@@ -1,5 +1,5 @@
-/* -^- */
 #pragma once
+
 // #ifndef _clasp_memoryManagement_H
 // #define _clasp_memoryManagement_H
 
@@ -54,15 +54,15 @@ namespace gctools {
 
 struct ClaspInfo {
   int _argc;
-  const char **_argv;
+  const char** _argv;
   size_t _stackMax;
-  core::ThreadLocalState *_threadLocalStateP;
-  core::LispHolder *_lispHolder;
+  core::ThreadLocalState* _threadLocalStateP;
+  core::LispHolder* _lispHolder;
   bool _mpiEnabled;
   int _mpiRank;
   int _mpiSize;
 
-  ClaspInfo(int argc, const char **argv, size_t stackMax)
+  ClaspInfo(int argc, const char** argv, size_t stackMax)
       : _argc(argc), _argv(argv), _stackMax(stackMax), _lispHolder(NULL), _mpiEnabled(false), _mpiRank(0), _mpiSize(1){};
 };
 }; // namespace gctools
@@ -75,7 +75,7 @@ struct ClaspInfo {
 
 #ifdef RUNNING_PRECISEPREP
 typedef uintptr_t GC_word;
-inline void *GC_base(void *v) { return v; };
+inline void* GC_base(void* v) { return v; };
 #endif
 
 namespace gctools {
@@ -84,7 +84,7 @@ typedef enum { room_test, room_max, room_default, room_min } RoomVerbosity;
 
 // The clasp pointer type.
 // This was introduced very late - but we can use it to recognize pointers that need fixup in save/load
-typedef unsigned char *clasp_ptr_t;
+typedef unsigned char* clasp_ptr_t;
 
 }; // namespace gctools
 
@@ -101,7 +101,7 @@ namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
 template <class OT> struct GCStamp;
 extern size_t global_alignup_sizeof_header;
-extern const char *_global_stack_marker;
+extern const char* _global_stack_marker;
 extern size_t _global_stack_max_size;
 }; // namespace gctools
 
@@ -153,8 +153,8 @@ class GCObject {};
 #include <clasp/gctools/threadlocal.fwd.h>
 
 extern "C" {
-const char *obj_name(gctools::stamp_t kind);
-extern void obj_dump_base(void *base);
+const char* obj_name(gctools::stamp_t kind);
+extern void obj_dump_base(void* base);
 };
 
 namespace gctools {
@@ -165,9 +165,9 @@ extern bool global_debuggerOnSIGABRT; // If this is false then SIGABRT is proces
 
 namespace gctools {
 /*! Allocate an atomic buffer with malloc */
-char *clasp_alloc_atomic(size_t buffer_size);
+char* clasp_alloc_atomic(size_t buffer_size);
 /*! The buffer above must be deallocated using this call*/
-void clasp_dealloc(char *buffer);
+void clasp_dealloc(char* buffer);
 }; // namespace gctools
 
 namespace gctools {
@@ -223,9 +223,8 @@ namespace gctools {
 class ThreadLocalState;
 };
 
-
 /*! Declare this in the top namespace */
-extern THREAD_LOCAL core::ThreadLocalState *my_thread;
+extern THREAD_LOCAL core::ThreadLocalState* my_thread;
 
 namespace gctools {
 
@@ -398,7 +397,7 @@ public:
     uintptr_t _header_data[0]; // The 0th element overlaps StampWtagMtag values
     tagged_stamp_t _value;
     StampWtagMtag() : _value(0){};
-    StampWtagMtag(core::Cons_O *cons) : _value(cons_mtag){};
+    StampWtagMtag(core::Cons_O* cons) : _value(cons_mtag){};
     StampWtagMtag(Value all) : _value(all){};
     StampWtagMtag(WeakKinds kind) : _value(kind){};
 
@@ -501,9 +500,7 @@ public:
     bool generalObjectP() const { return this->stampP(); };
     bool weakObjectP() const { return (this->_value & mtag_mask) == weak_mtag; };
     bool consObjectP() const { return (this->_value & mtag_mask) == cons_mtag; };
-    bool fwdP() const {
-      return (this->_value & mtag_mask) == fwd_mtag;
-    };
+    bool fwdP() const { return (this->_value & mtag_mask) == fwd_mtag; };
     bool fwdV() const { return (this->_value & mtag_mask); };
     bool padP() const { return (this->_value & mtag_mask) == pad_mtag; };
     bool pad1P() const { return (this->_value & mtag_mask) == pad1_mtag; };
@@ -512,9 +509,9 @@ public:
     GCStampEnum stamp_wtag() const { return (GCStampEnum)(this->_value >> general_mtag_shift); };
     GCStampEnum stamp_() const { return (GCStampEnum)(this->_value >> (wtag_width + general_mtag_shift)); };
     /*! No sanity checking done - this function assumes fwdP == true */
-    void *fwdPointer() const { return reinterpret_cast<void *>(this->_header_data[0] & (~(uintptr_t)mtag_mask)); };
+    void* fwdPointer() const { return reinterpret_cast<void*>(this->_header_data[0] & (~(uintptr_t)mtag_mask)); };
     /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
-    void setFwdPointer(void *ptr) { this->_header_data[0] = reinterpret_cast<uintptr_t>(ptr) | fwd_mtag; };
+    void setFwdPointer(void* ptr) { this->_header_data[0] = reinterpret_cast<uintptr_t>(ptr) | fwd_mtag; };
     uintptr_t fwdSize() const { return this->_header_data[1]; };
     /*! This writes into the first tagged_stamp_t sized word of the client data. */
     void setFwdSize(size_t sz) { this->_header_data[1] = sz; };
@@ -562,16 +559,17 @@ public:
         needed.
      */
     mutable std::atomic<badge_t> _header_badge; /* This can NEVER be zero or the boehm mark procedures in precise mode */
-                                   /* will treat it like a unused object residing on a free list          */
+                                                /* will treat it like a unused object residing on a free list          */
 
-    BadgeStampWtagMtag() : StampWtagMtag(), _header_badge(NoBadge) {};
-    BadgeStampWtagMtag(core::Cons_O *cons) : StampWtagMtag(cons_mtag), _header_badge((badge_t)((uintptr_t)cons & 0xFFFFFFFF)){};
+    BadgeStampWtagMtag() : StampWtagMtag(), _header_badge(NoBadge){};
+    BadgeStampWtagMtag(core::Cons_O* cons) : StampWtagMtag(cons_mtag), _header_badge((badge_t)((uintptr_t)cons & 0xFFFFFFFF)){};
     BadgeStampWtagMtag(const BadgeStampWtagMtag& other);
     BadgeStampWtagMtag(StampWtagMtag all) : StampWtagMtag(all), _header_badge(NoBadge){};
-    BadgeStampWtagMtag(StampWtagMtag all, badge_t badge) : StampWtagMtag(all), _header_badge(badge){
+    BadgeStampWtagMtag(StampWtagMtag all, badge_t badge) : StampWtagMtag(all), _header_badge(badge) {
 #ifdef DEBUG_BADGE_SSL
-      if (badge>1) {
-        printf("%s:%d:%s this = %p badge = %u   _header_badge = %u\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, badge, this->_header_badge.load() );
+      if (badge > 1) {
+        printf("%s:%d:%s this = %p badge = %u   _header_badge = %u\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, badge,
+               this->_header_badge.load());
       }
 #endif
     };
@@ -589,7 +587,7 @@ public:
   //
 
 public:
-  static void signal_invalid_object(const BaseHeader_s *header, const char *msg);
+  static void signal_invalid_object(const BaseHeader_s* header, const char* msg);
 
 public:
   void validate() const;
@@ -608,20 +606,23 @@ public:
   // The header contains the stamp_wtag_mtag value.
   BadgeStampWtagMtag _badge_stamp_wtag_mtag; // This MUST be the first word of the guard.
 public:
-  BaseHeader_s(const StampWtagMtag &k,bool dummy) : _badge_stamp_wtag_mtag(k) {
+  BaseHeader_s(const StampWtagMtag& k, bool dummy) : _badge_stamp_wtag_mtag(k) {
 #ifdef DEBUG_BADGE_SSL
     if (dummy)
-      printf("%s:%d:%s    this = %p   badge = %u\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, this->_badge_stamp_wtag_mtag._header_badge.load());
+      printf("%s:%d:%s    this = %p   badge = %u\n", __FILE__, __LINE__, __FUNCTION__, (void*)this,
+             this->_badge_stamp_wtag_mtag._header_badge.load());
 #endif
   }
-  BaseHeader_s(const BadgeStampWtagMtag &k,bool dummy) : _badge_stamp_wtag_mtag(k) {
+  BaseHeader_s(const BadgeStampWtagMtag& k, bool dummy) : _badge_stamp_wtag_mtag(k) {
 #ifdef DEBUG_BADGE_SSL
     if (dummy)
-      printf("%s:%d:%s    this = %p   badge = %u\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, this->_badge_stamp_wtag_mtag._header_badge.load());
+      printf("%s:%d:%s    this = %p   badge = %u\n", __FILE__, __LINE__, __FUNCTION__, (void*)this,
+             this->_badge_stamp_wtag_mtag._header_badge.load());
 #endif
   }
-  BaseHeader_s(const StampWtagMtag &k) : _badge_stamp_wtag_mtag(k) {}
+  BaseHeader_s(const StampWtagMtag& k) : _badge_stamp_wtag_mtag(k) {}
   BaseHeader_s(const BaseHeader_s& baseHeader);
+
 public:
   size_t mtag() const { return (size_t)(this->_badge_stamp_wtag_mtag._value & mtag_mask); };
   constexpr size_t tail_size() const { return 0; };
@@ -631,7 +632,7 @@ public:
   string description() const {
     if (this->_badge_stamp_wtag_mtag.stampP()) {
       std::stringstream ss;
-      ss << "Header=" << (void *)(uintptr_t)(this->_badge_stamp_wtag_mtag._value);
+      ss << "Header=" << (void*)(uintptr_t)(this->_badge_stamp_wtag_mtag._value);
       ss << "/";
       ss << obj_name(this->_badge_stamp_wtag_mtag.stamp_());
       return ss.str();
@@ -652,7 +653,7 @@ public:
     }
     stringstream ss;
     ss << "IllegalHeader=";
-    ss << (void *)(uintptr_t)(this->_badge_stamp_wtag_mtag._value);
+    ss << (void*)(uintptr_t)(this->_badge_stamp_wtag_mtag._value);
     printf("%s:%d Header->description() found an illegal header = %s\n", __FILE__, __LINE__, ss.str().c_str());
     return ss.str();
     ;
@@ -670,7 +671,7 @@ struct GatherObjects; // forward decl
 
 class ConsHeader_s : public BaseHeader_s {
 public:
-  ConsHeader_s(const BadgeStampWtagMtag &k) : BaseHeader_s(k){};
+  ConsHeader_s(const BadgeStampWtagMtag& k) : BaseHeader_s(k){};
 
 public:
   static constexpr size_t size() { return sizeof(ConsHeader_s); };
@@ -687,7 +688,7 @@ public:
   uint _guard2;
 #endif
 #ifdef DEBUG_GUARD_BACKTRACE
-  void *_backtrace[GUARD_BACKTRACE_LEVELS];
+  void* _backtrace[GUARD_BACKTRACE_LEVELS];
 #endif
 #ifdef DEBUG_GUARD
   // The last word of the guard must be a copy of the first.
@@ -706,7 +707,7 @@ public:
       if (this->_guard != 0xFEEAFEEBDEADBEEF)
         signal_invalid_object(this, "bad head guard");
       if (this->_tail_size > 0) {
-        const unsigned char *tail = (const unsigned char *)this + this->_tail_start;
+        const unsigned char* tail = (const unsigned char*)this + this->_tail_start;
         if ((*tail) != 0xcc)
           signal_invalid_object(this, "bad tail not 0xcc");
       }
@@ -722,12 +723,12 @@ public:
 #define GUARD_BACKTRACE_LEVELS 8
 #ifdef DEBUG_GUARD_BACKTRACE
   inline void maybe_fill_backtrace(tagged_stamp_t k) {
-    void **bp = (void **)__builtin_frame_address(0);
-    void **bpnew;
-    void *pc;
+    void** bp = (void**)__builtin_frame_address(0);
+    void** bpnew;
+    void* pc;
     for (size_t ii = 0; ii < GUARD_BACKTRACE_LEVELS; ++ii) {
-      pc = *(void **)(bp + 1);
-      bpnew = (void **)*(void **)bp;
+      pc = *(void**)(bp + 1);
+      bpnew = (void**)*(void**)bp;
       if ((uintptr_t)bpnew < (uintptr_t)bp)
         break;
       if (bpnew > my_thread_low_level->_StackTop)
@@ -740,28 +741,25 @@ public:
 #ifdef DEBUG_GUARD
   inline void fill_tail() {
     if (this->_tail_size)
-      memset((void *)(((char *)this) + this->_tail_start), 0xcc, this->_tail_size);
+      memset((void*)(((char*)this) + this->_tail_start), 0xcc, this->_tail_size);
   };
 #endif
 
 #if !defined(DEBUG_GUARD)
-  Header_s(const BadgeStampWtagMtag &k) : BaseHeader_s(k){};
-  Header_s(Header_s *headerptr) : BaseHeader_s(headerptr->_badge_stamp_wtag_mtag){};
-  Header_s(Header_s *headerptr,bool dummy) : BaseHeader_s(headerptr->_badge_stamp_wtag_mtag,dummy){
+  Header_s(const BadgeStampWtagMtag& k) : BaseHeader_s(k){};
+  Header_s(Header_s* headerptr) : BaseHeader_s(headerptr->_badge_stamp_wtag_mtag){};
+  Header_s(Header_s* headerptr, bool dummy) : BaseHeader_s(headerptr->_badge_stamp_wtag_mtag, dummy) {
 #ifdef DEBUG_BADGE_SSL
-    if(dummy)
-      printf("%s:%d:%s    this = %p   headerptr badge = %u   badge = %u\n",
-             __FILE__, __LINE__, __FUNCTION__,
-             (void*)this,
-             headerptr->_badge_stamp_wtag_mtag._header_badge.load(),
-             this->_badge_stamp_wtag_mtag._header_badge.load());
+    if (dummy)
+      printf("%s:%d:%s    this = %p   headerptr badge = %u   badge = %u\n", __FILE__, __LINE__, __FUNCTION__, (void*)this,
+             headerptr->_badge_stamp_wtag_mtag._header_badge.load(), this->_badge_stamp_wtag_mtag._header_badge.load());
 #endif
   };
 #else
 #define GUARD1 0xFEEAFEEBDEADBEE0
 #define GUARD2 0xC0FFEEE0
 
-  Header_s(const BadgeStampWtagMtag &k, size_t tstart = 0, size_t tsize = 0, size_t total_size = sizeof(Header_s))
+  Header_s(const BadgeStampWtagMtag& k, size_t tstart = 0, size_t tsize = 0, size_t total_size = sizeof(Header_s))
       : BaseHeader_s(k), _guard(GUARD1), _tail_start(tstart), _tail_size(tsize), _source((uintptr_t)this), _guard2(GUARD2),
         _dup_badge_stamp_wtag_mtag(k) {
 #ifdef DEBUG_GUARD_BACKTRACE
@@ -770,7 +768,7 @@ public:
     this->fill_tail();
   };
 
-  Header_s(Header_s *headerptr)
+  Header_s(Header_s* headerptr)
       : BaseHeader_s(headerptr->_badge_stamp_wtag_mtag), _guard(GUARD1), _tail_start(0), _tail_size(0), _source(headerptr->_source),
         _guard2(GUARD2), _dup_badge_stamp_wtag_mtag(headerptr->_badge_stamp_wtag_mtag){};
 
@@ -786,10 +784,9 @@ template <class LispClass> struct StackAllocate {
   LispClass _Object;
 
   template <class... ARGS>
-  StackAllocate(ARGS &&...args)
-      : _Header(Header_s::StampWtagMtag::make<LispClass>()), _Object(std::forward<ARGS>(args)...){};
+  StackAllocate(ARGS&&... args) : _Header(Header_s::StampWtagMtag::make<LispClass>()), _Object(std::forward<ARGS>(args)...){};
 
-  smart_ptr<LispClass> asSmartPtr() { return smart_ptr<LispClass>((LispClass *)&this->_Object); }
+  smart_ptr<LispClass> asSmartPtr() { return smart_ptr<LispClass>((LispClass*)&this->_Object); }
 };
 
 // We use a sham struct because C++ doesn't let us partially specify templates.
@@ -797,8 +794,8 @@ template <class LispClass> struct InitializeObject {
 
   static size_t size() { return sizeof_with_header<LispClass>(); }
 
-  template <typename... ARGS> static LispClass *go(void *where, ARGS &&...args) {
-    LispClass *object = (LispClass *)((Header_s *)where + 1);
+  template <typename... ARGS> static LispClass* go(void* where, ARGS&&... args) {
+    LispClass* object = (LispClass*)((Header_s*)where + 1);
     new (where) Header_s(Header_s::StampWtagMtag::make<LispClass>());
     return new (object) LispClass(std::forward<ARGS>(args)...);
   }
@@ -809,13 +806,13 @@ template <> struct InitializeObject<core::Cons_O> {
   // KLUDGE: We can't specialize InitializeObject directly because Cons_O
   // is not defined enough yet that we can write code to initialize one.
   // But if we put in another layer of template, it's apparently okay.
-  template <class ConsType, typename... ARGS> static ConsType *initialize_cons(void *where, ARGS &&...args) {
-    ConsType *object = (ConsType *)((ConsHeader_s *)where + 1);
+  template <class ConsType, typename... ARGS> static ConsType* initialize_cons(void* where, ARGS&&... args) {
+    ConsType* object = (ConsType*)((ConsHeader_s*)where + 1);
     new (where) ConsHeader_s(ConsHeader_s::StampWtagMtag::make<ConsType>());
     return new (object) ConsType(std::forward<ARGS>(args)...);
   }
 
-  template <typename... ARGS> static core::Cons_O *go(void *where, ARGS &&...args) {
+  template <typename... ARGS> static core::Cons_O* go(void* where, ARGS&&... args) {
     return initialize_cons<core::Cons_O>(where, std::forward<ARGS>(args)...);
   }
 };
@@ -892,32 +889,32 @@ namespace gctools {
 #define EXHAUSTIVE_VALIDATE(ptr)
 #endif
 
-inline const void *GeneralPtrToHeaderPtr(const void *mostDerived) {
-  const void *ptr = reinterpret_cast<const char *>(mostDerived) - sizeof(Header_s);
+inline const void* GeneralPtrToHeaderPtr(const void* mostDerived) {
+  const void* ptr = reinterpret_cast<const char*>(mostDerived) - sizeof(Header_s);
   return ptr;
 }
 
 inline constexpr size_t SizeofGeneralHeader() { return sizeof(Header_s); };
 
-inline void *GeneralPtrToHeaderPtr(void *mostDerived) {
-  void *ptr = reinterpret_cast<char *>(mostDerived) - SizeofGeneralHeader();
+inline void* GeneralPtrToHeaderPtr(void* mostDerived) {
+  void* ptr = reinterpret_cast<char*>(mostDerived) - SizeofGeneralHeader();
   return ptr;
 }
 
-inline const Header_s *header_pointer(const void *client_pointer) {
-  const Header_s *header = reinterpret_cast<const Header_s *>(reinterpret_cast<const char *>(client_pointer) - sizeof(Header_s));
+inline const Header_s* header_pointer(const void* client_pointer) {
+  const Header_s* header = reinterpret_cast<const Header_s*>(reinterpret_cast<const char*>(client_pointer) - sizeof(Header_s));
   return header;
 }
 
-inline void throwIfInvalidClient(core::T_O *client) {
-  Header_s *header = (Header_s *)GeneralPtrToHeaderPtr(client);
+inline void throwIfInvalidClient(core::T_O* client) {
+  Header_s* header = (Header_s*)GeneralPtrToHeaderPtr(client);
   if (header->_badge_stamp_wtag_mtag.invalidP()) {
-    throw_hard_error_bad_client((void *)client);
+    throw_hard_error_bad_client((void*)client);
   }
 }
 
-template <typename T> inline T *HeaderPtrToGeneralPtr(void *base) {
-  T *ptr = reinterpret_cast<T *>(reinterpret_cast<char *>(base) + SizeofGeneralHeader());
+template <typename T> inline T* HeaderPtrToGeneralPtr(void* base) {
+  T* ptr = reinterpret_cast<T*>(reinterpret_cast<char*>(base) + SizeofGeneralHeader());
   return ptr;
 }
 
@@ -926,35 +923,35 @@ template <typename T> inline T *HeaderPtrToGeneralPtr(void *base) {
  */
 inline constexpr size_t SizeofWeakHeader() { return SizeofGeneralHeader(); };
 
-inline const void *WeakPtrToHeaderPtr(const void *client) {
-  const void *ptr = reinterpret_cast<const char *>(client) - SizeofWeakHeader();
+inline const void* WeakPtrToHeaderPtr(const void* client) {
+  const void* ptr = reinterpret_cast<const char*>(client) - SizeofWeakHeader();
   return ptr;
 }
 
-inline void *WeakPtrToHeaderPtr(void *client) {
-  void *ptr = reinterpret_cast<char *>(client) - SizeofWeakHeader();
+inline void* WeakPtrToHeaderPtr(void* client) {
+  void* ptr = reinterpret_cast<char*>(client) - SizeofWeakHeader();
   return ptr;
 }
 
-inline void *HeaderPtrToWeakPtr(void *header) {
-  void *ptr = reinterpret_cast<void *>(reinterpret_cast<char *>(header) + SizeofWeakHeader());
+inline void* HeaderPtrToWeakPtr(void* header) {
+  void* ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(header) + SizeofWeakHeader());
   return ptr;
 }
 
 inline constexpr size_t SizeofConsHeader() { return ConsHeader_s::size(); };
 
-inline const void *ConsPtrToHeaderPtr(const void *client) {
-  const void *ptr = reinterpret_cast<const char *>(client) - SizeofConsHeader();
+inline const void* ConsPtrToHeaderPtr(const void* client) {
+  const void* ptr = reinterpret_cast<const char*>(client) - SizeofConsHeader();
   return ptr;
 }
 
-inline void *ConsPtrToHeaderPtr(void *client) {
-  void *ptr = reinterpret_cast<char *>(client) - SizeofConsHeader();
+inline void* ConsPtrToHeaderPtr(void* client) {
+  void* ptr = reinterpret_cast<char*>(client) - SizeofConsHeader();
   return ptr;
 }
 
-inline void *HeaderPtrToConsPtr(void *header) {
-  void *ptr = reinterpret_cast<void *>(reinterpret_cast<char *>(header) + SizeofConsHeader());
+inline void* HeaderPtrToConsPtr(void* header) {
+  void* ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(header) + SizeofConsHeader());
   return ptr;
 }
 
@@ -1061,10 +1058,10 @@ public:
 #endif
 
 extern "C" {
-const char *obj_name(gctools::stamp_t kind);
-const char *obj_kind_name(core::T_O *ptr);
-size_t obj_kind(core::T_O *ptr);
-extern void obj_dump_base(void *base);
+const char* obj_name(gctools::stamp_t kind);
+const char* obj_kind_name(core::T_O* ptr);
+size_t obj_kind(core::T_O* ptr);
+extern void obj_dump_base(void* base);
 };
 
 namespace gctools {
@@ -1102,7 +1099,7 @@ namespace core {
 typedef gctools::smart_ptr<Cons_O> Cons_sp;
 typedef gctools::smart_ptr<General_O> General_sp;
 typedef gctools::smart_ptr<T_O> T_sp;
-};
+}; // namespace core
 
 namespace gctools {
 uint32_t lisp_calculate_heap_badge();
@@ -1114,10 +1111,10 @@ uint32_t lisp_badge(core::T_sp object);
 namespace gctools {
 extern int global_pollTicksPerCleanup;
 
-template <typename T> void *SmartPtrToBasePtr(smart_ptr<T> obj) {
-  void *ptr;
+template <typename T> void* SmartPtrToBasePtr(smart_ptr<T> obj) {
+  void* ptr;
   if (obj.objectp()) {
-    ptr = reinterpret_cast<void *>(reinterpret_cast<char *>(obj.untag_object()) - sizeof(Header_s));
+    ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(obj.untag_object()) - sizeof(Header_s));
   } else {
     throw_hard_error("Bad pointer for SmartPtrToBasePtr");
   }
@@ -1141,22 +1138,22 @@ namespace gctools {
 
 int handleFatalCondition();
 
-void rawHeaderDescribe(const uintptr_t *headerP);
+void rawHeaderDescribe(const uintptr_t* headerP);
 }; // namespace gctools
 
 extern "C" {
 // These must be provided the the garbage collector specific code
 
 //! Describe the header of the client
-void client_describe(void *taggedClient);
+void client_describe(void* taggedClient);
 //! Validate the client
 void client_validate_tagged(gctools::Tagged taggedClient);
 //! Must be a General_O ptr - no tag
-void client_validate_General_O_ptr(const core::General_O *client_ptr);
+void client_validate_General_O_ptr(const core::General_O* client_ptr);
 //! Validate a client smart_ptr - only general objects
 void client_validate(core::T_sp client);
 //! Describe the header
-void header_describe(gctools::Header_s *headerP);
+void header_describe(gctools::Header_s* headerP);
 };
 
 // #include <clasp/gctools/containers.h>
@@ -1165,7 +1162,7 @@ namespace gctools {
 #define LITERAL_TAG_CHAR 0
 #define TRANSIENT_TAG_CHAR 1
 
-void untag_literal_index(size_t findex, size_t &index, size_t &tag);
+void untag_literal_index(size_t findex, size_t& index, size_t& tag);
 }; // namespace gctools
 
 namespace gctools {
@@ -1178,15 +1175,15 @@ struct GCRootsInModule {
   static int const TransientRawIndex = 0;
   static size_t const DefaultCapacity = 256;
   // Fields
-  core::SimpleVector_O **_TransientAlloca;
-  void *_module_memory;
+  core::SimpleVector_O** _TransientAlloca;
+  void* _module_memory;
   size_t _num_entries;
   size_t _capacity;
-  /*fnLispCallingConvention* */ void **_function_pointers;
+  /*fnLispCallingConvention* */ void** _function_pointers;
   size_t _function_pointer_count;
-  GCRootsInModule(void *module_mem, size_t num_entries, core::SimpleVector_O **transient_alloca, size_t transient_entries,
-                  size_t function_pointer_count, void **fptrs);
-  void setup_transients(core::SimpleVector_O **transient_alloca, size_t transient_entries);
+  GCRootsInModule(void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries,
+                  size_t function_pointer_count, void** fptrs);
+  void setup_transients(core::SimpleVector_O** transient_alloca, size_t transient_entries);
 
   size_t remainingCapacity() { return this->_capacity - this->_num_entries; };
   size_t push_back(Tagged val);
@@ -1196,28 +1193,28 @@ struct GCRootsInModule {
   Tagged getTransient(size_t index);
   Tagged setTaggedIndex(char tag, size_t index, Tagged val);
   Tagged getTaggedIndex(char tag, size_t index);
-  /*fnLispCallingConvention*/ void *lookup_function(size_t index);
-  void *address(size_t index) { return reinterpret_cast<void *>(&reinterpret_cast<core::T_sp *>(this->_module_memory)[index + 1]); }
+  /*fnLispCallingConvention*/ void* lookup_function(size_t index);
+  void* address(size_t index) { return reinterpret_cast<void*>(&reinterpret_cast<core::T_sp*>(this->_module_memory)[index + 1]); }
 };
 
-void initialize_gcroots_in_module(GCRootsInModule *gcroots_in_module, core::T_O **root_address, size_t num_roots,
-                                  gctools::Tagged initial_data, core::SimpleVector_O **transientAlloca, size_t transient_entries,
-                                  size_t function_pointer_number, void **fptrs);
-core::T_O *read_gcroots_in_module(GCRootsInModule *roots, size_t index);
-void shutdown_gcroots_in_module(GCRootsInModule *gcroots_in_module);
+void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O** root_address, size_t num_roots,
+                                  gctools::Tagged initial_data, core::SimpleVector_O** transientAlloca, size_t transient_entries,
+                                  size_t function_pointer_number, void** fptrs);
+core::T_O* read_gcroots_in_module(GCRootsInModule* roots, size_t index);
+void shutdown_gcroots_in_module(GCRootsInModule* gcroots_in_module);
 
-inline core::T_O *ensure_valid_object(core::T_O *tagged_object) {
+inline core::T_O* ensure_valid_object(core::T_O* tagged_object) {
   // Only validate general objects for now
   if (tagged_generalp(tagged_object)) {
-    core::T_O *untagged_object = gc::untag_general(tagged_object);
-    Header_s *header = reinterpret_cast<Header_s *>(GeneralPtrToHeaderPtr(untagged_object));
+    core::T_O* untagged_object = gc::untag_general(tagged_object);
+    Header_s* header = reinterpret_cast<Header_s*>(GeneralPtrToHeaderPtr(untagged_object));
     header->quick_validate();
   }
   return tagged_object;
 }
-inline void *ensure_valid_header(void *base) {
+inline void* ensure_valid_header(void* base) {
   // Only validate general objects for now
-  Header_s *header = reinterpret_cast<Header_s *>(base);
+  Header_s* header = reinterpret_cast<Header_s*>(base);
   header->quick_validate();
   return base;
 }
@@ -1226,8 +1223,8 @@ template <typename OT> inline gctools::smart_ptr<OT> ensure_valid_object(gctools
 #ifdef DEBUG_GUARD_VALIDATE
   // Only validate general objects for now
   if (tagged_generalp(tagged_object.raw_())) {
-    core::T_O *untagged_object = gc::untag_general(tagged_object.raw_());
-    Header_s *header = reinterpret_cast<Header_s *>(GeneralPtrToHeaderPtr(untagged_object));
+    core::T_O* untagged_object = gc::untag_general(tagged_object.raw_());
+    Header_s* header = reinterpret_cast<Header_s*>(GeneralPtrToHeaderPtr(untagged_object));
     header->quick_validate();
   }
 #endif
@@ -1252,7 +1249,7 @@ void gc_release();
 #endif
 
 #ifdef DEBUG_THROW_IF_INVALID_CLIENT_ON
-#define DEBUG_THROW_IF_INVALID_CLIENT(c) throwIfInvalidClient(reinterpret_cast<core::T_O *>(c))
+#define DEBUG_THROW_IF_INVALID_CLIENT(c) throwIfInvalidClient(reinterpret_cast<core::T_O*>(c))
 #else
 #define DEBUG_THROW_IF_INVALID_CLIENT(c)
 #endif
@@ -1271,10 +1268,10 @@ typedef enum { LispRoot, CoreSymbolRoot, SymbolRoot } RootType;
 /* When walking root objects, this callback is called repeatedly
    with the address of the root.
 */
-typedef void (*RootWalkCallback)(Tagged *rootAddress, RootType rootType, size_t rootIndex, void *userData);
+typedef void (*RootWalkCallback)(Tagged* rootAddress, RootType rootType, size_t rootIndex, void* userData);
 
 /* walkRoots must be provided by any GC */
-void walkRoots(RootWalkCallback callback, void *userData);
+void walkRoots(RootWalkCallback callback, void* userData);
 
 }; // namespace gctools
 
@@ -1311,61 +1308,61 @@ void walkRoots(RootWalkCallback callback, void *userData);
 template <typename Type> struct dont_expose {
   Type _value;
   dont_expose(){};
-  template <typename Arg> dont_expose(const Arg &val) : _value(val){};
+  template <typename Arg> dont_expose(const Arg& val) : _value(val){};
 };
 
 namespace gctools {
 
-typedef void (*PointerFix)(uintptr_t *clientAddress, uintptr_t client, uintptr_t tag, void *user_data);
+typedef void (*PointerFix)(uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, void* user_data);
 extern PointerFix globalMemoryWalkPointerFix;
 
 struct MarkNode {
-  gctools::Tagged *_ObjectAddr;
+  gctools::Tagged* _ObjectAddr;
   bool _ForceGeneralRoot;
-  MarkNode *_Next;
-  MarkNode(gctools::Tagged *tt, bool forceGeneralRoot = false)
+  MarkNode* _Next;
+  MarkNode(gctools::Tagged* tt, bool forceGeneralRoot = false)
       : _ObjectAddr(tt), _ForceGeneralRoot(forceGeneralRoot), _Next(NULL){};
 };
 
 struct GatherObjects {
   RoomVerbosity _Verbosity;
-  std::set<BaseHeader_s *> _Marked;
-  MarkNode *_Stack;
-  std::map<BaseHeader_s *, std::vector<uintptr_t>> _corruptObjects;
+  std::set<BaseHeader_s*> _Marked;
+  MarkNode* _Stack;
+  std::map<BaseHeader_s*, std::vector<uintptr_t>> _corruptObjects;
 
   GatherObjects(RoomVerbosity v) : _Verbosity(v), _Stack(NULL){};
 
-  MarkNode *popMarkStack() {
+  MarkNode* popMarkStack() {
     if (this->_Stack) {
-      MarkNode *top = this->_Stack;
+      MarkNode* top = this->_Stack;
       this->_Stack = top->_Next;
       return top;
     }
     return NULL;
   }
-  void pushMarkStack(MarkNode *node) {
+  void pushMarkStack(MarkNode* node) {
     node->_Next = this->_Stack;
     this->_Stack = node;
   }
 
-  void mark(Header_s *header) { this->_Marked.insert(header); }
+  void mark(Header_s* header) { this->_Marked.insert(header); }
 
-  bool markedP(BaseHeader_s *header) { return this->_Marked.find(header) != this->_Marked.end(); }
+  bool markedP(BaseHeader_s* header) { return this->_Marked.find(header) != this->_Marked.end(); }
 };
 
-void gatherAllObjects(GatherObjects &gather);
-size_t objectSize(BaseHeader_s *header);
+void gatherAllObjects(GatherObjects& gather);
+size_t objectSize(BaseHeader_s* header);
 
-bool is_memory_readable(const void *address, size_t bytes = 8);
+bool is_memory_readable(const void* address, size_t bytes = 8);
 
 }; // namespace gctools
 
 extern "C" {
-int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCode);
+int startup_clasp(void** stackMarker, gctools::ClaspInfo* claspInfo, int* exitCode);
 
-int run_clasp(gctools::ClaspInfo *claspInfo);
+int run_clasp(gctools::ClaspInfo* claspInfo);
 
-void shutdown_clasp(gctools::ClaspInfo *claspInfo);
+void shutdown_clasp(gctools::ClaspInfo* claspInfo);
 };
 
 namespace core {

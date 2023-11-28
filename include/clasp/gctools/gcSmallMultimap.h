@@ -1,17 +1,19 @@
+#pragma once
+
 /*
     File: gcSmallMultimap.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,8 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef gc_gcSmallMultimap_H
-#define gc_gcSmallMultimap_H
 
 namespace gctools {
 
@@ -81,22 +81,20 @@ public:
       int order = key_compare::order(k, it->first);
       if (order == 0)
         return it;
-      if (order < 0 )
+      if (order < 0)
         return this->end();
     }
     return it;
   }
 
-  bool contains(Key k) const {
-    return (this->find(k) != this->end());
-  }
+  bool contains(Key k) const { return (this->find(k) != this->end()); }
 
   int count(Key k) const {
     pair<iterator, iterator> range = this->equal_range(k);
     return range->second - range->first;
   }
 
-  pair<iterator, bool> insert(const value_type &val) {
+  pair<iterator, bool> insert(const value_type& val) {
     iterator it;
     if (!this->_Contents) {
       this->reserve(4);
@@ -112,7 +110,7 @@ public:
     return pair<iterator, bool>(it, true);
   }
 
-  mapped_type &get(const key_type &k) {
+  mapped_type& get(const key_type& k) {
     iterator it = this->find(k);
     if (it == this->end()) {
       throw SmallMultimapGetError();
@@ -120,7 +118,7 @@ public:
     return it->second;
   }
 
-  const mapped_type &get(const key_type &k) const {
+  const mapped_type& get(const key_type& k) const {
     const_iterator it = this->find(k);
     if (it == this->end()) {
       throw SmallMultimapGetError();
@@ -130,5 +128,3 @@ public:
 };
 
 } // namespace gctools
-
-#endif

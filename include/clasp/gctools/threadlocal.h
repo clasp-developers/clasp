@@ -1,14 +1,12 @@
-#ifndef gctools_threadlocal_H
-#define gctools_threadlocal_H
+#pragma once
 
 #include <signal.h>
 #include <functional>
 #include <algorithm> // copy
 #include <clasp/gctools/threadlocal.fwd.h>
 
-typedef core::T_O*(*T_OStartUp)(core::T_O*);
-typedef void(*voidStartUp)(void);
-
+typedef core::T_O* (*T_OStartUp)(core::T_O*);
+typedef void (*voidStartUp)(void);
 
 namespace core {
 
@@ -18,36 +16,33 @@ extern bool global_debug_dyn_env_stack;
 
 #define STARTUP_FUNCTION_CAPACITY_INIT 128
 #define STARTUP_FUNCTION_CAPACITY_MULTIPLIER 2
-  struct StartUp {
-    typedef enum {T_O_function, void_function} FunctionEnum;
-    FunctionEnum _Type;
-    size_t       _Position;
-    void*        _Function;
-    StartUp() {};
-    StartUp(FunctionEnum type, size_t p, void* f) : _Type(type), _Position(p), _Function(f) {};
-    bool operator<(const StartUp& other) {
-      return this->_Position < other._Position;
-    }
-  };
-
-  struct StartupInfo {
-    size_t _capacity;
-    size_t _count;
-    StartUp* _functions;
-
-  StartupInfo() : _capacity(0), _count(0), _functions(NULL) {};
-  };
+struct StartUp {
+  typedef enum { T_O_function, void_function } FunctionEnum;
+  FunctionEnum _Type;
+  size_t _Position;
+  void* _Function;
+  StartUp(){};
+  StartUp(FunctionEnum type, size_t p, void* f) : _Type(type), _Position(p), _Function(f){};
+  bool operator<(const StartUp& other) { return this->_Position < other._Position; }
 };
+
+struct StartupInfo {
+  size_t _capacity;
+  size_t _count;
+  StartUp* _functions;
+
+  StartupInfo() : _capacity(0), _count(0), _functions(NULL){};
+};
+}; // namespace core
 
 namespace core {
 struct CleanupFunctionNode {
   std::function<void(void)> _CleanupFunction;
-  CleanupFunctionNode*      _Next;
+  CleanupFunctionNode* _Next;
   CleanupFunctionNode(const std::function<void(void)>& cleanup, CleanupFunctionNode* next)
-    : _CleanupFunction(cleanup), _Next(next) {};
-
+      : _CleanupFunction(cleanup), _Next(next){};
 };
-};
+}; // namespace core
 
 namespace llvmo {
 class ObjectFile_O;
@@ -55,30 +50,54 @@ typedef gctools::smart_ptr<ObjectFile_O> ObjectFile_sp;
 class CodeBase_O;
 typedef gctools::smart_ptr<CodeBase_O> CodeBase_sp;
 
-};
+}; // namespace llvmo
 namespace core {
 
 #ifdef DEBUG_VIRTUAL_MACHINE
 #define DVM_TRACE_FRAME 0b0001
 extern int global_debug_virtual_machine;
 
-#define VM_ASSERT_ALIGNED(vm,ptr) if (((uintptr_t)(ptr))&0x7) { printf("%s:%d:%s Unaligned pointer %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)(ptr)); (vm).error(); }
-#define VM_STACK_POINTER_CHECK(vm) if ((vm)._Running&&_stackPointer&&!((vm)._stackBottom<=_stackPointer && _stackPointer<=(vm)._stackTop) ) { printf("%s:%d:%s _stackPointer %p is out of stack _stackTop %p _stackBottom %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)(_stackPointer), (void*)((vm)._stackTop), (void*)((vm)._stackBottom)); (vm).error(); }
-#define VM_PC_CHECK(vm,pc,bytecode_start,bytecode_end) if ((uintptr_t)pc<(uintptr_t)bytecode_start || (uintptr_t)pc>=(uintptr_t)bytecode_end) {printf("%s:%d:%s vm._pc %p is outside of the bytecode vector range [ %p - %p ]\n", __FILE__, __LINE__, __FUNCTION__, (void*)pc, (void*)bytecode_start,(void*)bytecode_end);(vm).error();}
+#define VM_ASSERT_ALIGNED(vm, ptr)                                                                                                 \
+  if (((uintptr_t)(ptr)) & 0x7) {                                                                                                  \
+    printf("%s:%d:%s Unaligned pointer %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)(ptr));                                     \
+    (vm).error();                                                                                                                  \
+  }
+#define VM_STACK_POINTER_CHECK(vm)                                                                                                 \
+  if ((vm)._Running && _stackPointer && !((vm)._stackBottom <= _stackPointer && _stackPointer <= (vm)._stackTop)) {                \
+    printf("%s:%d:%s _stackPointer %p is out of stack _stackTop %p _stackBottom %p\n", __FILE__, __LINE__, __FUNCTION__,           \
+           (void*)(_stackPointer), (void*)((vm)._stackTop), (void*)((vm)._stackBottom));                                           \
+    (vm).error();                                                                                                                  \
+  }
+#define VM_PC_CHECK(vm, pc, bytecode_start, bytecode_end)                                                                          \
+  if ((uintptr_t)pc < (uintptr_t)bytecode_start || (uintptr_t)pc >= (uintptr_t)bytecode_end) {                                     \
+    printf("%s:%d:%s vm._pc %p is outside of the bytecode vector range [ %p - %p ]\n", __FILE__, __LINE__, __FUNCTION__,           \
+           (void*)pc, (void*)bytecode_start, (void*)bytecode_end);                                                                 \
+    (vm).error();                                                                                                                  \
+  }
 #define VM_CHECK(vm) VM_STACK_POINTER_CHECK(vm);
-#define VM_CURRENT_DATA(vm,data) { (vm)._data = data; }
-#define VM_CURRENT_DATA1(vm,data) { (vm)._data1 = data; }
-#define VM_INC_COUNTER0(vm) { (vm)._counter0++; }
-#define VM_INC_UNWIND_COUNTER(vm) { (vm)._unwind_counter++; }
-#define VM_INC_THROW_COUNTER(vm) { (vm)._throw_counter++; }
-#define VM_RESET_COUNTERS(vm) { (vm)._unwind_counter=0; (vm)._throw_counter=0; (vm)._counter0=0; }
+#define VM_CURRENT_DATA(vm, data)                                                                                                  \
+  { (vm)._data = data; }
+#define VM_CURRENT_DATA1(vm, data)                                                                                                 \
+  { (vm)._data1 = data; }
+#define VM_INC_COUNTER0(vm)                                                                                                        \
+  { (vm)._counter0++; }
+#define VM_INC_UNWIND_COUNTER(vm)                                                                                                  \
+  { (vm)._unwind_counter++; }
+#define VM_INC_THROW_COUNTER(vm)                                                                                                   \
+  { (vm)._throw_counter++; }
+#define VM_RESET_COUNTERS(vm)                                                                                                      \
+  {                                                                                                                                \
+    (vm)._unwind_counter = 0;                                                                                                      \
+    (vm)._throw_counter = 0;                                                                                                       \
+    (vm)._counter0 = 0;                                                                                                            \
+  }
 #else
-#define VM_ASSERT_ALIGNED(vm,ptr)
+#define VM_ASSERT_ALIGNED(vm, ptr)
 #define VM_STACK_POINTER_CHECK(vm)
 #define VM_CHECK(vm)
-#define VM_PC_CHECK(vm,pc,start,end)
-#define VM_CURRENT_DATA(vm,data)
-#define VM_CURRENT_DATA1(vm,data)
+#define VM_PC_CHECK(vm, pc, start, end)
+#define VM_CURRENT_DATA(vm, data)
+#define VM_CURRENT_DATA1(vm, data)
 #define VM_INC_COUNTER0(vm)
 #define VM_INC_UNWIND_COUNTER(vm)
 #define VM_INC_THROW_COUNTER(vm)
@@ -89,23 +108,23 @@ struct VirtualMachine {
   // Stack size is kind of arbitrary, and really we should make it
   // grow and etc.
   static constexpr size_t MaxStackWords = 65536;
-  bool           _Running;
-  core::T_O**    _stackBottom;
-  size_t         _stackBytes;
-  core::T_O**    _stackTop;
-  core::T_O**    _stackGuard;
-  core::T_O**    _stackPointer;
+  bool _Running;
+  core::T_O** _stackBottom;
+  size_t _stackBytes;
+  core::T_O** _stackTop;
+  core::T_O** _stackGuard;
+  core::T_O** _stackPointer;
   // only used by debugger
   // has to be initialized because bytecode_call reads it
-  core::T_O**    _framePointer = NULL;
+  core::T_O** _framePointer = NULL;
 #ifdef DEBUG_VIRTUAL_MACHINE
-  core::T_O*     _data;
-  core::T_O*     _data1;
-  size_t         _counter0;
-  size_t         _unwind_counter;
-  size_t         _throw_counter;
+  core::T_O* _data;
+  core::T_O* _data1;
+  size_t _counter0;
+  size_t _unwind_counter;
+  size_t _throw_counter;
 #endif
-  core::T_O**    _literals;
+  core::T_O** _literals;
   unsigned char* _pc;
 
   void error();
@@ -114,13 +133,11 @@ struct VirtualMachine {
   void disable_guards();
 
   void startup();
-  inline void shutdown() {
-    this->_Running = false;
-  }
+  inline void shutdown() { this->_Running = false; }
   inline void push(core::T_O**& stackPointer, core::T_O* value) {
     stackPointer++;
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(*this,stackPointer);
+    VM_ASSERT_ALIGNED(*this, stackPointer);
     *stackPointer = value;
   }
 
@@ -132,8 +149,7 @@ struct VirtualMachine {
   }
 
   // Allocate a Vaslist object on the stack.
-  inline core::T_O* alloca_vaslist1(core::T_O**& stackPointer,
-                                    core::T_O** args, size_t nargs) {
+  inline core::T_O* alloca_vaslist1(core::T_O**& stackPointer, core::T_O** args, size_t nargs) {
     stackPointer += 2;
     *(stackPointer - 1) = (core::T_O*)args;
     *(stackPointer - 0) = Vaslist::make_shifted_nargs(nargs);
@@ -141,34 +157,26 @@ struct VirtualMachine {
     return gc::tag_vaslist<core::T_O*>((core::Vaslist*)(stackPointer - 1));
   }
 
-  inline core::T_O* alloca_vaslist2(core::T_O**& stackPointer,
-                                    core::T_O** args, size_t nargs) {
-    core::T_O* vl = this->alloca_vaslist1(stackPointer,args,nargs);
-    this->alloca_vaslist1(stackPointer,args,nargs);
+  inline core::T_O* alloca_vaslist2(core::T_O**& stackPointer, core::T_O** args, size_t nargs) {
+    core::T_O* vl = this->alloca_vaslist1(stackPointer, args, nargs);
+    this->alloca_vaslist1(stackPointer, args, nargs);
     return vl;
   }
 
   // Allocate a general object on the stack.
-  template <class LispClass>
-  struct Alloc {
+  template <class LispClass> struct Alloc {
     static inline size_t size() { return gc::sizeof_with_header<LispClass>(); }
-    
-    template <typename...ARGS>
-    static inline gctools::smart_ptr<LispClass> alloc(core::T_O**& stackPointer,
-                                                      ARGS&&...args) {
+
+    template <typename... ARGS> static inline gctools::smart_ptr<LispClass> alloc(core::T_O**& stackPointer, ARGS&&... args) {
       core::T_O** start = stackPointer + 1;
       stackPointer += size();
-      LispClass* obj
-        = gc::InitializeObject<LispClass>::go(start,
-                                              std::forward<ARGS>(args)...);
+      LispClass* obj = gc::InitializeObject<LispClass>::go(start, std::forward<ARGS>(args)...);
       LispClass* tobj = gc::tag_general<LispClass*>(obj);
       gctools::smart_ptr<LispClass> robj((gctools::Tagged)tobj);
       return robj;
     }
 
-    static inline void dealloc(core::T_O**& stackPointer) {
-      stackPointer -= size();
-    }
+    static inline void dealloc(core::T_O**& stackPointer) { stackPointer -= size(); }
   };
 
   // Allocate a cons.
@@ -176,38 +184,33 @@ struct VirtualMachine {
   // InitializeObject struct, but in gctools/memoryManagement.h we don't
   // have a complete definition of Cons_O or even DoRegister, making things
   // rather more difficult.o
-  template <>
-  struct Alloc<core::Cons_O> {
-    template <class ConsType>
-    static inline size_t size() {
+  template <> struct Alloc<core::Cons_O> {
+    template <class ConsType> static inline size_t size() {
       return gc::ConsSizeCalculator<gc::RuntimeStage, ConsType, gc::DoRegister>::value();
     }
 
-    template <typename...ARGS>
-    static inline core::Cons_sp alloc(core::T_O**& stackPointer, ARGS&&...args) {
+    template <typename... ARGS> static inline core::Cons_sp alloc(core::T_O**& stackPointer, ARGS&&... args) {
       core::T_O** start = stackPointer + 1;
       stackPointer += size<core::Cons_O>();
-      core::Cons_O* obj
-        = gc::InitializeObject<core::Cons_O>::go(start,
-                                                 std::forward<ARGS>(args)...);
+      core::Cons_O* obj = gc::InitializeObject<core::Cons_O>::go(start, std::forward<ARGS>(args)...);
       core::Cons_O* tobj = gc::tag_cons<core::Cons_O*>(obj);
       core::Cons_sp robj((gctools::Tagged)tobj);
       return robj;
     }
   };
-    
+
   // Drop NELEMS slots on the stack all in one go.
   inline void drop(core::T_O**& stackPointer, size_t nelems) {
     stackPointer -= nelems;
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(*this,stackPointer);
+    VM_ASSERT_ALIGNED(*this, stackPointer);
   }
 
   // Get a pointer to the nth element from the stack
   // i.e. 0 is most recently pushed, 1 the next most recent, etc.
   inline core::T_O** stackref(core::T_O**& stackPointer, ptrdiff_t n) {
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(*this,stackPointer);
+    VM_ASSERT_ALIGNED(*this, stackPointer);
     return stackPointer - n;
   }
 
@@ -215,60 +218,55 @@ struct VirtualMachine {
   // Return the new stack pointer.
   inline T_O** push_frame(core::T_O** framePointer, size_t nlocals) {
 #ifdef DEBUG_VIRTUAL_MACHINE
-    if (global_debug_virtual_machine&DVM_TRACE_FRAME) {
-      printf("\nFRAME PUSH %p %p %lu unwind_counter %lu throw_counter %lu\n", this->_data, this->_data1, this->_counter0, this->_unwind_counter, this->_throw_counter);
+    if (global_debug_virtual_machine & DVM_TRACE_FRAME) {
+      printf("\nFRAME PUSH %p %p %lu unwind_counter %lu throw_counter %lu\n", this->_data, this->_data1, this->_counter0,
+             this->_unwind_counter, this->_throw_counter);
     }
 #endif
     core::T_O** ret = framePointer + nlocals;
     VM_STACK_POINTER_CHECK(*this);
-    VM_ASSERT_ALIGNED(*this,ret);
+    VM_ASSERT_ALIGNED(*this, ret);
     return ret;
   }
 
-  inline void setreg(T_O** framePointer, size_t base, core::T_O* value) {
-    *(framePointer + base + 1) = value;
-  }
+  inline void setreg(T_O** framePointer, size_t base, core::T_O* value) { *(framePointer + base + 1) = value; }
 
   inline void savesp(T_O** framePointer, T_O**& stackPointer, size_t base) {
     *(framePointer + base + 1) = (core::T_O*)stackPointer;
   }
 
-  inline void restoresp(T_O** framePointer, T_O**& stackPointer,
-                        size_t base) {
+  inline void restoresp(T_O** framePointer, T_O**& stackPointer, size_t base) {
     stackPointer = (core::T_O**)(*(framePointer + base + 1));
   }
 
   // Copy N elements from SOURCE into the current frame's register file
   // starting at BASE.
-  inline void copytoreg(core::T_O** framePointer, core::T_O** source,
-                        size_t n, size_t base) {
+  inline void copytoreg(core::T_O** framePointer, core::T_O** source, size_t n, size_t base) {
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(*this,source);
+    VM_ASSERT_ALIGNED(*this, source);
     std::copy(source, source + n, framePointer + base + 1);
   }
 
   // Fill OBJECT into N registers starting at BASE.
-  inline void fillreg(core::T_O** framePointer, core::T_O* object,
-                      size_t n, size_t base) {
+  inline void fillreg(core::T_O** framePointer, core::T_O* object, size_t n, size_t base) {
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(*this,framePointer+base+1);
+    VM_ASSERT_ALIGNED(*this, framePointer + base + 1);
     std::fill(framePointer + base + 1, framePointer + base + n + 1, object);
   }
 
   // Get a pointer to the nth register in the current frame.
   inline core::T_O** reg(core::T_O** framePointer, size_t n) {
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(*this,framePointer+n+1);
+    VM_ASSERT_ALIGNED(*this, framePointer + n + 1);
     return framePointer + n + 1;
   }
 
   // Compute how many elements are on the stack in the current frame
   // but which are not part of the register file.
-  inline ptrdiff_t npushed(T_O** framePointer, T_O**& stackPointer,
-                           size_t nlocals) {
+  inline ptrdiff_t npushed(T_O** framePointer, T_O**& stackPointer, size_t nlocals) {
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(*this,stackPointer);
-    VM_ASSERT_ALIGNED(*this,framePointer);
+    VM_ASSERT_ALIGNED(*this, stackPointer);
+    VM_ASSERT_ALIGNED(*this, framePointer);
     return stackPointer - nlocals - framePointer;
   }
 
@@ -276,122 +274,116 @@ struct VirtualMachine {
   // The most recent push goes to the end of the range.
   // Unlike copytoreg, here the destination is the pointer to the start
   // of the range regardless of stack growth direction.
-  template < class OutputIter >
-  inline void copyto(core::T_O**& stackPointer, size_t n, OutputIter dest) {
+  template <class OutputIter> inline void copyto(core::T_O**& stackPointer, size_t n, OutputIter dest) {
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(*this,stackPointer+1-n);
+    VM_ASSERT_ALIGNED(*this, stackPointer + 1 - n);
     std::copy(stackPointer + 1 - n, stackPointer + 1, dest);
   }
 
   VirtualMachine();
   ~VirtualMachine();
-
 };
 
-
-
 #define IHS_BACKTRACE_SIZE 16
-  struct ThreadLocalState {
+struct ThreadLocalState {
 
-    core::T_sp            _ObjectFiles;
-    mp::Process_sp        _Process;
-    DynamicBindingStack   _Bindings;
-    /*! Pending interrupts */
-    List_sp               _PendingInterrupts;
-    /*! Save CONS records so we don't need to do allocations
-        to add to _PendingInterrupts */
-    List_sp               _SparePendingInterruptRecords; // signal_queue on ECL
-    List_sp               _BufferStr8NsPool;
-    List_sp               _BufferStrWNsPool;
-    StringOutputStream_sp _BFormatStringOutputStream;
-    StringOutputStream_sp _WriteToStringOutputStream;
-    MultipleValues        _MultipleValues;
-    void*                 _sigaltstack_buffer;
-    size_t                _unwinds;
-    stack_t               _original_stack;
-    std::string           _initializer_symbol;
-    void*                 _object_file_start;
-    size_t                _object_file_size;
-    gctools::GCRootsInModule*  _GCRootsInModule;
-    StartupInfo           _Startup;
-    bool                  _Breakstep; // Should we check for breaks?
-    // What frame are we stepping over? NULL means step-into mode.
-    void*                 _BreakstepFrame;
-    // Stuff for SJLJ unwinding
-    List_sp               _DynEnvStackBottom;
-    T_sp                  _UnwindDest;
-    size_t                _UnwindDestIndex;
+  core::T_sp _ObjectFiles;
+  mp::Process_sp _Process;
+  DynamicBindingStack _Bindings;
+  /*! Pending interrupts */
+  List_sp _PendingInterrupts;
+  /*! Save CONS records so we don't need to do allocations
+      to add to _PendingInterrupts */
+  List_sp _SparePendingInterruptRecords; // signal_queue on ECL
+  List_sp _BufferStr8NsPool;
+  List_sp _BufferStrWNsPool;
+  StringOutputStream_sp _BFormatStringOutputStream;
+  StringOutputStream_sp _WriteToStringOutputStream;
+  MultipleValues _MultipleValues;
+  void* _sigaltstack_buffer;
+  size_t _unwinds;
+  stack_t _original_stack;
+  std::string _initializer_symbol;
+  void* _object_file_start;
+  size_t _object_file_size;
+  gctools::GCRootsInModule* _GCRootsInModule;
+  StartupInfo _Startup;
+  bool _Breakstep; // Should we check for breaks?
+  // What frame are we stepping over? NULL means step-into mode.
+  void* _BreakstepFrame;
+  // Stuff for SJLJ unwinding
+  List_sp _DynEnvStackBottom;
+  T_sp _UnwindDest;
+  size_t _UnwindDestIndex;
 #ifdef DEBUG_IHS
-    // Save the last return address before IHS screws up
-    void*                 _IHSBacktrace[IHS_BACKTRACE_SIZE];
+  // Save the last return address before IHS screws up
+  void* _IHSBacktrace[IHS_BACKTRACE_SIZE];
 #endif
-    size_t                 _xorshf_x; // Marsaglia's xorshf generator
-    size_t                 _xorshf_y;
-    size_t                 _xorshf_z;
-    CleanupFunctionNode*   _CleanupFunctions;
-    mp::SpinLock _SparePendingInterruptRecordsSpinLock;
-    uint64_t   _BytesAllocated;
-    uint64_t            _Tid;
-    uintptr_t           _BacktraceBasePointer;
-    uint64_t            _DtreeInterpreterCallCount;
-    VirtualMachine      _VM;
-    
+  size_t _xorshf_x; // Marsaglia's xorshf generator
+  size_t _xorshf_y;
+  size_t _xorshf_z;
+  CleanupFunctionNode* _CleanupFunctions;
+  mp::SpinLock _SparePendingInterruptRecordsSpinLock;
+  uint64_t _BytesAllocated;
+  uint64_t _Tid;
+  uintptr_t _BacktraceBasePointer;
+  uint64_t _DtreeInterpreterCallCount;
+  VirtualMachine _VM;
+
 #ifdef DEBUG_MONITOR_SUPPORT
-    // When enabled, maintain a thread-local map of strings to FILE*
-    // used for logging. This is so that per-thread log files can be
-    // generated.  These log files are automatically closed when the
-    // thread exits.
-    std::map<std::string,FILE*> _MonitorFiles;
+  // When enabled, maintain a thread-local map of strings to FILE*
+  // used for logging. This is so that per-thread log files can be
+  // generated.  These log files are automatically closed when the
+  // thread exits.
+  std::map<std::string, FILE*> _MonitorFiles;
 #endif
 
-  public:
-    // Methods
-    ThreadLocalState(bool dummy);
-    void finish_initialization_main_thread(core::T_sp theNilObject);
-    ThreadLocalState();
-    void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
+public:
+  // Methods
+  ThreadLocalState(bool dummy);
+  void finish_initialization_main_thread(core::T_sp theNilObject);
+  ThreadLocalState();
+  void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
 
-    pid_t safe_fork();
-    
-    void dynEnvStackTest(core::T_sp val) const;
-    void dynEnvStackSet(core::T_sp val) {
+  pid_t safe_fork();
+
+  void dynEnvStackTest(core::T_sp val) const;
+  void dynEnvStackSet(core::T_sp val) {
 #ifdef DEBUG_DYN_ENV_STACK
-      if (core::global_debug_dyn_env_stack)
-        this->dynEnvStackTest(val);
+    if (core::global_debug_dyn_env_stack)
+      this->dynEnvStackTest(val);
 #endif
-      this->_DynEnvStackBottom = val;
-    }
-    core::T_sp dynEnvStackGet() const {
+    this->_DynEnvStackBottom = val;
+  }
+  core::T_sp dynEnvStackGet() const {
 #ifdef DEBUG_DYN_ENV_STACK
-      if (core::global_debug_dyn_env_stack)
-        this->dynEnvStackTest(this->_DynEnvStackBottom);
+    if (core::global_debug_dyn_env_stack)
+      this->dynEnvStackTest(this->_DynEnvStackBottom);
 #endif
-      return this->_DynEnvStackBottom;
-    }
-    
-    uint32_t random();
+    return this->_DynEnvStackBottom;
+  }
 
-    llvmo::ObjectFile_sp topObjectFile();
-    void pushObjectFile(llvmo::ObjectFile_sp of);
-    void popObjectFile();
-    inline DynamicBindingStack& bindings() { return this->_Bindings; };
+  uint32_t random();
 
-    void startUpVM();
-    
-    ~ThreadLocalState();
-  };
+  llvmo::ObjectFile_sp topObjectFile();
+  void pushObjectFile(llvmo::ObjectFile_sp of);
+  void popObjectFile();
+  inline DynamicBindingStack& bindings() { return this->_Bindings; };
 
-  void thread_local_register_cleanup(const std::function<void(void)>& cleanup);
-  void thread_local_invoke_and_clear_cleanup();
+  void startUpVM();
+
+  ~ThreadLocalState();
+};
+
+void thread_local_register_cleanup(const std::function<void(void)>& cleanup);
+void thread_local_invoke_and_clear_cleanup();
 
 }; // namespace core
 
-
 namespace gctools {
 
-  void registerBytesAllocated(size_t bytes);
+void registerBytesAllocated(size_t bytes);
 };
-
 
 struct ThreadManager {
   struct Worker {
@@ -408,28 +400,24 @@ struct ThreadManager {
 #endif
     };
     ~Worker() {
- //      printf("%s:%d:%s Stopping pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid() );
+      //      printf("%s:%d:%s Stopping pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid() );
 #ifdef USE_BOEHM
       GC_unregister_my_thread();
 #endif
     };
   };
-  void register_thread(std::thread& th) {
-    // Do nothing for now
+  void register_thread(std::thread& th){
+      // Do nothing for now
   };
-  void unregister_thread(std::thread& th) {
-//    printf("%s:%d:%s What do I do here pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid(); );
+  void unregister_thread(std::thread& th){
+      //    printf("%s:%d:%s What do I do here pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid(); );
   };
 };
 
-
-template <typename T>
-class thread_pool;
+template <typename T> class thread_pool;
 
 namespace gctools {
 
 extern thread_pool<ThreadManager>* global_thread_pool;
 
 };
-
-#endif

@@ -11,8 +11,8 @@
 
 typedef enum { code_kind, setf_kind, method_kind, class_kind, variable_kind, unknown_kind } source_info_kind;
 
-NOINLINE void define_source_info(source_info_kind kind, const string &lisp_name, const string &file, size_t character_offset,
-                                 size_t line, const string &docstring) {
+NOINLINE void define_source_info(source_info_kind kind, const string& lisp_name, const string& file, size_t character_offset,
+                                 size_t line, const string& docstring) {
   std::string package_part, symbol_part;
   core::colon_split(lisp_name, package_part, symbol_part);
   core::Symbol_sp sym = core::lisp_intern(symbol_part, package_part);
@@ -60,7 +60,7 @@ NOINLINE void define_source_info(source_info_kind kind, const string &lisp_name,
   }
 }
 
-NOINLINE void define_pathname_translation(const string &from, const string &to) {
+NOINLINE void define_pathname_translation(const string& from, const string& to) {
   core::T_sp host = core::SimpleBaseString_O::make("SYS");
   core::cl__setf_logical_pathname_translations(
       core::Cons_O::create(core::Cons_O::createList(
@@ -77,7 +77,7 @@ NOINLINE void define_pathname_translation(const string &from, const string &to) 
 #endif
 #undef SOURCE_INFO_HELPERS
 
-void initialize_source_info() {
+void initialize_source_info(){
 #define SOURCE_INFO
 #ifndef SCRAPING
 #include SOURCE_INFO_INC_H

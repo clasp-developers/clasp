@@ -216,7 +216,7 @@
 /* #undef REDIRECT_REALLOC */
 
 /* The number of caller frames saved when allocating with the debugging API.
-   */
+ */
 /* #undef SAVE_CALL_COUNT */
 
 /* Shorten the headers to minimize object size at the expense of checking for
@@ -271,4 +271,3 @@
 #ifndef __cplusplus
 /* #undef inline */
 #endif
-

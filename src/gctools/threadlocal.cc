@@ -16,11 +16,9 @@
 #include <clasp/core/lispStream.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/code.h>
-#include <clasp/core/unwind.h> // DynEnv stuff
+#include <clasp/core/unwind.h>                    // DynEnv stuff
 #include <clasp/gctools/boehmGarbageCollection.h> // DynEnv stuff
 #include <clasp/external/thread-pool/thread_pool.h>
-
-
 
 THREAD_LOCAL gctools::ThreadLocalStateLowLevel* my_thread_low_level;
 THREAD_LOCAL core::ThreadLocalState* my_thread;
@@ -40,12 +38,12 @@ CL_DEFUN void core__debug_virtual_machine(int val, bool reset_counters) {
 
 #endif
 
-
 void VirtualMachine::error() {
-  printf("%s:%d:%s There was an error encountered in the vm - put a breakpoint here to trap it\n", __FILE__, __LINE__, __FUNCTION__ );
+  printf("%s:%d:%s There was an error encountered in the vm - put a breakpoint here to trap it\n", __FILE__, __LINE__,
+         __FUNCTION__);
 };
 
-unsigned int *BignumExportBuffer::getOrAllocate(const mpz_class &bignum, int nail) {
+unsigned int* BignumExportBuffer::getOrAllocate(const mpz_class& bignum, int nail) {
   size_t size = _lisp->integer_ordering()._mpz_import_size;
   size_t numb = (size << 3) - nail; // *8
   size_t count = (mpz_sizeinbase(bignum.get_mpz_t(), 2) + numb - 1) / numb;
@@ -54,20 +52,19 @@ unsigned int *BignumExportBuffer::getOrAllocate(const mpz_class &bignum, int nai
     if (this->buffer) {
       free(this->buffer);
     }
-    this->buffer = (unsigned int *)malloc(bytes);
+    this->buffer = (unsigned int*)malloc(bytes);
   }
   return this->buffer;
 };
 
-};
+}; // namespace core
 
 namespace core {
 
-size_t DynamicBindingStack::new_binding_index() const
-{
+size_t DynamicBindingStack::new_binding_index() const {
 #ifdef CLASP_THREADS
   RAIILock<mp::Mutex> mutex(mp::global_BindingIndexPoolMutex);
-  if ( mp::global_BindingIndexPool.size() != 0 ) {
+  if (mp::global_BindingIndexPool.size() != 0) {
     size_t index = mp::global_BindingIndexPool.back();
     mp::global_BindingIndexPool.pop_back();
     return index;
@@ -78,8 +75,7 @@ size_t DynamicBindingStack::new_binding_index() const
 #endif
 };
 
-void DynamicBindingStack::release_binding_index(size_t index) const
-{
+void DynamicBindingStack::release_binding_index(size_t index) const {
 #ifdef CLASP_THREADS
   RAIILock<mp::Mutex> mutex(mp::global_BindingIndexPoolMutex);
   mp::global_BindingIndexPool.push_back(index);
@@ -87,73 +83,69 @@ void DynamicBindingStack::release_binding_index(size_t index) const
 };
 
 T_sp* DynamicBindingStack::thread_local_reference(const uint32_t index) const {
-  unlikely_if (index >= this->_ThreadLocalBindings.size())
-    this->_ThreadLocalBindings.resize(index+1,no_thread_local_binding<T_O>());
+  unlikely_if(index >= this->_ThreadLocalBindings.size()) this->_ThreadLocalBindings.resize(index + 1,
+                                                                                            no_thread_local_binding<T_O>());
   return &(this->_ThreadLocalBindings[index]);
 }
 
-T_sp DynamicBindingStack::thread_local_value(uint32_t index) const {
-  return *thread_local_reference(index);
-}
+T_sp DynamicBindingStack::thread_local_value(uint32_t index) const { return *thread_local_reference(index); }
 
-void DynamicBindingStack::set_thread_local_value(T_sp value, uint32_t index) {
-  *thread_local_reference(index) = value;
-}
+void DynamicBindingStack::set_thread_local_value(T_sp value, uint32_t index) { *thread_local_reference(index) = value; }
 
 bool DynamicBindingStack::thread_local_boundp(uint32_t index) const {
-  if (index == NO_THREAD_LOCAL_BINDINGS) return false;
-  else if (index >= this->_ThreadLocalBindings.size()) return false;
+  if (index == NO_THREAD_LOCAL_BINDINGS)
+    return false;
+  else if (index >= this->_ThreadLocalBindings.size())
+    return false;
   else if (gctools::tagged_no_thread_local_bindingp(_ThreadLocalBindings[index].raw_()))
     return false;
-  else return true;
+  else
+    return true;
 }
 
-};
+}; // namespace core
 
 namespace gctools {
-ThreadLocalStateLowLevel::ThreadLocalStateLowLevel(void* stack_top) :
-    _StackTop(stack_top)
-    , _DisableInterrupts(false)
+ThreadLocalStateLowLevel::ThreadLocalStateLowLevel(void* stack_top)
+    : _StackTop(stack_top), _DisableInterrupts(false)
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
-    , _RecursiveAllocationCounter(0)
+      ,
+      _RecursiveAllocationCounter(0)
 #endif
-  
-{};
 
-ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel()
-{};
+          {};
 
-};
+ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel(){};
+
+}; // namespace gctools
 namespace core {
 
-
-VirtualMachine::VirtualMachine() :
-    _Running(true)
+VirtualMachine::VirtualMachine()
+    : _Running(true)
 #ifdef DEBUG_VIRTUAL_MACHINE
-    ,_counter0(0)
-    ,_unwind_counter(0)
-    ,_throw_counter(0)
+      ,
+      _counter0(0), _unwind_counter(0), _throw_counter(0)
 #endif
-{}
+{
+}
 
 void VirtualMachine::startup() {
-  size_t stackSpace = VirtualMachine::MaxStackWords*sizeof(T_O*);
+  size_t stackSpace = VirtualMachine::MaxStackWords * sizeof(T_O*);
   this->_stackBottom = (T_O**)gctools::RootClassAllocator<T_O>::allocateRootsAndZero(VirtualMachine::MaxStackWords);
-  this->_stackTop = this->_stackBottom+VirtualMachine::MaxStackWords-1;
-//  printf("%s:%d:%s vm._stackTop = %p\n", __FILE__, __LINE__, __FUNCTION__, this->_stackTop );
+  this->_stackTop = this->_stackBottom + VirtualMachine::MaxStackWords - 1;
+  //  printf("%s:%d:%s vm._stackTop = %p\n", __FILE__, __LINE__, __FUNCTION__, this->_stackTop );
   size_t pageSize = getpagesize();
-  uintptr_t stackGuardPage = ((uintptr_t)this->_stackTop - pageSize)/pageSize;
-  uintptr_t stackGuard = stackGuardPage*pageSize;
+  uintptr_t stackGuardPage = ((uintptr_t)this->_stackTop - pageSize) / pageSize;
+  uintptr_t stackGuard = stackGuardPage * pageSize;
   this->_stackGuard = (core::T_O**)stackGuard;
-//  printf("%s:%d:%s stackGuard = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)stackGuard );
+  //  printf("%s:%d:%s stackGuard = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)stackGuard );
   this->_stackBytes = stackSpace;
   // Clear the stack memory
-  memset(this->_stackBottom,0,stackSpace);
+  memset(this->_stackBottom, 0, stackSpace);
   this->enable_guards();
   this->_stackPointer = this->_stackBottom;
   (*this->_stackPointer) = NULL;
 }
-
 
 void VirtualMachine::enable_guards() {
 //  printf("%s:%d:%s pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid()  );
@@ -176,7 +168,6 @@ void VirtualMachine::disable_guards() {
 #endif
 }
 
-
 VirtualMachine::~VirtualMachine() {
 #if 1
   this->disable_guards();
@@ -184,26 +175,13 @@ VirtualMachine::~VirtualMachine() {
   gctools::RootClassAllocator<T_O>::freeRoots(this->_stackBottom);
 }
 
-
-
-
 // For main thread initialization - it happens too early and _Nil is undefined
 // So this partially sets up the ThreadLocalState and the system must invoke
 // ThreadLocalState::finish_initialization_main_thread() after the Nil symbol is
 // in GC managed memory.
-ThreadLocalState::ThreadLocalState(bool dummy) :
-  _unwinds(0)
-  ,_PendingInterrupts()
-  ,_CleanupFunctions(NULL)
-  ,_ObjectFiles()
-  ,_BufferStr8NsPool()
-  ,_BufferStrWNsPool()
-  ,_Breakstep(false)
-  ,_BreakstepFrame(NULL)
-  ,_DynEnvStackBottom()
-  ,_UnwindDest()
-  ,_DtreeInterpreterCallCount(0)
-{
+ThreadLocalState::ThreadLocalState(bool dummy)
+    : _unwinds(0), _PendingInterrupts(), _CleanupFunctions(NULL), _ObjectFiles(), _BufferStr8NsPool(), _BufferStrWNsPool(),
+      _Breakstep(false), _BreakstepFrame(NULL), _DynEnvStackBottom(), _UnwindDest(), _DtreeInterpreterCallCount(0) {
   my_thread = this;
 #ifdef _TARGET_OS_DARWIN
   pthread_threadid_np(NULL, &this->_Tid);
@@ -215,14 +193,13 @@ ThreadLocalState::ThreadLocalState(bool dummy) :
   this->_xorshf_z = rand();
 }
 
-pid_t ThreadLocalState::safe_fork()
-{
+pid_t ThreadLocalState::safe_fork() {
   // Wrap fork in code that turns guards off and on
   this->_VM.disable_guards();
   pid_t result = fork();
-  if (result==-1) {
+  if (result == -1) {
     // error
-    printf("%s:%d:%s fork failed errno = %d\n", __FILE__, __LINE__, __FUNCTION__, errno );
+    printf("%s:%d:%s fork failed errno = %d\n", __FILE__, __LINE__, __FUNCTION__, errno);
   } else if (result == 0) {
     // child
     this->_VM.enable_guards();
@@ -238,18 +215,24 @@ pid_t ThreadLocalState::safe_fork()
 // new position in the GC managed memory.
 void ThreadLocalState::finish_initialization_main_thread(core::T_sp theNilObject) {
   if (!theNilObject.raw_()) {
-    printf("%s:%d:%s reinitialize symbols the _Nil object is not defined!!!\n", __FILE__, __LINE__, __FUNCTION__ );
+    printf("%s:%d:%s reinitialize symbols the _Nil object is not defined!!!\n", __FILE__, __LINE__, __FUNCTION__);
     abort();
   }
-//  printf("%s:%d:%s reinitialize symbols here once _Nil is defined\n", __FILE__, __LINE__, __FUNCTION__ );
+  //  printf("%s:%d:%s reinitialize symbols here once _Nil is defined\n", __FILE__, __LINE__, __FUNCTION__ );
   // Reinitialize all threadlocal lists once NIL is defined
   // We work with theObject here directly because it's very early in the bootstrapping
-  if (this->_PendingInterrupts.theObject) goto ERR;
-  if (this->_ObjectFiles.theObject) goto ERR;
-  if (this->_BufferStr8NsPool.theObject) goto ERR;
-  if (this->_BufferStrWNsPool.theObject) goto ERR;
-  if (this->_DynEnvStackBottom.theObject) goto ERR;
-  if (this->_UnwindDest.theObject) goto ERR;
+  if (this->_PendingInterrupts.theObject)
+    goto ERR;
+  if (this->_ObjectFiles.theObject)
+    goto ERR;
+  if (this->_BufferStr8NsPool.theObject)
+    goto ERR;
+  if (this->_BufferStrWNsPool.theObject)
+    goto ERR;
+  if (this->_DynEnvStackBottom.theObject)
+    goto ERR;
+  if (this->_UnwindDest.theObject)
+    goto ERR;
   this->_PendingInterrupts.theObject = theNilObject.theObject;
   this->_ObjectFiles.theObject = theNilObject.theObject;
   this->_BufferStr8NsPool.theObject = theNilObject.theObject;
@@ -257,22 +240,15 @@ void ThreadLocalState::finish_initialization_main_thread(core::T_sp theNilObject
   this->_DynEnvStackBottom.theObject = theNilObject.theObject;
   this->_UnwindDest.theObject = theNilObject.theObject;
   return;
- ERR:
-  printf("%s:%d:%s one of the reinitialize symbols was already initialized\n", __FILE__, __LINE__, __FUNCTION__ );
+ERR:
+  printf("%s:%d:%s one of the reinitialize symbols was already initialized\n", __FILE__, __LINE__, __FUNCTION__);
   abort();
 };
 
 // This is for constructing ThreadLocalState for threads
-ThreadLocalState::ThreadLocalState() :
-  _unwinds(0)
-  , _PendingInterrupts(nil<core::T_O>())
-  , _ObjectFiles(nil<core::T_O>())
-  , _CleanupFunctions(NULL)
-  , _Breakstep(false)
-  , _BreakstepFrame(NULL)
-  , _DynEnvStackBottom(nil<core::T_O>())
-  , _UnwindDest(nil<core::T_O>())
-{
+ThreadLocalState::ThreadLocalState()
+    : _unwinds(0), _PendingInterrupts(nil<core::T_O>()), _ObjectFiles(nil<core::T_O>()), _CleanupFunctions(NULL), _Breakstep(false),
+      _BreakstepFrame(NULL), _DynEnvStackBottom(nil<core::T_O>()), _UnwindDest(nil<core::T_O>()) {
   my_thread = this;
 #ifdef _TARGET_OS_DARWIN
   pthread_threadid_np(NULL, &this->_Tid);
@@ -297,12 +273,13 @@ static void dumpDynEnvStack(T_sp stack) {
     if (iter.consp()) {
       fprintf(stderr, " level %3lu  %p", level, iter.raw_());
       if (prev != 0) {
-        fprintf(stderr, " [delta %ld]\n", (intptr_t)iter.raw_()-prev);
+        fprintf(stderr, " [delta %ld]\n", (intptr_t)iter.raw_() - prev);
       } else {
         fprintf(stderr, "\n");
       }
       prev = (intptr_t)iter.raw_();
-    } else if (iter.nilp()) break;
+    } else if (iter.nilp())
+      break;
     else {
       fprintf(stderr, "level %3lu  %p [NOT A CONS!]\n", level, iter.raw_());
       break;
@@ -319,14 +296,12 @@ void ThreadLocalState::dynEnvStackTest(core::T_sp bot) const {
     T_sp hare = CONS_CDR(bot);
     while (true) {
       if ((uintptr_t)turtle.raw_() <= approximate_sp) {
-        fprintf(stderr, "%s:%d:%s: The DynEnvStack has conses from deallocated stack space\n",
-                __FILE__, __LINE__, __FUNCTION__);
+        fprintf(stderr, "%s:%d:%s: The DynEnvStack has conses from deallocated stack space\n", __FILE__, __LINE__, __FUNCTION__);
         dumpDynEnvStack(bot);
         abort();
       }
       if (turtle == hare) {
-        fprintf(stderr, "%s:%d:%s: The DynEnvStack is circular\n",
-                __FILE__, __LINE__, __FUNCTION__);
+        fprintf(stderr, "%s:%d:%s: The DynEnvStack is circular\n", __FILE__, __LINE__, __FUNCTION__);
         // This will dump a whole 1000 frames. It could be made smarter,
         // but I don't think this is a likely scenario and it's just here to
         // avoid a nonterminating test which would be really damn annoying.
@@ -334,27 +309,26 @@ void ThreadLocalState::dynEnvStackTest(core::T_sp bot) const {
         abort();
       }
       if (!gc::IsA<core::DynEnv_sp>(ENSURE_VALID_OBJECT(CONS_CAR(turtle)))) {
-        fprintf(stderr, "%s:%d:%s: The DynEnvStack contains a non-dynenv\n",
-                __FILE__, __LINE__, __FUNCTION__);
+        fprintf(stderr, "%s:%d:%s: The DynEnvStack contains a non-dynenv\n", __FILE__, __LINE__, __FUNCTION__);
         dumpDynEnvStack(bot);
         abort();
       }
       turtle = CONS_CDR(turtle);
-      if (turtle.nilp()) break;
+      if (turtle.nilp())
+        break;
       else if (!turtle.consp()) {
-        fprintf(stderr, "%s:%d:%s: The DynEnvStack is a dotted list\n",
-                __FILE__, __LINE__, __FUNCTION__);
+        fprintf(stderr, "%s:%d:%s: The DynEnvStack is a dotted list\n", __FILE__, __LINE__, __FUNCTION__);
         dumpDynEnvStack(bot);
         abort();
       }
       if (hare.consp()) {
         hare = CONS_CDR(hare);
-        if (hare.consp()) hare = CONS_CDR(hare);
+        if (hare.consp())
+          hare = CONS_CDR(hare);
       }
     }
   } else if (bot.notnilp()) {
-    fprintf(stderr, "%s:%d:%s: The DynEnvStack is not a list\n",
-            __FILE__, __LINE__, __FUNCTION__);
+    fprintf(stderr, "%s:%d:%s: The DynEnvStack is not a list\n", __FILE__, __LINE__, __FUNCTION__);
     dumpDynEnvStack(bot);
     abort();
   }
@@ -374,14 +348,15 @@ uint32_t ThreadLocalState::random() {
     this->_xorshf_x = this->_xorshf_y;
     this->_xorshf_y = this->_xorshf_z;
     this->_xorshf_z = t ^ this->_xorshf_x ^ this->_xorshf_y;
-  } while (this->_xorshf_z==gctools::BaseHeader_s::BadgeStampWtagMtag::IllegalBadge || this->_xorshf_z==gctools::BaseHeader_s::BadgeStampWtagMtag::NoBadge);
-  uint32_t rnd = this->_xorshf_z&0xFFFFFFFF;
+  } while (this->_xorshf_z == gctools::BaseHeader_s::BadgeStampWtagMtag::IllegalBadge ||
+           this->_xorshf_z == gctools::BaseHeader_s::BadgeStampWtagMtag::NoBadge);
+  uint32_t rnd = this->_xorshf_z & 0xFFFFFFFF;
   // printf("%s:%d:%s rnd = %u\n", __FILE__, __LINE__, __FUNCTION__, rnd );
   return rnd;
 }
 
 void ThreadLocalState::pushObjectFile(llvmo::ObjectFile_sp of) {
-  this->_ObjectFiles = core::Cons_O::create(of,this->_ObjectFiles);
+  this->_ObjectFiles = core::Cons_O::create(of, this->_ObjectFiles);
 }
 
 llvmo::ObjectFile_sp ThreadLocalState::topObjectFile() {
@@ -402,24 +377,18 @@ void ThreadLocalState::popObjectFile() {
   SIMPLE_ERROR("There were no more object files");
 }
 
-void ThreadLocalState::startUpVM() {
-  this->_VM.startup();
-}
+void ThreadLocalState::startUpVM() { this->_VM.startup(); }
 
-ThreadLocalState::~ThreadLocalState() {
-}
+ThreadLocalState::~ThreadLocalState() {}
 
-
-void thread_local_register_cleanup(const std::function<void(void)>& cleanup)
-{
-  CleanupFunctionNode* node = new CleanupFunctionNode(cleanup,my_thread->_CleanupFunctions);
-//  printf("%s:%d:%s %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)node);
+void thread_local_register_cleanup(const std::function<void(void)>& cleanup) {
+  CleanupFunctionNode* node = new CleanupFunctionNode(cleanup, my_thread->_CleanupFunctions);
+  //  printf("%s:%d:%s %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)node);
   my_thread->_CleanupFunctions = node;
 }
 
-
 void thread_local_invoke_and_clear_cleanup() {
-//  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
+  //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
   CleanupFunctionNode* node = my_thread->_CleanupFunctions;
   while (node) {
     node->_CleanupFunction();
@@ -431,39 +400,30 @@ void thread_local_invoke_and_clear_cleanup() {
 }
 
 // Need to use LTO to inline this.
-inline void registerTypesAllocated(size_t bytes) {
-  my_thread->_BytesAllocated += bytes;
-}
+inline void registerTypesAllocated(size_t bytes) { my_thread->_BytesAllocated += bytes; }
 
-void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize_GCRoots=true ) {
-//  printf("%s:%d Initialize all ThreadLocalState things this->%p\n",__FILE__, __LINE__, (void*)this);
+void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize_GCRoots = true) {
+  //  printf("%s:%d Initialize all ThreadLocalState things this->%p\n",__FILE__, __LINE__, (void*)this);
   this->_Process = process;
   process->_ThreadInfo = this;
   this->_BFormatStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream());
 #ifdef CLASP_UNICODE
-  this->_WriteToStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream(STRING_OUTPUT_STREAM_DEFAULT_SIZE,1));
+  this->_WriteToStringOutputStream =
+      gc::As<StringOutputStream_sp>(clasp_make_string_output_stream(STRING_OUTPUT_STREAM_DEFAULT_SIZE, 1));
 #else
-   this->_WriteToStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream());
+  this->_WriteToStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream());
 #endif
   this->_PendingInterrupts = nil<T_O>();
-  this->_SparePendingInterruptRecords = cl__make_list(clasp_make_fixnum(16),nil<T_O>());
+  this->_SparePendingInterruptRecords = cl__make_list(clasp_make_fixnum(16), nil<T_O>());
 };
 
-};
+}; // namespace core
 
-
-uint32_t my_thread_random() {
-  return my_thread->random();
-}
+uint32_t my_thread_random() { return my_thread->random(); }
 
 namespace gctools {
 
 DOCGROUP(clasp);
-CL_DEFUN size_t gctools__thread_local_unwinds()
-{
-  return
-    my_thread->_unwinds;
-}
+CL_DEFUN size_t gctools__thread_local_unwinds() { return my_thread->_unwinds; }
 
-
-};
+}; // namespace gctools
