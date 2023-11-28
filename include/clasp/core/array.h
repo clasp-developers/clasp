@@ -55,65 +55,65 @@ SYMBOL_EXPORT_SC_(ExtPkg, integer32);
 SYMBOL_EXPORT_SC_(ExtPkg, integer64);
 
 namespace cl {
-extern core::Symbol_sp &_sym_fixnum;
+extern core::Symbol_sp& _sym_fixnum;
 };
 
 namespace ext {
-extern core::Symbol_sp &_sym_cl_index;
-extern core::Symbol_sp &_sym_byte64;
-extern core::Symbol_sp &_sym_byte32;
-extern core::Symbol_sp &_sym_byte16;
-extern core::Symbol_sp &_sym_byte8;
-extern core::Symbol_sp &_sym_byte4;
-extern core::Symbol_sp &_sym_byte2;
-extern core::Symbol_sp &_sym_integer64;
-extern core::Symbol_sp &_sym_integer32;
-extern core::Symbol_sp &_sym_integer16;
-extern core::Symbol_sp &_sym_integer8;
-extern core::Symbol_sp &_sym_integer4;
-extern core::Symbol_sp &_sym_integer2;
+extern core::Symbol_sp& _sym_cl_index;
+extern core::Symbol_sp& _sym_byte64;
+extern core::Symbol_sp& _sym_byte32;
+extern core::Symbol_sp& _sym_byte16;
+extern core::Symbol_sp& _sym_byte8;
+extern core::Symbol_sp& _sym_byte4;
+extern core::Symbol_sp& _sym_byte2;
+extern core::Symbol_sp& _sym_integer64;
+extern core::Symbol_sp& _sym_integer32;
+extern core::Symbol_sp& _sym_integer16;
+extern core::Symbol_sp& _sym_integer8;
+extern core::Symbol_sp& _sym_integer4;
+extern core::Symbol_sp& _sym_integer2;
 }; // namespace ext
 
 namespace cl {
-extern core::Symbol_sp &_sym_General_O;
-extern core::Symbol_sp &_sym_adjust_array;
-extern core::Symbol_sp &_sym_sequence;
-extern core::Symbol_sp &_sym_array;
-extern core::Symbol_sp &_sym_or;
-extern core::Symbol_sp &_sym_nil;
-extern core::Symbol_sp &_sym_vector;
-extern core::Symbol_sp &_sym_vectorPush;
-extern core::Symbol_sp &_sym_vectorPushExtend;
-extern core::Symbol_sp &_sym_simple_base_string;
-extern core::Symbol_sp &_sym_simple_bit_vector;
-extern core::Symbol_sp &_sym_simple_vector;
-extern core::Symbol_sp &_sym_base_string;
-extern core::Symbol_sp &_sym_subseq;
-extern core::Symbol_sp &_sym_string;
-extern core::Symbol_sp &_sym_fillPointer;
-extern core::Symbol_sp &_sym_arrayDimension;
-extern core::Symbol_sp &_sym_reverse;
-extern core::Symbol_sp &_sym_nreverse;
-extern core::Symbol_sp &_sym_base_char;
-extern core::Symbol_sp &_sym_character;
-extern core::Symbol_sp &_sym_bit_vector;
-extern core::Symbol_sp &_sym_bit;
-extern core::Symbol_sp &_sym_float;
-extern core::Symbol_sp &_sym_double_float;
-extern core::Symbol_sp &_sym_single_float;
-extern core::Symbol_sp &_sym_UnsignedByte;
-extern core::Symbol_sp &_sym_T_O;
-extern core::Symbol_sp &_sym_simple_string;
-extern core::Symbol_sp &_sym_simple_array;
+extern core::Symbol_sp& _sym_General_O;
+extern core::Symbol_sp& _sym_adjust_array;
+extern core::Symbol_sp& _sym_sequence;
+extern core::Symbol_sp& _sym_array;
+extern core::Symbol_sp& _sym_or;
+extern core::Symbol_sp& _sym_nil;
+extern core::Symbol_sp& _sym_vector;
+extern core::Symbol_sp& _sym_vectorPush;
+extern core::Symbol_sp& _sym_vectorPushExtend;
+extern core::Symbol_sp& _sym_simple_base_string;
+extern core::Symbol_sp& _sym_simple_bit_vector;
+extern core::Symbol_sp& _sym_simple_vector;
+extern core::Symbol_sp& _sym_base_string;
+extern core::Symbol_sp& _sym_subseq;
+extern core::Symbol_sp& _sym_string;
+extern core::Symbol_sp& _sym_fillPointer;
+extern core::Symbol_sp& _sym_arrayDimension;
+extern core::Symbol_sp& _sym_reverse;
+extern core::Symbol_sp& _sym_nreverse;
+extern core::Symbol_sp& _sym_base_char;
+extern core::Symbol_sp& _sym_character;
+extern core::Symbol_sp& _sym_bit_vector;
+extern core::Symbol_sp& _sym_bit;
+extern core::Symbol_sp& _sym_float;
+extern core::Symbol_sp& _sym_double_float;
+extern core::Symbol_sp& _sym_single_float;
+extern core::Symbol_sp& _sym_UnsignedByte;
+extern core::Symbol_sp& _sym_T_O;
+extern core::Symbol_sp& _sym_simple_string;
+extern core::Symbol_sp& _sym_simple_array;
 }; // namespace cl
 
 namespace core {
-extern core::Symbol_sp &_sym_replaceArray;
-extern core::Symbol_sp &_sym_swapElements;
-extern core::Symbol_sp &_sym_fillPointerSet;
-extern core::Symbol_sp &_sym_fillArrayWithElt;
-extern core::Symbol_sp &_sym_setf_subseq;
-extern void clasp_write_string(const string &str, T_sp strm);
+extern core::Symbol_sp& _sym_replaceArray;
+extern core::Symbol_sp& _sym_swapElements;
+extern core::Symbol_sp& _sym_fillPointerSet;
+extern core::Symbol_sp& _sym_fillArrayWithElt;
+extern core::Symbol_sp& _sym_setf_subseq;
+extern void clasp_write_string(const string& str, T_sp strm);
 extern claspCharacter clasp_write_char(claspCharacter c, T_sp strm);
 }; // namespace core
 
@@ -147,9 +147,9 @@ namespace core {
 [[noreturn]] void notAdjustableError(Symbol_sp fn_name, T_sp array);
 [[noreturn]] void notVectorError(T_sp array);
 
-size_t calculateArrayTotalSizeAndValidateDimensions(List_sp dim_desig, size_t &rank);
+size_t calculateArrayTotalSizeAndValidateDimensions(List_sp dim_desig, size_t& rank);
 
-template <class SimpleType> Array_sp templated_ranged_reverse(const SimpleType &me, size_t start, size_t end) {
+template <class SimpleType> Array_sp templated_ranged_reverse(const SimpleType& me, size_t start, size_t end) {
   size_t new_length = end - start;
   size_t last_index = end - 1;
   gctools::smart_ptr<SimpleType> newVec = SimpleType::make(new_length);
@@ -158,13 +158,13 @@ template <class SimpleType> Array_sp templated_ranged_reverse(const SimpleType &
   }
   return newVec;
 }
-template <class T> void templated_swapElements(T &x, size_t xi, size_t yi) {
+template <class T> void templated_swapElements(T& x, size_t xi, size_t yi) {
   typename T::simple_element_type u = x[xi];
   x[xi] = x[yi];
   x[yi] = u;
 }
 template <class MaybeTemplatedSimpleType>
-Array_sp templated_ranged_nreverse(MaybeTemplatedSimpleType &me, size_t start, size_t end) {
+Array_sp templated_ranged_nreverse(MaybeTemplatedSimpleType& me, size_t start, size_t end) {
   size_t length = end - start;
   size_t halfpoint = length / 2;
   size_t lastElement = end - 1;
@@ -174,7 +174,7 @@ Array_sp templated_ranged_nreverse(MaybeTemplatedSimpleType &me, size_t start, s
   return me.asSmartPtr();
 }
 
-template <class T> Array_sp templated_reverse_VectorNs(T &me) {
+template <class T> Array_sp templated_reverse_VectorNs(T& me) {
   AbstractSimpleVector_sp bsv;
   size_t start, end;
   me.asAbstractSimpleVectorRange(bsv, start, end);
@@ -182,7 +182,7 @@ template <class T> Array_sp templated_reverse_VectorNs(T &me) {
   return templated_ranged_reverse<typename T::simple_type>(*sv, start, end);
 }
 
-template <class T> void templated_nreverse_VectorNs(T &me) {
+template <class T> void templated_nreverse_VectorNs(T& me) {
   AbstractSimpleVector_sp bsv;
   size_t start, end;
   me.asAbstractSimpleVectorRange(bsv, start, end);
@@ -211,8 +211,8 @@ public:
   // Low level functions for access to contents
 
   virtual size_t elementSizeInBytes() const = 0;
-  virtual void *rowMajorAddressOfElement_(size_t index) const = 0;
-  virtual void asAbstractSimpleVectorRange(AbstractSimpleVector_sp &sv, size_t &start, size_t &end) const = 0;
+  virtual void* rowMajorAddressOfElement_(size_t index) const = 0;
+  virtual void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const = 0;
 
 public: // Functions here
   virtual T_sp type_of() const {
@@ -242,7 +242,7 @@ public: // Functions here
   /*! Return the offset into a one-dimensional vector for the multidimensional index
       in the vector<int>s.  This is in rowMajor order.
       Separate from arrayRowMajorIndex because it's internal and does less error checking. */
-  size_t index_vector_int(const vector<int> &indices) const;
+  size_t index_vector_int(const vector<int>& indices) const;
   virtual bool arrayHasFillPointerP() const { return false; };
   virtual void fillPointerSet(size_t f) { noFillPointerError(cl::_sym_fillPointer, this->asSmartPtr()); };
   virtual size_t fillPointer() const { noFillPointerError(cl::_sym_fillPointer, this->asSmartPtr()); };
@@ -281,8 +281,8 @@ public: // Functions here
     return this->unsafe_setf_subseq(p.start, p.end, newVec);
   }
   void fillInitialContents(T_sp initialContents);
-  virtual void sxhash_(HashGenerator &hg) const override = 0;
-  virtual void sxhash_equalp(HashGenerator &hg) const override;
+  virtual void sxhash_(HashGenerator& hg) const override = 0;
+  virtual void sxhash_equalp(HashGenerator& hg) const override;
   // --------------------------------------------------
   // Ranged operations with explicit limits
   virtual Array_sp unsafe_subseq(size_t start, size_t end) const = 0;
@@ -345,7 +345,7 @@ public:
 
 public:
   virtual size_t elementSizeInBytes() const override { return this->_Data->elementSizeInBytes(); };
-  virtual void *rowMajorAddressOfElement_(size_t index) const override {
+  virtual void* rowMajorAddressOfElement_(size_t index) const override {
     return this->_Data->rowMajorAddressOfElement_(index + this->_DisplacedIndexOffset);
   };
   virtual bool adjustableArrayP() const override { return true; };
@@ -369,7 +369,7 @@ public:
   virtual size_t displacedIndexOffset() const override { return this->_DisplacedIndexOffset; }
   virtual bool arrayHasFillPointerP() const override { return this->_Flags.fillPointerP(); };
   virtual T_sp replaceArray(T_sp other) override;
-  virtual void sxhash_(HashGenerator &hg) const override;
+  virtual void sxhash_(HashGenerator& hg) const override;
   void fillPointerSet(size_t idx) override {
     // This better not be bigger than the vector size (must be a vector)
     if (idx > this->_ArrayTotalSize)
@@ -469,13 +469,13 @@ public:
   };
   virtual T_sp replaceArray(T_sp other) override { notAdjustableError(core::_sym_replaceArray, this->asSmartPtr()); };
   virtual std::string get_std_string() const override { notStringError(this->asSmartPtr()); };
-  virtual void ranged_sxhash(HashGenerator &hg, size_t start, size_t end) const {
+  virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const {
     TYPE_ERROR(this->asSmartPtr(), Cons_O::createList(cl::_sym_string, cl::_sym_bit_vector));
   };
-  virtual void sxhash_(HashGenerator &hg) const override { this->General_O::sxhash_(hg); }
+  virtual void sxhash_(HashGenerator& hg) const override { this->General_O::sxhash_(hg); }
   virtual bool equal(T_sp other) const override { return this->eq(other); };
   virtual bool equalp(T_sp other) const override;
-  void asAbstractSimpleVectorRange(AbstractSimpleVector_sp &sv, size_t &start, size_t &end) const override {
+  void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const override {
     sv = this->asSmartPtr();
     start = 0;
     end = this->length();
@@ -504,15 +504,15 @@ public:
   typedef typename vector_type::iterator iterator;
   typedef typename vector_type::const_iterator const_iterator;
   /* These two are necessary because of bit unit vectors, see below */
-  typedef value_type &reference_type;
-  typedef const value_type &const_reference_type;
+  typedef value_type& reference_type;
+  typedef const value_type& const_reference_type;
 
 public:
   vector_type _Data;
 
 public:
   template_SimpleVector(size_t length, value_type initialElement = value_type(), bool initialElementSupplied = false,
-                        size_t initialContentsSize = 0, const value_type *initialContents = NULL)
+                        size_t initialContentsSize = 0, const value_type* initialContents = NULL)
       : Base(), _Data(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};
 
 public:
@@ -538,14 +538,14 @@ public:
   const_iterator begin() const { return _Data.begin(); }
   const_iterator end() const { return _Data.end(); }
   virtual size_t elementSizeInBytes() const override { return sizeof(value_type); };
-  virtual void *rowMajorAddressOfElement_(size_t i) const override { return (void *)&(this->_Data[i]); };
+  virtual void* rowMajorAddressOfElement_(size_t i) const override { return (void*)&(this->_Data[i]); };
   virtual void unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) override {
     for (size_t i(start); i < end; ++i) {
       (*this)[i] = leaf_type::from_object(initialElement);
     }
   };
   virtual Array_sp reverse() const final {
-    return templated_ranged_reverse<leaf_type>(*reinterpret_cast<const leaf_type *>(this), 0, this->length());
+    return templated_ranged_reverse<leaf_type>(*reinterpret_cast<const leaf_type*>(this), 0, this->length());
   };
   virtual Array_sp nreverse() final { return templated_ranged_nreverse(*this, 0, this->length()); };
   CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final { (*this)[idx] = leaf_type::from_object(value); }
@@ -554,7 +554,7 @@ public:
   CL_METHOD_OVERLOAD virtual T_sp vref(size_t idx) const final { return leaf_type::to_object((*this)[idx]); }
   virtual Array_sp unsafe_subseq(size_t start, size_t end) const final {
     BOUNDS_ASSERT(start <= end && end <= this->length());
-    return leaf_type::make(end - start, value_type(), true, end - start, (value_type *)this->rowMajorAddressOfElement_(start));
+    return leaf_type::make(end - start, value_type(), true, end - start, (value_type*)this->rowMajorAddressOfElement_(start));
   }
   virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) final {
     // TODO: Write specialized versions of this to speed it up
@@ -582,8 +582,8 @@ public:
   typedef typename bitunit_array_type::value_type value_type;
   typedef value_type simple_element_type;
   // Iterators very hacky.
-  typedef value_type *iterator;
-  typedef const value_type *const_iterator;
+  typedef value_type* iterator;
+  typedef const value_type* const_iterator;
   /* See GCBitUnitArray_moveable - short version is, we don't have pointers into
    * sub-byte arrays for obvious reasons, so we use proxies. */
   typedef typename bitunit_array_type::reference reference_type;
@@ -597,7 +597,7 @@ public:
 public:
   bitunit_array_type _Data;
   template_SimpleBitUnitVector(size_t length, bit_array_word initialElement, bool initialElementSupplied,
-                               size_t initialContentsSize = 0, const bit_array_word *initialContents = NULL)
+                               size_t initialContentsSize = 0, const bit_array_word* initialContents = NULL)
       : Base(), _Data(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};
 
 public:
@@ -616,7 +616,7 @@ public:
     BOUNDS_ASSERT_LT(index, this->length());
     return this->_Data.ref(index);
   }
-  bit_array_word *bytes() { return &this->_Data[0]; }
+  bit_array_word* bytes() { return &this->_Data[0]; }
   size_t byteslen() { return bitunit_array_type::nwords_for_length(this->length()); }
   // Given an initial element, replicate it into a bit_array_word. E.g. 01 becomes 01010101...01
   static bit_array_word initialFillValue(value_type initialValue) { return bitunit_array_type::initialFillValue(initialValue); }
@@ -636,11 +636,11 @@ public:
       (*this)[i] = from_object(initialElement);
   }
   virtual size_t elementSizeInBytes() const override { bitVectorDoesntSupportError(); }
-  virtual void *rowMajorAddressOfElement_(size_t i) const override { bitVectorDoesntSupportError(); }
+  virtual void* rowMajorAddressOfElement_(size_t i) const override { bitVectorDoesntSupportError(); }
   static value_type default_initial_element(void) { return 0; }
   virtual T_sp element_type() const override final { return leaf_type::static_element_type(); }
   virtual Array_sp reverse() const final {
-    return templated_ranged_reverse<leaf_type>(*reinterpret_cast<const leaf_type *>(this), 0, this->length());
+    return templated_ranged_reverse<leaf_type>(*reinterpret_cast<const leaf_type*>(this), 0, this->length());
   }
   virtual Array_sp nreverse() final { return templated_ranged_nreverse(*this, 0, this->length()); }
   CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final { (*this)[idx] = from_object(value); }
@@ -719,26 +719,26 @@ public:
   // Primary functions/operators for operator[] that handle displacement
   // There's a non-const and a const version of each
   template <typename array_type> reference_type unsafe_indirectReference(size_t index) {
-    array_type &vecns = *reinterpret_cast<array_type *>(&*this->_Data);
+    array_type& vecns = *reinterpret_cast<array_type*>(&*this->_Data);
     return vecns[this->_DisplacedIndexOffset + index];
   }
   reference_type operator[](size_t index) {
     BOUNDS_ASSERT(index < this->arrayTotalSize());
     LIKELY_if(gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) {
-      return (*reinterpret_cast<simple_type *>(&*(this->_Data)))[this->_DisplacedIndexOffset + index];
+      return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset + index];
     }
     if (gc::IsA<my_smart_ptr_type>(this->_Data))
       return this->unsafe_indirectReference<my_array_type>(index);
     return this->unsafe_indirectReference<my_simple_array_type>(index);
   }
   template <typename array_type> const_reference_type unsafe_indirectReference(size_t index) const {
-    array_type &vecns = *reinterpret_cast<array_type *>(&*this->_Data);
+    array_type& vecns = *reinterpret_cast<array_type*>(&*this->_Data);
     return vecns[this->_DisplacedIndexOffset + index];
   }
   const_reference_type operator[](size_t index) const {
     BOUNDS_ASSERT(index < this->arrayTotalSize());
     LIKELY_if(gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) {
-      return (*reinterpret_cast<simple_type *>(&*(this->_Data)))[this->_DisplacedIndexOffset + index];
+      return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset + index];
     }
     if (gc::IsA<my_smart_ptr_type>(this->_Data))
       return this->unsafe_indirectReference<my_array_type>(index);
@@ -753,7 +753,7 @@ public:
   const_iterator end() const { return &(*this)[this->length()]; };
 
 public:
-  void asAbstractSimpleVectorRange(AbstractSimpleVector_sp &sv, size_t &start, size_t &end) const final {
+  void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
     LIKELY_if(gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) {
       sv = gc::As<AbstractSimpleVector_sp>(this->_Data);
       start = this->_DisplacedIndexOffset;
@@ -824,7 +824,7 @@ public:
   // Primary functions/operators for operator[] that handle displacement
   // There's a non-const and a const version of each
   reference_type unsafe_indirectReference(size_t index) {
-    my_array_type &vecns = *reinterpret_cast<my_array_type *>(&*this->_Data);
+    my_array_type& vecns = *reinterpret_cast<my_array_type*>(&*this->_Data);
     return vecns[this->_DisplacedIndexOffset + index];
   }
   reference_type operator[](size_t index) {
@@ -834,17 +834,17 @@ public:
     // The definition in template_Array is similarly sketchy in the case of an mdarray displaced
     // to a complex vector.
     LIKELY_if(gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) return (
-        *reinterpret_cast<simple_type *>(&*(this->_Data)))[this->_DisplacedIndexOffset + index];
+        *reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset + index];
     else return this->unsafe_indirectReference(index);
   }
   const_reference_type unsafe_indirectReference(size_t index) const {
-    my_array_type &vecns = *reinterpret_cast<my_array_type *>(&*this->_Data);
+    my_array_type& vecns = *reinterpret_cast<my_array_type*>(&*this->_Data);
     return vecns[this->_DisplacedIndexOffset + index];
   }
   const_reference_type operator[](size_t index) const {
     BOUNDS_ASSERT(index < this->arrayTotalSize());
     LIKELY_if(gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) return (
-        *reinterpret_cast<simple_type *>(&*(this->_Data)))[this->_DisplacedIndexOffset + index];
+        *reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset + index];
     else return this->unsafe_indirectReference(index);
   }
 
@@ -856,7 +856,7 @@ public:
   const_iterator end() const { return &(*this)[this->length()]; };
 
 public:
-  void asAbstractSimpleVectorRange(AbstractSimpleVector_sp &sv, size_t &start, size_t &end) const final {
+  void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
     LIKELY_if(gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) {
       sv = gc::As<AbstractSimpleVector_sp>(this->_Data);
       start = this->_DisplacedIndexOffset;
@@ -963,11 +963,11 @@ public:
   // There's a non-const and a const version of each
   reference_type operator[](size_t index) {
     BOUNDS_ASSERT(index < this->arrayTotalSize());
-    return (*reinterpret_cast<simple_type *>(&*(this->_Data)))[index];
+    return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[index];
   }
   const_reference_type operator[](size_t index) const {
     BOUNDS_ASSERT(index < this->arrayTotalSize());
-    return (*reinterpret_cast<simple_type *>(&*(this->_Data)))[index];
+    return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[index];
   }
 
 public:
@@ -988,7 +988,7 @@ public:
   };
 
 public:
-  void asAbstractSimpleVectorRange(AbstractSimpleVector_sp &sv, size_t &start, size_t &end) const final {
+  void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
     ASSERT(gc::IsA<AbstractSimpleVector_sp>(this->_Data));
     sv = gc::As_unsafe<AbstractSimpleVector_sp>(this->_Data);
     start = this->_DisplacedIndexOffset;

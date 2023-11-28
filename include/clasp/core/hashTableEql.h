@@ -50,7 +50,7 @@ public: // Functions here
 
   bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
-  gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, HashGenerator &hg) const;
+  gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, HashGenerator& hg) const;
 };
 
 }; // namespace core

@@ -39,7 +39,7 @@ DynEnv_O::SearchStatus sjlj_unwind_search(LexDynEnv_sp dest) {
   return status;
 }
 
-DynEnv_O::SearchStatus sjlj_throw_search(T_sp tag, CatchDynEnv_sp &dest) {
+DynEnv_O::SearchStatus sjlj_throw_search(T_sp tag, CatchDynEnv_sp& dest) {
   DynEnv_O::SearchStatus status = DynEnv_O::Proceed;
   for (T_sp iter = my_thread->dynEnvStackGet();;) {
     if (iter.nilp())
@@ -72,7 +72,7 @@ void sjlj_unwind_invalidate(DestDynEnv_sp dest) {
 #endif
 
 [[noreturn]] void sjlj_unwind_proceed(DestDynEnv_sp dest, size_t index) {
-  ThreadLocalState *thread = my_thread;
+  ThreadLocalState* thread = my_thread;
   T_sp here = thread->dynEnvStackGet();
   thread->_UnwindDest = dest;
   thread->_UnwindDestIndex = index;
@@ -226,7 +226,7 @@ CL_UNWIND_COOP(true);
   // Call the thunk to get the return values.
   T_mv result = eval::funcall(thunk);
   // Save the return values.
-  core::MultipleValues &mv = core::lisp_multipleValues();
+  core::MultipleValues& mv = core::lisp_multipleValues();
   mv.saveToMultipleValue0(result);
   // checkme result.saveToMultipleValue0();
   // Go. Index is ignored for blocks.
@@ -256,7 +256,7 @@ CL_DEFUN T_mv core__sjlj_catch_function(T_sp tag, Function_sp thunk) {
 CL_UNWIND_COOP(true);
 [[noreturn]] CL_DEFUN void core__sjlj_throw(T_sp tag, Function_sp thunk) {
   T_mv result = eval::funcall(thunk);
-  core::MultipleValues &mv = core::lisp_multipleValues();
+  core::MultipleValues& mv = core::lisp_multipleValues();
   mv.saveToMultipleValue0(result);
   // checkme result.saveToMultipleValue0();
   sjlj_throw(tag);

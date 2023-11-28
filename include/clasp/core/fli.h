@@ -122,7 +122,7 @@ public:
   virtual ~ForeignData_O(); // non-trivial
 
   // OVERLADED FUNCTIONS
-  void *externalObject(void) const;
+  void* externalObject(void) const;
   bool eql_(core::T_sp obj) const;
 
   // SLOT ACCESS
@@ -132,9 +132,9 @@ public:
   void set_kind(core::T_sp kind) { this->m_kind = kind; };
 
   const int ownership_flags(void) { return m_ownership_flags; };
-  const void *orig_data_ptr(void) { return m_orig_data_ptr; };
-  void *raw_data(void) { return m_raw_data; };
-  void *ptr(void) { return m_raw_data; };
+  const void* orig_data_ptr(void) { return m_orig_data_ptr; };
+  void* raw_data(void) { return m_raw_data; };
+  void* ptr(void) { return m_raw_data; };
 
   CL_DEFMETHOD size_t foreign_data_size(void) { return m_size; };
 
@@ -148,7 +148,7 @@ public:
 
   // MAKE AND CREATE
   static ForeignData_sp create(const uintptr_t address = 0);
-  static ForeignData_sp create(void *p_address = nullptr, size_t size = 0);
+  static ForeignData_sp create(void* p_address = nullptr, size_t size = 0);
 
   CL_DEFMETHOD void PERCENTfree_foreign_object();
   CL_DEFMETHOD void PERCENTfree_foreign_data();
@@ -171,7 +171,7 @@ private:
   core::ForeignDataFlagEnum m_ownership_flags;
   size_t m_size;
 
-  void *m_orig_data_ptr;
+  void* m_orig_data_ptr;
 
 }; // ForeignData_O
 
@@ -185,7 +185,7 @@ ForeignData_sp allocate_foreign_data(uint64_t size);
 
 DOCGROUP(clasp)
 CL_DEFUN ForeignData_sp PERCENTmake_pointer(core::Integer_sp address);
-ForeignData_sp make_pointer(void *p_address);
+ForeignData_sp make_pointer(void* p_address);
 DOCGROUP(clasp)
 CL_DEFUN core::T_sp PERCENTpointerp(core::T_sp obj);
 
@@ -451,7 +451,7 @@ DOCGROUP(clasp)
 CL_DEFUN core::T_sp PERCENTmem_set_unsigned_char(core::Integer_sp address, core::T_sp value);
 SYMBOL_EXPORT_SC_(Clasp_ffi_pkg, PERCENTmem_set_unsigned_char);
 
-void *clasp_to_void_pointer(ForeignData_sp sp_lisp_value);
+void* clasp_to_void_pointer(ForeignData_sp sp_lisp_value);
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------

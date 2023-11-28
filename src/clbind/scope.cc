@@ -75,18 +75,18 @@ scope_::scope_(std::unique_ptr<detail::registration> reg) : m_chain(reg.release(
   LOG_SCOPE(("%s:%d scope_::scope_ %p m_chain-> %p\n", __FILE__, __LINE__, this, m_chain));
 }
 
-scope_::scope_(scope_ const &other) : m_chain(other.m_chain) {
+scope_::scope_(scope_ const& other) : m_chain(other.m_chain) {
   LOG_SCOPE(("%s:%d copy ctor scope_::scope_ %p m_chain-> %p  other= %p  other.m_chain(was %p) set to 0\n", __FILE__, __LINE__,
              this, m_chain, &other, other.m_chain));
-  const_cast<scope_ &>(other).m_chain = 0;
+  const_cast<scope_&>(other).m_chain = 0;
 }
 
-scope_ &scope_::operator=(scope_ const &other_) {
+scope_& scope_::operator=(scope_ const& other_) {
   delete m_chain;
   m_chain = other_.m_chain;
   LOG_SCOPE(("%s:%d operator= scope_::scope_ %p m_chain-> %p  other= %p  other.m_chain set to 0\n", __FILE__, __LINE__, this,
              m_chain, &other_));
-  const_cast<scope_ &>(other_).m_chain = 0;
+  const_cast<scope_&>(other_).m_chain = 0;
   return *this;
 }
 
@@ -108,7 +108,7 @@ scope_ &scope_::operator,(scope_ s) {
   }
 
   LOG_SCOPE(("%s:%d   Head of list registration entry %p to chain of %p\n", __FILE__, __LINE__, m_chain, this));
-  for (detail::registration *c = m_chain;; c = c->m_next) {
+  for (detail::registration* c = m_chain;; c = c->m_next) {
     if (!c->m_next) {
 #ifdef DEBUG_SCOPE
       if (s.m_chain) {
@@ -132,7 +132,7 @@ scope_ &scope_::operator,(scope_ s) {
 
 void scope_::register_() const {
   LOG_SCOPE(("%s:%d  register_ scope -> %p\n", __FILE__, __LINE__, this));
-  for (detail::registration *r = m_chain; r != 0; r = r->m_next) {
+  for (detail::registration* r = m_chain; r != 0; r = r->m_next) {
     LOG_SCOPE(("%s:%d register_ r-> %p  %s/%s\n", __FILE__, __LINE__, r, r->kind().c_str(), r->name().c_str()));
     //    printf("%s:%d register_ r-> %p  %s/%s\n", __FILE__, __LINE__, r, r->kind().c_str(), r->name().c_str());
     r->register_();
@@ -143,7 +143,7 @@ void scope_::register_() const {
 
 namespace clbind {
 
-package_::package_(string const &name, std::list<std::string> nicknames, std::list<string> usePackageNames)
+package_::package_(string const& name, std::list<std::string> nicknames, std::list<string> usePackageNames)
     : m_name(name), m_nicknames(nicknames), m_usePackageNames(usePackageNames) {
   string packageName = m_name;
   core::T_sp pkg = _lisp->findPackage(packageName);

@@ -68,12 +68,12 @@ class DestDynEnv_O : public DynEnv_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, DestDynEnv_O, "DestDynEnv", DynEnv_O);
 
 public:
-  jmp_buf *target;
+  jmp_buf* target;
 #ifdef UNWIND_INVALIDATE_STRICT
   bool valid = true;
 #endif
   DestDynEnv_O() : DynEnv_O(){};
-  DestDynEnv_O(jmp_buf *a_target) : DynEnv_O(), target(a_target){};
+  DestDynEnv_O(jmp_buf* a_target) : DynEnv_O(), target(a_target){};
   virtual ~DestDynEnv_O(){};
   virtual SearchStatus search() const { return Continue; };
   virtual void proceed(){};
@@ -91,9 +91,9 @@ class LexDynEnv_O : public DestDynEnv_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, LexDynEnv_O, "LexDynEnv", DestDynEnv_O);
 
 public:
-  void *frame; // for fallback
+  void* frame; // for fallback
   LexDynEnv_O() : DestDynEnv_O(){};
-  LexDynEnv_O(void *a_frame, jmp_buf *target) : DestDynEnv_O(target), frame(a_frame){};
+  LexDynEnv_O(void* a_frame, jmp_buf* target) : DestDynEnv_O(target), frame(a_frame){};
   virtual ~LexDynEnv_O(){};
 };
 
@@ -104,7 +104,7 @@ class BlockDynEnv_O : public LexDynEnv_O {
 
 public:
   using LexDynEnv_O::LexDynEnv_O; // inherit constructor
-  static BlockDynEnv_sp create(void *frame, jmp_buf *target) { return gctools::GC<BlockDynEnv_O>::allocate(frame, target); }
+  static BlockDynEnv_sp create(void* frame, jmp_buf* target) { return gctools::GC<BlockDynEnv_O>::allocate(frame, target); }
   virtual ~BlockDynEnv_O(){};
   virtual bool unwound_dynenv_p() { return true; }
 };
@@ -116,7 +116,7 @@ class TagbodyDynEnv_O : public LexDynEnv_O {
 
 public:
   using LexDynEnv_O::LexDynEnv_O;
-  static TagbodyDynEnv_sp create(void *frame, jmp_buf *target) { return gctools::GC<TagbodyDynEnv_O>::allocate(frame, target); }
+  static TagbodyDynEnv_sp create(void* frame, jmp_buf* target) { return gctools::GC<TagbodyDynEnv_O>::allocate(frame, target); }
   virtual ~TagbodyDynEnv_O(){};
   virtual bool unwound_dynenv_p() { return false; }
 };
@@ -127,7 +127,7 @@ class CatchDynEnv_O : public DestDynEnv_O {
 
 public:
   T_sp tag;
-  CatchDynEnv_O(jmp_buf *target, T_sp a_tag) : DestDynEnv_O(target), tag(a_tag) {}
+  CatchDynEnv_O(jmp_buf* target, T_sp a_tag) : DestDynEnv_O(target), tag(a_tag) {}
   virtual ~CatchDynEnv_O(){};
 
 public:
@@ -139,11 +139,11 @@ class UnwindProtectDynEnv_O : public DynEnv_O {
   LISP_CLASS(core, CorePkg, UnwindProtectDynEnv_O, "UnwindProtectDynEnv", DynEnv_O);
 
 public:
-  UnwindProtectDynEnv_O(jmp_buf *a_target) : target(a_target){};
+  UnwindProtectDynEnv_O(jmp_buf* a_target) : target(a_target){};
   virtual ~UnwindProtectDynEnv_O(){};
 
 public:
-  jmp_buf *target;
+  jmp_buf* target;
 
 public:
   virtual SearchStatus search() const { return Continue; };
@@ -166,9 +166,9 @@ public:
 
 // RAII helper for augmenting the dynamic environment.
 struct DynEnvPusher {
-  ThreadLocalState *mthread;
+  ThreadLocalState* mthread;
   List_sp stack;
-  DynEnvPusher(ThreadLocalState *thread, List_sp newstack) {
+  DynEnvPusher(ThreadLocalState* thread, List_sp newstack) {
     mthread = thread;
     stack = thread->dynEnvStackGet();
     thread->dynEnvStackSet(newstack);
@@ -208,7 +208,7 @@ DynEnv_O::SearchStatus sjlj_unwind_search(DestDynEnv_sp dest);
  * runtime overhead by essentially inlining. Both thunks should accept no
  * arguments, and protected_thunk should return a T_mv.
  * See core__sjlj_funwind_protect for example usage. */
-template <typename Protf, typename Cleanupf> T_mv funwind_protect(Protf &&protected_thunk, Cleanupf &&cleanup_thunk) {
+template <typename Protf, typename Cleanupf> T_mv funwind_protect(Protf&& protected_thunk, Cleanupf&& cleanup_thunk) {
   jmp_buf target;
   T_mv result;
   if (setjmp(target)) {
@@ -219,9 +219,9 @@ template <typename Protf, typename Cleanupf> T_mv funwind_protect(Protf &&protec
     // itself unwinds.
     T_sp dest = my_thread->_UnwindDest;
     size_t dindex = my_thread->_UnwindDestIndex;
-    MultipleValues &multipleValues = lisp_multipleValues();
+    MultipleValues& multipleValues = lisp_multipleValues();
     size_t nvals = multipleValues.getSize();
-    T_O *mv_temp[nvals];
+    T_O* mv_temp[nvals];
     multipleValues.saveToTemp(nvals, mv_temp);
     cleanup_thunk();
     multipleValues.loadFromTemp(nvals, mv_temp);
@@ -238,16 +238,16 @@ template <typename Protf, typename Cleanupf> T_mv funwind_protect(Protf &&protec
       DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
       result = protected_thunk();
     } catch (...) { // C++ unwind. Do the same shit then rethrow
-      MultipleValues &multipleValues = core::lisp_multipleValues();
+      MultipleValues& multipleValues = core::lisp_multipleValues();
       size_t nvals = multipleValues.getSize();
-      T_O *mv_temp[nvals];
+      T_O* mv_temp[nvals];
       multipleValues.saveToTemp(nvals, mv_temp);
       cleanup_thunk();
       multipleValues.loadFromTemp(nvals, mv_temp);
       throw;
     }
     size_t nvals = result.number_of_values();
-    T_O *mv_temp[nvals];
+    T_O* mv_temp[nvals];
     returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
     cleanup_thunk();
     return returnTypeLoadFromTemp(nvals, mv_temp);
@@ -257,11 +257,11 @@ template <typename Protf, typename Cleanupf> T_mv funwind_protect(Protf &&protec
 /* Similarly, BLOCK. Note that the use of __builtin_frame_address is a bit
  * hairy here, and nesting this function without intervening frames may cause
  * strange issues. thunkf should accept a BlockDynEnv_sp. */
-template <typename Blockf> T_mv call_with_escape(Blockf &&block) {
+template <typename Blockf> T_mv call_with_escape(Blockf&& block) {
   jmp_buf target;
-  void *frame = __builtin_frame_address(0);
+  void* frame = __builtin_frame_address(0);
   if (setjmp(target)) {
-    core::MultipleValues &mv = core::lisp_multipleValues();
+    core::MultipleValues& mv = core::lisp_multipleValues();
     T_mv result = mv.readFromMultipleValue0(mv.getSize());
     return result;
     // checkme    return T_mv::createFromValues(); // abnormal return
@@ -277,9 +277,9 @@ template <typename Blockf> T_mv call_with_escape(Blockf &&block) {
       gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->dynEnvStackGet());
       DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
       return block(env);
-    } catch (Unwind &uw) {
+    } catch (Unwind& uw) {
       if (uw.getFrame() == frame) {
-        core::MultipleValues &mv = core::lisp_multipleValues();
+        core::MultipleValues& mv = core::lisp_multipleValues();
         T_mv result = mv.readFromMultipleValue0(mv.getSize());
         return result;
         // checkme return T_mv::createFromValues();
@@ -288,9 +288,9 @@ template <typename Blockf> T_mv call_with_escape(Blockf &&block) {
     }
 }
 
-template <typename Tagbodyf> void call_with_tagbody(Tagbodyf &&tagbody) {
+template <typename Tagbodyf> void call_with_tagbody(Tagbodyf&& tagbody) {
   jmp_buf target;
-  void *frame = __builtin_frame_address(0);
+  void* frame = __builtin_frame_address(0);
   TagbodyDynEnv_sp env = TagbodyDynEnv_O::create(frame, &target);
   gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->dynEnvStackGet());
   DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
@@ -302,7 +302,7 @@ template <typename Tagbodyf> void call_with_tagbody(Tagbodyf &&tagbody) {
 again:
   try {
     tagbody(env, index);
-  } catch (Unwind &uw) {
+  } catch (Unwind& uw) {
     if (uw.getFrame() == frame) {
       // The thrower may not be cooperative, so reset the dynenv.
       // (DynEnvPusher takes care of this when we actually escape.)
@@ -314,10 +314,10 @@ again:
   }
 }
 
-template <typename Catchf> T_mv call_with_catch(T_sp tag, Catchf &&cf) {
+template <typename Catchf> T_mv call_with_catch(T_sp tag, Catchf&& cf) {
   jmp_buf target;
   if (setjmp(target)) {
-    core::MultipleValues &mv = core::lisp_multipleValues();
+    core::MultipleValues& mv = core::lisp_multipleValues();
     T_mv result = mv.readFromMultipleValue0(mv.getSize());
     return result;
     // checkme return T_mv::createFromValues(); // abnormal return
@@ -327,11 +327,11 @@ template <typename Catchf> T_mv call_with_catch(T_sp tag, Catchf &&cf) {
       gctools::StackAllocate<Cons_O> sa_ec(env.asSmartPtr(), my_thread->dynEnvStackGet());
       DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
       return cf();
-    } catch (CatchThrow &ct) {
+    } catch (CatchThrow& ct) {
       if (ct.getTag() != tag)
         throw;
       else {
-        core::MultipleValues &mv = core::lisp_multipleValues();
+        core::MultipleValues& mv = core::lisp_multipleValues();
         T_mv result = mv.readFromMultipleValue0(mv.getSize());
         return result;
         // checkme return T_mv::createFromValues();
@@ -339,7 +339,7 @@ template <typename Catchf> T_mv call_with_catch(T_sp tag, Catchf &&cf) {
     }
 }
 
-template <typename Boundf> inline auto call_with_cell_bound(VariableCell_sp cell, T_sp val, Boundf &&bound) {
+template <typename Boundf> inline auto call_with_cell_bound(VariableCell_sp cell, T_sp val, Boundf&& bound) {
   DynamicScopeManager scope(cell, val);
   gctools::StackAllocate<BindingDynEnv_O> bde(cell, scope.oldBinding());
   gctools::StackAllocate<Cons_O> sa_ec(bde.asSmartPtr(), my_thread->dynEnvStackGet());
@@ -347,7 +347,7 @@ template <typename Boundf> inline auto call_with_cell_bound(VariableCell_sp cell
   return bound();
 }
 
-template <typename Boundf> auto call_with_variable_bound(Symbol_sp sym, T_sp val, Boundf &&bound) {
+template <typename Boundf> auto call_with_variable_bound(Symbol_sp sym, T_sp val, Boundf&& bound) {
   return call_with_cell_bound(sym->ensureVariableCell(), val, bound);
 }
 

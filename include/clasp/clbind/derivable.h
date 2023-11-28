@@ -58,7 +58,7 @@ public:
   typedef int enable_derivable;
 
 public:
-  template <typename... Args> static gctools::smart_ptr<DerivableType> create(Args &&...args) {
+  template <typename... Args> static gctools::smart_ptr<DerivableType> create(Args&&... args) {
     auto obj = gctools::GC<DerivableType>::allocate(std::forward<Args>(args)...);
     return obj;
   }
@@ -66,20 +66,20 @@ public:
   /*! Define a pointerToAlienWithin() virtual function that returns
       a void* pointer to the Derivable<Alien> Alien object.
       This will be used by translators. */
-  virtual void *pointerToAlienWithin() { return reinterpret_cast<void *>(static_cast<Alien *>(this)); };
+  virtual void* pointerToAlienWithin() { return reinterpret_cast<void*>(static_cast<Alien*>(this)); };
   bool cxxAdapterClassP() const { return true; };
   virtual Fixnum get_stamp_() const { return this->stamp(); };
-  virtual Instance_O *get_Instance_O_address_() {
-    Instance_O *inst = this;
+  virtual Instance_O* get_Instance_O_address_() {
+    Instance_O* inst = this;
     return inst;
   };
   virtual size_t get_size_() const { return sizeof(*this); };
   void describe() {
     printf("#<Derivable>@%p\n", this);
     printf("typeid(this) --> %p\n", &typeid(this));
-    printf("dynamic_cast to void* --> %p\n", dynamic_cast<void *>(this));
-    printf("dynamic_cast to T_O* -->  %p\n", dynamic_cast<core::T_O *>(this));
-    printf("dynamic_cast to Derivable<Alien>* --> %p\n", dynamic_cast<Derivable<Alien> *>(this));
+    printf("dynamic_cast to void* --> %p\n", dynamic_cast<void*>(this));
+    printf("dynamic_cast to T_O* -->  %p\n", dynamic_cast<core::T_O*>(this));
+    printf("dynamic_cast to Derivable<Alien>* --> %p\n", dynamic_cast<Derivable<Alien>*>(this));
 
     printf("alien pointer = %p\n", this->pointerToAlienWithin());
     printf("_Class: %s\n", _rep_(this->_Class).c_str());

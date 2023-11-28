@@ -213,36 +213,36 @@ template <> struct from_object<bool, std::true_type> {
   from_object(core::T_sp o) : _v(!o.nilp()){};
 };
 
-template <> struct from_object<bool &, std::true_type> {
+template <> struct from_object<bool&, std::true_type> {
   typedef bool DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(!o.nilp()){};
   ~from_object(){/*non trivial*/};
 };
 
-template <> struct from_object<core::T_O *, std::true_type> {
-  typedef core::T_O *DeclareType;
+template <> struct from_object<core::T_O*, std::true_type> {
+  typedef core::T_O* DeclareType;
 
   DeclareType _v;
   from_object(core::T_sp o) : _v(o.raw_()){};
 };
 
-template <> struct from_object<void *, std::true_type> {
-  typedef void *DeclareType;
+template <> struct from_object<void*, std::true_type> {
+  typedef void* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(core::lisp_to_void_ptr(o)){};
 };
 
-template <> struct from_object<bool *, std::false_type> {
-  typedef bool *DeclareType;
+template <> struct from_object<bool*, std::false_type> {
+  typedef bool* DeclareType;
 
   DeclareType _v;
   bool _val;
   from_object(T_P o) : _v(&_val), _val(false){};
 };
 
-template <> struct from_object<bool *&, std::false_type> {
-  typedef bool *DeclareType;
+template <> struct from_object<bool*&, std::false_type> {
+  typedef bool* DeclareType;
 
   DeclareType _v;
   bool _val;
@@ -250,8 +250,8 @@ template <> struct from_object<bool *&, std::false_type> {
   ~from_object(){/*non trivial*/};
 };
 
-template <> struct from_object<bool *, std::true_type> {
-  typedef bool *DeclareType;
+template <> struct from_object<bool*, std::true_type> {
+  typedef bool* DeclareType;
 
   DeclareType _v;
   bool _val;
@@ -260,8 +260,8 @@ template <> struct from_object<bool *, std::true_type> {
 
 // TO_OBJECT TRANSLATORS
 
-template <> struct to_object<bool *, translate::dont_adopt_pointer> {
-  typedef bool *DeclareType;
+template <> struct to_object<bool*, translate::dont_adopt_pointer> {
+  typedef bool* DeclareType;
   static core::T_sp convert(DeclareType v) {
     if (*v) {
       return core::lisp_true();
@@ -270,8 +270,8 @@ template <> struct to_object<bool *, translate::dont_adopt_pointer> {
   }
 };
 
-template <> struct to_object<bool *&, translate::dont_adopt_pointer> {
-  typedef bool *DeclareType;
+template <> struct to_object<bool*&, translate::dont_adopt_pointer> {
+  typedef bool* DeclareType;
   static core::T_sp convert(DeclareType v) {
     if (*v) {
       return core::lisp_true();
@@ -280,8 +280,8 @@ template <> struct to_object<bool *&, translate::dont_adopt_pointer> {
   }
 };
 
-template <> struct to_object<void *> {
-  typedef void *DeclareType;
+template <> struct to_object<void*> {
+  typedef void* DeclareType;
   static core::T_sp convert(DeclareType v) { return core::lisp_from_void_ptr(v); }
 };
 
@@ -412,14 +412,14 @@ template <> struct to_object<long double> {
 
 template <> struct to_object<mpz_class> {
   typedef mpz_class DeclareType;
-  static core::T_sp convert(const DeclareType &v) {
+  static core::T_sp convert(const DeclareType& v) {
     core::Integer_sp oi = core::Integer_O::create(v);
     return (oi);
   }
 };
 
-template <> struct to_object<const mpz_class &> {
-  typedef const mpz_class &DeclareType;
+template <> struct to_object<const mpz_class&> {
+  typedef const mpz_class& DeclareType;
   static core::T_sp convert(DeclareType v) {
     core::Integer_sp oi = core::Integer_O::create(v);
     return (oi);
@@ -428,7 +428,7 @@ template <> struct to_object<const mpz_class &> {
 
 //  String translators
 
-template <> struct from_object<const std::string &, std::true_type> {
+template <> struct from_object<const std::string&, std::true_type> {
   typedef std::string DeclareType;
   DeclareType _v;
   from_object(T_P o) : _v(string_get_std_string(o)){};
@@ -440,14 +440,14 @@ template <> struct from_object<std::string, std::true_type> {
   from_object(T_P o) : _v(string_get_std_string(o)){};
 };
 
-template <> struct from_object<std::string &, std::true_type> {
+template <> struct from_object<std::string&, std::true_type> {
   typedef std::string DeclareType;
   DeclareType _v;
   from_object(T_P o) : _v(string_get_std_string(o)){};
   ~from_object(){/*non trivial*/};
 };
 
-template <> struct from_object<std::string &, std::false_type> {
+template <> struct from_object<std::string&, std::false_type> {
   typedef std::string DeclareType;
   DeclareType _v;
   from_object(T_P o){};
@@ -455,38 +455,38 @@ template <> struct from_object<std::string &, std::false_type> {
 };
 
 template <> struct to_object<std::string, translate::adopt_pointer> {
-  static core::T_sp convert(const std::string &v) {
+  static core::T_sp convert(const std::string& v) {
     core::T_sp oi = core::str_create(v);
     return (oi);
   }
 };
 
 template <> struct to_object<std::string, translate::dont_adopt_pointer> {
-  typedef std::string &DeclareType;
-  static core::T_sp convert(DeclareType &v) {
+  typedef std::string& DeclareType;
+  static core::T_sp convert(DeclareType& v) {
     core::T_sp oi = core::str_create(v);
     return (oi);
   }
 };
 
-template <> struct to_object<const std::string &> {
-  typedef const std::string &DeclareType;
+template <> struct to_object<const std::string&> {
+  typedef const std::string& DeclareType;
   static core::T_sp convert(DeclareType v) {
     core::T_sp oi = core::str_create(v);
     return (oi);
   }
 };
 
-template <> struct to_object<std::string &> {
-  typedef std::string &DeclareType;
+template <> struct to_object<std::string&> {
+  typedef std::string& DeclareType;
   static core::T_sp convert(DeclareType v) {
     core::T_sp oi = core::str_create(v);
     return (oi);
   }
 };
 
-template <> struct to_object<const char *> {
-  typedef const char *DeclareType;
+template <> struct to_object<const char*> {
+  typedef const char* DeclareType;
   static core::T_sp convert(DeclareType v) {
     core::T_sp oi = core::str_create(v);
     return (oi);
@@ -510,16 +510,16 @@ namespace translate {
   };
 #endif
 
-template <typename TX, typename TY> struct from_object<std::pair<const TX &, gctools::smart_ptr<TY>>> {
-  typedef std::pair<const TX &, gctools::smart_ptr<TY>> DeclareType;
+template <typename TX, typename TY> struct from_object<std::pair<const TX&, gctools::smart_ptr<TY>>> {
+  typedef std::pair<const TX&, gctools::smart_ptr<TY>> DeclareType;
   DeclareType _v;
-  from_object(core::T_sp o) : _v(from_object<const TX &>(core::oCar(o))._v, core::oCdr(o)){};
+  from_object(core::T_sp o) : _v(from_object<const TX&>(core::oCar(o))._v, core::oCdr(o)){};
 };
 
-template <typename TX, typename TY> struct to_object<std::pair<const TX &, gctools::smart_ptr<TY>>> {
-  typedef std::pair<const TX &, gctools::smart_ptr<TY>> DeclareType;
+template <typename TX, typename TY> struct to_object<std::pair<const TX&, gctools::smart_ptr<TY>>> {
+  typedef std::pair<const TX&, gctools::smart_ptr<TY>> DeclareType;
   static core::T_sp convert(DeclareType v) {
-    core::T_sp oi = core::Cons_O::create(to_object<const TX &>::convert(v.first), v.second);
+    core::T_sp oi = core::Cons_O::create(to_object<const TX&>::convert(v.first), v.second);
     return (oi);
   }
 };

@@ -41,8 +41,8 @@ namespace core {
 /*! Duplicated from ECL list.d
  */
 struct cl_test {
-  bool (*test_c_function)(struct cl_test *, T_sp);
-  T_sp (*key_c_function)(struct cl_test *, T_sp);
+  bool (*test_c_function)(struct cl_test*, T_sp);
+  T_sp (*key_c_function)(struct cl_test*, T_sp);
   // cl_env_ptr env;
   T_sp key_function;
   Function_sp key_fn;
@@ -62,7 +62,7 @@ struct cl_test {
 #define KEY(t, x) ((t)->key_c_function)((t), (x))
 #define close_test(t) (void)0
 
-static bool test_compare(struct cl_test *t, T_sp x) {
+static bool test_compare(struct cl_test* t, T_sp x) {
   x = KEY(t, x);
   // t->env->function = t->test_function;
   MAKE_STACK_FRAME(frame, 2);
@@ -72,7 +72,7 @@ static bool test_compare(struct cl_test *t, T_sp x) {
   return res.notnilp();
 }
 
-static bool test_compare_not(struct cl_test *t, T_sp x) {
+static bool test_compare_not(struct cl_test* t, T_sp x) {
   x = KEY(t, x);
   // t->env->function = t->test_function;
   MAKE_STACK_FRAME(frame, 2);
@@ -82,15 +82,15 @@ static bool test_compare_not(struct cl_test *t, T_sp x) {
   return res.nilp();
 }
 
-static bool test_eq(struct cl_test *t, T_sp x) { return (t->item_compared == KEY(t, x)); }
+static bool test_eq(struct cl_test* t, T_sp x) { return (t->item_compared == KEY(t, x)); }
 
-static bool test_eql(struct cl_test *t, T_sp x) { return cl__eql(t->item_compared, KEY(t, x)); }
+static bool test_eql(struct cl_test* t, T_sp x) { return cl__eql(t->item_compared, KEY(t, x)); }
 
-static bool test_equal(struct cl_test *t, T_sp x) { return cl__equal(t->item_compared, KEY(t, x)); }
+static bool test_equal(struct cl_test* t, T_sp x) { return cl__equal(t->item_compared, KEY(t, x)); }
 
-static bool test_equalp(struct cl_test *t, T_sp x) { return cl__equalp(t->item_compared, KEY(t, x)); }
+static bool test_equalp(struct cl_test* t, T_sp x) { return cl__equalp(t->item_compared, KEY(t, x)); }
 
-static T_sp key_function(struct cl_test *t, T_sp x) {
+static T_sp key_function(struct cl_test* t, T_sp x) {
   // t->env->function = t->key_function;
   T_mv result;
   MAKE_STACK_FRAME(frame, 1);
@@ -98,9 +98,9 @@ static T_sp key_function(struct cl_test *t, T_sp x) {
   return (*t->key_fn).entry()(t->key_fn.raw_(), 1, frame->arguments(0));
 }
 
-static T_sp key_identity(struct cl_test *t, T_sp x) { return x; }
+static T_sp key_identity(struct cl_test* t, T_sp x) { return x; }
 
-static void setup_test(struct cl_test *t, T_sp item, T_sp test, T_sp test_not, T_sp key) {
+static void setup_test(struct cl_test* t, T_sp item, T_sp test, T_sp test_not, T_sp key) {
   // cl_env_ptr env = t->env = ecl_process_env();
   t->item_compared = item;
   if (test.notnilp()) {
@@ -331,12 +331,12 @@ CL_DEFUN T_sp cl__listSTAR(Vaslist_sp vargs) {
     throwTooFewArgumentsError(nil<T_O>(), clasp_make_fixnum(0), clasp_make_fixnum(1));
   ql::list result;
   while (nargs > 1) {
-    T_O *tcsp = ENSURE_VALID_OBJECT(vargs->next_arg().raw_());
+    T_O* tcsp = ENSURE_VALID_OBJECT(vargs->next_arg().raw_());
     T_sp csp((gctools::Tagged)tcsp);
     result << csp;
     nargs--;
   }
-  T_O *tailptr = ENSURE_VALID_OBJECT(vargs->next_arg().raw_());
+  T_O* tailptr = ENSURE_VALID_OBJECT(vargs->next_arg().raw_());
   T_sp tail((gctools::Tagged)tailptr);
   result.dot(tail);
   return result.cons();

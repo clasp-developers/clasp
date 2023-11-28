@@ -3,7 +3,7 @@
 namespace clbind {
 namespace detail {
 
-typedef void *(*cast_function)(void *);
+typedef void* (*cast_function)(void*);
 
 class edge {
 public:
@@ -13,7 +13,7 @@ public:
   cast_function cast;
 };
 
-inline bool operator<(edge const &x, edge const &y) { return x.target < y.target; }
+inline bool operator<(edge const& x, edge const& y) { return x.target < y.target; }
 
 class vertex {
 public:

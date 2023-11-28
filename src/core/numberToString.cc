@@ -53,14 +53,14 @@ CL_LAMBDA(buffer x base);
 CL_DECLARE();
 DOCGROUP(clasp);
 CL_DEFUN StrNs_sp core__next_to_string(StrNs_sp buffer, Bignum_sp bn, Fixnum_sp base) {
-  const char *num_to_text = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const char* num_to_text = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   int ibase = unbox_fixnum(base);
   if (ibase < 2 || ibase > 36) {
     QERROR_WRONG_TYPE_NTH_ARG(3, base, Cons_O::createList(cl::_sym_integer, make_fixnum(2), make_fixnum(36)));
   }
   mp_size_t len = bn->length();
   mp_size_t size = std::abs(len);
-  const mp_limb_t *limbs = bn->limbs();
+  const mp_limb_t* limbs = bn->limbs();
   size_t str_size = mpn_sizeinbase(limbs, size, ibase);
   size_t negative = (len < 0) ? 1 : 0;
   mp_limb_t copy_limbs[size]; // mpn_get_str may destroy its input
@@ -70,8 +70,8 @@ CL_DEFUN StrNs_sp core__next_to_string(StrNs_sp buffer, Bignum_sp bn, Fixnum_sp 
 
   if (Str8Ns_sp buffer8 = buffer.asOrNull<Str8Ns_O>()) {
     buffer8->ensureSpaceAfterFillPointer(clasp_make_character('\0'), str_size + negative + 2);
-    unsigned char *bufferStart = (unsigned char *)&(*buffer8)[buffer8->fillPointer()];
-    unsigned char *significandStart = bufferStart + negative;
+    unsigned char* bufferStart = (unsigned char*)&(*buffer8)[buffer8->fillPointer()];
+    unsigned char* significandStart = bufferStart + negative;
     mp_size_t actual_str_size = mpn_get_str(significandStart, ibase, copy_limbs, size);
     if (negative == 1)
       bufferStart[0] = '-';

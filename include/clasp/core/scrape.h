@@ -107,9 +107,9 @@ DOCGROUP(clasp)
 #define PACKAGE_NICKNAME(name_str)
 #define PACKAGE_SHADOW(name_str)
 #define NAMESPACE_PACKAGE_ASSOCIATION(x, y, z)                                                                                     \
-  static const char * /*std::string*/ y = z;                                                                                       \
+  static const char* /*std::string*/ y = z;                                                                                        \
   namespace x {                                                                                                                    \
-  static const char * /*std::string*/ CurrentPkg = z;                                                                              \
+  static const char* /*std::string*/ CurrentPkg = z;                                                                               \
   }
 #endif
 
@@ -118,7 +118,7 @@ DOCGROUP(clasp)
   namespace translate {                                                                                                            \
   template <> struct to_object<_type_> {                                                                                           \
     typedef _type_ GivenType;                                                                                                      \
-    static core::T_sp convert(const GivenType &val) {                                                                              \
+    static core::T_sp convert(const GivenType& val) {                                                                              \
       _G();                                                                                                                        \
       core::SymbolToEnumConverter_sp converter = _sym_->symbolValue().as<core::SymbolToEnumConverter_O>();                         \
       return (converter->symbolForEnum(val));                                                                                      \

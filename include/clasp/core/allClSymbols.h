@@ -29,7 +29,7 @@ THE SOFTWARE.
 #ifdef DEFINE_CL_SYMBOLS
 namespace core {
 
-void throwIfNotValidClSymbol(const string &name);
+void throwIfNotValidClSymbol(const string& name);
 void initializeAllClSymbols(Package_sp clPkg);
 void initializeAllClSymbolsFunctions();
 }; // namespace core

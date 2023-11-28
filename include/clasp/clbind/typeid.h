@@ -48,20 +48,20 @@ class type_id : public boost::less_than_comparable<type_id> {
 public:
   type_id() : id(&typeid(reg::null_type)) {}
 
-  type_id(std::type_info const &id) : id(&id) {}
+  type_id(std::type_info const& id) : id(&id) {}
 
-  bool operator!=(type_id const &other) const { return *id != *other.id; }
+  bool operator!=(type_id const& other) const { return *id != *other.id; }
 
-  bool operator==(type_id const &other) const { return *id == *other.id; }
+  bool operator==(type_id const& other) const { return *id == *other.id; }
 
-  bool operator<(type_id const &other) const { return id->before(*other.id); }
+  bool operator<(type_id const& other) const { return id->before(*other.id); }
 
-  char const *name() const { return id->name(); }
+  char const* name() const { return id->name(); }
 
-  std::type_info const *get_type_info() const { return this->id; };
+  std::type_info const* get_type_info() const { return this->id; };
 
 private:
-  std::type_info const *id;
+  std::type_info const* id;
 };
 
 #ifdef BOOST_MSVC

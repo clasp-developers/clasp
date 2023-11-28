@@ -34,14 +34,14 @@ public:
       return obj.unsafe_fixnum();
     return clasp_to_float(gc::As<Number_sp>(obj));
   };
-  static T_sp to_object(const value_type &v) { return core::clasp_make_single_float(v); };
+  static T_sp to_object(const value_type& v) { return core::clasp_make_single_float(v); };
 
 public:
   SimpleVector_float_O(size_t length, value_type initialElement = value_type(), bool initialElementSupplied = false,
-                       size_t initialContentsSize = 0, const value_type *initialContents = NULL)
+                       size_t initialContentsSize = 0, const value_type* initialContents = NULL)
       : TemplatedBase(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};
   static smart_ptr_type make(size_t length, value_type initialElement = value_type(), bool initialElementSupplied = false,
-                             size_t initialContentsSize = 0, const value_type *initialContents = NULL,
+                             size_t initialContentsSize = 0, const value_type* initialContents = NULL,
                              bool static_vector_p = false) {
     auto bs = gctools::GC<my_type>::allocate_container<gctools::RuntimeStage>(
         static_vector_p, length, initialElement, initialElementSupplied, initialContentsSize, initialContents);
@@ -53,8 +53,8 @@ public:
 
 public: // Provide the API that I used for NVector_sp
   static SimpleVector_float_sp create(size_t sz) { return make(sz, 0.0, false, 0, NULL); }
-  float &element(size_t i) { return this->operator[](i); };
-  float &getElement(size_t i) { return this->operator[](i); };
+  float& element(size_t i) { return this->operator[](i); };
+  float& getElement(size_t i) { return this->operator[](i); };
   void setElement(size_t i, float v) { this->operator[](i) = v; };
   void addToElement(size_t i, float v) { this->operator[](i) += v; };
   void zero() {

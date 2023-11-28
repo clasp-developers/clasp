@@ -57,7 +57,7 @@ public:
     return 0;
   };
 
-  inline list &operator<<(core::T_sp const &obj) {
+  inline list& operator<<(core::T_sp const& obj) {
     core::Cons_sp one = core::Cons_O::create(obj, nil<core::T_O>());
     if (!this->_Head.consp())
       this->_Head = one;
@@ -70,7 +70,7 @@ public:
   }
 
   /*! Insert list into list - should I copy or append (which will modify the argument)? */
-  inline list &operator&(core::List_sp l) {
+  inline list& operator&(core::List_sp l) {
     for (auto cur : l) {
       (*this) << CONS_CAR(cur);
     }
@@ -80,7 +80,7 @@ public:
   /*! dot the list argument to the end of the list
    *  NOTE: After calling this, trying to add more elements is not allowed and will have
    *        bad consequences. */
-  inline list &dot(core::T_sp arg) {
+  inline list& dot(core::T_sp arg) {
     if (this->_Tail.consp()) {
       core::Cons_sp ctail = gc::As_unsafe<core::Cons_sp>(this->_Tail);
       ctail->rplacd(arg);

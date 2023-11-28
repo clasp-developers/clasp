@@ -78,12 +78,12 @@ struct Token {
   vector<trait_chr_type> chars;
   void clear() { this->chars.clear(); };
   void recordSourcePos(SourcePosInfo_sp sp) { this->sourcePosInfo = sp; }
-  trait_chr_type *data() { return this->chars.data(); };
+  trait_chr_type* data() { return this->chars.data(); };
   void push_back(trait_chr_type c) { this->chars.push_back(c); };
   size_t size() const { return this->chars.size(); };
 
-  trait_chr_type &operator[](int i) { return this->chars[i]; };
-  const trait_chr_type &operator[](int i) const { return this->chars[i]; };
+  trait_chr_type& operator[](int i) { return this->chars[i]; };
+  const trait_chr_type& operator[](int i) const { return this->chars[i]; };
 };
 
 #define TRAIT_DIGIT 0x000100000000
@@ -385,7 +385,7 @@ void make_str(StrNs_sp sout, List_sp cur_char) {
   }
 }
 
-string fix_exponent_char(const char *cur) {
+string fix_exponent_char(const char* cur) {
   stringstream ss;
   while (*cur) {
     if (alpha_char_p(*cur)) {
@@ -489,7 +489,7 @@ string stateString(TokenState state) {
 
 template <typename Char> struct fmt::formatter<core::TokenState, Char> : fmt::formatter<fmt::basic_string_view<Char>> {
   template <typename FormatContext>
-  auto format(const core::TokenState &o, FormatContext &ctx) const -> typename FormatContext::iterator {
+  auto format(const core::TokenState& o, FormatContext& ctx) const -> typename FormatContext::iterator {
     return fmt::formatter<fmt::basic_string_view<Char>>::format(stateString(o), ctx);
   }
 };
@@ -498,7 +498,7 @@ namespace core {
 
 typedef enum { undefined_exp, double_float_exp, float_exp, single_float_exp, long_float_exp, short_float_exp } FloatExponentType;
 
-UnEscapedCase token_check_case(Token &token, size_t start, size_t end) {
+UnEscapedCase token_check_case(Token& token, size_t start, size_t end) {
   UnEscapedCase curcase = undefined;
   for (size_t i(start); i < end; ++i) {
     curcase = case_state(token[i], curcase);
@@ -506,20 +506,20 @@ UnEscapedCase token_check_case(Token &token, size_t start, size_t end) {
   return curcase;
 }
 
-void token_upcase(Token &token, size_t start, size_t end) {
+void token_upcase(Token& token, size_t start, size_t end) {
   for (size_t i(start); i < end; ++i) {
     if (!(token[i] & TRAIT_ESCAPED))
       token[i] = (TRAIT_MASK & token[i]) | char_upcase(CHR(token[i]));
   }
 }
-void token_downcase(Token &token, size_t start, size_t end) {
+void token_downcase(Token& token, size_t start, size_t end) {
   for (size_t i(start); i < end; ++i) {
     if (!(token[i] & TRAIT_ESCAPED))
       token[i] = (TRAIT_MASK & token[i]) | char_downcase(CHR(token[i]));
   }
 }
 
-void apply_readtable_case(Token &token, size_t start, size_t end) {
+void apply_readtable_case(Token& token, size_t start, size_t end) {
   T_sp readtable = _lisp->getCurrentReadTable();
   Symbol_sp case_ = cl__readtable_case(readtable);
   if (case_ == kw::_sym_invert) {
@@ -547,7 +547,7 @@ void apply_readtable_case(Token &token, size_t start, size_t end) {
   }
 }
 
-SimpleString_sp symbolTokenStr(T_sp stream, Token &token, size_t start, size_t end, bool only_dots_ok = false) {
+SimpleString_sp symbolTokenStr(T_sp stream, Token& token, size_t start, size_t end, bool only_dots_ok = false) {
   SafeBufferStrWNs buffer;
   apply_readtable_case(token, start, end);
   bool only_dots = true;
@@ -572,7 +572,7 @@ SimpleString_sp symbolTokenStr(T_sp stream, Token &token, size_t start, size_t e
   return buffer.string()->asMinimalSimpleString();
 }
 
-SimpleString_sp tokenStr(T_sp stream, const Token &token, size_t start = 0, size_t end = UNDEF_UINT, bool only_dots_ok = false) {
+SimpleString_sp tokenStr(T_sp stream, const Token& token, size_t start = 0, size_t end = UNDEF_UINT, bool only_dots_ok = false) {
   if (end == UNDEF_UINT)
     end = token.size();
   SafeBufferStrWNs buffer;
@@ -596,14 +596,14 @@ SimpleString_sp tokenStr(T_sp stream, const Token &token, size_t start = 0, size
   return buffer.string()->asMinimalSimpleString();
 }
 
-T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dots_ok) {
+T_sp interpret_token_or_throw_reader_error(T_sp sin, Token& token, bool only_dots_ok) {
   LOG_READ(BF("About to interpret_token_or_throw_reader_error"));
   ASSERTF(token.size() > 0, "The token is empty!");
-  const trait_chr_type *start = token.data();
-  const trait_chr_type *cur = start;
-  const trait_chr_type *end = token.data() + token.size();
-  const trait_chr_type *package_marker = start;
-  const trait_chr_type *name_marker = start;
+  const trait_chr_type* start = token.data();
+  const trait_chr_type* cur = start;
+  const trait_chr_type* end = token.data() + token.size();
+  const trait_chr_type* package_marker = start;
+  const trait_chr_type* name_marker = start;
   TokenState state = tstart;
   FloatExponentType exponent = undefined_exp;
 #define EXPTEST(c, x)                                                                                                              \
@@ -788,7 +788,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
     string packageName = packageSin.string()->get_std_string();
     Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
     Symbol_sp sym;
-    MultipleValues &mvn = core::lisp_multipleValues();
+    MultipleValues& mvn = core::lisp_multipleValues();
     if (separator == 1) { // Asking for external symbol
       Symbol_mv symmv = pkg->findSymbol_SimpleString(symbol_name_str);
       sym = symmv;
@@ -848,7 +848,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
         } else {
           return Integer_O::create(num, read_base);
         }
-      } catch (std::invalid_argument &arg) {
+      } catch (std::invalid_argument& arg) {
         SIMPLE_ERROR("Problem in mpz_class creation with {} error: {}", num, arg.what());
       }
       SIMPLE_ERROR("Problem while interpreting int from {} in reader", num);
@@ -874,7 +874,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
     {
       switch (exponent) {
       case undefined_exp: {
-        char *lastValid = NULL;
+        char* lastValid = NULL;
         if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_single_float) {
           string numstr = tokenStr(sin, token, start - token.data())->get_std_string();
           float f = ::strtof(numstr.c_str(), &lastValid);
@@ -896,31 +896,31 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
         }
       }
       case float_exp: {
-        char *lastValid = NULL;
+        char* lastValid = NULL;
         string numstr = fix_exponent_char(tokenStr(sin, token, start - token.data())->get_std_string().c_str());
         double d = ::strtod(numstr.c_str(), &lastValid);
         return DoubleFloat_O::create(d);
       }
       case short_float_exp: {
-        char *lastValid = NULL;
+        char* lastValid = NULL;
         string numstr = fix_exponent_char(tokenStr(sin, token, start - token.data())->get_std_string().c_str());
         double d = ::strtod(numstr.c_str(), &lastValid);
         return clasp_make_single_float(d);
       }
       case single_float_exp: {
-        char *lastValid = NULL;
+        char* lastValid = NULL;
         string numstr = fix_exponent_char(tokenStr(sin, token, start - token.data())->get_std_string().c_str());
         double d = ::strtod(numstr.c_str(), &lastValid);
         return clasp_make_single_float(d);
       }
       case double_float_exp: {
-        char *lastValid = NULL;
+        char* lastValid = NULL;
         string numstr = fix_exponent_char(tokenStr(sin, token, start - token.data())->get_std_string().c_str());
         double d = ::strtod(numstr.c_str(), &lastValid);
         return DoubleFloat_O::create(d);
       }
       case long_float_exp: {
-        char *lastValid = NULL;
+        char* lastValid = NULL;
         string numstr = fix_exponent_char(tokenStr(sin, token, start - token.data())->get_std_string().c_str());
 #ifdef CLASP_LONG_FLOAT
         LongFloat d = ::strtold(numstr.c_str(), &lastValid);

@@ -72,16 +72,16 @@ HashTableEq_sp HashTableEq_O::createFromPList(List_sp plist, Symbol_sp nilTermin
   return ht;
 }
 
-KeyValuePair *HashTableEq_O::searchTable_no_read_lock(T_sp key, cl_index index) {
+KeyValuePair* HashTableEq_O::searchTable_no_read_lock(T_sp key, cl_index index) {
   for (size_t cur = index, curEnd(this->_Table.size()); cur < curEnd; ++cur) {
-    KeyValuePair &entry = this->_Table[cur];
+    KeyValuePair& entry = this->_Table[cur];
     if (entry._Key == key)
       return &entry;
     if (entry._Key.no_keyp())
       goto NOT_FOUND;
   }
   for (size_t cur = 0, curEnd(index); cur < curEnd; ++cur) {
-    KeyValuePair &entry = this->_Table[cur];
+    KeyValuePair& entry = this->_Table[cur];
     if (entry._Key == key)
       return &entry;
     if (entry._Key.no_keyp())
@@ -93,7 +93,7 @@ NOT_FOUND:
 
 bool HashTableEq_O::keyTest(T_sp entryKey, T_sp searchKey) const { return cl__eq(entryKey, searchKey); }
 
-gc::Fixnum HashTableEq_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator &hg) const {
+gc::Fixnum HashTableEq_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator& hg) const {
   HashTable_O::sxhash_eq(hg, obj);
   return hg.hashBound(bound);
 }

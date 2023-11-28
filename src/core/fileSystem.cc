@@ -50,7 +50,7 @@ THE SOFTWARE.
 #include <string>
 
 namespace boost {
-void assertion_failed_msg(char const *expr, char const *msg, char const *function, char const *file, long line) {
+void assertion_failed_msg(char const* expr, char const* msg, char const* function, char const* file, long line) {
   THROW_HARD_ERROR("boost::assertion_failed_msg was called with expr[{}] msg[{}] function[{}] file[{}] line[{}]", expr, msg,
                    function, file, line);
 }
@@ -106,11 +106,11 @@ CL_DEFUN T_mv cl__ensure_directories_exist(T_sp pathspec) {
   return (Values(pathspec, _lisp->_true()));
 }
 
-Path_O::Path_O(Path_O const &other) : Base(other) { this->_Path = other._Path; }
+Path_O::Path_O(Path_O const& other) : Base(other) { this->_Path = other._Path; }
 
 void Path_O::initialize() { this->Base::initialize(); }
 
-Path_sp Path_O::create(const string &path) {
+Path_sp Path_O::create(const string& path) {
   auto op = gctools::GC<Path_O>::allocate_with_default_constructor();
   op->setPathFromString(path);
   return op;
@@ -142,10 +142,10 @@ Path_mv af_makePath(List_sp args) {
   return (Values(me));
 }
 
-void Path_O::sxhash_(HashGenerator &hg) const {
+void Path_O::sxhash_(HashGenerator& hg) const {
 
   string ts = this->_Path._value.string();
-  for (char const &c : ts)
+  for (char const& c : ts)
     if (!(hg.addValue(c)))
       return;
 }
@@ -162,14 +162,14 @@ CL_DEFMETHOD Integer_sp Path_O::last_write_time() const {
 #endif
 
 CL_LISPIFY_NAME("path-append");
-CL_DEFMETHOD Path_sp Path_O::path_append(string const &pp) {
+CL_DEFMETHOD Path_sp Path_O::path_append(string const& pp) {
 
   LOG("Appending string[{}] to the path", pp);
   this->_Path._value /= pp;
   return this->sharedThis<Path_O>();
 }
 
-void Path_O::setPath(const std::filesystem::path &path) { this->_Path = path; }
+void Path_O::setPath(const std::filesystem::path& path) { this->_Path = path; }
 
 CL_LISPIFY_NAME("path-absolute");
 CL_DEFMETHOD Path_sp Path_O::absolute() const {
@@ -188,7 +188,7 @@ CL_DEFMETHOD Path_sp Path_O::copyPath() const {
 }
 
 CL_LISPIFY_NAME("setPathFromString");
-CL_DEFMETHOD void Path_O::setPathFromString(const string &pth) {
+CL_DEFMETHOD void Path_O::setPathFromString(const string& pth) {
   std::filesystem::path p(pth);
   this->_Path._value = p;
 }
@@ -222,7 +222,7 @@ CL_DEFMETHOD string Path_O::stem() { return this->_Path._value.stem().string(); 
 CL_LISPIFY_NAME("extension");
 CL_DEFMETHOD string Path_O::extension() { return this->_Path._value.extension().string(); }
 
-void Path_O::appendToExtension(string const &str) {
+void Path_O::appendToExtension(string const& str) {
 
   stringstream newExtension;
   newExtension << this->extension() << str;
@@ -230,7 +230,7 @@ void Path_O::appendToExtension(string const &str) {
 }
 
 CL_LISPIFY_NAME("replaceExtension");
-CL_DEFMETHOD Path_sp Path_O::replaceExtension(string const &str) {
+CL_DEFMETHOD Path_sp Path_O::replaceExtension(string const& str) {
 
   //	std::filesystem::path newExt(str);
   this->_Path._value.replace_extension(str);
@@ -280,7 +280,7 @@ void DirectoryIterator_O::setupCurrentIterator() {
   delete (this->_CurrentIterator._value);
   try {
     this->_CurrentIterator._value = new std::filesystem::directory_iterator(this->_Path->getPath());
-  } catch (std::filesystem::filesystem_error &err) {
+  } catch (std::filesystem::filesystem_error& err) {
     SIMPLE_ERROR("{}", err.what());
   }
 }
@@ -335,7 +335,7 @@ void RecursiveDirectoryIterator_O::setupCurrentIterator() {
   delete (this->_CurrentIterator._value);
   try {
     this->_CurrentIterator._value = new std::filesystem::recursive_directory_iterator(this->_Path->getPath());
-  } catch (std::filesystem::filesystem_error &err) {
+  } catch (std::filesystem::filesystem_error& err) {
     SIMPLE_ERROR("{}", err.what());
   }
 }
@@ -371,7 +371,7 @@ RecursiveDirectoryIterator_O::~RecursiveDirectoryIterator_O() { delete this->_Cu
 
 void DirectoryEntry_O::initialize() { this->Base::initialize(); }
 
-void DirectoryEntry_O::setEntry(const std::filesystem::directory_entry &entry) {
+void DirectoryEntry_O::setEntry(const std::filesystem::directory_entry& entry) {
   delete this->_Entry;
   this->_Entry = new std::filesystem::directory_entry(entry);
 }
@@ -403,7 +403,7 @@ DirectoryEntry_O::~DirectoryEntry_O() { delete this->_Entry; }
 
 void FileStatus_O::initialize() { this->Base::initialize(); }
 
-void FileStatus_O::setFileStatus(const std::filesystem::file_status &fs) { this->_FileStatus = fs; }
+void FileStatus_O::setFileStatus(const std::filesystem::file_status& fs) { this->_FileStatus = fs; }
 
 CL_LISPIFY_NAME("exists");
 CL_DEFMETHOD bool FileStatus_O::exists() { return std::filesystem::exists(this->_FileStatus); }
@@ -464,14 +464,14 @@ Pathname_sp getcwd(bool change_d_p_d) {
 Pathname_sp homedirPathname(T_sp tuser) {
   int i;
   SimpleBaseString_sp namestring;
-  const char *h;
+  const char* h;
   if (cl__stringp(tuser)) {
     String_sp user = gc::As_unsafe<String_sp>(tuser);
 #ifdef HAVE_PWD_H
-    struct passwd *pwent = NULL;
+    struct passwd* pwent = NULL;
 #endif
     std::string users = user->get_std_string();
-    const char *p = users.c_str();
+    const char* p = users.c_str();
     i = user->length();
     if (i > 0 && *p == '~') {
       p++;

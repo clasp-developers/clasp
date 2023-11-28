@@ -72,30 +72,30 @@ using namespace clbind;
 #include <clasp/clbind/clbind.h>
 
 namespace asttooling {
-core::T_sp mostDerivedDecl(const clang::Decl *cd);
-core::T_sp mostDerivedStmt(const clang::Stmt *x);
-core::T_sp mostDerivedType(const clang::Type *x);
+core::T_sp mostDerivedDecl(const clang::Decl* cd);
+core::T_sp mostDerivedStmt(const clang::Stmt* x);
+core::T_sp mostDerivedType(const clang::Type* x);
 }; // namespace asttooling
 
 namespace translate {
 
 #define DECL(_T_, _ignore_)                                                                                                        \
-  template <> struct to_object<clang::_T_##Decl *> {                                                                               \
-    static core::T_sp convert(clang::_T_##Decl *p) { return asttooling::mostDerivedDecl(p); }                                      \
+  template <> struct to_object<clang::_T_##Decl*> {                                                                                \
+    static core::T_sp convert(clang::_T_##Decl* p) { return asttooling::mostDerivedDecl(p); }                                      \
   };
 #include <clang/AST/DeclNodes.inc>
 #undef DECL
 
 #define STMT(_T_, _ignore_)                                                                                                        \
-  template <> struct to_object<clang::_T_ *> {                                                                                     \
-    static core::T_sp convert(clang::_T_ *p) { return asttooling::mostDerivedStmt(p); }                                            \
+  template <> struct to_object<clang::_T_*> {                                                                                      \
+    static core::T_sp convert(clang::_T_* p) { return asttooling::mostDerivedStmt(p); }                                            \
   };
 #include <clang/AST/StmtNodes.inc>
 #undef STMT
 
 #define TYPE(_T_, _ignore_)                                                                                                        \
-  template <> struct to_object<clang::_T_##Type *> {                                                                               \
-    static core::T_sp convert(clang::_T_##Type *p) { return asttooling::mostDerivedType(p); }                                      \
+  template <> struct to_object<clang::_T_##Type*> {                                                                                \
+    static core::T_sp convert(clang::_T_##Type* p) { return asttooling::mostDerivedType(p); }                                      \
   };
 #define ABSTRACT_TYPE(_C_, _B_) TYPE(_C_, _B_)
 #define NON_CANONICAL_TYPE(_C_, _B_) TYPE(_C_, _B_)
@@ -118,24 +118,24 @@ typedef clbind::Wrapper<clang::TemplateName, std::unique_ptr<clang::TemplateName
 
 namespace asttooling {
 
-template <typename T, typename B> core::T_sp cast_decl(clang::Decl *d) {
-  if (T *x = dyn_cast<T>(d)) {
-    return clbind::Wrapper<T, T *>::make_wrapper(x, reg::registered_class<T>::id);
+template <typename T, typename B> core::T_sp cast_decl(clang::Decl* d) {
+  if (T* x = dyn_cast<T>(d)) {
+    return clbind::Wrapper<T, T*>::make_wrapper(x, reg::registered_class<T>::id);
   }
   SIMPLE_ERROR("Could not cast Decl to known Decl");
 }
 
-template <typename T> core::T_sp cast_stmt(clang::Stmt *d) {
-  T *x = llvm::cast<T>(d);
-  return clbind::Wrapper<T, T *>::make_wrapper(x, reg::registered_class<T>::id);
+template <typename T> core::T_sp cast_stmt(clang::Stmt* d) {
+  T* x = llvm::cast<T>(d);
+  return clbind::Wrapper<T, T*>::make_wrapper(x, reg::registered_class<T>::id);
 }
 
-core::T_sp mostDerivedDecl(const clang::Decl *cd) {
+core::T_sp mostDerivedDecl(const clang::Decl* cd) {
   if (!cd)
     return nil<core::T_O>();
-  clang::Decl *d = const_cast<clang::Decl *>(cd);
+  clang::Decl* d = const_cast<clang::Decl*>(cd);
   if (!d) {
-    SIMPLE_ERROR("Could not downcast clang::Decl @{} to most derived object", (void *)(cd));
+    SIMPLE_ERROR("Could not downcast clang::Decl @{} to most derived object", (void*)(cd));
   }
   switch (d->getKind()) {
 #undef NAMED
@@ -154,12 +154,12 @@ core::T_sp mostDerivedDecl(const clang::Decl *cd) {
   SIMPLE_ERROR("Could not cast Decl");
 };
 
-core::T_sp mostDerivedStmt(const clang::Stmt *x) {
+core::T_sp mostDerivedStmt(const clang::Stmt* x) {
   if (!x)
     return nil<core::T_O>();
-  clang::Stmt *s = const_cast<clang::Stmt *>(x);
+  clang::Stmt* s = const_cast<clang::Stmt*>(x);
   if (!s) {
-    SIMPLE_ERROR("Could not downcast clang::Stmt @{} to most derived object", (void *)(x));
+    SIMPLE_ERROR("Could not downcast clang::Stmt @{} to most derived object", (void*)(x));
   }
 
 #define STMT(_C_, _ignore_)                                                                                                        \
@@ -180,17 +180,17 @@ core::T_sp mostDerivedStmt(const clang::Stmt *x) {
   SIMPLE_ERROR("Could not cast Stmt");
 };
 
-template <typename T> core::T_sp cast_type(clang::Type *d) {
-  T *x = llvm::cast<T>(d);
-  return clbind::Wrapper<T, T *>::make_wrapper(x, reg::registered_class<T>::id);
+template <typename T> core::T_sp cast_type(clang::Type* d) {
+  T* x = llvm::cast<T>(d);
+  return clbind::Wrapper<T, T*>::make_wrapper(x, reg::registered_class<T>::id);
 }
 
-core::T_sp mostDerivedType(const clang::Type *x) {
+core::T_sp mostDerivedType(const clang::Type* x) {
   if (!x)
     return nil<core::T_O>();
-  clang::Type *s = const_cast<clang::Type *>(x);
+  clang::Type* s = const_cast<clang::Type*>(x);
   if (!s) {
-    SIMPLE_ERROR("Could not downcast clang::Type @{} to most derived object", (void *)(x));
+    SIMPLE_ERROR("Could not downcast clang::Type @{} to most derived object", (void*)(x));
   }
   switch (s->getTypeClass()) {
     //
@@ -225,8 +225,8 @@ core::T_sp mostDerivedType(const clang::Type *x) {
 }; // namespace asttooling
 
 namespace asttooling {
-core::T_sp af_getAsCXXRecordDecl(clang::Type *tp) {
-  const clang::CXXRecordDecl *declp = tp->getAsCXXRecordDecl();
+core::T_sp af_getAsCXXRecordDecl(clang::Type* tp) {
+  const clang::CXXRecordDecl* declp = tp->getAsCXXRecordDecl();
   if (declp) {
     return mostDerivedDecl(declp);
   }
@@ -244,15 +244,15 @@ __attribute__((optnone)) CL_DEFUN void cast__dump(core::T_sp obj, core::T_sp str
   core::WrappedPointer_sp wp_node = gc::As<core::WrappedPointer_sp>(obj);
   //  printf("%s:%d:%s About to try and cast wp_node id: %lu to %lu \n", __FILE__, __LINE__, __FUNCTION__, wp_node->classId(),
   //  reg::registered_class<clang::Decl>::id);
-  if (clang::Decl *decl = wp_node->castOrNull<clang::Decl>()) {
+  if (clang::Decl* decl = wp_node->castOrNull<clang::Decl>()) {
     decl->dump(ostream);
-  } else if (clang::Stmt *stmt = wp_node->castOrNull<clang::Stmt>()) {
+  } else if (clang::Stmt* stmt = wp_node->castOrNull<clang::Stmt>()) {
     clang::ASTDumper P(ostream, /*ShowColors=*/false);
     P.Visit(stmt);
-  } else if (clang::Type *type = wp_node->castOrNull<clang::Type>()) {
+  } else if (clang::Type* type = wp_node->castOrNull<clang::Type>()) {
     clang::ASTDumper P(ostream, /*ShowColors=*/false);
     P.Visit(type);
-  } else if (clang::QualType *qtype = wp_node->castOrNull<clang::QualType>()) {
+  } else if (clang::QualType* qtype = wp_node->castOrNull<clang::QualType>()) {
     clang::ASTDumper P(ostream, /*ShowColors=*/false);
     P.Visit(*qtype);
   } else {
@@ -268,7 +268,7 @@ CL_DEFUN clang::QualType cast__makeQualTypeDefault() {
 };
 
 DOCGROUP(clasp);
-CL_DEFUN clang::QualType cast__makeQualType(clang::Type *ty) {
+CL_DEFUN clang::QualType cast__makeQualType(clang::Type* ty) {
   clang::QualType qt(ty, 0);
   return qt;
 };
@@ -280,12 +280,12 @@ DOCGROUP(clasp);
 CL_DEFUN bool cast__isCanonical(clang::QualType qt) { return qt.isCanonical(); }
 
 DOCGROUP(clasp);
-CL_DEFUN bool cast__isStaticLocal(clang::VarDecl *vd) { return vd->isStaticLocal(); }
+CL_DEFUN bool cast__isStaticLocal(clang::VarDecl* vd) { return vd->isStaticLocal(); }
 
 DOCGROUP(clasp);
 CL_DEFUN clang::QualType cast__getCanonicalType(clang::QualType qt) { return qt.getCanonicalType(); }
 
-void af_getNameForDiagnostic(clang::ClassTemplateSpecializationDecl *decl, core::T_sp stream, clang::LangOptions &langOps,
+void af_getNameForDiagnostic(clang::ClassTemplateSpecializationDecl* decl, core::T_sp stream, clang::LangOptions& langOps,
                              bool qualified) {
   string str;
   llvm::raw_string_ostream ostr(str);
@@ -294,7 +294,7 @@ void af_getNameForDiagnostic(clang::ClassTemplateSpecializationDecl *decl, core:
   clasp_write_characters(str.c_str(), str.size(), stream);
 };
 
-core::T_sp af_constant_array_get_size(clang::ConstantArrayType *cat) {
+core::T_sp af_constant_array_get_size(clang::ConstantArrayType* cat) {
   llvm::APInt size = cat->getSize();
   llvm::SmallString<40> svi;
   size.toString(svi, 10, true, false);
@@ -303,7 +303,7 @@ core::T_sp af_constant_array_get_size(clang::ConstantArrayType *cat) {
 
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp cast__getTypePtrOrNull(clang::QualType qt) {
-  const clang::Type *tp = qt.getTypePtrOrNull();
+  const clang::Type* tp = qt.getTypePtrOrNull();
   if (tp) {
     return asttooling::mostDerivedType(tp);
   }
@@ -321,18 +321,18 @@ CLBIND_TRANSLATE_SYMBOL_TO_ENUM(clang::AccessSpecifier, asttooling::_sym_STARcla
 
 namespace asttooling {
 
-llvm::APSInt getAsIntegral(clang::TemplateArgument *arg) { return arg->getAsIntegral(); }
+llvm::APSInt getAsIntegral(clang::TemplateArgument* arg) { return arg->getAsIntegral(); }
 
-bool isIntegerType(clang::Type *ty) { return ty->isIntegerType(); }
+bool isIntegerType(clang::Type* ty) { return ty->isIntegerType(); }
 
-QualType getElementType(clang::ArrayType *array_type) { return array_type->getElementType(); }
+QualType getElementType(clang::ArrayType* array_type) { return array_type->getElementType(); }
 
-QualType getInnerType(clang::ParenType *paren_type) { return paren_type->getInnerType(); }
+QualType getInnerType(clang::ParenType* paren_type) { return paren_type->getInnerType(); }
 
-clang::QualType getPointeeType(clang::Type *type) {
-  if (auto *ptr = llvm::dyn_cast<clang::PointerType>(type)) {
+clang::QualType getPointeeType(clang::Type* type) {
+  if (auto* ptr = llvm::dyn_cast<clang::PointerType>(type)) {
     return ptr->getPointeeType();
-  } else if (auto *mptr = llvm::dyn_cast<clang::MemberPointerType>(type)) {
+  } else if (auto* mptr = llvm::dyn_cast<clang::MemberPointerType>(type)) {
     return mptr->getPointeeType();
   }
   SIMPLE_ERROR("getPointeeType only accepts PointerType and MemberPointerType");
@@ -343,7 +343,7 @@ void initialize_astExpose() {
       gc::As<core::Package_sp>(_lisp->findPackage(ClangAstPkg)); //, {"CAST"}, {}); //{"CAST"},{"CL","CORE","AST_TOOLING"});
   pkg->shadow(core::SimpleBaseString_O::make("TYPE"));
   clbind::package_ pkgg(ClangAstPkg);
-  clbind::scope_ &m = pkgg.scope();
+  clbind::scope_& m = pkgg.scope();
   clbind::class_<clang::Decl> cl(m, "Decl");
   cl.def("getGlobalID", &clang::Decl::getGlobalID)
       .def("isImplicit", &clang::Decl::isImplicit)

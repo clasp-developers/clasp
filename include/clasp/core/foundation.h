@@ -50,30 +50,30 @@ THE SOFTWARE.
 #include <clasp/core/core.h>
 
 namespace core {
-[[noreturn]] void lisp_throwLispError(const std::string &str);
+[[noreturn]] void lisp_throwLispError(const std::string& str);
 [[noreturn]] void lisp_nan_error();
-[[noreturn]] void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const string &fmt);
-[[noreturn]] void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const std::string &str);
-void lisp_debugLogWrite(const char *fileName, const char *funcName, uint lineNumber, uint column, const std::string &message,
+[[noreturn]] void lisp_error_simple(const char* functionName, const char* fileName, int lineNumber, const string& fmt);
+[[noreturn]] void lisp_error_simple(const char* functionName, const char* fileName, int lineNumber, const std::string& str);
+void lisp_debugLogWrite(const char* fileName, const char* funcName, uint lineNumber, uint column, const std::string& message,
                         uint debugFlags = DEBUG_CPP_FUNCTION);
 }; // namespace core
 
 template <typename Char> struct fmt::formatter<core::T_sp, Char> : fmt::formatter<fmt::basic_string_view<Char>> {
-  template <typename FormatContext> auto format(const core::T_sp &o, FormatContext &ctx) const -> typename FormatContext::iterator {
+  template <typename FormatContext> auto format(const core::T_sp& o, FormatContext& ctx) const -> typename FormatContext::iterator {
     return fmt::formatter<fmt::basic_string_view<Char>>::format(_rep_(o), ctx);
   }
 };
 
 template <typename Char> struct fmt::formatter<core::Symbol_sp, Char> : fmt::formatter<fmt::basic_string_view<Char>> {
   template <typename FormatContext>
-  auto format(const core::Symbol_sp &o, FormatContext &ctx) const -> typename FormatContext::iterator {
+  auto format(const core::Symbol_sp& o, FormatContext& ctx) const -> typename FormatContext::iterator {
     return fmt::formatter<fmt::basic_string_view<Char>>::format(_rep_(o), ctx);
   }
 };
 
 template <> struct fmt::formatter<gctools::GCStampEnum> : fmt::formatter<int> {
   template <typename FormatContext>
-  auto format(const gctools::GCStampEnum &o, FormatContext &ctx) const -> typename FormatContext::iterator {
+  auto format(const gctools::GCStampEnum& o, FormatContext& ctx) const -> typename FormatContext::iterator {
     return fmt::formatter<int>::format((int)o, ctx);
   }
 };

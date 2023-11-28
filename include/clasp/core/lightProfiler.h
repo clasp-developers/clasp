@@ -39,7 +39,7 @@ class LightProfiler;
 
 class LightTimer {
 private:
-  LightProfiler *_Profiler;
+  LightProfiler* _Profiler;
   uint _Id;
   bool _IsOn;
   double _AccumulatedTime;
@@ -52,8 +52,8 @@ private:
   clock_t _StartTime;
 
 public:
-  LightTimer(LightProfiler *profiler = NULL);
-  void setup(uint id, const string &description, uint parent) {
+  LightTimer(LightProfiler* profiler = NULL);
+  void setup(uint id, const string& description, uint parent) {
     this->_Id = id;
     this->_Description = description;
     this->_Parent = parent;
@@ -68,7 +68,7 @@ public:
   uint getClockResolutionFails() { return this->_ClockResolutionFails; };
   uint getChild() { return this->_Child; };
   clock_t getStartTime() { return this->_StartTime; };
-  void setStartTime(const clock_t &t) { this->_StartTime = t; };
+  void setStartTime(const clock_t& t) { this->_StartTime = t; };
 
   void start();
   void stop();
@@ -113,7 +113,7 @@ public:
 
   double getLongestTime();
 
-  uint createTimer(uint parent, const string &name);
+  uint createTimer(uint parent, const string& name);
   uint createEventCounter(string name);
 
   void pushTimerStates();
@@ -121,8 +121,8 @@ public:
 
   void disableMessages();
 
-  LightTimer &timer(uint c);
-  LightEventCounter &eventCounter(uint c);
+  LightTimer& timer(uint c);
+  LightEventCounter& eventCounter(uint c);
 
   void dumpChildTimers(uint level, uint top);
   void dump();

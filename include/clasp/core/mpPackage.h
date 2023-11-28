@@ -51,20 +51,20 @@ extern std::atomic<size_t> global_LastBindingIndex;
 
 #ifdef CLASP_THREADS
 template <typename T> struct RAIILock {
-  RAIILock(T &m) : _Mutex(m) { this->_Mutex.lock(); };
+  RAIILock(T& m) : _Mutex(m) { this->_Mutex.lock(); };
   ~RAIILock() { this->_Mutex.unlock(); }
-  T &_Mutex;
+  T& _Mutex;
 };
 #endif
 
 namespace mp {
-inline core::T_sp atomic_get_and_set_to_Nil(mp::SpinLock &spinlock, core::T_sp &slot) noexcept {
+inline core::T_sp atomic_get_and_set_to_Nil(mp::SpinLock& spinlock, core::T_sp& slot) noexcept {
   mp::SafeSpinLock l(spinlock);
   core::T_sp old = slot;
   slot = nil<core::T_O>();
   return old;
 }
-inline void atomic_push(mp::SpinLock &spinlock, core::T_sp &slot, core::T_sp object) {
+inline void atomic_push(mp::SpinLock& spinlock, core::T_sp& slot, core::T_sp object) {
   core::Cons_sp cons = core::Cons_O::create(object, nil<core::T_O>());
   mp::SafeSpinLock l(spinlock);
   core::T_sp car = slot;
@@ -130,7 +130,7 @@ public:
   core::List_sp _ReturnValuesList;
   bool _Aborted;
   core::T_sp _AbortCondition;
-  core::ThreadLocalState *_ThreadInfo;
+  core::ThreadLocalState* _ThreadInfo;
   std::atomic<ProcessPhase> _Phase;
   dont_expose<Mutex> _SuspensionMutex;
   dont_expose<ConditionVariable> _SuspensionCV;
@@ -139,8 +139,8 @@ public:
   dont_expose<pthread_t> _TheThread;
   // Need to match fields in the two GC's
 #if defined(USE_BOEHM) || defined(USE_MMTK)
-  dont_expose<void *> thr_o;
-  dont_expose<void *> root;
+  dont_expose<void*> thr_o;
+  dont_expose<void*> root;
 #elif defined(USE_MPS)
   dont_expose<mps_thr_t> thr_o;
   dont_expose<mps_root_t> root;
@@ -165,8 +165,8 @@ public:
     if (result != 0)
       return result;
     this->_Phase = Active;
-    ThreadStartInfo *info = new ThreadStartInfo(this->_UniqueID); // delete this in start_thread
-    result = pthread_create(&this->_TheThread._value, &attr, start_thread, (void *)info);
+    ThreadStartInfo* info = new ThreadStartInfo(this->_UniqueID); // delete this in start_thread
+    result = pthread_create(&this->_TheThread._value, &attr, start_thread, (void*)info);
     pthread_attr_destroy(&attr);
     return result;
   }
@@ -204,7 +204,7 @@ public:
   core::T_sp _Owner;
   dont_expose<Mutex> _Mutex;
   Mutex_O(core::T_sp name, bool recursive) : _Name(name), _Owner(nil<T_O>()), _Mutex(Mutex(lisp_nameword(name), recursive)){};
-  ~Mutex_O() { printf("%s:%d:%s Finalizing Mutex_O @ %p\n", __FILE__, __LINE__, __FUNCTION__, (void *)this); }
+  ~Mutex_O() { printf("%s:%d:%s Finalizing Mutex_O @ %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)this); }
   bool lock(bool waitp) {
     bool locked = this->_Mutex._value.lock(waitp);
     if (locked)
@@ -261,7 +261,7 @@ public:
   void setLockNames(core::SimpleBaseString_sp readLockName, core::SimpleBaseString_sp writeLockName);
   string __repr__() const override;
 
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup) {
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
     if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
       //        printf("%s:%d:%s About to initialize an mp::SharedMutex for a Package_O object\n", __FILE__, __LINE__, __FUNCTION__
       //        );

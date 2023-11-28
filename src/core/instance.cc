@@ -284,7 +284,7 @@ T_sp Instance_O::instanceSig() const {
   } else {
     ssig << "UNDEFINED ";
   }
-  printf("\nMLOG INSTANCE-SIG of Instance %p \n", (void *)(this));
+  printf("\nMLOG INSTANCE-SIG of Instance %p \n", (void*)(this));
 #endif
   return ((rack()->_Sig));
 }
@@ -304,7 +304,7 @@ T_sp Instance_O::instanceRef(size_t idx) const {
   client_validate(rack());
 #endif
 #if DEBUG_CLOS >= 2
-  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), rack()[idx]->__repr__().c_str());
+  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void*)(this), rack()[idx]->__repr__().c_str());
 #endif
   T_sp val = low_level_instanceRef(rack(), idx);
 #if 0
@@ -316,7 +316,7 @@ T_sp Instance_O::instanceRef(size_t idx) const {
 }
 T_sp Instance_O::instanceSet(size_t idx, T_sp val) {
 #if DEBUG_CLOS >= 2
-  printf("\nMLOG SI-INSTANCE-SET[%d] of Instance %p to val: %s\n", idx, (void *)(this), val->__repr__().c_str());
+  printf("\nMLOG SI-INSTANCE-SET[%d] of Instance %p to val: %s\n", idx, (void*)(this), val->__repr__().c_str());
 #endif
   low_level_instanceSet(rack(), idx, val);
 #ifdef DEBUG_GUARD_VALIDATE
@@ -369,7 +369,7 @@ bool Instance_O::equalp(T_sp obj) const {
 }
 
 // also only for structure-objects.
-void Instance_O::sxhash_equalp(HashGenerator &hg) const {
+void Instance_O::sxhash_equalp(HashGenerator& hg) const {
   if (this->_Class->_Class != _lisp->_Roots._TheStructureClass) {
     HashTable_O::sxhash_eq(hg, this->asSmartPtr());
     return;
@@ -465,10 +465,10 @@ void Instance_O::lowLevel_calculateClassPrecedenceList() {
   class TopoSortSetup : public KeyValueMapper {
   private:
     HashTable_sp supers;
-    vector<list<int>> *graphP;
+    vector<list<int>>* graphP;
 
   public:
-    TopoSortSetup(HashTable_sp asupers, vector<list<int>> *gP) : supers(asupers), graphP(gP){};
+    TopoSortSetup(HashTable_sp asupers, vector<list<int>>* gP) : supers(asupers), graphP(gP){};
     virtual bool mapKeyValue(T_sp key, T_sp value) {
       Fixnum_sp fnValue(gc::As<Fixnum_sp>(value));
       int mcIndex = unbox_fixnum(fnValue);
@@ -633,14 +633,14 @@ void Instance_O::__setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp clas
 
 string Instance_O::dumpInfo() {
   stringstream ss;
-  ss << fmt::format("this.instanceClassName: {} @ {}", this->instanceClassName(), (void *)this) << std::endl;
+  ss << fmt::format("this.instanceClassName: {} @ {}", this->instanceClassName(), (void*)this) << std::endl;
   ss << "_FullName[" << this->_className()->fullName() << "]" << std::endl;
-  ss << fmt::format("    _Class = {}  this._Class.instanceClassName()={}\n", (void *)&*(this->__class()),
+  ss << fmt::format("    _Class = {}  this._Class.instanceClassName()={}\n", (void*)&*(this->__class()),
                     this->__class()->instanceClassName());
   for (auto cc : this->directSuperclasses()) {
     ss << "Base class: " << gc::As<Instance_sp>(oCar(cc))->instanceClassName() << std::endl;
   }
-  ss << fmt::format("this.instanceCreator* = {}\n", (void *)(&*this->CLASS_get_creator()));
+  ss << fmt::format("this.instanceCreator* = {}\n", (void*)(&*this->CLASS_get_creator()));
   return ss.str();
 }
 
@@ -721,7 +721,7 @@ CL_DEFUN T_sp core__class_stamp_for_instances(Instance_sp c) {
 
 namespace core {
 CL_DEFUN T_sp core__rack_stamp(core::T_sp obj) {
-  General_O *client_ptr = gctools::untag_general<General_O *>((General_O *)obj.raw_());
+  General_O* client_ptr = gctools::untag_general<General_O*>((General_O*)obj.raw_());
   uintptr_t stamp = (uintptr_t)(llvmo::template_read_rack_stamp(client_ptr));
   // core::clasp_write_string(fmt::format("{}:{}:{} stamp = {}u\n", __FILE__, __LINE__, __FUNCTION__, stamp ));
   T_sp result((gctools::Tagged)stamp);

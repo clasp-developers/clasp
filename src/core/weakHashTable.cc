@@ -48,20 +48,20 @@ double WeakKeyHashTable_O::rehash_threshold() { return this->_HashTable._RehashT
 T_sp WeakKeyHashTable_O::hash_table_test() { return cl::_sym_eq; }
 
 void WeakKeyHashTable_O::describe(T_sp stream) {
-  KeyBucketsType &keys = *this->_HashTable._Keys;
-  ValueBucketsType &values = *this->_HashTable._Values;
+  KeyBucketsType& keys = *this->_HashTable._Keys;
+  ValueBucketsType& values = *this->_HashTable._Values;
   stringstream ss;
   ss << fmt::format("WeakKeyHashTable   size: {}u\n", this->_HashTable.length());
-  ss << fmt::format("   keys memory range:  {}  - {} \n", (void *)&keys[0].rawRef_(),
-                    (void *)&keys[this->_HashTable.length()].rawRef_());
+  ss << fmt::format("   keys memory range:  {}  - {} \n", (void*)&keys[0].rawRef_(),
+                    (void*)&keys[this->_HashTable.length()].rawRef_());
   ss << fmt::format("   _HashTable.length = {}\n", keys.length());
   ss << fmt::format("   _HashTable.used = {}\n", keys.used());
   ss << fmt::format("   _HashTable.deleted = {}\n", keys.deleted());
   for (int i(0), iEnd(this->_HashTable.length()); i < iEnd; ++i) {
-    value_type &key = keys[i];
+    value_type& key = keys[i];
     stringstream sentry;
     sentry.width(3);
-    sentry << i << "  key.px@" << (void *)(&key.rawRef_()) << "  ";
+    sentry << i << "  key.px@" << (void*)(&key.rawRef_()) << "  ";
     if (!key) {
       sentry << "splatted";
     } else if (key.unboundp()) {
@@ -72,7 +72,7 @@ void WeakKeyHashTable_O::describe(T_sp stream) {
       // key.base_ref().nilp() ) {
       T_sp okey = key;
       sentry << _rep_(okey);
-      sentry << "@" << (void *)(key.raw_());
+      sentry << "@" << (void*)(key.raw_());
       sentry << "   -->   ";
       value_type val = values[i];
       if (val.same_as_keyP()) {
@@ -98,7 +98,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, deleted);
  */
 T_mv WeakKeyHashTable_O::gethash(T_sp key, T_sp defaultValue) { return this->_HashTable.gethash(key, defaultValue); }
 
-void WeakKeyHashTable_O::maphashLowLevel(std::function<void(T_sp, T_sp)> const &fn) { this->_HashTable.maphash(fn); }
+void WeakKeyHashTable_O::maphashLowLevel(std::function<void(T_sp, T_sp)> const& fn) { this->_HashTable.maphash(fn); }
 
 void WeakKeyHashTable_O::maphash(T_sp func) { this->_HashTable.maphashFn(func); }
 

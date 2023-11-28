@@ -42,14 +42,14 @@ class WeakPointer_O : public General_O {
   WeakPointer_O() : _Link(NULL), _Object(NULL){};
   WeakPointer_O(T_sp ptr) : _Link(ptr.raw_()), _Object(ptr.raw_()) {
 #ifdef USE_BOEHM
-    GC_general_register_disappearing_link((void **)&this->_Link, &*ptr);
+    GC_general_register_disappearing_link((void**)&this->_Link, &*ptr);
 #else
     SIMPLE_ERROR("WeakPointer_O not supported");
 #endif
   };
   ~WeakPointer_O() {
 #ifdef USE_BOEHM
-    GC_unregister_disappearing_link((void **)&this->_Link);
+    GC_unregister_disappearing_link((void**)&this->_Link);
 #else
     SIMPLE_ERROR("WeakPointer_O not supported");
 #endif
@@ -59,8 +59,8 @@ public:
   static WeakPointer_sp make(T_sp obj);
 
 public:
-  void *_Link; // Use a boehm disappearing link
-  void *_Object;
+  void* _Link; // Use a boehm disappearing link
+  void* _Object;
 
 public: // Functions here
   /*! Value of the reference to the object. If the object was destroyed then return nil. */

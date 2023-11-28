@@ -46,7 +46,7 @@ void LightEventCounter::recordCallAndProblem(bool prob) {
     this->_Problems++;
 }
 
-LightTimer::LightTimer(LightProfiler *profiler)
+LightTimer::LightTimer(LightProfiler* profiler)
     : _Profiler(profiler), _Id(0), _IsOn(false), _AccumulatedTime(0.0), _Calls(0), _ClockResolutionFails(0),
       _Parent(UndefinedUnsignedInt), _Sibling(UndefinedUnsignedInt), _Child(UndefinedUnsignedInt), _StartTime(0.0) {
 #ifdef DARWIN_CLOCK
@@ -64,7 +64,7 @@ LightTimer::LightTimer(LightProfiler *profiler)
 
 void LightTimer::addChild(uint childIndex) {
   HARD_ASSERT(this->_Profiler != NULL);
-  LightTimer &child = this->_Profiler->timer(childIndex);
+  LightTimer& child = this->_Profiler->timer(childIndex);
   child._Sibling = this->_Child;
   this->_Child = childIndex;
 }
@@ -110,7 +110,7 @@ uint LightProfiler::createEventCounter(string name) {
   return this->_EventCounters.size() - 1;
 }
 
-uint LightProfiler::createTimer(uint parent, const string &name) {
+uint LightProfiler::createTimer(uint parent, const string& name) {
   LightTimer child(this);
   ;
   if (this->_Timers.size() == 0) {
@@ -166,7 +166,7 @@ void LightProfiler::createTimers(uint num) {
 
 double LightProfiler::getLongestTime() {
   double max = 0.0;
-  for (auto &t : this->_Timers) {
+  for (auto& t : this->_Timers) {
     if (max < t.getAccumulatedTime()) {
       max = t.getAccumulatedTime();
     }
@@ -175,13 +175,13 @@ double LightProfiler::getLongestTime() {
 }
 
 void LightProfiler::resetAllTimers() {
-  for (auto &t : this->_Timers) {
+  for (auto& t : this->_Timers) {
     t.reset();
   }
 }
 
 void LightProfiler::stopAllTimers() {
-  for (auto &t : this->_Timers) {
+  for (auto& t : this->_Timers) {
     t.stop();
   }
 }
@@ -296,13 +296,13 @@ void LightProfiler::popTimerStates() {
   this->_TimerStateStack.erase(this->_TimerStateStack.end() - 1);
 }
 
-LightEventCounter &LightProfiler::eventCounter(uint c) {
+LightEventCounter& LightProfiler::eventCounter(uint c) {
 
   ASSERT_lessThan(c, this->_EventCounters.size());
   return this->_EventCounters[c];
 }
 
-LightTimer &LightProfiler::timer(uint c) {
+LightTimer& LightProfiler::timer(uint c) {
 
   ASSERT_lessThan(c, this->_Timers.size());
   return this->_Timers[c];

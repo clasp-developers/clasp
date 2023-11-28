@@ -67,7 +67,7 @@ public: // ctor/dtor for classes with shared virtual base
       this->_Producer._value = temp_gen; // this->_Producer.seed(0);
     }
   };
-  explicit RandomState_O(const RandomState_O &state) { this->_Producer._value = state._Producer._value; };
+  explicit RandomState_O(const RandomState_O& state) { this->_Producer._value = state._Producer._value; };
   virtual ~RandomState_O() {}
 
   CL_DEFMETHOD std::string random_state_get() const {
@@ -75,7 +75,7 @@ public: // ctor/dtor for classes with shared virtual base
     ss << this->_Producer._value;
     return ss.str();
   }
-  CL_DEFMETHOD RandomState_sp random_state_set(const std::string &s) {
+  CL_DEFMETHOD RandomState_sp random_state_set(const std::string& s) {
     stringstream ss(s);
     ss >> this->_Producer._value;
     return this->asSmartPtr();

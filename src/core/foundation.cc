@@ -88,7 +88,7 @@ THE SOFTWARE.
 namespace reg {
 
 typedef std::map<type_id, class_id> map_type;
-map_type *global_registered_ids_ptr = NULL;
+map_type* global_registered_ids_ptr = NULL;
 class_id global_next_id = 0;
 
 void dump_class_ids() {
@@ -97,10 +97,10 @@ void dump_class_ids() {
     return;
   }
   for (auto it : (*global_registered_ids_ptr)) {
-    const char *fnName = it.first.name();
+    const char* fnName = it.first.name();
     size_t length;
     int status;
-    char *ret = abi::__cxa_demangle(fnName, NULL, &length, &status);
+    char* ret = abi::__cxa_demangle(fnName, NULL, &length, &status);
     if (status == 0) {
       printf("  %s --> %lu : %s\n", ret, it.second, _rep_(lisp_classSymbolFromClassId(it.second)).c_str());
       delete ret;
@@ -112,7 +112,7 @@ void dump_class_ids() {
   }
 }
 
-class_id allocate_class_id(type_id const &cls) {
+class_id allocate_class_id(type_id const& cls) {
   //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
   if (global_registered_ids_ptr == NULL) {
     global_registered_ids_ptr = new map_type();
@@ -194,7 +194,7 @@ Instance_sp lisp_derivable_cxx_class() { return _lisp->_Roots._TheDerivableCxxCl
 Instance_sp lisp_clbind_cxx_class() { return _lisp->_Roots._TheClbindCxxClass; }
 
 /*! Convert valid objects to void*/
-void *lisp_to_void_ptr(T_sp o) {
+void* lisp_to_void_ptr(T_sp o) {
   if (gc::IsA<clasp_ffi::ForeignData_sp>(o)) {
     return gc::As_unsafe<clasp_ffi::ForeignData_sp>(o)->ptr();
   } else if (gc::IsA<Pointer_sp>(o)) {
@@ -204,7 +204,7 @@ void *lisp_to_void_ptr(T_sp o) {
 }
 
 /*! Convert void* to a ForeignData_O object */
-T_sp lisp_from_void_ptr(void *p) { return clasp_ffi::ForeignData_O::create(p); }
+T_sp lisp_from_void_ptr(void* p) { return clasp_ffi::ForeignData_O::create(p); }
 }; // namespace core
 
 namespace core {
@@ -214,24 +214,24 @@ CL_DEFUN void core__dump_class_ids() { reg::dump_class_ids(); }
 
 void lisp_nan_error() { SIMPLE_ERROR("Encountered a NAN value"); }
 
-void lisp_errorExpectedList(core::T_O *v) {
+void lisp_errorExpectedList(core::T_O* v) {
   T_sp tv((gctools::Tagged)v);
   TYPE_ERROR(tv, cl::_sym_list);
 }
 
-void lisp_errorIllegalDereference(void *v) { SIMPLE_ERROR("Tried to dereference px={}", v); }
+void lisp_errorIllegalDereference(void* v) { SIMPLE_ERROR("Tried to dereference px={}", v); }
 
-void lisp_errorDereferencedNonPointer(core::T_O *v) { SIMPLE_ERROR("Tried to dereference immediate value: {}", (void *)v); }
+void lisp_errorDereferencedNonPointer(core::T_O* v) { SIMPLE_ERROR("Tried to dereference immediate value: {}", (void*)v); }
 
 void lisp_errorDereferencedNil() { SIMPLE_ERROR("Tried to dereference nil"); }
 
 void lisp_errorDereferencedUnbound() { SIMPLE_ERROR("Tried to dereference unbound"); }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedTypeStampWtag(size_t to, core::T_O *objP) {
+DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedTypeStampWtag(size_t to, core::T_O* objP) {
   size_t expectedStamp = STAMP_UNSHIFT_WTAG(to);
 #ifdef DEBUG_RUNTIME
   // This is a really low level debug code appropriate when debugging the runtime
-  const char *expectedName = obj_name(expectedStamp);
+  const char* expectedName = obj_name(expectedStamp);
   printf("%s:%d:%s ----- Unexpected type error! ------\n", __FILE__, __LINE__, __FUNCTION__);
   printf(" EXPECTED stamp_wtag = %4lu name: %s\n", (size_t)to, expectedName);
   printf(" the actual object with tagged pointer %p has the header:\n", objP);
@@ -248,7 +248,7 @@ DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedTypeStampWtag(size_t to, core::T_O
   TYPE_ERROR(obj, expectedClassSymbol);
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expected_class_id, class_id given_class_id, core::T_O *objP) {
+DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expected_class_id, class_id given_class_id, core::T_O* objP) {
   if (expected_class_id >= _lisp->classSymbolsHolder().size()) {
     core::lisp_error_simple(
         __FUNCTION__, __FILE__, __LINE__,
@@ -259,7 +259,7 @@ DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expected_class_id, c
     core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__,
                             fmt::format("unexpected class_id for object {} (given_class_id {} / expected_class_id {}) could not "
                                         "lookup expected_class_id symbol",
-                                        (void *)objP, given_class_id, expected_class_id));
+                                        (void*)objP, given_class_id, expected_class_id));
   }
 
   if (given_class_id >= _lisp->classSymbolsHolder().size()) {
@@ -277,34 +277,34 @@ DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expected_class_id, c
   TYPE_ERROR(obj, expectedSym);
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastToFixnum(class_id from_typ, core::T_O *objP) {
+DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastToFixnum(class_id from_typ, core::T_O* objP) {
   class_id to_typ = reg::registered_class<core::Fixnum_I>::id;
   core::lisp_errorUnexpectedType(to_typ, from_typ, objP);
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O *objP) {
+DONT_OPTIMIZE_ALWAYS void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O* objP) {
   lisp_errorUnexpectedType(toType, fromType, objP);
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastStampWtag(size_t to, core::T_O *objP) {
+DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastStampWtag(size_t to, core::T_O* objP) {
   lisp_errorUnexpectedTypeStampWtag((size_t)to, objP);
   abort();
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromT_O(class_id toType, core::T_O *objP) {
+DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromT_O(class_id toType, core::T_O* objP) {
   class_id from_typ = reg::registered_class<core::T_O>::id;
   lisp_errorUnexpectedType(toType, from_typ, objP);
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromT_OToCons_O(core::T_O *objP) {
+DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromT_OToCons_O(core::T_O* objP) {
   class_id to_typ = reg::registered_class<core::Cons_O>::id;
   class_id from_typ = reg::registered_class<core::T_O>::id;
   lisp_errorUnexpectedType(to_typ, from_typ, objP);
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromSymbol_O(class_id toType, core::Symbol_O *objP) {
+DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromSymbol_O(class_id toType, core::Symbol_O* objP) {
   class_id from_typ = reg::registered_class<core::Symbol_O>::id;
-  lisp_errorUnexpectedType(toType, from_typ, reinterpret_cast<core::T_O *>(objP));
+  lisp_errorUnexpectedType(toType, from_typ, reinterpret_cast<core::T_O*>(objP));
 }
 
 DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedNil(class_id expectedTyp) {
@@ -324,7 +324,7 @@ DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedNil(class_id expectedTyp) {
 }; // namespace core
 namespace boost {
 using namespace core;
-void assertion_failed(char const *expr, char const *function, char const *file, long line) {
+void assertion_failed(char const* expr, char const* function, char const* file, long line) {
   THROW_HARD_ERROR("A BOOST assertion failed");
 }
 }; // namespace boost
@@ -334,7 +334,7 @@ namespace llvm_interface {
 ::llvm_interface::llvmAddSymbolCallbackType addSymbol = NULL;
 };
 
-NOINLINE void dbg_hook(const char *error) {
+NOINLINE void dbg_hook(const char* error) {
   // Do nothing
   // set a break point here to catch every error
   //
@@ -363,7 +363,7 @@ void lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(Symbol_sp classSymbol) {
 
 void lisp_defparameter(Symbol_sp sym, T_sp val) { sym->defparameter(val); }
 
-void lisp_write(const string &fmt, T_sp strm) { clasp_write_string(fmt, strm); }
+void lisp_write(const string& fmt, T_sp strm) { clasp_write_string(fmt, strm); }
 
 Symbol_sp lisp_symbolNil() { return nil<Symbol_O>(); }
 
@@ -394,7 +394,7 @@ CL_DEFUN String_sp core__lispify_name(String_sp name) {
 Convert strings that have the form pkg:name or pkg__name into a package name string and a symbol name string, run them through
 lispify_symbol_name and then recombine them as pkg:name.
 */
-void colon_split(const string &name, string &package_str, string &symbol_str) {
+void colon_split(const string& name, string& package_str, string& symbol_str) {
   std::size_t found = name.find(":");
   if (found != std::string::npos) {
     package_str = name.substr(0, found);
@@ -422,7 +422,7 @@ void colon_split(const string &name, string &package_str, string &symbol_str) {
 CL_LAMBDA("name &optional (package \"\")");
 CL_DOCSTRING(R"(Intern the package:name or name/package combination)");
 DOCGROUP(clasp);
-CL_DEFUN Symbol_sp core__magic_intern(const string &name, const string &package) {
+CL_DEFUN Symbol_sp core__magic_intern(const string& name, const string& package) {
   std::string pkg_sym = magic_name(name, package);
   std::string sym;
   std::string pkg;
@@ -434,7 +434,7 @@ CL_DEFUN Symbol_sp core__magic_intern(const string &name, const string &package)
 CL_LAMBDA("name");
 CL_DOCSTRING(R"(Disassemble and intern the package:name)");
 DOCGROUP(clasp);
-CL_DEFUN T_mv core__magic_disassemble_and_intern(const string &name) {
+CL_DEFUN T_mv core__magic_disassemble_and_intern(const string& name) {
   std::string sym;
   std::string pkg;
   colon_split(name, pkg, sym);
@@ -453,7 +453,7 @@ lispify_symbol_name and then recombine them as pkg:name. If package_name is not 
 signal an error. If the name has neither of the above forms then use the package_name to construct package_name:name after
 lispifying name and return that.
 */
-std::string magic_name(const std::string &name, const std::string &package_name) {
+std::string magic_name(const std::string& name, const std::string& package_name) {
   // printf("%s:%d magic_name -> %s\n", __FILE__, __LINE__, name.c_str());
   std::size_t found = name.find(":");
   if (found != std::string::npos) {
@@ -500,7 +500,7 @@ Convert strings that have the form pkg:name or pkg__name into a package name str
 run them through lispify_symbol_name and then recombine them as pkg:name.
 Then split them again (sorry) and return (values pkg:sym pkg sym).)dx")
 DOCGROUP(clasp);
-CL_DEFUN T_mv core__magic_name(const std::string &name, const std::string &package) {
+CL_DEFUN T_mv core__magic_name(const std::string& name, const std::string& package) {
   std::string pkg_sym = magic_name(name, package);
   std::string sym;
   std::string pkg;
@@ -508,7 +508,7 @@ CL_DEFUN T_mv core__magic_name(const std::string &name, const std::string &packa
   return Values(SimpleBaseString_O::make(pkg_sym), SimpleBaseString_O::make(pkg), SimpleBaseString_O::make(sym));
 };
 
-MultipleValues &lisp_multipleValues() {
+MultipleValues& lisp_multipleValues() {
   //	return &(_lisp->multipleValues());
   return my_thread->_MultipleValues;
 }
@@ -521,12 +521,12 @@ MultipleValues &lisp_multipleValues() {
 }
 #endif
 
-[[noreturn]] void errorFormatted(const string &msg) {
+[[noreturn]] void errorFormatted(const string& msg) {
   dbg_hook(msg.c_str());
   core__invoke_internal_debugger(nil<core::T_O>());
 }
 
-[[noreturn]] void errorFormatted(const char *msg) {
+[[noreturn]] void errorFormatted(const char* msg) {
   dbg_hook(msg);
   core__invoke_internal_debugger(nil<core::T_O>());
 }
@@ -541,17 +541,17 @@ string lisp_packageName(T_sp tpkg) {
   return pkg->packageName();
 }
 
-Symbol_sp lispify_intern_keyword(string const &name) {
+Symbol_sp lispify_intern_keyword(string const& name) {
   string lispName = lispify_symbol_name(name);
   return _lisp->internKeyword(lispName);
 }
 
-Symbol_sp lisp_upcase_intern(string const &name, string const &packageName) {
+Symbol_sp lisp_upcase_intern(string const& name, string const& packageName) {
   string lispName = stringUpper(name);
   return _lisp->intern(lispName, packageName);
 }
 
-Symbol_sp lisp_upcase_intern_export(string const &name, string const &packageName) {
+Symbol_sp lisp_upcase_intern_export(string const& name, string const& packageName) {
   Symbol_sp sym = lisp_upcase_intern(name, packageName);
   sym->exportYourself();
   return sym;
@@ -563,15 +563,15 @@ typedef enum { ignore, upperCaseAlpha } NextCharTest;
 
 template <typename Char> struct fmt::formatter<core::NextCharTest, Char> : fmt::formatter<fmt::basic_string_view<Char>> {
   template <typename FormatContext>
-  auto format(const core::NextCharTest &o, FormatContext &ctx) const -> typename FormatContext::iterator {
+  auto format(const core::NextCharTest& o, FormatContext& ctx) const -> typename FormatContext::iterator {
     return fmt::formatter<fmt::basic_string_view<Char>>::format(o == core::ignore ? "ignore" : "upperCaseAlpha", ctx);
   }
 };
 
 namespace core {
 
-bool lispify_match(const char *&cur, const char *match, NextCharTest nextCharTest = ignore) {
-  const char *ccur = cur;
+bool lispify_match(const char*& cur, const char* match, NextCharTest nextCharTest = ignore) {
+  const char* ccur = cur;
   while (*match) {
     if (*ccur == '\0')
       return false;
@@ -594,7 +594,7 @@ bool lispify_match(const char *&cur, const char *match, NextCharTest nextCharTes
   SIMPLE_ERROR("Unknown nextCharTest({})", nextCharTest);
 }
 
-string lispify_symbol_name(const string &s) {
+string lispify_symbol_name(const string& s) {
   bool new_rule_change = false;
   LOG("lispify_symbol_name pass1 source[{}]", s);
   /*! Temporarily store the string in a buffer */
@@ -609,7 +609,7 @@ string lispify_symbol_name(const string &s) {
   memset(buffer, 0, name_length + 2);
   strncpy(buffer, s.c_str(), name_length);
   stringstream stream_pass1;
-  const char *cur = buffer;
+  const char* cur = buffer;
   while (*cur) {
     if (lispify_match(cur, "_SHARP_")) {
       stream_pass1 << "#";
@@ -701,7 +701,7 @@ string lispify_symbol_name(const string &s) {
   stringstream stream_pass2;
   string str_pass2 = stream_pass1.str();
   LOG("lispify_symbol_name pass2 source[{}]", str_pass2);
-  const char *start_pass2 = str_pass2.c_str();
+  const char* start_pass2 = str_pass2.c_str();
   cur = start_pass2;
   while (*cur) {
     if (lower_case_p(*cur) && upper_case_p(*(cur + 1))) {
@@ -753,7 +753,7 @@ Instance_sp lisp_instance_class(T_sp o) {
   } else if (o.unboundp()) {
     SIMPLE_ERROR("lisp_instance_class for called on #<UNBOUND>");
   } else {
-    SIMPLE_ERROR("Add support for unknown (immediate?) object to lisp_instance_class obj = {}", (void *)(o.raw_()));
+    SIMPLE_ERROR("Add support for unknown (immediate?) object to lisp_instance_class obj = {}", (void*)(o.raw_()));
   }
   return gc::As_unsafe<Instance_sp>(tc);
 }
@@ -802,7 +802,7 @@ string _rep_(T_sp obj) {
     return "#<UNBOUND>";
   }
   stringstream ss;
-  ss << "WTF-object@" << (void *)obj.raw_();
+  ss << "WTF-object@" << (void*)obj.raw_();
   return ss.str();
 #endif
 }
@@ -815,14 +815,14 @@ void lisp_throwUnexpectedType(T_sp offendingObject, Symbol_sp expectedTypeId) {
 
 string lisp_classNameAsString(Instance_sp c) { return c->_classNameAsString(); }
 
-void lisp_throwLispError(const string &str) { SIMPLE_ERROR("{}", str); }
+void lisp_throwLispError(const string& str) { SIMPLE_ERROR("{}", str); }
 
-bool lisp_debugIsOn(const char *fileName, uint debugFlags) {
+bool lisp_debugIsOn(const char* fileName, uint debugFlags) {
   bool ret = _lisp->debugLog().isOn(fileName, debugFlags);
   return ret;
 }
 
-DebugStream *lisp_debugLog() { return &(_lisp->debugLog()); }
+DebugStream* lisp_debugLog() { return &(_lisp->debugLog()); }
 
 Fixnum lisp_hash(uintptr_t x) {
   HashGenerator hg;
@@ -845,7 +845,7 @@ T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp classSymbol) {
   return mc;
 }
 
-List_sp lisp_parse_arguments(const string &packageName, const string &args, int number_of_required_arguments,
+List_sp lisp_parse_arguments(const string& packageName, const string& args, int number_of_required_arguments,
                              const std::set<int> skip_indices) {
   if (args == "") {
     // If args is "" then cook up arguments using number_of_required_arguments and skip_indices
@@ -876,7 +876,7 @@ List_sp lisp_parse_arguments(const string &packageName, const string &args, int 
   return sscons;
 }
 
-List_sp lisp_lexical_variable_names(List_sp lambda_list, bool &trivial_wrapper) {
+List_sp lisp_lexical_variable_names(List_sp lambda_list, bool& trivial_wrapper) {
   gctools::Vec0<RequiredArgument> reqs;
   gctools::Vec0<OptionalArgument> optionals;
   gctools::Vec0<KeywordArgument> keys;
@@ -905,7 +905,7 @@ List_sp lisp_lexical_variable_names(List_sp lambda_list, bool &trivial_wrapper) 
   return vars;
 }
 
-List_sp lisp_parse_declares(const string &packageName, const string &declarestring) {
+List_sp lisp_parse_declares(const string& packageName, const string& declarestring) {
   if (declarestring == "")
     return nil<T_O>();
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
@@ -922,7 +922,7 @@ List_sp lisp_parse_declares(const string &packageName, const string &declarestri
 }
 
 /*! Insert the package qualified class_symbol into the lambda list wherever a ! is seen */
-string fix_method_lambda(core::Symbol_sp class_symbol, const string &lambda) {
+string fix_method_lambda(core::Symbol_sp class_symbol, const string& lambda) {
   stringstream new_lambda;
   for (auto c : lambda) {
     if (c == '!') {
@@ -957,9 +957,9 @@ static Function_sp bytecompile_wrapper(GlobalSimpleFunBase_sp entry, List_sp var
   return comp::bytecompile(form, comp::Lexenv_O::make_top_level());
 }
 
-void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper &specializer, T_sp name, Symbol_sp classSymbol,
+void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& specializer, T_sp name, Symbol_sp classSymbol,
                                      GlobalSimpleFunBase_sp method_body, size_t TemplateDispatchOn, bool useTemplateDispatchOn,
-                                     const string &raw_arguments, const string &declares, const string &docstring, bool autoExport,
+                                     const string& raw_arguments, const string& declares, const string& docstring, bool autoExport,
                                      int number_of_required_arguments, const std::set<int> pureOutIndices) {
   string arguments = fix_method_lambda(classSymbol, raw_arguments);
   Instance_sp receiver_class = gc::As<Instance_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
@@ -979,7 +979,7 @@ void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper &specializer,
     T_mv mv_llprocessed = process_single_dispatch_lambda_list(llraw, true);
     T_sp tllproc = coerce_to_list(mv_llprocessed); // slice
     lambda_list = coerce_to_list(tllproc);
-    MultipleValues &mvn = core::lisp_multipleValues();
+    MultipleValues& mvn = core::lisp_multipleValues();
     Symbol_sp sd_symbol = gc::As<Symbol_sp>(mvn.valueGet(1, mv_llprocessed.number_of_values()));
     Symbol_sp specializer_symbol = gc::As<Symbol_sp>(mvn.valueGet(2, mv_llprocessed.number_of_values()));
     T_sp dispatchOn = mvn.valueGet(3, mv_llprocessed.number_of_values());
@@ -1031,7 +1031,7 @@ Instance_sp lisp_classFromClassSymbol(Symbol_sp classSymbol) {
 
 /*! If the name has the structure XXX:YYY or XXX::YYY then intern YYY in package XXX either
       exported or not respectively.   If there is no package prefix then use the defaultPackageName */
-Symbol_sp lispify_intern(const string &name, const string &defaultPackageName, bool exportSymbol) {
+Symbol_sp lispify_intern(const string& name, const string& defaultPackageName, bool exportSymbol) {
   string lispName = lispify_symbol_name(name);
   string packageName = lispify_symbol_name(defaultPackageName);
   Symbol_sp sym = _lisp->internWithDefaultPackageName(packageName, lispName);
@@ -1043,10 +1043,10 @@ Symbol_sp lispify_intern(const string &name, const string &defaultPackageName, b
 
 SYMBOL_EXPORT_SC_(CorePkg, bytecode_wrapper);
 
-void lisp_bytecode_defun(SymbolFunctionEnum kind, int bytecodep, Symbol_sp sym, const string &packageName,
-                         GlobalSimpleFunBase_sp entry, const string &arguments, const string &declares, const string &docstring,
-                         const string &sourceFile, int lineNumber, int numberOfRequiredArguments, bool autoExport,
-                         const std::set<int> &skipIndices) {
+void lisp_bytecode_defun(SymbolFunctionEnum kind, int bytecodep, Symbol_sp sym, const string& packageName,
+                         GlobalSimpleFunBase_sp entry, const string& arguments, const string& declares, const string& docstring,
+                         const string& sourceFile, int lineNumber, int numberOfRequiredArguments, bool autoExport,
+                         const std::set<int>& skipIndices) {
   List_sp lambda_list = lisp_parse_arguments(packageName, arguments, numberOfRequiredArguments, skipIndices);
   bool trivial_wrapper;
   List_sp vars = lisp_lexical_variable_names(lambda_list, trivial_wrapper);
@@ -1087,19 +1087,19 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind, int bytecodep, Symbol_sp sym, 
   func->setf_docstring(tdocstring);
 }
 
-Symbol_sp lisp_internKeyword(const string &name) {
+Symbol_sp lisp_internKeyword(const string& name) {
   if (name == "")
     return nil<Symbol_O>();
   return _lisp->internKeyword(name);
 }
 
-Symbol_sp lisp_intern(const string &name) {
+Symbol_sp lisp_intern(const string& name) {
   if (name == "")
     return nil<Symbol_O>();
   return _lisp->intern(name);
 }
 
-Symbol_sp lisp_intern(const string &name, const string &pkg) {
+Symbol_sp lisp_intern(const string& name, const string& pkg) {
   if (name == "")
     return nil<Symbol_O>();
   return _lisp->internWithPackageName(pkg, name);
@@ -1121,12 +1121,12 @@ Symbol_sp lisp_lookupSymbolForEnum(Symbol_sp predefSymId, int enumVal) {
   return converter->symbolForEnumIndex(enumVal);
 }
 
-void lisp_extendSymbolToEnumConverter(SymbolToEnumConverter_sp conv, Symbol_sp const &name, Symbol_sp const &archiveName,
+void lisp_extendSymbolToEnumConverter(SymbolToEnumConverter_sp conv, Symbol_sp const& name, Symbol_sp const& archiveName,
                                       int value) {
   conv->addSymbolEnumPair(name, archiveName, value);
 }
 
-void lisp_debugLogWrite(char const *fileName, const char *functionName, uint lineNumber, uint col, const string &fmt_str,
+void lisp_debugLogWrite(char const* fileName, const char* functionName, uint lineNumber, uint col, const string& fmt_str,
                         uint debugFlags) {
   if (debugFlags == DEBUG_SCRIPT) {
     _lisp->debugLog().beginNode(DEBUG_TOPLEVEL, fileName, functionName, lineNumber, 0, fmt_str);
@@ -1153,14 +1153,14 @@ string concatenateVectorStrings(VectorStrings strs) {
   return conc;
 }
 
-void appendVectorStrings(VectorStrings &app, VectorStrings strs) {
+void appendVectorStrings(VectorStrings& app, VectorStrings strs) {
   VectorStrings::iterator vs;
   for (vs = strs.begin(); vs != strs.end(); vs++) {
     app.push_back(*vs);
   }
 }
 
-string stripCharacters(const string &orig, const string &stripSet) {
+string stripCharacters(const string& orig, const string& stripSet) {
   stringstream sout;
   stringstream sin;
   sin.str(orig);
@@ -1176,7 +1176,7 @@ string stripCharacters(const string &orig, const string &stripSet) {
   return sout.str();
 }
 
-string escapeWhiteSpace(const string &inp) {
+string escapeWhiteSpace(const string& inp) {
   stringstream sout;
   stringstream sin(inp);
   char c;
@@ -1204,7 +1204,7 @@ string escapeWhiteSpace(const string &inp) {
   return sout.str();
 }
 
-string unEscapeWhiteSpace(string const &inp) {
+string unEscapeWhiteSpace(string const& inp) {
   stringstream sout;
   stringstream sin(inp);
   char c;
@@ -1239,7 +1239,7 @@ string unEscapeWhiteSpace(string const &inp) {
 }
 
 // Trim Both leading and trailing spaces
-string trimWhiteSpace(const string &str) {
+string trimWhiteSpace(const string& str) {
   // Find the first character position after excluding leading blank spaces
   size_t startpos = str.find_first_not_of(" \t");
   // Find the first character position from reverse af
@@ -1261,21 +1261,21 @@ string lisp_symbolNameAsString(Symbol_sp sym) {
   return sym->symbolNameAsString();
 }
 
-T_sp lisp_createStr(const string &s) { return SimpleBaseString_O::make(s); }
+T_sp lisp_createStr(const string& s) { return SimpleBaseString_O::make(s); }
 
 T_sp lisp_createFixnum(int fn) { return make_fixnum(fn); }
 
-SourcePosInfo_sp lisp_createSourcePosInfo(const string &fileName, size_t filePos, int lineno) {
+SourcePosInfo_sp lisp_createSourcePosInfo(const string& fileName, size_t filePos, int lineno) {
   SimpleBaseString_sp fn = SimpleBaseString_O::make(fileName);
   T_mv sfi_mv = core__file_scope(fn);
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   Fixnum_sp handle = gc::As<Fixnum_sp>(mvn.valueGet(1, sfi_mv.number_of_values()));
   int sfindex = unbox_fixnum(handle);
   return SourcePosInfo_O::create(sfindex, filePos, lineno, 0);
 }
 
 /*! Create a core:source-pos-info object on the fly */
-SourcePosInfo_sp core__createSourcePosInfo(const string &filename, size_t filePos, int lineno) {
+SourcePosInfo_sp core__createSourcePosInfo(const string& filename, size_t filePos, int lineno) {
   return lisp_createSourcePosInfo(filename, filePos, lineno);
 }
 
@@ -1292,11 +1292,11 @@ T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp 
   return Cons_O::createList(a1, a2, a3, a4, a5, a6, a7, a8);
 }
 
-[[noreturn]] void lisp_error_no_stamp(void *ptr) {
-  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(ptr));
+[[noreturn]] void lisp_error_no_stamp(void* ptr) {
+  gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(gctools::GeneralPtrToHeaderPtr(ptr));
   SIMPLE_ERROR("This General_O object {} does not return a stamp because its subclass should overload get_stamp_() and return one "
                " - the subclass header stamp value is {}",
-               ((void *)ptr), header->_badge_stamp_wtag_mtag.stamp_());
+               ((void*)ptr), header->_badge_stamp_wtag_mtag.stamp_());
 }
 
 void lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(T_sp aclass_symbol) {
@@ -1307,7 +1307,7 @@ void lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(T_sp aclass_s
 void lisp_errorExpectedTypeSymbol(Symbol_sp typeSym, T_sp datum) { TYPE_ERROR(datum, typeSym); }
 
 #define MAX_SPRINTF_BUFFER 1024
-[[noreturn]] void lisp_error_sprintf(const char *fileName, int lineNumber, const char *functionName, const char *fmt, ...) {
+[[noreturn]] void lisp_error_sprintf(const char* fileName, int lineNumber, const char* functionName, const char* fmt, ...) {
   va_list args;
   va_start(args, fmt);
   char buffer[MAX_SPRINTF_BUFFER];
@@ -1335,7 +1335,7 @@ void lisp_errorExpectedTypeSymbol(Symbol_sp typeSym, T_sp datum) { TYPE_ERROR(da
 }
 
 DONT_OPTIMIZE_ALWAYS
-NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const string &fmt) {
+NOINLINE void lisp_error_simple(const char* functionName, const char* fileName, int lineNumber, const string& fmt) {
   stringstream ss;
   ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl;
   ss << fmt;
@@ -1367,7 +1367,7 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
   UNREACHABLE();
 }
 
-string stringUpper(const string &s) {
+string stringUpper(const string& s) {
   LOG("Converting string({}) to uppercase", s);
   stringstream ss;
   for (uint si = 0; si < s.length(); si++) {
@@ -1377,7 +1377,7 @@ string stringUpper(const string &s) {
   return ss.str();
 }
 
-string stringUpper(const char *s) {
+string stringUpper(const char* s) {
   LOG("Converting const char*({}) to uppercase", s);
   stringstream ss;
   for (; *s; s++) {
@@ -1387,7 +1387,7 @@ string stringUpper(const char *s) {
   return ss.str();
 }
 
-vector<string> split(const string &str, const string &delimiters) {
+vector<string> split(const string& str, const string& delimiters) {
   vector<string> parts;
   tokenize(str, parts, delimiters);
   return parts;
@@ -1395,7 +1395,7 @@ vector<string> split(const string &str, const string &delimiters) {
 
 /*! DONT PUT DEBUGGING CODE IN TOKENIZE!!!!  IT IS USED BY DebugStream
  */
-void tokenize(const string &str, vector<string> &tokens, const string &delimiters) {
+void tokenize(const string& str, vector<string>& tokens, const string& delimiters) {
   tokens.erase(tokens.begin(), tokens.end());
   // Skip delimiters at beginning.
   string::size_type lastPos = str.find_first_not_of(delimiters, 0);
@@ -1411,7 +1411,7 @@ void tokenize(const string &str, vector<string> &tokens, const string &delimiter
   }
 }
 
-string searchAndReplaceString(const string &str, const string &search, const string &replace) {
+string searchAndReplaceString(const string& str, const string& search, const string& replace) {
   string result;
   string::size_type pos = 0;
   result = str;
@@ -1422,7 +1422,7 @@ string searchAndReplaceString(const string &str, const string &search, const str
   return result;
 }
 
-void queueSplitString(const string &str, std::queue<string> &tokens, const string &delimiters) {
+void queueSplitString(const string& str, std::queue<string>& tokens, const string& delimiters) {
   //    LOG("foundation.cc::tokenize-- Entered" );
   // Skip delimiters at beginning.
   string::size_type lastPos = str.find_first_not_of(delimiters, 0);
@@ -1445,9 +1445,9 @@ void queueSplitString(const string &str, std::queue<string> &tokens, const strin
 //
 //	Return true if it matches and false if it doesn't
 //
-bool wildcmp(string const &sWild, string const &sRegular) {
+bool wildcmp(string const& sWild, string const& sRegular) {
   const char *wild, *mp, *cp;
-  const char *regular;
+  const char* regular;
 
   cp = NULL;
   mp = NULL;
@@ -1486,7 +1486,7 @@ void StringStack::pop() {
   this->parts.pop_back();
 };
 
-string StringStack::all(const string &separator) {
+string StringStack::all(const string& separator) {
   stringstream ss;
   ss.str("");
   if (this->parts.size() > 0) {
@@ -1499,10 +1499,10 @@ string StringStack::all(const string &separator) {
   return ss.str();
 };
 
-const char *trimSourceFilePathName(const char *longName) {
+const char* trimSourceFilePathName(const char* longName) {
   if (longName == NULL)
     return NULL;
-  const char *cp = longName + strlen(longName);
+  const char* cp = longName + strlen(longName);
   while (cp > longName && *cp != '/')
     --cp;
   if (*cp == '/')
@@ -1512,7 +1512,7 @@ const char *trimSourceFilePathName(const char *longName) {
 
 bool _ClassesAreInitialized = false;
 
-void throwIfClassesNotInitialized(const LispPtr &lisp) {
+void throwIfClassesNotInitialized(const LispPtr& lisp) {
   if (!_ClassesAreInitialized) {
     fmt::print("Debug information was being written when classes have not yet been initialized");
     fmt::print("This should never happen.");
@@ -1612,11 +1612,11 @@ CL_DEFUN size_t core__get_badge(T_sp object) { return gctools::lisp_badge(object
 DOCGROUP(clasp);
 CL_DEFUN void core__debug_only_set_badge(T_sp object, size_t badge) {
   if (object.consp()) {
-    gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(gctools::ConsPtrToHeaderPtr(object.unsafe_cons()));
+    gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(gctools::ConsPtrToHeaderPtr(object.unsafe_cons()));
     header->_badge_stamp_wtag_mtag._header_badge = badge;
     return;
   } else if (object.generalp()) {
-    gctools::Header_s *header = const_cast<gctools::Header_s *>(gctools::header_pointer(object.unsafe_general()));
+    gctools::Header_s* header = const_cast<gctools::Header_s*>(gctools::header_pointer(object.unsafe_general()));
     header->_badge_stamp_wtag_mtag._header_badge = badge;
   }
 }
@@ -1627,9 +1627,9 @@ size_t global_pointerCount = 0;
 size_t global_goodPointerCount = 0;
 std::set<std::string> global_mangledSymbols;
 std::set<uintptr_t> global_addresses;
-snapshotSaveLoad::SymbolLookup *global_SymbolLookup = NULL;
+snapshotSaveLoad::SymbolLookup* global_SymbolLookup = NULL;
 
-void maybe_register_symbol_using_dladdr_ep(void *functionPointer, size_t size, const std::string &name, size_t arityCode) {
+void maybe_register_symbol_using_dladdr_ep(void* functionPointer, size_t size, const std::string& name, size_t arityCode) {
   if (core::global_options->_ExportedSymbolsCheck) {
     if (!global_SymbolLookup) {
       global_SymbolLookup = new snapshotSaveLoad::SymbolLookup();
@@ -1641,8 +1641,8 @@ void maybe_register_symbol_using_dladdr_ep(void *functionPointer, size_t size, c
       global_pointerCount++;
       Dl_info info;
 #if defined(_TARGET_OS_LINUX)
-      const Elf64_Sym *extra_info;
-      int ret = dladdr1(functionPointer, &info, (void **)&extra_info, RTLD_DL_SYMENT);
+      const Elf64_Sym* extra_info;
+      int ret = dladdr1(functionPointer, &info, (void**)&extra_info, RTLD_DL_SYMENT);
 #else
       int ret = dladdr(functionPointer, &info);
 #endif
@@ -1671,7 +1671,7 @@ void maybe_register_symbol_using_dladdr_ep(void *functionPointer, size_t size, c
       if (!global_SymbolLookup->lookupAddr((uintptr_t)functionPointer, claspDladdrName)) {
         printf("%s:%d:%s FAIL Clasp's dladdr could not find a symbol for the address %p for name %s - THIS WILL BREAK "
                "save-lisp-and-die\n",
-               __FILE__, __LINE__, __FUNCTION__, (void *)functionPointer, name.c_str());
+               __FILE__, __LINE__, __FUNCTION__, (void*)functionPointer, name.c_str());
       } else {
         if (system_dladdr_had_problem) {
           printf("%s:%d:%s   The system dladdr had a problem but clasp's dladdr found the symbol - the clasp dladdr name is: %s\n",
@@ -1688,7 +1688,7 @@ void maybe_register_symbol_using_dladdr_ep(void *functionPointer, size_t size, c
   }
 }
 
-void maybe_register_symbol_using_dladdr(void *functionPointer, size_t size, const std::string &name, size_t arityCode) {
+void maybe_register_symbol_using_dladdr(void* functionPointer, size_t size, const std::string& name, size_t arityCode) {
   maybe_register_symbol_using_dladdr_ep(functionPointer, size, name, arityCode);
 }
 

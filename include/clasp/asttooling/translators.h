@@ -64,7 +64,7 @@ template <> struct to_object<std::vector<std::string>, translate::dont_adopt_poi
   }
 };
 
-template <> struct from_object<const vector<string> &> {
+template <> struct from_object<const vector<string>&> {
   typedef vector<string> DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) {
@@ -92,9 +92,9 @@ template <> struct from_object<const vector<string> &> {
   }
 };
 
-template <> struct to_object<std::vector<std::unique_ptr<clang::ASTUnit>> &> {
+template <> struct to_object<std::vector<std::unique_ptr<clang::ASTUnit>>&> {
   typedef std::vector<std::unique_ptr<clang::ASTUnit>> GivenType;
-  static core::T_sp convert(std::vector<std::unique_ptr<clang::ASTUnit>> &vals) {
+  static core::T_sp convert(std::vector<std::unique_ptr<clang::ASTUnit>>& vals) {
     core::ComplexVector_T_sp vo = core::ComplexVector_T_O::make(vals.size(), nil<core::T_O>(), core::clasp_make_fixnum(0));
     for (int i(0), iEnd(vals.size()); i < iEnd; ++i) {
       vo->vectorPushExtend(clbind::Wrapper<clang::ASTUnit, std::unique_ptr<clang::ASTUnit>>::make_wrapper(
@@ -117,13 +117,13 @@ template <> struct to_object<std::vector<clang::tooling::CompileCommand>> {
   }
 };
 
-template <> struct to_object<std::map<std::string, clang::tooling::Replacements> &, translate::dont_adopt_pointer> {
+template <> struct to_object<std::map<std::string, clang::tooling::Replacements>&, translate::dont_adopt_pointer> {
   typedef std::map<std::string, clang::tooling::Replacements> GivenType;
   static core::T_sp convert(GivenType vals) {
     core::HashTableEqual_sp result = core::HashTableEqual_O::create_default();
     for (auto pair : vals) {
       core::SimpleBaseString_sp str = core::SimpleBaseString_O::make(pair.first);
-      core::T_sp obj = to_object<const clang::tooling::Replacements &>::convert(pair.second);
+      core::T_sp obj = to_object<const clang::tooling::Replacements&>::convert(pair.second);
       result->setf_gethash(str, obj);
     }
     return result;
@@ -168,7 +168,7 @@ template <> struct from_object<clang::PresumedLoc, std::true_type> {
   }
 };
 
-template <> struct from_object<const clang::PresumedLoc &, std::true_type> {
+template <> struct from_object<const clang::PresumedLoc&, std::true_type> {
   typedef clang::PresumedLoc DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(gc::As<asttooling::PresumedLoc_sp>(o)->_Value._value) {
@@ -206,7 +206,7 @@ template <> struct from_object<clang::SourceLocation, std::true_type> {
   }
 };
 
-template <> struct from_object<const clang::SourceLocation &, std::true_type> {
+template <> struct from_object<const clang::SourceLocation&, std::true_type> {
   typedef clang::SourceLocation DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(gc::As<asttooling::SourceLocation_sp>(o)->_Value._value) {

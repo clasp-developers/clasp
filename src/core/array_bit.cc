@@ -11,7 +11,7 @@
 namespace core {
 void bitVectorDoesntSupportError() { SIMPLE_ERROR("You tried to invoke a method that bit-vector doesn't support on a bit-vector"); }
 
-bool ranged_bit_vector_EQ_(const SimpleBitVector_O &bvx, const SimpleBitVector_O &bvy, size_t startx, size_t endx, size_t starty,
+bool ranged_bit_vector_EQ_(const SimpleBitVector_O& bvx, const SimpleBitVector_O& bvy, size_t startx, size_t endx, size_t starty,
                            size_t endy) {
   size_t lenx = endx - startx;
   size_t leny = endy - starty;
@@ -24,7 +24,7 @@ bool ranged_bit_vector_EQ_(const SimpleBitVector_O &bvx, const SimpleBitVector_O
   return true;
 }
 
-SimpleBitVector_sp SimpleBitVector_O::make(const string &bv) {
+SimpleBitVector_sp SimpleBitVector_O::make(const string& bv) {
   size_t dim = bv.size() - 2;
   SimpleBitVector_sp x = SimpleBitVector_O::make(dim);
   for (int i = 0; i < dim; i++) {
@@ -54,7 +54,7 @@ bool SimpleBitVector_O::equal(T_sp other) const {
     AbstractSimpleVector_sp sv;
     size_t start, end;
     bvns->asAbstractSimpleVectorRange(sv, start, end);
-    SimpleBitVector_O &sbv = *gc::As<SimpleBitVector_sp>(sv);
+    SimpleBitVector_O& sbv = *gc::As<SimpleBitVector_sp>(sv);
     return ranged_bit_vector_EQ_(*this, sbv, 0, this->length(), start, end);
   }
   return false;
@@ -122,7 +122,7 @@ CL_DEFUN SimpleBitVector_sp core__sbv_bit_not(SimpleBitVector_sp vec, SimpleBitV
  */
 #define DO_BIT_ARRAY_WORDS(vec, word, i, statement)                                                                                \
   do {                                                                                                                             \
-    bit_array_word *bytes = vec->bytes();                                                                                          \
+    bit_array_word* bytes = vec->bytes();                                                                                          \
     bit_array_word word;                                                                                                           \
     size_t len = vec->length();                                                                                                    \
     size_t nwords = len / BIT_ARRAY_WORD_BITS;                                                                                     \
@@ -188,7 +188,7 @@ void SimpleBitVector_inPlaceXor(SimpleBitVector_sp x, SimpleBitVector_sp y) {
 
 size_t SimpleBitVector_lowestIndex(SimpleBitVector_sp x) { return core__sbv_position_one(x); }
 
-void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t> &res) {
+void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t>& res) {
   size_t i;
   res.clear();
   i = SimpleBitVector_lowestIndex(x);
@@ -210,17 +210,17 @@ bool BitVectorNs_O::equal(T_sp other) const {
     AbstractSimpleVector_sp bme;
     size_t mstart, mend;
     this->asAbstractSimpleVectorRange(bme, mstart, mend);
-    simple_type *me = reinterpret_cast<simple_type *>(&*bme);
+    simple_type* me = reinterpret_cast<simple_type*>(&*bme);
     AbstractSimpleVector_sp bso;
     size_t ostart, oend;
     strns->asAbstractSimpleVectorRange(bso, ostart, oend);
-    simple_type *so = reinterpret_cast<simple_type *>(&*bso);
+    simple_type* so = reinterpret_cast<simple_type*>(&*bso);
     return ranged_bit_vector_EQ_(*me, *so, mstart, mend, ostart, oend);
   } else if (SimpleBitVector_sp ss = other.asOrNull<SimpleBitVector_O>()) {
     AbstractSimpleVector_sp bme;
     size_t mstart, mend;
     this->asAbstractSimpleVectorRange(bme, mstart, mend);
-    simple_type *me = reinterpret_cast<simple_type *>(&*bme);
+    simple_type* me = reinterpret_cast<simple_type*>(&*bme);
     return ranged_bit_vector_EQ_(*me, *ss, mstart, mend, 0, ss->length());
   }
   return false;

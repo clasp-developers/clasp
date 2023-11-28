@@ -28,7 +28,7 @@ If you're looking for bit array stuff, try array_bit.cc.
 namespace core {
 
 // Add 1 to in and stuff it in result. Return normalized size of result.
-mp_size_t next_addone_aux(mp_limb_t *result, const mp_limb_t *in, mp_size_t size) {
+mp_size_t next_addone_aux(mp_limb_t* result, const mp_limb_t* in, mp_size_t size) {
   if (size == 0) {
     // zero size argument to mpn_add_1 is invalid, so we special case
     result[0] = (mp_limb_t)1;
@@ -44,7 +44,7 @@ mp_size_t next_addone_aux(mp_limb_t *result, const mp_limb_t *in, mp_size_t size
 }
 
 // AND two positive bignums together and return size of the result.
-mp_size_t next_and_aux(mp_limb_t *result, const mp_limb_t *s1, mp_size_t size1, const mp_limb_t *s2, mp_size_t size2) {
+mp_size_t next_and_aux(mp_limb_t* result, const mp_limb_t* s1, mp_size_t size1, const mp_limb_t* s2, mp_size_t size2) {
   mp_size_t result_size = std::min(size1, size2);
   if (result_size == 0)
     return 0;
@@ -54,7 +54,7 @@ mp_size_t next_and_aux(mp_limb_t *result, const mp_limb_t *s1, mp_size_t size1, 
 }
 
 // OR two positive bignums together and return size of the result.
-mp_size_t next_ior_aux(mp_limb_t *result, const mp_limb_t *s1, mp_size_t size1, const mp_limb_t *s2, mp_size_t size2) {
+mp_size_t next_ior_aux(mp_limb_t* result, const mp_limb_t* s1, mp_size_t size1, const mp_limb_t* s2, mp_size_t size2) {
   if (size1 < size2) {
     if (size1 != 0)
       mpn_ior_n(result, s1, s2, size1);
@@ -73,7 +73,7 @@ mp_size_t next_ior_aux(mp_limb_t *result, const mp_limb_t *s1, mp_size_t size1, 
 }
 
 // XOR two positive bignums together and return size of the result.
-mp_size_t next_xor_aux(mp_limb_t *result, const mp_limb_t *s1, mp_size_t size1, const mp_limb_t *s2, mp_size_t size2) {
+mp_size_t next_xor_aux(mp_limb_t* result, const mp_limb_t* s1, mp_size_t size1, const mp_limb_t* s2, mp_size_t size2) {
   // x^0 = x so we have to copy over the high limbs.
   if (size1 < size2) {
     if (size1 != 0)
@@ -93,7 +93,7 @@ mp_size_t next_xor_aux(mp_limb_t *result, const mp_limb_t *s1, mp_size_t size1, 
 }
 
 // Compute s1 & ~s2, both operands being positive, and return size of result.
-mp_size_t next_andc2_aux(mp_limb_t *result, const mp_limb_t *s1, mp_size_t size1, const mp_limb_t *s2, mp_size_t size2) {
+mp_size_t next_andc2_aux(mp_limb_t* result, const mp_limb_t* s1, mp_size_t size1, const mp_limb_t* s2, mp_size_t size2) {
   if (size1 < size2) {
     // For the high limbs s1 is zero, so high limbs of s2 are discarded.
     if (size1 != 0)
@@ -111,20 +111,20 @@ mp_size_t next_andc2_aux(mp_limb_t *result, const mp_limb_t *s1, mp_size_t size1
   }
 }
 
-mp_size_t next_clr(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const mp_limb_t *s2, mp_size_t len2) { return 0; }
+mp_size_t next_clr(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1, const mp_limb_t* s2, mp_size_t len2) { return 0; }
 
 // Return bignum parts for -1.
-mp_size_t next_set_aux(mp_limb_t *result) {
+mp_size_t next_set_aux(mp_limb_t* result) {
   result[0] = 1;
   return -1;
 }
 
-mp_size_t next_set(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const mp_limb_t *s2, mp_size_t len2) {
+mp_size_t next_set(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1, const mp_limb_t* s2, mp_size_t len2) {
   return next_set_aux(result);
 }
 
 // next_add where t1 is negative, t2 is positive.
-mp_size_t next_addneg(mp_limb_t *result, const mp_limb_t *t1, mp_size_t size1, const mp_limb_t *t2, mp_size_t size2) {
+mp_size_t next_addneg(mp_limb_t* result, const mp_limb_t* t1, mp_size_t size1, const mp_limb_t* t2, mp_size_t size2) {
   // t1 is positive, t2 is negative.
   // result will be positive (think of the infinite left bits)
   // x & (-y) = x & ~(y-1)
@@ -135,7 +135,7 @@ mp_size_t next_addneg(mp_limb_t *result, const mp_limb_t *t1, mp_size_t size1, c
   return next_andc2_aux(result, t1, size1, temp, size2);
 }
 
-mp_size_t next_and(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const mp_limb_t *s2, mp_size_t len2) {
+mp_size_t next_and(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1, const mp_limb_t* s2, mp_size_t len2) {
   if (len1 > 0) {
     if (len2 > 0)
       // Both operands are positive so this is simple.
@@ -169,7 +169,7 @@ mp_size_t next_and(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const
     return 0; // s1 = 0
 }
 
-mp_size_t next_andc2(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const mp_limb_t *s2, mp_size_t len2) {
+mp_size_t next_andc2(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1, const mp_limb_t* s2, mp_size_t len2) {
   if (len1 > 0) {
     if (len2 > 0)
       return next_andc2_aux(result, s1, len1, s2, len2);
@@ -210,7 +210,7 @@ mp_size_t next_andc2(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, con
     return 0; // len1 = 0, so result is zero
 }
 
-mp_size_t next_1(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const mp_limb_t *s2, mp_size_t len2) {
+mp_size_t next_1(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1, const mp_limb_t* s2, mp_size_t len2) {
   // mpn gives us the ability to copy increasingly or decreasingly,
   // but I don't think it matters which we do here.
   if (len1 != 0)
@@ -218,15 +218,15 @@ mp_size_t next_1(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const m
   return len1;
 }
 
-mp_size_t next_andc1(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const mp_limb_t *s2, mp_size_t len2) {
+mp_size_t next_andc1(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1, const mp_limb_t* s2, mp_size_t len2) {
   return next_andc2(result, s2, len2, s1, len1);
 }
 
-mp_size_t next_2(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const mp_limb_t *s2, mp_size_t len2) {
+mp_size_t next_2(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1, const mp_limb_t* s2, mp_size_t len2) {
   return next_1(result, s2, len2, s1, len1);
 }
 
-mp_size_t next_xorneg(mp_limb_t *result, const mp_limb_t *t1, mp_size_t size1, const mp_limb_t *t2, mp_size_t size2) {
+mp_size_t next_xorneg(mp_limb_t* result, const mp_limb_t* t1, mp_size_t size1, const mp_limb_t* t2, mp_size_t size2) {
   // t1 positive, t2 negative.
   // result negative because we have infinite 0^-1 on the left.
   // -(a ^ (-b)) = -(a ^ ~(b-1))
@@ -238,7 +238,7 @@ mp_size_t next_xorneg(mp_limb_t *result, const mp_limb_t *t1, mp_size_t size1, c
   return -next_addone_aux(result, result, result_size);
 }
 
-mp_size_t next_xor(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const mp_limb_t *s2, mp_size_t len2) {
+mp_size_t next_xor(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1, const mp_limb_t* s2, mp_size_t len2) {
   if (len1 > 0) {
     if (len2 > 0)
       return next_xor_aux(result, s1, len1, s2, len2);
@@ -271,7 +271,7 @@ mp_size_t next_xor(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const
   }
 }
 
-mp_size_t next_iorneg(mp_limb_t *result, const mp_limb_t *t1, mp_size_t size1, const mp_limb_t *t2, mp_size_t size2) {
+mp_size_t next_iorneg(mp_limb_t* result, const mp_limb_t* t1, mp_size_t size1, const mp_limb_t* t2, mp_size_t size2) {
   // Result is negative since we have 0|-1 = -1 on the left.
   // -(x | -y) = -(x | ~(y-1)) = ~(x | ~(y-1)) + 1
   // = ~x & (y-1) + 1
@@ -281,7 +281,7 @@ mp_size_t next_iorneg(mp_limb_t *result, const mp_limb_t *t1, mp_size_t size1, c
   return -next_addone_aux(result, result, result_size);
 }
 
-mp_size_t next_ior(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const mp_limb_t *s2, mp_size_t len2) {
+mp_size_t next_ior(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1, const mp_limb_t* s2, mp_size_t len2) {
   if (len1 > 0) {
     if (len2 > 0)
       return next_ior_aux(result, s1, len1, s2, len2);
@@ -316,7 +316,7 @@ mp_size_t next_ior(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const
   }
 }
 
-mp_size_t next_com(mp_limb_t *result, const mp_limb_t *s, mp_size_t size) {
+mp_size_t next_com(mp_limb_t* result, const mp_limb_t* s, mp_size_t size) {
   if (size > 0)
     // -~x = ~~x + 1 = x + 1
     return -next_addone_aux(result, s, size);
@@ -330,7 +330,7 @@ mp_size_t next_com(mp_limb_t *result, const mp_limb_t *s, mp_size_t size) {
     return next_set_aux(result);
 }
 
-mp_size_t next_norneg(mp_limb_t *result, const mp_limb_t *t1, mp_size_t size1, const mp_limb_t *t2, mp_size_t size2) {
+mp_size_t next_norneg(mp_limb_t* result, const mp_limb_t* t1, mp_size_t size1, const mp_limb_t* t2, mp_size_t size2) {
   // ~(-1|0) = 0 so the result is positive
   // ~(x | -y) = ~(x | ~(y-1)) = (~x & (y-1))
   mp_limb_t temp[size2];
@@ -338,7 +338,7 @@ mp_size_t next_norneg(mp_limb_t *result, const mp_limb_t *t1, mp_size_t size1, c
   return next_andc2_aux(result, temp, size2, t1, size1);
 }
 
-mp_size_t next_nor(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const mp_limb_t *s2, mp_size_t len2) {
+mp_size_t next_nor(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1, const mp_limb_t* s2, mp_size_t len2) {
   if (len1 > 0) {
     if (len2 > 0) {
       // Negation of high limbs means the result is negative.
@@ -366,7 +366,7 @@ mp_size_t next_nor(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const
     return next_com(result, s2, len2); // s1 = 0
 }
 
-mp_size_t next_eqvneg(mp_limb_t *result, const mp_limb_t *t1, mp_size_t size1, const mp_limb_t *t2, mp_size_t size2) {
+mp_size_t next_eqvneg(mp_limb_t* result, const mp_limb_t* t1, mp_size_t size1, const mp_limb_t* t2, mp_size_t size2) {
   // ~(0^-1) = 0 so the result is positive.
   // ~(x ^ -y) = ~(x ^ ~(y - 1)) = x ^ (y - 1)
   mp_limb_t temp[size2];
@@ -375,7 +375,7 @@ mp_size_t next_eqvneg(mp_limb_t *result, const mp_limb_t *t1, mp_size_t size1, c
 }
 
 // eqv is xnor if that wasn't clear
-mp_size_t next_eqv(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const mp_limb_t *s2, mp_size_t len2) {
+mp_size_t next_eqv(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1, const mp_limb_t* s2, mp_size_t len2) {
   if (len1 > 0) {
     if (len2 > 0) {
       // Both positive. Result is negative because ~(0^0) = -1.
@@ -407,11 +407,11 @@ mp_size_t next_eqv(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const
     return next_com(result, s2, len2);
 }
 
-mp_size_t next_c2(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const mp_limb_t *s2, mp_size_t len2) {
+mp_size_t next_c2(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1, const mp_limb_t* s2, mp_size_t len2) {
   return next_com(result, s2, len2);
 }
 
-mp_size_t next_orc2(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const mp_limb_t *s2, mp_size_t len2) {
+mp_size_t next_orc2(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1, const mp_limb_t* s2, mp_size_t len2) {
   if (len1 > 0) {
     if (len2 > 0) {
       // 0|~0 = -1, negative result
@@ -456,15 +456,15 @@ mp_size_t next_orc2(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, cons
     return next_com(result, s2, len2);
 }
 
-mp_size_t next_c1(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const mp_limb_t *s2, mp_size_t len2) {
+mp_size_t next_c1(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1, const mp_limb_t* s2, mp_size_t len2) {
   return next_com(result, s1, len1);
 }
 
-mp_size_t next_orc1(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const mp_limb_t *s2, mp_size_t len2) {
+mp_size_t next_orc1(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1, const mp_limb_t* s2, mp_size_t len2) {
   return next_orc2(result, s2, len2, s1, len1);
 }
 
-mp_size_t next_nandneg(mp_limb_t *result, const mp_limb_t *t1, mp_size_t size1, const mp_limb_t *t2, mp_size_t size2) {
+mp_size_t next_nandneg(mp_limb_t* result, const mp_limb_t* t1, mp_size_t size1, const mp_limb_t* t2, mp_size_t size2) {
   // ~(0&-1) = ~0 = -1, negative result
   // -(~(x & -y)) = ~(~(x & -y)) + 1 = (x & -y) + 1
   // = (x & ~(y-1)) + 1
@@ -474,7 +474,7 @@ mp_size_t next_nandneg(mp_limb_t *result, const mp_limb_t *t1, mp_size_t size1, 
   return -next_addone_aux(result, result, result_size);
 }
 
-mp_size_t next_nand(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, const mp_limb_t *s2, mp_size_t len2) {
+mp_size_t next_nand(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1, const mp_limb_t* s2, mp_size_t len2) {
   if (len1 > 0) {
     if (len2 > 0) {
       // ~(0&0) = ~0 = -1, negative result
@@ -507,7 +507,7 @@ mp_size_t next_nand(mp_limb_t *result, const mp_limb_t *s1, mp_size_t len1, cons
     return next_set_aux(result);
 }
 
-typedef mp_size_t (*next_bit_operator)(mp_limb_t *, const mp_limb_t *, mp_size_t, const mp_limb_t *, mp_size_t);
+typedef mp_size_t (*next_bit_operator)(mp_limb_t*, const mp_limb_t*, mp_size_t, const mp_limb_t*, mp_size_t);
 
 static next_bit_operator next_operations[boolOpsMax] = {next_clr, next_and,  next_andc2, next_1,   next_andc1, next_2,
                                                         next_xor, next_ior,  next_nor,   next_eqv, next_c2,    next_orc2,
@@ -600,7 +600,7 @@ Integer_sp next_operation_rest(boole_ops op, List_sp integers) {
       Bignum_sp bfirst = gc::As<Bignum_sp>(first);
       mp_size_t first_len = bfirst->length();
       mp_size_t first_size = std::abs(first_len);
-      const mp_limb_t *first_limbs = bfirst->limbs();
+      const mp_limb_t* first_limbs = bfirst->limbs();
       result_len = first_len;
       // FIXME: use memcpy or something
       for (mp_size_t i = 0; i < first_size; ++i)
@@ -711,10 +711,10 @@ CL_DEFUN bool cl__logbitp(Integer_sp index, Integer_sp i) {
       Bignum_sp bi = gc::As<Bignum_sp>(i);
       mp_size_t len = bi->length();
       mp_size_t size = std::abs(len);
-      const mp_limb_t *limbs = bi->limbs();
+      const mp_limb_t* limbs = bi->limbs();
       mp_size_t limb_index = n / mp_bits_per_limb;
       if (limb_index < size) {
-        const mp_limb_t *limbptr = &(limbs[limb_index]);
+        const mp_limb_t* limbptr = &(limbs[limb_index]);
         mp_limb_t limb = *limbptr;
         if (len < 0) {
           limb = -limb; // two's complement
@@ -912,7 +912,7 @@ CL_DEFUN Integer_sp cl__lognot(Integer_sp a) {
     Bignum_sp big = gc::As_unsafe<Bignum_sp>(a);
     mp_size_t len = big->length();
     mp_size_t size = std::abs(len);
-    const mp_limb_t *limbs = big->limbs();
+    const mp_limb_t* limbs = big->limbs();
     mp_limb_t rlimbs[size + 1];
     mp_size_t result_len = next_com(rlimbs, limbs, len);
     return bignum_result(result_len, rlimbs);

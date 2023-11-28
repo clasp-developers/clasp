@@ -63,10 +63,10 @@ typedef struct {
 
 Real_sp times2(Real_sp x) { return gc::As<Real_sp>(clasp_plus(x, x)); }
 
-static float_approx *setup(Float_sp number, float_approx *approx) {
+static float_approx* setup(Float_sp number, float_approx* approx) {
   Real_mv mv_f = cl__integer_decode_float(number);
   Integer_sp f = gc::As<Integer_sp>(mv_f);
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   Fixnum_sp fne = gc::As<Fixnum_sp>(mvn.valueGet(1, mv_f.number_of_values()));
   Fixnum e = fne.unsafe_fixnum(), min_e;
   bool limit_f = 0;
@@ -116,7 +116,7 @@ static float_approx *setup(Float_sp number, float_approx *approx) {
   return approx;
 }
 
-static Fixnum scale(float_approx *approx) {
+static Fixnum scale(float_approx* approx) {
   Fixnum k = 0;
   Real_sp x = gc::As<Real_sp>(clasp_plus(approx->r, approx->mp));
   int sign;
@@ -150,11 +150,11 @@ static Fixnum scale(float_approx *approx) {
   return k;
 }
 
-static StrNs_sp generate(StrNs_sp digits, float_approx *approx) {
+static StrNs_sp generate(StrNs_sp digits, float_approx* approx) {
   Real_sp d, x;
   gctools::Fixnum digit;
   bool tc1, tc2;
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   do {
     Real_mv mv_d = clasp_truncate2(gc::As<Real_sp>(clasp_times(approx->r, PRINT_BASE)), approx->s);
     d = mv_d;
@@ -182,7 +182,7 @@ static StrNs_sp generate(StrNs_sp digits, float_approx *approx) {
   return digits;
 }
 
-static void change_precision(float_approx *approx, T_sp tposition, T_sp relativep) {
+static void change_precision(float_approx* approx, T_sp tposition, T_sp relativep) {
   if (tposition.nilp())
     return;
   gctools::Fixnum pos;

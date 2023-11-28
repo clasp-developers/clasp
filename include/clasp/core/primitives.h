@@ -90,7 +90,7 @@ void initializePythonPrimitives(LispPtr lisp);
 
 namespace core {
 int clasp_musleep(double dsec, bool alertable);
-void core__dynamic_binding_stack_dump(std::ostream &out);
+void core__dynamic_binding_stack_dump(std::ostream& out);
 
 T_sp core__valid_function_name_p(T_sp arg);
 void core__exception_stack_dump();
@@ -112,7 +112,7 @@ T_sp core__next_number();
 
 namespace core {
 /*! Calculate crc32 for a block of data */
-void crc32(const void *data, size_t n_bytes, uint32_t *crc);
+void crc32(const void* data, size_t n_bytes, uint32_t* crc);
 }; // namespace core
 
 namespace core {
@@ -134,13 +134,13 @@ FORWARD(Test);
 class Test_O : public core::ExternalObject_O {
   LISP_EXTERNAL_CLASS(core, CorePkg, Test, Test_O, "Test", core::ExternalObject_O);
   typedef Test ExternalType;
-  typedef Test *PointerToExternalType;
+  typedef Test* PointerToExternalType;
 
 protected:
   PointerToExternalType _ptr;
 
 public:
-  PointerToExternalType wrappedPtr() const { return static_cast<ExternalType *>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return static_cast<ExternalType*>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /* delete this->_ptr; */
     this->_ptr = ptr;

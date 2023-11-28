@@ -38,7 +38,7 @@ const int MultipleValues::MultipleValuesLimit;
 
 void MultipleValues::initialize(){};
 
-void dump_values_pos(T_sp v, const char *name, int n) {
+void dump_values_pos(T_sp v, const char* name, int n) {
   if (n > 4) {
     if (_sym_STARdebug_valuesSTAR && _sym_STARdebug_valuesSTAR->boundP() && _sym_STARdebug_valuesSTAR->symbolValue().notnilp()) {
       if (strcmp(name, "v0") == 0) {
@@ -61,7 +61,7 @@ core::T_mv ValuesFromCons(core::List_sp vals) {
   if (len == 0) {
     return core::T_mv(nil<core::T_O>(), 0);
   }
-  core::MultipleValues &me = (core::lisp_multipleValues());
+  core::MultipleValues& me = (core::lisp_multipleValues());
   int i = 1;
   SUPPRESS_GC();
   me.setSize(0);

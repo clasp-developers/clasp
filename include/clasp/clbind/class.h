@@ -178,18 +178,18 @@ namespace clbind {
 namespace detail {
 
 template <class T> struct static_scope {
-  static_scope(T &self_) : self(self_) {}
+  static_scope(T& self_) : self(self_) {}
 
-  T &operator[](scope_ s) const {
+  T& operator[](scope_ s) const {
     self.add_inner_scope(s);
     return self;
   }
 
 private:
-  template <class U> void operator,(U const &) const;
-  void operator=(static_scope const &);
+  template <class U> void operator,(U const&) const;
+  void operator=(static_scope const&);
 
-  T &self;
+  T& self;
 };
 
 struct class_registration;
@@ -205,7 +205,7 @@ struct cast_entry {
 } // namespace
 
 struct class_registration : registration {
-  class_registration(const string &name);
+  class_registration(const string& name);
 
   void register_() const;
 
@@ -214,7 +214,7 @@ struct class_registration : registration {
   virtual std::string name() const { return this->m_name; }
   virtual std::string kind() const { return "class_registration"; };
 
-  mutable std::map<const char *, int, detail::ltstr> m_static_constants;
+  mutable std::map<const char*, int, detail::ltstr> m_static_constants;
 
   typedef std::pair<type_id, cast_function> base_desc;
   mutable std::vector<base_desc> m_bases;
@@ -227,37 +227,37 @@ struct class_registration : registration {
 
   scope_ m_scope;
   scope_ m_members;
-  detail::registration *m_default_constructor;
+  detail::registration* m_default_constructor;
   scope_ m_default_members;
   bool m_derivable;
 };
 
 struct CLBIND_API class_base : scope_ {
 public:
-  class_base(const string &name);
+  class_base(const string& name);
 
   struct base_desc {
     type_id type;
     int ptr_offset;
   };
 
-  void init(type_id const &type, class_id id, type_id const &wrapped_type, class_id wrapper_id, bool derivable);
+  void init(type_id const& type, class_id id, type_id const& wrapped_type, class_id wrapper_id, bool derivable);
 
-  void add_base(type_id const &base, cast_function cast);
+  void add_base(type_id const& base, cast_function cast);
 
-  void set_default_constructor(registration *member);
-  void add_member(registration *member);
-  void add_default_member(registration *member);
+  void set_default_constructor(registration* member);
+  void add_member(registration* member);
+  void add_default_member(registration* member);
 
   string name() const;
 
-  void add_static_constant(const char *name, int val);
-  void add_inner_scope(scope_ &s);
+  void add_static_constant(const char* name, int val);
+  void add_inner_scope(scope_& s);
 
   void add_cast(class_id src, class_id target, cast_function cast);
 
 private:
-  class_registration *m_registration;
+  class_registration* m_registration;
 
 public:
   int m_init_counter;
@@ -286,7 +286,7 @@ template <typename RT, typename OT, typename... ARGS> struct CountMethodArgument
 };
 
 template <class Class, typename MethodPointerType, class Policies> struct memfun_registration : registration {
-  memfun_registration(const std::string &name, MethodPointerType f, Policies const &policies)
+  memfun_registration(const std::string& name, MethodPointerType f, Policies const& policies)
       : m_name(name), methodPtr(f), policies(policies) {
     this->m_arguments = policies.lambdaList();
     this->m_doc_string = policies.docstring();
@@ -320,8 +320,8 @@ template <class Class, typename MethodPointerType, class Policies> struct memfun
 };
 
 template <class Class, class Begin, class End, class Policies> struct iterator_registration : registration {
-  iterator_registration(const string &name, Begin begin, End end, Policies const &policies, string const &arguments,
-                        string const &declares, string const &docstring)
+  iterator_registration(const string& name, Begin begin, End end, Policies const& policies, string const& arguments,
+                        string const& declares, string const& docstring)
       : m_name(name), beginPtr(begin), endPtr(end), policies(policies), m_arguments(arguments), m_declares(declares),
         m_doc_string(docstring) {}
 
@@ -371,8 +371,8 @@ template <typename... ARGS> struct CountConstructorArguments<constructor<ARGS...
 };
 
 template <class Class, class Pointer, class Signature, class Policies> struct constructor_registration_base : public registration {
-  constructor_registration_base(Policies const &policies, string const &name, string const &arguments, string const &declares,
-                                string const &docstring)
+  constructor_registration_base(Policies const& policies, string const& name, string const& arguments, string const& declares,
+                                string const& docstring)
       : policies(policies), m_name(name), m_arguments(arguments), m_declares(declares), m_doc_string(docstring) {}
 
   void register_() const {
@@ -408,8 +408,8 @@ class construct_derivable_class {};
 template <class Class, class HoldType, class Signature, class Policies, class DerivableType>
 struct constructor_registration : public constructor_registration_base<Class, HoldType, Signature, Policies> {
   typedef constructor_registration_base<Class, HoldType, Signature, Policies> Base;
-  constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares,
-                           string const &docstring)
+  constructor_registration(Policies const& policies, string const& name, string const& arguments, string const& declares,
+                           string const& docstring)
       : constructor_registration_base<Class, HoldType, Signature, Policies>(policies, name, arguments, declares, docstring){};
 };
 
@@ -417,8 +417,8 @@ struct constructor_registration : public constructor_registration_base<Class, Ho
 template <class Class, class HoldType, class Policies>
 struct constructor_registration<Class, HoldType, default_constructor, Policies, construct_non_derivable_class>
     : public constructor_registration_base<Class, HoldType, default_constructor, Policies> {
-  constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares,
-                           string const &docstring)
+  constructor_registration(Policies const& policies, string const& name, string const& arguments, string const& declares,
+                           string const& docstring)
       : constructor_registration_base<Class, HoldType, default_constructor, Policies>(policies, name, arguments, declares,
                                                                                       docstring){};
   core::Creator_sp registerDefaultConstructor_() const {
@@ -436,8 +436,8 @@ struct constructor_registration<Class, HoldType, default_constructor, Policies, 
  */
 template <class Class, class Policies>
 struct constructor_registration_base<Class, reg::null_type, default_constructor, Policies> : public registration {
-  constructor_registration_base(Policies const &policies, string const &name, string const &arguments, string const &declares,
-                                string const &docstring)
+  constructor_registration_base(Policies const& policies, string const& name, string const& arguments, string const& declares,
+                                string const& docstring)
       : policies(policies), m_name(name), m_arguments(arguments), m_declares(declares), m_doc_string(docstring) {}
 
   void register_() const { HARD_IMPLEMENT_MEF("Do I use this code?"); }
@@ -455,23 +455,23 @@ struct constructor_registration_base<Class, reg::null_type, default_constructor,
 template <class Class, class Policies>
 struct constructor_registration<Class, reg::null_type, default_constructor, Policies, construct_non_derivable_class>
     : public constructor_registration_base<Class, reg::null_type, default_constructor, Policies> {
-  constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares,
-                           string const &docstring)
+  constructor_registration(Policies const& policies, string const& name, string const& arguments, string const& declares,
+                           string const& docstring)
       : constructor_registration_base<Class, reg::null_type, default_constructor, Policies>(policies, name, arguments, declares,
                                                                                             docstring){};
   core::Creator_sp registerDefaultConstructor_() const {
     //                printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> -----
     //                Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
     //    return gctools::GC<DerivableDefaultConstructorCreator_O<Class>>::allocate();
-    return gctools::GC<DefaultConstructorCreator_O<Class, Class *>>::allocate();
+    return gctools::GC<DefaultConstructorCreator_O<Class, Class*>>::allocate();
   }
 };
 
 template <class Class, class Get, class GetPolicies, class Set = reg::null_type, class SetPolicies = reg::null_type>
 struct property_registration : registration {
-  property_registration(const string &name, Get const &get, GetPolicies const &get_policies, Set const &set = Set(),
-                        SetPolicies const &set_policies = SetPolicies(), string const &arguments = "", string const &declares = "",
-                        string const &docstring = "")
+  property_registration(const string& name, Get const& get, GetPolicies const& get_policies, Set const& set = Set(),
+                        SetPolicies const& set_policies = SetPolicies(), string const& arguments = "", string const& declares = "",
+                        string const& docstring = "")
       : m_name(name), get(get), get_policies(get_policies), set(set), set_policies(set_policies), m_arguments(arguments),
         m_declares(declares), m_doc_string(docstring) {}
 
@@ -484,7 +484,7 @@ struct property_registration : registration {
     core::Symbol_sp sym = core::lisp_intern(n, symbol_packageName(classSymbol));
     using VariadicGetterType = WRAPPER_Getter<reg::null_type, Class, Get>;
     core::GlobalSimpleFun_sp entryPoint = makeGlobalSimpleFunAndFunctionDescription<VariadicGetterType>(sym, nil<core::T_O>());
-    maybe_register_symbol_using_dladdr((void *)VariadicGetterType::entry_point);
+    maybe_register_symbol_using_dladdr((void*)VariadicGetterType::entry_point);
     auto raw_getter = gc::GC<VariadicGetterType>::allocate(entryPoint, get);
     core::BuiltinClosure_sp getter = gc::As<core::BuiltinClosure_sp>(raw_getter);
     lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), sym, classSymbol, getter, 0, true, m_arguments, m_declares,
@@ -493,7 +493,7 @@ struct property_registration : registration {
     using VariadicSetterType = WRAPPER_Setter<reg::null_type, Class, Set>;
     core::GlobalSimpleFun_sp setterEntryPoint =
         makeGlobalSimpleFunAndFunctionDescription<VariadicSetterType>(setf_name, nil<core::T_O>());
-    maybe_register_symbol_using_dladdr((void *)VariadicSetterType::entry_point);
+    maybe_register_symbol_using_dladdr((void*)VariadicSetterType::entry_point);
     auto raw_setter = gc::GC<VariadicSetterType>::allocate(setterEntryPoint, set);
     core::BuiltinClosure_sp setter = gc::As<core::BuiltinClosure_sp>(raw_setter);
     lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), setf_name, classSymbol, setter, 1, true, m_arguments, m_declares,
@@ -515,9 +515,9 @@ struct property_registration : registration {
 
 template <class Class, class Get, class GetPolicies>
 struct property_registration<Class, Get, GetPolicies, reg::null_type, reg::null_type> : registration {
-  property_registration(const string &name, Get const &get, GetPolicies const &get_policies,
-                        reg::null_type const &set = reg::null_type(), reg::null_type const &set_policies = reg::null_type(),
-                        string const &arguments = "", string const &declares = "", string const &docstring = "")
+  property_registration(const string& name, Get const& get, GetPolicies const& get_policies,
+                        reg::null_type const& set = reg::null_type(), reg::null_type const& set_policies = reg::null_type(),
+                        string const& arguments = "", string const& declares = "", string const& docstring = "")
       : m_name(name), get(get), get_policies(get_policies), m_arguments(arguments), m_declares(declares), m_doc_string(docstring) {}
 
   void register_() const {
@@ -550,7 +550,7 @@ template <class T, class Base = no_bases, class WrappedType = reg::null_type> st
   typedef class_<T, Base> self_t;
 
 private:
-  template <class A, class B> class_(const class_<A, B> &);
+  template <class A, class B> class_(const class_<A, B>&);
 
 public:
   static_assert(std::is_same_v<WrappedType, reg::null_type> || std::is_base_of_v<T, WrappedType>,
@@ -561,7 +561,7 @@ public:
 
   typedef std::unique_ptr<T> HoldType;
 
-  template <class Src, class Target> void add_downcast(Src *, Target *) {
+  template <class Src, class Target> void add_downcast(Src*, Target*) {
     // We use if constexpr. This will discard the add_cast when Src is not
     // polymorphic, which is important as add_cast would not be instantiable.
     if constexpr (std::is_polymorphic_v<Src>) {
@@ -577,7 +577,7 @@ public:
     add_base(typeid(To), detail::static_cast_<T, To>::execute);
     add_cast(reg::registered_class<T>::id, reg::registered_class<To>::id, detail::static_cast_<T, To>::execute);
 
-    add_downcast((To *)0, (T *)0);
+    add_downcast((To*)0, (T*)0);
     return 0;
   }
 
@@ -593,7 +593,7 @@ public:
 #undef CLBIND_GEN_BASE_INFO
 
   template <typename NameType>
-  class_(scope_ &outer_scope, const NameType &name, const std::string &docstring = "")
+  class_(scope_& outer_scope, const NameType& name, const std::string& docstring = "")
       : class_base(PrepareName(name)), _outer_scope(&outer_scope), scope(*this) {
 #ifndef NDEBUG
     detail::check_link_compatibility();
@@ -603,12 +603,12 @@ public:
   }
 
   template <typename NameType, typename... Types>
-  class_ &def_constructor(const NameType &name, constructor<Types...> sig, string const &arguments = "",
-                          string const &declares = "", string const &docstring = "") {
+  class_& def_constructor(const NameType& name, constructor<Types...> sig, string const& arguments = "",
+                          string const& declares = "", string const& docstring = "") {
     return this->def_constructor_(PrepareName(name), &sig, policies<adopt<result>>(), arguments, declares, docstring);
   }
 
-  template <typename NameType, class F, class... PTypes> class_ &def(const NameType &name, F f, PTypes... pols) {
+  template <typename NameType, class F, class... PTypes> class_& def(const NameType& name, F f, PTypes... pols) {
     typedef policies<PTypes...> Policies;
     Policies curPolicies;
     walk_policy(curPolicies, pols...);
@@ -617,22 +617,22 @@ public:
 
   // static functions
   template <typename NameType, class F, class Policies>
-  class_ &def_static(const char *name, F fn, string const &docstring = "", string const &arguments = "",
-                     string const &declares = "", Policies policies = Policies()) {
+  class_& def_static(const char* name, F fn, string const& docstring = "", string const& arguments = "",
+                     string const& declares = "", Policies policies = Policies()) {
 
     this->scope_::def(name, fn, policies, docstring, arguments, declares);
     return *this;
   }
   // static functions
   template <typename NameType, class F>
-  class_ &def_static(const NameType &name, F fn, string const &docstring = "", string const &arguments = "",
-                     string const &declares = "") {
+  class_& def_static(const NameType& name, F fn, string const& docstring = "", string const& arguments = "",
+                     string const& declares = "") {
     this->scope_::def(name, fn, docstring.c_str(), arguments.c_str(), declares.c_str());
     return *this;
   }
 
   // static functions
-  template <typename... Types> class_ &def(constructor<Types...> sig) {
+  template <typename... Types> class_& def(constructor<Types...> sig) {
     printf("%s:%d def(expose::init...)\n", __FILE__, __LINE__);
     stringstream ss;
     ss << "make-";
@@ -640,15 +640,15 @@ public:
     if (this->m_init_counter) {
       ss << this->m_init_counter;
     }
-    maybe_register_symbol_using_dladdr((void *)sig, sizeof(sig), ss.str());
+    maybe_register_symbol_using_dladdr((void*)sig, sizeof(sig), ss.str());
     this->def_constructor_(ss.str(), &sig, policies<>(), "", "", "");
     this->m_init_counter++;
     return *this;
   }
 
   template <typename NameType, class Getter>
-  class_ &property(const NameType &name, Getter g, string const &arguments = "", string const &declares = "",
-                   string const &docstring = "") {
+  class_& property(const NameType& name, Getter g, string const& arguments = "", string const& declares = "",
+                   string const& docstring = "") {
     this->add_member(new detail::property_registration<T, Getter, reg::null_type>(PrepareName(name) // name
                                                                                   ,
                                                                                   g // Get
@@ -661,8 +661,8 @@ public:
   }
 
   template <typename NameType, class Begin, class End>
-  class_ &iterator(const NameType &iteratorName, Begin beginFn, End endFn, string const &arguments = "",
-                   string const &declares = "", string const &docstring = "") {
+  class_& iterator(const NameType& iteratorName, Begin beginFn, End endFn, string const& arguments = "",
+                   string const& declares = "", string const& docstring = "") {
     this->add_member(new detail::iterator_registration<T, Begin, End, reg::null_type>(PrepareName(iteratorName),
                                                                                       beginFn // begin
                                                                                       ,
@@ -674,7 +674,7 @@ public:
     return *this;
   }
 
-  template <typename NameType, class C, class D> class_ &def_readonly(const NameType &name, D C::*mem_ptr) {
+  template <typename NameType, class C, class D> class_& def_readonly(const NameType& name, D C::*mem_ptr) {
     typedef detail::property_registration<T, D C::*, detail::null_type> registration_type;
 
     this->add_member(new registration_type(PrepareName(name), mem_ptr, detail::null_type()));
@@ -682,14 +682,14 @@ public:
   }
 
   template <typename NameType, class C, class D, class Policies>
-  class_ &def_readonly(const NameType &name, D C::*mem_ptr, Policies const &policies) {
+  class_& def_readonly(const NameType& name, D C::*mem_ptr, Policies const& policies) {
     typedef detail::property_registration<T, D C::*, Policies> registration_type;
 
     this->add_member(new registration_type(PrepareName(name), mem_ptr, policies));
     return *this;
   }
 
-  template <typename NameType, class C, class D> class_ &def_readwrite(const NameType &name, D C::*mem_ptr) {
+  template <typename NameType, class C, class D> class_& def_readwrite(const NameType& name, D C::*mem_ptr) {
     typedef detail::property_registration<T, D C::*, detail::null_type, D C::*> registration_type;
 
     this->add_member(new registration_type(PrepareName(name), mem_ptr, detail::null_type(), mem_ptr));
@@ -697,7 +697,7 @@ public:
   }
 
   template <typename NameType, class C, class D, class GetPolicies>
-  class_ &def_readwrite(const NameType &name, D C::*mem_ptr, GetPolicies const &get_policies) {
+  class_& def_readwrite(const NameType& name, D C::*mem_ptr, GetPolicies const& get_policies) {
     typedef detail::property_registration<T, D C::*, GetPolicies, D C::*> registration_type;
 
     this->add_member(new registration_type(PrepareName(name), mem_ptr, get_policies, mem_ptr));
@@ -705,18 +705,18 @@ public:
   }
 
   template <typename NameType, class C, class D, class GetPolicies, class SetPolicies>
-  class_ &def_readwrite(const NameType &name, D C::*mem_ptr, GetPolicies const &get_policies, SetPolicies const &set_policies) {
+  class_& def_readwrite(const NameType& name, D C::*mem_ptr, GetPolicies const& get_policies, SetPolicies const& set_policies) {
     typedef detail::property_registration<T, D C::*, GetPolicies, D C::*, SetPolicies> registration_type;
 
     this->add_member(new registration_type(PrepareName(name), mem_ptr, get_policies, mem_ptr, set_policies));
     return *this;
   }
 
-  template <class Derived, class Policies> class_ &def(detail::operator_<Derived>, Policies const &policies) {
+  template <class Derived, class Policies> class_& def(detail::operator_<Derived>, Policies const& policies) {
     return this->def(Derived::name(), &Derived::template apply<T, Policies>::execute, policies);
   }
 
-  template <class Derived> class_ &def(detail::operator_<Derived>) {
+  template <class Derived> class_& def(detail::operator_<Derived>) {
     return this->def(Derived::name(), &Derived::template apply<T, detail::null_type>::execute);
   }
 
@@ -728,18 +728,18 @@ public:
   }
 #endif
 
-  scope_ *_outer_scope;
+  scope_* _outer_scope;
   detail::static_scope<self_t> scope;
 
 private:
-  void operator=(class_ const &);
+  void operator=(class_ const&);
 
-  void add_wrapper_cast(reg::null_type *) {}
+  void add_wrapper_cast(reg::null_type*) {}
 
-  template <class U> void add_wrapper_cast(U *) {
+  template <class U> void add_wrapper_cast(U*) {
     add_cast(reg::registered_class<U>::id, reg::registered_class<T>::id, detail::static_cast_<U, T>::execute);
 
-    add_downcast((T *)0, (U *)0);
+    add_downcast((T*)0, (U*)0);
   }
 
   void init() {
@@ -748,7 +748,7 @@ private:
     class_base::init(typeid(T), reg::registered_class<T>::id, typeid(WrappedType), reg::registered_class<WrappedType>::id,
                      isDerivableCxxClass<T>(0));
 
-    add_wrapper_cast((WrappedType *)0);
+    add_wrapper_cast((WrappedType*)0);
 #if 0
     int*** a = HoldType();
     int*** b = WrappedType();
@@ -759,15 +759,15 @@ private:
 
   // these handle default implementation of virtual functions
   template <class F, class Policies>
-  class_ &virtual_def(const std::string &name, F const &fn, Policies const &policies, reg::null_type) {
-    maybe_register_symbol_using_dladdr(*(void **)&fn, sizeof(fn), name);
+  class_& virtual_def(const std::string& name, F const& fn, Policies const& policies, reg::null_type) {
+    maybe_register_symbol_using_dladdr(*(void**)&fn, sizeof(fn), name);
     this->add_member(new detail::memfun_registration<T, F, Policies>(name, fn, policies));
     return *this;
   }
 
   template <class Signature, class Policies>
-  class_ &def_default_constructor_(const char *name, Signature *, Policies const &, string const &docstring,
-                                   string const &arguments, string const &declares) {
+  class_& def_default_constructor_(const char* name, Signature*, Policies const&, string const& docstring, string const& arguments,
+                                   string const& declares) {
     typedef std::conditional_t<std::is_same_v<WrappedType, reg::null_type>, T, WrappedType> construct_type;
 
     this->set_default_constructor(
@@ -777,8 +777,8 @@ private:
   }
 
   template <class Signature, class Policies>
-  class_ &def_constructor_(const string &name, Signature *, Policies const &, string const &arguments, string const &declares,
-                           string const &docstring) {
+  class_& def_constructor_(const string& name, Signature*, Policies const&, string const& arguments, string const& declares,
+                           string const& docstring) {
     typedef Signature signature;
 
     typedef std::conditional_t<std::is_same_v<WrappedType, reg::null_type>, T, WrappedType> construct_type;
@@ -791,7 +791,7 @@ private:
 
 public:
   template <class Getter, class Setter>
-  class_ &def_property(const std::string &prefix, Getter g, Setter s, const char *docstring = "") {
+  class_& def_property(const std::string& prefix, Getter g, Setter s, const char* docstring = "") {
     this->property_impl(prefix, g, s);
   }
 };

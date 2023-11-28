@@ -52,7 +52,7 @@ public:
 
 public:
   static FileScope_sp create(Pathname_sp path, int handle);
-  static FileScope_sp create(const string &fileNamePath, int handle);
+  static FileScope_sp create(const string& fileNamePath, int handle);
 
 public: // ctor/dtor for classes with shared virtual base
   explicit FileScope_O();
@@ -61,8 +61,8 @@ public: // ctor/dtor for classes with shared virtual base
   GCPRIVATE : // instance variables here
               Pathname_sp _pathname;
   /*! Allocated buffer that stores the file name until the program exits */
-  char *_PermanentPathName;
-  char *_PermanentFileName;
+  char* _PermanentPathName;
+  char* _PermanentFileName;
   int _FileHandle;
 
 public: // Functions here
@@ -72,8 +72,8 @@ public: // Functions here
   string namestring() const;
   CL_LISPIFY_NAME("FileScope-pathname");
   CL_DEFMETHOD Pathname_sp pathname() const { return this->_pathname; };
-  const char *permanentPathName();
-  const char *permanentFileName();
+  const char* permanentPathName();
+  const char* permanentFileName();
   string __repr__() const override;
 }; // FileScope class
 
@@ -129,7 +129,7 @@ public:
   void setf_source_pos_info_extra(T_sp, T_sp);
 };
 
-SourcePosInfo_sp core__makeSourcePosInfo(const string &filename, bool filenamep, size_t filepos, bool fileposp, size_t lineno,
+SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool filenamep, size_t filepos, bool fileposp, size_t lineno,
                                          bool linenop, size_t column, bool columnp, T_sp function_scope = nil<T_O>(),
                                          bool function_scope_p = false, T_sp inlined_at = nil<T_O>(), bool inlined_at_p = false,
                                          T_sp defaults = nil<T_O>(), bool defaults_p = false);

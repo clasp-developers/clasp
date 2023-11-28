@@ -83,7 +83,7 @@ public:
   /*! If this is the allocator for the original Adapter class return true - otherwise false */
   virtual int duplicationLevel() const { return this->_duplicationLevel; };
   core::T_sp creator_allocate() {
-    T *naked_ptr(new T());
+    T* naked_ptr(new T());
     //            printf("%s:%d - creating WrapperType\n", __FILE__,__LINE__);
     gctools::smart_ptr<WrapperType> retval = WrapperType::make_wrapper(naked_ptr, reg::registered_class<T>::id);
     //            clbind::support_enable_wrapper_from_this<T,Pointer>(retval,naked_ptr,naked_ptr);
@@ -125,7 +125,7 @@ public:
   DerivableDefaultConstructorCreator_O(core::GlobalSimpleFun_sp fdesc)
       : ConstructorCreator_O(fdesc, reg::lisp_classSymbol<T>()), _duplicationLevel(0){};
   DerivableDefaultConstructorCreator_O(core::GlobalSimpleFun_sp fdesc, core::Symbol_sp cn,
-                                       const gctools::Header_s::StampWtagMtag &header, int dupnum)
+                                       const gctools::Header_s::StampWtagMtag& header, int dupnum)
       : ConstructorCreator_O(fdesc, cn), _Header(header), _duplicationLevel(dupnum){};
 
   /*! If this is the allocator for the original Adapter class return true - otherwise false */
@@ -167,23 +167,23 @@ public:
   static inline LCC_RETURN LISP_CALLING_CONVENTION() { SIMPLE_ERROR("What do we do when this is called?"); }
   static inline LISP_ENTRY_0() { return entry_point_n(lcc_closure, 0, NULL); }
   static inline LISP_ENTRY_1() {
-    core::T_O *args[1] = {lcc_farg0};
+    core::T_O* args[1] = {lcc_farg0};
     return entry_point_n(lcc_closure, 1, args);
   }
   static inline LISP_ENTRY_2() {
-    core::T_O *args[2] = {lcc_farg0, lcc_farg1};
+    core::T_O* args[2] = {lcc_farg0, lcc_farg1};
     return entry_point_n(lcc_closure, 2, args);
   }
   static inline LISP_ENTRY_3() {
-    core::T_O *args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
+    core::T_O* args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
     return entry_point_n(lcc_closure, 3, args);
   }
   static inline LISP_ENTRY_4() {
-    core::T_O *args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
+    core::T_O* args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
     return entry_point_n(lcc_closure, 4, args);
   }
   static inline LISP_ENTRY_5() {
-    core::T_O *args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
+    core::T_O* args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
     return entry_point_n(lcc_closure, 5, args);
   }
 };
@@ -208,14 +208,14 @@ public:
 
 public:
 public:
-  virtual const char *describe() const { return "VariadicConstructorFunctor"; };
+  virtual const char* describe() const { return "VariadicConstructorFunctor"; };
   enum { NumParams = sizeof...(ARGS) };
   WRAPPER_Constructor_O(core::FunctionDescription_sp fdesc)
       : core::GlobalSimpleFunBase_O(fdesc, core::ClaspXepFunction::make<MyType>(), nil<core::T_O>()){};
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
-  static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper &dummy, core::T_O *lcc_closure, size_t lcc_nargs,
-                                                 core::T_O **lcc_args) {
+  static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs,
+                                                 core::T_O** lcc_args) {
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     if (lcc_nargs != NumParams)
@@ -224,29 +224,29 @@ public:
     return constructor_apply_and_return<WrapperType, Policies, ConstructType, decltype(all_args)>::go(std::move(all_args));
   }
 
-  static inline LCC_RETURN entry_point_n(core::T_O *lcc_closure, size_t lcc_nargs, core::T_O **lcc_args) {
+  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args) {
     return wrapper_entry_point_n(ArgumentWrapper(), lcc_closure, lcc_nargs, lcc_args);
   }
 
   static inline LISP_ENTRY_0() { return entry_point_n(lcc_closure, 0, NULL); }
   static inline LISP_ENTRY_1() {
-    core::T_O *args[1] = {lcc_farg0};
+    core::T_O* args[1] = {lcc_farg0};
     return entry_point_n(lcc_closure, 1, args);
   }
   static inline LISP_ENTRY_2() {
-    core::T_O *args[2] = {lcc_farg0, lcc_farg1};
+    core::T_O* args[2] = {lcc_farg0, lcc_farg1};
     return entry_point_n(lcc_closure, 2, args);
   }
   static inline LISP_ENTRY_3() {
-    core::T_O *args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
+    core::T_O* args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
     return entry_point_n(lcc_closure, 3, args);
   }
   static inline LISP_ENTRY_4() {
-    core::T_O *args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
+    core::T_O* args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
     return entry_point_n(lcc_closure, 4, args);
   }
   static inline LISP_ENTRY_5() {
-    core::T_O *args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
+    core::T_O* args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
     return entry_point_n(lcc_closure, 5, args);
   }
 };

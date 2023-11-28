@@ -45,7 +45,7 @@ THE SOFTWARE.
 
 namespace core {
 
-Bignum mixedBaseDigitsToBignum(const vector<int> &bases, const vector<int> &digits) {
+Bignum mixedBaseDigitsToBignum(const vector<int>& bases, const vector<int>& digits) {
   Bignum index;
   vector<int>::const_iterator bi, di;
   ASSERT(bases.size() == digits.size());
@@ -60,7 +60,7 @@ Bignum mixedBaseDigitsToBignum(const vector<int> &bases, const vector<int> &digi
   return index;
 }
 
-Bignum numberOfIndicesForMixedBase(const vector<int> &bases) {
+Bignum numberOfIndicesForMixedBase(const vector<int>& bases) {
   vector<int>::const_iterator bi;
   Bignum numSeq;
   ASSERT(bases.size() >= 1);
@@ -76,7 +76,7 @@ Bignum numberOfIndicesForMixedBase(const vector<int> &bases) {
 /*! Convert a collection of positive mixed-base digits to a LongLongInt index.
  * If the index can not be stored in a LongLongInt then return -1
  */
-vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &bases) {
+vector<int> bignumToMixedBaseDigits(const Bignum& index, const vector<int>& bases) {
   Bignum curIndex;
   vector<int> digits;
   vector<int>::const_reverse_iterator bi;

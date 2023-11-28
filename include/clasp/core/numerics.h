@@ -37,9 +37,9 @@ namespace numerics {
 
 static const double pi = 3.14159265;
 
-inline double radFromDeg(const double &deg) { return deg * 0.0174533; }
+inline double radFromDeg(const double& deg) { return deg * 0.0174533; }
 
-inline double degFromRad(const double &rad) {
+inline double degFromRad(const double& rad) {
 #define DEG_FROM_RAD 1.0 / 0.0174533;
   return rad * DEG_FROM_RAD;
 }
@@ -48,14 +48,14 @@ inline double degFromRad(const double &rad) {
 /*! Convert a collection of positive mixed-base digits to a Bignum index.
  * If the index can not be stored in a Bignum then return -1
  */
-extern Bignum mixedBaseDigitsToBignum(const vector<int> &bases, const vector<int> &digits);
+extern Bignum mixedBaseDigitsToBignum(const vector<int>& bases, const vector<int>& digits);
 
 /*! Convert a collection of positive mixed-base digits to a LongLongInt index.
  * If the index can not be stored in a LongLongInt then return -1
  */
-extern vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &bases);
+extern vector<int> bignumToMixedBaseDigits(const Bignum& index, const vector<int>& bases);
 
-extern Bignum numberOfIndicesForMixedBase(const vector<int> &bases);
+extern Bignum numberOfIndicesForMixedBase(const vector<int>& bases);
 
 // declared here for cando compatibility; defined in random.cc
 double randomNumber01();

@@ -33,7 +33,7 @@ struct CharacterInfo {
   HashTableEqual_sp _NamesToCharacterIndex;
   gctools::Vec0<T_sp> gIndexedCharacters;
   gctools::Vec0<T_sp> gCharacterNames;
-  const char *repr() const { return "CharacterInfo"; };
+  const char* repr() const { return "CharacterInfo"; };
   CharacterInfo(){};
   void initialize();
 };

@@ -40,13 +40,13 @@ FORWARD(IOFileStream);
 FORWARD(IOStreamStream);
 FORWARD(ConcatenatedStream);
 
-void clasp_write_string(const string &str, T_sp strm);
+void clasp_write_string(const string& str, T_sp strm);
 
 #define STDOUT_BFORMAT(x) core::clasp_write_string((x).str(), ::cl::_sym_STARstandard_outputSTAR->symbolValue())
 
 #define CPP_SOURCE() (fmt::format("{}:{}:{}", __FILE__, __LINE__, __FUNCTION__))
 
-void lisp_write(const std::string &s);
-void lisp_write(const std::string &s, T_sp stream);
+void lisp_write(const std::string& s);
+void lisp_write(const std::string& s, T_sp stream);
 
 } // namespace core

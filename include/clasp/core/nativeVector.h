@@ -19,11 +19,11 @@ public:
   CL_DEF_CLASS_METHOD inline static gc::smart_ptr<NativeVector_int_O> make() { return gctools::GC<NativeVector_int_O>::allocate(); }
 
 public:
-  inline int &operator[](size_t i) {
+  inline int& operator[](size_t i) {
     BOUNDS_ASSERT(i < this->_Vector.size());
     return this->_Vector[i];
   };
-  inline const int &operator[](size_t i) const {
+  inline const int& operator[](size_t i) const {
     BOUNDS_ASSERT(i < this->_Vector.size());
     return this->_Vector[i];
   };

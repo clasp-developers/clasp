@@ -8,18 +8,18 @@
 #include <sys/mman.h>
 #include <clasp/core/core.h>
 #include <clasp/core/bformat.h>
-#include <clasp/core/ql.h>            // ql::list
-#include <clasp/core/primitives.h>    // core__ensure_function_cell
-#include <clasp/core/bytecode.h>      // modules, functions
-#include <clasp/core/lispStream.h>    // I/O
-#include <clasp/core/hashTable.h>     // making hash tables
-#include <clasp/core/bignum.h>        // making bignums
-#include <clasp/core/package.h>       // making packages
-#include <clasp/core/pathname.h>      // making pathnames
-#include <clasp/core/unixfsys.h>      // cl__truename
-#include <clasp/llvmo/llvmoPackage.h> // cmp__compile_trampoline
+#include <clasp/core/ql.h>                // ql::list
+#include <clasp/core/primitives.h>        // core__ensure_function_cell
+#include <clasp/core/bytecode.h>          // modules, functions
+#include <clasp/core/lispStream.h>        // I/O
+#include <clasp/core/hashTable.h>         // making hash tables
+#include <clasp/core/bignum.h>            // making bignums
+#include <clasp/core/package.h>           // making packages
+#include <clasp/core/pathname.h>          // making pathnames
+#include <clasp/core/unixfsys.h>          // cl__truename
+#include <clasp/llvmo/llvmoPackage.h>     // cmp__compile_trampoline
 #include <clasp/core/bytecode_compiler.h> // btb_bcfun_p
-#include <clasp/core/evaluator.h>     // eval::funcall
+#include <clasp/core/evaluator.h>         // eval::funcall
 
 // FIXME: Move these to the generated file thingie
 #define LTV_OP_NIL 65
@@ -76,7 +76,7 @@ typedef std::array<uint16_t, 2> BCVersion;
 const BCVersion min_version = {BC_VERSION_MAJOR, BC_VERSION_MINOR};
 const BCVersion max_version = {BC_VERSION_MAJOR, BC_VERSION_MINOR};
 
-static uint64_t ltv_header_decode(uint8_t *header) {
+static uint64_t ltv_header_decode(uint8_t* header) {
   if (header[0] != FASL_MAGIC_NUMBER_0 || header[1] != FASL_MAGIC_NUMBER_1 || header[2] != FASL_MAGIC_NUMBER_2 ||
       header[3] != FASL_MAGIC_NUMBER_3)
     SIMPLE_ERROR("Invalid FASL: incorrect magic number {:02x}{:02x}{:02x}{:02x}", header[0], header[1], header[2], header[3]);
@@ -89,7 +89,7 @@ static uint64_t ltv_header_decode(uint8_t *header) {
          ((uint64_t)header[12] << 24) | ((uint64_t)header[13] << 16) | ((uint64_t)header[14] << 8) | ((uint64_t)header[15] << 0);
 }
 
-static void ltv_header_encode(uint8_t *header, uint64_t instruction_count) {
+static void ltv_header_encode(uint8_t* header, uint64_t instruction_count) {
   header[0] = FASL_MAGIC_NUMBER_0;
   header[1] = FASL_MAGIC_NUMBER_1;
   header[2] = FASL_MAGIC_NUMBER_2;
@@ -585,13 +585,13 @@ struct loadltv {
     FunctionDescription_sp fdesc = makeFunctionDescription(name, lambda_list, docstring, nil<T_O>(), nil<T_O>(), -1, -1, -1);
     GlobalBytecodeSimpleFun_sp fun = core__makeGlobalBytecodeSimpleFun(fdesc, module, nlocals, nclosed, entry_point, final_size,
                                                                        llvmo::cmp__compile_trampoline(name));
-    if (comp::_sym_STARautocompile_hookSTAR->boundP()
-        && comp::_sym_STARautocompile_hookSTAR->symbolValue().notnilp()
+    if (comp::_sym_STARautocompile_hookSTAR->boundP() &&
+        comp::_sym_STARautocompile_hookSTAR->symbolValue().notnilp()
         // Not sure exactly how it happens that we get here with
         // an unfinished module. From the bcfuns in the debug info,
         // maybe? Maybe.
-        && gc::IsA<SimpleVector_sp>(module->debugInfo())
-        && comp::btb_bcfun_p(fun, gc::As_unsafe<SimpleVector_sp>(module->debugInfo()))) {
+        && gc::IsA<SimpleVector_sp>(module->debugInfo()) &&
+        comp::btb_bcfun_p(fun, gc::As_unsafe<SimpleVector_sp>(module->debugInfo()))) {
       T_sp nfun = eval::funcall(comp::_sym_STARautocompile_hookSTAR->symbolValue(), fun, nil<T_O>());
       fun->setSimpleFun(gc::As<SimpleFun_sp>(nfun));
     }
@@ -640,7 +640,7 @@ struct loadltv {
     Function_sp func = gc::As<Function_sp>(get_ltv(read_index()));
     // fmt::print("create {}\n", _rep_(func));
     uint16_t nargs = read_u16();
-    T_O *args[nargs];
+    T_O* args[nargs];
     for (size_t i = 0; i < nargs; ++i)
       args[i] = get_ltv(read_index()).raw_();
     T_sp res = funcall_general<Function_O>((gc::Tagged)(func.raw_()), nargs, args);
@@ -651,7 +651,7 @@ struct loadltv {
     Function_sp func = gc::As<Function_sp>(get_ltv(read_index()));
     // fmt::print("init {}\n", _rep_(func));
     uint16_t nargs = read_u16();
-    T_O *args[nargs];
+    T_O* args[nargs];
     for (size_t i = 0; i < nargs; ++i)
       args[i] = get_ltv(read_index()).raw_();
     funcall_general<Function_O>((gc::Tagged)(func.raw_()), nargs, args);
@@ -924,9 +924,9 @@ CL_DEFUN bool load_bytecode(T_sp filename, bool verbose, bool print, T_sp extern
 }
 
 struct ltv_MmapInfo {
-  uint8_t *_Memory;
+  uint8_t* _Memory;
   size_t _Len;
-  ltv_MmapInfo(uint8_t *mem, size_t len) : _Memory(mem), _Len(len){};
+  ltv_MmapInfo(uint8_t* mem, size_t len) : _Memory(mem), _Len(len){};
 };
 
 CL_LAMBDA(output-designator files &optional (verbose nil));
@@ -940,7 +940,7 @@ CL_DEFUN void core__link_fasl_files(T_sp output, List_sp files, bool verbose) {
     int fd = open(filename->get_std_string().c_str(), O_RDONLY);
     off_t fsize = lseek(fd, 0, SEEK_END);
     lseek(fd, 0, SEEK_SET);
-    uint8_t *memory = (uint8_t *)mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
+    uint8_t* memory = (uint8_t*)mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
     close(fd);
     if (memory == MAP_FAILED) {
       SIMPLE_ERROR("Could not mmap {} because of {}", _rep_(filename), strerror(errno));

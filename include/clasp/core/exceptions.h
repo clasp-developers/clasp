@@ -44,10 +44,10 @@ THE SOFTWARE.
 #include <clasp/core/primitives.fwd.h>
 
 namespace cl {
-extern core::Symbol_sp &_sym_cellError;
+extern core::Symbol_sp& _sym_cellError;
 };
 namespace kw {
-extern core::Symbol_sp &_sym_name;
+extern core::Symbol_sp& _sym_name;
 };
 
 /* ------------------------------------------------------------
@@ -197,7 +197,7 @@ struct SaveLispAndDie {
   string _FileName;
   bool _Executable;
   string _LibDir;
-  SaveLispAndDie(const std::string &filename, bool executable, const std::string &libDir)
+  SaveLispAndDie(const std::string& filename, bool executable, const std::string& libDir)
       : _FileName(filename), _Executable(executable), _LibDir(libDir){};
 };
 
@@ -209,7 +209,7 @@ private:
   string _Message;
 
 public:
-  TerminateProgramIfBatch(int result, string const &message) : _ExitResult(result), _Message(message){};
+  TerminateProgramIfBatch(int result, string const& message) : _ExitResult(result), _Message(message){};
   string message() const { return this->_Message; };
   int getExitResult() { return this->_ExitResult; };
 };
@@ -231,13 +231,13 @@ class ATTR_WEAK Unwind {
   virtual void keyFunctionForVtable() ATTR_WEAK;
 
 private:
-  void *_Frame; // NOT GC'd use FIXNUM tagged_ptr
+  void* _Frame; // NOT GC'd use FIXNUM tagged_ptr
   size_t _Index;
 
 public:
-  ATTR_WEAK Unwind(void *frame, size_t index) : _Frame(frame), _Index(index){};
+  ATTR_WEAK Unwind(void* frame, size_t index) : _Frame(frame), _Index(index){};
   /*ATTR_WEAK*/ virtual ~Unwind(){};
-  void *getFrame() const { return this->_Frame; };
+  void* getFrame() const { return this->_Frame; };
   size_t index() const { return this->_Index; };
 };
 
@@ -255,12 +255,12 @@ void wrongNumberOfArguments(core::T_sp closure, size_t givenNumberOfArguments, s
 /*! Set a break-point in _trapThrow to catch
  * every exception except those thrown by THROW_noTrap
  */
-extern void _trapThrow(const string &fileName, uint line, const string &msg);
+extern void _trapThrow(const string& fileName, uint line, const string& msg);
 
 /*! If DEBUG_SOURCE macro is defined then this class uses RAII to log entry/exit of C++ functions
           An instance of this struct is declared by the _G() macro */
 struct CxxFunctionInvocationLogger {
-  CxxFunctionInvocationLogger(const char *cPSourceFile, const char *cPFunctionName, uint lineNumber);
+  CxxFunctionInvocationLogger(const char* cPSourceFile, const char* cPFunctionName, uint lineNumber);
   virtual ~CxxFunctionInvocationLogger();
 };
 
@@ -342,7 +342,7 @@ private:
 
 private:
   int DebugCallDepth;
-  const char *_DebugTraceSourceFileName;
+  const char* _DebugTraceSourceFileName;
   int DebugTraceLineNumber;
   bool DebugLogAsXml;
   bool DebugLogAddBrackets;
@@ -356,26 +356,26 @@ public:
   void open();
   void close();
   void finalClose();
-  bool isOn(const char *fileName, uint debugFlags);
-  DebugStream &beginNode(uint debugFlags);
-  DebugStream &beginNode(uint debugFlags, const char *sourceFile, const char *functionName, uint lineNumber, uint col,
-                         const string &message);
-  DebugStream &endNode(uint debugFlags);
-  DebugStream &writeRaw(const string &data);
-  DebugStream &writeText(const string &data);
-  DebugStream &writeTextCr(const string &data);
-  DebugStream &writeInt(uint i);
-  DebugStream &writePtr(void *);
-  DebugStream &writeLn();
-  DebugStream &log(const string &msg);
+  bool isOn(const char* fileName, uint debugFlags);
+  DebugStream& beginNode(uint debugFlags);
+  DebugStream& beginNode(uint debugFlags, const char* sourceFile, const char* functionName, uint lineNumber, uint col,
+                         const string& message);
+  DebugStream& endNode(uint debugFlags);
+  DebugStream& writeRaw(const string& data);
+  DebugStream& writeText(const string& data);
+  DebugStream& writeTextCr(const string& data);
+  DebugStream& writeInt(uint i);
+  DebugStream& writePtr(void*);
+  DebugStream& writeLn();
+  DebugStream& log(const string& msg);
 
   string nextPosition();
 
   bool debugAll() { return this->_DebugAll; };
   bool debugLisp() { return this->_DebugLisp; };
   bool debugScript() { return this->_DebugScript; };
-  void addDebugFileName(const string &fn) { this->_DebugFileNames.insert(fn); };
-  bool recognizesDebugFileName(const string &fn);
+  void addDebugFileName(const string& fn) { this->_DebugFileNames.insert(fn); };
+  bool recognizesDebugFileName(const string& fn);
   string allDebugFileNames();
 
   void setSuppressMessages(bool s);
@@ -385,7 +385,7 @@ public:
   //	void	setDebugPrefix(const char* s);
   //	const char*	getTraceFile();
   //	uint	getTraceLine();
-  const char *getDebugPrefix();
+  const char* getDebugPrefix();
 
   void lazyInitialize();
 
@@ -451,8 +451,8 @@ extern bool stackmap_log;
 
 #endif // DEBUG_ON
 
-void assert_failure(const char *file, size_t line, const char *func, const char *msg);
-void assert_failure_bounds_error_lt(const char *file, size_t line, const char *func, int64_t x, int64_t y);
+void assert_failure(const char* file, size_t line, const char* func, const char* msg);
+void assert_failure_bounds_error_lt(const char* file, size_t line, const char* func, int64_t x, int64_t y);
 
 #ifdef DEBUG_ASSERT
 #define lisp_ASSERT(x)                                                                                                             \
@@ -595,38 +595,38 @@ public:
 
 [[noreturn]] void core__function_wrong_type_argument(Symbol_sp function, T_sp value, T_sp type);
 
-[[noreturn]] void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type);
+[[noreturn]] void core__wrong_type_argument(const string& sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type);
 
-void af_wrongTypeKeyArg(const string &sourceFile, int lineno, Symbol_sp function, T_sp key, T_sp value, T_sp type);
+void af_wrongTypeKeyArg(const string& sourceFile, int lineno, Symbol_sp function, T_sp key, T_sp value, T_sp type);
 
-[[noreturn]] void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value,
+[[noreturn]] void core__wrong_type_nth_arg(const string& sourceFile, int lineno, Symbol_sp function, int narg, T_sp value,
                                            T_sp type);
 
-[[noreturn]] void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type);
+[[noreturn]] void af_wrongTypeOnlyArg(const string& sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type);
 
-void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index,
+void core__wrong_index(const string& sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index,
                        int noninc_index);
 
-void core__reader_error_internal(const string &sourceFile, uint lineno, String_sp fmt, List_sp fmtargs, T_sp stream = nil<T_O>());
+void core__reader_error_internal(const string& sourceFile, uint lineno, String_sp fmt, List_sp fmtargs, T_sp stream = nil<T_O>());
 
 T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage, T_sp formatControl, T_sp formatArgs, T_sp args);
 
-[[noreturn]] void file_libc_error(T_sp error_type, T_sp stream, const char *msg, int narg, ...);
-[[noreturn]] void FEerror(const string &fmt, int numArgs, ...);
+[[noreturn]] void file_libc_error(T_sp error_type, T_sp stream, const char* msg, int narg, ...);
+[[noreturn]] void FEerror(const string& fmt, int numArgs, ...);
 void FEtype_error_list(T_sp thing);
-void FElibc_error(const char *fmt, int nargs, ...);
+void FElibc_error(const char* fmt, int nargs, ...);
 void FEcannot_open(T_sp fname);
 void FEdoes_not_exist(T_sp fname);
 void FEexists(T_sp fname);
 void FEargument_number_error(T_sp supplied, T_sp min, T_sp max);
-T_sp CEerror(T_sp c, const char *fmt, int numArgs, ...);
+T_sp CEerror(T_sp c, const char* fmt, int numArgs, ...);
 
-void FEpackage_error(const char *fmt, T_sp package, int nargs, ...);
-void CEpackage_error(const char *fmt, const char *continue_message, T_sp package, int nargs, ...);
+void FEpackage_error(const char* fmt, T_sp package, int nargs, ...);
+void CEpackage_error(const char* fmt, const char* continue_message, T_sp package, int nargs, ...);
 void Warn(T_sp datum, List_sp arguments);
 
-void clasp_internal_error(const char *error);
+void clasp_internal_error(const char* error);
 
-[[noreturn]] void wrong_number_of_arguments(T_O *closure, std::size_t given, std::size_t expected);
+[[noreturn]] void wrong_number_of_arguments(T_O* closure, std::size_t given, std::size_t expected);
 
 }; // namespace core

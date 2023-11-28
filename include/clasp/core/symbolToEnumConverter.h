@@ -41,8 +41,8 @@ class SymbolToEnumConverter_O : public General_O {
   LISP_CLASS(core, CorePkg, SymbolToEnumConverter_O, "SymbolToEnumConverter", General_O);
 
 public:
-  static SymbolToEnumConverter_sp create(const string &whatDoesEnumRepresent);
-  static SymbolToEnumConverter_sp create(const string &whatDoesEnumRepresent, string const &packageName,
+  static SymbolToEnumConverter_sp create(const string& whatDoesEnumRepresent);
+  static SymbolToEnumConverter_sp create(const string& whatDoesEnumRepresent, string const& packageName,
                                          NullTerminatedEnumAssociation assoc[], bool expose = false);
 
 public: // virtual functions inherited from Object
@@ -61,11 +61,11 @@ public: // virtual functions inherited from Object
 public:
   List_sp enumSymbolsAsList() const;
 
-  void setWhatTheEnumsRepresent(const string &represent);
+  void setWhatTheEnumsRepresent(const string& represent);
 
   /*!Associate the symbol with the enum
           If the symbol is nil then create a new one with the archiveString and return it */
-  Symbol_sp addSymbolEnumPair(Symbol_sp sym, Symbol_sp const &archiveSymbol, int enumIndex);
+  Symbol_sp addSymbolEnumPair(Symbol_sp sym, Symbol_sp const& archiveSymbol, int enumIndex);
 
   int enumIndexForSymbol(T_sp sym);
 
@@ -114,7 +114,7 @@ public:
   namespace translate {                                                                                                            \
   template <> struct to_object<enumType> {                                                                                         \
     typedef enumType GivenType;                                                                                                    \
-    static core::T_sp convert(const GivenType &val) {                                                                              \
+    static core::T_sp convert(const GivenType& val) {                                                                              \
       _G();                                                                                                                        \
       core::SymbolToEnumConverter_sp converter = converterSymbol->symbolValue().as<core::SymbolToEnumConverter_O>();               \
       return converter->symbolForEnum(val);                                                                                        \

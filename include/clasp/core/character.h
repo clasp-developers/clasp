@@ -142,5 +142,5 @@ bool both_case_p(claspCharacter cc);
 
 inline Character_sp clasp_make_standard_character(claspCharacter c) { return gc::make_tagged_character(c); }
 
-Character_sp clasp_character_create_from_name(string const &name);
+Character_sp clasp_character_create_from_name(string const& name);
 }; // namespace core

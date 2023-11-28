@@ -172,25 +172,25 @@ SYMBOL_EXPORT_SC_(ClPkg, stringRightTrim);
 SYMBOL_EXPORT_SC_(ClPkg, char);
 
 template <typename T> struct StringCharPointer {
-  const T *_stringPtr;
+  const T* _stringPtr;
   size_t _pos;
   size_t _start;
   typedef typename T::simple_element_type CharacterType;
-  StringCharPointer(const T *strP, size_t start) : _stringPtr(strP), _pos(start), _start(start) {}
+  StringCharPointer(const T* strP, size_t start) : _stringPtr(strP), _pos(start), _start(start) {}
   inline size_t offset() { return this->_pos - this->_start; };
   CharacterType operator*() {
     CharacterType c = (*this->_stringPtr)[this->_pos];
     return c;
   }
-  void *address() { return (void *)&((*this->_stringPtr)[this->_pos]); }
-  StringCharPointer &operator++() {
+  void* address() { return (void*)&((*this->_stringPtr)[this->_pos]); }
+  StringCharPointer& operator++() {
     ++this->_pos;
     return *this;
   }
 };
 
 template <typename T1, typename T2>
-bool template_string_equalp_bool(const T1 &string1, const T2 &string2, size_t start1, size_t end1, size_t start2, size_t end2) {
+bool template_string_equalp_bool(const T1& string1, const T2& string2, size_t start1, size_t end1, size_t start2, size_t end2) {
   StringCharPointer<T1> cp1(&string1, start1);
   StringCharPointer<T2> cp2(&string2, start2);
   size_t num1 = end1 - start1;
@@ -220,7 +220,7 @@ RETURN_TRUE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_EQ_(const T1 &string1, const T2 &string2, size_t start1, size_t end1, size_t start2, size_t end2) {
+T_sp template_string_EQ_(const T1& string1, const T2& string2, size_t start1, size_t end1, size_t start2, size_t end2) {
   StringCharPointer<T1> cp1(&string1, start1);
   StringCharPointer<T2> cp2(&string2, start2);
   size_t num1 = end1 - start1;
@@ -250,7 +250,7 @@ RETURN_TRUE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_NE_(const T1 &string1, const T2 &string2, size_t start1, size_t end1, size_t start2, size_t end2) {
+T_sp template_string_NE_(const T1& string1, const T2& string2, size_t start1, size_t end1, size_t start2, size_t end2) {
   StringCharPointer<T1> cp1(&string1, start1);
   StringCharPointer<T2> cp2(&string2, start2);
   size_t num1 = end1 - start1;
@@ -280,7 +280,7 @@ RETURN_FALSE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_LT_(const T1 &string1, const T2 &string2, size_t start1, size_t end1, size_t start2, size_t end2) {
+T_sp template_string_LT_(const T1& string1, const T2& string2, size_t start1, size_t end1, size_t start2, size_t end2) {
   StringCharPointer<T1> cp1(&string1, start1);
   StringCharPointer<T2> cp2(&string2, start2);
   size_t num1 = end1 - start1;
@@ -312,7 +312,7 @@ RETURN_FALSE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_GT_(const T1 &string1, const T2 &string2, size_t start1, size_t end1, size_t start2, size_t end2) {
+T_sp template_string_GT_(const T1& string1, const T2& string2, size_t start1, size_t end1, size_t start2, size_t end2) {
   StringCharPointer<T1> cp1(&string1, start1);
   StringCharPointer<T2> cp2(&string2, start2);
   size_t num1 = end1 - start1;
@@ -342,7 +342,7 @@ RETURN_TRUE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_LE_(const T1 &string1, const T2 &string2, size_t start1, size_t end1, size_t start2, size_t end2) {
+T_sp template_string_LE_(const T1& string1, const T2& string2, size_t start1, size_t end1, size_t start2, size_t end2) {
   StringCharPointer<T1> cp1(&string1, start1);
   StringCharPointer<T2> cp2(&string2, start2);
   size_t num1 = end1 - start1;
@@ -376,7 +376,7 @@ RETURN_TRUE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_GE_(const T1 &string1, const T2 &string2, size_t start1, size_t end1, size_t start2, size_t end2) {
+T_sp template_string_GE_(const T1& string1, const T2& string2, size_t start1, size_t end1, size_t start2, size_t end2) {
   StringCharPointer<T1> cp1(&string1, start1);
   StringCharPointer<T2> cp2(&string2, start2);
   size_t num1 = end1 - start1;
@@ -414,7 +414,7 @@ RETURN_TRUE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_equal(const T1 &string1, const T2 &string2, size_t start1, size_t end1, size_t start2, size_t end2) {
+T_sp template_string_equal(const T1& string1, const T2& string2, size_t start1, size_t end1, size_t start2, size_t end2) {
   StringCharPointer<T1> cp1(&string1, start1);
   StringCharPointer<T2> cp2(&string2, start2);
   size_t num1 = end1 - start1;
@@ -444,7 +444,7 @@ RETURN_TRUE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_not_equal(const T1 &string1, const T2 &string2, size_t start1, size_t end1, size_t start2, size_t end2) {
+T_sp template_string_not_equal(const T1& string1, const T2& string2, size_t start1, size_t end1, size_t start2, size_t end2) {
   StringCharPointer<T1> cp1(&string1, start1);
   StringCharPointer<T2> cp2(&string2, start2);
   size_t num1 = end1 - start1;
@@ -474,7 +474,7 @@ RETURN_FALSE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_lessp(const T1 &string1, const T2 &string2, size_t start1, size_t end1, size_t start2, size_t end2) {
+T_sp template_string_lessp(const T1& string1, const T2& string2, size_t start1, size_t end1, size_t start2, size_t end2) {
   StringCharPointer<T1> cp1(&string1, start1);
   StringCharPointer<T2> cp2(&string2, start2);
   size_t num1 = end1 - start1;
@@ -508,7 +508,7 @@ RETURN_FALSE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_greaterp(const T1 &string1, const T2 &string2, size_t start1, size_t end1, size_t start2, size_t end2) {
+T_sp template_string_greaterp(const T1& string1, const T2& string2, size_t start1, size_t end1, size_t start2, size_t end2) {
   StringCharPointer<T1> cp1(&string1, start1);
   StringCharPointer<T2> cp2(&string2, start2);
   size_t num1 = end1 - start1;
@@ -540,7 +540,7 @@ RETURN_TRUE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_not_greaterp(const T1 &string1, const T2 &string2, size_t start1, size_t end1, size_t start2, size_t end2) {
+T_sp template_string_not_greaterp(const T1& string1, const T2& string2, size_t start1, size_t end1, size_t start2, size_t end2) {
   StringCharPointer<T1> cp1(&string1, start1);
   StringCharPointer<T2> cp2(&string2, start2);
   size_t num1 = end1 - start1;
@@ -576,7 +576,7 @@ RETURN_TRUE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_not_lessp(const T1 &string1, const T2 &string2, size_t start1, size_t end1, size_t start2, size_t end2) {
+T_sp template_string_not_lessp(const T1& string1, const T2& string2, size_t start1, size_t end1, size_t start2, size_t end2) {
   StringCharPointer<T1> cp1(&string1, start1);
   StringCharPointer<T2> cp2(&string2, start2);
   size_t num1 = end1 - start1;
@@ -615,9 +615,9 @@ RETURN_TRUE:
   return make_fixnum((int)(cp1.offset() + start1));
 }
 
-inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig, String_sp &string1, String_sp &string2,
-                                      Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2, size_t &istart1, size_t &iend1,
-                                      size_t &istart2, size_t &iend2) {
+inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig, String_sp& string1, String_sp& string2,
+                                      Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2, size_t& istart1, size_t& iend1,
+                                      size_t& istart2, size_t& iend2) {
   string1 = coerce::stringDesignator(string1_desig);
   string2 = coerce::stringDesignator(string2_desig);
   Fixnum fstart1 = unbox_fixnum(start1);
@@ -1024,7 +1024,7 @@ cl_index fsmIntegerDigit(char c, cl_index radix) {
   return idigit;
 }
 
-cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, String_sp str, cl_index istart, cl_index iend,
+cl_index fsmInteger(mpz_class& result, cl_index& numDigits, bool& sawJunk, String_sp str, cl_index istart, cl_index iend,
                     bool junkAllowed, cl_index radix) {
   IntegerFSMState state = iinit;
   cl_index sign = 1;
@@ -1301,17 +1301,17 @@ bool Str8Ns_O::equalp(T_sp other) const {
 }
 
 // Creators - depreciate these once the new array stuff is working better
-Str8Ns_sp Str8Ns_O::create(const string &nm) {
-  auto ss = SimpleBaseString_O::make(nm.size(), '\0', true, nm.size(), (const claspChar *)nm.c_str());
+Str8Ns_sp Str8Ns_O::create(const string& nm) {
+  auto ss = SimpleBaseString_O::make(nm.size(), '\0', true, nm.size(), (const claspChar*)nm.c_str());
   return Str8Ns_O::make(nm.size(), '\0', false, nil<T_O>(), ss, false, 0);
 }
 
-Str8Ns_sp Str8Ns_O::create(const char *nm, size_t len) {
-  SimpleBaseString_sp ss = SimpleBaseString_O::make(len, '\0', true, len, (const claspChar *)nm);
+Str8Ns_sp Str8Ns_O::create(const char* nm, size_t len) {
+  SimpleBaseString_sp ss = SimpleBaseString_O::make(len, '\0', true, len, (const claspChar*)nm);
   return Str8Ns_O::make(len, '\0', false, nil<T_O>(), ss, false, 0);
 }
 
-Str8Ns_sp Str8Ns_O::create(const char *nm) {
+Str8Ns_sp Str8Ns_O::create(const char* nm) {
   size_t len = strlen(nm);
   return Str8Ns_O::create(nm, len);
 }
@@ -1416,7 +1416,7 @@ void StringPushSubString(String_sp buffer, String_sp str, size_t start, size_t e
 
 void StringPushString(String_sp buffer, String_sp other) { StringPushSubString(buffer, other, 0, cl__length(other)); }
 
-void StringPushStringCharStar(String_sp buffer, const char *cPtr) {
+void StringPushStringCharStar(String_sp buffer, const char* cPtr) {
   while (*cPtr) {
     buffer->vectorPushExtend(clasp_make_character(*cPtr), 64);
     ++cPtr;
@@ -1430,8 +1430,8 @@ string string_get_std_string(T_sp str) {
   };
   return gc::As<String_sp>(str)->get_std_string();
 };
-SimpleBaseString_sp str_create(const string &str) { return SimpleBaseString_O::make(str); };
-SimpleBaseString_sp str_create(const char *str) { return SimpleBaseString_O::make(std::string(str)); };
+SimpleBaseString_sp str_create(const string& str) { return SimpleBaseString_O::make(str); };
+SimpleBaseString_sp str_create(const char* str) { return SimpleBaseString_O::make(std::string(str)); };
 
 CL_LAMBDA(core:&va-rest args);
 CL_LISPIFY_NAME(base_string_concatenate);
@@ -1448,19 +1448,18 @@ CL_DEFUN T_sp core__base_string_concatenate(Vaslist_sp vargs) {
 };
 
 template <typename T1, typename T2>
-T_sp template_search_string(const T1 &sub, const T2 &outer, size_t sub_start, size_t sub_end, size_t outer_start,
+T_sp template_search_string(const T1& sub, const T2& outer, size_t sub_start, size_t sub_end, size_t outer_start,
                             size_t outer_end) {
   // The std::search convention is reversed -->  std::search(outer,sub,...)
-  const typename T2::simple_element_type *startp =
-      (const typename T2::simple_element_type *)outer.rowMajorAddressOfElement_(0); // &outer[0];
-  const typename T2::simple_element_type *cps =
-      (const typename T2::simple_element_type *)outer.rowMajorAddressOfElement_(outer_start); //&outer[outer_start];
-  const typename T2::simple_element_type *cpe =
-      (const typename T2::simple_element_type *)outer.rowMajorAddressOfElement_(outer_end);
-  const typename T1::simple_element_type *s_cps =
-      (const typename T1::simple_element_type *)sub.rowMajorAddressOfElement_(sub_start); //&sub[sub_start];
-  const typename T1::simple_element_type *s_cpe = (const typename T1::simple_element_type *)sub.rowMajorAddressOfElement_(sub_end);
-  const typename T2::simple_element_type *pos = std::search(cps, cpe, s_cps, s_cpe);
+  const typename T2::simple_element_type* startp =
+      (const typename T2::simple_element_type*)outer.rowMajorAddressOfElement_(0); // &outer[0];
+  const typename T2::simple_element_type* cps =
+      (const typename T2::simple_element_type*)outer.rowMajorAddressOfElement_(outer_start); //&outer[outer_start];
+  const typename T2::simple_element_type* cpe = (const typename T2::simple_element_type*)outer.rowMajorAddressOfElement_(outer_end);
+  const typename T1::simple_element_type* s_cps =
+      (const typename T1::simple_element_type*)sub.rowMajorAddressOfElement_(sub_start); //&sub[sub_start];
+  const typename T1::simple_element_type* s_cpe = (const typename T1::simple_element_type*)sub.rowMajorAddressOfElement_(sub_end);
+  const typename T2::simple_element_type* pos = std::search(cps, cpe, s_cps, s_cpe);
   if (pos == cpe)
     return nil<T_O>();
   // this should return the absolute position starting from 0, not relative to outer_start
@@ -1479,7 +1478,7 @@ CL_DEFUN T_sp core__search_string(String_sp sub, size_t sub_start, size_t sub_en
 
 CL_LISPIFY_NAME("core:split");
 DOCGROUP(clasp);
-CL_DEFUN List_sp core__split(const string &all, const string &chars) {
+CL_DEFUN List_sp core__split(const string& all, const string& chars) {
   vector<string> parts = split(all, chars);
   ql::list result;
   for (vector<string>::iterator it = parts.begin(); it != parts.end(); it++)
@@ -1542,12 +1541,12 @@ AGAIN:
   SIMPLE_ERROR("Could not copy {} to simple-base-string", _rep_(x));
 }
 
-template <typename T1> bool template_fits_in_base_string(const T1 &sub, size_t start, size_t end) {
+template <typename T1> bool template_fits_in_base_string(const T1& sub, size_t start, size_t end) {
   // The std::search convention is reversed -->  std::search(outer,sub,...)
-  const typename T1::simple_element_type *s_cps =
-      (typename T1::simple_element_type *)sub.rowMajorAddressOfElement_(start); // &sub[start];
-  const typename T1::simple_element_type *s_cpe =
-      (typename T1::simple_element_type *)sub.rowMajorAddressOfElement_(end); // &sub[end];
+  const typename T1::simple_element_type* s_cps =
+      (typename T1::simple_element_type*)sub.rowMajorAddressOfElement_(start); // &sub[start];
+  const typename T1::simple_element_type* s_cpe =
+      (typename T1::simple_element_type*)sub.rowMajorAddressOfElement_(end); // &sub[end];
   for (; s_cps != s_cpe; ++s_cps) {
     if (!clasp_base_char_p(*s_cps)) {
       return false;

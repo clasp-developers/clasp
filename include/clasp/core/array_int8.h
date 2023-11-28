@@ -28,14 +28,14 @@ public:
 public:
   static value_type default_initial_element(void) { return 0; }
   static value_type from_object(T_sp obj) { return clasp_to_uint8_t(obj); };
-  static T_sp to_object(const value_type &v) { return Integer_O::create(v); };
+  static T_sp to_object(const value_type& v) { return Integer_O::create(v); };
 
 public:
   SimpleVector_byte8_t_O(size_t length, value_type initialElement = value_type(), bool initialElementSupplied = false,
-                         size_t initialContentsSize = 0, const value_type *initialContents = NULL)
+                         size_t initialContentsSize = 0, const value_type* initialContents = NULL)
       : TemplatedBase(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};
   static smart_ptr_type make(size_t length, value_type initialElement = value_type(), bool initialElementSupplied = false,
-                             size_t initialContentsSize = 0, const value_type *initialContents = NULL,
+                             size_t initialContentsSize = 0, const value_type* initialContents = NULL,
                              bool static_vector_p = false) {
     auto bs = gctools::GC<my_type>::allocate_container<gctools::RuntimeStage>(
         static_vector_p, length, initialElement, initialElementSupplied, initialContentsSize, initialContents);
@@ -132,14 +132,14 @@ public:
 public:
   static value_type default_initial_element(void) { return 0; }
   static value_type from_object(T_sp obj) { return clasp_to_int8_t(obj); };
-  static T_sp to_object(const value_type &v) { return Integer_O::create(v); };
+  static T_sp to_object(const value_type& v) { return Integer_O::create(v); };
 
 public:
   SimpleVector_int8_t_O(size_t length, value_type initialElement = value_type(), bool initialElementSupplied = false,
-                        size_t initialContentsSize = 0, const value_type *initialContents = NULL)
+                        size_t initialContentsSize = 0, const value_type* initialContents = NULL)
       : TemplatedBase(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};
   static smart_ptr_type make(size_t length, value_type initialElement = value_type(), bool initialElementSupplied = false,
-                             size_t initialContentsSize = 0, const value_type *initialContents = NULL,
+                             size_t initialContentsSize = 0, const value_type* initialContents = NULL,
                              bool static_vector_p = false) {
     auto bs = gctools::GC<my_type>::allocate_container<gctools::RuntimeStage>(
         static_vector_p, length, initialElement, initialElementSupplied, initialContentsSize, initialContents);

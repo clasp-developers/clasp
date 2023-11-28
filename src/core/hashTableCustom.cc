@@ -51,7 +51,7 @@ bool HashTableCustom_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   return c.notnilp();
 }
 
-gc::Fixnum HashTableCustom_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator &hg) const {
+gc::Fixnum HashTableCustom_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator& hg) const {
   T_sp hash = eval::funcall(hasher, obj);
   if (hash.fixnump()) {
     gc::Fixnum fxhash = hash.unsafe_fixnum();

@@ -40,7 +40,7 @@ namespace core {
 DOCGROUP(clasp);
 CL_DEFUN Bignum_sp core__next_from_fixnum(Fixnum fix) { return Bignum_O::create(fix); }
 
-Bignum_sp Bignum_O::create(const mpz_class &c) {
+Bignum_sp Bignum_O::create(const mpz_class& c) {
   const mp_size_t limbsize = sizeof(mp_limb_t);
   const size_t nails = GMP_NAIL_BITS;
   // copied from gmp docs
@@ -54,19 +54,19 @@ Bignum_sp Bignum_O::create(const mpz_class &c) {
   return create_from_limbs(len, 0, false, count, dest);
 }
 
-void Bignum_O::sxhash_(HashGenerator &hg) const {
+void Bignum_O::sxhash_(HashGenerator& hg) const {
   mp_size_t len = this->length();
   if (!(hg.addValue(len)))
     return;
   mp_size_t size = std::abs(len);
-  const mp_limb_t *limbs = this->limbs();
+  const mp_limb_t* limbs = this->limbs();
   for (mp_size_t i = 0; i < size; ++i)
     if (!(hg.addValue(limbs[i])))
       return;
 }
 
 // Given bignum parts, return a fixnum if that fits, or else a bignum.
-Integer_sp bignum_result(mp_size_t len, const mp_limb_t *limbs) {
+Integer_sp bignum_result(mp_size_t len, const mp_limb_t* limbs) {
   switch (len) {
   case 0:
     return clasp_make_fixnum(0);
@@ -100,7 +100,7 @@ string Bignum_O::__repr__() const {
   stringstream ss;
   mp_size_t len = this->length();
   mp_size_t size = std::abs(len);
-  const mp_limb_t *limbs = this->limbs();
+  const mp_limb_t* limbs = this->limbs();
   mp_limb_t copylimbs[size];
   for (mp_size_t i = 0; i < size; ++i)
     copylimbs[i] = limbs[i];
@@ -115,8 +115,8 @@ string Bignum_O::__repr__() const {
   return ss.str();
 }
 
-Bignum_sp Bignum_O::make(const string &str) {
-  const char *cstr = str.c_str();
+Bignum_sp Bignum_O::make(const string& str) {
+  const char* cstr = str.c_str();
   size_t strsize = str.size();
   bool negative = false;
   if (str[0] == '-') {
@@ -137,7 +137,7 @@ Bignum_sp Bignum_O::make(const string &str) {
 }
 
 DOCGROUP(clasp);
-CL_DEFUN Bignum_sp core__next_from_string(const string &str) { return Bignum_O::make(str); }
+CL_DEFUN Bignum_sp core__next_from_string(const string& str) { return Bignum_O::make(str); }
 
 Number_sp Bignum_O::signum_() const {
   // There are no zero bignums, so this is easy.
@@ -159,7 +159,7 @@ Number_sp Bignum_O::abs_() const {
 
 Number_sp Bignum_O::negate_() const {
   mp_size_t len = this->length();
-  const mp_limb_t *limbs = this->limbs();
+  const mp_limb_t* limbs = this->limbs();
   // This can be a fixnum, if we are -most_negative_fixnum.
   if ((len == 1) && (limbs[0] == -gc::most_negative_fixnum))
     return clasp_make_fixnum(gc::most_negative_fixnum);
@@ -184,7 +184,7 @@ bool Bignum_O::eql_(T_sp obj) const {
 
 gc::Fixnum Bignum_O::popcount() const {
   mp_size_t length = this->length();
-  const mp_limb_t *limbs = this->limbs();
+  const mp_limb_t* limbs = this->limbs();
   if (length > 0)
     return mpn_popcount(limbs, length);
   else {
@@ -204,7 +204,7 @@ gc::Fixnum Bignum_O::popcount() const {
 
 gc::Fixnum Bignum_O::bit_length_() const {
   mp_size_t length = this->length();
-  const mp_limb_t *limbs = this->limbs();
+  const mp_limb_t* limbs = this->limbs();
   if (length > 0)
     return mpn_sizeinbase(limbs, length, 2);
   else {
@@ -226,7 +226,7 @@ DOCGROUP(clasp);
 CL_DEFUN string core__next_primitive_string(Bignum_sp num) {
   stringstream ss;
   mp_size_t len = num->length();
-  const mp_limb_t *limbs = num->limbs();
+  const mp_limb_t* limbs = num->limbs();
   ss << "#<NEXT-BIGNUM (size " << len << ")";
   for (size_t i = 0; i < std::abs(len); ++i)
     ss << " " << limbs[i];
@@ -240,7 +240,7 @@ CL_DEFUN Integer_sp core__next_fmul(Bignum_sp left, Fixnum right) {
     return clasp_make_fixnum(0);
   mp_size_t llen = left->length();
   mp_size_t size = std::abs(llen);
-  const mp_limb_t *llimbs = left->limbs();
+  const mp_limb_t* llimbs = left->limbs();
   mp_size_t result_len;
   mp_limb_t result_limbs[size + 1];
   mp_limb_t carry;
@@ -267,7 +267,7 @@ CL_DEFUN Bignum_sp core__next_lshift(Bignum_sp num, Fixnum shift) {
   ASSERT(shift >= 0);
   mp_size_t len = num->length();
   size_t size = std::abs(len);
-  const mp_limb_t *limbs = num->limbs();
+  const mp_limb_t* limbs = num->limbs();
   unsigned int nlimbs = shift / mp_bits_per_limb;
   unsigned int nbits = shift % mp_bits_per_limb;
   size_t result_size = size + nlimbs + 1;
@@ -297,7 +297,7 @@ CL_DEFUN Integer_sp core__next_rshift(Bignum_sp num, Fixnum shift) {
   ASSERT(shift >= 0);
   mp_size_t len = num->length();
   size_t size = std::abs(len);
-  const mp_limb_t *limbs = num->limbs();
+  const mp_limb_t* limbs = num->limbs();
   unsigned int nlimbs = shift / mp_bits_per_limb;
   unsigned int nbits = shift % mp_bits_per_limb;
   if (len < 0) {
@@ -411,8 +411,8 @@ CL_DEFUN T_mv core__next_truncate(Bignum_sp dividend, Bignum_sp divisor) {
   mp_size_t divisor_size = std::abs(divisor_length);
   if (divisor_size > dividend_size)
     return Values(clasp_make_fixnum(0), dividend);
-  const mp_limb_t *dividend_limbs = dividend->limbs();
-  const mp_limb_t *divisor_limbs = divisor->limbs();
+  const mp_limb_t* dividend_limbs = dividend->limbs();
+  const mp_limb_t* divisor_limbs = divisor->limbs();
   mp_size_t quotient_size = dividend_size - divisor_size + 1;
   mp_size_t remainder_size = divisor_size;
   mp_limb_t quotient_limbs[quotient_size];
@@ -440,7 +440,7 @@ CL_DEFUN T_mv core__next_ftruncate(Bignum_sp dividend, Fixnum divisor) {
   mp_limb_t positive_divisor = std::abs(divisor);
   mp_size_t len = dividend->length();
   mp_size_t size = std::abs(len);
-  const mp_limb_t *limbs = dividend->limbs();
+  const mp_limb_t* limbs = dividend->limbs();
   mp_size_t quotient_size = size;
   mp_limb_t quotient_limbs[quotient_size];
   // GMP docs don't mark the third argument const but it seems to be.
@@ -463,7 +463,7 @@ Integer_sp fix_divided_by_next(Fixnum dividend, Bignum_sp divisor) {
     return clasp_make_fixnum(0);
 }
 
-Integer_sp next_gcd(const mp_limb_t *llimbs, mp_size_t lsize, const mp_limb_t *rlimbs, mp_size_t rsize) {
+Integer_sp next_gcd(const mp_limb_t* llimbs, mp_size_t lsize, const mp_limb_t* rlimbs, mp_size_t rsize) {
   // This one is rather nontrivial due to two properties of mpn_gcd:
   // 1) Both source operands are destroyed.
   //    So we have to copy the operands, as Lisp bignums are immutable.
@@ -534,7 +534,7 @@ Integer_sp next_gcd(const mp_limb_t *llimbs, mp_size_t lsize, const mp_limb_t *r
   // Also, we reuse one of the operands as the destination, which
   // is apparently allowed.
   mp_size_t gcd_size;
-  mp_limb_t *gcd_limbs = rlimbs_copy;
+  mp_limb_t* gcd_limbs = rlimbs_copy;
   if ((lsize < rsize) || ((lsize == rsize) && (llimbs_copy[lsize - 1] < rlimbs_copy[rsize - 1])))
     gcd_size = mpn_gcd(gcd_limbs, rlimbs_copy, rsize, llimbs_copy, lsize);
   else
@@ -583,7 +583,7 @@ Rational_sp Bignum_O::ratdivide(Integer_sp divisor) const {
   // end up with bignums and so could be direct create calls instead.
   mp_size_t len = this->length();
   mp_size_t size = std::abs(len);
-  const mp_limb_t *limbs = this->limbs();
+  const mp_limb_t* limbs = this->limbs();
 
   if (divisor.fixnump()) {
     Fixnum fdivisor = divisor.unsafe_fixnum();
@@ -613,7 +613,7 @@ Rational_sp Bignum_O::ratdivide(Integer_sp divisor) const {
     Bignum_sp bdivisor = gc::As<Bignum_sp>(divisor);
     mp_size_t divlen = bdivisor->length();
     mp_size_t divsize = std::abs(divlen);
-    const mp_limb_t *divlimbs = bdivisor->limbs();
+    const mp_limb_t* divlimbs = bdivisor->limbs();
     Fixnum result_sign = ((len < 0) ^ (divlen < 0)) ? -1 : 1;
 
     // FIXME?: We could save some memory by not consing up an
@@ -667,7 +667,7 @@ Rational_sp Bignum_O::ratdivide(Integer_sp divisor) const {
       // algorithm is a few times faster than the usual one.
       Bignum_sp bgcd = gc::As_unsafe<Bignum_sp>(gcd);
       mp_size_t gcd_size = bgcd->length(); // necessarily positive
-      const mp_limb_t *gcd_limbs = bgcd->limbs();
+      const mp_limb_t* gcd_limbs = bgcd->limbs();
 
       mp_limb_t remainder_limbs[gcd_size];
 
@@ -700,7 +700,7 @@ Rational_sp Bignum_O::ratdivide(Integer_sp divisor) const {
   }
 }
 
-Integer_sp next_add(const mp_limb_t *llimbs, mp_size_t llen, const mp_limb_t *rlimbs, mp_size_t rlen) {
+Integer_sp next_add(const mp_limb_t* llimbs, mp_size_t llen, const mp_limb_t* rlimbs, mp_size_t rlen) {
   mp_size_t absllen = std::abs(llen), absrlen = std::abs(rlen);
 
   // Keep the larger number in the left.
@@ -760,7 +760,7 @@ CL_DEFUN Integer_sp core__next_sub(Bignum_sp left, Bignum_sp right) {
 }
 
 // Easier than above since we know abs(right) < abs(left) and the result size.
-Integer_sp next_fadd(const mp_limb_t *limbs, mp_size_t len, Fixnum right) {
+Integer_sp next_fadd(const mp_limb_t* limbs, mp_size_t len, Fixnum right) {
   Fixnum aright = std::abs(right);
   mp_size_t size = std::abs(len);
 
@@ -799,7 +799,7 @@ Number_sp Bignum_O::oneMinus_() const { return next_fadd(this->limbs(), this->le
 
 Number_sp Bignum_O::onePlus_() const { return next_fadd(this->limbs(), this->length(), 1); }
 
-double next_to_double(mp_size_t len, const mp_limb_t *limbs) {
+double next_to_double(mp_size_t len, const mp_limb_t* limbs) {
   // MPN does not seem to export a float conversion function,
   // so we roll our own. FIXME: Could get bad with float rounding
   // or otherwise as I'm making this up as I go.
@@ -886,7 +886,7 @@ CL_DEFUN Bignum_sp core__bignum_from_fixnum_add_over(int64_t add_over) {
 }
 
 CL_DEFUN Bignum_sp core__bignum_do_fixnum_add_over(T_sp x, T_sp y) {
-  fmt::print("{}:{}:{} x = {} y = {}\n", __FILE__, __LINE__, __FUNCTION__, (void *)x.raw_(), (void *)y.raw_());
+  fmt::print("{}:{}:{} x = {} y = {}\n", __FILE__, __LINE__, __FUNCTION__, (void*)x.raw_(), (void*)y.raw_());
   int64_t add_over = (int64_t)x.raw_() + (int64_t)y.raw_();
   return core__bignum_from_fixnum_add_over(add_over);
 }

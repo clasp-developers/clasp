@@ -103,29 +103,29 @@ public:
 
   ClassRep_O(core::Instance_sp c) : Instance_O(c) { printf("%s:%d:%s  create class\n", __FILE__, __LINE__, __FUNCTION__); };
 
-  ClassRep_O(core::Instance_sp class_, type_id const &type, core::Symbol_sp name, bool derivable);
+  ClassRep_O(core::Instance_sp class_, type_id const& type, core::Symbol_sp name, bool derivable);
 
 #if 0
   ClassRep_O(const std::string &name, bool derivable);
 #endif
 
 public:
-  static ClassRep_sp create(core::Instance_sp class_, type_id const &mtype, core::Symbol_sp name, bool derivable) {
+  static ClassRep_sp create(core::Instance_sp class_, type_id const& mtype, core::Symbol_sp name, bool derivable) {
     auto val = gctools::GC<ClassRep_O>::allocate(class_, mtype, name, derivable);
     return val;
   }
   void add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base);
 
-  const gctools::Vec0<core::Cons_sp> &bases() const throw() { return m_bases; }
+  const gctools::Vec0<core::Cons_sp>& bases() const throw() { return m_bases; }
 
-  void set_type(type_id const &t) { m_type = t; }
-  type_id const &type() const throw() { return m_type._value; }
+  void set_type(type_id const& t) { m_type = t; }
+  type_id const& type() const throw() { return m_type._value; }
 
   std::string name_() const throw() { return m_name->symbolNameAsString(); }
 
-  detail::cast_graph const &casts() const { return *m_casts._value; }
+  detail::cast_graph const& casts() const { return *m_casts._value; }
 
-  detail::class_id_map const &classes() const { return *m_classes._value; }
+  detail::class_id_map const& classes() const { return *m_classes._value; }
 
 public:
   // this is a pointer to the type_info structure for
@@ -143,9 +143,9 @@ public:
   // the class' name (as given when registered to lua with class_)
   core::Symbol_sp m_name;
 
-  dont_expose<detail::cast_graph *> m_casts;
+  dont_expose<detail::cast_graph*> m_casts;
   /* What does this store???? */
-  dont_expose<detail::class_id_map *> m_classes;
+  dont_expose<detail::class_id_map*> m_classes;
   bool m_derivable;
 };
 

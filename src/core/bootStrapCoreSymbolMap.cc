@@ -36,18 +36,18 @@ THE SOFTWARE.
 
 namespace core {
 
-string BootStrapCoreSymbolMap::fullSymbolName(string const &packageName, string const &symbolName) {
+string BootStrapCoreSymbolMap::fullSymbolName(string const& packageName, string const& symbolName) {
   string fullName = packageName + "::" + symbolName;
   return ((fullName));
 }
 
 BootStrapCoreSymbolMap::BootStrapCoreSymbolMap(){};
 
-void BootStrapCoreSymbolMap::add_package_info(std::string const &pkg, list<std::string> const &used) {
+void BootStrapCoreSymbolMap::add_package_info(std::string const& pkg, list<std::string> const& used) {
   this->_PackageUseInfo[pkg] = used;
 }
 
-Symbol_sp BootStrapCoreSymbolMap::maybe_allocate_unique_symbol(string const &pkgName, string const &symbolName, bool exportp,
+Symbol_sp BootStrapCoreSymbolMap::maybe_allocate_unique_symbol(string const& pkgName, string const& symbolName, bool exportp,
                                                                bool shadowp) {
   string name = BootStrapCoreSymbolMap::fullSymbolName(pkgName, symbolName);
   if (!shadowp) {
@@ -78,7 +78,7 @@ Symbol_sp BootStrapCoreSymbolMap::maybe_allocate_unique_symbol(string const &pkg
   return (sym);
 }
 
-bool BootStrapCoreSymbolMap::find_symbol(string const &packageName, string const &rawSymbolName, SymbolStorage &symbolStorage,
+bool BootStrapCoreSymbolMap::find_symbol(string const& packageName, string const& rawSymbolName, SymbolStorage& symbolStorage,
                                          bool recursivep) const {
   string fullName = BootStrapCoreSymbolMap::fullSymbolName(packageName, rawSymbolName);
   map<string, int>::const_iterator it = this->_SymbolNamesToIndex.find(fullName);
@@ -102,7 +102,7 @@ void BootStrapCoreSymbolMap::finish_setup_of_symbols() {
   // printf("%s:%d finish_setup_of_symbols\n", __FILE__, __LINE__ );
   for (map<string, int>::const_iterator it = this->_SymbolNamesToIndex.begin(); it != this->_SymbolNamesToIndex.end(); it++) {
     int idx = it->second;
-    SymbolStorage &ss = this->_IndexToSymbol[idx];
+    SymbolStorage& ss = this->_IndexToSymbol[idx];
     string packageName = ss._PackageName;
     //    printf("%s:%d  Adding symbol(%s)[%d/%d] to package: %s\n", __FILE__, __LINE__, ss._SymbolName.c_str(), idx, idxEnd,
     //    packageName.c_str());
@@ -118,7 +118,7 @@ void BootStrapCoreSymbolMap::dump() {
   for (map<string, int>::const_iterator it = this->_SymbolNamesToIndex.begin(); it != this->_SymbolNamesToIndex.end(); it++) {
     string ts = it->first;
     printf("%s\n", ts.c_str());
-    SymbolStorage &ss = this->_IndexToSymbol[it->second];
+    SymbolStorage& ss = this->_IndexToSymbol[it->second];
     printf("    _PackageName: %s   _SymbolName: %s   _Export: %d\n", ss._PackageName.c_str(), ss._SymbolName.c_str(), ss._Export);
   }
 }

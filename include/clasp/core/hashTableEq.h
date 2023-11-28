@@ -50,10 +50,10 @@ public:
 public: // Functions here
   virtual bool is_eq_hashtable() const { return true; }
   virtual T_sp hashTableTest() const { return cl::_sym_eq; };
-  virtual KeyValuePair *searchTable_no_read_lock(T_sp key, cl_index index);
+  virtual KeyValuePair* searchTable_no_read_lock(T_sp key, cl_index index);
   bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
-  gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, HashGenerator &hg) const;
+  gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, HashGenerator& hg) const;
 };
 
 }; // namespace core

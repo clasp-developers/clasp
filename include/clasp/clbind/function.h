@@ -67,7 +67,7 @@ protected:
 
 private:
   friend struct ::clbind::scope_;
-  registration *m_next;
+  registration* m_next;
 };
 } // namespace detail
 } // namespace clbind
@@ -107,19 +107,19 @@ public:
 
   WRAPPER_VariadicFunction(FuncType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
       : GlobalSimpleFunBase_O(fdesc, core::ClaspXepFunction::make<MyType>(), code), fptr(ptr) {
-    this->validateCodePointer((void **)&this->fptr, sizeof(this->fptr));
+    this->validateCodePointer((void**)&this->fptr, sizeof(this->fptr));
   };
 
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
-  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup) {
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
     this->TemplatedBase::fixupInternalsForSnapshotSaveLoad(fixup);
-    this->fixupOneCodePointer(fixup, (void **)&this->fptr);
+    this->fixupOneCodePointer(fixup, (void**)&this->fptr);
   };
 
-  static inline LCC_RETURN handler_entry_point_n(const BytecodeWrapper &dummy, core::T_O *lcc_closure, size_t lcc_nargs,
-                                                 core::T_O **lcc_args) {
-    MyType *closure = gctools::untag_general<MyType *>((MyType *)lcc_closure);
+  static inline LCC_RETURN handler_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs,
+                                                 core::T_O** lcc_args) {
+    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     if (lcc_nargs != NumParams)
@@ -129,30 +129,30 @@ public:
                                                                                            std::move(all_args));
   }
 
-  static inline LCC_RETURN entry_point_n(core::T_O *lcc_closure, size_t lcc_nargs, core::T_O **lcc_args) {
+  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args) {
     //    if (lcc_nargs != NumParams) cc_wrong_number_of_arguments(lcc_closure,lcc_nargs,NumParams,NumParams);
     return handler_entry_point_n(ArgumentWrapper(), lcc_closure, lcc_nargs, lcc_args);
   }
 
   static inline LISP_ENTRY_0() { return entry_point_n(lcc_closure, 0, NULL); }
   static inline LISP_ENTRY_1() {
-    core::T_O *args[1] = {lcc_farg0};
+    core::T_O* args[1] = {lcc_farg0};
     return entry_point_n(lcc_closure, 1, args);
   }
   static inline LISP_ENTRY_2() {
-    core::T_O *args[2] = {lcc_farg0, lcc_farg1};
+    core::T_O* args[2] = {lcc_farg0, lcc_farg1};
     return entry_point_n(lcc_closure, 2, args);
   }
   static inline LISP_ENTRY_3() {
-    core::T_O *args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
+    core::T_O* args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
     return entry_point_n(lcc_closure, 3, args);
   }
   static inline LISP_ENTRY_4() {
-    core::T_O *args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
+    core::T_O* args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
     return entry_point_n(lcc_closure, 4, args);
   }
   static inline LISP_ENTRY_5() {
-    core::T_O *args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
+    core::T_O* args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
     return entry_point_n(lcc_closure, 5, args);
   }
 };
@@ -189,8 +189,8 @@ struct function_registration;
 template <class FunctionPointerType, class... Policies, class PureOutsPack>
 struct function_registration<FunctionPointerType, policies<Policies...>, PureOutsPack> : registration {
   function_registration(
-      const std::string &name, FunctionPointerType f,
-      policies<Policies...> const &policies) // , string const &lambdalist, string const &declares, string const &docstring)
+      const std::string& name, FunctionPointerType f,
+      policies<Policies...> const& policies) // , string const &lambdalist, string const &declares, string const &docstring)
       : m_name(name), functionPtr(f), m_policies(policies) {
     this->m_lambdalist = policies.lambdaList();
     this->m_docstring = policies.docstring();

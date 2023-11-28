@@ -50,7 +50,7 @@ THE SOFTWARE.
 
 namespace core {
 
-bool safe_is_directory(const std::filesystem::path &path) {
+bool safe_is_directory(const std::filesystem::path& path) {
   try {
     return std::filesystem::is_directory(path);
   } catch (...) {
@@ -58,7 +58,7 @@ bool safe_is_directory(const std::filesystem::path &path) {
   }
 }
 
-Bundle::Bundle(const string &raw_argv0) {
+Bundle::Bundle(const string& raw_argv0) {
   this->_Initialized = false;
   this->_Directories = NULL;
   bool verbose = false;
@@ -79,7 +79,7 @@ Bundle::Bundle(const string &raw_argv0) {
 #endif
   // Check if there is a dev test directory in _ExecutableDir - if so we are building
   std::filesystem::path devPath = this->_Directories->_ExecutableDir / CLASP_DEV_TEST_PATH;
-  char *homedir = getenv("CLASP_HOME");
+  char* homedir = getenv("CLASP_HOME");
   if (std::filesystem::exists(devPath)) {
     if (verbose) {
       printf("%s:%d In development environment, found = %s\n", __FILE__, __LINE__, devPath.string().c_str());
@@ -112,7 +112,7 @@ Bundle::Bundle(const string &raw_argv0) {
   // Setup the quicklisp dir - if none is available then leave _QuicklispDir empty and don't create a hostname
   if (verbose)
     printf("%s:%d   Starting to look for quicklisp\n", __FILE__, __LINE__);
-  const char *quicklisp_env = getenv("CLASP_QUICKLISP_DIRECTORY");
+  const char* quicklisp_env = getenv("CLASP_QUICKLISP_DIRECTORY");
   if (quicklisp_env) {
     std::filesystem::path env_path(quicklisp_env);
     if (std::filesystem::exists(env_path)) {
@@ -145,7 +145,7 @@ Bundle::Bundle(const string &raw_argv0) {
     }
     if (!gotQuicklispPath) {
       // Try $HOME/quicklisp
-      const char *home_dir = getenv("HOME");
+      const char* home_dir = getenv("HOME");
       std::stringstream sdir;
       if (home_dir) {
         std::filesystem::path quicklispPath(home_dir);
@@ -169,7 +169,7 @@ Bundle::Bundle(const string &raw_argv0) {
   }
 }
 
-std::string Bundle::deduceArgv0(const std::string &raw_argv0) {
+std::string Bundle::deduceArgv0(const std::string& raw_argv0) {
   pid_t pid = getpid();
   // fixme, cracauer.  This should be passed in from main()
   // /proc lookup can fail.  /proc is not always mounted or available,
@@ -185,7 +185,7 @@ std::string Bundle::deduceArgv0(const std::string &raw_argv0) {
   stringstream path;
   path << "/proc/" << pid << "/file";
   char buffer[PATH_MAX + 1];
-  char *rp = realpath(path.str().c_str(), buffer);
+  char* rp = realpath(path.str().c_str(), buffer);
   if (!rp) {
     printf("%s:%d Could not resolve pid realpath for %s\n", __FILE__, __LINE__, path.str().c_str());
   } else {
@@ -196,7 +196,7 @@ std::string Bundle::deduceArgv0(const std::string &raw_argv0) {
   stringstream path;
   path << "/proc/" << pid << "/exe";
   char buffer[PATH_MAX + 1];
-  char *rp = realpath(path.str().c_str(), buffer);
+  char* rp = realpath(path.str().c_str(), buffer);
   if (!rp) {
     printf("%s:%d Could not resolve pid realpath for %s\n", __FILE__, __LINE__, path.str().c_str());
   } else {
@@ -212,7 +212,7 @@ std::string Bundle::deduceArgv0(const std::string &raw_argv0) {
 // appVariableName is the name of a variable containing the directory for this app, e.g.
 // MYAPPDIR. This is checked first.
 
-void Bundle::findExecutableDir(const string &argv0, bool verbose) {
+void Bundle::findExecutableDir(const string& argv0, bool verbose) {
   if (verbose) {
     printf("%s:%d In findExecutableDir argv0: %s\n", __FILE__, __LINE__, argv0.c_str());
   }
@@ -235,7 +235,7 @@ void Bundle::findExecutableDir(const string &argv0, bool verbose) {
 
   // OK, it's neither an absolute path nor a relative path.
   // Search PATH.
-  char *pc = getenv("PATH");
+  char* pc = getenv("PATH");
   if (pc == NULL) {
     THROW_HARD_ERROR("PATH environment variable must be defined");
   }

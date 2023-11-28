@@ -56,7 +56,7 @@ struct timespec global__start_end_time;
 struct timespec global__end_end_time;
 
 /* Return the time in nanoseconds form the system defined starting time */
-void systemReadClock(struct timespec &ts) {
+void systemReadClock(struct timespec& ts) {
 #ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
   clock_serv_t cclock;
   mach_timespec_t mts;
@@ -101,7 +101,7 @@ CL_DEFUN T_sp cl__get_internal_real_time() {
 };
 
 /* Converts the two-tier time structure into one big number */
-Bignum convertClockToNs(struct timespec &ts) {
+Bignum convertClockToNs(struct timespec& ts) {
   Bignum mpz_ns = ts.tv_sec;
   mpz_ns = mpz_ns * 1000000000; /* 1e9 ns/s */
   mpz_ns = mpz_ns + ts.tv_nsec;

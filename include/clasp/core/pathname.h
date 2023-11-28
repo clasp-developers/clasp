@@ -35,13 +35,13 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 
 namespace kw {
-extern core::Symbol_sp &_sym_unspecific;
-extern core::Symbol_sp &_sym_local;
-extern core::Symbol_sp &_sym_newest;
+extern core::Symbol_sp& _sym_unspecific;
+extern core::Symbol_sp& _sym_local;
+extern core::Symbol_sp& _sym_newest;
 } // namespace kw
 
 namespace cl {
-extern core::Symbol_sp &_sym_STARdefaultPathnameDefaultsSTAR;
+extern core::Symbol_sp& _sym_STARdefaultPathnameDefaultsSTAR;
 };
 
 namespace core {
@@ -118,7 +118,7 @@ public:
   static Pathname_sp tilde_expand(Pathname_sp pathname);
 
 public:
-  Pathname_O(const Pathname_O &ss); //!< Copy constructor
+  Pathname_O(const Pathname_O& ss); //!< Copy constructor
 
   Pathname_O()
       : _Host(kw::_sym_unspecific), _Device(kw::_sym_unspecific), _Directory(nil<T_O>()), _Name(nil<T_O>()), _Type(nil<T_O>()),
@@ -128,9 +128,9 @@ public:
 
   virtual bool equal(T_sp obj) const;
   virtual bool equalp(T_sp obj) const { return this->equal(obj); };
-  virtual void sxhash_(HashGenerator &hg) const;
-  virtual void sxhash_equal(HashGenerator &hg) const;
-  virtual void sxhash_equalp(HashGenerator &hg) const;
+  virtual void sxhash_(HashGenerator& hg) const;
+  virtual void sxhash_equal(HashGenerator& hg) const;
+  virtual void sxhash_equalp(HashGenerator& hg) const;
 
   virtual string __repr__() const;
   //! Common Lisp __write__(T_sp strm)
@@ -145,7 +145,7 @@ class LogicalPathname_O : public Pathname_O {
   LISP_CLASS(core, ClPkg, LogicalPathname_O, "logical-pathname", Pathname_O);
 
 public:
-  LogicalPathname_O(const LogicalPathname_O &ss); //!< Copy constructor
+  LogicalPathname_O(const LogicalPathname_O& ss); //!< Copy constructor
   LogicalPathname_O(){};
   virtual ~LogicalPathname_O(){};
 };

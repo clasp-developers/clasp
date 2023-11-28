@@ -51,20 +51,20 @@ struct BundleDirectories {
  */
 class Bundle {
 #if defined(USE_MPS)
-  friend mps_res_t globals_scan(mps_ss_t ss, void *p, size_t s);
+  friend mps_res_t globals_scan(mps_ss_t ss, void* p, size_t s);
 #endif
 
 public:
   bool _Initialized;
-  BundleDirectories *_Directories;
+  BundleDirectories* _Directories;
 
 private:
-  void findExecutableDir(const string &argv0, bool verbose = false);
-  std::string deduceArgv0(const std::string &raw_argv0);
+  void findExecutableDir(const string& argv0, bool verbose = false);
+  std::string deduceArgv0(const std::string& raw_argv0);
 
 public:
   string describe();
-  Bundle(const string &argv0);
+  Bundle(const string& argv0);
 
   void setup_pathname_translations();
 

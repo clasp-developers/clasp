@@ -29,10 +29,10 @@ public:
 
 public:
   SimpleVector_byte2_t_O(size_t length, bit_array_word initialElement, bool initialElementSupplied, size_t initialContentsSize = 0,
-                         const bit_array_word *initialContents = NULL)
+                         const bit_array_word* initialContents = NULL)
       : TemplatedBase(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};
   static smart_ptr_type make(size_t length, value_type initialElement = 0, bool initialElementSupplied = false,
-                             size_t initialContentsSize = 0, const bit_array_word *initialContents = NULL,
+                             size_t initialContentsSize = 0, const bit_array_word* initialContents = NULL,
                              bool static_vector_p = false) {
     bit_array_word init = initialFillValue(initialElement);
     return gctools::GC<my_type>::allocate_bitunit_container(static_vector_p, length, init, initialElementSupplied,
@@ -120,10 +120,10 @@ public:
 
 public:
   SimpleVector_int2_t_O(size_t length, bit_array_word initialElement, bool initialElementSupplied, size_t initialContentsSize = 0,
-                        const bit_array_word *initialContents = NULL)
+                        const bit_array_word* initialContents = NULL)
       : TemplatedBase(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};
   static smart_ptr_type make(size_t length, value_type initialElement = 0, bool initialElementSupplied = false,
-                             size_t initialContentsSize = 0, const bit_array_word *initialContents = NULL,
+                             size_t initialContentsSize = 0, const bit_array_word* initialContents = NULL,
                              bool static_vector_p = false) {
     bit_array_word init = initialFillValue(initialElement);
     return gctools::GC<my_type>::allocate_bitunit_container(static_vector_p, length, init, initialElementSupplied,

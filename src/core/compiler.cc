@@ -100,7 +100,7 @@ CL_DEFUN size_t core__next_jit_compile_counter() { return ++global_jit_compile_c
 DOCGROUP(clasp);
 CL_DEFUN size_t core__next_jit_unique_counter() { return ++global_jit_unique_counter; }
 
-MaybeDebugStartup::MaybeDebugStartup(void *fp, const char *n) : fptr(fp), start_dispatcher_count(0) {
+MaybeDebugStartup::MaybeDebugStartup(void* fp, const char* n) : fptr(fp), start_dispatcher_count(0) {
   if (n)
     this->name = n;
   this->start_jit_compile_counter = global_jit_compile_counter;
@@ -132,14 +132,14 @@ NEVER_OPTIMIZE MaybeDebugStartup::~MaybeDebugStartup() {
     if (this->name != "")
       name_ << this->name << " ";
     Dl_info di;
-    int found = dladdr((void *)this->fptr, &di);
+    int found = dladdr((void*)this->fptr, &di);
     if (found && di.dli_sname) {
       name_ << di.dli_sname;
     } else {
       name_ << "NONAME";
     }
     if (name_.str() == "")
-      name_ << (void *)this->fptr;
+      name_ << (void*)this->fptr;
     printf("%s us %zu gfds %zu jits: %s\n", _rep_(Integer_O::create(us.count())).c_str(), dispatcher_delta,
            (global_jit_compile_counter - this->start_jit_compile_counter), name_.str().c_str());
   }
@@ -153,19 +153,19 @@ namespace core {
 #define INITIALIZER_CAPACITY_MULTIPLIER 2
 size_t global_initializer_capacity = 0;
 size_t global_initializer_count = 0;
-InitializerFunction *global_initializer_functions = NULL;
+InitializerFunction* global_initializer_functions = NULL;
 
 void register_initializer_function(InitializerFunction fptr) {
   //  printf("%s:%d In register_initializer_function --> %p\n", __FILE__, __LINE__, fptr);
   if (global_initializer_functions == NULL) {
     global_initializer_capacity = INITIALIZER_CAPACITY_INIT;
     global_initializer_count = 0;
-    global_initializer_functions = (InitializerFunction *)malloc(global_initializer_capacity * sizeof(InitializerFunction));
+    global_initializer_functions = (InitializerFunction*)malloc(global_initializer_capacity * sizeof(InitializerFunction));
   } else {
     if (global_initializer_count == global_initializer_capacity) {
       global_initializer_capacity = global_initializer_capacity * INITIALIZER_CAPACITY_MULTIPLIER;
       global_initializer_functions =
-          (InitializerFunction *)realloc(global_initializer_functions, global_initializer_capacity * sizeof(InitializerFunction));
+          (InitializerFunction*)realloc(global_initializer_functions, global_initializer_capacity * sizeof(InitializerFunction));
     }
   }
   global_initializer_functions[global_initializer_count] = fptr;
@@ -227,11 +227,11 @@ void transfer_StartupInfo_to_my_thread() {
   my_thread->_Startup = global_startup;
 }
 
-void register_startup_function(const StartUp &one_startup) {
+void register_startup_function(const StartUp& one_startup) {
 #ifdef DEBUG_STARTUP
   printf("%s:%d In register_startup_function type: %d at %p\n", __FILE__, __LINE__, startup._Type, startup._Function);
 #endif
-  StartupInfo *startup = NULL;
+  StartupInfo* startup = NULL;
   // if my_thread is defined - then use its startup info
   // otherwise use the global_startup info.
   // This will only happen in cclasp when startup functions
@@ -244,11 +244,11 @@ void register_startup_function(const StartUp &one_startup) {
   if (startup->_functions == NULL) {
     startup->_capacity = STARTUP_FUNCTION_CAPACITY_INIT;
     startup->_count = 0;
-    startup->_functions = (StartUp *)malloc(startup->_capacity * sizeof(StartUp));
+    startup->_functions = (StartUp*)malloc(startup->_capacity * sizeof(StartUp));
   } else {
     if (startup->_count == startup->_capacity) {
       startup->_capacity = startup->_capacity * STARTUP_FUNCTION_CAPACITY_MULTIPLIER;
-      startup->_functions = (StartUp *)realloc(startup->_functions, startup->_capacity * sizeof(StartUp));
+      startup->_functions = (StartUp*)realloc(startup->_functions, startup->_capacity * sizeof(StartUp));
     }
   }
   startup->_functions[startup->_count] = one_startup;
@@ -264,9 +264,9 @@ size_t startup_functions_are_waiting() {
 };
 
 /*! Invoke the startup functions and clear the array of startup functions */
-core::T_O *startup_functions_invoke(T_O *literals) {
+core::T_O* startup_functions_invoke(T_O* literals) {
   size_t startup_count = 0;
-  StartUp *startup_functions = NULL;
+  StartUp* startup_functions = NULL;
   {
     // Save the current list
     startup_count = my_thread->_Startup._count;
@@ -277,20 +277,20 @@ core::T_O *startup_functions_invoke(T_O *literals) {
     my_thread->_Startup._functions = NULL;
   }
   // Invoke the current list
-  core::T_O *result = NULL;
+  core::T_O* result = NULL;
   if (startup_count > 0) {
     sort::quickSortMemory(startup_functions, 0, startup_count);
 #ifdef DEBUG_STARTUP
     printf("%s:%d In startup_functions_invoke - there are %" PRsize_t " startup functions\n", __FILE__, __LINE__, startup_count);
     for (size_t i = 0; i < startup_count; ++i) {
-      Startup &startup = startup_functions[i];
+      Startup& startup = startup_functions[i];
       printf("%s:%d     Startup fn[%" PRsize_t "] -> %p\n", __FILE__, __LINE__, startup._Position, startup._Function);
     }
     printf("%s:%d Starting to call the startup functions\n", __FILE__, __LINE__);
 #endif
     StartUp previous;
     for (size_t i = 0; i < startup_count; ++i) {
-      StartUp &startup = startup_functions[i];
+      StartUp& startup = startup_functions[i];
       if (startup._Position == previous._Position) {
         printf("%s:%d At startup there were two adjacent startup functions with the same position value %lu - this could mean a "
                "startup order catastrophe\n",
@@ -353,7 +353,7 @@ NOINLINE CL_DEFUN T_sp core__trigger_dtrace_stop() {
 
 DOCGROUP(clasp);
 CL_DEFUN void core__startup_functions_invoke(List_sp literals) {
-  startup_functions_invoke((T_O *)literals.raw_());
+  startup_functions_invoke((T_O*)literals.raw_());
   printf("%s:%d startup_functions_invoke returned -   this should never happen\n", __FILE__, __LINE__);
   abort();
 };
@@ -361,14 +361,14 @@ CL_DEFUN void core__startup_functions_invoke(List_sp literals) {
 }; // namespace core
 
 extern "C" {
-gctools::return_type wrapped_test(core::T_O *arg0, core::T_O *arg1, core::T_O *arg2) {
+gctools::return_type wrapped_test(core::T_O* arg0, core::T_O* arg1, core::T_O* arg2) {
   printf("%s:%d wrapped_test called (%p, %p, %p)\n", __FILE__, __LINE__, arg0, arg1, arg2);
   return gctools::return_type();
 }
 };
 namespace core {
 
-int f(Environment_sp &e) {
+int f(Environment_sp& e) {
   (void)e;
   return 1;
 }
@@ -430,7 +430,7 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
   return Values(nil<T_O>(), SimpleBaseString_O::make("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
 }
 
-bool startup_snapshot_is_stale(const std::string &snapshotFileName) {
+bool startup_snapshot_is_stale(const std::string& snapshotFileName) {
   stringstream ss;
   std::string executablePath;
   core::executablePath(executablePath);
@@ -499,7 +499,7 @@ struct FasoHeader {
   }
 };
 
-void setup_FasoHeader(FasoHeader *header) {
+void setup_FasoHeader(FasoHeader* header) {
   header->_Magic[0] = FASO_MAGIC_NUMBER_0;
   header->_Magic[1] = FASO_MAGIC_NUMBER_1;
   header->_Magic[2] = FASO_MAGIC_NUMBER_2;
@@ -526,7 +526,7 @@ CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles, T_sp tstart_
   }
   //  printf("%s:%d start_object_id = %lu\n", __FILE__, __LINE__, start_object_id );
   //  printf("%s:%d Number of object files: %lu\n", __FILE__, __LINE__, cl__length(objectFiles));
-  FasoHeader *header = (FasoHeader *)malloc(FasoHeader::calculateSize(cl__length(objectFiles)));
+  FasoHeader* header = (FasoHeader*)malloc(FasoHeader::calculateSize(cl__length(objectFiles)));
   setup_FasoHeader(header);
   header->_HeaderPageCount = FasoHeader::calculateHeaderNumberOfPages(cl__length(objectFiles), getpagesize());
   header->_NumberOfObjectFiles = cl__length(objectFiles);
@@ -550,17 +550,17 @@ CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles, T_sp tstart_
 #endif
   }
   String_sp filename = gc::As<String_sp>(cl__namestring(pathDesig));
-  FILE *fout = fopen(filename->get_std_string().c_str(), "w");
+  FILE* fout = fopen(filename->get_std_string().c_str(), "w");
   // Write header
   size_t header_bytes = FasoHeader::calculateSize(header->_NumberOfObjectFiles);
-  fwrite((const void *)header, header_bytes, 1, fout);
+  fwrite((const void*)header, header_bytes, 1, fout);
 
   // Fill out to the end of the page
   size_t pad_bytes =
       FasoHeader::calculateHeaderNumberOfPages(header->_NumberOfObjectFiles, header->_PageSize) * header->_PageSize - header_bytes;
   char empty_byte(0xcc);
   for (size_t ii = 0; ii < pad_bytes; ++ii) {
-    fwrite((const void *)&empty_byte, 1, 1, fout);
+    fwrite((const void*)&empty_byte, 1, 1, fout);
   }
   // Write out each object file
   List_sp ocur = objectFiles;
@@ -568,10 +568,10 @@ CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles, T_sp tstart_
     size_t of_bytes = header->_ObjectFiles[ofindex]._ObjectFileSize;
     Array_sp of = gc::As<Array_sp>(oCar(ocur));
     ocur = oCdr(ocur);
-    fwrite((const void *)of->rowMajorAddressOfElement_(0), of_bytes, 1, fout);
+    fwrite((const void*)of->rowMajorAddressOfElement_(0), of_bytes, 1, fout);
     size_t of_pad_bytes = header->_ObjectFiles[ofindex]._NumberOfPages * header->_PageSize - of_bytes;
     for (size_t of_padi = 0; of_padi < of_pad_bytes; ++of_padi) {
-      fwrite((const void *)&empty_byte, 1, 1, fout);
+      fwrite((const void*)&empty_byte, 1, 1, fout);
     }
   }
   fclose(fout);
@@ -579,10 +579,10 @@ CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles, T_sp tstart_
 
 struct MmapInfo {
   int _FileDescriptor;
-  void *_Memory;
+  void* _Memory;
   size_t _ObjectFileAreaStart;
   size_t _ObjectFileAreaSize;
-  MmapInfo(int fd, void *mem, size_t start, size_t size)
+  MmapInfo(int fd, void* mem, size_t start, size_t size)
       : _FileDescriptor(fd), _Memory(mem), _ObjectFileAreaStart(start), _ObjectFileAreaSize(size){};
 };
 
@@ -608,13 +608,13 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
       clasp_write_string(fmt::format("mmap'ing file[{}] {}\n", ii, _rep_(filename)));
     off_t fsize = lseek(fd, 0, SEEK_END);
     lseek(fd, 0, SEEK_SET);
-    void *memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
+    void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
     if (memory == MAP_FAILED) {
       close(fd);
       SIMPLE_ERROR("Could not mmap {} because of {}", _rep_(filename), strerror(errno));
     }
     close(fd);
-    FasoHeader *header = (FasoHeader *)memory;
+    FasoHeader* header = (FasoHeader*)memory;
     if (header->_Magic[0] == FASO_MAGIC_NUMBER_0 && header->_Magic[1] == FASO_MAGIC_NUMBER_1 &&
         header->_Magic[2] == FASO_MAGIC_NUMBER_2 && header->_Magic[3] == FASO_MAGIC_NUMBER_3) {
       size_t object0_offset = (header->_HeaderPageCount * header->_PageSize);
@@ -637,7 +637,7 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
                    (uint8_t)header->_Magic[1], (uint8_t)header->_Magic[2], (uint8_t)header->_Magic[3]);
     }
   }
-  FasoHeader *header = (FasoHeader *)malloc(FasoHeader::calculateSize(allObjectFiles.size()));
+  FasoHeader* header = (FasoHeader*)malloc(FasoHeader::calculateSize(allObjectFiles.size()));
   setup_FasoHeader(header);
   header->_HeaderPageCount = FasoHeader::calculateHeaderNumberOfPages(allObjectFiles.size(), getpagesize());
   header->_NumberOfObjectFiles = allObjectFiles.size();
@@ -658,7 +658,7 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
   }
   String_sp filename = gc::As<String_sp>(cl__namestring(outputPathDesig));
 
-  FILE *fout = fopen(filename->get_std_string().c_str(), "w");
+  FILE* fout = fopen(filename->get_std_string().c_str(), "w");
   if (!fout) {
     SIMPLE_ERROR("Could not open file {}", _rep_(filename));
   }
@@ -669,7 +669,7 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
   size_t header_bytes = FasoHeader::calculateSize(header->_NumberOfObjectFiles);
   if (verbose)
     clasp_write_string(fmt::format("Writing {} bytes of header\n", header_bytes));
-  fwrite((const void *)header, header_bytes, 1, fout);
+  fwrite((const void*)header, header_bytes, 1, fout);
 
   //  clasp_write_string(fmt::format("Writing header {} bytes\n" , header_bytes ));
   // Fill out to the end of the page
@@ -679,7 +679,7 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
     clasp_write_string(fmt::format("Writing {} bytes of header for padding\n", pad_bytes));
   char empty_byte(0xcc);
   for (size_t ii = 0; ii < pad_bytes; ++ii) {
-    fwrite((const void *)&empty_byte, 1, 1, fout);
+    fwrite((const void*)&empty_byte, 1, 1, fout);
   }
   unsigned char pad(0xcc);
   for (size_t mmi = 0; mmi < mmaps.size(); mmi++) {
@@ -688,7 +688,7 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
     size_t padding = (((size_t)(bytes_to_write + page_size - 1) / page_size) * page_size - bytes_to_write);
     if (verbose)
       clasp_write_string(fmt::format("Writing {} bytes of object files\n", bytes_to_write));
-    fwrite((const void *)((const char *)mmaps[mmi]._Memory + mmaps[mmi]._ObjectFileAreaStart), bytes_to_write, 1, fout);
+    fwrite((const void*)((const char*)mmaps[mmi]._Memory + mmaps[mmi]._ObjectFileAreaStart), bytes_to_write, 1, fout);
     if (verbose)
       clasp_write_string(fmt::format("Writing {} bytes of padding\n", padding));
     for (size_t pi = 0; pi < padding; ++pi) {
@@ -728,13 +728,13 @@ CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external
 CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
   String_sp sfilename = gc::As<String_sp>(cl__namestring(pathDesig));
   std::string filename = sfilename->get_std_string();
-  char *name_buffer = (char *)malloc(filename.size() + 1);
+  char* name_buffer = (char*)malloc(filename.size() + 1);
   strncpy(name_buffer, filename.c_str(), filename.size());
   name_buffer[filename.size()] = '\0';
   int fd = open(filename.c_str(), O_RDONLY);
   off_t fsize = lseek(fd, 0, SEEK_END);
   lseek(fd, 0, SEEK_SET);
-  void *memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
+  void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
   free(name_buffer);
   if (memory == MAP_FAILED) {
     close(fd);
@@ -742,17 +742,17 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
   }
   close(fd); // Ok to close file descriptor after mmap
   llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
-  FasoHeader *header = (FasoHeader *)memory;
+  FasoHeader* header = (FasoHeader*)memory;
   llvmo::JITDylib_sp jitDylib;
   for (size_t fasoIndex = 0; fasoIndex < header->_NumberOfObjectFiles; ++fasoIndex) {
     if (!jitDylib || header->_ObjectFiles[fasoIndex]._ObjectId == 0) {
       jitDylib = jit->createAndRegisterJITDylib(filename);
     }
-    void *of_start = (void *)((char *)header + header->_ObjectFiles[fasoIndex]._StartPage * header->_PageSize);
+    void* of_start = (void*)((char*)header + header->_ObjectFiles[fasoIndex]._StartPage * header->_PageSize);
     size_t of_length = header->_ObjectFiles[fasoIndex]._ObjectFileSize;
     if (print.notnilp())
       clasp_write_string(fmt::format("{}:{} Adding faso {} object file {} to jit\n", __FILE__, __LINE__, filename, fasoIndex));
-    llvm::StringRef sbuffer((const char *)of_start, of_length);
+    llvm::StringRef sbuffer((const char*)of_start, of_length);
     stringstream tryUniqueName;
     tryUniqueName << filename << "-" << header->_ObjectFiles[fasoIndex]._ObjectId;
     std::string uniqueName = llvmo::ensureUniqueMemoryBufferName(tryUniqueName.str());
@@ -772,10 +772,10 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
 }
 
 int global_jit_pid = -1;
-FILE *global_jit_log_stream = NULL;
+FILE* global_jit_log_stream = NULL;
 bool global_jit_log_symbols = false;
 
-void jit_register_symbol(const std::string &name, size_t size, void *address) {
+void jit_register_symbol(const std::string& name, size_t size, void* address) {
   WITH_READ_WRITE_LOCK(globals_->_JITLogMutex);
   int gpid = getpid();
   if (global_jit_log_stream && (global_jit_pid != gpid)) {
@@ -791,7 +791,7 @@ void jit_register_symbol(const std::string &name, size_t size, void *address) {
   }
   if (global_jit_log_stream) {
     char nameBuffer[1024];
-    char *namecur = nameBuffer;
+    char* namecur = nameBuffer;
     char prevchar = ' ';
     for (int i = 0; i < name.size() && i < 1023; i++) {
       if (name[i] == '\r')
@@ -810,7 +810,7 @@ void jit_register_symbol(const std::string &name, size_t size, void *address) {
   }
 }
 
-CL_DEFUN void core__jit_register_symbol(const std::string &name, size_t size, void *address) {
+CL_DEFUN void core__jit_register_symbol(const std::string& name, size_t size, void* address) {
   if (global_jit_log_symbols) {
     jit_register_symbol(name, size, address);
   }
@@ -822,12 +822,12 @@ CL_DEFUN core::T_sp core__describe_faso(T_sp pathDesig) {
   int fd = open(filename->get_std_string().c_str(), O_RDONLY);
   off_t fsize = lseek(fd, 0, SEEK_END);
   lseek(fd, 0, SEEK_SET);
-  void *memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
+  void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
   if (memory == MAP_FAILED) {
     close(fd);
     SIMPLE_ERROR("Could not mmap {} because of {}", _rep_(pathDesig), strerror(errno));
   }
-  FasoHeader *header = (FasoHeader *)memory;
+  FasoHeader* header = (FasoHeader*)memory;
   clasp_write_string(fmt::format("NumberOfObjectFiles {}\n", header->_NumberOfObjectFiles));
   for (size_t fasoIndex = 0; fasoIndex < header->_NumberOfObjectFiles; ++fasoIndex) {
     //    clasp_write_string(fmt::format("Adding faso {} object file {} to jit\n" , _rep_(filename) , fasoIndex));
@@ -839,7 +839,7 @@ CL_DEFUN core::T_sp core__describe_faso(T_sp pathDesig) {
   return _lisp->_true();
 }
 
-void clasp_unpack_faso(const std::string &path_designator) {
+void clasp_unpack_faso(const std::string& path_designator) {
   size_t pos = path_designator.find_last_of('.');
   if (pos == std::string::npos) {
     SIMPLE_ERROR("Could not find extension in path: {}", path_designator);
@@ -848,19 +848,19 @@ void clasp_unpack_faso(const std::string &path_designator) {
   int fd = open(path_designator.c_str(), O_RDONLY);
   off_t fsize = lseek(fd, 0, SEEK_END);
   lseek(fd, 0, SEEK_SET);
-  void *memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
+  void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
   if (memory == MAP_FAILED) {
     close(fd);
     SIMPLE_ERROR("Could not mmap {} because of {}", path_designator, strerror(errno));
   }
-  FasoHeader *header = (FasoHeader *)memory;
+  FasoHeader* header = (FasoHeader*)memory;
   printf("NumberOfObjectFiles %lu\n", header->_NumberOfObjectFiles);
   for (size_t fasoIndex = 0; fasoIndex < header->_NumberOfObjectFiles; ++fasoIndex) {
-    void *of_start = (void *)((char *)header + header->_ObjectFiles[fasoIndex]._StartPage * header->_PageSize);
+    void* of_start = (void*)((char*)header + header->_ObjectFiles[fasoIndex]._StartPage * header->_PageSize);
     size_t of_length = header->_ObjectFiles[fasoIndex]._ObjectFileSize;
     stringstream sfilename;
     sfilename << prefix << "-" << fasoIndex << "-" << header->_ObjectFiles[fasoIndex]._ObjectId << ".o";
-    FILE *fout = fopen(sfilename.str().c_str(), "w");
+    FILE* fout = fopen(sfilename.str().c_str(), "w");
     fwrite(of_start, of_length, 1, fout);
     fclose(fout);
     printf("Object file[%lu] ObjectId: %lu  start-page: %lu  bytes: %lu pages: %lu\n", fasoIndex,
@@ -912,7 +912,7 @@ CL_DEFUN T_mv core__load_binary_directory(T_sp pathDesig, T_sp verbose, T_sp pri
   return core__load_binary(tpath, verbose, print, external_format);
 }
 
-void startup_shutdown_names(size_t id, const std::string &prefix, std::string &start, std::string &shutdown) {
+void startup_shutdown_names(size_t id, const std::string& prefix, std::string& start, std::string& shutdown) {
   stringstream sstart;
   stringstream sshutdown;
   if (prefix != "") {
@@ -948,7 +948,7 @@ CL_LAMBDA(&optional (id 0) prefix);
 CL_DEFUN T_mv core__startup_linkage(size_t id, core::T_sp prefix) {
   T_mv result = core__startup_linkage_shutdown_names(id, prefix);
   T_sp result1 = result;
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   T_sp result2 = mvn.second(result.number_of_values());
   return Values(result1, result2);
 }
@@ -961,8 +961,8 @@ CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-std::tuple<void *, string> do_dlopen(const string &str_path, const int n_mode) {
-  void *p_handle = nullptr;
+std::tuple<void*, string> do_dlopen(const string& str_path, const int n_mode) {
+  void* p_handle = nullptr;
   std::string str_error{""};
 
   dlerror(); // clear any previous error
@@ -979,7 +979,7 @@ std::tuple<void *, string> do_dlopen(const string &str_path, const int n_mode) {
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-std::tuple<int, string> do_dlclose(void *p_handle) {
+std::tuple<int, string> do_dlclose(void* p_handle) {
 
   std::string str_error{""};
   int n_rc = 0;
@@ -1017,7 +1017,7 @@ CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
   string ts0 = gc::As<String_sp>(cl__namestring(path))->get_std_string();
 
   auto result = do_dlopen(ts0, mode);
-  void *handle = std::get<0>(result);
+  void* handle = std::get<0>(result);
 
   if (handle == nullptr) {
     return (Values(nil<T_O>(), SimpleBaseString_O::make(get<1>(result))));
@@ -1027,9 +1027,9 @@ CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-std::tuple<void *, string> do_dlsym(void *p_handle, const char *pc_symbol) {
+std::tuple<void*, string> do_dlsym(void* p_handle, const char* pc_symbol) {
   std::string str_error{""};
-  void *p_sym = nullptr;
+  void* p_sym = nullptr;
   dlerror(); // clear any earlier error
              //  printf("%s:%d:%s  pc_symbol: %s\n", __FILE__, __LINE__, __FUNCTION__, pc_symbol );
   p_sym = dlsym(p_handle, pc_symbol);
@@ -1048,7 +1048,7 @@ CL_DOCSTRING(
     R"dx((dlsym handle name) handle is pointer from dlopen or :rtld-next, :rtld-self, :rtld-default or :rtld-main-only (see dlsym man page) returns ptr or nil if not found.)dx")
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__dlsym(T_sp ohandle, String_sp name) {
-  void *handle = NULL;
+  void* handle = NULL;
   if (ohandle.nilp()) {
     SIMPLE_ERROR("Invalid ohandle passed -> nil");
   } else if (Pointer_sp phandle = ohandle.asOrNull<Pointer_O>()) {
@@ -1085,7 +1085,7 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, String_sp name) {
 
   //  printf("%s:%d:%s  handle = %p  symbol = |%s|\n", __FILE__, __LINE__, __FUNCTION__, handle, ts.c_str());
   auto result = do_dlsym(handle, ts.c_str());
-  void *p_sym = std::get<0>(result);
+  void* p_sym = std::get<0>(result);
   if (p_sym == nullptr) {
     return (Values(nil<T_O>(), SimpleBaseString_O::make(get<1>(result))));
   }
@@ -1105,7 +1105,7 @@ CL_DOCSTRING(
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__dladdr(Pointer_sp addr) {
   uint64_t val = (uint64_t)addr->ptr();
-  void *ptr = (void *)val;
+  void* ptr = (void*)val;
   Dl_info info;
   int ret = dladdr(ptr, &info);
   if (!ret) {
@@ -1177,7 +1177,7 @@ CL_DOCSTRING(R"dx(Like CL:THROW, but takes a thunk)dx");
 DOCGROUP(clasp);
 CL_DEFUN void core__throw_function(T_sp tag, Function_sp result_form) {
   T_mv result = eval::funcall(result_form);
-  MultipleValues &mv = lisp_multipleValues();
+  MultipleValues& mv = lisp_multipleValues();
   mv.saveToMultipleValue0(result);
   sjlj_throw(tag);
 }
@@ -1218,10 +1218,10 @@ CL_DEFUN T_sp core__run_function(T_sp object) {
   if (thandle.notnilp() && gc::IsA<Pointer_sp>(thandle)) {
     handle = (uintptr_t)gc::As_unsafe<Pointer_sp>(thandle)->ptr();
   }
-  ClaspXepGeneralFunction func = (ClaspXepGeneralFunction)dlsym((void *)handle, name.c_str());
+  ClaspXepGeneralFunction func = (ClaspXepGeneralFunction)dlsym((void*)handle, name.c_str());
 //  printf("%s:%d:%s running function %s  at %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)func);
 #ifdef DEBUG_SLOW
-  MaybeDebugStartup startup((void *)func);
+  MaybeDebugStartup startup((void*)func);
 #endif
   if (func != nullptr) {
     LCC_RETURN ret = func(nil<T_O>().raw_(), 0, NULL);
@@ -1256,13 +1256,13 @@ SYMBOL_EXPORT_SC_(CorePkg, callWithVariableBound);
 template <typename T> char document() { return '\0'; };
 template <> char document<char>() { return 'c'; };
 template <> char document<size_t>() { return 's'; };
-template <> char document<char *>() { return 'S'; };
-template <> char document<T_O *>() { return 'O'; };
+template <> char document<char*>() { return 'S'; };
+template <> char document<T_O*>() { return 'O'; };
 template <> char document<float>() { return 'f'; };
 template <> char document<double>() { return 'd'; };
 template <> char document<ClaspXepAnonymousFunction>() { return 'f'; };
 
-char ll_read_char(T_sp stream, bool log, size_t &index) {
+char ll_read_char(T_sp stream, bool log, size_t& index) {
   while (1) {
     char c = clasp_read_char(stream);
     if (c == '!') {
@@ -1319,7 +1319,7 @@ CL_DEFUN size_t core__ltvc_write_char(T_sp object, T_sp stream, size_t index) {
   return index;
 }
 
-char ltvc_read_char(char *&bytecode, char *byteend, bool log) {
+char ltvc_read_char(char*& bytecode, char* byteend, bool log) {
   if (bytecode >= byteend)
     SIMPLE_ERROR("Unexpected EOF"); // FIXME
   char c = *bytecode++;
@@ -1328,19 +1328,19 @@ char ltvc_read_char(char *&bytecode, char *byteend, bool log) {
   return c;
 }
 
-void compact_write_size_t(size_t data, T_sp stream, size_t &index) {
+void compact_write_size_t(size_t data, T_sp stream, size_t& index) {
   int64_t nb = 0;
   for (nb = sizeof(data) - 1; nb >= 0; nb--) {
-    if (((char *)&data)[nb] != '\0')
+    if (((char*)&data)[nb] != '\0')
       break;
   }
   nb += 1;
   clasp_write_char('0' + nb, stream);
-  clasp_write_characters((char *)&data, nb, stream);
+  clasp_write_characters((char*)&data, nb, stream);
   index += nb + 1;
 }
 
-size_t compact_read_size_t(char *&bytecode, char *byteend) {
+size_t compact_read_size_t(char*& bytecode, char* byteend) {
   if (bytecode >= byteend)
     SIMPLE_ERROR("Unexpected EOF"); // FIXME
   size_t data = 0;
@@ -1352,7 +1352,7 @@ size_t compact_read_size_t(char *&bytecode, char *byteend) {
   if (bytecode > byteend - nb)
     SIMPLE_ERROR("Unexpected EOF");
   for (size_t ii = 0; ii < nb; ++ii) {
-    ((char *)&data)[ii] = *bytecode++;
+    ((char*)&data)[ii] = *bytecode++;
   }
   return data;
 }
@@ -1365,7 +1365,7 @@ CL_DEFUN size_t core__ltvc_write_size_t(T_sp object, T_sp stream, size_t index) 
   return index;
 }
 
-size_t ltvc_read_size_t(char *&bytecode, char *byteend, bool log) {
+size_t ltvc_read_size_t(char*& bytecode, char* byteend, bool log) {
   size_t data = compact_read_size_t(bytecode, byteend);
   if (log)
     printf("%s:%d:%s -> %lu\n", __FILE__, __LINE__, __FUNCTION__, data);
@@ -1374,15 +1374,15 @@ size_t ltvc_read_size_t(char *&bytecode, char *byteend, bool log) {
 
 DOCGROUP(clasp);
 CL_DEFUN size_t core__ltvc_write_string(T_sp object, T_sp stream, size_t index) {
-  SELF_DOCUMENT(char *, stream, index);
+  SELF_DOCUMENT(char*, stream, index);
   std::string str = gc::As<String_sp>(object)->get_std_string();
   index = core__ltvc_write_size_t(make_fixnum(str.size()), stream, index);
-  clasp_write_characters((char *)str.c_str(), str.size(), stream);
+  clasp_write_characters((char*)str.c_str(), str.size(), stream);
   index += str.size();
   return index;
 }
 
-std::string ltvc_read_string(char *&bytecode, char *byteend, bool log) {
+std::string ltvc_read_string(char*& bytecode, char* byteend, bool log) {
   // SELF_CHECK(char *, stream, index);
   size_t len = ltvc_read_size_t(bytecode, byteend, log);
   if (bytecode > byteend - len)
@@ -1401,14 +1401,14 @@ CL_DEFUN size_t core__ltvc_write_bignum(T_sp object, T_sp stream, size_t index) 
   SELF_DOCUMENT(long long, stream, index);
   core::Bignum_sp bignum = gc::As<Bignum_sp>(object);
   mp_size_t length = bignum->length();
-  const mp_limb_t *limbs = bignum->limbs();
+  const mp_limb_t* limbs = bignum->limbs();
   compact_write_size_t(length, stream, index);
   for (mp_size_t i = 0; i < std::abs(length); i++)
     compact_write_size_t(limbs[i], stream, index);
   return index;
 }
 
-T_O *ltvc_read_bignum(char *&bytecode, char *byteend, bool log) {
+T_O* ltvc_read_bignum(char*& bytecode, char* byteend, bool log) {
   //  SELF_CHECK(long long, stream, index);
   mp_size_t length = compact_read_size_t(bytecode, byteend);
   size_t size = std::abs(length);
@@ -1416,7 +1416,7 @@ T_O *ltvc_read_bignum(char *&bytecode, char *byteend, bool log) {
   for (mp_size_t i = 0; i < size; i++) {
     limbs[i] = compact_read_size_t(bytecode, byteend);
   }
-  return reinterpret_cast<T_O *>(Bignum_O::create_from_limbs(length, 0, false, size, limbs).raw_());
+  return reinterpret_cast<T_O*>(Bignum_O::create_from_limbs(length, 0, false, size, limbs).raw_());
 }
 
 DOCGROUP(clasp);
@@ -1424,7 +1424,7 @@ CL_DEFUN size_t core__ltvc_write_float(T_sp object, T_sp stream, size_t index) {
   SELF_DOCUMENT(float, stream, index);
   if (object.single_floatp()) {
     float data = object.unsafe_single_float();
-    clasp_write_characters((char *)&data, sizeof(data), stream);
+    clasp_write_characters((char*)&data, sizeof(data), stream);
     index += sizeof(data);
   } else {
     SIMPLE_ERROR("Expected single-float got {}", _rep_(object));
@@ -1432,13 +1432,13 @@ CL_DEFUN size_t core__ltvc_write_float(T_sp object, T_sp stream, size_t index) {
   return index;
 }
 
-float ltvc_read_float(char *&bytecode, char *byteend, bool log) {
+float ltvc_read_float(char*& bytecode, char* byteend, bool log) {
   //  SELF_CHECK(float, stream, index);
   float data;
   if (bytecode > byteend - sizeof(data))
     SIMPLE_ERROR("Unexpected EOF");
   for (size_t i = 0; i < sizeof(data); ++i) {
-    ((char *)&data)[i] = *bytecode++;
+    ((char*)&data)[i] = *bytecode++;
   }
   if (log)
     printf("%s:%d:%s -> '%f'\n", __FILE__, __LINE__, __FUNCTION__, data);
@@ -1449,18 +1449,18 @@ DOCGROUP(clasp);
 CL_DEFUN size_t core__ltvc_write_double(T_sp object, T_sp stream, size_t index) {
   SELF_DOCUMENT(double, stream, index);
   double data = gc::As<DoubleFloat_sp>(object)->get();
-  clasp_write_characters((char *)&data, sizeof(data), stream);
+  clasp_write_characters((char*)&data, sizeof(data), stream);
   index += sizeof(data);
   return index;
 }
 
-double ltvc_read_double(char *&bytecode, char *byteend, bool log) {
+double ltvc_read_double(char*& bytecode, char* byteend, bool log) {
   SELF_CHECK(double, stream, index);
   double data;
   if (bytecode > byteend - sizeof(data))
     SIMPLE_ERROR("Unexpected EOF");
   for (size_t i = 0; i < sizeof(data); ++i) {
-    ((char *)&data)[i] = *bytecode++;
+    ((char*)&data)[i] = *bytecode++;
   }
   if (log)
     printf("%s:%d:%s -> '%lf'\n", __FILE__, __LINE__, __FUNCTION__, data);
@@ -1470,7 +1470,7 @@ double ltvc_read_double(char *&bytecode, char *byteend, bool log) {
 CL_DOCSTRING(R"dx(tag is (0|1|2) where 0==literal, 1==transient, 2==immediate)dx");
 DOCGROUP(clasp);
 CL_DEFUN size_t core__ltvc_write_object(T_sp ttag, T_sp index_or_immediate, T_sp stream, size_t index) {
-  SELF_DOCUMENT(T_O *, stream, index);
+  SELF_DOCUMENT(T_O*, stream, index);
   if (ttag.characterp() && (ttag.unsafe_character() == 'l' || ttag.unsafe_character() == 't' || ttag.unsafe_character() == 'i')) {
     char tag = ttag.unsafe_character();
     clasp_write_char(tag, stream);
@@ -1490,7 +1490,7 @@ CL_DEFUN size_t core__ltvc_write_object(T_sp ttag, T_sp index_or_immediate, T_sp
   SIMPLE_ERROR("tag must be 0, 1 or 2 - you passed {}", _rep_(ttag));
 }
 
-T_O *ltvc_read_object(gctools::GCRootsInModule *roots, char *&bytecode, char *byteend, bool log) {
+T_O* ltvc_read_object(gctools::GCRootsInModule* roots, char*& bytecode, char* byteend, bool log) {
   // SELF_CHECK(T_O *, stream, index);
   if (bytecode >= byteend)
     SIMPLE_ERROR("Unexpected EOF");
@@ -1519,7 +1519,7 @@ T_O *ltvc_read_object(gctools::GCRootsInModule *roots, char *&bytecode, char *by
       T_sp o((gctools::Tagged)val);
       printf("%s:%d:%s literal -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(o).c_str());
     }
-    return (T_O *)val;
+    return (T_O*)val;
   } break;
   case 't': {
     gctools::Tagged val = roots->getTransient(data);
@@ -1527,7 +1527,7 @@ T_O *ltvc_read_object(gctools::GCRootsInModule *roots, char *&bytecode, char *by
       T_sp o((gctools::Tagged)val);
       printf("%s:%d:%s transient -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(o).c_str());
     }
-    return (T_O *)val;
+    return (T_O*)val;
   } break;
   case 'i': {
     gctools::Tagged val = (gctools::Tagged)data;
@@ -1535,7 +1535,7 @@ T_O *ltvc_read_object(gctools::GCRootsInModule *roots, char *&bytecode, char *by
       T_sp o((gctools::Tagged)val);
       printf("%s:%d:%s immediate -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(o).c_str());
     }
-    return (T_O *)val;
+    return (T_O*)val;
   }
   default: {
     SIMPLE_ERROR("Could not read an object for using tag {} data {}", tag, data);
@@ -1543,7 +1543,7 @@ T_O *ltvc_read_object(gctools::GCRootsInModule *roots, char *&bytecode, char *by
   };
 }
 
-Cons_O *ltvc_read_list(gctools::GCRootsInModule *roots, size_t num, char *&bytecode, char *byteend, bool log) {
+Cons_O* ltvc_read_list(gctools::GCRootsInModule* roots, size_t num, char*& bytecode, char* byteend, bool log) {
   ql::list result;
   for (size_t ii = 0; ii < num; ++ii) {
     T_sp obj((gctools::Tagged)ltvc_read_object(roots, bytecode, byteend, log));
@@ -1552,10 +1552,10 @@ Cons_O *ltvc_read_list(gctools::GCRootsInModule *roots, size_t num, char *&bytec
   if (log) {
     printf("%s:%d:%s list -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(result.cons()).c_str());
   }
-  return (Cons_O *)result.cons().tagged_();
+  return (Cons_O*)result.cons().tagged_();
 }
 
-void ltvc_fill_list_varargs(gctools::GCRootsInModule *roots, T_O *list, size_t len, Cons_O *varargs) {
+void ltvc_fill_list_varargs(gctools::GCRootsInModule* roots, T_O* list, size_t len, Cons_O* varargs) {
   // Copy the vargs list into the ltv one.
   // FIXME: This is obviously inefficient.
   T_sp cur((gctools::Tagged)list);
@@ -1569,15 +1569,15 @@ void ltvc_fill_list_varargs(gctools::GCRootsInModule *roots, T_O *list, size_t l
   }
 }
 
-void ltvc_mlf_create_basic_call_varargs(gctools::GCRootsInModule *holder, char tag, size_t index, T_O *fname, size_t len,
-                                        Cons_O *varargs) {
+void ltvc_mlf_create_basic_call_varargs(gctools::GCRootsInModule* holder, char tag, size_t index, T_O* fname, size_t len,
+                                        Cons_O* varargs) {
   T_sp tfname((gctools::Tagged)fname);
   T_sp tvarargs((gctools::Tagged)varargs);
   T_sp val = core__apply0(coerce::calledFunctionDesignator(tfname), tvarargs);
   holder->setTaggedIndex(tag, index, val.tagged_());
 }
 
-void ltvc_mlf_init_basic_call_varargs(gctools::GCRootsInModule *holder, T_O *fname, size_t len, Cons_O *varargs) {
+void ltvc_mlf_init_basic_call_varargs(gctools::GCRootsInModule* holder, T_O* fname, size_t len, Cons_O* varargs) {
   (void)len; // don't need it.
   T_sp tfname((gctools::Tagged)fname);
   T_sp tvarargs((gctools::Tagged)varargs);
@@ -1611,10 +1611,10 @@ void dump_start_code(T_sp fin, size_t length, bool useFrom = false, size_t from 
 #include <virtualMachine.h>
 #undef DEFINE_LTV_PARSERS
 
-void start_code_interpreter(gctools::GCRootsInModule *roots, char *bytecode, size_t nbytes, bool log) {
+void start_code_interpreter(gctools::GCRootsInModule* roots, char* bytecode, size_t nbytes, bool log) {
   volatile uint32_t i = 0x01234567;
   // return 0 for big endian, 1 for little endian.
-  if ((*((uint8_t *)(&i))) == 0x67) {
+  if ((*((uint8_t*)(&i))) == 0x67) {
     // Little endian - the code is set up for this
   } else {
     printf("%s:%d This is a big-endian architecture and the byte-code interpreter is set up for little-endian - fix this before "
@@ -1622,7 +1622,7 @@ void start_code_interpreter(gctools::GCRootsInModule *roots, char *bytecode, siz
            __FILE__, __LINE__);
     abort();
   }
-  char *byteend = bytecode + nbytes;
+  char* byteend = bytecode + nbytes;
   while (1) {
     if (log) {
       printf("%s:%d ------- top of byte-code interpreter\n", __FILE__, __LINE__);
@@ -1725,9 +1725,9 @@ SYMBOL_EXPORT_SC_(CorePkg, two_arg_STAR);
 
 extern "C" {
 
-void clasp_trap(core::T_O *val) { printf("%s:%d  clasp_trap called with %p\n", __FILE__, __LINE__, val); }
+void clasp_trap(core::T_O* val) { printf("%s:%d  clasp_trap called with %p\n", __FILE__, __LINE__, val); }
 
-void clasp_silent_trap(core::T_O *obj) {
+void clasp_silent_trap(core::T_O* obj) {
   // Do nothing
 }
 };

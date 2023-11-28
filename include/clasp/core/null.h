@@ -40,7 +40,7 @@ public:                             // ctor/dtor for classes with shared virtual
   explicit Null_O() : Symbol_O(){}; // List_O
   explicit Null_O(SimpleBaseString_sp name) : Symbol_O(name){};
   virtual ~Null_O(){};
-  static Null_sp create_at_boot(const string &nm);
+  static Null_sp create_at_boot(const string& nm);
 
 public: // Functions here
   string __repr__() const;

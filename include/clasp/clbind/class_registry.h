@@ -79,9 +79,9 @@ public:
         int cl_class() const { return m_cl_class_metatable; }
         int cl_function() const { return m_cl_function_metatable; }
 #endif
-  void add_class(type_id const &info, ClassRep_sp crep);
+  void add_class(type_id const& info, ClassRep_sp crep);
 
-  ClassRep_sp find_class(type_id const &info) const;
+  ClassRep_sp find_class(type_id const& info) const;
 
   GCPRIVATE :
 

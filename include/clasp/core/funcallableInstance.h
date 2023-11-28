@@ -130,7 +130,7 @@ public: // Functions here
 
   void __write__(T_sp sout) const; // Look in write_ugly.cc
 
-  static inline LCC_RETURN entry_point_n(core::T_O *lcc_closure, size_t lcc_nargs, core::T_O **lcc_args) {
+  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args) {
     SETUP_CLOSURE(FuncallableInstance_O, closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
@@ -143,65 +143,65 @@ public: // Functions here
     return (entry_point)(funcallable_closure.raw_(), lcc_nargs, lcc_args);
   }
 
-  static inline LCC_RETURN entry_point_0(core::T_O *lcc_closure) {
+  static inline LCC_RETURN entry_point_0(core::T_O* lcc_closure) {
     SETUP_CLOSURE(FuncallableInstance_O, closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
     Function_sp funcallable_closure = closure->REAL_FUNCTION();
-    const ClaspXepFunction &xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
     return xep.invoke_0(funcallable_closure.raw_());
   }
 
-  static inline LCC_RETURN entry_point_1(core::T_O *lcc_closure, core::T_O *lcc_farg0) {
+  static inline LCC_RETURN entry_point_1(core::T_O* lcc_closure, core::T_O* lcc_farg0) {
     SETUP_CLOSURE(FuncallableInstance_O, closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
     Function_sp funcallable_closure = closure->REAL_FUNCTION();
-    const ClaspXepFunction &xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
     return xep.invoke_1(funcallable_closure.raw_(), lcc_farg0);
   }
 
-  static inline LCC_RETURN entry_point_2(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1) {
+  static inline LCC_RETURN entry_point_2(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1) {
     SETUP_CLOSURE(FuncallableInstance_O, closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
     Function_sp funcallable_closure = closure->REAL_FUNCTION();
-    const ClaspXepFunction &xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
     return xep.invoke_2(funcallable_closure.raw_(), lcc_farg0, lcc_farg1);
   }
 
-  static inline LCC_RETURN entry_point_3(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1, core::T_O *lcc_farg2) {
+  static inline LCC_RETURN entry_point_3(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2) {
     SETUP_CLOSURE(FuncallableInstance_O, closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
     Function_sp funcallable_closure = closure->REAL_FUNCTION();
-    const ClaspXepFunction &xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
     return xep.invoke_3(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2);
   }
 
-  static inline LCC_RETURN entry_point_4(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1, core::T_O *lcc_farg2,
-                                         core::T_O *lcc_farg3) {
+  static inline LCC_RETURN entry_point_4(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2,
+                                         core::T_O* lcc_farg3) {
     SETUP_CLOSURE(FuncallableInstance_O, closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
     Function_sp funcallable_closure = closure->REAL_FUNCTION();
-    const ClaspXepFunction &xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
     return xep.invoke_4(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3);
   }
 
-  static inline LCC_RETURN entry_point_5(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1, core::T_O *lcc_farg2,
-                                         core::T_O *lcc_farg3, core::T_O *lcc_farg4) {
+  static inline LCC_RETURN entry_point_5(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2,
+                                         core::T_O* lcc_farg3, core::T_O* lcc_farg4) {
     SETUP_CLOSURE(FuncallableInstance_O, closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
     Function_sp funcallable_closure = closure->REAL_FUNCTION();
-    const ClaspXepFunction &xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
     return xep.invoke_5(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4);
   }
 
@@ -211,23 +211,23 @@ public: // Functions here
 
 namespace gctools {
 /*! Specialize TaggedCast for FuncallableInstance_O - always use dynamic_cast */
-template <typename FROM> struct TaggedCast<core::FuncallableInstance_O *, FROM> {
-  typedef core::FuncallableInstance_O *ToType;
+template <typename FROM> struct TaggedCast<core::FuncallableInstance_O*, FROM> {
+  typedef core::FuncallableInstance_O* ToType;
   typedef FROM FromType;
   inline static bool isA(FromType ptr) {
     if (tagged_generalp(ptr)) {
       // Maybe
-      core::General_O *raw_client = (core::General_O *)untag_general<FromType>(ptr);
-      core::FuncallableInstance_O *iptr = dynamic_cast<core::FuncallableInstance_O *>(raw_client);
+      core::General_O* raw_client = (core::General_O*)untag_general<FromType>(ptr);
+      core::FuncallableInstance_O* iptr = dynamic_cast<core::FuncallableInstance_O*>(raw_client);
       return iptr != NULL;
     }
     return false;
   }
-  inline static core::FuncallableInstance_O *castOrNULL(FromType client) {
+  inline static core::FuncallableInstance_O* castOrNULL(FromType client) {
     if (tagged_generalp(client)) {
       // maybe
-      core::General_O *raw_client = (core::General_O *)untag_general<FromType>(client);
-      core::FuncallableInstance_O *iclient = dynamic_cast<core::FuncallableInstance_O *>(raw_client);
+      core::General_O* raw_client = (core::General_O*)untag_general<FromType>(client);
+      core::FuncallableInstance_O* iclient = dynamic_cast<core::FuncallableInstance_O*>(raw_client);
       if (iclient)
         return tag_general<ToType>(iclient);
       return NULL;
@@ -273,7 +273,7 @@ public:
   CL_DEFMETHOD SimpleVector_sp literals() const { return this->_Literals; }
   string __repr__() const;
 
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup);
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
   size_t entryPcN() const;
   inline size_t specializedLength() const { return this->_SpecializedLength; }
 };

@@ -56,7 +56,7 @@ namespace core {
 #define clasp_mode_t mode_t
 #endif
 
-int safe_open(const char *filename, int flags, clasp_mode_t mode);
+int safe_open(const char* filename, int flags, clasp_mode_t mode);
 
 enum StreamMode {
   clasp_smm_input,         //  input
@@ -113,8 +113,8 @@ typedef enum {
   CLASP_STREAM_CLOSE_COMPONENTS = 1024
 } StreamFlagsEnum;
 
-cl_index clasp_read_byte8(T_sp stream, unsigned char *c, cl_index n);
-cl_index clasp_write_byte8(T_sp stream, unsigned char *c, cl_index n);
+cl_index clasp_read_byte8(T_sp stream, unsigned char* c, cl_index n);
+cl_index clasp_write_byte8(T_sp stream, unsigned char* c, cl_index n);
 
 void clasp_force_output(T_sp strm);
 
@@ -165,7 +165,7 @@ T_sp cl__file_position(T_sp stream, T_sp position = nil<core::T_O>());
 T_sp cl__stream_element_type(T_sp strm);
 T_sp cl__stream_external_format(T_sp strm);
 
-T_sp clasp_make_stream_from_FILE(T_sp fname, FILE *f, enum StreamMode smm, gctools::Fixnum byte_size = 8,
+T_sp clasp_make_stream_from_FILE(T_sp fname, FILE* f, enum StreamMode smm, gctools::Fixnum byte_size = 8,
                                  int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(),
                                  T_sp tempName = nil<T_O>(), bool created = false);
 
@@ -193,13 +193,13 @@ T_sp cl__close(T_sp strm, T_sp abort = nil<T_O>());
 #define CLASP_LISTEN_EOF -1
 #define CLASP_LISTEN_UNKNOWN -3
 
-typedef claspCharacter (*cl_eformat_decoder)(T_sp stream, unsigned char **buffer, unsigned char *buffer_end);
-typedef int (*cl_eformat_encoder)(T_sp stream, unsigned char *buffer, claspCharacter c);
-typedef cl_index (*cl_eformat_read_byte8)(T_sp object, unsigned char *buffer, cl_index n);
+typedef claspCharacter (*cl_eformat_decoder)(T_sp stream, unsigned char** buffer, unsigned char* buffer_end);
+typedef int (*cl_eformat_encoder)(T_sp stream, unsigned char* buffer, claspCharacter c);
+typedef cl_index (*cl_eformat_read_byte8)(T_sp object, unsigned char* buffer, cl_index n);
 
 struct FileOps {
-  cl_index (*write_byte8)(T_sp strm, unsigned char *c, cl_index n);
-  cl_index (*read_byte8)(T_sp strm, unsigned char *c, cl_index n);
+  cl_index (*write_byte8)(T_sp strm, unsigned char* c, cl_index n);
+  cl_index (*read_byte8)(T_sp strm, unsigned char* c, cl_index n);
 
   void (*write_byte)(T_sp c, T_sp strm);
   T_sp (*read_byte)(T_sp strm);
@@ -282,7 +282,7 @@ template <> struct gctools::GCInfo<core::Stream_O> {
 
 template <> struct fmt::formatter<core::StreamMode> : fmt::formatter<int> {
   template <typename FormatContext>
-  auto format(const core::StreamMode &o, FormatContext &ctx) const -> typename FormatContext::iterator {
+  auto format(const core::StreamMode& o, FormatContext& ctx) const -> typename FormatContext::iterator {
     return fmt::formatter<int>::format((int)o, ctx);
   }
 };
@@ -305,7 +305,7 @@ public:
   FileOps ops;
   int _Closed;
   StreamMode _Mode;
-  char *_Buffer;
+  char* _Buffer;
   T_sp _Format;
   int _ByteSize;
   int _Flags;         // bitmap of flags
@@ -335,8 +335,8 @@ public:
 };
 
 class FileStream_O : public AnsiStream_O {
-  friend T_sp &FileStreamFilename(T_sp);
-  friend T_sp &FileStreamEltType(T_sp);
+  friend T_sp& FileStreamFilename(T_sp);
+  friend T_sp& FileStreamEltType(T_sp);
   LISP_CLASS(core, ClPkg, FileStream_O, "file-stream", AnsiStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -363,7 +363,7 @@ template <> struct gctools::GCInfo<core::IOFileStream_O> {
 namespace core {
 
 class IOFileStream_O : public FileStream_O {
-  friend int &IOFileStreamDescriptor(T_sp);
+  friend int& IOFileStreamDescriptor(T_sp);
   LISP_CLASS(core, CorePkg, IOFileStream_O, "iofile-stream", FileStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -374,21 +374,21 @@ private: // instance variables here
   int _FileDescriptor;
 
 public: // Functions here
-  static T_sp makeInput(const string &name, int fd) {
+  static T_sp makeInput(const string& name, int fd) {
     return clasp_make_stream_from_fd(str_create(name), fd, clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
   }
-  static T_sp makeOutput(const string &name, int fd) {
+  static T_sp makeOutput(const string& name, int fd) {
     return clasp_make_stream_from_fd(str_create(name), fd, clasp_smm_output_file, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
   }
-  static T_sp makeIO(const string &name, int fd) {
+  static T_sp makeIO(const string& name, int fd) {
     return clasp_make_stream_from_fd(str_create(name), fd, clasp_smm_io_file, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
   }
-  static T_sp make(const string &name, int fd, enum StreamMode smm, T_sp elementType, T_sp externalFormat);
+  static T_sp make(const string& name, int fd, enum StreamMode smm, T_sp elementType, T_sp externalFormat);
 
 public:
   int fileDescriptor() const { return this->_FileDescriptor; };
   virtual bool has_file_position() const override;
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup);
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
 };
 
 }; // namespace core
@@ -402,7 +402,7 @@ template <> struct gctools::GCInfo<core::IOStreamStream_O> {
 namespace core {
 
 class IOStreamStream_O : public FileStream_O {
-  friend FILE *&IOStreamStreamFile(T_sp strm);
+  friend FILE*& IOStreamStreamFile(T_sp strm);
   LISP_CLASS(core, CorePkg, IOStreamStream_O, "iostream-stream", FileStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -410,22 +410,22 @@ public: // Simple default ctor/dtor
   ~IOStreamStream_O();
 
 private: // instance variables here
-  FILE *_File;
+  FILE* _File;
 
 public: // Functions here
-  static T_sp makeInput(const string &name, FILE *f) {
+  static T_sp makeInput(const string& name, FILE* f) {
     return clasp_make_stream_from_FILE(str_create(name), f, clasp_smm_input, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
   }
-  static T_sp makeOutput(const string &name, FILE *f) {
+  static T_sp makeOutput(const string& name, FILE* f) {
     return clasp_make_stream_from_FILE(str_create(name), f, clasp_smm_output, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
   };
-  static T_sp makeIO(const string &name, FILE *f) {
+  static T_sp makeIO(const string& name, FILE* f) {
     return clasp_make_stream_from_FILE(str_create(name), f, clasp_smm_io, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
   };
 
 public:
-  FILE *file() const { return this->_File; };
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup);
+  FILE* file() const { return this->_File; };
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
 };
 
 class StringStream_O : public AnsiStream_O {
@@ -451,12 +451,12 @@ template <> struct gctools::GCInfo<core::StringOutputStream_O> {
 namespace core {
 
 class StringOutputStream_O : public StringStream_O {
-  friend String_sp &StringOutputStreamOutputString(T_sp);
+  friend String_sp& StringOutputStreamOutputString(T_sp);
   LISP_CLASS(core, CorePkg, StringOutputStream_O, "string-output-stream", StringStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(StringOutputStream_O);
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup);
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
 
 public:
   // Use the cl__make_string_output_stream
@@ -464,7 +464,7 @@ public: // instance variables here
   String_sp _Contents;
 
 public: // Functions here
-  void fill(const string &data);
+  void fill(const string& data);
   void clear();
   String_sp getAndReset();
 }; // StringStream class
@@ -479,14 +479,14 @@ template <> struct gctools::GCInfo<core::StringInputStream_O> {
 namespace core {
 
 class StringInputStream_O : public StringStream_O {
-  friend gctools::Fixnum &StringInputStreamInputPosition(T_sp strm);
-  friend gctools::Fixnum &StringInputStreamInputLimit(T_sp strm);
-  friend String_sp &StringInputStreamInputString(T_sp strm);
+  friend gctools::Fixnum& StringInputStreamInputPosition(T_sp strm);
+  friend gctools::Fixnum& StringInputStreamInputLimit(T_sp strm);
+  friend String_sp& StringInputStreamInputString(T_sp strm);
   LISP_CLASS(core, CorePkg, StringInputStream_O, "string-input-stream", StringStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(StringInputStream_O);
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup);
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
 
 public: // ctor/dtor for classes with shared virtual base
         //    explicit StringStream_O(core::Instance_sp const& mc) : T_O(mc),AnsiStream(mc) {};
@@ -497,7 +497,7 @@ public: // instance variables here
   gctools::Fixnum _InputLimit;
 
 public: // Functions here
-  static T_sp make(const string &str);
+  static T_sp make(const string& str);
   string peer(size_t len);
   string peerFrom(size_t start, size_t len);
 }; // StringStream class
@@ -513,7 +513,7 @@ template <> struct gctools::GCInfo<core::SynonymStream_O> {
 namespace core {
 
 class SynonymStream_O : public AnsiStream_O {
-  friend Symbol_sp &SynonymStreamSymbol(T_sp strm);
+  friend Symbol_sp& SynonymStreamSymbol(T_sp strm);
   friend T_sp SynonymStreamStream(T_sp);
   LISP_CLASS(core, ClPkg, SynonymStream_O, "synonym-stream", AnsiStream_O);
   //    DECLARE_ARCHIVE();
@@ -529,7 +529,7 @@ public:
 public: // Functions here
   virtual string __repr__() const override;
   T_sp filename() const override;
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup);
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
 
 }; // SynonymStream class
 
@@ -544,8 +544,8 @@ template <> struct gctools::GCInfo<core::TwoWayStream_O> {
 namespace core {
 
 class TwoWayStream_O : public AnsiStream_O {
-  friend T_sp &TwoWayStreamInput(T_sp);
-  friend T_sp &TwoWayStreamOutput(T_sp);
+  friend T_sp& TwoWayStreamInput(T_sp);
+  friend T_sp& TwoWayStreamOutput(T_sp);
   LISP_CLASS(core, ClPkg, TwoWayStream_O, "two-way-stream", AnsiStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -556,7 +556,7 @@ public: // Simple default ctor/dtor
 
 public:
   static T_sp make(T_sp in, T_sp out) { return cl__make_two_way_stream(in, out); };
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup);
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
 }; // TwoWayStream class
 
 }; // namespace core
@@ -571,7 +571,7 @@ namespace core {
 
 FORWARD(BroadcastStream);
 class BroadcastStream_O : public AnsiStream_O {
-  friend T_sp &BroadcastStreamList(T_sp strm);
+  friend T_sp& BroadcastStreamList(T_sp strm);
   LISP_CLASS(core, ClPkg, BroadcastStream_O, "BroadcastStream", AnsiStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -594,7 +594,7 @@ template <> struct gctools::GCInfo<core::ConcatenatedStream_O> {
 namespace core {
 
 class ConcatenatedStream_O : public AnsiStream_O {
-  friend T_sp &ConcatenatedStreamList(T_sp strm);
+  friend T_sp& ConcatenatedStreamList(T_sp strm);
   LISP_CLASS(core, ClPkg, ConcatenatedStream_O, "ConcatenatedStream", AnsiStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -616,8 +616,8 @@ template <> struct gctools::GCInfo<core::EchoStream_O> {
 namespace core {
 
 class EchoStream_O : public AnsiStream_O {
-  friend T_sp &EchoStreamInput(T_sp);
-  friend T_sp &EchoStreamOutput(T_sp);
+  friend T_sp& EchoStreamInput(T_sp);
+  friend T_sp& EchoStreamOutput(T_sp);
   LISP_CLASS(core, ClPkg, EchoStream_O, "EchoStream", AnsiStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -644,10 +644,10 @@ String_sp clasp_writeString(String_sp str, T_sp stream, int istart = 0, T_sp end
 //    int core__stream_column(T_sp strm);
 
 void clasp_terpri(T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
-void clasp_write_characters(const char *buf, int sz, T_sp strm);
-void clasp_write_string(const string &str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
-void clasp_writeln_string(const string &str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
-void writestr_stream(const char *str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
+void clasp_write_characters(const char* buf, int sz, T_sp strm);
+void clasp_write_string(const string& str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
+void clasp_writeln_string(const string& str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
+void writestr_stream(const char* str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
 void core__write_addr(T_sp x, T_sp strm);
 claspCharacter clasp_write_char(claspCharacter c, T_sp strm);
 
@@ -659,6 +659,6 @@ T_mv cl__read_line(T_sp sin, T_sp eof_error_p = cl::_sym_T_O, T_sp eof_value = n
 T_sp clasp_openRead(T_sp pathDesig);
 T_sp clasp_openWrite(T_sp pathDesig);
 
-void denseReadTo8Bit(T_sp stream, size_t charCount, unsigned char *buffer);
+void denseReadTo8Bit(T_sp stream, size_t charCount, unsigned char* buffer);
 
 }; // namespace core

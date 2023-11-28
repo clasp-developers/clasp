@@ -38,7 +38,7 @@ namespace core {
 map<string, int> globalAllClSymbols;
 set<string> globalMissingClSymbols;
 
-void throwIfNotValidClSymbol(const string &name) {
+void throwIfNotValidClSymbol(const string& name) {
   map<string, int>::iterator it = globalAllClSymbols.find(name);
   if (it == globalAllClSymbols.end()) {
     SIMPLE_ERROR("They symbol {} is being exported from COMMON-LISP but it is not one of the canonical CL symbols", name);
@@ -53,7 +53,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp core__calculate_missing_common_lisp_symbols() {
   Package_sp commonLispPackage = _lisp->commonLispPackage();
   List_sp missing = nil<T_O>();
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   for (auto it : globalAllClSymbols) {
     T_mv sym = commonLispPackage->findSymbol(it.first);
     T_sp found = mvn.valueGet(1, sym.number_of_values());

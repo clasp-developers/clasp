@@ -179,7 +179,7 @@ CL_DEFUN Symbol_sp cl__make_symbol(String_sp tstrng) {
 }
 
 /*! Construct a symbol that is incomplete, it has no Class or Package */
-Symbol_O::Symbol_O(const only_at_startup &dummy)
+Symbol_O::Symbol_O(const only_at_startup& dummy)
     : _HomePackage(nil<T_O>()),
 #ifdef SYMBOL_CLASS
       _Class(nil<T_O>()),
@@ -199,7 +199,7 @@ void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
   this->setf_plist(nil<T_O>());
 }
 
-Symbol_sp Symbol_O::create_from_string(const string &nm) {
+Symbol_sp Symbol_O::create_from_string(const string& nm) {
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
   only_at_startup dummy;
@@ -218,7 +218,7 @@ uint32_t VariableCell_O::ensureBindingIndex() const {
   uint32_t binding_index = _BindingIdx.load(std::memory_order_relaxed);
   if (binding_index == no_binding) {
     // Get a new index and try to exchange it in.
-    auto &bindings = my_thread->_Bindings;
+    auto& bindings = my_thread->_Bindings;
     uint32_t new_index = bindings.new_binding_index();
     // NOTE: We can use memory_order_relaxed because (a) nothing outside
     // of VariableCell_O deals with the _BindingIdx, and (b) the only guarantee we
@@ -411,7 +411,7 @@ void Symbol_O::fmakunbound_setf() {
 
 void Symbol_O::setf_symbolFunction(Function_sp fn) { ensureFunctionCell(fn)->real_function_set(fn); }
 
-void Symbol_O::sxhash_(HashGenerator &hg) const {
+void Symbol_O::sxhash_(HashGenerator& hg) const {
   // clhs 18.2.14 sxhash
   // Although similarity is defined for symbols in terms of both the symbol's name and the packages
   // in which the symbol is accessible, item 3 disallows using package information to compute the hash
@@ -421,7 +421,7 @@ void Symbol_O::sxhash_(HashGenerator &hg) const {
     this->_Name->sxhash_(hg);
 }
 
-void Symbol_O::sxhash_equal(HashGenerator &hg) const {
+void Symbol_O::sxhash_equal(HashGenerator& hg) const {
   if (hg.isFilling())
     HashTable_O::sxhash_equal(hg, this->getPackage());
   if (hg.isFilling())
@@ -650,7 +650,7 @@ SYMBOL_EXPORT_SC_(ClPkg, boundp);
 
 void Symbol_O::dump() {
   stringstream ss;
-  ss << "Symbol @" << (void *)this << " --->" << std::endl;
+  ss << "Symbol @" << (void*)this << " --->" << std::endl;
   {
     ss << "Name: " << this->_Name->get_std_string() << std::endl;
     if (!this->getPackage()) {

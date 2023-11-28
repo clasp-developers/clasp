@@ -39,7 +39,7 @@ namespace core {
 
 bool global_debug_start_code = false;
 
-const char *help = R"dx(Usage: clasp <options>
+const char* help = R"dx(Usage: clasp <options>
 Options:
   -n, --noinit
       Don't load the default image or init.lisp (very minimal environment)
@@ -217,7 +217,7 @@ Environment variables:
                    <nurseryMortalityPercent> <generation1Kb>
                    <generation1MortalityPercent> <keyExtendByKb>)dx";
 
-bool CommandLineOptions::validStartupTypeOption(const std::string &arg) {
+bool CommandLineOptions::validStartupTypeOption(const std::string& arg) {
   if (this->_FreezeStartupType) {
     fmt::print(std::cerr, "Ignoring {} option because startup type has already been set to ", arg);
     switch (this->_StartupType) {
@@ -271,7 +271,7 @@ void CommandLineOptions::printVersion() {
   std::cout << CLASP_VERSION;
 }
 
-void process_clasp_arguments(CommandLineOptions *options) {
+void process_clasp_arguments(CommandLineOptions* options) {
   std::set<std::string> parameter_required = {"-i",
                                               "--image",
                                               "--snapshot",
@@ -377,10 +377,10 @@ void process_clasp_arguments(CommandLineOptions *options) {
         ++arg;
       }
     } else if (*arg == "-L" || *arg == "--llvm-debug") {
-      const char *bogus_args[3];
+      const char* bogus_args[3];
       bogus_args[0] = "clasp";
       bogus_args[1] = "--debug-only";
-      char *opt = (char *)malloc((++arg)->size() + 1);
+      char* opt = (char*)malloc((++arg)->size() + 1);
       strcpy(opt, arg->c_str());
       bogus_args[2] = opt;
       printf("%s:%d:%s Passing arguments: <%s>\n", __FILE__, __LINE__, __FUNCTION__, bogus_args[2]);
@@ -438,7 +438,7 @@ void process_clasp_arguments(CommandLineOptions *options) {
   }
 }
 
-CommandLineOptions::CommandLineOptions(int argc, const char *argv[])
+CommandLineOptions::CommandLineOptions(int argc, const char* argv[])
     : _ProcessArguments(process_clasp_arguments), _DisableMpi(false), _AddressesP(false), _StartupType(DEFAULT_STARTUP_TYPE),
       _FreezeStartupType(false), _HasDescribeFile(false), _StartupFile(""), _ExportedSymbolsCheck(false),
       _ExportedSymbolsSave(false), _RandomNumberSeed(0), _NoInform(false), _NoPrint(false), _DebuggerDisabled(false),
@@ -462,7 +462,7 @@ CommandLineOptions::CommandLineOptions(int argc, const char *argv[])
     }
   }
   this->_ExecutableName = this->_RawArguments[0];
-  const char *environment_features = getenv("CLASP_FEATURES");
+  const char* environment_features = getenv("CLASP_FEATURES");
   if (environment_features) {
     vector<string> features = core::split(std::string(environment_features), " ,");
     for (auto feature : features) {
@@ -497,9 +497,9 @@ CL_DEFUN List_sp core__command_line_load_eval_sequence() {
   return cl__nreverse(loadEvals);
 }
 
-void maybeHandleAddressesOption(CommandLineOptions *options) {
+void maybeHandleAddressesOption(CommandLineOptions* options) {
   if (options->_AddressesP) {
-    FILE *fout = fopen(options->_AddressesFileName.c_str(), "w");
+    FILE* fout = fopen(options->_AddressesFileName.c_str(), "w");
     fprintf(fout, "# Generating addresses from %s\n", __FUNCTION__);
     snapshotSaveLoad::SymbolLookup lookup;
     lookup.addAllLibraries(fout);

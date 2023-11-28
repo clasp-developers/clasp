@@ -1349,7 +1349,7 @@ bool Number_O::equalp(T_sp obj) const {
     return false;
 }
 
-Rational_sp Rational_O::create(mpz_class const &num, mpz_class const &denom) {
+Rational_sp Rational_O::create(mpz_class const& num, mpz_class const& denom) {
   mpz_class q, r;
   if (denom == 0)
     ERROR_DIVISION_BY_ZERO(Integer_O::create(num), Integer_O::create(denom));
@@ -1509,7 +1509,7 @@ Integer_sp Integer_O::createLongFloat(LongFloat v) {
     return Bignum_O::create(v);
 }
 
-Integer_sp Integer_O::create(const mpz_class &v) {
+Integer_sp Integer_O::create(const mpz_class& v) {
   if (v >= gc::most_negative_fixnum && v <= gc::most_positive_fixnum) {
     Fixnum fv = mpz_get_si(v.get_mpz_t());
     return make_fixnum(fv);
@@ -1549,16 +1549,16 @@ CL_LISPIFY_NAME("core:castToInteger");
 CL_DEFMETHOD Integer_sp ShortFloat_O::castToInteger() const {
   if (this->_Value < 0) {
     float f = -this->_Value;
-    int cf = *(int *)&f;
+    int cf = *(int*)&f;
     return gc::As<Integer_sp>(clasp_negate(Integer_O::create((gc::Fixnum)cf)));
   }
-  int cf = *(int *)&this->_Value;
+  int cf = *(int*)&this->_Value;
   return Integer_O::create((gc::Fixnum)cf);
 }
 
 Number_sp ShortFloat_O::abs_() const { return ShortFloat_O::create(fabs(this->_Value)); }
 
-void ShortFloat_O::sxhash_(HashGenerator &hg) const { hg.addValue(std::abs(::floor(this->_Value))); }
+void ShortFloat_O::sxhash_(HashGenerator& hg) const { hg.addValue(std::abs(::floor(this->_Value))); }
 
 bool ShortFloat_O::eql_(T_sp obj) const {
   if (this->eq(obj))
@@ -1591,24 +1591,24 @@ CL_DEFMETHOD Integer_sp DoubleFloat_O::castToInteger() const {
   TESTING();
   if (this->_Value < 0) {
     double f = -this->_Value;
-    long long int cf = *(long long int *)&f;
+    long long int cf = *(long long int*)&f;
     return gc::As<Integer_sp>(clasp_negate(Integer_O::create((gctools::Fixnum)cf)));
   }
-  long long int cf = *(long long int *)&this->_Value;
+  long long int cf = *(long long int*)&this->_Value;
   return Integer_O::create((gctools::Fixnum)cf);
 }
 
 Number_sp DoubleFloat_O::signum_() const { return DoubleFloat_O::create(this->_Value > 0.0 ? 1 : (this->_Value < 0.0 ? -1 : 0)); }
 
-void DoubleFloat_O::sxhash_(HashGenerator &hg) const { hg.addValue(std::abs(::floor(this->_Value))); }
+void DoubleFloat_O::sxhash_(HashGenerator& hg) const { hg.addValue(std::abs(::floor(this->_Value))); }
 
 bool DoubleFloat_O::eql_(T_sp obj) const {
   if (this->eq(obj))
     return true;
   if (DoubleFloat_sp other = obj.asOrNull<DoubleFloat_O>()) {
     ASSERT(sizeof(this->_Value) == sizeof(int64_t));
-    int64_t me = *(int64_t *)(&this->_Value);
-    int64_t them = *(int64_t *)(&other->_Value);
+    int64_t me = *(int64_t*)(&this->_Value);
+    int64_t them = *(int64_t*)(&other->_Value);
     return me == them;
   }
   return false;
@@ -1657,7 +1657,7 @@ string LongFloat_O::valueAsString() const {
 
 Number_sp LongFloat_O::abs() const { return LongFloat_O::create(fabs(this->_Value)); }
 
-void LongFloat_O::sxhash(HashGenerator &hg) const { hg.addValue(std::abs(::floor(this->_Value))); }
+void LongFloat_O::sxhash(HashGenerator& hg) const { hg.addValue(std::abs(::floor(this->_Value))); }
 
 bool LongFloat_O::eql(T_sp obj) const {
   if (this->eq(obj))
@@ -1698,7 +1698,7 @@ float Ratio_O::as_float_() const {
 }
 
 // translated from https://gitlab.com/embeddable-common-lisp/ecl/blob/develop/src/c/number.d#L663
-static Integer_sp mantissa_and_exponent_from_ratio(Integer_sp num, Integer_sp den, int digits, gc::Fixnum *exponent) {
+static Integer_sp mantissa_and_exponent_from_ratio(Integer_sp num, Integer_sp den, int digits, gc::Fixnum* exponent) {
   /* We have to cook our own routine because GMP does not round. The
    * recipe is simple: we multiply the numerator by a large enough
    * number so that the integer length of the division by the
@@ -1783,7 +1783,7 @@ bool Ratio_O::eql_(T_sp obj) const {
   }
   return false;
 }
-void Ratio_O::sxhash_(HashGenerator &hg) const {
+void Ratio_O::sxhash_(HashGenerator& hg) const {
   if (hg.isFilling())
     hg.hashObject(this->_numerator);
   if (hg.isFilling())
@@ -1857,7 +1857,7 @@ string Complex_O::__repr__() const {
   return ss.str();
 }
 
-void Complex_O::sxhash_(HashGenerator &hg) const {
+void Complex_O::sxhash_(HashGenerator& hg) const {
   if (hg.isFilling())
     hg.hashObject(this->_real);
   if (hg.isFilling())

@@ -113,7 +113,7 @@ THE SOFTWARE.
 #undef NAMESPACE_core
 
 namespace core {
-const char *CorePkg_nicknames[] = {
+const char* CorePkg_nicknames[] = {
     "SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/
 };
 SYMBOL_EXPORT_SC_(CorePkg, fixnump);
@@ -871,7 +871,7 @@ void testConses() {
   }
 };
 
-void setNilable(gc::Nilable<String_sp> &val, bool s) {
+void setNilable(gc::Nilable<String_sp>& val, bool s) {
   if (!s) {
     val = nil<String_O>();
   } else {
@@ -1218,7 +1218,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
 #else
   int optimization_level = 3;
 #endif
-  const char *optLevel = getenv("CLASP_OPTIMIZATION_LEVEL");
+  const char* optLevel = getenv("CLASP_OPTIMIZATION_LEVEL");
   if (optLevel) {
     optimization_level = strtol(optLevel, NULL, 10);
     if (optimization_level < 0)

@@ -62,12 +62,12 @@ namespace core {
 
 bool stackmap_log = true;
 
-NEVER_OPTIMIZE void assert_failure(const char *file, size_t line, const char *func, const char *msg) {
+NEVER_OPTIMIZE void assert_failure(const char* file, size_t line, const char* func, const char* msg) {
   printf("%s:%lu:%s Assertion failure msg: %s\n", file, line, func, msg);
   SIMPLE_ERROR("{}:{}:{}  Assertion failure: {}", file, line, func, msg);
 }
 
-NEVER_OPTIMIZE void assert_failure_bounds_error_lt(const char *file, size_t line, const char *func, int64_t x, int64_t y) {
+NEVER_OPTIMIZE void assert_failure_bounds_error_lt(const char* file, size_t line, const char* func, int64_t x, int64_t y) {
   SIMPLE_ERROR("{}:{}:{}  Assertion failure: bounds error - {} must be less than {}", file, line, func, x, y);
 }
 
@@ -112,7 +112,7 @@ void wrongNumberOfArguments(core::T_sp closure, size_t givenNumberOfArguments, s
 // #define DebugOpenRight " */"
 // #define	DebugClose "/* }}} */"
 
-CxxFunctionInvocationLogger::CxxFunctionInvocationLogger(const char *cPSourceFile, const char *cPFunctionName, uint lineNumber) {
+CxxFunctionInvocationLogger::CxxFunctionInvocationLogger(const char* cPSourceFile, const char* cPFunctionName, uint lineNumber) {
   _lisp->debugLog().beginNode(DEBUG_CPP_FUNCTION, cPSourceFile, cPFunctionName, lineNumber, 0, "");
 };
 CxxFunctionInvocationLogger::~CxxFunctionInvocationLogger() { _lisp->debugLog().endNode(DEBUG_CPP_FUNCTION); };
@@ -146,7 +146,7 @@ CL_DEFUN T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage
   return nil<T_O>();
 };
 
-void _trapThrow(const string &fileName, uint line, const string &msg) { /* do nothing */
+void _trapThrow(const string& fileName, uint line, const string& msg) { /* do nothing */
 }
 
 string debugFlagsAsNodeName(uint flags) {
@@ -211,7 +211,7 @@ void debugBreakPoint() {
 
 CL_DOCSTRING(R"dx(Add a debug filename.)dx");
 DOCGROUP(clasp);
-CL_DEFUN void core__add_debug_filename(const string &name) { lisp_debugLog()->addDebugFileName(name); }
+CL_DEFUN void core__add_debug_filename(const string& name) { lisp_debugLog()->addDebugFileName(name); }
 
 DebugStream::DebugStream(int rank) : DebugLogAsXml(false) {
   this->_Enabled = true;
@@ -227,7 +227,7 @@ DebugStream::DebugStream(int rank) : DebugLogAsXml(false) {
   pid_t pid = getpid();
   ss << "/tmp/_claspDebug_" << pid << ".log";
   this->_LogFileName = ss.str();
-  char *cstr = getenv("CLASP_DEBUG");
+  char* cstr = getenv("CLASP_DEBUG");
   if (cstr != NULL) {
     printf("=== Initializing source code debug/log system\n");
     printf("--- Writing log to file: %s\n", this->_LogFileName.c_str());
@@ -280,7 +280,7 @@ DebugStream::~DebugStream() {
   this->_OutStream.close();
 }
 
-bool DebugStream::recognizesDebugFileName(const string &fn) {
+bool DebugStream::recognizesDebugFileName(const string& fn) {
   if (!this->_Enabled)
     return false;
   if (this->debugAll())
@@ -308,7 +308,7 @@ string DebugStream::nextPosition() {
   return ss.str();
 }
 
-DebugStream &DebugStream::beginNode(uint debugFlags) {
+DebugStream& DebugStream::beginNode(uint debugFlags) {
   if (this->DebugLogAsXml) {
     this->writeRaw(fmt::format("<{}>\n", debugFlagsAsNodeName(debugFlags)));
   } else {
@@ -317,9 +317,9 @@ DebugStream &DebugStream::beginNode(uint debugFlags) {
   return *this;
 }
 
-DebugStream &DebugStream::beginNode(uint debugFlags, const char *cPsourceFile, const char *cPfunctionName, uint lineNumber,
-                                    uint column, const string &message) {
-  const char *shortSourceFile = trimSourceFilePathName(cPsourceFile);
+DebugStream& DebugStream::beginNode(uint debugFlags, const char* cPsourceFile, const char* cPfunctionName, uint lineNumber,
+                                    uint column, const string& message) {
+  const char* shortSourceFile = trimSourceFilePathName(cPsourceFile);
   if (shortSourceFile == NULL)
     shortSourceFile = "-begin-node-no-file-";
   if (this->DebugLogAsXml) {
@@ -337,7 +337,7 @@ DebugStream &DebugStream::beginNode(uint debugFlags, const char *cPsourceFile, c
   return *this;
 }
 
-DebugStream &DebugStream::endNode(uint flags) {
+DebugStream& DebugStream::endNode(uint flags) {
   if (this->DebugLogAsXml) {
     string stuff = fmt::format("</{}>\n", debugFlagsAsNodeName(flags));
     this->writeRaw(stuff);
@@ -348,7 +348,7 @@ DebugStream &DebugStream::endNode(uint flags) {
   return *this;
 }
 
-DebugStream &DebugStream::writeRaw(const string &data) {
+DebugStream& DebugStream::writeRaw(const string& data) {
   if (!this->_Enabled)
     return *this;
   if (this->_SuppressMessages)
@@ -360,13 +360,13 @@ DebugStream &DebugStream::writeRaw(const string &data) {
   return *this;
 }
 
-DebugStream &DebugStream::writeText(const string &data) {
+DebugStream& DebugStream::writeText(const string& data) {
   if (!this->_Enabled)
     return *this;
   if (this->_SuppressMessages)
     return *this;
   this->open();
-  const char *cp;
+  const char* cp;
   for (cl_index i = 0; i < data.size(); ++i) {
     cp = &data[i];
     if (this->DebugLogAsXml) {
@@ -403,13 +403,13 @@ DebugStream &DebugStream::writeText(const string &data) {
   return *this;
 }
 
-DebugStream &DebugStream::writeTextCr(const string &msg) {
+DebugStream& DebugStream::writeTextCr(const string& msg) {
   this->writeText(msg);
   this->writeRaw("\n");
   return *this;
 }
 
-DebugStream &DebugStream::writeInt(uint i) {
+DebugStream& DebugStream::writeInt(uint i) {
   if (!this->_Enabled)
     return *this;
   if (this->_SuppressMessages)
@@ -420,7 +420,7 @@ DebugStream &DebugStream::writeInt(uint i) {
   return *this;
 }
 
-DebugStream &DebugStream::writePtr(void *i) {
+DebugStream& DebugStream::writePtr(void* i) {
   if (!this->_Enabled)
     return *this;
   if (this->_SuppressMessages)
@@ -431,7 +431,7 @@ DebugStream &DebugStream::writePtr(void *i) {
   return *this;
 }
 
-DebugStream &DebugStream::writeLn() {
+DebugStream& DebugStream::writeLn() {
   if (!this->_Enabled)
     return *this;
   if (this->_SuppressMessages)
@@ -476,7 +476,7 @@ void DebugStream::finalClose() {
  * Return true if this message will be logged and false if not
  * Pass the __FILENAME__ preprocessor string to test for source file by source file logging.
  */
-bool DebugStream::isOn(const char *fileName, uint debugFlags) {
+bool DebugStream::isOn(const char* fileName, uint debugFlags) {
   if (!this->_Enabled)
     return false;
   if (debugFlags == DEBUG_SHOUT)
@@ -487,7 +487,7 @@ bool DebugStream::isOn(const char *fileName, uint debugFlags) {
     return true;
   //    if ( this->debugLisp() && (debugFlags&DEBUG_LISP) ) return true;
   //    if ( this->debugScript() && (debugFlags&DEBUG_SCRIPT) ) return true;
-  const char *name = fileName + strlen(fileName);
+  const char* name = fileName + strlen(fileName);
   while (name >= fileName && !((*name == '\\') || (*name == '/')))
     name--;
   name++;
@@ -506,8 +506,8 @@ void DebugStream::setSuppressMessages(bool s) {
   this->_SuppressMessages = s;
 }
 
-char *internalPrintf(const LispPtr &lisp, const char *fmt, va_list arg_ptr) {
-  char *outBuffer;
+char* internalPrintf(const LispPtr& lisp, const char* fmt, va_list arg_ptr) {
+  char* outBuffer;
   int n;
   n = vasprintf(&outBuffer, fmt, arg_ptr);
   if (outBuffer == NULL) {
@@ -519,7 +519,7 @@ char *internalPrintf(const LispPtr &lisp, const char *fmt, va_list arg_ptr) {
 #define ARGS_af_wrongTypeKeyArg "(source-file lineno function narg value type)"
 #define DECL_af_wrongTypeKeyArg ""
 #define DOCS_af_wrongTypeKeyArg "wrongTypeKeyArg"
-void af_wrongTypeKeyArg(const string &sourceFile, int lineno, Symbol_sp function, T_sp key, T_sp value, T_sp type) {
+void af_wrongTypeKeyArg(const string& sourceFile, int lineno, Symbol_sp function, T_sp key, T_sp value, T_sp type) {
   stringstream message;
   message << "In ";
   if (function.nilp()) {
@@ -538,7 +538,7 @@ void af_wrongTypeKeyArg(const string &sourceFile, int lineno, Symbol_sp function
 #define ARGS_af_wrongTypeOnlyArg "(source-file lineno function narg value type)"
 #define DECL_af_wrongTypeOnlyArg ""
 #define DOCS_af_wrongTypeOnlyArg "wrongTypeOnlyArg"
-void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type) {
+void af_wrongTypeOnlyArg(const string& sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type) {
   stringstream message;
   if (function.nilp()) {
     message << "In an anonymous function,";
@@ -592,7 +592,7 @@ CL_LAMBDA(source-file lineno function narg value type);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(wrongTypeArgument)dx");
 DOCGROUP(clasp);
-[[noreturn]] CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value,
+[[noreturn]] CL_DEFUN void core__wrong_type_argument(const string& sourceFile, int lineno, Symbol_sp function, T_sp value,
                                                      T_sp type) {
   stringstream message;
   if (function.nilp()) {
@@ -621,7 +621,7 @@ CL_LAMBDA(source-file lineno function narg value type);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(wrongTypeNthArg)dx");
 DOCGROUP(clasp);
-[[noreturn]] CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value,
+[[noreturn]] CL_DEFUN void core__wrong_type_nth_arg(const string& sourceFile, int lineno, Symbol_sp function, int narg, T_sp value,
                                                     T_sp type) {
   if (function.nilp()) {
     stringstream message;
@@ -652,17 +652,17 @@ CL_LAMBDA(source-file lineno function narg value type);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(wrongIndex)dx");
 DOCGROUP(clasp);
-CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index,
+CL_DEFUN void core__wrong_index(const string& sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index,
                                 int nonincl_limit) {
   if (function.nilp()) {
-    const char *message1 = "In an anonymous function, "
+    const char* message1 = "In an anonymous function, "
                            "the ~*index into the object~% ~A.~%"
                            "takes a value ~D out of the range ~A.";
-    const char *message2 = "In an anonymous function, "
+    const char* message2 = "In an anonymous function, "
                            "the ~:R index into the object~% ~A~%"
                            "takes a value ~D out of the range ~A.";
     T_sp type = Integer_O::makeIntegerType(0, (gc::Fixnum)(nonincl_limit - 1));
-    const char *msg = (which < 0) ? message1 : message2;
+    const char* msg = (which < 0) ? message1 : message2;
     SimpleBaseString_sp message = SimpleBaseString_O::make(msg);
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_simpleTypeError, // arg0
@@ -671,14 +671,14 @@ CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp 
                   Cons_O::createList(make_fixnum(which + 1), array, index, type), kw::_sym_expected_type, type, kw::_sym_datum,
                   index);
   } else {
-    const char *message1 = "In function ~A, "
+    const char* message1 = "In function ~A, "
                            "the ~*index into the object~% ~A.~%"
                            "takes a value ~D out of the range ~A.";
-    const char *message2 = "In function ~A, "
+    const char* message2 = "In function ~A, "
                            "the ~:R index into the object~% ~A~%"
                            "takes a value ~D out of the range ~A.";
     T_sp type = Integer_O::makeIntegerType(0, (gc::Fixnum)(nonincl_limit - 1));
-    const char *msg = (which < 0) ? message1 : message2;
+    const char* msg = (which < 0) ? message1 : message2;
     SimpleBaseString_sp message = SimpleBaseString_O::make(msg);
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_simpleTypeError, // arg0
@@ -691,7 +691,7 @@ CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp 
 
 // no need to call this from lisp
 NEVER_OPTIMIZE
-void core__reader_error_internal(const string &sourceFile, uint lineno, String_sp fmt, List_sp fmtargs, T_sp stream) {
+void core__reader_error_internal(const string& sourceFile, uint lineno, String_sp fmt, List_sp fmtargs, T_sp stream) {
   // printf("%s:%d:%s  sourceFile: %s lineno: %u fmt: %s  fmtargs: %s\n",
   //       __FILE__, __LINE__, __FUNCTION__, sourceFile.c_str(), lineno, _rep_(fmt).c_str(), _rep_(fmtargs).c_str() );
   ASSERT(cl__stringp(fmt));
@@ -710,13 +710,13 @@ void core__reader_error_internal(const string &sourceFile, uint lineno, String_s
   }
 };
 
-void FEerror(const string &fmt, int nargs, ...) {
+void FEerror(const string& fmt, int nargs, ...) {
   SimpleBaseString_sp sfmt = SimpleBaseString_O::make(fmt);
   va_list args;
   va_start(args, nargs);
   ql::list l;
   while (nargs) {
-    T_sp arg = gctools::smart_ptr<T_O>((gc::Tagged)(va_arg(args, T_O *)));
+    T_sp arg = gctools::smart_ptr<T_O>((gc::Tagged)(va_arg(args, T_O*)));
     l << arg;
     --nargs;
   }
@@ -729,14 +729,14 @@ void FEerror(const string &fmt, int nargs, ...) {
 List_sp clasp_grab_rest_args(va_list args, int nargs) {
   ql::list l;
   while (nargs) {
-    T_sp arg = gctools::smart_ptr<T_O>((gc::Tagged)va_arg(args, T_O *));
+    T_sp arg = gctools::smart_ptr<T_O>((gc::Tagged)va_arg(args, T_O*));
     l << arg;
     --nargs;
   }
   return l.cons();
 }
 
-void file_libc_error(T_sp error_type, T_sp stream, const char *msg, int narg, ...) {
+void file_libc_error(T_sp error_type, T_sp stream, const char* msg, int narg, ...) {
   va_list args;
   T_sp error = SimpleBaseString_O::make(std::string(strerror(errno)));
   va_start(args, narg);
@@ -747,7 +747,7 @@ void file_libc_error(T_sp error_type, T_sp stream, const char *msg, int narg, ..
   UNREACHABLE();
 }
 
-void FElibc_error(const char *msg, int nargs, ...) {
+void FElibc_error(const char* msg, int nargs, ...) {
   T_sp error = SimpleBaseString_O::make(strerror(errno));
   SimpleBaseString_sp smsg = SimpleBaseString_O::make(msg);
   va_list args;
@@ -763,7 +763,7 @@ void FEdoes_not_exist(T_sp fileName) { cl__error(core::_sym_fileDoesNotExist, Co
 
 void FEexists(T_sp fileName) { cl__error(core::_sym_fileExists, Cons_O::createList(kw::_sym_pathname, fileName)); }
 
-T_sp CEerror(T_sp c, const char *err, int narg, ...) {
+T_sp CEerror(T_sp c, const char* err, int narg, ...) {
   va_list args;
   va_start(args, narg);
   T_sp result = eval::funcall(core::_sym_universalErrorHandler,
@@ -774,7 +774,7 @@ T_sp CEerror(T_sp c, const char *err, int narg, ...) {
   return result;
 }
 
-void CEpackage_error(const char *fmt, const char *continue_message, T_sp package, int nargs, ...) {
+void CEpackage_error(const char* fmt, const char* continue_message, T_sp package, int nargs, ...) {
   va_list args;
   va_start(args, nargs);
   List_sp fmtargs = clasp_grab_rest_args(args, nargs);
@@ -785,7 +785,7 @@ void CEpackage_error(const char *fmt, const char *continue_message, T_sp package
                 SimpleBaseString_O::make(std::string(fmt)), fmtargs, kw::_sym_package, package);
 }
 
-void FEpackage_error(const char *fmt, T_sp package, int nargs, ...) {
+void FEpackage_error(const char* fmt, T_sp package, int nargs, ...) {
   va_list args;
   va_start(args, nargs);
   List_sp fmtargs = clasp_grab_rest_args(args, nargs);
@@ -798,7 +798,7 @@ void FEpackage_error(const char *fmt, T_sp package, int nargs, ...) {
 
 void Warn(T_sp datum, List_sp arguments) { core__apply1(core::coerce::calledFunctionDesignator(cl::_sym_warn), arguments, datum); }
 
-void clasp_internal_error(const char *msg) {
+void clasp_internal_error(const char* msg) {
   printf("%s:%d %s\n", __FILE__, __LINE__, msg);
   SIMPLE_ERROR("Internal error: {}\n", msg);
 }

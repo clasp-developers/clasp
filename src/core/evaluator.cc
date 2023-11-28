@@ -57,9 +57,9 @@ THE SOFTWARE.
 #include <clasp/core/unwind.h> // funwind_protect, etc
 
 namespace cl {
-extern core::Symbol_sp &_sym_or;
-extern core::Symbol_sp &_sym_Symbol_O;
-extern core::Symbol_sp &_sym_Cons_O;
+extern core::Symbol_sp& _sym_or;
+extern core::Symbol_sp& _sym_Symbol_O;
+extern core::Symbol_sp& _sym_Cons_O;
 }; // namespace cl
 
 namespace core {
@@ -130,11 +130,11 @@ Refinements:
 
 */
 
-extern "C" void cc_protect_alloca(char *ptr);
+extern "C" void cc_protect_alloca(char* ptr);
 #define REG_ARGS 4 // 4 common lisp arguments in registers
 #define ALLOCA_variadic()                                                                                                          \
-  T_O *variadic[nargs - REG_ARGS];                                                                                                 \
-  cc_protect_alloca((char *)&variadic[0]);
+  T_O* variadic[nargs - REG_ARGS];                                                                                                 \
+  cc_protect_alloca((char*)&variadic[0]);
 #define GET_AND_ADVANCE_LIST(x_, cur_)                                                                                             \
   {                                                                                                                                \
     x_ = CONS_CAR(cur_).raw_();                                                                                                    \
@@ -181,7 +181,7 @@ T_mv apply0_inner_valist(Function_sp func, Vaslist_sp var) {
   }
 }
 
-T_mv apply1_inner_valist(Function_sp func, T_O *a0, Vaslist_sp var) {
+T_mv apply1_inner_valist(Function_sp func, T_O* a0, Vaslist_sp var) {
   T_O *a1, *a2, *a3;
   size_t lenRest = var->nargs();
   size_t nargs = lenRest + 1;
@@ -215,7 +215,7 @@ T_mv apply1_inner_valist(Function_sp func, T_O *a0, Vaslist_sp var) {
   }
 }
 
-T_mv apply2_inner_valist(Function_sp func, T_O *a0, T_O *a1, Vaslist_sp var) {
+T_mv apply2_inner_valist(Function_sp func, T_O* a0, T_O* a1, Vaslist_sp var) {
   T_O *a2, *a3;
   size_t lenRest = var->nargs();
   size_t nargs = lenRest + 2;
@@ -244,8 +244,8 @@ T_mv apply2_inner_valist(Function_sp func, T_O *a0, T_O *a1, Vaslist_sp var) {
   }
 }
 
-T_mv apply3_inner_valist(Function_sp func, T_O *a0, T_O *a1, T_O *a2, Vaslist_sp var) {
-  T_O *a3;
+T_mv apply3_inner_valist(Function_sp func, T_O* a0, T_O* a1, T_O* a2, Vaslist_sp var) {
+  T_O* a3;
   size_t lenRest = var->nargs();
   size_t nargs = lenRest + 3;
   switch (lenRest) {
@@ -269,7 +269,7 @@ T_mv apply3_inner_valist(Function_sp func, T_O *a0, T_O *a1, T_O *a2, Vaslist_sp
   }
 }
 
-T_mv apply4_inner_valist(Function_sp func, Vaslist_sp v, T_O *a0, T_O *a1, T_O *a2, T_O *a3, Vaslist_sp var) {
+T_mv apply4_inner_valist(Function_sp func, Vaslist_sp v, T_O* a0, T_O* a1, T_O* a2, T_O* a3, Vaslist_sp var) {
   size_t lenRest = var->nargs();
   size_t nargs = lenRest + 4 + v->nargs();
   MAKE_STACK_FRAME(frame, nargs);
@@ -286,10 +286,10 @@ T_mv apply4_inner_valist(Function_sp func, Vaslist_sp v, T_O *a0, T_O *a1, T_O *
 
 T_mv apply0_inner_list(Function_sp func, T_sp var) {
   const size_t fargs = 0;
-  T_O *a0;
-  T_O *a1;
-  T_O *a2;
-  T_O *a3;
+  T_O* a0;
+  T_O* a1;
+  T_O* a2;
+  T_O* a3;
   size_t rargs = 0;
   {
     T_sp cur = var;
@@ -337,11 +337,11 @@ T_mv apply0_inner_list(Function_sp func, T_sp var) {
   }
 }
 
-T_mv apply1_inner_list(Function_sp func, T_O *a0, T_sp var) {
+T_mv apply1_inner_list(Function_sp func, T_O* a0, T_sp var) {
   const size_t fargs = 1;
-  T_O *a1;
-  T_O *a2;
-  T_O *a3;
+  T_O* a1;
+  T_O* a2;
+  T_O* a3;
   size_t rargs = 0;
   {
     T_sp cur = var;
@@ -383,10 +383,10 @@ T_mv apply1_inner_list(Function_sp func, T_O *a0, T_sp var) {
   }
 }
 
-T_mv apply2_inner_list(Function_sp func, T_O *a0, T_O *a1, T_sp var) {
+T_mv apply2_inner_list(Function_sp func, T_O* a0, T_O* a1, T_sp var) {
   const size_t fargs = 2;
-  T_O *a2;
-  T_O *a3;
+  T_O* a2;
+  T_O* a3;
   size_t rargs = 0;
   {
     T_sp cur = var;
@@ -423,9 +423,9 @@ T_mv apply2_inner_list(Function_sp func, T_O *a0, T_O *a1, T_sp var) {
   }
 }
 
-T_mv apply3_inner_list(Function_sp func, T_O *a0, T_O *a1, T_O *a2, T_sp var) {
+T_mv apply3_inner_list(Function_sp func, T_O* a0, T_O* a1, T_O* a2, T_sp var) {
   const size_t fargs = 3;
-  T_O *a3;
+  T_O* a3;
   size_t rargs = 0;
   {
     T_sp cur = var;
@@ -458,7 +458,7 @@ T_mv apply3_inner_list(Function_sp func, T_O *a0, T_O *a1, T_O *a2, T_sp var) {
   }
 }
 
-T_mv apply4_inner_list(Function_sp func, T_sp var, T_O *a0, T_O *a1, T_O *a2, T_O *a3, Vaslist_sp fixed) {
+T_mv apply4_inner_list(Function_sp func, T_sp var, T_O* a0, T_O* a1, T_O* a2, T_O* a3, Vaslist_sp fixed) {
   size_t lenRest = 0;
   {
     T_sp cur = var;
@@ -517,7 +517,7 @@ CL_DEFUN T_mv cl__apply(T_sp head, Vaslist_sp args) {
   if (args->nargs_zero())
     eval::errorApplyZeroArguments();
   size_t lenArgs = args->nargs();
-  T_O *lastArgRaw = (*args)[lenArgs - 1];
+  T_O* lastArgRaw = (*args)[lenArgs - 1];
   if (gctools::tagged_vaslistp(lastArgRaw)) {
     Vaslist_sp valast((gc::Tagged)lastArgRaw);
     return apply_inner_valist(func, lenArgs - 1, args, valast);
@@ -786,7 +786,7 @@ CL_DEFUN T_sp ext__symbol_macro(Symbol_sp sym, T_sp env) {
   SYMBOL_SC_(ExtPkg, symbolMacro);
   T_sp fn = nil<T_O>();
   T_mv result = core__get_sysprop(sym, ext::_sym_symbolMacro);
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   if (gc::As<T_sp>(mvn.valueGet(1, result.number_of_values())).notnilp()) {
     fn = gc::As<Function_sp>(result);
   }
@@ -828,8 +828,8 @@ namespace eval {
   Return the list of declarations, the documentation string and the rest
   of the forms in CODE.  Identify the local special declarations and
   return them in SPECIALS but leave them in the DECLARES list */
-void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declares, bool expectDocString,
-                                              gc::Nilable<String_sp> &documentation, List_sp &code, List_sp &specials) {
+void extract_declares_docstring_code_specials(List_sp inputBody, List_sp& declares, bool expectDocString,
+                                              gc::Nilable<String_sp>& documentation, List_sp& code, List_sp& specials) {
   List_sp body = inputBody;
   declares = nil<T_O>();
   specials = nil<T_O>();
@@ -878,14 +878,14 @@ void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declar
   declares = cl__nreverse(declares);
 }
 
-void extract_declares_code(List_sp args, List_sp &declares, List_sp &code) {
+void extract_declares_code(List_sp args, List_sp& declares, List_sp& code) {
   gc::Nilable<String_sp> dummy_docstring;
   List_sp specials;
   IMPLEMENT_MEF("Check who is using this and why they aren't calling extract_declares_docstring_code_specials directly");
   extract_declares_docstring_code_specials(args, declares, false, dummy_docstring, code, specials);
 }
 
-void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<String_sp> &docstring, List_sp &code) {
+void parse_lambda_body(List_sp body, List_sp& declares, gc::Nilable<String_sp>& docstring, List_sp& code) {
   LOG("Parsing lambda body: {}", body->__repr__());
   List_sp specials;
   extract_declares_docstring_code_specials(body, declares, true, docstring, code, specials);

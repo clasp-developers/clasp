@@ -83,7 +83,7 @@ T_sp clasp_system(T_sp cmd_string) {
   return nil<T_O>();
 #else
   std::string cmd = gc::As<String_sp>(cmd_string)->get_std_string();
-  int code = system((const char *)(cmd.c_str()));
+  int code = system((const char*)(cmd.c_str()));
   return clasp_make_fixnum(code);
 #endif
 }
@@ -130,11 +130,11 @@ SYMBOL_EXPORT_SC_(KeywordPkg, stopped);
 SYMBOL_EXPORT_SC_(KeywordPkg, resumed);
 SYMBOL_EXPORT_SC_(KeywordPkg, running);
 
-static void from_list_to_execve_argument(T_sp l, char ***environp) {
+static void from_list_to_execve_argument(T_sp l, char*** environp) {
   T_sp p;
   cl_index i, j, total_size = 0, nstrings = 0;
   SimpleBaseString_sp buffer;
-  char **environ;
+  char** environ;
   for (p = l; p.notnilp(); p = CONS_CDR(p)) {
     T_sp s = CONS_CAR(p);
     total_size += cl__length(gc::As<String_sp>(s)) + 1;
@@ -143,12 +143,12 @@ static void from_list_to_execve_argument(T_sp l, char ***environp) {
   /* Extra place for ending null */
   total_size++;
 
-  environ = (char **)malloc((nstrings + 1) * sizeof(char *));
+  environ = (char**)malloc((nstrings + 1) * sizeof(char*));
   for (j = i = 0, p = l; p.notnilp(); p = CONS_CDR(p)) {
     T_sp s = CONS_CAR(p);
     std::string ss = gc::As<String_sp>(s)->get_std_string();
     cl_index l = ss.size();
-    environ[j] = (char *)malloc(l + 1);
+    environ[j] = (char*)malloc(l + 1);
     memcpy(environ[j], ss.c_str(), l);
     j++;
     environ[j][l] = 0;
@@ -165,7 +165,7 @@ T_mv clasp_waitpid(T_sp pid, T_sp wait) {
   @(return ECL_NIL);
 #elif defined(ECL_MS_WINDOWS_HOST)
   cl_env_ptr the_env = ecl_process_env();
-  HANDLE *hProcess = ecl_foreign_data_pointer_safe(pid);
+  HANDLE* hProcess = ecl_foreign_data_pointer_safe(pid);
   DWORD exitcode;
   int ok;
   WaitForSingleObject(*hProcess, Null(wait) ? 0 : INFINITE);
@@ -240,7 +240,7 @@ CL_DEFUN T_sp sys__killpid(T_sp pid, T_sp signal) {
 }
 #endif
 
-void describe_fildes(int fildes, const char *name) {
+void describe_fildes(int fildes, const char* name) {
   struct stat info;
   [[maybe_unused]] int fstat_error = fstat(fildes, &info);
   int fdflags;
@@ -250,7 +250,7 @@ void describe_fildes(int fildes, const char *name) {
 }
 
 #if defined(ECL_MS_WINDOWS_HOST)
-static void create_descriptor(T_sp stream, T_sp direction, HANDLE *child, int *parent) {
+static void create_descriptor(T_sp stream, T_sp direction, HANDLE* child, int* parent) {
   SECURITY_ATTRIBUTES attr;
   HANDLE current = GetCurrentProcess();
   attr.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -294,7 +294,7 @@ static void create_descriptor(T_sp stream, T_sp direction, HANDLE *child, int *p
   }
 }
 #else
-static void create_descriptor(T_sp stream, T_sp direction, int *child, int *parent) {
+static void create_descriptor(T_sp stream, T_sp direction, int* child, int* parent) {
   if (stream == kw::_sym_stream) {
     int fd[2], ret;
     ret = pipe(fd);
@@ -347,7 +347,7 @@ T_mv sys__spawn_subprocess(T_sp command, T_sp argv, T_sp environ, T_sp input, T_
     HANDLE child_stdout, child_stdin, child_stderr;
     HANDLE current = GetCurrentProcess();
     T_sp env_buffer;
-    char *env = NULL;
+    char* env = NULL;
 
     if (ECL_LISTP(environ)) {
       env_buffer = from_list_to_execve_argument(environ, NULL);
@@ -392,8 +392,8 @@ T_mv sys__spawn_subprocess(T_sp command, T_sp argv, T_sp environ, T_sp input, T_
       CloseHandle(pr_info.hThread);
       pid = make_windows_handle(pr_info.hProcess);
     } else {
-      char *message;
-      FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER, 0, GetLastError(), 0, (void *)&message, 0, NULL);
+      char* message;
+      FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER, 0, GetLastError(), 0, (void*)&message, 0, NULL);
       printf("%s\n", message);
       LocalFree(message);
       pid = nil<T_O>();
@@ -426,15 +426,15 @@ T_mv sys__spawn_subprocess(T_sp command, T_sp argv, T_sp environ, T_sp input, T_
       /* Child */
       int j;
       Array_sp argvv = gc::As<Array_sp>(argv);
-      void **argv_ptr = (void **)malloc(sizeof(void *) * cl__length(argvv));
+      void** argv_ptr = (void**)malloc(sizeof(void*) * cl__length(argvv));
       for (j = 0; j < cl__length(argvv); j++) {
         T_sp arg = argvv->rowMajorAref(j);
         if (arg.nilp()) {
           argv_ptr[j] = NULL;
         } else {
           std::string str = gc::As<String_sp>(arg)->get_std_string();
-          argv_ptr[j] = (void *)malloc(str.size() + 1);
-          char *end = strncpy((char *)argv_ptr[j], (const char *)str.c_str(), str.size());
+          argv_ptr[j] = (void*)malloc(str.size() + 1);
+          char* end = strncpy((char*)argv_ptr[j], (const char*)str.c_str(), str.size());
           end = end + str.size();
           *end = '\0';
         }
@@ -451,11 +451,11 @@ T_mv sys__spawn_subprocess(T_sp command, T_sp argv, T_sp environ, T_sp input, T_
       dup2(child_stderr, STDERR_FILENO);
 
       if (environ.consp() || environ.nilp()) {
-        char **pstrings;
+        char** pstrings;
         from_list_to_execve_argument(environ, &pstrings);
-        execve((char *)gc::As<String_sp>(command)->get_std_string().c_str(), (char **)argv_ptr, pstrings);
+        execve((char*)gc::As<String_sp>(command)->get_std_string().c_str(), (char**)argv_ptr, pstrings);
       } else {
-        execvp((char *)gc::As<String_sp>(command)->get_std_string().c_str(), (char **)argv_ptr);
+        execvp((char*)gc::As<String_sp>(command)->get_std_string().c_str(), (char**)argv_ptr);
       }
       /* at this point exec has failed */
       perror("exec");

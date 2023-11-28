@@ -3,9 +3,9 @@
 
 namespace core {
 template <typename T1, typename T2>
-bool template_string_EQ_equal(const T1 &string1, const T2 &string2, size_t start1, size_t end1, size_t start2, size_t end2) {
-  const typename T1::simple_element_type *cp1((const typename T1::simple_element_type *)string1.rowMajorAddressOfElement_(start1));
-  const typename T2::simple_element_type *cp2((const typename T2::simple_element_type *)string2.rowMajorAddressOfElement_(start2));
+bool template_string_EQ_equal(const T1& string1, const T2& string2, size_t start1, size_t end1, size_t start2, size_t end2) {
+  const typename T1::simple_element_type* cp1((const typename T1::simple_element_type*)string1.rowMajorAddressOfElement_(start1));
+  const typename T2::simple_element_type* cp2((const typename T2::simple_element_type*)string2.rowMajorAddressOfElement_(start2));
   size_t length = end1 - start1;
   if (length != (end2 - start2))
     return false;
@@ -69,16 +69,16 @@ public:
     }
     TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_character, cl::_sym_nil));
   }
-  static T_sp to_object(const value_type &v) { return clasp_make_character(v); };
+  static T_sp to_object(const value_type& v) { return clasp_make_character(v); };
 
 public:
   // Always leave space for \0 at end
   SimpleBaseString_O(size_t length, value_type initialElement = value_type(), bool initialElementSupplied = false,
-                     size_t initialContentsSize = 0, const value_type *initialContents = NULL)
+                     size_t initialContentsSize = 0, const value_type* initialContents = NULL)
       : TemplatedBase(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};
   template <typename Stage = gctools::RuntimeStage>
   static SimpleBaseString_sp make(size_t length, value_type initialElement = '\0', bool initialElementSupplied = false,
-                                  size_t initialContentsSize = 0, const value_type *initialContents = NULL,
+                                  size_t initialContentsSize = 0, const value_type* initialContents = NULL,
                                   bool static_vector_p = false) {
     // For C/C++ interop make SimpleBaseString 1 character longer and append a \0
     auto bs = gctools::GC<SimpleBaseString_O>::allocate_container_null_terminated_string<Stage>(
@@ -86,11 +86,11 @@ public:
     bs->c_style_null_terminate(); // (*bs)[length] = '\0';
     return bs;
   }
-  template <typename Stage = gctools::RuntimeStage> static SimpleBaseString_sp make(const std::string &str) {
-    return SimpleBaseString_O::make<Stage>(str.size(), '\0', true, str.size(), (const claspChar *)str.c_str());
+  template <typename Stage = gctools::RuntimeStage> static SimpleBaseString_sp make(const std::string& str) {
+    return SimpleBaseString_O::make<Stage>(str.size(), '\0', true, str.size(), (const claspChar*)str.c_str());
   }
-  static SimpleBaseString_sp make(const char *data, size_t len) {
-    return SimpleBaseString_O::make(len, '\0', true, len, (const unsigned char *)data);
+  static SimpleBaseString_sp make(const char* data, size_t len) {
+    return SimpleBaseString_O::make(len, '\0', true, len, (const unsigned char*)data);
   }
   static SimpleBaseString_sp makeSize(size_t len) { return SimpleBaseString_O::make(len, '\0', true); }
   // SimpleBaseString_O(size_t total_size) : Base(), _Data('\0',total_size+1) {};
@@ -105,15 +105,15 @@ public:
   virtual void __write__(T_sp strm) const final;                                   // implemented in write_array.cc
   virtual void __writeString(size_t istart, size_t iend, T_sp stream) const final; // implemented in write_array.cc
   virtual std::string get_std_string() const final {
-    return this->length() == 0 ? string("") : string((char *)&(*this)[0], this->length());
+    return this->length() == 0 ? string("") : string((char*)&(*this)[0], this->length());
   };
   virtual std::string __repr__() const override;
-  virtual void sxhash_(HashGenerator &hg) const final { this->ranged_sxhash(hg, 0, this->length()); }
-  virtual void ranged_sxhash(HashGenerator &hg, size_t start, size_t end) const final {
+  virtual void sxhash_(HashGenerator& hg) const final { this->ranged_sxhash(hg, 0, this->length()); }
+  virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const final {
     if (hg.isFilling()) {
       Fixnum hash = 5381;
       for (size_t i(start); i < end; ++i) {
-        const value_type &c = (*this)[i];
+        const value_type& c = (*this)[i];
         hash = ((hash << 5) + hash) + c;
       }
       hg.addValue(hash);
@@ -157,21 +157,21 @@ public:
     }
     TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_character, cl::_sym_nil));
   }
-  static T_sp to_object(const value_type &v) { return clasp_make_character(v); };
+  static T_sp to_object(const value_type& v) { return clasp_make_character(v); };
 
 public:
   // Always leave space for \0 at end
   SimpleCharacterString_O(size_t length, value_type initialElement = value_type(), bool initialElementSupplied = false,
-                          size_t initialContentsSize = 0, const value_type *initialContents = NULL)
+                          size_t initialContentsSize = 0, const value_type* initialContents = NULL)
       : TemplatedBase(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};
   static SimpleCharacterString_sp make(size_t length, value_type initialElement = '\0', bool initialElementSupplied = false,
-                                       size_t initialContentsSize = 0, const value_type *initialContents = NULL,
+                                       size_t initialContentsSize = 0, const value_type* initialContents = NULL,
                                        bool static_vector_p = false) {
     auto bs = gctools::GC<SimpleCharacterString_O>::allocate_container<gctools::RuntimeStage>(
         static_vector_p, length, initialElement, initialElementSupplied, initialContentsSize, initialContents);
     return bs;
   }
-  static SimpleCharacterString_sp make(const std::string &str) {
+  static SimpleCharacterString_sp make(const std::string& str) {
     auto bs = SimpleCharacterString_O::make(str.size(), '\0');
     for (size_t i(0); i < str.size(); ++i) {
       (*bs)[i] = str[i];
@@ -193,12 +193,12 @@ public:
   virtual std::string __repr__() const final;
 
 public:
-  virtual void sxhash_(HashGenerator &hg) const override { this->ranged_sxhash(hg, 0, this->length()); }
-  virtual void ranged_sxhash(HashGenerator &hg, size_t start, size_t end) const override {
+  virtual void sxhash_(HashGenerator& hg) const override { this->ranged_sxhash(hg, 0, this->length()); }
+  virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const override {
     if (hg.isFilling()) {
       Fixnum hash = 5381;
       for (size_t i(start); i < end; ++i) {
-        const value_type &c = (*this)[i];
+        const value_type& c = (*this)[i];
         hash = ((hash << 5) + hash) + c;
       }
       hg.addValue(hash);
@@ -220,7 +220,7 @@ public:
       : Base(dimension, fillPointer, data, displacedToP, displacedIndexOffset){};
 
 public:
-  virtual void sxhash_(HashGenerator &hg) const final {
+  virtual void sxhash_(HashGenerator& hg) const final {
     AbstractSimpleVector_sp svec;
     size_t start, end;
     this->asAbstractSimpleVectorRange(svec, start, end);
@@ -246,8 +246,8 @@ public:
   typedef typename TemplatedBase::simple_element_type simple_element_type;
   typedef typename TemplatedBase::simple_type simple_type;
   typedef typename TemplatedBase::dimension_element_type value_type;
-  typedef simple_element_type *iterator;
-  typedef const simple_element_type *const_iterator;
+  typedef simple_element_type* iterator;
+  typedef const simple_element_type* const_iterator;
 
 public:
   Str8Ns_O(size_t rank1, size_t dimension, T_sp fillPointer, Array_sp data, bool displacedToP, Fixnum_sp displacedIndexOffset)
@@ -266,7 +266,7 @@ public:
                         T_sp fillPointer /*=_Nil<T_O>()*/) {
     return make(dimension, initElement, initialElementSuppliedP, fillPointer, nil<T_O>(), false, clasp_make_fixnum(0));
   }
-  static Str8Ns_sp make(const string &nm) {
+  static Str8Ns_sp make(const string& nm) {
     auto ss = SimpleBaseString_O::make(nm);
     auto result = Str8Ns_O::make(nm.size(), '\0', false, nil<T_O>(), ss, false, clasp_make_fixnum(0));
     return result;
@@ -280,9 +280,9 @@ public:
   };
 
 public:
-  static Str8Ns_sp create(const string &nm);
-  static Str8Ns_sp create(const char *nm, size_t numChars);
-  static Str8Ns_sp create(const char *nm);
+  static Str8Ns_sp create(const string& nm);
+  static Str8Ns_sp create(const char* nm, size_t numChars);
+  static Str8Ns_sp create(const char* nm);
   static Str8Ns_sp create(size_t numChars);
   static Str8Ns_sp create(Str8Ns_sp orig);
 
@@ -300,7 +300,7 @@ public:
 public:
   virtual void __write__(T_sp strm) const final;
   virtual void __writeString(size_t istart, size_t iend, T_sp stream) const final; // implemented in write_array.cc
-  virtual std::string get_std_string() const final { return std::string((const char *)this->begin(), this->length()); };
+  virtual std::string get_std_string() const final { return std::string((const char*)this->begin(), this->length()); };
   virtual std::string __repr__() const override;
 
 public: // Str8Ns specific functions
@@ -318,8 +318,8 @@ public:
   typedef template_Vector<StrWNs_O, SimpleCharacterString_O, StrNs_O> TemplatedBase;
   typedef typename TemplatedBase::simple_element_type simple_element_type;
   typedef typename TemplatedBase::simple_type simple_type;
-  typedef simple_element_type *iterator;
-  typedef const simple_element_type *const_iterator;
+  typedef simple_element_type* iterator;
+  typedef const simple_element_type* const_iterator;
 
 public:
   StrWNs_O(size_t rank1, size_t dimension, T_sp fillPointer, Array_sp data, bool displacedToP, Fixnum_sp displacedIndexOffset)
@@ -338,7 +338,7 @@ public:
                         T_sp fillPointer /*=_Nil<T_O>()*/) {
     return make(dimension, initElement, initialElementSuppliedP, fillPointer, nil<T_O>(), false, clasp_make_fixnum(0));
   }
-  static StrWNs_sp make(const string &nm) {
+  static StrWNs_sp make(const string& nm) {
     auto result = StrWNs_O::make(nm.size(), '\0', false, nil<T_O>(), nil<T_O>(), false, clasp_make_fixnum(0));
     return result;
   }
@@ -463,7 +463,7 @@ T_sp cl__string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1 = clasp_make_
                       Fixnum_sp start2 = clasp_make_fixnum(0), T_sp end2 = nil<T_O>());
 
 /*! Push a c-style string worth of characters into the buffer */
-void StringPushStringCharStar(String_sp buffer, const char *cp);
+void StringPushStringCharStar(String_sp buffer, const char* cp);
 void StringPushSubString(String_sp buffer, String_sp other, size_t start, size_t end);
 void StringPushString(String_sp buffer, String_sp other);
 
@@ -480,7 +480,7 @@ namespace core {
 extern bool upper_case_p(claspCharacter cc);
 extern bool lower_case_p(claspCharacter cc);
 
-template <class StringType> int template_string_case(const StringType &s) {
+template <class StringType> int template_string_case(const StringType& s) {
   int upcase = 0;
   for (typename StringType::const_iterator it = s.begin(); it != s.end(); ++it) {
     claspCharacter cc = static_cast<claspCharacter>(*it);

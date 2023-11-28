@@ -55,7 +55,7 @@ template <typename _RandomAccessIterator> struct SortWork {
   SortWork(){};
 };
 
-template <typename Oelement> void swap(Oelement &x, Oelement &y) {
+template <typename Oelement> void swap(Oelement& x, Oelement& y) {
   Oelement t(x);
   x = y;
   y = t;
@@ -318,7 +318,7 @@ template <class Oit> void reverse(Oit m, Oit n) {
 }
 
 template <typename ValueType, typename Ocomp>
-void quickSortVec0(gctools::Vec0<ValueType> &array, ssize_t m, ssize_t en, Ocomp comparer) {
+void quickSortVec0(gctools::Vec0<ValueType>& array, ssize_t m, ssize_t en, Ocomp comparer) {
   std::vector<SortWork<size_t>> work;
   work.emplace_back(m, en);
   while (work.size() > 0) {
@@ -366,7 +366,7 @@ void quickSortVec0(gctools::Vec0<ValueType> &array, ssize_t m, ssize_t en, Ocomp
 }
 
 // The default sorter, increasing order
-template <typename ValueType> void quickSortVec0(gctools::Vec0<ValueType> &array, ssize_t m, ssize_t en) {
+template <typename ValueType> void quickSortVec0(gctools::Vec0<ValueType>& array, ssize_t m, ssize_t en) {
   std::vector<SortWork<size_t>> work;
   work.emplace_back(m, en);
   while (work.size() > 0) {
@@ -402,7 +402,7 @@ template <typename ValueType> void quickSortVec0(gctools::Vec0<ValueType> &array
 }
 
 // The default sorter, increasing order
-template <typename ValueType> void quickSortMemory(ValueType *array, ssize_t m, ssize_t en) {
+template <typename ValueType> void quickSortMemory(ValueType* array, ssize_t m, ssize_t en) {
   std::vector<SortWork<size_t>> work;
   work.emplace_back(m, en);
   while (work.size() > 0) {

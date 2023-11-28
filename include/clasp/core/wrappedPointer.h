@@ -51,16 +51,16 @@ public:
   CL_DEFMETHOD virtual bool validp() const { SUBIMP(); };
   virtual size_t templatedSizeof() const override { SUBIMP(); };
   virtual bool eql_(core::T_sp obj) const override;
-  virtual void *mostDerivedPointer() const {
+  virtual void* mostDerivedPointer() const {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
   };
   Pointer_sp address() const;
-  virtual void *castTo(class_id cid) const { SUBIMP(); };
+  virtual void* castTo(class_id cid) const { SUBIMP(); };
   virtual class_id classId() const { SUBIMP(); };
-  template <typename T> T *castOrNull() const { return static_cast<T *>(this->castTo(reg::registered_class<T>::id)); }
-  template <typename T> T *cast() const {
-    T *result = this->castOrNull<T>();
+  template <typename T> T* castOrNull() const { return static_cast<T*>(this->castTo(reg::registered_class<T>::id)); }
+  template <typename T> T* cast() const {
+    T* result = this->castOrNull<T>();
     if (!result) {
       SIMPLE_ERROR(
           "Is inheritance defined correctly? Could not cast WrappedPointer of class {} to {} class_id/from={}/{} class_id/to={}/{}",
@@ -70,7 +70,7 @@ public:
     }
     return result;
   }
-  virtual void *pointerRelease() { SUBIMP(); };
+  virtual void* pointerRelease() { SUBIMP(); };
   virtual void pointerDelete() { SUBIMP(); };
 
 public:

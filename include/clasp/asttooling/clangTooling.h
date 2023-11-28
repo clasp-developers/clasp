@@ -56,10 +56,10 @@ namespace ast_matchers {
           and I can expose it and forward declare it while I cannot forward declare
           MatchFinder::MatchResult */
 struct MatchFinderMatchResult : public MatchFinder::MatchResult {
-  MatchFinderMatchResult(const MatchFinder::MatchResult &other) : MatchFinder::MatchResult(other){};
-  const BoundNodes &getNodes() const { return this->Nodes; };
-  clang::ASTContext *getContext() const { return this->Context; };
-  clang::SourceManager *getSourceManager() const { return this->SourceManager; };
+  MatchFinderMatchResult(const MatchFinder::MatchResult& other) : MatchFinder::MatchResult(other){};
+  const BoundNodes& getNodes() const { return this->Nodes; };
+  clang::ASTContext* getContext() const { return this->Context; };
+  clang::SourceManager* getSourceManager() const { return this->SourceManager; };
 };
 }; // namespace ast_matchers
 }; // namespace clang
@@ -70,21 +70,21 @@ class DerivableASTFrontendAction : public clbind::Derivable<clang::ASTFrontendAc
   typedef clang::ASTFrontendAction Base;
 
 public:
-  virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
+  virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance& Compiler, llvm::StringRef InFile) {
     core::T_sp obj = core::eval::funcall(_sym_CreateASTConsumer, this->asSmartPtr(),
-                                         translate::to_object<clang::CompilerInstance &>::convert(Compiler),
+                                         translate::to_object<clang::CompilerInstance&>::convert(Compiler),
                                          translate::to_object<llvm::StringRef>::convert(InFile));
     // translate::from_object<std::unique_ptr<clang::ASTConsumer>> result(obj);
     // return result._v;
     return translate::from_object<std::unique_ptr<clang::ASTConsumer>>(obj)._v;
   }
 
-  std::unique_ptr<clang::ASTConsumer> default_CreateASTConsumer(clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
+  std::unique_ptr<clang::ASTConsumer> default_CreateASTConsumer(clang::CompilerInstance& Compiler, llvm::StringRef InFile) {
     return this->Base::CreateASTConsumer(Compiler, InFile);
   }
 
   virtual void ExecuteAction() {
-    clang::CompilerInstance &CI = this->getCompilerInstance();
+    clang::CompilerInstance& CI = this->getCompilerInstance();
     CI.getFrontendOpts().DisableFree = true;
     this->Base::ExecuteAction();
   }
@@ -94,19 +94,19 @@ class DerivableSyntaxOnlyAction : public clbind::Derivable<clang::SyntaxOnlyActi
   typedef clang::SyntaxOnlyAction Base;
 
 public:
-  virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
+  virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance& Compiler, llvm::StringRef InFile) {
     core::T_sp obj = core::eval::funcall(_sym_CreateASTConsumer, this->asSmartPtr(),
-                                         translate::to_object<clang::CompilerInstance &>::convert(Compiler),
+                                         translate::to_object<clang::CompilerInstance&>::convert(Compiler),
                                          translate::to_object<llvm::StringRef>::convert(InFile));
     return translate::from_object<std::unique_ptr<clang::ASTConsumer>>(obj)._v;
   }
 
-  std::unique_ptr<clang::ASTConsumer> default_CreateASTConsumer(clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
+  std::unique_ptr<clang::ASTConsumer> default_CreateASTConsumer(clang::CompilerInstance& Compiler, llvm::StringRef InFile) {
     return this->CreateASTConsumer(Compiler, InFile);
   }
 
   virtual void ExecuteAction() {
-    clang::CompilerInstance &CI = this->getCompilerInstance();
+    clang::CompilerInstance& CI = this->getCompilerInstance();
     CI.getFrontendOpts().DisableFree = true;
     this->ExecuteAction();
   }
@@ -118,12 +118,12 @@ class DerivableFrontendActionFactory : public clbind::Derivable<clang::tooling::
 public:
   virtual std::unique_ptr<clang::FrontendAction> create() {
     core::T_sp obj = core::eval::funcall(_sym_create, this->asSmartPtr());
-    translate::from_object<clang::FrontendAction *> result(obj);
+    translate::from_object<clang::FrontendAction*> result(obj);
     std::unique_ptr<clang::FrontendAction> ret(result._v);
     return ret;
   }
 
-  clang::FrontendAction *default_create() { SIMPLE_ERROR("Subclass must implement create"); };
+  clang::FrontendAction* default_create() { SIMPLE_ERROR("Subclass must implement create"); };
 };
 
 }; // namespace asttooling
@@ -143,16 +143,16 @@ class DerivableMatchCallback : public clbind::Derivable<clang::ast_matchers::Mat
   typedef clang::ast_matchers::MatchFinder::MatchCallback AlienBase;
 
 public:
-  virtual void run(const clang::ast_matchers::MatchFinder::MatchResult &Result) {
+  virtual void run(const clang::ast_matchers::MatchFinder::MatchResult& Result) {
     const clang::ast_matchers::MatchFinderMatchResult conv(
         Result); //  = static_cast<const clang::ast_matchers::MatchFinderMatchResult&>(Result);
     //    printf("%s:%d:%s Found a MatchResult context: %p sourceManger %p\n", __FILE__, __LINE__, __FUNCTION__, conv.getContext(),
     //    conv.getSourceManager() );
-    core::T_sp val = translate::to_object<const clang::ast_matchers::MatchFinderMatchResult &>::convert(conv);
+    core::T_sp val = translate::to_object<const clang::ast_matchers::MatchFinderMatchResult&>::convert(conv);
     core::eval::funcall(asttooling::_sym_run, this->asSmartPtr(), val);
   }
 
-  void default_run(const clang::ast_matchers::MatchFinderMatchResult &Result) { SIMPLE_ERROR("Subclass must implement"); };
+  void default_run(const clang::ast_matchers::MatchFinderMatchResult& Result) { SIMPLE_ERROR("Subclass must implement"); };
 
   virtual void onStartOfTranslationUnit() {
     //    printf("%s:%d entered onStartOfTranslationUnit funcalling\n", __FILE__, __LINE__);
@@ -174,13 +174,13 @@ public:
   void describe() {
     printf("%s:%d Entered DerivableMatchCallback::describe()\n", __FILE__, __LINE__);
     printf("this=%p  typeid(this)@%p  typeid(this).name=%s\n", this, &typeid(this), typeid(this).name());
-    printf("dynamic_cast<void*>(this) = %p\n", dynamic_cast<void *>(this));
-    printf("dynamic_cast<core::T_O*>(this) = %p\n", dynamic_cast<core::T_O *>(this));
-    printf("typeid(dynamic_cast<core::T_O>*>(this))@%p  typeid.name=%s\n", &typeid(dynamic_cast<core::T_O *>(this)),
-           typeid(dynamic_cast<core::T_O *>(this)).name());
+    printf("dynamic_cast<void*>(this) = %p\n", dynamic_cast<void*>(this));
+    printf("dynamic_cast<core::T_O*>(this) = %p\n", dynamic_cast<core::T_O*>(this));
+    printf("typeid(dynamic_cast<core::T_O>*>(this))@%p  typeid.name=%s\n", &typeid(dynamic_cast<core::T_O*>(this)),
+           typeid(dynamic_cast<core::T_O*>(this)).name());
     printf("dynamic_cast<Derivable<clang::ast_matchers::MatchFinder::MatchCallback>*>(this) = %p\n",
-           dynamic_cast<Derivable<clang::ast_matchers::MatchFinder::MatchCallback> *>(this));
-    printf("dynamic_cast<DerivableMatchCallback*>(this) = %p\n", dynamic_cast<DerivableMatchCallback *>(this));
+           dynamic_cast<Derivable<clang::ast_matchers::MatchFinder::MatchCallback>*>(this));
+    printf("dynamic_cast<DerivableMatchCallback*>(this) = %p\n", dynamic_cast<DerivableMatchCallback*>(this));
 
     printf("alien pointer = %p\n", this->pointerToAlienWithin());
     printf("_Class: %s\n", _rep_(this->_Class).c_str());

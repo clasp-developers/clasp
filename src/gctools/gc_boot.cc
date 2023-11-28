@@ -77,7 +77,7 @@ void dump_data_types(std::ostream& fout, const std::string& indent) {
   DTNAME(ctype_opaque_ptr, "opaque_ptr", sizeof(void*));
 
   DTNAME(CXX_FIXUP_OFFSET, "CXX_FIXUP_OFFSET", sizeof(unsigned long));
-  DTNAME(ATOMIC_POD_OFFSET_unsigned_short,"ATOMIC_POD_OFFSET_unsigned_short", sizeof(unsigned short));
+  DTNAME(ATOMIC_POD_OFFSET_unsigned_short, "ATOMIC_POD_OFFSET_unsigned_short", sizeof(unsigned short));
   DTNAME(ATOMIC_POD_OFFSET_unsigned_long, "ATOMIC_POD_OFFSET_unsigned_long", sizeof(unsigned long));
   DTNAME(ATOMIC_POD_OFFSET_mp__ProcessPhase, "ATOMIC_POD_OFFSET_mp__ProcessPhase", sizeof(mp::ProcessPhase));
   DTNAME(ATOMIC_POD_OFFSET_unsigned_int, "ATOMIC_POD_OFFSET_unsigned_int", sizeof(unsigned int));

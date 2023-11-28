@@ -63,7 +63,7 @@ bool HashTableEqualp_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   return equalp;
 }
 
-gc::Fixnum HashTableEqualp_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator &hg) const {
+gc::Fixnum HashTableEqualp_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator& hg) const {
   HashTable_O::sxhash_equalp(hg, obj);
   return hg.hashBound(bound);
 }

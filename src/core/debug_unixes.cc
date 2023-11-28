@@ -67,23 +67,23 @@ THE SOFTWARE.
 namespace core {
 
 struct ScanInfo {
-  add_dynamic_library *_AdderOrNull;
+  add_dynamic_library* _AdderOrNull;
   size_t _Index;
   //  std::vector<BacktraceEntry>* _Backtrace;
   //  scan_callback _Callback;
   size_t _symbol_table_memory;
-  ScanInfo(add_dynamic_library *ad) : _AdderOrNull(ad), _Index(0), _symbol_table_memory(0){};
+  ScanInfo(add_dynamic_library* ad) : _AdderOrNull(ad), _Index(0), _symbol_table_memory(0){};
 };
 
 #if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
 
-const char *global_progname_full = NULL;
+const char* global_progname_full = NULL;
 
-const char *getExecutablePath() {
+const char* getExecutablePath() {
   if (global_progname_full == NULL) {
     std::stringstream ss;
     ss << "/proc/" << getpid() << "/exe";
-    char *result = (char *)malloc(PATH_MAX + 1);
+    char* result = (char*)malloc(PATH_MAX + 1);
     ssize_t count = readlink(ss.str().c_str(), result, PATH_MAX);
     result[count] = '\0';
     global_progname_full = result;
@@ -100,18 +100,18 @@ void ensure_libelf_initialized() {
   }
 }
 
-void walk_elf_symbol_table(struct dl_phdr_info *info, const char *filename, bool executable, uintptr_t start,
-                           SymbolCallback *symbolCallback) {
-  printf("%s:%d:%s entered filename = %s  start: %p  interested -> %d\n", __FILE__, __LINE__, __FUNCTION__, filename, (void *)start,
+void walk_elf_symbol_table(struct dl_phdr_info* info, const char* filename, bool executable, uintptr_t start,
+                           SymbolCallback* symbolCallback) {
+  printf("%s:%d:%s entered filename = %s  start: %p  interested -> %d\n", __FILE__, __LINE__, __FUNCTION__, filename, (void*)start,
          symbolCallback->interestedInLibrary(filename, executable));
 
   if (!symbolCallback->interestedInLibrary(filename, executable))
     return;
   BT_LOG(("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__));
-  BT_LOG(("Searching symbol table %s memory-start %p\n", filename, (void *)start));
-  Elf *elf;
+  BT_LOG(("Searching symbol table %s memory-start %p\n", filename, (void*)start));
+  Elf* elf;
   GElf_Shdr shdr;
-  Elf_Data *data;
+  Elf_Data* data;
   int fd, ii, count;
   ensure_libelf_initialized();
   elf_version(EV_CURRENT);
@@ -125,7 +125,7 @@ void walk_elf_symbol_table(struct dl_phdr_info *info, const char *filename, bool
     close(fd);
     SIMPLE_ERROR("Error with elf_begin for file {} - {}", filename, elf_errmsg(-1));
   }
-  Elf_Scn *scn = NULL;
+  Elf_Scn* scn = NULL;
   // Search the symbol tables for functions that contain the return address
   scn = NULL;
   uintptr_t highest_end_address(0);
@@ -162,12 +162,12 @@ void walk_elf_symbol_table(struct dl_phdr_info *info, const char *filename, bool
             type = 'd';
         }
         BT_LOG(("Looking at symbol %s type: %d\n", elf_strptr(elf, shdr.sh_link, (size_t)sym.st_name), ELF64_ST_TYPE(sym.st_info)));
-        const char *sname = elf_strptr(elf, shdr.sh_link, (size_t)sym.st_name);
+        const char* sname = elf_strptr(elf, shdr.sh_link, (size_t)sym.st_name);
         if (symbolCallback->debug()) {
           uintptr_t dlsymStart = (uintptr_t)dlsym(RTLD_DEFAULT, sname);
           if (dlsymStart != 0 && sym.st_value != 0) {
             printf("%s:%d %10s address: %p sym.st_value: %p  sym.st_shndx: %lu sym.st_size: %lu  name: %s \n", __FILE__, __LINE__,
-                   ((uintptr_t)dlsymStart == (uintptr_t)sym.st_value) ? "==" : "XX!=XX", (void *)dlsymStart, (void *)sym.st_value,
+                   ((uintptr_t)dlsymStart == (uintptr_t)sym.st_value) ? "==" : "XX!=XX", (void*)dlsymStart, (void*)sym.st_value,
                    (uintptr_t)sym.st_shndx, (uintptr_t)sym.st_size, sname);
           }
           continue;
@@ -177,8 +177,8 @@ void walk_elf_symbol_table(struct dl_phdr_info *info, const char *filename, bool
           uintptr_t dlsymStart = (uintptr_t)dlsym(RTLD_DEFAULT, sname);
           if (dlsymStart != 0 && (dlsymStart != symbol_start)) {
             printf("delta: 0x%0lx %s:%d:%s  The dlsym result %p does NOT match %p sym.st_shndx: %u symbol: %s\n",
-                   ((intptr_t)dlsymStart - (intptr_t)symbol_start), __FILE__, __LINE__, __FUNCTION__, (void *)dlsymStart,
-                   (void *)symbol_start, sym.st_shndx, sname);
+                   ((intptr_t)dlsymStart - (intptr_t)symbol_start), __FILE__, __LINE__, __FUNCTION__, (void*)dlsymStart,
+                   (void*)symbol_start, sym.st_shndx, sname);
           }
           symbolCallback->callback(sname, symbol_start, symbol_end);
         }
@@ -193,32 +193,32 @@ void walk_elf_symbol_table(struct dl_phdr_info *info, const char *filename, bool
 }
 
 struct SearchInfo {
-  const char *_Name;
-  void *_Address;
+  const char* _Name;
+  void* _Address;
   size_t _Index;
-  SearchInfo(const char *name) : _Name(name), _Address(NULL), _Index(0){};
+  SearchInfo(const char* name) : _Name(name), _Address(NULL), _Index(0){};
 };
 
-int elf_search_loaded_object_callback(struct dl_phdr_info *info, size_t size, void *data) {
-  SearchInfo *search_callback_info = (SearchInfo *)data;
-  const char *libname;
+int elf_search_loaded_object_callback(struct dl_phdr_info* info, size_t size, void* data) {
+  SearchInfo* search_callback_info = (SearchInfo*)data;
+  const char* libname;
   if (search_callback_info->_Index == 0 && strlen(info->dlpi_name) == 0) {
     libname = getExecutablePath();
   } else {
     libname = info->dlpi_name;
   }
-  BT_LOG(("Name: \"%s\" address: %p (%d segments)\n", libname, (void *)info->dlpi_addr, info->dlpi_phnum));
+  BT_LOG(("Name: \"%s\" address: %p (%d segments)\n", libname, (void*)info->dlpi_addr, info->dlpi_phnum));
   if (strcmp(libname, search_callback_info->_Name) == 0) {
-    search_callback_info->_Address = (void *)info->dlpi_addr;
-    BT_LOG(("%s:%d:%s start Address: %p\n", __FILE__, __LINE__, __FUNCTION__, (void *)info->dlpi_addr));
-    BT_LOG(("%s:%d:%s dlpi_phdr = %p\n", __FILE__, __LINE__, __FUNCTION__, (void *)info->dlpi_phdr));
+    search_callback_info->_Address = (void*)info->dlpi_addr;
+    BT_LOG(("%s:%d:%s start Address: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)info->dlpi_addr));
+    BT_LOG(("%s:%d:%s dlpi_phdr = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)info->dlpi_phdr));
     BT_LOG(("%s:%d:%s dlpi_phnum = %d\n", __FILE__, __LINE__, __FUNCTION__, info->dlpi_phnum));
   }
   search_callback_info->_Index++;
   return 0;
 }
 
-void *find_base_of_loaded_object(const char *name) {
+void* find_base_of_loaded_object(const char* name) {
   BT_LOG(("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__));
   SearchInfo search(name);
   dl_iterate_phdr(elf_search_loaded_object_callback, &search);
@@ -234,8 +234,8 @@ void *find_base_of_loaded_object(const char *name) {
 /*! Add a dynamic library.
     If library_origin points to the start of the library then that address is used,
     otherwise it uses handle to look up the start of the library. */
-void walk_dynamic_library_impl(struct dl_phdr_info *info, bool is_executable, const std::string &libraryName, bool use_origin,
-                               uintptr_t library_origin, SymbolCallback *symbol_callback) {
+void walk_dynamic_library_impl(struct dl_phdr_info* info, bool is_executable, const std::string& libraryName, bool use_origin,
+                               uintptr_t library_origin, SymbolCallback* symbol_callback) {
   printf("%s:%d:%s  libraryName = %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str());
   if (!use_origin) {
     printf("%s:%d:%s This path should never be followed\n", __FILE__, __LINE__, __FUNCTION__);
@@ -243,11 +243,11 @@ void walk_dynamic_library_impl(struct dl_phdr_info *info, bool is_executable, co
   walk_elf_symbol_table(info, libraryName.c_str(), is_executable, library_origin, symbol_callback);
 }
 
-int elf_walk_loaded_object_callback(struct dl_phdr_info *info, size_t size, void *data) {
+int elf_walk_loaded_object_callback(struct dl_phdr_info* info, size_t size, void* data) {
   //  printf("%s:%d:%s Startup registering loaded object %s\n", __FILE__, __LINE__, __FUNCTION__, info->dlpi_name);
-  SymbolCallback *symbol_callback = (SymbolCallback *)data;
+  SymbolCallback* symbol_callback = (SymbolCallback*)data;
   bool is_executable;
-  const char *libname;
+  const char* libname;
   if (!info->dlpi_name || strlen(info->dlpi_name) == 0) {
     libname = getExecutablePath();
     is_executable = true;
@@ -261,7 +261,7 @@ int elf_walk_loaded_object_callback(struct dl_phdr_info *info, size_t size, void
   for (int j = 0; j < info->dlpi_phnum; j++) {
     int p_type = info->dlpi_phdr[j].p_type;
 #if 1
-    const char *type;
+    const char* type;
     type = (p_type == PT_LOAD)           ? "PT_LOAD"
            : (p_type == PT_DYNAMIC)      ? "PT_DYNAMIC"
            : (p_type == PT_INTERP)       ? "PT_INTERP"
@@ -273,16 +273,16 @@ int elf_walk_loaded_object_callback(struct dl_phdr_info *info, size_t size, void
            : (p_type == PT_GNU_STACK)    ? "PT_GNU_STACK"
            : (p_type == PT_GNU_RELRO)    ? "PT_GNU_RELRO"
                                          : NULL;
-    printf("    %2d: [%14p; memsz:%7jx; END: %14p] flags: %#jx; \n", j, (void *)(info->dlpi_addr + info->dlpi_phdr[j].p_vaddr),
+    printf("    %2d: [%14p; memsz:%7jx; END: %14p] flags: %#jx; \n", j, (void*)(info->dlpi_addr + info->dlpi_phdr[j].p_vaddr),
            (uintmax_t)info->dlpi_phdr[j].p_memsz,
-           (void *)((char *)info->dlpi_addr + (uintptr_t)info->dlpi_phdr[j].p_vaddr + (uintptr_t)info->dlpi_phdr[j].p_memsz),
+           (void*)((char*)info->dlpi_addr + (uintptr_t)info->dlpi_phdr[j].p_vaddr + (uintptr_t)info->dlpi_phdr[j].p_memsz),
            (uintmax_t)info->dlpi_phdr[j].p_flags);
 #endif
     if (p_type == PT_LOAD && (info->dlpi_phdr[j].p_flags & 0x1)) { // executable
       text_start = (gctools::clasp_ptr_t)(info->dlpi_addr + info->dlpi_phdr[j].p_vaddr);
       text_end = (gctools::clasp_ptr_t)(text_start + info->dlpi_phdr[j].p_memsz);
-      printf("%s:%d:%s      text_start = %p     text_end = %p\n", __FILE__, __LINE__, __FUNCTION__, (void *)text_start,
-             (void *)text_end);
+      printf("%s:%d:%s      text_start = %p     text_end = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)text_start,
+             (void*)text_end);
     }
   }
   walk_dynamic_library_impl(info, is_executable, libname, true,
@@ -291,7 +291,7 @@ int elf_walk_loaded_object_callback(struct dl_phdr_info *info, size_t size, void
   return 0;
 }
 
-void walk_loaded_objects_symbol_table(SymbolCallback *callback) { dl_iterate_phdr(elf_walk_loaded_object_callback, callback); }
+void walk_loaded_objects_symbol_table(SymbolCallback* callback) { dl_iterate_phdr(elf_walk_loaded_object_callback, callback); }
 
 DOCGROUP(clasp);
 CL_DEFUN void core__walk_loaded_objects() {
@@ -300,14 +300,14 @@ CL_DEFUN void core__walk_loaded_objects() {
   walk_loaded_objects_symbol_table(&symbol_callback);
 }
 
-int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, void *data) {
+int elf_startup_loaded_object_callback(struct dl_phdr_info* info, size_t size, void* data) {
   //  printf("%s:%d:%s Startup registering loaded object %s\n", __FILE__, __LINE__, __FUNCTION__, info->dlpi_name);
   core::General_O general;
-  gctools::clasp_ptr_t vtablePtr = *(gctools::clasp_ptr_t *)&general;
+  gctools::clasp_ptr_t vtablePtr = *(gctools::clasp_ptr_t*)&general;
   //  printf("%s:%d:%s one vtablePtr = %p\n", __FILE__, __LINE__, __FUNCTION__, vtablePtr );
-  ScanInfo *scan_callback_info = (ScanInfo *)data;
+  ScanInfo* scan_callback_info = (ScanInfo*)data;
   bool is_executable = false;
-  const char *libname;
+  const char* libname;
   if (scan_callback_info->_Index == 0 && strlen(info->dlpi_name) == 0) {
     libname = getExecutablePath();
     is_executable = true;
@@ -327,7 +327,7 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, v
   for (int j = 0; j < info->dlpi_phnum; j++) {
     int p_type = info->dlpi_phdr[j].p_type;
     gctools::clasp_ptr_t low = (gctools::clasp_ptr_t)(info->dlpi_addr + info->dlpi_phdr[j].p_vaddr);
-    gctools::clasp_ptr_t high = (gctools::clasp_ptr_t)((char *)info->dlpi_addr + (uintptr_t)info->dlpi_phdr[j].p_vaddr +
+    gctools::clasp_ptr_t high = (gctools::clasp_ptr_t)((char*)info->dlpi_addr + (uintptr_t)info->dlpi_phdr[j].p_vaddr +
                                                        (uintptr_t)info->dlpi_phdr[j].p_memsz);
     if (p_type == PT_LOAD && (info->dlpi_phdr[j].p_flags & 0x1)) { // executable
       text_start = (gctools::clasp_ptr_t)(info->dlpi_addr + info->dlpi_phdr[j].p_vaddr);
@@ -364,7 +364,7 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, v
   return 0;
 }
 
-void startup_register_loaded_objects(add_dynamic_library *callback) {
+void startup_register_loaded_objects(add_dynamic_library* callback) {
   ScanInfo scan(callback);
   dl_iterate_phdr(elf_startup_loaded_object_callback, &scan);
 }
@@ -372,8 +372,8 @@ void startup_register_loaded_objects(add_dynamic_library *callback) {
 /*! Add a dynamic library.
     If library_origin points to the start of the library then that address is used,
     otherwise it uses handle to look up the start of the library. */
-void add_dynamic_library_impl(add_dynamic_library *callback, bool is_executable, const std::string &libraryName, bool use_origin,
-                              uintptr_t library_origin, void *handle, gctools::clasp_ptr_t text_start,
+void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable, const std::string& libraryName, bool use_origin,
+                              uintptr_t library_origin, void* handle, gctools::clasp_ptr_t text_start,
                               gctools::clasp_ptr_t text_end, bool hasVtableSection, gctools::clasp_ptr_t vtableSectionStart,
                               gctools::clasp_ptr_t vtableSectionEnd) {
   // printf("%s:%d:%s libraryName = %s   is_executable = %d\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), is_executable
@@ -390,8 +390,8 @@ void add_dynamic_library_impl(add_dynamic_library *callback, bool is_executable,
     // Try looking for _init symbol
     Dl_info data;
     dlerror();
-    void *addr = dlsym(handle, "_init");
-    const char *error = dlerror();
+    void* addr = dlsym(handle, "_init");
+    const char* error = dlerror();
     if (error) {
       printf("%s:%d:%s Could not find library by walking objects or by searching for external symbol '_init' - library %s dlerror "
              "= %s\n",
@@ -407,9 +407,9 @@ void add_dynamic_library_impl(add_dynamic_library *callback, bool is_executable,
     library_origin = (uintptr_t)data.dli_fbase;
   }
   SymbolTable symbol_table;
-  BT_LOG(("OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(), (void *)handle,
-          (void *)library_origin));
-  OpenDynamicLibraryInfo *odli = NULL;
+  BT_LOG(("OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(), (void*)handle,
+          (void*)library_origin));
+  OpenDynamicLibraryInfo* odli = NULL;
   LoadableKind loadable;
   if (is_executable) {
     // printf("%s:%d:%s  Creating an ExecutableLibraryInfo\n", __FILE__, __LINE__, __FUNCTION__ );

@@ -54,9 +54,9 @@ public:
      dynamic_cast<void*> before being passed in here, and src has to
      match typeid(*p).
   */
-  std::pair<void *, int> cast(void *p, class_id src, class_id target, class_id dynamic_id, void const *dynamic_ptr) const;
+  std::pair<void*, int> cast(void* p, class_id src, class_id target, class_id dynamic_id, void const* dynamic_ptr) const;
   void insert(class_id src, class_id target, cast_function cast);
-  void dump(FILE *fout);
+  void dump(FILE* fout);
 
 private:
   class impl;
@@ -131,15 +131,15 @@ inline void class_map_put(class_id id, ClassRep_sp cls) {
 }
 
 template <class S, class T> struct static_cast_ {
-  static void *execute(void *p) { return static_cast<T *>(static_cast<S *>(p)); }
+  static void* execute(void* p) { return static_cast<T*>(static_cast<S*>(p)); }
 };
 
 template <class S, class T> struct dynamic_cast_ {
-  static void *execute(void *p) { return dynamic_cast<T *>(static_cast<S *>(p)); }
+  static void* execute(void* p) { return dynamic_cast<T*>(static_cast<S*>(p)); }
 };
 
 // Thread safe class_id allocation.
-class_id allocate_class_id(type_id const &cls);
+class_id allocate_class_id(type_id const& cls);
 
 template <class T> struct registered_class {
   static class_id const id;

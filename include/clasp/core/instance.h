@@ -59,11 +59,11 @@ public:
   size_t length() const { return this->_Slots.length(); };
   inline value_type low_level_rackRef(size_t i) { return _Slots.load(i); }
   inline void low_level_rackSet(size_t i, value_type value) { _Slots.store(i, value); }
-  inline bool low_level_rack_compare_exchange_weak(size_t i, value_type &expected, value_type desired,
+  inline bool low_level_rack_compare_exchange_weak(size_t i, value_type& expected, value_type desired,
                                                    std::memory_order sync = std::memory_order_seq_cst) {
     return this->_Slots[i].compare_exchange_weak(expected, desired, sync);
   }
-  inline bool low_level_rack_compare_exchange_strong(size_t i, value_type &expected, value_type desired,
+  inline bool low_level_rack_compare_exchange_strong(size_t i, value_type& expected, value_type desired,
                                                      std::memory_order sync = std::memory_order_seq_cst) {
     return this->_Slots[i].compare_exchange_strong(expected, desired, sync);
   }
@@ -215,7 +215,7 @@ public: // Functions here
   virtual T_sp instanceSig() const override;
 
   virtual bool equalp(T_sp obj) const override;
-  virtual void sxhash_equalp(HashGenerator &hg) const override;
+  virtual void sxhash_equalp(HashGenerator& hg) const override;
 
   /*! Return the value of a slot */
   T_sp instanceRef(size_t idx) const override;
@@ -243,28 +243,28 @@ template <class RackType_sp> inline void low_level_instanceSet(RackType_sp rack,
 
 namespace gctools {
 /*! Specialize TaggedCast for Instance_O - always use dynamic_cast */
-template <typename FROM> struct TaggedCast<core::Instance_O *, FROM> {
-  typedef core::Instance_O *ToType;
+template <typename FROM> struct TaggedCast<core::Instance_O*, FROM> {
+  typedef core::Instance_O* ToType;
   typedef FROM FromType;
   inline static bool isA(FromType ptr) {
     if (tagged_generalp(ptr)) {
       // Maybe
-      core::General_O *raw_client = (core::General_O *)untag_general<FromType>(ptr);
-      if (cast::Cast<core::Instance_O *, core::General_O *>::isA(raw_client))
+      core::General_O* raw_client = (core::General_O*)untag_general<FromType>(ptr);
+      if (cast::Cast<core::Instance_O*, core::General_O*>::isA(raw_client))
         return true;
-      core::Instance_O *iptr = dynamic_cast<core::Instance_O *>(raw_client);
+      core::Instance_O* iptr = dynamic_cast<core::Instance_O*>(raw_client);
       return iptr != NULL;
     }
     return false;
   }
-  inline static core::Instance_O *castOrNULL(FromType client) {
+  inline static core::Instance_O* castOrNULL(FromType client) {
     if (tagged_generalp(client)) {
       // maybe
-      core::General_O *raw_client = (core::General_O *)untag_general<FromType>(client);
-      if (cast::Cast<core::Instance_O *, core::General_O *>::isA(raw_client)) {
-        return tag_general<core::Instance_O *>(reinterpret_cast<core::Instance_O *>(raw_client));
+      core::General_O* raw_client = (core::General_O*)untag_general<FromType>(client);
+      if (cast::Cast<core::Instance_O*, core::General_O*>::isA(raw_client)) {
+        return tag_general<core::Instance_O*>(reinterpret_cast<core::Instance_O*>(raw_client));
       }
-      core::Instance_O *iclient = dynamic_cast<core::Instance_O *>(raw_client);
+      core::Instance_O* iclient = dynamic_cast<core::Instance_O*>(raw_client);
       if (iclient)
         return tag_general<ToType>(iclient);
       return NULL;

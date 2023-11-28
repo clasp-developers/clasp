@@ -50,7 +50,7 @@ THE SOFTWARE.
 #include <clasp/core/singleDispatchGenericFunction.fwd.h>
 
 namespace cl {
-extern core::Symbol_sp &_sym_eq;
+extern core::Symbol_sp& _sym_eq;
 };
 
 namespace mpip {
@@ -71,15 +71,15 @@ FORWARD(ObjectFile);
 }; // namespace llvmo
 
 extern "C" {
-extern unsigned char *global_python_virtual_machine_codes;
+extern unsigned char* global_python_virtual_machine_codes;
 extern uintptr_t global_python_virtual_machine_codes_size;
-extern unsigned char *global_python_class_layouts;
+extern unsigned char* global_python_class_layouts;
 extern uintptr_t global_python_class_layouts_size;
 };
 
 namespace core {
 
-extern CommandLineOptions *global_options;
+extern CommandLineOptions* global_options;
 extern bool global_initialize_builtin_classes;
 
 class Bundle;
@@ -121,7 +121,7 @@ public:
   IntegerOrdering() {
     // Setup the contents here in the constructor
     unsigned int endian_test = 1;
-    char *endian_test_ptr = (char *)&endian_test;
+    char* endian_test_ptr = (char*)&endian_test;
     this->_mpz_import_endian = 0; // use native endianness (see mpz_import)
     this->_mpz_import_size = sizeof(int);
     if (*endian_test_ptr == 1) {
@@ -170,7 +170,7 @@ private:
 public:
   /*! CTor that looks up a Package with packageName and if it
           doesn't exist it makes it - no nicknames allowed */
-  Exposer_O(LispPtr lisp, const string &packageName);
+  Exposer_O(LispPtr lisp, const string& packageName);
 
   virtual ~Exposer_O();
 
@@ -220,8 +220,8 @@ struct globals_t {
   /*! Map source file path strings to FileScope_sp */
   uint _ReplCounter;
   /*! Store paths to important directories */
-  Bundle *_Bundle;
-  DebugStream *_DebugStream;
+  Bundle* _Bundle;
+  DebugStream* _DebugStream;
   uint _SingleStepLevel;
   int _TraceLevel;
   std::atomic<int> _DebuggerLevel;
@@ -270,13 +270,13 @@ public:
 //
 // All non-gc managed globals go here
 //
-extern core::globals_t *globals_;
+extern core::globals_t* globals_;
 
 namespace core {
 
 class Lisp {
   friend T_mv core__file_scope(T_sp sourceFile);
-  friend gctools::Layout_code *gctools::get_stamp_layout_codes();
+  friend gctools::Layout_code* gctools::get_stamp_layout_codes();
 
 public:
   struct GCRoots //: public gctools::HeapRoot
@@ -347,7 +347,7 @@ public:
   friend class BootStrapCoreSymbolMap;
   friend T_sp sp_eval_when(List_sp args, T_sp env);
   friend List_sp core__all_source_files();
-  template <class oclass> friend void define_base_class(Instance_sp co, Instance_sp cob, uint &classesUpdated);
+  template <class oclass> friend void define_base_class(Instance_sp co, Instance_sp cob, uint& classesUpdated);
   template <class oclass> friend T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value);
   friend T_mv core__get_sysprop(T_sp key, T_sp area);
 
@@ -391,7 +391,7 @@ public:
   List_sp copy_default_special_bindings() const;
 #endif
 public:
-  DebugStream &debugLog() { return *(globals_->_DebugStream); };
+  DebugStream& debugLog() { return *(globals_->_DebugStream); };
 
 public:
   uint nextReplCounter() { return ++globals_->_ReplCounter; };
@@ -409,10 +409,10 @@ public:
   void put_StrWNs_buffer_string(StrWNs_sp str);
 
 public:
-  IntegerOrdering const &integer_ordering() const { return this->_IntegerOrdering; };
+  IntegerOrdering const& integer_ordering() const { return this->_IntegerOrdering; };
 
 public:
-  void mapClassNamesAndClasses(KeyValueMapper *mapper);
+  void mapClassNamesAndClasses(KeyValueMapper* mapper);
 
 public:
   //	List_sp catchPushTag(T_sp tag);
@@ -426,13 +426,13 @@ public:
   bool bootClassTableIsValid() const { return this->_BootClassTableIsValid; };
 
 public:
-  CharacterInfo &characterInfo() { return this->_Roots.charInfo; };
+  CharacterInfo& characterInfo() { return this->_Roots.charInfo; };
 
 public:
-  gctools::Vec0<core::Symbol_sp> &classSymbolsHolder() { return this->_Roots._ClassSymbolsHolderUnshiftedNowhere; };
+  gctools::Vec0<core::Symbol_sp>& classSymbolsHolder() { return this->_Roots._ClassSymbolsHolderUnshiftedNowhere; };
 
 public:
-  FileScope_mv getOrRegisterFileScope(const string &fileName);
+  FileScope_mv getOrRegisterFileScope(const string& fileName);
 
 public:
   /*! Get the LoadTimeValues_sp that corresponds to the name.
@@ -448,7 +448,7 @@ public:
   /*! Keep track of every source file that is read by the system */
   //	FileScope_sp getSourceFileInfo(const string& fileName);
   /*! Maintain a database of every source file read by the system */
-  void setFileScope(const string &fileName, FileScope_sp fileInfo);
+  void setFileScope(const string& fileName, FileScope_sp fileInfo);
 
 public:
   /*! Takes the place of ECL trap_fpe_bits - for now trap everything */
@@ -515,7 +515,7 @@ public:
         */
   void exportingSymbol(Symbol_sp sym);
 
-  void dump_apropos(const char *part) const;
+  void dump_apropos(const char* part) const;
 
 public:
   DoubleFloat_sp rehashSize() const { return this->_Roots._RehashSize; };
@@ -530,14 +530,14 @@ public:
   uint _LineNumber;
 
 public:
-  gctools::Vec0<Package_sp> &packages() { return this->_Roots._Packages; };
+  gctools::Vec0<Package_sp>& packages() { return this->_Roots._Packages; };
   Package_sp corePackage() { return this->_Roots._CorePackage; };
   Package_sp keywordPackage() { return this->_Roots._KeywordPackage; };
   Package_sp commonLispPackage() { return this->_Roots._CommonLispPackage; };
 
 private:
-  void parseStringIntoPackageAndSymbolName(const string &name, bool &packageDefined, Package_sp &package, string &symbolName,
-                                           bool &exported) const;
+  void parseStringIntoPackageAndSymbolName(const string& name, bool& packageDefined, Package_sp& package, string& symbolName,
+                                           bool& exported) const;
 
 public:
   T_sp _true() const { return this->_Roots._TrueObject; };
@@ -623,8 +623,8 @@ public:
   void setBuiltInClassesInitialized(bool b) { this->_BuiltInClassesInitialized = b; };
   void throwIfBuiltInClassesNotInitialized();
 
-  void defineMethod(const string &name, Symbol_sp classSymbol, Function_sp methoid, const string &arguments,
-                    const string &docString, bool autoExport);
+  void defineMethod(const string& name, Symbol_sp classSymbol, Function_sp methoid, const string& arguments,
+                    const string& docString, bool autoExport);
 
   //	string getRenderFileName() { return this->_RenderFileName; };
 
@@ -639,15 +639,15 @@ public:
   void initializePackages();
 
 public:
-  bool recognizesModule(const string &fileName);
-  void addModule(const string &fileName);
+  bool recognizesModule(const string& fileName);
+  void addModule(const string& fileName);
 
   int getRequireLevel() { return this->_RequireLevel; };
   void pushRequireLevel() { this->_RequireLevel++; };
   void popRequireLevel() { this->_RequireLevel--; };
 
   /*! Install a package */
-  void installPackage(const Exposer_O *package);
+  void installPackage(const Exposer_O* package);
 
   /*! Create nils for all classes that don't have them yet */
   //	void	createNils();
@@ -657,10 +657,10 @@ public:
   void installGlobalInitializationCallback(InitializationCallback c);
 
   /*! Find symbol or nil */
-  Symbol_sp findSymbol(string const &symbolName, T_sp optionalPackageDesignator) const;
+  Symbol_sp findSymbol(string const& symbolName, T_sp optionalPackageDesignator) const;
 
   /*! Find symbol or nil - symbolName can have package:[:]name form */
-  Symbol_sp findSymbol(const string &symbolName /*, T_sp optionalPackageDesignator = nil */) const;
+  Symbol_sp findSymbol(const string& symbolName /*, T_sp optionalPackageDesignator = nil */) const;
 
   //	void createGlobalMacro(Symbol_sp sym, MacroCallback func);
 
@@ -678,34 +678,34 @@ public:
           sin - an input stream designator
         */
   T_mv readEvalPrint(T_sp sin, T_sp environ, bool printResults, bool prompt);
-  T_mv readEvalPrintString(const string &string, T_sp environ, bool printResults);
+  T_mv readEvalPrintString(const string& string, T_sp environ, bool printResults);
   void readEvalPrintInteractive();
 
   /*! Find symbol or intern - symbolName can have package:[:]name form	*/
-  Symbol_mv intern(const string &symbolName, T_sp optionalPackageDesignator);
+  Symbol_mv intern(const string& symbolName, T_sp optionalPackageDesignator);
 
   /*! Find symbol or intern - symbolName can have package:[:]name form. */
-  Symbol_sp intern(const string &symbolName /*, T_sp optionalPackageDesignator = nil */);
+  Symbol_sp intern(const string& symbolName /*, T_sp optionalPackageDesignator = nil */);
 
   /*! Find symbol or intern - symbolName can have package:[:]name form. */
-  Symbol_sp intern(const string &symbolName, const string &pkgName);
+  Symbol_sp intern(const string& symbolName, const string& pkgName);
 
   /*! Intern the symbol into the package with the given name. Warn if the symbol already exists */
-  Symbol_sp internUniqueWithPackageName(const string &packageName, const string &symbolName);
+  Symbol_sp internUniqueWithPackageName(const string& packageName, const string& symbolName);
 
   /*! Intern the symbol into the package with the given name */
-  Symbol_sp internWithPackageName(const string &packageName, const string &symbolName);
+  Symbol_sp internWithPackageName(const string& packageName, const string& symbolName);
 
   /*! Intern the symbol - if it doesn't have a package prefix in the symbolName then use packageName as the package.
           If the symbolName has the form XXX:YYY then intern YYY in package XXX and export it.
           If the symbolName has the form XXX::YYY then intern YYY in package XXX as an internal symbol.
           If the symbolName has the form YYY then intern YYY in the package (packageName) as an internal symbol. */
-  Symbol_sp internWithDefaultPackageName(const string &defaultPackageName, const string &possiblePackagePrefixedSymbolName);
+  Symbol_sp internWithDefaultPackageName(const string& defaultPackageName, const string& possiblePackagePrefixedSymbolName);
 
   /*! Find the keyword symbol with the given name or intern it */
-  Symbol_sp internKeyword(const string &keywordName);
+  Symbol_sp internKeyword(const string& keywordName);
 
-  Symbol_sp getClassSymbolForClassName(const string &symbolName);
+  Symbol_sp getClassSymbolForClassName(const string& symbolName);
 
   //	void setGlobal(Symbol_sp sym, T_sp obj);
   //	void setGlobalIfNotDefined(Symbol_sp sym, T_sp obj);
@@ -736,22 +736,22 @@ public:
    */
   //	bool subClassOrder(Symbol_sp baseClassSymbol,Symbol_sp classSymbol);
 
-  bool recognizesPackage(const string &packageName) const;
-  T_sp findPackage_no_lock(const string &packageName, bool errorp = false) const;
-  T_sp findPackage(const string &packageName, bool errorp = false) const;
+  bool recognizesPackage(const string& packageName) const;
+  T_sp findPackage_no_lock(const string& packageName, bool errorp = false) const;
+  T_sp findPackage(const string& packageName, bool errorp = false) const;
   T_sp findPackage_no_lock(String_sp packageName, bool errorp = false) const;
   T_sp findPackage(String_sp packageName, bool errorp = false) const;
-  void inPackage(const string &packageName);
+  void inPackage(const string& packageName);
   void selectPackage(Package_sp pack);
   Package_sp getCurrentPackage() const;
-  void mapNameToPackage(const string &name, Package_sp pkg);
-  void unmapNameToPackage(const string &name);
-  void finishPackageSetup(const string &packageName, list<string> const &nicknames, list<string> const &usePackages,
-                          list<string> const &shadow = {});
-  Package_sp makePackage(const string &packageName, list<string> const &nicknames, list<string> const &usePackages,
-                         list<string> const &shadow = {});
-  void remove_package(const string &package_name);
-  bool usePackage(const string &packageName);
+  void mapNameToPackage(const string& name, Package_sp pkg);
+  void unmapNameToPackage(const string& name);
+  void finishPackageSetup(const string& packageName, list<string> const& nicknames, list<string> const& usePackages,
+                          list<string> const& shadow = {});
+  Package_sp makePackage(const string& packageName, list<string> const& nicknames, list<string> const& usePackages,
+                         list<string> const& shadow = {});
+  void remove_package(const string& package_name);
+  bool usePackage(const string& packageName);
 
   List_sp getBackTrace() const;
   string backTraceAsString(int numcol = 50) const;
@@ -767,18 +767,18 @@ public:
    * Cons of code if code was provided on the command line or through a script file
    * Otherwise return nil
    */
-  void parseCommandLineArguments(const CommandLineOptions &options);
+  void parseCommandLineArguments(const CommandLineOptions& options);
 
-  Intrinsic_sp getIntrinsic(const string &name);
+  Intrinsic_sp getIntrinsic(const string& name);
   string getMethodName(uint methodId);
-  uint getMethodId(const string &methodName);
+  uint getMethodId(const string& methodName);
 
 public:
   void initializeClassManager();
   void initializeEnvironments();
 
   /*! Run the program, if returns _ExitStatus != 0 there was an error */
-  bool load(int &exitCode);
+  bool load(int& exitCode);
   int run();
 
   string errorMessage();
@@ -787,10 +787,10 @@ public:
   //! Wipes out namespace and fills it with new values
   void initializeEnvironment();
 
-  void addClassNameToPackageAsDynamic(const string &package, const string &name, Instance_sp cl);
+  void addClassNameToPackageAsDynamic(const string& package, const string& name, Instance_sp cl);
   void addClassSymbol(Symbol_sp classSymbol, Creator_sp creator,
                       Symbol_sp base1ClassSymbol); //, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol =
-                                                   //UNDEFINED_SYMBOL);
+                                                   // UNDEFINED_SYMBOL);
                                                    //  void addClass(Symbol_sp classSymbol, Instance_sp theClass);
   //	void addClass( Symbol_sp classSymbol);
 
@@ -799,11 +799,11 @@ public:
   /*! From gdb - start trace on functions using function names separated by spaces.
           If the names string is empty then dump all the functions currently being
           traced */
-  void gdb_trace_by_name(const char *names);
+  void gdb_trace_by_name(const char* names);
 
   /*! From gdb - stop trace on functions using function names separated by spaces.
           if the names string is empty then untrace all functions. */
-  void gdb_untrace_by_name(const char *name);
+  void gdb_untrace_by_name(const char* name);
 
   explicit Lisp();
   virtual ~Lisp();
@@ -833,7 +833,7 @@ struct LispHolder //: public gctools::StackRoot
   /*! Pass the mpiProcess rank in (rank) or set to 0 if there is only one process */
   LispHolder(bool mpiEnabled, int mpiRank, int mpiSize);
 
-  virtual void startup(const CommandLineOptions &options);
+  virtual void startup(const CommandLineOptions& options);
 
   virtual ~LispHolder();
 };
@@ -868,11 +868,11 @@ namespace core {
 void initialize_Lisp();
 #ifdef DEBUG_MONITOR_SUPPORT
 std::string core__monitor_directory();
-FILE *monitor_file(const std::string &filename_prefix);
+FILE* monitor_file(const std::string& filename_prefix);
 #endif
 
 #ifdef DEBUG_MONITOR
-void monitor_message(const std::string &msg);
+void monitor_message(const std::string& msg);
 #define MONITOR(x) core::monitor_message((x).str());
 #else
 #define MONITOR(x)

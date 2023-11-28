@@ -45,8 +45,8 @@ THE SOFTWARE.
 #include <clasp/core/unwind.h>
 
 extern "C" {
-void mutex_lock_enter(char *nameword) { (void)0; };
-void mutex_lock_return(char *nameword) { (void)0; };
+void mutex_lock_enter(char* nameword) { (void)0; };
+void mutex_lock_return(char* nameword) { (void)0; };
 };
 
 namespace mp {
@@ -61,17 +61,17 @@ std::vector<size_t> global_BindingIndexPool;
 
 #ifdef DEBUG_THREADS
 struct DebugThread {
-  DebugThread *_Next;
+  DebugThread* _Next;
   std::string _Message;
   size_t _Tid;
-  DebugThread(DebugThread *next, const std::string &msg, size_t tid) : _Next(next), _Message(msg), _Tid(tid){};
+  DebugThread(DebugThread* next, const std::string& msg, size_t tid) : _Next(next), _Message(msg), _Tid(tid){};
 };
 
-std::atomic<DebugThread *> global_DebugThreadList;
+std::atomic<DebugThread*> global_DebugThreadList;
 
-void dump_debug_threads(const char *filename) {
-  FILE *fout = fopen(filename, "w");
-  DebugThread *cur = global_DebugThreadList.load();
+void dump_debug_threads(const char* filename) {
+  FILE* fout = fopen(filename, "w");
+  DebugThread* cur = global_DebugThreadList.load();
   while (cur) {
     fprintf(fout, "Tid[%lu] %s\n", cur->_Tid, cur->_Message.c_str());
     cur = cur->_Next;
@@ -84,12 +84,12 @@ void dump_debug_threads(const char *filename) {
 namespace mp {
 
 #ifdef DEBUG_THREADS
-void debug_mutex_lock(Mutex *m) {
+void debug_mutex_lock(Mutex* m) {
   if (core::_sym_STARdebug_threadsSTAR && !core::_sym_STARdebug_threadsSTAR.unboundp() &&
       core::_sym_STARdebug_threadsSTAR->boundP() && core::_sym_STARdebug_threadsSTAR->symbolValue().notnilp()) {
     stringstream ss;
-    ss << "lock " << (char *)&(m->_NameWord) << std::endl;
-    DebugThread *cur = new DebugThread(global_DebugThreadList.load(), ss.str(), my_thread->_Tid);
+    ss << "lock " << (char*)&(m->_NameWord) << std::endl;
+    DebugThread* cur = new DebugThread(global_DebugThreadList.load(), ss.str(), my_thread->_Tid);
     bool exchanged = false;
     do {
       exchanged = global_DebugThreadList.compare_exchange_strong(cur->_Next, cur);
@@ -100,12 +100,12 @@ void debug_mutex_lock(Mutex *m) {
   }
 };
 
-void debug_mutex_unlock(Mutex *m) {
+void debug_mutex_unlock(Mutex* m) {
   if (core::_sym_STARdebug_threadsSTAR && !core::_sym_STARdebug_threadsSTAR.unboundp() &&
       core::_sym_STARdebug_threadsSTAR->boundP() && core::_sym_STARdebug_threadsSTAR->symbolValue().notnilp()) {
     stringstream ss;
-    ss << "UNlock " << (char *)&(m->_NameWord) << std::endl;
-    DebugThread *cur = new DebugThread(global_DebugThreadList.load(), ss.str(), my_thread->_Tid);
+    ss << "UNlock " << (char*)&(m->_NameWord) << std::endl;
+    DebugThread* cur = new DebugThread(global_DebugThreadList.load(), ss.str(), my_thread->_Tid);
     bool exchanged = false;
     do {
       exchanged = global_DebugThreadList.compare_exchange_strong(cur->_Next, cur);
@@ -152,11 +152,11 @@ void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
     {
       try {
         result_mv = core::core__apply0(core::coerce::calledFunctionDesignator(process->_Function), args);
-      } catch (ExitProcess &e) {
+      } catch (ExitProcess& e) {
         // Exiting specially. Don't touch _ReturnValuesList - it's initialized to NIL just fine,
         // and may have been set by mp:exit-process.
         return;
-      } catch (AbortProcess &e) {
+      } catch (AbortProcess& e) {
         // Exiting specially for some weird reason. Mark this as an abort.
         // NOTE: Should probably catch all attempts to exit, i.e. catch (...),
         // but that might be a problem for the main thread.
@@ -166,7 +166,7 @@ void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
     }
     ql::list return_values;
     int nv = result_mv.number_of_values();
-    core::MultipleValues &mv = core::lisp_multipleValues();
+    core::MultipleValues& mv = core::lisp_multipleValues();
     if (nv > 0) {
       core::T_sp result0 = result_mv;
       return_values << result0;
@@ -177,7 +177,7 @@ void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
   }
 }
 
-__attribute__((noinline)) void start_thread_inner(uintptr_t uniqueId, void *cold_end_of_stack) {
+__attribute__((noinline)) void start_thread_inner(uintptr_t uniqueId, void* cold_end_of_stack) {
 #ifdef USE_MPS
   // use mask
   mps_thr_t thr_o;
@@ -189,7 +189,7 @@ __attribute__((noinline)) void start_thread_inner(uintptr_t uniqueId, void *cold
   mps_root_t root;
   res = mps_root_create_thread_tagged(&root, global_arena, mps_rank_ambig(), 0, thr_o, mps_scan_area_masked,
                                       gctools::pointer_tag_mask, gctools::pointer_tag_eq,
-                                      reinterpret_cast<mps_addr_t>(const_cast<void *>(cold_end_of_stack)));
+                                      reinterpret_cast<mps_addr_t>(const_cast<void*>(cold_end_of_stack)));
   if (res != MPS_RES_OK) {
     printf("%s:%d Could not create thread stack roots\n", __FILE__, __LINE__);
     abort();
@@ -256,11 +256,11 @@ __attribute__((noinline)) void start_thread_inner(uintptr_t uniqueId, void *cold
 };
 
 // This is the function actually passed to pthread_create.
-void *start_thread(void *vinfo) {
-  ThreadStartInfo *info = (ThreadStartInfo *)vinfo;
+void* start_thread(void* vinfo) {
+  ThreadStartInfo* info = (ThreadStartInfo*)vinfo;
   uintptr_t uniqueId = info->_UniqueID;
   delete info;
-  void *cold_end_of_stack = &cold_end_of_stack;
+  void* cold_end_of_stack = &cold_end_of_stack;
   ////////////////////////////////////////////////////////////
   //
   // MPS setup of thread
@@ -276,7 +276,7 @@ string Mutex_O::__repr__() const {
   ss << _rep_(this->_Name);
   ss << " :owner " << _rep_(this->_Owner) << " :counter " << this->counter();
 #ifdef NON_MOVING_GC // things don't move in boehm
-  ss << " @" << (void *)(this->asSmartPtr().raw_());
+  ss << " @" << (void*)(this->asSmartPtr().raw_());
 #endif
   ss << ">";
   return ss.str();
@@ -320,7 +320,7 @@ string SharedMutex_O::__repr__() const {
   ss << "#<SHARED-MUTEX ";
   ss << _rep_(this->_Name);
 #ifdef NON_MOVING_GC // things don't move in boehm
-  ss << " @" << (void *)(this->asSmartPtr().raw_());
+  ss << " @" << (void*)(this->asSmartPtr().raw_());
 #endif
   ss << ">";
   return ss.str();
@@ -349,7 +349,7 @@ string Process_O::__repr__() const {
   ss << "#<PROCESS ";
   ss << _rep_(this->_Name);
 #ifdef NON_MOVING_GC // things don't move in boehm
-  ss << " @" << (void *)(this->asSmartPtr().raw_());
+  ss << " @" << (void*)(this->asSmartPtr().raw_());
 #endif
   ss << " " << this->phase_as_string();
   ss << ">";
@@ -668,8 +668,8 @@ CL_DOCSTRING_LONG(
     R"dx(If WAITP is true, this function will not return until exclusion is obtained.\n\nReturn true iff exclusion was obtained, otherwise false.)dx");
 DOCGROUP(clasp);
 CL_DEFUN bool mp__get_lock(core::T_sp m, bool waitp) {
-  if (*(void **)&*m == NULL) {
-    printf("%s:%d:%s The Mutex @%p has been wiped out\n", __FILE__, __LINE__, __FUNCTION__, (void *)&*m);
+  if (*(void**)&*m == NULL) {
+    printf("%s:%d:%s The Mutex @%p has been wiped out\n", __FILE__, __LINE__, __FUNCTION__, (void*)&*m);
     abort();
   }
   if (!gc::IsA<Mutex_sp>(m)) {

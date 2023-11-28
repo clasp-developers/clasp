@@ -404,7 +404,7 @@ CL_DECLARE();
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__print_address_of(T_sp arg, T_sp msg) {
   ASSERT(arg.objectp());
-  void *ptr = &(*arg);
+  void* ptr = &(*arg);
   printf("%s:%d  AddressOf = %p msg: %s\n", __FILE__, __LINE__, ptr, _rep_(msg).c_str());
   return arg;
 };
@@ -529,19 +529,19 @@ CL_DEFUN T_mv cl__values(Vaslist_sp vargs) {
   }
   if (_sym_STARdebug_valuesSTAR && _sym_STARdebug_valuesSTAR->boundP() && _sym_STARdebug_valuesSTAR->symbolValue().notnilp()) {
     for (size_t di(0); di < nargs; ++di) {
-      T_sp dsp((gctools::Tagged)va_arg(debugl, T_O *));
+      T_sp dsp((gctools::Tagged)va_arg(debugl, T_O*));
       printf("%s:%d   VALUES[%lu] -> %s\n", __FILE__, __LINE__, di, _rep_(dsp).c_str());
     }
     va_end(debugl);
   }
 #endif
-  core::MultipleValues &me = (core::lisp_multipleValues());
+  core::MultipleValues& me = (core::lisp_multipleValues());
   me.setSize(0);
   core::T_sp first(nil<core::T_O>());
   if (nargs > 0) {
     first = vargs->next_arg();
     for (size_t i(1); i < nargs; ++i) {
-      T_O *tcsp = ENSURE_VALID_OBJECT(vargs->next_arg().raw_());
+      T_O* tcsp = ENSURE_VALID_OBJECT(vargs->next_arg().raw_());
       T_sp csp((gctools::Tagged)tcsp);
       me.valueSet(i, csp);
     }
@@ -573,7 +573,7 @@ CL_DEFUN T_mv cl__values_list(T_sp list) {
 
 // Need to distinguish between nil as invalid-input and nil as the symbol found
 // correctp indicates correctness of input
-Symbol_sp functionBlockName(T_sp functionName, bool *correctp) {
+Symbol_sp functionBlockName(T_sp functionName, bool* correctp) {
   *correctp = true;
   if (cl__symbolp(functionName))
     return gc::As<Symbol_sp>(functionName);
@@ -1230,7 +1230,7 @@ CL_DEFUN T_sp cl__read_preserving_whitespace(T_sp input_stream_designator, T_sp 
 
 /* Only works on lists of lists - used to support macroexpansion backquote */
 bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, bool elementTest, bool elementReturn,
-                                     bool fallThroughReturn, T_sp &retVal) {
+                                     bool fallThroughReturn, T_sp& retVal) {
   if (!sequences.consp())
     goto FALLTHROUGH;
   {
@@ -1475,7 +1475,7 @@ CL_DEFUN T_sp cl__append(Vaslist_sp args) {
   LOG("Carrying out append with arguments: {}", _rep_(lists));
   size_t lenArgs = args->nargs();
   unlikely_if(lenArgs == 0) return nil<T_O>();
-  T_O *lastArg = (*args)[lenArgs - 1];
+  T_O* lastArg = (*args)[lenArgs - 1];
   for (int i(0), iEnd(lenArgs - 1); i < iEnd; ++i) {
     T_sp curit = args->next_arg();
     LIKELY_if(curit.consp()) {
@@ -1930,7 +1930,7 @@ CL_LAMBDA(filename &optional (max-lines 0) approach);
 CL_DOCSTRING(R"dx(Count number of lines in text file up to max-lines if max-lines is not 0)dx");
 CL_DOCSTRING_LONG(R"dx(Return (valus number-of-lines file-position size-of-file).)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_mv core__countLinesInFile(const std::string &filename, size_t maxLines, bool approach) {
+CL_DEFUN T_mv core__countLinesInFile(const std::string& filename, size_t maxLines, bool approach) {
   int numberOfLines = 0;
   int charsSinceLastEol = 0;
   std::string line;
@@ -2078,19 +2078,19 @@ int ctak_aux(int x, int y, int z, bool allocate) {
     int rx = 0;
     try {
       ctak_aux(x - 1, y, z, allocate);
-    } catch (Ctak &val) {
+    } catch (Ctak& val) {
       rx = val.val;
     }
     int ry = 0;
     try {
       ctak_aux(y - 1, z, x, allocate);
-    } catch (Ctak &val) {
+    } catch (Ctak& val) {
       ry = val.val;
     }
     int rz = 0;
     try {
       ctak_aux(z - 1, x, y, allocate);
-    } catch (Ctak &val) {
+    } catch (Ctak& val) {
       rz = val.val;
     }
     return ctak_aux(rx, ry, rz, allocate);
@@ -2102,7 +2102,7 @@ int ctak(int x, int y, int z, bool allocate, int times) {
   for (int ii = 0; ii < times; ++ii) {
     try {
       ctak_aux(x, y, z, allocate);
-    } catch (Ctak &val) {
+    } catch (Ctak& val) {
       ret = val.val;
     }
   }
@@ -2129,13 +2129,13 @@ uint32_t crc32_for_byte(uint32_t r) {
   return r ^ (uint32_t)0xFF000000L;
 }
 
-void crc32(const void *data, size_t n_bytes, uint32_t *crc) {
+void crc32(const void* data, size_t n_bytes, uint32_t* crc) {
   static uint32_t table[0x100];
   if (!*table)
     for (size_t i = 0; i < 0x100; ++i)
       table[i] = crc32_for_byte(i);
   for (size_t i = 0; i < n_bytes; ++i)
-    *crc = table[(uint8_t)*crc ^ ((uint8_t *)data)[i]] ^ *crc >> 8;
+    *crc = table[(uint8_t)*crc ^ ((uint8_t*)data)[i]] ^ *crc >> 8;
 }
 
 }; // namespace core

@@ -60,7 +60,7 @@ using namespace clbind;
 class Foo {
 public:
   std::string _message;
-  void setMessage(const std::string &m) { this->_message = m; };
+  void setMessage(const std::string& m) { this->_message = m; };
   std::string message() { return this->_message; };
   Foo() : _message("Hi there"){};
   virtual ~Foo() { printf("%s:%d - destructing Foo\n", __FILE__, __LINE__); }
@@ -84,7 +84,7 @@ void initialize_clang_compile() {
   // overloaded functions that had trouble resolving
   package_ pkg(ClangCompilePkg, {"CLANG-COMPILER"}, {}); // "CL", "CORE"})
   /* -- */
-  scope_ &sc = pkg.scope();
+  scope_& sc = pkg.scope();
   class_<clang::DiagnosticOptions>(sc, "DiagnosticOptions"); //)
   class_<clang::DiagnosticIDs>(sc, "DiagnosticIds");
 }
