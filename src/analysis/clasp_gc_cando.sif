@@ -2974,9 +2974,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::SimpleBaseString_O>"
              :offset-base-ctype "chem::SketchFunction_O" :layout-offset-field-names ("_Message")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "chem::SketchFunction_O" :layout-offset-field-names ("_Frozen")}
 {class-kind :stamp-name "STAMPWTAG_chem__RigidBodyEnergyFunction_O"
             :stamp-key "chem::RigidBodyEnergyFunction_O" :parent-class "chem::ScoringFunction_O"
             :lisp-class-base "chem::ScoringFunction_O" :root-class "core::T_O" :stamp-wtag 3
@@ -4840,9 +4837,6 @@
              :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
              :offset-base-ctype "chem::Minimizer_O"
              :layout-offset-field-names ("nvP1DSearchDirection")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "chem::Minimizer_O"
-             :layout-offset-field-names ("_Frozen")}
 {fixed-field :offset-type-cxx-identifier "POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "chem::Minimizer_O"
              :layout-offset-field-names ("_Position" ".theObject")}
