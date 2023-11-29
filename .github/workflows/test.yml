@@ -39,8 +39,8 @@ jobs:
     - name: Install MacOS dependencies
       if: matrix.os == 'macos-latest'
       run: |
-        rm /usr/local/bin/2to3
         brew update
+        brew upgrade
         brew install boost fmt gmp llvm@17 ninja pkg-config sbcl netcdf
     - name: Checkout repository
       uses: actions/checkout@v4
