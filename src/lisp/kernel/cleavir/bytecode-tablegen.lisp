@@ -100,10 +100,10 @@
               block (pop blocks)
               (block-entry-function block) function)
         ;; If there's an annotation for the new block, note it.
-        (let ((annot (find-if (lambda (a) (typep a 'core:bytecode-debug-block))
+        (let ((annot (find-if (lambda (a) (typep a 'core:bytecode-ast-block))
                               annots)))
           (when annot
-            (setf (block-entry-name block) (core:bytecode-debug-block/name annot)
-                  (block-entry-receiving block) (core:bytecode-debug-block/receiving annot))))))
+            (setf (block-entry-name block) (core:bytecode-ast-block/name annot)
+                  (block-entry-receiving block) (core:bytecode-ast-block/receiving annot))))))
     (setf (block-entry-end block) (length bytecode))
     (values all-functions all-blocks)))

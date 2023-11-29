@@ -131,79 +131,131 @@ public:
   CL_DEFMETHOD T_sp location() const { return this->_location; }
 };
 
-// Debug information for declarations.
+// Information about declarations.
 // This records declarations from the source code.
 // Some declarations are ignored by the simplistic bytecode compiler,
 // but may be relevant for further compilation.
 // (The debugger doesn't really need them.)
-FORWARD(BytecodeDebugDecls);
-class BytecodeDebugDecls_O : public BytecodeDebugInfo_O {
-  LISP_CLASS(core, CorePkg, BytecodeDebugDecls_O, "BytecodeDebugDecls", BytecodeDebugInfo_O);
+// START and END delineate the declarations' scope.
+FORWARD(BytecodeAstDecls);
+class BytecodeAstDecls_O : public BytecodeDebugInfo_O {
+  LISP_CLASS(core, CorePkg, BytecodeAstDecls_O, "BytecodeAstDecls", BytecodeDebugInfo_O);
 
 public:
-  BytecodeDebugDecls_O(T_sp start, T_sp end, List_sp decls) : BytecodeDebugInfo_O(start, end), _decls(decls) {}
-  CL_LISPIFY_NAME(BytecodeDebugDecls/make)
+  BytecodeAstDecls_O(T_sp start, T_sp end, List_sp decls) : BytecodeDebugInfo_O(start, end), _decls(decls) {}
+  CL_LISPIFY_NAME(BytecodeAstDecls/make)
   CL_DEF_CLASS_METHOD
-  static BytecodeDebugDecls_sp make(T_sp start, T_sp end, List_sp decls) {
-    return gctools::GC<BytecodeDebugDecls_O>::allocate<gctools::RuntimeStage>(start, end, decls);
+  static BytecodeAstDecls_sp make(T_sp start, T_sp end, List_sp decls) {
+    return gctools::GC<BytecodeAstDecls_O>::allocate<gctools::RuntimeStage>(start, end, decls);
   }
 
 public:
   List_sp _decls;
 
 public:
-  CL_LISPIFY_NAME(BytecodeDebugDecls/decls)
+  CL_LISPIFY_NAME(BytecodeAstDecls/decls)
   CL_DEFMETHOD List_sp decls() const { return this->_decls; }
 };
 
 // Information about a THE form, also for the compiler.
-FORWARD(BytecodeDebugThe);
-class BytecodeDebugThe_O : public BytecodeDebugInfo_O {
-  LISP_CLASS(core, CorePkg, BytecodeDebugThe_O, "BytecodeDebugThe", BytecodeDebugInfo_O);
+FORWARD(BytecodeAstThe);
+class BytecodeAstThe_O : public BytecodeDebugInfo_O {
+  LISP_CLASS(core, CorePkg, BytecodeAstThe_O, "BytecodeAstThe", BytecodeDebugInfo_O);
 
 public:
-  BytecodeDebugThe_O(T_sp start, T_sp end, T_sp type, int receiving)
+  BytecodeAstThe_O(T_sp start, T_sp end, T_sp type, int receiving)
       : BytecodeDebugInfo_O(start, end), _type(type), _receiving(receiving) {}
-  CL_LISPIFY_NAME(BytecodeDebugThe/make)
+  CL_LISPIFY_NAME(BytecodeAstThe/make)
   CL_DEF_CLASS_METHOD
-  static BytecodeDebugThe_sp make(T_sp start, T_sp end, T_sp type, int receiving) {
-    return gctools::GC<BytecodeDebugThe_O>::allocate<gctools::RuntimeStage>(start, end, type, receiving);
+  static BytecodeAstThe_sp make(T_sp start, T_sp end, T_sp type, int receiving) {
+    return gctools::GC<BytecodeAstThe_O>::allocate<gctools::RuntimeStage>(start, end, type, receiving);
   }
 
 public:
   T_sp _type;
   int _receiving; // as in compiler contexts - which values this decl applies to
 public:
-  CL_LISPIFY_NAME(BytecodeDebugThe/receiving)
+  CL_LISPIFY_NAME(BytecodeAstThe/receiving)
   CL_DEFMETHOD Fixnum receiving() const { return this->_receiving; }
-  CL_LISPIFY_NAME(BytecodeDebugThe/type)
+  CL_LISPIFY_NAME(BytecodeAstThe/type)
   CL_DEFMETHOD T_sp type() const { return this->_type; }
 };
 
-// Information about the beginning of a semi-basic block.
-// RECEIVING indicates what values the block will pull from the stack or
-// MV register; this information can be used by the compiler to determine
-// how many PHI nodes are needed.
-FORWARD(BytecodeDebugBlock);
-class BytecodeDebugBlock_O : public BytecodeDebugInfo_O {
-  LISP_CLASS(core, CorePkg, BytecodeDebugBlock_O, "BytecodeDebugBlock", BytecodeDebugInfo_O);
+// Information about an IF form.
+// the START is just after the jump-if, and the END the start
+// of the merge block. the THEN block starts at the destination
+// of the jump-if.
+// RECEIVING indicates how many values the merge block receives.
+FORWARD(BytecodeAstIf);
+class BytecodeAstIf_O : public BytecodeDebugInfo_O {
+  LISP_CLASS(core, CorePkg, BytecodeAstIf_O, "BytecodeAstIf", BytecodeDebugInfo_O);
+  
+public:
+  BytecodeAstIf_O(T_sp start, T_sp end, int receiving)
+      : BytecodeDebugInfo_O(start, end), _receiving(receiving) {}
+  CL_LISPIFY_NAME(BytecodeAstIf/make)
+  CL_DEF_CLASS_METHOD
+  static BytecodeAstIf_sp make(T_sp start, T_sp end, int receiving) {
+    return gctools::GC<BytecodeAstIf_O>::allocate<gctools::RuntimeStage>(start, end, receiving);
+  }
 
 public:
-  BytecodeDebugBlock_O(T_sp start, T_sp end, T_sp name, int receiving)
-      : BytecodeDebugInfo_O(start, end), _name(name), _receiving(receiving) {}
-  CL_LISPIFY_NAME(BytecodeDebugBlock/make)
+  int _receiving; // as in compiler contexts
+public:
+  CL_LISPIFY_NAME(BytecodeAstIf/receiving)
+  CL_DEFMETHOD Fixnum receiving() const { return this->_receiving; }
+};
+
+// Information about a TAGBODY form.
+// START and END delineate the extent of the tagbody, so START
+// is immediately after the entry or save-sp.
+// TAGS is an alist (go-tag . label), where label is an actual
+// label during compilation, but resolved to an instruction
+// index at the end of compilation.
+FORWARD(BytecodeAstTagbody);
+class BytecodeAstTagbody_O : public BytecodeDebugInfo_O {
+  LISP_CLASS(core, CorePkg, BytecodeAstTagbody_O, "BytecodeAstTagbody", BytecodeDebugInfo_O);
+  
+public:
+  BytecodeAstTagbody_O(T_sp start, T_sp end, List_sp tags) : BytecodeDebugInfo_O(start, end), _tags(tags) {}
+  CL_LISPIFY_NAME(BytecodeAstTagbody/make)
   CL_DEF_CLASS_METHOD
-  static BytecodeDebugBlock_sp make(T_sp start, T_sp end, T_sp name, int receiving) {
-    return gctools::GC<BytecodeDebugBlock_O>::allocate<gctools::RuntimeStage>(start, end, name, receiving);
+  static BytecodeAstTagbody_sp make(T_sp start, T_sp end, List_sp tags) {
+    return gctools::GC<BytecodeAstTagbody_O>::allocate<gctools::RuntimeStage>(start, end, tags);
+  }
+
+public:
+  List_sp _tags;
+
+public:
+  CL_LISPIFY_NAME(BytecodeAstTagbody/tags)
+  CL_DEFMETHOD List_sp tags() const { return this->_tags; }
+
+};
+
+// Information about a BLOCK form.
+// START and END delineate the block's extent.
+// RECEIVING indicates what values the block returns.
+FORWARD(BytecodeAstBlock);
+class BytecodeAstBlock_O : public BytecodeDebugInfo_O {
+  LISP_CLASS(core, CorePkg, BytecodeAstBlock_O, "BytecodeAstBlock", BytecodeDebugInfo_O);
+
+public:
+  BytecodeAstBlock_O(T_sp start, T_sp end, T_sp name, int receiving)
+      : BytecodeDebugInfo_O(start, end), _name(name), _receiving(receiving) {}
+  CL_LISPIFY_NAME(BytecodeAstBlock/make)
+  CL_DEF_CLASS_METHOD
+  static BytecodeAstBlock_sp make(T_sp start, T_sp end, T_sp name, int receiving) {
+    return gctools::GC<BytecodeAstBlock_O>::allocate<gctools::RuntimeStage>(start, end, name, receiving);
   }
 
 public:
   T_sp _name;
   int _receiving; // meaning is as for compiler contexts
 public:
-  CL_LISPIFY_NAME(BytecodeDebugBlock/receiving)
+  CL_LISPIFY_NAME(BytecodeAstBlock/receiving)
   CL_DEFMETHOD Fixnum receiving() const { return this->_receiving; }
-  CL_LISPIFY_NAME(BytecodeDebugBlock/name)
+  CL_LISPIFY_NAME(BytecodeAstBlock/name)
   CL_DEFMETHOD T_sp name() const { return this->_name; }
 };
 
@@ -215,22 +267,22 @@ public:
 // arguments and the call to FOO are unreachable, but if the argument was just
 // (bar), this unreachable code would just need to have one value added to the
 // stack and to be in whatever dynamic environment is in place before.
-FORWARD(BytecodeDebugExit);
-class BytecodeDebugExit_O : public BytecodeDebugInfo_O {
-  LISP_CLASS(core, CorePkg, BytecodeDebugExit_O, "BytecodeDebugExit", BytecodeDebugInfo_O);
+FORWARD(BytecodeAstExit);
+class BytecodeAstExit_O : public BytecodeDebugInfo_O {
+  LISP_CLASS(core, CorePkg, BytecodeAstExit_O, "BytecodeAstExit", BytecodeDebugInfo_O);
 
 public:
-  BytecodeDebugExit_O(T_sp start, T_sp end, int receiving) : BytecodeDebugInfo_O(start, end), _receiving(receiving) {}
-  CL_LISPIFY_NAME(BytecodeDebugExit/make)
+  BytecodeAstExit_O(T_sp start, T_sp end, int receiving) : BytecodeDebugInfo_O(start, end), _receiving(receiving) {}
+  CL_LISPIFY_NAME(BytecodeAstExit/make)
   CL_DEF_CLASS_METHOD
-  static BytecodeDebugExit_sp make(T_sp start, T_sp end, int receiving) {
-    return gctools::GC<BytecodeDebugExit_O>::allocate<gctools::RuntimeStage>(start, end, receiving);
+  static BytecodeAstExit_sp make(T_sp start, T_sp end, int receiving) {
+    return gctools::GC<BytecodeAstExit_O>::allocate<gctools::RuntimeStage>(start, end, receiving);
   }
 
 public:
   int _receiving; // meaning is as for compiler contexts
 public:
-  CL_LISPIFY_NAME(BytecodeDebugExit/receiving)
+  CL_LISPIFY_NAME(BytecodeAstExit/receiving)
   CL_DEFMETHOD Fixnum receiving() const { return this->_receiving; }
 };
 

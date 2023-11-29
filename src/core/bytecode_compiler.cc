@@ -958,10 +958,8 @@ size_t Module_O::bytecode_size() {
   return last_cfunction->pposition() + last_cfunction->final_size();
 }
 
-// Resolve the labels to fixnums, and LVInfos to frame locations.
-// If a variable is stored in a cell, we indicate this by wrapping its
-// frame location in a cons.
-static void resolve_debug_vars(BytecodeDebugVars_sp info) {
+// Resolve start and end but leave the rest alone.
+static void resolve_debug_info(BytecodeDebugInfo_sp info) {
   T_sp open_label = info->start();
   if (gc::IsA<Label_sp>(open_label))
     info->setStart(clasp_make_fixnum(gc::As_unsafe<Label_sp>(open_label)->module_position()));
@@ -972,6 +970,13 @@ static void resolve_debug_vars(BytecodeDebugVars_sp info) {
     info->setEnd(clasp_make_fixnum(gc::As_unsafe<Label_sp>(close_label)->module_position()));
   else
     info->setEnd(clasp_make_fixnum(0));
+}
+
+// Resolve the labels to fixnums, and LVInfos to frame locations.
+// If a variable is stored in a cell, we indicate this by wrapping its
+// frame location in a cons.
+static void resolve_debug_vars(BytecodeDebugVars_sp info) {
+  resolve_debug_info(info);
   for (Cons_sp cur : info->bindings()) {
     T_sp tentry = cur->car();
     if (gc::IsA<Cons_sp>(tentry)) {
@@ -989,18 +994,16 @@ static void resolve_debug_vars(BytecodeDebugVars_sp info) {
   }
 }
 
-// Resolve start and end but leave the rest alone.
-static void resolve_debug_info(BytecodeDebugInfo_sp info) {
-  T_sp open_label = info->start();
-  if (gc::IsA<Label_sp>(open_label))
-    info->setStart(clasp_make_fixnum(gc::As_unsafe<Label_sp>(open_label)->module_position()));
-  else // compiler screwed up, but this is just debug info, don't raise stink
-    info->setStart(clasp_make_fixnum(0));
-  T_sp close_label = info->end();
-  if (gc::IsA<Label_sp>(close_label))
-    info->setEnd(clasp_make_fixnum(gc::As_unsafe<Label_sp>(close_label)->module_position()));
-  else
-    info->setEnd(clasp_make_fixnum(0));
+static void resolve_ast_tagbody(BytecodeAstTagbody_sp info) {
+  resolve_debug_info(info);
+  for (Cons_sp cur : info->tags()) {
+    T_sp tentry = cur->car();
+    if (gc::IsA<Cons_sp>(tentry)) {
+      Cons_sp centry = gc::As_unsafe<Cons_sp>(tentry);
+      if (gc::IsA<Label_sp>(centry->cdr()))
+        centry->setCdr(clasp_make_fixnum(gc::As_unsafe<Label_sp>(centry->cdr())->module_position()));
+    }
+  }
 }
 
 SimpleVector_sp Module_O::create_debug_info() {
@@ -1025,6 +1028,8 @@ SimpleVector_sp Module_O::create_debug_info() {
       // Resolve labels, etc.
       if (gc::IsA<BytecodeDebugVars_sp>(info))
         resolve_debug_vars(gc::As_unsafe<BytecodeDebugVars_sp>(info));
+      else if (gc::IsA<BytecodeAstTagbody_sp>(info))
+        resolve_ast_tagbody(gc::As_unsafe<BytecodeAstTagbody_sp>(info));
       else if (gc::IsA<BytecodeDebugInfo_sp>(info))
         resolve_debug_info(gc::As_unsafe<BytecodeDebugInfo_sp>(info));
     }
@@ -1091,8 +1096,8 @@ bool btb_bcfun_p(GlobalBytecodeSimpleFun_sp fun, SimpleVector_sp debug_info) {
   size_t end = start + fun->bytecodeSize();
   for (size_t i = 0; i < debug_info->length(); ++i) {
     T_sp tinfo = (*debug_info)[i];
-    if (gc::IsA<BytecodeDebugDecls_sp>(tinfo)) {
-      BytecodeDebugDecls_sp info = gc::As_unsafe<BytecodeDebugDecls_sp>(tinfo);
+    if (gc::IsA<BytecodeAstDecls_sp>(tinfo)) {
+      BytecodeAstDecls_sp info = gc::As_unsafe<BytecodeAstDecls_sp>(tinfo);
       size_t infostart = info->start().unsafe_fixnum();
       size_t infoend = info->start().unsafe_fixnum();
       if (infostart > end)
@@ -1320,7 +1325,7 @@ void compile_locally(List_sp body, Lexenv_sp env, const Context ctxt) {
   Label_sp begin_label = Label_O::make(), end_label = Label_O::make();
   if (declares.notnilp()) {
     begin_label->contextualize(ctxt);
-    ctxt.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, declares));
+    ctxt.push_debug_info(BytecodeAstDecls_O::make(begin_label, end_label, declares));
   }
   compile_progn(code, env, ctxt);
   if (declares.notnilp())
@@ -1385,7 +1390,7 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
   if (dbindings.notnilp())
     ctxt.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, dbindings));
   if (declares.notnilp())
-    ctxt.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, declares));
+    ctxt.push_debug_info(BytecodeAstDecls_O::make(begin_label, end_label, declares));
   compile_progn(code, post_binding_env, ctxt.sub_de(Integer_O::create(special_binding_count)));
   ctxt.emit_unbind(special_binding_count);
   end_label->contextualize(ctxt);
@@ -1496,7 +1501,7 @@ void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Contex
           BytecodeDebugVars_O::make(begin_label, end_label, Cons_O::createList(Cons_O::create(var, lvinfo->lex()))));
       List_sp decls = decls_for_var(var, declares);
       if (decls.notnilp())
-        ctxt.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, decls));
+        ctxt.push_debug_info(BytecodeAstDecls_O::make(begin_label, end_label, decls));
     }
   }
   new_env = new_env->add_decls(declares);
@@ -1575,7 +1580,7 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, Lexi
     context.push_debug_info(
         BytecodeDebugVars_O::make(varlabel, end_label, Cons_O::createList(Cons_O::create(var, varinfo->lex()))));
     if (vardecls.notnilp())
-      context.push_debug_info(BytecodeDebugDecls_O::make(varlabel, end_label, vardecls));
+      context.push_debug_info(BytecodeAstDecls_O::make(varlabel, end_label, vardecls));
   }
   // The suppliedp value was pushed most recently, so bind that first.
   // We do it this way after the branch so that the suppliedp var has a dominating bind
@@ -1594,7 +1599,7 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, Lexi
       context.push_debug_info(
           BytecodeDebugVars_O::make(suplabel, end_label, Cons_O::createList(Cons_O::create(supplied_var, lsinfo->lex()))));
       if (spdecls.notnilp())
-        context.push_debug_info(BytecodeDebugDecls_O::make(suplabel, end_label, spdecls));
+        context.push_debug_info(BytecodeAstDecls_O::make(suplabel, end_label, spdecls));
     }
   }
   // That's it for code generation. Now return the new environment.
@@ -1648,7 +1653,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     if (svdecls.notnilp()) {
       Label_sp debug_begin_label = Label_O::make();
       debug_begin_label->contextualize(context);
-      context.push_debug_info(BytecodeDebugDecls_O::make(debug_begin_label, end_label, svdecls));
+      context.push_debug_info(BytecodeAstDecls_O::make(debug_begin_label, end_label, svdecls));
     }
     ql::list debugbindings;
     ql::list debugdecls;
@@ -1693,7 +1698,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     if (odecls.notnilp()) {
       Label_sp begin_label = Label_O::make();
       begin_label->contextualize(context);
-      context.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, odecls));
+      context.push_debug_info(BytecodeAstDecls_O::make(begin_label, end_label, odecls));
     }
     // new_env has enough space for the optional arguments, but without the
     // variables actually bound, so that default forms can be compiled correctly
@@ -1726,7 +1731,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
           BytecodeDebugVars_O::make(begin_label, end_label, Cons_O::createList(Cons_O::create(rest, lvinfo->lex()))));
       List_sp rdecls = decls_for_var(rest, declares);
       if (rdecls.notnilp())
-        context.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, rdecls));
+        context.push_debug_info(BytecodeAstDecls_O::make(begin_label, end_label, rdecls));
     }
   }
   if (key_flag.notnilp()) {
@@ -1754,7 +1759,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     if (kdecls.notnilp()) {
       Label_sp begin_label = Label_O::make();
       begin_label->contextualize(context);
-      context.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, kdecls));
+      context.push_debug_info(BytecodeAstDecls_O::make(begin_label, end_label, kdecls));
     }
     optkey_env = optkey_env->bind_vars(lkeyvars, context);
     new_env = Lexenv_O::make(new_env->vars(), optkey_env->tags(), optkey_env->blocks(), optkey_env->funs(), optkey_env->decls(),
@@ -1843,7 +1848,7 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
   if (all_declares.notnilp() || source_info.notnilp()) {
     begin->contextualize(context);
     if (all_declares.notnilp())
-      context.push_debug_info(BytecodeDebugDecls_O::make(begin, end, all_declares));
+      context.push_debug_info(BytecodeAstDecls_O::make(begin, end, all_declares));
     if (source_info.notnilp())
       context.push_debug_info(BytecodeDebugLocation_O::make(begin, end, source_info));
   }
@@ -2142,32 +2147,39 @@ void compile_the(T_sp type, T_sp form, Lexenv_sp env, const Context ctxt) {
   Label_sp lab = Label_O::make();
   compile_form(form, env, ctxt);
   lab->contextualize(ctxt);
-  ctxt.push_debug_info(BytecodeDebugThe_O::make(lab, lab, type, ctxt.receiving()));
+  ctxt.push_debug_info(BytecodeAstThe_O::make(lab, lab, type, ctxt.receiving()));
 }
 
 void compile_if(T_sp cond, T_sp thn, T_sp els, Lexenv_sp env, const Context ctxt) {
   compile_form(cond, env, ctxt.sub_receiving(1));
-  Label_sp then_label = Label_O::make();
+  Label_sp then_label = Label_O::make(),
+    else_label = Label_O::make();
   Label_sp done_label = Label_O::make();
   ctxt.emit_jump_if(then_label);
+  else_label->contextualize(ctxt);
+  ctxt.push_debug_info(BytecodeAstIf_O::make(else_label, done_label, ctxt.receiving()));
   compile_form(els, env, ctxt);
   ctxt.emit_jump(done_label);
   then_label->contextualize(ctxt);
   compile_form(thn, env, ctxt);
   done_label->contextualize(ctxt);
-  ctxt.push_debug_info(BytecodeDebugBlock_O::make(done_label, done_label, nil<T_O>(), ctxt.receiving()));
 }
 
 static bool go_tag_p(T_sp object) { return object.fixnump() || gc::IsA<Integer_sp>(object) || gc::IsA<Symbol_sp>(object); }
 
 void compile_tagbody(List_sp statements, Lexenv_sp env, const Context ctxt) {
+  Label_sp start = Label_O::make(), end = Label_O::make();
   ql::list tags;
+  ql::list dtags; // for debug info
   for (auto cur : statements) {
     T_sp statement = oCar(cur);
-    if (go_tag_p(statement))
+    if (go_tag_p(statement)) {
       tags << statement;
+      dtags << Cons_O::create(statement, nil<T_O>());
+    }
   }
   List_sp ltags = tags.cons();
+  List_sp ldtags = dtags.cons();
   if (ltags.nilp()) { // degenerate case
     Context stmt_ctxt = ctxt.sub_receiving(0);
     for (auto cur : statements) {
@@ -2177,8 +2189,15 @@ void compile_tagbody(List_sp statements, Lexenv_sp env, const Context ctxt) {
   } else { // actual dynenv+tags case
     LexicalInfo_sp dynenv = LexicalInfo_O::make(env->frameEnd(), ctxt.cfunction());
     Lexenv_sp nenv = env->bind_tags(tags.cons(), dynenv, ctxt);
+    // Install labels in the debug tags list.
+    for (Cons_sp cur : ldtags) {
+      Cons_sp ccur = gc::As_assert<Cons_sp>(cur->car());
+      ccur->setCdr(gc::As<TagInfo_sp>(nenv->tagInfo(ccur->car()))->exit());
+    }
     // Bind the dynamic environment (or just save the stack pointer).
     ctxt.emit_entry_or_save_sp(dynenv);
+    start->contextualize(ctxt);
+    ctxt.push_debug_info(BytecodeAstTagbody_O::make(start, end, ldtags));
     // Compile the body, emitting the tag destination labels.
     Context stmt_ctxt = ctxt.sub_de(dynenv).sub_receiving(0);
     for (auto cur : statements) {
@@ -2187,10 +2206,10 @@ void compile_tagbody(List_sp statements, Lexenv_sp env, const Context ctxt) {
         TagInfo_sp tinfo = gc::As<TagInfo_sp>(nenv->tagInfo(statement));
         Label_sp lab = tinfo->exit();
         lab->contextualize(stmt_ctxt);
-        ctxt.push_debug_info(BytecodeDebugBlock_O::make(lab, lab, statement, 0));
       } else
         compile_form(statement, nenv, stmt_ctxt);
     }
+    end->contextualize(ctxt);
     stmt_ctxt.maybe_emit_entry_close(dynenv);
   }
   // return nil if we really have to
@@ -2228,7 +2247,6 @@ void compile_go(T_sp tag, Lexenv_sp env, const Context ctxt) {
   if (gc::IsA<TagInfo_sp>(tinfo)) {
     Label_sp start = Label_O::make(), end = Label_O::make();
     start->contextualize(ctxt);
-    ctxt.push_debug_info(BytecodeDebugExit_O::make(start, end, ctxt.receiving()));
     TagInfo_sp info = gc::As_unsafe<TagInfo_sp>(tinfo);
     compile_exit(info->lex(), info->exit(), ctxt);
     end->contextualize(ctxt);
@@ -2239,12 +2257,14 @@ void compile_go(T_sp tag, Lexenv_sp env, const Context ctxt) {
 void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ctxt) {
   Label_sp label = Label_O::make();
   Label_sp normal_label = Label_O::make();
-  Label_sp r1p_hack_label = Label_O::make();
+  Label_sp start = Label_O::make();
   Lexenv_sp nenv = env->bind_block(name, label, ctxt);
   BlockInfo_sp binfo = gc::As<BlockInfo_sp>(nenv->blockInfo(name));
   LexicalInfo_sp blex = binfo->lex();
   // Bind the dynamic environment or save SP.
   ctxt.emit_entry_or_save_sp(blex);
+  start->contextualize(ctxt);
+  ctxt.push_debug_info(BytecodeAstBlock_O::make(start, label, name, ctxt.receiving()));
   // We force single values into multiple so that we can uniformly PUSH afterward.
   // Specifically: if we're returning 0 values, there's no problem anyway.
   // If we're returning multiple values, the local and nonlocal returns just
@@ -2252,25 +2272,15 @@ void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ct
   // If we're returning exactly one value, the local just pushes one, and
   // the nonlocal stores into the MV which is then vm_push'd to the stack.
   bool r1p = ctxt.receiving() == 1;
-  if (r1p) {
-    // This silliness is to let the BTB compiler work. We treat the normal
-    // code as an exit so that the stack states match up correctly.
-    // Without this BDExit, code as simple as (lambda () (values (block nil)))
-    // breaks the BTB compiler.
-    r1p_hack_label->contextualize(ctxt);
-    ctxt.push_debug_info(BytecodeDebugExit_O::make(r1p_hack_label, label, -1));
-  }
   compile_progn(body, nenv, ctxt.sub_de(blex));
   if (r1p)
     ctxt.emit_jump(normal_label);
   label->contextualize(ctxt);
-  ctxt.push_debug_info(BytecodeDebugBlock_O::make(label, label, nil<T_O>(), ctxt.receiving() == 0 ? 0 : -1));
   // When we need 1 value, we have to make sure that the
   // "exceptional" case pushes a single value onto the stack.
   if (r1p) {
     ctxt.assemble0(vm_push);
     normal_label->contextualize(ctxt);
-    ctxt.push_debug_info(BytecodeDebugBlock_O::make(label, label, nil<T_O>(), 1));
   }
   ctxt.maybe_emit_entry_close(blex);
 }
@@ -2280,7 +2290,6 @@ void compile_return_from(T_sp name, T_sp valuef, Lexenv_sp env, const Context ct
   if (gc::IsA<BlockInfo_sp>(tbinfo)) {
     Label_sp start = Label_O::make(), end = Label_O::make();
     start->contextualize(ctxt);
-    ctxt.push_debug_info(BytecodeDebugExit_O::make(start, end, ctxt.receiving()));
     BlockInfo_sp binfo = gc::As<BlockInfo_sp>(tbinfo);
     int breceiving = binfo->receiving();
     compile_form(valuef, env, ctxt.sub_receiving(breceiving == 0 ? 0 : -1));

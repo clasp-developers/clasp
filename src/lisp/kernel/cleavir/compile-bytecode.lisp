@@ -306,9 +306,9 @@
         with sys = clasp-cleavir:*clasp-system*
         with ctype = (ctype:top sys)
         for annot in annotations
-        when (typep annot 'core:bytecode-debug-decls)
+        when (typep annot 'core:bytecode-ast-decls)
           do (loop for (spec . rest)
-                     in (core:bytecode-debug-decls/decls annot)
+                     in (core:bytecode-ast-decls/decls annot)
                    do (case spec
                         ((type)
                          (let ((nt (first rest)) (vars (rest rest)))
@@ -468,8 +468,8 @@
 
 (defun variable-ignore (varname annots)
   (loop for annot in annots
-        when (typep annot 'core:bytecode-debug-decls)
-          do (loop for (spec . rest) in (core:bytecode-debug-decls/decls annot)
+        when (typep annot 'core:bytecode-ast-decls)
+          do (loop for (spec . rest) in (core:bytecode-ast-decls/decls annot)
                    do (case spec
                         ((ignore)
                          (when (member varname rest)
@@ -1216,11 +1216,11 @@
 (defun maybe-compile-the (annots inserter context)
   ;; TODO: Handle multiple THE annotations at same position
   (let ((the
-          (find-if (lambda (a) (typep a 'core:bytecode-debug-the))
+          (find-if (lambda (a) (typep a 'core:bytecode-ast-the))
                    annots)))
     (when the
-      (let ((type (core:bytecode-debug-the/type the))
-            (receiving (core:bytecode-debug-the/receiving the)))
+      (let ((type (core:bytecode-ast-the/type the))
+            (receiving (core:bytecode-ast-the/receiving the)))
         (case receiving
           ((1) (stack-push
                 (compile-type-decl inserter :the
@@ -1263,9 +1263,9 @@
 (defun compute-optimize (active-annotations)
   (loop with optimize = nil
         for annot in active-annotations
-        when (typep annot 'core:bytecode-debug-decls)
+        when (typep annot 'core:bytecode-ast-decls)
           do (loop for (spec . rest)
-                     in (core:bytecode-debug-decls/decls annot)
+                     in (core:bytecode-ast-decls/decls annot)
                    when (eq spec 'cl:optimize)
                      do (loop for optim in rest
                               for roptim = (if (consp optim)
@@ -1292,7 +1292,7 @@
                                (<= (core:bytecode-debug-info/end annot) ip)))
                          (when result
                            (typecase annot
-                             (core:bytecode-debug-decls
+                             (core:bytecode-ast-decls
                               (setf recompute-optimize t))))
                          result))
                      active-annotations))
@@ -1311,14 +1311,14 @@
                (unless (eql ip aend)
                  (push annot active-annotations)
                  (typecase annot
-                   (core:bytecode-debug-decls
+                   (core:bytecode-ast-decls
                     (setf recompute-optimize t))
-                   (core:bytecode-debug-exit
+                   (core:bytecode-ast-exit
                     ;; if we're already in an exit that ends at the same spot,
                     ;; ignore this nested one.
                     (unless (assoc aend exit-contexts)
                       ;; Make a new context with whatever values appended.
-                      (let ((r (core:bytecode-debug-exit/receiving annot))
+                      (let ((r (core:bytecode-ast-exit/receiving annot))
                             (c (copy-context context)))
                         (if (minusp r)
                             (setf (context-mv c)

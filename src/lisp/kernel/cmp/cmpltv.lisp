@@ -285,6 +285,14 @@
    (%receiving :initarg :receiving :reader di-receiving :type (signed-byte 32))))
 
 #+clasp
+(defclass debug-ast-if (debug-info)
+  ((%receiving :initarg :receiving :reader di-receiving :type (signed-byte 32))))
+
+#+clasp
+(defclass debug-ast-tagbody (debug-info)
+  ((%tags :initarg :tags :reader di-tags :type list)))
+
+#+clasp
 (defclass debug-info-block (debug-info)
   ((%name :initarg :name :reader name :type creator)
    (%receiving :initarg :receiving :reader di-receiving :type (signed-byte 32))))
@@ -1303,31 +1311,45 @@
       :column (core:source-pos-info-column spi)
       :filepos (core:source-pos-info-filepos spi))))
 
-(defmethod process-debug-info ((item core:bytecode-debug-decls))
+(defmethod process-debug-info ((item core:bytecode-ast-decls))
   (make-instance 'debug-info-decls
     :start (core:bytecode-debug-info/start item)
     :end (core:bytecode-debug-info/end item)
-    :decls (ensure-constant (core:bytecode-debug-decls/decls item))))
+    :decls (ensure-constant (core:bytecode-ast-decls/decls item))))
 
-(defmethod process-debug-info ((item core:bytecode-debug-the))
+(defmethod process-debug-info ((item core:bytecode-ast-the))
   (make-instance 'debug-info-the
     :start (core:bytecode-debug-info/start item)
     :end (core:bytecode-debug-info/end item)
-    :type (ensure-constant (core:bytecode-debug-the/type item))
-    :receiving (core:bytecode-debug-the/receiving item)))
+    :type (ensure-constant (core:bytecode-ast-the/type item))
+    :receiving (core:bytecode-ast-the/receiving item)))
 
-(defmethod process-debug-info ((item core:bytecode-debug-block))
+(defmethod process-debug-info ((item core:bytecode-ast-if))
+  (make-instance 'debug-ast-if
+    :start (core:bytecode-debug-info/start item)
+    :end (core:bytecode-debug-info/end item)
+    :receiving (core:bytecode-ast-if/receiving item)))
+
+(defmethod process-debug-info ((item core:bytecode-ast-tagbody))
+  (make-instance 'debug-ast-tagbody
+    :start (core:bytecode-debug-info/start item)
+    :end (core:bytecode-debug-info/end item)
+    :tags (loop for (tag . ip)
+                  in (core:bytecode-ast-tagbody/tags item)
+                collect (cons (ensure-constant tag) ip))))
+
+(defmethod process-debug-info ((item core:bytecode-ast-block))
   (make-instance 'debug-info-block
     :start (core:bytecode-debug-info/start item)
     :end (core:bytecode-debug-info/end item)
-    :name (ensure-constant (core:bytecode-debug-block/name item))
-    :receiving (core:bytecode-debug-block/receiving item)))
+    :name (ensure-constant (core:bytecode-ast-block/name item))
+    :receiving (core:bytecode-ast-block/receiving item)))
 
-(defmethod process-debug-info ((item core:bytecode-debug-exit))
+(defmethod process-debug-info ((item core:bytecode-ast-exit))
   (make-instance 'debug-info-exit
     :start (core:bytecode-debug-info/start item)
     :end (core:bytecode-debug-info/end item)
-    :receiving (core:bytecode-debug-exit/receiving item)))
+    :receiving (core:bytecode-ast-exit/receiving item)))
 
 (defmethod process-debug-info ((item core:bytecode-debug-macroexpansion))
   (make-instance 'debug-info-macroexpansion
@@ -1406,7 +1428,9 @@
     (the 4)
     (block 5)
     (exit 6)
-    (macro 7)))
+    (macro 7)
+    (if 8)
+    (tagbody 9)))
 
 (defun debug-info-opcode (mnemonic)
   (let ((inst (assoc mnemonic +debug-info-ops+)))
@@ -1465,6 +1489,26 @@
   (write-b32 (di-receiving info) stream))
 (defmethod info-length ((info debug-info-the))
   (+ 1 4 4 *index-bytes* 4))
+
+(defmethod encode ((info debug-ast-if) stream)
+  (write-debug-info-mnemonic 'if stream)
+  (write-b32 (di-start info) stream)
+  (write-b32 (di-end info) stream)
+  (write-b32 (di-receiving info) stream))
+(defmethod info-length ((info debug-ast-if))
+  (+ 1 4 4 4))
+
+(defmethod encode ((info debug-ast-tagbody) stream)
+  (write-debug-info-mnemonic 'tagbody stream)
+  (write-b32 (di-start info) stream)
+  (write-b32 (di-end info) stream)
+  (write-b16 (length (di-tags info)) stream)
+  (loop for (tag . ip) in (di-tags info)
+        do (write-index tag stream)
+           (write-b32 ip stream)))
+(defmethod info-length ((info debug-ast-tagbody))
+  (+ 1 4 4 2 (* (length (di-tags info))
+                (+ *index-bytes* 4))))
 
 (defmethod encode ((info debug-info-block) stream)
   (write-debug-info-mnemonic 'block stream)

@@ -72,5 +72,5 @@
 ;;;
 ;;; Hook the bytecode-to-bir compiler into cl:compile.
 ;;;
-
+#+(or)
 (setq cmp:*btb-compile-hook* 'clasp-bytecode-to-bir:compile-hook)
