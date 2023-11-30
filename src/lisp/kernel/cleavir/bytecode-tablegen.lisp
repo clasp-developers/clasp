@@ -24,7 +24,7 @@
 (defun compute-block-starts (bytecode &rest entry-points)
   (assert (> (length entry-points) 0))
   (let ((block-starts ()))
-    (core::do-instructions (mnemonic args opip ip) (bytecode)
+    (core:do-instructions (mnemonic args opip ip) (bytecode)
       (when (eql opip (first entry-points))
         (pop entry-points)
         (pushnew opip block-starts))
@@ -55,7 +55,7 @@
          (function (pop functions)))
     (assert (eql (function-entry-start function) 0))
     (setf (block-entry-function block) function)
-    (core::do-instructions (mnemonic args opip ip annots)
+    (core:do-instructions (mnemonic args opip ip annots)
         (bytecode :annotations annotations)
       (when (and functions (eql ip (function-entry-start (first functions))))
         ;; Starting a new function.

@@ -25,6 +25,8 @@
             expand-compare
             expand-uncompare
             with-memory-ramp
+            ;; bytecode
+            do-instructions do-module-instructions
             ;;;;MISSING SYMBOLS!!!!!
             fill-pointer-set ;;; MISSING!!!! from C++ source code used in vector-pop arraylib.lisp
             set-symbol-plist

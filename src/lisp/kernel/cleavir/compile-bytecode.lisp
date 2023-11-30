@@ -1381,7 +1381,7 @@
     (assert (zerop (bt:function-entry-start function)))
     (setf (bir:start (bt:function-entry-extra function))
           (bt:block-entry-extra block))
-    (core::do-instructions (mnemonic args opip ip) (bytecode)
+    (core:do-instructions (mnemonic args opip ip) (bytecode)
       ;; Update annotations.
       ;; Note that we keep tighter annotations at the front.
       (setf (values *active-annotations* next-annotation-index
