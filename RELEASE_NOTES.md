@@ -24,6 +24,8 @@
 
 ## Fixed
 * `cl:read-line` so it correctly returns lines that end with EOF.
+* `cl:read-byte` so it respects the `eof-error-p` and `eof-value`
+  arguments for Gray streams.
 
 # Version 2.4.0 (LLVM15-17) 2023-10-01
 
