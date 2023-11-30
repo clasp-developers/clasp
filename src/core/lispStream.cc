@@ -5661,29 +5661,20 @@ CL_DEFUN T_sp cl__read_byte(T_sp strm, T_sp eof_error_p, T_sp eof_value) {
   // Should signal an error of type error if stream is not a binary input stream.
   if (strm.nilp())
     TYPE_ERROR(strm, cl::_sym_Stream_O);
-  if (!AnsiStreamP(strm)) {
-    // if the return value is :eof, return nil
-    T_sp byte_or_eof = eval::funcall(gray::_sym_stream_read_byte, strm);
-    if (byte_or_eof == kw::_sym_eof)
-      return nil<T_O>();
-    else
-      return byte_or_eof;
-  }
   // as a side effect verifies that strm is really a stream.
   T_sp elt_type = clasp_stream_element_type(strm);
   if (elt_type == cl::_sym_character || elt_type == cl::_sym_base_char)
     SIMPLE_ERROR("Not a binary stream");
+
   T_sp c = clasp_read_byte(strm);
-  if (c.nilp()) {
-    LOG("Hit eof");
-    if (!eof_error_p.isTrue()) {
-      LOG("Returning eof_value[{}]", _rep_(eof_value));
-      return eof_value;
-    }
-    ERROR_END_OF_FILE(strm);
-  }
-  LOG("Read and returning char[{}]", c);
-  return c;
+
+  if (!c.nilp())
+    return c;
+
+  if (eof_error_p.nilp())
+    return eof_value;
+
+  ERROR_END_OF_FILE(strm);
 }
 
 CL_LAMBDA(&optional peek-type strm (eof-errorp t) eof-value recursivep);
