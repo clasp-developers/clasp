@@ -273,3 +273,37 @@
     (delete-file name)
     buffer)
   ("foo"))
+
+(defclass binary-input-stream (gray:fundamental-binary-input-stream)
+  ((value :reader value
+          :initarg :value)
+   (index :accessor index
+          :initform 0)))
+
+(defmethod gray:stream-element-type ((stream binary-input-stream))
+  '(unsigned-byte 8))
+
+(defmethod gray:stream-read-byte ((stream binary-input-stream))
+  (with-accessors ((value value)
+                   (index index))
+      stream
+    (if (< index (length value))
+        (prog1 (elt value index)
+          (incf index))
+        :eof)))
+
+(test read-byte.01
+  (let ((stream (make-instance 'binary-input-stream :value #())))
+    (read-byte stream nil :wibble))
+  (:wibble))
+
+(test-expect-error read-byte.02
+  (let ((stream (make-instance 'binary-input-stream :value #())))
+    (read-byte stream))
+  :type end-of-file)
+
+(test read-byte.03
+  (let ((stream (make-instance 'binary-input-stream :value #(73))))
+    (values (read-byte stream nil :wibble)
+            (read-byte stream nil :wibble)))
+  (73 :wibble))
