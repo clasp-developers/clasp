@@ -8,11 +8,12 @@
 
 (defun make-function-method-name (&key source package class name)
   (let ((slash (position #\/ name)))
-    (when (and slash
-               (< 0 slash (1- (length name)))
-               (string/= name "STRING/=")
-               (string/= name "CHAR/="))
-      (error "The name ~s contains a slash" name))
+    ;; I'm going to allow slashes in function names
+    #+(or)(when (and slash
+                     (< 0 slash (1- (length name)))
+                     (string/= name "STRING/=")
+                     (string/= name "CHAR/="))
+            (error "The name ~s contains a slash" name))
     (make-instance 'function-method-name
                    :source source
                    :package package
