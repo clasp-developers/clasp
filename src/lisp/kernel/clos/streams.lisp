@@ -292,7 +292,7 @@
 
 ;; CLEAR-INPUT
 
-(defmethod stream-clear-input ((stream fundamental-character-input-stream))
+(defmethod stream-clear-input ((stream fundamental-input-stream))
   (declare (ignore stream))
   nil)
 
@@ -401,6 +401,9 @@
 
 
 ;; INTERACTIVE-STREAM-P
+
+(defmethod stream-interactive-p ((stream fundamental-input-stream))
+  nil)
 
 (defmethod stream-interactive-p ((stream ansi-stream))
   (cl:interactive-stream-p stream))
