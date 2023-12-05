@@ -2822,7 +2822,9 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(doc(float-nan-p)dx");
 DOCGROUP(clasp);
-CL_DEFUN bool ext__float_nan_p(Float_sp i) { return clasp_float_nan_p(i); };
+CL_DEFUN bool ext__float_nan_p(Float_sp i) {
+  return clasp_float_nan_p(i);
+};
 
 CL_LAMBDA(i);
 CL_DECLARE();

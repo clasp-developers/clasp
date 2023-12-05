@@ -371,7 +371,7 @@ public:
   Number_sp signum_() const override;
   string __repr__() const override;
   Number_sp abs_() const override;
-  bool isnan_() const override { return this->_Value != this->_Value; }; // NaN is supposed to be the only value that != itself!
+  bool isnan_() const override { return std::isnan(this->_Value); }; // NaN is supposed to be the only value that != itself!
   bool isinf_() const override { return std::isinf(this->_Value); };
 
 public:
@@ -444,7 +444,7 @@ public:
     ASSERT_NOT_NAN(this->_Value);
     return DoubleFloat_O::create(fabs(this->_Value));
   };
-  bool isnan_() const override { return this->_Value != this->_Value; }; // NaN is supposed to be the only value that != itself!!!!
+  bool isnan_() const override { return std::isnan(this->_Value); }; // NaN is supposed to be the only value that != itself!!!!
   bool isinf_() const override { return std::isinf(this->_Value); };
 
 public:
@@ -1162,7 +1162,7 @@ inline Number_sp clasp_conjugate(Number_sp x) {
 inline bool clasp_float_nan_p(Float_sp num) {
   if (num.single_floatp()) {
     float f = num.unsafe_single_float();
-    return f != f;
+    return std::isnan(f);
   }
   return num->isnan_();
 }
