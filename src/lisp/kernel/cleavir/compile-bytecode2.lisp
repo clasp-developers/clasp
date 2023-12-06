@@ -285,6 +285,37 @@
         do (push (stack-pop context) args)
         finally (return args)))
 
+(defmethod compile-instruction ((mnemonic (eql :set))
+                                inserter context &rest args)
+  (destructuring-bind (index) args
+    (let* ((locals (locals context))
+           (existing (aref locals index))
+           (value (stack-pop context)))
+      (if (null existing)
+          (setf (aref locals index) (cons value nil)) ; FIXME cell
+          (let ((var (car existing)))
+            (check-type var bir:variable)
+            (write-variable var value inserter))))))
+
+(defmethod compile-instruction ((mnemonic (eql :bind))
+                                inserter context &rest args)
+  (destructuring-bind (nvars base) args
+    (loop with locals = (locals context)
+          for i from base below (+ base nvars)
+          for local = (aref locals i)
+          for value = (stack-pop context)
+          do (if (null local)
+                 (setf (aref locals i) (cons value nil)) ; FIXME cell
+                 (let ((var (car local)))
+                   (check-type var bir:variable)
+                   (write-variable var value inserter))))))
+
+(defun write-variable (variable value inserter)
+  (assert (slot-boundp variable 'bir::%binder))
+  (bir:record-variable-set variable)
+  (ast-to-bir:insert inserter 'bir:writevar
+                     :inputs (list value) :outputs (list variable)))
+
 (defmethod compile-instruction ((mnemonic (eql :return))
                                 inserter context &rest args)
   (destructuring-bind () args
