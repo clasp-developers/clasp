@@ -23,7 +23,8 @@
   (let ((funmap nil) ; map from bcfuns to irfuns; returned.
         (irmodule (make-instance 'bir:module))
         (literals (core:bytecode-module/literals bcmodule))
-        bcfun irfun context irblocks
+        context
+        (blockmap (make-blockmap))
         (inserter (make-instance 'ast-to-bir:inserter))
         ;; annotations starting at opip.
         (opannots
@@ -32,29 +33,54 @@
     ;; Compile.
     (core:do-module-instructions (mnemonic args opip ip annots)
         (bcmodule)
-      (let ((new-bcfun (find-if #'bcfun-p opannots))
-            (irblock (find-block opip irblocks)))
-        (cond (new-bcfun
-               (setf bcfun new-bcfun
-                     irfun (make-bir-function bcfun irmodule)
-                     context (make-context bcfun))
-               (let ((start (make-start-block irfun bcfun)))
-                 (setf (bir:start irfun) start)
-                 (ast-to-bir:begin inserter start))
-               (push (cons bcfun irfun) funmap))
-              (irblock
-               (ast-to-bir:begin inserter irblock))))
-      (let ((args (if (eq mnemonic :parse-key-args)
-                      (compute-pka-args args literals)
-                      (compute-args args literals irblocks))))
-        (apply #'compile-instruction mnemonic inserter context args)
-        (compile-annotations annots inserter context))
+      (setf (values context funmap)
+            (maybe-begin-new opip opannots blockmap irmodule
+                             inserter context funmap))
+      ;; If this code is unreachable, we don't bother generating
+      ;; anything. This makes consistency a bit easier but is a
+      ;; little wacky? Maybe we want to generate IR for unreachable
+      ;; code anyway so it can be deleted properly?
+      (when (reachablep context)
+        (let ((args (if (eq mnemonic :parse-key-args)
+                        (compute-pka-args args literals)
+                        (compute-args args literals blockmap))))
+          (apply #'compile-instruction mnemonic inserter context args)
+          (compile-annotations annots inserter context)))
       (setf opannots annots))
     ;; Compute all iblock flow orders.
     (loop for (bc . ir) in funmap
           do (bir:compute-iblock-flow-order ir))
     ;; Return
     (values irmodule funmap)))
+
+;;; If the instruction begins a new iblock and/or function,
+;;; set everything up for that.
+;;; Return (values new-context new-funmap).
+(defun maybe-begin-new (opip opannots blockmap irmodule
+                        inserter context funmap)
+  (let ((bcfun (find-if #'bcfun-p opannots)))
+    (cond (bcfun
+           (let* ((irfun (make-bir-function bcfun irmodule))
+                  (start (make-start-block irfun bcfun)))
+             (setf context (make-context bcfun blockmap)
+                   (bir:start irfun) start)
+             (ast-to-bir:begin inserter start)
+             (push (cons bcfun irfun) funmap)))
+          (t (let ((binfo (find-block opip blockmap)))
+               (when binfo
+                 ;; If we're falling through from an existing block
+                 ;; compile in an implicit jump.
+                 (when (and (reachablep context)
+                            ;; KLUDGE
+                            (not (slot-boundp
+                                  (ast-to-bir::iblock inserter)
+                                  'bir::%end)))
+                   (%compile-jump inserter context binfo))
+                 ;; Start new block.
+                 (setf context (binfo-context binfo))
+                 (ast-to-bir:begin inserter
+                                   (binfo-irblock binfo)))))))
+  (values context funmap))
 
 (defun compile-function (function
                          &key (abi clasp-cleavir:*abi-x86-64*)
@@ -84,23 +110,57 @@
   (loop for a in annotations
         do (compile-annotation a inserter context)))
 
-(defun make-context (bcfun)
+(defun make-context (bcfun blockmap)
   (make-instance 'context
-    :locals (make-array (bcfun/locals-size bcfun))))
+    :locals (make-array (bcfun/locals-size bcfun))
+    :blockmap blockmap))
+
+(defun copy-context (context)
+  (make-instance 'context
+    :stack (copy-list (stack context))
+    :locals (copy-seq (locals context))
+    :mvals (copy-list (mvals context))
+    :blockmap (blockmap context)
+    :reachablep (reachablep context)))
 
 (defun compute-args (args literals irblocks)
   (loop for (type . value) in args
         collect (ecase type
                   ((:constant) (aref literals value))
-                  ((:label)
-                   (find-block value irblocks))
+                  ((:label) value)
                   ((:keys)
                    ;; not actually used, so whatever
                    value)
                   ((:operand) value))))
 
+;;; Mapping from IPs to IR blocks. Used throughout compilation of
+;;; a bytecode module due to nonlocal exits.
+(defclass blockmap ()
+  (;; Alist.
+   (%map :initform nil :accessor bmap)))
+
+(defun make-blockmap () (make-instance 'blockmap))
+
 (defun find-block (ip irblocks)
-  (cdr (assoc ip irblocks)))
+  (assoc ip (bmap irblocks)))
+
+(defun binfo-ip (binfo) (first binfo))
+(defun binfo-irblock (binfo) (second binfo))
+(defun binfo-context (binfo) (third binfo))
+(defun binfo-receiving (binfo) (fourth binfo))
+
+(defun add-block (context ip iblock &optional (receiving 0))
+  (let ((ncontext (copy-context context)))
+    ;; Fix up the context with block inputs
+    (if (= receiving -1)
+        (setf (mvals ncontext) (first (bir:inputs iblock)))
+        (loop with inputs = (bir:inputs iblock)
+                initially (assert (= (length inputs) receiving))
+              for i in (bir:inputs iblock)
+              do (stack-push i ncontext)))
+    ;; Record info
+    (push (list ip iblock ncontext receiving)
+          (bmap (blockmap context)))))
 
 (defun compute-pka-args (args literals)
   (let ((more-args (cdr (first args)))
@@ -140,7 +200,10 @@
 (defclass context ()
   ((%stack :initform nil :initarg :stack :accessor stack)
    (%locals :initarg :locals :reader locals)
-   (%mvals :accessor mvals)))
+   (%mvals :initform nil :initarg :mvals :accessor mvals)
+   (%blockmap :initarg :blockmap :reader blockmap :type blockmap)
+   (%reachablep :initform t :initarg :reachablep
+                :accessor reachablep)))
 
 (defun stack-push (datum context)
   (push datum (stack context)))
@@ -244,6 +307,66 @@
             collect arg into args
             finally (setf (bir:lambda-list ifun) args)))))
 
+(defun compile-jump (inserter context destination)
+  ;; The destination must have already been put in.
+  (let ((binfo (find-block destination (blockmap context))))
+    (assert binfo)
+    (%compile-jump inserter context binfo))
+  (setf (reachablep context) nil))
+
+(defun %compile-jump (inserter context binfo)
+  (let* ((irblock (binfo-irblock binfo))
+         (receiving (binfo-receiving binfo))
+         (inputs (if (eql receiving -1)
+                     (list (mvals context))
+                     (loop repeat receiving
+                           collect (stack-pop context))))
+         (outputs (copy-list (bir:inputs irblock))))
+    (ast-to-bir:terminate inserter 'bir:jump
+                          :next (list irblock)
+                          :inputs inputs :outputs outputs)))
+
+(defmethod compile-instruction ((mnemonic (eql :jump-8))
+                                inserter context &rest args)
+  (apply #'compile-jump inserter context args))
+(defmethod compile-instruction ((mnemonic (eql :jump-16))
+                                inserter context &rest args)
+  (apply #'compile-jump inserter context args))
+(defmethod compile-instruction ((mnemonic (eql :jump-24))
+                                inserter context &rest args)
+  (apply #'compile-jump inserter context args))
+
+(defun compile-jump-if (inserter context destination)
+  (let* ((condition (stack-pop context))
+         (dynenv (ast-to-bir::dynamic-environment inserter))
+         (then-dest (make-instance 'bir:iblock
+                      :name '#:if-then :inputs ()
+                      :function (inserter-function inserter)
+                      :dynamic-environment dynenv))
+         (else-dest (make-instance 'bir:iblock
+                      :name '#:if-else :inputs ()
+                      :function (inserter-function inserter)
+                      :dynamic-environment dynenv)))
+    (ast-to-bir:terminate inserter 'bir:ifi
+                          :inputs (list condition)
+                          :next (list then-dest else-dest))
+    (set:nadjoinf (bir:scope dynenv) then-dest)
+    (set:nadjoinf (bir:scope dynenv) else-dest)
+    ;; Add the then block for later.
+    (add-block context destination then-dest)
+    ;; The else block we just start here.
+    (ast-to-bir:begin inserter else-dest)))
+
+(defmethod compile-instruction ((mnemonic (eql :jump-if-8))
+                                inserter context &rest args)
+  (apply #'compile-jump-if inserter context args))
+(defmethod compile-instruction ((mnemonic (eql :jump-if-16))
+                                inserter context &rest args)
+  (apply #'compile-jump-if inserter context args))
+(defmethod compile-instruction ((mnemonic (eql :jump-if-24))
+                                inserter context &rest args)
+  (apply #'compile-jump-if inserter context args))
+
 (defmethod compile-instruction ((mnemonic (eql :check-arg-count-le))
                                 inserter context &rest args)
   (declare (ignore inserter context args)))
@@ -310,6 +433,9 @@
   ;; FIXME: Export a-t-b:iblock or something.
   (bir:module (bir:function (ast-to-bir::iblock inserter))))
 
+(defun inserter-function (inserter)
+  (bir:function (ast-to-bir::iblock inserter)))
+
 (defun inserter-fcell (fname inserter)
   (bir:function-cell-in-module fname (inserter-module inserter)))
 
@@ -340,3 +466,24 @@
                                    :outputs (list variable))))
     (set:nadjoinf (bir:variables (bir:function binder)) variable)
     (setf (bir:binder variable) binder)))
+
+(defmethod compile-annotation ((annot core:bytecode-ast-if)
+                               inserter context)
+  ;; Record the merge block for later jumps.
+  (let* ((end (core:bytecode-debug-info/end annot))
+         (receiving (core:bytecode-ast-if/receiving annot))
+         (dynamic-environment
+           (ast-to-bir::dynamic-environment inserter))
+         (iblock (make-instance 'bir:iblock
+                    :name '#:if-merge :inputs ()
+                    :function (inserter-function inserter)
+                    :dynamic-environment dynamic-environment))
+         (phis
+           (if (eql receiving -1) ; multiple values
+               (list (make-instance 'bir:phi :iblock iblock))
+               (loop repeat receiving
+                     collect (make-instance 'bir:phi
+                               :iblock iblock)))))
+    (set:nadjoinf (bir:scope dynamic-environment) iblock)
+    (setf (bir:inputs iblock) phis)
+    (add-block context end iblock receiving)))
