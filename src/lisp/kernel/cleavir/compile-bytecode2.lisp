@@ -168,21 +168,6 @@
         (replace name string :start1 index)
         (incf index (length string))))))
 
-(defmethod compile-instruction ((mnemonic (eql :check-arg-count-eq))
-                                inserter context &rest args)
-  (declare (ignore inserter context args)))
-
-(defmethod compile-instruction ((mnemonic (eql :bind-required-args))
-                                inserter context &rest args)
-  (destructuring-bind (nreq) args
-    (let ((ifun (bir:function (ast-to-bir::iblock inserter))))
-      (loop with locals = (locals context)
-            for i from 0 below nreq
-            for arg = (make-instance 'bir:argument :function ifun)
-            do (setf (aref locals i) (cons arg nil))
-            collect arg into args
-            finally (setf (bir:lambda-list ifun) args)))))
-
 (defmethod compile-instruction ((mnemonic (eql :ref))
                                 inserter context &rest args)
   (destructuring-bind (varindex) args
@@ -196,19 +181,46 @@
          (bir:come-from var))
        context))))
 
-(defun read-variable (variable inserter)
-  (bir:record-variable-ref variable)
-  (let ((readvar-out (make-instance 'bir:output :name (bir:name variable))))
-    (ast-to-bir:insert inserter 'bir:readvar
-                       :inputs (list variable) :outputs (list readvar-out))
-    readvar-out))
+(defmethod compile-instruction ((mnemonic (eql :call)) inserter
+                                context &rest args)
+  (destructuring-bind (nargs) args
+    (let ((args (gather context nargs))
+          (callee (stack-pop context))
+          (out (make-instance 'bir:output)))
+      (ast-to-bir:insert inserter 'bir:call
+                         :inputs (list* callee args)
+                         :outputs (list out))
+      (setf (mvals context) out))))
 
-(defmethod compile-instruction ((mnemonic (eql :pop))
+(defmethod compile-instruction ((mnemonic (eql :call-receive-one))
                                 inserter context &rest args)
-  (destructuring-bind () args
-    (let ((mv (stack-pop context)))
-      (check-type mv bir:linear-datum)
-      (setf (mvals context) mv))))
+  (destructuring-bind (nargs) args
+    (let ((args (gather context nargs))
+          (callee (stack-pop context))
+          (out (make-instance 'bir:output)))
+      (ast-to-bir:insert inserter 'bir:call
+                         :inputs (list* callee args)
+                         :outputs (list out))
+      (setf (mvals context) nil) ; invalidate for self-consistency checks
+      (stack-push out context))))
+
+(defmethod compile-instruction ((mnemonic (eql :call-receive-fixed))
+                                inserter context &rest args)
+  (destructuring-bind (nargs nvals) args
+    (assert (zerop nvals)) ; FIXME
+    (let ((args (gather context nargs))
+          (callee (stack-pop context))
+          (out (make-instance 'bir:output)))
+      (setf (mvals context) nil) ; invalidate for self-consistency checks
+      (ast-to-bir:insert inserter 'bir:call
+                         :inputs (list* callee args)
+                         :outputs (list out)))))
+
+(defun gather (context n)
+  (loop with args = nil
+        repeat n
+        do (push (stack-pop context) args)
+        finally (return args)))
 
 (defmethod compile-instruction ((mnemonic (eql :return))
                                 inserter context &rest args)
@@ -220,6 +232,93 @@
         (let ((returni (make-instance 'bir:returni :inputs (list input))))
           (setf (bir:returni (bir:function (ast-to-bir::iblock inserter))) returni)
           (ast-to-bir:terminate inserter returni))))))
+
+(defmethod compile-instruction ((mnemonic (eql :bind-required-args))
+                                inserter context &rest args)
+  (destructuring-bind (nreq) args
+    (let ((ifun (bir:function (ast-to-bir::iblock inserter))))
+      (loop with locals = (locals context)
+            for i from 0 below nreq
+            for arg = (make-instance 'bir:argument :function ifun)
+            do (setf (aref locals i) (cons arg nil))
+            collect arg into args
+            finally (setf (bir:lambda-list ifun) args)))))
+
+(defmethod compile-instruction ((mnemonic (eql :check-arg-count-le))
+                                inserter context &rest args)
+  (declare (ignore inserter context args)))
+(defmethod compile-instruction ((mnemonic (eql :check-arg-count-ge))
+                                inserter context &rest args)
+  (declare (ignore inserter context args)))
+(defmethod compile-instruction ((mnemonic (eql :check-arg-count-eq))
+                                inserter context &rest args)
+  (declare (ignore inserter context args)))
+
+(defun read-variable (variable inserter)
+  (bir:record-variable-ref variable)
+  (let ((readvar-out (make-instance 'bir:output :name (bir:name variable))))
+    (ast-to-bir:insert inserter 'bir:readvar
+                       :inputs (list variable) :outputs (list readvar-out))
+    readvar-out))
+
+(defmethod compile-instruction ((mnemonic (eql :fdefinition))
+                                inserter context &rest args)
+  (destructuring-bind (fcell) args
+    (let* (;; FIXME: May not be a sufficiently reliable way to get
+           ;; the name from the cell in all cases? Probably ok though
+           (fname (core:function-name fcell))
+           (const (inserter-fcell fname inserter))
+           (attributes (clasp-cleavir::function-attributes fname))
+           (fdef-out (make-instance 'bir:output
+                       :name fname :attributes attributes)))
+      (ast-to-bir:insert inserter 'bir:constant-fdefinition
+                         :inputs (list const) :outputs (list fdef-out))
+      (stack-push fdef-out context))))
+
+;; Identical to the above, but BIR should maybe have a
+;; CONSTANT-CALLED-FDEFINITION for this.
+(defmethod compile-instruction ((mnemonic (eql :called-fdefinition))
+                                inserter context &rest args)
+  (destructuring-bind (fcell) args
+    (let* ((fname (core:function-name fcell))
+           (const (inserter-fcell fname inserter))
+           (attributes (clasp-cleavir::function-attributes fname))
+           (fdef-out (make-instance 'bir:output
+                       :name fname :attributes attributes)))
+      (ast-to-bir:insert inserter 'bir:constant-fdefinition
+                         :inputs (list const) :outputs (list fdef-out))
+      (stack-push fdef-out context))))
+
+(defmethod compile-instruction ((mnemonic (eql :fdesignator))
+                                inserter context &rest args)
+  ;; Just call CORE:COERCE-CALLED-FDESIGNATOR.
+  (let* ((desig (stack-pop context))
+         (fname 'core:coerce-called-fdesignator)
+         (const (inserter-fcell fname inserter))
+         (attributes (clasp-cleavir::function-attributes fname))
+         (fdef-out (make-instance 'bir:output
+                     :name fname :attributes attributes))
+         (out (make-instance 'bir:output :name '#:callee)))
+    (ast-to-bir:insert inserter 'bir:constant-fdefinition
+                       :inputs (list const) :outputs (list fdef-out))
+    (ast-to-bir:insert inserter 'bir:call
+                       :inputs (list fdef-out desig)
+                       :outputs (list out))
+    (stack-push out context)))
+
+(defun inserter-module (inserter)
+  ;; FIXME: Export a-t-b:iblock or something.
+  (bir:module (bir:function (ast-to-bir::iblock inserter))))
+
+(defun inserter-fcell (fname inserter)
+  (bir:function-cell-in-module fname (inserter-module inserter)))
+
+(defmethod compile-instruction ((mnemonic (eql :pop))
+                                inserter context &rest args)
+  (destructuring-bind () args
+    (let ((mv (stack-pop context)))
+      (check-type mv bir:linear-datum)
+      (setf (mvals context) mv))))
 
 (defmethod compile-annotation ((annotation core:bytecode-debug-vars)
                                inserter context)
