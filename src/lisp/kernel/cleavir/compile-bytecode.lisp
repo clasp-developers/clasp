@@ -243,6 +243,18 @@
          (bir:come-from var))
        context))))
 
+(defmethod compile-instruction ((mnemonic (eql :const))
+                                inserter context &rest args)
+  (destructuring-bind (value) args
+    (stack-push (compile-constant value inserter) context)))
+
+(defun compile-constant (value inserter)
+  (let* ((const (inserter-constant value inserter))
+         (cref-out (make-instance 'bir:output)))
+    (ast-to-bir:insert inserter 'bir:constant-reference
+                       :inputs (list const) :outputs (list cref-out))
+    cref-out))
+
 (defmethod compile-instruction ((mnemonic (eql :call)) inserter
                                 context &rest args)
   (destructuring-bind (nargs) args
@@ -466,8 +478,17 @@
 (defun inserter-function (inserter)
   (bir:function (ast-to-bir::iblock inserter)))
 
+(defun inserter-constant (value inserter)
+  (bir:constant-in-module value (inserter-module inserter)))
+(defun inserter-vcell (symbol inserter)
+  (bir:variable-cell-in-module symbol (inserter-module inserter)))
 (defun inserter-fcell (fname inserter)
   (bir:function-cell-in-module fname (inserter-module inserter)))
+
+(defmethod compile-instruction ((mnemonic (eql :nil))
+                                inserter context &rest args)
+  (destructuring-bind () args
+    (stack-push (compile-constant 'nil inserter) context)))
 
 (defmethod compile-instruction ((mnemonic (eql :pop))
                                 inserter context &rest args)
