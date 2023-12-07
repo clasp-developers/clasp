@@ -384,10 +384,11 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 #define DBG_SLS(...)
 #endif
 #if 0
-#define DBG_SL1(_fmt_)                                                                                                             \
-  {                                                                                                                                \
+#define DBG_SL1(...)                                                                                                             \
+  if (global_debugSnapshot) {                                                                                                                                \
     printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__);                                                                         \
-    printf("%s", (_fmt_).str().c_str());                                                                                           \
+    printf(__VA_ARGS__); \
+    fflush(stdout);\
   }
 #else
 #define DBG_SL1(_fmt_)
@@ -1572,18 +1573,22 @@ struct calculate_size_t : public walker_callback_t {
         }
         this->_TotalSize += sizeof(ISLGeneralHeader_s) + saveCodeSize;
         this->_ObjectFileCount++;
+        if (!code->memoryBufferValid()) {
+          printf("%s:%d:%s Memory buffer for ObjectFile at %p is NULL\n", __FILE__, __LINE__, __FUNCTION__, (void*)&*code);
+          gctools::wait_for_user_signal("Connect a debugger");
+        }
         size_t objectFileSize = code->objectFileSizeAlignedUp();
         this->_ObjectFileTotalSize += objectFileSize;
         this->_TotalSize += sizeof(ISLGeneralHeader_s) + sizeof(llvmo::ObjectFile_O);
       } else {
         [[maybe_unused]] size_t delta = isl_obj_skip(client, false, objectSize) - client;
-        DBG_SL1(BF("   general header@%p value: 0x%x badge: 0x%x  sz = %lu  obj_skip = %lu\n") % header %
-                header->_badge_stamp_wtag_mtag._value % header->_badge_stamp_wtag_mtag._header_badge % objectSize % delta);
+        DBG_SL1("   general header@%p value: 0x%x badge: 0x%x  sz = %lu  obj_skip = %lu\n", header ,
+                header->_badge_stamp_wtag_mtag._value , header->_badge_stamp_wtag_mtag._header_badge.load() , objectSize , delta);
         this->_TotalSize += sizeof(ISLGeneralHeader_s) + objectSize;
       }
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToConsPtr(header);
-      DBG_SL1(BF("   cons header@%p -> %p\n") % header % *(void**)header);
+      DBG_SL1(("   cons header@%p -> %p\n") , header , *(void**)header);
       this->_cons_count++;
       size_t consSize;
       isl_cons_skip(client, consSize);
@@ -1591,7 +1596,7 @@ struct calculate_size_t : public walker_callback_t {
     } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
       this->_weak_count++;
-      DBG_SL1(BF("weak object header %p   client: %p\n") % (void*)header % (void*)client);
+      DBG_SL1(("weak object header %p   client: %p\n") , (void*)header , (void*)client);
       size_t objectSize;
       [[maybe_unused]] gctools::clasp_ptr_t nextClient = isl_weak_skip(client, false, objectSize);
       this->_TotalSize += sizeof(ISLWeakHeader_s) + objectSize;
@@ -3360,6 +3365,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer, name, false));
               loadedObjectFile->_MemoryBuffer.reset();
               loadedObjectFile->_MemoryBuffer = std::move(memoryBuffer);
+//              printf("%s:%d:%s loadedObjectFile %p  _MemoryBuffer = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)loadedObjectFile, (void*)loadedObjectFile->_MemoryBuffer.get() );
               // Allocate a new ObjectFile_O
               //
               // I don't think I should be allocating an ObjectFile here.
@@ -3445,8 +3451,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
             }
           }
           next_header = cur_header->next(cur_header->_Kind);
-          DBG_SL1(BF("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") % (void*)cur_header %
-                  (void*)next_header % size);
+//          DBG_SL1(("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") , (void*)cur_header , (void*)next_header , size);
           cur_header = next_header;
         }
         pool.wait_for_tasks();
@@ -3609,8 +3614,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                    (uintptr_t)cur_header - (uintptr_t)fileHeader, *(uintptr_t*)cur_header);
           }
           next_header = cur_header->next(cur_header->_Kind);
-          DBG_SL1(BF("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") % (void*)cur_header %
-                  (void*)next_header % size);
+//          DBG_SL1(("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") , (void*)cur_header , (void*)next_header , size);
           cur_header = next_header;
         }
       }
@@ -3622,8 +3626,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           }
 
           next_header = cur_header->next(cur_header->_Kind);
-          DBG_SL1(BF("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") % (void*)cur_header %
-                  (void*)next_header % size);
+//          DBG_SL1(("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") , (void*)cur_header , (void*)next_header , size);
           cur_header = next_header;
         }
       }

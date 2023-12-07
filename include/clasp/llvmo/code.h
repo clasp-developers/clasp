@@ -133,6 +133,7 @@ public:
   ~ObjectFile_O();
   std::string __repr__() const;
   static void writeToFile(const std::string& filename, const char* start, size_t size);
+  bool memoryBufferValid() const { return this->_MemoryBuffer.get() != NULL; };
   size_t objectFileSize() { return this->_MemoryBuffer->getBufferSize(); };
   void* objectFileData() { return (void*)this->_MemoryBuffer->getBufferStart(); };
   size_t objectFileSizeAlignedUp() { return gctools::AlignUp(this->objectFileSize()); }

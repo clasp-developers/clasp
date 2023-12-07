@@ -360,6 +360,7 @@ CL_DEFMETHOD DWARFContext_sp Library_O::getDwarfContext() {
     printf("%s:%d:%s   rawFileBuf = %p    rawDwarfContext = %p\n", __FILE__, __LINE__, __FUNCTION__, rawFileBuf, rawDwarfContext);
     auto claspFileBuf = gctools::GC<MemoryBuffer_O>::allocate(rawFileBuf);
     auto claspDwarfContext = gctools::GC<DWARFContext_O>::allocate(rawDwarfContext);
+//    printf("%s:%d:%s this %p  _MemoryBuffer=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, (void*)&*claspFileBuf);
     this->_MemoryBuffer = claspFileBuf;
     this->_ObjectFile.swap(obj);
     this->_DWARFContext = claspDwarfContext;

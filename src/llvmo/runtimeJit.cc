@@ -961,6 +961,7 @@ void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
 
   ObjectFile_sp code = lookupObjectFile(buffer->getBufferIdentifier().str());
   code->_MemoryBuffer = std::move(buffer);
+//  printf("%s:%d:%s loadedObjectFile %p  _MemoryBuffer = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)&*code, (void*)code->_MemoryBuffer.get() );
   auto objf = code->getObjectFile();
   llvm::object::ObjectFile& of = *objf->get();
 #if defined(_TARGET_OS_LINUX)
