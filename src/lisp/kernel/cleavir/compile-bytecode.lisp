@@ -14,16 +14,17 @@
 
 (defun bcfun/locals-size (bcfun)
   (core:global-bytecode-simple-fun/locals-frame-size bcfun))
+(defun bcfun/nvars (bcfun)
+  (core:global-bytecode-simple-fun/environment-size bcfun))
 
 (defgeneric compile-instruction (mnemonic inserter context &rest args))
 (defgeneric compile-annotation (annotation inserter context))
 
 (defun compile-bcmodule (bcmodule)
-  (let ((funmap nil) ; map from bcfuns to irfuns; returned.
-        (irmodule (make-instance 'bir:module))
+  (let ((irmodule (make-instance 'bir:module))
         (literals (core:bytecode-module/literals bcmodule))
+        (blockmap (make-blockmap)) (funmap (make-funmap))
         context
-        (blockmap (make-blockmap))
         (inserter (make-instance 'ast-to-bir:inserter))
         ;; annotations starting at opip.
         (opannots
@@ -32,7 +33,7 @@
     ;; Compile.
     (core:do-module-instructions (mnemonic args opip ip annots)
         (bcmodule)
-      (setf (values context funmap)
+      (setf context
             (maybe-begin-new opip opannots blockmap irmodule
                              inserter context funmap))
       ;; If this code is unreachable, we don't bother generating
@@ -46,42 +47,48 @@
           (apply #'compile-instruction mnemonic inserter context args)
           (compile-annotations annots inserter context)))
       (setf opannots annots))
-    ;; Compute all iblock flow orders.
-    (loop for (bc . ir) in funmap
-          do (bir:compute-iblock-flow-order ir))
-    ;; Return
-    (values irmodule funmap)))
+    ;; Compute all iblock flow orders and return.
+    (values irmodule
+            (loop for entry in (fmap funmap)
+                  for irfun = (finfo-irfun entry)
+                  do (bir:compute-iblock-flow-order irfun)
+                  collect (cons (finfo-bcfun entry) irfun)))))
 
 ;;; If the instruction begins a new iblock and/or function,
 ;;; set everything up for that.
 ;;; Return (values new-context new-funmap).
-(defun maybe-begin-new (opip opannots blockmap irmodule
-                        inserter context funmap)
+(defun maybe-begin-new (opip opannots blockmap irmodule inserter context funmap)
+  ;; Do we have a function start in the annotations?
   (let ((bcfun (find-if #'bcfun-p opannots)))
-    (cond (bcfun
-           (let* ((irfun (make-bir-function bcfun irmodule))
-                  (start (make-start-block inserter irfun bcfun)))
-             (setf context (make-context bcfun blockmap)
-                   (bir:start irfun) start)
-             (ast-to-bir:begin inserter start)
-             (push (cons bcfun irfun) funmap)))
-          (t (let ((binfo (find-block opip blockmap)))
-               (when binfo
-                 (print (binfo-irblock binfo))
-                 (print (bir:inputs (binfo-irblock binfo)))
-                 ;; If we're falling through from an existing block
-                 ;; compile in an implicit jump.
-                 (when (and (reachablep context)
-                            ;; KLUDGE
-                            (not (slot-boundp
-                                  (ast-to-bir::iblock inserter)
-                                  'bir::%end)))
-                   (%compile-jump inserter context binfo))
-                 ;; Start new block.
-                 (setf context (binfo-context binfo))
-                 (ast-to-bir:begin inserter
-                                   (binfo-irblock binfo)))))))
-  (values context funmap))
+    (when bcfun
+      (let* ((existing (find-bcfun bcfun funmap))
+             ;; We might have made this function earlier for ENCLOSE.
+             (irfun (if existing
+                        (finfo-irfun existing)
+                        (let ((new
+                                (make-bir-function bcfun inserter irmodule)))
+                          (push (list bcfun new nil) (fmap funmap))
+                          new))))
+        (ast-to-bir:begin inserter (bir:start irfun))
+        (return-from maybe-begin-new
+          (make-context bcfun blockmap funmap)))))
+  ;; Maybe we've determined earlier that this IP begins a block?
+  (let ((binfo (find-block opip blockmap)))
+    (when binfo
+      ;; If we're falling through from an existing block
+      ;; compile in an implicit jump.
+      (when (and (reachablep context)
+                 ;; KLUDGE
+                 (not (slot-boundp
+                       (ast-to-bir::iblock inserter)
+                       'bir::%end)))
+        (%compile-jump inserter context binfo))
+      ;; Start new block.
+      (ast-to-bir:begin inserter
+                        (binfo-irblock binfo))
+      (return-from maybe-begin-new (binfo-context binfo))))
+  ;; Nothing.
+  context)
 
 (defun compile-function (function
                          &key (abi clasp-cleavir:*abi-x86-64*)
@@ -111,17 +118,17 @@
   (loop for a in annotations
         do (compile-annotation a inserter context)))
 
-(defun make-context (bcfun blockmap)
+(defun make-context (bcfun blockmap funmap)
   (make-instance 'context
     :locals (make-array (bcfun/locals-size bcfun))
-    :blockmap blockmap))
+    :blockmap blockmap :funmap funmap))
 
 (defun copy-context (context)
   (make-instance 'context
     :stack (copy-list (stack context))
     :locals (copy-seq (locals context))
     :mvals (mvals context)
-    :blockmap (blockmap context)
+    :blockmap (blockmap context) :funmap (funmap context)
     :reachablep (reachablep context)))
 
 (defun compute-args (args literals irblocks)
@@ -134,10 +141,32 @@
                    value)
                   ((:operand) value))))
 
+;;; Mapping from bytecode functions to IR functions.
+(defclass funmap ()
+  (;; Alist.
+   (%map :initform nil :accessor fmap)))
+
+(defun make-funmap () (make-instance 'funmap))
+
+(defun find-bcfun (bcfun funmap)
+  (find bcfun (fmap funmap) :key #'finfo-bcfun))
+(defun find-irfun (irfun funmap)
+  (find irfun (fmap funmap) :key #'finfo-irfun))
+
+(defun finfo-bcfun (finfo) (first finfo))
+(defun finfo-irfun (finfo) (second finfo))
+(defun finfo-closure (finfo) (third finfo))
+(defun (setf finfo-closure) (new finfo) (setf (third finfo) new))
+
+(defun add-function (context bcfun irfun closure)
+  (push (list bcfun irfun closure) (fmap (funmap context))))
+
 ;;; Mapping from IPs to IR blocks. Used throughout compilation of
 ;;; a bytecode module due to nonlocal exits.
 (defclass blockmap ()
-  (;; Alist.
+  (;; List of (ip irblock context).
+   ;; the context is the context that should be used when compilation
+   ;; reaches this point.
    (%map :initform nil :accessor bmap)))
 
 (defun make-blockmap () (make-instance 'blockmap))
@@ -174,7 +203,8 @@
                 collect (aref literals i))
           key-frame-start)))
 
-(defun make-bir-function (bytecode-function module)
+(defun make-bir-function (bytecode-function inserter
+                          &optional (module (inserter-module inserter)))
   (let* ((lambda-list (core:function-lambda-list bytecode-function))
          (function (make-instance 'bir:function
                      :returni nil ; set by :return compilation
@@ -185,7 +215,9 @@
                      :origin (function-spi bytecode-function)
                      :policy nil
                      :attributes nil
-                     :module module)))
+                     :module module))
+         (start (make-start-block inserter function bytecode-function)))
+    (setf (bir:start function) start)
     (set:nadjoinf (bir:functions module) function)
     function))
 
@@ -202,9 +234,9 @@
   ((%stack :initform nil :initarg :stack :accessor stack)
    (%locals :initarg :locals :reader locals)
    (%mvals :initform nil :initarg :mvals :accessor mvals)
-   (%blockmap :initarg :blockmap :reader blockmap :type blockmap)
-   (%reachablep :initform t :initarg :reachablep
-                :accessor reachablep)))
+   (%reachablep :initform t :initarg :reachablep :accessor reachablep)
+   (%funmap :initarg :funmap :reader funmap :type funmap)
+   (%blockmap :initarg :blockmap :reader blockmap :type blockmap)))
 
 (defun stack-push (datum context)
   (push datum (stack context)))
@@ -237,7 +269,8 @@
        (etypecase var
          (bir:variable
           (if cellp varinfo (read-variable var inserter)))
-         (bir:come-from var))
+         (bir:come-from var)
+         (bir:argument var)) ; happens from e.g. encelled parameters.)
        context))))
 
 (defun read-variable (variable inserter) ; FIXME: types
@@ -261,6 +294,19 @@
     (ast-to-bir:insert inserter 'bir:constant-reference
                        :inputs (list const) :outputs (list cref-out))
     cref-out))
+
+(defmethod compile-instruction ((mnemonic (eql :closure)) inserter
+                                context &rest args)
+  (destructuring-bind (index) args
+    (let* ((ifun (inserter-function inserter))
+           (lexes (finfo-closure (find-irfun ifun (funmap context))))
+           (lex (elt lexes index)))
+      (stack-push (etypecase lex
+                    ((cons bir:variable (eql t)) lex) ; cell
+                    ((cons bir:variable (eql nil))
+                     (read-variable (car lex) inserter))
+                    (bir:come-from lex))
+                  context))))
 
 (defmethod compile-instruction ((mnemonic (eql :call)) inserter
                                 context &rest args)
@@ -303,36 +349,134 @@
         do (push (stack-pop context) args)
         finally (return args)))
 
-(defmethod compile-instruction ((mnemonic (eql :set))
-                                inserter context &rest args)
-  (destructuring-bind (index) args
-    (let* ((locals (locals context))
-           (existing (aref locals index))
-           (value (stack-pop context)))
-      (if (null existing)
-          (setf (aref locals index) (cons value nil)) ; FIXME cell
-          (let ((var (car existing)))
-            (check-type var bir:variable)
-            (write-variable var value inserter))))))
-
 (defmethod compile-instruction ((mnemonic (eql :bind))
                                 inserter context &rest args)
   (destructuring-bind (nvars base) args
     (loop with locals = (locals context)
           for i from base below (+ base nvars)
-          for local = (aref locals i)
           for value = (stack-pop context)
-          do (if (null local)
-                 (setf (aref locals i) (cons value nil)) ; FIXME cell
-                 (let ((var (car local)))
-                   (check-type var bir:variable)
-                   (write-variable var value inserter))))))
+          do (set-local locals i value inserter))))
+
+(defun set-local (locals index value inserter)
+  (let ((local (aref locals index)))
+    (if (null local)
+        (setf (aref locals index) (cons value nil)) ; FIXME cell
+        (let ((var (car local)))
+          (if (typep var 'bir:variable)
+              (write-variable var value inserter)
+              ;; happens when bindings are closed over.
+              (setf (aref locals index)
+                    (etypecase value
+                      (bir:linear-datum (cons value nil))
+                      ((cons bir:linear-datum)
+                       (cons (car value) t)))))))))
+
+(defmethod compile-instruction ((mnemonic (eql :set))
+                                inserter context &rest args)
+  (destructuring-bind (index) args
+    (set-local (locals context) index (stack-pop context) inserter)))
 
 (defun write-variable (variable value inserter)
   (assert (slot-boundp variable 'bir::%binder))
   (bir:record-variable-set variable)
   (ast-to-bir:insert inserter 'bir:writevar
                      :inputs (list value) :outputs (list variable)))
+
+(defmethod compile-instruction ((mnemonic (eql :make-cell))
+                                inserter context &rest args)
+  (declare (ignore inserter))
+  (destructuring-bind () args
+    (let ((top (stack-pop context)))
+      (check-type top bir:linear-datum)
+      ;; Mark as a cell.
+      (stack-push (list top) context))))
+
+(defmethod compile-instruction ((mnemonic (eql :cell-ref))
+                                inserter context &rest args)
+  (destructuring-bind () args
+    (let ((cell (stack-pop context)))
+      ;; Make sure it's a bound cell
+      ;; (not a linear datum directly from make-cell; that's illegal bytecode)
+      (check-type cell (cons bir:variable))
+      (stack-push (read-variable (car cell) inserter) context))))
+
+(defmethod compile-instruction ((mnemonic (eql :cell-set))
+                                inserter context &rest args)
+  (destructuring-bind () args
+    (let ((cell (stack-pop context)) (val (stack-pop context)))
+      (check-type cell (cons bir:variable))
+      (check-type val bir:linear-datum)
+      (write-variable (car cell) val inserter))))
+
+(defmethod compile-instruction ((mnemonic (eql :make-closure))
+                                inserter context &rest args)
+  (destructuring-bind (template) args
+    (let* ((irfun (make-bir-function template inserter))
+           (enclose-out (make-instance 'bir:output
+                          :name (core:function-name template)))
+           (enclose
+             (ast-to-bir:insert inserter 'bir:enclose
+                                :code irfun :outputs (list enclose-out)))
+           (nclosed (bcfun/nvars template))
+           (closed (nreverse (subseq (stack context) 0 nclosed)))
+           (real-closed (mapcar #'resolve-closed closed)))
+      (assert (every (lambda (v) (typep v '(or bir:come-from
+                                            (cons bir:variable))))
+                     real-closed))
+      (add-function context template irfun real-closed)
+      (setf (stack context) (nthcdr nclosed (stack context))
+            (bir:enclose irfun) enclose)
+      (stack-push enclose-out context))))
+
+(defmethod compile-instruction ((mnemonic (eql :make-uninitialized-closure))
+                                inserter context &rest args)
+  ;; Set up an ir function for the funmap and generate an enclose,
+  ;; but leave the closure for initialize-closure.
+  (destructuring-bind (template) args
+    (let* ((irfun (make-bir-function template inserter))
+           (enclose-out (make-instance 'bir:output
+                          :name (core:function-name template)))
+           (enclose
+             (ast-to-bir:insert inserter 'bir:enclose
+                                :code irfun :outputs (list enclose-out))))
+      (add-function context template irfun nil)
+      (setf (bir:enclose irfun) enclose)
+      (stack-push enclose-out context))))
+
+(defmethod compile-instruction ((mnemonic (eql :initialize-closure))
+                                inserter context &rest args)
+  ;; The function has already been put in the funmap and enclosed,
+  ;; so just set up its closure before it's generated.
+  (declare (ignore inserter))
+  (destructuring-bind (index) args
+    (destructuring-bind (var . cellp) (aref (locals context) index)
+      (check-type var bir:variable) (assert (not cellp))
+      (let* ((enclose (bir:definition (bir:input (bir:binder var))))
+             (finfo (find-irfun (bir:code enclose) (funmap context)))
+             (template (finfo-bcfun finfo))
+             (nclosed (bcfun/nvars template))
+             (closed (nreverse (subseq (stack context) 0 nclosed)))
+             (real-closed (mapcar #'resolve-closed closed)))
+        (setf (stack context) (nthcdr nclosed (stack context))
+              (finfo-closure finfo) real-closed)))))
+
+(defun resolve-closed (v)
+  ;; Each thing on the stack is either a come-from, a list
+  ;; (variable . t) if there's a cell, or the output of a readvar for
+  ;; variables with no cell.
+  (etypecase v
+    (bir:come-from v)
+    (bir:output (cons (variable-from-output v) nil))
+    ((cons bir:variable (eql t)) v)))
+
+(defun variable-from-output (output)
+  (let ((def (bir:definition output)))
+    (etypecase def
+      (bir:readvar (bir:input def))
+      (bir:thei
+       (let ((tdef (bir:definition (bir:input def))))
+         (check-type tdef bir:readvar)
+         (bir:input tdef))))))
 
 (defmethod compile-instruction ((mnemonic (eql :return))
                                 inserter context &rest args)
@@ -665,5 +809,8 @@
 
 ;;; default method: irrelevant to compilation. ignore.
 (defmethod compile-annotation ((annot core:bytecode-debug-info)
+                               inserter context)
+  (declare (ignore inserter context)))
+(defmethod compile-annotation ((annot core:global-bytecode-simple-fun)
                                inserter context)
   (declare (ignore inserter context)))
