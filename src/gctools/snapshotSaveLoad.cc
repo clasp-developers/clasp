@@ -3367,6 +3367,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               //
               core::T_sp tallocatedObjectFile = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
               llvmo::ObjectFile_sp allocatedObjectFile = gc::As<llvmo::ObjectFile_sp>(tallocatedObjectFile);
+//              printf("%s:%d:%s Allocated ObjectFile %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)&*allocatedObjectFile );
               allocatedObjectFile->_State = llvmo::RunState;
               DBG_OF(printf("%s:%d:%s About to pass LLJIT ObjectFile_O @ %p name: %s\n      loadedObjectFile->_Name: %s\n        "
                             "startupID: %lu  _ObjectFileOffset %lu  _ObjectFileSize %lu  of_start %p\n",
@@ -3394,7 +3395,8 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                 printf("%s:%d:%s JITDylib* is NULL\n", __FILE__, __LINE__, __FUNCTION__);
                 abort();
               }
-              ExitOnErr(obj_claspJIT->_LLJIT->addObjectFile(*jd, std::move(allocatedObjectFile->_MemoryBuffer)));
+//              printf("%s:%d:%s Allocated ObjectFile @%p before _LLJIT->addObjectFile...  _MemoryBuffer = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)&*allocatedObjectFile, (void*)allocatedObjectFile->_MemoryBuffer.get() );
+              ExitOnErr(obj_claspJIT->_LLJIT->addObjectFile(*jd, llvm::MemoryBuffer::getMemBuffer(allocatedObjectFile->_MemoryBuffer->getMemBufferRef())));
 
               gctools::Tagged fwd =
                   (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)allocatedObjectFile.raw_());
@@ -3432,6 +3434,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                 DBG_OF(printf("%s:%d:%s Ran lookup of objectId: %lu name %s jitdylib %p in thread pool found = %d\n", __FILE__,
                               __LINE__, __FUNCTION__, objectId, start.c_str(), jitdylib.raw_(), found););
               });
+//              printf("%s:%d:%s Allocated ObjectFile @%p AFTER _LLJIT->addObjectFile...  _MemoryBuffer = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)&*allocatedObjectFile, (void*)allocatedObjectFile->_MemoryBuffer.get() );
             }
           }
           next_header = cur_header->next(cur_header->_Kind);
