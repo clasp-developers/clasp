@@ -197,8 +197,9 @@ struct SaveLispAndDie {
   string _FileName;
   bool _Executable;
   string _LibDir;
-  SaveLispAndDie(const std::string& filename, bool executable, const std::string& libDir)
-      : _FileName(filename), _Executable(executable), _LibDir(libDir){};
+  bool   _Exit;  // Set to true unless debugging
+  SaveLispAndDie(const std::string& filename, bool executable, const std::string& libDir, bool ep=true)
+      : _FileName(filename), _Executable(executable), _LibDir(libDir), _Exit(ep){};
 };
 
 /*! To exit the program throw this exception

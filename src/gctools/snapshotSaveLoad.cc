@@ -2704,7 +2704,8 @@ void* snapshot_save_impl(void* data) {
 #ifdef USE_BOEHM
 //  printf("%s:%d:%s Not using GC_start_world_external();\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
-  exit(0);
+  if (snapshot_data->_Exit) exit(0);
+  return NULL;
 }
 
 void snapshot_save(core::SaveLispAndDie& data) {

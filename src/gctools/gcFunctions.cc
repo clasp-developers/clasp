@@ -480,7 +480,7 @@ CL_LAMBDA(filename &key executable);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Save a snapshot, i.e. enough information to restart a Lisp process
 later in the same state, in the file of the specified name. Only
-global state is preserved.
+global state is preserved. After the snapshot is saved, clasp will exit.
 
 The following &KEY arguments are defined:
   :EXECUTABLE
@@ -496,6 +496,26 @@ CL_DEFUN void gctools__save_lisp_and_die(core::T_sp filename, core::T_sp executa
   SIMPLE_ERROR("save-lisp-and-die only works for precise GC");
 #endif
 }
+
+CL_LAMBDA(filename &key executable);
+CL_DECLARE();
+CL_DOCSTRING(R"dx(Save a snapshot, i.e. enough information to restart a Lisp process
+later in the same state, in the file of the specified name. Only
+global state is preserved. After the snapshot is saved, clasp will continue running!
+THIS IS EXPERIMENTAL - I am not yet sure if it's safe to keep running clasp!
+
+The following &KEY arguments are defined:
+  :EXECUTABLE
+     If true, arrange to combine the Clasp runtime and the snapshot
+     to create a standalone executable.  If false (the default), the
+     snapshot will not be executable on its own.)dx")
+DOCGROUP(clasp);
+CL_DEFUN void gctools__save_lisp_and_continue(core::T_sp filename, core::T_sp executable) {
+  core::SaveLispAndDie ee(gc::As<core::String_sp>(filename)->get_std_string(), executable.notnilp(),
+                          globals_->_Bundle->_Directories->_LibDir, false );
+  snapshotSaveLoad::snapshot_save(ee);
+}
+
 
 CL_LAMBDA(stamp);
 CL_DECLARE();
