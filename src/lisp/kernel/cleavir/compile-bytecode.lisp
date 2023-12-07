@@ -240,7 +240,10 @@
          (bir:come-from var))
        context))))
 
-(defun read-variable (variable inserter)
+(defun read-variable (variable inserter) ; FIXME: types
+  (%read-variable variable inserter))
+
+(defun %read-variable (variable inserter)
   (bir:record-variable-ref variable)
   (let ((readvar-out (make-instance 'bir:output :name (bir:name variable))))
     (ast-to-bir:insert inserter 'bir:readvar
@@ -594,6 +597,14 @@
       (check-type mv bir:linear-datum)
       (setf (mvals context) mv))))
 
+(defmethod compile-instruction ((mnemonic (eql :dup))
+                                inserter context &rest args)
+  (destructuring-bind () args
+    (let ((var (make-instance 'bir:variable :ignore nil)))
+      (%bind-variable var (stack-pop context) inserter)
+      (stack-push (%read-variable var inserter) context)
+      (stack-push (%read-variable var inserter) context))))
+
 (defmethod compile-annotation ((annotation core:bytecode-debug-vars)
                                inserter context)
   (loop for (name . index)
@@ -608,7 +619,10 @@
            (setf (aref (locals context) rindex)
                  (cons variable cellp))))
 
-(defun bind-variable (variable value inserter)
+(defun bind-variable (variable value inserter) ; FIXME: Types
+  (%bind-variable variable value inserter))
+
+(defun %bind-variable (variable value inserter)
   (let ((binder (ast-to-bir:insert inserter 'bir:leti
                                    :inputs (list value)
                                    :outputs (list variable))))
