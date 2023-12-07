@@ -67,6 +67,8 @@
              (push (cons bcfun irfun) funmap)))
           (t (let ((binfo (find-block opip blockmap)))
                (when binfo
+                 (print (binfo-irblock binfo))
+                 (print (bir:inputs (binfo-irblock binfo)))
                  ;; If we're falling through from an existing block
                  ;; compile in an implicit jump.
                  (when (and (reachablep context)
@@ -509,6 +511,18 @@
       (ast-to-bir:begin inserter after))
     out))
 
+(defmethod compile-instruction ((mnemonic (eql :save-sp))
+                                inserter context &rest args)
+  (destructuring-bind (index) args
+    (setf (aref (locals context) index) (cons (stack context) nil))))
+
+(defmethod compile-instruction ((mnemonic (eql :restore-sp))
+                                inserter context &rest args)
+  (destructuring-bind (index) args
+    (destructuring-bind (stack . cellp) (aref (locals context) index)
+      (assert (not cellp)) (assert (listp stack))
+      (setf (stack context) stack))))
+
 (defmethod compile-instruction ((mnemonic (eql :fdefinition))
                                 inserter context &rest args)
   (destructuring-bind (fcell) args
@@ -606,15 +620,36 @@
   ;; Record the merge block for later jumps.
   (let* ((end (core:bytecode-debug-info/end annot))
          (receiving (core:bytecode-ast-if/receiving annot))
-         (dynamic-environment
-           (ast-to-bir::dynamic-environment inserter))
-         (iblock (ast-to-bir::make-iblock inserter :name '#:if-merge))
+         (iblock (make-iblock-r inserter '#:if-merge receiving)))
+    (add-block context end iblock receiving)))
+
+(defmethod compile-annotation ((annot core:bytecode-ast-tagbody)
+                               inserter context)
+  (loop for (name . ip) in (core:bytecode-ast-tagbody/tags annot)
+        do (add-block context ip (ast-to-bir::make-iblock inserter :name name))))
+
+(defun make-iblock-r (inserter name receiving)
+  (let* ((iblock (ast-to-bir::make-iblock inserter :name name))
          (phis
            (if (eql receiving -1) ; multiple values
                (list (make-instance 'bir:phi :iblock iblock))
                (loop repeat receiving
                      collect (make-instance 'bir:phi
                                :iblock iblock)))))
-    (set:nadjoinf (bir:scope dynamic-environment) iblock)
     (setf (bir:inputs iblock) phis)
-    (add-block context end iblock receiving)))
+    iblock))
+
+(defmethod compile-annotation ((annot core:bytecode-ast-block)
+                               inserter context)
+  (let ((receiving (core:bytecode-ast-block/receiving annot)))
+    (add-block context (core:bytecode-debug-info/end annot)
+               (make-iblock-r inserter
+                              (symbolicate (core:bytecode-ast-block/name annot)
+                                           '#:-after)
+                              receiving)
+               receiving)))
+
+;;; default method: irrelevant to compilation. ignore.
+(defmethod compile-annotation ((annot core:bytecode-debug-info)
+                               inserter context)
+  (declare (ignore inserter context)))
