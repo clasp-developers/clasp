@@ -723,6 +723,50 @@
   (declare (ignore inserter context))
   (destructuring-bind () args))
 
+(defmethod compile-instruction ((mnemonic (eql :special-bind))
+                                inserter context &rest args)
+  (destructuring-bind (vcell) args
+    (let* ((vname (core:variable-cell/name vcell))
+           (bname (symbolicate '#:bind- vname))
+           (next (ast-to-bir::make-iblock inserter :name bname))
+           (const (inserter-vcell vname inserter))
+           (value (stack-pop context))
+           (bind (ast-to-bir::terminate inserter 'bir:constant-bind
+                                        :inputs (list const value)
+                                        :next (list next))))
+      (setf (bir:dynamic-environment next) bind)
+      (ast-to-bir:begin inserter next))))
+
+(defmethod compile-instruction ((mnemonic (eql :symbol-value))
+                                inserter context &rest args)
+  (destructuring-bind (vcell) args
+    (let* ((vname (core:variable-cell/name vcell))
+           (const (inserter-vcell vname inserter))
+           (out (make-instance 'bir:output :name vname)))
+      (ast-to-bir:insert inserter 'bir:constant-symbol-value
+                         :inputs (list const) :outputs (list out))
+      (stack-push out context))))
+
+(defmethod compile-instruction ((mnemonic (eql :symbol-value-set))
+                                inserter context &rest args)
+  (destructuring-bind (vcell) args
+    (let ((const (inserter-vcell (core:variable-cell/name vcell) inserter))
+          (in (stack-pop context)))
+      (ast-to-bir:insert inserter 'bir:set-constant-symbol-value
+                         :inputs (list const in)))))
+
+(defmethod compile-instruction ((mnemonic (eql :unbind))
+                                inserter context &rest args)
+  (let* ((bind (ast-to-bir::dynamic-environment inserter))
+         (vname (bir:variable-name (first (bir:inputs bind))))
+         (ib (ast-to-bir::make-iblock
+              inserter :name (symbolicate '#:unbind- vname)
+                       :dynamic-environment (bir:parent bind))))
+    (ast-to-bir:terminate inserter 'bir:jump
+                          :inputs () :outputs ()
+                          :next (list ib))
+    (ast-to-bir:begin inserter ib)))
+
 (defmethod compile-instruction ((mnemonic (eql :fdefinition))
                                 inserter context &rest args)
   (destructuring-bind (fcell) args
