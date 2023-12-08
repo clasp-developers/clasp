@@ -670,6 +670,59 @@
       (assert (not cellp)) (assert (listp stack))
       (setf (stack context) stack))))
 
+(defmethod compile-instruction ((mnemonic (eql :entry))
+                                inserter context &rest args)
+  (destructuring-bind (index) args
+    (let* ((during (ast-to-bir::make-iblock inserter :name '#:block))
+           (cf (ast-to-bir:terminate inserter 'bir:come-from
+                                     :next (list during)))
+           (function (inserter-function inserter)))
+      (set:nadjoinf (bir:come-froms function) cf)
+      (setf (bir:dynamic-environment during) cf
+            (aref (locals context) index) (cons cf nil))
+      (ast-to-bir:begin inserter during))))
+
+(defmethod compile-instruction ((mnemonic (eql :exit-8))
+                                inserter context &rest args)
+  (destructuring-bind (destination) args
+    (compile-exit inserter context destination)))
+(defmethod compile-instruction ((mnemonic (eql :exit-16))
+                                inserter context &rest args)
+  (destructuring-bind (destination) args
+    (compile-exit inserter context destination)))
+(defmethod compile-instruction ((mnemonic (eql :exit-24))
+                                inserter context &rest args)
+  (destructuring-bind (destination) args
+    (compile-exit inserter context destination)))
+
+(defun compile-exit (inserter context destination)
+  (let* ((dinfo (find-block destination (blockmap context)))
+         (dest (binfo-irblock dinfo))
+         (receiving (binfo-receiving dinfo))
+         (cf (stack-pop context))
+         (inputs (if (= receiving -1)
+                     (prog1 (list (mvals context)) (setf (mvals context) nil))
+                     (loop repeat receiving collect (stack-pop context)))))
+    (check-type cf bir:come-from)
+    (let ((uw (ast-to-bir:terminate inserter 'bir:unwind
+                                    :inputs inputs
+                                    :outputs (copy-list (bir:inputs dest))
+                                    :come-from cf
+                                    :destination dest)))
+      ;; Don't add duplicate NEXT entries
+      ;; (obscure NLX uses can hit this, like CORE::PACKAGES-ITERATOR)
+      (unless (eql dest (first (bir:next cf)))
+        (pushnew dest (rest (bir:next cf))))
+      (set:nadjoinf (bir:unwinds cf) uw)
+      (set:nadjoinf (bir:entrances dest) (ast-to-bir::iblock inserter)))))
+
+(defmethod compile-instruction ((mnemonic (eql :entry-close))
+                                inserter context &rest args)
+  ;; the next block was already set up by BytecodeDebugBlock/Tagbody,
+  ;; so just fall through.
+  (declare (ignore inserter context))
+  (destructuring-bind () args))
+
 (defmethod compile-instruction ((mnemonic (eql :fdefinition))
                                 inserter context &rest args)
   (destructuring-bind (fcell) args
@@ -783,8 +836,32 @@
 
 (defmethod compile-annotation ((annot core:bytecode-ast-tagbody)
                                inserter context)
-  (loop for (name . ip) in (core:bytecode-ast-tagbody/tags annot)
-        do (add-block context ip (ast-to-bir::make-iblock inserter :name name))))
+  (loop with entryp = (just-started-entry-p inserter)
+        with de = (ast-to-bir::dynamic-environment inserter)
+        for (name . ip) in (core:bytecode-ast-tagbody/tags annot)
+        for iblock = (ast-to-bir::make-iblock inserter :name name)
+        do (add-block context ip iblock)
+        when entryp
+          do (push iblock (cdr (bir:next de)))
+             (set:nadjoinf (bir:predecessors iblock) (bir:iblock de))
+        finally
+           ;; Establish a block for after the end.
+           (add-block context (core:bytecode-debug-info/end annot)
+                      (ast-to-bir::make-iblock
+                       inserter :name '#:tagbody-after
+                       :dynamic-environment (if entryp (bir:parent de) de)))))
+
+;;; Sorta messy code, but I think this should be reliable.
+;;; See if the previous instruction is an entry, and we are at
+;;; the beginning of its block.
+(defun just-started-entry-p (inserter)
+  (let ((ib (ast-to-bir::iblock inserter)))
+    (and (not (slot-boundp ib 'bir::%start))
+         (= (set:size (bir:predecessors ib)) 1)
+         (let* ((pred (set:arb (bir:predecessors ib)))
+                (term (bir:end pred)))
+           (and (typep term 'bir:come-from)
+                (= (length (bir:next term)) 1))))))
 
 (defun make-iblock-r (inserter name receiving)
   (let* ((iblock (ast-to-bir::make-iblock inserter :name name))
@@ -799,13 +876,19 @@
 
 (defmethod compile-annotation ((annot core:bytecode-ast-block)
                                inserter context)
-  (let ((receiving (core:bytecode-ast-block/receiving annot)))
+  (let* ((receiving (core:bytecode-ast-block/receiving annot))
+         (after
+           (make-iblock-r inserter
+                          (symbolicate (core:bytecode-ast-block/name annot)
+                                       '#:-after)
+                          receiving)))
+    (when (just-started-entry-p inserter)
+      (let ((cf (ast-to-bir::dynamic-environment inserter)))
+        (check-type cf bir:come-from)
+        (push after (cdr (bir:next cf)))
+        (set:nadjoinf (bir:predecessors after) (bir:iblock cf))))
     (add-block context (core:bytecode-debug-info/end annot)
-               (make-iblock-r inserter
-                              (symbolicate (core:bytecode-ast-block/name annot)
-                                           '#:-after)
-                              receiving)
-               receiving)))
+               after receiving)))
 
 ;;; default method: irrelevant to compilation. ignore.
 (defmethod compile-annotation ((annot core:bytecode-debug-info)
