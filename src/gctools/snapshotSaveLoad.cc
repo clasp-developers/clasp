@@ -391,7 +391,7 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
     fflush(stdout);\
   }
 #else
-#define DBG_SL1(_fmt_)
+#define DBG_SL1(...)
 #endif
 #if 0
 #define DBG_SL_ALLOCATE(_fmt_)                                                                                                     \
