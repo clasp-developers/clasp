@@ -209,7 +209,7 @@ Character_sp read_ch_or_die(T_sp sin) {
 }
 
 /*! See SACLA reader.lisp::unread-ch */
-void unread_ch(T_sp sin, Character_sp c) { clasp_unread_char(clasp_as_claspCharacter(c), sin); }
+void unread_ch(T_sp sin, Character_sp c) { stream_unread_char(sin, clasp_as_claspCharacter(c)); }
 
 /*! See SACLA reader.lisp::collect-escaped-lexemes */
 List_sp collect_escaped_lexemes(Character_sp c, T_sp sin) {
@@ -828,7 +828,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token& token, bool only_dot
     // interpret failed symbols
     SIMPLE_ERROR("Error encountered while reading source file {} at character position {} - Could not interpret symbol state({}) "
                  "symbol: [{}]",
-                 _rep_(clasp_filename(sin, false)), _rep_(clasp_file_position(sin)), stateString(state),
+                 _rep_(clasp_filename(sin, false)), _rep_(stream_position(sin)), stateString(state),
                  symbolTokenStr(sin, token, start - token.data(), token.size())->get_std_string());
     break;
   case tintt:
@@ -1062,7 +1062,7 @@ T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
 #if 0
   static int monitorReaderStep = 0;
   if ((monitorReaderStep % 1000) == 0 && cl__member(_sym_monitorReader, _sym_STARdebugMonitorSTAR->symbolValue(), nil<T_O>()).notnilp()) {
-    printf("%s:%d:%s stream %s -> pos = %" PRF "\n", __FILE__, __LINE__, __FUNCTION__, _rep_(clasp_filename(sin, false)).c_str(), unbox_fixnum(gc::As<Fixnum_sp>(clasp_file_position(sin))));
+    printf("%s:%d:%s stream %s -> pos = %" PRF "\n", __FILE__, __LINE__, __FUNCTION__, _rep_(clasp_filename(sin, false)).c_str(), unbox_fixnum(gc::As<Fixnum_sp>(stream_position(sin))));
   }
   ++monitorReaderStep;
 #endif
@@ -1186,7 +1186,7 @@ step8:
       SIMPLE_ERROR("ReaderError_O::create()");
     if (y8_syntax_type == kw::_sym_terminating_macro) {
       LOG_READ(BF("UNREADING char y[%s]") % clasp_as_claspCharacter(y));
-      clasp_unread_char(clasp_as_claspCharacter(y), sin);
+      stream_unread_char(sin, clasp_as_claspCharacter(y));
       goto step10;
     }
     if (y8_syntax_type == kw::_sym_whitespace) {
@@ -1194,10 +1194,10 @@ step8:
 #if 0
       if (_sym_STARpreserve_whitespace_pSTAR->symbolValue().isTrue()) { // Can this be recursiveP?
         LOG_READ(BF("unreading y[%s]") % clasp_as_claspCharacter(y));
-        clasp_unread_char(clasp_as_claspCharacter(y), sin);
+        stream_unread_char(sin, clasp_as_claspCharacter(y));
       }
 #else
-      clasp_unread_char(clasp_as_claspCharacter(y), sin);
+      stream_unread_char(sin, clasp_as_claspCharacter(y));
 #endif
       goto step10;
     }

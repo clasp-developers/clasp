@@ -61,16 +61,16 @@ static void write_array_data(size_t rank, std::vector<size_t> adims, Array_sp ar
   for (m = 0, j = 0;;) {
     for (i = j; i < rank; ++i) {
       if (subscripts[i] == 0) {
-        clasp_write_char('(', stream);
+        stream_write_char(stream, '(');
         if (adims[i] == 0) {
-          clasp_write_char(')', stream);
+          stream_write_char(stream, ')');
           j = i - 1;
           k = 0;
           goto INC;
         }
       }
       if (subscripts[i] > 0)
-        clasp_write_char(' ', stream);
+        stream_write_char(stream, ' ');
       if (subscripts[i] >= print_length) {
         writestr_stream("...)", stream);
         k = adims[i] - subscripts[i];
@@ -85,7 +85,7 @@ static void write_array_data(size_t rank, std::vector<size_t> adims, Array_sp ar
     if (write_elems)
       write_object(array->rowMajorAref(m), stream);
     else
-      clasp_write_char('#', stream);
+      stream_write_char(stream, '#');
     j = rank - 1;
     k = 1;
 
@@ -94,7 +94,7 @@ static void write_array_data(size_t rank, std::vector<size_t> adims, Array_sp ar
       if (++subscripts[j] < adims[j])
         break;
       subscripts[j] = 0;
-      clasp_write_char(')', stream);
+      stream_write_char(stream, ')');
       --j;
     }
     if (j < 0)
@@ -105,13 +105,13 @@ static void write_array_data(size_t rank, std::vector<size_t> adims, Array_sp ar
 
 // Write a vector out as a list. Might save consing up an actual Lisp list.
 static void write_array_dimensions(size_t rank, std::vector<size_t> dims, T_sp stream) {
-  clasp_write_char('(', stream);
+  stream_write_char(stream, '(');
   for (size_t i = 0; i < rank; ++i) {
     write_object(clasp_make_fixnum(dims[i]), stream);
     if (i < rank - 1)
-      clasp_write_char(' ', stream);
+      stream_write_char(stream, ' ');
   }
-  clasp_write_char(')', stream);
+  stream_write_char(stream, ')');
 }
 
 // Generae dense (6-bit) character strings from blobs of bytes
@@ -252,11 +252,11 @@ static void write_array_ext_readable(Array_sp array, std::vector<size_t> adims, 
     }
 #endif
     write_object(array->element_type(), stream); // write element type
-    clasp_write_char(' ', stream);
+    stream_write_char(stream, ' ');
     write_array_dimensions(rank, adims, stream);
-    clasp_write_char(' ', stream);
+    stream_write_char(stream, ' ');
     write_array_data(rank, adims, array, stream, MOST_POSITIVE_FIXNUM, true);
-    clasp_write_char(')', stream);
+    stream_write_char(stream, ')');
   }
 }
 
@@ -277,13 +277,13 @@ static void write_array_basic(Array_sp array, std::vector<size_t> adims, T_sp st
     print_level = clasp_print_level();
   }
 
-  clasp_write_char('#', stream);
+  stream_write_char(stream, '#');
   if (print_level == 0)
     return;
 
   if (rank != 1) { // Need to use #nA
     _clasp_write_fixnum(rank, stream);
-    clasp_write_char('A', stream);
+    stream_write_char(stream, 'A');
   }
 
   if (print_level >= rank) { // We're writing all elements of the array.
@@ -300,11 +300,11 @@ static void write_array_basic(Array_sp array, std::vector<size_t> adims, T_sp st
 static void write_array_unreadable(Array_sp array, std::vector<size_t> adims, T_sp stream) {
   writestr_stream("#<", stream);
   write_object(array->array_type(), stream); // simple-array or array
-  clasp_write_char(' ', stream);
+  stream_write_char(stream, ' ');
   write_object(array->element_type(), stream);
-  clasp_write_char(' ', stream);
+  stream_write_char(stream, ' ');
   write_array_dimensions(array->rank(), adims, stream);
-  clasp_write_char('>', stream);
+  stream_write_char(stream, '>');
 }
 
 // Basic method - some overrides are below (FIXME: move them?)
@@ -342,9 +342,9 @@ void SimpleBitVector_O::__write__(T_sp stream) const {
     writestr_stream("#*", stream);
     for (cl_index ndx = 0; ndx < this->length(); ++ndx)
       if (this->testBit(ndx))
-        clasp_write_char('1', stream);
+        stream_write_char(stream, '1');
       else
-        clasp_write_char('0', stream);
+        stream_write_char(stream, '0');
   } else
     write_array_unreadable(this->asSmartPtr(), this->arrayDimensionsAsVector(), stream);
 }
@@ -355,9 +355,9 @@ void BitVectorNs_O::__write__(T_sp stream) const {
     writestr_stream("#*", stream);
     for (cl_index ndx = 0; ndx < this->length(); ++ndx)
       if (this->testBit(ndx))
-        clasp_write_char('1', stream);
+        stream_write_char(stream, '1');
       else
-        clasp_write_char('0', stream);
+        stream_write_char(stream, '0');
   } else
     write_array_unreadable(this->asSmartPtr(), this->arrayDimensionsAsVector(), stream);
 }
@@ -367,17 +367,17 @@ void unsafe_write_SimpleBaseString(SimpleBaseString_sp str, size_t start, size_t
   if (!clasp_print_escape() && !clasp_print_readably()) {
     for (ndx = start; ndx < end; ndx++) {
       claspChar c = (*str)[ndx];
-      clasp_write_char(c, stream);
+      stream_write_char(stream, c);
     }
   } else {
-    clasp_write_char('"', stream);
+    stream_write_char(stream, '"');
     for (ndx = start; ndx < end; ndx++) {
       claspChar c = (*str)[ndx];
       if (c == '"' || c == '\\')
-        clasp_write_char('\\', stream);
-      clasp_write_char(c, stream);
+        stream_write_char(stream, '\\');
+      stream_write_char(stream, c);
     }
-    clasp_write_char('"', stream);
+    stream_write_char(stream, '"');
   }
 }
 
@@ -385,17 +385,17 @@ void unsafe_write_SimpleCharacterString(SimpleCharacterString_sp str, size_t sta
   cl_index ndx;
   if (!clasp_print_escape() && !clasp_print_readably()) {
     for (ndx = start; ndx < end; ndx++) {
-      clasp_write_char((*str)[ndx], stream);
+      stream_write_char(stream, (*str)[ndx]);
     }
   } else {
-    clasp_write_char('"', stream);
+    stream_write_char(stream, '"');
     for (ndx = start; ndx < end; ndx++) {
       claspCharacter c = (*str)[ndx];
       if (c == '"' || c == '\\')
-        clasp_write_char('\\', stream);
-      clasp_write_char((*str)[ndx], stream);
+        stream_write_char(stream, '\\');
+      stream_write_char(stream, (*str)[ndx]);
     }
-    clasp_write_char('"', stream);
+    stream_write_char(stream, '"');
   }
 }
 
@@ -441,13 +441,13 @@ void Str8Ns_O::__writeString(size_t istart, size_t iend, T_sp stream) const {
 
 void SimpleBaseString_O::__writeString(size_t start, size_t end, T_sp stream) const {
   for (cl_index ndx = start; ndx < end; ndx++) {
-    clasp_write_char((*this)[ndx], stream);
+    stream_write_char(stream, (*this)[ndx]);
   }
 }
 
 void SimpleCharacterString_O::__writeString(size_t start, size_t end, T_sp stream) const {
   for (cl_index ndx = start; ndx < end; ndx++) {
-    clasp_write_char((*this)[ndx], stream);
+    stream_write_char(stream, (*this)[ndx]);
   }
 }
 

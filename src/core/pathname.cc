@@ -1206,7 +1206,7 @@ T_sp clasp_namestring(T_sp tx, int flags) {
   y = cons_car(l);
   if (y == kw::_sym_relative) {
     if (logical)
-      clasp_write_char(';', buffer);
+      stream_write_char(buffer, ';');
   } else {
     if (!logical)
       clasp_write_string(DIR_SEPARATOR, buffer);
@@ -1226,10 +1226,10 @@ T_sp clasp_namestring(T_sp tx, int flags) {
       /* Directory :back has no namestring representation */
       return nil<T_O>();
     }
-    clasp_write_char(logical ? ';' : DIR_SEPARATOR_CHAR, buffer);
+    stream_write_char(buffer, logical ? ';' : DIR_SEPARATOR_CHAR);
   }
 NO_DIRECTORY:
-  core::T_sp fp = clasp_file_position(buffer);
+  core::T_sp fp = stream_position(buffer);
   if (unbox_fixnum(gc::As<Fixnum_sp>(fp)) == 0) {
     if ((cl__stringp(x->_Name) && clasp_memberChar(':', gc::As_unsafe<String_sp>(x->_Name))) ||
         (cl__stringp(x->_Type) && clasp_memberChar(':', gc::As_unsafe<String_sp>(x->_Type))))
@@ -1283,7 +1283,7 @@ NO_DIRECTORY:
         if (i == 0)
           b[i++] = '0';
         while (i--) {
-          clasp_write_char(b[i], buffer);
+          stream_write_char(buffer, b[i]);
         }
       }
     }

@@ -1700,7 +1700,7 @@ CL_DEFUN void core__mangledSymbols(T_sp stream_designator) {
   clasp_write_string(fmt::format("# Dumping {} mangled function names\n", global_mangledSymbols.size()), stream);
   for (auto entry : ::global_mangledSymbols) {
 #ifdef _TARGET_OS_DARWIN
-    clasp_write_char('_', stream);
+    stream_write_char(stream, '_');
 #endif
     clasp_write_string(entry, stream);
     clasp_terpri(stream);
@@ -1709,7 +1709,7 @@ CL_DEFUN void core__mangledSymbols(T_sp stream_designator) {
     List_sp keys = gc::As<HashTable_sp>(comp::_sym_STARprimitivesSTAR->symbolValue())->keysAsCons();
     for (auto cur : keys) {
       T_sp key = CONS_CAR(cur);
-      clasp_write_char('_', stream);
+      stream_write_char(stream, '_');
       clasp_write_string(gc::As<String_sp>(key)->get_std_string(), stream);
       clasp_terpri(stream);
     }

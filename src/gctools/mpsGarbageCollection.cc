@@ -1288,7 +1288,7 @@ size_t ReachableMPSObject::print(const std::string& shortName, const vector<std:
                                          this->instances, (this->totalMemory / this->instances), stampNames[this->stamp],
                                          this->stamp),
                              cl::_sym_STARstandard_outputSTAR->symbolValue());
-    core::clasp_finish_output_t();
+    core::stream_finish_output(cl::_sym_STARstandard_outputSTAR->symbolValue());
   }
   return this->totalMemory;
 }

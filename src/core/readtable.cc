@@ -298,7 +298,7 @@ CL_DEFUN T_sp core__reader_comma_form(T_sp sin, Character_sp ch) {
     core__reader_error_backquote_context(sin);
   Fixnum_sp new_backquote_level = make_fixnum(unbox_fixnum(backquote_level) - 1);
   DynamicScopeManager scope(_sym_STARbackquote_levelSTAR, new_backquote_level);
-  char nextc = clasp_peek_char(sin);
+  char nextc = stream_peek_char(sin);
   //	ql::source_code_list list(sin->lineNumber(),sin->column(),core__file_scope(sin));
   ql::list list;
   Symbol_sp head = _sym_unquote;
@@ -362,7 +362,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(reader_skip_semicolon_comment)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__reader_skip_semicolon_comment(T_sp sin, Character_sp ch) {
-  ASSERT(clasp_input_stream_p(sin));
+  ASSERT(stream_input_p(sin));
   stringstream str;
   bool done = false;
   while (!done) {
@@ -384,18 +384,18 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(dispatch_macro_character)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__dispatch_macro_character(T_sp sin, Character_sp ch) {
-  char cpeek = clasp_peek_char(sin);
+  char cpeek = stream_peek_char(sin);
   bool sawnumarg = false;
   uint numarg = 0;
   while (isdigit(cpeek)) {
     sawnumarg = true;
-    int cget = clasp_read_char(sin);
+    int cget = stream_read_char(sin);
     if (cget == EOF) {
       SIMPLE_ERROR("Hit eof in sharp macro");
     }
     numarg *= 10;
     numarg += (cget - '0');
-    cpeek = clasp_peek_char(sin);
+    cpeek = stream_peek_char(sin);
   }
   T_sp onumarg(nil<T_O>());
   if (sawnumarg)
@@ -803,19 +803,19 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(sharp_vertical_bar)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__sharp_vertical_bar(T_sp sin, Character_sp ch, T_sp num) {
-  ASSERT(clasp_input_stream_p(sin));
+  ASSERT(stream_input_p(sin));
   bool done = false;
   while (!done) {
     Character_sp nc = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true()));
     claspCharacter cc = clasp_as_claspCharacter(nc);
     if (cc == '#') {
-      claspCharacter nextc = clasp_peek_char(sin);
+      claspCharacter nextc = stream_peek_char(sin);
       if (nextc == '|') {
         Character_sp nextsubc = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true()));
         eval::funcall(_sym_sharp_vertical_bar, sin, nextsubc, num);
       }
     } else if (cc == '|') {
-      claspCharacter nextc = clasp_peek_char(sin);
+      claspCharacter nextc = stream_peek_char(sin);
       if (nextc == '#') {
         Character_sp nextsubc = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true()));
         (void)nextsubc;

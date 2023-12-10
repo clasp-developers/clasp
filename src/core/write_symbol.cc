@@ -138,13 +138,13 @@ static void write_symbol_string(SimpleString_sp s, Symbol_sp action, T_sp print_
       action = kw::_sym_preserve;
   }
   if (escape)
-    clasp_write_char('|', stream);
+    stream_write_char(stream, '|');
   capitalize = 1;
   for (cl_index i = 0, iEnd(s->length()); i < iEnd; i++) {
     claspCharacter c = clasp_as_claspCharacter(cl__char(s, i));
     if (escape) {
       if (c == '|' || c == '\\') {
-        clasp_write_char('\\', stream);
+        stream_write_char(stream, '\\');
       }
     } else if (action != kw::_sym_preserve) {
       if (upper_case_p(c)) {
@@ -165,10 +165,10 @@ static void write_symbol_string(SimpleString_sp s, Symbol_sp action, T_sp print_
         capitalize = !alphanumericp(c);
       }
     }
-    clasp_write_char(c, stream);
+    stream_write_char(stream, c);
   }
   if (escape)
-    clasp_write_char('|', stream);
+    stream_write_char(stream, '|');
 }
 
 static bool forced_print_package(T_sp package) {
@@ -208,7 +208,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
     if (print_readably || clasp_print_gensym())
       clasp_write_string("#:", stream);
   } else if (package == _lisp->keywordPackage()) {
-    clasp_write_char(':', stream);
+    stream_write_char(stream, ':');
   } else {
     bool print_package = false;
     if ((forced_package = forced_print_package(package)))
@@ -241,7 +241,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
         if (intern_flag2 == kw::_sym_internal || forced_package) {
           clasp_write_string("::", stream);
         } else if (intern_flag2 == kw::_sym_external) {
-          clasp_write_char(':', stream);
+          stream_write_char(stream, ':');
         } else {
           clasp_write_string("<PATHOLOGICAL-SYMBOL@", stream);
           stringstream ss;
@@ -252,7 +252,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
           SIMPLE_ERROR("Pathological symbol --- cannot print");
         }
       } else {
-        clasp_write_char(':', stream);
+        stream_write_char(stream, ':');
       }
     }
   }

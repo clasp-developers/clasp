@@ -117,7 +117,7 @@ struct loadltv {
 
   loadltv(Stream_sp stream) : _stream(stream), _index_bytes(1) {}
 
-  inline uint8_t read_u8() { return clasp_read_byte(_stream).unsafe_fixnum(); }
+  inline uint8_t read_u8() { return stream_read_byte(_stream).unsafe_fixnum(); }
 
   inline int8_t read_s8() {
     uint8_t byte = read_u8();
@@ -944,7 +944,7 @@ struct loadltv {
 
   void load() {
     uint8_t header[BC_HEADER_SIZE];
-    clasp_read_byte8(_stream, header, BC_HEADER_SIZE);
+    stream_read_byte8(_stream, header, BC_HEADER_SIZE);
     uint64_t ninsts = ltv_header_decode(header);
     for (size_t i = 0; i < ninsts; ++i)
       load_instruction();

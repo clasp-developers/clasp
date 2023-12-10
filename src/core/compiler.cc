@@ -1264,12 +1264,12 @@ template <> char document<ClaspXepAnonymousFunction>() { return 'f'; };
 
 char ll_read_char(T_sp stream, bool log, size_t& index) {
   while (1) {
-    char c = clasp_read_char(stream);
+    char c = stream_read_char(stream);
     if (c == '!') {
       std::string msg;
       char d;
       do {
-        d = clasp_read_char(stream);
+        d = stream_read_char(stream);
         if (d != '!') {
           msg += d;
         }
@@ -1286,7 +1286,7 @@ char ll_read_char(T_sp stream, bool log, size_t& index) {
 #define SELF_DOCUMENT(ty, stream, index)                                                                                           \
   {                                                                                                                                \
     char _xx = document<ty>();                                                                                                     \
-    clasp_write_char(_xx, stream);                                                                                                 \
+    stream_write_char(stream, _xx);                                                                                                \
     ++index;                                                                                                                       \
   }
 #define SELF_CHECK(ty, stream, index)                                                                                              \
@@ -1308,10 +1308,10 @@ DOCGROUP(clasp);
 CL_DEFUN size_t core__ltvc_write_char(T_sp object, T_sp stream, size_t index) {
   SELF_DOCUMENT(char, stream, index);
   if (object.fixnump()) {
-    clasp_write_char(object.unsafe_fixnum() & 0xff, stream);
+    stream_write_char(stream, object.unsafe_fixnum() & 0xff);
     ++index;
   } else if (object.characterp()) {
-    clasp_write_char(object.unsafe_character(), stream);
+    stream_write_char(stream, object.unsafe_character());
     ++index;
   } else {
     SIMPLE_ERROR("Expected fixnum or character - got {}", _rep_(object));
@@ -1335,7 +1335,7 @@ void compact_write_size_t(size_t data, T_sp stream, size_t& index) {
       break;
   }
   nb += 1;
-  clasp_write_char('0' + nb, stream);
+  stream_write_char(stream, '0' + nb);
   clasp_write_characters((char*)&data, nb, stream);
   index += nb + 1;
 }
@@ -1473,7 +1473,7 @@ CL_DEFUN size_t core__ltvc_write_object(T_sp ttag, T_sp index_or_immediate, T_sp
   SELF_DOCUMENT(T_O*, stream, index);
   if (ttag.characterp() && (ttag.unsafe_character() == 'l' || ttag.unsafe_character() == 't' || ttag.unsafe_character() == 'i')) {
     char tag = ttag.unsafe_character();
-    clasp_write_char(tag, stream);
+    stream_write_char(stream, tag);
     index += 1;
     size_t data;
     if (ttag.unsafe_character() == 'l' || ttag.unsafe_character() == 't') {

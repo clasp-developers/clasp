@@ -202,9 +202,9 @@ CL_DOCSTRING(R"dx(printCxxObject)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__print_cxx_object(T_sp obj, T_sp stream) {
   if (core__fieldsp(obj)) {
-    clasp_write_char('#', stream);
-    clasp_write_char('I', stream);
-    clasp_write_char('(', stream);
+    stream_write_char(stream, '#');
+    stream_write_char(stream, 'I');
+    stream_write_char(stream, '(');
     Instance_sp myclass = lisp_instance_class(obj);
     ASSERT(myclass);
     Symbol_sp className = myclass->_className();
@@ -214,15 +214,15 @@ CL_DEFUN T_sp core__print_cxx_object(T_sp obj, T_sp stream) {
       Cons_sp entry = gc::As<Cons_sp>(oCar(cur));
       Symbol_sp key = gc::As<Symbol_sp>(oCar(entry));
       T_sp val = oCdr(entry);
-      clasp_write_char(' ', stream);
+      stream_write_char(stream, ' ');
       cl__prin1(key, stream);
-      clasp_finish_output(stream);
-      clasp_write_char(' ', stream);
+      stream_finish_output(stream);
+      stream_write_char(stream, ' ');
       cl__prin1(val, stream);
     }
-    clasp_write_char(' ', stream);
-    clasp_write_char(')', stream);
-    clasp_finish_output(stream);
+    stream_write_char(stream, ' ');
+    stream_write_char(stream, ')');
+    stream_finish_output(stream);
   } else {
     SIMPLE_ERROR("Object does not provide fields");
   }
