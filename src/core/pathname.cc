@@ -888,7 +888,7 @@ struct PathnameRecursionGuard {
 };
 
 DOCGROUP(clasp);
-CL_DEFUN Pathname_sp cl__pathname(T_sp x) {
+CL_DEFUN Pathname_sp core__pathnameSTAR(T_sp x) {
   PathnameRecursionGuard guard;
   if (x.nilp()) {
     ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_pathname, x,
@@ -909,6 +909,13 @@ L:
         Cons_O::createList(cl::_sym_or, cl::_sym_fileStream, cl::_sym_string, cl::_sym_pathname, cl::_sym_SynonymStream_O));
   }
   return gc::As<Pathname_sp>(x);
+}
+
+CL_DOCSTRING(R"dx(Returns the pathname denoted by pathspec. If the gray-streams module has been loaded
+then this function will be made generic.)dx")
+DOCGROUP(clasp);
+CL_DEFUN Pathname_sp cl__pathname(T_sp pathspec) {
+  return core__pathnameSTAR(pathspec);
 }
 
 CL_LAMBDA(x);

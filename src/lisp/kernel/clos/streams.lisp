@@ -79,6 +79,13 @@
 (defgeneric stream-p (stream)
   (:documentation "Is this object a STREAM?"))
 
+(defgeneric pathname (pathspec)
+  (:documentation "Returns the pathname denoted by pathspec."))
+
+(defgeneric truename (filespec)
+  (:documentation "truename tries to find the file indicated by filespec and returns its
+truename."))
+
 (defgeneric stream-interactive-p (stream)
   (:documentation "Is stream interactive (For instance, a tty)?"))
 
@@ -411,6 +418,15 @@
 (defmethod stream-interactive-p ((stream t))
   (bug-or-error stream 'stream-interactive-p))
 
+;; PATHNAME
+
+(defmethod pathname (pathspec)
+  (core:pathname* pathspec))
+
+;; TRUENAME
+
+(defmethod truename (filespec)
+  (core:truename* filespec))
 
 ;; LINE-COLUMN
 
@@ -781,8 +797,15 @@
 
 ;;; Setup
 
-(core:defconstant-equal +conflicting-symbols+ '(cl:close cl:stream-element-type cl:input-stream-p
-                                                cl:open-stream-p cl:output-stream-p cl:streamp))
+(core:defconstant-equal +conflicting-symbols+
+  '(cl:close
+    cl:stream-element-type
+    cl:input-stream-p
+    cl:open-stream-p
+    cl:output-stream-p
+    cl:streamp
+    cl:pathname
+    cl:truename))
 
 (defun redefine-cl-functions ()
   "Some functions in CL package are expected to be generic. We make them so."
