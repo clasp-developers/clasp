@@ -1540,6 +1540,10 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, Lexi
   Label_sp supplied_label = Label_O::make();
   Label_sp next_label = Label_O::make();
   context.emit_jump_if_supplied(supplied_label, varinfo->frameIndex());
+  // Emit an annotation for the if.
+  Label_sp else_label = Label_O::make();
+  else_label->contextualize(context);
+  context.push_debug_info(BytecodeAstIf_O::make(else_label, next_label, supplied_var.notnilp() ? 2 : 1));
   // Emit code for the case of the variable not being supplied:
   // Bind the var to the default, and the suppliedvar to NIL if applicable.
   // We push the suppliedp value first because it's bound second.
