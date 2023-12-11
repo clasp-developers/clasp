@@ -879,12 +879,11 @@ CL_DEFUN Pathname_mv core__file_truename(T_sp pathname, T_sp filename, bool foll
  * current directory
  */
 
-CL_LAMBDA(orig-pathname);
+CL_LAMBDA(filespec);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(truename)dx");
 DOCGROUP(clasp);
-CL_DEFUN Pathname_sp cl__truename(T_sp orig_pathname) {
-  Pathname_sp pathname = make_absolute_pathname(orig_pathname);
+CL_DEFUN Pathname_sp core__truenameSTAR(T_sp filespec) {
+  Pathname_sp pathname = make_absolute_pathname(filespec);
   Pathname_sp base_dir = make_base_pathname(pathname);
   Cons_sp dir;
   /* We process the directory part of the filename, removing all
@@ -904,6 +903,15 @@ CL_DEFUN Pathname_sp cl__truename(T_sp orig_pathname) {
 #endif
   Pathname_mv truename = file_truename(pathname, nil<T_O>(), FOLLOW_SYMLINKS);
   return truename;
+}
+
+CL_LAMBDA(filespec);
+CL_DECLARE();
+CL_DOCSTRING(R"dx(truename tries to find the file indicated by filespec and returns its truename.
+If the gray-streams module has been loaded then this function will be made generic.)dx");
+DOCGROUP(clasp);
+CL_DEFUN Pathname_sp cl__truename(T_sp filespec) {
+  return core__truenameSTAR(filespec);
 }
 
 int clasp_backup_open(const char* filename, int option, int mode) {
