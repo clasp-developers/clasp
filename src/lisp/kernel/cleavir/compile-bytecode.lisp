@@ -26,24 +26,36 @@
   (core:global-bytecode-simple-fun/environment-size bcfun))
 
 (defgeneric compile-instruction (mnemonic inserter context &rest args))
-(defgeneric compile-annotation (annotation inserter context))
+(defgeneric start-annotation (annotation inserter context))
+(defgeneric end-annotation (annotation inserter context))
 
 (defun compile-bcmodule (bcmodule)
-  (let ((irmodule (make-instance 'bir:module))
-        (literals (core:bytecode-module/literals bcmodule))
-        (blockmap (make-blockmap)) (funmap (make-funmap))
-        context
-        (inserter (make-instance 'ast-to-bir:inserter))
-        ;; annotations starting at opip.
-        (opannots
-          (initial-annotations
-           (core:bytecode-module/debug-info bcmodule))))
+  (let* ((irmodule (make-instance 'bir:module))
+         (literals (core:bytecode-module/literals bcmodule))
+         (blockmap (make-blockmap)) (funmap (make-funmap))
+         (context (make-context irmodule blockmap funmap))
+         (inserter (make-instance 'ast-to-bir:inserter))
+         ;; annotations starting at opip.
+         (opannots (initial-annotations
+                    (core:bytecode-module/debug-info bcmodule)))
+         ;; all annotations currently in scope.
+         (annots
+           (sort (copy-list opannots) #'<
+                 :key #'core:bytecode-debug-info/end)))
     ;; Compile.
-    (core:do-module-instructions (mnemonic args opip ip annots)
+    (core:do-module-instructions (mnemonic args opip ip next-annots)
         (bcmodule)
-      (setf context
-            (maybe-begin-new opip opannots blockmap irmodule
-                             inserter context funmap))
+      ;; Start a block or function maybe.
+      (setf context (maybe-begin-new opip opannots inserter context)
+            ;; End annotations coming out of effect.
+            ;; NOTE: It's important to do this here because
+            ;; maybe-begin-new may install a fresh context on block entry,
+            ;; and that may coincide with an annotation ending.
+            ;; E.g. in (let ((z ...)) (if ...)) the end of the IF (a block)
+            ;; and the end of the binding (an annotation) coincide.
+            annots (end-annotations opip annots inserter context))
+      ;; Set up stuff for annotations coming into effect.
+      (start-annotations opannots inserter context)
       ;; If this code is unreachable, we don't bother generating
       ;; anything. This makes consistency a bit easier but is a
       ;; little wacky? Maybe we want to generate IR for unreachable
@@ -52,9 +64,9 @@
         (let ((args (if (eq mnemonic :parse-key-args)
                         (compute-pka-args args literals)
                         (compute-args args literals blockmap))))
-          (apply #'compile-instruction mnemonic inserter context args)
-          (compile-annotations annots inserter context)))
-      (setf opannots annots))
+          (apply #'compile-instruction mnemonic inserter context args)))
+      (setf annots (add-annotations annots next-annots)
+            opannots next-annots))
     ;; Compute all iblock flow orders and return.
     (values irmodule
             (loop for entry in (fmap funmap)
@@ -65,23 +77,24 @@
 ;;; If the instruction begins a new iblock and/or function,
 ;;; set everything up for that.
 ;;; Return (values new-context new-funmap).
-(defun maybe-begin-new (opip opannots blockmap irmodule inserter context funmap)
+(defun maybe-begin-new (opip opannots inserter context)
   ;; Do we have a function start in the annotations?
   (let ((bcfun (find-if #'bcfun-p opannots)))
     (when bcfun
-      (let* ((existing (find-bcfun bcfun funmap))
+      (let* ((existing (find-bcfun bcfun (funmap context)))
              ;; We might have made this function earlier for ENCLOSE.
              (irfun (if existing
                         (finfo-irfun existing)
                         (let ((new
-                                (make-bir-function bcfun inserter irmodule)))
-                          (push (list bcfun new nil) (fmap funmap))
+                                (make-bir-function bcfun inserter
+                                                   (module context))))
+                          (push (list bcfun new nil) (fmap (funmap context)))
                           new))))
         (ast-to-bir:begin inserter (bir:start irfun))
         (return-from maybe-begin-new
-          (make-context bcfun blockmap funmap)))))
+          (context-new-function context bcfun)))))
   ;; Maybe we've determined earlier that this IP begins a block?
-  (let ((binfo (find-block opip blockmap)))
+  (let ((binfo (find-block opip (blockmap context))))
     (when binfo
       ;; If we're falling through from an existing block
       ;; compile in an implicit jump.
@@ -122,20 +135,42 @@
           collect annot
         else do (loop-finish)))
 
-(defun compile-annotations (annotations inserter context)
+(defun start-annotations (annotations inserter context)
   (loop for a in annotations
-        do (compile-annotation a inserter context)))
+        do (start-annotation a inserter context)))
 
-(defun make-context (bcfun blockmap funmap)
+(defun add-annotations (annots next-annots)
+  ;; We keep ANNOTS sorted by end IP.
+  ;; FIXME? This could be done without consing, but it would be uglier.
+  (let ((sna (sort (copy-list next-annots) #'<
+                   :key #'core:bytecode-debug-info/end)))
+    (merge 'list annots sna #'< :key #'core:bytecode-debug-info/end)))
+
+(defun end-annotations (ip annots inserter context)
+  ;; ANNOTS are kept sorted by bdi/end, so this is easy.
+  (loop with result = annots
+        for a in annots
+        while (<= (core:bytecode-debug-info/end a) ip)
+        do (end-annotation a inserter context)
+           (setf result (cdr result))
+        finally (return result)))
+
+(defun make-context (module blockmap funmap)
   (make-instance 'context
-    :locals (make-array (bcfun/locals-size bcfun))
-    :blockmap blockmap :funmap funmap))
+    :module module :blockmap blockmap :funmap funmap))
+
+(defun context-new-function (context bcfun)
+  (setf (stack context) ()
+        (locals context) (make-array (bcfun/locals-size bcfun))
+        (mvals context) nil
+        (reachablep context) t)
+  context)
 
 (defun copy-context (context)
   (make-instance 'context
     :stack (copy-list (stack context))
     :locals (copy-seq (locals context))
-    :mvals (mvals context)
+    :mvals (mvals context) :module (module context)
     :blockmap (blockmap context) :funmap (funmap context)
     :reachablep (reachablep context)))
 
@@ -240,9 +275,10 @@
 
 (defclass context ()
   ((%stack :initform nil :initarg :stack :accessor stack)
-   (%locals :initarg :locals :reader locals)
+   (%locals :initarg :locals :accessor locals)
    (%mvals :initform nil :initarg :mvals :accessor mvals)
    (%reachablep :initform t :initarg :reachablep :accessor reachablep)
+   (%module :initarg :module :reader module :type bir:module)
    (%funmap :initarg :funmap :reader funmap :type funmap)
    (%blockmap :initarg :blockmap :reader blockmap :type blockmap)))
 
@@ -933,8 +969,8 @@
       (stack-push (%read-variable var inserter) context)
       (stack-push (%read-variable var inserter) context))))
 
-(defmethod compile-annotation ((annotation core:bytecode-debug-vars)
-                               inserter context)
+(defmethod start-annotation ((annotation core:bytecode-debug-vars)
+                             inserter context)
   (loop for (name . index)
           in (core:bytecode-debug-vars/bindings annotation)
         for cellp = (consp index)
@@ -942,8 +978,11 @@
         for (datum) = (aref (locals context) rindex)
         for variable = (make-instance 'bir:variable
                          :ignore nil :name name)
-        do (check-type datum bir:linear-datum)
-           (bind-variable variable datum inserter)
+        do (etypecase datum
+             (bir:linear-datum
+              (bind-variable variable datum inserter))
+             ((cons bir:linear-datum) ; cell
+              (bind-variable variable (car datum) inserter)))
            (setf (aref (locals context) rindex)
                  (cons variable cellp))))
 
@@ -957,16 +996,24 @@
     (set:nadjoinf (bir:variables (bir:function binder)) variable)
     (setf (bir:binder variable) binder)))
 
-(defmethod compile-annotation ((annot core:bytecode-ast-if)
-                               inserter context)
+(defmethod end-annotation ((annot core:bytecode-debug-vars)
+                           inserter context)
+  ;; End the extent of all variables.
+  (loop for (_ . index)
+          in (core:bytecode-debug-vars/bindings annot)
+        for rindex = (if (consp index) (car index) index)
+        do (setf (aref (locals context) rindex) nil)))
+
+(defmethod start-annotation ((annot core:bytecode-ast-if)
+                             inserter context)
   ;; Record the merge block for later jumps.
   (let* ((end (core:bytecode-debug-info/end annot))
          (receiving (core:bytecode-ast-if/receiving annot))
          (iblock (make-iblock-r inserter '#:if-merge receiving)))
     (add-block context end iblock receiving)))
 
-(defmethod compile-annotation ((annot core:bytecode-ast-tagbody)
-                               inserter context)
+(defmethod start-annotation ((annot core:bytecode-ast-tagbody)
+                             inserter context)
   (loop with entryp = (just-started-entry-p inserter)
         with de = (ast-to-bir::dynamic-environment inserter)
         for (name . ip) in (core:bytecode-ast-tagbody/tags annot)
@@ -1005,8 +1052,8 @@
     (setf (bir:inputs iblock) phis)
     iblock))
 
-(defmethod compile-annotation ((annot core:bytecode-ast-block)
-                               inserter context)
+(defmethod start-annotation ((annot core:bytecode-ast-block)
+                             inserter context)
   (let* ((receiving (core:bytecode-ast-block/receiving annot))
          (after
            (make-iblock-r inserter
@@ -1021,10 +1068,17 @@
     (add-block context (core:bytecode-debug-info/end annot)
                after receiving)))
 
-;;; default method: irrelevant to compilation. ignore.
-(defmethod compile-annotation ((annot core:bytecode-debug-info)
-                               inserter context)
+;;; default methods: irrelevant to compilation. ignore.
+(defmethod start-annotation ((annot core:bytecode-debug-info)
+                             inserter context)
   (declare (ignore inserter context)))
-(defmethod compile-annotation ((annot core:global-bytecode-simple-fun)
-                               inserter context)
+(defmethod end-annotation ((annot core:bytecode-debug-info)
+                           inserter context)
+  (declare (ignore inserter context)))
+;;; Handled by maybe-begin-new.
+(defmethod start-annotation ((annot core:global-bytecode-simple-fun)
+                             inserter context)
+  (declare (ignore inserter context)))
+(defmethod end-annotation ((annot core:global-bytecode-simple-fun)
+                           inserter context)
   (declare (ignore inserter context)))
