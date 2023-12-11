@@ -547,7 +547,7 @@
     (let* ((ifun (inserter-function inserter))
            (ll (bir:lambda-list ifun)))
       (loop with locals = (locals context)
-            for i from start
+            for i from frame-start
             for key in keys
             for arg = (make-instance 'bir:argument :function ifun)
             for -p = (make-instance 'bir:argument :function ifun)
