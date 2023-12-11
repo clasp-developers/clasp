@@ -8,6 +8,8 @@
   code (FASO) while the bytecode compiler is active.
 * Generic `gray:stream-file-length` which implements `cl:file-length`
   for Gray streams.
+* Generic versions of `cl:pathname` and `cl:truename`, both of which
+  are available after the Gray stream modules is required.
 
 ## Changed
 * `cl:format` and `pprint` now respect the value returned bye
