@@ -9,6 +9,14 @@
 
 (in-package #:clasp-bytecode-to-bir)
 
+;;; To be bound to cmp:*btb-compile-hook*
+(defun compile-hook (definition environment)
+  (declare (ignore environment))
+  (handler-case (compile-function definition)
+    (error (e)
+      (warn "BUG: Error during BTB compilation: ~a" e)
+      definition)))
+
 (defun bcfun-p (annotation)
   (typep annotation 'core:global-bytecode-simple-fun))
 
