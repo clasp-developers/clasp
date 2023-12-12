@@ -45,17 +45,12 @@
     ;; Compile.
     (core:do-module-instructions (mnemonic args opip ip next-annots)
         (bcmodule)
-      ;; Start a block or function maybe.
-      (setf context (maybe-begin-new opip opannots inserter context)
-            ;; End annotations coming out of effect.
-            ;; NOTE: It's important to do this here because
-            ;; maybe-begin-new may install a fresh context on block entry,
-            ;; and that may coincide with an annotation ending.
-            ;; E.g. in (let ((z ...)) (if ...)) the end of the IF (a block)
-            ;; and the end of the binding (an annotation) coincide.
-            annots (end-annotations opip annots inserter context))
       ;; Set up stuff for annotations coming into effect.
       (start-annotations opannots inserter context)
+      ;; Start a block or function maybe.
+      (maybe-begin-new opip opannots inserter context)
+      ;; End annotations coming out of effect.
+      (setf annots (end-annotations opip annots inserter context))
       ;; If this code is unreachable, we don't bother generating
       ;; anything. This makes consistency a bit easier but is a
       ;; little wacky? Maybe we want to generate IR for unreachable
@@ -76,7 +71,7 @@
 
 ;;; If the instruction begins a new iblock and/or function,
 ;;; set everything up for that.
-;;; Return (values new-context new-funmap).
+;;; Return value irrelevant. Mutates CONTEXT.
 (defun maybe-begin-new (opip opannots inserter context)
   ;; Do we have a function start in the annotations?
   (let ((bcfun (find-if #'bcfun-p opannots)))
@@ -91,8 +86,7 @@
                           (push (list bcfun new nil) (fmap (funmap context)))
                           new))))
         (ast-to-bir:begin inserter (bir:start irfun))
-        (return-from maybe-begin-new
-          (context-new-function context bcfun)))))
+        (context-new-function context bcfun))))
   ;; Maybe we've determined earlier that this IP begins a block?
   (let ((binfo (find-block opip (blockmap context))))
     (when binfo
@@ -107,9 +101,7 @@
       ;; Start new block.
       (ast-to-bir:begin inserter
                         (binfo-irblock binfo))
-      (return-from maybe-begin-new (binfo-context binfo))))
-  ;; Nothing.
-  context)
+      (context-new-block context (binfo-context binfo)))))
 
 (defun compile-function (function
                          &key (abi clasp-cleavir:*abi-x86-64*)
@@ -165,6 +157,15 @@
         (mvals context) nil
         (reachablep context) t)
   context)
+
+(defun context-new-block (context old-context)
+  ;; Basically mutate context to be old-context.
+  (setf (stack context) (stack old-context)
+        (locals context) (locals old-context)
+        (mvals context) (mvals old-context)
+        ;; new block, so we're reachable.
+        ;; module, funmap, blockmap should already be ok.
+        (reachablep context) t))
 
 (defun copy-context (context)
   (make-instance 'context
@@ -222,7 +223,7 @@
 (defun binfo-context (binfo) (third binfo))
 (defun binfo-receiving (binfo) (fourth binfo))
 
-(defun add-block (context ip iblock &optional (receiving 0))
+(defun %add-block (context ip iblock &optional (receiving 0))
   (let ((ncontext (copy-context context)))
     ;; Fix up the context with block inputs
     (if (= receiving -1)
@@ -233,7 +234,28 @@
               do (stack-push i ncontext)))
     ;; Record info
     (push (list ip iblock ncontext receiving)
-          (bmap (blockmap context)))))
+          (bmap (blockmap context))))
+  iblock)
+
+;;; Set up and return a new iblock for a later IP.
+;;; If an iblock has already been set up (e.g. from nested IF), check
+;;; for consistency but return the existing block.
+;;; NOTE: Alternately we could create a block anyway that just jumps to the
+;;; next. This would preserve block names. But who cares about those?
+(defun delay-block (inserter context ip
+                    &key name (receiving 0)
+                      (dynamic-environment
+                       (ast-to-bir::dynamic-environment inserter)))
+  (let ((einfo (find-block ip (blockmap context))))
+    (cond (einfo
+           (assert (= receiving (binfo-receiving einfo)))
+           (binfo-irblock einfo))
+          (t
+           (%add-block context ip
+                       (make-iblock-r inserter name
+                                      :receiving receiving
+                                      :dynamic-environment dynamic-environment)
+                       receiving)))))
 
 (defun compute-pka-args (args literals)
   (let ((more-args (cdr (first args)))
@@ -626,15 +648,13 @@
 
 (defun compile-jump-if (inserter context destination)
   (let* ((condition (stack-pop context))
-         (then-dest (ast-to-bir::make-iblock
-                     inserter :name '#:if-then))
+         (then-dest (delay-block inserter context destination
+                                 :name '#:if-then))
          (else-dest (ast-to-bir::make-iblock
                      inserter :name '#:if-else)))
     (ast-to-bir:terminate inserter 'bir:ifi
                           :inputs (list condition)
                           :next (list then-dest else-dest))
-    ;; Add the then block for later.
-    (add-block context destination then-dest)
     ;; The else block we just start here.
     (ast-to-bir:begin inserter else-dest)))
 
@@ -661,12 +681,12 @@
                                  (return (second e))))
                             (3 (when (eq (second e) arg)
                                  (return (third e)))))))
-           (thenb (ast-to-bir::make-iblock inserter :name '#:if-supplied))
+           (thenb (delay-block inserter context true-dest
+                               :name '#:if-supplied))
            (elseb (ast-to-bir::make-iblock inserter :name '#:if-unsupplied)))
       (ast-to-bir:terminate inserter 'bir:ifi
                             :inputs (list -p)
                             :next (list thenb elseb))
-      (add-block context true-dest thenb)
       (ast-to-bir:begin inserter elseb))))
 
 (defmethod compile-instruction ((mnemonic (eql :jump-if-supplied-8))
@@ -1007,27 +1027,25 @@
 (defmethod start-annotation ((annot core:bytecode-ast-if)
                              inserter context)
   ;; Record the merge block for later jumps.
-  (let* ((end (core:bytecode-debug-info/end annot))
-         (receiving (core:bytecode-ast-if/receiving annot))
-         (iblock (make-iblock-r inserter '#:if-merge receiving)))
-    (add-block context end iblock receiving)))
+  (delay-block inserter context (core:bytecode-debug-info/end annot)
+               :name '#:if-merge
+               :receiving (core:bytecode-ast-if/receiving annot)))
 
 (defmethod start-annotation ((annot core:bytecode-ast-tagbody)
                              inserter context)
   (loop with entryp = (just-started-entry-p inserter)
         with de = (ast-to-bir::dynamic-environment inserter)
         for (name . ip) in (core:bytecode-ast-tagbody/tags annot)
-        for iblock = (ast-to-bir::make-iblock inserter :name name)
-        do (add-block context ip iblock)
+        for iblock = (delay-block inserter context ip :name name)
         when entryp
           do (push iblock (cdr (bir:next de)))
              (set:nadjoinf (bir:predecessors iblock) (bir:iblock de))
         finally
            ;; Establish a block for after the end.
-           (add-block context (core:bytecode-debug-info/end annot)
-                      (ast-to-bir::make-iblock
-                       inserter :name '#:tagbody-after
-                       :dynamic-environment (if entryp (bir:parent de) de)))))
+           (delay-block inserter context
+                        (core:bytecode-debug-info/end annot)
+                        :name '#:tagbody-after
+                        :dynamic-environment (if entryp (bir:parent de) de))))
 
 ;;; Sorta messy code, but I think this should be reliable.
 ;;; See if the previous instruction is an entry, and we are at
@@ -1041,8 +1059,13 @@
            (and (typep term 'bir:come-from)
                 (= (length (bir:next term)) 1))))))
 
-(defun make-iblock-r (inserter name receiving)
-  (let* ((iblock (ast-to-bir::make-iblock inserter :name name))
+(defun make-iblock-r (inserter name
+                      &key (receiving 0)
+                        (dynamic-environment
+                         (ast-to-bir::dynamic-environment inserter)))
+  (let* ((iblock (ast-to-bir::make-iblock
+                  inserter :name name
+                           :dynamic-environment dynamic-environment))
          (phis
            (if (eql receiving -1) ; multiple values
                (list (make-instance 'bir:phi :iblock iblock))
@@ -1054,19 +1077,16 @@
 
 (defmethod start-annotation ((annot core:bytecode-ast-block)
                              inserter context)
-  (let* ((receiving (core:bytecode-ast-block/receiving annot))
-         (after
-           (make-iblock-r inserter
-                          (symbolicate (core:bytecode-ast-block/name annot)
-                                       '#:-after)
-                          receiving)))
+  (let ((after
+          (delay-block inserter context (core:bytecode-debug-info/end annot)
+                       :name (symbolicate (core:bytecode-ast-block/name annot)
+                                          '#:-after)
+                       :receiving (core:bytecode-ast-block/receiving annot))))
     (when (just-started-entry-p inserter)
       (let ((cf (ast-to-bir::dynamic-environment inserter)))
         (check-type cf bir:come-from)
         (push after (cdr (bir:next cf)))
-        (set:nadjoinf (bir:predecessors after) (bir:iblock cf))))
-    (add-block context (core:bytecode-debug-info/end annot)
-               after receiving)))
+        (set:nadjoinf (bir:predecessors after) (bir:iblock cf))))))
 
 ;;; default methods: irrelevant to compilation. ignore.
 (defmethod start-annotation ((annot core:bytecode-debug-info)
