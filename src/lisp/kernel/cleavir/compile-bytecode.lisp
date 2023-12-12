@@ -306,7 +306,9 @@
 
 (defun stack-push (datum context)
   (push datum (stack context)))
-(defun stack-pop (context) (pop (stack context)))
+(defun stack-pop (context)
+  (assert (stack context))
+  (pop (stack context)))
 
 (defun make-start-block (inserter irfun bcfun)
   (ast-to-bir::make-iblock
@@ -974,6 +976,13 @@
   (destructuring-bind () args
     (stack-push (compile-constant 'nil inserter) context)))
 
+(defmethod compile-instruction ((mnemonic (eql :push))
+                                inserter context &rest args)
+  (destructuring-bind () args
+    (let ((mv (mvals context)))
+      (setf (mvals context) nil)
+      (stack-push mv context))))
+
 (defmethod compile-instruction ((mnemonic (eql :pop))
                                 inserter context &rest args)
   (destructuring-bind () args
@@ -1077,11 +1086,23 @@
 
 (defmethod start-annotation ((annot core:bytecode-ast-block)
                              inserter context)
-  (let ((after
-          (delay-block inserter context (core:bytecode-debug-info/end annot)
-                       :name (symbolicate (core:bytecode-ast-block/name annot)
-                                          '#:-after)
-                       :receiving (core:bytecode-ast-block/receiving annot))))
+  (let* ((receiving (core:bytecode-ast-block/receiving annot))
+         (freceiving (if (= receiving 1) -1 receiving))
+         (name (core:bytecode-ast-block/name annot))
+         (end (core:bytecode-debug-info/end annot))
+         (after
+           (delay-block inserter context end
+                        :name (symbolicate name '#:-after)
+                        :receiving freceiving)))
+    ;; this and FRECEIVING are to take care of the ugly code we generate
+    ;; when a block is in a one-value context. See bytecode_compiler.cc.
+    ;; Basically, we have entry -> [body] -> jump normal; exit: push; normal:
+    ;; exits jump to the exit label. This is done so that nonlocal return
+    ;; values can always be put in the MV vector, but it sure looks ugly.
+    (when (= receiving 1)
+      (delay-block inserter context (1+ end) ; 1+ for the push.
+                   :name (symbolicate name '#:after-push)
+                   :receiving receiving))
     (when (just-started-entry-p inserter)
       (let ((cf (ast-to-bir::dynamic-environment inserter)))
         (check-type cf bir:come-from)
