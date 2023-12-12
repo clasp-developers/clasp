@@ -421,7 +421,7 @@
                                 inserter context &rest args)
   (destructuring-bind (nvars base) args
     (loop with locals = (locals context)
-          for i from base below (+ base nvars)
+          for i from (+ base nvars -1) downto base
           for value = (stack-pop context)
           do (set-local locals i value inserter))))
 
