@@ -23,6 +23,14 @@ public:
   // only used for lexical variables, but it's convenient for fixups and debug
   // infos to have it generally present.
   bool _set_p = false;
+  // Used for IGNORE tracking, which is used for local variables and functions
+  // but irrelevant for blocks and tags.
+  // To make things easier on the compiler, we default this to NOIGNORE, and then
+  // set it afterwards, so that you don't have to know the ignore status any time
+  // you make a variable.
+  enum class IgnoreStatus { NOIGNORE, IGNORE, IGNORABLE };
+  IgnoreStatus _ignore = IgnoreStatus::NOIGNORE;
+  bool _read_p = false;
 
 public:
   LexicalInfo_O(size_t ind, Cfunction_sp funct) : _frame_index(ind), _cfunction(funct){};
@@ -39,6 +47,10 @@ public:
   void setSetP(bool n) { this->_set_p = n; }
   // Is a cell required?
   bool indirectLexicalP() const { return closedOverP() && setP(); }
+  IgnoreStatus ignore() const { return this->_ignore; }
+  void setIgnore(IgnoreStatus n) { this->_ignore = n; }
+  bool readP() const { return this->_read_p; }
+  void setReadP(bool n) { this->_read_p = n; }
 };
 
 class VarInfo_O : public General_O {

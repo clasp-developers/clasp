@@ -613,6 +613,8 @@
              :offset-base-ctype "comp::LexicalInfo_O" :layout-offset-field-names ("_closed_over_p")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "comp::LexicalInfo_O" :layout-offset-field-names ("_set_p")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "comp::LexicalInfo_O" :layout-offset-field-names ("_read_p")}
 {class-kind :stamp-name "STAMPWTAG_core__DynEnv_O" :stamp-key "core::DynEnv_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
