@@ -10,6 +10,8 @@
   for Gray streams.
 * Generic versions of `cl:pathname` and `cl:truename`, both of which
   are available after the Gray stream modules is required.
+* Generic `(setf gray:stream-element-type)` for basic support of
+  bivalent streams.
 
 ## Changed
 * `cl:format` and `pprint` now respect the value returned bye
