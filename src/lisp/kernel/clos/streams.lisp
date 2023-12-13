@@ -55,6 +55,12 @@
   STREAM. The class FUNDAMENTAL-CHARACTER-STREAM provides a default method
   which returns CHARACTER."))
 
+(defgeneric (setf stream-element-type) (new-value stream)
+  (:documentation
+   "Set the type specifier of the kind of object returned by the
+  STREAM. There is no default method as this is optional and only
+  needed for bivalent streams."))
+
 (defgeneric stream-finish-output (stream)
   (:documentation
    "Attempts to ensure that all output sent to the Stream has reached
