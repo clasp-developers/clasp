@@ -513,7 +513,9 @@ DOCGROUP(clasp);
 CL_DEFUN void gctools__save_lisp_and_continue(core::T_sp filename, core::T_sp executable) {
   core::SaveLispAndDie ee(gc::As<core::String_sp>(filename)->get_std_string(), executable.notnilp(),
                           globals_->_Bundle->_Directories->_LibDir, false );
+#ifdef USE_PRECISE_GC
   snapshotSaveLoad::snapshot_save(ee);
+#endif
 }
 
 
