@@ -1000,19 +1000,22 @@
 
 (defmethod start-annotation ((annotation core:bytecode-debug-vars)
                              inserter context)
-  (loop for (name . index)
-          in (core:bytecode-debug-vars/bindings annotation)
-        for cellp = (consp index)
-        for rindex = (if cellp (car index) index)
-        for (datum) = (aref (locals context) rindex)
+  (loop for bdv in (core:bytecode-debug-vars/bindings annotation)
+        for name = (core:bytecode-debug-var/name bdv)
+        for cellp = (core:bytecode-debug-var/cellp bdv)
+        for index = (core:bytecode-debug-var/frame-index bdv)
+        for ignore = (loop for d in (core:bytecode-debug-var/decls bdv)
+                           when (eq d 'cl:ignore) return d
+                           when (eq d 'cl:ignorable) return d)
+        for (datum) = (aref (locals context) index)
         for variable = (make-instance 'bir:variable
-                         :ignore nil :name name)
+                         :ignore ignore :name name)
         do (etypecase datum
              (bir:linear-datum
               (bind-variable variable datum inserter))
              ((cons bir:linear-datum) ; cell
               (bind-variable variable (car datum) inserter)))
-           (setf (aref (locals context) rindex)
+           (setf (aref (locals context) index)
                  (cons variable cellp))))
 
 (defun bind-variable (variable value inserter) ; FIXME: Types
@@ -1028,10 +1031,9 @@
 (defmethod end-annotation ((annot core:bytecode-debug-vars)
                            inserter context)
   ;; End the extent of all variables.
-  (loop for (_ . index)
-          in (core:bytecode-debug-vars/bindings annot)
-        for rindex = (if (consp index) (car index) index)
-        do (setf (aref (locals context) rindex) nil)))
+  (loop for bdv in (core:bytecode-debug-vars/bindings annot)
+        for index = (core:bytecode-debug-var/frame-index bdv)
+        do (setf (aref (locals context) index) nil)))
 
 (defmethod start-annotation ((annot core:bytecode-ast-if)
                              inserter context)
