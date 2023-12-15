@@ -642,6 +642,7 @@
                            do (push (stack-pop context) result)
                            finally (return result))))
          (outputs (copy-list (bir:inputs irblock))))
+    (assert (loop for i in inputs always (typep i 'bir:linear-datum)))
     (ast-to-bir:terminate inserter 'bir:jump
                           :next (list irblock)
                           :inputs inputs :outputs outputs)))
@@ -871,7 +872,8 @@
         (pushnew dest (rest (bir:next cf)))
         (set:nadjoinf (bir:predecessors dest) (bir:iblock cf)))
       (set:nadjoinf (bir:unwinds cf) uw)
-      (set:nadjoinf (bir:entrances dest) (ast-to-bir::iblock inserter)))))
+      (set:nadjoinf (bir:entrances dest) (ast-to-bir::iblock inserter))))
+  (setf (reachablep context) nil))
 
 ;;; FIXME: The iblocks generated here are often kind of pointless -
 ;;; i.e. only reachable by unwinding and then all they do is unwind more.
