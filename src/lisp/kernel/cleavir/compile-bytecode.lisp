@@ -62,11 +62,19 @@
           (apply #'compile-instruction mnemonic inserter context args)))
       (setf annots (add-annotations annots next-annots)
             opannots next-annots))
+    ;; Compute all iblock flow orders.
+    (loop for entry in (fmap funmap)
+          do (bir:compute-iblock-flow-order (finfo-irfun entry)))
+    ;; Delete any delayed iblocks that turned out to be unreachable
+    ;; (e.g. the -after of (tagbody loop ... (go loop))).
+    ;; We have to do this manually because compute-iblock-flow-order, which
+    ;; normally deletes unused blocks, doesn't even know about them.
+    (loop for entry in (bmap blockmap)
+          do (bir:maybe-delete-iblock (binfo-irblock entry)))
     ;; Compute all iblock flow orders and return.
     (values irmodule
             (loop for entry in (fmap funmap)
                   for irfun = (finfo-irfun entry)
-                  do (bir:compute-iblock-flow-order irfun)
                   collect (cons (finfo-bcfun entry) irfun)))))
 
 ;;; If the instruction begins a new iblock and/or function,
@@ -99,8 +107,7 @@
                        'bir::%end)))
         (%compile-jump inserter context binfo))
       ;; Start new block.
-      (ast-to-bir:begin inserter
-                        (binfo-irblock binfo))
+      (ast-to-bir:begin inserter (binfo-irblock binfo))
       (context-new-block context (binfo-context binfo)))))
 
 (defun compile-function (function
@@ -160,11 +167,10 @@
 
 (defun context-new-block (context old-context)
   ;; Basically mutate context to be old-context.
+  ;; module, funmap, blockmap should already be ok.
   (setf (stack context) (stack old-context)
         (locals context) (locals old-context)
         (mvals context) (mvals old-context)
-        ;; new block, so we're reachable.
-        ;; module, funmap, blockmap should already be ok.
         (reachablep context) t))
 
 (defun copy-context (context)
@@ -862,16 +868,24 @@
       ;; Don't add duplicate NEXT entries
       ;; (obscure NLX uses can hit this, like CORE::PACKAGES-ITERATOR)
       (unless (eql dest (first (bir:next cf)))
-        (pushnew dest (rest (bir:next cf))))
+        (pushnew dest (rest (bir:next cf)))
+        (set:nadjoinf (bir:predecessors dest) (bir:iblock cf)))
       (set:nadjoinf (bir:unwinds cf) uw)
       (set:nadjoinf (bir:entrances dest) (ast-to-bir::iblock inserter)))))
 
+;;; FIXME: The iblocks generated here are often kind of pointless -
+;;; i.e. only reachable by unwinding and then all they do is unwind more.
+;;; Cleavir could maybe optimize such blocks away.
 (defmethod compile-instruction ((mnemonic (eql :entry-close))
                                 inserter context &rest args)
-  ;; the next block was already set up by BytecodeDebugBlock/Tagbody,
-  ;; so just fall through.
-  (declare (ignore inserter context))
-  (destructuring-bind () args))
+  (declare (ignore context))
+  (destructuring-bind () args
+    (let* ((de (bir:parent (ast-to-bir::dynamic-environment inserter)))
+           (ib (ast-to-bir::make-iblock
+                inserter :name '#:entry-close :dynamic-environment de)))
+      (ast-to-bir:terminate inserter 'bir:jump
+                            :inputs () :outputs () :next (list ib))
+      (ast-to-bir:begin inserter ib))))
 
 (defmethod compile-instruction ((mnemonic (eql :special-bind))
                                 inserter context &rest args)
@@ -1014,12 +1028,12 @@
         for name = (core:bytecode-debug-var/name bdv)
         for cellp = (core:bytecode-debug-var/cellp bdv)
         for index = (core:bytecode-debug-var/frame-index bdv)
-        for ignore = (loop for d in (core:bytecode-debug-var/decls bdv)
-                           when (eq d 'cl:ignore) return d
-                           when (eq d 'cl:ignorable) return d)
         for (datum) = (aref (locals context) index)
+        ;; We make all variables IGNORABLE because the bytecode compiler
+        ;; has already warned about any semantically unused variables
+        ;; (and variables declared IGNORE but then used).
         for variable = (make-instance 'bir:variable
-                         :ignore ignore :name name)
+                         :ignore 'cl:ignorable :name name)
         do (etypecase datum
              (bir:linear-datum
               (bind-variable variable datum inserter))
@@ -1055,31 +1069,13 @@
 
 (defmethod start-annotation ((annot core:bytecode-ast-tagbody)
                              inserter context)
-  (loop with entryp = (just-started-entry-p inserter)
-        with de = (ast-to-bir::dynamic-environment inserter)
-        for (name . ip) in (core:bytecode-ast-tagbody/tags annot)
+  (loop for (name . ip) in (core:bytecode-ast-tagbody/tags annot)
         for iblock = (delay-block inserter context ip :name name)
-        when entryp
-          do (push iblock (cdr (bir:next de)))
-             (set:nadjoinf (bir:predecessors iblock) (bir:iblock de))
         finally
            ;; Establish a block for after the end.
            (delay-block inserter context
                         (core:bytecode-debug-info/end annot)
-                        :name '#:tagbody-after
-                        :dynamic-environment (if entryp (bir:parent de) de))))
-
-;;; Sorta messy code, but I think this should be reliable.
-;;; See if the previous instruction is an entry, and we are at
-;;; the beginning of its block.
-(defun just-started-entry-p (inserter)
-  (let ((ib (ast-to-bir::iblock inserter)))
-    (and (not (slot-boundp ib 'bir::%start))
-         (= (set:size (bir:predecessors ib)) 1)
-         (let* ((pred (set:arb (bir:predecessors ib)))
-                (term (bir:end pred)))
-           (and (typep term 'bir:come-from)
-                (= (length (bir:next term)) 1))))))
+                        :name '#:tagbody-after)))
 
 (defun make-iblock-r (inserter name
                       &key (receiving 0)
@@ -1102,11 +1098,10 @@
   (let* ((receiving (core:bytecode-ast-block/receiving annot))
          (freceiving (if (= receiving 1) -1 receiving))
          (name (core:bytecode-ast-block/name annot))
-         (end (core:bytecode-debug-info/end annot))
-         (after
-           (delay-block inserter context end
-                        :name (symbolicate name '#:-after)
-                        :receiving freceiving)))
+         (end (core:bytecode-debug-info/end annot)))
+    (delay-block inserter context end
+                 :name (symbolicate name '#:-after)
+                 :receiving freceiving)
     ;; this and FRECEIVING are to take care of the ugly code we generate
     ;; when a block is in a one-value context. See bytecode_compiler.cc.
     ;; Basically, we have entry -> [body] -> jump normal; exit: push; normal:
@@ -1115,12 +1110,7 @@
     (when (= receiving 1)
       (delay-block inserter context (1+ end) ; 1+ for the push.
                    :name (symbolicate name '#:after-push)
-                   :receiving receiving))
-    (when (just-started-entry-p inserter)
-      (let ((cf (ast-to-bir::dynamic-environment inserter)))
-        (check-type cf bir:come-from)
-        (push after (cdr (bir:next cf)))
-        (set:nadjoinf (bir:predecessors after) (bir:iblock cf))))))
+                   :receiving receiving))))
 
 ;;; default methods: irrelevant to compilation. ignore.
 (defmethod start-annotation ((annot core:bytecode-debug-info)
