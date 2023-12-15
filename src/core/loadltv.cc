@@ -70,7 +70,7 @@ namespace core {
 #define BC_HEADER_SIZE 16
 
 #define BC_VERSION_MAJOR 0
-#define BC_VERSION_MINOR 12
+#define BC_VERSION_MINOR 13
 
 // versions are std::arrays so that we can compare them.
 typedef std::array<uint16_t, 2> BCVersion;
@@ -680,9 +680,28 @@ struct loadltv {
     gctools::Vec0<T_sp> bindings;
     for (uint16_t bcount = read_u16(); bcount > 0; --bcount) {
       T_sp name = get_ltv(read_index());
-      uint8_t flag = read_u8();
-      Integer_sp framei = Integer_O::create(read_u16());
-      bindings.push_back((flag == 0) ? Cons_O::create(name, framei) : Cons_O::createList(name, framei));
+      uint16_t framei = read_u16();
+      ql::list decls;
+      uint8_t flags = read_u8();
+      // Parse flags
+      switch ((flags & 0b00110000) >> 4) { // inline
+      case 0b00: break; // default
+      case 0b01: decls << cl::_sym_inline; break;
+      case 0b10: decls << cl::_sym_notinline; break;
+      }
+      if (flags & 0b00001000)
+        decls << cl::_sym_dynamic_extent;
+      switch ((flags & 0b00000110) >> 1) { // ignore
+      case 0b00: break; // default
+      case 0b01: decls << cl::_sym_ignore; break;
+      case 0b10: decls << cl::_sym_ignorable; break;
+      }
+      bool cellp = flags & 0b00000001;
+      // Extra declarations
+      for (uint16_t dcount = read_u16(); dcount > 0; --dcount) {
+        decls << get_ltv(read_index());
+      }
+      bindings.push_back(BytecodeDebugVar_O::make(name, framei, cellp, decls.cons()));
     }
     return BytecodeDebugVars_O::make(start, end, Cons_O::createFromVec0(bindings));
   }

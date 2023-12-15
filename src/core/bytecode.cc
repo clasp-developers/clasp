@@ -1468,28 +1468,16 @@ List_sp bytecode_bindings_for_pc(BytecodeModule_sp module, void* pc, T_O** fp) {
       size_t end = entry->end().unsafe_fixnum();
       if ((start <= bpc) && (bpc < end)) {
         for (Cons_sp cur : entry->bindings()) {
-          T_sp tinfo = cur->car();
-          if (gc::IsA<Cons_sp>(tinfo)) {
-            Cons_sp info = gc::As_unsafe<Cons_sp>(tinfo);
-            T_sp name = info->car();
-            T_sp cdr = info->cdr();
-            if (cdr.fixnump()) {
-              gc::Fixnum index = cdr.unsafe_fixnum();
-              // We add one here because *fp is the previous fp.
-              T_O* tvalue = *(fp + index + 1);
-              T_sp value((gctools::Tagged)tvalue);
-              bindings << Cons_O::create(name, value);
-            } else if (gc::IsA<Cons_sp>(cdr)) {
-              // indirect cell
-              T_sp tindex = gc::As_unsafe<Cons_sp>(cdr)->car();
-              if (tindex.fixnump()) {
-                gc::Fixnum index = tindex.unsafe_fixnum();
-                T_sp cell((gctools::Tagged)(*(fp + index + 1)));
-                T_sp value = gc::As<Cons_sp>(cell)->car();
-                bindings << Cons_O::create(name, value);
-              }
-            }
-          }
+          auto bdv = gc::As_assert<BytecodeDebugVar_sp>(cur->car());
+          T_sp name = bdv->name();
+          // We add one here because *fp is the previous fp and so the variables
+          // actually start at *(fp+1).
+          T_O* tvalue = *(fp + bdv->frameIndex() + 1);
+          T_sp value((gctools::Tagged)tvalue);
+          if (bdv->cellp())
+            bindings << Cons_O::create(name, gc::As_assert<Cons_sp>(value)->car());
+          else
+            bindings << Cons_O::create(name, value);
         }
       }
     }

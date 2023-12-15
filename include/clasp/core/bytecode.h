@@ -89,6 +89,35 @@ public:
   void setEnd(T_sp end) { this->_end = end; }
 };
 
+// Debug information about one lexical variable.
+// Stored in a BytecodeDebugVars, below.
+FORWARD(BytecodeDebugVar);
+class BytecodeDebugVar_O : public General_O {
+  LISP_CLASS(core, CorePkg, BytecodeDebugVar_O, "BytecodeDebugVar", core::General_O);
+public:
+  BytecodeDebugVar_O(T_sp name, uint16_t index, bool cellp, List_sp decls)
+    : _name(name), _index(index), _cellp(cellp), _decls(decls) {}
+  CL_LISPIFY_NAME(BytecodeDebugVar/make)
+  CL_DEF_CLASS_METHOD
+  static BytecodeDebugVar_sp make(T_sp name, uint16_t index, bool cellp, List_sp decls) {
+    return gctools::GC<BytecodeDebugVar_O>::allocate<gctools::RuntimeStage>(name, index, cellp, decls);
+  }
+public:
+  T_sp _name;
+  uint16_t _index; // index in the bytecode stack frame.
+  bool _cellp;
+  List_sp _decls; // other declarations (e.g. type, user-defined)
+public:
+  CL_LISPIFY_NAME(BytecodeDebugVar/name)
+  CL_DEFMETHOD T_sp name() const { return this->_name; }
+  CL_LISPIFY_NAME(BytecodeDebugVar/frameIndex)
+  CL_DEFMETHOD uint16_t frameIndex() const { return this->_index; }
+  CL_LISPIFY_NAME(BytecodeDebugVar/cellp)
+  CL_DEFMETHOD bool cellp() const { return this->_cellp; }
+  CL_LISPIFY_NAME(BytecodeDebugVar/decls)
+  CL_DEFMETHOD List_sp decls() const { return this->_decls; }
+};
+
 // Debug information structure for bindings.
 FORWARD(BytecodeDebugVars);
 class BytecodeDebugVars_O : public BytecodeDebugInfo_O {
