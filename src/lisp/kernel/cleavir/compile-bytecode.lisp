@@ -58,7 +58,7 @@
       (when (reachablep context)
         (let ((args (if (eq mnemonic :parse-key-args)
                         (compute-pka-args args literals)
-                        (compute-args args literals blockmap))))
+                        (compute-args args literals))))
           (apply #'compile-instruction mnemonic inserter context args)))
       (setf annots (add-annotations annots next-annots)
             opannots next-annots))
@@ -175,7 +175,7 @@
     :blockmap (blockmap context) :funmap (funmap context)
     :reachablep (reachablep context)))
 
-(defun compute-args (args literals irblocks)
+(defun compute-args (args literals)
   (loop for (type . value) in args
         collect (ecase type
                   ((:constant) (aref literals value))
@@ -586,6 +586,7 @@
 (defmethod compile-instruction ((mnemonic (eql :listify-rest-args))
                                 inserter context &rest args)
   (destructuring-bind (start) args
+    (declare (ignore start))
     (let* ((ifun (inserter-function inserter))
            (ll (bir:lambda-list ifun))
            (rarg (make-instance 'bir:argument :function ifun)))
@@ -594,6 +595,7 @@
 (defmethod compile-instruction ((mnemonic (eql :vaslistify-rest-args))
                                 inserter context &rest args)
   (destructuring-bind (start) args
+    (declare (ignore start))
     (let* ((ifun (inserter-function inserter))
            (ll (bir:lambda-list ifun))
            (rarg (make-instance 'bir:argument :function ifun)))
@@ -603,7 +605,7 @@
 (defmethod compile-instruction ((mnemonic (eql :parse-key-args))
                                 inserter context &rest args)
   (destructuring-bind (start (key-count . aokp) keys frame-start) args
-    (declare (ignore key-count))
+    (declare (ignore start key-count))
     (let* ((ifun (inserter-function inserter))
            (ll (bir:lambda-list ifun)))
       (loop with locals = (locals context)
@@ -673,6 +675,7 @@
 (defun compile-jump-if-supplied (inserter context index true-dest)
   (destructuring-bind (arg . cellp)
       (aref (locals context) index)
+    (assert (null cellp))
     (check-type arg bir:argument) ; from bind-optional-args
     ;; Now find the corresponding -p argument and branch on it.
     (let* ((ifun (inserter-function inserter))
@@ -805,11 +808,13 @@
 
 (defmethod compile-instruction ((mnemonic (eql :save-sp))
                                 inserter context &rest args)
+  (declare (ignore inserter))
   (destructuring-bind (index) args
     (setf (aref (locals context) index) (cons (stack context) nil))))
 
 (defmethod compile-instruction ((mnemonic (eql :restore-sp))
                                 inserter context &rest args)
+  (declare (ignore inserter))
   (destructuring-bind (index) args
     (destructuring-bind (stack . cellp) (aref (locals context) index)
       (assert (not cellp)) (assert (listp stack))
@@ -902,15 +907,17 @@
 
 (defmethod compile-instruction ((mnemonic (eql :unbind))
                                 inserter context &rest args)
-  (let* ((bind (ast-to-bir::dynamic-environment inserter))
-         (vname (bir:variable-name (first (bir:inputs bind))))
-         (ib (ast-to-bir::make-iblock
-              inserter :name (symbolicate '#:unbind- vname)
-                       :dynamic-environment (bir:parent bind))))
-    (ast-to-bir:terminate inserter 'bir:jump
-                          :inputs () :outputs ()
-                          :next (list ib))
-    (ast-to-bir:begin inserter ib)))
+  (declare (ignore context))
+  (destructuring-bind () args
+    (let* ((bind (ast-to-bir::dynamic-environment inserter))
+           (vname (bir:variable-name (first (bir:inputs bind))))
+           (ib (ast-to-bir::make-iblock
+                inserter :name (symbolicate '#:unbind- vname)
+                :dynamic-environment (bir:parent bind))))
+      (ast-to-bir:terminate inserter 'bir:jump
+                            :inputs () :outputs ()
+                            :next (list ib))
+      (ast-to-bir:begin inserter ib))))
 
 (defmethod compile-instruction ((mnemonic (eql :fdefinition))
                                 inserter context &rest args)
@@ -943,19 +950,20 @@
 (defmethod compile-instruction ((mnemonic (eql :fdesignator))
                                 inserter context &rest args)
   ;; Just call CORE:COERCE-CALLED-FDESIGNATOR.
-  (let* ((desig (stack-pop context))
-         (fname 'core:coerce-called-fdesignator)
-         (const (inserter-fcell fname inserter))
-         (attributes (clasp-cleavir::function-attributes fname))
-         (fdef-out (make-instance 'bir:output
-                     :name fname :attributes attributes))
-         (out (make-instance 'bir:output :name '#:callee)))
-    (ast-to-bir:insert inserter 'bir:constant-fdefinition
-                       :inputs (list const) :outputs (list fdef-out))
-    (ast-to-bir:insert inserter 'bir:call
-                       :inputs (list fdef-out desig)
-                       :outputs (list out))
-    (stack-push out context)))
+  (destructuring-bind () args
+    (let* ((desig (stack-pop context))
+           (fname 'core:coerce-called-fdesignator)
+           (const (inserter-fcell fname inserter))
+           (attributes (clasp-cleavir::function-attributes fname))
+           (fdef-out (make-instance 'bir:output
+                       :name fname :attributes attributes))
+           (out (make-instance 'bir:output :name '#:callee)))
+      (ast-to-bir:insert inserter 'bir:constant-fdefinition
+                         :inputs (list const) :outputs (list fdef-out))
+      (ast-to-bir:insert inserter 'bir:call
+                         :inputs (list fdef-out desig)
+                         :outputs (list out))
+      (stack-push out context))))
 
 (defun inserter-module (inserter)
   ;; FIXME: Export a-t-b:iblock or something.
@@ -978,6 +986,7 @@
 
 (defmethod compile-instruction ((mnemonic (eql :push))
                                 inserter context &rest args)
+  (declare (ignore inserter))
   (destructuring-bind () args
     (let ((mv (mvals context)))
       (setf (mvals context) nil)
@@ -985,6 +994,7 @@
 
 (defmethod compile-instruction ((mnemonic (eql :pop))
                                 inserter context &rest args)
+  (declare (ignore inserter))
   (destructuring-bind () args
     (let ((mv (stack-pop context)))
       (check-type mv bir:linear-datum)
@@ -1030,6 +1040,7 @@
 
 (defmethod end-annotation ((annot core:bytecode-debug-vars)
                            inserter context)
+  (declare (ignore inserter))
   ;; End the extent of all variables.
   (loop for bdv in (core:bytecode-debug-vars/bindings annot)
         for index = (core:bytecode-debug-var/frame-index bdv)
