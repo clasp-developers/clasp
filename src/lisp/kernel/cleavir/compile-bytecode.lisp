@@ -3,6 +3,8 @@
   (:local-nicknames (#:bir #:cleavir-bir)
                     (#:set #:cleavir-set)
                     (#:ctype #:cleavir-ctype)
+                    (#:env #:cleavir-env)
+                    (#:policy #:cleavir-compilation-policy)
                     ;; FIXME: Move inserter stuff to its own small system
                     (#:ast-to-bir #:cleavir-ast-to-bir))
   (:export #:compile-function #:compile-hook))
@@ -30,8 +32,11 @@
 (defgeneric end-annotation (annotation inserter context))
 
 (defun compile-bcmodule (bcmodule)
-  (let* ((irmodule (make-instance 'bir:module))
-         (literals (core:bytecode-module/literals bcmodule))
+  (let ((irmodule (make-instance 'bir:module)))
+    (values irmodule (compile-bcmodule-into bcmodule irmodule))))
+
+(defun compile-bcmodule-into (bcmodule irmodule)
+  (let* ((literals (core:bytecode-module/literals bcmodule))
          (blockmap (make-blockmap)) (funmap (make-funmap))
          (context (make-context irmodule blockmap funmap))
          (inserter (make-instance 'ast-to-bir:inserter))
@@ -45,23 +50,24 @@
     ;; Compile.
     (core:do-module-instructions (mnemonic args opip ip next-annots)
         (bcmodule)
-      ;; Set up stuff for annotations coming into effect.
-      (start-annotations opannots inserter context)
-      ;; Start a block or function maybe.
-      (maybe-begin-new opip opannots inserter context)
-      ;; End annotations coming out of effect.
-      (setf annots (end-annotations opip annots inserter context))
-      ;; If this code is unreachable, we don't bother generating
-      ;; anything. This makes consistency a bit easier but is a
-      ;; little wacky? Maybe we want to generate IR for unreachable
-      ;; code anyway so it can be deleted properly?
-      (when (reachablep context)
-        (let ((args (if (eq mnemonic :parse-key-args)
-                        (compute-pka-args args literals)
-                        (compute-args args literals))))
-          (apply #'compile-instruction mnemonic inserter context args)))
-      (setf annots (add-annotations annots next-annots)
-            opannots next-annots))
+      (let ((bir:*policy* (policy context)))
+        ;; Set up stuff for annotations coming into effect.
+        (start-annotations opannots inserter context)
+        ;; Start a block or function maybe.
+        (maybe-begin-new opip opannots inserter context)
+        ;; End annotations coming out of effect.
+        (setf annots (end-annotations opip annots inserter context))
+        ;; If this code is unreachable, we don't bother generating
+        ;; anything. This makes consistency a bit easier but is a
+        ;; little wacky? Maybe we want to generate IR for unreachable
+        ;; code anyway so it can be deleted properly?
+        (when (reachablep context)
+          (let ((args (if (eq mnemonic :parse-key-args)
+                          (compute-pka-args args literals)
+                          (compute-args args literals))))
+            (apply #'compile-instruction mnemonic inserter context args)))
+        (setf annots (add-annotations annots next-annots)
+              opannots next-annots)))
     ;; Compute all iblock flow orders.
     (loop for entry in (fmap funmap)
           do (bir:compute-iblock-flow-order (finfo-irfun entry)))
@@ -71,11 +77,10 @@
     ;; normally deletes unused blocks, doesn't even know about them.
     (loop for entry in (bmap blockmap)
           do (bir:maybe-delete-iblock (binfo-irblock entry)))
-    ;; Compute all iblock flow orders and return.
-    (values irmodule
-            (loop for entry in (fmap funmap)
-                  for irfun = (finfo-irfun entry)
-                  collect (cons (finfo-bcfun entry) irfun)))))
+    ;; Return a mapping from bcfuns to BIR functions.
+    (loop for entry in (fmap funmap)
+          for irfun = (finfo-irfun entry)
+          collect (cons (finfo-bcfun entry) irfun))))
 
 ;;; If the instruction begins a new iblock and/or function,
 ;;; set everything up for that.
@@ -110,6 +115,7 @@
       (ast-to-bir:begin inserter (binfo-irblock binfo))
       (context-new-block context (binfo-context binfo)))))
 
+;;; Given a bytecode function, return a compiled native function.
 (defun compile-function (function
                          &key (abi clasp-cleavir:*abi-x86-64*)
                            (linkage 'llvm-sys:internal-linkage)
@@ -126,6 +132,15 @@
           (*load-pathname* (core:function-source-pos function))
           (bir (cdr (assoc function funmap))))
       (clasp-cleavir::bir->function bir :abi abi :linkage linkage))))
+
+;;; Given a bytecode function, compile it into the given IR module.
+;;; that is, this does NOT finish the compilation process.
+;;; the BIR:FUNCTION is returned.
+;;; Used in compile-type-decl.
+(defun compile-bcfun-into (function irmodule)
+  (let ((fmap (compile-bcmodule-into (core:simple-fun-code function)
+                                     irmodule)))
+    (cdr (assoc function fmap))))
 
 ;;; Return a list of all annotations that start at IP 0.
 (defun initial-annotations (annotations)
@@ -156,7 +171,8 @@
 
 (defun make-context (module blockmap funmap)
   (make-instance 'context
-    :module module :blockmap blockmap :funmap funmap))
+    :module module :blockmap blockmap :funmap funmap
+    :optimize-stack (list cmp:*optimize*) :policy cmp:*policy*))
 
 (defun context-new-function (context bcfun)
   (setf (stack context) ()
@@ -306,6 +322,10 @@
    (%locals :initarg :locals :accessor locals)
    (%mvals :initform nil :initarg :mvals :accessor mvals)
    (%reachablep :initform t :initarg :reachablep :accessor reachablep)
+   ;; A stack of normalized optimize specifications.
+   ;; entering a bytecode-ast-decls pushes one, exiting pops.
+   (%optimize-stack :initarg :optimize-stack :accessor optimize-stack :type list)
+   (%policy :initarg :policy :accessor policy)
    (%module :initarg :module :reader module :type bir:module)
    (%funmap :initarg :funmap :reader funmap :type funmap)
    (%blockmap :initarg :blockmap :reader blockmap :type blockmap)))
@@ -1026,7 +1046,8 @@
 
 (defmethod start-annotation ((annotation core:bytecode-debug-vars)
                              inserter context)
-  (loop for bdv in (core:bytecode-debug-vars/bindings annotation)
+  (loop with bir:*policy* = (policy context)
+        for bdv in (core:bytecode-debug-vars/bindings annotation)
         for name = (core:bytecode-debug-var/name bdv)
         for cellp = (core:bytecode-debug-var/cellp bdv)
         for index = (core:bytecode-debug-var/frame-index bdv)
@@ -1113,6 +1134,78 @@
       (delay-block inserter context (1+ end) ; 1+ for the push.
                    :name (symbolicate name '#:after-push)
                    :receiving receiving))))
+
+(defmethod start-annotation ((the core:bytecode-ast-the) inserter context)
+  (let* ((type (core:bytecode-ast-the/type the))
+         (ptype (env:parse-values-type-specifier
+                 type clasp-cleavir:*clasp-env* clasp-cleavir:*clasp-system*))
+         (receiving (core:bytecode-ast-the/receiving the)))
+    (case receiving
+      ((1)
+       (stack-push (compile-type-decl :the ptype (stack-pop context)
+                                      inserter context)
+                   context))
+      ((-1)
+       (setf (mvals context)
+             (compile-type-decl :the ptype (mvals context) inserter context)))
+      ;; TODO: Something for 0/single values?
+      (otherwise))))
+
+(defun compile-type-decl (which ctype datum inserter context)
+  (let ((sys clasp-cleavir:*clasp-system*)
+        (sv-ctype-p (member which '(:variable :argument :setq))))
+    (if (if sv-ctype-p
+            (ctype:top-p ctype sys)
+            (clasp-cleavir::values-top-p ctype sys))
+        datum ; too boring a type annotation to bother with
+        (let* ((bir:*policy* (policy context))
+               (vctype (ecase which
+                         ((:the :return) ctype)
+                         ((:variable) (ctype:single-value ctype sys))
+                         ((:argument :setq)
+                          (ctype:coerce-to-values ctype sys))))
+               (out (make-instance 'bir:output
+                      :name (bir:name datum)))
+               (type-check-function
+                 (ecase (clasp-cleavir::insert-type-checks-level bir:*policy* which)
+                   ((0) :trusted)
+                   ((1) nil)
+                   ((2 3) (bytecompile-type-check which ctype sys
+                                                  (inserter-module inserter))))))
+          (ast-to-bir:insert inserter 'bir:thei
+                             :inputs (list datum)
+                             :outputs (list out)
+                             :asserted-type vctype
+                             :type-check-function type-check-function)
+          out))))
+
+;;; TODO? Probably could cache this, at least for standard types.
+(defun bytecompile-type-check (which ctype sys module)
+  (compile-bcfun-into
+   (cmp:bytecompile (clasp-cleavir::make-type-check-fun which ctype sys))
+   module))
+
+;;; FIXME: To get declaration scope right w/ bytecode-debug-vars we'll probably
+;;; need to ensure that decls appear before vars in the annotations.
+(defmethod start-annotation ((annot core:bytecode-ast-decls)
+                             inserter context)
+  (declare (ignore inserter))
+  (loop for (spec . rest) in (core:bytecode-ast-decls/decls annot)
+        for opt = (first (optimize-stack context))
+        do (case spec
+             ((cl:optimize)
+              (setf opt
+                    (policy:normalize-optimize
+                     (append rest opt) clasp-cleavir:*clasp-env*))))
+        finally (push opt (optimize-stack context))
+                (setf (policy context)
+                      (policy:compute-policy opt clasp-cleavir:*clasp-env*))))
+(defmethod end-annotation ((annot core:bytecode-ast-decls)
+                           inserter context)
+  (declare (ignore inserter))
+  (pop (optimize-stack context))
+  (setf (policy context) (policy:compute-policy (first (optimize-stack context))
+                                                clasp-cleavir:*clasp-env*)))
 
 ;;; default methods: irrelevant to compilation. ignore.
 (defmethod start-annotation ((annot core:bytecode-debug-info)
