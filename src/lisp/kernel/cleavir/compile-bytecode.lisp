@@ -51,12 +51,12 @@
     (core:do-module-instructions (mnemonic args opip ip next-annots)
         (bcmodule)
       (let ((bir:*policy* (policy context)))
+        ;; End annotations coming out of effect.
+        (setf annots (end-annotations opip annots inserter context))
         ;; Set up stuff for annotations coming into effect.
         (start-annotations opannots inserter context)
         ;; Start a block or function maybe.
         (maybe-begin-new opip opannots inserter context)
-        ;; End annotations coming out of effect.
-        (setf annots (end-annotations opip annots inserter context))
         ;; If this code is unreachable, we don't bother generating
         ;; anything. This makes consistency a bit easier but is a
         ;; little wacky? Maybe we want to generate IR for unreachable
@@ -183,16 +183,14 @@
 
 (defun context-new-block (context old-context)
   ;; Basically mutate context to be old-context.
-  ;; module, funmap, blockmap should already be ok.
+  ;; locals are handled fine by debug-vars annotations.
   (setf (stack context) (stack old-context)
-        (locals context) (locals old-context)
         (mvals context) (mvals old-context)
         (reachablep context) t))
 
 (defun copy-context (context)
   (make-instance 'context
     :stack (copy-list (stack context))
-    :locals (copy-seq (locals context))
     :mvals (mvals context) :module (module context)
     :blockmap (blockmap context) :funmap (funmap context)
     :reachablep (reachablep context)))
@@ -326,6 +324,8 @@
    ;; entering a bytecode-ast-decls pushes one, exiting pops.
    (%optimize-stack :initarg :optimize-stack :accessor optimize-stack :type list)
    (%policy :initarg :policy :accessor policy)
+   (%typemap-stack :initform nil :initarg :typemap-stack
+                   :accessor typemap-stack :type list)
    (%module :initarg :module :reader module :type bir:module)
    (%funmap :initarg :funmap :reader funmap :type funmap)
    (%blockmap :initarg :blockmap :reader blockmap :type blockmap)))
@@ -362,13 +362,22 @@
       (stack-push
        (etypecase var
          (bir:variable
-          (if cellp varinfo (read-variable var inserter)))
+          (if cellp varinfo (read-variable var inserter context)))
          (bir:come-from var)
          (bir:argument var)) ; happens from e.g. encelled parameters.)
        context))))
 
-(defun read-variable (variable inserter) ; FIXME: types
-  (%read-variable variable inserter))
+(defun read-variable (variable inserter context)
+  (let ((ctype (declared-ctype (bir:name variable) context)))
+    (compile-type-decl :variable ctype
+                       (%read-variable variable inserter)
+                       inserter context)))
+
+(defun declared-ctype (name context)
+  (loop for map in (typemap-stack context)
+        for pair = (assoc name map)
+        when pair return (cdr pair)
+        finally (return (ctype:top clasp-cleavir:*clasp-system*))))
 
 (defun %read-variable (variable inserter)
   (bir:record-variable-ref variable)
@@ -398,7 +407,7 @@
       (stack-push (etypecase lex
                     ((cons bir:variable (eql t)) lex) ; cell
                     ((cons bir:variable (eql nil))
-                     (read-variable (car lex) inserter))
+                     (read-variable (car lex) inserter context))
                     (bir:come-from lex))
                   context))))
 
@@ -449,15 +458,15 @@
     (loop with locals = (locals context)
           for i from (+ base nvars -1) downto base
           for value = (stack-pop context)
-          do (set-local locals i value inserter))))
+          do (set-local locals i value inserter context))))
 
-(defun set-local (locals index value inserter)
+(defun set-local (locals index value inserter context)
   (let ((local (aref locals index)))
     (if (null local)
         (setf (aref locals index) (cons value nil)) ; FIXME cell
         (let ((var (car local)))
           (if (typep var 'bir:variable)
-              (write-variable var value inserter)
+              (write-variable var value inserter context)
               ;; happens when bindings are closed over.
               (setf (aref locals index)
                     (etypecase value
@@ -468,13 +477,19 @@
 (defmethod compile-instruction ((mnemonic (eql :set))
                                 inserter context &rest args)
   (destructuring-bind (index) args
-    (set-local (locals context) index (stack-pop context) inserter)))
+    (set-local (locals context) index (stack-pop context) inserter context)))
 
-(defun write-variable (variable value inserter)
+(defun %write-variable (variable value inserter)
   (assert (slot-boundp variable 'bir::%binder))
   (bir:record-variable-set variable)
   (ast-to-bir:insert inserter 'bir:writevar
                      :inputs (list value) :outputs (list variable)))
+
+(defun write-variable (variable value inserter context)
+  (let ((ctype (declared-ctype (bir:name variable) context)))
+    (%write-variable variable
+                     (compile-type-decl :setq ctype value inserter context)
+                     inserter)))
 
 (defmethod compile-instruction ((mnemonic (eql :make-cell))
                                 inserter context &rest args)
@@ -492,7 +507,7 @@
       ;; Make sure it's a bound cell
       ;; (not a linear datum directly from make-cell; that's illegal bytecode)
       (check-type cell (cons bir:variable))
-      (stack-push (read-variable (car cell) inserter) context))))
+      (stack-push (read-variable (car cell) inserter context) context))))
 
 (defmethod compile-instruction ((mnemonic (eql :cell-set))
                                 inserter context &rest args)
@@ -500,7 +515,7 @@
     (let ((cell (stack-pop context)) (val (stack-pop context)))
       (check-type cell (cons bir:variable))
       (check-type val bir:linear-datum)
-      (write-variable (car cell) val inserter))))
+      (write-variable (car cell) val inserter context))))
 
 (defmethod compile-instruction ((mnemonic (eql :make-closure))
                                 inserter context &rest args)
@@ -1046,11 +1061,15 @@
 
 (defmethod start-annotation ((annotation core:bytecode-debug-vars)
                              inserter context)
+  (when (degenerate-annotation-p annotation)
+    (return-from start-annotation))
   (loop with bir:*policy* = (policy context)
         for bdv in (core:bytecode-debug-vars/bindings annotation)
         for name = (core:bytecode-debug-var/name bdv)
         for cellp = (core:bytecode-debug-var/cellp bdv)
         for index = (core:bytecode-debug-var/frame-index bdv)
+        for ctype = (declared-variable-ctype
+                     (core:bytecode-debug-var/decls bdv) (consp name))
         for (datum) = (aref (locals context) index)
         ;; We make all variables IGNORABLE because the bytecode compiler
         ;; has already warned about any semantically unused variables
@@ -1059,14 +1078,37 @@
                          :ignore 'cl:ignorable :name name)
         do (etypecase datum
              (bir:linear-datum
-              (bind-variable variable datum inserter))
+              (bind-variable variable datum ctype inserter context))
              ((cons bir:linear-datum) ; cell
-              (bind-variable variable (car datum) inserter)))
+              (bind-variable variable (car datum) ctype inserter context)))
            (setf (aref (locals context) index)
-                 (cons variable cellp))))
+                 (cons variable cellp))
+        collect (cons name ctype) into typemap
+        finally (push typemap (typemap-stack context))))
 
-(defun bind-variable (variable value inserter) ; FIXME: Types
-  (%bind-variable variable value inserter))
+(defun degenerate-annotation-p (annotation)
+  ;; These can arise naturally from code like
+  ;; (progn (let ((y x)) y) more-code)
+  ;; or just from THE or something. But for bytecode-debug-vars they pose
+  ;; an issue, as we would end the annotation before it begins. So we skip 'em.
+  (= (core:bytecode-debug-info/start annotation)
+     (core:bytecode-debug-info/end annotation)))
+
+(defun declared-variable-ctype (decls functionp)
+  ;; FIXME: Function types will take a little thought, since we want to
+  ;; declare types of arguments/return values rather than of the function itself.
+  (when functionp (return-from declared-variable-ctype t))
+  (loop with env = clasp-cleavir:*clasp-env*
+        with sys = clasp-cleavir:*clasp-system*
+        for decl in decls
+        ;; just take the first type decl - FIXME?
+        when (and (consp decl) (eq (first decl) 'cl:type))
+          return (env:parse-type-specifier (second decl) env sys)
+        finally (return (ctype:top sys))))
+
+(defun bind-variable (variable value ctype inserter context)
+  (let ((typed (compile-type-decl :setq ctype value inserter context)))
+    (%bind-variable variable typed inserter)))
 
 (defun %bind-variable (variable value inserter)
   (let ((binder (ast-to-bir:insert inserter 'bir:leti
@@ -1078,10 +1120,14 @@
 (defmethod end-annotation ((annot core:bytecode-debug-vars)
                            inserter context)
   (declare (ignore inserter))
+  (when (degenerate-annotation-p annot)
+    (return-from end-annotation))
   ;; End the extent of all variables.
   (loop for bdv in (core:bytecode-debug-vars/bindings annot)
         for index = (core:bytecode-debug-var/frame-index bdv)
-        do (setf (aref (locals context) index) nil)))
+        do (setf (aref (locals context) index) nil))
+  ;; And type declarations.
+  (pop (typemap-stack context)))
 
 (defmethod start-annotation ((annot core:bytecode-ast-if)
                              inserter context)
@@ -1190,13 +1236,13 @@
 (defmethod start-annotation ((annot core:bytecode-ast-decls)
                              inserter context)
   (declare (ignore inserter))
-  (loop for (spec . rest) in (core:bytecode-ast-decls/decls annot)
-        for opt = (first (optimize-stack context))
+  (loop with opt = (first (optimize-stack context))
+        for (spec . rest) in (core:bytecode-ast-decls/decls annot)
         do (case spec
              ((cl:optimize)
               (setf opt
                     (policy:normalize-optimize
-                     (append rest opt) clasp-cleavir:*clasp-env*))))
+                     (append (copy-list rest) opt) clasp-cleavir:*clasp-env*))))
         finally (push opt (optimize-stack context))
                 (setf (policy context)
                       (policy:compute-policy opt clasp-cleavir:*clasp-env*))))
