@@ -17,21 +17,31 @@ class LexicalInfo_O : public General_O {
   LISP_CLASS(comp, CompPkg, LexicalInfo_O, "LexicalInfo", General_O);
 
 public:
-  size_t _frame_index;
+  uint16_t _frame_index;
   Cfunction_sp _cfunction;
   bool _closed_over_p = false;
   // only used for lexical variables, but it's convenient for fixups and debug
   // infos to have it generally present.
   bool _set_p = false;
+  // Used for IGNORE tracking, which is used for local variables and functions
+  // but irrelevant for blocks and tags.
+  // To make things easier on the compiler, we default this to NOIGNORE, and then
+  // set it afterwards, so that you don't have to know the ignore status any time
+  // you make a variable.
+  enum class IgnoreStatus { NOIGNORE, IGNORE, IGNORABLE };
+  IgnoreStatus _ignore = IgnoreStatus::NOIGNORE;
+  bool _read_p = false;
+  // Other declarations.
+  List_sp _decls = nil<T_O>();
 
 public:
-  LexicalInfo_O(size_t ind, Cfunction_sp funct) : _frame_index(ind), _cfunction(funct){};
+  LexicalInfo_O(uint16_t ind, Cfunction_sp funct) : _frame_index(ind), _cfunction(funct){};
   CL_LISPIFY_NAME(LexicalInfo/make)
   CL_DEF_CLASS_METHOD
-  static LexicalInfo_sp make(size_t frame_index, Cfunction_sp cfunction) {
+  static LexicalInfo_sp make(uint16_t frame_index, Cfunction_sp cfunction) {
     return gctools::GC<LexicalInfo_O>::allocate<gctools::RuntimeStage>(frame_index, cfunction);
   }
-  CL_DEFMETHOD size_t frameIndex() const { return this->_frame_index; }
+  CL_DEFMETHOD uint16_t frameIndex() const { return this->_frame_index; }
   CL_DEFMETHOD Cfunction_sp cfunction() const { return this->_cfunction; }
   CL_DEFMETHOD bool closedOverP() const { return this->_closed_over_p; }
   void setClosedOverP(bool n) { this->_closed_over_p = n; }
@@ -39,6 +49,12 @@ public:
   void setSetP(bool n) { this->_set_p = n; }
   // Is a cell required?
   bool indirectLexicalP() const { return closedOverP() && setP(); }
+  IgnoreStatus ignore() const { return this->_ignore; }
+  void setIgnore(IgnoreStatus n) { this->_ignore = n; }
+  bool readP() const { return this->_read_p; }
+  void setReadP(bool n) { this->_read_p = n; }
+  List_sp decls() const { return this->_decls; }
+  void setDecls(List_sp ndecls) { this->_decls = ndecls; }
 };
 
 class VarInfo_O : public General_O {

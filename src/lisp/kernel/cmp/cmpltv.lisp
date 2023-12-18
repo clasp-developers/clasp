@@ -265,6 +265,18 @@
    (%end :initarg :end :reader di-end :type (unsigned-byte 32))))
 
 #+clasp
+(defclass debug-info-var ()
+  ((%name :initarg :name :reader name :type creator)
+   (%index :initarg :frame-index :reader frame-index :type (unsigned-byte 16))
+   (%cellp :initarg :cellp :reader cellp :type boolean)
+   (%dynamic-extent-p :initarg :dxp :reader dynamic-extent-p :type boolean)
+   (%ignore :initarg :ignore :reader di-ignore
+            :type (member nil cl:ignore cl:ignorable))
+   (%inline :initarg :inline :reader di-inline
+            :type (member nil cl:inline cl:notinline))
+   ;; other declarations (type, user defined)
+   (%decls :initarg :decls :reader decls :type list)))
+#+clasp
 (defclass debug-info-vars (debug-info)
   ((%vars :initarg :vars :reader vars :type list)))
 
@@ -283,6 +295,14 @@
 (defclass debug-info-the (debug-info)
   ((%type :initarg :type :reader di-type :type creator)
    (%receiving :initarg :receiving :reader di-receiving :type (signed-byte 32))))
+
+#+clasp
+(defclass debug-ast-if (debug-info)
+  ((%receiving :initarg :receiving :reader di-receiving :type (signed-byte 32))))
+
+#+clasp
+(defclass debug-ast-tagbody (debug-info)
+  ((%tags :initarg :tags :reader di-tags :type list)))
 
 #+clasp
 (defclass debug-info-block (debug-info)
@@ -768,7 +788,7 @@
 (defun write-magic (stream) (write-b32 +magic+ stream))
 
 (defparameter *major-version* 0)
-(defparameter *minor-version* 12)
+(defparameter *minor-version* 13)
 
 (defun write-version (stream)
   (write-b16 *major-version* stream)
@@ -1282,13 +1302,27 @@
   (make-instance 'debug-info-vars
     :start (core:bytecode-debug-info/start item)
     :end (core:bytecode-debug-info/end item)
-    :vars (loop for (var . index)
+    :vars (loop for bdv
                   in (core:bytecode-debug-vars/bindings item)
-                for cvar = (ensure-constant var)
-                if (consp index)
-                  collect (list cvar t (car index))
-                else
-                  collect (list cvar nil index))))
+                for adecls = (core:bytecode-debug-var/decls bdv)
+                for ignore = (loop for d in adecls
+                                   when (eq d 'cl:ignore) return d
+                                   when (eq d 'cl:ignorable) return d)
+                for inline = (loop for d in adecls
+                                   when (eq d 'cl:inline) return d
+                                   when (eq d 'cl:notinline) return d)
+                for decls = (set-difference adecls
+                                            '(cl:dynamic-extent cl:ignore
+                                              cl:ignorable cl:inline
+                                              cl:notinline))
+                collect (make-instance 'debug-info-var
+                          :name (ensure-constant
+                                 (core:bytecode-debug-var/name bdv))
+                          :frame-index (core:bytecode-debug-var/frame-index bdv)
+                          :cellp (core:bytecode-debug-var/cellp bdv)
+                          :dxp (not (not (member 'cl:dynamic-extent adecls)))
+                          :ignore ignore :inline inline
+                          :decls (mapcar #'ensure-constant decls)))))
 
 (defmethod process-debug-info ((item core:bytecode-debug-location))
   (let ((spi (core:bytecode-debug-location/location item)))
@@ -1303,31 +1337,45 @@
       :column (core:source-pos-info-column spi)
       :filepos (core:source-pos-info-filepos spi))))
 
-(defmethod process-debug-info ((item core:bytecode-debug-decls))
+(defmethod process-debug-info ((item core:bytecode-ast-decls))
   (make-instance 'debug-info-decls
     :start (core:bytecode-debug-info/start item)
     :end (core:bytecode-debug-info/end item)
-    :decls (ensure-constant (core:bytecode-debug-decls/decls item))))
+    :decls (ensure-constant (core:bytecode-ast-decls/decls item))))
 
-(defmethod process-debug-info ((item core:bytecode-debug-the))
+(defmethod process-debug-info ((item core:bytecode-ast-the))
   (make-instance 'debug-info-the
     :start (core:bytecode-debug-info/start item)
     :end (core:bytecode-debug-info/end item)
-    :type (ensure-constant (core:bytecode-debug-the/type item))
-    :receiving (core:bytecode-debug-the/receiving item)))
+    :type (ensure-constant (core:bytecode-ast-the/type item))
+    :receiving (core:bytecode-ast-the/receiving item)))
 
-(defmethod process-debug-info ((item core:bytecode-debug-block))
+(defmethod process-debug-info ((item core:bytecode-ast-if))
+  (make-instance 'debug-ast-if
+    :start (core:bytecode-debug-info/start item)
+    :end (core:bytecode-debug-info/end item)
+    :receiving (core:bytecode-ast-if/receiving item)))
+
+(defmethod process-debug-info ((item core:bytecode-ast-tagbody))
+  (make-instance 'debug-ast-tagbody
+    :start (core:bytecode-debug-info/start item)
+    :end (core:bytecode-debug-info/end item)
+    :tags (loop for (tag . ip)
+                  in (core:bytecode-ast-tagbody/tags item)
+                collect (cons (ensure-constant tag) ip))))
+
+(defmethod process-debug-info ((item core:bytecode-ast-block))
   (make-instance 'debug-info-block
     :start (core:bytecode-debug-info/start item)
     :end (core:bytecode-debug-info/end item)
-    :name (ensure-constant (core:bytecode-debug-block/name item))
-    :receiving (core:bytecode-debug-block/receiving item)))
+    :name (ensure-constant (core:bytecode-ast-block/name item))
+    :receiving (core:bytecode-ast-block/receiving item)))
 
-(defmethod process-debug-info ((item core:bytecode-debug-exit))
+(defmethod process-debug-info ((item core:bytecode-ast-exit))
   (make-instance 'debug-info-exit
     :start (core:bytecode-debug-info/start item)
     :end (core:bytecode-debug-info/end item)
-    :receiving (core:bytecode-debug-exit/receiving item)))
+    :receiving (core:bytecode-ast-exit/receiving item)))
 
 (defmethod process-debug-info ((item core:bytecode-debug-macroexpansion))
   (make-instance 'debug-info-macroexpansion
@@ -1406,7 +1454,9 @@
     (the 4)
     (block 5)
     (exit 6)
-    (macro 7)))
+    (macro 7)
+    (if 8)
+    (tagbody 9)))
 
 (defun debug-info-opcode (mnemonic)
   (let ((inst (assoc mnemonic +debug-info-ops+)))
@@ -1425,18 +1475,40 @@
 (defmethod info-length ((info debug-info-function))
   (+ 1 *index-bytes*))
 
+;;; Compute the FLAGS byte for a bytecode-debug-var.
+;;; This is 00NNDIIC: C = cellp, D = dynamic-extent-p,
+;;; NN = 01 for inline, 10 for notinline, 00 for default
+;;; II = 01 for ignore, 10 for ignorable, 00 for default
+(defun bdv-flags (bdv)
+  (let ((result 0))
+    (setf (ldb (byte 2 4) result)
+          (ecase (di-inline bdv) (cl:inline #b01) (cl:notinline #b10) ((nil) #b00))
+          (ldb (byte 1 3) result)
+          (if (dynamic-extent-p bdv) #b1 #b0)
+          (ldb (byte 2 1) result)
+          (ecase (di-ignore bdv) (cl:ignore #b01) (cl:ignorable #b10) ((nil) #b00))
+          (ldb (byte 1 0) result)
+          (if (cellp bdv) #b1 #b0))
+    result))
+
 (defmethod encode ((info debug-info-vars) stream)
   (write-debug-info-mnemonic 'vars stream)
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (let ((vars (vars info)))
     (write-b16 (length vars) stream)
-    (loop for (name cellp index) in vars
-          do (write-index name stream)
-             (write-byte (if cellp 1 0) stream)
-             (write-b16 index stream))))
+    (loop for var in vars
+          do (write-index (name var) stream)
+             (write-b16 (frame-index var) stream)
+             (write-byte (bdv-flags var) stream)
+             (write-b16 (length (decls var)) stream)
+             (loop for decl in (decls var)
+                   do (write-index decl stream)))))
 (defmethod info-length ((info debug-info-vars))
-  (+ 1 4 4 2 (* (length (vars info)) (+ *index-bytes* 1 2))))
+  (+ 1 4 4 2
+     (loop for var in (vars info)
+           sum (+ *index-bytes* 2 1 2)
+           sum (* *index-bytes* (length (decls var))))))
 
 (defmethod encode ((info debug-info-location) stream)
   (write-debug-info-mnemonic 'location stream)
@@ -1465,6 +1537,26 @@
   (write-b32 (di-receiving info) stream))
 (defmethod info-length ((info debug-info-the))
   (+ 1 4 4 *index-bytes* 4))
+
+(defmethod encode ((info debug-ast-if) stream)
+  (write-debug-info-mnemonic 'if stream)
+  (write-b32 (di-start info) stream)
+  (write-b32 (di-end info) stream)
+  (write-b32 (di-receiving info) stream))
+(defmethod info-length ((info debug-ast-if))
+  (+ 1 4 4 4))
+
+(defmethod encode ((info debug-ast-tagbody) stream)
+  (write-debug-info-mnemonic 'tagbody stream)
+  (write-b32 (di-start info) stream)
+  (write-b32 (di-end info) stream)
+  (write-b16 (length (di-tags info)) stream)
+  (loop for (tag . ip) in (di-tags info)
+        do (write-index tag stream)
+           (write-b32 ip stream)))
+(defmethod info-length ((info debug-ast-tagbody))
+  (+ 1 4 4 2 (* (length (di-tags info))
+                (+ *index-bytes* 4))))
 
 (defmethod encode ((info debug-info-block) stream)
   (write-debug-info-mnemonic 'block stream)

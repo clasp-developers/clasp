@@ -62,13 +62,15 @@
 #define LTV_DI_OP_BLOCK 5
 #define LTV_DI_OP_EXIT 6
 #define LTV_DI_OP_MACRO 7
+#define LTV_DI_OP_IF 8
+#define LTV_DI_OP_TAGBODY 9
 
 namespace core {
 
 #define BC_HEADER_SIZE 16
 
 #define BC_VERSION_MAJOR 0
-#define BC_VERSION_MINOR 12
+#define BC_VERSION_MINOR 13
 
 // versions are std::arrays so that we can compare them.
 typedef std::array<uint16_t, 2> BCVersion;
@@ -678,9 +680,28 @@ struct loadltv {
     gctools::Vec0<T_sp> bindings;
     for (uint16_t bcount = read_u16(); bcount > 0; --bcount) {
       T_sp name = get_ltv(read_index());
-      uint8_t flag = read_u8();
-      Integer_sp framei = Integer_O::create(read_u16());
-      bindings.push_back((flag == 0) ? Cons_O::create(name, framei) : Cons_O::createList(name, framei));
+      uint16_t framei = read_u16();
+      ql::list decls;
+      uint8_t flags = read_u8();
+      // Parse flags
+      switch ((flags & 0b00110000) >> 4) { // inline
+      case 0b00: break; // default
+      case 0b01: decls << cl::_sym_inline; break;
+      case 0b10: decls << cl::_sym_notinline; break;
+      }
+      if (flags & 0b00001000)
+        decls << cl::_sym_dynamic_extent;
+      switch ((flags & 0b00000110) >> 1) { // ignore
+      case 0b00: break; // default
+      case 0b01: decls << cl::_sym_ignore; break;
+      case 0b10: decls << cl::_sym_ignorable; break;
+      }
+      bool cellp = flags & 0b00000001;
+      // Extra declarations
+      for (uint16_t dcount = read_u16(); dcount > 0; --dcount) {
+        decls << get_ltv(read_index());
+      }
+      bindings.push_back(BytecodeDebugVar_O::make(name, framei, cellp, decls.cons()));
     }
     return BytecodeDebugVars_O::make(start, end, Cons_O::createFromVec0(bindings));
   }
@@ -699,33 +720,51 @@ struct loadltv {
   T_sp di_op_decls() {
     Integer_sp start = Integer_O::create(read_u32()), end = Integer_O::create(read_u32());
     T_sp decls = get_ltv(read_index());
-    return BytecodeDebugDecls_O::make(start, end, decls);
+    return BytecodeAstDecls_O::make(start, end, decls);
   }
 
   T_sp di_op_the() {
     Integer_sp start = Integer_O::create(read_u32()), end = Integer_O::create(read_u32());
     T_sp type = get_ltv(read_index());
     int32_t receiving = read_s32();
-    return BytecodeDebugThe_O::make(start, end, type, receiving);
+    return BytecodeAstThe_O::make(start, end, type, receiving);
   }
 
   T_sp di_op_block() {
     Integer_sp start = Integer_O::create(read_u32()), end = Integer_O::create(read_u32());
     T_sp name = get_ltv(read_index());
     int32_t receiving = read_s32();
-    return BytecodeDebugBlock_O::make(start, end, name, receiving);
+    return BytecodeAstBlock_O::make(start, end, name, receiving);
   }
 
   T_sp di_op_exit() {
     Integer_sp start = Integer_O::create(read_u32()), end = Integer_O::create(read_u32());
     int32_t receiving = read_s32();
-    return BytecodeDebugExit_O::make(start, end, receiving);
+    return BytecodeAstExit_O::make(start, end, receiving);
   }
 
   T_sp di_op_macro() {
     Integer_sp start = Integer_O::create(read_u32()), end = Integer_O::create(read_u32());
     T_sp macro_name = get_ltv(read_index());
     return BytecodeDebugMacroexpansion_O::make(start, end, macro_name);
+  }
+
+  T_sp di_op_if() {
+    Integer_sp start = Integer_O::create(read_u32()), end = Integer_O::create(read_u32());
+    int32_t receiving = read_s32();
+    return BytecodeAstIf_O::make(start, end, receiving);
+  }
+
+  T_sp di_op_tagbody() {
+    Integer_sp start = Integer_O::create(read_u32()), end = Integer_O::create(read_u32());
+    uint16_t ntags = read_u16();
+    ql::list tags;
+    for (uint16_t i = 0; i < ntags; ++i) {
+      T_sp tag = get_ltv(read_index());
+      Integer_sp ip = Integer_O::create(read_u32());
+      tags << Cons_O::create(tag, ip);
+    }
+    return BytecodeAstTagbody_O::make(start, end, tags.cons());
   }
 
   void attr_clasp_module_debug_info(uint32_t bytes) {
@@ -758,6 +797,12 @@ struct loadltv {
         break;
       case LTV_DI_OP_MACRO:
         vargs.push_back(di_op_macro());
+        break;
+      case LTV_DI_OP_IF:
+        vargs.push_back(di_op_if());
+        break;
+      case LTV_DI_OP_TAGBODY:
+        vargs.push_back(di_op_tagbody());
         break;
       default:
         SIMPLE_ERROR("Unknown debug info opcode {:02x}", op);

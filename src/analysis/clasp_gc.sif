@@ -12,8 +12,8 @@
                           "comp::FunctionCellInfo_O" "core::HashTable_O"
                           "core::SimpleVector_size_t_O" "llvmo::DIScope_O" "core::FileStatus_O"
                           "core::CodeSimpleFun_O" "llvmo::IndirectBrInst_O"
-                          "core::BytecodeDebugExit_O" "llvmo::ConstantArray_O" "llvmo::PHINode_O"
-                          "core::Package_O" "core::SimpleMDArrayBaseChar_O" "llvmo::DILocation_O"
+                          "llvmo::ConstantArray_O" "llvmo::PHINode_O" "core::Package_O"
+                          "core::SimpleMDArrayBaseChar_O" "llvmo::DILocation_O"
                           "llvmo::DWARFUnit_O" "core::SimpleMDArray_O" "core::Stream_O"
                           "core::VMFrameDynEnv_O" "core::SymbolClassHolderPair"
                           "comp::EncageFixup_O" "llvmo::MDString_O" "core::ShortFloat_O"
@@ -23,12 +23,11 @@
                           "core::SimpleVector_byte4_t_O" "llvmo::UndefValue_O" "llvmo::CallBase_O"
                           "core::Path_O" "mp::SharedMutex_O"
                           "asttooling::DerivableASTFrontendAction" "core::InstanceCreator_O"
-                          "core::IOStreamStream_O" "core::BytecodeDebugDecls_O" "core::Scope_O"
-                          "core::BytecodeDebugLocation_O" "llvmo::InsertPoint_O"
-                          "core::FunctionDescription_O" "core::ComplexVector_double_O"
-                          "core::StrWNs_O" "core::UnknownDynEnv_O" "core::EchoStream_O"
-                          "core::HashTableBase_O" "core::SimpleMDArrayBit_O" "core::MDArrayBit_O"
-                          "core::ComplexVector_byte16_t_O" "comp::BlockInfo_O"
+                          "core::IOStreamStream_O" "core::Scope_O" "core::BytecodeDebugLocation_O"
+                          "llvmo::InsertPoint_O" "core::FunctionDescription_O"
+                          "core::ComplexVector_double_O" "core::StrWNs_O" "core::UnknownDynEnv_O"
+                          "core::EchoStream_O" "core::HashTableBase_O" "core::SimpleMDArrayBit_O"
+                          "core::MDArrayBit_O" "core::ComplexVector_byte16_t_O" "comp::BlockInfo_O"
                           "llvmo::DILocalScope_O" "asttooling::DerivableFrontendActionFactory"
                           "comp::Label_O" "core::ComplexVector_int2_t_O" "llvmo::DILexicalBlock_O"
                           "llvmo::DITypeRefArray_O" "mp::Mutex_O"
@@ -38,14 +37,15 @@
                           "asttooling::QualType_O" "llvmo::LibraryFile_O"
                           "core::GlobalBytecodeSimpleFun_O" "llvmo::User_O"
                           "asttooling::DerivableSyntaxOnlyAction" "core::MDArray_int16_t_O"
-                          "core::ComplexVector_T_O" "llvmo::CodeBlock_O" "llvmo::FenceInst_O"
-                          "llvmo::AtomicCmpXchgInst_O" "core::ComplexVector_int8_t_O"
-                          "core::SimpleMDArray_int4_t_O" "core::SimpleVector_int32_t_O"
-                          "comp::LoadTimeValueInfo_O" "core::SimpleMDArray_double_O"
-                          "core::Complex_O" "core::TagbodyDynEnv_O" "llvmo::ConstantPointerNull_O"
-                          "llvmo::VectorType_O" "llvmo::ValueAsMetadata_O" "llvmo::ConstantExpr_O"
-                          "core::VariableCell_O" "core::GFBytecodeSimpleFun_O"
-                          "llvmo::StructType_O" "core::RandomState_O"
+                          "core::BytecodeAstTagbody_O" "core::ComplexVector_T_O"
+                          "llvmo::CodeBlock_O" "llvmo::FenceInst_O" "llvmo::AtomicCmpXchgInst_O"
+                          "core::ComplexVector_int8_t_O" "core::SimpleMDArray_int4_t_O"
+                          "core::SimpleVector_int32_t_O" "comp::LoadTimeValueInfo_O"
+                          "core::SimpleMDArray_double_O" "core::Complex_O" "core::TagbodyDynEnv_O"
+                          "llvmo::ConstantPointerNull_O" "llvmo::VectorType_O"
+                          "llvmo::ValueAsMetadata_O" "core::BytecodeAstExit_O"
+                          "llvmo::ConstantExpr_O" "core::VariableCell_O"
+                          "core::GFBytecodeSimpleFun_O" "llvmo::StructType_O" "core::RandomState_O"
                           "core::ComplexVector_int16_t_O" "core::SimpleMDArray_float_O"
                           "llvmo::Target_O" "core::SimpleVector_int2_t_O" "comp::LocalFunInfo_O"
                           "core::MDArray_byte64_t_O" "core::SimpleVector_fixnum_O"
@@ -53,14 +53,15 @@
                           "core::KeywordArgument" "llvmo::Module_O" "core::SingleFloat_dummy_O"
                           "llvmo::DIExpression_O" "llvmo::InvokeInst_O" "core::StrNs_O"
                           "comp::GlobalFunInfo_O" "clasp_ffi::ForeignData_O" "llvmo::CallInst_O"
-                          "core::DoubleFloat_O" "core::DebuggerFrame_O" "comp::LocalMacroInfo_O"
-                          "comp::LexFixup_O" "core::StringStream_O" "llvmo::LibraryBase_O"
-                          "core::Sigset_O" "core::MDArray_int32_t_O" "core::GlobalSimpleFun_O"
-                          "asttooling::AsttoolingExposer_O" "core::GlobalSimpleFunGenerator_O"
-                          "llvmo::IntegerType_O" "comp::GlobalMacroInfo_O"
-                          "core::MDArray_int64_t_O" "core::SimpleMDArray_size_t_O"
-                          "comp::VariableCellInfo_O" "core::SmallMultimap_O" "core::Fixnum_dummy_O"
-                          "core::AuxArgument" "core::MDArray_int8_t_O" "llvmo::ConstantFP_O"
+                          "core::BytecodeAstDecls_O" "core::DoubleFloat_O" "core::DebuggerFrame_O"
+                          "comp::LocalMacroInfo_O" "comp::LexFixup_O" "core::StringStream_O"
+                          "llvmo::LibraryBase_O" "core::Sigset_O" "core::MDArray_int32_t_O"
+                          "core::GlobalSimpleFun_O" "asttooling::AsttoolingExposer_O"
+                          "core::GlobalSimpleFunGenerator_O" "llvmo::IntegerType_O"
+                          "comp::GlobalMacroInfo_O" "core::MDArray_int64_t_O"
+                          "core::SimpleMDArray_size_t_O" "comp::VariableCellInfo_O"
+                          "core::SmallMultimap_O" "core::Fixnum_dummy_O" "core::AuxArgument"
+                          "core::MDArray_int8_t_O" "llvmo::ConstantFP_O" "core::BytecodeDebugVar_O"
                           "core::BlockDynEnv_O" "core::Cons_O" "core::WRAPPER_Translator_O"
                           "clbind::detail::vertex" "llvmo::LLVMContext_O" "core::MDArray_int4_t_O"
                           "core::WeakKeyHashTable_O" "core::Rack_O" "core::MDArrayBaseChar_O"
@@ -92,22 +93,22 @@
                           "llvmo::IRBuilder_O" "llvmo::ClaspJIT_O" "core::SimpleVector_byte8_t_O"
                           "llvmo::DILexicalBlockBase_O" "llvmo::MDNode_O"
                           "core::ComplexVector_fixnum_O" "mp::RecursiveMutex_O"
-                          "core::Vaslist_dummy_O" "core::SimpleVector_float_O" "llvmo::VAArgInst_O"
+                          "core::BytecodeAstIf_O" "core::Vaslist_dummy_O"
+                          "core::SimpleVector_float_O" "llvmo::VAArgInst_O"
                           "core::SimpleVector_int4_t_O" "core::MDArray_fixnum_O"
                           "core::SharpEqualWrapper_O" "comp::ConstantVarInfo_O"
                           "core::LoadTimeValues_O" "asttooling::DerivableMatchCallback"
                           "llvmo::DIFile_O" "llvmo::LineTable_O" "llvmo::DataLayout_O"
                           "llvmo::BasicBlock_O" "llvmo::CodeBase_O" "core::SimpleMDArray_int8_t_O"
                           "llvmo::EngineBuilder_O" "core::ComplexVector_byte64_t_O"
-                          "core::BytecodeDebugBlock_O" "llvmo::SectionedAddress_O"
-                          "core::MDArray_byte32_t_O" "core::Character_dummy_O"
-                          "comp::LexRefFixup_O" "llvmo::Constant_O" "llvmo::FunctionCallee_O"
-                          "llvmo::DIBasicType_O" "llvmo::DIBuilder_O" "core::NativeVector_int_O"
-                          "llvmo::APInt_O" "llvmo::APFloat_O" "core::SimpleMDArrayCharacter_O"
-                          "core::SimpleCharacterString_O" "core::Symbol_O" "core::Array_O"
-                          "core::MDArray_byte4_t_O" "llvmo::Argument_O" "core::Iterator_O"
-                          "llvmo::IRBuilderBase_O" "core::Null_O" "core::RequiredArgument"
-                          "core::BytecodeDebugThe_O" "core::SingleDispatchMethod_O"
+                          "llvmo::SectionedAddress_O" "core::MDArray_byte32_t_O"
+                          "core::Character_dummy_O" "comp::LexRefFixup_O" "llvmo::Constant_O"
+                          "llvmo::FunctionCallee_O" "llvmo::DIBasicType_O" "llvmo::DIBuilder_O"
+                          "core::NativeVector_int_O" "llvmo::APInt_O" "llvmo::APFloat_O"
+                          "core::SimpleMDArrayCharacter_O" "core::SimpleCharacterString_O"
+                          "core::Symbol_O" "core::Array_O" "core::MDArray_byte4_t_O"
+                          "llvmo::Argument_O" "core::Iterator_O" "llvmo::IRBuilderBase_O"
+                          "core::Null_O" "core::RequiredArgument" "core::SingleDispatchMethod_O"
                           "comp::VarInfo_O" "core::CxxObject_O" "llvmo::ReturnInst_O"
                           "llvmo::FunctionType_O" "clbind::DummyCreator_O"
                           "core::MDArray_byte16_t_O" "llvmo::DIContext_O" "llvmo::JITDylib_O"
@@ -118,15 +119,16 @@
                           "llvmo::ConstantDataSequential_O" "comp::EntryFixup_O"
                           "core::MDArray_double_O" "llvmo::StoreInst_O" "llvmo::DebugLoc_O"
                           "core::WeakPointer_O" "core::DestDynEnv_O" "core::IOFileStream_O"
-                          "comp::Annotation_O" "core::DynEnv_O" "comp::LexSetFixup_O"
-                          "core::SimpleMDArray_byte8_t_O" "comp::SymbolMacroVarInfo_O"
-                          "core::UnwindProtectDynEnv_O" "comp::LexicalInfo_O"
-                          "llvmo::Instruction_O" "core::FileStream_O" "comp::ExitFixup_O"
-                          "core::Rational_O" "core::CatchDynEnv_O" "core::MDArrayCharacter_O"
-                          "llvmo::LandingPadInst_O" "core::ImmobileObject_O" "core::Function_O"
+                          "comp::Annotation_O" "core::DynEnv_O" "core::BytecodeAstBlock_O"
+                          "comp::LexSetFixup_O" "core::SimpleMDArray_byte8_t_O"
+                          "comp::SymbolMacroVarInfo_O" "core::UnwindProtectDynEnv_O"
+                          "comp::LexicalInfo_O" "llvmo::Instruction_O" "core::FileStream_O"
+                          "comp::ExitFixup_O" "core::Rational_O" "core::CatchDynEnv_O"
+                          "core::MDArrayCharacter_O" "llvmo::LandingPadInst_O"
+                          "core::ImmobileObject_O" "core::Function_O"
                           "core::SimpleMDArray_int2_t_O" "core::HashTableEql_O"
                           "comp::ConstantInfo_O" "mp::ConditionVariable_O" "core::Real_O"
-                          "core::Lisp" "core::MDArray_byte8_t_O"
+                          "core::Lisp" "core::MDArray_byte8_t_O" "core::BytecodeAstThe_O"
                           "core::FuncallableInstanceCreator_O" "core::StringOutputStream_O"
                           "llvmo::AttributeSet_O" "llvmo::AtomicRMWInst_O" "comp::Module_O"
                           "llvmo::MDBuilder_O" "core::SimpleVector_O" "llvmo::DISubprogram_O"
@@ -602,7 +604,7 @@
 {class-kind :stamp-name "STAMPWTAG_comp__LexicalInfo_O" :stamp-key "comp::LexicalInfo_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_short" :offset-ctype "unsigned short"
              :offset-base-ctype "comp::LexicalInfo_O" :layout-offset-field-names ("_frame_index")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<comp::Cfunction_O>"
@@ -611,6 +613,11 @@
              :offset-base-ctype "comp::LexicalInfo_O" :layout-offset-field-names ("_closed_over_p")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "comp::LexicalInfo_O" :layout-offset-field-names ("_set_p")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "comp::LexicalInfo_O" :layout-offset-field-names ("_read_p")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::List_V>"
+             :offset-base-ctype "comp::LexicalInfo_O" :layout-offset-field-names ("_decls")}
 {class-kind :stamp-name "STAMPWTAG_core__DynEnv_O" :stamp-key "core::DynEnv_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -3533,37 +3540,46 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::BytecodeDebugInfo_O" :layout-offset-field-names ("_end")}
-{class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugThe_O" :stamp-key "core::BytecodeDebugThe_O"
+{class-kind :stamp-name "STAMPWTAG_core__BytecodeAstThe_O" :stamp-key "core::BytecodeAstThe_O"
             :parent-class "core::BytecodeDebugInfo_O" :lisp-class-base "core::BytecodeDebugInfo_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BytecodeDebugThe_O" :layout-offset-field-names ("_start")}
+             :offset-base-ctype "core::BytecodeAstThe_O" :layout-offset-field-names ("_start")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BytecodeDebugThe_O" :layout-offset-field-names ("_end")}
+             :offset-base-ctype "core::BytecodeAstThe_O" :layout-offset-field-names ("_end")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BytecodeDebugThe_O" :layout-offset-field-names ("_type")}
+             :offset-base-ctype "core::BytecodeAstThe_O" :layout-offset-field-names ("_type")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::BytecodeDebugThe_O"
-             :layout-offset-field-names ("_receiving")}
-{class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugBlock_O"
-            :stamp-key "core::BytecodeDebugBlock_O" :parent-class "core::BytecodeDebugInfo_O"
-            :lisp-class-base "core::BytecodeDebugInfo_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
+             :offset-base-ctype "core::BytecodeAstThe_O" :layout-offset-field-names ("_receiving")}
+{class-kind :stamp-name "STAMPWTAG_core__BytecodeAstBlock_O" :stamp-key "core::BytecodeAstBlock_O"
+            :parent-class "core::BytecodeDebugInfo_O" :lisp-class-base "core::BytecodeDebugInfo_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BytecodeDebugBlock_O" :layout-offset-field-names ("_start")}
+             :offset-base-ctype "core::BytecodeAstBlock_O" :layout-offset-field-names ("_start")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BytecodeDebugBlock_O" :layout-offset-field-names ("_end")}
+             :offset-base-ctype "core::BytecodeAstBlock_O" :layout-offset-field-names ("_end")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BytecodeDebugBlock_O" :layout-offset-field-names ("_name")}
+             :offset-base-ctype "core::BytecodeAstBlock_O" :layout-offset-field-names ("_name")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::BytecodeDebugBlock_O"
+             :offset-base-ctype "core::BytecodeAstBlock_O"
              :layout-offset-field-names ("_receiving")}
+{class-kind :stamp-name "STAMPWTAG_core__BytecodeAstIf_O" :stamp-key "core::BytecodeAstIf_O"
+            :parent-class "core::BytecodeDebugInfo_O" :lisp-class-base "core::BytecodeDebugInfo_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeAstIf_O" :layout-offset-field-names ("_start")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeAstIf_O" :layout-offset-field-names ("_end")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::BytecodeAstIf_O" :layout-offset-field-names ("_receiving")}
 {class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugMacroexpansion_O"
             :stamp-key "core::BytecodeDebugMacroexpansion_O"
             :parent-class "core::BytecodeDebugInfo_O" :lisp-class-base "core::BytecodeDebugInfo_O"
@@ -3594,6 +3610,42 @@
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "core::BytecodeDebugVars_O"
              :layout-offset-field-names ("_bindings")}
+{class-kind :stamp-name "STAMPWTAG_core__BytecodeAstDecls_O" :stamp-key "core::BytecodeAstDecls_O"
+            :parent-class "core::BytecodeDebugInfo_O" :lisp-class-base "core::BytecodeDebugInfo_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeAstDecls_O" :layout-offset-field-names ("_start")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeAstDecls_O" :layout-offset-field-names ("_end")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::List_V>"
+             :offset-base-ctype "core::BytecodeAstDecls_O" :layout-offset-field-names ("_decls")}
+{class-kind :stamp-name "STAMPWTAG_core__BytecodeAstExit_O" :stamp-key "core::BytecodeAstExit_O"
+            :parent-class "core::BytecodeDebugInfo_O" :lisp-class-base "core::BytecodeDebugInfo_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeAstExit_O" :layout-offset-field-names ("_start")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeAstExit_O" :layout-offset-field-names ("_end")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::BytecodeAstExit_O" :layout-offset-field-names ("_receiving")}
+{class-kind :stamp-name "STAMPWTAG_core__BytecodeAstTagbody_O"
+            :stamp-key "core::BytecodeAstTagbody_O" :parent-class "core::BytecodeDebugInfo_O"
+            :lisp-class-base "core::BytecodeDebugInfo_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeAstTagbody_O" :layout-offset-field-names ("_start")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeAstTagbody_O" :layout-offset-field-names ("_end")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::List_V>"
+             :offset-base-ctype "core::BytecodeAstTagbody_O" :layout-offset-field-names ("_tags")}
 {class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugLocation_O"
             :stamp-key "core::BytecodeDebugLocation_O" :parent-class "core::BytecodeDebugInfo_O"
             :lisp-class-base "core::BytecodeDebugInfo_O" :root-class "core::T_O" :stamp-wtag 3
@@ -3609,32 +3661,6 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::BytecodeDebugLocation_O"
              :layout-offset-field-names ("_location")}
-{class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugDecls_O"
-            :stamp-key "core::BytecodeDebugDecls_O" :parent-class "core::BytecodeDebugInfo_O"
-            :lisp-class-base "core::BytecodeDebugInfo_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BytecodeDebugDecls_O" :layout-offset-field-names ("_start")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BytecodeDebugDecls_O" :layout-offset-field-names ("_end")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>"
-             :offset-base-ctype "core::BytecodeDebugDecls_O" :layout-offset-field-names ("_decls")}
-{class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugExit_O"
-            :stamp-key "core::BytecodeDebugExit_O" :parent-class "core::BytecodeDebugInfo_O"
-            :lisp-class-base "core::BytecodeDebugInfo_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BytecodeDebugExit_O" :layout-offset-field-names ("_start")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BytecodeDebugExit_O" :layout-offset-field-names ("_end")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::BytecodeDebugExit_O"
-             :layout-offset-field-names ("_receiving")}
 {class-kind :stamp-name "STAMPWTAG_clasp_ffi__ForeignTypeSpec_O"
             :stamp-key "clasp_ffi::ForeignTypeSpec_O" :parent-class "core::General_O"
             :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3
@@ -4558,6 +4584,19 @@
                    :end-field-names ("_Slots" "._Length")}
 {variable-field-only :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
                      :fixup-type "std::atomic<gctools::smart_ptr<core::T_O>>"}
+{class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugVar_O" :stamp-key "core::BytecodeDebugVar_O"
+            :parent-class "core::General_O" :lisp-class-base "core::General_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugVar_O" :layout-offset-field-names ("_name")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_short" :offset-ctype "unsigned short"
+             :offset-base-ctype "core::BytecodeDebugVar_O" :layout-offset-field-names ("_index")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "core::BytecodeDebugVar_O" :layout-offset-field-names ("_cellp")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::List_V>"
+             :offset-base-ctype "core::BytecodeDebugVar_O" :layout-offset-field-names ("_decls")}
 {class-kind :stamp-name "STAMPWTAG_core__SmallMultimap_O" :stamp-key "core::SmallMultimap_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

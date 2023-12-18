@@ -208,9 +208,8 @@
            (,%sublist (nthcdr ,index ,list) (cdr ,%sublist))
            (,%count (- ,end ,index) (1- ,%count)))
           ((<= ,%count 0) ,output)
-       (declare (fixnum ,index ,%count)
-                (cons ,%sublist))
-       (let ((,elt (car ,%sublist)))
+       (declare (fixnum ,index ,%count))
+       (let ((,elt (car (the cons ,%sublist))))
          ,@body)))))
 
 (defmacro do-general-subsequence ((elt sequence start end

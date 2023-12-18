@@ -392,6 +392,7 @@
           redefined-function-warning
           wrong-argcount-warning
           compiler-macro-expansion-error-warning
+          unused-variable used-variable
           fold-failure))
 
 ;;; Eclector

@@ -12,6 +12,7 @@
   are available after the Gray stream modules is required.
 * Generic `(setf gray:stream-element-type)` for basic support of
   bivalent streams.
+* The bytecode compiler warns about unused variables.
 
 ## Changed
 * `cl:format` and `pprint` now respect the value returned bye

@@ -44,8 +44,6 @@
 (defun lispify-symbol-name (name)
   "This needs to generate exactly the same result as lispify_symbol_name
    in foundation.cc"
-  (when (string= name "Atom/getNeighborsForAbsoluteConfiguration")
-    (break "Check backtrace"))
   (let ((subst-name
           (with-output-to-string (sout)
             (loop named subst

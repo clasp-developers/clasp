@@ -131,6 +131,39 @@
             :condition c :origin origin)
       form)))
 
+;; These conditions are signaled by the bytecode compiler.
+;; They are NOT signaled by Cleavir which uses its own conditions,
+;; so that's kind of ugly. FIXME.
+(define-condition cmp:unused-variable (style-warning
+                                       compiler-condition)
+  ((%name :initarg :name :reader name)
+   (%setp :initarg :setp :reader setp))
+  (:report
+   (lambda (condition stream)
+     (let ((name (name condition)))
+       (format stream "The ~:[function~;variable~] ~a is ~:[defined~;assigned~] but never used."
+               (symbolp name)
+               (if (symbolp name) name (second name))
+               (setp condition))))))
+(define-condition cmp:used-variable (style-warning
+                                     compiler-condition)
+  ((%name :initarg :name :reader name))
+  (:report
+   (lambda (condition stream)
+     (let ((name (name condition)))
+       (format stream "The ~:[function~;variable~] ~a is used, even though it was declared ~a."
+               (symbolp name)
+               (if (symbolp name) name (second name))
+               'ignore)))))
+
+;;; redefined from bytecode_compiler.cc.
+(defun cmp:warn-unused-variable (name &optional (origin (ext:current-source-location)))
+  (warn 'cmp:unused-variable :origin origin :name name :setp nil))
+(defun cmp:warn-used-ignored-variable (name &optional (origin (ext:current-source-location)))
+  (warn 'cmp:used-variable :origin origin :name name))
+(defun cmp:warn-set-unused-variable (name &optional (origin (ext:current-source-location)))
+  (warn 'cmp:unused-variable :origin origin :name name :setp t))
+
 ;; This condition is signaled when an attempt at constant folding fails
 ;; due to the function being called signaling an error.
 ;; A full warning might be okay since this should correspond to a runtime

@@ -958,37 +958,6 @@ size_t Module_O::bytecode_size() {
   return last_cfunction->pposition() + last_cfunction->final_size();
 }
 
-// Resolve the labels to fixnums, and LVInfos to frame locations.
-// If a variable is stored in a cell, we indicate this by wrapping its
-// frame location in a cons.
-static void resolve_debug_vars(BytecodeDebugVars_sp info) {
-  T_sp open_label = info->start();
-  if (gc::IsA<Label_sp>(open_label))
-    info->setStart(clasp_make_fixnum(gc::As_unsafe<Label_sp>(open_label)->module_position()));
-  else // compiler screwed up, but this is just debug info, don't raise stink
-    info->setStart(clasp_make_fixnum(0));
-  T_sp close_label = info->end();
-  if (gc::IsA<Label_sp>(close_label))
-    info->setEnd(clasp_make_fixnum(gc::As_unsafe<Label_sp>(close_label)->module_position()));
-  else
-    info->setEnd(clasp_make_fixnum(0));
-  for (Cons_sp cur : info->bindings()) {
-    T_sp tentry = cur->car();
-    if (gc::IsA<Cons_sp>(tentry)) {
-      Cons_sp entry = gc::As_unsafe<Cons_sp>(tentry);
-      T_sp tlvinfo = entry->cdr();
-      if (gc::IsA<LexicalInfo_sp>(tlvinfo)) {
-        LexicalInfo_sp lvinfo = gc::As_unsafe<LexicalInfo_sp>(tlvinfo);
-        T_sp index = clasp_make_fixnum(lvinfo->frameIndex());
-        if (lvinfo->indirectLexicalP())
-          entry->setCdr(Cons_O::createList(index));
-        else
-          entry->setCdr(index);
-      }
-    }
-  }
-}
-
 // Resolve start and end but leave the rest alone.
 static void resolve_debug_info(BytecodeDebugInfo_sp info) {
   T_sp open_label = info->start();
@@ -1001,6 +970,40 @@ static void resolve_debug_info(BytecodeDebugInfo_sp info) {
     info->setEnd(clasp_make_fixnum(gc::As_unsafe<Label_sp>(close_label)->module_position()));
   else
     info->setEnd(clasp_make_fixnum(0));
+}
+
+// Resolve the labels to fixnums, and LVInfos to frame locations.
+// If a variable is stored in a cell, we indicate this by wrapping its
+// frame location in a cons.
+static void resolve_debug_vars(BytecodeDebugVars_sp info) {
+  resolve_debug_info(info);
+  for (Cons_sp cur : info->bindings()) {
+    T_sp tentry = cur->car();
+    if (gc::IsA<Cons_sp>(tentry)) {
+      Cons_sp entry = gc::As_unsafe<Cons_sp>(tentry);
+      T_sp tlvinfo = entry->cdr();
+      if (gc::IsA<LexicalInfo_sp>(tlvinfo)) {
+        T_sp name = entry->car();
+        LexicalInfo_sp lvinfo = gc::As_unsafe<LexicalInfo_sp>(tlvinfo);
+        auto bdv = BytecodeDebugVar_O::make(name, lvinfo->frameIndex(),
+                                            lvinfo->indirectLexicalP(),
+                                            lvinfo->decls());
+        cur->setCar(bdv);
+      }
+    }
+  }
+}
+
+static void resolve_ast_tagbody(BytecodeAstTagbody_sp info) {
+  resolve_debug_info(info);
+  for (Cons_sp cur : info->tags()) {
+    T_sp tentry = cur->car();
+    if (gc::IsA<Cons_sp>(tentry)) {
+      Cons_sp centry = gc::As_unsafe<Cons_sp>(tentry);
+      if (gc::IsA<Label_sp>(centry->cdr()))
+        centry->setCdr(clasp_make_fixnum(gc::As_unsafe<Label_sp>(centry->cdr())->module_position()));
+    }
+  }
 }
 
 SimpleVector_sp Module_O::create_debug_info() {
@@ -1025,6 +1028,8 @@ SimpleVector_sp Module_O::create_debug_info() {
       // Resolve labels, etc.
       if (gc::IsA<BytecodeDebugVars_sp>(info))
         resolve_debug_vars(gc::As_unsafe<BytecodeDebugVars_sp>(info));
+      else if (gc::IsA<BytecodeAstTagbody_sp>(info))
+        resolve_ast_tagbody(gc::As_unsafe<BytecodeAstTagbody_sp>(info));
       else if (gc::IsA<BytecodeDebugInfo_sp>(info))
         resolve_debug_info(gc::As_unsafe<BytecodeDebugInfo_sp>(info));
     }
@@ -1091,8 +1096,8 @@ bool btb_bcfun_p(GlobalBytecodeSimpleFun_sp fun, SimpleVector_sp debug_info) {
   size_t end = start + fun->bytecodeSize();
   for (size_t i = 0; i < debug_info->length(); ++i) {
     T_sp tinfo = (*debug_info)[i];
-    if (gc::IsA<BytecodeDebugDecls_sp>(tinfo)) {
-      BytecodeDebugDecls_sp info = gc::As_unsafe<BytecodeDebugDecls_sp>(tinfo);
+    if (gc::IsA<BytecodeAstDecls_sp>(tinfo)) {
+      BytecodeAstDecls_sp info = gc::As_unsafe<BytecodeAstDecls_sp>(tinfo);
       size_t infostart = info->start().unsafe_fixnum();
       size_t infoend = info->start().unsafe_fixnum();
       if (infostart > end)
@@ -1257,6 +1262,21 @@ inline static bool code_walking_p() {
   return _sym_STARcodeWalkerSTAR->boundP() && _sym_STARcodeWalkerSTAR->symbolValue().notnilp();
 }
 
+SYMBOL_EXPORT_SC_(CompPkg, warn_used_ignored_variable);
+CL_DEFUN void cmp__warn_used_ignored_variable(T_sp name, T_sp sourceloc) {
+  (void)name; (void)sourceloc;
+}
+
+// Function is called whenever a lexical is referenced, to issue a
+// warning with appropriate source location.
+static void maybe_warn_used(T_sp name, LexicalInfo_sp lex,
+                            T_sp sloc, bool funp) {
+  if (lex->ignore() == LexicalInfo_O::IgnoreStatus::IGNORE) {
+    T_sp rname = funp ? Cons_O::createList(cl::_sym_Function_O, name) : name;
+    eval::funcall(_sym_warn_used_ignored_variable, rname, sloc);
+  }
+}
+
 void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
   VarInfoV info = var_info_v(sym, env);
   if (std::holds_alternative<SymbolMacroVarInfoV>(info)) {
@@ -1268,6 +1288,12 @@ void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
     // A symbol macro could expand into something with arbitrary side effects
     // so we always have to compile that, but otherwise, if no values are
     // wanted, we want to not compile anything.
+    // But we do want to note any lexical variable as used.
+    if (std::holds_alternative<LexicalVarInfoV>(info)) {
+      LexicalInfo_sp lex = std::get<LexicalVarInfoV>(info).info()->lex();
+      lex->setReadP(true);
+      maybe_warn_used(sym, lex, context.source_info(), false);
+    }
     return;
   } else {
     if (std::holds_alternative<LexicalVarInfoV>(info)) {
@@ -1280,6 +1306,8 @@ void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
         context.assemble1(vm_closure, context.closure_index(lvinfo->lex()));
       }
       context.maybe_emit_cell_ref(lvinfo);
+      lvinfo->lex()->setReadP(true);
+      maybe_warn_used(sym, lvinfo->lex(), context.source_info(), false);
     } else if (std::holds_alternative<SpecialVarInfoV>(info))
       context.assemble1(vm_symbol_value, context.vcell_index(sym));
     else if (std::holds_alternative<ConstantVarInfoV>(info)) {
@@ -1320,7 +1348,7 @@ void compile_locally(List_sp body, Lexenv_sp env, const Context ctxt) {
   Label_sp begin_label = Label_O::make(), end_label = Label_O::make();
   if (declares.notnilp()) {
     begin_label->contextualize(ctxt);
-    ctxt.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, declares));
+    ctxt.push_debug_info(BytecodeAstDecls_O::make(begin_label, end_label, declares));
   }
   compile_progn(code, env, ctxt);
   if (declares.notnilp())
@@ -1339,6 +1367,125 @@ bool special_binding_p(Symbol_sp sym, List_sp specials, Lexenv_sp env) {
   }
 }
 
+// From a list of declarations, determine the ignore status of the variable
+// or #'function. The latter is why we use cl:equal.
+LexicalInfo_O::IgnoreStatus binding_ignore(T_sp name, List_sp decls) {
+  for (auto cur : decls) {
+    T_sp decl = oCar(cur);
+    if (!gc::IsA<Cons_sp>(decl) || !gc::IsA<Cons_sp>(oCdr(decl))) continue;
+    if (oCar(decl) == cl::_sym_ignore) {
+      for (auto cv : gc::As_unsafe<List_sp>(oCdr(decl))) {
+        if (cl__equal(oCar(cv), name))
+          return LexicalInfo_O::IgnoreStatus::IGNORE;
+      }
+    } else if (oCar(decl) == cl::_sym_ignorable) {
+      for (auto cv : gc::As_unsafe<List_sp>(oCdr(decl))) {
+        if (cl__equal(oCar(cv), name))
+          return LexicalInfo_O::IgnoreStatus::IGNORABLE;
+      }
+    }
+  }
+  return LexicalInfo_O::IgnoreStatus::NOIGNORE; // ain't nothin
+}
+
+// These will be redefined in compiler-conditions.lisp,
+// once the condition system is really up.
+SYMBOL_EXPORT_SC_(CompPkg, warn_unused_variable);
+SYMBOL_EXPORT_SC_(CompPkg, warn_set_unused_variable);
+CL_DEFUN void cmp__warn_unused_variable(T_sp name, T_sp sourceloc) {
+  (void)name; (void)sourceloc;
+}
+CL_DEFUN void cmp__warn_set_unused_variable(T_sp name, T_sp sourceloc)
+{
+  (void)name; (void)sourceloc;
+}
+
+// Emit warnings for unused variables etc.
+// Bindings is an alist of (name . lexical-info).
+static void warn_ignorance(List_sp bindings) {
+  if (code_walking_p()) return;
+  for (auto cur : bindings) {
+    LexicalInfo_sp lex = gc::As_assert<LexicalInfo_sp>(oCadar(cur));
+    if (lex->ignore() == LexicalInfo_O::IgnoreStatus::NOIGNORE
+        && !lex->readP()) {
+      T_sp name = oCaar(cur);
+      T_sp sloc = oCaddar(cur);
+      if (lex->setP())
+        eval::funcall(_sym_warn_set_unused_variable, name, sloc);
+      else eval::funcall(_sym_warn_unused_variable, name, sloc);
+    }
+  }
+}
+
+static T_sp source_location_for(T_sp form, T_sp fallback) {
+  if (_sym_STARsourceLocationsSTAR->boundP()) {
+    T_sp table = _sym_STARsourceLocationsSTAR->symbolValue();
+    if (gc::IsA<HashTableBase_sp>(table))
+      return gc::As_unsafe<HashTableBase_sp>(table)->gethash(form, fallback);
+  }
+  return fallback;
+}
+
+static List_sp decls_for_var(T_sp varname, List_sp decls) {
+  // FIXME: Should be extensible.
+  // Also ideally in Lisp. This is pretty grody as-is.
+  ql::list result;
+  for (auto cur : decls) {
+    T_sp decl = oCar(cur);
+    if (gc::IsA<Cons_sp>(decl) && gc::IsA<Cons_sp>(oCdr(decl))) {
+      T_sp spec = oCar(decl);
+      Cons_sp rest = gc::As_unsafe<Cons_sp>(oCdr(decl));
+      // SPECIAL declarations are ignored, since we handle that
+      // directly rather than needing to put it in annotations.
+      if (spec == cl::_sym_dynamic_extent || spec == cl::_sym_ignore || spec == cl::_sym_ignorable) {
+        if (rest->memberEq(varname).notnilp())
+          result << spec;
+      } else if (spec == cl::_sym_type && gc::IsA<Cons_sp>(oCdr(rest))) {
+        Cons_sp names = gc::As_unsafe<Cons_sp>(oCdr(rest));
+        if (names->memberEq(varname).notnilp())
+          result << Cons_O::createList(spec, oCar(rest));
+      } else if (!(spec == cl::_sym_ftype || spec == cl::_sym_inline || spec == cl::_sym_notinline || spec == cl::_sym_optimize ||
+                   spec == cl::_sym_special || spec == core::_sym_lambdaName || spec == core::_sym_lambdaList)) {
+        // Presumed type decl
+        if (rest->memberEq(varname).notnilp())
+          result << Cons_O::createList(cl::_sym_type, spec);
+      }
+    }
+  }
+  return result.cons();
+}
+
+static List_sp decls_for_fun(T_sp funname, List_sp decls) {
+  // FIXME: Should be extensible.
+  // Also ideally in Lisp. This is pretty grody as-is.
+  ql::list result;
+  for (auto cur : decls) {
+    T_sp decl = oCar(cur);
+    if (gc::IsA<Cons_sp>(decl) && gc::IsA<Cons_sp>(oCdr(decl))) {
+      T_sp spec = oCar(decl);
+      Cons_sp rest = gc::As_unsafe<Cons_sp>(oCdr(decl));
+      if (spec == cl::_sym_dynamic_extent || spec == cl::_sym_ignore || spec == cl::_sym_ignorable) {
+        for (auto ncur : (List_sp)rest) {
+          T_sp ncurn = oCar(ncur);
+          if (gc::IsA<Cons_sp>(ncurn) && oCar(ncurn) == cl::_sym_Function_O
+              && oCadr(ncurn) == funname && oCddr(ncurn).nilp()) {
+            result << spec;
+            break;
+          }
+        }
+      } else if (spec == cl::_sym_inline || spec == cl::_sym_notinline) {
+        if (rest->memberEq(funname).notnilp())
+          result << spec;
+      } else if (spec == cl::_sym_ftype && gc::IsA<Cons_sp>(oCdr(rest))) {
+        Cons_sp names = gc::As_unsafe<Cons_sp>(oCdr(rest));
+        if (names->memberEq(funname).notnilp())
+          result << Cons_O::createList(spec, oCar(rest));
+      }
+    }
+  }
+  return result.cons();
+}
+
 void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ctxt) {
   List_sp declares = nil<T_O>();
   gc::Nilable<String_sp> docstring;
@@ -1352,6 +1499,7 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
   Label_sp begin_label = Label_O::make();
   Label_sp end_label = Label_O::make();
   ql::list debug_bindings; // alist (name . LexicalInfo)
+  ql::list ibindings; // (name lex source). FIXME merge w/ above.
   // now get processing
   for (auto cur : bindings) {
     T_sp binding = oCar(cur);
@@ -1374,6 +1522,10 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
       ++lexical_binding_count;
       LexicalVarInfo_sp lvinfo = gc::As_assert<LexicalVarInfo_sp>(post_binding_env->variableInfo(var));
       debug_bindings << Cons_O::create(var, lvinfo->lex());
+      ibindings << Cons_O::createList(var, lvinfo->lex(),
+                                      source_location_for(binding, ctxt.source_info()));
+      lvinfo->lex()->setIgnore(binding_ignore(var, declares));
+      lvinfo->lex()->setDecls(decls_for_var(var, declares));
       ctxt.maybe_emit_make_cell(lvinfo);
     }
   }
@@ -1385,75 +1537,12 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
   if (dbindings.notnilp())
     ctxt.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, dbindings));
   if (declares.notnilp())
-    ctxt.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, declares));
+    ctxt.push_debug_info(BytecodeAstDecls_O::make(begin_label, end_label, declares));
   compile_progn(code, post_binding_env, ctxt.sub_de(Integer_O::create(special_binding_count)));
   ctxt.emit_unbind(special_binding_count);
   end_label->contextualize(ctxt);
-}
-
-static List_sp decls_for_var(T_sp varname, List_sp decls) {
-  // FIXME: Should be extensible.
-  // Also ideally in Lisp. This is pretty grody as-is.
-  ql::list result;
-  for (auto cur : decls) {
-    T_sp decl = oCar(cur);
-    if (gc::IsA<Cons_sp>(decl) && gc::IsA<Cons_sp>(oCdr(decl))) {
-      T_sp spec = oCar(decl);
-      Cons_sp rest = gc::As_unsafe<Cons_sp>(oCdr(decl));
-      // SPECIAL declarations are ignored, since we handle that
-      // directly rather than needing to put it in annotations.
-      if (spec == cl::_sym_dynamic_extent || spec == cl::_sym_ignore || spec == cl::_sym_ignorable) {
-        if (rest->memberEq(varname).notnilp())
-          result << Cons_O::createList(spec, varname);
-      } else if (spec == cl::_sym_type && gc::IsA<Cons_sp>(oCdr(rest))) {
-        Cons_sp names = gc::As_unsafe<Cons_sp>(oCdr(rest));
-        if (names->memberEq(varname).notnilp())
-          result << Cons_O::createList(spec, oCar(rest), varname);
-      } else if (!(spec == cl::_sym_ftype || spec == cl::_sym_inline || spec == cl::_sym_notinline || spec == cl::_sym_optimize ||
-                   spec == cl::_sym_special || spec == core::_sym_lambdaName || spec == core::_sym_lambdaList)) {
-        // Presumed type decl
-        if (rest->memberEq(varname).notnilp())
-          result << Cons_O::createList(cl::_sym_type, spec, varname);
-      }
-    }
-  }
-  return result.cons();
-}
-
-static List_sp decls_for_vars(List_sp vars, List_sp decls) {
-  ql::list result;
-  for (auto cur : decls) {
-    T_sp decl = oCar(cur);
-    if (gc::IsA<Cons_sp>(decl) && gc::IsA<Cons_sp>(oCdr(decl))) {
-      T_sp spec = oCar(decl);
-      Cons_sp rest = gc::As_unsafe<Cons_sp>(oCdr(decl));
-      // SPECIAL declarations are ignored, since we handle that
-      // directly rather than needing to put it in annotations.
-      if (spec == cl::_sym_dynamic_extent || spec == cl::_sym_ignore || spec == cl::_sym_ignorable) {
-        for (auto svars : vars) {
-          T_sp thisvar = oCar(svars);
-          if (rest->memberEq(thisvar).notnilp())
-            result << Cons_O::createList(spec, thisvar);
-        }
-      } else if (spec == cl::_sym_type && gc::IsA<Cons_sp>(oCdr(rest))) {
-        Cons_sp names = gc::As_unsafe<Cons_sp>(oCdr(rest));
-        for (auto svars : vars) {
-          T_sp thisvar = oCar(svars);
-          if (names->memberEq(thisvar).notnilp())
-            result << Cons_O::createList(spec, oCar(rest), thisvar);
-        }
-      } else if (!(spec == cl::_sym_ftype || spec == cl::_sym_inline || spec == cl::_sym_notinline || spec == cl::_sym_optimize ||
-                   spec == cl::_sym_special || spec == core::_sym_lambdaName || spec == core::_sym_lambdaList)) {
-        // Presumed type decl
-        for (auto svars : vars) {
-          T_sp thisvar = oCar(svars);
-          if (rest->memberEq(thisvar).notnilp())
-            result << Cons_O::createList(spec, thisvar);
-        }
-      }
-    }
-  }
-  return result.cons();
+  // Warn about unused variables.
+  warn_ignorance(ibindings.cons());
 }
 
 void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Context ectxt) {
@@ -1466,6 +1555,8 @@ void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Contex
   Lexenv_sp new_env = env;
   Context ctxt = ectxt;
   Label_sp end_label = Label_O::make();
+  ql::list debug_bindings;
+  ql::list ibindings;
   for (auto cur : bindings) {
     T_sp binding = oCar(cur);
     Symbol_sp var;
@@ -1490,13 +1581,15 @@ void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Contex
       LexicalVarInfo_sp lvinfo = gc::As_assert<LexicalVarInfo_sp>(new_env->variableInfo(var));
       ctxt.maybe_emit_make_cell(lvinfo);
       ctxt.assemble1(vm_set, frame_start);
+      lvinfo->lex()->setIgnore(binding_ignore(var, declares));
+      lvinfo->lex()->setDecls(decls_for_var(var, declares));
       // Set up debug info
       begin_label->contextualize(ctxt);
-      ctxt.push_debug_info(
-          BytecodeDebugVars_O::make(begin_label, end_label, Cons_O::createList(Cons_O::create(var, lvinfo->lex()))));
-      List_sp decls = decls_for_var(var, declares);
-      if (decls.notnilp())
-        ctxt.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, decls));
+      Cons_sp dpair = Cons_O::create(var, lvinfo->lex());
+      ctxt.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, Cons_O::createList(dpair)));
+      debug_bindings << dpair;
+      ibindings << Cons_O::createList(var, lvinfo->lex(),
+                                      source_location_for(binding, ctxt.source_info()));
     }
   }
   new_env = new_env->add_decls(declares);
@@ -1507,6 +1600,7 @@ void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Contex
   compile_progn(code, new_env->add_specials(specials), ctxt);
   ctxt.emit_unbind(special_binding_count);
   end_label->contextualize(ctxt);
+  warn_ignorance(ibindings.cons());
 }
 
 // copied from evaluator.cc (on the premise that that will be deleted or
@@ -1529,12 +1623,15 @@ static T_sp extract_lambda_list_from_declares(List_sp declares, T_sp defaultll) 
   return defaultll;
 }
 
-Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, LexicalVarInfo_sp varinfo, Symbol_sp supplied_var,
-                                       Label_sp end_label, bool var_specialp, bool supplied_specialp, const Context context,
-                                       Lexenv_sp env, List_sp vardecls, List_sp spdecls) {
+Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, LexicalVarInfo_sp varinfo, Symbol_sp supplied_var, bool var_specialp, bool supplied_specialp, const Context context,
+                                       Lexenv_sp env) {
   Label_sp supplied_label = Label_O::make();
   Label_sp next_label = Label_O::make();
   context.emit_jump_if_supplied(supplied_label, varinfo->frameIndex());
+  // Emit an annotation for the if.
+  Label_sp else_label = Label_O::make();
+  else_label->contextualize(context);
+  context.push_debug_info(BytecodeAstIf_O::make(else_label, next_label, supplied_var.notnilp() ? 2 : 1));
   // Emit code for the case of the variable not being supplied:
   // Bind the var to the default, and the suppliedvar to NIL if applicable.
   // We push the suppliedp value first because it's bound second.
@@ -1568,14 +1665,8 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, Lexi
   if (var_specialp)
     context.emit_special_bind(var);
   else {
-    Label_sp varlabel = Label_O::make();
     context.maybe_emit_make_cell(varinfo);
     context.assemble1(vm_set, varinfo->frameIndex());
-    varlabel->contextualize(context);
-    context.push_debug_info(
-        BytecodeDebugVars_O::make(varlabel, end_label, Cons_O::createList(Cons_O::create(var, varinfo->lex()))));
-    if (vardecls.notnilp())
-      context.push_debug_info(BytecodeDebugDecls_O::make(varlabel, end_label, vardecls));
   }
   // The suppliedp value was pushed most recently, so bind that first.
   // We do it this way after the branch so that the suppliedp var has a dominating bind
@@ -1584,21 +1675,48 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, Lexi
     if (supplied_specialp)
       context.emit_special_bind(supplied_var);
     else {
-      Label_sp suplabel = Label_O::make();
       LexicalVarInfo_sp lsinfo = gc::As_assert<LexicalVarInfo_sp>(env->variableInfo(supplied_var));
       context.maybe_emit_make_cell(lsinfo);
       // This is a separate set because the variable and its optionalp usually
       // don't have contiguous indices.
       context.assemble1(vm_set, lsinfo->frameIndex());
-      suplabel->contextualize(context);
-      context.push_debug_info(
-          BytecodeDebugVars_O::make(suplabel, end_label, Cons_O::createList(Cons_O::create(supplied_var, lsinfo->lex()))));
-      if (spdecls.notnilp())
-        context.push_debug_info(BytecodeDebugDecls_O::make(suplabel, end_label, spdecls));
     }
   }
   // That's it for code generation. Now return the new environment.
   return env;
+}
+
+// Generate BytecodeDebug whatsits for optional/key variables.
+// Also set the ignore and other declarations.
+void annotate_optional_or_key_item(Symbol_sp key_var, Symbol_sp supplied_var,
+                                   List_sp decls, Label_sp end,
+                                   const Context ctxt, Lexenv_sp env)
+{
+  ql::list dvars;
+  VarInfoV kinfo = var_info_v(key_var, env);
+  if (std::holds_alternative<LexicalVarInfoV>(kinfo)) {
+    LexicalVarInfo_sp lvinfo = std::get<LexicalVarInfoV>(kinfo).info();
+    LexicalInfo_sp lex = lvinfo->lex();
+    lex->setIgnore(binding_ignore(key_var, decls));
+    lex->setDecls(decls_for_var(key_var, decls));
+    dvars << Cons_O::create(key_var, lex);
+  }
+  if (supplied_var.notnilp()) {
+    VarInfoV sinfo = var_info_v(supplied_var, env);
+    if (std::holds_alternative<LexicalVarInfoV>(sinfo)) {
+      LexicalVarInfo_sp lvinfo = std::get<LexicalVarInfoV>(sinfo).info();
+      LexicalInfo_sp lex = lvinfo->lex();
+      lex->setIgnore(binding_ignore(supplied_var, decls));
+      lex->setDecls(decls_for_var(supplied_var, decls));
+      dvars << Cons_O::create(supplied_var, lex);
+    }
+  }
+  T_sp dbinds = dvars.cons();
+  if (dbinds.notnilp()) {
+    Label_sp dlabel = Label_O::make();
+    dlabel->contextualize(ctxt);
+    ctxt.push_debug_info(BytecodeDebugVars_O::make(dlabel, end, dbinds));
+  }
 }
 
 void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, const Context context) {
@@ -1623,6 +1741,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
   size_t max_count = min_count + optional_count;
   bool morep = restarg._ArgTarget.notnilp() || key_flag.notnilp();
   Label_sp end_label = Label_O::make(); // for debug info
+  ql::list ibindings; // for ignore. &optional/&key not included FIXME
   ql::list lreqs;
   for (auto& it : reqs)
     lreqs << it._ArgTarget;
@@ -1644,12 +1763,6 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     Label_sp begin_label = Label_O::make();
     // Bind the required arguments.
     context.assemble1(vm_bind_required_args, min_count);
-    List_sp svdecls = decls_for_vars(lreqs.cons(), declares);
-    if (svdecls.notnilp()) {
-      Label_sp debug_begin_label = Label_O::make();
-      debug_begin_label->contextualize(context);
-      context.push_debug_info(BytecodeDebugDecls_O::make(debug_begin_label, end_label, svdecls));
-    }
     ql::list debugbindings;
     ql::list debugdecls;
     ql::list sreqs; // required parameters that are special
@@ -1665,14 +1778,17 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
         ++special_binding_count; // not in lisp - bug?
       } else {
         context.maybe_emit_encage(lvinfo);
-        debugbindings << Cons_O::create(var, lvinfo->lex());
+        T_sp dpair = Cons_O::create(var, lvinfo->lex());
+        debugbindings << dpair;
+        lvinfo->lex()->setIgnore(binding_ignore(var, declares));
+        lvinfo->lex()->setDecls(decls_for_var(var, declares));
+        ibindings << Cons_O::createList(var, lvinfo->lex(),
+                                        context.source_info());
       }
     }
     new_env = new_env->add_specials(sreqs.cons());
     begin_label->contextualize(context); // after encages
-    T_sp dbindings = debugbindings.cons();
-    if (dbindings.notnilp())
-      context.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, dbindings));
+    context.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, debugbindings.cons()));
   }
   Lexenv_sp optkey_env = new_env;
   if (optional_count > 0) {
@@ -1687,14 +1803,6 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
       opts << it._ArgTarget;
     List_sp lopts = opts.cons();
     optkey_env = optkey_env->bind_vars(lopts, context);
-    // Grab declarations. We do this here so that the b2b compiler can
-    // make variables with proper ignore/whatever declarations.
-    List_sp odecls = decls_for_vars(lopts, declares);
-    if (odecls.notnilp()) {
-      Label_sp begin_label = Label_O::make();
-      begin_label->contextualize(context);
-      context.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, odecls));
-    }
     // new_env has enough space for the optional arguments, but without the
     // variables actually bound, so that default forms can be compiled correctly
     new_env = Lexenv_O::make(new_env->vars(), optkey_env->tags(), optkey_env->blocks(), optkey_env->funs(), optkey_env->decls(),
@@ -1722,11 +1830,11 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
       context.maybe_emit_encage(lvinfo);
       Label_sp begin_label = Label_O::make();
       begin_label->contextualize(context);
-      context.push_debug_info(
-          BytecodeDebugVars_O::make(begin_label, end_label, Cons_O::createList(Cons_O::create(rest, lvinfo->lex()))));
-      List_sp rdecls = decls_for_var(rest, declares);
-      if (rdecls.notnilp())
-        context.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, rdecls));
+      T_sp dpair = Cons_O::create(rest, lvinfo->lex());
+      context.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, Cons_O::createList(dpair)));
+      lvinfo->lex()->setIgnore(binding_ignore(rest, declares));
+      lvinfo->lex()->setDecls(decls_for_var(rest, declares));
+      ibindings << Cons_O::createList(rest, lvinfo->lex(), context.source_info());
     }
   }
   if (key_flag.notnilp()) {
@@ -1750,12 +1858,6 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     for (auto& it : keys)
       keyvars << it._ArgTarget;
     List_sp lkeyvars = keyvars.cons();
-    List_sp kdecls = decls_for_vars(lkeyvars, declares);
-    if (kdecls.notnilp()) {
-      Label_sp begin_label = Label_O::make();
-      begin_label->contextualize(context);
-      context.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, kdecls));
-    }
     optkey_env = optkey_env->bind_vars(lkeyvars, context);
     new_env = Lexenv_O::make(new_env->vars(), optkey_env->tags(), optkey_env->blocks(), optkey_env->funs(), optkey_env->decls(),
                              optkey_env->frameEnd());
@@ -1769,16 +1871,18 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
       bool optional_special_p = special_binding_p(optional_var, specials, env);
       auto varinfo = gc::As_assert<LexicalVarInfo_sp>(var_info(optional_var, optkey_env));
       bool supplied_special_p = supplied_var.notnilp() && special_binding_p(supplied_var, specials, env);
-      List_sp vardecls = decls_for_var(optional_var, declares);
-      List_sp spdecls = nil<T_O>();
-      if (supplied_var.notnilp())
-        spdecls = decls_for_var(supplied_var, declares);
-      new_env = compile_optional_or_key_item(optional_var, defaulting_form, varinfo, supplied_var, end_label, optional_special_p,
-                                             supplied_special_p, context, new_env, vardecls, spdecls);
+      new_env = compile_optional_or_key_item(optional_var, defaulting_form, varinfo, supplied_var, optional_special_p,
+                                             supplied_special_p, context, new_env);
+      annotate_optional_or_key_item(optional_var, supplied_var, declares, end_label,
+                                    context, new_env);
       if (optional_special_p)
         ++special_binding_count;
+      else
+        ibindings << Cons_O::createList(optional_var, varinfo->lex(), context.source_info());
       if (supplied_special_p)
         ++special_binding_count;
+      else
+        ibindings << Cons_O::createList(supplied_var, gc::As_assert<LexicalVarInfo_sp>(var_info(supplied_var, new_env))->lex(), context.source_info());
     }
   }
   // Generate defaulting code for key args, and special-bind them if necessary
@@ -1790,16 +1894,18 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
       bool key_special_p = special_binding_p(key_var, specials, env);
       auto varinfo = gc::As_assert<LexicalVarInfo_sp>(var_info(key_var, optkey_env));
       bool supplied_special_p = supplied_var.notnilp() && special_binding_p(supplied_var, specials, env);
-      List_sp vardecls = decls_for_var(key_var, declares);
-      List_sp spdecls = nil<T_O>();
-      if (supplied_var.notnilp())
-        spdecls = decls_for_var(supplied_var, declares);
-      new_env = compile_optional_or_key_item(key_var, defaulting_form, varinfo, supplied_var, end_label, key_special_p,
-                                             supplied_special_p, context, new_env, vardecls, spdecls);
+      new_env = compile_optional_or_key_item(key_var, defaulting_form, varinfo, supplied_var, key_special_p,
+                                             supplied_special_p, context, new_env);
+      annotate_optional_or_key_item(key_var, supplied_var, declares,
+                                    end_label, context, new_env);
       if (key_special_p)
         ++special_binding_count;
+      else
+        ibindings << Cons_O::createList(key_var, varinfo->lex(), context.source_info());
       if (supplied_special_p)
         ++special_binding_count;
+      else
+        ibindings << Cons_O::createList(supplied_var, gc::As_assert<LexicalVarInfo_sp>(var_info(supplied_var, new_env))->lex(), context.source_info());
     }
   }
   // Generate aux and the body as a let*.
@@ -1815,6 +1921,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
   // Finally, clean up any special bindings.
   context.emit_unbind(special_binding_count);
   end_label->contextualize(context);
+  warn_ignorance(ibindings.cons());
 }
 
 // Compile the lambda expression in MODULE, returning the resulting CFUNCTION.
@@ -1843,7 +1950,7 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
   if (all_declares.notnilp() || source_info.notnilp()) {
     begin->contextualize(context);
     if (all_declares.notnilp())
-      context.push_debug_info(BytecodeDebugDecls_O::make(begin, end, all_declares));
+      context.push_debug_info(BytecodeAstDecls_O::make(begin, end, all_declares));
     if (source_info.notnilp())
       context.push_debug_info(BytecodeDebugLocation_O::make(begin, end, source_info));
   }
@@ -1854,15 +1961,6 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
   if (all_declares.notnilp() || source_info.notnilp())
     end->contextualize(context);
   return function;
-}
-
-static T_sp source_location_for(T_sp form, T_sp fallback) {
-  if (_sym_STARsourceLocationsSTAR->boundP()) {
-    T_sp table = _sym_STARsourceLocationsSTAR->symbolValue();
-    if (gc::IsA<HashTableBase_sp>(table))
-      return gc::As_unsafe<HashTableBase_sp>(table)->gethash(form, fallback);
-  }
-  return fallback;
 }
 
 SYMBOL_EXPORT_SC_(CompPkg, register_global_function_ref);
@@ -1899,6 +1997,8 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
       ctxt.assemble1(vm_fdefinition, ctxt.fcell_index(fnameoid));
     } else if (std::holds_alternative<LocalFunInfoV>(info)) {
       LocalFunInfo_sp lfinfo = std::get<LocalFunInfoV>(info).info();
+      lfinfo->lex()->setReadP(true);
+      maybe_warn_used(fnameoid, lfinfo->lex(), ctxt.source_info(), true);
       ctxt.reference_lexical_info(lfinfo->lex());
     } else
       // FIXME: e.g. #'with-open-file. needs better error.
@@ -1933,6 +2033,8 @@ void compile_called_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
       ctxt.assemble1(vm_called_fdefinition, ctxt.fcell_index(fnameoid));
     } else if (std::holds_alternative<LocalFunInfoV>(info)) {
       LocalFunInfo_sp lfinfo = std::get<LocalFunInfoV>(info).info();
+      lfinfo->lex()->setReadP(true);
+      maybe_warn_used(fnameoid, lfinfo->lex(), ctxt.source_info(), true);
       ctxt.reference_lexical_info(lfinfo->lex());
     } else
       // FIXME: e.g. #'with-open-file. needs better error.
@@ -1965,6 +2067,9 @@ void compile_fdesignator(T_sp fform, Lexenv_sp env, const Context ctxt) {
 }
 
 void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Context ctxt) {
+  gc::Nilable<String_sp> docstring;
+  List_sp code, specials, declares = nil<T_O>();
+  eval::extract_declares_docstring_code_specials(body, declares, false, docstring, code, specials);
   ql::list fun_vars;
   size_t fun_count = 0;
   for (auto cur : definitions) {
@@ -1987,12 +2092,17 @@ void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Contex
   Label_sp begin_label = Label_O::make(), end_label = Label_O::make();
   if (definitions.notnilp())
     begin_label->contextualize(ctxt);
-  ql::list debugbindings;
+  ql::list debugbindings, ibindings;
   for (auto cur : definitions) {
     T_sp name = oCaar(cur);
     T_sp fname = Cons_O::createList(cl::_sym_Function_O, name);
     auto info = gc::As_assert<LocalFunInfo_sp>(new_env->functionInfo(name));
-    debugbindings << Cons_O::create(fname, info->lex());
+    LexicalInfo_sp lex = info->lex();
+    lex->setIgnore(binding_ignore(fname, declares));
+    lex->setDecls(decls_for_fun(name, declares));
+    debugbindings << Cons_O::create(fname, lex);
+    ibindings << Cons_O::createList(fname, lex,
+                                    source_location_for(oCar(cur), ctxt.source_info()));
   }
   T_sp dbindings = debugbindings.cons();
   if (dbindings.notnilp())
@@ -2001,13 +2111,17 @@ void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Contex
   compile_locally(body, new_env, ctxt);
   if (dbindings.notnilp())
     end_label->contextualize(ctxt);
+  warn_ignorance(ibindings.cons());
 }
 
 void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Context ctxt) {
+  gc::Nilable<String_sp> docstring;
+  List_sp code, specials, body_declares = nil<T_O>();
+  eval::extract_declares_docstring_code_specials(body, body_declares, false, docstring, code, specials);
   size_t fun_count = 0;
   ql::list fun_vars;
   ql::list closures;
-  ql::list debugbindings;
+  ql::list debugbindings, ibindings;
   Label_sp begin_label = Label_O::make(), end_label = Label_O::make();
   for (auto cur : definitions) {
     Cons_sp definition = gc::As<Cons_sp>(oCar(cur));
@@ -2036,7 +2150,13 @@ void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Cont
       closures << Cons_O::create(fun, clasp_make_fixnum(lfi->frameIndex()));
       ctxt.assemble1(vm_make_uninitialized_closure, literal_index);
     }
-    debugbindings << Cons_O::create(Cons_O::createList(cl::_sym_Function_O, name), lfi->lex());
+    T_sp fname = Cons_O::createList(cl::_sym_Function_O, name);
+    LexicalInfo_sp lex = lfi->lex();
+    lex->setIgnore(binding_ignore(fname, body_declares));
+    lex->setDecls(decls_for_fun(name, body_declares));
+    debugbindings << Cons_O::create(fname, lex);
+    ibindings << Cons_O::createList(fname, lex,
+                                    source_location_for(definition, ctxt.source_info()));
   }
   ctxt.emit_bind(fun_count, env->frameEnd());
   T_sp dbindings = debugbindings.cons();
@@ -2055,6 +2175,7 @@ void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Cont
   }
   compile_locally(body, new_env, ctxt);
   end_label->contextualize(ctxt);
+  warn_ignorance(ibindings.cons());
 }
 
 static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Context ctxt) {
@@ -2142,32 +2263,39 @@ void compile_the(T_sp type, T_sp form, Lexenv_sp env, const Context ctxt) {
   Label_sp lab = Label_O::make();
   compile_form(form, env, ctxt);
   lab->contextualize(ctxt);
-  ctxt.push_debug_info(BytecodeDebugThe_O::make(lab, lab, type, ctxt.receiving()));
+  ctxt.push_debug_info(BytecodeAstThe_O::make(lab, lab, type, ctxt.receiving()));
 }
 
 void compile_if(T_sp cond, T_sp thn, T_sp els, Lexenv_sp env, const Context ctxt) {
   compile_form(cond, env, ctxt.sub_receiving(1));
-  Label_sp then_label = Label_O::make();
+  Label_sp then_label = Label_O::make(),
+    else_label = Label_O::make();
   Label_sp done_label = Label_O::make();
   ctxt.emit_jump_if(then_label);
+  else_label->contextualize(ctxt);
+  ctxt.push_debug_info(BytecodeAstIf_O::make(else_label, done_label, ctxt.receiving()));
   compile_form(els, env, ctxt);
   ctxt.emit_jump(done_label);
   then_label->contextualize(ctxt);
   compile_form(thn, env, ctxt);
   done_label->contextualize(ctxt);
-  ctxt.push_debug_info(BytecodeDebugBlock_O::make(done_label, done_label, nil<T_O>(), ctxt.receiving()));
 }
 
 static bool go_tag_p(T_sp object) { return object.fixnump() || gc::IsA<Integer_sp>(object) || gc::IsA<Symbol_sp>(object); }
 
 void compile_tagbody(List_sp statements, Lexenv_sp env, const Context ctxt) {
+  Label_sp start = Label_O::make(), end = Label_O::make();
   ql::list tags;
+  ql::list dtags; // for debug info
   for (auto cur : statements) {
     T_sp statement = oCar(cur);
-    if (go_tag_p(statement))
+    if (go_tag_p(statement)) {
       tags << statement;
+      dtags << Cons_O::create(statement, nil<T_O>());
+    }
   }
   List_sp ltags = tags.cons();
+  List_sp ldtags = dtags.cons();
   if (ltags.nilp()) { // degenerate case
     Context stmt_ctxt = ctxt.sub_receiving(0);
     for (auto cur : statements) {
@@ -2177,8 +2305,15 @@ void compile_tagbody(List_sp statements, Lexenv_sp env, const Context ctxt) {
   } else { // actual dynenv+tags case
     LexicalInfo_sp dynenv = LexicalInfo_O::make(env->frameEnd(), ctxt.cfunction());
     Lexenv_sp nenv = env->bind_tags(tags.cons(), dynenv, ctxt);
+    // Install labels in the debug tags list.
+    for (Cons_sp cur : ldtags) {
+      Cons_sp ccur = gc::As_assert<Cons_sp>(cur->car());
+      ccur->setCdr(gc::As<TagInfo_sp>(nenv->tagInfo(ccur->car()))->exit());
+    }
     // Bind the dynamic environment (or just save the stack pointer).
     ctxt.emit_entry_or_save_sp(dynenv);
+    start->contextualize(ctxt);
+    ctxt.push_debug_info(BytecodeAstTagbody_O::make(start, end, ldtags));
     // Compile the body, emitting the tag destination labels.
     Context stmt_ctxt = ctxt.sub_de(dynenv).sub_receiving(0);
     for (auto cur : statements) {
@@ -2187,10 +2322,10 @@ void compile_tagbody(List_sp statements, Lexenv_sp env, const Context ctxt) {
         TagInfo_sp tinfo = gc::As<TagInfo_sp>(nenv->tagInfo(statement));
         Label_sp lab = tinfo->exit();
         lab->contextualize(stmt_ctxt);
-        ctxt.push_debug_info(BytecodeDebugBlock_O::make(lab, lab, statement, 0));
       } else
         compile_form(statement, nenv, stmt_ctxt);
     }
+    end->contextualize(ctxt);
     stmt_ctxt.maybe_emit_entry_close(dynenv);
   }
   // return nil if we really have to
@@ -2228,7 +2363,6 @@ void compile_go(T_sp tag, Lexenv_sp env, const Context ctxt) {
   if (gc::IsA<TagInfo_sp>(tinfo)) {
     Label_sp start = Label_O::make(), end = Label_O::make();
     start->contextualize(ctxt);
-    ctxt.push_debug_info(BytecodeDebugExit_O::make(start, end, ctxt.receiving()));
     TagInfo_sp info = gc::As_unsafe<TagInfo_sp>(tinfo);
     compile_exit(info->lex(), info->exit(), ctxt);
     end->contextualize(ctxt);
@@ -2239,12 +2373,14 @@ void compile_go(T_sp tag, Lexenv_sp env, const Context ctxt) {
 void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ctxt) {
   Label_sp label = Label_O::make();
   Label_sp normal_label = Label_O::make();
-  Label_sp r1p_hack_label = Label_O::make();
+  Label_sp start = Label_O::make();
   Lexenv_sp nenv = env->bind_block(name, label, ctxt);
   BlockInfo_sp binfo = gc::As<BlockInfo_sp>(nenv->blockInfo(name));
   LexicalInfo_sp blex = binfo->lex();
   // Bind the dynamic environment or save SP.
   ctxt.emit_entry_or_save_sp(blex);
+  start->contextualize(ctxt);
+  ctxt.push_debug_info(BytecodeAstBlock_O::make(start, label, name, ctxt.receiving()));
   // We force single values into multiple so that we can uniformly PUSH afterward.
   // Specifically: if we're returning 0 values, there's no problem anyway.
   // If we're returning multiple values, the local and nonlocal returns just
@@ -2252,25 +2388,15 @@ void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ct
   // If we're returning exactly one value, the local just pushes one, and
   // the nonlocal stores into the MV which is then vm_push'd to the stack.
   bool r1p = ctxt.receiving() == 1;
-  if (r1p) {
-    // This silliness is to let the BTB compiler work. We treat the normal
-    // code as an exit so that the stack states match up correctly.
-    // Without this BDExit, code as simple as (lambda () (values (block nil)))
-    // breaks the BTB compiler.
-    r1p_hack_label->contextualize(ctxt);
-    ctxt.push_debug_info(BytecodeDebugExit_O::make(r1p_hack_label, label, -1));
-  }
   compile_progn(body, nenv, ctxt.sub_de(blex));
   if (r1p)
     ctxt.emit_jump(normal_label);
   label->contextualize(ctxt);
-  ctxt.push_debug_info(BytecodeDebugBlock_O::make(label, label, nil<T_O>(), ctxt.receiving() == 0 ? 0 : -1));
   // When we need 1 value, we have to make sure that the
   // "exceptional" case pushes a single value onto the stack.
   if (r1p) {
     ctxt.assemble0(vm_push);
     normal_label->contextualize(ctxt);
-    ctxt.push_debug_info(BytecodeDebugBlock_O::make(label, label, nil<T_O>(), 1));
   }
   ctxt.maybe_emit_entry_close(blex);
 }
@@ -2280,7 +2406,6 @@ void compile_return_from(T_sp name, T_sp valuef, Lexenv_sp env, const Context ct
   if (gc::IsA<BlockInfo_sp>(tbinfo)) {
     Label_sp start = Label_O::make(), end = Label_O::make();
     start->contextualize(ctxt);
-    ctxt.push_debug_info(BytecodeDebugExit_O::make(start, end, ctxt.receiving()));
     BlockInfo_sp binfo = gc::As<BlockInfo_sp>(tbinfo);
     int breceiving = binfo->receiving();
     compile_form(valuef, env, ctxt.sub_receiving(breceiving == 0 ? 0 : -1));
@@ -2594,13 +2719,10 @@ void compile_form(T_sp form, Lexenv_sp env, const Context context) {
   if (code_walking_p())
     form = eval::funcall(_sym_STARcodeWalkerSTAR->symbolValue(), form, env);
   // Record source location if we have it.
-  T_sp source_location = nil<T_O>();
+  T_sp source_location = source_location_for(form, nil<T_O>());
   Label_sp begin_label = Label_O::make();
   Label_sp end_label = Label_O::make();
   Context ncontext = context;
-  if (_sym_STARsourceLocationsSTAR->boundP() && gc::IsA<HashTableBase_sp>(_sym_STARsourceLocationsSTAR->symbolValue())) {
-    source_location = gc::As<HashTableBase_sp>(_sym_STARsourceLocationsSTAR->symbolValue())->gethash(form, nil<T_O>());
-  }
   if (source_location.notnilp()) {
     ncontext = context.sub_source(source_location);
     begin_label->contextualize(ncontext);
