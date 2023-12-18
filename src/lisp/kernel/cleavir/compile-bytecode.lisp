@@ -1076,6 +1076,9 @@
         ;; We make all variables IGNORABLE because the bytecode compiler
         ;; has already warned about any semantically unused variables
         ;; (and variables declared IGNORE but then used).
+        ;; Also, some uses in the original source are not preserved by the
+        ;; bytecode compiler, e.g. (progn x nil). So doing ignore stuff
+        ;; here results in spurious warnings.
         for variable = (make-instance 'bir:variable
                          :ignore 'cl:ignorable :name name)
         do (etypecase datum
