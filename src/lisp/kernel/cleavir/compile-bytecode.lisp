@@ -50,7 +50,8 @@
     ;; Compile.
     (core:do-module-instructions (mnemonic args opip ip next-annots)
         (bcmodule)
-      (let ((bir:*policy* (policy context)))
+      (let ((bir:*policy* (policy context))
+            (bir:*origin* (first (origin-stack context))))
         ;; End annotations coming out of effect.
         (setf annots (end-annotations opip annots inserter context))
         ;; Set up stuff for annotations coming into effect.
@@ -326,6 +327,7 @@
    (%policy :initarg :policy :accessor policy)
    (%typemap-stack :initform nil :initarg :typemap-stack
                    :accessor typemap-stack :type list)
+   (%origin-stack :initform nil :accessor origin-stack :type list)
    (%module :initarg :module :reader module :type bir:module)
    (%funmap :initarg :funmap :reader funmap :type funmap)
    (%blockmap :initarg :blockmap :reader blockmap :type blockmap)))
@@ -1253,17 +1255,42 @@
   (setf (policy context) (policy:compute-policy (first (optimize-stack context))
                                                 clasp-cleavir:*clasp-env*)))
 
+(defmethod start-annotation ((annot core:bytecode-debug-location)
+                             inserter context)
+  (declare (ignore inserter))
+  (push (kludge-spi (core:bytecode-debug-location/location annot))
+        (origin-stack context)))
+(defmethod end-annotation ((annot core:bytecode-debug-location)
+                           inserter context)
+  (declare (ignore inserter))
+  (pop (origin-stack context)))
+
+;;; Most processing is handled by maybe-begin-new, but there's still source info.
+(defmethod start-annotation ((annot core:global-bytecode-simple-fun)
+                             inserter context)
+  (declare (ignore inserter))
+  (let ((spi (function-spi annot)))
+    (when spi
+      (push (kludge-spi spi) (origin-stack context)))))
+(defmethod end-annotation ((annot core:global-bytecode-simple-fun)
+                           inserter context)
+  (declare (ignore inserter))
+  (when (function-spi annot)
+    (pop (origin-stack context))))
+
+(defun kludge-spi (spi)
+  ;; KLUDGE KLUDGE KLUDGE
+  ;; BIR currently checks that all source infos are
+  ;; (source) CSTs. We don't have those.
+  ;; Probably BIR needs adjustment.
+  (if spi
+      (make-instance 'cst:atom-cst :raw nil :source (cons spi spi))
+      nil))
+
 ;;; default methods: irrelevant to compilation. ignore.
 (defmethod start-annotation ((annot core:bytecode-debug-info)
                              inserter context)
   (declare (ignore inserter context)))
 (defmethod end-annotation ((annot core:bytecode-debug-info)
-                           inserter context)
-  (declare (ignore inserter context)))
-;;; Handled by maybe-begin-new.
-(defmethod start-annotation ((annot core:global-bytecode-simple-fun)
-                             inserter context)
-  (declare (ignore inserter context)))
-(defmethod end-annotation ((annot core:global-bytecode-simple-fun)
                            inserter context)
   (declare (ignore inserter context)))
