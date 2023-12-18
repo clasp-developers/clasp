@@ -96,11 +96,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.WWW_SSH_KEY }}
           ssh-host: www.thirdlaw.tech
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: jammy_clasp
           path: jammy
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: jammy_cando
           path: jammy
@@ -182,11 +182,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.WWW_SSH_KEY }}
           ssh-host: www.thirdlaw.tech
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: bookworm_clasp
           path: bookworm
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: bookworm_cando
           path: bookworm
@@ -270,11 +270,11 @@ jobs:
         with:
           gpg_private_key: ${{ secrets.PKG_GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PKG_GPG_PASSPHRASE }}
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: arch_clasp
           path: arch
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: arch_cando
           path: arch
@@ -297,7 +297,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.WWW_SSH_KEY }}
           ssh-host: www.thirdlaw.tech
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: arch_repo
           path: arch
