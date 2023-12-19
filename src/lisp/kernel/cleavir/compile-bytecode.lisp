@@ -416,43 +416,82 @@
 (defmethod compile-instruction ((mnemonic (eql :call)) inserter
                                 context &rest args)
   (destructuring-bind (nargs) args
-    (let ((args (gather context nargs))
-          (callee (stack-pop context))
-          (out (make-instance 'bir:output)))
-      (ast-to-bir:insert inserter 'bir:call
-                         :inputs (list* callee args)
-                         :outputs (list out))
-      (setf (mvals context) out))))
+    (setf (mvals context) (compile-call nargs inserter context))))
 
 (defmethod compile-instruction ((mnemonic (eql :call-receive-one))
                                 inserter context &rest args)
   (destructuring-bind (nargs) args
-    (let ((args (gather context nargs))
-          (callee (stack-pop context))
-          (out (make-instance 'bir:output)))
-      (ast-to-bir:insert inserter 'bir:call
-                         :inputs (list* callee args)
-                         :outputs (list out))
-      (setf (mvals context) nil) ; invalidate for self-consistency checks
-      (stack-push out context))))
+    (setf (mvals context) nil) ; invalidate for self-consistency checks
+    (stack-push (compile-call nargs inserter context) context)))
 
 (defmethod compile-instruction ((mnemonic (eql :call-receive-fixed))
                                 inserter context &rest args)
   (destructuring-bind (nargs nvals) args
     (assert (zerop nvals)) ; FIXME
-    (let ((args (gather context nargs))
-          (callee (stack-pop context))
-          (out (make-instance 'bir:output)))
-      (setf (mvals context) nil) ; invalidate for self-consistency checks
-      (ast-to-bir:insert inserter 'bir:call
-                         :inputs (list* callee args)
-                         :outputs (list out)))))
+    (setf (mvals context) nil) ; invalidate for self-consistency checks
+    (compile-call nargs inserter context)))
+
+(defun compile-call (nargs inserter context)
+  (let* ((args (gather context nargs))
+         (callee (stack-pop context))
+         (ftype (callee-ftype callee inserter))
+         (rargs (type-wrap-arguments ftype args inserter context))
+         (out (make-instance 'bir:output))
+         (sys clasp-cleavir::*clasp-system*))
+    (ast-to-bir:insert inserter 'bir:call
+                       :inputs (list* callee rargs)
+                       :outputs (list out))
+    (compile-type-decl :return (ctype:function-values ftype sys) out
+                       inserter context)))
 
 (defun gather (context n)
   (loop with args = nil
         repeat n
         do (push (stack-pop context) args)
         finally (return args)))
+
+;;; Get the ftype of an output.
+;;; Right now this is trivial, but - TODO - might be more involved when
+;;; we support local ftype declarations.
+(defun callee-ftype (callee context)
+  (declare (ignore context))
+  (let* ((sys clasp-cleavir:*clasp-system*)
+         ;; We use the asserted type rather than the derived because
+         ;; that's what :fdefinition etc put in, and also because we've yet to
+         ;; actually derive anything.
+         (vct (bir:asserted-type callee))
+         (ct (ctype:primary vct sys)))
+    (if (ctype:functionp ct sys)
+        ct
+        (ctype:function-top sys))))
+
+;;; Given an ftype and a list of argument outputs, return a new list of argument
+;;; outputs that are type wrapped if that's useful.
+;;; Also warn on argument count mismatch.
+(defun type-wrap-arguments (ftype args inserter context)
+  (let* ((sys clasp-cleavir:*clasp-system*)
+         (req (ctype:function-required ftype sys))
+         (opt (ctype:function-optional ftype sys))
+         (rest (ctype:function-rest ftype sys))
+         (rrest (cond ((not (ctype:bottom-p rest sys)) rest)
+                      ;; Arguably FIXME that we can have &rest nil with keys.
+                      ((ctype:function-keysp ftype sys) (ctype:top sys))
+                      (t rest)))
+         (min (length req))
+         (max (if (not (ctype:bottom-p rrest sys))
+                  nil
+                  (+ min (length opt))))
+         (nargs (length args)))
+    (when (or (< nargs min) (and max (> nargs max)))
+      (warn 'cmp:wrong-argcount-warning
+            :given-nargs nargs :min-nargs min :max-nargs max
+            :origin (cst:source bir:*origin*))
+      (return-from type-wrap-arguments args))
+    (loop for arg in args
+          for ctype = (cond (req (pop req))
+                            (opt (pop opt))
+                            (t rrest))
+          collect (compile-type-decl :argument ctype arg inserter context))))
 
 (defmethod compile-instruction ((mnemonic (eql :bind))
                                 inserter context &rest args)
@@ -980,8 +1019,10 @@
            (fname (core:function-name fcell))
            (const (inserter-fcell fname inserter))
            (attributes (clasp-cleavir::function-attributes fname))
+           (ftype (ctype:single-value (clasp-cleavir::global-ftype fname)
+                                      clasp-cleavir:*clasp-system*))
            (fdef-out (make-instance 'bir:output
-                       :name fname :attributes attributes)))
+                       :name fname :asserted-type ftype :attributes attributes)))
       (ast-to-bir:insert inserter 'bir:constant-fdefinition
                          :inputs (list const) :outputs (list fdef-out))
       (stack-push fdef-out context))))
@@ -994,8 +1035,10 @@
     (let* ((fname (core:function-name fcell))
            (const (inserter-fcell fname inserter))
            (attributes (clasp-cleavir::function-attributes fname))
+           (ftype (ctype:single-value (clasp-cleavir::global-ftype fname)
+                                      clasp-cleavir::*clasp-system*))
            (fdef-out (make-instance 'bir:output
-                       :name fname :attributes attributes)))
+                       :name fname :asserted-type ftype :attributes attributes)))
       (ast-to-bir:insert inserter 'bir:constant-fdefinition
                          :inputs (list const) :outputs (list fdef-out))
       (stack-push fdef-out context))))
