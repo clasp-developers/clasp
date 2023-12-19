@@ -1526,7 +1526,7 @@
 
 (define-deriver mp:fence (order)
   (declare (ignore order))
-  (ctype:values-bottom *clasp-system*))
+  (ctype:values nil nil (ctype:bottom *clasp-system*) *clasp-system*))
 
 (define-deriver core:atomic-aref (order array &rest indices)
   (declare (ignore order))
