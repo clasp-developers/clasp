@@ -53,7 +53,7 @@ bool Cons_O::maybe_write_quoted_form(bool tail, T_sp stream) const {
   if (op == cl::_sym_quote) {
     if (tail)
       return false;
-    clasp_write_char('\'', stream);
+    stream_write_char(stream, '\'');
     write_object(oCar(cdr()), stream);
     return true;
   }
@@ -109,13 +109,13 @@ void Cons_O::__write__(T_sp stream) const {
   }
 
   if (print_level == 0) {
-    clasp_write_char('#', stream);
+    stream_write_char(stream, '#');
     return;
   }
 
   T_sp x = this->const_sharedThis<Cons_O>();
 
-  clasp_write_char('(', stream);
+  stream_write_char(stream, '(');
 
   for (_Index i = 0;; i++) {
     if (i >= print_length) {
@@ -141,9 +141,9 @@ void Cons_O::__write__(T_sp stream) const {
     if (x.consp() && gc::As<Cons_sp>(x)->maybe_write_quoted_form(true, stream))
       break;
 
-    clasp_write_char(' ', stream);
+    stream_write_char(stream, ' ');
   }
 
-  clasp_write_char(')', stream);
+  stream_write_char(stream, ')');
 }
 }; // namespace core

@@ -37,6 +37,12 @@ FORWARD(BroadcastStream);
 FORWARD(EchoStream);
 FORWARD(FileStream);
 FORWARD(IOFileStream);
+#ifdef ECL_WINSOCK
+FORWARD(WinsockStream);
+#endif
+#ifdef CLASP_MS_WINDOWS_HOST
+FORWARD(ConsoleStream);
+#endif
 FORWARD(IOStreamStream);
 FORWARD(ConcatenatedStream);
 

@@ -56,6 +56,24 @@ namespace core {
 #define clasp_mode_t mode_t
 #endif
 
+void cannot_close(T_sp stream);
+void not_a_file_stream(T_sp fn);
+void not_an_input_stream(T_sp fn);
+void not_an_output_stream(T_sp fn);
+void not_a_character_stream(T_sp s);
+void not_a_binary_stream(T_sp s);
+void unread_error(T_sp strm);
+void unread_twice(T_sp strm);
+void io_error(T_sp strm);
+#ifdef CLASP_UNICODE
+cl_index encoding_error(T_sp strm, unsigned char* buffer, claspCharacter c);
+claspCharacter decoding_error(T_sp strm, unsigned char** buffer, int length, unsigned char* buffer_end);
+#endif
+void wrong_file_handler(T_sp strm) NO_RETURN;
+#if defined(ECL_WSOCK)
+void wsock_error(const char* err_msg, T_sp strm) NO_RETURN;
+#endif
+
 int safe_open(const char* filename, int flags, clasp_mode_t mode);
 
 enum StreamMode {
@@ -95,17 +113,19 @@ typedef enum {
   CLASP_STREAM_ISO_8859_1 = 1,
   CLASP_STREAM_LATIN_1 = 1,
   CLASP_STREAM_UTF_8 = 2,
-  CLASP_STREAM_UCS_2 = 3,
+  CLASP_STREAM_UCS_2 = 4,
   CLASP_STREAM_UCS_2LE = 5 + 128,
   CLASP_STREAM_UCS_2BE = 5,
   CLASP_STREAM_UCS_4 = 6,
   CLASP_STREAM_UCS_4LE = 7 + 128,
   CLASP_STREAM_UCS_4BE = 7,
   CLASP_STREAM_USER_FORMAT = 8,
+  CLASP_STREAM_USER_MULTISTATE_FORMAT = 9,
   CLASP_STREAM_US_ASCII = 10,
 #endif
   CLASP_STREAM_CR = 16,
   CLASP_STREAM_LF = 32,
+  CLASP_STREAM_CRLF = CLASP_STREAM_CR | CLASP_STREAM_LF,
   CLASP_STREAM_SIGNED_BYTES = 64,
   CLASP_STREAM_LITTLE_ENDIAN = 128,
   CLASP_STREAM_C_STREAM = 256,
@@ -113,28 +133,6 @@ typedef enum {
   CLASP_STREAM_CLOSE_COMPONENTS = 1024
 } StreamFlagsEnum;
 
-cl_index clasp_read_byte8(T_sp stream, unsigned char* c, cl_index n);
-cl_index clasp_write_byte8(T_sp stream, unsigned char* c, cl_index n);
-
-void clasp_force_output(T_sp strm);
-
-T_sp clasp_read_byte(T_sp strm);
-void clasp_write_byte(T_sp c, T_sp strm);
-
-claspCharacter clasp_read_char(T_sp strm);
-void clasp_unread_char(claspCharacter c, T_sp strm);
-claspCharacter clasp_write_char(claspCharacter c, T_sp strm);
-claspCharacter clasp_peek_char(T_sp strm);
-int clasp_listen_stream(T_sp strm);
-
-void clasp_clear_input(T_sp strm);
-void clasp_clear_output(T_sp strm);
-void clasp_force_output(T_sp strm);
-
-void clasp_finish_output(T_sp strm);
-void clasp_finish_output_t(); // finish output to *standard-output*
-int clasp_file_column(T_sp strm);
-int clasp_file_column_set(T_sp strm, int column);
 size_t clasp_input_filePos(T_sp strm);
 int clasp_input_lineno(T_sp strm);
 int clasp_input_column(T_sp strm);
@@ -148,16 +146,8 @@ T_sp clasp_filename(T_sp strm, bool errorp = false);
 T_sp cl__unread_char(Character_sp ch, T_sp dstrm);
 T_sp cl__get_output_stream_string(T_sp strm);
 
-T_sp clasp_file_length(T_sp strm);
-T_sp clasp_file_position(T_sp strm);
-T_sp clasp_file_position_set(T_sp strm, T_sp pos);
-bool clasp_input_stream_p(T_sp strm);
-bool clasp_output_stream_p(T_sp strm);
-T_sp clasp_stream_element_type(T_sp strm);
-int clasp_interactive_stream_p(T_sp strm);
 T_sp clasp_off_t_to_integer(clasp_off_t offset);
 clasp_off_t clasp_integer_to_off_t(T_sp i);
-int clasp_stream_to_handle(T_sp s, bool output);
 
 T_sp cl__file_length(T_sp stream);
 T_sp cl__file_position(T_sp stream, T_sp position = nil<core::T_O>());
@@ -193,44 +183,46 @@ T_sp cl__close(T_sp strm, T_sp abort = nil<T_O>());
 #define CLASP_LISTEN_EOF -1
 #define CLASP_LISTEN_UNKNOWN -3
 
-typedef claspCharacter (*cl_eformat_decoder)(T_sp stream, unsigned char** buffer, unsigned char* buffer_end);
-typedef int (*cl_eformat_encoder)(T_sp stream, unsigned char* buffer, claspCharacter c);
-typedef cl_index (*cl_eformat_read_byte8)(T_sp object, unsigned char* buffer, cl_index n);
+cl_index stream_write_byte8(T_sp stream, unsigned char* c, cl_index n);
+cl_index stream_read_byte8(T_sp stream, unsigned char* c, cl_index n);
 
-struct FileOps {
-  cl_index (*write_byte8)(T_sp strm, unsigned char* c, cl_index n);
-  cl_index (*read_byte8)(T_sp strm, unsigned char* c, cl_index n);
+void stream_write_byte(T_sp stream, T_sp c);
+T_sp stream_read_byte(T_sp stream);
 
-  void (*write_byte)(T_sp c, T_sp strm);
-  T_sp (*read_byte)(T_sp strm);
+claspCharacter stream_read_char(T_sp stream);
+claspCharacter stream_write_char(T_sp stream, claspCharacter c);
+void stream_unread_char(T_sp stream, claspCharacter c);
+claspCharacter stream_peek_char(T_sp stream);
 
-  claspCharacter (*read_char)(T_sp strm);
-  claspCharacter (*write_char)(T_sp strm, claspCharacter c);
-  void (*unread_char)(T_sp strm, claspCharacter c);
-  claspCharacter (*peek_char)(T_sp strm);
+cl_index stream_read_vector(T_sp stream, T_sp data, cl_index start, cl_index end);
+cl_index stream_write_vector(T_sp stream, T_sp data, cl_index start, cl_index end);
 
-  cl_index (*read_vector)(T_sp strm, T_sp data, cl_index start, cl_index end);
-  cl_index (*write_vector)(T_sp strm, T_sp data, cl_index start, cl_index end);
+int stream_listen(T_sp stream);
+void stream_clear_input(T_sp stream);
+void stream_clear_output(T_sp stream);
+void stream_finish_output(T_sp stream);
+void stream_force_output(T_sp stream);
 
-  int (*listen)(T_sp strm);
-  void (*clear_input)(T_sp strm);
-  void (*clear_output)(T_sp strm);
-  void (*finish_output)(T_sp strm);
-  void (*force_output)(T_sp strm);
+bool stream_open_p(T_sp stream);
+bool stream_input_p(T_sp stream);
+bool stream_output_p(T_sp stream);
+bool stream_interactive_p(T_sp stream);
+T_sp stream_element_type(T_sp stream);
+T_sp stream_set_element_type(T_sp stream, T_sp type);
+T_sp stream_external_format(T_sp stream);
+T_sp stream_set_external_format(T_sp stream, T_sp format);
 
-  int (*input_p)(T_sp strm);
-  int (*output_p)(T_sp strm);
-  int (*interactive_p)(T_sp strm);
-  T_sp (*element_type)(T_sp strm);
+T_sp stream_length(T_sp stream);
+T_sp stream_position(T_sp stream);
+T_sp stream_set_position(T_sp stream, T_sp pos);
+T_sp stream_string_length(T_sp stream, T_sp string);
+int stream_column(T_sp stream);
+int stream_set_column(T_sp stream, int column);
 
-  T_sp (*length)(T_sp strm);
-  T_sp (*get_position)(T_sp strm);
-  T_sp (*set_position)(T_sp strm, T_sp pos);
-  int (*column)(T_sp strm);
-  int (*set_column)(T_sp strm, int column);
+int stream_input_handle(T_sp stream);
+int stream_output_handle(T_sp stream);
 
-  T_sp (*close)(T_sp strm, T_sp abort);
-};
+T_sp stream_close(T_sp stream, T_sp abort);
 
 // Define types of streams
 // See ecl object.h:600
@@ -302,16 +294,13 @@ class AnsiStream_O : public Stream_O {
   LISP_CLASS(core, ExtPkg, AnsiStream_O, "ansi-stream", Stream_O);
 
 public:
-  FileOps ops;
-  int _Closed;
+  bool _Open;
   StreamMode _Mode;
   char* _Buffer;
   T_sp _Format;
   int _ByteSize;
   int _Flags;         // bitmap of flags
   List_sp _ByteStack; // For unget in input streams
-  cl_eformat_encoder _Encoder;
-  cl_eformat_decoder _Decoder;
   T_sp _FormatTable;
   Fixnum _LastCode[2];
   claspCharacter _EofChar;
@@ -323,15 +312,74 @@ public:
 
 public:
   AnsiStream_O()
-      : _Closed(0), _Buffer(NULL), _Format(nil<Symbol_O>()), _ByteSize(8), _Flags(0), _ByteStack(nil<T_O>()), _Encoder(NULL),
-        _Decoder(NULL), _FormatTable(nil<T_O>()), _LastCode{EOF, EOF}, _EofChar(EOF), _ExternalFormat(nil<T_O>()),
-        _OutputColumn(0){};
+      : _Open(true), _Buffer(NULL), _Format(nil<Symbol_O>()), _ByteSize(8), _Flags(0), _ByteStack(nil<T_O>()),
+        _FormatTable(nil<T_O>()), _LastCode{EOF, EOF}, _EofChar(EOF), _ExternalFormat(nil<T_O>()), _OutputColumn(0){};
   virtual ~AnsiStream_O(); // nontrivial
 
-public:
+  cl_index consume_byte_stack(unsigned char* c, cl_index n);
+  int restartable_io_error(const char* s);
+  void update_column(claspCharacter c);
+
+  virtual cl_index write_byte8(unsigned char* c, cl_index n);
+  virtual cl_index read_byte8(unsigned char* c, cl_index n);
+
+  virtual void write_byte(T_sp c);
+  virtual T_sp read_byte();
+
+  virtual claspCharacter read_char();
+  virtual claspCharacter write_char(claspCharacter c);
+  virtual void unread_char(claspCharacter c);
+  virtual claspCharacter peek_char();
+
+  virtual cl_index read_vector(T_sp data, cl_index start, cl_index end);
+  virtual cl_index write_vector(T_sp data, cl_index start, cl_index end);
+
+  virtual int listen();
+  virtual void clear_input();
+  virtual void clear_output();
+  virtual void finish_output();
+  virtual void force_output();
+
+  virtual bool open_p() const;
+  virtual bool input_p() const;
+  virtual bool output_p() const;
+  virtual bool interactive_p() const;
+  virtual T_sp element_type() const;
+  virtual T_sp set_element_type(T_sp type);
+  virtual T_sp external_format() const;
+  virtual T_sp set_external_format(T_sp format);
+
+  virtual T_sp length();
+  virtual T_sp position();
+  virtual T_sp set_position(T_sp pos);
+  virtual T_sp string_length(T_sp string);
+  virtual int column() const;
+  virtual int set_column(int column);
+
+  virtual int input_handle();
+  virtual int output_handle();
+
+  virtual T_sp close(T_sp abort);
+
   virtual T_sp filename() const;
   virtual int lineno() const;
-  virtual int column() const;
+
+  inline void check_open() {
+    if (!_Open)
+      CLOSED_STREAM_ERROR(asSmartPtr());
+  }
+
+  inline void check_input() {
+    if (!input_p())
+      not_an_input_stream(asSmartPtr());
+    check_open();
+  }
+
+  inline void check_output() {
+    if (!output_p())
+      not_an_output_stream(asSmartPtr());
+    check_open();
+  }
 };
 
 class FileStream_O : public AnsiStream_O {
@@ -341,7 +389,9 @@ class FileStream_O : public AnsiStream_O {
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   FileStream_O(){};
-  GCPROTECTED : T_sp _Filename;
+
+public:
+  T_sp _Filename;
   T_sp _TempFilename;
   bool _Created = false;
   T_sp _ElementType;
@@ -350,6 +400,76 @@ public: // Functions here
   virtual string __repr__() const override;
   T_sp filename() const override { return this->_Filename; };
   virtual bool has_file_position() const;
+  int _fd_listen(int fd);
+  void close_cleanup(T_sp abort);
+  cl_index compute_char_size(claspCharacter c);
+
+  claspCharacter decode_passthrough(unsigned char** buffer, unsigned char* buffer_end);
+  int encode_passthrough(unsigned char* buffer, claspCharacter c);
+
+  claspCharacter decode_ascii(unsigned char** buffer, unsigned char* buffer_end);
+  int encode_ascii(unsigned char* buffer, claspCharacter c);
+
+  claspCharacter decode_ucs_4be(unsigned char** buffer, unsigned char* buffer_end);
+  int encode_ucs_4be(unsigned char* buffer, claspCharacter c);
+
+  claspCharacter decode_ucs_4le(unsigned char** buffer, unsigned char* buffer_end);
+  int encode_ucs_4le(unsigned char* buffer, claspCharacter c);
+
+  claspCharacter decode_ucs_4(unsigned char** buffer, unsigned char* buffer_end);
+  int encode_ucs_4(unsigned char* buffer, claspCharacter c);
+
+  claspCharacter decode_ucs_2be(unsigned char** buffer, unsigned char* buffer_end);
+  int encode_ucs_2be(unsigned char* buffer, claspCharacter c);
+
+  claspCharacter decode_ucs_2le(unsigned char** buffer, unsigned char* buffer_end);
+  int encode_ucs_2le(unsigned char* buffer, claspCharacter c);
+
+  claspCharacter decode_ucs_2(unsigned char** buffer, unsigned char* buffer_end);
+  int encode_ucs_2(unsigned char* buffer, claspCharacter c);
+
+  claspCharacter decode_user(unsigned char** buffer, unsigned char* buffer_end);
+  int encode_user(unsigned char* buffer, claspCharacter c);
+
+  claspCharacter decode_user_multistate(unsigned char** buffer, unsigned char* buffer_end);
+  int encode_user_multistate(unsigned char* buffer, claspCharacter c);
+
+  claspCharacter decode_utf_8(unsigned char** buffer, unsigned char* buffer_end);
+  int encode_utf_8(unsigned char* buffer, claspCharacter c);
+
+  claspCharacter decode(unsigned char** buffer, unsigned char* buffer_end);
+  int encode(unsigned char* buffer, claspCharacter c);
+  claspCharacter decode_char_from_buffer(unsigned char* buffer, unsigned char** buffer_pos, unsigned char** buffer_end,
+                                         bool seekable, cl_index min_needed_bytes);
+
+  T_sp read_byte_short();
+  T_sp read_byte_long();
+  T_sp read_byte_le();
+  T_sp read_byte_signed8();
+  T_sp read_byte_unsigned8();
+
+  void write_byte_short(T_sp c);
+  void write_byte_long(T_sp c);
+  void write_byte_le(T_sp c);
+  void write_byte_signed8(T_sp c);
+  void write_byte_unsigned8(T_sp c);
+
+  T_sp read_byte();
+  void write_byte(T_sp c);
+  claspCharacter read_char_no_cursor();
+
+  claspCharacter write_char(claspCharacter c);
+  claspCharacter read_char();
+  void unread_char(claspCharacter c);
+
+  cl_index read_vector(T_sp data, cl_index start, cl_index n);
+  cl_index write_vector(T_sp data, cl_index start, cl_index n);
+
+  T_sp element_type() const;
+  T_sp set_element_type(T_sp type);
+  T_sp set_external_format(T_sp format);
+
+  T_sp string_length(T_sp string);
 }; // FileStream class
 
 }; // namespace core
@@ -368,9 +488,8 @@ class IOFileStream_O : public FileStream_O {
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   IOFileStream_O(){};
-  ~IOFileStream_O();
 
-private: // instance variables here
+public: // instance variables here
   int _FileDescriptor;
 
 public: // Functions here
@@ -388,8 +507,63 @@ public: // Functions here
 public:
   int fileDescriptor() const { return this->_FileDescriptor; };
   virtual bool has_file_position() const override;
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
+
+  cl_index read_byte8(unsigned char* c, cl_index n);
+  cl_index write_byte8(unsigned char* c, cl_index n);
+
+  int listen();
+  void clear_input();
+  void clear_output();
+  void force_output();
+  void finish_output();
+
+  bool input_p() const;
+  bool output_p() const;
+  bool interactive_p() const;
+
+  T_sp length();
+  T_sp position();
+  T_sp set_position(T_sp pos);
+
+  int input_handle();
+  int output_handle();
+
+  T_sp close(T_sp abort);
 };
+
+#ifdef ECL_WSOCK
+
+class WinsockStream_O : public IOFileStream_O {
+  LISP_CLASS(core, CorePkg, WinsockStream_O, "winsock-stream", IOFileStream_O);
+
+public:
+  WinsockStream_O(){};
+
+  cl_index read_byte8(unsigned char* c, cl_index n);
+  cl_index write_byte8(unsigned char* c, cl_index n);
+  int listen();
+  void clear_input();
+  T_sp close(T_sp abort);
+};
+
+#endif
+
+#ifdef CLASP_MS_WINDOWS_HOST
+
+class ConsoleStream_O : public IOFileStream_O {
+  LISP_CLASS(core, CorePkg, ConsoleStream_O, "console-stream", IOFileStream_O);
+
+public:
+  ConsoleStream_O(){};
+
+  cl_index read_byte8(unsigned char* c, cl_index n);
+  cl_index write_byte8(unsigned char* c, cl_index n);
+  int listen();
+  void clear_input();
+  void force_output();
+};
+
+#endif
 
 }; // namespace core
 
@@ -407,12 +581,13 @@ class IOStreamStream_O : public FileStream_O {
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   IOStreamStream_O(){};
-  ~IOStreamStream_O();
 
-private: // instance variables here
+public: // instance variables here
   FILE* _File;
 
 public: // Functions here
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
+
   static T_sp makeInput(const string& name, FILE* f) {
     return clasp_make_stream_from_FILE(str_create(name), f, clasp_smm_input, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
   }
@@ -425,7 +600,30 @@ public: // Functions here
 
 public:
   FILE* file() const { return this->_File; };
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
+
+  cl_index read_byte8(unsigned char* c, cl_index n);
+  cl_index write_byte8(unsigned char* c, cl_index n);
+
+  int _file_listen();
+
+  int listen();
+  void clear_input();
+  void clear_output();
+  void force_output();
+  void finish_output();
+
+  bool input_p() const;
+  bool output_p() const;
+  bool interactive_p() const;
+
+  T_sp length();
+  T_sp position();
+  T_sp set_position(T_sp pos);
+
+  int input_handle();
+  int output_handle();
+
+  T_sp close(T_sp abort);
 };
 
 class StringStream_O : public AnsiStream_O {
@@ -456,7 +654,6 @@ class StringOutputStream_O : public StringStream_O {
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(StringOutputStream_O);
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
 
 public:
   // Use the cl__make_string_output_stream
@@ -467,6 +664,18 @@ public: // Functions here
   void fill(const string& data);
   void clear();
   String_sp getAndReset();
+
+  claspCharacter write_char(claspCharacter c);
+
+  void clear_output();
+  void finish_output();
+  void force_output();
+
+  bool output_p() const;
+  T_sp element_type() const;
+
+  T_sp position();
+  T_sp set_position(T_sp pos);
 }; // StringStream class
 }; // namespace core
 
@@ -486,7 +695,6 @@ class StringInputStream_O : public StringStream_O {
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(StringInputStream_O);
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
 
 public: // ctor/dtor for classes with shared virtual base
         //    explicit StringStream_O(core::Instance_sp const& mc) : T_O(mc),AnsiStream(mc) {};
@@ -500,6 +708,18 @@ public: // Functions here
   static T_sp make(const string& str);
   string peer(size_t len);
   string peerFrom(size_t start, size_t len);
+
+  claspCharacter read_char();
+  void unread_char(claspCharacter c);
+  claspCharacter peek_char();
+  int listen();
+  void clear_input();
+
+  bool input_p() const;
+  T_sp element_type() const;
+
+  T_sp position();
+  T_sp set_position(T_sp pos);
 }; // StringStream class
 
 }; // namespace core
@@ -520,8 +740,8 @@ class SynonymStream_O : public AnsiStream_O {
 public: // Simple default ctor/dtor
   SynonymStream_O() : _SynonymSymbol(nil<Symbol_O>()){};
 
-  GCPROTECTED : // instance variables here
-                Symbol_sp _SynonymSymbol;
+public: // instance variables here
+  Symbol_sp _SynonymSymbol;
 
 public:
   static SynonymStream_sp make(Symbol_sp symbol) { return gc::As<SynonymStream_sp>(cl__make_synonym_stream(symbol)); }
@@ -529,8 +749,41 @@ public:
 public: // Functions here
   virtual string __repr__() const override;
   T_sp filename() const override;
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
 
+  T_sp stream() const { return _SynonymSymbol->symbolValue(); }
+
+  cl_index read_byte8(unsigned char* c, cl_index n);
+  cl_index write_byte8(unsigned char* c, cl_index n);
+  T_sp read_byte();
+  void write_byte(T_sp c);
+  claspCharacter read_char();
+  claspCharacter write_char(claspCharacter c);
+  void unread_char(claspCharacter c);
+  claspCharacter peek_char();
+  cl_index read_vector(T_sp data, cl_index start, cl_index n);
+  cl_index write_vector(T_sp data, cl_index start, cl_index n);
+
+  int listen();
+  void clear_input();
+  void clear_output();
+  void force_output();
+  void finish_output();
+
+  bool input_p() const;
+  bool output_p() const;
+  bool interactive_p() const;
+  T_sp element_type() const;
+  T_sp external_format() const;
+  T_sp set_external_format(T_sp format);
+
+  T_sp length();
+  T_sp position();
+  T_sp set_position(T_sp pos);
+  int column() const;
+  int set_column(int column);
+
+  int input_handle();
+  int output_handle();
 }; // SynonymStream class
 
 }; // namespace core
@@ -544,19 +797,50 @@ template <> struct gctools::GCInfo<core::TwoWayStream_O> {
 namespace core {
 
 class TwoWayStream_O : public AnsiStream_O {
-  friend T_sp& TwoWayStreamInput(T_sp);
-  friend T_sp& TwoWayStreamOutput(T_sp);
+  friend T_sp TwoWayStreamInput(T_sp);
+  friend T_sp TwoWayStreamOutput(T_sp);
   LISP_CLASS(core, ClPkg, TwoWayStream_O, "two-way-stream", AnsiStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   TwoWayStream_O() : _In(nil<T_O>()), _Out(nil<T_O>()){};
-  GCPROTECTED : // instance variables here
-                T_sp _In;
+
+public: // instance variables here
+  T_sp _In;
   T_sp _Out;
 
 public:
   static T_sp make(T_sp in, T_sp out) { return cl__make_two_way_stream(in, out); };
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
+
+  cl_index read_byte8(unsigned char* c, cl_index n);
+  cl_index write_byte8(unsigned char* c, cl_index n);
+  T_sp read_byte();
+  void write_byte(T_sp c);
+  claspCharacter read_char();
+  claspCharacter write_char(claspCharacter c);
+  void unread_char(claspCharacter c);
+  claspCharacter peek_char();
+  cl_index read_vector(T_sp data, cl_index start, cl_index n);
+  cl_index write_vector(T_sp data, cl_index start, cl_index n);
+
+  int listen();
+  void clear_input();
+  void clear_output();
+  void force_output();
+  void finish_output();
+
+  bool input_p() const;
+  bool output_p() const;
+  bool interactive_p() const;
+  T_sp element_type() const;
+
+  T_sp position();
+  int column() const;
+  int set_column(int column);
+
+  int input_handle();
+  int output_handle();
+
+  T_sp close(T_sp abort);
 }; // TwoWayStream class
 
 }; // namespace core
@@ -577,11 +861,30 @@ class BroadcastStream_O : public AnsiStream_O {
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(BroadcastStream_O);
 
-  GCPRIVATE : // instance variables here
-              T_sp _Streams;
+public: // instance variables here
+  T_sp _Streams;
 
 public: // Functions here
-};      // BroadcastStream class
+  cl_index write_byte8(unsigned char* c, cl_index n);
+  void write_byte(T_sp c);
+  claspCharacter write_char(claspCharacter c);
+
+  void clear_output();
+  void force_output();
+  void finish_output();
+
+  bool output_p() const;
+  T_sp element_type() const;
+  T_sp external_format() const;
+
+  T_sp length();
+  T_sp position();
+  T_sp set_position(T_sp pos);
+  T_sp string_length(T_sp string);
+  int column() const;
+  int set_column(int column);
+  T_sp close(T_sp abort);
+}; // BroadcastStream class
 
 }; // namespace core
 
@@ -599,11 +902,24 @@ class ConcatenatedStream_O : public AnsiStream_O {
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(ConcatenatedStream_O);
-  GCPRIVATE : // instance variables here
-              T_sp _List;
+
+public: // instance variables here
+  T_sp _List;
 
 public: // Functions here
-};      // ConcatenatedStream class
+  cl_index read_byte8(unsigned char* c, cl_index n);
+  T_sp read_byte();
+  claspCharacter read_char();
+  void unread_char(claspCharacter c);
+  int listen();
+  void clear_input();
+
+  bool input_p() const;
+  T_sp element_type() const;
+
+  T_sp position();
+  T_sp close(T_sp abort);
+}; // ConcatenatedStream class
 
 }; // namespace core
 
@@ -616,19 +932,46 @@ template <> struct gctools::GCInfo<core::EchoStream_O> {
 namespace core {
 
 class EchoStream_O : public AnsiStream_O {
-  friend T_sp& EchoStreamInput(T_sp);
-  friend T_sp& EchoStreamOutput(T_sp);
+  friend T_sp EchoStreamInput(T_sp);
+  friend T_sp EchoStreamOutput(T_sp);
   LISP_CLASS(core, ClPkg, EchoStream_O, "EchoStream", AnsiStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(EchoStream_O);
 
-  GCPRIVATE : // instance variables here
-              T_sp _In;
+public: // instance variables here
+  T_sp _In;
   T_sp _Out;
 
 public: // Functions here
-};      // EchoStream class
+  cl_index read_byte8(unsigned char* c, cl_index n);
+  cl_index write_byte8(unsigned char* c, cl_index n);
+  T_sp read_byte();
+  void write_byte(T_sp c);
+  claspCharacter read_char();
+  claspCharacter write_char(claspCharacter c);
+  void unread_char(claspCharacter c);
+  claspCharacter peek_char();
+
+  int listen();
+  void clear_input();
+  void clear_output();
+  void force_output();
+  void finish_output();
+
+  bool input_p() const;
+  bool output_p() const;
+  T_sp element_type() const;
+
+  T_sp position();
+  int column() const;
+  int set_column(int column);
+
+  int input_handle();
+  int output_handle();
+
+  T_sp close(T_sp abort);
+}; // EchoStream class
 
 T_sp cl__peek_char(T_sp peek_type, T_sp strm, T_sp eof_errorp, T_sp eof_value, T_sp recursivep);
 T_sp cl__read_char(T_sp ostrm, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p);

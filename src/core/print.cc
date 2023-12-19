@@ -177,7 +177,7 @@ CL_DEFUN void cl__pprint(T_sp obj, T_sp stream) {
   DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR, _lisp->_true());
   DynamicScopeManager scope1(cl::_sym_STARprint_prettySTAR, _lisp->_true());
   stream = coerce::outputStreamDesignator(stream);
-  clasp_write_char('\n', stream);
+  stream_write_char(stream, '\n');
   write_object(obj, stream);
 }
 

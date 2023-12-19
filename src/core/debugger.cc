@@ -443,7 +443,7 @@ void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
   clasp_write_string(fmt::format("dbg_printTPtr object class --> {}\n", _rep_(lisp_instance_class(obj)->_className())), sout);
   fflush(stdout);
   write_ugly_object(obj, sout);
-  clasp_force_output(sout);
+  stream_force_output(sout);
 }
 
 } // namespace core

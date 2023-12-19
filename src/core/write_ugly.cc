@@ -130,9 +130,9 @@ void Ratio_O::__write__(T_sp stream) const {
 void Complex_O::__write__(T_sp stream) const {
   clasp_write_string("#C(", stream);
   write_ugly_object(this->_real, stream);
-  clasp_write_char(' ', stream);
+  stream_write_char(stream, ' ');
   write_ugly_object(this->_imaginary, stream);
-  clasp_write_char(')', stream);
+  stream_write_char(stream, ')');
 }
 
 // Function_O also has a __repr__ method, but it displays too much low level info.
@@ -140,17 +140,17 @@ void Complex_O::__write__(T_sp stream) const {
 void Function_O::__write__(T_sp stream) const {
   clasp_write_string("#<", stream);
   clasp_write_string(this->className(), stream);
-  clasp_write_char(' ', stream);
+  stream_write_char(stream, ' ');
   write_ugly_object(this->functionName(), stream);
-  clasp_write_char('>', stream);
+  stream_write_char(stream, '>');
 }
 
 void VariableCell_O::__write__(T_sp stream) const {
   clasp_write_string("#<", stream);
   clasp_write_string(this->className(), stream);
-  clasp_write_char(' ', stream);
+  stream_write_char(stream, ' ');
   write_ugly_object(this->name(), stream);
-  clasp_write_char('>', stream);
+  stream_write_char(stream, '>');
 }
 
 void _clasp_write_fixnum(gctools::Fixnum i, T_sp stream) {
@@ -184,7 +184,7 @@ void write_character(T_sp strm, T_sp chr) {
   // could be a unicode char, don't assume a claspChar
   claspCharacter i = clasp_as_claspCharacter(gc::As<Character_sp>(chr));
   if (!clasp_print_escape() && !clasp_print_readably()) {
-    clasp_write_char(i, strm);
+    stream_write_char(strm, i);
   } else {
     clasp_write_string("#\\", strm);
     if (i < 32 || i >= 127) {
@@ -193,7 +193,7 @@ void write_character(T_sp strm, T_sp chr) {
       if (!name.nilp())
         clasp_write_string(name->get_std_string(), strm);
     } else {
-      clasp_write_char(i, strm);
+      stream_write_char(strm, i);
     }
   }
 }

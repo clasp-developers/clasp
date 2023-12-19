@@ -98,12 +98,12 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
   DynamicScopeManager scope2(cl::_sym_STARloadTruenameSTAR, truename);
 
   if (skipShebang) {
-    if (clasp_peek_char(strm) == '#') {
-      clasp_read_char(strm);
-      if (clasp_peek_char(strm) == '!') {
+    if (stream_peek_char(strm) == '#') {
+      stream_read_char(strm);
+      if (stream_peek_char(strm) == '!') {
         cl__read_line(strm);
       } else {
-        clasp_unread_char('#', strm);
+        stream_unread_char(strm, '#');
       }
     }
   }
@@ -191,7 +191,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
             T_sp stream = cl__open(pathname, kw::_sym_input, ext::_sym_byte8, nil<T_O>(), false, nil<T_O>(), false, external_format,
                                    nil<T_O>());
             uint8_t bytes[4];
-            magic = clasp_make_fixnum((clasp_read_byte8(stream, bytes, 4) == 4)
+            magic = clasp_make_fixnum((stream_read_byte8(stream, bytes, 4) == 4)
                                           ? (((uint32_t)bytes[0] << 24) | ((uint32_t)bytes[1] << 16) | ((uint32_t)bytes[2] << 8) |
                                              ((uint32_t)bytes[3] << 0))
                                           : 0);

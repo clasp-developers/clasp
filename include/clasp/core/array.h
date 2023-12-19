@@ -114,7 +114,7 @@ extern core::Symbol_sp& _sym_fillPointerSet;
 extern core::Symbol_sp& _sym_fillArrayWithElt;
 extern core::Symbol_sp& _sym_setf_subseq;
 extern void clasp_write_string(const string& str, T_sp strm);
-extern claspCharacter clasp_write_char(claspCharacter c, T_sp strm);
+extern claspCharacter stream_write_char(T_sp strm, claspCharacter c);
 }; // namespace core
 
 namespace core {

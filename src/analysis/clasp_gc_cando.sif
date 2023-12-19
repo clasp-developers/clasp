@@ -9892,77 +9892,8 @@
 {class-kind :stamp-name "STAMPWTAG_core__AnsiStream_O" :stamp-key "core::AnsiStream_O"
             :parent-class "core::Stream_O" :lisp-class-base "core::Stream_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("ops" ".write_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("ops" ".read_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("ops" ".write_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("ops" ".read_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("ops" ".read_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("ops" ".write_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("ops" ".unread_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("ops" ".peek_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("ops" ".read_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("ops" ".write_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("ops" ".listen")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("ops" ".clear_input")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("ops" ".clear_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("ops" ".finish_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("ops" ".force_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("ops" ".input_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("ops" ".output_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("ops" ".interactive_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("ops" ".element_type")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("ops" ".length")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("ops" ".get_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("ops" ".set_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("ops" ".column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("ops" ".set_column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("ops" ".close")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_Closed")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_Open")}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_Buffer")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -9975,10 +9906,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_ByteStack")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_Encoder")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_Decoder")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::AnsiStream_O"
              :layout-offset-field-names ("_FormatTable")}
@@ -10011,79 +9938,8 @@
 {class-kind :stamp-name "STAMPWTAG_core__TwoWayStream_O" :stamp-key "core::TwoWayStream_O"
             :parent-class "core::AnsiStream_O" :lisp-class-base "core::AnsiStream_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".write_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".read_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".write_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".read_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".read_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".write_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".unread_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".peek_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".read_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".write_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("ops" ".listen")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".clear_input")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".clear_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".finish_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".force_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".input_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".output_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".interactive_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".element_type")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("ops" ".length")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".get_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".set_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("ops" ".column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("ops" ".set_column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("ops" ".close")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_Closed")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_Open")}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_Buffer")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -10096,10 +9952,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_ByteStack")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_Encoder")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_Decoder")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_FormatTable")}
@@ -10139,82 +9991,8 @@
 {class-kind :stamp-name "STAMPWTAG_core__SynonymStream_O" :stamp-key "core::SynonymStream_O"
             :parent-class "core::AnsiStream_O" :lisp-class-base "core::AnsiStream_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".write_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".read_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".write_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".read_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".read_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".write_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".unread_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".peek_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".read_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".write_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".listen")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".clear_input")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".clear_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".finish_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".force_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".input_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".output_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".interactive_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".element_type")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".length")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".get_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".set_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("ops" ".set_column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("ops" ".close")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_Closed")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_Open")}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_Buffer")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -10227,10 +10005,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_ByteStack")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_Encoder")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_Decoder")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_FormatTable")}
@@ -10269,79 +10043,8 @@
 {class-kind :stamp-name "STAMPWTAG_core__StringStream_O" :stamp-key "core::StringStream_O"
             :parent-class "core::AnsiStream_O" :lisp-class-base "core::AnsiStream_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".write_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".read_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".write_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".read_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".read_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".write_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".unread_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".peek_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".read_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".write_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("ops" ".listen")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".clear_input")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".clear_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".finish_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".force_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".input_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".output_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".interactive_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".element_type")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("ops" ".length")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".get_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".set_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("ops" ".column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("ops" ".set_column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("ops" ".close")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_Closed")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_Open")}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_Buffer")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -10354,10 +10057,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_ByteStack")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_Encoder")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_Decoder")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_FormatTable")}
@@ -10392,83 +10091,8 @@
             :stamp-key "core::StringOutputStream_O" :parent-class "core::StringStream_O"
             :lisp-class-base "core::StringStream_O" :root-class "core::T_O" :stamp-wtag 3
             :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".write_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".read_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".write_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".read_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".read_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".write_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".unread_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".peek_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".read_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".write_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".listen")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".clear_input")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".clear_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".finish_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".force_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".input_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".output_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".interactive_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".element_type")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".length")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".get_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".set_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".set_column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("ops" ".close")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringOutputStream_O" :layout-offset-field-names ("_Closed")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "core::StringOutputStream_O" :layout-offset-field-names ("_Open")}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "core::StringOutputStream_O" :layout-offset-field-names ("_Buffer")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -10483,12 +10107,6 @@
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "core::StringOutputStream_O"
              :layout-offset-field-names ("_ByteStack")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("_Encoder")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("_Decoder")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::StringOutputStream_O"
@@ -10531,83 +10149,8 @@
             :stamp-key "core::StringInputStream_O" :parent-class "core::StringStream_O"
             :lisp-class-base "core::StringStream_O" :root-class "core::T_O" :stamp-wtag 3
             :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".write_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".read_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".write_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".read_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".read_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".write_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".unread_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".peek_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".read_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".write_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".listen")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".clear_input")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".clear_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".finish_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".force_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".input_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".output_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".interactive_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".element_type")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".length")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".get_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".set_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".set_column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("ops" ".close")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringInputStream_O" :layout-offset-field-names ("_Closed")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "core::StringInputStream_O" :layout-offset-field-names ("_Open")}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "core::StringInputStream_O" :layout-offset-field-names ("_Buffer")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -10622,10 +10165,6 @@
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "core::StringInputStream_O"
              :layout-offset-field-names ("_ByteStack")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O" :layout-offset-field-names ("_Encoder")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::StringInputStream_O" :layout-offset-field-names ("_Decoder")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::StringInputStream_O"
@@ -10672,77 +10211,8 @@
 {class-kind :stamp-name "STAMPWTAG_core__EchoStream_O" :stamp-key "core::EchoStream_O"
             :parent-class "core::AnsiStream_O" :lisp-class-base "core::AnsiStream_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("ops" ".write_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("ops" ".read_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("ops" ".write_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("ops" ".read_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("ops" ".read_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("ops" ".write_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("ops" ".unread_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("ops" ".peek_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("ops" ".read_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("ops" ".write_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("ops" ".listen")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("ops" ".clear_input")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("ops" ".clear_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("ops" ".finish_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("ops" ".force_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("ops" ".input_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("ops" ".output_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("ops" ".interactive_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("ops" ".element_type")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("ops" ".length")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("ops" ".get_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("ops" ".set_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("ops" ".column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("ops" ".set_column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("ops" ".close")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_Closed")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_Open")}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_Buffer")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -10755,10 +10225,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_ByteStack")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_Encoder")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_Decoder")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::EchoStream_O"
              :layout-offset-field-names ("_FormatTable")}
@@ -10798,83 +10264,8 @@
             :stamp-key "core::ConcatenatedStream_O" :parent-class "core::AnsiStream_O"
             :lisp-class-base "core::AnsiStream_O" :root-class "core::T_O" :stamp-wtag 3
             :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".write_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".read_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".write_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".read_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".read_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".write_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".unread_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".peek_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".read_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".write_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".listen")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".clear_input")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".clear_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".finish_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".force_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".input_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".output_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".interactive_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".element_type")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".length")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".get_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".set_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".set_column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("ops" ".close")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::ConcatenatedStream_O" :layout-offset-field-names ("_Closed")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "core::ConcatenatedStream_O" :layout-offset-field-names ("_Open")}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "core::ConcatenatedStream_O" :layout-offset-field-names ("_Buffer")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -10889,12 +10280,6 @@
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "core::ConcatenatedStream_O"
              :layout-offset-field-names ("_ByteStack")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("_Encoder")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("_Decoder")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::ConcatenatedStream_O"
@@ -10935,77 +10320,8 @@
 {class-kind :stamp-name "STAMPWTAG_core__FileStream_O" :stamp-key "core::FileStream_O"
             :parent-class "core::AnsiStream_O" :lisp-class-base "core::AnsiStream_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("ops" ".write_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("ops" ".read_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("ops" ".write_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("ops" ".read_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("ops" ".read_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("ops" ".write_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("ops" ".unread_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("ops" ".peek_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("ops" ".read_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("ops" ".write_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("ops" ".listen")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("ops" ".clear_input")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("ops" ".clear_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("ops" ".finish_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("ops" ".force_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("ops" ".input_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("ops" ".output_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("ops" ".interactive_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("ops" ".element_type")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("ops" ".length")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("ops" ".get_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("ops" ".set_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("ops" ".column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("ops" ".set_column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("ops" ".close")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_Closed")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_Open")}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_Buffer")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -11018,10 +10334,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_ByteStack")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_Encoder")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_Decoder")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::FileStream_O"
              :layout-offset-field-names ("_FormatTable")}
@@ -11065,79 +10377,8 @@
 {class-kind :stamp-name "STAMPWTAG_core__IOFileStream_O" :stamp-key "core::IOFileStream_O"
             :parent-class "core::FileStream_O" :lisp-class-base "core::FileStream_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".write_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".read_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".write_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".read_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".read_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".write_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".unread_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".peek_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".read_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".write_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("ops" ".listen")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".clear_input")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".clear_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".finish_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".force_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".input_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".output_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".interactive_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".element_type")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("ops" ".length")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".get_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".set_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("ops" ".column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("ops" ".set_column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("ops" ".close")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_Closed")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_Open")}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_Buffer")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -11150,10 +10391,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_ByteStack")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_Encoder")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_Decoder")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_FormatTable")}
@@ -11201,83 +10438,8 @@
 {class-kind :stamp-name "STAMPWTAG_core__IOStreamStream_O" :stamp-key "core::IOStreamStream_O"
             :parent-class "core::FileStream_O" :lisp-class-base "core::FileStream_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".write_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".read_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".write_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".read_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".read_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".write_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".unread_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".peek_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".read_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".write_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".listen")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".clear_input")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".clear_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".finish_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".force_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".input_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".output_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".interactive_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".element_type")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".length")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".get_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".set_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".set_column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("ops" ".close")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_Closed")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_Open")}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_Buffer")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -11290,10 +10452,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_ByteStack")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_Encoder")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_Decoder")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::IOStreamStream_O"
@@ -11344,83 +10502,8 @@
 {class-kind :stamp-name "STAMPWTAG_core__BroadcastStream_O" :stamp-key "core::BroadcastStream_O"
             :parent-class "core::AnsiStream_O" :lisp-class-base "core::AnsiStream_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".write_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".read_byte8")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".write_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".read_byte")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".read_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".write_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".unread_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".peek_char")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".read_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".write_vector")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".listen")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".clear_input")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".clear_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".finish_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".force_output")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".input_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".output_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".interactive_p")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".element_type")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".length")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".get_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".set_position")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".set_column")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("ops" ".close")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_Closed")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_Open")}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_Buffer")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -11433,10 +10516,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_ByteStack")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_Encoder")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_Decoder")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::BroadcastStream_O"
