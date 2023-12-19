@@ -1241,6 +1241,8 @@
 (defmethod start-annotation ((annot core:bytecode-ast-decls)
                              inserter context)
   (declare (ignore inserter))
+  (when (degenerate-annotation-p annot)
+    (return-from start-annotation))
   (loop with opt = (first (optimize-stack context))
         for (spec . rest) in (core:bytecode-ast-decls/decls annot)
         do (case spec
@@ -1254,6 +1256,8 @@
 (defmethod end-annotation ((annot core:bytecode-ast-decls)
                            inserter context)
   (declare (ignore inserter))
+  (when (degenerate-annotation-p annot)
+    (return-from end-annotation))
   (pop (optimize-stack context))
   (setf (policy context) (policy:compute-policy (first (optimize-stack context))
                                                 clasp-cleavir:*clasp-env*)))
@@ -1261,11 +1265,15 @@
 (defmethod start-annotation ((annot core:bytecode-debug-location)
                              inserter context)
   (declare (ignore inserter))
+  (when (degenerate-annotation-p annot)
+    (return-from start-annotation))
   (push (kludge-spi (core:bytecode-debug-location/location annot))
         (origin-stack context)))
 (defmethod end-annotation ((annot core:bytecode-debug-location)
                            inserter context)
   (declare (ignore inserter))
+  (when (degenerate-annotation-p annot)
+    (return-from end-annotation))
   (pop (origin-stack context)))
 
 ;;; Most processing is handled by maybe-begin-new, but there's still source info.
