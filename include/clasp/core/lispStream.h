@@ -147,8 +147,6 @@ SourcePosInfo_sp core__input_stream_source_pos_info(T_sp, FileScope_sp, size_t, 
 SourcePosInfo_sp clasp_simple_input_stream_source_pos_info(T_sp);
 FileScope_sp clasp_input_source_file_info(T_sp strm);
 Pathname_sp clasp_input_pathname(T_sp strm);
-/*! Return the filename of the stream if possible, error if errorp=true and no name can be determined */
-T_sp clasp_filename(T_sp strm, bool errorp = false);
 
 T_sp cl__unread_char(Character_sp ch, T_sp dstrm);
 T_sp cl__get_output_stream_string(T_sp strm);
@@ -205,6 +203,7 @@ void stream_clear_output(T_sp stream);
 void stream_finish_output(T_sp stream);
 void stream_force_output(T_sp stream);
 
+bool stream_p(T_sp stream);
 bool stream_open_p(T_sp stream);
 bool stream_input_p(T_sp stream);
 bool stream_output_p(T_sp stream);
@@ -225,6 +224,9 @@ int stream_input_handle(T_sp stream);
 int stream_output_handle(T_sp stream);
 
 T_sp stream_close(T_sp stream, T_sp abort);
+
+T_sp stream_pathname(T_sp stream);
+T_sp stream_truename(T_sp stream);
 
 // Define types of streams
 // See ecl object.h:600
@@ -363,7 +365,8 @@ public:
 
   virtual T_sp close(T_sp abort);
 
-  virtual T_sp filename() const;
+  virtual T_sp pathname() const;
+  virtual T_sp truename() const;
   virtual int lineno() const;
 
   inline void check_open() {
@@ -400,7 +403,6 @@ public:
 
 public: // Functions here
   virtual string __repr__() const override;
-  T_sp filename() const override { return this->_Filename; };
   virtual bool has_file_position() const;
   ListenResult _fd_listen(int fd);
   void close_cleanup(T_sp abort);
@@ -472,6 +474,9 @@ public: // Functions here
   T_sp set_external_format(T_sp format);
 
   T_sp string_length(T_sp string);
+
+  T_sp pathname() const;
+  T_sp truename() const;
 }; // FileStream class
 
 }; // namespace core
@@ -750,7 +755,6 @@ public:
 
 public: // Functions here
   virtual string __repr__() const override;
-  T_sp filename() const override;
 
   T_sp stream() const { return _SynonymSymbol->symbolValue(); }
 
@@ -786,6 +790,9 @@ public: // Functions here
 
   int input_handle();
   int output_handle();
+
+  T_sp pathname() const;
+  T_sp truename() const;
 }; // SynonymStream class
 
 }; // namespace core

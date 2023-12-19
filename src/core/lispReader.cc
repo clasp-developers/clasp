@@ -828,7 +828,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token& token, bool only_dot
     // interpret failed symbols
     SIMPLE_ERROR("Error encountered while reading source file {} at character position {} - Could not interpret symbol state({}) "
                  "symbol: [{}]",
-                 _rep_(clasp_filename(sin, false)), _rep_(stream_position(sin)), stateString(state),
+                 _rep_(stream_pathname(sin)), _rep_(stream_position(sin)), stateString(state),
                  symbolTokenStr(sin, token, start - token.data(), token.size())->get_std_string());
     break;
   case tintt:
@@ -1062,7 +1062,7 @@ T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
 #if 0
   static int monitorReaderStep = 0;
   if ((monitorReaderStep % 1000) == 0 && cl__member(_sym_monitorReader, _sym_STARdebugMonitorSTAR->symbolValue(), nil<T_O>()).notnilp()) {
-    printf("%s:%d:%s stream %s -> pos = %" PRF "\n", __FILE__, __LINE__, __FUNCTION__, _rep_(clasp_filename(sin, false)).c_str(), unbox_fixnum(gc::As<Fixnum_sp>(stream_position(sin))));
+    printf("%s:%d:%s stream %s -> pos = %" PRF "\n", __FILE__, __LINE__, __FUNCTION__, _rep_(stream_pathname(sin)).c_str(), unbox_fixnum(gc::As<Fixnum_sp>(stream_position(sin))));
   }
   ++monitorReaderStep;
 #endif

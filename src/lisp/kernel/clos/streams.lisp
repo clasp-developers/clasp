@@ -82,7 +82,7 @@
 (defgeneric input-stream-p (stream)
   (:documentation "Can STREAM perform input operations?"))
 
-(defgeneric stream-p (stream)
+(defgeneric streamp (stream)
   (:documentation "Is this object a STREAM?"))
 
 (defgeneric pathname (pathspec)
@@ -656,7 +656,7 @@ truename."))
 (defmethod stream-file-length ((stream t))
   (error 'type-error :datum stream :expected-type 'file-stream))
 
-;; STREAM-P
+;; STREAMP
 
 (defmethod streamp ((stream stream))
   (declare (ignore stream))

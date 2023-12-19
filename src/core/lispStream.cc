@@ -161,8 +161,8 @@ void StreamCursor::advanceLineNumber(T_sp strm, claspCharacter c, int num) {
   this->_Column = 0;
 #ifdef DEBUG_CURSOR
   if (core::_sym_STARdebugMonitorSTAR->symbolValue().notnilp()) {
-    printf("%s:%d stream=%s advanceLineNumber=%c/%d  ln/col=%lld/%d\n", __FILE__, __LINE__,
-           clasp_filename(strm, false)->get().c_str(), c, c, this->_LineNumber, this->_Column);
+    printf("%s:%d stream=%s advanceLineNumber=%c/%d  ln/col=%lld/%d\n", __FILE__, __LINE__, stream_pathname(strm)->get().c_str(), c,
+           c, this->_LineNumber, this->_Column);
   }
 #endif
 }
@@ -173,8 +173,8 @@ void StreamCursor::advanceColumn(T_sp strm, claspCharacter c, int num) {
   this->_Column++;
 #ifdef DEBUG_CURSOR
   if (core::_sym_STARdebugMonitorSTAR->symbolValue().notnilp()) {
-    printf("%s:%d stream=%s advanceColumn=%c/%d  ln/col=%lld/%d\n", __FILE__, __LINE__, clasp_filename(strm, false)->get().c_str(),
-           c, c, this->_LineNumber, this->_Column);
+    printf("%s:%d stream=%s advanceColumn=%c/%d  ln/col=%lld/%d\n", __FILE__, __LINE__, stream_pathname(strm)->get().c_str(), c, c,
+           this->_LineNumber, this->_Column);
   }
 #endif
 }
@@ -184,7 +184,7 @@ void StreamCursor::backup(T_sp strm, claspCharacter c) {
   this->_Column = this->_PrevColumn;
 #ifdef DEBUG_CURSOR
   if (core::_sym_STARdebugMonitorSTAR->symbolValue().notnilp()) {
-    printf("%s:%d stream=%s backup=%c/%d ln/col=%lld/%d\n", __FILE__, __LINE__, clasp_filename(strm, false)->get().c_str(), c, c,
+    printf("%s:%d stream=%s backup=%c/%d ln/col=%lld/%d\n", __FILE__, __LINE__, stream_pathname(strm)->get().c_str(), c, c,
            this->_LineNumber, this->_Column);
   }
 #endif
@@ -1030,6 +1030,10 @@ T_sp FileStream_O::string_length(T_sp string) {
   return clasp_make_fixnum(l);
 }
 
+T_sp FileStream_O::pathname() const { return cl__parse_namestring(_Filename); }
+
+T_sp FileStream_O::truename() const { return cl__truename((_Open && _TempFilename.notnilp()) ? _TempFilename : _Filename); }
+
 /**********************************************************************
  * STRING OUTPUT STREAMS
  */
@@ -1801,6 +1805,10 @@ int SynonymStream_O::set_column(int column) { return stream_set_column(stream(),
 int SynonymStream_O::input_handle() { return stream_input_handle(stream()); }
 
 int SynonymStream_O::output_handle() { return stream_output_handle(stream()); }
+
+T_sp SynonymStream_O::pathname() const { return stream_pathname(stream()); };
+
+T_sp SynonymStream_O::truename() const { return stream_truename(stream()); };
 
 CL_LAMBDA(strm1);
 CL_DECLARE();
@@ -3374,9 +3382,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(streamp)dx");
 DOCGROUP(clasp);
-CL_DEFUN bool cl__streamp(T_sp stream) {
-  return stream.isA<Stream_O>() || (gray::_sym_streamp->fboundp() && T_sp(eval::funcall(gray::_sym_streamp, stream)).notnilp());
-}
+CL_DEFUN bool cl__streamp(T_sp stream) { return stream_p(stream); }
 
 /**********************************************************************
  * FILE OPENING AND CLOSING
@@ -3958,23 +3964,6 @@ void clasp_writeln_string(const string& str, T_sp strm) {
   stream_finish_output(strm);
 }
 
-T_sp clasp_filename(T_sp stream, bool errorp) {
-  T_sp fn = nil<T_O>();
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  if (ansi_stream)
-    fn = ansi_stream->filename();
-
-  if (fn.nilp()) {
-    if (errorp) {
-      SIMPLE_ERROR("The stream {} does not have a filename", _rep_(stream));
-    } else {
-      return SimpleBaseString_O::make("-no-name-");
-    }
-  }
-
-  return fn;
-}
-
 size_t clasp_input_filePos(T_sp strm) {
   T_sp position = stream_position(strm);
   if (position == kw::_sym_start)
@@ -4026,11 +4015,7 @@ SourcePosInfo_sp clasp_simple_input_stream_source_pos_info(T_sp strm) {
   return spi;
 }
 
-FileScope_sp clasp_input_source_file_info(T_sp strm) {
-  T_sp filename = clasp_filename(strm);
-  FileScope_sp sfi = gc::As<FileScope_sp>(core__file_scope(filename));
-  return sfi;
-}
+FileScope_sp clasp_input_source_file_info(T_sp strm) { return gc::As<FileScope_sp>(core__file_scope(stream_pathname(strm))); }
 }; // namespace core
 
 namespace core {
@@ -4211,11 +4196,17 @@ T_sp AnsiStream_O::close(T_sp _abort) {
   return _lisp->_true();
 }
 
-T_sp AnsiStream_O::filename() const { return nil<T_O>(); };
+T_sp AnsiStream_O::pathname() const {
+  // not_a_file_stream(asSmartPtr());
+  return nil<T_O>();
+}
+
+T_sp AnsiStream_O::truename() const {
+  // not_a_file_stream(asSmartPtr());
+  return nil<T_O>();
+}
 
 int AnsiStream_O::lineno() const { return 0; };
-
-T_sp SynonymStream_O::filename() const { return clasp_filename(stream()); };
 
 void StringOutputStream_O::fill(const string& data) { StringPushStringCharStar(this->_Contents, data.c_str()); }
 
@@ -4243,7 +4234,7 @@ bool IOFileStream_O::has_file_position() const {
 string FileStream_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->_classNameAsString();
-  ss << " " << _rep_(filename());
+  ss << " " << _rep_(pathname());
   if (has_file_position()) {
     if (_Open) {
       ss << " file-pos ";
@@ -5199,7 +5190,7 @@ ListenResult stream_listen(T_sp stream) {
   AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
   return ansi_stream
              ? ansi_stream->listen()
-    : ((T_sp(eval::funcall(gray::_sym_stream_listen, stream))).nilp() ? listen_result_no_char : listen_result_available);
+             : ((T_sp(eval::funcall(gray::_sym_stream_listen, stream))).nilp() ? listen_result_no_char : listen_result_available);
 }
 
 void stream_clear_input(T_sp stream) {
@@ -5237,6 +5228,10 @@ void stream_force_output(T_sp stream) {
 bool stream_open_p(T_sp stream) {
   AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
   return ansi_stream ? ansi_stream->open_p() : T_sp(eval::funcall(gray::_sym_open_stream_p, stream)).notnilp();
+}
+
+bool stream_p(T_sp stream) {
+  return stream.isA<Stream_O>() || (gray::_sym_streamp->fboundp() && T_sp(eval::funcall(gray::_sym_streamp, stream)).notnilp());
 }
 
 bool stream_input_p(T_sp stream) {
@@ -5322,6 +5317,16 @@ int stream_output_handle(T_sp stream) {
 T_sp stream_close(T_sp stream, T_sp abort) {
   AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
   return ansi_stream ? ansi_stream->close(abort) : eval::funcall(gray::_sym_close, stream, kw::_sym_abort, abort);
+}
+
+T_sp stream_pathname(T_sp stream) {
+  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
+  return ansi_stream ? ansi_stream->pathname() : eval::funcall(gray::_sym_pathname, stream);
+}
+
+T_sp stream_truename(T_sp stream) {
+  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
+  return ansi_stream ? ansi_stream->truename() : eval::funcall(gray::_sym_truename, stream);
 }
 
 }; // namespace core
