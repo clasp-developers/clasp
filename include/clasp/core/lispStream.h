@@ -77,30 +77,10 @@ void wsock_error(const char* err_msg, T_sp strm) NO_RETURN;
 int safe_open(const char* filename, int flags, clasp_mode_t mode);
 
 enum StreamMode {
-  clasp_smm_input,         //  input
-  clasp_smm_input_file,    //  input
-  clasp_smm_output,        //  output
-  clasp_smm_output_file,   //  output
-  clasp_smm_io,            //  input-output
-  clasp_smm_io_file,       //  input-output
-  clasp_smm_synonym,       //  synonym
-  clasp_smm_broadcast,     //  broadcast
-  clasp_smm_concatenated,  //  concatenated
-  clasp_smm_two_way,       //  two way
-  clasp_smm_echo,          //  echo
-  clasp_smm_string_input,  //  string input
-  clasp_smm_string_output, //  string output
-  clasp_smm_probe,         //  probe (only used in open_stream())
-#if defined(ECL_WSOCK)
-  clasp_smm_input_wsock,  //  input socket (Win32)
-  clasp_smm_output_wsock, //  output socket (Win32)
-  clasp_smm_io_wsock,     //  input/output socket (Win32)
-#endif
-#if defined(CLASP_MS_WINDOWS_HOST)
-  clasp_smm_io_wcon, //  windows console (Win32)
-#endif
-  clasp_smm_sequence_input, //  sequence input
-  clasp_smm_sequence_output //  sequence output
+  stream_mode_input = 0b0001,  //  input
+  stream_mode_output = 0b0010, //  output
+  stream_mode_io = 0b0011,     //  input-output
+  stream_mode_probe = 0b0100   //  probe (only used in open_stream())
 };
 
 typedef enum {
@@ -134,10 +114,10 @@ typedef enum {
 } StreamFlagsEnum;
 
 typedef enum {
-    listen_result_no_char = 0,
-    listen_result_available = 1,
-    listen_result_eof = -1,
-    listen_result_unknown = -3
+  listen_result_no_char = 0,
+  listen_result_available = 1,
+  listen_result_eof = -1,
+  listen_result_unknown = -3
 } ListenResult;
 
 size_t clasp_input_filePos(T_sp strm);
@@ -159,18 +139,6 @@ T_sp cl__file_position(T_sp stream, T_sp position = nil<core::T_O>());
 
 T_sp cl__stream_element_type(T_sp strm);
 T_sp cl__stream_external_format(T_sp strm);
-
-T_sp clasp_make_stream_from_FILE(T_sp fname, FILE* f, enum StreamMode smm, gctools::Fixnum byte_size = 8,
-                                 int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(),
-                                 T_sp tempName = nil<T_O>(), bool created = false);
-
-T_sp clasp_make_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gctools::Fixnum byte_size = 8,
-                               int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(),
-                               T_sp tempName = nil<T_O>(), bool created = false);
-
-T_sp clasp_make_file_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gctools::Fixnum byte_size = 8,
-                                    int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(),
-                                    T_sp tempName = nil<T_O>(), bool created = false);
 
 T_sp cl__make_synonym_stream(T_sp sym);
 T_sp cl__make_two_way_stream(T_sp in, T_sp out);
@@ -299,7 +267,6 @@ class AnsiStream_O : public Stream_O {
 
 public:
   bool _Open;
-  StreamMode _Mode;
   char* _Buffer;
   T_sp _Format;
   int _ByteSize;
@@ -388,20 +355,18 @@ public:
 };
 
 class FileStream_O : public AnsiStream_O {
-  friend T_sp& FileStreamFilename(T_sp);
-  friend T_sp& FileStreamEltType(T_sp);
   LISP_CLASS(core, ClPkg, FileStream_O, "file-stream", AnsiStream_O);
-  //    DECLARE_ARCHIVE();
-public: // Simple default ctor/dtor
-  FileStream_O(){};
 
 public:
+  StreamMode _mode;
   T_sp _Filename;
   T_sp _TempFilename;
   bool _Created = false;
   T_sp _ElementType;
 
 public: // Functions here
+  FileStream_O(){};
+
   virtual string __repr__() const override;
   virtual bool has_file_position() const;
   ListenResult _fd_listen(int fd);
@@ -458,6 +423,9 @@ public: // Functions here
   void write_byte_signed8(T_sp c);
   void write_byte_unsigned8(T_sp c);
 
+  bool input_p() const;
+  bool output_p() const;
+
   T_sp read_byte();
   void write_byte(T_sp c);
   claspCharacter read_char_no_cursor();
@@ -490,28 +458,17 @@ template <> struct gctools::GCInfo<core::IOFileStream_O> {
 namespace core {
 
 class IOFileStream_O : public FileStream_O {
-  friend int& IOFileStreamDescriptor(T_sp);
   LISP_CLASS(core, CorePkg, IOFileStream_O, "iofile-stream", FileStream_O);
-  //    DECLARE_ARCHIVE();
-public: // Simple default ctor/dtor
-  IOFileStream_O(){};
-
-public: // instance variables here
-  int _FileDescriptor;
-
-public: // Functions here
-  static T_sp makeInput(const string& name, int fd) {
-    return clasp_make_stream_from_fd(str_create(name), fd, clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
-  }
-  static T_sp makeOutput(const string& name, int fd) {
-    return clasp_make_stream_from_fd(str_create(name), fd, clasp_smm_output_file, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
-  }
-  static T_sp makeIO(const string& name, int fd) {
-    return clasp_make_stream_from_fd(str_create(name), fd, clasp_smm_io_file, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
-  }
-  static T_sp make(const string& name, int fd, enum StreamMode smm, T_sp elementType, T_sp externalFormat);
 
 public:
+  int _FileDescriptor;
+
+public:
+  IOFileStream_O(){};
+
+  static T_sp make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size = 8, int flags = CLASP_STREAM_DEFAULT_FORMAT,
+                   T_sp external_format = nil<T_O>(), T_sp tempName = nil<T_O>(), bool created = false);
+
   int fileDescriptor() const { return this->_FileDescriptor; };
   virtual bool has_file_position() const override;
 
@@ -524,8 +481,6 @@ public:
   void force_output();
   void finish_output();
 
-  bool input_p() const;
-  bool output_p() const;
   bool interactive_p() const;
 
   T_sp length();
@@ -540,11 +495,17 @@ public:
 
 #ifdef ECL_WSOCK
 
-class WinsockStream_O : public IOFileStream_O {
-  LISP_CLASS(core, CorePkg, WinsockStream_O, "winsock-stream", IOFileStream_O);
+class WinsockStream_O : public FileStream_O {
+  LISP_CLASS(core, CorePkg, WinsockStream_O, "winsock-stream", FileStream_O);
+
+public:
+  SOCKET _socket;
 
 public:
   WinsockStream_O(){};
+
+  static T_sp make(T_sp fname, SOCKET socket, StreamMode smm, gctools::Fixnum byte_size = 8,
+                   int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>());
 
   cl_index read_byte8(unsigned char* c, cl_index n);
   cl_index write_byte8(unsigned char* c, cl_index n);
@@ -557,12 +518,18 @@ public:
 
 #ifdef CLASP_MS_WINDOWS_HOST
 
-class ConsoleStream_O : public IOFileStream_O {
-  LISP_CLASS(core, CorePkg, ConsoleStream_O, "console-stream", IOFileStream_O);
+class ConsoleStream_O : public FileStream_O {
+  LISP_CLASS(core, CorePkg, ConsoleStream_O, "console-stream", FileStream_O);
+
+  HANDLE _handle;
 
 public:
   ConsoleStream_O(){};
 
+  static T_sp make(T_sp fname, HANDLE handle, StreamMode smm, gctools::Fixnum byte_size = 8,
+                   int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>());
+
+  bool interactive_p() const;
   cl_index read_byte8(unsigned char* c, cl_index n);
   cl_index write_byte8(unsigned char* c, cl_index n);
   ListenResult listen();
@@ -583,29 +550,22 @@ template <> struct gctools::GCInfo<core::IOStreamStream_O> {
 namespace core {
 
 class IOStreamStream_O : public FileStream_O {
-  friend FILE*& IOStreamStreamFile(T_sp strm);
   LISP_CLASS(core, CorePkg, IOStreamStream_O, "iostream-stream", FileStream_O);
-  //    DECLARE_ARCHIVE();
-public: // Simple default ctor/dtor
-  IOStreamStream_O(){};
-
-public: // instance variables here
-  FILE* _File;
-
-public: // Functions here
-  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
-
-  static T_sp makeInput(const string& name, FILE* f) {
-    return clasp_make_stream_from_FILE(str_create(name), f, clasp_smm_input, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
-  }
-  static T_sp makeOutput(const string& name, FILE* f) {
-    return clasp_make_stream_from_FILE(str_create(name), f, clasp_smm_output, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
-  };
-  static T_sp makeIO(const string& name, FILE* f) {
-    return clasp_make_stream_from_FILE(str_create(name), f, clasp_smm_io, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
-  };
 
 public:
+  FILE* _File;
+
+public:
+  IOStreamStream_O(){};
+
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
+
+  static T_sp make(T_sp fname, FILE* f, StreamMode smm, gctools::Fixnum byte_size = 8, int flags = CLASP_STREAM_DEFAULT_FORMAT,
+                   T_sp external_format = nil<T_O>(), T_sp tempName = nil<T_O>(), bool created = false);
+
+  static T_sp make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size = 8, int flags = CLASP_STREAM_DEFAULT_FORMAT,
+                   T_sp external_format = nil<T_O>(), T_sp tempName = nil<T_O>(), bool created = false);
+
   FILE* file() const { return this->_File; };
 
   cl_index read_byte8(unsigned char* c, cl_index n);
@@ -619,8 +579,6 @@ public:
   void force_output();
   void finish_output();
 
-  bool input_p() const;
-  bool output_p() const;
   bool interactive_p() const;
 
   T_sp length();
@@ -635,15 +593,10 @@ public:
 
 class StringStream_O : public AnsiStream_O {
   LISP_CLASS(core, ClPkg, StringStream_O, "string-stream", AnsiStream_O);
-  //    DECLARE_ARCHIVE();
-public: // Simple default ctor/dtor
-  DEFAULT_CTOR_DTOR(StringStream_O);
 
-public: // ctor/dtor for classes with shared virtual base
-        //    explicit StringStream_O(core::Instance_sp const& mc) : T_O(mc),AnsiStream(mc) {};
-        //    virtual ~StringStream_O() {};
-public: // Functions here
-};      // StringStream class
+public:
+  DEFAULT_CTOR_DTOR(StringStream_O);
+};
 
 }; // namespace core
 
@@ -656,18 +609,14 @@ template <> struct gctools::GCInfo<core::StringOutputStream_O> {
 namespace core {
 
 class StringOutputStream_O : public StringStream_O {
-  friend String_sp& StringOutputStreamOutputString(T_sp);
   LISP_CLASS(core, CorePkg, StringOutputStream_O, "string-output-stream", StringStream_O);
-  //    DECLARE_ARCHIVE();
-public: // Simple default ctor/dtor
-  DEFAULT_CTOR_DTOR(StringOutputStream_O);
 
 public:
-  // Use the cl__make_string_output_stream
-public: // instance variables here
   String_sp _Contents;
 
-public: // Functions here
+public:
+  DEFAULT_CTOR_DTOR(StringOutputStream_O);
+
   void fill(const string& data);
   void clear();
   String_sp getAndReset();
@@ -683,7 +632,8 @@ public: // Functions here
 
   T_sp position();
   T_sp set_position(T_sp pos);
-}; // StringStream class
+};
+
 }; // namespace core
 
 template <> struct gctools::GCInfo<core::StringInputStream_O> {
@@ -695,23 +645,16 @@ template <> struct gctools::GCInfo<core::StringInputStream_O> {
 namespace core {
 
 class StringInputStream_O : public StringStream_O {
-  friend gctools::Fixnum& StringInputStreamInputPosition(T_sp strm);
-  friend gctools::Fixnum& StringInputStreamInputLimit(T_sp strm);
-  friend String_sp& StringInputStreamInputString(T_sp strm);
   LISP_CLASS(core, CorePkg, StringInputStream_O, "string-input-stream", StringStream_O);
-  //    DECLARE_ARCHIVE();
-public: // Simple default ctor/dtor
-  DEFAULT_CTOR_DTOR(StringInputStream_O);
 
-public: // ctor/dtor for classes with shared virtual base
-        //    explicit StringStream_O(core::Instance_sp const& mc) : T_O(mc),AnsiStream(mc) {};
-        //    virtual ~StringStream_O() {};
-public: // instance variables here
+public:
   String_sp _Contents;
   gctools::Fixnum _InputPosition;
   gctools::Fixnum _InputLimit;
 
-public: // Functions here
+public:
+  DEFAULT_CTOR_DTOR(StringInputStream_O);
+
   static T_sp make(const string& str);
   string peer(size_t len);
   string peerFrom(size_t start, size_t len);
@@ -740,10 +683,8 @@ template <> struct gctools::GCInfo<core::SynonymStream_O> {
 namespace core {
 
 class SynonymStream_O : public AnsiStream_O {
-  friend Symbol_sp& SynonymStreamSymbol(T_sp strm);
-  friend T_sp SynonymStreamStream(T_sp);
   LISP_CLASS(core, ClPkg, SynonymStream_O, "synonym-stream", AnsiStream_O);
-  //    DECLARE_ARCHIVE();
+
 public: // Simple default ctor/dtor
   SynonymStream_O() : _SynonymSymbol(nil<Symbol_O>()){};
 
@@ -806,10 +747,8 @@ template <> struct gctools::GCInfo<core::TwoWayStream_O> {
 namespace core {
 
 class TwoWayStream_O : public AnsiStream_O {
-  friend T_sp TwoWayStreamInput(T_sp);
-  friend T_sp TwoWayStreamOutput(T_sp);
   LISP_CLASS(core, ClPkg, TwoWayStream_O, "two-way-stream", AnsiStream_O);
-  //    DECLARE_ARCHIVE();
+
 public: // Simple default ctor/dtor
   TwoWayStream_O() : _In(nil<T_O>()), _Out(nil<T_O>()){};
 
@@ -864,9 +803,8 @@ namespace core {
 
 FORWARD(BroadcastStream);
 class BroadcastStream_O : public AnsiStream_O {
-  friend T_sp& BroadcastStreamList(T_sp strm);
   LISP_CLASS(core, ClPkg, BroadcastStream_O, "BroadcastStream", AnsiStream_O);
-  //    DECLARE_ARCHIVE();
+
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(BroadcastStream_O);
 
@@ -906,9 +844,8 @@ template <> struct gctools::GCInfo<core::ConcatenatedStream_O> {
 namespace core {
 
 class ConcatenatedStream_O : public AnsiStream_O {
-  friend T_sp& ConcatenatedStreamList(T_sp strm);
   LISP_CLASS(core, ClPkg, ConcatenatedStream_O, "ConcatenatedStream", AnsiStream_O);
-  //    DECLARE_ARCHIVE();
+
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(ConcatenatedStream_O);
 
@@ -941,10 +878,8 @@ template <> struct gctools::GCInfo<core::EchoStream_O> {
 namespace core {
 
 class EchoStream_O : public AnsiStream_O {
-  friend T_sp EchoStreamInput(T_sp);
-  friend T_sp EchoStreamOutput(T_sp);
   LISP_CLASS(core, ClPkg, EchoStream_O, "EchoStream", AnsiStream_O);
-  //    DECLARE_ARCHIVE();
+
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(EchoStream_O);
 

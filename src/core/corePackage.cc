@@ -1019,9 +1019,9 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
 
   //        testPointers();
 
-  T_sp stdin_stream = IOStreamStream_O::makeInput("*STDIN*", stdin);
-  T_sp stdout_stream = IOStreamStream_O::makeOutput("*STDOUT*", stdout);
-  T_sp stderr_stream = IOStreamStream_O::makeOutput("*STDERR*", stderr);
+  T_sp stdin_stream = IOStreamStream_O::make(str_create("*STDIN*"), stdin, stream_mode_input);
+  T_sp stdout_stream = IOStreamStream_O::make(str_create("*STDOUT*"), stdout, stream_mode_output);
+  T_sp stderr_stream = IOStreamStream_O::make(str_create("*STDERR*"), stderr, stream_mode_output);
 
   ext::_sym__PLUS_processStandardInput_PLUS_->defparameter(stdin_stream);
   ext::_sym__PLUS_processStandardOutput_PLUS_->defparameter(stdout_stream);
