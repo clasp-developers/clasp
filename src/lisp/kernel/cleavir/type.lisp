@@ -297,6 +297,33 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; (9) CONDITIONS
+
+(define-deriver error (datum &rest arguments)
+  (declare (ignore datum arguments))
+  (ctype:values-bottom *clasp-system*))
+
+;;; I extremely doubt these matter, but why not.
+(define-deriver cerror (cfc datum &rest arguments)
+  (declare (ignore cfc datum arguments))
+  (ctype:single-value (ctype:member *clasp-system* nil) *clasp-system*))
+(define-deriver signal (datum &rest arguments)
+  (declare (ignore datum arguments))
+  (ctype:single-value (ctype:member *clasp-system* nil) *clasp-system*))
+(define-deriver warn (datum &rest arguments)
+  (declare (ignore datum arguments))
+  (ctype:single-value (ctype:member *clasp-system* nil) *clasp-system*))
+
+(define-deriver invoke-debugger (condition)
+  (declare (ignore condition))
+  (ctype:values-bottom *clasp-system*))
+
+(define-deriver break (&optional format-control &rest args)
+  (declare (ignore format-control args))
+  (ctype:single-value (ctype:member *clasp-system* nil) *clasp-system*))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; (10) SYMBOLS
 
 (define-deriver symbolp (object)
