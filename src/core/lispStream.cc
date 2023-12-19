@@ -1172,7 +1172,7 @@ claspCharacter StringInputStream_O::peek_char() {
   return (_InputPosition >= _InputLimit) ? EOF : clasp_as_claspCharacter(cl__char(_Contents, _InputPosition));
 }
 
-int StringInputStream_O::listen() { return (_InputPosition < _InputLimit) ? CLASP_LISTEN_AVAILABLE : CLASP_LISTEN_EOF; }
+ListenResult StringInputStream_O::listen() { return (_InputPosition < _InputLimit) ? listen_result_available : listen_result_eof; }
 
 void StringInputStream_O::clear_input() {}
 
@@ -1274,7 +1274,7 @@ cl_index TwoWayStream_O::read_vector(T_sp data, cl_index start, cl_index n) { re
 
 cl_index TwoWayStream_O::write_vector(T_sp data, cl_index start, cl_index n) { return stream_write_vector(_Out, data, start, n); }
 
-int TwoWayStream_O::listen() { return stream_listen(_In); }
+ListenResult TwoWayStream_O::listen() { return stream_listen(_In); }
 
 void TwoWayStream_O::clear_input() { stream_clear_input(_In); }
 
@@ -1529,7 +1529,7 @@ claspCharacter EchoStream_O::peek_char() {
   return c;
 }
 
-int EchoStream_O::listen() { return stream_listen(_In); }
+ListenResult EchoStream_O::listen() { return stream_listen(_In); }
 
 void EchoStream_O::clear_input() { stream_clear_input(_In); }
 
@@ -1664,17 +1664,17 @@ void ConcatenatedStream_O::unread_char(claspCharacter c) {
   stream_unread_char(oCar(_List), c);
 }
 
-int ConcatenatedStream_O::listen() {
+ListenResult ConcatenatedStream_O::listen() {
   check_open();
 
   while (!_List.nilp()) {
-    int f = stream_listen(oCar(_List));
-    if (f != CLASP_LISTEN_EOF) {
+    ListenResult f = stream_listen(oCar(_List));
+    if (f != listen_result_eof) {
       return f;
     }
     _List = oCdr(_List);
   }
-  return CLASP_LISTEN_EOF;
+  return listen_result_eof;
 }
 
 void ConcatenatedStream_O::clear_input() {
@@ -1766,7 +1766,7 @@ cl_index SynonymStream_O::write_vector(T_sp data, cl_index start, cl_index n) {
   return stream_write_vector(stream(), data, start, n);
 }
 
-int SynonymStream_O::listen() { return stream_listen(stream()); }
+ListenResult SynonymStream_O::listen() { return stream_listen(stream()); }
 
 void SynonymStream_O::clear_input() { stream_clear_input(stream()); }
 
@@ -1978,11 +1978,11 @@ cl_index IOFileStream_O::write_byte8(unsigned char* c, cl_index n) {
   return out;
 }
 
-int IOFileStream_O::listen() {
+ListenResult IOFileStream_O::listen() {
   check_input();
 
   if (_ByteStack.notnilp())
-    return CLASP_LISTEN_AVAILABLE;
+    return listen_result_available;
   if (_Flags & CLASP_STREAM_MIGHT_SEEK) {
     cl_env_ptr the_env = clasp_process_env();
     clasp_off_t disp, onew;
@@ -1995,9 +1995,9 @@ int IOFileStream_O::listen() {
       clasp_enable_interrupts_env(the_env);
       lseek(_FileDescriptor, disp, SEEK_SET);
       if (onew == disp) {
-        return CLASP_LISTEN_NO_CHAR;
+        return listen_result_no_char;
       } else if (onew != (clasp_off_t)-1) {
-        return CLASP_LISTEN_AVAILABLE;
+        return listen_result_available;
       }
     }
   }
@@ -2023,7 +2023,7 @@ void IOFileStream_O::clear_input() {
     /* Do not stop here: the FILE structure needs also to be flushed */
   }
 #endif
-  while (_fd_listen(_FileDescriptor) == CLASP_LISTEN_AVAILABLE) {
+  while (_fd_listen(_FileDescriptor) == listen_result_available) {
     claspCharacter c = read_char();
     if (c == EOF)
       return;
@@ -2652,10 +2652,10 @@ cl_index IOStreamStream_O::write_byte8(unsigned char* c, cl_index n) {
   return out;
 }
 
-int IOStreamStream_O::listen() {
+ListenResult IOStreamStream_O::listen() {
   check_input();
   if (_ByteStack.notnilp())
-    return CLASP_LISTEN_AVAILABLE;
+    return listen_result_available;
   return _file_listen();
 }
 
@@ -2669,7 +2669,7 @@ void IOStreamStream_O::clear_input() {
     /* Do not stop here: the FILE structure needs also to be flushed */
   }
 #endif
-  while (_file_listen() == CLASP_LISTEN_AVAILABLE) {
+  while (_file_listen() == listen_result_available) {
     clasp_disable_interrupts();
     getc(_File);
     clasp_enable_interrupts();
@@ -2833,9 +2833,9 @@ cl_index WinsockStream_O::write_byte8(unsigned char* c, cl_index n) {
   return out;
 }
 
-int WinsockStream_O::listen() {
+ListenResult WinsockStream_O::listen() {
   SOCKET s;
-  unlikely_if(_ByteStack.notnilp()) return CLASP_LISTEN_AVAILABLE;
+  unlikely_if(_ByteStack.notnilp()) return listen_result_available;
 
   s = (SOCKET)_FileDescriptor;
   unlikely_if(INVALID_SOCKET == s) wrong_file_handler(asSmartPtr());
@@ -2852,12 +2852,12 @@ int WinsockStream_O::listen() {
                                                     "socket ~S.~%~A",
                                                     strm);
     clasp_enable_interrupts();
-    return (result > 0 ? CLASP_LISTEN_AVAILABLE : CLASP_LISTEN_NO_CHAR);
+    return (result > 0 ? listen_result_available : listen_result_no_char);
   }
 }
 
 void WinsockStream_O::clear_input() {
-  while (listen() == CLASP_LISTEN_AVAILABLE) {
+  while (listen() == listen_result_available) {
     read_char();
   }
 }
@@ -3625,7 +3625,7 @@ CL_DEFUN T_sp cl__close(T_sp strm, T_sp abort) { return core__closeSTAR(strm, ab
  * BACKEND
  */
 
-int FileStream_O::_fd_listen(int fileno) {
+ListenResult FileStream_O::_fd_listen(int fileno) {
 #ifdef CLASP_MS_WINDOWS_HOST
   HANDLE hnd = (HANDLE)_get_osfhandle(fileno);
   switch (GetFileType(hnd)) {
@@ -3641,15 +3641,15 @@ int FileStream_O::_fd_listen(int fileno) {
           if (cm & ENABLE_LINE_INPUT) {
             for (i = 0; i < dw_read; i++)
               if (recs[i].EventType == KEY_EVENT && recs[i].Event.KeyEvent.bKeyDown && recs[i].Event.KeyEvent.uChar.AsciiChar == 13)
-                return CLASP_LISTEN_AVAILABLE;
+                return listen_result_available;
           } else {
             for (i = 0; i < dw_read; i++)
               if (recs[i].EventType == KEY_EVENT && recs[i].Event.KeyEvent.bKeyDown && recs[i].Event.KeyEvent.uChar.AsciiChar != 0)
-                return CLASP_LISTEN_AVAILABLE;
+                return listen_result_available;
           }
         }
       }
-      return CLASP_LISTEN_NO_CHAR;
+      return listen_result_no_char;
     } else
       FEwin32_error("GetNumberOfConsoleInputEvents() failed", 0);
     break;
@@ -3660,9 +3660,9 @@ int FileStream_O::_fd_listen(int fileno) {
   case FILE_TYPE_PIPE: {
     DWORD dw;
     if (PeekNamedPipe(hnd, NULL, 0, NULL, &dw, NULL))
-      return (dw > 0 ? CLASP_LISTEN_AVAILABLE : CLASP_LISTEN_NO_CHAR);
+      return (dw > 0 ? listen_result_available : listen_result_no_char);
     else if (GetLastError() == ERROR_BROKEN_PIPE)
-      return CLASP_LISTEN_EOF;
+      return listen_result_eof;
     else
       FEwin32_error("PeekNamedPipe() failed", 0);
     break;
@@ -3688,11 +3688,11 @@ restart_poll:
     goto listen_error;
   }
   if (fd.revents == 0) {
-    return CLASP_LISTEN_NO_CHAR;
+    return listen_result_no_char;
   }
   /* When read() returns a result without blocking, this can also be
      EOF! (Example: Linux and pipes.) We therefore refrain from simply
-     doing  { return CLASP_LISTEN_AVAILABLE; }  and instead try methods
+     doing  { return listen_result_available; }  and instead try methods
      3 and 4. */
 #elif defined(HAVE_SELECT)
   fd_set fds;
@@ -3707,7 +3707,7 @@ restart_select:
     if (errno != EBADF) /* UNIX_LINUX returns EBADF for files! */
       goto listen_error;
   } else if (result == 0) {
-    return CLASP_LISTEN_NO_CHAR;
+    return listen_result_no_char;
   }
 #endif
 #ifdef FIONREAD
@@ -3715,7 +3715,7 @@ restart_select:
   if (ioctl(fileno, FIONREAD, &c) < 0) {
     if (!((errno == ENOTTY) || IS_EINVAL))
       goto listen_error;
-    return (c > 0) ? CLASP_LISTEN_AVAILABLE : CLASP_LISTEN_EOF;
+    return (c > 0) ? listen_result_available : listen_result_eof;
   }
 #endif
 #if !defined(HAVE_POLL) && !defined(HAVE_SELECT)
@@ -3736,32 +3736,32 @@ restart_read:
     if (read_errno == EINTR)
       goto restart_read;
     if (read_errno == EAGAIN || read_errno == EWOULDBLOCK)
-      return CLASP_LISTEN_NO_CHAR;
+      return listen_result_no_char;
     goto listen_error;
   }
 
   if (result == 0) {
-    return CLASP_LISTEN_EOF;
+    return listen_result_eof;
   }
 
   _ByteStack = Cons_O::createList(make_fixnum(b));
-  return CLASP_LISTEN_AVAILABLE;
+  return listen_result_available;
 listen_error:
   file_libc_error(core::_sym_simpleStreamError, asSmartPtr(), "Error while listening to stream.", 0);
 #endif
-  return CLASP_LISTEN_UNKNOWN;
+  return listen_result_unknown;
 }
 
-int IOStreamStream_O::_file_listen() {
-  int aux;
+ListenResult IOStreamStream_O::_file_listen() {
+  ListenResult aux;
   if (feof(_File))
-    return CLASP_LISTEN_EOF;
+    return listen_result_eof;
 #ifdef FILE_CNT
   if (FILE_CNT(_File) > 0)
-    return CLASP_LISTEN_AVAILABLE;
+    return listen_result_available;
 #endif
   aux = _fd_listen(fileno(_File));
-  if (aux != CLASP_LISTEN_UNKNOWN)
+  if (aux != listen_result_unknown)
     return aux;
   /* This code is portable, and implements the expected behavior for regular files.
             It will fail on noninteractive streams. */
@@ -3777,9 +3777,9 @@ int IOStreamStream_O::_file_listen() {
     end_pos = clasp_ftello(_File);
     unlikely_if(clasp_fseeko(_File, old_pos, SEEK_SET) != 0)
         file_libc_error(core::_sym_simpleFileError, asSmartPtr(), "Unable to check file position in SEEK_SET", 0);
-    return (end_pos > old_pos ? CLASP_LISTEN_AVAILABLE : CLASP_LISTEN_EOF);
+    return (end_pos > old_pos ? listen_result_available : listen_result_eof);
   }
-  return !CLASP_LISTEN_AVAILABLE;
+  return listen_result_no_char;
 }
 
 T_sp clasp_off_t_to_integer(clasp_off_t offset) {
@@ -4149,9 +4149,9 @@ cl_index AnsiStream_O::write_vector(T_sp data, cl_index start, cl_index end) {
   return start;
 }
 
-int AnsiStream_O::listen() {
+ListenResult AnsiStream_O::listen() {
   not_an_input_stream(asSmartPtr());
-  return CLASP_LISTEN_EOF;
+  return listen_result_eof;
 }
 
 void AnsiStream_O::clear_input() { not_an_input_stream(asSmartPtr()); }
@@ -4395,11 +4395,11 @@ CL_DEFUN T_sp cl__read_char_no_hang(T_sp stream, T_sp eof_error_p, T_sp eof_valu
 
   if (ansi_stream) {
     int f = ansi_stream->listen();
-    if (f == CLASP_LISTEN_AVAILABLE) {
+    if (f == listen_result_available) {
       int c = ansi_stream->read_char();
       if (c != EOF)
         return clasp_make_standard_character(c);
-    } else if (f == CLASP_LISTEN_NO_CHAR) {
+    } else if (f == listen_result_no_char) {
       return nil<T_O>();
     }
   } else {
@@ -4682,7 +4682,7 @@ DOCGROUP(clasp);
 CL_DEFUN bool cl__listen(T_sp strm) {
   strm = coerce::inputStreamDesignator(strm);
   int result = stream_listen(strm);
-  if (result == CLASP_LISTEN_EOF)
+  if (result == listen_result_eof)
     return 0;
   else
     return result;
@@ -5195,9 +5195,11 @@ cl_index stream_write_vector(T_sp stream, T_sp data, cl_index start, cl_index en
   return end;
 }
 
-int stream_listen(T_sp stream) {
+ListenResult stream_listen(T_sp stream) {
   AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? ansi_stream->listen() : !(T_sp(eval::funcall(gray::_sym_stream_listen, stream))).nilp();
+  return ansi_stream
+             ? ansi_stream->listen()
+    : ((T_sp(eval::funcall(gray::_sym_stream_listen, stream))).nilp() ? listen_result_no_char : listen_result_available);
 }
 
 void stream_clear_input(T_sp stream) {

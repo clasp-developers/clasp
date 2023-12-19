@@ -133,6 +133,13 @@ typedef enum {
   CLASP_STREAM_CLOSE_COMPONENTS = 1024
 } StreamFlagsEnum;
 
+typedef enum {
+    listen_result_no_char = 0,
+    listen_result_available = 1,
+    listen_result_eof = -1,
+    listen_result_unknown = -3
+} ListenResult;
+
 size_t clasp_input_filePos(T_sp strm);
 int clasp_input_lineno(T_sp strm);
 int clasp_input_column(T_sp strm);
@@ -178,11 +185,6 @@ T_sp cl__get_output_stream_string(T_sp strm);
 
 T_sp cl__close(T_sp strm, T_sp abort = nil<T_O>());
 
-#define CLASP_LISTEN_NO_CHAR 0
-#define CLASP_LISTEN_AVAILABLE 1
-#define CLASP_LISTEN_EOF -1
-#define CLASP_LISTEN_UNKNOWN -3
-
 cl_index stream_write_byte8(T_sp stream, unsigned char* c, cl_index n);
 cl_index stream_read_byte8(T_sp stream, unsigned char* c, cl_index n);
 
@@ -197,7 +199,7 @@ claspCharacter stream_peek_char(T_sp stream);
 cl_index stream_read_vector(T_sp stream, T_sp data, cl_index start, cl_index end);
 cl_index stream_write_vector(T_sp stream, T_sp data, cl_index start, cl_index end);
 
-int stream_listen(T_sp stream);
+ListenResult stream_listen(T_sp stream);
 void stream_clear_input(T_sp stream);
 void stream_clear_output(T_sp stream);
 void stream_finish_output(T_sp stream);
@@ -334,7 +336,7 @@ public:
   virtual cl_index read_vector(T_sp data, cl_index start, cl_index end);
   virtual cl_index write_vector(T_sp data, cl_index start, cl_index end);
 
-  virtual int listen();
+  virtual ListenResult listen();
   virtual void clear_input();
   virtual void clear_output();
   virtual void finish_output();
@@ -400,7 +402,7 @@ public: // Functions here
   virtual string __repr__() const override;
   T_sp filename() const override { return this->_Filename; };
   virtual bool has_file_position() const;
-  int _fd_listen(int fd);
+  ListenResult _fd_listen(int fd);
   void close_cleanup(T_sp abort);
   cl_index compute_char_size(claspCharacter c);
 
@@ -511,7 +513,7 @@ public:
   cl_index read_byte8(unsigned char* c, cl_index n);
   cl_index write_byte8(unsigned char* c, cl_index n);
 
-  int listen();
+  ListenResult listen();
   void clear_input();
   void clear_output();
   void force_output();
@@ -541,7 +543,7 @@ public:
 
   cl_index read_byte8(unsigned char* c, cl_index n);
   cl_index write_byte8(unsigned char* c, cl_index n);
-  int listen();
+  ListenResult listen();
   void clear_input();
   T_sp close(T_sp abort);
 };
@@ -558,7 +560,7 @@ public:
 
   cl_index read_byte8(unsigned char* c, cl_index n);
   cl_index write_byte8(unsigned char* c, cl_index n);
-  int listen();
+  ListenResult listen();
   void clear_input();
   void force_output();
 };
@@ -604,9 +606,9 @@ public:
   cl_index read_byte8(unsigned char* c, cl_index n);
   cl_index write_byte8(unsigned char* c, cl_index n);
 
-  int _file_listen();
+  ListenResult _file_listen();
 
-  int listen();
+  ListenResult listen();
   void clear_input();
   void clear_output();
   void force_output();
@@ -712,7 +714,7 @@ public: // Functions here
   claspCharacter read_char();
   void unread_char(claspCharacter c);
   claspCharacter peek_char();
-  int listen();
+  ListenResult listen();
   void clear_input();
 
   bool input_p() const;
@@ -763,7 +765,7 @@ public: // Functions here
   cl_index read_vector(T_sp data, cl_index start, cl_index n);
   cl_index write_vector(T_sp data, cl_index start, cl_index n);
 
-  int listen();
+  ListenResult listen();
   void clear_input();
   void clear_output();
   void force_output();
@@ -822,7 +824,7 @@ public:
   cl_index read_vector(T_sp data, cl_index start, cl_index n);
   cl_index write_vector(T_sp data, cl_index start, cl_index n);
 
-  int listen();
+  ListenResult listen();
   void clear_input();
   void clear_output();
   void force_output();
@@ -911,7 +913,7 @@ public: // Functions here
   T_sp read_byte();
   claspCharacter read_char();
   void unread_char(claspCharacter c);
-  int listen();
+  ListenResult listen();
   void clear_input();
 
   bool input_p() const;
@@ -953,7 +955,7 @@ public: // Functions here
   void unread_char(claspCharacter c);
   claspCharacter peek_char();
 
-  int listen();
+  ListenResult listen();
   void clear_input();
   void clear_output();
   void force_output();
