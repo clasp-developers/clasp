@@ -206,22 +206,22 @@ typedef enum { clasp_stream_mode_input, clasp_stream_mode_output, clasp_stream_m
 class StreamCursor {
 public:
   /*! Tell that _LineNumber/_Column mean something */
-  bool _CursorIsValid;
+  bool _cursor_is_valid;
   /*! Keep track of line number and column - if not valid return 0 */
-  LongLongInt _LineNumber;
+  LongLongInt _line_number;
   /*! Keep track of column - if not valid return 0 */
-  uint _Column;
-  LongLongInt _PrevLineNumber;
+  uint _column;
+  LongLongInt _prev_line_number;
   /*! Keep track of column - if not valid return 0 */
-  uint _PrevColumn;
+  uint _prev_column;
 
 public:
-  StreamCursor() : _CursorIsValid(true), _LineNumber(1), _Column(0){};
+  StreamCursor() : _cursor_is_valid(true), _line_number(1), _column(0){};
 
 public:
   void advanceLineNumber(T_sp strm, claspCharacter c, int num = 1);
   void advanceColumn(T_sp strm, claspCharacter c, int num = 1);
-  void invalidate() { this->_CursorIsValid = false; };
+  void invalidate() { this->_cursor_is_valid = false; };
   void advanceForChar(T_sp strm, char c, char previous) {
     if ((c == '\n' || c == '\r') && previous != '\r')
       this->advanceLineNumber(strm, c);
@@ -231,10 +231,10 @@ public:
   void backup(T_sp strm, claspCharacter c);
 
 public:
-  LongLongInt lineNumber() const { return this->_LineNumber; };
-  uint column() const { return this->_Column; };
-  bool atStartOfLine() const { return this->_Column == 0; };
-  bool isValid() const { return this->_CursorIsValid; };
+  LongLongInt lineNumber() const { return this->_line_number; };
+  uint column() const { return this->_column; };
+  bool atStartOfLine() const { return this->_column == 0; };
+  bool isValid() const { return this->_cursor_is_valid; };
 };
 }; // namespace core
 
@@ -266,25 +266,24 @@ class AnsiStream_O : public Stream_O {
   LISP_CLASS(core, ExtPkg, AnsiStream_O, "ansi-stream", Stream_O);
 
 public:
-  bool _Open;
-  char* _Buffer;
+  bool _open;
   T_sp _Format;
-  int _ByteSize;
-  int _Flags;         // bitmap of flags
-  List_sp _ByteStack; // For unget in input streams
-  T_sp _FormatTable;
-  Fixnum _LastCode[2];
-  claspCharacter _EofChar;
-  int _LastOp;
+  int _byte_size;
+  int _flags;         // bitmap of flags
+  List_sp _byte_stack; // For unget in input streams
+  T_sp _format_table;
+  Fixnum _last_code[2];
+  claspCharacter _eof_char;
+  int _last_op;
   int _LastChar;
-  T_sp _ExternalFormat;
-  int _OutputColumn;
-  StreamCursor _InputCursor;
+  T_sp _external_format;
+  int _output_column;
+  StreamCursor _input_cursor;
 
 public:
   AnsiStream_O()
-      : _Open(true), _Buffer(NULL), _Format(nil<Symbol_O>()), _ByteSize(8), _Flags(0), _ByteStack(nil<T_O>()),
-        _FormatTable(nil<T_O>()), _LastCode{EOF, EOF}, _EofChar(EOF), _ExternalFormat(nil<T_O>()), _OutputColumn(0){};
+      : _open(true), _Format(nil<Symbol_O>()), _byte_size(8), _flags(0), _byte_stack(nil<T_O>()), _format_table(nil<T_O>()),
+        _last_code{EOF, EOF}, _eof_char(EOF), _external_format(nil<T_O>()), _output_column(0){};
   virtual ~AnsiStream_O(); // nontrivial
 
   cl_index consume_byte_stack(unsigned char* c, cl_index n);
@@ -337,7 +336,7 @@ public:
   virtual int lineno() const;
 
   inline void check_open() {
-    if (!_Open)
+    if (!_open)
       CLOSED_STREAM_ERROR(asSmartPtr());
   }
 
@@ -359,10 +358,10 @@ class FileStream_O : public AnsiStream_O {
 
 public:
   StreamMode _mode;
-  T_sp _Filename;
-  T_sp _TempFilename;
-  bool _Created = false;
-  T_sp _ElementType;
+  T_sp _filename;
+  T_sp _temp_filename;
+  bool _created = false;
+  T_sp _element_type;
 
 public: // Functions here
   FileStream_O(){};
@@ -461,7 +460,7 @@ class IOFileStream_O : public FileStream_O {
   LISP_CLASS(core, CorePkg, IOFileStream_O, "iofile-stream", FileStream_O);
 
 public:
-  int _FileDescriptor;
+  int _file_descriptor;
 
 public:
   IOFileStream_O(){};
@@ -469,7 +468,7 @@ public:
   static T_sp make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size = 8, int flags = CLASP_STREAM_DEFAULT_FORMAT,
                    T_sp external_format = nil<T_O>(), T_sp tempName = nil<T_O>(), bool created = false);
 
-  int fileDescriptor() const { return this->_FileDescriptor; };
+  int fileDescriptor() const { return this->_file_descriptor; };
   virtual bool has_file_position() const override;
 
   cl_index read_byte8(unsigned char* c, cl_index n);
@@ -553,10 +552,11 @@ class IOStreamStream_O : public FileStream_O {
   LISP_CLASS(core, CorePkg, IOStreamStream_O, "iostream-stream", FileStream_O);
 
 public:
-  FILE* _File;
+  FILE* _file;
+  char* _buffer;
 
 public:
-  IOStreamStream_O(){};
+  IOStreamStream_O() : _buffer(NULL){};
 
   void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
 
@@ -566,7 +566,7 @@ public:
   static T_sp make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size = 8, int flags = CLASP_STREAM_DEFAULT_FORMAT,
                    T_sp external_format = nil<T_O>(), T_sp tempName = nil<T_O>(), bool created = false);
 
-  FILE* file() const { return this->_File; };
+  FILE* file() const { return this->_file; };
 
   cl_index read_byte8(unsigned char* c, cl_index n);
   cl_index write_byte8(unsigned char* c, cl_index n);
@@ -589,6 +589,8 @@ public:
   int output_handle();
 
   T_sp close(T_sp abort);
+
+  void set_buffering_mode(T_sp mode);
 };
 
 class StringStream_O : public AnsiStream_O {
@@ -612,7 +614,7 @@ class StringOutputStream_O : public StringStream_O {
   LISP_CLASS(core, CorePkg, StringOutputStream_O, "string-output-stream", StringStream_O);
 
 public:
-  String_sp _Contents;
+  String_sp _contents;
 
 public:
   DEFAULT_CTOR_DTOR(StringOutputStream_O);
@@ -648,9 +650,9 @@ class StringInputStream_O : public StringStream_O {
   LISP_CLASS(core, CorePkg, StringInputStream_O, "string-input-stream", StringStream_O);
 
 public:
-  String_sp _Contents;
-  gctools::Fixnum _InputPosition;
-  gctools::Fixnum _InputLimit;
+  String_sp _contents;
+  gctools::Fixnum _input_position;
+  gctools::Fixnum _input_limit;
 
 public:
   DEFAULT_CTOR_DTOR(StringInputStream_O);
@@ -686,10 +688,10 @@ class SynonymStream_O : public AnsiStream_O {
   LISP_CLASS(core, ClPkg, SynonymStream_O, "synonym-stream", AnsiStream_O);
 
 public: // Simple default ctor/dtor
-  SynonymStream_O() : _SynonymSymbol(nil<Symbol_O>()){};
+  SynonymStream_O() : _symbol(nil<Symbol_O>()){};
 
 public: // instance variables here
-  Symbol_sp _SynonymSymbol;
+  Symbol_sp _symbol;
 
 public:
   static SynonymStream_sp make(Symbol_sp symbol) { return gc::As<SynonymStream_sp>(cl__make_synonym_stream(symbol)); }
@@ -697,7 +699,7 @@ public:
 public: // Functions here
   virtual string __repr__() const override;
 
-  T_sp stream() const { return _SynonymSymbol->symbolValue(); }
+  T_sp stream() const { return _symbol->symbolValue(); }
 
   cl_index read_byte8(unsigned char* c, cl_index n);
   cl_index write_byte8(unsigned char* c, cl_index n);
@@ -809,7 +811,7 @@ public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(BroadcastStream_O);
 
 public: // instance variables here
-  T_sp _Streams;
+  T_sp _streams;
 
 public: // Functions here
   cl_index write_byte8(unsigned char* c, cl_index n);
@@ -850,7 +852,7 @@ public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(ConcatenatedStream_O);
 
 public: // instance variables here
-  T_sp _List;
+  T_sp _streams;
 
 public: // Functions here
   cl_index read_byte8(unsigned char* c, cl_index n);
