@@ -269,7 +269,7 @@ public:
   bool _open;
   T_sp _Format;
   int _byte_size;
-  int _flags;         // bitmap of flags
+  int _flags;          // bitmap of flags
   List_sp _byte_stack; // For unget in input streams
   T_sp _format_table;
   Fixnum _last_code[2];
@@ -752,11 +752,11 @@ class TwoWayStream_O : public AnsiStream_O {
   LISP_CLASS(core, ClPkg, TwoWayStream_O, "two-way-stream", AnsiStream_O);
 
 public: // Simple default ctor/dtor
-  TwoWayStream_O() : _In(nil<T_O>()), _Out(nil<T_O>()){};
+  TwoWayStream_O() : _input_stream(nil<T_O>()), _output_stream(nil<T_O>()){};
 
 public: // instance variables here
-  T_sp _In;
-  T_sp _Out;
+  T_sp _input_stream;
+  T_sp _output_stream;
 
 public:
   static T_sp make(T_sp in, T_sp out) { return cl__make_two_way_stream(in, out); };
@@ -886,8 +886,8 @@ public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(EchoStream_O);
 
 public: // instance variables here
-  T_sp _In;
-  T_sp _Out;
+  T_sp _input_stream;
+  T_sp _output_stream;
 
 public: // Functions here
   cl_index read_byte8(unsigned char* c, cl_index n);

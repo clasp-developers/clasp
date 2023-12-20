@@ -1256,7 +1256,7 @@ CL_DEFUN T_sp cl__make_string_input_stream(String_sp strng, cl_index istart, T_s
  * TWO WAY STREAM
  */
 
-cl_index TwoWayStream_O::read_byte8(unsigned char* c, cl_index n) { return stream_read_byte8(_In, c, n); }
+cl_index TwoWayStream_O::read_byte8(unsigned char* c, cl_index n) { return stream_read_byte8(_input_stream, c, n); }
 
 /*static cl_index two_way_read_byte8(T_sp strm, unsigned char* c, cl_index n) {
   if (strm == _lisp->_Roots._TerminalIO)
@@ -1264,58 +1264,62 @@ cl_index TwoWayStream_O::read_byte8(unsigned char* c, cl_index n) { return strea
   return stream_read_byte8(TwoWayStreamInput(strm), c, n);
 }*/
 
-cl_index TwoWayStream_O::write_byte8(unsigned char* c, cl_index n) { return stream_write_byte8(_Out, c, n); }
+cl_index TwoWayStream_O::write_byte8(unsigned char* c, cl_index n) { return stream_write_byte8(_output_stream, c, n); }
 
-void TwoWayStream_O::write_byte(T_sp byte) { stream_write_byte(_Out, byte); }
+void TwoWayStream_O::write_byte(T_sp byte) { stream_write_byte(_output_stream, byte); }
 
-T_sp TwoWayStream_O::read_byte() { return stream_read_byte(_In); }
+T_sp TwoWayStream_O::read_byte() { return stream_read_byte(_input_stream); }
 
-claspCharacter TwoWayStream_O::read_char() { return stream_read_char(_In); }
+claspCharacter TwoWayStream_O::read_char() { return stream_read_char(_input_stream); }
 
-claspCharacter TwoWayStream_O::write_char(claspCharacter c) { return stream_write_char(_Out, c); }
+claspCharacter TwoWayStream_O::write_char(claspCharacter c) { return stream_write_char(_output_stream, c); }
 
-void TwoWayStream_O::unread_char(claspCharacter c) { stream_unread_char(_In, c); }
+void TwoWayStream_O::unread_char(claspCharacter c) { stream_unread_char(_input_stream, c); }
 
-claspCharacter TwoWayStream_O::peek_char() { return stream_peek_char(_In); }
+claspCharacter TwoWayStream_O::peek_char() { return stream_peek_char(_input_stream); }
 
-cl_index TwoWayStream_O::read_vector(T_sp data, cl_index start, cl_index n) { return stream_read_vector(_In, data, start, n); }
+cl_index TwoWayStream_O::read_vector(T_sp data, cl_index start, cl_index n) {
+  return stream_read_vector(_input_stream, data, start, n);
+}
 
-cl_index TwoWayStream_O::write_vector(T_sp data, cl_index start, cl_index n) { return stream_write_vector(_Out, data, start, n); }
+cl_index TwoWayStream_O::write_vector(T_sp data, cl_index start, cl_index n) {
+  return stream_write_vector(_output_stream, data, start, n);
+}
 
-ListenResult TwoWayStream_O::listen() { return stream_listen(_In); }
+ListenResult TwoWayStream_O::listen() { return stream_listen(_input_stream); }
 
-void TwoWayStream_O::clear_input() { stream_clear_input(_In); }
+void TwoWayStream_O::clear_input() { stream_clear_input(_input_stream); }
 
-void TwoWayStream_O::clear_output() { stream_clear_output(_Out); }
+void TwoWayStream_O::clear_output() { stream_clear_output(_output_stream); }
 
-void TwoWayStream_O::force_output() { stream_force_output(_Out); }
+void TwoWayStream_O::force_output() { stream_force_output(_output_stream); }
 
-void TwoWayStream_O::finish_output() { stream_finish_output(_Out); }
+void TwoWayStream_O::finish_output() { stream_finish_output(_output_stream); }
 
 bool TwoWayStream_O::input_p() const { return true; }
 
 bool TwoWayStream_O::output_p() const { return true; }
 
-bool TwoWayStream_O::interactive_p() const { return stream_interactive_p(_In); }
+bool TwoWayStream_O::interactive_p() const { return stream_interactive_p(_input_stream); }
 
-T_sp TwoWayStream_O::element_type() const { return stream_element_type(_In); }
+T_sp TwoWayStream_O::element_type() const { return stream_element_type(_input_stream); }
 
 T_sp TwoWayStream_O::position() { return nil<T_O>(); }
 
-int TwoWayStream_O::column() const { return stream_column(_Out); }
+int TwoWayStream_O::column() const { return stream_column(_output_stream); }
 
-int TwoWayStream_O::set_column(int column) { return stream_set_column(_Out, column); }
+int TwoWayStream_O::set_column(int column) { return stream_set_column(_output_stream, column); }
 
-int TwoWayStream_O::input_handle() { return stream_input_handle(_In); }
+int TwoWayStream_O::input_handle() { return stream_input_handle(_input_stream); }
 
-int TwoWayStream_O::output_handle() { return stream_output_handle(_Out); }
+int TwoWayStream_O::output_handle() { return stream_output_handle(_output_stream); }
 
 T_sp TwoWayStream_O::close(T_sp abort) {
   if (_open) {
     _open = false;
     if (_flags & CLASP_STREAM_CLOSE_COMPONENTS) {
-      stream_close(_In, abort);
-      stream_close(_Out, abort);
+      stream_close(_input_stream, abort);
+      stream_close(_output_stream, abort);
     }
   }
   return _lisp->_true();
@@ -1333,8 +1337,8 @@ CL_DEFUN T_sp cl__make_two_way_stream(T_sp istrm, T_sp ostrm) {
     not_an_output_stream(ostrm);
   TwoWayStream_sp strm = TwoWayStream_O::create();
   strm->_Format = stream_external_format(istrm);
-  strm->_In = istrm;
-  strm->_Out = ostrm;
+  strm->_input_stream = istrm;
+  strm->_output_stream = ostrm;
   return strm;
 }
 
@@ -1346,7 +1350,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp cl__two_way_stream_input_stream(T_sp strm) {
   TwoWayStream_sp stream = strm.asOrNull<TwoWayStream_O>();
   unlikely_if(!stream) ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_two_way_stream_input_stream, strm, cl::_sym_two_way_stream);
-  return stream->_In;
+  return stream->_input_stream;
 }
 
 CL_LAMBDA(strm);
@@ -1357,7 +1361,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp cl__two_way_stream_output_stream(T_sp strm) {
   TwoWayStream_sp stream = strm.asOrNull<TwoWayStream_O>();
   unlikely_if(!stream) ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_two_way_stream_output_stream, strm, cl::_sym_two_way_stream);
-  return stream->_Out;
+  return stream->_output_stream;
 }
 
 /**********************************************************************
@@ -1492,80 +1496,80 @@ T_sp cl__broadcast_stream_streams(T_sp strm) {
  */
 
 cl_index EchoStream_O::read_byte8(unsigned char* c, cl_index n) {
-  return stream_write_byte8(_Out, c, stream_read_byte8(_In, c, n));
+  return stream_write_byte8(_output_stream, c, stream_read_byte8(_input_stream, c, n));
 }
 
-cl_index EchoStream_O::write_byte8(unsigned char* c, cl_index n) { return stream_write_byte8(_Out, c, n); }
+cl_index EchoStream_O::write_byte8(unsigned char* c, cl_index n) { return stream_write_byte8(_output_stream, c, n); }
 
-void EchoStream_O::write_byte(T_sp c) { stream_write_byte(_Out, c); }
+void EchoStream_O::write_byte(T_sp c) { stream_write_byte(_output_stream, c); }
 
 T_sp EchoStream_O::read_byte() {
-  T_sp out = stream_read_byte(_In);
+  T_sp out = stream_read_byte(_input_stream);
   if (!out.nilp())
-    stream_write_byte(_Out, out);
+    stream_write_byte(_output_stream, out);
   return out;
 }
 
 claspCharacter EchoStream_O::read_char() {
   claspCharacter c = _last_code[0];
   if (c == EOF) {
-    c = stream_read_char(_In);
+    c = stream_read_char(_input_stream);
     if (c != EOF)
-      stream_write_char(_Out, c);
+      stream_write_char(_output_stream, c);
   } else {
     _last_code[0] = EOF;
-    stream_read_char(_In);
+    stream_read_char(_input_stream);
   }
   return c;
 }
 
-claspCharacter EchoStream_O::write_char(claspCharacter c) { return stream_write_char(_Out, c); }
+claspCharacter EchoStream_O::write_char(claspCharacter c) { return stream_write_char(_output_stream, c); }
 
 void EchoStream_O::unread_char(claspCharacter c) {
   unlikely_if(_last_code[0] != EOF) unread_twice(asSmartPtr());
   _last_code[0] = c;
-  stream_unread_char(_In, c);
+  stream_unread_char(_input_stream, c);
 }
 
 claspCharacter EchoStream_O::peek_char() {
   claspCharacter c = _last_code[0];
   if (c == EOF) {
-    c = stream_peek_char(_In);
+    c = stream_peek_char(_input_stream);
   }
   return c;
 }
 
-ListenResult EchoStream_O::listen() { return stream_listen(_In); }
+ListenResult EchoStream_O::listen() { return stream_listen(_input_stream); }
 
-void EchoStream_O::clear_input() { stream_clear_input(_In); }
+void EchoStream_O::clear_input() { stream_clear_input(_input_stream); }
 
-void EchoStream_O::clear_output() { stream_clear_output(_Out); }
+void EchoStream_O::clear_output() { stream_clear_output(_output_stream); }
 
-void EchoStream_O::force_output() { stream_force_output(_Out); }
+void EchoStream_O::force_output() { stream_force_output(_output_stream); }
 
-void EchoStream_O::finish_output() { stream_finish_output(_Out); }
+void EchoStream_O::finish_output() { stream_finish_output(_output_stream); }
 
 bool EchoStream_O::input_p() const { return true; }
 
 bool EchoStream_O::output_p() const { return true; }
 
-T_sp EchoStream_O::element_type() const { return stream_element_type(_In); }
+T_sp EchoStream_O::element_type() const { return stream_element_type(_input_stream); }
 
 T_sp EchoStream_O::position() { return nil<T_O>(); }
 
-int EchoStream_O::column() const { return stream_column(_Out); }
+int EchoStream_O::column() const { return stream_column(_output_stream); }
 
-int EchoStream_O::set_column(int column) { return stream_set_column(_Out, column); }
+int EchoStream_O::set_column(int column) { return stream_set_column(_output_stream, column); }
 
-int EchoStream_O::input_handle() { return stream_input_handle(_In); }
+int EchoStream_O::input_handle() { return stream_input_handle(_input_stream); }
 
-int EchoStream_O::output_handle() { return stream_output_handle(_Out); }
+int EchoStream_O::output_handle() { return stream_output_handle(_output_stream); }
 
 T_sp EchoStream_O::close(T_sp abort) {
   if (_open) {
     if (_flags & CLASP_STREAM_CLOSE_COMPONENTS) {
-      stream_close(_In, abort);
-      stream_close(_Out, abort);
+      stream_close(_input_stream, abort);
+      stream_close(_output_stream, abort);
     }
     _open = false;
   }
@@ -1582,8 +1586,8 @@ CL_DEFUN T_sp cl__make_echo_stream(T_sp strm1, T_sp strm2) {
   unlikely_if(!stream_output_p(strm2)) not_an_output_stream(strm2);
   EchoStream_sp strm = EchoStream_O::create();
   strm->_Format = stream_external_format(strm1);
-  strm->_In = strm1;
-  strm->_Out = strm2;
+  strm->_input_stream = strm1;
+  strm->_output_stream = strm2;
   return strm;
 }
 
@@ -1595,7 +1599,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp cl__echo_stream_input_stream(T_sp strm) {
   EchoStream_sp stream = strm.asOrNull<EchoStream_O>();
   unlikely_if(!stream) ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_echo_stream_input_stream, strm, cl::_sym_EchoStream_O);
-  return stream->_In;
+  return stream->_input_stream;
 }
 
 CL_LAMBDA(strm);
@@ -1606,7 +1610,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp cl__echo_stream_output_stream(T_sp strm) {
   EchoStream_sp stream = strm.asOrNull<EchoStream_O>();
   unlikely_if(!stream) ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_echo_stream_output_stream, strm, cl::_sym_EchoStream_O);
-  return stream->_Out;
+  return stream->_output_stream;
 }
 
 /**********************************************************************
@@ -2914,7 +2918,7 @@ int ConsoleStream_O::listen(T_sp) {
       return 0;
     if (aux.EventType == KEY_EVENT)
       return 1;
-    unlikely_if(!ReadConsoleInput(_handle), &aux, 1, &nevents)) FEwin32_error("Cannot read from console.", 0);
+    unlikely_if(!ReadConsoleInput(_handle), &aux, 1, &nevents) FEwin32_error("Cannot read from console.", 0);
   } while (1);
 }
 
@@ -3199,9 +3203,8 @@ CL_DOCSTRING(R"dx(readSequence)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__read_sequence(T_sp sequence, T_sp stream, T_sp start, T_sp oend) {
   stream = coerce::inputStreamDesignator(stream);
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? si_do_read_sequence(sequence, stream, start, oend)
-                     : eval::funcall(gray::_sym_stream_read_sequence, stream, sequence, start, oend);
+  return stream.isA<AnsiStream_O>() ? si_do_read_sequence(sequence, stream, start, oend)
+                                    : eval::funcall(gray::_sym_stream_read_sequence, stream, sequence, start, oend);
 }
 
 CL_LAMBDA(sequence stream start end);

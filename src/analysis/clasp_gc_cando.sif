@@ -9981,10 +9981,11 @@
              :layout-offset-field-names ("_input_cursor" "._prev_column")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_In")}
+             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_input_stream")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_Out")}
+             :offset-base-ctype "core::TwoWayStream_O"
+             :layout-offset-field-names ("_output_stream")}
 {class-kind :stamp-name "STAMPWTAG_core__SynonymStream_O" :stamp-key "core::SynonymStream_O"
             :parent-class "core::AnsiStream_O" :lisp-class-base "core::AnsiStream_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -10246,10 +10247,10 @@
              :layout-offset-field-names ("_input_cursor" "._prev_column")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("_In")}
+             :layout-offset-field-names ("_input_stream")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("_Out")}
+             :layout-offset-field-names ("_output_stream")}
 {class-kind :stamp-name "STAMPWTAG_core__ConcatenatedStream_O"
             :stamp-key "core::ConcatenatedStream_O" :parent-class "core::AnsiStream_O"
             :lisp-class-base "core::AnsiStream_O" :root-class "core::T_O" :stamp-wtag 3
