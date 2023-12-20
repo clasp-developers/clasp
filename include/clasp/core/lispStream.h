@@ -267,7 +267,6 @@ class AnsiStream_O : public Stream_O {
 
 public:
   bool _open;
-  T_sp _Format;
   int _byte_size;
   int _flags;          // bitmap of flags
   List_sp _byte_stack; // For unget in input streams
@@ -275,15 +274,15 @@ public:
   Fixnum _last_code[2];
   claspCharacter _eof_char;
   int _last_op;
-  int _LastChar;
+  int _last_char;
   T_sp _external_format;
   int _output_column;
   StreamCursor _input_cursor;
 
 public:
   AnsiStream_O()
-      : _open(true), _Format(nil<Symbol_O>()), _byte_size(8), _flags(0), _byte_stack(nil<T_O>()), _format_table(nil<T_O>()),
-        _last_code{EOF, EOF}, _eof_char(EOF), _external_format(nil<T_O>()), _output_column(0){};
+      : _open(true), _byte_size(8), _flags(0), _byte_stack(nil<T_O>()), _format_table(nil<T_O>()), _last_code{EOF, EOF},
+        _eof_char(EOF), _external_format(nil<T_O>()), _output_column(0){};
   virtual ~AnsiStream_O(); // nontrivial
 
   cl_index consume_byte_stack(unsigned char* c, cl_index n);
@@ -361,10 +360,11 @@ public:
   T_sp _filename;
   T_sp _temp_filename;
   bool _created = false;
+  T_sp _format;
   T_sp _element_type;
 
 public: // Functions here
-  FileStream_O(){};
+  FileStream_O() : _format(nil<Symbol_O>()){};
 
   virtual string __repr__() const override;
   virtual bool has_file_position() const;
@@ -438,6 +438,7 @@ public: // Functions here
 
   T_sp element_type() const;
   T_sp set_element_type(T_sp type);
+  T_sp external_format() const;
   T_sp set_external_format(T_sp format);
 
   T_sp string_length(T_sp string);
@@ -597,7 +598,11 @@ class StringStream_O : public AnsiStream_O {
   LISP_CLASS(core, ClPkg, StringStream_O, "string-stream", AnsiStream_O);
 
 public:
+  String_sp _contents;
+
   DEFAULT_CTOR_DTOR(StringStream_O);
+
+  T_sp external_format() const;
 };
 
 }; // namespace core
@@ -612,9 +617,6 @@ namespace core {
 
 class StringOutputStream_O : public StringStream_O {
   LISP_CLASS(core, CorePkg, StringOutputStream_O, "string-output-stream", StringStream_O);
-
-public:
-  String_sp _contents;
 
 public:
   DEFAULT_CTOR_DTOR(StringOutputStream_O);
@@ -650,7 +652,6 @@ class StringInputStream_O : public StringStream_O {
   LISP_CLASS(core, CorePkg, StringInputStream_O, "string-input-stream", StringStream_O);
 
 public:
-  String_sp _contents;
   gctools::Fixnum _input_position;
   gctools::Fixnum _input_limit;
 

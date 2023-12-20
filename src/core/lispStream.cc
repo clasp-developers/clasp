@@ -403,7 +403,7 @@ T_sp FileStream_O::read_byte() {
  */
 
 void FileStream_O::unread_char(claspCharacter c) {
-  unlikely_if(c != _LastChar) unread_twice(asSmartPtr());
+  unlikely_if(c != _last_char) unread_twice(asSmartPtr());
 
   unsigned char buffer[2 * ENCODING_BUFFER_MAX_SIZE];
   int ndx = 0;
@@ -420,7 +420,7 @@ void FileStream_O::unread_char(claspCharacter c) {
     l = Cons_O::create(make_fixnum(buffer[--ndx]), l);
   }
   _byte_stack = gc::As<Cons_sp>(l);
-  _LastChar = EOF;
+  _last_char = EOF;
   _input_cursor.backup(asSmartPtr(), c);
 }
 
@@ -440,7 +440,7 @@ claspCharacter FileStream_O::read_char_no_cursor() {
   } while (c == EOF && (buffer_end - buffer) < ENCODING_BUFFER_MAX_SIZE);
   unlikely_if(c == _eof_char) return EOF;
   if (c != EOF) {
-    _LastChar = c;
+    _last_char = c;
     _last_code[0] = c;
     _last_code[1] = EOF;
   }
@@ -463,7 +463,7 @@ claspCharacter FileStream_O::read_char() {
         _last_code[0] = c;
         _last_code[1] = EOF;
       }
-      _LastChar = c;
+      _last_char = c;
       _input_cursor.advanceLineNumber(asSmartPtr(), c);
     } else {
       _input_cursor.advanceColumn(asSmartPtr(), c);
@@ -472,14 +472,14 @@ claspCharacter FileStream_O::read_char() {
   case CLASP_STREAM_CR:
     if (c == CLASP_CHAR_CODE_RETURN) {
       c = CLASP_CHAR_CODE_NEWLINE;
-      _LastChar = c;
+      _last_char = c;
       _input_cursor.advanceLineNumber(asSmartPtr(), c);
     } else {
       _input_cursor.advanceColumn(asSmartPtr(), c);
     }
     break;
   default:
-    _input_cursor.advanceForChar(asSmartPtr(), c, _LastChar);
+    _input_cursor.advanceForChar(asSmartPtr(), c, _last_char);
     break;
   }
   return c;
@@ -1030,6 +1030,8 @@ T_sp FileStream_O::string_length(T_sp string) {
   return clasp_make_fixnum(l);
 }
 
+T_sp FileStream_O::external_format() const { return _format; }
+
 bool FileStream_O::input_p() const { return _mode & stream_mode_input; }
 
 bool FileStream_O::output_p() const { return _mode & stream_mode_output; }
@@ -1037,6 +1039,14 @@ bool FileStream_O::output_p() const { return _mode & stream_mode_output; }
 T_sp FileStream_O::pathname() const { return cl__parse_namestring(_filename); }
 
 T_sp FileStream_O::truename() const { return cl__truename((_open && _temp_filename.notnilp()) ? _temp_filename : _filename); }
+
+T_sp StringStream_O::external_format() const {
+#ifdef CLASP_UNICODE
+  return core__base_string_p(_contents) ? kw::_sym_latin_1 : kw::_sym_ucs_4;
+#else
+  return kw::_sym_passThrough;
+#endif
+}
 
 /**********************************************************************
  * STRING OUTPUT STREAMS
@@ -1091,16 +1101,13 @@ CL_DEFUN T_sp core__make_string_output_stream_from_string(T_sp s) {
   strm->_contents = gc::As<String_sp>(s);
   strm->_output_column = 0;
 #if !defined(CLASP_UNICODE)
-  strm->_Format = kw::_sym_passThrough;
   strm->_flags = CLASP_STREAM_DEFAULT_FORMAT;
   strm->_byte_size = 8;
 #else
   if (cl__simple_string_p(s)) {
-    strm->_Format = kw::_sym_latin_1;
     strm->_flags = CLASP_STREAM_LATIN_1;
     strm->_byte_size = 8;
   } else {
-    strm->_Format = kw::_sym_ucs_4;
     strm->_flags = CLASP_STREAM_UCS_4;
     strm->_byte_size = 32;
   }
@@ -1210,16 +1217,13 @@ T_sp clasp_make_string_input_stream(T_sp strng, cl_index istart, cl_index iend) 
   strm->_input_position = istart;
   strm->_input_limit = iend;
 #if !defined(CLASP_UNICODE)
-  strm->_Format = kw::_sym_passThrough;
   strm->_flags = CLASP_STREAM_DEFAULT_FORMAT;
   strm->_byte_size = 8;
 #else
   if (core__base_string_p(strng) /*cl__simple_string_p(strng) == t_base_string*/) {
-    strm->_Format = kw::_sym_latin_1;
     strm->_flags = CLASP_STREAM_LATIN_1;
     strm->_byte_size = 8;
   } else {
-    strm->_Format = kw::_sym_ucs_4;
     strm->_flags = CLASP_STREAM_UCS_4;
     strm->_byte_size = 32;
   }
@@ -1336,7 +1340,6 @@ CL_DEFUN T_sp cl__make_two_way_stream(T_sp istrm, T_sp ostrm) {
   if (!stream_output_p(ostrm))
     not_an_output_stream(ostrm);
   TwoWayStream_sp strm = TwoWayStream_O::create();
-  strm->_Format = stream_external_format(istrm);
   strm->_input_stream = istrm;
   strm->_output_stream = ostrm;
   return strm;
@@ -1472,7 +1475,6 @@ CL_DEFUN T_sp cl__make_broadcast_stream(List_sp ap) {
   }
   streams = ap;
   BroadcastStream_sp x = BroadcastStream_O::create();
-  x->_Format = kw::_sym_default;
   // nreverse is needed in ecl, since they freshly cons_up a list in reverse order
   // but not here streams is in the original order
   x->_streams = streams;
@@ -1585,7 +1587,6 @@ CL_DEFUN T_sp cl__make_echo_stream(T_sp strm1, T_sp strm2) {
   unlikely_if(!stream_input_p(strm1)) not_an_input_stream(strm1);
   unlikely_if(!stream_output_p(strm2)) not_an_output_stream(strm2);
   EchoStream_sp strm = EchoStream_O::create();
-  strm->_Format = stream_external_format(strm1);
   strm->_input_stream = strm1;
   strm->_output_stream = strm2;
   return strm;
@@ -2169,7 +2170,7 @@ AGAIN:
       _last_code[0] = c;
       _last_code[1] = EOF;
     }
-    _LastChar = c;
+    _last_char = c;
     return c;
   } else {
     /* We need more bytes. First copy unconsumed bytes at the
@@ -2479,65 +2480,65 @@ T_sp FileStream_O::set_external_format(T_sp format) {
     // This is better than (T Size), but not necesarily the right type
     // Probably the value of the vriable t was meant, use it now!
     _element_type = Cons_O::createList(t, make_fixnum(_byte_size));
-    _Format = t;
+    _format = t;
     break;
 #ifdef CLASP_UNICODE
   /*case ECL_ISO_8859_1:*/
   case CLASP_STREAM_LATIN_1:
     _element_type = cl::_sym_base_char;
     _byte_size = 8;
-    _Format = kw::_sym_latin_1;
+    _format = kw::_sym_latin_1;
     break;
   case CLASP_STREAM_UTF_8:
     _element_type = cl::_sym_character;
     _byte_size = 8;
-    _Format = kw::_sym_utf_8;
+    _format = kw::_sym_utf_8;
     break;
   case CLASP_STREAM_UCS_2:
     _element_type = cl::_sym_character;
     _byte_size = 8 * 2;
-    _Format = kw::_sym_ucs_2;
+    _format = kw::_sym_ucs_2;
     break;
   case CLASP_STREAM_UCS_2BE:
     _element_type = cl::_sym_character;
     _byte_size = 8 * 2;
     if (_flags & CLASP_STREAM_LITTLE_ENDIAN) {
-      _Format = kw::_sym_ucs_2le;
+      _format = kw::_sym_ucs_2le;
     } else {
-      _Format = kw::_sym_ucs_2be;
+      _format = kw::_sym_ucs_2be;
     }
     break;
   case CLASP_STREAM_UCS_4:
     _element_type = cl::_sym_character;
     _byte_size = 8 * 4;
-    _Format = kw::_sym_ucs_4be;
+    _format = kw::_sym_ucs_4be;
     break;
   case CLASP_STREAM_UCS_4BE:
     _element_type = cl::_sym_character;
     _byte_size = 8 * 4;
     if (_flags & CLASP_STREAM_LITTLE_ENDIAN) {
-      _Format = kw::_sym_ucs_4le;
+      _format = kw::_sym_ucs_4le;
     } else {
-      _Format = kw::_sym_ucs_4be;
+      _format = kw::_sym_ucs_4be;
     }
     break;
   case CLASP_STREAM_USER_FORMAT:
     _element_type = cl::_sym_character;
     _byte_size = 8;
-    _Format = _format_table;
+    _format = _format_table;
     if (_format_table.consp())
       _flags |= CLASP_STREAM_USER_MULTISTATE_FORMAT;
     break;
   case CLASP_STREAM_US_ASCII:
     _element_type = cl::_sym_base_char;
     _byte_size = 8;
-    _Format = kw::_sym_us_ascii;
+    _format = kw::_sym_us_ascii;
     break;
 #else
   case CLASP_STREAM_DEFAULT_FORMAT:
     _element_type = cl::_sym_base_char;
     _byte_size = 8;
-    _Format = kw::_sym_passThrough;
+    _format = kw::_sym_passThrough;
     break;
 #endif
   default:
@@ -2551,7 +2552,7 @@ T_sp FileStream_O::set_external_format(T_sp format) {
       t = kw::_sym_cr;
     }
   }
-  _Format = Cons_O::createList(_Format, t);
+  _format = Cons_O::createList(_format, t);
   _byte_size = (_byte_size + 7) & (~(gctools::Fixnum)7);
 
   return format;
@@ -4085,7 +4086,7 @@ T_sp AnsiStream_O::set_element_type(T_sp type) {
   return type;
 }
 
-T_sp AnsiStream_O::external_format() const { return _Format; }
+T_sp AnsiStream_O::external_format() const { return kw::_sym_default; }
 
 T_sp AnsiStream_O::set_external_format(T_sp external_format) {
   FEerror("Cannot change external format of stream ~A", 0, this);
