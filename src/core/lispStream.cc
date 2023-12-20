@@ -2345,94 +2345,112 @@ SYMBOL_EXPORT_SC_(KeywordPkg, latin_1);
 SYMBOL_EXPORT_SC_(KeywordPkg, us_ascii);
 SYMBOL_EXPORT_SC_(ExtPkg, make_encoding);
 
-static int parse_external_format(T_sp tstream, T_sp format, int flags) {
-  FileStream_sp stream = gc::As_unsafe<FileStream_sp>(tstream);
+void FileStream_O::parse_external_format(T_sp format) {
   if (format == kw::_sym_default) {
     format = ext::_sym_STARdefault_external_formatSTAR->symbolValue();
   }
-  if ((format).consp()) {
-    flags = parse_external_format(stream, oCdr(format), flags);
+  if (format.consp()) {
+    parse_external_format(oCdr(format));
     format = oCar(format);
   }
   if (format == _lisp->_true()) {
 #ifdef CLASP_UNICODE
-    return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UTF_8;
+    _flags = (_flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UTF_8;
 #else
-    return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_DEFAULT_FORMAT;
+    _flags = (_flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_DEFAULT_FORMAT;
 #endif
+    return;
   }
   if (format == nil<T_O>()) {
-    return flags;
+    return;
   }
   if (format == kw::_sym_cr) {
-    return (flags | CLASP_STREAM_CR) & ~CLASP_STREAM_LF;
+    _flags = (_flags | CLASP_STREAM_CR) & ~CLASP_STREAM_LF;
+    return;
   }
   if (format == kw::_sym_lf) {
-    return (flags | CLASP_STREAM_LF) & ~CLASP_STREAM_CR;
+    _flags = (_flags | CLASP_STREAM_LF) & ~CLASP_STREAM_CR;
+    return;
   }
   if (format == kw::_sym_crlf) {
-    return flags | (CLASP_STREAM_CR + CLASP_STREAM_LF);
+    _flags = _flags | (CLASP_STREAM_CR + CLASP_STREAM_LF);
+    return;
   }
   if (format == kw::_sym_littleEndian) {
-    return flags | CLASP_STREAM_LITTLE_ENDIAN;
+    _flags = _flags | CLASP_STREAM_LITTLE_ENDIAN;
+    return;
   }
   if (format == kw::_sym_bigEndian) {
-    return flags & ~CLASP_STREAM_LITTLE_ENDIAN;
+    _flags = _flags & ~CLASP_STREAM_LITTLE_ENDIAN;
+    return;
   }
   if (format == kw::_sym_passThrough) {
 #ifdef CLASP_UNICODE
-    return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_LATIN_1;
+    _flags = (_flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_LATIN_1;
 #else
-    return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_DEFAULT_FORMAT;
+    _flags = (_flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_DEFAULT_FORMAT;
 #endif
+    return;
   }
 #ifdef CLASP_UNICODE
-PARSE_SYMBOLS:
   if (format == kw::_sym_utf_8) {
-    return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UTF_8;
+    _flags = (_flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UTF_8;
+    return;
   }
   if (format == kw::_sym_ucs_2) {
-    return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UCS_2;
+    _flags = (_flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UCS_2;
+    return;
   }
   if (format == kw::_sym_ucs_2be) {
-    return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UCS_2BE;
+    _flags = (_flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UCS_2BE;
+    return;
   }
   if (format == kw::_sym_ucs_2le) {
-    return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UCS_2LE;
+    _flags = (_flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UCS_2LE;
+    return;
   }
   if (format == kw::_sym_ucs_4) {
-    return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UCS_4;
+    _flags = (_flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UCS_4;
+    return;
   }
   if (format == kw::_sym_ucs_4be) {
-    return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UCS_4BE;
+    _flags = (_flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UCS_4BE;
+    return;
   }
   if (format == kw::_sym_ucs_4le) {
-    return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UCS_4LE;
+    _flags = (_flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_UCS_4LE;
+    return;
   }
   if (format == kw::_sym_iso_8859_1) {
-    return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_ISO_8859_1;
+    _flags = (_flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_ISO_8859_1;
+    return;
   }
   if (format == kw::_sym_latin_1) {
-    return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_LATIN_1;
+    _flags = (_flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_LATIN_1;
+    return;
   }
   if (format == kw::_sym_us_ascii) {
-    return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_US_ASCII;
+    _flags = (_flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_US_ASCII;
+    return;
   }
   if (gc::IsA<HashTable_sp>(format)) {
-    stream->_format_table = format;
-    return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_USER_FORMAT;
+    _format_table = format;
+    _flags = (_flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_USER_FORMAT;
+    return;
   }
   if (gc::IsA<Symbol_sp>(format)) {
     ASSERT(format.notnilp());
     format = eval::funcall(ext::_sym_make_encoding, format);
-    if (gc::IsA<Symbol_sp>(format))
-      goto PARSE_SYMBOLS;
-    stream->_format_table = format;
-    return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_USER_FORMAT;
+    if (gc::IsA<Symbol_sp>(format)) {
+      parse_external_format(format);
+      return;
+    }
+    _format_table = format;
+    _flags = (_flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_USER_FORMAT;
+    return;
   }
 #endif
   FEerror("Unknown or unsupported external format: ~A", 1, format.raw_());
-  return CLASP_STREAM_DEFAULT_FORMAT;
 }
 
 T_sp FileStream_O::set_element_type(T_sp type) {
@@ -2450,7 +2468,7 @@ T_sp FileStream_O::set_external_format(T_sp format) {
     _flags &= ~CLASP_STREAM_SIGNED_BYTES;
     t = cl::_sym_UnsignedByte;
   }
-  _flags = parse_external_format(asSmartPtr(), format, _flags);
+  parse_external_format(format);
   switch (_flags & CLASP_STREAM_FORMAT) {
   case CLASP_STREAM_BINARY:
     // e.g. (T size) is not a valid type, use (UnsignedByte size)

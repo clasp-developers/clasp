@@ -377,6 +377,7 @@ public: // Functions here
   ListenResult _fd_listen(int fd);
   void close_cleanup(T_sp abort);
   cl_index compute_char_size(claspCharacter c);
+  void parse_external_format(T_sp format);
 
   claspCharacter decode_passthrough(unsigned char** buffer, unsigned char* buffer_end);
   int encode_passthrough(unsigned char* buffer, claspCharacter c);
@@ -766,8 +767,8 @@ public: // instance variables here
 
 public:
   static TwoWayStream_sp make(T_sp input_stream, T_sp output_stream);
-  static T_sp input_stream(T_sp echo_stream);
-  static T_sp output_stream(T_sp echo_stream);
+  static T_sp input_stream(T_sp two_way_stream);
+  static T_sp output_stream(T_sp two_way_stream);
 
   T_sp input_stream() const { return _input_stream; }
   T_sp output_stream() const { return _output_stream; }
@@ -905,7 +906,7 @@ protected:
   T_sp _output_stream;
 
 public:
-  DEFAULT_CTOR_DTOR(EchoStream_O);
+  EchoStream_O() : _last_char(EOF){};
 
   static EchoStream_sp make(T_sp input_stream, T_sp output_stream);
   static T_sp input_stream(T_sp echo_stream);
