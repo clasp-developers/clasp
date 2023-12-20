@@ -262,6 +262,36 @@ public:
     core::lisp_errorCast<o_class, Type>(this->theObject);
   }
 
+  template <class o_class> inline base_ptr<o_class> as_unsafe() {
+    base_ptr<o_class> ret((Tagged)this->theObject);
+    return ret;
+  }
+
+  template <class o_class> inline base_ptr<o_class> as_unsafe() const {
+    base_ptr<o_class> ret((Tagged)this->theObject);
+    return ret;
+  }
+
+  template <class o_class> inline base_ptr<o_class> as_assert() {
+#ifdef DEBUG_ASSERT
+    if (!TaggedCast<o_class*, Type*>::isA(this->theObject)) {
+      throw_hard_error_failed_assertion("as_assert failed!");
+    }
+#endif
+    base_ptr<o_class> ret((Tagged)this->theObject);
+    return ret;
+  }
+
+  template <class o_class> inline base_ptr<o_class> as_assert() const {
+#ifdef DEBUG_ASSERT
+    if (!TaggedCast<o_class*, Type*>::isA(this->theObject)) {
+      throw_hard_error_failed_assertion("as_assert failed!");
+    }
+#endif
+    base_ptr<o_class> ret((Tagged)this->theObject);
+    return ret;
+  }
+
   template <class o_class> inline bool isA() { return TaggedCast<o_class*, Type*>::isA(this->theObject); }
 
   template <class o_class> inline bool isA() const { return TaggedCast<o_class*, Type*>::isA(this->theObject); }
@@ -582,6 +612,36 @@ public:
     if (ret)
       return ret;
     core::lisp_errorCast<o_class, Type>(this->theObject);
+  }
+
+  template <class o_class> inline smart_ptr<o_class> as_unsafe() {
+    smart_ptr<o_class> ret((Tagged)this->theObject);
+    return ret;
+  }
+
+  template <class o_class> inline smart_ptr<o_class> as_unsafe() const {
+    smart_ptr<o_class> ret((Tagged)this->theObject);
+    return ret;
+  }
+
+  template <class o_class> inline smart_ptr<o_class> as_assert() {
+#ifdef DEBUG_ASSERT
+    if (!TaggedCast<o_class*, Type*>::isA(this->theObject)) {
+      throw_hard_error_failed_assertion("as_assert failed!");
+    }
+#endif
+    smart_ptr<o_class> ret((Tagged)this->theObject);
+    return ret;
+  }
+
+  template <class o_class> inline smart_ptr<o_class> as_assert() const {
+#ifdef DEBUG_ASSERT
+    if (!TaggedCast<o_class*, Type*>::isA(this->theObject)) {
+      throw_hard_error_failed_assertion("as_assert failed!");
+    }
+#endif
+    smart_ptr<o_class> ret((Tagged)this->theObject);
+    return ret;
   }
 
   template <class o_class> inline bool isA() {
