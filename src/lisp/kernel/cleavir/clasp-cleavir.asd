@@ -10,6 +10,7 @@
                #:cleavir-compilation-policy
                #:cleavir-conditions
                #:cleavir-cst-to-ast
+               #:cleavir-bir-builder ; for compile-bytecode
                #:cleavir-stealth-mixins
                #:concrete-syntax-tree
                #:eclector
