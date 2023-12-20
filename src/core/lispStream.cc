@@ -1179,7 +1179,9 @@ claspCharacter StringInputStream_O::peek_char() {
   return (_input_position >= _input_limit) ? EOF : clasp_as_claspCharacter(cl__char(_contents, _input_position));
 }
 
-ListenResult StringInputStream_O::listen() { return (_input_position < _input_limit) ? listen_result_available : listen_result_eof; }
+ListenResult StringInputStream_O::listen() {
+  return (_input_position < _input_limit) ? listen_result_available : listen_result_eof;
+}
 
 void StringInputStream_O::clear_input() {}
 
@@ -4977,9 +4979,8 @@ CL_DEFUN T_sp core__copy_stream(T_sp in, T_sp out, T_sp wait) {
 void lisp_write(const std::string& s) { clasp_write_string(s); }
 
 cl_index stream_write_byte8(T_sp stream, unsigned char* c, cl_index n) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  if (ansi_stream)
-    return ansi_stream->write_byte8(c, n);
+  if (stream.isA<AnsiStream_O>())
+    return stream.as_unsafe<AnsiStream_O>()->write_byte8(c, n);
 
   cl_index i;
   for (i = 0; i < n; i++) {
@@ -4991,9 +4992,8 @@ cl_index stream_write_byte8(T_sp stream, unsigned char* c, cl_index n) {
 }
 
 cl_index stream_read_byte8(T_sp stream, unsigned char* c, cl_index n) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  if (ansi_stream)
-    return ansi_stream->read_byte8(c, n);
+  if (stream.isA<AnsiStream_O>())
+    return stream.as_unsafe<AnsiStream_O>()->read_byte8(c, n);
 
   cl_index i;
   for (i = 0; i < n; i++) {
@@ -5006,17 +5006,15 @@ cl_index stream_read_byte8(T_sp stream, unsigned char* c, cl_index n) {
 }
 
 void stream_write_byte(T_sp stream, T_sp c) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  if (ansi_stream)
-    ansi_stream->write_byte(c);
+  if (stream.isA<AnsiStream_O>())
+    stream.as_unsafe<AnsiStream_O>()->write_byte(c);
   else
     eval::funcall(gray::_sym_stream_write_byte, stream, c);
 }
 
 T_sp stream_read_byte(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  if (ansi_stream)
-    return ansi_stream->read_byte();
+  if (stream.isA<AnsiStream_O>())
+    return stream.as_unsafe<AnsiStream_O>()->read_byte();
 
   T_sp b = eval::funcall(gray::_sym_stream_read_byte, stream);
   if (b == kw::_sym_eof)
@@ -5025,9 +5023,8 @@ T_sp stream_read_byte(T_sp stream) {
 }
 
 claspCharacter stream_read_char(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  if (ansi_stream)
-    return ansi_stream->read_char();
+  if (stream.isA<AnsiStream_O>())
+    return stream.as_unsafe<AnsiStream_O>()->read_char();
 
   T_sp output = eval::funcall(gray::_sym_stream_read_char, stream);
   gctools::Fixnum value;
@@ -5045,28 +5042,25 @@ claspCharacter stream_read_char(T_sp stream) {
 
 claspCharacter stream_write_char(T_sp stream, claspCharacter c) {
   if (!_lisp->_Roots._Started && !stream)
-    putchar(c);
+    return putchar(c);
 
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  if (ansi_stream)
-    return ansi_stream->write_char(c);
+  if (stream.isA<AnsiStream_O>())
+    return stream.as_unsafe<AnsiStream_O>()->write_char(c);
 
   eval::funcall(gray::_sym_stream_write_char, stream, clasp_make_character(c));
   return c;
 }
 
 void stream_unread_char(T_sp stream, claspCharacter c) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  if (ansi_stream)
-    ansi_stream->unread_char(c);
+  if (stream.isA<AnsiStream_O>())
+    stream.as_unsafe<AnsiStream_O>()->unread_char(c);
   else
     eval::funcall(gray::_sym_stream_unread_char, stream, clasp_make_character(c));
 }
 
 claspCharacter stream_peek_char(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  if (ansi_stream)
-    return ansi_stream->peek_char();
+  if (stream.isA<AnsiStream_O>())
+    return stream.as_unsafe<AnsiStream_O>()->peek_char();
 
   T_sp out = eval::funcall(gray::_sym_stream_peek_char, stream);
   if (out == kw::_sym_eof)
@@ -5075,9 +5069,8 @@ claspCharacter stream_peek_char(T_sp stream) {
 }
 
 cl_index stream_read_vector(T_sp stream, T_sp data, cl_index start, cl_index end) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  if (ansi_stream)
-    return ansi_stream->read_vector(data, start, end);
+  if (stream.isA<AnsiStream_O>())
+    return stream.as_unsafe<AnsiStream_O>()->read_vector(data, start, end);
 
   T_sp fn = eval::funcall(gray::_sym_stream_read_sequence, stream, data, clasp_make_fixnum(start), clasp_make_fixnum(end));
   if (fn.fixnump()) {
@@ -5087,9 +5080,8 @@ cl_index stream_read_vector(T_sp stream, T_sp data, cl_index start, cl_index end
 }
 
 cl_index stream_write_vector(T_sp stream, T_sp data, cl_index start, cl_index end) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  if (ansi_stream)
-    return ansi_stream->write_vector(data, start, end);
+  if (stream.isA<AnsiStream_O>())
+    return stream.as_unsafe<AnsiStream_O>()->write_vector(data, start, end);
 
   eval::funcall(gray::_sym_stream_write_sequence, stream, data, clasp_make_fixnum(start), clasp_make_fixnum(end));
   if (start >= end)
@@ -5098,47 +5090,42 @@ cl_index stream_write_vector(T_sp stream, T_sp data, cl_index start, cl_index en
 }
 
 ListenResult stream_listen(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream
-             ? ansi_stream->listen()
+  return stream.isA<AnsiStream_O>()
+             ? stream.as_unsafe<AnsiStream_O>()->listen()
              : ((T_sp(eval::funcall(gray::_sym_stream_listen, stream))).nilp() ? listen_result_no_char : listen_result_available);
 }
 
 void stream_clear_input(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  if (ansi_stream)
-    ansi_stream->clear_input();
+  if (stream.isA<AnsiStream_O>())
+    stream.as_unsafe<AnsiStream_O>()->clear_input();
   else
     eval::funcall(gray::_sym_stream_clear_input, stream);
 }
 
 void stream_clear_output(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  if (ansi_stream)
-    ansi_stream->clear_output();
+  if (stream.isA<AnsiStream_O>())
+    stream.as_unsafe<AnsiStream_O>()->clear_output();
   else
     eval::funcall(gray::_sym_stream_clear_output, stream);
 }
 
 void stream_finish_output(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  if (ansi_stream)
-    ansi_stream->finish_output();
+  if (stream.isA<AnsiStream_O>())
+    stream.as_unsafe<AnsiStream_O>()->finish_output();
   else
     eval::funcall(gray::_sym_stream_finish_output, stream);
 }
 
 void stream_force_output(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  if (ansi_stream)
-    ansi_stream->force_output();
+  if (stream.isA<AnsiStream_O>())
+    stream.as_unsafe<AnsiStream_O>()->force_output();
   else
     eval::funcall(gray::_sym_stream_force_output, stream);
 }
 
 bool stream_open_p(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? ansi_stream->open_p() : T_sp(eval::funcall(gray::_sym_open_stream_p, stream)).notnilp();
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->open_p()
+                                    : T_sp(eval::funcall(gray::_sym_open_stream_p, stream)).notnilp();
 }
 
 bool stream_p(T_sp stream) {
@@ -5146,64 +5133,59 @@ bool stream_p(T_sp stream) {
 }
 
 bool stream_input_p(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? ansi_stream->input_p() : T_sp(eval::funcall(gray::_sym_input_stream_p, stream)).notnilp();
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->input_p()
+                                    : T_sp(eval::funcall(gray::_sym_input_stream_p, stream)).notnilp();
 }
 
 bool stream_output_p(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? ansi_stream->output_p() : T_sp(eval::funcall(gray::_sym_output_stream_p, stream)).notnilp();
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->output_p()
+                                    : T_sp(eval::funcall(gray::_sym_output_stream_p, stream)).notnilp();
 }
 
 bool stream_interactive_p(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? ansi_stream->interactive_p() : T_sp(eval::funcall(gray::_sym_stream_interactive_p, stream)).notnilp();
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->interactive_p()
+                                    : T_sp(eval::funcall(gray::_sym_stream_interactive_p, stream)).notnilp();
 }
 
 T_sp stream_element_type(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? ansi_stream->element_type() : eval::funcall(gray::_sym_stream_element_type, stream);
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->element_type()
+                                    : eval::funcall(gray::_sym_stream_element_type, stream);
 }
 
 T_sp stream_set_element_type(T_sp stream, T_sp type) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? ansi_stream->set_element_type(type) : _lisp->_true();
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->set_element_type(type) : _lisp->_true();
 }
 
 T_sp stream_external_format(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? ansi_stream->external_format() : (T_sp)kw::_sym_default;
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->external_format() : (T_sp)kw::_sym_default;
 }
 
 T_sp stream_set_external_format(T_sp stream, T_sp format) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? ansi_stream->set_external_format(format) : (T_sp)kw::_sym_default;
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->set_external_format(format) : (T_sp)kw::_sym_default;
 }
 
 T_sp stream_length(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? ansi_stream->length() : eval::funcall(gray::_sym_stream_file_length, stream);
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->length()
+                                    : eval::funcall(gray::_sym_stream_file_length, stream);
 }
 
 T_sp stream_position(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? ansi_stream->position() : eval::funcall(gray::_sym_stream_file_position, stream);
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->position()
+                                    : eval::funcall(gray::_sym_stream_file_position, stream);
 }
 
 T_sp stream_set_position(T_sp stream, T_sp pos) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? ansi_stream->set_position(pos) : eval::funcall(gray::_sym_stream_file_position, stream, pos);
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->set_position(pos)
+                                    : eval::funcall(gray::_sym_stream_file_position, stream, pos);
 }
 
 T_sp stream_string_length(T_sp stream, T_sp string) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? ansi_stream->string_length(string) : nil<T_O>();
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->string_length(string) : nil<T_O>();
 }
 
 int stream_column(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  if (ansi_stream)
-    return ansi_stream->column();
+  if (stream.isA<AnsiStream_O>())
+    return stream.as_unsafe<AnsiStream_O>()->column();
 
   T_sp col = eval::funcall(gray::_sym_stream_line_column, stream);
   // negative columns represent NIL
@@ -5211,33 +5193,26 @@ int stream_column(T_sp stream) {
 }
 
 int stream_set_column(T_sp stream, int column) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? ansi_stream->set_column(column) : column;
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->set_column(column) : column;
 }
 
-int stream_input_handle(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? ansi_stream->input_handle() : -1;
-}
+int stream_input_handle(T_sp stream) { return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->input_handle() : -1; }
 
 int stream_output_handle(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? ansi_stream->output_handle() : -1;
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->output_handle() : -1;
 }
 
 T_sp stream_close(T_sp stream, T_sp abort) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? ansi_stream->close(abort) : eval::funcall(gray::_sym_close, stream, kw::_sym_abort, abort);
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->close(abort)
+                                    : eval::funcall(gray::_sym_close, stream, kw::_sym_abort, abort);
 }
 
 T_sp stream_pathname(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? ansi_stream->pathname() : eval::funcall(gray::_sym_pathname, stream);
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->pathname() : eval::funcall(gray::_sym_pathname, stream);
 }
 
 T_sp stream_truename(T_sp stream) {
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  return ansi_stream ? ansi_stream->truename() : eval::funcall(gray::_sym_truename, stream);
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->truename() : eval::funcall(gray::_sym_truename, stream);
 }
 
 }; // namespace core
