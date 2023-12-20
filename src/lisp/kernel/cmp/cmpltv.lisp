@@ -1704,6 +1704,8 @@
                                 &key (environment
                                       (cmp:make-null-lexical-environment))
                                 &allow-other-keys)
+  ;; *COMPILE-PRINT* is defined later in compile-file.lisp.
+  (declare (special *compile-print*))
   (with-constants ()
     ;; Read and compile the forms.
     (loop with eof = (gensym "EOF")

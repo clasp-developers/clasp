@@ -944,7 +944,7 @@ Otherwise do a variable shift."
 
 (defun irc-function-create (function-type linkage function-name module
                             &key
-                              (function-attributes *default-function-attributes* function-attributes-p ))
+                              (function-attributes *default-function-attributes*))
   (let* ((fn (llvm-sys:function-create function-type
                                        linkage
                                        function-name
@@ -960,7 +960,7 @@ Otherwise do a variable shift."
 
 
 (defun irc-simple-function-create (function-name function-type linkage module
-                                   &key (function-attributes *default-function-attributes* function-attributes-p )
+                                   &key (function-attributes *default-function-attributes*)
                                      argument-names ;;; '("result-ptr" "activation-frame-ptr") argument-names-p))
                                      )
   "A simple function creator - set personality and arguments and function-attributes.

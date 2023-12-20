@@ -468,10 +468,12 @@
 
 #+clasp
 (defmethod %load-attribute ((mnemonic (eql 'module-debug-info)) ncreator stream)
-  (let* ((nbytes (read-ub32 stream))
-         (mod (read-creator stream))
+  (declare (ignore ncreator))
+  (read-ub32 stream) ; nbytes
+  (let* ((mod (read-creator stream))
          (ninfos (read-ub32 stream))
          (infos (make-array ninfos)))
+    (declare (ignore mod))
     (loop for i below ninfos
           do (setf (aref infos i) (load-debug-info stream)))))
 

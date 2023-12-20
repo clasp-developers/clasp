@@ -291,7 +291,7 @@ Compile a Lisp source stream and return a corresponding LLVM module."
                               &key
                                 (optimize t)
                                 (optimize-level *optimization-level*)
-                                (output-type *default-output-type* output-type-p)
+                                (output-type *default-output-type*)
                                 ;; type can be either :kernel or :user
                                 (type :user)
                                 ;; Control the order of startup functions
