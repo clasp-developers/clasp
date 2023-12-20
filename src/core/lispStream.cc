@@ -1329,42 +1329,48 @@ T_sp TwoWayStream_O::close(T_sp abort) {
   return _lisp->_true();
 }
 
-CL_LAMBDA(istrm ostrm);
+CL_LISPIFY_NAME("cl:make-two-way-stream")
+CL_LAMBDA(input-stream output-stream);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(make-two-way-stream)dx");
+CL_DOCSTRING(R"dx(Returns a two-way stream that gets its input from input-stream and
+sends its output to output-stream.)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__make_two_way_stream(T_sp istrm, T_sp ostrm) {
-  if (!stream_input_p(istrm))
-    not_an_input_stream(istrm);
-  if (!stream_output_p(ostrm))
-    not_an_output_stream(ostrm);
-  TwoWayStream_sp strm = TwoWayStream_O::create();
-  strm->_input_stream = istrm;
-  strm->_output_stream = ostrm;
-  return strm;
+CL_DEFUN TwoWayStream_sp TwoWayStream_O::make(T_sp input_stream, T_sp output_stream) {
+  check_input_stream(input_stream);
+  check_output_stream(output_stream);
+
+  TwoWayStream_sp stream = create();
+  stream->_input_stream = input_stream;
+  stream->_output_stream = output_stream;
+
+  return stream;
 }
 
-CL_LAMBDA(strm);
+CL_LISPIFY_NAME("cl:two-way-stream-input-stream")
+CL_LAMBDA(two-way-stream);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(two-way-stream-input-stream)dx");
+CL_DOCSTRING(R"dx(Returns the input stream from which two-way-stream receives input.)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__two_way_stream_input_stream(T_sp strm) {
-  TwoWayStream_sp stream = strm.asOrNull<TwoWayStream_O>();
-  unlikely_if(!stream) ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_two_way_stream_input_stream, strm, cl::_sym_two_way_stream);
-  return stream->_input_stream;
+CL_DEFUN T_sp TwoWayStream_O::input_stream(T_sp two_way_stream) {
+  if (!two_way_stream.isA<TwoWayStream_O>())
+    ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_two_way_stream_input_stream, two_way_stream, cl::_sym_TwoWayStream_O);
+
+  return two_way_stream.as_unsafe<TwoWayStream_O>()->_input_stream;
 }
 
-CL_LAMBDA(strm);
+CL_LISPIFY_NAME("cl:two-way-stream-output-stream")
+CL_LAMBDA(two-way-stream);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(two-way-stream-output-stream)dx");
+CL_DOCSTRING(R"dx(Returns the output stream from which two-way-stream sends output.)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__two_way_stream_output_stream(T_sp strm) {
-  TwoWayStream_sp stream = strm.asOrNull<TwoWayStream_O>();
-  unlikely_if(!stream) ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_two_way_stream_output_stream, strm, cl::_sym_two_way_stream);
-  return stream->_output_stream;
+CL_DEFUN T_sp TwoWayStream_O::output_stream(T_sp two_way_stream) {
+  if (!two_way_stream.isA<TwoWayStream_O>())
+    ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_two_way_stream_output_stream, two_way_stream, cl::_sym_TwoWayStream_O);
+
+  return two_way_stream.as_unsafe<TwoWayStream_O>()->_output_stream;
 }
 
 /**********************************************************************
@@ -1457,40 +1463,33 @@ T_sp BroadcastStream_O::close(T_sp abort) {
   return _lisp->_true();
 }
 
-CL_LAMBDA(&rest ap);
+CL_LISPIFY_NAME("cl:make-broadcast-stream")
+CL_LAMBDA(&rest streams);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(makeBroadcastStream)dx");
+CL_DOCSTRING(R"dx(Returns a broadcast stream.)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__make_broadcast_stream(List_sp ap) {
-  T_sp streams;
-  // we need to verify that ap are all streams and if so, also output-streams
-  // previously (make-broadcast-stream 1 2 3) worked fine
-  if (ap.notnilp()) {
-    for (T_sp l = ap; !l.nilp(); l = oCdr(l)) {
-      T_sp potentialstream = oCar(l);
-      if (!stream_output_p(potentialstream))
-        not_an_output_stream(potentialstream);
-    }
-  }
-  streams = ap;
-  BroadcastStream_sp x = BroadcastStream_O::create();
-  // nreverse is needed in ecl, since they freshly cons_up a list in reverse order
-  // but not here streams is in the original order
-  x->_streams = streams;
-  return x;
+CL_DEFUN BroadcastStream_sp BroadcastStream_O::make(List_sp streams) {
+  for (T_sp head = streams; !head.nilp(); head = oCdr(head))
+    check_output_stream(oCar(head));
+
+  BroadcastStream_sp stream = create();
+  stream->_streams = streams;
+
+  return stream;
 }
 
-CL_LAMBDA(strm);
+CL_LISPIFY_NAME("cl:broadcast-stream-streams")
+CL_LAMBDA(broadcast-stream);
 CL_DECLARE();
-CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(broadcast-stream-streams)dx");
+CL_DOCSTRING(R"dx(Returns a list of output streams that constitute all the streams to
+which the broadcast-stream is broadcasting.)dx");
 DOCGROUP(clasp);
-CL_DEFUN
-T_sp cl__broadcast_stream_streams(T_sp strm) {
-  BroadcastStream_sp stream = strm.asOrNull<BroadcastStream_O>();
-  unlikely_if(!stream) ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_broadcast_stream_streams, strm, cl::_sym_BroadcastStream_O);
-  return cl__copy_list(stream->_streams);
+CL_DEFUN T_sp BroadcastStream_O::streams(T_sp broadcast_stream) {
+  if (!broadcast_stream.isA<BroadcastStream_O>())
+    ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_broadcast_stream_streams, broadcast_stream, cl::_sym_BroadcastStream_O);
+
+  return cl__copy_list(broadcast_stream.as_unsafe<BroadcastStream_O>()->_streams);
 }
 
 /**********************************************************************
@@ -1578,40 +1577,48 @@ T_sp EchoStream_O::close(T_sp abort) {
   return _lisp->_true();
 }
 
-CL_LAMBDA(strm1 strm2);
+CL_LISPIFY_NAME("cl:make-echo-stream")
+CL_LAMBDA(input-stream output-stream);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(make-echo-stream)dx");
+CL_DOCSTRING(R"dx(Creates and returns an echo stream that takes input from input-stream
+and sends output to output-stream.)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__make_echo_stream(T_sp strm1, T_sp strm2) {
-  unlikely_if(!stream_input_p(strm1)) not_an_input_stream(strm1);
-  unlikely_if(!stream_output_p(strm2)) not_an_output_stream(strm2);
-  EchoStream_sp strm = EchoStream_O::create();
-  strm->_input_stream = strm1;
-  strm->_output_stream = strm2;
-  return strm;
+CL_DEFUN EchoStream_sp EchoStream_O::make(T_sp input_stream, T_sp output_stream) {
+  check_input_stream(input_stream);
+  check_output_stream(output_stream);
+
+  EchoStream_sp stream = create();
+  stream->_input_stream = input_stream;
+  stream->_output_stream = output_stream;
+
+  return stream;
 }
 
-CL_LAMBDA(strm);
+CL_LISPIFY_NAME("cl:echo-stream-input-stream")
+CL_LAMBDA(echo-stream);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(echo-stream-input-stream)dx");
+CL_DOCSTRING(R"dx(Returns the input stream from which echo-stream receives input.)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__echo_stream_input_stream(T_sp strm) {
-  EchoStream_sp stream = strm.asOrNull<EchoStream_O>();
-  unlikely_if(!stream) ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_echo_stream_input_stream, strm, cl::_sym_EchoStream_O);
-  return stream->_input_stream;
+CL_DEFUN T_sp EchoStream_O::input_stream(T_sp echo_stream) {
+  if (!echo_stream.isA<EchoStream_O>())
+    ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_echo_stream_input_stream, echo_stream, cl::_sym_EchoStream_O);
+
+  return echo_stream.as_unsafe<EchoStream_O>()->_input_stream;
 }
 
-CL_LAMBDA(strm);
+CL_LISPIFY_NAME("cl:echo-stream-output-stream")
+CL_LAMBDA(echo-stream);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(echo-stream-output-stream)dx");
+CL_DOCSTRING(R"dx(Returns the output stream from which echo-stream sends output.)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__echo_stream_output_stream(T_sp strm) {
-  EchoStream_sp stream = strm.asOrNull<EchoStream_O>();
-  unlikely_if(!stream) ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_echo_stream_output_stream, strm, cl::_sym_EchoStream_O);
-  return stream->_output_stream;
+CL_DEFUN T_sp EchoStream_O::output_stream(T_sp echo_stream) {
+  if (!echo_stream.isA<EchoStream_O>())
+    ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_echo_stream_output_stream, echo_stream, cl::_sym_EchoStream_O);
+
+  return echo_stream.as_unsafe<EchoStream_O>()->_output_stream;
 }
 
 /**********************************************************************
@@ -1708,43 +1715,36 @@ T_sp ConcatenatedStream_O::close(T_sp abort) {
   return _lisp->_true();
 }
 
-CL_LAMBDA(&rest ap);
+CL_LISPIFY_NAME("cl:make-concatenated-stream")
+CL_LAMBDA(&rest input-streams);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(makeConcatenatedStream)dx");
+CL_DOCSTRING(R"dx(Returns a concatenated stream that has the indicated input-streams
+initially associated with it)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__make_concatenated_stream(List_sp ap) {
-  T_sp streams;
-  streams = ap;
-  ConcatenatedStream_sp x = ConcatenatedStream_O::create();
-  if (streams.nilp()) {
-    x->_Format = kw::_sym_passThrough;
-  } else {
-    x->_Format = stream_external_format(oCar(streams));
-    // here we should test that the effectively we were passed a list of streams that satisfy INPUT-STREAM-P
-    // fixes MAKE-CONCATENATED-STREAM.ERROR.1, MAKE-CONCATENATED-STREAM.ERROR.2
-    for (T_sp l = streams; !l.nilp(); l = oCdr(l)) {
-      T_sp potentialstream = oCar(l);
-      // stream_input_p also verifies if is a stream at all
-      if (!stream_input_p(potentialstream))
-        not_an_input_stream(potentialstream);
-    }
-  }
-  // used to be nreverse, but this gives wrong results, since it than reads first from the last stream passed
-  // stick with the original list
-  // in ecl there is nreverse, since the list of streams is consed up newly, so is in inverse order
-  x->_streams = streams;
-  return x;
+CL_DEFUN ConcatenatedStream_sp ConcatenatedStream_O::make(List_sp input_streams) {
+  for (T_sp head = input_streams; !head.nilp(); head = oCdr(head))
+    check_input_stream(oCar(head));
+
+  ConcatenatedStream_sp stream = create();
+  stream->_streams = input_streams;
+
+  return stream;
 }
 
-CL_LAMBDA(strm);
+CL_LISPIFY_NAME("cl:concatenated-stream-streams")
+CL_LAMBDA(concatenated-stream);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(concatenated-stream-streams)dx");
+CL_DOCSTRING(R"dx(Returns a list of input streams that constitute the ordered set of
+streams the concatenated-stream still has to read from, starting with
+the current one it is reading from. The list may be empty if no more
+streams remain to be read.)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__concatenated_stream_streams(T_sp strm) {
-  ConcatenatedStream_sp stream = strm.asOrNull<ConcatenatedStream_O>();
-  unlikely_if(!stream) ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_concatenated_stream_streams, strm, cl::_sym_ConcatenatedStream_O);
-  return cl__copy_list(stream->_streams);
+CL_DEFUN T_sp ConcatenatedStream_O::streams(T_sp concatenated_stream) {
+  if (!concatenated_stream.isA<ConcatenatedStream_O>())
+    ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_concatenated_stream_streams, concatenated_stream, cl::_sym_ConcatenatedStream_O);
+
+  return cl__copy_list(concatenated_stream.as_unsafe<ConcatenatedStream_O>()->_streams);
 }
 
 /**********************************************************************
@@ -1815,25 +1815,26 @@ T_sp SynonymStream_O::pathname() const { return stream_pathname(stream()); };
 
 T_sp SynonymStream_O::truename() const { return stream_truename(stream()); };
 
-CL_LAMBDA(strm1);
+CL_LISPIFY_NAME("cl:make-synonym-stream")
+CL_LAMBDA(symbol);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(make-synonym-stream)dx");
+CL_DOCSTRING(R"dx(Returns a synonym stream whose synonym stream symbol is symbol.)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__make_synonym_stream(T_sp tsym) {
-  Symbol_sp sym = gc::As<Symbol_sp>(tsym);
-  SynonymStream_sp x = SynonymStream_O::create();
-  x->_symbol = sym;
+CL_DEFUN SynonymStream_sp SynonymStream_O::make(T_sp symbol) {
+  SynonymStream_sp x = create();
+  x->_symbol = gc::As<Symbol_sp>(symbol);
   return x;
 }
 
+CL_LISPIFY_NAME("cl:synonym-stream-symbol")
 CL_LAMBDA(s);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(See CLHS synonym-stream-symbol)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__synonym_stream_symbol(T_sp strm) {
-  SynonymStream_sp stream = strm.asOrNull<SynonymStream_O>();
-  unlikely_if(!stream) ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_synonym_stream_symbol, strm, cl::_sym_SynonymStream_O);
-  return stream->_symbol;
+CL_DEFUN Symbol_sp SynonymStream_O::symbol(T_sp synonym_stream) {
+  if (!synonym_stream.isA<SynonymStream_O>())
+    ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_synonym_stream_symbol, synonym_stream, cl::_sym_SynonymStream_O);
+  return synonym_stream.as_unsafe<SynonymStream_O>()->_symbol;
 }
 
 /**********************************************************************

@@ -74,6 +74,7 @@ void wrong_file_handler(T_sp strm) NO_RETURN;
 void wsock_error(const char* err_msg, T_sp strm) NO_RETURN;
 #endif
 
+
 int safe_open(const char* filename, int flags, clasp_mode_t mode);
 
 enum StreamMode {
@@ -140,9 +141,6 @@ T_sp cl__file_position(T_sp stream, T_sp position = nil<core::T_O>());
 T_sp cl__stream_element_type(T_sp strm);
 T_sp cl__stream_external_format(T_sp strm);
 
-T_sp cl__make_synonym_stream(T_sp sym);
-T_sp cl__make_two_way_stream(T_sp in, T_sp out);
-
 T_sp cl__make_string_input_stream(String_sp strng, cl_index istart, T_sp iend);
 #define STRING_OUTPUT_STREAM_DEFAULT_SIZE 128
 T_sp clasp_make_string_output_stream(cl_index line_length = STRING_OUTPUT_STREAM_DEFAULT_SIZE, bool extended = false);
@@ -196,8 +194,17 @@ T_sp stream_close(T_sp stream, T_sp abort);
 T_sp stream_pathname(T_sp stream);
 T_sp stream_truename(T_sp stream);
 
+inline void check_input_stream(T_sp stream) {
+  if (!stream_input_p(stream))
+    not_an_input_stream(stream);
+}
+
+inline void check_output_stream(T_sp stream) {
+  if (!stream_output_p(stream))
+    not_an_output_stream(stream);
+}
+
 // Define types of streams
-// See ecl object.h:600
 
 #define C_STREAM 1
 
@@ -688,16 +695,15 @@ namespace core {
 class SynonymStream_O : public AnsiStream_O {
   LISP_CLASS(core, ClPkg, SynonymStream_O, "synonym-stream", AnsiStream_O);
 
-public: // Simple default ctor/dtor
-  SynonymStream_O() : _symbol(nil<Symbol_O>()){};
-
-public: // instance variables here
+protected:
   Symbol_sp _symbol;
 
 public:
-  static SynonymStream_sp make(Symbol_sp symbol) { return gc::As<SynonymStream_sp>(cl__make_synonym_stream(symbol)); }
+  SynonymStream_O() : _symbol(nil<Symbol_O>()){};
 
-public: // Functions here
+  static SynonymStream_sp make(T_sp symbol);
+  static Symbol_sp symbol(T_sp synonym_stream);
+
   virtual string __repr__() const override;
 
   T_sp stream() const { return _symbol->symbolValue(); }
@@ -760,7 +766,12 @@ public: // instance variables here
   T_sp _output_stream;
 
 public:
-  static T_sp make(T_sp in, T_sp out) { return cl__make_two_way_stream(in, out); };
+  static TwoWayStream_sp make(T_sp input_stream, T_sp output_stream);
+  static T_sp input_stream(T_sp echo_stream);
+  static T_sp output_stream(T_sp echo_stream);
+
+  T_sp input_stream() const { return _input_stream; }
+  T_sp output_stream() const { return _output_stream; }
 
   cl_index read_byte8(unsigned char* c, cl_index n);
   cl_index write_byte8(unsigned char* c, cl_index n);
@@ -815,6 +826,9 @@ public: // instance variables here
   T_sp _streams;
 
 public: // Functions here
+  static BroadcastStream_sp make(List_sp streams);
+  static T_sp streams(T_sp broadcast_stream);
+
   cl_index write_byte8(unsigned char* c, cl_index n);
   void write_byte(T_sp c);
   claspCharacter write_char(claspCharacter c);
@@ -856,6 +870,9 @@ public: // instance variables here
   T_sp _streams;
 
 public: // Functions here
+  static ConcatenatedStream_sp make(List_sp input_streams);
+  static T_sp streams(T_sp concatenated_stream);
+
   cl_index read_byte8(unsigned char* c, cl_index n);
   T_sp read_byte();
   claspCharacter read_char();
@@ -883,14 +900,20 @@ namespace core {
 class EchoStream_O : public AnsiStream_O {
   LISP_CLASS(core, ClPkg, EchoStream_O, "EchoStream", AnsiStream_O);
 
-public: // Simple default ctor/dtor
-  DEFAULT_CTOR_DTOR(EchoStream_O);
-
-public: // instance variables here
+protected:
   T_sp _input_stream;
   T_sp _output_stream;
 
-public: // Functions here
+public:
+  DEFAULT_CTOR_DTOR(EchoStream_O);
+
+  static EchoStream_sp make(T_sp input_stream, T_sp output_stream);
+  static T_sp input_stream(T_sp echo_stream);
+  static T_sp output_stream(T_sp echo_stream);
+
+  T_sp input_stream() const { return _input_stream; }
+  T_sp output_stream() const { return _output_stream; }
+
   cl_index read_byte8(unsigned char* c, cl_index n);
   cl_index write_byte8(unsigned char* c, cl_index n);
   T_sp read_byte();
