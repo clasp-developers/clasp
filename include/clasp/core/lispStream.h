@@ -74,7 +74,6 @@ void wrong_file_handler(T_sp strm) NO_RETURN;
 void wsock_error(const char* err_msg, T_sp strm) NO_RETURN;
 #endif
 
-
 int safe_open(const char* filename, int flags, clasp_mode_t mode);
 
 enum StreamMode {
@@ -274,25 +273,14 @@ class AnsiStream_O : public Stream_O {
 
 public:
   bool _open;
-  int _byte_size;
-  int _flags;          // bitmap of flags
-  List_sp _byte_stack; // For unget in input streams
-  T_sp _format_table;
-  Fixnum _last_code[2];
-  claspCharacter _eof_char;
-  int _last_op;
-  int _last_char;
-  T_sp _external_format;
+  int _flags; // bitmap of flags
   int _output_column;
   StreamCursor _input_cursor;
 
 public:
-  AnsiStream_O()
-      : _open(true), _byte_size(8), _flags(0), _byte_stack(nil<T_O>()), _format_table(nil<T_O>()), _last_code{EOF, EOF},
-        _eof_char(EOF), _external_format(nil<T_O>()), _output_column(0){};
+  AnsiStream_O() : _open(true), _output_column(0){};
   virtual ~AnsiStream_O(); // nontrivial
 
-  cl_index consume_byte_stack(unsigned char* c, cl_index n);
   int restartable_io_error(const char* s);
   void update_column(claspCharacter c);
 
@@ -364,6 +352,14 @@ class FileStream_O : public AnsiStream_O {
 
 public:
   StreamMode _mode;
+  int _byte_size;
+  List_sp _byte_stack; // For unget in input streams
+  T_sp _format_table;
+  Fixnum _last_code[2];
+  claspCharacter _eof_char;
+  int _last_char;
+  int _last_op;
+  T_sp _external_format;
   T_sp _filename;
   T_sp _temp_filename;
   bool _created = false;
@@ -371,10 +367,13 @@ public:
   T_sp _element_type;
 
 public: // Functions here
-  FileStream_O() : _format(nil<Symbol_O>()){};
+  FileStream_O()
+      : _byte_size(8), _byte_stack(nil<T_O>()), _format_table(nil<T_O>()), _last_code{EOF, EOF}, _eof_char(EOF),
+        _external_format(nil<T_O>()), _format(nil<Symbol_O>()){};
 
   virtual string __repr__() const override;
   virtual bool has_file_position() const;
+  cl_index consume_byte_stack(unsigned char* c, cl_index n);
   ListenResult _fd_listen(int fd);
   void close_cleanup(T_sp abort);
   cl_index compute_char_size(claspCharacter c);
@@ -901,6 +900,7 @@ class EchoStream_O : public AnsiStream_O {
   LISP_CLASS(core, ClPkg, EchoStream_O, "EchoStream", AnsiStream_O);
 
 protected:
+  int _last_char;
   T_sp _input_stream;
   T_sp _output_stream;
 

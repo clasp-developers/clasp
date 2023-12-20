@@ -1100,18 +1100,6 @@ CL_DEFUN T_sp core__make_string_output_stream_from_string(T_sp s) {
   }
   strm->_contents = gc::As<String_sp>(s);
   strm->_output_column = 0;
-#if !defined(CLASP_UNICODE)
-  strm->_flags = CLASP_STREAM_DEFAULT_FORMAT;
-  strm->_byte_size = 8;
-#else
-  if (cl__simple_string_p(s)) {
-    strm->_flags = CLASP_STREAM_LATIN_1;
-    strm->_byte_size = 8;
-  } else {
-    strm->_flags = CLASP_STREAM_UCS_4;
-    strm->_byte_size = 32;
-  }
-#endif
   return strm;
 }
 
@@ -1216,18 +1204,6 @@ T_sp clasp_make_string_input_stream(T_sp strng, cl_index istart, cl_index iend) 
   strm->_contents = gc::As<String_sp>(strng);
   strm->_input_position = istart;
   strm->_input_limit = iend;
-#if !defined(CLASP_UNICODE)
-  strm->_flags = CLASP_STREAM_DEFAULT_FORMAT;
-  strm->_byte_size = 8;
-#else
-  if (core__base_string_p(strng) /*cl__simple_string_p(strng) == t_base_string*/) {
-    strm->_flags = CLASP_STREAM_LATIN_1;
-    strm->_byte_size = 8;
-  } else {
-    strm->_flags = CLASP_STREAM_UCS_4;
-    strm->_byte_size = 32;
-  }
-#endif
   return strm;
 }
 
@@ -1512,13 +1488,13 @@ T_sp EchoStream_O::read_byte() {
 }
 
 claspCharacter EchoStream_O::read_char() {
-  claspCharacter c = _last_code[0];
+  claspCharacter c = _last_char;
   if (c == EOF) {
     c = stream_read_char(_input_stream);
     if (c != EOF)
       stream_write_char(_output_stream, c);
   } else {
-    _last_code[0] = EOF;
+    _last_char = EOF;
     stream_read_char(_input_stream);
   }
   return c;
@@ -1527,13 +1503,13 @@ claspCharacter EchoStream_O::read_char() {
 claspCharacter EchoStream_O::write_char(claspCharacter c) { return stream_write_char(_output_stream, c); }
 
 void EchoStream_O::unread_char(claspCharacter c) {
-  unlikely_if(_last_code[0] != EOF) unread_twice(asSmartPtr());
-  _last_code[0] = c;
+  unlikely_if(_last_char != EOF) unread_twice(asSmartPtr());
+  _last_char = c;
   stream_unread_char(_input_stream, c);
 }
 
 claspCharacter EchoStream_O::peek_char() {
-  claspCharacter c = _last_code[0];
+  claspCharacter c = _last_char;
   if (c == EOF) {
     c = stream_peek_char(_input_stream);
   }
@@ -2370,7 +2346,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, us_ascii);
 SYMBOL_EXPORT_SC_(ExtPkg, make_encoding);
 
 static int parse_external_format(T_sp tstream, T_sp format, int flags) {
-  AnsiStream_sp stream = gc::As_unsafe<AnsiStream_sp>(tstream);
+  FileStream_sp stream = gc::As_unsafe<FileStream_sp>(tstream);
   if (format == kw::_sym_default) {
     format = ext::_sym_STARdefault_external_formatSTAR->symbolValue();
   }
@@ -3951,7 +3927,7 @@ namespace core {
 
 AnsiStream_O::~AnsiStream_O() { close(nil<T_O>()); };
 
-cl_index AnsiStream_O::consume_byte_stack(unsigned char* c, cl_index n) {
+cl_index FileStream_O::consume_byte_stack(unsigned char* c, cl_index n) {
   cl_index out = 0;
   while (n) {
     if (_byte_stack.nilp())

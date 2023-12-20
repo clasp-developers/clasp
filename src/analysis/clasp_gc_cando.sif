@@ -9894,28 +9894,8 @@
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_open")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("_Format")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_byte_size")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>"
-             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_byte_stack")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("_format_table")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
-             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_eof_char")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_last_op")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_LastChar")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("_external_format")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_output_column")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
@@ -9938,29 +9918,8 @@
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_open")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_Format")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_byte_size")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>"
-             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_byte_stack")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_format_table")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
-             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_eof_char")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_last_op")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_LastChar")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("_external_format")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::TwoWayStream_O"
              :layout-offset-field-names ("_output_column")}
@@ -9991,30 +9950,8 @@
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_open")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_Format")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_byte_size")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>"
-             :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_byte_stack")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("_format_table")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
-             :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_eof_char")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_last_op")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_LastChar")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("_external_format")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::SynonymStream_O"
              :layout-offset-field-names ("_output_column")}
@@ -10041,29 +9978,8 @@
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_open")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_Format")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_byte_size")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>"
-             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_byte_stack")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_format_table")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
-             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_eof_char")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_last_op")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_LastChar")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("_external_format")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::StringStream_O"
              :layout-offset-field-names ("_output_column")}
@@ -10082,41 +9998,17 @@
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::StringStream_O"
              :layout-offset-field-names ("_input_cursor" "._prev_column")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Array_O>"
+             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_contents")}
 {class-kind :stamp-name "STAMPWTAG_core__StringOutputStream_O"
             :stamp-key "core::StringOutputStream_O" :parent-class "core::StringStream_O"
             :lisp-class-base "core::StringStream_O" :root-class "core::T_O" :stamp-wtag 3
             :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::StringOutputStream_O" :layout-offset-field-names ("_open")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::StringOutputStream_O" :layout-offset-field-names ("_Format")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("_byte_size")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::StringOutputStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("_byte_stack")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("_format_table")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("_eof_char")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("_last_op")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("_LastChar")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("_external_format")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::StringOutputStream_O"
              :layout-offset-field-names ("_output_column")}
@@ -10145,34 +10037,8 @@
             :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::StringInputStream_O" :layout-offset-field-names ("_open")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::StringInputStream_O" :layout-offset-field-names ("_Format")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("_byte_size")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::StringInputStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("_byte_stack")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("_format_table")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("_eof_char")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringInputStream_O" :layout-offset-field-names ("_last_op")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("_LastChar")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("_external_format")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::StringInputStream_O"
              :layout-offset-field-names ("_output_column")}
@@ -10206,28 +10072,8 @@
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_open")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("_Format")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_byte_size")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>"
-             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_byte_stack")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("_format_table")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
-             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_eof_char")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_last_op")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_LastChar")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("_external_format")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_output_column")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
@@ -10245,6 +10091,8 @@
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::EchoStream_O"
              :layout-offset-field-names ("_input_cursor" "._prev_column")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_last_char")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::EchoStream_O"
              :layout-offset-field-names ("_input_stream")}
@@ -10257,35 +10105,8 @@
             :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::ConcatenatedStream_O" :layout-offset-field-names ("_open")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::ConcatenatedStream_O" :layout-offset-field-names ("_Format")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("_byte_size")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::ConcatenatedStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("_byte_stack")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("_format_table")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("_eof_char")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("_last_op")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("_LastChar")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("_external_format")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::ConcatenatedStream_O"
              :layout-offset-field-names ("_output_column")}
@@ -10313,28 +10134,8 @@
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_open")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("_Format")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_byte_size")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>"
-             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_byte_stack")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("_format_table")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
-             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_eof_char")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_last_op")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_LastChar")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("_external_format")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_output_column")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
@@ -10352,6 +10153,23 @@
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::FileStream_O"
              :layout-offset-field-names ("_input_cursor" "._prev_column")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_byte_size")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::List_V>"
+             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_byte_stack")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::FileStream_O"
+             :layout-offset-field-names ("_format_table")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_eof_char")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_last_char")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_last_op")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::FileStream_O"
+             :layout-offset-field-names ("_external_format")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::FileStream_O"
              :layout-offset-field-names ("_filename")}
@@ -10362,35 +10180,17 @@
              :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_created")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::FileStream_O"
+             :layout-offset-field-names ("_format")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::FileStream_O"
              :layout-offset-field-names ("_element_type")}
 {class-kind :stamp-name "STAMPWTAG_core__IOFileStream_O" :stamp-key "core::IOFileStream_O"
             :parent-class "core::FileStream_O" :lisp-class-base "core::FileStream_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_open")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_Format")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_byte_size")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_byte_stack")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_format_table")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_eof_char")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_last_op")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_LastChar")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("_external_format")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::IOFileStream_O"
              :layout-offset-field-names ("_output_column")}
@@ -10409,6 +10209,24 @@
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::IOFileStream_O"
              :layout-offset-field-names ("_input_cursor" "._prev_column")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_byte_size")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::List_V>"
+             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_byte_stack")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_format_table")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_eof_char")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_last_char")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_last_op")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::IOFileStream_O"
+             :layout-offset-field-names ("_external_format")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_filename")}
@@ -10420,6 +10238,9 @@
              :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_created")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_format")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_element_type")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::IOFileStream_O"
@@ -10429,30 +10250,8 @@
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_open")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_Format")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_byte_size")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_byte_stack")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("_format_table")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_eof_char")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_last_op")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_LastChar")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("_external_format")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::IOStreamStream_O"
              :layout-offset-field-names ("_output_column")}
@@ -10471,6 +10270,25 @@
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::IOStreamStream_O"
              :layout-offset-field-names ("_input_cursor" "._prev_column")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_byte_size")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::List_V>"
+             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_byte_stack")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::IOStreamStream_O"
+             :layout-offset-field-names ("_format_table")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_eof_char")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_last_char")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_last_op")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::IOStreamStream_O"
+             :layout-offset-field-names ("_external_format")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_filename")}
@@ -10480,6 +10298,9 @@
              :layout-offset-field-names ("_temp_filename")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_created")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_format")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::IOStreamStream_O"
@@ -10493,31 +10314,8 @@
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_open")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_Format")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_byte_size")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("_byte_stack")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("_format_table")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
-             :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_eof_char")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_last_op")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_LastChar")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("_external_format")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::BroadcastStream_O"
              :layout-offset-field-names ("_output_column")}

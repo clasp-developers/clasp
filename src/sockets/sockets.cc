@@ -623,11 +623,8 @@ CL_LAMBDA(stream);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(ll_autoCloseTwoWayStream)dx");
 DOCGROUP(clasp);
-CL_DEFUN void sockets_internal__ll_autoCloseTwoWayStream(core::Stream_sp stream) {
-#if 0
-	IMPLEMENT_MEF("Handle ECL_STREAM_CLOSE_COMPONENTS");
-	stream->stream.flags |= ECL_STREAM_CLOSE_COMPONENTS;
-#endif
+CL_DEFUN void sockets_internal__ll_autoCloseTwoWayStream(core::AnsiStream_sp stream) {
+  stream->_flags |= core::CLASP_STREAM_CLOSE_COMPONENTS;
 };
 
 CL_LAMBDA(num);
