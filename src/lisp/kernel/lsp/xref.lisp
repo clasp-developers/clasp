@@ -123,7 +123,7 @@ Returns an alist. Each CAR is name of the function using the macro, and the CDR 
          (end (core:bytecode-debug-info/end fun))
          (result nil))
     (do-module-instructions (mnem args opip ip) (module)
-      (when (eql mnem :called-fdefinition)
+      (when (and (<= start opip end) (eql mnem :called-fdefinition))
         (let* ((arg (first args))
                (pos (cdr arg))
                (cell (aref literals pos))
