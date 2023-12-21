@@ -560,7 +560,7 @@ template <typename To_SP, typename From_SP> inline To_SP As_unsafe(From_SP const
 template <typename To_SP, typename From_SP> inline To_SP As_assert(From_SP const& rhs) {
 #ifdef DEBUG_ASSERT
   if (!gctools::IsA<To_SP>(rhs)) {
-    throw_hard_error_failed_assertion("!gctools::IsA<To_SP>(rhs)");
+    throw_hard_error_cast_failed(typeid(To_SP).name(), typeid(From_SP).name());
   }
 #endif
   To_SP ret((Tagged)rhs.raw_());
