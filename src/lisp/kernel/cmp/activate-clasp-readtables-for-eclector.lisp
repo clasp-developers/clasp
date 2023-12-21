@@ -59,6 +59,7 @@
 
 (defmethod eclector.parse-result:make-expression-result
     ((client clasp-tracking-elector-client) result children source)
+  (declare (ignore children))
   (when cmp:*source-locations*
     (setf (gethash result cmp:*source-locations*) (car source)))
   result)
@@ -121,7 +122,7 @@
 
 (defun patch-object (client value-old seen-objects)
   (multiple-value-bind (state object*)
-      (labeled-object-state client value-old)
+      (eclector.reader:labeled-object-state client value-old)
     (case state
       ((nil) ; normal object
        (eclector.reader:fixup client value-old seen-objects)

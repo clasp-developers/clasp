@@ -1662,7 +1662,6 @@
 (defmethod translate-simple-instruction ((inst bir:constant-fdefinition) abi)
   (declare (ignore abi))
   (let* ((output (bir:output inst))
-         (name (datum-name-as-string output))
          (cell (bir:input inst))
          (index (gethash cell *constant-values*)))
     (assert index () "Function cell not found!")
@@ -2087,6 +2086,7 @@ COMPILE-FILE will use the default *clasp-env*."
   (let (;; used by compute-inline-ast (inline-prep.lisp) to get detailed
         ;; source info for inline function bodies.
         (*compiling-cst* cst))
+    (declare (special *compiling-cst*))
     (handler-bind
         ((cst-to-ast:no-variable-info
            (lambda (condition)

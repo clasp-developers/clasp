@@ -15,6 +15,8 @@
   (cmp:compile-file-source-pos-info stream))
 
 (defmethod eclector.reader:find-character ((client clasp-eclector-client-mixin) name)
+  ;; This variable is defined in define-unicode-tables, which is loaded later.
+  (declare (special *additional-clasp-character-names*))
   (or (call-next-method)
       (gethash name *additional-clasp-character-names*)
       (simple-unicode-name name)))

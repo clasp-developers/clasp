@@ -63,7 +63,8 @@
   (:use #:cl)
   (:nicknames #:cc-bir)
   (:local-nicknames (#:bir #:cleavir-bir)
-                    (#:ast-to-bir #:cleavir-ast-to-bir))
+                    (#:ast-to-bir #:cleavir-ast-to-bir)
+                    (#:build #:cleavir-bir-builder))
   (:export #:header-stamp-case
            #:foreign-call-pointer #:foreign-types
            #:mv-foreign-call #:function-name

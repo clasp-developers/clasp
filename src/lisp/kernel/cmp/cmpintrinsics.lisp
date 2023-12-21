@@ -1045,8 +1045,7 @@ and initialize it with an array consisting of one function pointer."
                                                   %fn-start-up%
                                                   'llvm-sys:external-linkage ; this should be internal and invoked by a ctor but that doesn't seem to be happening yet
                                                   module
-                                                  :argument-names (list "values" )))
-          (ordered-raw-literals-list nil))
+                                                  :argument-names (list "values" ))))
       (llvm-sys:set-unnamed-addr startup-fn 'llvm-sys:none)
       (let* ((irbuilder-alloca
                (llvm-sys:make-irbuilder (thread-local-llvm-context)))

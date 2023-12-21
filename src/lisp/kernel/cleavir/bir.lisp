@@ -8,11 +8,9 @@
   (ast-to-bir:with-compiled-arguments (args (cc-ast:argument-asts ast)
                                             inserter system)
     (let ((output (make-instance 'bir:output)))
-      (ast-to-bir:insert
-       inserter
-       (make-instance 'mv-foreign-call
-         :function-name (cc-ast:function-name ast)
-         :inputs args :outputs (list output)))
+      (build:insert inserter 'mv-foreign-call
+                    :function-name (cc-ast:function-name ast)
+                    :inputs args :outputs (list output))
       (list output))))
 
 (defclass foreign-call-pointer (bir:one-output bir:instruction)
@@ -23,11 +21,9 @@
   (ast-to-bir:with-compiled-arguments (args (cc-ast:argument-asts ast)
                                             inserter system)
     (let ((out (make-instance 'bir:output)))
-      (ast-to-bir:insert
-       inserter
-       (make-instance 'foreign-call-pointer
-         :foreign-types (cc-ast:foreign-types ast)
-         :inputs args :outputs (list out)))
+      (build:insert inserter 'foreign-call-pointer
+                    :foreign-types (cc-ast:foreign-types ast)
+                    :inputs args :outputs (list out))
       (list out))))
 
 ;;; atomics

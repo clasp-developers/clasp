@@ -5,8 +5,7 @@
                     (#:ctype #:cleavir-ctype)
                     (#:env #:cleavir-env)
                     (#:policy #:cleavir-compilation-policy)
-                    ;; FIXME: Move inserter stuff to its own small system
-                    (#:ast-to-bir #:cleavir-ast-to-bir))
+                    (#:build #:cleavir-bir-builder))
   (:export #:compile-function #:compile-hook))
 
 (in-package #:clasp-bytecode-to-bir)
@@ -39,7 +38,7 @@
   (let* ((literals (core:bytecode-module/literals bcmodule))
          (blockmap (make-blockmap)) (funmap (make-funmap))
          (context (make-context irmodule blockmap funmap))
-         (inserter (make-instance 'ast-to-bir:inserter))
+         (inserter (make-instance 'build:inserter))
          ;; annotations starting at opip.
          (opannots (initial-annotations
                     (core:bytecode-module/debug-info bcmodule)))
@@ -99,7 +98,7 @@
                                                    (module context))))
                           (push (list bcfun new nil) (fmap (funmap context)))
                           new))))
-        (ast-to-bir:begin inserter (bir:start irfun))
+        (build:begin inserter (bir:start irfun))
         (context-new-function context bcfun))))
   ;; Maybe we've determined earlier that this IP begins a block?
   (let ((binfo (find-block opip (blockmap context))))
@@ -107,13 +106,10 @@
       ;; If we're falling through from an existing block
       ;; compile in an implicit jump.
       (when (and (reachablep context)
-                 ;; KLUDGE
-                 (not (slot-boundp
-                       (ast-to-bir::iblock inserter)
-                       'bir::%end)))
+                 (not (bir:terminatedp (bir:iblock inserter))))
         (%compile-jump inserter context binfo))
       ;; Start new block.
-      (ast-to-bir:begin inserter (binfo-irblock binfo))
+      (build:begin inserter (binfo-irblock binfo))
       (context-new-block context (binfo-context binfo)))))
 
 ;;; Given a bytecode function, return a compiled native function.
@@ -266,7 +262,7 @@
 (defun delay-block (inserter context ip
                     &key name (receiving 0)
                       (dynamic-environment
-                       (ast-to-bir::dynamic-environment inserter)))
+                       (bir:dynamic-environment inserter)))
   (let ((einfo (find-block ip (blockmap context))))
     (cond (einfo
            (assert (= receiving (binfo-receiving einfo)))
@@ -290,7 +286,7 @@
           key-frame-start)))
 
 (defun make-bir-function (bytecode-function inserter
-                          &optional (module (inserter-module inserter)))
+                          &optional (module (bir:module inserter)))
   (let* ((lambda-list (core:function-lambda-list bytecode-function))
          (function (make-instance 'bir:function
                      :returni nil ; set by :return compilation
@@ -339,7 +335,7 @@
   (pop (stack context)))
 
 (defun make-start-block (inserter irfun bcfun)
-  (ast-to-bir::make-iblock
+  (build:make-iblock
    inserter
    :name (symbolicate (write-to-string (core:function-name bcfun))
                       '#:-start)
@@ -382,10 +378,9 @@
         finally (return (ctype:top clasp-cleavir:*clasp-system*))))
 
 (defun %read-variable (variable inserter)
-  (bir:record-variable-ref variable)
   (let ((readvar-out (make-instance 'bir:output :name (bir:name variable))))
-    (ast-to-bir:insert inserter 'bir:readvar
-                       :inputs (list variable) :outputs (list readvar-out))
+    (build:insert inserter 'bir:readvar
+                  :inputs (list variable) :outputs (list readvar-out))
     readvar-out))
 
 (defmethod compile-instruction ((mnemonic (eql :const))
@@ -394,16 +389,16 @@
     (stack-push (compile-constant value inserter) context)))
 
 (defun compile-constant (value inserter)
-  (let* ((const (inserter-constant value inserter))
+  (let* ((const (build:constant inserter value))
          (cref-out (make-instance 'bir:output)))
-    (ast-to-bir:insert inserter 'bir:constant-reference
-                       :inputs (list const) :outputs (list cref-out))
+    (build:insert inserter 'bir:constant-reference
+                  :inputs (list const) :outputs (list cref-out))
     cref-out))
 
 (defmethod compile-instruction ((mnemonic (eql :closure)) inserter
                                 context &rest args)
   (destructuring-bind (index) args
-    (let* ((ifun (inserter-function inserter))
+    (let* ((ifun (bir:function inserter))
            (lexes (finfo-closure (find-irfun ifun (funmap context))))
            (lex (elt lexes index)))
       (stack-push (etypecase lex
@@ -416,43 +411,82 @@
 (defmethod compile-instruction ((mnemonic (eql :call)) inserter
                                 context &rest args)
   (destructuring-bind (nargs) args
-    (let ((args (gather context nargs))
-          (callee (stack-pop context))
-          (out (make-instance 'bir:output)))
-      (ast-to-bir:insert inserter 'bir:call
-                         :inputs (list* callee args)
-                         :outputs (list out))
-      (setf (mvals context) out))))
+    (setf (mvals context) (compile-call nargs inserter context))))
 
 (defmethod compile-instruction ((mnemonic (eql :call-receive-one))
                                 inserter context &rest args)
   (destructuring-bind (nargs) args
-    (let ((args (gather context nargs))
-          (callee (stack-pop context))
-          (out (make-instance 'bir:output)))
-      (ast-to-bir:insert inserter 'bir:call
-                         :inputs (list* callee args)
-                         :outputs (list out))
-      (setf (mvals context) nil) ; invalidate for self-consistency checks
-      (stack-push out context))))
+    (setf (mvals context) nil) ; invalidate for self-consistency checks
+    (stack-push (compile-call nargs inserter context) context)))
 
 (defmethod compile-instruction ((mnemonic (eql :call-receive-fixed))
                                 inserter context &rest args)
   (destructuring-bind (nargs nvals) args
     (assert (zerop nvals)) ; FIXME
-    (let ((args (gather context nargs))
-          (callee (stack-pop context))
-          (out (make-instance 'bir:output)))
-      (setf (mvals context) nil) ; invalidate for self-consistency checks
-      (ast-to-bir:insert inserter 'bir:call
-                         :inputs (list* callee args)
-                         :outputs (list out)))))
+    (setf (mvals context) nil) ; invalidate for self-consistency checks
+    (compile-call nargs inserter context)))
+
+(defun compile-call (nargs inserter context)
+  (let* ((args (gather context nargs))
+         (callee (stack-pop context))
+         (ftype (callee-ftype callee inserter))
+         (rargs (type-wrap-arguments ftype args inserter context))
+         (out (make-instance 'bir:output))
+         (sys clasp-cleavir::*clasp-system*))
+    (build:insert inserter 'bir:call
+                  :inputs (list* callee rargs)
+                  :outputs (list out))
+    (compile-type-decl :return (ctype:function-values ftype sys) out
+                       inserter context)))
 
 (defun gather (context n)
   (loop with args = nil
         repeat n
         do (push (stack-pop context) args)
         finally (return args)))
+
+;;; Get the ftype of an output.
+;;; Right now this is trivial, but - TODO - might be more involved when
+;;; we support local ftype declarations.
+(defun callee-ftype (callee context)
+  (declare (ignore context))
+  (let* ((sys clasp-cleavir:*clasp-system*)
+         ;; We use the asserted type rather than the derived because
+         ;; that's what :fdefinition etc put in, and also because we've yet to
+         ;; actually derive anything.
+         (vct (bir:asserted-type callee))
+         (ct (ctype:primary vct sys)))
+    (if (ctype:functionp ct sys)
+        ct
+        (ctype:function-top sys))))
+
+;;; Given an ftype and a list of argument outputs, return a new list of argument
+;;; outputs that are type wrapped if that's useful.
+;;; Also warn on argument count mismatch.
+(defun type-wrap-arguments (ftype args inserter context)
+  (let* ((sys clasp-cleavir:*clasp-system*)
+         (req (ctype:function-required ftype sys))
+         (opt (ctype:function-optional ftype sys))
+         (rest (ctype:function-rest ftype sys))
+         (rrest (cond ((not (ctype:bottom-p rest sys)) rest)
+                      ;; Arguably FIXME that we can have &rest nil with keys.
+                      ((ctype:function-keysp ftype sys) (ctype:top sys))
+                      (t rest)))
+         (min (length req))
+         (max (if (not (ctype:bottom-p rrest sys))
+                  nil
+                  (+ min (length opt))))
+         (nargs (length args)))
+    (when (or (< nargs min) (and max (> nargs max)))
+      (warn 'cmp:wrong-argcount-warning
+            :given-nargs nargs :min-nargs min :max-nargs max
+            :origin (cst:source bir:*origin*))
+      (return-from type-wrap-arguments args))
+    (loop for arg in args
+          for ctype = (cond (req (pop req))
+                            (opt (pop opt))
+                            (t rrest))
+          collect (compile-type-decl :argument ctype arg inserter context))))
 
 (defmethod compile-instruction ((mnemonic (eql :bind))
                                 inserter context &rest args)
@@ -483,9 +517,8 @@
 
 (defun %write-variable (variable value inserter)
   (assert (slot-boundp variable 'bir::%binder))
-  (bir:record-variable-set variable)
-  (ast-to-bir:insert inserter 'bir:writevar
-                     :inputs (list value) :outputs (list variable)))
+  (build:insert inserter 'bir:writevar
+                :inputs (list value) :outputs (list variable)))
 
 (defun write-variable (variable value inserter context)
   (let ((ctype (declared-ctype (bir:name variable) context)))
@@ -525,18 +558,16 @@
     (let* ((irfun (make-bir-function template inserter))
            (enclose-out (make-instance 'bir:output
                           :name (core:function-name template)))
-           (enclose
-             (ast-to-bir:insert inserter 'bir:enclose
-                                :code irfun :outputs (list enclose-out)))
            (nclosed (bcfun/nvars template))
            (closed (nreverse (subseq (stack context) 0 nclosed)))
            (real-closed (mapcar #'resolve-closed closed)))
       (assert (every (lambda (v) (typep v '(or bir:come-from
                                             (cons bir:variable))))
                      real-closed))
+      (build:insert inserter 'bir:enclose
+                    :code irfun :outputs (list enclose-out))
       (add-function context template irfun real-closed)
-      (setf (stack context) (nthcdr nclosed (stack context))
-            (bir:enclose irfun) enclose)
+      (setf (stack context) (nthcdr nclosed (stack context)))
       (stack-push enclose-out context))))
 
 (defmethod compile-instruction ((mnemonic (eql :make-uninitialized-closure))
@@ -544,14 +575,12 @@
   ;; Set up an ir function for the funmap and generate an enclose,
   ;; but leave the closure for initialize-closure.
   (destructuring-bind (template) args
-    (let* ((irfun (make-bir-function template inserter))
-           (enclose-out (make-instance 'bir:output
-                          :name (core:function-name template)))
-           (enclose
-             (ast-to-bir:insert inserter 'bir:enclose
-                                :code irfun :outputs (list enclose-out))))
+    (let ((irfun (make-bir-function template inserter))
+          (enclose-out (make-instance 'bir:output
+                         :name (core:function-name template))))
+      (build:insert inserter 'bir:enclose
+                    :code irfun :outputs (list enclose-out))
       (add-function context template irfun nil)
-      (setf (bir:enclose irfun) enclose)
       (stack-push enclose-out context))))
 
 (defmethod compile-instruction ((mnemonic (eql :initialize-closure))
@@ -593,17 +622,15 @@
                                 inserter context &rest args)
   (destructuring-bind () args
     ;; KLUDGE
-    (unless (slot-boundp (ast-to-bir::iblock inserter) 'bir::%end)
+    (unless (bir:terminatedp (bir:iblock inserter))
       (let ((input (mvals context)))
         (check-type input bir:linear-datum)
-        (let ((returni (make-instance 'bir:returni :inputs (list input))))
-          (setf (bir:returni (bir:function (ast-to-bir::iblock inserter))) returni)
-          (ast-to-bir:terminate inserter returni))))))
+        (build:terminate inserter 'bir:returni :inputs (list input))))))
 
 (defmethod compile-instruction ((mnemonic (eql :bind-required-args))
                                 inserter context &rest args)
   (destructuring-bind (nreq) args
-    (loop with ifun = (inserter-function inserter)
+    (loop with ifun = (bir:function inserter)
           with locals = (locals context)
           for i from 0 below nreq
           for arg = (make-instance 'bir:argument :function ifun)
@@ -614,7 +641,7 @@
 (defmethod compile-instruction ((mnemonic (eql :bind-optional-args))
                                 inserter context &rest args)
   (destructuring-bind (start nopt) args
-    (let* ((ifun (inserter-function inserter))
+    (let* ((ifun (bir:function inserter))
            (ll (bir:lambda-list ifun)))
       (loop with locals = (locals context)
             repeat nopt
@@ -630,7 +657,7 @@
                                 inserter context &rest args)
   (destructuring-bind (start) args
     (declare (ignore start))
-    (let* ((ifun (inserter-function inserter))
+    (let* ((ifun (bir:function inserter))
            (ll (bir:lambda-list ifun))
            (rarg (make-instance 'bir:argument :function ifun)))
       (setf (bir:lambda-list ifun) (append ll `(&rest ,rarg)))
@@ -639,7 +666,7 @@
                                 inserter context &rest args)
   (destructuring-bind (start) args
     (declare (ignore start))
-    (let* ((ifun (inserter-function inserter))
+    (let* ((ifun (bir:function inserter))
            (ll (bir:lambda-list ifun))
            (rarg (make-instance 'bir:argument :function ifun)))
       (setf (bir:lambda-list ifun) (append ll `(core:&va-rest ,rarg)))
@@ -649,7 +676,7 @@
                                 inserter context &rest args)
   (destructuring-bind (start (key-count . aokp) keys frame-start) args
     (declare (ignore start key-count))
-    (let* ((ifun (inserter-function inserter))
+    (let* ((ifun (bir:function inserter))
            (ll (bir:lambda-list ifun)))
       (loop with locals = (locals context)
             for i from frame-start
@@ -680,9 +707,9 @@
                            finally (return result))))
          (outputs (copy-list (bir:inputs irblock))))
     (assert (loop for i in inputs always (typep i 'bir:linear-datum)))
-    (ast-to-bir:terminate inserter 'bir:jump
-                          :next (list irblock)
-                          :inputs inputs :outputs outputs)))
+    (build:terminate inserter 'bir:jump
+                     :next (list irblock)
+                     :inputs inputs :outputs outputs)))
 
 (defmethod compile-instruction ((mnemonic (eql :jump-8))
                                 inserter context &rest args)
@@ -698,13 +725,13 @@
   (let* ((condition (stack-pop context))
          (then-dest (delay-block inserter context destination
                                  :name '#:if-then))
-         (else-dest (ast-to-bir::make-iblock
+         (else-dest (build:make-iblock
                      inserter :name '#:if-else)))
-    (ast-to-bir:terminate inserter 'bir:ifi
-                          :inputs (list condition)
-                          :next (list then-dest else-dest))
+    (build:terminate inserter 'bir:ifi
+                     :inputs (list condition)
+                     :next (list then-dest else-dest))
     ;; The else block we just start here.
-    (ast-to-bir:begin inserter else-dest)))
+    (build:begin inserter else-dest)))
 
 (defmethod compile-instruction ((mnemonic (eql :jump-if-8))
                                 inserter context &rest args)
@@ -722,7 +749,7 @@
     (assert (null cellp))
     (check-type arg bir:argument) ; from bind-optional-args
     ;; Now find the corresponding -p argument and branch on it.
-    (let* ((ifun (inserter-function inserter))
+    (let* ((ifun (bir:function inserter))
            (-p (loop for e in (bir:lambda-list ifun)
                      when (consp e)
                        do (ecase (length e)
@@ -732,11 +759,11 @@
                                  (return (third e)))))))
            (thenb (delay-block inserter context true-dest
                                :name '#:if-supplied))
-           (elseb (ast-to-bir::make-iblock inserter :name '#:if-unsupplied)))
-      (ast-to-bir:terminate inserter 'bir:ifi
-                            :inputs (list -p)
-                            :next (list thenb elseb))
-      (ast-to-bir:begin inserter elseb))))
+           (elseb (build:make-iblock inserter :name '#:if-unsupplied)))
+      (build:terminate inserter 'bir:ifi
+                       :inputs (list -p)
+                       :next (list thenb elseb))
+      (build:begin inserter elseb))))
 
 (defmethod compile-instruction ((mnemonic (eql :jump-if-supplied-8))
                                 inserter context &rest args)
@@ -758,33 +785,30 @@
 (defmethod compile-instruction ((mnemonic (eql :push-values))
                                 inserter context &rest args)
   (destructuring-bind () args
-    (let* ((mv (mvals context))
-           (during (ast-to-bir::make-iblock inserter :name '#:save-values))
-           (save-out (make-instance 'bir:output :name '#:saved-values))
-           (save (ast-to-bir::terminate inserter 'bir:values-save
-                                        :inputs (list mv)
-                                        :outputs (list save-out)
-                                        :next (list during))))
-      (setf (bir:dynamic-environment during) save
-            (mvals context) nil)
+    (let ((mv (mvals context))
+          (during (build:make-iblock inserter :name '#:save-values))
+          (save-out (make-instance 'bir:output :name '#:saved-values)))
+      (build:terminate inserter 'bir:values-save
+                       :inputs (list mv) :outputs (list save-out)
+                       :next (list during))
+      (setf (mvals context) nil)
       (stack-push (list :multiple-values save-out) context)
-      (ast-to-bir::begin inserter during))))
+      (build:begin inserter during))))
 
 (defmethod compile-instruction ((mnemonic (eql :append-values))
                                 inserter context &rest args)
   (destructuring-bind () args
-    (let* ((mv (mvals context))
-           (during (ast-to-bir::make-iblock inserter :name '#:save-values))
-           (save-out (make-instance 'bir:output :name '#:saved-values))
-           (save (ast-to-bir::terminate inserter 'bir:values-save
-                                        :inputs (list mv)
-                                        :outputs (list save-out)
-                                        :next (list during)))
-           (previous (stack-pop context)))
+    (let ((mv (mvals context))
+          (during (build:make-iblock inserter :name '#:save-values))
+          (save-out (make-instance 'bir:output :name '#:saved-values))
+          (previous (stack-pop context)))
       (check-type previous (cons (eql :multiple-values)))
-      (setf (bir:dynamic-environment during) save (mvals context) nil)
+      (build:terminate inserter 'bir:values-save
+                       :inputs (list mv) :outputs (list save-out)
+                       :next (list during))
+      (setf (mvals context) nil)
       (stack-push (list* :multiple-values save-out (cdr previous)) context)
-      (ast-to-bir::begin inserter during))))
+      (build:begin inserter during))))
 
 (defmethod compile-instruction ((mnemonic (eql :pop-values))
                                 inserter context &rest args)
@@ -797,16 +821,16 @@
              (read-out (make-instance 'bir:output
                          :name '#:restored-values))
              (old-de (bir:dynamic-environment save))
-             (after (ast-to-bir::make-iblock inserter
-                                             :name '#:mv-prog1-after
-                                             :dynamic-environment old-de)))
+             (after (build:make-iblock inserter
+                                       :name '#:mv-prog1-after
+                                       :dynamic-environment old-de)))
         (check-type save bir:values-save)
         (setf (mvals context) read-out)
-        (ast-to-bir:insert inserter 'bir:values-restore
-                           :inputs (list mv) :outputs (list read-out))
-        (ast-to-bir:terminate inserter 'bir:jump
-                              :inputs () :outputs () :next (list after))
-        (ast-to-bir::begin inserter after)))))
+        (build:insert inserter 'bir:values-restore
+                      :inputs (list mv) :outputs (list read-out))
+        (build:terminate inserter 'bir:jump
+                         :inputs () :outputs () :next (list after))
+        (build:begin inserter after)))))
 
 (defmethod compile-instruction ((mnemonic (eql :mv-call))
                                 inserter context &rest args)
@@ -835,19 +859,19 @@
            (args (reverse (rest previous)))
            (firstdef (bir:definition (first args)))
            (old-de (bir:dynamic-environment firstdef))
-           (after (ast-to-bir::make-iblock inserter :name '#:mv-call-after
-                                           :dynamic-environment old-de)))
+           (after (build:make-iblock inserter :name '#:mv-call-after
+                                              :dynamic-environment old-de)))
       (check-type lastdef bir:values-save)
       ;; Morph the most recent values-save into a -collect
       ;; so that we have a proper mv call
       (change-class lastdef 'bir:values-collect
                     :inputs (append (butlast args) (bir:inputs lastdef)))
       ;; Generate the actual call
-      (ast-to-bir:insert inserter 'bir:mv-call
-                         :inputs (list callee mv) :outputs (list out))
-      (ast-to-bir:terminate inserter 'bir:jump
-                            :inputs () :outputs () :next (list after))
-      (ast-to-bir:begin inserter after))
+      (build:insert inserter 'bir:mv-call
+                    :inputs (list callee mv) :outputs (list out))
+      (build:terminate inserter 'bir:jump
+                       :inputs () :outputs () :next (list after))
+      (build:begin inserter after))
     out))
 
 (defmethod compile-instruction ((mnemonic (eql :save-sp))
@@ -867,14 +891,11 @@
 (defmethod compile-instruction ((mnemonic (eql :entry))
                                 inserter context &rest args)
   (destructuring-bind (index) args
-    (let* ((during (ast-to-bir::make-iblock inserter :name '#:block))
-           (cf (ast-to-bir:terminate inserter 'bir:come-from
-                                     :next (list during)))
-           (function (inserter-function inserter)))
-      (set:nadjoinf (bir:come-froms function) cf)
-      (setf (bir:dynamic-environment during) cf
-            (aref (locals context) index) (cons cf nil))
-      (ast-to-bir:begin inserter during))))
+    (let* ((during (build:make-iblock inserter :name '#:block))
+           (cf (build:terminate inserter 'bir:come-from
+                                :next (list during))))
+      (setf (aref (locals context) index) (cons cf nil))
+      (build:begin inserter during))))
 
 (defmethod compile-instruction ((mnemonic (eql :exit-8))
                                 inserter context &rest args)
@@ -898,18 +919,16 @@
                      (prog1 (list (mvals context)) (setf (mvals context) nil))
                      (loop repeat receiving collect (stack-pop context)))))
     (check-type cf bir:come-from)
-    (let ((uw (ast-to-bir:terminate inserter 'bir:unwind
-                                    :inputs inputs
-                                    :outputs (copy-list (bir:inputs dest))
-                                    :come-from cf
-                                    :destination dest)))
-      ;; Don't add duplicate NEXT entries
-      ;; (obscure NLX uses can hit this, like CORE::PACKAGES-ITERATOR)
-      (unless (eql dest (first (bir:next cf)))
-        (pushnew dest (rest (bir:next cf)))
-        (set:nadjoinf (bir:predecessors dest) (bir:iblock cf)))
-      (set:nadjoinf (bir:unwinds cf) uw)
-      (set:nadjoinf (bir:entrances dest) (ast-to-bir::iblock inserter))))
+    (build:terminate inserter 'bir:unwind
+                     :inputs inputs
+                     :outputs (copy-list (bir:inputs dest))
+                     :come-from cf
+                     :destination dest)
+    ;; Don't add duplicate NEXT entries
+    ;; (obscure NLX uses can hit this, like CORE::PACKAGES-ITERATOR)
+    (unless (eql dest (first (bir:next cf)))
+      (pushnew dest (rest (bir:next cf)))
+      (set:nadjoinf (bir:predecessors dest) (bir:iblock cf))))
   (setf (reachablep context) nil))
 
 ;;; FIXME: The iblocks generated here are often kind of pointless -
@@ -919,58 +938,57 @@
                                 inserter context &rest args)
   (declare (ignore context))
   (destructuring-bind () args
-    (let* ((de (bir:parent (ast-to-bir::dynamic-environment inserter)))
-           (ib (ast-to-bir::make-iblock
+    (let* ((de (bir:parent (bir:dynamic-environment inserter)))
+           (ib (build:make-iblock
                 inserter :name '#:entry-close :dynamic-environment de)))
-      (ast-to-bir:terminate inserter 'bir:jump
-                            :inputs () :outputs () :next (list ib))
-      (ast-to-bir:begin inserter ib))))
+      (build:terminate inserter 'bir:jump
+                       :inputs () :outputs () :next (list ib))
+      (build:begin inserter ib))))
 
 (defmethod compile-instruction ((mnemonic (eql :special-bind))
                                 inserter context &rest args)
   (destructuring-bind (vcell) args
     (let* ((vname (core:variable-cell/name vcell))
            (bname (symbolicate '#:bind- vname))
-           (next (ast-to-bir::make-iblock inserter :name bname))
-           (const (inserter-vcell vname inserter))
-           (value (stack-pop context))
-           (bind (ast-to-bir::terminate inserter 'bir:constant-bind
-                                        :inputs (list const value)
-                                        :next (list next))))
-      (setf (bir:dynamic-environment next) bind)
-      (ast-to-bir:begin inserter next))))
+           (next (build:make-iblock inserter :name bname))
+           (const (build:vcell inserter vname))
+           (value (stack-pop context)))
+      (build:terminate inserter 'bir:constant-bind
+                       :inputs (list const value)
+                       :next (list next))
+      (build:begin inserter next))))
 
 (defmethod compile-instruction ((mnemonic (eql :symbol-value))
                                 inserter context &rest args)
   (destructuring-bind (vcell) args
     (let* ((vname (core:variable-cell/name vcell))
-           (const (inserter-vcell vname inserter))
+           (const (build:vcell inserter vname))
            (out (make-instance 'bir:output :name vname)))
-      (ast-to-bir:insert inserter 'bir:constant-symbol-value
-                         :inputs (list const) :outputs (list out))
+      (build:insert inserter 'bir:constant-symbol-value
+                    :inputs (list const) :outputs (list out))
       (stack-push out context))))
 
 (defmethod compile-instruction ((mnemonic (eql :symbol-value-set))
                                 inserter context &rest args)
   (destructuring-bind (vcell) args
-    (let ((const (inserter-vcell (core:variable-cell/name vcell) inserter))
+    (let ((const (build:vcell inserter (core:variable-cell/name vcell)))
           (in (stack-pop context)))
-      (ast-to-bir:insert inserter 'bir:set-constant-symbol-value
-                         :inputs (list const in)))))
+      (build:insert inserter 'bir:set-constant-symbol-value
+                    :inputs (list const in)))))
 
 (defmethod compile-instruction ((mnemonic (eql :unbind))
                                 inserter context &rest args)
   (declare (ignore context))
   (destructuring-bind () args
-    (let* ((bind (ast-to-bir::dynamic-environment inserter))
+    (let* ((bind (bir:dynamic-environment inserter))
            (vname (bir:variable-name (first (bir:inputs bind))))
-           (ib (ast-to-bir::make-iblock
+           (ib (build:make-iblock
                 inserter :name (symbolicate '#:unbind- vname)
                 :dynamic-environment (bir:parent bind))))
-      (ast-to-bir:terminate inserter 'bir:jump
-                            :inputs () :outputs ()
-                            :next (list ib))
-      (ast-to-bir:begin inserter ib))))
+      (build:terminate inserter 'bir:jump
+                       :inputs () :outputs ()
+                       :next (list ib))
+      (build:begin inserter ib))))
 
 (defmethod compile-instruction ((mnemonic (eql :fdefinition))
                                 inserter context &rest args)
@@ -978,12 +996,14 @@
     (let* (;; FIXME: May not be a sufficiently reliable way to get
            ;; the name from the cell in all cases? Probably ok though
            (fname (core:function-name fcell))
-           (const (inserter-fcell fname inserter))
+           (const (build:fcell inserter fname))
            (attributes (clasp-cleavir::function-attributes fname))
+           (ftype (ctype:single-value (clasp-cleavir::global-ftype fname)
+                                      clasp-cleavir:*clasp-system*))
            (fdef-out (make-instance 'bir:output
-                       :name fname :attributes attributes)))
-      (ast-to-bir:insert inserter 'bir:constant-fdefinition
-                         :inputs (list const) :outputs (list fdef-out))
+                       :name fname :asserted-type ftype :attributes attributes)))
+      (build:insert inserter 'bir:constant-fdefinition
+                    :inputs (list const) :outputs (list fdef-out))
       (stack-push fdef-out context))))
 
 ;; Identical to the above, but BIR should maybe have a
@@ -992,12 +1012,14 @@
                                 inserter context &rest args)
   (destructuring-bind (fcell) args
     (let* ((fname (core:function-name fcell))
-           (const (inserter-fcell fname inserter))
+           (const (build:fcell inserter fname))
            (attributes (clasp-cleavir::function-attributes fname))
+           (ftype (ctype:single-value (clasp-cleavir::global-ftype fname)
+                                      clasp-cleavir::*clasp-system*))
            (fdef-out (make-instance 'bir:output
-                       :name fname :attributes attributes)))
-      (ast-to-bir:insert inserter 'bir:constant-fdefinition
-                         :inputs (list const) :outputs (list fdef-out))
+                       :name fname :asserted-type ftype :attributes attributes)))
+      (build:insert inserter 'bir:constant-fdefinition
+                    :inputs (list const) :outputs (list fdef-out))
       (stack-push fdef-out context))))
 
 (defmethod compile-instruction ((mnemonic (eql :fdesignator))
@@ -1006,31 +1028,17 @@
   (destructuring-bind () args
     (let* ((desig (stack-pop context))
            (fname 'core:coerce-called-fdesignator)
-           (const (inserter-fcell fname inserter))
+           (const (build:fcell inserter fname))
            (attributes (clasp-cleavir::function-attributes fname))
            (fdef-out (make-instance 'bir:output
                        :name fname :attributes attributes))
            (out (make-instance 'bir:output :name '#:callee)))
-      (ast-to-bir:insert inserter 'bir:constant-fdefinition
-                         :inputs (list const) :outputs (list fdef-out))
-      (ast-to-bir:insert inserter 'bir:call
-                         :inputs (list fdef-out desig)
-                         :outputs (list out))
+      (build:insert inserter 'bir:constant-fdefinition
+                    :inputs (list const) :outputs (list fdef-out))
+      (build:insert inserter 'bir:call
+                    :inputs (list fdef-out desig)
+                    :outputs (list out))
       (stack-push out context))))
-
-(defun inserter-module (inserter)
-  ;; FIXME: Export a-t-b:iblock or something.
-  (bir:module (bir:function (ast-to-bir::iblock inserter))))
-
-(defun inserter-function (inserter)
-  (bir:function (ast-to-bir::iblock inserter)))
-
-(defun inserter-constant (value inserter)
-  (bir:constant-in-module value (inserter-module inserter)))
-(defun inserter-vcell (symbol inserter)
-  (bir:variable-cell-in-module symbol (inserter-module inserter)))
-(defun inserter-fcell (fname inserter)
-  (bir:function-cell-in-module fname (inserter-module inserter)))
 
 (defmethod compile-instruction ((mnemonic (eql :nil))
                                 inserter context &rest args)
@@ -1116,11 +1124,9 @@
     (%bind-variable variable typed inserter)))
 
 (defun %bind-variable (variable value inserter)
-  (let ((binder (ast-to-bir:insert inserter 'bir:leti
-                                   :inputs (list value)
-                                   :outputs (list variable))))
-    (set:nadjoinf (bir:variables (bir:function binder)) variable)
-    (setf (bir:binder variable) binder)))
+  (build:insert inserter 'bir:leti
+                :inputs (list value)
+                :outputs (list variable)))
 
 (defmethod end-annotation ((annot core:bytecode-debug-vars)
                            inserter context)
@@ -1154,18 +1160,11 @@
 (defun make-iblock-r (inserter name
                       &key (receiving 0)
                         (dynamic-environment
-                         (ast-to-bir::dynamic-environment inserter)))
-  (let* ((iblock (ast-to-bir::make-iblock
-                  inserter :name name
-                           :dynamic-environment dynamic-environment))
-         (phis
-           (if (eql receiving -1) ; multiple values
-               (list (make-instance 'bir:phi :iblock iblock))
-               (loop repeat receiving
-                     collect (make-instance 'bir:phi
-                               :iblock iblock)))))
-    (setf (bir:inputs iblock) phis)
-    iblock))
+                         (bir:dynamic-environment inserter)))
+  (build:make-iblock inserter :name name
+                              :dynamic-environment dynamic-environment
+                              ;; -1 means multiple values means one phi.
+                              :ninputs (if (eql receiving -1) 1 receiving)))
 
 (defmethod start-annotation ((annot core:bytecode-ast-block)
                              inserter context)
@@ -1222,12 +1221,12 @@
                    ((0) :trusted)
                    ((1) nil)
                    ((2 3) (bytecompile-type-check which ctype sys
-                                                  (inserter-module inserter))))))
-          (ast-to-bir:insert inserter 'bir:thei
-                             :inputs (list datum)
-                             :outputs (list out)
-                             :asserted-type vctype
-                             :type-check-function type-check-function)
+                                                  (bir:module inserter))))))
+          (build:insert inserter 'bir:thei
+                        :inputs (list datum)
+                        :outputs (list out)
+                        :asserted-type vctype
+                        :type-check-function type-check-function)
           out))))
 
 ;;; TODO? Probably could cache this, at least for standard types.
@@ -1241,6 +1240,8 @@
 (defmethod start-annotation ((annot core:bytecode-ast-decls)
                              inserter context)
   (declare (ignore inserter))
+  (when (degenerate-annotation-p annot)
+    (return-from start-annotation))
   (loop with opt = (first (optimize-stack context))
         for (spec . rest) in (core:bytecode-ast-decls/decls annot)
         do (case spec
@@ -1254,6 +1255,8 @@
 (defmethod end-annotation ((annot core:bytecode-ast-decls)
                            inserter context)
   (declare (ignore inserter))
+  (when (degenerate-annotation-p annot)
+    (return-from end-annotation))
   (pop (optimize-stack context))
   (setf (policy context) (policy:compute-policy (first (optimize-stack context))
                                                 clasp-cleavir:*clasp-env*)))
@@ -1261,11 +1264,15 @@
 (defmethod start-annotation ((annot core:bytecode-debug-location)
                              inserter context)
   (declare (ignore inserter))
+  (when (degenerate-annotation-p annot)
+    (return-from start-annotation))
   (push (kludge-spi (core:bytecode-debug-location/location annot))
         (origin-stack context)))
 (defmethod end-annotation ((annot core:bytecode-debug-location)
                            inserter context)
   (declare (ignore inserter))
+  (when (degenerate-annotation-p annot)
+    (return-from end-annotation))
   (pop (origin-stack context)))
 
 ;;; Most processing is handled by maybe-begin-new, but there's still source info.
