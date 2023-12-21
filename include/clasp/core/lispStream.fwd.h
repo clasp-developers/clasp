@@ -36,14 +36,14 @@ FORWARD(TwoWayStream);
 FORWARD(BroadcastStream);
 FORWARD(EchoStream);
 FORWARD(FileStream);
-FORWARD(IOFileStream);
+FORWARD(PosixFileStream);
 #ifdef ECL_WINSOCK
 FORWARD(WinsockStream);
 #endif
 #ifdef CLASP_MS_WINDOWS_HOST
 FORWARD(ConsoleStream);
 #endif
-FORWARD(IOStreamStream);
+FORWARD(CFileStream);
 FORWARD(ConcatenatedStream);
 
 void clasp_write_string(const string& str, T_sp strm);

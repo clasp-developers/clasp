@@ -195,9 +195,9 @@ llvm::raw_pwrite_stream* llvm_stream(core::T_sp stream, llvm::SmallString<1024>&
     (void)sos;
     ostreamP = new llvm::raw_svector_ostream(stringOutput);
     stringOutputStream = true;
-  } else if (core::IOFileStream_sp fs = stream.asOrNull<core::IOFileStream_O>()) {
+  } else if (core::PosixFileStream_sp fs = stream.asOrNull<core::PosixFileStream_O>()) {
     ostreamP = new llvm::raw_fd_ostream(fs->fileDescriptor(), false, true);
-  } else if (core::IOStreamStream_sp iostr = stream.asOrNull<core::IOStreamStream_O>()) {
+  } else if (core::CFileStream_sp iostr = stream.asOrNull<core::CFileStream_O>()) {
     FILE* f = iostr->file();
     ostreamP = new llvm::raw_fd_ostream(fileno(f), false, true);
   } else if (core::SynonymStream_sp sstr = stream.asOrNull<core::SynonymStream_O>()) {
@@ -580,9 +580,9 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::emitModule(core::T_sp stream, core::T_s
   } else if (stream == kw::_sym_simple_vector_byte8) {
     (void)sos;
     ostream.set_stream(new llvm::raw_svector_ostream(stringOutput));
-  } else if (core::IOFileStream_sp fs = stream.asOrNull<core::IOFileStream_O>()) {
+  } else if (core::PosixFileStream_sp fs = stream.asOrNull<core::PosixFileStream_O>()) {
     ostream.set_stream(new llvm::raw_fd_ostream(fs->fileDescriptor(), false, true));
-  } else if (core::IOStreamStream_sp iostr = stream.asOrNull<core::IOStreamStream_O>()) {
+  } else if (core::CFileStream_sp iostr = stream.asOrNull<core::CFileStream_O>()) {
     FILE* f = iostr->file();
     ostream.set_stream(new llvm::raw_fd_ostream(fileno(f), false, true));
   } else {
@@ -597,9 +597,9 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::emitModule(core::T_sp stream, core::T_s
     (void)sos;
     dwo_ostream.set_stream(new llvm::raw_svector_ostream(dwo_stringOutput));
     dwo_stringOutputStream = true;
-  } else if (core::IOFileStream_sp fs = dwo_stream.asOrNull<core::IOFileStream_O>()) {
+  } else if (core::PosixFileStream_sp fs = dwo_stream.asOrNull<core::PosixFileStream_O>()) {
     dwo_ostream.set_stream(new llvm::raw_fd_ostream(fs->fileDescriptor(), false, true));
-  } else if (core::IOStreamStream_sp iostr = dwo_stream.asOrNull<core::IOStreamStream_O>()) {
+  } else if (core::CFileStream_sp iostr = dwo_stream.asOrNull<core::CFileStream_O>()) {
     FILE* f = iostr->file();
     dwo_ostream.set_stream(new llvm::raw_fd_ostream(fileno(f), false, true));
   } else if (dwo_stream.nilp()) {

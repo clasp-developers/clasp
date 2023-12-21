@@ -457,7 +457,7 @@ public: // Functions here
 
 }; // namespace core
 
-template <> struct gctools::GCInfo<core::IOFileStream_O> {
+template <> struct gctools::GCInfo<core::PosixFileStream_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;
@@ -465,18 +465,18 @@ template <> struct gctools::GCInfo<core::IOFileStream_O> {
 
 namespace core {
 
-class IOFileStream_O : public FileStream_O {
-  LISP_CLASS(core, CorePkg, IOFileStream_O, "iofile-stream", FileStream_O);
+class PosixFileStream_O : public FileStream_O {
+  LISP_CLASS(core, CorePkg, PosixFileStream_O, "posix-file-stream", FileStream_O);
 
 public:
   int _file_descriptor;
 
 public:
-  IOFileStream_O(){};
+  PosixFileStream_O(){};
 
-  static IOFileStream_sp make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size = 8,
-                              int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(),
-                              T_sp tempName = nil<T_O>(), bool created = false);
+  static PosixFileStream_sp make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size = 8,
+                                 int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(),
+                                 T_sp tempName = nil<T_O>(), bool created = false);
 
   int fileDescriptor() const { return this->_file_descriptor; };
   virtual bool has_file_position() const override;
@@ -550,7 +550,7 @@ public:
 
 }; // namespace core
 
-template <> struct gctools::GCInfo<core::IOStreamStream_O> {
+template <> struct gctools::GCInfo<core::CFileStream_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;
@@ -558,25 +558,25 @@ template <> struct gctools::GCInfo<core::IOStreamStream_O> {
 
 namespace core {
 
-class IOStreamStream_O : public FileStream_O {
-  LISP_CLASS(core, CorePkg, IOStreamStream_O, "iostream-stream", FileStream_O);
+class CFileStream_O : public FileStream_O {
+  LISP_CLASS(core, CorePkg, CFileStream_O, "c-file-stream", FileStream_O);
 
 public:
   FILE* _file;
   char* _buffer;
 
 public:
-  IOStreamStream_O() : _buffer(NULL){};
+  CFileStream_O() : _buffer(NULL){};
 
   void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
 
-  static IOStreamStream_sp make(T_sp fname, FILE* f, StreamMode smm, gctools::Fixnum byte_size = 8,
-                                int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(),
-                                T_sp tempName = nil<T_O>(), bool created = false);
+  static CFileStream_sp make(T_sp fname, FILE* f, StreamMode smm, gctools::Fixnum byte_size = 8,
+                             int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(), T_sp tempName = nil<T_O>(),
+                             bool created = false);
 
-  static IOStreamStream_sp make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size = 8,
-                                int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(),
-                                T_sp tempName = nil<T_O>(), bool created = false);
+  static CFileStream_sp make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size = 8,
+                             int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(), T_sp tempName = nil<T_O>(),
+                             bool created = false);
 
   FILE* file() const { return this->_file; };
 

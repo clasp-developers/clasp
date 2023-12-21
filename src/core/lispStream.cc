@@ -1215,11 +1215,11 @@ CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__make_fd_stream(int fd, Symbol_sp direction) {
   if (direction == kw::_sym_input) {
-    return IOFileStream_O::make(str_create("InputIOFileStreamFromFD"), fd, stream_mode_input);
+    return PosixFileStream_O::make(str_create("InputPosixFileStreamFromFD"), fd, stream_mode_input);
   } else if (direction == kw::_sym_output) {
-    return IOFileStream_O::make(str_create("OutputIOFileStreamFromFD"), fd, stream_mode_output);
+    return PosixFileStream_O::make(str_create("OutputPosixFileStreamFromFD"), fd, stream_mode_output);
   } else {
-    SIMPLE_ERROR("Could not create IOFileStream with direction {}", _rep_(direction));
+    SIMPLE_ERROR("Could not create PosixFileStream with direction {}", _rep_(direction));
   }
 }
 
@@ -1930,7 +1930,7 @@ static int safe_fclose(FILE* stream) {
  * POSIX FILE STREAM
  */
 
-cl_index IOFileStream_O::read_byte8(unsigned char* c, cl_index n) {
+cl_index PosixFileStream_O::read_byte8(unsigned char* c, cl_index n) {
   check_input();
 
   if (_byte_stack.notnilp())
@@ -1947,7 +1947,7 @@ cl_index IOFileStream_O::read_byte8(unsigned char* c, cl_index n) {
   return out;
 }
 
-cl_index IOFileStream_O::write_byte8(unsigned char* c, cl_index n) {
+cl_index PosixFileStream_O::write_byte8(unsigned char* c, cl_index n) {
   check_output();
 
   if (input_p()) {
@@ -1969,7 +1969,7 @@ cl_index IOFileStream_O::write_byte8(unsigned char* c, cl_index n) {
   return out;
 }
 
-ListenResult IOFileStream_O::listen() {
+ListenResult PosixFileStream_O::listen() {
   check_input();
 
   if (_byte_stack.notnilp())
@@ -1995,7 +1995,7 @@ ListenResult IOFileStream_O::listen() {
   return _fd_listen(_file_descriptor);
 }
 
-void IOFileStream_O::clear_input() {
+void PosixFileStream_O::clear_input() {
   check_input();
   while (_fd_listen(_file_descriptor) == listen_result_available) {
     claspCharacter c = read_char();
@@ -2004,17 +2004,17 @@ void IOFileStream_O::clear_input() {
   }
 }
 
-void IOFileStream_O::clear_output() { check_output(); }
+void PosixFileStream_O::clear_output() { check_output(); }
 
-void IOFileStream_O::force_output() { check_output(); }
+void PosixFileStream_O::force_output() { check_output(); }
 
-void IOFileStream_O::finish_output() { check_output(); }
+void PosixFileStream_O::finish_output() { check_output(); }
 
-bool IOFileStream_O::interactive_p() const { return isatty(_file_descriptor); }
+bool PosixFileStream_O::interactive_p() const { return isatty(_file_descriptor); }
 
 T_sp FileStream_O::element_type() const { return _element_type; }
 
-T_sp IOFileStream_O::length() {
+T_sp PosixFileStream_O::length() {
   T_sp output = clasp_file_len(_file_descriptor); // NIL or Integer_sp
   if (_byte_size != 8 && output.notnilp()) {
     Real_mv output_mv = clasp_floor2(gc::As_unsafe<Integer_sp>(output), make_fixnum(_byte_size / 8));
@@ -2027,7 +2027,7 @@ T_sp IOFileStream_O::length() {
   return output;
 }
 
-T_sp IOFileStream_O::position() {
+T_sp PosixFileStream_O::position() {
   T_sp output;
   clasp_off_t offset;
 
@@ -2055,7 +2055,7 @@ T_sp IOFileStream_O::position() {
   return output;
 }
 
-T_sp IOFileStream_O::set_position(T_sp pos) {
+T_sp PosixFileStream_O::set_position(T_sp pos) {
   clasp_off_t disp;
   int mode;
   if (pos.nilp()) {
@@ -2084,11 +2084,11 @@ void FileStream_O::close_cleanup(T_sp abort) {
   }
 }
 
-int IOFileStream_O::input_handle() { return (_mode == stream_mode_input || _mode == stream_mode_io) ? _file_descriptor : -1; }
+int PosixFileStream_O::input_handle() { return (_mode == stream_mode_input || _mode == stream_mode_io) ? _file_descriptor : -1; }
 
-int IOFileStream_O::output_handle() { return (_mode == stream_mode_output || _mode == stream_mode_io) ? _file_descriptor : -1; }
+int PosixFileStream_O::output_handle() { return (_mode == stream_mode_output || _mode == stream_mode_io) ? _file_descriptor : -1; }
 
-T_sp IOFileStream_O::close(T_sp abort) {
+T_sp PosixFileStream_O::close(T_sp abort) {
   if (_open) {
     int failed;
     unlikely_if(_file_descriptor == STDOUT_FILENO) FEerror("Cannot close the standard output", 0);
@@ -2102,9 +2102,9 @@ T_sp IOFileStream_O::close(T_sp abort) {
   return _lisp->_true();
 }
 
-IOFileStream_sp IOFileStream_O::make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size, int flags, T_sp external_format,
-                          T_sp tempName, bool created) {
-  IOFileStream_sp stream = IOFileStream_O::create();
+PosixFileStream_sp PosixFileStream_O::make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size, int flags,
+                                           T_sp external_format, T_sp tempName, bool created) {
+  PosixFileStream_sp stream = PosixFileStream_O::create();
   stream->_temp_filename = tempName;
   stream->_created = created;
   stream->_mode = smm;
@@ -2559,7 +2559,7 @@ T_sp FileStream_O::set_external_format(T_sp format) {
  * C STREAMS
  */
 
-void IOStreamStream_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+void CFileStream_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
   if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     std::string name = gc::As<String_sp>(_filename)->get_std_string();
     T_sp stream = this->asSmartPtr();
@@ -2573,7 +2573,7 @@ void IOStreamStream_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup
   }
 }
 
-cl_index IOStreamStream_O::read_byte8(unsigned char* c, cl_index n) {
+cl_index CFileStream_O::read_byte8(unsigned char* c, cl_index n) {
   check_input();
 
   if (_mode == stream_mode_io) {
@@ -2595,7 +2595,7 @@ cl_index IOStreamStream_O::read_byte8(unsigned char* c, cl_index n) {
   return out;
 }
 
-cl_index IOStreamStream_O::write_byte8(unsigned char* c, cl_index n) {
+cl_index CFileStream_O::write_byte8(unsigned char* c, cl_index n) {
   if (input_p()) {
     /* When using the same stream for input and output operations, we have to
      * use some file position operation before reading again. Besides this, if
@@ -2621,14 +2621,14 @@ cl_index IOStreamStream_O::write_byte8(unsigned char* c, cl_index n) {
   return out;
 }
 
-ListenResult IOStreamStream_O::listen() {
+ListenResult CFileStream_O::listen() {
   check_input();
   if (_byte_stack.notnilp())
     return listen_result_available;
   return _file_listen();
 }
 
-void IOStreamStream_O::clear_input() {
+void CFileStream_O::clear_input() {
   check_input();
 #if defined(CLASP_MS_WINDOWS_HOST)
   int f = fileno(_file);
@@ -2645,9 +2645,9 @@ void IOStreamStream_O::clear_input() {
   }
 }
 
-void IOStreamStream_O::clear_output() { check_output(); }
+void CFileStream_O::clear_output() { check_output(); }
 
-void IOStreamStream_O::force_output() {
+void CFileStream_O::force_output() {
   check_output();
   clasp_disable_interrupts();
   while ((fflush(_file) == EOF) && restartable_io_error("fflush"))
@@ -2655,11 +2655,11 @@ void IOStreamStream_O::force_output() {
   clasp_enable_interrupts();
 }
 
-void IOStreamStream_O::finish_output() { force_output(); }
+void CFileStream_O::finish_output() { force_output(); }
 
-bool IOStreamStream_O::interactive_p() const { return isatty(fileno(_file)); }
+bool CFileStream_O::interactive_p() const { return isatty(fileno(_file)); }
 
-T_sp IOStreamStream_O::length() {
+T_sp CFileStream_O::length() {
   T_sp output = clasp_file_len(fileno(_file)); // NIL or Integer_sp
   if (_byte_size != 8 && output.notnilp()) {
     //            const cl_env_ptr the_env = clasp_process_env();
@@ -2674,7 +2674,7 @@ T_sp IOStreamStream_O::length() {
   return output;
 }
 
-T_sp IOStreamStream_O::position() {
+T_sp CFileStream_O::position() {
   T_sp output;
   clasp_off_t offset;
 
@@ -2705,7 +2705,7 @@ T_sp IOStreamStream_O::position() {
   return output;
 }
 
-T_sp IOStreamStream_O::set_position(T_sp pos) {
+T_sp CFileStream_O::set_position(T_sp pos) {
   clasp_off_t disp;
   int mode;
   if (pos.nilp()) {
@@ -2724,11 +2724,11 @@ T_sp IOStreamStream_O::set_position(T_sp pos) {
   return mode ? nil<T_O>() : _lisp->_true();
 }
 
-int IOStreamStream_O::input_handle() { return (_mode == stream_mode_input || _mode == stream_mode_io) ? fileno(_file) : -1; }
+int CFileStream_O::input_handle() { return (_mode == stream_mode_input || _mode == stream_mode_io) ? fileno(_file) : -1; }
 
-int IOStreamStream_O::output_handle() { return (_mode == stream_mode_output || _mode == stream_mode_io) ? fileno(_file) : -1; }
+int CFileStream_O::output_handle() { return (_mode == stream_mode_output || _mode == stream_mode_io) ? fileno(_file) : -1; }
 
-T_sp IOStreamStream_O::close(T_sp abort) {
+T_sp CFileStream_O::close(T_sp abort) {
   if (_open) {
     int failed;
     unlikely_if(_file == stdout) FEerror("Cannot close the standard output", 0);
@@ -2747,9 +2747,9 @@ T_sp IOStreamStream_O::close(T_sp abort) {
   return _lisp->_true();
 }
 
-IOStreamStream_sp IOStreamStream_O::make(T_sp fname, FILE* f, StreamMode smm, gctools::Fixnum byte_size, int flags,
-                                         T_sp external_format, T_sp tempName, bool created) {
-  IOStreamStream_sp stream = IOStreamStream_O::create();
+CFileStream_sp CFileStream_O::make(T_sp fname, FILE* f, StreamMode smm, gctools::Fixnum byte_size, int flags, T_sp external_format,
+                                   T_sp tempName, bool created) {
+  CFileStream_sp stream = CFileStream_O::create();
   stream->_temp_filename = tempName;
   stream->_created = created;
   stream->_mode = smm;
@@ -2951,7 +2951,7 @@ CL_DOCSTRING(R"dx(set-buffering-mode)dx");
 DOCGROUP(clasp);
 CL_LISPIFY_NAME("set_buffering_mode")
 CL_DEFMETHOD
-void IOStreamStream_O::set_buffering_mode(T_sp mode) {
+void CFileStream_O::set_buffering_mode(T_sp mode) {
   int bm;
 
   if (mode == kw::_sym_none || mode.nilp())
@@ -2970,8 +2970,8 @@ void IOStreamStream_O::set_buffering_mode(T_sp mode) {
     setvbuf(_file, NULL, _IONBF, 0);
 }
 
-IOStreamStream_sp IOStreamStream_O::make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size, int flags,
-                                         T_sp external_format, T_sp tempName, bool created) {
+CFileStream_sp CFileStream_O::make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size, int flags, T_sp external_format,
+                                   T_sp tempName, bool created) {
   const char* mode; /* file open mode */
   FILE* fp;         /* file pointer */
   switch (smm) {
@@ -2986,7 +2986,7 @@ IOStreamStream_sp IOStreamStream_O::make(T_sp fname, int fd, StreamMode smm, gct
     break;
   default:
     mode = OPEN_R; // dummy
-    FEerror("make_stream: wrong mode in IOStreamStream_O::make smm = ~d", 1, clasp_make_fixnum(smm).raw_());
+    FEerror("make_stream: wrong mode in CFileStream_O::make smm = ~d", 1, clasp_make_fixnum(smm).raw_());
   }
   fp = safe_fdopen(fd, mode);
   if (fp == NULL) {
@@ -3003,7 +3003,7 @@ IOStreamStream_sp IOStreamStream_O::make(T_sp fname, int fd, StreamMode smm, gct
         gc::As<String_sp>(fname)->get_std_string().c_str(), mode, strerror(errno), fstat_error, info.st_mode,
         string_mode(info.st_mode));
   }
-  return IOStreamStream_O::make(fname, fp, smm, byte_size, flags, external_format, tempName, created);
+  return CFileStream_O::make(fname, fp, smm, byte_size, flags, external_format, tempName, created);
 }
 
 SYMBOL_EXPORT_SC_(KeywordPkg, input_output);
@@ -3026,7 +3026,7 @@ CL_DEFUN T_sp ext__make_stream_from_fd(int fd, T_sp direction, T_sp buffering, T
   }
   gctools::Fixnum byte_size;
   byte_size = clasp_normalize_stream_element_type(element_type);
-  IOStreamStream_sp stream = IOStreamStream_O::make(name, fd, smm_mode, byte_size, CLASP_STREAM_BINARY, external_format);
+  CFileStream_sp stream = CFileStream_O::make(name, fd, smm_mode, byte_size, CLASP_STREAM_BINARY, external_format);
   if (buffering.notnilp()) {
     stream->set_buffering_mode(byte_size ? kw::_sym_full : kw::_sym_line);
   }
@@ -3461,10 +3461,10 @@ T_sp clasp_open_stream(T_sp fn, StreamMode smm, T_sp if_exists, T_sp if_does_not
       SIMPLE_ERROR("Illegal smm mode: {} for CLASP_STREAM_C_STREAM", smm);
       UNREACHABLE();
     }
-    output = IOStreamStream_O::make(fn, fp, smm, byte_size, flags, external_format, temp_name, created);
-    output.as_unsafe<IOStreamStream_O>()->set_buffering_mode(byte_size ? kw::_sym_full : kw::_sym_line);
+    output = CFileStream_O::make(fn, fp, smm, byte_size, flags, external_format, temp_name, created);
+    output.as_unsafe<CFileStream_O>()->set_buffering_mode(byte_size ? kw::_sym_full : kw::_sym_line);
   } else {
-    output = IOFileStream_O::make(fn, f, smm, byte_size, flags, external_format, temp_name, created);
+    output = PosixFileStream_O::make(fn, f, smm, byte_size, flags, external_format, temp_name, created);
   }
   if (smm == stream_mode_probe) {
     eval::funcall(cl::_sym_close, output);
@@ -3683,7 +3683,7 @@ listen_error:
   return listen_result_unknown;
 }
 
-ListenResult IOStreamStream_O::_file_listen() {
+ListenResult CFileStream_O::_file_listen() {
   ListenResult aux;
   if (feof(_file))
     return listen_result_eof;
@@ -3786,7 +3786,7 @@ void unread_error(T_sp s) { CEerror(_lisp->_true(), "Error when using UNREAD-CHA
 void unread_twice(T_sp s) { CEerror(_lisp->_true(), "Used UNREAD-CHAR twice on stream ~D", 1, s.raw_()); }
 
 void maybe_clearerr(T_sp strm) {
-  IOStreamStream_sp s = strm.asOrNull<IOStreamStream_O>();
+  CFileStream_sp s = strm.asOrNull<CFileStream_O>();
   if (s && s->_file)
     clearerr(s->_file);
 }
@@ -4146,7 +4146,7 @@ String_sp StringOutputStream_O::get_string() {
 
 bool FileStream_O::has_file_position() const { return false; }
 
-bool IOFileStream_O::has_file_position() const {
+bool PosixFileStream_O::has_file_position() const {
   int fd = fileDescriptor();
   return clasp_has_file_position(fd);
 }

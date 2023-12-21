@@ -1108,8 +1108,8 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init_class_kind(core::SynonymStream_O);
   Init_class_kind(core::ConcatenatedStream_O);
   Init_class_kind(core::FileStream_O);
-  Init_class_kind(core::IOFileStream_O);
-  Init_class_kind(core::IOStreamStream_O);
+  Init_class_kind(core::PosixFileStream_O);
+  Init_class_kind(core::CFileStream_O);
   Init_class_kind(core::BroadcastStream_O);
   Init_class_kind(core::StringStream_O);
   Init_class_kind(core::StringOutputStream_O);
