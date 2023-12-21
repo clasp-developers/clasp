@@ -201,8 +201,7 @@ llvm::raw_pwrite_stream* llvm_stream(core::T_sp stream, llvm::SmallString<1024>&
     FILE* f = iostr->file();
     ostreamP = new llvm::raw_fd_ostream(fileno(f), false, true);
   } else if (core::SynonymStream_sp sstr = stream.asOrNull<core::SynonymStream_O>()) {
-    core::Symbol_sp sym = sstr->_SynonymSymbol;
-    return llvm_stream(sym->symbolValue(), stringOutput, stringOutputStream);
+    return llvm_stream(sstr->stream(), stringOutput, stringOutputStream);
   } else {
     SIMPLE_ERROR("Illegal file type {} for llvm_stream", _rep_(stream));
   }

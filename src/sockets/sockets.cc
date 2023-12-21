@@ -602,20 +602,20 @@ CL_DEFUN core::T_sp sockets_internal__ll_makeStreamFromFd(const string& name,   
   core::StreamMode direction;
   switch (streamMode) {
   case core::clasp_stream_mode_input:
-    direction = core::clasp_smm_input;
+    direction = core::stream_mode_input;
     break;
   case core::clasp_stream_mode_output:
-    direction = core::clasp_smm_output;
+    direction = core::stream_mode_output;
     break;
   case core::clasp_stream_mode_io:
-    direction = core::clasp_smm_io;
+    direction = core::stream_mode_io;
     break;
   default: {
     SIMPLE_ERROR("Illegal stream mode {}", streamMode);
   }
   }
-  core::Stream_sp stream =
-      gc::As_unsafe<core::Stream_sp>(core::IOFileStream_O::make(name, fd, direction, elementType, externalFormat));
+  core::Stream_sp stream = gc::As_unsafe<core::Stream_sp>(
+      core::IOStreamStream_O::make(core::str_create(name), fd, direction, elementType, externalFormat));
   return stream;
 }
 
@@ -623,11 +623,8 @@ CL_LAMBDA(stream);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(ll_autoCloseTwoWayStream)dx");
 DOCGROUP(clasp);
-CL_DEFUN void sockets_internal__ll_autoCloseTwoWayStream(core::Stream_sp stream) {
-#if 0
-	IMPLEMENT_MEF("Handle ECL_STREAM_CLOSE_COMPONENTS");
-	stream->stream.flags |= ECL_STREAM_CLOSE_COMPONENTS;
-#endif
+CL_DEFUN void sockets_internal__ll_autoCloseTwoWayStream(core::AnsiStream_sp stream) {
+  stream->_flags |= core::CLASP_STREAM_CLOSE_COMPONENTS;
 };
 
 CL_LAMBDA(num);

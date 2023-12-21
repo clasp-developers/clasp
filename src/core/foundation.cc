@@ -772,9 +772,9 @@ Instance_sp lisp_static_class(T_sp o) {
 string _rep_(T_sp obj) {
 // #define USE_WRITE_OBJECT
 #if defined(USE_WRITE_OBJECT)
-  T_sp sout = clasp_make_string_output_stream();
+  StringOutputStream_sp sout = clasp_make_string_output_stream();
   write_object(obj, sout);
-  return cl__get_output_stream_string(sout).as<String_O>()->get();
+  return sout->get_string()->get();
 #else
   if (obj.fixnump()) {
     stringstream ss;

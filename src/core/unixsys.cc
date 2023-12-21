@@ -114,9 +114,9 @@ T_sp clasp_make_pipe() {
   } else {
     T_sp fake_in_name = SimpleBaseString_O::make("PIPE-READ-ENDPOINT");
     T_sp fake_out_name = SimpleBaseString_O::make("PIPE-WRITE-ENDPOINT");
-    T_sp in = clasp_make_stream_from_fd(fake_in_name, fds[0], clasp_smm_input, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
-    T_sp out = clasp_make_stream_from_fd(fake_out_name, fds[1], clasp_smm_output, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
-    output = cl__make_two_way_stream(in, out);
+    T_sp in = IOStreamStream_O::make(fake_in_name, fds[0], stream_mode_input, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
+    T_sp out = IOStreamStream_O::make(fake_out_name, fds[1], stream_mode_output, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
+    output = TwoWayStream_O::make(in, out);
   }
   return output;
 #endif

@@ -1590,7 +1590,7 @@ void dump_start_code(T_sp fin, size_t length, bool useFrom = false, size_t from 
   if (useFrom) {
     peer = sis->peerFrom(from, length);
   } else {
-    from = sis->_InputPosition;
+    from = sis->_input_position;
     peer = sis->peer(length);
   }
   clasp_write_string(fmt::format("{}lu: ", from));

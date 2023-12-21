@@ -68,6 +68,7 @@ SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, stream_element_type);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_file_length);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_file_position);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_line_column);
+SYMBOL_EXPORT_SC_(GrayPkg, stream_line_number);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_line_length);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_advance_to_column);
 SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, close);

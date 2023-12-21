@@ -1,5 +1,6 @@
 (in-package #:clasp-tests)
 
+#+use-precise-gc
 (test slad-snapshot
       (let ((binary (ext:argv 0))
             (snap-fname
@@ -30,6 +31,7 @@
                 (values dump-code nil)))))
       (0 89))
 
+#+use-precise-gc
 (test slad-executable
       (let ((binary (ext:argv 0))
             (snap-fname

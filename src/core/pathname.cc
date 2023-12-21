@@ -894,29 +894,30 @@ CL_DEFUN Pathname_sp core__pathnameSTAR(T_sp x) {
     ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_pathname, x,
                               Cons_O::createList(cl::_sym_or, cl::_sym_fileStream, cl::_sym_string, cl::_sym_pathname));
   }
-L:
-  if (cl__stringp(x)) {
-    x = cl__parse_namestring(x);
-  } else if (gc::IsA<Pathname_sp>(x)) {
-    // do nothing
-  } else if ((gc::IsA<FileStream_sp>(x)) || (gc::IsA<SynonymStream_sp>(x))) {
-    // other streams don't have an associated pathname, no use return "-no-name-" here, SBCL says SynonymStream_sp also valid
-    x = clasp_filename(x);
-    goto L;
-  } else {
-    ERROR_WRONG_TYPE_ONLY_ARG(
-        cl::_sym_pathname, x,
-        Cons_O::createList(cl::_sym_or, cl::_sym_fileStream, cl::_sym_string, cl::_sym_pathname, cl::_sym_SynonymStream_O));
+
+  if (gc::IsA<Pathname_sp>(x))
+    return gc::As<Pathname_sp>(x);
+
+  if (cl__stringp(x))
+    return gc::As<Pathname_sp>(cl__parse_namestring(x));
+
+  if (stream_p(x)) {
+    T_sp pathname = stream_pathname(x);
+    if (cl__stringp(pathname))
+      pathname = cl__parse_namestring(pathname);
+    if (gc::IsA<Pathname_sp>(pathname))
+      return gc::As<Pathname_sp>(pathname);
   }
-  return gc::As<Pathname_sp>(x);
+
+  ERROR_WRONG_TYPE_ONLY_ARG(
+      cl::_sym_pathname, x,
+      Cons_O::createList(cl::_sym_or, cl::_sym_fileStream, cl::_sym_string, cl::_sym_pathname, cl::_sym_SynonymStream_O));
 }
 
 CL_DOCSTRING(R"dx(Returns the pathname denoted by pathspec. If the gray-streams module has been loaded
 then this function will be made generic.)dx")
 DOCGROUP(clasp);
-CL_DEFUN Pathname_sp cl__pathname(T_sp pathspec) {
-  return core__pathnameSTAR(pathspec);
-}
+CL_DEFUN Pathname_sp cl__pathname(T_sp pathspec) { return core__pathnameSTAR(pathspec); }
 
 CL_LAMBDA(x);
 CL_DECLARE();
@@ -1298,7 +1299,7 @@ NO_DIRECTORY:
       return nil<T_O>();
     }
   }
-  String_sp sbuffer = gc::As<String_sp>(cl__get_output_stream_string(buffer));
+  String_sp sbuffer = buffer.as<StringOutputStream_O>()->get_string();
 #ifdef CLASP_UNICODE
   if (core__extended_string_p(buffer) && (flags & CLASP_NAMESTRING_FORCE_BASE_STRING)) {
     unlikely_if(!core__fits_in_base_string(buffer)) FEerror("The filesystem does not accept filenames "

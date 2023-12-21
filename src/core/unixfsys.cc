@@ -257,8 +257,8 @@ CL_DEFUN T_mv core__fork(bool bReturnStream) {
         close(filedes[1]);
         int flags = fcntl(filedes[0], F_GETFL, 0);
         fcntl(filedes[0], F_SETFL, flags | O_NONBLOCK);
-        T_sp stream = clasp_make_file_stream_from_fd(SimpleBaseString_O::make("execvp"), filedes[0], clasp_smm_input_file, 8,
-                                                     CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
+        T_sp stream = IOFileStream_O::make(SimpleBaseString_O::make("execvp"), filedes[0], stream_mode_input, 8,
+                                           CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
         return Values(nil<T_O>(), clasp_make_fixnum(child_PID), stream);
       }
       return Values(nil<T_O>(), clasp_make_fixnum(child_PID), nil<T_O>());
@@ -883,6 +883,14 @@ CL_LAMBDA(filespec);
 CL_DECLARE();
 DOCGROUP(clasp);
 CL_DEFUN Pathname_sp core__truenameSTAR(T_sp filespec) {
+  if  (stream_p(filespec)) {
+    T_sp pathname = stream_truename(filespec);
+    if (cl__stringp(pathname))
+      pathname = cl__parse_namestring(pathname);
+    if (gc::IsA<Pathname_sp>(pathname))
+      return gc::As<Pathname_sp>(pathname);
+  }
+
   Pathname_sp pathname = make_absolute_pathname(filespec);
   Pathname_sp base_dir = make_base_pathname(pathname);
   Cons_sp dir;
@@ -910,9 +918,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(truename tries to find the file indicated by filespec and returns its truename.
 If the gray-streams module has been loaded then this function will be made generic.)dx");
 DOCGROUP(clasp);
-CL_DEFUN Pathname_sp cl__truename(T_sp filespec) {
-  return core__truenameSTAR(filespec);
-}
+CL_DEFUN Pathname_sp cl__truename(T_sp filespec) { return core__truenameSTAR(filespec); }
 
 int clasp_backup_open(const char* filename, int option, int mode) {
   stringstream sbackup;
@@ -1983,8 +1989,8 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
         if (bReturnStream) {
           int flags = fcntl(filedes[0], F_GETFL, 0);
           fcntl(filedes[0], F_SETFL, flags | O_NONBLOCK);
-          T_sp stream = clasp_make_file_stream_from_fd(SimpleBaseString_O::make("execvp"), filedes[0], clasp_smm_input_file, 8,
-                                                       CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
+          T_sp stream = IOFileStream_O::make(SimpleBaseString_O::make("execvp"), filedes[0], stream_mode_input, 8,
+                                             CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
 
           DEBUG_PRINT(BF("%s (%s:%d) | Values( %d %d %p )\n.") % __FUNCTION__ % __FILE__ % __LINE__ % 0 % child_PID % stream);
 
@@ -2076,8 +2082,8 @@ CL_DEFUN T_mv ext__fork_execvp(List_sp call_and_arguments, T_sp return_stream) {
         if (bReturnStream) {
           int flags = fcntl(filedes[0], F_GETFL, 0);
           fcntl(filedes[0], F_SETFL, flags | O_NONBLOCK);
-          T_sp stream = clasp_make_file_stream_from_fd(SimpleBaseString_O::make("execvp"), filedes[0], clasp_smm_input_file, 8,
-                                                       CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
+          T_sp stream = IOFileStream_O::make(SimpleBaseString_O::make("execvp"), filedes[0], stream_mode_input, 8,
+                                             CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
           return Values(nil<T_O>(), clasp_make_fixnum(child_PID), stream);
         }
         return Values(nil<T_O>(), clasp_make_fixnum(child_PID), nil<T_O>());
