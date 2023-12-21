@@ -129,7 +129,6 @@ FileScope_sp clasp_input_source_file_info(T_sp strm);
 Pathname_sp clasp_input_pathname(T_sp strm);
 
 T_sp cl__unread_char(Character_sp ch, T_sp dstrm);
-T_sp cl__get_output_stream_string(T_sp strm);
 
 T_sp clasp_off_t_to_integer(clasp_off_t offset);
 clasp_off_t clasp_integer_to_off_t(T_sp i);
@@ -144,7 +143,6 @@ T_sp cl__make_string_input_stream(String_sp strng, cl_index istart, T_sp iend);
 #define STRING_OUTPUT_STREAM_DEFAULT_SIZE 128
 T_sp clasp_make_string_output_stream(cl_index line_length = STRING_OUTPUT_STREAM_DEFAULT_SIZE, bool extended = false);
 T_sp cl__make_string_output_stream(Symbol_sp elementType);
-T_sp cl__get_output_stream_string(T_sp strm);
 
 T_sp cl__close(T_sp strm, T_sp abort = nil<T_O>());
 
@@ -628,9 +626,11 @@ class StringOutputStream_O : public StringStream_O {
 public:
   DEFAULT_CTOR_DTOR(StringOutputStream_O);
 
+  static String_sp get_string(T_sp string_output_stream);
+
   void fill(const string& data);
   void clear();
-  String_sp getAndReset();
+  String_sp get_string();
 
   claspCharacter write_char(claspCharacter c);
 
@@ -666,6 +666,8 @@ public:
   DEFAULT_CTOR_DTOR(StringInputStream_O);
 
   static T_sp make(const string& str);
+  static StringInputStream_sp make(String_sp string, cl_index istart, cl_index iend);
+
   string peer(size_t len);
   string peerFrom(size_t start, size_t len);
 

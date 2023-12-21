@@ -1142,17 +1142,21 @@ CL_DEFUN T_sp cl__make_string_output_stream(Symbol_sp elementType) {
   return clasp_make_string_output_stream(STRING_OUTPUT_STREAM_DEFAULT_SIZE, extended);
 }
 
-CL_LAMBDA(strm);
+CL_LISPIFY_NAME("cl:get-output-stream-string")
+CL_LAMBDA(string-output-stream);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(get_output_stream_string)dx");
+CL_DOCSTRING(R"dx(Returns a string containing, in order, all the characters that have
+been output to string-output-stream. This operation clears any
+characters on string-output-stream, so the string contains only those
+characters which have been output since the last call to
+get-output-stream-string or since the creation of the
+string-output-stream, whichever occurred most recently.)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__get_output_stream_string(T_sp strm) {
-  StringOutputStream_sp stream = strm.asOrNull<StringOutputStream_O>();
-  unlikely_if(!stream) af_wrongTypeOnlyArg(__FILE__, __LINE__, cl::_sym_getOutputStreamString, strm, cl::_sym_StringStream_O);
-  T_sp strng = cl__copy_seq(stream->_contents);
-  SetStringFillp(stream->_contents, 0);
-  return strng;
+CL_DEFUN String_sp StringOutputStream_O::get_string(T_sp string_output_stream) {
+  if (!string_output_stream.isA<StringOutputStream_O>())
+    af_wrongTypeOnlyArg(__FILE__, __LINE__, cl::_sym_getOutputStreamString, string_output_stream, cl::_sym_StringStream_O);
+  return string_output_stream.as_unsafe<StringOutputStream_O>()->get_string();
 }
 
 /**********************************************************************
@@ -1198,13 +1202,12 @@ T_sp StringInputStream_O::set_position(T_sp pos) {
   return _lisp->_true();
 }
 
-T_sp clasp_make_string_input_stream(T_sp strng, cl_index istart, cl_index iend) {
-  ASSERT(cl__stringp(strng));
-  StringInputStream_sp strm = StringInputStream_O::create();
-  strm->_contents = gc::As<String_sp>(strng);
-  strm->_input_position = istart;
-  strm->_input_limit = iend;
-  return strm;
+StringInputStream_sp StringInputStream_O::make(String_sp string, cl_index istart, cl_index iend) {
+  StringInputStream_sp stream = create();
+  stream->_contents = string;
+  stream->_input_position = istart;
+  stream->_input_limit = iend;
+  return stream;
 }
 
 CL_LAMBDA(file_descriptor &key direction);
@@ -1229,7 +1232,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp cl__make_string_input_stream(String_sp strng, cl_index istart, T_sp iend) {
   ASSERT(cl__stringp(strng));
   size_t_pair p = sequenceStartEnd(cl::_sym_make_string_input_stream, strng->length(), istart, iend);
-  return clasp_make_string_input_stream(strng, p.start, p.end);
+  return StringInputStream_O::make(strng, p.start, p.end);
 }
 
 /**********************************************************************
@@ -4136,7 +4139,7 @@ void StringOutputStream_O::clear() {
 };
 
 /*! Get the contents and reset them */
-String_sp StringOutputStream_O::getAndReset() {
+String_sp StringOutputStream_O::get_string() {
   String_sp contents = _contents;
   _contents = Str8Ns_O::createBufferString(STRING_OUTPUT_STREAM_DEFAULT_SIZE);
   _output_column = 0;

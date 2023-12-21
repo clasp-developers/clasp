@@ -122,12 +122,7 @@ template <int FMT> struct formatter {
         clasp_write_string(this->_controls[ii], output);
       }
     }
-    if (destination.nilp()) {
-      StringOutputStream_sp sout = gc::As_unsafe<StringOutputStream_sp>(output);
-      String_sp result = sout->getAndReset();
-      return result;
-    }
-    return nil<T_O>();
+    return destination.nilp() ? (T_sp)StringOutputStream_O::get_string(output) : nil<T_O>();
   }
 };
 

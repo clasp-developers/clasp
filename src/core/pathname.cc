@@ -1176,7 +1176,7 @@ T_sp clasp_namestring(T_sp tx, int flags) {
    * or using clasp_make_pathname(). In all of these cases Clasp will complain
    * at creation time if the pathname has wrong components.
    */
-  T_sp buffer = clasp_make_string_output_stream(); //(128, 1);
+  StringOutputStream_sp buffer = clasp_make_string_output_stream(); //(128, 1);
   logical = core__logical_pathname_p(x);
   host = x->_Host;
   if (logical) {
@@ -1299,7 +1299,7 @@ NO_DIRECTORY:
       return nil<T_O>();
     }
   }
-  String_sp sbuffer = gc::As<String_sp>(cl__get_output_stream_string(buffer));
+  String_sp sbuffer = buffer->get_string();
 #ifdef CLASP_UNICODE
   if (core__extended_string_p(buffer) && (flags & CLASP_NAMESTRING_FORCE_BASE_STRING)) {
     unlikely_if(!core__fits_in_base_string(buffer)) FEerror("The filesystem does not accept filenames "
