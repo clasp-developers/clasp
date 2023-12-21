@@ -1093,7 +1093,7 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(make_string_output_stream_from_string)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__make_string_output_stream_from_string(T_sp s) {
+CL_DEFUN StringOutputStream_sp core__make_string_output_stream_from_string(T_sp s) {
   StringOutputStream_sp strm = StringOutputStream_O::create();
   bool stringp = cl__stringp(s);
   unlikely_if(!stringp || !gc::As<Array_sp>(s)->arrayHasFillPointerP()) {
@@ -1104,7 +1104,7 @@ CL_DEFUN T_sp core__make_string_output_stream_from_string(T_sp s) {
   return strm;
 }
 
-T_sp clasp_make_string_output_stream(cl_index line_length, bool extended) {
+StringOutputStream_sp clasp_make_string_output_stream(cl_index line_length, bool extended) {
 #ifdef CLASP_UNICODE
   T_sp s;
   if (extended) {
@@ -1123,7 +1123,7 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(makeStringOutputStream)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__make_string_output_stream(Symbol_sp elementType) {
+CL_DEFUN StringOutputStream_sp cl__make_string_output_stream(Symbol_sp elementType) {
   int extended = 0;
   if (elementType == cl::_sym_base_char) {
     (void)0;
@@ -2104,7 +2104,7 @@ T_sp IOFileStream_O::close(T_sp abort) {
   return _lisp->_true();
 }
 
-T_sp IOFileStream_O::make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size, int flags, T_sp external_format,
+IOFileStream_sp IOFileStream_O::make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size, int flags, T_sp external_format,
                           T_sp tempName, bool created) {
   IOFileStream_sp stream = IOFileStream_O::create();
   stream->_temp_filename = tempName;
@@ -2749,8 +2749,8 @@ T_sp IOStreamStream_O::close(T_sp abort) {
   return _lisp->_true();
 }
 
-T_sp IOStreamStream_O::make(T_sp fname, FILE* f, StreamMode smm, gctools::Fixnum byte_size, int flags, T_sp external_format,
-                            T_sp tempName, bool created) {
+IOStreamStream_sp IOStreamStream_O::make(T_sp fname, FILE* f, StreamMode smm, gctools::Fixnum byte_size, int flags,
+                                         T_sp external_format, T_sp tempName, bool created) {
   IOStreamStream_sp stream = IOStreamStream_O::create();
   stream->_temp_filename = tempName;
   stream->_created = created;
@@ -2972,8 +2972,8 @@ void IOStreamStream_O::set_buffering_mode(T_sp mode) {
     setvbuf(_file, NULL, _IONBF, 0);
 }
 
-T_sp IOStreamStream_O::make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size, int flags, T_sp external_format,
-                            T_sp tempName, bool created) {
+IOStreamStream_sp IOStreamStream_O::make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size, int flags,
+                                         T_sp external_format, T_sp tempName, bool created) {
   const char* mode; /* file open mode */
   FILE* fp;         /* file pointer */
   switch (smm) {
@@ -3464,7 +3464,7 @@ T_sp clasp_open_stream(T_sp fn, StreamMode smm, T_sp if_exists, T_sp if_does_not
       UNREACHABLE();
     }
     output = IOStreamStream_O::make(fn, fp, smm, byte_size, flags, external_format, temp_name, created);
-    gc::As<IOStreamStream_sp>(output)->set_buffering_mode(byte_size ? kw::_sym_full : kw::_sym_line);
+    output.as_unsafe<IOStreamStream_O>()->set_buffering_mode(byte_size ? kw::_sym_full : kw::_sym_line);
   } else {
     output = IOFileStream_O::make(fn, f, smm, byte_size, flags, external_format, temp_name, created);
   }

@@ -141,8 +141,9 @@ T_sp cl__stream_external_format(T_sp strm);
 
 T_sp cl__make_string_input_stream(String_sp strng, cl_index istart, T_sp iend);
 #define STRING_OUTPUT_STREAM_DEFAULT_SIZE 128
-T_sp clasp_make_string_output_stream(cl_index line_length = STRING_OUTPUT_STREAM_DEFAULT_SIZE, bool extended = false);
-T_sp cl__make_string_output_stream(Symbol_sp elementType);
+StringOutputStream_sp clasp_make_string_output_stream(cl_index line_length = STRING_OUTPUT_STREAM_DEFAULT_SIZE,
+                                                      bool extended = false);
+StringOutputStream_sp cl__make_string_output_stream(Symbol_sp elementType);
 
 T_sp cl__close(T_sp strm, T_sp abort = nil<T_O>());
 
@@ -473,8 +474,9 @@ public:
 public:
   IOFileStream_O(){};
 
-  static T_sp make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size = 8, int flags = CLASP_STREAM_DEFAULT_FORMAT,
-                   T_sp external_format = nil<T_O>(), T_sp tempName = nil<T_O>(), bool created = false);
+  static IOFileStream_sp make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size = 8,
+                              int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(),
+                              T_sp tempName = nil<T_O>(), bool created = false);
 
   int fileDescriptor() const { return this->_file_descriptor; };
   virtual bool has_file_position() const override;
@@ -568,11 +570,13 @@ public:
 
   void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
 
-  static T_sp make(T_sp fname, FILE* f, StreamMode smm, gctools::Fixnum byte_size = 8, int flags = CLASP_STREAM_DEFAULT_FORMAT,
-                   T_sp external_format = nil<T_O>(), T_sp tempName = nil<T_O>(), bool created = false);
+  static IOStreamStream_sp make(T_sp fname, FILE* f, StreamMode smm, gctools::Fixnum byte_size = 8,
+                                int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(),
+                                T_sp tempName = nil<T_O>(), bool created = false);
 
-  static T_sp make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size = 8, int flags = CLASP_STREAM_DEFAULT_FORMAT,
-                   T_sp external_format = nil<T_O>(), T_sp tempName = nil<T_O>(), bool created = false);
+  static IOStreamStream_sp make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size = 8,
+                                int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(),
+                                T_sp tempName = nil<T_O>(), bool created = false);
 
   FILE* file() const { return this->_file; };
 
