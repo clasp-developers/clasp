@@ -613,6 +613,7 @@ public:
 
   DEFAULT_CTOR_DTOR(StringStream_O);
 
+  T_sp element_type() const;
   T_sp external_format() const;
 };
 
@@ -645,7 +646,6 @@ public:
   void force_output();
 
   bool output_p() const;
-  T_sp element_type() const;
 
   T_sp position();
   T_sp set_position(T_sp pos);
@@ -684,7 +684,6 @@ public:
   void clear_input();
 
   bool input_p() const;
-  T_sp element_type() const;
 
   T_sp position();
   T_sp set_position(T_sp pos);

@@ -1041,6 +1041,8 @@ T_sp FileStream_O::pathname() const { return cl__parse_namestring(_filename); }
 
 T_sp FileStream_O::truename() const { return cl__truename((_open && _temp_filename.notnilp()) ? _temp_filename : _filename); }
 
+T_sp StringStream_O::element_type() const { return _contents->element_type(); }
+
 T_sp StringStream_O::external_format() const {
 #ifdef CLASP_UNICODE
   return core__base_string_p(_contents) ? kw::_sym_latin_1 : kw::_sym_ucs_4;
@@ -1058,8 +1060,6 @@ claspCharacter StringOutputStream_O::write_char(claspCharacter c) {
   _contents->vectorPushExtend(clasp_make_character(c));
   return c;
 }
-
-T_sp StringOutputStream_O::element_type() const { return _contents->element_type(); }
 
 T_sp StringOutputStream_O::position() { return Integer_O::create((gc::Fixnum)(StringFillp(_contents))); }
 
@@ -1184,8 +1184,6 @@ ListenResult StringInputStream_O::listen() {
 }
 
 void StringInputStream_O::clear_input() {}
-
-T_sp StringInputStream_O::element_type() const { return _contents->element_type(); }
 
 T_sp StringInputStream_O::position() { return Integer_O::create((gc::Fixnum)_input_position); }
 
@@ -4135,15 +4133,14 @@ void StringOutputStream_O::fill(const string& data) { StringPushStringCharStar(t
 
 /*! Get the contents and reset them */
 void StringOutputStream_O::clear() {
-  _contents = Str8Ns_O::createBufferString(STRING_OUTPUT_STREAM_DEFAULT_SIZE);
+  SetStringFillp(_contents, 0);
   _column = 0;
 };
 
 /*! Get the contents and reset them */
 String_sp StringOutputStream_O::get_string() {
-  String_sp contents = _contents;
-  _contents = Str8Ns_O::createBufferString(STRING_OUTPUT_STREAM_DEFAULT_SIZE);
-  _column = 0;
+  String_sp contents = gc::As_unsafe<String_sp>(cl__copy_seq(_contents));
+  SetStringFillp(_contents, 0);
   return contents;
 };
 
