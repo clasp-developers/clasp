@@ -207,8 +207,6 @@ inline void check_output_stream(T_sp stream) {
 
 #define C_STREAM 1
 
-typedef enum { clasp_stream_mode_input, clasp_stream_mode_output, clasp_stream_mode_io } ClaspStreamModeEnum;
-
 class StreamCursor {
 public:
   /*! Tell that _LineNumber/_Column mean something */
@@ -430,29 +428,29 @@ public: // Functions here
   void write_byte_signed8(T_sp c);
   void write_byte_unsigned8(T_sp c);
 
-  bool input_p() const;
-  bool output_p() const;
+  bool input_p() const override;
+  bool output_p() const override;
 
-  T_sp read_byte();
-  void write_byte(T_sp c);
+  T_sp read_byte() override;
+  void write_byte(T_sp c) override;
   claspCharacter read_char_no_cursor();
 
-  claspCharacter write_char(claspCharacter c);
-  claspCharacter read_char();
-  void unread_char(claspCharacter c);
+  claspCharacter write_char(claspCharacter c) override;
+  claspCharacter read_char() override;
+  void unread_char(claspCharacter c) override;
 
-  cl_index read_vector(T_sp data, cl_index start, cl_index n);
-  cl_index write_vector(T_sp data, cl_index start, cl_index n);
+  cl_index read_vector(T_sp data, cl_index start, cl_index n) override;
+  cl_index write_vector(T_sp data, cl_index start, cl_index n) override;
 
-  T_sp element_type() const;
-  T_sp set_element_type(T_sp type);
-  T_sp external_format() const;
-  T_sp set_external_format(T_sp format);
+  T_sp element_type() const override;
+  T_sp set_element_type(T_sp type) override;
+  T_sp external_format() const override;
+  T_sp set_external_format(T_sp format) override;
 
-  T_sp string_length(T_sp string);
+  T_sp string_length(T_sp string) override;
 
-  T_sp pathname() const;
-  T_sp truename() const;
+  T_sp pathname() const override;
+  T_sp truename() const override;
 }; // FileStream class
 
 }; // namespace core
@@ -481,25 +479,25 @@ public:
   int fileDescriptor() const { return this->_file_descriptor; };
   virtual bool has_file_position() const override;
 
-  cl_index read_byte8(unsigned char* c, cl_index n);
-  cl_index write_byte8(unsigned char* c, cl_index n);
+  cl_index read_byte8(unsigned char* c, cl_index n) override;
+  cl_index write_byte8(unsigned char* c, cl_index n) override;
 
-  ListenResult listen();
-  void clear_input();
-  void clear_output();
-  void force_output();
-  void finish_output();
+  ListenResult listen() override;
+  void clear_input() override;
+  void clear_output() override;
+  void force_output() override;
+  void finish_output() override;
 
-  bool interactive_p() const;
+  bool interactive_p() const override;
 
-  T_sp length();
-  T_sp position();
-  T_sp set_position(T_sp pos);
+  T_sp length() override;
+  T_sp position() override;
+  T_sp set_position(T_sp pos) override;
 
-  int input_handle();
-  int output_handle();
+  int input_handle() override;
+  int output_handle() override;
 
-  T_sp close(T_sp abort);
+  T_sp close(T_sp abort) override;
 };
 
 #ifdef ECL_WSOCK
@@ -516,11 +514,11 @@ public:
   static T_sp make(T_sp fname, SOCKET socket, StreamMode smm, gctools::Fixnum byte_size = 8,
                    int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>());
 
-  cl_index read_byte8(unsigned char* c, cl_index n);
-  cl_index write_byte8(unsigned char* c, cl_index n);
-  ListenResult listen();
-  void clear_input();
-  T_sp close(T_sp abort);
+  cl_index read_byte8(unsigned char* c, cl_index n) override;
+  cl_index write_byte8(unsigned char* c, cl_index n) override;
+  ListenResult listen() override;
+  void clear_input() override;
+  T_sp close(T_sp abort) override;
 };
 
 #endif
@@ -538,12 +536,12 @@ public:
   static T_sp make(T_sp fname, HANDLE handle, StreamMode smm, gctools::Fixnum byte_size = 8,
                    int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>());
 
-  bool interactive_p() const;
-  cl_index read_byte8(unsigned char* c, cl_index n);
-  cl_index write_byte8(unsigned char* c, cl_index n);
-  ListenResult listen();
-  void clear_input();
-  void force_output();
+  bool interactive_p() const override;
+  cl_index read_byte8(unsigned char* c, cl_index n) override;
+  cl_index write_byte8(unsigned char* c, cl_index n) override;
+  ListenResult listen() override;
+  void clear_input() override;
+  void force_output() override;
 };
 
 #endif
@@ -580,27 +578,27 @@ public:
 
   FILE* file() const { return this->_file; };
 
-  cl_index read_byte8(unsigned char* c, cl_index n);
-  cl_index write_byte8(unsigned char* c, cl_index n);
+  cl_index read_byte8(unsigned char* c, cl_index n) override;
+  cl_index write_byte8(unsigned char* c, cl_index n) override;
 
   ListenResult _file_listen();
 
-  ListenResult listen();
-  void clear_input();
-  void clear_output();
-  void force_output();
-  void finish_output();
+  ListenResult listen() override;
+  void clear_input() override;
+  void clear_output() override;
+  void force_output() override;
+  void finish_output() override;
 
-  bool interactive_p() const;
+  bool interactive_p() const override;
 
-  T_sp length();
-  T_sp position();
-  T_sp set_position(T_sp pos);
+  T_sp length() override;
+  T_sp position() override;
+  T_sp set_position(T_sp pos) override;
 
-  int input_handle();
-  int output_handle();
+  int input_handle() override;
+  int output_handle() override;
 
-  T_sp close(T_sp abort);
+  T_sp close(T_sp abort) override;
 
   void set_buffering_mode(T_sp mode);
 };
@@ -613,8 +611,8 @@ public:
 
   DEFAULT_CTOR_DTOR(StringStream_O);
 
-  T_sp element_type() const;
-  T_sp external_format() const;
+  T_sp element_type() const override;
+  T_sp external_format() const override;
 };
 
 }; // namespace core
@@ -634,21 +632,22 @@ public:
   DEFAULT_CTOR_DTOR(StringOutputStream_O);
 
   static String_sp get_string(T_sp string_output_stream);
+  static String_sp get_string_shrink(T_sp string_output_stream);
 
   void fill(const string& data);
   void clear();
   String_sp get_string();
 
-  claspCharacter write_char(claspCharacter c);
+  claspCharacter write_char(claspCharacter c) override;
 
-  void clear_output();
-  void finish_output();
-  void force_output();
+  void clear_output() override;
+  void finish_output() override;
+  void force_output() override;
 
-  bool output_p() const;
+  bool output_p() const override;
 
-  T_sp position();
-  T_sp set_position(T_sp pos);
+  T_sp position() override;
+  T_sp set_position(T_sp pos) override;
 };
 
 }; // namespace core
@@ -677,16 +676,16 @@ public:
   string peer(size_t len);
   string peerFrom(size_t start, size_t len);
 
-  claspCharacter read_char();
-  void unread_char(claspCharacter c);
-  claspCharacter peek_char();
-  ListenResult listen();
-  void clear_input();
+  claspCharacter read_char() override;
+  void unread_char(claspCharacter c) override;
+  claspCharacter peek_char() override;
+  ListenResult listen() override;
+  void clear_input() override;
 
-  bool input_p() const;
+  bool input_p() const override;
 
-  T_sp position();
-  T_sp set_position(T_sp pos);
+  T_sp position() override;
+  T_sp set_position(T_sp pos) override;
 }; // StringStream class
 
 }; // namespace core
@@ -715,41 +714,41 @@ public:
 
   T_sp stream() const { return _symbol->symbolValue(); }
 
-  cl_index read_byte8(unsigned char* c, cl_index n);
-  cl_index write_byte8(unsigned char* c, cl_index n);
-  T_sp read_byte();
-  void write_byte(T_sp c);
-  claspCharacter read_char();
-  claspCharacter write_char(claspCharacter c);
-  void unread_char(claspCharacter c);
-  claspCharacter peek_char();
-  cl_index read_vector(T_sp data, cl_index start, cl_index n);
-  cl_index write_vector(T_sp data, cl_index start, cl_index n);
+  cl_index read_byte8(unsigned char* c, cl_index n) override;
+  cl_index write_byte8(unsigned char* c, cl_index n) override;
+  T_sp read_byte() override;
+  void write_byte(T_sp c) override;
+  claspCharacter read_char() override;
+  claspCharacter write_char(claspCharacter c) override;
+  void unread_char(claspCharacter c) override;
+  claspCharacter peek_char() override;
+  cl_index read_vector(T_sp data, cl_index start, cl_index n) override;
+  cl_index write_vector(T_sp data, cl_index start, cl_index n) override;
 
-  ListenResult listen();
-  void clear_input();
-  void clear_output();
-  void force_output();
-  void finish_output();
+  ListenResult listen() override;
+  void clear_input() override;
+  void clear_output() override;
+  void force_output() override;
+  void finish_output() override;
 
-  bool input_p() const;
-  bool output_p() const;
-  bool interactive_p() const;
-  T_sp element_type() const;
-  T_sp external_format() const;
-  T_sp set_external_format(T_sp format);
+  bool input_p() const override;
+  bool output_p() const override;
+  bool interactive_p() const override;
+  T_sp element_type() const override;
+  T_sp external_format() const override;
+  T_sp set_external_format(T_sp format) override;
 
-  T_sp length();
-  T_sp position();
-  T_sp set_position(T_sp pos);
-  int column() const;
-  int set_column(int column);
+  T_sp length() override;
+  T_sp position() override;
+  T_sp set_position(T_sp pos) override;
+  int column() const override;
+  int set_column(int column) override;
 
-  int input_handle();
-  int output_handle();
+  int input_handle() override;
+  int output_handle() override;
 
-  T_sp pathname() const;
-  T_sp truename() const;
+  T_sp pathname() const override;
+  T_sp truename() const override;
 }; // SynonymStream class
 
 }; // namespace core
@@ -765,14 +764,13 @@ namespace core {
 class TwoWayStream_O : public AnsiStream_O {
   LISP_CLASS(core, ClPkg, TwoWayStream_O, "two-way-stream", AnsiStream_O);
 
-public: // Simple default ctor/dtor
-  TwoWayStream_O() : _input_stream(nil<T_O>()), _output_stream(nil<T_O>()){};
-
 public: // instance variables here
   T_sp _input_stream;
   T_sp _output_stream;
 
 public:
+  TwoWayStream_O() : _input_stream(nil<T_O>()), _output_stream(nil<T_O>()){};
+
   static TwoWayStream_sp make(T_sp input_stream, T_sp output_stream);
   static T_sp input_stream(T_sp two_way_stream);
   static T_sp output_stream(T_sp two_way_stream);
@@ -780,34 +778,34 @@ public:
   T_sp input_stream() const { return _input_stream; }
   T_sp output_stream() const { return _output_stream; }
 
-  cl_index read_byte8(unsigned char* c, cl_index n);
-  cl_index write_byte8(unsigned char* c, cl_index n);
-  T_sp read_byte();
-  void write_byte(T_sp c);
-  claspCharacter read_char();
-  claspCharacter write_char(claspCharacter c);
-  void unread_char(claspCharacter c);
-  claspCharacter peek_char();
-  cl_index read_vector(T_sp data, cl_index start, cl_index n);
-  cl_index write_vector(T_sp data, cl_index start, cl_index n);
+  cl_index read_byte8(unsigned char* c, cl_index n) override;
+  cl_index write_byte8(unsigned char* c, cl_index n) override;
+  T_sp read_byte() override;
+  void write_byte(T_sp c) override;
+  claspCharacter read_char() override;
+  claspCharacter write_char(claspCharacter c) override;
+  void unread_char(claspCharacter c) override;
+  claspCharacter peek_char() override;
+  cl_index read_vector(T_sp data, cl_index start, cl_index n) override;
+  cl_index write_vector(T_sp data, cl_index start, cl_index n) override;
 
-  ListenResult listen();
-  void clear_input();
-  void clear_output();
-  void force_output();
-  void finish_output();
+  ListenResult listen() override;
+  void clear_input() override;
+  void clear_output() override;
+  void force_output() override;
+  void finish_output() override;
 
-  bool input_p() const;
-  bool output_p() const;
-  bool interactive_p() const;
-  T_sp element_type() const;
+  bool input_p() const override;
+  bool output_p() const override;
+  bool interactive_p() const override;
+  T_sp element_type() const override;
 
-  T_sp position();
-  int column() const;
-  int set_column(int column);
+  T_sp position() override;
+  int column() const override;
+  int set_column(int column) override;
 
-  int input_handle();
-  int output_handle();
+  int input_handle() override;
+  int output_handle() override;
 
   T_sp close(T_sp abort);
 }; // TwoWayStream class
@@ -826,35 +824,34 @@ FORWARD(BroadcastStream);
 class BroadcastStream_O : public AnsiStream_O {
   LISP_CLASS(core, ClPkg, BroadcastStream_O, "BroadcastStream", AnsiStream_O);
 
-public: // Simple default ctor/dtor
-  DEFAULT_CTOR_DTOR(BroadcastStream_O);
-
 public: // instance variables here
   T_sp _streams;
 
-public: // Functions here
+public:
+  DEFAULT_CTOR_DTOR(BroadcastStream_O);
+
   static BroadcastStream_sp make(List_sp streams);
   static T_sp streams(T_sp broadcast_stream);
 
-  cl_index write_byte8(unsigned char* c, cl_index n);
-  void write_byte(T_sp c);
-  claspCharacter write_char(claspCharacter c);
+  cl_index write_byte8(unsigned char* c, cl_index n) override;
+  void write_byte(T_sp c) override;
+  claspCharacter write_char(claspCharacter c) override;
 
-  void clear_output();
-  void force_output();
-  void finish_output();
+  void clear_output() override;
+  void force_output() override;
+  void finish_output() override;
 
-  bool output_p() const;
-  T_sp element_type() const;
-  T_sp external_format() const;
+  bool output_p() const override;
+  T_sp element_type() const override;
+  T_sp external_format() const override;
 
-  T_sp length();
-  T_sp position();
-  T_sp set_position(T_sp pos);
-  T_sp string_length(T_sp string);
-  int column() const;
-  int set_column(int column);
-  T_sp close(T_sp abort);
+  T_sp length() override;
+  T_sp position() override;
+  T_sp set_position(T_sp pos) override;
+  T_sp string_length(T_sp string) override;
+  int column() const override;
+  int set_column(int column) override;
+  T_sp close(T_sp abort) override;
 }; // BroadcastStream class
 
 }; // namespace core
@@ -870,28 +867,27 @@ namespace core {
 class ConcatenatedStream_O : public AnsiStream_O {
   LISP_CLASS(core, ClPkg, ConcatenatedStream_O, "ConcatenatedStream", AnsiStream_O);
 
-public: // Simple default ctor/dtor
-  DEFAULT_CTOR_DTOR(ConcatenatedStream_O);
-
 public: // instance variables here
   T_sp _streams;
 
-public: // Functions here
+public:
+  DEFAULT_CTOR_DTOR(ConcatenatedStream_O);
+
   static ConcatenatedStream_sp make(List_sp input_streams);
   static T_sp streams(T_sp concatenated_stream);
 
-  cl_index read_byte8(unsigned char* c, cl_index n);
-  T_sp read_byte();
-  claspCharacter read_char();
-  void unread_char(claspCharacter c);
-  ListenResult listen();
-  void clear_input();
+  cl_index read_byte8(unsigned char* c, cl_index n) override;
+  T_sp read_byte() override;
+  claspCharacter read_char() override;
+  void unread_char(claspCharacter c) override;
+  ListenResult listen() override;
+  void clear_input() override;
 
-  bool input_p() const;
-  T_sp element_type() const;
+  bool input_p() const override;
+  T_sp element_type() const override;
 
-  T_sp position();
-  T_sp close(T_sp abort);
+  T_sp position() override;
+  T_sp close(T_sp abort) override;
 }; // ConcatenatedStream class
 
 }; // namespace core
@@ -922,33 +918,33 @@ public:
   T_sp input_stream() const { return _input_stream; }
   T_sp output_stream() const { return _output_stream; }
 
-  cl_index read_byte8(unsigned char* c, cl_index n);
-  cl_index write_byte8(unsigned char* c, cl_index n);
-  T_sp read_byte();
-  void write_byte(T_sp c);
-  claspCharacter read_char();
-  claspCharacter write_char(claspCharacter c);
-  void unread_char(claspCharacter c);
-  claspCharacter peek_char();
+  cl_index read_byte8(unsigned char* c, cl_index n) override;
+  cl_index write_byte8(unsigned char* c, cl_index n) override;
+  T_sp read_byte() override;
+  void write_byte(T_sp c) override;
+  claspCharacter read_char() override;
+  claspCharacter write_char(claspCharacter c) override;
+  void unread_char(claspCharacter c) override;
+  claspCharacter peek_char() override;
 
-  ListenResult listen();
-  void clear_input();
-  void clear_output();
-  void force_output();
-  void finish_output();
+  ListenResult listen() override;
+  void clear_input() override;
+  void clear_output() override;
+  void force_output() override;
+  void finish_output() override;
 
-  bool input_p() const;
-  bool output_p() const;
-  T_sp element_type() const;
+  bool input_p() const override;
+  bool output_p() const override;
+  T_sp element_type() const override;
 
-  T_sp position();
-  int column() const;
-  int set_column(int column);
+  T_sp position() override;
+  int column() const override;
+  int set_column(int column) override;
 
-  int input_handle();
-  int output_handle();
+  int input_handle() override;
+  int output_handle() override;
 
-  T_sp close(T_sp abort);
+  T_sp close(T_sp abort) override;
 }; // EchoStream class
 
 T_sp cl__peek_char(T_sp peek_type, T_sp strm, T_sp eof_errorp, T_sp eof_value, T_sp recursivep);

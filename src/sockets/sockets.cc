@@ -601,13 +601,13 @@ CL_DEFUN core::T_sp sockets_internal__ll_makeStreamFromFd(const string& name,   
 {
   core::StreamMode direction;
   switch (streamMode) {
-  case core::clasp_stream_mode_input:
+  case core::stream_mode_input:
     direction = core::stream_mode_input;
     break;
-  case core::clasp_stream_mode_output:
+  case core::stream_mode_output:
     direction = core::stream_mode_output;
     break;
-  case core::clasp_stream_mode_io:
+  case core::stream_mode_io:
     direction = core::stream_mode_io;
     break;
   default: {
@@ -827,13 +827,13 @@ void initialize_sockets_globals() {
   _sym__PLUS_sock_stream_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)SOCK_STREAM));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_clasp_stream_mode_input_PLUS_);
-  _sym__PLUS_clasp_stream_mode_input_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)(core::clasp_stream_mode_input)));
+  _sym__PLUS_clasp_stream_mode_input_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)(core::stream_mode_input)));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_clasp_stream_mode_output_PLUS_);
-  _sym__PLUS_clasp_stream_mode_output_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)core::clasp_stream_mode_output));
+  _sym__PLUS_clasp_stream_mode_output_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)core::stream_mode_output));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_clasp_stream_mode_io_PLUS_);
-  _sym__PLUS_clasp_stream_mode_io_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)core::clasp_stream_mode_io));
+  _sym__PLUS_clasp_stream_mode_io_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)core::stream_mode_io));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_EADDRINUSE_PLUS_);
   _sym__PLUS_EADDRINUSE_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)EADDRINUSE));
