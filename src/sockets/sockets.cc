@@ -615,7 +615,7 @@ CL_DEFUN core::T_sp sockets_internal__ll_makeStreamFromFd(const string& name,   
   }
   }
   core::Stream_sp stream = gc::As_unsafe<core::Stream_sp>(
-      core::IOFileStream_O::make(core::str_create(name), fd, direction, elementType, externalFormat));
+      core::IOStreamStream_O::make(core::str_create(name), fd, direction, elementType, externalFormat));
   return stream;
 }
 
