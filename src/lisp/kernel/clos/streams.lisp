@@ -733,8 +733,13 @@ truename."))
                                   &optional (start 0) end)
   (clos-default-write-sequence stream sequence start end))
 
-(defmethod stream-write-sequence ((stream ansi-stream) sequence &optional (start 0) end)
-  (core:do-write-sequence sequence stream start end))
+(defmethod stream-write-sequence ((stream ansi-stream) sequence
+                                  &optional (start 0)
+                                            (end (length sequence)))
+  ;; it is safe to call cl:write-sequence because
+  ;; stream_write_sequence does not call the generic
+  ;; gray:stream-write-sequence if the stream is an ansi-stream.
+  (cl:write-sequence sequence stream :start start :end end))
 
 (defmethod stream-write-sequence ((stream t) sequence &optional start end)
   (declare (ignore sequence start end))

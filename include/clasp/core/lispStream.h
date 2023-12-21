@@ -163,7 +163,7 @@ void stream_terpri(T_sp stream);
 bool stream_fresh_line(T_sp stream);
 
 cl_index stream_read_vector(T_sp stream, T_sp data, cl_index start, cl_index end);
-cl_index stream_write_vector(T_sp stream, T_sp data, cl_index start, cl_index end);
+void stream_write_sequence(T_sp stream, T_sp data, cl_index start, cl_index end);
 
 ListenResult stream_listen(T_sp stream);
 void stream_clear_input(T_sp stream);
@@ -302,7 +302,7 @@ public:
   virtual bool fresh_line();
 
   virtual cl_index read_vector(T_sp data, cl_index start, cl_index end);
-  virtual cl_index write_vector(T_sp data, cl_index start, cl_index end);
+  virtual void write_sequence(T_sp data, cl_index start, cl_index end);
 
   virtual ListenResult listen();
   virtual void clear_input();
@@ -447,7 +447,7 @@ public: // Functions here
   void unread_char(claspCharacter c) override;
 
   cl_index read_vector(T_sp data, cl_index start, cl_index n) override;
-  cl_index write_vector(T_sp data, cl_index start, cl_index n) override;
+  void write_sequence(T_sp data, cl_index start, cl_index n) override;
 
   T_sp element_type() const override;
   T_sp set_element_type(T_sp type) override;
@@ -729,8 +729,9 @@ public:
   claspCharacter write_char(claspCharacter c) override;
   void unread_char(claspCharacter c) override;
   claspCharacter peek_char() override;
+
   cl_index read_vector(T_sp data, cl_index start, cl_index n) override;
-  cl_index write_vector(T_sp data, cl_index start, cl_index n) override;
+  void write_sequence(T_sp data, cl_index start, cl_index n) override;
 
   ListenResult listen() override;
   void clear_input() override;
@@ -793,8 +794,9 @@ public:
   claspCharacter write_char(claspCharacter c) override;
   void unread_char(claspCharacter c) override;
   claspCharacter peek_char() override;
+
   cl_index read_vector(T_sp data, cl_index start, cl_index n) override;
-  cl_index write_vector(T_sp data, cl_index start, cl_index n) override;
+  void write_sequence(T_sp data, cl_index start, cl_index n) override;
 
   ListenResult listen() override;
   void clear_input() override;
@@ -843,6 +845,8 @@ public:
   cl_index write_byte8(unsigned char* c, cl_index n) override;
   void write_byte(T_sp c) override;
   claspCharacter write_char(claspCharacter c) override;
+
+  void write_sequence(T_sp data, cl_index start, cl_index end);
 
   void clear_output() override;
   void force_output() override;

@@ -1264,8 +1264,8 @@ cl_index TwoWayStream_O::read_vector(T_sp data, cl_index start, cl_index n) {
   return stream_read_vector(_input_stream, data, start, n);
 }
 
-cl_index TwoWayStream_O::write_vector(T_sp data, cl_index start, cl_index n) {
-  return stream_write_vector(_output_stream, data, start, n);
+void TwoWayStream_O::write_sequence(T_sp data, cl_index start, cl_index n) {
+  stream_write_sequence(_output_stream, data, start, n);
 }
 
 ListenResult TwoWayStream_O::listen() { return stream_listen(_input_stream); }
@@ -1371,9 +1371,14 @@ claspCharacter BroadcastStream_O::write_char(claspCharacter c) {
 }
 
 void BroadcastStream_O::write_byte(T_sp c) {
-  T_sp l;
-  for (l = _streams; !l.nilp(); l = oCdr(l)) {
+  for (T_sp l = _streams; !l.nilp(); l = oCdr(l)) {
     stream_write_byte(oCar(l), c);
+  }
+}
+
+void BroadcastStream_O::write_sequence(T_sp sequence, cl_index start, cl_index end) {
+  for (T_sp l = _streams; !l.nilp(); l = oCdr(l)) {
+    stream_write_sequence(oCar(l), sequence, start, end);
   }
 }
 
@@ -1749,9 +1754,7 @@ cl_index SynonymStream_O::read_vector(T_sp data, cl_index start, cl_index n) {
   return stream_read_vector(stream(), data, start, n);
 }
 
-cl_index SynonymStream_O::write_vector(T_sp data, cl_index start, cl_index n) {
-  return stream_write_vector(stream(), data, start, n);
-}
+void SynonymStream_O::write_sequence(T_sp data, cl_index start, cl_index n) { stream_write_sequence(stream(), data, start, n); }
 
 ListenResult SynonymStream_O::listen() { return stream_listen(stream()); }
 
@@ -2239,100 +2242,100 @@ cl_index FileStream_O::read_vector(T_sp data, cl_index start, cl_index end) {
   return AnsiStream_O::read_vector(data, start, end);
 }
 
-cl_index FileStream_O::write_vector(T_sp data, cl_index start, cl_index end) {
-  Vector_sp vec = gc::As<Vector_sp>(data);
-  T_sp elementType = vec->element_type();
-  if (start >= end)
-    return start;
-  if (elementType == ext::_sym_byte8 || elementType == ext::_sym_integer8) {
-    if (_byte_size == sizeof(uint8_t) * 8) {
-      unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
-      return write_byte8(aux, end - start);
-    }
-  } else if (elementType == ext::_sym_byte16 || elementType == ext::_sym_integer16) {
-    if (_byte_size == sizeof(uint16_t) * 8) {
-      unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
-      size_t bytes = (end - start) * sizeof(uint16_t);
-      bytes = write_byte8(aux, bytes);
-      return start + bytes / sizeof(uint16_t);
-    }
-  } else if (elementType == ext::_sym_byte32 || elementType == ext::_sym_integer32) {
-    if (_byte_size == sizeof(uint32_t) * 8) {
-      unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
-      size_t bytes = (end - start) * sizeof(uint32_t);
-      bytes = write_byte8(aux, bytes);
-      return start + bytes / sizeof(uint32_t);
-    }
-  } else if (elementType == ext::_sym_byte64 || elementType == ext::_sym_integer64) {
-    if (_byte_size == sizeof(uint64_t) * 8) {
-      unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
-      size_t bytes = (end - start) * sizeof(uint64_t);
-      bytes = write_byte8(aux, bytes);
-      return start + bytes / sizeof(uint64_t);
-    }
-  } else if (elementType == cl::_sym_fixnum) {
-    if (_byte_size == sizeof(Fixnum) * 8) {
-      unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
-      size_t bytes = (end - start) * sizeof(Fixnum);
-      bytes = write_byte8(aux, bytes);
-      return start + bytes / sizeof(Fixnum);
-    }
-  } else if (elementType == _sym_size_t) {
-    if (_byte_size == sizeof(size_t) * 8) {
-      unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
-      cl_index bytes = (end - start) * sizeof(size_t);
-      bytes = write_byte8(aux, bytes);
-      return start + bytes / sizeof(size_t);
-    }
-  } else if (elementType == cl::_sym_base_char) {
-    /* 1 extra byte for linefeed in crlf mode */
-    unsigned char buffer[VECTOR_ENCODING_BUFFER_SIZE + ENCODING_BUFFER_MAX_SIZE + 1];
-    size_t nbytes = 0;
-    size_t i;
-    for (i = start; i < end; i++) {
-      char c = *(char*)(vec->rowMajorAddressOfElement_(i));
-      if (c == CLASP_CHAR_CODE_NEWLINE) {
-        if ((_flags & CLASP_STREAM_CR) && (_flags & CLASP_STREAM_LF))
-          nbytes += encode(buffer + nbytes, CLASP_CHAR_CODE_RETURN);
-        else if (_flags & CLASP_STREAM_CR)
-          c = CLASP_CHAR_CODE_RETURN;
+void FileStream_O::write_sequence(T_sp data, cl_index start, cl_index end) {
+  if (data.isA<Vector_O>()) {
+    Vector_sp vec = data.as_unsafe<Vector_O>();
+    T_sp elementType = vec->element_type();
+    if (start >= end)
+      return;
+    if (elementType == ext::_sym_byte8 || elementType == ext::_sym_integer8) {
+      if (_byte_size == sizeof(uint8_t) * 8) {
+        unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
+        write_byte8(aux, end - start);
+        return;
       }
-      nbytes += encode(buffer + nbytes, c);
-      update_line_column(c);
-      if (nbytes >= VECTOR_ENCODING_BUFFER_SIZE) {
-        write_byte8(buffer, nbytes);
-        nbytes = 0;
+    } else if (elementType == ext::_sym_byte16 || elementType == ext::_sym_integer16) {
+      if (_byte_size == sizeof(uint16_t) * 8) {
+        unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
+        size_t bytes = (end - start) * sizeof(uint16_t);
+        write_byte8(aux, bytes);
+        return;
       }
+    } else if (elementType == ext::_sym_byte32 || elementType == ext::_sym_integer32) {
+      if (_byte_size == sizeof(uint32_t) * 8) {
+        unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
+        size_t bytes = (end - start) * sizeof(uint32_t);
+        write_byte8(aux, bytes);
+        return;
+      }
+    } else if (elementType == ext::_sym_byte64 || elementType == ext::_sym_integer64) {
+      if (_byte_size == sizeof(uint64_t) * 8) {
+        unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
+        size_t bytes = (end - start) * sizeof(uint64_t);
+        write_byte8(aux, bytes);
+      }
+    } else if (elementType == cl::_sym_fixnum) {
+      if (_byte_size == sizeof(Fixnum) * 8) {
+        unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
+        size_t bytes = (end - start) * sizeof(Fixnum);
+        write_byte8(aux, bytes);
+      }
+    } else if (elementType == _sym_size_t) {
+      if (_byte_size == sizeof(size_t) * 8) {
+        unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
+        cl_index bytes = (end - start) * sizeof(size_t);
+        write_byte8(aux, bytes);
+      }
+    } else if (elementType == cl::_sym_base_char) {
+      /* 1 extra byte for linefeed in crlf mode */
+      unsigned char buffer[VECTOR_ENCODING_BUFFER_SIZE + ENCODING_BUFFER_MAX_SIZE + 1];
+      size_t nbytes = 0;
+      size_t i;
+      for (i = start; i < end; i++) {
+        char c = *(char*)(vec->rowMajorAddressOfElement_(i));
+        if (c == CLASP_CHAR_CODE_NEWLINE) {
+          if ((_flags & CLASP_STREAM_CR) && (_flags & CLASP_STREAM_LF))
+            nbytes += encode(buffer + nbytes, CLASP_CHAR_CODE_RETURN);
+          else if (_flags & CLASP_STREAM_CR)
+            c = CLASP_CHAR_CODE_RETURN;
+        }
+        nbytes += encode(buffer + nbytes, c);
+        update_line_column(c);
+        if (nbytes >= VECTOR_ENCODING_BUFFER_SIZE) {
+          write_byte8(buffer, nbytes);
+          nbytes = 0;
+        }
+      }
+      write_byte8(buffer, nbytes);
+      return;
     }
-    write_byte8(buffer, nbytes);
-    return end;
-  }
 #ifdef CLASP_UNICODE
-  else if (elementType == cl::_sym_character) {
-    /* 1 extra byte for linefeed in crlf mode */
-    unsigned char buffer[VECTOR_ENCODING_BUFFER_SIZE + ENCODING_BUFFER_MAX_SIZE + 1];
-    cl_index nbytes = 0;
-    cl_index i;
-    for (i = start; i < end; i++) {
-      unsigned char c = *(unsigned char*)vec->rowMajorAddressOfElement_(i);
-      if (c == CLASP_CHAR_CODE_NEWLINE) {
-        if ((_flags & CLASP_STREAM_CR) && (_flags & CLASP_STREAM_LF))
-          nbytes += encode(buffer + nbytes, CLASP_CHAR_CODE_RETURN);
-        else if (_flags & CLASP_STREAM_CR)
-          c = CLASP_CHAR_CODE_RETURN;
+    else if (elementType == cl::_sym_character) {
+      /* 1 extra byte for linefeed in crlf mode */
+      unsigned char buffer[VECTOR_ENCODING_BUFFER_SIZE + ENCODING_BUFFER_MAX_SIZE + 1];
+      cl_index nbytes = 0;
+      cl_index i;
+      for (i = start; i < end; i++) {
+        unsigned char c = *(unsigned char*)vec->rowMajorAddressOfElement_(i);
+        if (c == CLASP_CHAR_CODE_NEWLINE) {
+          if ((_flags & CLASP_STREAM_CR) && (_flags & CLASP_STREAM_LF))
+            nbytes += encode(buffer + nbytes, CLASP_CHAR_CODE_RETURN);
+          else if (_flags & CLASP_STREAM_CR)
+            c = CLASP_CHAR_CODE_RETURN;
+        }
+        nbytes += encode(buffer + nbytes, c);
+        update_line_column(c);
+        if (nbytes >= VECTOR_ENCODING_BUFFER_SIZE) {
+          write_byte8(buffer, nbytes);
+          nbytes = 0;
+        }
       }
-      nbytes += encode(buffer + nbytes, c);
-      update_line_column(c);
-      if (nbytes >= VECTOR_ENCODING_BUFFER_SIZE) {
-        write_byte8(buffer, nbytes);
-        nbytes = 0;
-      }
+      write_byte8(buffer, nbytes);
+      return;
     }
-    write_byte8(buffer, nbytes);
-    return end;
-  }
 #endif
-  return AnsiStream_O::write_vector(data, start, end);
+  }
+  return AnsiStream_O::write_sequence(data, start, end);
 }
 
 SYMBOL_EXPORT_SC_(KeywordPkg, utf_8);
@@ -3080,61 +3083,6 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(file-string-length)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__file_string_length(T_sp stream, T_sp tstring) { return stream_string_length(stream, tstring); }
-
-CL_LAMBDA(seq stream start end);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(do_write_sequence)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__do_write_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
-  gctools::Fixnum start, limit, end(0);
-
-  /* Since we have called clasp_length(), we know that SEQ is a valid
-           sequence. Therefore, we only need to check the type of the
-           object, and seq == nil<T_O>() i.f.f. t = t_symbol */
-  limit = cl__length(seq);
-  if (!core__fixnump(s)) {
-    ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence, kw::_sym_start, s, Integer_O::makeIntegerType(0, limit - 1));
-  }
-  start = (s).unsafe_fixnum();
-  if ((start < 0) || (start > limit)) {
-    ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence, kw::_sym_start, s, Integer_O::makeIntegerType(0, limit - 1));
-  }
-  if (e.nilp()) {
-    end = limit;
-  } else if (!e.fixnump()) { //! core__fixnump(e)) {
-    ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence, kw::_sym_end, e, Integer_O::makeIntegerType(0, limit));
-  } else
-    end = (e).unsafe_fixnum();
-  if ((end < 0) || (end > limit)) {
-    ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence, kw::_sym_end, e, Integer_O::makeIntegerType(0, limit));
-  }
-  if (start < end) {
-    if (cl__listp(seq)) {
-      T_sp elt_type = cl__stream_element_type(stream);
-      bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
-      T_sp s = cl__nthcdr(clasp_make_integer(start), seq);
-      T_sp orig = s;
-      for (; s.notnilp(); s = oCdr(s)) {
-        if (!cl__listp(s)) {
-          TYPE_ERROR_PROPER_LIST(orig);
-        }
-        if (start < end) {
-          T_sp elt = oCar(s);
-          if (ischar)
-            stream_write_char(stream, clasp_as_claspCharacter(gc::As<Character_sp>(elt)));
-          else
-            stream_write_byte(stream, elt);
-          start++;
-        } else {
-          return seq;
-        }
-      };
-    } else {
-      stream_write_vector(stream, seq, start, end);
-    }
-  }
-  return seq;
-}
 
 T_sp si_do_read_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
   gctools::Fixnum start, limit, end(0);
@@ -4047,25 +3995,44 @@ cl_index AnsiStream_O::read_vector(T_sp data, cl_index start, cl_index end) {
   return start;
 }
 
-cl_index AnsiStream_O::write_vector(T_sp data, cl_index start, cl_index end) {
+void AnsiStream_O::write_sequence(T_sp data, cl_index start, cl_index end) {
   if (start >= end)
-    return start;
-  Vector_sp vec = gc::As<Vector_sp>(data);
-  T_sp elementType = vec->element_type();
-  if (elementType == cl::_sym_base_char ||
-#ifdef CLASP_UNICODE
-      elementType == cl::_sym_character ||
-#endif
-      (elementType == cl::_sym_T && cl__characterp(vec->rowMajorAref(0)))) {
-    for (; start < end; start++) {
-      write_char(clasp_as_claspCharacter(gc::As<Character_sp>((vec->rowMajorAref(start)))));
+    return;
+  if (cl__listp(data)) {
+    T_sp elt_type = element_type();
+    bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
+    T_sp s = cl__nthcdr(clasp_make_integer(start), data);
+    T_sp orig = s;
+    for (; s.notnilp(); s = oCdr(s)) {
+      if (!cl__listp(s)) {
+        TYPE_ERROR_PROPER_LIST(orig);
+      }
+      if (start < end) {
+        T_sp elt = oCar(s);
+        if (ischar)
+          write_char(clasp_as_claspCharacter(gc::As<Character_sp>(elt)));
+        else
+          write_byte(elt);
+        start++;
+      }
     }
   } else {
-    for (; start < end; start++) {
-      write_byte(vec->rowMajorAref(start));
+    Vector_sp vec = gc::As<Vector_sp>(data);
+    T_sp elementType = vec->element_type();
+    if (elementType == cl::_sym_base_char ||
+#ifdef CLASP_UNICODE
+        elementType == cl::_sym_character ||
+#endif
+        (elementType == cl::_sym_T && cl__characterp(vec->rowMajorAref(0)))) {
+      for (; start < end; start++) {
+        write_char(clasp_as_claspCharacter(gc::As<Character_sp>((vec->rowMajorAref(start)))));
+      }
+    } else {
+      for (; start < end; start++) {
+        write_byte(vec->rowMajorAref(start));
+      }
     }
   }
-  return start;
 }
 
 ListenResult AnsiStream_O::listen() {
@@ -4471,9 +4438,7 @@ CL_LAMBDA(&optional output-stream);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Send a newline to the output stream)dx");
 DOCGROUP(clasp);
-CL_DEFUN void cl__terpri(T_sp outputStreamDesig) {
-  stream_terpri(coerce::outputStreamDesignator(outputStreamDesig));
-};
+CL_DEFUN void cl__terpri(T_sp outputStreamDesig) { stream_terpri(coerce::outputStreamDesignator(outputStreamDesig)); };
 
 CL_LAMBDA(&optional outputStream);
 CL_DECLARE();
@@ -4515,6 +4480,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(writeLine)dx");
 DOCGROUP(clasp);
 CL_DEFUN String_sp cl__write_line(String_sp str, T_sp stream, int istart, T_sp end) {
+  stream = coerce::outputStreamDesignator(stream);
   clasp_writeString(str, stream, istart, end);
   stream_terpri(stream);
   return str;
@@ -4631,7 +4597,6 @@ CL_DEFUN T_sp core__stream_line_number(T_sp strm) {
   return make_fixnum(stream_line(strm));
 };
 
-/*! Translated from ecl::si_do_write_sequence */
 CL_LAMBDA(seq stream &key (start 0) end);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(writeSequence)dx");
@@ -4660,26 +4625,7 @@ CL_DEFUN T_sp cl__write_sequence(T_sp seq, T_sp stream, Fixnum_sp fstart, T_sp t
     // I don't believe that we can silently return seq, sbcl throws an error
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence, kw::_sym_end, tend, Integer_O::makeIntegerType(start, limit - 1));
   }
-  if (cl__listp(seq)) {
-    T_sp elt_type = cl__stream_element_type(stream);
-    bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
-    T_sp s = cl__nthcdr(clasp_make_integer(start), seq);
-    for (;; s = cons_cdr(s)) {
-      if (start < end) {
-        T_sp elt = oCar(s);
-        if (ischar)
-          stream_write_char(stream, clasp_as_claspCharacter(gc::As<Character_sp>(elt)));
-        else
-          stream_write_byte(stream, gc::As<Integer_sp>(elt));
-        start++;
-      } else {
-        goto OUTPUT;
-      }
-    }
-  } else {
-    stream_write_vector(stream, gc::As<Vector_sp>(seq), start, end);
-  }
-OUTPUT:
+  stream_write_sequence(stream, seq, start, end);
   return seq;
 }
 
@@ -4730,7 +4676,6 @@ SYMBOL_EXPORT_SC_(ClPkg, unread_char);
 SYMBOL_EXPORT_SC_(CorePkg, fileColumn);
 SYMBOL_EXPORT_SC_(CorePkg, makeStringOutputStreamFromString);
 SYMBOL_EXPORT_SC_(ClPkg, makeStringOutputStream);
-SYMBOL_EXPORT_SC_(CorePkg, do_write_sequence);
 SYMBOL_EXPORT_SC_(ClPkg, writeByte);
 SYMBOL_EXPORT_SC_(ClPkg, input_stream_p);
 SYMBOL_EXPORT_SC_(ClPkg, output_stream_p);
@@ -5083,14 +5028,11 @@ bool stream_fresh_line(T_sp stream) {
                                     : T_sp(eval::funcall(gray::_sym_stream_fresh_line, stream)).notnilp();
 }
 
-cl_index stream_write_vector(T_sp stream, T_sp data, cl_index start, cl_index end) {
+void stream_write_sequence(T_sp stream, T_sp data, cl_index start, cl_index end) {
   if (stream.isA<AnsiStream_O>())
-    return stream.as_unsafe<AnsiStream_O>()->write_vector(data, start, end);
-
-  eval::funcall(gray::_sym_stream_write_sequence, stream, data, clasp_make_fixnum(start), clasp_make_fixnum(end));
-  if (start >= end)
-    return start;
-  return end;
+    stream.as_unsafe<AnsiStream_O>()->write_sequence(data, start, end);
+  else
+    eval::funcall(gray::_sym_stream_write_sequence, stream, data, clasp_make_fixnum(start), clasp_make_fixnum(end));
 }
 
 ListenResult stream_listen(T_sp stream) {
