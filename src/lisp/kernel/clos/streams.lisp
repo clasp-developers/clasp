@@ -636,8 +636,11 @@ truename."))
   (clos-default-read-sequence stream sequence start end))
 
 (defmethod stream-read-sequence ((stream ansi-stream) sequence
-				 &optional (start 0) (end nil))
-  (core:do-read-sequence sequence stream start end))
+				 &optional (start 0) (end (length sequence)))
+  ;; it is safe to call cl:read-sequence because stream_read_sequence
+  ;; does not call the generic gray:stream-read-sequence if the stream
+  ;; is an ansi-stream.
+  (cl:read-sequence sequence stream :start start :end end))
 
 (defmethod stream-read-sequence ((stream t) sequence &optional start end)
   (declare (ignore sequence start end))

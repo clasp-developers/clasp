@@ -1260,8 +1260,8 @@ void TwoWayStream_O::unread_char(claspCharacter c) { stream_unread_char(_input_s
 
 claspCharacter TwoWayStream_O::peek_char() { return stream_peek_char(_input_stream); }
 
-cl_index TwoWayStream_O::read_vector(T_sp data, cl_index start, cl_index n) {
-  return stream_read_vector(_input_stream, data, start, n);
+cl_index TwoWayStream_O::read_sequence(T_sp data, cl_index start, cl_index n) {
+  return stream_read_sequence(_input_stream, data, start, n);
 }
 
 void TwoWayStream_O::write_sequence(T_sp data, cl_index start, cl_index n) {
@@ -1750,8 +1750,8 @@ void SynonymStream_O::unread_char(claspCharacter c) { stream_unread_char(stream(
 
 claspCharacter SynonymStream_O::peek_char() { return stream_peek_char(stream()); }
 
-cl_index SynonymStream_O::read_vector(T_sp data, cl_index start, cl_index n) {
-  return stream_read_vector(stream(), data, start, n);
+cl_index SynonymStream_O::read_sequence(T_sp data, cl_index start, cl_index n) {
+  return stream_read_sequence(stream(), data, start, n);
 }
 
 void SynonymStream_O::write_sequence(T_sp data, cl_index start, cl_index n) { stream_write_sequence(stream(), data, start, n); }
@@ -2170,76 +2170,78 @@ AGAIN:
   }
 }
 
-cl_index FileStream_O::read_vector(T_sp data, cl_index start, cl_index end) {
-  Vector_sp vec = gc::As<Vector_sp>(data);
-  T_sp elementType = vec->element_type();
-  if (start >= end)
-    return start;
-  if (elementType == ext::_sym_byte8 || elementType == ext::_sym_integer8) {
-    if (_byte_size == sizeof(uint8_t) * 8) {
-      unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
-      return start + read_byte8(aux, end - start);
-    }
-  } else if (elementType == ext::_sym_byte16 || elementType == ext::_sym_integer16) {
-    if (_byte_size == sizeof(uint16_t) * 8) {
-      unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
-      size_t bytes = (end - start) * sizeof(uint16_t);
-      bytes = read_byte8(aux, bytes);
-      return start + bytes / sizeof(uint16_t);
-    }
-  } else if (elementType == ext::_sym_byte32 || elementType == ext::_sym_integer32) {
-    if (_byte_size == sizeof(uint32_t) * 8) {
-      unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
-      size_t bytes = (end - start) * sizeof(uint32_t);
-      bytes = read_byte8(aux, bytes);
-      return start + bytes / sizeof(uint32_t);
-    }
-  } else if (elementType == ext::_sym_byte64 || elementType == ext::_sym_integer64) {
-    if (_byte_size == sizeof(uint64_t) * 8) {
-      unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
-      size_t bytes = (end - start) * sizeof(uint64_t);
-      bytes = read_byte8(aux, bytes);
-      return start + bytes / sizeof(uint64_t);
-    }
-  } else if (elementType == cl::_sym_fixnum) {
-    if (_byte_size == sizeof(Fixnum) * 8) {
-      unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
-      size_t bytes = (end - start) * sizeof(Fixnum);
-      bytes = read_byte8(aux, bytes);
-      return start + bytes / sizeof(Fixnum);
-    }
-  } else if (elementType == cl::_sym_base_char || elementType == cl::_sym_character) {
-    unsigned char buffer[VECTOR_ENCODING_BUFFER_SIZE + ENCODING_BUFFER_MAX_SIZE];
-    unsigned char* buffer_pos = buffer;
-    unsigned char* buffer_end = buffer;
-    /* When we can't call lseek/fseek we have to be conservative and
-     * read only as many bytes as we actually need. Otherwise, we read
-     * more and later reposition the file offset. */
-    bool seekable = position().notnilp();
-
-    while (start < end) {
-      claspCharacter c = decode_char_from_buffer(buffer, &buffer_pos, &buffer_end, seekable, (end - start) * (_byte_size / 8));
-      if (c == EOF)
-        break;
-      vec->rowMajorAset(start++, clasp_make_character(c));
-    }
-
-    if (seekable) {
-      /* INV: (buffer_end - buffer_pos) is divisible by \
-       * (strm->stream.byte_size / 8) since VECTOR_ENCODING_BUFFER_SIZE \
-       * is divisible by all byte sizes for character streams and all \
-       * decoders consume bytes in multiples of the byte size. */
-      T_sp fp = position();
-      if (fp.fixnump()) {
-        set_position(contagion_sub(gc::As_unsafe<Number_sp>(fp), make_fixnum((buffer_end - buffer_pos) / (_byte_size / 8))));
-      } else {
-        SIMPLE_ERROR("clasp_file_position is not a number");
+cl_index FileStream_O::read_sequence(T_sp data, cl_index start, cl_index end) {
+  if (data.isA<Vector_O>()) {
+    Vector_sp vec = data.as_unsafe<Vector_O>();
+    T_sp elementType = vec->element_type();
+    if (start >= end)
+      return start;
+    if (elementType == ext::_sym_byte8 || elementType == ext::_sym_integer8) {
+      if (_byte_size == sizeof(uint8_t) * 8) {
+        unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
+        return start + read_byte8(aux, end - start);
       }
-    }
+    } else if (elementType == ext::_sym_byte16 || elementType == ext::_sym_integer16) {
+      if (_byte_size == sizeof(uint16_t) * 8) {
+        unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
+        size_t bytes = (end - start) * sizeof(uint16_t);
+        bytes = read_byte8(aux, bytes);
+        return start + bytes / sizeof(uint16_t);
+      }
+    } else if (elementType == ext::_sym_byte32 || elementType == ext::_sym_integer32) {
+      if (_byte_size == sizeof(uint32_t) * 8) {
+        unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
+        size_t bytes = (end - start) * sizeof(uint32_t);
+        bytes = read_byte8(aux, bytes);
+        return start + bytes / sizeof(uint32_t);
+      }
+    } else if (elementType == ext::_sym_byte64 || elementType == ext::_sym_integer64) {
+      if (_byte_size == sizeof(uint64_t) * 8) {
+        unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
+        size_t bytes = (end - start) * sizeof(uint64_t);
+        bytes = read_byte8(aux, bytes);
+        return start + bytes / sizeof(uint64_t);
+      }
+    } else if (elementType == cl::_sym_fixnum) {
+      if (_byte_size == sizeof(Fixnum) * 8) {
+        unsigned char* aux = (unsigned char*)vec->rowMajorAddressOfElement_(start);
+        size_t bytes = (end - start) * sizeof(Fixnum);
+        bytes = read_byte8(aux, bytes);
+        return start + bytes / sizeof(Fixnum);
+      }
+    } else if (elementType == cl::_sym_base_char || elementType == cl::_sym_character) {
+      unsigned char buffer[VECTOR_ENCODING_BUFFER_SIZE + ENCODING_BUFFER_MAX_SIZE];
+      unsigned char* buffer_pos = buffer;
+      unsigned char* buffer_end = buffer;
+      /* When we can't call lseek/fseek we have to be conservative and
+       * read only as many bytes as we actually need. Otherwise, we read
+       * more and later reposition the file offset. */
+      bool seekable = position().notnilp();
 
-    return start;
+      while (start < end) {
+        claspCharacter c = decode_char_from_buffer(buffer, &buffer_pos, &buffer_end, seekable, (end - start) * (_byte_size / 8));
+        if (c == EOF)
+          break;
+        vec->rowMajorAset(start++, clasp_make_character(c));
+      }
+
+      if (seekable) {
+        /* INV: (buffer_end - buffer_pos) is divisible by \
+         * (strm->stream.byte_size / 8) since VECTOR_ENCODING_BUFFER_SIZE \
+         * is divisible by all byte sizes for character streams and all \
+         * decoders consume bytes in multiples of the byte size. */
+        T_sp fp = position();
+        if (fp.fixnump()) {
+          set_position(contagion_sub(gc::As_unsafe<Number_sp>(fp), make_fixnum((buffer_end - buffer_pos) / (_byte_size / 8))));
+        } else {
+          SIMPLE_ERROR("clasp_file_position is not a number");
+        }
+      }
+
+      return start;
+    }
   }
-  return AnsiStream_O::read_vector(data, start, end);
+  return AnsiStream_O::read_sequence(data, start, end);
 }
 
 void FileStream_O::write_sequence(T_sp data, cl_index start, cl_index end) {
@@ -3084,12 +3086,17 @@ CL_DOCSTRING(R"dx(file-string-length)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__file_string_length(T_sp stream, T_sp tstring) { return stream_string_length(stream, tstring); }
 
-T_sp si_do_read_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
-  gctools::Fixnum start, limit, end(0);
+CL_LAMBDA(sequence stream &key (start 0) end);
+CL_DECLARE();
+CL_DOCSTRING(R"dx(readSequence)dx");
+DOCGROUP(clasp);
+CL_DEFUN T_sp cl__read_sequence(T_sp sequence, T_sp stream, T_sp s, T_sp e) {
+  stream = coerce::inputStreamDesignator(stream);
+  cl_index start, limit, end(0);
   /* Since we have called clasp_length(), we know that SEQ is a valid
            sequence. Therefore, we only need to check the type of the
            object, and seq == nil<T_O>() i.f.f. t = t_symbol */
-  limit = cl__length(seq);
+  limit = cl__length(sequence);
   if (!core__fixnump(s)) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_read_sequence, kw::_sym_start, s, Integer_O::makeIntegerType(0, limit - 1));
   }
@@ -3111,56 +3118,11 @@ T_sp si_do_read_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_read_sequence, kw::_sym_end, e, Integer_O::makeIntegerType(start, limit));
   }
   if (start < end) {
-    if (cl__listp(seq)) {
-      T_sp elt_type = cl__stream_element_type(stream);
-      bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
-      seq = cl__nthcdr(clasp_make_integer(start), seq);
-      for (; seq.notnilp(); seq = oCdr(seq)) {
-        if (start >= end) {
-          return make_fixnum(start);
-        } else {
-          T_sp c;
-          if (ischar) {
-            int i = stream_read_char(stream);
-            if (i < 0) {
-              return make_fixnum(start);
-            }
-            c = clasp_make_character(i);
-          } else {
-            c = stream_read_byte(stream);
-            if (c.nilp()) {
-              return make_fixnum(start);
-            }
-          }
-          gc::As<Cons_sp>(seq)->rplaca(c);
-          start++;
-        }
-      };
-    } else {
-      start = stream_read_vector(stream, seq, start, end);
-    }
+    start = stream_read_sequence(stream, sequence, start, end);
   }
   return make_fixnum(start);
 }
 
-CL_LAMBDA(sequence stream &key (start 0) end);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(readSequence)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp cl__read_sequence(T_sp sequence, T_sp stream, T_sp start, T_sp oend) {
-  stream = coerce::inputStreamDesignator(stream);
-  return stream.isA<AnsiStream_O>() ? si_do_read_sequence(sequence, stream, start, oend)
-                                    : eval::funcall(gray::_sym_stream_read_sequence, stream, sequence, start, oend);
-}
-
-CL_LAMBDA(sequence stream start end);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(readSequence)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__do_read_sequence(T_sp sequence, T_sp stream, T_sp start, T_sp oend) {
-  stream = coerce::inputStreamDesignator(stream);
-  return si_do_read_sequence(sequence, stream, start, oend);
-}
 /**********************************************************************
  * LISP LEVEL INTERFACE
  */
@@ -3972,24 +3934,44 @@ bool AnsiStream_O::fresh_line() {
   return false;
 }
 
-cl_index AnsiStream_O::read_vector(T_sp data, cl_index start, cl_index end) {
+cl_index AnsiStream_O::read_sequence(T_sp data, cl_index start, cl_index end) {
   if (start >= end)
     return start;
-  Vector_sp vec = gc::As<Vector_sp>(data);
-  T_sp expected_type = element_type();
-  if (expected_type == cl::_sym_base_char || expected_type == cl::_sym_character) {
-    for (; start < end; start++) {
-      claspCharacter c = read_char();
-      if (c == EOF)
-        break;
-      vec->rowMajorAset(start, clasp_make_character(c));
+  T_sp elt_type = element_type();
+  bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
+  if (cl__listp(data)) {
+    data = cl__nthcdr(clasp_make_integer(start), data);
+    if (ischar) {
+      for (; data.notnilp() && start < end; data = oCdr(data), start++) {
+        claspCharacter i = read_char();
+        if (i == EOF)
+          break;
+        gc::As<Cons_sp>(data)->rplaca(clasp_make_character(i));
+      }
+    } else {
+      for (; data.notnilp() && start < end; data = oCdr(data), start++) {
+        T_sp c = read_byte();
+        if (c.nilp())
+          break;
+        gc::As<Cons_sp>(data)->rplaca(c);
+      }
     }
   } else {
-    for (; start < end; start++) {
-      T_sp x = read_byte();
-      if (x.nilp())
-        break;
-      vec->rowMajorAset(start, x);
+    Vector_sp vec = data.as<Vector_O>();
+    if (ischar) {
+      for (; start < end; start++) {
+        claspCharacter c = read_char();
+        if (c == EOF)
+          break;
+        vec->rowMajorAset(start, clasp_make_character(c));
+      }
+    } else {
+      for (; start < end; start++) {
+        T_sp x = read_byte();
+        if (x.nilp())
+          break;
+        vec->rowMajorAset(start, x);
+      }
     }
   }
   return start;
@@ -3998,27 +3980,44 @@ cl_index AnsiStream_O::read_vector(T_sp data, cl_index start, cl_index end) {
 void AnsiStream_O::write_sequence(T_sp data, cl_index start, cl_index end) {
   if (start >= end)
     return;
+
+  T_sp elt_type = element_type();
+  bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
+
   if (cl__listp(data)) {
-    T_sp elt_type = element_type();
-    bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
     T_sp s = cl__nthcdr(clasp_make_integer(start), data);
     T_sp orig = s;
-    for (; s.notnilp(); s = oCdr(s)) {
-      if (!cl__listp(s)) {
-        TYPE_ERROR_PROPER_LIST(orig);
+    if (ischar) {
+      for (; s.notnilp(); s = oCdr(s)) {
+        if (!cl__listp(s)) {
+          TYPE_ERROR_PROPER_LIST(orig);
+        }
+        if (start < end) {
+          T_sp elt = oCar(s);
+          if (ischar)
+            write_char(clasp_as_claspCharacter(gc::As<Character_sp>(elt)));
+          else
+            write_byte(elt);
+          start++;
+        }
       }
-      if (start < end) {
-        T_sp elt = oCar(s);
-        if (ischar)
-          write_char(clasp_as_claspCharacter(gc::As<Character_sp>(elt)));
-        else
-          write_byte(elt);
-        start++;
+    } else {
+      for (; s.notnilp(); s = oCdr(s)) {
+        if (!cl__listp(s)) {
+          TYPE_ERROR_PROPER_LIST(orig);
+        }
+        if (start < end) {
+          T_sp elt = oCar(s);
+          if (ischar)
+            write_char(clasp_as_claspCharacter(gc::As<Character_sp>(elt)));
+          else
+            write_byte(elt);
+          start++;
+        }
       }
     }
   } else {
     Vector_sp vec = gc::As<Vector_sp>(data);
-    T_sp elementType = vec->element_type();
     if (elementType == cl::_sym_base_char ||
 #ifdef CLASP_UNICODE
         elementType == cl::_sym_character ||
@@ -4655,7 +4654,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, output);
 SYMBOL_EXPORT_SC_(KeywordPkg, input);
 SYMBOL_EXPORT_SC_(ClPkg, filePosition);
 SYMBOL_EXPORT_SC_(ClPkg, readSequence);
-SYMBOL_EXPORT_SC_(CorePkg, doReadSequence);
 SYMBOL_EXPORT_SC_(ClPkg, read_from_string);
 SYMBOL_EXPORT_SC_(ClPkg, read_line);
 SYMBOL_EXPORT_SC_(ClPkg, terpri);
@@ -5005,9 +5003,9 @@ claspCharacter stream_peek_char(T_sp stream) {
   return clasp_as_claspCharacter(gc::As<Character_sp>(out));
 }
 
-cl_index stream_read_vector(T_sp stream, T_sp data, cl_index start, cl_index end) {
+cl_index stream_read_sequence(T_sp stream, T_sp data, cl_index start, cl_index end) {
   if (stream.isA<AnsiStream_O>())
-    return stream.as_unsafe<AnsiStream_O>()->read_vector(data, start, end);
+    return stream.as_unsafe<AnsiStream_O>()->read_sequence(data, start, end);
 
   T_sp fn = eval::funcall(gray::_sym_stream_read_sequence, stream, data, clasp_make_fixnum(start), clasp_make_fixnum(end));
   if (fn.fixnump()) {
