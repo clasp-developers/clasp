@@ -150,7 +150,7 @@ CL_DEFUN String_sp core__get_thread_local_write_to_string_output_stream_string(S
   } else {
     SetStringFillp(my_stream->_contents, core::make_fixnum(0));
   }
-  my_stream->_output_column = 0;
+  my_stream->_column = 0;
   return result;
 }
 
@@ -485,13 +485,14 @@ claspCharacter FileStream_O::read_char() {
   return c;
 }
 
-void AnsiStream_O::update_column(claspCharacter c) {
-  if (c == '\n')
-    _output_column = 0;
-  else if (c == '\t')
-    _output_column = (_output_column & ~((size_t)07)) + 8;
+void AnsiStream_O::update_line_column(claspCharacter c) {
+  if (c == '\n') {
+    _column = 0;
+    _line++;
+  } else if (c == '\t')
+    _column = (_column & ~((size_t)07)) + 8;
   else
-    _output_column++;
+    _column++;
 }
 
 claspCharacter FileStream_O::write_char(claspCharacter c) {
@@ -513,7 +514,7 @@ claspCharacter FileStream_O::write_char(claspCharacter c) {
     write_byte8(buffer, nbytes);
   }
 
-  update_column(c);
+  update_line_column(c);
 
   return c;
 }
@@ -1053,7 +1054,7 @@ T_sp StringStream_O::external_format() const {
  */
 
 claspCharacter StringOutputStream_O::write_char(claspCharacter c) {
-  update_column(c);
+  update_line_column(c);
   _contents->vectorPushExtend(clasp_make_character(c));
   return c;
 }
@@ -1099,7 +1100,7 @@ CL_DEFUN T_sp core__make_string_output_stream_from_string(T_sp s) {
     FEerror("~S is not a string with a fill-pointer.", 1, s.raw_());
   }
   strm->_contents = gc::As<String_sp>(s);
-  strm->_output_column = 0;
+  strm->_column = 0;
   return strm;
 }
 
@@ -2114,7 +2115,7 @@ T_sp IOFileStream_O::make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum by
   stream->_flags = flags;
   stream->set_external_format(external_format);
   stream->_filename = fname;
-  stream->_output_column = 0;
+  stream->_column = 0;
   stream->_file_descriptor = fd;
   stream->_last_op = 0;
   return stream;
@@ -2299,7 +2300,7 @@ cl_index FileStream_O::write_vector(T_sp data, cl_index start, cl_index end) {
           c = CLASP_CHAR_CODE_RETURN;
       }
       nbytes += encode(buffer + nbytes, c);
-      update_column(c);
+      update_line_column(c);
       if (nbytes >= VECTOR_ENCODING_BUFFER_SIZE) {
         write_byte8(buffer, nbytes);
         nbytes = 0;
@@ -2323,7 +2324,7 @@ cl_index FileStream_O::write_vector(T_sp data, cl_index start, cl_index end) {
           c = CLASP_CHAR_CODE_RETURN;
       }
       nbytes += encode(buffer + nbytes, c);
-      update_column(c);
+      update_line_column(c);
       if (nbytes >= VECTOR_ENCODING_BUFFER_SIZE) {
         write_byte8(buffer, nbytes);
         nbytes = 0;
@@ -4105,9 +4106,9 @@ T_sp AnsiStream_O::string_length(T_sp string) {
   return nil<T_O>();
 }
 
-int AnsiStream_O::column() const { return _output_column; }
+int AnsiStream_O::column() const { return _column; }
 
-int AnsiStream_O::set_column(int column) { return _output_column = column; }
+int AnsiStream_O::set_column(int column) { return _column = column; }
 
 int AnsiStream_O::input_handle() { return -1; }
 
@@ -4128,21 +4129,21 @@ T_sp AnsiStream_O::truename() const {
   return nil<T_O>();
 }
 
-int AnsiStream_O::lineno() const { return 0; };
+int AnsiStream_O::line() const { return _line; };
 
 void StringOutputStream_O::fill(const string& data) { StringPushStringCharStar(this->_contents, data.c_str()); }
 
 /*! Get the contents and reset them */
 void StringOutputStream_O::clear() {
   _contents = Str8Ns_O::createBufferString(STRING_OUTPUT_STREAM_DEFAULT_SIZE);
-  _output_column = 0;
+  _column = 0;
 };
 
 /*! Get the contents and reset them */
 String_sp StringOutputStream_O::get_string() {
   String_sp contents = _contents;
   _contents = Str8Ns_O::createBufferString(STRING_OUTPUT_STREAM_DEFAULT_SIZE);
-  _output_column = 0;
+  _column = 0;
   return contents;
 };
 
@@ -4639,6 +4640,15 @@ DOCGROUP(clasp);
 CL_DEFUN_SETF T_sp core__setf_file_column(int column, T_sp strm) {
   strm = coerce::outputStreamDesignator(strm);
   return make_fixnum(stream_set_column(strm, column));
+};
+
+CL_LAMBDA(stream);
+CL_DECLARE();
+CL_DOCSTRING("Return the current line number of the stream");
+DOCGROUP(clasp);
+CL_DEFUN T_sp core__stream_line_number(T_sp strm) {
+  strm = coerce::outputStreamDesignator(strm);
+  return make_fixnum(stream_line(strm));
 };
 
 /*! Translated from ecl::si_do_write_sequence */
@@ -5196,6 +5206,15 @@ int stream_column(T_sp stream) {
 
 int stream_set_column(T_sp stream, int column) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->set_column(column) : column;
+}
+
+int stream_line(T_sp stream) {
+  if (stream.isA<AnsiStream_O>())
+    return stream.as_unsafe<AnsiStream_O>()->column();
+
+  T_sp line = eval::funcall(gray::_sym_stream_line_number, stream);
+  // negative lines represent NIL
+  return line.nilp() ? -1 : clasp_to_integral<int>(clasp_floor1(gc::As<Real_sp>(line)));
 }
 
 int stream_input_handle(T_sp stream) { return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->input_handle() : -1; }

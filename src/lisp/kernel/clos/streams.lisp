@@ -105,6 +105,12 @@ truename."))
   defined for this function, although it is permissible for it to
   always return NIL."))
 
+(defgeneric stream-line-number (stream)
+  (:documentation
+   "Return the line number where the next character
+  will be written, or NIL if that is not meaningful for this stream.
+  The first line is numbered 0. The default method returns NIL."))
+
 ;; Extension from CMUCL, SBCL, Mezzano and SICL
 
 (defgeneric stream-line-length (stream)
@@ -447,6 +453,16 @@ truename."))
 
 (defmethod stream-line-column ((stream t))
   (bug-or-error stream 'stream-line-column))
+
+;; LINE-NUMBER
+
+(defmethod stream-line-number ((stream t))
+  nil)
+
+(defmethod stream-line-number ((stream ansi-stream))
+  (let ((column (sys:stream-line-number stream)))
+    (and (not (minusp column))
+         column)))
 
 ;; LINE-LENGTH
 

@@ -182,6 +182,7 @@ T_sp stream_set_position(T_sp stream, T_sp pos);
 T_sp stream_string_length(T_sp stream, T_sp string);
 int stream_column(T_sp stream);
 int stream_set_column(T_sp stream, int column);
+int stream_line(T_sp stream);
 
 int stream_input_handle(T_sp stream);
 int stream_output_handle(T_sp stream);
@@ -272,15 +273,16 @@ class AnsiStream_O : public Stream_O {
 public:
   bool _open;
   int _flags; // bitmap of flags
-  int _output_column;
+  int _column;
+  int _line;
   StreamCursor _input_cursor;
 
 public:
-  AnsiStream_O() : _open(true), _output_column(0){};
+  AnsiStream_O() : _open(true), _column(0), _line(0){};
   virtual ~AnsiStream_O(); // nontrivial
 
   int restartable_io_error(const char* s);
-  void update_column(claspCharacter c);
+  void update_line_column(claspCharacter c);
 
   virtual cl_index write_byte8(unsigned char* c, cl_index n);
   virtual cl_index read_byte8(unsigned char* c, cl_index n);
@@ -317,6 +319,7 @@ public:
   virtual T_sp string_length(T_sp string);
   virtual int column() const;
   virtual int set_column(int column);
+  virtual int line() const;
 
   virtual int input_handle();
   virtual int output_handle();
@@ -325,7 +328,6 @@ public:
 
   virtual T_sp pathname() const;
   virtual T_sp truename() const;
-  virtual int lineno() const;
 
   inline void check_open() {
     if (!_open)

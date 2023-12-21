@@ -9897,7 +9897,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_flags")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_output_column")}
+             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_column")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_line")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::AnsiStream_O"
              :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
@@ -9921,8 +9923,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_flags")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("_output_column")}
+             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_column")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_line")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::TwoWayStream_O"
              :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
@@ -9953,8 +9956,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_flags")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("_output_column")}
+             :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_column")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_line")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::SynonymStream_O"
              :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
@@ -9981,8 +9985,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_flags")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("_output_column")}
+             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_column")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_line")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::StringStream_O"
              :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
@@ -10010,8 +10015,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::StringOutputStream_O" :layout-offset-field-names ("_flags")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("_output_column")}
+             :offset-base-ctype "core::StringOutputStream_O" :layout-offset-field-names ("_column")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::StringOutputStream_O" :layout-offset-field-names ("_line")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::StringOutputStream_O"
              :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
@@ -10040,8 +10046,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::StringInputStream_O" :layout-offset-field-names ("_flags")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("_output_column")}
+             :offset-base-ctype "core::StringInputStream_O" :layout-offset-field-names ("_column")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::StringInputStream_O" :layout-offset-field-names ("_line")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::StringInputStream_O"
              :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
@@ -10075,7 +10082,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_flags")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_output_column")}
+             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_column")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_line")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::EchoStream_O"
              :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
@@ -10108,8 +10117,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::ConcatenatedStream_O" :layout-offset-field-names ("_flags")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("_output_column")}
+             :offset-base-ctype "core::ConcatenatedStream_O" :layout-offset-field-names ("_column")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::ConcatenatedStream_O" :layout-offset-field-names ("_line")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::ConcatenatedStream_O"
              :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
@@ -10137,7 +10147,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_flags")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_output_column")}
+             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_column")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_line")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::FileStream_O"
              :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
@@ -10192,8 +10204,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_flags")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("_output_column")}
+             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_column")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_line")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::IOFileStream_O"
              :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
@@ -10253,8 +10266,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_flags")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("_output_column")}
+             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_column")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_line")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::IOStreamStream_O"
              :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
@@ -10317,8 +10331,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_flags")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("_output_column")}
+             :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_column")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_line")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::BroadcastStream_O"
              :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
