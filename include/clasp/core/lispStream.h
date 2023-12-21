@@ -128,6 +128,7 @@ SourcePosInfo_sp clasp_simple_input_stream_source_pos_info(T_sp);
 FileScope_sp clasp_input_source_file_info(T_sp strm);
 Pathname_sp clasp_input_pathname(T_sp strm);
 
+void cl__terpri(T_sp outputStreamDesig = nil<T_O>());
 T_sp cl__unread_char(Character_sp ch, T_sp dstrm);
 
 T_sp clasp_off_t_to_integer(clasp_off_t offset);
@@ -157,6 +158,9 @@ claspCharacter stream_read_char(T_sp stream);
 claspCharacter stream_write_char(T_sp stream, claspCharacter c);
 void stream_unread_char(T_sp stream, claspCharacter c);
 claspCharacter stream_peek_char(T_sp stream);
+
+void stream_terpri(T_sp stream);
+bool stream_fresh_line(T_sp stream);
 
 cl_index stream_read_vector(T_sp stream, T_sp data, cl_index start, cl_index end);
 cl_index stream_write_vector(T_sp stream, T_sp data, cl_index start, cl_index end);
@@ -293,6 +297,9 @@ public:
   virtual claspCharacter write_char(claspCharacter c);
   virtual void unread_char(claspCharacter c);
   virtual claspCharacter peek_char();
+
+  virtual void terpri();
+  virtual bool fresh_line();
 
   virtual cl_index read_vector(T_sp data, cl_index start, cl_index end);
   virtual cl_index write_vector(T_sp data, cl_index start, cl_index end);
@@ -957,10 +964,6 @@ bool cl__streamp(T_sp strm);
 
 String_sp clasp_writeString(String_sp str, T_sp stream, int istart = 0, T_sp end = nil<T_O>());
 
-//    int core__stream_linenumber(T_sp strm);
-//    int core__stream_column(T_sp strm);
-
-void clasp_terpri(T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
 void clasp_write_characters(const char* buf, int sz, T_sp strm);
 void clasp_write_string(const string& str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
 void clasp_writeln_string(const string& str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());

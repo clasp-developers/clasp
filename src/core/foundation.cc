@@ -1703,7 +1703,7 @@ CL_DEFUN void core__mangledSymbols(T_sp stream_designator) {
     stream_write_char(stream, '_');
 #endif
     clasp_write_string(entry, stream);
-    clasp_terpri(stream);
+    stream_terpri(stream);
   }
   if (comp::_sym_STARprimitivesSTAR.boundp() && comp::_sym_STARprimitivesSTAR->symbolValue().notnilp()) {
     List_sp keys = gc::As<HashTable_sp>(comp::_sym_STARprimitivesSTAR->symbolValue())->keysAsCons();
@@ -1711,23 +1711,23 @@ CL_DEFUN void core__mangledSymbols(T_sp stream_designator) {
       T_sp key = CONS_CAR(cur);
       stream_write_char(stream, '_');
       clasp_write_string(gc::As<String_sp>(key)->get_std_string(), stream);
-      clasp_terpri(stream);
+      stream_terpri(stream);
     }
   }
   clasp_write_string("__mh_execute_header", stream);
-  clasp_terpri(stream);
+  stream_terpri(stream);
   clasp_write_string("_cc_throw", stream);
-  clasp_terpri(stream);
+  stream_terpri(stream);
   clasp_write_string("_llvm_orc_registerJITLoaderGDBWrapper", stream);
-  clasp_terpri(stream);
+  stream_terpri(stream);
   clasp_write_string("___jit_debug_descriptor", stream);
-  clasp_terpri(stream);
+  stream_terpri(stream);
   clasp_write_string("___jit_debug_register_code", stream);
-  clasp_terpri(stream);
-  //  clasp_write_string("_start_of_snapshot",stream); clasp_terpri(stream);
-  //  clasp_write_string("_end_of_snapshot",stream); clasp_terpri(stream);
+  stream_terpri(stream);
+  //  clasp_write_string("_start_of_snapshot",stream); stream_terpri(stream);
+  //  clasp_write_string("_end_of_snapshot",stream); stream_terpri(stream);
   clasp_write_string("__ZTIN4core6UnwindE", stream);
-  clasp_terpri(stream);
+  stream_terpri(stream);
 };
 
 }; // namespace core

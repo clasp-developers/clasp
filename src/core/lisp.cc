@@ -1307,7 +1307,7 @@ void Lisp::readEvalPrintInteractive() {
   core::clasp_write_string("Clasp (copyright Christian E. Schafmeister 2014-2023)\n"
                            "Low level repl\n");
   this->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(), nil<T_O>(), true, true);
-  clasp_terpri();
+  stream_terpri(cl::_sym_STARterminal_ioSTAR->symbolValue());
 }
 
 CL_LAMBDA();

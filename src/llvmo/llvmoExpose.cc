@@ -305,7 +305,7 @@ CL_DEFUN void llvm_sys__disassemble_instructions(const std::string& striple, cor
       core::clasp_write_string(std::string("                      ").substr(0, 24 - sstr.size()));
     }
     core::writestr_stream(str);
-    core::clasp_terpri();
+    core::cl__terpri();
     if (sz == 0) {
       ss << "STOPPING BECAUSE PREVIOUS INSTRUCTION HAS ZERO LENGTH!!!!! ";
       break;

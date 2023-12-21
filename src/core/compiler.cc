@@ -1584,29 +1584,6 @@ void ltvc_mlf_init_basic_call_varargs(gctools::GCRootsInModule* holder, T_O* fna
   core__apply0(coerce::calledFunctionDesignator(tfname), tvarargs);
 }
 
-void dump_start_code(T_sp fin, size_t length, bool useFrom = false, size_t from = 0) {
-  StringInputStream_sp sis = gc::As<StringInputStream_sp>(fin);
-  string peer;
-  if (useFrom) {
-    peer = sis->peerFrom(from, length);
-  } else {
-    from = sis->_input_position;
-    peer = sis->peer(length);
-  }
-  clasp_write_string(fmt::format("{}lu: ", from));
-  for (int i = 0; i < peer.size(); ++i) {
-    unsigned char cc = (unsigned char)peer[i];
-    if (cc < 32) {
-      clasp_write_string(fmt::format("(\\{})", (int)cc));
-    } else if (cc >= 128) {
-      clasp_write_string(fmt::format("(\\{})", (int)cc));
-    } else {
-      clasp_write_string(fmt::format("({}\\{})", (char)cc, (int)cc));
-    }
-  }
-  clasp_terpri();
-}
-
 #define DEFINE_LTV_PARSERS
 #include <virtualMachine.h>
 #undef DEFINE_LTV_PARSERS
@@ -1627,7 +1604,6 @@ void start_code_interpreter(gctools::GCRootsInModule* roots, char* bytecode, siz
     if (log) {
       printf("%s:%d ------- top of byte-code interpreter\n", __FILE__, __LINE__);
     }
-    // dump_start_code(fin,32);
     char c = ltvc_read_char(bytecode, byteend, log);
     switch (c) {
     case 0:

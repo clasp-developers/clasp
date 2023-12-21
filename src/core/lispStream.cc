@@ -3885,7 +3885,7 @@ void clasp_write_string(const string& str, T_sp strm) { clasp_write_characters(s
 
 void clasp_writeln_string(const string& str, T_sp strm) {
   clasp_write_string(str, strm);
-  clasp_terpri(strm);
+  stream_terpri(strm);
   stream_finish_output(strm);
 }
 
@@ -4009,6 +4009,19 @@ claspCharacter AnsiStream_O::peek_char() {
   if (out != EOF)
     unread_char(out);
   return out;
+}
+
+void AnsiStream_O::terpri() {
+  write_char('\n');
+  force_output();
+}
+
+bool AnsiStream_O::fresh_line() {
+  if (column() > 0) {
+    terpri();
+    return true;
+  }
+  return false;
 }
 
 cl_index AnsiStream_O::read_vector(T_sp data, cl_index start, cl_index end) {
@@ -4454,50 +4467,20 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
   }
 }
 
-void clasp_terpri(T_sp stream) {
-  stream = coerce::outputStreamDesignator(stream);
-
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  if (ansi_stream) {
-    ansi_stream->write_char('\n');
-    ansi_stream->force_output();
-  } else
-    eval::funcall(gray::_sym_stream_terpri, stream);
-}
-
 CL_LAMBDA(&optional output-stream);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Send a newline to the output stream)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__terpri(T_sp outputStreamDesig) {
-  // outputStreamDesign in clasp_terpri
-  clasp_terpri(outputStreamDesig);
-  return nil<T_O>();
+CL_DEFUN void cl__terpri(T_sp outputStreamDesig) {
+  stream_terpri(coerce::outputStreamDesignator(outputStreamDesig));
 };
-
-bool clasp_freshLine(T_sp stream) {
-  stream = coerce::outputStreamDesignator(stream);
-
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
-  if (ansi_stream) {
-    if (ansi_stream->column() > 0) {
-      ansi_stream->write_char('\n');
-      ansi_stream->force_output();
-      return true;
-    }
-    return false;
-  }
-
-  return T_sp(eval::funcall(gray::_sym_stream_fresh_line, stream)).notnilp();
-}
 
 CL_LAMBDA(&optional outputStream);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(freshLine)dx");
 DOCGROUP(clasp);
 CL_DEFUN bool cl__fresh_line(T_sp outputStreamDesig) {
-  // outputStreamDesignator in clasp_freshLine
-  return clasp_freshLine(outputStreamDesig);
+  return stream_fresh_line(coerce::outputStreamDesignator(outputStreamDesig));
 };
 
 CL_LAMBDA(string &optional (output-stream cl:*standard-output*) &key (start 0) end);
@@ -4533,7 +4516,7 @@ CL_DOCSTRING(R"dx(writeLine)dx");
 DOCGROUP(clasp);
 CL_DEFUN String_sp cl__write_line(String_sp str, T_sp stream, int istart, T_sp end) {
   clasp_writeString(str, stream, istart, end);
-  clasp_terpri(stream);
+  stream_terpri(stream);
   return str;
 };
 
@@ -5086,6 +5069,18 @@ cl_index stream_read_vector(T_sp stream, T_sp data, cl_index start, cl_index end
     return fn.unsafe_fixnum();
   }
   SIMPLE_ERROR("gray:stream-read-sequence returned a non-integer {}", _rep_(fn));
+}
+
+void stream_terpri(T_sp stream) {
+  if (stream.isA<AnsiStream_O>())
+    stream.as_unsafe<AnsiStream_O>()->terpri();
+  else
+    eval::funcall(gray::_sym_stream_terpri, stream);
+}
+
+bool stream_fresh_line(T_sp stream) {
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->fresh_line()
+                                    : T_sp(eval::funcall(gray::_sym_stream_fresh_line, stream)).notnilp();
 }
 
 cl_index stream_write_vector(T_sp stream, T_sp data, cl_index start, cl_index end) {
