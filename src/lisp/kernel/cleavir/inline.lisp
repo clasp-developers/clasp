@@ -39,7 +39,7 @@
                (eq (first lambda-list) '&whole))
     (warn "BUG: Bad ~a for ~a" 'define-cleavir-compiler-macro name))
   `(define-compiler-macro ,name (,@lambda-list)
-     ;; I just picked this since it's the first variable in auto-compile.lisp.
+     ;; I just picked this since it's the first variable in hooks.lisp.
      (unless (eq cmp:*cleavir-compile-hook* 'bir-compile)
        (return-from ,(core:function-block-name name) ,(second lambda-list)))
      ,@body))

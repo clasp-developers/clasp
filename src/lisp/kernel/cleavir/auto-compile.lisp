@@ -1,76 +1,98 @@
-;;;
-;;;    File: auto-compile.lisp
-;;;
-
-;; Copyright (c) 2014, Christian E. Schafmeister
-;; 
-;; CLASP is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU Library General Public
-;; License as published by the Free Software Foundation; either
-;; version 2 of the License, or (at your option) any later version.
-;; 
-;; See directory 'clasp/licenses' for full details.
-;; 
-;; The above copyright notice and this permission notice shall be included in
-;; all copies or substantial portions of the Software.
-;;
-;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-;; IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-;; FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-;; AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-;; LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-;; THE SOFTWARE.
-
-;; -^-
-;;
-;; Insert the compiler into the repl
-;;
-;; Don't use FORMAT here use core:fmt 
-;; otherwise you will have problems when format.lisp is bootstrapped
-
 (in-package :clasp-cleavir)
 
-;;; Dump modules to ensure that the proper functions have 'llvm-sys:external-linkage
-#+(or)
-(eval-when (:compile-toplevel :execute)
-  (setq cmp::*jit-dump-module* t))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Set up the cmp:*CLEAVIR-COMPILE-HOOK* so that COMPILE uses Cleavir
-;;
-(eval-when (:execute :load-toplevel)
-  (setq cmp:*cleavir-compile-hook* 'bir-compile))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Set up the cmp:*CLEAVIR-COMPILE-FILE-HOOK* so that COMPILE-FILE uses Cleavir
-;;
-(eval-when (:execute :load-toplevel)
-  (setq cmp:*cleavir-compile-file-hook* 'bir-loop-read-and-compile-file-forms))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Set up the core:*use-cleavir-compiler*
-;; so that walk-method-lambda in method.lisp uses the cleavir compiler.
-;;
-(eval-when (:execute :load-toplevel)
-  (setq core:*use-cleavir-compiler* t))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; cleavir-implicit-compile-hook - compile the form in the given environment
+;;; Actual auto compilation - use *autocompile-hook* to compile stuff.
+;;; This is done in its own thread instead of inline to avoid weird
+;;; time delays - if literally any call can result in a lengthy
+;;; compilation, runtimes become unreliable/chaotic.
 ;;;
 
-(eval-when (:execute :load-toplevel)
-  (setq core:*eval-with-env-hook* 
-        #+bytecode 'core:interpret-eval-with-env
-        #-bytecode 'cclasp-eval))
+;;; Queue of commands to the autocompilation thread.
+;;; A command is either :QUIT, meaning to stop compiling,
+;;; or a cons (BYTECODE-FUNCTION . ENVIRONMENT) representing a job.
+(defvar *autocompilation-queue* (core:make-queue 'autocompile))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Hook the bytecode-to-bir compiler into cl:compile.
-;;;
+;;; The autocompilation thread, if it yet exists, otherwise NIL.
+(defvar *autocompilation-thread* nil)
 
-(setq cmp:*btb-compile-hook* 'clasp-bytecode-to-bir:compile-hook)
+;;; A flag telling the autocompilation thread to log its actions.
+;;; The log can get pretty lengthy quickly.
+(defvar *autocompilation-logging* t)
+
+;;; A list of log entries, most recent first,
+;;; output by the autocompilation thread.
+(defvar *autocompilation-log* nil)
+
+(defun autocompilation-log ()
+  ;; During build we're not set up to use cleavir processing to determine
+  ;; specialness - FIXME - so we use explicit symbol-value.
+  (mp:atomic (symbol-value '*autocompilation-log*) :order :relaxed))
+
+(defun clear-autocompilation-log ()
+  (setf (mp:atomic (symbol-value '*autocompilation-log*) :order :relaxed) nil))
+
+;;; Value of *autocompile-hook*.
+;;; We don't queue anything until start-autocompilation is run.
+;;; Afterwards we queue even if the worker is not going - more work for later.
+(defun queue-autocompilation (definition environment)
+  (when (global-definition-p definition)
+    (core:atomic-enqueue *autocompilation-queue*
+                         (cons definition environment)))
+  definition)
+
+;;; The BTB compiler currently is only safe for non-closures. FIXME.
+;;; I think all we have to do is make sure we replace outer functions
+;;; before inner functions, so that outer bytecode functions never have
+;;; inner native functions.
+(defun global-definition-p (definition)
+  (let ((name (core:function-name definition)))
+    (and (or (symbolp name)
+             (typep name '(cons (eql setf) (cons symbol null))))
+         (fboundp name)
+         (eq definition (fdefinition name)))))
+
+(defun autocompile-worker ()
+  (macrolet ((log (thing)
+               `(when (mp:atomic (symbol-value '*autocompilation-logging*)
+                                 :order :relaxed)
+                  (mp::atomic-push-explicit ,thing
+                                            ((symbol-value '*autocompilation-log*)
+                                             :order :relaxed)))))
+    (loop for item = (core:dequeue *autocompilation-queue*)
+          when (eq item :quit)
+            do (log item)
+            and return nil
+          when (consp item)
+            do (let ((def (car item)) (env (cdr item)))
+                 (declare (ignore env))
+                 ;; Make sure it hasn't been compiled already.
+                 (if (eq (core:entry-point def) def)
+                     (handler-case (clasp-bytecode-to-bir:compile-function def)
+                       (serious-condition (e)
+                         (log `(:error ,def ,e)))
+                       (:no-error (f)
+                         (log `(:success ,def ,f))
+                         (core:set-simple-fun def f)))
+                     (log `(:redundant ,def))))
+          else do (log `(:bad-queue ,item)))))
+
+(defun start-autocompilation ()
+  ;; If a thread already exists, ignore.
+  ;; Note that this function is not thread safe. It's expected you'll only
+  ;; use it manually.
+  (unless *autocompilation-thread*
+    (setf *autocompilation-thread*
+          (mp:process-run-function 'autocompilation #'autocompile-worker)
+          cmp:*autocompile-hook* 'queue-autocompilation)
+    (mp::atomic-push-explicit :start ((symbol-value '*autocompilation-log*)
+                                      :order :relaxed))))
+(defun end-autocompilation ()
+  (when *autocompilation-thread*
+    (setf *autocompilation-thread* nil)
+    (core:atomic-enqueue *autocompilation-queue* :quit)))
+
+(defun start-autocompilation-logging ()
+  (setf (mp:atomic (symbol-value '*autocompilation-logging*) :order :relaxed) t))
+(defun end-autocompilation-logging ()
+  (setf (mp:atomic (symbol-value '*autocompilation-logging*) :order :relaxed) nil))
