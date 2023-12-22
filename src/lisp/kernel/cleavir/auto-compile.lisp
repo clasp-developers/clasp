@@ -17,8 +17,9 @@
 (defvar *autocompilation-thread* nil)
 
 ;;; A flag telling the autocompilation thread to log its actions.
-;;; The log can get pretty lengthy quickly.
-(defvar *autocompilation-logging* t)
+;;; The log can get pretty lengthy quickly. Useful for debugging
+;;; the internal autocompilation mechanisms.
+(defvar *autocompilation-logging* nil)
 
 ;;; A list of log entries, most recent first,
 ;;; output by the autocompilation thread.
@@ -56,9 +57,9 @@
   (macrolet ((log (thing)
                `(when (mp:atomic (symbol-value '*autocompilation-logging*)
                                  :order :relaxed)
-                  (mp::atomic-push-explicit ,thing
-                                            ((symbol-value '*autocompilation-log*)
-                                             :order :relaxed)))))
+                  (mp:atomic-push-explicit ,thing
+                                           ((symbol-value '*autocompilation-log*)
+                                            :order :relaxed)))))
     (loop for item = (core:dequeue *autocompilation-queue*)
           when (eq item :quit)
             do (log item)
@@ -77,7 +78,7 @@
                      (log `(:redundant ,def))))
           else do (log `(:bad-queue ,item)))))
 
-(defun start-autocompilation ()
+(defun ext:start-autocompilation ()
   ;; If a thread already exists, ignore.
   ;; Note that this function is not thread safe. It's expected you'll only
   ;; use it manually.
@@ -85,12 +86,14 @@
     (setf *autocompilation-thread*
           (mp:process-run-function 'autocompilation #'autocompile-worker)
           cmp:*autocompile-hook* 'queue-autocompilation)
-    (mp::atomic-push-explicit :start ((symbol-value '*autocompilation-log*)
-                                      :order :relaxed))))
-(defun end-autocompilation ()
+    (mp:atomic-push-explicit :start ((symbol-value '*autocompilation-log*)
+                                     :order :relaxed)))
+  (values))
+(defun ext:stop-autocompilation ()
   (when *autocompilation-thread*
     (setf *autocompilation-thread* nil)
-    (core:atomic-enqueue *autocompilation-queue* :quit)))
+    (core:atomic-enqueue *autocompilation-queue* :quit))
+  (values))
 
 (defun start-autocompilation-logging ()
   (setf (mp:atomic (symbol-value '*autocompilation-logging*) :order :relaxed) t))
