@@ -257,20 +257,24 @@ public:
   string __repr__() const;
 };
 
+// This and GlobalSimpleFunGenerator are used in FASLs to indicate functions.
+// The loader will create actual local/global simple funs based on these generators.
 FORWARD(LocalSimpleFunGenerator);
-class LocalSimpleFunGenerator_O : public SimpleFun_O {
-  LISP_CLASS(core, CorePkg, LocalSimpleFunGenerator_O, "LocalSimpleFunGenerator", SimpleFun_O);
+class LocalSimpleFunGenerator_O : public General_O {
+  LISP_CLASS(core, CorePkg, LocalSimpleFunGenerator_O, "LocalSimpleFunGenerator", General_O);
 
 public:
+  FunctionDescription_sp _FunctionDescription;
   T_sp _entry_point_indices;
 
 public:
   // Accessors
   LocalSimpleFunGenerator_O(FunctionDescription_sp fdesc, T_sp entry_point_indices)
-      : SimpleFun_O(fdesc), _entry_point_indices(entry_point_indices){
+      : _FunctionDescription(fdesc), _entry_point_indices(entry_point_indices){
                                 // ASSERT(cl__length(entry_point_indices)==1);
                             };
   std::string __repr__() const;
+  CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
 };
 
 FORWARD(GlobalSimpleFunBase);
@@ -365,19 +369,21 @@ public:
 };
 
 FORWARD(GlobalSimpleFunGenerator);
-class GlobalSimpleFunGenerator_O : public SimpleFun_O {
-  LISP_CLASS(core, CorePkg, GlobalSimpleFunGenerator_O, "GlobalSimpleFunGenerator", SimpleFun_O);
+class GlobalSimpleFunGenerator_O : public General_O {
+  LISP_CLASS(core, CorePkg, GlobalSimpleFunGenerator_O, "GlobalSimpleFunGenerator", General_O);
 
 public:
+  FunctionDescription_sp _FunctionDescription;
   T_sp _entry_point_indices;
   size_t _localSimpleFunIndex;
 
 public:
   // Accessors
   GlobalSimpleFunGenerator_O(FunctionDescription_sp fdesc, T_sp entry_point_indices, size_t lepIndex)
-      : SimpleFun_O(fdesc), _entry_point_indices(entry_point_indices), _localSimpleFunIndex(lepIndex){};
+      : _FunctionDescription(fdesc), _entry_point_indices(entry_point_indices), _localSimpleFunIndex(lepIndex){};
   std::string __repr__() const;
   size_t localSimpleFunIndex() const;
+  CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
 };
 
 FunctionDescription_sp makeFunctionDescription(T_sp functionName, T_sp lambda_list = unbound<T_O>(), T_sp docstring = nil<T_O>(),
