@@ -4004,6 +4004,15 @@ T_mv AnsiStream_O::read_line() {
   return Values(result, missing_newline_p);
 }
 
+void AnsiStream_O::write_string(String_sp data, cl_index start, cl_index end) {
+  if (start >= end)
+    return;
+
+  for (; start < end; start++) {
+    write_char(clasp_as_claspCharacter(cl__char(data, start)));
+  }
+}
+
 void AnsiStream_O::terpri() {
   write_char(CLASP_CHAR_CODE_NEWLINE);
   force_output();
@@ -4430,30 +4439,15 @@ CL_DEFUN bool cl__fresh_line(T_sp outputStreamDesig) {
   return stream_fresh_line(coerce::outputStreamDesignator(outputStreamDesig));
 };
 
-CL_LAMBDA(string &optional (output-stream cl:*standard-output*) &key (start 0) end);
+CL_LAMBDA(string &optional output-stream &key (start 0) end);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(writeString)dx");
 CL_LISPIFY_NAME("cl:write-string");
 DOCGROUP(clasp);
 CL_DEFUN String_sp clasp_writeString(String_sp str, T_sp stream, int istart, T_sp end) {
   stream = coerce::outputStreamDesignator(stream);
-
-  if (!stream.isA<AnsiStream_O>())
-    return eval::funcall(gray::_sym_stream_write_string, stream, str, make_fixnum(istart), end);
-
-  /*
-  Beware that we might have unicode characters in str (or a non simple string)
-  Don't use clasp_write_characters, since that operates on chars and
-  might fail miserably with unicode strings, see issue 1134
-
-  Best to audit in clasp every use of c_str() or even get_std_string() to see whether
-  Strings might be clobbered.
-
-  Write-String is not specified to respect print_escape and print_readably
-  */
-  // Verify no OutOfBound Access
   size_t_pair p = sequenceStartEnd(cl::_sym_writeString, str->length(), istart, end);
-  str->__writeString(p.start, p.end, stream);
+  stream_write_string(stream, str, p.start, p.end);
   return str;
 }
 
@@ -4463,7 +4457,8 @@ CL_DOCSTRING(R"dx(writeLine)dx");
 DOCGROUP(clasp);
 CL_DEFUN String_sp cl__write_line(String_sp str, T_sp stream, int istart, T_sp end) {
   stream = coerce::outputStreamDesignator(stream);
-  clasp_writeString(str, stream, istart, end);
+  size_t_pair p = sequenceStartEnd(cl::_sym_writeString, str->length(), istart, end);
+  stream_write_string(stream, str, p.start, p.end);
   stream_terpri(stream);
   return str;
 };
@@ -4582,9 +4577,6 @@ CL_DOCSTRING(R"dx(writeSequence)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__write_sequence(T_sp seq, T_sp stream, Fixnum_sp fstart, T_sp tend) {
   stream = coerce::outputStreamDesignator(stream);
-  if (!stream.isA<AnsiStream_O>()) {
-    return eval::funcall(gray::_sym_stream_write_sequence, stream, seq, fstart, tend);
-  }
   int limit = cl__length(seq);
   unlikely_if(!core__fixnump(fstart) || (unbox_fixnum(fstart) < 0) || (unbox_fixnum(fstart) > limit)) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence, kw::_sym_start, fstart, Integer_O::makeIntegerType(0, limit - 1));
@@ -5007,6 +4999,13 @@ claspCharacter stream_peek_char(T_sp stream) {
 T_mv stream_read_line(T_sp stream) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->read_line()
                                     : eval::funcall(gray::_sym_stream_read_line, stream);
+}
+
+void stream_write_string(String_sp stream, T_sp data, cl_index start, cl_index end) {
+  if (stream.isA<AnsiStream_O>())
+    stream.as_unsafe<AnsiStream_O>()->write_string(data, start, end);
+  else
+    eval::funcall(gray::_sym_stream_write_string, stream, data, clasp_make_fixnum(start), clasp_make_fixnum(end));
 }
 
 cl_index stream_read_sequence(T_sp stream, T_sp data, cl_index start, cl_index end) {
