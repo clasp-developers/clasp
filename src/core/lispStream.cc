@@ -3937,23 +3937,29 @@ bool AnsiStream_O::fresh_line() {
 cl_index AnsiStream_O::read_sequence(T_sp data, cl_index start, cl_index end) {
   if (start >= end)
     return start;
+
   T_sp elt_type = element_type();
   bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
+
   if (cl__listp(data)) {
-    data = cl__nthcdr(clasp_make_integer(start), data);
+    T_sp s = cl__nthcdr(clasp_make_integer(start), data);
     if (ischar) {
-      for (; data.notnilp() && start < end; data = oCdr(data), start++) {
+      for (; s.notnilp() && start < end; s = oCdr(s), start++) {
+        if (!s.consp())
+          TYPE_ERROR_PROPER_LIST(data);
         claspCharacter i = read_char();
         if (i == EOF)
           break;
-        gc::As<Cons_sp>(data)->rplaca(clasp_make_character(i));
+        s.as<Cons_O>()->rplaca(clasp_make_character(i));
       }
     } else {
-      for (; data.notnilp() && start < end; data = oCdr(data), start++) {
+      for (; s.notnilp() && start < end; s = oCdr(s), start++) {
+        if (!s.consp())
+          TYPE_ERROR_PROPER_LIST(data);
         T_sp c = read_byte();
         if (c.nilp())
           break;
-        gc::As<Cons_sp>(data)->rplaca(c);
+        s.as<Cons_O>()->rplaca(c);
       }
     }
   } else {
@@ -3986,45 +3992,24 @@ void AnsiStream_O::write_sequence(T_sp data, cl_index start, cl_index end) {
 
   if (cl__listp(data)) {
     T_sp s = cl__nthcdr(clasp_make_integer(start), data);
-    T_sp orig = s;
     if (ischar) {
-      for (; s.notnilp(); s = oCdr(s)) {
-        if (!cl__listp(s)) {
-          TYPE_ERROR_PROPER_LIST(orig);
-        }
-        if (start < end) {
-          T_sp elt = oCar(s);
-          if (ischar)
-            write_char(clasp_as_claspCharacter(gc::As<Character_sp>(elt)));
-          else
-            write_byte(elt);
-          start++;
-        }
+      for (; s.notnilp() && start < end; s = oCdr(s), start++) {
+        if (!s.consp())
+          TYPE_ERROR_PROPER_LIST(data);
+        write_char(clasp_as_claspCharacter(oCar(s).as<Character_O>()));
       }
     } else {
-      for (; s.notnilp(); s = oCdr(s)) {
-        if (!cl__listp(s)) {
-          TYPE_ERROR_PROPER_LIST(orig);
-        }
-        if (start < end) {
-          T_sp elt = oCar(s);
-          if (ischar)
-            write_char(clasp_as_claspCharacter(gc::As<Character_sp>(elt)));
-          else
-            write_byte(elt);
-          start++;
-        }
+      for (; s.notnilp() && start < end; s = oCdr(s), start++) {
+        if (!s.consp())
+          TYPE_ERROR_PROPER_LIST(data);
+        write_byte(oCar(s));
       }
     }
   } else {
-    Vector_sp vec = gc::As<Vector_sp>(data);
-    if (elementType == cl::_sym_base_char ||
-#ifdef CLASP_UNICODE
-        elementType == cl::_sym_character ||
-#endif
-        (elementType == cl::_sym_T && cl__characterp(vec->rowMajorAref(0)))) {
+    Vector_sp vec = data.as<Vector_O>();
+    if (ischar || (elt_type == cl::_sym_T && cl__characterp(vec->rowMajorAref(0)))) {
       for (; start < end; start++) {
-        write_char(clasp_as_claspCharacter(gc::As<Character_sp>((vec->rowMajorAref(start)))));
+        write_char(clasp_as_claspCharacter(vec->rowMajorAref(start).as<Character_O>()));
       }
     } else {
       for (; start < end; start++) {
