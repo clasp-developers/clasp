@@ -113,11 +113,11 @@ typedef enum {
   CLASP_STREAM_CLOSE_COMPONENTS = 1024
 } StreamFlagsEnum;
 
-typedef enum {
-  listen_result_no_char = 0,
+typedef enum : claspCharacter {
   listen_result_available = 1,
-  listen_result_eof = -1,
-  listen_result_unknown = -3
+  listen_result_eof = EOF,
+  listen_result_no_char = EOF - 2,
+  listen_result_unknown = EOF - 3
 } ListenResult;
 
 size_t clasp_input_filePos(T_sp strm);
@@ -155,6 +155,7 @@ void stream_write_byte(T_sp stream, T_sp c);
 T_sp stream_read_byte(T_sp stream);
 
 claspCharacter stream_read_char(T_sp stream);
+claspCharacter stream_read_char_no_hang(T_sp stream);
 claspCharacter stream_write_char(T_sp stream, claspCharacter c);
 void stream_unread_char(T_sp stream, claspCharacter c);
 claspCharacter stream_peek_char(T_sp stream);
@@ -294,6 +295,7 @@ public:
   virtual T_sp read_byte();
 
   virtual claspCharacter read_char();
+  virtual claspCharacter read_char_no_hang();
   virtual claspCharacter write_char(claspCharacter c);
   virtual void unread_char(claspCharacter c);
   virtual claspCharacter peek_char();
@@ -726,6 +728,7 @@ public:
   T_sp read_byte() override;
   void write_byte(T_sp c) override;
   claspCharacter read_char() override;
+  claspCharacter read_char_no_hang() override;
   claspCharacter write_char(claspCharacter c) override;
   void unread_char(claspCharacter c) override;
   claspCharacter peek_char() override;
@@ -791,6 +794,7 @@ public:
   T_sp read_byte() override;
   void write_byte(T_sp c) override;
   claspCharacter read_char() override;
+  claspCharacter read_char_no_hang() override;
   claspCharacter write_char(claspCharacter c) override;
   void unread_char(claspCharacter c) override;
   claspCharacter peek_char() override;

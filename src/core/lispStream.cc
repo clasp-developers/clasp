@@ -1254,6 +1254,8 @@ T_sp TwoWayStream_O::read_byte() { return stream_read_byte(_input_stream); }
 
 claspCharacter TwoWayStream_O::read_char() { return stream_read_char(_input_stream); }
 
+claspCharacter TwoWayStream_O::read_char_no_hang() { return stream_read_char_no_hang(_input_stream); }
+
 claspCharacter TwoWayStream_O::write_char(claspCharacter c) { return stream_write_char(_output_stream, c); }
 
 void TwoWayStream_O::unread_char(claspCharacter c) { stream_unread_char(_input_stream, c); }
@@ -1743,6 +1745,8 @@ void SynonymStream_O::write_byte(T_sp c) { stream_write_byte(stream(), c); }
 T_sp SynonymStream_O::read_byte() { return stream_read_byte(stream()); }
 
 claspCharacter SynonymStream_O::read_char() { return stream_read_char(stream()); }
+
+claspCharacter SynonymStream_O::read_char_no_hang() { return stream_read_char_no_hang(stream()); }
 
 claspCharacter SynonymStream_O::write_char(claspCharacter c) { return stream_write_char(stream(), c); }
 
@@ -3907,6 +3911,11 @@ claspCharacter AnsiStream_O::read_char() {
   return EOF;
 }
 
+claspCharacter AnsiStream_O::read_char_no_hang() {
+  ListenResult f = listen();
+  return (f == listen_result_available) ? read_char() : f;
+}
+
 claspCharacter AnsiStream_O::write_char(claspCharacter c) {
   not_an_output_stream(asSmartPtr());
   return EOF;
@@ -4259,26 +4268,21 @@ CL_DOCSTRING(R"dx(readCharNoHang)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__read_char_no_hang(T_sp stream, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
   stream = coerce::inputStreamDesignator(stream);
-  AnsiStream_sp ansi_stream = stream.asOrNull<AnsiStream_O>();
 
-  if (ansi_stream) {
-    int f = ansi_stream->listen();
-    if (f == listen_result_available) {
-      int c = ansi_stream->read_char();
-      if (c != EOF)
-        return clasp_make_standard_character(c);
-    } else if (f == listen_result_no_char) {
-      return nil<T_O>();
-    }
-  } else {
-    T_sp output = eval::funcall(gray::_sym_stream_read_char_no_hang, stream);
-    if (output != kw::_sym_eof)
-      return output;
+  fmt::print("{:x} {:x}\n", (claspCharacter)listen_result_no_char, (claspCharacter)listen_result_eof);
+  claspCharacter c = stream_read_char_no_hang(stream);
+
+  switch (c) {
+  case listen_result_eof:
+    if (eof_error_p.nilp())
+      return eof_value;
+    ERROR_END_OF_FILE(stream);
+    break;
+  case listen_result_no_char:
+    return nil<T_O>();
   }
 
-  if (eof_error_p.nilp())
-    return eof_value;
-  ERROR_END_OF_FILE(stream);
+  return clasp_make_standard_character(c);
 }
 
 CL_LAMBDA(content &optional (eof-error-p t) eof-value &key (start 0) end preserve-whitespace);
@@ -4519,10 +4523,7 @@ DOCGROUP(clasp);
 CL_DEFUN bool cl__listen(T_sp strm) {
   strm = coerce::inputStreamDesignator(strm);
   int result = stream_listen(strm);
-  if (result == listen_result_eof)
-    return 0;
-  else
-    return result;
+  return (result != listen_result_eof) && (result != listen_result_no_char);
 }
 
 CL_LAMBDA(&optional strm);
@@ -4947,15 +4948,36 @@ claspCharacter stream_read_char(T_sp stream) {
     return stream.as_unsafe<AnsiStream_O>()->read_char();
 
   T_sp output = eval::funcall(gray::_sym_stream_read_char, stream);
-  gctools::Fixnum value;
+
+  if (output.nilp() || output == kw::_sym_eof)
+    return EOF;
+
+  gctools::Fixnum value = -1;
   if (cl__characterp(output))
     value = output.unsafe_character();
   else if (core__fixnump(output))
     value = (output).unsafe_fixnum();
-  else if (output == nil<T_O>() || output == kw::_sym_eof)
+  unlikely_if(value < 0 || value > CHAR_CODE_LIMIT) FEerror("Unknown character ~A", 1, output.raw_());
+  return value;
+}
+
+claspCharacter stream_read_char_no_hang(T_sp stream) {
+  if (stream.isA<AnsiStream_O>())
+    return stream.as_unsafe<AnsiStream_O>()->read_char_no_hang();
+
+  T_sp output = eval::funcall(gray::_sym_stream_read_char_no_hang, stream);
+
+  if (output.nilp())
+    return listen_result_no_char;
+
+  if (output == kw::_sym_eof)
     return EOF;
-  else
-    value = -1;
+
+  gctools::Fixnum value = -1;
+  if (cl__characterp(output))
+    value = output.unsafe_character();
+  else if (core__fixnump(output))
+    value = (output).unsafe_fixnum();
   unlikely_if(value < 0 || value > CHAR_CODE_LIMIT) FEerror("Unknown character ~A", 1, output.raw_());
   return value;
 }
