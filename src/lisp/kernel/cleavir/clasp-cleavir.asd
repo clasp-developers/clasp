@@ -44,6 +44,6 @@
                (:file "compile-bytecode")
                (:file "inline-prep")
                (:file "proclamations")
-               (:file "auto-compile")
+               (:file "hooks")
                (:file "bytecode-adaptor")
                (:file "inline")))

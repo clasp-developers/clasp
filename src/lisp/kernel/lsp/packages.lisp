@@ -123,7 +123,7 @@
             not-atomic not-atomic-place
             atomic-update atomic-update-explicit
             atomic-incf atomic-decf atomic-incf-explicit atomic-decf-explicit
-            atomic-push atomic-pop
+            atomic-push atomic-push-explicit atomic-pop atomic-pop-explicit
             atomic-pushnew atomic-pushnew-explicit
             ))
   (core:select-package "CORE"))
@@ -251,5 +251,7 @@
             ;; Compiler
             describe-compiler-policy
             with-current-source-form
+            start-autocompilation
+            stop-autocompilation
             ;; Misc
             printing-char-p)))

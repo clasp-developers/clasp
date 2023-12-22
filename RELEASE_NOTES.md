@@ -13,6 +13,10 @@
 * Generic `(setf gray:stream-element-type)` for basic support of
   bivalent streams.
 * The bytecode compiler warns about unused variables.
+* Experimental: `ext:start-autocompilation` and
+  `ext:stop-autocompilation` control automatic compilation. When
+  enabled, bytecode functions that are called frequently will be
+  automatically and transparently replaced with native-compiled code.
 
 ## Changed
 * `cl:format` and `pprint` now respect the value returned bye
