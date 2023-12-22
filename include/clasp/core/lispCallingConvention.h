@@ -222,7 +222,7 @@ struct ClaspXepFunction {
     this->_EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
     this->_EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
   }
-  void fixupInternalsForSnapshotSaveLoad(CodeSimpleFun_O* cep, snapshotSaveLoad::Fixup* fixup) {
+  void fixupInternalsForSnapshotSaveLoad(SimpleFun_O* cep, snapshotSaveLoad::Fixup* fixup) {
     printf("%s:%d:%s See function.h/clbind/line136\n", __FILE__, __LINE__, __FUNCTION__);
   }
   ClaspXepAnonymousFunction operator[](int index) const { return this->_EntryPoints[index]; };

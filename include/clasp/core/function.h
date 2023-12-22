@@ -210,26 +210,13 @@ public:
 
 public:
   FunctionDescription_sp _FunctionDescription;
-
-public:
-  // Accessors
-  SimpleFun_O(FunctionDescription_sp fdesc) : Function_O(this), _FunctionDescription(fdesc){};
-  CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
-  virtual Pointer_sp defaultEntryAddress() const;
-};
-
-FORWARD(CodeSimpleFun);
-class CodeSimpleFun_O : public SimpleFun_O {
-  LISP_CLASS(core, CorePkg, CodeSimpleFun_O, "CodeSimpleFun", SimpleFun_O);
-
-public:
-  CLASP_DEFAULT_CTOR CodeSimpleFun_O(){};
-
-public:
   T_sp _Code; //  10 code
 public:
   // Accessors
-  CodeSimpleFun_O(FunctionDescription_sp fdesc, T_sp code) : SimpleFun_O(fdesc), _Code(code){};
+  SimpleFun_O(FunctionDescription_sp fdesc, T_sp code)
+    : Function_O(this), _FunctionDescription(fdesc), _Code(code){};
+  CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
+  virtual Pointer_sp defaultEntryAddress() const;
 
 public:
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
@@ -241,8 +228,8 @@ public:
 };
 
 FORWARD(LocalSimpleFun);
-class LocalSimpleFun_O : public CodeSimpleFun_O {
-  LISP_CLASS(core, CorePkg, LocalSimpleFun_O, "LocalSimpleFun", CodeSimpleFun_O);
+class LocalSimpleFun_O : public SimpleFun_O {
+  LISP_CLASS(core, CorePkg, LocalSimpleFun_O, "LocalSimpleFun", SimpleFun_O);
 
 public:
   ClaspLocalFunction _Entry;
@@ -278,8 +265,8 @@ public:
 };
 
 FORWARD(GlobalSimpleFunBase);
-class GlobalSimpleFunBase_O : public CodeSimpleFun_O {
-  LISP_CLASS(core, CorePkg, GlobalSimpleFunBase_O, "GlobalSimpleFunBase", CodeSimpleFun_O);
+class GlobalSimpleFunBase_O : public SimpleFun_O {
+  LISP_CLASS(core, CorePkg, GlobalSimpleFunBase_O, "GlobalSimpleFunBase", SimpleFun_O);
 
 public:
   /*! A general entry point at 0 and fixed arity entry points from 1...(NUMBER_OF_ENTRY_POINTS-1)

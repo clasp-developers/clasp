@@ -802,8 +802,6 @@ class Function_O;
 typedef gctools::smart_ptr<Function_O> Function_sp;
 class SimpleFun_O;
 typedef gctools::smart_ptr<SimpleFun_O> SimpleFun_sp;
-class CodeSimpleFun_O;
-typedef gctools::smart_ptr<CodeSimpleFun_O> CodeSimpleFun_sp;
 
 class GlobalSimpleFunBase_O;
 typedef gctools::smart_ptr<GlobalSimpleFunBase_O> GlobalSimpleFunBase_sp;

@@ -53,7 +53,7 @@ namespace core {
 
 bytecode_trampoline_function bytecode_trampoline = bytecode_call; // default
 
-void CodeSimpleFun_O::fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr) {
+void SimpleFun_O::fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr) {
 #ifdef USE_PRECISE_GC
   if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::InfoOp) {
     uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
@@ -75,7 +75,7 @@ void CodeSimpleFun_O::fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void**
 CL_DEFMETHOD Pointer_sp SimpleFun_O::defaultEntryAddress() const { SUBCLASS_MUST_IMPLEMENT(); }
 
 GlobalSimpleFunBase_O::GlobalSimpleFunBase_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code)
-    : CodeSimpleFun_O(fdesc, code), _EntryPoints(entry_point) {
+    : SimpleFun_O(fdesc, code), _EntryPoints(entry_point) {
   if (code.nilp()) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point._EntryPoints[0]));
     this->_Code = code;
@@ -122,7 +122,7 @@ CL_LISPIFY_NAME(BytecodeDebugInfo/end)
 CL_DEFMETHOD T_sp GlobalBytecodeSimpleFun_O::end() const { return Integer_O::create(this->_EntryPcN + this->_BytecodeSize); }
 
 LocalSimpleFun_O::LocalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point, T_sp code)
-    : CodeSimpleFun_O(fdesc, code), _Entry(entry_point) {
+    : SimpleFun_O(fdesc, code), _Entry(entry_point) {
   llvmo::validateEntryPoint(code, entry_point);
 };
 
