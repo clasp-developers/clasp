@@ -163,6 +163,8 @@ claspCharacter stream_peek_char(T_sp stream);
 void stream_terpri(T_sp stream);
 bool stream_fresh_line(T_sp stream);
 
+T_mv stream_read_line(T_sp stream);
+
 cl_index stream_read_sequence(T_sp stream, T_sp data, cl_index start, cl_index end);
 void stream_write_sequence(T_sp stream, T_sp data, cl_index start, cl_index end);
 
@@ -299,6 +301,8 @@ public:
   virtual claspCharacter write_char(claspCharacter c);
   virtual void unread_char(claspCharacter c);
   virtual claspCharacter peek_char();
+
+  virtual T_mv read_line();
 
   virtual void terpri();
   virtual bool fresh_line();
@@ -688,6 +692,9 @@ public:
   claspCharacter read_char() override;
   void unread_char(claspCharacter c) override;
   claspCharacter peek_char() override;
+
+  T_mv read_line() override;
+
   ListenResult listen() override;
   void clear_input() override;
 
@@ -732,6 +739,8 @@ public:
   claspCharacter write_char(claspCharacter c) override;
   void unread_char(claspCharacter c) override;
   claspCharacter peek_char() override;
+
+  T_mv read_line() override;
 
   cl_index read_sequence(T_sp data, cl_index start, cl_index n) override;
   void write_sequence(T_sp data, cl_index start, cl_index n) override;
@@ -798,6 +807,8 @@ public:
   claspCharacter write_char(claspCharacter c) override;
   void unread_char(claspCharacter c) override;
   claspCharacter peek_char() override;
+
+  T_mv read_line() override;
 
   cl_index read_sequence(T_sp data, cl_index start, cl_index n) override;
   void write_sequence(T_sp data, cl_index start, cl_index n) override;

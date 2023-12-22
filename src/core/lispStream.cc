@@ -486,7 +486,7 @@ claspCharacter FileStream_O::read_char() {
 }
 
 void AnsiStream_O::update_line_column(claspCharacter c) {
-  if (c == '\n') {
+  if (c == CLASP_CHAR_CODE_NEWLINE) {
     _column = 0;
     _line++;
   } else if (c == '\t')
@@ -1183,6 +1183,21 @@ ListenResult StringInputStream_O::listen() {
   return (_input_position < _input_limit) ? listen_result_available : listen_result_eof;
 }
 
+T_mv StringInputStream_O::read_line() {
+  T_sp missing_newline_p = _lisp->_true();
+  cl_index start = _input_position, end = _input_position;
+
+  for (; _input_position < _input_limit; end++, _input_position++) {
+    if (cl__char(_contents, end).unsafe_character() == CLASP_CHAR_CODE_NEWLINE) {
+      _input_position++;
+      missing_newline_p = nil<T_O>();
+      break;
+    }
+  }
+
+  return Values(cl__subseq(_contents, start, clasp_make_fixnum(end)), missing_newline_p);
+}
+
 void StringInputStream_O::clear_input() {}
 
 T_sp StringInputStream_O::position() { return Integer_O::create((gc::Fixnum)_input_position); }
@@ -1261,6 +1276,8 @@ claspCharacter TwoWayStream_O::write_char(claspCharacter c) { return stream_writ
 void TwoWayStream_O::unread_char(claspCharacter c) { stream_unread_char(_input_stream, c); }
 
 claspCharacter TwoWayStream_O::peek_char() { return stream_peek_char(_input_stream); }
+
+T_mv TwoWayStream_O::read_line() { return stream_read_line(_input_stream); }
 
 cl_index TwoWayStream_O::read_sequence(T_sp data, cl_index start, cl_index n) {
   return stream_read_sequence(_input_stream, data, start, n);
@@ -1753,6 +1770,8 @@ claspCharacter SynonymStream_O::write_char(claspCharacter c) { return stream_wri
 void SynonymStream_O::unread_char(claspCharacter c) { stream_unread_char(stream(), c); }
 
 claspCharacter SynonymStream_O::peek_char() { return stream_peek_char(stream()); }
+
+T_mv SynonymStream_O::read_line() { return stream_read_line(stream()); }
 
 cl_index SynonymStream_O::read_sequence(T_sp data, cl_index start, cl_index n) {
   return stream_read_sequence(stream(), data, start, n);
@@ -3381,7 +3400,7 @@ T_sp clasp_open_stream(T_sp fn, StreamMode smm, T_sp if_exists, T_sp if_does_not
     output = PosixFileStream_O::make(fn, f, smm, byte_size, flags, external_format, temp_name, created);
   }
   if (smm == stream_mode_probe) {
-    eval::funcall(cl::_sym_close, output);
+    stream_close(output, nil<T_O>());
   } else {
     output->_flags |= CLASP_STREAM_MIGHT_SEEK;
     //            si_set_finalizer(output, _lisp->_true());
@@ -3930,8 +3949,63 @@ claspCharacter AnsiStream_O::peek_char() {
   return out;
 }
 
+T_mv AnsiStream_O::read_line() {
+  T_sp missing_newline_p = _lisp->_true();
+  // We set things up so that we accumulate a bytestring when possible, and revert to a real
+  // character string if we hit multibyte characters.
+  bool base = true;
+  Str8Ns_sp base_buffer = _lisp->get_Str8Ns_buffer_string();
+  StrWNs_sp extended_buffer;
+  claspCharacter c;
+
+  while ((c = read_char()) != EOF) {
+    if (c == CLASP_CHAR_CODE_NEWLINE) {
+      missing_newline_p = nil<T_O>();
+      break;
+    }
+
+    // have a real character
+    if (!clasp_base_char_p(c)) {
+      // wide character.
+      // NOTE: We assume that wide characters are not newlines.
+      // In unicode this is false, e.g. U+2028 LINE SEPARATOR.
+      // However, CLHS specifies #\Newline as the only newline. Maybe look at this more.
+      if (base) {
+        // We've read our first wide character - set up a wide buffer to use now
+        base = false;
+        extended_buffer = _lisp->get_StrWNs_buffer_string();
+        // Extend the wide buffer if necessary
+        if (extended_buffer->arrayTotalSize() < base_buffer->length())
+          extended_buffer->resize(base_buffer->length());
+        // copy in the base buffer, then release the base buffer
+        extended_buffer->unsafe_setf_subseq(0, base_buffer->length(), base_buffer->asSmartPtr());
+        extended_buffer->fillPointerSet(base_buffer->length());
+        _lisp->put_Str8Ns_buffer_string(base_buffer);
+      }
+      // actually put in the wide character
+      extended_buffer->vectorPushExtend(c);
+    } else if (base)
+      base_buffer->vectorPushExtend(c);
+    else
+      extended_buffer->vectorPushExtend(c);
+  }
+
+  // We've accumulated a line. Copy it into a simple string, release the buffer, and return.
+  String_sp result;
+
+  if (base) {
+    result = cl__copy_seq(base_buffer);
+    _lisp->put_Str8Ns_buffer_string(base_buffer);
+  } else {
+    result = cl__copy_seq(extended_buffer);
+    _lisp->put_StrWNs_buffer_string(extended_buffer);
+  }
+
+  return Values(result, missing_newline_p);
+}
+
 void AnsiStream_O::terpri() {
-  write_char('\n');
+  write_char(CLASP_CHAR_CODE_NEWLINE);
   force_output();
 }
 
@@ -4269,7 +4343,6 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp cl__read_char_no_hang(T_sp stream, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
   stream = coerce::inputStreamDesignator(stream);
 
-  fmt::print("{:x} {:x}\n", (claspCharacter)listen_result_no_char, (claspCharacter)listen_result_eof);
   claspCharacter c = stream_read_char_no_hang(stream);
 
   switch (c) {
@@ -4331,95 +4404,16 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(See clhs)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
-  // TODO Handle encodings from sin - currently only Str8Ns is supported
-  bool eofErrorP = eof_error_p.isTrue();
   sin = coerce::inputStreamDesignator(sin);
-  AnsiStream_sp stream = sin.asOrNull<AnsiStream_O>();
+  T_mv result = stream_read_line(sin);
 
-  if (!stream) {
-    T_mv results = eval::funcall(gray::_sym_stream_read_line, sin);
-    MultipleValues& mvn = core::lisp_multipleValues();
-    if (mvn.second(results.number_of_values()).isTrue() && (gc::As<core::String_sp>(results)->length() == 0)) {
-      if (eof_error_p.notnilp()) {
-        ERROR_END_OF_FILE(sin);
-      } else {
-        return Values(eof_value, _lisp->_true());
-      }
-    } else
-      return results;
+  if (cl__length(result) == 0 && lisp_multipleValues().second(result.number_of_values()).notnilp()) {
+    if (eof_error_p.nilp())
+      return Values(eof_value, _lisp->_true());
+    ERROR_END_OF_FILE(sin);
   }
 
-  // Now we have an ANSI stream. Get read_char so we don't need to dispatch every iteration.
-  // This is the second return value.
-  T_sp missing_newline_p = nil<T_O>();
-  // We set things up so that we accumulate a bytestring when possible, and revert to a real
-  // character string if we hit multibyte characters.
-  bool small = true;
-  Str8Ns_sp sbuf_small = _lisp->get_Str8Ns_buffer_string();
-  StrWNs_sp sbuf_wide;
-  // Read loop
-  while (1) {
-    claspCharacter cc = stream->read_char();
-    if (cc == EOF) { // hit end of file
-      missing_newline_p = _lisp->_true();
-      if (small) { // have a bytestring
-        if (sbuf_small->length() > 0)
-          break;                                       // we've read something - return it.
-        else if (eofErrorP) {                          // we need to signal an error.
-          _lisp->put_Str8Ns_buffer_string(sbuf_small); // return our buffer first
-          ERROR_END_OF_FILE(sin);
-        } else { // return the eof value.
-          _lisp->put_Str8Ns_buffer_string(sbuf_small);
-          return Values(eof_value, missing_newline_p);
-        }
-      } else
-        break; // Otherwise we have a wide string- this implies we've read something.
-    } else {   // have a real character
-      if (!clasp_base_char_p(cc)) {
-        // wide character.
-        // NOTE: We assume that wide characters are not newlines.
-        // In unicode this is false, e.g. U+2028 LINE SEPARATOR.
-        // However, CLHS specifies #\Newline as the only newline. Maybe look at this more.
-        if (small) {
-          // We've read our first wide character - set up a wide buffer to use now
-          small = false;
-          sbuf_wide = _lisp->get_StrWNs_buffer_string();
-          // Extend the wide buffer if necessary
-          if (sbuf_wide->arrayTotalSize() < sbuf_small->length())
-            sbuf_wide->resize(sbuf_small->length());
-          // copy in the small buffer, then release the small buffer
-          sbuf_wide->unsafe_setf_subseq(0, sbuf_small->length(), sbuf_small->asSmartPtr());
-          sbuf_wide->fillPointerSet(sbuf_small->length());
-          _lisp->put_Str8Ns_buffer_string(sbuf_small);
-        }
-        // actually put in the wide character
-        sbuf_wide->vectorPushExtend(cc);
-      } else if (cc == '\n')
-        break; // hit a newline, get ready to return a result
-      else if (cc == '\r') {
-        // Treat a CR or CRLF as a newline.
-        if (stream->peek_char() == '\n')
-          stream->read_char(); // lose any LF first tho
-        break;
-      } else { // ok, we have a real non-newline character. accumulate.
-        if (small)
-          sbuf_small->vectorPushExtend(cc);
-        else
-          sbuf_wide->vectorPushExtend(cc);
-      }
-    }
-  } // while(1)
-  // We've accumulated a line. Copy it into a simple string, release the buffer, and return.
-  LOG("Read line result -->[{}]", sbuf.str());
-  if (small) {
-    T_sp result = cl__copy_seq(sbuf_small);
-    _lisp->put_Str8Ns_buffer_string(sbuf_small);
-    return Values(result, missing_newline_p);
-  } else {
-    T_sp result = cl__copy_seq(sbuf_wide);
-    _lisp->put_StrWNs_buffer_string(sbuf_wide);
-    return Values(result, missing_newline_p);
-  }
+  return result;
 }
 
 CL_LAMBDA(&optional output-stream);
@@ -5008,6 +5002,11 @@ claspCharacter stream_peek_char(T_sp stream) {
   if (out == kw::_sym_eof)
     return EOF;
   return clasp_as_claspCharacter(gc::As<Character_sp>(out));
+}
+
+T_mv stream_read_line(T_sp stream) {
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->read_line()
+                                    : eval::funcall(gray::_sym_stream_read_line, stream);
 }
 
 cl_index stream_read_sequence(T_sp stream, T_sp data, cl_index start, cl_index end) {
