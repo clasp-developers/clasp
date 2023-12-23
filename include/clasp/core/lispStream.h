@@ -191,6 +191,7 @@ T_sp stream_set_position(T_sp stream, T_sp pos);
 T_sp stream_string_length(T_sp stream, T_sp string);
 int stream_column(T_sp stream);
 int stream_set_column(T_sp stream, int column);
+bool stream_start_line_p(T_sp stream);
 int stream_line(T_sp stream);
 
 int stream_input_handle(T_sp stream);
@@ -333,6 +334,7 @@ public:
   virtual T_sp string_length(T_sp string);
   virtual int column() const;
   virtual int set_column(int column);
+  virtual bool start_line_p() const;
   virtual int line() const;
 
   virtual int input_handle();
@@ -765,6 +767,7 @@ public:
   T_sp set_position(T_sp pos) override;
   int column() const override;
   int set_column(int column) override;
+  bool start_line_p() const override;
 
   int input_handle() override;
   int output_handle() override;
@@ -829,6 +832,7 @@ public:
   T_sp position() override;
   int column() const override;
   int set_column(int column) override;
+  bool start_line_p() const override;
 
   int input_handle() override;
   int output_handle() override;
@@ -879,6 +883,7 @@ public:
   T_sp string_length(T_sp string) override;
   int column() const override;
   int set_column(int column) override;
+  bool start_line_p() const override;
   T_sp close(T_sp abort) override;
 }; // BroadcastStream class
 
@@ -968,6 +973,7 @@ public:
   T_sp position() override;
   int column() const override;
   int set_column(int column) override;
+  bool start_line_p() const override;
 
   int input_handle() override;
   int output_handle() override;

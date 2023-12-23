@@ -1311,6 +1311,8 @@ int TwoWayStream_O::column() const { return stream_column(_output_stream); }
 
 int TwoWayStream_O::set_column(int column) { return stream_set_column(_output_stream, column); }
 
+bool TwoWayStream_O::start_line_p() const { return stream_start_line_p(_output_stream); }
+
 int TwoWayStream_O::input_handle() { return stream_input_handle(_input_stream); }
 
 int TwoWayStream_O::output_handle() { return stream_output_handle(_output_stream); }
@@ -1453,6 +1455,8 @@ int BroadcastStream_O::set_column(int column) {
   return column;
 }
 
+bool BroadcastStream_O::start_line_p() const { return _streams.nilp() || stream_start_line_p(oCar(_streams)); }
+
 T_sp BroadcastStream_O::close(T_sp abort) {
   if (_open) {
     if (_flags & CLASP_STREAM_CLOSE_COMPONENTS) {
@@ -1563,6 +1567,8 @@ T_sp EchoStream_O::position() { return nil<T_O>(); }
 int EchoStream_O::column() const { return stream_column(_output_stream); }
 
 int EchoStream_O::set_column(int column) { return stream_set_column(_output_stream, column); }
+
+bool EchoStream_O::start_line_p() const { return stream_start_line_p(_output_stream); }
 
 int EchoStream_O::input_handle() { return stream_input_handle(_input_stream); }
 
@@ -1810,6 +1816,8 @@ T_sp SynonymStream_O::set_position(T_sp pos) { return stream_set_position(stream
 int SynonymStream_O::column() const { return stream_column(stream()); }
 
 int SynonymStream_O::set_column(int column) { return stream_set_column(stream(), column); }
+
+bool SynonymStream_O::start_line_p() const { return stream_start_line_p(stream()); }
 
 int SynonymStream_O::input_handle() { return stream_input_handle(stream()); }
 
@@ -3183,15 +3191,16 @@ CL_DEFUN T_sp cl__input_stream_p(T_sp strm) { return stream_input_p(strm) ? _lis
 
 CL_LAMBDA(arg);
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__output_stream_p(T_sp strm) { return stream_output_p(strm) ? _lisp->_true() : nil<T_O>();; }
+CL_DEFUN T_sp cl__output_stream_p(T_sp strm) {
+  return stream_output_p(strm) ? _lisp->_true() : nil<T_O>();
+  ;
+}
 
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(interactive_stream_p)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__interactive_stream_p(T_sp strm) {
-  return stream_interactive_p(strm) ? _lisp->_true() : nil<T_O>();
-}
+CL_DEFUN T_sp cl__interactive_stream_p(T_sp strm) { return stream_interactive_p(strm) ? _lisp->_true() : nil<T_O>(); }
 
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__open_stream_p(T_sp strm) {
@@ -3985,7 +3994,7 @@ void AnsiStream_O::terpri() {
 }
 
 bool AnsiStream_O::fresh_line() {
-  if (column() > 0) {
+  if (!start_line_p()) {
     terpri();
     return true;
   }
@@ -4129,6 +4138,8 @@ T_sp AnsiStream_O::string_length(T_sp string) {
 int AnsiStream_O::column() const { return _column; }
 
 int AnsiStream_O::set_column(int column) { return _column = column; }
+
+bool AnsiStream_O::start_line_p() const { return _column < 1; }
 
 int AnsiStream_O::input_handle() { return -1; }
 
@@ -5126,6 +5137,15 @@ int stream_column(T_sp stream) {
 
 int stream_set_column(T_sp stream, int column) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->set_column(column) : column;
+}
+
+// This function is exposed to CL because it is needed to implement
+// the GRAY:STREAM-START-LINE-METHOD for ansi-stream. The stream
+// argument is guaranteed to be an AnsiStream_sp so recursion is
+// avoided.
+bool stream_start_line_p(T_sp stream) {
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->start_line_p()
+                                    : T_sp(eval::funcall(gray::_sym_stream_line_column, stream)).notnilp();
 }
 
 int stream_line(T_sp stream) {

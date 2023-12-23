@@ -21,6 +21,7 @@
             %pathname
             %stream-element-type
             %stream-interactive-p
+            %stream-start-line-p
             %truename)
           "GRAY")
 
@@ -536,7 +537,7 @@ truename."))
     char))
 
 (defmethod stream-peek-char ((stream ansi-stream))
-  (cl:peek-char stream))
+  (cl:peek-char stream nil nil :eof))
 
 (defmethod stream-peek-char ((stream t))
   (bug-or-error stream 'stream-peek-char))
@@ -554,7 +555,7 @@ truename."))
 ;; READ-CHAR
 
 (defmethod stream-read-char ((stream ansi-stream))
-  (cl:read-char stream))
+  (cl:read-char stream nil :eof))
 
 (defmethod stream-read-char ((stream t))
   (bug-or-error stream 'stream-read-char))
@@ -664,7 +665,7 @@ truename."))
   (eql (stream-line-column stream) 0))
 
 (defmethod stream-start-line-p ((stream ansi-stream))
-  (eql (stream-line-column stream) 0))
+  (%stream-start-line-p stream))
 
 (defmethod stream-start-line-p ((stream t))
   (bug-or-error stream 'stream-start-line-p))
