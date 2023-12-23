@@ -14,6 +14,16 @@
 
 (import 'ext:ansi-stream)
 
+(unexport '(%close
+            %input-stream-p
+            %open-stream-p
+            %output-stream-p
+            %pathname
+            %stream-element-type
+            %stream-interactive-p
+            %truename)
+          "GRAY")
+
 ;;;
 ;;; This is the generic function interface for CLOS streams.
 ;;;
@@ -343,8 +353,9 @@ truename."))
   t)
 
 (defmethod close ((stream ansi-stream) &key abort)
-  ;; To avoid an recursive loop after redefine-cl-symbols - use core:close* here
-  (core:close* stream :abort abort))
+  ;; To avoid an recursive loop after redefine-cl-symbols - use
+  ;; gray:%close here.
+  (%close stream abort))
 
 (defmethod close ((stream t) &key abort)
   (declare (ignore abort))
@@ -358,7 +369,7 @@ truename."))
   'character)
 
 (defmethod stream-element-type ((stream ansi-stream))
-  (core:stream-element-type* stream))
+  (%stream-element-type stream))
 
 (defmethod stream-element-type ((stream t))
   (bug-or-error stream 'stream-element-type))
@@ -413,7 +424,7 @@ truename."))
   t)
 
 (defmethod input-stream-p ((stream ansi-stream))
-  (core:input-stream-p* stream))
+  (%input-stream-p stream))
 
 (defmethod input-stream-p ((stream t))
   (bug-or-error stream 'input-stream-p))
@@ -425,7 +436,7 @@ truename."))
   nil)
 
 (defmethod stream-interactive-p ((stream ansi-stream))
-  (cl:interactive-stream-p stream))
+  (%stream-interactive-p stream))
 
 (defmethod stream-interactive-p ((stream t))
   (bug-or-error stream 'stream-interactive-p))
@@ -433,12 +444,12 @@ truename."))
 ;; PATHNAME
 
 (defmethod pathname (pathspec)
-  (core:pathname* pathspec))
+  (%pathname pathspec))
 
 ;; TRUENAME
 
 (defmethod truename (filespec)
-  (core:truename* filespec))
+  (%truename filespec))
 
 ;; LINE-COLUMN
 
@@ -493,7 +504,7 @@ truename."))
 ;; OPEN-STREAM-P
 
 (defmethod open-stream-p ((stream ansi-stream))
-  (core:open-stream-p* stream))
+  (%open-stream-p stream))
 
 (defmethod open-stream-p ((stream t))
   (bug-or-error stream 'open-stream-p))
@@ -510,7 +521,7 @@ truename."))
   t)
 
 (defmethod output-stream-p ((stream ansi-stream))
-  (core:output-stream-p* stream))
+  (%output-stream-p stream))
 
 (defmethod output-stream-p ((stream t))
   (bug-or-error stream 'output-stream-p))
@@ -823,7 +834,6 @@ truename."))
                                                                    :input))
   (declare (ignore direction))
   (ext:file-stream-file-descriptor stream))
-
 
 ;;; Setup
 

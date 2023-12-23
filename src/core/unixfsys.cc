@@ -873,16 +873,10 @@ CL_DEFUN Pathname_mv core__file_truename(T_sp pathname, T_sp filename, bool foll
   return file_truename(pathname, filename, follow_links);
 }
 
-/*
- * Search the actual name of the directory of a pathname,
- * going through links if they exist. Default is
- * current directory
- */
-
-CL_LAMBDA(filespec);
-CL_DECLARE();
-DOCGROUP(clasp);
-CL_DEFUN Pathname_sp core__truenameSTAR(T_sp filespec) {
+// This function is exposed to CL because it is needed to implement
+// the generic version of CL:TRUENAME. It will be unexported by
+// streams.lisp.
+CL_DEFUN Pathname_sp gray__PERCENTtruename(T_sp filespec) {
   if (stream_p(filespec)) {
     T_sp pathname = stream_truename(filespec);
     if (cl__stringp(pathname))
@@ -918,7 +912,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(truename tries to find the file indicated by filespec and returns its truename.
 If the gray-streams module has been loaded then this function will be made generic.)dx");
 DOCGROUP(clasp);
-CL_DEFUN Pathname_sp cl__truename(T_sp filespec) { return core__truenameSTAR(filespec); }
+CL_DEFUN Pathname_sp cl__truename(T_sp filespec) { return gray__PERCENTtruename(filespec); }
 
 int clasp_backup_open(const char* filename, int option, int mode) {
   stringstream sbackup;

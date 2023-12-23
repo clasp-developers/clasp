@@ -3179,41 +3179,18 @@ CL_DEFUN T_sp cl__file_position(T_sp stream, T_sp position) {
 
 CL_LAMBDA(strm);
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__input_stream_pSTAR(T_sp strm) {
-  ASSERT(strm);
-  return (stream_input_p(strm) ? _lisp->_true() : nil<T_O>());
-}
-
-CL_LAMBDA(strm);
-DOCGROUP(clasp);
-CL_DEFUN T_sp cl__input_stream_p(T_sp strm) { return core__input_stream_pSTAR(strm); }
+CL_DEFUN T_sp cl__input_stream_p(T_sp strm) { return stream_input_p(strm) ? _lisp->_true() : nil<T_O>(); }
 
 CL_LAMBDA(arg);
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__output_stream_pSTAR(T_sp strm) {
-  ASSERT(strm);
-  return stream_output_p(strm) ? _lisp->_true() : nil<T_O>();
-}
-
-CL_LAMBDA(arg);
-DOCGROUP(clasp);
-CL_DEFUN T_sp cl__output_stream_p(T_sp strm) { return core__output_stream_pSTAR(strm); }
+CL_DEFUN T_sp cl__output_stream_p(T_sp strm) { return stream_output_p(strm) ? _lisp->_true() : nil<T_O>();; }
 
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(interactive_stream_p)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__interactive_stream_p(T_sp strm) {
-  ASSERT(strm);
   return stream_interactive_p(strm) ? _lisp->_true() : nil<T_O>();
-}
-
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__open_stream_pSTAR(T_sp strm) {
-  /* ANSI and Cltl2 specify that open-stream-p should work
-           on closed streams, and that a stream is only closed
-           when #'close has been applied on it */
-  return stream_open_p(strm) ? _lisp->_true() : nil<T_O>();
 }
 
 DOCGROUP(clasp);
@@ -3221,14 +3198,11 @@ CL_DEFUN T_sp cl__open_stream_p(T_sp strm) {
   /* ANSI and Cltl2 specify that open-stream-p should work
            on closed streams, and that a stream is only closed
            when #'close has been applied on it */
-  return core__open_stream_pSTAR(strm);
+  return stream_open_p(strm) ? _lisp->_true() : nil<T_O>();
 }
 
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__stream_element_typeSTAR(T_sp strm) { return stream_element_type(strm); }
-
-DOCGROUP(clasp);
-CL_DEFUN T_sp cl__stream_element_type(T_sp strm) { return core__stream_element_typeSTAR(strm); }
+CL_DEFUN T_sp cl__stream_element_type(T_sp strm) { return stream_element_type(strm); }
 
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__stream_external_format(T_sp strm) { return stream_external_format(strm); }
@@ -3473,17 +3447,9 @@ CL_DEFUN T_sp cl__open(T_sp filename, T_sp direction, T_sp element_type, T_sp if
 
 CL_LAMBDA(strm &key abort);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Lower-level version of cl:close)dx");
-CL_DOCSTRING_LONG(
-    R"dx(However, this won't be redefined by gray streams and will be available to call after cl:close is redefined by gray::redefine-cl-functions.)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__closeSTAR(T_sp strm, T_sp abort) { return stream_close(strm, abort); }
-
-CL_LAMBDA(strm &key abort);
-CL_DECLARE();
 CL_DOCSTRING(R"doc(close)doc");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__close(T_sp strm, T_sp abort) { return core__closeSTAR(strm, abort); }
+CL_DEFUN T_sp cl__close(T_sp strm, T_sp abort) { return stream_close(strm, abort); }
 
 /**********************************************************************
  * BACKEND
@@ -5072,7 +5038,11 @@ void stream_force_output(T_sp stream) {
     eval::funcall(gray::_sym_stream_force_output, stream);
 }
 
-bool stream_open_p(T_sp stream) {
+// This function is exposed to CL because it is needed to implement
+// the generic version of CL:OPEN-STREAM-P. It will be unexported by
+// streams.lisp.
+CL_LISPIFY_NAME("gray:%open-stream-p")
+CL_DEFUN bool stream_open_p(T_sp stream) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->open_p()
                                     : T_sp(eval::funcall(gray::_sym_open_stream_p, stream)).notnilp();
 }
@@ -5081,22 +5051,35 @@ bool stream_p(T_sp stream) {
   return stream.isA<Stream_O>() || (gray::_sym_streamp->fboundp() && T_sp(eval::funcall(gray::_sym_streamp, stream)).notnilp());
 }
 
-bool stream_input_p(T_sp stream) {
+CL_LISPIFY_NAME("gray:%input-stream-p")
+CL_DEFUN bool stream_input_p(T_sp stream) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->input_p()
                                     : T_sp(eval::funcall(gray::_sym_input_stream_p, stream)).notnilp();
 }
 
-bool stream_output_p(T_sp stream) {
+// This function is exposed to CL because it is needed to implement
+// the generic version of CL:OUTPUT-STREAM-P. It will be unexported by
+// streams.lisp.
+CL_LISPIFY_NAME("gray:%output-stream-p")
+CL_DEFUN bool stream_output_p(T_sp stream) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->output_p()
                                     : T_sp(eval::funcall(gray::_sym_output_stream_p, stream)).notnilp();
 }
 
-bool stream_interactive_p(T_sp stream) {
+// This function is exposed to CL because it is needed to implement
+// the generic version of CL:INTERACTIVE-STREAM-P. It will be
+// unexported by streams.lisp.
+CL_LISPIFY_NAME("gray:%stream-interactive-p")
+CL_DEFUN bool stream_interactive_p(T_sp stream) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->interactive_p()
                                     : T_sp(eval::funcall(gray::_sym_stream_interactive_p, stream)).notnilp();
 }
 
-T_sp stream_element_type(T_sp stream) {
+// This function is exposed to CL because it is needed to implement
+// the generic version of CL:STREAM-ELEMENT-TYPE. It will be
+// unexported by streams.lisp.
+CL_LISPIFY_NAME("gray:%stream-element-type")
+CL_DEFUN T_sp stream_element_type(T_sp stream) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->element_type()
                                     : eval::funcall(gray::_sym_stream_element_type, stream);
 }
@@ -5160,7 +5143,11 @@ int stream_output_handle(T_sp stream) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->output_handle() : -1;
 }
 
-T_sp stream_close(T_sp stream, T_sp abort) {
+// This function is exposed to CL because it is needed to implement
+// the generic version of CL:CLOSE. It will be unexported by
+// streams.lisp.
+CL_LISPIFY_NAME("gray:%close")
+CL_DEFUN T_sp stream_close(T_sp stream, T_sp abort) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->close(abort)
                                     : eval::funcall(gray::_sym_close, stream, kw::_sym_abort, abort);
 }

@@ -887,8 +887,10 @@ struct PathnameRecursionGuard {
   virtual ~PathnameRecursionGuard() { --global_pathname_recursion_guard; }
 };
 
-DOCGROUP(clasp);
-CL_DEFUN Pathname_sp core__pathnameSTAR(T_sp x) {
+// This function is exposed to CL because it is needed to implement
+// the generic version of CL:PATHNAME. It will be unexported by
+// streams.lisp.
+CL_DEFUN Pathname_sp gray__PERCENTpathname(T_sp x) {
   PathnameRecursionGuard guard;
   if (x.nilp()) {
     ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_pathname, x,
@@ -917,7 +919,7 @@ CL_DEFUN Pathname_sp core__pathnameSTAR(T_sp x) {
 CL_DOCSTRING(R"dx(Returns the pathname denoted by pathspec. If the gray-streams module has been loaded
 then this function will be made generic.)dx")
 DOCGROUP(clasp);
-CL_DEFUN Pathname_sp cl__pathname(T_sp pathspec) { return core__pathnameSTAR(pathspec); }
+CL_DEFUN Pathname_sp cl__pathname(T_sp pathspec) { return gray__PERCENTpathname(pathspec); }
 
 CL_LAMBDA(x);
 CL_DECLARE();
