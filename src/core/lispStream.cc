@@ -3760,7 +3760,10 @@ void clasp_write_characters(const char* buf, int sz, T_sp strm) {
   }
 }
 
-void clasp_write_string(const string& str, T_sp strm) { clasp_write_characters(str.c_str(), str.size(), strm); }
+void clasp_write_string(const string& str, T_sp strm) {
+  for (auto ch : str)
+    stream_write_char(strm, ch);
+}
 
 void clasp_writeln_string(const string& str, T_sp strm) {
   clasp_write_string(str, strm);
@@ -4429,8 +4432,7 @@ CL_DEFUN bool cl__fresh_line(T_sp outputStreamDesig) {
 CL_LAMBDA(string &optional output-stream &key (start 0) end);
 CL_DOCSTRING(R"dx(Writes the characters of the subsequence of string bounded by start
 and end to output-stream.)dx");
-CL_LISPIFY_NAME("cl:write-string");
-CL_DEFUN String_sp clasp_writeString(String_sp str, T_sp stream, int istart, T_sp end) {
+CL_DEFUN String_sp cl__write_string(String_sp str, T_sp stream, int istart, T_sp end) {
   stream = coerce::outputStreamDesignator(stream);
   size_t_pair p = sequenceStartEnd(cl::_sym_writeString, str->length(), istart, end);
   stream_write_string(stream, str, p.start, p.end);

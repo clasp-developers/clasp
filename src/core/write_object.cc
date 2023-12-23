@@ -128,14 +128,12 @@ T_sp do_write_object_circle(T_sp x, T_sp stream) {
     /* Object is referenced twice. We print its definition */
     stringstream ss;
     ss << '#' << -code << '=';
-    SimpleBaseString_sp out = SimpleBaseString_O::make(ss.str());
-    clasp_writeString(out, stream);
+    cl__write_string(SimpleBaseString_O::make(ss.str()), stream);
   } else {
     /* Second reference to the object */
     stringstream ss;
     ss << '#' << code << '#';
-    SimpleBaseString_sp out = SimpleBaseString_O::make(ss.str());
-    clasp_writeString(out, stream);
+    cl__write_string(SimpleBaseString_O::make(ss.str()), stream);
     return x;
   }
 

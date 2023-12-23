@@ -994,14 +994,13 @@ T_sp cl__read_sequence(T_sp sequence, T_sp stream, T_sp start, T_sp oend);
 
 bool cl__streamp(T_sp strm);
 
-String_sp clasp_writeString(String_sp str, T_sp stream, int istart = 0, T_sp end = nil<T_O>());
+String_sp cl__write_string(String_sp str, T_sp stream, int istart = 0, T_sp end = nil<T_O>());
 
 void clasp_write_characters(const char* buf, int sz, T_sp strm);
 void clasp_write_string(const string& str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
 void clasp_writeln_string(const string& str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
 void writestr_stream(const char* str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
 void core__write_addr(T_sp x, T_sp strm);
-claspCharacter clasp_write_char(claspCharacter c, T_sp strm);
 
 T_sp cl__open(T_sp filename, T_sp direction = kw::_sym_input, T_sp element_type = cl::_sym_base_char,
               T_sp if_exists = nil<core::T_O>(), bool iesp = false, T_sp if_does_not_exist = nil<core::T_O>(), bool idnesp = false,
