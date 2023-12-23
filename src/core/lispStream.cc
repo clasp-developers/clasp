@@ -132,10 +132,8 @@ void SetStringFillp(String_sp s, Fixnum fp) {
   s->fillPointerSet(fp);
 }
 
-DOCGROUP(clasp);
 CL_DEFUN StringOutputStream_sp core__thread_local_write_to_string_output_stream() { return my_thread->_WriteToStringOutputStream; }
 
-DOCGROUP(clasp);
 CL_UNWIND_COOP(true)
 CL_DEFUN String_sp core__get_thread_local_write_to_string_output_stream_string(StringOutputStream_sp my_stream) {
   // This is like get-string-output-stream-string but it checks the size of the
@@ -1089,10 +1087,8 @@ void StringOutputStream_O::force_output() {}
 bool StringOutputStream_O::output_p() const { return true; }
 
 CL_LAMBDA(s);
-CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(make_string_output_stream_from_string)dx");
-DOCGROUP(clasp);
 CL_DEFUN StringOutputStream_sp core__make_string_output_stream_from_string(T_sp s) {
   StringOutputStream_sp strm = StringOutputStream_O::create();
   bool stringp = cl__stringp(s);
@@ -1119,10 +1115,14 @@ StringOutputStream_sp clasp_make_string_output_stream(cl_index line_length, bool
 }
 
 CL_LAMBDA("&key (element-type 'character)");
-CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(makeStringOutputStream)dx");
-DOCGROUP(clasp);
+CL_DOCSTRING(R"dx(Returns an output string stream that accepts characters and makes
+available (via get-output-stream-string) a string that contains the
+characters that were actually output.
+
+The element-type names the type of the elements of the string; a
+string is constructed of the most specialized type that can
+accommodate elements of that element-type.)dx");
 CL_DEFUN StringOutputStream_sp cl__make_string_output_stream(Symbol_sp elementType) {
   int extended = 0;
   if (elementType == cl::_sym_base_char) {
@@ -1145,7 +1145,6 @@ CL_DEFUN StringOutputStream_sp cl__make_string_output_stream(Symbol_sp elementTy
 
 CL_LISPIFY_NAME("cl:get-output-stream-string")
 CL_LAMBDA(string-output-stream);
-CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Returns a string containing, in order, all the characters that have
 been output to string-output-stream. This operation clears any
@@ -1153,7 +1152,6 @@ characters on string-output-stream, so the string contains only those
 characters which have been output since the last call to
 get-output-stream-string or since the creation of the
 string-output-stream, whichever occurred most recently.)dx");
-DOCGROUP(clasp);
 CL_DEFUN String_sp StringOutputStream_O::get_string(T_sp string_output_stream) {
   if (!string_output_stream.isA<StringOutputStream_O>())
     af_wrongTypeOnlyArg(__FILE__, __LINE__, cl::_sym_getOutputStreamString, string_output_stream, cl::_sym_StringStream_O);
@@ -1227,7 +1225,6 @@ StringInputStream_sp StringInputStream_O::make(String_sp string, cl_index istart
 CL_LAMBDA(file_descriptor &key direction);
 CL_DOCSTRING(R"dx(Create a file from a file descriptor and direction)dx");
 CL_UNWIND_COOP(true);
-DOCGROUP(clasp);
 CL_DEFUN T_sp core__make_fd_stream(int fd, Symbol_sp direction) {
   if (direction == kw::_sym_input) {
     return PosixFileStream_O::make(str_create("InputPosixFileStreamFromFD"), fd, stream_mode_input);
@@ -1239,10 +1236,11 @@ CL_DEFUN T_sp core__make_fd_stream(int fd, Symbol_sp direction) {
 }
 
 CL_LAMBDA(strng &optional (istart 0) iend);
-CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(make_string_input_stream)dx");
-DOCGROUP(clasp);
+CL_DOCSTRING(R"dx(Returns an input string stream. This stream will supply, in order, the
+characters in the substring of string bounded by start and end. After
+the last character has been supplied, the string stream will then be
+at end of file.)dx");
 CL_DEFUN T_sp cl__make_string_input_stream(String_sp strng, cl_index istart, T_sp iend) {
   ASSERT(cl__stringp(strng));
   size_t_pair p = sequenceStartEnd(cl::_sym_make_string_input_stream, strng->length(), istart, iend);
@@ -1330,11 +1328,9 @@ T_sp TwoWayStream_O::close(T_sp abort) {
 
 CL_LISPIFY_NAME("cl:make-two-way-stream")
 CL_LAMBDA(input-stream output-stream);
-CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Returns a two-way stream that gets its input from input-stream and
 sends its output to output-stream.)dx");
-DOCGROUP(clasp);
 CL_DEFUN TwoWayStream_sp TwoWayStream_O::make(T_sp input_stream, T_sp output_stream) {
   check_input_stream(input_stream);
   check_output_stream(output_stream);
@@ -1348,10 +1344,8 @@ CL_DEFUN TwoWayStream_sp TwoWayStream_O::make(T_sp input_stream, T_sp output_str
 
 CL_LISPIFY_NAME("cl:two-way-stream-input-stream")
 CL_LAMBDA(two-way-stream);
-CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Returns the input stream from which two-way-stream receives input.)dx");
-DOCGROUP(clasp);
 CL_DEFUN T_sp TwoWayStream_O::input_stream(T_sp two_way_stream) {
   if (!two_way_stream.isA<TwoWayStream_O>())
     ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_two_way_stream_input_stream, two_way_stream, cl::_sym_TwoWayStream_O);
@@ -1361,10 +1355,8 @@ CL_DEFUN T_sp TwoWayStream_O::input_stream(T_sp two_way_stream) {
 
 CL_LISPIFY_NAME("cl:two-way-stream-output-stream")
 CL_LAMBDA(two-way-stream);
-CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Returns the output stream from which two-way-stream sends output.)dx");
-DOCGROUP(clasp);
 CL_DEFUN T_sp TwoWayStream_O::output_stream(T_sp two_way_stream) {
   if (!two_way_stream.isA<TwoWayStream_O>())
     ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_two_way_stream_output_stream, two_way_stream, cl::_sym_TwoWayStream_O);
@@ -1471,10 +1463,8 @@ T_sp BroadcastStream_O::close(T_sp abort) {
 
 CL_LISPIFY_NAME("cl:make-broadcast-stream")
 CL_LAMBDA(&rest streams);
-CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Returns a broadcast stream.)dx");
-DOCGROUP(clasp);
 CL_DEFUN BroadcastStream_sp BroadcastStream_O::make(List_sp streams) {
   for (T_sp head = streams; !head.nilp(); head = oCdr(head))
     check_output_stream(oCar(head));
@@ -1487,10 +1477,8 @@ CL_DEFUN BroadcastStream_sp BroadcastStream_O::make(List_sp streams) {
 
 CL_LISPIFY_NAME("cl:broadcast-stream-streams")
 CL_LAMBDA(broadcast-stream);
-CL_DECLARE();
 CL_DOCSTRING(R"dx(Returns a list of output streams that constitute all the streams to
 which the broadcast-stream is broadcasting.)dx");
-DOCGROUP(clasp);
 CL_DEFUN T_sp BroadcastStream_O::streams(T_sp broadcast_stream) {
   if (!broadcast_stream.isA<BroadcastStream_O>())
     ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_broadcast_stream_streams, broadcast_stream, cl::_sym_BroadcastStream_O);
@@ -1587,11 +1575,9 @@ T_sp EchoStream_O::close(T_sp abort) {
 
 CL_LISPIFY_NAME("cl:make-echo-stream")
 CL_LAMBDA(input-stream output-stream);
-CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Creates and returns an echo stream that takes input from input-stream
 and sends output to output-stream.)dx");
-DOCGROUP(clasp);
 CL_DEFUN EchoStream_sp EchoStream_O::make(T_sp input_stream, T_sp output_stream) {
   check_input_stream(input_stream);
   check_output_stream(output_stream);
@@ -1605,10 +1591,8 @@ CL_DEFUN EchoStream_sp EchoStream_O::make(T_sp input_stream, T_sp output_stream)
 
 CL_LISPIFY_NAME("cl:echo-stream-input-stream")
 CL_LAMBDA(echo-stream);
-CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Returns the input stream from which echo-stream receives input.)dx");
-DOCGROUP(clasp);
 CL_DEFUN T_sp EchoStream_O::input_stream(T_sp echo_stream) {
   if (!echo_stream.isA<EchoStream_O>())
     ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_echo_stream_input_stream, echo_stream, cl::_sym_EchoStream_O);
@@ -1618,10 +1602,8 @@ CL_DEFUN T_sp EchoStream_O::input_stream(T_sp echo_stream) {
 
 CL_LISPIFY_NAME("cl:echo-stream-output-stream")
 CL_LAMBDA(echo-stream);
-CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Returns the output stream from which echo-stream sends output.)dx");
-DOCGROUP(clasp);
 CL_DEFUN T_sp EchoStream_O::output_stream(T_sp echo_stream) {
   if (!echo_stream.isA<EchoStream_O>())
     ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_echo_stream_output_stream, echo_stream, cl::_sym_EchoStream_O);
@@ -1725,11 +1707,9 @@ T_sp ConcatenatedStream_O::close(T_sp abort) {
 
 CL_LISPIFY_NAME("cl:make-concatenated-stream")
 CL_LAMBDA(&rest input-streams);
-CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Returns a concatenated stream that has the indicated input-streams
 initially associated with it)dx");
-DOCGROUP(clasp);
 CL_DEFUN ConcatenatedStream_sp ConcatenatedStream_O::make(List_sp input_streams) {
   for (T_sp head = input_streams; !head.nilp(); head = oCdr(head))
     check_input_stream(oCar(head));
@@ -1742,12 +1722,10 @@ CL_DEFUN ConcatenatedStream_sp ConcatenatedStream_O::make(List_sp input_streams)
 
 CL_LISPIFY_NAME("cl:concatenated-stream-streams")
 CL_LAMBDA(concatenated-stream);
-CL_DECLARE();
 CL_DOCSTRING(R"dx(Returns a list of input streams that constitute the ordered set of
 streams the concatenated-stream still has to read from, starting with
 the current one it is reading from. The list may be empty if no more
 streams remain to be read.)dx");
-DOCGROUP(clasp);
 CL_DEFUN T_sp ConcatenatedStream_O::streams(T_sp concatenated_stream) {
   if (!concatenated_stream.isA<ConcatenatedStream_O>())
     ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_concatenated_stream_streams, concatenated_stream, cl::_sym_ConcatenatedStream_O);
@@ -1829,9 +1807,7 @@ T_sp SynonymStream_O::truename() const { return stream_truename(stream()); };
 
 CL_LISPIFY_NAME("cl:make-synonym-stream")
 CL_LAMBDA(symbol);
-CL_DECLARE();
 CL_DOCSTRING(R"dx(Returns a synonym stream whose synonym stream symbol is symbol.)dx");
-DOCGROUP(clasp);
 CL_DEFUN SynonymStream_sp SynonymStream_O::make(T_sp symbol) {
   SynonymStream_sp x = create();
   x->_symbol = gc::As<Symbol_sp>(symbol);
@@ -1840,9 +1816,7 @@ CL_DEFUN SynonymStream_sp SynonymStream_O::make(T_sp symbol) {
 
 CL_LISPIFY_NAME("cl:synonym-stream-symbol")
 CL_LAMBDA(s);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(See CLHS synonym-stream-symbol)dx");
-DOCGROUP(clasp);
+CL_DOCSTRING(R"dx(Returns the symbol whose symbol-value the synonym-stream is using.)dx");
 CL_DEFUN Symbol_sp SynonymStream_O::symbol(T_sp synonym_stream) {
   if (!synonym_stream.isA<SynonymStream_O>())
     ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_synonym_stream_symbol, synonym_stream, cl::_sym_SynonymStream_O);
@@ -2982,9 +2956,7 @@ T_sp ConsoleStream_O::make(T_sp fname, HANDLE handle, StreamMode smm, gctools::F
 #endif
 
 CL_LAMBDA(stream mode);
-CL_DECLARE();
 CL_DOCSTRING(R"dx(set-buffering-mode)dx");
-DOCGROUP(clasp);
 CL_LISPIFY_NAME("set_buffering_mode")
 CL_DEFMETHOD
 void CFileStream_O::set_buffering_mode(T_sp mode) {
@@ -3070,15 +3042,12 @@ CL_DEFUN T_sp ext__make_stream_from_fd(int fd, T_sp direction, T_sp buffering, T
 }
 
 CL_LAMBDA(s);
-CL_DECLARE();
 CL_DOCSTRING(R"dx(Returns the file descriptor for a stream)dx");
-DOCGROUP(clasp);
 CL_DEFUN T_sp ext__file_stream_file_descriptor(T_sp s) {
   return clasp_make_fixnum(stream_output_p(s) ? stream_output_handle(s) : stream_input_handle(s));
 }
 
 // Temporary shim until we can update SLIME.
-DOCGROUP(clasp);
 CL_DEFUN T_sp core__file_stream_fd(T_sp s) { return ext__file_stream_file_descriptor(s); }
 
 /**********************************************************************
@@ -3102,9 +3071,7 @@ void writestr_stream(const char* s, T_sp strm) {
 }
 
 CL_LAMBDA(oject stream);
-CL_DECLARE();
 CL_DOCSTRING("Write the address of an object to the stream designator.");
-DOCGROUP(clasp);
 CL_DEFUN void core__write_addr(T_sp x, T_sp strm) {
   stringstream ss;
   ss << (void*)x.raw_();
@@ -3112,15 +3079,27 @@ CL_DEFUN void core__write_addr(T_sp x, T_sp strm) {
 }
 
 CL_LAMBDA(stream string);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(file-string-length)dx");
-DOCGROUP(clasp);
+CL_DOCSTRING(R"dx(file-string-length returns the difference between what (file-position
+stream) would be after writing object and its current value, or nil if
+this cannot be determined.
+
+The returned value corresponds to the current state of stream at the
+time of the call and might not be the same if it is called again when
+the state of the stream has changed.)dx");
 CL_DEFUN T_sp cl__file_string_length(T_sp stream, T_sp tstring) { return stream_string_length(stream, tstring); }
 
 CL_LAMBDA(sequence stream &key (start 0) end);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(readSequence)dx");
-DOCGROUP(clasp);
+CL_DOCSTRING(R"dx(Destructively modifies sequence by replacing the elements of sequence
+bounded by start and end with elements read from stream.
+
+Sequence is destructively modified by copying successive elements into
+it from stream. If the end of file for stream is reached before
+copying all elements of the subsequence, then the extra elements near
+the end of sequence are not updated.
+
+Position is the index of the first element of sequence that was not
+updated, which might be less than end because the end of file was
+reached.)dx");
 CL_DEFUN T_sp cl__read_sequence(T_sp sequence, T_sp stream, T_sp s, T_sp e) {
   stream = coerce::inputStreamDesignator(stream);
   cl_index start, limit, end(0);
@@ -3161,15 +3140,15 @@ CL_DEFUN T_sp cl__read_sequence(T_sp sequence, T_sp stream, T_sp s, T_sp e) {
 T_sp si_file_column(T_sp strm) { return make_fixnum(stream_column(strm)); }
 
 CL_LAMBDA(strm);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(file_length)dx");
-DOCGROUP(clasp);
+CL_DOCSTRING(R"dx(file-length returns the length of stream, or nil if the length cannot
+be determined.
+
+For a binary file, the length is measured in units of the element type
+of the stream.)dx");
 CL_DEFUN T_sp cl__file_length(T_sp strm) { return stream_length(strm); }
 
 CL_LAMBDA(file-stream &optional position);
-CL_DECLARE();
 CL_DOCSTRING(R"dx(filePosition)dx");
-DOCGROUP(clasp);
 CL_DEFUN T_sp cl__file_position(T_sp stream, T_sp position) {
   T_sp output;
   if (position.nilp()) {
@@ -3185,44 +3164,32 @@ CL_DEFUN T_sp cl__file_position(T_sp stream, T_sp position) {
   return output;
 }
 
-CL_LAMBDA(strm);
-DOCGROUP(clasp);
-CL_DEFUN T_sp cl__input_stream_p(T_sp strm) { return stream_input_p(strm) ? _lisp->_true() : nil<T_O>(); }
+CL_DOCSTRING(R"dx(Returns true if stream is an input stream; otherwise, returns
+false.)dx")
+CL_DEFUN T_sp cl__input_stream_p(T_sp stream) { return stream_input_p(stream) ? _lisp->_true() : nil<T_O>(); }
 
-CL_LAMBDA(arg);
-DOCGROUP(clasp);
-CL_DEFUN T_sp cl__output_stream_p(T_sp strm) {
-  return stream_output_p(strm) ? _lisp->_true() : nil<T_O>();
-  ;
-}
+CL_DOCSTRING(R"dx(Returns true if stream is an output stream; otherwise, returns
+false.)dx")
+CL_DEFUN T_sp cl__output_stream_p(T_sp stream) { return stream_output_p(stream) ? _lisp->_true() : nil<T_O>(); }
 
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(interactive_stream_p)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp cl__interactive_stream_p(T_sp strm) { return stream_interactive_p(strm) ? _lisp->_true() : nil<T_O>(); }
+CL_DOCSTRING(R"dx(Returns true if stream is an interactive stream; otherwise, returns
+false.)dx");
+CL_DEFUN T_sp cl__interactive_stream_p(T_sp stream) { return stream_interactive_p(stream) ? _lisp->_true() : nil<T_O>(); }
 
-DOCGROUP(clasp);
-CL_DEFUN T_sp cl__open_stream_p(T_sp strm) {
-  /* ANSI and Cltl2 specify that open-stream-p should work
-           on closed streams, and that a stream is only closed
-           when #'close has been applied on it */
-  return stream_open_p(strm) ? _lisp->_true() : nil<T_O>();
-}
+CL_DOCSTRING(R"dx(Returns true if stream is an open stream; otherwise, returns false.)dx");
+CL_DEFUN T_sp cl__open_stream_p(T_sp stream) { return stream_open_p(stream) ? _lisp->_true() : nil<T_O>(); }
 
-DOCGROUP(clasp);
-CL_DEFUN T_sp cl__stream_element_type(T_sp strm) { return stream_element_type(strm); }
+CL_DOCSTRING(R"dx(Returns a type specifier that indicates the types of objects that may
+be read from or written to stream.)dx");
+CL_DEFUN T_sp cl__stream_element_type(T_sp stream) { return stream_element_type(stream); }
 
-DOCGROUP(clasp);
-CL_DEFUN T_sp cl__stream_external_format(T_sp strm) { return stream_external_format(strm); }
+CL_DOCSTRING(R"dx(Returns an external file format designator for the stream.)dx");
+CL_DEFUN T_sp cl__stream_external_format(T_sp stream) { return stream_external_format(stream); }
 
-DOCGROUP(clasp);
 CL_DEFUN T_sp core__set_stream_external_format(T_sp stream, T_sp format) { return stream_set_external_format(stream, format); }
 
 CL_LAMBDA(arg);
-CL_DECLARE();
 CL_DOCSTRING(R"dx(streamp)dx");
-DOCGROUP(clasp);
 CL_DEFUN bool cl__streamp(T_sp stream) { return stream_p(stream); }
 
 /**********************************************************************
@@ -3398,9 +3365,10 @@ T_sp clasp_open_stream(T_sp fn, StreamMode smm, T_sp if_exists, T_sp if_does_not
 }
 
 CL_LAMBDA("filename &key (direction :input) (element-type 'base-char) (if-exists nil iesp) (if-does-not-exist nil idnesp) (external-format :default) (cstream T)");
-CL_DECLARE();
-CL_DOCSTRING(R"dx(open)dx");
-DOCGROUP(clasp);
+CL_DOCSTRING(R"dx(Creates, opens, and returns a file stream that is connected to the
+file specified by filespec. Filespec is the name of the file to be
+opened. If the filespec designator is a stream, that stream is not
+closed first or otherwise affected.)dx");
 CL_DEFUN T_sp cl__open(T_sp filename, T_sp direction, T_sp element_type, T_sp if_exists, bool iesp, T_sp if_does_not_exist,
                        bool idnesp, T_sp external_format, T_sp cstream) {
   if (filename.nilp()) {
@@ -3455,9 +3423,16 @@ CL_DEFUN T_sp cl__open(T_sp filename, T_sp direction, T_sp element_type, T_sp if
 }
 
 CL_LAMBDA(strm &key abort);
-CL_DECLARE();
-CL_DOCSTRING(R"doc(close)doc");
-DOCGROUP(clasp);
+CL_DOCSTRING(R"doc(Closes stream. Closing a stream means that it may no longer be used in
+input or output operations. The act of closing a file stream ends the
+association between the stream and its associated file; the
+transaction with the file system is terminated, and input/output may
+no longer be performed on the stream.
+
+If abort is true, an attempt is made to clean up any side effects of
+having created stream. If stream performs output to a file that was
+created when the stream was created, the file is deleted and any
+previously existing file is not superseded.)doc");
 CL_DEFUN T_sp cl__close(T_sp strm, T_sp abort) { return stream_close(strm, abort); }
 
 /**********************************************************************
@@ -3770,15 +3745,11 @@ void wsock_error(const char* err_msg, T_sp strm) {
 #endif
 
 CL_LAMBDA(stream);
-CL_DECLARE();
 CL_DOCSTRING(R"dx(streamLinenumber)dx");
-DOCGROUP(clasp);
 CL_DEFUN int core__stream_linenumber(T_sp tstream) { return clasp_input_lineno(tstream); };
 
 CL_LAMBDA(stream);
-CL_DECLARE();
 CL_DOCSTRING(R"dx(streamColumn)dx");
-DOCGROUP(clasp);
 CL_DEFUN int core__stream_column(T_sp tstream) { return clasp_input_column(tstream); };
 }; // namespace core
 
@@ -3823,9 +3794,7 @@ int clasp_input_column(T_sp stream) {
 }
 
 CL_LAMBDA(stream file line-offset positional-offset);
-CL_DECLARE();
 CL_DOCSTRING(R"dx(sourcePosInfo)dx");
-DOCGROUP(clasp);
 CL_DEFUN SourcePosInfo_sp core__input_stream_source_pos_info(T_sp strm, FileScope_sp sfi, size_t line_offset, size_t pos_offset) {
   strm = coerce::inputStreamDesignator(strm);
   size_t filePos = clasp_input_filePos(strm) + pos_offset;
@@ -4232,21 +4201,20 @@ string StringInputStream_O::peer(size_t len) {
   return ss.str();
 }
 
-CL_LAMBDA(strm &optional (eof-error-p t) eof-value);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(readByte)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp cl__read_byte(T_sp strm, T_sp eof_error_p, T_sp eof_value) {
+CL_LAMBDA(stream &optional (eof-error-p t) eof-value);
+CL_DOCSTRING(R"dx(Reads and returns one byte from stream. If an end of file2 occurs and
+eof-error-p is false, the eof-value is returned.)dx");
+CL_DEFUN T_sp cl__read_byte(T_sp stream, T_sp eof_error_p, T_sp eof_value) {
   // Should signal an error of type type-error if stream is not a stream.
   // Should signal an error of type error if stream is not a binary input stream.
-  if (strm.nilp())
-    TYPE_ERROR(strm, cl::_sym_Stream_O);
+  if (stream.nilp())
+    TYPE_ERROR(stream, cl::_sym_Stream_O);
   // as a side effect verifies that strm is really a stream.
-  T_sp elt_type = stream_element_type(strm);
+  T_sp elt_type = stream_element_type(stream);
   if (elt_type == cl::_sym_character || elt_type == cl::_sym_base_char)
     SIMPLE_ERROR("Not a binary stream");
 
-  T_sp c = stream_read_byte(strm);
+  T_sp c = stream_read_byte(stream);
 
   if (!c.nilp())
     return c;
@@ -4254,32 +4222,33 @@ CL_DEFUN T_sp cl__read_byte(T_sp strm, T_sp eof_error_p, T_sp eof_value) {
   if (eof_error_p.nilp())
     return eof_value;
 
-  ERROR_END_OF_FILE(strm);
+  ERROR_END_OF_FILE(stream);
 }
 
-CL_LAMBDA(&optional peek-type strm (eof-errorp t) eof-value recursivep);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(peekChar)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp cl__peek_char(T_sp peek_type, T_sp strm, T_sp eof_errorp, T_sp eof_value, T_sp recursive_p) {
-  strm = coerce::inputStreamDesignator(strm);
-  if (!stream_input_p(strm))
+CL_LAMBDA(&optional peek-type stream (eof-error-p t) eof-value recursive-p);
+CL_DOCSTRING(R"dx(Obtains the next character in input-stream without actually reading
+it, thus leaving the character to be read at a later time. It can also
+be used to skip over and discard intervening characters in the
+input-stream until a particular character is found.)dx");
+CL_DEFUN T_sp cl__peek_char(T_sp peek_type, T_sp stream, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
+  stream = coerce::inputStreamDesignator(stream);
+  if (!stream_input_p(stream))
     SIMPLE_ERROR("Not input-stream");
   if (peek_type.nilp()) {
-    int c = stream_peek_char(strm);
+    int c = stream_peek_char(stream);
     if (c == EOF)
       goto HANDLE_EOF;
-    return clasp_make_character(stream_peek_char(strm));
+    return clasp_make_character(stream_peek_char(stream));
   }
   if (cl__characterp(peek_type)) {
     claspCharacter looking_for = clasp_as_claspCharacter(gc::As<Character_sp>(peek_type));
     while (1) {
-      int c = stream_peek_char(strm);
+      int c = stream_peek_char(stream);
       if (c == EOF)
         goto HANDLE_EOF;
       if (c == looking_for)
         return clasp_make_character(c);
-      stream_read_char(strm);
+      stream_read_char(stream);
     }
   }
   // Now peek_type is true - this means skip whitespace until the first non-whitespace character
@@ -4288,44 +4257,62 @@ CL_DEFUN T_sp cl__peek_char(T_sp peek_type, T_sp strm, T_sp eof_errorp, T_sp eof
   } else {
     T_sp readtable = _lisp->getCurrentReadTable();
     while (1) {
-      int c = stream_peek_char(strm);
+      int c = stream_peek_char(stream);
       if (c == EOF)
         goto HANDLE_EOF;
       Character_sp charc = clasp_make_character(c);
       if (core__syntax_type(readtable, charc) != kw::_sym_whitespace)
         return charc;
-      stream_read_char(strm);
+      stream_read_char(stream);
     }
   }
 HANDLE_EOF:
-  if (eof_errorp.isTrue())
-    ERROR_END_OF_FILE(strm);
+  if (eof_error_p.isTrue())
+    ERROR_END_OF_FILE(stream);
   return eof_value;
 }
 
-CL_LAMBDA(&optional strm (eof-error-p t) eof-value recursive-p);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(readChar)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp cl__read_char(T_sp strm, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
-  strm = coerce::inputStreamDesignator(strm);
-  int c = stream_read_char(strm);
+CL_LAMBDA(&optional stream (eof-error-p t) eof-value recursive-p);
+CL_DOCSTRING(R"dx(Returns the next character from input-stream.
+
+When input-stream is an echo stream, the character is echoed on
+input-stream the first time the character is seen. Characters that are
+not echoed by read-char are those that were put there by unread-char
+and hence are assumed to have been echoed already by a previous call
+to read-char.
+
+If recursive-p is true, this call is expected to be embedded in a
+higher-level call to read or a similar function used by the Lisp
+reader.
+
+If an end of file2 occurs and eof-error-p is false, eof-value is
+returned.)dx");
+CL_DEFUN T_sp cl__read_char(T_sp stream, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
+  stream = coerce::inputStreamDesignator(stream);
+  int c = stream_read_char(stream);
   if (c == EOF) {
     LOG("Hit eof");
     if (!eof_error_p.isTrue()) {
       LOG("Returning eof_value[{}]", _rep_(eof_value));
       return eof_value;
     }
-    ERROR_END_OF_FILE(strm);
+    ERROR_END_OF_FILE(stream);
   }
   LOG("Read and returning char[{}]", c);
   return clasp_make_character(c);
 }
 
 CL_LAMBDA(&optional stream (eof-error-p t) eof-value recursive-p);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(readCharNoHang)dx");
-DOCGROUP(clasp);
+CL_DOCSTRING(R"dx(Returns a character from input-stream if such a character is
+available. If no character is available, read-char-no-hang returns
+nil.
+
+If recursive-p is true, this call is expected to be embedded in a
+higher-level call to read or a similar function used by the Lisp
+reader.
+
+If an end of file2 occurs and eof-error-p is false, eof-value is
+returned.)dx");
 CL_DEFUN T_sp cl__read_char_no_hang(T_sp stream, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
   stream = coerce::inputStreamDesignator(stream);
 
@@ -4345,9 +4332,22 @@ CL_DEFUN T_sp cl__read_char_no_hang(T_sp stream, T_sp eof_error_p, T_sp eof_valu
 }
 
 CL_LAMBDA(content &optional (eof-error-p t) eof-value &key (start 0) end preserve-whitespace);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(read_from_string)dx");
-DOCGROUP(clasp);
+CL_DOCSTRING(R"dx(Parses the printed representation of an object from the subsequence of
+string bounded by start and end, as if read had been called on an
+input stream containing those same characters.
+
+If preserve-whitespace is true, the operation will preserve
+whitespace2 as read-preserving-whitespace would do.
+
+If an object is successfully parsed, the primary value, object, is the
+object that was parsed. If eof-error-p is false and if the end of the
+substring is reached, eof-value is returned.
+
+The secondary value, position, is the index of the first character in
+the bounded string that was not read. The position may depend upon the
+value of preserve-whitespace. If the entire string was read, the
+position returned is either the length of the string or one greater
+than the length of the string.)dx");
 CL_DEFUN T_mv cl__read_from_string(String_sp content, T_sp eof_error_p, T_sp eof_value, Fixnum_sp start, T_sp end,
                                    T_sp preserve_whitespace) {
   ASSERT(cl__stringp(content));
@@ -4386,9 +4386,22 @@ CL_DEFUN T_mv cl__read_from_string(String_sp content, T_sp eof_error_p, T_sp eof
 }
 
 CL_LAMBDA(&optional input-stream (eof-error-p t) eof-value recursive-p);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(See clhs)dx");
-DOCGROUP(clasp);
+CL_DOCSTRING(R"dx(Reads from input-stream a line of text that is terminated by a newline
+or end of file.
+
+If recursive-p is true, this call is expected to be embedded in a
+higher-level call to read or a similar function used by the Lisp
+reader.
+
+The primary value, line, is the line that is read, represented as a
+string (without the trailing newline, if any). If eof-error-p is false
+and the end of file for input-stream is reached before any characters
+are read, eof-value is returned as the line.
+
+The secondary value, missing-newline-p, is a generalized boolean that
+is false if the line was terminated by a newline, or true if the line
+was terminated by the end of file for input-stream (or if the line is
+the eof-value).)dx");
 CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
   sin = coerce::inputStreamDesignator(sin);
   T_mv result = stream_read_line(sin);
@@ -4403,24 +4416,20 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
 }
 
 CL_LAMBDA(&optional output-stream);
-CL_DECLARE();
 CL_DOCSTRING(R"dx(Send a newline to the output stream)dx");
-DOCGROUP(clasp);
 CL_DEFUN void cl__terpri(T_sp outputStreamDesig) { stream_terpri(coerce::outputStreamDesignator(outputStreamDesig)); };
 
 CL_LAMBDA(&optional outputStream);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(freshLine)dx");
-DOCGROUP(clasp);
+CL_DOCSTRING(R"dx(Outputs a newline only if the output-stream is not already at the
+start of a line.)dx");
 CL_DEFUN bool cl__fresh_line(T_sp outputStreamDesig) {
   return stream_fresh_line(coerce::outputStreamDesignator(outputStreamDesig));
 };
 
 CL_LAMBDA(string &optional output-stream &key (start 0) end);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(writeString)dx");
+CL_DOCSTRING(R"dx(Writes the characters of the subsequence of string bounded by start
+and end to output-stream.)dx");
 CL_LISPIFY_NAME("cl:write-string");
-DOCGROUP(clasp);
 CL_DEFUN String_sp clasp_writeString(String_sp str, T_sp stream, int istart, T_sp end) {
   stream = coerce::outputStreamDesignator(stream);
   size_t_pair p = sequenceStartEnd(cl::_sym_writeString, str->length(), istart, end);
@@ -4429,9 +4438,8 @@ CL_DEFUN String_sp clasp_writeString(String_sp str, T_sp stream, int istart, T_s
 }
 
 CL_LAMBDA(string &optional output-stream &key (start 0) end);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(writeLine)dx");
-DOCGROUP(clasp);
+CL_DOCSTRING(R"dx(Writes the characters of the subsequence of string bounded by start
+and end to output-stream followed by a newline.)dx");
 CL_DEFUN String_sp cl__write_line(String_sp str, T_sp stream, int istart, T_sp end) {
   stream = coerce::outputStreamDesignator(stream);
   size_t_pair p = sequenceStartEnd(cl::_sym_writeString, str->length(), istart, end);
@@ -4440,92 +4448,85 @@ CL_DEFUN String_sp cl__write_line(String_sp str, T_sp stream, int istart, T_sp e
   return str;
 };
 
-CL_LAMBDA(byte output-stream);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(writeByte)dx");
-DOCGROUP(clasp);
+CL_LAMBDA(byte stream);
+CL_DOCSTRING(R"dx(Writes one byte, byte, to stream.)dx");
 CL_DEFUN Integer_sp cl__write_byte(Integer_sp byte, T_sp stream) {
-  if (stream.nilp())
-    TYPE_ERROR(stream, cl::_sym_Stream_O);
+  check_stream(stream);
   // clhs in 21.2 says stream---a binary output stream, not mentioning a stream designator
   stream_write_byte(stream, byte);
   return (byte);
 };
 
 CL_LAMBDA(string &optional output-stream);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(writeChar)dx");
-DOCGROUP(clasp);
-CL_DEFUN Character_sp cl__write_char(Character_sp chr, T_sp stream) {
-  stream = coerce::outputStreamDesignator(stream);
-  stream_write_char(stream, clasp_as_claspCharacter(chr));
+CL_DOCSTRING(R"dx(Outputs character to output-stream.)dx");
+CL_DEFUN Character_sp cl__write_char(Character_sp chr, T_sp output_stream) {
+  stream_write_char(coerce::outputStreamDesignator(output_stream), clasp_as_claspCharacter(chr));
   return chr;
 };
 
-CL_LAMBDA(&optional dstrm);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(clearInput)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp cl__clear_input(T_sp dstrm) {
-  dstrm = coerce::inputStreamDesignator(dstrm);
-  stream_clear_input(dstrm);
+CL_LAMBDA(&optional input-stream);
+CL_DOCSTRING(R"dx(Clears any available input from input-stream.
+
+If clear-input does not make sense for input-stream, then clear-input
+does nothing.)dx");
+CL_DEFUN T_sp cl__clear_input(T_sp input_stream) {
+  stream_clear_input(coerce::inputStreamDesignator(input_stream));
   return nil<T_O>();
 }
 
-CL_LAMBDA(&optional dstrm);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(clearOutput)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp cl__clear_output(T_sp dstrm) {
-  dstrm = coerce::outputStreamDesignator(dstrm);
-  stream_clear_output(dstrm);
+CL_LAMBDA(&optional output-stream);
+CL_DOCSTRING(R"dx(Attempts to abort any outstanding output operation in progress in
+order to allow as little output as possible to continue to the
+destination.)dx");
+CL_DEFUN T_sp cl__clear_output(T_sp output_stream) {
+  stream_clear_output(coerce::outputStreamDesignator(output_stream));
   return nil<T_O>();
 }
 
-CL_LAMBDA(&optional dstrm);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(listen)dx");
-DOCGROUP(clasp);
-CL_DEFUN bool cl__listen(T_sp strm) {
-  strm = coerce::inputStreamDesignator(strm);
-  int result = stream_listen(strm);
+CL_LAMBDA(&optional input-stream);
+CL_DOCSTRING(R"dx(Returns true if there is a character immediately available from
+input-stream; otherwise, returns false. On a non-interactive
+input-stream, listen returns true except when at end of file1. If an
+end of file is encountered, listen returns false. listen is intended
+to be used when input-stream obtains characters from an interactive
+device such as a keyboard.)dx");
+CL_DEFUN bool cl__listen(T_sp input_stream) {
+  int result = stream_listen(coerce::inputStreamDesignator(input_stream));
   return (result != listen_result_eof) && (result != listen_result_no_char);
 }
 
-CL_LAMBDA(&optional strm);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(force_output)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp cl__force_output(T_sp ostrm) {
-  ostrm = coerce::outputStreamDesignator(ostrm);
-  stream_force_output(ostrm);
+CL_LAMBDA(&optional output-stream);
+CL_DOCSTRING(R"dx(Initiates the emptying of any internal buffers but does not wait for
+completion or acknowledgment to return.)dx");
+CL_DEFUN T_sp cl__force_output(T_sp output_stream) {
+  stream_force_output(coerce::outputStreamDesignator(output_stream));
   return nil<T_O>();
 };
 
-CL_LAMBDA(&optional strm);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(finish_output)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp cl__finish_output(T_sp ostrm) {
-  ostrm = coerce::outputStreamDesignator(ostrm);
-  stream_finish_output(ostrm);
+CL_LAMBDA(&optional output-stream);
+CL_DOCSTRING(R"dx(Attempts to ensure that any buffered output sent to output-stream has
+reached its destination, and then returns)dx");
+CL_DEFUN T_sp cl__finish_output(T_sp output_stream) {
+  stream_finish_output(coerce::outputStreamDesignator(output_stream));
   return nil<T_O>();
 };
 
-CL_LAMBDA(char &optional strm);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(unread_char)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp cl__unread_char(Character_sp ch, T_sp dstrm) {
-  dstrm = coerce::inputStreamDesignator(dstrm);
-  stream_unread_char(dstrm, clasp_as_claspCharacter(ch));
+CL_LAMBDA(char &optional input-stream);
+CL_DOCSTRING(R"dx(Places character back onto the front of input-stream so that it will
+again be the next character in input-stream.
+
+When input-stream is an echo stream, no attempt is made to undo any
+echoing of the character that might already have been done on
+input-stream. However, characters placed on input-stream by
+unread-char are marked in such a way as to inhibit later re-echo by
+read-char.)dx");
+CL_DEFUN T_sp cl__unread_char(Character_sp ch, T_sp input_stream) {
+  stream_unread_char(coerce::inputStreamDesignator(input_stream), clasp_as_claspCharacter(ch));
   return nil<T_O>();
 };
 
 CL_LAMBDA(stream);
-CL_DECLARE();
 CL_DOCSTRING("Return the current column of the stream");
-DOCGROUP(clasp);
 CL_DEFUN T_sp core__file_column(T_sp strm) {
   strm = coerce::outputStreamDesignator(strm);
   return make_fixnum(stream_column(strm));
@@ -4533,25 +4534,21 @@ CL_DEFUN T_sp core__file_column(T_sp strm) {
 
 CL_LISPIFY_NAME("core:file-column");
 CL_DOCSTRING("Set the column of the stream is that is meaningful for the stream.");
-DOCGROUP(clasp);
 CL_DEFUN_SETF T_sp core__setf_file_column(int column, T_sp strm) {
   strm = coerce::outputStreamDesignator(strm);
   return make_fixnum(stream_set_column(strm, column));
 };
 
 CL_LAMBDA(stream);
-CL_DECLARE();
 CL_DOCSTRING("Return the current line number of the stream");
-DOCGROUP(clasp);
 CL_DEFUN T_sp core__stream_line_number(T_sp strm) {
   strm = coerce::outputStreamDesignator(strm);
   return make_fixnum(stream_line(strm));
 };
 
 CL_LAMBDA(seq stream &key (start 0) end);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(writeSequence)dx");
-DOCGROUP(clasp);
+CL_DOCSTRING(R"dx(Writes the elements of the subsequence of sequence bounded by start
+and end to stream.)dx");
 CL_DEFUN T_sp cl__write_sequence(T_sp seq, T_sp stream, Fixnum_sp fstart, T_sp tend) {
   stream = coerce::outputStreamDesignator(stream);
   int limit = cl__length(seq);
@@ -4636,7 +4633,6 @@ SYMBOL_EXPORT_SC_(ClPkg, synonymStreamSymbol);
 SYMBOL_EXPORT_SC_(ExtPkg, file_stream_file_descriptor);
 
 CL_DOCSTRING(R"dx(Use read to read characters if they are available - return (values num-read errno-or-nil))dx");
-DOCGROUP(clasp);
 CL_DEFUN T_mv core__read_fd(int filedes, SimpleBaseString_sp buffer) {
   size_t buffer_length = cl__length(buffer);
   unsigned char* buffer_data = &(*buffer)[0];
@@ -4769,7 +4765,6 @@ CL_DEFUN T_sp core__read_dense_specialized_array(T_sp stream, size_t num6bit) {
 }
 
 CL_DOCSTRING(R"dx(Read 4 bytes and interpret them as a single float))dx");
-DOCGROUP(clasp);
 CL_DEFUN T_sp core__read_binary_single_float(T_sp stream) {
   unsigned char buffer[4];
   if (stream_read_byte8(stream, buffer, 4) < 4)
@@ -4779,7 +4774,6 @@ CL_DEFUN T_sp core__read_binary_single_float(T_sp stream) {
 }
 
 CL_DOCSTRING(R"dx(Write a single float as IEEE format in 4 contiguous bytes))dx");
-DOCGROUP(clasp);
 CL_DEFUN void core__write_ieee_single_float(T_sp stream, T_sp val) {
   if (!val.single_floatp())
     TYPE_ERROR(val, cl::_sym_single_float);
@@ -4789,7 +4783,6 @@ CL_DEFUN void core__write_ieee_single_float(T_sp stream, T_sp val) {
 }
 
 CL_DOCSTRING(R"dx(Write a C uint32 POD 4 contiguous bytes))dx");
-DOCGROUP(clasp);
 CL_DEFUN void core__write_c_uint32(T_sp stream, T_sp val) {
   if (!val.fixnump() || val.unsafe_fixnum() < 0 || val.unsafe_fixnum() >= (uint64_t)1 << 32) {
     TYPE_ERROR(val, ext::_sym_byte32);
@@ -4800,7 +4793,6 @@ CL_DEFUN void core__write_c_uint32(T_sp stream, T_sp val) {
 }
 
 CL_DOCSTRING(R"dx(Write a C uint16 POD 2 contiguous bytes))dx");
-DOCGROUP(clasp);
 CL_DEFUN void core__write_c_uint16(T_sp stream, T_sp val) {
   if (!val.fixnump() || val.unsafe_fixnum() < 0 || val.unsafe_fixnum() >= (uint64_t)1 << 16) {
     TYPE_ERROR(val, ext::_sym_byte16);
@@ -4811,21 +4803,18 @@ CL_DEFUN void core__write_c_uint16(T_sp stream, T_sp val) {
 }
 
 CL_DOCSTRING(R"dx(Set filedescriptor to nonblocking)dx");
-DOCGROUP(clasp);
 CL_DEFUN void core__fcntl_non_blocking(int filedes) {
   int flags = fcntl(filedes, F_GETFL, 0);
   fcntl(filedes, F_SETFL, flags | O_NONBLOCK);
 };
 
 CL_DOCSTRING(R"dx(Close the file descriptor)dx");
-DOCGROUP(clasp);
 CL_DEFUN void core__close_fd(int filedes) { close(filedes); };
 
 SYMBOL_EXPORT_SC_(KeywordPkg, seek_set);
 SYMBOL_EXPORT_SC_(KeywordPkg, seek_cur);
 SYMBOL_EXPORT_SC_(KeywordPkg, seek_end);
 
-DOCGROUP(clasp);
 CL_DEFUN int64_t core__lseek(int fd, int64_t offset, Symbol_sp whence) {
   int iwhence;
   if (whence == kw::_sym_seek_set) {

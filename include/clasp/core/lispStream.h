@@ -202,6 +202,11 @@ T_sp stream_close(T_sp stream, T_sp abort);
 T_sp stream_pathname(T_sp stream);
 T_sp stream_truename(T_sp stream);
 
+inline void check_stream(T_sp stream) {
+  if (!stream_p(stream))
+    TYPE_ERROR(stream, cl::_sym_Stream_O);
+}
+
 inline void check_input_stream(T_sp stream) {
   if (!stream_input_p(stream))
     not_an_input_stream(stream);
