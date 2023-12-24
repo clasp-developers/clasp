@@ -19,6 +19,7 @@
             %open-stream-p
             %output-stream-p
             %pathname
+            %stream-advance-to-column
             %stream-element-type
             %stream-interactive-p
             %stream-start-line-p
@@ -275,28 +276,37 @@ truename."))
 
 (let ((clos::*clos-booted* 'clos:map-dependents))
   (defclass fundamental-stream (standard-object stream)
-    ((open-p :initform t :accessor open-stream-p))
+    ((open-p :accessor open-stream-p
+             :initform t ))
     (:documentation "the base class for all CLOS streams")))
 
-(defclass fundamental-input-stream (fundamental-stream) nil)
+(defclass fundamental-input-stream (fundamental-stream)
+  ())
 
-(defclass fundamental-output-stream (fundamental-stream) nil)
+(defclass fundamental-output-stream (fundamental-stream)
+  ())
 
-(defclass fundamental-character-stream (fundamental-stream) nil)
+(defclass fundamental-character-stream (fundamental-stream)
+  ())
 
-(defclass fundamental-binary-stream (fundamental-stream) nil)
+(defclass fundamental-binary-stream (fundamental-stream)
+  ())
 
 (defclass fundamental-character-input-stream
-    (fundamental-input-stream fundamental-character-stream) nil)
+    (fundamental-input-stream fundamental-character-stream)
+  ())
 
 (defclass fundamental-character-output-stream
-    (fundamental-output-stream fundamental-character-stream) nil)
+    (fundamental-output-stream fundamental-character-stream)
+  ())
 
 (defclass fundamental-binary-input-stream
-    (fundamental-input-stream fundamental-binary-stream) nil)
+    (fundamental-input-stream fundamental-binary-stream)
+  ())
 
 (defclass fundamental-binary-output-stream
-    (fundamental-output-stream fundamental-binary-stream) nil)
+    (fundamental-output-stream fundamental-binary-stream)
+  ())
 
 
 ;;;
@@ -310,6 +320,9 @@ truename."))
 
 ;; STREAM-ADVANCE-TO-COLUMN
 
+(defmethod stream-advance-to-column ((stream ansi-stream) column)
+  (%stream-advance-to-column stream column))
+
 (defmethod stream-advance-to-column ((stream fundamental-character-output-stream)
 				     column)
   (let ((current-column (stream-line-column stream)))
@@ -317,7 +330,7 @@ truename."))
       (let ((fill (floor (- column current-column))))
 	(dotimes (i fill)
 	  (stream-write-char stream #\Space)))
-      T)))
+      t)))
 
 
 ;; CLEAR-INPUT

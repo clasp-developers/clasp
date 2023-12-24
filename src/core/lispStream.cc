@@ -1311,6 +1311,8 @@ int TwoWayStream_O::set_column(int column) { return stream_set_column(_output_st
 
 bool TwoWayStream_O::start_line_p() const { return stream_start_line_p(_output_stream); }
 
+bool TwoWayStream_O::advance_to_column(int column) { return stream_advance_to_column(_output_stream, column); }
+
 int TwoWayStream_O::input_handle() { return stream_input_handle(_input_stream); }
 
 int TwoWayStream_O::output_handle() { return stream_output_handle(_output_stream); }
@@ -1449,6 +1451,13 @@ int BroadcastStream_O::set_column(int column) {
 
 bool BroadcastStream_O::start_line_p() const { return _streams.nilp() || stream_start_line_p(oCar(_streams)); }
 
+bool BroadcastStream_O::advance_to_column(int column) {
+  for (T_sp cur = _streams; cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->cdr()) {
+    stream_advance_to_column(oCar(cur), column);
+  }
+  return true;
+}
+
 T_sp BroadcastStream_O::close(T_sp abort) {
   if (_open) {
     if (_flags & CLASP_STREAM_CLOSE_COMPONENTS) {
@@ -1557,6 +1566,8 @@ int EchoStream_O::column() const { return stream_column(_output_stream); }
 int EchoStream_O::set_column(int column) { return stream_set_column(_output_stream, column); }
 
 bool EchoStream_O::start_line_p() const { return stream_start_line_p(_output_stream); }
+
+bool EchoStream_O::advance_to_column(int column) { return stream_advance_to_column(_output_stream, column); }
 
 int EchoStream_O::input_handle() { return stream_input_handle(_input_stream); }
 
@@ -1796,6 +1807,8 @@ int SynonymStream_O::column() const { return stream_column(stream()); }
 int SynonymStream_O::set_column(int column) { return stream_set_column(stream(), column); }
 
 bool SynonymStream_O::start_line_p() const { return stream_start_line_p(stream()); }
+
+bool SynonymStream_O::advance_to_column(int column) { return stream_advance_to_column(stream(), column); }
 
 int SynonymStream_O::input_handle() { return stream_input_handle(stream()); }
 
@@ -4113,6 +4126,14 @@ int AnsiStream_O::set_column(int column) { return _column = column; }
 
 bool AnsiStream_O::start_line_p() const { return _column < 1; }
 
+bool AnsiStream_O::advance_to_column(int column) {
+  while (_column < column) {
+    write_char(' ');
+    _column++;
+  }
+  return true;
+}
+
 int AnsiStream_O::input_handle() { return -1; }
 
 int AnsiStream_O::output_handle() { return -1; }
@@ -5134,9 +5155,21 @@ int stream_set_column(T_sp stream, int column) {
 // the GRAY:STREAM-START-LINE-METHOD for ansi-stream. The stream
 // argument is guaranteed to be an AnsiStream_sp so recursion is
 // avoided.
-bool stream_start_line_p(T_sp stream) {
+CL_LISPIFY_NAME("gray:%stream-start-line-p")
+CL_DEFUN bool stream_start_line_p(T_sp stream) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->start_line_p()
                                     : T_sp(eval::funcall(gray::_sym_stream_line_column, stream)).notnilp();
+}
+
+// This function is exposed to CL because it is needed to implement
+// the GRAY:STREAM-ADVANCE-TO-COLUMN for ansi-stream. The stream
+// argument is guaranteed to be an AnsiStream_sp so recursion is
+// avoided.
+CL_LISPIFY_NAME("gray:%stream-advance-to-column")
+CL_DEFUN bool stream_advance_to_column(T_sp stream, int column) {
+  return stream.isA<AnsiStream_O>()
+             ? stream.as_unsafe<AnsiStream_O>()->advance_to_column(column)
+             : T_sp(eval::funcall(gray::_sym_stream_advance_to_column, stream, clasp_make_fixnum(column))).notnilp();
 }
 
 int stream_line(T_sp stream) {
