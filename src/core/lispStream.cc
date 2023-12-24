@@ -1031,9 +1031,9 @@ T_sp FileStream_O::string_length(T_sp string) {
 
 T_sp FileStream_O::external_format() const { return _format; }
 
-bool FileStream_O::input_p() const { return _mode & stream_mode_input; }
+bool FileStream_O::input_p() const { return _direction & stream_direction_input; }
 
-bool FileStream_O::output_p() const { return _mode & stream_mode_output; }
+bool FileStream_O::output_p() const { return _direction & stream_direction_output; }
 
 T_sp FileStream_O::pathname() const { return cl__parse_namestring(_filename); }
 
@@ -1227,9 +1227,9 @@ CL_DOCSTRING(R"dx(Create a file from a file descriptor and direction)dx");
 CL_UNWIND_COOP(true);
 CL_DEFUN T_sp core__make_fd_stream(int fd, Symbol_sp direction) {
   if (direction == kw::_sym_input) {
-    return PosixFileStream_O::make(str_create("InputPosixFileStreamFromFD"), fd, stream_mode_input);
+    return PosixFileStream_O::make(str_create("InputPosixFileStreamFromFD"), fd, stream_direction_input);
   } else if (direction == kw::_sym_output) {
-    return PosixFileStream_O::make(str_create("OutputPosixFileStreamFromFD"), fd, stream_mode_output);
+    return PosixFileStream_O::make(str_create("OutputPosixFileStreamFromFD"), fd, stream_direction_output);
   } else {
     SIMPLE_ERROR("Could not create PosixFileStream with direction {}", _rep_(direction));
   }
@@ -1417,45 +1417,46 @@ void BroadcastStream_O::finish_output() {
 
 bool BroadcastStream_O::output_p() const { return true; }
 
-T_sp BroadcastStream_O::element_type() const {
-  return _streams.nilp() ? _lisp->_true() : stream_element_type(oCar(cl__last(_streams, clasp_make_fixnum(1))));
-}
+T_sp BroadcastStream_O::element_type() const { return _streams.nilp() ? _lisp->_true() : stream_element_type(last_stream()); }
 
 T_sp BroadcastStream_O::external_format() const {
-  return _streams.nilp() ? (T_sp)kw::_sym_default : stream_external_format(oCar(cl__last(_streams, clasp_make_fixnum(1))));
+  return _streams.nilp() ? (T_sp)kw::_sym_default : stream_external_format(last_stream());
 }
 
-T_sp BroadcastStream_O::length() {
-  return _streams.nilp() ? (T_sp)clasp_make_fixnum(0) : stream_length(oCar(cl__last(_streams, clasp_make_fixnum(1))));
-}
+T_sp BroadcastStream_O::length() { return _streams.nilp() ? (T_sp)clasp_make_fixnum(0) : stream_length(last_stream()); }
 
-T_sp BroadcastStream_O::position() {
-  return _streams.nilp() ? (T_sp)clasp_make_fixnum(0) : stream_position(oCar(cl__last(_streams, clasp_make_fixnum(1))));
-}
+T_sp BroadcastStream_O::position() { return _streams.nilp() ? (T_sp)clasp_make_fixnum(0) : stream_position(last_stream()); }
 
-T_sp BroadcastStream_O::set_position(T_sp pos) { return _streams.nilp() ? nil<T_O>() : stream_set_position(oCar(_streams), pos); }
+T_sp BroadcastStream_O::set_position(T_sp pos) {
+  T_sp result = pos;
+  for (T_sp l = _streams; !l.nilp(); l = oCdr(l)) {
+    result = stream_set_position(oCar(l), pos);
+  }
+  return result;
+}
 
 T_sp BroadcastStream_O::string_length(T_sp string) {
-  return _streams.nilp() ? (T_sp)clasp_make_fixnum(1)
-                         : stream_string_length(oCar(cl__last(_streams, clasp_make_fixnum(1))), string);
+  return _streams.nilp() ? (T_sp)clasp_make_fixnum(1) : stream_string_length(last_stream(), string);
 }
 
-int BroadcastStream_O::column() const { return _streams.nilp() ? -1 : stream_column(oCar(_streams)); }
+int BroadcastStream_O::column() const { return _streams.nilp() ? -1 : stream_column(last_stream()); }
 
 int BroadcastStream_O::set_column(int column) {
-  for (T_sp cur = _streams; cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->cdr()) {
-    stream_set_column(oCar(cur), column);
+  int result = column;
+  for (T_sp l = _streams; !l.nilp(); l = oCdr(l)) {
+    result = stream_set_column(oCar(l), column);
   }
-  return column;
+  return result;
 }
 
-bool BroadcastStream_O::start_line_p() const { return _streams.nilp() || stream_start_line_p(oCar(_streams)); }
+bool BroadcastStream_O::start_line_p() const { return _streams.nilp() || stream_start_line_p(last_stream()); }
 
 bool BroadcastStream_O::advance_to_column(int column) {
-  for (T_sp cur = _streams; cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->cdr()) {
-    stream_advance_to_column(oCar(cur), column);
+  bool result = true;
+  for (T_sp l = _streams; !l.nilp(); l = oCdr(l)) {
+    result = stream_advance_to_column(oCar(l), column);
   }
-  return true;
+  return result;
 }
 
 T_sp BroadcastStream_O::close(T_sp abort) {
@@ -2105,9 +2106,9 @@ void FileStream_O::close_cleanup(T_sp abort) {
   }
 }
 
-int PosixFileStream_O::input_handle() { return (_mode == stream_mode_input || _mode == stream_mode_io) ? _file_descriptor : -1; }
+int PosixFileStream_O::input_handle() { return (_direction & stream_direction_input) ? _file_descriptor : -1; }
 
-int PosixFileStream_O::output_handle() { return (_mode == stream_mode_output || _mode == stream_mode_io) ? _file_descriptor : -1; }
+int PosixFileStream_O::output_handle() { return (_direction & stream_direction_output) ? _file_descriptor : -1; }
 
 T_sp PosixFileStream_O::close(T_sp abort) {
   if (_open) {
@@ -2123,12 +2124,12 @@ T_sp PosixFileStream_O::close(T_sp abort) {
   return _lisp->_true();
 }
 
-PosixFileStream_sp PosixFileStream_O::make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size, int flags,
+PosixFileStream_sp PosixFileStream_O::make(T_sp fname, int fd, StreamDirection direction, gctools::Fixnum byte_size, int flags,
                                            T_sp external_format, T_sp tempName, bool created) {
   PosixFileStream_sp stream = PosixFileStream_O::create();
   stream->_temp_filename = tempName;
   stream->_created = created;
-  stream->_mode = smm;
+  stream->_direction = direction;
   stream->_open = true;
   stream->_byte_size = byte_size;
   stream->_flags = flags;
@@ -2599,7 +2600,7 @@ void CFileStream_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* f
 cl_index CFileStream_O::read_byte8(unsigned char* c, cl_index n) {
   check_input();
 
-  if (_mode == stream_mode_io) {
+  if (_direction == stream_direction_io) {
     if (_last_op < 0) {
       force_output();
     }
@@ -2747,9 +2748,9 @@ T_sp CFileStream_O::set_position(T_sp pos) {
   return mode ? nil<T_O>() : _lisp->_true();
 }
 
-int CFileStream_O::input_handle() { return (_mode == stream_mode_input || _mode == stream_mode_io) ? fileno(_file) : -1; }
+int CFileStream_O::input_handle() { return (_direction & stream_direction_input) ? fileno(_file) : -1; }
 
-int CFileStream_O::output_handle() { return (_mode == stream_mode_output || _mode == stream_mode_io) ? fileno(_file) : -1; }
+int CFileStream_O::output_handle() { return (_direction & stream_direction_output) ? fileno(_file) : -1; }
 
 T_sp CFileStream_O::close(T_sp abort) {
   if (_open) {
@@ -2770,12 +2771,12 @@ T_sp CFileStream_O::close(T_sp abort) {
   return _lisp->_true();
 }
 
-CFileStream_sp CFileStream_O::make(T_sp fname, FILE* f, StreamMode smm, gctools::Fixnum byte_size, int flags, T_sp external_format,
-                                   T_sp tempName, bool created) {
+CFileStream_sp CFileStream_O::make(T_sp fname, FILE* f, StreamDirection direction, gctools::Fixnum byte_size, int flags,
+                                   T_sp external_format, T_sp tempName, bool created) {
   CFileStream_sp stream = CFileStream_O::create();
   stream->_temp_filename = tempName;
   stream->_created = created;
-  stream->_mode = smm;
+  stream->_direction = direction;
   stream->_open = true;
   stream->_byte_size = byte_size;
   stream->_flags = flags;
@@ -2874,10 +2875,11 @@ T_sp WinsockStream_O::close(T_sp abort) {
   return _lisp->_true();
 }
 
-T_sp WinsockStream_O::make(T_sp fname, SOCKET socket, StreamMode smm, gctools::Fixnum byte_size, int flags, T_sp external_format) {
+T_sp WinsockStream_O::make(T_sp fname, SOCKET socket, StreamDirection direction, gctools::Fixnum byte_size, int flags,
+                           T_sp external_format) {
   WinsockStream_sp stream = WinsockStream_O::create();
   stream->_socket = socket;
-  stream->_mode = smm;
+  stream->_direction = direction;
   stream->_open = true;
   stream->_byte_size = byte_size;
   stream->_flags = flags;
@@ -2952,10 +2954,11 @@ void ConsoleStream_O::force_output(T_sp strm) {
 
 #define CONTROL_Z 26
 
-T_sp ConsoleStream_O::make(T_sp fname, HANDLE handle, StreamMode smm, gctools::Fixnum byte_size, int flags, T_sp external_format) {
+T_sp ConsoleStream_O::make(T_sp fname, HANDLE handle, StreamDirection direction, gctools::Fixnum byte_size, int flags,
+                           T_sp external_format) {
   ConsoleStream_sp stream = ConsoleStream_O::create();
   stream->_handle = handle;
-  stream->_mode = smm;
+  stream->_direction = direction;
   stream->_open = true;
   stream->_byte_size = byte_size;
   stream->_flags = flags;
@@ -2991,23 +2994,23 @@ void CFileStream_O::set_buffering_mode(T_sp mode) {
     setvbuf(_file, NULL, _IONBF, 0);
 }
 
-CFileStream_sp CFileStream_O::make(T_sp fname, int fd, StreamMode smm, gctools::Fixnum byte_size, int flags, T_sp external_format,
-                                   T_sp tempName, bool created) {
+CFileStream_sp CFileStream_O::make(T_sp fname, int fd, StreamDirection direction, gctools::Fixnum byte_size, int flags,
+                                   T_sp external_format, T_sp tempName, bool created) {
   const char* mode; /* file open mode */
   FILE* fp;         /* file pointer */
-  switch (smm) {
-  case stream_mode_input:
+  switch (direction) {
+  case stream_direction_input:
     mode = OPEN_R;
     break;
-  case stream_mode_output:
+  case stream_direction_output:
     mode = OPEN_W;
     break;
-  case stream_mode_io:
+  case stream_direction_io:
     mode = OPEN_RW;
     break;
   default:
     mode = OPEN_R; // dummy
-    FEerror("make_stream: wrong mode in CFileStream_O::make smm = ~d", 1, clasp_make_fixnum(smm).raw_());
+    FEerror("make_stream: wrong mode in CFileStream_O::make direction = ~d", 1, clasp_make_fixnum(direction).raw_());
   }
   fp = safe_fdopen(fd, mode);
   if (fp == NULL) {
@@ -3024,7 +3027,7 @@ CFileStream_sp CFileStream_O::make(T_sp fname, int fd, StreamMode smm, gctools::
         gc::As<String_sp>(fname)->get_std_string().c_str(), mode, strerror(errno), fstat_error, info.st_mode,
         string_mode(info.st_mode));
   }
-  return CFileStream_O::make(fname, fp, smm, byte_size, flags, external_format, tempName, created);
+  return CFileStream_O::make(fname, fp, direction, byte_size, flags, external_format, tempName, created);
 }
 
 SYMBOL_EXPORT_SC_(KeywordPkg, input_output);
@@ -3032,13 +3035,13 @@ SYMBOL_EXPORT_SC_(KeywordPkg, input_output);
 CL_LAMBDA(fd direction &key buffering element-type (external-format :default) (name "FD-STREAM"));
 CL_DEFUN T_sp ext__make_stream_from_fd(int fd, T_sp direction, T_sp buffering, T_sp element_type, T_sp external_format,
                                        String_sp name) {
-  StreamMode smm_mode = stream_mode_output;
+  StreamDirection _direction = stream_direction_output;
   if (direction == kw::_sym_input) {
-    smm_mode = stream_mode_input;
+    _direction = stream_direction_input;
   } else if (direction == kw::_sym_output) {
-    smm_mode = stream_mode_output;
+    _direction = stream_direction_output;
   } else if (direction == kw::_sym_io || direction == kw::_sym_input_output) {
-    smm_mode = stream_mode_io;
+    _direction = stream_direction_io;
   } else {
     SIMPLE_ERROR("Unknown smm_mode");
   }
@@ -3047,7 +3050,7 @@ CL_DEFUN T_sp ext__make_stream_from_fd(int fd, T_sp direction, T_sp buffering, T
   }
   gctools::Fixnum byte_size;
   byte_size = clasp_normalize_stream_element_type(element_type);
-  CFileStream_sp stream = CFileStream_O::make(name, fd, smm_mode, byte_size, CLASP_STREAM_BINARY, external_format);
+  CFileStream_sp stream = CFileStream_O::make(name, fd, _direction, byte_size, CLASP_STREAM_BINARY, external_format);
   if (buffering.notnilp()) {
     stream->set_buffering_mode(byte_size ? kw::_sym_full : kw::_sym_line);
   }
@@ -3078,17 +3081,12 @@ claspCharacter stream_read_char_noeof(T_sp strm) {
  * SEQUENCES I/O
  */
 
-void writestr_stream(const char* s, T_sp strm) {
-  while (*s != '\0')
-    stream_write_char(strm, *s++);
-}
-
 CL_LAMBDA(oject stream);
 CL_DOCSTRING("Write the address of an object to the stream designator.");
 CL_DEFUN void core__write_addr(T_sp x, T_sp strm) {
   stringstream ss;
   ss << (void*)x.raw_();
-  writestr_stream(ss.str().c_str(), coerce::outputStreamDesignator(strm));
+  clasp_write_string(ss.str(), coerce::outputStreamDesignator(strm));
 }
 
 CL_LAMBDA(stream string);
@@ -3266,8 +3264,8 @@ err:
 
 static void FEinvalid_option(T_sp option, T_sp value) { FEerror("Invalid value op option ~A: ~A", 2, option.raw_(), value.raw_()); }
 
-T_sp clasp_open_stream(T_sp fn, StreamMode smm, T_sp if_exists, T_sp if_does_not_exist, gctools::Fixnum byte_size, int flags,
-                       T_sp external_format) {
+T_sp clasp_open_stream(T_sp fn, StreamDirection direction, T_sp if_exists, T_sp if_does_not_exist, gctools::Fixnum byte_size,
+                       int flags, T_sp external_format) {
   AnsiStream_sp output;
   int f;
 #if defined(CLASP_MS_WINDOWS_HOST)
@@ -3283,7 +3281,7 @@ T_sp clasp_open_stream(T_sp fn, StreamMode smm, T_sp if_exists, T_sp if_does_not
   bool appending = false, created = false;
   ASSERT(filename);
   bool exists = core__file_kind(filename, true).notnilp();
-  if (smm == stream_mode_input || smm == stream_mode_probe) {
+  if (direction == stream_direction_input || direction == stream_direction_probe) {
     if (!exists) {
       if (if_does_not_exist == kw::_sym_error) {
         FEdoes_not_exist(fn);
@@ -3299,8 +3297,8 @@ T_sp clasp_open_stream(T_sp fn, StreamMode smm, T_sp if_exists, T_sp if_does_not
     }
     f = safe_open(fname.c_str(), O_RDONLY, mode);
     unlikely_if(f < 0) FEcannot_open(fn);
-  } else if (smm == stream_mode_output || smm == stream_mode_io) {
-    int base = (smm == stream_mode_output) ? O_WRONLY : O_RDWR;
+  } else if (direction == stream_direction_output || direction == stream_direction_io) {
+    int base = (direction == stream_direction_output) ? O_WRONLY : O_RDWR;
     if (if_exists == kw::_sym_new_version && if_does_not_exist == kw::_sym_create) {
       exists = false;
       if_does_not_exist = kw::_sym_create;
@@ -3338,31 +3336,31 @@ T_sp clasp_open_stream(T_sp fn, StreamMode smm, T_sp if_exists, T_sp if_does_not
       }
     }
   } else {
-    FEerror("Illegal stream mode ~S", 1, make_fixnum(smm).raw_());
+    FEerror("Illegal stream mode ~S", 1, make_fixnum(direction).raw_());
   }
   if (flags & CLASP_STREAM_C_STREAM) {
     FILE* fp = NULL;
-    switch (smm) {
-    case stream_mode_probe:
-    case stream_mode_input:
+    switch (direction) {
+    case stream_direction_probe:
+    case stream_direction_input:
       fp = safe_fdopen(f, OPEN_R);
       break;
-    case stream_mode_output:
+    case stream_direction_output:
       fp = safe_fdopen(f, OPEN_W);
       break;
-    case stream_mode_io:
+    case stream_direction_io:
       fp = safe_fdopen(f, OPEN_RW);
       break;
     default:; /* never reached */
-      SIMPLE_ERROR("Illegal smm mode: {} for CLASP_STREAM_C_STREAM", smm);
+      SIMPLE_ERROR("Illegal direction mode: {} for CLASP_STREAM_C_STREAM", direction);
       UNREACHABLE();
     }
-    output = CFileStream_O::make(fn, fp, smm, byte_size, flags, external_format, temp_name, created);
+    output = CFileStream_O::make(fn, fp, direction, byte_size, flags, external_format, temp_name, created);
     output.as_unsafe<CFileStream_O>()->set_buffering_mode(byte_size ? kw::_sym_full : kw::_sym_line);
   } else {
-    output = PosixFileStream_O::make(fn, f, smm, byte_size, flags, external_format, temp_name, created);
+    output = PosixFileStream_O::make(fn, f, direction, byte_size, flags, external_format, temp_name, created);
   }
-  if (smm == stream_mode_probe) {
+  if (direction == stream_direction_probe) {
     stream_close(output, nil<T_O>());
   } else {
     output->_flags |= CLASP_STREAM_MIGHT_SEEK;
@@ -3382,22 +3380,21 @@ CL_DOCSTRING(R"dx(Creates, opens, and returns a file stream that is connected to
 file specified by filespec. Filespec is the name of the file to be
 opened. If the filespec designator is a stream, that stream is not
 closed first or otherwise affected.)dx");
-CL_DEFUN T_sp cl__open(T_sp filename, T_sp direction, T_sp element_type, T_sp if_exists, bool iesp, T_sp if_does_not_exist,
-                       bool idnesp, T_sp external_format, T_sp cstream) {
+CL_DEFUN T_sp cl__open(T_sp filename, core::StreamDirection direction, T_sp element_type, T_sp if_exists, bool iesp,
+                       T_sp if_does_not_exist, bool idnesp, T_sp external_format, T_sp cstream) {
   if (filename.nilp()) {
     TYPE_ERROR(filename, Cons_O::createList(cl::_sym_or, cl::_sym_string, cl::_sym_Pathname_O, cl::_sym_Stream_O));
   }
   T_sp strm;
-  StreamMode smm;
   int flags = 0;
   gctools::Fixnum byte_size;
   /* INV: clasp_open_stream() checks types */
-  if (direction == kw::_sym_input) {
-    smm = stream_mode_input;
+  switch (direction) {
+  case stream_direction_input:
     if (!idnesp)
       if_does_not_exist = kw::_sym_error;
-  } else if (direction == kw::_sym_output) {
-    smm = stream_mode_output;
+    break;
+  case stream_direction_output:
     if (!iesp)
       if_exists = kw::_sym_new_version;
     if (!idnesp) {
@@ -3406,8 +3403,8 @@ CL_DEFUN T_sp cl__open(T_sp filename, T_sp direction, T_sp element_type, T_sp if
       else
         if_does_not_exist = kw::_sym_create;
     }
-  } else if (direction == kw::_sym_io) {
-    smm = stream_mode_io;
+    break;
+  case stream_direction_io:
     if (!iesp)
       if_exists = kw::_sym_new_version;
     if (!idnesp) {
@@ -3416,13 +3413,11 @@ CL_DEFUN T_sp cl__open(T_sp filename, T_sp direction, T_sp element_type, T_sp if
       else
         if_does_not_exist = kw::_sym_create;
     }
-  } else if (direction == kw::_sym_probe) {
-    smm = stream_mode_probe;
+    break;
+  default:
     if (!idnesp)
       if_does_not_exist = nil<T_O>();
-  } else {
-    FEerror("~S is an illegal DIRECTION for OPEN.", 1, direction.raw_());
-    UNREACHABLE();
+    break;
   }
   byte_size = clasp_normalize_stream_element_type(element_type);
   if (byte_size != 0) {
@@ -3431,7 +3426,7 @@ CL_DEFUN T_sp cl__open(T_sp filename, T_sp direction, T_sp element_type, T_sp if
   if (!cstream.nilp()) {
     flags |= CLASP_STREAM_C_STREAM;
   }
-  strm = clasp_open_stream(filename, smm, if_exists, if_does_not_exist, byte_size, flags, external_format);
+  strm = clasp_open_stream(filename, direction, if_exists, if_does_not_exist, byte_size, flags, external_format);
   return strm;
 }
 
@@ -3778,7 +3773,18 @@ void clasp_write_string(const string& str, T_sp strm) {
     stream_write_char(strm, ch);
 }
 
+void clasp_write_string(const char* s, T_sp strm) {
+  while (*s != '\0')
+    stream_write_char(strm, *s++);
+}
+
 void clasp_writeln_string(const string& str, T_sp strm) {
+  clasp_write_string(str, strm);
+  stream_terpri(strm);
+  stream_finish_output(strm);
+}
+
+void clasp_writeln_string(const char* str, T_sp strm) {
   clasp_write_string(str, strm);
   stream_terpri(strm);
   stream_finish_output(strm);
@@ -4455,7 +4461,7 @@ CL_DOCSTRING(R"dx(Writes the characters of the subsequence of string bounded by 
 and end to output-stream.)dx");
 CL_DEFUN String_sp cl__write_string(String_sp str, T_sp stream, int istart, T_sp end) {
   stream = coerce::outputStreamDesignator(stream);
-  size_t_pair p = sequenceStartEnd(cl::_sym_writeString, str->length(), istart, end);
+  size_t_pair p = sequenceStartEnd(cl::_sym_write_string, str->length(), istart, end);
   stream_write_string(stream, str, p.start, p.end);
   return str;
 }
@@ -4465,7 +4471,7 @@ CL_DOCSTRING(R"dx(Writes the characters of the subsequence of string bounded by 
 and end to output-stream followed by a newline.)dx");
 CL_DEFUN String_sp cl__write_line(String_sp str, T_sp stream, int istart, T_sp end) {
   stream = coerce::outputStreamDesignator(stream);
-  size_t_pair p = sequenceStartEnd(cl::_sym_writeString, str->length(), istart, end);
+  size_t_pair p = sequenceStartEnd(cl::_sym_write_line, str->length(), istart, end);
   stream_write_string(stream, str, p.start, p.end);
   stream_terpri(stream);
   return str;
@@ -4597,26 +4603,6 @@ CL_DEFUN T_sp cl__write_sequence(T_sp seq, T_sp stream, Fixnum_sp fstart, T_sp t
   return seq;
 }
 
-T_sp clasp_openRead(T_sp sin) {
-  String_sp filename = gc::As<String_sp>(cl__namestring(sin));
-  StreamMode smm = stream_mode_input;
-  T_sp if_exists = nil<T_O>();
-  T_sp if_does_not_exist = nil<T_O>();
-  gctools::Fixnum byte_size = 8;
-  int flags = CLASP_STREAM_DEFAULT_FORMAT;
-  T_sp external_format = nil<T_O>();
-  if (filename.nilp()) {
-    SIMPLE_ERROR("{} was called with NIL as the argument", __FUNCTION__);
-  }
-  T_sp strm = clasp_open_stream(filename, smm, if_exists, if_does_not_exist, byte_size, flags, external_format);
-  return strm;
-}
-
-T_sp clasp_openWrite(T_sp path) {
-  T_sp stream = eval::funcall(cl::_sym_open, path, kw::_sym_direction, kw::_sym_output, kw::_sym_if_exists, kw::_sym_supersede);
-  return stream;
-}
-
 SYMBOL_EXPORT_SC_(ClPkg, open);
 SYMBOL_EXPORT_SC_(KeywordPkg, direction);
 SYMBOL_EXPORT_SC_(KeywordPkg, output);
@@ -4627,15 +4613,15 @@ SYMBOL_EXPORT_SC_(ClPkg, read_from_string);
 SYMBOL_EXPORT_SC_(ClPkg, read_line);
 SYMBOL_EXPORT_SC_(ClPkg, terpri);
 SYMBOL_EXPORT_SC_(ClPkg, freshLine);
-SYMBOL_EXPORT_SC_(ClPkg, writeString);
-SYMBOL_EXPORT_SC_(ClPkg, writeLine);
-SYMBOL_EXPORT_SC_(ClPkg, writeChar);
-SYMBOL_EXPORT_SC_(ClPkg, clearInput);
-SYMBOL_EXPORT_SC_(ClPkg, clearOutput);
-SYMBOL_EXPORT_SC_(ClPkg, readByte);
-SYMBOL_EXPORT_SC_(ClPkg, peekChar);
-SYMBOL_EXPORT_SC_(ClPkg, readChar);
-SYMBOL_EXPORT_SC_(ClPkg, readCharNoHang);
+SYMBOL_EXPORT_SC_(ClPkg, write_string);
+SYMBOL_EXPORT_SC_(ClPkg, write_line);
+SYMBOL_EXPORT_SC_(ClPkg, write_char);
+SYMBOL_EXPORT_SC_(ClPkg, clear_input);
+SYMBOL_EXPORT_SC_(ClPkg, clear_output);
+SYMBOL_EXPORT_SC_(ClPkg, read_byte);
+SYMBOL_EXPORT_SC_(ClPkg, peek_char);
+SYMBOL_EXPORT_SC_(ClPkg, read_char);
+SYMBOL_EXPORT_SC_(ClPkg, read_char_no_hang);
 SYMBOL_EXPORT_SC_(ClPkg, force_output);
 SYMBOL_EXPORT_SC_(ClPkg, finish_output);
 SYMBOL_EXPORT_SC_(ClPkg, listen);
@@ -4643,7 +4629,7 @@ SYMBOL_EXPORT_SC_(ClPkg, unread_char);
 SYMBOL_EXPORT_SC_(CorePkg, fileColumn);
 SYMBOL_EXPORT_SC_(CorePkg, makeStringOutputStreamFromString);
 SYMBOL_EXPORT_SC_(ClPkg, makeStringOutputStream);
-SYMBOL_EXPORT_SC_(ClPkg, writeByte);
+SYMBOL_EXPORT_SC_(ClPkg, write_byte);
 SYMBOL_EXPORT_SC_(ClPkg, input_stream_p);
 SYMBOL_EXPORT_SC_(ClPkg, output_stream_p);
 SYMBOL_EXPORT_SC_(ClPkg, interactive_stream_p);

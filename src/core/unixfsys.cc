@@ -257,7 +257,7 @@ CL_DEFUN T_mv core__fork(bool bReturnStream) {
         close(filedes[1]);
         int flags = fcntl(filedes[0], F_GETFL, 0);
         fcntl(filedes[0], F_SETFL, flags | O_NONBLOCK);
-        T_sp stream = PosixFileStream_O::make(SimpleBaseString_O::make("execvp"), filedes[0], stream_mode_input, 8,
+        T_sp stream = PosixFileStream_O::make(SimpleBaseString_O::make("execvp"), filedes[0], stream_direction_input, 8,
                                               CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
         return Values(nil<T_O>(), clasp_make_fixnum(child_PID), stream);
       }
@@ -1983,7 +1983,7 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
         if (bReturnStream) {
           int flags = fcntl(filedes[0], F_GETFL, 0);
           fcntl(filedes[0], F_SETFL, flags | O_NONBLOCK);
-          T_sp stream = PosixFileStream_O::make(SimpleBaseString_O::make("execvp"), filedes[0], stream_mode_input, 8,
+          T_sp stream = PosixFileStream_O::make(SimpleBaseString_O::make("execvp"), filedes[0], stream_direction_input, 8,
                                                 CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
 
           DEBUG_PRINT(BF("%s (%s:%d) | Values( %d %d %p )\n.") % __FUNCTION__ % __FILE__ % __LINE__ % 0 % child_PID % stream);
@@ -2076,7 +2076,7 @@ CL_DEFUN T_mv ext__fork_execvp(List_sp call_and_arguments, T_sp return_stream) {
         if (bReturnStream) {
           int flags = fcntl(filedes[0], F_GETFL, 0);
           fcntl(filedes[0], F_SETFL, flags | O_NONBLOCK);
-          T_sp stream = PosixFileStream_O::make(SimpleBaseString_O::make("execvp"), filedes[0], stream_mode_input, 8,
+          T_sp stream = PosixFileStream_O::make(SimpleBaseString_O::make("execvp"), filedes[0], stream_direction_input, 8,
                                                 CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
           return Values(nil<T_O>(), clasp_make_fixnum(child_PID), stream);
         }

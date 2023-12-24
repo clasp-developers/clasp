@@ -599,16 +599,16 @@ CL_DEFUN core::T_sp sockets_internal__ll_makeStreamFromFd(const string& name,   
                                                           core::T_sp elementType,    // #3
                                                           core::T_sp externalFormat) // #4
 {
-  core::StreamMode direction;
+  core::StreamDirection direction;
   switch (streamMode) {
-  case core::stream_mode_input:
-    direction = core::stream_mode_input;
+  case core::stream_direction_input:
+    direction = core::stream_direction_input;
     break;
-  case core::stream_mode_output:
-    direction = core::stream_mode_output;
+  case core::stream_direction_output:
+    direction = core::stream_direction_output;
     break;
-  case core::stream_mode_io:
-    direction = core::stream_mode_io;
+  case core::stream_direction_io:
+    direction = core::stream_direction_io;
     break;
   default: {
     SIMPLE_ERROR("Illegal stream mode {}", streamMode);
@@ -827,13 +827,13 @@ void initialize_sockets_globals() {
   _sym__PLUS_sock_stream_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)SOCK_STREAM));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_clasp_stream_mode_input_PLUS_);
-  _sym__PLUS_clasp_stream_mode_input_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)(core::stream_mode_input)));
+  _sym__PLUS_clasp_stream_mode_input_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)(core::stream_direction_input)));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_clasp_stream_mode_output_PLUS_);
-  _sym__PLUS_clasp_stream_mode_output_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)core::stream_mode_output));
+  _sym__PLUS_clasp_stream_mode_output_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)core::stream_direction_output));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_clasp_stream_mode_io_PLUS_);
-  _sym__PLUS_clasp_stream_mode_io_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)core::stream_mode_io));
+  _sym__PLUS_clasp_stream_mode_io_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)core::stream_direction_io));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_EADDRINUSE_PLUS_);
   _sym__PLUS_EADDRINUSE_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)EADDRINUSE));
