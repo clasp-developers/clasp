@@ -3826,7 +3826,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     comp::_sym_STARthread_safe_contextSTAR->defparameter(llvmo::ThreadSafeContext_O::create_thread_safe_context());
     comp::_sym_STARthread_local_builtins_moduleSTAR->defparameter(nil<core::T_O>());
     FILE* null_out = fopen("/dev/null", "w");
-    _lisp->_Roots._NullStream = core::CFileStream_O::make(core::str_create("/dev/null"), null_out, core::stream_direction_io);
+    _lisp->_Roots._NullStream = core::CFileStream_O::make(core::str_create("/dev/null"), null_out, core::StreamDirection::io);
 
     //
     // Setup the pathname info for wherever the executable was loaded

@@ -1031,9 +1031,9 @@ T_sp FileStream_O::string_length(T_sp string) {
 
 T_sp FileStream_O::external_format() const { return _format; }
 
-bool FileStream_O::input_p() const { return _direction & stream_direction_input; }
+bool FileStream_O::input_p() const { return _direction & StreamDirection::input; }
 
-bool FileStream_O::output_p() const { return _direction & stream_direction_output; }
+bool FileStream_O::output_p() const { return _direction & StreamDirection::output; }
 
 T_sp FileStream_O::pathname() const { return cl__parse_namestring(_filename); }
 
@@ -1225,14 +1225,8 @@ StringInputStream_sp StringInputStream_O::make(String_sp string, cl_index istart
 CL_LAMBDA(file_descriptor &key direction);
 CL_DOCSTRING(R"dx(Create a file from a file descriptor and direction)dx");
 CL_UNWIND_COOP(true);
-CL_DEFUN T_sp core__make_fd_stream(int fd, Symbol_sp direction) {
-  if (direction == kw::_sym_input) {
-    return PosixFileStream_O::make(str_create("InputPosixFileStreamFromFD"), fd, stream_direction_input);
-  } else if (direction == kw::_sym_output) {
-    return PosixFileStream_O::make(str_create("OutputPosixFileStreamFromFD"), fd, stream_direction_output);
-  } else {
-    SIMPLE_ERROR("Could not create PosixFileStream with direction {}", _rep_(direction));
-  }
+CL_DEFUN T_sp core__make_fd_stream(int fd, core::StreamDirection direction) {
+  return PosixFileStream_O::make(str_create("PosixFileStreamFromFD"), fd, direction);
 }
 
 CL_LAMBDA(strng &optional (istart 0) iend);
@@ -2106,9 +2100,9 @@ void FileStream_O::close_cleanup(T_sp abort) {
   }
 }
 
-int PosixFileStream_O::input_handle() { return (_direction & stream_direction_input) ? _file_descriptor : -1; }
+int PosixFileStream_O::input_handle() { return (_direction & StreamDirection::input) ? _file_descriptor : -1; }
 
-int PosixFileStream_O::output_handle() { return (_direction & stream_direction_output) ? _file_descriptor : -1; }
+int PosixFileStream_O::output_handle() { return (_direction & StreamDirection::output) ? _file_descriptor : -1; }
 
 T_sp PosixFileStream_O::close(T_sp abort) {
   if (_open) {
@@ -2600,7 +2594,7 @@ void CFileStream_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* f
 cl_index CFileStream_O::read_byte8(unsigned char* c, cl_index n) {
   check_input();
 
-  if (_direction == stream_direction_io) {
+  if (_direction == StreamDirection::io) {
     if (_last_op < 0) {
       force_output();
     }
@@ -2748,9 +2742,9 @@ T_sp CFileStream_O::set_position(T_sp pos) {
   return mode ? nil<T_O>() : _lisp->_true();
 }
 
-int CFileStream_O::input_handle() { return (_direction & stream_direction_input) ? fileno(_file) : -1; }
+int CFileStream_O::input_handle() { return (_direction & StreamDirection::input) ? fileno(_file) : -1; }
 
-int CFileStream_O::output_handle() { return (_direction & stream_direction_output) ? fileno(_file) : -1; }
+int CFileStream_O::output_handle() { return (_direction & StreamDirection::output) ? fileno(_file) : -1; }
 
 T_sp CFileStream_O::close(T_sp abort) {
   if (_open) {
@@ -2999,18 +2993,19 @@ CFileStream_sp CFileStream_O::make(T_sp fname, int fd, StreamDirection direction
   const char* mode; /* file open mode */
   FILE* fp;         /* file pointer */
   switch (direction) {
-  case stream_direction_input:
+  case StreamDirection::input:
     mode = OPEN_R;
     break;
-  case stream_direction_output:
+  case StreamDirection::output:
     mode = OPEN_W;
     break;
-  case stream_direction_io:
+  case StreamDirection::io:
     mode = OPEN_RW;
     break;
   default:
     mode = OPEN_R; // dummy
-    FEerror("make_stream: wrong mode in CFileStream_O::make direction = ~d", 1, clasp_make_fixnum(direction).raw_());
+    FEerror("make_stream: wrong mode in CFileStream_O::make direction = ~d", 1,
+            clasp_make_fixnum(static_cast<uint8_t>(direction)).raw_());
   }
   fp = safe_fdopen(fd, mode);
   if (fp == NULL) {
@@ -3033,24 +3028,14 @@ CFileStream_sp CFileStream_O::make(T_sp fname, int fd, StreamDirection direction
 SYMBOL_EXPORT_SC_(KeywordPkg, input_output);
 
 CL_LAMBDA(fd direction &key buffering element-type (external-format :default) (name "FD-STREAM"));
-CL_DEFUN T_sp ext__make_stream_from_fd(int fd, T_sp direction, T_sp buffering, T_sp element_type, T_sp external_format,
-                                       String_sp name) {
-  StreamDirection _direction = stream_direction_output;
-  if (direction == kw::_sym_input) {
-    _direction = stream_direction_input;
-  } else if (direction == kw::_sym_output) {
-    _direction = stream_direction_output;
-  } else if (direction == kw::_sym_io || direction == kw::_sym_input_output) {
-    _direction = stream_direction_io;
-  } else {
-    SIMPLE_ERROR("Unknown smm_mode");
-  }
+CL_DEFUN T_sp ext__make_stream_from_fd(int fd, core::StreamDirection direction, T_sp buffering, T_sp element_type,
+                                       T_sp external_format, String_sp name) {
   if (cl__integerp(element_type)) {
     external_format = nil<T_O>();
   }
   gctools::Fixnum byte_size;
   byte_size = clasp_normalize_stream_element_type(element_type);
-  CFileStream_sp stream = CFileStream_O::make(name, fd, _direction, byte_size, CLASP_STREAM_BINARY, external_format);
+  CFileStream_sp stream = CFileStream_O::make(name, fd, direction, byte_size, CLASP_STREAM_BINARY, external_format);
   if (buffering.notnilp()) {
     stream->set_buffering_mode(byte_size ? kw::_sym_full : kw::_sym_line);
   }
@@ -3264,8 +3249,8 @@ err:
 
 static void FEinvalid_option(T_sp option, T_sp value) { FEerror("Invalid value op option ~A: ~A", 2, option.raw_(), value.raw_()); }
 
-T_sp clasp_open_stream(T_sp fn, StreamDirection direction, T_sp if_exists, T_sp if_does_not_exist, gctools::Fixnum byte_size,
-                       int flags, T_sp external_format) {
+T_sp stream_open(T_sp fn, StreamDirection direction, StreamIfExists if_exists, StreamIfDoesNotExist if_does_not_exist,
+                 gctools::Fixnum byte_size, int flags, T_sp external_format) {
   AnsiStream_sp output;
   int f;
 #if defined(CLASP_MS_WINDOWS_HOST)
@@ -3281,74 +3266,83 @@ T_sp clasp_open_stream(T_sp fn, StreamDirection direction, T_sp if_exists, T_sp 
   bool appending = false, created = false;
   ASSERT(filename);
   bool exists = core__file_kind(filename, true).notnilp();
-  if (direction == stream_direction_input || direction == stream_direction_probe) {
-    if (!exists) {
-      if (if_does_not_exist == kw::_sym_error) {
+  switch (direction) {
+  case StreamDirection::input:
+  case StreamDirection::probe:
+    if (!exists)
+      switch (if_does_not_exist) {
+      case StreamIfDoesNotExist::error:
         FEdoes_not_exist(fn);
-      } else if (if_does_not_exist == kw::_sym_create) {
+        break;
+      case StreamIfDoesNotExist::create:
         f = safe_open(fname.c_str(), O_WRONLY | O_CREAT, mode);
         unlikely_if(f < 0) FEcannot_open(fn);
         safe_close(f);
-      } else if (if_does_not_exist.nilp()) {
+        break;
+      case StreamIfDoesNotExist::nil:
         return nil<T_O>();
-      } else {
-        FEinvalid_option(kw::_sym_if_does_not_exist, if_does_not_exist);
       }
-    }
+
     f = safe_open(fname.c_str(), O_RDONLY, mode);
     unlikely_if(f < 0) FEcannot_open(fn);
-  } else if (direction == stream_direction_output || direction == stream_direction_io) {
-    int base = (direction == stream_direction_output) ? O_WRONLY : O_RDWR;
-    if (if_exists == kw::_sym_new_version && if_does_not_exist == kw::_sym_create) {
+    break;
+  default:
+    int base = (direction == StreamDirection::output) ? O_WRONLY : O_RDWR;
+    if (if_exists == StreamIfExists::new_version && if_does_not_exist == StreamIfDoesNotExist::create) {
       exists = false;
-      if_does_not_exist = kw::_sym_create;
+      if_does_not_exist = StreamIfDoesNotExist::create;
     }
     if (exists) {
-      if (if_exists == kw::_sym_error) {
+      switch (if_exists) {
+      case StreamIfExists::error:
         FEexists(fn);
-      } else if (if_exists == kw::_sym_rename) {
+        break;
+      case StreamIfExists::rename:
         f = clasp_backup_open(fname.c_str(), base | O_CREAT, mode);
         unlikely_if(f < 0) FEcannot_open(fn);
-      } else if (if_exists == kw::_sym_rename_and_delete || if_exists == kw::_sym_new_version || if_exists == kw::_sym_supersede) {
+        break;
+      case StreamIfExists::rename_and_delete:
+      case StreamIfExists::new_version:
+      case StreamIfExists::supersede:
         temp_name = core__mkstemp(filename);
         f = safe_open(core__coerce_to_filename(temp_name)->get_std_string().c_str(), base | O_CREAT, mode);
         unlikely_if(f < 0) FEcannot_open(fn);
-      } else if (if_exists == kw::_sym_overwrite || if_exists == kw::_sym_append) {
+        break;
+      case StreamIfExists::append:
+        appending = true;
+      case StreamIfExists::overwrite:
         f = safe_open(fname.c_str(), base, mode);
         unlikely_if(f < 0) FEcannot_open(fn);
-        appending = (if_exists == kw::_sym_append);
-      } else if (if_exists.nilp()) {
+        break;
+      case StreamIfExists::nil:
         return nil<T_O>();
-      } else {
-        FEinvalid_option(kw::_sym_if_exists, if_exists);
       }
     } else {
-      if (if_does_not_exist == kw::_sym_error) {
+      switch (if_does_not_exist) {
+      case StreamIfDoesNotExist::error:
         FEdoes_not_exist(fn);
-      } else if (if_does_not_exist == kw::_sym_create) {
+        break;
+      case StreamIfDoesNotExist::create:
         f = safe_open(fname.c_str(), base | O_CREAT | O_TRUNC, mode);
         created = true;
         unlikely_if(f < 0) FEcannot_open(fn);
-      } else if (if_does_not_exist.nilp()) {
+        break;
+      case StreamIfDoesNotExist::nil:
         return nil<T_O>();
-      } else {
-        FEinvalid_option(kw::_sym_if_does_not_exist, if_does_not_exist);
       }
     }
-  } else {
-    FEerror("Illegal stream mode ~S", 1, make_fixnum(direction).raw_());
   }
   if (flags & CLASP_STREAM_C_STREAM) {
     FILE* fp = NULL;
     switch (direction) {
-    case stream_direction_probe:
-    case stream_direction_input:
+    case StreamDirection::probe:
+    case StreamDirection::input:
       fp = safe_fdopen(f, OPEN_R);
       break;
-    case stream_direction_output:
+    case StreamDirection::output:
       fp = safe_fdopen(f, OPEN_W);
       break;
-    case stream_direction_io:
+    case StreamDirection::io:
       fp = safe_fdopen(f, OPEN_RW);
       break;
     default:; /* never reached */
@@ -3360,7 +3354,7 @@ T_sp clasp_open_stream(T_sp fn, StreamDirection direction, T_sp if_exists, T_sp 
   } else {
     output = PosixFileStream_O::make(fn, f, direction, byte_size, flags, external_format, temp_name, created);
   }
-  if (direction == stream_direction_probe) {
+  if (direction == StreamDirection::probe) {
     stream_close(output, nil<T_O>());
   } else {
     output->_flags |= CLASP_STREAM_MIGHT_SEEK;
@@ -3380,8 +3374,8 @@ CL_DOCSTRING(R"dx(Creates, opens, and returns a file stream that is connected to
 file specified by filespec. Filespec is the name of the file to be
 opened. If the filespec designator is a stream, that stream is not
 closed first or otherwise affected.)dx");
-CL_DEFUN T_sp cl__open(T_sp filename, core::StreamDirection direction, T_sp element_type, T_sp if_exists, bool iesp,
-                       T_sp if_does_not_exist, bool idnesp, T_sp external_format, T_sp cstream) {
+CL_DEFUN T_sp cl__open(T_sp filename, core::StreamDirection direction, T_sp element_type, core::StreamIfExists if_exists, bool iesp,
+                       core::StreamIfDoesNotExist if_does_not_exist, bool idnesp, T_sp external_format, T_sp cstream) {
   if (filename.nilp()) {
     TYPE_ERROR(filename, Cons_O::createList(cl::_sym_or, cl::_sym_string, cl::_sym_Pathname_O, cl::_sym_Stream_O));
   }
@@ -3390,33 +3384,31 @@ CL_DEFUN T_sp cl__open(T_sp filename, core::StreamDirection direction, T_sp elem
   gctools::Fixnum byte_size;
   /* INV: clasp_open_stream() checks types */
   switch (direction) {
-  case stream_direction_input:
+  case StreamDirection::input:
     if (!idnesp)
-      if_does_not_exist = kw::_sym_error;
+      if_does_not_exist = StreamIfDoesNotExist::error;
     break;
-  case stream_direction_output:
+  case StreamDirection::output:
     if (!iesp)
-      if_exists = kw::_sym_new_version;
+      if_exists = StreamIfExists::new_version;
     if (!idnesp) {
-      if (if_exists == kw::_sym_overwrite || if_exists == kw::_sym_append)
-        if_does_not_exist = kw::_sym_error;
+      if (if_exists == StreamIfExists::overwrite || if_exists == StreamIfExists::append)
+        if_does_not_exist = StreamIfDoesNotExist::error;
       else
-        if_does_not_exist = kw::_sym_create;
+        if_does_not_exist = StreamIfDoesNotExist::create;
     }
     break;
-  case stream_direction_io:
+  case StreamDirection::io:
     if (!iesp)
-      if_exists = kw::_sym_new_version;
+      if_exists = StreamIfExists::new_version;
     if (!idnesp) {
-      if (if_exists == kw::_sym_overwrite || if_exists == kw::_sym_append)
-        if_does_not_exist = kw::_sym_error;
+      if (if_exists == StreamIfExists::overwrite || if_exists == StreamIfExists::append)
+        if_does_not_exist = StreamIfDoesNotExist::error;
       else
-        if_does_not_exist = kw::_sym_create;
+        if_does_not_exist = StreamIfDoesNotExist::create;
     }
     break;
   default:
-    if (!idnesp)
-      if_does_not_exist = nil<T_O>();
     break;
   }
   byte_size = clasp_normalize_stream_element_type(element_type);
@@ -3426,8 +3418,7 @@ CL_DEFUN T_sp cl__open(T_sp filename, core::StreamDirection direction, T_sp elem
   if (!cstream.nilp()) {
     flags |= CLASP_STREAM_C_STREAM;
   }
-  strm = clasp_open_stream(filename, direction, if_exists, if_does_not_exist, byte_size, flags, external_format);
-  return strm;
+  return stream_open(filename, direction, if_exists, if_does_not_exist, byte_size, flags, external_format);
 }
 
 CL_LAMBDA(strm &key abort);

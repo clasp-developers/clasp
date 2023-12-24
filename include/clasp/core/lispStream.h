@@ -76,25 +76,29 @@ void wsock_error(const char* err_msg, T_sp strm) NO_RETURN;
 
 int safe_open(const char* filename, int flags, clasp_mode_t mode);
 
-enum StreamDirection {
-  stream_direction_input = 0b0001,  //  input
-  stream_direction_output = 0b0010, //  output
-  stream_direction_io = 0b0011,     //  input-output
-  stream_direction_probe = 0b0100   //  probe (only used in open_stream())
+enum class StreamDirection : uint8_t {
+  input = 0b0001,  //  input
+  output = 0b0010, //  output
+  io = 0b0011,     //  input-output
+  probe = 0b0100   //  probe (only used in open_stream())
 };
 
-enum StreamIfExists {
-  stream_if_exists_nil,
-  stream_if_exists_error,
-  stream_if_exists_new_version,
-  stream_if_exists_rename,
-  stream_if_exists_rename_and_delete,
-  stream_if_exists_overwrite,
-  stream_if_exists_append,
-  stream_if_exists_supersede
+inline bool operator&(StreamDirection x, StreamDirection y) {
+  return static_cast<bool>(static_cast<uint8_t>(x) & static_cast<uint8_t>(y));
 };
 
-enum StreamIfDoesNotExist { stream_if_does_not_exist_nil, stream_if_does_not_exist_error, stream_if_does_not_exist_create };
+enum class StreamIfExists : uint8_t {
+  nil = 0,
+  error = 1,
+  new_version = 2,
+  rename = 3,
+  rename_and_delete = 4,
+  overwrite = 5,
+  append = 6,
+  supersede = 7
+};
+
+enum class StreamIfDoesNotExist : uint8_t { nil = 0, error = 1, create = 2 };
 
 typedef enum {
   CLASP_STREAM_BINARY = 0,
@@ -1025,8 +1029,12 @@ void clasp_writeln_string(const string& str, T_sp strm = cl::_sym_STARstandard_o
 void clasp_writeln_string(const char* str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
 void core__write_addr(T_sp x, T_sp strm);
 
-T_sp cl__open(T_sp filename, StreamDirection direction = stream_direction_input, T_sp element_type = cl::_sym_base_char,
-              T_sp if_exists = nil<core::T_O>(), bool iesp = false, T_sp if_does_not_exist = nil<core::T_O>(), bool idnesp = false,
+T_sp stream_open(T_sp fn, StreamDirection direction, StreamIfExists if_exists, StreamIfDoesNotExist if_does_not_exist,
+                 gctools::Fixnum byte_size, int flags, T_sp external_format);
+
+T_sp cl__open(T_sp filename, StreamDirection direction = StreamDirection::input, T_sp element_type = cl::_sym_base_char,
+              StreamIfExists if_exists = StreamIfExists::nil, bool iesp = false,
+              StreamIfDoesNotExist if_does_not_exist = StreamIfDoesNotExist::nil, bool idnesp = false,
               T_sp external_format = kw::_sym_default, T_sp cstream = lisp_true());
 T_mv cl__read_line(T_sp sin, T_sp eof_error_p = cl::_sym_T_O, T_sp eof_value = nil<T_O>(), T_sp recursive_p = nil<T_O>());
 
@@ -1041,19 +1049,19 @@ template <> struct from_object<core::StreamDirection> {
   DeclareType _v;
   from_object(core::T_sp o) {
     if (o == kw::_sym_input) {
-      this->_v = core::stream_direction_input;
+      this->_v = core::StreamDirection::input;
       return;
     }
     if (o == kw::_sym_output) {
-      this->_v = core::stream_direction_output;
+      this->_v = core::StreamDirection::output;
       return;
     }
     if (o == kw::_sym_io) {
-      this->_v = core::stream_direction_io;
+      this->_v = core::StreamDirection::io;
       return;
     }
     if (o == kw::_sym_probe) {
-      this->_v = core::stream_direction_probe;
+      this->_v = core::StreamDirection::probe;
       return;
     }
     core::T_sp type = core::Cons_O::createList(cl::_sym_member, kw::_sym_input, kw::_sym_output, kw::_sym_io, kw::_sym_probe);
@@ -1066,35 +1074,35 @@ template <> struct from_object<core::StreamIfExists> {
   DeclareType _v;
   from_object(core::T_sp o) {
     if (o.nilp()) {
-      this->_v = core::stream_if_exists_nil;
+      this->_v = core::StreamIfExists::nil;
       return;
     }
     if (o == kw::_sym_error) {
-      this->_v = core::stream_if_exists_error;
+      this->_v = core::StreamIfExists::error;
       return;
     }
     if (o == kw::_sym_new_version) {
-      this->_v = core::stream_if_exists_new_version;
+      this->_v = core::StreamIfExists::new_version;
       return;
     }
     if (o == kw::_sym_rename) {
-      this->_v = core::stream_if_exists_rename;
+      this->_v = core::StreamIfExists::rename;
       return;
     }
     if (o == kw::_sym_rename_and_delete) {
-      this->_v = core::stream_if_exists_rename_and_delete;
+      this->_v = core::StreamIfExists::rename_and_delete;
       return;
     }
     if (o == kw::_sym_overwrite) {
-      this->_v = core::stream_if_exists_overwrite;
+      this->_v = core::StreamIfExists::overwrite;
       return;
     }
     if (o == kw::_sym_append) {
-      this->_v = core::stream_if_exists_append;
+      this->_v = core::StreamIfExists::append;
       return;
     }
     if (o == kw::_sym_supersede) {
-      this->_v = core::stream_if_exists_supersede;
+      this->_v = core::StreamIfExists::supersede;
       return;
     }
     core::T_sp type = core::Cons_O::createList(cl::_sym_member, cl::_sym_nil, kw::_sym_error, kw::_sym_new_version, kw::_sym_rename,
@@ -1108,15 +1116,15 @@ template <> struct from_object<core::StreamIfDoesNotExist> {
   DeclareType _v;
   from_object(core::T_sp o) {
     if (o.nilp()) {
-      this->_v = core::stream_if_does_not_exist_nil;
+      this->_v = core::StreamIfDoesNotExist::nil;
       return;
     }
     if (o == kw::_sym_error) {
-      this->_v = core::stream_if_does_not_exist_error;
+      this->_v = core::StreamIfDoesNotExist::error;
       return;
     }
     if (o == kw::_sym_create) {
-      this->_v = core::stream_if_does_not_exist_create;
+      this->_v = core::StreamIfDoesNotExist::create;
       return;
     }
     core::T_sp type = core::Cons_O::createList(cl::_sym_member, cl::_sym_nil, kw::_sym_error, kw::_sym_create);

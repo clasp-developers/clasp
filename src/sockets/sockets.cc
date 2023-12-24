@@ -601,14 +601,14 @@ CL_DEFUN core::T_sp sockets_internal__ll_makeStreamFromFd(const string& name,   
 {
   core::StreamDirection direction;
   switch (streamMode) {
-  case core::stream_direction_input:
-    direction = core::stream_direction_input;
+  case static_cast<int>(core::StreamDirection::input):
+    direction = core::StreamDirection::input;
     break;
-  case core::stream_direction_output:
-    direction = core::stream_direction_output;
+  case static_cast<int>(core::StreamDirection::output):
+    direction = core::StreamDirection::output;
     break;
-  case core::stream_direction_io:
-    direction = core::stream_direction_io;
+  case static_cast<int>(core::StreamDirection::io):
+    direction = core::StreamDirection::io;
     break;
   default: {
     SIMPLE_ERROR("Illegal stream mode {}", streamMode);
@@ -827,13 +827,13 @@ void initialize_sockets_globals() {
   _sym__PLUS_sock_stream_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)SOCK_STREAM));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_clasp_stream_mode_input_PLUS_);
-  _sym__PLUS_clasp_stream_mode_input_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)(core::stream_direction_input)));
+  _sym__PLUS_clasp_stream_mode_input_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)(core::StreamDirection::input)));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_clasp_stream_mode_output_PLUS_);
-  _sym__PLUS_clasp_stream_mode_output_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)core::stream_direction_output));
+  _sym__PLUS_clasp_stream_mode_output_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)core::StreamDirection::output));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_clasp_stream_mode_io_PLUS_);
-  _sym__PLUS_clasp_stream_mode_io_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)core::stream_direction_io));
+  _sym__PLUS_clasp_stream_mode_io_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)core::StreamDirection::io));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_EADDRINUSE_PLUS_);
   _sym__PLUS_EADDRINUSE_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)EADDRINUSE));

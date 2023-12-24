@@ -84,7 +84,8 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
     final_format = kw::_sym_default;
   else
     final_format = externalFormat;
-  strm = cl__open(source, stream_direction_input, cl::_sym_character, nil<T_O>(), false, nil<T_O>(), false, final_format, nil<T_O>());
+  strm = cl__open(source, StreamDirection::input, cl::_sym_character, StreamIfExists::nil, false, StreamIfDoesNotExist::nil, false,
+                  final_format, nil<T_O>());
   if (strm.nilp())
     return nil<T_O>();
 
@@ -188,8 +189,8 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
           }
         } else {
           if (magic.nilp()) {
-            T_sp stream = cl__open(pathname, stream_direction_input, ext::_sym_byte8, nil<T_O>(), false, nil<T_O>(), false, external_format,
-                                   nil<T_O>());
+            T_sp stream = cl__open(pathname, StreamDirection::input, ext::_sym_byte8, StreamIfExists::nil, false,
+                                   StreamIfDoesNotExist::nil, false, external_format, nil<T_O>());
             uint8_t bytes[4];
             magic = clasp_make_fixnum((stream_read_byte8(stream, bytes, 4) == 4)
                                           ? (((uint32_t)bytes[0] << 24) | ((uint32_t)bytes[1] << 16) | ((uint32_t)bytes[2] << 8) |

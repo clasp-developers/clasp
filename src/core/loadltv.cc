@@ -685,16 +685,26 @@ struct loadltv {
       uint8_t flags = read_u8();
       // Parse flags
       switch ((flags & 0b00110000) >> 4) { // inline
-      case 0b00: break; // default
-      case 0b01: decls << cl::_sym_inline; break;
-      case 0b10: decls << cl::_sym_notinline; break;
+      case 0b00:
+        break; // default
+      case 0b01:
+        decls << cl::_sym_inline;
+        break;
+      case 0b10:
+        decls << cl::_sym_notinline;
+        break;
       }
       if (flags & 0b00001000)
         decls << cl::_sym_dynamic_extent;
       switch ((flags & 0b00000110) >> 1) { // ignore
-      case 0b00: break; // default
-      case 0b01: decls << cl::_sym_ignore; break;
-      case 0b10: decls << cl::_sym_ignorable; break;
+      case 0b00:
+        break; // default
+      case 0b01:
+        decls << cl::_sym_ignore;
+        break;
+      case 0b10:
+        decls << cl::_sym_ignorable;
+        break;
       }
       bool cellp = flags & 0b00000001;
       // Extra declarations
@@ -959,8 +969,8 @@ CL_DEFUN void load_bytecode_stream(Stream_sp stream) {
 }
 
 CL_DEFUN bool load_bytecode(T_sp filename, bool verbose, bool print, T_sp external_format) {
-  T_sp strm =
-      cl__open(filename, stream_direction_input, ext::_sym_byte8, nil<T_O>(), false, nil<T_O>(), false, external_format, nil<T_O>());
+  T_sp strm = cl__open(filename, StreamDirection::input, ext::_sym_byte8, StreamIfExists::nil, false, StreamIfDoesNotExist::nil,
+                       false, external_format, nil<T_O>());
   if (strm.nilp())
     return false;
   load_bytecode_stream(gc::As<Stream_sp>(strm));
