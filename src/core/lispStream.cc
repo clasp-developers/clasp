@@ -116,22 +116,6 @@ std::string string_mode(int st_mode) {
   return ss.str();
 }
 
-Fixnum StringFillp(String_sp s) {
-  ASSERT(core__non_simple_stringp(s));
-  if (!s->arrayHasFillPointerP()) {
-    SIMPLE_ERROR("The vector does not have a fill pointer");
-  }
-  return s->fillPointer();
-}
-
-void SetStringFillp(String_sp s, Fixnum fp) {
-  ASSERT(core__non_simple_stringp(s));
-  if (!s->arrayHasFillPointerP()) {
-    SIMPLE_ERROR("The vector does not have a fill pointer");
-  }
-  s->fillPointerSet(fp);
-}
-
 CL_DEFUN StringOutputStream_sp core__thread_local_write_to_string_output_stream() { return my_thread->_WriteToStringOutputStream; }
 
 CL_UNWIND_COOP(true)
@@ -146,7 +130,7 @@ CL_DEFUN String_sp core__get_thread_local_write_to_string_output_stream_string(S
     my_stream->_contents = Str8Ns_O::createBufferString(STRING_OUTPUT_STREAM_DEFAULT_SIZE);
 #endif
   } else {
-    SetStringFillp(my_stream->_contents, core::make_fixnum(0));
+    my_stream->_contents->fillPointerSet(0);
   }
   my_stream->_column = 0;
   return result;
@@ -1017,7 +1001,7 @@ T_sp FileStream_O::string_length(T_sp string) {
     Fixnum iEnd;
     String_sp sb = string.asOrNull<String_O>();
     if (sb && (sb->arrayHasFillPointerP()))
-      iEnd = StringFillp(sb);
+      iEnd = sb->fillPointer();
     else
       iEnd = cl__length(sb);
     for (int i = 0; i < iEnd; ++i) {
@@ -1059,7 +1043,7 @@ claspCharacter StringOutputStream_O::write_char(claspCharacter c) {
   return c;
 }
 
-T_sp StringOutputStream_O::position() { return Integer_O::create((gc::Fixnum)(StringFillp(_contents))); }
+T_sp StringOutputStream_O::position() { return Integer_O::create((gc::Fixnum)_contents->fillPointer()); }
 
 T_sp StringOutputStream_O::set_position(T_sp pos) {
   Fixnum disp;
@@ -1068,10 +1052,10 @@ T_sp StringOutputStream_O::set_position(T_sp pos) {
   } else {
     disp = clasp_to_integral<Fixnum>(pos);
   }
-  if (disp < StringFillp(_contents)) {
-    SetStringFillp(_contents, disp);
+  if (disp < _contents->fillPointer()) {
+    _contents->fillPointerSet(disp);
   } else {
-    disp -= StringFillp(_contents);
+    disp -= _contents->fillPointer();
     while (disp-- > 0)
       write_char(' ');
   }
@@ -4156,14 +4140,14 @@ void StringOutputStream_O::fill(const string& data) { StringPushStringCharStar(t
 
 /*! Get the contents and reset them */
 void StringOutputStream_O::clear() {
-  SetStringFillp(_contents, 0);
+  _contents->fillPointerSet(0);
   _column = 0;
 };
 
 /*! Get the contents and reset them */
 String_sp StringOutputStream_O::get_string() {
   String_sp contents = gc::As_unsafe<String_sp>(cl__copy_seq(_contents));
-  SetStringFillp(_contents, 0);
+  _contents->fillPointerSet(0);
   return contents;
 };
 
