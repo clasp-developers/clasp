@@ -500,9 +500,11 @@ Prints information about OBJECT to STREAM."
 
 (defun print-doc (symbol &optional (called-from-apropos-doc-p nil)
                   &aux (f nil))
-  (labels ((doc-value (value indicator)
+  (labels ((doc-value (value indicator &optional aestheticp)
              (setq f t)
-             (format t "~&~15A~62s" indicator value))
+             (if aestheticp
+                 (format t "~&~A~%~A~2%" indicator value)
+                 (format t "~&~15A~62s" indicator value)))
            (doc-separation (ind)
              (setq f t)
              (format t
@@ -510,17 +512,17 @@ Prints information about OBJECT to STREAM."
                      symbol ind))
            (describe-symbol (category-string)
              (doc-separation category-string)
-             (doc-value (or (documentation symbol 'FUNCTION) "") "Documentation:")
+             (doc-value (or (documentation symbol 'FUNCTION) "") "Documentation:" t)
              #+(or cclasp eclasp) (doc-value (or (core:function-lambda-list symbol) "") "Arguments:")
              (mapcar #'(lambda(location)
                          (doc-value (ext:source-location-pathname location) "Source:"))
                      (EXT:SOURCE-LOCATION symbol :function)))
            (describe-object (category-string type)
              (doc-separation category-string)
-             (doc-value (or (documentation symbol type) "") "Documentation:"))
+             (doc-value (or (documentation symbol type) "") "Documentation:" t))
            (describe-compiler-macro ()
              (doc-separation "[Compiler Macro]")
-             (doc-value (or (documentation symbol 'compiler-macro) "") "Documentation:")
+             (doc-value (or (documentation symbol 'compiler-macro) "") "Documentation:" t)
              (mapcar #'(lambda(location)
                          (doc-value (ext:source-location-pathname location) "Source:"))
                      (EXT:SOURCE-LOCATION symbol :compiler-macro)))
@@ -537,7 +539,7 @@ Prints information about OBJECT to STREAM."
              (describe-compiler-macro)))
           ((documentation symbol 'FUNCTION)
            (describe-object "[Macro or Function]" 'function)
-           (doc-value (documentation symbol 'function) "Documentation:")))
+           (doc-value (documentation symbol 'function) "Documentation:" t)))
 
     (cond ((constantp symbol)
            (unless (eq (symbol-package symbol) (find-package "KEYWORD"))
@@ -555,7 +557,7 @@ Prints information about OBJECT to STREAM."
            (let ((type (structure-type symbol))
                  (slots (structure-slot-descriptions symbol)))
              (doc-separation "[Structure]")
-             (doc-value (or (documentation symbol 'structure) "") "Documentation:")
+             (doc-value (or (documentation symbol 'structure) "") "Documentation:" t)
              (doc-value type "Type:")
              (doc-value (structure-constructor symbol) "Constructor:")
              (format t "~&Slots:")
@@ -569,7 +571,7 @@ Prints information about OBJECT to STREAM."
     (cond ((or (fboundp (list 'setf symbol))
                (ext:setf-expander symbol))
            (doc-separation "[Setf]")
-           (doc-value (documentation symbol 'setf) "Documentation:"))))
+           (doc-value (documentation symbol 'setf) "Documentation:" t))))
   
   (if called-from-apropos-doc-p
       f
