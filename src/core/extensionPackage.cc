@@ -38,12 +38,33 @@ THE SOFTWARE.
 namespace ext {
 using namespace core;
 
-SYMBOL_SC_(ExtPkg, aSingleExtSymbol);
-SYMBOL_EXPORT_SC_(ExtPkg, compiledFunctionName);
+SYMBOL_EXPORT_SC_(ExtPkg, STARclasp_clang_pathSTAR);
+SYMBOL_EXPORT_SC_(ExtPkg, STARdefault_external_formatSTAR);
+SYMBOL_EXPORT_SC_(ExtPkg, STARinspectorHookSTAR);
+SYMBOL_EXPORT_SC_(ExtPkg, STARinvoke_debugger_hookSTAR);
+SYMBOL_EXPORT_SC_(ExtPkg, STARtoplevel_hookSTAR);
+SYMBOL_EXPORT_SC_(ExtPkg, _PLUS_processErrorOutput_PLUS_);
+SYMBOL_EXPORT_SC_(ExtPkg, _PLUS_processStandardInput_PLUS_);
+SYMBOL_EXPORT_SC_(ExtPkg, _PLUS_processStandardOutput_PLUS_);
+SYMBOL_EXPORT_SC_(ExtPkg, allocaVar);
 SYMBOL_EXPORT_SC_(ExtPkg, ansi_stream);
-
+SYMBOL_EXPORT_SC_(ExtPkg, array_index);
+SYMBOL_EXPORT_SC_(ExtPkg, assume_no_errors);
+SYMBOL_EXPORT_SC_(ExtPkg, check_arguments_type);
+SYMBOL_EXPORT_SC_(ExtPkg, compiledFunctionName);
 SYMBOL_EXPORT_SC_(ExtPkg, constant_form_value);
+SYMBOL_EXPORT_SC_(ExtPkg, decoding_error);
+SYMBOL_EXPORT_SC_(ExtPkg, encoding_error);
+SYMBOL_EXPORT_SC_(ExtPkg, float_infinity_string);
+SYMBOL_EXPORT_SC_(ExtPkg, float_nan_string);
+SYMBOL_EXPORT_SC_(ExtPkg, ignore_signal);
+SYMBOL_EXPORT_SC_(ExtPkg, lambda_block);
+SYMBOL_EXPORT_SC_(ExtPkg, lexicalVar);
+SYMBOL_EXPORT_SC_(ExtPkg, llvmRegisterVar);
+SYMBOL_EXPORT_SC_(ExtPkg, make_encoding);
 SYMBOL_EXPORT_SC_(ExtPkg, parse_macro);
+SYMBOL_EXPORT_SC_(ExtPkg, specialVar);
+SYMBOL_EXPORT_SC_(ExtPkg, unix_signal_received);
 
 #define ARGS_af_maybeQuote "(form)"
 #define DECL_af_maybeQuote ""

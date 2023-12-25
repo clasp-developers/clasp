@@ -28,23 +28,23 @@ THE SOFTWARE.
 namespace core {
 FORWARD(Stream);
 FORWARD(AnsiStream);
+FORWARD(BroadcastStream);
+FORWARD(ConcatenatedStream);
+FORWARD(EchoStream);
 FORWARD(StringStream);
 FORWARD(StringInputStream);
 FORWARD(StringOutputStream);
 FORWARD(SynonymStream);
 FORWARD(TwoWayStream);
-FORWARD(BroadcastStream);
-FORWARD(EchoStream);
 FORWARD(FileStream);
 FORWARD(PosixFileStream);
+FORWARD(CFileStream);
 #ifdef ECL_WINSOCK
 FORWARD(WinsockStream);
 #endif
 #ifdef CLASP_MS_WINDOWS_HOST
 FORWARD(ConsoleStream);
 #endif
-FORWARD(CFileStream);
-FORWARD(ConcatenatedStream);
 
 void clasp_write_string(const string& str, T_sp strm);
 

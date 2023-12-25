@@ -80,15 +80,13 @@ using namespace core;
 
 namespace llvmo {
 
-SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, function);
-SYMBOL_EXPORT_SC_(LlvmoPkg, STARrunTimeExecutionEngineSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARdebugObjectFilesSTAR);
-SYMBOL_EXPORT_SC_(LlvmoPkg, STARdumpObjectFilesSTAR);
-SYMBOL_EXPORT_SC_(KeywordPkg, dumpObjectFiles);
-SYMBOL_EXPORT_SC_(KeywordPkg, debugObjectFiles);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARdefault_code_modelSTAR);
-
-SYMBOL_EXPORT_SC_(CompPkg, thread_local_llvm_context);
+SYMBOL_EXPORT_SC_(LlvmoPkg, STARdumpObjectFilesSTAR);
+SYMBOL_EXPORT_SC_(LlvmoPkg, STARrunTimeExecutionEngineSTAR);
+SYMBOL_EXPORT_SC_(LlvmoPkg, load_bc);
+SYMBOL_EXPORT_SC_(LlvmoPkg, load_ll);
+SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, function);
 
 void redirect_llvm_interface_addSymbol() {
   //	llvm_interface::addSymbol = &addSymbolAsGlobal;

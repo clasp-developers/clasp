@@ -974,7 +974,7 @@ CL_DEFUN bool load_bytecode(T_sp filename, bool verbose, bool print, T_sp extern
   if (strm.nilp())
     return false;
   load_bytecode_stream(gc::As<Stream_sp>(strm));
-  cl__close(strm);
+  stream_close(strm, nil<T_O>());
   return true;
 }
 
