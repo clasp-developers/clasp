@@ -209,7 +209,7 @@ void stream_clear_input(T_sp stream);
 
 claspCharacter stream_write_char(T_sp stream, claspCharacter c);
 bool stream_advance_to_column(T_sp stream, int column);
-void stream_write_string(String_sp stream, T_sp data, cl_index start, cl_index end);
+void stream_write_string(T_sp stream, String_sp data, cl_index start, cl_index end);
 void stream_terpri(T_sp stream);
 bool stream_fresh_line(T_sp stream);
 void stream_clear_output(T_sp stream);

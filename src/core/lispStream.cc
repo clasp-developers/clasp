@@ -401,7 +401,7 @@ CL_DEFUN bool stream_advance_to_column(T_sp stream, int column) {
              : T_sp(eval::funcall(gray::_sym_stream_advance_to_column, stream, clasp_make_fixnum(column))).notnilp();
 }
 
-void stream_write_string(String_sp stream, T_sp data, cl_index start, cl_index end) {
+void stream_write_string(T_sp stream, String_sp data, cl_index start, cl_index end) {
   if (stream.isA<AnsiStream_O>())
     stream.as_unsafe<AnsiStream_O>()->write_string(data, start, end);
   else
@@ -1868,7 +1868,7 @@ T_mv AnsiStream_O::read_line() {
   }
 
   // We've accumulated a line. Copy it into a simple string, release the buffer, and return.
-  String_sp result;
+  T_sp result;
 
   if (base) {
     result = cl__copy_seq(base_buffer);
