@@ -309,7 +309,7 @@ static void create_descriptor(T_sp stream, T_sp direction, int* child, int* pare
       *child = fd[1];
     }
   } else if (cl__streamp(stream)) {
-    *child = (direction == kw::_sym_input) ? stream_input_handle(stream) : stream_output_handle(stream);
+    *child = stream_file_descriptor(stream, (direction == kw::_sym_input) ? StreamDirection::input : StreamDirection::output);
     if (*child >= 0) {
       *child = dup(*child);
     } else {

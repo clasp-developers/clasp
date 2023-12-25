@@ -21,6 +21,7 @@
             %pathname
             %stream-advance-to-column
             %stream-element-type
+            %stream-file-descriptor
             %stream-interactive-p
             %stream-start-line-p
             %truename)
@@ -240,20 +241,11 @@ truename."))
   (:documentation
    "This is like CL:FILE-LENGTH, but for Gray streams."))
 
-(defgeneric stream-file-descriptor (stream &optional direction)
+(defgeneric stream-file-descriptor (stream direction)
   (:documentation
    "Return the file-descriptor underlaying STREAM, or NIL if not
-   available. DIRECTION must be either :INPUT, or :OUTPUT and is
-   supposed to discriminate in case STREAM is a bidirectional
-   stream. DIRECTION is supposed to default to :INPUT.
-
-   An error is signaled if DIRECTION is :INPUT (:OUTPUT), and STREAM
-   is not an input (output) stream. A system-provided :BEFORE method
-   handles this case; user methods do not need to take care of it.
-
-   In case STREAM-FILE-DESCRIPTOR is not implemented for STREAM, an
-   error is signaled. That is, users must add methods to explicitly
-   decline by returning NIL."))
+   available. DIRECTION must be either :INPUT, :OUTPUT, :IO or
+   :PROBE."))
 
 
 ;;;
@@ -812,42 +804,12 @@ truename."))
 
 ;;; FILE-DESCRIPTOR
 
-(defmethod stream-file-descriptor :before (stream &optional (direction :input))
-  (multiple-value-bind (predicate kind)     
-      (case direction
-        (:input  (values 'input-stream-p  "input"))
-        (:output (values 'output-stream-p "output"))
-        (t
-         (error 'simple-type-error
-                :format-control "Not a valid direction, ~S; must be one of ~
-                                 :INPUT or :OUTPUT."
-                :format-arguments (list direction)
-                :datum direction
-                :expected-type '(member :input :output))))
-    (unless (funcall predicate stream)
-      (error 'simple-type-error
-             :format-control "Not an ~A stream, ~S, although ~S ~
-                              was provided as DIRECTION."
-             :format-arguments (list kind stream direction)
-             :datum stream
-             :expected-type `(satisfies ,predicate)))))
+(defmethod stream-file-descriptor (stream direction)
+  (declare (ignore stream direction))
+  nil)
 
-(defmethod stream-file-descriptor (stream &optional direction)
-  (declare (ignore direction))
-  (bug-or-error stream 'stream-file-descriptor))
-
-(defmethod stream-file-descriptor ((stream two-way-stream) &optional (direction
-                                                                      :input))
-  (stream-file-descriptor
-   (case direction
-     (:input  (two-way-stream-input-stream stream))
-     (:output (two-way-stream-output-stream stream)))
-   direction))
-
-(defmethod stream-file-descriptor ((stream file-stream) &optional (direction
-                                                                   :input))
-  (declare (ignore direction))
-  (ext:file-stream-file-descriptor stream))
+(defmethod stream-file-descriptor ((stream ansi-stream) direction)
+  (%stream-file-descriptor direction))
 
 ;;; Setup
 

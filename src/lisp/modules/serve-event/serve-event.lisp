@@ -58,17 +58,9 @@
   "List of all the currently active handlers for file descriptors")
 
 (defun coerce-to-descriptor (stream-or-fd direction)
-  (etypecase stream-or-fd
-    (fixnum stream-or-fd)
-    (file-stream (ext:file-stream-file-descriptor stream-or-fd))
-    (two-way-stream
-     (coerce-to-descriptor
-      (case direction
-        (:input  (two-way-stream-input-stream  stream-or-fd))
-        (:output (two-way-stream-output-stream stream-or-fd)))
-      direction))
-    #+clos-streams
-    (stream (gray::stream-file-descriptor stream-or-fd direction))))
+  (if (typep stream-or-fd 'fixnum)
+      stream-or-fd
+      (gray:stream-file-descriptor stream-or-fd direction)))
 
 ;;; Add a new handler to *descriptor-handlers*.
 (defun add-fd-handler (stream-or-fd direction function)

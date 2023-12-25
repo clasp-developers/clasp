@@ -129,6 +129,10 @@ inline bool operator&(StreamDirection x, StreamDirection y) {
   return static_cast<bool>(static_cast<uint8_t>(x) & static_cast<uint8_t>(y));
 };
 
+inline bool has_direction(StreamDirection is, StreamDirection want) {
+  return (static_cast<uint8_t>(is) & static_cast<uint8_t>(want)) == static_cast<uint8_t>(want);
+};
+
 enum class StreamIfExists : uint8_t {
   nil = 0,
   error = 1,
@@ -257,8 +261,7 @@ T_sp stream_truename(T_sp stream);
 
 // Stream file descriptor functions
 
-int stream_input_handle(T_sp stream);
-int stream_output_handle(T_sp stream);
+int stream_file_descriptor(T_sp stream, StreamDirection direction);
 
 // CL interface function
 
@@ -457,8 +460,7 @@ public:
   virtual T_sp pathname() const;
   virtual T_sp truename() const;
 
-  virtual int input_handle();
-  virtual int output_handle();
+  virtual int file_descriptor(StreamDirection direction) const;
 
   inline void check_open() {
     if (!_open)
@@ -601,9 +603,7 @@ public:
   int set_column(int column) override;
   bool start_line_p() const override;
 
-  int input_handle() override;
-  int output_handle() override;
-
+  int file_descriptor(StreamDirection direction) const override;
 }; // EchoStream class
 
 class StringStream_O : public AnsiStream_O {
@@ -731,8 +731,7 @@ public:
   T_sp pathname() const override;
   T_sp truename() const override;
 
-  int input_handle() override;
-  int output_handle() override;
+  int file_descriptor(StreamDirection direction) const override;
 }; // SynonymStream class
 
 class TwoWayStream_O : public AnsiStream_O {
@@ -789,8 +788,7 @@ public:
   int set_column(int column) override;
   bool start_line_p() const override;
 
-  int input_handle() override;
-  int output_handle() override;
+  int file_descriptor(StreamDirection direction) const override;
 }; // TwoWayStream class
 
 class FileStream_O : public AnsiStream_O {
@@ -914,7 +912,6 @@ public:
                                  int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(),
                                  T_sp tempName = nil<T_O>(), bool created = false);
 
-  int fileDescriptor() const { return this->_file_descriptor; };
   virtual bool has_file_position() const override;
 
   T_sp close(T_sp abort) override;
@@ -935,8 +932,7 @@ public:
   T_sp position() override;
   T_sp set_position(T_sp pos) override;
 
-  int input_handle() override;
-  int output_handle() override;
+  int file_descriptor(StreamDirection direction) const override;
 };
 
 class CFileStream_O : public FileStream_O {
@@ -981,8 +977,7 @@ public:
   T_sp position() override;
   T_sp set_position(T_sp pos) override;
 
-  int input_handle() override;
-  int output_handle() override;
+  int file_descriptor(StreamDirection direction) const override;
 
   void set_buffering_mode(T_sp mode);
 };
@@ -1066,6 +1061,22 @@ template <> struct from_object<core::StreamDirection> {
     }
     core::T_sp type = core::Cons_O::createList(cl::_sym_member, kw::_sym_input, kw::_sym_output, kw::_sym_io, kw::_sym_probe);
     TYPE_ERROR(o, type);
+  }
+};
+
+template <> struct to_object<core::StreamDirection> {
+  typedef core::StreamDirection DeclareType;
+  static core::T_sp convert(DeclareType v) {
+    switch (v) {
+    case core::StreamDirection::input:
+      return kw::_sym_input;
+    case core::StreamDirection::output:
+      return kw::_sym_output;
+    case core::StreamDirection::io:
+      return kw::_sym_io;
+    case core::StreamDirection::probe:
+      return kw::_sym_probe;
+    }
   }
 };
 

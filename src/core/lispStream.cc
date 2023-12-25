@@ -590,16 +590,24 @@ T_sp stream_truename(T_sp stream) {
 
 // Stream file descriptor functions
 
-int stream_input_handle(T_sp stream) { return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->input_handle() : -1; }
+// This function is exposed to CL because it is needed to implement
+// the GRAY:STREAM-FILE-DESCRIPTOR for ansi-stream. The stream
+// argument is guaranteed to be an AnsiStream_sp so recursion is
+// avoided.
+CL_LISPIFY_NAME("gray:%stream-file-descriptor")
+CL_DEFUN int stream_file_descriptor(T_sp stream, core::StreamDirection direction) {
+  if (stream.isA<AnsiStream_O>())
+    return stream.as_unsafe<AnsiStream_O>()->file_descriptor(direction);
 
-int stream_output_handle(T_sp stream) {
-  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->output_handle() : -1;
+  T_sp fd = eval::funcall(gray::_sym_stream_file_descriptor, stream, translate::to_object<StreamDirection>::convert(direction));
+  return fd.nilp() ? -1 : clasp_to_integral<int>(fd);
 }
 
 CL_LAMBDA(s);
 CL_DOCSTRING(R"dx(Returns the file descriptor for a stream)dx");
 CL_DEFUN T_sp ext__file_stream_file_descriptor(T_sp s) {
-  return clasp_make_fixnum(stream_output_p(s) ? stream_output_handle(s) : stream_input_handle(s));
+  return clasp_make_fixnum(stream_output_p(s) ? stream_file_descriptor(s, StreamDirection::output)
+                                              : stream_file_descriptor(s, StreamDirection::input));
 }
 
 // Temporary shim until we can update SLIME.
@@ -2063,9 +2071,7 @@ T_sp AnsiStream_O::truename() const {
 
 int AnsiStream_O::line() const { return _line; };
 
-int AnsiStream_O::input_handle() { return -1; }
-
-int AnsiStream_O::output_handle() { return -1; }
+int AnsiStream_O::file_descriptor(StreamDirection direction) const { return -1; }
 
 /**********************************************************************
  * BROADCAST STREAM
@@ -2442,9 +2448,16 @@ int EchoStream_O::set_column(int column) { return stream_set_column(_output_stre
 
 bool EchoStream_O::start_line_p() const { return stream_start_line_p(_output_stream); }
 
-int EchoStream_O::input_handle() { return stream_input_handle(_input_stream); }
-
-int EchoStream_O::output_handle() { return stream_output_handle(_output_stream); }
+int EchoStream_O::file_descriptor(StreamDirection direction) const {
+  switch (direction) {
+  case StreamDirection::input:
+    return stream_file_descriptor(_input_stream, direction);
+  case StreamDirection::output:
+    return stream_file_descriptor(_output_stream, direction);
+  default:
+    return -1;
+  }
+}
 
 // StringStream_O
 
@@ -2788,9 +2801,7 @@ T_sp SynonymStream_O::pathname() const { return stream_pathname(stream()); };
 
 T_sp SynonymStream_O::truename() const { return stream_truename(stream()); };
 
-int SynonymStream_O::input_handle() { return stream_input_handle(stream()); }
-
-int SynonymStream_O::output_handle() { return stream_output_handle(stream()); }
+int SynonymStream_O::file_descriptor(StreamDirection direction) const { return stream_file_descriptor(stream(), direction); }
 
 /**********************************************************************
  * TWO WAY STREAM
@@ -2907,9 +2918,16 @@ int TwoWayStream_O::set_column(int column) { return stream_set_column(_output_st
 
 bool TwoWayStream_O::start_line_p() const { return stream_start_line_p(_output_stream); }
 
-int TwoWayStream_O::input_handle() { return stream_input_handle(_input_stream); }
-
-int TwoWayStream_O::output_handle() { return stream_output_handle(_output_stream); }
+int TwoWayStream_O::file_descriptor(StreamDirection direction) const {
+  switch (direction) {
+  case StreamDirection::input:
+    return stream_file_descriptor(_input_stream, direction);
+  case StreamDirection::output:
+    return stream_file_descriptor(_output_stream, direction);
+  default:
+    return -1;
+  }
+}
 
 /* Maximum number of bytes required to encode a character.
  * This currently corresponds to (4 + 2) for the ISO-2022-JP-* encodings
@@ -4664,14 +4682,11 @@ T_sp PosixFileStream_O::set_position(T_sp pos) {
   return (disp == (clasp_off_t)-1) ? nil<T_O>() : _lisp->_true();
 }
 
-int PosixFileStream_O::input_handle() { return (_direction & StreamDirection::input) ? _file_descriptor : -1; }
-
-int PosixFileStream_O::output_handle() { return (_direction & StreamDirection::output) ? _file_descriptor : -1; }
-
-bool PosixFileStream_O::has_file_position() const {
-  int fd = fileDescriptor();
-  return clasp_has_file_position(fd);
+int PosixFileStream_O::file_descriptor(StreamDirection direction) const {
+  return has_direction(_direction, direction) ? _file_descriptor : -1;
 }
+
+bool PosixFileStream_O::has_file_position() const { return clasp_has_file_position(_file_descriptor); }
 
 /**********************************************************************
  * C STREAMS
@@ -4902,9 +4917,9 @@ T_sp CFileStream_O::set_position(T_sp pos) {
   return mode ? nil<T_O>() : _lisp->_true();
 }
 
-int CFileStream_O::input_handle() { return (_direction & StreamDirection::input) ? fileno(_file) : -1; }
-
-int CFileStream_O::output_handle() { return (_direction & StreamDirection::output) ? fileno(_file) : -1; }
+int CFileStream_O::file_descriptor(StreamDirection direction) const {
+  return has_direction(_direction, direction) ? fileno(_file) : -1;
+}
 
 T_sp CFileStream_O::close(T_sp abort) {
   if (_open) {

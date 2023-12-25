@@ -38,6 +38,7 @@ namespace gray {
 SYMBOL_EXPORT_SC_(GrayPkg, stream_advance_to_column);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_clear_input);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_clear_output);
+SYMBOL_EXPORT_SC_(GrayPkg, stream_file_descriptor);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_file_length);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_file_position);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_finish_output);
