@@ -476,7 +476,7 @@ CL_DEFUN core::T_mv cl__room(core::Symbol_sp x) {
 
 namespace gctools {
 
-CL_LAMBDA(filename &key executable);
+CL_LAMBDA(filename &key executable test-memory);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Save a snapshot, i.e. enough information to restart a Lisp process
 later in the same state, in the file of the specified name. Only
@@ -486,12 +486,15 @@ The following &KEY arguments are defined:
   :EXECUTABLE
      If true, arrange to combine the Clasp runtime and the snapshot
      to create a standalone executable.  If false (the default), the
-     snapshot will not be executable on its own.)dx")
+     snapshot will not be executable on its own.
+  :TEST-MEMORY
+     Test memory prior to saving snapshot.
+     If NIL then snapshot saving is faster.)dx")
 DOCGROUP(clasp);
-CL_DEFUN void gctools__save_lisp_and_die(core::T_sp filename, core::T_sp executable) {
+CL_DEFUN void gctools__save_lisp_and_die(core::T_sp filename, core::T_sp executable, core::T_sp testMemory) {
 #ifdef USE_PRECISE_GC
   throw(core::SaveLispAndDie(gc::As<core::String_sp>(filename)->get_std_string(), executable.notnilp(),
-                             globals_->_Bundle->_Directories->_LibDir));
+                             globals_->_Bundle->_Directories->_LibDir, true, core::noStomp, testMemory.notnilp() ));
 #else
   SIMPLE_ERROR("save-lisp-and-die only works for precise GC");
 #endif
@@ -511,10 +514,13 @@ The following &KEY arguments are defined:
      snapshot will not be executable on its own.)dx")
 DOCGROUP(clasp);
 CL_DEFUN void gctools__save_lisp_and_continue(core::T_sp filename, core::T_sp executable) {
+#ifdef USE_PRECISE_GC
   core::SaveLispAndDie ee(gc::As<core::String_sp>(filename)->get_std_string(), executable.notnilp(),
                           globals_->_Bundle->_Directories->_LibDir, false );
 #ifdef USE_PRECISE_GC
   snapshotSaveLoad::snapshot_save(ee);
+#else
+  SIMPLE_ERROR("save-lisp-and-continue only works for precise GC");
 #endif
 }
 

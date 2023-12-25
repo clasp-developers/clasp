@@ -887,8 +887,7 @@ struct MemoryTest_t {
 //               This is to test stomp.
 //   undef - this means global_forwardingKind wasn't set yet.
 //
-typedef enum { undef, stomp, noStomp, testStomp } ForwardingEnum;
-ForwardingEnum global_forwardingKind = undef;
+core::ForwardingEnum global_forwardingKind = core::undef;
 
 [[noreturn]] void errorBadForwardingKind() {
   printf("%s:%d:%s The global_forwardingKind wasn't set\n", __FILE__, __LINE__, __FUNCTION__);
@@ -896,7 +895,7 @@ ForwardingEnum global_forwardingKind = undef;
 }
 
 void set_forwarding_pointer(gctools::BaseHeader_s* header, char* new_client, ISLInfo* info) {
-  if (global_forwardingKind == testStomp) {
+  if (global_forwardingKind == core::testStomp) {
     info->_forwarding[header] = (core::T_O*)new_client;
     if ((intptr_t)new_client < 0) {
       printf("%s:%d:%s Writing a bad forwarding pointer %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)new_client);
@@ -906,9 +905,9 @@ void set_forwarding_pointer(gctools::BaseHeader_s* header, char* new_client, ISL
       printf("%s:%d:%s Forwarding pointer written and read don't match\n", __FILE__, __LINE__, __FUNCTION__);
       abort();
     }
-  } else if (global_forwardingKind == noStomp) {
+  } else if (global_forwardingKind == core::noStomp) {
     info->_forwarding[header] = (core::T_O*)new_client;
-  } else if (global_forwardingKind == stomp) {
+  } else if (global_forwardingKind == core::stomp) {
     header->_badge_stamp_wtag_mtag.setFwdPointer(new_client);
   } else {
     errorBadForwardingKind();
@@ -916,7 +915,7 @@ void set_forwarding_pointer(gctools::BaseHeader_s* header, char* new_client, ISL
 }
 
 bool is_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
-  if (global_forwardingKind == testStomp) {
+  if (global_forwardingKind == core::testStomp) {
     auto result = info->_forwarding.find(header);
     bool noStompResult = (result != info->_forwarding.end());
     bool stompResult = header->_badge_stamp_wtag_mtag.fwdP();
@@ -925,11 +924,11 @@ bool is_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
       abort();
     }
     return stompResult;
-  } else if (global_forwardingKind == noStomp) {
+  } else if (global_forwardingKind == core::noStomp) {
     auto result = info->_forwarding.find(header);
     bool noStompResult = (result != info->_forwarding.end());
     return noStompResult;
-  } else if (global_forwardingKind == stomp) {
+  } else if (global_forwardingKind == core::stomp) {
     bool stompResult = header->_badge_stamp_wtag_mtag.fwdP();
     return stompResult;
   } else {
@@ -938,7 +937,7 @@ bool is_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
 }
 
 uintptr_t get_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
-  if (global_forwardingKind == testStomp) {
+  if (global_forwardingKind == core::testStomp) {
     uintptr_t noStompResult = (uintptr_t)info->_forwarding[header];
     uintptr_t stompResult = (uintptr_t)header->_badge_stamp_wtag_mtag.fwdPointer();
     if (noStompResult != stompResult) {
@@ -946,9 +945,9 @@ uintptr_t get_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
       abort();
     }
     return stompResult;
-  } else if (global_forwardingKind == noStomp) {
+  } else if (global_forwardingKind == core::noStomp) {
     return (uintptr_t)info->_forwarding[header];
-  } else if (global_forwardingKind == stomp) {
+  } else if (global_forwardingKind == core::stomp) {
     return (uintptr_t)header->_badge_stamp_wtag_mtag.fwdPointer();
   } else {
     errorBadForwardingKind();
@@ -1022,7 +1021,7 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
            pointer_pool(clientAddress), (void*)client, pointer_pool(client));
     printf("%s:%d:%s       general header %p IS NOT A FORWARDING POINTER - but it must be\n", __FILE__, __LINE__, __FUNCTION__,
            (void*)header);
-    if (global_forwardingKind == noStomp) {
+    if (global_forwardingKind == core::noStomp) {
       printf(" - for noStomp is not key in info->_forwarding[header]\n");
     } else {
       printf(" - *header should be fwd ptr but got %p\n", *(void**)header);
@@ -2778,9 +2777,12 @@ void snapshot_save(core::SaveLispAndDie& data) {
   memory_test(true, NULL, "In preparation for snapshot_save.");
 
   //
-  // For saving we may want to save snapshots and not die - so use noStomp forwarding.
+  // For saving we may want to save snapshots and continue (this is dangerous)
+  //  In that case use noStomp forwarding.
+  //  If we are ok with dying then use stomp.
   //
-  global_forwardingKind = noStomp;
+  global_forwardingKind = data._ForwardingKind;
+  
   core::lisp_write(fmt::format("Updated with noStomp forwarding for snapshot_save\n"));
   //
   // Call Common Lisp code to release things at snapshot-save time
@@ -2909,7 +2911,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
   //
   // For loading we need speed - so use stomp forwarding
   //
-  global_forwardingKind = stomp;
+  global_forwardingKind = core::stomp;
 
   {
     MaybeTimeStartup time1("Overall snapshot load time");

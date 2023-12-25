@@ -193,13 +193,18 @@ public:
   int getExitResult() { return this->_ExitResult; };
 };
 
+typedef enum { undef, stomp, noStomp, testStomp } ForwardingEnum;
+
+
 struct SaveLispAndDie {
   string _FileName;
   bool _Executable;
   string _LibDir;
   bool   _Exit;  // Set to true unless debugging
-  SaveLispAndDie(const std::string& filename, bool executable, const std::string& libDir, bool ep=true)
-      : _FileName(filename), _Executable(executable), _LibDir(libDir), _Exit(ep){};
+  ForwardingEnum _ForwardingKind;
+  bool           _TestMemory;
+  SaveLispAndDie(const std::string& filename, bool executable, const std::string& libDir, bool ep=true, ForwardingEnum fk=noStomp, bool tm=true)
+      : _FileName(filename), _Executable(executable), _LibDir(libDir), _Exit(ep), _ForwardingKind(fk), _TestMemory(tm) {};
 };
 
 /*! To exit the program throw this exception

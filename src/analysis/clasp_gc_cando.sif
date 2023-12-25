@@ -150,11 +150,12 @@
                           "core::SimpleBitVector_O" "core::SimpleVector_int8_t_O" "chem::CDNode_O"
                           "llvmo::ResumeInst_O" "llvmo::Function_O" "llvmo::DIType_O"
                           "chem::AddIonOctree_O" "core::LocalSimpleFunGenerator_O"
-                          "chem::ZMatrixEntry_O" "comp::TagInfo_O" "geom::BoundingCuboid_O"
-                          "core::Readtable_O" "chem::CalculatePositionRelativeToOrigin_O"
-                          "chem::AtomIndexer_O" "chem::ChemInfoMatch_O" "chem::Restraint_O"
-                          "units::Quantity_O" "llvmo::IRBuilder_O" "chem::AtomPdbRec"
-                          "llvmo::ClaspJIT_O" "chem::FFParameter_O" "core::SimpleVector_byte8_t_O"
+                          "kinematics::StubJoint_O" "chem::ZMatrixEntry_O" "comp::TagInfo_O"
+                          "geom::BoundingCuboid_O" "core::Readtable_O"
+                          "chem::CalculatePositionRelativeToOrigin_O" "chem::AtomIndexer_O"
+                          "chem::ChemInfoMatch_O" "chem::Restraint_O" "units::Quantity_O"
+                          "llvmo::IRBuilder_O" "chem::AtomPdbRec" "llvmo::ClaspJIT_O"
+                          "chem::FFParameter_O" "core::SimpleVector_byte8_t_O"
                           "llvmo::DILexicalBlockBase_O" "chem::RigidBodyAtomInfo" "llvmo::MDNode_O"
                           "core::ComplexVector_fixnum_O" "chem::GenericOctree_O"
                           "mp::RecursiveMutex_O" "core::BytecodeAstIf_O" "core::Vaslist_dummy_O"
@@ -1906,12 +1907,64 @@
              :offset-ctype "gctools::smart_ptr<kinematics::Joint_O>"
              :offset-base-ctype "kinematics::XyzJoint_O"
              :layout-offset-field-names ("_Children" "[4]")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "kinematics::XyzJoint_O" :layout-offset-field-names ("_X")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "kinematics::XyzJoint_O" :layout-offset-field-names ("_Y")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "kinematics::XyzJoint_O" :layout-offset-field-names ("_Z")}
+{class-kind :stamp-name "STAMPWTAG_kinematics__StubJoint_O" :stamp-key "kinematics::StubJoint_O"
+            :parent-class "kinematics::XyzJoint_O" :lisp-class-base "kinematics::XyzJoint_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<kinematics::Joint_O>"
+             :offset-base-ctype "kinematics::StubJoint_O" :layout-offset-field-names ("_Parent")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "kinematics::StubJoint_O" :layout-offset-field-names ("_Name")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "kinematics::StubJoint_O"
+             :layout-offset-field-names ("_Id" "._Molecule")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "kinematics::StubJoint_O"
+             :layout-offset-field-names ("_Id" "._Residue")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "kinematics::StubJoint_O"
+             :layout-offset-field-names ("_Id" "._Atom")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "kinematics::StubJoint_O"
+             :layout-offset-field-names ("_PositionIndexX3")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "kinematics::StubJoint_O"
+             :layout-offset-field-names ("_EndPositionIndexX3")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::List_V>"
+             :offset-base-ctype "kinematics::StubJoint_O"
+             :layout-offset-field-names ("_Properties")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "kinematics::StubJoint_O"
+             :layout-offset-field-names ("_DofRefoldIndex")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "kinematics::StubJoint_O"
+             :layout-offset-field-names ("_Orientation")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "kinematics::StubJoint_O"
+             :layout-offset-field-names ("_NumberOfChildren")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<kinematics::Joint_O>"
+             :offset-base-ctype "kinematics::StubJoint_O"
+             :layout-offset-field-names ("_Children" "[0]")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<kinematics::Joint_O>"
+             :offset-base-ctype "kinematics::StubJoint_O"
+             :layout-offset-field-names ("_Children" "[1]")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<kinematics::Joint_O>"
+             :offset-base-ctype "kinematics::StubJoint_O"
+             :layout-offset-field-names ("_Children" "[2]")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<kinematics::Joint_O>"
+             :offset-base-ctype "kinematics::StubJoint_O"
+             :layout-offset-field-names ("_Children" "[3]")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<kinematics::Joint_O>"
+             :offset-base-ctype "kinematics::StubJoint_O"
+             :layout-offset-field-names ("_Children" "[4]")}
 {class-kind :stamp-name "STAMPWTAG_kinematics__BondedJoint_O"
             :stamp-key "kinematics::BondedJoint_O" :parent-class "kinematics::Joint_O"
             :lisp-class-base "kinematics::Joint_O" :root-class "core::T_O" :stamp-wtag 3
