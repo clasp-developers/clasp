@@ -35,20 +35,30 @@ THE SOFTWARE.
 
 namespace comp {
 
-SYMBOL_SC_(CompPkg, aSingleCompilerSymbol);
-SYMBOL_EXPORT_SC_(CompPkg, STARlowLevelTraceSTAR);
-SYMBOL_EXPORT_SC_(CompPkg, STARthe_moduleSTAR);
-SYMBOL_EXPORT_SC_(CompPkg, STARlowLevelTracePrintSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARautocompile_hookSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARbtb_compile_hookSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARcodeWalkerSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARcompile_file_parallelSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARdebug_jitSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARdefault_output_typeSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARforce_startup_external_linkageSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARjit_saved_symbol_infoSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARload_time_value_holder_nameSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARlowLevelTracePrintSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARlowLevelTraceSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARoptimization_levelSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARoptimizeSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARprimitivesSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARsave_module_for_disassembleSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARsaved_module_from_clasp_jitSTAR);
-SYMBOL_EXPORT_SC_(CompPkg, STARcodeWalkerSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARsourceLocationsSTAR);
-SYMBOL_EXPORT_SC_(CompPkg, STARoptimizeSTAR);
-SYMBOL_EXPORT_SC_(CompPkg, STARbtb_compile_hookSTAR);
-SYMBOL_EXPORT_SC_(CompPkg, STARautocompile_hookSTAR);
-SYMBOL_EXPORT_SC_(CompPkg, optimize_module_for_compile);
+SYMBOL_EXPORT_SC_(CompPkg, STARthe_moduleSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARthread_safe_contextSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, compile_quick_module_dump);
+SYMBOL_EXPORT_SC_(CompPkg, optimize_module_for_compile);
+SYMBOL_EXPORT_SC_(CompPkg, thread_local_llvm_context);
+SYMBOL_SC_(CompPkg, aSingleCompilerSymbol);
+
 void initialize_compPackage() {
   list<string> lnicknames = {"CMP"};
   list<string> luse = {"COMMON-LISP"};

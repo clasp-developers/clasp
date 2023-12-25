@@ -599,23 +599,23 @@ CL_DEFUN core::T_sp sockets_internal__ll_makeStreamFromFd(const string& name,   
                                                           core::T_sp elementType,    // #3
                                                           core::T_sp externalFormat) // #4
 {
-  core::StreamMode direction;
+  core::StreamDirection direction;
   switch (streamMode) {
-  case core::clasp_stream_mode_input:
-    direction = core::stream_mode_input;
+  case static_cast<int>(core::StreamDirection::input):
+    direction = core::StreamDirection::input;
     break;
-  case core::clasp_stream_mode_output:
-    direction = core::stream_mode_output;
+  case static_cast<int>(core::StreamDirection::output):
+    direction = core::StreamDirection::output;
     break;
-  case core::clasp_stream_mode_io:
-    direction = core::stream_mode_io;
+  case static_cast<int>(core::StreamDirection::io):
+    direction = core::StreamDirection::io;
     break;
   default: {
     SIMPLE_ERROR("Illegal stream mode {}", streamMode);
   }
   }
-  core::Stream_sp stream = gc::As_unsafe<core::Stream_sp>(
-      core::IOStreamStream_O::make(core::str_create(name), fd, direction, elementType, externalFormat));
+  core::Stream_sp stream =
+      gc::As_unsafe<core::Stream_sp>(core::CFileStream_O::make(core::str_create(name), fd, direction, elementType, externalFormat));
   return stream;
 }
 
@@ -827,13 +827,13 @@ void initialize_sockets_globals() {
   _sym__PLUS_sock_stream_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)SOCK_STREAM));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_clasp_stream_mode_input_PLUS_);
-  _sym__PLUS_clasp_stream_mode_input_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)(core::clasp_stream_mode_input)));
+  _sym__PLUS_clasp_stream_mode_input_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)(core::StreamDirection::input)));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_clasp_stream_mode_output_PLUS_);
-  _sym__PLUS_clasp_stream_mode_output_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)core::clasp_stream_mode_output));
+  _sym__PLUS_clasp_stream_mode_output_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)core::StreamDirection::output));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_clasp_stream_mode_io_PLUS_);
-  _sym__PLUS_clasp_stream_mode_io_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)core::clasp_stream_mode_io));
+  _sym__PLUS_clasp_stream_mode_io_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)core::StreamDirection::io));
 
   SYMBOL_EXPORT_SC_(SocketsPkg, _PLUS_EADDRINUSE_PLUS_);
   _sym__PLUS_EADDRINUSE_PLUS_->defconstant(core::Integer_O::create((gc::Fixnum)EADDRINUSE));

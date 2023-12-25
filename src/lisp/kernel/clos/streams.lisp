@@ -14,6 +14,18 @@
 
 (import 'ext:ansi-stream)
 
+(unexport '(%close
+            %input-stream-p
+            %open-stream-p
+            %output-stream-p
+            %pathname
+            %stream-advance-to-column
+            %stream-element-type
+            %stream-interactive-p
+            %stream-start-line-p
+            %truename)
+          "GRAY")
+
 ;;;
 ;;; This is the generic function interface for CLOS streams.
 ;;;
@@ -264,28 +276,37 @@ truename."))
 
 (let ((clos::*clos-booted* 'clos:map-dependents))
   (defclass fundamental-stream (standard-object stream)
-    ((open-p :initform t :accessor open-stream-p))
+    ((open-p :accessor open-stream-p
+             :initform t ))
     (:documentation "the base class for all CLOS streams")))
 
-(defclass fundamental-input-stream (fundamental-stream) nil)
+(defclass fundamental-input-stream (fundamental-stream)
+  ())
 
-(defclass fundamental-output-stream (fundamental-stream) nil)
+(defclass fundamental-output-stream (fundamental-stream)
+  ())
 
-(defclass fundamental-character-stream (fundamental-stream) nil)
+(defclass fundamental-character-stream (fundamental-stream)
+  ())
 
-(defclass fundamental-binary-stream (fundamental-stream) nil)
+(defclass fundamental-binary-stream (fundamental-stream)
+  ())
 
 (defclass fundamental-character-input-stream
-    (fundamental-input-stream fundamental-character-stream) nil)
+    (fundamental-input-stream fundamental-character-stream)
+  ())
 
 (defclass fundamental-character-output-stream
-    (fundamental-output-stream fundamental-character-stream) nil)
+    (fundamental-output-stream fundamental-character-stream)
+  ())
 
 (defclass fundamental-binary-input-stream
-    (fundamental-input-stream fundamental-binary-stream) nil)
+    (fundamental-input-stream fundamental-binary-stream)
+  ())
 
 (defclass fundamental-binary-output-stream
-    (fundamental-output-stream fundamental-binary-stream) nil)
+    (fundamental-output-stream fundamental-binary-stream)
+  ())
 
 
 ;;;
@@ -299,6 +320,9 @@ truename."))
 
 ;; STREAM-ADVANCE-TO-COLUMN
 
+(defmethod stream-advance-to-column ((stream ansi-stream) column)
+  (%stream-advance-to-column stream column))
+
 (defmethod stream-advance-to-column ((stream fundamental-character-output-stream)
 				     column)
   (let ((current-column (stream-line-column stream)))
@@ -306,7 +330,7 @@ truename."))
       (let ((fill (floor (- column current-column))))
 	(dotimes (i fill)
 	  (stream-write-char stream #\Space)))
-      T)))
+      t)))
 
 
 ;; CLEAR-INPUT
@@ -343,8 +367,9 @@ truename."))
   t)
 
 (defmethod close ((stream ansi-stream) &key abort)
-  ;; To avoid an recursive loop after redefine-cl-symbols - use core:close* here
-  (core:close* stream :abort abort))
+  ;; To avoid an recursive loop after redefine-cl-symbols - use
+  ;; gray:%close here.
+  (%close stream abort))
 
 (defmethod close ((stream t) &key abort)
   (declare (ignore abort))
@@ -358,7 +383,7 @@ truename."))
   'character)
 
 (defmethod stream-element-type ((stream ansi-stream))
-  (core:stream-element-type* stream))
+  (%stream-element-type stream))
 
 (defmethod stream-element-type ((stream t))
   (bug-or-error stream 'stream-element-type))
@@ -413,7 +438,7 @@ truename."))
   t)
 
 (defmethod input-stream-p ((stream ansi-stream))
-  (core:input-stream-p* stream))
+  (%input-stream-p stream))
 
 (defmethod input-stream-p ((stream t))
   (bug-or-error stream 'input-stream-p))
@@ -425,7 +450,7 @@ truename."))
   nil)
 
 (defmethod stream-interactive-p ((stream ansi-stream))
-  (cl:interactive-stream-p stream))
+  (%stream-interactive-p stream))
 
 (defmethod stream-interactive-p ((stream t))
   (bug-or-error stream 'stream-interactive-p))
@@ -433,12 +458,12 @@ truename."))
 ;; PATHNAME
 
 (defmethod pathname (pathspec)
-  (core:pathname* pathspec))
+  (%pathname pathspec))
 
 ;; TRUENAME
 
 (defmethod truename (filespec)
-  (core:truename* filespec))
+  (%truename filespec))
 
 ;; LINE-COLUMN
 
@@ -493,7 +518,7 @@ truename."))
 ;; OPEN-STREAM-P
 
 (defmethod open-stream-p ((stream ansi-stream))
-  (core:open-stream-p* stream))
+  (%open-stream-p stream))
 
 (defmethod open-stream-p ((stream t))
   (bug-or-error stream 'open-stream-p))
@@ -510,7 +535,7 @@ truename."))
   t)
 
 (defmethod output-stream-p ((stream ansi-stream))
-  (core:output-stream-p* stream))
+  (%output-stream-p stream))
 
 (defmethod output-stream-p ((stream t))
   (bug-or-error stream 'output-stream-p))
@@ -525,7 +550,7 @@ truename."))
     char))
 
 (defmethod stream-peek-char ((stream ansi-stream))
-  (cl:peek-char stream))
+  (cl:peek-char stream nil nil :eof))
 
 (defmethod stream-peek-char ((stream t))
   (bug-or-error stream 'stream-peek-char))
@@ -543,7 +568,7 @@ truename."))
 ;; READ-CHAR
 
 (defmethod stream-read-char ((stream ansi-stream))
-  (cl:read-char stream))
+  (cl:read-char stream nil :eof))
 
 (defmethod stream-read-char ((stream t))
   (bug-or-error stream 'stream-read-char))
@@ -636,8 +661,11 @@ truename."))
   (clos-default-read-sequence stream sequence start end))
 
 (defmethod stream-read-sequence ((stream ansi-stream) sequence
-				 &optional (start 0) (end nil))
-  (core:do-read-sequence sequence stream start end))
+				 &optional (start 0) (end (length sequence)))
+  ;; it is safe to call cl:read-sequence because stream_read_sequence
+  ;; does not call the generic gray:stream-read-sequence if the stream
+  ;; is an ansi-stream.
+  (cl:read-sequence sequence stream :start start :end end))
 
 (defmethod stream-read-sequence ((stream t) sequence &optional start end)
   (declare (ignore sequence start end))
@@ -650,7 +678,7 @@ truename."))
   (eql (stream-line-column stream) 0))
 
 (defmethod stream-start-line-p ((stream ansi-stream))
-  (eql (stream-line-column stream) 0))
+  (%stream-start-line-p stream))
 
 (defmethod stream-start-line-p ((stream t))
   (bug-or-error stream 'stream-start-line-p))
@@ -733,8 +761,13 @@ truename."))
                                   &optional (start 0) end)
   (clos-default-write-sequence stream sequence start end))
 
-(defmethod stream-write-sequence ((stream ansi-stream) sequence &optional (start 0) end)
-  (core:do-write-sequence sequence stream start end))
+(defmethod stream-write-sequence ((stream ansi-stream) sequence
+                                  &optional (start 0)
+                                            (end (length sequence)))
+  ;; it is safe to call cl:write-sequence because
+  ;; stream_write_sequence does not call the generic
+  ;; gray:stream-write-sequence if the stream is an ansi-stream.
+  (cl:write-sequence sequence stream :start start :end end))
 
 (defmethod stream-write-sequence ((stream t) sequence &optional start end)
   (declare (ignore sequence start end))
@@ -815,7 +848,6 @@ truename."))
                                                                    :input))
   (declare (ignore direction))
   (ext:file-stream-file-descriptor stream))
-
 
 ;;; Setup
 

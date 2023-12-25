@@ -72,7 +72,7 @@ static void write_array_data(size_t rank, std::vector<size_t> adims, Array_sp ar
       if (subscripts[i] > 0)
         stream_write_char(stream, ' ');
       if (subscripts[i] >= print_length) {
-        writestr_stream("...)", stream);
+        clasp_write_string("...)", stream);
         k = adims[i] - subscripts[i];
         subscripts[i] = 0;
         for (j = i + 1; j < rank; j++)
@@ -195,13 +195,13 @@ std::vector<char> denseWriteTo6Bit(const unsigned char* inputBytes, size_t byteC
 void write_array_readable_dense(T_sp stream, const std::string kind, void* start, void* end) {
   size_t size = ((const char*)end) - ((const char*)start);
   auto result = denseWriteTo6Bit((const unsigned char*)start, size);
-  writestr_stream("#", stream);
+  clasp_write_string("#", stream);
   std::string num = std::to_string(result.size());
-  writestr_stream(num.c_str(), stream);
-  writestr_stream("D", stream);
-  writestr_stream(kind.c_str(), stream);
+  clasp_write_string(num.c_str(), stream);
+  clasp_write_string("D", stream);
+  clasp_write_string(kind.c_str(), stream);
   clasp_write_characters(&result[0], result.size(), stream);
-  writestr_stream(" ", stream);
+  clasp_write_string(" ", stream);
 }
 
 #define DISPATCH(_vtype_, _type_, _code_)                                                                                          \
@@ -245,7 +245,7 @@ static void write_array_ext_readable(Array_sp array, std::vector<size_t> adims, 
     wrote_binary = core__write_dense_specialized_array(stream, array);
   }
   if (!wrote_binary) {
-    writestr_stream("#A(", stream);
+    clasp_write_string("#A(", stream);
 #if 0
     if (array->element_type()==cl::_sym_single_float) {
       printf("%s:%d:%s readable single-float vector\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -298,7 +298,7 @@ static void write_array_basic(Array_sp array, std::vector<size_t> adims, T_sp st
 // Write an array as #<[SIMPLE-]ARRAY ELEMENT-TYPE DIMENSIONS> for *print-array* nil.
 // FIXME: Maybe we should include the address?
 static void write_array_unreadable(Array_sp array, std::vector<size_t> adims, T_sp stream) {
-  writestr_stream("#<", stream);
+  clasp_write_string("#<", stream);
   write_object(array->array_type(), stream); // simple-array or array
   stream_write_char(stream, ' ');
   write_object(array->element_type(), stream);
@@ -339,7 +339,7 @@ void ComplexVector_O::__write__(T_sp stream) const {
 
 void SimpleBitVector_O::__write__(T_sp stream) const {
   if (clasp_print_readably() || clasp_print_array()) {
-    writestr_stream("#*", stream);
+    clasp_write_string("#*", stream);
     for (cl_index ndx = 0; ndx < this->length(); ++ndx)
       if (this->testBit(ndx))
         stream_write_char(stream, '1');
@@ -352,7 +352,7 @@ void SimpleBitVector_O::__write__(T_sp stream) const {
 // FIXME: Duplicates the above
 void BitVectorNs_O::__write__(T_sp stream) const {
   if (clasp_print_readably() || clasp_print_array()) {
-    writestr_stream("#*", stream);
+    clasp_write_string("#*", stream);
     for (cl_index ndx = 0; ndx < this->length(); ++ndx)
       if (this->testBit(ndx))
         stream_write_char(stream, '1');

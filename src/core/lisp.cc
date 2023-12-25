@@ -533,7 +533,7 @@ void Lisp::startupLispEnvironment() {
   this->switchToClassNameHashTable();
   {
     FILE* null_out = fopen("/dev/null", "w");
-    this->_Roots._NullStream = IOStreamStream_O::make(str_create("/dev/null"), null_out, stream_mode_io);
+    this->_Roots._NullStream = CFileStream_O::make(str_create("/dev/null"), null_out, StreamDirection::io);
     this->_Roots._RehashSize = DoubleFloat_O::create(2.0);
     this->_Roots._RehashThreshold = DoubleFloat_O::create(maybeFixRehashThreshold(0.7));
     this->_Roots._ImaginaryUnit = Complex_O::create(0.0, 1.0);
@@ -1307,7 +1307,7 @@ void Lisp::readEvalPrintInteractive() {
   core::clasp_write_string("Clasp (copyright Christian E. Schafmeister 2014-2023)\n"
                            "Low level repl\n");
   this->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(), nil<T_O>(), true, true);
-  clasp_terpri();
+  stream_terpri(cl::_sym_STARterminal_ioSTAR->symbolValue());
 }
 
 CL_LAMBDA();
@@ -2226,7 +2226,7 @@ int Lisp::run() {
     exitCode = ee.getExitResult();
   }
   if (global_options->_ExportedSymbolsSave) {
-    T_sp stream = core::cl__open(core::SimpleBaseString_O::make(global_options->_ExportedSymbolsFilename), kw::_sym_output);
+    T_sp stream = core::cl__open(core::SimpleBaseString_O::make(global_options->_ExportedSymbolsFilename), StreamDirection::output);
     core::core__mangledSymbols(stream);
     cl__close(stream);
   }

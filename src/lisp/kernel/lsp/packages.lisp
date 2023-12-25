@@ -42,7 +42,7 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(fundamental-stream
-            fundamental-input-steam
+            fundamental-input-stream
             fundamental-output-stream
             fundamental-character-stream
             fundamental-binary-stream

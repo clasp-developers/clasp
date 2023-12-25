@@ -41,8 +41,8 @@
                           "core::Path_O" "mp::SharedMutex_O" "chem::BoundingBox_O"
                           "adapt::QDomNode_O" "chem::StructureComparer_O"
                           "asttooling::DerivableASTFrontendAction" "core::InstanceCreator_O"
-                          "core::IOStreamStream_O" "core::Scope_O" "chem::BondLogical_O"
-                          "chem::MoleculeGraph_O" "chem::BondToAtomTest_O" "chem::FFAngleDb_O"
+                          "core::Scope_O" "chem::BondLogical_O" "chem::MoleculeGraph_O"
+                          "chem::BondToAtomTest_O" "chem::FFAngleDb_O"
                           "core::BytecodeDebugLocation_O" "chem::FFTypeRule_O"
                           "llvmo::InsertPoint_O" "core::FunctionDescription_O"
                           "core::ComplexVector_double_O" "core::StrWNs_O"
@@ -173,15 +173,15 @@
                           "llvmo::EngineBuilder_O" "Vector3" "core::ComplexVector_byte64_t_O"
                           "kinematics::Joint_O" "chem::AntechamberBondToAtomTest_O"
                           "core::MDArray_byte32_t_O" "llvmo::SectionedAddress_O"
-                          "core::Character_dummy_O" "comp::LexRefFixup_O" "llvmo::Constant_O"
-                          "chem::EnergyStretch_O" "llvmo::FunctionCallee_O" "chem::ResidueOut"
-                          "core::NativeVector_int_O" "llvmo::DIBasicType_O" "llvmo::DIBuilder_O"
-                          "llvmo::APInt_O" "llvmo::APFloat_O" "core::SimpleMDArrayCharacter_O"
-                          "core::SimpleCharacterString_O" "core::Symbol_O"
-                          "chem::AtomOrBondMatchNode_O" "core::Array_O" "core::MDArray_byte4_t_O"
-                          "llvmo::Argument_O" "chem::FFItorDb_O" "llvmo::IRBuilderBase_O"
-                          "units::Unit_O" "core::Null_O" "chem::RingFinder_O"
-                          "chem::IterateBonds_O" "core::RequiredArgument"
+                          "core::Character_dummy_O" "core::PosixFileStream_O" "comp::LexRefFixup_O"
+                          "llvmo::Constant_O" "chem::EnergyStretch_O" "llvmo::FunctionCallee_O"
+                          "chem::ResidueOut" "core::NativeVector_int_O" "llvmo::DIBasicType_O"
+                          "llvmo::DIBuilder_O" "llvmo::APInt_O" "llvmo::APFloat_O"
+                          "core::SimpleMDArrayCharacter_O" "core::SimpleCharacterString_O"
+                          "core::Symbol_O" "chem::AtomOrBondMatchNode_O" "core::Array_O"
+                          "core::MDArray_byte4_t_O" "llvmo::Argument_O" "chem::FFItorDb_O"
+                          "llvmo::IRBuilderBase_O" "units::Unit_O" "core::Null_O"
+                          "chem::RingFinder_O" "chem::IterateBonds_O" "core::RequiredArgument"
                           "core::SingleDispatchMethod_O" "chem::CDFragment_O" "comp::VarInfo_O"
                           "core::CxxObject_O" "llvmo::ReturnInst_O" "llvmo::FunctionType_O"
                           "clbind::DummyCreator_O" "chem::EnergyDihedralRestraint"
@@ -198,8 +198,8 @@
                           "chem::BeyondThresholdFixedNonbondRestraint" "units::NamedUnit_O"
                           "core::MDArray_double_O" "llvmo::StoreInst_O" "llvmo::DebugLoc_O"
                           "chem::ResidueList_O" "core::WeakPointer_O" "core::DestDynEnv_O"
-                          "core::IOFileStream_O" "chem::EnergyNonbond" "comp::Annotation_O"
-                          "core::DynEnv_O" "core::BytecodeAstBlock_O" "comp::LexSetFixup_O"
+                          "chem::EnergyNonbond" "comp::Annotation_O" "core::DynEnv_O"
+                          "core::BytecodeAstBlock_O" "comp::LexSetFixup_O"
                           "core::SimpleMDArray_byte8_t_O" "core::UnwindProtectDynEnv_O"
                           "comp::SymbolMacroVarInfo_O" "chem::VirtualSphere_O"
                           "chem::ProperTorsion_O" "chem::IterateResidues_O" "comp::LexicalInfo_O"
@@ -242,7 +242,7 @@
                           "chem::StepReport_O" "geom::Color_O" "chem::FFVdw_O"
                           "core::ComplexVector_byte4_t_O" "asttooling::SourceLocation_O"
                           "core::LogicalPathname_O" "llvmo::TargetSubtargetInfo_O"
-                          "core::SimpleVector_double_O" "chem::Root_O"
+                          "core::SimpleVector_double_O" "chem::Root_O" "core::CFileStream_O"
                           "core::SimpleMDArray_byte32_t_O" "core::Bignum_O"
                           "llvmo::LLVMTargetMachine_O" "core::ClassHolder_O"
                           "chem::SketchFunction_O" "core::ComplexVector_byte32_t_O"
@@ -10196,133 +10196,132 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::FileStream_O"
              :layout-offset-field-names ("_element_type")}
-{class-kind :stamp-name "STAMPWTAG_core__IOFileStream_O" :stamp-key "core::IOFileStream_O"
+{class-kind :stamp-name "STAMPWTAG_core__CFileStream_O" :stamp-key "core::CFileStream_O"
             :parent-class "core::FileStream_O" :lisp-class-base "core::FileStream_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_open")}
+             :offset-base-ctype "core::CFileStream_O" :layout-offset-field-names ("_open")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_flags")}
+             :offset-base-ctype "core::CFileStream_O" :layout-offset-field-names ("_flags")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_column")}
+             :offset-base-ctype "core::CFileStream_O" :layout-offset-field-names ("_column")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_line")}
+             :offset-base-ctype "core::CFileStream_O" :layout-offset-field-names ("_line")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::IOFileStream_O"
+             :offset-base-ctype "core::CFileStream_O"
              :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
 {fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::IOFileStream_O"
+             :offset-base-ctype "core::CFileStream_O"
              :layout-offset-field-names ("_input_cursor" "._line_number")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
-             :offset-base-ctype "core::IOFileStream_O"
+             :offset-base-ctype "core::CFileStream_O"
              :layout-offset-field-names ("_input_cursor" "._column")}
 {fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::IOFileStream_O"
+             :offset-base-ctype "core::CFileStream_O"
              :layout-offset-field-names ("_input_cursor" "._prev_line_number")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
-             :offset-base-ctype "core::IOFileStream_O"
+             :offset-base-ctype "core::CFileStream_O"
              :layout-offset-field-names ("_input_cursor" "._prev_column")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_byte_size")}
+             :offset-base-ctype "core::CFileStream_O" :layout-offset-field-names ("_byte_size")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::List_V>"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_byte_stack")}
+             :offset-base-ctype "core::CFileStream_O" :layout-offset-field-names ("_byte_stack")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_format_table")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_eof_char")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_last_char")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_last_op")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("_external_format")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_filename")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("_temp_filename")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_created")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_format")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_element_type")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOFileStream_O"
-             :layout-offset-field-names ("_file_descriptor")}
-{class-kind :stamp-name "STAMPWTAG_core__IOStreamStream_O" :stamp-key "core::IOStreamStream_O"
-            :parent-class "core::FileStream_O" :lisp-class-base "core::FileStream_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_open")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_column")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_line")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("_input_cursor" "._line_number")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("_input_cursor" "._column")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_line_number")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
-             :offset-base-ctype "core::IOStreamStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_column")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_byte_size")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_byte_stack")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::IOStreamStream_O"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::CFileStream_O"
              :layout-offset-field-names ("_format_table")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_eof_char")}
+             :offset-base-ctype "core::CFileStream_O" :layout-offset-field-names ("_eof_char")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_last_char")}
+             :offset-base-ctype "core::CFileStream_O" :layout-offset-field-names ("_last_char")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_last_op")}
+             :offset-base-ctype "core::CFileStream_O" :layout-offset-field-names ("_last_op")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::CFileStream_O"
+             :layout-offset-field-names ("_external_format")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::CFileStream_O"
+             :layout-offset-field-names ("_filename")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::CFileStream_O"
+             :layout-offset-field-names ("_temp_filename")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "core::CFileStream_O" :layout-offset-field-names ("_created")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::CFileStream_O"
+             :layout-offset-field-names ("_format")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::CFileStream_O"
+             :layout-offset-field-names ("_element_type")}
+{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
+             :offset-base-ctype "core::CFileStream_O" :layout-offset-field-names ("_file")}
+{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
+             :offset-base-ctype "core::CFileStream_O" :layout-offset-field-names ("_buffer")}
+{class-kind :stamp-name "STAMPWTAG_core__PosixFileStream_O" :stamp-key "core::PosixFileStream_O"
+            :parent-class "core::FileStream_O" :lisp-class-base "core::FileStream_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "core::PosixFileStream_O" :layout-offset-field-names ("_open")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::PosixFileStream_O" :layout-offset-field-names ("_flags")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::PosixFileStream_O" :layout-offset-field-names ("_column")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::PosixFileStream_O" :layout-offset-field-names ("_line")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "core::PosixFileStream_O"
+             :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
+{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
+             :offset-base-ctype "core::PosixFileStream_O"
+             :layout-offset-field-names ("_input_cursor" "._line_number")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::PosixFileStream_O"
+             :layout-offset-field-names ("_input_cursor" "._column")}
+{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
+             :offset-base-ctype "core::PosixFileStream_O"
+             :layout-offset-field-names ("_input_cursor" "._prev_line_number")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::PosixFileStream_O"
+             :layout-offset-field-names ("_input_cursor" "._prev_column")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::PosixFileStream_O" :layout-offset-field-names ("_byte_size")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::List_V>"
+             :offset-base-ctype "core::PosixFileStream_O"
+             :layout-offset-field-names ("_byte_stack")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::IOStreamStream_O"
+             :offset-base-ctype "core::PosixFileStream_O"
+             :layout-offset-field-names ("_format_table")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::PosixFileStream_O" :layout-offset-field-names ("_eof_char")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::PosixFileStream_O" :layout-offset-field-names ("_last_char")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::PosixFileStream_O" :layout-offset-field-names ("_last_op")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::PosixFileStream_O"
              :layout-offset-field-names ("_external_format")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_filename")}
+             :offset-base-ctype "core::PosixFileStream_O" :layout-offset-field-names ("_filename")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::IOStreamStream_O"
+             :offset-base-ctype "core::PosixFileStream_O"
              :layout-offset-field-names ("_temp_filename")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_created")}
+             :offset-base-ctype "core::PosixFileStream_O" :layout-offset-field-names ("_created")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_format")}
+             :offset-base-ctype "core::PosixFileStream_O" :layout-offset-field-names ("_format")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::IOStreamStream_O"
+             :offset-base-ctype "core::PosixFileStream_O"
              :layout-offset-field-names ("_element_type")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_file")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_buffer")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::PosixFileStream_O"
+             :layout-offset-field-names ("_file_descriptor")}
 {class-kind :stamp-name "STAMPWTAG_core__BroadcastStream_O" :stamp-key "core::BroadcastStream_O"
             :parent-class "core::AnsiStream_O" :lisp-class-base "core::AnsiStream_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
