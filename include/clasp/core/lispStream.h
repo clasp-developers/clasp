@@ -212,7 +212,7 @@ void stream_clear_input(T_sp stream);
 // Character output functions
 
 claspCharacter stream_write_char(T_sp stream, claspCharacter c);
-bool stream_advance_to_column(T_sp stream, uint column);
+bool stream_advance_to_column(T_sp stream, T_sp column);
 void stream_write_string(T_sp stream, String_sp data, cl_index start, cl_index end);
 void stream_terpri(T_sp stream);
 bool stream_fresh_line(T_sp stream);
@@ -420,7 +420,7 @@ public:
   virtual void clear_input();
 
   virtual claspCharacter write_char(claspCharacter c);
-  virtual bool advance_to_column(uint column);
+  virtual bool advance_to_column(T_sp column);
   virtual void write_string(String_sp data, cl_index start, cl_index end);
   virtual void terpri();
   virtual bool fresh_line();
@@ -499,7 +499,10 @@ public:
   void write_byte(T_sp c) override;
 
   claspCharacter write_char(claspCharacter c) override;
-  bool advance_to_column(uint column) override;
+  bool advance_to_column(T_sp column) override;
+  void write_string(String_sp data, cl_index start, cl_index end) override;
+  void terpri() override;
+  bool fresh_line() override;
   void clear_output() override;
   void force_output() override;
   void finish_output() override;
@@ -519,6 +522,7 @@ public:
   T_sp output_column() const override;
   T_sp set_output_column(T_sp column) override;
   bool start_line_p() const override;
+  T_sp output_line() const override;
 }; // BroadcastStream class
 
 class ConcatenatedStream_O : public AnsiStream_O {
@@ -587,21 +591,28 @@ public:
   void clear_input() override;
 
   claspCharacter write_char(claspCharacter c) override;
-  bool advance_to_column(uint column) override;
+  bool advance_to_column(T_sp column) override;
+  void write_string(String_sp data, cl_index start, cl_index end) override;
+  void terpri() override;
+  bool fresh_line() override;
   void clear_output() override;
   void force_output() override;
   void finish_output() override;
+
+  void write_sequence(T_sp data, cl_index start, cl_index end) override;
 
   bool input_p() const override;
   bool output_p() const override;
 
   T_sp element_type() const override;
+  T_sp external_format() const override;
 
   T_sp position() override;
 
   T_sp output_column() const override;
   T_sp set_output_column(T_sp column) override;
   bool start_line_p() const override;
+  T_sp output_line() const override;
 
   T_sp input_column() const override;
   T_sp input_line() const override;
@@ -696,39 +707,43 @@ public:
   void write_byte(T_sp c) override;
 
   claspCharacter read_char() override;
-  claspCharacter read_char_no_hang() override;
-  claspCharacter write_char(claspCharacter c) override;
   void unread_char(claspCharacter c) override;
+  claspCharacter read_char_no_hang() override;
   claspCharacter peek_char() override;
-
-  T_mv read_line() override;
-
-  cl_index read_sequence(T_sp data, cl_index start, cl_index n) override;
-  void write_sequence(T_sp data, cl_index start, cl_index n) override;
-
   ListenResult listen() override;
+  T_mv read_line() override;
   void clear_input() override;
 
-  bool advance_to_column(uint column) override;
+  claspCharacter write_char(claspCharacter c) override;
+  bool advance_to_column(T_sp column) override;
+  void write_string(String_sp data, cl_index start, cl_index end) override;
+  void terpri() override;
+  bool fresh_line() override;
   void clear_output() override;
   void force_output() override;
   void finish_output() override;
+
+  cl_index read_sequence(T_sp data, cl_index start, cl_index n) override;
+  void write_sequence(T_sp data, cl_index start, cl_index n) override;
 
   bool input_p() const override;
   bool output_p() const override;
   bool interactive_p() const override;
 
   T_sp element_type() const override;
+  T_sp set_element_type(T_sp type) override;
   T_sp external_format() const override;
   T_sp set_external_format(T_sp format) override;
 
   T_sp length() override;
   T_sp position() override;
   T_sp set_position(T_sp pos) override;
+  T_sp string_length(T_sp string) override;
 
   T_sp output_column() const override;
   T_sp set_output_column(T_sp column) override;
   bool start_line_p() const override;
+  T_sp output_line() const override;
 
   T_sp input_column() const override;
   T_sp input_line() const override;
@@ -773,7 +788,10 @@ public:
   void clear_input() override;
 
   claspCharacter write_char(claspCharacter c) override;
-  bool advance_to_column(uint column) override;
+  bool advance_to_column(T_sp column) override;
+  void write_string(String_sp data, cl_index start, cl_index end) override;
+  void terpri() override;
+  bool fresh_line() override;
   void clear_output() override;
   void force_output() override;
   void finish_output() override;
@@ -786,12 +804,14 @@ public:
   bool interactive_p() const override;
 
   T_sp element_type() const override;
+  T_sp external_format() const override;
 
   T_sp position() override;
 
   T_sp output_column() const override;
   T_sp set_output_column(T_sp column) override;
   bool start_line_p() const override;
+  T_sp output_line() const override;
 
   T_sp input_column() const override;
   T_sp input_line() const override;

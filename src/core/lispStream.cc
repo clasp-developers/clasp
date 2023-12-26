@@ -395,7 +395,7 @@ claspCharacter stream_write_char(T_sp stream, claspCharacter c) {
 // argument is guaranteed to be an AnsiStream_sp so recursion is
 // avoided.
 CL_LISPIFY_NAME("gray:%stream-advance-to-column")
-CL_DEFUN bool stream_advance_to_column(T_sp stream, uint column) {
+CL_DEFUN bool stream_advance_to_column(T_sp stream, T_sp column) {
   return stream.isA<AnsiStream_O>()
              ? stream.as_unsafe<AnsiStream_O>()->advance_to_column(column)
              : T_sp(eval::funcall(gray::_sym_stream_advance_to_column, stream, clasp_make_fixnum(column))).notnilp();
@@ -1886,8 +1886,13 @@ claspCharacter AnsiStream_O::write_char(claspCharacter c) {
   return EOF;
 }
 
-bool AnsiStream_O::advance_to_column(uint col) {
-  while (_output_cursor.column() < col)
+bool AnsiStream_O::advance_to_column(T_sp col) {
+  if (!gc::IsA<Real_sp>(col))
+    return false;
+
+  uint _col = clasp_to_integral<uint>(clasp_floor1(gc::As_unsafe<Real_sp>(col)));
+
+  while (_output_cursor.column() < _col)
     write_char(' ');
 
   return true;
@@ -2127,6 +2132,26 @@ void BroadcastStream_O::write_sequence(T_sp sequence, cl_index start, cl_index e
   }
 }
 
+void BroadcastStream_O::write_string(String_sp data, cl_index start, cl_index end) {
+  for (T_sp l = _streams; !l.nilp(); l = oCdr(l)) {
+    stream_write_string(oCar(l), data, start, end);
+  }
+}
+
+void BroadcastStream_O::terpri() {
+  for (T_sp l = _streams; !l.nilp(); l = oCdr(l)) {
+    stream_terpri(oCar(l));
+  }
+}
+
+bool BroadcastStream_O::fresh_line() {
+  bool result = false;
+  for (T_sp l = _streams; !l.nilp(); l = oCdr(l)) {
+    result = stream_fresh_line(oCar(l));
+  }
+  return result;
+}
+
 void BroadcastStream_O::clear_output() {
   for (T_sp l = _streams; !l.nilp(); l = oCdr(l)) {
     stream_clear_output(oCar(l));
@@ -2181,7 +2206,9 @@ T_sp BroadcastStream_O::set_output_column(T_sp column) {
 
 bool BroadcastStream_O::start_line_p() const { return _streams.nilp() || stream_start_line_p(last_stream()); }
 
-bool BroadcastStream_O::advance_to_column(uint column) {
+T_sp BroadcastStream_O::output_line() const { return _streams.nilp() ? nil<T_O>() : stream_output_line(last_stream()); }
+
+bool BroadcastStream_O::advance_to_column(T_sp column) {
   bool result = true;
   for (T_sp l = _streams; !l.nilp(); l = oCdr(l)) {
     result = stream_advance_to_column(oCar(l), column);
@@ -2436,7 +2463,15 @@ void EchoStream_O::clear_input() { stream_clear_input(_input_stream); }
 
 claspCharacter EchoStream_O::write_char(claspCharacter c) { return stream_write_char(_output_stream, c); }
 
-bool EchoStream_O::advance_to_column(uint column) { return stream_advance_to_column(_output_stream, column); }
+bool EchoStream_O::advance_to_column(T_sp column) { return stream_advance_to_column(_output_stream, column); }
+
+void EchoStream_O::write_string(String_sp data, cl_index start, cl_index end) {
+  stream_write_string(_output_stream, data, start, end);
+}
+
+void EchoStream_O::terpri() { stream_terpri(_output_stream); }
+
+bool EchoStream_O::fresh_line() { return stream_fresh_line(_output_stream); }
 
 void EchoStream_O::clear_output() { stream_clear_output(_output_stream); }
 
@@ -2444,11 +2479,17 @@ void EchoStream_O::force_output() { stream_force_output(_output_stream); }
 
 void EchoStream_O::finish_output() { stream_finish_output(_output_stream); }
 
+void EchoStream_O::write_sequence(T_sp data, cl_index start, cl_index end) {
+  stream_write_sequence(_output_stream, data, start, end);
+}
+
 bool EchoStream_O::input_p() const { return true; }
 
 bool EchoStream_O::output_p() const { return true; }
 
 T_sp EchoStream_O::element_type() const { return stream_element_type(_input_stream); }
+
+T_sp EchoStream_O::external_format() const { return stream_external_format(_input_stream); }
 
 T_sp EchoStream_O::position() { return nil<T_O>(); }
 
@@ -2457,6 +2498,8 @@ T_sp EchoStream_O::output_column() const { return stream_output_column(_output_s
 T_sp EchoStream_O::set_output_column(T_sp column) { return stream_set_output_column(_output_stream, column); }
 
 bool EchoStream_O::start_line_p() const { return stream_start_line_p(_output_stream); }
+
+T_sp EchoStream_O::output_line() const { return stream_output_line(_output_stream); }
 
 T_sp EchoStream_O::input_column() const { return stream_input_column(_input_stream); }
 
@@ -2772,7 +2815,15 @@ void SynonymStream_O::clear_input() { stream_clear_input(stream()); }
 
 claspCharacter SynonymStream_O::write_char(claspCharacter c) { return stream_write_char(stream(), c); }
 
-bool SynonymStream_O::advance_to_column(uint column) { return stream_advance_to_column(stream(), column); }
+bool SynonymStream_O::advance_to_column(T_sp column) { return stream_advance_to_column(stream(), column); }
+
+void SynonymStream_O::write_string(String_sp data, cl_index start, cl_index end) {
+  stream_write_string(stream(), data, start, end);
+}
+
+void SynonymStream_O::terpri() { stream_terpri(stream()); }
+
+bool SynonymStream_O::fresh_line() { return stream_fresh_line(stream()); }
 
 void SynonymStream_O::clear_output() { stream_clear_output(stream()); }
 
@@ -2794,6 +2845,8 @@ bool SynonymStream_O::interactive_p() const { return stream_interactive_p(stream
 
 T_sp SynonymStream_O::element_type() const { return stream_element_type(stream()); }
 
+T_sp SynonymStream_O::set_element_type(T_sp type) { return stream_set_element_type(stream(), type); }
+
 T_sp SynonymStream_O::external_format() const { return stream_external_format(stream()); }
 
 T_sp SynonymStream_O::set_external_format(T_sp format) { return stream_set_external_format(stream(), format); }
@@ -2804,11 +2857,15 @@ T_sp SynonymStream_O::position() { return stream_position(stream()); }
 
 T_sp SynonymStream_O::set_position(T_sp pos) { return stream_set_position(stream(), pos); }
 
+T_sp SynonymStream_O::string_length(T_sp string) { return stream_string_length(stream(), string); }
+
 T_sp SynonymStream_O::output_column() const { return stream_output_column(stream()); }
 
 T_sp SynonymStream_O::set_output_column(T_sp column) { return stream_set_output_column(stream(), column); }
 
 bool SynonymStream_O::start_line_p() const { return stream_start_line_p(stream()); }
+
+T_sp SynonymStream_O::output_line() const { return stream_output_line(stream()); }
 
 T_sp SynonymStream_O::input_column() const { return stream_input_column(stream()); }
 
@@ -2903,7 +2960,15 @@ void TwoWayStream_O::clear_input() { stream_clear_input(_input_stream); }
 
 claspCharacter TwoWayStream_O::write_char(claspCharacter c) { return stream_write_char(_output_stream, c); }
 
-bool TwoWayStream_O::advance_to_column(uint column) { return stream_advance_to_column(_output_stream, column); }
+bool TwoWayStream_O::advance_to_column(T_sp column) { return stream_advance_to_column(_output_stream, column); }
+
+void TwoWayStream_O::write_string(String_sp data, cl_index start, cl_index end) {
+  stream_write_string(_output_stream, data, start, end);
+}
+
+void TwoWayStream_O::terpri() { stream_terpri(_output_stream); }
+
+bool TwoWayStream_O::fresh_line() { return stream_fresh_line(_output_stream); }
 
 void TwoWayStream_O::clear_output() { stream_clear_output(_output_stream); }
 
@@ -2927,6 +2992,8 @@ bool TwoWayStream_O::interactive_p() const { return stream_interactive_p(_input_
 
 T_sp TwoWayStream_O::element_type() const { return stream_element_type(_input_stream); }
 
+T_sp TwoWayStream_O::external_format() const { return stream_external_format(_input_stream); }
+
 T_sp TwoWayStream_O::position() { return nil<T_O>(); }
 
 T_sp TwoWayStream_O::output_column() const { return stream_output_column(_output_stream); }
@@ -2934,6 +3001,8 @@ T_sp TwoWayStream_O::output_column() const { return stream_output_column(_output
 T_sp TwoWayStream_O::set_output_column(T_sp column) { return stream_set_output_column(_output_stream, column); }
 
 bool TwoWayStream_O::start_line_p() const { return stream_start_line_p(_output_stream); }
+
+T_sp TwoWayStream_O::output_line() const { return stream_output_line(_output_stream); }
 
 T_sp TwoWayStream_O::input_column() const { return stream_input_column(_input_stream); }
 
