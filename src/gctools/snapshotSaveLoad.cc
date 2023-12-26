@@ -1634,7 +1634,7 @@ struct copy_progress {
     if (delta > this->_next_progress_tic) {
       this->_next_progress_tic += this->_inc;
       core::lisp_write(
-          fmt::format("\rCopy memory to snapshot buffer {:6.2f} done     ", (100.0 * (float)delta / (float)this->_size)));
+          fmt::format("Copy memory to snapshot buffer {:6.2f} done\n", (100.0 * (float)delta / (float)this->_size)));
     }
   }
 };
@@ -1975,7 +1975,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
     size_t hitBadPointers = 0;
     for (ssize_t ii = this->_Library._GroupedPointers.size() - 1; ii >= 0; --ii) {
       if (ii % 1000 == 0 && ii > 0) {
-        core::lisp_write(fmt::format("\r{} remaining pointers to dladdr    ", ii));
+        core::lisp_write(fmt::format("{:>5} remaining pointers to dladdr\n", ii));
       }
       uintptr_t address = this->_Library._GroupedPointers[ii]._address;
       std::string saveName("");
@@ -1990,7 +1990,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
         this->_Library._SymbolBuffer.push_back('\0');
       }
     }
-    core::lisp_write(fmt::format("\rAll pointers passed through dladdr    \n"));
+    core::lisp_write(fmt::format("All pointers passed through dladdr\n"));
     if (hitBadPointers) {
       printf("There were %lu bad pointers - we need to figure out how to get this to zero\n", hitBadPointers);
       abort();
