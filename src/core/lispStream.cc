@@ -555,8 +555,8 @@ CL_DEFUN T_sp stream_output_column(T_sp stream) {
                                     : eval::funcall(gray::_sym_stream_line_column, stream);
 }
 
-T_sp stream_set_column(T_sp stream, T_sp column) {
-  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->set_column(column) : column;
+T_sp stream_set_output_column(T_sp stream, T_sp column) {
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->set_output_column(column) : column;
 }
 
 // This function is exposed to CL because it is needed to implement
@@ -579,7 +579,7 @@ CL_DEFUN T_sp stream_output_line(T_sp stream) {
 }
 
 uint stream_output_column_as_uint(T_sp stream) {
-  T_sp column = stream_output_line(stream);
+  T_sp column = stream_output_column(stream);
   return gc::IsA<Real_sp>(column) ? clasp_to_integral<uint>(clasp_floor1(gc::As_unsafe<Real_sp>(column))) : 0;
 }
 
@@ -609,7 +609,7 @@ CL_DEFUN T_sp stream_input_line(T_sp stream) {
 }
 
 uint stream_input_column_as_uint(T_sp stream) {
-  T_sp column = stream_input_line(stream);
+  T_sp column = stream_input_column(stream);
   return gc::IsA<Real_sp>(column) ? clasp_to_integral<uint>(clasp_floor1(gc::As_unsafe<Real_sp>(column))) : 0;
 }
 
@@ -1272,7 +1272,7 @@ CL_DEFUN uint core__file_column(T_sp strm) { return stream_output_column_as_uint
 CL_LISPIFY_NAME("core:file-column");
 CL_DOCSTRING("Set the column of the stream is that is meaningful for the stream.");
 CL_DEFUN_SETF T_sp core__setf_file_column(T_sp column, T_sp strm) {
-  return stream_set_column(coerce::outputStreamDesignator(strm), column);
+  return stream_set_output_column(coerce::outputStreamDesignator(strm), column);
 };
 
 CL_LAMBDA(stream);
@@ -2044,7 +2044,7 @@ T_sp AnsiStream_O::string_length(T_sp string) {
 
 T_sp AnsiStream_O::output_column() const { return clasp_make_fixnum(_output_cursor.column()); }
 
-T_sp AnsiStream_O::set_column(T_sp column) {
+T_sp AnsiStream_O::set_output_column(T_sp column) {
   if (gc::IsA<Real_sp>(column))
     _output_cursor._current.first = clasp_to_integral<uint>(clasp_floor1(gc::As_unsafe<Real_sp>(column)));
 
@@ -2171,10 +2171,10 @@ T_sp BroadcastStream_O::string_length(T_sp string) {
 
 T_sp BroadcastStream_O::output_column() const { return _streams.nilp() ? nil<T_O>() : stream_output_column(last_stream()); }
 
-T_sp BroadcastStream_O::set_column(T_sp column) {
+T_sp BroadcastStream_O::set_output_column(T_sp column) {
   T_sp result = column;
   for (T_sp l = _streams; !l.nilp(); l = oCdr(l)) {
-    result = stream_set_column(oCar(l), column);
+    result = stream_set_output_column(oCar(l), column);
   }
   return result;
 }
@@ -2454,7 +2454,7 @@ T_sp EchoStream_O::position() { return nil<T_O>(); }
 
 T_sp EchoStream_O::output_column() const { return stream_output_column(_output_stream); }
 
-T_sp EchoStream_O::set_column(T_sp column) { return stream_set_column(_output_stream, column); }
+T_sp EchoStream_O::set_output_column(T_sp column) { return stream_set_output_column(_output_stream, column); }
 
 bool EchoStream_O::start_line_p() const { return stream_start_line_p(_output_stream); }
 
@@ -2806,7 +2806,7 @@ T_sp SynonymStream_O::set_position(T_sp pos) { return stream_set_position(stream
 
 T_sp SynonymStream_O::output_column() const { return stream_output_column(stream()); }
 
-T_sp SynonymStream_O::set_column(T_sp column) { return stream_set_column(stream(), column); }
+T_sp SynonymStream_O::set_output_column(T_sp column) { return stream_set_output_column(stream(), column); }
 
 bool SynonymStream_O::start_line_p() const { return stream_start_line_p(stream()); }
 
@@ -2931,7 +2931,7 @@ T_sp TwoWayStream_O::position() { return nil<T_O>(); }
 
 T_sp TwoWayStream_O::output_column() const { return stream_output_column(_output_stream); }
 
-T_sp TwoWayStream_O::set_column(T_sp column) { return stream_set_column(_output_stream, column); }
+T_sp TwoWayStream_O::set_output_column(T_sp column) { return stream_set_output_column(_output_stream, column); }
 
 bool TwoWayStream_O::start_line_p() const { return stream_start_line_p(_output_stream); }
 
