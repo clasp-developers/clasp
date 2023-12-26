@@ -212,7 +212,7 @@ void stream_clear_input(T_sp stream);
 // Character output functions
 
 claspCharacter stream_write_char(T_sp stream, claspCharacter c);
-bool stream_advance_to_column(T_sp stream, int column);
+bool stream_advance_to_column(T_sp stream, uint column);
 void stream_write_string(T_sp stream, String_sp data, cl_index start, cl_index end);
 void stream_terpri(T_sp stream);
 bool stream_fresh_line(T_sp stream);
@@ -249,10 +249,21 @@ T_sp stream_string_length(T_sp stream, T_sp string);
 
 // Stream column and line functions
 
-int stream_column(T_sp stream);
-int stream_set_column(T_sp stream, int column);
+T_sp stream_output_column(T_sp stream);
+T_sp stream_set_column(T_sp stream, T_sp column);
 bool stream_start_line_p(T_sp stream);
-int stream_line(T_sp stream);
+T_sp stream_line(T_sp stream);
+
+uint stream_output_column_as_uint(T_sp stream);
+uint stream_output_line_as_uint(T_sp stream);
+
+// Stream input tracking functions
+
+T_sp stream_input_column(T_sp stream);
+T_sp stream_input_line(T_sp stream);
+
+uint stream_input_column_as_uint(T_sp stream);
+uint stream_input_line_as_uint(T_sp stream);
 
 // Stream pathname functions
 
@@ -351,36 +362,21 @@ inline void check_output_stream(T_sp stream) {
 
 class StreamCursor {
 public:
-  /*! Tell that _LineNumber/_Column mean something */
-  bool _cursor_is_valid;
-  /*! Keep track of line number and column - if not valid return 0 */
-  LongLongInt _line_number;
-  /*! Keep track of column - if not valid return 0 */
-  uint _column;
-  LongLongInt _prev_line_number;
-  /*! Keep track of column - if not valid return 0 */
-  uint _prev_column;
+  std::pair<uint, uint> _previous, _current;
 
-public:
-  StreamCursor() : _cursor_is_valid(true), _line_number(1), _column(0){};
+  StreamCursor() : _previous(0, 1), _current(0, 1) {}
 
-public:
-  void advanceLineNumber(T_sp strm, claspCharacter c, int num = 1);
-  void advanceColumn(T_sp strm, claspCharacter c, int num = 1);
-  void invalidate() { this->_cursor_is_valid = false; };
-  void advanceForChar(T_sp strm, char c, char previous) {
-    if ((c == '\n' || c == '\r') && previous != '\r')
-      this->advanceLineNumber(strm, c);
-    else
-      this->advanceColumn(strm, c);
-  }
-  void backup(T_sp strm, claspCharacter c);
+  void save() { _previous = _current; }
+  void restore() { _current = _previous; }
+  void reset() { _previous = _current = std::make_pair(0, 1); }
 
-public:
-  LongLongInt lineNumber() const { return this->_line_number; };
-  uint column() const { return this->_column; };
-  bool atStartOfLine() const { return this->_column == 0; };
-  bool isValid() const { return this->_cursor_is_valid; };
+  uint column() const { return _current.first; }
+  uint& column() { return _current.first; }
+  uint line() const { return _current.second; }
+  uint& line() { return _current.second; }
+
+  claspCharacter update(claspCharacter c);
+  bool start_line_p() const { return this->column() == 0; };
 };
 
 SMART(Stream);
@@ -398,12 +394,10 @@ class AnsiStream_O : public Stream_O {
 public:
   bool _open;
   int _flags; // bitmap of flags
-  int _column;
-  int _line;
-  StreamCursor _input_cursor;
+  StreamCursor _input_cursor, _output_cursor;
 
 public:
-  AnsiStream_O() : _open(true), _column(0), _line(0){};
+  AnsiStream_O() : _open(true){};
   virtual ~AnsiStream_O(); // nontrivial
 
   int restartable_io_error(const char* s);
@@ -426,7 +420,7 @@ public:
   virtual void clear_input();
 
   virtual claspCharacter write_char(claspCharacter c);
-  virtual bool advance_to_column(int column);
+  virtual bool advance_to_column(uint column);
   virtual void write_string(String_sp data, cl_index start, cl_index end);
   virtual void terpri();
   virtual bool fresh_line();
@@ -452,10 +446,13 @@ public:
   virtual T_sp set_position(T_sp pos);
   virtual T_sp string_length(T_sp string);
 
-  virtual int column() const;
-  virtual int set_column(int column);
+  virtual T_sp output_column() const;
+  virtual T_sp set_column(T_sp column);
   virtual bool start_line_p() const;
-  virtual int line() const;
+  virtual T_sp output_line() const;
+
+  virtual T_sp input_column() const;
+  virtual T_sp input_line() const;
 
   virtual T_sp pathname() const;
   virtual T_sp truename() const;
@@ -502,7 +499,7 @@ public:
   void write_byte(T_sp c) override;
 
   claspCharacter write_char(claspCharacter c) override;
-  bool advance_to_column(int column) override;
+  bool advance_to_column(uint column) override;
   void clear_output() override;
   void force_output() override;
   void finish_output() override;
@@ -519,8 +516,8 @@ public:
   T_sp set_position(T_sp pos) override;
   T_sp string_length(T_sp string) override;
 
-  int column() const override;
-  int set_column(int column) override;
+  T_sp output_column() const override;
+  T_sp set_column(T_sp column) override;
   bool start_line_p() const override;
 }; // BroadcastStream class
 
@@ -552,6 +549,9 @@ public:
   T_sp element_type() const override;
 
   T_sp position() override;
+
+  T_sp input_column() const override;
+  T_sp input_line() const override;
 }; // ConcatenatedStream class
 
 class EchoStream_O : public AnsiStream_O {
@@ -587,7 +587,7 @@ public:
   void clear_input() override;
 
   claspCharacter write_char(claspCharacter c) override;
-  bool advance_to_column(int column) override;
+  bool advance_to_column(uint column) override;
   void clear_output() override;
   void force_output() override;
   void finish_output() override;
@@ -599,9 +599,12 @@ public:
 
   T_sp position() override;
 
-  int column() const override;
-  int set_column(int column) override;
+  T_sp output_column() const override;
+  T_sp set_column(T_sp column) override;
   bool start_line_p() const override;
+
+  T_sp input_column() const override;
+  T_sp input_line() const override;
 
   int file_descriptor(StreamDirection direction) const override;
 }; // EchoStream class
@@ -656,7 +659,6 @@ public:
   static String_sp get_string(T_sp string_output_stream);
   static String_sp get_string_shrink(T_sp string_output_stream);
 
-  void fill(const string& data);
   void clear();
   String_sp get_string();
 
@@ -707,7 +709,7 @@ public:
   ListenResult listen() override;
   void clear_input() override;
 
-  bool advance_to_column(int column) override;
+  bool advance_to_column(uint column) override;
   void clear_output() override;
   void force_output() override;
   void finish_output() override;
@@ -724,9 +726,12 @@ public:
   T_sp position() override;
   T_sp set_position(T_sp pos) override;
 
-  int column() const override;
-  int set_column(int column) override;
+  T_sp output_column() const override;
+  T_sp set_column(T_sp column) override;
   bool start_line_p() const override;
+
+  T_sp input_column() const override;
+  T_sp input_line() const override;
 
   T_sp pathname() const override;
   T_sp truename() const override;
@@ -768,7 +773,7 @@ public:
   void clear_input() override;
 
   claspCharacter write_char(claspCharacter c) override;
-  bool advance_to_column(int column) override;
+  bool advance_to_column(uint column) override;
   void clear_output() override;
   void force_output() override;
   void finish_output() override;
@@ -784,9 +789,12 @@ public:
 
   T_sp position() override;
 
-  int column() const override;
-  int set_column(int column) override;
+  T_sp output_column() const override;
+  T_sp set_column(T_sp column) override;
   bool start_line_p() const override;
+
+  T_sp input_column() const override;
+  T_sp input_line() const override;
 
   int file_descriptor(StreamDirection direction) const override;
 }; // TwoWayStream class

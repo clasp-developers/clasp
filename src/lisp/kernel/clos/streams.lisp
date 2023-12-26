@@ -22,7 +22,11 @@
             %stream-advance-to-column
             %stream-element-type
             %stream-file-descriptor
+            %stream-input-column
+            %stream-input-line
             %stream-interactive-p
+            %stream-line-column
+            %stream-line-number
             %stream-start-line-p
             %truename)
           "GRAY")
@@ -122,7 +126,7 @@ truename."))
   (:documentation
    "Return the line number where the next character
   will be written, or NIL if that is not meaningful for this stream.
-  The first line is numbered 0. The default method returns NIL."))
+  The first line is numbered 1. The default method returns NIL."))
 
 ;; Extension from CMUCL, SBCL, Mezzano and SICL
 
@@ -246,6 +250,18 @@ truename."))
    "Return the file-descriptor underlaying STREAM, or NIL if not
    available. DIRECTION must be either :INPUT, :OUTPUT, :IO or
    :PROBE."))
+
+(defgeneric stream-input-column (stream)
+  (:documentation
+   "Return the column number where the next character
+  will be read, or NIL if that is not meaningful for this stream.
+  The first column on a line is numbered 0."))
+
+(defgeneric stream-input-line (stream)
+  (:documentation
+   "Return the line number where the next character
+  will be read, or NIL if that is not meaningful for this stream.
+  The first line is numbered 1. The default method returns NIL."))
 
 
 ;;;
@@ -464,9 +480,7 @@ truename."))
   nil)
 
 (defmethod stream-line-column ((stream ansi-stream))
-  (let ((column (sys:file-column stream)))
-    (and (not (minusp column))
-         column)))
+  (%stream-line-column stream))
 
 (defmethod stream-line-column ((stream t))
   (bug-or-error stream 'stream-line-column))
@@ -477,9 +491,7 @@ truename."))
   nil)
 
 (defmethod stream-line-number ((stream ansi-stream))
-  (let ((column (sys:stream-line-number stream)))
-    (and (not (minusp column))
-         column)))
+  (%stream-line-number stream))
 
 ;; LINE-LENGTH
 
@@ -810,6 +822,27 @@ truename."))
 
 (defmethod stream-file-descriptor ((stream ansi-stream) direction)
   (%stream-file-descriptor direction))
+
+
+;;; STREAM-INPUT-COLUMN
+
+(defmethod stream-input-column (stream)
+  (declare (ignore stream))
+  nil)
+
+(defmethod stream-input-column ((stream ansi-stream))
+  (%stream-input-column direction))
+
+
+;;; STREAM-INPUT-LINE
+
+(defmethod stream-input-line (stream)
+  (declare (ignore stream))
+  nil)
+
+(defmethod stream-input-line ((stream ansi-stream))
+  (%stream-input-line direction))
+
 
 ;;; Setup
 

@@ -445,11 +445,7 @@ CL_DEFMETHOD void JITDylib_O::dump(core::T_sp stream) {
   llvm::SmallString<1024> stringOutput;
   llvm::raw_pwrite_stream* ostreamP = llvm_stream(stream, stringOutput, stringOutputStream);
   this->wrappedPtr()->dump(*ostreamP);
-  if (core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>()) {
-    sos->fill(stringOutput.c_str());
-  } else {
-    core::clasp_write_string(stringOutput.c_str(), stream);
-  }
+  core::clasp_write_string(stringOutput.c_str(), stream);
 };
 
 }; // namespace llvmo
@@ -619,9 +615,7 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::emitModule(core::T_sp stream, core::T_s
   }
   PM.run(*module->wrappedPtr());
 
-  if (core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>()) {
-    sos->fill(stringOutput.c_str());
-  } else if (stream == kw::_sym_simple_vector_byte8) {
+  if (stream == kw::_sym_simple_vector_byte8) {
     SYMBOL_EXPORT_SC_(KeywordPkg, simple_vector_byte8);
     core::SimpleVector_byte8_t_sp vector_byte8 = core::SimpleVector_byte8_t_O::make(
         stringOutput.size(), 0, false, stringOutput.size(), (const unsigned char*)stringOutput.data());
@@ -629,10 +623,12 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::emitModule(core::T_sp stream, core::T_s
       SIMPLE_ERROR("dwo_stream must be nil");
     }
     return vector_byte8;
+  } else if (stream_p(stream)) {
+    clasp_write_string(stringOutput.c_str(), stream);
   }
 
-  if (core::StringOutputStream_sp dwo_sos = dwo_stream.asOrNull<core::StringOutputStream_O>()) {
-    dwo_sos->fill(dwo_stringOutput.c_str());
+  if (stream_p(dwo_stream)) {
+    clasp_write_string(dwo_stringOutput.c_str(), dwo_stream);
   }
 
   return nil<core::T_O>();
