@@ -1625,7 +1625,7 @@ struct copy_progress {
   uintptr_t _inc;
   uintptr_t _next_progress_tic;
   copy_progress(uintptr_t begin, uintptr_t size) : _begin(begin), _size(size) {
-    this->_inc = this->_size / 100;
+    this->_inc = this->_size / 10;
     this->_next_progress_tic = this->_inc;
   };
 
