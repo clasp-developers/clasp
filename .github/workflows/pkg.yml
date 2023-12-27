@@ -222,7 +222,7 @@ jobs:
           sed -i "s/clasp\.git/clasp\.git#commit=${{ github.sha }}/g" PKGBUILD
           makepkg --noconfirm --syncdeps --sign
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: arch_clasp
           path: |
@@ -249,7 +249,7 @@ jobs:
           sed -i "s/clasp\.git/clasp\.git#commit=${{ github.sha }}/g" PKGBUILD
           makepkg --noconfirm --syncdeps --sign
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: arch_cando
           path: |
@@ -270,11 +270,11 @@ jobs:
         with:
           gpg_private_key: ${{ secrets.PKG_GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PKG_GPG_PASSPHRASE }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v3
         with:
           name: arch_clasp
           path: arch
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v3
         with:
           name: arch_cando
           path: arch
@@ -283,7 +283,7 @@ jobs:
           cd arch
           repo-add --key ${{ steps.import_gpg.outputs.keyid }} --sign thirdlaw.db.tar.gz *.pkg.tar.zst
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: arch_repo
           path: arch
