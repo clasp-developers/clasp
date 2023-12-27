@@ -551,24 +551,19 @@ Use special code 0 to cancel this operation.")
 		   ""
 		 (package-name *package*))
 	       (- *tpl-level* *step-level* -1)
-	       "")))
-  ;; Because by default *standard-output* is not
-  ;; *terminal-io* but STDOUT the column is not reset
-  ;; after pressing enter. Reduce confusion by resetting
-  ;; the column to 0
-  (setf (core:file-column *standard-output*) 0))
+	       ""))))
 
 (defun tpl-read (&aux (*read-suppress* nil))
   (finish-output)
   (loop
-    (case (peek-char nil *standard-input* nil :EOF)
+    (case (peek-char nil *terminal-io* nil :EOF)
       ((#\))
        #+(or)(warn "Ignoring an unmatched right parenthesis.")
-       (read-char))
+       (read-char *terminal-io*))
       ((#\space #\tab)
-       (read-char))
+       (read-char *terminal-io*))
       ((#\newline #\return)
-       (read-char)
+       (read-char *terminal-io*)
        ;; avoid repeating prompt on successive empty lines:
        (let ((command (tpl-make-command :newline "")))
 	 (when command (return command))))
@@ -576,21 +571,21 @@ Use special code 0 to cancel this operation.")
        (terpri)
        (return (tpl-make-command :EOF "")))
       (#\:
-       (return (tpl-make-command (read-preserving-whitespace)
-				 (read-line))))
+       (return (tpl-make-command (read-preserving-whitespace *terminal-io*)
+				 (read-line *terminal-io*))))
       (#\?
-       (read-char)
-       (case (peek-char nil *standard-input* nil :EOF)
+       (read-char *terminal-io*)
+       (case (peek-char nil *terminal-io* nil :EOF)
 	 ((#\space #\tab #\newline #\return :EOF)
 	  (return (tpl-make-command :HELP (read-line))))
 	 (t
-	  (unread-char #\?)
-	  (return (read-preserving-whitespace)))))
+	  (unread-char #\? *terminal-io*)
+	  (return (read-preserving-whitespace *terminal-io*)))))
       ;; We use READ-PRESERVING-WHITESPACE because with READ, if an
       ;; error happens within the reader, and we perform a ":C" or
       ;; (CONTINUE), the reader will wait for an inexistent #\Newline.
       (t
-       (return (read))))))
+       (return (read *terminal-io*))))))
 
 ;;; Set to true if a command is signaling an error
 ;;; and you want that to invoke the debugger so you can fix it.
@@ -948,6 +943,8 @@ See the CLASP-DEBUG package for more information about FRAME objects.")
   (with-standard-io-syntax
     (let* ((*standard-input* *debug-io*)
            (*standard-output* *debug-io*)
+           (*terminal-io* *debug-io*)
+           (*query-io* *debug-io*)
            ;;(*tpl-prompt-hook* "[dbg] ")
 	   (*print-readably* nil)
            (*print-pretty* nil)

@@ -46,6 +46,7 @@ SYMBOL_EXPORT_SC_(ExtPkg, STARtoplevel_hookSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, _PLUS_processErrorOutput_PLUS_);
 SYMBOL_EXPORT_SC_(ExtPkg, _PLUS_processStandardInput_PLUS_);
 SYMBOL_EXPORT_SC_(ExtPkg, _PLUS_processStandardOutput_PLUS_);
+SYMBOL_EXPORT_SC_(ExtPkg, _PLUS_process_terminal_io_PLUS_);
 SYMBOL_EXPORT_SC_(ExtPkg, allocaVar);
 SYMBOL_EXPORT_SC_(ExtPkg, ansi_stream);
 SYMBOL_EXPORT_SC_(ExtPkg, array_index);

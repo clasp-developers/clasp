@@ -539,23 +539,27 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   T_sp stdin_stream = CFileStream_O::make(str_create("*STDIN*"), stdin, StreamDirection::input);
   T_sp stdout_stream = CFileStream_O::make(str_create("*STDOUT*"), stdout, StreamDirection::output);
   T_sp stderr_stream = CFileStream_O::make(str_create("*STDERR*"), stderr, StreamDirection::output);
+  TwoWayStream_sp terminal_stream = TwoWayStream_O::make(stdin_stream, stdout_stream);
+  terminal_stream->echo_p() = true;
 
   ext::_sym__PLUS_processStandardInput_PLUS_->defparameter(stdin_stream);
   ext::_sym__PLUS_processStandardOutput_PLUS_->defparameter(stdout_stream);
   ext::_sym__PLUS_processErrorOutput_PLUS_->defparameter(stderr_stream);
+  ext::_sym__PLUS_process_terminal_io_PLUS_->defparameter(terminal_stream);
   _sym_STARcurrentSourcePosInfoSTAR->defparameter(nil<T_O>());
   cl::_sym_STARstandard_inputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processStandardInput_PLUS_));
   cl::_sym_STARstandard_outputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processStandardOutput_PLUS_));
   cl::_sym_STARerror_outputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processErrorOutput_PLUS_));
   cl::_sym_STARtrace_outputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processErrorOutput_PLUS_));
-  cl::_sym_STARdebug_ioSTAR->defparameter(TwoWayStream_O::make(stdin_stream, stdout_stream));
-  cl::_sym_STARquery_ioSTAR->defparameter(TwoWayStream_O::make(stdin_stream, stdout_stream));
+  T_sp debug_stream = SynonymStream_O::make(ext::_sym__PLUS_process_terminal_io_PLUS_);
+  cl::_sym_STARdebug_ioSTAR->defparameter(debug_stream);
+  cl::_sym_STARquery_ioSTAR->defparameter(debug_stream);
+  T_sp terminal_syn = SynonymStream_O::make(ext::_sym__PLUS_process_terminal_io_PLUS_);
+  _lisp->_Roots._TerminalIO = terminal_syn;
+  cl::_sym_STARterminal_ioSTAR->defparameter(terminal_syn);
   _sym_STARdocumentation_poolSTAR->defparameter(
       Cons_O::createList(HashTableEql_O::create_default(), SimpleBaseString_O::make("help_file.dat")));
   _sym_STARdocumentation_poolSTAR->exportYourself();
-  TwoWayStream_sp terminal = gc::As_unsafe<TwoWayStream_sp>(TwoWayStream_O::make(stdin_stream, stdout_stream));
-  _lisp->_Roots._TerminalIO = terminal;
-  cl::_sym_STARterminal_ioSTAR->defparameter(terminal);
   _sym_STARsystem_defsetf_update_functionsSTAR->defparameter(nil<T_O>());
   cl::_sym_STARmacroexpand_hookSTAR->defparameter(cl::_sym_funcall);
   _sym_STARsharp_equal_final_tableSTAR->defparameter(nil<T_O>());

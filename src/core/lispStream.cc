@@ -566,7 +566,7 @@ T_sp stream_set_output_column(T_sp stream, T_sp column) {
 CL_LISPIFY_NAME("gray:%stream-start-line-p")
 CL_DEFUN bool stream_start_line_p(T_sp stream) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->start_line_p()
-                                    : T_sp(eval::funcall(gray::_sym_stream_line_column, stream)).notnilp();
+                                    : T_sp(eval::funcall(gray::_sym_stream_start_line_p, stream)).notnilp();
 }
 
 // This function is exposed to CL because it is needed to implement
@@ -586,6 +586,16 @@ uint stream_output_column_as_uint(T_sp stream) {
 uint stream_output_line_as_uint(T_sp stream) {
   T_sp line = stream_output_line(stream);
   return gc::IsA<Real_sp>(line) ? clasp_to_integral<uint>(clasp_floor1(gc::As_unsafe<Real_sp>(line))) : 1;
+}
+
+void stream_update_output_cursor(T_sp stream, claspCharacter c) {
+  if (stream.isA<AnsiStream_O>())
+    stream.as_unsafe<AnsiStream_O>()->update_output_cursor(c);
+}
+
+void stream_restore_output_cursor(T_sp stream) {
+  if (stream.isA<AnsiStream_O>())
+    stream.as_unsafe<AnsiStream_O>()->restore_output_cursor();
 }
 
 // Stream input tracking functions
@@ -616,6 +626,16 @@ uint stream_input_column_as_uint(T_sp stream) {
 uint stream_input_line_as_uint(T_sp stream) {
   T_sp line = stream_input_line(stream);
   return gc::IsA<Real_sp>(line) ? clasp_to_integral<uint>(clasp_floor1(gc::As_unsafe<Real_sp>(line))) : 1;
+}
+
+void stream_update_input_cursor(T_sp stream, claspCharacter c) {
+  if (stream.isA<AnsiStream_O>())
+    stream.as_unsafe<AnsiStream_O>()->update_input_cursor(c);
+}
+
+void stream_restore_input_cursor(T_sp stream) {
+  if (stream.isA<AnsiStream_O>())
+    stream.as_unsafe<AnsiStream_O>()->restore_input_cursor();
 }
 
 // Stream pathname functions
@@ -1744,7 +1764,7 @@ FileScope_sp clasp_input_source_file_info(T_sp strm) { return gc::As<FileScope_s
 void lisp_write(const std::string& s) { clasp_write_string(s); }
 
 claspCharacter StreamCursor::update(claspCharacter c) {
-  if (c != EOF) {
+  if (c != EOF && c != listen_result_no_char) {
     save();
 
     if (c == CLASP_CHAR_CODE_NEWLINE) {
@@ -2060,9 +2080,17 @@ bool AnsiStream_O::start_line_p() const { return _output_cursor.start_line_p(); 
 
 T_sp AnsiStream_O::output_line() const { return clasp_make_fixnum(_output_cursor.line()); };
 
+void AnsiStream_O::update_output_cursor(claspCharacter c) { _output_cursor.update(c); }
+
+void AnsiStream_O::restore_output_cursor() { _output_cursor.restore(); }
+
 T_sp AnsiStream_O::input_column() const { return clasp_make_fixnum(_input_cursor.column()); }
 
 T_sp AnsiStream_O::input_line() const { return clasp_make_fixnum(_input_cursor.line()); }
+
+void AnsiStream_O::update_input_cursor(claspCharacter c) { _input_cursor.update(c); }
+
+void AnsiStream_O::restore_input_cursor() { _input_cursor.restore(); }
 
 T_sp AnsiStream_O::pathname() const {
   // not_a_file_stream(asSmartPtr());
@@ -2312,7 +2340,7 @@ claspCharacter ConcatenatedStream_O::read_char() {
     _streams = l = oCdr(l);
   }
 
-  _input_cursor.update(c);
+  update_input_cursor(c);
 
   return c;
 }
@@ -2568,8 +2596,13 @@ string StringInputStream_O::peer(size_t len) {
 }
 
 claspCharacter StringInputStream_O::read_char() {
-  return (_input_position >= _input_limit) ? EOF
-                                           : _input_cursor.update(clasp_as_claspCharacter(cl__char(_contents, _input_position++)));
+  if (_input_position >= _input_limit)
+    return EOF;
+
+  claspCharacter c = clasp_as_claspCharacter(cl__char(_contents, _input_position++));
+  update_input_cursor(c);
+
+  return c;
 }
 
 void StringInputStream_O::unread_char(claspCharacter c) {
@@ -2591,7 +2624,10 @@ T_mv StringInputStream_O::read_line() {
   cl_index start = _input_position, end = _input_position;
 
   for (; _input_position < _input_limit; end++, _input_position++) {
-    if (_input_cursor.update(cl__char(_contents, end).unsafe_character()) == CLASP_CHAR_CODE_NEWLINE) {
+    claspCharacter c = cl__char(_contents, end).unsafe_character();
+    update_input_cursor(c);
+
+    if (c == CLASP_CHAR_CODE_NEWLINE) {
       _input_position++;
       missing_newline_p = nil<T_O>();
       break;
@@ -2652,7 +2688,7 @@ String_sp StringOutputStream_O::get_string() {
 };
 
 claspCharacter StringOutputStream_O::write_char(claspCharacter c) {
-  _output_cursor.update(c);
+  update_output_cursor(c);
   _contents->vectorPushExtend(clasp_make_character(c));
   return c;
 }
@@ -2867,9 +2903,17 @@ bool SynonymStream_O::start_line_p() const { return stream_start_line_p(stream()
 
 T_sp SynonymStream_O::output_line() const { return stream_output_line(stream()); }
 
+void SynonymStream_O::update_output_cursor(claspCharacter c) { stream_update_output_cursor(stream(), c); }
+
+void SynonymStream_O::restore_output_cursor() { stream_restore_output_cursor(stream()); }
+
 T_sp SynonymStream_O::input_column() const { return stream_input_column(stream()); }
 
 T_sp SynonymStream_O::input_line() const { return stream_input_line(stream()); }
+
+void SynonymStream_O::update_input_cursor(claspCharacter c) { stream_update_input_cursor(stream(), c); }
+
+void SynonymStream_O::restore_input_cursor() { stream_restore_input_cursor(stream()); }
 
 T_sp SynonymStream_O::pathname() const { return stream_pathname(stream()); };
 
@@ -2944,17 +2988,45 @@ T_sp TwoWayStream_O::read_byte() { return stream_read_byte(_input_stream); }
 
 void TwoWayStream_O::write_byte(T_sp byte) { stream_write_byte(_output_stream, byte); }
 
-claspCharacter TwoWayStream_O::read_char() { return stream_read_char(_input_stream); }
+claspCharacter TwoWayStream_O::read_char() {
+  claspCharacter c = stream_read_char(_input_stream);
+  if (_echo)
+    update_output_cursor(c);
+  return c;
+}
 
-void TwoWayStream_O::unread_char(claspCharacter c) { stream_unread_char(_input_stream, c); }
+void TwoWayStream_O::unread_char(claspCharacter c) {
+  stream_unread_char(_input_stream, c);
+  if (_echo)
+    restore_output_cursor();
+}
 
-claspCharacter TwoWayStream_O::read_char_no_hang() { return stream_read_char_no_hang(_input_stream); }
+claspCharacter TwoWayStream_O::read_char_no_hang() {
+  claspCharacter c = stream_read_char_no_hang(_input_stream);
+  if (_echo)
+    update_output_cursor(c);
+  return c;
+}
 
 ListenResult TwoWayStream_O::listen() { return stream_listen(_input_stream); }
 
 claspCharacter TwoWayStream_O::peek_char() { return stream_peek_char(_input_stream); }
 
-T_mv TwoWayStream_O::read_line() { return stream_read_line(_input_stream); }
+T_mv TwoWayStream_O::read_line() {
+  T_mv result = stream_read_line(_input_stream);
+
+  if (_echo) {
+    String_sp string = result.as<String_O>();
+
+    for (cl_index i = 0; i < string->length(); i++)
+      update_output_cursor(clasp_as_claspCharacter(cl__char(string, i)));
+
+    if (lisp_multipleValues().second(result.number_of_values()).nilp())
+      update_output_cursor(CLASP_CHAR_CODE_NEWLINE);
+  }
+
+  return result;
+}
 
 void TwoWayStream_O::clear_input() { stream_clear_input(_input_stream); }
 
@@ -3004,9 +3076,17 @@ bool TwoWayStream_O::start_line_p() const { return stream_start_line_p(_output_s
 
 T_sp TwoWayStream_O::output_line() const { return stream_output_line(_output_stream); }
 
+void TwoWayStream_O::update_output_cursor(claspCharacter c) { stream_update_output_cursor(_output_stream, c); }
+
+void TwoWayStream_O::restore_output_cursor() { stream_restore_output_cursor(_output_stream); }
+
 T_sp TwoWayStream_O::input_column() const { return stream_input_column(_input_stream); }
 
 T_sp TwoWayStream_O::input_line() const { return stream_input_line(_input_stream); }
+
+void TwoWayStream_O::update_input_cursor(claspCharacter c) { stream_update_input_cursor(_input_stream, c); }
+
+void TwoWayStream_O::restore_input_cursor() { stream_restore_input_cursor(_input_stream); }
 
 int TwoWayStream_O::file_descriptor(StreamDirection direction) const {
   switch (direction) {
@@ -3491,7 +3571,7 @@ claspCharacter FileStream_O::read_char() {
       break;
     }
 
-    _input_cursor.update(c);
+    update_input_cursor(c);
   }
 
   return c;
@@ -3516,7 +3596,7 @@ claspCharacter FileStream_O::write_char(claspCharacter c) {
     write_byte8(buffer, nbytes);
   }
 
-  _output_cursor.update(c);
+  update_output_cursor(c);
 
   return c;
 }
@@ -4334,7 +4414,7 @@ void FileStream_O::write_sequence(T_sp data, cl_index start, cl_index end) {
             c = CLASP_CHAR_CODE_RETURN;
         }
         nbytes += encode(buffer + nbytes, c);
-        _output_cursor.update(c);
+        update_output_cursor(c);
         if (nbytes >= VECTOR_ENCODING_BUFFER_SIZE) {
           write_byte8(buffer, nbytes);
           nbytes = 0;
@@ -4358,7 +4438,7 @@ void FileStream_O::write_sequence(T_sp data, cl_index start, cl_index end) {
             c = CLASP_CHAR_CODE_RETURN;
         }
         nbytes += encode(buffer + nbytes, c);
-        _output_cursor.update(c);
+        update_output_cursor(c);
         if (nbytes >= VECTOR_ENCODING_BUFFER_SIZE) {
           write_byte8(buffer, nbytes);
           nbytes = 0;

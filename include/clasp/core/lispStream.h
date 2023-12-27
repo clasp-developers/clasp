@@ -253,6 +253,8 @@ T_sp stream_output_column(T_sp stream);
 T_sp stream_set_output_column(T_sp stream, T_sp column);
 bool stream_start_line_p(T_sp stream);
 T_sp stream_line(T_sp stream);
+void stream_update_output_cursor(T_sp stream, claspCharacter c);
+void stream_restore_output_cursor(T_sp stream);
 
 uint stream_output_column_as_uint(T_sp stream);
 uint stream_output_line_as_uint(T_sp stream);
@@ -261,6 +263,8 @@ uint stream_output_line_as_uint(T_sp stream);
 
 T_sp stream_input_column(T_sp stream);
 T_sp stream_input_line(T_sp stream);
+void stream_update_input_cursor(T_sp stream, claspCharacter c);
+void stream_restore_input_cursor(T_sp stream);
 
 uint stream_input_column_as_uint(T_sp stream);
 uint stream_input_line_as_uint(T_sp stream);
@@ -450,9 +454,13 @@ public:
   virtual T_sp set_output_column(T_sp column);
   virtual bool start_line_p() const;
   virtual T_sp output_line() const;
+  virtual void update_output_cursor(claspCharacter c);
+  virtual void restore_output_cursor();
 
   virtual T_sp input_column() const;
   virtual T_sp input_line() const;
+  virtual void update_input_cursor(claspCharacter c);
+  virtual void restore_input_cursor();
 
   virtual T_sp pathname() const;
   virtual T_sp truename() const;
@@ -744,9 +752,13 @@ public:
   T_sp set_output_column(T_sp column) override;
   bool start_line_p() const override;
   T_sp output_line() const override;
+  void update_output_cursor(claspCharacter c) override;
+  void restore_output_cursor() override;
 
   T_sp input_column() const override;
   T_sp input_line() const override;
+  void update_input_cursor(claspCharacter c) override;
+  void restore_input_cursor() override;
 
   T_sp pathname() const override;
   T_sp truename() const override;
@@ -760,9 +772,10 @@ class TwoWayStream_O : public AnsiStream_O {
 public: // instance variables here
   T_sp _input_stream;
   T_sp _output_stream;
+  bool _echo;
 
 public:
-  TwoWayStream_O() : _input_stream(nil<T_O>()), _output_stream(nil<T_O>()){};
+  TwoWayStream_O() : _input_stream(nil<T_O>()), _output_stream(nil<T_O>()), _echo(false){};
 
   static TwoWayStream_sp make(T_sp input_stream, T_sp output_stream);
   static T_sp input_stream(T_sp two_way_stream);
@@ -770,6 +783,8 @@ public:
 
   T_sp input_stream() const { return _input_stream; }
   T_sp output_stream() const { return _output_stream; }
+  bool echo_p() const { return _echo; }
+  bool& echo_p() { return _echo; }
 
   T_sp close(T_sp abort);
 
@@ -812,9 +827,13 @@ public:
   T_sp set_output_column(T_sp column) override;
   bool start_line_p() const override;
   T_sp output_line() const override;
+  void update_output_cursor(claspCharacter c) override;
+  void restore_output_cursor() override;
 
   T_sp input_column() const override;
   T_sp input_line() const override;
+  void update_input_cursor(claspCharacter c) override;
+  void restore_input_cursor() override;
 
   int file_descriptor(StreamDirection direction) const override;
 }; // TwoWayStream class
