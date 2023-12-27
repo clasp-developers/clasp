@@ -249,7 +249,9 @@ truename."))
   (:documentation
    "Return the file-descriptor underlaying STREAM, or NIL if not
    available. DIRECTION must be either :INPUT, :OUTPUT, :IO or
-   :PROBE."))
+   :PROBE. The direction argument is used to discrimate which
+   file descriptor to return for bidirectional streams versus
+   unidirectional streams."))
 
 (defgeneric stream-input-column (stream)
   (:documentation
@@ -821,7 +823,7 @@ truename."))
   nil)
 
 (defmethod stream-file-descriptor ((stream ansi-stream) direction)
-  (%stream-file-descriptor direction))
+  (%stream-file-descriptor streamm direction))
 
 
 ;;; STREAM-INPUT-COLUMN
@@ -831,7 +833,7 @@ truename."))
   nil)
 
 (defmethod stream-input-column ((stream ansi-stream))
-  (%stream-input-column direction))
+  (%stream-input-column stream))
 
 
 ;;; STREAM-INPUT-LINE
@@ -841,7 +843,7 @@ truename."))
   nil)
 
 (defmethod stream-input-line ((stream ansi-stream))
-  (%stream-input-line direction))
+  (%stream-input-line stream))
 
 
 ;;; Setup
