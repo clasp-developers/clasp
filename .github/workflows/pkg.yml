@@ -50,7 +50,7 @@ jobs:
           docker-image: ubuntu:jammy
           extra-build-deps: ca-certificates netbase
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: jammy_clasp
           path: debian/artifacts/*.deb
@@ -75,7 +75,7 @@ jobs:
           docker-image: ubuntu:jammy
           extra-build-deps: ca-certificates netbase
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: jammy_cando
           path: debian/artifacts/*.deb
@@ -96,11 +96,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.WWW_SSH_KEY }}
           ssh-host: www.thirdlaw.tech
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v3
         with:
           name: jammy_clasp
           path: jammy
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v3
         with:
           name: jammy_cando
           path: jammy
@@ -136,7 +136,7 @@ jobs:
           docker-image: debian:bookworm
           extra-build-deps: ca-certificates netbase g++-12
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: bookworm_clasp
           path: debian/artifacts/*.deb
@@ -161,7 +161,7 @@ jobs:
           docker-image: debian:bookworm
           extra-build-deps: ca-certificates netbase g++-12
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: bookworm_cando
           path: debian/artifacts/*.deb
@@ -182,11 +182,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.WWW_SSH_KEY }}
           ssh-host: www.thirdlaw.tech
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v3
         with:
           name: bookworm_clasp
           path: bookworm
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v3
         with:
           name: bookworm_cando
           path: bookworm
@@ -297,7 +297,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.WWW_SSH_KEY }}
           ssh-host: www.thirdlaw.tech
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v3
         with:
           name: arch_repo
           path: arch
