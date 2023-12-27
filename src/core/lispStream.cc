@@ -1679,13 +1679,13 @@ void wsock_error(const char* err_msg, T_sp strm) {
 CL_LAMBDA(stream);
 CL_DOCSTRING(R"dx(streamLinenumber)dx");
 CL_DEFUN uint core__stream_linenumber(T_sp tstream) {
-  return clasp_make_fixnum(stream_input_line_as_uint(coerce::inputStreamDesignator(tstream)));
+  return stream_input_line_as_uint(coerce::inputStreamDesignator(tstream));
 };
 
 CL_LAMBDA(stream);
 CL_DOCSTRING(R"dx(streamColumn)dx");
 CL_DEFUN uint core__stream_column(T_sp tstream) {
-  return clasp_make_fixnum(stream_input_column_as_uint(coerce::inputStreamDesignator(tstream)));
+  return stream_input_column_as_uint(coerce::inputStreamDesignator(tstream));
 }
 
 void clasp_write_characters(const char* buf, int sz, T_sp strm) {
@@ -2324,7 +2324,7 @@ void ConcatenatedStream_O::unread_char(claspCharacter c) {
   check_open();
 
   unlikely_if(_streams.nilp()) unread_error(asSmartPtr());
-  _input_cursor.restore();
+  restore_input_cursor();
   stream_unread_char(oCar(_streams), c);
 }
 
@@ -2580,7 +2580,7 @@ claspCharacter StringInputStream_O::read_char() {
 
 void StringInputStream_O::unread_char(claspCharacter c) {
   unlikely_if(c <= 0) unread_error(asSmartPtr());
-  _input_cursor.restore();
+  restore_input_cursor();
   _input_position--;
 }
 
@@ -3485,7 +3485,7 @@ void FileStream_O::unread_char(claspCharacter c) {
   }
   _byte_stack = gc::As<Cons_sp>(l);
   _last_char = EOF;
-  _input_cursor.restore();
+  restore_input_cursor();
 }
 
 claspCharacter FileStream_O::read_char_no_cursor() {

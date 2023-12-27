@@ -307,3 +307,50 @@
     (values (read-byte stream nil :wibble)
             (read-byte stream nil :wibble)))
   (73 :wibble))
+
+(defclass bidirectional-char-stream
+    (gray:fundamental-character-input-stream
+     gray:fundamental-character-output-stream)
+  ())
+
+(defmethod gray:stream-input-column ((s bidirectional-char-stream))
+  23)
+
+(defmethod gray:stream-input-line ((s bidirectional-char-stream))
+  29)
+
+(defmethod gray:stream-line-column ((s bidirectional-char-stream))
+  31)
+
+(defmethod gray:stream-line-number ((s bidirectional-char-stream))
+  37)
+
+(test gray-cursor.01
+  (let ((stream (make-instance 'bidirectional-char-stream)))
+    (values (core:stream-column stream)
+            (core:stream-linenumber stream)
+            (core:file-column stream)
+            (core:stream-line-number stream)))
+  (23 29 31 37))
+
+(test input-cursor.01
+  (let ((stream (make-string-input-stream "ab
+cd")))
+    (flet ((loc (ret)
+             (list ret
+                   :column (core:stream-column stream)
+                   :line (core:stream-linenumber stream))))
+      (values (loc (read-char stream))
+              (loc (unread-char #\a stream))
+              (loc (peek-char nil stream))
+              (loc (read-char stream))
+              (loc (read-char stream))
+              (loc (read-char stream))
+              (loc (read-char stream)))))
+  ((#\a :column 1 :line 1)
+   (nil :column 0 :line 1)
+   (#\a :column 0 :line 1)
+   (#\a :column 1 :line 1)
+   (#\b :column 2 :line 1)
+   (#\newline :column 0 :line 2)
+   (#\c :column 1 :line 2)))

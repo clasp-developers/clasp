@@ -404,7 +404,6 @@ public:
   virtual ~AnsiStream_O(); // nontrivial
 
   int restartable_io_error(const char* s);
-  void update_line_column(claspCharacter c);
 
   virtual T_sp close(T_sp abort);
 
