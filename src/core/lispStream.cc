@@ -555,10 +555,6 @@ CL_DEFUN T_sp stream_output_column(T_sp stream) {
                                     : eval::funcall(gray::_sym_stream_line_column, stream);
 }
 
-T_sp stream_set_output_column(T_sp stream, T_sp column) {
-  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->set_output_column(column) : column;
-}
-
 // This function is exposed to CL because it is needed to implement
 // the GRAY:STREAM-START-LINE-METHOD for ansi-stream. The stream
 // argument is guaranteed to be an AnsiStream_sp so recursion is
@@ -1288,12 +1284,6 @@ CL_DEFUN T_sp cl__unread_char(Character_sp ch, T_sp input_stream) {
 CL_LAMBDA(stream);
 CL_DOCSTRING("Return the current column of the stream");
 CL_DEFUN uint core__file_column(T_sp strm) { return stream_output_column_as_uint(coerce::outputStreamDesignator(strm)); };
-
-CL_LISPIFY_NAME("core:file-column");
-CL_DOCSTRING("Set the column of the stream is that is meaningful for the stream.");
-CL_DEFUN_SETF T_sp core__setf_file_column(T_sp column, T_sp strm) {
-  return stream_set_output_column(coerce::outputStreamDesignator(strm), column);
-};
 
 CL_LAMBDA(stream);
 CL_DOCSTRING("Return the current line number of the stream");
@@ -2069,13 +2059,6 @@ T_sp AnsiStream_O::string_length(T_sp string) {
 
 T_sp AnsiStream_O::output_column() const { return clasp_make_fixnum(_output_cursor.column()); }
 
-T_sp AnsiStream_O::set_output_column(T_sp column) {
-  if (gc::IsA<Real_sp>(column))
-    _output_cursor._current.first = clasp_to_integral<uint>(clasp_floor1(gc::As_unsafe<Real_sp>(column)));
-
-  return column;
-}
-
 bool AnsiStream_O::start_line_p() const { return _output_cursor.start_line_p(); }
 
 T_sp AnsiStream_O::output_line() const { return clasp_make_fixnum(_output_cursor.line()); };
@@ -2223,14 +2206,6 @@ T_sp BroadcastStream_O::string_length(T_sp string) {
 }
 
 T_sp BroadcastStream_O::output_column() const { return _streams.nilp() ? nil<T_O>() : stream_output_column(last_stream()); }
-
-T_sp BroadcastStream_O::set_output_column(T_sp column) {
-  T_sp result = column;
-  for (T_sp l = _streams; !l.nilp(); l = oCdr(l)) {
-    result = stream_set_output_column(oCar(l), column);
-  }
-  return result;
-}
 
 bool BroadcastStream_O::start_line_p() const { return _streams.nilp() || stream_start_line_p(last_stream()); }
 
@@ -2522,8 +2497,6 @@ T_sp EchoStream_O::external_format() const { return stream_external_format(_inpu
 T_sp EchoStream_O::position() { return nil<T_O>(); }
 
 T_sp EchoStream_O::output_column() const { return stream_output_column(_output_stream); }
-
-T_sp EchoStream_O::set_output_column(T_sp column) { return stream_set_output_column(_output_stream, column); }
 
 bool EchoStream_O::start_line_p() const { return stream_start_line_p(_output_stream); }
 
@@ -2897,8 +2870,6 @@ T_sp SynonymStream_O::string_length(T_sp string) { return stream_string_length(s
 
 T_sp SynonymStream_O::output_column() const { return stream_output_column(stream()); }
 
-T_sp SynonymStream_O::set_output_column(T_sp column) { return stream_set_output_column(stream(), column); }
-
 bool SynonymStream_O::start_line_p() const { return stream_start_line_p(stream()); }
 
 T_sp SynonymStream_O::output_line() const { return stream_output_line(stream()); }
@@ -3069,8 +3040,6 @@ T_sp TwoWayStream_O::external_format() const { return stream_external_format(_in
 T_sp TwoWayStream_O::position() { return nil<T_O>(); }
 
 T_sp TwoWayStream_O::output_column() const { return stream_output_column(_output_stream); }
-
-T_sp TwoWayStream_O::set_output_column(T_sp column) { return stream_set_output_column(_output_stream, column); }
 
 bool TwoWayStream_O::start_line_p() const { return stream_start_line_p(_output_stream); }
 
