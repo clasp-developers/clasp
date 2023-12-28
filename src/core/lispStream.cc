@@ -398,7 +398,7 @@ CL_LISPIFY_NAME("gray:%stream-advance-to-column")
 CL_DEFUN bool stream_advance_to_column(T_sp stream, T_sp column) {
   return stream.isA<AnsiStream_O>()
              ? stream.as_unsafe<AnsiStream_O>()->advance_to_column(column)
-             : T_sp(eval::funcall(gray::_sym_stream_advance_to_column, stream, clasp_make_fixnum(column))).notnilp();
+             : T_sp(eval::funcall(gray::_sym_stream_advance_to_column, stream, column).notnilp();
 }
 
 void stream_write_string(T_sp stream, String_sp data, cl_index start, cl_index end) {
@@ -1900,7 +1900,7 @@ bool AnsiStream_O::advance_to_column(T_sp col) {
   if (!gc::IsA<Real_sp>(col))
     return false;
 
-  uint _col = clasp_to_integral<uint>(clasp_floor1(gc::As_unsafe<Real_sp>(col)));
+  uint _col = clasp_to_integral<uint>(clasp_floor1(gc::As_unsafe<Real_O>(col)));
 
   while (_output_cursor.column() < _col)
     write_char(' ');
