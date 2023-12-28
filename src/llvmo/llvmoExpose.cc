@@ -190,22 +190,22 @@ size_t objectIdFromName(const std::string& name) {
 }
 
 llvm::raw_pwrite_stream* llvm_stream(core::T_sp stream, llvm::SmallString<1024>& stringOutput, bool& stringOutputStream) {
-  llvm::raw_pwrite_stream* ostreamP;
-  if (core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>()) {
-    (void)sos;
-    ostreamP = new llvm::raw_svector_ostream(stringOutput);
+  if (stream.isA<core::SynonymStream_O>())
+    return llvm_stream(stream.as_unsafe<core::SynonymStream_O>()->stream(), stringOutput, stringOutputStream);
+
+  if (stream.isA<core::TwoWayStream_O>())
+    return llvm_stream(stream.as_unsafe<core::TwoWayStream_O>()->output_stream(), stringOutput, stringOutputStream);
+
+  if (stream.isA<core::StringOutputStream_O>()) {
     stringOutputStream = true;
-  } else if (core::PosixFileStream_sp fs = stream.asOrNull<core::PosixFileStream_O>()) {
-    ostreamP = new llvm::raw_fd_ostream(fs->fileDescriptor(), false, true);
-  } else if (core::CFileStream_sp iostr = stream.asOrNull<core::CFileStream_O>()) {
-    FILE* f = iostr->file();
-    ostreamP = new llvm::raw_fd_ostream(fileno(f), false, true);
-  } else if (core::SynonymStream_sp sstr = stream.asOrNull<core::SynonymStream_O>()) {
-    return llvm_stream(sstr->stream(), stringOutput, stringOutputStream);
-  } else {
-    SIMPLE_ERROR("Illegal file type {} for llvm_stream", _rep_(stream));
+    return new llvm::raw_svector_ostream(stringOutput);
   }
-  return ostreamP;
+
+  int fd = core::stream_file_descriptor(stream, core::StreamDirection::output);
+  if (fd >= 0)
+    return new llvm::raw_fd_ostream(fd, false, true);
+
+  SIMPLE_ERROR("Illegal file type {} for llvm_stream", _rep_(stream));
 }
 
 DOCGROUP(clasp);
@@ -445,11 +445,7 @@ CL_DEFMETHOD void JITDylib_O::dump(core::T_sp stream) {
   llvm::SmallString<1024> stringOutput;
   llvm::raw_pwrite_stream* ostreamP = llvm_stream(stream, stringOutput, stringOutputStream);
   this->wrappedPtr()->dump(*ostreamP);
-  if (core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>()) {
-    sos->fill(stringOutput.c_str());
-  } else {
-    core::clasp_write_string(stringOutput.c_str(), stream);
-  }
+  core::clasp_write_string(stringOutput.c_str(), stream);
 };
 
 }; // namespace llvmo
@@ -574,38 +570,33 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::emitModule(core::T_sp stream, core::T_s
   llvm::SmallString<1024> stringOutput;
   bool stringOutputStream = false;
 
-  if (core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>()) {
+  if (stream.isA<core::StringOutputStream_O>()) {
     ostream.set_stream(new llvm::raw_svector_ostream(stringOutput));
     stringOutputStream = true;
   } else if (stream == kw::_sym_simple_vector_byte8) {
-    (void)sos;
     ostream.set_stream(new llvm::raw_svector_ostream(stringOutput));
-  } else if (core::PosixFileStream_sp fs = stream.asOrNull<core::PosixFileStream_O>()) {
-    ostream.set_stream(new llvm::raw_fd_ostream(fs->fileDescriptor(), false, true));
-  } else if (core::CFileStream_sp iostr = stream.asOrNull<core::CFileStream_O>()) {
-    FILE* f = iostr->file();
-    ostream.set_stream(new llvm::raw_fd_ostream(fileno(f), false, true));
   } else {
-    SIMPLE_ERROR("Illegal file type {} for addPassesToEmitFileAndRunPassManager", _rep_(stream));
+    int fd = core::stream_file_descriptor(stream, core::StreamDirection::output);
+    if (fd < 0)
+      SIMPLE_ERROR("Illegal file type {} for addPassesToEmitFileAndRunPassManager", _rep_(stream));
+    ostream.set_stream(new llvm::raw_fd_ostream(fd, false, true));
   }
 
   llvm::SmallString<1024> dwo_stringOutput;
   Safe_raw_pwrite_stream dwo_ostream;
   bool dwo_stringOutputStream = false;
 
-  if (core::StringOutputStream_sp sos = dwo_stream.asOrNull<core::StringOutputStream_O>()) {
-    (void)sos;
+  if (dwo_stream.nilp()) { // do nothing
+  } else if (dwo_stream.isA<core::StringOutputStream_O>()) {
     dwo_ostream.set_stream(new llvm::raw_svector_ostream(dwo_stringOutput));
     dwo_stringOutputStream = true;
-  } else if (core::PosixFileStream_sp fs = dwo_stream.asOrNull<core::PosixFileStream_O>()) {
-    dwo_ostream.set_stream(new llvm::raw_fd_ostream(fs->fileDescriptor(), false, true));
-  } else if (core::CFileStream_sp iostr = dwo_stream.asOrNull<core::CFileStream_O>()) {
-    FILE* f = iostr->file();
-    dwo_ostream.set_stream(new llvm::raw_fd_ostream(fileno(f), false, true));
-  } else if (dwo_stream.nilp()) {
-    // nothing
+  } else if (dwo_stream == kw::_sym_simple_vector_byte8) {
+    dwo_ostream.set_stream(new llvm::raw_svector_ostream(dwo_stringOutput));
   } else {
-    SIMPLE_ERROR("Illegal file type {} for addPassesToEmitFileAndRunPassManager", _rep_(dwo_stream));
+    int fd = core::stream_file_descriptor(dwo_stream, core::StreamDirection::output);
+    if (fd < 0)
+      SIMPLE_ERROR("Illegal file type {} for addPassesToEmitFileAndRunPassManager", _rep_(dwo_stream));
+    dwo_ostream.set_stream(new llvm::raw_fd_ostream(fd, false, true));
   }
 
   llvm::legacy::PassManager PM;
@@ -624,9 +615,7 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::emitModule(core::T_sp stream, core::T_s
   }
   PM.run(*module->wrappedPtr());
 
-  if (core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>()) {
-    sos->fill(stringOutput.c_str());
-  } else if (stream == kw::_sym_simple_vector_byte8) {
+  if (stream == kw::_sym_simple_vector_byte8) {
     SYMBOL_EXPORT_SC_(KeywordPkg, simple_vector_byte8);
     core::SimpleVector_byte8_t_sp vector_byte8 = core::SimpleVector_byte8_t_O::make(
         stringOutput.size(), 0, false, stringOutput.size(), (const unsigned char*)stringOutput.data());
@@ -634,10 +623,12 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::emitModule(core::T_sp stream, core::T_s
       SIMPLE_ERROR("dwo_stream must be nil");
     }
     return vector_byte8;
+  } else if (stream_p(stream)) {
+    clasp_write_string(stringOutput.c_str(), stream);
   }
 
-  if (core::StringOutputStream_sp dwo_sos = dwo_stream.asOrNull<core::StringOutputStream_O>()) {
-    dwo_sos->fill(dwo_stringOutput.c_str());
+  if (stream_p(dwo_stream)) {
+    clasp_write_string(dwo_stringOutput.c_str(), dwo_stream);
   }
 
   return nil<core::T_O>();

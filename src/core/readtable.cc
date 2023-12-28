@@ -271,17 +271,18 @@ DOCGROUP(clasp);
 CL_DEFUN T_mv core__reader_error_backquote_context(T_sp sin) {
   FileScope_sp info = gc::As<FileScope_sp>(core__file_scope(sin));
   // FIXME: Use a real condition class.
-  // SIMPLE_ERROR("Comma outside of backquote in file: {} line: {}", info->fileName() , clasp_input_lineno(sin));
+  // SIMPLE_ERROR("Comma outside of backquote in file: {} line: {}", info->fileName() , stream_input_line(sin));
   string fn = info->fileName();
   if (fn.compare("-no-name-") == 0) {
     READER_ERROR(SimpleBaseString_O::make("Comma outside of backquote in stream at line: ~a column ~a."),
-                 Cons_O::createList(Cons_O::create(make_fixnum(clasp_input_lineno(sin)), nil<T_O>()),
-                                    Cons_O::create(make_fixnum(clasp_input_column(sin)), nil<T_O>())),
+                 Cons_O::createList(Cons_O::create(make_fixnum(stream_input_line_as_uint(sin)), nil<T_O>()),
+                                    Cons_O::create(make_fixnum(stream_input_column_as_uint(sin)), nil<T_O>())),
                  sin);
   } else {
     READER_ERROR(SimpleBaseString_O::make("Comma outside of backquote in file: ~a line: ~a column ~a."),
-                 Cons_O::createList(SimpleBaseString_O::make(fn), Cons_O::create(make_fixnum(clasp_input_lineno(sin)), nil<T_O>()),
-                                    Cons_O::create(make_fixnum(clasp_input_column(sin)), nil<T_O>())),
+                 Cons_O::createList(SimpleBaseString_O::make(fn),
+                                    Cons_O::create(make_fixnum(stream_input_line_as_uint(sin)), nil<T_O>()),
+                                    Cons_O::create(make_fixnum(stream_input_column_as_uint(sin)), nil<T_O>())),
                  sin);
   };
   return (Values(nil<T_O>()));
@@ -332,13 +333,14 @@ CL_DEFUN T_mv core__reader_error_unmatched_close_parenthesis(T_sp sin, Character
   string fn = info->fileName();
   if (fn.compare("-no-name-") == 0) {
     READER_ERROR(SimpleBaseString_O::make("Unmatched close parenthesis in stream at line: ~a column ~a."),
-                 Cons_O::createList(Cons_O::create(make_fixnum(clasp_input_lineno(sin)), nil<T_O>()),
-                                    Cons_O::create(make_fixnum(clasp_input_column(sin)), nil<T_O>())),
+                 Cons_O::createList(Cons_O::create(make_fixnum(stream_input_line_as_uint(sin)), nil<T_O>()),
+                                    Cons_O::create(make_fixnum(stream_input_column_as_uint(sin)), nil<T_O>())),
                  sin);
   } else {
     READER_ERROR(SimpleBaseString_O::make("Unmatched close parenthesis in file ~a line: ~a column ~a."),
-                 Cons_O::createList(SimpleBaseString_O::make(fn), Cons_O::create(make_fixnum(clasp_input_lineno(sin)), nil<T_O>()),
-                                    Cons_O::create(make_fixnum(clasp_input_column(sin)), nil<T_O>())),
+                 Cons_O::createList(SimpleBaseString_O::make(fn),
+                                    Cons_O::create(make_fixnum(stream_input_line_as_uint(sin)), nil<T_O>()),
+                                    Cons_O::create(make_fixnum(stream_input_column_as_uint(sin)), nil<T_O>())),
                  sin);
   };
   return (Values(nil<T_O>()));
@@ -409,14 +411,14 @@ CL_DEFUN T_mv core__dispatch_macro_character(T_sp sin, Character_sp ch) {
     string fn = info->fileName();
     if (fn.compare("-no-name-") == 0) {
       READER_ERROR(SimpleBaseString_O::make("Undefined reader macro for char '~a' subchar '~a' in stream at line: ~a column ~a."),
-                   Cons_O::createList(ch, subchar, Cons_O::create(make_fixnum(clasp_input_lineno(sin)), nil<T_O>()),
-                                      Cons_O::create(make_fixnum(clasp_input_column(sin)), nil<T_O>())),
+                   Cons_O::createList(ch, subchar, Cons_O::create(make_fixnum(stream_input_line_as_uint(sin)), nil<T_O>()),
+                                      Cons_O::create(make_fixnum(stream_input_column_as_uint(sin)), nil<T_O>())),
                    sin);
     } else {
       READER_ERROR(SimpleBaseString_O::make("Undefined reader macro for char '~a' subchar '~a' in file ~a line: ~a column ~a."),
                    Cons_O::createList(ch, subchar, SimpleBaseString_O::make(fn),
-                                      Cons_O::create(make_fixnum(clasp_input_lineno(sin)), nil<T_O>()),
-                                      Cons_O::create(make_fixnum(clasp_input_column(sin)), nil<T_O>())),
+                                      Cons_O::create(make_fixnum(stream_input_line_as_uint(sin)), nil<T_O>()),
+                                      Cons_O::create(make_fixnum(stream_input_column_as_uint(sin)), nil<T_O>())),
                    sin);
     };
   }

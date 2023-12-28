@@ -38,11 +38,14 @@ namespace gray {
 SYMBOL_EXPORT_SC_(GrayPkg, stream_advance_to_column);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_clear_input);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_clear_output);
+SYMBOL_EXPORT_SC_(GrayPkg, stream_file_descriptor);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_file_length);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_file_position);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_finish_output);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_force_output);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_fresh_line);
+SYMBOL_EXPORT_SC_(GrayPkg, stream_input_column);
+SYMBOL_EXPORT_SC_(GrayPkg, stream_input_line);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_interactive_p);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_line_column);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_line_length);

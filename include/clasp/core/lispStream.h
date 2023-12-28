@@ -129,6 +129,10 @@ inline bool operator&(StreamDirection x, StreamDirection y) {
   return static_cast<bool>(static_cast<uint8_t>(x) & static_cast<uint8_t>(y));
 };
 
+inline bool has_direction(StreamDirection is, StreamDirection want) {
+  return (static_cast<uint8_t>(is) & static_cast<uint8_t>(want)) == static_cast<uint8_t>(want);
+};
+
 enum class StreamIfExists : uint8_t {
   nil = 0,
   error = 1,
@@ -208,7 +212,7 @@ void stream_clear_input(T_sp stream);
 // Character output functions
 
 claspCharacter stream_write_char(T_sp stream, claspCharacter c);
-bool stream_advance_to_column(T_sp stream, int column);
+bool stream_advance_to_column(T_sp stream, T_sp column);
 void stream_write_string(T_sp stream, String_sp data, cl_index start, cl_index end);
 void stream_terpri(T_sp stream);
 bool stream_fresh_line(T_sp stream);
@@ -245,10 +249,24 @@ T_sp stream_string_length(T_sp stream, T_sp string);
 
 // Stream column and line functions
 
-int stream_column(T_sp stream);
-int stream_set_column(T_sp stream, int column);
+T_sp stream_output_column(T_sp stream);
 bool stream_start_line_p(T_sp stream);
-int stream_line(T_sp stream);
+T_sp stream_line(T_sp stream);
+void stream_update_output_cursor(T_sp stream, claspCharacter c);
+void stream_restore_output_cursor(T_sp stream);
+
+uint stream_output_column_as_uint(T_sp stream);
+uint stream_output_line_as_uint(T_sp stream);
+
+// Stream input tracking functions
+
+T_sp stream_input_column(T_sp stream);
+T_sp stream_input_line(T_sp stream);
+void stream_update_input_cursor(T_sp stream, claspCharacter c);
+void stream_restore_input_cursor(T_sp stream);
+
+uint stream_input_column_as_uint(T_sp stream);
+uint stream_input_line_as_uint(T_sp stream);
 
 // Stream pathname functions
 
@@ -257,8 +275,7 @@ T_sp stream_truename(T_sp stream);
 
 // Stream file descriptor functions
 
-int stream_input_handle(T_sp stream);
-int stream_output_handle(T_sp stream);
+int stream_file_descriptor(T_sp stream, StreamDirection direction);
 
 // CL interface function
 
@@ -348,36 +365,21 @@ inline void check_output_stream(T_sp stream) {
 
 class StreamCursor {
 public:
-  /*! Tell that _LineNumber/_Column mean something */
-  bool _cursor_is_valid;
-  /*! Keep track of line number and column - if not valid return 0 */
-  LongLongInt _line_number;
-  /*! Keep track of column - if not valid return 0 */
-  uint _column;
-  LongLongInt _prev_line_number;
-  /*! Keep track of column - if not valid return 0 */
-  uint _prev_column;
+  std::pair<uint, uint> _previous, _current;
 
-public:
-  StreamCursor() : _cursor_is_valid(true), _line_number(1), _column(0){};
+  StreamCursor() : _previous(0, 1), _current(0, 1) {}
 
-public:
-  void advanceLineNumber(T_sp strm, claspCharacter c, int num = 1);
-  void advanceColumn(T_sp strm, claspCharacter c, int num = 1);
-  void invalidate() { this->_cursor_is_valid = false; };
-  void advanceForChar(T_sp strm, char c, char previous) {
-    if ((c == '\n' || c == '\r') && previous != '\r')
-      this->advanceLineNumber(strm, c);
-    else
-      this->advanceColumn(strm, c);
-  }
-  void backup(T_sp strm, claspCharacter c);
+  void save() { _previous = _current; }
+  void restore() { _current = _previous; }
+  void reset() { _previous = _current = std::make_pair(0, 1); }
 
-public:
-  LongLongInt lineNumber() const { return this->_line_number; };
-  uint column() const { return this->_column; };
-  bool atStartOfLine() const { return this->_column == 0; };
-  bool isValid() const { return this->_cursor_is_valid; };
+  uint column() const { return _current.first; }
+  uint& column() { return _current.first; }
+  uint line() const { return _current.second; }
+  uint& line() { return _current.second; }
+
+  claspCharacter update(claspCharacter c);
+  bool start_line_p() const { return this->column() == 0; };
 };
 
 SMART(Stream);
@@ -395,16 +397,13 @@ class AnsiStream_O : public Stream_O {
 public:
   bool _open;
   int _flags; // bitmap of flags
-  int _column;
-  int _line;
-  StreamCursor _input_cursor;
+  StreamCursor _input_cursor, _output_cursor;
 
 public:
-  AnsiStream_O() : _open(true), _column(0), _line(0){};
+  AnsiStream_O() : _open(true){};
   virtual ~AnsiStream_O(); // nontrivial
 
   int restartable_io_error(const char* s);
-  void update_line_column(claspCharacter c);
 
   virtual T_sp close(T_sp abort);
 
@@ -423,7 +422,7 @@ public:
   virtual void clear_input();
 
   virtual claspCharacter write_char(claspCharacter c);
-  virtual bool advance_to_column(int column);
+  virtual bool advance_to_column(T_sp column);
   virtual void write_string(String_sp data, cl_index start, cl_index end);
   virtual void terpri();
   virtual bool fresh_line();
@@ -449,16 +448,21 @@ public:
   virtual T_sp set_position(T_sp pos);
   virtual T_sp string_length(T_sp string);
 
-  virtual int column() const;
-  virtual int set_column(int column);
+  virtual T_sp output_column() const;
   virtual bool start_line_p() const;
-  virtual int line() const;
+  virtual T_sp output_line() const;
+  virtual void update_output_cursor(claspCharacter c);
+  virtual void restore_output_cursor();
+
+  virtual T_sp input_column() const;
+  virtual T_sp input_line() const;
+  virtual void update_input_cursor(claspCharacter c);
+  virtual void restore_input_cursor();
 
   virtual T_sp pathname() const;
   virtual T_sp truename() const;
 
-  virtual int input_handle();
-  virtual int output_handle();
+  virtual int file_descriptor(StreamDirection direction) const;
 
   inline void check_open() {
     if (!_open)
@@ -500,7 +504,10 @@ public:
   void write_byte(T_sp c) override;
 
   claspCharacter write_char(claspCharacter c) override;
-  bool advance_to_column(int column) override;
+  bool advance_to_column(T_sp column) override;
+  void write_string(String_sp data, cl_index start, cl_index end) override;
+  void terpri() override;
+  bool fresh_line() override;
   void clear_output() override;
   void force_output() override;
   void finish_output() override;
@@ -517,9 +524,9 @@ public:
   T_sp set_position(T_sp pos) override;
   T_sp string_length(T_sp string) override;
 
-  int column() const override;
-  int set_column(int column) override;
+  T_sp output_column() const override;
   bool start_line_p() const override;
+  T_sp output_line() const override;
 }; // BroadcastStream class
 
 class ConcatenatedStream_O : public AnsiStream_O {
@@ -550,6 +557,9 @@ public:
   T_sp element_type() const override;
 
   T_sp position() override;
+
+  T_sp input_column() const override;
+  T_sp input_line() const override;
 }; // ConcatenatedStream class
 
 class EchoStream_O : public AnsiStream_O {
@@ -585,25 +595,32 @@ public:
   void clear_input() override;
 
   claspCharacter write_char(claspCharacter c) override;
-  bool advance_to_column(int column) override;
+  bool advance_to_column(T_sp column) override;
+  void write_string(String_sp data, cl_index start, cl_index end) override;
+  void terpri() override;
+  bool fresh_line() override;
   void clear_output() override;
   void force_output() override;
   void finish_output() override;
+
+  void write_sequence(T_sp data, cl_index start, cl_index end) override;
 
   bool input_p() const override;
   bool output_p() const override;
 
   T_sp element_type() const override;
+  T_sp external_format() const override;
 
   T_sp position() override;
 
-  int column() const override;
-  int set_column(int column) override;
+  T_sp output_column() const override;
   bool start_line_p() const override;
+  T_sp output_line() const override;
 
-  int input_handle() override;
-  int output_handle() override;
+  T_sp input_column() const override;
+  T_sp input_line() const override;
 
+  int file_descriptor(StreamDirection direction) const override;
 }; // EchoStream class
 
 class StringStream_O : public AnsiStream_O {
@@ -656,7 +673,6 @@ public:
   static String_sp get_string(T_sp string_output_stream);
   static String_sp get_string_shrink(T_sp string_output_stream);
 
-  void fill(const string& data);
   void clear();
   String_sp get_string();
 
@@ -694,45 +710,54 @@ public:
   void write_byte(T_sp c) override;
 
   claspCharacter read_char() override;
-  claspCharacter read_char_no_hang() override;
-  claspCharacter write_char(claspCharacter c) override;
   void unread_char(claspCharacter c) override;
+  claspCharacter read_char_no_hang() override;
   claspCharacter peek_char() override;
-
-  T_mv read_line() override;
-
-  cl_index read_sequence(T_sp data, cl_index start, cl_index n) override;
-  void write_sequence(T_sp data, cl_index start, cl_index n) override;
-
   ListenResult listen() override;
+  T_mv read_line() override;
   void clear_input() override;
 
-  bool advance_to_column(int column) override;
+  claspCharacter write_char(claspCharacter c) override;
+  bool advance_to_column(T_sp column) override;
+  void write_string(String_sp data, cl_index start, cl_index end) override;
+  void terpri() override;
+  bool fresh_line() override;
   void clear_output() override;
   void force_output() override;
   void finish_output() override;
+
+  cl_index read_sequence(T_sp data, cl_index start, cl_index n) override;
+  void write_sequence(T_sp data, cl_index start, cl_index n) override;
 
   bool input_p() const override;
   bool output_p() const override;
   bool interactive_p() const override;
 
   T_sp element_type() const override;
+  T_sp set_element_type(T_sp type) override;
   T_sp external_format() const override;
   T_sp set_external_format(T_sp format) override;
 
   T_sp length() override;
   T_sp position() override;
   T_sp set_position(T_sp pos) override;
+  T_sp string_length(T_sp string) override;
 
-  int column() const override;
-  int set_column(int column) override;
+  T_sp output_column() const override;
   bool start_line_p() const override;
+  T_sp output_line() const override;
+  void update_output_cursor(claspCharacter c) override;
+  void restore_output_cursor() override;
+
+  T_sp input_column() const override;
+  T_sp input_line() const override;
+  void update_input_cursor(claspCharacter c) override;
+  void restore_input_cursor() override;
 
   T_sp pathname() const override;
   T_sp truename() const override;
 
-  int input_handle() override;
-  int output_handle() override;
+  int file_descriptor(StreamDirection direction) const override;
 }; // SynonymStream class
 
 class TwoWayStream_O : public AnsiStream_O {
@@ -741,9 +766,10 @@ class TwoWayStream_O : public AnsiStream_O {
 public: // instance variables here
   T_sp _input_stream;
   T_sp _output_stream;
+  bool _echo;
 
 public:
-  TwoWayStream_O() : _input_stream(nil<T_O>()), _output_stream(nil<T_O>()){};
+  TwoWayStream_O() : _input_stream(nil<T_O>()), _output_stream(nil<T_O>()), _echo(false){};
 
   static TwoWayStream_sp make(T_sp input_stream, T_sp output_stream);
   static T_sp input_stream(T_sp two_way_stream);
@@ -751,6 +777,8 @@ public:
 
   T_sp input_stream() const { return _input_stream; }
   T_sp output_stream() const { return _output_stream; }
+  bool echo_p() const { return _echo; }
+  bool& echo_p() { return _echo; }
 
   T_sp close(T_sp abort);
 
@@ -769,7 +797,10 @@ public:
   void clear_input() override;
 
   claspCharacter write_char(claspCharacter c) override;
-  bool advance_to_column(int column) override;
+  bool advance_to_column(T_sp column) override;
+  void write_string(String_sp data, cl_index start, cl_index end) override;
+  void terpri() override;
+  bool fresh_line() override;
   void clear_output() override;
   void force_output() override;
   void finish_output() override;
@@ -782,15 +813,22 @@ public:
   bool interactive_p() const override;
 
   T_sp element_type() const override;
+  T_sp external_format() const override;
 
   T_sp position() override;
 
-  int column() const override;
-  int set_column(int column) override;
+  T_sp output_column() const override;
   bool start_line_p() const override;
+  T_sp output_line() const override;
+  void update_output_cursor(claspCharacter c) override;
+  void restore_output_cursor() override;
 
-  int input_handle() override;
-  int output_handle() override;
+  T_sp input_column() const override;
+  T_sp input_line() const override;
+  void update_input_cursor(claspCharacter c) override;
+  void restore_input_cursor() override;
+
+  int file_descriptor(StreamDirection direction) const override;
 }; // TwoWayStream class
 
 class FileStream_O : public AnsiStream_O {
@@ -914,7 +952,6 @@ public:
                                  int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(),
                                  T_sp tempName = nil<T_O>(), bool created = false);
 
-  int fileDescriptor() const { return this->_file_descriptor; };
   virtual bool has_file_position() const override;
 
   T_sp close(T_sp abort) override;
@@ -935,8 +972,7 @@ public:
   T_sp position() override;
   T_sp set_position(T_sp pos) override;
 
-  int input_handle() override;
-  int output_handle() override;
+  int file_descriptor(StreamDirection direction) const override;
 };
 
 class CFileStream_O : public FileStream_O {
@@ -981,8 +1017,7 @@ public:
   T_sp position() override;
   T_sp set_position(T_sp pos) override;
 
-  int input_handle() override;
-  int output_handle() override;
+  int file_descriptor(StreamDirection direction) const override;
 
   void set_buffering_mode(T_sp mode);
 };
@@ -1066,6 +1101,22 @@ template <> struct from_object<core::StreamDirection> {
     }
     core::T_sp type = core::Cons_O::createList(cl::_sym_member, kw::_sym_input, kw::_sym_output, kw::_sym_io, kw::_sym_probe);
     TYPE_ERROR(o, type);
+  }
+};
+
+template <> struct to_object<core::StreamDirection> {
+  typedef core::StreamDirection DeclareType;
+  static core::T_sp convert(DeclareType v) {
+    switch (v) {
+    case core::StreamDirection::input:
+      return kw::_sym_input;
+    case core::StreamDirection::output:
+      return kw::_sym_output;
+    case core::StreamDirection::io:
+      return kw::_sym_io;
+    case core::StreamDirection::probe:
+      return kw::_sym_probe;
+    }
   }
 };
 

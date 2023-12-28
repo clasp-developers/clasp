@@ -165,7 +165,7 @@ uint af_lineno(T_sp obj) {
   } else if (Cons_sp co = obj.asOrNull<Cons_O>()) {
     IMPLEMENT_MEF(fmt::format("Handle cons {} for af_lineno", _rep_(co)));
   } else if (cl__streamp(obj)) {
-    return clasp_input_lineno(obj);
+    return stream_input_line_as_uint(obj);
   } else if (Function_sp fo = obj.asOrNull<Function_O>()) {
     return af_lineno(fo->sourcePosInfo());
   } else if (SourcePosInfo_sp info = obj.asOrNull<SourcePosInfo_O>()) {
@@ -183,7 +183,7 @@ uint af_column(T_sp obj) {
   } else if (gc::IsA<Cons_sp>(obj)) {
     IMPLEMENT_MEF("Handle cons for af_column");
   } else if (cl__streamp(obj)) {
-    return clasp_input_column(obj);
+    return stream_input_column_as_uint(obj);
   } else if (Function_sp fo = obj.asOrNull<Function_O>()) {
     return af_column(fo->sourcePosInfo());
   } else if (SourcePosInfo_sp info = obj.asOrNull<SourcePosInfo_O>()) {

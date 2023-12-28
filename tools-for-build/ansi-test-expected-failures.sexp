@@ -28,6 +28,9 @@ PRINT.LONG-FLOAT.RANDOM
 FORMAT.C.2A
 FORMATTER.C.2A
 
+;;; ansi-test assumes that SYNONYM-STREAM doesn't act like FILE-STREAM
+FILE-LENGTH.ERROR.3
+
 ;;; these no longer crash, but fail
 EXP.ERROR.4
 EXP.ERROR.5

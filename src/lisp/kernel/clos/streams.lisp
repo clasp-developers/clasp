@@ -21,7 +21,12 @@
             %pathname
             %stream-advance-to-column
             %stream-element-type
+            %stream-file-descriptor
+            %stream-input-column
+            %stream-input-line
             %stream-interactive-p
+            %stream-line-column
+            %stream-line-number
             %stream-start-line-p
             %truename)
           "GRAY")
@@ -121,7 +126,7 @@ truename."))
   (:documentation
    "Return the line number where the next character
   will be written, or NIL if that is not meaningful for this stream.
-  The first line is numbered 0. The default method returns NIL."))
+  The first line is numbered 1. The default method returns NIL."))
 
 ;; Extension from CMUCL, SBCL, Mezzano and SICL
 
@@ -240,20 +245,25 @@ truename."))
   (:documentation
    "This is like CL:FILE-LENGTH, but for Gray streams."))
 
-(defgeneric stream-file-descriptor (stream &optional direction)
+(defgeneric stream-file-descriptor (stream direction)
   (:documentation
    "Return the file-descriptor underlaying STREAM, or NIL if not
-   available. DIRECTION must be either :INPUT, or :OUTPUT and is
-   supposed to discriminate in case STREAM is a bidirectional
-   stream. DIRECTION is supposed to default to :INPUT.
+   available. DIRECTION must be either :INPUT, :OUTPUT, :IO or
+   :PROBE. The direction argument is used to discrimate which
+   file descriptor to return for bidirectional streams versus
+   unidirectional streams."))
 
-   An error is signaled if DIRECTION is :INPUT (:OUTPUT), and STREAM
-   is not an input (output) stream. A system-provided :BEFORE method
-   handles this case; user methods do not need to take care of it.
+(defgeneric stream-input-column (stream)
+  (:documentation
+   "Return the column number where the next character
+  will be read, or NIL if that is not meaningful for this stream.
+  The first column on a line is numbered 0."))
 
-   In case STREAM-FILE-DESCRIPTOR is not implemented for STREAM, an
-   error is signaled. That is, users must add methods to explicitly
-   decline by returning NIL."))
+(defgeneric stream-input-line (stream)
+  (:documentation
+   "Return the line number where the next character
+  will be read, or NIL if that is not meaningful for this stream.
+  The first line is numbered 1. The default method returns NIL."))
 
 
 ;;;
@@ -472,9 +482,7 @@ truename."))
   nil)
 
 (defmethod stream-line-column ((stream ansi-stream))
-  (let ((column (sys:file-column stream)))
-    (and (not (minusp column))
-         column)))
+  (%stream-line-column stream))
 
 (defmethod stream-line-column ((stream t))
   (bug-or-error stream 'stream-line-column))
@@ -485,9 +493,7 @@ truename."))
   nil)
 
 (defmethod stream-line-number ((stream ansi-stream))
-  (let ((column (sys:stream-line-number stream)))
-    (and (not (minusp column))
-         column)))
+  (%stream-line-number stream))
 
 ;; LINE-LENGTH
 
@@ -812,42 +818,33 @@ truename."))
 
 ;;; FILE-DESCRIPTOR
 
-(defmethod stream-file-descriptor :before (stream &optional (direction :input))
-  (multiple-value-bind (predicate kind)     
-      (case direction
-        (:input  (values 'input-stream-p  "input"))
-        (:output (values 'output-stream-p "output"))
-        (t
-         (error 'simple-type-error
-                :format-control "Not a valid direction, ~S; must be one of ~
-                                 :INPUT or :OUTPUT."
-                :format-arguments (list direction)
-                :datum direction
-                :expected-type '(member :input :output))))
-    (unless (funcall predicate stream)
-      (error 'simple-type-error
-             :format-control "Not an ~A stream, ~S, although ~S ~
-                              was provided as DIRECTION."
-             :format-arguments (list kind stream direction)
-             :datum stream
-             :expected-type `(satisfies ,predicate)))))
+(defmethod stream-file-descriptor (stream direction)
+  (declare (ignore stream direction))
+  nil)
 
-(defmethod stream-file-descriptor (stream &optional direction)
-  (declare (ignore direction))
-  (bug-or-error stream 'stream-file-descriptor))
+(defmethod stream-file-descriptor ((stream ansi-stream) direction)
+  (%stream-file-descriptor streamm direction))
 
-(defmethod stream-file-descriptor ((stream two-way-stream) &optional (direction
-                                                                      :input))
-  (stream-file-descriptor
-   (case direction
-     (:input  (two-way-stream-input-stream stream))
-     (:output (two-way-stream-output-stream stream)))
-   direction))
 
-(defmethod stream-file-descriptor ((stream file-stream) &optional (direction
-                                                                   :input))
-  (declare (ignore direction))
-  (ext:file-stream-file-descriptor stream))
+;;; STREAM-INPUT-COLUMN
+
+(defmethod stream-input-column (stream)
+  (declare (ignore stream))
+  nil)
+
+(defmethod stream-input-column ((stream ansi-stream))
+  (%stream-input-column stream))
+
+
+;;; STREAM-INPUT-LINE
+
+(defmethod stream-input-line (stream)
+  (declare (ignore stream))
+  nil)
+
+(defmethod stream-input-line ((stream ansi-stream))
+  (%stream-input-line stream))
+
 
 ;;; Setup
 

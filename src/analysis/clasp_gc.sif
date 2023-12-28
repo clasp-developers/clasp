@@ -5039,25 +5039,30 @@
              :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_open")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_column")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::AnsiStream_O" :layout-offset-field-names ("_line")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("_input_cursor" "._line_number")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("_input_cursor" "._column")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_line_number")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".first")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::AnsiStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_column")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::AnsiStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::AnsiStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::AnsiStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::AnsiStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::AnsiStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::AnsiStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".second")}
 {class-kind :stamp-name "STAMPWTAG_core__TwoWayStream_O" :stamp-key "core::TwoWayStream_O"
             :parent-class "core::AnsiStream_O" :lisp-class-base "core::AnsiStream_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -5065,25 +5070,30 @@
              :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_open")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_column")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_line")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("_input_cursor" "._line_number")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("_input_cursor" "._column")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_line_number")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".first")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::TwoWayStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_column")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::TwoWayStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::TwoWayStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::TwoWayStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::TwoWayStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::TwoWayStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::TwoWayStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".second")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::TwoWayStream_O" :layout-offset-field-names ("_input_stream")}
@@ -5098,25 +5108,30 @@
              :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_open")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_column")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_line")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("_input_cursor" "._line_number")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("_input_cursor" "._column")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_line_number")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".first")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::SynonymStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_column")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::SynonymStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::SynonymStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::SynonymStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::SynonymStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::SynonymStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::SynonymStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".second")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
              :offset-base-ctype "core::SynonymStream_O" :layout-offset-field-names ("_symbol")}
@@ -5128,25 +5143,30 @@
              :offset-base-ctype "core::ConcatenatedStream_O" :layout-offset-field-names ("_open")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::ConcatenatedStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::ConcatenatedStream_O" :layout-offset-field-names ("_column")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::ConcatenatedStream_O" :layout-offset-field-names ("_line")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("_input_cursor" "._line_number")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("_input_cursor" "._column")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_line_number")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".first")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::ConcatenatedStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_column")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::ConcatenatedStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::ConcatenatedStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::ConcatenatedStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::ConcatenatedStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::ConcatenatedStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::ConcatenatedStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".second")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::ConcatenatedStream_O"
@@ -5158,25 +5178,30 @@
              :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_open")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_column")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_line")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("_input_cursor" "._line_number")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("_input_cursor" "._column")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_line_number")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".first")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::FileStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_column")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::FileStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::FileStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::FileStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::FileStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::FileStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::FileStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".second")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_byte_size")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -5215,25 +5240,30 @@
              :offset-base-ctype "core::CFileStream_O" :layout-offset-field-names ("_open")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::CFileStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::CFileStream_O" :layout-offset-field-names ("_column")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::CFileStream_O" :layout-offset-field-names ("_line")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::CFileStream_O"
-             :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::CFileStream_O"
-             :layout-offset-field-names ("_input_cursor" "._line_number")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::CFileStream_O"
-             :layout-offset-field-names ("_input_cursor" "._column")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::CFileStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_line_number")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".first")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::CFileStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_column")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::CFileStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::CFileStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::CFileStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::CFileStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::CFileStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::CFileStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".second")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::CFileStream_O" :layout-offset-field-names ("_byte_size")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -5276,25 +5306,30 @@
              :offset-base-ctype "core::PosixFileStream_O" :layout-offset-field-names ("_open")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::PosixFileStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::PosixFileStream_O" :layout-offset-field-names ("_column")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::PosixFileStream_O" :layout-offset-field-names ("_line")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::PosixFileStream_O"
-             :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::PosixFileStream_O"
-             :layout-offset-field-names ("_input_cursor" "._line_number")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::PosixFileStream_O"
-             :layout-offset-field-names ("_input_cursor" "._column")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::PosixFileStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_line_number")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".first")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::PosixFileStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_column")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::PosixFileStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::PosixFileStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::PosixFileStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::PosixFileStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::PosixFileStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::PosixFileStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".second")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::PosixFileStream_O" :layout-offset-field-names ("_byte_size")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -5341,25 +5376,30 @@
              :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_open")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_column")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_line")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("_input_cursor" "._line_number")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("_input_cursor" "._column")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_line_number")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".first")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::BroadcastStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_column")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::BroadcastStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::BroadcastStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::BroadcastStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::BroadcastStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::BroadcastStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::BroadcastStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".second")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::BroadcastStream_O" :layout-offset-field-names ("_streams")}
@@ -5370,25 +5410,30 @@
              :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_open")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_column")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_line")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("_input_cursor" "._line_number")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("_input_cursor" "._column")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_line_number")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".first")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::StringStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_column")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::StringStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::StringStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::StringStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::StringStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::StringStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::StringStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".second")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Array_O>"
              :offset-base-ctype "core::StringStream_O" :layout-offset-field-names ("_contents")}
@@ -5400,25 +5445,30 @@
              :offset-base-ctype "core::StringOutputStream_O" :layout-offset-field-names ("_open")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::StringOutputStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringOutputStream_O" :layout-offset-field-names ("_column")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringOutputStream_O" :layout-offset-field-names ("_line")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("_input_cursor" "._line_number")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("_input_cursor" "._column")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_line_number")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".first")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::StringOutputStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_column")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::StringOutputStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::StringOutputStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::StringOutputStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::StringOutputStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::StringOutputStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::StringOutputStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".second")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Array_O>"
              :offset-base-ctype "core::StringOutputStream_O"
@@ -5431,25 +5481,30 @@
              :offset-base-ctype "core::StringInputStream_O" :layout-offset-field-names ("_open")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::StringInputStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringInputStream_O" :layout-offset-field-names ("_column")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::StringInputStream_O" :layout-offset-field-names ("_line")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("_input_cursor" "._line_number")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("_input_cursor" "._column")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_line_number")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".first")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::StringInputStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_column")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::StringInputStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::StringInputStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::StringInputStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::StringInputStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::StringInputStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::StringInputStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".second")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Array_O>"
              :offset-base-ctype "core::StringInputStream_O"
@@ -5467,25 +5522,30 @@
              :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_open")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_flags")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_column")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_line")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("_input_cursor" "._cursor_is_valid")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("_input_cursor" "._line_number")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("_input_cursor" "._column")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
-             :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_line_number")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".first")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::EchoStream_O"
-             :layout-offset-field-names ("_input_cursor" "._prev_column")}
+             :layout-offset-field-names ("_input_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::EchoStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::EchoStream_O"
+             :layout-offset-field-names ("_input_cursor" "._current" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::EchoStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::EchoStream_O"
+             :layout-offset-field-names ("_output_cursor" "._previous" ".second")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::EchoStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".first")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::EchoStream_O"
+             :layout-offset-field-names ("_output_cursor" "._current" ".second")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::EchoStream_O" :layout-offset-field-names ("_last_char")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
