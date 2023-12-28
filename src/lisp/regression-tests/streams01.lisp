@@ -327,10 +327,10 @@
 
 (test gray-cursor.01
   (let ((stream (make-instance 'bidirectional-char-stream)))
-    (values (core:stream-column stream)
-            (core:stream-linenumber stream)
-            (core:file-column stream)
-            (core:stream-line-number stream)))
+    (values (core:stream-input-column stream)
+            (core:stream-input-line stream)
+            (core:stream-output-column stream)
+            (core:stream-output-line stream)))
   (23 29 31 37))
 
 (test input-cursor.01
@@ -338,8 +338,8 @@
 cd")))
     (flet ((loc (ret)
              (list ret
-                   :column (core:stream-column stream)
-                   :line (core:stream-linenumber stream))))
+                   :column (core:stream-input-column stream)
+                   :line (core:stream-input-line stream))))
       (values (loc (read-char stream))
               (loc (unread-char #\a stream))
               (loc (peek-char nil stream))
@@ -359,8 +359,8 @@ cd")))
   (let ((stream (make-string-output-stream)))
     (flet ((loc (ret)
              (list ret
-                   :column (core:file-column stream)
-                   :line (core:stream-line-number stream))))
+                   :column (core:stream-output-column stream)
+                   :line (core:stream-output-line stream))))
       (values (loc (write-char #\a stream))
               (loc (write-char #\b stream))
               (loc (write-char #\Newline stream))

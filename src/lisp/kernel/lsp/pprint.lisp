@@ -121,7 +121,7 @@
 (defun make-pretty-stream (target)
   (make-instance 'pretty-stream
                  :target target
-		 :buffer-start-column (or (file-column target) 0)
+		 :buffer-start-column (or (stream-output-column target) 0)
                  :line-length (or *print-right-margin*
                                   (gray:stream-line-length target)
                                   default-line-length)))

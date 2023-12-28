@@ -396,9 +396,8 @@ claspCharacter stream_write_char(T_sp stream, claspCharacter c) {
 // avoided.
 CL_LISPIFY_NAME("gray:%stream-advance-to-column")
 CL_DEFUN bool stream_advance_to_column(T_sp stream, T_sp column) {
-  return stream.isA<AnsiStream_O>()
-             ? stream.as_unsafe<AnsiStream_O>()->advance_to_column(column)
-             : T_sp(eval::funcall(gray::_sym_stream_advance_to_column, stream, column).notnilp();
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->advance_to_column(column)
+                                    : T_sp(eval::funcall(gray::_sym_stream_advance_to_column, stream, column)).notnilp();
 }
 
 void stream_write_string(T_sp stream, String_sp data, cl_index start, cl_index end) {
@@ -1282,12 +1281,12 @@ CL_DEFUN T_sp cl__unread_char(Character_sp ch, T_sp input_stream) {
 };
 
 CL_LAMBDA(stream);
-CL_DOCSTRING("Return the current column of the stream");
-CL_DEFUN uint core__file_column(T_sp strm) { return stream_output_column_as_uint(coerce::outputStreamDesignator(strm)); };
+CL_DOCSTRING("Return the current output column of the stream");
+CL_DEFUN uint core__stream_output_column(T_sp strm) { return stream_output_column_as_uint(coerce::outputStreamDesignator(strm)); };
 
 CL_LAMBDA(stream);
-CL_DOCSTRING("Return the current line number of the stream");
-CL_DEFUN uint core__stream_line_number(T_sp strm) { return stream_output_line_as_uint(coerce::outputStreamDesignator(strm)); };
+CL_DOCSTRING("Return the current output line of the stream");
+CL_DEFUN uint core__stream_output_line(T_sp strm) { return stream_output_line_as_uint(coerce::outputStreamDesignator(strm)); };
 
 CL_LAMBDA(seq stream &key (start 0) end);
 CL_DOCSTRING(R"dx(Writes the elements of the subsequence of sequence bounded by start
@@ -1677,16 +1676,12 @@ void wsock_error(const char* err_msg, T_sp strm) {
 #endif
 
 CL_LAMBDA(stream);
-CL_DOCSTRING(R"dx(streamLinenumber)dx");
-CL_DEFUN uint core__stream_linenumber(T_sp tstream) {
-  return stream_input_line_as_uint(coerce::inputStreamDesignator(tstream));
-};
+CL_DOCSTRING("Return the current input line of the stream");
+CL_DEFUN uint core__stream_input_line(T_sp stream) { return stream_input_line_as_uint(coerce::inputStreamDesignator(stream)); };
 
 CL_LAMBDA(stream);
-CL_DOCSTRING(R"dx(streamColumn)dx");
-CL_DEFUN uint core__stream_column(T_sp tstream) {
-  return stream_input_column_as_uint(coerce::inputStreamDesignator(tstream));
-}
+CL_DOCSTRING("Return the current input column of the stream");
+CL_DEFUN uint core__stream_input_column(T_sp stream) { return stream_input_column_as_uint(coerce::inputStreamDesignator(stream)); }
 
 void clasp_write_characters(const char* buf, int sz, T_sp strm) {
   for (int i(0); i < sz; ++i) {
@@ -1900,7 +1895,7 @@ bool AnsiStream_O::advance_to_column(T_sp col) {
   if (!gc::IsA<Real_sp>(col))
     return false;
 
-  uint _col = clasp_to_integral<uint>(clasp_floor1(gc::As_unsafe<Real_O>(col)));
+  uint _col = clasp_to_integral<uint>(clasp_floor1(gc::As_unsafe<Real_sp>(col)));
 
   while (_output_cursor.column() < _col)
     write_char(' ');
