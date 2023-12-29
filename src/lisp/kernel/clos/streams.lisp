@@ -83,7 +83,7 @@
 
 (defgeneric stream-external-format (stream)
   (:documentation
-   "Return the external format the STREAM. The default method returns
+   "Return the external format of the STREAM. The default method returns
   :default."))
 
 (defgeneric (setf stream-external-format) (new-value stream)
