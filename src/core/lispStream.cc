@@ -4589,11 +4589,12 @@ void FileStream_O::parse_external_format(T_sp format) {
 }
 
 T_sp FileStream_O::set_element_type(T_sp type) {
-  // Need to add logic here
+  _last_char = EOF;
   return _element_type = type;
 }
 
 T_sp FileStream_O::set_external_format(T_sp format) {
+  _last_char = EOF;
   T_sp t;
   if (_byte_size < 0) {
     _byte_size = -_byte_size;

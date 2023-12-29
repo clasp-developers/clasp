@@ -563,6 +563,27 @@ cd")))
     character #\" nil character
     (unsigned-byte 8) 34 (unsigned-byte 8))))
 
+(test-expect-error stream-element-type.06
+  (let ((name (core:mkstemp "stream-element-type")))
+    (unwind-protect
+         (progn
+           (with-open-file (stream name :if-does-not-exist :create
+                                        :if-exists :supersede
+                                        :direction :output
+                                        :element-type 'character)
+             (write-char #\! stream)
+             (setf (stream-element-type stream) '(unsigned-byte 8))
+             (write-byte 34 stream))
+           (with-open-file (stream name :direction :input
+                                        :element-type 'character)
+             (list (read-char stream)
+                   (setf (stream-element-type stream) '(unsigned-byte 8))
+                   (read-byte stream)
+                   (setf (stream-element-type stream) 'character)
+                   (unread-char #\! stream))))
+      (delete-file name)))
+  :type error)
+
 (test stream-external-format.01
   (let ((name (core:mkstemp "stream-external-format")))
     (unwind-protect
