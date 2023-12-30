@@ -70,6 +70,7 @@ SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, open_stream_p);
 SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, output_stream_p);
 SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, pathname);
 SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, stream_element_type);
+SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, stream_external_format);
 SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, streamp);
 SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, truename);
 

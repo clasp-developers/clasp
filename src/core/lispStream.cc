@@ -510,15 +510,27 @@ CL_DEFUN T_sp stream_element_type(T_sp stream) {
                                     : eval::funcall(gray::_sym_stream_element_type, stream);
 }
 
-T_sp stream_set_element_type(T_sp stream, T_sp type) {
+// This function is exposed to CL because it is needed to implement
+// the generic version of (SETF CL:STREAM-ELEMENT-TYPE). It will be
+// unexported by streams.lisp.
+CL_LISPIFY_NAME("gray:%stream-set-element-type")
+CL_DEFUN T_sp stream_set_element_type(T_sp stream, T_sp type) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->set_element_type(type) : _lisp->_true();
 }
 
-T_sp stream_external_format(T_sp stream) {
+// This function is exposed to CL because it is needed to implement
+// the generic version of CL:STREAM-EXTERNAL-FORMAT. It will be
+// unexported by streams.lisp.
+CL_LISPIFY_NAME("gray:%stream-external-format")
+CL_DEFUN T_sp stream_external_format(T_sp stream) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->external_format() : (T_sp)kw::_sym_default;
 }
 
-T_sp stream_set_external_format(T_sp stream, T_sp format) {
+// This function is exposed to CL because it is needed to implement
+// the generic version of (SETF CL:STREAM-EXTERNAL-FORMAT). It will be
+// unexported by streams.lisp.
+CL_LISPIFY_NAME("gray:%stream-set-external-format")
+CL_DEFUN T_sp stream_set_external_format(T_sp stream, T_sp format) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->set_external_format(format) : (T_sp)kw::_sym_default;
 }
 
@@ -809,10 +821,17 @@ CL_DOCSTRING(R"dx(Returns a type specifier that indicates the types of objects t
 be read from or written to stream.)dx");
 CL_DEFUN T_sp cl__stream_element_type(T_sp stream) { return stream_element_type(stream); }
 
+CL_LISPIFY_NAME("cl:stream-element-type")
+CL_DOCSTRING(R"dx(Set the type specifier that indicates the types of objects that may
+be read from or written to stream.)dx");
+CL_DEFUN_SETF T_sp cl__set_stream_element_type(T_sp type, T_sp stream) { return stream_set_element_type(stream, type); }
+
 CL_DOCSTRING(R"dx(Returns an external file format designator for the stream.)dx");
 CL_DEFUN T_sp cl__stream_external_format(T_sp stream) { return stream_external_format(stream); }
 
-CL_DEFUN T_sp core__set_stream_external_format(T_sp stream, T_sp format) { return stream_set_external_format(stream, format); }
+CL_LISPIFY_NAME("cl:stream-external-format")
+CL_DOCSTRING(R"dx(Sets the external file format designator for the stream.)dx");
+CL_DEFUN_SETF T_sp cl__set_stream_external_format(T_sp format, T_sp stream) { return stream_set_external_format(stream, format); }
 
 CL_LAMBDA(arg);
 CL_DOCSTRING(R"dx(streamp)dx");
@@ -2180,8 +2199,24 @@ bool BroadcastStream_O::output_p() const { return true; }
 
 T_sp BroadcastStream_O::element_type() const { return _streams.nilp() ? _lisp->_true() : stream_element_type(last_stream()); }
 
+T_sp BroadcastStream_O::set_element_type(T_sp type) {
+  T_sp result = _lisp->_true();
+  for (T_sp l = _streams; !l.nilp(); l = oCdr(l)) {
+    result = stream_set_element_type(oCar(l), type);
+  }
+  return result;
+}
+
 T_sp BroadcastStream_O::external_format() const {
   return _streams.nilp() ? (T_sp)kw::_sym_default : stream_external_format(last_stream());
+}
+
+T_sp BroadcastStream_O::set_external_format(T_sp format) {
+  T_sp result = kw::_sym_default;
+  for (T_sp l = _streams; !l.nilp(); l = oCdr(l)) {
+    result = stream_set_external_format(oCar(l), format);
+  }
+  return result;
 }
 
 T_sp BroadcastStream_O::length() { return _streams.nilp() ? (T_sp)clasp_make_fixnum(0) : stream_length(last_stream()); }
@@ -2345,10 +2380,19 @@ void ConcatenatedStream_O::clear_input() {
 
 bool ConcatenatedStream_O::input_p() const { return true; }
 
-// this is wrong, must be specific for concatenated streams
-// should be concatenated_element_type with a proper definition for that
-// ccl does more or less (stream-element-type (concatenated-stream-current-input-stream s))
 T_sp ConcatenatedStream_O::element_type() const { return _streams.nilp() ? _lisp->_true() : stream_element_type(oCar(_streams)); }
+
+T_sp ConcatenatedStream_O::set_element_type(T_sp type) {
+  return _streams.nilp() ? _lisp->_true() : stream_set_element_type(oCar(_streams), type);
+}
+
+T_sp ConcatenatedStream_O::external_format() const {
+  return _streams.nilp() ? _lisp->_true() : stream_external_format(oCar(_streams));
+}
+
+T_sp ConcatenatedStream_O::set_external_format(T_sp format) {
+  return _streams.nilp() ? (T_sp)kw::_sym_default : stream_set_external_format(oCar(_streams), format);
+}
 
 T_sp ConcatenatedStream_O::input_column() const {
   return _streams.nilp() ? (T_sp)clasp_make_fixnum(0) : stream_input_column(oCar(_streams));
@@ -2487,7 +2531,17 @@ bool EchoStream_O::output_p() const { return true; }
 
 T_sp EchoStream_O::element_type() const { return stream_element_type(_input_stream); }
 
+T_sp EchoStream_O::set_element_type(T_sp type) {
+  stream_set_element_type(_output_stream, type);
+  return stream_set_element_type(_input_stream, type);
+}
+
 T_sp EchoStream_O::external_format() const { return stream_external_format(_input_stream); }
+
+T_sp EchoStream_O::set_external_format(T_sp format) {
+  stream_set_external_format(_output_stream, format);
+  return stream_set_external_format(_input_stream, format);
+}
 
 T_sp EchoStream_O::position() { return nil<T_O>(); }
 
@@ -3030,7 +3084,17 @@ bool TwoWayStream_O::interactive_p() const { return stream_interactive_p(_input_
 
 T_sp TwoWayStream_O::element_type() const { return stream_element_type(_input_stream); }
 
+T_sp TwoWayStream_O::set_element_type(T_sp type) {
+  stream_set_element_type(_output_stream, type);
+  return stream_set_element_type(_input_stream, type);
+}
+
 T_sp TwoWayStream_O::external_format() const { return stream_external_format(_input_stream); }
+
+T_sp TwoWayStream_O::set_external_format(T_sp format) {
+  stream_set_external_format(_output_stream, format);
+  return stream_set_external_format(_input_stream, format);
+}
 
 T_sp TwoWayStream_O::position() { return nil<T_O>(); }
 
@@ -4525,11 +4589,12 @@ void FileStream_O::parse_external_format(T_sp format) {
 }
 
 T_sp FileStream_O::set_element_type(T_sp type) {
-  // Need to add logic here
+  _last_char = EOF;
   return _element_type = type;
 }
 
 T_sp FileStream_O::set_external_format(T_sp format) {
+  _last_char = EOF;
   T_sp t;
   if (_byte_size < 0) {
     _byte_size = -_byte_size;

@@ -517,7 +517,9 @@ public:
   bool output_p() const override;
 
   T_sp element_type() const override;
+  T_sp set_element_type(T_sp type) override;
   T_sp external_format() const override;
+  T_sp set_external_format(T_sp format) override;
 
   T_sp length() override;
   T_sp position() override;
@@ -555,6 +557,9 @@ public:
   bool input_p() const override;
 
   T_sp element_type() const override;
+  T_sp set_element_type(T_sp type) override;
+  T_sp external_format() const override;
+  T_sp set_external_format(T_sp format) override;
 
   T_sp position() override;
 
@@ -609,7 +614,9 @@ public:
   bool output_p() const override;
 
   T_sp element_type() const override;
+  T_sp set_element_type(T_sp type) override;
   T_sp external_format() const override;
+  T_sp set_external_format(T_sp format) override;
 
   T_sp position() override;
 
@@ -813,7 +820,9 @@ public:
   bool interactive_p() const override;
 
   T_sp element_type() const override;
+  T_sp set_element_type(T_sp type) override;
   T_sp external_format() const override;
+  T_sp set_external_format(T_sp format) override;
 
   T_sp position() override;
 

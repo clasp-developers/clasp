@@ -21,12 +21,15 @@
             %pathname
             %stream-advance-to-column
             %stream-element-type
+            %stream-external-format
             %stream-file-descriptor
             %stream-input-column
             %stream-input-line
             %stream-interactive-p
             %stream-line-column
             %stream-line-number
+            %stream-set-element-type
+            %stream-set-external-format
             %stream-start-line-p
             %truename)
           "GRAY")
@@ -77,6 +80,16 @@
    "Set the type specifier of the kind of object returned by the
   STREAM. There is no default method as this is optional and only
   needed for bivalent streams."))
+
+(defgeneric stream-external-format (stream)
+  (:documentation
+   "Return the external format of the STREAM. The default method returns
+  :default."))
+
+(defgeneric (setf stream-external-format) (new-value stream)
+  (:documentation
+   "Set the external format of the STREAM. There is no default method
+   as this is optional."))
 
 (defgeneric stream-finish-output (stream)
   (:documentation
@@ -395,8 +408,25 @@ truename."))
 (defmethod stream-element-type ((stream ansi-stream))
   (%stream-element-type stream))
 
+(defmethod (setf stream-element-type) (new-value (stream ansi-stream))
+  (%stream-set-element-type stream new-value))
+
 (defmethod stream-element-type ((stream t))
   (bug-or-error stream 'stream-element-type))
+
+;; STREAM-EXTERNAL-FORMAT
+
+(defmethod stream-external-format ((stream ansi-stream))
+  (%stream-external-format stream))
+
+(defmethod (setf stream-external-format) (new-value (stream ansi-stream))
+  (%stream-set-external-format stream new-value))
+
+(defmethod stream-external-format ((stream fundamental-stream))
+  :default)
+
+(defmethod stream-external-format ((stream t))
+  (bug-or-error stream 'stream-external-format))
 
 ;; FINISH-OUTPUT
 
@@ -851,6 +881,7 @@ truename."))
 (core:defconstant-equal +conflicting-symbols+
   '(cl:close
     cl:stream-element-type
+    cl:stream-external-format
     cl:input-stream-p
     cl:open-stream-p
     cl:output-stream-p
@@ -868,10 +899,14 @@ truename."))
           for cl-symbol in '#.+conflicting-symbols+
           for gray-symbol = (find-symbol (symbol-name cl-symbol) gray-package)
           unless (typep (fdefinition cl-symbol) 'generic-function)
-          do (setf (fdefinition cl-symbol) (fdefinition gray-symbol))
-	  (unintern gray-symbol gray-package)
-          (import cl-symbol gray-package)
-          (export cl-symbol gray-package))
+            do (setf (fdefinition cl-symbol)
+                     (fdefinition gray-symbol))
+               (when (fboundp `(setf ,gray-symbol))
+                 (setf (fdefinition `(setf ,cl-symbol))
+                       (fdefinition `(setf ,gray-symbol))))
+               (unintern gray-symbol gray-package)
+               (import cl-symbol gray-package)
+               (export cl-symbol gray-package))
     nil))
 
 (pushnew :gray-streams-module *features*)
