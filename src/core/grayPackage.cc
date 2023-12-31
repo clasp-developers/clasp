@@ -41,6 +41,7 @@ SYMBOL_EXPORT_SC_(GrayPkg, stream_clear_output);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_file_descriptor);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_file_length);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_file_position);
+SYMBOL_EXPORT_SC_(GrayPkg, stream_file_string_length);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_finish_output);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_force_output);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_fresh_line);

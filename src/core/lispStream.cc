@@ -552,7 +552,8 @@ T_sp stream_set_position(T_sp stream, T_sp pos) {
 }
 
 T_sp stream_string_length(T_sp stream, T_sp string) {
-  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->string_length(string) : nil<T_O>();
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->string_length(string)
+                                    : eval::funcall(gray::_sym_stream_file_string_length, stream, string);
 }
 
 // Stream column and line functions

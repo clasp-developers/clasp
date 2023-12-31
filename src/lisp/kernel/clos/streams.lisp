@@ -258,6 +258,12 @@ truename."))
   (:documentation
    "This is like CL:FILE-LENGTH, but for Gray streams."))
 
+(defgeneric stream-file-string-length (stream object)
+  (:documentation
+   "This is like CL:FILE-LENGTH, but for Gray streams. The
+   default method for FUNDAMENTAL-CHARACTER-OUTPUT-STREAM
+   returns NIL."))
+
 (defgeneric stream-file-descriptor (stream direction)
   (:documentation
    "Return the file-descriptor underlaying STREAM, or NIL if not
@@ -735,6 +741,15 @@ truename."))
 
 (defmethod stream-file-length ((stream t))
   (error 'type-error :datum stream :expected-type 'file-stream))
+
+;; FILE-STRING-LENGTH
+
+(defmethod stream-file-string-length ((stream ansi-stream) object)
+  (file-string-length stream object))
+
+(defmethod stream-file-string-length ((stream fundamental-character-output-stream) object)
+  (declare (ignore stream object))
+  nil)
 
 ;; STREAMP
 
