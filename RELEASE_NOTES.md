@@ -10,12 +10,16 @@
   for Gray streams.
 * Generic versions of `cl:pathname` and `cl:truename`, both of which
   are available after the Gray stream modules is required.
-* Generic `(setf gray:stream-element-type)` for basic support of
-  bivalent streams.
+* Generic `(setf gray:stream-element-type)`,
+  `gray:stream-external-format`, and 
+  `(setf gray:stream-external-format)` for basic support of bivalent 
+  streams.
+* Generic `gray:stream-file-string-length` which implements
+  `cl:file-string-length` for Gray streams.
 * The bytecode compiler warns about unused variables.
 
 ## Changed
-* `cl:format` and `pprint` now respect the value returned bye
+* `cl:format` and `pprint` now respect the value returned by
   `gray:stream-line-length`.
 * `cl:close` now uses the `:abort` argument to decide what to do with
   the resulting file. If `:abort` is non-NIL and the file was created
