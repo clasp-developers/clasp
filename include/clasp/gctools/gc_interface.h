@@ -61,7 +61,6 @@ class KeywordArgument;
 class RequiredArgument;
 class SymbolClassHolderPair;
 class SymbolStorage;
-class WRAPPER_Translator_O;
 class DynamicBinding;
 class AuxArgument;
 class OptionalArgument;

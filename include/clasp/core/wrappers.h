@@ -36,54 +36,6 @@ THE SOFTWARE.
 
 // #define DEBUG_METHOIDS 1
 
-namespace core {
-
-class WRAPPER_Translator_O : public core::GlobalSimpleFunBase_O {
-  LISP_CLASS(core, CorePkg, WRAPPER_Translator_O, "WRAPPER_Translator", GlobalSimpleFunBase_O);
-
-public:
-  typedef WRAPPER_Translator_O MyType;
-  typedef core::T_O* (*Type)(core::T_O* arg);
-
-public:
-  Type fptr;
-
-public:
-  WRAPPER_Translator_O(Type ptr) : fptr(ptr) {
-    printf("%s:%d:%s What do I do with CodePtr\n", __FILE__, __LINE__, __FUNCTION__);
-    //
-    // Initialize the _EntryPoints with the addresses of this classes entrypoints
-    //
-    this->_EntryPoints.template setup<MyType>();
-    this->validateCodePointer((void**)&this->fptr, sizeof(this->fptr));
-  };
-
-public:
-  typedef GlobalSimpleFun_O TemplatedBase;
-  virtual size_t templatedSizeof() const override { return sizeof(WRAPPER_Translator_O); };
-
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
-    this->Base::fixupInternalsForSnapshotSaveLoad(fixup);
-    this->fixupOneCodePointer(fixup, (void**)&this->fptr);
-  }
-  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    WRAPPER_Translator_O* closure = gctools::untag_general<WRAPPER_Translator_O*>((WRAPPER_Translator_O*)lcc_closure);
-    core::T_O* arg0 = lcc_args[0];
-    return gctools::return_type((closure->fptr)(arg0), 1);
-  }
-  static inline LISP_ENTRY_0() { wrong_number_of_arguments(lcc_closure, 0, 1); };
-  static inline LISP_ENTRY_1() {
-    WRAPPER_Translator_O* closure = gctools::untag_general<WRAPPER_Translator_O*>((WRAPPER_Translator_O*)lcc_closure);
-    return gctools::return_type((closure->fptr)(lcc_farg0), 1);
-  }
-  static inline LISP_ENTRY_2() { wrong_number_of_arguments(lcc_closure, 2, 1); };
-  static inline LISP_ENTRY_3() { wrong_number_of_arguments(lcc_closure, 3, 1); };
-  static inline LISP_ENTRY_4() { wrong_number_of_arguments(lcc_closure, 4, 1); };
-  static inline LISP_ENTRY_5() { wrong_number_of_arguments(lcc_closure, 5, 1); };
-};
-
-}; // namespace core
-
 #include <clasp/core/arguments.h>
 #include <clasp/core/lambdaListHandler.fwd.h>
 #include <type_traits>
@@ -234,17 +186,6 @@ public:
 }; // namespace clbind
 
 namespace core {
-
-inline void wrap_translator(const string& packageName, const string& name, core::T_O* (*fp)(core::T_O*), const string& filename,
-                            const string& arguments = "", const string& declares = "", const string& docstring = "",
-                            const string& sourceFile = "", int sourceLine = 0) {
-  Symbol_sp symbol = lispify_intern(name, packageName);
-  using VariadicType = WRAPPER_Translator_O;
-  //    FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
-  auto entry = gctools::GC<VariadicType>::allocate(fp);
-  lisp_bytecode_defun(symbol_function, clbind::DefaultWrapper::BytecodeP, symbol, packageName, entry, arguments, declares,
-                      docstring, sourceFile, sourceLine, 1);
-}
 
 template <typename RT, typename... ARGS>
 void wrap_function(const string& packageName, const string& name, RT (*fp)(ARGS...), const string& arguments = "",
