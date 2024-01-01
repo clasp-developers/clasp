@@ -207,7 +207,7 @@ struct function_registration<FunctionPointerType, policies<Policies...>, PureOut
         WRAPPER_VariadicFunction<FunctionPointerType, policies<Policies...>, typename inValuePack::type, clbind::DefaultWrapper>;
     core::FunctionDescription_sp fdesc = makeFunctionDescription(symbol, nil<core::T_O>());
     auto entry = gctools::GC<VariadicType>::allocate(this->functionPtr, fdesc, nil<core::T_O>());
-    core::lisp_bytecode_defun(this->m_setf ? core::symbol_function_setf : core::symbol_function, clbind::DefaultWrapper::BytecodeP,
+    core::lisp_bytecode_defun(this->m_setf ? core::symbol_function_setf : core::symbol_function,
                               symbol, core::lisp_currentPackageName(), entry, m_lambdalist, m_declares, m_docstring,
                               "=external=", 0, (CountFunctionArguments<FunctionPointerType>::value), m_autoExport,
                               GatherPureOutValues<policies<Policies...>, -1>::gather());

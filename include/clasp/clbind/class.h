@@ -387,7 +387,7 @@ template <class Class, class Pointer, class Signature, class Policies> struct co
     using VariadicType = WRAPPER_Constructor_O<Signature, Policies, Pointer, Class, DefaultWrapper>;
     core::FunctionDescription_sp fdesc = makeFunctionDescription(sym, nil<core::T_O>());
     auto entry = gctools::GC<VariadicType>::allocate(fdesc);
-    lisp_bytecode_defun(core::symbol_function, clbind::DefaultWrapper::BytecodeP, sym, core::lisp_currentPackageName(), entry,
+    lisp_bytecode_defun(core::symbol_function, sym, core::lisp_currentPackageName(), entry,
                         m_arguments, m_declares, m_doc_string, "=external=", 0, CountConstructorArguments<Signature>::value);
   }
   virtual std::string name() const { return this->m_name; }

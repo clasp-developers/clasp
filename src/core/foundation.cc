@@ -1043,7 +1043,7 @@ Symbol_sp lispify_intern(const string& name, const string& defaultPackageName, b
 
 SYMBOL_EXPORT_SC_(CorePkg, bytecode_wrapper);
 
-void lisp_bytecode_defun(SymbolFunctionEnum kind, int bytecodep, Symbol_sp sym, const string& packageName,
+void lisp_bytecode_defun(SymbolFunctionEnum kind, Symbol_sp sym, const string& packageName,
                          GlobalSimpleFunBase_sp entry, const string& arguments, const string& declares, const string& docstring,
                          const string& sourceFile, int lineNumber, int numberOfRequiredArguments, bool autoExport,
                          const std::set<int>& skipIndices) {
@@ -1051,15 +1051,10 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind, int bytecodep, Symbol_sp sym, 
   bool trivial_wrapper;
   List_sp vars = lisp_lexical_variable_names(lambda_list, trivial_wrapper);
   Function_sp func;
-  if (!bytecodep) {
-    printf("%s:%d:%s We don't support LambdaListHandler anymore\n", __FILE__, __LINE__, __FUNCTION__);
-    abort();
-  } else {
-    if (trivial_wrapper)
-      func = entry;
-    else
-      func = bytecompile_wrapper(entry, vars, sym, lambda_list);
-  }
+  if (trivial_wrapper)
+    func = entry;
+  else
+    func = bytecompile_wrapper(entry, vars, sym, lambda_list);
   func->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
   if (kind == symbol_function) {
     sym->setf_symbolFunction(func);

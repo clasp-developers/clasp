@@ -197,7 +197,7 @@ void wrap_function(const string& packageName, const string& name, RT (*fp)(ARGS.
       clbind::WRAPPER_VariadicFunction<RT (*)(ARGS...), core::policy::clasp_policy, PureOutValuePack, clbind::DefaultWrapper>;
   FunctionDescription_sp fdesc = makeFunctionDescription(symbol, nil<T_O>());
   auto entry = gctools::GC<VariadicType>::allocate(fp, fdesc, nil<T_O>());
-  lisp_bytecode_defun(core::symbol_function, clbind::DefaultWrapper::BytecodeP, symbol, packageName, entry, arguments, declares,
+  lisp_bytecode_defun(core::symbol_function, symbol, packageName, entry, arguments, declares,
                       docstring, sourceFile, sourceLine, sizeof...(ARGS));
 }
 
@@ -213,7 +213,7 @@ void wrap_function_setf(const string& packageName, const string& name, RT (*fp)(
       clbind::WRAPPER_VariadicFunction<RT (*)(ARGS...), core::policy::clasp_policy, PureOutValuePack, clbind::DefaultWrapper>;
   FunctionDescription_sp fdesc = makeFunctionDescription(symbol, nil<T_O>());
   auto entry = gctools::GC<VariadicType>::allocate(fp, fdesc, nil<T_O>());
-  lisp_bytecode_defun(core::symbol_function_setf, clbind::DefaultWrapper::BytecodeP, symbol, packageName, entry, arguments,
+  lisp_bytecode_defun(core::symbol_function_setf, symbol, packageName, entry, arguments,
                       declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
 }
 
@@ -250,7 +250,7 @@ inline void defmacro(const string& packageName, const string& name, T_mv (*fp)(L
                                                         clbind::DefaultWrapper>;
   FunctionDescription_sp fdesc = makeFunctionDescription(symbol, nil<T_O>());
   GlobalSimpleFunBase_sp entry = gctools::GC<VariadicType>::allocate(fp, fdesc, nil<T_O>());
-  lisp_bytecode_defun(symbol_function_macro, clbind::DefaultWrapper::BytecodeP, symbol, packageName, entry, arguments, declares,
+  lisp_bytecode_defun(symbol_function_macro, symbol, packageName, entry, arguments, declares,
                       docstring);
 }
 

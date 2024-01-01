@@ -940,7 +940,7 @@ void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& dummy_specia
 
 typedef enum { symbol_function, symbol_function_setf, symbol_function_macro } SymbolFunctionEnum;
 
-void lisp_bytecode_defun(SymbolFunctionEnum kind, int bytecodep, Symbol_sp sym, const string& packageName,
+void lisp_bytecode_defun(SymbolFunctionEnum kind, Symbol_sp sym, const string& packageName,
                          GlobalSimpleFunBase_sp fc, const string& arguments = "", const string& declares = "",
                          const string& docstring = "", const string& sourceFile = "", int lineNumber = 0,
                          int numberOfRequiredArguments = 0, bool autoExport = true,
