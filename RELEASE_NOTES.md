@@ -1,4 +1,4 @@
-# Version 2.5.0 (LLVM15-17) Pending
+# Version 2.5.0 (LLVM15-17) 2024-01-01
 
 ## Added
 * New module named "gray-streams" which makes it possible to
