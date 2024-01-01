@@ -139,42 +139,6 @@ CL_LISPIFY_NAME("global-simple-fun-local-simple-fun");
 CL_DEFMETHOD
 T_sp GlobalSimpleFun_O::localSimpleFun() const { return this->_localSimpleFun; }
 
-CL_DEFMETHOD
-T_mv GlobalSimpleFun_O::sectionedEntryInfo() const {
-  char* address = (char*)this->_EntryPoints[0];
-  llvmo::ObjectFile_sp code = gc::As<llvmo::ObjectFile_sp>(this->_Code);
-  char* textStart = (char*)code->_TextSectionStart;
-  uintptr_t sectionId = code->_TextSectionId;
-  uintptr_t sectionAddress = (uintptr_t)(address - textStart);
-  llvmo::SectionedAddress_sp sa = llvmo::SectionedAddress_O::create(sectionId, sectionAddress);
-  return Values(sa, code);
-}
-
-CL_DEFMETHOD
-T_sp GlobalSimpleFun_O::lineTable() const {
-  T_mv saCode = this->sectionedEntryInfo();
-  llvmo::SectionedAddress_sp sa = gc::As<llvmo::SectionedAddress_sp>(saCode);
-  MultipleValues& mvn = core::lisp_multipleValues();
-  llvmo::ObjectFile_sp of = gc::As<llvmo::ObjectFile_sp>(mvn.second(saCode.number_of_values()));
-  llvmo::DWARFContext_sp dwarfContext = llvmo::DWARFContext_O::createDWARFContext(of);
-  auto addressRanges = getAddressRangesForAddressInner(dwarfContext, sa);
-  if (addressRanges) {
-    for (auto range : addressRanges.get()) {
-      printf("%s:%d:%s Got address range %p %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)range.LowPC, (void*)range.HighPC);
-      llvm::object::SectionedAddress sa;
-      sa.Address = range.LowPC;
-      sa.SectionIndex = of->_TextSectionId;
-      uintptr_t size = (uintptr_t)range.HighPC - (uintptr_t)range.LowPC;
-      auto lineTable = (*dwarfContext).wrappedPtr()->getLineInfoForAddressRange(sa, size);
-      printf("%s:%d:%s Number of entries: %lu\n", __FILE__, __LINE__, __FUNCTION__, lineTable.size());
-      for (auto ii : lineTable) {
-        printf("%s:%d:%s    first %p  second %u\n", __FILE__, __LINE__, __FUNCTION__, (void*)ii.first, ii.second.Line);
-      }
-    }
-  }
-  return nil<T_O>();
-}
-
 Pointer_sp LocalSimpleFun_O::defaultEntryAddress() const { return Pointer_O::create((void*)this->_Entry); };
 
 Pointer_sp GlobalBytecodeSimpleFun_O::defaultEntryAddress() const { return Pointer_O::create((void*)this->_EntryPoints[0]); };

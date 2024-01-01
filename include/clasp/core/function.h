@@ -296,8 +296,6 @@ public:
 
 public:
   virtual Pointer_sp defaultEntryAddress() const;
-  T_mv sectionedEntryInfo() const;
-  T_sp lineTable() const;
   llvmo::ObjectFile_sp code() const;
   T_sp localSimpleFun() const;
   string __repr__() const;
