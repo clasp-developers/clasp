@@ -743,7 +743,7 @@ std::string GFBytecodeSimpleFun_O::__repr__() const {
     } else {
       ss << "xep" << (ii - 1) << "@";
     }
-    ss << (void*)this->_EntryPoints._EntryPoints[ii] << " ";
+    ss << (void*)this->_EntryPoints[ii] << " ";
   }
   ss << " @" << (void*)this << ">";
   return ss.str();
