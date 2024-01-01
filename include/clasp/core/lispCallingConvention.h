@@ -148,19 +148,16 @@ typedef LCC_RETURN_RAW (*ClaspXep4Function)(core::T_O* lcc_closure, core::T_O* f
 typedef LCC_RETURN_RAW (*ClaspXep5Function)(core::T_O* lcc_closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2,
                                             core::T_O* farg3, core::T_O* farg4);
 
-struct XepFilling {};
-
 struct ClaspXepFunction {
   static const int Entries = NUMBER_OF_ENTRY_POINTS;
   ClaspXepAnonymousFunction _EntryPoints[NUMBER_OF_ENTRY_POINTS];
-  bool _Defined;
-  ClaspXepFunction() : _Defined(false){};
-  //! Use this ctor when filling ClaspXepFunction with entry points
-  ClaspXepFunction(XepFilling f) : _Defined(true){};
+  // We need a default constructor since GlobalSimpleFunBase is
+  // default constructible. I'm not sure WHY it is - something funky
+  // about the LISP_CLASS macro I think. FIXME?
+  ClaspXepFunction() = default;
   template <typename Wrapper> static ClaspXepFunction make() {
     assert(NUMBER_OF_ENTRY_POINTS == 7);
     ClaspXepFunction me;
-    me._Defined = true;
     me._EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_n;
     me._EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_0;
     me._EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_1;
@@ -173,7 +170,6 @@ struct ClaspXepFunction {
   template <typename Wrapper> static ClaspXepFunction make(size_t specializer_length) {
     assert(NUMBER_OF_ENTRY_POINTS == 7);
     ClaspXepFunction me;
-    me._Defined = true;
     me._EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_n;
 
     if (0 < specializer_length)
@@ -207,17 +203,6 @@ struct ClaspXepFunction {
       me._EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
 
     return me;
-  }
-  template <typename Wrapper> void setup() {
-    assert(NUMBER_OF_ENTRY_POINTS == 7);
-    this->_Defined = true;
-    this->_EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_n;
-    this->_EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_0;
-    this->_EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_1;
-    this->_EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_2;
-    this->_EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_3;
-    this->_EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
-    this->_EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
   }
   void fixupInternalsForSnapshotSaveLoad(SimpleFun_O* cep, snapshotSaveLoad::Fixup* fixup) {
     printf("%s:%d:%s See function.h/clbind/line136\n", __FILE__, __LINE__, __FUNCTION__);

@@ -382,12 +382,6 @@ LocalSimpleFun_sp makeLocalSimpleFun(FunctionDescription_sp fdesc, const ClaspLo
 GlobalSimpleFun_sp makeGlobalSimpleFun(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point,
                                        T_sp lep = nil<core::T_O>());
 
-template <typename Wrapper> GlobalSimpleFun_sp templated_makeGlobalSimpleFun(FunctionDescription_sp fdesc, T_sp lep) {
-  ClaspXepFunction xep;
-  xep.setup<Wrapper>();
-  return makeGlobalSimpleFun(fdesc, xep, lep);
-}
-
 template <typename Wrapper>
 GlobalSimpleFun_sp makeGlobalSimpleFunAndFunctionDescription(T_sp functionName, T_sp localSimpleFun,
                                                              T_sp lambda_list = unbound<T_O>(), T_sp docstring = nil<T_O>(),
@@ -395,7 +389,7 @@ GlobalSimpleFun_sp makeGlobalSimpleFunAndFunctionDescription(T_sp functionName, 
                                                              int lineno = -1, int column = -1, int filePos = -1) {
   FunctionDescription_sp fdesc =
       makeFunctionDescription(functionName, lambda_list, docstring, declares, sourcePathname, lineno, column, filePos);
-  return templated_makeGlobalSimpleFun<Wrapper>(fdesc, localSimpleFun);
+  return makeGlobalSimpleFun(fdesc, ClaspXepFunction::make<Wrapper>(), localSimpleFun);
 };
 
 GlobalBytecodeSimpleFun_sp core__makeGlobalBytecodeSimpleFun(FunctionDescription_sp fdesc, BytecodeModule_sp module,
@@ -430,10 +424,6 @@ public:
 
 public:
   static Closure_sp make_bytecode_closure(GlobalBytecodeSimpleFun_sp entryPoint, size_t closedOverSlots);
-
-  static Closure_sp make_cclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp localSimpleFun,
-                                        core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno,
-                                        core::Fixnum column);
 
 public:
   Closure_O(size_t capacity, SimpleFun_sp ep) : Base(ep), _Slots(capacity, unbound<T_O>(), true){};

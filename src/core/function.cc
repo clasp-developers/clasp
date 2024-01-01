@@ -310,23 +310,21 @@ LocalSimpleFun_sp makeLocalSimpleFun(FunctionDescription_sp fdesc, const ClaspLo
 
 GlobalSimpleFun_sp makeGlobalSimpleFun(FunctionDescription_sp tfdesc, const ClaspXepFunction& entry_point, T_sp lep) {
   T_sp code = unbound<T_O>();
-  if (entry_point._Defined) {
-    std::string name = "unkfunc";
-    if (gc::IsA<FunctionDescription_sp>(tfdesc)) {
-      FunctionDescription_sp fdesc = gc::As_unsafe<FunctionDescription_sp>(tfdesc);
+  std::string name = "unkfunc";
+  if (gc::IsA<FunctionDescription_sp>(tfdesc)) {
+    FunctionDescription_sp fdesc = gc::As_unsafe<FunctionDescription_sp>(tfdesc);
       //      printf("%s:%d:%s FunctionDescription is defined\n", __FILE__, __LINE__, __FUNCTION__ );
-      name = "namenil";
-      if (gc::IsA<Symbol_sp>(fdesc->functionName())) {
+    name = "namenil";
+    if (gc::IsA<Symbol_sp>(fdesc->functionName())) {
         //        printf("%s:%d:%s FunctionDescription name is defined\n", __FILE__, __LINE__, __FUNCTION__ );
-        Symbol_sp sname = gc::As_unsafe<Symbol_sp>(fdesc->functionName());
-        name = sname->safeFormattedName();
-      }
+      Symbol_sp sname = gc::As_unsafe<Symbol_sp>(fdesc->functionName());
+      name = sname->safeFormattedName();
     }
-    code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point._EntryPoints[0]));
-    if (gc::IsA<llvmo::Library_sp>(code)) {
-      for (size_t ii = 0; ii < ClaspXepFunction::Entries; ii++) {
-        maybe_register_symbol_using_dladdr_ep((void*)entry_point._EntryPoints[ii], sizeof(void*), name, ii);
-      }
+  }
+  code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point._EntryPoints[0]));
+  if (gc::IsA<llvmo::Library_sp>(code)) {
+    for (size_t ii = 0; ii < ClaspXepFunction::Entries; ii++) {
+      maybe_register_symbol_using_dladdr_ep((void*)entry_point._EntryPoints[ii], sizeof(void*), name, ii);
     }
   }
   auto ep = gctools::GC<GlobalSimpleFun_O>::allocate(tfdesc, entry_point, code, lep);
@@ -377,9 +375,7 @@ CL_DEFUN
 GlobalBytecodeSimpleFun_sp core__makeGlobalBytecodeSimpleFun(FunctionDescription_sp fdesc, BytecodeModule_sp module,
                                                              size_t localsFrameSize, size_t environmentSize, size_t pcIndex,
                                                              size_t bytecodeSize, Pointer_sp trampoline) {
-  ClaspXepFunction xep;
-  xep.setup<BytecodeClosureEntryPoint>();
-  auto entryPoint = gctools::GC<GlobalBytecodeSimpleFun_O>::allocate(fdesc, xep, module, localsFrameSize, environmentSize, pcIndex,
+  auto entryPoint = gctools::GC<GlobalBytecodeSimpleFun_O>::allocate(fdesc, ClaspXepFunction::make<BytecodeClosureEntryPoint>(), module, localsFrameSize, environmentSize, pcIndex,
                                                                      bytecodeSize, (BytecodeTrampolineFunction)trampoline->ptr());
   return entryPoint;
 }
@@ -414,7 +410,7 @@ GlobalSimpleFun_sp makeGlobalSimpleFunFromGenerator(GlobalSimpleFunGenerator_sp 
            ClaspXepFunction::Entries);
     abort();
   }
-  ClaspXepFunction xepFunction((XepFilling())); // Need extra paranetheses to disambiguate
+  ClaspXepFunction xepFunction;
   size_t cur = 0;
   for (auto entry : epIndices) {
     T_sp oneEntryPointIndex = CONS_CAR(entry);
@@ -637,18 +633,6 @@ CL_LISPIFY_NAME(bytecode_closure/make);
 CL_DEF_CLASS_METHOD
 Closure_sp Closure_O::make_bytecode_closure(GlobalBytecodeSimpleFun_sp entryPoint, size_t closedOverSlots) {
   Closure_sp closure = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, closedOverSlots, entryPoint);
-  return closure;
-}
-
-Closure_sp Closure_O::make_cclasp_closure(T_sp name, const ClaspXepFunction& fn, T_sp type, T_sp lambda_list, T_sp localSimpleFun,
-                                          core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno,
-                                          core::Fixnum column) {
-  printf("%s:%d:%s What are you going to do with an unbound Code_O object\n", __FILE__, __LINE__, __FUNCTION__);
-  FunctionDescription_sp fdesc = makeFunctionDescription(name, lambda_list, nil<T_O>(), nil<T_O>(), nil<T_O>(), lineno, column);
-  core::GlobalSimpleFun_sp entryPoint = makeGlobalSimpleFun(fdesc, fn, localSimpleFun);
-  Closure_sp closure = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 0, entryPoint);
-  closure->setf_lambdaList(lambda_list);
-  closure->setf_docstring(nil<T_O>());
   return closure;
 }
 
