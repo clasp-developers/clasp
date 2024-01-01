@@ -154,11 +154,10 @@ struct XepFillUsingLambda {};
 struct ClaspXepFunction {
   static const int Entries = NUMBER_OF_ENTRY_POINTS;
   ClaspXepAnonymousFunction _EntryPoints[NUMBER_OF_ENTRY_POINTS];
-  int _RequiredArgs;
   bool _Defined;
-  ClaspXepFunction() : _RequiredArgs(-1), _Defined(false){};
+  ClaspXepFunction() : _Defined(false){};
   //! Use this ctor when filling ClaspXepFunction with entry points
-  ClaspXepFunction(XepFilling f) : _RequiredArgs(-1), _Defined(true){};
+  ClaspXepFunction(XepFilling f) : _Defined(true){};
   template <typename Wrapper> static ClaspXepFunction make() {
     assert(NUMBER_OF_ENTRY_POINTS == 7);
     ClaspXepFunction me;
@@ -175,7 +174,6 @@ struct ClaspXepFunction {
   template <typename Wrapper> static ClaspXepFunction make(size_t specializer_length) {
     assert(NUMBER_OF_ENTRY_POINTS == 7);
     ClaspXepFunction me;
-    me._RequiredArgs = specializer_length;
     me._Defined = true;
     me._EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_n;
 

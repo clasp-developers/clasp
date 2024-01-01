@@ -340,8 +340,8 @@ void prepare_vm(core::T_O* lcc_closure, GFBytecodeSimpleFun_sp& gfep, SimpleVect
 
 [[noreturn]] void wrongNumberOfArgumentsForGenericFunction(T_O* lcc_closure, size_t nargs) {
   Function_sp closure((gctools::Tagged)lcc_closure);
-  const ClaspXepFunction& xep = gc::As<GlobalSimpleFunBase_sp>(closure->_TheSimpleFun.load())->_EntryPoints;
-  int required_args = xep._RequiredArgs;
+  GFBytecodeSimpleFun_sp gfbsf = gc::As_assert<GFBytecodeSimpleFun_sp>(closure->entryPoint());
+  int required_args = gfbsf->specializedLength();
   wrongNumberOfArguments(closure, nargs, required_args);
   UNREACHABLE();
 }
