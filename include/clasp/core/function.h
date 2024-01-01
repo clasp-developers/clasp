@@ -388,14 +388,6 @@ template <typename Wrapper> GlobalSimpleFun_sp templated_makeGlobalSimpleFun(Fun
   return makeGlobalSimpleFun(fdesc, xep, lep);
 }
 
-GlobalSimpleFun_sp makeGlobalSimpleFunCopy(GlobalSimpleFun_sp original, const ClaspXepFunction& = ClaspXepFunction());
-
-template <typename Wrapper> GlobalSimpleFun_sp templated_makeGlobalSimpleFunCopy(GlobalSimpleFun_sp original) {
-  ClaspXepFunction xep;
-  xep.setup<Wrapper>();
-  return makeGlobalSimpleFunCopy(original, xep);
-}
-
 template <typename Wrapper>
 GlobalSimpleFun_sp makeGlobalSimpleFunAndFunctionDescription(T_sp functionName, T_sp localSimpleFun,
                                                              T_sp lambda_list = unbound<T_O>(), T_sp docstring = nil<T_O>(),

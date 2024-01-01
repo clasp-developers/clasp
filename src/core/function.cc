@@ -333,16 +333,6 @@ GlobalSimpleFun_sp makeGlobalSimpleFun(FunctionDescription_sp tfdesc, const Clas
   return ep;
 }
 
-GlobalSimpleFun_sp makeGlobalSimpleFunCopy(GlobalSimpleFun_sp entryPoint, const ClaspXepFunction& entry_point) {
-  T_sp code = unbound<T_O>();
-  if (entry_point._Defined) {
-    code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point._EntryPoints[0]));
-  }
-  auto ep =
-      gctools::GC<GlobalSimpleFun_O>::allocate(entryPoint->_FunctionDescription, entry_point, code, entryPoint->_localSimpleFun);
-  return ep;
-}
-
 SYMBOL_EXPORT_SC_(CorePkg, bytecode_call);
 
 struct BytecodeClosureEntryPoint {

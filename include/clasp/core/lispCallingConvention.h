@@ -149,7 +149,6 @@ typedef LCC_RETURN_RAW (*ClaspXep5Function)(core::T_O* lcc_closure, core::T_O* f
                                             core::T_O* farg3, core::T_O* farg4);
 
 struct XepFilling {};
-struct XepFillUsingLambda {};
 
 struct ClaspXepFunction {
   static const int Entries = NUMBER_OF_ENTRY_POINTS;
