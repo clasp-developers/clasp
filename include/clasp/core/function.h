@@ -276,7 +276,7 @@ public:
 
 public:
   // Accessors
-  GlobalSimpleFunBase_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code);
+  GlobalSimpleFunBase_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp code);
   GlobalSimpleFunBase_O(){};
 
 public:
@@ -292,7 +292,7 @@ public:
 
 public:
   // Accessors
-  GlobalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code, T_sp localSimpleFun);
+  GlobalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp code, T_sp localSimpleFun);
 
 public:
   virtual Pointer_sp defaultEntryAddress() const;
@@ -325,7 +325,7 @@ public:
 
 public:
   // Accessors
-  GlobalBytecodeSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code,
+  GlobalBytecodeSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp code,
                             unsigned short localsFrameSize, unsigned int environmentSize, unsigned int entryPcN,
                             unsigned int bytecodeSize, BytecodeTrampolineFunction trampoline);
 
@@ -377,7 +377,7 @@ FunctionDescription_sp makeFunctionDescription(T_sp functionName, T_sp lambda_li
 
 LocalSimpleFun_sp makeLocalSimpleFun(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point);
 
-GlobalSimpleFun_sp makeGlobalSimpleFun(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point,
+GlobalSimpleFun_sp makeGlobalSimpleFun(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point,
                                        T_sp lep = nil<core::T_O>());
 
 template <typename Wrapper>
@@ -387,7 +387,7 @@ GlobalSimpleFun_sp makeGlobalSimpleFunAndFunctionDescription(T_sp functionName, 
                                                              int lineno = -1, int column = -1, int filePos = -1) {
   FunctionDescription_sp fdesc =
       makeFunctionDescription(functionName, lambda_list, docstring, declares, sourcePathname, lineno, column, filePos);
-  return makeGlobalSimpleFun(fdesc, ClaspXepFunction::make<Wrapper>(), localSimpleFun);
+  return makeGlobalSimpleFun(fdesc, XepStereotype<Wrapper>(), localSimpleFun);
 };
 
 GlobalBytecodeSimpleFun_sp core__makeGlobalBytecodeSimpleFun(FunctionDescription_sp fdesc, BytecodeModule_sp module,

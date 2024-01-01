@@ -25,6 +25,11 @@ THE SOFTWARE.
 */
 /* -^- */
 
+// FIXME: This file is pretty much three separate headers,
+// conditionalized by LCC_MACROS, LCC_PROTOTYPES, and LCC_FUNCALL.
+// This file is #included in three places with the three different
+// conditions defined.
+
 #ifdef LCC_MACROS
 
 namespace gctools {
@@ -148,6 +153,60 @@ typedef LCC_RETURN_RAW (*ClaspXep4Function)(core::T_O* lcc_closure, core::T_O* f
 typedef LCC_RETURN_RAW (*ClaspXep5Function)(core::T_O* lcc_closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2,
                                             core::T_O* farg3, core::T_O* farg4);
 
+// A struct that a ClaspXepFunction is instantiated from.
+struct ClaspXepTemplate {
+  ClaspXepAnonymousFunction _EntryPoints[NUMBER_OF_ENTRY_POINTS];
+};
+
+// This is a template where the entry point functions are static
+// and defined as lisp_entry_0, etc by the Wrapper.
+template <typename Wrapper>
+struct XepStereotype : public ClaspXepTemplate {
+  XepStereotype() {
+    _EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_n;
+    _EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_0;
+    _EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_1;
+    _EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_2;
+    _EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_3;
+    _EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
+    _EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
+  }
+  // Used for GFBytecodeSimpleFun_O
+  XepStereotype(size_t specializer_length) {
+    _EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_n;
+
+    if (0 < specializer_length)
+      _EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_0;
+    else
+      _EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_0;
+
+    if (1 < specializer_length)
+      _EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_1;
+    else
+      _EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_1;
+
+    if (2 < specializer_length)
+      _EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_2;
+    else
+      _EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_2;
+
+    if (3 < specializer_length)
+      _EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_3;
+    else
+      _EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_3;
+
+    if (4 < specializer_length)
+      _EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_4;
+    else
+      _EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
+
+    if (5 < specializer_length)
+      _EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_5;
+    else
+      _EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
+  }
+};
+
 struct ClaspXepFunction {
   static const int Entries = NUMBER_OF_ENTRY_POINTS;
   ClaspXepAnonymousFunction _EntryPoints[NUMBER_OF_ENTRY_POINTS];
@@ -155,54 +214,9 @@ struct ClaspXepFunction {
   // default constructible. I'm not sure WHY it is - something funky
   // about the LISP_CLASS macro I think. FIXME?
   ClaspXepFunction() = default;
-  template <typename Wrapper> static ClaspXepFunction make() {
-    assert(NUMBER_OF_ENTRY_POINTS == 7);
-    ClaspXepFunction me;
-    me._EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_n;
-    me._EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_0;
-    me._EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_1;
-    me._EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_2;
-    me._EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_3;
-    me._EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
-    me._EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
-    return me;
-  }
-  template <typename Wrapper> static ClaspXepFunction make(size_t specializer_length) {
-    assert(NUMBER_OF_ENTRY_POINTS == 7);
-    ClaspXepFunction me;
-    me._EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_n;
-
-    if (0 < specializer_length)
-      me._EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_0;
-    else
-      me._EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_0;
-
-    if (1 < specializer_length)
-      me._EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_1;
-    else
-      me._EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_1;
-
-    if (2 < specializer_length)
-      me._EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_2;
-    else
-      me._EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_2;
-
-    if (3 < specializer_length)
-      me._EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_3;
-    else
-      me._EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_3;
-
-    if (4 < specializer_length)
-      me._EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_4;
-    else
-      me._EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
-
-    if (5 < specializer_length)
-      me._EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_5;
-    else
-      me._EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
-
-    return me;
+  ClaspXepFunction(const ClaspXepTemplate& tl) {
+    for (size_t i = 0; i < Entries; ++i)
+      _EntryPoints[i] = tl._EntryPoints[i];
   }
   void fixupInternalsForSnapshotSaveLoad(SimpleFun_O* cep, snapshotSaveLoad::Fixup* fixup) {
     printf("%s:%d:%s See function.h/clbind/line136\n", __FILE__, __LINE__, __FUNCTION__);

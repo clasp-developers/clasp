@@ -11,7 +11,7 @@ public:
 
 public:
   WRAPPER_Setter(VariablePtrType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), GlobalSimpleFunBase_O(fdesc, core::ClaspXepFunction::make<MyType>(), code){};
+      : mptr(ptr), GlobalSimpleFunBase_O(fdesc, core::XepStereotype<MyType>(), code){};
 
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 

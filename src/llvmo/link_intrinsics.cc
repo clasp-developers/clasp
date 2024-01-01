@@ -393,7 +393,7 @@ LtvcReturnVoid ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, ch
   NO_UNWIND_BEGIN();
   core::T_sp localEntryPoint((gctools::Tagged)holder->getLiteral(localEntryPointIndex));
   core::FunctionDescription_sp fdesc((gctools::Tagged)functionDescription_t);
-  core::ClaspXepFunction xep;
+  core::ClaspXepTemplate xep;
   for (size_t ii = 0; ii < core::ClaspXepFunction::Entries; ++ii) {
     xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)holder->lookup_function(functionIndex0 + ii);
   }

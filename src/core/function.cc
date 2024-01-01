@@ -74,7 +74,7 @@ void SimpleFun_O::fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr
 
 CL_DEFMETHOD Pointer_sp SimpleFun_O::defaultEntryAddress() const { SUBCLASS_MUST_IMPLEMENT(); }
 
-GlobalSimpleFunBase_O::GlobalSimpleFunBase_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code)
+GlobalSimpleFunBase_O::GlobalSimpleFunBase_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp code)
     : SimpleFun_O(fdesc, code), _EntryPoints(entry_point) {
   if (code.nilp()) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point._EntryPoints[0]));
@@ -85,6 +85,7 @@ GlobalSimpleFunBase_O::GlobalSimpleFunBase_O(FunctionDescription_sp fdesc, const
       }
     }
   }
+  llvmo::validateEntryPoint(code, _EntryPoints);
 }
 
 void GlobalSimpleFunBase_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
@@ -93,18 +94,14 @@ void GlobalSimpleFunBase_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::
   }
 }
 
-GlobalSimpleFun_O::GlobalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code, T_sp lep)
-    : GlobalSimpleFunBase_O(fdesc, entry_point, code), _localSimpleFun(lep) {
-  llvmo::validateEntryPoint(code, entry_point);
-};
+GlobalSimpleFun_O::GlobalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp code, T_sp lep)
+    : GlobalSimpleFunBase_O(fdesc, entry_point, code), _localSimpleFun(lep) {};
 
-GlobalBytecodeSimpleFun_O::GlobalBytecodeSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp module,
+GlobalBytecodeSimpleFun_O::GlobalBytecodeSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp module,
                                                      uint16_t localsFrameSize, unsigned int environmentSize, unsigned int entryPcN,
                                                      unsigned int bytecodeSize, BytecodeTrampolineFunction trampoline)
     : GlobalSimpleFunBase_O(fdesc, entry_point, module), _LocalsFrameSize(localsFrameSize), _EnvironmentSize(environmentSize),
-      _EntryPcN(entryPcN), _BytecodeSize(bytecodeSize), _Trampoline(trampoline) {
-  llvmo::validateEntryPoint(module, entry_point);
-};
+      _EntryPcN(entryPcN), _BytecodeSize(bytecodeSize), _Trampoline(trampoline) {};
 
 void GlobalBytecodeSimpleFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
   this->fixupOneCodePointer(fixup, (void**)&this->_Trampoline);
@@ -272,7 +269,7 @@ LocalSimpleFun_sp makeLocalSimpleFun(FunctionDescription_sp fdesc, const ClaspLo
   return ep;
 }
 
-GlobalSimpleFun_sp makeGlobalSimpleFun(FunctionDescription_sp tfdesc, const ClaspXepFunction& entry_point, T_sp lep) {
+GlobalSimpleFun_sp makeGlobalSimpleFun(FunctionDescription_sp tfdesc, const ClaspXepTemplate& entry_point, T_sp lep) {
   T_sp code = unbound<T_O>();
   std::string name = "unkfunc";
   if (gc::IsA<FunctionDescription_sp>(tfdesc)) {
@@ -339,7 +336,7 @@ CL_DEFUN
 GlobalBytecodeSimpleFun_sp core__makeGlobalBytecodeSimpleFun(FunctionDescription_sp fdesc, BytecodeModule_sp module,
                                                              size_t localsFrameSize, size_t environmentSize, size_t pcIndex,
                                                              size_t bytecodeSize, Pointer_sp trampoline) {
-  auto entryPoint = gctools::GC<GlobalBytecodeSimpleFun_O>::allocate(fdesc, ClaspXepFunction::make<BytecodeClosureEntryPoint>(), module, localsFrameSize, environmentSize, pcIndex,
+  auto entryPoint = gctools::GC<GlobalBytecodeSimpleFun_O>::allocate(fdesc, XepStereotype<BytecodeClosureEntryPoint>(), module, localsFrameSize, environmentSize, pcIndex,
                                                                      bytecodeSize, (BytecodeTrampolineFunction)trampoline->ptr());
   return entryPoint;
 }
@@ -374,7 +371,7 @@ GlobalSimpleFun_sp makeGlobalSimpleFunFromGenerator(GlobalSimpleFunGenerator_sp 
            ClaspXepFunction::Entries);
     abort();
   }
-  ClaspXepFunction xepFunction;
+  ClaspXepTemplate xepFunction;
   size_t cur = 0;
   for (auto entry : epIndices) {
     T_sp oneEntryPointIndex = CONS_CAR(entry);
@@ -388,7 +385,7 @@ GlobalSimpleFun_sp makeGlobalSimpleFunFromGenerator(GlobalSimpleFunGenerator_sp 
   }
   T_sp localSimpleFun((gctools::Tagged)roots->getLiteral(original->_localSimpleFunIndex));
   T_sp code = unbound<T_O>();
-  code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(xepFunction[0]));
+  code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(xepFunction._EntryPoints[0]));
   auto globalSimpleFun =
       gctools::GC<GlobalSimpleFun_O>::allocate(original->_FunctionDescription, xepFunction, code, localSimpleFun);
   return globalSimpleFun;
