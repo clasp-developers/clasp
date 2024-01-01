@@ -226,7 +226,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
     printf("%s:%d:%s A very large number of arguments %lu are being passed - check if there is a problem\n", __FILE__, __LINE__,
            __FUNCTION__, lcc_nargs);
   }
-  GlobalBytecodeSimpleFun_sp ep = gc::As<GlobalBytecodeSimpleFun_sp>(closure->_TheSimpleFun.load());
+  GlobalBytecodeSimpleFun_sp ep = gc::As<GlobalBytecodeSimpleFun_sp>(closure->entryPoint());
   BytecodeModule_sp bm = gc::As<BytecodeModule_sp>(ep->_Code);
   BytecodeModule_O::Bytecode_sp_Type bc = bm->_Bytecode;
   uintptr_t bytecode_start = (uintptr_t)gc::As<Array_sp>(bc)->rowMajorAddressOfElement_(0);
