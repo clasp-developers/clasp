@@ -16,15 +16,17 @@
 ;;; So these tests are inherently dicey.
 
 (defun finalized-objects (maker n)
-  (let ((count 0))
-    ;; FIXME: Maybe should be atomic-incf, depending on how our GC
-    ;; runs finalizers. But that would require atomics support for lexicals.
-    (flet ((inc (a) (declare (ignore a)) (incf count)))
+  (let (;; We store the count in a cons so we can use atomic-incf.
+        ;; FIXME: Better would be supporting atomic ops on lexicals.
+        (countc (list 0)))
+    (flet ((inc (a)
+             (declare (ignore a))
+             (mp:atomic-incf (car countc))))
       (values (loop repeat n
                     for object = (funcall maker)
                     do (gctools:finalize object #'inc)
                     collect (ext:make-weak-pointer object))
-              (lambda () count)))))
+              (lambda () (mp:atomic (car countc)))))))
 (declaim (notinline finalized-objects))
 
 (defun test-finalizers (maker n)
@@ -37,19 +39,20 @@
           do (gctools:garbage-collect))
     (gctools:invoke-finalizers)
     ;; Since finalizers are inherently a little unreliable, we just check
-    ;; that the count of ran finalizers and uncollected objects sums to n
-    ;; (i.e. no object was finalized that is still accessible), and that
+    ;; that the count of ran finalizers and uncollected objects sums to
+    ;; at most n (i.e. no accessible object was finalized), and that
     ;; at least 95% of the finalizers ran. This idea is cribbed from SBCL.
     ;; SBCL also displays traces for any unsplatted objects, which might be
     ;; nice to do if we ever grow that capability.
     (let* ((count (funcall counter))
-           (success-fraction (/ count n)))
+           (success-fraction (/ count n))
+           (sum (+ count (count-if #'ext:weak-pointer-valid wps))))
       (values (or (> success-fraction (/ 95 100)) success-fraction)
-              (+ count (count-if #'ext:weak-pointer-valid wps))))))
+              (or (>= n sum) sum)))))
 
 (test finalizers-cons
       (test-finalizers (lambda () (make-list 5)) 100)
-      (t 100)
+      (t t)
       :description "Check if list of cons finalizers were executed")
 
 (test finalizers-cons-remove
@@ -65,7 +68,7 @@
 
 (test finalizers-general
       (test-finalizers (lambda () (make-array 5)) 100)
-      (t 100)
+      (t t)
       :description "Check if list of general finalizers were executed")
 
 (test finalizers-general-remove
