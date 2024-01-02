@@ -802,8 +802,6 @@ class Function_O;
 typedef gctools::smart_ptr<Function_O> Function_sp;
 class SimpleFun_O;
 typedef gctools::smart_ptr<SimpleFun_O> SimpleFun_sp;
-class CodeSimpleFun_O;
-typedef gctools::smart_ptr<CodeSimpleFun_O> CodeSimpleFun_sp;
 
 class GlobalSimpleFunBase_O;
 typedef gctools::smart_ptr<GlobalSimpleFunBase_O> GlobalSimpleFunBase_sp;
@@ -942,7 +940,7 @@ void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& dummy_specia
 
 typedef enum { symbol_function, symbol_function_setf, symbol_function_macro } SymbolFunctionEnum;
 
-void lisp_bytecode_defun(SymbolFunctionEnum kind, int bytecodep, Symbol_sp sym, const string& packageName,
+void lisp_bytecode_defun(SymbolFunctionEnum kind, Symbol_sp sym, const string& packageName,
                          GlobalSimpleFunBase_sp fc, const string& arguments = "", const string& declares = "",
                          const string& docstring = "", const string& sourceFile = "", int lineNumber = 0,
                          int numberOfRequiredArguments = 0, bool autoExport = true,

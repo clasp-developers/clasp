@@ -226,7 +226,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
     printf("%s:%d:%s A very large number of arguments %lu are being passed - check if there is a problem\n", __FILE__, __LINE__,
            __FUNCTION__, lcc_nargs);
   }
-  GlobalBytecodeSimpleFun_sp ep = gc::As<GlobalBytecodeSimpleFun_sp>(closure->_TheSimpleFun.load());
+  GlobalBytecodeSimpleFun_sp ep = gc::As<GlobalBytecodeSimpleFun_sp>(closure->entryPoint());
   BytecodeModule_sp bm = gc::As<BytecodeModule_sp>(ep->_Code);
   BytecodeModule_O::Bytecode_sp_Type bc = bm->_Bytecode;
   uintptr_t bytecode_start = (uintptr_t)gc::As<Array_sp>(bc)->rowMajorAddressOfElement_(0);
@@ -1349,12 +1349,9 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       comp::_sym_STARautocompile_hookSTAR->symbolValue().notnilp()) {
     core::T_sp nat = core::eval::funcall(comp::_sym_STARautocompile_hookSTAR->symbolValue(), entry, nil<core::T_O>());
     entryPoint->setSimpleFun(gc::As_assert<core::SimpleFun_sp>(nat));
+    // Since in practice the hook doesn't replace the simple fun
+    // immediately, we just continue as we were.
   }
-  // Set the closure's simple fun to be its simple fun's simple fun.
-  // This is so that if a bytecode's simple fun has been replaced with
-  // a native compiled version, that native simple fun will be used
-  // for subsequent calls.
-  closure->setSimpleFun(entry->entryPoint());
   // Proceed with the bytecode call.
   DBG_printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc);
   size_t nlocals = entryPoint->_LocalsFrameSize;

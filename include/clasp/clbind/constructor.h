@@ -211,7 +211,7 @@ public:
   virtual const char* describe() const { return "VariadicConstructorFunctor"; };
   enum { NumParams = sizeof...(ARGS) };
   WRAPPER_Constructor_O(core::FunctionDescription_sp fdesc)
-      : core::GlobalSimpleFunBase_O(fdesc, core::ClaspXepFunction::make<MyType>(), nil<core::T_O>()){};
+      : core::GlobalSimpleFunBase_O(fdesc, core::XepStereotype<MyType>(), nil<core::T_O>()){};
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
   static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs,

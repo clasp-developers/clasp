@@ -466,7 +466,7 @@ rewrite the slot in the literal table to store a closure."
   (let ((function-index (first (sys:local-simple-fun-generator-entry-point-indices entry-point))))
     (add-creator "ltvc_make_local_entry_point" index entry-point
                  function-index
-                 (load-time-reference-literal (sys:simple-fun-function-description entry-point) read-only-p :toplevelp nil))))
+                 (load-time-reference-literal (sys:local-simple-fun-generator/function-description entry-point) read-only-p :toplevelp nil))))
 
 (defun ltv/global-entry-point (entry-point index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp))
@@ -474,7 +474,7 @@ rewrite the slot in the literal table to store a closure."
         (local-entry-point-index (sys:global-simple-fun-generator-local-simple-fun-index entry-point)))
     (add-creator "ltvc_make_global_entry_point" index entry-point
                  function-index
-                 (load-time-reference-literal (sys:simple-fun-function-description entry-point) read-only-p :toplevelp nil)
+                 (load-time-reference-literal (sys:global-simple-fun-generator/function-description entry-point) read-only-p :toplevelp nil)
                  local-entry-point-index #+(or)(load-time-reference-literal (sys:global-entry-point-local-entry-point entry-point) read-only-p :toplevelp nil))))
 
 (defun ltv/package (package index read-only-p &key (toplevelp t))

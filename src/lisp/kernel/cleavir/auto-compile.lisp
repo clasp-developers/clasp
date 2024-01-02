@@ -25,6 +25,21 @@
 ;;; output by the autocompilation thread.
 (defvar *autocompilation-log* nil)
 
+;;; Enqueue a command to the autocompilation thread.
+;;; The queue implementation is not lock-free, so there is a
+;;; small possibility that queue-autocompilation could be called
+;;; while the lock is held, which could cause a deadlock. This
+;;; is avoided by temporarily disabling autocompilation while
+;;; the lock is held.
+;;; Making the queue lock-free might be a more elegant solution.
+(defun autocompilation-enqueue (command)
+  (let ((cmp:*autocompile-hook* nil))
+    (core:atomic-enqueue *autocompilation-queue* command)))
+
+(defun autocompilation-dequeue ()
+  (let ((cmp:*autocompile-hook* nil))
+    (core:dequeue *autocompilation-queue*)))
+
 (defun autocompilation-log ()
   ;; During build we're not set up to use cleavir processing to determine
   ;; specialness - FIXME - so we use explicit symbol-value.
@@ -38,8 +53,7 @@
 ;;; Afterwards we queue even if the worker is not going - more work for later.
 (defun queue-autocompilation (definition environment)
   (when (global-definition-p definition)
-    (core:atomic-enqueue *autocompilation-queue*
-                         (cons definition environment)))
+    (autocompilation-enqueue  (cons definition environment)))
   definition)
 
 ;;; The BTB compiler currently is only safe for non-closures. FIXME.
@@ -60,7 +74,7 @@
                   (mp:atomic-push-explicit ,thing
                                            ((symbol-value '*autocompilation-log*)
                                             :order :relaxed)))))
-    (loop for item = (core:dequeue *autocompilation-queue*)
+    (loop for item = (autocompilation-dequeue)
           when (eq item :quit)
             do (log item)
             and return nil

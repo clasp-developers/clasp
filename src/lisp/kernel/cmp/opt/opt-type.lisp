@@ -410,7 +410,8 @@
              ;; We know nothing.
              (t
               ;; NOTE: In cclasp cleavir will wrap this with better source info.
-              (cmp:warn-undefined-type nil type)
+              (when (fboundp 'cmp:warn-undefined-type)
+                (cmp:warn-undefined-type nil type))
               (default)))))))))
 
 (define-compiler-macro typep (&whole whole object type &optional environment

@@ -45,7 +45,7 @@ public:
 
 public:
   WRAPPER_Iterator(core::FunctionDescription_sp fdesc, core::T_sp code, Begin begin, End end)
-      : core::GlobalSimpleFunBase_O(fdesc, core::ClaspXepFunction::make<MyType>(), code), _begin(begin), _end(end){};
+      : core::GlobalSimpleFunBase_O(fdesc, core::XepStereotype<MyType>(), code), _begin(begin), _end(end){};
 
 private:
   typedef typename BeginReturnType<OT, Begin>::type IteratorType;
