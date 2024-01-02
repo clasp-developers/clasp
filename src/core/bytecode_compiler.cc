@@ -2681,12 +2681,8 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
         T_sp cmexpander = std::get<GlobalFunInfoV>(info).cmexpander();
         if (cmexpander.notnilp() &&
             !env->notinlinep(head)
-            // KLUDGE: The TYPEP compiler macro expands into TYPEQ, which
-            // causes infinite recursion as we implement TYPEQ as TYPEP.
-            // Better solution would be to have TYPEP expand into
-            // simpler TYPEPs, I'm thinking.
-            // CASE, similarly, expands into PRIMOP:TYPEQ.
-            && (head != cl::_sym_typep) && (head != cl::_sym_case)) {
+            // KLUDGE: CASE expands into PRIMOP:CASE.
+            && (head != cl::_sym_case)) {
           // Compiler macroexpand
           T_sp form = Cons_O::create(head, rest);
           T_sp expansion = expand_compiler_macro(gc::As<Function_sp>(cmexpander), form, env, context.source_info());
