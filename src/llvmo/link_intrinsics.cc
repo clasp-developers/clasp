@@ -370,20 +370,9 @@ LtvcReturnVoid ltvc_make_function_description(gctools::GCRootsInModule* holder, 
 LtvcReturnVoid ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex,
                                            core::T_O* functionDescription_t) {
   NO_UNWIND_BEGIN();
-  //  printf("%s:%d:%s got functionIndex %lu to index: %lu\n", __FILE__, __LINE__, __FUNCTION__, functionIndex, index );
-  ClaspLocalFunction llvm_func = (ClaspLocalFunction)holder->lookup_function(functionIndex);
+  ClaspCoreFunction llvm_func = (ClaspCoreFunction)holder->lookup_function(functionIndex);
   core::FunctionDescription_sp fdesc((gctools::Tagged)functionDescription_t);
-  core::LocalSimpleFun_sp simpleFun = core::makeLocalSimpleFun(fdesc, llvm_func);
-  //  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(),
-  //  (void*)llvm_func);
-  if (!gc::IsA<core::LocalSimpleFun_sp>(simpleFun)) {
-    SIMPLE_ERROR("The object is not a LocalEntryPoint {}", core::_rep_(simpleFun));
-  }
-#if 0
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s LocalSimpleFun_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, simpleFun.raw_()));
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ObjectFile_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()).c_str()));
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Code_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()->_Code).c_str()));
-#endif
+  core::CoreFun_sp simpleFun = core::makeCoreFun(fdesc, llvm_func);
   LTVCRETURN holder->setTaggedIndex(tag, index, simpleFun.tagged_());
   NO_UNWIND_END();
 }

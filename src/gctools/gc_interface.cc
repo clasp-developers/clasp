@@ -779,7 +779,7 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   for (int iii = 0; iii < NUMBER_OF_ENTRY_POINTS; iii++) {
     Init__fixed_field(core::GlobalSimpleFun_O, 3 + iii, RAW_POINTER_OFFSET, _EntryPoints._EntryPoints[iii]);
   }
-  Init__fixed_field(core::GlobalSimpleFun_O, 3 + NUMBER_OF_ENTRY_POINTS, SMART_PTR_OFFSET, _localSimpleFun);
+  Init__fixed_field(core::GlobalSimpleFun_O, 3 + NUMBER_OF_ENTRY_POINTS, SMART_PTR_OFFSET, _localFun);
 
   Init_class_kind(core::GlobalBytecodeSimpleFun_O);
   Init__fixed_field(core::GlobalBytecodeSimpleFun_O, 0, SMART_PTR_OFFSET, _TheSimpleFun);

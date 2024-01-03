@@ -140,7 +140,14 @@ LCC_RETURN_RAW general_entry_point_redirect_7(core::T_O* closure, core::T_O* far
 
 #include <atomic>
 
-typedef LCC_RETURN_RAW (*ClaspLocalFunction)();
+// This function type is basically a lie - core functions can have any
+// function type.
+typedef LCC_RETURN_RAW (*ClaspCoreFunction)();
+// This type is also a lie - we use this to hold ClaspXepGeneralFunction,
+// ClaspXep0Function, etc. below.
+// As long as we know what we're doing and don't try to actually call a
+// function while treating it as this type we're ok (see C++ standard on
+// reinterpret_cast, I think). Ditto for ClaspCoreFunction.
 typedef LCC_RETURN_RAW (*ClaspXepAnonymousFunction)();
 #define LISP_CALLING_CONVENTION() entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
 typedef LCC_RETURN_RAW (*BytecodeTrampolineFunction)(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs,

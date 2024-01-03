@@ -1042,7 +1042,7 @@ function-description - for debugging."
 (defun irc-create-local-entry-point-reference (local-fn module function-description)
   (declare (ignore module))
   (let* ((simple-fun-generator (let ((entry-point-index (literal:register-local-function-index local-fn)))
-                                 (sys:make-local-simple-fun-generator
+                                 (sys:make-core-fun-generator
                                   :entry-point-functions (list entry-point-index)
                                   :function-description function-description)))
          (index (literal:reference-literal simple-fun-generator)))

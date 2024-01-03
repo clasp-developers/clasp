@@ -16,7 +16,7 @@ EXTERN_SYMBOL(generic_function);
 namespace core {
 FORWARD(SimpleFun);
 FORWARD(GlobalSimpleFun);
-FORWARD(LocalSimpleFun);
+FORWARD(CoreFun);
 FORWARD(Function);
 FORWARD(ClosureBase);
 FORWARD(BuiltinClosure);
@@ -47,7 +47,7 @@ template <> struct gctools::GCInfo<core::GlobalSimpleFun_O> {
   static GCInfo_policy constexpr Policy = collectable_immobile;
 };
 
-template <> struct gctools::GCInfo<core::LocalSimpleFun_O> {
+template <> struct gctools::GCInfo<core::CoreFun_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = collectable_immobile;
@@ -227,16 +227,32 @@ public:
   CL_DEFMETHOD T_sp SimpleFun_code() const { return this->_Code; };
 };
 
-FORWARD(LocalSimpleFun);
-class LocalSimpleFun_O : public SimpleFun_O {
-  LISP_CLASS(core, CorePkg, LocalSimpleFun_O, "LocalSimpleFun", SimpleFun_O);
+// A CoreFun represents the specialized actual code for some functions
+// (basically Cleavir-compiled functions). The XEP (in the SimpleFun)
+// can handle any number of boxed arguments; it checks for argcount
+// mismatch, unboxes anything that needs it, then calls the core fun.
+// The core fun does whatever the function does, and returns a possibly
+// unboxed object to the XEP. The XEP boxes if necessary and returns.
+// This CoreFun object is retained for one purpose: letting the
+// disassembler know where the bulk of the code is.
+// In the future it may also be useful for a call-site optimization-
+// calling the core fun directly from some call compiled elsewhere.
+// Note that we do not need a CoreFun (or indeed any Lisp object) to
+// represent a Lisp function that is only locally called. It just exists
+// implicitly as actual code.
+FORWARD(CoreFun);
+class CoreFun_O : public General_O {
+  LISP_CLASS(core, CorePkg, CoreFun_O, "CoreFun", General_O);
 
 public:
-  ClaspLocalFunction _Entry;
+  FunctionDescription_sp _FunctionDescription; // for debugging
+  T_sp _Code;
+  ClaspCoreFunction _Entry;
 
 public:
   // Accessors
-  LocalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point, T_sp code);
+  CoreFun_O(FunctionDescription_sp fdesc, T_sp code,
+            const ClaspCoreFunction& entry_point);
 
 public:
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
@@ -245,10 +261,10 @@ public:
 };
 
 // This and GlobalSimpleFunGenerator are used in FASLs to indicate functions.
-// The loader will create actual local/global simple funs based on these generators.
-FORWARD(LocalSimpleFunGenerator);
-class LocalSimpleFunGenerator_O : public General_O {
-  LISP_CLASS(core, CorePkg, LocalSimpleFunGenerator_O, "LocalSimpleFunGenerator", General_O);
+// The loader will create actual local/simple funs based on these generators.
+FORWARD(CoreFunGenerator);
+class CoreFunGenerator_O : public General_O {
+  LISP_CLASS(core, CorePkg, CoreFunGenerator_O, "CoreFunGenerator", General_O);
 
 public:
   FunctionDescription_sp _FunctionDescription;
@@ -256,12 +272,16 @@ public:
 
 public:
   // Accessors
-  LocalSimpleFunGenerator_O(FunctionDescription_sp fdesc, T_sp entry_point_indices)
-      : _FunctionDescription(fdesc), _entry_point_indices(entry_point_indices){
-                                // ASSERT(cl__length(entry_point_indices)==1);
-                            };
+  CoreFunGenerator_O(FunctionDescription_sp fdesc,
+                      T_sp entry_point_indices)
+    : _FunctionDescription(fdesc),
+      _entry_point_indices(entry_point_indices){
+       // ASSERT(cl__length(entry_point_indices)==1);
+  };
   std::string __repr__() const;
-  CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
+  CL_DEFMETHOD FunctionDescription_sp functionDescription() const {
+    return this->_FunctionDescription;
+  }
 };
 
 FORWARD(GlobalSimpleFunBase);
@@ -288,16 +308,16 @@ class GlobalSimpleFun_O : public GlobalSimpleFunBase_O {
   LISP_CLASS(core, CorePkg, GlobalSimpleFun_O, "GlobalSimpleFun", GlobalSimpleFunBase_O);
 
 public:
-  T_sp _localSimpleFun;
+  T_sp _localFun;
 
 public:
   // Accessors
-  GlobalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp code, T_sp localSimpleFun);
+  GlobalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp code, T_sp localFun);
 
 public:
   virtual Pointer_sp defaultEntryAddress() const;
   llvmo::ObjectFile_sp code() const;
-  T_sp localSimpleFun() const;
+  T_sp localFun() const;
   string __repr__() const;
 };
 
@@ -360,14 +380,14 @@ class GlobalSimpleFunGenerator_O : public General_O {
 public:
   FunctionDescription_sp _FunctionDescription;
   T_sp _entry_point_indices;
-  size_t _localSimpleFunIndex;
+  size_t _localFunIndex;
 
 public:
   // Accessors
   GlobalSimpleFunGenerator_O(FunctionDescription_sp fdesc, T_sp entry_point_indices, size_t lepIndex)
-      : _FunctionDescription(fdesc), _entry_point_indices(entry_point_indices), _localSimpleFunIndex(lepIndex){};
+      : _FunctionDescription(fdesc), _entry_point_indices(entry_point_indices), _localFunIndex(lepIndex){};
   std::string __repr__() const;
-  size_t localSimpleFunIndex() const;
+  size_t localFunIndex() const;
   CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
 };
 
@@ -375,19 +395,20 @@ FunctionDescription_sp makeFunctionDescription(T_sp functionName, T_sp lambda_li
                                                T_sp declares = nil<T_O>(), T_sp sourcePathname = nil<T_O>(), int lineno = -1,
                                                int column = -1, int filePos = -1);
 
-LocalSimpleFun_sp makeLocalSimpleFun(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point);
+CoreFun_sp makeCoreFun(FunctionDescription_sp fdesc,
+                       const ClaspCoreFunction& entry_point);
 
 GlobalSimpleFun_sp makeGlobalSimpleFun(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point,
                                        T_sp lep = nil<core::T_O>());
 
 template <typename Wrapper>
-GlobalSimpleFun_sp makeGlobalSimpleFunAndFunctionDescription(T_sp functionName, T_sp localSimpleFun,
+GlobalSimpleFun_sp makeGlobalSimpleFunAndFunctionDescription(T_sp functionName, T_sp localFun,
                                                              T_sp lambda_list = unbound<T_O>(), T_sp docstring = nil<T_O>(),
                                                              T_sp declares = nil<T_O>(), T_sp sourcePathname = nil<T_O>(),
                                                              int lineno = -1, int column = -1, int filePos = -1) {
   FunctionDescription_sp fdesc =
       makeFunctionDescription(functionName, lambda_list, docstring, declares, sourcePathname, lineno, column, filePos);
-  return makeGlobalSimpleFun(fdesc, XepStereotype<Wrapper>(), localSimpleFun);
+  return makeGlobalSimpleFun(fdesc, XepStereotype<Wrapper>(), localFun);
 };
 
 GlobalBytecodeSimpleFun_sp core__makeGlobalBytecodeSimpleFun(FunctionDescription_sp fdesc, BytecodeModule_sp module,
@@ -395,7 +416,7 @@ GlobalBytecodeSimpleFun_sp core__makeGlobalBytecodeSimpleFun(FunctionDescription
                                                              size_t bytecodeSize, Pointer_sp trampoline);
 
 GlobalSimpleFun_sp makeGlobalSimpleFunFromGenerator(GlobalSimpleFunGenerator_sp ep, gctools::GCRootsInModule* roots, void** fptrs);
-LocalSimpleFun_sp makeLocalSimpleFunFromGenerator(LocalSimpleFunGenerator_sp ep, void** fptrs);
+CoreFun_sp makeCoreFunFromGenerator(CoreFunGenerator_sp ep, void** fptrs);
 
 }; // namespace core
 

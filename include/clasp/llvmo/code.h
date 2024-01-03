@@ -189,7 +189,7 @@ public:
   virtual uintptr_t codeEnd() const = 0;
   virtual std::string filename() const = 0;
   virtual void validateEntryPoint(const core::ClaspXepFunction& entry_point){};
-  virtual void validateEntryPoint(const core::ClaspLocalFunction& entry_point){};
+  virtual void validateEntryPoint(const core::ClaspCoreFunction& entry_point){};
 };
 
 }; // namespace llvmo
@@ -441,7 +441,7 @@ bool lookupObjectFileFromEntryPoint(uintptr_t entry_point, ObjectFile_sp& object
 
 void validateEntryPoint(core::T_sp code, uintptr_t entry_point);
 void validateEntryPoint(core::T_sp code, const core::ClaspXepFunction& entry_point);
-void validateEntryPoint(core::T_sp code, const core::ClaspLocalFunction& entry_point);
+void validateEntryPoint(core::T_sp code, const core::ClaspCoreFunction& entry_point);
 
 uintptr_t codeStart(core::T_sp codeOrLibrary);
 

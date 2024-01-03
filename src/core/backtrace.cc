@@ -205,10 +205,10 @@ T_sp dwarf_ep(size_t frameIndex, llvmo::ObjectFile_sp ofi, llvmo::DWARFContext_s
                  nliterals););
         for (size_t i = 0; i < nliterals; ++i) {
           T_sp literal((gc::Tagged)(rliterals[i]));
-          if (gc::IsA<LocalSimpleFun_sp>(literal)) {
-            LocalSimpleFun_sp ep = gc::As_unsafe<LocalSimpleFun_sp>(literal);
+          if (gc::IsA<CoreFun_sp>(literal)) {
+            CoreFun_sp ep = gc::As_unsafe<CoreFun_sp>(literal);
             uintptr_t absolute_entry = (uintptr_t)(ep->_Entry);
-            D(printf("%s%s:%d:%s LocalSimpleFun_sp %s  absolute_entry = %p   FunctionDescription name %s\n", trace.spaces().c_str(),
+            D(printf("%s%s:%d:%s CoreFun_sp %s  absolute_entry = %p   FunctionDescription name %s\n", trace.spaces().c_str(),
                      __FILE__, __LINE__, __FUNCTION__, _rep_(ep).c_str(), (void*)absolute_entry,
                      _rep_(ep->functionDescription()).c_str()););
             for (auto range : ranges) {
@@ -218,7 +218,7 @@ T_sp dwarf_ep(size_t frameIndex, llvmo::ObjectFile_sp ofi, llvmo::DWARFContext_s
                 D(printf("%s%s:%d:%s Matched absolute_LowPC/absolute_HighPC %p/%p\n", trace.spaces().c_str(), __FILE__, __LINE__,
                          __FUNCTION__, (void*)absolute_LowPC, (void*)absolute_HighPC););
                 XEPp = false;
-                // This will be identical to the entry point address in LocalSimpleFun_sp ep
+                // This will be identical to the entry point address in CoreFun_sp ep
                 return ep;
               } else {
                 D(printf("%s%s:%d:%s DID NOT match absolute_LowPC/absolute_HighPC %p/%p\n", trace.spaces().c_str(), __FILE__,
@@ -604,8 +604,8 @@ static bool sanity_check_frame(size_t frameIndex, void* ip, void* fbp) {
     T_sp ep = dwarf_ep(frameIndex, ofi, dcontext, sa, codeStart, functionStartAddress, XEPp, arityCode);
     uintptr_t stackmap_start = (uintptr_t)(ofi->_StackmapStart);
     uintptr_t stackmap_end = stackmap_start + ofi->_StackmapSize;
-    if (gc::IsA<LocalSimpleFun_sp>(ep)) {
-      LocalSimpleFun_sp localEntryPoint = gc::As_unsafe<LocalSimpleFun_sp>(ep);
+    if (gc::IsA<CoreFun_sp>(ep)) {
+      CoreFun_sp localEntryPoint = gc::As_unsafe<CoreFun_sp>(ep);
       bool result = true;
       auto thunk = [&](size_t _, const smStkSizeRecord& function, int32_t offsetOrSmallConstant, int64_t patchPointId) {
         if (function.FunctionAddress == (uintptr_t)(localEntryPoint->_Entry)) {

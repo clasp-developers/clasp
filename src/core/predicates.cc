@@ -286,9 +286,9 @@ CL_DEFUN bool core__global_simple_fun_generator_p(T_sp obj) { return gc::IsA<Glo
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(local-simple-fun-generator-p)dx");
+CL_DOCSTRING(R"dx(core-fun-generator-p)dx");
 DOCGROUP(clasp);
-CL_DEFUN bool core__local_simple_fun_generator_p(T_sp obj) { return gc::IsA<LocalSimpleFunGenerator_sp>(obj); };
+CL_DEFUN bool core__core_fun_generator_p(T_sp obj) { return gc::IsA<CoreFunGenerator_sp>(obj); };
 
 CL_LAMBDA(arg);
 CL_DECLARE();
