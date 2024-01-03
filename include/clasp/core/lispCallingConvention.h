@@ -219,7 +219,7 @@ struct XepStereotype : public ClaspXepTemplate {
 struct ClaspXepFunction {
   static const int Entries = NUMBER_OF_ENTRY_POINTS;
   std::atomic<ClaspXepAnonymousFunction> _EntryPoints[NUMBER_OF_ENTRY_POINTS];
-  // We need a default constructor since GlobalSimpleFunBase is
+  // We need a default constructor since SimpleFun is
   // default constructible. I'm not sure WHY it is - something funky
   // about the LISP_CLASS macro I think. FIXME?
   ClaspXepFunction() = default;

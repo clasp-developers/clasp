@@ -91,10 +91,10 @@ template <typename FunctionPtrType, typename Policies, typename PureOuts, typena
 namespace clbind {
 template <typename RT, typename... ARGS, typename Policies, typename... PUREOUTS, typename ArgumentWrapper>
 class WRAPPER_VariadicFunction<RT (*)(ARGS...), Policies, clbind::pureOutsPack<PUREOUTS...>, ArgumentWrapper>
-    : public core::GlobalSimpleFunBase_O {
+    : public core::SimpleFun_O {
 public:
   typedef WRAPPER_VariadicFunction<RT (*)(ARGS...), Policies, clbind::pureOutsPack<PUREOUTS...>, ArgumentWrapper> MyType;
-  typedef core::GlobalSimpleFunBase_O TemplatedBase;
+  typedef core::SimpleFun_O TemplatedBase;
   typedef RT (*FuncType)(ARGS...);
 
 public:
@@ -106,7 +106,7 @@ public:
   enum { NumParams = sizeof...(ARGS) };
 
   WRAPPER_VariadicFunction(FuncType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : GlobalSimpleFunBase_O(fdesc, core::XepStereotype<MyType>(), code), fptr(ptr) {
+    : SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()), fptr(ptr) {
     this->validateCodePointer((void**)&this->fptr, sizeof(this->fptr));
   };
 

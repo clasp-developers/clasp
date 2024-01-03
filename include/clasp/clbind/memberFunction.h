@@ -37,11 +37,11 @@ template <typename MethodPtrType, typename Policies, typename ArgumentWrapper> c
 namespace clbind {
 
 template <typename Policies, typename RT, typename OT, typename... ARGS, typename ArgumentWrapper>
-class WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...), Policies, ArgumentWrapper> : public core::GlobalSimpleFunBase_O {
+class WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...), Policies, ArgumentWrapper> : public core::SimpleFun_O {
 public:
   typedef WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...), Policies, ArgumentWrapper> MyType;
   typedef RT (OT::*MethodType)(ARGS...);
-  typedef core::GlobalSimpleFunBase_O TemplatedBase;
+  typedef core::SimpleFun_O TemplatedBase;
 
 public:
   MethodType mptr;
@@ -50,7 +50,7 @@ public:
   enum { NumParams = sizeof...(ARGS) + 1 };
 
   WRAPPER_AlienVariadicMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), GlobalSimpleFunBase_O(fdesc, core::XepStereotype<MyType>(), code) {
+    : mptr(ptr), SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
     this->validateCodePointer((void**)&this->mptr, sizeof(this->mptr));
   };
 
@@ -108,11 +108,11 @@ public:
 namespace clbind {
 
 template <typename Policies, typename RT, typename OT, typename... ARGS, typename ArgumentWrapper>
-class WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...) const, Policies, ArgumentWrapper> : public core::GlobalSimpleFunBase_O {
+class WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...) const, Policies, ArgumentWrapper> : public core::SimpleFun_O {
 public:
   typedef WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...) const, Policies, ArgumentWrapper> MyType;
   typedef RT (OT::*MethodType)(ARGS...) const;
-  typedef core::GlobalSimpleFunBase_O TemplatedBase;
+  typedef core::SimpleFun_O TemplatedBase;
 
 public:
   MethodType mptr;
@@ -121,7 +121,7 @@ public:
   enum { NumParams = sizeof...(ARGS) + 1 };
 
   WRAPPER_AlienVariadicMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), GlobalSimpleFunBase_O(fdesc, core::XepStereotype<MyType>(), code) {
+    : mptr(ptr), SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
     this->validateCodePointer((void**)&this->mptr, sizeof(this->mptr));
   };
 

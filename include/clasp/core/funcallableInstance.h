@@ -138,7 +138,7 @@ public: // Functions here
     Function_sp funcallable_closure = closure->REAL_FUNCTION();
     // This is where we could decide to compile the dtree and switch the REAL_FUNCTION() or not
     //  printf("%s:%d:%s About to call %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(closure->functionName()).c_str());
-    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->entryPoint())->_EntryPoints;
+    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
     return xep.invoke_n(funcallable_closure.raw_(), lcc_nargs, lcc_args);
   }
 
@@ -148,7 +148,7 @@ public: // Functions here
     DO_DRAG_CXX_CALLS();
     // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
     Function_sp funcallable_closure = closure->REAL_FUNCTION();
-    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->entryPoint())->_EntryPoints;
+    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
     return xep.invoke_0(funcallable_closure.raw_());
   }
 
@@ -158,7 +158,7 @@ public: // Functions here
     DO_DRAG_CXX_CALLS();
     // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
     Function_sp funcallable_closure = closure->REAL_FUNCTION();
-    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->entryPoint())->_EntryPoints;
+    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
     return xep.invoke_1(funcallable_closure.raw_(), lcc_farg0);
   }
 
@@ -168,7 +168,7 @@ public: // Functions here
     DO_DRAG_CXX_CALLS();
     // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
     Function_sp funcallable_closure = closure->REAL_FUNCTION();
-    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->entryPoint())->_EntryPoints;
+    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
     return xep.invoke_2(funcallable_closure.raw_(), lcc_farg0, lcc_farg1);
   }
 
@@ -178,7 +178,7 @@ public: // Functions here
     DO_DRAG_CXX_CALLS();
     // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
     Function_sp funcallable_closure = closure->REAL_FUNCTION();
-    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->entryPoint())->_EntryPoints;
+    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
     return xep.invoke_3(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2);
   }
 
@@ -189,7 +189,7 @@ public: // Functions here
     DO_DRAG_CXX_CALLS();
     // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
     Function_sp funcallable_closure = closure->REAL_FUNCTION();
-    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->entryPoint())->_EntryPoints;
+    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
     return xep.invoke_4(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3);
   }
 
@@ -200,7 +200,7 @@ public: // Functions here
     DO_DRAG_CXX_CALLS();
     // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
     Function_sp funcallable_closure = closure->REAL_FUNCTION();
-    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->entryPoint())->_EntryPoints;
+    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
     return xep.invoke_5(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4);
   }
 
@@ -240,8 +240,8 @@ namespace core {
 
 // Fulfill the role of bytecode_function
 FORWARD(GFBytecodeSimpleFun);
-class GFBytecodeSimpleFun_O : public GlobalSimpleFunBase_O {
-  LISP_CLASS(core, CorePkg, GFBytecodeSimpleFun_O, "GFBytecodeSimpleFun", GlobalSimpleFunBase_O);
+class GFBytecodeSimpleFun_O : public SimpleFun_O {
+  LISP_CLASS(core, CorePkg, GFBytecodeSimpleFun_O, "GFBytecodeSimpleFun", SimpleFun_O);
 
 public:
   // Store the bytecode in the _Code slot

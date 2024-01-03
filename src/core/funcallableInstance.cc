@@ -712,7 +712,7 @@ struct GFBytecodeEntryPoint {
 
 GFBytecodeSimpleFun_O::GFBytecodeSimpleFun_O(FunctionDescription_sp fdesc, unsigned int entryPcN, SimpleVector_byte8_t_sp bytecode,
                                              SimpleVector_sp literals, Function_sp generic_function, size_t specialized_length)
-    : GlobalSimpleFunBase_O(fdesc, XepStereotype<GFBytecodeEntryPoint>(specialized_length), nil<T_O>()),
+  : SimpleFun_O(fdesc, nil<T_O>(), XepStereotype<GFBytecodeEntryPoint>(specialized_length)),
       _EntryPcN(entryPcN), _Bytecode(bytecode), _Literals(literals), _GenericFunction(generic_function),
       _SpecializedLength(specialized_length){};
 

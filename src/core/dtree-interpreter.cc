@@ -236,7 +236,7 @@ case MAYBE_LONG_ADD + DTREE_OP_EFFECTIVE_METHOD: {
   T_sp tfunc = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_EFFECTIVE_METHOD_OFFSET), literals);
   Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
   DTILOG(">>>>>>> DTREE_OP_EFFECTIVE_METHOD: Invoking effective method\n");
-  ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(func->entryPoint())->_EntryPoints;
+  ClaspXepFunction& xep = func->entryPoint()->_EntryPoints;
   DTILOG("DTREE_OP_EFFECTIVE_METHOD: About to dump args\n");
 #if defined(GENERAL_ARITY_CALL)
   DTIDO(dump_lcc_args(monitor_file("dtree-interp"), lcc_nargs, lcc_args));

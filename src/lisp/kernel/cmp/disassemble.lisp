@@ -90,7 +90,7 @@ If type is :IR then dump the LLVM-IR for all of the associated functions.
        (error "Only disassembly to bytecode is supported for bytecode discriminating function: ~a" desig))
      ;; Defined later in clos/dtree.lisp.
      (clos::disassemble-discriminator desig))
-    ((or compiled-function core:global-simple-fun-base)
+    ((or compiled-function core:simple-fun)
      (ecase type
        ((:ir)
         (error "Dissassembly to LLVM-IR is not supported for already-compiled function: ~a"

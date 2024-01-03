@@ -201,6 +201,13 @@ public:
 
 namespace core {
 
+// A Simple Fun is a directly callable function underlying all Lisp
+// functions that can be called from unknown sites. They can accept
+// any number of boxed arguments through their entry points, and
+// return a boxed object, if they do return. They are themselves
+// functions, and in this case their own simple fun is usually
+// themselves (but this can change in a few circumstances -
+// check out bytecode simple funs).
 FORWARD(SimpleFun);
 class SimpleFun_O : public Function_O {
   LISP_CLASS(core, CorePkg, SimpleFun_O, "SimpleFun", Function_O);
@@ -211,18 +218,19 @@ public:
 public:
   FunctionDescription_sp _FunctionDescription;
   T_sp _Code; //  10 code
+  // The _EntryPoints contain the actual function pointers that
+  // implement this Lisp function. See lispCallingConvention.h
+  // for details.
+  ClaspXepFunction _EntryPoints;
 public:
   // Accessors
-  SimpleFun_O(FunctionDescription_sp fdesc, T_sp code)
-    : Function_O(this), _FunctionDescription(fdesc), _Code(code){};
+  SimpleFun_O(FunctionDescription_sp fdesc, T_sp code,
+              const ClaspXepTemplate& entry_point);
   CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
   virtual Pointer_sp defaultEntryAddress() const;
 
 public:
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
-    printf("%s:%d:%s Subclass must implement\n", __FILE__, __LINE__, __FUNCTION__);
-    abort();
-  }
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
   void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr);
   CL_DEFMETHOD T_sp SimpleFun_code() const { return this->_Code; };
 };
@@ -284,28 +292,9 @@ public:
   }
 };
 
-FORWARD(GlobalSimpleFunBase);
-class GlobalSimpleFunBase_O : public SimpleFun_O {
-  LISP_CLASS(core, CorePkg, GlobalSimpleFunBase_O, "GlobalSimpleFunBase", SimpleFun_O);
-
-public:
-  /*! A general entry point at 0 and fixed arity entry points from 1...(NUMBER_OF_ENTRY_POINTS-1)
-      The arity for each entry point from 1... starts with ENTRY_POINT_ARITY_BEGIN
-  */
-  ClaspXepFunction _EntryPoints;
-
-public:
-  // Accessors
-  GlobalSimpleFunBase_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp code);
-  GlobalSimpleFunBase_O(){};
-
-public:
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
-};
-
 FORWARD(GlobalSimpleFun);
-class GlobalSimpleFun_O : public GlobalSimpleFunBase_O {
-  LISP_CLASS(core, CorePkg, GlobalSimpleFun_O, "GlobalSimpleFun", GlobalSimpleFunBase_O);
+class GlobalSimpleFun_O : public SimpleFun_O {
+  LISP_CLASS(core, CorePkg, GlobalSimpleFun_O, "GlobalSimpleFun", SimpleFun_O);
 
 public:
   T_sp _localFun;
@@ -323,8 +312,8 @@ public:
 
 // Fulfill the role of bytecode_function
 FORWARD(GlobalBytecodeSimpleFun);
-class GlobalBytecodeSimpleFun_O : public GlobalSimpleFunBase_O {
-  LISP_CLASS(core, CorePkg, GlobalBytecodeSimpleFun_O, "GlobalBytecodeSimpleFun", GlobalSimpleFunBase_O);
+class GlobalBytecodeSimpleFun_O : public SimpleFun_O {
+  LISP_CLASS(core, CorePkg, GlobalBytecodeSimpleFun_O, "GlobalBytecodeSimpleFun", SimpleFun_O);
 
 public:
   // The frame size this function needs for local variables.
@@ -501,7 +490,7 @@ public:
     DO_DRAG_CXX_CALLS();
     // We need to be sure to load the real function only once to avoid race conditions.
     Function_sp funcallable_closure = closure->real_function();
-    GlobalSimpleFunBase_sp simpleFun = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->entryPoint());
+    SimpleFun_sp simpleFun = funcallable_closure->entryPoint();
     const ClaspXepFunction& xep = simpleFun->_EntryPoints;
     return xep.invoke_n(funcallable_closure.raw_(), lcc_nargs, lcc_args);
   }
@@ -511,7 +500,7 @@ public:
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     Function_sp funcallable_closure = closure->real_function();
-    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->entryPoint())->_EntryPoints;
+    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
     return xep.invoke_0(funcallable_closure.raw_());
   }
 
@@ -520,7 +509,7 @@ public:
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     Function_sp funcallable_closure = closure->real_function();
-    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->entryPoint())->_EntryPoints;
+    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
     return xep.invoke_1(funcallable_closure.raw_(), lcc_farg0);
   }
 
@@ -529,7 +518,7 @@ public:
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     Function_sp funcallable_closure = closure->real_function();
-    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->entryPoint())->_EntryPoints;
+    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
     return xep.invoke_2(funcallable_closure.raw_(), lcc_farg0, lcc_farg1);
   }
 
@@ -538,7 +527,7 @@ public:
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     Function_sp funcallable_closure = closure->real_function();
-    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->entryPoint())->_EntryPoints;
+    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
     return xep.invoke_3(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2);
   }
 
@@ -548,7 +537,7 @@ public:
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     Function_sp funcallable_closure = closure->real_function();
-    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->entryPoint())->_EntryPoints;
+    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
     return xep.invoke_4(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3);
   }
 
@@ -558,7 +547,7 @@ public:
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     Function_sp funcallable_closure = closure->real_function();
-    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->entryPoint())->_EntryPoints;
+    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
     return xep.invoke_5(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4);
   }
 };

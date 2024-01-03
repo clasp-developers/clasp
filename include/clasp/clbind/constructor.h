@@ -196,14 +196,14 @@ template <typename Sig, typename Pols, typename Pointer, typename T, typename Ar
 
 namespace clbind {
 template <typename ConstructorPtrType, typename Policies, typename Pointer, typename ConstructType, typename ArgumentWrapper>
-class WRAPPER_Constructor_O : public core::GlobalSimpleFunBase_O {};
+class WRAPPER_Constructor_O : public core::SimpleFun_O {};
 
 template <typename... ARGS, typename Policies, typename Pointer, typename ConstructType, typename ArgumentWrapper>
 class WRAPPER_Constructor_O<constructor<ARGS...>, Policies, Pointer, ConstructType, ArgumentWrapper>
-    : public core::GlobalSimpleFunBase_O {
+    : public core::SimpleFun_O {
 public:
   typedef WRAPPER_Constructor_O<constructor<ARGS...>, Policies, Pointer, ConstructType, ArgumentWrapper> MyType;
-  typedef core::GlobalSimpleFunBase_O TemplatedBase;
+  typedef core::SimpleFun_O TemplatedBase;
   typedef Wrapper<ConstructType, Pointer> WrapperType;
 
 public:
@@ -211,7 +211,7 @@ public:
   virtual const char* describe() const { return "VariadicConstructorFunctor"; };
   enum { NumParams = sizeof...(ARGS) };
   WRAPPER_Constructor_O(core::FunctionDescription_sp fdesc)
-      : core::GlobalSimpleFunBase_O(fdesc, core::XepStereotype<MyType>(), nil<core::T_O>()){};
+    : core::SimpleFun_O(fdesc, nil<core::T_O>(), core::XepStereotype<MyType>()){};
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
   static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs,

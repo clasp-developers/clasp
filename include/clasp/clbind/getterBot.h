@@ -1,8 +1,8 @@
 template <typename GetterPolicies, typename OT, typename MemberType>
-class WRAPPER_Getter<GetterPolicies, OT, MemberType* const(OT::*)> : public core::GlobalSimpleFunBase_O {
+class WRAPPER_Getter<GetterPolicies, OT, MemberType* const(OT::*)> : public core::SimpleFun_O {
 public:
   typedef WRAPPER_Getter<GetterPolicies, OT, MemberType* const(OT::*)> MyType;
-  typedef core::GlobalSimpleFunBase_O TemplatedBase;
+  typedef core::SimpleFun_O TemplatedBase;
   typedef clbind::Wrapper<MemberType, MemberType*> WrapperType;
   typedef MemberType* const(OT::*VariablePtrType);
 
@@ -11,7 +11,7 @@ public:
 
 public:
   WRAPPER_Getter(VariablePtrType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), GlobalSimpleFunBase_O(fdesc, core::XepStereotype<MyType>(), code) {
+    : mptr(ptr), SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
     trapGetterMethoid();
   };
 

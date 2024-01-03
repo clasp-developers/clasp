@@ -39,11 +39,11 @@ namespace clbind {
 
 template <typename RT, typename OT, typename... ARGS, typename Policies, typename ArgumentWrapper>
 class WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...), Policies, OT, ArgumentWrapper>
-    : public core::GlobalSimpleFunBase_O {
+    : public core::SimpleFun_O {
 public:
   typedef WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...), Policies, OT, ArgumentWrapper> MyType;
   typedef RT (OT::ExternalType::*MethodType)(ARGS...);
-  typedef core::GlobalSimpleFunBase_O TemplatedBase;
+  typedef core::SimpleFun_O TemplatedBase;
 
 public:
   MethodType mptr;
@@ -52,7 +52,7 @@ public:
   enum { NumParams = sizeof...(ARGS) + 1 };
 
   WRAPPER_IndirectMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), GlobalSimpleFunBase_O(fdesc, core::XepStereotype<MyType>(), code) {
+    : mptr(ptr), SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
     this->validateCodePointer((void**)&this->mptr, sizeof(this->mptr));
   };
 
@@ -97,11 +97,11 @@ public:
 namespace clbind {
 template <typename RT, typename OT, typename... ARGS, typename Policies, typename ArgumentWrapper>
 class WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...) const, Policies, OT, ArgumentWrapper>
-    : public core::GlobalSimpleFunBase_O {
+    : public core::SimpleFun_O {
 public:
   typedef WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...) const, Policies, OT, ArgumentWrapper> MyType;
   typedef RT (OT::ExternalType::*MethodType)(ARGS...) const;
-  typedef GlobalSimpleFunBase_O TemplatedBase;
+  typedef SimpleFun_O TemplatedBase;
 
 public:
   MethodType mptr;
@@ -110,7 +110,7 @@ public:
   enum { NumParams = sizeof...(ARGS) + 1 };
 
   WRAPPER_IndirectMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), GlobalSimpleFunBase_O(fdesc, core::XepStereotype<MyType>(), code) {
+    : mptr(ptr), SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
     this->validateCodePointer((void**)&this->mptr, sizeof(this->mptr));
   };
 
@@ -153,9 +153,9 @@ public:
 }; // namespace clbind
 
 namespace core {
-template <class D, class C> class WRAPPER_Getter : public GlobalSimpleFunBase_O {
+template <class D, class C> class WRAPPER_Getter : public SimpleFun_O {
 public:
-  typedef GlobalSimpleFunBase_O TemplatedBase;
+  typedef SimpleFun_O TemplatedBase;
   typedef WRAPPER_Getter<D, C> MyType;
 
 public:
@@ -165,7 +165,7 @@ public:
 
 public:
   WRAPPER_Getter(MemPtr ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), GlobalSimpleFunBase_O(fdesc, core::XepStereotype<MyType>(), code) {
+    : mptr(ptr), SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
     this->validateCodePointer((void**)&this->mptr, sizeof(this->mptr));
   }
 

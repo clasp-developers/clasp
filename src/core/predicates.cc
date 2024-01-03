@@ -52,7 +52,7 @@ THE SOFTWARE.
 namespace core {
 
 DOCGROUP(clasp);
-CL_DEFUN bool core__generalp(T_sp obj) { return gc::IsA<General_sp>(obj); }
+CL_DEFUN bool core__generalp(T_sp obj) { return obj.generalp(); }
 
 CL_LAMBDA(arg);
 CL_DECLARE();
