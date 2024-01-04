@@ -132,7 +132,6 @@ public: // Functions here
 
   static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args) {
     SETUP_CLOSURE(FuncallableInstance_O, closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
     Function_sp funcallable_closure = closure->REAL_FUNCTION();
@@ -144,7 +143,6 @@ public: // Functions here
   template <typename... Ts>
   static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure, Ts... args) {
     SETUP_CLOSURE(FuncallableInstance_O, closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
     Function_sp funcallable_closure = closure->REAL_FUNCTION();

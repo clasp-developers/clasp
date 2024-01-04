@@ -35,12 +35,6 @@ template <> struct gctools::GCInfo<core::Function_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
-#ifdef DEBUG_FUNCTION_CALL_COUNTER
-#define INCREMENT_FUNCTION_CALL_COUNTER(x) ++x->_TimesCalled
-#else
-#define INCREMENT_FUNCTION_CALL_COUNTER(x)
-#endif
-
 template <> struct gctools::GCInfo<core::GlobalSimpleFun_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
@@ -522,7 +516,6 @@ public:
 public:
   static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args) {
     SETUP_CLOSURE(FunctionCell_O, closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     // We need to be sure to load the real function only once to avoid race conditions.
     Function_sp funcallable_closure = closure->real_function();
@@ -532,7 +525,6 @@ public:
   template <typename... Ts>
   static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure, Ts... args) {
     SETUP_CLOSURE(FunctionCell_O, closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     Function_sp funcallable_closure = closure->real_function();
     return funcallable_closure->funcall_raw(args...);

@@ -61,7 +61,6 @@ public:
 
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     SETUP_CLOSURE(SingleDispatchGenericFunction_O, closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     size_t singleDispatchArgumentIndex = closure->argumentIndex.unsafe_fixnum();
     Instance_sp dispatchArgClass;

@@ -63,7 +63,6 @@ public:
 public:
   static LCC_RETURN LISP_CALLING_CONVENTION() {
     WRAPPER_Iterator* closure = gctools::untag_general<WRAPPER_Iterator*>((WRAPPER_Iterator*)lcc_closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     if (lcc_nargs != 1)
       core::wrongNumberOfArguments(core::T_sp((gctools::Tagged)lcc_closure), lcc_nargs, 1);
@@ -76,8 +75,6 @@ public:
     return Values(smart_itBegin, smart_itEnd);
   }
   static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure) {
-    WRAPPER_Iterator* closure = gctools::untag_general<WRAPPER_Iterator*>((WRAPPER_Iterator*)lcc_closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     core::wrongNumberOfArguments(core::T_sp((gctools::Tagged)lcc_closure), 0, 1);
   }
@@ -85,7 +82,6 @@ public:
   static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
                                              core::T_O* a0, Ts... as) {
     WRAPPER_Iterator* closure = gctools::untag_general<WRAPPER_Iterator*>((WRAPPER_Iterator*)lcc_closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     if constexpr(sizeof...(Ts) == 0) { // correct argcount
       core::T_sp arg0((gctools::Tagged)a0);

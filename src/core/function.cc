@@ -620,12 +620,6 @@ CL_DEFUN Closure_sp core__make_closure(SimpleFun_sp sfun, Vaslist_sp closed) {
  * i.e., if the entry point ignores its first argument. */
 bool Closure_O::openP() { return (this->_Slots.length() == 0); }
 
-#ifdef DEBUG_FUNCTION_CALL_COUNTER
-
-DOCGROUP(clasp);
-CL_DEFUN size_t core__function_call_counter(Function_sp f) { return f->_TimesCalled; }
-#endif
-
 bool Function_O::compiledP() const { return !gc::IsA<GlobalBytecodeSimpleFun_sp>(this->entryPoint()); }
 
 CL_DEFMETHOD T_sp Function_O::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) {
