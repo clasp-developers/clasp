@@ -28,6 +28,8 @@
 
 (defun sys::standard-toplevel ()
   (let ((core:*use-interpreter-for-eval* nil))
+    #-staging (when (ext:getenv "CLASP_AUTOCOMPILATION")
+                (funcall 'ext:start-autocompilation))
     (case (core:startup-type)
       ((:snapshot-file :embedded-snapshot)
        (sys::load-foreign-libraries))

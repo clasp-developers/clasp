@@ -97,6 +97,7 @@
   ;; Note that this function is not thread safe. It's expected you'll only
   ;; use it manually.
   (unless *autocompilation-thread*
+    (write-line "Starting autocompilation...")
     (setf *autocompilation-thread*
           (mp:process-run-function 'autocompilation #'autocompile-worker)
           cmp:*autocompile-hook* 'queue-autocompilation)
