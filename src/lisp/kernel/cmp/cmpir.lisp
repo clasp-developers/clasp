@@ -133,7 +133,7 @@ Maybe in the future we will want to actually put a test here."
 
 (defun generate-function-for-arity-p (arity cll-analysis)
   "Return T if a function should be generated for this arity.
-If nil then insert a general_entry_point_redirect_x function"
+If nil then insert a general_entry_point_redirect_x function which just calls the general entry point. This is useful for entry points that just signal an argcount mismatch error - we can just use existing entry point functions that defer to the general rather than generating more code."
   (if (eq arity :general-entry)
       t
       (if (cleavir-lambda-list-analysis-req-opt-only-p cll-analysis)

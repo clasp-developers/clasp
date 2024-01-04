@@ -166,6 +166,20 @@ public:
     return this->_TheSimpleFun.store(ep, std::memory_order_relaxed);
   }
 
+  // Perform a Lisp call of this function, and return its results.
+  // Takes smart pointers, or at least Ts must have .raw_().
+  // Note that these cannot be const because this is passed to
+  // the code, which may alter it (e.g. set a closure variable).
+  // Definitions below, after SimpleFun_O.
+  template <typename... Ts>
+  inline LCC_RETURN funcall(Ts... args);
+  // Ditto but with raw pointers (T_O*)
+  template <typename... Ts>
+  inline LCC_RETURN funcall_raw(Ts... args);
+
+  // Apply a function to array arguments (lcc_nargs, lcc_args)
+  inline LCC_RETURN apply_raw(size_t lcc_nargs, T_O** lcc_args);
+
   CL_LISPIFY_NAME("core:functionName");
   CL_DEFMETHOD virtual T_sp functionName() const { return this->fdesc()->functionName(); }
   CL_DEFMETHOD void setf_functionName(T_sp name) { this->fdesc()->setf_functionName(name); }
@@ -234,6 +248,28 @@ public:
   void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr);
   CL_DEFMETHOD T_sp SimpleFun_code() const { return this->_Code; };
 };
+
+// Now that SimpleFun exists we can define these.
+template <typename... Ts>
+LCC_RETURN Function_O::funcall(Ts... args) {
+  // This construct is to get us a tagged pointer to this.
+  // FIXME: Maybe there's a better way.
+  return entryPoint()->_EntryPoints.call(this->asSmartPtr().raw_(),
+                                         args.raw_()...);
+}
+template <typename... Ts>
+LCC_RETURN Function_O::funcall_raw(Ts... args) {
+  return entryPoint()->_EntryPoints.call(this->asSmartPtr().raw_(),
+                                         args...);
+}
+LCC_RETURN Function_O::apply_raw(size_t lcc_nargs, T_O** lcc_args) {
+  // NOTE: This function is used in the general entry point redirects
+  // (link_intrinsics.cc) for which it is important that it call the
+  // general entry point. So - don't get clever and call one of the
+  // fixed arity points here.
+  return entryPoint()->_EntryPoints.invoke_n(this->asSmartPtr().raw_(),
+                                             lcc_nargs, lcc_args);
+}
 
 // A CoreFun represents the specialized actual code for some functions
 // (basically Cleavir-compiled functions). The XEP (in the SimpleFun)

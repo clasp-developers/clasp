@@ -151,32 +151,27 @@ T_mv apply0_inner_valist(Function_sp func, Vaslist_sp var) {
   // Vaslist* vaslist = &*var;
   switch (lenRest) {
   case 0:
-    return (*func).entry_0()(func.raw_());
-    break;
+    return func->funcall_raw();
   case 1:
     a0 = (*var)[0];
-    return (*func).entry_1()(func.raw_(), a0);
-    break;
+    return func->funcall_raw(a0);
   case 2:
     a0 = (*var)[0];
     a1 = (*var)[1];
-    return (*func).entry_2()(func.raw_(), a0, a1);
-    break;
+    return func->funcall_raw(a0, a1);
   case 3:
     a0 = (*var)[0];
     a1 = (*var)[1];
     a2 = (*var)[2];
-    return (*func).entry_3()(func.raw_(), a0, a1, a2);
-    break;
+    return func->funcall_raw(a0, a1, a2);
   case 4:
     a0 = (*var)[0];
     a1 = (*var)[1];
     a2 = (*var)[2];
     a3 = (*var)[3];
-    return (*func).entry_4()(func.raw_(), a0, a1, a2, a3);
-    break;
+    return func->funcall_raw(a0, a1, a2, a3);
   default: { // lenRest>=4
-    return (*func).entry()(func.raw_(), nargs, var->args());
+    return func->apply_raw(nargs, var->args());
   }
   }
 }
@@ -187,30 +182,26 @@ T_mv apply1_inner_valist(Function_sp func, T_O* a0, Vaslist_sp var) {
   size_t nargs = lenRest + 1;
   switch (lenRest) {
   case 0:
-    return (*func).entry_1()(func.raw_(), a0);
-    break;
+    return func->funcall_raw(a0);
   case 1:
     a1 = (*var)[0];
-    return (*func).entry_2()(func.raw_(), a0, a1);
-    break;
+    return func->funcall_raw(a0, a1);
   case 2:
     a1 = (*var)[0];
     a2 = (*var)[1];
-    return (*func).entry_3()(func.raw_(), a0, a1, a2);
-    break;
+    return func->funcall_raw(a0, a1, a2);
   case 3:
     a1 = (*var)[0];
     a2 = (*var)[1];
     a3 = (*var)[2];
-    return (*func).entry_4()(func.raw_(), a0, a1, a2, a3);
-    break;
+    return func->funcall_raw(a0, a1, a2, a3);
   default: { // lenRest>=4
     MAKE_STACK_FRAME(frame, nargs);
     size_t idx(0);
     gctools::fill_frame_one(frame, idx, a0);
     gctools::fill_frame_vaslist(frame, idx, var);
     CHECK_FRAME(frame, idx, nargs);
-    return (*func).entry()(func.raw_(), nargs, frame->arguments());
+    return func->apply_raw(nargs, frame->arguments(0));
   }
   }
 }
@@ -221,17 +212,14 @@ T_mv apply2_inner_valist(Function_sp func, T_O* a0, T_O* a1, Vaslist_sp var) {
   size_t nargs = lenRest + 2;
   switch (lenRest) {
   case 0:
-    return (*func).entry_2()(func.raw_(), a0, a1);
-    break;
+    return func->funcall_raw(a0, a1);
   case 1:
     a2 = (*var)[0];
-    return (*func).entry_3()(func.raw_(), a0, a1, a2);
-    break;
+    return func->funcall_raw(a0, a1, a2);
   case 2:
     a2 = (*var)[0];
     a3 = (*var)[1];
-    return (*func).entry_4()(func.raw_(), a0, a1, a2, a3);
-    break;
+    return func->funcall_raw(a0, a1, a2, a3);
   default: { // lenRest>=4
     MAKE_STACK_FRAME(frame, nargs);
     size_t idx(0);
@@ -239,7 +227,7 @@ T_mv apply2_inner_valist(Function_sp func, T_O* a0, T_O* a1, Vaslist_sp var) {
     gctools::fill_frame_one(frame, idx, a1);
     gctools::fill_frame_vaslist(frame, idx, var);
     CHECK_FRAME(frame, idx, nargs);
-    return (*func).entry()(func.raw_(), nargs, frame->arguments(0));
+    return func->apply_raw(nargs, frame->arguments(0));
   }
   }
 }
@@ -250,12 +238,10 @@ T_mv apply3_inner_valist(Function_sp func, T_O* a0, T_O* a1, T_O* a2, Vaslist_sp
   size_t nargs = lenRest + 3;
   switch (lenRest) {
   case 0:
-    return (*func).entry_3()(func.raw_(), a0, a1, a2);
-    break;
+    return func->funcall_raw(a0, a1, a2);
   case 1:
     a3 = (*var)[0];
-    return (*func).entry_4()(func.raw_(), a0, a1, a2, a3);
-    break;
+    return func->funcall_raw(a0, a1, a2, a3);
   default: { // lenRest>=4
     MAKE_STACK_FRAME(frame, nargs);
     size_t idx(0);
@@ -264,7 +250,7 @@ T_mv apply3_inner_valist(Function_sp func, T_O* a0, T_O* a1, T_O* a2, Vaslist_sp
     gctools::fill_frame_one(frame, idx, a2);
     gctools::fill_frame_vaslist(frame, idx, var);
     CHECK_FRAME(frame, idx, nargs);
-    return (*func).entry()(func.raw_(), nargs, frame->arguments(0));
+    return func->apply_raw(nargs, frame->arguments(0));
   }
   }
 }
@@ -281,7 +267,7 @@ T_mv apply4_inner_valist(Function_sp func, Vaslist_sp v, T_O* a0, T_O* a1, T_O* 
   gctools::fill_frame_vaslist(frame, idx, var);
   gctools::fill_frame_vaslist(frame, idx, v);
   CHECK_FRAME(frame, idx, nargs);
-  return (*func).entry()(func.raw_(), idx, frame->arguments(0));
+  return func->apply_raw(idx, frame->arguments(0));
 }
 
 T_mv apply0_inner_list(Function_sp func, T_sp var) {
@@ -303,36 +289,35 @@ T_mv apply0_inner_list(Function_sp func, T_sp var) {
   size_t nargs = fargs + rargs;
   switch (rargs) {
   case 0:
-    return (*func).entry_0()(func.raw_());
-    break;
+    return func->funcall_raw();
   case 1:
     GET_AND_ADVANCE_LIST(a0, var);
-    return (*func).entry_1()(func.raw_(), a0);
+    return func->funcall_raw(a0);
     break;
   case 2:
     GET_AND_ADVANCE_LIST(a0, var);
     GET_AND_ADVANCE_LIST(a1, var);
-    return (*func).entry_2()(func.raw_(), a0, a1);
+    return func->funcall_raw(a0, a1);
     break;
   case 3:
     GET_AND_ADVANCE_LIST(a0, var);
     GET_AND_ADVANCE_LIST(a1, var);
     GET_AND_ADVANCE_LIST(a2, var);
-    return (*func).entry_3()(func.raw_(), a0, a1, a2);
+    return func->funcall_raw(a0, a1, a2);
     break;
   case 4:
     GET_AND_ADVANCE_LIST(a0, var);
     GET_AND_ADVANCE_LIST(a1, var);
     GET_AND_ADVANCE_LIST(a2, var);
     GET_AND_ADVANCE_LIST(a3, var);
-    return (*func).entry_4()(func.raw_(), a0, a1, a2, a3);
+    return func->funcall_raw(a0, a1, a2, a3);
     break;
   default: { // lenRest>=1
     MAKE_STACK_FRAME(frame, nargs);
     size_t idx(0);
     gctools::fill_frame_list(frame, idx, var);
     CHECK_FRAME(frame, idx, nargs);
-    return (*func).entry()(func.raw_(), nargs, frame->arguments(0));
+    return func->apply_raw(nargs, frame->arguments(0));
   }
   }
 }
@@ -355,22 +340,22 @@ T_mv apply1_inner_list(Function_sp func, T_O* a0, T_sp var) {
   size_t nargs = fargs + rargs;
   switch (rargs) {
   case 0:
-    return (*func).entry_1()(func.raw_(), a0);
+    return func->funcall_raw(a0);
     break;
   case 1:
     GET_AND_ADVANCE_LIST(a1, var);
-    return (*func).entry_2()(func.raw_(), a0, a1);
+    return func->funcall_raw(a0, a1);
     break;
   case 2:
     GET_AND_ADVANCE_LIST(a1, var);
     GET_AND_ADVANCE_LIST(a2, var);
-    return (*func).entry_3()(func.raw_(), a0, a1, a2);
+    return func->funcall_raw(a0, a1, a2);
     break;
   case 3:
     GET_AND_ADVANCE_LIST(a1, var);
     GET_AND_ADVANCE_LIST(a2, var);
     GET_AND_ADVANCE_LIST(a3, var);
-    return (*func).entry_4()(func.raw_(), a0, a1, a2, a3);
+    return func->funcall_raw(a0, a1, a2, a3);
     break;
   default: { // lenRest>=1
     MAKE_STACK_FRAME(frame, nargs);
@@ -378,7 +363,7 @@ T_mv apply1_inner_list(Function_sp func, T_O* a0, T_sp var) {
     gctools::fill_frame_one(frame, idx, a0);
     gctools::fill_frame_list(frame, idx, var);
     CHECK_FRAME(frame, idx, nargs);
-    return (*func).entry()(func.raw_(), nargs, frame->arguments(0));
+    return func->apply_raw(nargs, frame->arguments(0));
   }
   }
 }
@@ -400,16 +385,16 @@ T_mv apply2_inner_list(Function_sp func, T_O* a0, T_O* a1, T_sp var) {
   size_t nargs = fargs + rargs;
   switch (rargs) {
   case 0:
-    return (*func).entry_2()(func.raw_(), a0, a1);
+    return func->funcall_raw(a0, a1);
     break;
   case 1:
     GET_AND_ADVANCE_LIST(a2, var);
-    return (*func).entry_3()(func.raw_(), a0, a1, a2);
+    return func->funcall_raw(a0, a1, a2);
     break;
   case 2:
     GET_AND_ADVANCE_LIST(a2, var);
     GET_AND_ADVANCE_LIST(a3, var);
-    return (*func).entry_4()(func.raw_(), a0, a1, a2, a3);
+    return func->funcall_raw(a0, a1, a2, a3);
     break;
   default: { // lenRest>=1
     MAKE_STACK_FRAME(frame, nargs);
@@ -418,7 +403,7 @@ T_mv apply2_inner_list(Function_sp func, T_O* a0, T_O* a1, T_sp var) {
     gctools::fill_frame_one(frame, idx, a1);
     gctools::fill_frame_list(frame, idx, var);
     CHECK_FRAME(frame, idx, nargs);
-    return (*func).entry()(func.raw_(), nargs, frame->arguments(0));
+    return func->apply_raw(nargs, frame->arguments(0));
   }
   }
 }
@@ -439,11 +424,11 @@ T_mv apply3_inner_list(Function_sp func, T_O* a0, T_O* a1, T_O* a2, T_sp var) {
   size_t nargs = fargs + rargs;
   switch (rargs) {
   case 0:
-    return (*func).entry_3()(func.raw_(), a0, a1, a2);
+    return func->funcall_raw(a0, a1, a2);
     break;
   case 1:
     GET_AND_ADVANCE_LIST(a3, var);
-    return (*func).entry_4()(func.raw_(), a0, a1, a2, a3);
+    return func->funcall_raw(a0, a1, a2, a3);
     break;
   default: { // lenRest>=1
     MAKE_STACK_FRAME(frame, nargs);
@@ -453,7 +438,7 @@ T_mv apply3_inner_list(Function_sp func, T_O* a0, T_O* a1, T_O* a2, T_sp var) {
     gctools::fill_frame_one(frame, idx, a2);
     gctools::fill_frame_list(frame, idx, var);
     CHECK_FRAME(frame, idx, nargs);
-    return (*func).entry()(func.raw_(), nargs, frame->arguments(0));
+    return func->apply_raw(nargs, frame->arguments(0));
   }
   }
 }
@@ -479,7 +464,7 @@ T_mv apply4_inner_list(Function_sp func, T_sp var, T_O* a0, T_O* a1, T_O* a2, T_
   gctools::fill_frame_vaslist(frame, idx, fixed);
   gctools::fill_frame_list(frame, idx, var);
   CHECK_FRAME(frame, idx, nargs);
-  return (*func).entry()(func.raw_(), nargs, frame->arguments(0));
+  return func->apply_raw(nargs, frame->arguments(0));
 }
 
 /* The idea is that given a call to apply: (apply f1 f2... fn var),
@@ -493,7 +478,7 @@ T_mv apply_inner_valist(Function_sp func, size_t lenFixed, Vaslist_sp fixed, Vas
   gctools::fill_frame_nargs_args(frame, idx, lenFixed, fixed->args());
   gctools::fill_frame_vaslist(frame, idx, var);
   CHECK_FRAME(frame, idx, total_args);
-  return (*func).entry()(func.raw_(), total_args, frame->arguments());
+  return func->apply_raw(total_args, frame->arguments());
 }
 
 T_mv apply_inner_list(Function_sp func, size_t lenFixed, Vaslist_sp fixed, List_sp var) {
@@ -504,7 +489,7 @@ T_mv apply_inner_list(Function_sp func, size_t lenFixed, Vaslist_sp fixed, List_
   gctools::fill_frame_nargs_args(frame, idx, lenFixed, fixed->args());
   gctools::fill_frame_list(frame, idx, var);
   CHECK_FRAME(frame, idx, total_args);
-  return (*func).entry()(func.raw_(), total_args, frame->arguments());
+  return func->apply_raw(total_args, frame->arguments());
 }
 
 CL_LAMBDA(head core:&va-rest args);

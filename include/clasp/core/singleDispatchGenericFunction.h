@@ -82,7 +82,7 @@ public:
       if (CONS_CAR(entry) == dispatchArgClass) {
         SingleDispatchMethod_sp method = gc::As_unsafe<SingleDispatchMethod_sp>(CONS_CDR(entry));
         Function_sp method_function = method->_function;
-        return (method_function->entry())(method_function.raw_(), lcc_nargs, lcc_args);
+        return method_function->apply_raw(lcc_nargs, lcc_args);
       }
     }
     // There wasn't a direct match in the call history - so search the class-precedence list of the
@@ -112,7 +112,7 @@ public:
             callHistoryEntry->rplacd(expected);
           } while (!closure->callHistory.compare_exchange_weak(expected, callHistoryEntry));
           Function_sp method_function = method->_function;
-          return (method_function->entry())(method_function.raw_(), lcc_nargs, lcc_args);
+          return method_function->apply_raw(lcc_nargs, lcc_args);
         }
       }
     }

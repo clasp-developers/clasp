@@ -468,7 +468,7 @@ LtvcReturnVoid ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t si
   //  printf("%s:%d:%s make entry-point-index got simpleFunIndex %lu name: %s\n", __FILE__, __LINE__, __FUNCTION__, simpleFunIndex,
   //  name );
   core::GlobalSimpleFun_sp ep((gctools::Tagged)holder->getLiteral(simpleFunIndex));
-  [[maybe_unused]] auto ret = ep->entry()(ep.raw_(), 0, NULL);
+  [[maybe_unused]] auto ret = ep->funcall();
 }
 
 // Similar to the above, but puts value in the table.
@@ -478,7 +478,7 @@ LtvcReturnVoid ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, 
 #ifdef DEBUG_SLOW
   MaybeDebugStartup startup((void*)ep->_EntryPoints[1], name);
 #endif
-  LCC_RETURN ret = ep->entry()(ep.raw_(), 0, NULL);
+  LCC_RETURN ret = ep->funcall();
   core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
   LTVCRETURN holder->setTaggedIndex(tag, index, val.tagged_());
@@ -489,7 +489,7 @@ LtvcReturnVoid ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t si
 #ifdef DEBUG_SLOW
   MaybeDebugStartup startup((void*)ep->_EntryPoints[1], name);
 #endif
-  [[maybe_unused]] LCC_RETURN ret = ep->entry()(ep.raw_(), 0, NULL);
+  [[maybe_unused]] LCC_RETURN ret = ep->funcall();
 }
 };
 
@@ -1126,7 +1126,7 @@ LCC_RETURN cc_call_multipleValueOneFormCallWithRet0(core::Function_O* tfunc, gct
   }
 #endif
   core::Function_sp func((gctools::Tagged)tfunc);
-  return func->entry()(func.raw_(), ret0.nvals, callargs->arguments(0));
+  return func->apply_raw(ret0.nvals, callargs->arguments(0));
 }
 
 T_O* cc_mvcGatherRest(size_t nret, T_O* ret0, size_t nstart) {
@@ -1247,21 +1247,27 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char* exceptionP, void* thisFram
   throw;
 }
 
+// These entry point redirect functions are used as the XEP entries for
+// compiled functions that don't do anything interesting for a given arity
+// (like, they just signal an error). See generate-function-for-arity-p in
+// cmpir.lisp, and the redirect functionality in cmpliteral.lisp.
+// All they do is call the general entry point (via apply_raw).
+
 LCC_RETURN_RAW general_entry_point_redirect_0(core::T_O* closure) {
-  return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->entry()(closure, 0, NULL);
+  return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->apply_raw(0, NULL);
 }
 
 LCC_RETURN_RAW general_entry_point_redirect_1(core::T_O* closure, core::T_O* farg0) {
   MAKE_STACK_FRAME(frame, 1);
   gctools::fill_frame_one_indexed(frame, 0, farg0);
-  return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->entry()(closure, 1, frame->arguments(0));
+  return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->apply_raw(1, frame->arguments(0));
 }
 
 LCC_RETURN_RAW general_entry_point_redirect_2(core::T_O* closure, core::T_O* farg0, core::T_O* farg1) {
   MAKE_STACK_FRAME(frame, 2);
   gctools::fill_frame_one_indexed(frame, 0, farg0);
   gctools::fill_frame_one_indexed(frame, 1, farg1);
-  return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->entry()(closure, 2, frame->arguments(0));
+  return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->apply_raw(2, frame->arguments(0));
 }
 
 LCC_RETURN_RAW general_entry_point_redirect_3(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2) {
@@ -1269,7 +1275,7 @@ LCC_RETURN_RAW general_entry_point_redirect_3(core::T_O* closure, core::T_O* far
   gctools::fill_frame_one_indexed(frame, 0, farg0);
   gctools::fill_frame_one_indexed(frame, 1, farg1);
   gctools::fill_frame_one_indexed(frame, 2, farg2);
-  return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->entry()(closure, 3, frame->arguments(0));
+  return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->apply_raw(3, frame->arguments(0));
 }
 
 LCC_RETURN_RAW general_entry_point_redirect_4(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2,
@@ -1279,7 +1285,7 @@ LCC_RETURN_RAW general_entry_point_redirect_4(core::T_O* closure, core::T_O* far
   gctools::fill_frame_one_indexed(frame, 1, farg1);
   gctools::fill_frame_one_indexed(frame, 2, farg2);
   gctools::fill_frame_one_indexed(frame, 3, farg3);
-  return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->entry()(closure, 4, frame->arguments(0));
+  return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->apply_raw(4, frame->arguments(0));
 }
 
 LCC_RETURN_RAW general_entry_point_redirect_5(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2,
@@ -1290,7 +1296,7 @@ LCC_RETURN_RAW general_entry_point_redirect_5(core::T_O* closure, core::T_O* far
   gctools::fill_frame_one_indexed(frame, 2, farg2);
   gctools::fill_frame_one_indexed(frame, 3, farg3);
   gctools::fill_frame_one_indexed(frame, 4, farg4);
-  return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->entry()(closure, 5, frame->arguments(0));
+  return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->apply_raw(5, frame->arguments(0));
 }
 
 LCC_RETURN_RAW general_entry_point_redirect_6(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2,
@@ -1302,7 +1308,7 @@ LCC_RETURN_RAW general_entry_point_redirect_6(core::T_O* closure, core::T_O* far
   gctools::fill_frame_one_indexed(frame, 3, farg3);
   gctools::fill_frame_one_indexed(frame, 4, farg4);
   gctools::fill_frame_one_indexed(frame, 5, farg5);
-  return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->entry()(closure, 6, frame->arguments(0));
+  return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->apply_raw(6, frame->arguments(0));
 }
 
 LCC_RETURN_RAW general_entry_point_redirect_7(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2,
@@ -1315,7 +1321,7 @@ LCC_RETURN_RAW general_entry_point_redirect_7(core::T_O* closure, core::T_O* far
   gctools::fill_frame_one_indexed(frame, 4, farg4);
   gctools::fill_frame_one_indexed(frame, 5, farg5);
   gctools::fill_frame_one_indexed(frame, 6, farg6);
-  return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->entry()(closure, 7, frame->arguments(0));
+  return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->apply_raw(7, frame->arguments(0));
 }
 };
 

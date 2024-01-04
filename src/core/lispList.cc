@@ -64,21 +64,13 @@ struct cl_test {
 
 static bool test_compare(struct cl_test* t, T_sp x) {
   x = KEY(t, x);
-  // t->env->function = t->test_function;
-  MAKE_STACK_FRAME(frame, 2);
-  gctools::fill_frame_one_indexed(frame, 0, t->item_compared.raw_());
-  gctools::fill_frame_one_indexed(frame, 1, x.raw_());
-  T_sp res = (*t->test_fn).entry()(t->test_fn.raw_(), 2, frame->arguments());
+  T_sp res = t->test_fn->funcall(t->item_compared, x);
   return res.notnilp();
 }
 
 static bool test_compare_not(struct cl_test* t, T_sp x) {
   x = KEY(t, x);
-  // t->env->function = t->test_function;
-  MAKE_STACK_FRAME(frame, 2);
-  gctools::fill_frame_one_indexed(frame, 0, t->item_compared.raw_());
-  gctools::fill_frame_one_indexed(frame, 1, x.raw_());
-  T_sp res = (*t->test_fn).entry()(t->test_fn.raw_(), 2, frame->arguments());
+  T_sp res = t->test_fn->funcall(t->item_compared, x);
   return res.nilp();
 }
 
@@ -91,11 +83,7 @@ static bool test_equal(struct cl_test* t, T_sp x) { return cl__equal(t->item_com
 static bool test_equalp(struct cl_test* t, T_sp x) { return cl__equalp(t->item_compared, KEY(t, x)); }
 
 static T_sp key_function(struct cl_test* t, T_sp x) {
-  // t->env->function = t->key_function;
-  T_mv result;
-  MAKE_STACK_FRAME(frame, 1);
-  gctools::fill_frame_one_indexed(frame, 0, x.raw_());
-  return (*t->key_fn).entry()(t->key_fn.raw_(), 1, frame->arguments(0));
+  return t->key_fn->funcall(x);
 }
 
 static T_sp key_identity(struct cl_test* t, T_sp x) { return x; }

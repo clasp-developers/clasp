@@ -260,6 +260,28 @@ struct ClaspXepFunction {
   inline LCC_RETURN invoke_5(T_O* closure, T_O* farg0, T_O* farg1, T_O* farg2, T_O* farg3, T_O* farg4) const {
     return ((ClaspXep5Function)((*this)[6]))(closure, farg0, farg1, farg2, farg3, farg4);
   }
+
+  // Call the XEP and return its results.
+  // Fancy template version of the above invokes.
+  // Arguments are raw pointers (T_O*) or it won't typecheck.
+  template <typename... Ts>
+  inline LCC_RETURN call(T_O* closure, Ts... args) {
+    constexpr size_t nargs = sizeof...(Ts);
+    // We have to use if constexpr so that the discarded branches
+    // won't compile. switch constexpr would be nice but apparently
+    // does not exist. Womp womp.
+    if constexpr(nargs == 0) return invoke_0(closure);
+    else if constexpr(nargs == 1) return invoke_1(closure, args...);
+    else if constexpr(nargs == 2) return invoke_2(closure, args...);
+    else if constexpr(nargs == 3) return invoke_3(closure, args...);
+    else if constexpr(nargs == 4) return invoke_4(closure, args...);
+    else if constexpr(nargs == 5) return invoke_5(closure, args...);
+    else {
+      // Collect args into an array, then invoke the general.
+      T_O* lcc_args[nargs] = {args...};
+      return invoke_n(closure, nargs, lcc_args);
+    }
+  }
 };
 
 #endif
