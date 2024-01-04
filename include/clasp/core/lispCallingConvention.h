@@ -50,29 +50,6 @@ struct return_type {
 #define LCC_RETURN_RAW gctools::return_type
 #define LCC_RETURN gctools::return_type
 
-// To invoke "invoke" methods use these
-
-/*! This is a void function */
-#define LISP_ENTRY_0() LCC_RETURN entry_point_0(core::T_O* lcc_closure)
-#define LISP_ENTRY_1() LCC_RETURN entry_point_1(core::T_O* lcc_closure, core::T_O* lcc_farg0)
-#define LISP_ENTRY_2() LCC_RETURN entry_point_2(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1)
-#define LISP_ENTRY_3()                                                                                                             \
-  LCC_RETURN entry_point_3(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2)
-#define LISP_ENTRY_4()                                                                                                             \
-  LCC_RETURN entry_point_4(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2,               \
-                           core::T_O* lcc_farg3)
-#define LISP_ENTRY_5()                                                                                                             \
-  LCC_RETURN entry_point_5(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2,               \
-                           core::T_O* lcc_farg3, core::T_O* lcc_farg4)
-
-template <typename WRAPPER, typename... ARGS> inline LCC_RETURN arity_entry_point(core::T_O* lcc_closure, ARGS... lcc_arg) {
-  if constexpr (WRAPPER::NumParams == sizeof...(ARGS)) {
-    core::T_O* args[sizeof...(ARGS)] = {lcc_arg...};
-    return WRAPPER::entry_point_n(lcc_closure, lcc_arg...);
-  }
-  cc_wrong_number_of_arguments(lcc_closure, sizeof...(ARGS), WRAPPER::NumParams, WRAPPER::NumParams);
-}
-
 extern "C" {
 
 LCC_RETURN_RAW general_entry_point_redirect_0(core::T_O* closure);
@@ -167,52 +144,81 @@ struct ClaspXepTemplate {
   ClaspXepAnonymousFunction _EntryPoints[NUMBER_OF_ENTRY_POINTS];
 };
 
-// This is a template where the entry point functions are static
-// and defined as lisp_entry_0, etc by the Wrapper.
+// This is a template where the entry point functions are static.
+// They are expected to be available as
+// LCC_RETURN entry_point_n(T_O* closure, size_t nargs, T_O** args)
+// LCC_RETURN entry_point_fixed(T_O* closure, ...)
+// where entry_point_fixed is not variadic, but rather an infinite
+// collection of overloaded functions accepting T_O*s, via templating.
 template <typename Wrapper>
 struct XepStereotype : public ClaspXepTemplate {
   XepStereotype() {
     _EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_n;
-    _EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_0;
-    _EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_1;
-    _EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_2;
-    _EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_3;
-    _EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
-    _EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
+    // C++ selects the correct overload of entry_point_fixed based on
+    // the type we're assigning it to. A little magical.
+    // See https://en.cppreference.com/w/cpp/language/overloaded_address
+    // Doing it this way instead of putting in template parameters lets
+    // us define some overloads without templates.
+    // See e.g. clbind/iteratorMemberFunction.h
+    ClaspXep0Function ep0 = Wrapper::entry_point_fixed;
+    _EntryPoints[1] = (ClaspXepAnonymousFunction)ep0;
+    ClaspXep1Function ep1 = Wrapper::entry_point_fixed;
+    _EntryPoints[2] = (ClaspXepAnonymousFunction)ep1;
+    ClaspXep2Function ep2 = Wrapper::entry_point_fixed;
+    _EntryPoints[3] = (ClaspXepAnonymousFunction)ep2;
+    ClaspXep3Function ep3 = Wrapper::entry_point_fixed;
+    _EntryPoints[4] = (ClaspXepAnonymousFunction)ep3;
+    ClaspXep4Function ep4 = Wrapper::entry_point_fixed;
+    _EntryPoints[5] = (ClaspXepAnonymousFunction)ep4;
+    ClaspXep5Function ep5 = Wrapper::entry_point_fixed;
+    _EntryPoints[6] = (ClaspXepAnonymousFunction)ep5;
   }
   // Used for GFBytecodeSimpleFun_O
   XepStereotype(size_t specializer_length) {
     _EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_n;
 
-    if (0 < specializer_length)
-      _EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_0;
-    else
-      _EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_0;
-
-    if (1 < specializer_length)
-      _EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_1;
-    else
-      _EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_1;
-
-    if (2 < specializer_length)
-      _EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_2;
-    else
-      _EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_2;
-
-    if (3 < specializer_length)
-      _EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_3;
-    else
-      _EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_3;
-
-    if (4 < specializer_length)
-      _EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_4;
-    else
-      _EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
-
-    if (5 < specializer_length)
-      _EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_5;
-    else
-      _EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
+    if (0 < specializer_length) {
+      ClaspXep0Function ep0 = Wrapper::error_entry_point_fixed;
+      _EntryPoints[1] = (ClaspXepAnonymousFunction)ep0;
+    } else {
+      ClaspXep0Function ep0 = Wrapper::entry_point_fixed;
+      _EntryPoints[1] = (ClaspXepAnonymousFunction)ep0;
+    }
+    if (1 < specializer_length) {
+      ClaspXep1Function ep1 = Wrapper::error_entry_point_fixed;
+      _EntryPoints[2] = (ClaspXepAnonymousFunction)ep1;
+    } else {
+      ClaspXep1Function ep1 = Wrapper::entry_point_fixed;
+      _EntryPoints[2] = (ClaspXepAnonymousFunction)ep1;
+    }
+    if (2 < specializer_length) {
+      ClaspXep2Function ep2 = Wrapper::error_entry_point_fixed;
+      _EntryPoints[3] = (ClaspXepAnonymousFunction)ep2;
+    } else {
+      ClaspXep2Function ep2 = Wrapper::entry_point_fixed;
+      _EntryPoints[3] = (ClaspXepAnonymousFunction)ep2;
+    }
+    if (3 < specializer_length) {
+      ClaspXep3Function ep3 = Wrapper::error_entry_point_fixed;
+      _EntryPoints[4] = (ClaspXepAnonymousFunction)ep3;
+    } else {
+      ClaspXep3Function ep3 = Wrapper::entry_point_fixed;
+      _EntryPoints[4] = (ClaspXepAnonymousFunction)ep3;
+    }
+    if (4 < specializer_length) {
+      ClaspXep4Function ep4 = Wrapper::error_entry_point_fixed;
+      _EntryPoints[5] = (ClaspXepAnonymousFunction)ep4;
+    } else {
+      ClaspXep4Function ep4 = Wrapper::entry_point_fixed;
+      _EntryPoints[5] = (ClaspXepAnonymousFunction)ep4;
+    }
+    if (5 < specializer_length) {
+      ClaspXep5Function ep5 = Wrapper::error_entry_point_fixed;
+      _EntryPoints[6] = (ClaspXepAnonymousFunction)ep5;
+    } else {
+      ClaspXep5Function ep5 = Wrapper::entry_point_fixed;
+      _EntryPoints[6] = (ClaspXepAnonymousFunction)ep5;
+    }
   }
 };
 

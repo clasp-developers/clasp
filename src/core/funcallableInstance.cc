@@ -413,14 +413,12 @@ struct GFBytecodeEntryPoint {
     return bytecode_enter(lcc_closure, lcc_nargs, lcc_args);
   }
 
-  [[noreturn]] static inline LCC_RETURN error_entry_point_0(core::T_O* lcc_closure) {
-    wrongNumberOfArgumentsForGenericFunction(lcc_closure, 0);
+  template <typename... Ts>
+  [[noreturn]] static inline LCC_RETURN error_entry_point_fixed(core::T_O* lcc_closure, Ts... args) {
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, sizeof...(Ts));
   }
-  static inline LCC_RETURN entry_point_0(core::T_O* lcc_closure) { return bytecode_enter(lcc_closure, 0, NULL); }
-  static inline LCC_RETURN error_entry_point_1(core::T_O* lcc_closure, core::T_O* lcc_farg0) {
-    wrongNumberOfArgumentsForGenericFunction(lcc_closure, 1);
-  }
-  static inline LCC_RETURN entry_point_1(core::T_O* lcc_closure, core::T_O* lcc_farg0) {
+  static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure) { return bytecode_enter(lcc_closure, 0, NULL); }
+  static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure, core::T_O* lcc_farg0) {
     size_t lcc_nargs = 1;
     T_sp gfunction((gctools::Tagged)lcc_closure);
     DTIDO_ALWAYS(FILE* DTILOG_fout = monitor_file("dtree-interp"); my_thread->_DtreeInterpreterCallCount++;);
@@ -473,12 +471,7 @@ struct GFBytecodeEntryPoint {
     return core::eval::funcall(clos::_sym_single_dispatch_miss_va, generic_function, error_args);
   }
   }
-
-  static inline LCC_RETURN error_entry_point_2(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1) {
-    wrongNumberOfArgumentsForGenericFunction(lcc_closure, 2);
-  }
-
-  static inline LCC_RETURN entry_point_2(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1) {
+  static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1) {
     size_t lcc_nargs = 2;
     T_sp gfunction((gctools::Tagged)lcc_closure);
     DTIDO_ALWAYS(FILE* DTILOG_fout = monitor_file("dtree-interp"); my_thread->_DtreeInterpreterCallCount++;);
@@ -531,13 +524,7 @@ struct GFBytecodeEntryPoint {
     return core::eval::funcall(clos::_sym_single_dispatch_miss_va, generic_function, error_args);
   }
   }
-
-  static inline LCC_RETURN error_entry_point_3(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1,
-                                               core::T_O* lcc_farg2) {
-    wrongNumberOfArgumentsForGenericFunction(lcc_closure, 3);
-  }
-
-  static inline LCC_RETURN entry_point_3(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2) {
+  static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2) {
     size_t lcc_nargs = 3;
     T_sp gfunction((gctools::Tagged)lcc_closure);
     DTIDO_ALWAYS(FILE* DTILOG_fout = monitor_file("dtree-interp"); my_thread->_DtreeInterpreterCallCount++;);
@@ -590,13 +577,8 @@ struct GFBytecodeEntryPoint {
     return core::eval::funcall(clos::_sym_single_dispatch_miss_va, generic_function, error_args);
   }
   }
-
-  static inline LCC_RETURN error_entry_point_4(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1,
-                                               core::T_O* lcc_farg2, core::T_O* lcc_farg3) {
-    wrongNumberOfArgumentsForGenericFunction(lcc_closure, 4);
-  }
-  static inline LCC_RETURN entry_point_4(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2,
-                                         core::T_O* lcc_farg3) {
+  static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2,
+                                             core::T_O* lcc_farg3) {
     size_t lcc_nargs = 4;
     T_sp gfunction((gctools::Tagged)lcc_closure);
     DTIDO_ALWAYS(FILE* DTILOG_fout = monitor_file("dtree-interp"); my_thread->_DtreeInterpreterCallCount++;);
@@ -649,13 +631,8 @@ struct GFBytecodeEntryPoint {
     return core::eval::funcall(clos::_sym_single_dispatch_miss_va, generic_function, error_args);
   }
   }
-
-  static inline LCC_RETURN error_entry_point_5(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1,
-                                               core::T_O* lcc_farg2, core::T_O* lcc_farg3, core::T_O* lcc_farg4) {
-    wrongNumberOfArgumentsForGenericFunction(lcc_closure, 5);
-  }
-  static inline LCC_RETURN entry_point_5(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2,
-                                         core::T_O* lcc_farg3, core::T_O* lcc_farg4) {
+  static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2,
+                                             core::T_O* lcc_farg3, core::T_O* lcc_farg4) {
     size_t lcc_nargs = 5;
     T_sp gfunction((gctools::Tagged)lcc_closure);
     DTIDO_ALWAYS(FILE* DTILOG_fout = monitor_file("dtree-interp"); my_thread->_DtreeInterpreterCallCount++;);

@@ -119,29 +119,16 @@ public:
     SIMPLE_ERROR("This single dispatch generic function {} does not recognize argument class {}  arg {}",
                  _rep_(closure->asSmartPtr()), _rep_(dispatchArgClass), _rep_(dispatchArg).c_str());
   }
-  static inline LISP_ENTRY_0() {
-    cc_wrong_number_of_arguments(lcc_closure, 0, 1, 0);
-    UNREACHABLE();
-  }
-  static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return entry_point_n(lcc_closure, 1, args);
-  }
-  static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0, lcc_farg1};
-    return entry_point_n(lcc_closure, 2, args);
-  }
-  static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
-    return entry_point_n(lcc_closure, 3, args);
-  }
-  static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
-    return entry_point_n(lcc_closure, 4, args);
-  }
-  static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
-    return entry_point_n(lcc_closure, 5, args);
+  template <typename... Ts>
+  static inline LCC_RETURN entry_point_fixed(T_O* lcc_closure,
+                                             Ts... args) {
+    if constexpr(sizeof...(Ts) == 0) {
+      cc_wrong_number_of_arguments(lcc_closure, 0, 1, 0);
+      UNREACHABLE();
+    } else {
+      core::T_O* lcc_args[sizeof...(Ts)] = {args...};
+      return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
+    }
   }
 };
 

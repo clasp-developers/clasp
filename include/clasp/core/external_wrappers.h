@@ -83,13 +83,11 @@ public:
     return wrapper_entry_point_n(ArgumentWrapper(), lcc_closure, lcc_nargs, lcc_args);
   }
 
-  static inline LISP_ENTRY_0() { return general_entry_point_redirect_0(lcc_closure); }
-  static inline LISP_ENTRY_1() { return general_entry_point_redirect_1(lcc_closure, lcc_farg0); }
-  static inline LISP_ENTRY_2() { return general_entry_point_redirect_2(lcc_closure, lcc_farg0, lcc_farg1); }
-  static inline LISP_ENTRY_3() { return general_entry_point_redirect_3(lcc_closure, lcc_farg0, lcc_farg1, lcc_farg2); }
-  static inline LISP_ENTRY_4() { return general_entry_point_redirect_4(lcc_closure, lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3); }
-  static inline LISP_ENTRY_5() {
-    return general_entry_point_redirect_5(lcc_closure, lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4);
+  template <typename... Ts>
+  static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
+                                             Ts... args) {
+    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
+    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
   }
 };
 }; // namespace clbind
@@ -141,13 +139,11 @@ public:
     return wrapper_entry_point_n(ArgumentWrapper(), lcc_closure, lcc_nargs, lcc_args);
   }
 
-  static inline LISP_ENTRY_0() { return general_entry_point_redirect_0(lcc_closure); }
-  static inline LISP_ENTRY_1() { return general_entry_point_redirect_1(lcc_closure, lcc_farg0); }
-  static inline LISP_ENTRY_2() { return general_entry_point_redirect_2(lcc_closure, lcc_farg0, lcc_farg1); }
-  static inline LISP_ENTRY_3() { return general_entry_point_redirect_3(lcc_closure, lcc_farg0, lcc_farg1, lcc_farg2); }
-  static inline LISP_ENTRY_4() { return general_entry_point_redirect_4(lcc_closure, lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3); }
-  static inline LISP_ENTRY_5() {
-    return general_entry_point_redirect_5(lcc_closure, lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4);
+  template <typename... Ts>
+  static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
+                                             Ts... args) {
+    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
+    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
   }
 };
 }; // namespace clbind
@@ -178,26 +174,11 @@ public:
   };
 
   static inline LCC_RETURN LISP_CALLING_CONVENTION() { SIMPLE_ERROR("What do I do here"); }
-  static inline LISP_ENTRY_0() { return entry_point_n(lcc_closure, 0, NULL); }
-  static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return entry_point_n(lcc_closure, 1, args);
-  }
-  static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0, lcc_farg1};
-    return entry_point_n(lcc_closure, 2, args);
-  }
-  static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
-    return entry_point_n(lcc_closure, 3, args);
-  }
-  static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
-    return entry_point_n(lcc_closure, 4, args);
-  }
-  static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
-    return entry_point_n(lcc_closure, 5, args);
+  template <typename...Ts>
+  static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
+                                             Ts... args) {
+    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
+    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
   }
 };
 }; // namespace core

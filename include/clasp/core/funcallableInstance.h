@@ -138,70 +138,17 @@ public: // Functions here
     Function_sp funcallable_closure = closure->REAL_FUNCTION();
     // This is where we could decide to compile the dtree and switch the REAL_FUNCTION() or not
     //  printf("%s:%d:%s About to call %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(closure->functionName()).c_str());
-    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
-    return xep.invoke_n(funcallable_closure.raw_(), lcc_nargs, lcc_args);
+    return funcallable_closure->apply_raw(lcc_nargs, lcc_args);
   }
 
-  static inline LCC_RETURN entry_point_0(core::T_O* lcc_closure) {
+  template <typename... Ts>
+  static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure, Ts... args) {
     SETUP_CLOSURE(FuncallableInstance_O, closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
     Function_sp funcallable_closure = closure->REAL_FUNCTION();
-    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
-    return xep.invoke_0(funcallable_closure.raw_());
-  }
-
-  static inline LCC_RETURN entry_point_1(core::T_O* lcc_closure, core::T_O* lcc_farg0) {
-    SETUP_CLOSURE(FuncallableInstance_O, closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    DO_DRAG_CXX_CALLS();
-    // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
-    Function_sp funcallable_closure = closure->REAL_FUNCTION();
-    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
-    return xep.invoke_1(funcallable_closure.raw_(), lcc_farg0);
-  }
-
-  static inline LCC_RETURN entry_point_2(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1) {
-    SETUP_CLOSURE(FuncallableInstance_O, closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    DO_DRAG_CXX_CALLS();
-    // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
-    Function_sp funcallable_closure = closure->REAL_FUNCTION();
-    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
-    return xep.invoke_2(funcallable_closure.raw_(), lcc_farg0, lcc_farg1);
-  }
-
-  static inline LCC_RETURN entry_point_3(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2) {
-    SETUP_CLOSURE(FuncallableInstance_O, closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    DO_DRAG_CXX_CALLS();
-    // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
-    Function_sp funcallable_closure = closure->REAL_FUNCTION();
-    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
-    return xep.invoke_3(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2);
-  }
-
-  static inline LCC_RETURN entry_point_4(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2,
-                                         core::T_O* lcc_farg3) {
-    SETUP_CLOSURE(FuncallableInstance_O, closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    DO_DRAG_CXX_CALLS();
-    // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
-    Function_sp funcallable_closure = closure->REAL_FUNCTION();
-    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
-    return xep.invoke_4(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3);
-  }
-
-  static inline LCC_RETURN entry_point_5(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2,
-                                         core::T_O* lcc_farg3, core::T_O* lcc_farg4) {
-    SETUP_CLOSURE(FuncallableInstance_O, closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    DO_DRAG_CXX_CALLS();
-    // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
-    Function_sp funcallable_closure = closure->REAL_FUNCTION();
-    const ClaspXepFunction& xep = funcallable_closure->entryPoint()->_EntryPoints;
-    return xep.invoke_5(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4);
+    return funcallable_closure->funcall_raw(args...);
   }
 
 }; // FuncallableInstance class

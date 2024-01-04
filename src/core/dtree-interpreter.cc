@@ -236,36 +236,35 @@ case MAYBE_LONG_ADD + DTREE_OP_EFFECTIVE_METHOD: {
   T_sp tfunc = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_EFFECTIVE_METHOD_OFFSET), literals);
   Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
   DTILOG(">>>>>>> DTREE_OP_EFFECTIVE_METHOD: Invoking effective method\n");
-  ClaspXepFunction& xep = func->entryPoint()->_EntryPoints;
   DTILOG("DTREE_OP_EFFECTIVE_METHOD: About to dump args\n");
 #if defined(GENERAL_ARITY_CALL)
   DTIDO(dump_lcc_args(monitor_file("dtree-interp"), lcc_nargs, lcc_args));
-  return xep.invoke_n(func.raw_(), lcc_nargs, lcc_args);
+  return func->apply_raw(lcc_nargs, lcc_args);
 #elif (ENABLE_REGISTER == -1)
   DTILOG(" ---- done\n");
-  return xep.invoke_0(func.raw_());
+  return func->funcall_raw();
 #elif (ENABLE_REGISTER == 0)
   DTILOG(" arg0 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg0)));
   DTILOG(" ---- done\n");
-  return xep.invoke_1(func.raw_(), lcc_farg0);
+  return func->funcall_raw(lcc_farg0);
 #elif (ENABLE_REGISTER == 1)
   DTILOG(" arg0 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg0)));
   DTILOG(" arg1 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg1)));
   DTILOG(" ---- done\n");
-  return xep.invoke_2(func.raw_(), lcc_farg0, lcc_farg1);
+  return func->funcall_raw(lcc_farg0, lcc_farg1);
 #elif (ENABLE_REGISTER == 2)
   DTILOG(" arg0 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg0)));
   DTILOG(" arg1 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg1)));
   DTILOG(" arg2 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg2)));
   DTILOG(" ---- done\n");
-  return xep.invoke_3(func.raw_(), lcc_farg0, lcc_farg1, lcc_farg2);
+  return func->funcall_raw(lcc_farg0, lcc_farg1, lcc_farg2);
 #elif (ENABLE_REGISTER == 3)
   DTILOG(" arg0 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg0)));
   DTILOG(" arg1 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg1)));
   DTILOG(" arg2 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg2)));
   DTILOG(" arg3 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg3)));
   DTILOG(" ---- done\n");
-  return xep.invoke_4(func.raw_(), lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3);
+  return func->funcall_raw(lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3);
 #elif (ENABLE_REGISTER == 4)
   DTILOG("DTREE_OP_EFFECTIVE_METHOD: About to args\n");
   DTILOG(" arg0 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg0)));
@@ -274,7 +273,7 @@ case MAYBE_LONG_ADD + DTREE_OP_EFFECTIVE_METHOD: {
   DTILOG(" arg3 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg3)));
   DTILOG(" arg4 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg4)));
   DTILOG(" ---- done\n");
-  return xep.invoke_5(func.raw_(), lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4);
+  return func->funcall_raw(lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4);
 #endif
 }
 #if !defined(GENERAL_ARITY_CALL)
