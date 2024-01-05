@@ -2135,54 +2135,66 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
   public:
     OrderByAddress() {}
     bool operator()(const PointerBase& x, const PointerBase& y) { return x._address <= y._address; }
-  };
-  OrderByAddress orderer;
-  DBG_SLS("Step1\n");
-  for (size_t idx = 0; idx < fixup->_Libraries.size(); idx++) {
-    DBG_SLS("Adding library #%lu: %s\n", idx, fixup->_Libraries[idx]._Name.c_str());
-    symbolLookup.addLibrary(fixup->_Libraries[idx]._Name);
-    auto pointersBegin = fixup->_Libraries[idx]._InternalPointers.begin();
-    auto pointersEnd = fixup->_Libraries[idx]._InternalPointers.end();
-    if (pointersBegin < pointersEnd) {
-      DBG_SLS("About to quickSortFirstCheckOrder _Pointers.size(): %lu\n", fixup->_Libraries[idx]._InternalPointers.size());
-      sort::quickSortFirstCheckOrder(pointersBegin, pointersEnd, orderer);
+    void addLibraries(Fixup* fixup, SymbolLookup& symbolLookup) {
+      for (size_t idx = 0; idx < fixup->_Libraries.size(); idx++) {
+        DBG_SLS("Adding library #%lu: %s\n", idx, fixup->_Libraries[idx]._Name.c_str());
+        symbolLookup.addLibrary(fixup->_Libraries[idx]._Name);
+        auto pointersBegin = fixup->_Libraries[idx]._InternalPointers.begin();
+        auto pointersEnd = fixup->_Libraries[idx]._InternalPointers.end();
+        if (pointersBegin < pointersEnd) {
+          DBG_SLS("About to quickSortFirstCheckOrder _Pointers.size(): %lu\n", fixup->_Libraries[idx]._InternalPointers.size());
+        }
+      }
     }
-  }
-  DBG_SLS("Step2 - there are %lu libraries with function pointers that need relocating\n", fixup->_Libraries.size());
-  for (size_t idx = 0; idx < fixup->_Libraries.size(); idx++) {
-    int groupPointerIdx = -1;
-    ISLLibrary& curLib = fixup->_Libraries[idx];
+    void identifyUnique(Fixup* fixup, SymbolLookup& symbolLookup) {
+      for (size_t idx = 0; idx < fixup->_Libraries.size(); idx++) {
+        int groupPointerIdx = -1;
+        ISLLibrary& curLib = fixup->_Libraries[idx];
     // printf("%s:%d:%s  Dealing with library#%lu:  %s @%p\n", __FILE__, __LINE__, __FUNCTION__, idx, curLib._Name.c_str(), &curLib
     // ); printf("%s:%d:%s  Number of pointers before extracting unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__,
     // curLib._InternalPointers.size() );
-    for (size_t ii = 0; ii < curLib._InternalPointers.size(); ii++) {
-      if (groupPointerIdx < 0 || curLib._InternalPointers[ii]._address != curLib._InternalPointers[ii - 1]._address) {
-        curLib._GroupedPointers.emplace_back(curLib._InternalPointers[ii]._pointerType, curLib._InternalPointers[ii]._address);
-        groupPointerIdx++;
-      }
+        std::map<uintptr_t,int> uniques;
+        for (size_t ii = 0; ii < curLib._InternalPointers.size(); ii++) {
+          auto it = uniques.find(curLib._InternalPointers[ii]._address);
+          if (it==uniques.end()) {
+            groupPointerIdx = curLib._GroupedPointers.size();
+            uniques[curLib._InternalPointers[ii]._address] = groupPointerIdx;
+            curLib._GroupedPointers.emplace_back(curLib._InternalPointers[ii]._pointerType, curLib._InternalPointers[ii]._address);
+          } else {
+            groupPointerIdx = it->second;
+          }
       // Now encode the relocation
-      void** addr = (void**)curLib._InternalPointers[ii]._ptrptr;
-      uint8_t* uint8ptr = (uint8_t*)*addr;
+          void** addr = (void**)curLib._InternalPointers[ii]._ptrptr;
+          uint8_t* uint8ptr = (uint8_t*)*addr;
       //      printf("%s:%d:%s Relocation @%p group: %d  from %p\n", __FILE__, __LINE__, __FUNCTION__,
       //      curLib._InternalPointers[ii]._ptrptr, groupPointerIdx, uint8ptr );
-      uint8_t firstByte = *uint8ptr;
-      *curLib._InternalPointers[ii]._ptrptr = encodeRelocation_(firstByte, idx, groupPointerIdx);
+          uint8_t firstByte = *uint8ptr;
+          *curLib._InternalPointers[ii]._ptrptr = encodeRelocation_(firstByte, idx, groupPointerIdx);
       //      printf("%s:%d:%s                             to %p\n", __FILE__, __LINE__, __FUNCTION__,
       //      (void*)*curLib._InternalPointers[ii]._ptrptr );
-    }
-    core::lisp_write(fmt::format("{} unique pointers need to be passed to dladdr\n", curLib._GroupedPointers.size()));
-    SaveSymbolCallback thing(curLib);
-    curLib._SymbolInfo.resize(curLib._GroupedPointers.size(), SymbolInfo());
-    thing.generateSymbolTable(fixup, symbolLookup);
-    core::lisp_write(
-        fmt::format("Library #{} {} contains {} unique pointers\n", idx, curLib._Name, curLib._GroupedPointers.size()));
-    for (size_t ii = 0; ii < curLib._SymbolInfo.size(); ii++) {
-      if (curLib._SymbolInfo[ii]._SymbolLength < 0) {
-        printf("%s:%d:%s The _SymbolInfo[%lu] does not have a length\n", __FILE__, __LINE__, __FUNCTION__, ii);
+        }
+        core::lisp_write(fmt::format("{} unique pointers need to be passed to dladdr\n", curLib._GroupedPointers.size()));
+        SaveSymbolCallback thing(curLib);
+        curLib._SymbolInfo.resize(curLib._GroupedPointers.size(), SymbolInfo());
+        thing.generateSymbolTable(fixup, symbolLookup);
+        core::lisp_write(
+            fmt::format("Library #{} {} contains {} unique pointers\n", idx, curLib._Name, curLib._GroupedPointers.size()));
+        for (size_t ii = 0; ii < curLib._SymbolInfo.size(); ii++) {
+          if (curLib._SymbolInfo[ii]._SymbolLength < 0) {
+            printf("%s:%d:%s The _SymbolInfo[%lu] does not have a length\n", __FILE__, __LINE__, __FUNCTION__, ii);
+          }
+        }
+        core::lisp_write(fmt::format("Done with library #{} at {}\n", curLib._Name, (void*)&curLib));
       }
     }
-    core::lisp_write(fmt::format("Done with library #{} at {}\n", curLib._Name, (void*)&curLib));
-  }
+  };
+  OrderByAddress orderer;
+  DBG_SLS("Step1\n");
+  core::lisp_write(fmt::format("Add libraries to classify unique pointers\n"));
+  orderer.addLibraries(fixup,symbolLookup);
+  DBG_SLS("Step2 - there are %lu libraries with function pointers that need relocating\n", fixup->_Libraries.size());
+  core::lisp_write(fmt::format("Encoding relocation data for all pointers and identifying unique pointers\n"));
+  orderer.identifyUnique(fixup,symbolLookup);
   DBG_SLS("Step done\n");
 }
 
@@ -2257,9 +2269,10 @@ size_t memory_test(bool dosleep, FILE* fout, const char* message) {
   //
   // For saving we may want to save snapshots and not die - so use noStomp forwarding.
   //
-  core::lisp_write(fmt::format("Running memory test and gathering objects\n"));
+  core::lisp_write(fmt::format("Gathering base pointers for objects in memory\n"));
   gctools::GatherObjects gather(gctools::room_test);
   gctools::gatherAllObjects(gather);
+  core::lisp_write(fmt::format("Done gathering base pointers\n"));
 
 #if 0
   // this will write out headers of ALL objects
@@ -2274,7 +2287,7 @@ size_t memory_test(bool dosleep, FILE* fout, const char* message) {
 
   size_t result = gather._corruptObjects.size();
   if (result == 0) {
-    core::lisp_write(fmt::format("Passed the memory test with zero corrupt objects\n"));
+    core::lisp_write(fmt::format("Gathered base pointers with zero corrupt objects detected\n"));
     if (message)
       core::lisp_write(fmt::format("  {}\n", message));
   } else if (result > 0) {
@@ -2550,15 +2563,18 @@ void* snapshot_save_impl(void* data) {
   //  printf("%s:%d:%s Setting up SymbolLookup\n", __FILE__, __LINE__, __FUNCTION__ );
   SymbolLookup lookup;
   DBG_SL_STEP(12, " prepareRelocationTableForSave\n");
+  core::lisp_write(fmt::format("Prepare relocation table for save\n"));
   prepareRelocationTableForSave(&fixup, lookup);
 
   DBG_SL_STEP(13, "Calculating library sizes\n");
+  core::lisp_write(fmt::format("Calculate library sizes\n"));
   size_t librarySize = 0;
   for (size_t idx = 0; idx < fixup._Libraries.size(); idx++) {
     librarySize += fixup._Libraries[idx].writeSize();
   }
   DBG_SL_STEP(14, "copy_buffer_t\n");
   snapshot._Libraries = new copy_buffer_t(librarySize);
+  core::lisp_write(fmt::format("Copy buffer\n"));
   for (size_t idx = 0; idx < fixup._Libraries.size(); idx++) {
     size_t alignedLen = fixup._Libraries[idx].nameSize();
     char* buffer = (char*)malloc(alignedLen);
@@ -2592,6 +2608,7 @@ void* snapshot_save_impl(void* data) {
 
   DBG_SL_STEP(15, "Generating fileHeader\n");
 
+  core::lisp_write(fmt::format("Generating fileHeader\n"));
   ISLFileHeader* fileHeader = snapshot._FileHeader;
   uintptr_t offset = snapshot._HeaderBuffer->_Size;
   fileHeader->_LibrariesOffset = offset;
@@ -2630,7 +2647,7 @@ void* snapshot_save_impl(void* data) {
       }
       filename = tfbuffer;
     }
-    printf("Writing snapshot to temporary file %s filedes = %d\n", filename.c_str(), filedes);
+    core::lisp_write(fmt::format("Writing snapshot to temporary file {} filedes = {}\n", filename.c_str(), filedes));
     snapshot._HeaderBuffer->write_to_filedes(filedes);
     snapshot._Libraries->write_to_filedes(filedes);
     snapshot._Memory->write_to_filedes(filedes);
