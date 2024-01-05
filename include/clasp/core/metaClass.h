@@ -70,7 +70,7 @@ public:
     return obj;
   }
   virtual void searcher(){};
-  WRAPPER_BuiltInObjectCreator<Instance_O>(GlobalSimpleFun_sp fdesc) : Creator_O(fdesc){};
+  WRAPPER_BuiltInObjectCreator<Instance_O>(SimpleFun_sp ep) : Creator_O(ep){};
 };
 }; // namespace core
 

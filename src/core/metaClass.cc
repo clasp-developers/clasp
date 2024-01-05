@@ -89,8 +89,8 @@ CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, Li
   if (instance->CLASS_has_creator())
     return instance->CLASS_get_creator();
   if (metaclass->_className() == clos::_sym_funcallable_standard_class) {
-    GlobalSimpleFun_sp entryPoint =
-        makeGlobalSimpleFunAndFunctionDescription<FuncallableInstanceCreator_O>(kw::_sym_creator, nil<T_O>());
+    SimpleFun_sp entryPoint =
+        makeSimpleFunAndFunctionDescription<FuncallableInstanceCreator_O>(kw::_sym_creator);
     Creator_sp funcallableInstanceCreator = gc::GC<FuncallableInstanceCreator_O>::allocate(entryPoint, instance);
     return funcallableInstanceCreator;
   };
@@ -133,7 +133,7 @@ CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, Li
 #ifdef DEBUG_CLASS_INSTANCE
     printf("%s:%d   Creating an InstanceCreator_O for the class: %s\n", __FILE__, __LINE__, _rep_(instance->name()).c_str());
 #endif
-    GlobalSimpleFun_sp entryPoint = makeGlobalSimpleFunAndFunctionDescription<InstanceCreator_O>(kw::_sym_creator, nil<T_O>());
+    SimpleFun_sp entryPoint = makeSimpleFunAndFunctionDescription<InstanceCreator_O>(kw::_sym_creator);
     InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(entryPoint, instance);
     return instanceAllocator;
   }

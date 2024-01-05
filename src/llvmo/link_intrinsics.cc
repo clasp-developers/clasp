@@ -387,16 +387,6 @@ LtvcReturnVoid ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, ch
     xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)holder->lookup_function(functionIndex0 + ii);
   }
   core::GlobalSimpleFun_sp simpleFun = core::makeGlobalSimpleFun(fdesc, xep, localEntryPoint);
-  //  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(),
-  //  (void*)llvm_func);
-  if (!gc::IsA<core::GlobalSimpleFun_sp>(simpleFun)) {
-    SIMPLE_ERROR("The object is not a GlobalSimpleFun {}", core::_rep_(simpleFun));
-  }
-#if 0
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s GlobalSimpleFun_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, simpleFun.raw_()));
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ObjectFile_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()).c_str()));
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Code_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()->_Code).c_str()));
-#endif
   LTVCRETURN holder->setTaggedIndex(tag, index, simpleFun.tagged_());
   NO_UNWIND_END();
 }
@@ -467,14 +457,14 @@ LtvcReturnVoid ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, ch
 LtvcReturnVoid ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t simpleFunIndex, const char* name) {
   //  printf("%s:%d:%s make entry-point-index got simpleFunIndex %lu name: %s\n", __FILE__, __LINE__, __FUNCTION__, simpleFunIndex,
   //  name );
-  core::GlobalSimpleFun_sp ep((gctools::Tagged)holder->getLiteral(simpleFunIndex));
+  core::Function_sp ep((gctools::Tagged)holder->getLiteral(simpleFunIndex));
   [[maybe_unused]] auto ret = ep->funcall();
 }
 
 // Similar to the above, but puts value in the table.
 LtvcReturnVoid ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t simpleFunIndex,
                                     const char* name) {
-  core::GlobalSimpleFun_sp ep((gctools::Tagged)holder->getLiteral(simpleFunIndex));
+  core::SimpleFun_sp ep((gctools::Tagged)holder->getLiteral(simpleFunIndex));
 #ifdef DEBUG_SLOW
   MaybeDebugStartup startup((void*)ep->_EntryPoints[1], name);
 #endif
@@ -485,7 +475,7 @@ LtvcReturnVoid ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, 
 }
 
 LtvcReturnVoid ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t simpleFunIndex, const char* name) {
-  core::GlobalSimpleFun_sp ep((gctools::Tagged)holder->getLiteral(simpleFunIndex));
+  core::SimpleFun_sp ep((gctools::Tagged)holder->getLiteral(simpleFunIndex));
 #ifdef DEBUG_SLOW
   MaybeDebugStartup startup((void*)ep->_EntryPoints[1], name);
 #endif

@@ -207,9 +207,8 @@ struct constructor_registration<Class, reg::null_type, default_constructor, Poli
   core::Creator_sp registerDefaultConstructor_() const {
     //                printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> -----
     //                Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
-    core::GlobalSimpleFun_sp entryPoint =
-        core::makeGlobalSimpleFunAndFunctionDescription<DerivableDefaultConstructorCreator_O<Class>>(nil<core::T_O>(),
-                                                                                                     nil<core::T_O>());
+    core::SimpleFun_sp entryPoint =
+        core::makeSimpleFunAndFunctionDescription<DerivableDefaultConstructorCreator_O<Class>>(nil<core::T_O>());
     return gc::As_unsafe<core::Creator_sp>(gctools::GC<DerivableDefaultConstructorCreator_O<Class>>::allocate(entryPoint));
   }
   virtual std::string name() const { return this->mm_name; }

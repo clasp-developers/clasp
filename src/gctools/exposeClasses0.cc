@@ -73,8 +73,8 @@ template <class TheClass> NOINLINE void set_one_static_class_Header() {
 template <class TheClass>
 NOINLINE gc::smart_ptr<core::Instance_O> allocate_one_metaclass(gctools::UnshiftedStamp theStamp, core::Symbol_sp classSymbol,
                                                                 core::Instance_sp metaClass) {
-  core::GlobalSimpleFun_sp entryPoint =
-      core::makeGlobalSimpleFunAndFunctionDescription<TheClass>(kw::_sym_create, nil<core::T_O>());
+  core::SimpleFun_sp entryPoint =
+      core::makeSimpleFunAndFunctionDescription<TheClass>(kw::_sym_create);
   auto cb = gctools::GC<TheClass>::allocate(entryPoint);
   gc::smart_ptr<core::Instance_O> class_val =
       core::Instance_O::createClassUncollectable(theStamp, metaClass, REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS, cb);
@@ -87,9 +87,8 @@ NOINLINE gc::smart_ptr<core::Instance_O> allocate_one_metaclass(gctools::Unshift
 }
 
 template <class TheClass> NOINLINE gc::smart_ptr<core::Instance_O> allocate_one_class(core::Instance_sp metaClass) {
-  core::GlobalSimpleFun_sp entryPoint =
-      core::makeGlobalSimpleFunAndFunctionDescription<core::WRAPPER_BuiltInObjectCreator<TheClass>>(nil<core::T_O>(),
-                                                                                                    nil<core::T_O>());
+  core::SimpleFun_sp entryPoint =
+      core::makeSimpleFunAndFunctionDescription<core::WRAPPER_BuiltInObjectCreator<TheClass>>(nil<core::T_O>());
   core::Creator_sp cb = gc::As<core::Creator_sp>(gctools::GC<core::WRAPPER_BuiltInObjectCreator<TheClass>>::allocate(entryPoint));
   TheClass::set_static_creator(cb);
   gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(

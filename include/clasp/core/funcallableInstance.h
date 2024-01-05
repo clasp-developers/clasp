@@ -58,11 +58,11 @@ class FuncallableInstance_O : public Function_O {
   // in src/lisp/kernel/cmp/cmpintrinsics.lisp.
   // Changes to the structure here must be reflected there.
 public: // ctor/dtor for classes with shared virtual base
-  FuncallableInstance_O(GlobalSimpleFun_sp ep) : Base(ep), _Class(nil<Instance_O>()), _RealFunction(nil<Function_O>()) {}
-  explicit FuncallableInstance_O(GlobalSimpleFun_sp fdesc, Instance_sp metaClass, size_t slots)
-      : Base(fdesc), _Class(metaClass), _RealFunction(nil<Function_O>()){};
-  FuncallableInstance_O(GlobalSimpleFun_sp fdesc, Instance_sp cl, Rack_sp rack)
-      : Base(fdesc), _Rack(rack), _Class(cl), _RealFunction(nil<Function_O>()){};
+  FuncallableInstance_O(SimpleFun_sp ep) : Base(ep), _Class(nil<Instance_O>()), _RealFunction(nil<Function_O>()) {}
+  explicit FuncallableInstance_O(SimpleFun_sp ep, Instance_sp metaClass, size_t slots)
+      : Base(ep), _Class(metaClass), _RealFunction(nil<Function_O>()){};
+  FuncallableInstance_O(SimpleFun_sp ep, Instance_sp cl, Rack_sp rack)
+      : Base(ep), _Rack(rack), _Class(cl), _RealFunction(nil<Function_O>()){};
   virtual ~FuncallableInstance_O(){};
 
 public:

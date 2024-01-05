@@ -39,7 +39,7 @@ class SingleDispatchGenericFunction_O : public Function_O {
   LISP_CLASS(core, CorePkg, SingleDispatchGenericFunction_O, "SingleDispatchGenericFunction", Function_O);
 
 public:
-  SingleDispatchGenericFunction_O(GlobalSimpleFun_sp ep) : Base(ep){};
+  SingleDispatchGenericFunction_O(SimpleFun_sp ep) : Base(ep){};
 
 public:
   typedef enum {

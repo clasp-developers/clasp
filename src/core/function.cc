@@ -80,10 +80,10 @@ SimpleFun_O::SimpleFun_O(FunctionDescription_sp fdesc, T_sp code, const ClaspXep
   if (code.nilp()) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point._EntryPoints[0]));
     this->_Code = code;
-    if (gc::IsA<llvmo::Library_sp>(code)) {
-      for (size_t ii = 0; ii < ClaspXepFunction::Entries; ii++) {
-        maybe_register_symbol_using_dladdr_ep((void*)entry_point._EntryPoints[ii], sizeof(void*), "SimpleFunName", ii);
-      }
+  }
+  if (gc::IsA<llvmo::Library_sp>(code)) {
+    for (size_t ii = 0; ii < ClaspXepFunction::Entries; ii++) {
+      maybe_register_symbol_using_dladdr_ep((void*)entry_point._EntryPoints[ii], sizeof(void*), "SimpleFunName", ii);
     }
   }
   llvmo::validateEntryPoint(code, _EntryPoints);
@@ -286,27 +286,12 @@ CoreFun_sp makeCoreFun(FunctionDescription_sp fdesc,
   return ep;
 }
 
+SimpleFun_sp makeSimpleFun(FunctionDescription_sp tfdesc, const ClaspXepTemplate& entry_point) {
+  return gctools::GC<SimpleFun_O>::allocate(tfdesc, nil<T_O>(), entry_point);
+}
+
 GlobalSimpleFun_sp makeGlobalSimpleFun(FunctionDescription_sp tfdesc, const ClaspXepTemplate& entry_point, T_sp lep) {
-  T_sp code = unbound<T_O>();
-  std::string name = "unkfunc";
-  if (gc::IsA<FunctionDescription_sp>(tfdesc)) {
-    FunctionDescription_sp fdesc = gc::As_unsafe<FunctionDescription_sp>(tfdesc);
-      //      printf("%s:%d:%s FunctionDescription is defined\n", __FILE__, __LINE__, __FUNCTION__ );
-    name = "namenil";
-    if (gc::IsA<Symbol_sp>(fdesc->functionName())) {
-        //        printf("%s:%d:%s FunctionDescription name is defined\n", __FILE__, __LINE__, __FUNCTION__ );
-      Symbol_sp sname = gc::As_unsafe<Symbol_sp>(fdesc->functionName());
-      name = sname->safeFormattedName();
-    }
-  }
-  code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point._EntryPoints[0]));
-  if (gc::IsA<llvmo::Library_sp>(code)) {
-    for (size_t ii = 0; ii < ClaspXepFunction::Entries; ii++) {
-      maybe_register_symbol_using_dladdr_ep((void*)entry_point._EntryPoints[ii], sizeof(void*), name, ii);
-    }
-  }
-  auto ep = gctools::GC<GlobalSimpleFun_O>::allocate(tfdesc, entry_point, code, lep);
-  return ep;
+  return gctools::GC<GlobalSimpleFun_O>::allocate(tfdesc, entry_point, nil<T_O>(), lep);
 }
 
 SYMBOL_EXPORT_SC_(CorePkg, bytecode_call);
@@ -755,14 +740,14 @@ struct UnboundCellFunctionEntryPoint {
 };
 
 FunctionCell_sp FunctionCell_O::make(T_sp name, Function_sp fun) {
-  GlobalSimpleFun_sp entryPoint = makeGlobalSimpleFunAndFunctionDescription<FunctionCell_O>(name, nil<T_O>());
+  SimpleFun_sp entryPoint = makeSimpleFunAndFunctionDescription<FunctionCell_O>(name);
   return gctools::GC<FunctionCell_O>::allocate(entryPoint, fun);
 }
 
 FunctionCell_sp FunctionCell_O::make(T_sp name) {
   if (_lisp->_Roots._UnboundCellFunctionEntryPoint.unboundp())
     _lisp->_Roots._UnboundCellFunctionEntryPoint =
-        makeGlobalSimpleFunAndFunctionDescription<UnboundCellFunctionEntryPoint>(name, nil<T_O>());
+        makeSimpleFunAndFunctionDescription<UnboundCellFunctionEntryPoint>(name);
   Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(
       false, 1, _lisp->_Roots._UnboundCellFunctionEntryPoint);
   (*cf)[0] = name;
@@ -770,7 +755,8 @@ FunctionCell_sp FunctionCell_O::make(T_sp name) {
 }
 
 void FunctionCell_O::fmakunbound(T_sp name) {
-  GlobalSimpleFun_sp f = makeGlobalSimpleFunAndFunctionDescription<UnboundCellFunctionEntryPoint>(name, nil<T_O>());
+  // FIXME: Use the _Roots thing above?
+  SimpleFun_sp f = makeSimpleFunAndFunctionDescription<UnboundCellFunctionEntryPoint>(name);
   Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1, f);
   (*cf)[0] = name;
   real_function_set(cf);

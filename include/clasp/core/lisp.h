@@ -289,7 +289,7 @@ public:
     std::atomic<T_sp> _AllObjectFiles;
     std::atomic<T_sp> _AllCodeBlocks;
     std::atomic<T_sp> _AllBytecodeModules;
-    GlobalSimpleFun_sp _UnboundCellFunctionEntryPoint;
+    SimpleFun_sp _UnboundCellFunctionEntryPoint;
     T_sp _TerminalIO;
     List_sp _ActiveThreads;
     List_sp _DefaultSpecialBindings;

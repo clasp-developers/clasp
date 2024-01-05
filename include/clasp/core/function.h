@@ -417,8 +417,19 @@ FunctionDescription_sp makeFunctionDescription(T_sp functionName, T_sp lambda_li
 CoreFun_sp makeCoreFun(FunctionDescription_sp fdesc,
                        const ClaspCoreFunction& entry_point);
 
+SimpleFun_sp makeSimpleFun(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point);
 GlobalSimpleFun_sp makeGlobalSimpleFun(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point,
                                        T_sp lep = nil<core::T_O>());
+
+template <typename Wrapper>
+SimpleFun_sp makeSimpleFunAndFunctionDescription(T_sp functionName,
+                                                 T_sp lambda_list = unbound<T_O>(), T_sp docstring = nil<T_O>(),
+                                                 T_sp declares = nil<T_O>(), T_sp sourcePathname = nil<T_O>(),
+                                                 int lineno = -1, int column = -1, int filePos = -1) {
+  FunctionDescription_sp fdesc =
+      makeFunctionDescription(functionName, lambda_list, docstring, declares, sourcePathname, lineno, column, filePos);
+  return makeSimpleFun(fdesc, XepStereotype<Wrapper>());
+};
 
 template <typename Wrapper>
 GlobalSimpleFun_sp makeGlobalSimpleFunAndFunctionDescription(T_sp functionName, T_sp localFun,
@@ -489,7 +500,7 @@ class FunctionCell_O : public Function_O {
   LISP_CLASS(core, CorePkg, FunctionCell_O, "FunctionCell", Function_O);
 
 public:
-  FunctionCell_O(GlobalSimpleFun_sp ep, Function_sp function) : Base(ep), _Function(function) {}
+  FunctionCell_O(SimpleFun_sp ep, Function_sp function) : Base(ep), _Function(function) {}
 
 public:
   std::atomic<Function_sp> _Function;
