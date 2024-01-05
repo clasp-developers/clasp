@@ -331,8 +331,8 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(
       Cons_O::create(lisp_internKeyword("CLOSURE-ENTRY-POINT-OFFSET"), make_fixnum(offsetof(core::Function_O, _TheSimpleFun))),
       list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("GLOBAL-ENTRY-POINT-ENTRY-POINTS-OFFSET"),
-                                       make_fixnum(offsetof(core::GlobalSimpleFun_O, _EntryPoints))),
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("SIMPLE-FUN-ENTRY-POINTS-OFFSET"),
+                                       make_fixnum(offsetof(core::SimpleFun_O, _EntryPoints))),
                         list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("SIZE_T-BITS"), make_fixnum(sizeof(size_t) * 8)), list);
 #define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(name), code), list)
@@ -417,9 +417,9 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
   if (unbox_fixnum(functionSize) != Function_O_size) {
     SIMPLE_ERROR("Mismatch between function size[{}] and core::Function_O size[{}]", unbox_fixnum(functionSize), Function_O_size);
   }
-  if (function_description_offset.unsafe_fixnum() != offsetof(core::GlobalSimpleFun_O, _FunctionDescription)) {
-    SIMPLE_ERROR("Mismatch between function description offset[{}] and core::GlobalSimpleFun_O._FunctionDescription offset[{}]",
-                 function_description_offset.unsafe_fixnum(), offsetof(core::GlobalSimpleFun_O, _FunctionDescription));
+  if (function_description_offset.unsafe_fixnum() != offsetof(core::SimpleFun_O, _FunctionDescription)) {
+    SIMPLE_ERROR("Mismatch between function description offset[{}] and core::SimpleFun_O._FunctionDescription offset[{}]",
+                 function_description_offset.unsafe_fixnum(), offsetof(core::SimpleFun_O, _FunctionDescription));
   }
   if (gcRootsInModuleSize.notnilp()) {
     int gcRootsInModule_size = sizeof(gctools::GCRootsInModule);

@@ -1032,7 +1032,7 @@ function-description - for debugging."
 (defun irc-create-global-entry-point-reference (xep-arity-list module function-description local-entry-point-reference)
   (declare (ignore module))
   (let* ((simple-fun-generator (let ((entry-point-indices (literal:register-xep-function-indices xep-arity-list)))
-                                  (sys:make-global-simple-fun-generator
+                                  (sys:make-simple-core-fun-generator
                                    :entry-point-functions entry-point-indices
                                    :function-description function-description
                                    :local-entry-point-index (entry-point-reference-index local-entry-point-reference))))

@@ -95,7 +95,7 @@ void SimpleFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fix
   }
 }
 
-GlobalSimpleFun_O::GlobalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp code, T_sp lep)
+SimpleCoreFun_O::SimpleCoreFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp code, CoreFun_sp lep)
   : SimpleFun_O(fdesc, code, entry_point), _localFun(lep) {};
 
 GlobalBytecodeSimpleFun_O::GlobalBytecodeSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp module,
@@ -125,18 +125,18 @@ CoreFun_O::CoreFun_O(FunctionDescription_sp fdesc, T_sp code,
   llvmo::validateEntryPoint(code, entry_point);
 };
 
-Pointer_sp GlobalSimpleFun_O::defaultEntryAddress() const { return Pointer_O::create((void*)this->_EntryPoints[0]); };
+Pointer_sp SimpleCoreFun_O::defaultEntryAddress() const { return Pointer_O::create((void*)this->_EntryPoints[0]); };
 
-CL_LISPIFY_NAME("global-simple-fun/code");
+CL_LISPIFY_NAME("simple-core-fun/code");
 CL_DEFMETHOD
-llvmo::ObjectFile_sp GlobalSimpleFun_O::code() const {
+llvmo::ObjectFile_sp SimpleCoreFun_O::code() const {
   llvmo::ObjectFile_sp code = gc::As<llvmo::ObjectFile_sp>(this->_Code);
   return code;
 }
 
-CL_LISPIFY_NAME("global-simple-fun-local-fun");
+CL_LISPIFY_NAME("simple-core-fun-local-fun");
 CL_DEFMETHOD
-T_sp GlobalSimpleFun_O::localFun() const { return this->_localFun; }
+CoreFun_sp SimpleCoreFun_O::localFun() const { return this->_localFun; }
 
 Pointer_sp CoreFun_O::defaultEntryAddress() const { return Pointer_O::create((void*)this->_Entry); };
 
@@ -192,9 +192,9 @@ void CoreFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup
 
 CL_LAMBDA(&key function-description entry-point-functions local-entry-point-index);
 DOCGROUP(clasp);
-CL_DEFUN GlobalSimpleFunGenerator_sp core__makeGlobalSimpleFunGenerator(FunctionDescription_sp fdesc, T_sp entryPointIndices,
+CL_DEFUN SimpleCoreFunGenerator_sp core__makeSimpleCoreFunGenerator(FunctionDescription_sp fdesc, T_sp entryPointIndices,
                                                                         size_t localEntryPointIndex) {
-  auto entryPoint = gctools::GC<GlobalSimpleFunGenerator_O>::allocate(fdesc, entryPointIndices, localEntryPointIndex);
+  auto entryPoint = gctools::GC<SimpleCoreFunGenerator_O>::allocate(fdesc, entryPointIndices, localEntryPointIndex);
   //  printf("%s:%d:%s  entryPoint-> %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)entryPoint.raw_());
   return entryPoint;
 }
@@ -222,7 +222,7 @@ std::string CoreFun_O::__repr__() const {
   return ss.str();
 }
 
-std::string GlobalSimpleFun_O::__repr__() const {
+std::string SimpleCoreFun_O::__repr__() const {
   stringstream ss;
   ss << "#<Global-SIMPLE-FUN ";
   for (size_t ii = 0; ii < NUMBER_OF_ENTRY_POINTS; ii++) {
@@ -237,11 +237,11 @@ std::string GlobalSimpleFun_O::__repr__() const {
   return ss.str();
 }
 
-CL_LISPIFY_NAME("global-simple-fun-generator-local-fun-index");
+CL_LISPIFY_NAME("simple-core-fun-generator-local-fun-index");
 CL_DEFMETHOD
-size_t GlobalSimpleFunGenerator_O::localFunIndex() const { return this->_localFunIndex; }
+size_t SimpleCoreFunGenerator_O::coreFunIndex() const { return this->_localFunIndex; }
 
-std::string GlobalSimpleFunGenerator_O::__repr__() const {
+std::string SimpleCoreFunGenerator_O::__repr__() const {
   stringstream ss;
   ss << "#<GLOBAL-SIMPLE-FUN-GENERATOR ";
   ss << _rep_(this->_entry_point_indices) << " @" << (void*)this << ">";
@@ -290,8 +290,8 @@ SimpleFun_sp makeSimpleFun(FunctionDescription_sp tfdesc, const ClaspXepTemplate
   return gctools::GC<SimpleFun_O>::allocate(tfdesc, nil<T_O>(), entry_point);
 }
 
-GlobalSimpleFun_sp makeGlobalSimpleFun(FunctionDescription_sp tfdesc, const ClaspXepTemplate& entry_point, T_sp lep) {
-  return gctools::GC<GlobalSimpleFun_O>::allocate(tfdesc, entry_point, nil<T_O>(), lep);
+SimpleCoreFun_sp makeSimpleCoreFun(FunctionDescription_sp tfdesc, const ClaspXepTemplate& entry_point, CoreFun_sp lep) {
+  return gctools::GC<SimpleCoreFun_O>::allocate(tfdesc, entry_point, nil<T_O>(), lep);
 }
 
 SYMBOL_EXPORT_SC_(CorePkg, bytecode_call);
@@ -367,10 +367,10 @@ CoreFun_sp makeCoreFunFromGenerator(CoreFunGenerator_sp original, void** entry_p
   return entryPoint;
 }
 
-GlobalSimpleFun_sp makeGlobalSimpleFunFromGenerator(GlobalSimpleFunGenerator_sp original, gctools::GCRootsInModule* roots,
+SimpleCoreFun_sp makeSimpleCoreFunFromGenerator(SimpleCoreFunGenerator_sp original, gctools::GCRootsInModule* roots,
                                                     void** entry_points) {
   if (!original->_entry_point_indices.consp()) {
-    SIMPLE_ERROR("The GlobalSimpleFun {} does not have entry-points", _rep_(original));
+    SIMPLE_ERROR("The SimpleCoreFun {} does not have entry-points", _rep_(original));
   }
   List_sp epIndices = gc::As<List_sp>(original->_entry_point_indices);
   size_t num = cl__length(epIndices);
@@ -391,12 +391,10 @@ GlobalSimpleFun_sp makeGlobalSimpleFunFromGenerator(GlobalSimpleFunGenerator_sp 
     xepFunction._EntryPoints[cur] = entry_point;
     cur++;
   }
-  T_sp localFun((gctools::Tagged)roots->getLiteral(original->_localFunIndex));
+  CoreFun_sp localFun((gctools::Tagged)roots->getLiteral(original->_localFunIndex));
   T_sp code = unbound<T_O>();
   code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(xepFunction._EntryPoints[0]));
-  auto globalSimpleFun =
-      gctools::GC<GlobalSimpleFun_O>::allocate(original->_FunctionDescription, xepFunction, code, localFun);
-  return globalSimpleFun;
+  return gctools::GC<SimpleCoreFun_O>::allocate(original->_FunctionDescription, xepFunction, code, localFun);
 }
 
 DOCGROUP(clasp);
@@ -424,7 +422,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp core__SimpleFun_function_description(SimpleFun_sp entryPoint) { return entryPoint->_FunctionDescription; }
 
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__GlobalSimpleFunGenerator_entry_point_indices(GlobalSimpleFunGenerator_sp fdesc) {
+CL_DEFUN T_sp core__SimpleCoreFunGenerator_entry_point_indices(SimpleCoreFunGenerator_sp fdesc) {
   return fdesc->_entry_point_indices;
 }
 
@@ -434,7 +432,7 @@ CL_DEFUN T_sp core__CoreFunGenerator_entry_point_indices(CoreFunGenerator_sp fde
 }
 
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__set_GlobalSimpleFun_entry_point_indices(GlobalSimpleFunGenerator_sp fdesc, T_sp entry_point_indices) {
+CL_DEFUN T_sp core__set_SimpleCoreFun_entry_point_indices(SimpleCoreFunGenerator_sp fdesc, T_sp entry_point_indices) {
   return fdesc->_entry_point_indices = entry_point_indices;
 }
 
@@ -558,9 +556,9 @@ SYMBOL_EXPORT_SC_(KeywordPkg, required_args);
 
 DOCGROUP(clasp);
 CL_DEFUN void core__verify_global_entry_point(T_sp alist) {
-  expect_offset(kw::_sym_function_description, alist, offsetof(GlobalSimpleFun_O, _FunctionDescription) - gctools::general_tag);
-  expect_offset(kw::_sym_code, alist, offsetof(GlobalSimpleFun_O, _Code) - gctools::general_tag);
-  expect_offset(kw::_sym_entry_points, alist, offsetof(GlobalSimpleFun_O, _EntryPoints._EntryPoints) - gctools::general_tag);
+  expect_offset(kw::_sym_function_description, alist, offsetof(SimpleCoreFun_O, _FunctionDescription) - gctools::general_tag);
+  expect_offset(kw::_sym_code, alist, offsetof(SimpleCoreFun_O, _Code) - gctools::general_tag);
+  expect_offset(kw::_sym_entry_points, alist, offsetof(SimpleCoreFun_O, _EntryPoints._EntryPoints) - gctools::general_tag);
 }
 
 CL_LISPIFY_NAME(bytecode_closure/make);
@@ -615,13 +613,10 @@ CL_DEFUN T_sp core__function_pointer_alist(Function_sp func) {
       res << Cons_O::create(make_fixnum(ii - 1 + ENTRY_POINT_ARITY_BEGIN), Pointer_O::create((void*)ep));
     }
   }
-  if (gc::IsA<GlobalSimpleFun_sp>(func->entryPoint())) {
-    GlobalSimpleFun_sp gsf = gc::As_unsafe<GlobalSimpleFun_sp>(func->entryPoint());
-    T_sp tlep = gsf->localFun();
-    if (tlep.notnilp()) {
-      CoreFun_sp lep = gc::As<CoreFun_sp>(tlep);
-      res << Cons_O::create(kw::_sym_local_function, Pointer_O::create((void*)lep->_Entry));
-    }
+  if (gc::IsA<SimpleCoreFun_sp>(func->entryPoint())) {
+    SimpleCoreFun_sp gsf = gc::As_unsafe<SimpleCoreFun_sp>(func->entryPoint());
+    CoreFun_sp lep = gsf->localFun();
+    res << Cons_O::create(kw::_sym_local_function, Pointer_O::create((void*)lep->_Entry));
   }
   return res.cons();
 };

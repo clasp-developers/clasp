@@ -227,7 +227,7 @@ T_sp dwarf_ep(size_t frameIndex, llvmo::ObjectFile_sp ofi, llvmo::DWARFContext_s
             }
           } else if (gc::IsA<SimpleFun_sp>(literal)) {
             SimpleFun_sp ep = gc::As_unsafe<SimpleFun_sp>(literal);
-            D(printf("%s%s:%d:%s GlobalSimpleFun_sp %s  FunctionDescription name %s\n", trace.spaces().c_str(), __FILE__, __LINE__,
+            D(printf("%s%s:%d:%s SimpleCoreFun_sp %s  FunctionDescription name %s\n", trace.spaces().c_str(), __FILE__, __LINE__,
                      __FUNCTION__, _rep_(ep).c_str(), _rep_(ep->functionDescription()).c_str()););
             for (size_t j = 0; j < NUMBER_OF_ENTRY_POINTS; ++j) {
               uintptr_t absolute_entry = (uintptr_t)(ep->_EntryPoints[j]);

@@ -470,11 +470,11 @@ rewrite the slot in the literal table to store a closure."
 
 (defun ltv/global-entry-point (entry-point index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp))
-  (let ((function-index (first (sys:global-simple-fun-generator-entry-point-indices entry-point)))
-        (local-entry-point-index (sys:global-simple-fun-generator-local-fun-index entry-point)))
+  (let ((function-index (first (sys:simple-core-fun-generator-entry-point-indices entry-point)))
+        (local-entry-point-index (sys:simple-core-fun-generator-local-fun-index entry-point)))
     (add-creator "ltvc_make_global_entry_point" index entry-point
                  function-index
-                 (load-time-reference-literal (sys:global-simple-fun-generator/function-description entry-point) read-only-p :toplevelp nil)
+                 (load-time-reference-literal (sys:simple-core-fun-generator/function-description entry-point) read-only-p :toplevelp nil)
                  local-entry-point-index #+(or)(load-time-reference-literal (sys:global-entry-point-local-entry-point entry-point) read-only-p :toplevelp nil))))
 
 (defun ltv/package (package index read-only-p &key (toplevelp t))
@@ -554,7 +554,7 @@ rewrite the slot in the literal table to store a closure."
     ((core:ratiop object) (values (literal-machine-ratio-coalesce literal-machine) #'ltv/ratio))
     ((sys:function-description-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/function-description))
     ((sys:core-fun-generator-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/local-entry-point))
-    ((sys:global-simple-fun-generator-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/global-entry-point))
+    ((sys:simple-core-fun-generator-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/global-entry-point))
     ((bit-vector-p object) (values nil #'ltv/bitvector))
     ((core:base-string-p object)
      (values (if read-only-p (literal-machine-identity-coalesce literal-machine) (literal-machine-base-string-coalesce literal-machine)) #'ltv/base-string))

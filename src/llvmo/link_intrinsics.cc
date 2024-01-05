@@ -149,7 +149,7 @@ LtvcReturnVoid ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, 
   NO_UNWIND_BEGIN();
   //  printf("%s:%d:%s got functionIndex %lu change to simpleFunIndex\n", __FILE__, __LINE__, __FUNCTION__, functionIndex );
   gc::Tagged tentrypoint = holder->getLiteral(entry_point_index);
-  core::GlobalSimpleFun_sp simpleFun(tentrypoint);
+  core::SimpleCoreFun_sp simpleFun(tentrypoint);
   gctools::smart_ptr<core::Closure_O> functoid =
       gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 0, simpleFun);
   LTVCRETURN holder->setTaggedIndex(tag, index, functoid.tagged_());
@@ -380,13 +380,13 @@ LtvcReturnVoid ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, cha
 LtvcReturnVoid ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex0,
                                             core::T_O* functionDescription_t, size_t localEntryPointIndex) {
   NO_UNWIND_BEGIN();
-  core::T_sp localEntryPoint((gctools::Tagged)holder->getLiteral(localEntryPointIndex));
+  core::CoreFun_sp localEntryPoint((gctools::Tagged)holder->getLiteral(localEntryPointIndex));
   core::FunctionDescription_sp fdesc((gctools::Tagged)functionDescription_t);
   core::ClaspXepTemplate xep;
   for (size_t ii = 0; ii < core::ClaspXepFunction::Entries; ++ii) {
     xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)holder->lookup_function(functionIndex0 + ii);
   }
-  core::GlobalSimpleFun_sp simpleFun = core::makeGlobalSimpleFun(fdesc, xep, localEntryPoint);
+  core::SimpleCoreFun_sp simpleFun = core::makeSimpleCoreFun(fdesc, xep, localEntryPoint);
   LTVCRETURN holder->setTaggedIndex(tag, index, simpleFun.tagged_());
   NO_UNWIND_END();
 }
@@ -1082,7 +1082,7 @@ NEVER_OPTIMIZE void cc_error_case_failure(T_O* datum, T_O* expected_type, T_O* n
 
 core::T_O* cc_enclose(core::T_O* simpleFunInfo, std::size_t numCells) {
   core::T_sp tsimpleFun((gctools::Tagged)simpleFunInfo);
-  core::GlobalSimpleFun_sp simpleFun = gc::As<GlobalSimpleFun_sp>(tsimpleFun);
+  core::SimpleCoreFun_sp simpleFun = gc::As<SimpleCoreFun_sp>(tsimpleFun);
   gctools::smart_ptr<core::Closure_O> functoid =
       gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, numCells, simpleFun);
   return functoid.raw_();

@@ -772,14 +772,14 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init__fixed_field(core::BytecodeModule_O, 1, SMART_PTR_OFFSET, _Bytecode);
   Init__fixed_field(core::BytecodeModule_O, 2, SMART_PTR_OFFSET, _CompileInfo);
 
-  Init_class_kind(core::GlobalSimpleFun_O);
-  Init__fixed_field(core::GlobalSimpleFun_O, 0, SMART_PTR_OFFSET, _TheSimpleFun);
-  Init__fixed_field(core::GlobalSimpleFun_O, 1, SMART_PTR_OFFSET, _FunctionDescription);
-  Init__fixed_field(core::GlobalSimpleFun_O, 2, SMART_PTR_OFFSET, _Code);
+  Init_class_kind(core::SimpleCoreFun_O);
+  Init__fixed_field(core::SimpleCoreFun_O, 0, SMART_PTR_OFFSET, _TheSimpleFun);
+  Init__fixed_field(core::SimpleCoreFun_O, 1, SMART_PTR_OFFSET, _FunctionDescription);
+  Init__fixed_field(core::SimpleCoreFun_O, 2, SMART_PTR_OFFSET, _Code);
   for (int iii = 0; iii < NUMBER_OF_ENTRY_POINTS; iii++) {
-    Init__fixed_field(core::GlobalSimpleFun_O, 3 + iii, RAW_POINTER_OFFSET, _EntryPoints._EntryPoints[iii]);
+    Init__fixed_field(core::SimpleCoreFun_O, 3 + iii, RAW_POINTER_OFFSET, _EntryPoints._EntryPoints[iii]);
   }
-  Init__fixed_field(core::GlobalSimpleFun_O, 3 + NUMBER_OF_ENTRY_POINTS, SMART_PTR_OFFSET, _localFun);
+  Init__fixed_field(core::SimpleCoreFun_O, 3 + NUMBER_OF_ENTRY_POINTS, SMART_PTR_OFFSET, _localFun);
 
   Init_class_kind(core::GlobalBytecodeSimpleFun_O);
   Init__fixed_field(core::GlobalBytecodeSimpleFun_O, 0, SMART_PTR_OFFSET, _TheSimpleFun);
