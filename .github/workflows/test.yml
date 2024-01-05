@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: ${{ matrix.build }} / ${{ matrix.os }} / ${{ matrix.mode }}
+    name: ${{ matrix.build }}/${{ matrix.os }}/${{ matrix.mode }}/${{ matrix.auto }}
 
     defaults:
       run:
@@ -24,8 +24,28 @@ jobs:
         - macos-latest
         - ubuntu-latest
         mode:
-        - bytecode
         - faso
+        - bytecode-faso
+        - bytecode
+        auto:
+        - no
+        - yes
+        exclude:
+          - mode: faso
+            auto: yes
+          - build: cando
+            mode: faso
+          - build: cando
+            mode: bytecode
+          - build: cando
+            auto: yes
+          - mode: bytecode-faso
+            auto: yes
+          - os: macos-latest
+            mode: faso
+          - os: macos-latest
+            mode: bytecode
+            auto: no
 
     runs-on: ${{ matrix.os }}
 
@@ -73,12 +93,21 @@ jobs:
       run: |
         ninja -C build
     - name: Run regression tests
+      if: ${{ matrix.auto == 'no' }}
       run: |
         ninja -C build test
+    - name: Run regression tests [auto]
+      if: ${{ matrix.auto == 'yes' }}
+      run: |
+        CLASP_AUTOCOMPILATION=1 ninja -C build test
     - name: Run ANSI tests
-      if: ${{ matrix.build == 'clasp' }}
+      if: ${{ matrix.build == 'clasp' && matrix.auto == 'no' }}
       run: |
         ninja -C build ansi-test
+    - name: Run ANSI tests [auto]
+      if: ${{ matrix.build == 'clasp' && matrix.auto == 'yes' }}
+      run: |
+        CLASP_AUTOCOMPILATION=1 ninja -C build ansi-test
     - name: Run Cando regression tests
       if: ${{ matrix.build == 'cando' }}
       run: |
