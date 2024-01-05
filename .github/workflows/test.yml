@@ -39,9 +39,6 @@ jobs:
             mode: bytecode
           - build: cando
             auto: yes
-          - build: clasp
-            os: macos-latest
-            mode: faso
           - mode: bytecode-faso
             auto: yes
           - os: macos-latest
