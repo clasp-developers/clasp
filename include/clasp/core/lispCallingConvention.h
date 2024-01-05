@@ -329,19 +329,4 @@ inline void dump_lcc_args(FILE* fout, size_t lcc_nargs, T_O** lcc_args) {
 
 }; // extern "C"
 
-/*! Call a function object with args in a Vaslist_sp and consume the valist.
-The Callee can NOT use args after this call.
-Note: Since we don't have the full Function_O class definition when this
-header is compiled (and we don't want to #include it because of all the problems
-that will cause) I made this a template function where you pass the function
-type as a template argument.  Call it like this...
-funcall_consume_valist_<core::Function_O>(tagged_func_ptr,valist_args)
-*/
-template <typename Func_O_Type>
-inline gctools::return_type funcall_general(gc::Tagged func_tagged, size_t nargs, core::T_O** args) {
-  ASSERT(gc::tagged_generalp(func_tagged));
-  gc::smart_ptr<Function_O> func((gc::Tagged)func_tagged);
-  return func->entry()((core::T_O*)func_tagged, nargs, args);
-}
-
 #endif // LCC_FUNCALL

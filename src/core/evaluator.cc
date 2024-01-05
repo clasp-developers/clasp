@@ -634,12 +634,7 @@ CL_DOCSTRING(R"dx(See CLHS: funcall)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv cl__funcall(T_sp function_desig, Vaslist_sp args) {
   Function_sp func = coerce::calledFunctionDesignator(function_desig);
-  size_t nargs = args->nargs();
-  MAKE_STACK_FRAME(fargs, nargs);
-  size_t ia(0);
-  gctools::fill_frame_vaslist(fargs, ia, args);
-  T_mv res = funcall_general<core::Function_O>(func.tagged_(), nargs, fargs->arguments());
-  return res;
+  return func->apply_raw(args->nargs(), args->args());
 }
 
 CL_LAMBDA(arg);

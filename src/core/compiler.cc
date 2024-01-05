@@ -1158,7 +1158,7 @@ CL_DEFUN T_mv core__multiple_value_funcall(Function_sp fmv, List_sp thunks) {
     ASSERT(idx < MultipleValues::MultipleValuesLimit);
     gctools::fill_frame_multiple_value_return(frame, idx, result);
   }
-  return funcall_general<Function_O>(fmv.tagged_(), idx, frame->arguments(0));
+  return fmv->apply_raw(idx, frame->arguments(0));
 }
 
 CL_LAMBDA(tag func);

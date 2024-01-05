@@ -1251,7 +1251,7 @@ bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, b
       if (!atend) {
         Vaslist valist_struct(nargs, frame);
         Vaslist_sp valist(&valist_struct);
-        retVal = funcall_general<core::Function_O>(predicate.tagged_(), nargs, frame->arguments());
+        retVal = predicate->apply_raw(nargs, frame->arguments());
         if (retVal.isTrue() == elementTest) {
           return elementReturn;
         }
@@ -1330,7 +1330,7 @@ CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
           atend = true;
       }
       if (!atend) {
-        result << funcall_general<core::Function_O>(func.tagged_(), nargs, frame->arguments(0));
+        result << func->apply_raw(nargs, frame->arguments(0));
       }
     }
     return result.cons();
@@ -1367,7 +1367,7 @@ CL_DEFUN T_sp cl__mapc(T_sp func_desig, List_sp lists) {
           atend = true;
       }
       if (!atend) {
-        funcall_general<core::Function_O>(func.tagged_(), nargs, frame->arguments(0));
+        func->apply_raw(nargs, frame->arguments(0));
       }
     }
     return result;
@@ -1399,7 +1399,7 @@ CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
           atend = true;
       }
       if (!atend) {
-        result << funcall_general<core::Function_O>(func.tagged_(), nargs, frame->arguments());
+        result << func->apply_raw(nargs, frame->arguments());
       }
     }
     return result.cons();
@@ -1431,7 +1431,7 @@ CL_DEFUN T_sp cl__mapl(T_sp func_desig, List_sp lists) {
           atend = true;
       }
       if (!atend) {
-        funcall_general<core::Function_O>(func.tagged_(), nargs, frame->arguments(0));
+        func->apply_raw(nargs, frame->arguments(0));
       }
     }
     return result;

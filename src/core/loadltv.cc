@@ -645,7 +645,7 @@ struct loadltv {
     T_O* args[nargs];
     for (size_t i = 0; i < nargs; ++i)
       args[i] = get_ltv(read_index()).raw_();
-    T_sp res = funcall_general<Function_O>((gc::Tagged)(func.raw_()), nargs, args);
+    T_sp res = func->apply_raw(nargs, args);
     set_ltv(res, index);
   }
 
@@ -656,7 +656,7 @@ struct loadltv {
     T_O* args[nargs];
     for (size_t i = 0; i < nargs; ++i)
       args[i] = get_ltv(read_index()).raw_();
-    funcall_general<Function_O>((gc::Tagged)(func.raw_()), nargs, args);
+    func->apply_raw(nargs, args);
   }
 
   void op_class() {

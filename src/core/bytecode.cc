@@ -277,17 +277,13 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
     case vm_call: {
       uint8_t nargs = *(++pc);
       DBG_VM1("call %" PRIu8 "\n", nargs);
-      T_O* func = *(vm.stackref(sp, nargs));
+      T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+      Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
-      // ASSERT(gctools::tagged_generalp<T_O*>(func));
-      if (!(gctools::tagged_generalp<T_O*>(func))) {
-        T_sp tfun((gctools::Tagged)func);
-        SIMPLE_ERROR("Tried to call {} which is not a function", _rep_(tfun));
-      }
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
-      T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      T_mv res = func->apply_raw(nargs, args);
       multipleValues.setN(res.raw_(), res.number_of_values());
       vm.drop(sp, nargs + 2);
       pc++;
@@ -296,7 +292,8 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
     case vm_call_receive_one: {
       uint8_t nargs = *(++pc);
       DBG_VM1("call-receive-one %" PRIu8 "\n", nargs);
-      T_O* func = *(vm.stackref(sp, nargs));
+      T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+      Function_sp func = gc::As_assert<Function_sp>(tfunc);
       VM_RECORD_PLAYBACK(func, "vm_call_receive_one_func");
       VM_RECORD_PLAYBACK((void*)(uintptr_t)nargs, "vm_call_receive_one_nargs");
       T_O** args = vm.stackref(sp, nargs - 1);
@@ -310,7 +307,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
-      T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      T_sp res = func->apply_raw(nargs, args);
       vm.drop(sp, nargs + 2);
       vm.push(sp, res.raw_());
       VM_RECORD_PLAYBACK(res.raw_(), "vm_call_receive_one");
@@ -321,12 +318,13 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       uint8_t nargs = *(++pc);
       uint8_t nvals = *(++pc);
       DBG_VM("call-receive-fixed %" PRIu8 " %" PRIu8 "\n", nargs, nvals);
-      T_O* func = *(vm.stackref(sp, nargs));
+      T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+      Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
-      T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      T_mv res = func->apply_raw(nargs, args);
       vm.drop(sp, nargs + 2);
       if (nvals != 0) {
         vm.push(sp, res.raw_()); // primary
@@ -676,12 +674,13 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_sp tnargs((gctools::Tagged)vm.pop(sp));
       size_t nargs = tnargs.unsafe_fixnum();
       DBG_VM("  nargs = %zu\n", nargs);
-      T_O* func = *(vm.stackref(sp, nargs));
+      T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+      Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
-      T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      T_mv res = func->apply_raw(nargs, args);
       vm.drop(sp, nargs + 1 + 1); // 1 each for func, pc
       multipleValues.setN(res.raw_(), res.number_of_values());
       pc++;
@@ -692,12 +691,13 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_sp tnargs((gctools::Tagged)vm.pop(sp));
       size_t nargs = tnargs.unsafe_fixnum();
       DBG_VM("  nargs = %zu\n", nargs);
-      T_O* func = *(vm.stackref(sp, nargs));
+      T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+      Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
-      T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      T_sp res = func->apply_raw(nargs, args);
       vm.drop(sp, nargs + 2);
       multipleValues.set1(res);
       vm.push(sp, res.raw_());
@@ -709,12 +709,13 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       DBG_VM("mv-call-receive-fixed %" PRIu8 "\n", nvals);
       T_sp tnargs((gctools::Tagged)vm.pop(sp));
       size_t nargs = tnargs.unsafe_fixnum();
-      T_O* func = *(vm.stackref(sp, nargs));
+      T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+      Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
-      T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      T_mv res = func->apply_raw(nargs, args);
       vm.drop(sp, nargs + 2);
       if (nvals != 0) {
         vm.push(sp, res.raw_()); // primary
@@ -952,12 +953,13 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     uint8_t low = *(pc + 1);
     uint16_t nargs = low + (*(pc + 2) << 8);
     DBG_VM1("long call %" PRIu16 "\n", nargs);
-    T_O* func = *(vm.stackref(sp, nargs));
+    T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+    Function_sp func = gc::As_assert<Function_sp>(tfunc);
     T_O** args = vm.stackref(sp, nargs - 1);
     vm.push(sp, (T_O*)pc);
     vm._pc = pc;
     vm._stackPointer = sp;
-    T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+    T_mv res = func->apply_raw(nargs, args);
     multipleValues.setN(res.raw_(), res.number_of_values());
     vm.drop(sp, nargs + 2);
     pc += 3;
@@ -967,7 +969,8 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     uint8_t low = *(pc + 1);
     uint16_t nargs = low + (*(pc + 2) << 8);
     DBG_VM1("long call-receive-one %" PRIu16 "\n", nargs);
-    T_O* func = *(vm.stackref(sp, nargs));
+    T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+    Function_sp func = gc::As_assert<Function_sp>(tfunc);
     VM_RECORD_PLAYBACK(func, "vm_call_receive_one_func");
     VM_RECORD_PLAYBACK((void*)(uintptr_t)nargs, "vm_call_receive_one_nargs");
     T_O** args = vm.stackref(sp, nargs - 1);
@@ -981,7 +984,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     vm.push(sp, (T_O*)pc);
     vm._pc = pc;
     vm._stackPointer = sp;
-    T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+    T_sp res = func->apply_raw(nargs, args);
     vm.drop(sp, nargs + 2);
     vm.push(sp, res.raw_());
     VM_RECORD_PLAYBACK(res.raw_(), "vm_call_receive_one");
@@ -994,12 +997,13 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     uint8_t low_nvals = *(pc + 3);
     uint16_t nvals = low_nvals + (*(pc + 4) << 8);
     DBG_VM("long call-receive-fixed %" PRIu16 " %" PRIu16 "\n", nargs, nvals);
-    T_O* func = *(vm.stackref(sp, nargs));
+    T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+    Function_sp func = gc::As_assert<Function_sp>(tfunc);
     T_O** args = vm.stackref(sp, nargs - 1);
     vm.push(sp, (T_O*)pc);
     vm._pc = pc;
     vm._stackPointer = sp;
-    T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+    T_mv res = func->apply_raw(nargs, args);
     vm.drop(sp, nargs + 2);
     if (nvals != 0) {
       vm.push(sp, res.raw_()); // primary
@@ -1215,12 +1219,13 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     DBG_VM("long mv-call-receive-fixed %" PRIu16 "\n", nvals);
     T_sp tnargs((gctools::Tagged)vm.pop(sp));
     size_t nargs = tnargs.unsafe_fixnum();
-    T_O* func = *(vm.stackref(sp, nargs));
+    T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+    Function_sp func = gc::As_assert<Function_sp>(tfunc);
     T_O** args = vm.stackref(sp, nargs - 1);
     vm.push(sp, (T_O*)pc);
     vm._pc = pc;
     vm._stackPointer = sp;
-    T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+    T_mv res = func->apply_raw(nargs, args);
     vm.drop(sp, nargs + 2); // 2 = func + nargs
     if (nvals != 0) {
       vm.push(sp, res.raw_()); // primary
