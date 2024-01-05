@@ -337,9 +337,9 @@ public:
 };
 
 // Fulfill the role of bytecode_function
-FORWARD(GlobalBytecodeSimpleFun);
-class GlobalBytecodeSimpleFun_O : public SimpleFun_O {
-  LISP_CLASS(core, CorePkg, GlobalBytecodeSimpleFun_O, "GlobalBytecodeSimpleFun", SimpleFun_O);
+FORWARD(BytecodeSimpleFun);
+class BytecodeSimpleFun_O : public SimpleFun_O {
+  LISP_CLASS(core, CorePkg, BytecodeSimpleFun_O, "BytecodeSimpleFun", SimpleFun_O);
 
 public:
   // The frame size this function needs for local variables.
@@ -360,7 +360,7 @@ public:
 
 public:
   // Accessors
-  GlobalBytecodeSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp code,
+  BytecodeSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp code,
                             unsigned short localsFrameSize, unsigned int environmentSize, unsigned int entryPcN,
                             unsigned int bytecodeSize, BytecodeTrampolineFunction trampoline);
 
@@ -375,12 +375,12 @@ public:
   CL_DEFMETHOD Fixnum localsFrameSize() const { return this->_LocalsFrameSize; };
   CL_DEFMETHOD Fixnum environmentSize() const { return this->_EnvironmentSize; };
   size_t entryPcN() const;
-  CL_LISPIFY_NAME(GlobalBytecodeSimpleFun/bytecode-size)
+  CL_LISPIFY_NAME(BytecodeSimpleFun/bytecode-size)
   CL_DEFMETHOD Fixnum bytecodeSize() const { return this->_BytecodeSize; }
   // Used for bytecode debug info; see function.cc
   T_sp start() const;
   T_sp end() const;
-  CL_LISPIFY_NAME(GlobalBytecodeSimpleFun/call-count)
+  CL_LISPIFY_NAME(BytecodeSimpleFun/call-count)
   CL_DEFMETHOD Fixnum callCount() const { return this->_CallCount.load(std::memory_order_relaxed); }
   inline void countCall() {
     // We use this instead of ++ to get a weak memory ordering.
@@ -436,7 +436,7 @@ SimpleCoreFun_sp makeSimpleCoreFunAndFunctionDescription(T_sp functionName, T_sp
   return makeSimpleCoreFun(fdesc, XepStereotype<Wrapper>(), localFun);
 };
 
-GlobalBytecodeSimpleFun_sp core__makeGlobalBytecodeSimpleFun(FunctionDescription_sp fdesc, BytecodeModule_sp module,
+BytecodeSimpleFun_sp core__makeBytecodeSimpleFun(FunctionDescription_sp fdesc, BytecodeModule_sp module,
                                                              size_t localsFrameSize, size_t environmentSize, size_t pcIndex,
                                                              size_t bytecodeSize, Pointer_sp trampoline);
 
@@ -467,7 +467,7 @@ public:
   virtual size_t templatedSizeof() const override { return gctools::sizeof_container<Closure_O>(this->_Slots.size()); };
 
 public:
-  static Closure_sp make_bytecode_closure(GlobalBytecodeSimpleFun_sp entryPoint, size_t closedOverSlots);
+  static Closure_sp make_bytecode_closure(BytecodeSimpleFun_sp entryPoint, size_t closedOverSlots);
 
 public:
   Closure_O(size_t capacity, SimpleFun_sp ep) : Base(ep), _Slots(capacity, unbound<T_O>(), true){};

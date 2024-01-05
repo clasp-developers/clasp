@@ -79,7 +79,7 @@ If type is :IR then dump the LLVM-IR for all of the associated functions.
      ;; This allows both bytecode and native-compiled closures to be
      ;; disassembled correctly.
      (disassemble (core:function/entry-point desig) :type type))
-    (core:global-bytecode-simple-fun
+    (core:bytecode-simple-fun
      (unless (eq type :asm)
        (error "Only disassembly to bytecode is supported for bytecode function: ~a" desig))
      (cmpref:disassemble-bytecode-function desig))

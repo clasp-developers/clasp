@@ -585,7 +585,7 @@ struct loadltv {
     T_sp lambda_list = get_ltv(read_index());
     T_sp docstring = get_ltv(read_index());
     FunctionDescription_sp fdesc = makeFunctionDescription(name, lambda_list, docstring, nil<T_O>(), nil<T_O>(), -1, -1, -1);
-    GlobalBytecodeSimpleFun_sp fun = core__makeGlobalBytecodeSimpleFun(fdesc, module, nlocals, nclosed, entry_point, final_size,
+    BytecodeSimpleFun_sp fun = core__makeBytecodeSimpleFun(fdesc, module, nlocals, nclosed, entry_point, final_size,
                                                                        llvmo::cmp__compile_trampoline(name));
     if (comp::_sym_STARautocompile_hookSTAR->boundP() &&
         comp::_sym_STARautocompile_hookSTAR->symbolValue().notnilp()

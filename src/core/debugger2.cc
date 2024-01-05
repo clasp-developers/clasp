@@ -101,8 +101,8 @@ static void debugger_dump_current_module(DebuggerFrame_sp cur, int index) {
   }
   Function_sp func = gc::As_unsafe<Function_sp>(cur->closure);
   SimpleFun_sp ep = func->entryPoint();
-  if (gc::IsA<GlobalBytecodeSimpleFun_sp>(ep)) {
-    Array_sp bytecode = gc::As<Array_sp>(gc::As_unsafe<GlobalBytecodeSimpleFun_sp>(ep)->code());
+  if (gc::IsA<BytecodeSimpleFun_sp>(ep)) {
+    Array_sp bytecode = gc::As<Array_sp>(gc::As_unsafe<BytecodeSimpleFun_sp>(ep)->code());
     clasp_write_string(fmt::format("Start address: {}\n", (void*)bytecode->rowMajorAddressOfElement_(0)), stream);
     for (size_t ii = 0; ii < cl__length(bytecode); ii++) {
       clasp_write_string(fmt::format("{} ", _rep_(bytecode->rowMajorAref(ii))), stream);

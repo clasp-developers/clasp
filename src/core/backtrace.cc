@@ -463,7 +463,7 @@ static DebuggerFrame_sp make_lisp_frame(size_t frameIndex, void* absolute_ip, co
                                nil<T_O>(), INTERN_(kw, lisp), XEPp);
 }
 
-static DebuggerFrame_sp make_bytecode_frame_from_function(GlobalBytecodeSimpleFun_sp fun, void* bpc, T_O** bfp) {
+static DebuggerFrame_sp make_bytecode_frame_from_function(BytecodeSimpleFun_sp fun, void* bpc, T_O** bfp) {
   // We can get the closure easy if the function actually isn't one.
   // Otherwise we'd have to poke through bytecode_vm arguments or maybe
   // the vm stack?
@@ -489,8 +489,8 @@ static DebuggerFrame_sp make_bytecode_frame(size_t frameIndex, unsigned char*& p
     BytecodeModule_sp mod = gc::As_assert<BytecodeModule_sp>(oCar(mods));
     if (bytecode_module_contains_address_p(mod, bpc)) {
       T_sp fun = bytecode_function_for_pc(mod, bpc);
-      if (gc::IsA<GlobalBytecodeSimpleFun_sp>(fun))
-        return make_bytecode_frame_from_function(gc::As_unsafe<GlobalBytecodeSimpleFun_sp>(fun), bpc, bfp);
+      if (gc::IsA<BytecodeSimpleFun_sp>(fun))
+        return make_bytecode_frame_from_function(gc::As_unsafe<BytecodeSimpleFun_sp>(fun), bpc, bfp);
     }
   }
   return DebuggerFrame_O::make(INTERN_(kw, bytecode), Pointer_O::create(bpc), nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), false,

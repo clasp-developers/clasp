@@ -532,7 +532,7 @@ Tried to define constant #~d, but it was already defined"
       (dbgprint "  name = ~a, lambda-list = ~a, docstring = ~a"
                 name lambda-list docstring)
       (setf (constant index)
-            (core:global-bytecode-simple-fun/make
+            (core:bytecode-simple-fun/make
              (core:function-description/make
               :function-name name :lambda-list lambda-list :docstring docstring
               :source-pathname source-pathname

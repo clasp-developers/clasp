@@ -98,26 +98,26 @@ void SimpleFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fix
 SimpleCoreFun_O::SimpleCoreFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp code, CoreFun_sp lep)
   : SimpleFun_O(fdesc, code, entry_point), _localFun(lep) {};
 
-GlobalBytecodeSimpleFun_O::GlobalBytecodeSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp module,
+BytecodeSimpleFun_O::BytecodeSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp module,
                                                      uint16_t localsFrameSize, unsigned int environmentSize, unsigned int entryPcN,
                                                      unsigned int bytecodeSize, BytecodeTrampolineFunction trampoline)
   : SimpleFun_O(fdesc, module, entry_point), _LocalsFrameSize(localsFrameSize), _EnvironmentSize(environmentSize),
     _EntryPcN(entryPcN), _BytecodeSize(bytecodeSize), _Trampoline(trampoline) {};
 
-void GlobalBytecodeSimpleFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+void BytecodeSimpleFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
   this->fixupOneCodePointer(fixup, (void**)&this->_Trampoline);
   this->Base::fixupInternalsForSnapshotSaveLoad(fixup);
 }
 
-CL_DEFMETHOD size_t GlobalBytecodeSimpleFun_O::entryPcN() const { return this->_EntryPcN; }
+CL_DEFMETHOD size_t BytecodeSimpleFun_O::entryPcN() const { return this->_EntryPcN; }
 
 // These two methods allow functions to be used uniformly as
 // debug info in bytecode modules. The duck typing is a bit
 // unfortunate but ought to be harmless.
 CL_LISPIFY_NAME(BytecodeDebugInfo/start)
-CL_DEFMETHOD T_sp GlobalBytecodeSimpleFun_O::start() const { return Integer_O::create(this->_EntryPcN); }
+CL_DEFMETHOD T_sp BytecodeSimpleFun_O::start() const { return Integer_O::create(this->_EntryPcN); }
 CL_LISPIFY_NAME(BytecodeDebugInfo/end)
-CL_DEFMETHOD T_sp GlobalBytecodeSimpleFun_O::end() const { return Integer_O::create(this->_EntryPcN + this->_BytecodeSize); }
+CL_DEFMETHOD T_sp BytecodeSimpleFun_O::end() const { return Integer_O::create(this->_EntryPcN + this->_BytecodeSize); }
 
 CoreFun_O::CoreFun_O(FunctionDescription_sp fdesc, T_sp code,
                        const ClaspCoreFunction& entry_point)
@@ -140,16 +140,16 @@ CoreFun_sp SimpleCoreFun_O::localFun() const { return this->_localFun; }
 
 Pointer_sp CoreFun_O::defaultEntryAddress() const { return Pointer_O::create((void*)this->_Entry); };
 
-Pointer_sp GlobalBytecodeSimpleFun_O::defaultEntryAddress() const { return Pointer_O::create((void*)this->_EntryPoints[0]); };
+Pointer_sp BytecodeSimpleFun_O::defaultEntryAddress() const { return Pointer_O::create((void*)this->_EntryPoints[0]); };
 
-CL_LISPIFY_NAME("global-bytecode-simple-fun/code");
+CL_LISPIFY_NAME("bytecode-simple-fun/code");
 CL_DEFMETHOD
-BytecodeModule_sp GlobalBytecodeSimpleFun_O::code() const {
+BytecodeModule_sp BytecodeSimpleFun_O::code() const {
   BytecodeModule_sp code = gc::As<BytecodeModule_sp>(this->_Code);
   return code;
 }
 
-std::string GlobalBytecodeSimpleFun_O::__repr__() const {
+std::string BytecodeSimpleFun_O::__repr__() const {
   stringstream ss;
   ss << "#<GLOBAL-BYTECODE-SIMPLE-FUN ";
   for (size_t ii = 0; ii < NUMBER_OF_ENTRY_POINTS; ii++) {
@@ -297,7 +297,7 @@ SimpleCoreFun_sp makeSimpleCoreFun(FunctionDescription_sp tfdesc, const ClaspXep
 SYMBOL_EXPORT_SC_(CorePkg, bytecode_call);
 
 struct BytecodeClosureEntryPoint {
-  static inline LCC_RETURN bytecode_enter(GlobalBytecodeSimpleFun_sp entryPoint, T_O* lcc_closure, size_t lcc_nargs, T_O** lcc_args) {
+  static inline LCC_RETURN bytecode_enter(BytecodeSimpleFun_sp entryPoint, T_O* lcc_closure, size_t lcc_nargs, T_O** lcc_args) {
     core::BytecodeModule_sp module = gctools::As_assert<core::BytecodeModule_sp>(entryPoint->_Code);
     unsigned char* pc = (unsigned char*)&(gc::As_assert<SimpleVector_byte8_t_sp>(module->_Bytecode)->_Data[0]) + entryPoint->_EntryPcN;
     return (entryPoint->_Trampoline)(pc, lcc_closure, lcc_nargs, lcc_args);
@@ -305,7 +305,7 @@ struct BytecodeClosureEntryPoint {
 
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
-    core::GlobalBytecodeSimpleFun_sp entryPoint = gctools::As_assert<core::GlobalBytecodeSimpleFun_sp>(closure->entryPoint());
+    core::BytecodeSimpleFun_sp entryPoint = gctools::As_assert<core::BytecodeSimpleFun_sp>(closure->entryPoint());
     // Check if this bytecode SF's SF has been replaced,
     // as by autocompilation. If it has,
     // swap out the entry point (function pointer) to go directly to
@@ -323,7 +323,7 @@ struct BytecodeClosureEntryPoint {
   static inline LCC_RETURN entry_point_fixed(T_O* lcc_closure,
                                              Ts... args) {
     Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
-    GlobalBytecodeSimpleFun_sp entryPoint = gctools::As_assert<core::GlobalBytecodeSimpleFun_sp>(closure->entryPoint());
+    BytecodeSimpleFun_sp entryPoint = gctools::As_assert<core::BytecodeSimpleFun_sp>(closure->entryPoint());
     SimpleFun_sp eep = entryPoint->entryPoint();
     if (entryPoint != eep) [[unlikely]] {
       // the +1 is due to the general entry at 0.
@@ -339,12 +339,12 @@ struct BytecodeClosureEntryPoint {
   }
 };
 
-CL_LISPIFY_NAME(GlobalBytecodeSimpleFun/make);
+CL_LISPIFY_NAME(BytecodeSimpleFun/make);
 CL_DEFUN
-GlobalBytecodeSimpleFun_sp core__makeGlobalBytecodeSimpleFun(FunctionDescription_sp fdesc, BytecodeModule_sp module,
+BytecodeSimpleFun_sp core__makeBytecodeSimpleFun(FunctionDescription_sp fdesc, BytecodeModule_sp module,
                                                              size_t localsFrameSize, size_t environmentSize, size_t pcIndex,
                                                              size_t bytecodeSize, Pointer_sp trampoline) {
-  auto entryPoint = gctools::GC<GlobalBytecodeSimpleFun_O>::allocate(fdesc, XepStereotype<BytecodeClosureEntryPoint>(), module, localsFrameSize, environmentSize, pcIndex,
+  auto entryPoint = gctools::GC<BytecodeSimpleFun_O>::allocate(fdesc, XepStereotype<BytecodeClosureEntryPoint>(), module, localsFrameSize, environmentSize, pcIndex,
                                                                      bytecodeSize, (BytecodeTrampolineFunction)trampoline->ptr());
   return entryPoint;
 }
@@ -563,7 +563,7 @@ CL_DEFUN void core__verify_global_entry_point(T_sp alist) {
 
 CL_LISPIFY_NAME(bytecode_closure/make);
 CL_DEF_CLASS_METHOD
-Closure_sp Closure_O::make_bytecode_closure(GlobalBytecodeSimpleFun_sp entryPoint, size_t closedOverSlots) {
+Closure_sp Closure_O::make_bytecode_closure(BytecodeSimpleFun_sp entryPoint, size_t closedOverSlots) {
   Closure_sp closure = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, closedOverSlots, entryPoint);
   return closure;
 }
@@ -582,7 +582,7 @@ CL_DEFUN Closure_sp core__make_closure(SimpleFun_sp sfun, Vaslist_sp closed) {
  * i.e., if the entry point ignores its first argument. */
 bool Closure_O::openP() { return (this->_Slots.length() == 0); }
 
-bool Function_O::compiledP() const { return !gc::IsA<GlobalBytecodeSimpleFun_sp>(this->entryPoint()); }
+bool Function_O::compiledP() const { return !gc::IsA<BytecodeSimpleFun_sp>(this->entryPoint()); }
 
 CL_DEFMETHOD T_sp Function_O::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) {
   T_mv sfi_mv = core__file_scope(sourceFile);

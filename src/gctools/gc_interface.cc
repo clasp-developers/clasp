@@ -781,11 +781,11 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   }
   Init__fixed_field(core::SimpleCoreFun_O, 3 + NUMBER_OF_ENTRY_POINTS, SMART_PTR_OFFSET, _localFun);
 
-  Init_class_kind(core::GlobalBytecodeSimpleFun_O);
-  Init__fixed_field(core::GlobalBytecodeSimpleFun_O, 0, SMART_PTR_OFFSET, _TheSimpleFun);
-  Init__fixed_field(core::GlobalBytecodeSimpleFun_O, 1, SMART_PTR_OFFSET, _FunctionDescription);
-  Init__fixed_field(core::GlobalBytecodeSimpleFun_O, 2, SMART_PTR_OFFSET, _Code);
-  Init__fixed_field(core::GlobalBytecodeSimpleFun_O, 3, RAW_POINTER_OFFSET, _EntryPoints._EntryPoints[0]);
+  Init_class_kind(core::BytecodeSimpleFun_O);
+  Init__fixed_field(core::BytecodeSimpleFun_O, 0, SMART_PTR_OFFSET, _TheSimpleFun);
+  Init__fixed_field(core::BytecodeSimpleFun_O, 1, SMART_PTR_OFFSET, _FunctionDescription);
+  Init__fixed_field(core::BytecodeSimpleFun_O, 2, SMART_PTR_OFFSET, _Code);
+  Init__fixed_field(core::BytecodeSimpleFun_O, 3, RAW_POINTER_OFFSET, _EntryPoints._EntryPoints[0]);
 
   Init_class_kind(core::FunctionDescription_O);
   Init__fixed_field(core::FunctionDescription_O, 0, SMART_PTR_OFFSET, _functionName);
