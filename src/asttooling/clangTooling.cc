@@ -117,17 +117,11 @@ template <> struct from_object<clang::tooling::ArgumentsAdjuster> {
     if (o.nilp()) {
       SIMPLE_ERROR("You cannot pass nil as a function");
     } else if (core::Function_sp func = o.asOrNull<core::Function_O>()) {
-      void* function_address = (void*)func->entry();
-      // printf("%s:%d   intermediate from_object<clang::tooling::ArgumentsAdjuster> with Function arg: %s@%p - function_address:
-      // %p\n", __FILE__, __LINE__, _rep_(o).c_str(), (void*)o.tagged_(), function_address);
-      this->_v = [func, function_address](const clang::tooling::CommandLineArguments& args,
-                                          llvm::StringRef filename) -> clang::tooling::CommandLineArguments {
+      this->_v = [func](const clang::tooling::CommandLineArguments& args,
+                        llvm::StringRef filename) -> clang::tooling::CommandLineArguments {
         // Should resolve to vector<string>
         core::T_sp targs = translate::to_object<clang::tooling::CommandLineArguments>::convert(args);
         core::T_sp tfilename = translate::to_object<llvm::StringRef>::convert(filename);
-        //          printf("%s:%d About to funcall %s[lineno=%d] with targs %s and tfilename %s - it should have function address:
-        //          %p\n", __FILE__, __LINE__, _rep_(func).c_str(), func->lineNumber(), _rep_(targs).c_str(),
-        //          _rep_(tfilename).c_str(), function_address);
         core::T_mv result = core::eval::funcall(func, targs, tfilename);
         ;
         translate::from_object<const clang::tooling::CommandLineArguments&> cresult(result);

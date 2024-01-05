@@ -137,13 +137,6 @@ public:
     }
 #endif
   };
-  ClaspXepGeneralFunction entry() const;
-  ClaspXep0Function entry_0() const;
-  ClaspXep1Function entry_1() const;
-  ClaspXep2Function entry_2() const;
-  ClaspXep3Function entry_3() const;
-  ClaspXep4Function entry_4() const;
-  ClaspXep5Function entry_5() const;
 
   virtual FunctionDescription_sp fdesc() const;
   // Rewrite the function-description pointer - used in direct-calls.lisp
@@ -515,8 +508,9 @@ public:
     return this->_Function.load(std::memory_order_relaxed);
   }
   void real_function_set(Function_sp fun) { this->_Function.store(fun, std::memory_order_relaxed); }
+  static SimpleFun_sp cachedUnboundSimpleFun(T_sp name);
   void fmakunbound(T_sp name);
-  bool fboundp();
+  bool fboundp() const;
   // like real_function() but signals an error if we are un-fbound.
   Function_sp fdefinition() const;
 

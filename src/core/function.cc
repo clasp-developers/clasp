@@ -517,27 +517,6 @@ CL_DEFUN void core__dumpFunctionDescription(T_sp func) {
   }
 }
 
-ClaspXepGeneralFunction Function_O::entry() const {
-  return (ClaspXepGeneralFunction)(gc::As_unsafe<GlobalSimpleFun_sp>(this->entryPoint())->_EntryPoints[0]);
-}
-ClaspXep0Function Function_O::entry_0() const {
-  return (ClaspXep0Function)(gc::As_unsafe<GlobalSimpleFun_sp>(this->entryPoint())->_EntryPoints[1]);
-}
-ClaspXep1Function Function_O::entry_1() const {
-  return (ClaspXep1Function)(gc::As_unsafe<GlobalSimpleFun_sp>(this->entryPoint())->_EntryPoints[2]);
-}
-ClaspXep2Function Function_O::entry_2() const {
-  return (ClaspXep2Function)(gc::As_unsafe<GlobalSimpleFun_sp>(this->entryPoint())->_EntryPoints[3]);
-}
-ClaspXep3Function Function_O::entry_3() const {
-  return (ClaspXep3Function)(gc::As_unsafe<GlobalSimpleFun_sp>(this->entryPoint())->_EntryPoints[4]);
-}
-ClaspXep4Function Function_O::entry_4() const {
-  return (ClaspXep4Function)(gc::As_unsafe<GlobalSimpleFun_sp>(this->entryPoint())->_EntryPoints[5]);
-}
-ClaspXep5Function Function_O::entry_5() const {
-  return (ClaspXep5Function)(gc::As_unsafe<GlobalSimpleFun_sp>(this->entryPoint())->_EntryPoints[6]);
-}
 FunctionDescription_sp Function_O::fdesc() const { return this->entryPoint()->_FunctionDescription; };
 
 CL_LISPIFY_NAME("core:functionSourcePos");
@@ -618,7 +597,7 @@ CL_DEFMETHOD T_sp Function_O::setSourcePosInfo(T_sp sourceFile, size_t filePos, 
   return spi;
 }
 
-CL_DEFMETHOD Pointer_sp Function_O::function_pointer() const { return Pointer_O::create((void*)this->entry()); };
+CL_DEFMETHOD Pointer_sp Function_O::function_pointer() const { return Pointer_O::create((void*)this->entryPoint()->_EntryPoints[0]); }
 
 SYMBOL_EXPORT_SC_(KeywordPkg, general_entry);
 SYMBOL_EXPORT_SC_(KeywordPkg, local_function);
@@ -651,17 +630,9 @@ string Function_O::__repr__() const {
   T_sp name = this->functionName();
   stringstream ss;
   ss << "#<" << this->_instanceClass()->_classNameAsString();
-#if 1
   ss << " " << _rep_(name);
-#else
 #ifdef NON_MOVING_GC
   ss << "@" << (void*)this << " ";
-#endif
-  ss << " " << _rep_(name);
-  ss << " lambda-list: " << _rep_(this->lambdaList());
-  if (this->entry != NULL) {
-    ss << " :fptr " << reinterpret_cast<void*>(this->entry());
-  }
 #endif
   ss << ">";
   return ss.str();
@@ -670,13 +641,6 @@ string Function_O::__repr__() const {
 
 namespace core {
 char* global_dump_functions = NULL;
-#if 0
-void Closure_O::describeFunction() const {
-  if (global_dump_functions) {
-    printf("%s:%d  Closure_O %s entry@%p\n", __FILE__, __LINE__, _rep_(this->functionName()).c_str(), (void*)this->entry());
-  }
-}
-#endif
 
 DOCGROUP(clasp);
 CL_DEFUN size_t core__closure_size(size_t number_of_slots) {
@@ -700,7 +664,7 @@ string Closure_O::__repr__() const {
   ss << " " << _rep_(name);
   ss << " lambda-list: " << _rep_(this->lambdaList());
   if (!this->entryPoint().unboundp()) {
-    ss << " :fptr " << reinterpret_cast<void*>(this->entry());
+    ss << " :fptr " << reinterpret_cast<void*>(this->entryPoint()->_EntryPoints[0]);
   }
 
   ss << ">";
@@ -734,8 +698,8 @@ struct UnboundCellFunctionEntryPoint {
   }
   template <typename... Ts>
   static inline LCC_RETURN entry_point_fixed(T_O* lcc_closure, Ts... args) {
-    T_O* lcc_args[sizeof...(Ts)] = {args...};
-    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
+    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
+    ERROR_UNDEFINED_FUNCTION((*closure)[0]);
   }
 };
 
@@ -744,36 +708,39 @@ FunctionCell_sp FunctionCell_O::make(T_sp name, Function_sp fun) {
   return gctools::GC<FunctionCell_O>::allocate(entryPoint, fun);
 }
 
-FunctionCell_sp FunctionCell_O::make(T_sp name) {
+// grab the unbound cell entry point if it exists, otherwise make & cache.
+// FIXME: thread safety?
+SimpleFun_sp FunctionCell_O::cachedUnboundSimpleFun(T_sp name) {
   if (_lisp->_Roots._UnboundCellFunctionEntryPoint.unboundp())
     _lisp->_Roots._UnboundCellFunctionEntryPoint =
         makeSimpleFunAndFunctionDescription<UnboundCellFunctionEntryPoint>(name);
-  Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(
-      false, 1, _lisp->_Roots._UnboundCellFunctionEntryPoint);
+  return _lisp->_Roots._UnboundCellFunctionEntryPoint;
+}
+
+FunctionCell_sp FunctionCell_O::make(T_sp name) {
+  Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1, cachedUnboundSimpleFun(name));
   (*cf)[0] = name;
   return FunctionCell_O::make(name, cf);
 }
 
 void FunctionCell_O::fmakunbound(T_sp name) {
-  // FIXME: Use the _Roots thing above?
-  SimpleFun_sp f = makeSimpleFunAndFunctionDescription<UnboundCellFunctionEntryPoint>(name);
-  Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1, f);
+  Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1, cachedUnboundSimpleFun(name));
   (*cf)[0] = name;
   real_function_set(cf);
 }
 
-bool FunctionCell_O::fboundp() { return real_function()->entry() != UnboundCellFunctionEntryPoint::entry_point_n; }
+bool FunctionCell_O::fboundp() const { return real_function()->entryPoint()->_EntryPoints[0] != (ClaspXepAnonymousFunction)UnboundCellFunctionEntryPoint::entry_point_n; }
 
 Function_sp FunctionCell_O::fdefinition() const {
   // We don't use fboundp since we want to only load the real function
   // once, in order to avoid strange race condition nonsense.
   Function_sp rf = real_function();
-  if (real_function()->entry() != UnboundCellFunctionEntryPoint::entry_point_n)
+  if (rf->entryPoint()->_EntryPoints[0] != (ClaspXepAnonymousFunction)UnboundCellFunctionEntryPoint::entry_point_n)
     return rf;
   else {
     // It's an unbound cell closure, so this will signal an
     // appropriate error.
-    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)(rf.raw_()));
+    Closure_sp closure = gc::As_assert<Closure_sp>(rf);
     ERROR_UNDEFINED_FUNCTION((*closure)[0]);
   }
 }
