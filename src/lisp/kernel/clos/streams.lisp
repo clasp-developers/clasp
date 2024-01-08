@@ -868,7 +868,7 @@ truename."))
   nil)
 
 (defmethod stream-file-descriptor ((stream ansi-stream) direction)
-  (%stream-file-descriptor streamm direction))
+  (%stream-file-descriptor stream direction))
 
 
 ;;; STREAM-INPUT-COLUMN
