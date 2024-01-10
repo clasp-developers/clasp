@@ -229,6 +229,11 @@ public:
               const ClaspXepTemplate& entry_point);
   CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
   virtual Pointer_sp defaultEntryAddress() const;
+  // Necessary since we have templated subclasses in clbind.
+  // Doing so means the static analyzer marks SimpleFun as a
+  // TemplatedKind, which makes the GC use templatedSizeof to
+  // compute its size.
+  virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
