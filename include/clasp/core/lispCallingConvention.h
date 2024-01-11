@@ -50,29 +50,6 @@ struct return_type {
 #define LCC_RETURN_RAW gctools::return_type
 #define LCC_RETURN gctools::return_type
 
-// To invoke "invoke" methods use these
-
-/*! This is a void function */
-#define LISP_ENTRY_0() LCC_RETURN entry_point_0(core::T_O* lcc_closure)
-#define LISP_ENTRY_1() LCC_RETURN entry_point_1(core::T_O* lcc_closure, core::T_O* lcc_farg0)
-#define LISP_ENTRY_2() LCC_RETURN entry_point_2(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1)
-#define LISP_ENTRY_3()                                                                                                             \
-  LCC_RETURN entry_point_3(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2)
-#define LISP_ENTRY_4()                                                                                                             \
-  LCC_RETURN entry_point_4(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2,               \
-                           core::T_O* lcc_farg3)
-#define LISP_ENTRY_5()                                                                                                             \
-  LCC_RETURN entry_point_5(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2,               \
-                           core::T_O* lcc_farg3, core::T_O* lcc_farg4)
-
-template <typename WRAPPER, typename... ARGS> inline LCC_RETURN arity_entry_point(core::T_O* lcc_closure, ARGS... lcc_arg) {
-  if constexpr (WRAPPER::NumParams == sizeof...(ARGS)) {
-    core::T_O* args[sizeof...(ARGS)] = {lcc_arg...};
-    return WRAPPER::entry_point_n(lcc_closure, lcc_arg...);
-  }
-  cc_wrong_number_of_arguments(lcc_closure, sizeof...(ARGS), WRAPPER::NumParams, WRAPPER::NumParams);
-}
-
 extern "C" {
 
 LCC_RETURN_RAW general_entry_point_redirect_0(core::T_O* closure);
@@ -140,7 +117,14 @@ LCC_RETURN_RAW general_entry_point_redirect_7(core::T_O* closure, core::T_O* far
 
 #include <atomic>
 
-typedef LCC_RETURN_RAW (*ClaspLocalFunction)();
+// This function type is basically a lie - core functions can have any
+// function type.
+typedef LCC_RETURN_RAW (*ClaspCoreFunction)();
+// This type is also a lie - we use this to hold ClaspXepGeneralFunction,
+// ClaspXep0Function, etc. below.
+// As long as we know what we're doing and don't try to actually call a
+// function while treating it as this type we're ok (see C++ standard on
+// reinterpret_cast, I think). Ditto for ClaspCoreFunction.
 typedef LCC_RETURN_RAW (*ClaspXepAnonymousFunction)();
 #define LISP_CALLING_CONVENTION() entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
 typedef LCC_RETURN_RAW (*BytecodeTrampolineFunction)(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs,
@@ -160,59 +144,88 @@ struct ClaspXepTemplate {
   ClaspXepAnonymousFunction _EntryPoints[NUMBER_OF_ENTRY_POINTS];
 };
 
-// This is a template where the entry point functions are static
-// and defined as lisp_entry_0, etc by the Wrapper.
+// This is a template where the entry point functions are static.
+// They are expected to be available as
+// LCC_RETURN entry_point_n(T_O* closure, size_t nargs, T_O** args)
+// LCC_RETURN entry_point_fixed(T_O* closure, ...)
+// where entry_point_fixed is not variadic, but rather an infinite
+// collection of overloaded functions accepting T_O*s, via templating.
 template <typename Wrapper>
 struct XepStereotype : public ClaspXepTemplate {
   XepStereotype() {
     _EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_n;
-    _EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_0;
-    _EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_1;
-    _EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_2;
-    _EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_3;
-    _EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
-    _EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
+    // C++ selects the correct overload of entry_point_fixed based on
+    // the type we're assigning it to. A little magical.
+    // See https://en.cppreference.com/w/cpp/language/overloaded_address
+    // Doing it this way instead of putting in template parameters lets
+    // us define some overloads without templates.
+    // See e.g. clbind/iteratorMemberFunction.h
+    ClaspXep0Function ep0 = Wrapper::entry_point_fixed;
+    _EntryPoints[1] = (ClaspXepAnonymousFunction)ep0;
+    ClaspXep1Function ep1 = Wrapper::entry_point_fixed;
+    _EntryPoints[2] = (ClaspXepAnonymousFunction)ep1;
+    ClaspXep2Function ep2 = Wrapper::entry_point_fixed;
+    _EntryPoints[3] = (ClaspXepAnonymousFunction)ep2;
+    ClaspXep3Function ep3 = Wrapper::entry_point_fixed;
+    _EntryPoints[4] = (ClaspXepAnonymousFunction)ep3;
+    ClaspXep4Function ep4 = Wrapper::entry_point_fixed;
+    _EntryPoints[5] = (ClaspXepAnonymousFunction)ep4;
+    ClaspXep5Function ep5 = Wrapper::entry_point_fixed;
+    _EntryPoints[6] = (ClaspXepAnonymousFunction)ep5;
   }
   // Used for GFBytecodeSimpleFun_O
   XepStereotype(size_t specializer_length) {
     _EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_n;
 
-    if (0 < specializer_length)
-      _EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_0;
-    else
-      _EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_0;
-
-    if (1 < specializer_length)
-      _EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_1;
-    else
-      _EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_1;
-
-    if (2 < specializer_length)
-      _EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_2;
-    else
-      _EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_2;
-
-    if (3 < specializer_length)
-      _EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_3;
-    else
-      _EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_3;
-
-    if (4 < specializer_length)
-      _EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_4;
-    else
-      _EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
-
-    if (5 < specializer_length)
-      _EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_5;
-    else
-      _EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
+    if (0 < specializer_length) {
+      ClaspXep0Function ep0 = Wrapper::error_entry_point_fixed;
+      _EntryPoints[1] = (ClaspXepAnonymousFunction)ep0;
+    } else {
+      ClaspXep0Function ep0 = Wrapper::entry_point_fixed;
+      _EntryPoints[1] = (ClaspXepAnonymousFunction)ep0;
+    }
+    if (1 < specializer_length) {
+      ClaspXep1Function ep1 = Wrapper::error_entry_point_fixed;
+      _EntryPoints[2] = (ClaspXepAnonymousFunction)ep1;
+    } else {
+      ClaspXep1Function ep1 = Wrapper::entry_point_fixed;
+      _EntryPoints[2] = (ClaspXepAnonymousFunction)ep1;
+    }
+    if (2 < specializer_length) {
+      ClaspXep2Function ep2 = Wrapper::error_entry_point_fixed;
+      _EntryPoints[3] = (ClaspXepAnonymousFunction)ep2;
+    } else {
+      ClaspXep2Function ep2 = Wrapper::entry_point_fixed;
+      _EntryPoints[3] = (ClaspXepAnonymousFunction)ep2;
+    }
+    if (3 < specializer_length) {
+      ClaspXep3Function ep3 = Wrapper::error_entry_point_fixed;
+      _EntryPoints[4] = (ClaspXepAnonymousFunction)ep3;
+    } else {
+      ClaspXep3Function ep3 = Wrapper::entry_point_fixed;
+      _EntryPoints[4] = (ClaspXepAnonymousFunction)ep3;
+    }
+    if (4 < specializer_length) {
+      ClaspXep4Function ep4 = Wrapper::error_entry_point_fixed;
+      _EntryPoints[5] = (ClaspXepAnonymousFunction)ep4;
+    } else {
+      ClaspXep4Function ep4 = Wrapper::entry_point_fixed;
+      _EntryPoints[5] = (ClaspXepAnonymousFunction)ep4;
+    }
+    if (5 < specializer_length) {
+      ClaspXep5Function ep5 = Wrapper::error_entry_point_fixed;
+      _EntryPoints[6] = (ClaspXepAnonymousFunction)ep5;
+    } else {
+      ClaspXep5Function ep5 = Wrapper::entry_point_fixed;
+      _EntryPoints[6] = (ClaspXepAnonymousFunction)ep5;
+    }
   }
 };
 
 struct ClaspXepFunction {
   static const int Entries = NUMBER_OF_ENTRY_POINTS;
   std::atomic<ClaspXepAnonymousFunction> _EntryPoints[NUMBER_OF_ENTRY_POINTS];
-  // We need a default constructor since GlobalSimpleFunBase is
+  // We need a default constructor since SimpleFun is
   // default constructible. I'm not sure WHY it is - something funky
   // about the LISP_CLASS macro I think. FIXME?
   ClaspXepFunction() = default;
@@ -252,6 +265,28 @@ struct ClaspXepFunction {
 
   inline LCC_RETURN invoke_5(T_O* closure, T_O* farg0, T_O* farg1, T_O* farg2, T_O* farg3, T_O* farg4) const {
     return ((ClaspXep5Function)((*this)[6]))(closure, farg0, farg1, farg2, farg3, farg4);
+  }
+
+  // Call the XEP and return its results.
+  // Fancy template version of the above invokes.
+  // Arguments are raw pointers (T_O*) or it won't typecheck.
+  template <typename... Ts>
+  inline LCC_RETURN call(T_O* closure, Ts... args) {
+    constexpr size_t nargs = sizeof...(Ts);
+    // We have to use if constexpr so that the discarded branches
+    // won't compile. switch constexpr would be nice but apparently
+    // does not exist. Womp womp.
+    if constexpr(nargs == 0) return invoke_0(closure);
+    else if constexpr(nargs == 1) return invoke_1(closure, args...);
+    else if constexpr(nargs == 2) return invoke_2(closure, args...);
+    else if constexpr(nargs == 3) return invoke_3(closure, args...);
+    else if constexpr(nargs == 4) return invoke_4(closure, args...);
+    else if constexpr(nargs == 5) return invoke_5(closure, args...);
+    else {
+      // Collect args into an array, then invoke the general.
+      T_O* lcc_args[nargs] = {args...};
+      return invoke_n(closure, nargs, lcc_args);
+    }
   }
 };
 
@@ -293,20 +328,5 @@ inline void dump_lcc_args(FILE* fout, size_t lcc_nargs, T_O** lcc_args) {
 }
 
 }; // extern "C"
-
-/*! Call a function object with args in a Vaslist_sp and consume the valist.
-The Callee can NOT use args after this call.
-Note: Since we don't have the full Function_O class definition when this
-header is compiled (and we don't want to #include it because of all the problems
-that will cause) I made this a template function where you pass the function
-type as a template argument.  Call it like this...
-funcall_consume_valist_<core::Function_O>(tagged_func_ptr,valist_args)
-*/
-template <typename Func_O_Type>
-inline gctools::return_type funcall_general(gc::Tagged func_tagged, size_t nargs, core::T_O** args) {
-  ASSERT(gc::tagged_generalp(func_tagged));
-  gc::smart_ptr<Function_O> func((gc::Tagged)func_tagged);
-  return func->entry()((core::T_O*)func_tagged, nargs, args);
-}
 
 #endif // LCC_FUNCALL

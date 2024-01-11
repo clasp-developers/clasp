@@ -226,7 +226,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
     printf("%s:%d:%s A very large number of arguments %lu are being passed - check if there is a problem\n", __FILE__, __LINE__,
            __FUNCTION__, lcc_nargs);
   }
-  GlobalBytecodeSimpleFun_sp ep = gc::As<GlobalBytecodeSimpleFun_sp>(closure->entryPoint());
+  BytecodeSimpleFun_sp ep = gc::As<BytecodeSimpleFun_sp>(closure->entryPoint());
   BytecodeModule_sp bm = gc::As<BytecodeModule_sp>(ep->_Code);
   BytecodeModule_O::Bytecode_sp_Type bc = bm->_Bytecode;
   uintptr_t bytecode_start = (uintptr_t)gc::As<Array_sp>(bc)->rowMajorAddressOfElement_(0);
@@ -277,17 +277,13 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
     case vm_call: {
       uint8_t nargs = *(++pc);
       DBG_VM1("call %" PRIu8 "\n", nargs);
-      T_O* func = *(vm.stackref(sp, nargs));
+      T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+      Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
-      // ASSERT(gctools::tagged_generalp<T_O*>(func));
-      if (!(gctools::tagged_generalp<T_O*>(func))) {
-        T_sp tfun((gctools::Tagged)func);
-        SIMPLE_ERROR("Tried to call {} which is not a function", _rep_(tfun));
-      }
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
-      T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      T_mv res = func->apply_raw(nargs, args);
       multipleValues.setN(res.raw_(), res.number_of_values());
       vm.drop(sp, nargs + 2);
       pc++;
@@ -296,7 +292,8 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
     case vm_call_receive_one: {
       uint8_t nargs = *(++pc);
       DBG_VM1("call-receive-one %" PRIu8 "\n", nargs);
-      T_O* func = *(vm.stackref(sp, nargs));
+      T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+      Function_sp func = gc::As_assert<Function_sp>(tfunc);
       VM_RECORD_PLAYBACK(func, "vm_call_receive_one_func");
       VM_RECORD_PLAYBACK((void*)(uintptr_t)nargs, "vm_call_receive_one_nargs");
       T_O** args = vm.stackref(sp, nargs - 1);
@@ -310,7 +307,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
-      T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      T_sp res = func->apply_raw(nargs, args);
       vm.drop(sp, nargs + 2);
       vm.push(sp, res.raw_());
       VM_RECORD_PLAYBACK(res.raw_(), "vm_call_receive_one");
@@ -321,12 +318,13 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       uint8_t nargs = *(++pc);
       uint8_t nvals = *(++pc);
       DBG_VM("call-receive-fixed %" PRIu8 " %" PRIu8 "\n", nargs, nvals);
-      T_O* func = *(vm.stackref(sp, nargs));
+      T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+      Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
-      T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      T_mv res = func->apply_raw(nargs, args);
       vm.drop(sp, nargs + 2);
       if (nvals != 0) {
         vm.push(sp, res.raw_()); // primary
@@ -382,7 +380,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       uint8_t c = *(++pc);
       DBG_VM("make-closure %" PRIu8 "\n", c);
       T_sp fn_sp((gctools::Tagged)literals[c]);
-      GlobalBytecodeSimpleFun_sp fn = gc::As_assert<GlobalBytecodeSimpleFun_sp>(fn_sp);
+      BytecodeSimpleFun_sp fn = gc::As_assert<BytecodeSimpleFun_sp>(fn_sp);
       size_t nclosed = fn->environmentSize();
       DBG_VM("  nclosed = %zu\n", nclosed);
       Closure_sp closure = Closure_O::make_bytecode_closure(fn, nclosed);
@@ -397,7 +395,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       uint8_t c = *(++pc);
       DBG_VM("make-uninitialized-closure %" PRIu8 "\n", c);
       T_sp fn_sp((gctools::Tagged)literals[c]);
-      GlobalBytecodeSimpleFun_sp fn = gc::As_assert<GlobalBytecodeSimpleFun_sp>(fn_sp);
+      BytecodeSimpleFun_sp fn = gc::As_assert<BytecodeSimpleFun_sp>(fn_sp);
       size_t nclosed = fn->environmentSize();
       DBG_VM("  nclosed = %zu\n", nclosed);
       Closure_sp closure = Closure_O::make_bytecode_closure(fn, nclosed);
@@ -412,7 +410,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       Closure_sp closure = gc::As_assert<Closure_sp>(tclosure);
       // FIXME: We ought to be able to get the closure size directly
       // from the closure through some nice method.
-      GlobalBytecodeSimpleFun_sp fn = gc::As_assert<GlobalBytecodeSimpleFun_sp>(closure->entryPoint());
+      BytecodeSimpleFun_sp fn = gc::As_assert<BytecodeSimpleFun_sp>(closure->entryPoint());
       size_t nclosed = fn->environmentSize();
       DBG_VM("  nclosed = %zu\n", nclosed);
       vm.copyto(sp, nclosed, (T_O**)(closure->_Slots.data()));
@@ -676,12 +674,13 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_sp tnargs((gctools::Tagged)vm.pop(sp));
       size_t nargs = tnargs.unsafe_fixnum();
       DBG_VM("  nargs = %zu\n", nargs);
-      T_O* func = *(vm.stackref(sp, nargs));
+      T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+      Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
-      T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      T_mv res = func->apply_raw(nargs, args);
       vm.drop(sp, nargs + 1 + 1); // 1 each for func, pc
       multipleValues.setN(res.raw_(), res.number_of_values());
       pc++;
@@ -692,12 +691,13 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_sp tnargs((gctools::Tagged)vm.pop(sp));
       size_t nargs = tnargs.unsafe_fixnum();
       DBG_VM("  nargs = %zu\n", nargs);
-      T_O* func = *(vm.stackref(sp, nargs));
+      T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+      Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
-      T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      T_sp res = func->apply_raw(nargs, args);
       vm.drop(sp, nargs + 2);
       multipleValues.set1(res);
       vm.push(sp, res.raw_());
@@ -709,12 +709,13 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       DBG_VM("mv-call-receive-fixed %" PRIu8 "\n", nvals);
       T_sp tnargs((gctools::Tagged)vm.pop(sp));
       size_t nargs = tnargs.unsafe_fixnum();
-      T_O* func = *(vm.stackref(sp, nargs));
+      T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+      Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
-      T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      T_mv res = func->apply_raw(nargs, args);
       vm.drop(sp, nargs + 2);
       if (nvals != 0) {
         vm.push(sp, res.raw_()); // primary
@@ -910,7 +911,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
     }
     default:
       SimpleFun_sp ep = closure->entryPoint();
-      BytecodeModule_sp bcm = gc::As<GlobalBytecodeSimpleFun_sp>(ep)->code();
+      BytecodeModule_sp bcm = gc::As<BytecodeSimpleFun_sp>(ep)->code();
       unsigned char* codeStart = (unsigned char*)gc::As<Array_sp>(bcm->_Bytecode)->rowMajorAddressOfElement_(0);
       unsigned char* codeEnd = codeStart + gc::As<Array_sp>(bcm->_Bytecode)->arrayTotalSize();
       SIMPLE_ERROR("Unknown opcode {} pc: {}  module: {} - {}", *pc, (void*)pc, (void*)codeStart, (void*)codeEnd);
@@ -952,12 +953,13 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     uint8_t low = *(pc + 1);
     uint16_t nargs = low + (*(pc + 2) << 8);
     DBG_VM1("long call %" PRIu16 "\n", nargs);
-    T_O* func = *(vm.stackref(sp, nargs));
+    T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+    Function_sp func = gc::As_assert<Function_sp>(tfunc);
     T_O** args = vm.stackref(sp, nargs - 1);
     vm.push(sp, (T_O*)pc);
     vm._pc = pc;
     vm._stackPointer = sp;
-    T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+    T_mv res = func->apply_raw(nargs, args);
     multipleValues.setN(res.raw_(), res.number_of_values());
     vm.drop(sp, nargs + 2);
     pc += 3;
@@ -967,7 +969,8 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     uint8_t low = *(pc + 1);
     uint16_t nargs = low + (*(pc + 2) << 8);
     DBG_VM1("long call-receive-one %" PRIu16 "\n", nargs);
-    T_O* func = *(vm.stackref(sp, nargs));
+    T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+    Function_sp func = gc::As_assert<Function_sp>(tfunc);
     VM_RECORD_PLAYBACK(func, "vm_call_receive_one_func");
     VM_RECORD_PLAYBACK((void*)(uintptr_t)nargs, "vm_call_receive_one_nargs");
     T_O** args = vm.stackref(sp, nargs - 1);
@@ -981,7 +984,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     vm.push(sp, (T_O*)pc);
     vm._pc = pc;
     vm._stackPointer = sp;
-    T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+    T_sp res = func->apply_raw(nargs, args);
     vm.drop(sp, nargs + 2);
     vm.push(sp, res.raw_());
     VM_RECORD_PLAYBACK(res.raw_(), "vm_call_receive_one");
@@ -994,12 +997,13 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     uint8_t low_nvals = *(pc + 3);
     uint16_t nvals = low_nvals + (*(pc + 4) << 8);
     DBG_VM("long call-receive-fixed %" PRIu16 " %" PRIu16 "\n", nargs, nvals);
-    T_O* func = *(vm.stackref(sp, nargs));
+    T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+    Function_sp func = gc::As_assert<Function_sp>(tfunc);
     T_O** args = vm.stackref(sp, nargs - 1);
     vm.push(sp, (T_O*)pc);
     vm._pc = pc;
     vm._stackPointer = sp;
-    T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+    T_mv res = func->apply_raw(nargs, args);
     vm.drop(sp, nargs + 2);
     if (nvals != 0) {
       vm.push(sp, res.raw_()); // primary
@@ -1045,7 +1049,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     uint16_t c = low + (*(pc + 2) << 8);
     DBG_VM("long make-closure %" PRIu16 "\n", c);
     T_sp fn_sp((gctools::Tagged)literals[c]);
-    GlobalBytecodeSimpleFun_sp fn = gc::As_assert<GlobalBytecodeSimpleFun_sp>(fn_sp);
+    BytecodeSimpleFun_sp fn = gc::As_assert<BytecodeSimpleFun_sp>(fn_sp);
     size_t nclosed = fn->environmentSize();
     DBG_VM("  nclosed = %zu\n", nclosed);
     Closure_sp closure = Closure_O::make_bytecode_closure(fn, nclosed);
@@ -1061,7 +1065,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     uint16_t c = low + (*(pc + 2) << 8);
     DBG_VM("long make-uninitialized-closure %" PRIu16 "\n", c);
     T_sp fn_sp((gctools::Tagged)literals[c]);
-    GlobalBytecodeSimpleFun_sp fn = gc::As_assert<GlobalBytecodeSimpleFun_sp>(fn_sp);
+    BytecodeSimpleFun_sp fn = gc::As_assert<BytecodeSimpleFun_sp>(fn_sp);
     size_t nclosed = fn->environmentSize();
     DBG_VM("  nclosed = %zu\n", nclosed);
     Closure_sp closure = Closure_O::make_bytecode_closure(fn, nclosed);
@@ -1077,7 +1081,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     Closure_sp closure = gc::As_assert<Closure_sp>(tclosure);
     // FIXME: We ought to be able to get the closure size directly
     // from the closure through some nice method.
-    GlobalBytecodeSimpleFun_sp fn = gc::As_assert<GlobalBytecodeSimpleFun_sp>(closure->entryPoint());
+    BytecodeSimpleFun_sp fn = gc::As_assert<BytecodeSimpleFun_sp>(closure->entryPoint());
     size_t nclosed = fn->environmentSize();
     DBG_VM("  nclosed = %zu\n", nclosed);
     vm.copyto(sp, nclosed, (T_O**)(closure->_Slots.data()));
@@ -1215,12 +1219,13 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     DBG_VM("long mv-call-receive-fixed %" PRIu16 "\n", nvals);
     T_sp tnargs((gctools::Tagged)vm.pop(sp));
     size_t nargs = tnargs.unsafe_fixnum();
-    T_O* func = *(vm.stackref(sp, nargs));
+    T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
+    Function_sp func = gc::As_assert<Function_sp>(tfunc);
     T_O** args = vm.stackref(sp, nargs - 1);
     vm.push(sp, (T_O*)pc);
     vm._pc = pc;
     vm._stackPointer = sp;
-    T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+    T_mv res = func->apply_raw(nargs, args);
     vm.drop(sp, nargs + 2); // 2 = func + nargs
     if (nvals != 0) {
       vm.push(sp, res.raw_()); // primary
@@ -1340,9 +1345,9 @@ extern "C" {
 
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args) {
   core::Closure_O* closure = gctools::untag_general<core::Closure_O*>((core::Closure_O*)lcc_closure);
-  ASSERT(gc::IsA<core::GlobalBytecodeSimpleFun_sp>(closure->entryPoint()));
+  ASSERT(gc::IsA<core::BytecodeSimpleFun_sp>(closure->entryPoint()));
   auto entry = closure->entryPoint();
-  core::GlobalBytecodeSimpleFun_sp entryPoint = gctools::As_assert<core::GlobalBytecodeSimpleFun_sp>(entry);
+  core::BytecodeSimpleFun_sp entryPoint = gctools::As_assert<core::BytecodeSimpleFun_sp>(entry);
   // Maybe compile this function, if it's been called a lot.
   entryPoint->countCall();
   if (entryPoint->callCount() >= BYTECODE_COMPILE_THRESHOLD && comp::_sym_STARautocompile_hookSTAR->boundP() &&
@@ -1408,7 +1413,7 @@ bool bytecode_module_contains_address_p(BytecodeModule_sp module, void* pc) {
   return (start <= pc) && (pc <= end);
 }
 
-bool bytecode_function_contains_address_p(GlobalBytecodeSimpleFun_sp fun, void* pc) {
+bool bytecode_function_contains_address_p(BytecodeSimpleFun_sp fun, void* pc) {
   BytecodeModule_sp module = fun->code();
   Array_sp bytecode = gc::As_assert<Array_sp>(module->bytecode());
   void* start = bytecode->rowMajorAddressOfElement_(fun->entryPcN());
@@ -1420,8 +1425,8 @@ T_sp bytecode_function_for_pc(BytecodeModule_sp module, void* pc) {
   T_sp debuginfo = module->debugInfo();
   if (debuginfo.notnilp()) {
     for (auto info : *(gc::As_assert<SimpleVector_sp>(module->debugInfo()))) {
-      if (gc::IsA<GlobalBytecodeSimpleFun_sp>(info) &&
-          bytecode_function_contains_address_p(gc::As_unsafe<GlobalBytecodeSimpleFun_sp>(info), pc))
+      if (gc::IsA<BytecodeSimpleFun_sp>(info) &&
+          bytecode_function_contains_address_p(gc::As_unsafe<BytecodeSimpleFun_sp>(info), pc))
         return info;
     }
     // Should be impossible, but we don't want to err while a backtrace

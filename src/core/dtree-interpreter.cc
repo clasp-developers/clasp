@@ -1,19 +1,25 @@
+// This file is #included in funcallableInstance.cc four times -
+// twice in each of entry_point_n and entry_point_fixed.
+// Within each, it's #included with MAYBE_LONG_ADD defined as 0 or 1.
+
 case MAYBE_LONG_ADD + DTREE_OP_MISS:
 goto DISPATCH_MISS;
-#if defined(GENERAL_ARITY_CALL)
 case MAYBE_LONG_ADD + DTREE_OP_ARGN: {
   size_t idx = ReadArg<MAYBE_LONG_MUL>::read(ip, (DTREE_ARGN_OFFSET));
   DTILOG("About to read arg %lu\n", idx);
+#if defined(GENERAL_ENTRY)
   if (lcc_nargs <= idx) {
-    // we use an intermediate function, in lisp, to get a nice error message.
+  // we use an intermediate function, in lisp, to get a nice error message.
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_interp_wrong_nargs, generic_function, make_fixnum(lcc_nargs));
   }
   arg = T_sp((gctools::Tagged)(lcc_args[idx]));
+#else
+  arg = T_sp((gctools::Tagged)fargn(lcc_closure, idx, args));
+#endif
   ip += ReadArg<MAYBE_LONG_MUL>::offset(DTREE_ARGN_NEXT_OFFSET);
   DTILOG("Got arg@%p %s new ip %p\n", (void*)arg.raw_(), _safe_rep_(arg), (void*)ip);
 } break;
-#endif
 case MAYBE_LONG_ADD + DTREE_OP_TAG_TEST:
 if (arg.fixnump()) {
   ip += ReadArg<MAYBE_LONG_MUL>::read(ip, (DTREE_FIXNUM_TAG_OFFSET));
@@ -103,33 +109,49 @@ case MAYBE_LONG_ADD + DTREE_OP_EQL: {
     ip += ReadArg<MAYBE_LONG_MUL>::offset(DTREE_EQL_NEXT_OFFSET);
   break;
 }
-#if defined(GENERAL_ARITY_CALL)
 case MAYBE_LONG_ADD + DTREE_OP_SLOT_READ: {
   DTILOG("reading slot: ");
+#if defined(GENERAL_ENTRY)
   if (lcc_nargs != 1)
     wrongNumberOfArgumentsForGenericFunction(lcc_closure, lcc_nargs);
+  arg = T_sp((gctools::Tagged)(lcc_args[0]));
+#else
+  if constexpr(fixed_nargs == 1) {
+    arg = T_sp((gc::Tagged)(std::get<0>(args)));
+  } else
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, fixed_nargs);
+#endif
   T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_READER_INDEX_OFFSET), literals);
   T_sp slot_name = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_READER_SLOT_NAME_OFFSET), literals);
   DTILOG(" location: %s  name: %s\n", _safe_rep_(location), _safe_rep_(slot_name));
   size_t index = location.unsafe_fixnum();
-  T_sp tinstance((gctools::Tagged)(lcc_args[0]));
-  DTILOG("Got tinstance@%p %s\n", (void*)tinstance.raw_(), _safe_rep_(tinstance));
-  Instance_sp instance((gc::Tagged)tinstance.raw_());
+  DTILOG("Got tinstance@%p %s\n", (void*)arg.raw_(), _safe_rep_(arg));
+  Instance_sp instance = gc::As_assert<Instance_sp>(arg);
   DTILOG("instance %p index %lu\n", (void*)instance.raw_(), index);
   T_sp value = instance->instanceRef(index);
   if (value.unboundp()) {
     DTILOG("Slot was unbound\n");
-    return core::eval::funcall(cl::_sym_slot_unbound, lisp_instance_class(tinstance), instance, slot_name);
+    return core::eval::funcall(cl::_sym_slot_unbound, lisp_instance_class(arg), instance, slot_name);
   }
   DTILOG("Slot was read with value: %s\n", _safe_rep_(value));
   return gctools::return_type(value.raw_(), 1);
 }
 case MAYBE_LONG_ADD + DTREE_OP_CAR: {
   DTILOG("class cell\n");
+#if defined(GENERAL_ENTRY)
+  if (lcc_nargs != 1)
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, lcc_nargs);
+  arg = T_sp((gctools::Tagged)(lcc_args[0]));
+#else
+  if constexpr(fixed_nargs == 1) {
+    arg = T_sp((gctools::Tagged)(std::get<0>(args)));
+  } else
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, fixed_nargs);
+#endif
   T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_READER_INDEX_OFFSET), literals);
   T_sp slot_name = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_READER_SLOT_NAME_OFFSET), literals);
   // As_unsafe is ok since we couldn't be here unless we've already tested it.
-  Instance_sp instance = gc::As_unsafe<Instance_sp>(T_sp((gctools::Tagged)(lcc_args[0])));
+  Instance_sp instance = gc::As_unsafe<Instance_sp>(arg);
   DTILOG("Got instance@%p %s\n", (void*)instance.raw_(), _safe_rep_(instance));
   Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
   T_sp value = CONS_CAR(cell);
@@ -140,13 +162,23 @@ case MAYBE_LONG_ADD + DTREE_OP_CAR: {
 }
 case MAYBE_LONG_ADD + DTREE_OP_SLOT_WRITE: {
   DTILOG("writing slot: ");
+  // initializations maybe unnecessary?
+#if defined(GENERAL_ENTRY)
   if (lcc_nargs != 2)
     wrongNumberOfArgumentsForGenericFunction(lcc_closure, lcc_nargs);
+  T_sp value = T_sp((gc::Tagged)(lcc_args[0]));
+  T_sp tinstance = T_sp((gc::Tagged)(lcc_args[1]));
+#else
+  T_sp value, tinstance;
+  if constexpr(fixed_nargs == 2) {
+    value = T_sp((gc::Tagged)(std::get<0>(args)));
+    tinstance = T_sp((gc::Tagged)(std::get<1>(args)));
+  } else
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, fixed_nargs);
+#endif
   T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_WRITER_INDEX_OFFSET), literals);
   size_t index = location.unsafe_fixnum();
   DTILOG("index %lu\n", index);
-  T_sp value = T_sp((gctools::Tagged)(lcc_args[0]));
-  T_sp tinstance = T_sp((gctools::Tagged)(lcc_args[1]));
   DTILOG("Got tinstance@%p %s\n", (void*)tinstance.raw_(), _safe_rep_(tinstance));
   Instance_sp instance((gc::Tagged)tinstance.raw_());
   instance->instanceSet(index, value);
@@ -155,188 +187,99 @@ case MAYBE_LONG_ADD + DTREE_OP_SLOT_WRITE: {
 }
 case MAYBE_LONG_ADD + DTREE_OP_RPLACA: {
   DTILOG("class cell\n");
-  T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_WRITER_INDEX_OFFSET), literals);
-  Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
-  T_sp value = T_sp((gctools::Tagged)(lcc_args[0]));
-  DTILOG("Got value@%p %s\n", (void*)value.raw_(), _safe_rep_(value));
-  cell->rplaca(value);
-  DTILOG("Set to value: %s\n", _safe_rep_(value));
-  return gctools::return_type(value.raw_(), 1);
-}
-#else
-#if ENABLE_REGISTER >= 0
-case MAYBE_LONG_ADD + DTREE_OP_SLOT_READ: {
-  DTILOG("reading slot: ");
-  if (lcc_nargs != 1)
-    wrongNumberOfArgumentsForGenericFunction(lcc_closure, lcc_nargs);
-  T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_READER_INDEX_OFFSET), literals);
-  T_sp slot_name = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_READER_SLOT_NAME_OFFSET), literals);
-  DTILOG(" location: %s  name: %s\n", _safe_rep_(location), _safe_rep_(slot_name));
-  size_t index = location.unsafe_fixnum();
-  T_sp tinstance((gctools::Tagged)lcc_farg0);
-  // Do I need to check if it's an Instance_sp here????
-  Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
-  DTILOG("instance %p index %lu\n", (void*)instance.raw_(), index);
-  T_sp value = instance->instanceRef(index);
-  if (value.unboundp()) {
-    DTILOG("Slot was unbound\n");
-    return core::eval::funcall(cl::_sym_slot_unbound, lisp_instance_class(tinstance), instance, slot_name);
-  }
-  DTILOG("Slot was read with value: %s\n", _safe_rep_(value));
-  return gctools::return_type(value.raw_(), 1);
-}
-case MAYBE_LONG_ADD + DTREE_OP_CAR: {
-  DTILOG("class cell\n");
-  T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_READER_INDEX_OFFSET), literals);
-  T_sp slot_name = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_READER_SLOT_NAME_OFFSET), literals);
-  T_sp tinstance((gctools::Tagged)lcc_farg0);
-  // Do I need to check if it's an Instance_sp here????
-  Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
-  DTILOG("Got instance@%p %s\n", (void*)instance.raw_(), _safe_rep_(instance));
-  Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
-  T_sp value = CONS_CAR(cell);
-  if (value.unboundp())
-    return core::eval::funcall(cl::_sym_slot_unbound, lisp_instance_class(instance), instance, slot_name);
-  DTILOG("read value: %s\n", _safe_rep_(value));
-  return gctools::return_type(value.raw_(), 1);
-}
-#endif
-#if ENABLE_REGISTER >= 1
-case MAYBE_LONG_ADD + DTREE_OP_SLOT_WRITE: {
-  DTILOG("writing slot: ");
+#if defined(GENERAL_ENTRY)
   if (lcc_nargs != 2)
     wrongNumberOfArgumentsForGenericFunction(lcc_closure, lcc_nargs);
-  T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_WRITER_INDEX_OFFSET), literals);
-  size_t index = location.unsafe_fixnum();
-  DTILOG("index %lu\n", index);
-  T_sp value((gc::Tagged)lcc_farg0);
-  T_sp tinstance((gctools::Tagged)lcc_farg1);
-  // Do I need to check if it's an Instance_sp here????
-  Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
-  instance->instanceSet(index, value);
-  DTILOG("Set to value: %s\n", _safe_rep_(value));
-  return gctools::return_type(value.raw_(), 1);
-}
+  arg = T_sp((gctools::Tagged)(lcc_args[0]));
+#else
+  if constexpr(fixed_nargs == 2) {
+    arg = T_sp((gc::Tagged)(std::get<0>(args)));
+  } else
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, fixed_nargs);
 #endif
-#if ENABLE_REGISTER >= 0
-case MAYBE_LONG_ADD + DTREE_OP_RPLACA: {
-  DTILOG("class cell\n");
   T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_WRITER_INDEX_OFFSET), literals);
   Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
-  T_sp value((gc::Tagged)lcc_farg0);
-  DTILOG("Got value@%p %s\n", (void*)value.raw_(), _safe_rep_(value));
-  cell->rplaca(value);
-  DTILOG("Set to value: %s\n", _safe_rep_(value));
-  return gctools::return_type(value.raw_(), 1);
+  DTILOG("Got value@%p %s\n", (void*)arg.raw_(), _safe_rep_(arg));
+  cell->rplaca(arg);
+  DTILOG("Set to value: %s\n", _safe_rep_(arg));
+  return gctools::return_type(arg.raw_(), 1);
 }
-#endif
-#endif
 case MAYBE_LONG_ADD + DTREE_OP_EFFECTIVE_METHOD: {
   DTILOG("effective method call\n");
   T_sp tfunc = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_EFFECTIVE_METHOD_OFFSET), literals);
   Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
   DTILOG(">>>>>>> DTREE_OP_EFFECTIVE_METHOD: Invoking effective method\n");
-  ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(func->entryPoint())->_EntryPoints;
   DTILOG("DTREE_OP_EFFECTIVE_METHOD: About to dump args\n");
-#if defined(GENERAL_ARITY_CALL)
+#if defined(GENERAL_ENTRY)
   DTIDO(dump_lcc_args(monitor_file("dtree-interp"), lcc_nargs, lcc_args));
-  return xep.invoke_n(func.raw_(), lcc_nargs, lcc_args);
-#elif (ENABLE_REGISTER == -1)
-  DTILOG(" ---- done\n");
-  return xep.invoke_0(func.raw_());
-#elif (ENABLE_REGISTER == 0)
-  DTILOG(" arg0 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg0)));
-  DTILOG(" ---- done\n");
-  return xep.invoke_1(func.raw_(), lcc_farg0);
-#elif (ENABLE_REGISTER == 1)
-  DTILOG(" arg0 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg0)));
-  DTILOG(" arg1 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg1)));
-  DTILOG(" ---- done\n");
-  return xep.invoke_2(func.raw_(), lcc_farg0, lcc_farg1);
-#elif (ENABLE_REGISTER == 2)
-  DTILOG(" arg0 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg0)));
-  DTILOG(" arg1 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg1)));
-  DTILOG(" arg2 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg2)));
-  DTILOG(" ---- done\n");
-  return xep.invoke_3(func.raw_(), lcc_farg0, lcc_farg1, lcc_farg2);
-#elif (ENABLE_REGISTER == 3)
-  DTILOG(" arg0 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg0)));
-  DTILOG(" arg1 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg1)));
-  DTILOG(" arg2 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg2)));
-  DTILOG(" arg3 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg3)));
-  DTILOG(" ---- done\n");
-  return xep.invoke_4(func.raw_(), lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3);
-#elif (ENABLE_REGISTER == 4)
-  DTILOG("DTREE_OP_EFFECTIVE_METHOD: About to args\n");
-  DTILOG(" arg0 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg0)));
-  DTILOG(" arg1 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg1)));
-  DTILOG(" arg2 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg2)));
-  DTILOG(" arg3 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg3)));
-  DTILOG(" arg4 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg4)));
-  DTILOG(" ---- done\n");
-  return xep.invoke_5(func.raw_(), lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4);
+  return func->apply_raw(lcc_nargs, lcc_args);
+#else
+  DTIDO_ALWAYS((fprintf(DTILOG_fout, " arg = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_args))), ...););
+  return func->funcall_raw(lcc_args...);
 #endif
 }
-#if !defined(GENERAL_ARITY_CALL)
-#if (ENABLE_REGISTER >= 0)
 case MAYBE_LONG_ADD + DTREE_OP_FARG0: {
-  arg = T_sp((gctools::Tagged)lcc_farg0);
-  ++ip;
-  DTILOG("Got arg@%p %s new ip %p\n", (void*)arg.raw_(), _safe_rep_(arg), (void*)ip);
-} break;
-#if (ENABLE_REGISTER >= 1)
-case MAYBE_LONG_ADD + DTREE_OP_FARG1: {
-  arg = T_sp((gctools::Tagged)lcc_farg1);
-  ++ip;
-  DTILOG("Got arg@%p %s new ip %p\n", (void*)arg.raw_(), _safe_rep_(arg), (void*)ip);
-} break;
-#if (ENABLE_REGISTER >= 2)
-case MAYBE_LONG_ADD + DTREE_OP_FARG2: {
-  arg = T_sp((gctools::Tagged)lcc_farg2);
-  ++ip;
-  DTILOG("Got arg@%p %s new ip %p\n", (void*)arg.raw_(), _safe_rep_(arg), (void*)ip);
-} break;
-#if (ENABLE_REGISTER >= 3)
-case MAYBE_LONG_ADD + DTREE_OP_FARG3: {
-  arg = T_sp((gctools::Tagged)lcc_farg3);
-  ++ip;
-  DTILOG("Got arg@%p %s new ip %p\n", (void*)arg.raw_(), _safe_rep_(arg), (void*)ip);
-} break;
-#if (ENABLE_REGISTER >= 4)
-case MAYBE_LONG_ADD + DTREE_OP_FARG4: {
-  arg = T_sp((gctools::Tagged)lcc_farg4);
-  ++ip;
-  DTILOG("Got arg@%p %s new ip %p\n", (void*)arg.raw_(), _safe_rep_(arg), (void*)ip);
-} break;
-#endif // ENABLE_REGISTER >= 4
-#endif // ENABLE_REGISTER >= 3
-#endif // ENABLE_REGISTER >= 2
-#endif // ENABLE_REGISTER >= 1
-#endif // ENABLE_REGISTER >= 0
-#else  // GENERAL_ARITY_CALL
-
-case MAYBE_LONG_ADD + DTREE_OP_FARG0: {
+#if defined(GENERAL_ENTRY)
+  // We don't need to check argcount since entry_point_n does.
+  // (We shouldn't need to for SLOT_READ etc. either, but there's
+  //  a bug in FuncallableInstance - it tracks the number of specialized
+  //  parameters, but what we really want here is required parameters.
+  //  FIXME)
   arg = T_sp((gctools::Tagged)(lcc_args[0]));
+#else
+  if constexpr(fixed_nargs > 0) {
+    arg = T_sp((gctools::Tagged)(std::get<0>(args)));
+  } else
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, fixed_nargs);
+#endif
   ++ip;
   DTILOG("Got arg@%p %s new ip %p\n", (void*)arg.raw_(), _safe_rep_(arg), (void*)ip);
 } break;
 case MAYBE_LONG_ADD + DTREE_OP_FARG1: {
+#if defined(GENERAL_ENTRY)
   arg = T_sp((gctools::Tagged)(lcc_args[1]));
+#else
+  if constexpr(fixed_nargs > 1) {
+    arg = T_sp((gctools::Tagged)(std::get<1>(args)));
+  } else
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, fixed_nargs);
+#endif
   ++ip;
   DTILOG("Got arg@%p %s new ip %p\n", (void*)arg.raw_(), _safe_rep_(arg), (void*)ip);
 } break;
 case MAYBE_LONG_ADD + DTREE_OP_FARG2: {
+#if defined(GENERAL_ENTRY)
   arg = T_sp((gctools::Tagged)(lcc_args[2]));
+#else
+  if constexpr(fixed_nargs > 2) {
+    arg = T_sp((gctools::Tagged)(std::get<2>(args)));
+  } else
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, fixed_nargs);
+#endif
   ++ip;
   DTILOG("Got arg@%p %s new ip %p\n", (void*)arg.raw_(), _safe_rep_(arg), (void*)ip);
 } break;
 case MAYBE_LONG_ADD + DTREE_OP_FARG3: {
+#if defined(GENERAL_ENTRY)
   arg = T_sp((gctools::Tagged)(lcc_args[3]));
+#else
+  if constexpr(fixed_nargs > 3) {
+    arg = T_sp((gctools::Tagged)(std::get<3>(args)));
+  } else
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, fixed_nargs);
+#endif
   ++ip;
   DTILOG("Got arg@%p %s new ip %p\n", (void*)arg.raw_(), _safe_rep_(arg), (void*)ip);
 } break;
 case MAYBE_LONG_ADD + DTREE_OP_FARG4: {
+#if defined(GENERAL_ENTRY)
   arg = T_sp((gctools::Tagged)(lcc_args[4]));
+#else
+  if constexpr(fixed_nargs > 4) {
+    arg = T_sp((gctools::Tagged)(std::get<4>(args)));
+  } else
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, fixed_nargs);
+#endif
   ++ip;
   DTILOG("Got arg@%p %s new ip %p\n", (void*)arg.raw_(), _safe_rep_(arg), (void*)ip);
 } break;
@@ -352,5 +295,3 @@ case MAYBE_LONG_ADD + DTREE_OP_SD_EQ_BRANCH: {
 }
 case MAYBE_LONG_ADD + DTREE_OP_SINGLE_DISPATCH_MISS:
 goto SINGLE_DISPATCH_MISS;
-
-#endif

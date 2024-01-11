@@ -1091,7 +1091,7 @@ Function_sp Cfunction_O::link_function(T_sp compile_info) {
 
 // Should we BTB compile this new bytecode function?
 // We say yes if there's a (speed 3) declaration anywhere in it.
-bool btb_bcfun_p(GlobalBytecodeSimpleFun_sp fun, SimpleVector_sp debug_info) {
+bool btb_bcfun_p(BytecodeSimpleFun_sp fun, SimpleVector_sp debug_info) {
   size_t start = fun->entryPcN();
   size_t end = start + fun->bytecodeSize();
   for (size_t i = 0; i < debug_info->length(); ++i) {
@@ -1156,8 +1156,8 @@ void Module_O::link_load(T_sp compile_info) {
                                                            sourcePathname, lineno, column, filepos);
     Fixnum_sp ep = clasp_make_fixnum(cfunction->entry_point()->module_position());
     Pointer_sp trampoline = llvmo::cmp__compile_trampoline(cfunction->nname());
-    GlobalBytecodeSimpleFun_sp func =
-        core__makeGlobalBytecodeSimpleFun(fdesc, bytecode_module, cfunction->nlocals(), cfunction->closed()->length(),
+    BytecodeSimpleFun_sp func =
+        core__makeBytecodeSimpleFun(fdesc, bytecode_module, cfunction->nlocals(), cfunction->closed()->length(),
                                           ep.unsafe_fixnum(), cfunction->final_size(), trampoline);
     cfunction->setInfo(func);
   }
@@ -1200,7 +1200,7 @@ void Module_O::link_load(T_sp compile_info) {
   if (_sym_STARautocompile_hookSTAR->boundP() && _sym_STARautocompile_hookSTAR->symbolValue().notnilp()) {
     for (T_sp tfun : *cfunctions) {
       Cfunction_sp cfun = gc::As_assert<Cfunction_sp>(tfun);
-      GlobalBytecodeSimpleFun_sp fun = cfun->info();
+      BytecodeSimpleFun_sp fun = cfun->info();
       if (btb_bcfun_p(fun, debug_info)) {
         T_sp nat = eval::funcall(_sym_STARautocompile_hookSTAR->symbolValue(), fun, nil<T_O>());
         fun->setSimpleFun(gc::As_assert<SimpleFun_sp>(nat));

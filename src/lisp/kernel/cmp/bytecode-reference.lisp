@@ -1522,7 +1522,7 @@
                  (length (cfunction-closed cfunction))
                  (annotation-module-position (cfunction-entry-point cfunction)))
                 #+clasp
-                (core:global-bytecode-simple-fun/make
+                (core:bytecode-simple-fun/make
                  (core:function-description/make
                   :function-name (cfunction-name cfunction)
                   :docstring (cfunction-doc cfunction))
@@ -1696,8 +1696,8 @@
                       (let ((lit (aref literals value)))
                         ;; This may not be the best place for this check,
                         ;; but here we check for enclosed functions.
-                        (when (and (typep lit 'core:global-bytecode-simple-fun)
-                                   (eq (core:global-bytecode-simple-fun/code lit)
+                        (when (and (typep lit 'core:bytecode-simple-fun)
+                                   (eq (core:bytecode-simple-fun/code lit)
                                        module)
                                    (boundp '*functions-to-disassemble*))
                           (push lit *functions-to-disassemble*))
@@ -1725,9 +1725,9 @@
 
 (defun %disassemble-bytecode-function (bcfunction labels)
   (let* ((simple (core:function/entry-point bcfunction))
-         (module (core:global-bytecode-simple-fun/code simple))
-         (start (core:global-bytecode-simple-fun/entry-pc-n simple))
-         (length (core:global-bytecode-simple-fun/bytecode-size simple)))
+         (module (core:bytecode-simple-fun/code simple))
+         (start (core:bytecode-simple-fun/entry-pc-n simple))
+         (length (core:bytecode-simple-fun/bytecode-size simple)))
     (disassemble-bytecode module
                           :start start :length length :labels labels
                           :function-name (core:function-name bcfunction)))
@@ -1736,7 +1736,7 @@
 (defun disassemble-bytecode-function (bcfunction)
   (let* ((disassembled-functions nil) ; prevent recursion
          (simple (core:function/entry-point bcfunction))
-         (module (core:global-bytecode-simple-fun/code simple))
+         (module (core:bytecode-simple-fun/code simple))
          (bytecode (core:bytecode-module/bytecode module))
          ;; We grab labels for the entire module, so that nonlocal exit points
          ;; are noted completely and deterministically.

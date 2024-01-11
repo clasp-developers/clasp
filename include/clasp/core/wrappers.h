@@ -46,11 +46,11 @@ template <typename FunctionPtrType, typename Policies, typename ArgumentWrapper>
 
 namespace clbind {
 template <typename RT, typename OT, typename... ARGS, typename Policies, typename ArgumentWrapper>
-class WRAPPER_VariadicMethod<RT (OT::*)(ARGS...), Policies, ArgumentWrapper> : public core::GlobalSimpleFunBase_O {
+class WRAPPER_VariadicMethod<RT (OT::*)(ARGS...), Policies, ArgumentWrapper> : public core::SimpleFun_O {
 public:
   typedef WRAPPER_VariadicMethod<RT (OT::*)(ARGS...), Policies, ArgumentWrapper> MyType;
   typedef RT (OT::*MethodType)(ARGS...);
-  typedef core::GlobalSimpleFunBase_O TemplatedBase;
+  typedef core::SimpleFun_O TemplatedBase;
 
 public:
   MethodType mptr;
@@ -59,7 +59,7 @@ public:
   enum { NumParams = sizeof...(ARGS) + 1 };
 
   WRAPPER_VariadicMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : core::GlobalSimpleFunBase_O(fdesc, core::XepStereotype<MyType>(), code), mptr(ptr) {
+    : core::SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()), mptr(ptr) {
     this->validateCodePointer((void**)&this->mptr, sizeof(this->mptr));
   };
 
@@ -75,7 +75,6 @@ public:
   static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs,
                                                  core::T_O** lcc_args) {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     if (lcc_nargs != NumParams)
       cc_wrong_number_of_arguments(lcc_closure, lcc_nargs, NumParams, NumParams);
@@ -89,26 +88,11 @@ public:
     return wrapper_entry_point_n(ArgumentWrapper(), lcc_closure, lcc_nargs, lcc_args);
   }
 
-  static inline LISP_ENTRY_0() { return entry_point_n(lcc_closure, 0, NULL); }
-  static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return entry_point_n(lcc_closure, 1, args);
-  }
-  static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0, lcc_farg1};
-    return entry_point_n(lcc_closure, 2, args);
-  }
-  static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
-    return entry_point_n(lcc_closure, 3, args);
-  }
-  static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
-    return entry_point_n(lcc_closure, 4, args);
-  }
-  static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
-    return entry_point_n(lcc_closure, 5, args);
+  template <typename... Ts>
+  static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
+                                             Ts... args) {
+    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
+    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
   }
 };
 }; // namespace clbind
@@ -118,11 +102,11 @@ public:
 //
 namespace clbind {
 template <typename RT, typename OT, typename... ARGS, typename Policies, typename ArgumentWrapper>
-class WRAPPER_VariadicMethod<RT (OT::*)(ARGS...) const, Policies, ArgumentWrapper> : public core::GlobalSimpleFunBase_O {
+class WRAPPER_VariadicMethod<RT (OT::*)(ARGS...) const, Policies, ArgumentWrapper> : public core::SimpleFun_O {
 public:
   typedef WRAPPER_VariadicMethod<RT (OT::*)(ARGS...) const, Policies, ArgumentWrapper> MyType;
   typedef RT (OT::*MethodType)(ARGS...) const;
-  typedef core::GlobalSimpleFunBase_O TemplatedBase;
+  typedef core::SimpleFun_O TemplatedBase;
 
 public:
   MethodType mptr;
@@ -131,7 +115,7 @@ public:
   enum { NumParams = sizeof...(ARGS) + 1 };
 
   WRAPPER_VariadicMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : core::GlobalSimpleFunBase_O(fdesc, core::XepStereotype<MyType>(), code), mptr(ptr) {
+    : core::SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()), mptr(ptr) {
     this->validateCodePointer((void**)&this->mptr, sizeof(this->mptr));
   };
 
@@ -147,7 +131,6 @@ public:
   static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs,
                                                  core::T_O** lcc_args) {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     if (lcc_nargs != NumParams)
       cc_wrong_number_of_arguments(lcc_closure, lcc_nargs, NumParams, NumParams);
@@ -161,26 +144,11 @@ public:
     return wrapper_entry_point_n(ArgumentWrapper(), lcc_closure, lcc_nargs, lcc_args);
   }
 
-  static inline LISP_ENTRY_0() { return entry_point_n(lcc_closure, 0, NULL); }
-  static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return entry_point_n(lcc_closure, 1, args);
-  }
-  static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0, lcc_farg1};
-    return entry_point_n(lcc_closure, 2, args);
-  }
-  static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
-    return entry_point_n(lcc_closure, 3, args);
-  }
-  static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
-    return entry_point_n(lcc_closure, 4, args);
-  }
-  static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
-    return entry_point_n(lcc_closure, 5, args);
+  template <typename... Ts>
+  static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
+                                             Ts... args) {
+    core::T_O* lcc_args[sizeof...(Ts)] = {args ...};
+    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
   }
 };
 }; // namespace clbind
@@ -249,7 +217,7 @@ inline void defmacro(const string& packageName, const string& name, T_mv (*fp)(L
   using VariadicType = clbind::WRAPPER_VariadicFunction<T_mv (*)(List_sp, T_sp), core::policy::clasp_policy, PureOutValuePack,
                                                         clbind::DefaultWrapper>;
   FunctionDescription_sp fdesc = makeFunctionDescription(symbol, nil<T_O>());
-  GlobalSimpleFunBase_sp entry = gctools::GC<VariadicType>::allocate(fp, fdesc, nil<T_O>());
+  SimpleFun_sp entry = gctools::GC<VariadicType>::allocate(fp, fdesc, nil<T_O>());
   lisp_bytecode_defun(symbol_function_macro, symbol, packageName, entry, arguments, declares,
                       docstring);
 }

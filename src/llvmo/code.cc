@@ -901,7 +901,7 @@ bool lookupObjectFileFromEntryPoint(uintptr_t entry_point, ObjectFile_sp& object
 void validateEntryPoint(core::T_sp code, const core::ClaspXepFunction& entry_point) {
   // Nothing for now
 }
-void validateEntryPoint(core::T_sp code, const core::ClaspLocalFunction& entry_point) {
+void validateEntryPoint(core::T_sp code, const core::ClaspCoreFunction& entry_point) {
   // Nothing for now
 }
 void validateEntryPoint(core::T_sp code, uintptr_t entry_point) {

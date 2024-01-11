@@ -4228,7 +4228,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
                             __FUNCTION__, startupName.c_str(), jit->getMainJITDylib().raw_(), jit->getMainJITDylib()->wrappedPtr(),
                             llvm::cast<JITLinkDylib>(jit->getMainJITDylib()->wrappedPtr())));
   replPtrRaw = jit->runStartupCode(jit->getMainJITDylib(), startupName, initialData);
-  core::GlobalSimpleFun_sp functoid((gctools::Tagged)replPtrRaw);
+  core::Function_sp functoid((gctools::Tagged)replPtrRaw);
   DEBUG_OBJECT_FILES_PRINT(
       ("%s:%d:%s   We should have captured the ObjectFile_O and Code_O object\n", __FILE__, __LINE__, __FUNCTION__));
   return functoid;

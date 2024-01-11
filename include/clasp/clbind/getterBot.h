@@ -1,8 +1,8 @@
 template <typename GetterPolicies, typename OT, typename MemberType>
-class WRAPPER_Getter<GetterPolicies, OT, MemberType* const(OT::*)> : public core::GlobalSimpleFunBase_O {
+class WRAPPER_Getter<GetterPolicies, OT, MemberType* const(OT::*)> : public core::SimpleFun_O {
 public:
   typedef WRAPPER_Getter<GetterPolicies, OT, MemberType* const(OT::*)> MyType;
-  typedef core::GlobalSimpleFunBase_O TemplatedBase;
+  typedef core::SimpleFun_O TemplatedBase;
   typedef clbind::Wrapper<MemberType, MemberType*> WrapperType;
   typedef MemberType* const(OT::*VariablePtrType);
 
@@ -11,7 +11,7 @@ public:
 
 public:
   WRAPPER_Getter(VariablePtrType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), GlobalSimpleFunBase_O(fdesc, core::XepStereotype<MyType>(), code) {
+    : mptr(ptr), SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
     trapGetterMethoid();
   };
 
@@ -25,32 +25,16 @@ public:
 
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     core::T_sp arg0((gctools::Tagged)lcc_args[0]);
     OT* objPtr = gc::As<core::WrappedPointer_sp>(arg0)->cast<OT>();
     MemberType* ptr = (*objPtr).*(closure->mptr);
     return translate::to_object<MemberType*, translate::dont_adopt_pointer>::convert(ptr);
   }
-  static inline LISP_ENTRY_0() { return entry_point_n(lcc_closure, 0, NULL); }
-  static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return entry_point_n(lcc_closure, 1, args);
-  }
-  static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0, lcc_farg1};
-    return entry_point_n(lcc_closure, 2, args);
-  }
-  static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
-    return entry_point_n(lcc_closure, 3, args);
-  }
-  static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
-    return entry_point_n(lcc_closure, 4, args);
-  }
-  static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
-    return entry_point_n(lcc_closure, 5, args);
+  template <typename... Ts>
+  static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
+                                             Ts... args) {
+    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
+    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
   }
 };

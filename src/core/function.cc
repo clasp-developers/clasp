@@ -74,80 +74,82 @@ void SimpleFun_O::fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr
 
 CL_DEFMETHOD Pointer_sp SimpleFun_O::defaultEntryAddress() const { SUBCLASS_MUST_IMPLEMENT(); }
 
-GlobalSimpleFunBase_O::GlobalSimpleFunBase_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp code)
-    : SimpleFun_O(fdesc, code), _EntryPoints(entry_point) {
+SimpleFun_O::SimpleFun_O(FunctionDescription_sp fdesc, T_sp code, const ClaspXepTemplate& entry_point)
+  : Function_O(this), _FunctionDescription(fdesc), _Code(code),
+    _EntryPoints(entry_point) {
   if (code.nilp()) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point._EntryPoints[0]));
     this->_Code = code;
-    if (gc::IsA<llvmo::Library_sp>(code)) {
-      for (size_t ii = 0; ii < ClaspXepFunction::Entries; ii++) {
-        maybe_register_symbol_using_dladdr_ep((void*)entry_point._EntryPoints[ii], sizeof(void*), "GlobalSimpleFunBaseName", ii);
-      }
+  }
+  if (gc::IsA<llvmo::Library_sp>(code)) {
+    for (size_t ii = 0; ii < ClaspXepFunction::Entries; ii++) {
+      maybe_register_symbol_using_dladdr_ep((void*)entry_point._EntryPoints[ii], sizeof(void*), "SimpleFunName", ii);
     }
   }
   llvmo::validateEntryPoint(code, _EntryPoints);
 }
 
-void GlobalSimpleFunBase_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+void SimpleFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
   for (size_t ii = 0; ii < ClaspXepFunction::Entries; ++ii) {
     this->fixupOneCodePointer(fixup, (void**)&this->_EntryPoints._EntryPoints[ii]);
   }
 }
 
-GlobalSimpleFun_O::GlobalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp code, T_sp lep)
-    : GlobalSimpleFunBase_O(fdesc, entry_point, code), _localSimpleFun(lep) {};
+SimpleCoreFun_O::SimpleCoreFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp code, CoreFun_sp lep)
+  : SimpleFun_O(fdesc, code, entry_point), _localFun(lep) {};
 
-GlobalBytecodeSimpleFun_O::GlobalBytecodeSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp module,
+BytecodeSimpleFun_O::BytecodeSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp module,
                                                      uint16_t localsFrameSize, unsigned int environmentSize, unsigned int entryPcN,
                                                      unsigned int bytecodeSize, BytecodeTrampolineFunction trampoline)
-    : GlobalSimpleFunBase_O(fdesc, entry_point, module), _LocalsFrameSize(localsFrameSize), _EnvironmentSize(environmentSize),
-      _EntryPcN(entryPcN), _BytecodeSize(bytecodeSize), _Trampoline(trampoline) {};
+  : SimpleFun_O(fdesc, module, entry_point), _LocalsFrameSize(localsFrameSize), _EnvironmentSize(environmentSize),
+    _EntryPcN(entryPcN), _BytecodeSize(bytecodeSize), _Trampoline(trampoline) {};
 
-void GlobalBytecodeSimpleFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+void BytecodeSimpleFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
   this->fixupOneCodePointer(fixup, (void**)&this->_Trampoline);
   this->Base::fixupInternalsForSnapshotSaveLoad(fixup);
 }
 
-CL_DEFMETHOD size_t GlobalBytecodeSimpleFun_O::entryPcN() const { return this->_EntryPcN; }
+CL_DEFMETHOD size_t BytecodeSimpleFun_O::entryPcN() const { return this->_EntryPcN; }
 
 // These two methods allow functions to be used uniformly as
 // debug info in bytecode modules. The duck typing is a bit
 // unfortunate but ought to be harmless.
 CL_LISPIFY_NAME(BytecodeDebugInfo/start)
-CL_DEFMETHOD T_sp GlobalBytecodeSimpleFun_O::start() const { return Integer_O::create(this->_EntryPcN); }
+CL_DEFMETHOD T_sp BytecodeSimpleFun_O::start() const { return Integer_O::create(this->_EntryPcN); }
 CL_LISPIFY_NAME(BytecodeDebugInfo/end)
-CL_DEFMETHOD T_sp GlobalBytecodeSimpleFun_O::end() const { return Integer_O::create(this->_EntryPcN + this->_BytecodeSize); }
+CL_DEFMETHOD T_sp BytecodeSimpleFun_O::end() const { return Integer_O::create(this->_EntryPcN + this->_BytecodeSize); }
 
-LocalSimpleFun_O::LocalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point, T_sp code)
-    : SimpleFun_O(fdesc, code), _Entry(entry_point) {
+CoreFun_O::CoreFun_O(FunctionDescription_sp fdesc, T_sp code,
+                       const ClaspCoreFunction& entry_point)
+  : _FunctionDescription(fdesc), _Code(code), _Entry(entry_point) {
   llvmo::validateEntryPoint(code, entry_point);
 };
 
-Pointer_sp GlobalSimpleFun_O::defaultEntryAddress() const { return Pointer_O::create((void*)this->_EntryPoints[0]); };
+Pointer_sp SimpleCoreFun_O::defaultEntryAddress() const { return Pointer_O::create((void*)this->_EntryPoints[0]); };
 
-CL_LISPIFY_NAME("global-simple-fun/code");
+CL_LISPIFY_NAME("simple-core-fun/code");
 CL_DEFMETHOD
-llvmo::ObjectFile_sp GlobalSimpleFun_O::code() const {
+llvmo::ObjectFile_sp SimpleCoreFun_O::code() const {
   llvmo::ObjectFile_sp code = gc::As<llvmo::ObjectFile_sp>(this->_Code);
   return code;
 }
 
-CL_LISPIFY_NAME("global-simple-fun-local-simple-fun");
+CL_LISPIFY_NAME("simple-core-fun-local-fun");
 CL_DEFMETHOD
-T_sp GlobalSimpleFun_O::localSimpleFun() const { return this->_localSimpleFun; }
+CoreFun_sp SimpleCoreFun_O::localFun() const { return this->_localFun; }
 
-Pointer_sp LocalSimpleFun_O::defaultEntryAddress() const { return Pointer_O::create((void*)this->_Entry); };
+Pointer_sp CoreFun_O::defaultEntryAddress() const { return Pointer_O::create((void*)this->_Entry); };
 
-Pointer_sp GlobalBytecodeSimpleFun_O::defaultEntryAddress() const { return Pointer_O::create((void*)this->_EntryPoints[0]); };
+Pointer_sp BytecodeSimpleFun_O::defaultEntryAddress() const { return Pointer_O::create((void*)this->_EntryPoints[0]); };
 
-CL_LISPIFY_NAME("global-bytecode-simple-fun/code");
+CL_LISPIFY_NAME("bytecode-simple-fun/code");
 CL_DEFMETHOD
-BytecodeModule_sp GlobalBytecodeSimpleFun_O::code() const {
+BytecodeModule_sp BytecodeSimpleFun_O::code() const {
   BytecodeModule_sp code = gc::As<BytecodeModule_sp>(this->_Code);
   return code;
 }
 
-std::string GlobalBytecodeSimpleFun_O::__repr__() const {
+std::string BytecodeSimpleFun_O::__repr__() const {
   stringstream ss;
   ss << "#<GLOBAL-BYTECODE-SIMPLE-FUN ";
   for (size_t ii = 0; ii < NUMBER_OF_ENTRY_POINTS; ii++) {
@@ -162,51 +164,65 @@ std::string GlobalBytecodeSimpleFun_O::__repr__() const {
   return ss.str();
 }
 
-void LocalSimpleFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
-  if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp) {
+void CoreFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+  void** ptr = (void**)&(this->_Entry);
+#ifdef USE_PRECISE_GC
+  if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::InfoOp) {
+    uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
+    if (fixup->_trackAddressName) {
+      fixup->addAddressName((void*)*ptrptr, _rep_(this->_FunctionDescription->functionName()));
+    }
+  } else if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp) {
     llvmo::ObjectFile_sp code = gc::As_unsafe<llvmo::ObjectFile_sp>(this->_Code);
     if ((uintptr_t)this->_Entry < code->codeStart()) {
       printf("%s:%d:%s Entrypoint %p is before the codeStart %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)this->_Entry,
              (void*)code->codeStart());
       abort();
     }
+    uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
+    snapshotSaveLoad::encodeEntryPoint(fixup, ptrptr, this->_Code);
+  } else if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
+    uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
+    snapshotSaveLoad::decodeEntryPoint(fixup, ptrptr, this->_Code);
+  } else {
+    SIMPLE_ERROR("Illegal image save/load operation");
   }
-  this->fixupOneCodePointer(fixup, (void**)&this->_Entry);
+#endif
 };
 
 CL_LAMBDA(&key function-description entry-point-functions local-entry-point-index);
 DOCGROUP(clasp);
-CL_DEFUN GlobalSimpleFunGenerator_sp core__makeGlobalSimpleFunGenerator(FunctionDescription_sp fdesc, T_sp entryPointIndices,
+CL_DEFUN SimpleCoreFunGenerator_sp core__makeSimpleCoreFunGenerator(FunctionDescription_sp fdesc, T_sp entryPointIndices,
                                                                         size_t localEntryPointIndex) {
-  auto entryPoint = gctools::GC<GlobalSimpleFunGenerator_O>::allocate(fdesc, entryPointIndices, localEntryPointIndex);
+  auto entryPoint = gctools::GC<SimpleCoreFunGenerator_O>::allocate(fdesc, entryPointIndices, localEntryPointIndex);
   //  printf("%s:%d:%s  entryPoint-> %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)entryPoint.raw_());
   return entryPoint;
 }
 
 CL_LAMBDA(&key function-description entry-point-functions);
 DOCGROUP(clasp);
-CL_DEFUN LocalSimpleFunGenerator_sp core__makeLocalSimpleFunGenerator(FunctionDescription_sp fdesc, T_sp entryPointIndices) {
-  auto entryPoint = gctools::GC<LocalSimpleFunGenerator_O>::allocate(fdesc, entryPointIndices);
+CL_DEFUN CoreFunGenerator_sp core__makeCoreFunGenerator(FunctionDescription_sp fdesc, T_sp entryPointIndices) {
+  auto entryPoint = gctools::GC<CoreFunGenerator_O>::allocate(fdesc, entryPointIndices);
   //  printf("%s:%d:%s  entryPoint-> %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)entryPoint.raw_());
   return entryPoint;
 }
 
-std::string LocalSimpleFunGenerator_O::__repr__() const {
+std::string CoreFunGenerator_O::__repr__() const {
   stringstream ss;
-  ss << "#<LOCAL-SIMPLE-FUN-GENERATOR ";
+  ss << "#<LOCAL-FUN-GENERATOR ";
   ss << _rep_(this->_entry_point_indices) << " @" << (void*)this << ">";
   return ss.str();
 }
 
-std::string LocalSimpleFun_O::__repr__() const {
+std::string CoreFun_O::__repr__() const {
   stringstream ss;
-  ss << "#<LOCAL-SIMPLE-FUN ";
+  ss << "#<LOCAL-FUN ";
   ss << (void*)this->_Entry;
   ss << " @" << (void*)this << ">";
   return ss.str();
 }
 
-std::string GlobalSimpleFun_O::__repr__() const {
+std::string SimpleCoreFun_O::__repr__() const {
   stringstream ss;
   ss << "#<Global-SIMPLE-FUN ";
   for (size_t ii = 0; ii < NUMBER_OF_ENTRY_POINTS; ii++) {
@@ -221,11 +237,11 @@ std::string GlobalSimpleFun_O::__repr__() const {
   return ss.str();
 }
 
-CL_LISPIFY_NAME("global-simple-fun-generator-local-simple-fun-index");
+CL_LISPIFY_NAME("simple-core-fun-generator-local-fun-index");
 CL_DEFMETHOD
-size_t GlobalSimpleFunGenerator_O::localSimpleFunIndex() const { return this->_localSimpleFunIndex; }
+size_t SimpleCoreFunGenerator_O::coreFunIndex() const { return this->_localFunIndex; }
 
-std::string GlobalSimpleFunGenerator_O::__repr__() const {
+std::string SimpleCoreFunGenerator_O::__repr__() const {
   stringstream ss;
   ss << "#<GLOBAL-SIMPLE-FUN-GENERATOR ";
   ss << _rep_(this->_entry_point_indices) << " @" << (void*)this << ">";
@@ -257,7 +273,8 @@ FunctionDescription_sp makeFunctionDescription(T_sp functionName, T_sp lambda_li
   return fdesc;
 }
 
-LocalSimpleFun_sp makeLocalSimpleFun(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point) {
+CoreFun_sp makeCoreFun(FunctionDescription_sp fdesc,
+                         const ClaspCoreFunction& entry_point) {
   T_sp code = unbound<llvmo::CodeBase_O>();
   if (entry_point) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
@@ -265,37 +282,22 @@ LocalSimpleFun_sp makeLocalSimpleFun(FunctionDescription_sp fdesc, const ClaspLo
       maybe_register_symbol_using_dladdr_ep((void*)entry_point);
     }
   }
-  auto ep = gctools::GC<LocalSimpleFun_O>::allocate(fdesc, entry_point, code);
+  auto ep = gctools::GC<CoreFun_O>::allocate(fdesc, code, entry_point);
   return ep;
 }
 
-GlobalSimpleFun_sp makeGlobalSimpleFun(FunctionDescription_sp tfdesc, const ClaspXepTemplate& entry_point, T_sp lep) {
-  T_sp code = unbound<T_O>();
-  std::string name = "unkfunc";
-  if (gc::IsA<FunctionDescription_sp>(tfdesc)) {
-    FunctionDescription_sp fdesc = gc::As_unsafe<FunctionDescription_sp>(tfdesc);
-      //      printf("%s:%d:%s FunctionDescription is defined\n", __FILE__, __LINE__, __FUNCTION__ );
-    name = "namenil";
-    if (gc::IsA<Symbol_sp>(fdesc->functionName())) {
-        //        printf("%s:%d:%s FunctionDescription name is defined\n", __FILE__, __LINE__, __FUNCTION__ );
-      Symbol_sp sname = gc::As_unsafe<Symbol_sp>(fdesc->functionName());
-      name = sname->safeFormattedName();
-    }
-  }
-  code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point._EntryPoints[0]));
-  if (gc::IsA<llvmo::Library_sp>(code)) {
-    for (size_t ii = 0; ii < ClaspXepFunction::Entries; ii++) {
-      maybe_register_symbol_using_dladdr_ep((void*)entry_point._EntryPoints[ii], sizeof(void*), name, ii);
-    }
-  }
-  auto ep = gctools::GC<GlobalSimpleFun_O>::allocate(tfdesc, entry_point, code, lep);
-  return ep;
+SimpleFun_sp makeSimpleFun(FunctionDescription_sp tfdesc, const ClaspXepTemplate& entry_point) {
+  return gctools::GC<SimpleFun_O>::allocate(tfdesc, nil<T_O>(), entry_point);
+}
+
+SimpleCoreFun_sp makeSimpleCoreFun(FunctionDescription_sp tfdesc, const ClaspXepTemplate& entry_point, CoreFun_sp lep) {
+  return gctools::GC<SimpleCoreFun_O>::allocate(tfdesc, entry_point, nil<T_O>(), lep);
 }
 
 SYMBOL_EXPORT_SC_(CorePkg, bytecode_call);
 
 struct BytecodeClosureEntryPoint {
-  static inline LCC_RETURN bytecode_enter(GlobalBytecodeSimpleFun_sp entryPoint, T_O* lcc_closure, size_t lcc_nargs, T_O** lcc_args) {
+  static inline LCC_RETURN bytecode_enter(BytecodeSimpleFun_sp entryPoint, T_O* lcc_closure, size_t lcc_nargs, T_O** lcc_args) {
     core::BytecodeModule_sp module = gctools::As_assert<core::BytecodeModule_sp>(entryPoint->_Code);
     unsigned char* pc = (unsigned char*)&(gc::As_assert<SimpleVector_byte8_t_sp>(module->_Bytecode)->_Data[0]) + entryPoint->_EntryPcN;
     return (entryPoint->_Trampoline)(pc, lcc_closure, lcc_nargs, lcc_args);
@@ -303,12 +305,12 @@ struct BytecodeClosureEntryPoint {
 
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
-    core::GlobalBytecodeSimpleFun_sp entryPoint = gctools::As_assert<core::GlobalBytecodeSimpleFun_sp>(closure->entryPoint());
+    core::BytecodeSimpleFun_sp entryPoint = gctools::As_assert<core::BytecodeSimpleFun_sp>(closure->entryPoint());
     // Check if this bytecode SF's SF has been replaced,
     // as by autocompilation. If it has,
     // swap out the entry point (function pointer) to go directly to
     // the compiled code next time.
-    GlobalSimpleFunBase_sp eep = gc::As_assert<GlobalSimpleFunBase_sp>(entryPoint->entryPoint());
+    SimpleFun_sp eep = entryPoint->entryPoint();
     if (entryPoint != eep) [[unlikely]] {
       entryPoint->_EntryPoints.store(0, eep->_EntryPoints[0]);
       // Call the new function.
@@ -317,110 +319,58 @@ struct BytecodeClosureEntryPoint {
       return bytecode_enter(entryPoint, lcc_closure, lcc_nargs, lcc_args);
   }
 
-  static inline LISP_ENTRY_0() {
+  template <typename... Ts>
+  static inline LCC_RETURN entry_point_fixed(T_O* lcc_closure,
+                                             Ts... args) {
     Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
-    core::GlobalBytecodeSimpleFun_sp entryPoint = gctools::As_assert<core::GlobalBytecodeSimpleFun_sp>(closure->entryPoint());
-    GlobalSimpleFunBase_sp eep = gc::As_assert<GlobalSimpleFunBase_sp>(entryPoint->entryPoint());
+    BytecodeSimpleFun_sp entryPoint = gctools::As_assert<core::BytecodeSimpleFun_sp>(closure->entryPoint());
+    SimpleFun_sp eep = entryPoint->entryPoint();
     if (entryPoint != eep) [[unlikely]] {
-      entryPoint->_EntryPoints.store(1, eep->_EntryPoints[1]);
-      return eep->_EntryPoints.invoke_0(lcc_closure);
-    } else
-      return bytecode_enter(entryPoint, lcc_closure, 0, NULL);
-  }
-  static inline LISP_ENTRY_1() {
-    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
-    core::GlobalBytecodeSimpleFun_sp entryPoint = gctools::As_assert<core::GlobalBytecodeSimpleFun_sp>(closure->entryPoint());
-    GlobalSimpleFunBase_sp eep = gc::As_assert<GlobalSimpleFunBase_sp>(entryPoint->entryPoint());
-    if (entryPoint != eep) [[unlikely]] {
-      entryPoint->_EntryPoints.store(2, eep->_EntryPoints[2]);
-      return eep->_EntryPoints.invoke_1(lcc_closure, lcc_farg0);
+      // the +1 is due to the general entry at 0.
+      constexpr size_t index = sizeof...(Ts) + 1;
+      entryPoint->_EntryPoints.store(index, eep->_EntryPoints[index]);
+      // Use this instead of funcall_raw to ensure the closure is correct
+      return eep->_EntryPoints.call(lcc_closure, args...);
     } else {
-      core::T_O* args[1] = {lcc_farg0};
-      return bytecode_enter(entryPoint, lcc_closure, 1, args);
-    }
-  }
-  static inline LISP_ENTRY_2() {
-    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
-    core::GlobalBytecodeSimpleFun_sp entryPoint = gctools::As_assert<core::GlobalBytecodeSimpleFun_sp>(closure->entryPoint());
-    GlobalSimpleFunBase_sp eep = gc::As_assert<GlobalSimpleFunBase_sp>(entryPoint->entryPoint());
-    if (entryPoint != eep) [[unlikely]] {
-      entryPoint->_EntryPoints.store(3, eep->_EntryPoints[3]);
-      return eep->_EntryPoints.invoke_2(lcc_closure, lcc_farg0, lcc_farg1);
-    } else {
-      core::T_O* args[2] = {lcc_farg0, lcc_farg1};
-      return bytecode_enter(entryPoint, lcc_closure, 2, args);
-    }
-  }
-  static inline LISP_ENTRY_3() {
-    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
-    core::GlobalBytecodeSimpleFun_sp entryPoint = gctools::As_assert<core::GlobalBytecodeSimpleFun_sp>(closure->entryPoint());
-    GlobalSimpleFunBase_sp eep = gc::As_assert<GlobalSimpleFunBase_sp>(entryPoint->entryPoint());
-    if (entryPoint != eep) [[unlikely]] {
-      entryPoint->_EntryPoints.store(4, eep->_EntryPoints[4]);
-      return eep->_EntryPoints.invoke_3(lcc_closure, lcc_farg0, lcc_farg1, lcc_farg2);
-    } else {
-      core::T_O* args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
-      return bytecode_enter(entryPoint, lcc_closure, 3, args);
-    }
-  }
-  static inline LISP_ENTRY_4() {
-    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
-    core::GlobalBytecodeSimpleFun_sp entryPoint = gctools::As_assert<core::GlobalBytecodeSimpleFun_sp>(closure->entryPoint());
-    GlobalSimpleFunBase_sp eep = gc::As_assert<GlobalSimpleFunBase_sp>(entryPoint->entryPoint());
-    if (entryPoint != eep) [[unlikely]] {
-      entryPoint->_EntryPoints.store(5, eep->_EntryPoints[5]);
-      return eep->_EntryPoints.invoke_4(lcc_closure, lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3);
-    } else {
-      core::T_O* args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
-      return bytecode_enter(entryPoint, lcc_closure, 4, args);
-    }
-  }
-  static inline LISP_ENTRY_5() {
-    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
-    core::GlobalBytecodeSimpleFun_sp entryPoint = gctools::As_assert<core::GlobalBytecodeSimpleFun_sp>(closure->entryPoint());
-    GlobalSimpleFunBase_sp eep = gc::As_assert<GlobalSimpleFunBase_sp>(entryPoint->entryPoint());
-    if (entryPoint != eep) [[unlikely]] {
-      entryPoint->_EntryPoints.store(6, eep->_EntryPoints[6]);
-      return eep->_EntryPoints.invoke_5(lcc_closure, lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4);
-    } else {      
-      core::T_O* args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
-      return bytecode_enter(entryPoint, lcc_closure, 5, args);
+      constexpr size_t lcc_nargs = sizeof...(Ts);
+      T_O* lcc_args[lcc_nargs] = {args...};
+      return bytecode_enter(entryPoint, lcc_closure, lcc_nargs, lcc_args);
     }
   }
 };
 
-CL_LISPIFY_NAME(GlobalBytecodeSimpleFun/make);
+CL_LISPIFY_NAME(BytecodeSimpleFun/make);
 CL_DEFUN
-GlobalBytecodeSimpleFun_sp core__makeGlobalBytecodeSimpleFun(FunctionDescription_sp fdesc, BytecodeModule_sp module,
+BytecodeSimpleFun_sp core__makeBytecodeSimpleFun(FunctionDescription_sp fdesc, BytecodeModule_sp module,
                                                              size_t localsFrameSize, size_t environmentSize, size_t pcIndex,
                                                              size_t bytecodeSize, Pointer_sp trampoline) {
-  auto entryPoint = gctools::GC<GlobalBytecodeSimpleFun_O>::allocate(fdesc, XepStereotype<BytecodeClosureEntryPoint>(), module, localsFrameSize, environmentSize, pcIndex,
+  auto entryPoint = gctools::GC<BytecodeSimpleFun_O>::allocate(fdesc, XepStereotype<BytecodeClosureEntryPoint>(), module, localsFrameSize, environmentSize, pcIndex,
                                                                      bytecodeSize, (BytecodeTrampolineFunction)trampoline->ptr());
   return entryPoint;
 }
 
-LocalSimpleFun_sp makeLocalSimpleFunFromGenerator(LocalSimpleFunGenerator_sp original, void** entry_points) {
+CoreFun_sp makeCoreFunFromGenerator(CoreFunGenerator_sp original, void** entry_points) {
   if (!original->_entry_point_indices.consp()) {
-    SIMPLE_ERROR("The LocalSimpleFun {} does not have entry-points", _rep_(original));
+    SIMPLE_ERROR("The CoreFun {} does not have entry-points", _rep_(original));
   }
   T_sp firstEntryPoint = CONS_CAR(original->_entry_point_indices);
   if (!firstEntryPoint.fixnump()) {
     SIMPLE_ERROR("The FunctionDescriptionGenerator {} does not have entry-points indices", _rep_(original));
   }
   size_t entryPointIndex = firstEntryPoint.unsafe_fixnum();
-  ClaspLocalFunction entry_point = (ClaspLocalFunction)(entry_points[entryPointIndex]);
+  ClaspCoreFunction entry_point = (ClaspCoreFunction)(entry_points[entryPointIndex]);
   T_sp code = unbound<T_O>();
   if (entry_point) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
   }
-  auto entryPoint = gctools::GC<LocalSimpleFun_O>::allocate(original->_FunctionDescription, entry_point, code);
+  auto entryPoint = gctools::GC<CoreFun_O>::allocate(original->_FunctionDescription, code, entry_point);
   return entryPoint;
 }
 
-GlobalSimpleFun_sp makeGlobalSimpleFunFromGenerator(GlobalSimpleFunGenerator_sp original, gctools::GCRootsInModule* roots,
+SimpleCoreFun_sp makeSimpleCoreFunFromGenerator(SimpleCoreFunGenerator_sp original, gctools::GCRootsInModule* roots,
                                                     void** entry_points) {
   if (!original->_entry_point_indices.consp()) {
-    SIMPLE_ERROR("The GlobalSimpleFun {} does not have entry-points", _rep_(original));
+    SIMPLE_ERROR("The SimpleCoreFun {} does not have entry-points", _rep_(original));
   }
   List_sp epIndices = gc::As<List_sp>(original->_entry_point_indices);
   size_t num = cl__length(epIndices);
@@ -441,12 +391,10 @@ GlobalSimpleFun_sp makeGlobalSimpleFunFromGenerator(GlobalSimpleFunGenerator_sp 
     xepFunction._EntryPoints[cur] = entry_point;
     cur++;
   }
-  T_sp localSimpleFun((gctools::Tagged)roots->getLiteral(original->_localSimpleFunIndex));
+  CoreFun_sp localFun((gctools::Tagged)roots->getLiteral(original->_localFunIndex));
   T_sp code = unbound<T_O>();
   code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(xepFunction._EntryPoints[0]));
-  auto globalSimpleFun =
-      gctools::GC<GlobalSimpleFun_O>::allocate(original->_FunctionDescription, xepFunction, code, localSimpleFun);
-  return globalSimpleFun;
+  return gctools::GC<SimpleCoreFun_O>::allocate(original->_FunctionDescription, xepFunction, code, localFun);
 }
 
 DOCGROUP(clasp);
@@ -474,37 +422,23 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp core__SimpleFun_function_description(SimpleFun_sp entryPoint) { return entryPoint->_FunctionDescription; }
 
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__GlobalSimpleFunGenerator_entry_point_indices(GlobalSimpleFunGenerator_sp fdesc) {
+CL_DEFUN T_sp core__SimpleCoreFunGenerator_entry_point_indices(SimpleCoreFunGenerator_sp fdesc) {
   return fdesc->_entry_point_indices;
 }
 
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__LocalSimpleFunGenerator_entry_point_indices(LocalSimpleFunGenerator_sp fdesc) {
+CL_DEFUN T_sp core__CoreFunGenerator_entry_point_indices(CoreFunGenerator_sp fdesc) {
   return fdesc->_entry_point_indices;
 }
 
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__set_GlobalSimpleFun_entry_point_indices(GlobalSimpleFunGenerator_sp fdesc, T_sp entry_point_indices) {
+CL_DEFUN T_sp core__set_SimpleCoreFun_entry_point_indices(SimpleCoreFunGenerator_sp fdesc, T_sp entry_point_indices) {
   return fdesc->_entry_point_indices = entry_point_indices;
 }
 
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__set_LocalSimpleFun_entry_point_indices(LocalSimpleFunGenerator_sp fdesc, T_sp entry_point_indices) {
+CL_DEFUN T_sp core__set_CoreFun_entry_point_indices(CoreFunGenerator_sp fdesc, T_sp entry_point_indices) {
   return fdesc->_entry_point_indices = entry_point_indices;
-}
-
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__LocalSimpleFun_relptr(LocalSimpleFun_sp lep) {
-  uintptr_t start = llvmo::codeStart(lep);
-  uintptr_t abs = (uintptr_t)(lep->_Entry);
-  return Integer_O::create(abs - start);
-}
-
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__GlobalSimpleFun_relptr(GlobalSimpleFun_sp gep) {
-  uintptr_t start = llvmo::codeStart(gep);
-  uintptr_t abs = (uintptr_t)(gep->_EntryPoints[0]);
-  return Integer_O::create(abs - start);
 }
 
 CL_LISPIFY_NAME(function-description-equal);
@@ -581,27 +515,6 @@ CL_DEFUN void core__dumpFunctionDescription(T_sp func) {
   }
 }
 
-ClaspXepGeneralFunction Function_O::entry() const {
-  return (ClaspXepGeneralFunction)(gc::As_unsafe<GlobalSimpleFun_sp>(this->entryPoint())->_EntryPoints[0]);
-}
-ClaspXep0Function Function_O::entry_0() const {
-  return (ClaspXep0Function)(gc::As_unsafe<GlobalSimpleFun_sp>(this->entryPoint())->_EntryPoints[1]);
-}
-ClaspXep1Function Function_O::entry_1() const {
-  return (ClaspXep1Function)(gc::As_unsafe<GlobalSimpleFun_sp>(this->entryPoint())->_EntryPoints[2]);
-}
-ClaspXep2Function Function_O::entry_2() const {
-  return (ClaspXep2Function)(gc::As_unsafe<GlobalSimpleFun_sp>(this->entryPoint())->_EntryPoints[3]);
-}
-ClaspXep3Function Function_O::entry_3() const {
-  return (ClaspXep3Function)(gc::As_unsafe<GlobalSimpleFun_sp>(this->entryPoint())->_EntryPoints[4]);
-}
-ClaspXep4Function Function_O::entry_4() const {
-  return (ClaspXep4Function)(gc::As_unsafe<GlobalSimpleFun_sp>(this->entryPoint())->_EntryPoints[5]);
-}
-ClaspXep5Function Function_O::entry_5() const {
-  return (ClaspXep5Function)(gc::As_unsafe<GlobalSimpleFun_sp>(this->entryPoint())->_EntryPoints[6]);
-}
 FunctionDescription_sp Function_O::fdesc() const { return this->entryPoint()->_FunctionDescription; };
 
 CL_LISPIFY_NAME("core:functionSourcePos");
@@ -643,14 +556,14 @@ SYMBOL_EXPORT_SC_(KeywordPkg, required_args);
 
 DOCGROUP(clasp);
 CL_DEFUN void core__verify_global_entry_point(T_sp alist) {
-  expect_offset(kw::_sym_function_description, alist, offsetof(GlobalSimpleFun_O, _FunctionDescription) - gctools::general_tag);
-  expect_offset(kw::_sym_code, alist, offsetof(GlobalSimpleFun_O, _Code) - gctools::general_tag);
-  expect_offset(kw::_sym_entry_points, alist, offsetof(GlobalSimpleFun_O, _EntryPoints._EntryPoints) - gctools::general_tag);
+  expect_offset(kw::_sym_function_description, alist, offsetof(SimpleCoreFun_O, _FunctionDescription) - gctools::general_tag);
+  expect_offset(kw::_sym_code, alist, offsetof(SimpleCoreFun_O, _Code) - gctools::general_tag);
+  expect_offset(kw::_sym_entry_points, alist, offsetof(SimpleCoreFun_O, _EntryPoints._EntryPoints) - gctools::general_tag);
 }
 
 CL_LISPIFY_NAME(bytecode_closure/make);
 CL_DEF_CLASS_METHOD
-Closure_sp Closure_O::make_bytecode_closure(GlobalBytecodeSimpleFun_sp entryPoint, size_t closedOverSlots) {
+Closure_sp Closure_O::make_bytecode_closure(BytecodeSimpleFun_sp entryPoint, size_t closedOverSlots) {
   Closure_sp closure = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, closedOverSlots, entryPoint);
   return closure;
 }
@@ -669,13 +582,7 @@ CL_DEFUN Closure_sp core__make_closure(SimpleFun_sp sfun, Vaslist_sp closed) {
  * i.e., if the entry point ignores its first argument. */
 bool Closure_O::openP() { return (this->_Slots.length() == 0); }
 
-#ifdef DEBUG_FUNCTION_CALL_COUNTER
-
-DOCGROUP(clasp);
-CL_DEFUN size_t core__function_call_counter(Function_sp f) { return f->_TimesCalled; }
-#endif
-
-bool Function_O::compiledP() const { return !gc::IsA<GlobalBytecodeSimpleFun_sp>(this->entryPoint()); }
+bool Function_O::compiledP() const { return !gc::IsA<BytecodeSimpleFun_sp>(this->entryPoint()); }
 
 CL_DEFMETHOD T_sp Function_O::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) {
   T_mv sfi_mv = core__file_scope(sourceFile);
@@ -688,14 +595,14 @@ CL_DEFMETHOD T_sp Function_O::setSourcePosInfo(T_sp sourceFile, size_t filePos, 
   return spi;
 }
 
-CL_DEFMETHOD Pointer_sp Function_O::function_pointer() const { return Pointer_O::create((void*)this->entry()); };
+CL_DEFMETHOD Pointer_sp Function_O::function_pointer() const { return Pointer_O::create((void*)this->entryPoint()->_EntryPoints[0]); }
 
 SYMBOL_EXPORT_SC_(KeywordPkg, general_entry);
 SYMBOL_EXPORT_SC_(KeywordPkg, local_function);
 SYMBOL_EXPORT_SC_(KeywordPkg, trampoline);
 CL_DOCSTRING("Return an alist of (cons entry-label pointer-or-nil )");
 CL_DEFUN T_sp core__function_pointer_alist(Function_sp func) {
-  GlobalSimpleFunBase_sp gep = gc::As<GlobalSimpleFunBase_sp>(func->entryPoint());
+  SimpleFun_sp gep = func->entryPoint();
   ql::list res;
   res << Cons_O::create(kw::_sym_general_entry, Pointer_O::create((void*)gep->_EntryPoints[0]));
   for (size_t ii = 1; ii < NUMBER_OF_ENTRY_POINTS; ++ii) {
@@ -706,13 +613,10 @@ CL_DEFUN T_sp core__function_pointer_alist(Function_sp func) {
       res << Cons_O::create(make_fixnum(ii - 1 + ENTRY_POINT_ARITY_BEGIN), Pointer_O::create((void*)ep));
     }
   }
-  if (gc::IsA<GlobalSimpleFun_sp>(func->entryPoint())) {
-    GlobalSimpleFun_sp gsf = gc::As_unsafe<GlobalSimpleFun_sp>(func->entryPoint());
-    T_sp tlep = gsf->localSimpleFun();
-    if (tlep.notnilp()) {
-      LocalSimpleFun_sp lep = gc::As<LocalSimpleFun_sp>(tlep);
-      res << Cons_O::create(kw::_sym_local_function, Pointer_O::create((void*)lep->_Entry));
-    }
+  if (gc::IsA<SimpleCoreFun_sp>(func->entryPoint())) {
+    SimpleCoreFun_sp gsf = gc::As_unsafe<SimpleCoreFun_sp>(func->entryPoint());
+    CoreFun_sp lep = gsf->localFun();
+    res << Cons_O::create(kw::_sym_local_function, Pointer_O::create((void*)lep->_Entry));
   }
   return res.cons();
 };
@@ -721,17 +625,9 @@ string Function_O::__repr__() const {
   T_sp name = this->functionName();
   stringstream ss;
   ss << "#<" << this->_instanceClass()->_classNameAsString();
-#if 1
   ss << " " << _rep_(name);
-#else
 #ifdef NON_MOVING_GC
   ss << "@" << (void*)this << " ";
-#endif
-  ss << " " << _rep_(name);
-  ss << " lambda-list: " << _rep_(this->lambdaList());
-  if (this->entry != NULL) {
-    ss << " :fptr " << reinterpret_cast<void*>(this->entry());
-  }
 #endif
   ss << ">";
   return ss.str();
@@ -740,13 +636,6 @@ string Function_O::__repr__() const {
 
 namespace core {
 char* global_dump_functions = NULL;
-#if 0
-void Closure_O::describeFunction() const {
-  if (global_dump_functions) {
-    printf("%s:%d  Closure_O %s entry@%p\n", __FILE__, __LINE__, _rep_(this->functionName()).c_str(), (void*)this->entry());
-  }
-}
-#endif
 
 DOCGROUP(clasp);
 CL_DEFUN size_t core__closure_size(size_t number_of_slots) {
@@ -770,7 +659,7 @@ string Closure_O::__repr__() const {
   ss << " " << _rep_(name);
   ss << " lambda-list: " << _rep_(this->lambdaList());
   if (!this->entryPoint().unboundp()) {
-    ss << " :fptr " << reinterpret_cast<void*>(this->entry());
+    ss << " :fptr " << reinterpret_cast<void*>(this->entryPoint()->_EntryPoints[0]);
   }
 
   ss << ">";
@@ -802,63 +691,51 @@ struct UnboundCellFunctionEntryPoint {
     Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
     ERROR_UNDEFINED_FUNCTION((*closure)[0]);
   }
-  static inline LISP_ENTRY_0() { return entry_point_n(lcc_closure, 0, NULL); }
-  static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return entry_point_n(lcc_closure, 1, args);
-  }
-  static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0, lcc_farg1};
-    return entry_point_n(lcc_closure, 2, args);
-  }
-  static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
-    return entry_point_n(lcc_closure, 3, args);
-  }
-  static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
-    return entry_point_n(lcc_closure, 4, args);
-  }
-  static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
-    return entry_point_n(lcc_closure, 5, args);
+  template <typename... Ts>
+  static inline LCC_RETURN entry_point_fixed(T_O* lcc_closure, Ts... args) {
+    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
+    ERROR_UNDEFINED_FUNCTION((*closure)[0]);
   }
 };
 
 FunctionCell_sp FunctionCell_O::make(T_sp name, Function_sp fun) {
-  GlobalSimpleFun_sp entryPoint = makeGlobalSimpleFunAndFunctionDescription<FunctionCell_O>(name, nil<T_O>());
+  SimpleFun_sp entryPoint = makeSimpleFunAndFunctionDescription<FunctionCell_O>(name);
   return gctools::GC<FunctionCell_O>::allocate(entryPoint, fun);
 }
 
-FunctionCell_sp FunctionCell_O::make(T_sp name) {
+// grab the unbound cell entry point if it exists, otherwise make & cache.
+// FIXME: thread safety?
+SimpleFun_sp FunctionCell_O::cachedUnboundSimpleFun(T_sp name) {
   if (_lisp->_Roots._UnboundCellFunctionEntryPoint.unboundp())
     _lisp->_Roots._UnboundCellFunctionEntryPoint =
-        makeGlobalSimpleFunAndFunctionDescription<UnboundCellFunctionEntryPoint>(name, nil<T_O>());
-  Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(
-      false, 1, _lisp->_Roots._UnboundCellFunctionEntryPoint);
+        makeSimpleFunAndFunctionDescription<UnboundCellFunctionEntryPoint>(name);
+  return _lisp->_Roots._UnboundCellFunctionEntryPoint;
+}
+
+FunctionCell_sp FunctionCell_O::make(T_sp name) {
+  Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1, cachedUnboundSimpleFun(name));
   (*cf)[0] = name;
   return FunctionCell_O::make(name, cf);
 }
 
 void FunctionCell_O::fmakunbound(T_sp name) {
-  GlobalSimpleFun_sp f = makeGlobalSimpleFunAndFunctionDescription<UnboundCellFunctionEntryPoint>(name, nil<T_O>());
-  Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1, f);
+  Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1, cachedUnboundSimpleFun(name));
   (*cf)[0] = name;
   real_function_set(cf);
 }
 
-bool FunctionCell_O::fboundp() { return real_function()->entry() != UnboundCellFunctionEntryPoint::entry_point_n; }
+bool FunctionCell_O::fboundp() const { return real_function()->entryPoint()->_EntryPoints[0] != (ClaspXepAnonymousFunction)UnboundCellFunctionEntryPoint::entry_point_n; }
 
 Function_sp FunctionCell_O::fdefinition() const {
   // We don't use fboundp since we want to only load the real function
   // once, in order to avoid strange race condition nonsense.
   Function_sp rf = real_function();
-  if (real_function()->entry() != UnboundCellFunctionEntryPoint::entry_point_n)
+  if (rf->entryPoint()->_EntryPoints[0] != (ClaspXepAnonymousFunction)UnboundCellFunctionEntryPoint::entry_point_n)
     return rf;
   else {
     // It's an unbound cell closure, so this will signal an
     // appropriate error.
-    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)(rf.raw_()));
+    Closure_sp closure = gc::As_assert<Closure_sp>(rf);
     ERROR_UNDEFINED_FUNCTION((*closure)[0]);
   }
 }

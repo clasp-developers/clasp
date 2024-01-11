@@ -482,7 +482,7 @@ NOINLINE void set_one_static_class_Header() {
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(UnshiftedStamp theStamp, core::Symbol_sp classSymbol, core::Instance_sp metaClass)
 {
-  core::GlobalSimpleFun_sp entryPoint = core::makeGlobalSimpleFunAndFunctionDescription<TheClass>(kw::_sym_create,nil<core::T_O>());
+  core::SimpleFun_sp entryPoint = core::makeSimpleFunAndFunctionDescription<TheClass>(kw::_sym_create);
   auto cb = gctools::GC<TheClass>::allocate(entryPoint);
   gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(theStamp,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,classSymbol);
@@ -497,7 +497,7 @@ NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(UnshiftedStamp 
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_class(core::Instance_sp metaClass)
 {
-  core::GlobalSimpleFun_sp entryPoint = core::makeGlobalSimpleFunAndFunctionDescription<core::BuiltInObjectCreator<TheClass>>(nil<core::T_O>(),nil<core::T_O>());
+  core::SimpleFun_sp entryPoint = core::makeSimpleFunAndFunctionDescription<core::BuiltInObjectCreator<TheClass>>(nil<core::T_O>());
   core::Creator_sp cb = gc::As<core::Creator_sp>(gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate(entryPoint));
   TheClass::set_static_creator(cb);
   gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(TheClass::static_StampWtagMtag.shifted_stamp(),metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
@@ -772,20 +772,20 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init__fixed_field(core::BytecodeModule_O, 1, SMART_PTR_OFFSET, _Bytecode);
   Init__fixed_field(core::BytecodeModule_O, 2, SMART_PTR_OFFSET, _CompileInfo);
 
-  Init_class_kind(core::GlobalSimpleFun_O);
-  Init__fixed_field(core::GlobalSimpleFun_O, 0, SMART_PTR_OFFSET, _TheSimpleFun);
-  Init__fixed_field(core::GlobalSimpleFun_O, 1, SMART_PTR_OFFSET, _FunctionDescription);
-  Init__fixed_field(core::GlobalSimpleFun_O, 2, SMART_PTR_OFFSET, _Code);
+  Init_class_kind(core::SimpleCoreFun_O);
+  Init__fixed_field(core::SimpleCoreFun_O, 0, SMART_PTR_OFFSET, _TheSimpleFun);
+  Init__fixed_field(core::SimpleCoreFun_O, 1, SMART_PTR_OFFSET, _FunctionDescription);
+  Init__fixed_field(core::SimpleCoreFun_O, 2, SMART_PTR_OFFSET, _Code);
   for (int iii = 0; iii < NUMBER_OF_ENTRY_POINTS; iii++) {
-    Init__fixed_field(core::GlobalSimpleFun_O, 3 + iii, RAW_POINTER_OFFSET, _EntryPoints._EntryPoints[iii]);
+    Init__fixed_field(core::SimpleCoreFun_O, 3 + iii, RAW_POINTER_OFFSET, _EntryPoints._EntryPoints[iii]);
   }
-  Init__fixed_field(core::GlobalSimpleFun_O, 3 + NUMBER_OF_ENTRY_POINTS, SMART_PTR_OFFSET, _localSimpleFun);
+  Init__fixed_field(core::SimpleCoreFun_O, 3 + NUMBER_OF_ENTRY_POINTS, SMART_PTR_OFFSET, _localFun);
 
-  Init_class_kind(core::GlobalBytecodeSimpleFun_O);
-  Init__fixed_field(core::GlobalBytecodeSimpleFun_O, 0, SMART_PTR_OFFSET, _TheSimpleFun);
-  Init__fixed_field(core::GlobalBytecodeSimpleFun_O, 1, SMART_PTR_OFFSET, _FunctionDescription);
-  Init__fixed_field(core::GlobalBytecodeSimpleFun_O, 2, SMART_PTR_OFFSET, _Code);
-  Init__fixed_field(core::GlobalBytecodeSimpleFun_O, 3, RAW_POINTER_OFFSET, _EntryPoints._EntryPoints[0]);
+  Init_class_kind(core::BytecodeSimpleFun_O);
+  Init__fixed_field(core::BytecodeSimpleFun_O, 0, SMART_PTR_OFFSET, _TheSimpleFun);
+  Init__fixed_field(core::BytecodeSimpleFun_O, 1, SMART_PTR_OFFSET, _FunctionDescription);
+  Init__fixed_field(core::BytecodeSimpleFun_O, 2, SMART_PTR_OFFSET, _Code);
+  Init__fixed_field(core::BytecodeSimpleFun_O, 3, RAW_POINTER_OFFSET, _EntryPoints._EntryPoints[0]);
 
   Init_class_kind(core::FunctionDescription_O);
   Init__fixed_field(core::FunctionDescription_O, 0, SMART_PTR_OFFSET, _functionName);

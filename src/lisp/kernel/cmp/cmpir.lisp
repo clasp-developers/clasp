@@ -133,7 +133,7 @@ Maybe in the future we will want to actually put a test here."
 
 (defun generate-function-for-arity-p (arity cll-analysis)
   "Return T if a function should be generated for this arity.
-If nil then insert a general_entry_point_redirect_x function"
+If nil then insert a general_entry_point_redirect_x function which just calls the general entry point. This is useful for entry points that just signal an argcount mismatch error - we can just use existing entry point functions that defer to the general rather than generating more code."
   (if (eq arity :general-entry)
       t
       (if (cleavir-lambda-list-analysis-req-opt-only-p cll-analysis)
@@ -1032,7 +1032,7 @@ function-description - for debugging."
 (defun irc-create-global-entry-point-reference (xep-arity-list module function-description local-entry-point-reference)
   (declare (ignore module))
   (let* ((simple-fun-generator (let ((entry-point-indices (literal:register-xep-function-indices xep-arity-list)))
-                                  (sys:make-global-simple-fun-generator
+                                  (sys:make-simple-core-fun-generator
                                    :entry-point-functions entry-point-indices
                                    :function-description function-description
                                    :local-entry-point-index (entry-point-reference-index local-entry-point-reference))))
@@ -1042,7 +1042,7 @@ function-description - for debugging."
 (defun irc-create-local-entry-point-reference (local-fn module function-description)
   (declare (ignore module))
   (let* ((simple-fun-generator (let ((entry-point-index (literal:register-local-function-index local-fn)))
-                                 (sys:make-local-simple-fun-generator
+                                 (sys:make-core-fun-generator
                                   :entry-point-functions (list entry-point-index)
                                   :function-description function-description)))
          (index (literal:reference-literal simple-fun-generator)))

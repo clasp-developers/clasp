@@ -111,8 +111,8 @@ void class_registration::register_() const {
   if (m_default_constructor != NULL) {
     creator = m_default_constructor->registerDefaultConstructor_();
   } else {
-    core::GlobalSimpleFun_sp entryPoint =
-        core::makeGlobalSimpleFunAndFunctionDescription<DummyCreator_O>(::nil<core::T_O>(), ::nil<core::T_O>());
+    core::SimpleFun_sp entryPoint =
+        core::makeSimpleFunAndFunctionDescription<DummyCreator_O>(::nil<core::T_O>());
     creator = gctools::GC<DummyCreator_O>::allocate(entryPoint, className);
   }
   //  printf("%s:%d:%s  classNameString->%s  where -> 0x%zx\n", __FILE__, __LINE__, __FUNCTION__, classNameString.c_str(), where);

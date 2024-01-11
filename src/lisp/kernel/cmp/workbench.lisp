@@ -105,7 +105,7 @@
          literal::register-xep-function-indices
          literal::register-local-function->function-datum
          literal::register-xep-function->function-datums
-         sys:make-global-simple-fun-generator
+         sys:make-simple-core-fun-generator
          sys:make-local-simple-fun-generator
          )
   (compile 'foo '(lambda (x) x))

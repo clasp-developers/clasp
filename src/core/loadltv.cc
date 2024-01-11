@@ -585,7 +585,7 @@ struct loadltv {
     T_sp lambda_list = get_ltv(read_index());
     T_sp docstring = get_ltv(read_index());
     FunctionDescription_sp fdesc = makeFunctionDescription(name, lambda_list, docstring, nil<T_O>(), nil<T_O>(), -1, -1, -1);
-    GlobalBytecodeSimpleFun_sp fun = core__makeGlobalBytecodeSimpleFun(fdesc, module, nlocals, nclosed, entry_point, final_size,
+    BytecodeSimpleFun_sp fun = core__makeBytecodeSimpleFun(fdesc, module, nlocals, nclosed, entry_point, final_size,
                                                                        llvmo::cmp__compile_trampoline(name));
     if (comp::_sym_STARautocompile_hookSTAR->boundP() &&
         comp::_sym_STARautocompile_hookSTAR->symbolValue().notnilp()
@@ -645,7 +645,7 @@ struct loadltv {
     T_O* args[nargs];
     for (size_t i = 0; i < nargs; ++i)
       args[i] = get_ltv(read_index()).raw_();
-    T_sp res = funcall_general<Function_O>((gc::Tagged)(func.raw_()), nargs, args);
+    T_sp res = func->apply_raw(nargs, args);
     set_ltv(res, index);
   }
 
@@ -656,7 +656,7 @@ struct loadltv {
     T_O* args[nargs];
     for (size_t i = 0; i < nargs; ++i)
       args[i] = get_ltv(read_index()).raw_();
-    funcall_general<Function_O>((gc::Tagged)(func.raw_()), nargs, args);
+    func->apply_raw(nargs, args);
   }
 
   void op_class() {

@@ -68,41 +68,10 @@ List_sp core__aclasp_list_of_all_special_operators();
   (functionDesignator) can be a Symbol or an Function
 */
 
-inline LCC_RETURN funcall(T_sp fn) {
+template <class... ARGS>
+inline LCC_RETURN funcall(T_sp fn, ARGS&&... args) {
   Function_sp func = coerce::calledFunctionDesignator(fn);
-  return func->entry_0()(func.raw_());
-}
-
-inline LCC_RETURN funcall(T_sp fn, T_sp arg0) {
-  Function_sp func = coerce::calledFunctionDesignator(fn);
-  return func->entry_1()(func.raw_(), arg0.raw_());
-}
-
-inline LCC_RETURN funcall(T_sp fn, T_sp arg0, T_sp arg1) {
-  Function_sp func = coerce::calledFunctionDesignator(fn);
-  return func->entry_2()(func.raw_(), arg0.raw_(), arg1.raw_());
-}
-
-inline LCC_RETURN funcall(T_sp fn, T_sp arg0, T_sp arg1, T_sp arg2) {
-  Function_sp func = coerce::calledFunctionDesignator(fn);
-  return func->entry_3()(func.raw_(), arg0.raw_(), arg1.raw_(), arg2.raw_());
-}
-
-inline LCC_RETURN funcall(T_sp fn, T_sp arg0, T_sp arg1, T_sp arg2, T_sp arg3) {
-  Function_sp func = coerce::calledFunctionDesignator(fn);
-  return func->entry_4()(func.raw_(), arg0.raw_(), arg1.raw_(), arg2.raw_(), arg3.raw_());
-}
-
-inline LCC_RETURN funcall(T_sp fn, T_sp arg0, T_sp arg1, T_sp arg2, T_sp arg3, T_sp arg4) {
-  Function_sp func = coerce::calledFunctionDesignator(fn);
-  return func->entry_5()(func.raw_(), arg0.raw_(), arg1.raw_(), arg2.raw_(), arg3.raw_(), arg4.raw_());
-}
-
-template <class... ARGS> inline LCC_RETURN funcall(T_sp fn, ARGS&&... args) {
-  Function_sp func = coerce::calledFunctionDesignator(fn);
-  size_t nargs = sizeof...(ARGS);
-  T_O* aargs[sizeof...(ARGS)] = {args.raw_()...};
-  return func->entry()(func.raw_(), nargs, &aargs[0]);
+  return func->funcall(args...);
 }
 
 }; // namespace eval

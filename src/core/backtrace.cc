@@ -205,10 +205,10 @@ T_sp dwarf_ep(size_t frameIndex, llvmo::ObjectFile_sp ofi, llvmo::DWARFContext_s
                  nliterals););
         for (size_t i = 0; i < nliterals; ++i) {
           T_sp literal((gc::Tagged)(rliterals[i]));
-          if (gc::IsA<LocalSimpleFun_sp>(literal)) {
-            LocalSimpleFun_sp ep = gc::As_unsafe<LocalSimpleFun_sp>(literal);
+          if (gc::IsA<CoreFun_sp>(literal)) {
+            CoreFun_sp ep = gc::As_unsafe<CoreFun_sp>(literal);
             uintptr_t absolute_entry = (uintptr_t)(ep->_Entry);
-            D(printf("%s%s:%d:%s LocalSimpleFun_sp %s  absolute_entry = %p   FunctionDescription name %s\n", trace.spaces().c_str(),
+            D(printf("%s%s:%d:%s CoreFun_sp %s  absolute_entry = %p   FunctionDescription name %s\n", trace.spaces().c_str(),
                      __FILE__, __LINE__, __FUNCTION__, _rep_(ep).c_str(), (void*)absolute_entry,
                      _rep_(ep->functionDescription()).c_str()););
             for (auto range : ranges) {
@@ -218,16 +218,16 @@ T_sp dwarf_ep(size_t frameIndex, llvmo::ObjectFile_sp ofi, llvmo::DWARFContext_s
                 D(printf("%s%s:%d:%s Matched absolute_LowPC/absolute_HighPC %p/%p\n", trace.spaces().c_str(), __FILE__, __LINE__,
                          __FUNCTION__, (void*)absolute_LowPC, (void*)absolute_HighPC););
                 XEPp = false;
-                // This will be identical to the entry point address in LocalSimpleFun_sp ep
+                // This will be identical to the entry point address in CoreFun_sp ep
                 return ep;
               } else {
                 D(printf("%s%s:%d:%s DID NOT match absolute_LowPC/absolute_HighPC %p/%p\n", trace.spaces().c_str(), __FILE__,
                          __LINE__, __FUNCTION__, (void*)absolute_LowPC, (void*)absolute_HighPC););
               }
             }
-          } else if (gc::IsA<GlobalSimpleFun_sp>(literal)) {
-            GlobalSimpleFun_sp ep = gc::As_unsafe<GlobalSimpleFun_sp>(literal);
-            D(printf("%s%s:%d:%s GlobalSimpleFun_sp %s  FunctionDescription name %s\n", trace.spaces().c_str(), __FILE__, __LINE__,
+          } else if (gc::IsA<SimpleFun_sp>(literal)) {
+            SimpleFun_sp ep = gc::As_unsafe<SimpleFun_sp>(literal);
+            D(printf("%s%s:%d:%s SimpleCoreFun_sp %s  FunctionDescription name %s\n", trace.spaces().c_str(), __FILE__, __LINE__,
                      __FUNCTION__, _rep_(ep).c_str(), _rep_(ep->functionDescription()).c_str()););
             for (size_t j = 0; j < NUMBER_OF_ENTRY_POINTS; ++j) {
               uintptr_t absolute_entry = (uintptr_t)(ep->_EntryPoints[j]);
@@ -238,8 +238,8 @@ T_sp dwarf_ep(size_t frameIndex, llvmo::ObjectFile_sp ofi, llvmo::DWARFContext_s
                   D(printf("%s%s:%d:%s Matched arityCode: %lu absolute_LowPC/absolute_HighPC %p/%p\n", trace.spaces().c_str(),
                            __FILE__, __LINE__, __FUNCTION__, j, (void*)absolute_LowPC, (void*)absolute_HighPC););
                   XEPp = true;
-                  // This will be identical to ONE of the the entry point address in GlobalSimpleFun_sp ep
-                  // arityCode is the index into the GlobalSimpleFun_sp vector corresponding to functionStartAddress
+                  // This will be identical to ONE of the the entry point address in SimpleFun_sp ep
+                  // arityCode is the index into the SimpleFun_sp vector corresponding to functionStartAddress
                   arityCode = j;
                   return ep;
                 } else {
@@ -463,7 +463,7 @@ static DebuggerFrame_sp make_lisp_frame(size_t frameIndex, void* absolute_ip, co
                                nil<T_O>(), INTERN_(kw, lisp), XEPp);
 }
 
-static DebuggerFrame_sp make_bytecode_frame_from_function(GlobalBytecodeSimpleFun_sp fun, void* bpc, T_O** bfp) {
+static DebuggerFrame_sp make_bytecode_frame_from_function(BytecodeSimpleFun_sp fun, void* bpc, T_O** bfp) {
   // We can get the closure easy if the function actually isn't one.
   // Otherwise we'd have to poke through bytecode_vm arguments or maybe
   // the vm stack?
@@ -489,8 +489,8 @@ static DebuggerFrame_sp make_bytecode_frame(size_t frameIndex, unsigned char*& p
     BytecodeModule_sp mod = gc::As_assert<BytecodeModule_sp>(oCar(mods));
     if (bytecode_module_contains_address_p(mod, bpc)) {
       T_sp fun = bytecode_function_for_pc(mod, bpc);
-      if (gc::IsA<GlobalBytecodeSimpleFun_sp>(fun))
-        return make_bytecode_frame_from_function(gc::As_unsafe<GlobalBytecodeSimpleFun_sp>(fun), bpc, bfp);
+      if (gc::IsA<BytecodeSimpleFun_sp>(fun))
+        return make_bytecode_frame_from_function(gc::As_unsafe<BytecodeSimpleFun_sp>(fun), bpc, bfp);
     }
   }
   return DebuggerFrame_O::make(INTERN_(kw, bytecode), Pointer_O::create(bpc), nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), false,
@@ -604,8 +604,8 @@ static bool sanity_check_frame(size_t frameIndex, void* ip, void* fbp) {
     T_sp ep = dwarf_ep(frameIndex, ofi, dcontext, sa, codeStart, functionStartAddress, XEPp, arityCode);
     uintptr_t stackmap_start = (uintptr_t)(ofi->_StackmapStart);
     uintptr_t stackmap_end = stackmap_start + ofi->_StackmapSize;
-    if (gc::IsA<LocalSimpleFun_sp>(ep)) {
-      LocalSimpleFun_sp localEntryPoint = gc::As_unsafe<LocalSimpleFun_sp>(ep);
+    if (gc::IsA<CoreFun_sp>(ep)) {
+      CoreFun_sp localEntryPoint = gc::As_unsafe<CoreFun_sp>(ep);
       bool result = true;
       auto thunk = [&](size_t _, const smStkSizeRecord& function, int32_t offsetOrSmallConstant, int64_t patchPointId) {
         if (function.FunctionAddress == (uintptr_t)(localEntryPoint->_Entry)) {
@@ -619,8 +619,8 @@ static bool sanity_check_frame(size_t frameIndex, void* ip, void* fbp) {
         walk_one_llvm_stackmap(thunk, stackmap_start, stackmap_end);
       }
       return result;
-    } else if (gc::IsA<GlobalSimpleFun_sp>(ep)) {
-      GlobalSimpleFun_sp globalEntryPoint = gc::As_unsafe<GlobalSimpleFun_sp>(ep);
+    } else if (gc::IsA<SimpleFun_sp>(ep)) {
+      SimpleFun_sp globalEntryPoint = gc::As_unsafe<SimpleFun_sp>(ep);
       bool result = true;
       auto thunk = [&](size_t _, const smStkSizeRecord& function, int32_t offsetOrSmallConstant, int64_t patchPointId) {
         if (function.FunctionAddress == (uintptr_t)(globalEntryPoint->_EntryPoints[arityCode])) {

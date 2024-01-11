@@ -7,7 +7,7 @@
 
 (defun function-at-ip (ip module)
   (map nil (lambda (dinfo)
-             (when (and (typep dinfo 'core:global-bytecode-simple-fun)
+             (when (and (typep dinfo 'core:bytecode-simple-fun)
                         (<= (core:bytecode-debug-info/start dinfo) ip)
                         (< ip (core:bytecode-debug-info/end dinfo)))
                (return-from function-at-ip dinfo)))
@@ -139,7 +139,7 @@ Returns an alist. Each CAR is the name of the called function, and the CDR is a 
   (if (fboundp function-name)
       (let* ((function (fdefinition function-name))
              (simple (core:function/entry-point function)))
-        (if (typep simple 'core:global-bytecode-simple-fun)
+        (if (typep simple 'core:bytecode-simple-fun)
             (bc-list-callees simple)
             nil))
       nil))

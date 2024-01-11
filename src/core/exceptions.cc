@@ -78,26 +78,26 @@ void CatchThrow::keyFunctionForVtable(){};
 void Unwind::keyFunctionForVtable(){};
 
 SYMBOL_EXPORT_SC_(KeywordPkg, called_function);
-void throwTooFewArgumentsError(core::T_sp closure, size_t given, size_t required) {
+[[noreturn]] void throwTooFewArgumentsError(core::T_sp closure, size_t given, size_t required) {
   lisp_error(core::_sym_wrongNumberOfArguments, lisp_createList(kw::_sym_called_function, closure, kw::_sym_givenNargs,
                                                                 make_fixnum(given), kw::_sym_minNargs, make_fixnum(required)));
 }
 
-void throwTooManyArgumentsError(core::T_sp closure, size_t given, size_t required) {
+[[noreturn]] void throwTooManyArgumentsError(core::T_sp closure, size_t given, size_t required) {
   lisp_error(core::_sym_wrongNumberOfArguments, lisp_createList(kw::_sym_called_function, closure, kw::_sym_givenNargs,
                                                                 make_fixnum(given), kw::_sym_maxNargs, make_fixnum(required)));
 }
 
-void throwOddKeywordsError(core::T_sp closure) {
+[[noreturn]] void throwOddKeywordsError(core::T_sp closure) {
   lisp_error(core::_sym_oddKeywords, lisp_createList(kw::_sym_called_function, closure));
 }
 
-void throwUnrecognizedKeywordArgumentError(core::T_sp closure, core::T_sp kws) {
+[[noreturn]] void throwUnrecognizedKeywordArgumentError(core::T_sp closure, core::T_sp kws) {
   lisp_error(core::_sym_unrecognizedKeywordArgumentError,
              lisp_createList(kw::_sym_unrecognizedKeywords, kws, kw::_sym_called_function, closure));
 }
 
-void wrongNumberOfArguments(core::T_sp closure, size_t givenNumberOfArguments, size_t requiredNumberOfArguments) {
+[[noreturn]] void wrongNumberOfArguments(core::T_sp closure, size_t givenNumberOfArguments, size_t requiredNumberOfArguments) {
   if (givenNumberOfArguments < requiredNumberOfArguments)
     throwTooFewArgumentsError(closure, givenNumberOfArguments, requiredNumberOfArguments);
   else

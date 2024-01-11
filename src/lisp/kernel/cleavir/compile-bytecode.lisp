@@ -19,12 +19,12 @@
       definition)))
 
 (defun bcfun-p (annotation)
-  (typep annotation 'core:global-bytecode-simple-fun))
+  (typep annotation 'core:bytecode-simple-fun))
 
 (defun bcfun/locals-size (bcfun)
-  (core:global-bytecode-simple-fun/locals-frame-size bcfun))
+  (core:bytecode-simple-fun/locals-frame-size bcfun))
 (defun bcfun/nvars (bcfun)
-  (core:global-bytecode-simple-fun/environment-size bcfun))
+  (core:bytecode-simple-fun/environment-size bcfun))
 
 (defgeneric compile-instruction (mnemonic inserter context &rest args))
 (defgeneric start-annotation (annotation inserter context))
@@ -1276,13 +1276,13 @@
   (pop (origin-stack context)))
 
 ;;; Most processing is handled by maybe-begin-new, but there's still source info.
-(defmethod start-annotation ((annot core:global-bytecode-simple-fun)
+(defmethod start-annotation ((annot core:bytecode-simple-fun)
                              inserter context)
   (declare (ignore inserter))
   (let ((spi (function-spi annot)))
     (when spi
       (push (kludge-spi spi) (origin-stack context)))))
-(defmethod end-annotation ((annot core:global-bytecode-simple-fun)
+(defmethod end-annotation ((annot core:bytecode-simple-fun)
                            inserter context)
   (declare (ignore inserter))
   (when (function-spi annot)

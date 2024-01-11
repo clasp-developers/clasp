@@ -590,80 +590,6 @@ CL_DEFUN void gctools__enable_underscanning(bool us) { global_underscanning = us
 #endif
 }; // namespace gctools
 
-#ifdef DEBUG_FUNCTION_CALL_COUNTER
-namespace gctools {
-void common_function_call_counter(core::General_O* obj, size_t size, void* hash_table_raw) {
-  core::HashTableEq_O* hash_table = reinterpret_cast<core::HashTableEq_O*>(hash_table_raw);
-  core::T_sp gen = obj->asSmartPtr();
-  if (core::Function_sp func = gen.asOrNull<core::Function_O>()) {
-    hash_table->setf_gethash(gen, core::clasp_make_fixnum(func->_TimesCalled));
-  }
-}
-
-#ifdef USE_MPS
-void amc_apply_function_call_counter(mps_addr_t client, void* hash_table_raw, size_t s) {
-  common_function_call_counter(reinterpret_cast<core::General_O*>(client), s, hash_table_raw);
-}
-#endif
-#ifdef USE_BOEHM
-void boehm_callback_function_call_counter(void* header, size_t size, void* hash_table_raw) {
-  common_function_call_counter(HeaderPtrToGeneralPtr<core::General_O>(header), size, hash_table_raw);
-};
-#endif
-
-CL_LAMBDA(func);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(function-call-count-profiler - Evaluate a function, count every function call made during the evaluation.)dx");
-DOCGROUP(clasp);
-CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
-  core::HashTable_sp func_counters_start = core::HashTableEq_O::create_default();
-  core::HashTable_sp func_counters_end = core::HashTableEq_O::create_default();
-#if defined(USE_MPS)
-  mps_amc_apply(global_amc_pool, amc_apply_function_call_counter, &*func_counters_start, 0);
-#elif defined(USE_BOEHM)
-#if GC_VERSION_MAJOR >= 7 && GC_VERSION_MINOR >= 6
-  GC_enumerate_reachable_objects_inner(boehm_callback_function_call_counter, &*func_counters_start);
-#endif
-#elif defined(USE_MMTK)
-  MISSING_GC_SUPPORT();
-#endif
-  core::eval::funcall(func);
-#if defined(USE_MPS)
-  mps_amc_apply(global_amc_pool, amc_apply_function_call_counter, &*func_counters_end, 0);
-#elif defined(USE_BOEHM)
-#if GC_VERSION_MAJOR >= 7 && GC_VERSION_MINOR >= 6
-  GC_enumerate_reachable_objects_inner(boehm_callback_function_call_counter, &*func_counters_end);
-#endif
-#endif
-  func_counters_start->mapHash([func_counters_end](core::T_sp f, core::T_sp start_value) {
-    core::T_sp end_value = func_counters_end->gethash(f);
-    ASSERT(start_value.fixnump() && end_value.fixnump());
-    Fixnum diff = end_value.unsafe_fixnum() - start_value.unsafe_fixnum();
-    func_counters_end->setf_gethash(f, core::clasp_make_fixnum(diff));
-  });
-
-  core::List_sp results = nil<core::T_O>();
-  func_counters_end->mapHash([func_counters_end, &results](core::T_sp f, core::T_sp value) {
-    ASSERT(value.fixnump());
-    Fixnum diff = value.unsafe_fixnum();
-    if (diff > 0) {
-      results = core::Cons_O::create(core::Cons_O::create(core::clasp_make_fixnum(diff), f), results);
-    }
-  });
-  printf("%s:%d There are %zu results\n", __FILE__, __LINE__, core::cl__length(results));
-  results = core::cl__sort(results, cl::_sym__LT_, cl::_sym_car);
-  for (auto cur : results) {
-    core::T_sp one = oCar(cur);
-    core::T_sp count = oCar(one);
-    core::T_sp func = oCdr(one);
-    if (count.unsafe_fixnum() > 0) {
-      core::clasp_write_string(fmt::format("{} : {}\n", count.unsafe_fixnum(), _rep_(func)));
-    }
-  }
-};
-};     // namespace gctools
-#endif // DEBUG_FUNCTION_CALL_COUNTER
-
 namespace gctools {
 /*! Call finalizer_callback with no arguments when object is finalized.*/
 DOCGROUP(clasp);
@@ -937,14 +863,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport)
     ss << (fmt::format("DEBUG_VALIDATE_GUARD = {}\n", (debug_validate_guard ? "**DEFINED**" : "undefined")));
-
-  bool debug_function_call_counter = false;
-#ifdef DEBUG_FUNCTION_CALL_COUNTER
-  debug_function_call_counter = true;
-  debugging = true;
-#endif
-  if (buildReport)
-    ss << (fmt::format("DEBUG_FUNCTION_CALL_COUNTER = {}\n", (debug_function_call_counter ? "**DEFINED**" : "undefined")));
 
   bool debug_ensure_valid_object = false;
 #ifdef DEBUG_ENSURE_VALID_OBJECT

@@ -132,7 +132,7 @@ class DummyCreator_O : public core::Creator_O {
   core::T_sp _name;
 
 public:
-  DummyCreator_O(core::GlobalSimpleFun_sp ep, core::T_sp name) : core::Creator_O(ep), _name(name){};
+  DummyCreator_O(core::SimpleFun_sp ep, core::T_sp name) : core::Creator_O(ep), _name(name){};
 
 public:
   virtual size_t templatedSizeof() const override { return sizeof(*this); };
@@ -141,8 +141,8 @@ public:
     SIMPLE_ERROR("This class named: {} cannot allocate instances", core::_rep_(this->_name));
   } // return _Nil<core::T_O>(); };
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) override {
-    core::GlobalSimpleFun_sp entryPoint =
-        core::makeGlobalSimpleFunAndFunctionDescription<DummyCreator_O>(nil<T_O>(), nil<core::T_O>());
+    core::SimpleFun_sp entryPoint =
+        core::makeSimpleFunAndFunctionDescription<DummyCreator_O>(nil<T_O>());
     return gc::GC<DummyCreator_O>::allocate(entryPoint, className);
   }
 };
@@ -422,8 +422,8 @@ struct constructor_registration<Class, HoldType, default_constructor, Policies, 
       : constructor_registration_base<Class, HoldType, default_constructor, Policies>(policies, name, arguments, declares,
                                                                                       docstring){};
   core::Creator_sp registerDefaultConstructor_() const {
-    core::GlobalSimpleFun_sp ep = core::makeGlobalSimpleFunAndFunctionDescription<DefaultConstructorCreator_O<Class, HoldType>>(
-        nil<core::T_O>(), nil<core::T_O>());
+    core::SimpleFun_sp ep = core::makeSimpleFunAndFunctionDescription<DefaultConstructorCreator_O<Class, HoldType>>(
+        nil<core::T_O>());
     core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<Class, HoldType>>::allocate(ep));
     return allocator;
   }
@@ -483,7 +483,7 @@ struct property_registration : registration {
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lisp_intern(n, symbol_packageName(classSymbol));
     using VariadicGetterType = WRAPPER_Getter<reg::null_type, Class, Get>;
-    core::GlobalSimpleFun_sp entryPoint = makeGlobalSimpleFunAndFunctionDescription<VariadicGetterType>(sym, nil<core::T_O>());
+    core::SimpleFun_sp entryPoint = makeSimpleFunAndFunctionDescription<VariadicGetterType>(sym);
     maybe_register_symbol_using_dladdr((void*)VariadicGetterType::entry_point);
     auto raw_getter = gc::GC<VariadicGetterType>::allocate(entryPoint, get);
     core::BuiltinClosure_sp getter = gc::As<core::BuiltinClosure_sp>(raw_getter);
@@ -491,8 +491,8 @@ struct property_registration : registration {
                                     m_doc_string, true, 1);
     core::T_sp setf_name = core::Cons_O::createList(cl::_sym_setf, sym);
     using VariadicSetterType = WRAPPER_Setter<reg::null_type, Class, Set>;
-    core::GlobalSimpleFun_sp setterEntryPoint =
-        makeGlobalSimpleFunAndFunctionDescription<VariadicSetterType>(setf_name, nil<core::T_O>());
+    core::SimpleFun_sp setterEntryPoint =
+        makeSimpleFunAndFunctionDescription<VariadicSetterType>(setf_name);
     maybe_register_symbol_using_dladdr((void*)VariadicSetterType::entry_point);
     auto raw_setter = gc::GC<VariadicSetterType>::allocate(setterEntryPoint, set);
     core::BuiltinClosure_sp setter = gc::As<core::BuiltinClosure_sp>(raw_setter);

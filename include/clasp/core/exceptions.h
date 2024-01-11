@@ -249,14 +249,14 @@ public:
 
 #pragma GCC visibility pop
 
-void throwTooFewArgumentsError(core::T_sp closure, size_t given, size_t required);
+[[noreturn]] void throwTooFewArgumentsError(core::T_sp closure, size_t given, size_t required);
 
-void throwTooManyArgumentsError(core::T_sp closure, size_t given, size_t required);
+[[noreturn]] void throwTooManyArgumentsError(core::T_sp closure, size_t given, size_t required);
 
-void throwOddKeywordsError(core::T_sp closure);
-void throwUnrecognizedKeywordArgumentError(core::T_sp closure, core::T_sp kw);
+[[noreturn]] void throwOddKeywordsError(core::T_sp closure);
+[[noreturn]] void throwUnrecognizedKeywordArgumentError(core::T_sp closure, core::T_sp kw);
 
-void wrongNumberOfArguments(core::T_sp closure, size_t givenNumberOfArguments, size_t requiredNumberOfArguments);
+[[noreturn]] void wrongNumberOfArguments(core::T_sp closure, size_t givenNumberOfArguments, size_t requiredNumberOfArguments);
 
 /*! Set a break-point in _trapThrow to catch
  * every exception except those thrown by THROW_noTrap

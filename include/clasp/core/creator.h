@@ -55,30 +55,13 @@ public:
     LCC_RETURN v;
     return v;
   }
-  static inline LISP_ENTRY_0() { return entry_point_n(lcc_closure, 0, NULL); }
-  static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return entry_point_n(lcc_closure, 1, args);
-  }
-  static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0, lcc_farg1};
-    return entry_point_n(lcc_closure, 2, args);
-  }
-  static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
-    return entry_point_n(lcc_closure, 3, args);
-  }
-  static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
-    return entry_point_n(lcc_closure, 4, args);
-  }
-  static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
-    return entry_point_n(lcc_closure, 5, args);
+  template <typename... Ts>
+  static inline LCC_RETURN entry_point_fixed(T_O* lcc_closure, Ts... args) {
+    T_O* lcc_args[sizeof...(Ts)] = {args...};
+    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
   }
 
-  Creator_O(GlobalSimpleFun_sp fdesc) : Base(fdesc){};
-  //    Creator_O() : Function_O(makeFunctionDescription(_Nil<T_O>(),entry_point)) {};
+  Creator_O(SimpleFun_sp ep) : Base(ep){};
   virtual ~Creator_O(){};
 };
 
@@ -93,7 +76,7 @@ public:
     return obj;
   }
   virtual void searcher(){};
-  WRAPPER_BuiltInObjectCreator(core::GlobalSimpleFun_sp fdesc) : core::Creator_O(fdesc){};
+  WRAPPER_BuiltInObjectCreator(core::SimpleFun_sp ep) : core::Creator_O(ep){};
 };
 
 }; // namespace core
@@ -117,7 +100,7 @@ public:
   Instance_sp _class;
 
 public:
-  InstanceCreator_O(GlobalSimpleFun_sp fdesc, Instance_sp class_) : Base(fdesc), _class(class_){};
+  InstanceCreator_O(SimpleFun_sp ep, Instance_sp class_) : Base(ep), _class(class_){};
   T_sp creator_allocate() override;
   virtual size_t templatedSizeof() const override { return sizeof(InstanceCreator_O); };
 };
@@ -131,7 +114,7 @@ public:
   Instance_sp _class;
 
 public:
-  FuncallableInstanceCreator_O(GlobalSimpleFun_sp fdesc, Instance_sp class_) : Base(fdesc), _class(class_){};
+  FuncallableInstanceCreator_O(SimpleFun_sp ep, Instance_sp class_) : Base(ep), _class(class_){};
   T_sp creator_allocate() override;
   virtual size_t templatedSizeof() const override { return sizeof(FuncallableInstanceCreator_O); };
 };
@@ -142,7 +125,7 @@ class StandardClassCreator_O : public Creator_O {
   LISP_CLASS(core, CorePkg, StandardClassCreator_O, "StandardClassCreator", Creator_O);
 
 public:
-  StandardClassCreator_O(GlobalSimpleFun_sp fdesc) : Base(fdesc){};
+  StandardClassCreator_O(SimpleFun_sp ep) : Base(ep){};
   T_sp creator_allocate() override;
   virtual size_t templatedSizeof() const override { return sizeof(StandardClassCreator_O); };
 };
@@ -153,7 +136,7 @@ class DerivableCxxClassCreator_O : public Creator_O {
   LISP_CLASS(core, CorePkg, DerivableCxxClassCreator_O, "DerivableCxxClassCreator", Creator_O);
 
 public:
-  DerivableCxxClassCreator_O(GlobalSimpleFun_sp fdesc) : Base(fdesc){};
+  DerivableCxxClassCreator_O(SimpleFun_sp ep) : Base(ep){};
   T_sp creator_allocate() override;
   virtual size_t templatedSizeof() const override { return sizeof(DerivableCxxClassCreator_O); };
 };
@@ -164,7 +147,7 @@ class ClassRepCreator_O : public Creator_O {
   LISP_CLASS(core, CorePkg, ClassRepCreator_O, "ClassRepCreator", Creator_O);
 
 public:
-  ClassRepCreator_O(GlobalSimpleFun_sp fdesc) : Base(fdesc){};
+  ClassRepCreator_O(SimpleFun_sp ep) : Base(ep){};
   T_sp creator_allocate() override;
   virtual size_t templatedSizeof() const override { return sizeof(ClassRepCreator_O); };
 };

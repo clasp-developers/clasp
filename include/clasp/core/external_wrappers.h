@@ -39,11 +39,11 @@ namespace clbind {
 
 template <typename RT, typename OT, typename... ARGS, typename Policies, typename ArgumentWrapper>
 class WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...), Policies, OT, ArgumentWrapper>
-    : public core::GlobalSimpleFunBase_O {
+    : public core::SimpleFun_O {
 public:
   typedef WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...), Policies, OT, ArgumentWrapper> MyType;
   typedef RT (OT::ExternalType::*MethodType)(ARGS...);
-  typedef core::GlobalSimpleFunBase_O TemplatedBase;
+  typedef core::SimpleFun_O TemplatedBase;
 
 public:
   MethodType mptr;
@@ -52,7 +52,7 @@ public:
   enum { NumParams = sizeof...(ARGS) + 1 };
 
   WRAPPER_IndirectMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), GlobalSimpleFunBase_O(fdesc, core::XepStereotype<MyType>(), code) {
+    : mptr(ptr), SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
     this->validateCodePointer((void**)&this->mptr, sizeof(this->mptr));
   };
 
@@ -68,7 +68,6 @@ public:
   static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs,
                                                  core::T_O** lcc_args) {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     if (lcc_nargs != NumParams)
       cc_wrong_number_of_arguments(lcc_closure, lcc_nargs, NumParams, NumParams);
@@ -83,13 +82,11 @@ public:
     return wrapper_entry_point_n(ArgumentWrapper(), lcc_closure, lcc_nargs, lcc_args);
   }
 
-  static inline LISP_ENTRY_0() { return general_entry_point_redirect_0(lcc_closure); }
-  static inline LISP_ENTRY_1() { return general_entry_point_redirect_1(lcc_closure, lcc_farg0); }
-  static inline LISP_ENTRY_2() { return general_entry_point_redirect_2(lcc_closure, lcc_farg0, lcc_farg1); }
-  static inline LISP_ENTRY_3() { return general_entry_point_redirect_3(lcc_closure, lcc_farg0, lcc_farg1, lcc_farg2); }
-  static inline LISP_ENTRY_4() { return general_entry_point_redirect_4(lcc_closure, lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3); }
-  static inline LISP_ENTRY_5() {
-    return general_entry_point_redirect_5(lcc_closure, lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4);
+  template <typename... Ts>
+  static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
+                                             Ts... args) {
+    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
+    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
   }
 };
 }; // namespace clbind
@@ -97,11 +94,11 @@ public:
 namespace clbind {
 template <typename RT, typename OT, typename... ARGS, typename Policies, typename ArgumentWrapper>
 class WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...) const, Policies, OT, ArgumentWrapper>
-    : public core::GlobalSimpleFunBase_O {
+    : public core::SimpleFun_O {
 public:
   typedef WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...) const, Policies, OT, ArgumentWrapper> MyType;
   typedef RT (OT::ExternalType::*MethodType)(ARGS...) const;
-  typedef GlobalSimpleFunBase_O TemplatedBase;
+  typedef SimpleFun_O TemplatedBase;
 
 public:
   MethodType mptr;
@@ -110,7 +107,7 @@ public:
   enum { NumParams = sizeof...(ARGS) + 1 };
 
   WRAPPER_IndirectMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), GlobalSimpleFunBase_O(fdesc, core::XepStereotype<MyType>(), code) {
+    : mptr(ptr), SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
     this->validateCodePointer((void**)&this->mptr, sizeof(this->mptr));
   };
 
@@ -126,7 +123,6 @@ public:
   static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs,
                                                  core::T_O** lcc_args) {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     if (lcc_nargs != NumParams)
       cc_wrong_number_of_arguments(lcc_closure, lcc_nargs, NumParams, NumParams);
@@ -141,21 +137,19 @@ public:
     return wrapper_entry_point_n(ArgumentWrapper(), lcc_closure, lcc_nargs, lcc_args);
   }
 
-  static inline LISP_ENTRY_0() { return general_entry_point_redirect_0(lcc_closure); }
-  static inline LISP_ENTRY_1() { return general_entry_point_redirect_1(lcc_closure, lcc_farg0); }
-  static inline LISP_ENTRY_2() { return general_entry_point_redirect_2(lcc_closure, lcc_farg0, lcc_farg1); }
-  static inline LISP_ENTRY_3() { return general_entry_point_redirect_3(lcc_closure, lcc_farg0, lcc_farg1, lcc_farg2); }
-  static inline LISP_ENTRY_4() { return general_entry_point_redirect_4(lcc_closure, lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3); }
-  static inline LISP_ENTRY_5() {
-    return general_entry_point_redirect_5(lcc_closure, lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4);
+  template <typename... Ts>
+  static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
+                                             Ts... args) {
+    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
+    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
   }
 };
 }; // namespace clbind
 
 namespace core {
-template <class D, class C> class WRAPPER_Getter : public GlobalSimpleFunBase_O {
+template <class D, class C> class WRAPPER_Getter : public SimpleFun_O {
 public:
-  typedef GlobalSimpleFunBase_O TemplatedBase;
+  typedef SimpleFun_O TemplatedBase;
   typedef WRAPPER_Getter<D, C> MyType;
 
 public:
@@ -165,7 +159,7 @@ public:
 
 public:
   WRAPPER_Getter(MemPtr ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), GlobalSimpleFunBase_O(fdesc, core::XepStereotype<MyType>(), code) {
+    : mptr(ptr), SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
     this->validateCodePointer((void**)&this->mptr, sizeof(this->mptr));
   }
 
@@ -178,26 +172,11 @@ public:
   };
 
   static inline LCC_RETURN LISP_CALLING_CONVENTION() { SIMPLE_ERROR("What do I do here"); }
-  static inline LISP_ENTRY_0() { return entry_point_n(lcc_closure, 0, NULL); }
-  static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return entry_point_n(lcc_closure, 1, args);
-  }
-  static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0, lcc_farg1};
-    return entry_point_n(lcc_closure, 2, args);
-  }
-  static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
-    return entry_point_n(lcc_closure, 3, args);
-  }
-  static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
-    return entry_point_n(lcc_closure, 4, args);
-  }
-  static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
-    return entry_point_n(lcc_closure, 5, args);
+  template <typename...Ts>
+  static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
+                                             Ts... args) {
+    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
+    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
   }
 };
 }; // namespace core

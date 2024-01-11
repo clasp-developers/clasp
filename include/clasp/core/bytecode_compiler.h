@@ -961,7 +961,7 @@ public:
   // The index of this cfunction in the containing module's cfunction vector.
   size_t _index;
   // The runtime function, used during link.
-  GlobalBytecodeSimpleFun_sp _info;
+  BytecodeSimpleFun_sp _info;
   // Stuff for the function description.
   T_sp _name;
   T_sp _doc;
@@ -977,7 +977,7 @@ public:
         _debug_info(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
         _closed(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))), _entry_point(Label_O::make()),
         // not sure this has to be initialized, but just in case
-        _info(unbound<GlobalBytecodeSimpleFun_O>()), _name(name), _doc(doc), _lambda_list(lambda_list),
+        _info(unbound<BytecodeSimpleFun_O>()), _name(name), _doc(doc), _lambda_list(lambda_list),
         _source_pos_info(source_pos_info) {}
   CL_LISPIFY_NAME(Cfunction/make)
   CL_DEF_CLASS_METHOD
@@ -1022,9 +1022,9 @@ public:
     this->_index = nindex;
     return nindex;
   }
-  CL_DEFMETHOD GlobalBytecodeSimpleFun_sp info() { return _info; }
+  CL_DEFMETHOD BytecodeSimpleFun_sp info() { return _info; }
   CL_LISPIFY_NAME(Cfunction/setf-info)
-  CL_DEFMETHOD GlobalBytecodeSimpleFun_sp setInfo(GlobalBytecodeSimpleFun_sp gbep) {
+  CL_DEFMETHOD BytecodeSimpleFun_sp setInfo(BytecodeSimpleFun_sp gbep) {
     this->_info = gbep;
     return gbep;
   }
@@ -1047,6 +1047,6 @@ Function_sp bytecompile(T_sp, Lexenv_sp);
 T_mv cmp__bytecode_implicit_compile_form(T_sp, T_sp);
 T_mv bytecode_toplevel_eval(T_sp, T_sp);
 // Used in loader
-bool btb_bcfun_p(GlobalBytecodeSimpleFun_sp, SimpleVector_sp);
+bool btb_bcfun_p(BytecodeSimpleFun_sp, SimpleVector_sp);
 
 }; // namespace comp
