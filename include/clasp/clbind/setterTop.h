@@ -36,7 +36,19 @@ public:
   // FIXME: make T_O*, T_O* direct and the rest errors.
   template <typename... Ts>
   static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure, Ts... args) {
-    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
-    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
+    DO_DRAG_CXX_CALLS();
+    if constexpr(sizeof...(Ts) == 2) {
+      MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+      core::T_sp arg0((gctools::Tagged)std::get<0>(std::make_tuple(args...)));
+      core::T_sp arg1((gctools::Tagged)std::get<1>(std::make_tuple(args...)));
+      OT* objPtr = gc::As<core::WrappedPointer_sp>(arg1)->cast<OT>();
+      translate::from_object<MemberType> fvalue(arg0);
+      (*objPtr).*(closure->mptr) = fvalue._v;
+      gctools::return_type retv(arg0.raw_(), 1);
+      return retv;
+    } else {
+      cc_wrong_number_of_arguments(lcc_closure, sizeof...(Ts), 2, 2);
+      UNREACHABLE();
+    }
   }
 };

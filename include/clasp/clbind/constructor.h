@@ -162,8 +162,7 @@ public:
   template <typename... Ts>
   static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
                                              Ts... args) {
-    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
-    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
+    SIMPLE_ERROR("What do we do when this is called?");
   }
 };
 }; // namespace clbind
@@ -209,8 +208,14 @@ public:
   template <typename... Ts>
   static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
                                              Ts... args) {
-    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
-    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
+    DO_DRAG_CXX_CALLS();
+    if constexpr(sizeof...(Ts) != NumParams) {
+      cc_wrong_number_of_arguments(lcc_closure, sizeof...(Ts), NumParams, NumParams);
+      UNREACHABLE();
+    } else {
+      std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<0, policies<>, ARGS...>::goArgs(args...);
+      return constructor_apply_and_return<WrapperType, Policies, ConstructType, decltype(all_args)>::go(std::move(all_args));
+    }
   }
 };
 }; // namespace clbind

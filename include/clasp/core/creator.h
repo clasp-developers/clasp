@@ -57,8 +57,8 @@ public:
   }
   template <typename... Ts>
   static inline LCC_RETURN entry_point_fixed(T_O* lcc_closure, Ts... args) {
-    T_O* lcc_args[sizeof...(Ts)] = {args...};
-    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
+    LCC_RETURN v;
+    return v;
   }
 
   Creator_O(SimpleFun_sp ep) : Base(ep){};

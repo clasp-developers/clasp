@@ -389,12 +389,11 @@ template <int Index, typename Type> struct prepare_argument<Val<Index>, Type> {
     // Return an initialized from_object for the argument
     return translate::from_object<Type, std::true_type>(gctools::smart_ptr<core::T_O>((gctools::Tagged)(frame[Index])));
   }
-#if 0
-  static translate::from_object<Type,std::true_type> goArg(Type&& arg) {
+  template <typename... Targs>
+  static translate::from_object<Type,std::true_type> goArg(const std::tuple<Targs...>&& args) {
     // Return an initialized from_object for the argument
-    return translate::from_object<Type,std::true_type>(gctools::smart_ptr<core::T_O>((gctools::Tagged)arg));
+    return translate::from_object<Type,std::true_type>(gctools::smart_ptr<core::T_O>((gctools::Tagged)(std::get<Index>(args))));
   }
-#endif
 };
 
 template <typename Type> struct prepare_argument<Val<32767>, Type> {
@@ -421,11 +420,10 @@ struct arg_tuple_impl<MupleIndices, std::integer_sequence<size_t, Is...>, Args..
   static type goFrame(gctools::Frame::ElementType* frame) {
     return {(prepare_argument<typename muple_element<Is, MupleIndices>::type, Args>::goFrame(frame))...};
   }
-#if 0
-  static type goArgs(Args&&...args) {
-    return { (prepare_argument<typename muple_element<Is,MupleIndices>::type,Args>::goArgs(std::forward<Args>(args)))... };
+  template <typename... Targs>
+  static type goArgs(const std::tuple<Targs...>&& args) {
+    return { (prepare_argument<typename muple_element<Is,MupleIndices>::type,Args>::goArg(std::forward<const std::tuple<Targs...>>(args)))... };
   }
-#endif
 };
 }; // namespace detail
 
@@ -436,13 +434,12 @@ template <int Start, typename Policies, typename... ARGS> struct arg_tuple {
   static type goFrame(gctools::Frame::ElementType* frame) {
     return detail::arg_tuple_impl<indexMuple, std::index_sequence_for<ARGS...>, ARGS...>::goFrame(frame);
   };
-#if 0
-  static type goArgs(Args&&...args) {
+  template <typename... TARGS> // T_O* args
+  static type goArgs(TARGS&&...args) {
     return detail::arg_tuple_impl<indexMuple,
                                   std::index_sequence_for<ARGS...>,
-                                  ARGS...>::goArgs(std::forward<Args>(args)...);
+                                  ARGS...>::goArgs(std::forward_as_tuple(args...));
   };
-#endif
 };
 }; // namespace clbind
 

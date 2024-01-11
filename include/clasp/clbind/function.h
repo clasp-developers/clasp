@@ -136,8 +136,16 @@ public:
   template <typename... Ts>
   static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
                                              Ts... args) {
-    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
-    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
+    DO_DRAG_CXX_CALLS();
+    if constexpr(sizeof...(Ts) != NumParams) {
+      cc_wrong_number_of_arguments(lcc_closure, sizeof...(Ts), NumParams, NumParams);
+      UNREACHABLE();
+    } else {
+      MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+      std::tuple<translate::from_object<ARGS, PUREOUTS>...> all_args(arg_tuple<0, Policies, ARGS...>::goArgs(args...));
+      return apply_and_return<Policies, RT, decltype(closure->fptr), decltype(all_args)>::go(std::move(closure->fptr),
+                                                                                             std::move(all_args));
+    }
   }
 };
 }; // namespace clbind

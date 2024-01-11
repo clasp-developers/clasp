@@ -91,8 +91,16 @@ public:
   template <typename... Ts>
   static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
                                              Ts... args) {
-    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
-    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
+    DO_DRAG_CXX_CALLS();
+    if constexpr(sizeof...(Ts) != NumParams) {
+      cc_wrong_number_of_arguments(lcc_closure, sizeof...(Ts), NumParams, NumParams);
+      UNREACHABLE();
+    } else {
+      MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+      OT& oto = *gc::As<gctools::smart_ptr<OT>>(core::T_sp((gctools::Tagged)std::get<0>(std::make_tuple(args...))));
+      std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1, clbind::policies<>, ARGS...>::goArgs(args...);
+      return clbind::method_apply_and_return<RT, core::policy::clasp_policy, decltype(closure->mptr), OT, decltype(all_args)>::go(std::move(closure->mptr), std::move(oto), std::move(all_args));
+    }
   }
 };
 }; // namespace clbind
@@ -147,8 +155,16 @@ public:
   template <typename... Ts>
   static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
                                              Ts... args) {
-    core::T_O* lcc_args[sizeof...(Ts)] = {args ...};
-    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
+    DO_DRAG_CXX_CALLS();
+    if constexpr(sizeof...(Ts) != NumParams) {
+      cc_wrong_number_of_arguments(lcc_closure, sizeof...(Ts), NumParams, NumParams);
+      UNREACHABLE();
+    } else {
+      MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+      OT& oto = *gc::As<gctools::smart_ptr<OT>>(core::T_sp((gctools::Tagged)std::get<0>(std::make_tuple(args...))));
+      std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1, clbind::policies<>, ARGS...>::goArgs(args...);
+      return clbind::method_apply_and_return<RT, core::policy::clasp_policy, decltype(closure->mptr), OT, decltype(all_args)>::go(std::move(closure->mptr), std::move(oto), std::move(all_args));
+    }
   }
 };
 }; // namespace clbind
