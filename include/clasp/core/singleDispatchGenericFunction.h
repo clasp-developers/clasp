@@ -35,11 +35,11 @@ THE SOFTWARE.
 
 namespace core {
 FORWARD(SingleDispatchMethod);
-class SingleDispatchGenericFunction_O : public Function_O {
-  LISP_CLASS(core, CorePkg, SingleDispatchGenericFunction_O, "SingleDispatchGenericFunction", Function_O);
+class SingleDispatchGenericFunction_O : public SimpleFun_O {
+  LISP_CLASS(core, CorePkg, SingleDispatchGenericFunction_O, "SingleDispatchGenericFunction", SimpleFun_O);
 
 public:
-  SingleDispatchGenericFunction_O(SimpleFun_sp ep, size_t newArgumentIndex) : Base(ep), callHistory(nil<T_O>()), argumentIndex(newArgumentIndex), methods(nil<T_O>()) {};
+  SingleDispatchGenericFunction_O(FunctionDescription_sp fdesc, size_t newArgumentIndex) : Base(fdesc, nil<T_O>(), XepStereotype<SingleDispatchGenericFunction_O>(newArgumentIndex)), callHistory(nil<T_O>()), argumentIndex(newArgumentIndex), methods(nil<T_O>()) {};
 
 public:
   static SingleDispatchGenericFunction_sp create_single_dispatch_generic_function(T_sp gfname, size_t singleDispatchArgumentIndex,
@@ -105,22 +105,30 @@ public:
                  _rep_(this->asSmartPtr()), _rep_(dispatchArgClass), _rep_(dispatchArg).c_str());
   }
 
+private:
+  [[noreturn]] LCC_RETURN tooFew(size_t nargs) {
+    throwTooFewArgumentsError(this->asSmartPtr(), nargs, argumentIndex + 1);
+  }
+
+public:
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     SETUP_CLOSURE(SingleDispatchGenericFunction_O, closure);
     DO_DRAG_CXX_CALLS();
     if (lcc_nargs > closure->argumentIndex) {
       T_sp dispatchArg((gctools::Tagged)lcc_args[closure->argumentIndex]);
       return closure->dispatch(dispatchArg)->_function->apply_raw(lcc_nargs, lcc_args);
-    } else {
-      T_sp tclosure((gctools::Tagged)lcc_closure);
-      throwTooFewArgumentsError(tclosure, lcc_nargs, closure->argumentIndex + 1);
-    }
+    } else closure->tooFew(lcc_nargs);
   }
   template <typename... Ts>
   static inline LCC_RETURN entry_point_fixed(T_O* lcc_closure,
                                              Ts... args) {
     core::T_O* lcc_args[sizeof...(Ts)] = {args...};
     return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
+  }
+  template <typename... Ts>
+  [[noreturn]] static LCC_RETURN error_entry_point_fixed(core::T_O* lcc_closure, Ts... args) {
+    SETUP_CLOSURE(SingleDispatchGenericFunction_O, closure);
+    closure->tooFew(sizeof...(Ts));
   }
 };
 

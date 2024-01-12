@@ -6321,25 +6321,6 @@
 {fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::SimpleFun_O>"
              :offset-base-ctype "core::Function_O" :layout-offset-field-names ("_TheSimpleFun")}
-{class-kind :stamp-name "STAMPWTAG_core__SingleDispatchGenericFunction_O"
-            :stamp-key "core::SingleDispatchGenericFunction_O" :parent-class "core::Function_O"
-            :lisp-class-base "core::Function_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleFun_O>"
-             :offset-base-ctype "core::SingleDispatchGenericFunction_O"
-             :layout-offset-field-names ("_TheSimpleFun")}
-{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::SingleDispatchGenericFunction_O"
-             :layout-offset-field-names ("callHistory")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
-             :offset-base-ctype "core::SingleDispatchGenericFunction_O"
-             :layout-offset-field-names ("argumentIndex")}
-{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::SingleDispatchGenericFunction_O"
-             :layout-offset-field-names ("methods")}
 {class-kind :stamp-name "STAMPWTAG_core__FuncallableInstance_O"
             :stamp-key "core::FuncallableInstance_O" :parent-class "core::Function_O"
             :lisp-class-base "core::Function_O" :root-class "core::T_O" :stamp-wtag 1
@@ -6459,6 +6440,33 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::SimpleFun_O"
              :layout-offset-field-names ("_Code")}
+{class-kind :stamp-name "STAMPWTAG_core__SingleDispatchGenericFunction_O"
+            :stamp-key "core::SingleDispatchGenericFunction_O" :parent-class "core::SimpleFun_O"
+            :lisp-class-base "core::SimpleFun_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::SimpleFun_O>"
+             :offset-base-ctype "core::SingleDispatchGenericFunction_O"
+             :layout-offset-field-names ("_TheSimpleFun")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::FunctionDescription_O>"
+             :offset-base-ctype "core::SingleDispatchGenericFunction_O"
+             :layout-offset-field-names ("_FunctionDescription")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::SingleDispatchGenericFunction_O"
+             :layout-offset-field-names ("_Code")}
+{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::SingleDispatchGenericFunction_O"
+             :layout-offset-field-names ("callHistory")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::SingleDispatchGenericFunction_O"
+             :layout-offset-field-names ("argumentIndex")}
+{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::SingleDispatchGenericFunction_O"
+             :layout-offset-field-names ("methods")}
 {class-kind :stamp-name "STAMPWTAG_core__BytecodeSimpleFun_O"
             :stamp-key "core::BytecodeSimpleFun_O" :parent-class "core::SimpleFun_O"
             :lisp-class-base "core::SimpleFun_O" :root-class "core::T_O" :stamp-wtag 3

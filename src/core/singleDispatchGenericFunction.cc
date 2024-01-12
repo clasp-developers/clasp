@@ -50,9 +50,8 @@ namespace core {
 SingleDispatchGenericFunction_sp
 SingleDispatchGenericFunction_O::create_single_dispatch_generic_function(T_sp gfname, size_t singleDispatchArgumentIndex,
                                                                          List_sp lambdaList) {
-  SimpleFun_sp entryPoint =
-      makeSimpleFunAndFunctionDescription<SingleDispatchGenericFunction_O>(gfname, lambdaList);
-  return gctools::GC<SingleDispatchGenericFunction_O>::allocate(entryPoint, singleDispatchArgumentIndex);
+  FunctionDescription_sp fdesc = makeFunctionDescription(gfname, lambdaList);
+  return gctools::GC<SingleDispatchGenericFunction_O>::allocate(fdesc, singleDispatchArgumentIndex);
 }
 
 CL_LISPIFY_NAME(SingleDispatchGenericFunction/callHistory);
