@@ -6,7 +6,6 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <signal.h>
-#include <execinfo.h>
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/core/lisp.h>
