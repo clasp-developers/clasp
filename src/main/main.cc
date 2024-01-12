@@ -45,7 +45,9 @@ THE SOFTWARE.
 #include <signal.h>
 #include <sys/resource.h>
 #include <libgen.h>
+#ifndef USE_LIBUNWIND
 #include <execinfo.h>
+#endif
 #include <cxxabi.h>
 #endif
 
@@ -117,6 +119,7 @@ void initialize_llvm(int argc, char** argv);
 
 // PRINT STACKTRACE PROGRAMMICALLY
 
+#ifndef USE_LIBUNWIND
 static inline void print_stacktrace(FILE* out = stderr, unsigned int max_frames = 63) {
   fprintf(out, "stack trace:\n");
 
@@ -185,6 +188,7 @@ static inline void print_stacktrace(FILE* out = stderr, unsigned int max_frames 
   free(funcname);
   free(symbollist);
 }
+#endif
 
 // ABORT FLAG HANDLING
 
