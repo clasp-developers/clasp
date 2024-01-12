@@ -58,8 +58,6 @@ template <typename...> struct pureOutsPack {};
 
 template <int N> struct pureOutValue {};
 
-template <int N> struct testType {};
-
 template <int N> struct adopt {};
 
 enum return_value_policy { reference = return_value_policy_reference_, copy = return_value_policy_copy_ };
