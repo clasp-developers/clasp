@@ -197,7 +197,7 @@ public:
     DO_DRAG_CXX_CALLS();
     if (lcc_nargs != NumParams)
       cc_wrong_number_of_arguments(lcc_closure, lcc_nargs, NumParams, NumParams);
-    std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<0, policies<>, ARGS...>::goFrame(lcc_args);
+    auto all_args = arg_tuple<0, policies<>, ARGS...>::goFrame(lcc_args);
     return constructor_apply_and_return<WrapperType, Policies, ConstructType, decltype(all_args)>::go(std::move(all_args));
   }
 
@@ -209,7 +209,7 @@ public:
       cc_wrong_number_of_arguments(lcc_closure, sizeof...(Ts), NumParams, NumParams);
       UNREACHABLE();
     } else {
-      std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<0, policies<>, ARGS...>::goArgs(args...);
+      auto all_args = arg_tuple<0, policies<>, ARGS...>::goArgs(args...);
       return constructor_apply_and_return<WrapperType, Policies, ConstructType, decltype(all_args)>::go(std::move(all_args));
     }
   }

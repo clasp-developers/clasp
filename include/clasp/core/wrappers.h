@@ -79,7 +79,7 @@ public:
     if (lcc_nargs != NumParams)
       cc_wrong_number_of_arguments(lcc_closure, lcc_nargs, NumParams, NumParams);
     OT& oto = *gc::As<gctools::smart_ptr<OT>>(core::T_sp((gctools::Tagged)lcc_args[0]));
-    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1, clbind::policies<>, ARGS...>::goFrame(lcc_args);
+    auto all_args = clbind::arg_tuple<1, clbind::policies<>, ARGS...>::goFrame(lcc_args);
     return clbind::method_apply_and_return<RT, core::policy::clasp_policy, decltype(closure->mptr), OT, decltype(all_args)>::go(
         std::move(closure->mptr), std::move(oto), std::move(all_args));
   }
@@ -94,7 +94,7 @@ public:
     } else {
       MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
       OT& oto = *gc::As<gctools::smart_ptr<OT>>(core::T_sp((gctools::Tagged)std::get<0>(std::make_tuple(args...))));
-      std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1, clbind::policies<>, ARGS...>::goArgs(args...);
+      auto all_args = clbind::arg_tuple<1, clbind::policies<>, ARGS...>::goArgs(args...);
       return clbind::method_apply_and_return<RT, core::policy::clasp_policy, decltype(closure->mptr), OT, decltype(all_args)>::go(std::move(closure->mptr), std::move(oto), std::move(all_args));
     }
   }
@@ -139,7 +139,7 @@ public:
     if (lcc_nargs != NumParams)
       cc_wrong_number_of_arguments(lcc_closure, lcc_nargs, NumParams, NumParams);
     OT& oto = *gc::As<gctools::smart_ptr<OT>>(core::T_sp((gctools::Tagged)lcc_args[0]));
-    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1, clbind::policies<>, ARGS...>::goFrame(lcc_args);
+    auto all_args = clbind::arg_tuple<1, clbind::policies<>, ARGS...>::goFrame(lcc_args);
     return clbind::method_apply_and_return<RT, core::policy::clasp_policy, decltype(closure->mptr), OT, decltype(all_args)>::go(
         std::move(closure->mptr), std::move(oto), std::move(all_args));
   }
@@ -154,7 +154,7 @@ public:
     } else {
       MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
       OT& oto = *gc::As<gctools::smart_ptr<OT>>(core::T_sp((gctools::Tagged)std::get<0>(std::make_tuple(args...))));
-      std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1, clbind::policies<>, ARGS...>::goArgs(args...);
+      auto all_args = clbind::arg_tuple<1, clbind::policies<>, ARGS...>::goArgs(args...);
       return clbind::method_apply_and_return<RT, core::policy::clasp_policy, decltype(closure->mptr), OT, decltype(all_args)>::go(std::move(closure->mptr), std::move(oto), std::move(all_args));
     }
   }

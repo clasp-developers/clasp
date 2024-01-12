@@ -514,7 +514,7 @@ public:
       been deleted!   Has a function that consumes a std::unique_ptr not been wrapped yet
     by Clasp?    How does this work???
     */
-template <typename T> struct from_object<std::unique_ptr<T>> {
+template <typename T> struct from_object<std::unique_ptr<T>, std::true_type> {
   typedef std::unique_ptr<T> DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) {
@@ -560,7 +560,7 @@ template <typename T> struct from_object<std::unique_ptr<T>> {
   }
 };
 
-template <typename T> struct from_object<T*> {
+template <typename T> struct from_object<T*, std::true_type> {
   typedef T* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) {
@@ -600,7 +600,7 @@ template <typename T> struct from_object<T*> {
   }
 };
 
-template <typename T> struct from_object<const T*&> {
+template <typename T> struct from_object<const T*&, std::true_type> {
   typedef const T* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) {
