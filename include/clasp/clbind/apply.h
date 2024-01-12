@@ -167,28 +167,6 @@ struct constructor_apply_and_return<WrapperType, policies<Policies...>, Construc
 }; // namespace clbind
 
 namespace clbind {
-
-template <typename RT, typename Policies, typename Func, typename Tuple> struct test_apply_and_return {};
-
-template <typename RT, typename Policies, typename Func, typename... Args>
-struct test_apply_and_return<RT, Policies, Func, std::tuple<Args...>> {
-  using tuple_type = std::tuple<Args...>;
-  static gctools::return_type go(Func&& fn, tuple_type&& tuple) {
-    RT ret0 = clbind::apply(std::forward<Func>(fn), std::forward<tuple_type>(tuple));
-#if 0
-    core::T_sp tret0 = translate::to_object<RT,typename AdoptPointer<Policies,result>::type >::convert(ret0);
-    size_t num_returns = 1 + clbind::return_multiple_values<1,Policies,decltype(tuple),std::index_sequence_for<Args...>,Args...>::go(std::forward<tuple_type>(tuple),returnValues.returnValues(0));
-//    printf("%s:%d  RT apply_and_return  returning %lu multiple values\n", __FILE__, __LINE__, num_returns );
-    gc::return_type result (tret0.raw_(),num_returns);
-    return result;
-#endif
-    abort();
-  }
-};
-
-}; // namespace clbind
-
-namespace clbind {
 template <typename RT, typename Policies, typename MethodType, typename OT, typename Tuple> struct method_apply_and_return {
   static gc::return_type go(MethodType&& mptr, OT&& object, Tuple&& tuple) {
     RT retval = clbind::method_apply(std::forward<MethodType>(mptr), std::forward<OT>(object), std::forward<Tuple>(tuple));
