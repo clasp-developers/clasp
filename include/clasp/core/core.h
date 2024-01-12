@@ -128,17 +128,6 @@ typedef std::size_t class_id;
 /*! Configure architecture dependent types */
 #include <clasp/core/configure_clasp.h>
 
-namespace clbind {
-
-struct BytecodeWrapper {
-  enum { BytecodeP = 1 };
-};
-
-// Use bytecode wrappers for all exposed functions
-using DefaultWrapper = BytecodeWrapper;
-
-}; // namespace clbind
-
 /*! Use old Conditions system baked into C++
   OLD_CONDITIONS = 1
   otherwise OLD_CONDITIONS = 0
@@ -929,7 +918,7 @@ List_sp lisp_parse_arguments(const string& packageName, const string& args, int 
 List_sp lisp_lexical_variable_names(List_sp lambda_list, bool& trivial_wrapper);
 List_sp lisp_parse_declares(const string& packageName, const string& declarestring);
 
-void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& dummy_specializer, T_sp name, Symbol_sp classSymbol,
+void lisp_defineSingleDispatchMethod(T_sp name, Symbol_sp classSymbol,
                                      SimpleFun_sp entry, size_t TemplateDispatchOn = 0,
                                      bool useTemplateDispatchOn = false, const string& lambda_list = "",
                                      const string& declares = "", const string& docstring = "", bool autoExport = true,

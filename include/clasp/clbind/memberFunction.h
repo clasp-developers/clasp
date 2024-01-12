@@ -31,15 +31,15 @@ THE SOFTWARE.
 #include <clasp/clbind/policies.h>
 #include <clasp/clbind/details.h>
 namespace clbind {
-template <typename MethodPtrType, typename Policies, typename ArgumentWrapper> class WRAPPER_AlienVariadicMethod;
+template <typename MethodPtrType, typename Policies> class WRAPPER_AlienVariadicMethod;
 };
 
 namespace clbind {
 
-template <typename Policies, typename RT, typename OT, typename... ARGS, typename ArgumentWrapper>
-class WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...), Policies, ArgumentWrapper> : public core::SimpleFun_O {
+template <typename Policies, typename RT, typename OT, typename... ARGS>
+class WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...), Policies> : public core::SimpleFun_O {
 public:
-  typedef WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...), Policies, ArgumentWrapper> MyType;
+  typedef WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...), Policies> MyType;
   typedef RT (OT::*MethodType)(ARGS...);
   typedef core::SimpleFun_O TemplatedBase;
 
@@ -63,8 +63,8 @@ public:
     this->fixupOneCodePointer(fixup, (void**)&this->mptr);
   };
 
-  static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs,
-                                                 core::T_O** lcc_args) {
+  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs,
+                                         core::T_O** lcc_args) {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     DO_DRAG_CXX_CALLS();
     if (lcc_nargs != NumParams)
@@ -74,10 +74,6 @@ public:
     std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1, Policies, ARGS...>::goFrame(lcc_args);
     return clbind::clbind_external_method_apply_and_return<Policies, RT, decltype(closure->mptr), OT*, decltype(all_args)>::go(
         std::move(closure->mptr), otep._v, std::move(all_args));
-  }
-
-  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args) {
-    return wrapper_entry_point_n(ArgumentWrapper(), lcc_closure, lcc_nargs, lcc_args);
   }
 
   template <typename... Ts>
@@ -99,10 +95,10 @@ public:
 
 namespace clbind {
 
-template <typename Policies, typename RT, typename OT, typename... ARGS, typename ArgumentWrapper>
-class WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...) const, Policies, ArgumentWrapper> : public core::SimpleFun_O {
+template <typename Policies, typename RT, typename OT, typename... ARGS>
+class WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...) const, Policies> : public core::SimpleFun_O {
 public:
-  typedef WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...) const, Policies, ArgumentWrapper> MyType;
+  typedef WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...) const, Policies> MyType;
   typedef RT (OT::*MethodType)(ARGS...) const;
   typedef core::SimpleFun_O TemplatedBase;
 
@@ -126,8 +122,8 @@ public:
     this->fixupOneCodePointer(fixup, (void**)&this->mptr);
   };
 
-  static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs,
-                                                 core::T_O** lcc_args) {
+  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs,
+                                         core::T_O** lcc_args) {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     DO_DRAG_CXX_CALLS();
     if (lcc_nargs != NumParams)
@@ -137,10 +133,6 @@ public:
     std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1, Policies, ARGS...>::goFrame(lcc_args);
     return clbind::clbind_external_method_apply_and_return<Policies, RT, decltype(closure->mptr), OT*, decltype(all_args)>::go(
         std::move(closure->mptr), otep._v, std::move(all_args));
-  }
-
-  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args) {
-    return wrapper_entry_point_n(ArgumentWrapper(), lcc_closure, lcc_nargs, lcc_args);
   }
 
   template <typename... Ts>
@@ -160,13 +152,13 @@ public:
 };
 }; // namespace clbind
 
-template <typename MethodPtrType, typename Pols, typename ArgumentHandler>
-class gctools::GCStamp<clbind::WRAPPER_AlienVariadicMethod<MethodPtrType, Pols, ArgumentHandler>> {
+template <typename MethodPtrType, typename Pols>
+class gctools::GCStamp<clbind::WRAPPER_AlienVariadicMethod<MethodPtrType, Pols>> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::GCStamp<
-      typename clbind::WRAPPER_AlienVariadicMethod<MethodPtrType, Pols, ArgumentHandler>::TemplatedBase>::StampWtag;
+      typename clbind::WRAPPER_AlienVariadicMethod<MethodPtrType, Pols>::TemplatedBase>::StampWtag;
 };
 
-template <typename MethodPtrType, typename Pols, typename ArgumentHandler>
-class gctools::Inherits<typename clbind::WRAPPER_AlienVariadicMethod<MethodPtrType, Pols, ArgumentHandler>::TemplatedBase,
-                        clbind::WRAPPER_AlienVariadicMethod<MethodPtrType, Pols, ArgumentHandler>> : public std::true_type {};
+template <typename MethodPtrType, typename Pols>
+class gctools::Inherits<typename clbind::WRAPPER_AlienVariadicMethod<MethodPtrType, Pols>::TemplatedBase,
+                        clbind::WRAPPER_AlienVariadicMethod<MethodPtrType, Pols>> : public std::true_type {};
