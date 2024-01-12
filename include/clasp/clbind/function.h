@@ -101,7 +101,6 @@ public:
   FuncType fptr;
 
 public:
-  static constexpr auto inValueMask = clbind::inValueMaskMuple<sizeof...(ARGS), Policies>();
 
   enum { NumParams = sizeof...(ARGS) };
 
