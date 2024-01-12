@@ -39,7 +39,7 @@ class SingleDispatchGenericFunction_O : public SimpleFun_O {
   LISP_CLASS(core, CorePkg, SingleDispatchGenericFunction_O, "SingleDispatchGenericFunction", SimpleFun_O);
 
 public:
-  SingleDispatchGenericFunction_O(FunctionDescription_sp fdesc, size_t newArgumentIndex) : Base(fdesc, nil<T_O>(), XepStereotype<SingleDispatchGenericFunction_O>(newArgumentIndex)), callHistory(nil<T_O>()), argumentIndex(newArgumentIndex), methods(nil<T_O>()) {};
+  SingleDispatchGenericFunction_O(FunctionDescription_sp fdesc, size_t newArgumentIndex);
 
 public:
   static SingleDispatchGenericFunction_sp create_single_dispatch_generic_function(T_sp gfname, size_t singleDispatchArgumentIndex,
@@ -109,26 +109,55 @@ private:
   [[noreturn]] LCC_RETURN tooFew(size_t nargs) {
     throwTooFewArgumentsError(this->asSmartPtr(), nargs, argumentIndex + 1);
   }
-
-public:
-  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    SETUP_CLOSURE(SingleDispatchGenericFunction_O, closure);
-    DO_DRAG_CXX_CALLS();
-    if (lcc_nargs > closure->argumentIndex) {
-      T_sp dispatchArg((gctools::Tagged)lcc_args[closure->argumentIndex]);
-      return closure->dispatch(dispatchArg)->_function->apply_raw(lcc_nargs, lcc_args);
-    } else closure->tooFew(lcc_nargs);
-  }
-  template <typename... Ts>
-  static inline LCC_RETURN entry_point_fixed(T_O* lcc_closure,
-                                             Ts... args) {
-    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
-    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
-  }
-  template <typename... Ts>
-  [[noreturn]] static LCC_RETURN error_entry_point_fixed(core::T_O* lcc_closure, Ts... args) {
-    SETUP_CLOSURE(SingleDispatchGenericFunction_O, closure);
-    closure->tooFew(sizeof...(Ts));
+  template <size_t DispatchIndex>
+  struct EntryPointFixed {
+    static LCC_RETURN entry_point_n(T_O* lcc_closure, size_t lcc_nargs, T_O** lcc_args) {
+      SETUP_CLOSURE(SingleDispatchGenericFunction_O, closure);
+      DO_DRAG_CXX_CALLS();
+      if (lcc_nargs > DispatchIndex) {
+        T_sp dispatchArg((gctools::Tagged)lcc_args[DispatchIndex]);
+        return closure->dispatch(dispatchArg)->_function->apply_raw(lcc_nargs, lcc_args);
+      } else closure->tooFew(lcc_nargs);
+    }
+    template <typename... Ts>
+    static LCC_RETURN entry_point_fixed(T_O* lcc_closure, Ts... args) {
+      SETUP_CLOSURE(SingleDispatchGenericFunction_O, closure);
+      DO_DRAG_CXX_CALLS();
+      if constexpr(sizeof...(Ts) > DispatchIndex) {
+        T_sp dispatchArg((gctools::Tagged)std::get<DispatchIndex>(std::make_tuple(args...)));
+        return closure->dispatch(dispatchArg)->_function->funcall_raw(args...);
+      } else closure->tooFew(sizeof...(Ts));
+    }
+  };
+  // In practice all SDGFs specialize on the 0th or 1st argument
+  // so this is never used. It's included for completeness.
+  struct EntryPointGeneric {
+    static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+      SETUP_CLOSURE(SingleDispatchGenericFunction_O, closure);
+      DO_DRAG_CXX_CALLS();
+      if (lcc_nargs > closure->argumentIndex) {
+        T_sp dispatchArg((gctools::Tagged)lcc_args[closure->argumentIndex]);
+        return closure->dispatch(dispatchArg)->_function->apply_raw(lcc_nargs, lcc_args);
+      } else closure->tooFew(lcc_nargs);
+    }
+    template <typename... Ts>
+    static inline LCC_RETURN entry_point_fixed(T_O* lcc_closure,
+                                               Ts... args) {
+      core::T_O* lcc_args[sizeof...(Ts)] = {args...};
+      return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
+    }
+    template <typename... Ts>
+    [[noreturn]] static LCC_RETURN error_entry_point_fixed(T_O* lcc_closure, Ts... args) {
+      SETUP_CLOSURE(SingleDispatchGenericFunction_O, closure);
+      closure->tooFew(sizeof...(Ts));
+    }
+  };
+  static const ClaspXepTemplate selectXEP(size_t dispatchIndex) {
+    switch (dispatchIndex) {
+    case 0: return XepStereotype<EntryPointFixed<0>>();
+    case 1: return XepStereotype<EntryPointFixed<1>>();
+    default: return XepStereotype<EntryPointGeneric>();
+    }
   }
 };
 

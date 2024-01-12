@@ -47,6 +47,11 @@ THE SOFTWARE.
 
 namespace core {
 
+SingleDispatchGenericFunction_O::SingleDispatchGenericFunction_O(FunctionDescription_sp fdesc, size_t newArgumentIndex)
+// we make a XEP based on the dispatch index.
+  // in practice this is always 0 or 1
+  : Base(fdesc, nil<T_O>(), selectXEP(newArgumentIndex)), callHistory(nil<T_O>()), argumentIndex(newArgumentIndex), methods(nil<T_O>()) {};
+
 SingleDispatchGenericFunction_sp
 SingleDispatchGenericFunction_O::create_single_dispatch_generic_function(T_sp gfname, size_t singleDispatchArgumentIndex,
                                                                          List_sp lambdaList) {
