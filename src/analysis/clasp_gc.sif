@@ -238,8 +238,7 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::SingleDispatchGenericFunction_O"
              :layout-offset-field-names ("callHistory")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Fixnum_I>"
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "core::SingleDispatchGenericFunction_O"
              :layout-offset-field-names ("argumentIndex")}
 {fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"

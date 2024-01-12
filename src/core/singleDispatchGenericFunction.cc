@@ -52,18 +52,14 @@ SingleDispatchGenericFunction_O::create_single_dispatch_generic_function(T_sp gf
                                                                          List_sp lambdaList) {
   SimpleFun_sp entryPoint =
       makeSimpleFunAndFunctionDescription<SingleDispatchGenericFunction_O>(gfname, lambdaList);
-  auto gfun = gctools::GC<SingleDispatchGenericFunction_O>::allocate(entryPoint);
-  gfun->callHistory = nil<T_O>();
-  gfun->argumentIndex = make_fixnum(singleDispatchArgumentIndex);
-  gfun->methods = nil<T_O>();
-  return gfun;
+  return gctools::GC<SingleDispatchGenericFunction_O>::allocate(entryPoint, singleDispatchArgumentIndex);
 }
 
 CL_LISPIFY_NAME(SingleDispatchGenericFunction/callHistory);
-CL_DEFUN List_sp core__callHistory(SingleDispatchGenericFunction_sp func) { return func->callHistory.load(); }
+CL_DEFUN List_sp core__callHistory(SingleDispatchGenericFunction_sp func) { return func->callHistory.load(std::memory_order_relaxed); }
 
 CL_LISPIFY_NAME(SingleDispatchGenericFunction/specializerIndices);
-CL_DEFUN List_sp core__specializerIndices(SingleDispatchGenericFunction_sp func) { return Cons_O::createList(func->argumentIndex); }
+CL_DEFUN List_sp core__specializerIndices(SingleDispatchGenericFunction_sp func) { return Cons_O::createList(Integer_O::create(func->argumentIndex)); }
 
 CL_DECLARE();
 CL_DOCSTRING(R"dx(ensureSingleDispatchGenericFunction)dx");
