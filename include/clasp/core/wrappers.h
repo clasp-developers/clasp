@@ -176,9 +176,8 @@ void wrap_function(const string& packageName, const string& name, RT (*fp)(ARGS.
                    const string& declares = "", const string& docstring = "", const string& sourceFile = "", int sourceLine = 0) {
   maybe_register_symbol_using_dladdr(*(void**)&fp, sizeof(fp), name);
   Symbol_sp symbol = _lisp->intern(name, packageName);
-  using PureOutValuePack = typename clbind::inValueTrueFalseMaskPack<sizeof...(ARGS), clbind::policies<>>::type;
   using VariadicType =
-      clbind::WRAPPER_VariadicFunction<RT (*)(ARGS...), core::policy::clasp_policy, PureOutValuePack, clbind::DefaultWrapper>;
+      clbind::WRAPPER_VariadicFunction<RT (*)(ARGS...), core::policy::clasp_policy, clbind::DefaultWrapper>;
   FunctionDescription_sp fdesc = makeFunctionDescription(symbol, nil<T_O>());
   auto entry = gctools::GC<VariadicType>::allocate(fp, fdesc, nil<T_O>());
   lisp_bytecode_defun(core::symbol_function, symbol, packageName, entry, arguments, declares,
@@ -192,9 +191,8 @@ void wrap_function_setf(const string& packageName, const string& name, RT (*fp)(
                         int sourceLine = 0) {
   maybe_register_symbol_using_dladdr(*(void**)&fp, sizeof(fp), name);
   Symbol_sp symbol = _lisp->intern(name, packageName);
-  using PureOutValuePack = typename clbind::inValueTrueFalseMaskPack<sizeof...(ARGS), clbind::policies<>>::type;
   using VariadicType =
-      clbind::WRAPPER_VariadicFunction<RT (*)(ARGS...), core::policy::clasp_policy, PureOutValuePack, clbind::DefaultWrapper>;
+      clbind::WRAPPER_VariadicFunction<RT (*)(ARGS...), core::policy::clasp_policy, clbind::DefaultWrapper>;
   FunctionDescription_sp fdesc = makeFunctionDescription(symbol, nil<T_O>());
   auto entry = gctools::GC<VariadicType>::allocate(fp, fdesc, nil<T_O>());
   lisp_bytecode_defun(core::symbol_function_setf, symbol, packageName, entry, arguments,
@@ -229,8 +227,7 @@ inline void defmacro(const string& packageName, const string& name, T_mv (*fp)(L
                      const string& declares, const string& docstring, const string& sourcePathname, int lineno) {
   maybe_register_symbol_using_dladdr(*(void**)&fp, sizeof(fp), name);
   Symbol_sp symbol = lispify_intern(name, packageName);
-  using PureOutValuePack = typename clbind::inValueTrueFalseMaskPack<2, clbind::policies<>>::type;
-  using VariadicType = clbind::WRAPPER_VariadicFunction<T_mv (*)(List_sp, T_sp), core::policy::clasp_policy, PureOutValuePack,
+  using VariadicType = clbind::WRAPPER_VariadicFunction<T_mv (*)(List_sp, T_sp), core::policy::clasp_policy,
                                                         clbind::DefaultWrapper>;
   FunctionDescription_sp fdesc = makeFunctionDescription(symbol, nil<T_O>());
   SimpleFun_sp entry = gctools::GC<VariadicType>::allocate(fp, fdesc, nil<T_O>());
