@@ -483,21 +483,6 @@ struct return_multiple_values<Start, Policies, ArgTuple, std::integer_sequence<s
   }
 };
 
-template <int Start, typename Policies, typename ArgTuple, typename ArgTupleForTypes, typename Seq>
-struct tuple_return_multiple_values {};
-
-template <int Start, typename Policies, typename ArgTuple, typename... Types, size_t... Is>
-struct tuple_return_multiple_values<Start, Policies, ArgTuple, std::tuple<Types...>, std::integer_sequence<size_t, Is...>> {
-  using OutValueMaskMuple = typename outValueMaskMuple<sizeof...(Types), Policies>::type;
-  using OutValueIndexMuple = typename outValueIndexMuple<Start - 1, OutValueMaskMuple>::type;
-  static size_t go(ArgTuple&& args, core::T_O** outputs) {
-    (do_return<typename muple_element<Is, OutValueIndexMuple>::type, Policies, Is, ArgTuple, Types>::go(
-         outputs, std::forward<ArgTuple>(args)),
-     ...);
-    return SumMuple<OutValueMaskMuple>::value;
-  }
-};
-
 }; // namespace clbind
 // ============================================================
 //
