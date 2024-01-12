@@ -232,32 +232,6 @@ template <int Start, typename MaskTuple> struct inValueIndexTuple {
 
 // ------------------------------------------------------------
 //
-// inValueTrueFalseMaskTuple
-//
-// Construct a tuple of size_t using policies_<...>
-// If there is a pureOutValue<x> where x is an index of an inValueMask argument then put 1
-//   if not then put 0 in that index of the tuple.
-//
-
-// static constexpr int*** iii = MapNotPureOutValues<0,policies<pureOutValue<1>>>::type();
-
-namespace clbind {
-namespace detail {
-template <typename Policies, typename Sequence> struct inValueTrueFalseMaskTuple_impl {};
-
-template <typename Policies, size_t... Is> struct inValueTrueFalseMaskTuple_impl<Policies, std::integer_sequence<size_t, Is...>> {
-  using type = pureOutsPack<typename MapPureOutValuesFalseOrTrue<Is, Policies>::type...>;
-};
-
-}; // namespace detail
-template <int Num, typename Policies> struct inValueTrueFalseMaskPack {
-  using type = typename detail::inValueTrueFalseMaskTuple_impl<Policies, std::make_index_sequence<Num>>::type;
-};
-
-}; // namespace clbind
-
-// ------------------------------------------------------------
-//
 // outValueMaskTuple
 //
 // Construct a tuple of size_t using policies<...>
@@ -307,16 +281,15 @@ template <int Index, typename Type> struct prepare_argument<std::integral_consta
 
 template <typename Type> struct prepare_argument<std::integral_constant<int, 32767>, Type> {
   using type = translate::from_object<Type, std::false_type>;
-  static translate::from_object<Type, std::false_type> goFrame(gctools::Frame::ElementType* frame) {
+  static type goFrame(gctools::Frame::ElementType* frame) {
     // Return an initialized from_object for the argument
-    return translate::from_object<Type, std::false_type>(nil<core::T_O>());
+    return type(nil<core::T_O>());
   }
-#if 0
-  static translate::from_object<Type,std::false_type> goFrame(Type arg) {
+  template <typename... Targs>
+  static type goArg(const std::tuple<Targs...>&& args) {
     // Return an initialized from_object for the argument
-    return translate::from_object<Type,std::false_type>(nil<core::T_O>());
+    return type(nil<core::T_O>());
   }
-#endif
 };
 
 namespace detail {
