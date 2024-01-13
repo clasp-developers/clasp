@@ -88,43 +88,37 @@ struct adopt_pointer {};
 template <class oClass, class AdoptPolicy = dont_adopt_pointer> struct to_object {};
 
 template <typename T> struct from_object<gctools::smart_ptr<T>, std::true_type> {
-  typedef gctools::smart_ptr<T> ExpectedType;
   typedef gctools::smart_ptr<T> DeclareType;
   DeclareType _v;
   from_object(const core::T_sp& o) : _v(gc::As<gctools::smart_ptr<T>>(o)) { ASSERT(gctools::IsA<gctools::smart_ptr<T>>(o)); };
 };
 
 template <typename T> struct from_object<gctools::smart_ptr<T>&, std::true_type> {
-  typedef gctools::smart_ptr<T> ExpectedType;
   typedef gctools::smart_ptr<T> DeclareType;
   DeclareType _v;
   from_object(const core::T_sp& o) : _v(gc::As<gctools::smart_ptr<T>>(o)) { ASSERT(gctools::IsA<gctools::smart_ptr<T>>(o)); };
 };
 
 template <> struct from_object<gctools::smart_ptr<core::Character_I>&, std::true_type> {
-  typedef gctools::smart_ptr<core::Character_I> ExpectedType;
   typedef gctools::smart_ptr<core::Character_I> DeclareType;
   DeclareType _v;
   from_object(const core::T_sp& o) : _v(gc::As<gctools::smart_ptr<core::Character_I>>(o)) { ASSERT(o.characterp()); };
 };
 
 template <> struct from_object<core::T_sp, std::true_type> {
-  typedef core::T_sp ExpectedType;
   typedef core::T_sp DeclareType;
   DeclareType _v;
   from_object(const core::T_sp& o) : _v(o){};
 };
 
 template <> struct from_object<gctools::smart_ptr<core::List_V>&, std::true_type> {
-  typedef core::List_sp ExpectedType;
   typedef core::List_sp DeclareType;
   DeclareType _v;
   from_object(const core::T_sp& o) : _v(gc::As<core::List_sp>(o)) { ASSERT(gc::IsA<core::List_sp>(o)); };
 };
 
 template <typename T> struct from_object<gc::Nilable<gc::smart_ptr<T>>, std::true_type> {
-  typedef gctools::Nilable<gc::smart_ptr<T>> ExpectedType;
-  typedef ExpectedType DeclareType;
+  typedef gctools::Nilable<gc::smart_ptr<T>> DeclareType;
   DeclareType _v;
   from_object(const core::T_sp& o) : _v(o){};
 };
@@ -141,7 +135,6 @@ template <class T> struct to_object<gc::Nilable<gctools::smart_ptr<T>>> {
 #define DECLARE_ENUM_SYMBOL_TRANSLATOR(enumType, psid)                                                                             \
   namespace translate {                                                                                                            \
   template <> struct from_object<enumType, std::true_type> {                                                                       \
-    typedef enumType ExpectedType;                                                                                                 \
     typedef enumType DeclareType;                                                                                                  \
     DeclareType _v;                                                                                                                \
     from_object(T_P o) : _v(static_cast<DeclareType>(core::lisp_lookupEnumForSymbol(psid, o.as<core::Symbol_O>()))){};             \

@@ -34,7 +34,6 @@ THE SOFTWARE.
 //
 // template <>
 // struct from_object<unsigned long, std::true_type> {
-//     typedef unsigned long ExpectedType;
 //     typedef unsigned long DeclareType;
 //
 //     DeclareType _v;
