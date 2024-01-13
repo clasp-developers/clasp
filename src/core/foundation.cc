@@ -957,7 +957,7 @@ static Function_sp bytecompile_wrapper(SimpleFun_sp entry, List_sp vars, Symbol_
   return comp::bytecompile(form, comp::Lexenv_O::make_top_level());
 }
 
-void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& specializer, T_sp name, Symbol_sp classSymbol,
+void lisp_defineSingleDispatchMethod(T_sp name, Symbol_sp classSymbol,
                                      SimpleFun_sp method_body, size_t TemplateDispatchOn, bool useTemplateDispatchOn,
                                      const string& raw_arguments, const string& declares, const string& docstring, bool autoExport,
                                      int number_of_required_arguments, const std::set<int> pureOutIndices) {

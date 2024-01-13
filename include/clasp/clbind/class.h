@@ -270,9 +270,6 @@ public:
 #pragma pack(16)
 #endif
 
-template <int N> struct print_value_as_warning {
-  char operator()() { return N + 256; } // deliberately causing overflow
-};
 template <typename MethodPointerType> struct CountMethodArguments {
   //            enum {value = 0 };
 };
@@ -298,10 +295,10 @@ template <class Class, typename MethodPointerType, class Policies> struct memfun
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp symbol = core::lisp_intern(m_name, symbol_packageName(classSymbol));
-    using VariadicType = WRAPPER_AlienVariadicMethod<MethodPointerType, Policies, clbind::DefaultWrapper>;
+    using VariadicType = WRAPPER_AlienVariadicMethod<MethodPointerType, Policies>;
     core::FunctionDescription_sp fdesc = makeFunctionDescription(symbol, nil<core::T_O>());
     auto entry = gc::GC<VariadicType>::allocate(methodPtr, fdesc, nil<core::T_O>());
-    lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), symbol, classSymbol, entry, 0, true, m_arguments, m_declares,
+    lisp_defineSingleDispatchMethod(symbol, classSymbol, entry, 0, true, m_arguments, m_declares,
                                     m_doc_string, m_auto_export,
                                     CountMethodArguments<MethodPointerType>::value + 1, // +1 for the self argument
                                     GatherPureOutValues<Policies, 0>::gather());
@@ -332,9 +329,7 @@ template <class Class, class Begin, class End, class Policies> struct iterator_r
     using VariadicType = WRAPPER_Iterator<Policies, Class, Begin, End>;
     core::FunctionDescription_sp fdesc = makeFunctionDescription(symbol, nil<core::T_O>());
     auto entry = gc::GC<VariadicType>::allocate(fdesc, nil<core::T_O>(), beginPtr, endPtr);
-    //                int*** i = MethodPointerType(); printf("%p\n", i); // generate error to check type
-    //                print_value_as_warning<CountMethodArguments<MethodPointerType>::value>()();
-    lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), symbol, classSymbol, entry, 0, true, m_arguments, m_declares,
+    lisp_defineSingleDispatchMethod(symbol, classSymbol, entry, 0, true, m_arguments, m_declares,
                                     m_doc_string, true, 1); // one argument required for iterator - the object that has the sequence
   }
 
@@ -353,14 +348,6 @@ template <class Class, class Begin, class End, class Policies> struct iterator_r
 #ifdef BOOST_MSVC
 #pragma pack(pop)
 #endif
-
-template <class P, class T> struct default_pointer {
-  typedef P type;
-};
-
-template <class T> struct default_pointer<reg::null_type, T> {
-  typedef std::unique_ptr<T> type;
-};
 
 template <typename ConstructorType> struct CountConstructorArguments {
   enum { value = 0 };
@@ -384,7 +371,7 @@ template <class Class, class Pointer, class Signature, class Policies> struct co
     //                printf("%s:%d    constructor_registration_base::register_ called for %s\n", __FILE__, __LINE__,
     //                m_name.c_str());
     core::Symbol_sp sym = core::lisp_intern(tname, core::lisp_currentPackageName());
-    using VariadicType = WRAPPER_Constructor_O<Signature, Policies, Pointer, Class, DefaultWrapper>;
+    using VariadicType = WRAPPER_Constructor_O<Signature, Policies, Pointer, Class>;
     core::FunctionDescription_sp fdesc = makeFunctionDescription(sym, nil<core::T_O>());
     auto entry = gctools::GC<VariadicType>::allocate(fdesc);
     lisp_bytecode_defun(core::symbol_function, sym, core::lisp_currentPackageName(), entry,
@@ -487,7 +474,7 @@ struct property_registration : registration {
     maybe_register_symbol_using_dladdr((void*)VariadicGetterType::entry_point);
     auto raw_getter = gc::GC<VariadicGetterType>::allocate(entryPoint, get);
     core::BuiltinClosure_sp getter = gc::As<core::BuiltinClosure_sp>(raw_getter);
-    lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), sym, classSymbol, getter, 0, true, m_arguments, m_declares,
+    lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares,
                                     m_doc_string, true, 1);
     core::T_sp setf_name = core::Cons_O::createList(cl::_sym_setf, sym);
     using VariadicSetterType = WRAPPER_Setter<reg::null_type, Class, Set>;
@@ -496,7 +483,7 @@ struct property_registration : registration {
     maybe_register_symbol_using_dladdr((void*)VariadicSetterType::entry_point);
     auto raw_setter = gc::GC<VariadicSetterType>::allocate(setterEntryPoint, set);
     core::BuiltinClosure_sp setter = gc::As<core::BuiltinClosure_sp>(raw_setter);
-    lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), setf_name, classSymbol, setter, 1, true, m_arguments, m_declares,
+    lisp_defineSingleDispatchMethod(setf_name, classSymbol, setter, 1, true, m_arguments, m_declares,
                                     m_doc_string, true, 2);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
     // register the getter here
@@ -530,7 +517,7 @@ struct property_registration<Class, Get, GetPolicies, reg::null_type, reg::null_
     using VariadicType = WRAPPER_Getter<reg::null_type, Class, Get>;
     core::FunctionDescription_sp fdesc = makeFunctionDescription(symbol, nil<core::T_O>());
     auto entry = gc::GC<VariadicType>::allocate(get, fdesc, nil<core::T_O>());
-    lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), symbol, classSymbol, entry, 0, true, m_arguments, m_declares,
+    lisp_defineSingleDispatchMethod(symbol, classSymbol, entry, 0, true, m_arguments, m_declares,
                                     m_doc_string, true, 1);
   }
   virtual std::string name() const { return this->m_name; }
@@ -561,7 +548,7 @@ public:
 
   typedef std::unique_ptr<T> HoldType;
 
-  template <class Src, class Target> void add_downcast(Src*, Target*) {
+  template <class Src, class Target> void add_downcast() {
     // We use if constexpr. This will discard the add_cast when Src is not
     // polymorphic, which is important as add_cast would not be instantiable.
     if constexpr (std::is_polymorphic_v<Src>) {
@@ -572,25 +559,19 @@ public:
   // this function generates conversion information
   // in the given class_rep structure. It will be able
   // to implicitly cast to the given template type
-  // Dummy return value
-  template <class To> int gen_base_info(detail::type_<To>) {
-    add_base(typeid(To), detail::static_cast_<T, To>::execute);
-    add_cast(reg::registered_class<T>::id, reg::registered_class<To>::id, detail::static_cast_<T, To>::execute);
-
-    add_downcast((To*)0, (T*)0);
-    return 0;
+  template <class To> void gen_base_info() {
+    if constexpr(!std::is_same_v<To, reg::null_type>) {
+      add_base(typeid(To), detail::static_cast_<T, To>::execute);
+      add_cast(reg::registered_class<T>::id, reg::registered_class<To>::id, detail::static_cast_<T, To>::execute);
+      
+      add_downcast<To, T>();
+    }
   }
 
-  int gen_base_info(detail::type_<reg::null_type>) { return 0; }
-
-#define CLBIND_GEN_BASE_INFO(z, n, text) gen_base_info(detail::type_<BaseClass##n>());
-
-  template <class... BaseClass> void generate_baseclass_list(detail::type_<bases<BaseClass...>>) {
+  template <class... BaseClass> void generate_baseclass_list(bases<BaseClass...>) {
     // Fold expression to call gen_base_info for each base.
-    (gen_base_info(detail::type_<BaseClass>()), ...);
+    (gen_base_info<BaseClass>(), ...);
   }
-
-#undef CLBIND_GEN_BASE_INFO
 
   template <typename NameType>
   class_(scope_& outer_scope, const NameType& name, const std::string& docstring = "")
@@ -722,24 +703,18 @@ public:
 
   // #endif // end_meister_disabled
 
-#if 0
-  enum_maker enum_(core::Symbol_sp converter) {
-    return enum_maker(this, converter);
-  }
-#endif
-
   scope_* _outer_scope;
   detail::static_scope<self_t> scope;
 
 private:
   void operator=(class_ const&);
 
-  void add_wrapper_cast(reg::null_type*) {}
+  template <class U> void add_wrapper_cast() {
+    if constexpr(!std::is_same_v<U, reg::null_type>) {
+      add_cast(reg::registered_class<U>::id, reg::registered_class<T>::id, detail::static_cast_<U, T>::execute);
 
-  template <class U> void add_wrapper_cast(U*) {
-    add_cast(reg::registered_class<U>::id, reg::registered_class<T>::id, detail::static_cast_<U, T>::execute);
-
-    add_downcast((T*)0, (U*)0);
+      add_downcast<T, U>();
+    }
   }
 
   void init() {
@@ -748,13 +723,8 @@ private:
     class_base::init(typeid(T), reg::registered_class<T>::id, typeid(WrappedType), reg::registered_class<WrappedType>::id,
                      isDerivableCxxClass<T>(0));
 
-    add_wrapper_cast((WrappedType*)0);
-#if 0
-    int*** a = HoldType();
-    int*** b = WrappedType();
-    int*** i = Base();
-#endif
-    generate_baseclass_list(detail::type_<bases_t>());
+    add_wrapper_cast<WrappedType>();
+    generate_baseclass_list(bases_t());
   }
 
   // these handle default implementation of virtual functions

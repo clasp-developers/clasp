@@ -47,23 +47,23 @@ THE SOFTWARE.
 
 namespace core {
 
+SingleDispatchGenericFunction_O::SingleDispatchGenericFunction_O(FunctionDescription_sp fdesc, size_t newArgumentIndex)
+// we make a XEP based on the dispatch index.
+  // in practice this is always 0 or 1
+  : Base(fdesc, nil<T_O>(), selectXEP(newArgumentIndex)), callHistory(nil<T_O>()), argumentIndex(newArgumentIndex), methods(nil<T_O>()) {};
+
 SingleDispatchGenericFunction_sp
 SingleDispatchGenericFunction_O::create_single_dispatch_generic_function(T_sp gfname, size_t singleDispatchArgumentIndex,
                                                                          List_sp lambdaList) {
-  SimpleFun_sp entryPoint =
-      makeSimpleFunAndFunctionDescription<SingleDispatchGenericFunction_O>(gfname, lambdaList);
-  auto gfun = gctools::GC<SingleDispatchGenericFunction_O>::allocate(entryPoint);
-  gfun->callHistory = nil<T_O>();
-  gfun->argumentIndex = make_fixnum(singleDispatchArgumentIndex);
-  gfun->methods = nil<T_O>();
-  return gfun;
+  FunctionDescription_sp fdesc = makeFunctionDescription(gfname, lambdaList);
+  return gctools::GC<SingleDispatchGenericFunction_O>::allocate(fdesc, singleDispatchArgumentIndex);
 }
 
 CL_LISPIFY_NAME(SingleDispatchGenericFunction/callHistory);
-CL_DEFUN List_sp core__callHistory(SingleDispatchGenericFunction_sp func) { return func->callHistory.load(); }
+CL_DEFUN List_sp core__callHistory(SingleDispatchGenericFunction_sp func) { return func->callHistory.load(std::memory_order_relaxed); }
 
 CL_LISPIFY_NAME(SingleDispatchGenericFunction/specializerIndices);
-CL_DEFUN List_sp core__specializerIndices(SingleDispatchGenericFunction_sp func) { return Cons_O::createList(func->argumentIndex); }
+CL_DEFUN List_sp core__specializerIndices(SingleDispatchGenericFunction_sp func) { return Cons_O::createList(Integer_O::create(func->argumentIndex)); }
 
 CL_DECLARE();
 CL_DOCSTRING(R"dx(ensureSingleDispatchGenericFunction)dx");

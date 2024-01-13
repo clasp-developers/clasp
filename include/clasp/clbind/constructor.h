@@ -162,26 +162,25 @@ public:
   template <typename... Ts>
   static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
                                              Ts... args) {
-    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
-    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
+    SIMPLE_ERROR("What do we do when this is called?");
   }
 };
 }; // namespace clbind
 
 namespace clbind {
 
-template <typename Sig, typename Pols, typename Pointer, typename T, typename ArgumentWrapper> class WRAPPER_Constructor_O;
+template <typename Sig, typename Pols, typename Pointer, typename T> class WRAPPER_Constructor_O;
 };
 
 namespace clbind {
-template <typename ConstructorPtrType, typename Policies, typename Pointer, typename ConstructType, typename ArgumentWrapper>
+template <typename ConstructorPtrType, typename Policies, typename Pointer, typename ConstructType>
 class WRAPPER_Constructor_O : public core::SimpleFun_O {};
 
-template <typename... ARGS, typename Policies, typename Pointer, typename ConstructType, typename ArgumentWrapper>
-class WRAPPER_Constructor_O<constructor<ARGS...>, Policies, Pointer, ConstructType, ArgumentWrapper>
+template <typename... ARGS, typename Policies, typename Pointer, typename ConstructType>
+class WRAPPER_Constructor_O<constructor<ARGS...>, Policies, Pointer, ConstructType>
     : public core::SimpleFun_O {
 public:
-  typedef WRAPPER_Constructor_O<constructor<ARGS...>, Policies, Pointer, ConstructType, ArgumentWrapper> MyType;
+  typedef WRAPPER_Constructor_O<constructor<ARGS...>, Policies, Pointer, ConstructType> MyType;
   typedef core::SimpleFun_O TemplatedBase;
   typedef Wrapper<ConstructType, Pointer> WrapperType;
 
@@ -193,38 +192,40 @@ public:
     : core::SimpleFun_O(fdesc, nil<core::T_O>(), core::XepStereotype<MyType>()){};
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
-  static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs,
-                                                 core::T_O** lcc_args) {
+  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs,
+                                         core::T_O** lcc_args) {
     DO_DRAG_CXX_CALLS();
     if (lcc_nargs != NumParams)
       cc_wrong_number_of_arguments(lcc_closure, lcc_nargs, NumParams, NumParams);
-    std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<0, policies<>, ARGS...>::goFrame(lcc_args);
+    auto all_args = arg_tuple<0, policies<>, ARGS...>::goFrame(lcc_args);
     return constructor_apply_and_return<WrapperType, Policies, ConstructType, decltype(all_args)>::go(std::move(all_args));
-  }
-
-  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args) {
-    return wrapper_entry_point_n(ArgumentWrapper(), lcc_closure, lcc_nargs, lcc_args);
   }
 
   template <typename... Ts>
   static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
                                              Ts... args) {
-    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
-    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
+    DO_DRAG_CXX_CALLS();
+    if constexpr(sizeof...(Ts) != NumParams) {
+      cc_wrong_number_of_arguments(lcc_closure, sizeof...(Ts), NumParams, NumParams);
+      UNREACHABLE();
+    } else {
+      auto all_args = arg_tuple<0, policies<>, ARGS...>::goArgs(args...);
+      return constructor_apply_and_return<WrapperType, Policies, ConstructType, decltype(all_args)>::go(std::move(all_args));
+    }
   }
 };
 }; // namespace clbind
 
-template <typename Sig, typename Pols, typename Pointer, typename T, typename ArgumentWrapper>
-class gctools::GCStamp<clbind::WRAPPER_Constructor_O<Sig, Pols, Pointer, T, ArgumentWrapper>> {
+template <typename Sig, typename Pols, typename Pointer, typename T>
+class gctools::GCStamp<clbind::WRAPPER_Constructor_O<Sig, Pols, Pointer, T>> {
 public:
   static gctools::GCStampEnum const StampWtag =
-      gctools::GCStamp<typename clbind::WRAPPER_Constructor_O<Sig, Pols, Pointer, T, ArgumentWrapper>::TemplatedBase>::StampWtag;
+      gctools::GCStamp<typename clbind::WRAPPER_Constructor_O<Sig, Pols, Pointer, T>::TemplatedBase>::StampWtag;
 };
 
-template <typename Sig, typename Pols, typename Pointer, typename T, typename ArgumentWrapper>
-struct gctools::Inherits<typename clbind::WRAPPER_Constructor_O<Sig, Pols, Pointer, T, ArgumentWrapper>::TemplatedBase,
-                         clbind::WRAPPER_Constructor_O<Sig, Pols, Pointer, T, ArgumentWrapper>> : public std::true_type {};
+template <typename Sig, typename Pols, typename Pointer, typename T>
+struct gctools::Inherits<typename clbind::WRAPPER_Constructor_O<Sig, Pols, Pointer, T>::TemplatedBase,
+                         clbind::WRAPPER_Constructor_O<Sig, Pols, Pointer, T>> : public std::true_type {};
 
 template <typename Policies, typename T> class gctools::GCStamp<clbind::DerivableDefaultConstructorFunctor<Policies, T>> {
 public:

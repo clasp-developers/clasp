@@ -32,16 +32,16 @@ THE SOFTWARE.
 // #include "clbind.h"
 
 namespace clbind {
-template <typename MethodPtrType, typename Policies, typename OT, typename ArgumentWrapper> class WRAPPER_IndirectMethod;
+template <typename MethodPtrType, typename Policies, typename OT> class WRAPPER_IndirectMethod;
 };
 
 namespace clbind {
 
-template <typename RT, typename OT, typename... ARGS, typename Policies, typename ArgumentWrapper>
-class WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...), Policies, OT, ArgumentWrapper>
+template <typename RT, typename OT, typename... ARGS, typename Policies>
+class WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...), Policies, OT>
     : public core::SimpleFun_O {
 public:
-  typedef WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...), Policies, OT, ArgumentWrapper> MyType;
+  typedef WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...), Policies, OT> MyType;
   typedef RT (OT::ExternalType::*MethodType)(ARGS...);
   typedef core::SimpleFun_O TemplatedBase;
 
@@ -65,38 +65,43 @@ public:
     this->fixupOneCodePointer(fixup, (void**)&this->mptr);
   };
 
-  static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs,
-                                                 core::T_O** lcc_args) {
+  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs,
+                                         core::T_O** lcc_args) {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     DO_DRAG_CXX_CALLS();
     if (lcc_nargs != NumParams)
       cc_wrong_number_of_arguments(lcc_closure, lcc_nargs, NumParams, NumParams);
     core::T_sp ootep((gctools::Tagged)lcc_args[0]);
     OT* otep = &*gc::As<gctools::smart_ptr<OT>>(ootep);
-    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1, Policies, ARGS...>::goFrame(lcc_args);
+    auto all_args = clbind::arg_tuple<1, Policies, ARGS...>::goFrame(lcc_args);
     return clbind::external_method_apply_and_return<Policies, RT, decltype(closure->mptr), OT, decltype(all_args)>::go(
         std::move(closure->mptr), otep, std::move(all_args));
-  }
-
-  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args) {
-    return wrapper_entry_point_n(ArgumentWrapper(), lcc_closure, lcc_nargs, lcc_args);
   }
 
   template <typename... Ts>
   static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
                                              Ts... args) {
-    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
-    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
+    DO_DRAG_CXX_CALLS();
+    if constexpr(sizeof...(Ts) != NumParams) {
+      cc_wrong_number_of_arguments(lcc_closure, sizeof...(Ts), NumParams, NumParams);
+      UNREACHABLE();
+    } else {
+      MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+      core::T_sp ootep((gctools::Tagged)std::get<0>(std::make_tuple(args...)));
+      OT* otep = &*gc::As<gctools::smart_ptr<OT>>(ootep);
+      auto all_args = clbind::arg_tuple<1, Policies, ARGS...>::goArgs(args...);
+      return clbind::external_method_apply_and_return<Policies, RT, decltype(closure->mptr), OT, decltype(all_args)>::go(std::move(closure->mptr), otep, std::move(all_args));
+    }
   }
 };
 }; // namespace clbind
 
 namespace clbind {
-template <typename RT, typename OT, typename... ARGS, typename Policies, typename ArgumentWrapper>
-class WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...) const, Policies, OT, ArgumentWrapper>
+template <typename RT, typename OT, typename... ARGS, typename Policies>
+class WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...) const, Policies, OT>
     : public core::SimpleFun_O {
 public:
-  typedef WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...) const, Policies, OT, ArgumentWrapper> MyType;
+  typedef WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...) const, Policies, OT> MyType;
   typedef RT (OT::ExternalType::*MethodType)(ARGS...) const;
   typedef SimpleFun_O TemplatedBase;
 
@@ -120,28 +125,33 @@ public:
     this->fixupOneCodePointer(fixup, (void**)&this->mptr);
   };
 
-  static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs,
-                                                 core::T_O** lcc_args) {
+  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs,
+                                         core::T_O** lcc_args) {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     DO_DRAG_CXX_CALLS();
     if (lcc_nargs != NumParams)
       cc_wrong_number_of_arguments(lcc_closure, lcc_nargs, NumParams, NumParams);
     core::T_sp ootep((gctools::Tagged)lcc_args[0]);
     OT* otep = &*gc::As<gctools::smart_ptr<OT>>(ootep);
-    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1, Policies, ARGS...>::goFrame(lcc_args);
+    auto all_args = clbind::arg_tuple<1, Policies, ARGS...>::goFrame(lcc_args);
     return clbind::external_method_apply_and_return<Policies, RT, decltype(closure->mptr), OT, decltype(all_args)>::go(
         std::move(closure->mptr), otep, std::move(all_args));
-  }
-
-  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args) {
-    return wrapper_entry_point_n(ArgumentWrapper(), lcc_closure, lcc_nargs, lcc_args);
   }
 
   template <typename... Ts>
   static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
                                              Ts... args) {
-    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
-    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
+    DO_DRAG_CXX_CALLS();
+    if constexpr(sizeof...(Ts) != NumParams) {
+      cc_wrong_number_of_arguments(lcc_closure, sizeof...(Ts), NumParams, NumParams);
+      UNREACHABLE();
+    } else {
+      MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+      core::T_sp ootep((gctools::Tagged)std::get<0>(std::make_tuple(args...)));
+      OT* otep = &*gc::As<gctools::smart_ptr<OT>>(ootep);
+      auto all_args = clbind::arg_tuple<1, Policies, ARGS...>::goArgs(args...);
+      return clbind::external_method_apply_and_return<Policies, RT, decltype(closure->mptr), OT, decltype(all_args)>::go(std::move(closure->mptr), otep, std::move(all_args));
+    }
   }
 };
 }; // namespace clbind
@@ -175,22 +185,21 @@ public:
   template <typename...Ts>
   static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
                                              Ts... args) {
-    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
-    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
+    SIMPLE_ERROR("What do I do here");
   }
 };
 }; // namespace core
 
-template <typename Policies, typename OT, typename MethodPtrType, typename ArgumentHandler>
-class gctools::GCStamp<clbind::WRAPPER_IndirectMethod<MethodPtrType, Policies, OT, ArgumentHandler>> {
+template <typename Policies, typename OT, typename MethodPtrType>
+class gctools::GCStamp<clbind::WRAPPER_IndirectMethod<MethodPtrType, Policies, OT>> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::GCStamp<
-      typename clbind::WRAPPER_IndirectMethod<MethodPtrType, Policies, OT, ArgumentHandler>::TemplatedBase>::StampWtag;
+      typename clbind::WRAPPER_IndirectMethod<MethodPtrType, Policies, OT>::TemplatedBase>::StampWtag;
 };
 
-template <typename Policies, typename OT, typename MethodPtrType, typename ArgumentHandler>
-struct gctools::Inherits<typename clbind::WRAPPER_IndirectMethod<MethodPtrType, Policies, OT, ArgumentHandler>::TemplatedBase,
-                         clbind::WRAPPER_IndirectMethod<MethodPtrType, Policies, OT, ArgumentHandler>> : public std::true_type {};
+template <typename Policies, typename OT, typename MethodPtrType>
+struct gctools::Inherits<typename clbind::WRAPPER_IndirectMethod<MethodPtrType, Policies, OT>::TemplatedBase,
+                         clbind::WRAPPER_IndirectMethod<MethodPtrType, Policies, OT>> : public std::true_type {};
 
 namespace core {
 
@@ -256,10 +265,10 @@ public:
     for (auto& name : names._Names) {
       maybe_register_symbol_using_dladdr(*(void**)&mp, sizeof(mp), name);
       Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-      using VariadicType = clbind::WRAPPER_VariadicMethod<RT (OT::*)(ARGS...), core::policy::clasp_policy, clbind::DefaultWrapper>;
+      using VariadicType = clbind::WRAPPER_VariadicMethod<RT (OT::*)(ARGS...), core::policy::clasp_policy>;
       FunctionDescription_sp fdesc = makeFunctionDescription(symbol, nil<T_O>());
       auto entry = gctools::GC<VariadicType>::allocate(mp, fdesc, nil<T_O>());
-      lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares,
+      lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares,
                                       docstring, autoExport, sizeof...(ARGS) + 1);
     }
     return *this;
@@ -272,10 +281,10 @@ public:
       maybe_register_symbol_using_dladdr(*(void**)&mp, sizeof(mp), name);
       Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
       using VariadicType =
-          clbind::WRAPPER_VariadicMethod<RT (OT::*)(ARGS...) const, core::policy::clasp_policy, clbind::DefaultWrapper>;
+          clbind::WRAPPER_VariadicMethod<RT (OT::*)(ARGS...) const, core::policy::clasp_policy>;
       FunctionDescription_sp fdesc = makeFunctionDescription(symbol, nil<T_O>());
       auto entry = gctools::GC<VariadicType>::allocate(mp, fdesc, nil<T_O>());
-      lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares,
+      lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares,
                                       docstring, autoExport, sizeof...(ARGS) + 1);
     }
     return *this;
@@ -288,10 +297,10 @@ public:
       maybe_register_symbol_using_dladdr(*(void**)&mp, sizeof(mp), name);
       Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
       using VariadicType =
-          clbind::WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...), clbind::policies<>, OT, clbind::DefaultWrapper>;
+          clbind::WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...), clbind::policies<>, OT>;
       FunctionDescription_sp fdesc = makeFunctionDescription(symbol, nil<T_O>());
       auto entry = gctools::GC<VariadicType>::allocate(mp, fdesc, nil<T_O>());
-      lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares,
+      lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares,
                                       docstring, autoExport, sizeof...(ARGS) + 1);
     }
     return *this;
@@ -304,10 +313,10 @@ public:
       maybe_register_symbol_using_dladdr(*(void**)&mp, sizeof(mp), name);
       Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
       using VariadicType =
-          clbind::WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...) const, clbind::policies<>, OT, clbind::DefaultWrapper>;
+          clbind::WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...) const, clbind::policies<>, OT>;
       FunctionDescription_sp fdesc = makeFunctionDescription(symbol, nil<T_O>());
       auto entry = gctools::GC<VariadicType>::allocate(mp, fdesc, nil<T_O>());
-      lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares,
+      lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares,
                                       docstring, autoExport, sizeof...(ARGS) + 1);
     }
     return *this;

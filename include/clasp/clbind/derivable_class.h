@@ -233,7 +233,7 @@ public:
 
   typedef std::unique_ptr<T> HoldType;
 
-  template <class Src, class Target> void add_downcast(Src*, Target*) {
+  template <class Src, class Target> void add_downcast() {
     if constexpr (std::is_polymorphic_v<Src>) {
       add_cast(reg::registered_class<Src>::id, reg::registered_class<Target>::id, detail::dynamic_cast_<Src, Target>::execute);
     }
@@ -242,22 +242,18 @@ public:
   // this function generates conversion information
   // in the given class_rep structure. It will be able
   // to implicitly cast to the given template type
-  // Dummy return value
-  template <class To> int gen_base_info(detail::type_<To>) {
-    add_base(typeid(To), detail::static_cast_<T, To>::execute);
-    add_cast(reg::registered_class<T>::id, reg::registered_class<To>::id, detail::static_cast_<T, To>::execute);
+  template <class To> void gen_base_info() {
+    if constexpr(!std::is_same_v<To, reg::null_type>) {
+      add_base(typeid(To), detail::static_cast_<T, To>::execute);
+      add_cast(reg::registered_class<T>::id, reg::registered_class<To>::id, detail::static_cast_<T, To>::execute);
 
-    add_downcast((To*)0, (T*)0);
-    return 0;
+      add_downcast<To, T>();
+    }
   }
 
-#define CLBIND_GEN_BASE_INFO(z, n, text) gen_base_info(detail::type_<BaseClass##n>());
-
-  template <class... BaseClass> void generate_baseclass_list(detail::type_<bases<BaseClass...>>) {
-    (gen_base_info(detail::type_<BaseClass>()), ...);
+  template <class... BaseClass> void generate_baseclass_list(bases<BaseClass...>) {
+    (gen_base_info<BaseClass>(), ...);
   }
-
-#undef CLBIND_GEN_BASE_INFO
 
   derivable_class_(scope_& outer_scope, const char* name, default_constructor_type, const char* docstring = "")
       : derivable_class_base(name), _outer_scope(&outer_scope), scope(*this) {
@@ -335,23 +331,18 @@ public:
     return *this;
   }
 
-#if 0
-  enum_maker enum_(core::Symbol_sp converter) {
-    return enum_maker(this, converter);
-  }
-#endif
   scope_* _outer_scope;
   detail::static_scope<self_t> scope;
 
 private:
   void operator=(derivable_class_ const&);
 
-  void add_wrapper_cast(reg::null_type*) {}
+  template <class U> void add_wrapper_cast() {
+    if (!std::is_same_v<U, reg::null_type>) {
+      add_cast(reg::registered_class<U>::id, reg::registered_class<T>::id, detail::static_cast_<U, T>::execute);
 
-  template <class U> void add_wrapper_cast(U*) {
-    add_cast(reg::registered_class<U>::id, reg::registered_class<T>::id, detail::static_cast_<U, T>::execute);
-
-    add_downcast((T*)0, (U*)0);
+      add_downcast<T, U>();
+    }
   }
 
   void init(bool hasConstructor) {
@@ -366,9 +357,9 @@ private:
                                isDerivableCxxClass<T>(0));
 
     //            printf("%s:%d Should I be adding a wrapper cast???\n", __FILE__, __LINE__ );
-    add_wrapper_cast((WrappedType*)0);
+    add_wrapper_cast<WrappedType>();
 
-    generate_baseclass_list(detail::type_<bases_t>());
+    generate_baseclass_list(bases_t());
   }
 
   // these handle default implementation of virtual functions

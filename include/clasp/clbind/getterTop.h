@@ -23,19 +23,32 @@ public:
     //    );
     this->fixupOneCodePointer(fixup, (void**)&this->mptr);
   };
-
-  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
-    DO_DRAG_CXX_CALLS();
-    core::T_sp arg0((gctools::Tagged)lcc_args[0]);
+private:
+  inline LCC_RETURN go(core::T_O* a0) {
+    core::T_sp arg0((gctools::Tagged)a0);
     OT* objPtr = gc::As<core::WrappedPointer_sp>(arg0)->cast<OT>();
-    MemberType& orig = (*objPtr).*(closure->mptr);
+    MemberType& orig = (*objPtr).*(this->mptr);
     return Values(translate::to_object<MemberType, translate::dont_adopt_pointer>::convert(orig));
+  }
+  
+public:
+  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    DO_DRAG_CXX_CALLS();
+    if (lcc_nargs == 1)
+      return gctools::untag_general<MyType*>((MyType*)lcc_closure)->go(lcc_args[0]);
+    else {
+      cc_wrong_number_of_arguments(lcc_closure, lcc_nargs, 1, 1);
+      UNREACHABLE();
+    }
   }
   template <typename... Ts>
   static inline LCC_RETURN entry_point_fixed(core::T_O* lcc_closure,
                                              Ts... args) {
-    core::T_O* lcc_args[sizeof...(Ts)] = {args...};
-    return entry_point_n(lcc_closure, sizeof...(Ts), lcc_args);
+    if constexpr(sizeof...(Ts) == 1)
+      return gctools::untag_general<MyType*>((MyType*)lcc_closure)->go(args...);
+    else {
+      cc_wrong_number_of_arguments(lcc_closure, sizeof...(Ts), 1, 1);
+      UNREACHABLE();
+    }
   }
 };
