@@ -124,8 +124,7 @@ template <> struct from_object<clang::tooling::ArgumentsAdjuster> {
         core::T_sp tfilename = translate::to_object<llvm::StringRef>::convert(filename);
         core::T_mv result = core::eval::funcall(func, targs, tfilename);
         ;
-        translate::from_object<const clang::tooling::CommandLineArguments&> cresult(result);
-        return cresult._v;
+        return translate::make_from_object<clang::tooling::CommandLineArguments>(result);
       };
       return;
     } else if (clang::tooling::ArgumentsAdjuster* argAdj =

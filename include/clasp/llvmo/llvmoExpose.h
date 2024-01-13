@@ -1517,9 +1517,9 @@ class GlobalVariable_O : public GlobalValue_O {
   typedef llvm::GlobalVariable* PointerToExternalType;
 
 public:
-  static GlobalVariable_sp make(Module_sp module, Type_sp type, bool isConstant, core::Symbol_sp linkage,
+  static GlobalVariable_sp make(Module_sp module, Type_sp type, bool isConstant, llvm::GlobalValue::LinkageTypes linkage,
                                 /*Constant_sp*/ core::T_sp initializer, core::String_sp name,
-                                /*GlobalVariable_sp*/ core::T_sp insertBefore, core::Symbol_sp threadLocalMode);
+                                /*GlobalVariable_sp*/ core::T_sp insertBefore, llvm::GlobalValue::ThreadLocalMode threadLocalMode);
 
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
@@ -3315,7 +3315,7 @@ public:
   ~FunctionType_O() {}
 
 public: // static methods
-  static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
+  static core::T_sp get(llvm::Type* result_type, core::T_sp params, core::T_sp is_var_arg);
 }; // FunctionType_O
 }; // namespace llvmo
 /* from_object translators */
@@ -3390,7 +3390,7 @@ public:
 
 public: // static methods
   /*! Get a structure using llvm:StructType::create(LLVMContext& context, ArrayRef<Type*>Elements,StringRef name,bool isPacked) */
-  static StructType_sp make(LLVMContext_sp context, core::T_sp elements, core::String_sp name, core::T_sp isPacked);
+  static StructType_sp make(LLVMContext_sp context, core::T_sp elements, llvm::StringRef name, core::T_sp isPacked);
 
   static StructType_sp get(LLVMContext_sp context, core::T_sp elements, bool isPacked = false);
 

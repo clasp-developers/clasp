@@ -1800,11 +1800,10 @@ namespace llvmo {
 CL_LAMBDA("module type is-constant linkage initializer name &optional (insert-before nil) (thread-local-mode 'llvm-sys:not-thread-local)");
 CL_LISPIFY_NAME(make-global-variable);
 DOCGROUP(clasp);
-CL_DEFUN GlobalVariable_sp GlobalVariable_O::make(Module_sp mod, Type_sp type, bool isConstant, core::Symbol_sp linkage,
+CL_DEFUN GlobalVariable_sp GlobalVariable_O::make(Module_sp mod, Type_sp type, bool isConstant, llvm::GlobalValue::LinkageTypes linkage,
                                                   /*Constant_sp*/ core::T_sp initializer, core::String_sp name,
-                                                  /*GlobalVariable_sp*/ core::T_sp insertBefore, core::Symbol_sp threadLocalMode) {
+                                                  /*GlobalVariable_sp*/ core::T_sp insertBefore, llvm::GlobalValue::ThreadLocalMode threadLocalMode) {
   auto me = gctools::GC<GlobalVariable_O>::allocate_with_default_constructor();
-  translate::from_object<llvm::GlobalValue::LinkageTypes> llinkage(linkage);
   llvm::Constant* llvm_initializer = NULL;
   if (initializer.notnilp()) {
     llvm_initializer = gc::As<Constant_sp>(initializer)->wrappedPtr();
@@ -1813,9 +1812,8 @@ CL_DEFUN GlobalVariable_sp GlobalVariable_O::make(Module_sp mod, Type_sp type, b
   if (insertBefore.notnilp()) {
     lInsertBefore = gc::As<GlobalVariable_sp>(insertBefore)->wrappedPtr();
   }
-  translate::from_object<llvm::GlobalValue::ThreadLocalMode> lThreadLocalMode(threadLocalMode);
-  llvm::GlobalVariable* gv = new llvm::GlobalVariable(*(mod->wrappedPtr()), type->wrappedPtr(), isConstant, llinkage._v,
-                                                      llvm_initializer, name->get_std_string(), lInsertBefore, lThreadLocalMode._v);
+  llvm::GlobalVariable* gv = new llvm::GlobalVariable(*(mod->wrappedPtr()), type->wrappedPtr(), isConstant, linkage,
+                                                      llvm_initializer, name->get_std_string(), lInsertBefore, threadLocalMode);
   me->set_wrapped(gv);
   //	me->set_ptrIsOwned(true); // GlobalVariables made this way are responsible for freeing their pointers - I hope this isn't a
   // disaster
@@ -3184,12 +3182,10 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, ValueAsMetadataGet);
 namespace llvmo {
 
 DOCGROUP(clasp);
-CL_DEFUN Function_sp llvm_sys__FunctionCreate(FunctionType_sp tysp, llvm::GlobalValue::LinkageTypes linkage, core::String_sp nsp,
-                                              Module_sp modulesp) {
-  translate::from_object<llvm::FunctionType*> ty(tysp);
-  translate::from_object<llvm::Module*> m(modulesp);
+CL_DEFUN Function_sp llvm_sys__FunctionCreate(llvm::FunctionType* ty, llvm::GlobalValue::LinkageTypes linkage, core::String_sp nsp,
+                                              llvm::Module* m) {
   //        printf("%s:%d FunctionCreate %s with linkage %d\n", __FILE__, __LINE__, nsp->get().c_str(), linkage);
-  llvm::Function* func = llvm::Function::Create(ty._v, linkage, nsp->get_std_string(), m._v);
+  llvm::Function* func = llvm::Function::Create(ty, linkage, nsp->get_std_string(), m);
   Function_sp funcsp = gc::As<Function_sp>(translate::to_object<llvm::Function*>::convert(func));
   return funcsp;
 };
@@ -3481,17 +3477,16 @@ namespace llvmo {
 CL_LAMBDA(result &optional params is-var-arg);
 CL_LISPIFY_NAME(function-type-get);
 DOCGROUP(clasp);
-CL_DEFUN core::T_sp FunctionType_O::get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg) {
-  translate::from_object<llvm::Type*> r(result_type);
+CL_DEFUN core::T_sp FunctionType_O::get(llvm::Type* result_type, core::T_sp params, core::T_sp is_var_arg) {
   bool iva = is_var_arg.isTrue();
   llvm::FunctionType* result = NULL;
   if (params.nilp()) {
-    result = llvm::FunctionType::get(r._v, iva);
+    result = llvm::FunctionType::get(result_type, iva);
   } else {
     vector<llvm::Type*> vparams;
     convert_sequence_types_to_vector(params, vparams);
     llvm::ArrayRef<llvm::Type*> p(vparams);
-    result = llvm::FunctionType::get(r._v, p, iva);
+    result = llvm::FunctionType::get(result_type, p, iva);
   }
   return translate::to_object<llvm::FunctionType*>::convert(result);
 };
@@ -3519,16 +3514,15 @@ namespace llvmo {
 CL_LAMBDA(context &key elements name is-packed);
 CL_LISPIFY_NAME(struct-type-create);
 DOCGROUP(clasp);
-CL_DEFUN StructType_sp StructType_O::make(LLVMContext_sp context, core::T_sp elements, core::String_sp name, core::T_sp isPacked) {
+CL_DEFUN StructType_sp StructType_O::make(LLVMContext_sp context, core::T_sp elements, llvm::StringRef srname, core::T_sp isPacked) {
   llvm::StructType* result = NULL;
-  translate::from_object<llvm::StringRef> srname(name);
   if (elements.notnilp()) {
     vector<llvm::Type*> velements;
     convert_sequence_types_to_vector(elements, velements);
     llvm::ArrayRef<llvm::Type*> p(velements);
-    result = llvm::StructType::create(*(context->wrappedPtr()), p, srname._v, isPacked.isTrue());
+    result = llvm::StructType::create(*(context->wrappedPtr()), p, srname, isPacked.isTrue());
   } else {
-    result = llvm::StructType::create(*(context->wrappedPtr()), srname._v);
+    result = llvm::StructType::create(*(context->wrappedPtr()), srname);
   }
   return translate::to_object<llvm::StructType*>::convert(result);
 }
