@@ -26,20 +26,6 @@ THE SOFTWARE.
 */
 /* -^- */
 
-// PATTERN FOR from_object TRANSLATORS:
-//
-// Fixnum not_fixnum_error(core::T_sp o) {
-//     TYPE_ERROR(o,cl::_sym_fixnum);
-// }
-//
-// template <>
-// struct from_object<unsigned long, std::true_type> {
-//     typedef unsigned long DeclareType;
-//
-//     DeclareType _v;
-//     from_object() : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error(o) ) {};
-// };
-
 //
 // Type translators
 //
@@ -62,60 +48,60 @@ namespace translate {
 
 // FROM_OBJECT TRANSLATORS
 
-template <std::integral I> struct from_object<I, std::true_type> {
+template <std::integral I> struct from_object<I> {
   typedef I DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(core::clasp_to_integral<I>(o)) {};
 };
 
-template <> struct from_object<float, std::true_type> {
+template <> struct from_object<float> {
   typedef float DeclareType;
 
   DeclareType _v;
   from_object(core::T_sp o) : _v(core::clasp_to_float(gc::As<core::Number_sp>(o))){};
 };
 
-template <> struct from_object<double, std::true_type> {
+template <> struct from_object<double> {
   typedef double DeclareType;
 
   DeclareType _v;
   from_object(core::T_sp o) : _v(core::clasp_to_double(gc::As<core::Number_sp>(o))){};
 };
 
-template <> struct from_object<long double, std::true_type> {
+template <> struct from_object<long double> {
   typedef long double DeclareType;
 
   DeclareType _v;
   from_object(core::T_sp o) : _v(core::clasp_to_long_double(gc::As<core::Number_sp>(o))){};
 };
 
-template <> struct from_object<bool, std::true_type> {
+template <> struct from_object<bool> {
   typedef bool DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(!o.nilp()){};
 };
 
-template <> struct from_object<bool&, std::true_type> {
+template <> struct from_object<bool&> {
   typedef bool DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(!o.nilp()){};
   ~from_object(){/*non trivial*/};
 };
 
-template <> struct from_object<core::T_O*, std::true_type> {
+template <> struct from_object<core::T_O*> {
   typedef core::T_O* DeclareType;
 
   DeclareType _v;
   from_object(core::T_sp o) : _v(o.raw_()){};
 };
 
-template <> struct from_object<void*, std::true_type> {
+template <> struct from_object<void*> {
   typedef void* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(core::lisp_to_void_ptr(o)){};
 };
 
-template <> struct from_object<bool*, std::true_type> {
+template <> struct from_object<bool*> {
   typedef bool* DeclareType;
 
   DeclareType _v;
@@ -293,19 +279,19 @@ template <> struct to_object<const mpz_class&> {
 
 //  String translators
 
-template <> struct from_object<const std::string&, std::true_type> {
+template <> struct from_object<const std::string&> {
   typedef std::string DeclareType;
   DeclareType _v;
   from_object(T_P o) : _v(string_get_std_string(o)){};
 };
 
-template <> struct from_object<std::string, std::true_type> {
+template <> struct from_object<std::string> {
   typedef std::string DeclareType;
   DeclareType _v;
   from_object(T_P o) : _v(string_get_std_string(o)){};
 };
 
-template <> struct from_object<std::string&, std::true_type> {
+template <> struct from_object<std::string&> {
   typedef std::string DeclareType;
   DeclareType _v;
   from_object(T_P o) : _v(string_get_std_string(o)){};

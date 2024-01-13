@@ -102,7 +102,7 @@ public:
 
 #define ENUM_FROM_OBJECT_TRANSLATOR(enumType, converterSymbol)                                                                     \
   namespace translate {                                                                                                            \
-  template <> struct from_object<enumType, std::true_type> {                                                                       \
+  template <> struct from_object<enumType> {                                                                       \
     typedef enumType DeclareType;                                                                                                  \
     DeclareType _v;                                                                                                                \
     from_object(core::T_sp o)                                                                                                      \

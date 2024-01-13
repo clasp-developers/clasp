@@ -71,14 +71,12 @@ template <> inline gctools::multiple_values<core::Symbol_O> safe_downcast(const 
 #define T_P const core::T_sp&
 
 namespace translate {
-/*! The second template argument can be std::true_type if the value passed to the from_object ctor should be used
-      to construct the value or std::false_type if a default initialization value should be used */
-template <class oClass, typename Doit = std::true_type> struct from_object;
+template <class oClass> struct from_object;
 
 // Shortcut operator when we just want a new object and don't care about
 // references etc.
 template <typename T> T make_from_object(core::T_sp o) {
-  return from_object<T, std::true_type>(o)._v;
+  return from_object<T>(o)._v;
 }
 
 struct dont_adopt_pointer {};
@@ -87,37 +85,37 @@ struct adopt_pointer {};
       that specifies if the pointer should be adopted or not adopted */
 template <class oClass, class AdoptPolicy = dont_adopt_pointer> struct to_object {};
 
-template <typename T> struct from_object<gctools::smart_ptr<T>, std::true_type> {
+template <typename T> struct from_object<gctools::smart_ptr<T>> {
   typedef gctools::smart_ptr<T> DeclareType;
   DeclareType _v;
-  from_object(const core::T_sp& o) : _v(gc::As<gctools::smart_ptr<T>>(o)) { ASSERT(gctools::IsA<gctools::smart_ptr<T>>(o)); };
+  from_object(const core::T_sp& o) : _v(gc::As<gctools::smart_ptr<T>>(o)) {};
 };
 
-template <typename T> struct from_object<gctools::smart_ptr<T>&, std::true_type> {
+template <typename T> struct from_object<gctools::smart_ptr<T>&> {
   typedef gctools::smart_ptr<T> DeclareType;
   DeclareType _v;
-  from_object(const core::T_sp& o) : _v(gc::As<gctools::smart_ptr<T>>(o)) { ASSERT(gctools::IsA<gctools::smart_ptr<T>>(o)); };
+  from_object(const core::T_sp& o) : _v(gc::As<gctools::smart_ptr<T>>(o)) {};
 };
 
-template <> struct from_object<gctools::smart_ptr<core::Character_I>&, std::true_type> {
+template <> struct from_object<gctools::smart_ptr<core::Character_I>&> {
   typedef gctools::smart_ptr<core::Character_I> DeclareType;
   DeclareType _v;
-  from_object(const core::T_sp& o) : _v(gc::As<gctools::smart_ptr<core::Character_I>>(o)) { ASSERT(o.characterp()); };
+  from_object(const core::T_sp& o) : _v(gc::As<gctools::smart_ptr<core::Character_I>>(o)) {};
 };
 
-template <> struct from_object<core::T_sp, std::true_type> {
+template <> struct from_object<core::T_sp> {
   typedef core::T_sp DeclareType;
   DeclareType _v;
   from_object(const core::T_sp& o) : _v(o){};
 };
 
-template <> struct from_object<gctools::smart_ptr<core::List_V>&, std::true_type> {
+template <> struct from_object<gctools::smart_ptr<core::List_V>&> {
   typedef core::List_sp DeclareType;
   DeclareType _v;
-  from_object(const core::T_sp& o) : _v(gc::As<core::List_sp>(o)) { ASSERT(gc::IsA<core::List_sp>(o)); };
+  from_object(const core::T_sp& o) : _v(gc::As<core::List_sp>(o)) {};
 };
 
-template <typename T> struct from_object<gc::Nilable<gc::smart_ptr<T>>, std::true_type> {
+template <typename T> struct from_object<gc::Nilable<gc::smart_ptr<T>>> {
   typedef gctools::Nilable<gc::smart_ptr<T>> DeclareType;
   DeclareType _v;
   from_object(const core::T_sp& o) : _v(o){};
@@ -134,7 +132,7 @@ template <class T> struct to_object<gc::Nilable<gctools::smart_ptr<T>>> {
 
 #define DECLARE_ENUM_SYMBOL_TRANSLATOR(enumType, psid)                                                                             \
   namespace translate {                                                                                                            \
-  template <> struct from_object<enumType, std::true_type> {                                                                       \
+  template <> struct from_object<enumType> {                                                                       \
     typedef enumType DeclareType;                                                                                                  \
     DeclareType _v;                                                                                                                \
     from_object(T_P o) : _v(static_cast<DeclareType>(core::lisp_lookupEnumForSymbol(psid, o.as<core::Symbol_O>()))){};             \

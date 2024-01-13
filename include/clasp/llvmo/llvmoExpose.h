@@ -128,7 +128,7 @@ public:
 }; // namespace llvmo
 
 namespace translate {
-template <> struct from_object<llvm::LLVMContext&, std::true_type> {
+template <> struct from_object<llvm::LLVMContext&> {
   typedef llvm::LLVMContext& DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*(gc::As<llvmo::LLVMContext_sp>(object)->wrappedPtr())){};
@@ -195,7 +195,7 @@ public:
 }; // namespace llvmo
 
 namespace translate {
-template <> struct from_object<const llvm::FunctionCallee&, std::true_type> {
+template <> struct from_object<const llvm::FunctionCallee&> {
   typedef llvm::FunctionCallee DeclareType;
   DeclareType _v;
   from_object(llvmo::FunctionCallee_sp object) : _v(object->getFunctionType(), object->getCallee()){};
@@ -277,7 +277,7 @@ public:
 }; // namespace llvmo
 
 namespace translate {
-template <> struct from_object<llvm::Linker&, std::true_type> {
+template <> struct from_object<llvm::Linker&> {
   typedef llvm::Linker& DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*(gc::As<llvmo::Linker_sp>(object)->wrappedPtr())){};
@@ -341,7 +341,7 @@ public:
 }; // namespace llvmo
 
 namespace translate {
-template <> struct from_object<llvm::orc::JITDylib*, std::true_type> {
+template <> struct from_object<llvm::orc::JITDylib*> {
   typedef llvm::orc::JITDylib* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::JITDylib_sp>(object)->wrappedPtr()){};
@@ -471,13 +471,13 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::Triple*, std::true_type> {
+template <> struct from_object<llvm::Triple*> {
   typedef llvm::Triple* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(object.nilp() ? NULL : gc::As<llvmo::Triple_sp>(object)->wrappedPtr()){};
 };
 
-template <> struct from_object<llvm::Triple&, std::true_type> {
+template <> struct from_object<llvm::Triple&> {
   typedef llvm::Triple& DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*gc::As<llvmo::Triple_sp>(object)->wrappedPtr()){};
@@ -552,12 +552,12 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::TargetOptions*, std::true_type> {
+template <> struct from_object<llvm::TargetOptions*> {
   typedef llvm::TargetOptions* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(object.nilp() ? NULL : gc::As<llvmo::TargetOptions_sp>(object)->wrappedPtr()){};
 };
-template <> struct from_object<const llvm::TargetOptions&, std::true_type> {
+template <> struct from_object<const llvm::TargetOptions&> {
   typedef const llvm::TargetOptions& DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*gc::As<llvmo::TargetOptions_sp>(object)->wrappedPtr()){};
@@ -605,7 +605,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::Target*, std::true_type> {
+template <> struct from_object<llvm::Target*> {
   typedef llvm::Target* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(object.nilp() ? NULL : gc::As<llvmo::Target_sp>(object)->wrappedPtr()){};
@@ -655,7 +655,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::MCSubtargetInfo*, std::true_type> {
+template <> struct from_object<llvm::MCSubtargetInfo*> {
   typedef llvm::MCSubtargetInfo* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(object.nilp() ? NULL : gc::As<llvmo::MCSubtargetInfo_sp>(object)->wrappedPtr()){};
@@ -698,7 +698,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::TargetSubtargetInfo*, std::true_type> {
+template <> struct from_object<llvm::TargetSubtargetInfo*> {
   typedef llvm::TargetSubtargetInfo* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<gc::smart_ptr<llvmo::TargetSubtargetInfo_O>>(object)->wrappedPtr()){};
@@ -712,7 +712,7 @@ template <> struct to_object<const llvm::TargetSubtargetInfo*> {
 }; // namespace translate
 
 namespace translate {
-template <> struct from_object<llvm::CodeGenOpt::Level, std::true_type> {
+template <> struct from_object<llvm::CodeGenOpt::Level> {
   typedef llvm::CodeGenOpt::Level DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(llvm::CodeGenOpt::Default) {
@@ -729,7 +729,7 @@ template <> struct from_object<llvm::CodeGenOpt::Level, std::true_type> {
 };
 
 #if LLVM_VERSION_MAJOR < 16
-template <> struct from_object<llvm::Optional<llvm::Reloc::Model>, std::true_type> {
+template <> struct from_object<llvm::Optional<llvm::Reloc::Model>> {
   typedef llvm::Optional<llvm::Reloc::Model> DeclareType;
   DeclareType _v;
   from_object(T_P object) {
@@ -749,7 +749,7 @@ template <> struct from_object<llvm::Optional<llvm::Reloc::Model>, std::true_typ
   }
 };
 #else
-template <> struct from_object<std::optional<llvm::Reloc::Model>, std::true_type> {
+template <> struct from_object<std::optional<llvm::Reloc::Model>> {
   typedef std::optional<llvm::Reloc::Model> DeclareType;
   DeclareType _v;
   from_object(T_P object) {
@@ -770,7 +770,7 @@ template <> struct from_object<std::optional<llvm::Reloc::Model>, std::true_type
 };
 #endif
 
-template <> struct from_object<llvm::CodeModel::Model, std::true_type> {
+template <> struct from_object<llvm::CodeModel::Model> {
   typedef llvm::CodeModel::Model DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(llvm::CodeModel::Small) {
@@ -785,7 +785,7 @@ template <> struct from_object<llvm::CodeModel::Model, std::true_type> {
     }
   }
 };
-template <> struct from_object<llvm::CodeGenFileType, std::true_type> {
+template <> struct from_object<llvm::CodeGenFileType> {
   typedef llvm::CodeGenFileType DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(llvm::CGFT_ObjectFile) {
@@ -848,7 +848,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::TargetMachine*, std::true_type> {
+template <> struct from_object<llvm::TargetMachine*> {
   typedef llvm::TargetMachine* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(object.nilp() ? NULL : gc::As<llvmo::TargetMachine_sp>(object)->wrappedPtr()){};
@@ -905,7 +905,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::LLVMTargetMachine*, std::true_type> {
+template <> struct from_object<llvm::LLVMTargetMachine*> {
   typedef llvm::LLVMTargetMachine* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::LLVMTargetMachine_sp>(object)->wrappedPtr()){};
@@ -959,7 +959,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::Value*, std::true_type> {
+template <> struct from_object<llvm::Value*> {
   typedef llvm::Value* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::Value_sp>(object)->wrappedPtr()){};
@@ -1037,7 +1037,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::Metadata*, std::true_type> {
+template <> struct from_object<llvm::Metadata*> {
   typedef llvm::Metadata* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::Metadata_sp>(object)->wrappedPtr()){};
@@ -1120,7 +1120,7 @@ public:
 /* to_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::MetadataAsValue*, std::true_type> {
+template <> struct from_object<llvm::MetadataAsValue*> {
   typedef llvm::MetadataAsValue* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::MetadataAsValue_sp>(object)->wrappedPtr()){};
@@ -1161,7 +1161,7 @@ public: // Functions here
 
 }; // namespace llvmo
 namespace translate {
-template <> struct from_object<llvm::Attribute::AttrKind, std::true_type> {
+template <> struct from_object<llvm::Attribute::AttrKind> {
   typedef llvm::Attribute::AttrKind DeclareType;
   DeclareType _v;
   from_object(core::T_sp object) {
@@ -1174,7 +1174,7 @@ template <> struct from_object<llvm::Attribute::AttrKind, std::true_type> {
   }
 };
 
-template <> struct from_object<llvm::Attribute, std::true_type> {
+template <> struct from_object<llvm::Attribute> {
   typedef llvm::Attribute DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::Attribute_sp>(object)->attributes()){};
@@ -1248,7 +1248,7 @@ namespace translate {
 // Since llvm3.8 there don't appear to be functions that
 // take or return llvm::DataLayout* pointers.  So I am commenting out
 // their converters and I changed the DataLayout_O class to store a llvm::DataLayout
-template <> struct from_object<llvm::DataLayout const&, std::true_type> {
+template <> struct from_object<llvm::DataLayout const&> {
   typedef llvm::DataLayout const& DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::DataLayout_sp>(object)->dataLayout()){};
@@ -1334,7 +1334,7 @@ namespace translate {
 template <> struct to_object<llvm::Constant*> {
   static core::T_sp convert(llvm::Constant* ptr) { return ((core::RP_Create_wrapped<llvmo::Constant_O, llvm::Constant*>(ptr))); };
 };
-template <> struct from_object<llvm::Constant*, std::true_type> {
+template <> struct from_object<llvm::Constant*> {
   typedef llvm::Constant* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::Constant_sp>(object)->wrappedPtr()){};
@@ -1535,7 +1535,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::GlobalVariable*, std::true_type> {
+template <> struct from_object<llvm::GlobalVariable*> {
   typedef llvm::GlobalVariable* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::GlobalVariable_sp>(object)->wrappedPtr()){};
@@ -1681,12 +1681,12 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::Module*, std::true_type> {
+template <> struct from_object<llvm::Module*> {
   typedef llvm::Module* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::Module_sp>(object)->wrappedPtr()){};
 };
-template <> struct from_object<llvm::Module&, std::true_type> {
+template <> struct from_object<llvm::Module&> {
   typedef llvm::Module& DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*gc::As<llvmo::Module_sp>(object)->wrappedPtr()){};
@@ -1705,7 +1705,7 @@ template <> struct to_object<llvm::Module*> {
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::ExecutionEngine*, std::true_type> {
+template <> struct from_object<llvm::ExecutionEngine*> {
   typedef llvm::ExecutionEngine* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::ExecutionEngine_sp>(object)->wrappedPtr()){};
@@ -1773,7 +1773,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::EngineBuilder*, std::true_type> {
+template <> struct from_object<llvm::EngineBuilder*> {
   typedef llvm::EngineBuilder* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = (gc::As<llvmo::EngineBuilder_sp>(object)->wrappedPtr()); };
@@ -1800,7 +1800,7 @@ public:
 }; // APFloat_O
 }; // namespace llvmo
 namespace translate {
-template <> struct from_object<const llvm::APFloat&, std::true_type> {
+template <> struct from_object<const llvm::APFloat&> {
   typedef llvm::APFloat DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*gc::As<llvmo::APFloat_sp>(object)->_valueP){};
@@ -1838,7 +1838,7 @@ public:
 }; // namespace llvmo
 /* from_object translators */
 namespace translate {
-template <> struct from_object<const llvm::APInt&, std::true_type> {
+template <> struct from_object<const llvm::APInt&> {
   typedef llvm::APInt DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::APInt_sp>(object)->_value._value){};
@@ -1910,7 +1910,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::IRBuilderBase*, std::true_type> {
+template <> struct from_object<llvm::IRBuilderBase*> {
   typedef llvm::IRBuilderBase* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::IRBuilderBase_sp>(object)->wrappedPtr(); };
@@ -1996,7 +1996,7 @@ public:
 }; // Instruction_O
 }; // namespace llvmo
 namespace translate {
-template <> struct from_object<llvm::Instruction*, std::true_type> {
+template <> struct from_object<llvm::Instruction*> {
   typedef llvm::Instruction* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::Instruction_sp>(object)->wrappedPtr(); };
@@ -2045,7 +2045,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::StoreInst*, std::true_type> {
+template <> struct from_object<llvm::StoreInst*> {
   typedef llvm::StoreInst* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::StoreInst_sp>(object)->wrappedPtr(); };
@@ -2082,7 +2082,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::FenceInst*, std::true_type> {
+template <> struct from_object<llvm::FenceInst*> {
   typedef llvm::FenceInst* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::FenceInst_sp>(object)->wrappedPtr(); };
@@ -2119,7 +2119,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::AtomicCmpXchgInst*, std::true_type> {
+template <> struct from_object<llvm::AtomicCmpXchgInst*> {
   typedef llvm::AtomicCmpXchgInst* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::AtomicCmpXchgInst_sp>(object)->wrappedPtr(); };
@@ -2158,7 +2158,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::AtomicRMWInst*, std::true_type> {
+template <> struct from_object<llvm::AtomicRMWInst*> {
   typedef llvm::AtomicRMWInst* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::AtomicRMWInst_sp>(object)->wrappedPtr(); };
@@ -2197,7 +2197,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::PHINode*, std::true_type> {
+template <> struct from_object<llvm::PHINode*> {
   typedef llvm::PHINode* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::PHINode_sp>(object)->wrappedPtr(); };
@@ -2272,7 +2272,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::CallInst*, std::true_type> {
+template <> struct from_object<llvm::CallInst*> {
   typedef llvm::CallInst* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::CallInst_sp>(object)->wrappedPtr(); };
@@ -2309,7 +2309,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::LandingPadInst*, std::true_type> {
+template <> struct from_object<llvm::LandingPadInst*> {
   typedef llvm::LandingPadInst* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::LandingPadInst_sp>(object)->wrappedPtr(); };
@@ -2370,7 +2370,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::AllocaInst*, std::true_type> {
+template <> struct from_object<llvm::AllocaInst*> {
   typedef llvm::AllocaInst* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::AllocaInst_sp>(object)->wrappedPtr(); };
@@ -2409,7 +2409,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::VAArgInst*, std::true_type> {
+template <> struct from_object<llvm::VAArgInst*> {
   typedef llvm::VAArgInst* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::VAArgInst_sp>(object)->wrappedPtr(); };
@@ -2447,7 +2447,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::LoadInst*, std::true_type> {
+template <> struct from_object<llvm::LoadInst*> {
   typedef llvm::LoadInst* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::LoadInst_sp>(object)->wrappedPtr(); };
@@ -2484,7 +2484,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::BranchInst*, std::true_type> {
+template <> struct from_object<llvm::BranchInst*> {
   typedef llvm::BranchInst* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::BranchInst_sp>(object)->wrappedPtr(); };
@@ -2525,7 +2525,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::SwitchInst*, std::true_type> {
+template <> struct from_object<llvm::SwitchInst*> {
   typedef llvm::SwitchInst* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::SwitchInst_sp>(object)->wrappedPtr(); };
@@ -2564,7 +2564,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::IndirectBrInst*, std::true_type> {
+template <> struct from_object<llvm::IndirectBrInst*> {
   typedef llvm::IndirectBrInst* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::IndirectBrInst_sp>(object)->wrappedPtr(); };
@@ -2604,7 +2604,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::InvokeInst*, std::true_type> {
+template <> struct from_object<llvm::InvokeInst*> {
   typedef llvm::InvokeInst* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::InvokeInst_sp>(object)->wrappedPtr(); };
@@ -2643,7 +2643,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::ResumeInst*, std::true_type> {
+template <> struct from_object<llvm::ResumeInst*> {
   typedef llvm::ResumeInst* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::ResumeInst_sp>(object)->wrappedPtr(); };
@@ -2682,7 +2682,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::UnreachableInst*, std::true_type> {
+template <> struct from_object<llvm::UnreachableInst*> {
   typedef llvm::UnreachableInst* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::UnreachableInst_sp>(object)->wrappedPtr(); };
@@ -2721,7 +2721,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::ReturnInst*, std::true_type> {
+template <> struct from_object<llvm::ReturnInst*> {
   typedef llvm::ReturnInst* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::ReturnInst_sp>(object)->wrappedPtr(); };
@@ -2903,7 +2903,7 @@ template <> struct to_object<llvm::ConstantPointerNull*> {
   static core::T_sp convert(llvm::ConstantPointerNull* ptr) { return ((llvmo::ConstantPointerNull_O::create(ptr))); }
 };
 
-template <> struct from_object<llvm::ConstantPointerNull*, std::true_type> {
+template <> struct from_object<llvm::ConstantPointerNull*> {
   typedef llvm::ConstantPointerNull* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::ConstantPointerNull_sp>(object)->wrappedPtr()){};
@@ -2936,7 +2936,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::MDNode*, std::true_type> {
+template <> struct from_object<llvm::MDNode*> {
   typedef llvm::MDNode* DeclareType;
   DeclareType _v;
   from_object(T_P o) : _v(o.nilp() ? NULL : gc::As<llvmo::MDNode_sp>(o)->wrappedPtr()){};
@@ -2978,7 +2978,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::MDString*, std::true_type> {
+template <> struct from_object<llvm::MDString*> {
   typedef llvm::MDString* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::MDString_sp>(object)->wrappedPtr(); };
@@ -3018,7 +3018,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::ValueAsMetadata*, std::true_type> {
+template <> struct from_object<llvm::ValueAsMetadata*> {
   typedef llvm::ValueAsMetadata* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::ValueAsMetadata_sp>(object)->wrappedPtr(); };
@@ -3067,7 +3067,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::NamedMDNode*, std::true_type> {
+template <> struct from_object<llvm::NamedMDNode*> {
   typedef llvm::NamedMDNode* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = object.nilp() ? NULL : gc::As<llvmo::NamedMDNode_sp>(object)->wrappedPtr(); };
@@ -3134,7 +3134,7 @@ template <> struct to_object<const llvm::Function&> {
   };
 };
 
-template <> struct from_object<llvm::Function*, std::true_type> {
+template <> struct from_object<llvm::Function*> {
   typedef llvm::Function* DeclareType;
   DeclareType _v;
   from_object(T_P object) {
@@ -3145,12 +3145,12 @@ template <> struct from_object<llvm::Function*, std::true_type> {
     }
   }
 };
-template <> struct from_object<const llvm::Function&, std::true_type> {
+template <> struct from_object<const llvm::Function&> {
   typedef llvm::Function const& DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*(static_cast<llvm::Function*>(gc::As<llvmo::Function_sp>(object)->wrappedPtr()))){};
 };
-template <> struct from_object<llvm::Function&, std::true_type> {
+template <> struct from_object<llvm::Function&> {
   typedef llvm::Function& DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*(static_cast<llvm::Function*>(gc::As<llvmo::Function_sp>(object)->wrappedPtr()))){};
@@ -3195,7 +3195,7 @@ template <> struct to_object<llvm::BasicBlock*> {
     return ((nil<core::T_O>()));
   };
 };
-template <> struct from_object<llvm::BasicBlock*, std::true_type> {
+template <> struct from_object<llvm::BasicBlock*> {
   typedef llvm::BasicBlock* DeclareType;
   DeclareType _v;
   from_object(T_P object) {
@@ -3279,7 +3279,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::Type*, std::true_type> {
+template <> struct from_object<llvm::Type*> {
   typedef llvm::Type* DeclareType;
   DeclareType _v;
   from_object(T_P object) {
@@ -3327,7 +3327,7 @@ template <> struct to_object<llvm::FunctionType*> {
     return ((core::RP_Create_wrapped<llvmo::FunctionType_O, llvm::FunctionType*>(ptr)));
   };
 };
-template <> struct from_object<llvm::FunctionType*, std::true_type> {
+template <> struct from_object<llvm::FunctionType*> {
   typedef llvm::FunctionType* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = static_cast<llvm::FunctionType*>(gc::As<llvmo::FunctionType_sp>(object)->wrappedPtr()); }
@@ -3365,7 +3365,7 @@ template <> struct to_object<llvm::IntegerType*> {
     return ((core::RP_Create_wrapped<llvmo::IntegerType_O, llvm::IntegerType*>(ptr)));
   };
 };
-template <> struct from_object<llvm::IntegerType*, std::true_type> {
+template <> struct from_object<llvm::IntegerType*> {
   typedef llvm::IntegerType* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = static_cast<llvm::IntegerType*>(gc::As<llvmo::IntegerType_sp>(object)->wrappedPtr()); }
@@ -3408,7 +3408,7 @@ template <> struct to_object<llvm::StructType*> {
     return (Values(core::RP_Create_wrapped<llvmo::StructType_O, llvm::StructType*>(ptr)));
   };
 };
-template <> struct from_object<llvm::StructType*, std::true_type> {
+template <> struct from_object<llvm::StructType*> {
   typedef llvm::StructType* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = static_cast<llvm::StructType*>(gc::As<llvmo::StructType_sp>(object)->wrappedPtr()); }
@@ -3450,7 +3450,7 @@ template <> struct to_object<llvm::PointerType*> {
     return (Values(core::RP_Create_wrapped<llvmo::PointerType_O, llvm::PointerType*>(ptr)));
   };
 };
-template <> struct from_object<llvm::PointerType*, std::true_type> {
+template <> struct from_object<llvm::PointerType*> {
   typedef llvm::PointerType* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = static_cast<llvm::PointerType*>(gc::As<llvmo::PointerType_sp>(object)->wrappedPtr()); }
@@ -3489,7 +3489,7 @@ template <> struct to_object<llvm::ArrayType*> {
     return ((core::RP_Create_wrapped<llvmo::ArrayType_O, llvm::ArrayType*>(ptr)));
   };
 };
-template <> struct from_object<llvm::ArrayType*, std::true_type> {
+template <> struct from_object<llvm::ArrayType*> {
   typedef llvm::ArrayType* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = static_cast<llvm::ArrayType*>(gc::As<llvmo::ArrayType_sp>(object)->wrappedPtr()); }
@@ -3527,7 +3527,7 @@ template <> struct to_object<llvm::VectorType*> {
     return ((core::RP_Create_wrapped<llvmo::VectorType_O, llvm::VectorType*>(ptr)));
   };
 };
-template <> struct from_object<llvm::VectorType*, std::true_type> {
+template <> struct from_object<llvm::VectorType*> {
   typedef llvm::VectorType* DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = static_cast<llvm::VectorType*>(gc::As<llvmo::VectorType_sp>(object)->wrappedPtr()); }
@@ -3536,7 +3536,7 @@ template <> struct from_object<llvm::VectorType*, std::true_type> {
 
 namespace translate {
 
-template <> struct from_object<const llvm::StringRef, std::true_type> {
+template <> struct from_object<const llvm::StringRef> {
   typedef llvm::StringRef DeclareType;
   DeclareType _v;
   string _Storage;
@@ -3545,7 +3545,7 @@ template <> struct from_object<const llvm::StringRef, std::true_type> {
   from_object(from_object&& orig) : _v(_Storage), _Storage(std::move(orig._Storage)){};
 };
 
-template <> struct from_object<llvm::GlobalValue::LinkageTypes, std::true_type> {
+template <> struct from_object<llvm::GlobalValue::LinkageTypes> {
   typedef llvm::GlobalValue::LinkageTypes DeclareType;
   DeclareType _v;
   from_object(T_P object) {
@@ -3559,7 +3559,7 @@ template <> struct from_object<llvm::GlobalValue::LinkageTypes, std::true_type> 
   }
 };
 
-template <> struct from_object<llvm::GlobalValue::ThreadLocalMode, std::true_type> {
+template <> struct from_object<llvm::GlobalValue::ThreadLocalMode> {
   typedef llvm::GlobalValue::ThreadLocalMode DeclareType;
   DeclareType _v;
   from_object(T_P object) {
@@ -3575,7 +3575,7 @@ template <> struct from_object<llvm::GlobalValue::ThreadLocalMode, std::true_typ
   }
 };
 
-template <> struct from_object<llvm::AtomicOrdering, std::true_type> {
+template <> struct from_object<llvm::AtomicOrdering> {
   typedef llvm::AtomicOrdering DeclareType;
   DeclareType _v;
   from_object(core::T_sp object) {
@@ -3591,7 +3591,7 @@ template <> struct from_object<llvm::AtomicOrdering, std::true_type> {
   }
 };
 
-template <> struct from_object<llvm::AtomicRMWInst::BinOp, std::true_type> {
+template <> struct from_object<llvm::AtomicRMWInst::BinOp> {
   typedef llvm::AtomicRMWInst::BinOp DeclareType;
   DeclareType _v;
   from_object(T_P object) {
@@ -3605,7 +3605,7 @@ template <> struct from_object<llvm::AtomicRMWInst::BinOp, std::true_type> {
   }
 };
 
-template <> struct from_object<llvm::Instruction::CastOps, std::true_type> {
+template <> struct from_object<llvm::Instruction::CastOps> {
   typedef llvm::Instruction::CastOps DeclareType;
   DeclareType _v;
   from_object(T_P object) {
@@ -3619,7 +3619,7 @@ template <> struct from_object<llvm::Instruction::CastOps, std::true_type> {
   }
 };
 
-template <> struct from_object<llvm::Instruction::BinaryOps, std::true_type> {
+template <> struct from_object<llvm::Instruction::BinaryOps> {
   typedef llvm::Instruction::BinaryOps DeclareType;
   DeclareType _v;
   from_object(T_P object) {
@@ -3633,7 +3633,7 @@ template <> struct from_object<llvm::Instruction::BinaryOps, std::true_type> {
   }
 };
 
-template <> struct from_object<llvm::CmpInst::Predicate, std::true_type> {
+template <> struct from_object<llvm::CmpInst::Predicate> {
   typedef llvm::CmpInst::Predicate DeclareType;
   DeclareType _v;
   from_object(T_P object) {
@@ -3740,7 +3740,7 @@ public:
 }; // SectionedAddress_O
 }; // namespace llvmo
 namespace translate {
-template <> struct from_object<const llvm::object::SectionedAddress&, std::true_type> {
+template <> struct from_object<const llvm::object::SectionedAddress&> {
   typedef llvm::object::SectionedAddress DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::SectionedAddress_sp>(object)->_value){};

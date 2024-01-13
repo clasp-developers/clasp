@@ -514,7 +514,7 @@ public:
       been deleted!   Has a function that consumes a std::unique_ptr not been wrapped yet
     by Clasp?    How does this work???
     */
-template <typename T> struct from_object<std::unique_ptr<T>, std::true_type> {
+template <typename T> struct from_object<std::unique_ptr<T>> {
   typedef std::unique_ptr<T> DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) {
@@ -560,7 +560,7 @@ template <typename T> struct from_object<std::unique_ptr<T>, std::true_type> {
   }
 };
 
-template <typename T> struct from_object<T*, std::true_type> {
+template <typename T> struct from_object<T*> {
   typedef T* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) {
@@ -600,7 +600,7 @@ template <typename T> struct from_object<T*, std::true_type> {
   }
 };
 
-template <typename T> struct from_object<const T*&, std::true_type> {
+template <typename T> struct from_object<const T*&> {
   typedef const T* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) {
@@ -641,14 +641,7 @@ template <typename T> struct from_object<T&> {
   ~from_object(){/*non trivial*/};
 };
 
-template <typename T> struct from_object<T&, std::false_type> {
-  typedef T& DeclareType;
-  T _v;
-  from_object(){};
-  ~from_object(){/*non trivial*/};
-};
-
-template <typename T> struct from_object<T> {
+template <typename T> struct from_object {
   typedef T DeclareType;
   DeclareType _v;
   from_object(core::T_sp o)
@@ -658,7 +651,7 @@ template <typename T> struct from_object<T> {
               !!!!!!!! and you need to implement a more specialized one.
               !!!!!!!! And you need to make sure it's visible when the function that
               !!!!!!!! uses it is exposed.
-              !!!!!!!! See from_object<llvm::DIFile::ChecksumKind,std::true_type>
+              !!!!!!!! See from_object<llvm::DIFile::ChecksumKind>
               !!!!!!!! for an example where a specific translator was implemented
             */
         };
@@ -677,14 +670,14 @@ template <typename T> struct from_object<T> {
 
 namespace translate {
 
-template <> struct from_object<int&, std::true_type> {
+template <> struct from_object<int&> {
   typedef int DeclareType;
   int _v;
   from_object(gctools::smart_ptr<core::T_O> vv) : _v(core::clasp_to_int(vv)){};
   ~from_object(){/* Non-trivial */};
 };
 
-template <> struct from_object<const char*, std::true_type> {
+template <> struct from_object<const char*> {
   typedef const char* DeclareType;
   mutable char* _v;
   from_object(gctools::smart_ptr<core::T_O> vv) {
@@ -694,7 +687,7 @@ template <> struct from_object<const char*, std::true_type> {
     strncpy(this->_v, strng->get_std_string().data(), len);
     this->_v[len] = '\0';
   }
-  from_object(const from_object<const char*, std::true_type>& other) {
+  from_object(const from_object<const char*>& other) {
     this->_v = other._v;
     other._v = NULL;
   }

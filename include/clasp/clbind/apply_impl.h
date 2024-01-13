@@ -267,22 +267,29 @@ namespace clbind {
 template <typename ValIndex, typename Type> struct prepare_argument {};
 
 template <int Index, typename Type> struct prepare_argument<std::integral_constant<int, Index>, Type> {
-  using type = translate::from_object<Type, std::true_type>;
-  static translate::from_object<Type, std::true_type> goFrame(gctools::Frame::ElementType* frame) {
+  using type = translate::from_object<Type>;
+  static translate::from_object<Type> goFrame(gctools::Frame::ElementType* frame) {
     // Return an initialized from_object for the argument
-    return translate::from_object<Type, std::true_type>(gctools::smart_ptr<core::T_O>((gctools::Tagged)(frame[Index])));
+    return translate::from_object<Type>(gctools::smart_ptr<core::T_O>((gctools::Tagged)(frame[Index])));
   }
   template <typename... Targs>
-  static translate::from_object<Type,std::true_type> goArg(const std::tuple<Targs...>&& args) {
+  static translate::from_object<Type> goArg(const std::tuple<Targs...>&& args) {
     // Return an initialized from_object for the argument
-    return translate::from_object<Type,std::true_type>(gctools::smart_ptr<core::T_O>((gctools::Tagged)(std::get<Index>(args))));
+    return translate::from_object<Type>(gctools::smart_ptr<core::T_O>((gctools::Tagged)(std::get<Index>(args))));
   }
 };
-
 template <typename Type> struct prepare_argument<std::integral_constant<int, 32767>, Type&> {
-  using type = translate::from_object<Type&, std::false_type>;
+  // We have a pureout, so we essentially just need to return
+  // uninitialized storage. We can do this with an inner struct
+  // instead of from_object.
+  struct from_pureout {
+    // DeclareType and _v are both needed to match from_object.
+    typedef Type& DeclareType;
+    Type _v;
+  };
+  // Now we simply return those.
+  using type = from_pureout;
   static type goFrame(gctools::Frame::ElementType* frame) {
-    // Return an uninitialized from_object for the argument.
     return type();
   }
   template <typename... Targs>
