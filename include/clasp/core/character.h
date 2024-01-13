@@ -90,7 +90,7 @@ inline bool clasp_is_character_type(T_sp the_type) {
 
 namespace translate {
 
-template <> struct from_object<char, std::true_type> {
+template <> struct from_object<char> {
   typedef char DeclareType;
 
   DeclareType _v;

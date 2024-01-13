@@ -130,7 +130,7 @@ template <> struct to_object<std::map<std::string, clang::tooling::Replacements>
   }
 };
 
-template <> struct from_object<clang::QualType, std::true_type> {
+template <> struct from_object<clang::QualType> {
   typedef clang::QualType DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(gc::As<asttooling::QualType_sp>(o)->_Value._value) {
@@ -160,7 +160,7 @@ template <> struct to_object<clang::QualType, translate::adopt_pointer> {
   }
 };
 
-template <> struct from_object<clang::PresumedLoc, std::true_type> {
+template <> struct from_object<clang::PresumedLoc> {
   typedef clang::PresumedLoc DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(gc::As<asttooling::PresumedLoc_sp>(o)->_Value._value) {
@@ -168,7 +168,7 @@ template <> struct from_object<clang::PresumedLoc, std::true_type> {
   }
 };
 
-template <> struct from_object<const clang::PresumedLoc&, std::true_type> {
+template <> struct from_object<const clang::PresumedLoc&> {
   typedef clang::PresumedLoc DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(gc::As<asttooling::PresumedLoc_sp>(o)->_Value._value) {
@@ -198,7 +198,7 @@ template <> struct to_object<clang::PresumedLoc, translate::adopt_pointer> {
   }
 };
 
-template <> struct from_object<clang::SourceLocation, std::true_type> {
+template <> struct from_object<clang::SourceLocation> {
   typedef clang::SourceLocation DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(gc::As<asttooling::SourceLocation_sp>(o)->_Value._value) {
@@ -206,7 +206,7 @@ template <> struct from_object<clang::SourceLocation, std::true_type> {
   }
 };
 
-template <> struct from_object<const clang::SourceLocation&, std::true_type> {
+template <> struct from_object<const clang::SourceLocation&> {
   typedef clang::SourceLocation DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(gc::As<asttooling::SourceLocation_sp>(o)->_Value._value) {

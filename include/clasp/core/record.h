@@ -90,7 +90,7 @@ public:
       List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (find.consp()) {
         RECORD_LOG(("find apair %s\n"), _rep_(find));
-        value = translate::from_object<ST>(CONS_CDR(find))._v;
+        value = translate::make_from_object<ST>(CONS_CDR(find));
         if (this->stage() == initializing)
           this->flagSeen(gc::As_unsafe<Cons_sp>(find));
       } else {
@@ -274,7 +274,7 @@ public:
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
         RECORD_LOG(("Loading vec0[%d] new@%p: %s\n"), i, (void*)(val.raw_()), _rep_(val));
-        value[i] = translate::from_object<SC>(val)._v;
+        value[i] = translate::make_from_object<SC>(val);
       }
       if (this->stage() == initializing)
         this->flagSeen(apair);
@@ -287,7 +287,7 @@ public:
         if (patch != orig) {
           RECORD_LOG(("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n"), i, _rep_(orig), (void*)(orig.raw_()), _rep_(patch),
                      (void*)(patch.raw_()));
-          value[i] = translate::from_object<SC>(patch)._v;
+          value[i] = translate::make_from_object<SC>(patch);
         }
       }
     } break;
@@ -368,7 +368,7 @@ public:
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
         RECORD_LOG(("Loading vec0[%d] new@%p: %s\n"), i, (void*)(val.raw_()), _rep_(val));
-        value.push_back(std::make_pair<K, gctools::smart_ptr<SV>>(translate::from_object<K>(oCar(val))._v,
+        value.push_back(std::make_pair<K, gctools::smart_ptr<SV>>(translate::make_from_object<K>(oCar(val)),
                                                                   gc::As_unsafe<gctools::smart_ptr<SV>>(oCdr(val))));
       }
       if (this->stage() == initializing)
@@ -748,7 +748,7 @@ public:
         value = default_value;
       } else {
         Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
-        value = translate::from_object<T>(CONS_CDR(apair))._v;
+        value = translate::make_from_object<T>(CONS_CDR(apair));
         if (this->stage() == initializing)
           this->flagSeen(apair);
       }
@@ -778,7 +778,7 @@ public:
       } else {
         defined = true;
         Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
-        value = translate::from_object<T>(CONS_CDR(apair))._v;
+        value = translate::make_from_object<T>(CONS_CDR(apair));
         if (this->stage() == initializing)
           this->flagSeen(apair);
       }

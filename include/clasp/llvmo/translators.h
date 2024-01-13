@@ -38,7 +38,7 @@ THE SOFTWARE.
 
 namespace translate {
 
-template <> struct from_object<llvm::StringRef, std::true_type> {
+template <> struct from_object<llvm::StringRef> {
   typedef llvm::StringRef DeclareType;
   string _Storage; // Store the string here so it won't get wiped out before its used by the callee
   DeclareType _v;
@@ -208,7 +208,7 @@ template <> struct from_object<std::function<bool(const llvm::Function&)>> {
   }
 };
 
-template <> struct from_object<llvm::MaybeAlign, std::true_type> {
+template <> struct from_object<llvm::MaybeAlign> {
   typedef llvm::MaybeAlign DeclareType;
   DeclareType _v;
   from_object(core::T_sp object) : _v((size_t)core::clasp_to_fixnum(object)){};

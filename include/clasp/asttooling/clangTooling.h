@@ -74,9 +74,7 @@ public:
     core::T_sp obj = core::eval::funcall(_sym_CreateASTConsumer, this->asSmartPtr(),
                                          translate::to_object<clang::CompilerInstance&>::convert(Compiler),
                                          translate::to_object<llvm::StringRef>::convert(InFile));
-    // translate::from_object<std::unique_ptr<clang::ASTConsumer>> result(obj);
-    // return result._v;
-    return translate::from_object<std::unique_ptr<clang::ASTConsumer>>(obj)._v;
+    return translate::make_from_object<std::unique_ptr<clang::ASTConsumer>>(obj);
   }
 
   std::unique_ptr<clang::ASTConsumer> default_CreateASTConsumer(clang::CompilerInstance& Compiler, llvm::StringRef InFile) {
@@ -98,7 +96,7 @@ public:
     core::T_sp obj = core::eval::funcall(_sym_CreateASTConsumer, this->asSmartPtr(),
                                          translate::to_object<clang::CompilerInstance&>::convert(Compiler),
                                          translate::to_object<llvm::StringRef>::convert(InFile));
-    return translate::from_object<std::unique_ptr<clang::ASTConsumer>>(obj)._v;
+    return translate::make_from_object<std::unique_ptr<clang::ASTConsumer>>(obj);
   }
 
   std::unique_ptr<clang::ASTConsumer> default_CreateASTConsumer(clang::CompilerInstance& Compiler, llvm::StringRef InFile) {
@@ -118,8 +116,8 @@ class DerivableFrontendActionFactory : public clbind::Derivable<clang::tooling::
 public:
   virtual std::unique_ptr<clang::FrontendAction> create() {
     core::T_sp obj = core::eval::funcall(_sym_create, this->asSmartPtr());
-    translate::from_object<clang::FrontendAction*> result(obj);
-    std::unique_ptr<clang::FrontendAction> ret(result._v);
+    auto result = translate::make_from_object<clang::FrontendAction*>(obj);
+    std::unique_ptr<clang::FrontendAction> ret(result);
     return ret;
   }
 

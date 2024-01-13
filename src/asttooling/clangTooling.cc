@@ -124,8 +124,7 @@ template <> struct from_object<clang::tooling::ArgumentsAdjuster> {
         core::T_sp tfilename = translate::to_object<llvm::StringRef>::convert(filename);
         core::T_mv result = core::eval::funcall(func, targs, tfilename);
         ;
-        translate::from_object<const clang::tooling::CommandLineArguments&> cresult(result);
-        return cresult._v;
+        return translate::make_from_object<clang::tooling::CommandLineArguments>(result);
       };
       return;
     } else if (clang::tooling::ArgumentsAdjuster* argAdj =
@@ -783,7 +782,7 @@ CL_DEFUN clang::SourceLocation ast_tooling__getIncludeLoc(const clang::PresumedL
 namespace asttooling {
 DOCGROUP(clasp);
 CL_DEFUN core::T_mv ast_tooling__wrapped_JSONCompilationDatabase_loadFromFile(core::T_sp FilePath, core::Symbol_sp ssyntax) {
-  clang::tooling::JSONCommandLineSyntax syntax = translate::from_object<clang::tooling::JSONCommandLineSyntax>(ssyntax)._v;
+  clang::tooling::JSONCommandLineSyntax syntax = translate::make_from_object<clang::tooling::JSONCommandLineSyntax>(ssyntax);
   std::string ErrorMessage;
   std::unique_ptr<clang::tooling::JSONCompilationDatabase> result = clang::tooling::JSONCompilationDatabase::loadFromFile(
       gc::As<core::String_sp>(FilePath)->get_std_string(), ErrorMessage, syntax);

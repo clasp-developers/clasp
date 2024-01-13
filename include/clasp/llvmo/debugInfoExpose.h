@@ -93,10 +93,9 @@ public:
   virtual ~DILocation_O(){};
 }; // DILocation_O
 }; // namespace llvmo
-TRANSLATE(llvmo::DILocation_O);
 
 namespace translate {
-template <> struct from_object<llvm::DILocation*, std::true_type> {
+template <> struct from_object<llvm::DILocation*> {
   typedef llvm::DILocation* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DILocation_sp>(o)->wrappedPtr()){};
@@ -130,10 +129,9 @@ public:
   virtual ~DINode_O(){};
 }; // DINode_O
 }; // namespace llvmo
-TRANSLATE(llvmo::DINode_O);
 
 namespace translate {
-template <> struct from_object<llvm::DINode*, std::true_type> {
+template <> struct from_object<llvm::DINode*> {
   typedef llvm::DINode* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DINode_sp>(o)->wrappedPtr()){};
@@ -167,10 +165,9 @@ public:
   virtual ~DIExpression_O(){};
 }; // DIExpression_O
 }; // namespace llvmo
-TRANSLATE(llvmo::DIExpression_O);
 
 namespace translate {
-template <> struct from_object<llvm::DIExpression*, std::true_type> {
+template <> struct from_object<llvm::DIExpression*> {
   typedef llvm::DIExpression* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DIExpression_sp>(o)->wrappedPtr()){};
@@ -200,12 +197,11 @@ public:
   virtual ~DIScope_O() {}
 }; // DIScope_O
 }; // namespace llvmo
-TRANSLATE(llvmo::DIScope_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::DIScope*, std::true_type> {
+template <> struct from_object<llvm::DIScope*> {
   typedef llvm::DIScope* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DIScope_sp>(o)->wrappedPtr()){};
@@ -233,7 +229,6 @@ public:
 
 }; // DINodeArray_O
 }; // namespace llvmo
-TRANSLATE(llvmo::DINodeArray_O);
 
 namespace translate {
 template <> struct to_object<llvm::DINodeArray> {
@@ -242,7 +237,7 @@ template <> struct to_object<llvm::DINodeArray> {
     return ((obj));
   };
 };
-template <> struct from_object<llvm::DINodeArray, std::true_type> {
+template <> struct from_object<llvm::DINodeArray> {
   typedef llvm::DINodeArray DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(object.nilp() ? nullptr : gc::As<llvmo::DINodeArray_sp>(object)->get()){};
@@ -264,7 +259,6 @@ public:
   virtual ~DITypeRefArray_O() {}
 }; // DITypeRefArray_O
 }; // namespace llvmo
-TRANSLATE(llvmo::DITypeRefArray_O);
 
 namespace translate {
 template <> struct to_object<llvm::DITypeRefArray> {
@@ -273,7 +267,7 @@ template <> struct to_object<llvm::DITypeRefArray> {
     return ((obj));
   };
 };
-template <> struct from_object<llvm::DITypeRefArray, std::true_type> {
+template <> struct from_object<llvm::DITypeRefArray> {
   typedef llvm::DITypeRefArray& DeclareType;
   DeclareType _v;
   from_object(core::T_sp object) : _v(gc::As<llvmo::DITypeRefArray_sp>(object)->get()){};
@@ -300,12 +294,11 @@ public:
   virtual ~DIFile_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DIFile_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::DIFile*, std::true_type> {
+template <> struct from_object<llvm::DIFile*> {
   typedef llvm::DIFile* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DIFile_sp>(o)->wrappedPtr()){};
@@ -335,12 +328,11 @@ public:
   virtual ~DILocalScope_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DILocalScope_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::DILocalScope*, std::true_type> {
+template <> struct from_object<llvm::DILocalScope*> {
   typedef llvm::DILocalScope* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DILocalScope_sp>(o)->wrappedPtr()){};
@@ -372,12 +364,11 @@ public:
   virtual ~DISubprogram_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DISubprogram_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::DISubprogram*, std::true_type> {
+template <> struct from_object<llvm::DISubprogram*> {
   typedef llvm::DISubprogram* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DISubprogram_sp>(o)->wrappedPtr()){};
@@ -407,12 +398,11 @@ public:
   virtual ~DIType_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DIType_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::DIType*, std::true_type> {
+template <> struct from_object<llvm::DIType*> {
   typedef llvm::DIType* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DIType_sp>(o)->wrappedPtr()){};
@@ -442,12 +432,11 @@ public:
   virtual ~DIBasicType_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DIBasicType_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::DIBasicType*, std::true_type> {
+template <> struct from_object<llvm::DIBasicType*> {
   typedef llvm::DIBasicType* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DIBasicType_sp>(o)->wrappedPtr()){};
@@ -477,12 +466,11 @@ public:
   virtual ~DIDerivedType_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DIDerivedType_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::DIDerivedType*, std::true_type> {
+template <> struct from_object<llvm::DIDerivedType*> {
   typedef llvm::DIDerivedType* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DIDerivedType_sp>(o)->wrappedPtr()){};
@@ -512,12 +500,11 @@ public:
   virtual ~DICompositeType_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DICompositeType_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::DICompositeType*, std::true_type> {
+template <> struct from_object<llvm::DICompositeType*> {
   typedef llvm::DICompositeType* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DICompositeType_sp>(o)->wrappedPtr()){};
@@ -547,12 +534,11 @@ public:
   virtual ~DISubroutineType_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DISubroutineType_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::DISubroutineType*, std::true_type> {
+template <> struct from_object<llvm::DISubroutineType*> {
   typedef llvm::DISubroutineType* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DISubroutineType_sp>(o)->wrappedPtr()){};
@@ -582,12 +568,11 @@ public:
   virtual ~DILexicalBlockBase_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DILexicalBlockBase_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::DILexicalBlockBase*, std::true_type> {
+template <> struct from_object<llvm::DILexicalBlockBase*> {
   typedef llvm::DILexicalBlockBase* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DILexicalBlockBase_sp>(o)->wrappedPtr()){};
@@ -618,12 +603,11 @@ public:
   virtual ~DILexicalBlock_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DILexicalBlock_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::DILexicalBlock*, std::true_type> {
+template <> struct from_object<llvm::DILexicalBlock*> {
   typedef llvm::DILexicalBlock* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DILexicalBlock_sp>(o)->wrappedPtr()){};
@@ -653,12 +637,11 @@ public:
   virtual ~DICompileUnit_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DICompileUnit_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::DICompileUnit*, std::true_type> {
+template <> struct from_object<llvm::DICompileUnit*> {
   typedef llvm::DICompileUnit* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DICompileUnit_sp>(o)->wrappedPtr()){};
@@ -717,11 +700,10 @@ public:
 
 }; // DIBuilder_O
 }; // namespace llvmo
-TRANSLATE(llvmo::DIBuilder_O);
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::DIBuilder&, std::true_type> {
+template <> struct from_object<llvm::DIBuilder&> {
   typedef llvm::DIBuilder& DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*gc::As<llvmo::DIBuilder_sp>(object)->wrappedPtr()){};
@@ -747,12 +729,11 @@ public:
   virtual ~DIVariable_O() {}
 }; // DIVariable_O
 }; // namespace llvmo
-TRANSLATE(llvmo::DIVariable_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::DIVariable*, std::true_type> {
+template <> struct from_object<llvm::DIVariable*> {
   typedef llvm::DIVariable* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DIVariable_sp>(o)->wrappedPtr()){};
@@ -784,12 +765,11 @@ public:
   virtual ~DILocalVariable_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DILocalVariable_O);
 /* from_object translators */
 /* to_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::DILocalVariable*, std::true_type> {
+template <> struct from_object<llvm::DILocalVariable*> {
   typedef llvm::DILocalVariable* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DILocalVariable_sp>(o)->wrappedPtr()){};
@@ -803,7 +783,7 @@ template <> struct to_object<llvm::DILocalVariable*> {
 
 #if LLVM_VERSION_MAJOR < 16
 namespace translate {
-template <> struct from_object<llvm::Optional<llvm::DIFile::ChecksumInfo<llvm::StringRef>>, std::true_type> {
+template <> struct from_object<llvm::Optional<llvm::DIFile::ChecksumInfo<llvm::StringRef>>> {
   typedef llvm::Optional<llvm::DIFile::ChecksumInfo<llvm::StringRef>> DeclareType;
   DeclareType _v;
   std::string _Storage;
@@ -844,7 +824,7 @@ template <> struct from_object<llvm::Optional<llvm::DIFile::ChecksumInfo<llvm::S
 }; // namespace translate
 #else
 namespace translate {
-template <> struct from_object<std::optional<llvm::DIFile::ChecksumInfo<llvm::StringRef>>, std::true_type> {
+template <> struct from_object<std::optional<llvm::DIFile::ChecksumInfo<llvm::StringRef>>> {
   typedef std::optional<llvm::DIFile::ChecksumInfo<llvm::StringRef>> DeclareType;
   DeclareType _v;
   std::string _Storage;
@@ -887,7 +867,7 @@ template <> struct from_object<std::optional<llvm::DIFile::ChecksumInfo<llvm::St
 
 #if LLVM_VERSION_MAJOR < 16
 namespace translate {
-template <> struct from_object<llvm::Optional<llvm::StringRef>, std::true_type> {
+template <> struct from_object<llvm::Optional<llvm::StringRef>> {
   typedef llvm::Optional<llvm::StringRef> DeclareType;
   std::string _Storage;
   DeclareType _v;
@@ -911,7 +891,7 @@ template <> struct from_object<llvm::Optional<llvm::StringRef>, std::true_type> 
 }; // namespace translate
 #else
 namespace translate {
-template <> struct from_object<std::optional<llvm::StringRef>, std::true_type> {
+template <> struct from_object<std::optional<llvm::StringRef>> {
   typedef std::optional<llvm::StringRef> DeclareType;
   std::string _Storage;
   DeclareType _v;
@@ -965,7 +945,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::DIContext*, std::true_type> {
+template <> struct from_object<llvm::DIContext*> {
   typedef llvm::DIContext* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::DIContext_sp>(object)->wrappedPtr()){};
@@ -1019,7 +999,7 @@ llvm::Expected<std::vector<llvm::DWARFAddressRange>> getAddressRangesForAddressI
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<llvm::DWARFContext*, std::true_type> {
+template <> struct from_object<llvm::DWARFContext*> {
   typedef llvm::DWARFContext* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::DWARFContext_sp>(object)->wrappedPtr()){};
@@ -1067,7 +1047,7 @@ public:
 }; // namespace llvmo
 
 namespace translate {
-template <> struct from_object<llvm::DWARFUnit*, std::true_type> {
+template <> struct from_object<llvm::DWARFUnit*> {
   typedef llvm::DWARFUnit* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::DWARFUnit_sp>(object)->wrappedPtr()){};
@@ -1118,7 +1098,7 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <> struct from_object<const llvm::DWARFDebugLine::LineTable*, std::true_type> {
+template <> struct from_object<const llvm::DWARFDebugLine::LineTable*> {
   typedef const llvm::DWARFDebugLine::LineTable* DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::LineTable_sp>(object)->wrappedPtr()){};
