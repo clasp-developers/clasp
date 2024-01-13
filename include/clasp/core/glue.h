@@ -75,6 +75,12 @@ namespace translate {
       to construct the value or std::false_type if a default initialization value should be used */
 template <class oClass, typename Doit = std::true_type> struct from_object;
 
+// Shortcut operator when we just want a new object and don't care about
+// references etc.
+template <typename T> T make_from_object(core::T_sp o) {
+  return from_object<T, std::true_type>(o)._v;
+}
+
 struct dont_adopt_pointer {};
 struct adopt_pointer {};
 /*! to_object takes a class to convert to an T_sp type and a template parameter

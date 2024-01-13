@@ -273,7 +273,7 @@ DOCGROUP(clasp);
 CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
   size_t nargs = core::cl__length(args);
   // Get the address of the memory space in the llvm::Module
-  uintptr_t address = translate::from_object<uintptr_t>(taddress)._v;
+  uintptr_t address = translate::make_from_object<uintptr_t>(taddress);
   core::T_O** module_mem = reinterpret_cast<core::T_O**>(address);
   //  printf("%s:%d:%s address=%p nargs=%" PRu "\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, nargs);
   //  printf("%s:%d:%s constants-table contents: vvvvv\n", __FILE__, __LINE__, __FUNCTION__ );

@@ -290,7 +290,7 @@ ALWAYS_INLINE core::T_O* to_object_unsigned_int(unsigned int x) { return to_obje
 // ----------------------------------------------------------------------------
 
 ALWAYS_INLINE long from_object_long(core::T_O* obj) {
-  long x = translate::from_object<long>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+  long x = translate::make_from_object<long>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj));
   return x;
 }
 
@@ -301,7 +301,7 @@ ALWAYS_INLINE core::T_O* to_object_long(long x) { return translate::to_object<lo
 // ----------------------------------------------------------------------------
 
 ALWAYS_INLINE unsigned long from_object_unsigned_long(core::T_O* obj) {
-  unsigned long x = translate::from_object<unsigned long>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+  unsigned long x = translate::make_from_object<unsigned long>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj));
   return x;
 }
 
@@ -360,7 +360,7 @@ ALWAYS_INLINE core::T_O* to_object_uint32(uint32_t x) { return to_object_fixnum(
 // ----------------------------------------------------------------------------
 
 ALWAYS_INLINE int64_t from_object_int64(core::T_O* obj) {
-  int64_t x = translate::from_object<int64_t>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+  int64_t x = translate::make_from_object<int64_t>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj));
   return x;
 }
 
@@ -371,7 +371,7 @@ ALWAYS_INLINE core::T_O* to_object_int64(int64_t x) { return translate::to_objec
 // ----------------------------------------------------------------------------
 
 ALWAYS_INLINE uint64_t from_object_uint64(core::T_O* obj) {
-  uint64_t x = translate::from_object<uint64_t>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+  uint64_t x = translate::make_from_object<uint64_t>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj));
   return x;
 }
 
@@ -383,7 +383,7 @@ ALWAYS_INLINE core::T_O* to_object_uint64(uint64_t x) { return translate::to_obj
 
 ALWAYS_INLINE long long from_object_long_long(core::T_O* obj) {
   core::T_sp tobj((gctools::Tagged)obj);
-  long long x = translate::from_object<long long>(tobj)._v; // gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  long long x = translate::make_from_object<long long>(tobj);
   return x;
 }
 
@@ -394,7 +394,7 @@ ALWAYS_INLINE core::T_O* to_object_long_long(long long x) { return translate::to
 // ----------------------------------------------------------------------------
 
 ALWAYS_INLINE unsigned long long from_object_unsigned_long_long(core::T_O* obj) {
-  unsigned long long x = translate::from_object<long long>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+  unsigned long long x = translate::make_from_object<long long>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj));
   return x;
 }
 
@@ -407,7 +407,7 @@ ALWAYS_INLINE core::T_O* to_object_unsigned_long_long(unsigned long long x) {
 // ----------------------------------------------------------------------------
 
 ALWAYS_INLINE size_t from_object_size(core::T_O* obj) {
-  size_t x = translate::from_object<size_t>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+  size_t x = translate::make_from_object<size_t>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj));
   return x;
 }
 
@@ -418,7 +418,7 @@ ALWAYS_INLINE core::T_O* to_object_size(size_t x) { return translate::to_object<
 // ----------------------------------------------------------------------------
 
 ALWAYS_INLINE size_t from_object_ssize(core::T_O* obj) {
-  ssize_t x = translate::from_object<ssize_t>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+  ssize_t x = translate::make_from_object<ssize_t>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj));
   return x;
 }
 
@@ -429,7 +429,7 @@ ALWAYS_INLINE core::T_O* to_object_ssize(ssize_t x) { return translate::to_objec
 // ----------------------------------------------------------------------------
 
 ALWAYS_INLINE ptrdiff_t from_object_ptrdiff(core::T_O* obj) {
-  ptrdiff_t x = translate::from_object<ptrdiff_t>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+  ptrdiff_t x = translate::make_from_object<ptrdiff_t>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj));
   return x;
 }
 
@@ -440,7 +440,7 @@ ALWAYS_INLINE core::T_O* to_object_ptrdiff(ptrdiff_t x) { return translate::to_o
 // ----------------------------------------------------------------------------
 
 ALWAYS_INLINE time_t from_object_time(core::T_O* obj) {
-  time_t x = translate::from_object<time_t>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+  time_t x = translate::make_from_object<time_t>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj));
   return x;
 }
 
@@ -451,7 +451,7 @@ ALWAYS_INLINE core::T_O* to_object_time(time_t x) { return translate::to_object<
 // ----------------------------------------------------------------------------
 
 ALWAYS_INLINE char from_object_char(core::T_O* obj) {
-  char x = translate::from_object<char>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+  char x = translate::make_from_object<char>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj));
   return x;
 }
 
@@ -462,7 +462,7 @@ ALWAYS_INLINE core::T_O* to_object_char(char x) { return translate::to_object<ch
 // ----------------------------------------------------------------------------
 
 ALWAYS_INLINE unsigned char from_object_unsigned_char(core::T_O* obj) {
-  unsigned char x = translate::from_object<unsigned char>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+  unsigned char x = translate::make_from_object<unsigned char>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj));
   return x;
 }
 
@@ -515,7 +515,7 @@ ALWAYS_INLINE core::T_O* to_object_float(float x) { return translate::to_object<
 // ----------------------------------------------------------------------------
 
 ALWAYS_INLINE double from_object_double(core::T_O* obj) {
-  double x = translate::from_object<double>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+  double x = translate::make_from_object<double>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj));
   return x;
 }
 
@@ -526,7 +526,7 @@ ALWAYS_INLINE core::T_O* to_object_double(double x) { return translate::to_objec
 // ----------------------------------------------------------------------------
 
 ALWAYS_INLINE long double from_object_long_double(core::T_O* obj) {
-  long double x = translate::from_object<long double>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+  long double x = translate::make_from_object<long double>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj));
   return x;
 }
 
