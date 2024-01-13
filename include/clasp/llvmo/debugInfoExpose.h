@@ -93,7 +93,6 @@ public:
   virtual ~DILocation_O(){};
 }; // DILocation_O
 }; // namespace llvmo
-TRANSLATE(llvmo::DILocation_O);
 
 namespace translate {
 template <> struct from_object<llvm::DILocation*, std::true_type> {
@@ -130,7 +129,6 @@ public:
   virtual ~DINode_O(){};
 }; // DINode_O
 }; // namespace llvmo
-TRANSLATE(llvmo::DINode_O);
 
 namespace translate {
 template <> struct from_object<llvm::DINode*, std::true_type> {
@@ -167,7 +165,6 @@ public:
   virtual ~DIExpression_O(){};
 }; // DIExpression_O
 }; // namespace llvmo
-TRANSLATE(llvmo::DIExpression_O);
 
 namespace translate {
 template <> struct from_object<llvm::DIExpression*, std::true_type> {
@@ -200,7 +197,6 @@ public:
   virtual ~DIScope_O() {}
 }; // DIScope_O
 }; // namespace llvmo
-TRANSLATE(llvmo::DIScope_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -233,7 +229,6 @@ public:
 
 }; // DINodeArray_O
 }; // namespace llvmo
-TRANSLATE(llvmo::DINodeArray_O);
 
 namespace translate {
 template <> struct to_object<llvm::DINodeArray> {
@@ -264,7 +259,6 @@ public:
   virtual ~DITypeRefArray_O() {}
 }; // DITypeRefArray_O
 }; // namespace llvmo
-TRANSLATE(llvmo::DITypeRefArray_O);
 
 namespace translate {
 template <> struct to_object<llvm::DITypeRefArray> {
@@ -300,7 +294,6 @@ public:
   virtual ~DIFile_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DIFile_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -335,7 +328,6 @@ public:
   virtual ~DILocalScope_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DILocalScope_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -372,7 +364,6 @@ public:
   virtual ~DISubprogram_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DISubprogram_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -407,7 +398,6 @@ public:
   virtual ~DIType_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DIType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -442,7 +432,6 @@ public:
   virtual ~DIBasicType_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DIBasicType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -477,7 +466,6 @@ public:
   virtual ~DIDerivedType_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DIDerivedType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -512,7 +500,6 @@ public:
   virtual ~DICompositeType_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DICompositeType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -547,7 +534,6 @@ public:
   virtual ~DISubroutineType_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DISubroutineType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -582,7 +568,6 @@ public:
   virtual ~DILexicalBlockBase_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DILexicalBlockBase_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -618,7 +603,6 @@ public:
   virtual ~DILexicalBlock_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DILexicalBlock_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -653,7 +637,6 @@ public:
   virtual ~DICompileUnit_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DICompileUnit_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -717,7 +700,6 @@ public:
 
 }; // DIBuilder_O
 }; // namespace llvmo
-TRANSLATE(llvmo::DIBuilder_O);
 /* from_object translators */
 
 namespace translate {
@@ -747,7 +729,6 @@ public:
   virtual ~DIVariable_O() {}
 }; // DIVariable_O
 }; // namespace llvmo
-TRANSLATE(llvmo::DIVariable_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -784,7 +765,6 @@ public:
   virtual ~DILocalVariable_O() {}
 };
 }; // namespace llvmo
-TRANSLATE(llvmo::DILocalVariable_O);
 /* from_object translators */
 /* to_object translators */
 

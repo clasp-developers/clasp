@@ -138,27 +138,6 @@ template <class T> struct to_object<gc::Nilable<gctools::smart_ptr<T>>> {
 };
 }; // namespace translate
 
-#define __FROM_OBJECT_CONVERTER(oClass)                                                                                            \
-  namespace translate {                                                                                                            \
-  template <> struct from_object<gctools::smart_ptr<oClass>, std::true_type> {                                                     \
-    typedef gctools::smart_ptr<oClass> ExpectedType;                                                                               \
-    typedef gctools::smart_ptr<oClass> DeclareType;                                                                                \
-    DeclareType _v;                                                                                                                \
-    from_object(T_P o) : _v(o.as<oClass>()) {}                                                                                     \
-  };                                                                                                                               \
-  };
-
-#define __TO_OBJECT_CONVERTER(oClass)                                                                                              \
-  namespace translate {                                                                                                            \
-  template <> struct to_object<gctools::smart_ptr<oClass>> {                                                                       \
-    typedef gctools::smart_ptr<oClass> GivenType;                                                                                  \
-    static core::T_sp convert(GivenType o) {                                                                                       \
-      _G();                                                                                                                        \
-      return o;                                                                                                                    \
-    }                                                                                                                              \
-  };                                                                                                                               \
-  };
-
 #define DECLARE_ENUM_SYMBOL_TRANSLATOR(enumType, psid)                                                                             \
   namespace translate {                                                                                                            \
   template <> struct from_object<enumType, std::true_type> {                                                                       \
@@ -175,13 +154,3 @@ template <class T> struct to_object<gc::Nilable<gctools::smart_ptr<T>>> {
     }                                                                                                                              \
   };                                                                                                                               \
   };
-
-#define STREAMIO(classo)                                                                                                           \
-  std::ostream& operator<<(std::ostream& os, gctools::smart_ptr<classo> p) {                                                       \
-    THROW_HARD_ERROR("Illegal operator<<");                                                                                        \
-    return os;                                                                                                                     \
-  }
-
-#define TRANSLATE(classo)
-
-//    STREAMIO(classo);
