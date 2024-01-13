@@ -279,16 +279,15 @@ template <int Index, typename Type> struct prepare_argument<std::integral_consta
   }
 };
 
-template <typename Type> struct prepare_argument<std::integral_constant<int, 32767>, Type> {
-  using type = translate::from_object<Type, std::false_type>;
+template <typename Type> struct prepare_argument<std::integral_constant<int, 32767>, Type&> {
+  using type = translate::from_object<Type&, std::false_type>;
   static type goFrame(gctools::Frame::ElementType* frame) {
-    // Return an initialized from_object for the argument
-    return type(nil<core::T_O>());
+    // Return an uninitialized from_object for the argument.
+    return type();
   }
   template <typename... Targs>
   static type goArg(const std::tuple<Targs...>&& args) {
-    // Return an initialized from_object for the argument
-    return type(nil<core::T_O>());
+    return type();
   }
 };
 

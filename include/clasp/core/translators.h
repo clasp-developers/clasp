@@ -116,23 +116,6 @@ template <> struct from_object<void*, std::true_type> {
   from_object(core::T_sp o) : _v(core::lisp_to_void_ptr(o)){};
 };
 
-template <> struct from_object<bool*, std::false_type> {
-  typedef bool* DeclareType;
-
-  DeclareType _v;
-  bool _val;
-  from_object(T_P o) : _v(&_val), _val(false){};
-};
-
-template <> struct from_object<bool*&, std::false_type> {
-  typedef bool* DeclareType;
-
-  DeclareType _v;
-  bool _val;
-  from_object(T_P o) : _v(&_val), _val(false){};
-  ~from_object(){/*non trivial*/};
-};
-
 template <> struct from_object<bool*, std::true_type> {
   typedef bool* DeclareType;
 
@@ -327,13 +310,6 @@ template <> struct from_object<std::string&, std::true_type> {
   typedef std::string DeclareType;
   DeclareType _v;
   from_object(T_P o) : _v(string_get_std_string(o)){};
-  ~from_object(){/*non trivial*/};
-};
-
-template <> struct from_object<std::string&, std::false_type> {
-  typedef std::string DeclareType;
-  DeclareType _v;
-  from_object(T_P o){};
   ~from_object(){/*non trivial*/};
 };
 

@@ -620,13 +620,6 @@ template <typename T> struct from_object<const T*&, std::true_type> {
   }
 };
 
-/*! If the argument is a pure-out-value then don't use the passed to initialize _v */
-template <typename T> struct from_object<const T*&, std::false_type> {
-  typedef const T* DeclareType;
-  DeclareType _v;
-  from_object(const core::T_sp& o) : _v(NULL){};
-};
-
 template <typename T> struct from_object<const T&> {
   typedef const T& DeclareType;
   DeclareType _v;
@@ -651,7 +644,7 @@ template <typename T> struct from_object<T&> {
 template <typename T> struct from_object<T&, std::false_type> {
   typedef T& DeclareType;
   T _v;
-  from_object(core::T_sp o){};
+  from_object(){};
   ~from_object(){/*non trivial*/};
 };
 
@@ -689,24 +682,6 @@ template <> struct from_object<int&, std::true_type> {
   int _v;
   from_object(gctools::smart_ptr<core::T_O> vv) : _v(core::clasp_to_int(vv)){};
   ~from_object(){/* Non-trivial */};
-};
-
-template <> struct from_object<int&, std::false_type> {
-  typedef int DeclareType;
-  int _v;
-  from_object(gctools::smart_ptr<core::T_O> vv) { (void)vv; };
-  ~from_object(){
-      // non-trivial dtor to keep _v around
-  };
-};
-
-template <> struct from_object<int*, std::false_type> {
-  typedef int DeclareType;
-  int _v;
-  from_object(gctools::smart_ptr<core::T_O> vv) { (void)vv; };
-  ~from_object(){
-      // non-trivial dtor to keep _v around
-  };
 };
 
 template <> struct from_object<const char*, std::true_type> {
