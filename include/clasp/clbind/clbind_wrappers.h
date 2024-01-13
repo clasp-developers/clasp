@@ -623,7 +623,7 @@ template <typename T> struct from_object<const T*&> {
 template <typename T> struct from_object<const T&> {
   typedef const T& DeclareType;
   DeclareType _v;
-  from_object(core::T_sp o) : _v(*(from_object<T*>(o)._v)){};
+  from_object(core::T_sp o) : _v(*(make_from_object<T*>(o))){};
 };
 
 template <typename T> T& safe_deref(T* ptr) {
@@ -637,7 +637,7 @@ template <typename T> T& safe_deref(T* ptr) {
 template <typename T> struct from_object<T&> {
   typedef T& DeclareType;
   DeclareType _v;
-  from_object(core::T_sp o) : _v(safe_deref<T>((from_object<T*>(o)._v))){};
+  from_object(core::T_sp o) : _v(safe_deref<T>((make_from_object<T*>(o)))){};
   ~from_object(){/*non trivial*/};
 };
 
@@ -645,7 +645,7 @@ template <typename T> struct from_object {
   typedef T DeclareType;
   DeclareType _v;
   from_object(core::T_sp o)
-      : _v(*(from_object<T*>(o)._v)){
+      : _v(*(make_from_object<T*>(o))){
             /*!!!!!!!! Did a EXC_BAD_ACCESS happen here???
               !!!!!!!! If it did - maybe this isn't the right from_object translator
               !!!!!!!! and you need to implement a more specialized one.
@@ -686,10 +686,6 @@ template <> struct from_object<const char*> {
     this->_v = (char*)malloc(len + 1);
     strncpy(this->_v, strng->get_std_string().data(), len);
     this->_v[len] = '\0';
-  }
-  from_object(const from_object<const char*>& other) {
-    this->_v = other._v;
-    other._v = NULL;
   }
   ~from_object() {
     if (this->_v) {

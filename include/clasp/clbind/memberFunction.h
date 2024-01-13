@@ -70,10 +70,10 @@ public:
     if (lcc_nargs != NumParams)
       cc_wrong_number_of_arguments(lcc_closure, lcc_nargs, NumParams, NumParams);
     core::T_sp ootep((gctools::Tagged)lcc_args[0]);
-    translate::from_object<OT*> otep(ootep);
+    OT* otep = translate::make_from_object<OT*>(ootep);
     auto all_args = clbind::arg_tuple<1, Policies, ARGS...>::goFrame(lcc_args);
     return clbind::clbind_external_method_apply_and_return<Policies, RT, decltype(closure->mptr), OT*, decltype(all_args)>::go(
-        std::move(closure->mptr), otep._v, std::move(all_args));
+        std::move(closure->mptr), otep, std::move(all_args));
   }
 
   template <typename... Ts>
@@ -85,9 +85,9 @@ public:
     } else {
       MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
       core::T_sp ootep((gctools::Tagged)std::get<0>(std::make_tuple(args...)));
-      translate::from_object<OT*> otep(ootep);
+      OT* otep = translate::make_from_object<OT*>(ootep);
       auto all_args = clbind::arg_tuple<1, Policies, ARGS...>::goArgs(args...);
-      return clbind::clbind_external_method_apply_and_return<Policies, RT, decltype(closure->mptr), OT*, decltype(all_args)>::go(std::move(closure->mptr), otep._v, std::move(all_args));
+      return clbind::clbind_external_method_apply_and_return<Policies, RT, decltype(closure->mptr), OT*, decltype(all_args)>::go(std::move(closure->mptr), otep, std::move(all_args));
     }
   }
 };
@@ -129,10 +129,10 @@ public:
     if (lcc_nargs != NumParams)
       cc_wrong_number_of_arguments(lcc_closure, lcc_nargs, NumParams, NumParams);
     core::T_sp ootep((gctools::Tagged)lcc_args[0]);
-    translate::from_object<OT*> otep(ootep);
+    OT* otep = translate::make_from_object<OT*>(ootep);
     auto all_args = clbind::arg_tuple<1, Policies, ARGS...>::goFrame(lcc_args);
     return clbind::clbind_external_method_apply_and_return<Policies, RT, decltype(closure->mptr), OT*, decltype(all_args)>::go(
-        std::move(closure->mptr), otep._v, std::move(all_args));
+        std::move(closure->mptr), otep, std::move(all_args));
   }
 
   template <typename... Ts>
@@ -144,9 +144,9 @@ public:
     } else {
       MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
       core::T_sp ootep((gctools::Tagged)std::get<0>(std::make_tuple(args...)));
-      translate::from_object<OT*> otep(ootep);
+      OT* otep = translate::make_from_object<OT*>(ootep);
       auto all_args = clbind::arg_tuple<1, Policies, ARGS...>::goArgs(args...);
-      return clbind::clbind_external_method_apply_and_return<Policies, RT, decltype(closure->mptr), OT*, decltype(all_args)>::go(std::move(closure->mptr), otep._v, std::move(all_args));
+      return clbind::clbind_external_method_apply_and_return<Policies, RT, decltype(closure->mptr), OT*, decltype(all_args)>::go(std::move(closure->mptr), otep, std::move(all_args));
     }
   }
 };

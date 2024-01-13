@@ -3762,8 +3762,6 @@ template <typename T> struct from_object<llvm::Optional<T>> {
     this->_v = val;
     return;
   }
-  from_object(const from_object& orig) = delete;
-  from_object(from_object&& orig) : _v(std::move(orig._v)){};
 };
 } // namespace translate
 #else
@@ -3779,8 +3777,6 @@ template <typename T> struct from_object<std::optional<T>> {
     this->_v = val;
     return;
   }
-  from_object(const from_object& orig) = delete;
-  from_object(from_object&& orig) : _v(std::move(orig._v)){};
 };
 } // namespace translate
 #endif

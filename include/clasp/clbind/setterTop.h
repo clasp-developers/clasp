@@ -26,8 +26,7 @@ private:
     core::T_sp arg0((gctools::Tagged)a0);
     core::T_sp arg1((gctools::Tagged)a1);
     OT* objPtr = gc::As<core::WrappedPointer_sp>(arg1)->cast<OT>();
-    translate::from_object<MemberType> fvalue(arg0);
-    (*objPtr).*(this->mptr) = fvalue._v;
+    (*objPtr).*(this->mptr) = translate::make_from_object<MemberType>(arg0);
     gctools::return_type retv(arg0.raw_(), 1);
     return retv;
   }
