@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/bignum.fwd.h>
+#include <concepts> // integral
 
 namespace core {
 class Bignum_O;
@@ -132,7 +133,7 @@ public: // Functions here
   virtual bool evenp_() const override { return !((this->limbs())[0] & 1); }
   virtual bool oddp_() const override { return (this->limbs())[0] & 1; }
 
-  template <typename integral> integral to_integral() const {
+  template <std::integral integral> integral to_integral() const {
     integral mn = std::numeric_limits<integral>::min();
     integral mx = std::numeric_limits<integral>::max();
     // First, if integral can only hold fixnums, conversion will always fail.
@@ -184,8 +185,7 @@ Integer_sp core__next_fadd(Bignum_sp, Fixnum);
 Integer_sp core__next_fsub(Fixnum, Bignum_sp);
 int core__next_compare(Bignum_sp, Bignum_sp);
 
-template <typename integral> integral clasp_to_integral(T_sp obj) {
-  static_assert(std::is_integral<integral>::value, "clasp_to_integral needs an integral type");
+template <std::integral integral> integral clasp_to_integral(T_sp obj) {
   integral mn = std::numeric_limits<integral>::min();
   integral mx = std::numeric_limits<integral>::max();
   if (obj.fixnump()) {

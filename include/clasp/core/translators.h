@@ -49,142 +49,25 @@ THE SOFTWARE.
 
 #include <cstdint>
 #include <utility>
+#include <concepts> // std::integral
 
 #include <clasp/core/predicates.h>
 #include <clasp/core/clasp_gmpxx.h>
 #include <clasp/core/glue.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/numbers.h>
+#include <clasp/core/bignum.h> // clasp_to_integral
 #include <clasp/core/array.fwd.h>
 
 namespace translate {
 
 // FROM_OBJECT TRANSLATORS
 
-// template <>
-// struct from_object< short, std::true_type >
-// {
-//   typedef short DeclareType;
-
-//   DeclareType _v;
-// from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error(o) ) {};
-// };
-
-// template <>
-//   struct from_object< unsigned short, std::true_type >
-// {
-//   typedef unsigned short DeclareType;
-
-//   DeclareType _v;
-// from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error(o) ) {};
-// };
-
-// template <>
-//   struct from_object< int, std::true_type >
-// {
-//   typedef int DeclareType;
-
-//   DeclareType _v;
-// from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error(o) ) {};
-// };
-
-// template <>
-//   struct from_object< unsigned int, std::true_type >
-// {
-//   typedef unsigned int DeclareType;
-
-//   DeclareType _v;
-// from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : not_fixnum_error(o) ) {};
-// };
-
-#if defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_FREEBSD)
-// linux doesn't like these because they clash with int64_t and uint64_t
-template <> struct from_object<long, std::true_type> {
-  typedef int DeclareType;
+template <std::integral I> struct from_object<I, std::true_type> {
+  typedef I DeclareType;
   DeclareType _v;
-  from_object(core::T_sp o) : _v(o.fixnump() ? o.unsafe_fixnum() : clasp_to_long(o)){};
+  from_object(core::T_sp o) : _v(core::clasp_to_integral<I>(o)) {};
 };
-
-template <> struct from_object<unsigned long, std::true_type> {
-  typedef unsigned long DeclareType;
-  DeclareType _v;
-  from_object(core::T_sp o) : _v(o.fixnump() ? o.unsafe_fixnum() : clasp_to_ulong(o)){};
-};
-#endif
-
-template <> struct from_object<long long, std::true_type> {
-  typedef long long DeclareType;
-
-  DeclareType _v;
-  from_object(core::T_sp o) : _v(o.fixnump() ? o.unsafe_fixnum() : core::clasp_to_longlong(o)){};
-};
-
-template <> struct from_object<unsigned long long, std::true_type> {
-  typedef unsigned long long DeclareType;
-
-  DeclareType _v;
-  from_object(core::T_sp o) : _v(o.fixnump() ? o.unsafe_fixnum() : core::clasp_to_ulonglong(o)){};
-};
-
-template <> struct from_object<int8_t, std::true_type> {
-  typedef int8_t DeclareType;
-
-  DeclareType _v;
-  from_object(core::T_sp o) : _v(o.fixnump() ? o.unsafe_fixnum() : core::not_fixnum_error(o)){};
-};
-
-template <> struct from_object<uint8_t, std::true_type> {
-  typedef uint8_t DeclareType;
-
-  DeclareType _v;
-  from_object(core::T_sp o) : _v(o.fixnump() ? o.unsafe_fixnum() : core::not_fixnum_error(o)){};
-};
-
-template <> struct from_object<int16_t, std::true_type> {
-  typedef int16_t DeclareType;
-
-  DeclareType _v;
-  from_object(core::T_sp o) : _v(o.fixnump() ? o.unsafe_fixnum() : core::not_fixnum_error(o)){};
-};
-
-template <> struct from_object<uint16_t, std::true_type> {
-  typedef uint16_t DeclareType;
-
-  DeclareType _v;
-  from_object(core::T_sp o) : _v(o.fixnump() ? o.unsafe_fixnum() : core::not_fixnum_error(o)){};
-};
-
-template <> struct from_object<int32_t, std::true_type> {
-  typedef int32_t DeclareType;
-
-  DeclareType _v;
-  from_object(core::T_sp o) : _v(o.fixnump() ? o.unsafe_fixnum() : core::not_fixnum_error(o)){};
-};
-
-template <> struct from_object<uint32_t, std::true_type> {
-  typedef uint32_t DeclareType;
-
-  DeclareType _v;
-  from_object(core::T_sp o) : _v(o.fixnump() ? o.unsafe_fixnum() : core::not_fixnum_error(o)){};
-};
-
-#if defined(_TARGET_OS_LINUX)
-template <> struct from_object<int64_t, std::true_type> {
-  typedef int64_t DeclareType;
-
-  DeclareType _v;
-  from_object(core::T_sp o) : _v(o.fixnump() ? o.unsafe_fixnum() : clasp_to_int64_t(o)){};
-};
-#endif
-
-#if defined(_TARGET_OS_LINUX)
-template <> struct from_object<uint64_t, std::true_type> {
-  typedef uint64_t DeclareType;
-
-  DeclareType _v;
-  from_object(core::T_sp o) : _v(o.fixnump() ? o.unsafe_fixnum() : clasp_to_uint64_t(o)){};
-};
-#endif
 
 template <> struct from_object<float, std::true_type> {
   typedef float DeclareType;
