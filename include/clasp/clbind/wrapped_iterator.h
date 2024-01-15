@@ -38,6 +38,7 @@ template <class IT, typename Policy = reg::null_type>
 class Iterator : public core::Iterator_O /*, public gctools::GC_MergeKinds */ {
 public:
   typedef core::Iterator_O TemplatedBase;
+  typedef decltype(*(std::declval<IT>())) ElementType;
 
 public:
   IT _Iterator;
@@ -45,7 +46,7 @@ public:
 public:
   Iterator(IT it /*, End end */) : _Iterator(it) /* , _end(end) */ {};
 
-  core::T_sp unsafeElement() const { return translate::to_object<IT>::convert(this->_Iterator); }
+  core::T_sp unsafeElement() const { return translate::to_object<ElementType>::convert(*_Iterator); }
   size_t templatedSizeof() const { return sizeof(*this); };
   void step() { ++this->_Iterator; };
   size_t distance(core::T_sp other) const {
