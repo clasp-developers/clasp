@@ -40,7 +40,10 @@
          ,iterator
        (do* ((,cur ,begin (core:iterator-step ,cur))
              (,i (core:iterator-unsafe-element ,cur) (core:iterator-unsafe-element ,cur)))
-            ((core:iterator= ,cur ,end) ,result)
+            ((core:iterator= ,cur ,end)
+             (let ((,i nil))
+               (declare (ignorable ,i))
+               ,result))
          ,@body))))
 
 (defmacro map-c++-iterator (code iterator)
