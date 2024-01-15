@@ -32,12 +32,6 @@ THE SOFTWARE.
 #include <clasp/clbind/wrapped_iterator.h>
 namespace clbind {
 
-template <typename T, typename FN> struct BeginReturnType {};
-
-template <typename T, typename RT> struct BeginReturnType<T, RT (T::*)()> {
-  typedef RT type;
-};
-
 template <typename Pols, typename OT, typename Begin, typename End> class WRAPPER_Iterator : public core::SimpleFun_O {
 public:
   typedef WRAPPER_Iterator MyType;
@@ -48,7 +42,7 @@ public:
     : core::SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()), _begin(begin), _end(end){};
 
 private:
-  typedef typename BeginReturnType<OT, Begin>::type IteratorType;
+  typedef std::invoke_result_t<Begin, OT> IteratorType;
   typedef Iterator<IteratorType, Pols> WrappedIteratorType;
   Begin _begin;
   End _end;
