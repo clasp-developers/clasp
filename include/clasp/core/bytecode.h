@@ -35,7 +35,6 @@ public:
 public:
   Literals_sp_Type _Literals;
   Bytecode_sp_Type _Bytecode;
-  T_sp _CompileInfo;
   T_sp _DebugInfo = nil<T_O>();
 
 public:

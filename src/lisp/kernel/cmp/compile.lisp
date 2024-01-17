@@ -34,20 +34,6 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
   (with-compilation-unit ()
     (compile-with-hook compile-hook definition env)))
 
-(defun builtin-wrapper-form (name)
-  (when (and (fboundp name)
-             (functionp (fdefinition name))
-             (null (compiled-function-p (fdefinition name)))
-             (typep (sys:function/entry-point (fdefinition name)) 'sys:bytecode-simple-fun))
-    (let* ((function (fdefinition name))
-           (entry-point (sys:function/entry-point function))
-           (module (sys:bytecode-simple-fun/code entry-point))
-           (compile-info (sys:bytecode-module/compile-info module))
-           (code (car compile-info)))
-      code)))
-
-(export 'builtin-wrapper-form :cmp)
-
 (defun %compile (definition environment)
   (cond
     ((and (typep definition 'core:bytecode-simple-fun)

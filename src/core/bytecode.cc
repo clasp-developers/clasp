@@ -67,12 +67,6 @@ BytecodeModule_O::Bytecode_sp_Type BytecodeModule_O::bytecode() const { return t
 CL_DEFMETHOD
 void BytecodeModule_O::setf_bytecode(BytecodeModule_O::Bytecode_sp_Type o) { this->_Bytecode = o; }
 
-CL_DEFMETHOD
-T_sp BytecodeModule_O::compileInfo() const { return this->_CompileInfo; }
-
-CL_DEFMETHOD
-void BytecodeModule_O::setf_compileInfo(T_sp o) { this->_CompileInfo = o; }
-
 void BytecodeModule_O::register_for_debug() {
   // An atomic push, as the variable is shared.
   T_sp old = _lisp->_Roots._AllBytecodeModules.load(std::memory_order_relaxed);

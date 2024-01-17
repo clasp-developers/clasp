@@ -8,10 +8,9 @@
   (defvar *bclog* (progn
                     (format t "!~%!~%!   Opening /tmp/allcode.log - logging all bytecode compilation~%!~%!~%")
                     (open "/tmp/allcode.log" :direction :output :if-exists :supersede)))
-  (defun log-function (cfunction compile-info bytecode)
+  (defun log-function (cfunction bytecode)
     (format *bclog* "Name: ~s~%" (cfunction-name cfunction))
     (let ((*print-circle* t))
-      (format *bclog* "Form: ~s~%" (car compile-info))
       (format *bclog* "Bytecode: ~s~%" bytecode)
       (finish-output *bclog*)))
   (defmacro logf (message &rest args)
@@ -437,7 +436,7 @@
          (body (cddr lambda-expression)))
     (logf "-------- About to link~%")
     (multiple-value-prog1
-        (link-function (compile-lambda lambda-list body env module) (cons lambda-expression env))
+        (link-function (compile-lambda lambda-list body env module))
       (logf "^^^^^^^^^ Compile done~%"))))
 
 (export 'bytecompile)
@@ -1495,7 +1494,7 @@
 ;;; Run down the hierarchy and link the compile time representations
 ;;; of modules and functions together into runtime objects. Return the
 ;;; bytecode function corresponding to CFUNCTION.
-(defun link-function (cfunction compile-info)
+(defun link-function (cfunction)
   (declare (optimize debug))
   (let ((cmodule (cfunction-cmodule cfunction)))
     (initialize-cfunction-positions cmodule)
@@ -1544,9 +1543,7 @@
       (progn
         (core:bytecode-module/setf-literals bytecode-module literals)
         ;; Now just install the bytecode and Bob's your uncle.
-        (core:bytecode-module/setf-bytecode bytecode-module bytecode)
-        (core:bytecode-module/setf-compile-info bytecode-module compile-info))
-      #+(or)(log-function cfunction compile-info bytecode)))
+        (core:bytecode-module/setf-bytecode bytecode-module bytecode))))
   (cfunction-info cfunction))
 
 

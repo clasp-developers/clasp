@@ -21,15 +21,9 @@
 ;;;
 ;;;
 
-(defun describe-wrappers()
-  (dolist (name sys:*builtin-function-names*)
-    (format t "About to compile ~a ~a~%" name (cmp:builtin-wrapper-form name))))
-
 (defun compile-wrappers ()
   (dolist (name sys:*builtin-function-names*)
-    (when (cmp:builtin-wrapper-form name)
-      (format t "Compiling wrapper for ~a ~a~%" name (cmp:builtin-wrapper-form name))
-      (compile name))))
+    (setf (fdefinition name) (compile nil (fdefinition name)))))
 
 #-(and)
 (eval-when (:compile-toplevel :execute)
