@@ -934,13 +934,13 @@ T_sp Readtable_O::set_syntax_type_(Character_sp ch, T_sp syntaxType) {
 SYMBOL_EXPORT_SC_(KeywordPkg, macro_function);
 
 T_sp Readtable_O::set_macro_character_(Character_sp ch, T_sp funcDesig, T_sp non_terminating_p) {
+  if (!(gctools::IsA<core::Symbol_sp>(funcDesig) || gctools::IsA<core::Function_sp>(funcDesig))) {
+    TYPE_ERROR(funcDesig, Cons_O::createList(cl::_sym_or, cl::_sym_symbol, cl::_sym_function));
+  }
   if (non_terminating_p.isTrue()) {
     this->set_syntax_type_(ch, kw::_sym_non_terminating_macro);
   } else {
     this->set_syntax_type_(ch, kw::_sym_terminating_macro);
-  }
-  if (!(gctools::IsA<core::Symbol_sp>(funcDesig) || gctools::IsA<core::Function_sp>(funcDesig))) {
-    TYPE_ERROR(funcDesig, Cons_O::createList(cl::_sym_or, cl::_sym_symbol, cl::_sym_function));
   }
   this->MacroCharacters_->setf_gethash(ch, funcDesig);
   return _lisp->_true();
