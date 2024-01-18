@@ -92,10 +92,8 @@
                      (log `(:redundant ,def))))
           else do (log `(:bad-queue ,item)))))
 
-(defun ext:start-autocompilation ()
-  ;; If a thread already exists, ignore.
-  ;; Note that this function is not thread safe. It's expected you'll only
-  ;; use it manually.
+
+(defun start-autocompilation* ()
   (unless *autocompilation-thread*
     (write-line "Starting autocompilation...")
     (setf *autocompilation-thread*
@@ -104,10 +102,31 @@
     (mp:atomic-push-explicit :start ((symbol-value '*autocompilation-log*)
                                      :order :relaxed)))
   (values))
-(defun ext:stop-autocompilation ()
+
+(defun stop-autocompilation* ()
   (when *autocompilation-thread*
     (setf *autocompilation-thread* nil)
     (core:atomic-enqueue *autocompilation-queue* :quit))
+  (values))
+
+(defun ext:start-autocompilation ()
+  ;; If a thread already exists, ignore.
+  ;; Note that this function is not thread safe. It's expected you'll only
+  ;; use it manually.
+  (unless *autocompilation-thread*
+    ;; Setup turn off autocompilation for snapshot save
+    ;;  and restart it after we snapshot load
+    ;;  This means it will be on for repeated snapshot save/load cycles unless we
+    ;;  remove ext:start-autocompilation from core:*initialize-hooks*
+    (pushnew 'stop-autocompilation* core:*terminate-hooks*)
+    (pushnew 'start-autocompilation* core:*initialize-hooks*)
+    (start-autocompilation*)))
+
+(defun ext:stop-autocompilation ()
+  (when *autocompilation-thread*
+    (setf core:*terminate-hooks* (remove 'start-autocompilation* core:*initialize-hooks*))
+    (setf core:*terminate-hooks* (remove 'stop-autocompilation* core:*terminate-hooks*)))
+  (stop-autocompilation*)
   (values))
 
 (defun start-autocompilation-logging ()
