@@ -118,16 +118,21 @@
                                                            function-description
                                                            the-function
                                                            local-fun)
-                             :xep-unallocated)))
+                             :xep-unallocated))
+              ;; Check for a forced closure layout first.
+              ;: if there isn't one, make one up.
+              (env (or (cdr (assoc function *fixed-closures*))
+                       (cleavir-set:set-to-list
+                        (bir:environment function)))))
           (if (eq xep-group :xep-unallocated)
               (make-instance 'llvm-function-info
-                             :environment (cleavir-set:set-to-list (bir:environment function))
+                             :environment env
                              :main-function the-function
                              :xep-function :xep-unallocated
                              :xep-function-description :xep-unallocated
                              :arguments arguments)
               (make-instance 'llvm-function-info
-                             :environment (cleavir-set:set-to-list (bir:environment function))
+                             :environment env
                              :main-function the-function
                              :xep-function xep-group
                              :xep-function-description function-description

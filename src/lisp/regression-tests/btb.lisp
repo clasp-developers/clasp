@@ -36,7 +36,7 @@
                                            (lambda () (list x y))))
                         10 382)))
         (loop repeat 7 collect (funcall (compile nil c))))
-      ((10 382) (10 382) (10 382) (10 382) (10 382) (10 382) (10 382)))
+      (((10 382) (10 382) (10 382) (10 382) (10 382) (10 382) (10 382))))
 
 ;;; Does LOAD-TIME-VALUE with a normal object work OK?
 (test btb.ltv-1

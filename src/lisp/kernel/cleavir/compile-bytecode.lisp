@@ -78,10 +78,8 @@
     ;; normally deletes unused blocks, doesn't even know about them.
     (loop for entry in (bmap blockmap)
           do (bir:maybe-delete-iblock (binfo-irblock entry)))
-    ;; Return a mapping from bcfuns to BIR functions.
-    (loop for entry in (fmap funmap)
-          for irfun = (finfo-irfun entry)
-          collect (cons (finfo-bcfun entry) irfun))))
+    ;; Return the funmap.
+    funmap))
 
 ;;; If the instruction begins a new iblock and/or function,
 ;;; set everything up for that.
@@ -128,8 +126,23 @@
     (let ((cleavir-cst-to-ast:*compiler* 'cl:compile)
           ;; necessary for bir->function debug info to work. KLUDGE
           (*load-pathname* (core:function-source-pos function))
-          (bir (cdr (assoc function funmap))))
+          ;; Ensure any closures have the same layout as original
+          ;; bytecode closures, so the simple fun can be swapped
+          ;; out transparently.
+          (clasp-cleavir::*fixed-closures*
+            (fixed-closures-map (fmap funmap)))
+          (bir (finfo-irfun (find-bcfun function funmap))))
       (clasp-cleavir::bir->function bir :abi abi :linkage linkage))))
+
+(defun fixed-closures-map (fmap)
+  (loop for entry in fmap
+        for ir = (finfo-irfun entry)
+        for clos = (loop for thing in (finfo-closure entry)
+                         when (consp thing)
+                           collect (car thing)
+                         else
+                           collect thing)
+        collect (cons ir clos)))
 
 ;;; Given a bytecode function, compile it into the given IR module.
 ;;; that is, this does NOT finish the compilation process.
@@ -138,7 +151,7 @@
 (defun compile-bcfun-into (function irmodule)
   (let ((fmap (compile-bcmodule-into (core:simple-fun-code function)
                                      irmodule)))
-    (cdr (assoc function fmap))))
+    (finfo-irfun (find-bcfun function fmap))))
 
 ;;; Return a list of all annotations that start at IP 0.
 (defun initial-annotations (annotations)

@@ -12,6 +12,12 @@
 (defvar *function-info*)
 (defvar *enclose-initializers*)
 
+;; This is an alist from BIR:FUNCTIONs to closure environments
+;; (i.e. lists of lexicals). It is used by the BTB compiler to
+;; ensure that clasp-cleavir lays out a simple fun that can use
+;; an existing closure layout.
+(defvar *fixed-closures* nil)
+
 ;;; In CSTs and stuff the origin is (spi . spi). Use the head.
 (defun origin-spi (origin)
   (if (consp origin) (car origin) origin))
