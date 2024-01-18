@@ -1165,13 +1165,18 @@ void Module_O::link_load() {
   // real bytecode functions in the module vector.
   // Also replace load-time-value infos with the evaluated forms,
   // and resolve cells.
+  // Also also record mutable LTVs.
+  ql::list mutableLTVs;
   for (size_t i = 0; i < literal_length; ++i) {
     T_sp lit = (*cmodule_literals)[i];
     if (gc::IsA<Cfunction_sp>(lit))
       (*literals)[i] = gc::As_unsafe<Cfunction_sp>(lit)->info();
-    else if (gc::IsA<LoadTimeValueInfo_sp>(lit))
-      (*literals)[i] = gc::As_unsafe<LoadTimeValueInfo_sp>(lit)->eval();
-    else if (gc::IsA<ConstantInfo_sp>(lit))
+    else if (gc::IsA<LoadTimeValueInfo_sp>(lit)) {
+      LoadTimeValueInfo_sp ltvinfo = gc::As_unsafe<LoadTimeValueInfo_sp>(lit);
+      (*literals)[i] = ltvinfo->eval();
+      if (!ltvinfo->read_only_p())
+        mutableLTVs << Integer_O::create(i);
+    } else if (gc::IsA<ConstantInfo_sp>(lit))
       (*literals)[i] = gc::As_unsafe<ConstantInfo_sp>(lit)->value();
     else if (gc::IsA<FunctionCellInfo_sp>(lit))
       (*literals)[i] = core__ensure_function_cell(gc::As_unsafe<FunctionCellInfo_sp>(lit)->fname());
@@ -1192,6 +1197,7 @@ void Module_O::link_load() {
   bytecode_module->setf_literals(literals);
   bytecode_module->setf_bytecode(bytecode);
   bytecode_module->setf_debugInfo(debug_info);
+  bytecode_module->setf_mutableLiterals(mutableLTVs.cons());
   // Native-compile anything that really seems like it should be,
   // and install the resulting simple funs.
   // We can only do native compilations after the module is

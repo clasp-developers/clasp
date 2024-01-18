@@ -1616,7 +1616,9 @@
 
 (defmethod encode ((attr module-mutable-ltv-attr) stream)
   (let ((indices (indices attr)))
-    (write-b32 (+ 2 (* 2 (length indices))) stream) ; length of attr
+    (write-b32 (+ 2 *index-bytes* (* 2 (length indices)))
+               stream) ; length of attr
+    (write-index (module attr) stream)
     (write-b16 (length indices) stream)
     (loop for index in indices
           do (write-b16 index stream))))
