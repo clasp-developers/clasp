@@ -1879,10 +1879,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "kinematics::XyzJoint_O"
              :layout-offset-field-names ("_DofRefoldIndex")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "kinematics::XyzJoint_O"
-             :layout-offset-field-names ("_Orientation")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "kinematics::XyzJoint_O"
              :layout-offset-field-names ("_NumberOfChildren")}
@@ -1937,10 +1933,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "kinematics::StubJoint_O"
              :layout-offset-field-names ("_DofRefoldIndex")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "kinematics::StubJoint_O"
-             :layout-offset-field-names ("_Orientation")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "kinematics::StubJoint_O"
              :layout-offset-field-names ("_NumberOfChildren")}
