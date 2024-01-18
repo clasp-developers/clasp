@@ -49,6 +49,7 @@ DOCGROUP(clasp)
 #define CL_EXTERN_DEFUN(pointer) BEGIN_TAG CL_EXTERN_DEFUN_TAG (:FILE __FILE__ :LINE __LINE__ :POINTER #pointer )
 #define SYMBOL_SC_(pkg, name) BEGIN_TAG SYMBOL_INTERNAL ( :FILE __FILE__ :LINE __LINE__ :PACKAGE #pkg :NAME #name )
 #define SYMBOL_EXPORT_SC_(pkg, name) BEGIN_TAG SYMBOL_EXTERNAL ( :FILE __FILE__ :LINE __LINE__  :PACKAGE #pkg :NAME #name )
+#define SYMBOL_EXPORT(pkg, name) BEGIN_TAG SYMBOL_EXTERNAL ( :FILE __FILE__ :LINE __LINE__  :PACKAGE #pkg :NAME #name )
 //! Ensure that the symbol is present within the package - acts like CL:SHADOW
 #define SYMBOL_SHADOW_EXPORT_SC_(pkg, name)                                                                                        \
   BEGIN_TAG SYMBOL_SHADOW_EXTERNAL ( :FILE __FILE__ :LINE __LINE__  :PACKAGE #pkg :NAME #name )
@@ -101,6 +102,7 @@ DOCGROUP(clasp)
 #define CL_TERMINATOR
 #define SYMBOL_SC_(pkg, name)
 #define SYMBOL_EXPORT_SC_(pkg, name)
+#define SYMBOL_EXPORT(pkg, name)
 #define SYMBOL_SHADOW_EXPORT_SC_(pkg, name)
 #define INTERN_(ns, name) (ns::_sym_##name)
 #define PACKAGE_USE(name_str)
