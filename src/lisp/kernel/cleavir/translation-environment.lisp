@@ -107,17 +107,23 @@
 ;; on whether it is immutable so we can close over the memory location
 ;; and implement the the cell indirection properly when the variable
 ;; is mutable and closed over.
+;; We also allow a "variable" to be NIL. This indicates that the closure
+;; has a slot unused by the code; this is used when we BTB compile
+;; a bytecode function. In this case we just put in a nil.
+;; (Not undef, since it still ought to be a valid object.)
 (defun variable-as-argument (variable)
-  (let ((value/cell (or (gethash variable *datum-values*)
-                        (error "BUG: Variable or cell missing: ~a" variable))))
-    (if (or (typep variable 'bir:come-from)
-            (bir:immutablep variable))
-        value/cell
-        (ecase (bir:extent variable)
-          (:indefinite value/cell)
-          (:dynamic (cmp:irc-bit-cast value/cell cmp:%t*%))
-          (:local
-           (error "Should not be passing the local variable ~a as an environment argument." variable))))))
+  (if variable
+      (let ((value/cell (or (gethash variable *datum-values*)
+                            (error "BUG: Variable or cell missing: ~a" variable))))
+        (if (or (typep variable 'bir:come-from)
+                (bir:immutablep variable))
+            value/cell
+            (ecase (bir:extent variable)
+              (:indefinite value/cell)
+              (:dynamic (cmp:irc-bit-cast value/cell cmp:%t*%))
+              (:local
+               (error "Should not be passing the local variable ~a as an environment argument." variable)))))
+      (%nil)))
 
 (defun in (datum)
   (check-type datum (or bir:phi bir:ssa))

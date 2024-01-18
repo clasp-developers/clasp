@@ -121,7 +121,7 @@
                              :xep-unallocated))
               ;; Check for a forced closure layout first.
               ;: if there isn't one, make one up.
-              (env (or (cdr (assoc function *fixed-closures*))
+              (env (or (fixed-closure function)
                        (cleavir-set:set-to-list
                         (bir:environment function)))))
           (if (eq xep-group :xep-unallocated)
@@ -137,6 +137,27 @@
                              :xep-function xep-group
                              :xep-function-description function-description
                              :arguments arguments)))))))
+
+(defun fixed-closure (function)
+  (let ((fixed (cdr (assoc function *fixed-closures*))))
+    (if fixed
+        ;; The fixed environment may have variables that aren't
+        ;; in the computed environment because they have been
+        ;; optimized out. In this case we put in NIL, which is
+        ;; understood by variable-as-argument.
+        (let ((env (bir:environment function)))
+          (loop for v in fixed
+                collect (if (cleavir-set:presentp v env) v nil)))
+        nil)))
+
+;;; Given an llvm function info environment, return local call
+;;; arguments for the environment.
+;;; This is just mapped variable-as-argument, except
+;;; for excess NILs from fixed closures. We don't need those.
+(defun environment-arguments (environment)
+  (loop for v in environment
+        when v
+          collect (variable-as-argument v)))
 
 ;;; Return value is unspecified/irrelevant.
 (defgeneric translate-simple-instruction (instruction abi))
@@ -836,8 +857,8 @@
                     (subargs
                       (parse-local-call-arguments
                        req opt rest-id rest-vrtype arguments))
-                    (args (append (mapcar #'variable-as-argument
-                                          (environment callee-info))
+                    (args (append (environment-arguments
+                                   (environment callee-info))
                                   subargs))
                     (function (main-function callee-info))
                     (function-type (llvm-sys:get-function-type function))
@@ -967,7 +988,7 @@
         (cmp:irc-begin-block merge)
         (let* ((arguments
                  (nconc
-                  (mapcar #'variable-as-argument environment)
+                  (environment-arguments environment)
                   (loop for r in (rest req)
                         for j from 0
                         collect (translate-cast (load-return-value j) '(:object)
@@ -1792,8 +1813,9 @@
                (loop for import in (environment llvm-function-info)
                      for i from 0
                      for offset = (cmp:%closure%.offset-of[n]/t* i)
-                     collect (cmp:irc-t*-load-atomic
-                              (cmp::gen-memref-address closure-vec offset))))
+                     when import ; skip unused fixed closure entries
+                       collect (cmp:irc-t*-load-atomic
+                                (cmp::gen-memref-address closure-vec offset))))
              (source-pos-info (function-source-pos-info ir)))
         ;; Tail call the real function.
         (cmp:with-debug-info-source-position (source-pos-info)
@@ -1833,9 +1855,11 @@
           ;; appropriately.
           (let ((llvm-function-info (find-llvm-function-info ir)))
             (loop for arg in (llvm-sys:get-argument-list the-function)
-                  for lexical in (append (environment llvm-function-info)
+                  ;; remove-if is to remove fixed closure params.
+                  for lexical in (append (remove-if #'null (environment llvm-function-info))
                                          (arguments llvm-function-info))
-                  do (setf (gethash lexical *datum-values*) arg)))
+                  when lexical ; skip unused fixed
+                    do (setf (gethash lexical *datum-values*) arg)))
           ;; Branch to the start block.
           (cmp:irc-br (iblock-tag (bir:start ir)))
           ;; Lay out blocks.

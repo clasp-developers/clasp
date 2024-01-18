@@ -38,6 +38,18 @@
         (loop repeat 7 collect (funcall (compile nil c))))
       (((10 382) (10 382) (10 382) (10 382) (10 382) (10 382) (10 382))))
 
+;;; Can we handle variables that optimization deletes?
+(test btb.closure-4
+      (let ((c (funcall (cmp:bytecompile '(lambda (x y)
+                                           ;; Here we rely on
+                                           ;; bytecomp not optimizing.
+                                           (lambda () (if t x y))))
+                        7 19)))
+        (multiple-value-bind (f warningp failurep)
+            (compile nil c)
+          (values (funcall f) warningp failurep)))
+      (7 nil nil))
+
 ;;; Does LOAD-TIME-VALUE with a normal object work OK?
 (test btb.ltv-1
       (funcall
