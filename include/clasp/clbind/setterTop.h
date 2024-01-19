@@ -4,7 +4,6 @@ public:
   typedef WRAPPER_Setter<SetterPolicies, OT, VariablePtrType> MyType;
   typedef core::SimpleFun_O TemplatedBase;
   typedef typename memberpointertraits<VariablePtrType>::member_type MemberType;
-  typedef clbind::Wrapper<MemberType, MemberType*> WrapperType;
 
 public:
   VariablePtrType mptr;
