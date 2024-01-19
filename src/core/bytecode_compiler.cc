@@ -1083,8 +1083,8 @@ SimpleVector_byte8_t_sp Module_O::create_bytecode() {
 
 CL_DEFUN T_sp lambda_list_for_name(T_sp raw_lambda_list) { return core::lambda_list_for_name(raw_lambda_list); }
 
-Function_sp Cfunction_O::link_function(T_sp compile_info) {
-  this->module()->link_load(compile_info);
+Function_sp Cfunction_O::link_function() {
+  this->module()->link_load();
   // Linking installed the GBEP in this cfunction's info. Return that.
   return this->info();
 }
@@ -1126,7 +1126,7 @@ void Module_O::link() {
   cmodule->resolve_fixup_sizes();
 }
 
-void Module_O::link_load(T_sp compile_info) {
+void Module_O::link_load() {
   Module_sp cmodule = this->asSmartPtr();
   cmodule->link();
   SimpleVector_byte8_t_sp bytecode = cmodule->create_bytecode();
@@ -1165,13 +1165,18 @@ void Module_O::link_load(T_sp compile_info) {
   // real bytecode functions in the module vector.
   // Also replace load-time-value infos with the evaluated forms,
   // and resolve cells.
+  // Also also record mutable LTVs.
+  ql::list mutableLTVs;
   for (size_t i = 0; i < literal_length; ++i) {
     T_sp lit = (*cmodule_literals)[i];
     if (gc::IsA<Cfunction_sp>(lit))
       (*literals)[i] = gc::As_unsafe<Cfunction_sp>(lit)->info();
-    else if (gc::IsA<LoadTimeValueInfo_sp>(lit))
-      (*literals)[i] = gc::As_unsafe<LoadTimeValueInfo_sp>(lit)->eval();
-    else if (gc::IsA<ConstantInfo_sp>(lit))
+    else if (gc::IsA<LoadTimeValueInfo_sp>(lit)) {
+      LoadTimeValueInfo_sp ltvinfo = gc::As_unsafe<LoadTimeValueInfo_sp>(lit);
+      (*literals)[i] = ltvinfo->eval();
+      if (!ltvinfo->read_only_p())
+        mutableLTVs << Integer_O::create(i);
+    } else if (gc::IsA<ConstantInfo_sp>(lit))
       (*literals)[i] = gc::As_unsafe<ConstantInfo_sp>(lit)->value();
     else if (gc::IsA<FunctionCellInfo_sp>(lit))
       (*literals)[i] = core__ensure_function_cell(gc::As_unsafe<FunctionCellInfo_sp>(lit)->fname());
@@ -1192,7 +1197,7 @@ void Module_O::link_load(T_sp compile_info) {
   bytecode_module->setf_literals(literals);
   bytecode_module->setf_bytecode(bytecode);
   bytecode_module->setf_debugInfo(debug_info);
-  bytecode_module->setf_compileInfo(compile_info);
+  bytecode_module->setf_mutableLiterals(mutableLTVs.cons());
   // Native-compile anything that really seems like it should be,
   // and install the resulting simple funs.
   // We can only do native compilations after the module is
@@ -2754,7 +2759,7 @@ CL_LAMBDA(lambda-expression &optional (env (cmp::make-null-lexical-environment))
 CL_DEFUN Function_sp bytecompile(T_sp lambda_expression, Lexenv_sp env) {
   Module_sp module = Module_O::make();
   Cfunction_sp cf = bytecompile_into(module, lambda_expression, env);
-  return cf->link_function(Cons_O::create(lambda_expression, env));
+  return cf->link_function();
 }
 
 static Lexenv_sp coerce_lexenv_desig(T_sp env) {

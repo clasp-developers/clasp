@@ -36,6 +36,7 @@
 
 (defun compile-bcmodule-into (bcmodule irmodule)
   (let* ((literals (core:bytecode-module/literals bcmodule))
+         (mutables (core:bytecode-module/mutable-literals bcmodule))
          (blockmap (make-blockmap)) (funmap (make-funmap))
          (context (make-context irmodule blockmap funmap))
          (inserter (make-instance 'build:inserter))
@@ -64,7 +65,7 @@
         (when (reachablep context)
           (let ((args (if (eq mnemonic :parse-key-args)
                           (compute-pka-args args literals)
-                          (compute-args args literals))))
+                          (compute-args args literals mutables))))
             (apply #'compile-instruction mnemonic inserter context args)))
         (setf annots (add-annotations annots next-annots)
               opannots next-annots)))
@@ -77,10 +78,8 @@
     ;; normally deletes unused blocks, doesn't even know about them.
     (loop for entry in (bmap blockmap)
           do (bir:maybe-delete-iblock (binfo-irblock entry)))
-    ;; Return a mapping from bcfuns to BIR functions.
-    (loop for entry in (fmap funmap)
-          for irfun = (finfo-irfun entry)
-          collect (cons (finfo-bcfun entry) irfun))))
+    ;; Return the funmap.
+    funmap))
 
 ;;; If the instruction begins a new iblock and/or function,
 ;;; set everything up for that.
@@ -127,8 +126,23 @@
     (let ((cleavir-cst-to-ast:*compiler* 'cl:compile)
           ;; necessary for bir->function debug info to work. KLUDGE
           (*load-pathname* (core:function-source-pos function))
-          (bir (cdr (assoc function funmap))))
+          ;; Ensure any closures have the same layout as original
+          ;; bytecode closures, so the simple fun can be swapped
+          ;; out transparently.
+          (clasp-cleavir::*fixed-closures*
+            (fixed-closures-map (fmap funmap)))
+          (bir (finfo-irfun (find-bcfun function funmap))))
       (clasp-cleavir::bir->function bir :abi abi :linkage linkage))))
+
+(defun fixed-closures-map (fmap)
+  (loop for entry in fmap
+        for ir = (finfo-irfun entry)
+        for clos = (loop for thing in (finfo-closure entry)
+                         when (consp thing)
+                           collect (car thing)
+                         else
+                           collect thing)
+        collect (cons ir clos)))
 
 ;;; Given a bytecode function, compile it into the given IR module.
 ;;; that is, this does NOT finish the compilation process.
@@ -137,7 +151,7 @@
 (defun compile-bcfun-into (function irmodule)
   (let ((fmap (compile-bcmodule-into (core:simple-fun-code function)
                                      irmodule)))
-    (cdr (assoc function fmap))))
+    (finfo-irfun (find-bcfun function fmap))))
 
 ;;; Return a list of all annotations that start at IP 0.
 (defun initial-annotations (annotations)
@@ -192,10 +206,13 @@
     :blockmap (blockmap context) :funmap (funmap context)
     :reachablep (reachablep context)))
 
-(defun compute-args (args literals)
+(defun compute-args (args literals mutables)
   (loop for (type . value) in args
         collect (ecase type
-                  ((:constant) (aref literals value))
+                  ((:constant)
+                   ;; (values . mutablep)
+                   (cons (aref literals value)
+                         (if (member value mutables) t nil)))
                   ((:label) value)
                   ((:keys)
                    ;; not actually used, so whatever
@@ -385,8 +402,11 @@
 
 (defmethod compile-instruction ((mnemonic (eql :const))
                                 inserter context &rest args)
-  (destructuring-bind (value) args
-    (stack-push (compile-constant value inserter) context)))
+  (destructuring-bind ((value . mutablep)) args
+    (stack-push (if mutablep
+                    (compile-load-time-value value nil inserter)
+                    (compile-constant value inserter))
+                context)))
 
 (defun compile-constant (value inserter)
   (let* ((const (build:constant inserter value))
@@ -394,6 +414,21 @@
     (build:insert inserter 'bir:constant-reference
                   :inputs (list const) :outputs (list cref-out))
     cref-out))
+
+(defun compile-load-time-value (value read-only-p inserter)
+  ;; read-only-p is always nil since T will just end up as a
+  ;; normal constant, but it's included for completeness.
+  ;; FIXME: Define build:load-time-value
+  (let* ((module (bir:module inserter))
+         ;; FIXME: Maybe change Cleavir LTV handling to not need
+         ;; a raw form. Using quote here is a little sketchy
+         ;; since the value is after all mutable.
+         (ltv (bir:load-time-value-in-module `',value read-only-p
+                                             module))
+         (ltv-out (make-instance 'bir:output)))
+    (build:insert inserter 'bir:load-time-value-reference
+                  :inputs (list ltv) :outputs (list ltv-out))
+    ltv-out))
 
 (defmethod compile-instruction ((mnemonic (eql :closure)) inserter
                                 context &rest args)
@@ -554,7 +589,7 @@
 
 (defmethod compile-instruction ((mnemonic (eql :make-closure))
                                 inserter context &rest args)
-  (destructuring-bind (template) args
+  (destructuring-bind ((template)) args
     (let* ((irfun (make-bir-function template inserter))
            (enclose-out (make-instance 'bir:output
                           :name (core:function-name template)))
@@ -574,7 +609,7 @@
                                 inserter context &rest args)
   ;; Set up an ir function for the funmap and generate an enclose,
   ;; but leave the closure for initialize-closure.
-  (destructuring-bind (template) args
+  (destructuring-bind ((template)) args
     (let ((irfun (make-bir-function template inserter))
           (enclose-out (make-instance 'bir:output
                          :name (core:function-name template))))
@@ -947,7 +982,7 @@
 
 (defmethod compile-instruction ((mnemonic (eql :special-bind))
                                 inserter context &rest args)
-  (destructuring-bind (vcell) args
+  (destructuring-bind ((vcell)) args
     (let* ((vname (core:variable-cell/name vcell))
            (bname (symbolicate '#:bind- vname))
            (next (build:make-iblock inserter :name bname))
@@ -960,7 +995,7 @@
 
 (defmethod compile-instruction ((mnemonic (eql :symbol-value))
                                 inserter context &rest args)
-  (destructuring-bind (vcell) args
+  (destructuring-bind ((vcell)) args
     (let* ((vname (core:variable-cell/name vcell))
            (const (build:vcell inserter vname))
            (out (make-instance 'bir:output :name vname)))
@@ -970,7 +1005,7 @@
 
 (defmethod compile-instruction ((mnemonic (eql :symbol-value-set))
                                 inserter context &rest args)
-  (destructuring-bind (vcell) args
+  (destructuring-bind ((vcell)) args
     (let ((const (build:vcell inserter (core:variable-cell/name vcell)))
           (in (stack-pop context)))
       (build:insert inserter 'bir:set-constant-symbol-value
@@ -992,7 +1027,7 @@
 
 (defmethod compile-instruction ((mnemonic (eql :fdefinition))
                                 inserter context &rest args)
-  (destructuring-bind (fcell) args
+  (destructuring-bind ((fcell)) args
     (let* (;; FIXME: May not be a sufficiently reliable way to get
            ;; the name from the cell in all cases? Probably ok though
            (fname (core:function-name fcell))
@@ -1010,7 +1045,7 @@
 ;; CONSTANT-CALLED-FDEFINITION for this.
 (defmethod compile-instruction ((mnemonic (eql :called-fdefinition))
                                 inserter context &rest args)
-  (destructuring-bind (fcell) args
+  (destructuring-bind ((fcell)) args
     (let* ((fname (core:function-name fcell))
            (const (build:fcell inserter fname))
            (attributes (clasp-cleavir::function-attributes fname))

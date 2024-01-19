@@ -770,7 +770,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init_class_kind(core::BytecodeModule_O);
   Init__fixed_field(core::BytecodeModule_O, 0, SMART_PTR_OFFSET, _Literals);
   Init__fixed_field(core::BytecodeModule_O, 1, SMART_PTR_OFFSET, _Bytecode);
-  Init__fixed_field(core::BytecodeModule_O, 2, SMART_PTR_OFFSET, _CompileInfo);
 
   Init_class_kind(core::SimpleCoreFun_O);
   Init__fixed_field(core::SimpleCoreFun_O, 0, SMART_PTR_OFFSET, _TheSimpleFun);

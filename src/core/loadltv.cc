@@ -822,6 +822,16 @@ struct loadltv {
     mod->setf_debugInfo(SimpleVector_O::make(vargs));
   }
 
+  void attr_clasp_module_mutable_ltv(uint32_t bytes) {
+    BytecodeModule_sp mod = gc::As<BytecodeModule_sp>(get_ltv(read_index()));
+    uint16_t nltvs = read_u16();
+    ql::list mutableLTVs;
+    for (size_t i = 0; i < nltvs; ++i) {
+      mutableLTVs << Integer_O::create(read_u16());
+    }
+    mod->setf_mutableLiterals(mutableLTVs.cons());
+  }
+
   void op_attribute() {
     std::string name = (gc::As<String_sp>(get_ltv(read_index())))->get_std_string();
     uint32_t attrbytes = read_u32();

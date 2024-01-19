@@ -62,6 +62,7 @@
 #+(and)(load-if-compiled-correctly "sys:src;lisp;regression-tests;debug.lisp")
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;mp.lisp")
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;posix.lisp")
+(load-if-compiled-correctly "sys:src;lisp;regression-tests;btb.lisp")
 ;;; When we have system construction before debug.lisp, debug.lisp will fail
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;system-construction.lisp")
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;extensions.lisp")

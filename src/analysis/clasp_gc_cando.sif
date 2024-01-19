@@ -647,11 +647,11 @@
              :offset-base-ctype "core::BytecodeModule_O" :layout-offset-field-names ("_Bytecode")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BytecodeModule_O"
-             :layout-offset-field-names ("_CompileInfo")}
+             :offset-base-ctype "core::BytecodeModule_O" :layout-offset-field-names ("_DebugInfo")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BytecodeModule_O" :layout-offset-field-names ("_DebugInfo")}
+             :offset-base-ctype "core::BytecodeModule_O"
+             :layout-offset-field-names ("_MutableLiterals")}
 {class-kind :stamp-name "STAMPWTAG_chem__NumericalFunction_O"
             :stamp-key "chem::NumericalFunction_O" :parent-class "core::CxxObject_O"
             :lisp-class-base "core::CxxObject_O" :root-class "core::T_O" :stamp-wtag 3

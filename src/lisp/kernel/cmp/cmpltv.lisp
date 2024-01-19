@@ -256,6 +256,12 @@
    (%infos :initarg :infos :reader infos :type sequence)))
 
 #+clasp
+(defclass module-mutable-ltv-attr (attribute)
+  ((%name :initform (ensure-constant "clasp:module-mutable-ltv"))
+   (%module :initarg :module :reader module)
+   (%indices :initarg :indices :reader indices :type sequence)))
+
+#+clasp
 (defclass debug-info-function ()
   ((%function :initarg :function :reader di-function :type creator)))
 
@@ -1384,6 +1390,13 @@
     :macro-name (ensure-constant
                  (core:bytecode-debug-macroexpansion/macro-name item))))
 
+(defun mutable-LTVs (literals)
+  (loop for lit across literals
+        for i from 0
+        when (and (typep lit 'cmp:load-time-value-info)
+                  (not (cmp:load-time-value-info/read-only-p lit)))
+          collect i))
+
 (defun add-module (value)
   ;; Add the module first to prevent recursion.
   (cmp:module/link value)
@@ -1405,6 +1418,13 @@
          (make-instance 'module-debug-attr
            :module mod
            :infos (map 'vector #'process-debug-info info)))))
+    #+clasp ; mutable LTVs
+    (let ((mutables (mutable-LTVs (cmp:module/literals value))))
+      (when mutables
+        (add-instruction
+         (make-instance 'module-mutable-ltv-attr
+           :module mod
+           :indices mutables))))
     mod))
 
 (defun ensure-module (module)
@@ -1593,6 +1613,15 @@
     (write-b32 (length infos) stream)
     ;; The infos
     (map nil (lambda (info) (encode info stream)) infos)))
+
+(defmethod encode ((attr module-mutable-ltv-attr) stream)
+  (let ((indices (indices attr)))
+    (write-b32 (+ 2 *index-bytes* (* 2 (length indices)))
+               stream) ; length of attr
+    (write-index (module attr) stream)
+    (write-b16 (length indices) stream)
+    (loop for index in indices
+          do (write-b16 index stream))))
 
 (defmethod encode ((init init-object-array) stream)
   (write-mnemonic 'init-object-array stream)

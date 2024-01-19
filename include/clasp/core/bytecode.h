@@ -35,8 +35,16 @@ public:
 public:
   Literals_sp_Type _Literals;
   Bytecode_sp_Type _Bytecode;
-  T_sp _CompileInfo;
+  // A simple-vector of BytecodeDebugInfo_sp (below)
+  // ordered by start index
   T_sp _DebugInfo = nil<T_O>();
+  // A list of literal indices.
+  // This indicates the constant at that index is a mutable
+  // load-time-value (i.e. from (load-time-value foo [nil]))
+  // which is important to know for BTB compilation.
+  // Some kind of bit vector could be used instead, but it's
+  // expected that these load time values will be rare.
+  T_sp _MutableLiterals = nil<T_O>();
 
 public:
   BytecodeModule_O(){};
@@ -60,6 +68,9 @@ public:
   CL_DEFMETHOD T_sp debugInfo() const { return this->_DebugInfo; }
   CL_LISPIFY_NAME(BytecodeModule/setfDebugInfo)
   CL_DEFMETHOD void setf_debugInfo(T_sp info) { this->_DebugInfo = info; }
+  CL_LISPIFY_NAME(BytecodeModule/mutableLiterals)
+  CL_DEFMETHOD T_sp mutableLiterals() const { return this->_MutableLiterals; }
+  void setf_mutableLiterals(T_sp indices) { this->_MutableLiterals = indices; }
 
   // Add the module to *all-bytecode-modules* for the debugger.
   void register_for_debug();

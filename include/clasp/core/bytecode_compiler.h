@@ -936,7 +936,7 @@ public:
   CL_DEFMETHOD SimpleVector_sp create_debug_info();
   // Link, then create actual run-time function objects and a bytecode module.
   // Suitable for cl:compile.
-  CL_DEFMETHOD void link_load(T_sp compile_info);
+  CL_DEFMETHOD void link_load();
 };
 
 class Cfunction_O : public General_O {
@@ -1038,7 +1038,7 @@ public:
 public:
   // Convenience method to link the module and return the new bytecode function
   // corresponding to this cfunction. Good for cl:compile.
-  CL_DEFMETHOD Function_sp link_function(T_sp compile_info);
+  CL_DEFMETHOD Function_sp link_function();
 };
 
 // Main entry point
