@@ -123,31 +123,12 @@ public:
   };
 
 public:
-  void do_checks() {
-#if 0
-    OT* rawPtr = RawGetter<HolderType>::get_pointer(this->p_gc_ignore);
-    void* basePtr = dynamic_cast<void*>(rawPtr);
-    if (basePtr==NULL) {
-      printf("%s:%d:%s The basePtr from dynamic_cast<void*>(%p) was NULL!\n", __FILE__, __LINE__, __FUNCTION__, rawPtr );
-    }
-    if (basePtr!=(void*)rawPtr) {
-      printf("%s:%d:%s The basePtr %p from dynamic_cast<void*>(%p) was different!\n", __FILE__, __LINE__, __FUNCTION__, basePtr, rawPtr );
-    }
-#endif
-  }
-
   Wrapper(OT* naked, class_id dynamic_id, void* dynamic_ptr)
-      : p_gc_ignore(naked), weak(0), dynamic_id(dynamic_id), dynamic_ptr(dynamic_ptr) {
-    //    printf("%s:%d:%s naked ctor OT\n", __FILE__, __LINE__, __FUNCTION__ );
-    this->do_checks();
-  };
+    : p_gc_ignore(naked), weak(0), dynamic_id(dynamic_id), dynamic_ptr(dynamic_ptr) {};
 
   // ctor that takes a unique_ptr
   Wrapper(std::unique_ptr<OT> naked, class_id dynamic_id, void* dynamic_ptr)
-      : p_gc_ignore(std::move(naked)), weak(0), dynamic_id(dynamic_id), dynamic_ptr(dynamic_ptr) {
-    //    printf("%s:%d:%s unique_ptr ctor OT\n", __FILE__, __LINE__, __FUNCTION__ );
-    this->do_checks();
-  };
+    : p_gc_ignore(std::move(naked)), weak(0), dynamic_id(dynamic_id), dynamic_ptr(dynamic_ptr) {};
 
   size_t templatedSizeof() const { return sizeof(*this); };
   void* mostDerivedPointer() const { return (void*)RawGetter<HolderType>::get_pointer(this->p_gc_ignore); };
@@ -564,8 +545,6 @@ template <typename T> struct from_object<T*> {
   typedef T* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) {
-    // static_assert(!std::is_pod<T>::value, "T must NOT be POD");
-    //    int*** i = T();
     if (o.nilp()) {
       this->_v = static_cast<T*>(NULL);
       return;

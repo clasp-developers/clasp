@@ -465,8 +465,6 @@ struct property_registration : registration {
   void register_() const {
     LOG_SCOPE(("%s:%d class_ register_ %s\n", __FILE__, __LINE__, this->m_name.c_str()));
     const string n(m_name);
-    //                int*** i = GetterMethoid<reg::null_type,Class,Get>(n,get);
-    //                printf("%p\n", i);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lisp_intern(n, symbol_packageName(classSymbol));
     using VariadicGetterType = WRAPPER_Getter<reg::null_type, Class, Get>;
@@ -510,8 +508,6 @@ struct property_registration<Class, Get, GetPolicies, reg::null_type, reg::null_
   void register_() const {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     const string n(m_name);
-    //                int*** i = WRAPPER_Getter<reg::null_type,Class,Get>(n,get);
-    //                printf("%p\n", i);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp symbol = core::lisp_intern(n, symbol_packageName(classSymbol));
     using VariadicType = WRAPPER_Getter<reg::null_type, Class, Get>;

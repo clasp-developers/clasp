@@ -209,8 +209,6 @@ template <int N, typename... Types> struct MapPureOutValuesFalseOrTrue<N, polici
 //   if not then put 0 in that index of the tuple.
 //
 
-// static constexpr int*** iii = MapNotPureOutValues<0,policies<pureOutValue<1>>>::type();
-
 namespace clbind {
 namespace detail {
 template <typename Policies, typename Sequence> struct inValueMaskTuple_impl {};
@@ -380,13 +378,11 @@ namespace detail {
 template <class F, class ArgTuple, std::size_t... I> decltype(auto) apply_impl(F&& f, ArgTuple&& t, std::index_sequence<I...>) {
   // This is where the MAGIC happens!
   // Apply the function to the arguments in the tuple of from_object objects
-  //  return std::invoke(std::forward<F>(f), (std::get<I>(std::forward<Args>(t))._v)...);
   return std::invoke(std::forward<F>(f), (std::get<I>(t)._v)...);
 }
 } // namespace detail
 
 template <class F, class ArgTuple> decltype(auto) apply(F&& f, ArgTuple&& t) {
-  //  int*** iii = std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{};
   return detail::apply_impl(std::forward<F>(f), std::forward<ArgTuple>(t),
                             std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{});
 }
@@ -427,7 +423,6 @@ constexpr decltype(auto) method_apply_impl(F&& f, OT&& object, std::tuple<Args..
 } // namespace detail
 
 template <class F, class OT, class ArgTuple> constexpr decltype(auto) method_apply(F&& f, OT&& object, ArgTuple&& t) {
-  //  int*** iii = std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{};
   return detail::method_apply_impl(std::forward<F>(f), std::forward<OT>(object), std::forward<ArgTuple>(t),
                                    std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{});
 }
@@ -448,7 +443,6 @@ constexpr decltype(auto) external_method_apply_impl(F&& f, OT* objectP, std::tup
 } // namespace detail
 
 template <class F, class OT, class ArgTuple> constexpr decltype(auto) external_method_apply(F&& f, OT* objectP, ArgTuple&& t) {
-  //  int*** iii = std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{};
   return detail::external_method_apply_impl(std::forward<F>(f), objectP, std::forward<ArgTuple>(t),
                                             std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{});
 }
@@ -470,7 +464,6 @@ constexpr decltype(auto) clbind_external_method_apply_impl(F&& f, OT* objectP, s
 
 template <class F, class OT, class ArgTuple>
 constexpr decltype(auto) clbind_external_method_apply(F&& f, OT* objectP, ArgTuple&& t) {
-  //  int*** iii = std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{};
   return detail::clbind_external_method_apply_impl(std::forward<F>(f), objectP, std::forward<ArgTuple>(t),
                                                    std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{});
 }
