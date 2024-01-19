@@ -99,7 +99,6 @@ public:
 
 public: // Do NOT declare any smart_ptr's or weak_smart_ptr's here!!!!
   HolderType p_gc_ignore;
-  void* weak;
   class_id dynamic_id;
   void* dynamic_ptr;
 
@@ -124,11 +123,11 @@ public:
 
 public:
   Wrapper(OT* naked, class_id dynamic_id, void* dynamic_ptr)
-    : p_gc_ignore(naked), weak(0), dynamic_id(dynamic_id), dynamic_ptr(dynamic_ptr) {};
+    : p_gc_ignore(naked), dynamic_id(dynamic_id), dynamic_ptr(dynamic_ptr) {};
 
   // ctor that takes a unique_ptr
   Wrapper(std::unique_ptr<OT> naked, class_id dynamic_id, void* dynamic_ptr)
-    : p_gc_ignore(std::move(naked)), weak(0), dynamic_id(dynamic_id), dynamic_ptr(dynamic_ptr) {};
+    : p_gc_ignore(std::move(naked)), dynamic_id(dynamic_id), dynamic_ptr(dynamic_ptr) {};
 
   size_t templatedSizeof() const { return sizeof(*this); };
   void* mostDerivedPointer() const { return (void*)RawGetter<HolderType>::get_pointer(this->p_gc_ignore); };
