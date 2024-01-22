@@ -291,6 +291,7 @@ public:
             const ClaspCoreFunction& entry_point);
 
 public:
+  CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
   virtual Pointer_sp defaultEntryAddress() const;
   string __repr__() const;
