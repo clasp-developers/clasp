@@ -455,6 +455,7 @@ public:
 
 public:
   size_t literal_index(T_sp literal) const;
+  size_t named_literal_index(T_sp literal, Symbol_sp name) const;
   size_t new_literal_index(T_sp literal) const;
   size_t ltv_index(T_sp form, bool read_only_p) const;
   size_t cfunction_index(Cfunction_sp fun) const;
@@ -837,16 +838,28 @@ class ConstantInfo_O : public General_O {
   LISP_CLASS(comp, CompPkg, ConstantInfo_O, "ConstantInfo", General_O);
 
 public:
-  ConstantInfo_O(T_sp value) : _value(value) {}
+  ConstantInfo_O(T_sp value, T_sp name)
+    : _value(value), _lookupName(name) {}
 
 public:
   T_sp _value; // the value of the constant.
+  // The name of the value, as for named constants.
+  // May be NIL. If it's not, the file compiler can instruct
+  // the loader to just look up the value from the environment,
+  // rather than reconstruct the constant.
+  Symbol_sp _lookupName;
 public:
-  static ConstantInfo_sp make(T_sp value) { return gctools::GC<ConstantInfo_O>::allocate<gctools::RuntimeStage>(value); }
+  static ConstantInfo_sp make(T_sp value) { return gctools::GC<ConstantInfo_O>::allocate<gctools::RuntimeStage>(value, nil<T_O>()); }
+  static ConstantInfo_sp make(T_sp value, Symbol_sp name) {
+    return gctools::GC<ConstantInfo_O>::allocate<gctools::RuntimeStage>(value, name);
+  }
 
 public:
   CL_LISPIFY_NAME(ConstantInfo/value)
-  CL_DEFMETHOD T_sp value() { return this->_value; }
+  CL_DEFMETHOD T_sp value() const { return this->_value; }
+  CL_LISPIFY_NAME(ConstantInfo/LookupName)
+  CL_DEFMETHOD Symbol_sp lookupName() const { return this->_lookupName; }
+  void setLookupName(Symbol_sp name) { this->_lookupName = name; }
 };
 
 // Compiler literals marker representing the load-time lookup of a

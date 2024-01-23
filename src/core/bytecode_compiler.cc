@@ -425,7 +425,27 @@ size_t Context::literal_index(T_sp literal) const {
     if (gc::IsA<ConstantInfo_sp>(slit) && gc::As_unsafe<ConstantInfo_sp>(slit)->value() == literal)
       return i;
   }
+  // No literal found, so make a new one.
   Fixnum_sp nind = literals->vectorPushExtend(ConstantInfo_O::make(literal));
+  return nind.unsafe_fixnum();
+}
+
+size_t Context::named_literal_index(T_sp literal, Symbol_sp name) const {
+  ComplexVector_T_sp literals = this->cfunction()->module()->literals();
+  for (size_t i = 0; i < literals->length(); ++i) {
+    T_sp slit = (*literals)[i];
+    if (gc::IsA<ConstantInfo_sp>(slit)) {
+      ConstantInfo_sp c = gc::As_unsafe<ConstantInfo_sp>(slit);
+      if (c->value() == literal) {
+        // Give c a name if it doesn't have one already.
+        if (c->lookupName().nilp())
+          c->setLookupName(name);
+        // Return index.
+        return i;
+      }
+    }
+  }
+  Fixnum_sp nind = literals->vectorPushExtend(ConstantInfo_O::make(literal, name));
   return nind.unsafe_fixnum();
 }
 
@@ -1238,6 +1258,31 @@ void compile_literal(T_sp literal, Lexenv_sp env, const Context context) {
   }
 }
 
+void compile_named_literal(T_sp literal, Symbol_sp name,
+                           Lexenv_sp env, const Context context) {
+  (void)env;
+  switch (context.receiving()) {
+  case 0:
+    return; // No value required, so do nothing
+  case 1:
+    if (literal.nilp())
+      context.assemble0(vm_nil);
+    else
+      context.assemble1(vm_const, context.named_literal_index(literal, name));
+    return;
+  case -1: // values
+    if (literal.nilp())
+      context.assemble0(vm_nil);
+    else
+      context.assemble1(vm_const, context.named_literal_index(literal, name));
+    context.assemble0(vm_pop);
+    return;
+  default:
+    // FIXME: Just need to pad in some NILs.
+    SIMPLE_ERROR("BUG: Don't know how to compile literal returning %" PFixnum " values", context.receiving());
+  }
+}
+
 void compile_form(T_sp, Lexenv_sp, const Context);
 
 static T_sp expand_macro(Function_sp expander, T_sp form, Lexenv_sp env) {
@@ -1316,7 +1361,7 @@ void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
     } else if (std::holds_alternative<SpecialVarInfoV>(info))
       context.assemble1(vm_symbol_value, context.vcell_index(sym));
     else if (std::holds_alternative<ConstantVarInfoV>(info)) {
-      compile_literal(std::get<ConstantVarInfoV>(info).value(), env, context);
+      compile_named_literal(std::get<ConstantVarInfoV>(info).value(), sym, env, context);
       // Avoid the pop code below - compile-literal handles it.
       return;
     } else if (std::holds_alternative<NoVarInfoV>(info)) {

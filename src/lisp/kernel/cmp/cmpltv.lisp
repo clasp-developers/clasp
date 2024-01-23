@@ -181,6 +181,11 @@
 (defclass vcell-lookup (creator)
   ((%name :initarg :name :reader name :type creator)))
 
+;;; Look up the value of a constant. This is used when some literal is
+;;; available in a DEFCONSTANT; see #1517.
+(defclass symbol-value-lookup (vcreator)
+  ((%name :initarg :name :reader name :type creator)))
+
 (defclass general-creator (vcreator)
   (;; Reference to a function designator to call to allocate the object,
    ;; e.g. a function made of the first return value from make-load-form.
@@ -419,6 +424,17 @@
 (defun ensure-constant (value)
   (let ((creator (or (find-constant value) (add-constant value))))
     creator))
+
+(defun ensure-named-constant (value name)
+  ;; If a constant already exists, we use it, even if it's not a lookup.
+  (or (find-constant value)
+      ;; Otherwise just make a lookup.
+      ;; In the pathological case of (defconstant foo 'foo), ensure-constant
+      ;; will make a non-symbol-value-lookup construction of FOO, which will
+      ;; then be available later. Arguably we should ignore the name for
+      ;; values of easy to construct types like this.
+      (add-creator value (make-instance 'symbol-value-lookup
+                           :prototype value :name (ensure-constant name)))))
 
 ;;; Given a form, get a constant handle to a function that at load time will
 ;;; have the effect of evaluating the form in a null lexical environment.
@@ -769,6 +785,7 @@
     #+(or) ; obsolete as of v0.3
     (make-specialized-array 97 sind rank dims etype . elems)
     (init-object-array 99 ub64)
+    (symbol-value 100)
     (attribute 255 name nbytes . data)))
 
 ;;; STREAM is a ub8 stream.
@@ -794,7 +811,7 @@
 (defun write-magic (stream) (write-b32 +magic+ stream))
 
 (defparameter *major-version* 0)
-(defparameter *minor-version* 13)
+(defparameter *minor-version* 14)
 
 (defun write-version (stream)
   (write-b16 *major-version* stream)
@@ -1154,6 +1171,11 @@
   (write-index inst stream)
   (write-index (class-creator-name inst) stream))
 
+(defmethod encode ((inst symbol-value-lookup) stream)
+  (write-mnemonic 'symbol-value stream)
+  (write-index inst stream)
+  (write-index (name inst) stream))
+
 (defmethod encode ((inst load-time-value-creator) stream)
   (write-mnemonic 'funcall-create stream)
   (write-index inst stream)
@@ -1264,7 +1286,11 @@
 (defgeneric ensure-module-literal (literal-info))
 
 (defmethod ensure-module-literal ((info cmp:constant-info))
-  (ensure-constant (cmp:constant-info/value info)))
+  (let ((name (cmp:constant-info/lookup-name info))
+        (value (cmp:constant-info/value info)))
+    (if name
+        (ensure-named-constant value name)
+        (ensure-constant value))))
 
 (defun ensure-function (cfunction)
   (or (find-oob cfunction) (add-function cfunction)))

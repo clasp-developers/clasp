@@ -52,6 +52,7 @@
 #define LTV_OP_VCELL 97
 #define LTV_OP_CLASS 98
 #define LTV_OP_INIT_OBJECT_ARRAY 99
+#define LTV_OP_SYMBOL_VALUE 100
 #define LTV_OP_ATTR 255
 
 #define LTV_DI_OP_FUNCTION 0
@@ -70,7 +71,7 @@ namespace core {
 #define BC_HEADER_SIZE 16
 
 #define BC_VERSION_MAJOR 0
-#define BC_VERSION_MINOR 13
+#define BC_VERSION_MINOR 14
 
 // versions are std::arrays so that we can compare them.
 typedef std::array<uint16_t, 2> BCVersion;
@@ -665,6 +666,12 @@ struct loadltv {
     set_ltv(cl__find_class(name, true, nil<T_O>()), index);
   }
 
+  void op_symbol_value() {
+    size_t index = read_index();
+    Symbol_sp name = gc::As<Symbol_sp>(get_ltv(read_index()));
+    set_ltv(name->symbolValue(), index);
+  }
+
   void attr_clasp_source_pos_info(uint32_t bytes) {
     Function_sp func = gc::As<Function_sp>(get_ltv(read_index()));
     T_sp path = get_ltv(read_index());
@@ -953,6 +960,9 @@ struct loadltv {
       break;
     case LTV_OP_INIT_OBJECT_ARRAY:
       op_init_object_array();
+      break;
+    case LTV_OP_SYMBOL_VALUE:
+      op_symbol_value();
       break;
     case LTV_OP_ATTR:
       op_attribute();
