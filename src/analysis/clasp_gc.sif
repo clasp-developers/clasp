@@ -220,6 +220,9 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "comp::ConstantInfo_O" :layout-offset-field-names ("_value")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
+             :offset-base-ctype "comp::ConstantInfo_O" :layout-offset-field-names ("_lookupName")}
 {class-kind :stamp-name "STAMPWTAG_core__Function_O" :stamp-key "core::Function_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
