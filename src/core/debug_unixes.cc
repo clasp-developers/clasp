@@ -194,9 +194,10 @@ void walk_elf_symbol_table(struct dl_phdr_info* info, const char* filename, bool
 
 struct SearchInfo {
   const char* _Name;
-  void* _Address;
+  uintptr_t _Address;
   size_t _Index;
-  SearchInfo(const char* name) : _Name(name), _Address(NULL), _Index(0){};
+  bool _Found;
+  SearchInfo(const char* name) : _Name(name), _Address((uintptr_t)NULL), _Index(0), _Found(false){};
 };
 
 int elf_search_loaded_object_callback(struct dl_phdr_info* info, size_t size, void* data) {
@@ -209,7 +210,8 @@ int elf_search_loaded_object_callback(struct dl_phdr_info* info, size_t size, vo
   }
   BT_LOG(("Name: \"%s\" address: %p (%d segments)\n", libname, (void*)info->dlpi_addr, info->dlpi_phnum));
   if (strcmp(libname, search_callback_info->_Name) == 0) {
-    search_callback_info->_Address = (void*)info->dlpi_addr;
+    search_callback_info->_Address = (uintptr_t)info->dlpi_addr;
+    search_callback_info->_Found = true;
     BT_LOG(("%s:%d:%s start Address: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)info->dlpi_addr));
     BT_LOG(("%s:%d:%s dlpi_phdr = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)info->dlpi_phdr));
     BT_LOG(("%s:%d:%s dlpi_phnum = %d\n", __FILE__, __LINE__, __FUNCTION__, info->dlpi_phnum));
@@ -218,11 +220,13 @@ int elf_search_loaded_object_callback(struct dl_phdr_info* info, size_t size, vo
   return 0;
 }
 
-void* find_base_of_loaded_object(const char* name) {
+bool find_base_of_loaded_object(const char* name, uintptr_t& address) {
   BT_LOG(("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__));
   SearchInfo search(name);
   dl_iterate_phdr(elf_search_loaded_object_callback, &search);
-  return search._Address;
+  if (search._Found)
+    address = search._Address;
+  return search._Found;
 }
 
 ////////////////////////////////////////////////////////////
@@ -385,8 +389,7 @@ void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable,
     printf("%s:%d:%s   This path should never be taken - use_origin must always be true!!!!!!\n", __FILE__, __LINE__, __FUNCTION__);
   }
   // Walk all objects looking for the one we just loaded
-  library_origin = (uintptr_t)find_base_of_loaded_object(libraryName.c_str());
-  if (library_origin == 0) {
+  if (!find_base_of_loaded_object(libraryName.c_str(), library_origin)) {
     // Try looking for _init symbol
     Dl_info data;
     dlerror();
