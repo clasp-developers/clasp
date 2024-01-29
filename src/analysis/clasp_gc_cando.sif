@@ -809,9 +809,6 @@
              :layout-offset-field-names ("_Evaluations")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyRigidBodyNonbond_O"
-             :layout-offset-field-names ("_DielectricConstant")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyRigidBodyNonbond_O"
              :layout-offset-field-names ("_ScaleVdw")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyRigidBodyNonbond_O"
@@ -1312,9 +1309,6 @@
              :offset-ctype "gctools::smart_ptr<chem::FFNonbondCrossTermTable_O>"
              :offset-base-ctype "chem::EnergyFixedNonbondRestraint_O"
              :layout-offset-field-names ("_NonbondCrossTermTable")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyFixedNonbondRestraint_O"
-             :layout-offset-field-names ("_DielectricConstant")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyFixedNonbondRestraint_O"
              :layout-offset-field-names ("_ScaleVdw")}
