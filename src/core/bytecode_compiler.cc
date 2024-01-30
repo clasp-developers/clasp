@@ -2058,10 +2058,19 @@ void compile_fdesignator(T_sp fform, Lexenv_sp env, const Context ctxt) {
   // TODO: We could do something smarter if given 'foo or a constant,
   // but those are more marginal.
   if (fform.consp()) {
+    // In either case we are skipping compile_form on fform,
+    // so make sure to call the walker manually.
+    // We ignore the result though. That would be bad, except we don't
+    // actually use the code walker for rewriting anyway.
+    // FIXME: Encode that.
     if (oCar(fform) == cl::_sym_Function_O) {
+      if (code_walking_p())
+        eval::funcall(_sym_STARcodeWalkerSTAR->symbolValue(), fform, env);
       compile_called_function(oCadr(fform), env, ctxt);
       return;
     } else if (oCar(fform) == cl::_sym_lambda) {
+      if (code_walking_p())
+        eval::funcall(_sym_STARcodeWalkerSTAR->symbolValue(), fform, env);
       compile_called_function(fform, env, ctxt);
       return;
     }
@@ -2446,24 +2455,59 @@ void compile_progv(T_sp syms, T_sp vals, List_sp body, Lexenv_sp env, const Cont
   ctxt.emit_unbind(1);
 }
 
+// TODO: Hypothetically these could macroexpand etc., but honestly
+// I don't wanna go through all that trouble, especially in C++.
+inline static bool values_form_p(T_sp form) {
+  return gc::IsA<Cons_sp>(form) && oCar(form) == cl::_sym_values;
+}
+
+inline static bool values_list_form_p(T_sp form) {
+  return gc::IsA<Cons_sp>(form) && oCar(form) == cl::_sym_values_list
+    && gc::IsA<Cons_sp>(oCdr(form)) && oCddr(form).nilp();
+}
+
 void compile_multiple_value_call(T_sp fform, List_sp aforms, Lexenv_sp env, const Context ctxt) {
   compile_fdesignator(fform, env, ctxt);
-  if (aforms.nilp()) {
-    ctxt.emit_call(0);
-  } else {
-    // Compile the arguments
-    T_sp first = oCar(aforms);
-    List_sp rest = gc::As<List_sp>(oCdr(aforms));
-    compile_form(first, env, ctxt.sub_receiving(-1));
-    ctxt.assemble0(vm_push_values);
-    if (rest.notnilp()) {
-      for (auto cur : rest) {
-        compile_form(oCar(cur), env, ctxt.sub_receiving(-1));
-        ctxt.assemble0(vm_append_values);
+  // Compile the arguments. We search for and pick out (values ...)
+  // forms in the first arguments, and (values-list ...) anywhere.
+  bool fixed_prefix = true; // still looking for (values ...)
+  size_t nfixed = 0;
+  for (auto cur : aforms) {
+    T_sp form = oCar(cur);
+    if (fixed_prefix) {
+      if (values_form_p(form)) {
+        for (auto largs : gc::As<List_sp>(oCdr(form))) {
+          ++nfixed;
+          compile_form(oCar(largs), env, ctxt.sub_receiving(1));
+        }
+        continue; // skip the compilations below
+      } else { // first non-values form
+        fixed_prefix = false;
+        // With no prefix, we generate
+        // push-fixed 0; [form]; append-values
+        // which is a little dumb, but I doubt push-values would be
+        // meaningfully faster anyway.
+        ctxt.assemble1(vm_push_fixed, nfixed);
+        // form is actually compiled below.
+        // Checking for (values ...) after a non-values is pointless
+        // since append-fixed would, when you think about it, require
+        // a bunch of stack shifting or something.
       }
     }
-    ctxt.emit_mv_call();
+    if (values_list_form_p(form)) {
+      compile_form(oCadr(form), env, ctxt.sub_receiving(1));
+      ctxt.assemble0(vm_append_values_list);
+    } else {
+      compile_form(form, env, ctxt.sub_receiving(-1));
+      ctxt.assemble0(vm_append_values);
+    }
   }
+  if (fixed_prefix)
+    // we have (mv-call foo (values ...) (values ...) etc).
+    // weird flex, but ok.
+    ctxt.emit_call(nfixed);
+  else
+    ctxt.emit_mv_call();
 }
 
 void compile_multiple_value_prog1(T_sp fform, List_sp forms, Lexenv_sp env, const Context ctxt) {
@@ -2607,6 +2651,30 @@ void compile_primop_funcall(T_sp callee, List_sp args, Lexenv_sp env, const Cont
   compile_call(args, env, context);
 }
 
+void compile_values(List_sp args, Lexenv_sp env, const Context context) {
+  size_t nreceiving = context.receiving();
+  if (nreceiving == -1) { // All values needed.
+    size_t nargs = 0;
+    for (auto largs : args) {
+      T_sp form = oCar(largs);
+      ++nargs;
+      compile_form(form, env, context.sub_receiving(1));
+    }
+    if (nargs == 1)
+      context.assemble0(vm_pop);
+    else
+      context.assemble1(vm_values, nargs);
+  } else { // Get the first n values and discard the rest.
+    // Note that if args = nil oCar will properly return nil.
+    for (size_t i = 0; i < nreceiving; ++i) {
+      compile_form(oCar(args), env, context.sub_receiving(1));
+      args = oCdr(args);
+    }
+    for (auto largs : args)
+      compile_form(oCar(largs), env, context.sub_receiving(0));
+  }
+}
+
 void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context context) {
   if (head == cl::_sym_progn)
     compile_progn(rest, env, context);
@@ -2655,6 +2723,8 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
            // Do a basic syntax check so that (funcall) fails properly.
            && rest.consp())
     compile_funcall(oCar(rest), oCdr(rest), env, context);
+  else if (head == cl::_sym_values)
+    compile_values(rest, env, context);
   // extension
   else if (head == cleavirPrimop::_sym_funcall)
     compile_primop_funcall(oCar(rest), oCdr(rest), env, context);
