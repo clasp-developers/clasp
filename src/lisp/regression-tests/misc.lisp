@@ -304,3 +304,15 @@
 (test vaslist-opt-2
       (multiple-value-call (lambda (&rest args) (values-list args)) (values-list '(1 2 3)))
       (1 2 3))
+
+;;; Make sure macro-function handles local shadowing correctly
+;;; See bug #1556.
+(defmacro macro-function-shadowing.f () 3)
+(test macro-function-shadowing
+      (macrolet ((macro-function-shadowing.f () 1)
+                 (e (form &environment env)
+                   `',(macroexpand-1 form env)))
+        (flet ((macro-function-shadowing.f () 2))
+          (declare (ignorable #'macro-function-shadowing.f))
+          (e (macro-function-shadowing.f))))
+      ((macro-function-shadowing.f)))
