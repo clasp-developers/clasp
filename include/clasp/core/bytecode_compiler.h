@@ -415,7 +415,7 @@ public:
   T_sp variableInfo(T_sp varname);
   T_sp lookupSymbolMacro(T_sp sname);
   T_sp functionInfo(T_sp fname);
-  T_sp lookupMacro(T_sp mname);
+  T_sp lookupMacro(Symbol_sp mname);
   bool notinlinep(T_sp fname);
   T_sp blockInfo(T_sp bname);
   T_sp tagInfo(T_sp tname);

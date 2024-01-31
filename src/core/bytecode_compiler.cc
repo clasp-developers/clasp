@@ -51,17 +51,17 @@ T_sp Lexenv_O::functionInfo(T_sp funname) {
   }
 }
 
-T_sp Lexenv_O::lookupMacro(T_sp macroname) {
+T_sp Lexenv_O::lookupMacro(Symbol_sp macroname) {
   T_sp info = this->functionInfo(macroname);
-  if (gc::IsA<GlobalMacroInfo_sp>(info))
-    return gc::As_unsafe<GlobalMacroInfo_sp>(info)->expander();
-  else if (gc::IsA<LocalMacroInfo_sp>(info))
+  if (gc::IsA<LocalMacroInfo_sp>(info))
     return gc::As_unsafe<LocalMacroInfo_sp>(info)->expander();
-  else if (gc::IsA<LocalFunInfo_sp>(info) || gc::IsA<GlobalFunInfo_sp>(info))
-    return nil<T_O>(); // not a macro, e.g. shadowed
-  // no info
-  else
-    return info;
+  else if (gc::IsA<LocalFunInfo_sp>(info))
+    return nil<T_O>(); // not a macro, i.e. shadowed
+  // no local info: check global
+  else if (macroname->fboundp() && macroname->macroP())
+    return macroname->symbolFunction();
+  else // nothing
+    return nil<T_O>();
 }
 
 T_sp Lexenv_O::blockInfo(T_sp blockname) {

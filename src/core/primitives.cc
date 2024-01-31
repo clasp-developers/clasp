@@ -698,12 +698,7 @@ CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
     else
       return nil<T_O>();
   } else if (gc::IsA<comp::Lexenv_sp>(env)) {
-    T_sp func = gc::As_unsafe<comp::Lexenv_sp>(env)->lookupMacro(symbol);
-    if (func.nilp() // not bound locally, try global
-        && symbol->fboundp() && symbol->macroP())
-      return symbol->symbolFunction();
-    else
-      return func;
+    return gc::As_unsafe<comp::Lexenv_sp>(env)->lookupMacro(symbol);
   } else {
     if (cleavirEnv::_sym_macroFunction->fboundp()) {
       return eval::funcall(cleavirEnv::_sym_macroFunction, symbol, env);
