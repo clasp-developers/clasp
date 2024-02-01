@@ -570,6 +570,17 @@
       ;; Mark as a cell.
       (stack-push (list top) context))))
 
+(defmethod compile-instruction ((mnemonic (eql :encell))
+                                inserter context &rest args)
+  (declare (ignore inserter))
+  (destructuring-bind (varindex) args
+    (let* ((varinfo (aref (locals context) varindex))
+           (arg (car varinfo)) (cellp (cdr varinfo)))
+      ;; encell is only generated for arguments; ergo
+      (check-type arg bir:argument)
+      (assert (not cellp))
+      (setf (aref (locals context) varindex) (cons arg t)))))
+
 (defmethod compile-instruction ((mnemonic (eql :cell-ref))
                                 inserter context &rest args)
   (destructuring-bind () args
