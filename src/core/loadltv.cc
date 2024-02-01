@@ -52,6 +52,7 @@
 #define LTV_OP_VCELL 97
 #define LTV_OP_CLASS 98
 #define LTV_OP_INIT_OBJECT_ARRAY 99
+#define LTV_OP_ENVIRONMENT 100
 #define LTV_OP_ATTR 255
 
 #define LTV_DI_OP_FUNCTION 0
@@ -70,7 +71,7 @@ namespace core {
 #define BC_HEADER_SIZE 16
 
 #define BC_VERSION_MAJOR 0
-#define BC_VERSION_MINOR 13
+#define BC_VERSION_MINOR 14
 
 // versions are std::arrays so that we can compare them.
 typedef std::array<uint16_t, 2> BCVersion;
@@ -113,9 +114,10 @@ static void ltv_header_encode(uint8_t* header, uint64_t instruction_count) {
 struct loadltv {
   Stream_sp _stream;
   gctools::Vec0<T_sp> _literals;
-  uint8_t _index_bytes;
+  uint8_t _index_bytes = 1;
+  size_t _next_index = 0;
 
-  loadltv(Stream_sp stream) : _stream(stream), _index_bytes(1) {}
+  loadltv(Stream_sp stream) : _stream(stream) {}
 
   inline uint8_t read_u8() { return stream_read_byte(_stream).unsafe_fixnum(); }
 
@@ -204,6 +206,34 @@ struct loadltv {
     return converter.d;
   }
 
+  // Read a UTF-8 continuation byte or signal an error if invalid.
+  inline uint8_t read_continuation_byte() {
+    uint8_t byte = read_u8();
+    if (byte >> 6 == 0b10)
+      return byte & 0b111111;
+    else SIMPLE_ERROR("Invalid UTF-8 in FASL: invalid continuation byte {:02x}", byte);
+  }
+
+  // Read a UTF-8 encoded character.
+  inline claspCharacter read_utf8() {
+    uint8_t head = read_u8();
+    if (head >> 7 == 0)
+      return head;
+    else if (head >> 5 == 0b110)
+      return (claspCharacter)(head & 0b11111) << 6
+        | read_continuation_byte();
+    else if (head >> 4 == 0b1110)
+      return (claspCharacter)(head & 0b1111) << 12
+        | (claspCharacter)read_continuation_byte() << 6
+        | read_continuation_byte();
+    else if (head >> 3 == 0b11110)
+      return (claspCharacter)(head & 0b111) << 18
+        | (claspCharacter)read_continuation_byte() << 12
+        | (claspCharacter)read_continuation_byte() << 6
+        | read_continuation_byte();
+    else SIMPLE_ERROR("Invalid UTF-8 in FASL: invalid header byte {:02x}", head);
+  }
+
   inline uint8_t read_opcode() { return read_u8(); }
 
   inline size_t read_index() {
@@ -219,6 +249,10 @@ struct loadltv {
     default:
       UNREACHABLE();
     }
+  }
+
+  inline size_t next_index() {
+    return _next_index++;
   }
 
   void check_initialization() {
@@ -245,11 +279,11 @@ struct loadltv {
     _literals[index] = value;
   }
 
-  void op_nil() { set_ltv(nil<T_O>(), read_index()); }
+  void op_nil() { set_ltv(nil<T_O>(), next_index()); }
 
-  void op_t() { set_ltv(cl::_sym_T_O, read_index()); }
+  void op_t() { set_ltv(cl::_sym_T_O, next_index()); }
 
-  void op_cons() { set_ltv(Cons_O::create(nil<T_O>(), nil<T_O>()), read_index()); }
+  void op_cons() { set_ltv(Cons_O::create(nil<T_O>(), nil<T_O>()), next_index()); }
 
   void op_rplaca() {
     Cons_sp c = gc::As<Cons_sp>(get_ltv(read_index()));
@@ -383,7 +417,7 @@ struct loadltv {
       READ_ARRAY(SimpleBaseString_sp, read_u8(), clasp_make_character(read_u8()));
       break;
     case UAETCode::character:
-      READ_ARRAY(SimpleCharacterString_sp, read_u32(), clasp_make_character(read_u32()));
+      READ_ARRAY(SimpleCharacterString_sp, read_utf8(), clasp_make_character(read_utf8()));
       break;
     case UAETCode::single_float:
       READ_ARRAY(SimpleVector_float_sp, read_f32(), clasp_make_single_float(read_f32()));
@@ -435,7 +469,7 @@ struct loadltv {
   void op_array() {
     // FIXME: This is pretty inefficient, including consing way more than it
     // ought to. We don't really have C++ equivalents for make-array.
-    size_t index = read_index();
+    size_t index = next_index();
     uint8_t uaet_code = read_u8();
     T_sp uaet = decode_uaet(uaet_code);
     uint8_t packing_code = read_u8();
@@ -467,7 +501,7 @@ struct loadltv {
   }
 
   void op_hasht() {
-    size_t index = read_index();
+    size_t index = next_index();
     uint8_t testcode = read_u8();
     uint16_t count = read_u16();
     // Resolve test
@@ -501,18 +535,18 @@ struct loadltv {
   }
 
   void op_sb64() {
-    size_t index = read_index();
+    size_t index = next_index();
     set_ltv(Integer_O::create(read_s64()), index);
   }
 
   void op_package() {
-    size_t index = read_index();
+    size_t index = next_index();
     String_sp name = gc::As<String_sp>(get_ltv(read_index()));
     set_ltv(_lisp->findPackage(name->get_std_string(), true), index);
   }
 
   void op_bignum() {
-    size_t index = read_index();
+    size_t index = next_index();
     int64_t ssize = read_s64();
     mp_limb_t limbs[std::abs(ssize)];
     for (size_t i = std::abs(ssize); i > 0; --i)
@@ -521,50 +555,50 @@ struct loadltv {
   }
 
   void op_float() {
-    size_t index = read_index();
+    size_t index = next_index();
     set_ltv(clasp_make_single_float(read_f32()), index);
   }
 
   void op_double() {
-    size_t index = read_index();
+    size_t index = next_index();
     set_ltv(clasp_make_double_float(read_f64()), index);
   }
 
   void op_ratio() {
-    size_t index = read_index();
+    size_t index = next_index();
     Integer_sp num = gc::As<Integer_sp>(get_ltv(read_index()));
     Integer_sp den = gc::As<Integer_sp>(get_ltv(read_index()));
     set_ltv(contagion_div(num, den), index);
   }
 
   void op_complex() {
-    size_t index = read_index();
+    size_t index = next_index();
     Real_sp real = gc::As<Real_sp>(get_ltv(read_index()));
     Real_sp imag = gc::As<Real_sp>(get_ltv(read_index()));
     set_ltv(clasp_make_complex(real, imag), index);
   }
 
   void op_symbol() {
-    size_t index = read_index();
+    size_t index = next_index();
     SimpleString_sp name = gc::As<SimpleString_sp>(get_ltv(read_index()));
     set_ltv(Symbol_O::create(name), index);
   }
 
   void op_intern() {
-    size_t index = read_index();
+    size_t index = next_index();
     Package_sp pack = gc::As<Package_sp>(get_ltv(read_index()));
     SimpleString_sp name = gc::As<SimpleString_sp>(get_ltv(read_index()));
     set_ltv(pack->intern(name), index);
   }
 
   void op_character() {
-    size_t index = read_index();
+    size_t index = next_index();
     uint32_t code = read_u32();
     set_ltv(clasp_make_character(code), index);
   }
 
   void op_pathname() {
-    size_t index = read_index();
+    size_t index = next_index();
     T_sp host = get_ltv(read_index());
     T_sp device = get_ltv(read_index());
     T_sp directory = get_ltv(read_index());
@@ -575,33 +609,20 @@ struct loadltv {
   }
 
   void op_bcfunc() {
-    size_t index = read_index();
+    size_t index = next_index();
     uint32_t entry_point = read_u32();
     uint32_t final_size = read_u32();
     uint16_t nlocals = read_u16();
     uint16_t nclosed = read_u16();
     BytecodeModule_sp module = gc::As<BytecodeModule_sp>(get_ltv(read_index()));
-    T_sp name = get_ltv(read_index());
-    T_sp lambda_list = get_ltv(read_index());
-    T_sp docstring = get_ltv(read_index());
-    FunctionDescription_sp fdesc = makeFunctionDescription(name, lambda_list, docstring, nil<T_O>(), nil<T_O>(), -1, -1, -1);
+    FunctionDescription_sp fdesc = makeFunctionDescription(nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), -1, -1, -1);
     BytecodeSimpleFun_sp fun = core__makeBytecodeSimpleFun(fdesc, module, nlocals, nclosed, entry_point, final_size,
-                                                                       llvmo::cmp__compile_trampoline(name));
-    if (comp::_sym_STARautocompile_hookSTAR->boundP() &&
-        comp::_sym_STARautocompile_hookSTAR->symbolValue().notnilp()
-        // Not sure exactly how it happens that we get here with
-        // an unfinished module. From the bcfuns in the debug info,
-        // maybe? Maybe.
-        && gc::IsA<SimpleVector_sp>(module->debugInfo()) &&
-        comp::btb_bcfun_p(fun, gc::As_unsafe<SimpleVector_sp>(module->debugInfo()))) {
-      T_sp nfun = eval::funcall(comp::_sym_STARautocompile_hookSTAR->symbolValue(), fun, nil<T_O>());
-      fun->setSimpleFun(gc::As<SimpleFun_sp>(nfun));
-    }
+                                                           llvmo::cmp__compile_trampoline(nil<T_O>()));
     set_ltv(fun, index);
   }
 
   void op_bcmod() {
-    size_t index = read_index();
+    size_t index = next_index();
     uint32_t len = read_u32();
     BytecodeModule_sp mod = BytecodeModule_O::make();
     SimpleVector_byte8_t_sp bytes = SimpleVector_byte8_t_O::make(len);
@@ -620,25 +641,25 @@ struct loadltv {
   }
 
   void op_fdef() {
-    size_t index = read_index();
+    size_t index = next_index();
     T_sp name = get_ltv(read_index());
     set_ltv(cl__fdefinition(name), index);
   }
 
   void op_fcell() {
-    size_t index = read_index();
+    size_t index = next_index();
     T_sp name = get_ltv(read_index());
     set_ltv(core__ensure_function_cell(name), index);
   }
 
   void op_vcell() {
-    size_t index = read_index();
+    size_t index = next_index();
     Symbol_sp name = gc::As<Symbol_sp>(get_ltv(read_index()));
     set_ltv(name->ensureVariableCell(), index);
   }
 
   void op_create() {
-    size_t index = read_index();
+    size_t index = next_index();
     Function_sp func = gc::As<Function_sp>(get_ltv(read_index()));
     // fmt::print("create {}\n", _rep_(func));
     uint16_t nargs = read_u16();
@@ -660,9 +681,41 @@ struct loadltv {
   }
 
   void op_class() {
-    size_t index = read_index();
+    size_t index = next_index();
     Symbol_sp name = gc::As<Symbol_sp>(get_ltv(read_index()));
     set_ltv(cl__find_class(name, true, nil<T_O>()), index);
+  }
+
+  void op_environment() {
+    // We don't support multiple FCGEs right now, so just use
+    // _the_ global environment, indicated by NIL.
+    set_ltv(nil<T_O>(), next_index());
+  }
+
+  // FIXME: Have these fail gracefully if the byte count is wrong.
+  void attr_name(uint32_t bytes) {
+    T_sp named = get_ltv(read_index());
+    T_sp name = get_ltv(read_index());
+    if (gc::IsA<Function_sp>(named)) {
+      Function_sp fun = gc::As_unsafe<Function_sp>(named);
+      fun->setf_functionName(name);
+      if (gc::IsA<BytecodeSimpleFun_sp>(named))
+        gc::As_unsafe<BytecodeSimpleFun_sp>(named)->set_trampoline(llvmo::cmp__compile_trampoline(name));
+    }
+  }
+
+  void attr_docstring(uint32_t bytes) {
+    T_sp function = get_ltv(read_index());
+    T_sp docstring = get_ltv(read_index());
+    if (gc::IsA<Function_sp>(function)) // could be extended to more types
+      gc::As_unsafe<Function_sp>(function)->setf_docstring(docstring);
+  }
+
+  void attr_lambda_list(uint32_t bytes) {
+    T_sp function = get_ltv(read_index());
+    T_sp lambda_list = get_ltv(read_index());
+    if (gc::IsA<Function_sp>(function))
+      gc::As_unsafe<Function_sp>(function)->setf_lambdaList(lambda_list);
   }
 
   void attr_clasp_source_pos_info(uint32_t bytes) {
@@ -835,7 +888,13 @@ struct loadltv {
   void op_attribute() {
     std::string name = (gc::As<String_sp>(get_ltv(read_index())))->get_std_string();
     uint32_t attrbytes = read_u32();
-    if (name == "clasp:source-pos-info") {
+    if (name == "name") {
+      attr_name(attrbytes);
+    } else if (name == "docstring") {
+      attr_docstring(attrbytes);
+    } else if (name == "lambda-list") {
+      attr_lambda_list(attrbytes);
+    } else if (name == "clasp:source-pos-info") {
       attr_clasp_source_pos_info(attrbytes);
     } else if (name == "clasp:module-debug-info") {
       attr_clasp_module_debug_info(attrbytes);
@@ -857,6 +916,7 @@ struct loadltv {
     } else {
       _index_bytes = 8;
     }
+    _next_index = 0;
     _literals.assign(nobjs, unbound<T_O>());
   }
 
@@ -953,6 +1013,9 @@ struct loadltv {
       break;
     case LTV_OP_INIT_OBJECT_ARRAY:
       op_init_object_array();
+      break;
+    case LTV_OP_ENVIRONMENT:
+      op_environment();
       break;
     case LTV_OP_ATTR:
       op_attribute();

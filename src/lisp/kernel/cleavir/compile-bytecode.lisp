@@ -570,6 +570,17 @@
       ;; Mark as a cell.
       (stack-push (list top) context))))
 
+(defmethod compile-instruction ((mnemonic (eql :encell))
+                                inserter context &rest args)
+  (declare (ignore inserter))
+  (destructuring-bind (varindex) args
+    (let* ((varinfo (aref (locals context) varindex))
+           (arg (car varinfo)) (cellp (cdr varinfo)))
+      ;; encell is only generated for arguments; ergo
+      (check-type arg bir:argument)
+      (assert (not cellp))
+      (setf (aref (locals context) varindex) (cons arg t)))))
+
 (defmethod compile-instruction ((mnemonic (eql :cell-ref))
                                 inserter context &rest args)
   (destructuring-bind () args
@@ -691,21 +702,19 @@
 (defmethod compile-instruction ((mnemonic (eql :listify-rest-args))
                                 inserter context &rest args)
   (destructuring-bind (start) args
-    (declare (ignore start))
     (let* ((ifun (bir:function inserter))
            (ll (bir:lambda-list ifun))
            (rarg (make-instance 'bir:argument :function ifun)))
-      (setf (bir:lambda-list ifun) (append ll `(&rest ,rarg)))
-      (stack-push rarg context))))
+      (setf (bir:lambda-list ifun) (append ll `(&rest ,rarg))
+            (aref (locals context) start) (cons rarg nil)))))
 (defmethod compile-instruction ((mnemonic (eql :vaslistify-rest-args))
                                 inserter context &rest args)
   (destructuring-bind (start) args
-    (declare (ignore start))
     (let* ((ifun (bir:function inserter))
            (ll (bir:lambda-list ifun))
            (rarg (make-instance 'bir:argument :function ifun)))
-      (setf (bir:lambda-list ifun) (append ll `(core:&va-rest ,rarg)))
-      (stack-push rarg context))))
+      (setf (bir:lambda-list ifun) (append ll `(core:&va-rest ,rarg))
+            (aref (locals context) start) (cons rarg nil)))))
 
 (defmethod compile-instruction ((mnemonic (eql :parse-key-args))
                                 inserter context &rest args)
@@ -1060,7 +1069,8 @@
 (defmethod compile-instruction ((mnemonic (eql :fdesignator))
                                 inserter context &rest args)
   ;; Just call CORE:COERCE-CALLED-FDESIGNATOR.
-  (destructuring-bind () args
+  (destructuring-bind (env) args
+    (declare (ignore env))
     (let* ((desig (stack-pop context))
            (fname 'core:coerce-called-fdesignator)
            (const (build:fcell inserter fname))

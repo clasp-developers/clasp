@@ -392,6 +392,8 @@ public:
     // We use this instead of ++ to get a weak memory ordering.
     this->_CallCount.fetch_add(1, std::memory_order_relaxed);
   }
+  // Used in loadltv.cc since functions may be named after they are made.
+  void set_trampoline(Pointer_sp trampoline);
 };
 
 FORWARD(SimpleCoreFunGenerator);

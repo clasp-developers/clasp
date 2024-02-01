@@ -57,7 +57,9 @@
                #+(or cclasp eclasp)
                ((typep tree 'structure-object)
                 (dotimes (i (clos::class-size (class-of tree)))
-                  (si:instance-set tree i (circle-subst circle-table (si:instance-ref tree i)))))
+                  (setf (si:instance-ref tree i)
+                        (circle-subst circle-table
+                                      (si:instance-ref tree i)))))
                ;; For general objects go full MOP
                #+(or cclasp eclasp)
                ((typep tree 'standard-object)

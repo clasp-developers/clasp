@@ -304,11 +304,12 @@ CL_DEFUN T_sp core__instance_sig_set(T_sp arg) {
   IMPLEMENT_MEF("Implement for non-general objects");
 };
 
-CL_LAMBDA(obj idx val);
+CL_NAME("INSTANCE-REF");
+CL_LAMBDA(val obj idx);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(instanceSet - set the (idx) slot of (obj) to (val))dx");
+CL_DOCSTRING(R"dx(set the (idx) slot of (obj) to (val))dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__instance_set(T_sp obj, int idx, T_sp val) {
+CL_DEFUN_SETF T_sp core__instance_set(T_sp val, T_sp obj, int idx) {
   if (obj.generalp()) {
     return obj.unsafe_general()->instanceSet(idx, val);
   }

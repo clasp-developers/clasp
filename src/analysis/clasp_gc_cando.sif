@@ -60,7 +60,7 @@
                           "chem::IterateAtoms_O" "core::LongFloat_O" "core::ComplexVector_int4_t_O"
                           "llvmo::DILocalVariable_O" "chem::FFPtorDb_O" "asttooling::QualType_O"
                           "chem::ComplexRestraint_O" "llvmo::LibraryFile_O"
-                          "asttooling::DerivableSyntaxOnlyAction" "llvmo::User_O"
+                          "asttooling::DerivableSyntaxOnlyAction" "llvmo::User_O" "comp::EnvInfo_O"
                           "core::MDArray_int16_t_O" "chem::ZMatrixDihedralInternal_O"
                           "core::ComplexVector_T_O" "core::BytecodeAstTagbody_O"
                           "chem::ForceMatchReport_O" "llvmo::CodeBlock_O" "llvmo::FenceInst_O"
@@ -5858,6 +5858,9 @@
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {class-kind :stamp-name "STAMPWTAG_core__RandomState_O" :stamp-key "core::RandomState_O"
+            :parent-class "core::General_O" :lisp-class-base "core::General_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{class-kind :stamp-name "STAMPWTAG_comp__EnvInfo_O" :stamp-key "comp::EnvInfo_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {class-kind :stamp-name "STAMPWTAG_comp__Lexenv_O" :stamp-key "comp::Lexenv_O"

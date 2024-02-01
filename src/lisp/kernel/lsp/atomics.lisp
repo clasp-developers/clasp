@@ -9,7 +9,7 @@
   (defun atomic-expander (symbol)
     (core:get-sysprop symbol 'atomic-expander))
   (defun (setf atomic-expander) (expander symbol)
-    (core:put-sysprop symbol 'atomic-expander expander)))
+    (setf (core:get-sysprop symbol 'atomic-expander) expander)))
 
 (defun get-atomic-expansion (place &rest keys
                              &key environment (order nil orderp)

@@ -306,21 +306,16 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Converting CORE:INSTANCE-REF/SET
+;;; Converting CORE:INSTANCE-REF
 ;;;
 ;;; FIXME: Maybe just use the primops instead.
+;;; FIXME: Is this code even relevant any more? If it is, update for
+;;; (setf si:instance-ref).
 
 (defmethod cst-to-ast:convert-special
     ((symbol (eql 'core:instance-ref)) cst environment
      (system clasp-cleavir:clasp))
   (cst-to-ast:convert-special 'cleavir-primop:slot-read cst environment system))
-
-;;; For -set it's mildly more complicated, as slot-write returns no values.
-(def-convert-macro core:instance-set (instance index value)
-  (let ((ig (gensym)) (ing (gensym)) (vg (gensym)))
-    `(let ((,ig ,instance) (,ing ,index) (,vg ,value))
-       (cleavir-primop:slot-write ,ig ,ing ,vg)
-       ,vg)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

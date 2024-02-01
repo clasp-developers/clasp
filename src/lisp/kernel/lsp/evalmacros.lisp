@@ -382,7 +382,7 @@ values of the last FORM.  If no FORM is given, returns NIL."
 (defun (setf ext:symbol-macro) (expander name &optional env)
   (when env
     (error "Non-NIL environment passed to (setf ext:symbol-macro)"))
-  (put-sysprop name 'ext:symbol-macro expander))
+  (funcall #'(setf get-sysprop) expander name 'ext:symbol-macro))
 
 (defmacro define-symbol-macro (symbol expansion)
   (cond ((not (symbolp symbol))

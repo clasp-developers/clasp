@@ -28,7 +28,7 @@ would expand to
 
 which is in turn equivalent to (si::instance-ref mc 1). This allows slot values to be accessed naturally without going through all the machinery of slot-value. Of course, it only works if slot locations don't change. It should probably use flet instead of macrolet, but local function inlining isn't working.
 
-WITH-EARLY-MAKE-INSTANCE similarly makes instances without calling generic functions, using si::allocate-raw-instance and si::instance-set.
+WITH-EARLY-MAKE-INSTANCE similarly makes instances without calling generic functions, using si::allocate-raw-instance and (setf si:instance-ref).
 
 Some of the slot definitions are a little funny. standard-class has "class-id": this is unexported and nonstandard, but basically equivalent to class-name. I believe we don't use class-name because (setf class-name) is defined to call reinitialize-instance, which is inoperative during boot.
 

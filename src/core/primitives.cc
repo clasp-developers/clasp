@@ -652,8 +652,9 @@ CL_DEFUN T_sp core__get_global_inline_status(core::T_sp name, core::T_sp env) { 
 
 CL_LAMBDA(name status &optional env);
 DOCGROUP(clasp);
-CL_DEFUN void core__setf_global_inline_status(core::T_sp name, bool status, core::T_sp env) {
-  core__put_sysprop(name, cl::_sym_inline, _lisp->_boolean(status));
+CL_DEFUN void core__setf_global_inline_status(core::T_sp name, bool status, core::T_sp env)
+{
+  core__put_sysprop(_lisp->_boolean(status),name,cl::_sym_inline);
 }
 
 // ignore env
@@ -665,7 +666,7 @@ CL_LISPIFY_NAME("CORE:function-type");
 CL_LAMBDA(type name &optional env);
 DOCGROUP(clasp);
 CL_DEFUN_SETF T_sp core__setf_function_type(T_sp type, T_sp name, T_sp env) {
-  core__put_sysprop(name, cl::_sym_ftype, type);
+  core__put_sysprop(type, name, cl::_sym_ftype);
   return type;
 }
 

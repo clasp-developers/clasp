@@ -123,7 +123,11 @@ CoreFun_O::CoreFun_O(FunctionDescription_sp fdesc, T_sp code,
                        const ClaspCoreFunction& entry_point)
   : _FunctionDescription(fdesc), _Code(code), _Entry(entry_point) {
   llvmo::validateEntryPoint(code, entry_point);
-};
+}
+
+  void BytecodeSimpleFun_O::set_trampoline(Pointer_sp trampoline) {
+  this->_Trampoline = (BytecodeTrampolineFunction)trampoline->ptr();
+}
 
 Pointer_sp SimpleCoreFun_O::defaultEntryAddress() const { return Pointer_O::create((void*)this->_EntryPoints[0]); };
 

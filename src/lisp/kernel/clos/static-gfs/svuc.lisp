@@ -86,7 +86,7 @@ TODO 2: Build a cell system like we do for make-instance.
   (let ((allocation (clos:slot-definition-allocation slotd)))
     (ecase allocation
       ((:instance)
-       `(si:instance-set ,instancef ,(clos:slot-definition-location slotd) ,value))
+       `(setf (si:instance-ref ,instancef ,(clos:slot-definition-location slotd)) ,value))
       ((:class)
        `(rplaca (load-time-value
                  (clos:slot-definition-location ,(slotd-form class slotd)))

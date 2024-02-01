@@ -17,7 +17,7 @@ This adds up to `(make-instance 'foo ...)` with no custom methods or slot defini
 
  1. One function call of the cell closure.
  2. One call to `core:allocate-new-(funcallable-)instance`.
- 3. Several inline `instance-set`s and such to set the slots.
+ 3. Several inline `(setf instance-ref)`s and such to set the slots.
 
 Pretty fast. In informal tests it can be ~10 times faster than having no optimization.
 
