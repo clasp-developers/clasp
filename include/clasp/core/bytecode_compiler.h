@@ -460,6 +460,7 @@ public:
   size_t cfunction_index(Cfunction_sp fun) const;
   size_t fcell_index(T_sp name) const;
   size_t vcell_index(Symbol_sp name) const;
+  size_t env_index() const;
   size_t closure_index(T_sp info) const;
   void push_debug_info(T_sp info) const;
   void assemble0(uint8_t opcode) const;
@@ -887,6 +888,19 @@ public:
 public:
   CL_LISPIFY_NAME(VariableCellInfo/vname)
   CL_DEFMETHOD Symbol_sp vname() { return this->_vname; }
+};
+
+// And the environment, which is useless within Clasp itself but
+// needed for portable VM stuff.
+FORWARD(EnvInfo)
+class EnvInfo_O : public General_O {
+  LISP_CLASS(comp, CompPkg, EnvInfo_O, "EnvInfo", General_O);
+public:
+  EnvInfo_O() {}
+public:
+  static EnvInfo_sp make() {
+    return gctools::GC<EnvInfo_O>::allocate<gctools::RuntimeStage>();
+  }
 };
 
 class Module_O : public General_O {

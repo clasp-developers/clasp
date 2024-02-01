@@ -303,7 +303,7 @@ pointer is 0 already."
              (optimize (safety 0)))
     (when (zerop fp)
       (error "The fill pointer of the vector ~S zero." vector))
-    (sys:fill-pointer-set vector (decf fp))
+    (funcall #'(setf fill-pointer) (decf fp) vector)
     (aref vector fp)))
 
 (defun copy-array-contents (dest orig)

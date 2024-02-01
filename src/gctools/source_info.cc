@@ -37,16 +37,16 @@ NOINLINE void define_source_info(source_info_kind kind, const string& lisp_name,
     break;
   case method_kind:
     core::core__put_sysprop(
-        sym, core::_sym_cxx_method_source_location,
         core::Cons_O::create(core::Cons_O::createList(sourceFile, core::clasp_make_fixnum((Fixnum)character_offset)),
-                             core__get_sysprop(sym, core::_sym_cxx_method_source_location)));
+                             core__get_sysprop(sym, core::_sym_cxx_method_source_location)),
+        sym, core::_sym_cxx_method_source_location);
     if (gotdocs) {
       ext__annotate(sym, cl::_sym_documentation, cl::_sym_method, docs);
     }
     break;
   case class_kind:
-    core::core__put_sysprop(sym, core::_sym_class_source_location,
-                            core::Cons_O::createList(sourceFile, core::clasp_make_fixnum((Fixnum)character_offset)));
+    core::core__put_sysprop(core::Cons_O::createList(sourceFile, core::clasp_make_fixnum((Fixnum)character_offset)),
+                            sym, core::_sym_class_source_location);
     if (gotdocs) {
       gc::As<core::Instance_sp>(core::cl__find_class(sym))->instanceSet(core::Instance_O::REF_CLASS_DOCSTRING, docs);
     }

@@ -196,7 +196,7 @@
 (defun inline-ast (name)
   (core:get-sysprop name 'inline-ast))
 (defun (setf inline-ast) (ast name)
-  (core:put-sysprop name 'inline-ast ast))
+  (setf (core:get-sysprop name 'inline-ast) ast))
 
 ;;; So that we can dump ASTs (for DEFUNs with an inline expansion)
 (defmethod make-load-form ((ast cleavir-ast:ast) &optional environment)

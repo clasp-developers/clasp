@@ -19,7 +19,7 @@
        (lambda (new object)
          (declare (core:lambda-name
                    effective-instance-writer))
-         (si:instance-set object location new)))))
+         (setf (si:instance-ref object location) new)))))
 
 (defun make-effective-reader-function (location slot-name)
   (make-%method-function-fast

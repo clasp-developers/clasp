@@ -79,8 +79,12 @@ CL_DEFUN size_t core__rack_size(Rack_sp rack) { return rack->length(); }
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__rack_ref(Rack_sp rack, size_t i) { return rack->low_level_rackRef(i); }
 
+CL_NAME("RACK-REF");
 DOCGROUP(clasp);
-CL_DEFUN void core__rack_set(Rack_sp rack, size_t i, T_sp val) { rack->low_level_rackSet(i, val); }
+CL_DEFUN_SETF T_sp core__rack_set(T_sp val, Rack_sp rack, size_t i) {
+  rack->low_level_rackSet(i, val);
+  return val;
+}
 
 DOCGROUP(clasp);
 CL_LAMBDA(order rack index);
@@ -109,11 +113,12 @@ CL_DEFUN T_sp core__cas_rack(T_sp order, T_sp old, T_sp newval, Rack_sp rack, si
   return old;
 }
 
-CL_LAMBDA(instance class);
+CL_NAME("INSTANCE-CLASS");
+CL_LAMBDA(class instance);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(instanceClassSet)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__instance_class_set(T_sp obj, Instance_sp mc) {
+CL_DEFUN_SETF T_sp core__instance_class_set(Instance_sp mc, T_sp obj) {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     return iobj->instanceClassSet(mc);
   }
@@ -239,8 +244,9 @@ CL_DEFUN Rack_sp core__instance_rack(T_sp instance) {
   TYPE_ERROR(instance, Cons_O::createList(core::_sym_Instance_O, core::_sym_FuncallableInstance_O));
 }
 
+CL_NAME("INSTANCE-RACK");
 DOCGROUP(clasp);
-CL_DEFUN void core__instance_rack_set(T_sp instance, Rack_sp rack) {
+CL_DEFUN_SETF void core__instance_rack_set(Rack_sp rack, T_sp instance) {
   if (gc::IsA<Instance_sp>(instance)) {
     gc::As_unsafe<Instance_sp>(instance)->_Rack = rack;
     return;

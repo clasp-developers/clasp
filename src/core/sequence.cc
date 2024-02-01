@@ -155,11 +155,12 @@ CL_DEFUN T_sp cl__elt(T_sp sequence, size_t index) {
   }
 };
 
-CL_LAMBDA(sequence index value);
+CL_NAME("ELT");
+CL_LAMBDA(value sequence index);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(setfElt)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__setf_elt(T_sp sequence, size_t index, T_sp value) {
+CL_DEFUN_SETF T_sp core__setf_elt(T_sp value, T_sp sequence, size_t index) {
   if (sequence.consp()) {
     sequence.unsafe_cons()->setf_elt(index, value);
     return value;

@@ -482,6 +482,16 @@ size_t Context::vcell_index(Symbol_sp name) const {
   return nind.unsafe_fixnum();
 }
 
+size_t Context::env_index() const {
+  ComplexVector_T_sp literals = this->cfunction()->module()->literals();
+  for (size_t i = 0; i < literals->length(); ++i) {
+    T_sp slit = (*literals)[i];
+    if (gc::IsA<EnvInfo_sp>(slit)) return i;
+  }
+  Fixnum_sp nind = literals->vectorPushExtend(EnvInfo_O::make());
+  return nind.unsafe_fixnum();
+}
+
 size_t Context::closure_index(T_sp info) const {
   ComplexVector_T_sp closed = this->cfunction()->closed();
   for (size_t i = 0; i < closed->length(); ++i)
@@ -539,8 +549,6 @@ void Context::maybe_emit_cell_ref(LexicalVarInfo_sp info) const {
   LexRefFixup_O::make(info->lex(), vm_cell_ref)->contextualize(*this);
 }
 
-// FIXME: This is probably a good candidate for a specialized
-// instruction.
 void Context::maybe_emit_encage(LexicalVarInfo_sp info) const { EncageFixup_O::make(info->lex())->contextualize(*this); }
 
 void Context::emit_lexical_set(LexicalVarInfo_sp info) const { LexSetFixup_O::make(info->lex())->contextualize(*this); }
@@ -762,23 +770,15 @@ void EncageFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
   size_t size = this->size();
   size_t index = this->lex()->frameIndex();
   switch (size) {
-  case 5: // FIXME: Use assemble_into?
-    (*code)[position] = vm_ref;
+  case 2: // FIXME: Use assemble_into?
+    (*code)[position] = vm_encell;
     (*code)[position + 1] = index;
-    (*code)[position + 2] = vm_make_cell;
-    (*code)[position + 3] = vm_set;
-    (*code)[position + 4] = index;
     break;
-  case 9:
+  case 4:
     (*code)[position] = vm_long;
-    (*code)[position + 1] = vm_ref;
+    (*code)[position + 1] = vm_encell;
     (*code)[position + 2] = index & 0xff;
     (*code)[position + 3] = index >> 8;
-    (*code)[position + 4] = vm_make_cell;
-    (*code)[position + 5] = vm_long;
-    (*code)[position + 6] = vm_set;
-    (*code)[position + 7] = index & 0xff;
-    (*code)[position + 8] = index >> 8;
     break;
   default:
     UNREACHABLE();
@@ -790,9 +790,9 @@ size_t EncageFixup_O::resize() {
   if (!this->lex()->indirectLexicalP())
     return 0;
   else if (index < 1 << 8)
-    return 5;
+    return 2;
   else if (index < 1 << 16)
-    return 9;
+    return 4;
   else
     SIMPLE_ERROR("Bytecode compiler limit reached: Fixup delta too large");
 }
@@ -1182,8 +1182,10 @@ void Module_O::link_load() {
       (*literals)[i] = core__ensure_function_cell(gc::As_unsafe<FunctionCellInfo_sp>(lit)->fname());
     else if (gc::IsA<VariableCellInfo_sp>(lit))
       (*literals)[i] = gc::As_unsafe<VariableCellInfo_sp>(lit)->vname()->ensureVariableCell();
-    else
-      SIMPLE_ERROR("BUG: Weird thing in compiler literals vector: {}", _rep_(lit));
+    else if (gc::IsA<EnvInfo_sp>(lit))
+      (*literals)[i] = nil<T_O>(); // the only environment we have
+    else SIMPLE_ERROR("BUG: Weird thing in compiler literals vector: {}",
+                      _rep_(lit));
   }
   // Also replace the cfunctions in the debug info.
   // We just modify the vector rather than cons a new one since create_debug_info
@@ -1822,7 +1824,6 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     } else {
       context.assemble1(vm_listify_rest_args, max_count);
     }
-    context.assemble1(vm_set, new_env->frameEnd());
     new_env = new_env->bind1var(rest, context);
     optkey_env = optkey_env->bind1var(rest, context);
     auto lvinfo = gc::As_assert<LexicalVarInfo_sp>(new_env->variableInfo(rest));
@@ -2068,7 +2069,7 @@ void compile_fdesignator(T_sp fform, Lexenv_sp env, const Context ctxt) {
   }
   // default
   compile_form(fform, env, ctxt.sub_receiving(1));
-  ctxt.assemble0(vm_fdesignator);
+  ctxt.assemble1(vm_fdesignator, ctxt.env_index());
 }
 
 void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Context ctxt) {

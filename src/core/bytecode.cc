@@ -449,7 +449,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         T_sp tobj((gctools::Tagged)lcc_args[i]);
         rest << tobj;
       }
-      vm.push(sp, rest.cons().raw_());
+      vm.setreg(fp, start, rest.cons().raw_());
       pc++;
       break;
     }
@@ -461,15 +461,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       uint8_t start = *(++pc);
       DBG_VM("vaslistify-rest-args %" PRIu8 "\n", start);
       auto theVaslist = vm.alloca_vaslist2(sp, lcc_args + start, lcc_nargs - start);
-#if 0
-      printf("%s:%d:%s About to dump vm.alloca_vaslst result\n", __FILE__, __LINE__, __FUNCTION__ );
-      dump_Vaslist_ptr(stdout,gctools::untag_vaslist<T_O*>(theVaslist));
-      Vaslist_sp vl((gctools::Tagged)theVaslist);
-      if ((*vl).nargs() >= 3 && (*vl).iarg(0) == kw::_sym_name && (*vl).iarg(2)==kw::_sym_name) {
-        core::core__gdb(nil<core::T_O>());
-      }
-#endif
-      vm.push(sp, theVaslist);
+      vm.setreg(fp, start, theVaslist);
       pc++;
       break;
     }
@@ -872,7 +864,8 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       break;
     }
     case vm_fdesignator: {
-      DBG_VM1("fdesignator");
+      uint8_t c = *(++pc); // ignored environment parameter
+      DBG_VM1("fdesignator" % PRIu8 % "\n", c);
       T_sp desig((gctools::Tagged)vm.pop(sp));
       Function_sp fun = coerce::calledFunctionDesignator(desig);
       vm.push(sp, fun.raw_());
@@ -891,6 +884,15 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_O* fun = literals[c];
       vm.push(sp, fun);
       VM_RECORD_PLAYBACK(fun, "called-fdefinition");
+      pc++;
+      break;
+    }
+    case vm_encell: {
+      // abbreviation for ref N; make-cell; set N
+      uint8_t n = *(++pc);
+      DBG_VM1("encell %" PRIu8 "\n", n);
+      T_sp val((gctools::Tagged)(*(vm.reg(fp, n))));
+      vm.setreg(fp, n, Cons_O::create(val, nil<T_O>()).raw_());
       pc++;
       break;
     }
@@ -1117,7 +1119,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
       T_sp tobj((gctools::Tagged)lcc_args[i]);
       rest << tobj;
     }
-    vm.push(sp, rest.cons().raw_());
+    vm.setreg(fp, start, rest.cons().raw_());
     pc += 3;
     break;
   }
@@ -1308,6 +1310,16 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc++;
     break;
   }
+  case vm_fdesignator: {
+    uint8_t low = *(++pc);
+    uint16_t n = low + (*(++pc) << 8);
+    DBG_VM1("long fdesignator %" PRIu16 "\n", n);
+    T_sp desig((gctools::Tagged)vm.pop(sp));
+    Function_sp fun = coerce::calledFunctionDesignator(desig);
+    vm.push(sp, fun.raw_());
+    pc++;
+    break;
+  }
   case vm_called_fdefinition: {
     uint8_t low = *(++pc);
     uint16_t n = low + (*(++pc) << 8);
@@ -1315,6 +1327,15 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     T_O* fun = literals[n];
     vm.push(sp, fun);
     VM_RECORD_PLAYBACK(fun, "long called-fdefinition");
+    pc++;
+    break;
+  }
+  case vm_encell: {
+    uint8_t low = *(++pc);
+    uint16_t n = low + (*(++pc) << 8);
+    DBG_VM1("encell %" PRIu16 "\n", n);
+    T_sp val((gctools::Tagged)(*(vm.reg(fp, n))));
+    vm.setreg(fp, n, Cons_O::create(val, nil<T_O>()).raw_());
     pc++;
     break;
   }

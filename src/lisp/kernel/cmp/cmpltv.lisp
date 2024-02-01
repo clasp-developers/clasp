@@ -181,6 +181,9 @@
 (defclass vcell-lookup (creator)
   ((%name :initarg :name :reader name :type creator)))
 
+;;; And the "cell" for the loader environment.
+(defclass environment-lookup (creator) ())
+
 (defclass general-creator (vcreator)
   (;; Reference to a function designator to call to allocate the object,
    ;; e.g. a function made of the first return value from make-load-form.
@@ -239,6 +242,21 @@
   (;; Creator for the name of the attribute, a string.
    ;; FIXME: Do this more cleanly.
    (%name :reader name :initarg :name :type creator)))
+
+(defclass name-attr (attribute)
+  ((%name :initform (ensure-constant "name"))
+   (%object :initarg :object :reader object :type creator)
+   (%objname :initarg :objname :reader objname :type creator)))
+
+(defclass docstring-attr (attribute)
+  ((%name :initform (ensure-constant "docstring"))
+   (%object :initarg :object :reader object :type creator)
+   (%docstring :initarg :docstring :reader docstring :type creator)))
+
+(defclass lambda-list-attr (attribute)
+  ((%name :initform (ensure-constant "lambda-list"))
+   (%function :initarg :function :reader ll-function :type creator)
+   (%lambda-list :initarg :lambda-list :reader lambda-list :type creator)))
 
 #+clasp
 (defclass spi-attr (attribute)
@@ -350,6 +368,9 @@
 (defvar *fcell-coalesce*)
 ;;; And variable cells.
 (defvar *vcell-coalesce*)
+;;; Since there's only ever at most one environment cell, it's just
+;;; stored directly in this variable rather than a table.
+(defvar *environment-coalesce*)
 
 ;; Look up a value in the existing instructions.
 ;; On success returns the creator, otherwise NIL.
@@ -367,6 +388,8 @@
 (defun find-fcell (name) (values (gethash name *fcell-coalesce*)))
 (defun find-vcell (name) (values (gethash name *vcell-coalesce*)))
 
+(defun find-environment () *environment-coalesce*)
+
 ;;; List of instructions to be executed by the loader.
 ;;; In reverse.
 (defvar *instructions*)
@@ -382,7 +405,8 @@
   `(let ((*instructions* nil) (*creating* nil)
          (*coalesce* (make-hash-table)) (*oob-coalesce* (make-hash-table))
          (*fcell-coalesce* (make-hash-table :test #'equal))
-         (*vcell-coalesce* (make-hash-table)))
+         (*vcell-coalesce* (make-hash-table))
+         (*environment-coalesce* nil))
      ,@body))
 
 (defun find-constant (value)
@@ -412,6 +436,10 @@
 
 (defun add-vcell (key instruction)
   (setf (gethash key *vcell-coalesce*) instruction)
+  (add-instruction instruction))
+
+(defun add-environment (instruction)
+  (setf *environment-coalesce* instruction)
   (add-instruction instruction))
 
 (defgeneric add-constant (value))
@@ -769,6 +797,7 @@
     #+(or) ; obsolete as of v0.3
     (make-specialized-array 97 sind rank dims etype . elems)
     (init-object-array 99 ub64)
+    (environment 100)
     (attribute 255 name nbytes . data)))
 
 ;;; STREAM is a ub8 stream.
@@ -794,7 +823,7 @@
 (defun write-magic (stream) (write-b32 +magic+ stream))
 
 (defparameter *major-version* 0)
-(defparameter *minor-version* 13)
+(defparameter *minor-version* 14)
 
 (defun write-version (stream)
   (write-b16 *major-version* stream)
@@ -840,8 +869,7 @@
       ((8) (write-b64 position stream)))))
 
 (defmethod encode ((inst cons-creator) stream)
-  (write-mnemonic 'cons stream)
-  (write-index inst stream))
+  (write-mnemonic 'cons stream))
 
 (defmethod encode ((inst rplaca-init) stream)
   (write-mnemonic 'rplaca stream)
@@ -888,9 +916,26 @@
                    do (setf (ldb (byte ,nbits shift) byte) rma))
              (write-byte byte ,s)))))))
 
+(defun write-utf8-codepoint (cpoint stream)
+  (cond ((< cpoint #x80) ; one byte
+	 (write-byte cpoint stream))
+	((< cpoint #x800) ; two
+	 (write-byte (logior #b11000000 (ldb (byte 5  6) cpoint)) stream)
+	 (write-byte (logior #b10000000 (ldb (byte 6  0) cpoint)) stream))
+	((< cpoint #x10000) ; three
+	 (write-byte (logior #b11100000 (ldb (byte 4 12) cpoint)) stream)
+	 (write-byte (logior #b10000000 (ldb (byte 6  6) cpoint)) stream)
+	 (write-byte (logior #b10000000 (ldb (byte 6  0) cpoint)) stream))
+	((< cpoint #x110000) ; four
+	 (write-byte (logior #b11110000 (ldb (byte 3 18) cpoint)) stream)
+	 (write-byte (logior #b10000000 (ldb (byte 6 12) cpoint)) stream)
+	 (write-byte (logior #b10000000 (ldb (byte 6  6) cpoint)) stream)
+	 (write-byte (logior #b10000000 (ldb (byte 6  0) cpoint)) stream))
+	(t ; not allowed by RFC3629
+	 (error "Code point #x~x is out of range for UTF-8" cpoint))))
+
 (defmethod encode ((inst array-creator) stream)
   (write-mnemonic 'make-array stream)
-  (write-index inst stream)
   (write-byte (uaet-code inst) stream)
   (let* ((packing-info (packing-info inst))
          (dims (dimensions inst))
@@ -907,8 +952,7 @@
             ((equal packing-type 'base-char)
              (dump (write-byte (char-code elem) stream)))
             ((equal packing-type 'character)
-             ;; TODO: UTF-8
-             (dump (write-b32 (char-code elem) stream)))
+             (dump (write-utf8-codepoint (char-code elem) stream)))
             ((equal packing-type 'single-float)
              (dump (write-b32 (ext:single-float-to-bits elem) stream)))
             ((equal packing-type 'double-float)
@@ -1031,7 +1075,6 @@
          ;; in a portable fashion. (we could just invert a provided rehash-size?)
          (count (min (hash-table-creator-count inst) #xffff)))
     (write-mnemonic 'make-hash-table stream)
-    (write-index inst stream)
     (write-byte testcode stream)
     (write-b16 count stream)))
 
@@ -1044,33 +1087,27 @@
 (defmethod encode ((inst singleton-creator) stream)
   (ecase (prototype inst)
     ((nil) (write-mnemonic 'nil stream))
-    ((t) (write-mnemonic 't stream)))
-  (write-index inst stream))
+    ((t) (write-mnemonic 't stream))))
 
 (defmethod encode ((inst symbol-creator) stream)
   (write-mnemonic 'make-symbol stream)
-  (write-index inst stream)
   (write-index (symbol-creator-name inst) stream))
 
 (defmethod encode ((inst interned-symbol-creator) stream)
   (write-mnemonic 'intern stream)
-  (write-index inst stream)
   (write-index (symbol-creator-package inst) stream)
   (write-index (symbol-creator-name inst) stream))
 
 (defmethod encode ((inst package-creator) stream)
   (write-mnemonic 'find-package stream)
-  (write-index inst stream)
   (write-index (package-creator-name inst) stream))
 
 (defmethod encode ((inst character-creator) stream)
   (write-mnemonic 'make-character stream)
-  (write-index inst stream)
   (write-b32 (char-code (prototype inst)) stream))
 
 (defmethod encode ((inst pathname-creator) stream)
   (write-mnemonic 'make-pathname stream)
-  (write-index inst stream)
   (write-index (pathname-creator-host inst) stream)
   (write-index (pathname-creator-device inst) stream)
   (write-index (pathname-creator-directory inst) stream)
@@ -1080,13 +1117,11 @@
 
 (defmethod encode ((inst sb64-creator) stream)
   (write-mnemonic 'make-sb64 stream)
-  (write-index inst stream)
   (write-b64 (prototype inst) stream))
 
 (defmethod encode ((inst bignum-creator) stream)
   ;; uses sign-magnitude representation.
   (write-mnemonic 'make-bignum stream)
-  (write-index inst stream)
   (let* ((number (prototype inst))
          (anumber (abs number))
          (nwords (ceiling (integer-length anumber) 64))
@@ -1099,44 +1134,39 @@
 
 (defmethod encode ((inst single-float-creator) stream)
   (write-mnemonic 'make-single-float stream)
-  (write-index inst stream)
   (write-b32 (ext:single-float-to-bits (prototype inst)) stream))
 
 (defmethod encode ((inst double-float-creator) stream)
   (write-mnemonic 'make-double-float stream)
-  (write-index inst stream)
   (write-b64 (ext:double-float-to-bits (prototype inst)) stream))
 
 (defmethod encode ((inst ratio-creator) stream)
   (write-mnemonic 'ratio stream)
-  (write-index inst stream)
   (write-index (ratio-creator-numerator inst) stream)
   (write-index (ratio-creator-denominator inst) stream))
 
 (defmethod encode ((inst complex-creator) stream)
   (write-mnemonic 'complex stream)
-  (write-index inst stream)
   (write-index (complex-creator-realpart inst) stream)
   (write-index (complex-creator-imagpart inst) stream))
 
 (defmethod encode ((inst fdefinition-lookup) stream)
   (write-mnemonic 'fdefinition stream)
-  (write-index inst stream)
   (write-index (name inst) stream))
 
 (defmethod encode ((inst fcell-lookup) stream)
   (write-mnemonic 'fcell stream)
-  (write-index inst stream)
   (write-index (name inst) stream))
 
 (defmethod encode ((inst vcell-lookup) stream)
   (write-mnemonic 'vcell stream)
-  (write-index inst stream)
   (write-index (name inst) stream))
+
+(defmethod encode ((inst environment-lookup) stream)
+  (write-mnemonic 'environment stream))
 
 (defmethod encode ((inst general-creator) stream)
   (write-mnemonic 'funcall-create stream)
-  (write-index inst stream)
   (write-index (general-function inst) stream)
   (write-b16 (length (general-arguments inst)) stream)
   (loop for arg in (general-arguments inst)
@@ -1151,12 +1181,10 @@
 
 (defmethod encode ((inst class-creator) stream)
   (write-mnemonic 'find-class stream)
-  (write-index inst stream)
   (write-index (class-creator-name inst) stream))
 
 (defmethod encode ((inst load-time-value-creator) stream)
   (write-mnemonic 'funcall-create stream)
-  (write-index inst stream)
   (write-index (load-time-value-creator-function inst) stream)
   ;; no arguments
   (write-b16 0 stream))
@@ -1178,9 +1206,6 @@
 (defclass bytefunction-creator (creator)
   ((%cfunction :initarg :cfunction :reader cfunction)
    (%module :initarg :module :reader module)
-   (%name :initarg :name :reader name :type creator)
-   (%lambda-list :initarg :lambda-list :reader lambda-list :type creator)
-   (%docstring :initarg :docstring :reader docstring :type creator)
    (%nlocals :initarg :nlocals :reader nlocals :type (unsigned-byte 16))
    (%nclosed :initarg :nclosed :reader nclosed :type (unsigned-byte 16))
    (%entry-point :initarg :entry-point :reader entry-point
@@ -1195,15 +1220,24 @@
            (make-instance 'bytefunction-creator
              :cfunction value
              :module module-creator
-             :name (ensure-constant (cmp:cfunction/name value))
-             :lambda-list (ensure-constant
-                           (cmp:cfunction/lambda-list value))
-             :docstring (ensure-constant (cmp:cfunction/doc value))
              :nlocals (cmp:cfunction/nlocals value)
              :nclosed (length (cmp:cfunction/closed value))
              :entry-point (cmp:annotation/module-position
                            (cmp:cfunction/entry-point value))
              :size (cmp:cfunction/final-size value)))))
+    (add-instruction (make-instance 'name-attr
+                       :object inst
+                       :objname (ensure-constant
+                                 (cmp:cfunction/name value))))
+    (when (cmp:cfunction/doc value)
+      (add-instruction (make-instance 'docstring-attr
+                         :object inst
+                         :docstring (ensure-constant
+                                     (cmp:cfunction/doc value)))))
+    (add-instruction (make-instance 'lambda-list-attr
+                       :function inst
+                       :lambda-list (ensure-constant
+                                     (cmp:cfunction/lambda-list value))))
     #+clasp ; source info
     (let ((cspi core:*current-source-pos-info*))
       (add-instruction
@@ -1230,15 +1264,11 @@
   ;; four bytes for the entry point, two for the nlocals and nclosed,
   ;; then indices.
   (write-mnemonic 'make-bytecode-function stream)
-  (write-index inst stream)
   (write-b32 (entry-point inst) stream)
   (write-b32 (size inst) stream)
   (write-b16 (nlocals inst) stream)
   (write-b16 (nclosed inst) stream)
-  (write-index (module inst) stream)
-  (write-index (name inst) stream)
-  (write-index (lambda-list inst) stream)
-  (write-index (docstring inst) stream))
+  (write-index (module inst) stream))
 
 ;;; Having this be a vcreator with a prototype is a slight abuse of notation,
 ;;; since what we actually create is a bytecode module, not a compiler module.
@@ -1297,6 +1327,10 @@
 
 (defmethod ensure-module-literal ((info cmp:variable-cell-info))
   (ensure-vcell (cmp:variable-cell-info/vname info)))
+
+(defmethod ensure-module-literal ((info cmp:env-info))
+  (or (find-environment)
+      (add-environment (make-instance 'environment-lookup))))
 
 (defgeneric process-debug-info (debug-info))
 
@@ -1433,7 +1467,6 @@
 (defmethod encode ((inst bytemodule-creator) stream)
   ;; Write instructions.
   (write-mnemonic 'make-bytecode-module stream)
-  (write-index inst stream)
   (let* ((lispcode (bytemodule-lispcode inst))
          (len (length lispcode)))
     (when (> len #.(ash 1 32))
@@ -1454,6 +1487,21 @@
 (defmethod encode :before ((attr attribute) stream)
   (write-mnemonic 'attribute stream)
   (write-index (name attr) stream))
+
+(defmethod encode ((attr name-attr) stream)
+  (write-b32 (+ *index-bytes* *index-bytes*) stream)
+  (write-index (object attr) stream)
+  (write-index (objname attr) stream))
+
+(defmethod encode ((attr docstring-attr) stream)
+  (write-b32 (+ *index-bytes* *index-bytes*) stream)
+  (write-index (object attr) stream)
+  (write-index (docstring attr) stream))
+
+(defmethod encode ((attr lambda-list-attr) stream)
+  (write-b32 (+ *index-bytes* *index-bytes*) stream)
+  (write-index (ll-function attr) stream)
+  (write-index (lambda-list attr) stream))
 
 #+clasp
 (defmethod encode ((attr spi-attr) stream)

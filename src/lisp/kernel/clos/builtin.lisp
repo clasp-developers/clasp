@@ -151,5 +151,6 @@
          (copy (allocate-instance class))
          (size (class-size class)))
     (loop for i below size
-          do (si:instance-set copy i (si:instance-ref structure i)))
+          do (setf (si:instance-ref copy i)
+                   (si:instance-ref structure i)))
     copy))

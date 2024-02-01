@@ -214,7 +214,8 @@
                        (accessor-method-slot-definition method)))
                (class (second (method-specializers method))))
            (cond ((si:fixnump location)
-                  `(si:instance-set ,(second arguments) ,location ,(first arguments)))
+                  `(setf (si:instance-ref ,(second arguments) ,location)
+                         ,(first arguments)))
                  ((consp location)
                   ;; class location
                   ;; Note we don't actually need the instance.
