@@ -1069,7 +1069,8 @@
 (defmethod compile-instruction ((mnemonic (eql :fdesignator))
                                 inserter context &rest args)
   ;; Just call CORE:COERCE-CALLED-FDESIGNATOR.
-  (destructuring-bind () args
+  (destructuring-bind (env) args
+    (declare (ignore env))
     (let* ((desig (stack-pop context))
            (fname 'core:coerce-called-fdesignator)
            (const (build:fcell inserter fname))
