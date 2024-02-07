@@ -1887,8 +1887,10 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
         ibindings << Cons_O::createList(optional_var, varinfo->lex(), context.source_info());
       if (supplied_special_p)
         ++special_binding_count;
-      else
-        ibindings << Cons_O::createList(supplied_var, gc::As_assert<LexicalVarInfo_sp>(var_info(supplied_var, new_env))->lex(), context.source_info());
+      else if (supplied_var.notnilp()){
+        T_sp lexvarinfo = var_info(supplied_var, new_env);
+        ibindings << Cons_O::createList(supplied_var, gc::As_assert<LexicalVarInfo_sp>(lexvarinfo)->lex(), context.source_info());
+      }
     }
   }
   // Generate defaulting code for key args, and special-bind them if necessary
@@ -1910,7 +1912,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
         ibindings << Cons_O::createList(key_var, varinfo->lex(), context.source_info());
       if (supplied_special_p)
         ++special_binding_count;
-      else
+      else if (supplied_var.notnilp())
         ibindings << Cons_O::createList(supplied_var, gc::As_assert<LexicalVarInfo_sp>(var_info(supplied_var, new_env))->lex(), context.source_info());
     }
   }
