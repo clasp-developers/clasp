@@ -809,15 +809,6 @@
              :layout-offset-field-names ("_Evaluations")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyRigidBodyNonbond_O"
-             :layout-offset-field-names ("_ScaleVdw")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyRigidBodyNonbond_O"
-             :layout-offset-field-names ("_ScaleElectrostatic")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyRigidBodyNonbond_O"
-             :layout-offset-field-names ("_EnergyVdw")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyRigidBodyNonbond_O"
              :layout-offset-field-names ("_EnergyElectrostatic")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::SimpleVector_byte32_t_O>"
@@ -1062,13 +1053,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergyNonbond_O" :layout-offset-field-names ("_Evaluations")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyNonbond_O" :layout-offset-field-names ("_ScaleVdw")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyNonbond_O"
-             :layout-offset-field-names ("_ScaleElectrostatic")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyNonbond_O" :layout-offset-field-names ("_EnergyVdw")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyNonbond_O"
              :layout-offset-field-names ("_EnergyElectrostatic")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
@@ -1159,15 +1143,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_Evaluations")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
-             :layout-offset-field-names ("_ScaleVdw")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
-             :layout-offset-field-names ("_ScaleElectrostatic")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
-             :layout-offset-field-names ("_EnergyVdw")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_EnergyElectrostatic")}
@@ -1309,15 +1284,6 @@
              :offset-ctype "gctools::smart_ptr<chem::FFNonbondCrossTermTable_O>"
              :offset-base-ctype "chem::EnergyFixedNonbondRestraint_O"
              :layout-offset-field-names ("_NonbondCrossTermTable")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyFixedNonbondRestraint_O"
-             :layout-offset-field-names ("_ScaleVdw")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyFixedNonbondRestraint_O"
-             :layout-offset-field-names ("_ScaleElectrostatic")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyFixedNonbondRestraint_O"
-             :layout-offset-field-names ("_EnergyVdw")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyFixedNonbondRestraint_O"
              :layout-offset-field-names ("_EnergyElectrostatic")}
