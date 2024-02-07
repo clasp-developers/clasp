@@ -322,6 +322,7 @@ void clasp_write_string(const string& str, T_sp strm = cl::_sym_STARstandard_out
 void clasp_write_string(const char* str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
 void clasp_writeln_string(const string& str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
 void clasp_writeln_string(const char* str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
+T_sp cl__finish_output(T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
 void core__write_addr(T_sp x, T_sp strm);
 
 // Error functions
