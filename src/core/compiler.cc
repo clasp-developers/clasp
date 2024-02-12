@@ -728,14 +728,10 @@ CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external
 CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
   String_sp sfilename = gc::As<String_sp>(cl__namestring(pathDesig));
   std::string filename = sfilename->get_std_string();
-  char* name_buffer = (char*)malloc(filename.size() + 1);
-  strncpy(name_buffer, filename.c_str(), filename.size());
-  name_buffer[filename.size()] = '\0';
   int fd = open(filename.c_str(), O_RDONLY);
   off_t fsize = lseek(fd, 0, SEEK_END);
   lseek(fd, 0, SEEK_SET);
   void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
-  free(name_buffer);
   if (memory == MAP_FAILED) {
     close(fd);
     SIMPLE_ERROR("Could not mmap {} because of {}", _rep_(pathDesig), strerror(errno));
