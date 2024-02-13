@@ -1474,9 +1474,6 @@ function-description - for debugging."
       (if failed-verify
           (progn
             (core:fmt t "!!!!!!!!!!! Function in module failed to verify !!!!!!!!!!!!!!!!!!!%N")
-            (core:fmt t "---------------- dumping function to assist in debugging%N")
-            (cmp:dump-function fn)
-            (core:fmt t "!!!!!!!!!!! ------- see above ------- !!!!!!!!!!!!!!!!!!!%N")
             (core:fmt t "llvm::verifyFunction error[{}]%N" error-msg)
             (if continue
                 (break "Error when trying to verify-function")

@@ -91,42 +91,6 @@
 
 (export '(snapshot-load-restore register-save-hook))
 
-(defun dump-function (func)
-  (declare (ignore func))
-  (warn "Do something with dump-function"))
-(export 'dump-function)
-
-(defun dso-handle-module (dylib)
-  (let* ((dso-handle-name "__dso_handle")
-         (module (llvm-create-module dso-handle-name)))
-    (llvm-sys:make-global-variable
-     module
-     %i32%                              ; type
-     nil                                ; isConstant
-     'llvm-sys:external-linkage         ; linkage
-     (jit-constant-i32 0)
-     dso-handle-name)
-    (llvm-sys:add-irmodule (llvm-sys:clasp-jit)
-                           dylib
-                           module
-                           *thread-safe-context*)
-    module))
-
-
-(defun load-ir-run-c-function (filename function-name)
-  (let* ((pathname (merge-pathnames (pathname filename)))
-         (bc-file (make-pathname :type "bc" :defaults pathname))
-         (ll-file (make-pathname :type "ll" :defaults pathname))
-         (module (if (probe-file ll-file)
-                     (llvm-sys:parse-irfile ll-file (thread-local-llvm-context))
-                     (if (probe-file bc-file)
-                         (llvm-sys:parse-bitcode-file bc-file (thread-local-llvm-context))
-                         (error "Could not find file ~a or ~a" ll-file bc-file))))
-         (dylib (llvm-sys:create-and-register-jitdylib (llvm-sys:clasp-jit) (namestring pathname))))
-    (dso-handle-module dylib)
-    (llvm-sys:add-irmodule (llvm-sys:clasp-jit) dylib module *thread-safe-context*)
-    (llvm-sys:jit-finalize-run-cxx-function (llvm-sys:clasp-jit) dylib function-name)))
-
 (defun parse-bitcode (filename context &key print output-type)
   ;; Load a module from a bitcode or .ll file
   (cond
