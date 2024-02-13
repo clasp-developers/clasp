@@ -313,7 +313,6 @@
             ensure-jit-constant-i64
             jit-constant-size_t
             jit-constant-unique-string-ptr
-            jit-function-name
             module-make-global-string
             make-boot-function-global-variable
             setup-calling-convention

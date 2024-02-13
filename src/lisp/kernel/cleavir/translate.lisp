@@ -81,7 +81,7 @@
 
 (defun allocate-llvm-function-info (function &key (linkage 'llvm-sys:internal-linkage))
   (let* ((lambda-name (get-or-create-lambda-name function))
-         (jit-function-name (cmp:jit-function-name lambda-name))
+         (jit-function-name (jit-function-name lambda-name))
          (function-info (calculate-function-info function lambda-name))
          (arguments
            (let ((arglist '()))
@@ -1875,7 +1875,7 @@
   (let* ((*tags* (make-hash-table :test #'eq))
          (*datum-values* (make-hash-table :test #'eq))
          (*dynenv-storage* (make-hash-table :test #'eq))
-         (jit-function-name (cmp:jit-function-name lambda-name))
+         (jit-function-name (jit-function-name lambda-name))
          (cmp:*current-function-name* jit-function-name)
          (cmp:*gv-current-function-name*
            (cmp:module-make-global-string jit-function-name "fn-name"))
@@ -1941,7 +1941,7 @@
 
 (defun layout-xep-function (xep-arity xep-group function lambda-name abi)
   (let* ((*datum-values* (make-hash-table :test #'eq))
-         (jit-function-name (cmp:jit-function-name lambda-name))
+         (jit-function-name (jit-function-name lambda-name))
          (cmp:*current-function-name* jit-function-name)
          (cmp:*gv-current-function-name*
            (cmp:module-make-global-string jit-function-name "fn-name")))
@@ -2242,7 +2242,7 @@ COMPILE-FILE will use the default *clasp-env*."
                 (literal:with-rtv
                     (translate bir :linkage linkage :abi abi)))
             (declare (ignore constants-table))
-            (cmp:jit-add-module-return-function
+            (jit-add-module-return-function
              cmp:*the-module* startup-shutdown-id ordered-raw-constants-list)))))))
 
 (defun bir-compile-cst (cst env)

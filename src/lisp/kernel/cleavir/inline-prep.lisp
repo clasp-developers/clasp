@@ -66,7 +66,7 @@
                       ((null orig) core:*current-source-pos-info*)
                       (t orig)))))
     ;; See usage in cmp/debuginfo.lisp
-    (list (cmp:jit-function-name (cleavir-ast:name ast))
+    (list (jit-function-name (cleavir-ast:name ast))
           (core:source-pos-info-lineno orig)
           (core:source-pos-info-file-handle orig))))
 

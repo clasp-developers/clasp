@@ -27,6 +27,7 @@
                (:file "setup")
                (:file "fold")
                (:file "ir")
+               (:file "jit")
                (:file "translation-environment")
                (:file "bir")
                (:file "bmir")
