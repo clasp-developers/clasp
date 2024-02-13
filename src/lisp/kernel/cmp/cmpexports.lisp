@@ -51,7 +51,6 @@
             *debug-compile-file*
             *debug-compile-file-counter*
             *generate-compile-file-load-time-values*
-            module-literal-table
             *gv-current-function-name*
             *implicit-compile-hook*
             *irbuilder*
@@ -61,8 +60,6 @@
             *load-time-value-holder-global-var*
             *low-level-trace*
             *low-level-trace-print*
-            *run-time-values-table-name*
-            #+(or)*run-time-values-table-global-var*
             *the-module*
             +header-size+
             +header-stamp-size+
@@ -434,7 +431,6 @@
           reference-literal
           load-time-reference-literal
           compile-reference-to-literal
-          ltv-global
           compile-load-time-value-thunk
           new-table-index
           constants-table-reference

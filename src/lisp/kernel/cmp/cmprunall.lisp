@@ -12,32 +12,16 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
 ;;; Contains the current RUN-ALL, initialization function
 ;;; for the current module
 (defvar *run-all-function*)
-(define-symbol-macro %run-and-load-time-value-holder-global-var-type% cmp:%ltv*%) ;; Was +ltvsp*+
-(defvar *run-time-values-table-name* "run_time_values_table")
-(defvar *run-all-environment*)
-;;;------
-;;; Set up the run-time-values-table
-;;;  set-run-time-values-table MUST be called to set the
-;;;  global
-#+(or)(defvar *run-time-values-table* (core:load-time-value-array *run-time-values-table-name* 0))
-#+(or)(core:set-run-time-values-table *run-time-values-table-name*)
 
 (defvar *load-time-value-holder-global-var-type* nil
   "Store the current load-time-value data structure type for COMPILE-FILE")
 (defvar *load-time-value-holder-global-var* nil
   "Store the current load-time-value data structure for COMPILE-FILE")
 
-#+(or)(defvar *run-time-values-table-global-var* nil
-  "All load-time-values and quoted values are stored in this array accessed with an integer index"
-  )
-
-
 (defvar *irbuilder-run-all-alloca* nil
   "Maintains an IRBuilder for the load-time-value function alloca area")
 (defvar *irbuilder-run-all-body* nil
   "Maintain an IRBuilder for the load-time-value body area")
-
-(defvar *run-all-result*)
 
 
 (defun do-make-new-run-all (body name-suffix)
@@ -100,18 +84,4 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
        (cmp:with-irbuilder (*irbuilder-run-all-body*)
          ,@form))))
 
-(defun ltv-global ()
-  "called by cclasp"
-  (values *load-time-value-holder-global-var*
-          *load-time-value-holder-global-var-type*))
-
 (defun generate-load-time-values () *generate-compile-file-load-time-values*)
-
-(defun module-literal-table ()
-  (format t "literal::*gcroots-in-module* -> ~a~%" literal::*gcroots-in-module*)
-  (format t "*load-time-value-holder-global-var* -> ~a~%" *load-time-value-holder-global-var*)
-  #+(or)(format t "*run-time-values-table-global-var* -> ~a~%" *run-time-values-table-global-var*)
-  #+(or)(if (generate-load-time-values)
-      *load-time-value-holder-global-var*
-      *run-time-values-table-global-var*))
-
