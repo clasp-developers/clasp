@@ -126,7 +126,13 @@ case MAYBE_LONG_ADD + DTREE_OP_SLOT_READ: {
   DTILOG(" location: %s  name: %s\n", _safe_rep_(location), _safe_rep_(slot_name));
   size_t index = location.unsafe_fixnum();
   DTILOG("Got tinstance@%p %s\n", (void*)arg.raw_(), _safe_rep_(arg));
-  Instance_sp instance = gc::As_assert<Instance_sp>(arg);
+
+#ifdef DEBUG_ASSERT
+  if (!(gc::IsA<Instance_sp>(arg) || gc::IsA<FuncallableInstance_sp>(arg))) {
+    THROW_HARD_ERROR("arg = {} must be an Instance_sp or FuncallableInstance_sp",(void*)arg.raw_());
+  }
+#endif
+  Instance_sp instance = gc::As_unsafe<Instance_sp>(arg);
   DTILOG("instance %p index %lu\n", (void*)instance.raw_(), index);
   T_sp value = instance->instanceRef(index);
   if (value.unboundp()) {
