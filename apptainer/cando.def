@@ -19,6 +19,7 @@ From: ubuntu:lunar
     rm -rf Miniconda3-latest-Linux-x86_64.sh
     export PATH="/home/cando/miniconda3/bin:${PATH}"
     conda install -y -c conda-forge jupyterlab sidecar ambertools
+    jupyter-lab build
     apt-get install -y -o Dpkg::Options::="--force-overwrite" emacs
     chmod -R ugo+rw /home/cando/
 
