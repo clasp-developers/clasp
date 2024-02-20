@@ -79,64 +79,64 @@
         (return-rtype->llvm (cc-bmir:rtype (bir:input returni)))
         cmp:%void%)))
 
+(defun compute-arglist (lambda-list)
+  (let ((arglist '()))
+    (dolist (item lambda-list)
+      (unless (symbolp item)
+        (if (consp item)
+            (ecase (length item)
+              (2
+               (push (first item) arglist)
+               (push (second item) arglist))
+              (3
+               (push (second item) arglist)
+               (push (third item) arglist)))
+            (push item arglist))))
+    (nreverse arglist)))
+
+(defun compute-llvm-function-type (function arguments)
+  (llvm-sys:function-type-get
+   (main-function-return-type function)
+   (nconc
+    (loop repeat (cleavir-set:size (bir:environment function))
+          collect cmp:%t*%)
+    (mapcar #'argument-rtype->llvm arguments))))
+
 (defun allocate-llvm-function-info (function &key (linkage 'llvm-sys:internal-linkage))
   (let* ((lambda-name (get-or-create-lambda-name function))
          (jit-function-name (jit-function-name lambda-name))
          (function-info (calculate-function-info function lambda-name))
-         (arguments
-           (let ((arglist '()))
-             (dolist (item (bir:lambda-list function))
-               (unless (symbolp item)
-                 (if (consp item)
-                     (ecase (length item)
-                       (2
-                        (push (first item) arglist)
-                        (push (second item) arglist))
-                       (3
-                        (push (second item) arglist)
-                        (push (third item) arglist)))
-                     (push item arglist))))
-             (nreverse arglist))))
-    (let ((function-description (cmp:irc-make-function-description function-info jit-function-name)))
-      (multiple-value-bind (the-function local-fun)
-          (cmp:irc-local-function-create
-           (llvm-sys:function-type-get
-            (main-function-return-type function)
-            (nconc
-             (loop repeat (cleavir-set:size (bir:environment function))
-                   collect cmp:%t*%)
-             (mapcar #'argument-rtype->llvm arguments)))
-           'llvm-sys:internal-linkage ;; was llvm-sys:private-linkage
-           jit-function-name
-           cmp:*the-module*
-           function-description)
-        (let ((xep-group (if (xep-needed-p function)
-                             (cmp:irc-xep-functions-create (cmp:function-info-cleavir-lambda-list-analysis function-info)
-                                                           linkage
-                                                           jit-function-name
-                                                           cmp:*the-module*
-                                                           function-description
-                                                           the-function
-                                                           local-fun)
-                             :xep-unallocated))
-              ;; Check for a forced closure layout first.
-              ;: if there isn't one, make one up.
-              (env (or (fixed-closure function)
-                       (cleavir-set:set-to-list
-                        (bir:environment function)))))
-          (if (eq xep-group :xep-unallocated)
-              (make-instance 'llvm-function-info
-                             :environment env
-                             :main-function the-function
-                             :xep-function :xep-unallocated
-                             :xep-function-description :xep-unallocated
-                             :arguments arguments)
-              (make-instance 'llvm-function-info
-                             :environment env
-                             :main-function the-function
-                             :xep-function xep-group
-                             :xep-function-description function-description
-                             :arguments arguments)))))))
+         (arguments (compute-arglist (bir:lambda-list function)))
+         (function-description (cmp:irc-make-function-description function-info jit-function-name)))
+    (multiple-value-bind (the-function local-fun)
+        (cmp:irc-local-function-create
+         (compute-llvm-function-type function arguments)
+         'llvm-sys:internal-linkage ;; was llvm-sys:private-linkage
+         jit-function-name
+         cmp:*the-module*
+         function-description)
+      (let ((xep-group (if (xep-needed-p function)
+                           (cmp:irc-xep-functions-create (cmp:function-info-cleavir-lambda-list-analysis function-info)
+                                                         linkage
+                                                         jit-function-name
+                                                         cmp:*the-module*
+                                                         function-description
+                                                         the-function
+                                                         local-fun)
+                           :xep-unallocated))
+            ;; Check for a forced closure layout first.
+            ;; if there isn't one, make one up.
+            (env (or (fixed-closure function)
+                     (cleavir-set:set-to-list
+                      (bir:environment function)))))
+        (make-instance 'llvm-function-info
+          :environment env
+          :main-function the-function
+          :xep-function xep-group
+          :xep-function-description (if (eq xep-group :xep-unallocated)
+                                        xep-group
+                                        function-description)
+          :arguments arguments)))))
 
 (defun fixed-closure (function)
   (let ((fixed (cdr (assoc function *fixed-closures*))))
