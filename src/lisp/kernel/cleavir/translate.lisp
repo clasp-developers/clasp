@@ -15,10 +15,7 @@
    ;; cells from the closure vector and parsing the number of arguments.
    (%xep-function :initarg :xep-function :reader xep-function)
    (%xep-function-description :initarg :xep-function-description :reader xep-function-description)
-   (%main-function :initarg :main-function :reader main-function)
-   ;; karlosz added main-function-description - but it isn't used by anything
-   ;;  so I (meister) removed it
-   #+(or)(%main-function-description :initarg :main-function-description :reader main-function-description)))
+   (%main-function :initarg :main-function :reader main-function)))
 
 (defun lambda-list-too-hairy-p (lambda-list)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs aok aux varest-p)
