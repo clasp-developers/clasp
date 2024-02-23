@@ -549,6 +549,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     }
     //
     bool found_gcroots_in_module = false;
+    gctools::GCRootsInModule* roots;
     bool found_literals = false;
     for (auto ssym : G.defined_symbols()) {
       if (ssym->getName() == "DW.ref.__gxx_personality_v0") {
@@ -576,7 +577,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
           void* address = (void*)ssym->getAddress().getValue();
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Symbol-info %s %p %lu\n", __FILE__, __LINE__, __FUNCTION__,
                                     gcroots_in_module_name.c_str(), address, size));
-          currentCode->_gcRoots = (gctools::GCRootsInModule*)address;
+          roots = (gctools::GCRootsInModule*)address;
           continue;
         }
         pos = sname.find(literals_name);
@@ -632,11 +633,11 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     //
     void* literalStart = (void*)currentCode->_LiteralVectorStart;
     size_t literalCount = currentCode->_LiteralVectorSizeBytes / sizeof(void*);
-    currentCode->_gcRoots->_module_memory = literalStart;
-    currentCode->_gcRoots->_num_entries = literalCount;
+    roots->_module_memory = literalStart;
+    roots->_num_entries = literalCount;
     gctools::clasp_gc_registerRoots(literalStart, literalCount);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s currentCode->_gcroots @%p literals %p num: %lu\n", __FILE__, __LINE__, __FUNCTION__,
-                              (gctools::GCRootsInModule*)currentCode->_gcRoots, literalStart, literalCount));
+                              roots, literalStart, literalCount));
 #ifdef DEBUG_OBJECT_FILES
     for (auto* Sym : G.external_symbols())
       if (Sym->getName() == "DW.ref.__gxx_personality_v0") {
