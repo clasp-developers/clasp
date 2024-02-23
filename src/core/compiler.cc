@@ -202,6 +202,37 @@ void initializer_functions_invoke() {
   }
 }
 
+// These functions are used to access a runtime module's literals vector.
+// The vector is a T_sp[]. This could possibly be done with some normal
+// CFFI accessor instead.
+
+CL_DEFUN T_sp core__literals_vref(Pointer_sp lvec, size_t index) {
+  return ((T_sp*)(lvec->ptr()))[index];
+}
+
+CL_LISPIFY_NAME("core:literals_vref");
+CL_DEFUN_SETF T_sp core__literals_vset(T_sp val, Pointer_sp lvec, size_t index)
+{
+  ((T_sp*)(lvec->ptr()))[index] = val;
+  return val;
+}
+
+// Get the address of the redirect function with the given arity.
+// This is used by clasp-cleavir to construct functions.
+CL_DEFUN Pointer_sp core__xep_redirect_address(size_t arity) {
+  switch (arity) {
+  case 0: return Pointer_O::create((void*)general_entry_point_redirect_0);
+  case 1: return Pointer_O::create((void*)general_entry_point_redirect_1);
+  case 2: return Pointer_O::create((void*)general_entry_point_redirect_2);
+  case 3: return Pointer_O::create((void*)general_entry_point_redirect_3);
+  case 4: return Pointer_O::create((void*)general_entry_point_redirect_4);
+  case 5: return Pointer_O::create((void*)general_entry_point_redirect_5);
+  case 6: return Pointer_O::create((void*)general_entry_point_redirect_6);
+  case 7: return Pointer_O::create((void*)general_entry_point_redirect_7);
+  default: SIMPLE_ERROR("BUG: Invalid arity for redirect: %zu", arity);
+  }
+}
+
 }; // namespace core
 
 namespace core {
