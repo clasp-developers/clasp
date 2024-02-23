@@ -93,7 +93,6 @@ public:
   size_t _FasoIndex;
   //
   // Code data
-  gctools::GCRootsInModule* _gcRoots;
   void* _TextSectionStart;
   void* _TextSectionEnd;
   uintptr_t _TextSectionId;
@@ -109,16 +108,16 @@ public:
   ObjectFile_O(core::SimpleBaseString_sp codename, std::unique_ptr<llvm::MemoryBuffer> buffer, size_t objectId,
                JITDylib_sp jitdylib, core::SimpleBaseString_sp fasoName, size_t fasoIndex)
       : _State(RunState), _CodeName(codename), _MemoryBuffer(std::move(buffer)), _ObjectId(objectId), _TheJITDylib(jitdylib),
-        _FasoName(fasoName), _FasoIndex(fasoIndex), _gcRoots(NULL), _CodeBlock(unbound<CodeBlock_O>()) {
+        _FasoName(fasoName), _FasoIndex(fasoIndex), _CodeBlock(unbound<CodeBlock_O>()) {
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   objectId = %lu\n", __FILE__, __LINE__, __FUNCTION__, objectId));
   };
   ObjectFile_O(core::SimpleBaseString_sp codename, JITDylib_sp jitdylib, size_t objectId)
-      : _State(RunState), _CodeName(codename), _ObjectId(objectId), _TheJITDylib(jitdylib), _gcRoots(NULL),
+      : _State(RunState), _CodeName(codename), _ObjectId(objectId), _TheJITDylib(jitdylib),
         _CodeBlock(unbound<CodeBlock_O>()) {
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   codename = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(codename).c_str()));
   };
   ObjectFile_O(core::SimpleBaseString_sp codename, CodeBlock_sp codeBlock, JITDylib_sp dylib, size_t objectId)
-      : _State(RunState), _CodeName(codename), _ObjectId(objectId), _TheJITDylib(dylib), _gcRoots(NULL), _TextSectionStart(0),
+      : _State(RunState), _CodeName(codename), _ObjectId(objectId), _TheJITDylib(dylib), _TextSectionStart(0),
         _TextSectionEnd(0), _CodeBlock(codeBlock) {
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s created with CodeBlock_sp   codename = %s CodeBlock = %s\n", __FILE__, __LINE__,
                               __FUNCTION__, _rep_(codename).c_str(), core::_rep_(codeBlock).c_str()));
