@@ -69,19 +69,17 @@
                                          (llvm-sys:get-name f))))))
 
 (defun allocate-module-constants (module)
-  (let ((constants (bir:constants module))
-        (i 0))
+  (let ((i 0))
     ;; Functions: If a XEP is needed, put in space for one
     (bir:do-functions (function module)
       (when (xep-needed-p function)
-        ;; Note that there is no possibility of this BIR function appearing
-        ;; as a literal constant, which would be ambiguous. We made the BIR
-        ;; as part of this compilation process, so it's not in the code.
-        (setf (gethash function *constant-values*)
-              (cons i (find-llvm-function-info function)))
+        ;; Keys in the *constant-values* table are usually BIR:CONSTANTs and
+        ;; stuff. So there is no possibility of overlap between a BIR:FUNCTION
+        ;; and a BIR:FUNCTION that literally appears in the code somehow.
+        (setf (gethash function *constant-values*) i)
         (incf i)))
     ;; Actual constants
-    (cleavir-set:doset (value constants)
+    (cleavir-set:doset (value (bir:constants module))
       (let ((immediate (core:create-tagged-immediate-value-or-nil value)))
         (setf (gethash value *constant-values*)
               (if immediate
@@ -279,9 +277,7 @@
 
 (defun enclose (function extent &optional (delay t))
   (let* ((code-info (find-llvm-function-info function))
-         (centry (gethash function *constant-values*))
-         (cindex (if (consp centry)
-                     (car centry)
+         (cindex (or (gethash function *constant-values*)
                      (error "BUG: Tried to ENCLOSE a function with no XEP")))
          (environment (environment code-info))
          (simple (literal:constants-table-value cindex)))
@@ -347,10 +343,8 @@
                                             cmp:*thread-safe-context* 0)))
         (declare (ignore object))
         (fill-constants jit dylib *constant-values*)
-        (let ((targetinfo (gethash bir *constant-values*)))
-          (assert (consp targetinfo))
-          (cmp:literals-vref (llvm-sys:lookup jit dylib "__clasp_literals_")
-                             (car targetinfo)))))))
+        (cmp:literals-vref (llvm-sys:lookup jit dylib "__clasp_literals_")
+                           (gethash bir *constant-values*))))))
 
 (defgeneric resolve-constant (ir))
 
@@ -372,15 +366,16 @@
   (let ((literals (llvm-sys:lookup jit dylib "__clasp_literals_")))
     (loop for value being the hash-keys of constants
             using (hash-value cinf)
-          ;; cinf is either (index . info) meaning a function,
-          ;; index meaning a literal,
+          ;; cinf is either a fixnum, meaning a literal,
           ;; or an llvm Value, meaning an immediate.
           ;; We don't need to do anything for immediates.
-          if (consp cinf)
-            do (setf (cmp:literals-vref literals (car cinf))
+          ;; We also need to handle functions a bit differently- building
+          ;; a simple fun for them.
+          if (typep value 'bir:function)
+            do (setf (cmp:literals-vref literals cinf)
                      (make-compiled-fun jit dylib
                                         (make-function-description value)
-                                        (cdr cinf)))
+                                        (find-llvm-function-info value)))
           else if (integerp cinf)
                  do (setf (core:literals-vref literals cinf)
                           (resolve-constant value))))
