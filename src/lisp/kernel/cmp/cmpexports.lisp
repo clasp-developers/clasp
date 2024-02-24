@@ -1,7 +1,6 @@
 (in-package :cmp)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(with-debug-info-source-position
-            with-interpreter
             calculate-cleavir-lambda-list-analysis
             module-report
             transform-lambda-parts

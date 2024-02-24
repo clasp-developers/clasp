@@ -48,7 +48,6 @@
              #~"kernel/cmp/cmpname.lisp"
              #~"kernel/cmp/bytecode-machines.lisp"
              #~"kernel/cmp/bytecode-reference.lisp"
-             #~"kernel/cmp/cmprepl-bytecode.lisp"
              #@"base-translations.lisp"
              #~"kernel/stage/base/0-end.lisp"
              #~"kernel/cmp/cmpwalk.lisp"
