@@ -548,8 +548,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       }
     }
     //
-    bool found_gcroots_in_module = false;
-    gctools::GCRootsInModule* roots;
     bool found_literals = false;
     for (auto ssym : G.defined_symbols()) {
       if (ssym->getName() == "DW.ref.__gxx_personality_v0") {
@@ -571,16 +569,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 #endif
       if (ssym->hasName()) {
         std::string sname = ssym->getName().str();
-        size_t pos = sname.find(gcroots_in_module_name);
-        if (pos != std::string::npos) {
-          found_gcroots_in_module = true;
-          void* address = (void*)ssym->getAddress().getValue();
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Symbol-info %s %p %lu\n", __FILE__, __LINE__, __FUNCTION__,
-                                    gcroots_in_module_name.c_str(), address, size));
-          roots = (gctools::GCRootsInModule*)address;
-          continue;
-        }
-        pos = sname.find(literals_name);
+        size_t pos = sname.find(literals_name);
         if (pos != std::string::npos) {
           found_literals = true;
           currentCode->_LiteralVectorStart = (uintptr_t)ssym->getAddress().getValue();
@@ -622,22 +611,10 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       printf("%s:%d Did NOT FIND %s\n", __FILE__, __LINE__, literals_name.c_str());
       abort();
     }
-    if (!found_gcroots_in_module) {
-      printf("%s:%d Did NOT FIND %s\n", __FILE__, __LINE__, gcroots_in_module_name.c_str());
-      abort();
-    }
-    //
-    // Write the address of literals vector into the gcroots structure
-    // Later when we run the code we will check that the gcroots structure
-    //  has the correct values
     //
     void* literalStart = (void*)currentCode->_LiteralVectorStart;
     size_t literalCount = currentCode->_LiteralVectorSizeBytes / sizeof(void*);
-    roots->_module_memory = literalStart;
-    roots->_num_entries = literalCount;
     gctools::clasp_gc_registerRoots(literalStart, literalCount);
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s currentCode->_gcroots @%p literals %p num: %lu\n", __FILE__, __LINE__, __FUNCTION__,
-                              roots, literalStart, literalCount));
 #ifdef DEBUG_OBJECT_FILES
     for (auto* Sym : G.external_symbols())
       if (Sym->getName() == "DW.ref.__gxx_personality_v0") {
