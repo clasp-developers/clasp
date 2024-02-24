@@ -60,16 +60,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; cleavir-implicit-compile-hook - compile the form in the given environment
-;;;
-
-(eval-when (:execute :load-toplevel)
-  (setq core:*eval-with-env-hook* 
-        #+bytecode 'core:interpret-eval-with-env
-        #-bytecode 'cclasp-eval))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Hook the bytecode-to-bir compiler into cl:compile.
 ;;;
 

@@ -43,6 +43,7 @@ THE SOFTWARE.
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/bytecode_compiler.h> // bytecode_toplevel_eval
 
 namespace core {
 
@@ -63,7 +64,7 @@ T_sp load_stream(T_sp strm, bool print) {
     if (x.number_of_values() > 0) {
       if (print)
         clasp_write_string(fmt::format(";; -read- {}\n", _rep_(x)));
-      eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), x, nil<T_O>());
+      comp::bytecode_toplevel_eval(x, nil<T_O>());
     }
   }
   cl__close(strm);

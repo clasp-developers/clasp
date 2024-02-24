@@ -613,11 +613,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(eval)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv cl__eval(T_sp form) {
-  if (!core::_sym_STAReval_with_env_hookSTAR->boundP() || core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue()) {
-    return eval::evaluate(form, nil<T_O>());
-  } else {
-    return eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), form, nil<T_O>());
-  }
+  return eval::evaluate(form, nil<T_O>());
 };
 
 CL_DECLARE();
@@ -938,7 +934,6 @@ SYMBOL_SC_(CorePkg, classifyLetVariablesAndDeclares);
 SYMBOL_EXPORT_SC_(ClPkg, ignore);
 SYMBOL_EXPORT_SC_(ClPkg, apply);
 SYMBOL_EXPORT_SC_(ClPkg, funcall);
-SYMBOL_EXPORT_SC_(CorePkg, STAReval_with_env_hookSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, interpret_eval_with_env);
 
 }; // namespace core

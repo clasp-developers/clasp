@@ -162,7 +162,6 @@
   (core::select-package :core))
 
 (sys:*make-special '*use-cleavir-compiler*)
-(sys:*make-special '*eval-with-env-hook*)
 
 ;; Setup a few things for the CMP package
 (eval-when (:execute :compile-toplevel :load-toplevel)
