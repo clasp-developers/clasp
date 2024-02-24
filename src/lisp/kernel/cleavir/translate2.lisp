@@ -90,18 +90,35 @@
     i))
 
 (defun nconstants ()
-  (1+ (loop for value being the hash-values of *constant-values*
-            maximizing (if (integerp value) value 0))))
+  (loop for value being the hash-values of *constant-values*
+        maximizing (if (integerp value) (1+ value) 0)))
+
+;; A constant introduced at translate time. We use this instead of
+;; bir:constant just to avoid any unneeded silliness with BIR modules
+;; and backpointers.
+(defclass last-minute-constant ()
+  ((%value :initarg :value :reader bir:constant-value)))
 
 (defun literal:reference-literal (value &optional read-only-p)
   (declare (ignore read-only-p))
-  (let ((immediate (core:create-tagged-immediate-value-or-nil value)))
-    (if immediate
-        (values (setf (gethash value *constant-values*)
-                      (cmp:irc-int-to-ptr (%i64 immediate) cmp:%t*%))
-                nil)
-        ;; FIXME: inefficient
-        (values (setf (gethash value *constant-values*) (nconstants)) t))))
+  (let ((next-index
+          ;; Check for an existing constant.
+          ;; While we're doing that, also check what a new constant
+          ;; index would be.
+          (loop for key being the hash-keys of *constant-values*
+                  using (hash-value indexoid)
+                when (and (typep key '(or bir:constant last-minute-constant))
+                          (eql (bir:constant-value key) value))
+                  do (return-from literal:reference-literal
+                       (values indexoid (integerp indexoid)))
+                maximizing (if (integerp indexoid) (1+ indexoid) 0)))
+        (immediate (core:create-tagged-immediate-value-or-nil value))
+        (constant (make-instance 'last-minute-constant :value value)))
+      (if immediate
+          (values (setf (gethash constant *constant-values*)
+                        (cmp:irc-int-to-ptr (%i64 immediate) cmp:%t*%))
+                  nil)
+          (values (setf (gethash constant *constant-values*) next-index) t))))
 
 (defun layout-xep-function* (xep arity ir lambda-list-analysis calling-convention)
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
@@ -335,6 +352,22 @@
           (cmp:literals-vref (llvm-sys:lookup jit dylib "__clasp_literals_")
                              (car targetinfo)))))))
 
+(defgeneric resolve-constant (ir))
+
+(defmethod resolve-constant ((ir bir:constant))
+  (bir:constant-value ir))
+(defmethod resolve-constant ((ir last-minute-constant))
+  (bir:constant-value ir))
+
+(defmethod resolve-constant ((ir bir:load-time-value))
+  (eval (bir:form ir)))
+
+(defmethod resolve-constant ((ir bir:function-cell))
+  (core:ensure-function-cell (bir:function-name ir)))
+
+(defmethod resolve-constant ((ir bir:variable-cell))
+  (core:ensure-variable-cell (bir:variable-name ir)))
+
 (defun fill-constants (jit dylib constants)
   (let ((literals (llvm-sys:lookup jit dylib "__clasp_literals_")))
     (loop for value being the hash-keys of constants
@@ -349,7 +382,8 @@
                                         (make-function-description value)
                                         (cdr cinf)))
           else if (integerp cinf)
-                 do (setf (core:literals-vref literals cinf) value)))
+                 do (setf (core:literals-vref literals cinf)
+                          (resolve-constant value))))
   (values))
 
 (defun make-function-description (irfun)
