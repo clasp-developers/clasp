@@ -144,8 +144,6 @@ static bool debugger_parse_integer(string s, int& new_frame_index) {
 }
 
 T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
-  DynamicScopeManager tempBind(comp::_sym_STARimplicit_compile_hookSTAR, comp::_sym_bytecode_implicit_compile_form);
-
   int frame_index = 0;
   DebuggerFrame_sp cur = bot;
   debugger_display_frame(cur, frame_index);
