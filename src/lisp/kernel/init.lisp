@@ -161,8 +161,6 @@
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :core))
 
-(sys:*make-special '*use-cleavir-compiler*)
-
 ;; Setup a few things for the CMP package
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :cmp))

@@ -235,7 +235,6 @@
     (*compile-file-file-scope* . ',*compile-file-file-scope*)
     #+(or cclasp eclasp)(cleavir-cst-to-ast:*compiler*
                          . ',cleavir-cst-to-ast:*compiler*)
-    #+(or cclasp eclasp)(core:*use-cleavir-compiler* . ',core:*use-cleavir-compiler*)
     (*global-function-refs* . ',*global-function-refs*)))
 
 (defun cclasp-loop2 (source-sin
@@ -271,7 +270,6 @@ multithreaded performance that we should explore."
               (error "Handle intermediate-output-type ~a" intermediate-output-type))))
          #+(or cclasp eclasp) (cleavir-cst-to-ast:*compiler*
                                 'cl:compile-file)
-         #+(or cclasp eclasp)(core:*use-cleavir-compiler* t)
          #+(or cclasp eclasp)(eclector.reader:*client* cmp:*cst-client*)
          ast-jobs
          (_ (cfp-log "Starting the pool of threads~%"))

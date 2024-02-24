@@ -953,11 +953,8 @@ and  return the sorted values and the constant-table or (values nil nil)."
 ;;;
 
 (defun compile-form (form)
-  (if core:*use-cleavir-compiler*
-      (progn
-        (funcall (find-symbol "COMPILE-FORM" "CLASP-CLEAVIR")
-                 form))
-      (error "BUG: no compiler for cmpliteral")))
+  (funcall (find-symbol "COMPILE-FORM" "CLASP-CLEAVIR")
+           form))
 
 ;;; ------------------------------------------------------------
 ;;; ------------------------------------------------------------
