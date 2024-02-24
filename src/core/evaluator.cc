@@ -775,13 +775,6 @@ CL_DOCSTRING(R"dx(evaluateVerbosity)dx");
 DOCGROUP(clasp);
 CL_DEFUN void core__evaluate_verbosity(Fixnum_sp level) { eval::_evaluateVerbosity = unbox_fixnum(level); };
 
-CL_LAMBDA(form &optional env);
-CL_DECLARE();
-CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(Evaluate the form in the environment using the interpreter)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_mv core__interpret_eval_with_env(T_sp form, T_sp environment) { return comp::bytecode_toplevel_eval(form, environment); }
-
 }; // namespace core
 
 namespace core {
@@ -934,6 +927,5 @@ SYMBOL_SC_(CorePkg, classifyLetVariablesAndDeclares);
 SYMBOL_EXPORT_SC_(ClPkg, ignore);
 SYMBOL_EXPORT_SC_(ClPkg, apply);
 SYMBOL_EXPORT_SC_(ClPkg, funcall);
-SYMBOL_EXPORT_SC_(CorePkg, interpret_eval_with_env);
 
 }; // namespace core
