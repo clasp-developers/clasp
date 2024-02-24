@@ -300,9 +300,8 @@ SimpleCoreFun_sp makeSimpleCoreFun(FunctionDescription_sp tfdesc, const ClaspXep
 
 // Used by clasp-cleavir to build compiled functions from function pointers.
 // FIXME: Find some way to abstract away the arity XEPs.
-CL_DEFUN SimpleCoreFun_sp core__make_simple_core_fun(FunctionDescription_sp fdesc, Pointer_sp mainfun, Pointer_sp generalxep, Pointer_sp xep0, Pointer_sp xep1, Pointer_sp xep2, Pointer_sp xep3, Pointer_sp xep4, Pointer_sp xep5, Pointer_sp xep6) {
+CL_DEFUN SimpleCoreFun_sp core__make_simple_core_fun(FunctionDescription_sp fdesc, Pointer_sp mainfun, Pointer_sp generalxep, Pointer_sp xep0, Pointer_sp xep1, Pointer_sp xep2, Pointer_sp xep3, Pointer_sp xep4, Pointer_sp xep5) {
   CoreFun_sp core = makeCoreFun(fdesc, (ClaspCoreFunction)(mainfun->ptr()));
-  T_sp code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(mainfun->ptr()));
   ClaspXepTemplate xep;
   xep._EntryPoints[0] = (ClaspXepAnonymousFunction)(generalxep->ptr());
   xep._EntryPoints[1] = (ClaspXepAnonymousFunction)(xep0->ptr());
@@ -311,8 +310,7 @@ CL_DEFUN SimpleCoreFun_sp core__make_simple_core_fun(FunctionDescription_sp fdes
   xep._EntryPoints[4] = (ClaspXepAnonymousFunction)(xep3->ptr());
   xep._EntryPoints[5] = (ClaspXepAnonymousFunction)(xep4->ptr());
   xep._EntryPoints[6] = (ClaspXepAnonymousFunction)(xep5->ptr());
-  xep._EntryPoints[7] = (ClaspXepAnonymousFunction)(xep6->ptr());
-  return gctools::GC<SimpleCoreFun_O>::allocate(fdesc, xep, code, core);
+  return gctools::GC<SimpleCoreFun_O>::allocate(fdesc, xep, nil<T_O>(), core);
 }
 
 SYMBOL_EXPORT_SC_(CorePkg, bytecode_call);

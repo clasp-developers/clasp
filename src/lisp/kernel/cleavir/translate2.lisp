@@ -7,19 +7,24 @@
    (%environment :initarg :environment :type list :reader environment)
    ;; The argument variables of the function lambda list.
    (%arguments :initarg :arguments :type list :reader arguments)
-   (%main-function :initarg :main-function :reader main-function :type string)
-   (%general-xep :initarg :general-xep :reader general-xep
-                 :type (or null string))
+   (%main-function :initarg :main-function :reader main-function)
+   (%general-xep :initarg :general-xep :reader general-xep)
    (%fixed-xeps :initarg :fixed-xeps :reader fixed-xeps
                 ;; obviously null <: sequence but this is more explicit.
-                :type (or null sequence))))
+                :type (or null sequence))
+   ;; These should be obtainable from llvm-sys:get-name, but that seems to
+   ;; return "" for functions after some point. Weird. FIXME
+   (%main-function-name :initarg :main-function-name
+                        :reader main-function-name)
+   (%general-xep-name :initarg :general-xep-name
+                      :reader general-xep-name)
+   (%fixed-xep-names :initarg :fixed-xep-names
+                     :reader fixed-xep-names)))
 
 (defun allocate-llvm-function-info (function &key linkage)
   (let* ((lambda-name (get-or-create-lambda-name function))
          (jit-function-name (jit-function-name lambda-name))
-         ;(function-info (calculate-function-info function lambda-name))
-         (arguments (compute-arglist (bir:lambda-list function)))
-         ;(function-description (cmp:irc-make-function-description function-info jit-function-name))
+          (arguments (compute-arglist (bir:lambda-list function)))
          (mtype (compute-llvm-function-type function arguments))
          (xep-p (xep-needed-p function))
          (analysis (cmp:calculate-cleavir-lambda-list-analysis
@@ -52,10 +57,16 @@
                    (bir:environment function)))))
     (make-instance 'llvm-function-info
       :environment env
+      :arguments arguments
       :main-function main-function
       :general-xep general-xep
       :fixed-xeps fixed-xeps
-      :arguments arguments)))
+      :main-function-name (llvm-sys:get-name main-function)
+      :general-xep-name (llvm-sys:get-name general-xep)
+      :fixed-xep-names (loop for f in fixed-xeps
+                             collect (if (eq f :placeholder)
+                                         nil
+                                         (llvm-sys:get-name f))))))
 
 (defun allocate-module-constants (module)
   (let ((constants (bir:constants module))
@@ -218,7 +229,7 @@
                                              nil ; isConstant
                                              'llvm-sys:external-linkage
                                              (llvm-sys:undef-value-get arrayt)
-                                             "literals"))
+                                             "__clasp_literals_"))
             (bcast
               (cmp:irc-bit-cast new-holder cmp:%t*[DUMMY]*% "bitcast-literals")))
        (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var*
@@ -244,9 +255,7 @@
                         abi :linkage linkage))))
 
 (defun translate (bir &key abi linkage)
-  (let* ((*unwind-ids* (make-hash-table :test #'eq))
-         (*function-info* (make-hash-table :test #'eq))
-         (*constant-values* (make-hash-table :test #'eq)))
+  (let* ((*unwind-ids* (make-hash-table :test #'eq)))
     (layout-module (bir:module bir) abi :linkage linkage)
     (cmp::potentially-save-module)
     (find-llvm-function-info bir)))
@@ -302,15 +311,83 @@
 (defun bir->function (bir &key (abi *abi-x86-64*)
                               (linkage 'llvm-sys:external-linkage))
   (cmp::with-compiler-env ()
-    (let* ((module (cmp::create-run-time-module-for-compile)))
+    (let ((module (cmp::create-run-time-module-for-compile))
+          (*constant-values* (make-hash-table :test #'eq))
+          (*function-info* (make-hash-table :test #'eq)))
       ;; Link the C++ intrinsics into the module
       (cmp::with-module (:module module)
         (let ((pathname (if *load-pathname*
                             (namestring *load-pathname*)
                             "repl-code")))
           (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-            (translate bir :linkage linkage :abi abi)))
-        (llvm-sys:dump-module module)))))
+            (translate bir :linkage linkage :abi abi))))
+      ;;(llvm-sys:dump-module module)
+      (let ((cmp::*verify-llvm-modules* t))
+        (cmp:irc-verify-module-safe module))
+      (let* ((jit (llvm-sys:clasp-jit))
+             (dylib (llvm-sys:create-and-register-jitdylib jit "repl"))
+             (object (llvm-sys:add-irmodule jit dylib module
+                                            cmp:*thread-safe-context* 0)))
+        (declare (ignore object))
+        (fill-constants jit dylib *constant-values*)
+        (let ((targetinfo (gethash bir *constant-values*)))
+          (assert (consp targetinfo))
+          (cmp:literals-vref (llvm-sys:lookup jit dylib "__clasp_literals_")
+                             (car targetinfo)))))))
+
+(defun fill-constants (jit dylib constants)
+  (let ((literals (llvm-sys:lookup jit dylib "__clasp_literals_")))
+    (loop for value being the hash-keys of constants
+            using (hash-value cinf)
+          ;; cinf is either (index . info) meaning a function,
+          ;; index meaning a literal,
+          ;; or an llvm Value, meaning an immediate.
+          ;; We don't need to do anything for immediates.
+          if (consp cinf)
+            do (setf (cmp:literals-vref literals (car cinf))
+                     (make-compiled-fun jit dylib
+                                        (make-function-description value)
+                                        (cdr cinf)))
+          else if (integerp cinf)
+                 do (setf (core:literals-vref literals cinf) value)))
+  (values))
+
+(defun make-function-description (irfun)
+  (let ((spi (origin-spi (origin-source (bir:origin irfun)))))
+    (if spi
+        (sys:function-description/make
+         :function-name (get-or-create-lambda-name irfun)
+         :lambda-list (bir:original-lambda-list irfun)
+         :docstring (bir:docstring irfun)
+         :source-pathname (core:file-scope-pathname
+                           (core:file-scope
+                            (core:source-pos-info-file-handle spi)))
+         :lineno (core:source-pos-info-lineno spi)
+         ;; Why 1+?
+         :column (1+ (core:source-pos-info-column spi))
+         :filepos (core:source-pos-info-filepos spi))
+        (sys:function-description/make
+         :function-name (get-or-create-lambda-name irfun)
+         :lambda-list (bir:original-lambda-list irfun)
+         :docstring (bir:docstring irfun)
+         :source-pathname "-unknown-file-"))))
+
+(defun make-compiled-fun (jit dylib fdesc info)
+  (let ((main
+          (llvm-sys:lookup
+           jit dylib (main-function-name info)))
+        (general-xep
+          (llvm-sys:lookup
+           jit dylib (general-xep-name info)))
+        (fixed-xeps
+               (loop for i from cmp:+entry-point-arity-begin+
+                       below cmp:+entry-point-arity-end+
+                     for f in (fixed-xeps info)
+                     for fname in (fixed-xep-names info)
+                     collect (if (eq f :placeholder)
+                                 (core:xep-redirect-address i)
+                                 (llvm-sys:lookup jit dylib fname)))))
+    (apply #'core:make-simple-core-fun fdesc main general-xep fixed-xeps)))
 
 (in-package #:clasp-bytecode-to-bir)
 
