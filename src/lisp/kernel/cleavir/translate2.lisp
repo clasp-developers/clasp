@@ -68,11 +68,13 @@
                                          nil
                                          (llvm-sys:get-name f))))))
 
-(defun allocate-module-constants (module)
+(defun allocate-module-constants (module toplevel)
   (let ((i 0))
     ;; Functions: If a XEP is needed, put in space for one
+    ;; except for the toplevel function, which doesn't need space in the
+    ;; literals vector as nothing inside the code references it.
     (bir:do-functions (function module)
-      (when (xep-needed-p function)
+      (when (and (not (eq toplevel function)) (xep-needed-p function))
         ;; Keys in the *constant-values* table are usually BIR:CONSTANTs and
         ;; stuff. So there is no possibility of overlap between a BIR:FUNCTION
         ;; and a BIR:FUNCTION that literally appears in the code somehow.
@@ -252,7 +254,7 @@
        (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*))
      (values)))
 
-(defun layout-module (module abi &key (linkage 'llvm-sys:external-linkage))
+(defun layout-module (module abi &key toplevel)
   ;; Create llvm IR functions for each BIR function.
   (bir:do-functions (function module)
     ;; Assign IDs to unwind destinations. We start from 1 to allow
@@ -262,16 +264,18 @@
         (setf (gethash entrance *unwind-ids*) i)
         (incf i)))
     (setf (gethash function *function-info*)
-          (allocate-llvm-function-info function :linkage linkage)))
+          (allocate-llvm-function-info function
+                                       :linkage 'llvm-sys:external-linkage)))
   (with-literals
-      (allocate-module-constants module)
+      (allocate-module-constants module toplevel)
     (bir:do-functions (function module)
       (layout-procedure function (get-or-create-lambda-name function)
-                        abi :linkage linkage))))
+                        abi :linkage 'llvm-sys:external-linkage))))
 
 (defun translate (bir &key abi linkage)
+  (declare (ignore linkage))
   (let* ((*unwind-ids* (make-hash-table :test #'eq)))
-    (layout-module (bir:module bir) abi :linkage linkage)
+    (layout-module (bir:module bir) abi :toplevel bir)
     (cmp::potentially-save-module)
     (find-llvm-function-info bir)))
 
@@ -321,8 +325,8 @@
   (out (enclose (bir:code instruction) (bir:extent instruction))
        (bir:output instruction)))
 
-(defun bir->function (bir &key (abi *abi-x86-64*)
-                              (linkage 'llvm-sys:external-linkage))
+(defun bir->function (bir &key (abi *abi-x86-64*) linkage)
+  (declare (ignore linkage))
   (cmp::with-compiler-env ()
     (let ((module (cmp::create-run-time-module-for-compile))
           (*constant-values* (make-hash-table :test #'eq))
@@ -333,7 +337,7 @@
                             (namestring *load-pathname*)
                             "repl-code")))
           (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-            (translate bir :linkage linkage :abi abi))))
+            (translate bir :abi abi))))
       ;;(llvm-sys:dump-module module)
       (let ((cmp::*verify-llvm-modules* t))
         (cmp:irc-verify-module-safe module))
@@ -343,8 +347,8 @@
                                             cmp:*thread-safe-context* 0)))
         (declare (ignore object))
         (fill-constants jit dylib *constant-values*)
-        (cmp:literals-vref (llvm-sys:lookup jit dylib "__clasp_literals_")
-                           (gethash bir *constant-values*))))))
+        (make-compiled-fun jit dylib (make-function-description bir)
+                           (find-llvm-function-info bir))))))
 
 (defgeneric resolve-constant (ir))
 
