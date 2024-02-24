@@ -51,7 +51,6 @@
             *debug-compile-file-counter*
             *generate-compile-file-load-time-values*
             *gv-current-function-name*
-            *implicit-compile-hook*
             *irbuilder*
             *thread-safe-context*
             thread-local-llvm-context
