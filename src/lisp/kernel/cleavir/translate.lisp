@@ -2218,10 +2218,6 @@ COMPILE-FILE will use the default *clasp-env*."
 (defun bir-compile (form env)
   (bir-compile-cst (cst:cst-from-expression form) env))
 
-(defun cleavir-compile (name &optional definition)
-  (let ((cmp:*cleavir-compile-hook* #'bir-compile))
-    (compile name definition)))
-
 (defun bir->function (bir &key (abi *abi-x86-64*)
                             (linkage 'llvm-sys:internal-linkage))
   (cmp::with-compiler-env ()
