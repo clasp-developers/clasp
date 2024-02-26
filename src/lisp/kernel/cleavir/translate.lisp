@@ -146,7 +146,7 @@
       :general-xep general-xep
       :fixed-xeps fixed-xeps
       :main-function-name (llvm-sys:get-name main-function)
-      :general-xep-name (llvm-sys:get-name general-xep)
+      :general-xep-name (when xep-p (llvm-sys:get-name general-xep))
       :fixed-xep-names (loop for f in fixed-xeps
                              collect (if (eq f :placeholder)
                                          nil
@@ -2365,13 +2365,13 @@ COMPILE-FILE will use the default *clasp-env*."
           (llvm-sys:lookup
            jit dylib (general-xep-name info)))
         (fixed-xeps
-               (loop for i from cmp:+entry-point-arity-begin+
-                       below cmp:+entry-point-arity-end+
-                     for f in (fixed-xeps info)
-                     for fname in (fixed-xep-names info)
-                     collect (if (eq f :placeholder)
-                                 (core:xep-redirect-address i)
-                                 (llvm-sys:lookup jit dylib fname)))))
+          (loop for i from cmp:+entry-point-arity-begin+
+                  below cmp:+entry-point-arity-end+
+                for f in (fixed-xeps info)
+                for fname in (fixed-xep-names info)
+                collect (if (eq f :placeholder)
+                            (core:xep-redirect-address i)
+                            (llvm-sys:lookup jit dylib fname)))))
     (apply #'core:make-simple-core-fun fdesc main general-xep fixed-xeps)))
 
 ;;; Used from fli.lisp.
