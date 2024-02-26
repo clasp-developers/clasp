@@ -85,7 +85,6 @@
             +cons-size+
             +unwind-protect-dynenv-size+
             +binding-dynenv-size+
-            *startup-primitives-as-list*
             %void%
             %i1%
             %exception-struct%

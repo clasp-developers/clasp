@@ -71,18 +71,8 @@
   (core:fmt nil "general_entry_point_redirect_{}" arity))
 
 (defmacro primitives-macro ()
-  "ltvc functions are used to construct the byte-code interpreter"
   `(progn
-     ,@(mapcar (lambda (op)
-                 (list* (if (first op) 'primitive-unwinds 'primitive)
-                        (second op)
-                        :ltvc-return
-                        (list* 'list :gcroots-in-module* (third op))
-                        :ltvc t (cdddr op)))
-               cmpref:*startup-primitives-as-list*)
-     ,@'((primitive         "ltvc_lookup_literal" :t* (list :gcroots-in-module* :size_t))
-         (primitive         "ltvc_lookup_transient" :t* (list :gcroots-in-module* :i8 :size_t))
-         (primitive         "cc_match" :t* (list :t* :t*))    
+     ,@'((primitive         "cc_match" :t* (list :t* :t*))    
          (primitive-unwinds "cc_register_startup_function" :void (list :size_t :fn-start-up*))
          (primitive         "cc_protect_alloca" :void (list :i8*))
 
