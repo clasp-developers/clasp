@@ -186,11 +186,6 @@
               :initform t
               :type boolean
               :documentation "If t use clang-cpp otherwise use the individual clang libraries.")
-   (compile-file-parallel :accessor compile-file-parallel
-                          :initarg :compile-file-parallel
-                          :initform t
-                          :type boolean
-                          :documentation "Compile files in parallel.")
    (force-startup-external-linkage :accessor force-startup-external-linkage
                                    :initarg :force-startup-external-linkage
                                    :initform t

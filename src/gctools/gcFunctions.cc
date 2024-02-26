@@ -1159,18 +1159,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (buildReport)
     ss << (fmt::format("DISABLE_TYPE_INFERENCE = {}\n", (disable_type_inference ? "**DEFINED**" : "undefined")));
 
-#if USE_COMPILE_FILE_PARALLEL == 0
-  use_compile_file_parallel = false;
-  INTERN_(comp, STARuse_compile_file_parallelSTAR)->defparameter(nil<core::T_O>());
-  printf("%s:%d You have turned off compile-file-parallel\n   - you can enable it by setting USE_COMPILE_FILE_PARALLEL in the "
-         "wscript.config\n   - compile-file-parallel should be enabled by default\n",
-         __FILE__, __LINE__);
-#else
-  INTERN_(comp, STARuse_compile_file_parallelSTAR)->defparameter(_lisp->_true());
-#endif
-  if (buildReport)
-    ss << (fmt::format("USE_COMPILE_FILE_PARALLEL = {}\n", USE_COMPILE_FILE_PARALLEL));
-
 #if FORCE_STARTUP_EXTERNAL_LINKAGE == 0
   force_startup_external_linkage = false;
   INTERN_(comp, STARforce_startup_external_linkageSTAR)->defparameter(nil<core::T_O>());

@@ -26,7 +26,6 @@
                          (if (eq (build-mode configuration) :bytecode-faso)
                              :bytecode
                              (build-mode configuration))) t
-                 "USE_COMPILE_FILE_PARALLEL" (if (compile-file-parallel configuration) 1 0)
                  "FORCE_STARTUP_EXTERNAL_LINKAGE" (if (force-startup-external-linkage configuration) 1 0)
                  "USE_PRECISE_GC" *variant-precise*
                  "USE_BOEHM" (eq :boehm *variant-gc*)

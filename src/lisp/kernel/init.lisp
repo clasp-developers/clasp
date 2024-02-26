@@ -45,15 +45,6 @@
 (sys:*make-special 'core::*clang-bin*)
 (export 'core::*clang-bin*)
 
-
-;;; --------------------------------------------------
-;;;
-;;; Use force-compile-file-serial feature to
-;;; shutdown compile-file-parallel.
-;;;
-(if (member :force-compile-file-serial *features*)
-    (setq cmp:*use-compile-file-parallel* nil))
-
 #+clasp-min
 (EVAL-WHEN (:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
   (CORE:SETF-LAMBDA-LIST

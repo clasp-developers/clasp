@@ -107,8 +107,7 @@ Successes: ~d~%"
   (handler-case
       (multiple-value-bind
             (fasl warnings-p failure-p)
-          (let (#+(or) (cmp::*compile-file-parallel* t))
-            (compile-file file))
+          (compile-file file)
         (declare (ignore warnings-p failure-p))
         (when fasl
           (load fasl)))
@@ -119,8 +118,7 @@ Successes: ~d~%"
 (defun no-handler-case-load-if-compiled-correctly (file)
   (multiple-value-bind
         (fasl warnings-p failure-p)
-      (let (#+(or) (cmp::*compile-file-parallel* t))
-        (compile-file file))
+      (compile-file file)
     (declare (ignore warnings-p failure-p))
     (when fasl
       (load fasl))))

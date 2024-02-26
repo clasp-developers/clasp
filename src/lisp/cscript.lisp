@@ -157,7 +157,6 @@
              #~"kernel/lsp/xref.lisp"
              #@"base-immutable.lisp"
              #~"kernel/stage/base/2-end.lisp"
-             #~"kernel/cmp/compile-file-parallel.lisp"
              #~"kernel/cleavir/auto-compile.lisp"
              #~"kernel/lsp/top-hook.lisp"))
 

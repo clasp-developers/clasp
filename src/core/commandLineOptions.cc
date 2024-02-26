@@ -147,8 +147,6 @@ Options:
       Set cmp::*dbg-generate-dwarf* to NIL
   disable
       generation of DWARF metadata during compilations
-  force-compile-file-serial
-      Force compile-file-serial to be used for compilation
 
 Environment variables:
   CLASP_DEBUG=<filenames>

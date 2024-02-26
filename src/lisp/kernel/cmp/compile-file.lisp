@@ -220,9 +220,7 @@ Compile a Lisp source stream and return a corresponding LLVM module."
                        ((:print *compile-print*) *compile-print*)
                        (external-format :default)
                        ;; Extensions
-                       (execution (if *compile-file-parallel*
-                                      :parallel
-                                      :serial))
+                       (execution :serial)
                        environment ; compilation environment
                        ;; output-type can be (or :faso :fasobc :fasoll :bytecode)
                        (output-type *default-output-type*)
@@ -281,11 +279,7 @@ Compile a Lisp source stream and return a corresponding LLVM module."
                     (namestring input-file)))
           (ecase execution
             (:serial
-             (apply #'compile-stream/serial source-sin output-path args))
-            (:parallel
-             ;; defined later in compile-file-parallel.lisp.
-             (apply #'compile-stream/parallel source-sin output-path
-                    args))))))))
+             (apply #'compile-stream/serial source-sin output-path args))))))))
 
 (defun compile-stream/serial (input-stream output-path &rest args
                               &key
@@ -298,21 +292,20 @@ Compile a Lisp source stream and return a corresponding LLVM module."
                                 (image-startup-position (core:next-startup-position)) 
                                 environment
                               &allow-other-keys)
-  (let ((*compile-file-parallel* nil))
-    (if (eq output-type :bytecode)
-        (apply #'cmpltv:bytecode-compile-stream input-stream output-path args)
-        (with-compiler-env ()
-          (with-compiler-timer (:message "Compile-file"
-                                :report-link-time t
-                                :verbose *compile-verbose*)
-            (let ((module (compile-stream-to-module input-stream
-                                                    :environment environment
-                                                    :image-startup-position image-startup-position
-                                                    :optimize optimize
-                                                    :optimize-level optimize-level)))
-              (compile-file-output-module module output-path output-type
-                                          type
-                                          :position image-startup-position))))))
+  (if (eq output-type :bytecode)
+      (apply #'cmpltv:bytecode-compile-stream input-stream output-path args)
+      (with-compiler-env ()
+        (with-compiler-timer (:message "Compile-file"
+                              :report-link-time t
+                              :verbose *compile-verbose*)
+          (let ((module (compile-stream-to-module input-stream
+                                                  :environment environment
+                                                  :image-startup-position image-startup-position
+                                                  :optimize optimize
+                                                  :optimize-level optimize-level)))
+            (compile-file-output-module module output-path output-type
+                                        type
+                                        :position image-startup-position)))))
   (truename output-path))
 
 (defun compile-file-output-module (module output-file output-type type
