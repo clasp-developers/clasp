@@ -23,7 +23,6 @@
                (:file "ast")
                (:file "convert-form")
                (:file "convert-special")
-               (:file "toplevel")
                (:file "setup")
                (:file "fold")
                (:file "ir")
