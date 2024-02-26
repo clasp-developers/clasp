@@ -114,7 +114,7 @@
 ;;; Given a bytecode function, return a compiled native function.
 (defun compile-function (function
                          &key (abi clasp-cleavir:*abi-x86-64*)
-                           (linkage 'llvm-sys:internal-linkage)
+                           (linkage 'llvm-sys:external-linkage)
                            (system clasp-cleavir:*clasp-system*)
                            (disassemble nil))
   (multiple-value-bind (module funmap)
