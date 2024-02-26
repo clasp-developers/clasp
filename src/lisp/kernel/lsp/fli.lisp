@@ -323,28 +323,24 @@
 ;;; a special form, but the bytecode will resort to calling the function, which
 ;;; will in turn compile something to use.
 
+;;; TODO: Set up Cleavir to lower %%foreign-funcall calls into actual foreign
+;;; calls ("inline" the foreign-caller). That should make BTB CFFI efficient.
+;;; Also set it up so that in the usual case where the foreign function is named,
+;;; the lookup is done before runtime.
+
 ;;; Cache table from foreign-call signatures to caller functions.
 ;;; A caller takes a function pointer and its arguments as arguments.
 (defvar *foreign-callers* (make-hash-table :test 'equal))
 
-(defun make-foreign-caller (signature)
-  (let ((fptr (gensym "FUNCTION-POINTER"))
-        (args (mapcar (lambda (argt) (gensym (write-to-string argt)))
-                      (second signature))))
-    (clasp-cleavir::cleavir-compile
-     nil
-     `(lambda (,fptr ,@args)
-       (core:foreign-call-pointer ,signature
-        (ensure-core-pointer ,fptr "%%foreign-funcall" ,fptr)
-        ,@args)))))
-
 (defun ensure-foreign-caller (signature)
   (or (gethash signature *foreign-callers*)
       (setf (gethash signature *foreign-callers*)
-            (make-foreign-caller signature))))
+            (clasp-cleavir::make-foreign-caller signature))))
 
 (defun %%foreign-funcall (signature function-pointer &rest arguments)
-  (apply (ensure-foreign-caller signature) function-pointer arguments))
+  (apply (ensure-foreign-caller signature)
+         (ensure-core-pointer function-pointer "%%foreign-funcall" function-pointer)
+         arguments))
 
 (defmacro core:foreign-call-pointer (signature pointer &rest arguments)
   `(%%foreign-funcall ',signature ,pointer ,@arguments))
@@ -487,12 +483,6 @@
                                        (llvm-sys:constant-array-get
                                         cmp:%t*[0]% nil)
                                        (format nil "__clasp_literals_~a"
-                                               callback-name))
-        (llvm-sys:make-global-variable module cmp:%gcroots-in-module% nil
-                                       'llvm-sys:external-linkage
-                                       (llvm-sys:undef-value-get
-                                        cmp:%gcroots-in-module%)
-                                       (format nil "__clasp_gcroots_in_module_~a"
                                                callback-name))
         ;;(llvm-sys:dump-module module)
         ;;(cmp:irc-verify-module-safe module)
