@@ -10,8 +10,6 @@
          cmp::do-new-function
          cmp::do-dbg-function
          cmp::compile-file-to-module
-         cmp::loop-read-and-compile-file-forms
-         cmp::bclasp-loop-read-and-compile-file-forms
          cmp::t1expr
          cmp::t1eval-when
          cmp::t1progn

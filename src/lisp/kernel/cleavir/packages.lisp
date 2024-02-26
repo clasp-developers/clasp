@@ -32,7 +32,6 @@
    #:convert-funcalls
    #:finalize-unwind-and-landing-pad-instructions
    #:cleavir-compile
-   #:cleavir-compile-file
    #:cclasp-compile-in-env
    #:*function-inline-asts*
    #:*clasp-env*

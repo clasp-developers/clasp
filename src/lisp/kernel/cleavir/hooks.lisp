@@ -44,13 +44,6 @@
   (setq cmp:*cleavir-compile-hook* 'bir-compile))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Set up the cmp:*CLEAVIR-COMPILE-FILE-HOOK* so that COMPILE-FILE uses Cleavir
-;;
-(eval-when (:execute :load-toplevel)
-  (setq cmp:*cleavir-compile-file-hook* 'bir-loop-read-and-compile-file-forms))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Hook the bytecode-to-bir compiler into cl:compile.
 ;;;

@@ -26,12 +26,6 @@
     (dotimes (i 50)
       (format t "Compilation #~a~%" i)
       (compile-file "sys:src;lisp;kernel;lsp;setf.lisp" :output-file "/tmp/setf.fasl")))
-
-
-  (defun cleavir-compile-file (&rest args)
-    (let ((cmp:*cleavir-compile-file-hook* 'clasp-cleavir::bir-loop-read-and-compile-file-forms))
-      (apply #'compile-file args)))
-
   )
 
 

@@ -39,7 +39,6 @@
             +c++-stamp-max+
             %opaque-fn-prototype*%
             fn-prototype
-            *cleavir-compile-file-hook*
             *cleavir-compile-hook*
             *btb-compile-hook*
             *compile-print*

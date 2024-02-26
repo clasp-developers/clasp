@@ -2296,34 +2296,3 @@ COMPILE-FILE will use the default *clasp-env*."
          (pre-ast (cst->ast cst env))
          (ast (wrap-ast pre-ast)))
     (translate-ast ast)))
-
-(defun compile-file-cst (cst &optional (env *clasp-env*))
-  (let* ((cmp:*default-condition-origin* (origin-spi (cst:source cst)))
-         (pre-ast (cst->ast cst env))
-         (ast (wrap-ast pre-ast)))
-    (literal:arrange-thunk-as-top-level
-     (translate-ast ast :linkage cmp:*default-linkage*))))
-
-(defun bir-loop-read-and-compile-file-forms (source-sin environment)
-  (let ((eof-value (gensym))
-        (eclector.reader:*client* cmp:*cst-client*)
-        (cst-to-ast:*compiler* 'cl:compile-file))
-    (loop
-      ;; Required to update the source pos info. FIXME!?
-      (peek-char t source-sin nil)
-      ;; FIXME: if :environment is provided we should probably use a different read somehow
-      (let* ((core:*current-source-pos-info* (cmp:compile-file-source-pos-info source-sin))
-             (cst (eclector.concrete-syntax-tree:read source-sin nil eof-value)))
-        #+debug-monitor(sys:monitor-message "source-pos ~a" core:*current-source-pos-info*)
-        (if (eq cst eof-value)
-            (return nil)
-            (progn
-              (when *compile-print* (cmp::describe-form (cst:raw cst)))
-              (core:with-memory-ramp (:pattern 'gctools:ramp)
-                (compile-file-cst cst environment))))))))
-
-(defun cleavir-compile-file (input-file &rest kwargs)
-  (let ((cmp:*cleavir-compile-file-hook*
-          'bir-loop-read-and-compile-file-forms)
-        (cmp:*cleavir-compile-hook* 'bir-compile))
-    (apply #'compile-file input-file kwargs)))
