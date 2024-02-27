@@ -451,35 +451,6 @@ Boehm and MPS use a single pointer"
        (cons-cdr-offset (llvm-sys:struct-layout-get-element-offset cons-layout +cons.cdr-index+)))
   (core:verify-cons-layout cons-size cons-car-offset cons-cdr-offset))
 
-
-;; This structure must match the gctools::GCRootsInModule structure
-(define-c++-struct %gcroots-in-module% +general-tag+
-  ((%size_t%  :index-offset)
-   (%i8*%     :module-memory)
-   (%size_t%  :num-entries)
-   (%size_t%  :capacity)
-   (%i8**%    :function-pointers)
-   (%size_t%  :number-of-functions)))
-
-(defun gcroots-in-module-initial-value (&optional literals size)
-  (declare (ignore literals))
-  (llvm-sys:constant-struct-get %gcroots-in-module%
-                                (list
-                                 (jit-constant-size_t 0)
-                                 #+(or)(if literals
-                                           (irc-bit-cast literals %i8*%)
-                                           (llvm-sys:constant-pointer-null-get %i8*%))
-                                 (llvm-sys:constant-pointer-null-get %i8*%)
-                                 (if size
-                                     (jit-constant-size_t size)
-                                     (jit-constant-size_t 0))
-                                 (jit-constant-size_t 0)
-                                 (llvm-sys:constant-pointer-null-get %i8**%)
-                                 (jit-constant-size_t 0)
-                                 )))
-
-(define-symbol-macro %gcroots-in-module*% (llvm-sys:type-get-pointer-to %gcroots-in-module%))
-
 ;; The definition of %tmv% doesn't quite match T_mv because T_mv inherits from T_sp
 (define-symbol-macro %tmv% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %t*% %size_t%) nil))  ;; "T_mv"
 (define-symbol-macro %return-type% %tmv%)
@@ -962,7 +933,6 @@ and initialize it with an array consisting of one function pointer."
          (global-entry-point-layout (llvm-sys:data-layout-get-struct-layout data-layout %global-entry-point%))
          (function-description-offset (c++-field-offset :function-description info.%global-entry-point%))
          (vaslist-size (llvm-sys:data-layout-get-type-alloc-size data-layout %vaslist%))
-         (gcroots-in-module-size (llvm-sys:data-layout-get-type-alloc-size data-layout %gcroots-in-module%))
          (global-entry-point-size (llvm-sys:data-layout-get-type-alloc-size data-layout %global-entry-point%))
          (function-description-size (llvm-sys:data-layout-get-type-alloc-size data-layout %function-description%)))
     (declare (ignore global-entry-point-layout global-entry-point-size))
@@ -973,7 +943,6 @@ and initialize it with an array consisting of one function pointer."
                                                   :symbol-setf-function-offset symbol-setf-function-offset
                                                   :function function-size
                                                   :function-description-offset (+ function-description-offset +general-tag+)
-                                                  :gcroots-in-module gcroots-in-module-size
                                                   :vaslist vaslist-size
                                                   :function-description function-description-size)
 
@@ -1036,96 +1005,6 @@ and initialize it with an array consisting of one function pointer."
 (defun assert-result-isa-llvm-value (result)
   (unless (llvm-sys:llvm-value-p result)
     (error "result must be an instance of llvm-sys:Value_O but instead it has the value ~s" result)))
-
-(defun codegen-startup (module startup-function-name
-                        THE-REPL-XEP-GROUP gcroots-in-module
-                        array-type roots-array-or-nil number-of-roots
-                        ordered-literals)
-    (let ((startup-fn (irc-simple-function-create startup-function-name
-                                                  %fn-start-up%
-                                                  'llvm-sys:external-linkage ; this should be internal and invoked by a ctor but that doesn't seem to be happening yet
-                                                  module
-                                                  :argument-names (list "values" ))))
-      (llvm-sys:set-unnamed-addr startup-fn 'llvm-sys:none)
-      (let* ((irbuilder-alloca
-               (llvm-sys:make-irbuilder (thread-local-llvm-context)))
-             (irbuilder-body
-               (llvm-sys:make-irbuilder (thread-local-llvm-context)))
-             (*irbuilder-function-alloca* irbuilder-alloca)
-             (*irbuilder-function-body* irbuilder-body)
-             (*current-function* startup-fn)
-             (entry-bb (irc-basic-block-create "entry" startup-fn))
-             (arguments (llvm-sys:get-argument-list startup-fn))
-             (arg-values (first arguments)))
-        (cmp:irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
-        (with-irbuilder (irbuilder-alloca)
-          (let ((start (if roots-array-or-nil
-                           (irc-typed-gep array-type roots-array-or-nil (list 0 0))
-                           (llvm-sys:constant-pointer-null-get %t**%))))
-            (multiple-value-bind (function-vector-length function-vector function-vector-type)
-                (literal:setup-literal-machine-function-vectors cmp:*the-module*)
-              (when gcroots-in-module
-                (irc-intrinsic-call "cc_initialize_gcroots_in_module"
-                                    (list gcroots-in-module ; holder
-                                          start ; root_address
-                                          (jit-constant-size_t number-of-roots) ; num_roots
-                                          arg-values ; initial_data
-                                          (llvm-sys:constant-pointer-null-get %i8**%) ; transient_alloca
-                                          (jit-constant-size_t 0) ; transient_entries
-                                          (jit-constant-size_t function-vector-length) ; function_pointer_count
-                                          (irc-bit-cast
-                                           (cmp:irc-typed-gep function-vector-type
-                                                              function-vector
-                                                              (list 0 0))
-                                           %i8**%) ; fptrs
-                                          ))))
-            ;; If the constant/literal list is provided - then we may need to generate code for closurettes
-            (map nil
-                 (lambda (x)
-                   (when (and (literal:literal-node-creator-p x)
-                              (literal:literal-node-closure-p (literal:literal-node-creator-object x)))
-                     (literal:generate-run-time-code-for-closurette x)))
-                 ordered-literals))
-          (when gcroots-in-module
-            (irc-intrinsic-call "cc_finish_gcroots_in_module" (list gcroots-in-module)))
-          (let ((global-entry-point (literal:constants-table-value (cmp:entry-point-reference-index (xep-group-entry-point-reference THE-REPL-XEP-GROUP)))))
-            (irc-ret (irc-bit-cast global-entry-point %t*%))))
-        (values))))
-
-(defun codegen-shutdown (module shutdown-function-name gcroots-in-module)
-  (let* ((shutdown-fn (irc-simple-function-create shutdown-function-name
-                                                  %fn-shut-down%
-                                                  'llvm-sys::internal-linkage
-                                                  module
-                                                  :argument-names nil))
-         (irbuilder-alloca
-           (llvm-sys:make-irbuilder (thread-local-llvm-context)))
-         (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context)))
-         (*irbuilder-function-alloca* irbuilder-alloca)
-         (*irbuilder-function-body* irbuilder-body)
-         (*current-function* shutdown-fn)
-         (entry-bb (irc-basic-block-create "entry" shutdown-fn)))
-    (irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
-    (with-irbuilder (irbuilder-alloca)
-      (if gcroots-in-module
-          (irc-intrinsic-call "cc_remove_gcroots_in_module"
-                              (list gcroots-in-module)))
-      (irc-ret-void)))
-  (values))
-
-(defun codegen-startup-shutdown (module startup-shutdown-id THE-REPL-XEP-GROUP &optional gcroots-in-module array-type roots-array-or-nil (number-of-roots 0) ordered-literals)
-  (multiple-value-bind (startup-function-name shutdown-function-name)
-      (jit-startup-shutdown-function-names startup-shutdown-id)
-    (codegen-startup module startup-function-name
-                     THE-REPL-XEP-GROUP gcroots-in-module
-                     array-type roots-array-or-nil number-of-roots
-                     ordered-literals)
-    (codegen-shutdown module shutdown-function-name gcroots-in-module)
-    (make-boot-function-global-variable
-     module startup-shutdown-id :position startup-shutdown-id)
-    (cmp-log-dump-module *the-module*)
-    (values)))
-
 
 ;;; Define what ltvc_xxx functions return
 (define-symbol-macro %ltvc-return% %void%)

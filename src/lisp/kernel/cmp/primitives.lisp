@@ -203,20 +203,6 @@
          (primitive-unwinds "cc_checkBound" :size_t (list :t* :size_t :t*))
          (primitive         "cc_simpleBitVectorAref" :i8 (list :t* :size_t))
          (primitive         "cc_simpleBitVectorAset" :void (list :t* :size_t :i8))
-         (primitive         "cc_initialize_gcroots_in_module" :void (list :gcroots-in-module* ; holder
-                                                                      :t** ; root_address
-                                                                      :size_t ; num_roots
-                                                                      :t* ; initial_data
-                                                                      :i8** ; transient_alloca
-                                                                      :size_t ; transient_entries
-                                                                      :size_t ; function_pointer_count
-                                                                      :i8** ; fptrs
-                                                                      ))
-         (primitive         "cc_finish_gcroots_in_module" :void (list :gcroots-in-module*))
-         (primitive         "cc_remove_gcroots_in_module" :void (list :gcroots-in-module* ))
-         (primitive-unwinds "cc_invoke_sub_run_all_function" :void (list :fn-start-up*))
-         (primitive-unwinds "cc_invoke_start_code_interpreter" :void (list :gcroots-in-module* :i8* :size_t :i8*))
-
          (primitive "cc_verify_tag" :void (list :size_t :t* :size_t))
 
          (primitive-unwinds "cc_enclose" :t* (list
@@ -414,7 +400,6 @@
     (:double-float %double%)
     (:single-float %float%)
     (:fn-start-up* %fn-start-up*%)
-    (:gcroots-in-module* %gcroots-in-module*%)
     (:i1 %i1%)
     (:i16 %i16%)
     (:i32 %i32%)

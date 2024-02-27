@@ -1167,42 +1167,6 @@ void untag_literal_index(size_t findex, size_t& index, size_t& tag);
 
 namespace gctools {
 
-/*! Maintains pointers to arrays of roots that are stored in LLVM Modules
-    we add and remove during runtime as Modules are compiled and (in the future) removed.
- */
-
-struct GCRootsInModule {
-  static int const TransientRawIndex = 0;
-  static size_t const DefaultCapacity = 256;
-  // Fields
-  core::SimpleVector_O** _TransientAlloca;
-  void* _module_memory;
-  size_t _num_entries;
-  size_t _capacity;
-  /*fnLispCallingConvention* */ void** _function_pointers;
-  size_t _function_pointer_count;
-  GCRootsInModule(void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries,
-                  size_t function_pointer_count, void** fptrs);
-  void setup_transients(core::SimpleVector_O** transient_alloca, size_t transient_entries);
-
-  size_t remainingCapacity() { return this->_capacity - this->_num_entries; };
-  size_t push_back(Tagged val);
-  Tagged setLiteral(size_t index, Tagged val);
-  Tagged getLiteral(size_t index);
-  Tagged setTransient(size_t index, Tagged val);
-  Tagged getTransient(size_t index);
-  Tagged setTaggedIndex(char tag, size_t index, Tagged val);
-  Tagged getTaggedIndex(char tag, size_t index);
-  /*fnLispCallingConvention*/ void* lookup_function(size_t index);
-  void* address(size_t index) { return reinterpret_cast<void*>(&reinterpret_cast<core::T_sp*>(this->_module_memory)[index + 1]); }
-};
-
-void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O** root_address, size_t num_roots,
-                                  gctools::Tagged initial_data, core::SimpleVector_O** transientAlloca, size_t transient_entries,
-                                  size_t function_pointer_number, void** fptrs);
-core::T_O* read_gcroots_in_module(GCRootsInModule* roots, size_t index);
-void shutdown_gcroots_in_module(GCRootsInModule* gcroots_in_module);
-
 inline core::T_O* ensure_valid_object(core::T_O* tagged_object) {
   // Only validate general objects for now
   if (tagged_generalp(tagged_object)) {

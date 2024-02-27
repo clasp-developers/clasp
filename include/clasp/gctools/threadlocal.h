@@ -306,7 +306,6 @@ struct ThreadLocalState {
   std::string _initializer_symbol;
   void* _object_file_start;
   size_t _object_file_size;
-  gctools::GCRootsInModule* _GCRootsInModule;
   StartupInfo _Startup;
   bool _Breakstep; // Should we check for breaks?
   // What frame are we stepping over? NULL means step-into mode.

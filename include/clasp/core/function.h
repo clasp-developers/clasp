@@ -54,13 +54,6 @@ namespace core {
 extern char* global_dump_functions;
 
 /* The following MUST MATCH %function-description% in cmpintrinsics.lisp
-Each thread maintains a current GCRootsInModule structure that stores roots
-used by the FunctionDescription objects.  Every time a Function_O object is created
-a FunctionDescription is allocated using 'new' and if the GCRootsInModule can still fit
-all of the slots (two currently) indicated by the fields that end in 'Index' then that
-GCRootsInModule* is written into the FunctionDescription and the indices into the
-GCRootsInModule are written into the FunctionDescription.  Then the function description
-objects that need to be managed by the GC are written into the GCRootsInModule object.
 A pointer to the new FunctionDescription object is then written into the instance
 of the Function_O subclass.  A virtual function in the Function_O is used to
 recover the pointer to the FunctionDescription object for the Function_O.

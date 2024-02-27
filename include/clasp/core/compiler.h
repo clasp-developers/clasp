@@ -95,7 +95,6 @@ void expect_offset(T_sp key, T_sp alist, size_t expected);
 };
 
 namespace core {
-void start_code_interpreter(gctools::GCRootsInModule* roots, char* bytecode, size_t nbytes, bool log);
 void core__throw_function(T_sp tag, T_sp result_form);
 void register_startup_function(const StartUp& startup);
 void transfer_StartupInfo_to_my_thread();
