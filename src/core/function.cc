@@ -194,30 +194,6 @@ void CoreFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup
 #endif
 };
 
-CL_LAMBDA(&key function-description entry-point-functions local-entry-point-index);
-DOCGROUP(clasp);
-CL_DEFUN SimpleCoreFunGenerator_sp core__makeSimpleCoreFunGenerator(FunctionDescription_sp fdesc, T_sp entryPointIndices,
-                                                                        size_t localEntryPointIndex) {
-  auto entryPoint = gctools::GC<SimpleCoreFunGenerator_O>::allocate(fdesc, entryPointIndices, localEntryPointIndex);
-  //  printf("%s:%d:%s  entryPoint-> %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)entryPoint.raw_());
-  return entryPoint;
-}
-
-CL_LAMBDA(&key function-description entry-point-functions);
-DOCGROUP(clasp);
-CL_DEFUN CoreFunGenerator_sp core__makeCoreFunGenerator(FunctionDescription_sp fdesc, T_sp entryPointIndices) {
-  auto entryPoint = gctools::GC<CoreFunGenerator_O>::allocate(fdesc, entryPointIndices);
-  //  printf("%s:%d:%s  entryPoint-> %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)entryPoint.raw_());
-  return entryPoint;
-}
-
-std::string CoreFunGenerator_O::__repr__() const {
-  stringstream ss;
-  ss << "#<LOCAL-FUN-GENERATOR ";
-  ss << _rep_(this->_entry_point_indices) << " @" << (void*)this << ">";
-  return ss.str();
-}
-
 std::string CoreFun_O::__repr__() const {
   stringstream ss;
   ss << "#<LOCAL-FUN ";
@@ -238,17 +214,6 @@ std::string SimpleCoreFun_O::__repr__() const {
     ss << (void*)this->_EntryPoints[ii] << " ";
   }
   ss << " @" << (void*)this << ">";
-  return ss.str();
-}
-
-CL_LISPIFY_NAME("simple-core-fun-generator-local-fun-index");
-CL_DEFMETHOD
-size_t SimpleCoreFunGenerator_O::coreFunIndex() const { return this->_localFunIndex; }
-
-std::string SimpleCoreFunGenerator_O::__repr__() const {
-  stringstream ss;
-  ss << "#<GLOBAL-SIMPLE-FUN-GENERATOR ";
-  ss << _rep_(this->_entry_point_indices) << " @" << (void*)this << ">";
   return ss.str();
 }
 
@@ -368,54 +333,6 @@ BytecodeSimpleFun_sp core__makeBytecodeSimpleFun(FunctionDescription_sp fdesc, B
   return entryPoint;
 }
 
-CoreFun_sp makeCoreFunFromGenerator(CoreFunGenerator_sp original, void** entry_points) {
-  if (!original->_entry_point_indices.consp()) {
-    SIMPLE_ERROR("The CoreFun {} does not have entry-points", _rep_(original));
-  }
-  T_sp firstEntryPoint = CONS_CAR(original->_entry_point_indices);
-  if (!firstEntryPoint.fixnump()) {
-    SIMPLE_ERROR("The FunctionDescriptionGenerator {} does not have entry-points indices", _rep_(original));
-  }
-  size_t entryPointIndex = firstEntryPoint.unsafe_fixnum();
-  ClaspCoreFunction entry_point = (ClaspCoreFunction)(entry_points[entryPointIndex]);
-  T_sp code = unbound<T_O>();
-  if (entry_point) {
-    code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
-  }
-  auto entryPoint = gctools::GC<CoreFun_O>::allocate(original->_FunctionDescription, code, entry_point);
-  return entryPoint;
-}
-
-SimpleCoreFun_sp makeSimpleCoreFunFromGenerator(SimpleCoreFunGenerator_sp original, gctools::GCRootsInModule* roots,
-                                                    void** entry_points) {
-  if (!original->_entry_point_indices.consp()) {
-    SIMPLE_ERROR("The SimpleCoreFun {} does not have entry-points", _rep_(original));
-  }
-  List_sp epIndices = gc::As<List_sp>(original->_entry_point_indices);
-  size_t num = cl__length(epIndices);
-  if (num != ClaspXepFunction::Entries) {
-    printf("%s:%d:%s %lu is not enough entry_points for a ClaspXepFunction expected %d\n", __FILE__, __LINE__, __FUNCTION__, num,
-           ClaspXepFunction::Entries);
-    abort();
-  }
-  ClaspXepTemplate xepFunction;
-  size_t cur = 0;
-  for (auto entry : epIndices) {
-    T_sp oneEntryPointIndex = CONS_CAR(entry);
-    if (!oneEntryPointIndex.fixnump()) {
-      SIMPLE_ERROR("The FunctionDescriptionGenerator {} does not have entry-points indices", _rep_(original));
-    }
-    size_t entryPointIndex = oneEntryPointIndex.unsafe_fixnum();
-    ClaspXepAnonymousFunction entry_point = (ClaspXepAnonymousFunction)(entry_points[entryPointIndex]);
-    xepFunction._EntryPoints[cur] = entry_point;
-    cur++;
-  }
-  CoreFun_sp localFun((gctools::Tagged)roots->getLiteral(original->_localFunIndex));
-  T_sp code = unbound<T_O>();
-  code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(xepFunction._EntryPoints[0]));
-  return gctools::GC<SimpleCoreFun_O>::allocate(original->_FunctionDescription, xepFunction, code, localFun);
-}
-
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__FunctionDescription_sourcePathname(FunctionDescription_sp fdesc) { return fdesc->_sourcePathname; }
 
@@ -439,26 +356,6 @@ CL_DEFUN size_t core__FunctionDescription_filepos(FunctionDescription_sp fdesc) 
 
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__SimpleFun_function_description(SimpleFun_sp entryPoint) { return entryPoint->_FunctionDescription; }
-
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__SimpleCoreFunGenerator_entry_point_indices(SimpleCoreFunGenerator_sp fdesc) {
-  return fdesc->_entry_point_indices;
-}
-
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__CoreFunGenerator_entry_point_indices(CoreFunGenerator_sp fdesc) {
-  return fdesc->_entry_point_indices;
-}
-
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__set_SimpleCoreFun_entry_point_indices(SimpleCoreFunGenerator_sp fdesc, T_sp entry_point_indices) {
-  return fdesc->_entry_point_indices = entry_point_indices;
-}
-
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__set_CoreFun_entry_point_indices(CoreFunGenerator_sp fdesc, T_sp entry_point_indices) {
-  return fdesc->_entry_point_indices = entry_point_indices;
-}
 
 CL_LISPIFY_NAME(function-description-equal);
 CL_DEFMETHOD bool FunctionDescription_O::function_description_equal(T_sp other) const {

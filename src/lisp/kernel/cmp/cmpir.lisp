@@ -1029,26 +1029,6 @@ function-description - for debugging."
                                      :column column
                                      :filepos filepos))))
 
-(defun irc-create-global-entry-point-reference (xep-arity-list module function-description local-entry-point-reference)
-  (declare (ignore module))
-  (let* ((simple-fun-generator (let ((entry-point-indices (literal:register-xep-function-indices xep-arity-list)))
-                                  (sys:make-simple-core-fun-generator
-                                   :entry-point-functions entry-point-indices
-                                   :function-description function-description
-                                   :local-entry-point-index (entry-point-reference-index local-entry-point-reference))))
-         (index (literal:reference-literal simple-fun-generator)))
-    (make-entry-point-reference :index index :kind :global :function-description function-description)))
-
-(defun irc-create-local-entry-point-reference (local-fn module function-description)
-  (declare (ignore module))
-  (let* ((simple-fun-generator (let ((entry-point-index (literal:register-local-function-index local-fn)))
-                                 (sys:make-core-fun-generator
-                                  :entry-point-functions (list entry-point-index)
-                                  :function-description function-description)))
-         (index (literal:reference-literal simple-fun-generator)))
-    (make-entry-point-reference :index index :kind :local :function-description function-description)))
-
-
 (defun irc-local-function-create (llvm-function-type linkage function-name module function-description)
   "Create a local function and no function description is needed"
   (let* ((local-function-name (concatenate 'string function-name "-lcl"))

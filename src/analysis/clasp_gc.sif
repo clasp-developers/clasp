@@ -67,15 +67,13 @@
                           "llvmo::Library_O" "core::Closure_O" "core::ComplexVector_size_t_O"
                           "comp::RestoreSPFixup_O" "mpip::Mpi_O" "llvmo::DINodeArray_O"
                           "llvmo::ConstantDataArray_O" "core::SmallMap_O" "core::Instance_O"
-                          "llvmo::TargetOptions_O" "core::CoreFunGenerator_O"
-                          "clasp_ffi::ForeignTypeSpec_O" "core::Unused_dummy_O"
-                          "llvmo::DWARFContext_O" "core::HashTableEqual_O" "llvmo::Triple_O"
-                          "core::SimpleMDArray_byte64_t_O" "core::BitVectorNs_O"
+                          "llvmo::TargetOptions_O" "clasp_ffi::ForeignTypeSpec_O"
+                          "core::Unused_dummy_O" "llvmo::DWARFContext_O" "core::HashTableEqual_O"
+                          "llvmo::Triple_O" "core::SimpleMDArray_byte64_t_O" "core::BitVectorNs_O"
                           "core::CoreExposer_O" "core::BytecodeDebugVars_O"
                           "comp::JumpIfSuppliedFixup_O" "core::KeyValuePair" "llvmo::NamedMDNode_O"
                           "core::SimpleVector_byte16_t_O" "llvmo::ThreadSafeContext_O"
-                          "llvmo::TargetMachine_O" "core::SimpleVector_byte64_t_O"
-                          "core::SimpleCoreFunGenerator_O" "llvmo::Value_O"
+                          "llvmo::TargetMachine_O" "core::SimpleVector_byte64_t_O" "llvmo::Value_O"
                           "core::SimpleBaseString_O" "core::Test_O" "llvmo::Metadata_O"
                           "core::BytecodeDebugInfo_O" "core::MDArray_O" "clbind::ClassRep_O"
                           "core::BytecodeDebugMacroexpansion_O" "llvmo::ConstantInt_O"
@@ -3546,21 +3544,6 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::BytecodeDebugLocation_O"
              :layout-offset-field-names ("_location")}
-{class-kind :stamp-name "STAMPWTAG_core__SimpleCoreFunGenerator_O"
-            :stamp-key "core::SimpleCoreFunGenerator_O" :parent-class "core::General_O"
-            :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::FunctionDescription_O>"
-             :offset-base-ctype "core::SimpleCoreFunGenerator_O"
-             :layout-offset-field-names ("_FunctionDescription")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::SimpleCoreFunGenerator_O"
-             :layout-offset-field-names ("_entry_point_indices")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
-             :offset-base-ctype "core::SimpleCoreFunGenerator_O"
-             :layout-offset-field-names ("_localFunIndex")}
 {class-kind :stamp-name "STAMPWTAG_clasp_ffi__ForeignTypeSpec_O"
             :stamp-key "clasp_ffi::ForeignTypeSpec_O" :parent-class "core::General_O"
             :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3
@@ -3605,17 +3588,6 @@
              :offset-ctype "gctools::smart_ptr<clasp_ffi::ForeignData_O>"
              :offset-base-ctype "clasp_ffi::ForeignTypeSpec_O"
              :layout-offset-field-names ("m_from_object_fn_ptr")}
-{class-kind :stamp-name "STAMPWTAG_core__CoreFunGenerator_O" :stamp-key "core::CoreFunGenerator_O"
-            :parent-class "core::General_O" :lisp-class-base "core::General_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::FunctionDescription_O>"
-             :offset-base-ctype "core::CoreFunGenerator_O"
-             :layout-offset-field-names ("_FunctionDescription")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::CoreFunGenerator_O"
-             :layout-offset-field-names ("_entry_point_indices")}
 {class-kind :stamp-name "STAMPWTAG_core__Instance_O" :stamp-key "core::Instance_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 1 :definition-data "IS_POLYMORPHIC"}

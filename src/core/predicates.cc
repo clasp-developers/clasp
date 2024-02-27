@@ -280,18 +280,6 @@ CL_DEFUN bool core__proper_list_p(T_sp arg) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(simple-core-fun-generator-p)dx");
-DOCGROUP(clasp);
-CL_DEFUN bool core__simple_core_fun_generator_p(T_sp obj) { return gc::IsA<SimpleCoreFunGenerator_sp>(obj); };
-
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(core-fun-generator-p)dx");
-DOCGROUP(clasp);
-CL_DEFUN bool core__core_fun_generator_p(T_sp obj) { return gc::IsA<CoreFunGenerator_sp>(obj); };
-
-CL_LAMBDA(arg);
-CL_DECLARE();
 CL_DOCSTRING(R"dx(function-description-p)dx");
 DOCGROUP(clasp);
 CL_DEFUN bool core__function_description_p(T_sp obj) { return gc::IsA<FunctionDescription_sp>(obj); };

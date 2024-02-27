@@ -297,30 +297,6 @@ public:
   string __repr__() const;
 };
 
-// This and SimpleCoreFunGenerator are used in FASLs to indicate functions.
-// The loader will create actual local/simple funs based on these generators.
-FORWARD(CoreFunGenerator);
-class CoreFunGenerator_O : public General_O {
-  LISP_CLASS(core, CorePkg, CoreFunGenerator_O, "CoreFunGenerator", General_O);
-
-public:
-  FunctionDescription_sp _FunctionDescription;
-  T_sp _entry_point_indices;
-
-public:
-  // Accessors
-  CoreFunGenerator_O(FunctionDescription_sp fdesc,
-                      T_sp entry_point_indices)
-    : _FunctionDescription(fdesc),
-      _entry_point_indices(entry_point_indices){
-       // ASSERT(cl__length(entry_point_indices)==1);
-  };
-  std::string __repr__() const;
-  CL_DEFMETHOD FunctionDescription_sp functionDescription() const {
-    return this->_FunctionDescription;
-  }
-};
-
 // A SimpleCoreFun is a SimpleFun with an associated CoreFun.
 // This implies that the SimpleCoreFun is a compiled Lisp function,
 // at least roughly and for the moment.
@@ -396,24 +372,6 @@ public:
   void set_trampoline(Pointer_sp trampoline);
 };
 
-FORWARD(SimpleCoreFunGenerator);
-class SimpleCoreFunGenerator_O : public General_O {
-  LISP_CLASS(core, CorePkg, SimpleCoreFunGenerator_O, "SimpleCoreFunGenerator", General_O);
-
-public:
-  FunctionDescription_sp _FunctionDescription;
-  T_sp _entry_point_indices;
-  size_t _localFunIndex;
-
-public:
-  // Accessors
-  SimpleCoreFunGenerator_O(FunctionDescription_sp fdesc, T_sp entry_point_indices, size_t lepIndex)
-      : _FunctionDescription(fdesc), _entry_point_indices(entry_point_indices), _localFunIndex(lepIndex){};
-  std::string __repr__() const;
-  size_t coreFunIndex() const;
-  CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
-};
-
 FunctionDescription_sp makeFunctionDescription(T_sp functionName, T_sp lambda_list = unbound<T_O>(), T_sp docstring = nil<T_O>(),
                                                T_sp declares = nil<T_O>(), T_sp sourcePathname = nil<T_O>(), int lineno = -1,
                                                int column = -1, int filePos = -1);
@@ -447,9 +405,6 @@ SimpleCoreFun_sp makeSimpleCoreFunAndFunctionDescription(T_sp functionName, T_sp
 BytecodeSimpleFun_sp core__makeBytecodeSimpleFun(FunctionDescription_sp fdesc, BytecodeModule_sp module,
                                                              size_t localsFrameSize, size_t environmentSize, size_t pcIndex,
                                                              size_t bytecodeSize, Pointer_sp trampoline);
-
-SimpleCoreFun_sp makeSimpleCoreFunFromGenerator(SimpleCoreFunGenerator_sp ep, gctools::GCRootsInModule* roots, void** fptrs);
-CoreFun_sp makeCoreFunFromGenerator(CoreFunGenerator_sp ep, void** fptrs);
 
 }; // namespace core
 

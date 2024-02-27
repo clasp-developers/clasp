@@ -236,19 +236,6 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_addre
     core::List_sp args((gctools::Tagged)initial_data);
     for (auto c : args) {
       core::T_sp arg = CONS_CAR(c);
-
-      //
-      // This is where we translate some literals
-      // This is like load-time
-      //
-      if (gc::IsA<core::SimpleCoreFunGenerator_sp>(arg)) {
-        core::SimpleCoreFunGenerator_sp fdgen = gc::As_unsafe<core::SimpleCoreFunGenerator_sp>(arg);
-        arg = core::makeSimpleCoreFunFromGenerator(fdgen, roots, fptrs);
-      } else if (gc::IsA<core::CoreFunGenerator_sp>(arg)) {
-        core::CoreFunGenerator_sp fdgen = gc::As_unsafe<core::CoreFunGenerator_sp>(arg);
-        arg = core::makeCoreFunFromGenerator(fdgen, fptrs);
-      }
-
       roots->setLiteral(idx, arg.tagged_());
       ++idx;
     }
