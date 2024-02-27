@@ -48,7 +48,6 @@
   `(let ((*the-module* nil)
 	 (*irbuilder-function-alloca* nil)
 	 (*irbuilder-function-body* nil)
-	 (*generate-compile-file-load-time-values* nil)
 	 (*load-time-value-holder-global-var-type* nil)
 	 (*load-time-value-holder-global-var* nil)
 	 (*the-module-dibuilder* nil))

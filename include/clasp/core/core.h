@@ -67,9 +67,6 @@ THE SOFTWARE.
 #define NOINLINE __attribute__((noinline))
 #define MAYBE_INLINE __attribute__((noinline))
 
-#define RUN_ALL_FUNCTION_NAME "RUN-ALL"
-#define CLASP_CTOR_FUNCTION_NAME "CLASP-CTOR"
-
 #ifdef CLASP_THREADS
 #include <atomic>
 #endif

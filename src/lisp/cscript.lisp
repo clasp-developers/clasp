@@ -38,7 +38,6 @@
              #~"kernel/cmp/cmpir.lisp"
              #~"kernel/cmp/debuginfo.lisp"
              #~"kernel/cmp/arguments.lisp"
-             #~"kernel/cmp/cmprunall.lisp"
              #~"kernel/cmp/cmpliteral.lisp"
              #~"kernel/cmp/typeq.lisp"
              #~"kernel/cmp/codegen-special-form.lisp"

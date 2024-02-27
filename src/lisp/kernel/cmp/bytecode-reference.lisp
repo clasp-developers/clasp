@@ -455,10 +455,8 @@
       (assemble context +pop+))))
 
 (defun compile-load-time-value (form env context)
-  (if cmp::*generate-compile-file-load-time-values*
-      (error "Handle compile-file")
-      (let ((value (eval form)))
-        (compile-literal value env context))))
+  (let ((value (eval form)))
+    (compile-literal value env context)))
 
 (flet ((maybe-emit (lexical-info opcode context)
          (flet ((emitter (fixup position code)

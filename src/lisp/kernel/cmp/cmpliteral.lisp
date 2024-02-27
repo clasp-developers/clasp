@@ -1,5 +1,10 @@
 (in-package :literal)
 
+(defvar cmp:*load-time-value-holder-global-var-type* nil
+  "Store the current load-time-value data structure type for the compiler")
+(defvar cmp:*load-time-value-holder-global-var* nil
+  "Store the current load-time-value data structure for the compiler")
+
 ;;; ------------------------------------------------------------
 ;;;
 ;;; Immediate objects don't need to be put into tables

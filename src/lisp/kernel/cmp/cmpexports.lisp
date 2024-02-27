@@ -47,7 +47,6 @@
             *current-unwind-landing-pad-dest*
             *debug-compile-file*
             *debug-compile-file-counter*
-            *generate-compile-file-load-time-values*
             *gv-current-function-name*
             *irbuilder*
             *thread-safe-context*
@@ -359,14 +358,6 @@
             general-entry-point-redirect-name
             get-or-declare-function-or-error
             )))
-
-;;; exports for runall
-(export '(
-          with-make-new-run-all
-          with-run-all-entry-codegen
-          with-run-all-body-codegen
-          generate-load-time-values
-          ))
 
 ;;; exports for conditions
 (export '(deencapsulate-compiler-condition

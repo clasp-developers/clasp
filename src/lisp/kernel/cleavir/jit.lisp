@@ -42,8 +42,6 @@
      (format nil nil "MAIN-~a" (string-upcase (pathname-name lname))))
     (string
      (cond
-       ((string= lname core:+run-all-function-name+) lname) ; this one is ok
-       ((string= lname core:+clasp-ctor-function-name+) lname) ; this one is ok
        ((string= lname "IMPLICIT-REPL") lname)  ; this one is ok
        ((string= lname "TOP-LEVEL")
         (function-name-from-source-info lname))
