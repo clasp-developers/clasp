@@ -114,7 +114,6 @@
 ;;; Given a bytecode function, return a compiled native function.
 (defun compile-function (function
                          &key (abi clasp-cleavir:*abi-x86-64*)
-                           (linkage 'llvm-sys:external-linkage)
                            (system clasp-cleavir:*clasp-system*)
                            (disassemble nil))
   (multiple-value-bind (module funmap)
@@ -132,7 +131,7 @@
           (clasp-cleavir::*fixed-closures*
             (fixed-closures-map (fmap funmap)))
           (bir (finfo-irfun (find-bcfun function funmap))))
-      (clasp-cleavir::bir->function bir :abi abi :linkage linkage))))
+      (clasp-cleavir::bir->function bir :abi abi))))
 
 (defun fixed-closures-map (fmap)
   (loop for entry in fmap

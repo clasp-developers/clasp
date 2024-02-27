@@ -104,7 +104,7 @@
 
 ;;; Create an llvm-function-info for a BIR function.
 ;;; Also create the llvm::Functions.
-(defun allocate-llvm-function-info (function &key linkage toplevel)
+(defun allocate-llvm-function-info (function &key toplevel)
   (let* ((lambda-name (get-or-create-lambda-name function))
          (jit-function-name (jit-function-name lambda-name))
           (arguments (compute-arglist (bir:lambda-list function)))
@@ -114,13 +114,13 @@
                     (bir:lambda-list function)))
          (main-function
            (cmp:irc-function-create
-            mtype linkage
+            mtype 'llvm-sys:external-linkage
             (concatenate 'string jit-function-name ".main")
             cmp:*the-module*))
          (general-xep
            (when xep-p
              (cmp:irc-function-create
-              (cmp:fn-prototype :general-entry) linkage
+              (cmp:fn-prototype :general-entry) 'llvm-sys:external-linkage
               (concatenate 'string jit-function-name ".xep-general")
               cmp:*the-module*)))
          (fixed-xeps
@@ -130,8 +130,8 @@
                    for name = (format nil "~a.xep-~d" jit-function-name i)
                    collect (if (cmp::generate-function-for-arity-p i analysis)
                                (cmp:irc-function-create
-                                (cmp:fn-prototype i) linkage name
-                                cmp:*the-module*)
+                                (cmp:fn-prototype i) 'llvm-sys:external-linkage
+                                name cmp:*the-module*)
                                :placeholder))))
          ;; Check for a forced closure layout first.
          ;; if there isn't one, make one up.
@@ -1851,10 +1851,7 @@
                 (cmp:irc-unreachable)))))))
   xep)
 
-(defun layout-main-function* (the-function ir
-                              body-irbuilder body-block
-                              abi &key (linkage 'llvm-sys:internal-linkage))
-  (declare (ignore linkage))
+(defun layout-main-function* (the-function ir body-irbuilder body-block abi)
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
     (cmp:with-irbuilder (body-irbuilder)
       (with-catch-pad-prep
@@ -1879,8 +1876,7 @@
     (cmp:irc-br body-block))
   the-function)
 
-(defun layout-main-function (function lambda-name abi
-                             &aux (linkage 'llvm-sys:internal-linkage)) ; llvm-sys:private-linkage
+(defun layout-main-function (function lambda-name abi)
   (let* ((*tags* (make-hash-table :test #'eq))
          (*datum-values* (make-hash-table :test #'eq))
          (*dynenv-storage* (make-hash-table :test #'eq))
@@ -1935,8 +1931,7 @@
             (cmp:with-dbg-lexical-block
                 (:lineno (core:source-pos-info-lineno source-pos-info))
               (layout-main-function* the-function function
-                                     body-irbuilder body-block
-                                     abi :linkage linkage))))))))
+                                     body-irbuilder body-block abi))))))))
 
 (defun compute-rest-alloc (cleavir-lambda-list-analysis)
   ;; FIXME: We seriously need to not reparse lambda lists a million times
@@ -2048,9 +2043,7 @@
        (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*))
      (values)))
 
-(defun layout-procedure (function lambda-name abi
-                         &key (linkage 'llvm-sys:internal-linkage) toplevel)
-  (declare (ignore linkage))
+(defun layout-procedure (function lambda-name abi &key toplevel)
   (when (or (eq function toplevel) (xep-needed-p function))
     (layout-xep-group function lambda-name abi))
   (layout-main-function function lambda-name abi))
@@ -2123,17 +2116,14 @@
         (setf (gethash entrance *unwind-ids*) i)
         (incf i)))
     (setf (gethash function *function-info*)
-          (allocate-llvm-function-info function :toplevel toplevel
-                                       :linkage 'llvm-sys:external-linkage)))
+          (allocate-llvm-function-info function :toplevel toplevel)))
   (with-literals
       (allocate-module-constants module)
     (bir:do-functions (function module)
       (layout-procedure function (get-or-create-lambda-name function)
-                        abi :toplevel toplevel
-                            :linkage 'llvm-sys:external-linkage))))
+                        abi :toplevel toplevel))))
 
-(defun translate (bir &key abi linkage)
-  (declare (ignore linkage))
+(defun translate (bir &key abi)
   (let* ((*unwind-ids* (make-hash-table :test #'eq)))
     (layout-module (bir:module bir) abi :toplevel bir)
     (cmp::potentially-save-module)
@@ -2268,17 +2258,14 @@ COMPILE-FILE will use the default *clasp-env*."
   (maybe-debug-transformation module :final)
   (values))
 
-(defun translate-ast (ast &key (abi *abi-x86-64*)
-                               (linkage 'llvm-sys:internal-linkage)
-                               (system *clasp-system*))
+(defun translate-ast (ast &key (abi *abi-x86-64*) (system *clasp-system*))
   (let ((bir (ast->bir ast system)))
-    (translate bir :abi abi :linkage linkage)))
+    (translate bir :abi abi)))
 
 (defun bir-compile (form env)
   (bir-compile-cst (cst:cst-from-expression form) env))
 
-(defun bir->function (bir &key (abi *abi-x86-64*) linkage)
-  (declare (ignore linkage))
+(defun bir->function (bir &key (abi *abi-x86-64*))
   (cmp::with-compiler-env ()
     (let ((module (cmp::create-run-time-module-for-compile))
           (*constant-values* (make-hash-table :test #'eq))
