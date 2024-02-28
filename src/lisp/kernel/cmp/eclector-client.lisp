@@ -10,7 +10,7 @@
   (locally (declare (notinline make-instance))
     (make-instance 'clasp-cst-client)))
 
-(defmethod eclector.parse-result:source-position
+(defmethod eclector.base:source-position
     ((client clasp-cst-client) stream)
   (cmp:compile-file-source-pos-info stream))
 
