@@ -53,7 +53,7 @@
 
 (defclass clasp-tracking-elector-client (cmp:clasp-eclector-client-mixin eclector.parse-result:parse-result-client) ())
 
-(defmethod eclector.parse-result:source-position
+(defmethod eclector.base:source-position
     ((client clasp-tracking-elector-client) stream)
   (cmp:compile-file-source-pos-info stream))
 
