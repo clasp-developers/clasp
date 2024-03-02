@@ -34,22 +34,67 @@
   (let ((irmodule (make-instance 'bir:module)))
     (values irmodule (compile-bcmodule-into bcmodule irmodule))))
 
+;;; When compiling bytecode we make load time value objects ahead of time
+;;; to make things easier on the file compiler. When compiling a runtime module
+;;; we only need to create LTVs for the mutable indices.
+;;; TODO?: If the bytecode recorded immutable LTVs as well, and the forms (or
+;;; bytecode functions) that produced the values, we could dump an actual
+;;; bytecode function into a FASL with zero information loss.
+(defun compute-runtime-literals (irmodule literals mutables)
+  (loop with nlits = (length literals)
+        with result = (make-array nlits)
+        for i from 0 below nlits
+        for value = (aref literals i)
+        do (setf (aref result i)
+                 (if (member i mutables) ; FIXME: a bit inefficient
+                     (cons (bir:load-time-value-in-module `',value nil irmodule)
+                           t)
+                     (cons value nil)))
+        finally (return result)))
+
+(defun compute-compile-literals-ltvs (irmodule literal-infos)
+  (map 'vector
+       (lambda (info)
+         (etypecase info
+           (cmp:constant-info
+            (cons (cmp:constant-info/value info) nil))
+           (cmp:function-cell-info
+            (cons (core:ensure-function-cell
+                   (cmp:function-cell-info/fname info))
+                  nil))
+           (cmp:variable-cell-info
+            (cons (core:ensure-variable-cell
+                   (cmp:variable-cell-info/vname info))
+                  nil))
+           (cmp:load-time-value-info
+            (cons (bir:load-time-value-in-module
+                   (cmp:load-time-value-info/form info)
+                   (cmp:load-time-value-info/read-only-p info)
+                   irmodule)
+                  t))))
+       literal-infos))
+
 (defun compile-bcmodule-into (bcmodule irmodule)
-  (let* ((literals (core:bytecode-module/literals bcmodule))
-         (mutables (core:bytecode-module/mutable-literals bcmodule))
-         (blockmap (make-blockmap)) (funmap (make-funmap))
+  (let ((literals (core:bytecode-module/literals bcmodule))
+        (mutables (core:bytecode-module/mutable-literals bcmodule)))
+    (compile-bytecode-into (core:bytecode-module/bytecode bcmodule)
+                           (core:bytecode-module/debug-info bcmodule)
+                           (compute-runtime-literals irmodule literals mutables)
+                           irmodule)))
+
+(defun compile-bytecode-into (bytecode annotations literals irmodule)
+  (let* ((blockmap (make-blockmap)) (funmap (make-funmap))
          (context (make-context irmodule blockmap funmap))
          (inserter (make-instance 'build:inserter))
          ;; annotations starting at opip.
-         (opannots (initial-annotations
-                    (core:bytecode-module/debug-info bcmodule)))
+         (opannots (initial-annotations annotations))
          ;; all annotations currently in scope.
          (annots
            (sort (copy-list opannots) #'<
                  :key #'core:bytecode-debug-info/end)))
     ;; Compile.
-    (core:do-module-instructions (mnemonic args opip ip next-annots)
-        (bcmodule)
+    (core:do-instructions (mnemonic args opip ip next-annots)
+        (bytecode :annotations annotations)
       (let ((bir:*policy* (policy context))
             (bir:*origin* (first (origin-stack context))))
         ;; End annotations coming out of effect.
@@ -65,7 +110,7 @@
         (when (reachablep context)
           (let ((args (if (eq mnemonic :parse-key-args)
                           (compute-pka-args args literals)
-                          (compute-args args literals mutables))))
+                          (compute-args args literals))))
             (apply #'compile-instruction mnemonic inserter context args)))
         (setf annots (add-annotations annots next-annots)
               opannots next-annots)))
@@ -206,13 +251,14 @@
     :blockmap (blockmap context) :funmap (funmap context)
     :reachablep (reachablep context)))
 
-(defun compute-args (args literals mutables)
+(defun compute-args (args literals)
   (loop for (type . value) in args
         collect (ecase type
                   ((:constant)
-                   ;; (values . mutablep)
-                   (cons (aref literals value)
-                         (if (member value mutables) t nil)))
+                   ;; (value . ltvp)
+                   ;; if an ltv, VALUE is a bir:load-time-value
+                   ;; otherwise it's whatever unadorned object
+                   (aref literals value))
                   ((:label) value)
                   ((:keys)
                    ;; not actually used, so whatever
@@ -299,7 +345,7 @@
     (list more-args key-count-info
           (loop for i from key-literals-start
                 repeat (car key-count-info)
-                collect (aref literals i))
+                collect (car (aref literals i)))
           key-frame-start)))
 
 (defun make-bir-function (bytecode-function inserter
@@ -402,9 +448,9 @@
 
 (defmethod compile-instruction ((mnemonic (eql :const))
                                 inserter context &rest args)
-  (destructuring-bind ((value . mutablep)) args
-    (stack-push (if mutablep
-                    (compile-load-time-value value nil inserter)
+  (destructuring-bind ((value . ltvp)) args
+    (stack-push (if ltvp
+                    (compile-load-time-value value inserter)
                     (compile-constant value inserter))
                 context)))
 
@@ -415,17 +461,8 @@
                   :inputs (list const) :outputs (list cref-out))
     cref-out))
 
-(defun compile-load-time-value (value read-only-p inserter)
-  ;; read-only-p is always nil since T will just end up as a
-  ;; normal constant, but it's included for completeness.
-  ;; FIXME: Define build:load-time-value
-  (let* ((module (bir:module inserter))
-         ;; FIXME: Maybe change Cleavir LTV handling to not need
-         ;; a raw form. Using quote here is a little sketchy
-         ;; since the value is after all mutable.
-         (ltv (bir:load-time-value-in-module `',value read-only-p
-                                             module))
-         (ltv-out (make-instance 'bir:output)))
+(defun compile-load-time-value (ltv inserter)
+  (let ((ltv-out (make-instance 'bir:output)))
     (build:insert inserter 'bir:load-time-value-reference
                   :inputs (list ltv) :outputs (list ltv-out))
     ltv-out))
