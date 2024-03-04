@@ -2088,6 +2088,10 @@ void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Contex
     List_sp code;
     List_sp specials;
     eval::extract_declares_docstring_code_specials(oCddr(definition), declares, false, docstring, code, specials);
+    // If the function does not have a declared name, name it (flet whatever).
+    if (extract_lambda_name_from_declares(declares).nilp())
+      declares = Cons_O::create(Cons_O::createList(core::_sym_lambdaName, Cons_O::createList(cl::_sym_flet, name)), declares);
+    // Compile the function.
     T_sp block = Cons_O::create(cl::_sym_block, Cons_O::create(core__function_block_name(name), code));
     T_sp lambda = Cons_O::createList(cl::_sym_lambda, oCadr(definition), Cons_O::create(cl::_sym_declare, declares), block);
     compile_function(lambda, env, ctxt.sub_receiving(1));
@@ -2146,6 +2150,8 @@ void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Cont
     List_sp code;
     List_sp specials;
     eval::extract_declares_docstring_code_specials(oCddr(definition), declares, false, docstring, code, specials);
+    if (extract_lambda_name_from_declares(declares).nilp())
+      declares = Cons_O::create(Cons_O::createList(core::_sym_lambdaName, Cons_O::createList(cl::_sym_labels, name)), declares);
     T_sp block = Cons_O::create(cl::_sym_block, Cons_O::create(core__function_block_name(name), code));
     T_sp fun_body = Cons_O::createList(Cons_O::create(cl::_sym_declare, declares), block);
     Cfunction_sp fun =
