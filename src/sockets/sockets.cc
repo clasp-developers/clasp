@@ -30,6 +30,12 @@ THE SOFTWARE.
 #include <sys/un.h>
 #include <sys/time.h>
 #include <netdb.h>
+#ifndef NETDB_INTERNAL
+#define NETDB_INTERNAL (-1)
+#endif
+#ifndef NETDB_SUCCESS
+#define NETDB_SUCCESS (0)
+#endif
 #include <string.h>
 #include <unistd.h>
 #include <netinet/in.h>

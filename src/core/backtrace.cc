@@ -675,7 +675,7 @@ __attribute__((optnone)) static T_mv lu_call_with_frame(std::function<T_mv(Debug
   // is a pain in the ass for very little gain.
   std::string sstring = lu_procname(&cursor)->get_std_string();
   int fi(0);
-  DebuggerFrame_sp bot = make_frame(fi++, (void*)ip, sstring.c_str(), (void*)fbp);
+  DebuggerFrame_sp bot = make_frame(fi++, (void*)ip, sstring.c_str(), (void*)fbp, bytecode_pc, bytecode_fp);
   DebuggerFrame_sp prev = bot;
   while (unw_step(&cursor) > 0) {
     resip = unw_get_reg(&cursor, UNW_REG_IP, &ip);

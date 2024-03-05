@@ -16,7 +16,6 @@ extern "C" {
 int gcFunctions_after;
 
 #include <stdint.h>
-#include <execinfo.h>
 #include <unistd.h>
 #include <sstream>
 #include <iomanip>

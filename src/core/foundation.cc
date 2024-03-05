@@ -1635,7 +1635,7 @@ void maybe_register_symbol_using_dladdr_ep(void* functionPointer, size_t size, c
         return; // This means it's a virtual method.
       global_pointerCount++;
       Dl_info info;
-#if defined(_TARGET_OS_LINUX)
+#ifdef RTLD_DL_SYMENT
       const Elf64_Sym* extra_info;
       int ret = dladdr1(functionPointer, &info, (void**)&extra_info, RTLD_DL_SYMENT);
 #else
