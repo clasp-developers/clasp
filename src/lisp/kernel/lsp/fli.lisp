@@ -434,7 +434,7 @@
         (let* ((c-args (llvm-sys:get-argument-list llfun))
                ;; Generate code to translate the arguments.
                (cl-args (mapcar (lambda (c-arg c-arg-name c-type)
-                                  (cmp:irc-intrinsic-call
+                                  (cmp:irc-intrinsic-call-or-invoke
                                    (clasp-ffi::to-translator-name c-type)
                                    (list c-arg)
                                    (format nil "translated-~a" c-arg-name)))
@@ -455,7 +455,7 @@
           ;; Translate the return value back to C if applicable.
           (if (llvm-sys:type-equal rett cmp:%void%)
               (cmp:irc-ret-void)
-              (cmp:irc-ret (cmp:irc-intrinsic-call
+              (cmp:irc-ret (cmp:irc-intrinsic-call-or-invoke
                             (clasp-ffi::from-translator-name rett-kw)
                             (list (cmp:irc-tmv-primary cl-result))
                             "c-result"))))))))
