@@ -40,19 +40,6 @@
 ;;; The policy is computed later in cleavir/setup.lisp.
 (defvar *policy* ())
 
-;;; (setq core::*echo-repl-read* t)
-
-(defmacro with-compiler-env ((&rest options) &rest body)
-  "Initialize the environment to protect nested compilations from each other"
-  (declare (ignore options)) ; FIXME: Find a use or remove
-  `(let ((*the-module* nil)
-	 (*irbuilder-function-alloca* nil)
-	 (*irbuilder-function-body* nil)
-	 (*load-time-value-holder-global-var-type* nil)
-	 (*load-time-value-holder-global-var* nil)
-	 (*the-module-dibuilder* nil))
-     ,@body))
-
 (defmacro with-compilation-unit ((&rest options) &body body)
   `(do-compilation-unit #'(lambda () ,@body) ,@options))
 

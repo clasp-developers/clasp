@@ -462,33 +462,32 @@
 
 (defun make-callback (signature function)
   (declare (ignorable function))
-  (cmp::with-compiler-env ()
-    (let* ((module (cmp::create-run-time-module-for-compile))
-           (id (cmp::next-jit-compile-counter))
-           (varname (format nil "callback-lisp-function-~d" id))
-           (callback-name (format nil "callback-~d" id)))
-      (cmp::with-module (:module module :optimize nil)
-        (let ((var (llvm-sys:make-global-variable module cmp:%t*% nil
-                                                  'llvm-sys:external-linkage
-                                                  (llvm-sys:undef-value-get
-                                                   cmp:%t*%)
-                                                  varname)))
-          (codegen-callback signature var :c-name callback-name))
-        ;; Some variables required by parseLinkGraph.
-        ;; We don't actually use them - this is a stupid sham.
-        ;; Initializers need to be put in to ensure the symbol actually
-        ;; exist in the lib - without initializers these are just declarations.
-        (llvm-sys:make-global-variable module cmp:%t*[0]% nil
-                                       'llvm-sys:external-linkage
-                                       (llvm-sys:constant-array-get
-                                        cmp:%t*[0]% nil)
-                                       (format nil "__clasp_literals_~a"
-                                               callback-name))
-        ;;(llvm-sys:dump-module module)
-        ;;(cmp:irc-verify-module-safe module)
-        (let ((dylib (llvm-sys:jit-module-to-dylib module callback-name)))
-          (setf (llvm-sys:jit-lookup-t dylib varname) function)
-          (llvm-sys:jit-lookup dylib callback-name))))))
+  (let* ((module (cmp::create-run-time-module-for-compile))
+         (id (cmp::next-jit-compile-counter))
+         (varname (format nil "callback-lisp-function-~d" id))
+         (callback-name (format nil "callback-~d" id)))
+    (cmp::with-module (:module module :optimize nil)
+      (let ((var (llvm-sys:make-global-variable module cmp:%t*% nil
+                                                'llvm-sys:external-linkage
+                                                (llvm-sys:undef-value-get
+                                                 cmp:%t*%)
+                                                varname)))
+        (codegen-callback signature var :c-name callback-name))
+      ;; Some variables required by parseLinkGraph.
+      ;; We don't actually use them - this is a stupid sham.
+      ;; Initializers need to be put in to ensure the symbol actually
+      ;; exist in the lib - without initializers these are just declarations.
+      (llvm-sys:make-global-variable module cmp:%t*[0]% nil
+                                     'llvm-sys:external-linkage
+                                     (llvm-sys:constant-array-get
+                                      cmp:%t*[0]% nil)
+                                     (format nil "__clasp_literals_~a"
+                                             callback-name))
+      ;;(llvm-sys:dump-module module)
+      ;;(cmp:irc-verify-module-safe module)
+      (let ((dylib (llvm-sys:jit-module-to-dylib module callback-name)))
+        (setf (llvm-sys:jit-lookup-t dylib varname) function)
+        (llvm-sys:jit-lookup dylib callback-name)))))
 
 (defun %ensure-callback (signature function)
   (let ((key (cons function signature)))
