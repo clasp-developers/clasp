@@ -56,14 +56,10 @@
       ;; + called with %intrinsic-invoke-if-landing-pad-or-call
       ;; + ... unless its cc_unwind or cc_throw
       (warn "%intrinsic-call is being used for ~a when this intrinsic has been declared with the unwind property - meaning that it can throw an exception and %intrinsic-invoke-if-landing-pad-or-call should be used" function-name)))
-  (cmp:irc-intrinsic-call function-name args label))
+  (cmp:irc-intrinsic-call-or-invoke function-name args label))
 
 (defun %intrinsic-invoke-if-landing-pad-or-call (function-name args &optional (label "") (maybe-landing-pad cmp:*current-unwind-landing-pad-dest*))
-  (cmp::irc-intrinsic-invoke-if-landing-pad-or-call function-name args label maybe-landing-pad)
-  ;; FIXME:   If the current function has a landing pad - then use INVOKE
-  #+(or)(if maybe-landing-pad
-            (cmp:irc-intrinsic-invoke function-name args maybe-landing-pad label)
-            (cmp:irc-intrinsic-call function-name args label)))
+  (cmp:irc-intrinsic-call-or-invoke function-name args label maybe-landing-pad))
 
 (defgeneric %sadd.with-overflow (x y abi))
 (defmethod %sadd.with-overflow (x y (abi abi-x86-64))

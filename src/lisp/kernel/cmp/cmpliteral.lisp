@@ -707,14 +707,14 @@ Return the index of the load-time-value"
                    (byte-code-length (length byte-code-string))
                    (byte-code-global (llvm-sys:make-string-global cmp:*the-module* byte-code-string
                                                                   (core:fmt nil "startup-byte-code-{}" id))))
-              (cmp:irc-intrinsic-call "cc_invoke_start_code_interpreter"
-                                      (list *gcroots-in-module*
-                                            (cmp:irc-bit-cast (cmp:irc-typed-gep (llvm-sys:array-type-get cmp:%i8% (1+ byte-code-length))
-                                                                           byte-code-global (list 0 0))
-                                                              cmp:%i8*%)
-                                            (cmp:jit-constant-size_t byte-code-length)
-                                            (cmp:irc-bit-cast cmp::*current-function* cmp:%i8*%)))
-              (cmp:irc-intrinsic-call "cc_finish_gcroots_in_module" (list *gcroots-in-module*)))))
+              (cmp:irc-intrinsic "cc_invoke_start_code_interpreter"
+                                 *gcroots-in-module*
+                                 (cmp:irc-bit-cast (cmp:irc-typed-gep (llvm-sys:array-type-get cmp:%i8% (1+ byte-code-length))
+                                                                      byte-code-global (list 0 0))
+                                                   cmp:%i8*%)
+                                 (cmp:jit-constant-size_t byte-code-length)
+                                 (cmp:irc-bit-cast cmp::*current-function* cmp:%i8*%))
+              (cmp:irc-intrinsic "cc_finish_gcroots_in_module" *gcroots-in-module*))))
       (let ((literal-entries (literal-machine-table-index *literal-machine*)))
         (when t ;; (> literal-entries 0)
           ;; We have a new table, replace the old one and generate code to register the new one
@@ -738,20 +738,20 @@ Return the index of the load-time-value"
                 (setup-literal-machine-function-vectors cmp:*the-module* :id id)
               (cmp:with-run-all-entry-codegen
                   (let ((transient-vector (cmp:alloca-i8* "transients")))
-                    (cmp:irc-intrinsic-call "cc_initialize_gcroots_in_module"
-                                            (list *gcroots-in-module*
-                                                  (cmp:irc-pointer-cast correct-size-holder cmp:%t**% "")
-                                                  (cmp:jit-constant-size_t literal-entries)
-                                                  (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0)
-                                                                      cmp:%t*%)
-                                                  transient-vector
-                                                  (cmp:jit-constant-size_t transient-entries)
-                                                  (cmp:jit-constant-size_t function-vector-length)
-                                                  (cmp:irc-bit-cast
-                                                   (cmp:irc-typed-gep function-vector-type function-vector
-                                                                (list 0 0))
-                                                   cmp:%i8**%)
-                                                  )))))
+                    (cmp:irc-intrinsic "cc_initialize_gcroots_in_module"
+                                       *gcroots-in-module*
+                                       (cmp:irc-pointer-cast correct-size-holder cmp:%t**% "")
+                                       (cmp:jit-constant-size_t literal-entries)
+                                       (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0)
+                                                           cmp:%t*%)
+                                       transient-vector
+                                       (cmp:jit-constant-size_t transient-entries)
+                                       (cmp:jit-constant-size_t function-vector-length)
+                                       (cmp:irc-bit-cast
+                                        (cmp:irc-typed-gep function-vector-type function-vector
+                                                           (list 0 0))
+                                        cmp:%i8**%)
+                                       ))))
             ;; Erase the dummy holder
             (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)))))))
 

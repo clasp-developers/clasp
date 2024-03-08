@@ -12,9 +12,9 @@
   (with-irbuilder ((llvm-sys:make-irbuilder (thread-local-llvm-context)))
     (let ((errorb (irc-basic-block-create "wrong-num-args")))
       (irc-begin-block errorb)
-      (irc-intrinsic-call-or-invoke "cc_wrong_number_of_arguments"
-                                    ;; We use low max to indicate no upper limit.
-                                    (list closure nargs min (or max (irc-size_t 0))))
+      (irc-intrinsic "cc_wrong_number_of_arguments"
+                     ;; We use low max to indicate no upper limit.
+                     closure nargs min (or max (irc-size_t 0)))
       (irc-unreachable)
       errorb)))
 
@@ -131,25 +131,25 @@ switch (nargs) {
                    ((eq rest-alloc 'dynamic-extent)
                     ;; Do the dynamic extent thing- alloca, then an intrinsic to initialize it.
                     (let ((rrest (alloca-dx-list :length nremaining :label "rrest")))
-                      (irc-intrinsic-call "cc_gatherDynamicExtentRestArguments"
-                                          (list (cmp:calling-convention-vaslist* calling-conv)
-                                                nremaining
-                                                (irc-bit-cast rrest %t**%)))))
+                      (irc-intrinsic "cc_gatherDynamicExtentRestArguments"
+                                     (cmp:calling-convention-vaslist* calling-conv)
+                                     nremaining
+                                     (irc-bit-cast rrest %t**%))))
                    (varest-p
                     #+(or)
                     (irc-tag-vaslist (cmp:calling-convention-vaslist* calling-conv)
                                      "rest")
                     ;;#+(or)
                     (let ((temp-vaslist (alloca-vaslist :label "rest")))
-                      (irc-intrinsic-call "cc_gatherVaRestArguments" 
-                                          (list (cmp:calling-convention-vaslist* calling-conv)
-                                                nremaining
-                                                temp-vaslist))))
+                      (irc-intrinsic "cc_gatherVaRestArguments" 
+                                     (cmp:calling-convention-vaslist* calling-conv)
+                                     nremaining
+                                     temp-vaslist)))
                    (t
                     ;; general case- heap allocation
-                    (irc-intrinsic-call "cc_gatherRestArguments" 
-                                        (list (cmp:calling-convention-vaslist* calling-conv)
-                                              nremaining))))))
+                    (irc-intrinsic "cc_gatherRestArguments" 
+                                   (cmp:calling-convention-vaslist* calling-conv)
+                                   nremaining)))))
       (funcall *argument-out* rest rest-var))))
 
 ;;; Keyword processing is the most complicated part, unsurprisingly.
@@ -239,8 +239,8 @@ a_p = a_p_temp; a = a_temp;
         (irc-begin-block odd-kw)
         (unless (calling-convention-closure calling-conv)
           (error "The calling-conv ~s does not have a closure" calling-conv))
-        (irc-intrinsic-invoke-if-landing-pad-or-call "cc_oddKeywordException"
-                                                     (list (calling-convention-closure calling-conv)))
+        (irc-intrinsic "cc_oddKeywordException"
+                       (calling-convention-closure calling-conv))
         (irc-unreachable))
       ;; Loop starts; welcome hell
       (irc-begin-block kw-loop)
@@ -343,10 +343,10 @@ a_p = a_p_temp; a = a_temp;
                 (kw-assigns (irc-basic-block-create "kw-assigns")))
             (irc-cond-br sbkw aok-check kw-assigns)
             (irc-begin-block aok-check)
-            (irc-intrinsic-invoke-if-landing-pad-or-call
+            (irc-intrinsic
              "cc_ifBadKeywordArgumentException"
              ;; aok was initialized to NIL, regardless of the suppliedp, so this is ok.
-             (list allow-other-keys bad-keyword (calling-convention-closure calling-conv)))
+             allow-other-keys bad-keyword (calling-convention-closure calling-conv))
             (irc-br kw-assigns)
             (irc-begin-block kw-assigns)))
         (do* ((top-param-phis top-param-phis (cdr top-param-phis))

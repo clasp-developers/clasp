@@ -205,12 +205,10 @@
             irc-branch-to-and-begin-block
             irc-cond-br
             irc-call-or-invoke
-            irc-intrinsic-call
-            irc-intrinsic-invoke
+            irc-intrinsic-call-or-invoke
             irc-bit-cast
             irc-pointer-cast
             irc-maybe-cast-integer-to-t*
-            irc-create-invoke-default-unwind
             irc-create-landing-pad
             irc-exception-typeid*
             irc-insert-value

@@ -38,7 +38,6 @@
          cmp::compile-optional-arguments
          cmp::compile-key-arguments
          cmp::add-global-ctor-function
-         cmp::irc-create-invoke-default-unwind
          cmp::codegen-lexical-var-reference
          cmp::irc-intrinsic-call-or-invoke
          cmp::irc-arity-info

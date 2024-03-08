@@ -1066,22 +1066,22 @@ and initialize it with an array consisting of one function pointer."
           (multiple-value-bind (function-vector-length function-vector function-vector-type)
               (literal:setup-literal-machine-function-vectors cmp:*the-module*)
             (when gcroots-in-module
-              (irc-intrinsic-call "cc_initialize_gcroots_in_module"
-                                  (list gcroots-in-module ; holder
-                                        start ; root_address
-                                        (jit-constant-size_t number-of-roots) ; num_roots
-                                        arg-values ; initial_data
-                                        (llvm-sys:constant-pointer-null-get %i8**%) ; transient_alloca
-                                        (jit-constant-size_t 0) ; transient_entries
-                                        (jit-constant-size_t function-vector-length) ; function_pointer_count
-                                        (irc-bit-cast
-                                         (cmp:irc-typed-gep function-vector-type
-                                                            function-vector
-                                                            (list 0 0))
-                                         %i8**%) ; fptrs
-                                        )))))
+              (irc-intrinsic "cc_initialize_gcroots_in_module"
+                             gcroots-in-module ; holder
+                             start ; root_address
+                             (jit-constant-size_t number-of-roots) ; num_roots
+                             arg-values ; initial_data
+                             (llvm-sys:constant-pointer-null-get %i8**%) ; transient_alloca
+                             (jit-constant-size_t 0) ; transient_entries
+                             (jit-constant-size_t function-vector-length) ; function_pointer_count
+                             (irc-bit-cast
+                              (cmp:irc-typed-gep function-vector-type
+                                                 function-vector
+                                                 (list 0 0))
+                              %i8**%) ; fptrs
+                             ))))
         (when gcroots-in-module
-          (irc-intrinsic-call "cc_finish_gcroots_in_module" (list gcroots-in-module)))
+          (irc-intrinsic "cc_finish_gcroots_in_module" gcroots-in-module))
         (let ((global-entry-point (literal:constants-table-value (cmp:entry-point-reference-index (xep-group-entry-point-reference THE-REPL-XEP-GROUP)))))
           (irc-ret (irc-bit-cast global-entry-point %t*%))))
         (values))))
@@ -1102,8 +1102,8 @@ and initialize it with an array consisting of one function pointer."
     (irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
     (with-irbuilder (irbuilder-alloca)
       (if gcroots-in-module
-          (irc-intrinsic-call "cc_remove_gcroots_in_module"
-                              (list gcroots-in-module)))
+          (irc-intrinsic "cc_remove_gcroots_in_module"
+                         gcroots-in-module))
       (irc-ret-void)))
   (values))
 
