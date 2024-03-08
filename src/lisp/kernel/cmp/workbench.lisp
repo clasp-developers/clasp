@@ -14,7 +14,6 @@
          cmp::t1eval-when
          cmp::t1progn
          cmp::compile-top-level
-         literal:arrange-thunk-as-top-level
          cmp::compile-thunk
          cmp::codegen-symbol-value
          cmp::codegen
@@ -45,11 +44,7 @@
          cmp::irc-ret-null-t*
          cmp::irc-funcall-results-in-registers
          cmp::irc-function-create
-         cmp::irc-create-local-entry-point-reference
-         cmp::irc-create-global-entry-point-reference
-         cmp::make-xep-group
          cmp::irc-calculate-entry
-         cmp::make-xep-arity
          cmp::irc-calculate-real-args
          cmp::irc-calculate-call-info
          cmp::initialize-calling-convention
@@ -80,10 +75,6 @@
          cmp::irc-add
          cmp::irc-sub
          cmp::irc-store
-         literal::do-literal-table
-         literal::do-rtv
-         literal::constants-table-value
-         literal::constants-table-reference
          cmp::irc-phi-add-incoming
          cmp::cleavir-lambda-list-analysis-lambda-list-arguments
          cmp::process-cleavir-lambda-list-analysis
@@ -91,17 +82,6 @@
          cmp::ensure-cleavir-lambda-list-analysis
          cmp::process-bir-lambda-list
          cmp::generate-function-for-arity-p
-         
-         cmp:xep-group-p
-         cmp:xep-group-arities
-         cmp:xep-arity-function-or-placeholder
-         literal::register-function->function-datum-impl
-         cmp::make-entry-point-reference
-         literal::reference-literal
-         literal::register-local-function-index
-         literal::register-xep-function-indices
-         literal::register-local-function->function-datum
-         literal::register-xep-function->function-datums
          sys:make-simple-core-fun-generator
          sys:make-local-simple-fun-generator
          )

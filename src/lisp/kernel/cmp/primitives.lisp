@@ -66,10 +66,6 @@
 
 (defvar *primitives* (make-hash-table :test 'equal :thread-safe t))
 
-(defun general-entry-point-redirect-name (arity)
-  "Return the name of the wrong-number-of-arguments function for the arity"
-  (core:fmt nil "general_entry_point_redirect_{}" arity))
-
 (defmacro primitives-macro ()
   `(progn
      ,@'((primitive         "cc_match" :t* (list :t* :t*))    
@@ -374,16 +370,6 @@
          (primitive         "cc_read_derivable_cxx_stamp_untagged_object" :i64 (list :i8*))
          #+(or)(primitive         "cc_read_slot" :t* (list :t* :size_t))
          #+(or)(primitive         "cc_write_slot" :t* (list :t* :size_t :t*))
-
-         (primitive-unwinds (general-entry-point-redirect-name 0) :void (list :t*))
-         (primitive-unwinds (general-entry-point-redirect-name 1) :void (list :t* :t*))
-         (primitive-unwinds (general-entry-point-redirect-name 2) :void (list :t* :t* :t*))
-         (primitive-unwinds (general-entry-point-redirect-name 3) :void (list :t* :t* :t* :t*))
-         (primitive-unwinds (general-entry-point-redirect-name 4) :void (list :t* :t* :t* :t* :t*))
-         (primitive-unwinds (general-entry-point-redirect-name 5) :void (list :t* :t* :t* :t* :t* :t*))
-         (primitive-unwinds (general-entry-point-redirect-name 6) :void (list :t* :t* :t* :t* :t* :t* :t*))
-         (primitive-unwinds (general-entry-point-redirect-name 7) :void (list :t* :t* :t* :t* :t* :t* :t* :t*))
-         
          )
      ))
 

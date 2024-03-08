@@ -1792,18 +1792,6 @@
   (let ((origin (bir:origin irfunction)))
     (ensure-origin (origin-spi (origin-source origin)) 999909)))
 
-(defun calculate-function-info (irfunction lambda-name)
-  (let* ((origin (origin-source (bir:origin irfunction)))
-         (spi (origin-spi origin)))
-    (let ((cleavir-lambda-list-analysis (cmp:calculate-cleavir-lambda-list-analysis (bir:lambda-list irfunction))))
-      (cmp:make-function-info
-       :function-name lambda-name
-       :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
-       :lambda-list (bir:original-lambda-list irfunction)
-       :docstring (bir:docstring irfunction)
-       :declares nil
-       :spi spi))))
-
 (defun iblock-name (iblock)
   (let ((name (bir:name iblock)))
     (if name

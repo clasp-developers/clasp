@@ -26,16 +26,6 @@
             %ltv*%
             irc-function-create
             irc-make-function-description
-            irc-local-function-create
-            irc-xep-functions-create
-            xep-arity-arity
-            xep-arity-function-or-placeholder
-            xep-group-lookup
-            xep-group-p
-            xep-group-arities
-            xep-group-name
-            xep-group-entry-point-reference
-            xep-group-cleavir-lambda-list-analysis
             +c++-stamp-max+
             %opaque-fn-prototype*%
             fn-prototype
@@ -115,7 +105,6 @@
             %double%
             %function-description%
             %function-description*%
-            entry-point-reference-index
             irc-funcall-results-in-registers
             irc-apply
             function-type-create-on-the-fly
@@ -130,9 +119,6 @@
             cmp-log-dump-function
             make-file-metadata
             make-function-metadata
-            function-info
-            function-info-cleavir-lambda-list-analysis
-            make-function-info
             generate-function-for-arity-p
 
             irc-create-call-wft
@@ -352,8 +338,6 @@
             header-check-cond
             compile-tag-check
             compile-header-check
-            ensure-xep-function-not-placeholder
-            general-entry-point-redirect-name
             get-or-declare-function-or-error
             )))
 
@@ -390,7 +374,6 @@
           make-literal-node-creator
           setup-literal-machine-function-vectors
           run-all-add-node
-          entry-point-datum-for-xep-group
           register-local-function-index
           register-xep-function-indices
           literal-node-runtime-p
@@ -417,11 +400,7 @@
           constants-table-value
           reference-function-cell
           reference-variable-cell
-          load-time-value-from-thunk
-          with-rtv
-          arrange-thunk-as-top-level
-          with-literal-table
-          generate-run-time-code-for-closurette))
+          load-time-value-from-thunk))
 
 (in-package :clasp-ffi)
 (export '(with-foreign-object
