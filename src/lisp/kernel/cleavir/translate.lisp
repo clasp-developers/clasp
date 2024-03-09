@@ -2406,13 +2406,6 @@ COMPILE-FILE will use the default *clasp-env*."
          (bir (ast->bir ast *clasp-system*)))
     (bir->function bir)))
 
-(defun bir-compile-in-env (form &optional env)
-  (bir-compile-cst-in-env (cst:cst-from-expression form) env))
-
-(defun bir-compile-cst-in-env (cst &optional env)
-  (let ((cst-to-ast:*compiler* 'cl:compile))
-    (cmp:compile-in-env cst env #'bir-compile-cst)))
-
 (defun compile-form (form &optional (env *clasp-env*))
   (let* ((cst (cst:cst-from-expression form))
          (pre-ast (cst->ast cst env))

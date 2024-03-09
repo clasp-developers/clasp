@@ -123,10 +123,9 @@
 
             irc-create-call-wft
             irc-calculate-entry
-            compile-file-to-module
+            compile-definition
             codegen
             compile-error-if-not-enough-arguments
-            compile-in-env
             compile-lambda-function
             compile-lambda-list-code
             make-calling-convention
