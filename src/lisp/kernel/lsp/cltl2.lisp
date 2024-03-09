@@ -281,4 +281,4 @@ Clasp does not implement this functionality yet."
 (defun enclose (lambda-expression &optional env)
   "Given a lambda expression and a syntactic environment, return a function object. See CLTL2 8.5 for more information.
 Clasp will discard any non-syntactic information in the environment."
-  (cmp:compile-in-env lambda-expression (env:compile-time env)))
+  (cmp:compile-definition lambda-expression (env:compile-time env)))
