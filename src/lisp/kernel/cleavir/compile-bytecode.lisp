@@ -167,9 +167,7 @@
     (when disassemble
       (cleavir-bir-disassembler:display module))
     (clasp-cleavir::bir-transformations module system)
-    (let (;; necessary for bir->function debug info to work. KLUDGE
-          (*load-pathname* (core:function-source-pos function))
-          ;; Ensure any closures have the same layout as original
+    (let (;; Ensure any closures have the same layout as original
           ;; bytecode closures, so the simple fun can be swapped
           ;; out transparently.
           (clasp-cleavir::*fixed-closures*

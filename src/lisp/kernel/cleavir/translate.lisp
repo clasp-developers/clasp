@@ -2272,14 +2272,19 @@ COMPILE-FILE will use the default *clasp-env*."
 (defun bir->function (bir &key (abi *abi-x86-64*))
   (let ((module (cmp::create-run-time-module-for-compile))
         (*constant-values* (make-hash-table :test #'eq))
-        (*function-info* (make-hash-table :test #'eq)))
+        (*function-info* (make-hash-table :test #'eq))
+        (pathname
+          (let ((origin (bir:origin bir)))
+            (if origin
+                (namestring
+                 (core:file-scope-pathname
+                  (core:file-scope
+                   (core:source-pos-info-file-handle origin))))
+                "repl-code"))))
     ;; Link the C++ intrinsics into the module
     (cmp::with-module (:module module)
-      (let ((pathname (if *load-pathname*
-                          (namestring *load-pathname*)
-                          "repl-code")))
-        (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-          (translate bir :abi abi))))
+      (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
+        (translate bir :abi abi)))
     ;;(llvm-sys:dump-module module)
     (let ((cmp::*verify-llvm-modules* t))
       (cmp:irc-verify-module-safe module))
