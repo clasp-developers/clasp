@@ -192,7 +192,7 @@ exec $(dirname \"$0\")/iclasp -f ignore-extensions --base \"$@\""))
   (format output-stream "~%(load #P\"sys:quicklisp;setup.lisp\")
 (unless (ql-dist:find-dist \"quickclasp\")
   (sleep 2) ; ensure that the sequence number if quickclasp is higher
-  (ql-dist:install-dist \"http://thirdlaw.tech/quickclasp/quickclasp.txt\" :prompt nil))"))
+  (ql-dist:install-dist \"http://quickclasp.thirdlaw.tech/quickclasp/quickclasp.txt\" :prompt nil))"))
 
 (defun pprint-immutable-systems (stream object &aux (*print-pretty* t))
   (format stream "(in-package \"SYSTEM\")~%~%(defparameter *immutable-systems*~%")
