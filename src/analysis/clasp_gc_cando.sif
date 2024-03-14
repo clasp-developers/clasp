@@ -637,18 +637,22 @@
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_byte8_t_O>"
+             :offset-base-ctype "core::BytecodeModule_O" :layout-offset-field-names ("_Bytecode")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::BytecodeModule_O" :layout-offset-field-names ("_Literals")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BytecodeModule_O" :layout-offset-field-names ("_Bytecode")}
+             :offset-base-ctype "core::BytecodeModule_O"
+             :layout-offset-field-names ("_MutableLiterals")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::BytecodeModule_O" :layout-offset-field-names ("_DebugInfo")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::BytecodeModule_O"
-             :layout-offset-field-names ("_MutableLiterals")}
+             :layout-offset-field-names ("_NativeModule")}
 {class-kind :stamp-name "STAMPWTAG_chem__NumericalFunction_O"
             :stamp-key "chem::NumericalFunction_O" :parent-class "core::CxxObject_O"
             :lisp-class-base "core::CxxObject_O" :root-class "core::T_O" :stamp-wtag 3

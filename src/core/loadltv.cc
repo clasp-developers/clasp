@@ -624,11 +624,9 @@ struct loadltv {
   void op_bcmod() {
     size_t index = next_index();
     uint32_t len = read_u32();
-    BytecodeModule_sp mod = BytecodeModule_O::make();
     SimpleVector_byte8_t_sp bytes = SimpleVector_byte8_t_O::make(len);
-    mod->setf_bytecode(bytes);
     cl__read_sequence(bytes, _stream, clasp_make_fixnum(0), nil<T_O>());
-    set_ltv(mod, index);
+    set_ltv(BytecodeModule_O::make(bytes), index);
   }
 
   void op_slits() {
