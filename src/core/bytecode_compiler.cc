@@ -1134,7 +1134,7 @@ void Module_O::link_load() {
   size_t literal_length = cmodule_literals->length();
   SimpleVector_sp literals = SimpleVector_O::make(literal_length);
   SimpleVector_sp debug_info = cmodule->create_debug_info();
-  BytecodeModule_sp bytecode_module = BytecodeModule_O::make();
+  BytecodeModule_sp bytecode_module = BytecodeModule_O::make(bytecode);
   ComplexVector_T_sp cfunctions = cmodule->cfunctions();
   // Create the real function objects.
   for (T_sp tfun : *cfunctions) {
@@ -1197,7 +1197,6 @@ void Module_O::link_load() {
   }
   // Now just install the bytecode and Bob's your uncle.
   bytecode_module->setf_literals(literals);
-  bytecode_module->setf_bytecode(bytecode);
   bytecode_module->setf_debugInfo(debug_info);
   bytecode_module->setf_mutableLiterals(mutableLTVs.cons());
   // Native-compile anything that really seems like it should be,

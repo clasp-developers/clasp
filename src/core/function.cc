@@ -320,7 +320,7 @@ SYMBOL_EXPORT_SC_(CorePkg, bytecode_call);
 struct BytecodeClosureEntryPoint {
   static inline LCC_RETURN bytecode_enter(BytecodeSimpleFun_sp entryPoint, T_O* lcc_closure, size_t lcc_nargs, T_O** lcc_args) {
     core::BytecodeModule_sp module = gctools::As_assert<core::BytecodeModule_sp>(entryPoint->_Code);
-    unsigned char* pc = (unsigned char*)&(gc::As_assert<SimpleVector_byte8_t_sp>(module->_Bytecode)->_Data[0]) + entryPoint->_EntryPcN;
+    unsigned char* pc = (unsigned char*)&(module->bytecode()->_Data[0]) + entryPoint->_EntryPcN;
     return (entryPoint->_Trampoline)(pc, lcc_closure, lcc_nargs, lcc_args);
   }
 
