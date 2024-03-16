@@ -1089,6 +1089,17 @@ Function_sp Cfunction_O::link_function() {
   return this->info();
 }
 
+// For using a cfunction as a debug info (in BTB).
+// These only work after the module has been linked.
+CL_LISPIFY_NAME("core:bytecode-debug-info/start")
+CL_DEFMETHOD T_sp Cfunction_O::start() const {
+  return clasp_make_fixnum(this->entry_point()->module_position());
+}
+CL_LISPIFY_NAME("core:bytecode-debug-info/end")
+CL_DEFMETHOD T_sp Cfunction_O::end() const {
+  return clasp_make_fixnum(this->entry_point()->module_position() + this->final_size());
+}
+
 // Should we BTB compile this new bytecode function?
 // We say yes if there's a (speed 3) declaration anywhere in it.
 bool btb_bcfun_p(BytecodeSimpleFun_sp fun, SimpleVector_sp debug_info) {

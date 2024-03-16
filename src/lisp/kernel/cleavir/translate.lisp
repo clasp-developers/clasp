@@ -113,12 +113,12 @@
 
 ;;; Create an llvm-function-info for a BIR function.
 ;;; Also create the llvm::Functions.
-(defun allocate-llvm-function-info (function &key toplevel)
+(defun allocate-llvm-function-info (function &key toplevels)
   (let* ((lambda-name (get-or-create-lambda-name function))
          (jit-function-name (jit-function-name lambda-name))
           (arguments (compute-arglist (bir:lambda-list function)))
          (mtype (compute-llvm-function-type function arguments))
-         (xep-p (or (eq function toplevel) (xep-needed-p function)))
+         (xep-p (or (member function toplevels) (xep-needed-p function)))
          (analysis (cmp:calculate-cleavir-lambda-list-analysis
                     (bir:lambda-list function)))
          (main-function
@@ -2057,8 +2057,8 @@
        (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*))
      (values)))
 
-(defun layout-procedure (function lambda-name abi &key toplevel)
-  (when (or (eq function toplevel) (xep-needed-p function))
+(defun layout-procedure (function lambda-name abi &key toplevels)
+  (when (or (member function toplevels) (xep-needed-p function))
     (layout-xep-group function lambda-name abi))
   (layout-main-function function lambda-name abi))
 
@@ -2071,8 +2071,8 @@
 (defun allocate-module-constants (module)
   (let ((i 0))
     ;; Functions: If a XEP is needed, put in space for one
-    ;; except for the toplevel function, which doesn't need space in the
-    ;; literals vector as nothing inside the code references it.
+    ;; except for toplevel functions, which don't need space in the
+    ;; literals vector as nothing inside the code references them.
     (bir:do-functions (function module)
       (when (xep-needed-p function)
         ;; Keys in the *constant-values* table are usually BIR:CONSTANTs and
@@ -2120,7 +2120,7 @@
                   nil)
           (values (setf (gethash constant *constant-values*) next-index) t))))
 
-(defun layout-module (module abi &key toplevel)
+(defun layout-module (module abi &key toplevels)
   ;; Create llvm IR functions for each BIR function.
   (bir:do-functions (function module)
     ;; Assign IDs to unwind destinations. We start from 1 to allow
@@ -2130,12 +2130,12 @@
         (setf (gethash entrance *unwind-ids*) i)
         (incf i)))
     (setf (gethash function *function-info*)
-          (allocate-llvm-function-info function :toplevel toplevel)))
+          (allocate-llvm-function-info function :toplevels toplevels)))
   (with-literals
       (allocate-module-constants module)
     (bir:do-functions (function module)
       (layout-procedure function (get-or-create-lambda-name function)
-                        abi :toplevel toplevel))))
+                        abi :toplevels toplevels))))
 
 (defun compute-debug-namestring (bir)
   (if bir
@@ -2149,8 +2149,9 @@
       "repl-code"))
 
 (defun translate (bir-module
-                  &key abi (name "compile") toplevel
-                    (debug-namestring (compute-debug-namestring toplevel)))
+                  &key abi (name "compile") toplevels debug-namestring)
+  (unless debug-namestring
+    (setf debug-namestring (compute-debug-namestring (first toplevels))))
   (let ((module (cmp::llvm-create-module name))
         (*unwind-ids* (make-hash-table :test #'eq))
         (*constant-values* (make-hash-table :test #'eq))
@@ -2158,7 +2159,7 @@
     (cmp::with-module (:module module)
       (cmp:with-debug-info-generator (:module module
                                       :pathname debug-namestring)
-        (layout-module bir-module abi :toplevel toplevel))
+        (layout-module bir-module abi :toplevels toplevels))
       (cmp:irc-verify-module-safe module)
       (cmp::potentially-save-module))
     (make-instance 'translation
@@ -2299,7 +2300,7 @@ COMPILE-FILE will use the default *clasp-env*."
 
 (defun bir->function (bir &key (abi *abi-x86-64*))
   (let* ((translation
-           (translate (bir:module bir) :abi abi :toplevel bir))
+           (translate (bir:module bir) :abi abi :toplevels (list bir)))
          (module (module translation))
          (constants (constant-values translation))
          (*function-info* (function-info translation))
@@ -2425,3 +2426,29 @@ COMPILE-FILE will use the default *clasp-env*."
          (ast (cst->ast cst env))
          (bir (ast->bir ast *clasp-system*)))
     (bir->function bir)))
+
+;;; Return code for an IRMODULE as bytes.
+;;; Used in COMPILE-FILE (specifically in compile-bytecode.lisp).
+(defun emit-module (module)
+  (let* ((triple-string (llvm-sys:get-target-triple module))
+         (normalized-triple-string
+           (llvm-sys:triple-normalize triple-string))
+         (triple (llvm-sys:make-triple normalized-triple-string))
+         (target-options (llvm-sys:make-target-options)))
+    (multiple-value-bind (target msg)
+        (llvm-sys:target-registry-lookup-target "" triple)
+      (unless target
+        (error msg))
+      (llvm-sys:emit-module (llvm-sys:create-target-machine target
+                                                            (llvm-sys:get-triple triple)
+                                                            ""
+                                                            ""
+                                                            target-options
+                                                            cmp::*default-reloc-model*
+                                                            (cmp::code-model :jit nil)
+                                                            'llvm-sys:code-gen-opt-default
+                                                            nil)
+                            :simple-vector-byte8
+                            nil ; dwo-stream for dwarf objects
+                            'llvm-sys:code-gen-file-type-object-file
+                            module))))

@@ -264,10 +264,9 @@ SimpleCoreFun_sp makeSimpleCoreFun(FunctionDescription_sp tfdesc, const ClaspXep
 }
 
 // Used by clasp-cleavir to build compiled functions from function pointers.
-CL_DEFUN SimpleCoreFun_sp core__make_simple_core_fun(FunctionDescription_sp fdesc, Pointer_sp mainfun, Pointer_sp xept) {
-  CoreFun_sp core = makeCoreFun(fdesc, (ClaspCoreFunction)(mainfun->ptr()));
+SimpleCoreFun_sp SimpleCoreFun_O::make(FunctionDescription_sp fdesc, ClaspCoreFunction mainptr, ClaspXepAnonymousFunction* xepptrs) {
+  CoreFun_sp core = makeCoreFun(fdesc, mainptr);
   ClaspXepTemplate xep;
-  ClaspXepAnonymousFunction* xepptrs = (ClaspXepAnonymousFunction*)(xept->ptr());
   // NULL pointers represent a redirect.
 #define DEFXEP(n) xep._EntryPoints[(n+1)] = xepptrs[(n+1)] ? xepptrs[(n+1)] : (ClaspXepAnonymousFunction)(general_entry_point_redirect_##n)
   xep._EntryPoints[0] = xepptrs[0];
@@ -279,6 +278,10 @@ CL_DEFUN SimpleCoreFun_sp core__make_simple_core_fun(FunctionDescription_sp fdes
   DEFXEP(5);
 #undef DEFXEP
   return gctools::GC<SimpleCoreFun_O>::allocate(fdesc, xep, nil<T_O>(), core);
+}
+
+CL_DEFUN SimpleCoreFun_sp core__make_simple_core_fun(FunctionDescription_sp fdesc, Pointer_sp mainfun, Pointer_sp xept) {
+  return SimpleCoreFun_O::make(fdesc, (ClaspCoreFunction)(mainfun->ptr()), (ClaspXepAnonymousFunction*)(xept->ptr()));
 }
 
 SYMBOL_EXPORT_SC_(CorePkg, bytecode_call);

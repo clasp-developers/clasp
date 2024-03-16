@@ -18,13 +18,36 @@
       (warn "BUG: Error during BTB compilation: ~a" e)
       definition)))
 
+;;; During file compilation we will have a cmp:cfunction rather than an
+;;; actual function.
 (defun bcfun-p (annotation)
-  (typep annotation 'core:bytecode-simple-fun))
+  (typep annotation '(or cmp:cfunction core:bytecode-simple-fun)))
 
-(defun bcfun/locals-size (bcfun)
+(defgeneric bcfun/locals-size (bcfun))
+(defmethod bcfun/locals-size ((bcfun core:bytecode-simple-fun))
   (core:bytecode-simple-fun/locals-frame-size bcfun))
-(defun bcfun/nvars (bcfun)
+(defmethod bcfun/locals-size ((bcfun cmp:cfunction))
+  (cmp:cfunction/nlocals bcfun))
+(defgeneric bcfun/nvars (bcfun))
+(defmethod bcfun/nvars ((bcfun core:bytecode-simple-fun))
   (core:bytecode-simple-fun/environment-size bcfun))
+(defmethod bcfun/nvars ((bcfun cmp:cfunction))
+  (length (cmp:cfunction/closed bcfun)))
+(defgeneric bcfun/fname (bcfun))
+(defmethod bcfun/fname ((bcfun core:bytecode-simple-fun))
+  (core:function-name bcfun))
+(defmethod bcfun/fname ((bcfun cmp:cfunction))
+  (cmp:cfunction/name bcfun))
+(defgeneric bcfun/docstring (bcfun))
+(defmethod bcfun/docstring ((bcfun core:bytecode-simple-fun))
+  (core:function-docstring bcfun))
+(defmethod bcfun/docstring ((bcfun cmp:cfunction))
+  (cmp:cfunction/doc bcfun))
+(defgeneric bcfun/spi (bcfun))
+(defmethod bcfun/spi ((bcfun core:bytecode-simple-fun))
+  (function-spi bcfun))
+(defmethod bcfun/spi ((bcfun cmp:cfunction))
+  (cmp:cfunction/source-pos-info bcfun))
 
 (defgeneric compile-instruction (mnemonic inserter context &rest args))
 (defgeneric start-annotation (annotation inserter context))
@@ -34,54 +57,51 @@
   (let ((irmodule (make-instance 'bir:module)))
     (values irmodule (compile-bcmodule-into bcmodule irmodule))))
 
-;;; When compiling bytecode we make load time value objects ahead of time
-;;; to make things easier on the file compiler. When compiling a runtime module
-;;; we only need to create LTVs for the mutable indices.
+;;; Process a bytecode module's literals into something easy to turn into
+;;; BIR. Note that we avoid making constants/LTVs ahead of time, since
+;;; BTB or Cleavir may optimize them away (e.g. in unreachable code).
 ;;; TODO?: If the bytecode recorded immutable LTVs as well, and the forms (or
 ;;; bytecode functions) that produced the values, we could dump an actual
 ;;; bytecode function into a FASL with zero information loss.
-(defun compute-runtime-literals (irmodule literals mutables)
+(defun compute-runtime-literals (literals mutables)
   (loop with nlits = (length literals)
         with result = (make-array nlits)
         for i from 0 below nlits
         for value = (aref literals i)
         do (setf (aref result i)
                  (if (member i mutables) ; FIXME: a bit inefficient
-                     (cons (bir:load-time-value-in-module `',value nil irmodule)
-                           t)
+                     (cons `',value :ltv-mutable)
                      (cons value nil)))
         finally (return result)))
-
-(defun compute-compile-literals-ltvs (irmodule literal-infos)
-  (map 'vector
-       (lambda (info)
-         (etypecase info
-           (cmp:constant-info
-            (cons (cmp:constant-info/value info) nil))
-           (cmp:function-cell-info
-            (cons (core:ensure-function-cell
-                   (cmp:function-cell-info/fname info))
-                  nil))
-           (cmp:variable-cell-info
-            (cons (core:ensure-variable-cell
-                   (cmp:variable-cell-info/vname info))
-                  nil))
-           (cmp:load-time-value-info
-            (cons (bir:load-time-value-in-module
-                   (cmp:load-time-value-info/form info)
-                   (cmp:load-time-value-info/read-only-p info)
-                   irmodule)
-                  t))))
-       literal-infos))
 
 (defun compile-bcmodule-into (bcmodule irmodule)
   (let ((literals (core:bytecode-module/literals bcmodule))
         (mutables (core:bytecode-module/mutable-literals bcmodule)))
     (compile-bytecode-into (core:bytecode-module/bytecode bcmodule)
                            (core:bytecode-module/debug-info bcmodule)
-                           (compute-runtime-literals irmodule literals mutables)
+                           (compute-runtime-literals literals mutables)
                            irmodule)))
 
+;;; Now, for compile file
+(defgeneric compute-compile-literal (info))
+(defmethod compute-compile-literal ((info cmp:constant-info))
+  (cons (cmp:constant-info/value info) nil))
+(defmethod compute-compile-literal ((info cmp:cfunction))
+  (cons info nil))
+(defmethod compute-compile-literal ((info cmp:variable-cell-info))
+  (cons info nil))
+(defmethod compute-compile-literal ((info cmp:function-cell-info))
+  (cons info nil))
+(defmethod compute-compile-literal ((info cmp:load-time-value-info))
+  (cons (cmp:load-time-value-info/form info)
+        (if (cmp:load-time-value-info/read-only-p info)
+            :ltv-readonly
+            :ltv-mutable)))
+
+(defun compute-compile-literals (literals)
+  (map 'vector #'compute-compile-literal literals))
+
+;;; Shared entry point for both runtime and compile-file-time.
 (defun compile-bytecode-into (bytecode annotations literals irmodule)
   (let* ((blockmap (make-blockmap)) (funmap (make-funmap))
          (context (make-context irmodule blockmap funmap))
@@ -157,6 +177,7 @@
       (context-new-block context (binfo-context binfo)))))
 
 ;;; Given a bytecode function, return a compiled native function.
+;;; Used for CL:COMPILE.
 (defun compile-function (function
                          &key (abi clasp-cleavir:*abi-x86-64*)
                            (system clasp-cleavir:*clasp-system*)
@@ -174,6 +195,88 @@
             (fixed-closures-map (fmap funmap)))
           (bir (finfo-irfun (find-bcfun function funmap))))
       (clasp-cleavir::bir->function bir :abi abi))))
+
+;;; COMPILE-FILE interface: take the components of a CMP:MODULE and return
+;;; an NMODULE. The NMODULE contains everything COMPILE-FILE needs to dump
+;;; native code such that the loader can use it:
+;;; 1) The actual native code as bytes (an encoded ELF object)
+;;; 2) A mapping from cfunctions to native symbol names, so they can be
+;;;    reconstructed by the loader.
+;;; 3) A vector of literals. Each entry is either:
+;;;    - an integer, indicating the constant at that position of the
+;;;      cmp:module's literals. This may include cfunctions.
+;;;    - a cmp:constant-info or etc., indicating a constant not in the
+;;;      cmp:module's literals.
+;;;    - a LATE-FUNCTION, meaning a function introduced by BTB/translate,
+;;;      e.g. by transforms. Maybe. Not sure this happens, TODO
+(defclass nmodule ()
+  ((%code :initarg :code :reader nmodule-code)
+   (%fmap :initarg :fmap :reader nmodule-fmap)
+   (%literals :initarg :literals :reader nmodule-literals)))
+
+(defgeneric bir-constant->cmp (bir))
+(defmethod bir-constant->cmp ((constant bir:constant))
+  (cmp:constant-info/make (bir:constant-value constant)))
+(defmethod bir-constant->cmp ((constant clasp-cleavir::last-minute-constant))
+  (cmp:constant-info/make (bir:constant-value constant)))
+(defmethod bir-constant->cmp ((ltv bir:load-time-value))
+  (cmp:load-time-value-info/make (bir:form ltv) (bir:read-only-p ltv)))
+(defmethod bir-constant->cmp ((fcell bir:function-cell))
+  (cmp:function-cell-info/make (bir:function-name fcell)))
+(defmethod bir-constant->cmp ((vcell bir:variable-cell))
+  (cmp:variable-cell-info/make (bir:variable-name vcell)))
+
+(defun compute-nliterals (cliterals constants)
+  ;; CONSTANTS is the hash table produced by translation.
+  ;; Keys are BIR things, and values are indices into the eventual
+  ;; literals vector.
+  ;; CLITERALS is the vector produced by BTB, below.
+  ;; This consists of conses where the CDR is a placeholder or BIR thing.
+  ;; CONSTANTS may include constants not in CLITERALS and vice versa.
+  ;; This function produces a vector explaining to the file compiler how
+  ;; to produce the machine literals. There is one element for every index
+  ;; in the machine literals. Each element is of the format described in
+  ;; the comment above NMODULE, above.
+  (let* ((num (loop for value being the hash-values of constants
+                    maximizing (if (integerp value) (1+ value) 0)))
+         (nliterals (make-array num)))
+    (loop for key being the hash-keys of constants
+            using (hash-value indexoid)
+          when (integerp indexoid) ; not an immediate
+            do (setf (aref nliterals indexoid)
+                     ;; Check if the bytecode already had this constant.
+                     (or (position key cliterals :key #'cdr)
+                         ;; No, so translate back into CMP terms.
+                         (bir-constant->cmp key))))
+    nliterals))
+
+(defun compute-native-fmap (funmap function-info)
+  (loop for (bcfun irfun) in (fmap funmap)
+        for info = (gethash irfun function-info)
+        for main = (clasp-cleavir::main-function-name info)
+        for xep = (clasp-cleavir::xep-name info)
+        collect (list bcfun main xep)))
+
+(defun compile-cmodule (bytecode annotations literals
+                        &key debug-namestring
+                          (system clasp-cleavir:*clasp-system*))
+  (let* ((irmod (make-instance 'bir:module))
+         (cliterals (compute-compile-literals literals))
+         (funmap
+           (compile-bytecode-into bytecode annotations cliterals irmod))
+         (_ (clasp-cleavir::bir-transformations irmod system))
+         (translation
+           (clasp-cleavir::translate
+            irmod :debug-namestring debug-namestring
+            ;; All IR functions with a corresponding bytecode function
+            ;; need a XEP, so they can be put in the bytecode function.
+            :toplevels (mapcar #'second (fmap funmap))))
+         (nliterals (compute-nliterals cliterals (clasp-cleavir::constant-values translation)))
+         (lmod (clasp-cleavir::module translation))
+         (code (clasp-cleavir::emit-module lmod))
+         (fmap (compute-native-fmap funmap (clasp-cleavir::function-info translation))))
+    (declare (ignore _))
+    (make-instance 'nmodule :code code :fmap fmap :literals nliterals)))
 
 (defun fixed-closures-map (fmap)
   (loop for entry in fmap
@@ -263,7 +366,7 @@
 
 ;;; Mapping from bytecode functions to IR functions.
 (defclass funmap ()
-  (;; Alist.
+  (;; List of (bcfun irfun closure); see finfo- accessors below.
    (%map :initform nil :accessor fmap)))
 
 (defun make-funmap () (make-instance 'funmap))
@@ -349,11 +452,11 @@
   (let* ((lambda-list (core:function-lambda-list bytecode-function))
          (function (make-instance 'bir:function
                      :returni nil ; set by :return compilation
-                     :name (core:function-name bytecode-function)
+                     :name (bcfun/fname bytecode-function)
                      :lambda-list nil
-                     :docstring (core:function-docstring bytecode-function)
+                     :docstring (bcfun/docstring bytecode-function)
                      :original-lambda-list lambda-list
-                     :origin (function-spi bytecode-function)
+                     :origin (bcfun/spi bytecode-function)
                      :policy nil
                      :attributes nil
                      :module module))
@@ -396,7 +499,7 @@
 (defun make-start-block (inserter irfun bcfun)
   (build:make-iblock
    inserter
-   :name (symbolicate (write-to-string (core:function-name bcfun))
+   :name (symbolicate (write-to-string (bcfun/fname bcfun))
                       '#:-start)
    :function irfun :dynamic-environment irfun))
 
@@ -444,11 +547,29 @@
 
 (defmethod compile-instruction ((mnemonic (eql :const))
                                 inserter context &rest args)
-  (destructuring-bind ((value . ltvp)) args
-    (stack-push (if ltvp
-                    (compile-load-time-value value inserter)
-                    (compile-constant value inserter))
-                context)))
+  (destructuring-bind (c) args
+    (let ((output (make-instance 'bir:output))
+          (value (car c)) (existing (cdr c)))
+      (etypecase existing
+        (null ; constant, not yet processed
+         (let ((const (build:constant inserter value)))
+           (setf (cdr c) const)
+           (build:insert inserter 'bir:constant-reference
+                         :inputs (list const) :outputs (list output))))
+        ((member :ltv-mutable :ltv-readonly)
+         (let ((ltv (bir:load-time-value-in-module
+                     value (eql existing :ltv-readonly)
+                     (bir:module inserter))))
+           (setf (cdr c) ltv)
+           (build:insert inserter 'bir:load-time-value-reference
+                         :inputs (list ltv) :outputs (list output))))
+        (bir:constant
+         (build:insert inserter 'bir:constant-reference
+                       :inputs (list existing) :outputs (list output)))
+        (bir:load-time-value
+         (build:insert inserter 'bir:load-time-value-reference
+                       :inputs (list existing) :outputs (list output))))
+      (stack-push output context))))
 
 (defun compile-constant (value inserter)
   (let* ((const (build:constant inserter value))
@@ -456,12 +577,6 @@
     (build:insert inserter 'bir:constant-reference
                   :inputs (list const) :outputs (list cref-out))
     cref-out))
-
-(defun compile-load-time-value (ltv inserter)
-  (let ((ltv-out (make-instance 'bir:output)))
-    (build:insert inserter 'bir:load-time-value-reference
-                  :inputs (list ltv) :outputs (list ltv-out))
-    ltv-out))
 
 (defmethod compile-instruction ((mnemonic (eql :closure)) inserter
                                 context &rest args)
@@ -1022,14 +1137,22 @@
                        :inputs () :outputs () :next (list ib))
       (build:begin inserter ib))))
 
+(defgeneric vcell/name (vcell))
+(defmethod vcell/name ((vcell core:variable-cell))
+  (core:variable-cell/name vcell))
+(defmethod vcell/name ((vcell cmp:variable-cell-info))
+  (cmp:variable-cell-info/vname vcell))
+
 (defmethod compile-instruction ((mnemonic (eql :special-bind))
                                 inserter context &rest args)
-  (destructuring-bind ((vcell)) args
-    (let* ((vname (core:variable-cell/name vcell))
+  (destructuring-bind (entry) args
+    (let* ((vcell (car entry)) (existing (cdr entry))
+           (vname (vcell/name vcell))
+           (const (or existing (build:vcell inserter vname)))
            (bname (symbolicate '#:bind- vname))
            (next (build:make-iblock inserter :name bname))
-           (const (build:vcell inserter vname))
            (value (stack-pop context)))
+      (setf (cdr entry) const)
       (build:terminate inserter 'bir:constant-bind
                        :inputs (list const value)
                        :next (list next))
@@ -1037,19 +1160,24 @@
 
 (defmethod compile-instruction ((mnemonic (eql :symbol-value))
                                 inserter context &rest args)
-  (destructuring-bind ((vcell)) args
-    (let* ((vname (core:variable-cell/name vcell))
-           (const (build:vcell inserter vname))
+  (destructuring-bind (entry) args
+    (let* ((vcell (car entry)) (existing (cdr entry))
+           (vname (vcell/name vcell))
+           (const (or existing (build:vcell inserter vname)))
            (out (make-instance 'bir:output :name vname)))
+      (setf (cdr entry) const)
       (build:insert inserter 'bir:constant-symbol-value
                     :inputs (list const) :outputs (list out))
       (stack-push out context))))
 
 (defmethod compile-instruction ((mnemonic (eql :symbol-value-set))
                                 inserter context &rest args)
-  (destructuring-bind ((vcell)) args
-    (let ((const (build:vcell inserter (core:variable-cell/name vcell)))
-          (in (stack-pop context)))
+  (destructuring-bind (entry) args
+    (let* ((vcell (car entry)) (existing (cdr entry))
+           (const (or existing
+                      (setf (cdr entry)
+                            (build:vcell inserter (vcell/name vcell)))))
+           (in (stack-pop context)))
       (build:insert inserter 'bir:set-constant-symbol-value
                     :inputs (list const in)))))
 
@@ -1067,13 +1195,22 @@
                        :next (list ib))
       (build:begin inserter ib))))
 
+(defgeneric fcell/name (fcell))
+(defmethod fcell/name ((fcell core:function-cell))
+  ;; FIXME: May not be a sufficiently reliable way to get
+  ;; the name from the cell in all cases? Probably ok though
+  (core:function-name fcell))
+(defmethod fcell/name ((fcell cmp:function-cell-info))
+  (cmp:function-cell-info/fname fcell))
+
 (defmethod compile-instruction ((mnemonic (eql :fdefinition))
                                 inserter context &rest args)
-  (destructuring-bind ((fcell)) args
-    (let* (;; FIXME: May not be a sufficiently reliable way to get
-           ;; the name from the cell in all cases? Probably ok though
-           (fname (core:function-name fcell))
-           (const (build:fcell inserter fname))
+  (destructuring-bind (entry) args
+    (let* ((fcell (car entry)) (existing (cdr entry))
+           (fname (fcell/name fcell))
+           (const (or existing
+                      (setf (cdr entry)
+                            (build:fcell inserter fname))))
            (attributes (clasp-cleavir::function-attributes fname))
            (ftype (ctype:single-value (clasp-cleavir::global-ftype fname)
                                       clasp-cleavir:*clasp-system*))
@@ -1087,9 +1224,12 @@
 ;; CONSTANT-CALLED-FDEFINITION for this.
 (defmethod compile-instruction ((mnemonic (eql :called-fdefinition))
                                 inserter context &rest args)
-  (destructuring-bind ((fcell)) args
-    (let* ((fname (core:function-name fcell))
-           (const (build:fcell inserter fname))
+  (destructuring-bind (entry) args
+    (let* ((fcell (car entry)) (existing (cdr entry))
+           (fname (fcell/name fcell))
+           (const (or existing
+                      (setf (cdr entry)
+                            (build:fcell inserter fname))))
            (attributes (clasp-cleavir::function-attributes fname))
            (ftype (ctype:single-value (clasp-cleavir::global-ftype fname)
                                       clasp-cleavir::*clasp-system*))
@@ -1364,6 +1504,16 @@
                            inserter context)
   (declare (ignore inserter))
   (when (function-spi annot)
+    (pop (origin-stack context))))
+
+(defmethod start-annotation ((annot cmp:cfunction) inserter context)
+  (declare (ignore inserter))
+  (let ((spi (cmp:cfunction/source-pos-info annot)))
+    (when spi
+      (push (kludge-spi spi) (origin-stack context)))))
+(defmethod end-annotation ((annot cmp:cfunction) inserter context)
+  (declare (ignore inserter))
+  (when (cmp:cfunction/source-pos-info annot)
     (pop (origin-stack context))))
 
 (defun kludge-spi (spi)

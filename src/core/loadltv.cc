@@ -18,6 +18,10 @@
 #include <clasp/core/pathname.h>          // making pathnames
 #include <clasp/core/unixfsys.h>          // cl__truename
 #include <clasp/llvmo/llvmoPackage.h>     // cmp__compile_trampoline
+#include <clasp/llvmo/llvmoExpose.h>      // native module stuff
+#include <clasp/llvmo/jit.h>
+#include <clasp/llvmo/code.h>
+#include <clasp/core/lispStream.h>        // stream_read_byte8
 #include <clasp/core/bytecode_compiler.h> // btb_bcfun_p
 #include <clasp/core/evaluator.h>         // eval::funcall
 
@@ -716,6 +720,24 @@ struct loadltv {
       gc::As_unsafe<Function_sp>(function)->setf_lambdaList(lambda_list);
   }
 
+  void attr_clasp_function_native(uint32_t bytes) {
+    void *mainptr, *xepptr;
+    BytecodeSimpleFun_sp fun = gc::As<BytecodeSimpleFun_sp>(get_ltv(read_index()));
+    FunctionDescription_sp fdesc = fun->fdesc();
+    std::string mainn = gc::As<SimpleString_sp>(get_ltv(read_index()))->get_std_string();
+    std::string xepn = gc::As<SimpleString_sp>(get_ltv(read_index()))->get_std_string();
+    BytecodeModule_sp mod = fun->code();
+    llvmo::JITDylib_sp dylib = gc::As<llvmo::JITDylib_sp>(mod->nativeModule());
+    // FIXME: Do we need to grab a lock to use the JIT?
+    llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
+    if (!jit->do_lookup(dylib, mainn, mainptr))
+      // Failed lookup: Maybe a warning? Error right now to debug
+      SIMPLE_ERROR("Could not find pointer for name |{}|", mainn);
+    if (!jit->do_lookup(dylib, xepn, xepptr))
+      SIMPLE_ERROR("Could not find pointer for name |{}|", xepn);
+    fun->setSimpleFun(SimpleCoreFun_O::make(fun->fdesc(), (ClaspCoreFunction)mainptr, (ClaspXepAnonymousFunction*)xepptr));
+  }
+
   void attr_clasp_source_pos_info(uint32_t bytes) {
     Function_sp func = gc::As<Function_sp>(get_ltv(read_index()));
     T_sp path = get_ltv(read_index());
@@ -873,6 +895,41 @@ struct loadltv {
     mod->setf_debugInfo(SimpleVector_O::make(vargs));
   }
 
+  void attr_clasp_module_native(uint32_t bytes) {
+    // FIXME: Do we need to grab a lock to use the JIT?
+    llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
+    BytecodeModule_sp mod = gc::As<BytecodeModule_sp>(get_ltv(read_index()));
+    uint32_t nmc = read_u32(); // machine code length
+    // At the moment all machine code we give to JIT is unmanaged - e.g.
+    // load-faso just mmaps a file and leaves the mmap around forever.
+    // This is the unlinked object code, not the code that actually runs,
+    // so the JIT doesn't allocate it through our custom allocator either.
+    // We need to keep this unlinked object code around so that it can be
+    // saved in snapshots for relocating, so we just malloc to dodge GC.
+    unsigned char* mc = (unsigned char*)malloc(nmc);
+    stream_read_byte8(_stream, mc, nmc); // read in machine code
+    // Now feed the machine code to the JIT.
+    llvm::StringRef sbuffer((const char*)mc, nmc);
+    // FIXME: Use a better name, I guess? Not sure how much it matters.
+    std::string uniqueName = llvmo::ensureUniqueMemoryBufferName("bytecode-fasl");
+    llvm::StringRef name(uniqueName);
+    llvmo::JITDylib_sp dylib = jit->createAndRegisterJITDylib(uniqueName);
+    mod->setf_nativeModule(dylib);
+    std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer, name, false));
+    llvmo::ObjectFile_sp obj = jit->addObjectFile(dylib, std::move(memoryBuffer), false, 0);
+    // Loaded the object, so now we just need to stick the literals in.
+    uint16_t nlits = read_u16();
+    // We can't use the object's TOLiteralsStart because it won't exist before
+    // we actually query the symbol, due to the JIT's laziness.
+    void* vlits;
+    if (!jit->do_lookup(dylib, "__clasp_literals_", vlits))
+      SIMPLE_ERROR("Could not find literals");
+    T_O** lits = (T_O**)vlits;
+    for (size_t i = 0; i < nlits; ++i) {
+      lits[i] = get_ltv(read_index()).raw_();
+    }
+  }
+
   void attr_clasp_module_mutable_ltv(uint32_t bytes) {
     BytecodeModule_sp mod = gc::As<BytecodeModule_sp>(get_ltv(read_index()));
     uint16_t nltvs = read_u16();
@@ -892,10 +949,14 @@ struct loadltv {
       attr_docstring(attrbytes);
     } else if (name == "lambda-list") {
       attr_lambda_list(attrbytes);
+    } else if (name == "clasp:function-native") {
+      attr_clasp_function_native(attrbytes);
     } else if (name == "clasp:source-pos-info") {
       attr_clasp_source_pos_info(attrbytes);
     } else if (name == "clasp:module-debug-info") {
       attr_clasp_module_debug_info(attrbytes);
+    } else if (name == "clasp:module-native") {
+      attr_clasp_module_native(attrbytes);
     } else {
       for (size_t i = 0; i < attrbytes; ++i)
         read_u8();
