@@ -259,7 +259,8 @@
 
 (defun compile-cmodule (bytecode annotations literals
                         &key debug-namestring
-                          (system clasp-cleavir:*clasp-system*))
+                          (system clasp-cleavir:*clasp-system*)
+                          (abi clasp-cleavir:*abi-x86-64*))
   (let* ((irmod (make-instance 'bir:module))
          (cliterals (compute-compile-literals literals))
          (funmap
@@ -267,7 +268,7 @@
          (_ (clasp-cleavir::bir-transformations irmod system))
          (translation
            (clasp-cleavir::translate
-            irmod :debug-namestring debug-namestring
+            irmod :debug-namestring debug-namestring :abi abi
             ;; All IR functions with a corresponding bytecode function
             ;; need a XEP, so they can be put in the bytecode function.
             :toplevels (mapcar #'second (fmap funmap))))
