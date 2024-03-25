@@ -765,8 +765,10 @@
 (defun assign-indices (instructions)
   (let ((next-index 0))
     (map nil (lambda (inst)
-               (when (and (typep inst 'creator) (not (index inst)))
-                 (setf (index inst) next-index next-index (1+ next-index))))
+               (cond ((and (typep inst 'creator) (not (index inst)))
+                      (setf (index inst) next-index)
+                      (incf next-index))
+                     ((typep inst 'init-object-array) (setf next-index 0))))
          instructions))
   (values))
 
@@ -854,21 +856,27 @@
 
 ;; Used in disltv as well.
 (defun write-bytecode (instructions stream)
-  (let* ((nobjs (count-if (lambda (i) (typep i 'creator)) instructions))
-         ;; Next highest power of two bytes, roughly
-         (*index-bytes* (ash 1 (1- (ceiling (integer-length nobjs) 8))))
-         (ninsts (1+ (length instructions))))
+  (let* ((*index-bytes* 1) ; dummy; set by init-object-array instructions
+         (ninsts (length instructions)))
     (assign-indices instructions)
     (dbgprint "Instructions:~{~&~a~}" instructions)
     (write-magic stream)
     (write-version stream)
     (write-b64 ninsts stream)
-    (encode (make-instance 'init-object-array :count nobjs) stream)
-    (map nil (lambda (inst) (encode inst stream)) instructions)))
+    (map nil (lambda (inst)
+               (when (typep inst 'init-object-array)
+                 ;; Next highest power of two bytes, roughly
+                 (setf *index-bytes*
+                       (ash 1 (1- (ceiling (integer-length (init-object-array-count inst)) 8)))))
+               (encode inst stream))
+         instructions)))
 
 (defun %write-bytecode (stream)
   ;; lol efficiency with the reverse
-  (write-bytecode (reverse *instructions*) stream))
+  (let ((nobjs (count-if (lambda (i) (typep i 'creator)) *instructions*)))
+    (write-bytecode (cons (make-instance 'init-object-array :count nobjs)
+                          (reverse *instructions*))
+                    stream)))
 
 (defun opcode (mnemonic)
   (let ((inst (assoc mnemonic +ops+ :test #'equal)))
