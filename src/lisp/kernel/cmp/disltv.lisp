@@ -176,10 +176,11 @@
                  for bits = (ldb (byte ,nbits bit-index) byte)
                  do (setf (row-major-aref ,a (+ index j)) bits)))))))
 
+(defun decode-et-code (code)
+  (or (find code +array-packing-infos+ :key #'second)
+      (error "BUG: Unknown UAET code #x~x" code)))
 (defun decode-uaet (uaet-code)
-  (or (first (find uaet-code +array-packing-infos+ :key #'second))
-      (error "BUG: Unknown UAET code ~x" uaet-code)))
-(defun decode-packing (code) (decode-uaet code)) ; same for now
+  (first (decode-et-code uaet-code)))
 
 (defun read-utf8-codepoint (stream)
   (let ((b0 (read-byte stream)))
@@ -210,7 +211,8 @@
   (let* ((index (next-index)) (uaet-code (read-byte stream))
          (uaet (decode-uaet uaet-code))
          (packing-code (read-byte stream))
-         (packing-type (decode-packing packing-code))
+         (packing-info (decode-et-code packing-code))
+         (packing-type (first packing-info))
          (rank (read-byte stream))
          (dimensions (loop repeat rank collect (read-ub16 stream)))
          (array (unless (eq packing-type 't)
@@ -266,11 +268,11 @@
           (if (eq packing-type 't)
               (make-instance 'array-creator
                 :dimensions dimensions
-                :packing-info (%uaet-info 't) ; kludgeish
+                :packing-info packing-info
                 :uaet-code uaet-code)
               (make-instance 'array-creator
                 :dimensions dimensions
-                :packing-info (%uaet-info uaet) ; kludgeish
+                :packing-info packing-info
                 :uaet-code uaet-code
                 :prototype array)))))
 
@@ -482,16 +484,20 @@
 (defgeneric %load-attribute (mnemonic name-creator stream))
 
 (defmethod %load-attribute ((mnemonic string) ncreator stream)
-  ;; skip. we could record this as a pseudo-attribute, hypothetically
-  (let ((nbytes (read-ub32 stream)))
+  ;; skip.
+  (let* ((nbytes (read-ub32 stream))
+         (bytes (make-array nbytes :element-type '(unsigned-byte 8))))
     (dbgprint " (unknown-attribute ~s ~d)" ncreator nbytes)
-    (loop repeat nbytes do (read-byte stream))))
+    (read-sequence bytes stream)
+    (make-instance 'unknown-attr :name ncreator :bytes bytes)))
 
 ;;; Results from non-string (invalid) attribute name.
 (defmethod %load-attribute ((mnemonic null) ncreator stream)
-  (let ((nbytes (read-ub32 stream)))
+  (let* ((nbytes (read-ub32 stream))
+         (bytes (make-array nbytes :element-type '(unsigned-byte 8))))
     (dbgprint " (unknown-attribute ~s ~d)" ncreator nbytes)
-    (loop repeat nbytes do (read-byte stream))))
+    (read-sequence bytes stream)
+    (make-instance 'unknown-attr :name ncreator :bytes bytes)))
 
 #+clasp
 (defmethod %load-attribute ((mnemonic (eql 'source-pos-info)) ncreator stream)
@@ -507,14 +513,14 @@
 
 #+clasp
 (defmethod %load-attribute ((mnemonic (eql 'module-debug-info)) ncreator stream)
-  (declare (ignore ncreator))
   (read-ub32 stream) ; nbytes
   (let* ((mod (read-creator stream))
          (ninfos (read-ub32 stream))
          (infos (make-array ninfos)))
-    (declare (ignore mod))
     (loop for i below ninfos
-          do (setf (aref infos i) (load-debug-info stream)))))
+          do (setf (aref infos i) (load-debug-info stream)))
+    (make-instance 'module-debug-attr
+      :name ncreator :module mod :infos infos)))
 
 (defun read-di-mnemonic (stream)
   (let* ((opcode (read-byte stream))
@@ -664,6 +670,149 @@
 ;;;
 ;;; Operations on FASLs
 ;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Disassembly
+;;;
+;;; Get a human-readable representation of what a FASL is doing.
+
+(defgeneric disassemble-fasl (fasl)
+  (:method ((fasl pathname)) (disassemble-fasl (load-bytecode fasl)))
+  (:method ((namestring string)) (disassemble-fasl (load-bytecode namestring)))
+  (:method ((fasl stream)) (disassemble-fasl (load-bytecode-stream fasl))))
+
+(defgeneric disassemble-instruction (instruction))
+
+(defun unassign-indices (instructions)
+  (map nil (lambda (inst)
+             (when (typep inst 'creator) (setf (index inst) nil)))
+       instructions))
+
+(defmethod disassemble-fasl ((fasl fasl))
+  (assign-indices (instructions fasl))
+  (fresh-line)
+  (format t "; FASL version ~d.~d~%" (major-version fasl) (minor-version fasl))
+  (loop with *package* = (find-package "CMPLTV") ; for package prefix printing
+        for inst across (instructions fasl)
+        do (prin1 (disassemble-instruction inst)) (terpri))
+  ;; Make sure we don't do anything permanent to the FASL indices,
+  ;; e.g. if we want to insert new ones in the middle later.
+  (unassign-indices (instructions fasl))
+  (values))
+
+(defmethod disassemble-instruction ((inst singleton-creator))
+  `(<- (% ,(index inst)) ',(prototype inst)))
+(defmethod disassemble-instruction ((inst cons-creator))
+  `(<- (% ,(index inst)) '(cons nil nil)))
+(defmethod disassemble-instruction ((inst rplaca-init))
+  `(setf (car (% ,(index (rplac-cons inst)))) (% ,(index (rplac-value inst)))))
+(defmethod disassemble-instruction ((inst rplacd-init))
+  `(setf (cdr (% ,(index (rplac-cons inst)))) (% ,(index (rplac-value inst)))))
+(defmethod disassemble-instruction ((inst array-creator))
+  `(<- (% ,(index inst))
+       ,(case (first (packing-info inst))
+          ((t) `(make-array ',(dimensions inst)))
+          ((nil) `(make-array ',(dimensions inst) :element-type nil))
+          (otherwise
+           ;; make the output a little easier to read if we have a vector
+           ;; (this does make it slightly less obvious what the element type is)
+           (let ((dims (dimensions inst)))
+             (if (= (length dims) 1)
+                 `(copy-seq ,(prototype inst))
+                 `(make-array ',dims
+                              :element-type ',(decode-uaet (uaet-code inst))
+                              :initial-contents ,(prototype inst))))))))
+(defmethod disassemble-instruction ((inst setf-aref))
+  `(setf (row-major-aref (% ,(index (setf-aref-array inst)))
+                         ,(setf-aref-index inst))
+         (% ,(index (setf-aref-value inst)))))
+(defmethod disassemble-instruction ((inst hash-table-creator))
+  `(<- (% ,(index inst)) (make-hash-table
+                          :test ',(hash-table-creator-test inst)
+                          :count ,(hash-table-creator-count inst))))
+(defmethod disassemble-instruction ((inst setf-gethash))
+  `(setf (gethash (% ,(index (setf-gethash-key inst)))
+                  (% ,(index (setf-gethash-hash-table inst))))
+         (% ,(index (setf-gethash-value inst)))))
+(defmethod disassemble-instruction ((inst symbol-creator))
+  `(<- (% ,(index inst)) (make-symbol (% ,(index (symbol-creator-name inst))))))
+(defmethod disassemble-instruction ((inst interned-symbol-creator))
+  `(<- (% ,(index inst))
+       (intern (% ,(index (symbol-creator-name inst)))
+               (% ,(index (symbol-creator-package inst))))))
+(defmethod disassemble-instruction ((inst package-creator))
+  `(<- (% ,(index inst)) (find-package (% ,(index (package-creator-name inst))))))
+(defmethod disassemble-instruction ((inst sb64-creator))
+  `(<- (% ,(index inst)) ,(prototype inst)))
+(defmethod disassemble-instruction ((inst bignum-creator))
+  `(<- (% ,(index inst)) ,(prototype inst)))
+(defmethod disassemble-instruction ((inst single-float-creator))
+  `(<- (% ,(index inst)) ,(prototype inst)))
+(defmethod disassemble-instruction ((inst double-float-creator))
+  `(<- (% ,(index inst)) ,(prototype inst)))
+(defmethod disassemble-instruction ((inst ratio-creator))
+  `(<- (% ,(index inst))
+       (/ (% ,(index (ratio-creator-numerator inst)))
+          (% ,(index (ratio-creator-denominator inst))))))
+(defmethod disassemble-instruction ((inst complex-creator))
+  `(<- (% ,(index inst))
+       (complex (% ,(index (complex-creator-realpart inst)))
+                (% ,(index (complex-creator-imagpart inst))))))
+(defmethod disassemble-instruction ((inst character-creator))
+  `(<- (% ,(index inst)) ,(prototype inst)))
+(defmethod disassemble-instruction ((inst pathname-creator))
+  ;; not sure about *default-pathname-defaults*
+  `(<- (% ,(index inst)) (make-pathname
+                          :host (% ,(index (pathname-creator-host inst)))
+                          :device (% ,(index (pathname-creator-device inst)))
+                          :directory (% ,(index (pathname-creator-directory inst)))
+                          :name (% ,(index (pathname-creator-name inst)))
+                          :type (% ,(index (pathname-creator-type inst)))
+                          :version (% ,(index (pathname-creator-version inst))))))
+(defmethod disassemble-instruction ((inst fdefinition-lookup))
+  `(<- (% ,(index inst)) (fdefinition (% ,(index (name inst))))))
+(defmethod disassemble-instruction ((inst fcell-lookup))
+  `(<- (% ,(index inst)) (core:ensure-function-cell (% ,(index (name inst))))))
+(defmethod disassemble-instruction ((inst vcell-lookup))
+  `(<- (% ,(index inst)) (core:ensure-variable-cell (% ,(index (name inst))))))
+(defmethod disassemble-instruction ((inst environment-lookup))
+  `(<- (% ,(index inst)) *loader-environment*))
+(defmethod disassemble-instruction ((inst general-creator))
+  `(<- (% ,(index inst))
+       (funcall (the function (% ,(index (general-function inst))))
+                ,@(loop for arg in (general-arguments inst)
+                        collecting `(% ,(index arg))))))
+(defmethod disassemble-instruction ((inst general-initializer))
+  `(funcall (the function (% ,(index (general-function inst))))
+            ,@(loop for arg in (general-arguments inst)
+                    collecting `(% ,(index arg)))))
+(defmethod disassemble-instruction ((inst class-creator))
+  `(<- (% ,(index inst)) (find-class (% ,(index (class-creator-name inst))))))
+
+(defmethod disassemble-instruction ((inst bytemodule-creator))
+  ;; TODO: Disassemble the bytecode?
+  `(<- (% ,(index inst))
+       (core:bytecode-module/make ,(bytemodule-lispcode inst))))
+(defmethod disassemble-instruction ((inst setf-literals))
+  `(core:bytecode-module/setf-literals
+    (% ,(index (setf-literals-module inst)))
+    (vector ,@(loop for item across (setf-literals-literals inst)
+                    collecting `(% ,(index item))))))
+(defmethod disassemble-instruction ((inst bytefunction-creator))
+  `(<- (% ,(index inst))
+       (core:bytecode-simple-fun/make nil (% ,(index (module inst)))
+                                      ,(nlocals inst) ,(nclosed inst)
+                                      ,(entry-point inst) ,(size inst) nil)))
+
+(defmethod disassemble-instruction ((inst init-object-array))
+  `(init-object-array ,(init-object-array-count inst)))
+
+(defmethod disassemble-instruction ((inst attribute))
+  ;; TODO
+  `(attribute (% ,(index (name inst)))))
+(defmethod disassemble-instruction ((inst unknown-attr))
+  `(unknown-attribute (% ,(index (name inst))) ,(bytes inst)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

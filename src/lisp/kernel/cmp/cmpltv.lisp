@@ -243,6 +243,12 @@
    ;; FIXME: Do this more cleanly.
    (%name :reader name :initarg :name :type creator)))
 
+;;; Used by disltv so that FASLs with unknown attributes can round-trip
+;;; without losing any info.
+(defclass unknown-attr (attribute)
+  ((%bytes :initarg :bytes :reader bytes
+           :type (simple-array (unsigned-byte 8) (*)))))
+
 (defclass name-attr (attribute)
   ((%name :initform (ensure-constant "name"))
    (%object :initarg :object :reader object :type creator)
@@ -1549,6 +1555,10 @@
 (defmethod encode :before ((attr attribute) stream)
   (write-mnemonic 'attribute stream)
   (write-index (name attr) stream))
+
+(defmethod encode ((attr unknown-attr) stream)
+  (write-b32 (length (bytes attr)) stream)
+  (write-sequence (bytes attr) stream))
 
 (defmethod encode ((attr name-attr) stream)
   (write-b32 (+ *index-bytes* *index-bytes*) stream)
