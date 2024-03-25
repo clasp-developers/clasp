@@ -45,8 +45,8 @@
     (dbgprint "Magic number matches: ~x" magic)))
 
 ;; Bounds for major and minor version understood by this loader.
-(defparameter *min-version* '(0 10))
-(defparameter *max-version* '(0 10))
+(defparameter *min-version* '(0 14))
+(defparameter *max-version* '(0 14))
 
 (defun loadable-version-p (major minor)
   (and
@@ -181,6 +181,31 @@
       (error "BUG: Unknown UAET code ~x" uaet-code)))
 (defun decode-packing (code) (decode-uaet code)) ; same for now
 
+(defun read-utf8-codepoint (stream)
+  (let ((b0 (read-byte stream)))
+    (cond ((= (ldb (byte 1 7) b0) #b0) ; one byte
+           b0)
+          ((= (ldb (byte 3 5) b0) #b110)
+           (let ((b1 (read-byte stream))) ; two
+             (logior (ash (ldb (byte 5 0) b0) 6)
+                     (ash (ldb (byte 6 0) b1) 0))))
+          ((= (ldb (byte 4 4) b0) #b1110)
+           (let ((b1 (read-byte stream)) ; three
+                 (b2 (read-byte stream)))
+             (logior (ash (ldb (byte 4 0) b0) 12)
+                     (ash (ldb (byte 6 0) b1) 6)
+                     (ash (ldb (byte 6 0) b2) 0))))
+          ((= (ldb (byte 5 3) b0) #b11110)
+           (let ((b1 (read-byte stream)) ; four
+                 (b2 (read-byte stream))
+                 (b3 (read-byte stream)))
+             (logior (ash (ldb (byte 3 0) b0) 18)
+                     (ash (ldb (byte 6 0) b1) 12)
+                     (ash (ldb (byte 6 0) b2) 6)
+                     (ash (ldb (byte 6 0) b3) 0))))
+          (t ; invalid. should we err or just warn?
+           (error "Invalid UTF-8 header byte: ~x" b0)))))
+
 (defmethod %load-instruction ((mnemonic (eql 'make-array)) stream)
   (let* ((index (next-index)) (uaet-code (read-byte stream))
          (uaet (decode-uaet uaet-code))
@@ -201,7 +226,7 @@
             ((equal packing-type 'base-char)
              (undump (code-char (read-byte stream))))
             ((equal packing-type 'character)
-             (undump (code-char (read-ub32 stream))))
+             (undump (code-char (read-utf8-codepoint stream))))
             ((equal packing-type 'single-float)
              (undump (ext:bits-to-single-float (read-ub32 stream))))
             ((equal packing-type 'double-float)
@@ -398,6 +423,16 @@
     (dbgprint " (fdefinition ~d ~s)" index name)
     (setf (creator index) (make-instance 'fdefinition-lookup :name name))))
 
+(defmethod %load-instruction ((mnemonic (eql 'fcell)) stream)
+  (let ((index (next-index)) (name (read-creator stream)))
+    (dbgprint " (fcell ~d ~s)" index name)
+    (setf (creator index) (make-instance 'fcell-lookup :name name))))
+
+(defmethod %load-instruction ((mnemonic (eql 'vcell)) stream)
+  (let ((index (next-index)) (name (read-creator stream)))
+    (dbgprint " (vcell ~d ~s)" index name)
+    (setf (creator index) (make-instance 'vcell-lookup :name name))))
+
 (defmethod %load-instruction ((mnemonic (eql 'funcall-create)) stream)
   (let ((index (next-index)) (fun (read-creator stream))
         (args (if (and (= *load-major* 0) (<= *load-minor* 4))
@@ -501,14 +536,25 @@
   (make-instance 'debug-info-vars
     :start (read-ub32 stream) :end (read-ub32 stream)
     :vars (loop repeat (read-ub16 stream)
-                collect (list (read-ub32 stream)
-                              (read-ub32 stream)
-                              (loop repeat (read-ub16 stream)
-                                    collect (list (read-creator stream)
-                                                  (ecase (read-byte stream)
-                                                    (0 nil)
-                                                    (1 t))
-                                                  (read-ub16 stream)))))))
+                for name = (read-creator stream)
+                for frame-index = (read-ub16 stream)
+                for flagsb = (read-byte stream)
+                for decls = (loop repeat (read-ub16 stream)
+                                  collect (read-creator stream))
+                for inline = (ecase (ldb (byte 2 4) flagsb)
+                               (#b00 nil)
+                               (#b01 'cl:inline)
+                               (#b10 'cl:notinline))
+                for dx = (logbitp 3 flagsb)
+                for ignore = (ecase (ldb (byte 2 1) flagsb)
+                               (#b00 nil)
+                               (#b01 'cl:ignore)
+                               (#b10 'cl:ignorable))
+                for cellp = (logbitp 0 flagsb)
+                collect (make-instance 'debug-info-var
+                          :name name :frame-index frame-index
+                          :cellp cellp :dxp dx :ignore ignore :inline inline
+                          :decls decls))))
 
 (defmethod %load-debug-info ((mnemonic (eql 'location)) stream)
   (make-instance 'debug-info-location
@@ -518,6 +564,48 @@
     :lineno (read-ub64 stream)
     :column (read-ub64 stream)
     :filepos (read-ub64 stream)))
+
+(defmethod %load-debug-info ((mnemonic (eql 'decls)) stream)
+  (make-instance 'debug-info-decls
+    :start (read-ub32 stream)
+    :end (read-ub32 stream)
+    :decls (read-creator stream)))
+
+(defmethod %load-debug-info ((mnemonic (eql 'the)) stream)
+  (make-instance 'debug-info-the
+    :start (read-ub32 stream) :end (read-ub32 stream)
+    :type (read-creator stream)
+    :receiving (read-sb32 stream)))
+
+(defmethod %load-debug-info ((mnemonic (eql 'if)) stream)
+  (make-instance 'debug-ast-if
+    :start (read-ub32 stream)
+    :end (read-ub32 stream)
+    :receiving (read-sb32 stream)))
+
+(defmethod %load-debug-info ((mnemonic (eql 'tagbody)) stream)
+  (make-instance 'debug-ast-tagbody
+    :start (read-ub32 stream) :end (read-ub32 stream)
+    :tags (loop repeat (read-ub16 stream)
+                for tag = (read-creator stream)
+                for ip = (read-ub32 stream)
+                collect (cons tag ip))))
+
+(defmethod %load-debug-info ((mnemonic (eql 'block)) stream)
+  (make-instance 'debug-info-block
+    :start (read-ub32 stream) :end (read-ub32 stream)
+    :name (read-creator stream)
+    :receiving (read-sb32 stream)))
+
+(defmethod %load-debug-info ((mnemonic (eql 'exit)) stream)
+  (make-instance 'debug-info-exit
+    :start (read-ub32 stream) :end (read-ub32 stream)
+    :receiving (read-sb32 stream)))
+
+(defmethod %load-debug-info ((mnemonic (eql 'macro)) stream)
+  (make-instance 'debug-info-macroexpansion
+    :start (read-ub32 stream) :end (read-ub32 stream)
+    :macro-name (read-creator stream)))
 
 (defparameter *attr-map*
   (let ((ht (make-hash-table :test #'equal)))
