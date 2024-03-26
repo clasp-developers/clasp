@@ -137,9 +137,10 @@ struct loadltv {
   }
 
   inline uint16_t read_u16() {
-    // Ideally we'd want to use something like read-sequence here.
-    uint16_t high = read_u8();
-    uint16_t low = read_u8();
+    unsigned char bytes[2];
+    stream_read_byte8(_stream, &bytes[0], 2);
+    uint16_t high = bytes[0];
+    uint16_t low = bytes[1];
     return (high << 8) | low;
   }
 
@@ -154,10 +155,12 @@ struct loadltv {
   }
 
   inline uint32_t read_u32() {
-    uint32_t b0 = read_u8();
-    uint32_t b1 = read_u8();
-    uint32_t b2 = read_u8();
-    uint32_t b3 = read_u8();
+    unsigned char bytes[4];
+    stream_read_byte8(_stream, &bytes[0], 4);
+    uint32_t b0 = bytes[0];
+    uint32_t b1 = bytes[1];
+    uint32_t b2 = bytes[2];
+    uint32_t b3 = bytes[3];
     return (b0 << 24) | (b1 << 16) | (b2 << 8) | (b3 << 0);
   }
 
@@ -172,14 +175,16 @@ struct loadltv {
   }
 
   inline uint64_t read_u64() {
-    uint64_t b0 = read_u8();
-    uint64_t b1 = read_u8();
-    uint64_t b2 = read_u8();
-    uint64_t b3 = read_u8();
-    uint64_t b4 = read_u8();
-    uint64_t b5 = read_u8();
-    uint64_t b6 = read_u8();
-    uint64_t b7 = read_u8();
+    unsigned char bytes[8];
+    stream_read_byte8(_stream, &bytes[0], 8);
+    uint64_t b0 = bytes[0];
+    uint64_t b1 = bytes[1];
+    uint64_t b2 = bytes[2];
+    uint64_t b3 = bytes[3];
+    uint64_t b4 = bytes[4];
+    uint64_t b5 = bytes[5];
+    uint64_t b6 = bytes[6];
+    uint64_t b7 = bytes[7];
     return (b0 << 56) | (b1 << 48) | (b2 << 40) | (b3 << 32) | (b4 << 24) | (b5 << 16) | (b6 << 8) | (b7 << 0);
   }
 
