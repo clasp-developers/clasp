@@ -638,83 +638,102 @@
   (and (consp form) (eq (car form) 'cl:lambda)))
 
 ;;; Return true iff the proper list FORM represents a call to a global
-;;; function with all constant or #' arguments (and not too many).
-(defun call-with-dumpable-arguments-p (form &optional env)
-  (and (symbolp (car form))
-       (fboundp (car form))
-       (not (macro-function (car form)))
-       (not (special-operator-p (car form)))
-       (< (length (rest form)) +max-call-args+)
-       (every (lambda (f) (or (constantp f env)
-                              (function-form-p f)
-                              (lambda-expression-p f)))
-              (rest form))))
+;;; function with all constant, #', or dumpable arguments (and not too many).
+;;; Note that allowing these recursively dumpable forms may result in slightly
+;;; subpar outcomes - for example we're not smart enough to turn the (LIST)
+;;; arguments that appear in LOAD-DEFCLASS calls into constant NILs.
+;;; But I (Bike) believe that's offset by the value of not making the loader
+;;; make and run a one-time-use bytecode function.
+(defun directly-creatable-form-p (form &optional env)
+  (or (constantp form env)
+      (and (consp form)
+           (or (function-form-p form)
+               (lambda-expression-p form)
+               (and (symbolp (car form))
+                    (not (macro-function (car form)))
+                    (not (special-operator-p (car form)))
+                    (< (length (rest form)) +max-call-args+)
+                    (every (lambda (f)
+                             (directly-creatable-form-p f env))
+                           (rest form)))))))
 
-(defun f-dumpable-form-creator (env)
-  (lambda (form)
-    (cond ((lambda-expression-p form)
-           (add-function (bytecode-cf-compile-lexpr form env)))
-          ((not (function-form-p form)) ; must be a constant
-           (ensure-constant (ext:constant-form-value form env)))
-          ((and (consp (second form)) (eq (caadr form) 'cl:lambda))
-           ;; #'(lambda ...)
-           (add-function (bytecode-cf-compile-lexpr (second form) env)))
-          (t
-           ;; #'function-name
-           (add-instruction
-            (make-instance 'fdefinition-lookup
-              :name (ensure-constant (second form))))))))
+;;; Given a form and environment,
+;;; add FASL instructions to evaluate the form for its value.
+;;; This is used directly in creation forms, and also to
+;;; add argument forms for simple creation and initializaiton forms.
+;;; To use this function, you must have already checked that the form
+;;; is directly creatable with directly-creatable-form-p.
+(defun add-direct-creator-form (form env)
+  (cond ((constantp form env)
+         (ensure-constant (ext:constant-form-value form env)))
+        ;; (find-class 'something)
+        ((and (eq (car form) 'cl:find-class)
+              (= (length form) 2)
+              (constantp (second form) env))
+         (add-instruction
+          (make-instance 'class-creator
+            :name (ensure-constant
+                   (ext:constant-form-value (second form) env)))))
+        ;; (lambda ...)
+        ((lambda-expression-p form)
+         (add-function (bytecode-cf-compile-lexpr form env)))
+        ((function-form-p form)
+         (if (lambda-expression-p (second form))
+             (add-function (bytecode-cf-compile-lexpr (second form) env))
+             (add-instruction
+              (make-instance 'fdefinition-lookup
+                :name (ensure-constant (second form))))))
+        ;; must be a recursive directly creatable form.
+        (t
+         (add-instruction
+          (make-instance 'general-creator
+            :function (add-instruction
+                       (make-instance 'fdefinition-lookup
+                         :name (ensure-constant (car form))))
+            :arguments (mapcar (lambda (f) (add-direct-creator-form f env))
+                               (rest form)))))))
 
 ;;; Make a possibly-special creator based on an MLF creation form.
-(defun creation-form-creator (value form &optional env)
+(defun add-creation-form-creator (value form &optional env)
   (let ((*creating* (cons value *creating*)))
-    (flet ((default ()
-             (make-instance 'general-creator
-               :prototype value
-               :function (add-form form env) :arguments ())))
-      (cond ((not (core:proper-list-p form)) (default))
-            ;; (find-class 'something)
-            ((and (eq (car form) 'cl:find-class)
-                  (= (length form) 2)
-                  (constantp (second form) env))
-             (make-instance 'class-creator
-               :prototype value
-               :name (ensure-constant
-                      (ext:constant-form-value (second form) env))))
-            ;; (foo 'bar 'baz)
-            ((call-with-dumpable-arguments-p form)
-             (make-instance 'general-creator
-               :prototype value
-               :function (add-instruction
-                          (make-instance 'fdefinition-lookup
-                            :name (ensure-constant (car form))))
-               :arguments (mapcar (f-dumpable-form-creator env) (rest form))))
-            (t (default))))))
+    (if (directly-creatable-form-p form env)
+        (let ((inst (add-direct-creator-form form env)))
+          (when (typep inst 'vcreator)
+            (reinitialize-instance inst :prototype value))
+          inst)
+        (add-instruction
+         (make-instance 'general-creator
+           :prototype value
+           :function (add-form form env) :arguments ())))))
 
 ;;; Make a possibly-special initializer.
 (defun add-initializer-form (form &optional env)
-  (flet ((default ()
-           (add-instruction
-            (make-instance 'general-initializer
-              :function (add-form form env) :arguments ()))))
-    (cond ((constantp form env) nil) ; do nothing (good for e.g. defun's return)
-          ((not (core:proper-list-p form)) (default))
-          ((call-with-dumpable-arguments-p form env)
-           (let ((cre (f-dumpable-form-creator env)))
-             (if (eq (car form) 'cl:funcall)
-                 ;; cut off the funcall - general-initializer does the call itself.
-                 ;; this commonly arises from e.g. (funcall #'(setf fdefinition ...)
-                 (add-instruction
-                  (make-instance 'general-initializer
-                    :function (funcall cre (second form))
-                    :arguments (mapcar cre (cddr form))))
-                 (add-instruction
-                  (make-instance 'general-initializer
-                    :function (add-instruction
-                               (make-instance 'fdefinition-lookup
-                                 :name (ensure-constant (car form))))
-                    :arguments (mapcar cre (rest form)))))))
-           (t (default)))))
+  (cond ((constantp form env) nil) ; do nothing (good for e.g. defun's return)
+        ((and (symbolp form)
+              (not (nth-value 1 (macroexpand-1 form env))))
+         ;; also do nothing. this comes up for e.g. the *PACKAGE* returned from
+         ;; top-level IN-PACKAGE forms.
+         nil)
+        ((directly-creatable-form-p form env)
+         (flet ((direct (f)
+                  (add-direct-creator-form f env)))
+           (if (eq (car form) 'cl:funcall)
+               ;; cut off the funcall - general-initializer does the call itself.
+             ;; this commonly arises from e.g. (funcall #'(setf fdefinition ...)
+               (add-instruction
+                (make-instance 'general-initializer
+                  :function (direct (second form))
+                  :arguments (mapcar #'direct (cddr form))))
+               (add-instruction
+                (make-instance 'general-initializer
+                  :function (add-instruction
+                             (make-instance 'fdefinition-lookup
+                               :name (ensure-constant (car form))))
+                  :arguments (mapcar #'direct (rest form)))))))
+        (t ; give up
+         (add-instruction
+          (make-instance 'general-initializer
+            :function (add-form form env) :arguments ())))))
 
 (defvar *initializer-destination* nil)
 
@@ -726,7 +745,10 @@
              (make-load-form value)
            (let ((*initializer-map* (or *initializer-map* (make-hash-table))))
              (prog1
-                 (add-creator value (creation-form-creator value create))
+                 ;; We do this instead of ADD-CREATOR because
+                 ;; ADD-CREATION-FORM-CREATOR has already added the instructions.
+                 (setf (gethash value *coalesce*)
+                       (add-creation-form-creator value create))
                ;; WARNING: If object initializations ever need instructions
                ;; moved besides GENERAL-INITIALIZER, they have to be part of
                ;; these TYPEPs.
