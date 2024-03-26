@@ -57,6 +57,7 @@
 #define LTV_OP_CLASS 98
 #define LTV_OP_INIT_OBJECT_ARRAY 99
 #define LTV_OP_ENVIRONMENT 100
+#define LTV_OP_SYMBOL_VALUE 101
 #define LTV_OP_ATTR 255
 
 #define LTV_DI_OP_FUNCTION 0
@@ -694,6 +695,12 @@ struct loadltv {
     set_ltv(nil<T_O>(), next_index());
   }
 
+  void op_symbol_value() {
+    size_t index = next_index();
+    Symbol_sp name = gc::As<Symbol_sp>(get_ltv(read_index()));
+    set_ltv(name->symbolValue(), index);
+  }
+
   // FIXME: Have these fail gracefully if the byte count is wrong.
   void attr_name(uint32_t bytes) {
     T_sp named = get_ltv(read_index());
@@ -1075,6 +1082,9 @@ struct loadltv {
       break;
     case LTV_OP_ENVIRONMENT:
       op_environment();
+      break;
+    case LTV_OP_SYMBOL_VALUE:
+      op_symbol_value();
       break;
     case LTV_OP_ATTR:
       op_attribute();

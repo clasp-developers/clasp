@@ -435,6 +435,10 @@
     (dbgprint " (vcell ~d ~s)" index name)
     (setf (creator index) (make-instance 'vcell-lookup :name name))))
 
+(defmethod %load-instruction ((mnemonic (eql 'symbol-value)) stream)
+  (let ((index (next-index)) (name (read-creator stream)))
+    (setf (creator index) (make-instance 'vdefinition :name name))))
+
 (defmethod %load-instruction ((mnemonic (eql 'funcall-create)) stream)
   (let ((index (next-index)) (fun (read-creator stream))
         (args (if (and (= *load-major* 0) (<= *load-minor* 4))
@@ -776,6 +780,8 @@
   `(<- (% ,(index inst)) (core:ensure-function-cell (% ,(index (name inst))))))
 (defmethod disassemble-instruction ((inst vcell-lookup))
   `(<- (% ,(index inst)) (core:ensure-variable-cell (% ,(index (name inst))))))
+(defmethod disassemble-instruction ((inst vdefinition))
+  `(<- (% ,(index inst)) (symbol-value (% ,(index (name inst))))))
 (defmethod disassemble-instruction ((inst environment-lookup))
   `(<- (% ,(index inst)) *loader-environment*))
 (defmethod disassemble-instruction ((inst general-creator))
