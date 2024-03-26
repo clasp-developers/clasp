@@ -184,6 +184,12 @@
 ;;; And the "cell" for the loader environment.
 (defclass environment-lookup (creator) ())
 
+;;; Get a special or constant variable's value (as by SYMBOL-VALUE).
+;;; This is useful for direct dumping of some forms, as well as to allow
+;;; usage of non-dumpable DEFCONSTANTs in code (see #1517).
+(defclass vdefinition (creator)
+  ((%name :initarg :name :reader name :type creator)))
+
 (defclass general-creator (vcreator)
   (;; Reference to a function designator to call to allocate the object,
    ;; e.g. a function made of the first return value from make-load-form.
@@ -646,16 +652,20 @@
 ;;; make and run a one-time-use bytecode function.
 (defun directly-creatable-form-p (form &optional env)
   (or (constantp form env)
-      (and (consp form)
-           (or (function-form-p form)
-               (lambda-expression-p form)
-               (and (symbolp (car form))
-                    (not (macro-function (car form)))
-                    (not (special-operator-p (car form)))
-                    (< (length (rest form)) +max-call-args+)
-                    (every (lambda (f)
-                             (directly-creatable-form-p f env))
-                           (rest form)))))))
+      ;; constantp includes non-symbols-or-lists, so this typecase is exhaustive
+      (typecase form
+        (symbol
+         (not (nth-value 1 (macroexpand-1 form env))))
+        (cons
+         (or (function-form-p form)
+             (lambda-expression-p form)
+             (and (symbolp (car form))
+                  (not (macro-function (car form)))
+                  (not (special-operator-p (car form)))
+                  (< (length (rest form)) +max-call-args+)
+                  (every (lambda (f)
+                           (directly-creatable-form-p f env))
+                         (rest form))))))))
 
 ;;; Given a form and environment,
 ;;; add FASL instructions to evaluate the form for its value.
@@ -666,6 +676,10 @@
 (defun add-direct-creator-form (form env)
   (cond ((constantp form env)
          (ensure-constant (ext:constant-form-value form env)))
+        ;; special variable (constants are caught by constantp above)
+        ((symbolp form)
+         (add-instruction
+          (make-instance 'vdefinition :name (ensure-constant form))))
         ;; (find-class 'something)
         ((and (eq (car form) 'cl:find-class)
               (= (length form) 2)
@@ -709,8 +723,7 @@
 ;;; Make a possibly-special initializer.
 (defun add-initializer-form (form &optional env)
   (cond ((constantp form env) nil) ; do nothing (good for e.g. defun's return)
-        ((and (symbolp form)
-              (not (nth-value 1 (macroexpand-1 form env))))
+        ((and (symbolp form) (not (nth-value 1 (macroexpand-1 form env))))
          ;; also do nothing. this comes up for e.g. the *PACKAGE* returned from
          ;; top-level IN-PACKAGE forms.
          nil)
@@ -719,7 +732,7 @@
                   (add-direct-creator-form f env)))
            (if (eq (car form) 'cl:funcall)
                ;; cut off the funcall - general-initializer does the call itself.
-             ;; this commonly arises from e.g. (funcall #'(setf fdefinition ...)
+               ;; this commonly arises from e.g. (funcall #'(setf fdefinition ...)
                (add-instruction
                 (make-instance 'general-initializer
                   :function (direct (second form))
@@ -845,6 +858,7 @@
     (make-specialized-array 97 sind rank dims etype . elems)
     (init-object-array 99 ub64)
     (environment 100)
+    (symbol-value 101)
     (attribute 255 name nbytes . data)))
 
 ;;; STREAM is a ub8 stream.
@@ -1217,6 +1231,10 @@
 
 (defmethod encode ((inst environment-lookup) stream)
   (write-mnemonic 'environment stream))
+
+(defmethod encode ((inst vdefinition) stream)
+  (write-mnemonic 'symbol-value stream)
+  (write-index (name inst) stream))
 
 (defmethod encode ((inst general-creator) stream)
   (write-mnemonic 'funcall-create stream)
