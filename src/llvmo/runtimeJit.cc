@@ -548,6 +548,8 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       }
     }
     //
+    bool found_gcroots_in_module = false;
+    gctools::GCRootsInModule* roots;
     bool found_literals = false;
     for (auto ssym : G.defined_symbols()) {
       if (ssym->getName() == "DW.ref.__gxx_personality_v0") {
@@ -569,7 +571,14 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 #endif
       if (ssym->hasName()) {
         std::string sname = ssym->getName().str();
-        size_t pos = sname.find(literals_name);
+        size_t pos;
+        pos = sname.find(gcroots_in_module_name);
+        if (pos != std::string::npos) {
+          found_gcroots_in_module = true;
+          roots = (gctools::GCRootsInModule*)ssym->getAddress().getValue();
+          continue;
+        }
+        pos = sname.find(literals_name);
         if (pos != std::string::npos) {
           found_literals = true;
           currentCode->_LiteralVectorStart = (uintptr_t)ssym->getAddress().getValue();
@@ -614,6 +623,12 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     //
     void* literalStart = (void*)currentCode->_LiteralVectorStart;
     size_t literalCount = currentCode->_LiteralVectorSizeBytes / sizeof(void*);
+    if (found_gcroots_in_module) {
+      // if we have a GCRoots object, set it up properly.
+      // Note that BTB compilation will _not_ have a GCRoots. This is OK.
+      roots->_module_memory = literalStart;
+      roots->_num_entries = literalCount;
+    }
     gctools::clasp_gc_registerRoots(literalStart, literalCount);
 #ifdef DEBUG_OBJECT_FILES
     for (auto* Sym : G.external_symbols())
