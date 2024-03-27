@@ -46,9 +46,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   `(LOCALLY (DECLARE (SPECIAL ,var))
      (eval-when (:compile-toplevel :load-toplevel :execute)
        (SYS:*MAKE-SPECIAL ',var))
-    ,@(when form-sp
-	  `((UNLESS (BOUNDP ',var)
-	      (SETQ ,var ,form))))
+    ,@(when form-sp `((sys:mset ',var ,form)))
     ,@(when (and core:*current-source-pos-info*
                  ;; KLUDGE so that we can bootstrap this.
                  ;; The function is defined in clos/print.lisp.
@@ -67,7 +65,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   `(LOCALLY (DECLARE (SPECIAL ,var))
      (eval-when (:compile-toplevel :load-toplevel :execute)
        (SYS:*MAKE-SPECIAL ',var))
-     (SETQ ,var ,form)
+     (setq ,var ,form)
     ,@(when (and core:*current-source-pos-info*
                  (fboundp 'variable-source-info-saver))
         (variable-source-info-saver var core:*current-source-pos-info*))

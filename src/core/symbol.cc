@@ -316,6 +316,15 @@ CL_DEFUN Symbol_sp cl__makunbound(Symbol_sp functionName) {
   return functionName;
 }
 
+// "Maybe SET": Set the value of SYM if and only if it's not already bound.
+// This is functional DEFVAR, only it doesn't proclaim special or
+// return the symbol name. This exists so that the file compiler can just
+// dump a function call without having to generate any code.
+CL_DEFUN void core__mset(Symbol_sp var, T_sp value) {
+  if (!var->boundP())
+    var->setf_symbolValue(value);
+}
+
 FunctionCell_sp Symbol_O::ensureFunctionCell() {
   FunctionCell_sp existing = functionCell();
   if (existing.unboundp()) {
