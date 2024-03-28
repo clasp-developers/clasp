@@ -2242,6 +2242,47 @@ COMPILE-FILE will use the default *clasp-env*."
             (jit-add-module-return-function
              cmp:*the-module* startup-shutdown-id ordered-raw-constants-list)))))))
 
+;;; Used from fli.lisp.
+;;; Create a function like
+;;; (lambda (fptr ...args) (core:foreign-call-pointer SIGNATURE fptr ...args))
+;;; We build IR manually instead of going through bytecode so that the foreign
+;;; caller definitely uses native code, without having to rely on optimizations
+;;; taking place or anything.
+(defun make-foreign-caller-ir (signature)
+  (let* ((module (make-instance 'bir:module))
+         (argnames
+           (list* (make-symbol "FUNCTION-POINTER")
+                  (loop for atype in (second signature)
+                        collect (make-symbol (write-to-string atype)))))
+         (caller (make-instance 'bir:function
+                   :name (make-symbol (format nil "~a-CALLER" signature))
+                   :original-lambda-list argnames
+                   :module module))
+         (arguments
+           (loop for arg in argnames
+                 collect (make-instance 'bir:argument :function caller)))
+         (inserter (make-instance 'build:inserter))
+         (iblock (build:make-iblock
+                  inserter
+                  :name (make-symbol (format nil "~a-CALLER-START" signature))
+                  :function caller :dynamic-environment caller)))
+    (cleavir-set:nadjoinf (bir:functions module) caller)
+    (setf (bir:start caller) iblock
+          (bir:lambda-list caller) arguments)
+    (build:begin inserter iblock)
+    (let ((r (make-instance 'bir:output)))
+      (build:insert inserter 'cc-bir:foreign-call-pointer
+                    :foreign-types signature
+                    :inputs arguments :outputs (list r))
+      (build:terminate inserter 'bir:returni :inputs (list r)))
+    (bir:compute-iblock-flow-order caller)
+    caller))
+
+(defun make-foreign-caller (signature)
+  (let ((bir (make-foreign-caller-ir signature)))
+    (bir-transformations (bir:module bir) *clasp-system*)
+    (bir->function bir)))
+
 (defun bir-compile-cst (cst env)
   (let* ((cst-to-ast:*compiler* 'cl:compile)
          (ast (cst->ast cst env))
