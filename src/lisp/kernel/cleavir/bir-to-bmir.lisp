@@ -320,6 +320,9 @@
 (deftransform rplaca cleavir-primop:rplaca cons t)
 (deftransform rplacd cleavir-primop:rplacd cons t)
 
+(deftransform core:set-breakstep core:set-breakstep)
+(deftransform core:unset-breakstep core:unset-breakstep)
+
 (deftransform mp:fence (mp:fence :sequentially-consistent)
   (eql :sequentially-consistent))
 (deftransform mp:fence (mp:fence :acquire-release) (eql :acquire-release))
