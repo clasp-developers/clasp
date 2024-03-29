@@ -1,4 +1,16 @@
-(in-package #:clasp-cleavir)
+(defpackage #:clasp-cleavir-2
+  (:use #:cl)
+  (:local-nicknames (#:cc #:clasp-cleavir)
+                    (#:bir #:cleavir-bir)
+                    (#:bir-transformations #:cleavir-bir-transformations)
+                    (#:ast #:cleavir-ast)
+                    (#:ctype #:cleavir-ctype)
+                    (#:cst-to-ast #:cleavir-cst-to-ast)
+                    (#:build #:cleavir-bir-builder)
+                    (#:env #:cleavir-env)
+                    (#:policy #:cleavir-compilation-policy)))
+
+(in-package #:clasp-cleavir-2)
 
 ;;; Backend information associated with a BIR function.
 (defclass llvm-function-info ()
@@ -22,11 +34,11 @@
                      :reader fixed-xep-names)))
 
 (defun allocate-llvm-function-info (function &key linkage)
-  (let* ((lambda-name (get-or-create-lambda-name function))
-         (jit-function-name (jit-function-name lambda-name))
-          (arguments (compute-arglist (bir:lambda-list function)))
-         (mtype (compute-llvm-function-type function arguments))
-         (xep-p (xep-needed-p function))
+  (let* ((lambda-name (cc::get-or-create-lambda-name function))
+         (jit-function-name (cc::jit-function-name lambda-name))
+          (arguments (cc::compute-arglist (bir:lambda-list function)))
+         (mtype (cc::compute-llvm-function-type function arguments))
+         (xep-p (cc::xep-needed-p function))
          (analysis (cmp:calculate-cleavir-lambda-list-analysis
                     (bir:lambda-list function)))
          (main-function
@@ -52,7 +64,7 @@
                                :placeholder))))
          ;; Check for a forced closure layout first.
          ;; if there isn't one, make one up.
-         (env (or (fixed-closure function)
+         (env (or (cc::fixed-closure function)
                   (cleavir-set:set-to-list
                    (bir:environment function)))))
     (make-instance 'llvm-function-info
@@ -62,7 +74,7 @@
       :general-xep general-xep
       :fixed-xeps fixed-xeps
       :main-function-name (llvm-sys:get-name main-function)
-      :general-xep-name (llvm-sys:get-name general-xep)
+      :general-xep-name (when xep-p (llvm-sys:get-name general-xep))
       :fixed-xep-names (loop for f in fixed-xeps
                              collect (if (eq f :placeholder)
                                          nil
@@ -74,23 +86,23 @@
     ;; except for the toplevel function, which doesn't need space in the
     ;; literals vector as nothing inside the code references it.
     (bir:do-functions (function module)
-      (when (and (not (eq toplevel function)) (xep-needed-p function))
+      (when (and (not (eq toplevel function)) (cc::xep-needed-p function))
         ;; Keys in the *constant-values* table are usually BIR:CONSTANTs and
         ;; stuff. So there is no possibility of overlap between a BIR:FUNCTION
         ;; and a BIR:FUNCTION that literally appears in the code somehow.
-        (setf (gethash function *constant-values*) i)
+        (setf (gethash function cc::*constant-values*) i)
         (incf i)))
     ;; Actual constants
     (cleavir-set:doset (value (bir:constants module))
       (let ((immediate (core:create-tagged-immediate-value-or-nil value)))
-        (setf (gethash value *constant-values*)
+        (setf (gethash value cc::*constant-values*)
               (if immediate
-                  (cmp:irc-int-to-ptr (%i64 immediate) cmp:%t*%)
+                  (cmp:irc-int-to-ptr (cc::%i64 immediate) cmp:%t*%)
                   (prog1 i (incf i))))))
     i))
 
 (defun nconstants ()
-  (loop for value being the hash-values of *constant-values*
+  (loop for value being the hash-values of cc::*constant-values*
         maximizing (if (integerp value) (1+ value) 0)))
 
 ;; A constant introduced at translate time. We use this instead of
@@ -105,7 +117,7 @@
           ;; Check for an existing constant.
           ;; While we're doing that, also check what a new constant
           ;; index would be.
-          (loop for key being the hash-keys of *constant-values*
+          (loop for key being the hash-keys of cc::*constant-values*
                   using (hash-value indexoid)
                 when (and (typep key '(or bir:constant last-minute-constant))
                           (eql (bir:constant-value key) value))
@@ -115,10 +127,10 @@
         (immediate (core:create-tagged-immediate-value-or-nil value))
         (constant (make-instance 'last-minute-constant :value value)))
       (if immediate
-          (values (setf (gethash constant *constant-values*)
-                        (cmp:irc-int-to-ptr (%i64 immediate) cmp:%t*%))
+          (values (setf (gethash constant cc::*constant-values*)
+                        (cmp:irc-int-to-ptr (cc::%i64 immediate) cmp:%t*%))
                   nil)
-          (values (setf (gethash constant *constant-values*) next-index) t))))
+          (values (setf (gethash constant cc::*constant-values*) next-index) t))))
 
 (defun layout-xep-function* (xep arity ir lambda-list-analysis calling-convention)
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
@@ -127,12 +139,12 @@
       (let ((ret (cmp:compile-lambda-list-code lambda-list-analysis
                                                calling-convention
                                                arity
-                                               :argument-out #'out)))
+                                               :argument-out #'cc::out)))
         (unless ret
           (error "cmp:compile-lambda-list-code returned NIL which means this is not a function that should be generated")))
       ;; Import cells.
       (let* ((closure-vec (first (llvm-sys:get-argument-list xep)))
-             (llvm-function-info (find-llvm-function-info ir))
+             (llvm-function-info (cc::find-llvm-function-info ir))
              (environment-values
                (loop for import in (environment llvm-function-info)
                      for i from 0
@@ -140,14 +152,14 @@
                      when import ; skip unused fixed closure entries
                        collect (cmp:irc-t*-load-atomic
                                 (cmp::gen-memref-address closure-vec offset))))
-             (source-pos-info (function-source-pos-info ir)))
+             (source-pos-info (cc::function-source-pos-info ir)))
         ;; Tail call the real function.
         (cmp:with-debug-info-source-position (source-pos-info)
           (let* ((main-function (main-function llvm-function-info))
                  (function-type (llvm-sys:get-function-type main-function))
                  (arguments
                    (mapcar (lambda (arg)
-                             (translate-cast (in arg)
+                             (cc::translate-cast (cc::in arg)
                                              '(:object) (cc-bmir:rtype arg)))
                            (arguments llvm-function-info)))
                  (c
@@ -160,26 +172,26 @@
             #+(or)(llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
             ;; Box/etc. results of the local call.
             (if returni
-                (cmp:irc-ret (translate-cast
-                              (local-call-rv->inputs c rrtype)
+                (cmp:irc-ret (cc::translate-cast
+                              (cc::local-call-rv->inputs c rrtype)
                               rrtype :multiple-values))
                 (cmp:irc-unreachable)))))))
   xep)
 
 (defun layout-xep-function (xep arity ir lambda-list-analysis lambda-name)
   ;; XEP is the LLVM function we are creating.
-  (let* ((*datum-values* (make-hash-table :test #'eq))
-         (jit-function-name (jit-function-name lambda-name))
+  (let* ((cc::*datum-values* (make-hash-table :test #'eq))
+         (jit-function-name (cc::jit-function-name lambda-name))
          (cmp:*current-function-name* jit-function-name)
          (cmp:*gv-current-function-name*
            (cmp:module-make-global-string jit-function-name "fn-name"))
          (llvm-function-type (cmp:fn-prototype arity))
          (cmp:*current-function* xep)
          (entry-block (cmp:irc-basic-block-create "entry" xep))
-         (*function-current-multiple-value-array-address* nil)
+         (cc::*function-current-multiple-value-array-address* nil)
          (cmp:*irbuilder-function-alloca*
            (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
-         (source-pos-info (function-source-pos-info ir))
+         (source-pos-info (cc::function-source-pos-info ir))
          (lineno (core:source-pos-info-lineno source-pos-info)))
     (cmp:with-guaranteed-*current-source-pos-info* ()
       (cmp:with-dbg-function (:lineno lineno
@@ -207,15 +219,15 @@
                                                    (bir:policy ir)
                                                    'save-register-args)
                                                   :cleavir-lambda-list-analysis lambda-list-analysis
-                                                  :rest-alloc (compute-rest-alloc lambda-list-analysis))))
+                                                  :rest-alloc (cc::compute-rest-alloc lambda-list-analysis))))
               (layout-xep-function* xep arity ir lambda-list-analysis calling-convention))))))))
 
 (defun layout-xep-group (function lambda-name abi)
   (declare (ignore abi))
   ;; This goes way up here because we want it only noted once, not
   ;; once for each arity we happen to emit.
-  (maybe-note-return-cast function)
-  (let ((info (find-llvm-function-info function))
+  (cc::maybe-note-return-cast function)
+  (let ((info (cc::find-llvm-function-info function))
         (analysis
           (cmp:calculate-cleavir-lambda-list-analysis
            (bir:lambda-list function))))
@@ -261,60 +273,60 @@
     ;; things to work with setjmp, which cannot return 0 from longjmp.
     (let ((i 1))
       (cleavir-set:doset (entrance (bir:entrances function))
-        (setf (gethash entrance *unwind-ids*) i)
+        (setf (gethash entrance cc::*unwind-ids*) i)
         (incf i)))
-    (setf (gethash function *function-info*)
+    (setf (gethash function cc::*function-info*)
           (allocate-llvm-function-info function
                                        :linkage 'llvm-sys:external-linkage)))
   (with-literals
       (allocate-module-constants module toplevel)
     (bir:do-functions (function module)
-      (layout-procedure function (get-or-create-lambda-name function)
+      (cc::layout-procedure function (cc::get-or-create-lambda-name function)
                         abi :linkage 'llvm-sys:external-linkage))))
 
 (defun translate (bir &key abi linkage)
   (declare (ignore linkage))
-  (let* ((*unwind-ids* (make-hash-table :test #'eq)))
+  (let* ((cc::*unwind-ids* (make-hash-table :test #'eq)))
     (layout-module (bir:module bir) abi :toplevel bir)
     (cmp::potentially-save-module)
-    (find-llvm-function-info bir)))
+    (cc::find-llvm-function-info bir)))
 
 (defun enclose (function extent &optional (delay t))
-  (let* ((code-info (find-llvm-function-info function))
-         (cindex (or (gethash function *constant-values*)
+  (let* ((code-info (cc::find-llvm-function-info function))
+         (cindex (or (gethash function cc::*constant-values*)
                      (error "BUG: Tried to ENCLOSE a function with no XEP")))
          (environment (environment code-info))
          (simple (literal:constants-table-value cindex)))
     (if environment
         (let* ((ninputs (length environment))
-               (sninputs (%size_t ninputs))
+               (sninputs (cc::%size_t ninputs))
                (enclose
                  (ecase extent
                    (:dynamic
-                    (%intrinsic-call
+                    (cc::%intrinsic-call
                      "cc_stack_enclose"
                      (list (cmp:alloca-i8 (core:closure-size ninputs)
                                            :alignment cmp:+alignment+
                                            :label "stack-allocated-closure")
                            simple sninputs)))
                    (:indefinite
-                    (%intrinsic-invoke-if-landing-pad-or-call
+                    (cc::%intrinsic-invoke-if-landing-pad-or-call
                      "cc_enclose"
                      (list simple sninputs))))))
           ;; We may not initialize the closure immediately in case it partakes
           ;; in mutual reference.
           ;; (If DELAY NIL is passed this delay is not necessary.)
           (if delay
-              (delay-initializer
+              (cc::delay-initializer
                (lambda ()
-                 (%intrinsic-invoke-if-landing-pad-or-call
+                 (cc::%intrinsic-invoke-if-landing-pad-or-call
                   "cc_initialize_closure"
                   (list* enclose sninputs
-                         (mapcar #'variable-as-argument environment)))))
-              (%intrinsic-invoke-if-landing-pad-or-call
+                         (mapcar #'cc::variable-as-argument environment)))))
+              (cc::%intrinsic-invoke-if-landing-pad-or-call
                "cc_initialize_closure"
                (list* enclose sninputs
-                      (mapcar #'variable-as-argument environment))))
+                      (mapcar #'cc::variable-as-argument environment))))
           enclose)
         ;; When the function has no environment, it can be compiled and
         ;; referenced as literal.
@@ -322,15 +334,15 @@
 
 (defmethod translate-simple-instruction ((instruction bir:enclose) abi)
   (declare (ignore abi))
-  (out (enclose (bir:code instruction) (bir:extent instruction))
+  (cc::out (enclose (bir:code instruction) (bir:extent instruction))
        (bir:output instruction)))
 
-(defun bir->function (bir &key (abi *abi-x86-64*) linkage)
+(defun bir->function (bir &key (abi cc::*abi-x86-64*) linkage)
   (declare (ignore linkage))
   (cmp::with-compiler-env ()
     (let ((module (cmp::create-run-time-module-for-compile))
           (*constant-values* (make-hash-table :test #'eq))
-          (*function-info* (make-hash-table :test #'eq)))
+          (cc::*function-info* (make-hash-table :test #'eq)))
       ;; Link the C++ intrinsics into the module
       (cmp::with-module (:module module)
         (let ((pathname (if *load-pathname*
@@ -348,7 +360,7 @@
         (declare (ignore object))
         (fill-constants jit dylib *constant-values*)
         (make-compiled-fun jit dylib (make-function-description bir)
-                           (find-llvm-function-info bir))))))
+                           (cc::find-llvm-function-info bir))))))
 
 (defgeneric resolve-constant (ir))
 
@@ -379,17 +391,17 @@
             do (setf (cmp:literals-vref literals cinf)
                      (make-compiled-fun jit dylib
                                         (make-function-description value)
-                                        (find-llvm-function-info value)))
+                                        (cc::find-llvm-function-info value)))
           else if (integerp cinf)
                  do (setf (core:literals-vref literals cinf)
                           (resolve-constant value))))
   (values))
 
 (defun make-function-description (irfun)
-  (let ((spi (origin-spi (origin-source (bir:origin irfun)))))
+  (let ((spi (cc::origin-spi (cc::origin-source (bir:origin irfun)))))
     (if spi
         (sys:function-description/make
-         :function-name (get-or-create-lambda-name irfun)
+         :function-name (cc::get-or-create-lambda-name irfun)
          :lambda-list (bir:original-lambda-list irfun)
          :docstring (bir:docstring irfun)
          :source-pathname (core:file-scope-pathname
@@ -400,7 +412,7 @@
          :column (1+ (core:source-pos-info-column spi))
          :filepos (core:source-pos-info-filepos spi))
         (sys:function-description/make
-         :function-name (get-or-create-lambda-name irfun)
+         :function-name (cc::get-or-create-lambda-name irfun)
          :lambda-list (bir:original-lambda-list irfun)
          :docstring (bir:docstring irfun)
          :source-pathname "-unknown-file-"))))
@@ -421,7 +433,7 @@
                                  (core:xep-redirect-address i)
                                  (llvm-sys:lookup jit dylib fname)))))
     (apply #'core:make-simple-core-fun fdesc main general-xep fixed-xeps)))
-
+#|
 (in-package #:clasp-bytecode-to-bir)
 
 (defun compile-function (function
@@ -444,4 +456,5 @@
           (clasp-cleavir::*fixed-closures*
             (fixed-closures-map (fmap funmap)))
           (bir (finfo-irfun (find-bcfun function funmap))))
-      (clasp-cleavir::bir->function bir :abi abi :linkage linkage))))
+      (clasp-cleavir-2::bir->function bir :abi abi :linkage linkage))))
+|#
