@@ -627,8 +627,7 @@
 
 (defmethod translate-simple-instruction ((instruction bir:enclose) abi)
   (declare (ignore abi))
-  (out (enclose (find-llvm-function-info (bir:code instruction))
-                (bir:extent instruction))
+  (out (enclose (bir:code instruction) (bir:extent instruction))
        (bir:output instruction)))
 
 (defun maybe-insert-step-before (inst)
@@ -762,12 +761,21 @@
                  (t (list (gen-rest-list (nthcdr nopt more)))))))
     (append reqargs optargs rest)))
 
-(defun enclose (code-info extent &optional (delay t))
-  (let* ((environment (environment code-info))
-         (enclosed-xep-group (xep-function code-info))
+;;; Get a reference to the literal for a function's simple fun.
+;;; This is generic because it's also used by the BTB translator.
+(defgeneric reference-xep (function function-info))
+(defmethod reference-xep (function (function-info llvm-function-info))
+  (declare (ignore function))
+  (let* ((enclosed-xep-group (xep-function function-info))
          (entry-point-reference (cmp:xep-group-entry-point-reference enclosed-xep-group)))
     (when (eq enclosed-xep-group :xep-unallocated)
       (error "BUG: Tried to ENCLOSE a function with no XEP"))
+    (literal:constants-table-value (cmp:entry-point-reference-index entry-point-reference))))
+
+(defun enclose (function extent &optional (delay t))
+  (let* ((code-info (find-llvm-function-info function))
+         (environment (environment code-info))
+         (xepc (reference-xep function code-info)))
     (if environment
         (let* ((ninputs (length environment))
                (sninputs (%size_t ninputs))
@@ -779,13 +787,11 @@
                      (list (cmp:alloca-i8 (core:closure-size ninputs)
                                            :alignment cmp:+alignment+
                                            :label "stack-allocated-closure")
-                           (literal:constants-table-value (cmp:entry-point-reference-index entry-point-reference))
-                           sninputs)))
+                           xepc sninputs)))
                    (:indefinite
                     (%intrinsic-invoke-if-landing-pad-or-call
                      "cc_enclose"
-                     (list (literal:constants-table-value (cmp:entry-point-reference-index entry-point-reference))
-                           sninputs))))))
+                     (list xepc sninputs))))))
           ;; We may not initialize the closure immediately in case it partakes
           ;; in mutual reference.
           ;; (If DELAY NIL is passed this delay is not necessary.)
@@ -803,7 +809,7 @@
           enclose)
         ;; When the function has no environment, it can be compiled and
         ;; referenced as literal.
-        (%closurette-value enclosed-xep-group))))
+        xepc)))
 
 (defun rest-vrtype (rest-var)
   ;; We want :object or :vaslist only, even if the rest
@@ -825,7 +831,7 @@
            ;;  will get its value from some enclose.
            ;;  FIXME we could use that instead?)
            (translate-cast (closure-call-or-invoke
-                            (enclose callee-info :dynamic nil)
+                            (enclose callee :dynamic nil)
                             arguments)
                            :multiple-values outputrt))
           (t
@@ -843,7 +849,7 @@
                  ;; fixed-mv-local-calls for instance.
                  (return-from gen-local-call
                    (translate-cast (closure-call-or-invoke
-                                    (enclose callee-info :dynamic nil)
+                                    (enclose callee :dynamic nil)
                                     arguments)
                                    :multiple-values outputrt))))
              (let* ((rest-id (cond ((null rest-var) nil)
@@ -885,16 +891,17 @@
           :label (datum-name-as-string output))
          output)))
 
-(defun general-mv-local-call-vas (callee-info vaslist label outputrt)
-  (translate-cast (cmp:irc-apply (enclose callee-info :dynamic nil)
+(defun general-mv-local-call-vas (callee vaslist label outputrt)
+  (translate-cast (cmp:irc-apply (enclose callee :dynamic nil)
                                  (cmp:irc-vaslist-nvals vaslist)
                                  (cmp:irc-vaslist-values vaslist)
                                  label)
                   :multiple-values outputrt))
 
-(defun direct-mv-local-call-vas (vaslist callee-info req opt rest-var varest-p
+(defun direct-mv-local-call-vas (vaslist callee req opt rest-var varest-p
                                  label outputrt)
-  (let* ((nreq (car req))
+  (let* ((callee-info (find-llvm-function-info callee))
+         (nreq (car req))
          (nopt (car opt))
          (rnret (cmp:irc-vaslist-nvals vaslist))
          (rvalues (cmp:irc-vaslist-values vaslist))
@@ -936,7 +943,7 @@
           (cmp:irc-begin-block mismatch)
           (cmp::irc-intrinsic-call-or-invoke
            "cc_wrong_number_of_arguments"
-           (list (enclose callee-info :indefinite nil) rnret
+           (list (enclose callee :indefinite nil) rnret
                  (%size_t nreq) (%size_t nfixed)))
           (cmp:irc-unreachable))
         ;; Generate not-enough-args cases.
@@ -1008,7 +1015,6 @@
          (outputrt (cc-bmir:rtype output))
          (oname (datum-name-as-string output))
          (callee (bir:callee instruction))
-         (callee-info (find-llvm-function-info callee))
          (mvarg (second (bir:inputs instruction)))
          (mvargrt (cc-bmir:rtype mvarg))
          (mvargi (in mvarg)))
@@ -1019,9 +1025,9 @@
          (cmp::process-bir-lambda-list (bir:lambda-list callee))
        (declare (ignore keyargs aok aux))
        (if key-flag
-           (general-mv-local-call-vas callee-info mvargi oname outputrt)
+           (general-mv-local-call-vas callee mvargi oname outputrt)
            (direct-mv-local-call-vas
-            mvargi callee-info req opt rest-var varest-p oname outputrt)))
+            mvargi callee req opt rest-var varest-p oname outputrt)))
      output)))
 
 (defmethod translate-simple-instruction

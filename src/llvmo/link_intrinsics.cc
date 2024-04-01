@@ -144,18 +144,6 @@ void cc_remove_gcroots_in_module(gctools::GCRootsInModule* holder) {
 typedef void LtvcReturnVoid;
 #define LTVCRETURN /* Nothing return for void */
 
-LtvcReturnVoid ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index,
-                                    /*size_t functionIndex,*/ size_t entry_point_index) {
-  NO_UNWIND_BEGIN();
-  //  printf("%s:%d:%s got functionIndex %lu change to simpleFunIndex\n", __FILE__, __LINE__, __FUNCTION__, functionIndex );
-  gc::Tagged tentrypoint = holder->getLiteral(entry_point_index);
-  core::SimpleCoreFun_sp simpleFun(tentrypoint);
-  gctools::smart_ptr<core::Closure_O> functoid =
-      gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 0, simpleFun);
-  LTVCRETURN holder->setTaggedIndex(tag, index, functoid.tagged_());
-  NO_UNWIND_END();
-}
-
 LtvcReturnVoid ltvc_make_nil(gctools::GCRootsInModule* holder, char tag, size_t index) {
   NO_UNWIND_BEGIN();
   core::T_sp val = nil<core::T_O>();

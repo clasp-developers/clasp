@@ -640,19 +640,6 @@ rewrite the slot in the literal table to store a closure."
     (llog "----------------- done nodes~%")
     (get-output-stream-string fout)))
 
-
-(defun generate-run-time-code-for-closurette (node)
-  ;; Generate calls to ltvc_make_closurette for closurettes that are created at JIT startup time
-  (let* ((closurette-object (literal-node-creator-object node))
-         (datum (literal-dnode-datum closurette-object))
-         (index (datum-index datum))
-         (entry-point-ref (literal-node-closure-entry-point-ref closurette-object)))
-    (cmp:irc-intrinsic-call "ltvc_make_closurette"
-                            (list *gcroots-in-module*
-                                  (cmp:jit-constant-i8 cmp:+literal-tag-char-code+)
-                                  (cmp:jit-constant-size_t index)
-                                  (cmp:jit-constant-size_t (cmp:entry-point-reference-index entry-point-ref))))))
-
 ;; Note that this is set up so that we don't need to actually create a
 ;; function cell in the compiler's environment.
 (defun %reference-function-cell (fname)
@@ -1002,60 +989,6 @@ and  return the sorted values and the constant-table or (values nil nil)."
                             (error "data must be a immediate-datum - instead its ~s" immediate-datum))
                         nil)))))))
 
-;;; ------------------------------------------------------------
-;;;
-;;; reference-closure
-;;;
-;;; Returns an index for a closure.
-;;; We skip similarity testing etc. This could be improved (FIXME)
-;;; We could also add the capability to dump actual closures, though
-;;;  I'm not sure why we'd want to do so.
-
-(defun reference-closure (function)
-  (unless (cmp:xep-group-p function)
-    (error "In reference-closure function must be a xep-group - it's a ~s" function))
-  (let* ((datum (new-datum t))
-         (function-datum (entry-point-datum-for-xep-group function))
-         (function-index (function-datum-index function-datum))
-         (entry-point-ref (cmp:xep-group-entry-point-reference function))
-         (creator (make-literal-node-closure :datum datum
-                                             :function-index function-index
-                                             :function function
-                                             :entry-point-ref entry-point-ref)))
-    (let ((epi (cmp:entry-point-reference-index entry-point-ref)))
-      (add-creator "ltvc_make_closurette" datum creator epi))
-    (datum-index datum)))
-
-#|  (register-function function entry-point))
-
-  (if (cmp:generate-load-time-values)
-      (multiple-value-bind (lambda-name-node in-array)
-          (load-time-reference-literal lambda-name t)
-        (unless in-array
-          (error "BUG: Immediate lambda-name ~a- What?" lambda-name))
-        (let* ((datum (new-datum t))
-               (creator (make-literal-node-closure
-                         ;; lambda-name will never be immediate. (Should we check?)
-                         :lambda-name-index (literal-node-index lambda-name-node)
-                         :datum datum :function enclosed-function
-                         :source-info-handle source-info-handle
-                         :filepos filepos :lineno lineno :column column)))
-          (run-all-add-node creator)
-          index))
-      (multiple-value-bind (lambda-name-node in-array)
-          (run-time-reference-literal lambda-name t)
-        (unless in-array
-          (error "BUG: Immediate lambda-name ~a- What?" lambda-name))
-        (let* ((datum (new-datum t))
-               (creator (make-literal-node-closure
-                         ;; lambda-name will never be immediate. (Should we check?)
-                         :lambda-name-index (literal-node-index lambda-name-node)
-                         :datum datum :function enclosed-function
-                         :source-info-handle source-info-handle
-                         :filepos filepos :lineno lineno :column column)))
-          (run-all-add-node creator)
-          index))))
-|#
 ;;; ------------------------------------------------------------
 ;;;
 ;;; functions that are called by bclasp and cclasp that might

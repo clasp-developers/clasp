@@ -16,15 +16,6 @@
   (declare (ignore label))
   (cmp:irc-t*-load (%literal-ref value)))
 
-(defun %closurette-ref (function)
-  (unless (cmp:xep-group-p function)
-    (error "The first argument to %closurette-index must be a xep-group - instead it is a ~s of class ~s" function (class-name (class-of function))))
-  (let ((index (literal::reference-closure function)))
-    (literal:constants-table-reference index)))
-
-(defun %closurette-value (function)
-  (cmp:irc-t*-load (%closurette-ref function)))
-
 (defun %i1 (num)
   (cmp:jit-constant-i1 num))
 

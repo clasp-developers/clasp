@@ -437,8 +437,7 @@
           load-time-value-from-thunk
           with-rtv
           arrange-thunk-as-top-level
-          with-literal-table
-          generate-run-time-code-for-closurette))
+          with-literal-table))
 
 (in-package :clasp-ffi)
 (export '(with-foreign-object

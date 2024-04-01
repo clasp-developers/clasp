@@ -16,10 +16,10 @@
 (defclass llvm-function-info ()
   (;; In BIR, function environments are sets but we'd like to have it
    ;; be a list to ensure ordering.
-   (%environment :initarg :environment :type list :reader environment)
+   (%environment :initarg :environment :type list :reader cc::environment)
    ;; The argument variables of the function lambda list.
-   (%arguments :initarg :arguments :type list :reader arguments)
-   (%main-function :initarg :main-function :reader main-function)
+   (%arguments :initarg :arguments :type list :reader core:arguments)
+   (%main-function :initarg :main-function :reader cc::main-function)
    (%general-xep :initarg :general-xep :reader general-xep)
    (%fixed-xeps :initarg :fixed-xeps :reader fixed-xeps
                 ;; obviously null <: sequence but this is more explicit.
@@ -146,7 +146,7 @@
       (let* ((closure-vec (first (llvm-sys:get-argument-list xep)))
              (llvm-function-info (cc::find-llvm-function-info ir))
              (environment-values
-               (loop for import in (environment llvm-function-info)
+               (loop for import in (cc::environment llvm-function-info)
                      for i from 0
                      for offset = (cmp:%closure%.offset-of[n]/t* i)
                      when import ; skip unused fixed closure entries
@@ -155,13 +155,13 @@
              (source-pos-info (cc::function-source-pos-info ir)))
         ;; Tail call the real function.
         (cmp:with-debug-info-source-position (source-pos-info)
-          (let* ((main-function (main-function llvm-function-info))
+          (let* ((main-function (cc::main-function llvm-function-info))
                  (function-type (llvm-sys:get-function-type main-function))
                  (arguments
                    (mapcar (lambda (arg)
                              (cc::translate-cast (cc::in arg)
                                              '(:object) (cc-bmir:rtype arg)))
-                           (arguments llvm-function-info)))
+                           (core:arguments llvm-function-info)))
                  (c
                    (cmp:irc-create-call-wft
                     function-type main-function
@@ -266,6 +266,13 @@
        (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*))
      (values)))
 
+(defun layout-procedure (function lambda-name abi
+                         &key (linkage 'llvm-sys:internal-linkage))
+  (declare (ignore linkage))
+  (when (cc::xep-needed-p function)
+    (layout-xep-group function lambda-name abi))
+  (cc::layout-main-function function lambda-name abi))
+
 (defun layout-module (module abi &key toplevel)
   ;; Create llvm IR functions for each BIR function.
   (bir:do-functions (function module)
@@ -281,7 +288,7 @@
   (with-literals
       (allocate-module-constants module toplevel)
     (bir:do-functions (function module)
-      (cc::layout-procedure function (cc::get-or-create-lambda-name function)
+      (layout-procedure function (cc::get-or-create-lambda-name function)
                         abi :linkage 'llvm-sys:external-linkage))))
 
 (defun translate (bir &key abi linkage)
@@ -291,57 +298,16 @@
     (cmp::potentially-save-module)
     (cc::find-llvm-function-info bir)))
 
-(defun enclose (function extent &optional (delay t))
-  (let* ((code-info (cc::find-llvm-function-info function))
-         (cindex (or (gethash function cc::*constant-values*)
-                     (error "BUG: Tried to ENCLOSE a function with no XEP")))
-         (environment (environment code-info))
-         (simple (literal:constants-table-value cindex)))
-    (if environment
-        (let* ((ninputs (length environment))
-               (sninputs (cc::%size_t ninputs))
-               (enclose
-                 (ecase extent
-                   (:dynamic
-                    (cc::%intrinsic-call
-                     "cc_stack_enclose"
-                     (list (cmp:alloca-i8 (core:closure-size ninputs)
-                                           :alignment cmp:+alignment+
-                                           :label "stack-allocated-closure")
-                           simple sninputs)))
-                   (:indefinite
-                    (cc::%intrinsic-invoke-if-landing-pad-or-call
-                     "cc_enclose"
-                     (list simple sninputs))))))
-          ;; We may not initialize the closure immediately in case it partakes
-          ;; in mutual reference.
-          ;; (If DELAY NIL is passed this delay is not necessary.)
-          (if delay
-              (cc::delay-initializer
-               (lambda ()
-                 (cc::%intrinsic-invoke-if-landing-pad-or-call
-                  "cc_initialize_closure"
-                  (list* enclose sninputs
-                         (mapcar #'cc::variable-as-argument environment)))))
-              (cc::%intrinsic-invoke-if-landing-pad-or-call
-               "cc_initialize_closure"
-               (list* enclose sninputs
-                      (mapcar #'cc::variable-as-argument environment))))
-          enclose)
-        ;; When the function has no environment, it can be compiled and
-        ;; referenced as literal.
-        simple)))
-
-(defmethod translate-simple-instruction ((instruction bir:enclose) abi)
-  (declare (ignore abi))
-  (cc::out (enclose (bir:code instruction) (bir:extent instruction))
-       (bir:output instruction)))
+(defmethod cc::reference-xep (function (info llvm-function-info))
+  (let ((cindex (or (gethash function cc::*constant-values*)
+                    (error "BUG: Tried to ENCLOSE a function with no XEP"))))
+    (literal:constants-table-value cindex)))
 
 (defun bir->function (bir &key (abi cc::*abi-x86-64*) linkage)
   (declare (ignore linkage))
   (cmp::with-compiler-env ()
     (let ((module (cmp::create-run-time-module-for-compile))
-          (*constant-values* (make-hash-table :test #'eq))
+          (cc::*constant-values* (make-hash-table :test #'eq))
           (cc::*function-info* (make-hash-table :test #'eq)))
       ;; Link the C++ intrinsics into the module
       (cmp::with-module (:module module)
@@ -358,7 +324,7 @@
              (object (llvm-sys:add-irmodule jit dylib module
                                             cmp:*thread-safe-context* 0)))
         (declare (ignore object))
-        (fill-constants jit dylib *constant-values*)
+        (fill-constants jit dylib cc::*constant-values*)
         (make-compiled-fun jit dylib (make-function-description bir)
                            (cc::find-llvm-function-info bir))))))
 
@@ -433,7 +399,7 @@
                                  (core:xep-redirect-address i)
                                  (llvm-sys:lookup jit dylib fname)))))
     (apply #'core:make-simple-core-fun fdesc main general-xep fixed-xeps)))
-#|
+
 (in-package #:clasp-bytecode-to-bir)
 
 (defun compile-function (function
@@ -457,4 +423,3 @@
             (fixed-closures-map (fmap funmap)))
           (bir (finfo-irfun (find-bcfun function funmap))))
       (clasp-cleavir-2::bir->function bir :abi abi :linkage linkage))))
-|#
