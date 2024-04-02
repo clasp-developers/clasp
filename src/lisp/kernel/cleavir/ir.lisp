@@ -5,17 +5,6 @@
 
 (in-package :clasp-cleavir)
 
-(defun %literal-ref (value &optional read-only-p)
-  (multiple-value-bind (index in-array)
-      (literal:reference-literal value read-only-p)
-    (unless in-array
-      (error "%literal-ref of immediate value ~s is illegal" value))
-    (literal:constants-table-reference index)))
-
-(defun %literal-value (value &optional (label "literal"))
-  (declare (ignore label))
-  (cmp:irc-t*-load (%literal-ref value)))
-
 (defun %i1 (num)
   (cmp:jit-constant-i1 num))
 
@@ -40,11 +29,8 @@
 
 (defun %nil ()
   "A nil in a T*"
-  (%literal-value nil))
-(defun %t ()
-  "A T in a T*"
-  (%literal-value t))
-
+  (cmp::irc-literal nil))
+(defun %t () (cmp::irc-literal t))
 
 (defun instruction-llvm-function (instr)
   (llvm-sys:get-parent (llvm-sys:get-parent instr)))

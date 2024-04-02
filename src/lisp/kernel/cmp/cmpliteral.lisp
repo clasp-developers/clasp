@@ -29,10 +29,6 @@
 ;;;; * (SET-LTV index form) evaluates form and sets entry number INDEX in the LTV table
 ;;;;   to the value returned.
 ;;;; * (CALL handle) calls the function denoted by HANDLE (returned from COMPILE-CST-OR-FORM)
-#+(or)
-(defmacro llog (fmt &rest args)
-  `(format *error-output* ,fmt ,@args))
-(defmacro llog (fmt &rest args) (declare (ignore fmt args)))
 
 (defvar *gcroots-in-module*)
 #+threads(defvar *value-table-id-lock* (mp:make-lock :name '*value-table-id-lock*))
@@ -237,7 +233,6 @@ rewrite the slot in the literal table to store a closure."
 
 (defun add-creator (name index object &rest args)
   "Call the named function after converting fixnum args to llvm constants"
-  (llog "add-creator name ~s object: ~s~%" name object)
   (apply 'add-named-creator name index nil object args))
 
 (defun add-side-effect-call (name &rest args)
@@ -571,7 +566,6 @@ rewrite the slot in the literal table to store a closure."
        (values (literal-machine-identity-coalesce literal-machine) #'ltv/mlf))))
 
 (defun write-argument-byte-code (arg stream byte-index)
-  (llog "    write-argument-byte-code arg: ~s byte-index ~d~%" arg byte-index)
   (cond
     ((function-datum-p arg) (core:ltvc-write-size-t (function-datum-index arg) stream byte-index))
     ((fixnump arg) (core:ltvc-write-size-t arg stream byte-index))
@@ -634,10 +628,8 @@ rewrite the slot in the literal table to store a closure."
   (let ((fout (make-string-output-stream))
         (byte-index 0))
     (dolist (node nodes)
-      (llog "node-> ~s~%" node)
       (setf byte-index (write-literal-node-byte-code fout node byte-index)))
     (setf byte-index (core:ltvc-write-char (code-char 0) fout byte-index))
-    (llog "----------------- done nodes~%")
     (get-output-stream-string fout)))
 
 ;; Note that this is set up so that we don't need to actually create a
@@ -715,7 +707,6 @@ Return the index of the load-time-value"
     (values function-vector-length function-vector-global function-vector-type)))
 
 (defun do-literal-table (id body-fn)
-  (llog "do-literal-table~%")
   (let ((*gcroots-in-module*
           (llvm-sys:make-global-variable cmp:*the-module*
                                          cmp:%gcroots-in-module% ; type
@@ -735,11 +726,8 @@ Return the index of the load-time-value"
         (cmp:*generate-compile-file-load-time-values* t)
         (real-name (next-value-table-holder-name (core:next-number))) ;; do we need to use a module-id???
         (*literal-machine* (make-literal-machine)))
-    (cmp:cmp-log "do-literal-table cmp:*load-time-value-holder-global-var* -> {}%N" cmp:*load-time-value-holder-global-var*)
-    (llog "About to evaluate body-fn~%")
     (funcall body-fn)
     ;; Generate the run-all function here
-    (llog "About to generate run-all~%")
     (let ((transient-entries (finalize-transient-datum-indices *literal-machine*)))
       (cmp:with-run-all-body-codegen
           (let ((ordered-run-all-nodes (coerce (literal-machine-run-all-objects *literal-machine*) 'list)))
@@ -776,7 +764,6 @@ Return the index of the load-time-value"
                                                                 "bitcast-table")))
             (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var*
                                             bitcast-correct-size-holder)
-            (cmp::cmp-log "Replaced all {} with {}%N" cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
             (multiple-value-bind (function-vector-length function-vector function-vector-type)
                 (setup-literal-machine-function-vectors cmp:*the-module* :id id)
               (cmp:with-run-all-entry-codegen
@@ -821,7 +808,6 @@ Return the index of the load-time-value"
                                           (core:fmt nil "{}{}" core:+gcroots-in-module-name+ module-id)))
          (*run-time-coalesce* (make-similarity-table #'eq))
          (*literal-machine* (make-literal-machine)))
-    (cmp:cmp-log "do-rtv cmp:*load-time-value-holder-global-var* -> {}%N" cmp:*load-time-value-holder-global-var*)
     (let* ((THE-REPL-FUNCTION (funcall body-fn))
            (run-time-values (coerce (literal-machine-run-all-objects *literal-machine*) 'list))
            (num-elements (length run-time-values))
@@ -853,7 +839,6 @@ Return the index of the load-time-value"
             (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)
             (let ((cmp:*load-time-value-holder-global-var-type* cmp:%t*[0]%)
                   (cmp:*load-time-value-holder-global-var* bitcast-constant-table))
-              (cmp::cmp-log "do-rtv Replaced all {} with {}%N" cmp:*load-time-value-holder-global-var* bitcast-constant-table)
               (cmp:codegen-startup-shutdown cmp:*the-module* module-id THE-REPL-FUNCTION *gcroots-in-module* array-type constant-table num-elements ordered-literals-list)
               (values ordered-raw-constants-list constant-table module-id))))))))
 
@@ -870,27 +855,17 @@ and  return the sorted values and the constant-table or (values nil nil)."
 (defun load-time-reference-literal (object read-only-p &key (toplevelp t))
   "If the object is an immediate object return (values immediate nil).
    Otherwise return (values creator T)."
-  (llog "load-time-reference-literal object: ~s~%" object)
   (let ((immediate-datum (immediate-datum-or-nil object))
         (desired-kind (if toplevelp :literal :transient)))
     (if immediate-datum
-        (progn
-          (llog "immediate-datum ~s~%" immediate-datum)
-          (let ((val (immediate-datum-value immediate-datum)))
-            (declare (ignorable val))
-            (llog "immediate-datum value ~s~%" val)
-            (values immediate-datum nil)))
+        (values immediate-datum nil)
         (multiple-value-bind (similarity creator)
             (object-similarity-table-and-creator *literal-machine* object read-only-p)
-          (llog "non-immediate~%")
           (let ((existing (if similarity (find-similar object similarity) nil)))
-            (llog "Looking for ~s object ~s   existing --> ~s~%" desired-kind object existing)
             (cond
               (existing
                (when (and (eq desired-kind :literal) (eq :transient (datum-kind existing)))
-                 (llog "    upgrading ~s~%" existing)
-                 (upgrade-transient-datum-to-literal existing)
-                 (llog "    after upgrade: ~s~%" existing))
+                 (upgrade-transient-datum-to-literal existing))
                (values (datum-literal-node-creator existing) t))
               ;; Otherwise create a new datum at the current level of transientness
               (t (let ((datum (new-datum toplevelp)))
@@ -965,28 +940,19 @@ and  return the sorted values and the constant-table or (values nil nil)."
     (if (cmp:generate-load-time-values)
         (multiple-value-bind (data in-array)
             (load-time-reference-literal object read-only-p)
-          (llog "result from load-time-reference-literal -> ~s in-array -> ~s~%" data in-array)
           (if in-array
-              (progn
-                ;;                (format t "reference-literal data -> ~s~%" data)
-                (let ((index (literal-node-index data)))
-                  (values index T (literal-node-creator-literal-name data))))
-              (values (if (immediate-datum-p data)
-                          (progn
-                            (cmp:irc-maybe-cast-integer-to-t* (immediate-datum-value data)))
-                          (error "data must be a immediate-datum - instead its ~s" data))
+              (values (literal-node-index data) T
+                      (literal-node-creator-literal-name data))
+              (values (cmp:irc-maybe-cast-integer-to-t* (immediate-datum-value data))
                       nil)))
         (multiple-value-bind (immediate-datum?literal-node-runtime in-array)
             (run-time-reference-literal object read-only-p)
-          (llog "result from run-time-reference-literal -> ~s in-array -> ~s~%" immediate-datum?literal-node-runtime in-array)
           (if in-array
               (let* ((literal-node-runtime immediate-datum?literal-node-runtime)
                      (index (literal-node-index literal-node-runtime)))
                 (values index T))
               (let ((immediate-datum immediate-datum?literal-node-runtime))
-                (values (if (immediate-datum-p immediate-datum)
-                            (cmp:irc-maybe-cast-integer-to-t* (immediate-datum-value immediate-datum))
-                            (error "data must be a immediate-datum - instead its ~s" immediate-datum))
+                (values (cmp:irc-maybe-cast-integer-to-t* (immediate-datum-value immediate-datum))
                         nil)))))))
 
 ;;; ------------------------------------------------------------
@@ -994,10 +960,11 @@ and  return the sorted values and the constant-table or (values nil nil)."
 ;;; functions that are called by bclasp and cclasp that might
 ;;;  be refactored to simplify the API
 
-(defun compile-reference-to-literal (literal)
+(defun compile-reference-to-literal (literal
+                                     &optional (read-only-p t))
   "Generate a reference to a load-time-value or run-time-value literal depending if called from COMPILE-FILE or COMPILE respectively"
   (multiple-value-bind (data-or-index in-array literal-name)
-      (reference-literal literal t)
+      (reference-literal literal read-only-p)
     (if in-array
         (values (constants-table-reference data-or-index) literal-name)
         data-or-index)))

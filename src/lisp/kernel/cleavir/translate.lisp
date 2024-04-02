@@ -638,18 +638,14 @@
         (let* ((frame (%intrinsic-call "llvm.frameaddress.p0"
                                        (list (%i32 0)) "stepper-frame"))
                (raw (cst:raw origin))
-               ;; See #1376: Sometimes the source form will be a literal.
+               ;; See #1376: Sometimes the source form will be an immediate.
                ;; This may be due to inadequacies in constant folding.
-               (imm-or-index
-                 (handler-case (literal:reference-literal raw t)
-                   (serious-condition ()
-                     (literal:reference-literal
-                      "<error dumping form>" t))))
                (lit
-                 (if (integerp imm-or-index)
-                     (literal:constants-table-value imm-or-index
-                                                    :literal-name "step-source")
-                     imm-or-index)))
+                 (handler-case
+                     (literal:compile-reference-to-literal raw)
+                   (serious-condition ()
+                     (literal:compile-reference-to-literal
+                      "<error dumping form>")))))
           (%intrinsic-invoke-if-landing-pad-or-call
            "cc_breakstep" (list lit frame)))))))
 
