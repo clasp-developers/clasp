@@ -111,7 +111,7 @@
 (defclass last-minute-constant ()
   ((%value :initarg :value :reader bir:constant-value)))
 
-(defun literal:reference-literal (value &optional read-only-p)
+(defun reference-literal (value &optional read-only-p)
   (declare (ignore read-only-p))
   (let ((next-index
           ;; Check for an existing constant.
@@ -121,7 +121,7 @@
                   using (hash-value indexoid)
                 when (and (typep key '(or bir:constant last-minute-constant))
                           (eql (bir:constant-value key) value))
-                  do (return-from literal:reference-literal
+                  do (return-from reference-literal
                        (values indexoid (integerp indexoid)))
                 maximizing (if (integerp indexoid) (1+ indexoid) 0)))
         (immediate (core:create-tagged-immediate-value-or-nil value))
@@ -293,7 +293,8 @@
 
 (defun translate (bir &key abi linkage)
   (declare (ignore linkage))
-  (let* ((cc::*unwind-ids* (make-hash-table :test #'eq)))
+  (let* ((cc::*unwind-ids* (make-hash-table :test #'eq))
+         (cc::*literal-fn* #'reference-literal))
     (layout-module (bir:module bir) abi :toplevel bir)
     (cmp::potentially-save-module)
     (cc::find-llvm-function-info bir)))

@@ -278,12 +278,6 @@ local-function - the lcl function that all of the xep functions call."
 (defun irc-literal (lit &optional (label "literal"))
   (irc-t*-load (literal:compile-reference-to-literal lit) label))
 
-(defun irc-t ()
-  (irc-literal t "T"))
-
-(defun irc-nil ()
-  (irc-literal nil "NIL"))
-
 (defvar *current-unwind-landing-pad-dest* nil)
 
 (defmacro with-landing-pad (unwind-landing-pad-dest &rest body)

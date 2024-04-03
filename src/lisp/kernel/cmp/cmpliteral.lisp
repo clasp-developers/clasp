@@ -1,35 +1,5 @@
 (in-package :literal)
 
-;;;; implementation of load-time-value and literal logic in compile-file and compile
-;;;;
-;;;; Conceptually, there are two separate components, the "compiler" of ltv bytecode and
-;;;;  the ltv bytecode interpreter.
-;;;; The compiler compiles common lisp forms. Whenever it runs into a literal it can't
-;;;;  handle, it calls LTV. When LTV needs some code compiled, it calls the compiler.
-;;;; LTV forms code in bytecode that is evaluated from the @RUN-ALL function to create, at load time,
-;;;; a table (vector) with all the values the rest of the code needs to run.
-;;;; Once it's done compiling, the compiler checks with LTV to get a table size and
-;;;;  the table-initializing bytecode to run, which is injected into a couple of global variables
-;;;;  in the module.
-;;;;
-;;;; External protocol:
-;;;;
-;;;; * When the compiler runs into a literal, it calls REFERENCE-LITERAL. This will
-;;;;   return, an index into the load-time-values table for run-time.
-;;;; * The compiler can generate literals as structs and then the literal compiler can recognize 
-;;;; * When the compiler runs into load-time-value, it calls REFERENCE-LOAD-TIME-VALUE,  *****WRONG????
-;;;;   which also returns an index into the load-time-values table that will etc.
-;;;; * The compiler provides a function COMPILE-CST-OR-FORM that LTV can call. COMPILE-FORM
-;;;;   receives a lisp form, compiles it, and arranges for it to be put into the FASL
-;;;;   just like any function compile-file runs into. COMPILE-CST-OR-FORM returns some kind of
-;;;;   handle that can be used in the run-all code.
-;;;; * Code that will be put into the LTV initialization is added by LTV via
-;;;;   ADD-TO-RUN-ALL. This is not lisp code, but rather a restricted language:
-;;;;
-;;;; * (SET-LTV index form) evaluates form and sets entry number INDEX in the LTV table
-;;;;   to the value returned.
-;;;; * (CALL handle) calls the function denoted by HANDLE (returned from COMPILE-CST-OR-FORM)
-
 (defvar *gcroots-in-module*)
 #+threads(defvar *value-table-id-lock* (mp:make-lock :name '*value-table-id-lock*))
 (defvar *value-table-id* 0)

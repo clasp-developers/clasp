@@ -185,7 +185,7 @@ a_p = a_p_temp; a = a_temp;
   (let* ((keystring (string keyword))
          ;; NOTE: We might save a bit of time by moving this out of the loop.
          ;; Or maybe LLVM can handle it. I don't know.
-         (key-const (irc-literal keyword keystring))
+         (key-const (clasp-cleavir::literal keyword))
          (match (irc-basic-block-create (core:fmt nil "matched-{}" keystring)))
          (mismatch (irc-basic-block-create (core:fmt nil "not-{}" keystring))))
     (let ((test (irc-icmp-eq key-arg key-const)))
@@ -392,7 +392,7 @@ a_p = a_p_temp; a = a_temp;
       (compile-required-arguments reqargs calling-conv))
     (let (;; NOTE: Sometimes we don't actually need these.
           ;; We could save miniscule time by not generating.
-          (iNIL (irc-nil)) (iT (irc-t)))
+          (iNIL (clasp-cleavir::%nil)) (iT (clasp-cleavir::%t)))
       (if (or rest-var key-flag)
           ;; We have &key and/or &rest, so parse with that expectation.
           ;; Specifically, we have to get a variable for how many arguments are left after &optional.
@@ -463,8 +463,8 @@ a_p = a_p_temp; a = a_temp;
         (if (> nopt 0)
             (let* ((npreds (1+ nopt))
                    (undef (irc-undef-value-get %t*%))
-                   (true (irc-t))
-                   (false (irc-nil))
+                   (true (clasp-cleavir::%t))
+                   (false (clasp-cleavir::%nil))
                    (default (irc-basic-block-create "enough-for-optional"))
                    (assn (irc-basic-block-create "optional-assignments"))
                    (after (irc-basic-block-create "argument-parsing-done"))

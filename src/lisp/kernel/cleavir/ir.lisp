@@ -27,10 +27,21 @@
 (defmethod %default-int-type ((abi abi-x86-64)) cmp:%i64%)
 (defmethod %default-int-type ((abi abi-x86-32)) cmp:%i32%)
 
+;;; This is bound by the BTB translator to change how we
+;;; translate constants. KLUDGE.
+(defvar *literal-fn* #'literal:reference-literal)
+
+(defun literal (value &optional (read-only-p t))
+  (multiple-value-bind (data arrayp)
+      (funcall *literal-fn* value read-only-p)
+    (if arrayp
+        (literal:constants-table-value data)
+        data)))
+
 (defun %nil ()
   "A nil in a T*"
-  (cmp::irc-literal nil))
-(defun %t () (cmp::irc-literal t))
+  (literal nil))
+(defun %t () (literal t))
 
 (defun instruction-llvm-function (instr)
   (llvm-sys:get-parent (llvm-sys:get-parent instr)))
