@@ -33,12 +33,12 @@
    (%fixed-xep-names :initarg :fixed-xep-names
                      :reader fixed-xep-names)))
 
-(defun allocate-llvm-function-info (function &key linkage)
+(defun allocate-llvm-function-info (function &key linkage toplevel)
   (let* ((lambda-name (cc::get-or-create-lambda-name function))
          (jit-function-name (cc::jit-function-name lambda-name))
           (arguments (cc::compute-arglist (bir:lambda-list function)))
          (mtype (cc::compute-llvm-function-type function arguments))
-         (xep-p (cc::xep-needed-p function))
+         (xep-p (or (eq function toplevel) (xep-needed-p function)))
          (analysis (cmp:calculate-cleavir-lambda-list-analysis
                     (bir:lambda-list function)))
          (main-function
@@ -80,13 +80,28 @@
                                          nil
                                          (llvm-sys:get-name f))))))
 
-(defun allocate-module-constants (module toplevel)
+;;; See if a function needs a XEP based on the IR.
+;;; Note that the toplevel function (i.e. the one returned by CL:COMPILE)
+;;; also gets a XEP, but it's handled differently.
+(defun xep-needed-p (function)
+  (or (bir:enclose function)
+      ;; We need a XEP for more involved lambda lists.
+      (cc::lambda-list-too-hairy-p (bir:lambda-list function))
+      ;; or for mv-calls that might need to signal an error.
+      (and (cleavir-set:some #'cc::nontrivial-mv-local-call-p
+                             (bir:local-calls function))
+           (multiple-value-bind (req opt rest)
+               (cmp:process-bir-lambda-list (bir:lambda-list function))
+             (declare (ignore opt))
+             (or (plusp (car req)) (not rest))))))
+
+(defun allocate-module-constants (module)
   (let ((i 0))
     ;; Functions: If a XEP is needed, put in space for one
     ;; except for the toplevel function, which doesn't need space in the
     ;; literals vector as nothing inside the code references it.
     (bir:do-functions (function module)
-      (when (and (not (eq toplevel function)) (cc::xep-needed-p function))
+      (when (xep-needed-p function)
         ;; Keys in the *constant-values* table are usually BIR:CONSTANTs and
         ;; stuff. So there is no possibility of overlap between a BIR:FUNCTION
         ;; and a BIR:FUNCTION that literally appears in the code somehow.
@@ -267,9 +282,10 @@
      (values)))
 
 (defun layout-procedure (function lambda-name abi
-                         &key (linkage 'llvm-sys:internal-linkage))
+                         &key (linkage 'llvm-sys:internal-linkage)
+                           toplevel)
   (declare (ignore linkage))
-  (when (cc::xep-needed-p function)
+  (when (or (eq function toplevel) (xep-needed-p function))
     (layout-xep-group function lambda-name abi))
   (cc::layout-main-function function lambda-name abi))
 
@@ -283,13 +299,14 @@
         (setf (gethash entrance cc::*unwind-ids*) i)
         (incf i)))
     (setf (gethash function cc::*function-info*)
-          (allocate-llvm-function-info function
+          (allocate-llvm-function-info function :toplevel toplevel
                                        :linkage 'llvm-sys:external-linkage)))
   (with-literals
-      (allocate-module-constants module toplevel)
+      (allocate-module-constants module)
     (bir:do-functions (function module)
       (layout-procedure function (cc::get-or-create-lambda-name function)
-                        abi :linkage 'llvm-sys:external-linkage))))
+                        abi :toplevel toplevel
+                            :linkage 'llvm-sys:external-linkage))))
 
 (defun translate (bir &key abi linkage)
   (declare (ignore linkage))
@@ -326,8 +343,15 @@
                                             cmp:*thread-safe-context* 0)))
         (declare (ignore object))
         (fill-constants jit dylib cc::*constant-values*)
-        (make-compiled-fun jit dylib (make-function-description bir)
-                           (cc::find-llvm-function-info bir))))))
+        (let ((existing (gethash bir cc::*constant-values*)))
+          (if existing
+              ;; There will already be a compiled fun in the literals
+              ;; if it's e.g. enclosed.
+              (core:literals-vref (llvm-sys:lookup jit dylib "__clasp_literals_")
+                                  existing)
+              ;; Otherwise, make a new function.
+              (make-compiled-fun jit dylib (make-function-description bir)
+                                 (cc::find-llvm-function-info bir))))))))
 
 (defgeneric resolve-constant (ir))
 
