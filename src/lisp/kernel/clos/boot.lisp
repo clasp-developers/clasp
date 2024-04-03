@@ -175,6 +175,11 @@
   (setq +the-std-class+ (find-class 'std-class nil))
   (setq +the-funcallable-standard-class+
         (find-class 'funcallable-standard-class nil)))
+
+;; Undefine the SEQUENCE type expansion, which does not account
+;; for extended sequences. Redefining SEQUENCE like this is a KLUDGE.
+(setf (ext:type-expander 'sequence) nil)
+
 ;;
 ;; Finalize
 ;;
