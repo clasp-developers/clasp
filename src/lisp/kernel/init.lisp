@@ -157,12 +157,6 @@
   (core::select-package :gray))
 (shadow '(STREAM-ELEMENT-TYPE OPEN-STREAM-P OUTPUT-STREAM-P INPUT-STREAM-P STREAMP CLOSE))
 
-;; Setup a few things for the CORE package
-(eval-when (:execute :compile-toplevel :load-toplevel)
-  (core::select-package :core))
-
-(sys:*make-special '*use-cleavir-compiler*)
-
 ;; Setup a few things for the CMP package
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :cmp))

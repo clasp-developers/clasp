@@ -26,38 +26,6 @@
       ;; Add other clauses here
       (t #+(or)(warn "Add support for proclaim ~s~%" decl)))))
 
-(defmethod cleavir-cst-to-ast:convert :before (cst environment (system clasp-64bit))
-  (declare (ignore system))
-  (when cmp:*code-walker*
-    (let ((form (cst:raw cst)))
-      (funcall cmp:*code-walker* form environment))))
-
-(defun code-walk-using-cleavir (code-walker-function form env)
-  (let* ((cleavir-cst-to-ast:*compiler* 'cl:compile)
-         (core:*use-cleavir-compiler* t)
-         (cmp:*code-walker* code-walker-function))
-    (handler-bind
-        ((cleavir-cst-to-ast:no-variable-info
-           (lambda (condition)
-             (declare (ignore condition))
-             (invoke-restart 'cleavir-cst-to-ast:consider-special)))
-         (cleavir-cst-to-ast:no-function-info
-           (lambda (condition)
-             (declare (ignore condition))
-             (invoke-restart 'cleavir-cst-to-ast:consider-global)))
-         ;; No point printing warnings twice (now, and when the method body
-         ;; is actually compiled)
-         (warning #'muffle-warning)
-         ;; Upon other error just give up.
-         ;; (Returning NIL means code could not be walked.)
-         (error (lambda (e)
-                  (declare (ignore e))
-                  (return-from code-walk-using-cleavir nil))))
-      (cleavir-cst-to-ast:cst-to-ast (cst:cst-from-expression form) env *clasp-system*)))
-  t)
-
-(export 'code-walk-using-cleavir)
-
 ;;; Given a FUNCTION-AST, return the function-scope-info to insert into its body ASTs.
 ;;; or NIL if there's no source info.
 (defun compute-fsi (ast)

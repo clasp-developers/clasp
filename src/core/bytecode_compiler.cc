@@ -2060,11 +2060,19 @@ void compile_fdesignator(T_sp fform, Lexenv_sp env, const Context ctxt) {
   // we don't need to emit a vm_fdesignator instruction or anything.
   // TODO: We could do something smarter if given 'foo or a constant,
   // but those are more marginal.
+  // This function basically bypasses compile_form. As such we need to
+  // call the walker specially, if that's what we're doing, and if
+  // we don't end up just calling compile_form. We ignore the rewriting
+  // aspect and anyway we don't actually use that, so hey.
   if (fform.consp()) {
     if (oCar(fform) == cl::_sym_Function_O) {
+      if (code_walking_p())
+        eval::funcall(_sym_STARcodeWalkerSTAR->symbolValue(), fform, env);
       compile_called_function(oCadr(fform), env, ctxt);
       return;
     } else if (oCar(fform) == cl::_sym_lambda) {
+      if (code_walking_p())
+        eval::funcall(_sym_STARcodeWalkerSTAR->symbolValue(), fform, env);
       compile_called_function(fform, env, ctxt);
       return;
     }

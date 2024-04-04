@@ -2221,8 +2221,7 @@ COMPILE-FILE will use the default *clasp-env*."
   (bir-compile-cst (cst:cst-from-expression form) env))
 
 (defun cleavir-compile (name &optional definition)
-  (let ((cmp:*cleavir-compile-hook* #'bir-compile)
-        (core:*use-cleavir-compiler* t))
+  (let ((cmp:*cleavir-compile-hook* #'bir-compile))
     (compile name definition)))
 
 (defun bir->function (bir &key (abi *abi-x86-64*)
@@ -2295,8 +2294,7 @@ COMPILE-FILE will use the default *clasp-env*."
   (bir-compile-cst-in-env (cst:cst-from-expression form) env))
 
 (defun bir-compile-cst-in-env (cst &optional env)
-  (let ((cst-to-ast:*compiler* 'cl:compile)
-        (core:*use-cleavir-compiler* t))
+  (let ((cst-to-ast:*compiler* 'cl:compile))
     (cmp:compile-in-env cst env #'bir-compile-cst)))
 
 (defun compile-form (form &optional (env *clasp-env*))
@@ -2315,8 +2313,7 @@ COMPILE-FILE will use the default *clasp-env*."
 (defun bir-loop-read-and-compile-file-forms (source-sin environment)
   (let ((eof-value (gensym))
         (eclector.reader:*client* cmp:*cst-client*)
-        (cst-to-ast:*compiler* 'cl:compile-file)
-        (core:*use-cleavir-compiler* t))
+        (cst-to-ast:*compiler* 'cl:compile-file))
     (loop
       ;; Required to update the source pos info. FIXME!?
       (peek-char t source-sin nil)
@@ -2332,8 +2329,7 @@ COMPILE-FILE will use the default *clasp-env*."
                 (compile-file-cst cst environment))))))))
 
 (defun cleavir-compile-file (input-file &rest kwargs)
-  (let ((core:*use-cleavir-compiler* t)
-        (cmp:*cleavir-compile-file-hook*
+  (let ((cmp:*cleavir-compile-file-hook*
           'bir-loop-read-and-compile-file-forms)
         (cmp:*cleavir-compile-hook* 'bir-compile))
     (apply #'compile-file input-file kwargs)))
