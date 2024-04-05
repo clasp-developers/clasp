@@ -122,18 +122,21 @@
 (defgeneric %load-instruction (mnemonic stream))
 
 (defmethod %load-instruction ((mnemonic (eql 'nil)) stream)
+  (declare (ignore stream))
   (let ((index (next-index)))
     (dbgprint " (nil ~d)" index)
     (setf (creator index)
           (make-instance 'singleton-creator :prototype nil))))
 
 (defmethod %load-instruction ((mnemonic (eql 't)) stream)
+  (declare (ignore stream))
   (let ((index (next-index)))
     (dbgprint " (t ~d)" index)
     (setf (creator index)
           (make-instance 'singleton-creator :prototype t))))
 
 (defmethod %load-instruction ((mnemonic (eql 'cons)) stream)
+  (declare (ignore stream))
   (let ((index (next-index)))
     (dbgprint " (cons ~d)" index)
     (setf (creator index)

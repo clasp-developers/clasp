@@ -39,7 +39,7 @@
   "Depending on the type of LNAME an actual LLVM name is generated"
   (typecase lname
     (pathname
-     (format nil nil "MAIN-~a" (string-upcase (pathname-name lname))))
+     (format nil "MAIN-~a" (string-upcase (pathname-name lname))))
     (string
      (cond
        ((string= lname core:+run-all-function-name+) lname) ; this one is ok
