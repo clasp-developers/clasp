@@ -687,6 +687,17 @@ template <> struct from_object<const char*> {
     strncpy(this->_v, strng->get_std_string().data(), len);
     this->_v[len] = '\0';
   }
+  // Move constructor. Make sure to invalidate the move-ee's pointer
+  // or you'll get a double free.
+  // If you're wondering why we don't use unique_ptr for _v: because
+  // it actually needs to be const char* because the field is
+  // referenced directly by the apply machinery. FIXME
+  from_object(from_object<const char*>&& other) : _v(other._v) {
+    other._v = NULL;
+  }
+  // And for safety's sake, delete the copy constructor.
+  from_object(const from_object<const char*>&) = delete;
+  // Destructor: free _v.
   ~from_object() {
     if (this->_v) {
       free(this->_v);
