@@ -33,7 +33,7 @@
    (%fixed-xep-names :initarg :fixed-xep-names
                      :reader fixed-xep-names)))
 
-(defun allocate-llvm-function-info (function &key linkage toplevel)
+(defun allocate-llvm-function-info (function &key toplevel)
   (let* ((lambda-name (cc::get-or-create-lambda-name function))
          (jit-function-name (cc::jit-function-name lambda-name))
           (arguments (cc::compute-arglist (bir:lambda-list function)))
@@ -43,13 +43,13 @@
                     (bir:lambda-list function)))
          (main-function
            (cmp:irc-function-create
-            mtype linkage
+            mtype 'llvm-sys:external-linkage
             (concatenate 'string jit-function-name ".main")
             cmp:*the-module*))
          (general-xep
            (when xep-p
              (cmp:irc-function-create
-              (cmp:fn-prototype :general-entry) linkage
+              (cmp:fn-prototype :general-entry) 'llvm-sys:external-linkage
               (concatenate 'string jit-function-name ".xep-general")
               cmp:*the-module*)))
          (fixed-xeps
@@ -59,7 +59,8 @@
                    for name = (format nil "~a.xep-~d" jit-function-name i)
                    collect (if (cmp::generate-function-for-arity-p i analysis)
                                (cmp:irc-function-create
-                                (cmp:fn-prototype i) linkage name
+                                (cmp:fn-prototype i)
+                                'llvm-sys:external-linkage name
                                 cmp:*the-module*)
                                :placeholder))))
          ;; Check for a forced closure layout first.
@@ -281,10 +282,7 @@
        (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*))
      (values)))
 
-(defun layout-procedure (function lambda-name abi
-                         &key (linkage 'llvm-sys:internal-linkage)
-                           toplevel)
-  (declare (ignore linkage))
+(defun layout-procedure (function lambda-name abi &key toplevel)
   (when (or (eq function toplevel) (xep-needed-p function))
     (layout-xep-group function lambda-name abi))
   (cc::layout-main-function function lambda-name abi))
@@ -299,17 +297,14 @@
         (setf (gethash entrance cc::*unwind-ids*) i)
         (incf i)))
     (setf (gethash function cc::*function-info*)
-          (allocate-llvm-function-info function :toplevel toplevel
-                                       :linkage 'llvm-sys:external-linkage)))
+          (allocate-llvm-function-info function :toplevel toplevel)))
   (with-literals
       (allocate-module-constants module)
     (bir:do-functions (function module)
       (layout-procedure function (cc::get-or-create-lambda-name function)
-                        abi :toplevel toplevel
-                            :linkage 'llvm-sys:external-linkage))))
+                        abi :toplevel toplevel))))
 
-(defun translate (bir &key abi linkage)
-  (declare (ignore linkage))
+(defun translate (bir &key abi)
   (let* ((cc::*unwind-ids* (make-hash-table :test #'eq))
          (cc::*literal-fn* #'reference-literal))
     (layout-module (bir:module bir) abi :toplevel bir)
@@ -321,8 +316,7 @@
                     (error "BUG: Tried to ENCLOSE a function with no XEP"))))
     (literal:constants-table-value cindex)))
 
-(defun bir->function (bir &key (abi cc::*abi-x86-64*) linkage)
-  (declare (ignore linkage))
+(defun bir->function (bir &key (abi cc::*abi-x86-64*))
   (cmp::with-compiler-env ()
     (let ((module (cmp::create-run-time-module-for-compile))
           (cc::*constant-values* (make-hash-table :test #'eq))
@@ -429,7 +423,6 @@
 
 (defun compile-function (function
                          &key (abi clasp-cleavir:*abi-x86-64*)
-                           (linkage 'llvm-sys:external-linkage)
                            (system clasp-cleavir:*clasp-system*)
                            (disassemble nil))
   (multiple-value-bind (module funmap)
@@ -447,4 +440,4 @@
           (clasp-cleavir::*fixed-closures*
             (fixed-closures-map (fmap funmap)))
           (bir (finfo-irfun (find-bcfun function funmap))))
-      (clasp-cleavir-2::bir->function bir :abi abi :linkage linkage))))
+      (clasp-cleavir-2::bir->function bir :abi abi))))
