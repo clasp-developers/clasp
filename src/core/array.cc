@@ -1180,42 +1180,42 @@ CL_DEFUN bool ext__array_no_nans_p(Array_sp array) {
   if (gc::IsA<SimpleVector_float_sp>(array)) {
     auto sa = gc::As_unsafe<SimpleVector_float_sp>(array);
     for (size_t ii = 0; ii < sa->length(); ii++)
-      if (isnan((*sa)[ii]))
+      if (std::isnan((*sa)[ii]))
         return false;
   } else if (gc::IsA<MDArray_float_sp>(array)) {
     auto sa = gc::As_unsafe<MDArray_float_sp>(array);
     for (size_t ii = 0; ii < sa->length(); ii++)
-      if (isnan((*sa)[ii]))
+      if (std::isnan((*sa)[ii]))
         return false;
   } else if (gc::IsA<SimpleMDArray_float_sp>(array)) {
     auto sa = gc::As_unsafe<SimpleMDArray_float_sp>(array);
     for (size_t ii = 0; ii < sa->length(); ii++)
-      if (isnan((*sa)[ii]))
+      if (std::isnan((*sa)[ii]))
         return false;
   } else if (gc::IsA<ComplexVector_float_sp>(array)) {
     auto sa = gc::As_unsafe<ComplexVector_float_sp>(array);
     for (size_t ii = 0; ii < sa->length(); ii++)
-      if (isnan((*sa)[ii]))
+      if (std::isnan((*sa)[ii]))
         return false;
   } else if (gc::IsA<SimpleVector_double_sp>(array)) {
     auto sa = gc::As_unsafe<SimpleVector_double_sp>(array);
     for (size_t ii = 0; ii < sa->length(); ii++)
-      if (isnan((*sa)[ii]))
+      if (std::isnan((*sa)[ii]))
         return false;
   } else if (gc::IsA<MDArray_double_sp>(array)) {
     auto sa = gc::As_unsafe<MDArray_double_sp>(array);
     for (size_t ii = 0; ii < sa->length(); ii++)
-      if (isnan((*sa)[ii]))
+      if (std::isnan((*sa)[ii]))
         return false;
   } else if (gc::IsA<SimpleMDArray_double_sp>(array)) {
     auto sa = gc::As_unsafe<SimpleMDArray_double_sp>(array);
     for (size_t ii = 0; ii < sa->length(); ii++)
-      if (isnan((*sa)[ii]))
+      if (std::isnan((*sa)[ii]))
         return false;
   } else if (gc::IsA<ComplexVector_double_sp>(array)) {
     auto sa = gc::As_unsafe<ComplexVector_double_sp>(array);
     for (size_t ii = 0; ii < sa->length(); ii++)
-      if (isnan((*sa)[ii]))
+      if (std::isnan((*sa)[ii]))
         return false;
   }
   return true;
