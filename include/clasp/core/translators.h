@@ -54,59 +54,84 @@ template <std::integral I> struct from_object<I> {
   from_object(core::T_sp o) : _v(core::clasp_to_integral<I>(o)) {};
 };
 
+template <std::integral I> struct from_object<const I&> {
+  typedef I DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp o) : _v(core::clasp_to_integral<I>(o)) {};
+};
+
 template <> struct from_object<float> {
   typedef float DeclareType;
-
   DeclareType _v;
-  from_object(core::T_sp o) : _v(core::clasp_to_float(gc::As<core::Number_sp>(o))){};
+  from_object(core::T_sp o) : _v(core::clasp_to_float(gc::As<core::Number_sp>(o))) {};
+};
+
+template <> struct from_object<const float&> {
+  typedef float DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp o) : _v(core::clasp_to_float(gc::As<core::Number_sp>(o))) {};
 };
 
 template <> struct from_object<double> {
   typedef double DeclareType;
-
   DeclareType _v;
-  from_object(core::T_sp o) : _v(core::clasp_to_double(gc::As<core::Number_sp>(o))){};
+  from_object(core::T_sp o) : _v(core::clasp_to_double(gc::As<core::Number_sp>(o))) {};
+};
+
+template <> struct from_object<const double&> {
+  typedef double DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp o) : _v(core::clasp_to_double(gc::As<core::Number_sp>(o))) {};
 };
 
 template <> struct from_object<long double> {
   typedef long double DeclareType;
-
   DeclareType _v;
-  from_object(core::T_sp o) : _v(core::clasp_to_long_double(gc::As<core::Number_sp>(o))){};
+  from_object(core::T_sp o) : _v(core::clasp_to_long_double(gc::As<core::Number_sp>(o))) {};
+};
+
+template <> struct from_object<const long double&> {
+  typedef long double DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp o) : _v(core::clasp_to_long_double(gc::As<core::Number_sp>(o))) {};
 };
 
 template <> struct from_object<bool> {
   typedef bool DeclareType;
   DeclareType _v;
-  from_object(core::T_sp o) : _v(!o.nilp()){};
+  from_object(core::T_sp o) : _v(!o.nilp()) {};
+};
+
+template <> struct from_object<const bool&> {
+  typedef bool DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp o) : _v(!o.nilp()) {};
 };
 
 template <> struct from_object<bool&> {
   typedef bool DeclareType;
   DeclareType _v;
-  from_object(core::T_sp o) : _v(!o.nilp()){};
+  from_object(core::T_sp o) : _v(!o.nilp()) {};
   ~from_object(){/*non trivial*/};
 };
 
 template <> struct from_object<core::T_O*> {
   typedef core::T_O* DeclareType;
-
   DeclareType _v;
-  from_object(core::T_sp o) : _v(o.raw_()){};
+  from_object(core::T_sp o) : _v(o.raw_()) {};
 };
 
 template <> struct from_object<void*> {
   typedef void* DeclareType;
   DeclareType _v;
-  from_object(core::T_sp o) : _v(core::lisp_to_void_ptr(o)){};
+  from_object(core::T_sp o) : _v(core::lisp_to_void_ptr(o)) {};
 };
 
 template <> struct from_object<bool*> {
   typedef bool* DeclareType;
-
   DeclareType _v;
   bool _val;
-  from_object(T_P o) : _v(&_val), _val(true){};
+  from_object(T_P o) : _v(&_val), _val(true) {};
 };
 
 // TO_OBJECT TRANSLATORS
@@ -138,11 +163,12 @@ template <> struct to_object<void*> {
 
 template <> struct to_object<bool> {
   typedef bool DeclareType;
-  static core::T_sp convert(DeclareType v) {
-    if (v)
-      return core::lisp_true();
-    return nil<core::T_O>();
-  }
+  static core::T_sp convert(DeclareType v) { return v ? core::lisp_true() : nil<core::T_O>(); }
+};
+
+template <> struct to_object<const bool&> {
+  typedef const bool& DeclareType;
+  static core::T_sp convert(DeclareType v) { return v ? core::lisp_true() : nil<core::T_O>(); }
 };
 
 // THIS FN IS ALREADY DEFINED IN CHARACTER.H
@@ -156,125 +182,58 @@ template <> struct to_object<bool> {
 //   }
 // };
 
-template <> struct to_object<unsigned char> {
-  typedef unsigned char DeclareType;
-  static core::T_sp convert(DeclareType v) { return (core::clasp_make_fixnum(v)); }
+template <std::integral I> struct to_object<I> {
+  typedef I DeclareType;
+  static core::T_sp convert(DeclareType v) { return core::Integer_O::create(v); }
 };
 
-template <> struct to_object<short> {
-  typedef short DeclareType;
-  static core::T_sp convert(DeclareType v) {
-    core::Fixnum_sp oi = core::make_fixnum(v);
-    return (oi);
-  }
+template <std::integral I> struct to_object<const I&> {
+  typedef const I& DeclareType;
+  static core::T_sp convert(DeclareType v) { return core::Integer_O::create(v); }
 };
-
-template <> struct to_object<unsigned short> {
-  typedef unsigned short DeclareType;
-  static core::T_sp convert(DeclareType v) {
-    core::Fixnum_sp oi = core::make_fixnum(v);
-    return (oi);
-  }
-};
-
-template <> struct to_object<int> {
-  typedef int DeclareType;
-  static core::T_sp convert(DeclareType v) {
-    core::Fixnum_sp oi = core::make_fixnum(v);
-    return (oi);
-  }
-};
-
-template <> struct to_object<unsigned int> {
-  typedef unsigned int DeclareType;
-  static core::T_sp convert(DeclareType v) {
-    core::Integer_sp oi = core::Integer_O::create(v);
-    return (oi);
-  }
-};
-
-template <> struct to_object<const unsigned int> {
-  typedef const unsigned int DeclareType;
-  static core::T_sp convert(DeclareType v) {
-    core::Integer_sp oi = core::Integer_O::create(v);
-    return (oi);
-  }
-};
-
-template <> struct to_object<long> {
-  typedef long DeclareType;
-  static core::T_sp convert(DeclareType v) {
-    core::Integer_sp oi = core::Integer_O::create(static_cast<gctools::Fixnum>(v));
-    return (oi);
-  }
-};
-
-template <> struct to_object<unsigned long> {
-  typedef unsigned long DeclareType;
-  static core::T_sp convert(DeclareType v) {
-    core::Integer_sp oi = core::Integer_O::create(static_cast<gctools::Fixnum>(v));
-    return (oi);
-  }
-};
-
-#if __SIZEOF_LONG_LONG__ <= 8
-
-template <> struct to_object<long long> {
-  typedef long long DeclareType;
-  static core::T_sp convert(DeclareType v) {
-    core::Integer_sp oi = core::Integer_O::create((int64_t)v);
-    return (oi);
-  }
-};
-
-template <> struct to_object<unsigned long long> {
-  typedef unsigned long long DeclareType;
-  static core::T_sp convert(DeclareType v) {
-    core::Integer_sp oi = core::Integer_O::create((uint64_t)v);
-    return (oi);
-  }
-};
-
-#endif
 
 template <> struct to_object<float> {
-  typedef double DeclareType;
-  static core::T_sp convert(DeclareType v) {
-    core::SingleFloat_sp oi = core::clasp_make_single_float(v);
-    return (oi);
-  }
+  typedef float DeclareType;
+  static core::T_sp convert(DeclareType v) { return core::clasp_make_single_float(v); }
+};
+
+template <> struct to_object<const float&> {
+  typedef const float& DeclareType;
+  static core::T_sp convert(DeclareType v) { return core::clasp_make_single_float(v); }
 };
 
 template <> struct to_object<double> {
   typedef double DeclareType;
-  static core::T_sp convert(DeclareType v) {
-    core::DoubleFloat_sp oi = core::clasp_make_double_float(v);
-    return (oi);
-  }
+  static core::T_sp convert(DeclareType v) { return core::clasp_make_double_float(v); }
+};
+
+template <> struct to_object<const double&> {
+  typedef const double& DeclareType;
+  static core::T_sp convert(DeclareType v) { return core::clasp_make_double_float(v); }
 };
 
 template <> struct to_object<long double> {
-  typedef double DeclareType;
+  typedef long double DeclareType;
   static core::T_sp convert(DeclareType v) {
-    core::DoubleFloat_sp oi = core::DoubleFloat_O::create(v);
-    return (oi);
+    return core::clasp_make_double_float(static_cast<double>(v));
+  }
+};
+
+template <> struct to_object<const long double&> {
+  typedef const long double& DeclareType;
+  static core::T_sp convert(DeclareType v) {
+    return core::clasp_make_double_float(static_cast<double>(v));
   }
 };
 
 template <> struct to_object<mpz_class> {
   typedef mpz_class DeclareType;
-  static core::T_sp convert(const DeclareType& v) {
-    core::Integer_sp oi = core::Integer_O::create(v);
-    return (oi);
-  }
+  static core::T_sp convert(const DeclareType& v) { return core::Integer_O::create(v); }
 };
 
 template <> struct to_object<const mpz_class&> {
   typedef const mpz_class& DeclareType;
-  static core::T_sp convert(DeclareType v) {
-    core::Integer_sp oi = core::Integer_O::create(v);
-    return (oi);
-  }
+  static core::T_sp convert(DeclareType v) { return core::Integer_O::create(v); }
 };
 
 //  String translators
