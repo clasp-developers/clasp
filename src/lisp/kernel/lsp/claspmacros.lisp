@@ -34,13 +34,17 @@
 
 (in-package :ext)
 
-(defmacro do-c++-iterator ((i iterator &optional (cur (gensym)) (begin (gensym)) (end (gensym))) &rest body)
-  `(multiple-value-bind (,begin ,end)
-       ,iterator
-     (do* ((,cur ,begin (core:iterator-step ,cur))
-           (,i (core:iterator-unsafe-element ,cur) (core:iterator-unsafe-element ,cur)))
-          ((core:iterator= ,cur ,end))
-       ,@body)))
+(defmacro do-c++-iterator ((i iterator &optional result) &rest body)
+  (let ((cur (gensym)) (begin (gensym)) (end (gensym)))
+    `(multiple-value-bind (,begin ,end)
+         ,iterator
+       (do* ((,cur ,begin (core:iterator-step ,cur))
+             (,i (core:iterator-unsafe-element ,cur) (core:iterator-unsafe-element ,cur)))
+            ((core:iterator= ,cur ,end)
+             (let ((,i nil))
+               (declare (ignorable ,i))
+               ,result))
+         ,@body))))
 
 (defmacro map-c++-iterator (code iterator)
   (let ((val (gensym)))

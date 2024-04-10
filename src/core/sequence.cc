@@ -182,9 +182,8 @@ CL_DEFUN_SETF T_sp core__setf_elt(T_sp value, T_sp sequence, size_t index) {
     vsequence->rowMajorAset(index, value);
     return value;
   } else {
-    // FIXME: Having setf elt cons - and for this reason - is completely stupid.
     T_sp tindex = clasp_make_fixnum(index);
-    return eval::funcall(Cons_O::createList(cl::_sym_setf, seqext::_sym_elt), value, sequence, tindex);
+    return seqext::_sym_elt->ensureSetfFunctionCell()->funcall(value, sequence, tindex);
   }
 };
 

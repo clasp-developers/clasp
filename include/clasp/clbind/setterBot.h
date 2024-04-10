@@ -3,7 +3,6 @@ class WRAPPER_Setter<SetterPolicies, OT, MemberType* const(OT::*)> : public core
 public:
   typedef WRAPPER_Setter<SetterPolicies, OT, MemberType* const(OT::*)> MyType;
   typedef core::SimpleFun_O TemplatedBase;
-  typedef clbind::Wrapper<MemberType, MemberType*> WrapperType;
   typedef MemberType* const(OT::*VariablePtrType);
 
 private:
