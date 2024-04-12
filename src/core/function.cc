@@ -286,8 +286,7 @@ CoreFun_sp makeCoreFun(FunctionDescription_sp fdesc,
       maybe_register_symbol_using_dladdr_ep((void*)entry_point);
     }
   }
-  auto ep = gctools::GC<CoreFun_O>::allocate(fdesc, code, entry_point);
-  return ep;
+  return gctools::GC<CoreFun_O>::allocate(fdesc, code, entry_point);
 }
 
 SimpleFun_sp makeSimpleFun(FunctionDescription_sp tfdesc, const ClaspXepTemplate& entry_point) {
@@ -299,17 +298,20 @@ SimpleCoreFun_sp makeSimpleCoreFun(FunctionDescription_sp tfdesc, const ClaspXep
 }
 
 // Used by clasp-cleavir to build compiled functions from function pointers.
-// FIXME: Find some way to abstract away the arity XEPs.
-CL_DEFUN SimpleCoreFun_sp core__make_simple_core_fun(FunctionDescription_sp fdesc, Pointer_sp mainfun, Pointer_sp generalxep, Pointer_sp xep0, Pointer_sp xep1, Pointer_sp xep2, Pointer_sp xep3, Pointer_sp xep4, Pointer_sp xep5) {
+CL_DEFUN SimpleCoreFun_sp core__make_simple_core_fun(FunctionDescription_sp fdesc, Pointer_sp mainfun, Pointer_sp xept) {
   CoreFun_sp core = makeCoreFun(fdesc, (ClaspCoreFunction)(mainfun->ptr()));
   ClaspXepTemplate xep;
-  xep._EntryPoints[0] = (ClaspXepAnonymousFunction)(generalxep->ptr());
-  xep._EntryPoints[1] = (ClaspXepAnonymousFunction)(xep0->ptr());
-  xep._EntryPoints[2] = (ClaspXepAnonymousFunction)(xep1->ptr());
-  xep._EntryPoints[3] = (ClaspXepAnonymousFunction)(xep2->ptr());
-  xep._EntryPoints[4] = (ClaspXepAnonymousFunction)(xep3->ptr());
-  xep._EntryPoints[5] = (ClaspXepAnonymousFunction)(xep4->ptr());
-  xep._EntryPoints[6] = (ClaspXepAnonymousFunction)(xep5->ptr());
+  ClaspXepAnonymousFunction* xepptrs = (ClaspXepAnonymousFunction*)(xept->ptr());
+  // NULL pointers represent a redirect.
+#define DEFXEP(n) xep._EntryPoints[(n+1)] = xepptrs[(n+1)] ? xepptrs[(n+1)] : (ClaspXepAnonymousFunction)(general_entry_point_redirect_##n)
+  xep._EntryPoints[0] = xepptrs[0];
+  DEFXEP(0);
+  DEFXEP(1);
+  DEFXEP(2);
+  DEFXEP(3);
+  DEFXEP(4);
+  DEFXEP(5);
+#undef DEFXEP
   return gctools::GC<SimpleCoreFun_O>::allocate(fdesc, xep, nil<T_O>(), core);
 }
 

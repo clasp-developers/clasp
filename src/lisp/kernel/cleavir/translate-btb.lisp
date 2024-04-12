@@ -24,14 +24,13 @@
    (%fixed-xeps :initarg :fixed-xeps :reader fixed-xeps
                 ;; obviously null <: sequence but this is more explicit.
                 :type (or null sequence))
+   ;; The global variable holding an array of the XEP pointers.
+   (%xep :initarg :xep :reader xep)
    ;; These should be obtainable from llvm-sys:get-name, but that seems to
    ;; return "" for functions after some point. Weird. FIXME
    (%main-function-name :initarg :main-function-name
                         :reader main-function-name)
-   (%general-xep-name :initarg :general-xep-name
-                      :reader general-xep-name)
-   (%fixed-xep-names :initarg :fixed-xep-names
-                     :reader fixed-xep-names)))
+   (%xep-name :initarg :xep-name :reader xep-name)))
 
 (defun allocate-llvm-function-info (function &key toplevel)
   (let* ((lambda-name (cc::get-or-create-lambda-name function))
@@ -63,6 +62,26 @@
                                 'llvm-sys:external-linkage name
                                 cmp:*the-module*)
                                :placeholder))))
+         (xep
+           (when xep-p
+             (let* ((name (concatenate 'string jit-function-name ".xep"))
+                    ;; We rely on opaque pointer types here. Without them,
+                    ;; we'd have to do some bitcasting.
+                    (ptype (llvm-sys:type-get-pointer-to cmp:%void%))
+                    (xtype (llvm-sys:array-type-get
+                            ptype
+                            (1+ cmp:+entry-point-arity-end+)))
+                    (null (llvm-sys:constant-pointer-null-get ptype))
+                    (init (llvm-sys:constant-array-get
+                           xtype
+                           (list* general-xep
+                                  (loop for f in fixed-xeps
+                                        collect (if (eq f :placeholder)
+                                                    null
+                                                    f))))))
+               (llvm-sys:make-global-variable cmp:*the-module* xtype nil
+                                              'llvm-sys:external-linkage
+                                              init name))))
          ;; Check for a forced closure layout first.
          ;; if there isn't one, make one up.
          (env (or (cc::fixed-closure function)
@@ -74,12 +93,9 @@
       :main-function main-function
       :general-xep general-xep
       :fixed-xeps fixed-xeps
+      :xep xep
       :main-function-name (llvm-sys:get-name main-function)
-      :general-xep-name (when xep-p (llvm-sys:get-name general-xep))
-      :fixed-xep-names (loop for f in fixed-xeps
-                             collect (if (eq f :placeholder)
-                                         nil
-                                         (llvm-sys:get-name f))))))
+      :xep-name (when xep-p (llvm-sys:get-name xep)))))
 
 ;;; See if a function needs a XEP based on the IR.
 ;;; Note that the toplevel function (i.e. the one returned by CL:COMPILE)
@@ -403,21 +419,9 @@
          :source-pathname "-unknown-file-"))))
 
 (defun make-compiled-fun (jit dylib fdesc info)
-  (let ((main
-          (llvm-sys:lookup
-           jit dylib (main-function-name info)))
-        (general-xep
-          (llvm-sys:lookup
-           jit dylib (general-xep-name info)))
-        (fixed-xeps
-               (loop for i from cmp:+entry-point-arity-begin+
-                       below cmp:+entry-point-arity-end+
-                     for f in (fixed-xeps info)
-                     for fname in (fixed-xep-names info)
-                     collect (if (eq f :placeholder)
-                                 (core:xep-redirect-address i)
-                                 (llvm-sys:lookup jit dylib fname)))))
-    (apply #'core:make-simple-core-fun fdesc main general-xep fixed-xeps)))
+  (let ((main (llvm-sys:lookup jit dylib (main-function-name info)))
+        (xep (llvm-sys:lookup jit dylib (xep-name info))))
+    (core:make-simple-core-fun fdesc main xep)))
 
 (in-package #:clasp-bytecode-to-bir)
 
