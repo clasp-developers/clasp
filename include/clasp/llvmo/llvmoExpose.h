@@ -980,7 +980,9 @@ template <> struct from_object<llvm::ArrayRef<llvm::Value*>> {
       }
       this->_v = _backing;
       return;
-    } else if (core::Vector_sp vvals = o.asOrNull<core::Vector_O>()) {
+    } else if (o.isA<core::AbstractSimpleVector_O>()
+               || o.isA<core::ComplexVector_O>()) {
+      core::Array_sp vvals = o.as_unsafe<core::Array_O>();
       _backing.resize(vvals->length());
       for (int i(0), iEnd(vvals->length()); i < iEnd; ++i) {
         _backing[i] = gc::As<llvmo::Value_sp>(vvals->rowMajorAref(i))->wrappedPtr();
@@ -1055,7 +1057,9 @@ template <> struct from_object<llvm::ArrayRef<llvm::Metadata*>> {
         _v.push_back(vP);
       }
       return;
-    } else if (core::Vector_sp vvals = o.asOrNull<core::Vector_O>()) {
+    } else if (o.isA<core::AbstractSimpleVector_O>()
+               || o.isA<core::ComplexVector_O>()) {
+      core::Array_sp vvals = o.as_unsafe<core::Array_O>();
       _v.resize(vvals->length());
       for (int i(0), iEnd(vvals->length()); i < iEnd; ++i) {
         _v[i] = gc::As<llvmo::Metadata_sp>(vvals->rowMajorAref(i))->wrappedPtr();
@@ -1356,7 +1360,9 @@ template <> struct from_object<llvm::ArrayRef<llvm::Constant*>> {
       }
       this->_v = this->_backing;
       return;
-    } else if (core::Vector_sp vvals = o.asOrNull<core::Vector_O>()) {
+    } else if (o.isA<core::AbstractSimpleVector_O>()
+               || o.isA<core::ComplexVector_O>()) {
+      core::Array_sp vvals = o.as_unsafe<core::Array_O>();
       _backing.resize(vvals->length());
       for (int i(0), iEnd(vvals->length()); i < iEnd; ++i) {
         _backing[i] = gc::As<llvmo::Constant_sp>(vvals->rowMajorAref(i))->wrappedPtr();
