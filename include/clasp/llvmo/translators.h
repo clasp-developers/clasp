@@ -157,7 +157,9 @@ template <> struct from_object<llvm::ArrayRef<std::string>> {
         _v.push_back(s->get_std_string());
       }
       return;
-    } else if (core::Vector_sp vstrs = o.asOrNull<core::Vector_O>()) {
+    } else if (o.isA<core::AbstractSimpleVector_O>()
+               || o.isA<core::ComplexVector_O>()) {
+      core::Array_sp vstrs = o.as_unsafe<core::Array_O>();
       _v.resize(vstrs->length());
       for (int i(0), iEnd(vstrs->length()); i < iEnd; ++i) {
         _v[i] = gc::As<core::String_sp>(vstrs->rowMajorAref(i))->get_std_string();
@@ -181,7 +183,9 @@ template <> struct from_object<llvm::ArrayRef<int>> {
         _v.push_back(s.unsafe_fixnum());
       }
       return;
-    } else if (core::Vector_sp vstrs = o.asOrNull<core::Vector_O>()) {
+    } else if (o.isA<core::AbstractSimpleVector_O>()
+               || o.isA<core::ComplexVector_O>()) {
+      core::Array_sp vstrs = o.as_unsafe<core::Array_O>();
       _v.resize(vstrs->length());
       for (int i(0), iEnd(vstrs->length()); i < iEnd; ++i) {
         _v[i] = gc::As<core::Fixnum_sp>(vstrs->rowMajorAref(i)).unsafe_fixnum();

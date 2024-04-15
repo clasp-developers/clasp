@@ -50,8 +50,10 @@ CL_DEFUN size_t cl__length(T_sp arg) {
     return arg.unsafe_cons()->length();
   } else if (arg.nilp()) {
     return 0;
-  } else if (Vector_sp vec = arg.asOrNull<Vector_O>()) {
-    return vec->length();
+  } else if (arg.isA<AbstractSimpleVector_O>()) {
+    return arg.as_unsafe<AbstractSimpleVector_O>()->length();
+  } else if (arg.isA<ComplexVector_O>()) {
+    return arg.as_unsafe<ComplexVector_O>()->length();
   } else {
     T_sp result = eval::funcall(seqext::_sym_length, arg);
     if (result.fixnump())

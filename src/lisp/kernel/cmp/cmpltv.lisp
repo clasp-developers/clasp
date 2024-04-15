@@ -897,7 +897,7 @@
   (let ((perbyte (floor 8 nbits))
         (a (gensym "ARRAY")) (s (gensym "STREAM")))
     `(let* ((,a ,array) (,s ,stream) (total-size (array-total-size ,a)))
-       (multiple-value-bind (full-bytes remainder) (floor total-size 8)
+       (multiple-value-bind (full-bytes remainder) (floor total-size ,perbyte)
          (loop for byteindex below full-bytes
                for index = (* ,perbyte byteindex)
                for byte = (logior
@@ -974,7 +974,9 @@
             ((equal packing-type '(unsigned-byte 4))
              (write-sub-byte (prototype inst) stream 4))
             ((equal packing-type '(unsigned-byte 8))
-             (write-sequence (prototype inst) stream))
+             ;; can't use write-sequence in general since
+             ;; the array may be multidimensional.
+             (dump (write-byte elem stream)))
             ((equal packing-type '(unsigned-byte 16))
              (dump (write-b16 elem stream)))
             ((equal packing-type '(unsigned-byte 32))
