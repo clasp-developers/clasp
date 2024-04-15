@@ -897,7 +897,7 @@
   (let ((perbyte (floor 8 nbits))
         (a (gensym "ARRAY")) (s (gensym "STREAM")))
     `(let* ((,a ,array) (,s ,stream) (total-size (array-total-size ,a)))
-       (multiple-value-bind (full-bytes remainder) (floor total-size 8)
+       (multiple-value-bind (full-bytes remainder) (floor total-size ,perbyte)
          (loop for byteindex below full-bytes
                for index = (* ,perbyte byteindex)
                for byte = (logior
