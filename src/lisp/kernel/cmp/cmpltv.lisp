@@ -974,7 +974,9 @@
             ((equal packing-type '(unsigned-byte 4))
              (write-sub-byte (prototype inst) stream 4))
             ((equal packing-type '(unsigned-byte 8))
-             (write-sequence (prototype inst) stream))
+             ;; can't use write-sequence in general since
+             ;; the array may be multidimensional.
+             (dump (write-byte elem stream)))
             ((equal packing-type '(unsigned-byte 16))
              (dump (write-b16 elem stream)))
             ((equal packing-type '(unsigned-byte 32))
