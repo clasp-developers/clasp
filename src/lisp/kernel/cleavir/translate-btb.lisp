@@ -32,6 +32,16 @@
                         :reader main-function-name)
    (%xep-name :initarg :xep-name :reader xep-name)))
 
+;;; Result of TRANSLATE (below) containing everything needed for
+;;; a compiled Lisp module:
+;;; An LLVM-IR module, a map from BIR functions to function infos,
+;;; and a constants map (from BIR constants etc. to either indices,
+;;; or LLVM values for immediates).
+(defclass translation ()
+  ((%module :initarg :module :reader module)
+   (%constant-values :initarg :constant-values :reader constant-values)
+   (%function-info :initarg :function-info :reader function-info)))
+
 (defun allocate-llvm-function-info (function &key toplevel)
   (let* ((lambda-name (cc::get-or-create-lambda-name function))
          (jit-function-name (cc::jit-function-name lambda-name))
@@ -320,12 +330,34 @@
       (layout-procedure function (cc::get-or-create-lambda-name function)
                         abi :toplevel toplevel))))
 
-(defun translate (bir &key abi)
-  (let* ((cc::*unwind-ids* (make-hash-table :test #'eq))
-         (cc::*literal-fn* #'reference-literal))
-    (layout-module (bir:module bir) abi :toplevel bir)
-    (cmp::potentially-save-module)
-    (cc::find-llvm-function-info bir)))
+(defun compute-debug-namestring (bir)
+  (if bir
+      (let ((origin (bir:origin bir)))
+        (if origin
+            (namestring
+             (core:file-scope-pathname
+              (core:file-scope
+               (core:source-pos-info-file-handle origin))))
+            "repl-code"))
+      "repl-code"))
+
+(defun translate (bir-module
+                  &key abi (name "compile") toplevel
+                    (debug-namestring (compute-debug-namestring toplevel)))
+  (let ((module (cmp::llvm-create-module name))
+        (cc::*unwind-ids* (make-hash-table :test #'eq))
+        (cc::*constant-values* (make-hash-table :test #'eq))
+        (cc::*function-info* (make-hash-table :test #'eq))
+        (cc::*literal-fn* #'reference-literal))
+    (cmp::with-module (:module module)
+      (cmp:with-debug-info-generator (:module module
+                                      :pathname debug-namestring)
+        (layout-module bir-module abi :toplevel toplevel))
+      (cmp:irc-verify-module-safe module)
+      (cmp::potentially-save-module))
+    (make-instance 'translation
+      :module module :constant-values cc::*constant-values*
+      :function-info cc::*function-info*)))
 
 (defmethod cc::reference-xep (function (info llvm-function-info))
   (let ((cindex (or (gethash function cc::*constant-values*)
@@ -333,39 +365,26 @@
     (literal:constants-table-value cindex)))
 
 (defun bir->function (bir &key (abi cc::*abi-x86-64*))
-  (let ((module (cmp::create-run-time-module-for-compile))
-        (pathname
-          (let ((origin (bir:origin bir)))
-            (if origin
-                (namestring
-                 (core:file-scope-pathname
-                  (core:file-scope
-                   (core:source-pos-info-file-handle origin))))
-                "repl-code")))
-        (cc::*constant-values* (make-hash-table :test #'eq))
-        (cc::*function-info* (make-hash-table :test #'eq)))
-    ;; Link the C++ intrinsics into the module
-    (cmp::with-module (:module module)
-      (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-        (translate bir :abi abi)))
-    ;;(llvm-sys:dump-module module)
-    (let ((cmp::*verify-llvm-modules* t))
-      (cmp:irc-verify-module-safe module))
-    (let* ((jit (llvm-sys:clasp-jit))
-           (dylib (llvm-sys:create-and-register-jitdylib jit "repl"))
-           (object (llvm-sys:add-irmodule jit dylib module
-                                          cmp:*thread-safe-context* 0)))
-      (declare (ignore object))
-      (fill-constants jit dylib cc::*constant-values*)
-      (let ((existing (gethash bir cc::*constant-values*)))
-        (if existing
-            ;; There will already be a compiled fun in the literals
-            ;; if it's e.g. enclosed.
-            (core:literals-vref (llvm-sys:lookup jit dylib "__clasp_literals_")
-                                existing)
-            ;; Otherwise, make a new function.
-            (make-compiled-fun jit dylib (make-function-description bir)
-                               (cc::find-llvm-function-info bir)))))))
+  (let* ((translation
+           (translate (bir:module bir) :abi abi :toplevel bir))
+         (module (module translation))
+         (constants (constant-values translation))
+         (cc::*function-info* (function-info translation))
+         (jit (llvm-sys:clasp-jit))
+         (dylib (llvm-sys:create-and-register-jitdylib jit "repl"))
+         (object (llvm-sys:add-irmodule jit dylib module
+                                        cmp:*thread-safe-context* 0)))
+    (declare (ignore object))
+    (fill-constants jit dylib constants)
+    (let ((existing (gethash bir constants)))
+      (if existing
+          ;; There will already be a compiled fun in the literals
+          ;; if it's e.g. enclosed.
+          (core:literals-vref (llvm-sys:lookup jit dylib "__clasp_literals_")
+                              existing)
+          ;; Otherwise, make a new function.
+          (make-compiled-fun jit dylib (make-function-description bir)
+                             (cc::find-llvm-function-info bir))))))
 
 (defgeneric resolve-constant (ir))
 
