@@ -280,9 +280,6 @@ public:
 #endif
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocating JD = %p \n", __FILE__, __LINE__, __FUNCTION__, JD));
       ObjectFile_sp codeObject;
-      [[maybe_unused]] size_t objectId = objectIdFromName(G.getName());
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to allocate ObjectFile_sp with name %s  objectId = %lu\n", __FILE__, __LINE__,
-                                __FUNCTION__, G.getName().c_str(), objectId));
       codeObject = lookupObjectFile(G.getName());
       codeObject->_CodeBlock = codeBlock;
       [[maybe_unused]] core::SimpleBaseString_sp codeName = createSimpleBaseStringForStage(G.getName());
@@ -839,7 +836,6 @@ CL_DEFMETHOD ObjectFile_sp ClaspJIT_O::addIRModule(JITDylib_sp dylib, Module_sp 
   //  printf("%s:%d:%s module = %p\n", __FILE__, __LINE__, __FUNCTION__, module.raw_() );
   std::unique_ptr<llvm::Module> umodule(module->wrappedPtr());
   llvm::ExitOnError ExitOnErr;
-  std::unique_ptr<llvm::MemoryBuffer> empty;
   std::string prefix;
   std::string futureName = createIRModuleObjectFileName(startupID, prefix);
   module->wrappedPtr()->setModuleIdentifier(prefix);
@@ -859,7 +855,6 @@ ObjectFile_sp ClaspJIT_O::addObjectFile(JITDylib_sp dylib, std::unique_ptr<llvm:
   // Force the object file to be linked using MaterializationUnit::doMaterialize(...)
   if (print)
     core::clasp_write_string(fmt::format("{}:{} Materializing\n", __FILE__, __LINE__));
-  std::unique_ptr<llvm::MemoryBuffer> empty;
   //  llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::createForObjectFile(objectFile->getBufferIdentifier().str(), dylib );
   llvm::ExitOnError ExitOnErr;
   ObjectFile_sp codeObject = prepareObjectFileForMaterialization(dylib, objectFile->getBufferIdentifier().str(), startupId);

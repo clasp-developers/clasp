@@ -334,6 +334,7 @@ public:
 public:
   // Accessors
   SimpleCoreFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp code, CoreFun_sp localFun);
+  static SimpleCoreFun_sp make(FunctionDescription_sp fdesc, ClaspCoreFunction main, ClaspXepAnonymousFunction* xep);
 
 public:
   virtual Pointer_sp defaultEntryAddress() const;

@@ -258,6 +258,14 @@
    (%function :initarg :function :reader ll-function :type creator)
    (%lambda-list :initarg :lambda-list :reader lambda-list :type creator)))
 
+(defclass function-native-attr (attribute)
+  ((%name :initform (ensure-constant "clasp:function-native"))
+   (%function :initarg :function :reader ll-function :type creator)
+   ;; Name of the main function (string)
+   (%main :initarg :main :reader main :type creator)
+   ;; Name of the XEP array (string)
+   (%xep :initarg :xep :reader xep :type creator)))
+
 #+clasp
 (defclass spi-attr (attribute)
   ((%name :initform (ensure-constant "clasp:source-pos-info"))
@@ -278,6 +286,15 @@
   ((%name :initform (ensure-constant "clasp:module-mutable-ltv"))
    (%module :initarg :module :reader module)
    (%indices :initarg :indices :reader indices :type sequence)))
+
+#+clasp
+(defclass module-native-attr (attribute)
+  ((%name :initform (ensure-constant "clasp:module-native"))
+   (%module :initarg :module :reader module :type creator)
+   (%code :initarg :code :reader code
+          :type (simple-array (unsigned-byte 8) (*)))
+   (%literals :initarg :literals :reader module-native-attr-literals
+              :type simple-vector)))
 
 #+clasp
 (defclass debug-info-function ()
@@ -1431,35 +1448,80 @@
                   (not (cmp:load-time-value-info/read-only-p lit)))
           collect i))
 
+#+clasp
+(defvar *native-compile-file-all* nil)
+
 (defun add-module (value)
   ;; Add the module first to prevent recursion.
   (cmp:module/link value)
-  (let ((mod
-          (add-oob
-           value
-           (make-instance 'bytemodule-creator
-             :prototype value :lispcode (cmp:module/create-bytecode value)))))
+  (let* ((bytecode (cmp:module/create-bytecode value))
+         (literals (cmp:module/literals value))
+         #+clasp
+         (info (cmp:module/create-debug-info value))
+         (mod
+           (add-oob
+            value
+            (make-instance 'bytemodule-creator
+              :prototype value :lispcode bytecode)))
+         (cliterals
+           (map 'simple-vector #'ensure-module-literal literals)))
     ;; Modules can indirectly refer to themselves recursively through
     ;; cfunctions, so we need to 2stage it here.
     (add-instruction
-     (make-instance 'setf-literals
-       :module mod :literals (map 'simple-vector #'ensure-module-literal
-                                  (cmp:module/literals value))))
+     (make-instance 'setf-literals :module mod :literals cliterals))
     #+clasp ; debug info
-    (let ((info (cmp:module/create-debug-info value)))
-      (when info
-        (add-instruction
-         (make-instance 'module-debug-attr
-           :module mod
-           :infos (map 'vector #'process-debug-info info)))))
+    (add-instruction
+     (make-instance 'module-debug-attr
+       :module mod
+       :infos (map 'vector #'process-debug-info info)))
     #+clasp ; mutable LTVs
-    (let ((mutables (mutable-LTVs (cmp:module/literals value))))
+    (let ((mutables (mutable-LTVs literals)))
       (when mutables
         (add-instruction
          (make-instance 'module-mutable-ltv-attr
            :module mod
            :indices mutables))))
+    ;; Native compilation.
+    #+clasp
+    (when *native-compile-file-all*
+      (let* ((native (funcall (find-symbol "COMPILE-CMODULE"
+                                           "CLASP-BYTECODE-TO-BIR")
+                              bytecode info literals
+                              :debug-namestring (namestring cmp::*compile-file-source-debug-pathname*)))
+             (code (funcall (find-symbol "NMODULE-CODE"
+                                         "CLASP-BYTECODE-TO-BIR")
+                            native))
+             (nlits (funcall (find-symbol "NMODULE-LITERALS"
+                                          "CLASP-BYTECODE-TO-BIR")
+                             native)))
+        (add-instruction
+         (make-instance 'module-native-attr
+           :module mod
+           :code code
+           :literals (native-literals cliterals nlits)))
+        ;; Add attributes for the functions as well.
+        ;; We do this here instead of in the CFUNCTION methods because
+        ;; of the recursive nature of functions referring to modules
+        ;; referring to functions yada yada bla bla.
+        (loop with fmap = (funcall (find-symbol "NMODULE-FMAP" "CLASP-BYTECODE-TO-BIR") native)
+              for i across info
+              when (typep i 'cmp:cfunction)
+                do (let ((m (assoc i fmap)))
+                     (assert m)
+                     (destructuring-bind (main xep) (rest m)
+                       (add-instruction
+                        (make-instance 'function-native-attr
+                          :function (ensure-function i)
+                          :main (ensure-constant main)
+                          :xep (ensure-constant xep))))))))
     mod))
+
+(defun native-literals (cliterals nlits)
+  (map 'vector (lambda (lit)
+                 (if (integerp lit)
+                     (aref cliterals lit)
+                     (ensure-module-literal lit)))
+       nlits))
 
 (defun ensure-module (module)
   (or (find-oob module) (add-module module)))
@@ -1502,6 +1564,12 @@
   (write-b32 (+ *index-bytes* *index-bytes*) stream)
   (write-index (ll-function attr) stream)
   (write-index (lambda-list attr) stream))
+
+(defmethod encode ((attr function-native-attr) stream)
+  (write-b32 (* 3 *index-bytes*) stream)
+  (write-index (ll-function attr) stream)
+  (write-index (main attr) stream)
+  (write-index (xep attr) stream))
 
 #+clasp
 (defmethod encode ((attr spi-attr) stream)
@@ -1670,6 +1738,19 @@
     (write-b16 (length indices) stream)
     (loop for index in indices
           do (write-b16 index stream))))
+
+(defmethod encode ((attr module-native-attr) stream)
+  (let ((code (code attr))
+        (lits (module-native-attr-literals attr)))
+    (write-b32 (+ *index-bytes*
+                  4 (length code) 2 (* *index-bytes* (length lits)))
+               stream)
+    (write-index (module attr) stream)
+    (write-b32 (length code) stream)
+    (write-sequence code stream)
+    (write-b16 (length lits) stream)
+    (loop for creator across lits
+          do (write-index creator stream))))
 
 (defmethod encode ((init init-object-array) stream)
   (write-mnemonic 'init-object-array stream)

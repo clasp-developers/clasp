@@ -42,12 +42,12 @@
    (%constant-values :initarg :constant-values :reader constant-values)
    (%function-info :initarg :function-info :reader function-info)))
 
-(defun allocate-llvm-function-info (function &key toplevel)
+(defun allocate-llvm-function-info (function &key toplevels)
   (let* ((lambda-name (cc::get-or-create-lambda-name function))
          (jit-function-name (cc::jit-function-name lambda-name))
           (arguments (cc::compute-arglist (bir:lambda-list function)))
          (mtype (cc::compute-llvm-function-type function arguments))
-         (xep-p (or (eq function toplevel) (xep-needed-p function)))
+         (xep-p (or (member function toplevels) (xep-needed-p function)))
          (analysis (cmp:calculate-cleavir-lambda-list-analysis
                     (bir:lambda-list function)))
          (main-function
@@ -125,8 +125,8 @@
 (defun allocate-module-constants (module)
   (let ((i 0))
     ;; Functions: If a XEP is needed, put in space for one
-    ;; except for the toplevel function, which doesn't need space in the
-    ;; literals vector as nothing inside the code references it.
+    ;; except for toplevel functions, which don't need space in the
+    ;; literals vector as nothing inside the code references them.
     (bir:do-functions (function module)
       (when (xep-needed-p function)
         ;; Keys in the *constant-values* table are usually BIR:CONSTANTs and
@@ -308,12 +308,12 @@
        (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*))
      (values)))
 
-(defun layout-procedure (function lambda-name abi &key toplevel)
-  (when (or (eq function toplevel) (xep-needed-p function))
+(defun layout-procedure (function lambda-name abi &key toplevels)
+  (when (or (member function toplevels) (xep-needed-p function))
     (layout-xep-group function lambda-name abi))
   (cc::layout-main-function function lambda-name abi))
 
-(defun layout-module (module abi &key toplevel)
+(defun layout-module (module abi &key toplevels)
   ;; Create llvm IR functions for each BIR function.
   (bir:do-functions (function module)
     ;; Assign IDs to unwind destinations. We start from 1 to allow
@@ -323,12 +323,12 @@
         (setf (gethash entrance cc::*unwind-ids*) i)
         (incf i)))
     (setf (gethash function cc::*function-info*)
-          (allocate-llvm-function-info function :toplevel toplevel)))
+          (allocate-llvm-function-info function :toplevels toplevels)))
   (with-literals
       (allocate-module-constants module)
     (bir:do-functions (function module)
       (layout-procedure function (cc::get-or-create-lambda-name function)
-                        abi :toplevel toplevel))))
+                        abi :toplevels toplevels))))
 
 (defun compute-debug-namestring (bir)
   (if bir
@@ -342,8 +342,9 @@
       "repl-code"))
 
 (defun translate (bir-module
-                  &key abi (name "compile") toplevel
-                    (debug-namestring (compute-debug-namestring toplevel)))
+                  &key abi (name "compile") toplevels debug-namestring)
+  (unless debug-namestring
+    (setf debug-namestring (compute-debug-namestring (first toplevels))))
   (let ((module (cmp::llvm-create-module name))
         (cc::*unwind-ids* (make-hash-table :test #'eq))
         (cc::*constant-values* (make-hash-table :test #'eq))
@@ -352,7 +353,7 @@
     (cmp::with-module (:module module)
       (cmp:with-debug-info-generator (:module module
                                       :pathname debug-namestring)
-        (layout-module bir-module abi :toplevel toplevel))
+        (layout-module bir-module abi :toplevels toplevels))
       (cmp:irc-verify-module-safe module)
       (cmp::potentially-save-module))
     (make-instance 'translation
@@ -366,7 +367,7 @@
 
 (defun bir->function (bir &key (abi cc::*abi-x86-64*))
   (let* ((translation
-           (translate (bir:module bir) :abi abi :toplevel bir))
+           (translate (bir:module bir) :abi abi :toplevels (list bir)))
          (module (module translation))
          (constants (constant-values translation))
          (cc::*function-info* (function-info translation))
@@ -385,6 +386,32 @@
           ;; Otherwise, make a new function.
           (make-compiled-fun jit dylib (make-function-description bir)
                              (cc::find-llvm-function-info bir))))))
+
+;;; Return code for an IRMODULE as bytes.
+;;; Used in COMPILE-FILE (specifically in compile-bytecode.lisp).
+(defun emit-module (module)
+  (let* ((triple-string (llvm-sys:get-target-triple module))
+         (normalized-triple-string
+           (llvm-sys:triple-normalize triple-string))
+         (triple (llvm-sys:make-triple normalized-triple-string))
+         (target-options (llvm-sys:make-target-options)))
+    (multiple-value-bind (target msg)
+        (llvm-sys:target-registry-lookup-target "" triple)
+      (unless target
+        (error msg))
+      (llvm-sys:emit-module (llvm-sys:create-target-machine target
+                                                            (llvm-sys:get-triple triple)
+                                                            ""
+                                                            ""
+                                                            target-options
+                                                            cmp::*default-reloc-model*
+                                                            (cmp::code-model :jit nil)
+                                                            'llvm-sys:code-gen-opt-default
+                                                            nil)
+                            :simple-vector-byte8
+                            nil ; dwo-stream for dwarf objects
+                            'llvm-sys:code-gen-file-type-object-file
+                            module))))
 
 (defgeneric resolve-constant (ir))
 
@@ -447,6 +474,37 @@
     (core:make-simple-core-fun fdesc main xep)))
 
 (in-package #:clasp-bytecode-to-bir)
+
+(defmethod bir-constant->cmp ((constant clasp-cleavir-2::last-minute-constant))
+  (cmp:constant-info/make (bir:constant-value constant)))
+
+(defun compute-native-fmap (funmap function-info)
+  (loop for (bcfun irfun) in (fmap funmap)
+        for info = (gethash irfun function-info)
+        for main = (clasp-cleavir-2::main-function-name info)
+        for xep = (clasp-cleavir-2::xep-name info)
+        collect (list bcfun main xep)))
+
+(defun compile-cmodule (bytecode annotations literals
+                        &key debug-namestring
+                          (system clasp-cleavir:*clasp-system*))
+  (let* ((irmod (make-instance 'bir:module))
+         (cliterals (compute-compile-literals literals))
+         (funmap
+           (compile-bytecode-into bytecode annotations cliterals irmod))
+         (_ (clasp-cleavir::bir-transformations irmod system))
+         (translation
+           (clasp-cleavir-2::translate
+            irmod :debug-namestring debug-namestring
+            ;; All IR functions with a corresponding bytecode function
+            ;; need a XEP, so they can be put in the bytecode function.
+            :toplevels (mapcar #'second (fmap funmap))))
+         (nliterals (compute-nliterals cliterals (clasp-cleavir-2::constant-values translation)))
+         (lmod (clasp-cleavir-2::module translation))
+         (code (clasp-cleavir-2::emit-module lmod))
+         (fmap (compute-native-fmap funmap (clasp-cleavir-2::function-info translation))))
+    (declare (ignore _))
+    (make-instance 'nmodule :code code :fmap fmap :literals nliterals)))
 
 (defun compile-function (function
                          &key (abi clasp-cleavir:*abi-x86-64*)
