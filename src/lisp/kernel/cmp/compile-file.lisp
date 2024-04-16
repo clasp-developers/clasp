@@ -301,7 +301,6 @@ Compile a Lisp source stream and return a corresponding LLVM module."
   (let ((*compile-file-parallel* nil))
     (if (eq output-type :bytecode)
         (apply #'cmpltv:bytecode-compile-stream input-stream output-path args)
-        (with-compiler-env ()
           (with-compiler-timer (:message "Compile-file"
                                 :report-link-time t
                                 :verbose *compile-verbose*)
@@ -312,7 +311,7 @@ Compile a Lisp source stream and return a corresponding LLVM module."
                                                     :optimize-level optimize-level)))
               (compile-file-output-module module output-path output-type
                                           type
-                                          :position image-startup-position))))))
+                                          :position image-startup-position)))))
   (truename output-path))
 
 (defun compile-file-output-module (module output-file output-type type

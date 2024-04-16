@@ -333,35 +333,34 @@
     (literal:constants-table-value cindex)))
 
 (defun bir->function (bir &key (abi cc::*abi-x86-64*))
-  (cmp::with-compiler-env ()
-    (let ((module (cmp::create-run-time-module-for-compile))
-          (cc::*constant-values* (make-hash-table :test #'eq))
-          (cc::*function-info* (make-hash-table :test #'eq)))
-      ;; Link the C++ intrinsics into the module
-      (cmp::with-module (:module module)
-        (let ((pathname (if *load-pathname*
-                            (namestring *load-pathname*)
-                            "repl-code")))
-          (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-            (translate bir :abi abi))))
-      ;;(llvm-sys:dump-module module)
-      (let ((cmp::*verify-llvm-modules* t))
-        (cmp:irc-verify-module-safe module))
-      (let* ((jit (llvm-sys:clasp-jit))
-             (dylib (llvm-sys:create-and-register-jitdylib jit "repl"))
-             (object (llvm-sys:add-irmodule jit dylib module
-                                            cmp:*thread-safe-context* 0)))
-        (declare (ignore object))
-        (fill-constants jit dylib cc::*constant-values*)
-        (let ((existing (gethash bir cc::*constant-values*)))
-          (if existing
-              ;; There will already be a compiled fun in the literals
-              ;; if it's e.g. enclosed.
-              (core:literals-vref (llvm-sys:lookup jit dylib "__clasp_literals_")
-                                  existing)
-              ;; Otherwise, make a new function.
-              (make-compiled-fun jit dylib (make-function-description bir)
-                                 (cc::find-llvm-function-info bir))))))))
+  (let ((module (cmp::create-run-time-module-for-compile))
+        (cc::*constant-values* (make-hash-table :test #'eq))
+        (cc::*function-info* (make-hash-table :test #'eq)))
+    ;; Link the C++ intrinsics into the module
+    (cmp::with-module (:module module)
+      (let ((pathname (if *load-pathname*
+                          (namestring *load-pathname*)
+                          "repl-code")))
+        (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
+          (translate bir :abi abi))))
+    ;;(llvm-sys:dump-module module)
+    (let ((cmp::*verify-llvm-modules* t))
+      (cmp:irc-verify-module-safe module))
+    (let* ((jit (llvm-sys:clasp-jit))
+           (dylib (llvm-sys:create-and-register-jitdylib jit "repl"))
+           (object (llvm-sys:add-irmodule jit dylib module
+                                          cmp:*thread-safe-context* 0)))
+      (declare (ignore object))
+      (fill-constants jit dylib cc::*constant-values*)
+      (let ((existing (gethash bir cc::*constant-values*)))
+        (if existing
+            ;; There will already be a compiled fun in the literals
+            ;; if it's e.g. enclosed.
+            (core:literals-vref (llvm-sys:lookup jit dylib "__clasp_literals_")
+                                existing)
+            ;; Otherwise, make a new function.
+            (make-compiled-fun jit dylib (make-function-description bir)
+                               (cc::find-llvm-function-info bir)))))))
 
 (defgeneric resolve-constant (ir))
 
