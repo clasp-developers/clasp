@@ -2226,21 +2226,26 @@ COMPILE-FILE will use the default *clasp-env*."
 
 (defun bir->function (bir &key (abi *abi-x86-64*)
                             (linkage 'llvm-sys:internal-linkage))
-  (let* ((module (cmp::create-run-time-module-for-compile)))
+  (let ((module (cmp::create-run-time-module-for-compile))
+        (pathname
+          (let ((origin (bir:origin bir)))
+            (if origin
+                (namestring
+                 (core:file-scope-pathname
+                  (core:file-scope
+                   (core:source-pos-info-file-handle origin))))
+                "repl-code"))))
     ;; Link the C++ intrinsics into the module
     (cmp::with-module (:module module)
       (cmp::cmp-log "Dumping module%N")
       (cmp::cmp-log-dump-module module)
-      (let ((pathname (if *load-pathname*
-                          (namestring *load-pathname*)
-                          "repl-code")))
-        (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
-            (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-              (literal:with-rtv
-                  (translate bir :linkage linkage :abi abi)))
-          (declare (ignore constants-table))
-          (jit-add-module-return-function
-           cmp:*the-module* startup-shutdown-id ordered-raw-constants-list))))))
+      (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
+          (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
+            (literal:with-rtv
+                (translate bir :linkage linkage :abi abi)))
+        (declare (ignore constants-table))
+        (jit-add-module-return-function
+         cmp:*the-module* startup-shutdown-id ordered-raw-constants-list)))))
 
 ;;; Used from fli.lisp.
 ;;; Create a function like

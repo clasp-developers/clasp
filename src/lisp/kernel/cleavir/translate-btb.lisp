@@ -334,15 +334,20 @@
 
 (defun bir->function (bir &key (abi cc::*abi-x86-64*))
   (let ((module (cmp::create-run-time-module-for-compile))
+        (pathname
+          (let ((origin (bir:origin bir)))
+            (if origin
+                (namestring
+                 (core:file-scope-pathname
+                  (core:file-scope
+                   (core:source-pos-info-file-handle origin))))
+                "repl-code")))
         (cc::*constant-values* (make-hash-table :test #'eq))
         (cc::*function-info* (make-hash-table :test #'eq)))
     ;; Link the C++ intrinsics into the module
     (cmp::with-module (:module module)
-      (let ((pathname (if *load-pathname*
-                          (namestring *load-pathname*)
-                          "repl-code")))
-        (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-          (translate bir :abi abi))))
+      (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
+        (translate bir :abi abi)))
     ;;(llvm-sys:dump-module module)
     (let ((cmp::*verify-llvm-modules* t))
       (cmp:irc-verify-module-safe module))
@@ -435,8 +440,6 @@
       (cleavir-bir-disassembler:display module))
     (clasp-cleavir::bir-transformations module system)
     (let ((cleavir-cst-to-ast:*compiler* 'cl:compile)
-          ;; necessary for bir->function debug info to work. KLUDGE
-          (*load-pathname* (core:function-source-pos function))
           ;; Ensure any closures have the same layout as original
           ;; bytecode closures, so the simple fun can be swapped
           ;; out transparently.

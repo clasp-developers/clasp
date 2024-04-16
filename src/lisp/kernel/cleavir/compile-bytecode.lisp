@@ -169,8 +169,6 @@
       (cleavir-bir-disassembler:display module))
     (clasp-cleavir::bir-transformations module system)
     (let ((cleavir-cst-to-ast:*compiler* 'cl:compile)
-          ;; necessary for bir->function debug info to work. KLUDGE
-          (*load-pathname* (core:function-source-pos function))
           ;; Ensure any closures have the same layout as original
           ;; bytecode closures, so the simple fun can be swapped
           ;; out transparently.
