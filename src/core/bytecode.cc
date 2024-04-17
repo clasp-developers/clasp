@@ -562,14 +562,14 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       break;
     }
     case vm_jump_if_supplied_16: {
-      uint8_t slot = *(++pc);
-      int16_t rel = read_s16(pc + 1);
+      uint8_t slot = *(pc + 1);
+      int16_t rel = read_s16(pc + 2);
       DBG_VM("jump-if-supplied %" PRIu8 " %" PRId16 "\n", slot, rel);
       T_sp tval((gctools::Tagged)(*(vm.reg(fp, slot))));
       if (tval.unboundp())
         pc += 4;
       else
-        pc += rel - 1;
+        pc += rel;
       break;
     }
     case vm_check_arg_count_LE: {
