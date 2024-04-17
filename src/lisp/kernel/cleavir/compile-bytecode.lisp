@@ -1261,33 +1261,34 @@
 
 (defmethod start-annotation ((annotation core:bytecode-debug-vars)
                              inserter context)
-  (when (degenerate-annotation-p annotation)
-    (return-from start-annotation))
-  (loop with bir:*policy* = (policy context)
-        for bdv in (core:bytecode-debug-vars/bindings annotation)
-        for name = (core:bytecode-debug-var/name bdv)
-        for cellp = (core:bytecode-debug-var/cellp bdv)
-        for index = (core:bytecode-debug-var/frame-index bdv)
-        for ctype = (declared-variable-ctype
-                     (core:bytecode-debug-var/decls bdv) (consp name))
-        for (datum) = (aref (locals context) index)
-        ;; We make all variables IGNORABLE because the bytecode compiler
-        ;; has already warned about any semantically unused variables
-        ;; (and variables declared IGNORE but then used).
-        ;; Also, some uses in the original source are not preserved by the
-        ;; bytecode compiler, e.g. (progn x nil). So doing ignore stuff
-        ;; here results in spurious warnings.
-        for variable = (make-instance 'bir:variable
-                         :ignore 'cl:ignorable :name name)
-        do (etypecase datum
-             (bir:linear-datum
-              (bind-variable variable datum ctype inserter context))
-             ((cons bir:linear-datum) ; cell
-              (bind-variable variable (car datum) ctype inserter context)))
-           (setf (aref (locals context) index)
-                 (cons variable cellp))
-        collect (cons name ctype) into typemap
-        finally (push typemap (typemap-stack context))))
+  (when (reachablep context)
+    (when (degenerate-annotation-p annotation)
+      (return-from start-annotation))
+    (loop with bir:*policy* = (policy context)
+          for bdv in (core:bytecode-debug-vars/bindings annotation)
+          for name = (core:bytecode-debug-var/name bdv)
+          for cellp = (core:bytecode-debug-var/cellp bdv)
+          for index = (core:bytecode-debug-var/frame-index bdv)
+          for ctype = (declared-variable-ctype
+                       (core:bytecode-debug-var/decls bdv) (consp name))
+          for (datum) = (aref (locals context) index)
+          ;; We make all variables IGNORABLE because the bytecode compiler
+          ;; has already warned about any semantically unused variables
+          ;; (and variables declared IGNORE but then used).
+          ;; Also, some uses in the original source are not preserved by the
+          ;; bytecode compiler, e.g. (progn x nil). So doing ignore stuff
+          ;; here results in spurious warnings.
+          for variable = (make-instance 'bir:variable
+                           :ignore 'cl:ignorable :name name)
+          do (etypecase datum
+               (bir:linear-datum
+                (bind-variable variable datum ctype inserter context))
+               ((cons bir:linear-datum) ; cell
+                (bind-variable variable (car datum) ctype inserter context)))
+             (setf (aref (locals context) index)
+                   (cons variable cellp))
+          collect (cons name ctype) into typemap
+          finally (push typemap (typemap-stack context)))))
 
 (defun degenerate-annotation-p (annotation)
   ;; These can arise naturally from code like
@@ -1321,31 +1322,34 @@
 (defmethod end-annotation ((annot core:bytecode-debug-vars)
                            inserter context)
   (declare (ignore inserter))
-  (when (degenerate-annotation-p annot)
-    (return-from end-annotation))
-  ;; End the extent of all variables.
-  (loop for bdv in (core:bytecode-debug-vars/bindings annot)
-        for index = (core:bytecode-debug-var/frame-index bdv)
-        do (setf (aref (locals context) index) nil))
-  ;; And type declarations.
-  (pop (typemap-stack context)))
+  (when (reachablep context)
+    (when (degenerate-annotation-p annot)
+      (return-from end-annotation))
+    ;; End the extent of all variables.
+    (loop for bdv in (core:bytecode-debug-vars/bindings annot)
+          for index = (core:bytecode-debug-var/frame-index bdv)
+          do (setf (aref (locals context) index) nil))
+    ;; And type declarations.
+    (pop (typemap-stack context))))
 
 (defmethod start-annotation ((annot core:bytecode-ast-if)
                              inserter context)
-  ;; Record the merge block for later jumps.
-  (delay-block inserter context (core:bytecode-debug-info/end annot)
-               :name '#:if-merge
-               :receiving (core:bytecode-ast-if/receiving annot)))
+  (when (reachablep context)
+    ;; Record the merge block for later jumps.
+    (delay-block inserter context (core:bytecode-debug-info/end annot)
+                 :name '#:if-merge
+                 :receiving (core:bytecode-ast-if/receiving annot))))
 
 (defmethod start-annotation ((annot core:bytecode-ast-tagbody)
                              inserter context)
-  (loop for (name . ip) in (core:bytecode-ast-tagbody/tags annot)
-        for iblock = (delay-block inserter context ip :name name)
-        finally
-           ;; Establish a block for after the end.
-           (delay-block inserter context
-                        (core:bytecode-debug-info/end annot)
-                        :name '#:tagbody-after)))
+  (when (reachablep context)
+    (loop for (name . ip) in (core:bytecode-ast-tagbody/tags annot)
+          for iblock = (delay-block inserter context ip :name name)
+          finally
+             ;; Establish a block for after the end.
+             (delay-block inserter context
+                          (core:bytecode-debug-info/end annot)
+                          :name '#:tagbody-after))))
 
 (defun make-iblock-r (inserter name
                       &key (receiving 0)
@@ -1358,38 +1362,40 @@
 
 (defmethod start-annotation ((annot core:bytecode-ast-block)
                              inserter context)
-  (let* ((receiving (core:bytecode-ast-block/receiving annot))
-         (freceiving (if (= receiving 1) -1 receiving))
-         (name (core:bytecode-ast-block/name annot))
-         (end (core:bytecode-debug-info/end annot)))
-    (delay-block inserter context end
-                 :name (symbolicate name '#:-after)
-                 :receiving freceiving)
-    ;; this and FRECEIVING are to take care of the ugly code we generate
-    ;; when a block is in a one-value context. See bytecode_compiler.cc.
-    ;; Basically, we have entry -> [body] -> jump normal; exit: push; normal:
-    ;; exits jump to the exit label. This is done so that nonlocal return
-    ;; values can always be put in the MV vector, but it sure looks ugly.
-    (when (= receiving 1)
-      (delay-block inserter context (1+ end) ; 1+ for the push.
-                   :name (symbolicate name '#:after-push)
-                   :receiving receiving))))
+  (when (reachablep context)
+    (let* ((receiving (core:bytecode-ast-block/receiving annot))
+           (freceiving (if (= receiving 1) -1 receiving))
+           (name (core:bytecode-ast-block/name annot))
+           (end (core:bytecode-debug-info/end annot)))
+      (delay-block inserter context end
+                   :name (symbolicate name '#:-after)
+                   :receiving freceiving)
+      ;; this and FRECEIVING are to take care of the ugly code we generate
+      ;; when a block is in a one-value context. See bytecode_compiler.cc.
+      ;; Basically, we have entry -> [body] -> jump normal; exit: push; normal:
+      ;; exits jump to the exit label. This is done so that nonlocal return
+      ;; values can always be put in the MV vector, but it sure looks ugly.
+      (when (= receiving 1)
+        (delay-block inserter context (1+ end) ; 1+ for the push.
+                     :name (symbolicate name '#:after-push)
+                     :receiving receiving)))))
 
 (defmethod start-annotation ((the core:bytecode-ast-the) inserter context)
-  (let* ((type (core:bytecode-ast-the/type the))
-         (ptype (env:parse-values-type-specifier
-                 type clasp-cleavir:*clasp-env* clasp-cleavir:*clasp-system*))
-         (receiving (core:bytecode-ast-the/receiving the)))
-    (case receiving
-      ((1)
-       (stack-push (compile-type-decl :the ptype (stack-pop context)
-                                      inserter context)
-                   context))
-      ((-1)
-       (setf (mvals context)
-             (compile-type-decl :the ptype (mvals context) inserter context)))
-      ;; TODO: Something for 0/single values?
-      (otherwise))))
+  (when (reachablep context)
+    (let* ((type (core:bytecode-ast-the/type the))
+           (ptype (env:parse-values-type-specifier
+                   type clasp-cleavir:*clasp-env* clasp-cleavir:*clasp-system*))
+           (receiving (core:bytecode-ast-the/receiving the)))
+      (case receiving
+        ((1)
+         (stack-push (compile-type-decl :the ptype (stack-pop context)
+                                        inserter context)
+                     context))
+        ((-1)
+         (setf (mvals context)
+               (compile-type-decl :the ptype (mvals context) inserter context)))
+        ;; TODO: Something for 0/single values?
+        (otherwise)))))
 
 (defun compile-type-decl (which ctype datum inserter context)
   (let ((sys clasp-cleavir:*clasp-system*)
