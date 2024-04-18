@@ -562,8 +562,8 @@ void Context::emit_parse_key_args(size_t max_count, size_t key_count, size_t key
     bytecode->vectorPushExtend(keystart);
     bytecode->vectorPushExtend(indx);
   } else if ((max_count < (1 << 16)) && (key_count < (1 << 16)) && (keystart < (1 << 16)) && (indx < (1 << 16))) {
-    bytecode->vectorPushExtend(clasp_make_fixnum(vm_long));
-    bytecode->vectorPushExtend(clasp_make_fixnum(vm_parse_key_args));
+    bytecode->vectorPushExtend(vm_long);
+    bytecode->vectorPushExtend(vm_parse_key_args);
     bytecode->vectorPushExtend(max_count & 0xff);
     bytecode->vectorPushExtend(max_count >> 8);
     bytecode->vectorPushExtend(key_count & 0xff);
