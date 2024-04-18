@@ -46,7 +46,9 @@
 
 (defun decode-instr (opcode)
   (let ((res (member opcode *full-codes* :key #'second)))
-    (if res (first res) (error "unknown bytecode opcode ~d" opcode))))
+    (if res
+        (first res)
+        'illegal)))
 
 ;;; Return a list of all IPs that are jumped to.
 (defun gather-labels (bytecode)
@@ -56,6 +58,9 @@
         (longp nil)
         op)
     (loop (setq op (decode-instr (aref bytecode ip)))
+          ;; If the opcode is illegal, stop.
+          (when (eq op 'illegal)
+            (return (sort result #'<)))
           ;; Go through the arguments, identifying any labels.
           (let ((opip ip)) ; IP of the start of the instruction
             (incf ip)
@@ -80,6 +85,11 @@
           ;; If this is a label position, mark that.
           (let ((labelpos (position ip labels)))
             (if labelpos (push (write-to-string labelpos) result)))
+          ;; If we have an illegal opcode, record it and then give up
+          ;; (as we have lost the instruction stream)
+          (when (eq op 'illegal)
+            (push (list (format nil "! ILLEGAL OPCODE #x~x" (aref bytecode ip)) nil nil) result)
+            (return (nreverse result)))
           ;; Decode the instruction. If it's LONG, leave it to the next. KLUDGE
           (let ((opip ip))
             (incf ip)
