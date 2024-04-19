@@ -2228,7 +2228,7 @@ COMPILE-FILE will use the default *clasp-env*."
                             (linkage 'llvm-sys:internal-linkage))
   (let ((module (cmp::create-run-time-module-for-compile))
         (pathname
-          (let ((origin (bir:origin bir)))
+          (let ((origin (origin-source (bir:origin bir))))
             (if origin
                 (namestring
                  (core:file-scope-pathname
