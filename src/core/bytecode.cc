@@ -206,8 +206,8 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
   BytecodeSimpleFun_sp ep = gc::As<BytecodeSimpleFun_sp>(closure->entryPoint());
   BytecodeModule_sp bm = gc::As<BytecodeModule_sp>(ep->_Code);
   Vector_sp bc = bm->bytecode();
-  uintptr_t bytecode_start = bc->rowMajorAddressOfElement_(0);
-  uintptr_t bytecode_end = bc->rowMajorAddressOfElement_(bc->length());
+  uintptr_t bytecode_start = (uintptr_t)(bc->rowMajorAddressOfElement_(0));
+  uintptr_t bytecode_end = (uintptr_t)(bc->rowMajorAddressOfElement_(bc->length()));
 #endif
   MultipleValues& multipleValues = core::lisp_multipleValues();
   unsigned char* pc = vm._pc;
@@ -848,7 +848,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
     }
     case vm_fdesignator: {
       uint8_t c = *(++pc); // ignored environment parameter
-      DBG_VM1("fdesignator" % PRIu8 % "\n", c);
+      DBG_VM1("fdesignator %" PRIu8 "\n", c);
       T_sp desig((gctools::Tagged)vm.pop(sp));
       Function_sp fun = coerce::calledFunctionDesignator(desig);
       vm.push(sp, fun.raw_());
@@ -1158,6 +1158,31 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
       throwUnrecognizedKeywordArgumentError(tclosure, unknown_keys);
     }
     pc += 9;
+    break;
+  }
+  case vm_jump_if_supplied_8: {
+    uint8_t low = *(pc + 1);
+    uint16_t slot = low + (*(pc + 2) << 8);
+    int32_t rel = *(pc + 3);
+    DBG_VM("long jump-if-supplied %" PRIu16 " %" PRId8 "\n", slot, rel);
+    T_sp tval((gctools::Tagged)(*(vm.reg(fp, slot))));
+    if (tval.unboundp())
+      pc += 4;
+    else
+      pc += rel - 1; // -1 for the long opcode at pc-1
+    break;
+  }
+  case vm_jump_if_supplied_16: {
+    uint8_t low = *(pc + 1);
+    uint16_t slot = low + (*(pc + 2) << 8);
+    int32_t rel = read_s16(pc + 3);
+    DBG_VM("long jump-if-supplied %" PRIu16 " %" PRId8 "\n", slot, rel);
+    T_sp tval((gctools::Tagged)(*(vm.reg(fp, slot))));
+    if (tval.unboundp())
+      pc += 5;
+    else
+      pc += rel - 1; // -1 for the long opcode at pc-1
+    break;
   }
   case vm_check_arg_count_LE: {
     uint8_t low = *(pc + 1);
@@ -1323,7 +1348,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     break;
   }
   default:
-    SIMPLE_ERROR("Unknown LONG sub_opcode %hu", sub_opcode);
+    SIMPLE_ERROR("Unknown LONG sub_opcode {}", sub_opcode);
   }
   vm._stackPointer = sp;
   return pc;

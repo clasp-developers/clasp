@@ -62,7 +62,7 @@
           (when (eq op 'illegal)
             (return (sort result #'<)))
           ;; Go through the arguments, identifying any labels.
-          (let ((opip ip)) ; IP of the start of the instruction
+          (let ((opip (if longp (1- ip) ip))) ; IP of instruction start
             (incf ip)
             (dolist (argi (if longp (fourth op) (third op)))
               (let ((nbytes (logandc2 argi +mask-arg+)))
@@ -91,7 +91,7 @@
             (push (list (format nil "! ILLEGAL OPCODE #x~x" (aref bytecode ip)) nil nil) result)
             (return (nreverse result)))
           ;; Decode the instruction. If it's LONG, leave it to the next. KLUDGE
-          (let ((opip ip))
+          (let ((opip (if longp (1- ip) ip)))
             (incf ip)
             (cond
               ((string= (first op) "long") (setq longp t))

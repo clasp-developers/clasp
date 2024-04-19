@@ -724,32 +724,48 @@ size_t resize_control_label_fixup(ptrdiff_t delta) {
 size_t ControlLabelFixup_O::resize() { return resize_control_label_fixup(this->delta()); }
 
 void JumpIfSuppliedFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
+  uint16_t index = this->iindex();
+  if (index > 0xff)
+    (*code)[position++] = vm_long;
   size_t size = this->size();
+  bool s16 = false;
   switch (size) {
   case 3:
-    (*code)[position] = vm_jump_if_supplied_8;
+    (*code)[position++] = vm_jump_if_supplied_8;
     break;
   case 4:
+    s16 = true;
+    (*code)[position++] = vm_jump_if_supplied_16;
+    break;
+  case 5:
+    (*code)[position++] = vm_jump_if_supplied_8;
+    break;
+  case 6:
+    s16 = true;
     (*code)[position] = vm_jump_if_supplied_16;
     break;
   default:
     SIMPLE_ERROR("Assembler bug: Impossible size %zu", size);
   }
-  (*code)[position + 1] = this->iindex();
+  (*code)[position++] = index & 0xff;
+  if (index > 0xff)
+    (*code)[position++] = index >> 8;
   size_t offset = this->delta();
-  for (size_t i = 0; i < size - 2; ++i) {
-    (*code)[position + i + 2] = offset & 0xff;
-    offset >>= 8;
-  }
+  (*code)[position++] = offset & 0xff;
+  if (s16)
+    (*code)[position] = offset >> 8;
 }
 
 size_t JumpIfSuppliedFixup_O::resize() {
   ptrdiff_t delta = this->delta();
-  if ((-(1 << 7) <= delta) && (delta <= (1 << 7) - 1))
-    return 3;
-  if ((-(1 << 15) <= delta) && (delta <= (1 << 15) - 1))
-    return 4;
-  else
+  uint16_t index = this->iindex();
+  if ((-(1 << 7) <= delta) && (delta <= (1 << 7) - 1)) {
+    if (index > 0xff) return 5;
+    else return 3;
+  } if ((-(1 << 15) <= delta) && (delta <= (1 << 15) - 1)) {
+    if (index > 0xff) return 6;
+    else return 4;
+  } else
     SIMPLE_ERROR("Bytecode compiler limit reached: Fixup delta too large");
 }
 

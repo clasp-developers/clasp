@@ -635,18 +635,18 @@ class JumpIfSuppliedFixup_O : public LabelFixup_O {
   LISP_CLASS(comp, CompPkg, JumpIfSuppliedFixup_O, "JumpIfSuppliedFixup", LabelFixup_O);
 
 public:
-  uint8_t _index;
+  uint16_t _index;
 
 public:
-  JumpIfSuppliedFixup_O(Label_sp label, uint8_t index) : LabelFixup_O(label, 3), _index(index) {}
+  JumpIfSuppliedFixup_O(Label_sp label, uint16_t index) : LabelFixup_O(label, 3), _index(index) {}
   CL_LISPIFY_NAME(JumpIfSuppliedFixup/make)
   CL_DEF_CLASS_METHOD
-  static JumpIfSuppliedFixup_sp make(Label_sp label, uint8_t nindex) {
+  static JumpIfSuppliedFixup_sp make(Label_sp label, uint16_t nindex) {
     return gctools::GC<JumpIfSuppliedFixup_O>::allocate<gctools::RuntimeStage>(label, nindex);
   }
 
 public:
-  uint8_t iindex() { return this->_index; }
+  uint16_t iindex() { return this->_index; }
   virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
   virtual size_t resize();
 };
