@@ -130,6 +130,11 @@
 ;;; Particular primops
 ;;;
 
+(defvprimop-intrinsic type-error ((:object) :object :object)
+  "cc_error_type_error")
+(defvprimop-intrinsic core:array-out-of-bounds
+    ((:object) :object :object :object)
+  "cc_error_array_out_of_bounds")
 (defvprimop-intrinsic core::etypecase-error ((:object) :object :object)
   "cc_etypecase_error")
 

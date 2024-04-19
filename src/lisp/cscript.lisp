@@ -66,7 +66,6 @@
              #~"kernel/cmp/opt/opt-cons.lisp"
              #~"kernel/cmp/opt/opt-array.lisp"
              #~"kernel/cmp/opt/opt-object.lisp"
-             #~"kernel/cmp/opt/opt-condition.lisp"
              #~"kernel/cmp/opt/opt-print.lisp"
              #~"kernel/lsp/shiftf-rotatef.lisp"
              #~"kernel/lsp/assorted.lisp"
