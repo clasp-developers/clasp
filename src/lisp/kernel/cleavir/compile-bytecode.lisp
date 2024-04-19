@@ -455,8 +455,8 @@
    ;; entering a bytecode-ast-decls pushes one, exiting pops.
    (%optimize-stack :initarg :optimize-stack :accessor optimize-stack :type list)
    (%policy :initarg :policy :accessor policy)
-   (%typemap-stack :initform nil :initarg :typemap-stack
-                   :accessor typemap-stack :type list)
+   (%variable-stack :initform nil :initarg :variable-stack
+                    :accessor variable-stack :type list)
    (%origin-stack :initform nil :accessor origin-stack :type list)
    (%module :initarg :module :reader module :type bir:module)
    (%funmap :initarg :funmap :reader funmap :type funmap)
@@ -506,7 +506,7 @@
                        inserter context)))
 
 (defun declared-ctype (name context)
-  (loop for map in (typemap-stack context)
+  (loop for (_ . map) in (variable-stack context)
         for pair = (assoc name map)
         when pair return (cdr pair)
         finally (return (ctype:top clasp-cleavir:*clasp-system*))))
@@ -1261,9 +1261,8 @@
 
 (defmethod start-annotation ((annotation core:bytecode-debug-vars)
                              inserter context)
-  (when (reachablep context)
-    (when (degenerate-annotation-p annotation)
-      (return-from start-annotation))
+  (when (and (reachablep context)
+             (not (degenerate-annotation-p annotation)))
     (loop with bir:*policy* = (policy context)
           for bdv in (core:bytecode-debug-vars/bindings annotation)
           for name = (core:bytecode-debug-var/name bdv)
@@ -1273,7 +1272,7 @@
                        (core:bytecode-debug-var/decls bdv) (consp name))
           for (datum) = (aref (locals context) index)
           ;; We make all variables IGNORABLE because the bytecode compiler
-          ;; has already warned about any semantically unused variables
+          ;; has already warned about any syntactically unused variables
           ;; (and variables declared IGNORE but then used).
           ;; Also, some uses in the original source are not preserved by the
           ;; bytecode compiler, e.g. (progn x nil). So doing ignore stuff
@@ -1288,7 +1287,7 @@
              (setf (aref (locals context) index)
                    (cons variable cellp))
           collect (cons name ctype) into typemap
-          finally (push typemap (typemap-stack context)))))
+          finally (push (cons annotation typemap) (variable-stack context)))))
 
 (defun degenerate-annotation-p (annotation)
   ;; These can arise naturally from code like
@@ -1322,15 +1321,15 @@
 (defmethod end-annotation ((annot core:bytecode-debug-vars)
                            inserter context)
   (declare (ignore inserter))
-  (when (reachablep context)
-    (when (degenerate-annotation-p annot)
-      (return-from end-annotation))
+  ;; Check if start-annotation actually did anything. If it didn't,
+  ;; there's nothing for us to undo.
+  (when (eq annot (first (first (variable-stack context))))
     ;; End the extent of all variables.
     (loop for bdv in (core:bytecode-debug-vars/bindings annot)
           for index = (core:bytecode-debug-var/frame-index bdv)
           do (setf (aref (locals context) index) nil))
     ;; And type declarations.
-    (pop (typemap-stack context))))
+    (pop (variable-stack context))))
 
 (defmethod start-annotation ((annot core:bytecode-ast-if)
                              inserter context)
