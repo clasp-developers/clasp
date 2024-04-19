@@ -1,18 +1,5 @@
 (in-package #:cc-bir)
 
-(defclass mv-foreign-call (bir:one-output bir:instruction)
-  ((%function-name :initarg :function-name :reader function-name)))
-
-(defmethod ast-to-bir:compile-ast
-    ((ast cc-ast:multiple-value-foreign-call-ast) inserter system)
-  (ast-to-bir:with-compiled-arguments (args (cc-ast:argument-asts ast)
-                                            inserter system)
-    (let ((output (make-instance 'bir:output)))
-      (build:insert inserter 'mv-foreign-call
-                    :function-name (cc-ast:function-name ast)
-                    :inputs args :outputs (list output))
-      (list output))))
-
 (defclass foreign-call-pointer (bir:one-output bir:instruction)
   ((%foreign-types :initarg :foreign-types :accessor foreign-types)))
 

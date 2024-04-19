@@ -170,22 +170,6 @@ And convert everything to JIT constants."
                              cmp::*current-unwind-landing-pad-dest*
                              label)))
 
-(defun unsafe-multiple-value-foreign-call (intrinsic-name args abi
-                                           &key (label ""))
-  (declare (ignore abi))
-  (let* ((func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
-                   (let ((arg-types (make-list (length args) :initial-element cmp:%t*%))
-                         (varargs nil))
-                     (cmp:irc-function-create
-                      (llvm-sys:function-type-get cmp:%return-type% arg-types varargs)
-                      'llvm-sys::external-linkage
-                      intrinsic-name
-                      cmp:*the-module*))))
-         (function-type (llvm-sys:get-function-type func)))
-    (cmp::irc-call-or-invoke function-type func args
-                             cmp::*current-unwind-landing-pad-dest*
-                             label)))
-
 (defun unsafe-foreign-call (call-or-invoke foreign-types foreign-name args abi &key (label ""))
   (declare (ignore call-or-invoke abi label))
   ;; Write excess arguments into the multiple-value array

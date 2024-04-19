@@ -1076,15 +1076,6 @@
      (closure-call-or-invoke fun rargs :label label)
      output)))
 
-(defmethod translate-simple-instruction ((instruction cc-bir:mv-foreign-call)
-                                         abi)
-  (let ((output (bir:output instruction)))
-    (out (unsafe-multiple-value-foreign-call
-          (cc-bir:function-name instruction)
-          (mapcar #'in (bir:inputs instruction)) abi
-          :label (datum-name-as-string output))
-         output)))
-
 (defmethod translate-simple-instruction
     ((instruction cc-bir:foreign-call-pointer) abi)
   (let ((inputs (bir:inputs instruction)))

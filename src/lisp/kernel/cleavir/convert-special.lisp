@@ -240,22 +240,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Converting CORE:multiple-value-foreign-CALL
-;;;
-;;; This is converted into an intrinsic call
-;;;
-
-(defmethod cst-to-ast:convert-special
-    ((symbol (eql 'core:multiple-value-foreign-call)) cst environment
-     (system clasp-cleavir:clasp))
-  (assert (stringp (cst:raw (cst:second cst))))
-  (make-instance 'clasp-cleavir-ast:multiple-value-foreign-call-ast
-    :function-name (cst:raw (cst:second cst))
-    :argument-asts (cst-to-ast::convert-sequence (cst:rest (cst:rest cst)) environment system)
-    :origin cst))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Converting CORE:foreign-call-pointer
 ;;;
 ;;; This is converted into a pointer call

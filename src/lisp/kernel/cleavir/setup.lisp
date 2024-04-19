@@ -185,7 +185,6 @@
     ;; with macros.
     ((member name '(catch throw progv)) nil)
     ((special-operator-p name) t)
-    ((eq name 'core:multiple-value-foreign-call) t) ;; Call intrinsic functions
     ((eq name 'core:foreign-call-pointer) t) ;; Call function pointers
     ((eq name 'core::primop) t)
     ((eq (symbol-package name) (find-package :cleavir-primop)) t)
