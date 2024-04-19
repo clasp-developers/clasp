@@ -303,6 +303,10 @@
   (declare (ignore datum arguments))
   (ctype:values-bottom *clasp-system*))
 
+(define-deriver core::etypecase-error (datum types)
+  (declare (ignore datum types))
+  (ctype:values-bottom *clasp-system*))
+
 ;;; I extremely doubt these matter, but why not.
 (define-deriver cerror (cfc datum &rest arguments)
   (declare (ignore cfc datum arguments))

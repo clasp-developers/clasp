@@ -130,6 +130,9 @@
 ;;; Particular primops
 ;;;
 
+(defvprimop-intrinsic core::etypecase-error ((:object) :object :object)
+  "cc_etypecase_error")
+
 (macrolet ((def-float-compare (sfname dfname op reversep)
              `(progn
                 (deftprimop ,sfname (:single-float :single-float)

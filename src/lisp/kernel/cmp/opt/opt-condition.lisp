@@ -27,13 +27,3 @@
              default)))
       ;; this will include the non-constant case (datum = nil)
       (otherwise default))))
-
-;; Ditto for ETYPECASE
-#+(and (not bytecode) (or cclasp eclasp))
-(define-compiler-macro core::etypecase-error (&whole whole value types &environment env)
-  (if (constantp types env)
-      (let ((types (ext:constant-form-value types env)))
-        `(core:multiple-value-foreign-call
-          "cc_error_case_failure"
-          ,value '(or ,@types) 'etypecase ',types))
-      whole))

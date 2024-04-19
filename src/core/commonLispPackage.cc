@@ -175,6 +175,7 @@ SYMBOL_EXPORT_SC_(ClPkg, eql);
 SYMBOL_EXPORT_SC_(ClPkg, equal);
 SYMBOL_EXPORT_SC_(ClPkg, equalp);
 SYMBOL_EXPORT_SC_(ClPkg, error);
+SYMBOL_EXPORT_SC_(ClPkg, etypecase);
 SYMBOL_EXPORT_SC_(ClPkg, eval);
 SYMBOL_EXPORT_SC_(ClPkg, every);
 SYMBOL_EXPORT_SC_(ClPkg, extended_char);

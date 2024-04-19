@@ -170,6 +170,8 @@
 
 (deftransform random-state-p (core::headerq random-state) t)
 
+(deftransform core::etypecase-error core::etypecase-error t t)
+
 (deftransform core:to-single-float core::double-to-single double-float)
 (deftransform core:to-single-float core::fixnum-to-single fixnum)
 (deftransform core:to-double-float core::single-to-double single-float)
