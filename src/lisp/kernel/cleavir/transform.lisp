@@ -548,8 +548,18 @@ Optimizations are available for any of:
        0
        (core:cons-length x)))
 
-(deftransform-type-predicate endp null)
 (deftransform-type-predicate null null)
+
+(deftransform endp (((x (not list))))
+  '(error 'type-error :datum x :expected-type 'list))
+(deftransform endp (((x list))) '(null x))
+;; These two are technically redundant since null has a transform,
+;; but we might as well simplify in one shot, no?
+(deftransform endp (((x null))) t)
+(deftransform endp (((x cons))) nil)
+;; If all else fails,
+(deftransform endp (((x t)))
+  '(null (the (values list &rest nil) x)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
