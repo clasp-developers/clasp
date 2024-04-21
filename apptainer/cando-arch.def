@@ -1,0 +1,25 @@
+BootStrap: docker
+From: ghcr.io/yitzchak/archlinux-makepkg:latest
+
+%post
+    pacman -Syu --noconfirm binutils boost clang gmp fmt libunwind llvm ninja sbcl jupyterlab emacs openssh netcdf expat gocryptfs nodejs npm
+    cd /mnt
+    ./koga --extensions=cando --build-path=build-apptainer/
+    ninja -C build-apptainer
+    ninja -C build-apptainer install
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    mkdir -p /home/cando/
+    chmod ugo+rwx /home/cando/
+    tar -xvf /mnt/systems.tar -C /home/cando
+    bash Miniconda3-latest-Linux-x86_64.sh -b -p /home/cando/miniconda3
+    rm -rf Miniconda3-latest-Linux-x86_64.sh
+    export PATH="/home/cando/miniconda3/bin:${PATH}"
+    conda install -y -c conda-forge ambertools
+    jupyter-lab build
+    chmod -R ugo+rw /home/cando/
+
+%environment
+    export PATH="/home/cando/miniconda3/bin:${PATH}"
+    export AMBERHOME=/home/cando/miniconda3
+
+
