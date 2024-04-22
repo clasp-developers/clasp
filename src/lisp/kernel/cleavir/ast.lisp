@@ -44,22 +44,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Class MULTIPLE-VALUE-FOREIGN-CALL-AST
-;;;
-;;; This AST is used to represent a call to an intrinsic function inserted into the generated code.
-
-(defclass multiple-value-foreign-call-ast (base-foreign-call-ast)
-  ((%function-name :initarg :function-name  :accessor function-name)))
-
-(cleavir-io:define-save-info multiple-value-foreign-call-ast
-    (:function-name function-name))
-
-(defmethod cleavir-ast-graphviz::label ((ast multiple-value-foreign-call-ast))
-  (with-output-to-string (s)
-    (format s "multiple-value-foreign-call (~a)" (function-name ast))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Class foreign-call-pointer-AST
 ;;;
 ;;; This AST is used to represent a call to an pointer to a function inserted into the generated code.

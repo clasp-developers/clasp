@@ -17,11 +17,6 @@
     (t form)))
 
 (define-compiler-macro null (object) `(if ,object nil t))
-#-bytecode
-(define-compiler-macro endp (object)
-  ;; awkward THE to prevent very inefficient arbitrary-values type check in cclasp
-  ;; see the notes in opt-number for a little more information
-  `(if (the (values list &rest nil) (values ,object)) nil t))
 
 (defconstant +nthcdr-inline-limit+ 8) ; totally arbitrary
 

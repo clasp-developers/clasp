@@ -56,7 +56,6 @@
     (nil "ltvc_make_random_state"         (:i8 :size_t :t*))
     (nil "ltvc_make_float"                (:i8 :size_t :single-float))
     (nil "ltvc_make_double"               (:i8 :size_t :double-float))
-    (nil "ltvc_make_closurette"           (:i8 :size_t #|:size_t|# :size_t))
     (t   "ltvc_set_mlf_creator_funcall"   (:i8 :size_t :size_t :i8*))
     (t   "ltvc_mlf_init_funcall"          (:size_t :i8*))
     (t   "ltvc_mlf_init_basic_call"       (:t* :size_t) :varargs t)

@@ -10,7 +10,6 @@
                        #:multiple-value-funcall
                        #:multiple-value-prog1-function
                        #:debug-message
-                       #:multiple-value-foreign-call
                        #:foreign-call
                        #:foreign-call-pointer
                        #:catch-function

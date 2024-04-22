@@ -278,23 +278,11 @@ local-function - the lcl function that all of the xep functions call."
 (defun irc-literal (lit &optional (label "literal"))
   (irc-t*-load (literal:compile-reference-to-literal lit) label))
 
-(defun irc-t ()
-  (irc-literal t "T"))
-
-(defun irc-nil ()
-  (irc-literal nil "NIL"))
-
 (defvar *current-unwind-landing-pad-dest* nil)
 
 (defmacro with-landing-pad (unwind-landing-pad-dest &rest body)
   `(let ((*current-unwind-landing-pad-dest* ,unwind-landing-pad-dest))
-     ,@body))
-
-(defun irc-intrinsic-invoke-if-landing-pad-or-call (function-name args &optional (label "") (maybe-landing-pad *current-unwind-landing-pad-dest*))
-  ;; FIXME:   If the current function has a landing pad - then use INVOKE
-  (if maybe-landing-pad
-      (irc-intrinsic-invoke function-name args maybe-landing-pad label)
-      (irc-intrinsic-call function-name args label)))    
+     ,@body))    
 
 (defun irc-size_t-*current-source-pos-info*-filepos ()
   (jit-constant-size_t (core:source-pos-info-filepos core:*current-source-pos-info*)))
@@ -495,7 +483,7 @@ representing a tagged fixnum."
 
 ;;; NOTE: Unsafe. Cleavir inserts this only after type checks on safety > 0.
 (defun irc-unbox-single-float (t* &optional (label "single-float"))
-  (irc-intrinsic-call "cc_unbox_single_float" (list t*) label)
+  (irc-intrinsic-call-or-invoke "cc_unbox_single_float" (list t*) label)
   (irc-bit-cast
    (irc-trunc (irc-lshr (irc-ptr-to-int t* %i64%) +single-float-shift+) %i32%)
    %float% label))
@@ -513,9 +501,9 @@ representing a tagged fixnum."
 ;;;       Checking here is redundant.
 ;;; TODO: Inline this - it's just a memory load, unlike boxing
 (defun irc-unbox-double-float (t* &optional (label "double-float"))
-  (irc-intrinsic-call "cc_unbox_double_float" (list t*) label))
+  (irc-intrinsic-call-or-invoke "cc_unbox_double_float" (list t*) label))
 (defun irc-box-double-float (double &optional (label "double-float"))
-  (irc-intrinsic-call "to_object_double" (list double) label))
+  (irc-intrinsic-call-or-invoke "to_object_double" (list double) label))
 
 (defun irc-maybe-cast-integer-to-t* (val &optional (label "fixnum-to-t*"))
   "If it's a fixnum then cast it - otherwise just return it - it should already be a t*"
@@ -1406,16 +1394,10 @@ function-description - for debugging."
   (if *debug-create-call* (core:fmt t "irc-create-call-wft function-type: {} entry-point: {} args: {}%N" function-type entry-point args ))
   (llvm-sys:create-call-function-pointer *irbuilder* function-type entry-point args label nil))
 
-(defun irc-create-invoke-default-unwind (function-name args &optional (label ""))
-  (or *current-unwind-landing-pad-dest* (error "irc-create-invoke-default-unwind was called when *current-unwind-landing-pad-dest* was NIL - check the outer with-landing-pad macro"))
-  (irc-create-invoke-wft (llvm-sys:get-function-type function-name) function-name args *current-unwind-landing-pad-dest* label))
-
 (defun irc-call-or-invoke (function-type function args &optional (landing-pad *current-unwind-landing-pad-dest*) (label ""))
   (if landing-pad
-      (progn
-        (irc-create-invoke-wft function-type function args landing-pad label))
-      (progn
-        (irc-create-call-wft function-type function args label))))
+      (irc-create-invoke-wft function-type function args landing-pad label)
+      (irc-create-call-wft function-type function args label)))
 
 (defun irc-intrinsic-call-or-invoke (function-name args &optional (label "") (landing-pad *current-unwind-landing-pad-dest*))
   "landing-pad is either a landing pad or NIL (depends on function)"
@@ -1432,7 +1414,6 @@ function-description - for debugging."
       (when (llvm-sys:does-not-return the-function)
         (irc-unreachable)
         (irc-begin-block (irc-basic-block-create "from-invoke-that-never-returns")))
-      #+(or)(warn "Does add-param-attr work yet")
       ;;; FIXME: Do I need to add attributes to the return value of the call
       (dolist (index-attributes (primitive-argument-attributes primitive-info))
         (let ((index (car index-attributes))
@@ -1440,12 +1421,6 @@ function-description - for debugging."
           (dolist (attribute attributes)
             (llvm-sys:add-param-attr code index attribute))))
       code)))
-
-(defun irc-intrinsic-call (function-name args &optional (label ""))
-  (irc-intrinsic-call-or-invoke function-name args label nil))
-
-(defun irc-intrinsic-invoke (function-name args &optional (landing-pad *current-unwind-landing-pad-dest*) (label ""))
-  (irc-intrinsic-call-or-invoke function-name args label landing-pad))
   
 (defun irc-intrinsic (function-name &rest args)
   (irc-intrinsic-call-or-invoke function-name args))
@@ -1474,9 +1449,6 @@ function-description - for debugging."
       (if failed-verify
           (progn
             (core:fmt t "!!!!!!!!!!! Function in module failed to verify !!!!!!!!!!!!!!!!!!!%N")
-            (core:fmt t "---------------- dumping function to assist in debugging%N")
-            (cmp:dump-function fn)
-            (core:fmt t "!!!!!!!!!!! ------- see above ------- !!!!!!!!!!!!!!!!!!!%N")
             (core:fmt t "llvm::verifyFunction error[{}]%N" error-msg)
             (if continue
                 (break "Error when trying to verify-function")

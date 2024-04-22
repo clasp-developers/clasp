@@ -635,18 +635,18 @@ class JumpIfSuppliedFixup_O : public LabelFixup_O {
   LISP_CLASS(comp, CompPkg, JumpIfSuppliedFixup_O, "JumpIfSuppliedFixup", LabelFixup_O);
 
 public:
-  uint8_t _index;
+  uint16_t _index;
 
 public:
-  JumpIfSuppliedFixup_O(Label_sp label, uint8_t index) : LabelFixup_O(label, 3), _index(index) {}
+  JumpIfSuppliedFixup_O(Label_sp label, uint16_t index) : LabelFixup_O(label, 3), _index(index) {}
   CL_LISPIFY_NAME(JumpIfSuppliedFixup/make)
   CL_DEF_CLASS_METHOD
-  static JumpIfSuppliedFixup_sp make(Label_sp label, uint8_t nindex) {
+  static JumpIfSuppliedFixup_sp make(Label_sp label, uint16_t nindex) {
     return gctools::GC<JumpIfSuppliedFixup_O>::allocate<gctools::RuntimeStage>(label, nindex);
   }
 
 public:
-  uint8_t iindex() { return this->_index; }
+  uint16_t iindex() { return this->_index; }
   virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
   virtual size_t resize();
 };
@@ -816,6 +816,8 @@ public:
   bool _read_only_p;
 
 public:
+  CL_LISPIFY_NAME(LoadTimeValueInfo/make)
+  CL_DEF_CLASS_METHOD
   static LoadTimeValueInfo_sp make(T_sp form, bool read_only_p) {
     return gctools::GC<LoadTimeValueInfo_O>::allocate<gctools::RuntimeStage>(form, read_only_p);
   }
@@ -843,6 +845,8 @@ public:
 public:
   T_sp _value; // the value of the constant.
 public:
+  CL_LISPIFY_NAME(ConstantInfo/make)
+  CL_DEF_CLASS_METHOD
   static ConstantInfo_sp make(T_sp value) { return gctools::GC<ConstantInfo_O>::allocate<gctools::RuntimeStage>(value); }
 
 public:
@@ -863,6 +867,8 @@ public:
 public:
   T_sp _fname; // Name of the function being looked up.
 public:
+  CL_LISPIFY_NAME(FunctionCellInfo/make)
+  CL_DEF_CLASS_METHOD
   static FunctionCellInfo_sp make(T_sp fname) { return gctools::GC<FunctionCellInfo_O>::allocate<gctools::RuntimeStage>(fname); }
 
 public:
@@ -881,6 +887,8 @@ public:
 public:
   Symbol_sp _vname; // Name of the variable being looked up.
 public:
+  CL_LISPIFY_NAME(VariableCellInfo/make)
+  CL_DEF_CLASS_METHOD
   static VariableCellInfo_sp make(Symbol_sp vname) {
     return gctools::GC<VariableCellInfo_O>::allocate<gctools::RuntimeStage>(vname);
   }
@@ -898,6 +906,8 @@ class EnvInfo_O : public General_O {
 public:
   EnvInfo_O() {}
 public:
+  CL_LISPIFY_NAME(EnvInfo/make)
+  CL_DEF_CLASS_METHOD
   static EnvInfo_sp make() {
     return gctools::GC<EnvInfo_O>::allocate<gctools::RuntimeStage>();
   }
@@ -1000,27 +1010,27 @@ public:
   }
   CL_DEFMETHOD Module_sp module() { return _module; }
   CL_LISPIFY_NAME(cfunction/bytecode)
-  CL_DEFMETHOD ComplexVector_byte8_t_sp bytecode() { return _bytecode; }
-  CL_DEFMETHOD ComplexVector_T_sp annotations() { return _annotations; }
+  CL_DEFMETHOD ComplexVector_byte8_t_sp bytecode() const { return _bytecode; }
+  CL_DEFMETHOD ComplexVector_T_sp annotations() const { return _annotations; }
   CL_LISPIFY_NAME(cfunction/debug-info)
-  CL_DEFMETHOD ComplexVector_T_sp debug_info() { return _debug_info; }
-  CL_DEFMETHOD size_t nlocals() { return _nlocals; }
+  CL_DEFMETHOD ComplexVector_T_sp debug_info() const { return _debug_info; }
+  CL_DEFMETHOD size_t nlocals() const { return _nlocals; }
   CL_LISPIFY_NAME(Cfunction/setf-nlocals)
   CL_DEFMETHOD size_t setNlocals(size_t new_nlocals) {
     this->_nlocals = new_nlocals;
     return new_nlocals;
   }
-  CL_DEFMETHOD ComplexVector_T_sp closed() { return _closed; }
+  CL_DEFMETHOD ComplexVector_T_sp closed() const { return _closed; }
   CL_LISPIFY_NAME(Cfunction/entry-point)
-  CL_DEFMETHOD Label_sp entry_point() { return _entry_point; }
+  CL_DEFMETHOD Label_sp entry_point() const { return _entry_point; }
   CL_LISPIFY_NAME(Cfunction/position)
-  CL_DEFMETHOD size_t pposition() { return _position; }
+  CL_DEFMETHOD size_t pposition() const { return _position; }
   CL_LISPIFY_NAME(Cfunction/setf-position)
   CL_DEFMETHOD size_t setPosition(size_t npos) {
     this->_position = npos;
     return npos;
   }
-  CL_DEFMETHOD size_t extra() { return _extra; }
+  CL_DEFMETHOD size_t extra() const { return _extra; }
   CL_LISPIFY_NAME(Cfunction/setf-extra)
   CL_LAMBDA(cfunction new) // avoid name conflict with next
   CL_DEFMETHOD size_t setExtra(size_t next) {
@@ -1028,31 +1038,36 @@ public:
     return next;
   }
   CL_LISPIFY_NAME(Cfunction/final_size)
-  CL_DEFMETHOD size_t final_size() { return this->bytecode()->length() + this->extra(); }
+  CL_DEFMETHOD size_t final_size() const { return this->bytecode()->length() + this->extra(); }
   CL_LISPIFY_NAME(Cfunction/index)
-  CL_DEFMETHOD size_t iindex() { return _index; }
+  CL_DEFMETHOD size_t iindex() const { return _index; }
   CL_LISPIFY_NAME(Cfunction/setf-index)
   CL_DEFMETHOD size_t setIndex(size_t nindex) {
     this->_index = nindex;
     return nindex;
   }
-  CL_DEFMETHOD BytecodeSimpleFun_sp info() { return _info; }
+  CL_DEFMETHOD BytecodeSimpleFun_sp info() const { return _info; }
   CL_LISPIFY_NAME(Cfunction/setf-info)
   CL_DEFMETHOD BytecodeSimpleFun_sp setInfo(BytecodeSimpleFun_sp gbep) {
     this->_info = gbep;
     return gbep;
   }
   CL_LISPIFY_NAME(Cfunction/name)
-  CL_DEFMETHOD T_sp nname() { return _name; }
-  CL_DEFMETHOD T_sp doc() { return _doc; }
+  CL_DEFMETHOD T_sp nname() const { return _name; }
+  CL_DEFMETHOD T_sp doc() const { return _doc; }
   CL_LISPIFY_NAME(Cfunction/lambda-list)
-  CL_DEFMETHOD T_sp lambda_list() { return _lambda_list; }
-  T_sp sourcePosInfo() { return _source_pos_info; }
+  CL_DEFMETHOD T_sp lambda_list() const { return _lambda_list; }
+  CL_LISPIFY_NAME(Cfunction/source-pos-info)
+  CL_DEFMETHOD T_sp sourcePosInfo() const { return _source_pos_info; }
 
 public:
   // Convenience method to link the module and return the new bytecode function
   // corresponding to this cfunction. Good for cl:compile.
   CL_DEFMETHOD Function_sp link_function();
+public:
+  // For use as a BytecodeDebugInfo.
+  T_sp start() const;
+  T_sp end() const;
 };
 
 // Main entry point

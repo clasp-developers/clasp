@@ -50,23 +50,6 @@ bool global_debug_vm = false;
 
 namespace core {
 
-void BytecodeModule_O::initialize() {
-  this->_Literals = nil<core::T_O>();
-  this->_Bytecode = nil<core::T_O>();
-}
-
-CL_DEFMETHOD
-BytecodeModule_O::Literals_sp_Type BytecodeModule_O::literals() const { return this->_Literals; }
-
-CL_DEFMETHOD
-void BytecodeModule_O::setf_literals(BytecodeModule_O::Literals_sp_Type o) { this->_Literals = o; }
-
-CL_DEFMETHOD
-BytecodeModule_O::Bytecode_sp_Type BytecodeModule_O::bytecode() const { return this->_Bytecode; }
-
-CL_DEFMETHOD
-void BytecodeModule_O::setf_bytecode(BytecodeModule_O::Bytecode_sp_Type o) { this->_Bytecode = o; }
-
 void BytecodeModule_O::register_for_debug() {
   // An atomic push, as the variable is shared.
   T_sp old = _lisp->_Roots._AllBytecodeModules.load(std::memory_order_relaxed);
@@ -222,9 +205,9 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
   }
   BytecodeSimpleFun_sp ep = gc::As<BytecodeSimpleFun_sp>(closure->entryPoint());
   BytecodeModule_sp bm = gc::As<BytecodeModule_sp>(ep->_Code);
-  BytecodeModule_O::Bytecode_sp_Type bc = bm->_Bytecode;
-  uintptr_t bytecode_start = (uintptr_t)gc::As<Array_sp>(bc)->rowMajorAddressOfElement_(0);
-  uintptr_t bytecode_end = (uintptr_t)gc::As<Array_sp>(bc)->rowMajorAddressOfElement_(cl__length(bc));
+  Vector_sp bc = bm->bytecode();
+  uintptr_t bytecode_start = (uintptr_t)(bc->rowMajorAddressOfElement_(0));
+  uintptr_t bytecode_end = (uintptr_t)(bc->rowMajorAddressOfElement_(bc->length()));
 #endif
   MultipleValues& multipleValues = core::lisp_multipleValues();
   unsigned char* pc = vm._pc;
@@ -579,14 +562,14 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       break;
     }
     case vm_jump_if_supplied_16: {
-      uint8_t slot = *(++pc);
-      int16_t rel = read_s16(pc + 1);
+      uint8_t slot = *(pc + 1);
+      int16_t rel = read_s16(pc + 2);
       DBG_VM("jump-if-supplied %" PRIu8 " %" PRId16 "\n", slot, rel);
       T_sp tval((gctools::Tagged)(*(vm.reg(fp, slot))));
       if (tval.unboundp())
         pc += 4;
       else
-        pc += rel - 1;
+        pc += rel;
       break;
     }
     case vm_check_arg_count_LE: {
@@ -865,7 +848,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
     }
     case vm_fdesignator: {
       uint8_t c = *(++pc); // ignored environment parameter
-      DBG_VM1("fdesignator" % PRIu8 % "\n", c);
+      DBG_VM1("fdesignator %" PRIu8 "\n", c);
       T_sp desig((gctools::Tagged)vm.pop(sp));
       Function_sp fun = coerce::calledFunctionDesignator(desig);
       vm.push(sp, fun.raw_());
@@ -908,8 +891,8 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
     default:
       SimpleFun_sp ep = closure->entryPoint();
       BytecodeModule_sp bcm = gc::As<BytecodeSimpleFun_sp>(ep)->code();
-      unsigned char* codeStart = (unsigned char*)gc::As<Array_sp>(bcm->_Bytecode)->rowMajorAddressOfElement_(0);
-      unsigned char* codeEnd = codeStart + gc::As<Array_sp>(bcm->_Bytecode)->arrayTotalSize();
+      unsigned char* codeStart = (unsigned char*)bcm->bytecode()->rowMajorAddressOfElement_(0);
+      unsigned char* codeEnd = codeStart + bcm->bytecode()->arrayTotalSize();
       SIMPLE_ERROR("Unknown opcode {} pc: {}  module: {} - {}", *pc, (void*)pc, (void*)codeStart, (void*)codeEnd);
     };
   }
@@ -1175,6 +1158,31 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
       throwUnrecognizedKeywordArgumentError(tclosure, unknown_keys);
     }
     pc += 9;
+    break;
+  }
+  case vm_jump_if_supplied_8: {
+    uint8_t low = *(pc + 1);
+    uint16_t slot = low + (*(pc + 2) << 8);
+    int32_t rel = *(pc + 3);
+    DBG_VM("long jump-if-supplied %" PRIu16 " %" PRId8 "\n", slot, rel);
+    T_sp tval((gctools::Tagged)(*(vm.reg(fp, slot))));
+    if (tval.unboundp())
+      pc += 4;
+    else
+      pc += rel - 1; // -1 for the long opcode at pc-1
+    break;
+  }
+  case vm_jump_if_supplied_16: {
+    uint8_t low = *(pc + 1);
+    uint16_t slot = low + (*(pc + 2) << 8);
+    int32_t rel = read_s16(pc + 3);
+    DBG_VM("long jump-if-supplied %" PRIu16 " %" PRId8 "\n", slot, rel);
+    T_sp tval((gctools::Tagged)(*(vm.reg(fp, slot))));
+    if (tval.unboundp())
+      pc += 5;
+    else
+      pc += rel - 1; // -1 for the long opcode at pc-1
+    break;
   }
   case vm_check_arg_count_LE: {
     uint8_t low = *(pc + 1);
@@ -1340,7 +1348,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     break;
   }
   default:
-    SIMPLE_ERROR("Unknown LONG sub_opcode %hu", sub_opcode);
+    SIMPLE_ERROR("Unknown LONG sub_opcode {}", sub_opcode);
   }
   vm._stackPointer = sp;
   return pc;
@@ -1422,7 +1430,7 @@ CL_DEFUN void core__vm_stack_trigger(size_t trigger) { global_stackTrigger = tri
 
 bool bytecode_module_contains_address_p(BytecodeModule_sp module, void* pc) {
   // FIXME: Not sure if this is the best way to go about it.
-  Array_sp bytecode = gc::As_assert<Array_sp>(module->bytecode());
+  Array_sp bytecode = module->bytecode();
   void* start = bytecode->rowMajorAddressOfElement_(0);
   void* end = (byte8_t*)start + bytecode->length() * sizeof(byte8_t);
   return (start <= pc) && (pc <= end);
@@ -1430,7 +1438,7 @@ bool bytecode_module_contains_address_p(BytecodeModule_sp module, void* pc) {
 
 bool bytecode_function_contains_address_p(BytecodeSimpleFun_sp fun, void* pc) {
   BytecodeModule_sp module = fun->code();
-  Array_sp bytecode = gc::As_assert<Array_sp>(module->bytecode());
+  Array_sp bytecode = module->bytecode();
   void* start = bytecode->rowMajorAddressOfElement_(fun->entryPcN());
   void* end = (byte8_t*)bytecode->rowMajorAddressOfElement_(fun->entryPcN() + fun->bytecodeSize()) + sizeof(byte8_t);
   return (start <= pc) && (pc <= end);
@@ -1451,7 +1459,7 @@ T_sp bytecode_function_for_pc(BytecodeModule_sp module, void* pc) {
 }
 
 T_sp bytecode_spi_for_pc(BytecodeModule_sp module, void* pc) {
-  Array_sp bytecode = gc::As_assert<Array_sp>(module->bytecode());
+  Array_sp bytecode = module->bytecode();
   void* start = bytecode->rowMajorAddressOfElement_(0);
   ptrdiff_t bpc = (byte8_t*)pc - (byte8_t*)start;
   // Find the location info with the tightest enclosing bounds.
@@ -1474,7 +1482,7 @@ T_sp bytecode_spi_for_pc(BytecodeModule_sp module, void* pc) {
 }
 
 List_sp bytecode_bindings_for_pc(BytecodeModule_sp module, void* pc, T_O** fp) {
-  Array_sp bytecode = gc::As_assert<Array_sp>(module->bytecode());
+  Array_sp bytecode = module->bytecode();
   void* start = bytecode->rowMajorAddressOfElement_(0);
   ptrdiff_t bpc = (byte8_t*)pc - (byte8_t*)start;
   ql::list bindings;

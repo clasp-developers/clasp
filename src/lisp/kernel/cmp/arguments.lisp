@@ -12,9 +12,9 @@
   (with-irbuilder ((llvm-sys:make-irbuilder (thread-local-llvm-context)))
     (let ((errorb (irc-basic-block-create "wrong-num-args")))
       (irc-begin-block errorb)
-      (irc-intrinsic-call-or-invoke "cc_wrong_number_of_arguments"
-                                    ;; We use low max to indicate no upper limit.
-                                    (list closure nargs min (or max (irc-size_t 0))))
+      (irc-intrinsic "cc_wrong_number_of_arguments"
+                     ;; We use low max to indicate no upper limit.
+                     closure nargs min (or max (irc-size_t 0)))
       (irc-unreachable)
       errorb)))
 
@@ -131,25 +131,25 @@ switch (nargs) {
                    ((eq rest-alloc 'dynamic-extent)
                     ;; Do the dynamic extent thing- alloca, then an intrinsic to initialize it.
                     (let ((rrest (alloca-dx-list :length nremaining :label "rrest")))
-                      (irc-intrinsic-call "cc_gatherDynamicExtentRestArguments"
-                                          (list (cmp:calling-convention-vaslist* calling-conv)
-                                                nremaining
-                                                (irc-bit-cast rrest %t**%)))))
+                      (irc-intrinsic "cc_gatherDynamicExtentRestArguments"
+                                     (cmp:calling-convention-vaslist* calling-conv)
+                                     nremaining
+                                     (irc-bit-cast rrest %t**%))))
                    (varest-p
                     #+(or)
                     (irc-tag-vaslist (cmp:calling-convention-vaslist* calling-conv)
                                      "rest")
                     ;;#+(or)
                     (let ((temp-vaslist (alloca-vaslist :label "rest")))
-                      (irc-intrinsic-call "cc_gatherVaRestArguments" 
-                                          (list (cmp:calling-convention-vaslist* calling-conv)
-                                                nremaining
-                                                temp-vaslist))))
+                      (irc-intrinsic "cc_gatherVaRestArguments" 
+                                     (cmp:calling-convention-vaslist* calling-conv)
+                                     nremaining
+                                     temp-vaslist)))
                    (t
                     ;; general case- heap allocation
-                    (irc-intrinsic-call "cc_gatherRestArguments" 
-                                        (list (cmp:calling-convention-vaslist* calling-conv)
-                                              nremaining))))))
+                    (irc-intrinsic "cc_gatherRestArguments" 
+                                   (cmp:calling-convention-vaslist* calling-conv)
+                                   nremaining)))))
       (funcall *argument-out* rest rest-var))))
 
 ;;; Keyword processing is the most complicated part, unsurprisingly.
@@ -185,7 +185,7 @@ a_p = a_p_temp; a = a_temp;
   (let* ((keystring (string keyword))
          ;; NOTE: We might save a bit of time by moving this out of the loop.
          ;; Or maybe LLVM can handle it. I don't know.
-         (key-const (irc-literal keyword keystring))
+         (key-const (clasp-cleavir::literal keyword))
          (match (irc-basic-block-create (core:fmt nil "matched-{}" keystring)))
          (mismatch (irc-basic-block-create (core:fmt nil "not-{}" keystring))))
     (let ((test (irc-icmp-eq key-arg key-const)))
@@ -239,8 +239,8 @@ a_p = a_p_temp; a = a_temp;
         (irc-begin-block odd-kw)
         (unless (calling-convention-closure calling-conv)
           (error "The calling-conv ~s does not have a closure" calling-conv))
-        (irc-intrinsic-invoke-if-landing-pad-or-call "cc_oddKeywordException"
-                                                     (list (calling-convention-closure calling-conv)))
+        (irc-intrinsic "cc_oddKeywordException"
+                       (calling-convention-closure calling-conv))
         (irc-unreachable))
       ;; Loop starts; welcome hell
       (irc-begin-block kw-loop)
@@ -343,10 +343,10 @@ a_p = a_p_temp; a = a_temp;
                 (kw-assigns (irc-basic-block-create "kw-assigns")))
             (irc-cond-br sbkw aok-check kw-assigns)
             (irc-begin-block aok-check)
-            (irc-intrinsic-invoke-if-landing-pad-or-call
+            (irc-intrinsic
              "cc_ifBadKeywordArgumentException"
              ;; aok was initialized to NIL, regardless of the suppliedp, so this is ok.
-             (list allow-other-keys bad-keyword (calling-convention-closure calling-conv)))
+             allow-other-keys bad-keyword (calling-convention-closure calling-conv))
             (irc-br kw-assigns)
             (irc-begin-block kw-assigns)))
         (do* ((top-param-phis top-param-phis (cdr top-param-phis))
@@ -392,7 +392,7 @@ a_p = a_p_temp; a = a_temp;
       (compile-required-arguments reqargs calling-conv))
     (let (;; NOTE: Sometimes we don't actually need these.
           ;; We could save miniscule time by not generating.
-          (iNIL (irc-nil)) (iT (irc-t)))
+          (iNIL (clasp-cleavir::%nil)) (iT (clasp-cleavir::%t)))
       (if (or rest-var key-flag)
           ;; We have &key and/or &rest, so parse with that expectation.
           ;; Specifically, we have to get a variable for how many arguments are left after &optional.
@@ -463,8 +463,8 @@ a_p = a_p_temp; a = a_temp;
         (if (> nopt 0)
             (let* ((npreds (1+ nopt))
                    (undef (irc-undef-value-get %t*%))
-                   (true (irc-t))
-                   (false (irc-nil))
+                   (true (clasp-cleavir::%t))
+                   (false (clasp-cleavir::%nil))
                    (default (irc-basic-block-create "enough-for-optional"))
                    (assn (irc-basic-block-create "optional-assignments"))
                    (after (irc-basic-block-create "argument-parsing-done"))

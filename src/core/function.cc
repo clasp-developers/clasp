@@ -286,8 +286,7 @@ CoreFun_sp makeCoreFun(FunctionDescription_sp fdesc,
       maybe_register_symbol_using_dladdr_ep((void*)entry_point);
     }
   }
-  auto ep = gctools::GC<CoreFun_O>::allocate(fdesc, code, entry_point);
-  return ep;
+  return gctools::GC<CoreFun_O>::allocate(fdesc, code, entry_point);
 }
 
 SimpleFun_sp makeSimpleFun(FunctionDescription_sp tfdesc, const ClaspXepTemplate& entry_point) {
@@ -298,12 +297,33 @@ SimpleCoreFun_sp makeSimpleCoreFun(FunctionDescription_sp tfdesc, const ClaspXep
   return gctools::GC<SimpleCoreFun_O>::allocate(tfdesc, entry_point, nil<T_O>(), lep);
 }
 
+// Used by clasp-cleavir to build compiled functions from function pointers.
+SimpleCoreFun_sp SimpleCoreFun_O::make(FunctionDescription_sp fdesc, ClaspCoreFunction mainptr, ClaspXepAnonymousFunction* xepptrs) {
+  CoreFun_sp core = makeCoreFun(fdesc, mainptr);
+  ClaspXepTemplate xep;
+  // NULL pointers represent a redirect.
+#define DEFXEP(n) xep._EntryPoints[(n+1)] = xepptrs[(n+1)] ? xepptrs[(n+1)] : (ClaspXepAnonymousFunction)(general_entry_point_redirect_##n)
+  xep._EntryPoints[0] = xepptrs[0];
+  DEFXEP(0);
+  DEFXEP(1);
+  DEFXEP(2);
+  DEFXEP(3);
+  DEFXEP(4);
+  DEFXEP(5);
+#undef DEFXEP
+  return gctools::GC<SimpleCoreFun_O>::allocate(fdesc, xep, nil<T_O>(), core);
+}
+
+CL_DEFUN SimpleCoreFun_sp core__make_simple_core_fun(FunctionDescription_sp fdesc, Pointer_sp mainfun, Pointer_sp xept) {
+  return SimpleCoreFun_O::make(fdesc, (ClaspCoreFunction)(mainfun->ptr()), (ClaspXepAnonymousFunction*)(xept->ptr()));
+}
+
 SYMBOL_EXPORT_SC_(CorePkg, bytecode_call);
 
 struct BytecodeClosureEntryPoint {
   static inline LCC_RETURN bytecode_enter(BytecodeSimpleFun_sp entryPoint, T_O* lcc_closure, size_t lcc_nargs, T_O** lcc_args) {
     core::BytecodeModule_sp module = gctools::As_assert<core::BytecodeModule_sp>(entryPoint->_Code);
-    unsigned char* pc = (unsigned char*)&(gc::As_assert<SimpleVector_byte8_t_sp>(module->_Bytecode)->_Data[0]) + entryPoint->_EntryPcN;
+    unsigned char* pc = (unsigned char*)&(module->bytecode()->_Data[0]) + entryPoint->_EntryPcN;
     return (entryPoint->_Trampoline)(pc, lcc_closure, lcc_nargs, lcc_args);
   }
 

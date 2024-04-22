@@ -38,7 +38,6 @@
              #~"kernel/cmp/primitives.lisp"
              #~"kernel/cmp/cmpir.lisp"
              #~"kernel/cmp/debuginfo.lisp"
-             #~"kernel/cmp/arguments.lisp"
              #~"kernel/cmp/cmprunall.lisp"
              #~"kernel/cmp/cmpliteral.lisp"
              #~"kernel/cmp/typeq.lisp"
@@ -48,7 +47,6 @@
              #~"kernel/cmp/cmpname.lisp"
              #~"kernel/cmp/bytecode-machines.lisp"
              #~"kernel/cmp/bytecode-reference.lisp"
-             #~"kernel/cmp/cmprepl-bytecode.lisp"
              #@"base-translations.lisp"
              #~"kernel/stage/base/0-end.lisp"
              #~"kernel/cmp/cmpwalk.lisp"
@@ -68,7 +66,6 @@
              #~"kernel/cmp/opt/opt-cons.lisp"
              #~"kernel/cmp/opt/opt-array.lisp"
              #~"kernel/cmp/opt/opt-object.lisp"
-             #~"kernel/cmp/opt/opt-condition.lisp"
              #~"kernel/cmp/opt/opt-print.lisp"
              #~"kernel/lsp/shiftf-rotatef.lisp"
              #~"kernel/lsp/assorted.lisp"
@@ -150,6 +147,7 @@
              #~"kernel/stage/base/1-end.lisp"
              #~"kernel/stage/base/2-begin.lisp"  
              :clasp-cleavir
+             #~"kernel/cmp/arguments.lisp"
              #~"kernel/lsp/queue.lisp" ;; cclasp sources
              #~"kernel/lsp/generated-encodings.lisp"
              #~"kernel/lsp/process.lisp"

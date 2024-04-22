@@ -522,7 +522,7 @@ Use special code 0 to cancel this operation.")
                                (format t "#|REPL echo|# ~s~%" expr))
                              expr)))
                  (setq values (multiple-value-list
-                               (funcall core:*eval-with-env-hook* - *break-env*)
+                               (core:interpret - *break-env*)
                                )
                        /// // // / / values *** ** ** * * (car /))
                  (unless noprint
@@ -957,8 +957,7 @@ See the CLASP-DEBUG package for more information about FRAME objects.")
                                     (princ-condition-to-string condition)))
            (*break-level* (1+ *break-level*))
            (break-level *break-level*)
-           (*break-env* nil)
-	   (cmp:*implicit-compile-hook* 'cmp:bytecode-implicit-compile-form))
+           (*break-env* nil))
       (declare (ignore break-level))
       (check-default-debugger-runaway)
       #+threads

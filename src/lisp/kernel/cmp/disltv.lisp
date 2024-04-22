@@ -45,8 +45,8 @@
     (dbgprint "Magic number matches: ~x" magic)))
 
 ;; Bounds for major and minor version understood by this loader.
-(defparameter *min-version* '(0 10))
-(defparameter *max-version* '(0 10))
+(defparameter *min-version* '(0 14))
+(defparameter *max-version* '(0 14))
 
 (defun loadable-version-p (major minor)
   (and
@@ -122,18 +122,21 @@
 (defgeneric %load-instruction (mnemonic stream))
 
 (defmethod %load-instruction ((mnemonic (eql 'nil)) stream)
+  (declare (ignore stream))
   (let ((index (next-index)))
     (dbgprint " (nil ~d)" index)
     (setf (creator index)
           (make-instance 'singleton-creator :prototype nil))))
 
 (defmethod %load-instruction ((mnemonic (eql 't)) stream)
+  (declare (ignore stream))
   (let ((index (next-index)))
     (dbgprint " (t ~d)" index)
     (setf (creator index)
           (make-instance 'singleton-creator :prototype t))))
 
 (defmethod %load-instruction ((mnemonic (eql 'cons)) stream)
+  (declare (ignore stream))
   (let ((index (next-index)))
     (dbgprint " (cons ~d)" index)
     (setf (creator index)
@@ -173,16 +176,43 @@
                  for bits = (ldb (byte ,nbits bit-index) byte)
                  do (setf (row-major-aref ,a (+ index j)) bits)))))))
 
+(defun decode-et-code (code)
+  (or (find code +array-packing-infos+ :key #'second)
+      (error "BUG: Unknown UAET code #x~x" code)))
 (defun decode-uaet (uaet-code)
-  (or (first (find uaet-code +array-packing-infos+ :key #'second))
-      (error "BUG: Unknown UAET code ~x" uaet-code)))
-(defun decode-packing (code) (decode-uaet code)) ; same for now
+  (first (decode-et-code uaet-code)))
+
+(defun read-utf8-codepoint (stream)
+  (let ((b0 (read-byte stream)))
+    (cond ((= (ldb (byte 1 7) b0) #b0) ; one byte
+           b0)
+          ((= (ldb (byte 3 5) b0) #b110)
+           (let ((b1 (read-byte stream))) ; two
+             (logior (ash (ldb (byte 5 0) b0) 6)
+                     (ash (ldb (byte 6 0) b1) 0))))
+          ((= (ldb (byte 4 4) b0) #b1110)
+           (let ((b1 (read-byte stream)) ; three
+                 (b2 (read-byte stream)))
+             (logior (ash (ldb (byte 4 0) b0) 12)
+                     (ash (ldb (byte 6 0) b1) 6)
+                     (ash (ldb (byte 6 0) b2) 0))))
+          ((= (ldb (byte 5 3) b0) #b11110)
+           (let ((b1 (read-byte stream)) ; four
+                 (b2 (read-byte stream))
+                 (b3 (read-byte stream)))
+             (logior (ash (ldb (byte 3 0) b0) 18)
+                     (ash (ldb (byte 6 0) b1) 12)
+                     (ash (ldb (byte 6 0) b2) 6)
+                     (ash (ldb (byte 6 0) b3) 0))))
+          (t ; invalid. should we err or just warn?
+           (error "Invalid UTF-8 header byte: ~x" b0)))))
 
 (defmethod %load-instruction ((mnemonic (eql 'make-array)) stream)
   (let* ((index (next-index)) (uaet-code (read-byte stream))
          (uaet (decode-uaet uaet-code))
          (packing-code (read-byte stream))
-         (packing-type (decode-packing packing-code))
+         (packing-info (decode-et-code packing-code))
+         (packing-type (first packing-info))
          (rank (read-byte stream))
          (dimensions (loop repeat rank collect (read-ub16 stream)))
          (array (unless (eq packing-type 't)
@@ -198,7 +228,7 @@
             ((equal packing-type 'base-char)
              (undump (code-char (read-byte stream))))
             ((equal packing-type 'character)
-             (undump (code-char (read-ub32 stream))))
+             (undump (code-char (read-utf8-codepoint stream))))
             ((equal packing-type 'single-float)
              (undump (ext:bits-to-single-float (read-ub32 stream))))
             ((equal packing-type 'double-float)
@@ -238,11 +268,11 @@
           (if (eq packing-type 't)
               (make-instance 'array-creator
                 :dimensions dimensions
-                :packing-info (%uaet-info 't) ; kludgeish
+                :packing-info packing-info
                 :uaet-code uaet-code)
               (make-instance 'array-creator
                 :dimensions dimensions
-                :packing-info (%uaet-info uaet) ; kludgeish
+                :packing-info packing-info
                 :uaet-code uaet-code
                 :prototype array)))))
 
@@ -395,6 +425,20 @@
     (dbgprint " (fdefinition ~d ~s)" index name)
     (setf (creator index) (make-instance 'fdefinition-lookup :name name))))
 
+(defmethod %load-instruction ((mnemonic (eql 'fcell)) stream)
+  (let ((index (next-index)) (name (read-creator stream)))
+    (dbgprint " (fcell ~d ~s)" index name)
+    (setf (creator index) (make-instance 'fcell-lookup :name name))))
+
+(defmethod %load-instruction ((mnemonic (eql 'vcell)) stream)
+  (let ((index (next-index)) (name (read-creator stream)))
+    (dbgprint " (vcell ~d ~s)" index name)
+    (setf (creator index) (make-instance 'vcell-lookup :name name))))
+
+(defmethod %load-instruction ((mnemonic (eql 'symbol-value)) stream)
+  (let ((index (next-index)) (name (read-creator stream)))
+    (setf (creator index) (make-instance 'vdefinition :name name))))
+
 (defmethod %load-instruction ((mnemonic (eql 'funcall-create)) stream)
   (let ((index (next-index)) (fun (read-creator stream))
         (args (if (and (= *load-major* 0) (<= *load-minor* 4))
@@ -444,16 +488,20 @@
 (defgeneric %load-attribute (mnemonic name-creator stream))
 
 (defmethod %load-attribute ((mnemonic string) ncreator stream)
-  ;; skip. we could record this as a pseudo-attribute, hypothetically
-  (let ((nbytes (read-ub32 stream)))
+  ;; skip.
+  (let* ((nbytes (read-ub32 stream))
+         (bytes (make-array nbytes :element-type '(unsigned-byte 8))))
     (dbgprint " (unknown-attribute ~s ~d)" ncreator nbytes)
-    (loop repeat nbytes do (read-byte stream))))
+    (read-sequence bytes stream)
+    (make-instance 'unknown-attr :name ncreator :bytes bytes)))
 
 ;;; Results from non-string (invalid) attribute name.
 (defmethod %load-attribute ((mnemonic null) ncreator stream)
-  (let ((nbytes (read-ub32 stream)))
+  (let* ((nbytes (read-ub32 stream))
+         (bytes (make-array nbytes :element-type '(unsigned-byte 8))))
     (dbgprint " (unknown-attribute ~s ~d)" ncreator nbytes)
-    (loop repeat nbytes do (read-byte stream))))
+    (read-sequence bytes stream)
+    (make-instance 'unknown-attr :name ncreator :bytes bytes)))
 
 #+clasp
 (defmethod %load-attribute ((mnemonic (eql 'source-pos-info)) ncreator stream)
@@ -469,14 +517,14 @@
 
 #+clasp
 (defmethod %load-attribute ((mnemonic (eql 'module-debug-info)) ncreator stream)
-  (declare (ignore ncreator))
   (read-ub32 stream) ; nbytes
   (let* ((mod (read-creator stream))
          (ninfos (read-ub32 stream))
          (infos (make-array ninfos)))
-    (declare (ignore mod))
     (loop for i below ninfos
-          do (setf (aref infos i) (load-debug-info stream)))))
+          do (setf (aref infos i) (load-debug-info stream)))
+    (make-instance 'module-debug-attr
+      :name ncreator :module mod :infos infos)))
 
 (defun read-di-mnemonic (stream)
   (let* ((opcode (read-byte stream))
@@ -498,14 +546,25 @@
   (make-instance 'debug-info-vars
     :start (read-ub32 stream) :end (read-ub32 stream)
     :vars (loop repeat (read-ub16 stream)
-                collect (list (read-ub32 stream)
-                              (read-ub32 stream)
-                              (loop repeat (read-ub16 stream)
-                                    collect (list (read-creator stream)
-                                                  (ecase (read-byte stream)
-                                                    (0 nil)
-                                                    (1 t))
-                                                  (read-ub16 stream)))))))
+                for name = (read-creator stream)
+                for frame-index = (read-ub16 stream)
+                for flagsb = (read-byte stream)
+                for decls = (loop repeat (read-ub16 stream)
+                                  collect (read-creator stream))
+                for inline = (ecase (ldb (byte 2 4) flagsb)
+                               (#b00 nil)
+                               (#b01 'cl:inline)
+                               (#b10 'cl:notinline))
+                for dx = (logbitp 3 flagsb)
+                for ignore = (ecase (ldb (byte 2 1) flagsb)
+                               (#b00 nil)
+                               (#b01 'cl:ignore)
+                               (#b10 'cl:ignorable))
+                for cellp = (logbitp 0 flagsb)
+                collect (make-instance 'debug-info-var
+                          :name name :frame-index frame-index
+                          :cellp cellp :dxp dx :ignore ignore :inline inline
+                          :decls decls))))
 
 (defmethod %load-debug-info ((mnemonic (eql 'location)) stream)
   (make-instance 'debug-info-location
@@ -515,6 +574,48 @@
     :lineno (read-ub64 stream)
     :column (read-ub64 stream)
     :filepos (read-ub64 stream)))
+
+(defmethod %load-debug-info ((mnemonic (eql 'decls)) stream)
+  (make-instance 'debug-info-decls
+    :start (read-ub32 stream)
+    :end (read-ub32 stream)
+    :decls (read-creator stream)))
+
+(defmethod %load-debug-info ((mnemonic (eql 'the)) stream)
+  (make-instance 'debug-info-the
+    :start (read-ub32 stream) :end (read-ub32 stream)
+    :type (read-creator stream)
+    :receiving (read-sb32 stream)))
+
+(defmethod %load-debug-info ((mnemonic (eql 'if)) stream)
+  (make-instance 'debug-ast-if
+    :start (read-ub32 stream)
+    :end (read-ub32 stream)
+    :receiving (read-sb32 stream)))
+
+(defmethod %load-debug-info ((mnemonic (eql 'tagbody)) stream)
+  (make-instance 'debug-ast-tagbody
+    :start (read-ub32 stream) :end (read-ub32 stream)
+    :tags (loop repeat (read-ub16 stream)
+                for tag = (read-creator stream)
+                for ip = (read-ub32 stream)
+                collect (cons tag ip))))
+
+(defmethod %load-debug-info ((mnemonic (eql 'block)) stream)
+  (make-instance 'debug-info-block
+    :start (read-ub32 stream) :end (read-ub32 stream)
+    :name (read-creator stream)
+    :receiving (read-sb32 stream)))
+
+(defmethod %load-debug-info ((mnemonic (eql 'exit)) stream)
+  (make-instance 'debug-info-exit
+    :start (read-ub32 stream) :end (read-ub32 stream)
+    :receiving (read-sb32 stream)))
+
+(defmethod %load-debug-info ((mnemonic (eql 'macro)) stream)
+  (make-instance 'debug-info-macroexpansion
+    :start (read-ub32 stream) :end (read-ub32 stream)
+    :macro-name (read-creator stream)))
 
 (defparameter *attr-map*
   (let ((ht (make-hash-table :test #'equal)))
@@ -573,6 +674,151 @@
 ;;;
 ;;; Operations on FASLs
 ;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Disassembly
+;;;
+;;; Get a human-readable representation of what a FASL is doing.
+
+(defgeneric disassemble-fasl (fasl)
+  (:method ((fasl pathname)) (disassemble-fasl (load-bytecode fasl)))
+  (:method ((namestring string)) (disassemble-fasl (load-bytecode namestring)))
+  (:method ((fasl stream)) (disassemble-fasl (load-bytecode-stream fasl))))
+
+(defgeneric disassemble-instruction (instruction))
+
+(defun unassign-indices (instructions)
+  (map nil (lambda (inst)
+             (when (typep inst 'creator) (setf (index inst) nil)))
+       instructions))
+
+(defmethod disassemble-fasl ((fasl fasl))
+  (assign-indices (instructions fasl))
+  (fresh-line)
+  (format t "; FASL version ~d.~d~%" (major-version fasl) (minor-version fasl))
+  (loop with *package* = (find-package "CMPLTV") ; for package prefix printing
+        for inst across (instructions fasl)
+        do (prin1 (disassemble-instruction inst)) (terpri))
+  ;; Make sure we don't do anything permanent to the FASL indices,
+  ;; e.g. if we want to insert new ones in the middle later.
+  (unassign-indices (instructions fasl))
+  (values))
+
+(defmethod disassemble-instruction ((inst singleton-creator))
+  `(<- (% ,(index inst)) ',(prototype inst)))
+(defmethod disassemble-instruction ((inst cons-creator))
+  `(<- (% ,(index inst)) '(cons nil nil)))
+(defmethod disassemble-instruction ((inst rplaca-init))
+  `(setf (car (% ,(index (rplac-cons inst)))) (% ,(index (rplac-value inst)))))
+(defmethod disassemble-instruction ((inst rplacd-init))
+  `(setf (cdr (% ,(index (rplac-cons inst)))) (% ,(index (rplac-value inst)))))
+(defmethod disassemble-instruction ((inst array-creator))
+  `(<- (% ,(index inst))
+       ,(case (first (packing-info inst))
+          ((t) `(make-array ',(dimensions inst)))
+          ((nil) `(make-array ',(dimensions inst) :element-type nil))
+          (otherwise
+           ;; make the output a little easier to read if we have a vector
+           ;; (this does make it slightly less obvious what the element type is)
+           (let ((dims (dimensions inst)))
+             (if (= (length dims) 1)
+                 `(copy-seq ,(prototype inst))
+                 `(make-array ',dims
+                              :element-type ',(decode-uaet (uaet-code inst))
+                              :initial-contents ,(prototype inst))))))))
+(defmethod disassemble-instruction ((inst setf-aref))
+  `(setf (row-major-aref (% ,(index (setf-aref-array inst)))
+                         ,(setf-aref-index inst))
+         (% ,(index (setf-aref-value inst)))))
+(defmethod disassemble-instruction ((inst hash-table-creator))
+  `(<- (% ,(index inst)) (make-hash-table
+                          :test ',(hash-table-creator-test inst)
+                          :count ,(hash-table-creator-count inst))))
+(defmethod disassemble-instruction ((inst setf-gethash))
+  `(setf (gethash (% ,(index (setf-gethash-key inst)))
+                  (% ,(index (setf-gethash-hash-table inst))))
+         (% ,(index (setf-gethash-value inst)))))
+(defmethod disassemble-instruction ((inst symbol-creator))
+  `(<- (% ,(index inst)) (make-symbol (% ,(index (symbol-creator-name inst))))))
+(defmethod disassemble-instruction ((inst interned-symbol-creator))
+  `(<- (% ,(index inst))
+       (intern (% ,(index (symbol-creator-name inst)))
+               (% ,(index (symbol-creator-package inst))))))
+(defmethod disassemble-instruction ((inst package-creator))
+  `(<- (% ,(index inst)) (find-package (% ,(index (package-creator-name inst))))))
+(defmethod disassemble-instruction ((inst sb64-creator))
+  `(<- (% ,(index inst)) ,(prototype inst)))
+(defmethod disassemble-instruction ((inst bignum-creator))
+  `(<- (% ,(index inst)) ,(prototype inst)))
+(defmethod disassemble-instruction ((inst single-float-creator))
+  `(<- (% ,(index inst)) ,(prototype inst)))
+(defmethod disassemble-instruction ((inst double-float-creator))
+  `(<- (% ,(index inst)) ,(prototype inst)))
+(defmethod disassemble-instruction ((inst ratio-creator))
+  `(<- (% ,(index inst))
+       (/ (% ,(index (ratio-creator-numerator inst)))
+          (% ,(index (ratio-creator-denominator inst))))))
+(defmethod disassemble-instruction ((inst complex-creator))
+  `(<- (% ,(index inst))
+       (complex (% ,(index (complex-creator-realpart inst)))
+                (% ,(index (complex-creator-imagpart inst))))))
+(defmethod disassemble-instruction ((inst character-creator))
+  `(<- (% ,(index inst)) ,(prototype inst)))
+(defmethod disassemble-instruction ((inst pathname-creator))
+  ;; not sure about *default-pathname-defaults*
+  `(<- (% ,(index inst)) (make-pathname
+                          :host (% ,(index (pathname-creator-host inst)))
+                          :device (% ,(index (pathname-creator-device inst)))
+                          :directory (% ,(index (pathname-creator-directory inst)))
+                          :name (% ,(index (pathname-creator-name inst)))
+                          :type (% ,(index (pathname-creator-type inst)))
+                          :version (% ,(index (pathname-creator-version inst))))))
+(defmethod disassemble-instruction ((inst fdefinition-lookup))
+  `(<- (% ,(index inst)) (fdefinition (% ,(index (name inst))))))
+(defmethod disassemble-instruction ((inst fcell-lookup))
+  `(<- (% ,(index inst)) (core:ensure-function-cell (% ,(index (name inst))))))
+(defmethod disassemble-instruction ((inst vcell-lookup))
+  `(<- (% ,(index inst)) (core:ensure-variable-cell (% ,(index (name inst))))))
+(defmethod disassemble-instruction ((inst vdefinition))
+  `(<- (% ,(index inst)) (symbol-value (% ,(index (name inst))))))
+(defmethod disassemble-instruction ((inst environment-lookup))
+  `(<- (% ,(index inst)) *loader-environment*))
+(defmethod disassemble-instruction ((inst general-creator))
+  `(<- (% ,(index inst))
+       (funcall (the function (% ,(index (general-function inst))))
+                ,@(loop for arg in (general-arguments inst)
+                        collecting `(% ,(index arg))))))
+(defmethod disassemble-instruction ((inst general-initializer))
+  `(funcall (the function (% ,(index (general-function inst))))
+            ,@(loop for arg in (general-arguments inst)
+                    collecting `(% ,(index arg)))))
+(defmethod disassemble-instruction ((inst class-creator))
+  `(<- (% ,(index inst)) (find-class (% ,(index (class-creator-name inst))))))
+
+(defmethod disassemble-instruction ((inst bytemodule-creator))
+  ;; TODO: Disassemble the bytecode?
+  `(<- (% ,(index inst))
+       (core:bytecode-module/make ,(bytemodule-lispcode inst))))
+(defmethod disassemble-instruction ((inst setf-literals))
+  `(core:bytecode-module/setf-literals
+    (% ,(index (setf-literals-module inst)))
+    (vector ,@(loop for item across (setf-literals-literals inst)
+                    collecting `(% ,(index item))))))
+(defmethod disassemble-instruction ((inst bytefunction-creator))
+  `(<- (% ,(index inst))
+       (core:bytecode-simple-fun/make nil (% ,(index (module inst)))
+                                      ,(nlocals inst) ,(nclosed inst)
+                                      ,(entry-point inst) ,(size inst) nil)))
+
+(defmethod disassemble-instruction ((inst init-object-array))
+  `(init-object-array ,(init-object-array-count inst)))
+
+(defmethod disassemble-instruction ((inst attribute))
+  ;; TODO
+  `(attribute (% ,(index (name inst)))))
+(defmethod disassemble-instruction ((inst unknown-attr))
+  `(unknown-attribute (% ,(index (name inst))) ,(bytes inst)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

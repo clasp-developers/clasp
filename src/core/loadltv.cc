@@ -18,6 +18,10 @@
 #include <clasp/core/pathname.h>          // making pathnames
 #include <clasp/core/unixfsys.h>          // cl__truename
 #include <clasp/llvmo/llvmoPackage.h>     // cmp__compile_trampoline
+#include <clasp/llvmo/llvmoExpose.h>      // native module stuff
+#include <clasp/llvmo/jit.h>
+#include <clasp/llvmo/code.h>
+#include <clasp/core/lispStream.h>        // stream_read_byte8
 #include <clasp/core/bytecode_compiler.h> // btb_bcfun_p
 #include <clasp/core/evaluator.h>         // eval::funcall
 
@@ -53,6 +57,7 @@
 #define LTV_OP_CLASS 98
 #define LTV_OP_INIT_OBJECT_ARRAY 99
 #define LTV_OP_ENVIRONMENT 100
+#define LTV_OP_SYMBOL_VALUE 101
 #define LTV_OP_ATTR 255
 
 #define LTV_DI_OP_FUNCTION 0
@@ -132,9 +137,10 @@ struct loadltv {
   }
 
   inline uint16_t read_u16() {
-    // Ideally we'd want to use something like read-sequence here.
-    uint16_t high = read_u8();
-    uint16_t low = read_u8();
+    unsigned char bytes[2];
+    stream_read_byte8(_stream, &bytes[0], 2);
+    uint16_t high = bytes[0];
+    uint16_t low = bytes[1];
     return (high << 8) | low;
   }
 
@@ -149,10 +155,12 @@ struct loadltv {
   }
 
   inline uint32_t read_u32() {
-    uint32_t b0 = read_u8();
-    uint32_t b1 = read_u8();
-    uint32_t b2 = read_u8();
-    uint32_t b3 = read_u8();
+    unsigned char bytes[4];
+    stream_read_byte8(_stream, &bytes[0], 4);
+    uint32_t b0 = bytes[0];
+    uint32_t b1 = bytes[1];
+    uint32_t b2 = bytes[2];
+    uint32_t b3 = bytes[3];
     return (b0 << 24) | (b1 << 16) | (b2 << 8) | (b3 << 0);
   }
 
@@ -167,14 +175,16 @@ struct loadltv {
   }
 
   inline uint64_t read_u64() {
-    uint64_t b0 = read_u8();
-    uint64_t b1 = read_u8();
-    uint64_t b2 = read_u8();
-    uint64_t b3 = read_u8();
-    uint64_t b4 = read_u8();
-    uint64_t b5 = read_u8();
-    uint64_t b6 = read_u8();
-    uint64_t b7 = read_u8();
+    unsigned char bytes[8];
+    stream_read_byte8(_stream, &bytes[0], 8);
+    uint64_t b0 = bytes[0];
+    uint64_t b1 = bytes[1];
+    uint64_t b2 = bytes[2];
+    uint64_t b3 = bytes[3];
+    uint64_t b4 = bytes[4];
+    uint64_t b5 = bytes[5];
+    uint64_t b6 = bytes[6];
+    uint64_t b7 = bytes[7];
     return (b0 << 56) | (b1 << 48) | (b2 << 40) | (b3 << 32) | (b4 << 24) | (b5 << 16) | (b6 << 8) | (b7 << 0);
   }
 
@@ -624,11 +634,9 @@ struct loadltv {
   void op_bcmod() {
     size_t index = next_index();
     uint32_t len = read_u32();
-    BytecodeModule_sp mod = BytecodeModule_O::make();
     SimpleVector_byte8_t_sp bytes = SimpleVector_byte8_t_O::make(len);
-    mod->setf_bytecode(bytes);
     cl__read_sequence(bytes, _stream, clasp_make_fixnum(0), nil<T_O>());
-    set_ltv(mod, index);
+    set_ltv(BytecodeModule_O::make(bytes), index);
   }
 
   void op_slits() {
@@ -692,6 +700,12 @@ struct loadltv {
     set_ltv(nil<T_O>(), next_index());
   }
 
+  void op_symbol_value() {
+    size_t index = next_index();
+    Symbol_sp name = gc::As<Symbol_sp>(get_ltv(read_index()));
+    set_ltv(name->symbolValue(), index);
+  }
+
   // FIXME: Have these fail gracefully if the byte count is wrong.
   void attr_name(uint32_t bytes) {
     T_sp named = get_ltv(read_index());
@@ -716,6 +730,24 @@ struct loadltv {
     T_sp lambda_list = get_ltv(read_index());
     if (gc::IsA<Function_sp>(function))
       gc::As_unsafe<Function_sp>(function)->setf_lambdaList(lambda_list);
+  }
+
+  void attr_clasp_function_native(uint32_t bytes) {
+    void *mainptr, *xepptr;
+    BytecodeSimpleFun_sp fun = gc::As<BytecodeSimpleFun_sp>(get_ltv(read_index()));
+    FunctionDescription_sp fdesc = fun->fdesc();
+    std::string mainn = gc::As<SimpleString_sp>(get_ltv(read_index()))->get_std_string();
+    std::string xepn = gc::As<SimpleString_sp>(get_ltv(read_index()))->get_std_string();
+    BytecodeModule_sp mod = fun->code();
+    llvmo::JITDylib_sp dylib = gc::As<llvmo::JITDylib_sp>(mod->nativeModule());
+    // FIXME: Do we need to grab a lock to use the JIT?
+    llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
+    if (!jit->do_lookup(dylib, mainn, mainptr))
+      // Failed lookup: Maybe a warning? Error right now to debug
+      SIMPLE_ERROR("Could not find pointer for name |{}|", mainn);
+    if (!jit->do_lookup(dylib, xepn, xepptr))
+      SIMPLE_ERROR("Could not find pointer for name |{}|", xepn);
+    fun->setSimpleFun(SimpleCoreFun_O::make(fun->fdesc(), (ClaspCoreFunction)mainptr, (ClaspXepAnonymousFunction*)xepptr));
   }
 
   void attr_clasp_source_pos_info(uint32_t bytes) {
@@ -875,6 +907,41 @@ struct loadltv {
     mod->setf_debugInfo(SimpleVector_O::make(vargs));
   }
 
+  void attr_clasp_module_native(uint32_t bytes) {
+    // FIXME: Do we need to grab a lock to use the JIT?
+    llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
+    BytecodeModule_sp mod = gc::As<BytecodeModule_sp>(get_ltv(read_index()));
+    uint32_t nmc = read_u32(); // machine code length
+    // At the moment all machine code we give to JIT is unmanaged - e.g.
+    // load-faso just mmaps a file and leaves the mmap around forever.
+    // This is the unlinked object code, not the code that actually runs,
+    // so the JIT doesn't allocate it through our custom allocator either.
+    // We need to keep this unlinked object code around so that it can be
+    // saved in snapshots for relocating, so we just malloc to dodge GC.
+    unsigned char* mc = (unsigned char*)malloc(nmc);
+    stream_read_byte8(_stream, mc, nmc); // read in machine code
+    // Now feed the machine code to the JIT.
+    llvm::StringRef sbuffer((const char*)mc, nmc);
+    // FIXME: Use a better name, I guess? Not sure how much it matters.
+    std::string uniqueName = llvmo::ensureUniqueMemoryBufferName("bytecode-fasl");
+    llvm::StringRef name(uniqueName);
+    llvmo::JITDylib_sp dylib = jit->createAndRegisterJITDylib(uniqueName);
+    mod->setf_nativeModule(dylib);
+    std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer, name, false));
+    llvmo::ObjectFile_sp obj = jit->addObjectFile(dylib, std::move(memoryBuffer), false, 0);
+    // Loaded the object, so now we just need to stick the literals in.
+    uint16_t nlits = read_u16();
+    // We can't use the object's TOLiteralsStart because it won't exist before
+    // we actually query the symbol, due to the JIT's laziness.
+    void* vlits;
+    if (!jit->do_lookup(dylib, "__clasp_literals_", vlits))
+      SIMPLE_ERROR("Could not find literals");
+    T_O** lits = (T_O**)vlits;
+    for (size_t i = 0; i < nlits; ++i) {
+      lits[i] = get_ltv(read_index()).raw_();
+    }
+  }
+
   void attr_clasp_module_mutable_ltv(uint32_t bytes) {
     BytecodeModule_sp mod = gc::As<BytecodeModule_sp>(get_ltv(read_index()));
     uint16_t nltvs = read_u16();
@@ -894,10 +961,14 @@ struct loadltv {
       attr_docstring(attrbytes);
     } else if (name == "lambda-list") {
       attr_lambda_list(attrbytes);
+    } else if (name == "clasp:function-native") {
+      attr_clasp_function_native(attrbytes);
     } else if (name == "clasp:source-pos-info") {
       attr_clasp_source_pos_info(attrbytes);
     } else if (name == "clasp:module-debug-info") {
       attr_clasp_module_debug_info(attrbytes);
+    } else if (name == "clasp:module-native") {
+      attr_clasp_module_native(attrbytes);
     } else {
       for (size_t i = 0; i < attrbytes; ++i)
         read_u8();
@@ -1016,6 +1087,9 @@ struct loadltv {
       break;
     case LTV_OP_ENVIRONMENT:
       op_environment();
+      break;
+    case LTV_OP_SYMBOL_VALUE:
+      op_symbol_value();
       break;
     case LTV_OP_ATTR:
       op_attribute();

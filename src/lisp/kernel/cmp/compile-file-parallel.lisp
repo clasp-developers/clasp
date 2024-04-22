@@ -235,7 +235,6 @@
     (*compile-file-file-scope* . ',*compile-file-file-scope*)
     #+(or cclasp eclasp)(cleavir-cst-to-ast:*compiler*
                          . ',cleavir-cst-to-ast:*compiler*)
-    #+(or cclasp eclasp)(core:*use-cleavir-compiler* . ',core:*use-cleavir-compiler*)
     (*global-function-refs* . ',*global-function-refs*)))
 
 (defun cclasp-loop2 (source-sin
@@ -271,7 +270,6 @@ multithreaded performance that we should explore."
               (error "Handle intermediate-output-type ~a" intermediate-output-type))))
          #+(or cclasp eclasp) (cleavir-cst-to-ast:*compiler*
                                 'cl:compile-file)
-         #+(or cclasp eclasp)(core:*use-cleavir-compiler* t)
          #+(or cclasp eclasp)(eclector.reader:*client* cmp:*cst-client*)
          ast-jobs
          (_ (cfp-log "Starting the pool of threads~%"))
@@ -398,24 +396,23 @@ Compile a lisp source file into an LLVM module."
                                      ;; Use as little llvm as possible for timing
                                      dry-run ast-only
                                 &allow-other-keys)
-  (with-compiler-env ()
-    (with-compiler-timer (:message "Compile-file-parallel" :report-link-time t :verbose *compile-verbose*)
-      (let ((ast-jobs
-              (compile-stream-to-result
-               input-stream
-               :output-type output-type
-               :output-path output-path
-               :environment environment
-               :optimize optimize
-               :optimize-level optimize-level
-               :ast-only ast-only)))
-        (cond (dry-run (format t "Doing nothing further~%") nil)
-              ((some #'job-serious-condition ast-jobs)
-               ;; There was an insurmountable error - fail.
-               nil)
-              ;; Usual result
-              (t (output-cfp-result ast-jobs output-path output-type)
-                 (truename output-path)))))))
+  (with-compiler-timer (:message "Compile-file-parallel" :report-link-time t :verbose *compile-verbose*)
+    (let ((ast-jobs
+            (compile-stream-to-result
+             input-stream
+             :output-type output-type
+             :output-path output-path
+             :environment environment
+             :optimize optimize
+             :optimize-level optimize-level
+             :ast-only ast-only)))
+      (cond (dry-run (format t "Doing nothing further~%") nil)
+            ((some #'job-serious-condition ast-jobs)
+             ;; There was an insurmountable error - fail.
+             nil)
+            ;; Usual result
+            (t (output-cfp-result ast-jobs output-path output-type)
+               (truename output-path))))))
 
 (eval-when (:load-toplevel)
   (setf *compile-file-parallel* *use-compile-file-parallel*))

@@ -562,8 +562,8 @@ void Context::emit_parse_key_args(size_t max_count, size_t key_count, size_t key
     bytecode->vectorPushExtend(keystart);
     bytecode->vectorPushExtend(indx);
   } else if ((max_count < (1 << 16)) && (key_count < (1 << 16)) && (keystart < (1 << 16)) && (indx < (1 << 16))) {
-    bytecode->vectorPushExtend(clasp_make_fixnum(vm_long));
-    bytecode->vectorPushExtend(clasp_make_fixnum(vm_parse_key_args));
+    bytecode->vectorPushExtend(vm_long);
+    bytecode->vectorPushExtend(vm_parse_key_args);
     bytecode->vectorPushExtend(max_count & 0xff);
     bytecode->vectorPushExtend(max_count >> 8);
     bytecode->vectorPushExtend(key_count & 0xff);
@@ -724,32 +724,48 @@ size_t resize_control_label_fixup(ptrdiff_t delta) {
 size_t ControlLabelFixup_O::resize() { return resize_control_label_fixup(this->delta()); }
 
 void JumpIfSuppliedFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
+  uint16_t index = this->iindex();
+  if (index > 0xff)
+    (*code)[position++] = vm_long;
   size_t size = this->size();
+  bool s16 = false;
   switch (size) {
   case 3:
-    (*code)[position] = vm_jump_if_supplied_8;
+    (*code)[position++] = vm_jump_if_supplied_8;
     break;
   case 4:
+    s16 = true;
+    (*code)[position++] = vm_jump_if_supplied_16;
+    break;
+  case 5:
+    (*code)[position++] = vm_jump_if_supplied_8;
+    break;
+  case 6:
+    s16 = true;
     (*code)[position] = vm_jump_if_supplied_16;
     break;
   default:
     SIMPLE_ERROR("Assembler bug: Impossible size %zu", size);
   }
-  (*code)[position + 1] = this->iindex();
+  (*code)[position++] = index & 0xff;
+  if (index > 0xff)
+    (*code)[position++] = index >> 8;
   size_t offset = this->delta();
-  for (size_t i = 0; i < size - 2; ++i) {
-    (*code)[position + i + 2] = offset & 0xff;
-    offset >>= 8;
-  }
+  (*code)[position++] = offset & 0xff;
+  if (s16)
+    (*code)[position] = offset >> 8;
 }
 
 size_t JumpIfSuppliedFixup_O::resize() {
   ptrdiff_t delta = this->delta();
-  if ((-(1 << 7) <= delta) && (delta <= (1 << 7) - 1))
-    return 3;
-  if ((-(1 << 15) <= delta) && (delta <= (1 << 15) - 1))
-    return 4;
-  else
+  uint16_t index = this->iindex();
+  if ((-(1 << 7) <= delta) && (delta <= (1 << 7) - 1)) {
+    if (index > 0xff) return 5;
+    else return 3;
+  } if ((-(1 << 15) <= delta) && (delta <= (1 << 15) - 1)) {
+    if (index > 0xff) return 6;
+    else return 4;
+  } else
     SIMPLE_ERROR("Bytecode compiler limit reached: Fixup delta too large");
 }
 
@@ -1089,6 +1105,17 @@ Function_sp Cfunction_O::link_function() {
   return this->info();
 }
 
+// For using a cfunction as a debug info (in BTB).
+// These only work after the module has been linked.
+CL_LISPIFY_NAME("core:bytecode-debug-info/start")
+CL_DEFMETHOD T_sp Cfunction_O::start() const {
+  return clasp_make_fixnum(this->entry_point()->module_position());
+}
+CL_LISPIFY_NAME("core:bytecode-debug-info/end")
+CL_DEFMETHOD T_sp Cfunction_O::end() const {
+  return clasp_make_fixnum(this->entry_point()->module_position() + this->final_size());
+}
+
 // Should we BTB compile this new bytecode function?
 // We say yes if there's a (speed 3) declaration anywhere in it.
 bool btb_bcfun_p(BytecodeSimpleFun_sp fun, SimpleVector_sp debug_info) {
@@ -1134,7 +1161,7 @@ void Module_O::link_load() {
   size_t literal_length = cmodule_literals->length();
   SimpleVector_sp literals = SimpleVector_O::make(literal_length);
   SimpleVector_sp debug_info = cmodule->create_debug_info();
-  BytecodeModule_sp bytecode_module = BytecodeModule_O::make();
+  BytecodeModule_sp bytecode_module = BytecodeModule_O::make(bytecode);
   ComplexVector_T_sp cfunctions = cmodule->cfunctions();
   // Create the real function objects.
   for (T_sp tfun : *cfunctions) {
@@ -1197,7 +1224,6 @@ void Module_O::link_load() {
   }
   // Now just install the bytecode and Bob's your uncle.
   bytecode_module->setf_literals(literals);
-  bytecode_module->setf_bytecode(bytecode);
   bytecode_module->setf_debugInfo(debug_info);
   bytecode_module->setf_mutableLiterals(mutableLTVs.cons());
   // Native-compile anything that really seems like it should be,
@@ -2060,11 +2086,19 @@ void compile_fdesignator(T_sp fform, Lexenv_sp env, const Context ctxt) {
   // we don't need to emit a vm_fdesignator instruction or anything.
   // TODO: We could do something smarter if given 'foo or a constant,
   // but those are more marginal.
+  // This function basically bypasses compile_form. As such we need to
+  // call the walker specially, if that's what we're doing, and if
+  // we don't end up just calling compile_form. We ignore the rewriting
+  // aspect and anyway we don't actually use that, so hey.
   if (fform.consp()) {
     if (oCar(fform) == cl::_sym_Function_O) {
+      if (code_walking_p())
+        eval::funcall(_sym_STARcodeWalkerSTAR->symbolValue(), fform, env);
       compile_called_function(oCadr(fform), env, ctxt);
       return;
     } else if (oCar(fform) == cl::_sym_lambda) {
+      if (code_walking_p())
+        eval::funcall(_sym_STARcodeWalkerSTAR->symbolValue(), fform, env);
       compile_called_function(fform, env, ctxt);
       return;
     }
@@ -2088,6 +2122,10 @@ void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Contex
     List_sp code;
     List_sp specials;
     eval::extract_declares_docstring_code_specials(oCddr(definition), declares, false, docstring, code, specials);
+    // If the function does not have a declared name, name it (flet whatever).
+    if (extract_lambda_name_from_declares(declares).nilp())
+      declares = Cons_O::create(Cons_O::createList(core::_sym_lambdaName, Cons_O::createList(cl::_sym_flet, name)), declares);
+    // Compile the function.
     T_sp block = Cons_O::create(cl::_sym_block, Cons_O::create(core__function_block_name(name), code));
     T_sp lambda = Cons_O::createList(cl::_sym_lambda, oCadr(definition), Cons_O::create(cl::_sym_declare, declares), block);
     compile_function(lambda, env, ctxt.sub_receiving(1));
@@ -2146,6 +2184,8 @@ void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Cont
     List_sp code;
     List_sp specials;
     eval::extract_declares_docstring_code_specials(oCddr(definition), declares, false, docstring, code, specials);
+    if (extract_lambda_name_from_declares(declares).nilp())
+      declares = Cons_O::create(Cons_O::createList(core::_sym_lambdaName, Cons_O::createList(cl::_sym_labels, name)), declares);
     T_sp block = Cons_O::create(cl::_sym_block, Cons_O::create(core__function_block_name(name), code));
     T_sp fun_body = Cons_O::createList(Cons_O::create(cl::_sym_declare, declares), block);
     Cfunction_sp fun =

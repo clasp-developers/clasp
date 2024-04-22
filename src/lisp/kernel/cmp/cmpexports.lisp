@@ -1,7 +1,6 @@
 (in-package :cmp)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(with-debug-info-source-position
-            with-interpreter
             calculate-cleavir-lambda-list-analysis
             module-report
             transform-lambda-parts
@@ -51,9 +50,7 @@
             *debug-compile-file*
             *debug-compile-file-counter*
             *generate-compile-file-load-time-values*
-            module-literal-table
             *gv-current-function-name*
-            *implicit-compile-hook*
             *irbuilder*
             *thread-safe-context*
             thread-local-llvm-context
@@ -61,8 +58,6 @@
             *load-time-value-holder-global-var*
             *low-level-trace*
             *low-level-trace-print*
-            *run-time-values-table-name*
-            #+(or)*run-time-values-table-global-var*
             *the-module*
             +header-size+
             +header-stamp-size+
@@ -149,10 +144,9 @@
 
             irc-create-call-wft
             irc-calculate-entry
-            compile-file-to-module
+            compile-definition
             codegen
             compile-error-if-not-enough-arguments
-            compile-in-env
             compile-lambda-function
             compile-lambda-list-code
             make-calling-convention
@@ -210,12 +204,10 @@
             irc-branch-to-and-begin-block
             irc-cond-br
             irc-call-or-invoke
-            irc-intrinsic-call
-            irc-intrinsic-invoke
+            irc-intrinsic-call-or-invoke
             irc-bit-cast
             irc-pointer-cast
             irc-maybe-cast-integer-to-t*
-            irc-create-invoke-default-unwind
             irc-create-landing-pad
             irc-exception-typeid*
             irc-insert-value
@@ -316,7 +308,6 @@
             ensure-jit-constant-i64
             jit-constant-size_t
             jit-constant-unique-string-ptr
-            jit-function-name
             module-make-global-string
             make-boot-function-global-variable
             setup-calling-convention
@@ -434,7 +425,6 @@
           reference-literal
           load-time-reference-literal
           compile-reference-to-literal
-          ltv-global
           compile-load-time-value-thunk
           new-table-index
           constants-table-reference
@@ -444,8 +434,7 @@
           load-time-value-from-thunk
           with-rtv
           arrange-thunk-as-top-level
-          with-literal-table
-          generate-run-time-code-for-closurette))
+          with-literal-table))
 
 (in-package :clasp-ffi)
 (export '(with-foreign-object

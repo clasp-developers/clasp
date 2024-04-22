@@ -24,20 +24,12 @@ class BytecodeModule_O : public core::CxxObject_O {
   LISP_CLASS(core, CorePkg, BytecodeModule_O, "BytecodeModule", core::CxxObject_O);
 
 public:
-  void initialize();
-
-public:
-  typedef T_O Literals_O_Type;
-  typedef T_O Bytecode_O_Type;
-  typedef T_sp Literals_sp_Type;
-  typedef T_sp Bytecode_sp_Type;
-
-public:
-  Literals_sp_Type _Literals;
-  Bytecode_sp_Type _Bytecode;
-  // A simple-vector of BytecodeDebugInfo_sp (below)
-  // ordered by start index
-  T_sp _DebugInfo = nil<T_O>();
+  // The actual bytecode.
+  SimpleVector_byte8_t_sp _Bytecode;
+  // A simple vector of literal objects referred to by the bytecode.
+  // During loadltv, this will be default-initialized for a bit, hence
+  // why it's not a SimpleVector_sp.
+  T_sp _Literals = nil<T_O>();
   // A list of literal indices.
   // This indicates the constant at that index is a mutable
   // load-time-value (i.e. from (load-time-value foo [nil]))
@@ -45,25 +37,29 @@ public:
   // Some kind of bit vector could be used instead, but it's
   // expected that these load time values will be rare.
   T_sp _MutableLiterals = nil<T_O>();
+  // A simple-vector of BytecodeDebugInfo_sp (below)
+  // ordered by start index
+  T_sp _DebugInfo = nil<T_O>();
+  // If this bytecode has been native-compiled, this can be
+  // the corresponding JITDylib_sp.
+  T_sp _NativeModule = nil<T_O>();
 
 public:
-  BytecodeModule_O(){};
+  BytecodeModule_O(SimpleVector_byte8_t_sp bytecode)
+    : _Bytecode(bytecode) {};
   CL_LISPIFY_NAME(BytecodeModule/make)
   CL_DEF_CLASS_METHOD
-  static BytecodeModule_sp make() {
+  static BytecodeModule_sp make(SimpleVector_byte8_t_sp bytecode) {
     // When we can gc code allocate entire block in GC memory
-    BytecodeModule_sp codeblock = gctools::GC<BytecodeModule_O>::allocate<gctools::RuntimeStage>();
+    BytecodeModule_sp codeblock = gctools::GC<BytecodeModule_O>::allocate<gctools::RuntimeStage>(bytecode);
     // Register the new module for the debugger
     codeblock->register_for_debug();
     return codeblock;
   };
 
-  Literals_sp_Type literals() const;
-  void setf_literals(T_sp obj);
-  Bytecode_sp_Type bytecode() const;
-  void setf_bytecode(T_sp obj);
-  Bytecode_sp_Type compileInfo() const;
-  void setf_compileInfo(T_sp obj);
+  CL_DEFMETHOD T_sp literals() const { return this->_Literals; }
+  CL_DEFMETHOD void setf_literals(SimpleVector_sp obj) { this->_Literals = obj; }
+  CL_DEFMETHOD SimpleVector_byte8_t_sp bytecode() const { return this->_Bytecode; }
   CL_LISPIFY_NAME(BytecodeModule/debugInfo)
   CL_DEFMETHOD T_sp debugInfo() const { return this->_DebugInfo; }
   CL_LISPIFY_NAME(BytecodeModule/setfDebugInfo)
@@ -71,6 +67,9 @@ public:
   CL_LISPIFY_NAME(BytecodeModule/mutableLiterals)
   CL_DEFMETHOD T_sp mutableLiterals() const { return this->_MutableLiterals; }
   void setf_mutableLiterals(T_sp indices) { this->_MutableLiterals = indices; }
+  CL_LISPIFY_NAME(BytecodeModule/nativeModule)
+  CL_DEFMETHOD T_sp nativeModule() const { return this->_NativeModule; }
+  void setf_nativeModule(T_sp mod) { this->_NativeModule = mod; }
 
   // Add the module to *all-bytecode-modules* for the debugger.
   void register_for_debug();

@@ -5,26 +5,6 @@
 
 (in-package :clasp-cleavir)
 
-(defun %literal-ref (value &optional read-only-p)
-  (multiple-value-bind (index in-array)
-      (literal:reference-literal value read-only-p)
-    (unless in-array
-      (error "%literal-ref of immediate value ~s is illegal" value))
-    (literal:constants-table-reference index)))
-
-(defun %literal-value (value &optional (label "literal"))
-  (declare (ignore label))
-  (cmp:irc-t*-load (%literal-ref value)))
-
-(defun %closurette-ref (function)
-  (unless (cmp:xep-group-p function)
-    (error "The first argument to %closurette-index must be a xep-group - instead it is a ~s of class ~s" function (class-name (class-of function))))
-  (let ((index (literal::reference-closure function)))
-    (literal:constants-table-reference index)))
-
-(defun %closurette-value (function)
-  (cmp:irc-t*-load (%closurette-ref function)))
-
 (defun %i1 (num)
   (cmp:jit-constant-i1 num))
 
@@ -47,13 +27,21 @@
 (defmethod %default-int-type ((abi abi-x86-64)) cmp:%i64%)
 (defmethod %default-int-type ((abi abi-x86-32)) cmp:%i32%)
 
+;;; This is bound by the BTB translator to change how we
+;;; translate constants. KLUDGE.
+(defvar *literal-fn* #'literal:reference-literal)
+
+(defun literal (value &optional (read-only-p t))
+  (multiple-value-bind (data arrayp)
+      (funcall *literal-fn* value read-only-p)
+    (if arrayp
+        (literal:constants-table-value data)
+        data)))
+
 (defun %nil ()
   "A nil in a T*"
-  (%literal-value nil))
-(defun %t ()
-  "A T in a T*"
-  (%literal-value t))
-
+  (literal nil))
+(defun %t () (literal t))
 
 (defun instruction-llvm-function (instr)
   (llvm-sys:get-parent (llvm-sys:get-parent instr)))
@@ -68,14 +56,10 @@
       ;; + called with %intrinsic-invoke-if-landing-pad-or-call
       ;; + ... unless its cc_unwind or cc_throw
       (warn "%intrinsic-call is being used for ~a when this intrinsic has been declared with the unwind property - meaning that it can throw an exception and %intrinsic-invoke-if-landing-pad-or-call should be used" function-name)))
-  (cmp:irc-intrinsic-call function-name args label))
+  (cmp:irc-intrinsic-call-or-invoke function-name args label))
 
 (defun %intrinsic-invoke-if-landing-pad-or-call (function-name args &optional (label "") (maybe-landing-pad cmp:*current-unwind-landing-pad-dest*))
-  (cmp::irc-intrinsic-invoke-if-landing-pad-or-call function-name args label maybe-landing-pad)
-  ;; FIXME:   If the current function has a landing pad - then use INVOKE
-  #+(or)(if maybe-landing-pad
-            (cmp:irc-intrinsic-invoke function-name args maybe-landing-pad label)
-            (cmp:irc-intrinsic-call function-name args label)))
+  (cmp:irc-intrinsic-call-or-invoke function-name args label maybe-landing-pad))
 
 (defgeneric %sadd.with-overflow (x y abi))
 (defmethod %sadd.with-overflow (x y (abi abi-x86-64))
@@ -183,22 +167,6 @@ And convert everything to JIT constants."
     (cmp::irc-call-or-invoke (cmp:call-info-function-type call-info)
                              (call-info-entry-point call-info)
                              (call-info-real-args call-info)
-                             cmp::*current-unwind-landing-pad-dest*
-                             label)))
-
-(defun unsafe-multiple-value-foreign-call (intrinsic-name args abi
-                                           &key (label ""))
-  (declare (ignore abi))
-  (let* ((func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
-                   (let ((arg-types (make-list (length args) :initial-element cmp:%t*%))
-                         (varargs nil))
-                     (cmp:irc-function-create
-                      (llvm-sys:function-type-get cmp:%return-type% arg-types varargs)
-                      'llvm-sys::external-linkage
-                      intrinsic-name
-                      cmp:*the-module*))))
-         (function-type (llvm-sys:get-function-type func)))
-    (cmp::irc-call-or-invoke function-type func args
                              cmp::*current-unwind-landing-pad-dest*
                              label)))
 

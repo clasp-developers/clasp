@@ -8,6 +8,7 @@
                     (#:ast #:cleavir-ast)
                     (#:ctype #:cleavir-ctype)
                     (#:cst-to-ast #:cleavir-cst-to-ast)
+                    (#:build #:cleavir-bir-builder)
                     (#:env #:cleavir-env)
                     (#:policy #:cleavir-compilation-policy))
   (:export
@@ -23,7 +24,6 @@
    #:*debug-cleavir*
    #:*debug-cleavir-literals*
    #+stealth-gids :instruction-gid
-   #:unsafe-multiple-value-foreign-call
    #:unsafe-foreign-call
    #:unsafe-foreign-call-pointer
    #:datum-gid
@@ -32,7 +32,6 @@
    #:finalize-unwind-and-landing-pad-instructions
    #:cleavir-compile
    #:cleavir-compile-file
-   #:cclasp-compile-in-env
    #:*function-inline-asts*
    #:*clasp-env*
    #:*clasp-system*
@@ -46,11 +45,9 @@
   (:local-nicknames (#:ast #:cleavir-ast))
   (:use #:common-lisp)
   (:export
-   #:multiple-value-foreign-call-ast
    #:foreign-call-ast
    #:foreign-call-pointer-ast
    #:argument-asts
-   #:function-name
    #:foreign-types
    #:make-throw-ast
    #:throw-ast
@@ -67,7 +64,6 @@
                     (#:build #:cleavir-bir-builder))
   (:export #:header-stamp-case
            #:foreign-call-pointer #:foreign-types
-           #:mv-foreign-call #:function-name
            #:atomic #:order))
 
 (defpackage #:cc-bir-to-bmir

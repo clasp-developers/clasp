@@ -78,15 +78,6 @@ void errorApplyLastArgumentNotList(T_sp lastArg) {
 }; // namespace core
 
 namespace core {
-CL_LAMBDA(form &optional env stepping compiler-env-p (execute t));
-CL_DECLARE();
-CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(compileFormAndEvalWithEnv)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_mv core__compile_form_and_eval_with_env(T_sp form, T_sp env, T_sp stepping, T_sp compiler_env_p, T_sp execute) {
-  T_mv result = eval::funcall(comp::_sym_STARimplicit_compile_hookSTAR->symbolValue(), form, env);
-  return result;
-};
 
 /*! The following APPLY function works by exploiting variadic arrays in C++.
 Variadic arrays are allocated at the bottom of the stack frame (that grows down from high memory).
@@ -613,11 +604,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(eval)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv cl__eval(T_sp form) {
-  if (!core::_sym_STAReval_with_env_hookSTAR->boundP() || core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue()) {
-    return eval::evaluate(form, nil<T_O>());
-  } else {
-    return eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), form, nil<T_O>());
-  }
+  return eval::evaluate(form, nil<T_O>());
 };
 
 CL_DECLARE();
@@ -779,13 +766,6 @@ CL_DOCSTRING(R"dx(evaluateVerbosity)dx");
 DOCGROUP(clasp);
 CL_DEFUN void core__evaluate_verbosity(Fixnum_sp level) { eval::_evaluateVerbosity = unbox_fixnum(level); };
 
-CL_LAMBDA(form &optional env);
-CL_DECLARE();
-CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(Evaluate the form in the environment using the interpreter)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_mv core__interpret_eval_with_env(T_sp form, T_sp environment) { return comp::bytecode_toplevel_eval(form, environment); }
-
 }; // namespace core
 
 namespace core {
@@ -938,7 +918,5 @@ SYMBOL_SC_(CorePkg, classifyLetVariablesAndDeclares);
 SYMBOL_EXPORT_SC_(ClPkg, ignore);
 SYMBOL_EXPORT_SC_(ClPkg, apply);
 SYMBOL_EXPORT_SC_(ClPkg, funcall);
-SYMBOL_EXPORT_SC_(CorePkg, STAReval_with_env_hookSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, interpret_eval_with_env);
 
 }; // namespace core

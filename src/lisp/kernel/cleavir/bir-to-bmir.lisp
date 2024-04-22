@@ -142,12 +142,21 @@
                            clasp-cleavir:*clasp-system*
                            header-type))))
 
+;; If CTYPE is an eql type (constant), return (constant t), else nil nil.
+(defun ctype-constant-value (ctype)
+  (let ((system clasp-cleavir:*clasp-system*))
+    (if (cleavir-ctype:member-p system ctype)
+        (let ((members (cleavir-ctype:member-members system ctype)))
+          (if (= (length members) 1)
+              (values (first members) t)
+              (values nil nil)))
+        (values nil nil))))
+
 (defun headerp-test (return-type object-type header-type)
   (declare (ignore return-type object-type))
-  (and (cleavir-ctype:member-p clasp-cleavir:*clasp-system* header-type)
-       (let ((h (first (cleavir-ctype:member-members
-                        clasp-cleavir:*clasp-system* header-type))))
-         (and (gethash h core:+type-header-value-map+) t))))
+  (multiple-value-bind (h constantp)
+      (ctype-constant-value header-type)
+    (and constantp (gethash h core:+type-header-value-map+) t)))
 
 (deftransform-f core::headerp #'compute-headerp-primop 'headerp-test (0)
   t t t)
@@ -169,6 +178,14 @@
 (deftransform core:single-float-p core:single-float-p t)
 
 (deftransform random-state-p (core::headerq random-state) t)
+
+(deftransform core::etypecase-error core::etypecase-error t t)
+;; These are written kinda stupidly. Please forgive me.
+;; TODO: Better mechanism for &key parameters.
+(deftransform-f error (constantly 'type-error) (constantly t)
+  (2 4) t (eql type-error) (eql :datum) t (eql :expected-type) t)
+(deftransform-f error (constantly 'type-error) (constantly t)
+  (4 2) t (eql type-error) (eql :expected-type) t (eql :datum) t)
 
 (deftransform core:to-single-float core::double-to-single double-float)
 (deftransform core:to-single-float core::fixnum-to-single fixnum)
@@ -320,6 +337,9 @@
 (deftransform rplaca cleavir-primop:rplaca cons t)
 (deftransform rplacd cleavir-primop:rplacd cons t)
 
+(deftransform core:set-breakstep core:set-breakstep)
+(deftransform core:unset-breakstep core:unset-breakstep)
+
 (deftransform mp:fence (mp:fence :sequentially-consistent)
   (eql :sequentially-consistent))
 (deftransform mp:fence (mp:fence :acquire-release) (eql :acquire-release))
@@ -336,11 +356,9 @@
                '(t single-float double-float
                  base-char character))
        (cleavir-ctype:member-p system order-type)
-       (let ((mems (cleavir-ctype:member-members system order-type)))
-         (and (= (length mems) 1)
-              (member (first mems)
-                      '(:sequentially-consistent :relaxed
-                        :acquire-release :acquire :release))))))
+       (member (ctype-constant-value order-type)
+               '(:sequentially-consistent :relaxed
+                 :acquire-release :acquire :release))))
 
 (defun atomic-aref-test (return-type order-type array-type
                          &rest index-types)

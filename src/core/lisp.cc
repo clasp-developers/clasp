@@ -492,7 +492,6 @@ void Lisp::startupLispEnvironment() {
     Readtable_sp readtable = Readtable_O::create_standard_readtable();
     cl::_sym_STARreadtableSTAR->defparameter(readtable);
     initialize_functions();
-    core::_sym_STAReval_with_env_hookSTAR->defparameter(comp::_sym_bytecode_toplevel_eval->symbolFunction());
     globals_->_Bundle->setup_pathname_translations();
 #ifdef DEBUG_PROGRESS
     printf("%s:%d startupLispEnvironment initialize_classes_and_methods\n", __FILE__, __LINE__);
@@ -1197,7 +1196,7 @@ T_mv Lisp::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prom
               fmt::format("Cannot interpret {} - define core::*top-level-command-hook*", _rep_(Cons_O::createList(tplCmd.cons()))));
         }
       } else if (expression.notnilp()) {
-        result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), expression, environ);
+        result = eval::evaluate(expression, environ);
         gctools::Vec0<core::T_sp /*,gctools::RootedGCHolder*/> vresults;
         vresults.resize(result.number_of_values());
         if (result.number_of_values() > 0) {

@@ -112,8 +112,6 @@
   '(:vaslist))
 (defmethod %definition-rtype ((inst cc-vaslist:butlast) (datum bir:datum))
   '(:vaslist))
-(defmethod %definition-rtype ((inst cc-bir:mv-foreign-call) (datum bir:datum))
-  :multiple-values)
 (defmethod %definition-rtype ((inst bir:thei) (datum bir:datum))
   ;; THEI really throws a wrench in some stuff.
   (definition-rtype (bir:input inst)))
@@ -709,9 +707,6 @@
            (maybe-cast-before instruction args target))
           (t (insert-mtf-before instruction args target))))
   (cast-local-call-output instruction))
-(defmethod insert-casts ((instruction cc-bir:mv-foreign-call))
-  (object-inputs instruction)
-  (cast-output instruction :multiple-values))
 (defmethod insert-casts ((instruction bir:values-save))
   (let* ((input (bir:input instruction)) (output (bir:output instruction))
          (inputrt (cc-bmir:rtype input)) (outputrt (cc-bmir:rtype output)))

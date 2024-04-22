@@ -17,37 +17,29 @@
        ;;(cmp-log-dump-module ,module)
        (when (and ,optimize ,optimize-level (null ,dry-run)) (funcall ,optimize ,module ,optimize-level )))))
 
-;;; See NOTE on compile-in-env below.
 (defun compile-with-hook (compile-hook definition env)
-  "Dispatch to clasp compiler or cleavir-clasp compiler if available.
-We could do more fancy things here - like if cleavir-clasp fails, use the clasp compiler as backup."
-  (with-compilation-results ()
-    (if compile-hook
-        (funcall compile-hook definition env)
-        (error "no compile hook available"))))
-
-;;; NOTE: cclasp may pass a definition that is a CST or AST.
-;;; As such, this function should probably not examine the definition at all.
-(defun compile-in-env (definition env
-                       &optional (compile-hook *cleavir-compile-hook*))
-  "Compile in the given environment"
   (with-compilation-unit ()
-    (compile-with-hook compile-hook definition env)))
+    (with-compilation-results ()
+      (funcall compile-hook definition env))))
 
-(defun %compile (definition environment)
+;;; This implements the pure functional part of CL:COMPILE, i.e.
+;;; it computes and returns a compiled definition. It also accepts
+;;; an environment argument. CL:COMPILE is defined in terms of this.
+(defun compile-definition (definition environment)
   (cond
     ((and (typep definition 'core:bytecode-simple-fun)
           (boundp '*btb-compile-hook*)
           *btb-compile-hook*)
-     (compile-in-env definition environment *btb-compile-hook*))
+     (compile-with-hook *btb-compile-hook* definition environment))
     ((and (typep definition 'core:closure)
           (typep (core:function/entry-point definition)
                  'core:bytecode-simple-fun)
           (boundp '*btb-compile-hook*)
           *btb-compile-hook*)
      (multiple-value-bind (csfun warn fail)
-         (compile-in-env (core:function/entry-point definition)
-                         environment *btb-compile-hook*)
+         (compile-with-hook *btb-compile-hook*
+                            (core:function/entry-point definition)
+                            environment)
        (let ((cells nil))
          (dotimes (i (core:closure-length definition))
            (push (core:closure-ref definition i) cells))
@@ -60,19 +52,26 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
     ((functionp definition)
      (error "COMPILE doesn't know how to handle ~a definition"))
     ((and (consp definition) (eq (car definition) 'lambda))
-     (cmp-log "compile form: {}%N" definition)
-     (compile-in-env definition nil *cleavir-compile-hook*))
+     (with-compilation-unit ()
+       (with-compilation-results ()
+         #+(or)
+         (let ((bc (cmp:bytecompile definition)))
+           (if (and (boundp '*btb-compile-hook*) *btb-compile-hook*)
+               (funcall *btb-compile-hook* bc nil)
+               bc))
+         #-(or)
+         (funcall cmp:*cleavir-compile-hook* definition environment))))
     (t (error "COMPILE doesn't know how to handle ~a" definition))))
 
 (defun compile (name &optional definition)
   (multiple-value-bind (function warnp failp)
       ;; Get the actual compiled function and warnp+failp.
-      (%compile (if (null definition)
-                    (if (fboundp name)
-                        (fdefinition name)
-                        (error "No definition for ~a" name))
-                    definition)
-                nil)
+      (compile-definition (if (null definition)
+                              (if (fboundp name)
+                                  (fdefinition name)
+                                  (error "No definition for ~a" name))
+                              definition)
+                          nil)
     ;; Bind the name if applicable.
     (cond ((and (symbolp name) (macro-function name))
            (setf (macro-function name) function)

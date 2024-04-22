@@ -33,15 +33,15 @@
                           "comp::Lexenv_O" "core::DebuggerLocal_O" "llvmo::DILocalVariable_O"
                           "core::LongFloat_O" "core::ComplexVector_int4_t_O"
                           "asttooling::QualType_O" "llvmo::LibraryFile_O" "llvmo::User_O"
-                          "asttooling::DerivableSyntaxOnlyAction" "core::MDArray_int16_t_O" "comp::EnvInfo_O"
-                          "core::BytecodeAstTagbody_O" "core::ComplexVector_T_O"
-                          "llvmo::CodeBlock_O" "llvmo::FenceInst_O" "llvmo::AtomicCmpXchgInst_O"
-                          "core::ComplexVector_int8_t_O" "core::SimpleMDArray_int4_t_O"
-                          "core::SimpleVector_int32_t_O" "comp::LoadTimeValueInfo_O"
-                          "core::SimpleMDArray_double_O" "core::Complex_O" "core::TagbodyDynEnv_O"
-                          "llvmo::ConstantPointerNull_O" "llvmo::VectorType_O"
-                          "llvmo::ValueAsMetadata_O" "core::BytecodeAstExit_O"
-                          "llvmo::ConstantExpr_O" "core::VariableCell_O"
+                          "asttooling::DerivableSyntaxOnlyAction" "comp::EnvInfo_O"
+                          "core::MDArray_int16_t_O" "core::BytecodeAstTagbody_O"
+                          "core::ComplexVector_T_O" "llvmo::CodeBlock_O" "llvmo::FenceInst_O"
+                          "llvmo::AtomicCmpXchgInst_O" "core::ComplexVector_int8_t_O"
+                          "core::SimpleMDArray_int4_t_O" "core::SimpleVector_int32_t_O"
+                          "comp::LoadTimeValueInfo_O" "core::SimpleMDArray_double_O"
+                          "core::Complex_O" "core::TagbodyDynEnv_O" "llvmo::ConstantPointerNull_O"
+                          "llvmo::VectorType_O" "llvmo::ValueAsMetadata_O"
+                          "core::BytecodeAstExit_O" "llvmo::ConstantExpr_O" "core::VariableCell_O"
                           "core::GFBytecodeSimpleFun_O" "llvmo::StructType_O" "core::RandomState_O"
                           "core::ComplexVector_int16_t_O" "core::SimpleMDArray_float_O"
                           "llvmo::Target_O" "core::SimpleVector_int2_t_O" "comp::LocalFunInfo_O"
@@ -683,7 +683,7 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<comp::Label_O>"
              :offset-base-ctype "comp::JumpIfSuppliedFixup_O" :layout-offset-field-names ("_label")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_char" :offset-ctype "unsigned char"
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_short" :offset-ctype "unsigned short"
              :offset-base-ctype "comp::JumpIfSuppliedFixup_O" :layout-offset-field-names ("_index")}
 {class-kind :stamp-name "STAMPWTAG_comp__LexFixup_O" :stamp-key "comp::LexFixup_O"
             :parent-class "comp::Fixup_O" :lisp-class-base "comp::Fixup_O" :root-class "core::T_O"
@@ -880,18 +880,22 @@
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_byte8_t_O>"
+             :offset-base-ctype "core::BytecodeModule_O" :layout-offset-field-names ("_Bytecode")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::BytecodeModule_O" :layout-offset-field-names ("_Literals")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BytecodeModule_O" :layout-offset-field-names ("_Bytecode")}
+             :offset-base-ctype "core::BytecodeModule_O"
+             :layout-offset-field-names ("_MutableLiterals")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::BytecodeModule_O" :layout-offset-field-names ("_DebugInfo")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::BytecodeModule_O"
-             :layout-offset-field-names ("_MutableLiterals")}
+             :layout-offset-field-names ("_NativeModule")}
 {class-kind :stamp-name "STAMPWTAG_asttooling__PresumedLoc_O"
             :stamp-key "asttooling::PresumedLoc_O" :parent-class "core::CxxObject_O"
             :lisp-class-base "core::CxxObject_O" :root-class "core::T_O" :stamp-wtag 3
@@ -978,8 +982,6 @@
              :offset-base-ctype "llvmo::ObjectFile_O" :layout-offset-field-names ("_FasoName")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "llvmo::ObjectFile_O" :layout-offset-field-names ("_FasoIndex")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "llvmo::ObjectFile_O" :layout-offset-field-names ("_gcRoots")}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "llvmo::ObjectFile_O"
              :layout-offset-field-names ("_TextSectionStart")}
@@ -2967,19 +2969,6 @@
 {fixed-field :offset-type-cxx-identifier "CONSTANT_ARRAY_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "core::AbstractSimpleVector_O"
              :layout-offset-field-names ("_Length")}
-{class-kind :stamp-name "STAMPWTAG_core__SimpleVector_int64_t_O"
-            :stamp-key "core::SimpleVector_int64_t_O"
-            :parent-class "core::template_SimpleVector<core::SimpleVector_int64_t_O,long long,core::AbstractSimpleVector_O>"
-            :lisp-class-base "core::AbstractSimpleVector_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "CONSTANT_ARRAY_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SimpleVector_int64_t_O"
-             :layout-offset-field-names ("_Length")}
-{variable-array0 :offset-base-ctype "core::SimpleVector_int64_t_O" :field-names ("_Data" "._Data")}
-{variable-capacity :ctype "long long" :offset-base-ctype "core::SimpleVector_int64_t_O"
-                   :length-field-names ("_Data" "._MaybeSignedLength")
-                   :end-field-names ("_Data" "._MaybeSignedLength")}
-{variable-field-only :offset-type-cxx-identifier "ctype_long_long" :fixup-type "long long"}
 {class-kind :stamp-name "STAMPWTAG_core__SimpleString_O" :stamp-key "core::SimpleString_O"
             :parent-class "core::AbstractSimpleVector_O"
             :lisp-class-base "core::AbstractSimpleVector_O" :root-class "core::T_O" :stamp-wtag 3
@@ -3037,19 +3026,6 @@
                    :end-field-names ("_Data" "._MaybeSignedLength")}
 {variable-field-only :offset-type-cxx-identifier "ctype_unsigned_short"
                      :fixup-type "unsigned short"}
-{class-kind :stamp-name "STAMPWTAG_core__SimpleVector_fixnum_O"
-            :stamp-key "core::SimpleVector_fixnum_O"
-            :parent-class "core::template_SimpleVector<core::SimpleVector_fixnum_O,long long,core::AbstractSimpleVector_O>"
-            :lisp-class-base "core::AbstractSimpleVector_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "CONSTANT_ARRAY_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SimpleVector_fixnum_O"
-             :layout-offset-field-names ("_Length")}
-{variable-array0 :offset-base-ctype "core::SimpleVector_fixnum_O" :field-names ("_Data" "._Data")}
-{variable-capacity :ctype "long long" :offset-base-ctype "core::SimpleVector_fixnum_O"
-                   :length-field-names ("_Data" "._MaybeSignedLength")
-                   :end-field-names ("_Data" "._MaybeSignedLength")}
-{variable-field-only :offset-type-cxx-identifier "ctype_long_long" :fixup-type "long long"}
 {class-kind :stamp-name "STAMPWTAG_core__SimpleBitVector_O" :stamp-key "core::SimpleBitVector_O"
             :parent-class "core::template_SimpleBitUnitVector<core::SimpleBitVector_O,1,0>"
             :lisp-class-base "core::AbstractSimpleVector_O" :root-class "core::T_O" :stamp-wtag 3
@@ -3058,10 +3034,9 @@
              :offset-base-ctype "core::SimpleBitVector_O" :layout-offset-field-names ("_Length")}
 {variable-bit-array0 :integral-value "1" :offset-base-ctype "core::SimpleBitVector_O"
                      :field-names ("_Data" "._Data")}
-{variable-capacity :ctype "unsigned long long" :offset-base-ctype "core::SimpleBitVector_O"
+{variable-capacity :ctype "unsigned long" :offset-base-ctype "core::SimpleBitVector_O"
                    :length-field-names ("_Data" "._Length") :end-field-names ("_Data" "._Length")}
-{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long_long"
-                     :fixup-type "unsigned long long"}
+{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
 {class-kind :stamp-name "STAMPWTAG_core__SimpleVector_int4_t_O"
             :stamp-key "core::SimpleVector_int4_t_O"
             :parent-class "core::template_SimpleBitUnitVector<core::SimpleVector_int4_t_O,4,1>"
@@ -3072,10 +3047,9 @@
              :layout-offset-field-names ("_Length")}
 {variable-bit-array0 :integral-value "4" :offset-base-ctype "core::SimpleVector_int4_t_O"
                      :field-names ("_Data" "._Data")}
-{variable-capacity :ctype "unsigned long long" :offset-base-ctype "core::SimpleVector_int4_t_O"
+{variable-capacity :ctype "unsigned long" :offset-base-ctype "core::SimpleVector_int4_t_O"
                    :length-field-names ("_Data" "._Length") :end-field-names ("_Data" "._Length")}
-{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long_long"
-                     :fixup-type "unsigned long long"}
+{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
 {class-kind :stamp-name "STAMPWTAG_core__SimpleVector_byte32_t_O"
             :stamp-key "core::SimpleVector_byte32_t_O"
             :parent-class "core::template_SimpleVector<core::SimpleVector_byte32_t_O,unsigned int,core::AbstractSimpleVector_O>"
@@ -3115,6 +3089,19 @@
                    :length-field-names ("_Data" "._MaybeSignedLength")
                    :end-field-names ("_Data" "._MaybeSignedLength")}
 {variable-field-only :offset-type-cxx-identifier "ctype_double" :fixup-type "double"}
+{class-kind :stamp-name "STAMPWTAG_core__SimpleVector_byte64_t_O"
+            :stamp-key "core::SimpleVector_byte64_t_O"
+            :parent-class "core::template_SimpleVector<core::SimpleVector_byte64_t_O,unsigned long,core::AbstractSimpleVector_O>"
+            :lisp-class-base "core::AbstractSimpleVector_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "CONSTANT_ARRAY_OFFSET" :offset-ctype "UnknownType"
+             :offset-base-ctype "core::SimpleVector_byte64_t_O"
+             :layout-offset-field-names ("_Length")}
+{variable-array0 :offset-base-ctype "core::SimpleVector_byte64_t_O" :field-names ("_Data" "._Data")}
+{variable-capacity :ctype "unsigned long" :offset-base-ctype "core::SimpleVector_byte64_t_O"
+                   :length-field-names ("_Data" "._MaybeSignedLength")
+                   :end-field-names ("_Data" "._MaybeSignedLength")}
+{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
 {class-kind :stamp-name "STAMPWTAG_core__SimpleVector_int2_t_O"
             :stamp-key "core::SimpleVector_int2_t_O"
             :parent-class "core::template_SimpleBitUnitVector<core::SimpleVector_int2_t_O,2,1>"
@@ -3125,24 +3112,35 @@
              :layout-offset-field-names ("_Length")}
 {variable-bit-array0 :integral-value "2" :offset-base-ctype "core::SimpleVector_int2_t_O"
                      :field-names ("_Data" "._Data")}
-{variable-capacity :ctype "unsigned long long" :offset-base-ctype "core::SimpleVector_int2_t_O"
+{variable-capacity :ctype "unsigned long" :offset-base-ctype "core::SimpleVector_int2_t_O"
                    :length-field-names ("_Data" "._Length") :end-field-names ("_Data" "._Length")}
-{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long_long"
-                     :fixup-type "unsigned long long"}
-{class-kind :stamp-name "STAMPWTAG_core__SimpleVector_byte64_t_O"
-            :stamp-key "core::SimpleVector_byte64_t_O"
-            :parent-class "core::template_SimpleVector<core::SimpleVector_byte64_t_O,unsigned long long,core::AbstractSimpleVector_O>"
+{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
+{class-kind :stamp-name "STAMPWTAG_core__SimpleVector_int64_t_O"
+            :stamp-key "core::SimpleVector_int64_t_O"
+            :parent-class "core::template_SimpleVector<core::SimpleVector_int64_t_O,long,core::AbstractSimpleVector_O>"
             :lisp-class-base "core::AbstractSimpleVector_O" :root-class "core::T_O" :stamp-wtag 3
             :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "CONSTANT_ARRAY_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SimpleVector_byte64_t_O"
+             :offset-base-ctype "core::SimpleVector_int64_t_O"
              :layout-offset-field-names ("_Length")}
-{variable-array0 :offset-base-ctype "core::SimpleVector_byte64_t_O" :field-names ("_Data" "._Data")}
-{variable-capacity :ctype "unsigned long long" :offset-base-ctype "core::SimpleVector_byte64_t_O"
+{variable-array0 :offset-base-ctype "core::SimpleVector_int64_t_O" :field-names ("_Data" "._Data")}
+{variable-capacity :ctype "long" :offset-base-ctype "core::SimpleVector_int64_t_O"
                    :length-field-names ("_Data" "._MaybeSignedLength")
                    :end-field-names ("_Data" "._MaybeSignedLength")}
-{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long_long"
-                     :fixup-type "unsigned long long"}
+{variable-field-only :offset-type-cxx-identifier "ctype_long" :fixup-type "long"}
+{class-kind :stamp-name "STAMPWTAG_core__SimpleVector_fixnum_O"
+            :stamp-key "core::SimpleVector_fixnum_O"
+            :parent-class "core::template_SimpleVector<core::SimpleVector_fixnum_O,long,core::AbstractSimpleVector_O>"
+            :lisp-class-base "core::AbstractSimpleVector_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "CONSTANT_ARRAY_OFFSET" :offset-ctype "UnknownType"
+             :offset-base-ctype "core::SimpleVector_fixnum_O"
+             :layout-offset-field-names ("_Length")}
+{variable-array0 :offset-base-ctype "core::SimpleVector_fixnum_O" :field-names ("_Data" "._Data")}
+{variable-capacity :ctype "long" :offset-base-ctype "core::SimpleVector_fixnum_O"
+                   :length-field-names ("_Data" "._MaybeSignedLength")
+                   :end-field-names ("_Data" "._MaybeSignedLength")}
+{variable-field-only :offset-type-cxx-identifier "ctype_long" :fixup-type "long"}
 {class-kind :stamp-name "STAMPWTAG_core__SimpleVector_int8_t_O"
             :stamp-key "core::SimpleVector_int8_t_O"
             :parent-class "core::template_SimpleVector<core::SimpleVector_int8_t_O,signed char,core::AbstractSimpleVector_O>"
@@ -3203,10 +3201,9 @@
              :layout-offset-field-names ("_Length")}
 {variable-bit-array0 :integral-value "2" :offset-base-ctype "core::SimpleVector_byte2_t_O"
                      :field-names ("_Data" "._Data")}
-{variable-capacity :ctype "unsigned long long" :offset-base-ctype "core::SimpleVector_byte2_t_O"
+{variable-capacity :ctype "unsigned long" :offset-base-ctype "core::SimpleVector_byte2_t_O"
                    :length-field-names ("_Data" "._Length") :end-field-names ("_Data" "._Length")}
-{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long_long"
-                     :fixup-type "unsigned long long"}
+{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
 {class-kind :stamp-name "STAMPWTAG_core__SimpleVector_int32_t_O"
             :stamp-key "core::SimpleVector_int32_t_O"
             :parent-class "core::template_SimpleVector<core::SimpleVector_int32_t_O,int,core::AbstractSimpleVector_O>"
@@ -3230,10 +3227,9 @@
              :layout-offset-field-names ("_Length")}
 {variable-bit-array0 :integral-value "4" :offset-base-ctype "core::SimpleVector_byte4_t_O"
                      :field-names ("_Data" "._Data")}
-{variable-capacity :ctype "unsigned long long" :offset-base-ctype "core::SimpleVector_byte4_t_O"
+{variable-capacity :ctype "unsigned long" :offset-base-ctype "core::SimpleVector_byte4_t_O"
                    :length-field-names ("_Data" "._Length") :end-field-names ("_Data" "._Length")}
-{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long_long"
-                     :fixup-type "unsigned long long"}
+{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
 {class-kind :stamp-name "STAMPWTAG_core__Symbol_O" :stamp-key "core::Symbol_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -3840,11 +3836,11 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Instance_O>"
              :offset-base-ctype "llvmo::SectionedAddress_O" :layout-offset-field-names ("_Class")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long_long"
-             :offset-ctype "unsigned long long" :offset-base-ctype "llvmo::SectionedAddress_O"
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "llvmo::SectionedAddress_O"
              :layout-offset-field-names ("_value" ".Address")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long_long"
-             :offset-ctype "unsigned long long" :offset-base-ctype "llvmo::SectionedAddress_O"
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "llvmo::SectionedAddress_O"
              :layout-offset-field-names ("_value" ".SectionIndex")}
 {class-kind :stamp-name "STAMPWTAG_llvmo__EngineBuilder_O" :stamp-key "llvmo::EngineBuilder_O"
             :parent-class "core::ExternalObject_O" :lisp-class-base "core::ExternalObject_O"
@@ -5434,10 +5430,10 @@
              :offset-ctype "gctools::smart_ptr<core::Array_O>"
              :offset-base-ctype "core::StringInputStream_O"
              :layout-offset-field-names ("_contents")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
+{fixed-field :offset-type-cxx-identifier "ctype_long" :offset-ctype "long"
              :offset-base-ctype "core::StringInputStream_O"
              :layout-offset-field-names ("_input_position")}
-{fixed-field :offset-type-cxx-identifier "ctype_long_long" :offset-ctype "long long"
+{fixed-field :offset-type-cxx-identifier "ctype_long" :offset-ctype "long"
              :offset-base-ctype "core::StringInputStream_O"
              :layout-offset-field-names ("_input_limit")}
 {class-kind :stamp-name "STAMPWTAG_core__EchoStream_O" :stamp-key "core::EchoStream_O"
@@ -5856,18 +5852,6 @@
                    :length-field-names ("_MaybeSignedLength")
                    :end-field-names ("_MaybeSignedLength")}
 {variable-field-only :offset-type-cxx-identifier "ctype_unsigned_int" :fixup-type "unsigned int"}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCArray_moveable_unsigned_long_long_"
-                :stamp-key "gctools::GCArray_moveable<unsigned long long>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCArray_moveable<unsigned long long>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "unsigned long long"
-                   :offset-base-ctype "gctools::GCArray_moveable<unsigned long long>"
-                   :length-field-names ("_MaybeSignedLength")
-                   :end-field-names ("_MaybeSignedLength")}
-{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long_long"
-                     :fixup-type "unsigned long long"}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__"
                 :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -5905,11 +5889,10 @@
                         :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"
                         :bitwidth 4}
 {variable-array0 :offset-base-ctype "gctools::GCBitUnitArray_moveable<4,0>" :field-names ("_Data")}
-{variable-capacity :ctype "unsigned long long"
+{variable-capacity :ctype "unsigned long"
                    :offset-base-ctype "gctools::GCBitUnitArray_moveable<4,0>"
                    :length-field-names ("_Length") :end-field-names ("_Length")}
-{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long_long"
-                     :fixup-type "unsigned long long"}
+{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_core__SymbolClassHolderPair_"
                 :stamp-key "gctools::GCVector_moveable<core::SymbolClassHolderPair>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -6095,11 +6078,10 @@
                         :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"
                         :bitwidth 4}
 {variable-array0 :offset-base-ctype "gctools::GCBitUnitArray_moveable<4,1>" :field-names ("_Data")}
-{variable-capacity :ctype "unsigned long long"
+{variable-capacity :ctype "unsigned long"
                    :offset-base-ctype "gctools::GCBitUnitArray_moveable<4,1>"
                    :length-field-names ("_Length") :end-field-names ("_Length")}
-{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long_long"
-                     :fixup-type "unsigned long long"}
+{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_"
                 :stamp-key "gctools::GCVector_moveable<core::SymbolStorage>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -6160,15 +6142,6 @@
                 :fixup-ctype-offset-type-key "gctools::tagged_pointer<gctools::GCVector_moveable<clbind::detail::edge>>"
                 :fixup-ctype-key "clbind::detail::vertex"
                 :layout-offset-field-names ("edges" "._Vector" "._Contents")}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCArray_moveable_long_long_"
-                :stamp-key "gctools::GCArray_moveable<long long>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCArray_moveable<long long>" :field-names ("_Data")}
-{variable-capacity :ctype "long long" :offset-base-ctype "gctools::GCArray_moveable<long long>"
-                   :length-field-names ("_MaybeSignedLength")
-                   :end-field-names ("_MaybeSignedLength")}
-{variable-field-only :offset-type-cxx-identifier "ctype_long_long" :fixup-type "long long"}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCArray_moveable_unsigned_long_"
                 :stamp-key "gctools::GCArray_moveable<unsigned long>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -6214,11 +6187,10 @@
                         :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"
                         :bitwidth 2}
 {variable-array0 :offset-base-ctype "gctools::GCBitUnitArray_moveable<2,0>" :field-names ("_Data")}
-{variable-capacity :ctype "unsigned long long"
+{variable-capacity :ctype "unsigned long"
                    :offset-base-ctype "gctools::GCBitUnitArray_moveable<2,0>"
                    :length-field-names ("_Length") :end-field-names ("_Length")}
-{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long_long"
-                     :fixup-type "unsigned long long"}
+{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCArray_moveable_int_"
                 :stamp-key "gctools::GCArray_moveable<int>" :parent-class "gctools::GCContainer"
                 :lisp-class-base nil :root-class "gctools::GCContainer" :stamp-wtag 3
@@ -6234,11 +6206,10 @@
                         :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"
                         :bitwidth 1}
 {variable-array0 :offset-base-ctype "gctools::GCBitUnitArray_moveable<1,0>" :field-names ("_Data")}
-{variable-capacity :ctype "unsigned long long"
+{variable-capacity :ctype "unsigned long"
                    :offset-base-ctype "gctools::GCBitUnitArray_moveable<1,0>"
                    :length-field-names ("_Length") :end-field-names ("_Length")}
-{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long_long"
-                     :fixup-type "unsigned long long"}
+{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__"
                 :stamp-key "gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -6275,11 +6246,19 @@
                         :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"
                         :bitwidth 2}
 {variable-array0 :offset-base-ctype "gctools::GCBitUnitArray_moveable<2,1>" :field-names ("_Data")}
-{variable-capacity :ctype "unsigned long long"
+{variable-capacity :ctype "unsigned long"
                    :offset-base-ctype "gctools::GCBitUnitArray_moveable<2,1>"
                    :length-field-names ("_Length") :end-field-names ("_Length")}
-{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long_long"
-                     :fixup-type "unsigned long long"}
+{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
+{container-kind :stamp-name "STAMPWTAG_gctools__GCArray_moveable_long_"
+                :stamp-key "gctools::GCArray_moveable<long>" :parent-class "gctools::GCContainer"
+                :lisp-class-base nil :root-class "gctools::GCContainer" :stamp-wtag 3
+                :definition-data "0"}
+{variable-array0 :offset-base-ctype "gctools::GCArray_moveable<long>" :field-names ("_Data")}
+{variable-capacity :ctype "long" :offset-base-ctype "gctools::GCArray_moveable<long>"
+                   :length-field-names ("_MaybeSignedLength")
+                   :end-field-names ("_MaybeSignedLength")}
+{variable-field-only :offset-type-cxx-identifier "ctype_long" :fixup-type "long"}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_int_"
                 :stamp-key "gctools::GCVector_moveable<int>" :parent-class "gctools::GCContainer"
                 :lisp-class-base nil :root-class "gctools::GCContainer" :stamp-wtag 3

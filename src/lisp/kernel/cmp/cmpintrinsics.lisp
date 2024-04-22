@@ -1041,55 +1041,49 @@ and initialize it with an array consisting of one function pointer."
                         THE-REPL-XEP-GROUP gcroots-in-module
                         array-type roots-array-or-nil number-of-roots
                         ordered-literals)
-    (let ((startup-fn (irc-simple-function-create startup-function-name
-                                                  %fn-start-up%
-                                                  'llvm-sys:external-linkage ; this should be internal and invoked by a ctor but that doesn't seem to be happening yet
-                                                  module
-                                                  :argument-names (list "values" ))))
-      (llvm-sys:set-unnamed-addr startup-fn 'llvm-sys:none)
-      (let* ((irbuilder-alloca
-               (llvm-sys:make-irbuilder (thread-local-llvm-context)))
-             (irbuilder-body
-               (llvm-sys:make-irbuilder (thread-local-llvm-context)))
-             (*irbuilder-function-alloca* irbuilder-alloca)
-             (*irbuilder-function-body* irbuilder-body)
-             (*current-function* startup-fn)
-             (entry-bb (irc-basic-block-create "entry" startup-fn))
-             (arguments (llvm-sys:get-argument-list startup-fn))
-             (arg-values (first arguments)))
-        (cmp:irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
-        (with-irbuilder (irbuilder-alloca)
-          (let ((start (if roots-array-or-nil
-                           (irc-typed-gep array-type roots-array-or-nil (list 0 0))
-                           (llvm-sys:constant-pointer-null-get %t**%))))
-            (multiple-value-bind (function-vector-length function-vector function-vector-type)
-                (literal:setup-literal-machine-function-vectors cmp:*the-module*)
-              (when gcroots-in-module
-                (irc-intrinsic-call "cc_initialize_gcroots_in_module"
-                                    (list gcroots-in-module ; holder
-                                          start ; root_address
-                                          (jit-constant-size_t number-of-roots) ; num_roots
-                                          arg-values ; initial_data
-                                          (llvm-sys:constant-pointer-null-get %i8**%) ; transient_alloca
-                                          (jit-constant-size_t 0) ; transient_entries
-                                          (jit-constant-size_t function-vector-length) ; function_pointer_count
-                                          (irc-bit-cast
-                                           (cmp:irc-typed-gep function-vector-type
-                                                              function-vector
-                                                              (list 0 0))
-                                           %i8**%) ; fptrs
-                                          ))))
-            ;; If the constant/literal list is provided - then we may need to generate code for closurettes
-            (map nil
-                 (lambda (x)
-                   (when (and (literal:literal-node-creator-p x)
-                              (literal:literal-node-closure-p (literal:literal-node-creator-object x)))
-                     (literal:generate-run-time-code-for-closurette x)))
-                 ordered-literals))
-          (when gcroots-in-module
-            (irc-intrinsic-call "cc_finish_gcroots_in_module" (list gcroots-in-module)))
-          (let ((global-entry-point (literal:constants-table-value (cmp:entry-point-reference-index (xep-group-entry-point-reference THE-REPL-XEP-GROUP)))))
-            (irc-ret (irc-bit-cast global-entry-point %t*%))))
+  (declare (ignore ordered-literals))
+  (let ((startup-fn (irc-simple-function-create startup-function-name
+                                                %fn-start-up%
+                                                'llvm-sys:external-linkage ; this should be internal and invoked by a ctor but that doesn't seem to be happening yet
+                                                module
+                                                :argument-names (list "values" ))))
+    (llvm-sys:set-unnamed-addr startup-fn 'llvm-sys:none)
+    (let* ((irbuilder-alloca
+             (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+           (irbuilder-body
+             (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+           (*irbuilder-function-alloca* irbuilder-alloca)
+           (*irbuilder-function-body* irbuilder-body)
+           (*current-function* startup-fn)
+           (entry-bb (irc-basic-block-create "entry" startup-fn))
+           (arguments (llvm-sys:get-argument-list startup-fn))
+           (arg-values (first arguments)))
+      (cmp:irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
+      (with-irbuilder (irbuilder-alloca)
+        (let ((start (if roots-array-or-nil
+                         (irc-typed-gep array-type roots-array-or-nil (list 0 0))
+                         (llvm-sys:constant-pointer-null-get %t**%))))
+          (multiple-value-bind (function-vector-length function-vector function-vector-type)
+              (literal:setup-literal-machine-function-vectors cmp:*the-module*)
+            (when gcroots-in-module
+              (irc-intrinsic "cc_initialize_gcroots_in_module"
+                             gcroots-in-module ; holder
+                             start ; root_address
+                             (jit-constant-size_t number-of-roots) ; num_roots
+                             arg-values ; initial_data
+                             (llvm-sys:constant-pointer-null-get %i8**%) ; transient_alloca
+                             (jit-constant-size_t 0) ; transient_entries
+                             (jit-constant-size_t function-vector-length) ; function_pointer_count
+                             (irc-bit-cast
+                              (cmp:irc-typed-gep function-vector-type
+                                                 function-vector
+                                                 (list 0 0))
+                              %i8**%) ; fptrs
+                             ))))
+        (when gcroots-in-module
+          (irc-intrinsic "cc_finish_gcroots_in_module" gcroots-in-module))
+        (let ((global-entry-point (literal:constants-table-value (cmp:entry-point-reference-index (xep-group-entry-point-reference THE-REPL-XEP-GROUP)))))
+          (irc-ret (irc-bit-cast global-entry-point %t*%))))
         (values))))
 
 (defun codegen-shutdown (module shutdown-function-name gcroots-in-module)
@@ -1108,8 +1102,8 @@ and initialize it with an array consisting of one function pointer."
     (irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
     (with-irbuilder (irbuilder-alloca)
       (if gcroots-in-module
-          (irc-intrinsic-call "cc_remove_gcroots_in_module"
-                              (list gcroots-in-module)))
+          (irc-intrinsic "cc_remove_gcroots_in_module"
+                         gcroots-in-module))
       (irc-ret-void)))
   (values))
 

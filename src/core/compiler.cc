@@ -202,6 +202,37 @@ void initializer_functions_invoke() {
   }
 }
 
+// These functions are used to access a runtime module's literals vector.
+// The vector is a T_sp[]. This could possibly be done with some normal
+// CFFI accessor instead.
+
+CL_DEFUN T_sp core__literals_vref(Pointer_sp lvec, size_t index) {
+  return ((T_sp*)(lvec->ptr()))[index];
+}
+
+CL_LISPIFY_NAME("core:literals_vref");
+CL_DEFUN_SETF T_sp core__literals_vset(T_sp val, Pointer_sp lvec, size_t index)
+{
+  ((T_sp*)(lvec->ptr()))[index] = val;
+  return val;
+}
+
+// Get the address of the redirect function with the given arity.
+// This is used by clasp-cleavir to construct functions.
+CL_DEFUN Pointer_sp core__xep_redirect_address(size_t arity) {
+  switch (arity) {
+  case 0: return Pointer_O::create((void*)general_entry_point_redirect_0);
+  case 1: return Pointer_O::create((void*)general_entry_point_redirect_1);
+  case 2: return Pointer_O::create((void*)general_entry_point_redirect_2);
+  case 3: return Pointer_O::create((void*)general_entry_point_redirect_3);
+  case 4: return Pointer_O::create((void*)general_entry_point_redirect_4);
+  case 5: return Pointer_O::create((void*)general_entry_point_redirect_5);
+  case 6: return Pointer_O::create((void*)general_entry_point_redirect_6);
+  case 7: return Pointer_O::create((void*)general_entry_point_redirect_7);
+  default: SIMPLE_ERROR("BUG: Invalid arity for redirect: %zu", arity);
+  }
+}
+
 }; // namespace core
 
 namespace core {
@@ -728,14 +759,10 @@ CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external
 CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
   String_sp sfilename = gc::As<String_sp>(cl__namestring(pathDesig));
   std::string filename = sfilename->get_std_string();
-  char* name_buffer = (char*)malloc(filename.size() + 1);
-  strncpy(name_buffer, filename.c_str(), filename.size());
-  name_buffer[filename.size()] = '\0';
   int fd = open(filename.c_str(), O_RDONLY);
   off_t fsize = lseek(fd, 0, SEEK_END);
   lseek(fd, 0, SEEK_SET);
   void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
-  free(name_buffer);
   if (memory == MAP_FAILED) {
     close(fd);
     SIMPLE_ERROR("Could not mmap {} because of {}", _rep_(pathDesig), strerror(errno));
@@ -1247,7 +1274,6 @@ CL_DEFUN T_sp core__make_builtin_class(T_sp object) {
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__handle_creator(T_sp object) { SIMPLE_ERROR("Handle-creator for {}", _rep_(object).c_str()); }
 
-SYMBOL_EXPORT_SC_(CompPkg, STARimplicit_compile_hookSTAR);
 SYMBOL_SC_(CorePkg, dlopen);
 SYMBOL_SC_(CorePkg, dlsym);
 SYMBOL_SC_(CorePkg, dladdr);
@@ -1635,7 +1661,6 @@ void initialize_compiler_primitives(LispPtr lisp) {
   // Initialize raw object translators needed for Foreign Language Interface support
   llvmo::initialize_raw_translators(); // See file intrinsics.cc!
 
-  comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_bytecode_implicit_compile_form);
   cleavirPrimop::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
   comp::_sym_STARcodeWalkerSTAR->defparameter(nil<T_O>());
   comp::_sym_STARsourceLocationsSTAR->makeSpecial();

@@ -280,9 +280,6 @@ public:
 #endif
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocating JD = %p \n", __FILE__, __LINE__, __FUNCTION__, JD));
       ObjectFile_sp codeObject;
-      [[maybe_unused]] size_t objectId = objectIdFromName(G.getName());
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to allocate ObjectFile_sp with name %s  objectId = %lu\n", __FILE__, __LINE__,
-                                __FUNCTION__, G.getName().c_str(), objectId));
       codeObject = lookupObjectFile(G.getName());
       codeObject->_CodeBlock = codeBlock;
       [[maybe_unused]] core::SimpleBaseString_sp codeName = createSimpleBaseStringForStage(G.getName());
@@ -549,6 +546,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     }
     //
     bool found_gcroots_in_module = false;
+    gctools::GCRootsInModule* roots;
     bool found_literals = false;
     for (auto ssym : G.defined_symbols()) {
       if (ssym->getName() == "DW.ref.__gxx_personality_v0") {
@@ -570,13 +568,11 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 #endif
       if (ssym->hasName()) {
         std::string sname = ssym->getName().str();
-        size_t pos = sname.find(gcroots_in_module_name);
+        size_t pos;
+        pos = sname.find(gcroots_in_module_name);
         if (pos != std::string::npos) {
           found_gcroots_in_module = true;
-          void* address = (void*)ssym->getAddress().getValue();
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Symbol-info %s %p %lu\n", __FILE__, __LINE__, __FUNCTION__,
-                                    gcroots_in_module_name.c_str(), address, size));
-          currentCode->_gcRoots = (gctools::GCRootsInModule*)address;
+          roots = (gctools::GCRootsInModule*)ssym->getAddress().getValue();
           continue;
         }
         pos = sname.find(literals_name);
@@ -621,22 +617,16 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       printf("%s:%d Did NOT FIND %s\n", __FILE__, __LINE__, literals_name.c_str());
       abort();
     }
-    if (!found_gcroots_in_module) {
-      printf("%s:%d Did NOT FIND %s\n", __FILE__, __LINE__, gcroots_in_module_name.c_str());
-      abort();
-    }
-    //
-    // Write the address of literals vector into the gcroots structure
-    // Later when we run the code we will check that the gcroots structure
-    //  has the correct values
     //
     void* literalStart = (void*)currentCode->_LiteralVectorStart;
     size_t literalCount = currentCode->_LiteralVectorSizeBytes / sizeof(void*);
-    currentCode->_gcRoots->_module_memory = literalStart;
-    currentCode->_gcRoots->_num_entries = literalCount;
+    if (found_gcroots_in_module) {
+      // if we have a GCRoots object, set it up properly.
+      // Note that BTB compilation will _not_ have a GCRoots. This is OK.
+      roots->_module_memory = literalStart;
+      roots->_num_entries = literalCount;
+    }
     gctools::clasp_gc_registerRoots(literalStart, literalCount);
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s currentCode->_gcroots @%p literals %p num: %lu\n", __FILE__, __LINE__, __FUNCTION__,
-                              (gctools::GCRootsInModule*)currentCode->_gcRoots, literalStart, literalCount));
 #ifdef DEBUG_OBJECT_FILES
     for (auto* Sym : G.external_symbols())
       if (Sym->getName() == "DW.ref.__gxx_personality_v0") {
@@ -846,7 +836,6 @@ CL_DEFMETHOD ObjectFile_sp ClaspJIT_O::addIRModule(JITDylib_sp dylib, Module_sp 
   //  printf("%s:%d:%s module = %p\n", __FILE__, __LINE__, __FUNCTION__, module.raw_() );
   std::unique_ptr<llvm::Module> umodule(module->wrappedPtr());
   llvm::ExitOnError ExitOnErr;
-  std::unique_ptr<llvm::MemoryBuffer> empty;
   std::string prefix;
   std::string futureName = createIRModuleObjectFileName(startupID, prefix);
   module->wrappedPtr()->setModuleIdentifier(prefix);
@@ -866,7 +855,6 @@ ObjectFile_sp ClaspJIT_O::addObjectFile(JITDylib_sp dylib, std::unique_ptr<llvm:
   // Force the object file to be linked using MaterializationUnit::doMaterialize(...)
   if (print)
     core::clasp_write_string(fmt::format("{}:{} Materializing\n", __FILE__, __LINE__));
-  std::unique_ptr<llvm::MemoryBuffer> empty;
   //  llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::createForObjectFile(objectFile->getBufferIdentifier().str(), dylib );
   llvm::ExitOnError ExitOnErr;
   ObjectFile_sp codeObject = prepareObjectFileForMaterialization(dylib, objectFile->getBufferIdentifier().str(), startupId);

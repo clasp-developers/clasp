@@ -128,11 +128,12 @@
   `(if (cleavir-primop:eq ,x ,y) t nil))
 
 (declaim (ftype (function (t t) boolean) cl:eq eql))
+#+(or)
 (progn
   (debug-inline "eq")
   (defun cl:eq (x y)
     (if (cleavir-primop:eq x y) t nil)))
-
+#+(or)
 (progn
   (debug-inline "eql")
   (declaim (inline cl:eql))
@@ -160,7 +161,9 @@
 ;;; and reduce that "notinline" car to a primop, but that happens after type inference
 ;;; and so the compiler can use the type information.
 ;;; This is a KLUDGE, but it really seems to help in a lot of code.
+#+(or)
 (declaim (inline car cdr))
+#+(or)
 (defun car (list)
   "Return the first object in a list."
   (declare (optimize (safety 0)) (notinline car))
@@ -169,6 +172,7 @@
       (if (eq list nil)
           (the null list)
           (error 'type-error :datum list :expected-type 'list))))
+#+(or)
 (defun cdr (list)
   "Return all but the first object in a list."
   (declare (optimize (safety 0)) (notinline cdr))
@@ -176,7 +180,7 @@
     (cons (cdr (the cons list)))
     (null (the null list))
     (t (error 'type-error :datum list :expected-type 'list))))
-
+#+(or)
 (defmacro defcr (name &rest ops)
   `(progn
      (debug-inline ,(symbol-name name))
@@ -188,7 +192,7 @@
                        `(,(first ops) ,(rec (rest ops)))
                        'x)))
           (rec ops)))))
-
+#+(or)(progn
 (defcr caar   car car)
 (defcr cadr   car cdr)
 (defcr cdar   cdr car)
@@ -229,19 +233,13 @@
 (defcr eighth  car cdr cdr cdr cdr cdr cdr cdr)
 (defcr ninth   car cdr cdr cdr cdr cdr cdr cdr cdr)
 (defcr tenth   car cdr cdr cdr cdr cdr cdr cdr cdr cdr)
-
-(define-cleavir-compiler-macro core:set-breakstep (&whole form)
-  ;; Because the primop is for-effect, it must not be placed in a
-  ;; position where it's expected to return anything.
-  `(progn (core::primop core:set-breakstep) nil))
-(define-cleavir-compiler-macro core:unset-breakstep (&whole form)
-  `(progn (core::primop core:unset-breakstep) nil))
+)
 
 ;;; ------------------------------------------------------------
 ;;;
 ;;; Array functions
 ;;;
-
+#+(or)(progn
 (debug-inline "array-total-size")
 (declaim (inline array-total-size)
          (ftype (function (array) sys:index) array-total-size))
@@ -250,7 +248,8 @@
     ((simple-array * (*)) (core::primop core::vector-length array))
     ;; MDArray
     (array (core::primop core::%array-total-size array))))
-
+)
+#+(or)(progn
 (debug-inline "array-rank")
 (declaim (inline array-rank)
          (ftype (function (array) (integer 0 #.array-rank-limit)) array-rank))
@@ -258,7 +257,8 @@
   (etypecase array
     ((simple-array * (*)) 1)
     (array (core::primop core::%array-rank array))))
-
+)
+#+(or)(progn
 (declaim (inline schar (setf schar) char (setf char))
          (ftype (function (simple-string sys:index) character) schar)
          (ftype (function (string sys:index) character) char)
@@ -304,7 +304,7 @@
           (+ ,@(loop for sub in subscripts
                      for subsym in (reverse subsyms)
                      collect `(* ,sub ,subsym))))))))
-
+)
 ;;; ------------------------------------------------------------
 ;;;
 ;;; Sequence functions
@@ -315,6 +315,7 @@
 ;;; Redefinition of C++ function.
 ;;; NOTE: This will be faster if we use a generic function or implement typecase
 ;;;  in terms of generic function dispatch.
+#+(or)(progn
 (declaim (inline core:coerce-fdesignator)
          (ftype (function ((or function symbol)) function)
                 core:coerce-fdesignator))
@@ -323,6 +324,7 @@
   (etypecase fdesignator
     (function fdesignator)
     (symbol (fdefinition fdesignator))))
+)
 (declaim (ftype (function (t) function) core:coerce-to-function)))
 
 ;;; ------------------------------------------------------------
@@ -332,7 +334,7 @@
 ;;;
 (in-package "SI")
 
-#-bytecode
+#+(or)
 (progn (declaim (inline index-posn posn-index posn-column))
 (defun index-posn (index stream)
   (declare (type index index) (type pretty-stream stream))

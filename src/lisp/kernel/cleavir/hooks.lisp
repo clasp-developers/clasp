@@ -51,24 +51,6 @@
   (setq cmp:*cleavir-compile-file-hook* 'bir-loop-read-and-compile-file-forms))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Set up the core:*use-cleavir-compiler*
-;; so that walk-method-lambda in method.lisp uses the cleavir compiler.
-;;
-(eval-when (:execute :load-toplevel)
-  (setq core:*use-cleavir-compiler* t))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; cleavir-implicit-compile-hook - compile the form in the given environment
-;;;
-
-(eval-when (:execute :load-toplevel)
-  (setq core:*eval-with-env-hook* 
-        #+bytecode 'core:interpret-eval-with-env
-        #-bytecode 'cclasp-eval))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Hook the bytecode-to-bir compiler into cl:compile.
 ;;;

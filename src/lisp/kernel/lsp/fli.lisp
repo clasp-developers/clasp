@@ -323,28 +323,24 @@
 ;;; a special form, but the bytecode will resort to calling the function, which
 ;;; will in turn compile something to use.
 
+;;; TODO: Set up Cleavir to lower %%foreign-funcall calls into actual foreign
+;;; calls ("inline" the foreign-caller). That should make BTB CFFI efficient.
+;;; Also set it up so that in the usual case where the foreign function is named,
+;;; the lookup is done before runtime.
+
 ;;; Cache table from foreign-call signatures to caller functions.
 ;;; A caller takes a function pointer and its arguments as arguments.
 (defvar *foreign-callers* (make-hash-table :test 'equal))
 
-(defun make-foreign-caller (signature)
-  (let ((fptr (gensym "FUNCTION-POINTER"))
-        (args (mapcar (lambda (argt) (gensym (write-to-string argt)))
-                      (second signature))))
-    (clasp-cleavir::cleavir-compile
-     nil
-     `(lambda (,fptr ,@args)
-       (core:foreign-call-pointer ,signature
-        (ensure-core-pointer ,fptr "%%foreign-funcall" ,fptr)
-        ,@args)))))
-
 (defun ensure-foreign-caller (signature)
   (or (gethash signature *foreign-callers*)
       (setf (gethash signature *foreign-callers*)
-            (make-foreign-caller signature))))
+            (clasp-cleavir::make-foreign-caller signature))))
 
 (defun %%foreign-funcall (signature function-pointer &rest arguments)
-  (apply (ensure-foreign-caller signature) function-pointer arguments))
+  (apply (ensure-foreign-caller signature)
+         (ensure-core-pointer function-pointer "%%foreign-funcall" function-pointer)
+         arguments))
 
 (defmacro core:foreign-call-pointer (signature pointer &rest arguments)
   `(%%foreign-funcall ',signature ,pointer ,@arguments))
@@ -438,7 +434,7 @@
         (let* ((c-args (llvm-sys:get-argument-list llfun))
                ;; Generate code to translate the arguments.
                (cl-args (mapcar (lambda (c-arg c-arg-name c-type)
-                                  (cmp:irc-intrinsic-call
+                                  (cmp:irc-intrinsic-call-or-invoke
                                    (clasp-ffi::to-translator-name c-type)
                                    (list c-arg)
                                    (format nil "translated-~a" c-arg-name)))
@@ -459,46 +455,39 @@
           ;; Translate the return value back to C if applicable.
           (if (llvm-sys:type-equal rett cmp:%void%)
               (cmp:irc-ret-void)
-              (cmp:irc-ret (cmp:irc-intrinsic-call
+              (cmp:irc-ret (cmp:irc-intrinsic-call-or-invoke
                             (clasp-ffi::from-translator-name rett-kw)
                             (list (cmp:irc-tmv-primary cl-result))
                             "c-result"))))))))
 
 (defun make-callback (signature function)
   (declare (ignorable function))
-  (cmp::with-compiler-env ()
-    (let* ((module (cmp::create-run-time-module-for-compile))
-           (id (cmp::next-jit-compile-counter))
-           (varname (format nil "callback-lisp-function-~d" id))
-           (callback-name (format nil "callback-~d" id)))
-      (cmp::with-module (:module module :optimize nil)
-        (let ((var (llvm-sys:make-global-variable module cmp:%t*% nil
-                                                  'llvm-sys:external-linkage
-                                                  (llvm-sys:undef-value-get
-                                                   cmp:%t*%)
-                                                  varname)))
-          (codegen-callback signature var :c-name callback-name))
-        ;; Some variables required by parseLinkGraph.
-        ;; We don't actually use them - this is a stupid sham.
-        ;; Initializers need to be put in to ensure the symbol actually
-        ;; exist in the lib - without initializers these are just declarations.
-        (llvm-sys:make-global-variable module cmp:%t*[0]% nil
-                                       'llvm-sys:external-linkage
-                                       (llvm-sys:constant-array-get
-                                        cmp:%t*[0]% nil)
-                                       (format nil "__clasp_literals_~a"
-                                               callback-name))
-        (llvm-sys:make-global-variable module cmp:%gcroots-in-module% nil
-                                       'llvm-sys:external-linkage
-                                       (llvm-sys:undef-value-get
-                                        cmp:%gcroots-in-module%)
-                                       (format nil "__clasp_gcroots_in_module_~a"
-                                               callback-name))
-        ;;(llvm-sys:dump-module module)
-        ;;(cmp:irc-verify-module-safe module)
-        (let ((dylib (llvm-sys:jit-module-to-dylib module callback-name)))
-          (setf (llvm-sys:jit-lookup-t dylib varname) function)
-          (llvm-sys:jit-lookup dylib callback-name))))))
+  (let* ((module (cmp::create-run-time-module-for-compile))
+         (id (cmp::next-jit-compile-counter))
+         (varname (format nil "callback-lisp-function-~d" id))
+         (callback-name (format nil "callback-~d" id)))
+    (cmp::with-module (:module module :optimize nil)
+      (let ((var (llvm-sys:make-global-variable module cmp:%t*% nil
+                                                'llvm-sys:external-linkage
+                                                (llvm-sys:undef-value-get
+                                                 cmp:%t*%)
+                                                varname)))
+        (codegen-callback signature var :c-name callback-name))
+      ;; Some variables required by parseLinkGraph.
+      ;; We don't actually use them - this is a stupid sham.
+      ;; Initializers need to be put in to ensure the symbol actually
+      ;; exist in the lib - without initializers these are just declarations.
+      (llvm-sys:make-global-variable module cmp:%t*[0]% nil
+                                     'llvm-sys:external-linkage
+                                     (llvm-sys:constant-array-get
+                                      cmp:%t*[0]% nil)
+                                     (format nil "__clasp_literals_~a"
+                                             callback-name))
+      ;;(llvm-sys:dump-module module)
+      ;;(cmp:irc-verify-module-safe module)
+      (let ((dylib (llvm-sys:jit-module-to-dylib module callback-name)))
+        (setf (llvm-sys:jit-lookup-t dylib varname) function)
+        (llvm-sys:jit-lookup dylib callback-name)))))
 
 (defun %ensure-callback (signature function)
   (let ((key (cons function signature)))

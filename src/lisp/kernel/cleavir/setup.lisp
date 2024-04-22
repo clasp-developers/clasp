@@ -185,7 +185,6 @@
     ;; with macros.
     ((member name '(catch throw progv)) nil)
     ((special-operator-p name) t)
-    ((eq name 'core:multiple-value-foreign-call) t) ;; Call intrinsic functions
     ((eq name 'core:foreign-call-pointer) t) ;; Call function pointers
     ((eq name 'core::primop) t)
     ((eq (symbol-package name) (find-package :cleavir-primop)) t)
@@ -440,12 +439,7 @@
   (cleavir-environment:eval form env *clasp-env*))
 
 (defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
-  (simple-eval form env
-               (lambda (form env)
-                 (let (;; disable cleavir compiler macros
-                       (cmp:*cleavir-compile-hook* nil))
-                   (funcall (cmp:bytecompile `(lambda () (progn ,form))
-                                             (cleavir-env->bytecode env)))))))
+  (core:interpret form (cleavir-env->bytecode env)))
 
 (defun wrap-cst (cst)
   (cst:quasiquote (cst:source cst)
@@ -454,13 +448,7 @@
 (defmethod cleavir-environment:cst-eval (cst env (dispatch-env clasp-global-environment)
                                          system)
   (declare (ignore system))
-  (simple-eval-cst cst env
-                   (lambda (cst env)
-                     (let ((cmp:*cleavir-compile-hook* nil))
-                       (funcall
-                        (cmp:bytecompile
-                         `(lambda () (progn ,(cst:raw cst)))
-                         (cleavir-env->bytecode env)))))))
+  (core:interpret (cst:raw cst) (cleavir-env->bytecode env)))
 
 (defmethod cleavir-environment:cst-eval (cst env (dispatch-env null) system)
   (cleavir-environment:cst-eval cst env *clasp-env* system))

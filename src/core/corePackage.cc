@@ -188,7 +188,6 @@ SYMBOL_EXPORT_SC_(CorePkg, STARtopLevelCommandHookSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARuseBuildForkRedirectSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARuseInterpreterForEvalSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARuseParallelBuildSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, STARuse_cleavir_compilerSTAR); // nil (clasp) or T (cleavir)
 SYMBOL_EXPORT_SC_(CorePkg, _BANG_unbound_BANG_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_WNOHANG_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_application_name_PLUS_);
@@ -695,7 +694,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARdebug_fsetSTAR->defparameter(nil<core::T_O>());
   ext::_sym_ignore_signal->defparameter(SimpleBaseString_O::make("Ignore signal"));
   ext::_sym_STARinvoke_debugger_hookSTAR->defparameter(nil<core::T_O>());
-  _sym_STARuse_cleavir_compilerSTAR->defparameter(nil<core::T_O>());
   _sym_STARinterrupts_enabledSTAR->defparameter(_lisp->_true());
   _sym_STARallow_with_interruptsSTAR->defparameter(_lisp->_true());
   _sym_STARexit_backtraceSTAR->defparameter(nil<core::T_O>());

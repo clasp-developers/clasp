@@ -184,6 +184,12 @@
 ;;; And the "cell" for the loader environment.
 (defclass environment-lookup (creator) ())
 
+;;; Get a special or constant variable's value (as by SYMBOL-VALUE).
+;;; This is useful for direct dumping of some forms, as well as to allow
+;;; usage of non-dumpable DEFCONSTANTs in code (see #1517).
+(defclass vdefinition (creator)
+  ((%name :initarg :name :reader name :type creator)))
+
 (defclass general-creator (vcreator)
   (;; Reference to a function designator to call to allocate the object,
    ;; e.g. a function made of the first return value from make-load-form.
@@ -243,6 +249,12 @@
    ;; FIXME: Do this more cleanly.
    (%name :reader name :initarg :name :type creator)))
 
+;;; Used by disltv so that FASLs with unknown attributes can round-trip
+;;; without losing any info.
+(defclass unknown-attr (attribute)
+  ((%bytes :initarg :bytes :reader bytes
+           :type (simple-array (unsigned-byte 8) (*)))))
+
 (defclass name-attr (attribute)
   ((%name :initform (ensure-constant "name"))
    (%object :initarg :object :reader object :type creator)
@@ -257,6 +269,14 @@
   ((%name :initform (ensure-constant "lambda-list"))
    (%function :initarg :function :reader ll-function :type creator)
    (%lambda-list :initarg :lambda-list :reader lambda-list :type creator)))
+
+(defclass function-native-attr (attribute)
+  ((%name :initform (ensure-constant "clasp:function-native"))
+   (%function :initarg :function :reader ll-function :type creator)
+   ;; Name of the main function (string)
+   (%main :initarg :main :reader main :type creator)
+   ;; Name of the XEP array (string)
+   (%xep :initarg :xep :reader xep :type creator)))
 
 #+clasp
 (defclass spi-attr (attribute)
@@ -278,6 +298,15 @@
   ((%name :initform (ensure-constant "clasp:module-mutable-ltv"))
    (%module :initarg :module :reader module)
    (%indices :initarg :indices :reader indices :type sequence)))
+
+#+clasp
+(defclass module-native-attr (attribute)
+  ((%name :initform (ensure-constant "clasp:module-native"))
+   (%module :initarg :module :reader module :type creator)
+   (%code :initarg :code :reader code
+          :type (simple-array (unsigned-byte 8) (*)))
+   (%literals :initarg :literals :reader module-native-attr-literals
+              :type simple-vector)))
 
 #+clasp
 (defclass debug-info-function ()
@@ -615,83 +644,109 @@
   (and (consp form) (eq (car form) 'cl:lambda)))
 
 ;;; Return true iff the proper list FORM represents a call to a global
-;;; function with all constant or #' arguments (and not too many).
-(defun call-with-dumpable-arguments-p (form &optional env)
-  (and (symbolp (car form))
-       (fboundp (car form))
-       (not (macro-function (car form)))
-       (not (special-operator-p (car form)))
-       (< (length (rest form)) +max-call-args+)
-       (every (lambda (f) (or (constantp f env)
-                              (function-form-p f)
-                              (lambda-expression-p f)))
-              (rest form))))
+;;; function with all constant, #', or dumpable arguments (and not too many).
+;;; Note that allowing these recursively dumpable forms may result in slightly
+;;; subpar outcomes - for example we're not smart enough to turn the (LIST)
+;;; arguments that appear in LOAD-DEFCLASS calls into constant NILs.
+;;; But I (Bike) believe that's offset by the value of not making the loader
+;;; make and run a one-time-use bytecode function.
+(defun directly-creatable-form-p (form &optional env)
+  (or (constantp form env)
+      ;; constantp includes non-symbols-or-lists, so this typecase is exhaustive
+      (typecase form
+        (symbol
+         (not (nth-value 1 (macroexpand-1 form env))))
+        (cons
+         (or (function-form-p form)
+             (lambda-expression-p form)
+             (and (symbolp (car form))
+                  (not (macro-function (car form)))
+                  (not (special-operator-p (car form)))
+                  (< (length (rest form)) +max-call-args+)
+                  (every (lambda (f)
+                           (directly-creatable-form-p f env))
+                         (rest form))))))))
 
-(defun f-dumpable-form-creator (env)
-  (lambda (form)
-    (cond ((lambda-expression-p form)
-           (add-function (bytecode-cf-compile-lexpr form env)))
-          ((not (function-form-p form)) ; must be a constant
-           (ensure-constant (ext:constant-form-value form env)))
-          ((and (consp (second form)) (eq (caadr form) 'cl:lambda))
-           ;; #'(lambda ...)
-           (add-function (bytecode-cf-compile-lexpr (second form) env)))
-          (t
-           ;; #'function-name
-           (add-instruction
-            (make-instance 'fdefinition-lookup
-              :name (ensure-constant (second form))))))))
+;;; Given a form and environment,
+;;; add FASL instructions to evaluate the form for its value.
+;;; This is used directly in creation forms, and also to
+;;; add argument forms for simple creation and initializaiton forms.
+;;; To use this function, you must have already checked that the form
+;;; is directly creatable with directly-creatable-form-p.
+(defun add-direct-creator-form (form env)
+  (cond ((constantp form env)
+         (ensure-constant (ext:constant-form-value form env)))
+        ;; special variable (constants are caught by constantp above)
+        ((symbolp form)
+         (add-instruction
+          (make-instance 'vdefinition :name (ensure-constant form))))
+        ;; (find-class 'something)
+        ((and (eq (car form) 'cl:find-class)
+              (= (length form) 2)
+              (constantp (second form) env))
+         (add-instruction
+          (make-instance 'class-creator
+            :name (ensure-constant
+                   (ext:constant-form-value (second form) env)))))
+        ;; (lambda ...)
+        ((lambda-expression-p form)
+         (add-function (bytecode-cf-compile-lexpr form env)))
+        ((function-form-p form)
+         (if (lambda-expression-p (second form))
+             (add-function (bytecode-cf-compile-lexpr (second form) env))
+             (add-instruction
+              (make-instance 'fdefinition-lookup
+                :name (ensure-constant (second form))))))
+        ;; must be a recursive directly creatable form.
+        (t
+         (add-instruction
+          (make-instance 'general-creator
+            :function (add-instruction
+                       (make-instance 'fdefinition-lookup
+                         :name (ensure-constant (car form))))
+            :arguments (mapcar (lambda (f) (add-direct-creator-form f env))
+                               (rest form)))))))
 
 ;;; Make a possibly-special creator based on an MLF creation form.
-(defun creation-form-creator (value form &optional env)
+(defun add-creation-form-creator (value form &optional env)
   (let ((*creating* (cons value *creating*)))
-    (flet ((default ()
-             (make-instance 'general-creator
-               :prototype value
-               :function (add-form form env) :arguments ())))
-      (cond ((not (core:proper-list-p form)) (default))
-            ;; (find-class 'something)
-            ((and (eq (car form) 'cl:find-class)
-                  (= (length form) 2)
-                  (constantp (second form) env))
-             (make-instance 'class-creator
-               :prototype value
-               :name (ensure-constant
-                      (ext:constant-form-value (second form) env))))
-            ;; (foo 'bar 'baz)
-            ((call-with-dumpable-arguments-p form)
-             (make-instance 'general-creator
-               :prototype value
-               :function (add-instruction
-                          (make-instance 'fdefinition-lookup
-                            :name (ensure-constant (car form))))
-               :arguments (mapcar (f-dumpable-form-creator env) (rest form))))
-            (t (default))))))
+    (if (directly-creatable-form-p form env)
+        (let ((inst (add-direct-creator-form form env)))
+          (when (typep inst 'vcreator)
+            (reinitialize-instance inst :prototype value))
+          inst)
+        (add-instruction
+         (make-instance 'general-creator
+           :prototype value
+           :function (add-form form env) :arguments ())))))
 
 ;;; Make a possibly-special initializer.
 (defun add-initializer-form (form &optional env)
-  (flet ((default ()
-           (add-instruction
-            (make-instance 'general-initializer
-              :function (add-form form env) :arguments ()))))
-    (cond ((constantp form env) nil) ; do nothing (good for e.g. defun's return)
-          ((not (core:proper-list-p form)) (default))
-          ((call-with-dumpable-arguments-p form env)
-           (let ((cre (f-dumpable-form-creator env)))
-             (if (eq (car form) 'cl:funcall)
-                 ;; cut off the funcall - general-initializer does the call itself.
-                 ;; this commonly arises from e.g. (funcall #'(setf fdefinition ...)
-                 (add-instruction
-                  (make-instance 'general-initializer
-                    :function (funcall cre (second form))
-                    :arguments (mapcar cre (cddr form))))
-                 (add-instruction
-                  (make-instance 'general-initializer
-                    :function (add-instruction
-                               (make-instance 'fdefinition-lookup
-                                 :name (ensure-constant (car form))))
-                    :arguments (mapcar cre (rest form)))))))
-           (t (default)))))
+  (cond ((constantp form env) nil) ; do nothing (good for e.g. defun's return)
+        ((and (symbolp form) (not (nth-value 1 (macroexpand-1 form env))))
+         ;; also do nothing. this comes up for e.g. the *PACKAGE* returned from
+         ;; top-level IN-PACKAGE forms.
+         nil)
+        ((directly-creatable-form-p form env)
+         (flet ((direct (f)
+                  (add-direct-creator-form f env)))
+           (if (eq (car form) 'cl:funcall)
+               ;; cut off the funcall - general-initializer does the call itself.
+               ;; this commonly arises from e.g. (funcall #'(setf fdefinition ...)
+               (add-instruction
+                (make-instance 'general-initializer
+                  :function (direct (second form))
+                  :arguments (mapcar #'direct (cddr form))))
+               (add-instruction
+                (make-instance 'general-initializer
+                  :function (add-instruction
+                             (make-instance 'fdefinition-lookup
+                               :name (ensure-constant (car form))))
+                  :arguments (mapcar #'direct (rest form)))))))
+        (t ; give up
+         (add-instruction
+          (make-instance 'general-initializer
+            :function (add-form form env) :arguments ())))))
 
 (defvar *initializer-destination* nil)
 
@@ -703,7 +758,10 @@
              (make-load-form value)
            (let ((*initializer-map* (or *initializer-map* (make-hash-table))))
              (prog1
-                 (add-creator value (creation-form-creator value create))
+                 ;; We do this instead of ADD-CREATOR because
+                 ;; ADD-CREATION-FORM-CREATOR has already added the instructions.
+                 (setf (gethash value *coalesce*)
+                       (add-creation-form-creator value create))
                ;; WARNING: If object initializations ever need instructions
                ;; moved besides GENERAL-INITIALIZER, they have to be part of
                ;; these TYPEPs.
@@ -742,8 +800,10 @@
 (defun assign-indices (instructions)
   (let ((next-index 0))
     (map nil (lambda (inst)
-               (when (and (typep inst 'creator) (not (index inst)))
-                 (setf (index inst) next-index next-index (1+ next-index))))
+               (cond ((and (typep inst 'creator) (not (index inst)))
+                      (setf (index inst) next-index)
+                      (incf next-index))
+                     ((typep inst 'init-object-array) (setf next-index 0))))
          instructions))
   (values))
 
@@ -798,6 +858,7 @@
     (make-specialized-array 97 sind rank dims etype . elems)
     (init-object-array 99 ub64)
     (environment 100)
+    (symbol-value 101)
     (attribute 255 name nbytes . data)))
 
 ;;; STREAM is a ub8 stream.
@@ -831,21 +892,27 @@
 
 ;; Used in disltv as well.
 (defun write-bytecode (instructions stream)
-  (let* ((nobjs (count-if (lambda (i) (typep i 'creator)) instructions))
-         ;; Next highest power of two bytes, roughly
-         (*index-bytes* (ash 1 (1- (ceiling (integer-length nobjs) 8))))
-         (ninsts (1+ (length instructions))))
+  (let* ((*index-bytes* 1) ; dummy; set by init-object-array instructions
+         (ninsts (length instructions)))
     (assign-indices instructions)
     (dbgprint "Instructions:~{~&~a~}" instructions)
     (write-magic stream)
     (write-version stream)
     (write-b64 ninsts stream)
-    (encode (make-instance 'init-object-array :count nobjs) stream)
-    (map nil (lambda (inst) (encode inst stream)) instructions)))
+    (map nil (lambda (inst)
+               (when (typep inst 'init-object-array)
+                 ;; Next highest power of two bytes, roughly
+                 (setf *index-bytes*
+                       (ash 1 (1- (ceiling (integer-length (init-object-array-count inst)) 8)))))
+               (encode inst stream))
+         instructions)))
 
 (defun %write-bytecode (stream)
   ;; lol efficiency with the reverse
-  (write-bytecode (reverse *instructions*) stream))
+  (let ((nobjs (count-if (lambda (i) (typep i 'creator)) *instructions*)))
+    (write-bytecode (cons (make-instance 'init-object-array :count nobjs)
+                          (reverse *instructions*))
+                    stream)))
 
 (defun opcode (mnemonic)
   (let ((inst (assoc mnemonic +ops+ :test #'equal)))
@@ -1167,6 +1234,10 @@
 (defmethod encode ((inst environment-lookup) stream)
   (write-mnemonic 'environment stream))
 
+(defmethod encode ((inst vdefinition) stream)
+  (write-mnemonic 'symbol-value stream)
+  (write-index (name inst) stream))
+
 (defmethod encode ((inst general-creator) stream)
   (write-mnemonic 'funcall-create stream)
   (write-index (general-function inst) stream)
@@ -1433,35 +1504,80 @@
                   (not (cmp:load-time-value-info/read-only-p lit)))
           collect i))
 
+#+clasp
+(defvar *native-compile-file-all* nil)
+
 (defun add-module (value)
   ;; Add the module first to prevent recursion.
   (cmp:module/link value)
-  (let ((mod
-          (add-oob
-           value
-           (make-instance 'bytemodule-creator
-             :prototype value :lispcode (cmp:module/create-bytecode value)))))
+  (let* ((bytecode (cmp:module/create-bytecode value))
+         (literals (cmp:module/literals value))
+         #+clasp
+         (info (cmp:module/create-debug-info value))
+         (mod
+           (add-oob
+            value
+            (make-instance 'bytemodule-creator
+              :prototype value :lispcode bytecode)))
+         (cliterals
+           (map 'simple-vector #'ensure-module-literal literals)))
     ;; Modules can indirectly refer to themselves recursively through
     ;; cfunctions, so we need to 2stage it here.
     (add-instruction
-     (make-instance 'setf-literals
-       :module mod :literals (map 'simple-vector #'ensure-module-literal
-                                  (cmp:module/literals value))))
+     (make-instance 'setf-literals :module mod :literals cliterals))
     #+clasp ; debug info
-    (let ((info (cmp:module/create-debug-info value)))
-      (when info
-        (add-instruction
-         (make-instance 'module-debug-attr
-           :module mod
-           :infos (map 'vector #'process-debug-info info)))))
+    (add-instruction
+     (make-instance 'module-debug-attr
+       :module mod
+       :infos (map 'vector #'process-debug-info info)))
     #+clasp ; mutable LTVs
-    (let ((mutables (mutable-LTVs (cmp:module/literals value))))
+    (let ((mutables (mutable-LTVs literals)))
       (when mutables
         (add-instruction
          (make-instance 'module-mutable-ltv-attr
            :module mod
            :indices mutables))))
+    ;; Native compilation.
+    #+clasp
+    (when *native-compile-file-all*
+      (let* ((native (funcall (find-symbol "COMPILE-CMODULE"
+                                           "CLASP-BYTECODE-TO-BIR")
+                              bytecode info literals
+                              :debug-namestring (namestring cmp::*compile-file-source-debug-pathname*)))
+             (code (funcall (find-symbol "NMODULE-CODE"
+                                         "CLASP-BYTECODE-TO-BIR")
+                            native))
+             (nlits (funcall (find-symbol "NMODULE-LITERALS"
+                                          "CLASP-BYTECODE-TO-BIR")
+                             native)))
+        (add-instruction
+         (make-instance 'module-native-attr
+           :module mod
+           :code code
+           :literals (native-literals cliterals nlits)))
+        ;; Add attributes for the functions as well.
+        ;; We do this here instead of in the CFUNCTION methods because
+        ;; of the recursive nature of functions referring to modules
+        ;; referring to functions yada yada bla bla.
+        (loop with fmap = (funcall (find-symbol "NMODULE-FMAP" "CLASP-BYTECODE-TO-BIR") native)
+              for i across info
+              when (typep i 'cmp:cfunction)
+                do (let ((m (assoc i fmap)))
+                     (assert m)
+                     (destructuring-bind (main xep) (rest m)
+                       (add-instruction
+                        (make-instance 'function-native-attr
+                          :function (ensure-function i)
+                          :main (ensure-constant main)
+                          :xep (ensure-constant xep))))))))
     mod))
+
+(defun native-literals (cliterals nlits)
+  (map 'vector (lambda (lit)
+                 (if (integerp lit)
+                     (aref cliterals lit)
+                     (ensure-module-literal lit)))
+       nlits))
 
 (defun ensure-module (module)
   (or (find-oob module) (add-module module)))
@@ -1490,6 +1606,10 @@
   (write-mnemonic 'attribute stream)
   (write-index (name attr) stream))
 
+(defmethod encode ((attr unknown-attr) stream)
+  (write-b32 (length (bytes attr)) stream)
+  (write-sequence (bytes attr) stream))
+
 (defmethod encode ((attr name-attr) stream)
   (write-b32 (+ *index-bytes* *index-bytes*) stream)
   (write-index (object attr) stream)
@@ -1504,6 +1624,12 @@
   (write-b32 (+ *index-bytes* *index-bytes*) stream)
   (write-index (ll-function attr) stream)
   (write-index (lambda-list attr) stream))
+
+(defmethod encode ((attr function-native-attr) stream)
+  (write-b32 (* 3 *index-bytes*) stream)
+  (write-index (ll-function attr) stream)
+  (write-index (main attr) stream)
+  (write-index (xep attr) stream))
 
 #+clasp
 (defmethod encode ((attr spi-attr) stream)
@@ -1672,6 +1798,19 @@
     (write-b16 (length indices) stream)
     (loop for index in indices
           do (write-b16 index stream))))
+
+(defmethod encode ((attr module-native-attr) stream)
+  (let ((code (code attr))
+        (lits (module-native-attr-literals attr)))
+    (write-b32 (+ *index-bytes*
+                  4 (length code) 2 (* *index-bytes* (length lits)))
+               stream)
+    (write-index (module attr) stream)
+    (write-b32 (length code) stream)
+    (write-sequence code stream)
+    (write-b16 (length lits) stream)
+    (loop for creator across lits
+          do (write-index creator stream))))
 
 (defmethod encode ((init init-object-array) stream)
   (write-mnemonic 'init-object-array stream)

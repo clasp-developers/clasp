@@ -83,8 +83,6 @@ void JITMemoryReadExecute(llvm::jitlink::BasicLayout& BL) {
     uint64_t SegSize = alignTo(Seg.ContentSize + Seg.ZeroFillSize, PageSize);
     auto Prot = toSysMemoryProtectionFlags(AG.getMemProt());
     if ((Prot & sys::Memory::MF_RWE_MASK) == sys::Memory::MF_READ) {
-      //            printf("%s:%d:%s Was going to set to R-- from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,
-      //            (void*)(Seg.WorkingMem), (void*)(Seg.WorkingMem+SegSize) );
       Prot = (sys::Memory::ProtectionFlags)(sys::Memory::MF_READ | sys::Memory::MF_WRITE);
     } else if ((Prot & sys::Memory::MF_EXEC)) {
       Prot = (sys::Memory::ProtectionFlags)(sys::Memory::MF_READ | sys::Memory::MF_WRITE | sys::Memory::MF_EXEC);
@@ -107,18 +105,7 @@ void JITMemoryReadExecute(llvm::jitlink::BasicLayout& BL) {
 
 namespace llvmo { // ObjectFile_O
 
-#if 0
-LibraryFile_sp LibraryFile_O::createLibrary(const std::string& slibraryName)
-{
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Creating empty ObjectFile_O\n", __FILE__, __LINE__, __FUNCTION__));
-  core::SimpleBaseString_sp libraryName = core::SimpleBaseString_O::make(slibraryName);
-  LibraryFile_sp of = gc::GC<LibraryFile_O>::allocate(libraryName);
-  return of;
-}
-#endif
-
 ObjectFile_sp ObjectFile_O::createForObjectFile(const std::string& scodename, JITDylib_sp jitdylib, size_t objectId) {
-  //  printf("%s:%d:%s Creating ObjectFile faso: %s index: %lu\n", __FILE__, __LINE__, __FUNCTION__, sFasoName.c_str(), fasoIndex);
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Creating ObjectFile_O codename = %s\n", __FILE__, __LINE__, __FUNCTION__, scodename.c_str()));
   core::SimpleBaseString_sp codename = core::SimpleBaseString_O::make(scodename);
   ObjectFile_sp of = gc::GC<ObjectFile_O>::allocate(codename, jitdylib, objectId);
@@ -126,7 +113,6 @@ ObjectFile_sp ObjectFile_O::createForObjectFile(const std::string& scodename, JI
 }
 
 ObjectFile_sp ObjectFile_O::createForModule(const std::string& scodename, JITDylib_sp jitdylib, size_t objectId) {
-  //  printf("%s:%d:%s Creating ObjectFile faso: %s index: %lu\n", __FILE__, __LINE__, __FUNCTION__, sFasoName.c_str(), fasoIndex);
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Creating ObjectFile_O codename = %s\n", __FILE__, __LINE__, __FUNCTION__, scodename.c_str()));
   core::SimpleBaseString_sp codename = core::SimpleBaseString_O::make(scodename);
   ObjectFile_sp of = gc::GC<ObjectFile_O>::allocate(codename, jitdylib, objectId);
@@ -135,7 +121,6 @@ ObjectFile_sp ObjectFile_O::createForModule(const std::string& scodename, JITDyl
 
 ObjectFile_sp ObjectFile_O::create(const std::string& scodename, std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID,
                                    JITDylib_sp jitdylib, const std::string& sFasoName, size_t fasoIndex) {
-  //  printf("%s:%d:%s Creating ObjectFile faso: %s index: %lu\n", __FILE__, __LINE__, __FUNCTION__, sFasoName.c_str(), fasoIndex);
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Creating ObjectFile_O start=%p size= %lu\n", __FILE__, __LINE__, __FUNCTION__,
                             buffer ? buffer->getBufferStart() : NULL, buffer ? buffer->getBufferSize() : 0));
   core::SimpleBaseString_sp codename = core::SimpleBaseString_O::make(scodename);
@@ -151,16 +136,6 @@ llvm::Expected<std::unique_ptr<llvm::object::ObjectFile>> ObjectFile_O::getObjec
   return llvm::object::ObjectFile::createObjectFile(mem);
 }
 
-#if 0
-CL_DEFMETHOD
-void* Code_O::absoluteAddress(SectionedAddress_sp sa) {
-  if (sa->_value.SectionIndex != this->_TextSectionId) {
-    SIMPLE_ERROR("The sectioned-address section-index {} does not match the code section-index {}", sa->_value.SectionIndex , this->_TextSectionId);
-  }
-  return (void*)((char*)this->_TextSectionStart + sa->_value.Address);
-}
-#endif
-
 size_t ObjectFile_O::sizeofInState(ObjectFile_O* code, CodeState_t state) {
   if (state == SaveState) {
     return sizeof(ObjectFile_O) + code->_LiteralVectorSizeBytes;
@@ -168,31 +143,11 @@ size_t ObjectFile_O::sizeofInState(ObjectFile_O* code, CodeState_t state) {
   return gctools::sizeof_container<ObjectFile_O>(code->_DataCode.size());
 }
 
-#if 0
-CL_DEFMETHOD core::T_sp Code_O::codeLineTable() const {
-  llvmo::ObjectFile_sp of = this->_ObjectFile;
-  llvmo::DWARFContext_sp dwarfContext = llvmo::DWARFContext_O::createDWARFContext(of);
-  llvm::object::SectionedAddress sa;
-  sa.Address = 0;
-  sa.SectionIndex = this->_TextSectionId;
-  uintptr_t size = (uintptr_t)this->_TextSectionEnd - (uintptr_t)this->_TextSectionStart;
-  auto lineTable = (*dwarfContext).wrappedPtr()->getLineInfoForAddressRange(sa, size );
-  printf("%s:%d:%s Number of entries: %lu\n", __FILE__, __LINE__, __FUNCTION__, lineTable.size());
-  return nil<T_O>();
-}
-#endif
-
 std::string ObjectFile_O::filename() const {
   stringstream ss;
   ss << this->_FasoName->get_std_string() << ":" << this->_ObjectId;
   return ss.str();
 }
-
-#if 0
-Code_O::~Code_O() {
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d dtor for Code_O %p\n", __FILE__, __LINE__, (void*)this ));
-}
-#endif
 
 void ObjectFile_O::writeToFile(const std::string& fileName, const char* start, size_t size) {
   std::ofstream outfile;
@@ -200,14 +155,6 @@ void ObjectFile_O::writeToFile(const std::string& fileName, const char* start, s
   outfile.write(start, size);
   outfile.close();
 }
-
-#if 0
-std::string Code_O::__repr__() const {
-  stringstream ss;
-  ss << "#<CODE @" << (void*)this << this->_ObjectFile->__repr__() << ">";
-  return ss.str();
-};
-#endif
 
 /*! Return a pointer to the literals vector.
 The number of bytes in the literals vector is returned by literalsSize().
@@ -241,8 +188,6 @@ std::string Library_O::__repr__() const {
 
 void Library_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
   if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
-    //    printf("%s:%d:%s for Library_O - resetting pointers for DWARFContext - make sure this works\n", __FILE__, __LINE__,
-    //    __FUNCTION__ );
     this->_MemoryBuffer = unbound<MemoryBuffer_O>();
     this->_ObjectFile.release();
     this->_DWARFContext = unbound<DWARFContext_O>();
@@ -253,45 +198,6 @@ void Library_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup
 
 namespace llvmo {
 
-#if 0
-Code_sp Code_O::makeInSnapshotLoad(uintptr_t scanSize, uintptr_t totalSize) {
-//  printf("%s:%d:%s Creating Code_O for objectFile: %s %lu\n", __FILE__, __LINE__, __FUNCTION__, objectFile->_FasoName->get_std_string().c_str(), objectFile->_StartupID );
-//  Code_sp code = gctools::GC<Code_O>::allocate_container_partial_scan(scanSize, totalSize);
-  Code_sp code = gctools::GC<Code_O>::allocate_container<gctools::SnapshotLoadStage>(false,totalSize);
-  code->_ObjectFile = unbound<ObjectFile_O>();
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Allocated Code_O object and installed in objectFile->_Code %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)code.raw_() ));
-  // Don't put DEBUG_OBJECT_FILES_PRINT in here - this is called too early
-#if 0
-  printf("%s:%d:%s Allocated code object from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,
-         (void*)&code->_DataCode[0],
-         (void*)&code->_DataCode[code->_DataCode.size()]);
-#endif
-  return code;
-}
-#endif
-#if 0
-Code_sp Code_O::make( BasicLayout& BL, const std::string& objectFileName ) {
-//  printf("%s:%d:%s Creating Code_O for objectFile: %s %lu\n", __FILE__, __LINE__, __FUNCTION__, objectFile->_FasoName->get_std_string().c_str(), objectFile->_StartupID );
-//  Code_sp code = gctools::GC<Code_O>::allocate_container_partial_scan(scanSize, totalSize);
-  Code_sp code = gctools::GC<Code_O>::allocate_container<gctools::RuntimeStage>(false,0); // totalSize);
-  code->_ObjectFileName = objectFileName;
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Allocated Code_O object and installed in objectFile->_Code %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)code.raw_() ));
-  // Don't put DEBUG_OBJECT_FILES_PRINT in here - this is called too early
-#if 0
-  printf("%s:%d:%s Allocated code object from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,
-         (void*)&code->_DataCode[0],
-         (void*)&code->_DataCode[code->_DataCode.size()]);
-#endif
-  return code;
-}
-
-
-void Code_O::describe() const
-{
-  core::clasp_write_string(fmt::format("Code start: {}  stop: {}  size: {}\n" , (void*)this , (void*)&this->_DataCode[this->_DataCode.size()] , (uintptr_t)((char*)&this->_DataCode[this->_DataCode.size()]-(char*)this)));
-};
-#endif
-
 CL_DOCSTRING(R"dx(Return the count of literals in the given Code object)dx");
 CL_LISPIFY_NAME(code_literals_length);
 DOCGROUP(clasp);
@@ -300,12 +206,20 @@ CL_DEFUN core::Integer_sp code_literals_length(ObjectFile_sp code) {
 }
 
 CL_DOCSTRING(R"dx(Return an element from the Code object's literals vector. WARNING: Does not check bound.)dx");
-CL_LISPIFY_NAME(code_literals_ref);
+CL_LISPIFY_NAME(code_literal);
 DOCGROUP(clasp);
-CL_DEFUN core::T_sp code_literals_ref(ObjectFile_sp code, size_t idx) {
+CL_DEFUN core::T_sp code_literal_ref(ObjectFile_sp code, size_t idx) {
   core::T_O** literals = (core::T_O**)(code->literalsStart());
   core::T_sp ret((gc::Tagged)(literals[idx]));
   return ret;
+}
+
+CL_LISPIFY_NAME("CODE-LITERAL");
+CL_DEFUN_SETF core::T_sp code_literal_set(core::T_sp lit,
+                                          ObjectFile_sp code, size_t idx) {
+  core::T_O** literals = (core::T_O**)(code->literalsStart());
+  literals[idx] = lit.raw_();
+  return lit;
 }
 
 }; // namespace llvmo
@@ -350,28 +264,14 @@ CL_DEFMETHOD DWARFContext_sp Library_O::getDwarfContext() {
     // Use the DWARFContext to access debugging information
     // ...
 
-#if 0
-    llvm::raw_ostream &OS = llvm::errs();
-    dwarfContext->verify(OS);
-#endif
-
     void* rawFileBuf = fileBuf->release();
     void* rawDwarfContext = dwarfContext.release();
-    printf("%s:%d:%s   rawFileBuf = %p    rawDwarfContext = %p\n", __FILE__, __LINE__, __FUNCTION__, rawFileBuf, rawDwarfContext);
     auto claspFileBuf = gctools::GC<MemoryBuffer_O>::allocate(rawFileBuf);
     auto claspDwarfContext = gctools::GC<DWARFContext_O>::allocate(rawDwarfContext);
-//    printf("%s:%d:%s this %p  _MemoryBuffer=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, (void*)&*claspFileBuf);
     this->_MemoryBuffer = claspFileBuf;
     this->_ObjectFile.swap(obj);
     this->_DWARFContext = claspDwarfContext;
-  } else {
-    printf("%s:%d:%s   rawFileBuf = %p    rawDwarfContext = %p\n", __FILE__, __LINE__, __FUNCTION__,
-           this->_MemoryBuffer->wrappedPtr(), this->_DWARFContext->wrappedPtr());
   }
-#if 0
-  llvm::raw_ostream &OS = llvm::errs();
-  this->_DWARFContext->wrappedPtr()->verify(OS);
-#endif
   return this->_DWARFContext;
 }
 
@@ -398,8 +298,6 @@ core::T_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
   for (core::T_sp cur = allLibraries; cur.consp(); cur = CONS_CDR(cur)) {
     Library_sp lib = gc::As<Library_sp>(CONS_CAR(cur));
     if (lib->_Start <= entry_point && entry_point < lib->_End) {
-      //      printf("%s:%d:%s Returning library found in _lisp->_Roots._AllLibraries entry_point @%p  -> %s\n", __FILE__, __LINE__,
-      //      __FUNCTION__, entry_point, _rep_(lib).c_str());
       return lib;
     }
   }
@@ -410,8 +308,6 @@ core::T_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
   ObjectFile_sp of;
   bool foundBase = llvmo::lookupObjectFileFromEntryPoint((uintptr_t)entry_point, of);
   if (foundBase) {
-    //    printf("%s:%d:%s Returning Code_sp object entry_point @%p  -> %s codeStart: %p  codeEnd: %p\n", __FILE__, __LINE__,
-    //    __FUNCTION__, entry_point, _rep_(codeObject).c_str(), codeObject->codeStart(), codeObject->codeEnd());
     return of;
   }
 
@@ -426,8 +322,6 @@ core::T_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
   bool foundLibrary = core::lookup_address_in_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point), start, end, libraryName,
                                                       isExecutable, vtableStart, vtableEnd);
   if (foundLibrary) {
-    //    printf("%s:%d:%s For entry_point @%p found new library start: %p   end: %p  name: %s\n", __FILE__, __LINE__, __FUNCTION__,
-    //    entry_point, (void*)start, (void*)end, libraryName.c_str());
     Library_sp newlib = Library_O::make(isExecutable, reinterpret_cast<gctools::clasp_ptr_t>(start),
                                         reinterpret_cast<gctools::clasp_ptr_t>(end), vtableStart, vtableEnd, libraryName);
     core::T_sp expected;
@@ -436,8 +330,6 @@ core::T_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
       expected = _lisp->_Roots._AllLibraries.load();
       entry->rplacd(expected);
     } while (!_lisp->_Roots._AllLibraries.compare_exchange_weak(expected, entry));
-    //    printf("%s:%d:%s Returning new library added to _lisp->_Roots._AllLibraries entry_point @%p  -> %s\n", __FILE__, __LINE__,
-    //    __FUNCTION__, entry_point, _rep_(newlib).c_str());
     return newlib;
   }
 
@@ -445,28 +337,6 @@ core::T_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
   // 4. We have hit an unidentifiable entry_point - what is it
   SIMPLE_ERROR("We have hit an unidentifiable entry_point at {} - figure out what it is", (void*)entry_point);
 }
-
-}; // namespace llvmo
-
-namespace llvmo {
-std::atomic<size_t> fileNum;
-
-#if 0
-void dumpObjectFile(const char* start, size_t size, void* codeStart) {
-  size_t num = fileNum++;
-  std::stringstream filename;
-  filename << "object-file-" << num;
-  if (codeStart) {
-    filename << "-" << std::hex << (void*)codeStart;
-  }
-  filename << ".o";
-  std::ofstream fout;
-  printf("%s:%d:%s dumping object file to %s\n", __FILE__, __LINE__, __FUNCTION__, filename.str().c_str());
-  fout.open(filename.str(), std::ios::out | std::ios::binary );
-  fout.write(start,size);
-  fout.close();
-}
-#endif
 
 }; // namespace llvmo
 

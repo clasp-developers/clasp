@@ -91,42 +91,6 @@
 
 (export '(snapshot-load-restore register-save-hook))
 
-(defun dump-function (func)
-  (declare (ignore func))
-  (warn "Do something with dump-function"))
-(export 'dump-function)
-
-(defun dso-handle-module (dylib)
-  (let* ((dso-handle-name "__dso_handle")
-         (module (llvm-create-module dso-handle-name)))
-    (llvm-sys:make-global-variable
-     module
-     %i32%                              ; type
-     nil                                ; isConstant
-     'llvm-sys:external-linkage         ; linkage
-     (jit-constant-i32 0)
-     dso-handle-name)
-    (llvm-sys:add-irmodule (llvm-sys:clasp-jit)
-                           dylib
-                           module
-                           *thread-safe-context*)
-    module))
-
-
-(defun load-ir-run-c-function (filename function-name)
-  (let* ((pathname (merge-pathnames (pathname filename)))
-         (bc-file (make-pathname :type "bc" :defaults pathname))
-         (ll-file (make-pathname :type "ll" :defaults pathname))
-         (module (if (probe-file ll-file)
-                     (llvm-sys:parse-irfile ll-file (thread-local-llvm-context))
-                     (if (probe-file bc-file)
-                         (llvm-sys:parse-bitcode-file bc-file (thread-local-llvm-context))
-                         (error "Could not find file ~a or ~a" ll-file bc-file))))
-         (dylib (llvm-sys:create-and-register-jitdylib (llvm-sys:clasp-jit) (namestring pathname))))
-    (dso-handle-module dylib)
-    (llvm-sys:add-irmodule (llvm-sys:clasp-jit) dylib module *thread-safe-context*)
-    (llvm-sys:jit-finalize-run-cxx-function (llvm-sys:clasp-jit) dylib function-name)))
-
 (defun parse-bitcode (filename context &key print output-type)
   ;; Load a module from a bitcode or .ll file
   (cond
@@ -390,29 +354,6 @@ No DIBuilder is defined for the default module")
 (defconstant +target-min-mps+ :min-mps)
 (defconstant +target-full-mps+ :full-mps)
 
-(defun escape-and-join-jit-name (names)
-  (let ((all (make-string-output-stream)))
-    (tagbody
-     outer
-       (let ((name (string (car names))))
-         (let ((i 0)
-               (len (length name)))
-           (tagbody
-            top
-              (let ((c (aref name i)))
-                (if (char= c #\\)
-                    (write-string "\\\\" all)
-                    (if (char= c #\^)
-                        (write-string "\\^" all)
-                        (write-char c all))))
-              (setq i (+ 1 i))
-              (if (< i len) (go top)))
-           (write-char #\^ all)))
-       (setq names (cdr names))
-       (if names (go outer)))
-    (write-char #\^ all)
-    (get-output-stream-string all)))
-
 (defun unescape-and-split-jit-name (name)
   (let* (parts
          (unescaped (make-string-output-stream))
@@ -457,29 +398,6 @@ No DIBuilder is defined for the default module")
       (t raw-name))))
 
 (export 'print-name-from-unescaped-split-name)
-;;; FIXME: Get the filename from source-pos-info also.
-(defun function-name-from-source-info (lname)
-  (declare (ignore lname))
-  (if *current-source-pos-info*
-      (let ((lineno (core:source-pos-info-lineno *current-source-pos-info*)))
-        (cond
-          (*compile-file-pathname*
-           (core:fmt nil "___LAMBDA___{}.{}-{}^{}^{}"
-                         (pathname-name *compile-file-pathname*)
-                         (pathname-type *compile-file-pathname*)
-                         *compile-file-unique-symbol-prefix*
-                         lineno
-                         (sys:next-number)))
-          ;; Is this even possible?
-          (*load-pathname*
-           (core:fmt nil "{}.{}^{}^TOP-LOAD-{}"
-                         (pathname-name *load-pathname*)
-                         (pathname-type *load-pathname*)
-                         lineno
-                         (sys:next-number)))
-          (t
-           (core:fmt nil "UNKNOWN^{}^TOP-UNKNOWN" lineno))))
-      "UNKNOWN??LINE^TOP-UNKNOWN"))
 
 (defun jit-repl-function-name ()
   (sys:fmt nil "JITREPL-{}" (sys:next-number)))
@@ -495,103 +413,8 @@ No DIBuilder is defined for the default module")
 
 (export '(jit-startup-shutdown-function-names jit-repl-function-name))
 
-(defun jit-function-name (lname)
-  "Depending on the type of LNAME an actual LLVM name is generated"
-  ;;  (break "Check backtrace")
-  (cond
-    ((pathnamep lname) (core:fmt nil "MAIN-{}" (string-upcase (pathname-name lname))))
-    ((stringp lname)
-     (cond
-       ((string= lname core:+run-all-function-name+) lname) ; this one is ok
-       ((string= lname core:+clasp-ctor-function-name+) lname) ; this one is ok
-       ((string= lname "IMPLICIT-REPL") lname)  ; this one is ok
-       ((string= lname "TOP-LEVEL") (function-name-from-source-info lname))
-       ((string= lname "UNNAMED-LAMBDA") lname) ; this one is ok
-       ((string= lname "lambda") lname)         ; this one is ok
-       ((string= lname "ltv-literal") lname)    ; this one is ok
-       ((string= lname "disassemble") lname)    ; this one is ok
-       (t lname)))
-    ((symbolp lname)
-     (cond ((eq lname 'core::top-level)
-            (function-name-from-source-info lname))
-           ((eq lname 'cmp::repl)
-            (function-name-from-source-info lname))
-           (t 
-            (let* ((sym-pkg (symbol-package lname))
-                   (sym-name (symbol-name lname))
-                   (pkg-name (if sym-pkg
-                                 (string (package-name sym-pkg))
-                                 ;;; KNPK I don't undestand why "KEYWORD" is used here
-                                 ;;; (package-name (symbol-package :test)) -> "KEYWORD", so how can sym-pkg be empty for this case
-                                 ;;; More likely it is an uninterned symbol
-                                 "KEYWORD")))
-              (escape-and-join-jit-name (list sym-name pkg-name "FN"))))))
-    ;; (SETF symbol)
-    ((and (consp lname) (eq (car lname) 'setf) (symbolp (second lname)))
-;;;     (core:fmt t "jit-function-name handling SETF: {}%N" lname)
-     (let* ((sn (cadr lname))
-            (sym-pkg (symbol-package sn))
-            (sym-name (symbol-name sn))
-            (pkg-name (if sym-pkg
-                          (string (package-name sym-pkg))
-                          "KEYWORD")))
-       (escape-and-join-jit-name (list sym-name pkg-name "SETF"))))
-    ;; (SETF (symbol ...))
-    ((and (consp lname) (eq (car lname) 'setf) (consp (second lname)))
-;;;     (core:fmt t "jit-function-name handling SETFCONS: {}%N" lname)
-     (let* ((sn (second lname))
-            (sn-sym (first sn))
-            (sym-pkg (symbol-package sn-sym))
-            (sym-name (symbol-name sn-sym))
-            (pkg-name (if sym-pkg
-                          (string (package-name sym-pkg))
-                          "KEYWORD")))
-       (escape-and-join-jit-name (list sym-name pkg-name "SETFCONS"))))
-    ;; (METHOD symbol . specializer-list): a method function
-    ((and (consp lname) (eq (car lname) 'method) (symbolp (second lname)))
-     (let* ((symbol (second lname))
-            (sym-pkg (symbol-package symbol))
-            (pkg-name (if sym-pkg
-                      (string (package-name sym-pkg))
-                      "UNINTERNED"))
-           (name (symbol-name symbol))
-           (specializers (core:fmt nil "{}" (cddr lname))))
-       (escape-and-join-jit-name (list name pkg-name specializers "METHOD"))))
-    ;; (METHOD (SETF symbol) . specializer-list): a method function
-    ((and (consp lname) (eq (car lname) 'method) (consp (second lname)) (eq (car (second lname)) 'setf))
-     (let* ((name-list (second lname))
-            (setf-name-symbol (second name-list))
-            (pkg-symbol (symbol-package setf-name-symbol))
-            ;;; e.g. lname = (METHOD (SETF #:G4336) (T CONS))
-            (pkg-name (if pkg-symbol
-                          (string (package-name pkg-symbol))
-                          "UNINTERNED"))
-            (specializers (core:fmt nil "{}" (cddr lname))))
-       (escape-and-join-jit-name (list (string setf-name-symbol) pkg-name specializers "SETFMETHOD"))))
-    ;; (LAMBDA lambda-list): an anonymous function
-    ((and (consp lname) (eq (car lname) 'cl:lambda))
-     (jit-function-name 'cl:lambda))
-    ;; (FLET name) or (LABELS name): a local function
-    ((and (consp lname) (eq (car lname) 'cl:flet))
-     (jit-function-name (second lname)))
-    ((and (consp lname) (eq (car lname) 'cl:labels))
-     (jit-function-name (second lname)))
-    ;; Various little extensions for readability. See defmacro.lisp for occurrence.
-    ((and (consp lname)
-          (member (car lname) '(cl:macro-function cl:compiler-macro-function
-                                ext::type-expander ext::setf-expander)))
-     (jit-function-name (second lname)))
-    #+(or) ;; uncomment this to be more forgiving
-    ((consp lname)
-     (core:fmt t "jit-function-name handling UNKNOWN: {}%N" lname)
-     ;; What is this????
-     (core:fmt nil "{}_CONS-LNAME?" lname))
-    (t (error "Illegal lisp function name[~a]" lname))))
-(export '(jit-function-name unescape-and-split-jit-name escape-and-join-jit-name))
 
-
-(setq core:*llvm-function-name-hook* #'jit-function-name)
-
+(export '(unescape-and-split-jit-name))
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -605,16 +428,6 @@ No DIBuilder is defined for the default module")
   'llvm-sys:code-model-small)
 
 (export 'code-model)
-
-(defun remove-always-inline-from-functions (module)
-  (let ((functions (llvm-sys:module-get-function-list module))
-        inline-functions)
-    (dolist (f functions)
-      (if (llvm-sys:has-fn-attribute f 'llvm-sys:attribute-always-inline)
-          (progn
-            (llvm-sys:remove-fn-attr f 'llvm-sys:attribute-always-inline)
-            (setq inline-functions (cons f inline-functions)))))
-    inline-functions))
 
 (defun do-track-llvm-time (closure)
   "Run the closure in and keep track of the time, adding it to this threads accumulated llvm time"
@@ -634,131 +447,3 @@ No DIBuilder is defined for the default module")
                        (lambda ()
                         ,@code)))))
 	  t)
-
-(defun switch-always-inline-to-inline (module)
-  (let ((functions (llvm-sys:module-get-function-list module))
-        inline-functions)
-    (dolist (f functions)
-      (if (llvm-sys:has-fn-attribute f 'llvm-sys:attribute-always-inline)
-          (progn
-            (llvm-sys:remove-fn-attr f 'llvm-sys:attribute-always-inline)
-            (llvm-sys:add-fn-attr f 'llvm-sys:attribute-inline-hint)
-            (setq inline-functions (cons f inline-functions)))))
-    inline-functions))
-
-(defun call-sites-to-always-inline (module)
-  (let (call-sites
-        (functions (llvm-sys:module-get-function-list module)))
-    (dolist (func functions)
-      (let ((basic-blocks (llvm-sys:basic-blocks func)))
-        (dolist (bb basic-blocks)
-          (let ((instructions (llvm-sys:instructions bb)))
-            (dolist (instr instructions)
-              (if (or (llvm-sys:call-inst-p instr)
-                      (llvm-sys:invoke-inst-p instr))
-                  (let ((call-func (llvm-sys:get-called-function instr)))
-                    (setq call-sites (cons instr call-sites))
-                    (if (llvm-sys:has-fn-attribute call-func 'llvm-sys:attribute-always-inline)
-                        (setq call-sites (cons instr call-sites))))))))))
-    call-sites))
-         
-
-;;; ------------------------------------------------------------
-;;;
-;;; Using the new ORC JIT engine
-;;;
-
-;;; jit-register-symbol is a call
-#+threads(defvar *jit-log-lock* (mp:make-recursive-mutex 'jit-log-lock))
-(defvar *jit-log-stream*)
-(defvar *jit-pid*)
-
-(eval-when (:load-toplevel :execute)
-  (register-save-hook
-   (function (lambda ()
-     (format t "makunbound for *jit-pid* and *jit-log-stream*~%")
-     (format t "makunbound for *jit-pid*~%")
-     (makunbound '*jit-pid*)
-     (format t "makunbound for *jit-log-stream*~%")
-     (makunbound '*jit-log-stream*)
-     (format t "Finished makunbound of some symbols~%")))))
-
-(defun jit-register-symbol (symbol-name-string symbol-info &key verbose)
-  "This is a callback from llvmoExpose.cc::save_symbol_info for registering JITted symbols"
-  (funcall #'(setf gethash) symbol-info symbol-name-string *jit-saved-symbol-info*)
-  (if (member :jit-log-symbols *features*)
-      (unwind-protect
-           (progn
-             #+threads(mp:get-lock *jit-log-lock*)
-             (cond
-               ;; If this is the first process to generate a symbol then create the master symbol file
-               ((not (boundp '*jit-pid*))
-                (setq *jit-pid* (core:getpid))
-                (let ((filename (core:fmt nil "/tmp/perf-{}.map" (core:getpid))))
-                  ;; when is not yet available
-                  (if verbose
-                    (core:fmt t "Writing jitted symbols to {}%N" filename))
-                  (setq *jit-log-stream* (open filename :direction :output))))
-               ;; If we are in a forked child then we need to create a new clasp-symbols-<pid> file and
-               ;; refer to the parent clasp-symbols-<ppid> file.
-               ((and *jit-log-stream* (not (= *jit-pid* (core:getpid))))
-                (if verbose
-                  (format t "Closing the *jit-log-stream* because the *jit-pid* ~d does not match our pid ~d ~%"
-                          *jit-pid* (core:getpid)))
-                (close *jit-log-stream*) ; Shut down symbols for forked children
-                (setq *jit-log-stream* nil)))
-             (if *jit-log-stream*
-                 (progn
-                   (write (core:pointer-integer (cadr symbol-info)) :base 16 :stream *jit-log-stream*)
-                   (write-char #\space *jit-log-stream*)
-                   ;; car of symbol-info is a fixnum
-                   (write (car symbol-info) :base 16 :stream *jit-log-stream* :pretty nil)
-                   (write-char #\space *jit-log-stream*)
-                   (write-string symbol-name-string *jit-log-stream*)
-                   (terpri *jit-log-stream*)
-                   (finish-output *jit-log-stream*))))
-        (progn
-          #+threads(mp:giveup-lock *jit-log-lock*)))))
-
-;;; It's too early for (in-package :cmp) to work but if we want slime to compile
-;;; the code below we need it - so uncomment this as needed...
-
-;;;(in-package :cmp)
-(defparameter *dump-compile-module* nil)
-(progn
-  (export '(jit-add-module-return-function))
-  (defparameter *jit-lock* (mp:make-recursive-mutex 'jit-lock))
-  (defun jit-add-module-return-function (original-module startup-shutdown-id literals-list
-                                         &key output-path)
-    (declare (ignore output-path))
-    ;; Link the builtins into the module and optimize them
-    #+(or)
-    (progn
-      (quick-module-dump original-module "before-link-builtins")
-      (link-inline-remove-builtins original-module))
-    (quick-module-dump original-module "module-before-optimize")
-    (let ((module original-module))
-      (irc-verify-module-safe module)
-      (let ((jit-engine (llvm-sys:clasp-jit)))
-        (multiple-value-bind (startup-name shutdown-name)
-            (jit-startup-shutdown-function-names startup-shutdown-id)
-          (let ((function (llvm-sys:get-function module startup-name)))
-            (if (null function)
-                (error "Could not obtain the startup function ~s by name" startup-name)))
-          (with-track-llvm-time
-              (unwind-protect
-                   (progn
-                     (if *dump-compile-module*
-                         (progn
-                           (core:fmt t "About to dump module%N")
-                           (llvm-sys:dump-module module)
-                           (core:fmt t "startup-name |{}|%N" startup-name)
-                           (core:fmt t "Done dump module%N")
-                           ))
-                     (mp:get-lock *jit-lock*)
-                     (if (member :dump-compile *features*) (llvm-sys:dump-module module))
-                     (llvm-sys:add-irmodule jit-engine (llvm-sys:get-main-jitdylib jit-engine) module cmp:*thread-safe-context* startup-shutdown-id)
-                     (llvm-sys:jit-finalize-repl-function jit-engine startup-name shutdown-name literals-list))
-                (progn
-                  (gctools:thread-local-cleanup)
-                  (mp:giveup-lock *jit-lock*)))))))))
