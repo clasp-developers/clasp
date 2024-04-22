@@ -42,7 +42,7 @@
                (:file "transform")
                (:file "translate")
                (:file "compile-bytecode")
-               (:file "translate-btb")
+               ;;(:file "translate-btb") ; not working yet
                (:file "inline-prep")
                (:file "proclamations")
                (:file "hooks")
