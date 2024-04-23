@@ -1836,28 +1836,30 @@
                               body-irbuilder body-block
                               abi &key (linkage 'llvm-sys:internal-linkage))
   (declare (ignore linkage))
-  (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-    (cmp:with-irbuilder (body-irbuilder)
-      (with-catch-pad-prep
-          (cmp:irc-begin-block body-block)
-        (cmp:with-landing-pad (never-entry-landing-pad ir)
-          ;; Bind the arguments and the environment values
-          ;; appropriately.
-          (let ((llvm-function-info (find-llvm-function-info ir)))
-            (loop for arg in (llvm-sys:get-argument-list the-function)
-                  ;; remove-if is to remove fixed closure params.
-                  for lexical in (append (remove-if #'null (environment llvm-function-info))
-                                         (arguments llvm-function-info))
-                  when lexical ; skip unused fixed
-                    do (setf (gethash lexical *datum-values*) arg)))
-          ;; Branch to the start block.
-          (cmp:irc-br (iblock-tag (bir:start ir)))
-          ;; Lay out blocks.
-          (bir:do-iblocks (ib ir)
-            (layout-iblock ib abi))))))
-  ;; Finish up by jumping from the entry block to the body block
-  (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-    (cmp:irc-br body-block))
+  (cmp:with-irbuilder (body-irbuilder)
+    ;; Start the iblocks - put in phis and record them in our mapping
+    ;; for jumps.
+    (bir:do-iblocks (ib ir)
+      (setf (gethash ib *tags*)
+            (cmp:irc-basic-block-create (iblock-name ib)))
+      (initialize-iblock-translation ib))
+    (with-catch-pad-prep
+      (cmp:irc-begin-block body-block)
+      (cmp:with-landing-pad (never-entry-landing-pad ir)
+        ;; Bind the arguments and the environment values
+        ;; appropriately.
+        (let ((llvm-function-info (find-llvm-function-info ir)))
+          (loop for arg in (llvm-sys:get-argument-list the-function)
+                ;; remove-if is to remove fixed closure params.
+                for lexical in (append (remove-if #'null (environment llvm-function-info))
+                                       (arguments llvm-function-info))
+                when lexical ; skip unused fixed
+                  do (setf (gethash lexical *datum-values*) arg)))
+        ;; Branch to the start block.
+        (cmp:irc-br (iblock-tag (bir:start ir)))
+        ;; Lay out blocks.
+        (bir:do-iblocks (ib ir)
+          (layout-iblock ib abi)))))
   the-function)
 
 (defun layout-main-function (function lambda-name abi
@@ -1901,14 +1903,6 @@
                                      'perform-optimization)
           (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-inline)
           (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-optimize-none))
-        (cmp:with-irbuilder (body-irbuilder)
-          (bir:map-iblocks
-           (lambda (ib)
-             (setf (gethash ib *tags*)
-                   (cmp:irc-basic-block-create
-                    (iblock-name ib)))
-             (initialize-iblock-translation ib))
-           function))
         (cmp:irc-set-insert-point-basic-block entry-block
                                               cmp:*irbuilder-function-alloca*)
         (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
@@ -1917,7 +1911,10 @@
                 (:lineno (core:source-pos-info-lineno source-pos-info))
               (layout-main-function* the-function function
                                      body-irbuilder body-block
-                                     abi :linkage linkage))))))))
+                                     abi :linkage linkage)
+              ;; Finish up by jumping from the entry block to the body.
+              (cmp:irc-br body-block))))))
+    the-function))
 
 (defun compute-rest-alloc (cleavir-lambda-list-analysis)
   ;; FIXME: We seriously need to not reparse lambda lists a million times
