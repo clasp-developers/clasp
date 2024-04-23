@@ -166,20 +166,16 @@
   (origin-source (bir:origin inst)))
 
 ;;; Put in source info.
+#+(or)
 (defmethod translate-simple-instruction :around
     ((instruction bir:instruction) abi)
   (declare (ignore abi))
-  (cmp:with-debug-info-source-position ((ensure-origin
-                                         (inst-source instruction)
-                                         999902))
-    (call-next-method)))
+  (call-next-method))
+#+(or)
 (defmethod translate-terminator :around
     ((instruction bir:instruction) abi next)
   (declare (ignore abi next))
-  (cmp:with-debug-info-source-position ((ensure-origin
-                                         (inst-source instruction)
-                                         999903))
-    (call-next-method)))
+  (call-next-method))
 
 (defmethod translate-terminator ((instruction bir:unreachable)
                                  abi next)
@@ -1808,28 +1804,27 @@
                                 (cmp::gen-memref-address closure-vec offset))))
              (source-pos-info (function-source-pos-info ir)))
         ;; Tail call the real function.
-        (cmp:with-debug-info-source-position (source-pos-info)
-          (let* ((function-type (llvm-sys:get-function-type (main-function llvm-function-info)))
-                 (arguments
-                   (mapcar (lambda (arg)
-                             (translate-cast (in arg)
-                                             '(:object) (cc-bmir:rtype arg)))
-                           (arguments llvm-function-info)))
-                 (c
-                   (cmp:irc-create-call-wft
-                    function-type
-                    (main-function llvm-function-info)
-                    ;; Augment the environment lexicals as a local call would.
-                    (nconc environment-values arguments)))
-                 (returni (bir:returni ir))
-                 (rrtype (and returni (cc-bmir:rtype (bir:input returni)))))
-            #+(or)(llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
-            ;; Box/etc. results of the local call.
-            (if returni
-                (cmp:irc-ret (translate-cast
-                              (local-call-rv->inputs c rrtype)
-                              rrtype :multiple-values))
-                (cmp:irc-unreachable)))))))
+        (let* ((function-type (llvm-sys:get-function-type (main-function llvm-function-info)))
+               (arguments
+                 (mapcar (lambda (arg)
+                           (translate-cast (in arg)
+                                           '(:object) (cc-bmir:rtype arg)))
+                         (arguments llvm-function-info)))
+               (c
+                 (cmp:irc-create-call-wft
+                  function-type
+                  (main-function llvm-function-info)
+                  ;; Augment the environment lexicals as a local call would.
+                  (nconc environment-values arguments)))
+               (returni (bir:returni ir))
+               (rrtype (and returni (cc-bmir:rtype (bir:input returni)))))
+          #+(or)(llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
+          ;; Box/etc. results of the local call.
+          (if returni
+              (cmp:irc-ret (translate-cast
+                            (local-call-rv->inputs c rrtype)
+                            rrtype :multiple-values))
+              (cmp:irc-unreachable))))))
   the-function)
 
 (defun layout-main-function* (the-function ir
@@ -1886,34 +1881,27 @@
          (body-block (cmp:irc-basic-block-create "body"))
          (source-pos-info (function-source-pos-info function))
          (lineno (core:source-pos-info-lineno source-pos-info)))
-    (cmp:with-guaranteed-*current-source-pos-info* ()
-      (cmp:with-dbg-function (:lineno lineno
-                              :function-type llvm-function-type
-                              :function the-function)
-        #+(or)(llvm-sys:set-calling-conv the-function 'llvm-sys:fastcc)
-        (llvm-sys:set-personality-fn the-function
-                                     (cmp:irc-personality-function))
-        ;; we'd like to be able to be interruptable at any time, so we
-        ;; need async-safe unwinding tables basically everywhere.
-        ;; (Although in code that ignores interrupts we could loosen this.)
-        (llvm-sys:add-fn-attr2string the-function "uwtable" "async")
-        (when (null (bir:returni function))
-          (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-return))
-        (unless (policy:policy-value (bir:policy function)
-                                     'perform-optimization)
-          (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-inline)
-          (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-optimize-none))
-        (cmp:irc-set-insert-point-basic-block entry-block
-                                              cmp:*irbuilder-function-alloca*)
-        (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-          (cmp:with-debug-info-source-position (source-pos-info)
-            (cmp:with-dbg-lexical-block
-                (:lineno (core:source-pos-info-lineno source-pos-info))
-              (layout-main-function* the-function function
-                                     body-irbuilder body-block
-                                     abi :linkage linkage)
-              ;; Finish up by jumping from the entry block to the body.
-              (cmp:irc-br body-block))))))
+    #+(or)(llvm-sys:set-calling-conv the-function 'llvm-sys:fastcc)
+    (llvm-sys:set-personality-fn the-function
+                                 (cmp:irc-personality-function))
+    ;; we'd like to be able to be interruptable at any time, so we
+    ;; need async-safe unwinding tables basically everywhere.
+    ;; (Although in code that ignores interrupts we could loosen this.)
+    (llvm-sys:add-fn-attr2string the-function "uwtable" "async")
+    (when (null (bir:returni function))
+      (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-return))
+    (unless (policy:policy-value (bir:policy function)
+                                 'perform-optimization)
+      (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-inline)
+      (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-optimize-none))
+    (cmp:irc-set-insert-point-basic-block entry-block
+                                          cmp:*irbuilder-function-alloca*)
+    (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
+      (layout-main-function* the-function function
+                             body-irbuilder body-block
+                             abi :linkage linkage)
+      ;; Finish up by jumping from the entry block to the body.
+      (cmp:irc-br body-block))
     the-function))
 
 (defun compute-rest-alloc (cleavir-lambda-list-analysis)
@@ -1946,40 +1934,33 @@
                      (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
                    (source-pos-info (function-source-pos-info function))
                    (lineno (core:source-pos-info-lineno source-pos-info)))
-              (cmp:with-guaranteed-*current-source-pos-info* ()
-                (cmp:with-dbg-function (:lineno lineno
-                                        :function-type llvm-function-type
-                                        :function xep-arity-function)
-                  (llvm-sys:set-personality-fn xep-arity-function
-                                               (cmp:irc-personality-function))
-                  (llvm-sys:add-fn-attr2string xep-arity-function
-                                               "uwtable" "async")
-                  (when (null (bir:returni function))
-                    (llvm-sys:add-fn-attr xep-arity-function
-                                          'llvm-sys:attribute-no-return))
-                  (unless (policy:policy-value (bir:policy function)
-                                                       'perform-optimization)
-                    (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-no-inline)
-                    (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-optimize-none))
-                  (cmp:irc-set-insert-point-basic-block entry-block
-                                                        cmp:*irbuilder-function-alloca*)
-                  (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-                    (cmp:with-debug-info-source-position (source-pos-info)
-                      (if sys:*drag-native-calls*
-                          (cmp::irc-intrinsic "drag_native_calls"))
-                      (let* ((cleavir-lambda-list-analysis (cmp:xep-group-cleavir-lambda-list-analysis xep-group))
-                             (calling-convention
-                               (cmp:setup-calling-convention xep-arity-function
-                                                             arity
-                                                             :debug-on
-                                                             (policy:policy-value
-                                                              (bir:policy function)
-                                                              'save-register-args)
-                                                             :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
-                                                             :rest-alloc (compute-rest-alloc cleavir-lambda-list-analysis))))
-                        (layout-xep-function* xep-group arity xep-arity-function function calling-convention abi))))))))))))
-
-
+              (llvm-sys:set-personality-fn xep-arity-function
+                                           (cmp:irc-personality-function))
+              (llvm-sys:add-fn-attr2string xep-arity-function
+                                           "uwtable" "async")
+              (when (null (bir:returni function))
+                (llvm-sys:add-fn-attr xep-arity-function
+                                      'llvm-sys:attribute-no-return))
+              (unless (policy:policy-value (bir:policy function)
+                                           'perform-optimization)
+                (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-no-inline)
+                (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-optimize-none))
+              (cmp:irc-set-insert-point-basic-block entry-block
+                                                    cmp:*irbuilder-function-alloca*)
+              (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
+                (if sys:*drag-native-calls*
+                    (cmp::irc-intrinsic "drag_native_calls"))
+                (let* ((cleavir-lambda-list-analysis (cmp:xep-group-cleavir-lambda-list-analysis xep-group))
+                       (calling-convention
+                         (cmp:setup-calling-convention xep-arity-function
+                                                       arity
+                                                       :debug-on
+                                                       (policy:policy-value
+                                                        (bir:policy function)
+                                                        'save-register-args)
+                                                       :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
+                                                       :rest-alloc (compute-rest-alloc cleavir-lambda-list-analysis))))
+                  (layout-xep-function* xep-group arity xep-arity-function function calling-convention abi)))))))))
 
 
 (defun maybe-note-return-cast (function)
@@ -2228,9 +2209,8 @@ COMPILE-FILE will use the default *clasp-env*."
       (cmp::cmp-log "Dumping module%N")
       (cmp::cmp-log-dump-module module)
       (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
-          (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-            (literal:with-rtv
-                (translate bir :linkage linkage :abi abi)))
+          (literal:with-rtv
+              (translate bir :linkage linkage :abi abi))
         (declare (ignore constants-table))
         (jit-add-module-return-function
          cmp:*the-module* startup-shutdown-id ordered-raw-constants-list)))))

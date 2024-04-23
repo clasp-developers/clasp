@@ -194,30 +194,30 @@
                      when import ; skip unused fixed closure entries
                        collect (cmp:irc-t*-load-atomic
                                 (cmp::gen-memref-address closure-vec offset))))
+             #+(or)
              (source-pos-info (cc::function-source-pos-info ir)))
         ;; Tail call the real function.
-        (cmp:with-debug-info-source-position (source-pos-info)
-          (let* ((main-function (cc::main-function llvm-function-info))
-                 (function-type (llvm-sys:get-function-type main-function))
-                 (arguments
-                   (mapcar (lambda (arg)
-                             (cc::translate-cast (cc::in arg)
-                                             '(:object) (cc-bmir:rtype arg)))
-                           (core:arguments llvm-function-info)))
-                 (c
-                   (cmp:irc-create-call-wft
-                    function-type main-function
-                    ;; Augment the environment lexicals as a local call would.
-                    (nconc environment-values arguments)))
-                 (returni (bir:returni ir))
-                 (rrtype (and returni (cc-bmir:rtype (bir:input returni)))))
-            #+(or)(llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
-            ;; Box/etc. results of the local call.
-            (if returni
-                (cmp:irc-ret (cc::translate-cast
-                              (cc::local-call-rv->inputs c rrtype)
-                              rrtype :multiple-values))
-                (cmp:irc-unreachable)))))))
+        (let* ((main-function (cc::main-function llvm-function-info))
+               (function-type (llvm-sys:get-function-type main-function))
+               (arguments
+                 (mapcar (lambda (arg)
+                           (cc::translate-cast (cc::in arg)
+                                               '(:object) (cc-bmir:rtype arg)))
+                         (core:arguments llvm-function-info)))
+               (c
+                 (cmp:irc-create-call-wft
+                  function-type main-function
+                  ;; Augment the environment lexicals as a local call would.
+                  (nconc environment-values arguments)))
+               (returni (bir:returni ir))
+               (rrtype (and returni (cc-bmir:rtype (bir:input returni)))))
+          #+(or)(llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
+          ;; Box/etc. results of the local call.
+          (if returni
+              (cmp:irc-ret (cc::translate-cast
+                            (cc::local-call-rv->inputs c rrtype)
+                            rrtype :multiple-values))
+              (cmp:irc-unreachable))))))
   xep)
 
 (defun layout-xep-function (xep arity ir lambda-list-analysis lambda-name)
@@ -235,34 +235,29 @@
            (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
          (source-pos-info (cc::function-source-pos-info ir))
          (lineno (core:source-pos-info-lineno source-pos-info)))
-    (cmp:with-guaranteed-*current-source-pos-info* ()
-      (cmp:with-dbg-function (:lineno lineno
-                              :function-type llvm-function-type
-                              :function xep)
-        (llvm-sys:set-personality-fn xep (cmp:irc-personality-function))
-        (llvm-sys:add-fn-attr2string xep "uwtable" "async")
-        (when (null (bir:returni ir))
-          (llvm-sys:add-fn-attr xep 'llvm-sys:attribute-no-return))
-        (unless (policy:policy-value (bir:policy ir)
-                                     'perform-optimization)
-          (llvm-sys:add-fn-attr xep 'llvm-sys:attribute-no-inline)
-          (llvm-sys:add-fn-attr xep 'llvm-sys:attribute-optimize-none))
-        (cmp:irc-set-insert-point-basic-block entry-block
-                                              cmp:*irbuilder-function-alloca*)
-        (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-          (cmp:with-debug-info-source-position (source-pos-info)
-            (when sys:*drag-native-calls*
-              (cmp::irc-intrinsic "drag_native_calls"))
-            (let ((calling-convention
-                    (cmp:setup-calling-convention xep
-                                                  arity
-                                                  :debug-on
-                                                  (policy:policy-value
-                                                   (bir:policy ir)
-                                                   'save-register-args)
-                                                  :cleavir-lambda-list-analysis lambda-list-analysis
-                                                  :rest-alloc (cc::compute-rest-alloc lambda-list-analysis))))
-              (layout-xep-function* xep arity ir lambda-list-analysis calling-convention))))))))
+    (llvm-sys:set-personality-fn xep (cmp:irc-personality-function))
+    (llvm-sys:add-fn-attr2string xep "uwtable" "async")
+    (when (null (bir:returni ir))
+      (llvm-sys:add-fn-attr xep 'llvm-sys:attribute-no-return))
+    (unless (policy:policy-value (bir:policy ir)
+                                 'perform-optimization)
+      (llvm-sys:add-fn-attr xep 'llvm-sys:attribute-no-inline)
+      (llvm-sys:add-fn-attr xep 'llvm-sys:attribute-optimize-none))
+    (cmp:irc-set-insert-point-basic-block entry-block
+                                          cmp:*irbuilder-function-alloca*)
+    (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
+      (when sys:*drag-native-calls*
+        (cmp::irc-intrinsic "drag_native_calls"))
+      (let ((calling-convention
+              (cmp:setup-calling-convention xep
+                                            arity
+                                            :debug-on
+                                            (policy:policy-value
+                                             (bir:policy ir)
+                                             'save-register-args)
+                                            :cleavir-lambda-list-analysis lambda-list-analysis
+                                            :rest-alloc (cc::compute-rest-alloc lambda-list-analysis))))
+        (layout-xep-function* xep arity ir lambda-list-analysis calling-convention)))))
 
 (defun layout-xep-group (function lambda-name abi)
   (declare (ignore abi))
@@ -351,9 +346,7 @@
         (cc::*function-info* (make-hash-table :test #'eq))
         (cc::*literal-fn* #'reference-literal))
     (cmp::with-module (:module module)
-      (cmp:with-debug-info-generator (:module module
-                                      :pathname debug-namestring)
-        (layout-module bir-module abi :toplevels toplevels))
+      (layout-module bir-module abi :toplevels toplevels)
       (cmp:irc-verify-module-safe module)
       (cmp::potentially-save-module))
     (make-instance 'translation

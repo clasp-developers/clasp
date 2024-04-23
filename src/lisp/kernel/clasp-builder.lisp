@@ -234,6 +234,7 @@
   "Call make-create-file-args with each system path and the installed path so that when the
 DIFile is actually created the argument list passed to llvm-sys:create-file will have already
 been initialized with install path versus the build path of the source code file."
+  #+(or)
   (mapc #'(lambda (entry &aux (source-path (getf entry :source-path))
                               (install-path (getf entry :install-path)))
             (funcall make-create-file-args source-path (namestring source-path) install-path))

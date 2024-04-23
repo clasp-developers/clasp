@@ -8,7 +8,6 @@
          COMPILER:COMPILE-LAMBDA-FUNCTION COMPILER::GENERATE-LLVM-FUNCTION-FROM-CODE
          COMPILER::TRANSFORM-LAMBDA-PARTS COMPILE-FILE
          cmp::do-new-function
-         cmp::do-dbg-function
          cmp::compile-file-to-module
          cmp::loop-read-and-compile-file-forms
          cmp::bclasp-loop-read-and-compile-file-forms
@@ -67,9 +66,6 @@
          cmp::irc-create-call-wft
          cmp::irc-typed-gep
          cmp::irc-bit-cast
-         cmp::dbg-parameter-var
-         cmp::%dbg-variable-value
-         cmp::%dbg-variable-addr
          cmp::alloca-temp-values
          cmp::alloca-arguments
          cmp::alloca-register-save-area

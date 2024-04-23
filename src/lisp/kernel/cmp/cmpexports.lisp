@@ -1,7 +1,6 @@
 (in-package :cmp)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(with-debug-info-source-position
-            calculate-cleavir-lambda-list-analysis
+  (export '(calculate-cleavir-lambda-list-analysis
             module-report
             transform-lambda-parts
             codegen-startup-shutdown
@@ -135,8 +134,6 @@
             cmp-log
             cmp-log-dump-module
             cmp-log-dump-function
-            make-file-metadata
-            make-function-metadata
             function-info
             function-info-cleavir-lambda-list-analysis
             make-function-info
@@ -319,15 +316,6 @@
             cleavir-lambda-list-analysis-rest
             process-bir-lambda-list
             typeid-core-unwind
-            *dbg-generate-dwarf*
-            *dbg-current-function-metadata*
-            *dbg-current-function-lineno*
-            *dbg-current-scope*
-            with-guaranteed-*current-source-pos-info*
-            with-dbg-function
-            with-dbg-lexical-block
-            dbg-variable-alloca
-            dbg-variable-value
             compile-file-source-pos-info
             c++-field-offset
             c++-field-index
@@ -335,7 +323,6 @@
             c++-struct*-type
             c++-field-ptr
             %closure%.offset-of[n]/t*
-            with-debug-info-generator
             with-irbuilder
             with-landing-pad
             make-uintptr_t

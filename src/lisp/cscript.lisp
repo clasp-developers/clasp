@@ -37,7 +37,6 @@
              #~"kernel/cmp/startup-primitives.lisp"
              #~"kernel/cmp/primitives.lisp"
              #~"kernel/cmp/cmpir.lisp"
-             #~"kernel/cmp/debuginfo.lisp"
              #~"kernel/cmp/cmprunall.lisp"
              #~"kernel/cmp/cmpliteral.lisp"
              #~"kernel/cmp/typeq.lisp"
