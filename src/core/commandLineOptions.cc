@@ -405,7 +405,8 @@ void process_clasp_arguments(CommandLineOptions* options) {
     } else if (*arg == "-S" || *arg == "--seed") {
       options->_RandomNumberSeed = atoi((*++arg).c_str());
     } else {
-      // Unknown option.
+      fmt::print(std::cerr, "{}: unrecognized option '{}'\n", gctools::program_name(), *arg);
+      exit(1);
     }
   }
 
