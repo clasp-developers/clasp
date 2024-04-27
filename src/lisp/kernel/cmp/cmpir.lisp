@@ -245,6 +245,7 @@ local-function - the lcl function that all of the xep functions call."
     fixed-indices))
 
 (defun ensure-opaque-or-pointee-type-matches (ptr type)
+  #+(or llvm15 llvm16 llvm17)
   (unless (llvm-sys:is-opaque-or-pointee-type-matches (llvm-sys:get-type ptr) type)
     (error "irc-typed-gep is-opaque-or-pointee-type-matches failed for type -> ~a value -> ~a (llvm-sys:get-type value) -> ~a"
            type ptr (llvm-sys:get-type ptr))))
@@ -431,8 +432,8 @@ local-function - the lcl function that all of the xep functions call."
 (defun irc-sext (val &optional (destty %fixnum%) (label "sext"))
   (llvm-sys:create-sext *irbuilder* val destty label))
 
-(defun irc-zext (val &optional (destty %fixnum%) (label "sext"))
-  (llvm-sys:create-zext *irbuilder* val destty label))
+(defun irc-zext (val &optional (destty %fixnum%) (label "zext") #+llvm18 is-non-neg)
+  (llvm-sys:create-zext *irbuilder* val destty label #+llvm18 is-non-neg))
 
 (defun irc-untag-fixnum (t* fixnum-type &optional (label "fixnum"))
   "Given a T* fixnum llvm::Value, returns a Value of the given type

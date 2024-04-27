@@ -711,6 +711,7 @@ template <> struct to_object<const llvm::TargetSubtargetInfo*> {
 };
 }; // namespace translate
 
+#if LLVM_VERSION_MAJOR < 18
 namespace translate {
 template <> struct from_object<llvm::CodeGenOpt::Level> {
   typedef llvm::CodeGenOpt::Level DeclareType;
@@ -727,6 +728,24 @@ template <> struct from_object<llvm::CodeGenOpt::Level> {
     }
   }
 };
+#else
+namespace translate {
+template <> struct from_object<llvm::CodeGenOptLevel> {
+  typedef llvm::CodeGenOptLevel DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(llvm::CodeGenOptLevel::Default) {
+    if (object.nilp()) {
+      SIMPLE_ERROR("You must pass a valid CodeGenOpt");
+    }
+    if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
+      core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CodeGenOpt->symbolValue());
+      this->_v = converter->enumForSymbol<llvm::CodeGenOptLevel>(so);
+    } else {
+      SIMPLE_ERROR("You must pass a valid CodeGenOptLevel");
+    }
+  }
+};
+#endif
 
 #if LLVM_VERSION_MAJOR < 16
 template <> struct from_object<llvm::Optional<llvm::Reloc::Model>> {
@@ -785,6 +804,7 @@ template <> struct from_object<llvm::CodeModel::Model> {
     }
   }
 };
+#if LLVM_VERSION_MAJOR < 18
 template <> struct from_object<llvm::CodeGenFileType> {
   typedef llvm::CodeGenFileType DeclareType;
   DeclareType _v;
@@ -800,6 +820,23 @@ template <> struct from_object<llvm::CodeGenFileType> {
     SIMPLE_ERROR("You must pass a valid ");
   }
 };
+#else
+template <> struct from_object<llvm::CodeGenFileType> {
+  typedef llvm::CodeGenFileType DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(llvm::CodeGenFileType::ObjectFile) {
+    if (object.notnilp()) {
+      if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
+        core::SymbolToEnumConverter_sp converter =
+            gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CodeGenFileType->symbolValue());
+        this->_v = converter->enumForSymbol<llvm::CodeGenFileType>(so);
+        return;
+      }
+    }
+    SIMPLE_ERROR("You must pass a valid ");
+  }
+};
+#endif
 }; // namespace translate
 
 template <> struct gctools::GCInfo<llvmo::TargetMachine_O> {
