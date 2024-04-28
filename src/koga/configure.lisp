@@ -489,7 +489,7 @@
                     :documentation "mps setting")
    (ld :accessor ld ; TODO Add ld detection logic
        :initarg :ld
-       :initform #+darwin nil #-darwin :gold
+       :initform #+darwin :lld #-darwin :gold
        :type (member nil :bfd :lld :gold :mold)
        :documentation "The linker to use")
    (ar :accessor ar
