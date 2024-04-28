@@ -167,7 +167,7 @@
                     :description "Running pfdietz test-random-integer-forms"
                     :pool "console")
   (ninja:write-rule output-stream :link-fasl
-                    :command "$clasp --norc --type image --disable-mpi --ignore-image --feature clasp-min --load link-fasl.lisp -- $out $in"
+                    :command "$clasp --norc --disable-mpi --ignore-image --feature clasp-min --load link-fasl.lisp -- $out $in"
                     :restat 1
                     :description "Linking $target")
   (ninja:write-rule output-stream "link-fasl-abc"

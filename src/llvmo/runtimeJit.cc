@@ -9,7 +9,12 @@
 #include <dlfcn.h>
 #include <iomanip>
 #include <string>
+#include <llvm/Config/llvm-config.h>
+#if LLVM_VERSION_MAJOR < 18
 #include <llvm/ExecutionEngine/Orc/DebuggerSupportPlugin.h>
+#else
+#include <llvm/ExecutionEngine/Orc/Debugging/DebuggerSupportPlugin.h>
+#endif
 #include <llvm/ExecutionEngine/Orc/TargetProcess/JITLoaderGDB.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>

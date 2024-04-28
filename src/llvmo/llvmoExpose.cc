@@ -532,11 +532,17 @@ CL_EXTERN_DEFMETHOD(Target_O, (llvm::TargetMachine * (llvm::Target::*)(llvm::Str
                                                                        const llvm::TargetOptions&, Optional<Reloc::Model>,
                                                                        Optional<CodeModel::Model>, CodeGenOpt::Level, bool) const) &
                                   llvm::Target::createTargetMachine);
-#else
+#elif LLVM_VERSION_MAJOR == 17
 CL_EXTERN_DEFMETHOD(Target_O,
                     (llvm::TargetMachine * (llvm::Target::*)(llvm::StringRef, llvm::StringRef, llvm::StringRef,
                                                              const llvm::TargetOptions&, std::optional<Reloc::Model>,
                                                              std::optional<CodeModel::Model>, CodeGenOpt::Level, bool) const) &
+                        llvm::Target::createTargetMachine);
+#else
+CL_EXTERN_DEFMETHOD(Target_O,
+                    (llvm::TargetMachine * (llvm::Target::*)(llvm::StringRef, llvm::StringRef, llvm::StringRef,
+                                                             const llvm::TargetOptions&, std::optional<Reloc::Model>,
+                                                             std::optional<CodeModel::Model>, CodeGenOptLevel, bool) const) &
                         llvm::Target::createTargetMachine);
 #endif
 
@@ -647,10 +653,17 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenFileType_Null);
 SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenFileType_AssemblyFile);
 SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenFileType_ObjectFile);
 CL_BEGIN_ENUM(llvm::CodeGenFileType, _sym_CodeGenFileType, "CodeGenFileType");
+#if LLVM_VERSION_MAJOR < 18
 CL_VALUE_ENUM(_sym_CodeGenFileType_Null, llvm::CGFT_Null);
 CL_VALUE_ENUM(_sym_CodeGenFileType_AssemblyFile, llvm::CGFT_AssemblyFile);
 CL_VALUE_ENUM(_sym_CodeGenFileType_ObjectFile, llvm::CGFT_ObjectFile);
 ;
+#else
+CL_VALUE_ENUM(_sym_CodeGenFileType_Null, llvm::CodeGenFileType::Null);
+CL_VALUE_ENUM(_sym_CodeGenFileType_AssemblyFile, llvm::CodeGenFileType::AssemblyFile);
+CL_VALUE_ENUM(_sym_CodeGenFileType_ObjectFile, llvm::CodeGenFileType::ObjectFile);
+;
+#endif
 CL_END_ENUM(_sym_CodeGenFileType);
 
 SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenOpt);
@@ -658,6 +671,7 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenOpt_None);
 SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenOpt_Less);
 SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenOpt_Default);
 SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenOpt_Aggressive);
+#if LLVM_VERSION_MAJOR < 18
 CL_BEGIN_ENUM(llvm::CodeGenOpt::Level, _sym_CodeGenOpt, "CodeGenOpt");
 CL_VALUE_ENUM(_sym_CodeGenOpt_None, llvm::CodeGenOpt::None);
 CL_VALUE_ENUM(_sym_CodeGenOpt_Less, llvm::CodeGenOpt::Less);
@@ -665,6 +679,15 @@ CL_VALUE_ENUM(_sym_CodeGenOpt_Default, llvm::CodeGenOpt::Default);
 CL_VALUE_ENUM(_sym_CodeGenOpt_Aggressive, llvm::CodeGenOpt::Aggressive);
 ;
 CL_END_ENUM(_sym_CodeGenOpt);
+#else
+CL_BEGIN_ENUM(llvm::CodeGenOptLevel, _sym_CodeGenOpt, "CodeGenOpt");
+CL_VALUE_ENUM(_sym_CodeGenOpt_None, llvm::CodeGenOptLevel::None);
+CL_VALUE_ENUM(_sym_CodeGenOpt_Less, llvm::CodeGenOptLevel::Less);
+CL_VALUE_ENUM(_sym_CodeGenOpt_Default, llvm::CodeGenOptLevel::Default);
+CL_VALUE_ENUM(_sym_CodeGenOpt_Aggressive, llvm::CodeGenOptLevel::Aggressive);
+;
+CL_END_ENUM(_sym_CodeGenOpt);
+#endif
 
 SYMBOL_EXPORT_SC_(LlvmoPkg, RelocModel);
 SYMBOL_EXPORT_SC_(LlvmoPkg, RelocModel_undefined);
@@ -875,7 +898,6 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_OpenBSD);
 SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_Solaris);
 SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_Win32);
 SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_Haiku);
-SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_Minix);
 SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_RTEMS);
 SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_NaCl);
 // SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_CNK);
@@ -900,7 +922,6 @@ CL_VALUE_ENUM(_sym_OSType_OpenBSD, llvm::Triple::OpenBSD);
 CL_VALUE_ENUM(_sym_OSType_Solaris, llvm::Triple::Solaris);
 CL_VALUE_ENUM(_sym_OSType_Win32, llvm::Triple::Win32);
 CL_VALUE_ENUM(_sym_OSType_Haiku, llvm::Triple::Haiku);
-CL_VALUE_ENUM(_sym_OSType_Minix, llvm::Triple::Minix);
 CL_VALUE_ENUM(_sym_OSType_RTEMS, llvm::Triple::RTEMS);
 CL_VALUE_ENUM(_sym_OSType_NaCl, llvm::Triple::NaCl);
 // CL_VALUE_ENUM(_sym_OSType_CNK, llvm::Triple::CNK);
@@ -1607,9 +1628,11 @@ CL_EXTERN_DEFMETHOD(ExecutionEngine_O, &llvm::ExecutionEngine::getOrEmitGlobalVa
 
 namespace llvmo {
 
+#if LLVM_VERSION_MAJOR < 18
 CL_DEFUN bool llvm_sys__isOpaqueOrPointeeTypeMatches(Type_sp ptrType, Type_sp ty) {
   return dyn_cast<llvm::PointerType>(ptrType->wrappedPtr())->isOpaqueOrPointeeTypeMatches(ty->wrappedPtr());
 }
+#endif
 
 }; // namespace llvmo
 
@@ -1854,7 +1877,11 @@ CL_DEFUN core::T_mv llvm_sys__getDebugLocInfo(Instruction_sp instr) {
 CL_DOCSTRING(R"dx(Erase the instruction from its parent basic block and return the next instruction or NIL)dx");
 DOCGROUP(clasp);
 CL_DEFUN void llvm_sys__instruction_eraseFromParent(Instruction_sp instr) {
+#if LLVM_VERSION_MAJOR < 18
   [[maybe_unused]] llvm::SymbolTableList<llvm::Instruction>::iterator next = instr->wrappedPtr()->eraseFromParent();
+#else
+  [[maybe_unused]] llvm::AllocaInst::InstListType::iterator next = instr->wrappedPtr()->eraseFromParent();
+#endif
 }
 
 CL_DOCSTRING(R"dx(Return the next non-debug instruction or NIL if there is none)dx");
@@ -1869,8 +1896,10 @@ CL_DEFUN core::T_sp llvm_sys__instruction_getNextNonDebugInstruction(Instruction
 
 CL_LISPIFY_NAME("insertAfter");
 CL_EXTERN_DEFMETHOD(Instruction_O, &llvm::Instruction::insertAfter);
+#if LLVM_VERSION_MAJOR < 18
 CL_LISPIFY_NAME("insertBefore");
 CL_EXTERN_DEFMETHOD(Instruction_O, &llvm::Instruction::insertBefore);
+#endif
 
 CL_LISPIFY_NAME("terminatorInstP");
 CL_DEFMETHOD bool Instruction_O::terminatorInstP() const { return this->wrappedPtr()->isTerminator(); }
@@ -3451,6 +3480,7 @@ CL_EXTERN_DEFUN((llvm::IntegerType * (*)(llvm::LLVMContext & C)) & llvm::Type::g
 CL_LISPIFY_NAME("type-get-int128-ty");
 CL_EXTERN_DEFUN((llvm::IntegerType * (*)(llvm::LLVMContext & C)) & llvm::Type::getInt128Ty);
 
+#if LLVM_VERSION_MAJOR < 18
 CL_LISPIFY_NAME("type-get-float-ptr-ty");
 CL_EXTERN_DEFUN((llvm::PointerType * (*)(llvm::LLVMContext & C, unsigned AS)) & llvm::Type::getFloatPtrTy);
 CL_LISPIFY_NAME("type-get-double-ptr-ty");
@@ -3469,6 +3499,7 @@ CL_EXTERN_DEFUN((llvm::PointerType * (*)(llvm::LLVMContext & C, unsigned AS)) & 
 CL_LISPIFY_NAME("type-get-int64-ptr-ty");
 CL_EXTERN_DEFUN((llvm::PointerType * (*)(llvm::LLVMContext & C, unsigned AS)) & llvm::Type::getInt64PtrTy);
 ;
+#endif
 
 }; // namespace llvmo
 

@@ -1,3 +1,11 @@
+# Version 2.6.0 (LLVM15-18) Pending
+
+## Added
+* LLVM18 support.
+
+## Changed
+* Exit with error code when unknown option is present on command line.
+
 # Version 2.5.0 (LLVM15-17) 2024-01-01
 
 ## Added
