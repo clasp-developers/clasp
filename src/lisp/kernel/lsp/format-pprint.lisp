@@ -393,19 +393,38 @@
             insides
             suffix)))
 
-(defun add-fill-style-newlines (list string offset)
-  (if list
-      (let ((directive (car list)))
-        (if (simple-string-p directive)
-            (nconc (add-fill-style-newlines-aux directive string offset)
-                   (add-fill-style-newlines (cdr list)
-                                            string
-                                            (+ offset (length directive))))
-            (cons directive
-                  (add-fill-style-newlines (cdr list)
-                                           string
-                                           (format-directive-end directive)))))
-      nil))
+(defun add-fill-style-newlines (list string offset &optional last-directive)
+  (cond
+    (list
+     (let ((directive (car list)))
+       (cond
+         ((simple-string-p directive)
+          (let* ((non-space (position #\Space directive :test #'char/=))
+                 (newlinep (and last-directive
+                                (char= (format-directive-character last-directive)
+                                       #\Newline))))
+            (cond
+              ((and newlinep non-space)
+               (nconc
+                (list (subseq directive 0 non-space))
+                (add-fill-style-newlines-aux
+                 (subseq directive non-space) string (+ offset non-space))
+                (add-fill-style-newlines
+                 (cdr list) string (+ offset (length directive)))))
+              (newlinep
+               (cons directive
+                     (add-fill-style-newlines
+                      (cdr list) string (+ offset (length directive)))))
+              (t
+               (nconc (add-fill-style-newlines-aux directive string offset)
+                      (add-fill-style-newlines
+                       (cdr list) string (+ offset (length directive))))))))
+         (t
+          (cons directive
+                (add-fill-style-newlines
+                 (cdr list) string
+                 (format-directive-end directive) directive))))))
+    (t nil)))
 
 (defun add-fill-style-newlines-aux (literal string offset)
   (let ((end (length literal))
