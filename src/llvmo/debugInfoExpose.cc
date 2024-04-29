@@ -312,6 +312,14 @@ CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createPointerType);
 CL_LAMBDA(dibuilder);
 CL_LISPIFY_NAME(createNullPtrType);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createNullPtrType);
+CL_LAMBDA(dibuilder scope name file lineno size alignment flags derived-from elements runtime-lang vtable-holder unique-id);
+CL_LISPIFY_NAME(createStructType);
+CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createStructType);
+
+CL_LAMBDA(ditype);
+CL_LISPIFY_NAME(getSizeInBits);
+CL_EXTERN_DEFMETHOD(DIType_O, &llvm::DIType::getSizeInBits);
+
 CL_LAMBDA(dibuilder);
 CL_LISPIFY_NAME(createUnspecifiedParameter);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createUnspecifiedParameter);
@@ -384,6 +392,10 @@ CL_DEFMETHOD DITypeRefArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp e
     } else if (DINode_sp di = oCar(cur).asOrNull<DINode_O>()) {
       llvm::MDNode* mdnode = di->operator llvm::MDNode*();
       vector_values.push_back(mdnode);
+    } else if (oCar(cur).nilp()) {
+      // null metadata is used in a few places, such as to indicate
+      // a void return type in a DISubroutineType.
+      vector_values.push_back(nullptr);
     } else {
       SIMPLE_ERROR("Handle conversion of {} to llvm::Value*", _rep_(oCar(cur)));
     }

@@ -40,6 +40,7 @@
                (:file "interval")
                (:file "type")
                (:file "transform")
+               (:file "debuginfo")
                (:file "translate")
                (:file "compile-bytecode")
                ;;(:file "translate-btb") ; not working yet

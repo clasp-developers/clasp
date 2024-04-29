@@ -166,16 +166,22 @@
   (origin-source (bir:origin inst)))
 
 ;;; Put in source info.
-#+(or)
 (defmethod translate-simple-instruction :around
     ((instruction bir:instruction) abi)
   (declare (ignore abi))
-  (call-next-method))
-#+(or)
+  (with-instruction-source-position
+      ((ensure-origin
+        (origin-spi (origin-source (bir:origin instruction)))
+        999902))
+    (call-next-method)))
 (defmethod translate-terminator :around
     ((instruction bir:instruction) abi next)
   (declare (ignore abi next))
-  (call-next-method))
+  (with-instruction-source-position
+      ((ensure-origin
+        (origin-spi (origin-source (bir:origin instruction)))
+        999903))
+    (call-next-method)))
 
 (defmethod translate-terminator ((instruction bir:unreachable)
                                  abi next)
@@ -1801,8 +1807,7 @@
                      for offset = (cmp:%closure%.offset-of[n]/t* i)
                      when import ; skip unused fixed closure entries
                        collect (cmp:irc-t*-load-atomic
-                                (cmp::gen-memref-address closure-vec offset))))
-             (source-pos-info (function-source-pos-info ir)))
+                                (cmp::gen-memref-address closure-vec offset)))))
         ;; Tail call the real function.
         (let* ((function-type (llvm-sys:get-function-type (main-function llvm-function-info)))
                (arguments
@@ -1868,8 +1873,6 @@
            (cmp:module-make-global-string jit-function-name "fn-name"))
          (llvm-function-info (find-llvm-function-info function))
          (the-function (main-function llvm-function-info))
-         (llvm-function-type (llvm-sys:get-function-type the-function))
-         #+(or)(function-description (main-function-description llvm-function-info))
          (cmp:*current-function* the-function)
          (entry-block (cmp:irc-basic-block-create "entry" the-function))
          (*function-current-multiple-value-array-address*
@@ -1878,9 +1881,7 @@
            (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
          (body-irbuilder (llvm-sys:make-irbuilder
                           (cmp:thread-local-llvm-context)))
-         (body-block (cmp:irc-basic-block-create "body"))
-         (source-pos-info (function-source-pos-info function))
-         (lineno (core:source-pos-info-lineno source-pos-info)))
+         (body-block (cmp:irc-basic-block-create "body")))
     #+(or)(llvm-sys:set-calling-conv the-function 'llvm-sys:fastcc)
     (llvm-sys:set-personality-fn the-function
                                  (cmp:irc-personality-function))
@@ -1894,14 +1895,18 @@
                                  'perform-optimization)
       (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-inline)
       (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-optimize-none))
-    (cmp:irc-set-insert-point-basic-block entry-block
-                                          cmp:*irbuilder-function-alloca*)
-    (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-      (layout-main-function* the-function function
-                             body-irbuilder body-block
-                             abi :linkage linkage)
-      ;; Finish up by jumping from the entry block to the body.
-      (cmp:irc-br body-block))
+    (with-di-subprogram (the-function
+                         (create-di-main-function
+                          function
+                          (llvm-sys:get-name the-function)))
+      (cmp:irc-set-insert-point-basic-block entry-block
+                                            cmp:*irbuilder-function-alloca*)
+      (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
+        (layout-main-function* the-function function
+                               body-irbuilder body-block
+                               abi :linkage linkage)
+        ;; Finish up by jumping from the entry block to the body.
+        (cmp:irc-br body-block)))
     the-function))
 
 (defun compute-rest-alloc (cleavir-lambda-list-analysis)
@@ -1925,15 +1930,16 @@
       (if (literal:general-entry-placeholder-p xep-arity-function)
           (progn
             )
-          (progn
-            (let* ((llvm-function-type (cmp:fn-prototype arity))
-                   (cmp:*current-function* xep-arity-function)
+          (with-di-subprogram (xep-arity-function
+                               (create-di-xep
+                                function
+                                (llvm-sys:get-name xep-arity-function)
+                                arity))
+            (let* ((cmp:*current-function* xep-arity-function)
                    (entry-block (cmp:irc-basic-block-create "entry" xep-arity-function))
                    (*function-current-multiple-value-array-address* nil)
                    (cmp:*irbuilder-function-alloca*
-                     (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
-                   (source-pos-info (function-source-pos-info function))
-                   (lineno (core:source-pos-info-lineno source-pos-info)))
+                     (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context))))
               (llvm-sys:set-personality-fn xep-arity-function
                                            (cmp:irc-personality-function))
               (llvm-sys:add-fn-attr2string xep-arity-function
@@ -1948,19 +1954,23 @@
               (cmp:irc-set-insert-point-basic-block entry-block
                                                     cmp:*irbuilder-function-alloca*)
               (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-                (if sys:*drag-native-calls*
-                    (cmp::irc-intrinsic "drag_native_calls"))
-                (let* ((cleavir-lambda-list-analysis (cmp:xep-group-cleavir-lambda-list-analysis xep-group))
-                       (calling-convention
-                         (cmp:setup-calling-convention xep-arity-function
-                                                       arity
-                                                       :debug-on
-                                                       (policy:policy-value
-                                                        (bir:policy function)
-                                                        'save-register-args)
-                                                       :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
-                                                       :rest-alloc (compute-rest-alloc cleavir-lambda-list-analysis))))
-                  (layout-xep-function* xep-group arity xep-arity-function function calling-convention abi)))))))))
+                (with-instruction-source-position
+                    ((ensure-origin
+                      (origin-spi (origin-source (bir:origin function)))
+                      999903))
+                  (if sys:*drag-native-calls*
+                      (cmp::irc-intrinsic "drag_native_calls"))
+                  (let* ((cleavir-lambda-list-analysis (cmp:xep-group-cleavir-lambda-list-analysis xep-group))
+                         (calling-convention
+                           (cmp:setup-calling-convention xep-arity-function
+                                                         arity
+                                                         :debug-on
+                                                         (policy:policy-value
+                                                          (bir:policy function)
+                                                          'save-register-args)
+                                                         :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
+                                                         :rest-alloc (compute-rest-alloc cleavir-lambda-list-analysis))))
+                    (layout-xep-function* xep-group arity xep-arity-function function calling-convention abi))))))))))
 
 
 (defun maybe-note-return-cast (function)
@@ -2204,13 +2214,11 @@ COMPILE-FILE will use the default *clasp-env*."
                   (core:file-scope
                    (core:source-pos-info-file-handle origin))))
                 "repl-code"))))
-    ;; Link the C++ intrinsics into the module
     (cmp::with-module (:module module)
-      (cmp::cmp-log "Dumping module%N")
-      (cmp::cmp-log-dump-module module)
       (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
-          (literal:with-rtv
-              (translate bir :linkage linkage :abi abi))
+          (with-debuginfo (module :file pathname)
+            (literal:with-rtv
+                (translate bir :linkage linkage :abi abi)))
         (declare (ignore constants-table))
         (jit-add-module-return-function
          cmp:*the-module* startup-shutdown-id ordered-raw-constants-list)))))
@@ -2279,19 +2287,21 @@ COMPILE-FILE will use the default *clasp-env*."
   (let ((eof-value (gensym))
         (eclector.reader:*client* cmp:*cst-client*)
         (cst-to-ast:*compiler* 'cl:compile-file))
-    (loop
-      ;; Required to update the source pos info. FIXME!?
-      (peek-char t source-sin nil)
-      ;; FIXME: if :environment is provided we should probably use a different read somehow
-      (let* ((core:*current-source-pos-info* (cmp:compile-file-source-pos-info source-sin))
-             (cst (eclector.concrete-syntax-tree:read source-sin nil eof-value)))
-        #+debug-monitor(sys:monitor-message "source-pos ~a" core:*current-source-pos-info*)
-        (if (eq cst eof-value)
-            (return nil)
-            (progn
-              (when *compile-print* (cmp::describe-form (cst:raw cst)))
-              (core:with-memory-ramp (:pattern 'gctools:ramp)
-                (compile-file-cst cst environment))))))))
+    (with-debuginfo (cmp:*the-module*
+                     :file (namestring cmp::*compile-file-source-debug-pathname*))
+      (loop
+        ;; Required to update the source pos info. FIXME!?
+        (peek-char t source-sin nil)
+        ;; FIXME: if :environment is provided we should probably use a different read somehow
+        (let* ((core:*current-source-pos-info* (cmp:compile-file-source-pos-info source-sin))
+               (cst (eclector.concrete-syntax-tree:read source-sin nil eof-value)))
+          #+debug-monitor(sys:monitor-message "source-pos ~a" core:*current-source-pos-info*)
+          (if (eq cst eof-value)
+              (return nil)
+              (progn
+                (when *compile-print* (cmp::describe-form (cst:raw cst)))
+                (core:with-memory-ramp (:pattern 'gctools:ramp)
+                  (compile-file-cst cst environment)))))))))
 
 (defun cleavir-compile-file (input-file &rest kwargs)
   (let ((cmp:*cleavir-compile-file-hook*
