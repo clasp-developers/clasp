@@ -6,6 +6,10 @@
 ## Changed
 * Exit with error code when unknown option is present on command line.
 
+## Fixed
+* Avoid inserting fill newlines after newline format directive in
+  logical block format directive.
+
 # Version 2.5.0 (LLVM15-17) 2024-01-01
 
 ## Added
