@@ -22,9 +22,6 @@
 // Define compile-time flags that effect structure sizes
 //
 #include <atomic>
-#ifdef DEBUG_GUARD_BACKTRACE
-#include <execinfo.h>
-#endif
 #include <clasp/gctools/configure_memory.h>
 #include <clasp/gctools/hardErrors.h>
 

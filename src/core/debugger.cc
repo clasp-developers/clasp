@@ -28,7 +28,6 @@ THE SOFTWARE.
 #define DEBUG_LEVEL_FULL
 
 #include <csignal>
-#include <execinfo.h>
 #include <iomanip>
 #include <clasp/core/foundation.h>
 #include <dlfcn.h>

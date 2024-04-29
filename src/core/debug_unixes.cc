@@ -27,7 +27,6 @@ THE SOFTWARE.
 
 #include <csignal>
 #include <iostream>
-#include <execinfo.h>
 #include <dlfcn.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>

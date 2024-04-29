@@ -95,7 +95,11 @@ THE SOFTWARE.
 #include <clasp/core/weakHashTable.h>
 #include <clasp/core/wrappers.h>
 #ifdef CLASP_THREADS
+#ifdef _TARGET_OS_LINUX
+#include <sched.h>
+#else
 #include <pthread.h>
+#endif
 #endif
 namespace core {
 
@@ -1121,7 +1125,9 @@ KeyValuePair* HashTable_O::rehash_upgrade_write_lock(bool expandTable, T_sp find
       this->_Mutex->write_unlock(false /*releaseReadLock*/);
       return result;
     }
-#ifdef _TARGET_OS_DARWIN
+#if defined(_TARGET_OS_LINUX)
+    sched_yield();
+#elif defined(_TARGET_OS_DARWIN)
     pthread_yield_np();
 #else
     pthread_yield();
