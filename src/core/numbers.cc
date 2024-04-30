@@ -1458,6 +1458,15 @@ template Integer_sp Integer_O::create(long long v);
 template Integer_sp Integer_O::create(unsigned long long v);
 #endif
 
+#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD)
+Integer_sp Integer_O::create(unsigned long v) {
+  if (v <= gc::most_positive_fixnum)
+    return clasp_make_fixnum(static_cast<Fixnum>(v));
+  else
+    return Bignum_O::create(static_cast<uint64_t>(v));
+}
+#endif
+
 Integer_sp Integer_O::create(std::floating_point auto v) {
   // Why >= and <? Because most-negative-fixnum is a negative power of
   // two, exactly representable by a float. most-positive-fixnum is

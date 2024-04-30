@@ -263,6 +263,10 @@ public:
   static Integer_sp create(int32_t v);
   static Integer_sp create(uint32_t v);
 #endif
+#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD)
+  static Integer_sp create(long v) { return Integer_O::create(static_cast<Fixnum>(v)); };
+  static Integer_sp create(unsigned long v);
+#endif
 
   static Integer_sp create(const mpz_class& v);
   static Integer_sp create(const string& v, int base = 0) { return create(v.c_str(), base); };
