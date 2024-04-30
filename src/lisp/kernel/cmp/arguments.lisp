@@ -30,9 +30,7 @@
   ;; reqargs is as returned from process-lambda-list- (# ...) where # is the count.
   ;; cc is the calling-convention object.
   (dolist (req (cdr reqargs))
-    (let ((arg (calling-convention-vaslist.va-arg cc)))
-      (cmp-log "(calling-convention-vaslist.va-arg cc) -> {}%N" arg)
-      (clasp-cleavir::out arg req))))
+    (clasp-cleavir::out (calling-convention-vaslist.va-arg cc) req)))
 
 ;;; Unlike the other compile-*-arguments, this one returns a value-
 ;;; an LLVM Value for the number of arguments remaining.
@@ -72,16 +70,11 @@ switch (nargs) {
         (push (irc-phi %t*% npreds) suppliedp-phis)
         (push (irc-phi %t*% npreds) var-phis))
       ;; OK _now_ OUT.
-      (do* ((cur-opt opts (cdddr cur-opt))
-            (var (car cur-opt) (car cur-opt))
-            (suppliedp (cadr cur-opt) (cadr cur-opt))
-            (var-phis var-phis (cdr var-phis))
-            (var-phi (car var-phis) (car var-phis))
-            (suppliedp-phis suppliedp-phis (cdr suppliedp-phis))
-            (suppliedp-phi (car suppliedp-phis) (car suppliedp-phis)))
-           ((endp cur-opt))
-        (clasp-cleavir::out suppliedp-phi suppliedp)
-        (clasp-cleavir::out var-phi var))
+      (loop for (var suppliedp) on opts by #'cdddr
+            for var-phi in var-phis
+            for suppliedp-phi in suppliedp-phis
+            do (clasp-cleavir::out suppliedp-phi suppliedp)
+               (clasp-cleavir::out var-phi var))
       (irc-br final)
       ;; Generate a block for each case.
       (do ((i nreq (1+ i)))
@@ -91,15 +84,12 @@ switch (nargs) {
           (irc-phi-add-incoming nremaining zero new)
           (irc-begin-block new)
           ;; Assign each optional parameter accordingly.
-          (do* ((var-phis var-phis (cdr var-phis))
-                (var-phi (car var-phis) (car var-phis))
-                (suppliedp-phis suppliedp-phis (cdr suppliedp-phis))
-                (suppliedp-phi (car suppliedp-phis) (car suppliedp-phis))
-                (j nreq (1+ j))
-                (enough (< j i) (< j i)))
-               ((endp var-phis))
-            (irc-phi-add-incoming suppliedp-phi (if enough true false) new)
-            (irc-phi-add-incoming var-phi (if enough (calling-convention-vaslist.va-arg calling-conv) undef) new))
+          (loop for var-phi in var-phis
+                for suppliedp-phi in suppliedp-phis
+                for j from nreq
+                for enough = (< j i)
+                do (irc-phi-add-incoming suppliedp-phi (if enough true false) new)
+                   (irc-phi-add-incoming var-phi (if enough (calling-convention-vaslist.va-arg calling-conv) undef) new))
           (irc-br assn)))
       ;; Default case: everything gets a value and a suppliedp=T.
       (irc-begin-block enough)
@@ -195,10 +185,8 @@ a_p = a_p_temp; a = a_temp;
   
 (defun compile-key-arguments (keyargs lambda-list-aokp nremaining calling-conv false true)
   (macrolet ((do-keys ((keyword) &body body)
-               `(do* ((cur-key (cdr keyargs) (cddddr cur-key))
-                      (,keyword (car cur-key) (car cur-key)))
-                     ((endp cur-key))
-                  ,@body)))
+               `(loop for (,keyword) on (cdr keyargs) by #'cddddr
+                      do (progn ,@body))))
     (let ((aok-parameter-p nil)
           allow-other-keys
           (nkeys (car keyargs))
@@ -266,14 +254,11 @@ a_p = a_p_temp; a = a_temp;
         ;; Start matching keywords
         (let ((key-arg (calling-convention-vaslist.va-arg calling-conv))
               (value-arg (calling-convention-vaslist.va-arg calling-conv)))
-          (do* ((cur-key (cdr keyargs) (cddddr cur-key))
-                (key (car cur-key) (car cur-key))
-                (suppliedp-phis top-suppliedp-phis (cdr suppliedp-phis))
-                (suppliedp-phi (car suppliedp-phis) (car suppliedp-phis)))
-               ((endp cur-key))
-            (multiple-value-bind (new-block old-block)
-                (compile-one-key-test key key-arg suppliedp-phi kw-loop-continue false)
-              (push new-block new-blocks) (push old-block old-blocks)))
+          (loop for (key) on (cdr keyargs) by #'cddddr
+                for suppliedp-phi in top-suppliedp-phis
+                do (multiple-value-bind (new-block old-block)
+                       (compile-one-key-test key key-arg suppliedp-phi kw-loop-continue false)
+                     (push new-block new-blocks) (push old-block old-blocks)))
           (setf new-blocks (nreverse new-blocks) old-blocks (nreverse old-blocks))
           ;; match failure - as usual, works through phi
           (irc-branch-to-and-begin-block unknown-kw)
@@ -342,18 +327,13 @@ a_p = a_p_temp; a = a_temp;
              allow-other-keys bad-keyword (calling-convention-closure calling-conv))
             (irc-br kw-assigns)
             (irc-begin-block kw-assigns)))
-        (do* ((top-param-phis top-param-phis (cdr top-param-phis))
-              (top-param-phi (car top-param-phis) (car top-param-phis))
-              (top-suppliedp-phis top-suppliedp-phis (cdr top-suppliedp-phis))
-              (top-suppliedp-phi (car top-suppliedp-phis) (car top-suppliedp-phis))
-              (cur-key (cdr keyargs) (cddddr cur-key))
-              (key (car cur-key) (car cur-key))
-              (var (caddr cur-key) (caddr cur-key))
-              (suppliedp (cadddr cur-key) (cadddr cur-key)))
-             ((endp cur-key))
-          (when (or (not (eq key :allow-other-keys)) lambda-list-aokp aok-parameter-p)
-            (clasp-cleavir::out top-param-phi var)
-            (clasp-cleavir::out top-suppliedp-phi suppliedp)))))))
+        (loop for top-param-phi in top-param-phis
+              for top-suppliedp-phi in top-suppliedp-phis
+              for (key _ var suppliedp) on (cdr keyargs) by #'cddddr
+              when (or (not (eq key :allow-other-keys))
+                       lambda-list-aokp aok-parameter-p)
+                do (clasp-cleavir::out top-param-phi var)
+                   (clasp-cleavir::out top-suppliedp-phi suppliedp))))))
 
 (defun compile-general-lambda-list-code (reqargs 
 					 optargs 
@@ -466,12 +446,11 @@ a_p = a_p_temp; a = a_temp;
               (dotimes (i nopt)
                 (push (irc-phi %t*% npreds) var-phis)
                 (push (irc-phi %t*% npreds) suppliedp-phis))
-              (do ((cur-opt (cdr optargs) (cdddr cur-opt))
-                   (var-phis var-phis (cdr var-phis))
-                   (suppliedp-phis suppliedp-phis (cdr suppliedp-phis)))
-                  ((endp cur-opt))
-                (clasp-cleavir::out (car suppliedp-phis) (second cur-opt))
-                (clasp-cleavir::out (car var-phis) (first cur-opt)))
+              (loop for (var suppliedp) on (cdr optargs) by #'cdddr
+                    for var-phi in var-phis
+                    for suppliedp-phi in suppliedp-phis
+                    do (clasp-cleavir::out suppliedp-phi suppliedp)
+                       (clasp-cleavir::out var-phi var))
               (irc-br after)
               ;; each case
               (dotimes (i nopt)
