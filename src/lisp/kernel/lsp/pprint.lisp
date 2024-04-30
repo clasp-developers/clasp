@@ -25,4 +25,4 @@
            (write-char #\> stream))))
   nil)
 
-(inravina-shim:initialize)
+(inravina-shim:initialize-inravina)
