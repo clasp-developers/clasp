@@ -180,8 +180,7 @@
     (cmp:with-landing-pad nil
       (let ((ret (cmp:compile-lambda-list-code lambda-list-analysis
                                                calling-convention
-                                               arity
-                                               :argument-out #'cc::out)))
+                                               arity)))
         (unless ret
           (error "cmp:compile-lambda-list-code returned NIL which means this is not a function that should be generated")))
       ;; Import cells.

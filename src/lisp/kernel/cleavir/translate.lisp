@@ -1794,8 +1794,7 @@
     (cmp:with-landing-pad nil
       (let ((ret (cmp:compile-lambda-list-code (cmp:xep-group-cleavir-lambda-list-analysis xep-group)
                                                calling-convention
-                                               arity
-                                               :argument-out #'out)))
+                                               arity)))
         (unless ret
           (error "cmp:compile-lambda-list-code returned NIL which means this is not a function that should be generated")))
       ;; Import cells.
