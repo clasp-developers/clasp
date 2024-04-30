@@ -679,9 +679,8 @@ a_p = a_p_temp; a = a_temp;
 ;; Setup the calling convention
 ;;
 (defun setup-calling-convention (llvm-function arity
-                                 &key debug-on rest-alloc cleavir-lambda-list-analysis)
+                                 &key debug-on rest-alloc)
     (initialize-calling-convention llvm-function
                                    arity
                                    :debug-on debug-on
-                                   :rest-alloc rest-alloc
-                                   :cleavir-lambda-list-analysis cleavir-lambda-list-analysis))
+                                   :rest-alloc rest-alloc))

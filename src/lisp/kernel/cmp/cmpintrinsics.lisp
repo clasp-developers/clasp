@@ -627,26 +627,19 @@ Boehm and MPS use a single pointer"
   nargs
   register-args ; The arguments that were passed in registers
   vaslist*      ; The address of the vaslist, or NIL
-  cleavir-lambda-list-analysis ; analysis of cleavir-lambda-list
   rest-alloc ; whether we can dx or ignore a &rest argument
   )
 
 ;; Parse the function arguments into a calling-convention
 
-(defun initialize-calling-convention (llvm-function arity &key debug-on cleavir-lambda-list-analysis rest-alloc)
-  (cmp-log "llvm-function: {}%N" llvm-function)
+(defun initialize-calling-convention (llvm-function arity &key debug-on rest-alloc)
   (let ((arguments (llvm-sys:get-argument-list llvm-function)))
-    (cmp-log "llvm-function arguments: {}%N" (llvm-sys:get-argument-list llvm-function))
-    (cmp-log "llvm-function isVarArg: {}%N" (llvm-sys:is-var-arg llvm-function))
     (let ((register-save-area* (when debug-on (alloca-register-save-area arity :label "register-save-area")))
           (closure (first arguments)))
-      (cmp-log "A%N")
       (unless (first arguments)
         (error "initialize-calling-convention for arguments ~a - the closure is NIL" arguments))
-      (cmp-log "A%N")
       (cond
         ((eq arity :general-entry)
-         (cmp-log "B%N")
          (let* ((nargs (second arguments))
                 (args (third arguments))
                 (vaslist* (alloca-vaslist)))
@@ -655,7 +648,6 @@ Boehm and MPS use a single pointer"
            (make-calling-convention :closure closure
                                     :nargs nargs
                                     :vaslist* vaslist*
-                                    :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
                                     :rest-alloc rest-alloc)))
         (t
          (let ((nargs (length (cdr arguments)))
@@ -664,7 +656,6 @@ Boehm and MPS use a single pointer"
            (make-calling-convention :closure closure
                                     :nargs (jit-constant-i64 nargs)
                                     :register-args register-args
-                                    :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
                                     :rest-alloc rest-alloc)))))))
 
 ;;;

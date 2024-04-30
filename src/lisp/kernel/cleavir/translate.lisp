@@ -1967,7 +1967,6 @@
                                                          (policy:policy-value
                                                           (bir:policy function)
                                                           'save-register-args)
-                                                         :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
                                                          :rest-alloc (compute-rest-alloc cleavir-lambda-list-analysis))))
                     (layout-xep-function* xep-group arity xep-arity-function function calling-convention abi))))))))))
 

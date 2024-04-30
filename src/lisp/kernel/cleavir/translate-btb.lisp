@@ -254,7 +254,6 @@
                                             (policy:policy-value
                                              (bir:policy ir)
                                              'save-register-args)
-                                            :cleavir-lambda-list-analysis lambda-list-analysis
                                             :rest-alloc (cc::compute-rest-alloc lambda-list-analysis))))
         (layout-xep-function* xep arity ir lambda-list-analysis calling-convention)))))
 
