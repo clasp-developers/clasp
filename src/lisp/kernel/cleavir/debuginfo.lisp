@@ -1,6 +1,6 @@
 (in-package #:clasp-cleavir)
 
-(defvar *generate-dwarf* nil)
+(defvar *generate-dwarf* t)
 
 (defvar *dibuilder*)
 (defvar *dbg-current-scope*)
@@ -223,10 +223,9 @@
 
 (defmacro with-di-subprogram ((function subprogram) &body body)
   (let ((gfunction (gensym "FUNCTION")) (gsub (gensym "SUBPROGRAM")))
-    `(let ((,gfunction ,function) (,gsub ,subprogram)
-           (*dbg-current-scope* nil))
+    `(let* ((,gfunction ,function) (,gsub (when *generate-dwarf* ,subprogram))
+            (*dbg-current-scope* ,gsub))
        (when *generate-dwarf*
-         (setf *dbg-current-scope* ,gsub)
          (llvm-sys:set-subprogram ,gfunction ,gsub))
        ,@body)))
 
