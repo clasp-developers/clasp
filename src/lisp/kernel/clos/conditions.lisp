@@ -1081,8 +1081,11 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
                      (cell-error-name condition)))))
 
 (define-condition core:wrong-number-of-arguments (program-error)
-  (;; may be NIL if this is called from the interpreter and we don't know anything
-   ;; (KLUDGE, FIXME?)
+  (;; Some kind of name for the called function, or NIL if nothing is available.
+   ;; Note that this is not necessarily a legal function name. E.g. it could be
+   ;; a lambda expression, or an (FLET FOO) kind of name.
+   ;; It can also be a function itself rather than a name, because that's how
+   ;; it used to work.
    (called-function :initform nil :initarg :called-function :reader called-function)
    (given-nargs :initarg :given-nargs :reader given-nargs)
    ;; also may be NIL, same reason (KLUDGE, FIXME?)
@@ -1093,10 +1096,11 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
              (let* ((min (min-nargs condition))
                     (max (max-nargs condition))
                     (function (called-function condition))
-                    (name (and function (core:function-name function)))
-                    (dname (if (eq name 'cl:lambda) "anonymous function" name)))
+                    (fname (if (functionp function)
+                               (core:function-name function)
+                               function)))
                (format stream "~@[Calling ~a - ~]Got ~d arguments, but expected ~@?"
-                       dname (given-nargs condition)
+                       fname (given-nargs condition)
                        (cond ((null max)  "at least ~d")
                              ((null min)  "at most ~*~d")
                              ;; I think "exactly 0" is better than "at most 0", thus duplication
@@ -1129,9 +1133,12 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
 (define-condition core:odd-keywords (program-error)
   ((%called-function :initarg :called-function :reader called-function))
   (:report (lambda (condition stream)
-             (format stream "Odd number of keyword arguments~:[~; for ~s~]."
-                     (called-function condition)
-                     (core:function-name (called-function condition))))))
+             (let* ((function (called-function condition))
+                    (fname (if (functionp function)
+                               (core:function-name function)
+                               function)))
+               (format stream "Odd number of keyword arguments~@[ for ~s~]."
+                       fname)))))
 
 (define-condition core:unrecognized-keyword-argument-error (program-error)
   ((called-function :initarg :called-function :reader called-function :initform nil)
