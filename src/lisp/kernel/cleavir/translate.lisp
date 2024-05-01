@@ -1792,11 +1792,9 @@
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
     ;; Parse lambda list.
     (cmp:with-landing-pad nil
-      (let ((ret (cmp:compile-lambda-list-code (cmp:xep-group-cleavir-lambda-list-analysis xep-group)
-                                               calling-convention
-                                               arity)))
-        (unless ret
-          (error "cmp:compile-lambda-list-code returned NIL which means this is not a function that should be generated")))
+      (cmp:compile-lambda-list-code
+       (cmp:xep-group-cleavir-lambda-list-analysis xep-group)
+       calling-convention arity)
       ;; Import cells.
       (let* ((closure-vec (first (llvm-sys:get-argument-list the-function)))
              (llvm-function-info (find-llvm-function-info ir))

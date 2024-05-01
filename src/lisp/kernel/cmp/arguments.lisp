@@ -490,8 +490,7 @@ a_p = a_p_temp; a = a_temp;
                 (irc-begin-block after)))
             ;; no optional arguments, so not much to do
             (when safep
-              (compile-error-if-too-many-arguments error-block cmax nargs))))
-      t)))
+              (compile-error-if-too-many-arguments error-block cmax nargs)))))))
 
 (defun req-opt-only-p (cleavir-lambda-list)
   (let ((nreq 0) (nopt 0) (req-opt-only t)
@@ -608,12 +607,7 @@ a_p = a_p_temp; a = a_temp;
          (and (<= +entry-point-arity-begin+ (+ nreq nopt))
               (< (+ nreq nopt) +entry-point-arity-end+)))))
 
-;;; compile-lambda-list-code
-;;; you must provide the following lambdas
-;;;   alloca-size_t (label) that allocas a size_t slot in the current function
-;;;   alloca-vaslist (label) that allocas a vaslist slot in the current function
-;;;   translate-datum (datum) that translates a datum into an alloca in the current function
-;;;
+;;; Main entry point. Called for effect.
 (defun compile-lambda-list-code (cleavir-lambda-list-analysis calling-conv arity
                                  &key (safep t))
   "Return T if arguments were processed and NIL if they were not"
@@ -639,11 +633,9 @@ a_p = a_p_temp; a = a_temp;
        )
       ((and (fixnump arity)
             (may-use-only-registers cleavir-lambda-list-analysis))
-       (let ((result (compile-only-req-and-opt-arguments arity cleavir-lambda-list-analysis #|reqargs optargs|#
-                                                         calling-conv
-                                                         :safep safep)))
-         result                         ; may be nil or t
-         ))
+       (compile-only-req-and-opt-arguments arity cleavir-lambda-list-analysis
+                                           calling-conv
+                                           :safep safep))
       (t (let* ((register-args (calling-convention-register-args calling-conv))
                 (nargs (length register-args))
                 (arg-buffer (if (= nargs 0)
@@ -668,7 +660,4 @@ a_p = a_p_temp; a = a_temp;
                                              keyargs 
                                              allow-other-keys
                                              calling-conv
-                                             :safep safep)
-           )
-         t ;; always successful when using general lambda-list processing
-         ))))
+                                             :safep safep))))))
