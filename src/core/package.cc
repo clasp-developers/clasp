@@ -413,7 +413,7 @@ CL_DEFUN T_mv cl__gentemp(T_sp prefix, T_sp package_designator) {
   MultipleValues& mvn = core::lisp_multipleValues();
   while (1) {
     ++static_gentemp_counter;
-    core__integer_to_string(ss, Integer_O::create(static_gentemp_counter), clasp_make_fixnum(10), false, false);
+    core__integer_to_string(ss, Integer_O::create<uint64_t>(static_gentemp_counter), clasp_make_fixnum(10), false, false);
     T_mv rmv = pkg->findSymbol(ss);
     if (mvn.valueGet(1, rmv.number_of_values()).nilp()) {
       retval = pkg->intern(ss->asMinimalSimpleString());

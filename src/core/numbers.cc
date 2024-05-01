@@ -1417,103 +1417,76 @@ T_sp Integer_O::makeIntegerType(gc::Fixnum low, gc::Fixnum hi) {
   return Cons_O::createList(cl::_sym_Integer_O, Integer_O::create(low), Integer_O::create(hi));
 }
 
-Integer_sp Integer_O::create(gctools::Fixnum v) {
+// Integer_O::create is not defined in numbers.h because it cannot
+// include bignum.h for Bignum_O::create (circular reference).
+// Therefore we need to instantiate the template functions.
+
+Integer_sp Integer_O::create(std::signed_integral auto v) {
   if (v >= gc::most_negative_fixnum && v <= gc::most_positive_fixnum)
-    return make_fixnum(v);
+    return clasp_make_fixnum(v);
   else
     return Bignum_O::create(v);
 }
 
-Integer_sp Integer_O::create(int8_t v) { return clasp_make_fixnum(static_cast<Fixnum>(v)); }
-
-Integer_sp Integer_O::create(uint8_t v) { return clasp_make_fixnum(static_cast<Fixnum>(v)); }
-
-Integer_sp Integer_O::create(int16_t v) { return clasp_make_fixnum(static_cast<Fixnum>(v)); }
-
-Integer_sp Integer_O::create(uint16_t v) { return clasp_make_fixnum(static_cast<Fixnum>(v)); }
-
-Integer_sp Integer_O::create(int32_t v) { return clasp_make_fixnum(static_cast<Fixnum>(v)); }
-
-Integer_sp Integer_O::create(uint32_t v) { return clasp_make_fixnum(static_cast<Fixnum>(v)); }
-
-#if !defined(CLASP_FIXNUM_IS_INT64)
-Integer_sp Integer_O::create(int64_t v) {
-  if ((v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum))
-    return Integer_O::create(static_cast<Fixnum>(v));
-  else
-    return Bignum_O::create(v);
-}
-#endif
-
-Integer_sp Integer_O::create(uint64_t v) {
+Integer_sp Integer_O::create(std::unsigned_integral auto v) {
   if (v <= gc::most_positive_fixnum)
-    return Integer_O::create(static_cast<Fixnum>(v));
+    return clasp_make_fixnum(v);
   else
     return Bignum_O::create(v);
 }
 
-#if !defined(CLASP_LONG_LONG_IS_INT64)
-Integer_sp Integer_O::create(long long v) {
-  if ((v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum))
-    return clasp_make_fixnum((Fixnum)v);
-  else
-    return Bignum_O::create(v);
-}
+// gc::Fixnum is handled by one of the below definitions or instantiations.
+
+Integer_sp Integer_O::create(int8_t v) { return clasp_make_fixnum(v); }
+Integer_sp Integer_O::create(uint8_t v) { return clasp_make_fixnum(v); }
+Integer_sp Integer_O::create(int16_t v) { return clasp_make_fixnum(v); }
+Integer_sp Integer_O::create(uint16_t v) { return clasp_make_fixnum(v); }
+#ifdef CLASP_FIXNUM_IS_INT64
+Integer_sp Integer_O::create(int32_t v) { return clasp_make_fixnum(v); }
+Integer_sp Integer_O::create(uint32_t v) { return clasp_make_fixnum(v); }
+#else
+template Integer_sp Integer_O::create(int32_t v);
+template Integer_sp Integer_O::create(uint32_t v);
 #endif
+template Integer_sp Integer_O::create(int64_t v);
+template Integer_sp Integer_O::create(uint64_t v);
 
-#if !defined(CLASP_UNSIGNED_LONG_LONG_IS_UINT64)
-Integer_sp Integer_O::create(unsigned long long v) {
-  if (v <= gc::most_positive_fixnum)
-    return clasp_make_fixnum((Fixnum)v);
-  else
-    return Bignum_O::create(v);
-}
+#ifndef CLASP_LONG_LONG_IS_INT64
+template Integer_sp Integer_O::create(long long v);
+#endif
+#ifndef CLASP_UNSIGNED_LONG_LONG_IS_UINT64
+template Integer_sp Integer_O::create(unsigned long long v);
 #endif
 
 #if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD)
-Integer_sp Integer_O::create(uintptr_t v) {
+Integer_sp Integer_O::create(unsigned long v) {
   if (v <= gc::most_positive_fixnum)
-    return clasp_make_fixnum((Fixnum)v);
+    return clasp_make_fixnum(static_cast<Fixnum>(v));
   else
-    return Bignum_O::create((uint64_t)v);
+    return Bignum_O::create(static_cast<uint64_t>(v));
 }
 #endif
 
-/* Why >= and <? Because most-negative-fixnum is a negative power of two,
- * exactly representable by a float. most-positive-fixnum is slightly less than
- * a positive power of two. So (double)mpf is a double that, cast to an integer,
- * will be (1+ mpf). We want a bignum out of that.
- */
-
-Integer_sp Integer_O::create(float v) {
-  // This is really supposed to be >= <. see above comment
-  if (v >= (float)gc::most_negative_fixnum && v < (float)gc::most_positive_fixnum) {
-    return make_fixnum((Fixnum)v);
-  } else
+Integer_sp Integer_O::create(std::floating_point auto v) {
+  // Why >= and <? Because most-negative-fixnum is a negative power of
+  // two, exactly representable by a float. most-positive-fixnum is
+  // slightly less than a positive power of two. So (double)mpf is a
+  // double that, cast to an integer, will be (1+ mpf). We want a bignum
+  // out of that.
+  if (v >= static_cast<decltype(v)>(gc::most_negative_fixnum) &&
+      v < static_cast<decltype(v)>(gc::most_positive_fixnum))
+    return clasp_make_fixnum(v);
+  else
     return Bignum_O::create(v);
 }
 
-Integer_sp Integer_O::create(double v) {
-  // This is really supposed to be >= <. see above comment
-  if (v >= (double)gc::most_negative_fixnum && v < (double)gc::most_positive_fixnum) {
-    return make_fixnum((Fixnum)v);
-  } else
-    return Bignum_O::create(v);
-}
-
-Integer_sp Integer_O::createLongFloat(LongFloat v) {
-  // This is really supposed to be >= <. see above comment
-  if (v >= (LongFloat)gc::most_negative_fixnum && v < (LongFloat)gc::most_positive_fixnum) {
-    return make_fixnum((Fixnum)v);
-  } else
-    return Bignum_O::create(v);
-}
+template Integer_sp Integer_O::create(float v);
+template Integer_sp Integer_O::create(double v);
 
 Integer_sp Integer_O::create(const mpz_class& v) {
-  if (v >= gc::most_negative_fixnum && v <= gc::most_positive_fixnum) {
-    Fixnum fv = mpz_get_si(v.get_mpz_t());
-    return make_fixnum(fv);
-  } else
+  if (v >= gc::most_negative_fixnum && v <= gc::most_positive_fixnum)
+    return clasp_make_fixnum(v.get_si());
+  else
     return Bignum_O::create(v);
 }
 

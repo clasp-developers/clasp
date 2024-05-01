@@ -250,55 +250,31 @@ class Integer_O : public Rational_O {
 public:
   /*! Return a Cons (integer low high) */
   static T_sp makeIntegerType(gc::Fixnum low, gc::Fixnum high);
-  static Integer_sp create(const mpz_class& v);
-  static Integer_sp create(gctools::Fixnum v);
-  static Integer_sp create(const string& v, int base = 0) { return create(v.c_str(), base); };
-  static Integer_sp create(const char* v, int base = 0) {
-    if (v[0] == '+')
-      v = &v[1]; // skip leading +
-    mpz_class zv(v, base);
-    return create(zv);
-  };
+
+  static Integer_sp create(std::signed_integral auto v);
+  static Integer_sp create(std::unsigned_integral auto v);
+  static Integer_sp create(std::floating_point auto v);
 
   static Integer_sp create(int8_t v);
   static Integer_sp create(uint8_t v);
-
   static Integer_sp create(int16_t v);
   static Integer_sp create(uint16_t v);
-
+#ifdef CLASP_FIXNUM_IS_INT64
   static Integer_sp create(int32_t v);
   static Integer_sp create(uint32_t v);
-
+#endif
 #if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD)
-  static Integer_sp create(uintptr_t v);
+  static Integer_sp create(long v) { return Integer_O::create(static_cast<Fixnum>(v)); };
+  static Integer_sp create(unsigned long v);
 #endif
 
-#if !defined(CLASP_FIXNUM_IS_INT64)
-  static Integer_sp create(int64_t v);
-#endif
-  static Integer_sp create(uint64_t v);
-
-  // THOSE ARE ALREADY DEFINED ABOVE
-  // static Integer_sp create( short v );
-  // static Integer_sp create( unsigned short v );
-  //
-  // static Integer_sp create( int v );
-  // static Integer_sp create( unsigned int v );
-  //
-#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD)
-  static Integer_sp create(long v) { return Integer_O::create((Fixnum)v); }
-#endif
-  // static Integer_sp create( unsigned long v );
-  //
-#if !defined(CLASP_LONG_LONG_IS_INT64)
-  static Integer_sp create(long long v);
-#endif
-#if !defined(CLASP_UNSIGNED_LONG_LONG_IS_UINT64)
-  static Integer_sp create(unsigned long long v);
-#endif
-  static Integer_sp create(float f);
-  static Integer_sp create(double f);
-  static Integer_sp createLongFloat(LongFloat f);
+  static Integer_sp create(const mpz_class& v);
+  static Integer_sp create(const string& v, int base = 0) { return create(v.c_str(), base); };
+  static Integer_sp create(const char* v, int base = 0) {
+    if (v[0] == '+')
+      v = &v[1];
+    return create(mpz_class{v, base});
+  };
 
 public:
   virtual mpz_class mpz() const { SUBIMP(); };
