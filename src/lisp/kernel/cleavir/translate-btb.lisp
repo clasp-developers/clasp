@@ -248,13 +248,9 @@
       (when sys:*drag-native-calls*
         (cmp::irc-intrinsic "drag_native_calls"))
       (let ((calling-convention
-              (cmp:setup-calling-convention xep
-                                            arity
-                                            :debug-on
-                                            (policy:policy-value
-                                             (bir:policy ir)
-                                             'save-register-args)
-                                            :rest-alloc (cc::compute-rest-alloc lambda-list-analysis))))
+              (cmp:initialize-calling-convention xep
+                                                 arity
+                                                 :rest-alloc (cc::compute-rest-alloc lambda-list-analysis))))
         (layout-xep-function* xep arity ir lambda-list-analysis calling-convention)))))
 
 (defun layout-xep-group (function lambda-name abi)

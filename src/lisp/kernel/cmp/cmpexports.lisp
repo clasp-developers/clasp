@@ -191,6 +191,7 @@
             alloca-vaslist
             alloca-temp-values
             alloca-arguments
+            alloca-register-save-area
             irc-and
             irc-or
             irc-xor
@@ -307,7 +308,6 @@
             jit-constant-unique-string-ptr
             module-make-global-string
             make-boot-function-global-variable
-            setup-calling-convention
             initialize-calling-convention
             ensure-cleavir-lambda-list
             ensure-cleavir-lambda-list-analysis

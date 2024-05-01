@@ -672,15 +672,3 @@ a_p = a_p_temp; a = a_temp;
            )
          t ;; always successful when using general lambda-list processing
          ))))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Setup the calling convention
-;;
-(defun setup-calling-convention (llvm-function arity
-                                 &key debug-on rest-alloc)
-    (initialize-calling-convention llvm-function
-                                   arity
-                                   :debug-on debug-on
-                                   :rest-alloc rest-alloc))

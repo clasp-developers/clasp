@@ -1157,7 +1157,7 @@ function-description - for debugging."
 (defun alloca-arguments (size &optional (label "callargs"))
   (llvm-sys:create-alloca *irbuilder-function-alloca* (llvm-sys:array-type-get %t*% size) (jit-constant-i64 1) label))
 
-(defun alloca-register-save-area (arity &key (irbuilder *irbuilder-function-alloca*) (label "vaslist"))
+(defun alloca-register-save-area (arity &key (irbuilder *irbuilder-function-alloca*) (label "register-save-area"))
   "Alloca space for a register save area, and keep it in the stack map."
   (with-irbuilder (irbuilder)
     (multiple-value-bind (words index)

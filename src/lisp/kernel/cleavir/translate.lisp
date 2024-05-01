@@ -1959,17 +1959,45 @@
                       999903))
                   (if sys:*drag-native-calls*
                       (cmp::irc-intrinsic "drag_native_calls"))
-                  (let* ((cleavir-lambda-list-analysis (cmp:xep-group-cleavir-lambda-list-analysis xep-group))
+                  (let* ((cleavir-lambda-list-analysis
+                           (cmp:xep-group-cleavir-lambda-list-analysis xep-group))
+                         (rest-alloc
+                           (compute-rest-alloc cleavir-lambda-list-analysis))
                          (calling-convention
-                           (cmp:setup-calling-convention xep-arity-function
-                                                         arity
-                                                         :debug-on
-                                                         (policy:policy-value
-                                                          (bir:policy function)
-                                                          'save-register-args)
-                                                         :rest-alloc (compute-rest-alloc cleavir-lambda-list-analysis))))
+                           (cmp:initialize-calling-convention
+                            xep-arity-function arity
+                            :rest-alloc rest-alloc)))
+                    (when (policy:policy-value (bir:policy function)
+                                               'save-register-args)
+                      (save-registers xep-arity-function arity
+                                      (cmp:alloca-register-save-area arity)))
                     (layout-xep-function* xep-group arity xep-arity-function function calling-convention abi))))))))))
 
+;;; Generate code to dump arguments ("registers") to a "register save area" in
+;;; memory, where they can be read by the debugger even in the face of
+;;; heavy optimization.
+(defun save-registers (function arity rsa)
+  (let* ((arguments (llvm-sys:get-argument-list function))
+         (nargs (length arguments))
+         (rsa-type (llvm-sys:array-type-get cmp:%t*% nargs)))
+    (flet ((spill-reg (index reg name)
+             (cmp:irc-store reg
+                            (cmp:irc-typed-gep rsa-type rsa (list 0 index) name)
+                            ;; volatile, so optimizations don't remove it.
+                            t)))
+      (cond ((eq arity :general-entry)
+             ;; special cased, since we pun the non-lispobj arguments.
+             (destructuring-bind (closure nargs args) arguments
+               (spill-reg 0 closure "rsa-closure")
+               (spill-reg 1 (cmp:irc-int-to-ptr nargs cmp:%i8*% "nargs-i8*")
+                          "rsa-nargs")
+               (spill-reg 2 (cmp:irc-bit-cast args cmp:%i8*% "reg-i8*") "rsa-args")))
+            (t
+             (loop for i from 0
+                   for arg in arguments
+                   for name in '("rsa-closure" "rsa-arg0" "rsa-arg1" "rsa-arg2"
+                                 "rsa-arg3" "rsa-arg4" "rsa-arg5" "rsa-arg6")
+                   do (spill-reg i arg name)))))))
 
 (defun maybe-note-return-cast (function)
   (let ((returni (bir:returni function)))
