@@ -1,13 +1,59 @@
 (in-package :cmp)
 
-(defun compile-wrong-number-arguments-block (closure nargs min max)
+(defgeneric xep-nargs (arguments))
+
+(defclass xep-arguments () ())
+(defclass general-xep-arguments (xep-arguments)
+  ((%array :initarg :array :reader xep-array)
+   (%nargs :initarg :nargs :reader xep-nargs)))
+(defclass fixed-xep-arguments (xep-arguments)
+  ((%arguments :initarg :arguments :reader xep-arguments)))
+
+(defmethod xep-nargs ((arguments fixed-xep-arguments))
+  (irc-size_t (length (xep-arguments arguments))))
+
+;;; Generate code to get the nth argument (i.e. an LLVM Value) and return it.
+;;; n is a constant (i.e. a Lisp integer).
+(defgeneric nth-arg (arguments n))
+(defmethod nth-arg ((args general-xep-arguments) n)
+  (irc-t*-load (irc-typed-gep (llvm-sys:array-type-get %t*% 0)
+                              (xep-array args) (list 0 n) "arg*")))
+(defmethod nth-arg ((args fixed-xep-arguments) n)
+  (nth n (xep-arguments args)))
+
+;;; Generate code to get the arguments starting with the nth as an array.
+;;; n is a constant (i.e. a Lisp integer).
+(defgeneric remaining-args (args n))
+(defmethod remaining-args ((args general-xep-arguments) n)
+  ;; Note that n (a constant) must be less than nargs (a variable) for the
+  ;; GEP to be a valid pointer. We don't load from it in that case, but we
+  ;; still don't want to use an inbounds GEP because poison is bad.
+  (irc-const-gep1-64 %t**% (xep-array args) n "args"))
+(defmethod remaining-args ((args fixed-xep-arguments) n)
+  ;; Here we have to actually allocate, and then fill it up.
+  ;; Since we have a constant nargs and constant n, the size of the
+  ;; allocation is fixed.
+  (let* ((vals (xep-arguments args))
+         (size (- (length vals) n)))
+    (if (<= size 0)
+        (llvm-sys:constant-pointer-null-get %t**%)
+        (let ((res (alloca %t*% size)))
+          ;; Fill it up.
+          (loop for arg in (nthcdr n vals)
+                for i from 0
+                for addr = (irc-typed-gep (llvm-sys:array-type-get %t*% 0)
+                                          res (list i))
+                do (irc-store arg addr))
+          res))))
+
+(defun compile-wrong-number-arguments-block (fname nargs min max)
   ;; make a new irbuilder, so as to not disturb anything
   (with-irbuilder ((llvm-sys:make-irbuilder (thread-local-llvm-context)))
     (let ((errorb (irc-basic-block-create "wrong-num-args")))
       (irc-begin-block errorb)
       (irc-intrinsic "cc_wrong_number_of_arguments"
                      ;; We use low max to indicate no upper limit.
-                     closure nargs min (or max (irc-size_t 0)))
+                     fname nargs min (or max (irc-size_t 0)))
       (irc-unreachable)
       errorb)))
 
@@ -26,13 +72,16 @@
     (irc-begin-block cont-block)))
 
 ;; Generate code to bind the required arguments.
-(defun compile-required-arguments (reqargs cc)
+(defun compile-required-arguments (xepargs reqargs)
   ;; reqargs is as returned from process-lambda-list- (# ...) where # is the count.
-  ;; cc is the calling-convention object.
-  (dolist (req (cdr reqargs))
-    (clasp-cleavir::out (calling-convention-vaslist.va-arg cc) req)))
+  (loop for i from 0
+        for req in (cdr reqargs)
+        do (clasp-cleavir::out (nth-arg xepargs i) req)))
 
-(defun compile-optional-arguments (optargs nreq calling-conv false true)
+(defgeneric compile-optional-arguments (xepargs optargs nreq false true))
+(defmethod compile-optional-arguments ((xepargs general-xep-arguments)
+                                       optargs nreq false true)
+  ;; General case: variadic call.
   ;; optargs is (# var suppliedp default ...)
   ;; We basically generate a switch.
   ;; For (&optional a b) for example,
@@ -45,7 +94,7 @@ switch (nargs) {
 }
   |#
   ;; All these assignments are done with phi so it's a bit more confusing to follow, unfortunately.
-  (let* ((nargs (calling-convention-nargs calling-conv))
+  (let* ((nargs (xep-nargs xepargs))
          (nopt (first optargs))
          (nfixed (+ nopt nreq))
          (opts (rest optargs))
@@ -83,102 +132,108 @@ switch (nargs) {
                 for j from nreq
                 for enough = (< j i)
                 do (irc-phi-add-incoming suppliedp-phi (if enough true false) new)
-                   (irc-phi-add-incoming var-phi (if enough (calling-convention-vaslist.va-arg calling-conv) undef) new))
+                   (irc-phi-add-incoming var-phi (if enough (nth-arg xepargs i) undef) new))
           (irc-br assn)))
       ;; Default case: everything gets a value and a suppliedp=T.
       (irc-begin-block enough)
       (dolist (suppliedp-phi suppliedp-phis)
         (irc-phi-add-incoming suppliedp-phi true enough))
-      (dolist (var-phi var-phis)
-        (irc-phi-add-incoming var-phi (calling-convention-vaslist.va-arg calling-conv) enough))
+      (loop for var-phi in var-phis
+            for i from nreq
+            do (irc-phi-add-incoming var-phi (nth-arg xepargs i) enough))
       (irc-br assn)
       ;; ready to generate more code
       (irc-begin-block final))))
 
-(defun compile-rest-argument (rest-var varest-p nremaining calling-conv)
-  (cmp:irc-branch-to-and-begin-block (cmp:irc-basic-block-create "process-rest-argument"))
-  (when rest-var
-    (let* ((rest-alloc (calling-convention-rest-alloc calling-conv))
-	   (rest (cond
-                   ((eq rest-alloc 'ignore)
-                    ;; &rest variable is ignored- allocate nothing
-                    (irc-undef-value-get %t*%))
-                   ((eq rest-alloc 'dynamic-extent)
-                    ;; Do the dynamic extent thing- alloca, then an intrinsic to initialize it.
-                    (let ((rrest (alloca-dx-list :length nremaining :label "rrest")))
-                      (irc-intrinsic "cc_gatherDynamicExtentRestArguments"
-                                     (cmp:calling-convention-vaslist* calling-conv)
-                                     nremaining
-                                     (irc-bit-cast rrest %t**%))))
-                   (varest-p
-                    #+(or)
-                    (irc-tag-vaslist (cmp:calling-convention-vaslist* calling-conv)
-                                     "rest")
-                    ;;#+(or)
-                    (let ((temp-vaslist (alloca-vaslist :label "rest")))
-                      (irc-intrinsic "cc_gatherVaRestArguments" 
-                                     (cmp:calling-convention-vaslist* calling-conv)
-                                     nremaining
-                                     temp-vaslist)))
-                   (t
-                    ;; general case- heap allocation
-                    (irc-intrinsic "cc_gatherRestArguments" 
-                                   (cmp:calling-convention-vaslist* calling-conv)
-                                   nremaining)))))
-      (clasp-cleavir::out rest rest-var))))
+(defmethod compile-optional-arguments ((xepargs fixed-xep-arguments)
+                                       optargs nreq false true)
+  ;; Specific case: Argcount is known. Optional processing is basically
+  ;; trivial in this circumstance.
+  (loop with args = (nthcdr nreq (xep-arguments xepargs))
+        with undef = (irc-undef-value-get %t*%)
+        for (var suppliedp) on (rest optargs) by #'cdddr
+        for arg = (pop args)
+        do (multiple-value-bind (val sp)
+               (if (null arg) ; out of arguments
+                   (values undef false)
+                   (values arg true))
+             (clasp-cleavir::out sp suppliedp)
+             (clasp-cleavir::out val var))))
 
-;;; Keyword processing is the most complicated part, unsurprisingly.
+(defun compile-rest-argument (rest-var varest-p rest-alloc args nremaining)
+  (cmp:irc-branch-to-and-begin-block (cmp:irc-basic-block-create "process-rest-argument"))
+  (let ((rest
+          (cond ((eq rest-alloc 'ignore)
+                 ;; &rest variable is ignored- allocate nothing
+                 (irc-undef-value-get %t*%))
+                ((eq rest-alloc 'dynamic-extent)
+                 ;; Do the dynamic extent thing- alloca, then an intrinsic to initialize it.
+                 (let ((rrest (alloca-dx-list :length nremaining :label "rrest")))
+                   (irc-intrinsic "cc_gatherDynamicExtentRestArguments"
+                                  args nremaining
+                                  (irc-bit-cast rrest %t**%))))
+                (varest-p
+                 #+(or)
+                 (irc-tag-vaslist args "rest")
+                 ;;#+(or)
+                 (let ((temp-vaslist (alloca-vaslist :label "rest")))
+                   (irc-intrinsic "cc_gatherVaRestArguments"
+                                  args nremaining temp-vaslist)))
+                (t
+                 ;; general case- heap allocation
+                 (irc-intrinsic "cc_gatherRestArguments"
+                                args nremaining)))))
+    (clasp-cleavir::out rest rest-var)))
+
 #|
+Keyword processing is the most complicated part, unsurprisingly.
+We process the arguments from back to front, e.g. in :a 7 :a 8 we'd set A
+to 8 first, and then to 7 later, since the semantics demand that A
+eventually end up as 7.
 Here is pseudo-C for the parser for (&key a). [foo] indicates an inserted constant.
 Having to write with phi nodes unfortunately makes things rather more confusing.
 
 if ((remaining_nargs % 2) == 1)
-  cc_oddKeywordException([*current-function-description*]);
+  cc_oddKeywordException([*fname*]);
 tstar bad_keyword = undef;
 bool seen_bad_keyword = false;
-t_star a_temp = undef, a_p_temp = [nil], allow_other_keys_temp = [nil], allow_other_keys_p_temp = [nil];
+tstar allow_other_keys = [nil], allow_other_keys_p = [nil];
 for (; remaining_nargs != 0; remaining_nargs -= 2) {
-  tstar key = va_arg(vaslist), value = va_arg(vaslist);
+  tstar key = remaining_args[remaining_nargs - 2];
+  tstar value = remaining_args[remaining_nargs - 1];
   if (key == [:a]) {
-    if (a_p_temp == [nil]) {
-      a_p_temp = [t]; a_temp = value; continue;
-    } else continue;
+    a_p = [t]; a = value; continue;
   }
+  ...ditto for other keys...
   if (key == [:allow-other-keys]) {
-    if (allow_other_keys_p_temp == [nil]) {
-      allow_other_keys_p_temp = [t]; allow_other_keys_temp = value; continue;
-    } else continue;
-  }
-  seen_bad_keyword = true; bad_keyword = key;
+    allow_other_keys_p = [t]; allow_other_keys = value; continue;
+  } else { seen_bad_keyword = true; bad_keyword = key; }
 }
 if (seen_bad_keyword)
-  cc_ifBadKeywordArgumentException(allow_other_keys_temp, bad_keyword, [*current-function-description*]);
-a_p = a_p_temp; a = a_temp;
+  cc_ifBadKeywordArgumentException(allow_other_keys, bad_keyword, [*fname*]);
 |#
 
-(defun compile-one-key-test (keyword key-arg suppliedp-phi cont-block false)
+;;; Returns a new block that is jumped to when the keyword does match.
+;;; This is used to set up a phi to actually "assign" the value.
+(defun compile-one-key-test (keyword key-arg cont-block)
   (let* ((keystring (string keyword))
          ;; NOTE: We might save a bit of time by moving this out of the loop.
          ;; Or maybe LLVM can handle it. I don't know.
          (key-const (clasp-cleavir::literal keyword))
          (match (irc-basic-block-create (core:fmt nil "matched-{}" keystring)))
          (mismatch (irc-basic-block-create (core:fmt nil "not-{}" keystring))))
-    (let ((test (irc-icmp-eq key-arg key-const)))
-      (irc-cond-br test match mismatch))
+    (irc-cond-br (irc-icmp-eq key-arg key-const) match mismatch)
     (irc-begin-block match)
-    (let* ((new (irc-basic-block-create (core:fmt nil "new-{}" keystring)))
-           (old (irc-basic-block-create (core:fmt nil "old-{}" keystring))))
-      (let ((test (irc-icmp-eq suppliedp-phi false)))
-        (irc-cond-br test new old))
-      (irc-begin-block new) (irc-br cont-block)
-      (irc-begin-block old) (irc-br cont-block)
-      (irc-begin-block mismatch)
-      (values new old))))
-  
-(defun compile-key-arguments (keyargs lambda-list-aokp nremaining calling-conv false true)
+    (irc-br cont-block)
+    (irc-begin-block mismatch)
+    match))
+
+(defun compile-key-arguments (keyargs lambda-list-aokp nremaining remaining false true fname)
   (macrolet ((do-keys ((keyword) &body body)
-               `(loop for (,keyword) on (cdr keyargs) by #'cddddr
-                      do (progn ,@body))))
+               `(do* ((cur-key (cdr keyargs) (cddddr cur-key))
+                      (,keyword (car cur-key) (car cur-key)))
+                     ((endp cur-key))
+                  ,@body)))
     (let ((aok-parameter-p nil)
           allow-other-keys
           (nkeys (car keyargs))
@@ -210,15 +265,12 @@ a_p = a_p_temp; a = a_temp;
         (irc-cond-br evenp kw-loop odd-kw)
         ;; There have been an odd number of arguments, so signal an error.
         (irc-begin-block odd-kw)
-        (unless (calling-convention-closure calling-conv)
-          (error "The calling-conv ~s does not have a closure" calling-conv))
-        (irc-intrinsic "cc_oddKeywordException"
-                       (calling-convention-closure calling-conv))
+        (irc-intrinsic "cc_oddKeywordException" fname)
         (irc-unreachable))
       ;; Loop starts; welcome hell
       (irc-begin-block kw-loop)
       (let ((top-param-phis nil) (top-suppliedp-phis nil)
-            (new-blocks nil) (old-blocks nil)
+            (new-blocks nil)
             (nargs-remaining (irc-phi %size_t% 2 "nargs-remaining"))
             (sbkw (irc-phi %i1% 2 "seen-bad-keyword"))
             (bad-keyword (irc-phi %t*% 2 "bad-keyword")))
@@ -244,14 +296,18 @@ a_p = a_p_temp; a = a_temp;
           (irc-cond-br zerop after matching))
         (irc-begin-block matching)
         ;; Start matching keywords
-        (let ((key-arg (calling-convention-vaslist.va-arg calling-conv))
-              (value-arg (calling-convention-vaslist.va-arg calling-conv)))
-          (loop for (key) on (cdr keyargs) by #'cddddr
-                for suppliedp-phi in top-suppliedp-phis
-                do (multiple-value-bind (new-block old-block)
-                       (compile-one-key-test key key-arg suppliedp-phi kw-loop-continue false)
-                     (push new-block new-blocks) (push old-block old-blocks)))
-          (setf new-blocks (nreverse new-blocks) old-blocks (nreverse old-blocks))
+        ;; We process right to left. This means that we process the leftmost
+        ;; instance of any keyword last, to match the language semantics.
+        (let* (;; FIXME: These subs can be nuw
+               (key-idx (irc-sub nargs-remaining (irc-size_t 2) "key-idx"))
+               (key-addr (irc-typed-gep %t**% remaining (list key-idx) "key*"))
+               (key-arg (irc-typed-load %t*% key-addr))
+               (value-idx (irc-sub nargs-remaining (irc-size_t 1) "val-idx"))
+               (val-addr (irc-typed-gep %t**% remaining (list value-idx) "value*"))
+               (value-arg (irc-typed-load %t*% val-addr)))
+          (do-keys (key)
+            (push (compile-one-key-test key key-arg kw-loop-continue) new-blocks))
+          (setf new-blocks (nreverse new-blocks))
           ;; match failure - as usual, works through phi
           (irc-branch-to-and-begin-block unknown-kw)
           (irc-br kw-loop-continue)
@@ -269,10 +325,7 @@ a_p = a_p_temp; a = a_temp;
               ;; If we're coming from a match block, don't change anything.
               (dolist (new-block new-blocks)
                 (irc-phi-add-incoming bot-sbkw sbkw new-block)
-                (irc-phi-add-incoming bot-bad-keyword bad-keyword new-block))
-              (dolist (old-block old-blocks)
-                (irc-phi-add-incoming bot-sbkw sbkw old-block)
-                (irc-phi-add-incoming bot-bad-keyword bad-keyword old-block)))
+                (irc-phi-add-incoming bot-bad-keyword bad-keyword new-block)))
             ;; OK now the actual keyword values.
             (do* ((var-new-blocks new-blocks (cdr var-new-blocks))
                   (var-new-block (car var-new-blocks) (car var-new-blocks))
@@ -297,11 +350,7 @@ a_p = a_p_temp; a = a_temp;
                          (irc-phi-add-incoming suppliedp-phi true new-block))
                         (t
                          (irc-phi-add-incoming var-phi top-param-phi new-block)
-                         (irc-phi-add-incoming suppliedp-phi top-suppliedp-phi new-block))))
-                ;; All old-blocks stick with what they have.
-                (dolist (old-block old-blocks)
-                  (irc-phi-add-incoming var-phi top-param-phi old-block)
-                  (irc-phi-add-incoming suppliedp-phi top-suppliedp-phi old-block))))))
+                         (irc-phi-add-incoming suppliedp-phi top-suppliedp-phi new-block))))))))
         (let ((dec (irc-sub nargs-remaining (irc-size_t 2))))
           (irc-phi-add-incoming nargs-remaining dec kw-loop-continue))
         (irc-br kw-loop)
@@ -316,16 +365,21 @@ a_p = a_p_temp; a = a_temp;
             (irc-intrinsic
              "cc_ifBadKeywordArgumentException"
              ;; aok was initialized to NIL, regardless of the suppliedp, so this is ok.
-             allow-other-keys bad-keyword (calling-convention-closure calling-conv))
+             allow-other-keys bad-keyword fname)
             (irc-br kw-assigns)
             (irc-begin-block kw-assigns)))
-        (loop for top-param-phi in top-param-phis
-              for top-suppliedp-phi in top-suppliedp-phis
-              for (key _ var suppliedp) on (cdr keyargs) by #'cddddr
-              when (or (not (eq key :allow-other-keys))
-                       lambda-list-aokp aok-parameter-p)
-                do (clasp-cleavir::out top-param-phi var)
-                   (clasp-cleavir::out top-suppliedp-phi suppliedp))))))
+        (do* ((top-param-phis top-param-phis (cdr top-param-phis))
+              (top-param-phi (car top-param-phis) (car top-param-phis))
+              (top-suppliedp-phis top-suppliedp-phis (cdr top-suppliedp-phis))
+              (top-suppliedp-phi (car top-suppliedp-phis) (car top-suppliedp-phis))
+              (cur-key (cdr keyargs) (cddddr cur-key))
+              (key (car cur-key) (car cur-key))
+              (var (caddr cur-key) (caddr cur-key))
+              (suppliedp (cadddr cur-key) (cadddr cur-key)))
+             ((endp cur-key))
+          (when (or (not (eq key :allow-other-keys)) lambda-list-aokp aok-parameter-p)
+            (clasp-cleavir::out top-param-phi var)
+            (clasp-cleavir::out top-suppliedp-phi suppliedp)))))))
 
 (defun compile-general-lambda-list-code (reqargs 
 					 optargs 
@@ -334,10 +388,11 @@ a_p = a_p_temp; a = a_temp;
 					 key-flag 
 					 keyargs 
 					 allow-other-keys
-					 calling-conv
-                                         &key (safep t))
+					 xepargs
+                                         &key (safep t)
+                                           fname rest-alloc)
   (cmp-log "Entered compile-general-lambda-list-code%N")
-  (let* ((nargs (calling-convention-nargs calling-conv))
+  (let* ((nargs (xep-nargs xepargs))
          (nreq (car reqargs))
          (nopt (car optargs))
          (nfixed (+ nreq nopt))
@@ -347,161 +402,41 @@ a_p = a_p_temp; a = a_temp;
                    (irc-size_t nfixed)))
          (wrong-nargs-block
            (when safep
-             (compile-wrong-number-arguments-block
-              (calling-convention-closure calling-conv)
-              nargs creq cmax)))
+             (compile-wrong-number-arguments-block fname nargs creq cmax)))
          ;; NOTE: Sometimes we don't actually need these.
          ;; We could save miniscule time by not generating.
          (iNIL (clasp-cleavir::%nil)) (iT (clasp-cleavir::%t)))
     (unless (zerop nreq)
       (when safep
         (compile-error-if-not-enough-arguments wrong-nargs-block creq nargs))
-      (compile-required-arguments reqargs calling-conv))
+      (compile-required-arguments xepargs reqargs))
     (unless (zerop nopt)
-      (compile-optional-arguments optargs nreq calling-conv iNIL iT))
+      (compile-optional-arguments xepargs optargs nreq iNIL iT))
     (if (or rest-var key-flag)
         ;; We have &key and/or &rest, so parse with that expectation.
         ;; Specifically, we have to get a variable for how many arguments are left after &optional.
-        (let ((nremaining
-                (if (zerop nopt)
-                    ;; With no optional arguments it's trivial.
-                    (irc-sub nargs creq "nremaining")
-                    ;; Otherwise we need nargs - nfixed, clamped to min 0.
-                    ;; (Since nfixed > nargs is possible.)
-                    ;; We used to have compile-optional-arguments return
-                    ;; the number of remaining arguments, but that's a bit
-                    ;; of pointless code for the rare case that we have
-                    ;; both &optional and &rest/&key.
-                    (irc-intrinsic "llvm.usub.sat.i64" nargs
-                                   (irc-size_t nfixed)))))
+        (let* ((nremaining
+                 (if (zerop nopt)
+                     ;; With no optional arguments it's trivial.
+                     (irc-sub nargs creq "nremaining")
+                     ;; Otherwise we need nargs - nfixed, clamped to min 0.
+                     ;; (Since nfixed > nargs is possible.)
+                     ;; We used to have compile-optional-arguments return
+                     ;; the number of remaining arguments, but that's a bit
+                     ;; of pointless code for the rare case that we have
+                     ;; both &optional and &rest/&key.
+                     (irc-intrinsic "llvm.usub.sat.i64" nargs
+                                    (irc-size_t nfixed))))
+               (remaining (remaining-args xepargs nfixed)))
             ;; Note that we don't need to check for too many arguments here.
             (when rest-var
-              (compile-rest-argument rest-var varest-p nremaining calling-conv))
+              (compile-rest-argument rest-var varest-p rest-alloc remaining nremaining))
             (when key-flag
               (compile-key-arguments keyargs (or allow-other-keys (not safep))
-                                     nremaining calling-conv iNIL iT)))
+                                     nremaining remaining iNIL iT fname)))
         (when safep
           (cmp-log "Last if-too-many-arguments {} {}" cmax nargs)
           (compile-error-if-too-many-arguments wrong-nargs-block cmax nargs)))))
-
-
-        
-  
-(defun compile-only-req-and-opt-arguments (arity cleavir-lambda-list-analysis calling-conv &key (safep t))
-  (multiple-value-bind (reqargs optargs)
-      (process-cleavir-lambda-list-analysis cleavir-lambda-list-analysis)
-    (let* ((register-args (calling-convention-register-args calling-conv))
-           (nargs (calling-convention-nargs calling-conv))
-           (nreq (car (cleavir-lambda-list-analysis-required cleavir-lambda-list-analysis)))
-           (creq (irc-size_t nreq))
-           (nopt (car (cleavir-lambda-list-analysis-optional cleavir-lambda-list-analysis)))
-           (cmax (irc-size_t (+ nreq nopt)))
-           (error-block
-             ;; see kludge above
-             (when safep
-               (compile-wrong-number-arguments-block
-                (calling-convention-closure calling-conv)
-                nargs creq cmax))))
-      ;; fixme: it would probably be nicer to generate one switch such that not-enough-arguments
-      ;; goes to an error block and too-many goes to another. then we'll only have one test on
-      ;; the argument count. llvm might reduce it to that anyway, though.
-      (flet ((ensure-register (registers undef &optional name)
-               (declare (ignore name))
-               (let ((register (car registers)))
-                 (if register
-                     register
-                     undef))))
-        (unless (cmp:generate-function-for-arity-p arity cleavir-lambda-list-analysis)
-          (let ((error-block (compile-wrong-number-arguments-block (calling-convention-closure calling-conv)
-                                                                   (jit-constant-i64 (length register-args))
-                                                                   (jit-constant-i64 nreq)
-                                                                   (jit-constant-i64 (+ nreq nopt)))))
-            (irc-br error-block)
-            (return-from compile-only-req-and-opt-arguments nil)))
-        ;; required arguments
-        (when (> nreq 0)
-          (when safep
-            (compile-error-if-not-enough-arguments error-block creq nargs))
-          (dolist (req (cdr reqargs))
-            ;; we pop the register-args so that the optionals below won't use em.
-            (clasp-cleavir::out (pop register-args) req)))
-        ;; optional arguments. code is mostly the same as compile-optional-arguments (fixme).
-        (if (> nopt 0)
-            (let* ((npreds (1+ nopt))
-                   (undef (irc-undef-value-get %t*%))
-                   (true (clasp-cleavir::%t))
-                   (false (clasp-cleavir::%nil))
-                   (default (irc-basic-block-create "enough-for-optional"))
-                   (assn (irc-basic-block-create "optional-assignments"))
-                   (after (irc-basic-block-create "argument-parsing-done"))
-                   (sw (irc-switch nargs default nopt))
-                   (var-phis nil) (suppliedp-phis nil))
-              (irc-begin-block assn)
-              (dotimes (i nopt)
-                (push (irc-phi %t*% npreds) var-phis)
-                (push (irc-phi %t*% npreds) suppliedp-phis))
-              (loop for (var suppliedp) on (cdr optargs) by #'cdddr
-                    for var-phi in var-phis
-                    for suppliedp-phi in suppliedp-phis
-                    do (clasp-cleavir::out suppliedp-phi suppliedp)
-                       (clasp-cleavir::out var-phi var))
-              (irc-br after)
-              ;; each case
-              (dotimes (i nopt)
-                (let* ((opti (+ i nreq))
-                       (blck (irc-basic-block-create (core:fmt nil "supplied-{}-arguments" opti))))
-                  (llvm-sys:add-case sw (irc-size_t opti) blck)
-                  (do ((var-phis var-phis (cdr var-phis))
-                       (suppliedp-phis suppliedp-phis (cdr suppliedp-phis))
-                       (registers register-args (cdr registers))
-                       (optj nreq (1+ optj)))
-                      ((endp var-phis))
-                    (cond ((< optj opti) ; enough arguments
-                           (irc-phi-add-incoming (car suppliedp-phis) true blck)
-                           (irc-phi-add-incoming (car var-phis) (ensure-register registers undef :nopt) blck))
-                          (t            ; nope
-                           (irc-phi-add-incoming (car suppliedp-phis) false blck)
-                           (irc-phi-add-incoming (car var-phis) undef blck))))
-                  (irc-begin-block blck) (irc-br assn)))
-              ;; default
-              ;; just use a register for each argument
-              ;; we have to use another block because compile-error-etc does an invoke
-              ;; and generates more blocks.
-              (let ((default-cont (irc-basic-block-create "enough-for-optional-continued")))
-                (do ((var-phis var-phis (cdr var-phis))
-                     (suppliedp-phis suppliedp-phis (cdr suppliedp-phis))
-                     (registers register-args (cdr registers)))
-                    ((endp var-phis))
-                  (irc-phi-add-incoming (car suppliedp-phis) true default-cont)
-                  (irc-phi-add-incoming (car var-phis) (ensure-register registers undef :var-phis) default-cont))
-                (irc-begin-block default)
-                ;; test for too many arguments
-                (when safep
-                  (compile-error-if-too-many-arguments error-block cmax nargs))
-                (irc-branch-to-and-begin-block default-cont)
-                (irc-br assn)
-                ;; and, done.
-                (irc-begin-block after)))
-            ;; no optional arguments, so not much to do
-            (when safep
-              (compile-error-if-too-many-arguments error-block cmax nargs)))))))
-
-(defun req-opt-only-p (cleavir-lambda-list)
-  (let ((nreq 0) (nopt 0) (req-opt-only t)
-        (state nil))
-    (dolist (item cleavir-lambda-list)
-      (cond ((eq item '&optional)
-             (if (eq state '&optional)
-                 (progn (setf req-opt-only nil) ; dupe &optional; just mark as general
-                        (return))
-                 (setf state '&optional)))
-            ((member item lambda-list-keywords)
-             (setf req-opt-only nil)
-             (return))
-            (t (if (eq state '&optional)
-                   (incf nopt)
-                   (incf nreq)))))
-    (values req-opt-only nreq nopt)))
 
 (defun lambda-list-arguments (lambda-list)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs varest-p)
@@ -581,7 +516,6 @@ a_p = a_p_temp; a = a_temp;
            (arguments (lambda-list-arguments cleavir-lambda-list)))
       (make-cleavir-lambda-list-analysis
        :cleavir-lambda-list (ensure-cleavir-lambda-list lambda-list) ; Is this correct?
-       :req-opt-only-p (req-opt-only-p (ensure-cleavir-lambda-list lambda-list))
        :lambda-list-arguments arguments
        :required (cons required-count (nreverse required))
        :optional (cons optional-count (nreverse optional))
@@ -592,66 +526,17 @@ a_p = a_p_temp; a = a_temp;
        :aux-p nil                       ; aux-p; unused here
        :va-rest-p (if (eq rest-type 'core:&va-rest) t nil)))))
 
-
-
-(defun may-use-only-registers (cleavir-lambda-list-analysis)
-  (multiple-value-bind (req-opt-only nreq nopt)
-      (req-opt-only-p (cleavir-lambda-list-analysis-cleavir-lambda-list cleavir-lambda-list-analysis))
-    (and req-opt-only
-         (and (<= +entry-point-arity-begin+ (+ nreq nopt))
-              (< (+ nreq nopt) +entry-point-arity-end+)))))
-
 ;;; Main entry point. Called for effect.
-(defun compile-lambda-list-code (cleavir-lambda-list-analysis calling-conv arity
-                                 &key (safep t))
+(defun compile-lambda-list-code (cleavir-lambda-list-analysis xepargs
+                                 &key (safep t) rest-alloc
+                                   (fname (clasp-cleavir::%nil)))
   "Return T if arguments were processed and NIL if they were not"
   (cmp-log "about to compile-lambda-list-code cleavir-lambda-list-analysis: {}%N" cleavir-lambda-list-analysis)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
       (process-cleavir-lambda-list-analysis cleavir-lambda-list-analysis)
     (declare (ignore unused-auxs))
-    (cmp-log "    reqargs -> {}%N" reqargs)
-    (cmp-log "    optargs -> {}%N" optargs)
-    (cmp-log "    keyargs -> {}%N" keyargs)
-    (cond
-      ((eq arity :general-entry)
-       (compile-general-lambda-list-code reqargs 
-                                         optargs 
-                                         rest-var
-                                         varest-p
-                                         key-flag 
-                                         keyargs 
-                                         allow-other-keys
-                                         calling-conv
-                                         :safep safep)
-       t ;; always successful for general lambda-list processing
-       )
-      ((and (fixnump arity)
-            (may-use-only-registers cleavir-lambda-list-analysis))
-       (compile-only-req-and-opt-arguments arity cleavir-lambda-list-analysis
-                                           calling-conv
-                                           :safep safep))
-      (t (let* ((register-args (calling-convention-register-args calling-conv))
-                (nargs (length register-args))
-                (arg-buffer (if (= nargs 0)
-                                nil
-                                (alloca-arguments nargs "ll-args")))
-                (vaslist* (alloca-vaslist))
-                (idx 0))
-           (dolist (arg register-args)
-             (let ((arg-gep (irc-typed-gep (llvm-sys:array-type-get %t*% nargs) arg-buffer (list 0 idx))))
-               (incf idx)
-               (irc-store arg arg-gep)))
-           (if (= nargs 0)
-               (vaslist-start vaslist* (jit-constant-i64 nargs))
-               (vaslist-start vaslist* (jit-constant-i64 nargs)
-                              (irc-bit-cast arg-buffer %i8**%)))
-           (setf (calling-convention-vaslist* calling-conv) vaslist*)
-           (compile-general-lambda-list-code reqargs 
-                                             optargs 
-                                             rest-var
-                                             varest-p
-                                             key-flag 
-                                             keyargs 
-                                             allow-other-keys
-                                             calling-conv
-                                             :safep safep))))))
+    (compile-general-lambda-list-code reqargs optargs rest-var varest-p
+                                      key-flag keyargs allow-other-keys
+                                      xepargs
+                                      :safep safep :rest-alloc rest-alloc
+                                      :fname fname)))

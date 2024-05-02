@@ -1787,26 +1787,33 @@
         (t (loop for i from 0 below (length rtype)
                  collect (cmp:irc-extract-value llvm-value (list i))))))
 
-(defun layout-xep-function* (xep-group arity the-function ir calling-convention abi)
+(defun layout-xep-function* (xep-group arity the-function ir abi)
   (declare (ignore abi))
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
     ;; Parse lambda list.
     (cmp:with-landing-pad nil
-      (cmp:compile-lambda-list-code
-       (cmp:xep-group-cleavir-lambda-list-analysis xep-group)
-       calling-convention arity)
-      ;; Import cells.
-      (let* ((closure-vec (first (llvm-sys:get-argument-list the-function)))
-             (llvm-function-info (find-llvm-function-info ir))
-             (environment-values
-               (loop for import in (environment llvm-function-info)
-                     for i from 0
-                     for offset = (cmp:%closure%.offset-of[n]/t* i)
-                     when import ; skip unused fixed closure entries
-                       collect (cmp:irc-t*-load-atomic
-                                (cmp::gen-memref-address closure-vec offset)))))
-        ;; Tail call the real function.
-        (let* ((function-type (llvm-sys:get-function-type (main-function llvm-function-info)))
+      (let* ((args (llvm-sys:get-argument-list the-function))
+             (closure-vec (first args))
+             (analysis (cmp:xep-group-cleavir-lambda-list-analysis xep-group)))
+        (cmp:compile-lambda-list-code
+         analysis
+         (if (eq arity :general-entry)
+             (make-instance 'cmp::general-xep-arguments
+               :array (third args) :nargs (second args))
+             (make-instance 'cmp::fixed-xep-arguments
+               :arguments (rest args)))
+         :fname closure-vec :rest-alloc (compute-rest-alloc analysis))
+        ;; Import cells.
+        (let* ((llvm-function-info (find-llvm-function-info ir))
+               (environment-values
+                 (loop for import in (environment llvm-function-info)
+                       for i from 0
+                       for offset = (cmp:%closure%.offset-of[n]/t* i)
+                       when import ; skip unused fixed closure entries
+                         collect (cmp:irc-t*-load-atomic
+                                  (cmp::gen-memref-address closure-vec offset))))
+               ;; Tail call the real function.
+               (function-type (llvm-sys:get-function-type (main-function llvm-function-info)))
                (arguments
                  (mapcar (lambda (arg)
                            (translate-cast (in arg)
@@ -1957,19 +1964,11 @@
                       999903))
                   (if sys:*drag-native-calls*
                       (cmp::irc-intrinsic "drag_native_calls"))
-                  (let* ((cleavir-lambda-list-analysis
-                           (cmp:xep-group-cleavir-lambda-list-analysis xep-group))
-                         (rest-alloc
-                           (compute-rest-alloc cleavir-lambda-list-analysis))
-                         (calling-convention
-                           (cmp:initialize-calling-convention
-                            xep-arity-function arity
-                            :rest-alloc rest-alloc)))
-                    (when (policy:policy-value (bir:policy function)
-                                               'save-register-args)
-                      (save-registers xep-arity-function arity
-                                      (cmp:alloca-register-save-area arity)))
-                    (layout-xep-function* xep-group arity xep-arity-function function calling-convention abi))))))))))
+                  (when (policy:policy-value (bir:policy function)
+                                             'save-register-args)
+                    (save-registers xep-arity-function arity
+                                    (cmp:alloca-register-save-area arity)))
+                  (layout-xep-function* xep-group arity xep-arity-function function abi)))))))))
 
 ;;; Generate code to dump arguments ("registers") to a "register save area" in
 ;;; memory, where they can be read by the debugger even in the face of

@@ -615,52 +615,6 @@ Boehm and MPS use a single pointer"
     (irc-store shifted-nargs-next shifted-nargs*)
     val))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Provide the arguments passed to the function in a convenient manner.
-;; Either the register arguments are available in register-args
-;;   or the vaslist is used to access the arguments
-;;   one after the other with calling-convention.va-arg
-(defstruct (calling-convention (:type vector) :named)
-  closure
-  nargs
-  register-args ; The arguments that were passed in registers
-  vaslist*      ; The address of the vaslist, or NIL
-  rest-alloc ; whether we can dx or ignore a &rest argument
-  )
-
-;; Parse the function arguments into a calling-convention
-
-(defun initialize-calling-convention (llvm-function arity &key rest-alloc)
-  (let* ((arguments (llvm-sys:get-argument-list llvm-function))
-         (closure (first arguments)))
-    (unless closure
-      (error "initialize-calling-convention for arguments ~a - the closure is NIL" arguments))
-    (cond
-      ((eq arity :general-entry)
-       (let* ((nargs (second arguments))
-              (args (third arguments))
-              (vaslist* (alloca-vaslist)))
-         (vaslist-start vaslist* nargs args)
-         (make-calling-convention :closure closure
-                                  :nargs nargs
-                                  :vaslist* vaslist*
-                                  :rest-alloc rest-alloc)))
-      (t
-       (let ((nargs (length (cdr arguments)))
-             (register-args (cdr arguments)))
-         (make-calling-convention :closure closure
-                                  :nargs (jit-constant-i64 nargs)
-                                  :register-args register-args
-                                  :rest-alloc rest-alloc))))))
-
-;;;
-;;; Read the next argument from the vaslist
-(defun calling-convention-vaslist.va-arg (cc)
-  (let* ((vaslist (calling-convention-vaslist* cc)))
-    (gen-vaslist-pop vaslist)))
-
 (defun fn-prototype (arity)
   (cond
     ((eq arity :general-entry)

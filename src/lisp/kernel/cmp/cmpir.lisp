@@ -83,7 +83,6 @@ That layout looks like:
  * Return true if bindings will be defined and false if not.
 "
   cleavir-lambda-list
-  req-opt-only-p
   (lambda-list-arguments nil)
   (required (list 0)) ; default zero required
   (optional (list 0)) ; default zero optional
@@ -136,12 +135,12 @@ Maybe in the future we will want to actually put a test here."
 If nil then insert a general_entry_point_redirect_x function which just calls the general entry point. This is useful for entry points that just signal an argcount mismatch error - we can just use existing entry point functions that defer to the general rather than generating more code."
   (if (eq arity :general-entry)
       t
-      (if (cleavir-lambda-list-analysis-req-opt-only-p cll-analysis)
-          (let* ((nreq (car (cleavir-lambda-list-analysis-required cll-analysis)))
-                 (nopt (car (cleavir-lambda-list-analysis-optional cll-analysis))))
-            (not (or (< arity nreq)
-                     (< (+ nreq nopt) arity))))
-          nil)))
+      (let* ((nreq (car (cleavir-lambda-list-analysis-required cll-analysis)))
+             (nopt (car (cleavir-lambda-list-analysis-optional cll-analysis))))
+        (and (not (or (< arity nreq)
+                      (< (+ nreq nopt) arity)))
+             (null (cleavir-lambda-list-analysis-rest cll-analysis))
+             (not (cleavir-lambda-list-analysis-key-flag cll-analysis))))))
   
 (defstruct (xep-group (:type vector) :named)
   "xep-group describes a group of xep functions.
@@ -255,6 +254,9 @@ local-function - the lcl function that all of the xep functions call."
   (let ((fixed-indices (irc-fix-gep-indices indices)))
     (llvm-sys:create-in-bounds-gep *irbuilder* type ptr fixed-indices name )))
 
+(defun irc-const-gep1-64 (type ptr index &optional (label "gep"))
+  (ensure-opaque-or-pointee-type-matches ptr type)
+  (llvm-sys:create-const-gep1-64 *irbuilder* type ptr index label))
 (defun irc-const-gep2-64 (type ptr idx0 idx1 label)
   (ensure-opaque-or-pointee-type-matches ptr type)
   (llvm-sys:create-const-gep2-64 *irbuilder* type ptr idx0 idx1 label))

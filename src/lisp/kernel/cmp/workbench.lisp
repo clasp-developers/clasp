@@ -1,8 +1,7 @@
 (progn
   (setf cmp::*debug-compiler* t)
   (setf cmp::*use-human-readable-bitcode* t)
-  (trace COMPILER:SETUP-CALLING-CONVENTION
-         COMPILER::IRC-local-FUNCTION-CREATE
+  (trace COMPILER::IRC-local-FUNCTION-CREATE
          cmp::irc-xep-functions-create COMPILER::CODEGEN-FILL-FUNCTION-FRAME
          COMPILER::CODEGEN-FUNCTION COMPILER::COMPILE-TO-MODULE COMPILER::CODEGEN-CLOSURE
          COMPILER:COMPILE-LAMBDA-FUNCTION COMPILER::GENERATE-LLVM-FUNCTION-FROM-CODE
@@ -53,14 +52,12 @@
          cmp::make-xep-arity
          cmp::irc-calculate-real-args
          cmp::irc-calculate-call-info
-         cmp::initialize-calling-convention
          cmp::compile-wrong-number-arguments-block
          cmp::compile-error-if-too-many-arguments
          cmp::compile-error-if-not-enough-arguments
          cmp::irc-icmp-ugt
          cmp::bclasp-llvm-function-info-xep-function
          cmp::maybe-spill-to-register-save-area
-         cmp::make-calling-convention
          cmp::layout-xep-function
          cmp::layout-xep-function*
          cmp::irc-create-call-wft
@@ -72,8 +69,6 @@
          cmp::lambda-list-arguments
          cmp::jit-add-module-return-function
          cmp::c++-field-ptr
-         cmp::calling-convention-vaslist.va-arg
-         cmp::calling-convention-vaslist*
          cmp::irc-typed-load
          cmp::irc-add
          cmp::irc-sub

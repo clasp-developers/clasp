@@ -2817,11 +2817,11 @@ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,
 //  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateConstGEP2_32);
 CL_LISPIFY_NAME(CreateConstGEP1-64);
 CL_EXTERN_DEFMETHOD(IRBuilderBase_O,
-                    (llvm::Value * (IRBuilderBase_O::ExternalType::*)(llvm::Value*, uint64_t, const llvm::Twine&)) &
+                    (llvm::Value * (IRBuilderBase_O::ExternalType::*)(llvm::Type*, llvm::Value*, uint64_t, const llvm::Twine&)) &
                         IRBuilderBase_O::ExternalType::CreateConstGEP1_64);
 CL_LISPIFY_NAME(CreateConstInBoundsGEP1-64);
 CL_EXTERN_DEFMETHOD(IRBuilderBase_O,
-                    (llvm::Value * (IRBuilderBase_O::ExternalType::*)(llvm::Value*, uint64_t, const llvm::Twine&)) &
+                    (llvm::Value * (IRBuilderBase_O::ExternalType::*)(llvm::Type*, llvm::Value*, uint64_t, const llvm::Twine&)) &
                         IRBuilderBase_O::ExternalType::CreateConstInBoundsGEP1_64);
 //  CL_LISPIFY_NAME(CreateConstGEP2-64);
 //  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateConstGEP2_64);

@@ -610,11 +610,11 @@ T_O* cc_list(size_t nargs, ...) {
 
 /* Conses up a &rest argument from the passed valist.
  * Used in cmp/arguments.lisp for the general case of functions with a &rest in their lambda list. */
-__attribute__((visibility("default"))) core::T_O* cc_gatherRestArguments(Vaslist* vaslist, std::size_t nargs) {
+__attribute__((visibility("default"))) core::T_O* cc_gatherRestArguments(core::T_O** args, std::size_t nargs) {
   NO_UNWIND_BEGIN();
   ql::list result;
   for (int i = 0; i < nargs; ++i) {
-    core::T_O* tagged_obj = ENSURE_VALID_OBJECT((*vaslist)[i]);
+    core::T_O* tagged_obj = ENSURE_VALID_OBJECT(args[i]);
     result << gc::smart_ptr<core::T_O>((gc::Tagged)tagged_obj);
   }
   MAYBE_VERIFY_ALIGNMENT(&*(result.result()));
@@ -624,18 +624,18 @@ __attribute__((visibility("default"))) core::T_O* cc_gatherRestArguments(Vaslist
 
 /* Like cc_gatherRestArguments, but uses a vector of conses provided by the caller-
  * intended to be stack space, for &rest parameters declared dynamic-extent. */
-__attribute__((visibility("default"))) core::T_O* cc_gatherDynamicExtentRestArguments(Vaslist* vaslist, std::size_t nargs,
+__attribute__((visibility("default"))) core::T_O* cc_gatherDynamicExtentRestArguments(core::T_O** args, std::size_t nargs,
                                                                                       core::Cons_O* cur) {
   NO_UNWIND_BEGIN();
   core::List_sp result = Cons_sp((gctools::Tagged)gctools::tag_cons((core::Cons_O*)cur));
   if (nargs) {
     for (int i = 0; i < nargs - 1; ++i) {
-      core::T_O* tagged_obj = ENSURE_VALID_OBJECT((*vaslist)[i]);
+      core::T_O* tagged_obj = ENSURE_VALID_OBJECT(args[i]);
       Cons_O* next = cur + 1;
       new (cur) Cons_O(T_sp((gctools::Tagged)tagged_obj), T_sp((gctools::Tagged)gctools::tag_cons((core::Cons_O*)next)));
       cur = next;
     }
-    core::T_O* tagged_obj = ENSURE_VALID_OBJECT((*vaslist)[nargs - 1]);
+    core::T_O* tagged_obj = ENSURE_VALID_OBJECT(args[nargs - 1]);
     new (cur) Cons_O(T_sp((gctools::Tagged)tagged_obj), nil<T_O>());
     return result.raw_();
   }

@@ -146,7 +146,6 @@
              #~"kernel/stage/base/1-end.lisp"
              #~"kernel/stage/base/2-begin.lisp"  
              :clasp-cleavir
-             #~"kernel/cmp/arguments.lisp"
              #~"kernel/lsp/queue.lisp" ;; cclasp sources
              #~"kernel/lsp/generated-encodings.lisp"
              #~"kernel/lsp/process.lisp"

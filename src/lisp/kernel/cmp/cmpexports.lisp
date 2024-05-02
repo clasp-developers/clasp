@@ -126,11 +126,6 @@
             irc-apply
             function-type-create-on-the-fly
             evaluate-foreign-arguments
-            calling-convention-closure
-            calling-convention-vaslist*
-            calling-convention-vaslist.va-arg
-            calling-convention-nargs
-            calling-convention-register-args
             cmp-log
             cmp-log-dump-module
             cmp-log-dump-function
@@ -146,7 +141,6 @@
             compile-error-if-not-enough-arguments
             compile-lambda-function
             compile-lambda-list-code
-            make-calling-convention
             compiler-error
             compiler-warn
             compiler-style-warn
@@ -308,7 +302,6 @@
             jit-constant-unique-string-ptr
             module-make-global-string
             make-boot-function-global-variable
-            initialize-calling-convention
             ensure-cleavir-lambda-list
             ensure-cleavir-lambda-list-analysis
             process-cleavir-lambda-list-analysis

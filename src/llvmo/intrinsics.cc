@@ -85,10 +85,10 @@ ALWAYS_INLINE core::T_O* cc_ensure_valid_object(core::T_O* tagged_object) {
   NO_UNWIND_END();
 }
 
-ALWAYS_INLINE core::T_O* cc_gatherVaRestArguments(Vaslist* vaslist, std::size_t nargs, Vaslist untagged_vargs_rest[2]) {
+ALWAYS_INLINE core::T_O* cc_gatherVaRestArguments(core::T_O** args, std::size_t nargs, Vaslist untagged_vargs_rest[2]) {
   NO_UNWIND_BEGIN();
-  new (&untagged_vargs_rest[0]) Vaslist(nargs, vaslist->args());
-  new (&untagged_vargs_rest[1]) Vaslist(nargs, vaslist->args());
+  new (&untagged_vargs_rest[0]) Vaslist(nargs, args);
+  new (&untagged_vargs_rest[1]) Vaslist(nargs, args);
   T_O* result = untagged_vargs_rest->asTaggedPtr();
 #ifdef DEBUG_VASLIST
   if (_sym_STARdebugVaslistSTAR && _sym_STARdebugVaslistSTAR->symbolValue().notnilp()) {

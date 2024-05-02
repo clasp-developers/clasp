@@ -28,6 +28,7 @@
                (:file "ir")
                (:file "jit")
                (:file "translation-environment")
+               (:file "arguments")
                (:file "bir")
                (:file "bmir")
                (:file "blir")
