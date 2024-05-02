@@ -1794,46 +1794,48 @@
     (cmp:with-landing-pad nil
       (let* ((args (llvm-sys:get-argument-list the-function))
              (closure-vec (first args))
-             (analysis (cmp:xep-group-cleavir-lambda-list-analysis xep-group)))
-        (cmp:compile-lambda-list-code
-         analysis
-         (if (eq arity :general-entry)
-             (make-instance 'cmp::general-xep-arguments
-               :array (third args) :nargs (second args))
-             (make-instance 'cmp::fixed-xep-arguments
-               :arguments (rest args)))
-         :fname closure-vec :rest-alloc (compute-rest-alloc analysis))
-        ;; Import cells.
-        (let* ((llvm-function-info (find-llvm-function-info ir))
-               (environment-values
-                 (loop for import in (environment llvm-function-info)
-                       for i from 0
-                       for offset = (cmp:%closure%.offset-of[n]/t* i)
-                       when import ; skip unused fixed closure entries
-                         collect (cmp:irc-t*-load-atomic
-                                  (cmp::gen-memref-address closure-vec offset))))
-               ;; Tail call the real function.
-               (function-type (llvm-sys:get-function-type (main-function llvm-function-info)))
-               (arguments
-                 (mapcar (lambda (arg)
-                           (translate-cast (in arg)
-                                           '(:object) (cc-bmir:rtype arg)))
-                         (arguments llvm-function-info)))
-               (c
-                 (cmp:irc-create-call-wft
-                  function-type
-                  (main-function llvm-function-info)
-                  ;; Augment the environment lexicals as a local call would.
-                  (nconc environment-values arguments)))
-               (returni (bir:returni ir))
-               (rrtype (and returni (cc-bmir:rtype (bir:input returni)))))
-          #+(or)(llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
-          ;; Box/etc. results of the local call.
-          (if returni
-              (cmp:irc-ret (translate-cast
-                            (local-call-rv->inputs c rrtype)
-                            rrtype :multiple-values))
-              (cmp:irc-unreachable))))))
+             (analysis (cmp:xep-group-cleavir-lambda-list-analysis xep-group))
+             (uncast-arguments
+               (cmp:compile-lambda-list-code
+                analysis
+                (if (eq arity :general-entry)
+                    (make-instance 'cmp::general-xep-arguments
+                      :array (third args) :nargs (second args))
+                    (make-instance 'cmp::fixed-xep-arguments
+                      :arguments (rest args)))
+                :fname closure-vec :rest-alloc (compute-rest-alloc analysis)))
+             ;; Import cells.
+             (llvm-function-info (find-llvm-function-info ir))
+             (environment-values
+               (loop for import in (environment llvm-function-info)
+                     for i from 0
+                     for offset = (cmp:%closure%.offset-of[n]/t* i)
+                     when import ; skip unused fixed closure entries
+                       collect (cmp:irc-t*-load-atomic
+                                (cmp::gen-memref-address closure-vec offset))))
+             ;; Tail call the real function.
+             (function-type
+               (llvm-sys:get-function-type (main-function llvm-function-info)))
+             (arguments
+               (mapcar (lambda (param arg)
+                         (translate-cast arg '(:object) (cc-bmir:rtype param)))
+                       (arguments llvm-function-info)
+                       uncast-arguments))
+             (c
+               (cmp:irc-create-call-wft
+                function-type
+                (main-function llvm-function-info)
+                ;; Augment the environment lexicals as a local call would.
+                (nconc environment-values arguments)))
+             (returni (bir:returni ir))
+             (rrtype (and returni (cc-bmir:rtype (bir:input returni)))))
+        #+(or)(llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
+        ;; Box/etc. results of the local call.
+        (if returni
+            (cmp:irc-ret (translate-cast
+                          (local-call-rv->inputs c rrtype)
+                          rrtype :multiple-values))
+            (cmp:irc-unreachable)))))
   the-function)
 
 (defun layout-main-function* (the-function ir
@@ -1924,8 +1926,7 @@
           (t nil))))
 
 (defun layout-xep-function (xep-arity xep-group function lambda-name abi)
-  (let* ((*datum-values* (make-hash-table :test #'eq))
-         (jit-function-name (jit-function-name lambda-name))
+  (let* ((jit-function-name (jit-function-name lambda-name))
          (cmp:*current-function-name* jit-function-name)
          (cmp:*gv-current-function-name*
            (cmp:module-make-global-string jit-function-name "fn-name")))
