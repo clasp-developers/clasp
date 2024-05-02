@@ -588,3 +588,127 @@ BBBBCCCC**DDDD"))
                        :pretty t)
       ("(A (CORE:UNQUOTE A) (CORE:UNQUOTE-SPLICE A) (CORE:UNQUOTE-NSPLICE A)
  . `(A ,@(A (CORE:UNQUOTE A)) ,.A . ,A))"))
+
+(defun fmt (stream argument colonp atsignp &rest params)
+  (declare (ignore argument colonp atsignp))
+  (format stream "~S" params))
+
+(test cdr-7.comma.1.interpreted
+      (with-standard-io-syntax
+        (format nil (progn "~1,2/clasp-tests:fmt/") t))
+      ("(1 2)"))
+
+(test cdr-7.comma.1.compiled
+      (with-standard-io-syntax
+        (format nil "~1,2/clasp-tests:fmt/" t))
+      ("(1 2)"))
+
+(test cdr-7.comma.2.interpreted
+      (with-standard-io-syntax
+        (format nil (progn "~1,2,/clasp-tests:fmt/") t))
+      ("(1 2)"))
+
+(test cdr-7.comma.2.compiled
+      (with-standard-io-syntax
+        (format nil "~1,2,/clasp-tests:fmt/" t))
+      ("(1 2)"))
+
+(test cdr-7.comma.3.interpreted
+      (with-standard-io-syntax
+        (format nil (progn "~1,2:/clasp-tests:fmt/") t))
+      ("(1 2)"))
+
+(test cdr-7.comma.3.compiled
+      (with-standard-io-syntax
+        (format nil "~1,2:/clasp-tests:fmt/" t))
+      ("(1 2)"))
+
+(test cdr-7.comma.4.interpreted
+      (with-standard-io-syntax
+        (format nil (progn "~1,2,:/clasp-tests:fmt/") t))
+      ("(1 2)"))
+
+(test cdr-7.comma.4.compiled
+      (with-standard-io-syntax
+        (format nil "~1,2,:/clasp-tests:fmt/" t))
+      ("(1 2)"))
+
+(test cdr-7.parameter.1.interpreted
+      (with-standard-io-syntax
+        (format nil (progn "~1,v/clasp-tests:fmt/") 2 t))
+      ("(1 2)"))
+
+(test cdr-7.parameter.1.compiled
+      (with-standard-io-syntax
+        (format nil "~1,v/clasp-tests:fmt/" 2 t))
+      ("(1 2)"))
+
+(test cdr-7.parameter.2.interpreted
+      (with-standard-io-syntax
+        (format nil (progn "~1,v/clasp-tests:fmt/") nil t))
+      ("(1 NIL)"))
+
+(test cdr-7.parameter.2.compiled
+      (with-standard-io-syntax
+        (format nil "~1,v/clasp-tests:fmt/" nil t))
+      ("(1 NIL)"))
+
+(test cdr-7.parameter.3.interpreted
+      (with-standard-io-syntax
+        (format nil (progn "~1,v,/clasp-tests:fmt/") 2 t))
+      ("(1 2)"))
+
+(test cdr-7.parameter.3.compiled
+      (with-standard-io-syntax
+        (format nil "~1,v,/clasp-tests:fmt/" 2 t))
+      ("(1 2)"))
+
+(test cdr-7.parameter.4.interpreted
+      (with-standard-io-syntax
+        (format nil (progn "~1,v,/clasp-tests:fmt/") nil t))
+      ("(1 NIL)"))
+
+(test cdr-7.parameter.4.compiled
+      (with-standard-io-syntax
+        (format nil "~1,v,/clasp-tests:fmt/" nil t))
+      ("(1 NIL)"))
+
+(test cdr-7.parameter.5.interpreted
+      (with-standard-io-syntax
+        (format nil (progn "~1,v:/clasp-tests:fmt/") 2 t))
+      ("(1 2)"))
+
+(test cdr-7.parameter.5.compiled
+      (with-standard-io-syntax
+        (format nil "~1,v:/clasp-tests:fmt/" 2 t))
+      ("(1 2)"))
+
+(test cdr-7.parameter.6.interpreted
+      (with-standard-io-syntax
+        (format nil (progn "~1,v:/clasp-tests:fmt/") nil t))
+      ("(1 NIL)"))
+
+(test cdr-7.parameter.6.compiled
+      (with-standard-io-syntax
+        (format nil "~1,v:/clasp-tests:fmt/" nil t))
+      ("(1 NIL)"))
+
+(test cdr-7.parameter.7.interpreted
+      (with-standard-io-syntax
+        (format nil (progn "~1,v,:/clasp-tests:fmt/") 2 t))
+      ("(1 2)"))
+
+(test cdr-7.parameter.7.compiled
+      (with-standard-io-syntax
+        (format nil "~1,v,:/clasp-tests:fmt/" 2 t))
+      ("(1 2)"))
+
+(test cdr-7.parameter.8.interpreted
+      (with-standard-io-syntax
+        (format nil (progn "~1,v,:/clasp-tests:fmt/") nil t))
+      ("(1 NIL)"))
+
+(test cdr-7.parameter.8.compiled
+      (with-standard-io-syntax
+        (format nil "~1,v,:/clasp-tests:fmt/" nil t))
+      ("(1 NIL)"))
