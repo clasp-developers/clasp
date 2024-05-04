@@ -76,7 +76,9 @@
   ;; reqargs is as returned from process-lambda-list- (# ...) where # is the count.
   (loop for i from 0
         for req in (rest reqargs) ; maybe use for naming?
-        collect (nth-arg xepargs i)))
+        for arg = (nth-arg xepargs i)
+        for vrtype = (first (clasp-cleavir-bmir::rtype req))
+        collect (clasp-cleavir::cast-one :object vrtype arg)))
 
 (defgeneric compile-optional-arguments (xepargs optargs nreq false true))
 (defmethod compile-optional-arguments ((xepargs general-xep-arguments)
@@ -99,18 +101,22 @@ switch (nargs) {
          (nfixed (+ nopt nreq))
          (opts (rest optargs))
          (enough (irc-basic-block-create "enough-for-optional"))
-         (undef (irc-undef-value-get %t*%))
          (sw (irc-switch nargs enough nopt))
          (assn (irc-basic-block-create "optional-assignments"))
          (final (irc-basic-block-create "done-parsing-optionals")))
     ;; We generate the assignments first, although they occur last.
     ;; It's just a bit more convenient to do that way.
     (irc-begin-block assn)
-    (let ((npreds (1+ nopt))
-          (var-phis nil) (suppliedp-phis nil))
-      (dotimes (i nopt)
-        (push (irc-phi %t*% npreds) suppliedp-phis)
-        (push (irc-phi %t*% npreds) var-phis))
+    (multiple-value-bind (var-phis suppliedp-phis)
+        (loop with npreds = (1+ nopt)
+              for (var suppliedp) on opts by #'cdddr
+              for var-rtype = (first (clasp-cleavir-bmir:rtype var))
+              for var-ltype = (clasp-cleavir::vrtype->llvm var-rtype)
+              for suppliedp-rtype = (first (clasp-cleavir-bmir:rtype suppliedp))
+              for suppliedp-ltype = (clasp-cleavir::vrtype->llvm suppliedp-rtype)
+              collect (irc-phi var-ltype npreds) into var-phis
+              collect (irc-phi suppliedp-ltype npreds) into suppliedp-phis
+              finally (return (values var-phis suppliedp-phis)))
       (irc-br final)
       ;; Generate a block for each case.
       (do ((i nreq (1+ i)))
@@ -119,20 +125,40 @@ switch (nargs) {
           (llvm-sys:add-case sw (irc-size_t i) new)
           (irc-begin-block new)
           ;; Assign each optional parameter accordingly.
-          (loop for var-phi in var-phis
+          (loop for (var suppliedp) on opts by #'cdddr
+                for var-rtype = (first (clasp-cleavir-bmir::rtype var))
+                for var-ltype = (clasp-cleavir::vrtype->llvm var-rtype)
+                for suppliedp-rtype = (first (clasp-cleavir-bmir:rtype suppliedp))
+                for var-phi in var-phis
                 for suppliedp-phi in suppliedp-phis
                 for j from nreq
                 for enough = (< j i)
-                do (irc-phi-add-incoming suppliedp-phi (if enough true false) new)
-                   (irc-phi-add-incoming var-phi (if enough (nth-arg xepargs i) undef) new))
+                for sp = (ecase suppliedp-rtype
+                           (:object (if enough true false))
+                           (:boolean (jit-constant-i1 (if enough 1 0))))
+                for val = (if enough
+                              (clasp-cleavir::cast-one :object var-rtype
+                                                       (nth-arg xepargs j))
+                              (llvm-sys:undef-value-get var-ltype))
+                do (irc-phi-add-incoming suppliedp-phi sp new)
+                   (irc-phi-add-incoming var-phi val new))
           (irc-br assn)))
       ;; Default case: everything gets a value and a suppliedp=T.
       (irc-begin-block enough)
-      (dolist (suppliedp-phi suppliedp-phis)
-        (irc-phi-add-incoming suppliedp-phi true enough))
-      (loop for var-phi in var-phis
+      (loop for (var suppliedp) on opts by #'cdddr
+            for var-phi in var-phis
+            for suppliedp-phi in suppliedp-phis
             for i from nreq
-            do (irc-phi-add-incoming var-phi (nth-arg xepargs i) enough))
+            for var-rtype = (first (clasp-cleavir-bmir:rtype var))
+            for suppliedp-rtype = (first (clasp-cleavir-bmir:rtype suppliedp))
+            for val = (clasp-cleavir::cast-one :object var-rtype
+                                               (nth-arg xepargs i))
+            do (irc-phi-add-incoming var-phi val enough)
+               (irc-phi-add-incoming suppliedp-phi
+                                     (ecase suppliedp-rtype
+                                       (:object true)
+                                       (:boolean (jit-constant-i1 1)))
+                                     enough))
       (irc-br assn)
       ;; ready to generate more code
       (irc-begin-block final)
@@ -146,34 +172,49 @@ switch (nargs) {
   ;; Specific case: Argcount is known. Optional processing is basically
   ;; trivial in this circumstance.
   (loop with args = (nthcdr nreq (xep-arguments xepargs))
-        with undef = (irc-undef-value-get %t*%)
         for (var suppliedp) on (rest optargs) by #'cdddr
+        for var-rtype = (first (clasp-cleavir-bmir:rtype var))
+        for var-ltype = (clasp-cleavir::vrtype->llvm var-rtype)
+        for suppliedp-rtype = (first (clasp-cleavir-bmir:rtype suppliedp))
         for arg = (pop args)
-        for val = (if (null arg) undef arg)
-        for sp = (if (null arg) false true)
+        for val = (if (null arg)
+                      (llvm-sys:undef-value-get
+                       (clasp-cleavir::vrtype->llvm var-rtype))
+                      (clasp-cleavir::cast-one :object var-rtype arg))
+        for sp = (ecase suppliedp-rtype
+                   (:object (if (null arg) false true))
+                   (:boolean (jit-constant-i1 (if (null arg) 0 1))))
         collect val collect sp))
 
 (defun compile-rest-argument (rest-var varest-p rest-alloc args nremaining)
-  (declare (ignore rest-var)) ; old, maybe use for label name later?
-  (cmp:irc-branch-to-and-begin-block (cmp:irc-basic-block-create "process-rest-argument"))
-  (list
-   (cond ((eq rest-alloc 'ignore)
-          ;; &rest variable is ignored- allocate nothing
-          (irc-undef-value-get %t*%))
-         ((eq rest-alloc 'dynamic-extent)
-          ;; Do the dynamic extent thing- alloca, then an intrinsic to initialize it.
-          (let ((rrest (alloca-dx-list :length nremaining :label "rrest")))
-            (irc-intrinsic "cc_gatherDynamicExtentRestArguments"
-                           args nremaining
-                           (irc-bit-cast rrest %t**%))))
-         (varest-p
-          (let ((temp-vaslist (alloca-vaslist :label "rest")))
-            (irc-intrinsic "cc_gatherVaRestArguments"
-                           args nremaining temp-vaslist)))
-         (t
-          ;; general case- heap allocation
-          (irc-intrinsic "cc_gatherRestArguments"
-                         args nremaining)))))
+  (cmp:irc-branch-to-and-begin-block
+   (cmp:irc-basic-block-create "process-rest-argument"))
+  (let ((rtype (first (clasp-cleavir-bmir:rtype rest-var))))
+    (list
+     (cond ((eq rest-alloc 'ignore)
+            ;; &rest variable is ignored- allocate nothing
+            (irc-undef-value-get (clasp-cleavir::vrtype->llvm rtype)))
+           ((eq rest-alloc 'dynamic-extent)
+            ;; Do the dynamic extent thing- alloca, then an intrinsic to initialize it.
+            (let ((rrest (alloca-dx-list :length nremaining :label "rrest")))
+              (clasp-cleavir::cast-one
+               :object rtype
+               (irc-intrinsic "cc_gatherDynamicExtentRestArguments"
+                              args nremaining
+                              (irc-bit-cast rrest %t**%)))))
+           (varest-p
+            (ecase rtype
+              (:vaslist
+               (irc-make-vaslist nremaining args "va-rest-arg"))
+              (:object
+               (irc-intrinsic "cc_gatherVaRestArguments"
+                              args nremaining (alloca-vaslist :label "rest")))))
+           (t
+            ;; general case- heap allocation
+            (clasp-cleavir::cast-one
+             :object rtype
+             (irc-intrinsic "cc_gatherRestArguments"
+                            args nremaining)))))))
 
 #|
 Keyword processing is the most complicated part, unsurprisingly.
@@ -267,18 +308,18 @@ if (seen_bad_keyword)
         (irc-phi-add-incoming nargs-remaining nremaining start)
         (irc-phi-add-incoming sbkw (jit-constant-false) start)
         (irc-phi-add-incoming bad-keyword undef start)
-        (do-keys (key)
-          (let ((var-phi (irc-phi %t*% 2 (core:fmt nil "{}-top" (string key)))))
-            (push var-phi top-param-phis)
-            ;; If we're paying attention to :allow-other-keys, track it specially
-            ;; and initialize it to NIL.
-            (cond ((and (not lambda-list-aokp) (eq key :allow-other-keys))
-                   (irc-phi-add-incoming var-phi false start)
-                   (setf allow-other-keys var-phi))
-                  (t (irc-phi-add-incoming var-phi undef start))))
-          (let ((suppliedp-phi (irc-phi %t*% 2 (core:fmt nil "{}-suppliedp-top" (string key)))))
-            (push suppliedp-phi top-suppliedp-phis)
-            (irc-phi-add-incoming suppliedp-phi false start)))
+        (loop for (key) on (cdr keyargs) by #'cddddr
+              for var-phi = (irc-phi %t*% 2 (format nil "~a-top" key))
+              for suppliedp-phi = (irc-phi %t*% 2 (format nil "~s-suppliedp-top" key))
+              do (push var-phi top-param-phis)
+                 (push suppliedp-phi top-suppliedp-phis)
+                 ;; If we're paying attention to :allow-other-keys, track it specially
+                 ;; and initialize it to NIL.
+                 (cond ((and (not lambda-list-aokp) (eq key :allow-other-keys))
+                        (irc-phi-add-incoming var-phi false start)
+                        (setf allow-other-keys var-phi))
+                       (t (irc-phi-add-incoming var-phi undef start)))
+                 (irc-phi-add-incoming suppliedp-phi false start))
         (setf top-param-phis (nreverse top-param-phis)
               top-suppliedp-phis (nreverse top-suppliedp-phis))
         ;; Are we done?
@@ -317,30 +358,26 @@ if (seen_bad_keyword)
                 (irc-phi-add-incoming bot-sbkw sbkw new-block)
                 (irc-phi-add-incoming bot-bad-keyword bad-keyword new-block)))
             ;; OK now the actual keyword values.
-            (do* ((var-new-blocks new-blocks (cdr var-new-blocks))
-                  (var-new-block (car var-new-blocks) (car var-new-blocks))
-                  (top-param-phis top-param-phis (cdr top-param-phis))
-                  (top-param-phi (car top-param-phis) (car top-param-phis))
-                  (top-suppliedp-phis top-suppliedp-phis (cdr top-suppliedp-phis))
-                  (top-suppliedp-phi (car top-suppliedp-phis) (car top-suppliedp-phis)))
-                 ((endp var-new-blocks))
-              (let ((var-phi (irc-phi %t*% npreds))
-                    (suppliedp-phi (irc-phi %t*% npreds)))
-                ;; fix up the top part to take values from here
-                (irc-phi-add-incoming top-param-phi var-phi kw-loop-continue)
-                (irc-phi-add-incoming top-suppliedp-phi suppliedp-phi kw-loop-continue)
-                ;; If coming from unknown-kw we keep our values the same.
-                (irc-phi-add-incoming var-phi top-param-phi unknown-kw)
-                (irc-phi-add-incoming suppliedp-phi top-suppliedp-phi unknown-kw)
-                ;; All new-blocks other than this key's stick with what they have.
-                (dolist (new-block new-blocks)
-                  (cond ((eq var-new-block new-block)
-                         ;; Here, however, we get the new values
-                         (irc-phi-add-incoming var-phi value-arg new-block)
-                         (irc-phi-add-incoming suppliedp-phi true new-block))
-                        (t
-                         (irc-phi-add-incoming var-phi top-param-phi new-block)
-                         (irc-phi-add-incoming suppliedp-phi top-suppliedp-phi new-block))))))))
+            (loop for var-new-block in new-blocks
+                  for top-param-phi in top-param-phis
+                  for top-suppliedp-phi in top-suppliedp-phis
+                  for var-phi = (irc-phi %t*% npreds)
+                  for suppliedp-phi = (irc-phi %t*% npreds)
+                  ;; fix up the top part to take values from here
+                  do (irc-phi-add-incoming top-param-phi var-phi kw-loop-continue)
+                     (irc-phi-add-incoming top-suppliedp-phi suppliedp-phi kw-loop-continue)
+                     ;; If coming from unknown-kw we keep our values the same.
+                     (irc-phi-add-incoming var-phi top-param-phi unknown-kw)
+                     (irc-phi-add-incoming suppliedp-phi top-suppliedp-phi unknown-kw)
+                     ;; All new-blocks other than this key's stick with what they have.
+                     (dolist (new-block new-blocks)
+                       (cond ((eq var-new-block new-block)
+                              ;; Here, however, we get the new values
+                              (irc-phi-add-incoming var-phi value-arg new-block)
+                              (irc-phi-add-incoming suppliedp-phi true new-block))
+                             (t
+                              (irc-phi-add-incoming var-phi top-param-phi new-block)
+                              (irc-phi-add-incoming suppliedp-phi top-suppliedp-phi new-block)))))))
         (let ((dec (irc-sub nargs-remaining (irc-size_t 2))))
           (irc-phi-add-incoming nargs-remaining dec kw-loop-continue))
         (irc-br kw-loop)
