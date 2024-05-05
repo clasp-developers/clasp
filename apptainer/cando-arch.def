@@ -2,9 +2,9 @@ BootStrap: docker
 From: ghcr.io/yitzchak/archlinux-makepkg:latest
 
 %post
-    pacman -Syu --noconfirm binutils boost clang gmp fmt libunwind llvm ninja sbcl jupyterlab emacs openssh netcdf expat gocryptfs nodejs npm
+    pacman -Syu --noconfirm binutils inetutils boost clang gmp fmt libunwind llvm ninja sbcl jupyterlab emacs openssh netcdf expat gocryptfs nodejs npm
     cd /mnt
-    ./koga --extensions=cando --build-path=build-apptainer/
+    ./koga --extensions=cando --llvm-config="/usr/bin/llvm-config" --build-path=build-apptainer/
     ninja -C build-apptainer
     ninja -C build-apptainer install
     wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
