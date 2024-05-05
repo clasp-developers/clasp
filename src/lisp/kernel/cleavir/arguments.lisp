@@ -7,7 +7,8 @@
   ((%array :initarg :array :reader xep-array)
    (%nargs :initarg :nargs :reader xep-nargs)))
 (defclass fixed-xep-arguments (xep-arguments)
-  ((%arguments :initarg :arguments :reader xep-arguments)))
+  ((%arguments :initarg :arguments :reader xep-arguments)
+   (%vrtypes :initarg :vrtypes :reader xep-vrtypes)))
 
 (defmethod xep-nargs ((arguments fixed-xep-arguments))
   (irc-size_t (length (xep-arguments arguments))))
@@ -20,6 +21,15 @@
                               (xep-array args) (list 0 n) "arg*")))
 (defmethod nth-arg ((args fixed-xep-arguments) n)
   (nth n (xep-arguments args)))
+
+;;; Get the vrtype for the nth argument.
+(defgeneric nth-vrtype (arguments n))
+(defmethod nth-vrtype ((args general-xep-arguments) n)
+  ;; rest arguments are always boxed at the moment.
+  (declare (ignore n))
+  :object)
+(defmethod nth-vrtype ((args fixed-xep-arguments) n)
+  (nth n (xep-vrtypes args)))
 
 ;;; Generate code to get the arguments starting with the nth as an array.
 ;;; n is a constant (i.e. a Lisp integer).
@@ -40,10 +50,12 @@
         (let ((res (alloca %t*% size)))
           ;; Fill it up.
           (loop for arg in (nthcdr n vals)
+                for vrt in (nthcdr n (xep-vrtypes args))
+                for cast = (clasp-cleavir::cast-one vrt :object arg)
                 for i from 0
                 for addr = (irc-typed-gep (llvm-sys:array-type-get %t*% 0)
-                                          res (list i))
-                do (irc-store arg addr))
+                                          res (list 0 i))
+                do (irc-store cast addr))
           res))))
 
 (defun compile-wrong-number-arguments-block (fname nargs min max)
@@ -77,8 +89,9 @@
   (loop for i from 0
         for req in (rest reqargs) ; maybe use for naming?
         for arg = (nth-arg xepargs i)
-        for vrtype = (first (clasp-cleavir-bmir::rtype req))
-        collect (clasp-cleavir::cast-one :object vrtype arg)))
+        for src-vrtype = (nth-vrtype xepargs i)
+        for dest-vrtype = (first (clasp-cleavir-bmir::rtype req))
+        collect (clasp-cleavir::cast-one src-vrtype dest-vrtype arg)))
 
 (defgeneric compile-optional-arguments (xepargs optargs nreq false true))
 (defmethod compile-optional-arguments ((xepargs general-xep-arguments)
@@ -133,11 +146,12 @@ switch (nargs) {
                 for suppliedp-phi in suppliedp-phis
                 for j from nreq
                 for enough = (< j i)
+                for src-vrtype = (nth-vrtype xepargs j)
                 for sp = (ecase suppliedp-rtype
                            (:object (if enough true false))
                            (:boolean (jit-constant-i1 (if enough 1 0))))
                 for val = (if enough
-                              (clasp-cleavir::cast-one :object var-rtype
+                              (clasp-cleavir::cast-one src-vrtype var-rtype
                                                        (nth-arg xepargs j))
                               (llvm-sys:undef-value-get var-ltype))
                 do (irc-phi-add-incoming suppliedp-phi sp new)
@@ -150,8 +164,9 @@ switch (nargs) {
             for suppliedp-phi in suppliedp-phis
             for i from nreq
             for var-rtype = (first (clasp-cleavir-bmir:rtype var))
+            for src-vrtype = (nth-vrtype xepargs i)
             for suppliedp-rtype = (first (clasp-cleavir-bmir:rtype suppliedp))
-            for val = (clasp-cleavir::cast-one :object var-rtype
+            for val = (clasp-cleavir::cast-one src-vrtype var-rtype
                                                (nth-arg xepargs i))
             do (irc-phi-add-incoming var-phi val enough)
                (irc-phi-add-incoming suppliedp-phi
@@ -172,6 +187,7 @@ switch (nargs) {
   ;; Specific case: Argcount is known. Optional processing is basically
   ;; trivial in this circumstance.
   (loop with args = (nthcdr nreq (xep-arguments xepargs))
+        with src-vrtypes = (nthcdr nreq (xep-vrtypes xepargs))
         for (var suppliedp) on (rest optargs) by #'cdddr
         for var-rtype = (first (clasp-cleavir-bmir:rtype var))
         for var-ltype = (clasp-cleavir::vrtype->llvm var-rtype)
@@ -180,7 +196,7 @@ switch (nargs) {
         for val = (if (null arg)
                       (llvm-sys:undef-value-get
                        (clasp-cleavir::vrtype->llvm var-rtype))
-                      (clasp-cleavir::cast-one :object var-rtype arg))
+                      (clasp-cleavir::cast-one (pop src-vrtypes) var-rtype arg))
         for sp = (ecase suppliedp-rtype
                    (:object (if (null arg) false true))
                    (:boolean (jit-constant-i1 (if (null arg) 0 1))))
