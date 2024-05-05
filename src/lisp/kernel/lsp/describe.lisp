@@ -435,6 +435,7 @@ q (or Q):             quits the inspection.~%~
   (incf *inspect-level*)
   (push object *inspect-history*)
   (catch 'ABORT-INSPECT
+    (let ((* object))
          (cond
 	       ((symbolp object) (inspect-symbol object))
                ((packagep object) (inspect-package object))
@@ -451,7 +452,7 @@ q (or Q):             quits the inspection.~%~
 	       #+clos
 	       ((sys:instancep object) (inspect-instance object))
                ((sys:cxx-object-p object) (describe-object object *standard-output*))
-               (t (format t "~S - ~S" object (type-of object))))))
+               (t (format t "~S - ~S" object (type-of object)))))))
 
 (defun default-inspector (object)
   "Args: (object)
