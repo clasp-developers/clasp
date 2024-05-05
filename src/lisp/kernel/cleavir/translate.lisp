@@ -173,7 +173,7 @@
           ((null (rest rt)) (cmp:irc-ret inv))
           (t ; fixed values return: construct an aggregate and return it.
            (let* ((stype (return-rtype->llvm rt))
-                  (s (llvm-sys:undef-value-get stype)))
+                  (s (llvm-sys:poison-value-get stype)))
              (loop for i from 0
                    for v in inv
                    do (setf s (cmp:irc-insert-value s v (list i))))

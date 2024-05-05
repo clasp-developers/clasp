@@ -2913,7 +2913,36 @@ template <> struct to_object<llvm::UndefValue*> {
   static core::T_sp convert(llvm::UndefValue* ptr) { return ((llvmo::UndefValue_O::create(ptr))); }
 };
 }; // namespace translate
-    ;
+
+namespace llvmo {
+FORWARD(PoisonValue);
+class PoisonValue_O : public UndefValue_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::PoisonValue, PoisonValue_O, "PoisonValue", UndefValue_O);
+  typedef llvm::PoisonValue ExternalType;
+  typedef llvm::PoisonValue* PointerToExternalType;
+
+public:
+  PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); }
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); }
+  void set_wrapped(PointerToExternalType ptr) {
+    this->_ptr = ptr;
+  }
+  static PoisonValue_sp create(llvm::PoisonValue* ptr);
+  PoisonValue_O() : Base(){};
+  ~PoisonValue_O() {}
+
+public:
+  string __repr__() const;
+}; // PoisonValue_O
+}; // namespace llvmo
+/* from_object translators */
+/* to_object translators */
+
+namespace translate {
+template <> struct to_object<llvm::PoisonValue*> {
+  static core::T_sp convert(llvm::PoisonValue* ptr) { return ((llvmo::PoisonValue_O::create(ptr))); }
+};
+}; // namespace translate
 
 namespace llvmo {
 FORWARD(ConstantPointerNull);

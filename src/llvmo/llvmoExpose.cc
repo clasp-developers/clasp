@@ -2168,9 +2168,18 @@ UndefValue_sp UndefValue_O::create(llvm::UndefValue* ptr) { return core::RP_Crea
 CL_LISPIFY_NAME(UNDEF_VALUE-GET);
 CL_EXTERN_DEFUN((llvm::UndefValue * (*)(llvm::Type * type)) & llvm::UndefValue::get);
 
-;
-
 string UndefValue_O::__repr__() const {
+  stringstream ss;
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << ">";
+  return ss.str();
+}
+
+PoisonValue_sp PoisonValue_O::create(llvm::PoisonValue* ptr) { return core::RP_Create_wrapped<PoisonValue_O, llvm::PoisonValue*>(ptr); };
+
+CL_LISPIFY_NAME(POISON_VALUE-GET);
+CL_EXTERN_DEFUN((llvm::PoisonValue * (*)(llvm::Type * type)) & llvm::PoisonValue::get);
+
+string PoisonValue_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->_classNameAsString() << ">";
   return ss.str();

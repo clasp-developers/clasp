@@ -62,11 +62,11 @@
                          ;; a value, but control will never actually reach it.
                          ;; Ideally the compiler would not bother compiling
                          ;; such unreachable code, but sometimes it's stupid.
-                         ((:fixnum) (llvm-sys:undef-value-get cmp:%fixnum%))
+                         ((:fixnum) (llvm-sys:poison-value-get cmp:%fixnum%))
                          ((:single-float)
-                          (llvm-sys:undef-value-get cmp:%float%))
+                          (llvm-sys:poison-value-get cmp:%float%))
                          ((:double-float)
-                          (llvm-sys:undef-value-get cmp:%double%))))
+                          (llvm-sys:poison-value-get cmp:%double%))))
                       (t
                        (cast-one (first inputrt) (first outputrt)
                                  (first inputv)))))

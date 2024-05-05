@@ -153,7 +153,7 @@ switch (nargs) {
                 for val = (if enough
                               (clasp-cleavir::cast-one src-vrtype var-rtype
                                                        (nth-arg xepargs j))
-                              (llvm-sys:undef-value-get var-ltype))
+                              (llvm-sys:poison-value-get var-ltype))
                 do (irc-phi-add-incoming suppliedp-phi sp new)
                    (irc-phi-add-incoming var-phi val new))
           (irc-br assn)))
@@ -194,7 +194,7 @@ switch (nargs) {
         for suppliedp-rtype = (first (clasp-cleavir-bmir:rtype suppliedp))
         for arg = (pop args)
         for val = (if (null arg)
-                      (llvm-sys:undef-value-get
+                      (llvm-sys:poison-value-get
                        (clasp-cleavir::vrtype->llvm var-rtype))
                       (clasp-cleavir::cast-one (pop src-vrtypes) var-rtype arg))
         for sp = (ecase suppliedp-rtype
@@ -209,7 +209,7 @@ switch (nargs) {
     (list
      (cond ((eq rest-alloc 'ignore)
             ;; &rest variable is ignored- allocate nothing
-            (irc-undef-value-get (clasp-cleavir::vrtype->llvm rtype)))
+            (llvm-sys:poison-value-get (clasp-cleavir::vrtype->llvm rtype)))
            ((eq rest-alloc 'dynamic-extent)
             ;; Do the dynamic extent thing- alloca, then an intrinsic to initialize it.
             (let ((rrest (alloca-dx-list :length nremaining :label "rrest")))
@@ -242,7 +242,7 @@ Having to write with phi nodes unfortunately makes things rather more confusing.
 
 if ((remaining_nargs % 2) == 1)
   cc_oddKeywordException([*fname*]);
-tstar bad_keyword = undef;
+tstar bad_keyword = poison;
 bool seen_bad_keyword = false;
 tstar allow_other_keys = [nil], allow_other_keys_p = [nil];
 for (; remaining_nargs != 0; remaining_nargs -= 2) {
@@ -284,7 +284,7 @@ if (seen_bad_keyword)
     (let ((aok-parameter-p nil)
           allow-other-keys
           (nkeys (car keyargs))
-          (undef (irc-undef-value-get %t*%))
+          (poison (llvm-sys:poison-value-get %t*%))
           (start (irc-basic-block-create "parse-key-arguments"))
           (matching (irc-basic-block-create "match-keywords"))
           (after (irc-basic-block-create "after-kw-loop"))
@@ -323,7 +323,7 @@ if (seen_bad_keyword)
             (bad-keyword (irc-phi %t*% 2 "bad-keyword")))
         (irc-phi-add-incoming nargs-remaining nremaining start)
         (irc-phi-add-incoming sbkw (jit-constant-false) start)
-        (irc-phi-add-incoming bad-keyword undef start)
+        (irc-phi-add-incoming bad-keyword poison start)
         (loop for (key) on (cdr keyargs) by #'cddddr
               for var-phi = (irc-phi %t*% 2 (format nil "~a-top" key))
               for suppliedp-phi = (irc-phi %t*% 2 (format nil "~s-suppliedp-top" key))
@@ -334,7 +334,7 @@ if (seen_bad_keyword)
                  (cond ((and (not lambda-list-aokp) (eq key :allow-other-keys))
                         (irc-phi-add-incoming var-phi false start)
                         (setf allow-other-keys var-phi))
-                       (t (irc-phi-add-incoming var-phi undef start)))
+                       (t (irc-phi-add-incoming var-phi poison start)))
                  (irc-phi-add-incoming suppliedp-phi false start))
         (setf top-param-phis (nreverse top-param-phis)
               top-suppliedp-phis (nreverse top-suppliedp-phis))
