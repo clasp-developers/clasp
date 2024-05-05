@@ -316,7 +316,6 @@
         :hs                                             [Abbreviation]~@
         ~@
         Lists the functions to access backtrace information more directly.~%")
-      #+(or)
       ((:i :inspect) tpl-inspect-command nil
        ":i(nspect)      Inspect value of local variable"
        ":inspect var-name                               [Break command]~@
@@ -735,6 +734,19 @@ Use special code 0 to cancel this operation.")
                   do (format t "~& ~s" var))
             (loop for (var . value) in locals
                   do (format t "~& ~s: ~s" var value)))))
+  (terpri)
+  (values))
+
+(defun tpl-inspect-command (arg &optional no-values)
+  (format t "Inspect ~s~%" arg)
+  (let ((locals (clasp-debug:frame-locals *break-frame*)))
+    (if (null locals)
+        (format t "none")
+        (if no-values
+            (format t "Variable has no value")
+            (loop for (var . value) in locals
+                  when (eq var arg)
+                       do (inspect value)))))
   (terpri)
   (values))
 
