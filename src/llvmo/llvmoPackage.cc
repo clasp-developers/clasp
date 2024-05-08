@@ -54,7 +54,6 @@ THE SOFTWARE.
 #include <clasp/llvmo/clbindLlvmExpose.h>
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/intrinsics.h>
-#include <clasp/llvmo/claspLinkPass.h>
 #include <clasp/core/bytecode.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>
