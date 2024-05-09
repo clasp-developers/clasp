@@ -131,10 +131,9 @@
 ;;;
 
 (defun compile-from-module (job
-                            &key optimize
-                                 optimize-level
+                            &key optimize-level
                                  intermediate-output-type)
-  (declare (ignore optimize optimize-level))
+  (declare (ignore optimize-level))
   (let ((module (ast-job-module job)))
     (ecase intermediate-output-type
       (:in-memory-object
@@ -149,12 +148,10 @@
     (gctools:thread-local-cleanup))
   (values))
 
-(defun ast-job-to-module (job &key optimize optimize-level)
+(defun ast-job-to-module (job &key (optimize-level *optimization-level*))
   (let ((module (llvm-create-module (format nil "module~a" (ast-job-form-index job))))
         (core:*current-source-pos-info* (ast-job-source-pos-info job)))
-    (with-module (:module module
-                  :optimize (when optimize #'llvm-sys:optimize-module)
-                  :optimize-level optimize-level)
+    (with-module (:module module)
       (with-make-new-run-all (run-all-function (format nil "module~a" (ast-job-form-index job)))
         (clasp-cleavir::with-debuginfo (module :file (namestring cmp::*compile-file-source-debug-pathname*))
           (with-literal-table (:id (ast-job-form-index job))
@@ -178,18 +175,16 @@
       (cmp-log-dump-module module)
       (irc-verify-module-safe module)
       (quick-module-dump module (format nil "preoptimize~a" (ast-job-form-index job)))
-      ;; ALWAYS link the builtins in, inline them and then remove them.
-      #+(or)(link-inline-remove-builtins module)
-      module)))
+      module)
+    (llvm-sys:optimize-module module optimize-level)
+    module))
 
 (defun compile-from-ast (job &key
-                               optimize
-                               optimize-level
+                               (optimize-level *optimization-level*)
                                intermediate-output-type)
   (setf (ast-job-module job)
-        (ast-job-to-module job :optimize optimize
-                               :optimize-level optimize-level))
-  (compile-from-module job :optimize optimize :optimize-level optimize-level
+        (ast-job-to-module job :optimize-level optimize-level))
+  (compile-from-module job :optimize-level optimize-level
                            :intermediate-output-type intermediate-output-type))
 
 (defun read-one-ast (source-sin environment eof-value)
@@ -240,7 +235,6 @@
                      environment
                      &key
                        (compile-from-module nil) ; If nil - then compile from the ast in threads
-                       optimize
                        optimize-level
                        output-path
                        (intermediate-output-type :in-memory-object) ; or :bitcode
@@ -272,7 +266,7 @@ multithreaded performance that we should explore."
          #+(or cclasp eclasp)(eclector.reader:*client* cmp:*cst-client*)
          ast-jobs
          (_ (cfp-log "Starting the pool of threads~%"))
-         (job-args `(:optimize ,optimize :optimize-level ,optimize-level
+         (job-args `(:optimize-level ,optimize-level
                      :intermediate-output-type ,intermediate-output-type))
          (pool (make-thread-pool (if compile-from-module
                                      'compile-from-module
@@ -301,14 +295,13 @@ multithreaded performance that we should explore."
                                      :form-index form-index
                                      :form-counter form-counter)))
                       (when compile-from-module
-                        (let ((module (ast-job-to-module ast-job :optimize optimize :optimize-level optimize-level)))
+                        (let ((module (ast-job-to-module ast-job :optimize-level optimize-level)))
                           (setf (ast-job-module ast-job) module)))
                       (unless ast-only
                         (push ast-job ast-jobs)
                         (thread-pool-enqueue pool ast-job))
                       #+(or)
                       (compile-from-ast ast-job
-                                        :optimize optimize
                                         :optimize-level optimize-level
                                         :intermediate-output-type intermediate-output-type))))
       ;; Send :quit messages to all threads.
@@ -342,7 +335,6 @@ multithreaded performance that we should explore."
 - environment :: Arbitrary, passed only to hook
 Compile a lisp source file into an LLVM module."
   (cclasp-loop2 input-stream environment
-                :optimize optimize
                 :optimize-level optimize-level
                 :output-path output-path
                 :intermediate-output-type (ecase output-type
@@ -402,7 +394,6 @@ Compile a lisp source file into an LLVM module."
              :output-type output-type
              :output-path output-path
              :environment environment
-             :optimize optimize
              :optimize-level optimize-level
              :ast-only ast-only)))
       (cond (dry-run (format t "Doing nothing further~%") nil)

@@ -1866,8 +1866,10 @@ COMPILE-FILE will use the default *clasp-env*."
     (cmp::with-module (:module module)
       (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
           (with-debuginfo (module :file pathname)
-            (literal:with-rtv
-                (translate bir :linkage linkage :abi abi)))
+            (multiple-value-prog1
+                (literal:with-rtv
+                    (translate bir :linkage linkage :abi abi))
+              (llvm-sys:optimize-module module cmp:*optimization-level*)))
         (declare (ignore constants-table))
         (jit-add-module-return-function
          cmp:*the-module* startup-shutdown-id ordered-raw-constants-list)))))
