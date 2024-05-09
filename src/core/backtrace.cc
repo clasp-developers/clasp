@@ -232,34 +232,24 @@ T_sp dwarf_ep(size_t frameIndex, llvmo::ObjectFile_sp ofi, llvmo::DWARFContext_s
   return nil<T_O>();
 }
 
-__attribute__((optnone)) static bool args_from_offset(size_t fi, void* ip, const char* string, T_sp name, bool XEPp, int arityCode,
+__attribute__((optnone)) static bool args_from_offset(size_t fi, void* ip, int arityCode,
                                                       void* frameptr, int32_t offset32, T_sp& closure, T_sp& args,
                                                       int64_t patch_point_id) {
   MaybeTrace trace(__FUNCTION__);
   int64_t offset64 = static_cast<int64_t>(offset32);
-  D(printf("%s%s:%d:%s fi=%lu ip=%p fp = %p patch_point_id 0x%lx  offset64 = %ld\n", trace.spaces().c_str(), __FILE__, __LINE__,
-           __FUNCTION__, fi, ip, frameptr, patch_point_id, offset64););
   int64_t arity_code;
   if (frameptr && is_entry_point_arity(patch_point_id, arity_code)) {
-    D(printf("%s%s:%d:%s entry_point arity_code %ld\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, arity_code););
     T_O** register_save_area = (T_O**)((intptr_t)frameptr + offset64);
-    D(printf("%s%s:%d:%s fi=%lu ip=%p fp %p arity_code %ld rsa=%p %s XEP(y=%d,a=%d) ", trace.spaces().c_str(), __FILE__, __LINE__,
-             __FUNCTION__, fi, ip, frameptr, arity_code, register_save_area, _rep_(name).c_str(), XEPp, arityCode););
-    D(if (string) printf("%s", string););
-    D(printf("\n"););
     T_sp tclosure((gc::Tagged)register_save_area[LCC_CLOSURE_REGISTER]);
     if (!gc::IsA<Function_sp>(tclosure)) {
-      D(printf("%s%s:%d:%s bad tclosure %p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, tclosure.raw_()););
       fprintf(stderr, "%s:%d:%s When trying to get arguments from CL frame read what should be a closure %p but it isn't\n",
               __FILE__, __LINE__, __FUNCTION__, tclosure.raw_());
       return false;
     }
     closure = tclosure;
-    D(printf("%s%s:%d:%s closure = %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(closure).c_str()););
     if (arity_code == 0) {
       // For the general entry point the registers are (closure, nargs, arg_ptr)
       size_t nargs = (size_t)(register_save_area[LCC_NARGS_REGISTER]);
-      D(printf("%s%s:%d:%s nargs = %lu\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, nargs););
       if (nargs > 256) {
         fprintf(stderr, "%s:%d:%s  There are too many arguments %lu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
         return false;
@@ -268,12 +258,9 @@ __attribute__((optnone)) static bool args_from_offset(size_t fi, void* ip, const
       // Get the arg ptr from the register save area
       T_O** arg_ptr = (T_O**)register_save_area[LCC_ARGS_PTR_REGISTER];
       // get the args from the arg_ptr
-      D(printf("%s%s:%d:%s About to read %lu xep args\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, nargs););
       for (size_t i = 0; i < nargs; ++i) {
         T_O* rarg = arg_ptr[i];
         T_sp temp((gctools::Tagged)rarg);
-        D(printf("%s%s:%d:%s     read xep(general) arg %lu -> %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, i,
-                 _rep_(temp).c_str()););
         largs << temp;
       }
       args = largs.cons();
@@ -282,16 +269,12 @@ __attribute__((optnone)) static bool args_from_offset(size_t fi, void* ip, const
       size_t arity_nargs = arity_code - 1;
       ASSERT(ENTRY_POINT_ARITY_BEGIN == 0); // maybe in the future we may want to support something else
       size_t nargs = arity_nargs + ENTRY_POINT_ARITY_BEGIN;
-      D(printf("%s%s:%d:%s About to read %lu xep%lu args\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, nargs,
-               arity_code - 1););
       // Get the first args from the register save area
       ql::list largs;
       size_t args_in_rsa = std::min(nargs, (size_t)(LCC_WORDS_IN_REGISTER_SAVE_AREA - 1)); // -1 to remove closure arg
       int args_on_stack = nargs - (LCC_WORDS_IN_REGISTER_SAVE_AREA - 1);
       for (size_t i = 0; i < args_in_rsa; ++i) {
         T_sp temp((gctools::Tagged)(register_save_area[i + 1])); // +1 to skip closure arg
-        D(printf("%s%s:%d:%s     read xep%lu arg %lu -> %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, nargs, i,
-                 _rep_(temp).c_str()););
         largs << temp;
       }
       // and the rest from the stack frame if we support xepN functions that exhaust the available register arguments
@@ -311,10 +294,8 @@ __attribute__((optnone)) static bool args_from_offset(size_t fi, void* ip, const
     }
     return true;
   } else {
-    D(printf("%s%s:%d:%s entry_point no stackmap entry\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__););
     return false;
   }
-  D(printf("%s%s:%d:%s Extracted args: %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(args).c_str()););
 }
 
 bool sanity_check_args(void* frameptr, int32_t offset32, int64_t patch_point_id) {
@@ -351,9 +332,9 @@ bool sanity_check_args(void* frameptr, int32_t offset32, int64_t patch_point_id)
   return true; // information not being available is unfortunate but sane
 }
 
-__attribute__((optnone)) static bool args_for_function(size_t fi, void* ip, const char* string, bool XEPp, int arityCode,
+__attribute__((optnone)) static bool args_for_function(size_t fi, void* ip, int arityCode,
                                                        void* functionStartAddress, llvmo::ObjectFile_sp ofi,
-                                                       T_sp& functionDescriptionOrNil, void* frameptr, T_sp& closure, T_sp& args) {
+                                                       T_sp functionDescriptionOrNil, void* frameptr, T_sp& closure, T_sp& args) {
   MaybeTrace trace(__FUNCTION__);
   if (!functionStartAddress) {
     D(printf("%s:%d:%s functionStartAddress is NULL returning\n", __FILE__, __LINE__, __FUNCTION__););
@@ -366,16 +347,10 @@ __attribute__((optnone)) static bool args_for_function(size_t fi, void* ip, cons
   }
   uintptr_t stackmap_end = stackmap_start + ofi->_StackmapSize;
   bool args_available = false;
-  T_sp name = nil<T_O>();
-  ;
-  if (gc::IsA<FunctionDescription_sp>(functionDescriptionOrNil))
-    name = gc::As_unsafe<FunctionDescription_sp>(functionDescriptionOrNil);
   auto thunk = [&](size_t _, const smStkSizeRecord& function, int32_t offsetOrSmallConstant, int64_t patchPointId) {
     if (function.FunctionAddress == (uintptr_t)functionStartAddress) {
       MaybeTrace tracel("functionStartAddress_thunk");
-      D(printf("%s%s:%d:%s function.FunctionAddress = %p  functionStartAddress = %p\n", trace.spaces().c_str(), __FILE__, __LINE__,
-               __FUNCTION__, (void*)function.FunctionAddress, functionStartAddress););
-      if (args_from_offset(fi, ip, string, name, XEPp, arityCode, frameptr, offsetOrSmallConstant, closure, args, patchPointId))
+      if (args_from_offset(fi, ip, arityCode, frameptr, offsetOrSmallConstant, closure, args, patchPointId))
         args_available |= true;
       return;
     }
@@ -404,13 +379,15 @@ static DebuggerFrame_sp make_lisp_frame(size_t frameIndex, void* absolute_ip, co
   else if (gc::IsA<SimpleFun_sp>(ep))
     functionDescriptionOrNil = gc::As_unsafe<SimpleFun_sp>(ep)->functionDescription();
   T_sp closure = nil<T_O>(), args = nil<T_O>();
-  bool args_available = args_for_function(frameIndex, absolute_ip, string, XEPp, arityCode, functionStartAddress, ofi,
+  bool args_available = args_for_function(frameIndex, absolute_ip, arityCode, functionStartAddress, ofi,
                                           functionDescriptionOrNil, fbp, closure, args);
   T_sp fname = nil<T_O>();
   if (gc::IsA<FunctionDescription_sp>(functionDescriptionOrNil)) {
     fname = gc::As_unsafe<FunctionDescription_sp>(functionDescriptionOrNil)->functionName();
   } else if (args_available && gc::IsA<Function_sp>(closure)) {
-    fname = gc::As_unsafe<Function_sp>(closure)->functionName();
+    Function_sp fclos = closure.as_unsafe<Function_O>();
+    functionDescriptionOrNil = fclos->fdesc();
+    fname = fclos->functionName();
   }
   if (fname.nilp() && string) {
     fname = SimpleBaseString_O::make(std::string(string));
