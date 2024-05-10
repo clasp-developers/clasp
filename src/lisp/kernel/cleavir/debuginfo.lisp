@@ -25,6 +25,16 @@
     (llvm-sys:dibuilder/create-file *dibuilder* filename directory
                                     nil source)))
 
+;;; Hash table from pathnames to DIFiles. (So, use an EQUAL test.)
+;;; A source file can have other DIFiles in it due to inlining, so this is
+;;; pretty important.
+(defvar *difile-cache*)
+
+(defun ensure-difile (pathname &key (source ";;"))
+  (or (gethash pathname *difile-cache*)
+      (setf (gethash pathname *difile-cache*)
+            (make-difile pathname :source source))))
+
 (defun add-module-di-flags (module)
   ;; add the flag that defines the Dwarf Version
   ;; FIXME: Why do we use a pretty old DWARF version here?
@@ -59,11 +69,12 @@
     `(flet ((,gbody () (progn ,@body)))
        (if *generate-dwarf*
            (let* ((,gmodule ,llvm-ir-module)
-                  (*dibuilder* (make-dibuilder ,gmodule)))
+                  (*dibuilder* (make-dibuilder ,gmodule))
+                  (*difile-cache* (make-hash-table :test #'equal)))
              (unwind-protect
                   ,(if filep
                        `(let ((*dbg-current-scope*
-                                (make-difile ,file :source ,source)))
+                                (ensure-difile ,file :source ,source)))
                           (install-compile-unit *dibuilder*
                                                 *dbg-current-scope*)
                           (,gbody))
@@ -177,13 +188,15 @@
     (values (core:file-scope-pathname (core:file-scope handle))
             lineno column)))
 
-(defun create-di-main-function (ir name
-                                &key (difile *dbg-current-scope*)
-                                (linkage-name name))
+(defun create-di-main-function (ir name &key (linkage-name name))
   (let* ((spi (origin-spi (origin-source (bir:origin ir))))
+         (path (core:file-scope-pathname
+                (core:file-scope
+                 (core:source-pos-info-file-handle spi))))
+         (difile (ensure-difile path))
          (lineno (core:source-pos-info-lineno spi)))
     (llvm-sys:dibuilder/create-function
-     *dibuilder* *dbg-current-scope* name linkage-name difile lineno
+     *dibuilder* difile name linkage-name difile lineno
      (create-di-main-function-type ir) lineno
      (di-zeroflags) (dispflags 'llvm-sys:dispflag-definition)
      nil nil nil nil "")))
@@ -209,12 +222,15 @@
      (llvm-sys:get-or-create-type-array *dibuilder* params)
      (di-zeroflags) 0)))
 
-(defun create-di-xep (ir name arity &key (difile *dbg-current-scope*)
-                                      (linkage-name name))
+(defun create-di-xep (ir name arity &key (linkage-name name))
   (let* ((spi (origin-spi (origin-source (bir:origin ir))))
+         (path (core:file-scope-pathname
+                (core:file-scope
+                 (core:source-pos-info-file-handle spi))))
+         (difile (ensure-difile path))
          (lineno (core:source-pos-info-lineno spi)))
     (llvm-sys:dibuilder/create-function
-     *dibuilder* *dbg-current-scope* name linkage-name difile lineno
+     *dibuilder* difile name linkage-name difile lineno
      (if (eq arity :general-entry)
          (create-di-gxep-type)
          (create-di-nxep-type arity))
