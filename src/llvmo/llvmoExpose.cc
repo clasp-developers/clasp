@@ -111,6 +111,7 @@ Error enableObjCRegistration(const char* PathToLibObjC);
 #include <llvm/ExecutionEngine/Orc/TargetProcess/JITLoaderGDB.h>
 #include <llvm-c/Disassembler.h>
 // #include <llvm/IR/PrintModulePass.h> // will be llvm/IR  was llvm/Assembly
+#include <llvm/Passes/StandardInstrumentations.h>
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
@@ -4206,14 +4207,15 @@ CL_DEFUN void llvm_sys__optimizeModule(llvm::Module* module, int level) {
   llvm::FunctionAnalysisManager FAM;
   llvm::CGSCCAnalysisManager CGAM;
   llvm::ModuleAnalysisManager MAM;
-
+/*
   llvm::PipelineTuningOptions pipeline_opts;
 #if LLVM_VERSION_MAJOR > 15
   pipeline_opts.InlinerThreshold = 0;
 #endif
 
   llvm::PassBuilder PB(NULL, pipeline_opts);
-  llvm::ModulePassManager MPM;
+*/
+  llvm::PassBuilder PB;
 
   PB.registerModuleAnalyses(MAM);
   PB.registerCGSCCAnalyses(CGAM);
@@ -4237,7 +4239,13 @@ CL_DEFUN void llvm_sys__optimizeModule(llvm::Module* module, int level) {
   }
 #endif
 
-  PB.buildPerModuleDefaultPipeline(opt_level);
+  // In LLVM16, buildPerModuleDefaultPipeline does not work with O0.
+  // This was changed in 17 and up.
+#if LLVM_VERSION_MAJOR < 17
+  llvm::ModulePassManager MPM = opt_level == OptimizationLevel::O0 ? PB.buildO0DefaultPipeline(opt_level) : PB.buildPerModuleDefaultPipeline(opt_level);
+#else
+  llvm::ModulePassManager MPM = PB.buildPerModuleDefaultPipeline(opt_level);
+#endif
 
   MPM.run(*module, MAM);
 }
