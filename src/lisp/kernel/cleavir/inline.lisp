@@ -11,7 +11,6 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf cmp::*debug-create-call* nil))
 
-#+(or)
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (setq core:*defun-inline-hook* 'defun-inline-hook))
 
