@@ -1235,9 +1235,20 @@ CL_DEFUN Integer_sp cl__write_byte(Integer_sp byte, T_sp stream) {
 CL_LAMBDA(string &optional output-stream);
 CL_DOCSTRING(R"dx(Outputs character to output-stream.)dx");
 CL_DEFUN Character_sp cl__write_char(Character_sp chr, T_sp output_stream) {
+  Character_sp r = chr;
   stream_write_char(coerce::outputStreamDesignator(output_stream), clasp_as_claspCharacter(chr));
-  return chr;
+  return r;
 };
+
+
+CL_LAMBDA(string &optional output-stream);
+CL_DOCSTRING(R"dx(Outputs character to output-stream.)dx");
+CL_DEFUN Character_sp core__write_char_beta(Character_sp chr, T_sp output_stream) {
+  Character_sp r = chr;
+  stream_write_char(coerce::outputStreamDesignator(output_stream), clasp_as_claspCharacter(chr));
+  return r;
+};
+
 
 CL_LAMBDA(&optional input-stream);
 CL_DOCSTRING(R"dx(Clears any available input from input-stream.
@@ -3129,10 +3140,10 @@ int TwoWayStream_O::file_descriptor(StreamDirection direction) const {
 }
 
 /* Maximum number of bytes required to encode a character.
- * This currently corresponds to (4 + 2) for the ISO-2022-JP-* encodings
- * with 4 being the charset prefix, 2 for the character.
+ * This currently corresponds to (4 + 4) for the UCS-4 encoding
+ * with 4 being the byte-order mark, 4 for the character.
  */
-#define ENCODING_BUFFER_MAX_SIZE 6
+#define ENCODING_BUFFER_MAX_SIZE 8
 /* Size of the encoding buffer for vectors */
 #define VECTOR_ENCODING_BUFFER_SIZE 2048
 
