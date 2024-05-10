@@ -228,7 +228,11 @@ public:
   SimpleFun_O(FunctionDescription_sp fdesc, T_sp code,
               const ClaspXepTemplate& entry_point);
   CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
-  virtual Pointer_sp defaultEntryAddress() const;
+  // These two are useful for debugging things at a low level.
+  // They're unsafe.
+  Pointer_sp defaultEntryAddress() const;
+  Pointer_sp arityEntryAddress(size_t arity) const;
+  
   // Necessary since we have templated subclasses in clbind.
   // Doing so means the static analyzer marks SimpleFun as a
   // TemplatedKind, which makes the GC use templatedSizeof to
@@ -293,7 +297,6 @@ public:
 public:
   CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
-  virtual Pointer_sp defaultEntryAddress() const;
   string __repr__() const;
 };
 
@@ -337,7 +340,6 @@ public:
   static SimpleCoreFun_sp make(FunctionDescription_sp fdesc, ClaspCoreFunction main, ClaspXepAnonymousFunction* xep);
 
 public:
-  virtual Pointer_sp defaultEntryAddress() const;
   llvmo::ObjectFile_sp code() const;
   CoreFun_sp localFun() const;
   string __repr__() const;
@@ -372,7 +374,6 @@ public:
                             unsigned int bytecodeSize, BytecodeTrampolineFunction trampoline);
 
 public:
-  virtual Pointer_sp defaultEntryAddress() const;
   BytecodeModule_sp code() const;
   string __repr__() const;
 
