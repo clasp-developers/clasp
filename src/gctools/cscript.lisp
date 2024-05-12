@@ -10,7 +10,6 @@
            #~"exposeClasses3.cc"
            #~"boehmGarbageCollection.cc"
            #~"mmtkGarbageCollection.cc"
-           #~"mpsGarbageCollection.cc"
            #~"hardErrors.cc"
            #~"source_info.cc"
            #~"threadlocal.cc"

@@ -241,7 +241,7 @@ CL_DEFUN T_sp cl__lisp_implementation_version() {
 #endif
 #endif
 #ifdef RUNNING_PRECISEPREP
-  ss << "mpsprep-";
+  ss << "prep-";
 #endif
   ss << CLASP_VERSION;
   if (cst.notnilp())

@@ -768,7 +768,7 @@
     (configuration (name (eql :ninja)) output-stream (target (eql :analyze))
      (source c-source)
      &aux (output (make-source-output source :type "sa"))
-          (database (make-source (format nil "preciseprep~:[~;-d~]/compile_commands.json"
+          (database (make-source (format nil "boehm~:[~;-d~]/compile_commands.json"
                                          *variant-debug*)
                                  :build)))
   (declare (ignore configuration name target))
@@ -777,7 +777,7 @@
                        :clasp (make-source "iclasp" :variant)
                        :inputs (list source)
                        :implicit-inputs (list (build-name "cclasp")
-                                              (build-name "generated" :prep t :gc :mps)
+                                              (build-name "generated" :gc :boehm)
                                               database
                                               (make-source "analyzer.stub" :variant-lib))                                    
                        :database database
@@ -797,7 +797,7 @@
                        :clasp (make-source "iclasp" :variant)
                        :inputs outputs
                        :implicit-inputs (list (build-name "cclasp")
-                                              (build-name "generated" :prep t :gc :mps)
+                                              (build-name "generated" :gc :boehm)
                                               (make-source "analyzer.stub" :variant-lib))                                    
                        :sif sif
                        :outputs (list (build-name "analyze")))

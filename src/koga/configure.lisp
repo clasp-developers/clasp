@@ -720,8 +720,8 @@ is not compatible with snapshots.")
                              (make-instance 'variant :gc :boehm :precise t)
                              (make-instance 'variant :gc :boehm :debug t)
                              (make-instance 'variant :gc :boehm :precise t :debug t)
-                             (make-instance 'variant :gc :mps :prep t)
-                             (make-instance 'variant :gc :mps :debug t :prep t))
+                             (make-instance 'variant :gc :boehm :prep t)
+                             (make-instance 'variant :gc :boehm :debug t :prep t))
              :type list
              :documentation "A list of the variants")
    (scripts :accessor scripts
@@ -882,7 +882,7 @@ the function to the overall configuration."
   (:documentation "Configure a specific unit"))
 
 (defun variant-name (variant)
-  "Return the variant name, i.e. boehm, boehmprecise, preciseprep, etc"
+  "Return the variant name, i.e. boehm, boehmprecise, etc"
   (format nil "~:[~(~a~)~:[~;precise~]~;preciseprep~]"
           (variant-prep variant)
           (variant-gc variant)
