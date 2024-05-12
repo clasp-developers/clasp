@@ -2,7 +2,7 @@
 
 ;; This method creates a JSON Compilation Database that is compatible with
 ;; https://clang.llvm.org/docs/JSONCompilationDatabase.html
-;; This file is used by preciseprep to create an AST and sif file to enable
+;; This file is used by boehm to create an AST and sif file to enable
 ;; the precise variants.
 (defmethod print-variant-target-sources
     (configuration (name (eql :compile-commands)) output-stream (target (eql :iclasp)) sources

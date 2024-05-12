@@ -21,8 +21,7 @@ OPTIONS:")
 TARGETS:
 If no target is given to ninja then the default is cclasp-boehmprecise.
 
-  analyze: Run the static analyzer on the boehm variant. Builds preciseprep as
-    needed.
+  analyze: Run the static analyzer on the boehm variant.
 
   test: Run the regression tests on the boehmprecise variant.
 
@@ -44,7 +43,6 @@ If no target is given to ninja then the default is cclasp-boehmprecise.
     Unless you are developing clasp the \"c\" stage is generally what you want.
     The -d suffix will enable debug mode.
 
-  analyze-boehm[-d]: Run the static analyzer on the specified variant. Builds
-    preciseprep as needed.
+  analyze-boehm[-d]: Run the static analyzer on the specified variant
 
   test-boehm[precise][-d]: Run the regression tests on the specified variant."))

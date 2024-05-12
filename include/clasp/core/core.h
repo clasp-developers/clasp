@@ -46,11 +46,11 @@ THE SOFTWARE.
 // Checkif we are running the static analyzer
 // Modify the preprocessor settings for the static analyzer
 // Turn on USE_MPS and turn off USE_BOEHM
-#ifdef RUNNING_PRECISEPREP
-#undef USE_BOEHM
-#undef USE_MMTK
-#define USE_MPS
-#endif
+//#ifdef RUNNING_PRECISEPREP
+//#undef USE_BOEHM
+//#undef USE_MMTK
+//#define USE_MPS
+//#endif
 
 /*! Old way of doing #= and ## used alists which are slow
   Switch to hash-tables to speed things up */
