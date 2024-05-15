@@ -17,8 +17,25 @@
 (defun make-dibuilder (module)
   (llvm-sys:make-dibuilder module))
 
+;;; Translate a logical pathname into a physical pathname to put into
+;;; the DWARF info. Usually this is just translate-logical-pathname.
+;;; But during build, our SYS host will point to the build directory,
+;;; whereas we might want debug info to point to the install directory.
+;;; For that, we can use (SETF DEBUG-PATHNAME-TRANSLATION) to set up
+;;; our own mapping, instead of just using TRANSLATE-LOGICAL-PATHNAME.
+;;; See PREPARE-METADATA in clasp-builder.lisp.
+;;; We do this instead of having a single parameter like
+;;; "*source-debug-physical-pathname*" to COMPILE-FILE as we may need
+;;; multiple source files for a given input file due to inlining.
+(defvar *debug-pathname-translations* (make-hash-table :test #'equal))
+(defun debug-pathname-translation (pathname)
+  (or (gethash pathname *debug-pathname-translations*)
+      (translate-logical-pathname pathname)))
+(defun (setf debug-pathname-translation) (physical pathname)
+  (setf (gethash pathname *debug-pathname-translations*) physical))
+
 (defun make-difile (pathname)
-  (let* ((physical (translate-logical-pathname pathname))
+  (let* ((physical (debug-pathname-translation pathname))
          (source (if (core:logical-pathname-p pathname)
                      (format nil ";; LOGICAL-PATHNAME=~a~%"
                              (namestring pathname))
