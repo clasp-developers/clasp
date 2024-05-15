@@ -183,8 +183,9 @@
 ;;; Given a source-pos-info, return a pathname, lineno, and column
 ;;; as values. FIXME: This integer file handle thing is really silly.
 (defun spi-info (spi)
-  (multiple-value-bind (handle lineno column)
+  (multiple-value-bind (handle filepos lineno column)
       (core:source-pos-info-unpack spi)
+    (declare (ignore filepos))
     (values (core:file-scope-pathname (core:file-scope handle))
             lineno column)))
 
