@@ -131,7 +131,7 @@
                               &key scope (alignment 64))
   ;; These types are used by the runtime rather than being defined
   ;; anywhere, so the file spec is a little dumb.
-  (let ((file (make-difile #p"-implicit-")) (lineno 0))
+  (let ((file (ensure-difile #p"-implicit-")) (lineno 0))
     (llvm-sys:create-struct-type
      dibuilder scope name file lineno
      ;; WARNING: This may not work in general,
