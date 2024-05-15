@@ -17,11 +17,19 @@
 (defun make-dibuilder (module)
   (llvm-sys:make-dibuilder module))
 
-(defun make-difile (pathname &key (source ";;"))
-  (let ((filename (file-namestring pathname))
-        (directory
-          (namestring
-           (make-pathname :name nil :type nil :defaults pathname))))
+(defun make-difile (pathname)
+  (let* ((physical (translate-logical-pathname pathname))
+         (source (if (core:logical-pathname-p pathname)
+                     (format nil ";; LOGICAL-PATHNAME=~a~%"
+                             (namestring pathname))
+                     ;; LLVM expects that either all locations have
+                     ;; a SOURCE or none of them do, so we always
+                     ;; put in something.
+                     ";;"))
+         (filename (file-namestring physical))
+         (directory
+           (namestring
+            (make-pathname :name nil :type nil :defaults physical))))
     (llvm-sys:dibuilder/create-file *dibuilder* filename directory
                                     nil source)))
 
@@ -30,10 +38,10 @@
 ;;; pretty important.
 (defvar *difile-cache*)
 
-(defun ensure-difile (pathname &key (source ";;"))
+(defun ensure-difile (pathname)
   (or (gethash pathname *difile-cache*)
       (setf (gethash pathname *difile-cache*)
-            (make-difile pathname :source source))))
+            (make-difile pathname))))
 
 (defun add-module-di-flags (module)
   ;; add the flag that defines the Dwarf Version
@@ -61,7 +69,7 @@
 ;;; also bind *dbg-current-scope* to a new DIFile.
 ;;; Afterwords finalize the DIBuilder, and add debug flags to the module.
 (defmacro with-debuginfo ((llvm-ir-module
-                           &key (file nil filep) (source ";;"))
+                           &key (path nil pathp))
                           &body body)
   (let ((gbody (gensym "BODY"))
         (gmodule (gensym "MODULE")))
@@ -72,9 +80,9 @@
                   (*dibuilder* (make-dibuilder ,gmodule))
                   (*difile-cache* (make-hash-table :test #'equal)))
              (unwind-protect
-                  ,(if filep
+                  ,(if pathp
                        `(let ((*dbg-current-scope*
-                                (ensure-difile ,file :source ,source)))
+                                (ensure-difile ,path)))
                           (install-compile-unit *dibuilder*
                                                 *dbg-current-scope*)
                           (,gbody))
@@ -123,7 +131,7 @@
                               &key scope (alignment 64))
   ;; These types are used by the runtime rather than being defined
   ;; anywhere, so the file spec is a little dumb.
-  (let ((file (make-difile "-implicit-")) (lineno 0))
+  (let ((file (make-difile #p"-implicit-")) (lineno 0))
     (llvm-sys:create-struct-type
      dibuilder scope name file lineno
      ;; WARNING: This may not work in general,

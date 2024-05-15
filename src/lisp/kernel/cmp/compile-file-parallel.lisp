@@ -153,7 +153,7 @@
         (core:*current-source-pos-info* (ast-job-source-pos-info job)))
     (with-module (:module module)
       (with-make-new-run-all (run-all-function (format nil "module~a" (ast-job-form-index job)))
-        (clasp-cleavir::with-debuginfo (module :file (namestring cmp::*compile-file-source-debug-pathname*))
+        (clasp-cleavir::with-debuginfo (module :path cmp::*compile-file-source-debug-pathname*)
           (with-literal-table (:id (ast-job-form-index job))
             (core:with-memory-ramp (:pattern 'gctools:ramp)
               (literal:arrange-thunk-as-top-level

@@ -1871,14 +1871,13 @@ COMPILE-FILE will use the default *clasp-env*."
         (pathname
           (let ((origin (origin-source (bir:origin bir))))
             (if origin
-                (namestring
-                 (core:file-scope-pathname
-                  (core:file-scope
-                   (core:source-pos-info-file-handle origin))))
-                "repl-code"))))
+                (core:file-scope-pathname
+                 (core:file-scope
+                  (core:source-pos-info-file-handle origin)))
+                #p"repl-code"))))
     (cmp::with-module (:module module)
       (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
-          (with-debuginfo (module :file pathname)
+          (with-debuginfo (module :path pathname)
             (multiple-value-prog1
                 (literal:with-rtv
                     (translate bir :linkage linkage :abi abi))
@@ -1952,7 +1951,7 @@ COMPILE-FILE will use the default *clasp-env*."
         (eclector.reader:*client* cmp:*cst-client*)
         (cst-to-ast:*compiler* 'cl:compile-file))
     (with-debuginfo (cmp:*the-module*
-                     :file (namestring cmp::*compile-file-source-debug-pathname*))
+                     :path cmp::*compile-file-source-debug-pathname*)
       (loop
         ;; Required to update the source pos info. FIXME!?
         (peek-char t source-sin nil)
