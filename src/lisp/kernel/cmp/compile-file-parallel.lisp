@@ -326,7 +326,6 @@ multithreaded performance that we should explore."
                                    output-type
                                    output-path
                                    environment
-                                   (optimize t)
                                    (optimize-level *optimization-level*)
                                    ast-only)
   "* Arguments
@@ -380,8 +379,7 @@ Compile a lisp source file into an LLVM module."
      (error "Add support for output-type: ~a" output-type))))
 
 (defun compile-stream/parallel (input-stream output-path
-                                &key (optimize t)
-                                     (optimize-level *optimization-level*)
+                                &key (optimize-level *optimization-level*)
                                      (output-type *default-output-type*)
                                      environment
                                      ;; Use as little llvm as possible for timing
