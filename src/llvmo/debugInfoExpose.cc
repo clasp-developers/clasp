@@ -333,13 +333,42 @@ CL_LAMBDA(dibuilder scope name argno file lineno type always-preserve-p flags an
 CL_LISPIFY_NAME(createParameterVariable);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createParameterVariable);
 
-// We don't expose the instruction version since we don't really need it.
+// We want to use these instead of manually inserting an intrinsic
+// call so that when LLVM transitions to debug info records we
+// don't have to do anything.
+// (Despite the name, insertDbgValueIntrinsic can insert the new
+//  records rather than an intrinsic.)
+// We don't expose the insert-before-instruction versions as we
+// do not need them.
+// FIXME: Function instead of a method because we don't really
+// care about the DbgInstPtr return value and exposing it would
+// be rather complex.
 CL_LAMBDA(dibuilder val varinfo expr dilocation basic-block);
-CL_LISPIFY_NAME(insertDbgValueIntrinsic);
-CL_EXTERN_DEFMETHOD(DIBuilder_O, (llvm::Instruction * (llvm::DIBuilder::*)(llvm::Value * Val, llvm::DILocalVariable* VarInfo,
-                                                                           llvm::DIExpression* Expr, const llvm::DILocation* DL,
-                                                                           llvm::BasicBlock* InsertAtEnd)) &
-                                     llvm::DIBuilder::insertDbgValueIntrinsic);
+CL_LISPIFY_NAME(dibuilder/insertDbgValueIntrinsic);
+CL_DEFUN void llvm_sys__insert_dbg_value(llvm::DIBuilder& DIBuilder,
+                                         llvm::Value* V,
+                                         llvm::DILocalVariable* VarInfo,
+                                         llvm::DIExpression* Expr,
+                                         DILocation_sp DL,
+                                         llvm::BasicBlock* InsertAtEnd)
+{
+  // FIXME: why not just use from_object?
+  // This is cargo-culted from IRBuilderBase_O::SetCurrentDebugLocation
+  llvm::DILocation* real_diloc = DL->operator llvm::DILocation*();
+  DIBuilder.insertDbgValueIntrinsic(V, VarInfo, Expr, real_diloc, InsertAtEnd);
+}
+CL_LAMBDA(dibuilder val varinfo expr dilocation basic-block);
+CL_LISPIFY_NAME(dibuilder/insertDeclare);
+CL_DEFUN void llvm_sys__insert_declare(llvm::DIBuilder& DIBuilder,
+                                       llvm::Value* Storage,
+                                       llvm::DILocalVariable* VarInfo,
+                                       llvm::DIExpression* Expr,
+                                       DILocation_sp DL,
+                                       llvm::BasicBlock* InsertAtEnd)
+{
+  llvm::DILocation* real_diloc = DL->operator llvm::DILocation*();
+  DIBuilder.insertDeclare(Storage, VarInfo, Expr, real_diloc, InsertAtEnd);
+}
 
 CL_LAMBDA(dibuilder);
 CL_LISPIFY_NAME(finalize);

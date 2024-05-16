@@ -279,6 +279,36 @@
     (llvm-sys:get-dilocation (cmp:thread-local-llvm-context)
                              lineno column *dbg-current-scope*)))
 
+;;; Generate debug info for a variable binding.
+(defun di-bind-variable (name alloca spi vrtype)
+  (when spi
+    (multiple-value-bind (path line) (spi-info spi)
+      (let* ((type (vrtype->di vrtype))
+             (var
+               (llvm-sys:create-auto-variable
+                *dibuilder* *dbg-current-scope* name
+                (ensure-difile path) line type nil (di-zeroflags) 0))
+             (expr
+               (llvm-sys:create-expression-none *dibuilder*)))
+        (llvm-sys:dibuilder/insert-declare
+         *dibuilder* alloca var expr (get-dilocation spi)
+         (llvm-sys:get-insert-block cmp:*irbuilder*))))))
+
+;;; Generate debug info for an SSA variable binding.
+(defun di-bind-value (name value spi vrtype)
+  (when spi
+    (multiple-value-bind (path line) (spi-info spi)
+      (let* ((type (vrtype->di vrtype))
+             (var
+               (llvm-sys:create-auto-variable
+                *dibuilder* *dbg-current-scope* name
+                (ensure-difile path) line type nil (di-zeroflags) 0))
+             (expr
+               (llvm-sys:create-expression-none *dibuilder*)))
+        (llvm-sys:dibuilder/insert-dbg-value-intrinsic
+         *dibuilder* value var expr (get-dilocation spi)
+         (llvm-sys:get-insert-block cmp:*irbuilder*))))))
+
 ;;; if SPI is nil we unset the debug location.
 (defun set-instruction-source-position (spi)
   (when *generate-dwarf*

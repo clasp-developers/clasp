@@ -55,7 +55,8 @@
 ;;; a little bit more complete.
 (defun full-datum-name-as-string (datum)
   (let ((*package* (find-package "KEYWORD")))
-    (write-to-string datum :escape t :readably nil :pretty nil)))
+    (write-to-string (bir:name datum)
+                     :escape t :readably nil :pretty nil)))
 
 (defgeneric vrtype->llvm (vrtype))
 (defmethod vrtype->llvm ((vrtype (eql :object))) cmp:%t*%)
@@ -79,7 +80,6 @@
               ((:local :dynamic)
                ;; just an alloca
                (let* ((name (datum-name-as-string var))
-                      #+(or)
                       (fname (full-datum-name-as-string var))
                       (rtype (cc-bmir:rtype var)))
                  (if (null rtype)
@@ -91,12 +91,8 @@
                                      (first (cc-bmir:rtype var)))
                                     (t (error "BUG: Bad rtype ~a" rtype))))
                             (alloca (cmp:alloca (vrtype->llvm vrtype) 1 name))
-                            #+(or)
-                            (spi (origin-spi (bir:origin var))))
-                       ;; set up debug info
-                       ;; Disable for now - FIXME and get it working
-                       #+(or)(cmp:dbg-variable-alloca alloca fname spi)
-                       ;; return
+                            (spi (origin-spi (origin-source (bir:origin var)))))
+                       (di-bind-variable fname alloca spi vrtype)
                        alloca))))
               ((:indefinite)
                ;; make a cell
@@ -204,10 +200,11 @@
   (check-type variable bir:variable)
   (if (bir:immutablep variable)
       (prog1 (setf (gethash variable *datum-values*) value)
-        ;; FIXME - this doesn't work yet
-        #+(or)(cmp:dbg-variable-value
-               value (full-datum-name-as-string variable)
-               (origin-spi (bir:origin variable))))
+        (let ((rtype (cc-bmir:rtype variable)))
+          (unless (null rtype)
+            (di-bind-value (full-datum-name-as-string variable)
+                           value (origin-spi (origin-source (bir:origin variable)))
+                           (first rtype)))))
       (if (null (cc-bmir:rtype variable))
           value
           ;; NOTE: For typed loads in the future, use the rtype
