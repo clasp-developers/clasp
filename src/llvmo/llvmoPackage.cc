@@ -682,6 +682,25 @@ std::atomic<size_t> global_trampoline_counter;
 mp::Mutex* global_trampoline_mutex = NULL;
 #endif
 
+string escapeNameForLlvm(const string& inp) {
+  stringstream sout;
+  stringstream sin(inp);
+  char c;
+  while (1) {
+    sin.get(c);
+    if (!sin.good())
+      break;
+    switch (c) {
+    case '"':
+      sout << "_";
+      break;
+    default:
+      sout << c;
+    }
+  };
+  return sout.str();
+}
+
 CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
 #if !defined(DEFAULT_OUTPUT_TYPE_BYTECODE)
   return Values(Pointer_O::create((void*)bytecode_call), SimpleBaseString_O::make("bytecode_call"));
@@ -720,7 +739,7 @@ CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
     }
     name = name.substr(1, name.size() - 2); // Strip double quotes
   }
-  name = name + "_bct" + std::to_string(global_trampoline_counter++);
+  name = escapeNameForLlvm(name) + "_bct" + std::to_string(global_trampoline_counter++);
   LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
   std::string trampoline = core::searchAndReplaceString(global_trampoline, "wrapper:name", name);
   Module_sp module = llvm_sys__parseIRString(trampoline, context, "backtrace_trampoline");
