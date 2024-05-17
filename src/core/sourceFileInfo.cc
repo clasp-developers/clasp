@@ -123,8 +123,6 @@ CL_DEFUN Integer_sp core__source_pos_info_filepos(T_sp info) {
   SIMPLE_ERROR("Argument {} must be a source-pos-info object", _rep_(info));
 }
 
-uint clasp_sourcePosInfo_lineno(SourcePosInfo_sp info) { return info->_Lineno; }
-
 CL_LAMBDA(source-pos-info);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(sourcePosInfoLineno)dx");
@@ -133,7 +131,7 @@ CL_DEFUN Fixnum_sp core__source_pos_info_lineno(T_sp info) {
   if (info.nilp())
     return make_fixnum(0);
   if (gc::IsA<SourcePosInfo_sp>(info)) {
-    return Integer_O::create((gc::Fixnum)clasp_sourcePosInfo_lineno(gc::As_unsafe<SourcePosInfo_sp>(info)));
+    return Integer_O::create(info.as_unsafe<SourcePosInfo_O>()->_Lineno);
   }
   SIMPLE_ERROR("Argument {} must be a source-pos-info object", _rep_(info));
 }
@@ -148,7 +146,7 @@ CL_DEFUN Fixnum_sp core__source_pos_info_column(T_sp info) {
   if (info.nilp())
     return make_fixnum(0);
   if (gc::IsA<SourcePosInfo_sp>(info)) {
-    return make_fixnum(clasp_sourcePosInfo_column(gc::As_unsafe<SourcePosInfo_sp>(info)));
+    return Integer_O::create(info.as_unsafe<SourcePosInfo_O>()->_Column);
   }
   SIMPLE_ERROR("Argument {} must be a source-pos-info object", _rep_(info));
 }
@@ -156,43 +154,7 @@ CL_DEFUN Fixnum_sp core__source_pos_info_column(T_sp info) {
 
 namespace core {
 
-#define ARGS_af_lineno "(arg)"
-#define DECL_af_lineno ""
-#define DOCS_af_lineno "lineNumber"
-uint af_lineno(T_sp obj) {
-  if (obj.nilp()) {
-    return 0;
-  } else if (Cons_sp co = obj.asOrNull<Cons_O>()) {
-    IMPLEMENT_MEF(fmt::format("Handle cons {} for af_lineno", _rep_(co)));
-  } else if (cl__streamp(obj)) {
-    return stream_input_line_as_uint(obj);
-  } else if (Function_sp fo = obj.asOrNull<Function_O>()) {
-    return af_lineno(fo->sourcePosInfo());
-  } else if (SourcePosInfo_sp info = obj.asOrNull<SourcePosInfo_O>()) {
-    return info->_Lineno;
-  }
-  SIMPLE_ERROR("Implement lineNumber for {}", _rep_(obj));
-};
-
-#define ARGS_af_column "(arg)"
-#define DECL_af_column ""
-#define DOCS_af_column "column"
-uint af_column(T_sp obj) {
-  if (obj.nilp()) {
-    return 0;
-  } else if (gc::IsA<Cons_sp>(obj)) {
-    IMPLEMENT_MEF("Handle cons for af_column");
-  } else if (cl__streamp(obj)) {
-    return stream_input_column_as_uint(obj);
-  } else if (Function_sp fo = obj.asOrNull<Function_O>()) {
-    return af_column(fo->sourcePosInfo());
-  } else if (SourcePosInfo_sp info = obj.asOrNull<SourcePosInfo_O>()) {
-    return info->_Column;
-  }
-  SIMPLE_ERROR("Implement column for {}", _rep_(obj));
-};
-
-FileScope_O::FileScope_O() : Base(), _PermanentPathName(NULL), _PermanentFileName(NULL){};
+FileScope_O::FileScope_O() : Base(){};
 
 void FileScope_O::initialize() { this->Base::initialize(); }
 
@@ -247,24 +209,6 @@ string FileScope_O::namestring() const {
 string FileScope_O::parentPathName() const {
   String_sp s = gc::As<String_sp>(cl__directory_namestring(this->_pathname));
   return s->get_std_string();
-}
-
-const char* FileScope_O::permanentPathName() {
-  if (this->_PermanentPathName == NULL) {
-    string fn = this->namestring();
-    this->_PermanentPathName = (char*)malloc(fn.size() + 1);
-    ::strcpy(this->_PermanentPathName, fn.c_str());
-  }
-  return this->_PermanentPathName;
-}
-
-const char* FileScope_O::permanentFileName() {
-  if (this->_PermanentFileName == NULL) {
-    string fn = this->fileName();
-    this->_PermanentFileName = (char*)malloc(fn.size() + 1);
-    ::strcpy(this->_PermanentFileName, fn.c_str());
-  }
-  return this->_PermanentFileName;
 }
 
 CL_DOCSTRING(
@@ -426,19 +370,5 @@ string SourcePosInfo_O::__repr__() const {
   ss << ">";
   return ss.str();
 }
-
-#if 0
-bool SourcePosInfo_O::equalp(T_sp other) const {
-  if (!other.generalp()) return false;
-  if (this == &*other) return true;
-  if (!gc::IsA<SourcePosInfo_sp>(other)) return false;
-  SourcePosInfo_sp spi_other = gc::As_unsafe<SourcePosInfo_sp>(other);
-  if (this->_FileId != spi_other->_FileId) return false;
-  if (this->_Filepos != spi_other->_Filepos) return false;
-  if (this->_Lineno != spi_other->_Lineno) return false;
-  if (this->_Column != spi_other->_Column) return false;
-  return true;
-}
-#endif
 
 }; // namespace core

@@ -58,11 +58,8 @@ public: // ctor/dtor for classes with shared virtual base
   explicit FileScope_O();
   virtual ~FileScope_O(){};
   void initialize() override;
-  GCPRIVATE : // instance variables here
-              Pathname_sp _pathname;
-  /*! Allocated buffer that stores the file name until the program exits */
-  char* _PermanentPathName;
-  char* _PermanentFileName;
+GCPRIVATE : // instance variables here
+  Pathname_sp _pathname;
   int _FileHandle;
 
 public: // Functions here
@@ -72,8 +69,6 @@ public: // Functions here
   string namestring() const;
   CL_LISPIFY_NAME("FileScope-pathname");
   CL_DEFMETHOD Pathname_sp pathname() const { return this->_pathname; };
-  const char* permanentPathName();
-  const char* permanentFileName();
   string __repr__() const override;
 }; // FileScope class
 
@@ -133,32 +128,6 @@ SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool filenamep,
                                          bool linenop, size_t column, bool columnp, T_sp function_scope = nil<T_O>(),
                                          bool function_scope_p = false, T_sp inlined_at = nil<T_O>(), bool inlined_at_p = false,
                                          T_sp defaults = nil<T_O>(), bool defaults_p = false);
-
-inline core::Fixnum safe_fileId(T_sp spi) {
-  if (spi.nilp())
-    return 0;
-  return gc::As<SourcePosInfo_sp>(spi)->_FileId;
-}
-
-inline core::Fixnum safe_filepos(T_sp spi) {
-  if (spi.nilp())
-    return 0;
-  return gc::As<SourcePosInfo_sp>(spi)->_FileId;
-}
-
-inline core::Fixnum safe_lineno(T_sp spi) {
-  if (spi.nilp())
-    return 0;
-  return gc::As<SourcePosInfo_sp>(spi)->_Lineno;
-}
-
-inline core::Fixnum safe_column(T_sp spi) {
-  if (spi.nilp())
-    return 0;
-  return gc::As<SourcePosInfo_sp>(spi)->_Column;
-}
-// Pass all arguments to a FunctionClosure
-#define SOURCE_POS_INFO_FIELDS(spi) safe_fileId(spi), safe_filepos(spi), safe_lineno(spi), safe_column(spi)
 }; // namespace core
 template <> struct gctools::GCInfo<core::SourcePosInfo_O> {
   static bool constexpr NeedsInitialization = false;

@@ -9746,12 +9746,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Pathname_O>"
              :offset-base-ctype "core::FileScope_O" :layout-offset-field-names ("_pathname")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileScope_O"
-             :layout-offset-field-names ("_PermanentPathName")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::FileScope_O"
-             :layout-offset-field-names ("_PermanentFileName")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::FileScope_O" :layout-offset-field-names ("_FileHandle")}
 {class-kind :stamp-name "STAMPWTAG_core__Path_O" :stamp-key "core::Path_O"
