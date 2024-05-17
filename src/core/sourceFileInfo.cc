@@ -75,8 +75,8 @@ CL_DEFUN T_mv core__file_scope(T_sp sourceFile) {
     T_sp so = sourceFile;
     T_sp sfi = clasp_input_source_file_info(so);
     return core__file_scope(sfi);
-  } else if (FileScope_sp sfi = sourceFile.asOrNull<FileScope_O>()) {
-    return _lisp->getOrRegisterFileScope(sfi->namestring());
+  } else if (sourceFile.isA<FileScope_O>()) {
+    return sourceFile;
   } else if (SourcePosInfo_sp spi = sourceFile.asOrNull<SourcePosInfo_O>()) {
     return core__file_scope(make_fixnum(spi->_FileId));
   }
@@ -200,21 +200,6 @@ string FileScope_O::__repr__() const {
   ss << " :file-handle " << this->_FileHandle;
   ss << " >";
   return ss.str();
-}
-
-string FileScope_O::fileName() const {
-  String_sp s = gc::As<String_sp>(cl__file_namestring(this->_pathname));
-  return s->get_std_string();
-}
-
-string FileScope_O::namestring() const {
-  String_sp s = gc::As<String_sp>(cl__namestring(this->_pathname));
-  return s->get_std_string();
-}
-
-string FileScope_O::parentPathName() const {
-  String_sp s = gc::As<String_sp>(cl__directory_namestring(this->_pathname));
-  return s->get_std_string();
 }
 
 CL_DOCSTRING(

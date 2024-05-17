@@ -26,8 +26,6 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#define USE_WEAK_HASH_TABLE_FOR_SOURCE_POS_INFO 1
-
 #include <clasp/core/object.h>
 #include <clasp/core/pathname.fwd.h>
 #include <clasp/core/fileSystem.fwd.h>
@@ -64,9 +62,6 @@ GCPRIVATE : // instance variables here
 
 public: // Functions here
   int fileHandle() const { return this->_FileHandle; };
-  string fileName() const;
-  string parentPathName() const;
-  string namestring() const;
   CL_LISPIFY_NAME("FileScope-pathname");
   CL_DEFMETHOD Pathname_sp pathname() const { return this->_pathname; };
   string __repr__() const override;
@@ -85,10 +80,10 @@ public:
 public: // ctor/dtor for classes with shared virtual base
   explicit SourcePosInfo_O()
       : _FileId(UNDEF_UINT), _Filepos(0), _Lineno(0), _Column(0), _FunctionScope(nil<T_O>()),
-        _InlinedAt(nil<T_O>()){}; //, _Filepos(0) {};
+        _InlinedAt(nil<T_O>()){};
 public:                           // instance variables here
   SourcePosInfo_O(uint spf, size_t filepos, uint spln, uint spc, T_sp function_scope, T_sp inlined_at)
-      : _FileId(spf), _Filepos(filepos), _Lineno(spln), _Column(spc), //, _Expander(expander) {}
+      : _FileId(spf), _Filepos(filepos), _Lineno(spln), _Column(spc),
         _FunctionScope(function_scope), _InlinedAt(inlined_at){};
 
 public:
@@ -104,7 +99,6 @@ public:
   int column() const { return this->_Column; };
   T_sp function_scope() const { return this->_FunctionScope; };
   T_sp inlined_at() const { return this->_InlinedAt; };
-  //  bool equalp(T_sp obj) const;
 public:
   uint _FileId;
   size_t _Filepos;
@@ -112,12 +106,8 @@ public:
   uint _Column;
   T_sp _FunctionScope;
   T_sp _InlinedAt;
-  //	Function_sp 	_Expander;
   CL_LISPIFY_NAME(SourcePosInfo/pathname)
   CL_DEFMETHOD Pathname_sp pathname() const;
-  CL_DEFMETHOD size_t source_file_pos_filepos() const { return this->_Filepos; }
-  CL_DEFMETHOD size_t source_file_pos_lineno() const { return this->_Lineno; }
-  CL_DEFMETHOD size_t source_file_pos_column() const { return this->_Column; }
   SourcePosInfo_sp source_pos_info_copy() const;
   T_sp setf_source_pos_info_inlined_at(T_sp inlinedAt);
   T_sp source_pos_info_inlined_at() const;
