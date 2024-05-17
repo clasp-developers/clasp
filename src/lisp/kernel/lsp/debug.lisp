@@ -49,9 +49,7 @@
 
 ;;; these should maybe be deprecated, since they just go through source
 ;;; position info accessors.
-(defun code-source-line-pathname (spi)
-  (core:file-scope-pathname
-   (core:file-scope (core:source-pos-info-file-handle spi))))
+(defun code-source-line-pathname (spi) (core:source-pos-info/pathname spi))
 (defun code-source-line-line-number (spi) (core:source-pos-info-lineno spi))
 (defun code-source-line-column (spi) (core:source-pos-info-column spi))
 

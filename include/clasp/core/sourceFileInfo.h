@@ -113,6 +113,8 @@ public:
   T_sp _FunctionScope;
   T_sp _InlinedAt;
   //	Function_sp 	_Expander;
+  CL_LISPIFY_NAME(SourcePosInfo/pathname)
+  CL_DEFMETHOD Pathname_sp pathname() const;
   CL_DEFMETHOD size_t source_file_pos_filepos() const { return this->_Filepos; }
   CL_DEFMETHOD size_t source_file_pos_lineno() const { return this->_Lineno; }
   CL_DEFMETHOD size_t source_file_pos_column() const { return this->_Column; }

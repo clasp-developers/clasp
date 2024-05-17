@@ -1317,9 +1317,7 @@
        (make-instance 'spi-attr
          :function inst
          :pathname (ensure-constant
-                    (core:file-scope-pathname
-                     (core:file-scope
-                      (core:source-pos-info-file-handle cspi))))
+                    (core:source-pos-info/pathname cspi))
          :lineno (core:source-pos-info-lineno cspi)
          :column (core:source-pos-info-column cspi)
          :filepos (core:source-pos-info-filepos cspi))))
@@ -1443,9 +1441,7 @@
       :start (core:bytecode-debug-info/start item)
       :end (core:bytecode-debug-info/end item)
       :pathname (ensure-constant
-                 (core:file-scope-pathname
-                  (core:file-scope
-                   (core:source-pos-info-file-handle spi))))
+                 (core:source-pos-info/pathname spi))
       :lineno (core:source-pos-info-lineno spi)
       :column (core:source-pos-info-column spi)
       :filepos (core:source-pos-info-filepos spi))))

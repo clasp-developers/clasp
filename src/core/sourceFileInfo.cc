@@ -45,6 +45,14 @@ THE SOFTWARE.
 
 namespace core {
 
+static FileScope_sp fscope_from_handle(unsigned int handle) {
+  WITH_READ_LOCK(globals_->_SourceFilesMutex);
+  if (handle >= _lisp->_Roots._SourceFiles.size()) {
+    handle = 0;
+  }
+  return _lisp->_Roots._SourceFiles[handle];
+}
+
 CL_LAMBDA(name);
 CL_DECLARE();
 CL_DOCSTRING(
@@ -62,13 +70,7 @@ CL_DEFUN T_mv core__file_scope(T_sp sourceFile) {
     }
     return _lisp->getOrRegisterFileScope(gc::As<String_sp>(ns)->get_std_string());
   } else if (sourceFile.fixnump()) {
-    WITH_READ_LOCK(globals_->_SourceFilesMutex);
-    Fixnum_sp fnSourceFile(gc::As<Fixnum_sp>(sourceFile));
-    size_t idx = unbox_fixnum(fnSourceFile);
-    if (idx >= _lisp->_Roots._SourceFiles.size()) {
-      idx = 0;
-    }
-    return Values(_lisp->_Roots._SourceFiles[idx], fnSourceFile);
+    return Values(fscope_from_handle(sourceFile.unsafe_fixnum()), sourceFile);
   } else if (cl__streamp(sourceFile)) {
     T_sp so = sourceFile;
     T_sp sfi = clasp_input_source_file_info(so);
@@ -83,6 +85,10 @@ CL_DEFUN T_mv core__file_scope(T_sp sourceFile) {
 }; // namespace core
 
 namespace core {
+
+Pathname_sp SourcePosInfo_O::pathname() const {
+  return fscope_from_handle(this->_FileId)->pathname();
+}
 
 uint clasp_sourcePosInfo_fileHandle(SourcePosInfo_sp info) { return info->_FileId; }
 

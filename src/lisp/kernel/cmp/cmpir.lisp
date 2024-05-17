@@ -191,9 +191,7 @@ local-function - the lcl function that all of the xep functions call."
                              spi)
   (let ((lineno 0) (column 0) (filepos 0) (source-pathname "-unknown-file-"))
     (when spi
-      (setf source-pathname (core:file-scope-pathname
-                             (core:file-scope
-                              (core:source-pos-info-file-handle spi)))
+      (setf source-pathname (core:source-pos-info/pathname spi)
             lineno (core:source-pos-info-lineno spi)
             ;; FIXME: Why 1+?
             column (1+ (core:source-pos-info-column spi))

@@ -320,10 +320,7 @@
   (if bir
       (let ((origin (bir:origin bir)))
         (if origin
-            (namestring
-             (core:file-scope-pathname
-              (core:file-scope
-               (core:source-pos-info-file-handle origin))))
+            (namestring (core:source-pos-info/pathname origin))
             "repl-code"))
       "repl-code"))
 
@@ -439,9 +436,7 @@
          :function-name (cc::get-or-create-lambda-name irfun)
          :lambda-list (bir:original-lambda-list irfun)
          :docstring (bir:docstring irfun)
-         :source-pathname (core:file-scope-pathname
-                           (core:file-scope
-                            (core:source-pos-info-file-handle spi)))
+         :source-pathname (core:source-pos-info/pathname spi)
          :lineno (core:source-pos-info-lineno spi)
          ;; Why 1+?
          :column (1+ (core:source-pos-info-column spi))

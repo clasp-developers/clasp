@@ -216,9 +216,9 @@
 
 (defun create-di-main-function (ir name &key (linkage-name name))
   (let* ((spi (origin-spi (origin-source (bir:origin ir))))
-         (path (core:file-scope-pathname
-                (core:file-scope
-                 (core:source-pos-info-file-handle spi))))
+         (path (if spi
+                   (core:source-pos-info/pathname spi)
+                   #p"-unknown-file-"))
          (difile (ensure-difile path))
          (lineno (core:source-pos-info-lineno spi)))
     (llvm-sys:dibuilder/create-function
@@ -250,9 +250,9 @@
 
 (defun create-di-xep (ir name arity &key (linkage-name name))
   (let* ((spi (origin-spi (origin-source (bir:origin ir))))
-         (path (core:file-scope-pathname
-                (core:file-scope
-                 (core:source-pos-info-file-handle spi))))
+         (path (if spi
+                   (core:source-pos-info/pathname spi)
+                   #p"-unknown-file-"))
          (difile (ensure-difile path))
          (lineno (core:source-pos-info-lineno spi)))
     (llvm-sys:dibuilder/create-function

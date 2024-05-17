@@ -1871,9 +1871,7 @@ COMPILE-FILE will use the default *clasp-env*."
         (pathname
           (let ((origin (origin-source (bir:origin bir))))
             (if origin
-                (core:file-scope-pathname
-                 (core:file-scope
-                  (core:source-pos-info-file-handle origin)))
+                (core:source-pos-info/pathname origin)
                 #p"repl-code"))))
     (cmp::with-module (:module module)
       (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
