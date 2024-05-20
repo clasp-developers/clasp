@@ -1,12 +1,13 @@
-(asdf:defsystem #:koga
+(asdf:defsystem "koga"
   :description "A lisp based metabuilder for Clasp."
-  :depends-on (#:alexandria
-               #:asdf-groveler
-               #:clasp-scraper
-               #:closer-mop
-               #:ninja
-               #:shasht
-               #:trivial-features)
+  :depends-on ("alexandria"
+               "asdf-groveler"
+               "clasp-scraper"
+               "closer-mop"
+               "ninja"
+               "shasht"
+               "trivial-features")
+  :serial t
   :components ((:file "packages")
                (:file "utilities")
                (:file "header")
@@ -19,4 +20,5 @@
                (:file "scripts")
                (:file "config-header")
                (:file "ninja")
-               (:file "compile-commands")))
+               (:file "compile-commands")
+               (:file "archive")))

@@ -80,11 +80,11 @@
                                  :required t))))
 
 (defmethod configure-unit (configuration (unit (eql :dis)))
-  "Find the llvm0dis binary."
+  "Find the llvm-dis binary."
   (with-accessors ((dis dis)
                    (llvm-bindir llvm-bindir))
       configuration
-    (message :emph "Configuring ar")
+    (message :emph "Configuring llvm-dis")
     (setf dis (configure-program "dis"
                                  (or dis (merge-pathnames #P"llvm-dis" llvm-bindir))
                                  :required t))))
@@ -303,7 +303,7 @@ has not been set."
 (defmethod configure-unit (configuration (unit (eql :reproducible)))
   "Configure for a reproducible build."
   (when (reproducible-build configuration)
-    (message :emph "Configuring reducible build")
+    (message :emph "Configuring reproducible build")
     (append-cflags configuration
                    (format nil "-ffile-prefix-map=..=~a"
                            (normalize-directory (root :install-share))))

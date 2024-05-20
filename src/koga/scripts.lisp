@@ -81,7 +81,10 @@
 
 (defmethod print-prologue (configuration (name (eql :load-clasp)) output-stream)
   (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
-(setq core::*number-of-jobs* ~a)
+(setq core::*number-of-jobs*
+      (if (ext:getenv \"CLASP_BUILD_JOBS\")
+          (parse-integer (ext:getenv \"CLASP_BUILD_JOBS\"))
+          ~a))
 (defvar *system* (core:load-clasp :reproducible ~s
                                   :name (elt core:*command-line-arguments* 0)
                                   :position (parse-integer (elt core:*command-line-arguments* 1))
@@ -92,7 +95,10 @@
 
 (defmethod print-prologue (configuration (name (eql :snapshot-clasp)) output-stream)
   (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
-(setq core::*number-of-jobs* ~a)
+(setq core::*number-of-jobs*
+      (if (ext:getenv \"CLASP_BUILD_JOBS\")
+          (parse-integer (ext:getenv \"CLASP_BUILD_JOBS\"))
+          ~a))
 (defvar *system* (core:load-clasp :reproducible ~s
                                   :name (elt core:*command-line-arguments* 1)
                                   :position (parse-integer (elt core:*command-line-arguments* 2))
@@ -103,7 +109,10 @@
 (defmethod print-prologue (configuration (name (eql :compile-clasp)) output-stream)
   (format output-stream "(setq cmp:*default-output-type* ~s)
 (load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
-(setq core::*number-of-jobs* ~a)
+(setq core::*number-of-jobs*
+      (if (ext:getenv \"CLASP_BUILD_JOBS\")
+          (parse-integer (ext:getenv \"CLASP_BUILD_JOBS\"))
+          ~a))
 (core:load-and-compile-clasp :reproducible ~s :system-sort ~s
                              :name (elt core:*command-line-arguments* 0)
                              :position (parse-integer (elt core:*command-line-arguments* 1))

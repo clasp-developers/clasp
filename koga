@@ -135,4 +135,8 @@
                        (:tree ,(uiop:getcwd))
                        :inherit-configuration))
   (asdf:load-system :koga)
-  (apply #'uiop:symbol-call "KOGA" (if help "HELP" "SETUP") initargs))
+  (apply #'uiop:symbol-call "KOGA"
+                            (cond (help "HELP")
+                                  ((getf initargs :archive) "ARCHIVE")
+                                  (t "SETUP"))
+                            initargs))
