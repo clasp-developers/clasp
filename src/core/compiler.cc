@@ -260,7 +260,7 @@ void transfer_StartupInfo_to_my_thread() {
 
 void register_startup_function(const StartUp& one_startup) {
 #ifdef DEBUG_STARTUP
-  printf("%s:%d In register_startup_function type: %d at %p\n", __FILE__, __LINE__, startup._Type, startup._Function);
+  printf("%s:%d In register_startup_function type: %d at %p\n", __FILE__, __LINE__, one_startup._Type, one_startup._Function);
 #endif
   StartupInfo* startup = NULL;
   // if my_thread is defined - then use its startup info
@@ -289,7 +289,7 @@ void register_startup_function(const StartUp& one_startup) {
 /*! Return the number of startup_functions that are waiting to be run*/
 size_t startup_functions_are_waiting() {
 #ifdef DEBUG_STARTUP
-  printf("%s:%d startup_functions_are_waiting returning %" PRu "\n", __FILE__, __LINE__, my_thread->_Startup._count);
+  fmt::print("{}:{} startup_functions_are_waiting returning {}\n", __FILE__, __LINE__, my_thread->_Startup._count);
 #endif
   return my_thread->_Startup._count;
 };
@@ -314,7 +314,7 @@ core::T_O* startup_functions_invoke(T_O* literals) {
 #ifdef DEBUG_STARTUP
     printf("%s:%d In startup_functions_invoke - there are %" PRsize_t " startup functions\n", __FILE__, __LINE__, startup_count);
     for (size_t i = 0; i < startup_count; ++i) {
-      Startup& startup = startup_functions[i];
+      StartUp& startup = startup_functions[i];
       printf("%s:%d     Startup fn[%" PRsize_t "] -> %p\n", __FILE__, __LINE__, startup._Position, startup._Function);
     }
     printf("%s:%d Starting to call the startup functions\n", __FILE__, __LINE__);
@@ -328,9 +328,6 @@ core::T_O* startup_functions_invoke(T_O* literals) {
                __FILE__, __LINE__, startup._Position);
       }
       previous = startup;
-#ifdef DEBUG_STARTUP
-      printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn);
-#endif
       switch (startup._Type) {
       case StartUp::T_O_function:
         result = ((T_OStartUp)startup._Function)(literals); // invoke the startup function

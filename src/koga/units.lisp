@@ -41,6 +41,7 @@
       (setf llvm-includedir
             (uiop:ensure-directory-pathname (run-program-capture (list llvm-config "--includedir")))))
     (append-cflags configuration (format nil "-I~a" (normalize-directory llvm-includedir)))
+    (append-cflags configuration "-Wno-vla-extension")
     (append-ldflags configuration (run-program-capture (list llvm-config "--ldflags")))
     (append-ldlibs configuration (run-program-capture (list llvm-config "--system-libs")))
     (append-ldlibs configuration (run-program-capture (list llvm-config "--libs")))
