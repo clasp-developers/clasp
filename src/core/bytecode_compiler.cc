@@ -2683,23 +2683,41 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
     compile_labels(oCar(rest), oCdr(rest), env, context);
   else if (head == cl::_sym_setq)
     compile_setq(rest, env, context);
-  else if (head == cl::_sym_if)
-    compile_if(oCar(rest), oCadr(rest), oCaddr(rest), env, context);
-  else if (head == cl::_sym_Function_O)
-    compile_function(oCar(rest), env, context);
-  else if (head == cl::_sym_tagbody)
+  else if (head == cl::_sym_if) {
+    if (oCdddr(rest).nilp())
+      compile_if(oCar(rest), oCadr(rest), oCaddr(rest), env, context);
+    else
+      SIMPLE_PROGRAM_ERROR("Too many parameters to ~s", cl::_sym_if);
+  } else if (head == cl::_sym_Function_O) {
+    if (oCdr(rest).nilp())
+      compile_function(oCar(rest), env, context);
+    else
+      SIMPLE_PROGRAM_ERROR("Too many parameters to ~s", cl::_sym_Function_O);
+} else if (head == cl::_sym_tagbody)
     compile_tagbody(rest, env, context);
-  else if (head == cl::_sym_go)
-    compile_go(oCar(rest), env, context);
-  else if (head == cl::_sym_block)
+  else if (head == cl::_sym_go) {
+    if (oCdr(rest).nilp())
+      compile_go(oCar(rest), env, context);
+    else
+      SIMPLE_PROGRAM_ERROR("Too many parameters to ~s", cl::_sym_go);
+  } else if (head == cl::_sym_block)
     compile_block(oCar(rest), oCdr(rest), env, context);
-  else if (head == cl::_sym_return_from)
-    compile_return_from(oCar(rest), oCadr(rest), env, context);
-  else if (head == cl::_sym_quote)
-    compile_literal(oCar(rest), env, context);
-  else if (head == cl::_sym_load_time_value)
-    compile_load_time_value(oCar(rest), oCadr(rest), env, context);
-  else if (head == cl::_sym_macrolet)
+  else if (head == cl::_sym_return_from) {
+    if (oCddr(rest).nilp())
+      compile_return_from(oCar(rest), oCadr(rest), env, context);
+    else
+      SIMPLE_PROGRAM_ERROR("Too many parameters to ~s", cl::_sym_return_from);
+  } else if (head == cl::_sym_quote) {
+    if (oCdr(rest).nilp())
+      compile_literal(oCar(rest), env, context);
+    else
+      SIMPLE_PROGRAM_ERROR("Too many parameters to ~s", cl::_sym_quote);
+  } else if (head == cl::_sym_load_time_value) {
+    if (oCdr(rest).nilp() || oCddr(rest).nilp())
+      compile_load_time_value(oCar(rest), oCadr(rest), env, context);
+    else
+      SIMPLE_PROGRAM_ERROR("Too many parameters to ~s", cl::_sym_load_time_value);
+  } else if (head == cl::_sym_macrolet)
     compile_macrolet(oCar(rest), oCdr(rest), env, context);
   else if (head == cl::_sym_symbol_macrolet)
     compile_symbol_macrolet(oCar(rest), oCdr(rest), env, context);
@@ -2711,10 +2729,13 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
     compile_locally(rest, env, context);
   else if (head == cl::_sym_eval_when)
     compile_eval_when(oCar(rest), oCdr(rest), env, context);
-  else if (head == cl::_sym_the)
-    compile_the(oCar(rest), oCadr(rest), env, context);
+  else if (head == cl::_sym_the) {
+    if (oCddr(rest).nilp())
+      compile_the(oCar(rest), oCadr(rest), env, context);
+    else
+      SIMPLE_PROGRAM_ERROR("Too many parameters to ~s", cl::_sym_the);
   // basic optimization
-  else if (head == cl::_sym_funcall
+  } else if (head == cl::_sym_funcall
            // Do a basic syntax check so that (funcall) fails properly.
            && rest.consp())
     compile_funcall(oCar(rest), oCdr(rest), env, context);
