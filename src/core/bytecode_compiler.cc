@@ -1361,13 +1361,18 @@ void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
 void compile_progn(List_sp forms, Lexenv_sp env, const Context ctxt) {
   if (forms.nilp())
     compile_literal(nil<T_O>(), env, ctxt);
-  else
-    for (auto cur : forms) {
-      if (oCdr(cur).notnilp()) // compile for effect
-        compile_form(oCar(cur), env, ctxt.sub_receiving(0));
-      else // compile for value
-        compile_form(oCar(cur), env, ctxt);
+  else {
+    while (forms.consp()) {
+      T_sp form = oCar(forms);
+      if (oCdr(forms).nilp()) // compile for value
+        compile_form(oCar(forms), env, ctxt);
+      else // compile for effect
+        compile_form(oCar(forms), env, ctxt.sub_receiving(0));
+      forms = oCdr(forms);
     }
+    if (forms.notnilp()) // (progn ... . something), a syntax error
+      SIMPLE_PROGRAM_ERROR("Dotted list in PROGN", nil<T_O>());
+  }
 }
 
 void compile_locally(List_sp body, Lexenv_sp env, const Context ctxt) {
@@ -1519,6 +1524,33 @@ static List_sp decls_for_fun(T_sp funname, List_sp decls) {
   return result.cons();
 }
 
+// Given a LET variable binding, return the variable name and value form,
+// or signal a syntax error.
+static void extract_binding(T_sp binding, Symbol_sp& var, T_sp& valuef) {
+  if (binding.consp()) {
+    T_sp vart = oCar(binding);
+    T_sp valt = oCdr(binding);
+    if (vart.isA<Symbol_O>())
+      var = vart.as_unsafe<Symbol_O>();
+    else
+      SIMPLE_PROGRAM_ERROR("Variable name is not a symbol: ~s", vart);
+    if (valt.consp()) {
+      if (oCdr(valt).notnilp())
+        SIMPLE_PROGRAM_ERROR("Binding is not a symbol or proper list of length <= 2: ~s",
+                             binding);
+      valuef = oCar(valt);
+    } else if (valt.nilp()) {
+      valuef = nil<T_O>();
+    } else
+      SIMPLE_PROGRAM_ERROR("Binding is not a symbol or proper list of length <= 2: ~s",
+                           binding);
+  } else if (binding.isA<Symbol_O>()) {
+    var = gc::As<Symbol_sp>(binding);
+    valuef = nil<T_O>();
+  } else SIMPLE_PROGRAM_ERROR("Binding is not a symbol or proper list of length <=2: ~s",
+                              binding);
+}
+
 void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ctxt) {
   List_sp declares = nil<T_O>();
   gc::Nilable<String_sp> docstring;
@@ -1538,13 +1570,7 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
     T_sp binding = oCar(cur);
     Symbol_sp var;
     T_sp valf;
-    if (binding.consp()) {
-      var = gc::As<Symbol_sp>(oCar(binding));
-      valf = oCadr(binding);
-    } else {
-      var = gc::As<Symbol_sp>(binding);
-      valf = nil<T_O>();
-    }
+    extract_binding(binding, var, valf);
     compile_form(valf, env, ctxt.sub_receiving(1));
     if (special_binding_p(var, specials, env)) {
       ++special_binding_count;
@@ -1594,13 +1620,7 @@ void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Contex
     T_sp binding = oCar(cur);
     Symbol_sp var;
     T_sp valf;
-    if (binding.consp()) {
-      var = gc::As<Symbol_sp>(oCar(binding));
-      valf = oCadr(binding);
-    } else {
-      var = gc::As<Symbol_sp>(binding);
-      valf = nil<T_O>();
-    }
+    extract_binding(binding, var, valf);
     compile_form(valf, new_env, ctxt.sub_receiving(1));
     if (special_binding_p(var, specials, env)) {
       ++special_binding_count;
