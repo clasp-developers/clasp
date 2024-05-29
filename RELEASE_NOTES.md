@@ -5,10 +5,31 @@
 
 ## Changed
 * Exit with error code when unknown option is present on command line.
+* EVAL now uses bytecode, improving evaluation speed.
+* Bytecode is now simpler for functions with &rest parameters, as well
+  as functions that close over arguments.
 
 ## Fixed
 * Avoid inserting fill newlines after newline format directive in
   logical block format directive.
+* Don't buffer overrun when encoding UCS-4 streams.
+* The bytecode system can properly handle functions with more than
+  255 keyword parameters.
+* Bytecode FASLs can contain multidimensional arrays specialized to
+  sub-byte integer types.
+* Avoid a double free when translating `const char*` arguments in the
+  C++ bridge.
+* `macroexpand` does not ignore shadowing function bindings (#1556).
+* BTB compiler can handle closure variables deleted by optimization.
+* `(setf elt)` calls `(setf sequence:elt)` properly on extended
+  sequences.
+* BTB compiler handles non-constant load-time-values.
+* When `set-macro-character` is given a non-function, it signals an
+  error without breaking the readtable.
+
+## Optimized
+* Single dispatch generic functions don't perform redundant argument
+  count checks.
 
 # Version 2.5.0 (LLVM15-17) 2024-01-01
 
