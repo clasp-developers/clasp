@@ -56,3 +56,4 @@ src/lisp/regression-tests/*.newfasl
 src/analysis/*.lst
 src/analysis/*.cc
 bench/
+repos-*.sexp

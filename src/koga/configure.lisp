@@ -609,6 +609,10 @@ is not compatible with snapshots.")
                   :initform :cclasp
                   :type (member :iclasp :aclasp :bclasp :cclasp :eclasp :sclasp)
                   :documentation "Default stage for installation")
+   (dependency-file :accessor dependency-file
+                    :initarg :dependency-file
+                    :initform nil
+                    :documentation "Path to dependency-file")
    (units :accessor units
           :initform '(:git :describe :cpu-count #+darwin :xcode :base :default-target :pkg-config
                            :clang :llvm :ar :cc :cxx :dis :mpi :nm :etags :ctags :objcopy :jupyter
@@ -727,7 +731,8 @@ is not compatible with snapshots.")
    (scripts :accessor scripts
             :initform nil)
    (repos :reader repos
-          :initform (uiop:read-file-form #P"repos.sexp")))
+          :initform (loop for path in (directory #P"repos*.sexp")
+                          nconc (uiop:read-file-form path))))
   (:documentation "A class to encapsulate the configuration state."))
 
 (defmethod initialize-instance :after ((instance configuration) &rest initargs &key &allow-other-keys)

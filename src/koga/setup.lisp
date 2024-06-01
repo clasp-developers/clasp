@@ -192,7 +192,8 @@ accumulated plists from each PRINT-VARIANT-TARGET-SOURCE is passed as keys."))
         do (configure-unit *configuration* unit))
   (message :emph "~%Evaluating cscript files")
   (recurse #P"")
-  (loop with sources = (uiop:read-file-form #P"repos.sexp")
+  (loop with sources = (loop for path in (directory #P"repos*.sexp")
+                             nconc (uiop:read-file-form path))
         for name in (extensions *configuration*)
         for directory = (make-pathname :directory (list :relative
                                                         "extensions"
@@ -242,6 +243,18 @@ writing the build and variant outputs."
                               :package-generated (resolve-package-path install-generated)
                               *root-paths*))
          (*extensions* (extensions *configuration*)))
+    (when (dependency-file *configuration*)
+      (with-open-file (stream (dependency-file *configuration*)
+                              :direction :output
+                              :if-exists :supersede
+                              :if-does-not-exist :create)
+        (pprint (loop for source in (repos *configuration*)
+                      for name = (getf source :name)
+                      for extension = (getf source :extension)
+                      if (or (not extension)
+                             (member extension *extensions*))
+                        collect (getf source :directory))
+                stream)))
     (if (update-version *configuration*)
         (do-update-version)
         (do-setup))))

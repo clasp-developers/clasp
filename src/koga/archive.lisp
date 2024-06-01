@@ -20,7 +20,9 @@
                          tar-name prefix (or tag "HEAD")))
     (uiop:call-with-temporary-file
      (lambda (temp-path)
-       (loop for source in (read-file-form #P"repos.sexp" tag)
+       (loop for source in (nconc (read-file-form #P"repos.sexp" tag)
+                                  (loop for path in (directory #P"repos-*.sexp")
+                                        nconc (uiop:read-file-form path)))
              for name = (getf source :name)
              for directory = (getf source :directory)
              for extension = (getf source :extension)

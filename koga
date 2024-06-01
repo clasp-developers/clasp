@@ -115,7 +115,8 @@
   (unless help
     (format t "Synchronizing external repositories~%~%"))
   (loop with deep-clean = (getf initargs :deep-clean)
-        for source in (uiop:read-file-form #P"repos.sexp")
+        for source in (loop for path in (directory #P"repos*.sexp")
+                            nconc (uiop:read-file-form path))
         for name = (getf source :name)
         for extension = (getf source :extension)
         if (or (eq t skip-sync)
