@@ -160,8 +160,6 @@
 ;; Setup a few things for the CMP package
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :cmp))
-(sys:*make-special '*dbg-generate-dwarf*)
-(setq *dbg-generate-dwarf* (null (member :disable-dbg-generate-dwarf *features*)))
 (export '(link-fasoll-modules link-fasobc-modules))
 ;;; Turn on aclasp/bclasp activation-frame optimization
 (sys:*make-special '*activation-frame-optimize*)

@@ -85,8 +85,7 @@
                (redefinition-new-type condition)
                (compiler-warning-name condition)
                (redefinition-old-type condition)
-               (file-scope-pathname
-                (file-scope origin))
+               (source-pos-info/pathname origin)
                (source-pos-info-lineno origin)
                (source-pos-info-column origin))))))
 
@@ -279,8 +278,7 @@ Operation was (~s~{ ~s~})."
               (origin (if (consp origin) (car origin) origin)))
           (handler-case
               (format *error-output* "~&    at ~a ~d:~d~%"
-                      (file-scope-pathname
-                       (file-scope origin))
+                      (source-pos-info/pathname origin)
                       (source-pos-info-lineno origin)
                       (source-pos-info-column origin))
             (error (e)

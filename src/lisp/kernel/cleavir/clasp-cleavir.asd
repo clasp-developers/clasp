@@ -28,6 +28,8 @@
                (:file "ir")
                (:file "jit")
                (:file "translation-environment")
+               (:file "cast")
+               (:file "arguments")
                (:file "bir")
                (:file "bmir")
                (:file "blir")
@@ -40,6 +42,7 @@
                (:file "interval")
                (:file "type")
                (:file "transform")
+               (:file "debuginfo")
                (:file "translate")
                (:file "compile-bytecode")
                ;;(:file "translate-btb") ; not working yet

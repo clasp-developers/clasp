@@ -615,64 +615,6 @@ Boehm and MPS use a single pointer"
     (irc-store shifted-nargs-next shifted-nargs*)
     val))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Provide the arguments passed to the function in a convenient manner.
-;; Either the register arguments are available in register-args
-;;   or the vaslist is used to access the arguments
-;;   one after the other with calling-convention.va-arg
-(defstruct (calling-convention (:type vector) :named)
-  closure
-  nargs
-  register-args ; The arguments that were passed in registers
-  vaslist*      ; The address of the vaslist, or NIL
-  cleavir-lambda-list-analysis ; analysis of cleavir-lambda-list
-  rest-alloc ; whether we can dx or ignore a &rest argument
-  )
-
-;; Parse the function arguments into a calling-convention
-
-(defun initialize-calling-convention (llvm-function arity &key debug-on cleavir-lambda-list-analysis rest-alloc)
-  (cmp-log "llvm-function: {}%N" llvm-function)
-  (let ((arguments (llvm-sys:get-argument-list llvm-function)))
-    (cmp-log "llvm-function arguments: {}%N" (llvm-sys:get-argument-list llvm-function))
-    (cmp-log "llvm-function isVarArg: {}%N" (llvm-sys:is-var-arg llvm-function))
-    (let ((register-save-area* (when debug-on (alloca-register-save-area arity :label "register-save-area")))
-          (closure (first arguments)))
-      (cmp-log "A%N")
-      (unless (first arguments)
-        (error "initialize-calling-convention for arguments ~a - the closure is NIL" arguments))
-      (cmp-log "A%N")
-      (cond
-        ((eq arity :general-entry)
-         (cmp-log "B%N")
-         (let* ((nargs (second arguments))
-                (args (third arguments))
-                (vaslist* (alloca-vaslist)))
-           (vaslist-start vaslist* nargs args)
-           (maybe-spill-to-register-save-area arity register-save-area* (list closure nargs args))
-           (make-calling-convention :closure closure
-                                    :nargs nargs
-                                    :vaslist* vaslist*
-                                    :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
-                                    :rest-alloc rest-alloc)))
-        (t
-         (let ((nargs (length (cdr arguments)))
-               (register-args (cdr arguments)))
-           (maybe-spill-to-register-save-area arity register-save-area* (list* closure register-args))
-           (make-calling-convention :closure closure
-                                    :nargs (jit-constant-i64 nargs)
-                                    :register-args register-args
-                                    :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
-                                    :rest-alloc rest-alloc)))))))
-
-;;;
-;;; Read the next argument from the vaslist
-(defun calling-convention-vaslist.va-arg (cc)
-  (let* ((vaslist (calling-convention-vaslist* cc)))
-    (gen-vaslist-pop vaslist)))
-
 (defun fn-prototype (arity)
   (cond
     ((eq arity :general-entry)
@@ -692,29 +634,6 @@ Boehm and MPS use a single pointer"
      (error "Arity is too high -add support for this ~a" arity))
     (t (error "fn-prototype-names Illegal arity ~a" arity))))
 
-;; (Maybe) generate code to store registers in memory. Return value unspecified.  
-(defun maybe-spill-to-register-save-area (arity register-save-area* registers)
-  (cmp-log "maybe-spill-to-register-save-area register-save-area* -> {}%N" register-save-area*)
-  (cmp-log "maybe-spill-to-register-save-area registers -> {}%N" registers)
-  (when register-save-area*
-    (let ((words (irc-arity-info arity)))
-      (flet ((spill-reg (idx reg addr-name)
-               (let ((addr          (irc-typed-gep (llvm-sys:array-type-get %t*% words) register-save-area* (list 0 idx) addr-name))
-                     (reg-i8*       (cond
-                                      ((llvm-sys:type-equal (llvm-sys:get-type reg) %i64%)
-                                       (irc-int-to-ptr reg %i8*% "nargs-i8*"))
-                                      (t
-                                       (irc-bit-cast reg %i8*% "reg-i8*")))))
-                 (irc-store reg-i8* addr t)
-                 addr)))
-        (let* ((names (if (eq arity :general-entry)
-                          (list "rsa-closure" "rsa-nargs" "rsa-args")
-                          (list "rsa-closure" "rsa-arg0" "rsa-arg1" "rsa-arg2" "rsa-arg3" "rsa-arg4" "rsa-arg5" "rsa-arg6" "rsa-arg7")))
-               (idx 0))
-          (mapc (lambda (reg name)
-                  (spill-reg idx reg name)
-                  (incf idx))
-                registers names))))))
 
 ;;; This is the normal C-style prototype for a function
 (define-symbol-macro %opaque-fn-prototype*% %i8*%)

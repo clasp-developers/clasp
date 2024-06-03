@@ -1260,20 +1260,6 @@ T_sp lisp_createStr(const string& s) { return SimpleBaseString_O::make(s); }
 
 T_sp lisp_createFixnum(int fn) { return make_fixnum(fn); }
 
-SourcePosInfo_sp lisp_createSourcePosInfo(const string& fileName, size_t filePos, int lineno) {
-  SimpleBaseString_sp fn = SimpleBaseString_O::make(fileName);
-  T_mv sfi_mv = core__file_scope(fn);
-  MultipleValues& mvn = core::lisp_multipleValues();
-  Fixnum_sp handle = gc::As<Fixnum_sp>(mvn.valueGet(1, sfi_mv.number_of_values()));
-  int sfindex = unbox_fixnum(handle);
-  return SourcePosInfo_O::create(sfindex, filePos, lineno, 0);
-}
-
-/*! Create a core:source-pos-info object on the fly */
-SourcePosInfo_sp core__createSourcePosInfo(const string& filename, size_t filePos, int lineno) {
-  return lisp_createSourcePosInfo(filename, filePos, lineno);
-}
-
 T_sp lisp_createList(T_sp a1) { return Cons_O::create(a1, nil<T_O>()); }
 T_sp lisp_createList(T_sp a1, T_sp a2) { return Cons_O::createList(a1, a2); };
 T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3) { return Cons_O::createList(a1, a2, a3); };

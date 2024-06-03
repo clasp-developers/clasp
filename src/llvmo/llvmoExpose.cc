@@ -111,6 +111,7 @@ Error enableObjCRegistration(const char* PathToLibObjC);
 #include <llvm/ExecutionEngine/Orc/TargetProcess/JITLoaderGDB.h>
 #include <llvm-c/Disassembler.h>
 // #include <llvm/IR/PrintModulePass.h> // will be llvm/IR  was llvm/Assembly
+#include <llvm/Passes/StandardInstrumentations.h>
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
@@ -2168,9 +2169,18 @@ UndefValue_sp UndefValue_O::create(llvm::UndefValue* ptr) { return core::RP_Crea
 CL_LISPIFY_NAME(UNDEF_VALUE-GET);
 CL_EXTERN_DEFUN((llvm::UndefValue * (*)(llvm::Type * type)) & llvm::UndefValue::get);
 
-;
-
 string UndefValue_O::__repr__() const {
+  stringstream ss;
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << ">";
+  return ss.str();
+}
+
+PoisonValue_sp PoisonValue_O::create(llvm::PoisonValue* ptr) { return core::RP_Create_wrapped<PoisonValue_O, llvm::PoisonValue*>(ptr); };
+
+CL_LISPIFY_NAME(POISON_VALUE-GET);
+CL_EXTERN_DEFUN((llvm::PoisonValue * (*)(llvm::Type * type)) & llvm::PoisonValue::get);
+
+string PoisonValue_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->_classNameAsString() << ">";
   return ss.str();
@@ -2817,11 +2827,11 @@ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,
 //  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateConstGEP2_32);
 CL_LISPIFY_NAME(CreateConstGEP1-64);
 CL_EXTERN_DEFMETHOD(IRBuilderBase_O,
-                    (llvm::Value * (IRBuilderBase_O::ExternalType::*)(llvm::Value*, uint64_t, const llvm::Twine&)) &
+                    (llvm::Value * (IRBuilderBase_O::ExternalType::*)(llvm::Type*, llvm::Value*, uint64_t, const llvm::Twine&)) &
                         IRBuilderBase_O::ExternalType::CreateConstGEP1_64);
 CL_LISPIFY_NAME(CreateConstInBoundsGEP1-64);
 CL_EXTERN_DEFMETHOD(IRBuilderBase_O,
-                    (llvm::Value * (IRBuilderBase_O::ExternalType::*)(llvm::Value*, uint64_t, const llvm::Twine&)) &
+                    (llvm::Value * (IRBuilderBase_O::ExternalType::*)(llvm::Type*, llvm::Value*, uint64_t, const llvm::Twine&)) &
                         IRBuilderBase_O::ExternalType::CreateConstInBoundsGEP1_64);
 //  CL_LISPIFY_NAME(CreateConstGEP2-64);
 //  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateConstGEP2_64);
@@ -4197,14 +4207,15 @@ CL_DEFUN void llvm_sys__optimizeModule(llvm::Module* module, int level) {
   llvm::FunctionAnalysisManager FAM;
   llvm::CGSCCAnalysisManager CGAM;
   llvm::ModuleAnalysisManager MAM;
-
+/*
   llvm::PipelineTuningOptions pipeline_opts;
 #if LLVM_VERSION_MAJOR > 15
   pipeline_opts.InlinerThreshold = 0;
 #endif
 
   llvm::PassBuilder PB(NULL, pipeline_opts);
-  llvm::ModulePassManager MPM;
+*/
+  llvm::PassBuilder PB;
 
   PB.registerModuleAnalyses(MAM);
   PB.registerCGSCCAnalyses(CGAM);
@@ -4228,7 +4239,13 @@ CL_DEFUN void llvm_sys__optimizeModule(llvm::Module* module, int level) {
   }
 #endif
 
-  PB.buildPerModuleDefaultPipeline(opt_level);
+  // In LLVM16, buildPerModuleDefaultPipeline does not work with O0.
+  // This was changed in 17 and up.
+#if LLVM_VERSION_MAJOR < 17
+  llvm::ModulePassManager MPM = opt_level == OptimizationLevel::O0 ? PB.buildO0DefaultPipeline(opt_level) : PB.buildPerModuleDefaultPipeline(opt_level);
+#else
+  llvm::ModulePassManager MPM = PB.buildPerModuleDefaultPipeline(opt_level);
+#endif
 
   MPM.run(*module, MAM);
 }

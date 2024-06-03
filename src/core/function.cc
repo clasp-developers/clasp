@@ -53,6 +53,13 @@ namespace core {
 
 bytecode_trampoline_function bytecode_trampoline = bytecode_call; // default
 
+CL_DEFMETHOD Pointer_sp SimpleFun_O::defaultEntryAddress() const {
+  return Pointer_O::create((void*)(this->_EntryPoints[0]));
+}
+CL_DEFMETHOD Pointer_sp SimpleFun_O::arityEntryAddress(size_t arity) const {
+  return Pointer_O::create((void*)(this->_EntryPoints[arity+1]));
+}
+
 void SimpleFun_O::fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr) {
 #ifdef USE_PRECISE_GC
   if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::InfoOp) {
@@ -71,8 +78,6 @@ void SimpleFun_O::fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr
   }
 #endif
 }
-
-CL_DEFMETHOD Pointer_sp SimpleFun_O::defaultEntryAddress() const { SUBCLASS_MUST_IMPLEMENT(); }
 
 SimpleFun_O::SimpleFun_O(FunctionDescription_sp fdesc, T_sp code, const ClaspXepTemplate& entry_point)
   : Function_O(this), _FunctionDescription(fdesc), _Code(code),
@@ -125,11 +130,9 @@ CoreFun_O::CoreFun_O(FunctionDescription_sp fdesc, T_sp code,
   llvmo::validateEntryPoint(code, entry_point);
 }
 
-  void BytecodeSimpleFun_O::set_trampoline(Pointer_sp trampoline) {
+void BytecodeSimpleFun_O::set_trampoline(Pointer_sp trampoline) {
   this->_Trampoline = (BytecodeTrampolineFunction)trampoline->ptr();
 }
-
-Pointer_sp SimpleCoreFun_O::defaultEntryAddress() const { return Pointer_O::create((void*)this->_EntryPoints[0]); };
 
 CL_LISPIFY_NAME("simple-core-fun/code");
 CL_DEFMETHOD
@@ -141,10 +144,6 @@ llvmo::ObjectFile_sp SimpleCoreFun_O::code() const {
 CL_LISPIFY_NAME("simple-core-fun-local-fun");
 CL_DEFMETHOD
 CoreFun_sp SimpleCoreFun_O::localFun() const { return this->_localFun; }
-
-Pointer_sp CoreFun_O::defaultEntryAddress() const { return Pointer_O::create((void*)this->_Entry); };
-
-Pointer_sp BytecodeSimpleFun_O::defaultEntryAddress() const { return Pointer_O::create((void*)this->_EntryPoints[0]); };
 
 CL_LISPIFY_NAME("bytecode-simple-fun/code");
 CL_DEFMETHOD

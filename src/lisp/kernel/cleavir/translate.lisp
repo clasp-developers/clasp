@@ -17,34 +17,8 @@
    (%xep-function-description :initarg :xep-function-description :reader xep-function-description)
    (%main-function :initarg :main-function :reader main-function)))
 
-(defun lambda-list-too-hairy-p (lambda-list)
-  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs aok aux varest-p)
-      (cmp:process-bir-lambda-list lambda-list)
-    (declare (ignore reqargs optargs keyargs aok aux rest-var varest-p))
-    key-flag))
-
-(defun nontrivial-mv-local-call-p (call)
-  (cond ((typep call 'cc-bmir:fixed-mv-local-call)
-         ;; Could still be nontrivial if the number of arguments is wrong
-         (multiple-value-bind (req opt rest)
-             (cmp:process-bir-lambda-list (bir:lambda-list (bir:callee call)))
-           (let ((lreq (length (cc-bmir:rtype (second (bir:inputs call))))))
-             (or (< lreq (car req))
-                 (and (not rest) (> lreq (+ (car req) (car opt))))))))
-        ((typep call 'bir:mv-local-call) t)
-        (t nil)))
-
 (defun xep-needed-p (function)
   (or (bir:enclose function)
-      ;; We need a XEP for more involved lambda lists.
-      (lambda-list-too-hairy-p (bir:lambda-list function))
-      ;; or for mv-calls that might need to signal an error.
-      (and (cleavir-set:some #'nontrivial-mv-local-call-p
-                             (bir:local-calls function))
-           (multiple-value-bind (req opt rest)
-               (cmp:process-bir-lambda-list (bir:lambda-list function))
-             (declare (ignore opt))
-             (or (plusp (car req)) (not rest))))
       ;; Assume that a function with no enclose and no local calls is
       ;; toplevel and needs an XEP. Else it would have been removed or
       ;; deleted as it is unreferenced otherwise.
@@ -169,16 +143,18 @@
 (defmethod translate-simple-instruction :around
     ((instruction bir:instruction) abi)
   (declare (ignore abi))
-  (cmp:with-debug-info-source-position ((ensure-origin
-                                         (inst-source instruction)
-                                         999902))
+  (with-instruction-source-position
+      ((ensure-origin
+        (origin-spi (origin-source (bir:origin instruction)))
+        999902))
     (call-next-method)))
 (defmethod translate-terminator :around
     ((instruction bir:instruction) abi next)
   (declare (ignore abi next))
-  (cmp:with-debug-info-source-position ((ensure-origin
-                                         (inst-source instruction)
-                                         999903))
+  (with-instruction-source-position
+      ((ensure-origin
+        (origin-spi (origin-source (bir:origin instruction)))
+        999903))
     (call-next-method)))
 
 (defmethod translate-terminator ((instruction bir:unreachable)
@@ -197,7 +173,7 @@
           ((null (rest rt)) (cmp:irc-ret inv))
           (t ; fixed values return: construct an aggregate and return it.
            (let* ((stype (return-rtype->llvm rt))
-                  (s (llvm-sys:undef-value-get stype)))
+                  (s (llvm-sys:poison-value-get stype)))
              (loop for i from 0
                    for v in inv
                    do (setf s (cmp:irc-insert-value s v (list i))))
@@ -412,14 +388,19 @@
   (let ((mv (restore-multiple-value-0))
         (rt (cc-bmir:rtype phi)))
     (cond ((null rt))
-          ((equal rt '(:object))
-           (phi-out (cmp:irc-tmv-primary mv) phi block))
           ((eq rt :multiple-values) (phi-out mv phi block))
-          ((every (lambda (x) (eq x :object)) rt)
+          ((and (consp rt) (null (cdr rt)))
+           (phi-out (cast-one :object (first rt)
+                              (cmp:irc-tmv-primary mv))
+                    phi block))
+          ((listp rt)
            (phi-out
-            (list* (cmp:irc-tmv-primary mv)
-                   (loop for i from 1 below (length rt)
-                         collect (cmp:irc-t*-load (return-value-elt i))))
+            (list* (cast-one :object (first rt)
+                             (cmp:irc-tmv-primary mv))
+                   (loop for srt in (rest rt)
+                         for i from 1
+                         for v = (cmp:irc-t*-load (return-value-elt i))
+                         collect (cast-one :object srt v)))
             phi block))
           (t (error "BUG: Bad rtype ~a" rt)))))
 
@@ -505,17 +486,25 @@
          ;; Force the return values into a tmv for transmission.
          (rrv (when rv
                 (let ((rt (cc-bmir:rtype rv)))
-                  (cond ((equal rt '(:object))
-                         (cmp:irc-make-tmv (%size_t 1) (in rv)))
-                        ((eq rt :multiple-values) (in rv))
+                  (cond ((eq rt :multiple-values) (in rv))
                         ((null rt) (cmp:irc-make-tmv (%size_t 0) (%nil)))
-                        ((every (lambda (x) (eq x :object)) rt)
-                         (let ((vals (in rv))
-                               (nvals (length rt)))
+                        ((and (consp rt) (null (cdr rt)))
+                         (let ((srt (first rt))
+                               (val (in rv)))
+                           (cmp:irc-make-tmv (%size_t 1)
+                                             (cast-one srt :object val))))
+                        ((listp rt)
+                         (let* ((vals (in rv))
+                                (nvals (length rt))
+                                (srt1 (first rt))
+                                (c1 (cast-one srt1 :object (first vals))))
                            (loop for i from 1 below nvals
                                  for v in (rest vals)
-                                 do (cmp:irc-store v (return-value-elt i)))
-                           (cmp:irc-make-tmv (%size_t nvals) (first vals))))
+                                 for srt in (rest rt)
+                                 for e = (return-value-elt i)
+                                 for c = (cast-one srt :object v)
+                                 do (cmp:irc-store v e))
+                           (cmp:irc-make-tmv (%size_t nvals) c1)))
                         (t (error "BUG: Bad rtype ~a" rt))))))
          (destination (bir:destination instruction))
          (destination-id (get-destination-id destination)))
@@ -701,62 +690,6 @@
   (out (variable-in (bir:input instruction))
        (bir:output instruction)))
 
-(defun gen-rest-list (present-arguments)
-  (if (null present-arguments)
-      (%nil)
-      ;; Generate a call to cc_list.
-      ;; TODO: DX &rest lists.
-      (%intrinsic-invoke-if-landing-pad-or-call
-       "cc_list" (list* (%size_t (length present-arguments))
-                        present-arguments))))
-
-(defun maybe-boxed-vaslist (boxp nvals vals)
-  (let ((vas (cmp:irc-make-vaslist nvals vals)))
-    (if boxp
-        (let ((mem (cmp:alloca cmp:%vaslist% 1)))
-          (cmp:irc-store vas mem)
-          (cmp:irc-tag-vaslist mem))
-        vas)))
-
-(defun gen-va-rest-list (present-arguments boxp)
-  (let* ((nargs (length present-arguments))
-         ;; nargs is constant, so this alloca is just in the intro block.
-         (dat (cmp:alloca cmp:%t*% nargs "local-va-rest")))
-    ;; Store the arguments into the allocated memory.
-    (loop for arg in present-arguments
-          for i from 0
-          do (cmp:irc-store arg (cmp:irc-typed-gep cmp:%t*% dat (list i))))
-    ;; Make and return the va list object.
-    (maybe-boxed-vaslist boxp (%size_t nargs) dat)))
-
-(defun parse-local-call-optional-arguments (opt arguments)
-  (loop for (op) on (rest opt) by #'cdddr
-        if arguments
-          collect (translate-cast (pop arguments) '(:object)
-                                  (cc-bmir:rtype op))
-          and collect (%t)
-        else
-          collect (cmp:irc-undef-value-get (argument-rtype->llvm op))
-          and collect (%nil)))
-
-;; Create than argument list for a local call by parsing the callee's
-;; lambda list and filling in the correct values at compile time. We
-;; assume that we have already checked the validity of this call.
-(defun parse-local-call-arguments (req opt rest rest-vrtype arguments)
-  (let* ((nreq (car req)) (nopt (car opt))
-         (reqargs (subseq arguments 0 nreq))
-         (more (nthcdr nreq arguments))
-         (optargs (parse-local-call-optional-arguments opt more))
-         (rest
-           (cond ((not rest) nil)
-                 ((eq rest :unused)
-                  (list (cmp:irc-undef-value-get cmp:%t*%)))
-                 ((eq rest :va-rest)
-                  (list (gen-va-rest-list (nthcdr nopt more)
-                                          (eq rest-vrtype :object))))
-                 (t (list (gen-rest-list (nthcdr nopt more)))))))
-    (append reqargs optargs rest)))
-
 ;;; Get a reference to the literal for a function's simple fun.
 ;;; This is generic because it's also used by the BTB translator.
 (defgeneric reference-xep (function function-info))
@@ -816,64 +749,37 @@
       :vaslist
       :object))
 
-(defun gen-local-call (callee arguments outputrt)
-  (let ((callee-info (find-llvm-function-info callee)))
-    (cond ((lambda-list-too-hairy-p (bir:lambda-list callee))
-           ;; Has &key or something, so use the normal call protocol.
-           ;; We allocate a fresh closure for every call. Hopefully this
-           ;; isn't too expensive. We can always use stack allocation since
-           ;; there's no possibility of this closure being stored in a closure
-           ;; (If we local-call a self-referencing closure, the closure cell
-           ;;  will get its value from some enclose.
-           ;;  FIXME we could use that instead?)
-           (translate-cast (closure-call-or-invoke
-                            (enclose callee :dynamic nil)
-                            arguments)
-                           :multiple-values outputrt))
-          (t
-           ;; Call directly.
-           (multiple-value-bind (req opt rest-var key-flag keyargs aok aux
-                                 varest-p)
-               (cmp:process-bir-lambda-list (bir:lambda-list callee))
-             (declare (ignore keyargs aok aux))
-             (assert (not key-flag))
-             (let ((largs (length arguments)))
-               (when (or (< largs (car req))
-                         (and (not rest-var)
-                              (> largs (+ (car req) (car opt)))))
-                 ;; too many or too few args; we can get here from
-                 ;; fixed-mv-local-calls for instance.
-                 (return-from gen-local-call
-                   (translate-cast (closure-call-or-invoke
-                                    (enclose callee :dynamic nil)
-                                    arguments)
-                                   :multiple-values outputrt))))
-             (let* ((rest-id (cond ((null rest-var) nil)
-                                   ((bir:unused-p rest-var) :unused)
-                                   (varest-p :va-rest)
-                                   (t t)))
-                    (rest-vrtype (rest-vrtype rest-var))
-                    (subargs
-                      (parse-local-call-arguments
-                       req opt rest-id rest-vrtype arguments))
-                    (args (append (environment-arguments
-                                   (environment callee-info))
-                                  subargs))
-                    (function (main-function callee-info))
-                    (function-type (llvm-sys:get-function-type function))
-                    (result-in-registers
-                      (cmp::irc-call-or-invoke function-type function args)))
-               #+(or)
-               (llvm-sys:set-calling-conv result-in-registers 'llvm-sys:fastcc)
-               (local-call-rv->inputs result-in-registers outputrt)))))))
+(defun gen-local-call (callee arguments argrts outputrt)
+  (let* ((analysis
+           ;; FIXME: Can be calculated redundantly
+           (cmp:calculate-cleavir-lambda-list-analysis
+            (bir:lambda-list callee)))
+         (callee-info (find-llvm-function-info callee))
+         (envargs (environment-arguments (environment callee-info)))
+         (xepargs (make-instance 'cmp::fixed-xep-arguments
+                    :arguments arguments :vrtypes argrts))
+         (subargs (cmp:compile-lambda-list-code
+                   analysis xepargs
+                   :rest-alloc (compute-rest-alloc analysis)
+                   :fname (clasp-cleavir::literal (bir:name callee))))
+         (args (append envargs subargs))
+         (function (main-function callee-info))
+         (function-type (llvm-sys:get-function-type function))
+         (result-in-registers
+           (cmp::irc-call-or-invoke function-type function args)))
+    #+(or)
+    (llvm-sys:set-calling-conv result-in-registers 'llvm-sys:fastcc)
+    (local-call-rv->inputs result-in-registers outputrt)))
 
 (defmethod translate-simple-instruction ((instruction bir:local-call)
                                          abi)
   (declare (ignore abi))
   (let* ((callee (bir:callee instruction))
          (args (mapcar #'in (rest (bir:inputs instruction))))
+         (vrtypes (loop for inp in (rest (bir:inputs instruction))
+                        collect (first (cc-bmir:rtype inp))))
          (output (bir:output instruction))
-         (call (gen-local-call callee args (cc-bmir:rtype output))))
+         (call (gen-local-call callee args vrtypes (cc-bmir:rtype output))))
     (out call output)))
 
 (defmethod translate-simple-instruction ((instruction bir:call) abi)
@@ -887,144 +793,36 @@
           :label (datum-name-as-string output))
          output)))
 
-(defun general-mv-local-call-vas (callee vaslist label outputrt)
-  (translate-cast (cmp:irc-apply (enclose callee :dynamic nil)
-                                 (cmp:irc-vaslist-nvals vaslist)
-                                 (cmp:irc-vaslist-values vaslist)
-                                 label)
-                  :multiple-values outputrt))
-
-(defun direct-mv-local-call-vas (vaslist callee req opt rest-var varest-p
-                                 label outputrt)
-  (let* ((callee-info (find-llvm-function-info callee))
-         (nreq (car req))
-         (nopt (car opt))
-         (rnret (cmp:irc-vaslist-nvals vaslist))
-         (rvalues (cmp:irc-vaslist-values vaslist))
-         (nfixed (+ nreq nopt))
-         (mismatch
-           (unless (and (zerop nreq) rest-var)
-             (cmp:irc-basic-block-create "lmvc-arg-mismatch")))
-         (mte (if rest-var
-                  (cmp:irc-basic-block-create "lmvc-more-than-enough")
-                  mismatch))
-         (merge (cmp:irc-basic-block-create "lmvc-after"))
-         (sw (cmp:irc-switch rnret mte (+ 1 nreq nopt)))
-         (environment (environment callee-info))
-         (rest-vaboxp (not (eq (rest-vrtype rest-var) :vaslist))))
-    (labels ((load-return-value (n)
-               (cmp:irc-t*-load (cmp:irc-typed-gep cmp:%t*% rvalues (list n))))
-             (load-return-values (low high)
-               (loop for i from low below high
-                     collect (load-return-value i)))
-             (optionals (n)
-               (parse-local-call-optional-arguments
-                opt (load-return-values nreq (+ nreq n)))))
-      ;; Generate phis for the merge block's call.
-      (cmp:irc-begin-block merge)
-      (let ((opt-phis
-              (loop for (op s-p) on (rest opt) by #'cdddr
-                    for op-ty = (argument-rtype->llvm op)
-                    for s-p-ty = (argument-rtype->llvm s-p)
-                    collect (cmp:irc-phi op-ty (1+ nopt))
-                    collect (cmp:irc-phi s-p-ty (1+ nopt))))
-            (rest-phi
-              (cond ((null rest-var) nil)
-                    ((bir:unused-p rest-var)
-                     (cmp:irc-undef-value-get cmp:%t*%))
-                    (t (cmp:irc-phi (argument-rtype->llvm rest-var)
-                                    (1+ nopt))))))
-        ;; Generate the mismatch block, if it exists.
-        (when mismatch
-          (cmp:irc-begin-block mismatch)
-          (cmp::irc-intrinsic-call-or-invoke
-           "cc_wrong_number_of_arguments"
-           (list (enclose callee :indefinite nil) rnret
-                 (%size_t nreq) (%size_t nfixed)))
-          (cmp:irc-unreachable))
-        ;; Generate not-enough-args cases.
-        (loop for i below nreq
-              do (cmp:irc-add-case sw (%size_t i) mismatch))
-        ;; Generate optional arg cases, including the exactly-enough case.
-        (loop for i upto nopt
-              for b = (cmp:irc-basic-block-create
-                       (format nil "lmvc-optional-~d" i))
-              do (cmp:irc-add-case sw (%size_t (+ nreq i)) b)
-                 (cmp:irc-begin-block b)
-                 (loop for phi in opt-phis
-                       for val in (optionals i)
-                       do (cmp:irc-phi-add-incoming phi val b))
-                 (when (and rest-var (not (bir:unused-p rest-var)))
-                   (cmp:irc-phi-add-incoming
-                    rest-phi
-                    (if varest-p
-                        (maybe-boxed-vaslist
-                         rest-vaboxp (%size_t 0)
-                         (llvm-sys:constant-pointer-null-get cmp:%t**%))
-                        (%nil))
-                    b))
-                 (cmp:irc-br merge))
-        ;; If there's a &rest, generate the more-than-enough arguments case.
-        (when rest-var
-          (cmp:irc-begin-block mte)
-          (loop for phi in opt-phis
-                for val in (optionals nopt)
-                do (cmp:irc-phi-add-incoming phi val mte))
-          (unless (bir:unused-p rest-var)
-            (cmp:irc-phi-add-incoming
-             rest-phi
-             (if varest-p
-                 (maybe-boxed-vaslist
-                  rest-vaboxp
-                  (cmp:irc-sub rnret (%size_t nfixed))
-                  (cmp:irc-typed-gep cmp:%t*% rvalues (list nfixed)))
-                 (%intrinsic-invoke-if-landing-pad-or-call
-                  "cc_mvcGatherRest2"
-                  (list (cmp:irc-typed-gep cmp:%t*% rvalues (list nfixed))
-                        (cmp:irc-sub rnret (%size_t nfixed)))))
-             mte))
-          (cmp:irc-br merge))
-        ;; Generate the call, in the merge block.
-        (cmp:irc-begin-block merge)
-        (let* ((arguments
-                 (nconc
-                  (environment-arguments environment)
-                  (loop for r in (rest req)
-                        for j from 0
-                        collect (translate-cast (load-return-value j) '(:object)
-                                                (cc-bmir:rtype r)))
-                  opt-phis
-                  (when rest-var (list rest-phi))))
-               (function (main-function callee-info))
-               (function-type (llvm-sys:get-function-type function))
-               (call
-                 (cmp:irc-call-or-invoke function-type function arguments
-                                         cmp:*current-unwind-landing-pad-dest*
-                                         label)))
-          #+(or)(llvm-sys:set-calling-conv call 'llvm-sys:fastcc)
-          (local-call-rv->inputs call outputrt))))))
-
 (defmethod translate-simple-instruction
     ((instruction bir:mv-local-call) abi)
   (declare (ignore abi))
   (let* ((output (bir:output instruction))
          (outputrt (cc-bmir:rtype output))
-         (oname (datum-name-as-string output))
          (callee (bir:callee instruction))
          (mvarg (second (bir:inputs instruction)))
-         (mvargrt (cc-bmir:rtype mvarg))
-         (mvargi (in mvarg)))
-    (assert (eq mvargrt :vaslist))
-    (out
-     (multiple-value-bind (req opt rest-var key-flag keyargs
-                           aok aux varest-p)
-         (cmp::process-bir-lambda-list (bir:lambda-list callee))
-       (declare (ignore keyargs aok aux))
-       (if key-flag
-           (general-mv-local-call-vas callee mvargi oname outputrt)
-           (direct-mv-local-call-vas
-            mvargi callee req opt rest-var varest-p oname outputrt)))
-     output)))
+         (_ (assert (eq :vaslist (cc-bmir:rtype mvarg))))
+         (mvargi (in mvarg))
+         (analysis
+           ;; FIXME: Can be calculated redundantly
+           (cmp:calculate-cleavir-lambda-list-analysis
+            (bir:lambda-list callee)))
+         (callee-info (find-llvm-function-info callee))
+         (envargs (environment-arguments (environment callee-info)))
+         (xepargs (make-instance 'cmp::general-xep-arguments
+                    :array (cmp:irc-vaslist-values mvargi)
+                    :nargs (cmp:irc-vaslist-nvals mvargi)))
+         (subargs (cmp:compile-lambda-list-code
+                   analysis xepargs
+                   :rest-alloc (compute-rest-alloc analysis)
+                   :fname (clasp-cleavir::literal (bir:name callee))))
+         (args (append envargs subargs))
+         (function (main-function callee-info))
+         (function-type (llvm-sys:get-function-type function))
+         (result-in-registers
+           (cmp::irc-call-or-invoke function-type function args)))
+    (declare (ignore _))
+    #+(or) (llvm-sys:set-calling-conv result-in-registers 'llvm-sys:fastcc)
+    (out (local-call-rv->inputs result-in-registers outputrt) output)))
 
 (defmethod translate-simple-instruction
     ((instruction cc-bmir:fixed-mv-local-call) abi)
@@ -1040,6 +838,7 @@
      (gen-local-call callee (if (= (length mvargrt) 1)
                                 (list mvargi)
                                 mvargi)
+                     mvargrt
                      (cc-bmir:rtype output))
      output)))
 
@@ -1097,92 +896,6 @@
            (out (if (= ninputs 1) (in (first inputs)) (mapcar #'in inputs))
                 output)))))
 
-(defun %cast-to-mv (values)
-  (cond ((null values) (cmp:irc-make-tmv (%size_t 0) (%nil)))
-        (t
-         (loop for i from 1 for v in (rest values)
-               do (cmp:irc-store v (return-value-elt i)))
-         (cmp:irc-make-tmv (%size_t (length values)) (first values)))))
-
-(defgeneric cast-one (from to value)
-  (:method (from to value)
-    (if (eql from to)
-        value
-        (error "BUG: Don't know how to cast ~a ~a to ~a" from value to))))
-
-(defmethod cast-one ((from (eql :boolean)) (to (eql :object)) value)
-  ;; we could use a select instruction, but then we'd have a redundant memory load.
-  ;; which really shouldn't be a big deal, but why risk it.
-  (let* ((thenb (cmp:irc-basic-block-create "bool-t"))
-         (elseb (cmp:irc-basic-block-create "bool-nil"))
-         (_0 (cmp:irc-cond-br value thenb elseb))
-         (merge (cmp:irc-basic-block-create "bool"))
-         (_1 (cmp:irc-begin-block merge))
-         (phi (cmp:irc-phi cmp:%t*% 2 "bool")))
-    (declare (ignore _0 _1))
-    (cmp:irc-begin-block thenb)
-    (cmp:irc-phi-add-incoming phi (%t) thenb)
-    (cmp:irc-br merge)
-    (cmp:irc-begin-block elseb)
-    (cmp:irc-phi-add-incoming phi (%nil) elseb)
-    (cmp:irc-br merge)
-    (cmp:irc-begin-block merge)
-    phi))
-(defmethod cast-one ((from (eql :object)) (to (eql :boolean)) value)
-  (cmp:irc-icmp-ne value (%nil)))
-
-(defmethod cast-one ((from (eql :single-float)) (to (eql :object)) value)
-  (cmp:irc-box-single-float value))
-(defmethod cast-one ((from (eql :object)) (to (eql :single-float)) value)
-  (cmp:irc-unbox-single-float value))
-
-(defmethod cast-one ((from (eql :double-float)) (to (eql :object)) value)
-  (cmp:irc-box-double-float value))
-(defmethod cast-one ((from (eql :object)) (to (eql :double-float)) value)
-  (cmp:irc-unbox-double-float value))
-
-(defmethod cast-one ((from (eql :base-char)) (to (eql :object)) value)
-  (cmp:irc-tag-base-char value))
-(defmethod cast-one ((from (eql :object)) (to (eql :base-char)) value)
-  (cmp:irc-untag-base-char value))
-(defmethod cast-one ((from (eql :character)) (to (eql :object)) value)
-  (cmp:irc-tag-character value))
-(defmethod cast-one ((from (eql :object)) (to (eql :character)) value)
-  (cmp:irc-untag-character value))
-
-(defmethod cast-one ((from (eql :base-char)) (to (eql :character)) value)
-  (cmp:irc-zext value cmp:%i32%))
-(defmethod cast-one ((from (eql :character)) (to (eql :base-char)) value)
-  (cmp:irc-trunc value cmp:%i8%))
-
-(defmethod cast-one ((from (eql :fixnum)) (to (eql :object)) value)
-  (cmp:irc-int-to-ptr value cmp:%t*%))
-(defmethod cast-one ((from (eql :object)) (to (eql :fixnum)) value)
-  (cmp:irc-ptr-to-int value cmp:%fixnum%))
-
-(defmethod cast-one ((from (eql :utfixnum)) (to (eql :fixnum)) value)
-  (cmp:irc-shl value cmp:+fixnum-shift+ :nsw t))
-(defmethod cast-one ((from (eql :fixnum)) (to (eql :utfixnum)) value)
-  (cmp:irc-ashr value cmp:+fixnum-shift+ :exact t))
-
-(defmethod cast-one ((from (eql :utfixnum)) (to (eql :object)) value)
-  (cmp:irc-tag-fixnum value))
-(defmethod cast-one ((from (eql :object)) (to (eql :utfixnum)) value)
-  (cmp:irc-untag-fixnum value cmp:%fixnum%))
-
-(defmethod cast-one ((from (eql :object)) (to (eql :vaslist)) value)
-  ;; We only generate these when we know for sure the input is a vaslist,
-  ;; so we don't do checking.
-  (cmp:irc-unbox-vaslist value))
-
-(defun %cast-some (inputrt outputrt inputv)
-  (let ((Lin (length inputrt)) (Lout (length outputrt))
-        (pref (mapcar #'cast-one inputrt outputrt inputv)))
-    (cond ((<= Lout Lin) pref)
-          (t
-           (assert (every (lambda (r) (eq r :object)) (subseq outputrt Lin)))
-           (nconc pref (loop repeat (- Lout Lin) collect (%nil)))))))
-
 (define-condition box-emitted (ext:compiler-note)
   ((%name :initarg :name :reader name)
    (%inputrt :initarg :inputrt :reader inputrt)
@@ -1210,76 +923,6 @@
     (cmp:note 'box-emitted
               :inputrt inputrt :outputrt outputrt
               :name name :origin (origin-source origin))))
-
-(defun translate-cast (inputv inputrt outputrt)
-  ;; most of this is special casing crap due to 1-value values not being
-  ;; passed around as lists.
-  (cond ((eq inputrt :multiple-values)
-         (cond ((eq outputrt :multiple-values)
-                ;; A NOP like this isn't generated within code, but the
-                ;; translate-cast in layout-xep can end up here.
-                inputv)
-               ((not (listp outputrt)) (error "BUG: Bad rtype ~a" outputrt))
-               ((= (length outputrt) 1)
-                (cast-one :object (first outputrt)
-                          (cmp:irc-tmv-primary inputv)))
-               ((null outputrt) nil)
-               (t (cons (cast-one :object (first outputrt)
-                                  (cmp:irc-tmv-primary inputv))
-                        (loop for i from 1
-                              for ort in (rest outputrt)
-                              for val = (cmp:irc-t*-load (return-value-elt i))
-                              collect (cast-one :object ort val))))))
-        ((eq inputrt :vaslist)
-         (cond ((eq outputrt :multiple-values)
-                (%intrinsic-call "cc_load_values"
-                                 (list (cmp:irc-vaslist-nvals inputv)
-                                       (cmp:irc-vaslist-values inputv))))
-               ((and (listp outputrt) (= (length outputrt) 1))
-                (cast-one :object (first outputrt)
-                          (cmp:irc-vaslist-nth (%size_t 0) inputv)))
-               (t (error "BUG: Cast from ~a to ~a" inputrt outputrt))))
-        ((not (listp inputrt)) (error "BUG: Bad rtype ~a" inputrt))
-        ;; inputrt must be a list (fixed values)
-        ((= (length inputrt) 1)
-         (cond ((eq outputrt :multiple-values)
-                (cmp:irc-make-tmv (%size_t 1)
-                                  (cast-one (first inputrt) :object inputv)))
-               ((not (listp outputrt))
-                (error "BUG: Cast from ~a to ~a" inputrt outputrt))
-               ((null outputrt) nil)
-               ((= (length outputrt) 1)
-                (cast-one (first inputrt) (first outputrt) inputv))
-               (t ;; pad with nil
-                (assert (every (lambda (r) (eq r :object)) (rest outputrt)))
-                (cons (cast-one (first inputrt) (first outputrt) inputv)
-                      (loop repeat (length (rest outputrt))
-                            collect (%nil))))))
-        (t
-         (cond ((eq outputrt :multiple-values)
-                (%cast-to-mv
-                 (loop for inv in inputv for irt in inputrt
-                       collect (cast-one irt :object inv))))
-               ((not (listp outputrt))
-                (error "BUG: Cast from ~a to ~a" inputrt outputrt))
-               ((= (length outputrt) 1)
-                (cond ((null inputrt)
-                       (ecase (first outputrt)
-                         ((:object) (%nil))
-                         ;; We can end up here with a variety of output vrtypes
-                         ;; in some unusual situations where a primop expects
-                         ;; a value, but control will never actually reach it.
-                         ;; Ideally the compiler would not bother compiling
-                         ;; such unreachable code, but sometimes it's stupid.
-                         ((:fixnum) (llvm-sys:undef-value-get cmp:%fixnum%))
-                         ((:single-float)
-                          (llvm-sys:undef-value-get cmp:%float%))
-                         ((:double-float)
-                          (llvm-sys:undef-value-get cmp:%double%))))
-                      (t
-                       (cast-one (first inputrt) (first outputrt)
-                                 (first inputv)))))
-               (t (%cast-some inputrt outputrt inputv))))))
 
 (defmethod translate-simple-instruction ((instr cc-bmir:cast) (abi abi-x86-64))
   (let* ((input (bir:input instr)) (inputrt (cc-bmir:rtype input))
@@ -1785,19 +1428,26 @@
         (t (loop for i from 0 below (length rtype)
                  collect (cmp:irc-extract-value llvm-value (list i))))))
 
-(defun layout-xep-function* (xep-group arity the-function ir calling-convention abi)
+(defun layout-xep-function* (xep-group arity the-function ir abi)
   (declare (ignore abi))
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
     ;; Parse lambda list.
     (cmp:with-landing-pad nil
-      (let ((ret (cmp:compile-lambda-list-code (cmp:xep-group-cleavir-lambda-list-analysis xep-group)
-                                               calling-convention
-                                               arity
-                                               :argument-out #'out)))
-        (unless ret
-          (error "cmp:compile-lambda-list-code returned NIL which means this is not a function that should be generated")))
-      ;; Import cells.
-      (let* ((closure-vec (first (llvm-sys:get-argument-list the-function)))
+      (let* ((args (llvm-sys:get-argument-list the-function))
+             (closure-vec (first args))
+             (analysis (cmp:xep-group-cleavir-lambda-list-analysis xep-group))
+             (arguments
+               (cmp:compile-lambda-list-code
+                analysis
+                (if (eq arity :general-entry)
+                    (make-instance 'cmp::general-xep-arguments
+                      :array (third args) :nargs (second args))
+                    (make-instance 'cmp::fixed-xep-arguments
+                      :arguments (rest args)
+                      :vrtypes (make-list (length (rest args))
+                                          :initial-element :object)))
+                :fname closure-vec :rest-alloc (compute-rest-alloc analysis)))
+             ;; Import cells.
              (llvm-function-info (find-llvm-function-info ir))
              (environment-values
                (loop for import in (environment llvm-function-info)
@@ -1806,58 +1456,54 @@
                      when import ; skip unused fixed closure entries
                        collect (cmp:irc-t*-load-atomic
                                 (cmp::gen-memref-address closure-vec offset))))
-             (source-pos-info (function-source-pos-info ir)))
-        ;; Tail call the real function.
-        (cmp:with-debug-info-source-position (source-pos-info)
-          (let* ((function-type (llvm-sys:get-function-type (main-function llvm-function-info)))
-                 (arguments
-                   (mapcar (lambda (arg)
-                             (translate-cast (in arg)
-                                             '(:object) (cc-bmir:rtype arg)))
-                           (arguments llvm-function-info)))
-                 (c
-                   (cmp:irc-create-call-wft
-                    function-type
-                    (main-function llvm-function-info)
-                    ;; Augment the environment lexicals as a local call would.
-                    (nconc environment-values arguments)))
-                 (returni (bir:returni ir))
-                 (rrtype (and returni (cc-bmir:rtype (bir:input returni)))))
-            #+(or)(llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
-            ;; Box/etc. results of the local call.
-            (if returni
-                (cmp:irc-ret (translate-cast
-                              (local-call-rv->inputs c rrtype)
-                              rrtype :multiple-values))
-                (cmp:irc-unreachable)))))))
+             ;; Tail call the real function.
+             (function-type
+               (llvm-sys:get-function-type (main-function llvm-function-info)))
+             (c
+               (cmp:irc-create-call-wft
+                function-type
+                (main-function llvm-function-info)
+                ;; Augment the environment lexicals as a local call would.
+                (nconc environment-values arguments)))
+             (returni (bir:returni ir))
+             (rrtype (and returni (cc-bmir:rtype (bir:input returni)))))
+        #+(or)(llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
+        ;; Box/etc. results of the local call.
+        (if returni
+            (cmp:irc-ret (translate-cast
+                          (local-call-rv->inputs c rrtype)
+                          rrtype :multiple-values))
+            (cmp:irc-unreachable)))))
   the-function)
 
 (defun layout-main-function* (the-function ir
                               body-irbuilder body-block
                               abi &key (linkage 'llvm-sys:internal-linkage))
   (declare (ignore linkage))
-  (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-    (cmp:with-irbuilder (body-irbuilder)
-      (with-catch-pad-prep
-          (cmp:irc-begin-block body-block)
-        (cmp:with-landing-pad (never-entry-landing-pad ir)
-          ;; Bind the arguments and the environment values
-          ;; appropriately.
-          (let ((llvm-function-info (find-llvm-function-info ir)))
-            (loop for arg in (llvm-sys:get-argument-list the-function)
-                  ;; remove-if is to remove fixed closure params.
-                  for lexical in (append (remove-if #'null (environment llvm-function-info))
-                                         (arguments llvm-function-info))
-                  when lexical ; skip unused fixed
-                    do (setf (gethash lexical *datum-values*) arg)))
-          ;; Branch to the start block.
-          (cmp:irc-br (iblock-tag (bir:start ir)))
-          ;; Lay out blocks.
-          (bir:do-iblocks (ib ir)
-            (layout-iblock ib abi))))))
-  ;; Finish up by jumping from the entry block to the body block
-  (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-    (cmp:irc-br body-block))
+  (cmp:with-irbuilder (body-irbuilder)
+    ;; Start the iblocks - put in phis and record them in our mapping
+    ;; for jumps.
+    (bir:do-iblocks (ib ir)
+      (setf (gethash ib *tags*)
+            (cmp:irc-basic-block-create (iblock-name ib)))
+      (initialize-iblock-translation ib))
+    (with-catch-pad-prep
+      (cmp:irc-begin-block body-block)
+      (cmp:with-landing-pad (never-entry-landing-pad ir)
+        ;; Bind the arguments and the environment values
+        ;; appropriately.
+        (let ((llvm-function-info (find-llvm-function-info ir)))
+          (loop for arg in (llvm-sys:get-argument-list the-function)
+                ;; remove-if is to remove fixed closure params.
+                for lexical in (append (remove-if #'null (environment llvm-function-info))
+                                       (arguments llvm-function-info))
+                when lexical ; skip unused fixed
+                  do (setf (gethash lexical *datum-values*) arg)))
+        ;; Branch to the start block.
+        (cmp:irc-br (iblock-tag (bir:start ir)))
+        ;; Lay out blocks.
+        (bir:do-iblocks (ib ir)
+          (layout-iblock ib abi)))))
   the-function)
 
 (defun layout-main-function (function lambda-name abi
@@ -1871,8 +1517,6 @@
            (cmp:module-make-global-string jit-function-name "fn-name"))
          (llvm-function-info (find-llvm-function-info function))
          (the-function (main-function llvm-function-info))
-         (llvm-function-type (llvm-sys:get-function-type the-function))
-         #+(or)(function-description (main-function-description llvm-function-info))
          (cmp:*current-function* the-function)
          (entry-block (cmp:irc-basic-block-create "entry" the-function))
          (*function-current-multiple-value-array-address*
@@ -1881,43 +1525,33 @@
            (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
          (body-irbuilder (llvm-sys:make-irbuilder
                           (cmp:thread-local-llvm-context)))
-         (body-block (cmp:irc-basic-block-create "body"))
-         (source-pos-info (function-source-pos-info function))
-         (lineno (core:source-pos-info-lineno source-pos-info)))
-    (cmp:with-guaranteed-*current-source-pos-info* ()
-      (cmp:with-dbg-function (:lineno lineno
-                              :function-type llvm-function-type
-                              :function the-function)
-        #+(or)(llvm-sys:set-calling-conv the-function 'llvm-sys:fastcc)
-        (llvm-sys:set-personality-fn the-function
-                                     (cmp:irc-personality-function))
-        ;; we'd like to be able to be interruptable at any time, so we
-        ;; need async-safe unwinding tables basically everywhere.
-        ;; (Although in code that ignores interrupts we could loosen this.)
-        (llvm-sys:add-fn-attr2string the-function "uwtable" "async")
-        (when (null (bir:returni function))
-          (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-return))
-        (unless (policy:policy-value (bir:policy function)
-                                     'perform-optimization)
-          (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-inline)
-          (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-optimize-none))
-        (cmp:with-irbuilder (body-irbuilder)
-          (bir:map-iblocks
-           (lambda (ib)
-             (setf (gethash ib *tags*)
-                   (cmp:irc-basic-block-create
-                    (iblock-name ib)))
-             (initialize-iblock-translation ib))
-           function))
-        (cmp:irc-set-insert-point-basic-block entry-block
-                                              cmp:*irbuilder-function-alloca*)
-        (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-          (cmp:with-debug-info-source-position (source-pos-info)
-            (cmp:with-dbg-lexical-block
-                (:lineno (core:source-pos-info-lineno source-pos-info))
-              (layout-main-function* the-function function
-                                     body-irbuilder body-block
-                                     abi :linkage linkage))))))))
+         (body-block (cmp:irc-basic-block-create "body")))
+    #+(or)(llvm-sys:set-calling-conv the-function 'llvm-sys:fastcc)
+    (llvm-sys:set-personality-fn the-function
+                                 (cmp:irc-personality-function))
+    ;; we'd like to be able to be interruptable at any time, so we
+    ;; need async-safe unwinding tables basically everywhere.
+    ;; (Although in code that ignores interrupts we could loosen this.)
+    (llvm-sys:add-fn-attr2string the-function "uwtable" "async")
+    (when (null (bir:returni function))
+      (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-return))
+    (unless (policy:policy-value (bir:policy function)
+                                 'perform-optimization)
+      (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-inline)
+      (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-optimize-none))
+    (with-di-subprogram (the-function
+                         (create-di-main-function
+                          function
+                          (llvm-sys:get-name the-function)))
+      (cmp:irc-set-insert-point-basic-block entry-block
+                                            cmp:*irbuilder-function-alloca*)
+      (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
+        (layout-main-function* the-function function
+                               body-irbuilder body-block
+                               abi :linkage linkage)
+        ;; Finish up by jumping from the entry block to the body.
+        (cmp:irc-br body-block)))
+    the-function))
 
 (defun compute-rest-alloc (cleavir-lambda-list-analysis)
   ;; FIXME: We seriously need to not reparse lambda lists a million times
@@ -1930,8 +1564,7 @@
           (t nil))))
 
 (defun layout-xep-function (xep-arity xep-group function lambda-name abi)
-  (let* ((*datum-values* (make-hash-table :test #'eq))
-         (jit-function-name (jit-function-name lambda-name))
+  (let* ((jit-function-name (jit-function-name lambda-name))
          (cmp:*current-function-name* jit-function-name)
          (cmp:*gv-current-function-name*
            (cmp:module-make-global-string jit-function-name "fn-name")))
@@ -1940,50 +1573,67 @@
       (if (literal:general-entry-placeholder-p xep-arity-function)
           (progn
             )
-          (progn
-            (let* ((llvm-function-type (cmp:fn-prototype arity))
-                   (cmp:*current-function* xep-arity-function)
+          (with-di-subprogram (xep-arity-function
+                               (create-di-xep
+                                function
+                                (llvm-sys:get-name xep-arity-function)
+                                arity))
+            (let* ((cmp:*current-function* xep-arity-function)
                    (entry-block (cmp:irc-basic-block-create "entry" xep-arity-function))
                    (*function-current-multiple-value-array-address* nil)
                    (cmp:*irbuilder-function-alloca*
-                     (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
-                   (source-pos-info (function-source-pos-info function))
-                   (lineno (core:source-pos-info-lineno source-pos-info)))
-              (cmp:with-guaranteed-*current-source-pos-info* ()
-                (cmp:with-dbg-function (:lineno lineno
-                                        :function-type llvm-function-type
-                                        :function xep-arity-function)
-                  (llvm-sys:set-personality-fn xep-arity-function
-                                               (cmp:irc-personality-function))
-                  (llvm-sys:add-fn-attr2string xep-arity-function
-                                               "uwtable" "async")
-                  (when (null (bir:returni function))
-                    (llvm-sys:add-fn-attr xep-arity-function
-                                          'llvm-sys:attribute-no-return))
-                  (unless (policy:policy-value (bir:policy function)
-                                                       'perform-optimization)
-                    (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-no-inline)
-                    (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-optimize-none))
-                  (cmp:irc-set-insert-point-basic-block entry-block
-                                                        cmp:*irbuilder-function-alloca*)
-                  (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-                    (cmp:with-debug-info-source-position (source-pos-info)
-                      (if sys:*drag-native-calls*
-                          (cmp::irc-intrinsic "drag_native_calls"))
-                      (let* ((cleavir-lambda-list-analysis (cmp:xep-group-cleavir-lambda-list-analysis xep-group))
-                             (calling-convention
-                               (cmp:setup-calling-convention xep-arity-function
-                                                             arity
-                                                             :debug-on
-                                                             (policy:policy-value
-                                                              (bir:policy function)
-                                                              'save-register-args)
-                                                             :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
-                                                             :rest-alloc (compute-rest-alloc cleavir-lambda-list-analysis))))
-                        (layout-xep-function* xep-group arity xep-arity-function function calling-convention abi))))))))))))
+                     (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context))))
+              (llvm-sys:set-personality-fn xep-arity-function
+                                           (cmp:irc-personality-function))
+              (llvm-sys:add-fn-attr2string xep-arity-function
+                                           "uwtable" "async")
+              (when (null (bir:returni function))
+                (llvm-sys:add-fn-attr xep-arity-function
+                                      'llvm-sys:attribute-no-return))
+              (unless (policy:policy-value (bir:policy function)
+                                           'perform-optimization)
+                (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-no-inline)
+                (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-optimize-none))
+              (cmp:irc-set-insert-point-basic-block entry-block
+                                                    cmp:*irbuilder-function-alloca*)
+              (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
+                (with-instruction-source-position
+                    ((ensure-origin
+                      (origin-spi (origin-source (bir:origin function)))
+                      999903))
+                  (if sys:*drag-native-calls*
+                      (cmp::irc-intrinsic "drag_native_calls"))
+                  (when (policy:policy-value (bir:policy function)
+                                             'save-register-args)
+                    (save-registers xep-arity-function arity
+                                    (cmp:alloca-register-save-area arity)))
+                  (layout-xep-function* xep-group arity xep-arity-function function abi)))))))))
 
-
-
+;;; Generate code to dump arguments ("registers") to a "register save area" in
+;;; memory, where they can be read by the debugger even in the face of
+;;; heavy optimization.
+(defun save-registers (function arity rsa)
+  (let* ((arguments (llvm-sys:get-argument-list function))
+         (nargs (length arguments))
+         (rsa-type (llvm-sys:array-type-get cmp:%t*% nargs)))
+    (flet ((spill-reg (index reg name)
+             (cmp:irc-store reg
+                            (cmp:irc-typed-gep rsa-type rsa (list 0 index) name)
+                            ;; volatile, so optimizations don't remove it.
+                            t)))
+      (cond ((eq arity :general-entry)
+             ;; special cased, since we pun the non-lispobj arguments.
+             (destructuring-bind (closure nargs args) arguments
+               (spill-reg 0 closure "rsa-closure")
+               (spill-reg 1 (cmp:irc-int-to-ptr nargs cmp:%i8*% "nargs-i8*")
+                          "rsa-nargs")
+               (spill-reg 2 (cmp:irc-bit-cast args cmp:%i8*% "reg-i8*") "rsa-args")))
+            (t
+             (loop for i from 0
+                   for arg in arguments
+                   for name in '("rsa-closure" "rsa-arg0" "rsa-arg1" "rsa-arg2"
+                                 "rsa-arg3" "rsa-arg4" "rsa-arg5" "rsa-arg6")
+                   do (spill-reg i arg name)))))))
 
 (defun maybe-note-return-cast (function)
   (let ((returni (bir:returni function)))
@@ -2221,19 +1871,15 @@ COMPILE-FILE will use the default *clasp-env*."
         (pathname
           (let ((origin (origin-source (bir:origin bir))))
             (if origin
-                (namestring
-                 (core:file-scope-pathname
-                  (core:file-scope
-                   (core:source-pos-info-file-handle origin))))
-                "repl-code"))))
-    ;; Link the C++ intrinsics into the module
+                (core:source-pos-info/pathname origin)
+                #p"repl-code"))))
     (cmp::with-module (:module module)
-      (cmp::cmp-log "Dumping module%N")
-      (cmp::cmp-log-dump-module module)
       (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
-          (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-            (literal:with-rtv
-                (translate bir :linkage linkage :abi abi)))
+          (with-debuginfo (module :path pathname)
+            (multiple-value-prog1
+                (literal:with-rtv
+                    (translate bir :linkage linkage :abi abi))
+              (llvm-sys:optimize-module module cmp:*optimization-level*)))
         (declare (ignore constants-table))
         (jit-add-module-return-function
          cmp:*the-module* startup-shutdown-id ordered-raw-constants-list)))))
@@ -2302,19 +1948,21 @@ COMPILE-FILE will use the default *clasp-env*."
   (let ((eof-value (gensym))
         (eclector.reader:*client* cmp:*cst-client*)
         (cst-to-ast:*compiler* 'cl:compile-file))
-    (loop
-      ;; Required to update the source pos info. FIXME!?
-      (peek-char t source-sin nil)
-      ;; FIXME: if :environment is provided we should probably use a different read somehow
-      (let* ((core:*current-source-pos-info* (cmp:compile-file-source-pos-info source-sin))
-             (cst (eclector.concrete-syntax-tree:read source-sin nil eof-value)))
-        #+debug-monitor(sys:monitor-message "source-pos ~a" core:*current-source-pos-info*)
-        (if (eq cst eof-value)
-            (return nil)
-            (progn
-              (when *compile-print* (cmp::describe-form (cst:raw cst)))
-              (core:with-memory-ramp (:pattern 'gctools:ramp)
-                (compile-file-cst cst environment))))))))
+    (with-debuginfo (cmp:*the-module*
+                     :path cmp::*compile-file-source-debug-pathname*)
+      (loop
+        ;; Required to update the source pos info. FIXME!?
+        (peek-char t source-sin nil)
+        ;; FIXME: if :environment is provided we should probably use a different read somehow
+        (let* ((core:*current-source-pos-info* (cmp:compile-file-source-pos-info source-sin))
+               (cst (eclector.concrete-syntax-tree:read source-sin nil eof-value)))
+          #+debug-monitor(sys:monitor-message "source-pos ~a" core:*current-source-pos-info*)
+          (if (eq cst eof-value)
+              (return nil)
+              (progn
+                (when *compile-print* (cmp::describe-form (cst:raw cst)))
+                (core:with-memory-ramp (:pattern 'gctools:ramp)
+                  (compile-file-cst cst environment)))))))))
 
 (defun cleavir-compile-file (input-file &rest kwargs)
   (let ((cmp:*cleavir-compile-file-hook*

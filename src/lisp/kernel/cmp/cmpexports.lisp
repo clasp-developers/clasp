@@ -1,7 +1,6 @@
 (in-package :cmp)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(with-debug-info-source-position
-            calculate-cleavir-lambda-list-analysis
+  (export '(calculate-cleavir-lambda-list-analysis
             module-report
             transform-lambda-parts
             codegen-startup-shutdown
@@ -127,16 +126,9 @@
             irc-apply
             function-type-create-on-the-fly
             evaluate-foreign-arguments
-            calling-convention-closure
-            calling-convention-vaslist*
-            calling-convention-vaslist.va-arg
-            calling-convention-nargs
-            calling-convention-register-args
             cmp-log
             cmp-log-dump-module
             cmp-log-dump-function
-            make-file-metadata
-            make-function-metadata
             function-info
             function-info-cleavir-lambda-list-analysis
             make-function-info
@@ -149,7 +141,6 @@
             compile-error-if-not-enough-arguments
             compile-lambda-function
             compile-lambda-list-code
-            make-calling-convention
             compiler-error
             compiler-warn
             compiler-style-warn
@@ -194,6 +185,7 @@
             alloca-vaslist
             alloca-temp-values
             alloca-arguments
+            alloca-register-save-area
             irc-and
             irc-or
             irc-xor
@@ -310,8 +302,6 @@
             jit-constant-unique-string-ptr
             module-make-global-string
             make-boot-function-global-variable
-            setup-calling-convention
-            initialize-calling-convention
             ensure-cleavir-lambda-list
             ensure-cleavir-lambda-list-analysis
             process-cleavir-lambda-list-analysis
@@ -319,15 +309,6 @@
             cleavir-lambda-list-analysis-rest
             process-bir-lambda-list
             typeid-core-unwind
-            *dbg-generate-dwarf*
-            *dbg-current-function-metadata*
-            *dbg-current-function-lineno*
-            *dbg-current-scope*
-            with-guaranteed-*current-source-pos-info*
-            with-dbg-function
-            with-dbg-lexical-block
-            dbg-variable-alloca
-            dbg-variable-value
             compile-file-source-pos-info
             c++-field-offset
             c++-field-index
@@ -335,7 +316,6 @@
             c++-struct*-type
             c++-field-ptr
             %closure%.offset-of[n]/t*
-            with-debug-info-generator
             with-irbuilder
             with-landing-pad
             make-uintptr_t

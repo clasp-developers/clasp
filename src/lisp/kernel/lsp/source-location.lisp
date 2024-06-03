@@ -60,12 +60,10 @@
 ;; FIXME: Move this source debug stuff to an interface
 ;; (in SPI, probably)
 (defun source-position-info->source-location (source-position-info definer)
-  (let ((csi (core:file-scope
-              (core:source-pos-info-file-handle source-position-info))))
-    (make-source-location
-     :pathname (core:file-scope-pathname csi)
-     :offset (core:source-pos-info-filepos source-position-info)
-     :definer definer)))
+  (make-source-location
+   :pathname (core:source-pos-info/pathname source-position-info)
+   :offset (core:source-pos-info-filepos source-position-info)
+   :definer definer))
 
 ;;; Class source positions are just stored in a slot, or ones from C++ are
 ;;; stored as sysprops. We prefer the slot.

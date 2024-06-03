@@ -29,9 +29,4 @@ THE SOFTWARE.
 namespace core {
 FORWARD(FileScope);
 FORWARD(SourcePosInfo);
-
-uint clasp_sourcePosInfo_fileHandle(SourcePosInfo_sp info);
-size_t clasp_sourcePosInfo_filepos(SourcePosInfo_sp info);
-uint clasp_sourcePosInfo_lineno(SourcePosInfo_sp info);
-uint clasp_sourcePosInfo_column(SourcePosInfo_sp info);
 }; // namespace core

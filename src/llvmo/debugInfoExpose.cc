@@ -258,9 +258,11 @@ CL_VALUE_ENUM(kw::_sym_CSK_MD5, llvm::DIFile::CSK_MD5);   // Use it as zero valu
 CL_VALUE_ENUM(kw::_sym_CSK_SHA1, llvm::DIFile::CSK_SHA1); // Use it as zero value.
 CL_END_ENUM(_sym_CSKEnum);
 
+CL_LAMBDA(dibuilder addr);
 CL_LISPIFY_NAME(createExpression);
 CL_EXTERN_DEFMETHOD(DIBuilder_O,
                     (llvm::DIExpression * (llvm::DIBuilder::*)(llvm::ArrayRef<uint64_t>)) & llvm::DIBuilder::createExpression);
+
 CL_LISPIFY_NAME(createExpressionNone);
 DOCGROUP(clasp);
 CL_DEFUN llvm::DIExpression* llvm_sys__createExpressionNone(DIBuilder_sp dib) { return dib->wrappedPtr()->createExpression(); }
@@ -275,12 +277,15 @@ CL_VALUE_ENUM(kw::_sym_DNTK_GNU, llvm::DICompileUnit::DebugNameTableKind::GNU);
 CL_VALUE_ENUM(kw::_sym_DNTK_None, llvm::DICompileUnit::DebugNameTableKind::None);
 CL_END_ENUM(_sym_DNTKEnum);
 
+CL_LAMBDA(dibuilder lang file producer optimizedp flags runtime-version split-name emission-kind DW-old split-debug-inlining debug-info-for-profiling name-table-kind ranges-base-address sysroot sdk);
 CL_LISPIFY_NAME(createCompileUnit);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createCompileUnit);
 
+CL_LAMBDA(dibuilder filename directory checksum source);
 CL_LISPIFY_NAME(createFile);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createFile);
 
+CL_LAMBDA(dibuilder scope name linkage-name file lineno ty scope-line flags subprogram-flags template-params decl thrown-types annotations target-func-name);
 CL_LISPIFY_NAME(createFunction);
 CL_EXTERN_DEFMETHOD(DIBuilder_O,
                     (llvm::DISubprogram * (llvm::DIBuilder::*)(llvm::DIScope * Scope, llvm::StringRef Name,
@@ -292,33 +297,84 @@ CL_EXTERN_DEFMETHOD(DIBuilder_O,
                                                                llvm::StringRef TargetFunctionName)) &
                         llvm::DIBuilder::createFunction);
 
+CL_LAMBDA(dibuilder scope file lineno column);
 CL_LISPIFY_NAME(createLexicalBlock);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createLexicalBlock);
+
+CL_LAMBDA(dibuilder name size encoding flags);
 CL_LISPIFY_NAME(createBasicType);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createBasicType);
+CL_LAMBDA(dibuilder type name file lineno context alignment flags annotations);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createTypedef);
+CL_LAMBDA(dibuilder pointee-type size alignment dwarf-address-space name annotations);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createPointerType);
 
+CL_LAMBDA(dibuilder);
 CL_LISPIFY_NAME(createNullPtrType);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createNullPtrType);
+CL_LAMBDA(dibuilder scope name file lineno size alignment flags derived-from elements runtime-lang vtable-holder unique-id);
+CL_LISPIFY_NAME(createStructType);
+CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createStructType);
+
+CL_LAMBDA(ditype);
+CL_LISPIFY_NAME(getSizeInBits);
+CL_EXTERN_DEFMETHOD(DIType_O, &llvm::DIType::getSizeInBits);
+
+CL_LAMBDA(dibuilder);
 CL_LISPIFY_NAME(createUnspecifiedParameter);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createUnspecifiedParameter);
+CL_LAMBDA(dibuilder parameter-types flags calling-convention);
 CL_LISPIFY_NAME(createSubroutineType);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createSubroutineType);
+CL_LAMBDA(dibuilder scope name file lineno type always-preserve-p flags alignment);
 CL_LISPIFY_NAME(createAutoVariable);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createAutoVariable);
+CL_LAMBDA(dibuilder scope name argno file lineno type always-preserve-p flags annotations);
 CL_LISPIFY_NAME(createParameterVariable);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createParameterVariable);
 
-CL_LISPIFY_NAME(insertDbgValueIntrinsicBasicBlock);
-CL_EXTERN_DEFMETHOD(DIBuilder_O, (llvm::Instruction * (llvm::DIBuilder::*)(llvm::Value * Val, llvm::DILocalVariable* VarInfo,
-                                                                           llvm::DIExpression* Expr, const llvm::DILocation* DL,
-                                                                           llvm::BasicBlock* InsertAtEnd)) &
-                                     llvm::DIBuilder::insertDbgValueIntrinsic);
+// We want to use these instead of manually inserting an intrinsic
+// call so that when LLVM transitions to debug info records we
+// don't have to do anything.
+// (Despite the name, insertDbgValueIntrinsic can insert the new
+//  records rather than an intrinsic.)
+// We don't expose the insert-before-instruction versions as we
+// do not need them.
+// FIXME: Function instead of a method because we don't really
+// care about the DbgInstPtr return value and exposing it would
+// be rather complex.
+CL_LAMBDA(dibuilder val varinfo expr dilocation basic-block);
+CL_LISPIFY_NAME(dibuilder/insertDbgValueIntrinsic);
+CL_DEFUN void llvm_sys__insert_dbg_value(llvm::DIBuilder& DIBuilder,
+                                         llvm::Value* V,
+                                         llvm::DILocalVariable* VarInfo,
+                                         llvm::DIExpression* Expr,
+                                         DILocation_sp DL,
+                                         llvm::BasicBlock* InsertAtEnd)
+{
+  // FIXME: why not just use from_object?
+  // This is cargo-culted from IRBuilderBase_O::SetCurrentDebugLocation
+  llvm::DILocation* real_diloc = DL->operator llvm::DILocation*();
+  DIBuilder.insertDbgValueIntrinsic(V, VarInfo, Expr, real_diloc, InsertAtEnd);
+}
+CL_LAMBDA(dibuilder val varinfo expr dilocation basic-block);
+CL_LISPIFY_NAME(dibuilder/insertDeclare);
+CL_DEFUN void llvm_sys__insert_declare(llvm::DIBuilder& DIBuilder,
+                                       llvm::Value* Storage,
+                                       llvm::DILocalVariable* VarInfo,
+                                       llvm::DIExpression* Expr,
+                                       DILocation_sp DL,
+                                       llvm::BasicBlock* InsertAtEnd)
+{
+  llvm::DILocation* real_diloc = DL->operator llvm::DILocation*();
+  DIBuilder.insertDeclare(Storage, VarInfo, Expr, real_diloc, InsertAtEnd);
+}
 
+CL_LAMBDA(dibuilder);
 CL_LISPIFY_NAME(finalize);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::finalize);
 ;
+CL_LAMBDA(dibuilder subprogram);
 CL_LISPIFY_NAME(finalizeSubprogram);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::finalizeSubprogram);
 ;
@@ -365,6 +421,10 @@ CL_DEFMETHOD DITypeRefArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp e
     } else if (DINode_sp di = oCar(cur).asOrNull<DINode_O>()) {
       llvm::MDNode* mdnode = di->operator llvm::MDNode*();
       vector_values.push_back(mdnode);
+    } else if (oCar(cur).nilp()) {
+      // null metadata is used in a few places, such as to indicate
+      // a void return type in a DISubroutineType.
+      vector_values.push_back(nullptr);
     } else {
       SIMPLE_ERROR("Handle conversion of {} to llvm::Value*", _rep_(oCar(cur)));
     }
@@ -520,9 +580,12 @@ CL_DEFUN DWARFContext_sp DWARFContext_O::createDWARFContext(ObjectFile_sp ofi) {
 }
 
 CL_DEFMETHOD size_t DWARFContext_O::getNumCompileUnits() const { return this->wrappedPtr()->getNumCompileUnits(); }
+
+CL_LAMBDA(dwarf-context index);
 CL_LISPIFY_NAME(get-unit-at-index);
 CL_EXTERN_DEFMETHOD(DWARFContext_O, (llvm::DWARFUnit * (llvm::DWARFContext::*)(unsigned int)) & llvm::DWARFContext::getUnitAtIndex);
 
+CL_LAMBDA(dwarf-context unit);
 CL_LISPIFY_NAME(get-line-table-for-unit);
 CL_EXTERN_DEFMETHOD(DWARFContext_O, (const llvm::DWARFDebugLine::LineTable* (llvm::DWARFContext::*)(DWARFUnit*)) &
                                         llvm::DWARFContext::getLineTableForUnit);

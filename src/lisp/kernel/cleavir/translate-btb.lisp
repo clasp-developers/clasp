@@ -178,12 +178,8 @@
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
     ;; Parse lambda list.
     (cmp:with-landing-pad nil
-      (let ((ret (cmp:compile-lambda-list-code lambda-list-analysis
-                                               calling-convention
-                                               arity
-                                               :argument-out #'cc::out)))
-        (unless ret
-          (error "cmp:compile-lambda-list-code returned NIL which means this is not a function that should be generated")))
+      (cmp:compile-lambda-list-code lambda-list-analysis
+                                    calling-convention arity)
       ;; Import cells.
       (let* ((closure-vec (first (llvm-sys:get-argument-list xep)))
              (llvm-function-info (cc::find-llvm-function-info ir))
@@ -194,30 +190,30 @@
                      when import ; skip unused fixed closure entries
                        collect (cmp:irc-t*-load-atomic
                                 (cmp::gen-memref-address closure-vec offset))))
+             #+(or)
              (source-pos-info (cc::function-source-pos-info ir)))
         ;; Tail call the real function.
-        (cmp:with-debug-info-source-position (source-pos-info)
-          (let* ((main-function (cc::main-function llvm-function-info))
-                 (function-type (llvm-sys:get-function-type main-function))
-                 (arguments
-                   (mapcar (lambda (arg)
-                             (cc::translate-cast (cc::in arg)
-                                             '(:object) (cc-bmir:rtype arg)))
-                           (core:arguments llvm-function-info)))
-                 (c
-                   (cmp:irc-create-call-wft
-                    function-type main-function
-                    ;; Augment the environment lexicals as a local call would.
-                    (nconc environment-values arguments)))
-                 (returni (bir:returni ir))
-                 (rrtype (and returni (cc-bmir:rtype (bir:input returni)))))
-            #+(or)(llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
-            ;; Box/etc. results of the local call.
-            (if returni
-                (cmp:irc-ret (cc::translate-cast
-                              (cc::local-call-rv->inputs c rrtype)
-                              rrtype :multiple-values))
-                (cmp:irc-unreachable)))))))
+        (let* ((main-function (cc::main-function llvm-function-info))
+               (function-type (llvm-sys:get-function-type main-function))
+               (arguments
+                 (mapcar (lambda (arg)
+                           (cc::translate-cast (cc::in arg)
+                                               '(:object) (cc-bmir:rtype arg)))
+                         (core:arguments llvm-function-info)))
+               (c
+                 (cmp:irc-create-call-wft
+                  function-type main-function
+                  ;; Augment the environment lexicals as a local call would.
+                  (nconc environment-values arguments)))
+               (returni (bir:returni ir))
+               (rrtype (and returni (cc-bmir:rtype (bir:input returni)))))
+          #+(or)(llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
+          ;; Box/etc. results of the local call.
+          (if returni
+              (cmp:irc-ret (cc::translate-cast
+                            (cc::local-call-rv->inputs c rrtype)
+                            rrtype :multiple-values))
+              (cmp:irc-unreachable))))))
   xep)
 
 (defun layout-xep-function (xep arity ir lambda-list-analysis lambda-name)
@@ -235,34 +231,24 @@
            (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
          (source-pos-info (cc::function-source-pos-info ir))
          (lineno (core:source-pos-info-lineno source-pos-info)))
-    (cmp:with-guaranteed-*current-source-pos-info* ()
-      (cmp:with-dbg-function (:lineno lineno
-                              :function-type llvm-function-type
-                              :function xep)
-        (llvm-sys:set-personality-fn xep (cmp:irc-personality-function))
-        (llvm-sys:add-fn-attr2string xep "uwtable" "async")
-        (when (null (bir:returni ir))
-          (llvm-sys:add-fn-attr xep 'llvm-sys:attribute-no-return))
-        (unless (policy:policy-value (bir:policy ir)
-                                     'perform-optimization)
-          (llvm-sys:add-fn-attr xep 'llvm-sys:attribute-no-inline)
-          (llvm-sys:add-fn-attr xep 'llvm-sys:attribute-optimize-none))
-        (cmp:irc-set-insert-point-basic-block entry-block
-                                              cmp:*irbuilder-function-alloca*)
-        (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-          (cmp:with-debug-info-source-position (source-pos-info)
-            (when sys:*drag-native-calls*
-              (cmp::irc-intrinsic "drag_native_calls"))
-            (let ((calling-convention
-                    (cmp:setup-calling-convention xep
-                                                  arity
-                                                  :debug-on
-                                                  (policy:policy-value
-                                                   (bir:policy ir)
-                                                   'save-register-args)
-                                                  :cleavir-lambda-list-analysis lambda-list-analysis
-                                                  :rest-alloc (cc::compute-rest-alloc lambda-list-analysis))))
-              (layout-xep-function* xep arity ir lambda-list-analysis calling-convention))))))))
+    (llvm-sys:set-personality-fn xep (cmp:irc-personality-function))
+    (llvm-sys:add-fn-attr2string xep "uwtable" "async")
+    (when (null (bir:returni ir))
+      (llvm-sys:add-fn-attr xep 'llvm-sys:attribute-no-return))
+    (unless (policy:policy-value (bir:policy ir)
+                                 'perform-optimization)
+      (llvm-sys:add-fn-attr xep 'llvm-sys:attribute-no-inline)
+      (llvm-sys:add-fn-attr xep 'llvm-sys:attribute-optimize-none))
+    (cmp:irc-set-insert-point-basic-block entry-block
+                                          cmp:*irbuilder-function-alloca*)
+    (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
+      (when sys:*drag-native-calls*
+        (cmp::irc-intrinsic "drag_native_calls"))
+      (let ((calling-convention
+              (cmp:initialize-calling-convention xep
+                                                 arity
+                                                 :rest-alloc (cc::compute-rest-alloc lambda-list-analysis))))
+        (layout-xep-function* xep arity ir lambda-list-analysis calling-convention)))))
 
 (defun layout-xep-group (function lambda-name abi)
   (declare (ignore abi))
@@ -334,10 +320,7 @@
   (if bir
       (let ((origin (bir:origin bir)))
         (if origin
-            (namestring
-             (core:file-scope-pathname
-              (core:file-scope
-               (core:source-pos-info-file-handle origin))))
+            (namestring (core:source-pos-info/pathname origin))
             "repl-code"))
       "repl-code"))
 
@@ -351,9 +334,7 @@
         (cc::*function-info* (make-hash-table :test #'eq))
         (cc::*literal-fn* #'reference-literal))
     (cmp::with-module (:module module)
-      (cmp:with-debug-info-generator (:module module
-                                      :pathname debug-namestring)
-        (layout-module bir-module abi :toplevels toplevels))
+      (layout-module bir-module abi :toplevels toplevels)
       (cmp:irc-verify-module-safe module)
       (cmp::potentially-save-module))
     (make-instance 'translation
@@ -455,9 +436,7 @@
          :function-name (cc::get-or-create-lambda-name irfun)
          :lambda-list (bir:original-lambda-list irfun)
          :docstring (bir:docstring irfun)
-         :source-pathname (core:file-scope-pathname
-                           (core:file-scope
-                            (core:source-pos-info-file-handle spi)))
+         :source-pathname (core:source-pos-info/pathname spi)
          :lineno (core:source-pos-info-lineno spi)
          ;; Why 1+?
          :column (1+ (core:source-pos-info-column spi))

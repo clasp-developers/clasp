@@ -214,9 +214,7 @@ Not a valid documentation object ~A"
     ;; FIXME: Too many fields and the underlying function makes a new SPI. Dumb.
     (core:set-source-pos-info
      gfun
-     (core:file-scope-pathname
-      (core:file-scope
-       (core:source-pos-info-file-handle spi)))
+     (core:source-pos-info/pathname spi)
      (core:source-pos-info-filepos spi)
      (core:source-pos-info-lineno spi)
      ;; 1+ copied from cmpir.lisp. Dunno why it's there.

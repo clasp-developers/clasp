@@ -264,18 +264,26 @@
                    )
                  (format sout "#endif // EXPOSE_FUNCTION_BATCH~a~%" batch-num))))))
 
-(defun mangle-and-wrap-name (name arg-types)
+(defun sanitize (stream argument colonp atsignp &rest params)
+  (declare (ignore argument colonp atsignp))
+  (loop with underscore = nil
+        for c across (write-to-string argument)
+        when (alphanumericp c)
+          do (setf underscore nil)
+             (princ c stream)
+        else unless underscore
+               do (princ #\_ stream)
+                  (setf underscore t)))
+
+(defun mangle-and-wrap-name (name return-type arg-types)
   "* Arguments
 - name :: A string
 * Description
 Convert colons to underscores"
-  (let ((type-part (with-output-to-string (sout)
-                     (loop for type in arg-types
-                           do (loop for c across type
-                                    do (if (alphanumericp c)
-                                           (princ c sout)
-                                           (princ #\_ sout)))))))
-    (format nil "wrapped_~a_~a" (substitute #\_ #\: name) type-part)))
+  (format nil "wrapped_~/cscrape:sanitize/_~/cscrape:sanitize/_~{~/cscrape:sanitize/~^_~}"
+          name
+          return-type
+          arg-types))
 
 (defgeneric direct-call-function (c-code cl-code func c-code-info cl-code-info))
 
@@ -288,7 +296,7 @@ Convert colons to underscores"
     (if (function-ptr-type function-ptr)
         (multiple-value-bind (return-type arg-types)
             (convert-function-ptr-to-c++-types function-ptr)
-          (let* ((wrapped-name (mangle-and-wrap-name (function-name% func) arg-types))
+          (let* ((wrapped-name (mangle-and-wrap-name (function-name% func) return-type arg-types))
                  (one-func-code
                    (generate-wrapped-function wrapped-name
                                               (function-ptr-namespace function-ptr)
@@ -314,7 +322,7 @@ Convert colons to underscores"
 (defmethod direct-call-function (c-code cl-code (func expose-defun) c-code-info cl-code-info)
   (multiple-value-bind (return-type arg-types)
       (parse-types-from-signature (signature% func))
-    (let* ((wrapped-name (mangle-and-wrap-name (function-name% func) arg-types))
+    (let* ((wrapped-name (mangle-and-wrap-name (function-name% func) return-type arg-types))
            (one-func-code
             (generate-wrapped-function wrapped-name
                                        (namespace% func)
@@ -336,7 +344,7 @@ Convert colons to underscores"
 (defmethod direct-call-function (c-code cl-code (func expose-defun-setf) c-code-info cl-code-info)
   (multiple-value-bind (return-type arg-types)
       (parse-types-from-signature (signature% func))
-    (let* ((wrapped-name (mangle-and-wrap-name (function-name% func) arg-types))
+    (let* ((wrapped-name (mangle-and-wrap-name (function-name% func) return-type arg-types))
            (one-func-code
             (generate-wrapped-function wrapped-name
                                        (namespace% func)

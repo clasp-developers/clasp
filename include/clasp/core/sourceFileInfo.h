@@ -26,8 +26,6 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#define USE_WEAK_HASH_TABLE_FOR_SOURCE_POS_INFO 1
-
 #include <clasp/core/object.h>
 #include <clasp/core/pathname.fwd.h>
 #include <clasp/core/fileSystem.fwd.h>
@@ -58,22 +56,14 @@ public: // ctor/dtor for classes with shared virtual base
   explicit FileScope_O();
   virtual ~FileScope_O(){};
   void initialize() override;
-  GCPRIVATE : // instance variables here
-              Pathname_sp _pathname;
-  /*! Allocated buffer that stores the file name until the program exits */
-  char* _PermanentPathName;
-  char* _PermanentFileName;
+GCPRIVATE : // instance variables here
+  Pathname_sp _pathname;
   int _FileHandle;
 
 public: // Functions here
   int fileHandle() const { return this->_FileHandle; };
-  string fileName() const;
-  string parentPathName() const;
-  string namestring() const;
   CL_LISPIFY_NAME("FileScope-pathname");
   CL_DEFMETHOD Pathname_sp pathname() const { return this->_pathname; };
-  const char* permanentPathName();
-  const char* permanentFileName();
   string __repr__() const override;
 }; // FileScope class
 
@@ -90,10 +80,10 @@ public:
 public: // ctor/dtor for classes with shared virtual base
   explicit SourcePosInfo_O()
       : _FileId(UNDEF_UINT), _Filepos(0), _Lineno(0), _Column(0), _FunctionScope(nil<T_O>()),
-        _InlinedAt(nil<T_O>()){}; //, _Filepos(0) {};
+        _InlinedAt(nil<T_O>()){};
 public:                           // instance variables here
   SourcePosInfo_O(uint spf, size_t filepos, uint spln, uint spc, T_sp function_scope, T_sp inlined_at)
-      : _FileId(spf), _Filepos(filepos), _Lineno(spln), _Column(spc), //, _Expander(expander) {}
+      : _FileId(spf), _Filepos(filepos), _Lineno(spln), _Column(spc),
         _FunctionScope(function_scope), _InlinedAt(inlined_at){};
 
 public:
@@ -109,7 +99,6 @@ public:
   int column() const { return this->_Column; };
   T_sp function_scope() const { return this->_FunctionScope; };
   T_sp inlined_at() const { return this->_InlinedAt; };
-  //  bool equalp(T_sp obj) const;
 public:
   uint _FileId;
   size_t _Filepos;
@@ -117,10 +106,8 @@ public:
   uint _Column;
   T_sp _FunctionScope;
   T_sp _InlinedAt;
-  //	Function_sp 	_Expander;
-  CL_DEFMETHOD size_t source_file_pos_filepos() const { return this->_Filepos; }
-  CL_DEFMETHOD size_t source_file_pos_lineno() const { return this->_Lineno; }
-  CL_DEFMETHOD size_t source_file_pos_column() const { return this->_Column; }
+  CL_LISPIFY_NAME(SourcePosInfo/pathname)
+  CL_DEFMETHOD Pathname_sp pathname() const;
   SourcePosInfo_sp source_pos_info_copy() const;
   T_sp setf_source_pos_info_inlined_at(T_sp inlinedAt);
   T_sp source_pos_info_inlined_at() const;
@@ -133,32 +120,6 @@ SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool filenamep,
                                          bool linenop, size_t column, bool columnp, T_sp function_scope = nil<T_O>(),
                                          bool function_scope_p = false, T_sp inlined_at = nil<T_O>(), bool inlined_at_p = false,
                                          T_sp defaults = nil<T_O>(), bool defaults_p = false);
-
-inline core::Fixnum safe_fileId(T_sp spi) {
-  if (spi.nilp())
-    return 0;
-  return gc::As<SourcePosInfo_sp>(spi)->_FileId;
-}
-
-inline core::Fixnum safe_filepos(T_sp spi) {
-  if (spi.nilp())
-    return 0;
-  return gc::As<SourcePosInfo_sp>(spi)->_FileId;
-}
-
-inline core::Fixnum safe_lineno(T_sp spi) {
-  if (spi.nilp())
-    return 0;
-  return gc::As<SourcePosInfo_sp>(spi)->_Lineno;
-}
-
-inline core::Fixnum safe_column(T_sp spi) {
-  if (spi.nilp())
-    return 0;
-  return gc::As<SourcePosInfo_sp>(spi)->_Column;
-}
-// Pass all arguments to a FunctionClosure
-#define SOURCE_POS_INFO_FIELDS(spi) safe_fileId(spi), safe_filepos(spi), safe_lineno(spi), safe_column(spi)
 }; // namespace core
 template <> struct gctools::GCInfo<core::SourcePosInfo_O> {
   static bool constexpr NeedsInitialization = false;

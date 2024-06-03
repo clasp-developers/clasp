@@ -466,7 +466,7 @@
          (id (cmp::next-jit-compile-counter))
          (varname (format nil "callback-lisp-function-~d" id))
          (callback-name (format nil "callback-~d" id)))
-    (cmp::with-module (:module module :optimize nil)
+    (cmp::with-module (:module module)
       (let ((var (llvm-sys:make-global-variable module cmp:%t*% nil
                                                 'llvm-sys:external-linkage
                                                 (llvm-sys:undef-value-get

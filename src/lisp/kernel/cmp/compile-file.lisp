@@ -166,7 +166,6 @@
                                  &key
                                    environment
                                    image-startup-position
-                                   (optimize t)
                                    (optimize-level *optimization-level*))
   "* Arguments
 - source-sin :: An input stream to read forms from.
@@ -175,22 +174,16 @@ Compile a Lisp source stream and return a corresponding LLVM module."
   (let* ((name (namestring *compile-file-pathname*))
          (module (llvm-create-module name))
          run-all-name)
-    (unless module (error "module is NIL"))
     (cmp-log "About to with-module%N")
-    (with-module (:module module
-                  :optimize (when optimize #'llvm-sys:optimize-module)
-                  :optimize-level optimize-level)
+    (with-module (:module module)
       ;; (1) Generate the code
-      (cmp-log "About to with-debug-info-generator%N")
-      (with-debug-info-generator (:module *the-module*
-                                  :pathname *compile-file-source-debug-pathname*)
-        (cmp-log "About to with-make-new-run-all%N")
-        (with-make-new-run-all (run-all-function name)
-          (cmp-log "About to with-literal-table%N")
-          (with-literal-table (:id 0)
-            (cmp-log "About to loop-read-and-compile-file-forms%N")
-            (loop-read-and-compile-file-forms source-sin environment))
-          (setf run-all-name (llvm-sys:get-name run-all-function))))
+      (cmp-log "About to with-make-new-run-all%N")
+      (with-make-new-run-all (run-all-function name)
+        (cmp-log "About to with-literal-table%N")
+        (with-literal-table (:id 0)
+          (cmp-log "About to loop-read-and-compile-file-forms%N")
+          (loop-read-and-compile-file-forms source-sin environment))
+        (setf run-all-name (llvm-sys:get-name run-all-function)))
       (cmp-log "About to verify the module%N")
       (cmp-log-dump-module *the-module*)
       (irc-verify-module-safe *the-module*)
@@ -199,9 +192,7 @@ Compile a Lisp source stream and return a corresponding LLVM module."
       (make-boot-function-global-variable module run-all-name
                                           :position image-startup-position
                                           :register-library t))
-    ;; Now at the end of with-module another round of optimization is done
-    ;; but the RUN-ALL is now referenced by the CTOR and so it won't be optimized away
-    ;; ---- MOVE OPTIMIZATION in with-module to HERE ----
+    (llvm-sys:optimize-module module optimize-level)
     (quick-module-dump module "postoptimize")
     module))
 
@@ -244,15 +235,14 @@ Compile a Lisp source stream and return a corresponding LLVM module."
                        ((:source-debug-offset
                          *compile-file-source-debug-offset*)
                         0)
-                       ;; these ought to be removed, or at least made
+                       ;; this ought to be removed, or at least made
                        ;; to use lisp-level optimization policy rather
-                       ;; than what they do now, which is LLVM stuff.
-                       (optimize t)
+                       ;; than what it does now, which is LLVM stuff.
                        (optimize-level *optimization-level*)
                      &allow-other-keys)
   ;; These are all just passed along to other functions.
   (declare (ignore output-file environment type
-                   image-startup-position optimize optimize-level))
+                   image-startup-position optimize-level))
   "See CLHS compile-file."
   (with-compilation-unit ()
     (let* ((output-path (apply #'compile-file-pathname input-file args))
@@ -289,7 +279,6 @@ Compile a Lisp source stream and return a corresponding LLVM module."
 
 (defun compile-stream/serial (input-stream output-path &rest args
                               &key
-                                (optimize t)
                                 (optimize-level *optimization-level*)
                                 (output-type *default-output-type*)
                                 ;; type can be either :kernel or :user
@@ -307,7 +296,6 @@ Compile a Lisp source stream and return a corresponding LLVM module."
             (let ((module (compile-stream-to-module input-stream
                                                     :environment environment
                                                     :image-startup-position image-startup-position
-                                                    :optimize optimize
                                                     :optimize-level optimize-level)))
               (compile-file-output-module module output-path output-type
                                           type

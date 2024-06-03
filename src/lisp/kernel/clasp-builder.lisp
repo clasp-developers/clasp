@@ -230,13 +230,11 @@
     (message :err "About to exit clasp")))
 
 (defun prepare-metadata (system
-                         &aux (make-create-file-args (find-symbol "MAKE-CREATE-FILE-ARGS" "CMP")))
-  "Call make-create-file-args with each system path and the installed path so that when the
-DIFile is actually created the argument list passed to llvm-sys:create-file will have already
-been initialized with install path versus the build path of the source code file."
+                         &aux (setf-translation (fdefinition (list 'setf (find-symbol "DEBUG-PATHNAME-TRANSLATION" "CLASP-CLEAVIR")))))
+  "Set up translations for debug info such that we dump the installed paths into DWARF, rather than the build-time logical pathname translation."
   (mapc #'(lambda (entry &aux (source-path (getf entry :source-path))
                               (install-path (getf entry :install-path)))
-            (funcall make-create-file-args source-path (namestring source-path) install-path))
+            (funcall setf-translation install-path source-path))
         system))
 
 (defun link-modules (output-file all-modules)

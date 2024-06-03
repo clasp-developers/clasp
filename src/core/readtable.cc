@@ -269,18 +269,16 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Error signaler for when a comma (or splice) is outside a backquote.)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__reader_error_backquote_context(T_sp sin) {
-  FileScope_sp info = gc::As<FileScope_sp>(core__file_scope(sin));
-  // FIXME: Use a real condition class.
-  // SIMPLE_ERROR("Comma outside of backquote in file: {} line: {}", info->fileName() , stream_input_line(sin));
-  string fn = info->fileName();
-  if (fn.compare("-no-name-") == 0) {
-    READER_ERROR(SimpleBaseString_O::make("Comma outside of backquote in stream at line: ~a column ~a."),
-                 Cons_O::createList(Cons_O::create(make_fixnum(stream_input_line_as_uint(sin)), nil<T_O>()),
+  T_sp path = stream_pathname(sin);
+  if (path.nilp()) {
+    READER_ERROR(SimpleBaseString_O::make("Comma outside of backquote in stream: ~a at line: ~a column ~a."),
+                 Cons_O::createList(sin,
+                                    Cons_O::create(make_fixnum(stream_input_line_as_uint(sin)), nil<T_O>()),
                                     Cons_O::create(make_fixnum(stream_input_column_as_uint(sin)), nil<T_O>())),
                  sin);
   } else {
     READER_ERROR(SimpleBaseString_O::make("Comma outside of backquote in file: ~a line: ~a column ~a."),
-                 Cons_O::createList(SimpleBaseString_O::make(fn),
+                 Cons_O::createList(path,
                                     Cons_O::create(make_fixnum(stream_input_line_as_uint(sin)), nil<T_O>()),
                                     Cons_O::create(make_fixnum(stream_input_column_as_uint(sin)), nil<T_O>())),
                  sin);
@@ -329,16 +327,16 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(reader_error_unmatched_close_parenthesis)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__reader_error_unmatched_close_parenthesis(T_sp sin, Character_sp ch) {
-  FileScope_sp info = gc::As<FileScope_sp>(core__file_scope(sin));
-  string fn = info->fileName();
-  if (fn.compare("-no-name-") == 0) {
-    READER_ERROR(SimpleBaseString_O::make("Unmatched close parenthesis in stream at line: ~a column ~a."),
-                 Cons_O::createList(Cons_O::create(make_fixnum(stream_input_line_as_uint(sin)), nil<T_O>()),
+  T_sp path = stream_pathname(sin);
+  if (path.nilp()) {
+    READER_ERROR(SimpleBaseString_O::make("Unmatched close parenthesis in stream ~a at line: ~a column ~a."),
+                 Cons_O::createList(sin,
+                                    Cons_O::create(make_fixnum(stream_input_line_as_uint(sin)), nil<T_O>()),
                                     Cons_O::create(make_fixnum(stream_input_column_as_uint(sin)), nil<T_O>())),
                  sin);
   } else {
     READER_ERROR(SimpleBaseString_O::make("Unmatched close parenthesis in file ~a line: ~a column ~a."),
-                 Cons_O::createList(SimpleBaseString_O::make(fn),
+                 Cons_O::createList(path,
                                     Cons_O::create(make_fixnum(stream_input_line_as_uint(sin)), nil<T_O>()),
                                     Cons_O::create(make_fixnum(stream_input_column_as_uint(sin)), nil<T_O>())),
                  sin);
@@ -405,18 +403,15 @@ CL_DEFUN T_mv core__dispatch_macro_character(T_sp sin, Character_sp ch) {
   Character_sp subchar = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true()));
   T_sp macro_func = cl__get_dispatch_macro_character(ch, subchar, _lisp->getCurrentReadTable());
   if (macro_func.nilp()) {
-    // SIMPLE_ERROR("Undefined reader macro for {} {}", _rep_(ch) , _rep_(subchar));
-    //  Need to be a reader error
-    FileScope_sp info = gc::As<FileScope_sp>(core__file_scope(sin));
-    string fn = info->fileName();
-    if (fn.compare("-no-name-") == 0) {
-      READER_ERROR(SimpleBaseString_O::make("Undefined reader macro for char '~a' subchar '~a' in stream at line: ~a column ~a."),
-                   Cons_O::createList(ch, subchar, Cons_O::create(make_fixnum(stream_input_line_as_uint(sin)), nil<T_O>()),
+    T_sp path = stream_pathname(sin);
+    if (path.nilp()) {
+      READER_ERROR(SimpleBaseString_O::make("Undefined reader macro for char '~a' subchar '~a' in stream ~a at line: ~a column ~a."),
+                   Cons_O::createList(ch, subchar, sin, Cons_O::create(make_fixnum(stream_input_line_as_uint(sin)), nil<T_O>()),
                                       Cons_O::create(make_fixnum(stream_input_column_as_uint(sin)), nil<T_O>())),
                    sin);
     } else {
       READER_ERROR(SimpleBaseString_O::make("Undefined reader macro for char '~a' subchar '~a' in file ~a line: ~a column ~a."),
-                   Cons_O::createList(ch, subchar, SimpleBaseString_O::make(fn),
+                   Cons_O::createList(ch, subchar, path,
                                       Cons_O::create(make_fixnum(stream_input_line_as_uint(sin)), nil<T_O>()),
                                       Cons_O::create(make_fixnum(stream_input_column_as_uint(sin)), nil<T_O>())),
                    sin);
