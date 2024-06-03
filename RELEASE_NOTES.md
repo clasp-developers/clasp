@@ -1,4 +1,4 @@
-# Version 2.6.0 (LLVM15-18) Pending
+# Version 2.6.0 (LLVM15-18) 2024-06-03
 
 ## Added
 * LLVM18 support.
