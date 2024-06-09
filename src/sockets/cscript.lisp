@@ -1,3 +1,3 @@
-(k:sources :iclasp
+(k:sources :libclasp
            #~"sockets.cc"
            #~"socketsPackage.cc")

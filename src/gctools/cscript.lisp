@@ -1,4 +1,4 @@
-(k:sources :iclasp
+(k:sources :libclasp
            #~"gc_interface.cc"
            #~"exposeFunctions0.cc"
            #~"exposeFunctions1.cc"
