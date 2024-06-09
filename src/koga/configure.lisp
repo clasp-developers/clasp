@@ -661,7 +661,7 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"bench.lisp" :build))
                                                          :ninja
                                                          (list (make-source #P"build.ninja" :build)
-                                                               :iclasp :cclasp :modules :eclasp
+                                                               :libclasp :iclasp :cclasp :modules :eclasp
                                                                :eclasp-link :sclasp :install-bin :install-code
                                                                :clasp :regression-tests :analyzer :analyze
                                                                :tags :install-extension-code :vm-header
