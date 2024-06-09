@@ -93,16 +93,18 @@ template <typename... Policies, typename Func, typename Tuple> struct apply_and_
 };
 
 // clbind apply_and_return - this needs to handle multiple-values
-template <typename... Policies, typename RT, typename Func, typename Tuple>
-struct apply_and_return<policies<Policies...>, std::unique_ptr<RT>, Func, Tuple> {
-  static gc::return_type go(Func&& fn, Tuple&& tuple) {
+template <typename... Policies, typename RT, typename Func, typename... Args>
+struct apply_and_return<policies<Policies...>, std::unique_ptr<RT>, Func, std::tuple<Args...>> {
+  using tuple_type = std::tuple<Args...>;
+  static gc::return_type go(Func&& fn, tuple_type&& tuple) {
     std::unique_ptr<RT> retval = clbind::apply(std::move(fn), std::move(tuple));
     core::MultipleValues& returnValues = core::lisp_multipleValues();
     returnValues.setSize(0);
     // When returning unique_ptr always adopt it
-    core::T_sp rv = translate::to_object<std::unique_ptr<RT>, translate::adopt_pointer>::convert(std::move(retval));
+    core::T_sp rv = translate::to_object<std::unique_ptr<RT>, translate::adopt_pointer>::convert(retval);
     returnValues.emplace_back(rv);
-    tuple.write_multiple_values(returnValues);
+    printf("%s:%d Write the multiple values in tuple here\n", __FILE__, __LINE__);
+    //tuple.write_multiple_values(returnValues);
     return LCC_RETURN(rv.raw_(), returnValues.getSize());
   }
 };
