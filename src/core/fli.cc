@@ -653,10 +653,17 @@ core::T_sp PERCENTdlclose(ForeignData_sp handle) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::T_sp PERCENTdlsym(core::String_sp name) {
-
+core::T_sp PERCENTdlsym(core::T_sp library, core::String_sp name) {
+  void *handle = NULL;
+  if (library == kw::_sym_rtld_default) {
+    handle = RTLD_DEFAULT;
+  } else if (library == kw::_sym_rtld_next) {
+    handle = RTLD_NEXT;
+  } else if (ForeignData_sp fd = library.asOrNull<ForeignData_O>()) {
+    handle = fd->raw_data();
+  }
   ForeignData_sp sp_sym;
-  auto result = core::do_dlsym(RTLD_DEFAULT, name->get_std_string().c_str());
+  auto result = core::do_dlsym(handle, name->get_std_string().c_str());
   void* p_sym = std::get<0>(result);
 
   if (!p_sym) {
