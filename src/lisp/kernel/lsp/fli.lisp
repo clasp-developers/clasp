@@ -393,11 +393,12 @@
   "Load an extension library to be found at path. (name is ignored)"
   (multiple-value-bind (handle error)
       (%dlopen path)
-    (if (not handle)
-        (error "~A" error)
-        (let ((ptr (%foreign-symbol-pointer "clasp_extension_startup" handle)))
-          (%foreign-funcall-pointer ptr :void)
-          handle))))
+    (unless handle
+      (error "~A" error))
+    (gctools:register-loaded-objects)
+    (let ((ptr (%foreign-symbol-pointer "startup_clasp_extension" handle)))
+      (%foreign-funcall-pointer ptr :void))
+    handle))
 
 ;;;----------------------------------------------------------------------------
 ;;;
