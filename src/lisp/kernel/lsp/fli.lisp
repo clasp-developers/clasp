@@ -54,7 +54,7 @@
      (format t "#'ensure-core-pointer *** Illegal argument value: PTR may not be NIL - fn = ~a info = ~a!~%" fn info)
      (gctools:wait-for-user-signal "Bad ensure-core-pointer Send SIGUSR1 to continue")
      (error "#'ensure-core-ptr *** Illegal argument value: PTR may not be NIL!"))
-    ((eql (type-of ptr) 'CLASP-FFI::FOREIGN-DATA) (%core-pointer-from-foreign-data ptr ))
+    ((eql (type-of ptr) 'CLASP-FFI::FOREIGN-DATA) (%core-pointer-from-foreign-data ptr))
     ((eql (type-of ptr) 'CORE::POINTER) ptr)
     (t (error "#'ensure-core-pointer *** Illegal type ~S of ptr. Cannot convert to core::pointer." (type-of ptr)))))
 
@@ -383,10 +383,21 @@
 ;;; === F O R E I G N   G L O B A L S ===
 
 (declaim (inline %foreign-symbol-pointer))
-(defun %foreign-symbol-pointer (name module)
+(defun %foreign-symbol-pointer (name &optional module)
   "Return a pointer (of type ForeignData_sp / FOREIGN_DATA to a foreign symbol."
-  (declare (ignore module))
-  (%dlsym name))
+  (%dlsym (or module :rtld-default) name))
+
+;;; === FOREIGN EXTENSIONS ===
+
+(defun %load-extension-library (name path)
+  "Load an extension library to be found at path. (name is ignored)"
+  (multiple-value-bind (handle error)
+      (%dlopen path)
+    (if (not handle)
+        (error "~A" error)
+        (let ((ptr (%foreign-symbol-pointer "clasp_extension_startup" handle)))
+          (%foreign-funcall-pointer ptr :void)
+          handle))))
 
 ;;;----------------------------------------------------------------------------
 ;;;
@@ -532,6 +543,7 @@
             %foreign-funcall
             %foreign-funcall-pointer
             %load-foreign-library
+            %load-extension-library
             %close-foreign-library
             %foreign-symbol-pointer
             %foreign-type-size

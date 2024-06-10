@@ -133,6 +133,8 @@ SYMBOL_EXPORT_SC_(KeywordPkg, read_only);
 SYMBOL_EXPORT_SC_(KeywordPkg, relative);
 SYMBOL_EXPORT_SC_(KeywordPkg, rename);
 SYMBOL_EXPORT_SC_(KeywordPkg, rename_and_delete);
+SYMBOL_EXPORT_SC_(KeywordPkg, rtld_default);
+SYMBOL_EXPORT_SC_(KeywordPkg, rtld_next);
 SYMBOL_EXPORT_SC_(KeywordPkg, script);
 SYMBOL_EXPORT_SC_(KeywordPkg, seek_cur);
 SYMBOL_EXPORT_SC_(KeywordPkg, seek_end);
