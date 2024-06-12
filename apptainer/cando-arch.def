@@ -14,7 +14,7 @@ From: ghcr.io/yitzchak/archlinux-makepkg:latest
     bash Miniconda3-latest-Linux-x86_64.sh -b -p /home/cando/miniconda3
     rm -rf Miniconda3-latest-Linux-x86_64.sh
     export PATH="/home/cando/miniconda3/bin:${PATH}"
-    conda install -y -c conda-forge ambertools
+    conda install -y -c conda-forge jupyterlab sidecar ambertools
     jupyter-lab build
     chmod -R ugo+rw /home/cando/
 
