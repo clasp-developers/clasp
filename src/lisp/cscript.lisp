@@ -120,6 +120,8 @@
              #~"kernel/lsp/source-location.lisp"
              #~"kernel/lsp/defvirtual.lisp"
              #~"kernel/clos/streams.lisp"
+             #~"kernel/lsp/circle.lisp"
+             :inravina-shim
              #~"kernel/lsp/pprint.lisp"
              #~"kernel/lsp/format-pprint.lisp"
              #~"kernel/clos/conditions.lisp"
