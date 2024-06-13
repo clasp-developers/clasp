@@ -427,6 +427,8 @@
      &key objects sifs &allow-other-keys
      &aux (exe (make-source "iclasp" :variant))
           (exe-installed (make-source "iclasp" :package-bin))
+          (ilib (make-source "libiclasp.a" :variant-lib))
+          (ilib-installed (make-source "libiclasp.a" :package-lib))
           (lib (make-source "libclasp.so" :variant-lib))
           (symlink (make-source (if (member :cando (extensions configuration))
                                     "cando"
@@ -440,6 +442,9 @@
           (clasp-sh-installed (make-source "clasp" :package-bin))
           (cleap-symlink (make-source "cleap" :variant))
           (cleap-symlink-installed (make-source "cleap" :package-bin)))
+  (ninja:write-build output-stream :ar
+                     :inputs objects
+                     :outputs (list ilib))
   (ninja:write-build output-stream :link
                      :variant-ldflags *variant-ldflags*
                      :variant-ldlibs (format nil "-lclasp ~a" *variant-ldlibs*)
@@ -456,7 +461,7 @@
                        :target (file-namestring (source-path exe))
                        :outputs (list cleap-symlink)))
   (ninja:write-build output-stream :phony
-                     :inputs (append (list exe symlink lib)
+                     :inputs (append (list exe symlink ilib)
                                      (when (member :cando (extensions configuration))
                                        (list cleap-symlink))
                                      (when (and *variant-default*
@@ -469,6 +474,9 @@
     (ninja:write-build output-stream :install-binary
                        :inputs (list exe)
                        :outputs (list exe-installed))
+    (ninja:write-build output-stream :install-file
+                       :inputs (list ilib)
+                       :outputs (list ilib-installed))
     (ninja:write-build output-stream :symbolic-link
                        :inputs (list exe-installed)
                        :target (file-namestring (source-path exe-installed))
@@ -486,6 +494,7 @@
                                                            "install_extension_code"
                                                            "install_bin"
                                                            "install_lib"
+                                                           ilib-installed
                                                            exe-installed
                                                            symlink-installed)
                                                      (when (member :cando (extensions configuration))
