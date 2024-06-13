@@ -2720,12 +2720,12 @@ void* snapshot_save_impl(void* data) {
     }
 
     cmd = CXX_BINARY " " BUILD_LINKFLAGS " -L" + snapshot_data->_LibDir + " -o" + snapshot_data->_FileName + " " + obj_filename +
-          " -Wl,-whole-archive -lclasp -Wl,-no-whole-archive " BUILD_LIB;
+          " -Wl,-whole-archive -liclasp -Wl,-no-whole-archive -lclasp " BUILD_LIB;
 #endif
 #ifdef _TARGET_OS_DARWIN
     cmd = CXX_BINARY " " BUILD_LINKFLAGS " -o" + snapshot_data->_FileName +
           " -sectcreate " SNAPSHOT_SEGMENT " " SNAPSHOT_SECTION " " + filename + " -Wl,-force_load," + snapshot_data->_LibDir +
-          "/libclasp.a " BUILD_LIB;
+          "/libiclasp.a -lclasp" BUILD_LIB;
 #endif
 
     std::cout << "Link command:" << std::endl << std::flush;
