@@ -67,7 +67,7 @@ CL_DEFUN Package_sp cl__rename_package(T_sp pkg, T_sp newNameDesig, T_sp nickNam
   string newName = coerce::packageNameDesignator(newNameDesig);
   List_sp nickNames = coerce::listOfStringDesignators(nickNameDesigs);
   // Remove the old names from the Lisp system
-  _lisp->unmapNameToPackage(package->packageName());
+  _lisp->unmapNameToPackage(package->_Name);
   for (auto cur : package->getNicknames()) {
     _lisp->unmapNameToPackage(gc::As<String_sp>(oCar(cur)));
   }
@@ -75,7 +75,7 @@ CL_DEFUN Package_sp cl__rename_package(T_sp pkg, T_sp newNameDesig, T_sp nickNam
   package->setName(newName);
   _lisp->mapNameToPackage(newName, package);
   for (auto cur : nickNames) {
-    _lisp->mapNameToPackage(gc::As<String_sp>(oCar(cur))->get_std_string(), package);
+    _lisp->mapNameToPackage(gc::As<String_sp>(oCar(cur)), package);
   };
   package->setNicknames(nickNames);
   return package;
@@ -99,15 +99,15 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp ext__package_add_nickname(T_sp pkg, T_sp nick) {
   Package_sp package = coerce::packageDesignator(pkg);
   String_sp nickname = coerce::stringDesignator(nick);
-  T_sp packageUsingNickName = _lisp->findPackage(nickname->get_std_string());
+  T_sp packageUsingNickName = _lisp->findPackage(nickname);
   if (packageUsingNickName.notnilp()) {
     if (Package_sp pkg = packageUsingNickName.asOrNull<Package_O>())
-      SIMPLE_PACKAGE_ERROR_2_args("Package nickname[~a] is already being used by package[~a]", nickname->get_std_string(),
+      SIMPLE_PACKAGE_ERROR_2_args("Package nickname[~a] is already being used by package[~a]", _rep_(nickname),
                                   pkg->packageName());
     else
-      SIMPLE_PACKAGE_ERROR("Package nickname[~a] is already being used", nickname->get_std_string());
+      SIMPLE_PACKAGE_ERROR("Package nickname[~a] is already being used", _rep_(nickname));
   } else {
-    _lisp->mapNameToPackage(nickname->get_std_string(), package);
+    _lisp->mapNameToPackage(nickname, package);
     package->setNicknames(Cons_O::create(nickname, package->getNicknames()));
     return package->getNicknames();
   }
@@ -124,8 +124,8 @@ CL_DEFUN T_sp ext__package_remove_nickname(T_sp pkg, T_sp nick) {
   unlikely_if(package->getNicknames().nilp()) return nil<T_O>();
   String_sp nickname = coerce::stringDesignator(nick);
   // verify if nickname is really nicknames of this package
-  if (_lisp->findPackage(nickname->get_std_string()) == package) {
-    _lisp->unmapNameToPackage(nickname->get_std_string());
+  if (_lisp->findPackage(nickname) == package) {
+    _lisp->unmapNameToPackage(nickname);
     package->setNicknames(remove_equal(nickname, package->getNicknames()));
     return package->getNicknames();
   } else
@@ -290,7 +290,7 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj) {
   // Need to remove the nicknames, since package is not fully deleted
   // do this before the WITH_PACKAGE_READ_WRITE_LOCK
   for (auto cur : pkg->getNicknames()) {
-    _lisp->unmapNameToPackage(gc::As<String_sp>(oCar(cur))->get_std_string());
+    _lisp->unmapNameToPackage(gc::As<String_sp>(oCar(cur)));
   }
   pkg->setNicknames(nil<T_O>());
 
@@ -519,11 +519,11 @@ string Package_O::__repr__() const {
   WITH_PACKAGE_READ_LOCK(this);
   if (cl::_sym_STARprint_readablySTAR->symbolValue().notnilp()) {
     stringstream ss;
-    ss << "#.(CL:FIND-PACKAGE \"" << this->_Name->get_std_string() << "\")";
+    ss << "#.(CL:FIND-PACKAGE \"" << _rep_(this->_Name) << "\")";
     return ss.str();
   }
   stringstream ss;
-  ss << "#<PACKAGE " << this->_Name->get_std_string() << ">";
+  ss << "#<PACKAGE " << _rep_(this->_Name) << ">";
   return ss.str();
 }
 
@@ -1098,7 +1098,7 @@ void Package_O::mapInternals(KeyValueMapper* mapper) {
 
 void Package_O::dumpSymbols() {
   string all = this->allSymbols();
-  printf("%s:%d Package %s\n", __FILE__, __LINE__, this->_Name->get_std_string().c_str());
+  printf("%s:%d Package %s\n", __FILE__, __LINE__, _rep_(this->_Name).c_str());
   printf("%s\n", all.c_str());
 }
 

@@ -746,20 +746,22 @@ void Lisp::addClassSymbol(Symbol_sp classSymbol, Creator_sp alloc, Symbol_sp bas
   cc->CLASS_set_creator(alloc);
 }
 
-void Lisp::mapNameToPackage(const string& name, Package_sp pkg) {
-  // TODO Support package names with as regular strings
+void Lisp::mapNameToPackage(String_sp sname, Package_sp pkg) {
   int packageIndex;
   {
     WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
     for (packageIndex = 0; packageIndex < this->_Roots._Packages.size(); ++packageIndex) {
       if (this->_Roots._Packages[packageIndex] == pkg) {
-        SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
         this->_Roots._PackageNameIndexMap->setf_gethash(sname, make_fixnum(packageIndex));
         return;
       }
     }
   }
   SIMPLE_ERROR("Could not find package with (nick)name: {}", pkg->packageName());
+}
+
+void Lisp::mapNameToPackage(const string& name, Package_sp pkg) {
+  mapNameToPackage(SimpleBaseString_O::make(name), pkg);
 }
 
 void Lisp::unmapNameToPackage(String_sp sname) {
@@ -774,10 +776,6 @@ void Lisp::unmapNameToPackage(String_sp sname) {
   }
 package_unfound:
   SIMPLE_ERROR("Could not find package with (nick)name: {}", _rep_(sname));
-}
-
-void Lisp::unmapNameToPackage(const string& name) {
-  unmapNameToPackage(SimpleBaseString_O::make(name));
 }
 
 void Lisp::finishPackageSetup(const string& pkgname, list<string> const& nicknames, list<string> const& usePackages,
