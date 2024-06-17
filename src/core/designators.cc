@@ -144,12 +144,11 @@ CL_DEFUN core::Package_sp coerce_to_package(core::T_sp obj) { return coerce::pac
 
 namespace core {
 namespace coerce {
-string packageNameDesignator(T_sp obj) {
+SimpleString_sp packageNameDesignator(T_sp obj) {
   if (cl__packagep(obj)) {
-    return gc::As<Package_sp>(obj)->packageName();
-  }
-  String_sp packageName = stringDesignator(obj);
-  return packageName->get_std_string();
+    return gc::As<Package_sp>(obj)->name();
+  } else
+    return simple_string(obj);
 }
 
 List_sp listOfPackageDesignators(T_sp obj) {

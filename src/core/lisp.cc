@@ -708,7 +708,7 @@ void Lisp::defconstant(Symbol_sp sym, T_sp obj) {
 }
 
 void Lisp::installPackage(const Exposer_O* pkg) {
-  LOG("Installing package[{}]", pkg->packageName());
+  LOG("Installing package[{}]", _rep_(pkg->name()));
   int firstNewGlobalCallback = globals_->_GlobalInitializationCallbacks.end() - globals_->_GlobalInitializationCallbacks.begin();
   ChangePackage change(gc::As<Package_sp>(_lisp->findPackage(pkg->packageName())));
   { pkg->expose(_lisp, Exposer_O::candoClasses); }
@@ -757,7 +757,7 @@ void Lisp::mapNameToPackage(String_sp sname, Package_sp pkg) {
       }
     }
   }
-  SIMPLE_ERROR("Could not find package with (nick)name: {}", pkg->packageName());
+  SIMPLE_ERROR("Could not find package with (nick)name: {}", _rep_(pkg->name()));
 }
 
 void Lisp::mapNameToPackage(const string& name, Package_sp pkg) {
@@ -876,7 +876,7 @@ start:
     }
     for (list<string>::const_iterator jit = usePackages.begin(); jit != usePackages.end(); jit++) {
       Package_sp usePkg = gc::As<Package_sp>(this->findPackage_no_lock(*jit, true));
-      LOG("Using package[{}]", usePkg->packageName());
+      LOG("Using package[{}]", _rep_(usePkg->name()));
       newPackage->usePackage(usePkg);
     }
     if (globals_->_MakePackageCallback != NULL) {
@@ -1163,8 +1163,7 @@ T_mv Lisp::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prom
         Symbol_sp pkgSym = cl::_sym_STARpackageSTAR;
         T_sp pkgVal = pkgSym->symbolValue();
         Package_sp curPackage = gc::As<Package_sp>(pkgVal);
-        std::string name = curPackage->packageName();
-        prompts << name << "> ";
+        prompts << _rep_(curPackage->name()) << "> ";
         clasp_write_string(prompts.str(), stream);
       }
       T_sp expression = cl__read(stream, nil<T_O>(), unbound<T_O>(), nil<T_O>());
@@ -2066,7 +2065,7 @@ void Lisp::parseStringIntoPackageAndSymbolName(const string& name, bool& package
   }
   package = gc::As<Package_sp>(this->findPackage(name.substr(0, colonPos), true));
   symbolName = name.substr(secondPart, 99999);
-  LOG("It's a packaged symbol ({} :: {})", package->packageName(), symbolName);
+  LOG("It's a packaged symbol ({} :: {})", _rep_(package->name()), symbolName);
   return;
 }
 

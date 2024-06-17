@@ -88,6 +88,7 @@ private:
 
 public:
   string packageName() const;
+  SimpleString_sp name() const { return this->_Name; }
 
   T_mv packageHashTables() const;
 
@@ -120,7 +121,7 @@ public:
   /*! support for CLHS::unexport */
   void unexport(Symbol_sp sym);
 
-  void setName(const string& n);
+  void setName(SimpleString_sp newName);
 
   bool isExported(Symbol_sp sym);
 
