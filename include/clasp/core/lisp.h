@@ -735,11 +735,13 @@ public:
   /*! Return true if classSymbol is the id for a class that has the baseClassSymbol
    */
   //	bool subClassOrder(Symbol_sp baseClassSymbol,Symbol_sp classSymbol);
-
+private:
+  T_sp findPackage_no_lock(String_sp packageName) const;
+  T_sp findPackage_no_lock(const string& packageName) const;
+  
+public:
   bool recognizesPackage(const string& packageName) const;
-  T_sp findPackage_no_lock(const string& packageName, bool errorp = false) const;
   T_sp findPackage(const string& packageName, bool errorp = false) const;
-  T_sp findPackage_no_lock(String_sp packageName, bool errorp = false) const;
   T_sp findPackage(String_sp packageName, bool errorp = false) const;
   void inPackage(const string& packageName);
   void selectPackage(Package_sp pack);

@@ -814,10 +814,11 @@ Package_sp Lisp::makePackage(const string& name, list<string> const& nicknames, 
    * Instead we do this: Grab the lock. Try the operation. If the operation succeeds, just return.
    * If it fails, goto (yes, really) outside the lock scope so that we ungrab it, and signal an cerror there.
    * */
-start:
+ start:
   string usedNickName;
   Package_sp packageUsingNickName;
   Package_sp existing_package;
+  SimpleString_sp nonexistentUsedPackage;
   {
     WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
     SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
@@ -875,9 +876,15 @@ start:
       newPackage->shadow(sx);
     }
     for (list<string>::const_iterator jit = usePackages.begin(); jit != usePackages.end(); jit++) {
-      Package_sp usePkg = gc::As<Package_sp>(this->findPackage_no_lock(*jit, true));
-      LOG("Using package[{}]", _rep_(usePkg->name()));
-      newPackage->usePackage(usePkg);
+      T_sp tUsePkg = this->findPackage_no_lock(*jit);
+      if (tUsePkg.isA<Package_O>()) {
+        Package_sp usePkg = tUsePkg.as_unsafe<Package_O>();
+        LOG("Using package[{}]", _rep_(usePkg->name()));
+        newPackage->usePackage(usePkg);
+      } else {
+        nonexistentUsedPackage = SimpleBaseString_O::make(*jit);
+        goto nonexistent_used_package;
+      }
     }
     if (globals_->_MakePackageCallback != NULL) {
       LOG("Calling _MakePackageCallback with package[{}]", name);
@@ -890,28 +897,32 @@ start:
 // A correctable error is signaled if the package-name or any of the nicknames
 // is already the name or nickname of an existing package.
 // The correction is to delete the existing package.
-name_exists:
+ name_exists:
   CEpackage_error("There already exists a package with name: ~a", "Delete existing package", existing_package, 1,
                   SimpleBaseString_O::make(name));
   cl__delete_package(existing_package);
   goto start;
-nickname_exists:
+ nickname_exists:
   CEpackage_error("There already exists a package with nickname: ~a", "Delete existing package", existing_package, 1,
                   SimpleBaseString_O::make(name));
   cl__delete_package(existing_package);
   goto start;
+ nonexistent_used_package:
+  // FIXME: It might be nicer to let the error be correctable,
+  // e.g. by not trying to USE the nonexistent package.
+  // (The standard actually leaves this situation undefined.)
+  PACKAGE_ERROR(nonexistentUsedPackage);
 }
 
-T_sp Lisp::findPackage_no_lock(const string& name, bool errorp) const {
-  return this->findPackage_no_lock(SimpleBaseString_O::make(name), errorp);
+T_sp Lisp::findPackage_no_lock(const string& name) const {
+  return this->findPackage_no_lock(SimpleBaseString_O::make(name));
 }
 
 T_sp Lisp::findPackage(const string& name, bool errorp) const {
-  WITH_READ_LOCK(globals_->_PackagesMutex);
-  return this->findPackage_no_lock(SimpleBaseString_O::make(name), errorp);
+  return this->findPackage(SimpleBaseString_O::make(name), errorp);
 }
 
-T_sp Lisp::findPackage_no_lock(String_sp name, bool errorp) const {
+T_sp Lisp::findPackage_no_lock(String_sp name) const {
   // Check local nicknames first.
   if (_lisp->_Roots._TheSystemIsUp) {
     T_sp local = this->getCurrentPackage()->findPackageByLocalNickname(name);
@@ -921,9 +932,6 @@ T_sp Lisp::findPackage_no_lock(String_sp name, bool errorp) const {
   // OK, now global names.
   T_sp fi = this->_Roots._PackageNameIndexMap->gethash(name);
   if (fi.nilp()) {
-    if (errorp) {
-      PACKAGE_ERROR(name);
-    }
     return nil<Package_O>(); // return nil if no package found
   }
   ASSERT(fi.fixnump());
@@ -932,8 +940,14 @@ T_sp Lisp::findPackage_no_lock(String_sp name, bool errorp) const {
 }
 
 T_sp Lisp::findPackage(String_sp name, bool errorp) const {
-  WITH_READ_LOCK(globals_->_PackagesMutex);
-  return this->findPackage_no_lock(name, errorp);
+  {
+    WITH_READ_LOCK(globals_->_PackagesMutex);
+    T_sp res = this->findPackage_no_lock(name);
+    if (!errorp || res.isA<Package_O>())
+      return res;
+  }
+  // Signal the error only after releasing the lock.
+  PACKAGE_ERROR(name);
 }
 
 void Lisp::remove_package(String_sp name) {
