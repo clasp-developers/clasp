@@ -67,9 +67,9 @@ CL_DEFUN Package_sp cl__rename_package(T_sp pkg, T_sp newNameDesig, T_sp nickNam
   string newName = coerce::packageNameDesignator(newNameDesig);
   List_sp nickNames = coerce::listOfStringDesignators(nickNameDesigs);
   // Remove the old names from the Lisp system
-  _lisp->unmapNameToPackage(package->getName());
+  _lisp->unmapNameToPackage(package->packageName());
   for (auto cur : package->getNicknames()) {
-    _lisp->unmapNameToPackage(gc::As<String_sp>(oCar(cur))->get_std_string());
+    _lisp->unmapNameToPackage(gc::As<String_sp>(oCar(cur)));
   }
   // Set up the new names
   package->setName(newName);
@@ -103,7 +103,7 @@ CL_DEFUN T_sp ext__package_add_nickname(T_sp pkg, T_sp nick) {
   if (packageUsingNickName.notnilp()) {
     if (Package_sp pkg = packageUsingNickName.asOrNull<Package_O>())
       SIMPLE_PACKAGE_ERROR_2_args("Package nickname[~a] is already being used by package[~a]", nickname->get_std_string(),
-                                  pkg->getName());
+                                  pkg->packageName());
     else
       SIMPLE_PACKAGE_ERROR("Package nickname[~a] is already being used", nickname->get_std_string());
   } else {
@@ -500,8 +500,6 @@ void Package_O::initialize() {
 
 string Package_O::packageName() const { return this->_Name->get_std_string(); }
 
-string Package_O::getName() const { return this->packageName(); };
-
 void Package_O::setName(const string& n) {
   WITH_PACKAGE_READ_WRITE_LOCK(this);
   this->_Name = SimpleBaseString_O::make(n);
@@ -694,7 +692,7 @@ bool FindConflicts::mapKeyValue(T_sp key, T_sp value) {
 }
 
 bool Package_O::usePackage(Package_sp usePackage) {
-  LOG("In usePackage this[{}]  using package[{}]", this->getName(), usePackage->getName());
+  LOG("In usePackage this[{}]  using package[{}]", this->packageName(), usePackage->packageName());
   while (true) {
     FindConflicts findConflicts(this->asSmartPtr());
     {
@@ -735,7 +733,7 @@ bool Package_O::unusePackage_no_outer_lock(Package_sp usePackage) {
           return true;
         }
       }
-      SIMPLE_ERROR("The unusePackage argument {} is not used by my package {}", usePackage->getName(), this->getName());
+      SIMPLE_ERROR("The unusePackage argument {} is not used by my package {}", usePackage->packageName(), this->packageName());
     }
   }
   return true;
@@ -754,7 +752,7 @@ bool Package_O::unusePackage_no_inner_lock(Package_sp usePackage) {
           return true;
         }
       }
-      SIMPLE_ERROR("The unusePackage argument {} is not used by my package {}", usePackage->getName(), this->getName());
+      SIMPLE_ERROR("The unusePackage argument {} is not used by my package {}", usePackage->packageName(), this->packageName());
     }
   }
   return true;

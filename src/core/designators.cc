@@ -146,7 +146,7 @@ namespace core {
 namespace coerce {
 string packageNameDesignator(T_sp obj) {
   if (cl__packagep(obj)) {
-    return gc::As<Package_sp>(obj)->getName();
+    return gc::As<Package_sp>(obj)->packageName();
   }
   String_sp packageName = stringDesignator(obj);
   return packageName->get_std_string();

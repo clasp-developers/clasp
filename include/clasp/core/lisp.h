@@ -746,6 +746,7 @@ public:
   Package_sp getCurrentPackage() const;
   void mapNameToPackage(const string& name, Package_sp pkg);
   void unmapNameToPackage(const string& name);
+  void unmapNameToPackage(String_sp packageName);
   void finishPackageSetup(const string& packageName, list<string> const& nicknames, list<string> const& usePackages,
                           list<string> const& shadow = {});
   Package_sp makePackage(const string& packageName, list<string> const& nicknames, list<string> const& usePackages,

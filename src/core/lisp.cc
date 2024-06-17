@@ -759,13 +759,12 @@ void Lisp::mapNameToPackage(const string& name, Package_sp pkg) {
       }
     }
   }
-  SIMPLE_ERROR("Could not find package with (nick)name: {}", pkg->getName());
+  SIMPLE_ERROR("Could not find package with (nick)name: {}", pkg->packageName());
 }
 
-void Lisp::unmapNameToPackage(const string& name) {
+void Lisp::unmapNameToPackage(String_sp sname) {
   {
     WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
-    SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
     T_sp it = this->_Roots._PackageNameIndexMap->gethash(sname);
     if (it.nilp()) {
       goto package_unfound;
@@ -774,7 +773,11 @@ void Lisp::unmapNameToPackage(const string& name) {
     return;
   }
 package_unfound:
-  SIMPLE_ERROR("Could not find package with (nick)name: {}", name);
+  SIMPLE_ERROR("Could not find package with (nick)name: {}", _rep_(sname));
+}
+
+void Lisp::unmapNameToPackage(const string& name) {
+  unmapNameToPackage(SimpleBaseString_O::make(name));
 }
 
 void Lisp::finishPackageSetup(const string& pkgname, list<string> const& nicknames, list<string> const& usePackages,
@@ -875,7 +878,7 @@ start:
     }
     for (list<string>::const_iterator jit = usePackages.begin(); jit != usePackages.end(); jit++) {
       Package_sp usePkg = gc::As<Package_sp>(this->findPackage_no_lock(*jit, true));
-      LOG("Using package[{}]", usePkg->getName());
+      LOG("Using package[{}]", usePkg->packageName());
       newPackage->usePackage(usePkg);
     }
     if (globals_->_MakePackageCallback != NULL) {
@@ -1164,7 +1167,7 @@ T_mv Lisp::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prom
         Symbol_sp pkgSym = cl::_sym_STARpackageSTAR;
         T_sp pkgVal = pkgSym->symbolValue();
         Package_sp curPackage = gc::As<Package_sp>(pkgVal);
-        std::string name = curPackage->getName();
+        std::string name = curPackage->packageName();
         prompts << name << "> ";
         clasp_write_string(prompts.str(), stream);
       }
@@ -1590,7 +1593,7 @@ CL_DEFUN T_sp cl__find_package(T_sp name_desig) {
     return pkg;
   String_sp name = coerce::stringDesignator(name_desig);
   // TODO: Support wide string package names
-  return _lisp->findPackage(name->get_std_string());
+  return _lisp->findPackage(name);
 }
 
 CL_LAMBDA(package-designator);
@@ -2067,7 +2070,7 @@ void Lisp::parseStringIntoPackageAndSymbolName(const string& name, bool& package
   }
   package = gc::As<Package_sp>(this->findPackage(name.substr(0, colonPos), true));
   symbolName = name.substr(secondPart, 99999);
-  LOG("It's a packaged symbol ({} :: {})", package->getName(), symbolName);
+  LOG("It's a packaged symbol ({} :: {})", package->packageName(), symbolName);
   return;
 }
 

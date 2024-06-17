@@ -120,7 +120,6 @@ public:
   /*! support for CLHS::unexport */
   void unexport(Symbol_sp sym);
 
-  string getName() const;
   void setName(const string& n);
 
   bool isExported(Symbol_sp sym);
