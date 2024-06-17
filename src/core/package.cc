@@ -319,7 +319,7 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj) {
   });
   pkg->_ExternalSymbols->clrhash();
   pkg->_Shadowing->clrhash();
-  string package_name = pkg->packageName();
+  String_sp package_name = pkg->_Name;
   pkg->_Name = SimpleBaseString_O::make("");
   _lisp->remove_package(package_name);
   return _lisp->_true();

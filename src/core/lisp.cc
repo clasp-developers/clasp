@@ -961,15 +961,13 @@ T_sp Lisp::findPackage(String_sp name, bool errorp) const {
   return this->findPackage_no_lock(name, errorp);
 }
 
-void Lisp::remove_package(const string& name) {
+void Lisp::remove_package(String_sp name) {
   WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
-  //        printf("%s:%d Lisp::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
-  SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
-  T_sp fi = this->_Roots._PackageNameIndexMap->gethash(sname);
+  T_sp fi = this->_Roots._PackageNameIndexMap->gethash(name);
   if (fi.nilp()) {
-    PACKAGE_ERROR(sname);
+    PACKAGE_ERROR(name);
   }
-  this->_Roots._PackageNameIndexMap->remhash(sname);
+  this->_Roots._PackageNameIndexMap->remhash(name);
   this->_Roots._Packages[fi.unsafe_fixnum()]->setZombieP(true);
 }
 
