@@ -903,45 +903,22 @@ nickname_exists:
 }
 
 T_sp Lisp::findPackage_no_lock(const string& name, bool errorp) const {
-  // Check local nicknames first.
-  // FIXME: This conses!
-  if (_lisp->_Roots._TheSystemIsUp) {
-    T_sp local = this->getCurrentPackage()->findPackageByLocalNickname(SimpleBaseString_O::make(name));
-    if (local.notnilp())
-      return local;
-  }
-
-  //        printf("%s:%d Lisp::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
-  SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
-  T_sp fi = this->_Roots._PackageNameIndexMap->gethash(sname);
-  if (fi.nilp()) {
-    if (errorp) {
-      PACKAGE_ERROR(SimpleBaseString_O::make(name));
-    }
-    return nil<Package_O>(); // return nil if no package found
-  }
-  //        printf("%s:%d Lisp::findPackage index: %d\n", __FILE__, __LINE__, fi->second );
-  ASSERT(fi.fixnump());
-  Package_sp getPackage = this->_Roots._Packages[fi.unsafe_fixnum()];
-  //        printf("%s:%d Lisp::findPackage pkg@%p\n", __FILE__, __LINE__, getPackage.raw_());
-  return getPackage;
+  return this->findPackage_no_lock(SimpleBaseString_O::make(name), errorp);
 }
 
 T_sp Lisp::findPackage(const string& name, bool errorp) const {
   WITH_READ_LOCK(globals_->_PackagesMutex);
-  return this->findPackage_no_lock(name, errorp);
+  return this->findPackage_no_lock(SimpleBaseString_O::make(name), errorp);
 }
 
 T_sp Lisp::findPackage_no_lock(String_sp name, bool errorp) const {
   // Check local nicknames first.
-  // FIXME: This conses!
   if (_lisp->_Roots._TheSystemIsUp) {
     T_sp local = this->getCurrentPackage()->findPackageByLocalNickname(name);
     if (local.notnilp())
       return local;
   }
-
-  //        printf("%s:%d Lisp::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
+  // OK, now global names.
   T_sp fi = this->_Roots._PackageNameIndexMap->gethash(name);
   if (fi.nilp()) {
     if (errorp) {
@@ -949,10 +926,8 @@ T_sp Lisp::findPackage_no_lock(String_sp name, bool errorp) const {
     }
     return nil<Package_O>(); // return nil if no package found
   }
-  //        printf("%s:%d Lisp::findPackage index: %d\n", __FILE__, __LINE__, fi->second );
   ASSERT(fi.fixnump());
   Package_sp getPackage = this->_Roots._Packages[fi.unsafe_fixnum()];
-  //        printf("%s:%d Lisp::findPackage pkg@%p\n", __FILE__, __LINE__, getPackage.raw_());
   return getPackage;
 }
 
