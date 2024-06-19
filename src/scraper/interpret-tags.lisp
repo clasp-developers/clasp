@@ -947,9 +947,11 @@ Compare the symbol against previous definitions of symbols - if there is a misma
 (defmethod interpret-tag ((tag tags:symbol-tag) state)
   (let* ((c++-name (or (tags:c++-name% tag) (tags:lisp-name% tag)))
          (namespace (or (tags:namespace% tag)
-                        (tags:namespace%
-                         (gethash (tags:package% tag)
-                                  (state-package-to-assoc state)))))
+                                  (tags:namespace%
+                                   (let ((nst (gethash (tags:package% tag) (state-package-to-assoc state))))
+                                     (unless nst
+                                       (error "Couldn't find state-package-to-assoc for tag: ~s - did you use a wrong package name like KwPkg?????" tag))
+                                     nst))))
          (package (or (tags:package% tag)
                       (tags:package%
                        (gethash (tags:namespace% tag)

@@ -180,6 +180,16 @@
    (c++-name% :initform nil :initarg :c++-name% :reader tags:c++-name%)
    (lisp-name% :initarg :lisp-name% :reader tags:lisp-name%)))
 
+(defmethod print-object ((tag tags:symbol-tag) stream)
+  (print-unreadable-object (tag stream :type t)
+    (format stream ":namespace% ~s :package% ~s :c++-name% ~s :lisp-name% ~s :file ~s :line ~s"
+            (tags:namespace% tag)
+            (tags:package% tag)
+            (tags:c++-name% tag)
+            (tags:lisp-name% tag)
+            (tags:file% tag)
+            (tags:line% tag))))
+
 (defclass tags:symbol-external-tag (symbol-tag) ())
 (defclass tags:symbol-shadow-external-tag (symbol-external-tag) ())
 (defclass tags:detailed-symbol-external-tag (symbol-external-tag) ())

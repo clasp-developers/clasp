@@ -61,4 +61,6 @@ Read a list of tags from the sif file."
     (with-open-file (stream sif-pathname :direction :input :external-format :utf-8)
       (loop for tag = (read stream nil stream)
             until (eq tag stream)
+            unless tag
+              do (error "Encountered a NIL tag in ~s" sif-pathname)
             collect tag))))
