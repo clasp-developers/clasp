@@ -220,6 +220,7 @@
      &aux (identifiers (make-source ".identifiers" :code))
           (outputs (list (make-source "TAGS" :code))))
   (when (and *variant-default*
+             (not (reproducible-build configuration))
              (or (etags configuration)
                  (ctags configuration)))
     (ninja:write-build output-stream :tags
@@ -417,6 +418,7 @@
                                      (when (member :cando (extensions configuration))
                                        (list cleap-symlink))
                                      (when (and *variant-default*
+                                                (not (reproducible-build configuration))
                                                 (or (etags configuration)
                                                     (ctags configuration)))
                                        (list "tags")))
