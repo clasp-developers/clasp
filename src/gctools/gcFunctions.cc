@@ -1267,6 +1267,34 @@ CL_DEFUN core::Integer_sp gctools__unwind_time_nanoseconds() {
   return is;
 }
 
+CL_DOCSTRING(R"doc(This is an attempt at a SAFE function that walks the frame-pointers on the stack.
+             It tests if memory is readable before it reads it and returns with a message if it isn't readable.)doc");
+CL_DEFUN void gctools__walk_frame_pointers_on_stack() {
+  // Get the current frame pointer
+  void **frame_pointer = (void**)__builtin_frame_address(0);
+  printf("Stack trace:\n");
+  size_t idx = 0;
+  while (frame_pointer) {
+    if (!is_memory_readable(frame_pointer+1,8) ) goto UNREADABLE_RETURN_ADDRESS;
+    void* return_address = *(frame_pointer+1);
+    printf("%5zu frame-pointer: %p   return-address: %p\n", idx, frame_pointer, return_address );
+    if (return_address==0) goto DONE;
+        // Move to the previous frame
+    if (!is_memory_readable(frame_pointer,8)) goto UNREADABLE_FRAME_POINTER;
+    frame_pointer = (void**)*frame_pointer;
+    ++idx;
+  }
+ UNREADABLE_RETURN_ADDRESS:
+  printf("Could not read return_address at *(frame_pointer+1) %p - stopping\n", frame_pointer+1 );
+  return;
+ UNREADABLE_FRAME_POINTER:
+  printf("Could not read frame_pointer at *frame_pointer %p - stopping\n", frame_pointer );
+  return;
+ DONE:
+  return;
+}
+
+
 void initialize_gc_functions() {
   _sym_STARallocPatternStackSTAR->defparameter(nil<core::T_O>());
 #ifdef USE_MPS
