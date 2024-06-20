@@ -579,7 +579,7 @@ returns with NIL."
   ((address :initarg :address :reader memory-condition-address))
   (:REPORT
    (lambda (condition stream)
-     (format stream "Segmentation fault. Attempted to access resticted memory address #x~x.
+     (format stream "Segmentation fault. Attempted to access restricted memory address #x~x.
 
 This is due either to a problem in foreign code (e.g., C++), or a bug in Clasp itself."
              (memory-condition-address condition)))))
