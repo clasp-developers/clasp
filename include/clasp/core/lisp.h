@@ -753,6 +753,7 @@ public:
                           list<string> const& shadow = {});
   Package_sp makePackage(const string& packageName, list<string> const& nicknames, list<string> const& usePackages,
                          list<string> const& shadow = {});
+  Package_sp makePackage(SimpleString_sp packageName, List_sp nicknames, List_sp use);
   void remove_package(String_sp package_name);
   bool usePackage(const string& packageName);
 

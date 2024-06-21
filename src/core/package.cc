@@ -187,20 +187,12 @@ CL_LAMBDA("package-name &key nicknames (use (list \"CL\"))");
 CL_DECLARE();
 CL_DOCSTRING(R"dx(make_package)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_mv cl__make_package(T_sp package_name_desig, List_sp nick_names, List_sp use_packages) {
-  String_sp package_name = coerce::stringDesignator(package_name_desig);
-  list<string> lnn;
-  for (auto nc : nick_names) {
-    String_sp nickstr = coerce::stringDesignator(oCar(nc));
-    // TODO Support proper strings
-    lnn.push_front(nickstr->get_std_string());
+CL_DEFUN Package_sp cl__make_package(T_sp package_name_desig, List_sp nick_names, List_sp use_packages) {
+  ql::list use;
+  for (auto u : use_packages) {
+    use << coerce::packageDesignator(oCar(u));
   }
-  list<string> lup;
-  for (auto uc : use_packages) {
-    Package_sp pkg = coerce::packageDesignator(oCar(uc));
-    lup.push_front(pkg->packageName());
-  }
-  return Values(_lisp->makePackage(package_name->get_std_string(), lnn, lup));
+  return _lisp->makePackage(coerce::simple_string(package_name_desig), nick_names, use.cons());
 }
 
 /*
@@ -475,6 +467,11 @@ SYMBOL_EXPORT_SC_(CorePkg, package_lock_violation);
 Package_sp Package_O::create(const string& name) {
   Package_sp p = Package_O::create();
   p->setName(SimpleBaseString_O::make(name));
+  return p;
+}
+Package_sp Package_O::create(SimpleString_sp name) {
+  Package_sp p = Package_O::create();
+  p->setName(name);
   return p;
 }
 

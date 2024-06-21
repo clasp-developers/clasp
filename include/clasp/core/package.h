@@ -74,6 +74,7 @@ public: // instance variables
 
 public: // Creation class functions
   static Package_sp create(const string& p);
+  static Package_sp create(SimpleString_sp name);
 
 public:
   /*! Very low level - add to internal symbols unless keyword

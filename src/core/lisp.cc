@@ -914,6 +914,54 @@ Package_sp Lisp::makePackage(const string& name, list<string> const& nicknames, 
   PACKAGE_ERROR(nonexistentUsedPackage);
 }
 
+Package_sp Lisp::makePackage(SimpleString_sp name, List_sp nicknames, List_sp use) {
+ start:
+  T_sp existingPackage;
+  SimpleString_sp nonexistentUsedPackage;
+  // We need to coerce the nicknames for setNicknames so do that first.
+  ql::list qnicknames;
+  for (auto nc : nicknames) qnicknames << coerce::simple_string(oCar(nc));
+  List_sp cnicknames = qnicknames.cons();
+  {
+    WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
+    // Before creating the package, we check if the names or nicknames
+    // conflict with existing packages. This prevents us from half-making
+    // packages.
+    existingPackage = this->findPackage_no_lock(name);
+    if (existingPackage.notnilp()) goto name_exists;
+    for (auto nc : cnicknames) {
+      existingPackage = this->findPackage_no_lock(oCar(nc).as_unsafe<SimpleString_O>());
+      if (existingPackage.notnilp()) goto name_exists;
+    }
+    // We're good, make the package.
+    Package_sp newPackage = Package_O::create(name);
+    Fixnum_sp packageIndex = make_fixnum(this->_Roots._Packages.size());
+    {
+      this->_Roots._PackageNameIndexMap->setf_gethash(name, packageIndex);
+      this->_Roots._Packages.push_back(newPackage);
+    }
+    // Assign nicknames.
+    for (auto nc : nicknames) {
+      this->_Roots._PackageNameIndexMap->setf_gethash(oCar(nc), packageIndex);
+    }
+    newPackage->setNicknames(cnicknames);
+    // Use packages.
+    for (auto u : use) {
+      Package_sp usePkg = oCar(u).as_assert<Package_O>();
+      // FIXME: usePackage may signal errors & grabs read lock!
+      newPackage->usePackage(usePkg);
+    }
+    // Done!
+    return newPackage;
+  }
+ name_exists:
+  CEpackage_error("There already exists a package with name: ~a", "Delete existing package", existingPackage.as_unsafe<Package_O>(), 1, name);
+  cl__delete_package(existingPackage);
+  goto start;
+ nonexistent_used_package:
+  PACKAGE_ERROR(nonexistentUsedPackage);
+}
+
 T_sp Lisp::findPackage_no_lock(const string& name) const {
   return this->findPackage_no_lock(SimpleBaseString_O::make(name));
 }
