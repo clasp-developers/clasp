@@ -443,7 +443,9 @@ CL_DOCSTRING(R"dx(packageName)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__package_name(T_sp pkgDesig) {
   Package_sp pkg = coerce::packageDesignator(pkgDesig);
-  return pkg->name();
+  if (pkg->getZombieP()) // deleted
+    return nil<T_O>();
+  else return pkg->name();
 };
 
 SYMBOL_EXPORT_SC_(ClPkg, package_use_list);
