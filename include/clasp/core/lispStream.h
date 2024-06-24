@@ -866,6 +866,7 @@ public: // Functions here
         _external_format(nil<T_O>()), _format(nil<Symbol_O>()){};
 
   virtual string __repr__() const override;
+  virtual void __write__(T_sp stream) const override;
   virtual bool has_file_position() const;
   cl_index consume_byte_stack(unsigned char* c, cl_index n);
   ListenResult _fd_listen(int fd);
