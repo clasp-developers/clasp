@@ -941,7 +941,7 @@ Package_sp Lisp::makePackage(SimpleString_sp name, List_sp nicknames, List_sp us
       this->_Roots._Packages.push_back(newPackage);
     }
     // Assign nicknames.
-    for (auto nc : nicknames) {
+    for (auto nc : cnicknames) {
       this->_Roots._PackageNameIndexMap->setf_gethash(oCar(nc), packageIndex);
     }
     newPackage->setNicknames(cnicknames);
