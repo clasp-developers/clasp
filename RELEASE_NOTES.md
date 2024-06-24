@@ -1,3 +1,8 @@
+# Version 2.7.0 (LLVM15-18) Pending
+
+## Fixed
+* Pathnames and filesystem operations support Unicode (#1595).
+
 # Version 2.6.0 (LLVM15-18) 2024-06-03
 
 ## Added
