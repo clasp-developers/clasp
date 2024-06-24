@@ -258,6 +258,8 @@ public: // Functions here
   //
   // String functions
   virtual std::string get_std_string() const = 0;
+  // Get a string usable as a path. Has to take care of encoding.
+  virtual std::string get_path_string() const = 0;
   virtual vector<size_t> arrayDimensionsAsVector() const = 0;
   // ------------------------------------------------------------
   //
@@ -379,6 +381,7 @@ public:
   size_t fillPointer() const override { return this->_FillPointerOrLengthOrDummy; };
   virtual bool equalp(T_sp other) const override;
   virtual std::string get_std_string() const override { notStringError(this->asSmartPtr()); }
+  virtual std::string get_path_string() const override { notStringError(this->asSmartPtr()); }
   virtual vector<size_t> arrayDimensionsAsVector() const override {
     vector<size_t> dims;
     for (size_t i(0); i < this->_Dimensions.length(); ++i) {
@@ -469,6 +472,7 @@ public:
   };
   virtual T_sp replaceArray(T_sp other) override { notAdjustableError(core::_sym_replaceArray, this->asSmartPtr()); };
   virtual std::string get_std_string() const override { notStringError(this->asSmartPtr()); };
+  virtual std::string get_path_string() const override { notStringError(this->asSmartPtr()); };
   virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const {
     TYPE_ERROR(this->asSmartPtr(), Cons_O::createList(cl::_sym_string, cl::_sym_bit_vector));
   };

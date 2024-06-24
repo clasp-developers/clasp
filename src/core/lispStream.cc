@@ -136,7 +136,7 @@ T_sp stream_open(T_sp fn, StreamDirection direction, StreamIfExists if_exists, S
   if (fn.nilp())
     SIMPLE_ERROR("In {} the filename is NIL", __FUNCTION__);
   String_sp filename = core__coerce_to_filename(fn);
-  string fname = filename->get_std_string();
+  string fname = filename->get_path_string();
   T_sp temp_name = nil<T_O>();
   bool appending = false, created = false;
   ASSERT(filename);
@@ -180,7 +180,7 @@ T_sp stream_open(T_sp fn, StreamDirection direction, StreamIfExists if_exists, S
       case StreamIfExists::new_version:
       case StreamIfExists::supersede:
         temp_name = core__mkstemp(filename);
-        f = safe_open(core__coerce_to_filename(temp_name)->get_std_string().c_str(), base | O_CREAT, mode);
+        f = safe_open(core__coerce_to_filename(temp_name)->get_path_string().c_str(), base | O_CREAT, mode);
         unlikely_if(f < 0) FEcannot_open(fn);
         break;
       case StreamIfExists::append:
@@ -4925,12 +4925,12 @@ CFileStream_sp CFileStream_O::make(T_sp fname, int fd, StreamDirection direction
     if (fstat_error != 0) {
       SIMPLE_ERROR("Unable to create stream for file descriptor and while running fstat another error occurred -> fd: {} name: {} "
                    "mode: %s error: %s | fstat_error = %d  info.st_mode = %08x%s",
-                   fd, gc::As<String_sp>(fname)->get_std_string().c_str(), mode, strerror(errno), fstat_error, info.st_mode,
+                   fd, gc::As<String_sp>(fname)->get_path_string().c_str(), mode, strerror(errno), fstat_error, info.st_mode,
                    string_mode(info.st_mode));
     }
     SIMPLE_ERROR(
         "Unable to create stream for file descriptor %ld name: %s mode: %s error: %s | fstat_error = %d  info.st_mode = %08x%s", fd,
-        gc::As<String_sp>(fname)->get_std_string().c_str(), mode, strerror(errno), fstat_error, info.st_mode,
+        gc::As<String_sp>(fname)->get_path_string().c_str(), mode, strerror(errno), fstat_error, info.st_mode,
         string_mode(info.st_mode));
   }
   return CFileStream_O::make(fname, fp, direction, byte_size, flags, external_format, tempName, created);
@@ -4961,7 +4961,7 @@ void CFileStream_O::set_buffering_mode(T_sp mode) {
 
 void CFileStream_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
   if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
-    std::string name = gc::As<String_sp>(_filename)->get_std_string();
+    std::string name = gc::As<String_sp>(_filename)->get_path_string();
     T_sp stream = this->asSmartPtr();
     if (name == "*STDIN*") {
       _file = stdin;

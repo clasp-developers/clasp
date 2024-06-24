@@ -471,12 +471,7 @@ CL_DEFUN T_sp ext__chdir(T_sp dir, T_sp change_default_pathname_defaults) {
   T_sp tdir = clasp_namestring(dir, true);
   LIKELY_if(cl__stringp(tdir)) {
     String_sp sdir = gc::As_unsafe<String_sp>(tdir);
-#if 0
-    if (sdir->get_std_string().substr(0,strlen("/Users/meister/Development/cando-demos")) == "/Users/meister/Development/cando-demos") {
-      printf("%s:%d:%s set break-point here\n", __FILE__, __LINE__, __FUNCTION__ );
-    }
-#endif
-    Integer_sp result = Integer_O::create((gc::Fixnum)safe_chdir(sdir->get_std_string().c_str(), nil<T_O>()));
+    Integer_sp result = Integer_O::create((gc::Fixnum)safe_chdir(sdir->get_path_string().c_str(), nil<T_O>()));
     //    printf("%s:%d:%s  After safe_chdir\n", __FILE__, __LINE__, __FUNCTION__ );
     if (change_default_pathname_defaults.notnilp()) {
       clasp_write_string(fmt::format("Changing *default-pathname-defaults* because change-default-pathname-defaults -> {}\n",
@@ -647,18 +642,18 @@ static Symbol_sp file_kind(const char* filename, bool follow_links) {
 static Symbol_sp smart_file_kind(String_sp sfilename, bool follow_links) {
   ASSERT(cl__stringp(sfilename));
   if (follow_links) {
-    Symbol_sp kind_follow_links = file_kind((char*)(sfilename->get_std_string().c_str()), true);
+    Symbol_sp kind_follow_links = file_kind((char*)(sfilename->get_path_string().c_str()), true);
     if (kind_follow_links.notnilp()) {
       return kind_follow_links;
     } else {
       // If its a broken link return _sym_file
-      Symbol_sp kind_no_follow_links = file_kind((char*)(sfilename->get_std_string().c_str()), false);
+      Symbol_sp kind_no_follow_links = file_kind((char*)(sfilename->get_path_string().c_str()), false);
       if (kind_no_follow_links.nilp())
         return nil<T_O>();
       return kw::_sym_broken_link;
     }
   } else {
-    Symbol_sp kind = file_kind((char*)(sfilename->get_std_string().c_str()), false);
+    Symbol_sp kind = file_kind((char*)(sfilename->get_path_string().c_str()), false);
     return kind;
   }
 }
@@ -689,7 +684,7 @@ CL_DEFUN T_sp core__readlink(String_sp filename) {
   do {
     output = Str8Ns_O::make(size + 2, '*', true, clasp_make_fixnum(0));
     clasp_disable_interrupts();
-    written = readlink((char*)filename->get_std_string().c_str(), (char*)output->rowMajorAddressOfElement_(0), size);
+    written = readlink((char*)filename->get_path_string().c_str(), (char*)output->rowMajorAddressOfElement_(0), size);
     clasp_enable_interrupts();
     size += 256;
   } while (written == size - 256);
@@ -813,7 +808,7 @@ static Pathname_mv file_truename(T_sp pathname, T_sp filename, int flags) {
       SIMPLE_ERROR("Unprintable pathname {} found in TRUENAME", _rep_(pathname));
     }
   }
-  kind = file_kind((char*)gc::As<String_sp>(filename)->get_std_string().c_str(), false);
+  kind = file_kind((char*)gc::As<String_sp>(filename)->get_path_string().c_str(), false);
   //  kind = smart_file_kind( filename, false);
   if (kind.nilp()) {
     CANNOT_OPEN_FILE_ERROR(filename);
@@ -824,7 +819,7 @@ static Pathname_mv file_truename(T_sp pathname, T_sp filename, int flags) {
      * the other hand, if the link is broken - return file
      * truename "as is". */
     struct stat filestatus;
-    if (safe_stat(gc::As<String_sp>(filename)->get_std_string().c_str(), &filestatus) < 0)
+    if (safe_stat(gc::As<String_sp>(filename)->get_path_string().c_str(), &filestatus) < 0)
       return Values(pathname, kind);
     /* The link might be a relative pathname. In that case we have
      * to merge with the original pathname */
@@ -1001,12 +996,12 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
   if (if_exists == _lisp->_true()) {
     T_sp dkind = core__file_kind(new_filename, false);
     if (dkind == kw::_sym_directory) {
-      rmtree(new_filename->get_std_string().c_str());
+      rmtree(new_filename->get_path_string().c_str());
     }
   }
   {
     clasp_disable_interrupts();
-    if (rename((char*)old_filename->get_std_string().c_str(), (char*)new_filename->get_std_string().c_str()) == 0) {
+    if (rename((char*)old_filename->get_path_string().c_str(), (char*)new_filename->get_path_string().c_str()) == 0) {
       goto SUCCESS;
     }
   }
@@ -1044,7 +1039,7 @@ CL_DEFUN T_sp cl__delete_file(T_sp file) {
   int ok;
 
   clasp_disable_interrupts();
-  ok = (isdir ? rmdir : unlink)((char*)filename->get_std_string().c_str());
+  ok = (isdir ? rmdir : unlink)((char*)filename->get_path_string().c_str());
   clasp_enable_interrupts();
 
   if (ok < 0) {
@@ -1085,7 +1080,7 @@ CL_DEFUN Number_sp cl__file_write_date(T_sp pathspec) {
   String_sp filename = coerce_to_posix_filename(pathname);
   struct stat filestatus;
   time = nil<Number_O>();
-  if (safe_stat((char*)filename->get_std_string().c_str(), &filestatus) >= 0) {
+  if (safe_stat((char*)filename->get_path_string().c_str(), &filestatus) >= 0) {
     Number_sp accJan1st1970UT(Integer_O::create((gc::Fixnum)(24 * 60 * 60)));
     accJan1st1970UT = contagion_mul(accJan1st1970UT, Integer_O::create((gc::Fixnum)(17 + 365 * 70)));
     time = Integer_O::create((gc::Fixnum)filestatus.st_mtime);
@@ -1105,7 +1100,7 @@ CL_DEFUN T_sp cl__file_author(T_sp file) {
   Pathname_sp pn = cl__pathname(file);
   String_sp filename = coerce_to_posix_filename(pn);
   struct stat filestatus;
-  if (safe_stat((char*)filename->get_std_string().c_str(), &filestatus) < 0) {
+  if (safe_stat((char*)filename->get_path_string().c_str(), &filestatus) < 0) {
     std::string msg = "Unable to read file author for ~S."
                       "~%C library error: ~S";
     T_sp c_error = clasp_strerror(errno);
@@ -1172,12 +1167,12 @@ Pathname_sp clasp_homedir_pathname(T_sp tuser) {
   } else {
     namestring = SimpleBaseString_O::make("/");
   }
-  if (namestring->get_std_string().c_str()[0] == '~') {
-    SIMPLE_ERROR("Not a valid home pathname {}", namestring->get_std_string());
+  if (namestring->get_path_string().c_str()[0] == '~') {
+    SIMPLE_ERROR("Not a valid home pathname {}", namestring->get_path_string());
   }
   i = namestring->length();
-  if (!IS_DIR_SEPARATOR(namestring->get_std_string().c_str()[i - 1]))
-    namestring = SimpleBaseString_O::make(namestring->get_std_string() + DIR_SEPARATOR);
+  if (!IS_DIR_SEPARATOR(namestring->get_path_string().c_str()[i - 1]))
+    namestring = SimpleBaseString_O::make(namestring->get_path_string() + DIR_SEPARATOR);
   return gc::As<Pathname_sp>(cl__parse_namestring(namestring));
 }
 
@@ -1218,7 +1213,7 @@ static T_sp list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, in
   MultipleValues& mvn = core::lisp_multipleValues();
 
   clasp_disable_interrupts();
-  dir = opendir((char*)gc::As<String_sp>(prefix)->get_std_string().c_str());
+  dir = opendir((char*)gc::As<String_sp>(prefix)->get_path_string().c_str());
   if (dir == NULL) {
     out = nil<T_O>();
     goto OUTPUT;
@@ -1290,7 +1285,7 @@ CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
     SIMPLE_ERROR("In {} the template is NIL", __FUNCTION__);
   thetemplate = core__coerce_to_filename(thetemplate);
   stringstream outss;
-  outss << thetemplate->get_std_string();
+  outss << thetemplate->get_path_string();
   outss << "XXXXXX";
   string outname = outss.str();
   std::vector<char> dst_path(outname.begin(), outname.end());
@@ -1321,7 +1316,7 @@ CL_DEFUN T_sp core__mkstemp_fd(String_sp thetemplate) {
     SIMPLE_ERROR("In {} the template is NIL", __FUNCTION__);
   thetemplate = core__coerce_to_filename(thetemplate);
   stringstream outss;
-  outss << thetemplate->get_std_string();
+  outss << thetemplate->get_path_string();
   outss << "XXXXXX";
   string outname = outss.str();
   std::vector<char> dst_path(outname.begin(), outname.end());
@@ -1355,7 +1350,7 @@ CL_DEFUN T_sp core__mkdtemp(String_sp thetemplate) {
     SIMPLE_ERROR("In {} the template is NIL", __FUNCTION__);
   thetemplate = core__coerce_to_filename(thetemplate);
   stringstream outss;
-  outss << thetemplate->get_std_string();
+  outss << thetemplate->get_path_string();
   outss << "XXXXXX";
   string outname = outss.str();
   std::vector<char> dst_path(outname.begin(), outname.end());
@@ -1546,7 +1541,7 @@ DOCGROUP(clasp);
 CL_DEFUN void core__chmod(T_sp file, T_sp mode) {
   mode_t code = clasp_to_uint32_t(mode);
   T_sp filename = coerce_to_posix_filename(file);
-  unlikely_if(chmod((char*)gc::As<String_sp>(filename)->get_std_string().c_str(), code)) {
+  unlikely_if(chmod((char*)gc::As<String_sp>(filename)->get_path_string().c_str(), code)) {
     T_sp c_error = clasp_strerror(errno);
     std::string msg = "Unable to change mode of file ~S to value ~O"
                       "~%C library error: ~S";
@@ -1573,9 +1568,9 @@ CL_DEFUN T_sp core__copy_file(T_sp orig, T_sp dest) {
     SIMPLE_ERROR("In {} the destination pathname is NIL", __FUNCTION__);
   String_sp sdest = core__coerce_to_filename(dest);
   clasp_disable_interrupts();
-  in = fopen(sorig->get_std_string().c_str(), "r");
+  in = fopen(sorig->get_path_string().c_str(), "r");
   if (in) {
-    out = fopen(sdest->get_std_string().c_str(), "w");
+    out = fopen(sdest->get_path_string().c_str(), "w");
     if (out) {
       unsigned char* buffer = (unsigned char*)malloc(1024);
       cl_index size;
@@ -1791,7 +1786,7 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
 #if defined(CLASP_MS_WINDOWS_HOST)
   ok = mkdir((char*)filename->c_str());
 #else
-  ok = mkdir((char*)filename->get_std_string().c_str(), modeint);
+  ok = mkdir((char*)filename->get_path_string().c_str(), modeint);
 #endif
   //    clasp_enable_interrupts();
 
@@ -2176,7 +2171,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_mv ext__stat(T_sp pathname) {
   struct stat sb;
   String_sp filename = gc::As<String_sp>(cl__namestring(cl__translate_logical_pathname(pathname)));
-  if (stat(filename->get_std_string().c_str(), &sb) == -1)
+  if (stat(filename->get_path_string().c_str(), &sb) == -1)
     return Values(nil<T_O>());
   else
     return Values(Integer_O::create(sb.st_size), Integer_O::create((gctools::Fixnum)sb.st_mtime),
