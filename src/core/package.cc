@@ -519,8 +519,6 @@ string Package_O::__repr__() const {
   return ss.str();
 }
 
-void Package_O::__write__(T_sp stream) const { clasp_write_string(this->__repr__(), stream); }
-
 class PackageMapper : public KeyValueMapper {
 public:
   stringstream* ssP;
