@@ -1450,7 +1450,7 @@ void read_array_readable_binary(T_sp stream, size_t num6bit, void* start, void* 
     read_array_readable_binary(stream, num6bit, start, end);                                                                       \
     claspCharacter c = stream_read_char(stream);                                                                                   \
     if (c != ' ')                                                                                                                  \
-      SIMPLE_ERROR("Expected space at end of dense blob - got #\\{} ", c);                                                         \
+      SIMPLE_ERROR("Expected space at end of dense blob");                                                                         \
     return svf;                                                                                                                    \
   }
 
