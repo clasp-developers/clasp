@@ -1174,11 +1174,11 @@ T_sp clasp_namestring(T_sp tx, int flags) {
     TYPE_ERROR(tx, Cons_O::createList(cl::_sym_or, cl::_sym_string, cl::_sym_Pathname_O));
   Pathname_sp x = cl__pathname(tx);
 
-  /* INV: Pathnames can only be created by mergin, parsing namestrings
+  /* INV: Pathnames can only be created by merging, parsing namestrings
    * or using clasp_make_pathname(). In all of these cases Clasp will complain
    * at creation time if the pathname has wrong components.
    */
-  T_sp buffer = clasp_make_string_output_stream(); //(128, 1);
+  T_sp buffer = clasp_make_string_output_stream(STRING_OUTPUT_STREAM_DEFAULT_SIZE, true);
   logical = core__logical_pathname_p(x);
   host = x->_Host;
   if (logical) {
@@ -1346,9 +1346,6 @@ CL_DEFUN T_mv cl__parse_namestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum
     if (default_host.nilp() && tempdefaults.notnilp()) {
       default_host = gc::As<Pathname_sp>(tempdefaults)->_Host;
     }
-#ifdef CLASP_UNICODE
-    thing = coerce::coerce_to_base_string(thing);
-#endif
     p = sequenceKeywordStartEnd(cl::_sym_parse_namestring, gc::As<String_sp>(thing), start, end);
     output = clasp_parseNamestring(thing, p.start, p.end, &ee, default_host);
     start = make_fixnum(static_cast<uint>(ee));

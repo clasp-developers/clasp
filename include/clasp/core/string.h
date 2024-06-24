@@ -107,6 +107,7 @@ public:
   virtual std::string get_std_string() const final {
     return this->length() == 0 ? string("") : string((char*)&(*this)[0], this->length());
   };
+  virtual std::string get_path_string() const final { return get_std_string(); }
   virtual std::string __repr__() const override;
   virtual void sxhash_(HashGenerator& hg) const final { this->ranged_sxhash(hg, 0, this->length()); }
   virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const final {
@@ -190,6 +191,8 @@ public:
   virtual bool equal(T_sp other) const final;
   virtual bool equalp(T_sp other) const final;
   virtual std::string get_std_string() const final;
+  std::u32string get_u32_string() const;
+  virtual std::string get_path_string() const final;
   virtual std::string __repr__() const final;
 
 public:
@@ -301,6 +304,7 @@ public:
   virtual void __write__(T_sp strm) const final;
   virtual void __writeString(size_t istart, size_t iend, T_sp stream) const final; // implemented in write_array.cc
   virtual std::string get_std_string() const final { return std::string((const char*)this->begin(), this->length()); };
+  virtual std::string get_path_string() const final { return get_std_string(); }
   virtual std::string __repr__() const override;
 
 public: // Str8Ns specific functions
@@ -362,6 +366,8 @@ public:
   virtual void __write__(T_sp strm) const final;
   virtual void __writeString(size_t istart, size_t iend, T_sp stream) const final; // implemented in write_array.cc
   virtual std::string get_std_string() const final;
+  std::u32string get_u32_string() const;
+  virtual std::string get_path_string() const final;
   virtual std::string __repr__() const final;
 
 public: // StrWNs specific functions

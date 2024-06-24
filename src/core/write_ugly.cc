@@ -105,6 +105,14 @@ void Pathname_O::__write__(T_sp strm) const {
   write_ugly_object(namestring, strm);
 }
 
+void FileStream_O::__write__(T_sp stream) const {
+  clasp_write_string("#<", stream);
+  write_ugly_object(this->_instanceClass()->_className(), stream);
+  stream_write_char(stream, ' ');
+  write_ugly_object(this->pathname(), stream);
+  stream_write_char(stream, '>');
+}
+
 void Instance_O::__write__(T_sp stream) const { clasp_write_string(_rep_(this->asSmartPtr()), stream); }
 
 void FuncallableInstance_O::__write__(T_sp stream) const { clasp_write_string(_rep_(this->asSmartPtr()), stream); }

@@ -1,4 +1,5 @@
 #include <string.h>
+#include <filesystem> // get_path_string
 #include <clasp/core/foundation.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/bformat.h>
@@ -1253,6 +1254,15 @@ std::string SimpleCharacterString_O::get_std_string() const {
   return sout;
 }
 
+std::u32string SimpleCharacterString_O::get_u32_string() const {
+  return std::u32string(&(*this)[0], this->length());
+}
+
+std::string SimpleCharacterString_O::get_path_string() const {
+  // make C++ figure out the native filesystem encoding.
+  return std::filesystem::path(get_u32_string()).string();
+}
+
 std::string SimpleCharacterString_O::__repr__() const { return escaped_string(this->get_std_string()); }
 
 // ------------------------------------------------------------
@@ -1387,6 +1397,17 @@ std::string StrWNs_O::get_std_string() const {
   for (size_t i(0), iEnd(this->length()); i < iEnd; ++i)
     sout[i] = (*this)[i];
   return sout;
+}
+
+std::u32string StrWNs_O::get_u32_string() const {
+  std::u32string sout(this->length(), ' ');
+  for (size_t i(0), iEnd(this->length()); i < iEnd; ++i)
+    sout[i] = (*this)[i];
+  return sout;
+}
+
+std::string StrWNs_O::get_path_string() const {
+  return std::filesystem::path(get_u32_string()).string();
 }
 
 std::string StrWNs_O::__repr__() const { return escaped_string(this->get_std_string()); }

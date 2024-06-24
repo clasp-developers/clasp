@@ -47,10 +47,6 @@ namespace core {
 
 #include "character-generated.cc"
 
-void handleWideCharactersError(claspCharacter cc) {
-  SIMPLE_ERROR("A wide character with the value {} was encountered in a function that needed a base-char", cc);
-}
-
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Returns true if character is a graphic character other than space-like characters;
