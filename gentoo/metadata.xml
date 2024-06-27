@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>msouth@hamptonandsouth.com</email>
+		<name>Michael South</name>
+	</maintainer>
+	<longdescription>Clasp is a new Common Lisp implementation that
+	seamlessly interoperates with C++ libraries and programs using LLVM
+	for compilation to native code.
+
+	Building Clasp requires that you already have a running CL compiler.
+	This is hard-coded to SBCL due to strong preference from upstream.
+	</longdescription>
+	<use>
+		<flag name="bcfaso">Build-mode :bytecode-faso rather than the default
+			:faso (LLVM binary format). :bytecode-faso leaves the kernel and modules
+			as FASO but user code is bytecode (faster compilation but slower execution).
+		</flag>
+	</use>
+	<upstream>
+		<remote-id type="github">clasp-developers/clasp</remote-id>
+		<maintainer status="active">
+			<email>clasp-devel@common-lisp.net</email>
+			<name>Clasp developers</name>
+		</maintainer>
+		<changelog>https://github.com/clasp-developers/clasp/blob/main/RELEASE_NOTES.md</changelog>
+		<doc>https://clasp-developers.github.io/manual.html</doc>
+		<bugs-to>https://github.com/clasp-developers/clasp/issues/new</bugs-to>
+	</upstream>
+</pkgmetadata>

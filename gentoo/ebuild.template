@@ -1,0 +1,160 @@
+# -*- mode: sh-script; mode: ebuild; -*-
+# Copyright 1999-2024 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2 or later.
+
+EAPI=8
+
+CHECKREQS_MEMORY="2G"
+LLVM_COMPAT=( {15..18} )
+
+inherit check-reqs edo flag-o-matic llvm-r1 multiprocessing ninja-utils toolchain-funcs
+
+# Dependencies are in two groups: (1) a minimal set which are spec'd in
+# this ebuild and must be pre-installed, and (2) an additional set which
+# are obtained by the build scripts.
+#
+# Version N.N.N is a normal release. All necessary sources are wrapped
+# up in a tarball, including the additional dependencies but not the
+# minimal ebuild set.
+#
+# Version 9999 is the standard Gentoo "live ebuild" (git HEAD). The
+# minimal set of dependencies must already be installed, the Clasp
+# sources will be pulled down via git in this ebuild, and then the build
+# scripts will pull down the additional set of dependencies, also via
+# git.
+
+if [ ${PV} = "9999" ]; then
+	EGIT_REPO_URI="https://github.com/clasp-developers/clasp"
+	EGIT_BRANCH="main"
+	# The app build script will git the dependencies not in BDEPEND.
+	EGIT_MIN_CLONE_TYPE="shallow"
+	inherit git-r3
+	SLOT="0"
+else
+	SRC_URI="https://github.com/clasp-developers/clasp/releases/download/${PV}/${P}.tar.gz"
+	KEYWORDS="~amd64"
+	SLOT="0/${PV}"
+fi
+
+DESCRIPTION="Common Lisp implementation based on LLVM."
+HOMEPAGE="https://github.com/clasp-developers/clasp"
+# Primary Clasp and core ECL (src/lisp/kernel/lsp) are LGPL-2+,
+# Parts of Clasp are MIT.
+# MPS is Sleepycat,
+# src/lisp/kernel/clos is LGPL-2+,
+# src/lisp/kernel/lsp/loop2.lisp is MIT,
+# src/lisp/kernel/lsp/{pprint,format}.lisp are Public Domain by CMU,
+# src/lisp/kernel/clos is LGPL-2+
+LICENSE="LGPL-2+ Sleepycat MIT public-domain"
+
+IUSE="+bcfaso"
+
+# Clasp needs llvm's libunwind, but runs OK without the Portage
+# sys-devel/llvm-libunwind being installed. (Or even an "unwind"
+# lib anywhere in installed llvm tree.) Don't question it,
+# it's magic.
+
+RDEPEND="sys-devel/binutils:=
+		$(llvm_gen_dep '
+			sys-devel/clang:${LLVM_SLOT}=
+			sys-devel/llvm:${LLVM_SLOT}=
+			sys-devel/lld:${LLVM_SLOT}=
+		')
+		dev-libs/boost:=
+		>=dev-libs/libfmt-7.1.0
+		>=dev-libs/gmp-6.0.0[cxx]
+		virtual/pkgconfig
+		virtual/libelf:="
+DEPEND="${RDEPEND}"
+BDEPEND="app-alternatives/ninja
+		dev-lisp/sbcl"
+[ "${PV}" = "2.6.0" ] && BDEPEND+=" dev-util/ctags"
+IDEPEND="app-alternatives/ninja
+		dev-lisp/sbcl"
+
+RESTRICT="strip"
+
+DOCS=(
+	CONTRIBUTING.md
+	README.md
+	RELEASE_NOTES.md
+	SECURITY.md
+)
+MANDOCS=( docs/clasp.1 )
+
+pkg_pretend() {
+	if [ "${PV}" = "9999" ]; then
+		ewarn "This live ebuild is incompatible with make.conf FEATURE 'network-sandbox'."
+		ewarn "The koga/ninja build script downloads additional C++ and Common Lisp"
+		ewarn "dependencies by internally calling git, without going through ebuild"
+		ewarn "helpers. network-sandbox intentionally prevents all such access."
+		ewarn "See  https://wiki.gentoo.org/wiki/Sandbox_(Portage)"
+		ewarn "     https://bugs.gentoo.org/691472"
+	fi
+}
+
+src_unpack() {
+	[ -n "${EGIT_REPO_URI}" ] && git-r3_src_unpack
+	default
+}
+
+src_configure() {
+	# Get job count from MAKEOPTS '-j' flag. Use for Lisp builds and Ninja.
+	export CLASP_BUILD_JOBS=$(get_makeopts_jobs)
+
+	strip-unsupported-flags
+	# Clasp needs un-stripped binaries.
+	filter-flags -Wl,-s
+	filter-ldflags -s
+	# Clasp build scripts set -fno-omit-fpointer where its needed.
+
+	# Set up paths to LLVM components.
+	llvm-r1_pkg_setup
+
+	local myconf=(
+		--ldflags="${LDFLAGS}"
+		--jobs=${CLASP_BUILD_JOBS}
+		--reproducible
+		--build-path="${S}/build"
+		--prefix="${EPREFIX}/usr"
+		--bin-path="${EPREFIX}/usr/bin"
+		--lib-path="${EPREFIX}/usr/$(get_libdir)/${PF}"
+		--share-path="${EPREFIX}/usr/share/${PF}"
+		--pkg-config=$(tc-getPKG_CONFIG)
+		--ld="lld"
+		--lisp=sbcl # Upstream really, really prefers SBCL
+	)
+
+	# Yes, we get a pkgcheck VariableScope warning on {ED},
+	# Unfortunately, the Clasp koga script creates all of the ninja
+	# scripts at src_configure time, and the generated scripts have no
+	# provision for looking at DESTDIR at install time. This config
+	# setting only affects the install-time script, and seems to be the
+	# least-fragile way to handle it.
+	myconf+=( --package-path="${ED}" )
+
+	# All needed sources are bundled in release tarballs
+	[ "${PV}" != "9999" ] && myconf+=( --skip-sync )
+
+	use bcfaso && myconf+=( --build-mode=bytecode-faso )
+
+	edo ./koga "${myconf[@]}"
+}
+
+src_compile() {
+	edob eninja -C "${S}/build"
+}
+
+src_test() {
+	# False positives from backtrace tests
+	#eninja -C "${S}/build" test
+	edo "${S}/build/boehmprecise/clasp" --norc --disable-debugger --non-interactive \
+		--eval '(ext:quit (if (eql (* 6 7) 42) 0 1))'
+}
+
+src_install() {
+	eninja -C "${S}/build" install
+	dodoc ${DOCS[@]}
+	dodoc -r licenses
+	[ -e "${MANDOCS}" ] && doman ${MANDOCS[@]}
+}
