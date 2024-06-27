@@ -3,6 +3,7 @@
 
 /* Define to recognise all pointers to the interior of objects. */
 #define ALL_INTERIOR_POINTERS 1
+#define REGISTER_TAG_DISPLACEMENTS 1
 
 /* AO load, store and/or test-and-set primitives are implemented in
    libatomic_ops using locks. */
