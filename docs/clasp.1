@@ -1,0 +1,153 @@
+.\"
+.\" man page introduction to Clasp
+.\"
+.\" Copyright (c) 2024, Clasp Developers
+.\"           All Rights Reserved
+.TH CLASP 1 "20 June 2024"
+.SH NAME
+Clasp -- A Common Lisp native compiler using LLVM
+.SH SYNOPSIS
+\fBclasp\fP [ --help ] [ --noinform ] [ --noprint ] [ --disable-debugger ]
+[ --non-interactive ] [ --feature \~\fIfeature\fP ]
+[ --eval \fIform\fP | --load \~\fIfilename\fP ]*
+[ --norc ] [ --version ] [ \~\fIother options\fP ]
+
+.SH DESCRIPTION
+
+\fBClasp\fP is an implementation of Common Lisp primarily designed for
+compatibility with C++-language programs and libraries.
+
+Supported operating systems are Linux distributions Arch, Debian/Ubuntu, Fedora,
+Gentoo, and also MacOS. Its requirements (build and runtime) are primarily LLVM
+(versions 15 through 18), and several of the standard Common Lisp libraries.
+
+.SH RUNNING CLASP
+
+Running clasp without any arguments starts the interactive Read / Evaluation /
+Print Loop (REPL). At the prompt you may enter a Lisp expression; it will be
+executed, any values it produces will be printed, and you will recieve another
+prompt allowing you to enter another expression.
+
+\fBTo exit clasp\fP enter the expression "\f(CR(ext:quit [integer])\fR" (and
+return), or type a ^D (control-D).\fP The integer argument, if provided, is used
+as the exit status; the default is zero. \fI(N.B. The shell will treat 0 as
+true, non-zero as false/error.)
+
+\f(CR
+  $ clasp
+  ...[startup banner]...
+  COMMON-LISP-USER> (* 6 7)
+
+  42
+  COMMON-LISP-USER> (ext:quit)
+\fR
+
+.SH COMMAND LINE OPTIONS
+
+This is a summary of the most common options. The \f(CR\-\-help\fR option
+will display the full list of supported options, environment variables,
+and \f(CR*features*\fR flags.
+.TP 3
+.B \-\-noinform
+Skip messages at startup.
+.TP 3
+.B \-\-noprint
+Start a read-eval loop instead of a read-eval-print loop, and don't prompt. This
+is intended for scripts (\fIe.g.\fP piping a list of forms to Clasp).
+.TP 3
+.B \-\-disable-debugger
+Set things up so that if the default debugger would be entered, Clasp quits with
+a backtrace and nonzero exit status instead. \f(CR*debugger-hook*\fR and
+\f(CRext:*invoke-debugger-hook*\fR (below) work as usual, \fIi.e.\fR this
+setting does not affect them.
+.TP 3
+.B \-\-non-interactive
+Rather than starting a REPL, quit. This is intended to be used with \f(CR\-\-eval\fR and \f(CR\-\-load\fR. Implies \f(CR\-\-disable-debugger\fR.
+.TP 3
+.B \-\-feature \~\fIfeature\fP
+Intern "\fIfeature\fP" as a keyword and push it to \f(CR*features*\fR.
+.TP 3
+.B \-\-eval \~\fIform\fP
+Evaluate the given form. \f(CR\-\-eval\fR and \f(CR\-\-load\fR options are
+processed in order from left to right.
+.TP 3
+.B \-\-load \~\fIfilename\fP
+\f(CRcl:load\fR the given file. Intended for convenience, since \f(CR--eval
+(load ...))\fR could involve annoying quotation issues.
+.TP 3
+.B \-\-norc
+Do not load \f(CR~/.clasprc\fR (see below).
+.TP 3
+.B \-\-help
+Displays a full list of options, environment variables, and feature flags.
+.TP 3
+.B \-\-version
+Displays the program version string and exits.
+.PP
+If the file \f(CR~/.clasprc\fR exists, Clasp will \f(CRcl:load\fR it before
+processing \f(CR\-\-eval\fR and \f(CR\-\-load\fR options and starting the REPL.
+
+.SH CREDITS
+
+Clasp is the project of Dr. Christian Schafmeister. Additional contributions
+have been made by Alex Wood, Karsten Poeck, and many other contributors as seen
+in the Git history.
+
+Clasp's source code is derived substantially from that of Embeddable Common
+Lisp. Code from SBCL and SICL has been incorporated as well. Most notably, the
+compiler is SICL's Cleavir compiler with some minor customizations.
+
+.SH ENVIRONMENT
+
+See the \f(CR\-\-help\fR option for a complete list.
+
+.TP 10n
+.BR CLASP_DEBUG \~\fIfilenames\fP
+Define files that generate log info when \f(CRDEBUG_LEVEL_FULL\fR is set at
+top of file. \~\fIfilenames\fP is separated with spaces or commas.
+.TP 10n
+.BR CLASP_HOME \~\fIdir\fP
+Define where clasp source code lives.
+.TP 10n
+.BR CLASP_FEATURES \~\fIfeatures\fP
+Set \f(CR*features*\fR (separate multiple features with spaces or commas).
+
+.SH FILES
+
+.TP
+.I ~/.clasprc
+Optional per-user start-up script.
+
+.SH SEE ALSO
+
+Clasp project home page
+.IP
+<\f(CRhttps://github.com/clasp-developers/clasp/tree/main\fR>
+.PP
+Clasp manual
+.IP
+<\f(CRhttps://github.com/clasp-developers/clasp/wiki/Manual\fR>
+.PP
+Building from source
+.IP
+<\f(CRhttps://github.com/clasp-developers/clasp/wiki/Building-and-Installing-from-Source\fR>
+.PP
+Real-time chat
+.IP
+\f(CR#clasp\fR IRC channel on Libera <\f(CRhttps://web.libera.chat\fR>
+.PP
+.SH LICENSE
+
+CLASP is free software; you can redistribute it and/or modify it
+under the terms of the GNU Library General Public License as published
+by the Free Software Foundation; either version 2.1 of the License, or
+(at your option) any later version; see file 'Copying'.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Library General Public License for more details.
+
+You should have received a copy of the GNU Library General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
