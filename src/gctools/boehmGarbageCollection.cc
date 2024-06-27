@@ -32,6 +32,9 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #ifdef USE_BOEHM // whole file #ifdef USE_BOEHM
+#include <clasp/gctools/boehm_config.h>
+// boehm_config defines a PACKAGE macro and that will mess with the scraper - so undef it.
+#undef PACKAGE
 #include <clasp/gctools/boehmGarbageCollection.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/debugger.h>
@@ -398,8 +401,22 @@ __attribute__((noinline)) void startupBoehm(gctools::ClaspInfo* claspInfo) {
   GC_INIT();
   GC_allow_register_threads();
   GC_set_java_finalization(1);
+#ifdef ALL_INTERIOR_POINTERS
   GC_set_all_interior_pointers(1); // tagged pointers require this
                                    // printf("%s:%d Turning on interior pointers\n",__FILE__,__LINE__);
+#else
+    printf("%s:%d:%s ALL_INTERIOR_POINTERS is 0 - so interior pointers should not be detected\n",
+           __FILE__, __LINE__, __FUNCTION__ );
+    if (REGISTER_TAG_DISPLACEMENTS) {
+      printf("%s:%d:%s Calling GC_register_displacement for GENERAL_TAG and CONS_TAG\n",
+             __FILE__, __LINE__, __FUNCTION__ );
+      GC_register_displacement(GENERAL_TAG);
+      GC_register_displacement(CONS_TAG);
+    } else {
+      printf("%s:%d:%s NOT calling GC_register_displacement for GENERAL_TAG and CONS_TAG - I WANT Clasp to crash to see if displacements work\n",
+             __FILE__, __LINE__, __FUNCTION__ );
+    }
+#endif
   GC_set_warn_proc(clasp_warn_proc);
   //  GC_enable_incremental();
   GC_init();
