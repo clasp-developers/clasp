@@ -14,7 +14,7 @@ namespace snapshotSaveLoad {
 extern bool global_debugSnapshot;
 extern bool global_InSnapshotLoad;
 
-enum PointerType { UninitializedPointer = 0, EndPointer = 1, FunctionPointer = 2, VtablePointer = 3 };
+enum PointerType { UninitializedPointer = '?', EndPointer = 'E', FunctionPointer = 'f', VtablePointer = 'v' };
 
 struct PointerBase {
   PointerType _pointerType;
@@ -83,19 +83,9 @@ struct Fixup {
   uintptr_t fixedAddress(bool functionP, uintptr_t* ptrptr, const char* addressName);
   size_t ensureLibraryRegistered(uintptr_t address);
 
-  void registerVtablePointer(size_t libraryIndex, core::T_O* vtablePtrPtr) {
-    this->_Libraries[libraryIndex]._InternalPointers.emplace_back(VtablePointer, (uintptr_t*)vtablePtrPtr,
-                                                                  *(uintptr_t*)vtablePtrPtr);
-  };
+  void registerVtablePointer(size_t libraryIndex, core::T_O* vtablePtrPtr);
 
-  void registerFunctionPointer(size_t libraryIndex, uintptr_t* functionPtrPtr) {
-    if (libraryIndex > LIBRARY_ID_MAX) {
-      printf("%s:%d:%s The library id %lu is too large - change the pointer coding scheme to add more bits to the library id\n",
-             __FILE__, __LINE__, __FUNCTION__, libraryIndex);
-      abort();
-    }
-    this->_Libraries[libraryIndex]._InternalPointers.emplace_back(FunctionPointer, (uintptr_t*)functionPtrPtr, *functionPtrPtr);
-  };
+  void registerFunctionPointer(size_t libraryIndex, uintptr_t* functionPtrPtr, const char* location);
 
   void addAddressName(void* address, std::string name) {
     if (this->_trackAddressName) {
@@ -125,7 +115,7 @@ void clearLibraries();
 void encodeEntryPointInLibrary(Fixup* fixup, uintptr_t* ptrptr);
 void decodeEntryPointInLibrary(Fixup* fixup, uintptr_t* ptrptr);
 
-void encodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, core::T_sp code);
+void encodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, core::T_sp code, core::FunctionDescription_sp functionDescription );
 void decodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, core::T_sp code);
 
 struct LibraryLookup {

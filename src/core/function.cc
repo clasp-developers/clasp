@@ -62,7 +62,7 @@ void SimpleFun_O::fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr
     }
   } else if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp) {
     uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
-    snapshotSaveLoad::encodeEntryPoint(fixup, ptrptr, this->_Code);
+    snapshotSaveLoad::encodeEntryPoint(fixup, ptrptr, this->_Code, this->_FunctionDescription );
   } else if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
     snapshotSaveLoad::decodeEntryPoint(fixup, ptrptr, this->_Code);
@@ -184,7 +184,7 @@ void CoreFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup
       abort();
     }
     uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
-    snapshotSaveLoad::encodeEntryPoint(fixup, ptrptr, this->_Code);
+    snapshotSaveLoad::encodeEntryPoint(fixup, ptrptr, this->_Code, this->_FunctionDescription );
   } else if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
     snapshotSaveLoad::decodeEntryPoint(fixup, ptrptr, this->_Code);

@@ -5,6 +5,8 @@
 
 #define DEBUG_LEVEL_FULL
 
+//#define DEBUG_ENTRY_POINTS 1
+
 // #include <llvm/Support/system_error.h>
 #include <dlfcn.h>
 #include <sys/stat.h>
@@ -592,6 +594,30 @@ bool virtualMethodP(uintptr_t* ptrptr) {
   return false;
 }
 
+
+void Fixup::registerVtablePointer(size_t libraryIndex, core::T_O* vtablePtrPtr) {
+  this->_Libraries[libraryIndex]._InternalPointers.emplace_back(VtablePointer, (uintptr_t*)vtablePtrPtr,
+                                                                *(uintptr_t*)vtablePtrPtr);
+};
+
+void Fixup::registerFunctionPointer(size_t libraryIndex, uintptr_t* functionPtrPtr, const char* location) {
+  if (libraryIndex > LIBRARY_ID_MAX) {
+    printf("%s:%d:%s The library id %lu is too large - change the pointer coding scheme to add more bits to the library id\n",
+           __FILE__, __LINE__, __FUNCTION__, libraryIndex);
+    abort();
+  }
+  this->_Libraries[libraryIndex]._InternalPointers.emplace_back(FunctionPointer, (uintptr_t*)functionPtrPtr, *functionPtrPtr);
+#ifdef DEBUG_ENTRY_POINTS
+  printf("%s:%d:%s libraryIndex[%lu] functionPtrPtr @%p -> %p location: %s\n", 
+         __FILE__, __LINE__, __FUNCTION__,
+         libraryIndex,
+         (void*)functionPtrPtr,
+         (void*)*functionPtrPtr,
+         location);
+#endif
+};
+
+
 uintptr_t Fixup::fixedAddress(bool functionP, uintptr_t* ptrptr, const char* addressName) {
   uint8_t firstByte;
   uintptr_t libidx;
@@ -714,9 +740,9 @@ uintptr_t encodeEntryPointOffset(uintptr_t address, uintptr_t codeStart, uintptr
   return offset;
 }
 
-void encodeEntryPointInLibrary(Fixup* fixup, uintptr_t* ptrptr) {
+void encodeEntryPointInLibrary(Fixup* fixup, uintptr_t* ptrptr, const char* location) {
   size_t libraryIndex = fixup->ensureLibraryRegistered(*ptrptr);
-  fixup->registerFunctionPointer(libraryIndex, ptrptr);
+  fixup->registerFunctionPointer(libraryIndex, ptrptr, location);
 }
 
 void decodeEntryPointInLibrary(Fixup* fixup, uintptr_t* ptrptr) {
@@ -770,7 +796,7 @@ bool decodeEntryPointForCompiledCode(Fixup* fixup, uintptr_t* ptrptr, llvmo::Obj
   return true;
 }
 
-void encodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, core::T_sp codebase) {
+void encodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, core::T_sp codebase, core::FunctionDescription_sp functionDescription ) {
   if (virtualMethodP(ptrptr))
     return;
   if (gc::IsA<llvmo::ObjectFile_sp>(codebase)) {
@@ -778,12 +804,17 @@ void encodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, core::T_sp codebase) {
     if (!encodeEntryPointForCompiledCode(fixup, ptrptr, code)) {
       // The entry point wasnt into the compiled code
       //   so it must be to one of the libraries - apply that fixup.
-      encodeEntryPointInLibrary(fixup, ptrptr);
+      encodeEntryPointInLibrary(fixup, ptrptr,"ObjectFile");
     }
   } else if (gc::IsA<llvmo::Library_sp>(codebase)) {
-    encodeEntryPointInLibrary(fixup, ptrptr);
+    encodeEntryPointInLibrary(fixup, ptrptr, "Library");
+#ifdef DEBUG_ENTRY_POINTS
+    llvmo::Library_sp lib = gc::As<llvmo::Library_sp>(codebase);
+    printf("%s:%d:%s  entryPoint library -> %s\n", __FILE__, __LINE__, __FUNCTION__, lib->_Name->get_std_string().c_str() );
+    printf("           function name -> %s\n", _rep_(functionDescription->_functionName).c_str() );
+#endif
   } else if (gc::IsA<core::BytecodeModule_sp>(codebase)) {
-    encodeEntryPointInLibrary(fixup, ptrptr);
+    encodeEntryPointInLibrary(fixup, ptrptr,"BytecodeModule");
   } else {
     printf("%s:%d:%s The codebase must be a Code_sp or a Library_sp it is %s\n", __FILE__, __LINE__, __FUNCTION__,
            _rep_(codebase).c_str());
@@ -1512,7 +1543,7 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
           //          printf("%s:%d:%s  [%lu] before   target: %lu   cast_function@%p: %p\n", __FILE__, __LINE__, __FUNCTION__, ii,
           //          (*edges)[ii].target, &(*edges)[ii].cast, (*edges)[ii].cast);
           void** ptrptr = (void**)&(*edges)[ii].cast;
-          encodeEntryPointInLibrary(this->_fixup, (uintptr_t*)ptrptr);
+          encodeEntryPointInLibrary(this->_fixup, (uintptr_t*)ptrptr,"prepare_for_snapshot_save_t");
         }
       }
       // Handle them on a case by case basis
@@ -2054,7 +2085,7 @@ struct LoadSymbolCallback : public core::SymbolCallback {
         const char* myName = (const char*)&this->_Library._SymbolBuffer[offset];
         if ((namelen == this->_Library._SymbolInfo[ii]._SymbolLength) && (strcmp(name, myName) == 0)) {
           this->_Library._GroupedPointers[gpindex]._address = start;
-#if 0
+#ifdef DEBUG_ENTRY_POINTS
           printf("%s:%d:%s GroupedPointers[%lu] saved address %p  symbol address %p @%p\n     name: %s\n",
                  __FILE__, __LINE__, __FUNCTION__,
                  gpindex,
@@ -2116,12 +2147,12 @@ struct LoadSymbolCallback : public core::SymbolCallback {
       }
 #endif
       this->_Library._GroupedPointers[gpindex]._address = mysymStart;
-#if 0
+#ifdef DEBUG_ENTRY_POINTS
       printf("%s:%d:%s GroupedPointers[%lu] restored address %p  offset: %lu saved symbol address %p @%p\n     name: %s\n",
              __FILE__, __LINE__, __FUNCTION__,
              gpindex,
              (void*)dlsymStart,
-             this->_Library._SymbolInfo[ii]._AddressOffset,
+             (uintptr_t)this->_Library._SymbolInfo[ii]._AddressOffset,
              (void*)this->_Library._SymbolInfo[ii]._Address,
              (void*)&this->_Library._SymbolInfo[ii]._Address,
              myName);
@@ -2160,6 +2191,12 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
             groupPointerIdx = curLib._GroupedPointers.size();
             uniques[curLib._InternalPointers[ii]._address] = groupPointerIdx;
             curLib._GroupedPointers.emplace_back(curLib._InternalPointers[ii]._pointerType, curLib._InternalPointers[ii]._address);
+#ifdef DEBUG_ENTRY_POINTS
+            printf("%s:%d:%s emplace_back into GroupPointers[%lu] -> type: %c @%p\n", __FILE__, __LINE__, __FUNCTION__,
+                   curLib._GroupedPointers.size(),
+                   curLib._InternalPointers[ii]._pointerType,
+                   (void*)curLib._InternalPointers[ii]._address );
+#endif
           } else {
             groupPointerIdx = it->second;
           }
