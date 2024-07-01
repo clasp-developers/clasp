@@ -1326,7 +1326,8 @@ struct GatherObjects {
   std::set<BaseHeader_s*> _Marked;
   MarkNode* _Stack;
   std::map<BaseHeader_s*, std::vector<uintptr_t>> _corruptObjects;
-
+  std::set<void*>  _uniqueEntryPoints;
+  std::set<void*>  _uniqueEntryPointsFailedDladdr;
   GatherObjects(RoomVerbosity v) : _Verbosity(v), _Stack(NULL){};
 
   MarkNode* popMarkStack() {

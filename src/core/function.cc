@@ -27,6 +27,7 @@ THE SOFTWARE.
 // #define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
+#include <clasp/gctools/memoryManagement.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
@@ -763,5 +764,28 @@ Function_sp FunctionCell_O::fdefinition() const {
     ERROR_UNDEFINED_FUNCTION((*closure)[0]);
   }
 }
+
+
+void maybe_verify_dladdr( core::ClaspXepFunction& entryPoints,
+                          core::T_sp code,
+                          core::FunctionDescription_sp functionDescription,
+                          gctools::GatherObjects* gatherP ) {
+  if (gc::IsA<llvmo::Library_sp>(code)) {
+    for (size_t ii = 0; ii < ClaspXepFunction::Entries; ++ii) {
+      Dl_info info;
+      void* address = (void*)entryPoints._EntryPoints[ii].load();
+      if (gatherP->_uniqueEntryPoints.count(address)==0) {
+        gatherP->_uniqueEntryPoints.insert(address);
+        int ret = dladdr((void*)address, &info);
+        if (ret == 0) {
+          gatherP->_uniqueEntryPointsFailedDladdr.insert(address);
+          printf("%s:%d:%s During object scan entry point %p could not be resolved using dladdr\n",
+                 __FILE__, __LINE__, __FUNCTION__, (void*)address);
+        }
+      }
+    }
+  }
+}
+
 
 }; // namespace core

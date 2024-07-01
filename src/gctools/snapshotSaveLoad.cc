@@ -5,7 +5,7 @@
 
 #define DEBUG_LEVEL_FULL
 
-//#define DEBUG_ENTRY_POINTS 1
+#define DEBUG_ENTRY_POINTS 1
 
 // #include <llvm/Support/system_error.h>
 #include <dlfcn.h>

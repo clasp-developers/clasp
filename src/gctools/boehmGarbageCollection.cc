@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include <clasp/gctools/boehmGarbageCollection.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/function.h>
 #include <clasp/core/compiler.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 
@@ -62,6 +63,7 @@ static size_t invalidHeaderTotalSize = 0;
 
 extern "C" {
 void callback_reachable_object(gctools::BaseHeader_s* ptr, void* client_data) {
+  gctools::GatherObjects* gatherP = (gctools::GatherObjects*)client_data;
   gctools::GCStampEnum stamp;
   if (ptr->_badge_stamp_wtag_mtag.consObjectP()) {
     stamp = (gctools::GCStampEnum)STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_CONS);
@@ -72,6 +74,19 @@ void callback_reachable_object(gctools::BaseHeader_s* ptr, void* client_data) {
     }
   }
   size_t sz = objectSize(ptr);
+  if (stamp == (gctools::GCStampEnum)STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__SimpleFun_O)) {
+    core::SimpleFun_O* fun = HeaderPtrToGeneralPtr<core::SimpleFun_O>(ptr);
+    core::maybe_verify_dladdr( fun->_EntryPoints,
+                               fun->_Code,
+                               fun->_FunctionDescription,
+                               gatherP );
+  } else if (stamp == (gctools::GCStampEnum)STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__SimpleCoreFun_O)) {
+    core::SimpleCoreFun_O* fun = HeaderPtrToGeneralPtr<core::SimpleCoreFun_O>(ptr);
+    core::maybe_verify_dladdr( fun->_EntryPoints,
+                               fun->_Code,
+                               fun->_FunctionDescription,
+                               gatherP );
+  }
   gctools::ReachableClassMap::iterator it = static_ReachableClassKinds->find(stamp);
   if (it == static_ReachableClassKinds->end()) {
     gctools::ReachableClass reachableClass(stamp);
@@ -82,6 +97,7 @@ void callback_reachable_object(gctools::BaseHeader_s* ptr, void* client_data) {
   }
 #if 0
   if (stamp==(gctools::GCStampEnum)(gctools::STAMPWTAG_core__Symbol_O>>gctools::Header_s::wtag_width)) {
+    #error "ptr is a base pointer - it cant be cast to Symbol_O"
     core::Symbol_O* sym = (core::Symbol_O*)ptr;
     printf("%s:%d symbol %s\n", __FILE__, __LINE__, sym->formattedName(true).c_str());
   }
@@ -554,6 +570,10 @@ void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
   OutputStream << "Total number of Libraries:       " << std::setw(12) << cl__length(_lisp->_Roots._AllLibraries) << '\n';
   OutputStream << "Total number of ObjectFiles:     " << std::setw(12) << cl__length(_lisp->_Roots._AllObjectFiles) << '\n';
   OutputStream << "Total number of CodeBlocks:      " << std::setw(12) << cl__length(_lisp->_Roots._AllCodeBlocks) << '\n';
+  OutputStream << "Unique entry points:             " << std::setw(12) << gatherObjects._uniqueEntryPoints.size() << '\n';
+  if (gatherObjects._uniqueEntryPointsFailedDladdr.size()>0) {
+    OutputStream << "Unique entry points failed dladdr: " << std::setw(12) << gatherObjects._uniqueEntryPointsFailedDladdr.size() << '\n';
+  }
   delete static_ReachableClassKinds;
 }
 
