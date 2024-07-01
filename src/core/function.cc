@@ -782,7 +782,7 @@ void maybe_verify_dladdr( core::ClaspXepFunction& entryPoints,
         if (ret == 0) {
           failed_dladdr = true;
           gatherP->_uniqueEntryPointsFailedDladdr.insert(address);
-          printf("%s:%d:%s dladdr failed on entry point[%d] %p for %s\n",
+          printf("%s:%d:%s dladdr failed on entry point[%zu] %p for %s\n",
                  __FILE__, __LINE__, __FUNCTION__,
                  ii, (void*)address,
                  _rep_(functionDescription->_functionName).c_str());
