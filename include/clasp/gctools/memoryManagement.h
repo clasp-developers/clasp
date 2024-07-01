@@ -1326,9 +1326,11 @@ struct GatherObjects {
   std::set<BaseHeader_s*> _Marked;
   MarkNode* _Stack;
   std::map<BaseHeader_s*, std::vector<uintptr_t>> _corruptObjects;
+  size_t _SimpleFunCount;
+  size_t _SimpleFunFailedDladdrCount;
   std::set<void*>  _uniqueEntryPoints;
   std::set<void*>  _uniqueEntryPointsFailedDladdr;
-  GatherObjects(RoomVerbosity v) : _Verbosity(v), _Stack(NULL){};
+  GatherObjects(RoomVerbosity v) : _Verbosity(v), _Stack(NULL), _SimpleFunCount(0), _SimpleFunFailedDladdrCount(0) {};
 
   MarkNode* popMarkStack() {
     if (this->_Stack) {

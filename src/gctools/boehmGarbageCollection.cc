@@ -570,9 +570,13 @@ void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
   OutputStream << "Total number of Libraries:       " << std::setw(12) << cl__length(_lisp->_Roots._AllLibraries) << '\n';
   OutputStream << "Total number of ObjectFiles:     " << std::setw(12) << cl__length(_lisp->_Roots._AllObjectFiles) << '\n';
   OutputStream << "Total number of CodeBlocks:      " << std::setw(12) << cl__length(_lisp->_Roots._AllCodeBlocks) << '\n';
+  OutputStream << "Total number of SimpleFun:       " << std::setw(12) << gatherObjects._SimpleFunCount;
+  if (gatherObjects._SimpleFunsFailedDladdrCount>0) {
+    OutputStream << "Total number of SimpleFun failed dladdr: " << std::setw(12) << gatherObjects._SimpleFunFailedDladdrCount;
+  }
   OutputStream << "Unique entry points:             " << std::setw(12) << gatherObjects._uniqueEntryPoints.size() << '\n';
   if (gatherObjects._uniqueEntryPointsFailedDladdr.size()>0) {
-    OutputStream << "Unique entry points failed dladdr: " << std::setw(12) << gatherObjects._uniqueEntryPointsFailedDladdr.size() << '\n';
+    OutputStream << "Unique entry points failed dladdr: " << std::setw(10) << gatherObjects._uniqueEntryPointsFailedDladdr.size() << '\n';
   }
   delete static_ReachableClassKinds;
 }
