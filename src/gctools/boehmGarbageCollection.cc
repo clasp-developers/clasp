@@ -571,7 +571,7 @@ void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
   OutputStream << "Total number of ObjectFiles:     " << std::setw(12) << cl__length(_lisp->_Roots._AllObjectFiles) << '\n';
   OutputStream << "Total number of CodeBlocks:      " << std::setw(12) << cl__length(_lisp->_Roots._AllCodeBlocks) << '\n';
   OutputStream << "Total number of SimpleFun:       " << std::setw(12) << gatherObjects._SimpleFunCount;
-  if (gatherObjects._SimpleFunsFailedDladdrCount>0) {
+  if (gatherObjects._SimpleFunFailedDladdrCount>0) {
     OutputStream << "Total number of SimpleFun failed dladdr: " << std::setw(12) << gatherObjects._SimpleFunFailedDladdrCount;
   }
   OutputStream << "Unique entry points:             " << std::setw(12) << gatherObjects._uniqueEntryPoints.size() << '\n';
