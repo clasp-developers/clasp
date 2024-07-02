@@ -64,18 +64,18 @@ CL_DOCSTRING(R"dx(renamePackage)dx");
 DOCGROUP(clasp);
 CL_DEFUN Package_sp cl__rename_package(T_sp pkg, T_sp newNameDesig, T_sp nickNameDesigs) {
   Package_sp package = coerce::packageDesignator(pkg);
-  string newName = coerce::packageNameDesignator(newNameDesig);
+  SimpleString_sp newName = coerce::packageNameDesignator(newNameDesig);
   List_sp nickNames = coerce::listOfStringDesignators(nickNameDesigs);
   // Remove the old names from the Lisp system
-  _lisp->unmapNameToPackage(package->getName());
+  _lisp->unmapNameToPackage(package->_Name);
   for (auto cur : package->getNicknames()) {
-    _lisp->unmapNameToPackage(gc::As<String_sp>(oCar(cur))->get_std_string());
+    _lisp->unmapNameToPackage(gc::As<String_sp>(oCar(cur)));
   }
   // Set up the new names
   package->setName(newName);
   _lisp->mapNameToPackage(newName, package);
   for (auto cur : nickNames) {
-    _lisp->mapNameToPackage(gc::As<String_sp>(oCar(cur))->get_std_string(), package);
+    _lisp->mapNameToPackage(gc::As<String_sp>(oCar(cur)), package);
   };
   package->setNicknames(nickNames);
   return package;
@@ -99,15 +99,15 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp ext__package_add_nickname(T_sp pkg, T_sp nick) {
   Package_sp package = coerce::packageDesignator(pkg);
   String_sp nickname = coerce::stringDesignator(nick);
-  T_sp packageUsingNickName = _lisp->findPackage(nickname->get_std_string());
+  T_sp packageUsingNickName = _lisp->findPackage(nickname);
   if (packageUsingNickName.notnilp()) {
     if (Package_sp pkg = packageUsingNickName.asOrNull<Package_O>())
-      SIMPLE_PACKAGE_ERROR_2_args("Package nickname[~a] is already being used by package[~a]", nickname->get_std_string(),
-                                  pkg->getName());
+      SIMPLE_PACKAGE_ERROR_2_args("Package nickname[~a] is already being used by package[~a]", _rep_(nickname),
+                                  _rep_(pkg->name()));
     else
-      SIMPLE_PACKAGE_ERROR("Package nickname[~a] is already being used", nickname->get_std_string());
+      SIMPLE_PACKAGE_ERROR("Package nickname[~a] is already being used", _rep_(nickname));
   } else {
-    _lisp->mapNameToPackage(nickname->get_std_string(), package);
+    _lisp->mapNameToPackage(nickname, package);
     package->setNicknames(Cons_O::create(nickname, package->getNicknames()));
     return package->getNicknames();
   }
@@ -124,8 +124,8 @@ CL_DEFUN T_sp ext__package_remove_nickname(T_sp pkg, T_sp nick) {
   unlikely_if(package->getNicknames().nilp()) return nil<T_O>();
   String_sp nickname = coerce::stringDesignator(nick);
   // verify if nickname is really nicknames of this package
-  if (_lisp->findPackage(nickname->get_std_string()) == package) {
-    _lisp->unmapNameToPackage(nickname->get_std_string());
+  if (_lisp->findPackage(nickname) == package) {
+    _lisp->unmapNameToPackage(nickname);
     package->setNicknames(remove_equal(nickname, package->getNicknames()));
     return package->getNicknames();
   } else
@@ -187,20 +187,12 @@ CL_LAMBDA("package-name &key nicknames (use (list \"CL\"))");
 CL_DECLARE();
 CL_DOCSTRING(R"dx(make_package)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_mv cl__make_package(T_sp package_name_desig, List_sp nick_names, List_sp use_packages) {
-  String_sp package_name = coerce::stringDesignator(package_name_desig);
-  list<string> lnn;
-  for (auto nc : nick_names) {
-    String_sp nickstr = coerce::stringDesignator(oCar(nc));
-    // TODO Support proper strings
-    lnn.push_front(nickstr->get_std_string());
+CL_DEFUN Package_sp cl__make_package(T_sp package_name_desig, List_sp nick_names, List_sp use_packages) {
+  ql::list use;
+  for (auto u : use_packages) {
+    use << coerce::packageDesignator(oCar(u));
   }
-  list<string> lup;
-  for (auto uc : use_packages) {
-    Package_sp pkg = coerce::packageDesignator(oCar(uc));
-    lup.push_front(pkg->packageName());
-  }
-  return Values(_lisp->makePackage(package_name->get_std_string(), lnn, lup));
+  return _lisp->makePackage(coerce::simple_string(package_name_desig), nick_names, use.cons());
 }
 
 /*
@@ -271,7 +263,7 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj) {
   if ((pkg->getSystemLockedP()) || (pkg->getUserLockedP())) {
     FEpackage_error("Cannot delete the locked package ~S", pkg, 0);
   }
-  if (pkg->packageName() == "") { // already deleted
+  if (pkg->getZombieP()) { // already deleted
     return nil<T_O>();
   }
 
@@ -290,7 +282,7 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj) {
   // Need to remove the nicknames, since package is not fully deleted
   // do this before the WITH_PACKAGE_READ_WRITE_LOCK
   for (auto cur : pkg->getNicknames()) {
-    _lisp->unmapNameToPackage(gc::As<String_sp>(oCar(cur))->get_std_string());
+    _lisp->unmapNameToPackage(gc::As<String_sp>(oCar(cur)));
   }
   pkg->setNicknames(nil<T_O>());
 
@@ -319,7 +311,7 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj) {
   });
   pkg->_ExternalSymbols->clrhash();
   pkg->_Shadowing->clrhash();
-  string package_name = pkg->packageName();
+  String_sp package_name = pkg->_Name;
   pkg->_Name = SimpleBaseString_O::make("");
   _lisp->remove_package(package_name);
   return _lisp->_true();
@@ -451,12 +443,9 @@ CL_DOCSTRING(R"dx(packageName)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__package_name(T_sp pkgDesig) {
   Package_sp pkg = coerce::packageDesignator(pkgDesig);
-  string name = pkg->packageName();
-  if (name == "") {
+  if (pkg->getZombieP()) // deleted
     return nil<T_O>();
-  }
-  // TODO support package names with wide character strings
-  return SimpleBaseString_O::make(name);
+  else return pkg->name();
 };
 
 SYMBOL_EXPORT_SC_(ClPkg, package_use_list);
@@ -479,6 +468,11 @@ SYMBOL_EXPORT_SC_(CorePkg, package_lock_violation);
 
 Package_sp Package_O::create(const string& name) {
   Package_sp p = Package_O::create();
+  p->setName(SimpleBaseString_O::make(name));
+  return p;
+}
+Package_sp Package_O::create(SimpleString_sp name) {
+  Package_sp p = Package_O::create();
   p->setName(name);
   return p;
 }
@@ -500,11 +494,9 @@ void Package_O::initialize() {
 
 string Package_O::packageName() const { return this->_Name->get_std_string(); }
 
-string Package_O::getName() const { return this->packageName(); };
-
-void Package_O::setName(const string& n) {
+void Package_O::setName(SimpleString_sp n) {
   WITH_PACKAGE_READ_WRITE_LOCK(this);
-  this->_Name = SimpleBaseString_O::make(n);
+  this->_Name = n;
 };
 
 CL_LISPIFY_NAME("core:PackageHashTables");
@@ -521,15 +513,13 @@ string Package_O::__repr__() const {
   WITH_PACKAGE_READ_LOCK(this);
   if (cl::_sym_STARprint_readablySTAR->symbolValue().notnilp()) {
     stringstream ss;
-    ss << "#.(CL:FIND-PACKAGE \"" << this->_Name->get_std_string() << "\")";
+    ss << "#.(CL:FIND-PACKAGE \"" << _rep_(this->_Name) << "\")";
     return ss.str();
   }
   stringstream ss;
-  ss << "#<PACKAGE " << this->_Name->get_std_string() << ">";
+  ss << "#<PACKAGE " << _rep_(this->_Name) << ">";
   return ss.str();
 }
-
-void Package_O::__write__(T_sp stream) const { clasp_write_string(this->__repr__(), stream); }
 
 class PackageMapper : public KeyValueMapper {
 public:
@@ -694,7 +684,7 @@ bool FindConflicts::mapKeyValue(T_sp key, T_sp value) {
 }
 
 bool Package_O::usePackage(Package_sp usePackage) {
-  LOG("In usePackage this[{}]  using package[{}]", this->getName(), usePackage->getName());
+  LOG("In usePackage this[{}]  using package[{}]", _rep_(this->name()), _rep_(usePackage->name()));
   while (true) {
     FindConflicts findConflicts(this->asSmartPtr());
     {
@@ -735,7 +725,7 @@ bool Package_O::unusePackage_no_outer_lock(Package_sp usePackage) {
           return true;
         }
       }
-      SIMPLE_ERROR("The unusePackage argument {} is not used by my package {}", usePackage->getName(), this->getName());
+      SIMPLE_ERROR("The unusePackage argument {} is not used by my package {}", _rep_(usePackage->name()), _rep_(this->name()));
     }
   }
   return true;
@@ -754,7 +744,7 @@ bool Package_O::unusePackage_no_inner_lock(Package_sp usePackage) {
           return true;
         }
       }
-      SIMPLE_ERROR("The unusePackage argument {} is not used by my package {}", usePackage->getName(), this->getName());
+      SIMPLE_ERROR("The unusePackage argument {} is not used by my package {}", _rep_(usePackage->name()), _rep_(this->name()));
     }
   }
   return true;
@@ -1100,7 +1090,7 @@ void Package_O::mapInternals(KeyValueMapper* mapper) {
 
 void Package_O::dumpSymbols() {
   string all = this->allSymbols();
-  printf("%s:%d Package %s\n", __FILE__, __LINE__, this->_Name->get_std_string().c_str());
+  printf("%s:%d Package %s\n", __FILE__, __LINE__, _rep_(this->_Name).c_str());
   printf("%s\n", all.c_str());
 }
 

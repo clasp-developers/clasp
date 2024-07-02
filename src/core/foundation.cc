@@ -964,7 +964,7 @@ void lisp_defineSingleDispatchMethod(T_sp name, Symbol_sp classSymbol,
   string arguments = fix_method_lambda(classSymbol, raw_arguments);
   Instance_sp receiver_class = gc::As<Instance_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
   Symbol_sp className = receiver_class->_className();
-  List_sp ldeclares = lisp_parse_declares(gc::As<Package_sp>(className->getPackage())->getName(), declares);
+  List_sp ldeclares = lisp_parse_declares(gc::As<Package_sp>(className->getPackage())->packageName(), declares);
   // NOTE: We are compiling the llhandler in the package of the class - not the package of the
   // method name  -- sometimes the method name will belong to another class (ie: core:--init--)
   List_sp lambda_list;
@@ -972,10 +972,10 @@ void lisp_defineSingleDispatchMethod(T_sp name, Symbol_sp classSymbol,
   if (useTemplateDispatchOn)
     single_dispatch_argument_index = TemplateDispatchOn;
   if (arguments == "" && number_of_required_arguments >= 0) {
-    lambda_list = lisp_parse_arguments(gc::As<Package_sp>(className->getPackage())->getName(), arguments,
+    lambda_list = lisp_parse_arguments(gc::As<Package_sp>(className->getPackage())->packageName(), arguments,
                                        number_of_required_arguments, pureOutIndices);
   } else if (arguments != "") {
-    List_sp llraw = lisp_parse_arguments(gc::As<Package_sp>(className->getPackage())->getName(), arguments);
+    List_sp llraw = lisp_parse_arguments(gc::As<Package_sp>(className->getPackage())->packageName(), arguments);
     T_mv mv_llprocessed = process_single_dispatch_lambda_list(llraw, true);
     T_sp tllproc = coerce_to_list(mv_llprocessed); // slice
     lambda_list = coerce_to_list(tllproc);

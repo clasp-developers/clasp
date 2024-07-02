@@ -552,7 +552,7 @@ struct loadltv {
   void op_package() {
     size_t index = next_index();
     String_sp name = gc::As<String_sp>(get_ltv(read_index()));
-    set_ltv(_lisp->findPackage(name->get_std_string(), true), index);
+    set_ltv(_lisp->findPackage(name, true), index);
   }
 
   void op_bignum() {

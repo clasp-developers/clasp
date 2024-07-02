@@ -2,6 +2,7 @@
 
 ## Fixed
 * Pathnames and filesystem operations support Unicode (#1595).
+* Package names support Unicode (#1596).
 
 # Version 2.6.0 (LLVM15-18) 2024-06-03
 

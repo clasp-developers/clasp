@@ -735,22 +735,26 @@ public:
   /*! Return true if classSymbol is the id for a class that has the baseClassSymbol
    */
   //	bool subClassOrder(Symbol_sp baseClassSymbol,Symbol_sp classSymbol);
-
+private:
+  T_sp findPackage_no_lock(String_sp packageName) const;
+  T_sp findPackage_no_lock(const string& packageName) const;
+  
+public:
   bool recognizesPackage(const string& packageName) const;
-  T_sp findPackage_no_lock(const string& packageName, bool errorp = false) const;
   T_sp findPackage(const string& packageName, bool errorp = false) const;
-  T_sp findPackage_no_lock(String_sp packageName, bool errorp = false) const;
   T_sp findPackage(String_sp packageName, bool errorp = false) const;
   void inPackage(const string& packageName);
   void selectPackage(Package_sp pack);
   Package_sp getCurrentPackage() const;
   void mapNameToPackage(const string& name, Package_sp pkg);
-  void unmapNameToPackage(const string& name);
+  void mapNameToPackage(String_sp packageName, Package_sp pkg);
+  void unmapNameToPackage(String_sp packageName);
   void finishPackageSetup(const string& packageName, list<string> const& nicknames, list<string> const& usePackages,
                           list<string> const& shadow = {});
   Package_sp makePackage(const string& packageName, list<string> const& nicknames, list<string> const& usePackages,
                          list<string> const& shadow = {});
-  void remove_package(const string& package_name);
+  Package_sp makePackage(SimpleString_sp packageName, List_sp nicknames, List_sp use);
+  void remove_package(String_sp package_name);
   bool usePackage(const string& packageName);
 
   List_sp getBackTrace() const;

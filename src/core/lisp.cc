@@ -708,7 +708,7 @@ void Lisp::defconstant(Symbol_sp sym, T_sp obj) {
 }
 
 void Lisp::installPackage(const Exposer_O* pkg) {
-  LOG("Installing package[{}]", pkg->packageName());
+  LOG("Installing package[{}]", _rep_(pkg->name()));
   int firstNewGlobalCallback = globals_->_GlobalInitializationCallbacks.end() - globals_->_GlobalInitializationCallbacks.begin();
   ChangePackage change(gc::As<Package_sp>(_lisp->findPackage(pkg->packageName())));
   { pkg->expose(_lisp, Exposer_O::candoClasses); }
@@ -746,26 +746,27 @@ void Lisp::addClassSymbol(Symbol_sp classSymbol, Creator_sp alloc, Symbol_sp bas
   cc->CLASS_set_creator(alloc);
 }
 
-void Lisp::mapNameToPackage(const string& name, Package_sp pkg) {
-  // TODO Support package names with as regular strings
+void Lisp::mapNameToPackage(String_sp sname, Package_sp pkg) {
   int packageIndex;
   {
     WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
     for (packageIndex = 0; packageIndex < this->_Roots._Packages.size(); ++packageIndex) {
       if (this->_Roots._Packages[packageIndex] == pkg) {
-        SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
         this->_Roots._PackageNameIndexMap->setf_gethash(sname, make_fixnum(packageIndex));
         return;
       }
     }
   }
-  SIMPLE_ERROR("Could not find package with (nick)name: {}", pkg->getName());
+  SIMPLE_ERROR("Could not find package with (nick)name: {}", _rep_(pkg->name()));
 }
 
-void Lisp::unmapNameToPackage(const string& name) {
+void Lisp::mapNameToPackage(const string& name, Package_sp pkg) {
+  mapNameToPackage(SimpleBaseString_O::make(name), pkg);
+}
+
+void Lisp::unmapNameToPackage(String_sp sname) {
   {
     WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
-    SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
     T_sp it = this->_Roots._PackageNameIndexMap->gethash(sname);
     if (it.nilp()) {
       goto package_unfound;
@@ -774,7 +775,7 @@ void Lisp::unmapNameToPackage(const string& name) {
     return;
   }
 package_unfound:
-  SIMPLE_ERROR("Could not find package with (nick)name: {}", name);
+  SIMPLE_ERROR("Could not find package with (nick)name: {}", _rep_(sname));
 }
 
 void Lisp::finishPackageSetup(const string& pkgname, list<string> const& nicknames, list<string> const& usePackages,
@@ -813,10 +814,11 @@ Package_sp Lisp::makePackage(const string& name, list<string> const& nicknames, 
    * Instead we do this: Grab the lock. Try the operation. If the operation succeeds, just return.
    * If it fails, goto (yes, really) outside the lock scope so that we ungrab it, and signal an cerror there.
    * */
-start:
+ start:
   string usedNickName;
   Package_sp packageUsingNickName;
   Package_sp existing_package;
+  SimpleString_sp nonexistentUsedPackage;
   {
     WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
     SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
@@ -874,9 +876,15 @@ start:
       newPackage->shadow(sx);
     }
     for (list<string>::const_iterator jit = usePackages.begin(); jit != usePackages.end(); jit++) {
-      Package_sp usePkg = gc::As<Package_sp>(this->findPackage_no_lock(*jit, true));
-      LOG("Using package[{}]", usePkg->getName());
-      newPackage->usePackage(usePkg);
+      T_sp tUsePkg = this->findPackage_no_lock(*jit);
+      if (tUsePkg.isA<Package_O>()) {
+        Package_sp usePkg = tUsePkg.as_unsafe<Package_O>();
+        LOG("Using package[{}]", _rep_(usePkg->name()));
+        newPackage->usePackage(usePkg);
+      } else {
+        nonexistentUsedPackage = SimpleBaseString_O::make(*jit);
+        goto nonexistent_used_package;
+      }
     }
     if (globals_->_MakePackageCallback != NULL) {
       LOG("Calling _MakePackageCallback with package[{}]", name);
@@ -889,86 +897,114 @@ start:
 // A correctable error is signaled if the package-name or any of the nicknames
 // is already the name or nickname of an existing package.
 // The correction is to delete the existing package.
-name_exists:
+ name_exists:
   CEpackage_error("There already exists a package with name: ~a", "Delete existing package", existing_package, 1,
                   SimpleBaseString_O::make(name));
   cl__delete_package(existing_package);
   goto start;
-nickname_exists:
+ nickname_exists:
   CEpackage_error("There already exists a package with nickname: ~a", "Delete existing package", existing_package, 1,
                   SimpleBaseString_O::make(name));
   cl__delete_package(existing_package);
   goto start;
+ nonexistent_used_package:
+  // FIXME: It might be nicer to let the error be correctable,
+  // e.g. by not trying to USE the nonexistent package.
+  // (The standard actually leaves this situation undefined.)
+  PACKAGE_ERROR(nonexistentUsedPackage);
 }
 
-T_sp Lisp::findPackage_no_lock(const string& name, bool errorp) const {
-  // Check local nicknames first.
-  // FIXME: This conses!
-  if (_lisp->_Roots._TheSystemIsUp) {
-    T_sp local = this->getCurrentPackage()->findPackageByLocalNickname(SimpleBaseString_O::make(name));
-    if (local.notnilp())
-      return local;
-  }
-
-  //        printf("%s:%d Lisp::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
-  SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
-  T_sp fi = this->_Roots._PackageNameIndexMap->gethash(sname);
-  if (fi.nilp()) {
-    if (errorp) {
-      PACKAGE_ERROR(SimpleBaseString_O::make(name));
+Package_sp Lisp::makePackage(SimpleString_sp name, List_sp nicknames, List_sp use) {
+ start:
+  T_sp existingPackage;
+  SimpleString_sp nonexistentUsedPackage;
+  // We need to coerce the nicknames for setNicknames so do that first.
+  ql::list qnicknames;
+  for (auto nc : nicknames) qnicknames << coerce::simple_string(oCar(nc));
+  List_sp cnicknames = qnicknames.cons();
+  {
+    WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
+    // Before creating the package, we check if the names or nicknames
+    // conflict with existing packages. This prevents us from half-making
+    // packages.
+    existingPackage = this->findPackage_no_lock(name);
+    if (existingPackage.notnilp()) goto name_exists;
+    for (auto nc : cnicknames) {
+      existingPackage = this->findPackage_no_lock(oCar(nc).as_unsafe<SimpleString_O>());
+      if (existingPackage.notnilp()) goto name_exists;
     }
-    return nil<Package_O>(); // return nil if no package found
+    // We're good, make the package.
+    Package_sp newPackage = Package_O::create(name);
+    Fixnum_sp packageIndex = make_fixnum(this->_Roots._Packages.size());
+    {
+      this->_Roots._PackageNameIndexMap->setf_gethash(name, packageIndex);
+      this->_Roots._Packages.push_back(newPackage);
+    }
+    // Assign nicknames.
+    for (auto nc : cnicknames) {
+      this->_Roots._PackageNameIndexMap->setf_gethash(oCar(nc), packageIndex);
+    }
+    newPackage->setNicknames(cnicknames);
+    // Use packages.
+    for (auto u : use) {
+      Package_sp usePkg = oCar(u).as_assert<Package_O>();
+      // FIXME: usePackage may signal errors & grabs read lock!
+      newPackage->usePackage(usePkg);
+    }
+    // Done!
+    return newPackage;
   }
-  //        printf("%s:%d Lisp::findPackage index: %d\n", __FILE__, __LINE__, fi->second );
-  ASSERT(fi.fixnump());
-  Package_sp getPackage = this->_Roots._Packages[fi.unsafe_fixnum()];
-  //        printf("%s:%d Lisp::findPackage pkg@%p\n", __FILE__, __LINE__, getPackage.raw_());
-  return getPackage;
+ name_exists:
+  CEpackage_error("There already exists a package with name: ~a", "Delete existing package", existingPackage.as_unsafe<Package_O>(), 1, name);
+  cl__delete_package(existingPackage);
+  goto start;
+ nonexistent_used_package:
+  PACKAGE_ERROR(nonexistentUsedPackage);
+}
+
+T_sp Lisp::findPackage_no_lock(const string& name) const {
+  return this->findPackage_no_lock(SimpleBaseString_O::make(name));
 }
 
 T_sp Lisp::findPackage(const string& name, bool errorp) const {
-  WITH_READ_LOCK(globals_->_PackagesMutex);
-  return this->findPackage_no_lock(name, errorp);
+  return this->findPackage(SimpleBaseString_O::make(name), errorp);
 }
 
-T_sp Lisp::findPackage_no_lock(String_sp name, bool errorp) const {
+T_sp Lisp::findPackage_no_lock(String_sp name) const {
   // Check local nicknames first.
-  // FIXME: This conses!
   if (_lisp->_Roots._TheSystemIsUp) {
     T_sp local = this->getCurrentPackage()->findPackageByLocalNickname(name);
     if (local.notnilp())
       return local;
   }
-
-  //        printf("%s:%d Lisp::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
+  // OK, now global names.
   T_sp fi = this->_Roots._PackageNameIndexMap->gethash(name);
   if (fi.nilp()) {
-    if (errorp) {
-      PACKAGE_ERROR(name);
-    }
     return nil<Package_O>(); // return nil if no package found
   }
-  //        printf("%s:%d Lisp::findPackage index: %d\n", __FILE__, __LINE__, fi->second );
   ASSERT(fi.fixnump());
   Package_sp getPackage = this->_Roots._Packages[fi.unsafe_fixnum()];
-  //        printf("%s:%d Lisp::findPackage pkg@%p\n", __FILE__, __LINE__, getPackage.raw_());
   return getPackage;
 }
 
 T_sp Lisp::findPackage(String_sp name, bool errorp) const {
-  WITH_READ_LOCK(globals_->_PackagesMutex);
-  return this->findPackage_no_lock(name, errorp);
+  {
+    WITH_READ_LOCK(globals_->_PackagesMutex);
+    T_sp res = this->findPackage_no_lock(name);
+    if (!errorp || res.isA<Package_O>())
+      return res;
+  }
+  // Signal the error only after releasing the lock.
+  PACKAGE_ERROR(name);
 }
 
-void Lisp::remove_package(const string& name) {
+void Lisp::remove_package(String_sp name) {
   WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
-  //        printf("%s:%d Lisp::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
-  SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
-  T_sp fi = this->_Roots._PackageNameIndexMap->gethash(sname);
+  T_sp fi = this->_Roots._PackageNameIndexMap->gethash(name);
   if (fi.nilp()) {
-    PACKAGE_ERROR(sname);
+    PACKAGE_ERROR(name);
   }
-  this->_Roots._PackageNameIndexMap->remhash(sname);
+  this->_Roots._PackageNameIndexMap->remhash(name);
   this->_Roots._Packages[fi.unsafe_fixnum()]->setZombieP(true);
 }
 
@@ -1164,8 +1200,7 @@ T_mv Lisp::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prom
         Symbol_sp pkgSym = cl::_sym_STARpackageSTAR;
         T_sp pkgVal = pkgSym->symbolValue();
         Package_sp curPackage = gc::As<Package_sp>(pkgVal);
-        std::string name = curPackage->getName();
-        prompts << name << "> ";
+        prompts << _rep_(curPackage->name()) << "> ";
         clasp_write_string(prompts.str(), stream);
       }
       T_sp expression = cl__read(stream, nil<T_O>(), unbound<T_O>(), nil<T_O>());
@@ -1590,7 +1625,7 @@ CL_DEFUN T_sp cl__find_package(T_sp name_desig) {
     return pkg;
   String_sp name = coerce::stringDesignator(name_desig);
   // TODO: Support wide string package names
-  return _lisp->findPackage(name->get_std_string());
+  return _lisp->findPackage(name);
 }
 
 CL_LAMBDA(package-designator);
@@ -2067,7 +2102,7 @@ void Lisp::parseStringIntoPackageAndSymbolName(const string& name, bool& package
   }
   package = gc::As<Package_sp>(this->findPackage(name.substr(0, colonPos), true));
   symbolName = name.substr(secondPart, 99999);
-  LOG("It's a packaged symbol ({} :: {})", package->getName(), symbolName);
+  LOG("It's a packaged symbol ({} :: {})", _rep_(package->name()), symbolName);
   return;
 }
 

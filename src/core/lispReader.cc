@@ -758,7 +758,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token& token, bool only_dot
         return nil<T_O>();
       SimpleString_sp sym_name = symbolTokenStr(sin, token, name_marker - token.data(), token.size(), only_dots_ok);
       Symbol_sp sym = _lisp->getCurrentPackage()->intern(sym_name);
-      LOG_READ(BF("sym_name = |%s| sym->symbolNameAsString() = |%s|") % sym_name->get_std_string() % sym->symbolNameAsString());
+      LOG_READ(BF("sym_name = |%s| sym->symbolNameAsString() = |%s|") % _rep_(sym_name) % sym->symbolNameAsString());
       return sym;
     }
     break;
@@ -783,10 +783,8 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token& token, bool only_dot
     // TODO Handle proper string names
     SimpleString_sp symbol_name_str = symbolTokenStr(sin, token, name_marker - token.data(), token.size(), only_dots_ok);
     LOG_READ(BF("Interpreting token as packageName[%s] and symbol-name[%s]") % _rep_(packageSin.string()) %
-             symbol_name_str->get_std_string());
-    // TODO Deal with proper string package names
-    string packageName = packageSin.string()->get_std_string();
-    Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
+             _rep_(symbol_name_str));
+    Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageSin.string(), true));
     Symbol_sp sym;
     MultipleValues& mvn = core::lisp_multipleValues();
     if (separator == 1) { // Asking for external symbol

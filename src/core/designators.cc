@@ -120,7 +120,7 @@ core::T_sp packageDesignatorInternal(core::T_sp obj, bool errorp) {
   }
   TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_string, cl::_sym_Symbol_O, cl::_sym_character));
 PACKAGE_NAME:
-  T_sp tpkg = _lisp->findPackage(packageName->get_std_string(), false);
+  T_sp tpkg = _lisp->findPackage(packageName, false);
   if (tpkg.notnilp()) {
     Package_sp pkg = gc::As<Package_sp>(tpkg);
     return pkg;
@@ -144,12 +144,11 @@ CL_DEFUN core::Package_sp coerce_to_package(core::T_sp obj) { return coerce::pac
 
 namespace core {
 namespace coerce {
-string packageNameDesignator(T_sp obj) {
+SimpleString_sp packageNameDesignator(T_sp obj) {
   if (cl__packagep(obj)) {
-    return gc::As<Package_sp>(obj)->getName();
-  }
-  String_sp packageName = stringDesignator(obj);
-  return packageName->get_std_string();
+    return gc::As<Package_sp>(obj)->name();
+  } else
+    return simple_string(obj);
 }
 
 List_sp listOfPackageDesignators(T_sp obj) {
