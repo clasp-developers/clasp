@@ -222,7 +222,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
         print_package = true;
     }
     if (print_package) {
-      SimpleBaseString_sp name = SimpleBaseString_O::make(gc::As<Package_sp>(package)->packageName());
+      SimpleString_sp name = gc::As<Package_sp>(package)->name();
       write_symbol_string(name, cl__readtable_case(readtable), print_case, stream,
                           needs_to_be_escaped(gc::As<Array_sp>(name), readtable));
       if (!x.nilp()) {

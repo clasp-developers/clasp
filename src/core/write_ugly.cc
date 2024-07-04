@@ -56,6 +56,7 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/pathname.h>
+#include <clasp/core/package.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>
@@ -111,6 +112,19 @@ void FileStream_O::__write__(T_sp stream) const {
   stream_write_char(stream, ' ');
   write_ugly_object(this->pathname(), stream);
   stream_write_char(stream, '>');
+}
+
+void Package_O::__write__(T_sp stream) const {
+  if (clasp_print_readably()) {
+    clasp_write_string("#.(FIND-PACKAGE ", stream);
+    write_ugly_object(this->name(), stream);
+    stream_write_char(stream, ')');
+  } else {
+    DynamicScopeManager escape(cl::_sym_STARprint_escapeSTAR, _lisp->_true());
+    clasp_write_string("#<PACKAGE ", stream);
+    write_ugly_object(this->name(), stream);
+    stream_write_char(stream, '>');
+  }
 }
 
 void Instance_O::__write__(T_sp stream) const { clasp_write_string(_rep_(this->asSmartPtr()), stream); }

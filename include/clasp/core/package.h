@@ -50,7 +50,7 @@ class Package_O : public General_O {
 public: // virtual functions inherited from Object
   void initialize() override;
   string __repr__() const override;
-  void __write__(T_sp stream) const override;
+  void __write__(T_sp stream) const override; // in write_ugly.cc
 
 public: // instance variables
   HashTableEqual_sp _InternalSymbols;
@@ -74,6 +74,7 @@ public: // instance variables
 
 public: // Creation class functions
   static Package_sp create(const string& p);
+  static Package_sp create(SimpleString_sp name);
 
 public:
   /*! Very low level - add to internal symbols unless keyword
@@ -88,6 +89,7 @@ private:
 
 public:
   string packageName() const;
+  SimpleString_sp name() const { return this->_Name; }
 
   T_mv packageHashTables() const;
 
@@ -120,8 +122,7 @@ public:
   /*! support for CLHS::unexport */
   void unexport(Symbol_sp sym);
 
-  string getName() const;
-  void setName(const string& n);
+  void setName(SimpleString_sp newName);
 
   bool isExported(Symbol_sp sym);
 

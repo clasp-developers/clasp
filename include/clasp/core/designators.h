@@ -60,7 +60,7 @@ extern Package_sp packageDesignator(T_sp obj);
 extern T_sp packageDesignatorNoError(T_sp obj);
 
 /*! Return the name of a Package by interpreting a package or a string as a name */
-extern string packageNameDesignator(T_sp obj);
+extern SimpleString_sp packageNameDesignator(T_sp obj);
 
 /*! Return a List of packages by interpreting as a list of package designators */
 extern List_sp listOfPackageDesignators(T_sp obj);
