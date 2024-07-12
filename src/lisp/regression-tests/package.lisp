@@ -593,3 +593,41 @@
              (member s2 (package-shadowing-symbols chil))))
   (delete-package chil)
   (delete-package par0) (delete-package par1) (delete-package par2))
+
+;; package locking tests
+(defpackage "FOO")
+(defpackage "BAR")
+
+;; everything should error when locked
+(let ((sym (intern "BAR" "FOO")))
+  (core:package-lock "FOO")
+  (test-expect-error locked-shadow (shadow sym "FOO") :type core:package-lock-violation)
+  (test-expect-error locked-import (import sym "FOO") :type core:package-lock-violation)
+  (test-expect-error locked-unintern (unintern sym "FOO") :type core:package-lock-violation)
+  (test-expect-error locked-export (export sym "FOO") :type core:package-lock-violation)
+  (test-expect-error locked-unexport (unexport sym "FOO") :type core:package-lock-violation)
+)
+(test-expect-error locked-use (use-package "BAR" "FOO") :type core:package-lock-violation)
+(test-expect-error locked-unuse (unuse-package "BAR" "FOO") :type core:package-lock-violation)
+(test-expect-error locked-rename (rename-package "FOO" "FAA" '("F")) :type core:package-lock-violation)
+(test-expect-error locked-delete (delete-package "FOO") :type core:package-lock-violation)
+(test-expect-error locked-add-nickname (ext:package-add-nickname "FOO" "FO") :type core:package-lock-violation)
+(test-expect-error locked-remove-nickname (ext:package-remove-nickname "FOO" "F") :type core:package-lock-violation)
+(test-expect-error locked-intern (intern "BAR" "FOO") :type core:package-lock-violation)
+
+;; should all work again when unlocked
+(core:package-unlock "FOO")
+(test-finishes unlocked-shadow (shadow 'foo::bar "FOO"))
+(test-finishes unlocked-import (import 'foo::bar "FOO"))
+(test-finishes unlocked-unintern (unintern 'foo::bar "FOO"))
+(test-finishes unlocked-export (export 'foo::bar "FOO"))
+(test-finishes unlocked-unexport (unexport 'foo::bar "FOO"))
+(test-finishes unlocked-use (use-package "BAR" "FOO"))
+(test-finishes unlocked-unuse (unuse-package "BAR" "FOO"))
+(test-finishes unlocked-rename (rename-package "FOO" "FAA" '("F")))
+(test-finishes unlocked-delete (delete-package "FAA"))
+(defpackage "FOO")
+(test-finishes unlocked-add-nickname (ext:package-add-nickname "FOO" "FO")) 
+(test-finishes unlocked-remove-nickname (ext:package-remove-nickname "FOO" "FO"))
+(test-finishes unlocked-intern (intern "BAR" "FOO"))
+
