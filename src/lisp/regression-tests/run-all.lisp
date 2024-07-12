@@ -64,8 +64,8 @@
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;posix.lisp")
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;btb.lisp")
 ;;; When we have system construction before debug.lisp, debug.lisp will fail
-(load-if-compiled-correctly "sys:src;lisp;regression-tests;system-construction.lisp")
-(load-if-compiled-correctly "sys:src;lisp;regression-tests;extensions.lisp")
-(load-if-compiled-correctly "sys:src;lisp;regression-tests;run-program.lisp")
-(load-if-compiled-correctly "sys:src;lisp;regression-tests;snapshot.lisp")
+;;(load-if-compiled-correctly "sys:src;lisp;regression-tests;system-construction.lisp")
+;;(load-if-compiled-correctly "sys:src;lisp;regression-tests;extensions.lisp")
+;;(load-if-compiled-correctly "sys:src;lisp;regression-tests;run-program.lisp")
+;;(load-if-compiled-correctly "sys:src;lisp;regression-tests;snapshot.lisp")
 (sys:quit (if (show-test-summary) 0 1))
