@@ -66,6 +66,10 @@ CL_DEFUN Package_sp core__package_unlock(T_sp pkg) {
   package->setSystemLockedP (false);
   return package;
 }
+CL_DEFUN bool core__package_is_locked(T_sp pkg) {
+  Package_sp package = coerce::packageDesignator(pkg);
+  return (package->getUserLockedP() || package->getSystemLockedP());
+}
 CL_LAMBDA(package new-name &optional nick-names);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(renamePackage)dx");
@@ -736,6 +740,7 @@ bool Package_O::usePackage(Package_sp usePackage) {
     // again (rechecking for conflicts because multithreading makes this hard)
     // FIXME: This doesn't actually perfectly solve multithreading issues.
 
+    return false; // so it doesn't go through to package_lock_violation 
 package_lock_violation:
     eval::funcall(core::_sym_package_lock_violation, this->asSmartPtr(), core::lisp_createStr("using ~s"), usePackage->name());
     return false;
@@ -1081,8 +1086,9 @@ void Package_O::import1(Symbol_sp symbolToImport) {
   Symbol_sp foundSymbol;
   {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
-    if (this->getSystemLockedP() || this->getUserLockedP())
+    if (this->getSystemLockedP() || this->getUserLockedP()) {
       goto package_lock_violation;
+    }
     SimpleString_sp nameKey = symbolToImport->_Name;
     Symbol_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
     foundSymbol = values;
@@ -1099,6 +1105,7 @@ void Package_O::import1(Symbol_sp symbolToImport) {
   }
   // Conflict - resolve w/o lock held as handlers can do crazy things
   eval::funcall(_sym_import_name_conflict, this->asSmartPtr(), foundSymbol, symbolToImport);
+  return;
   package_lock_violation:
     eval::funcall(core::_sym_package_lock_violation, this->asSmartPtr(), core::lisp_createStr("importing ~s"), symbolToImport);
 }

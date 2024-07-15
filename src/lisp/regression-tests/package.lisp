@@ -332,7 +332,8 @@
        (sname "TEST") (rname "TSET")
        (s0 (intern sname nc0)) (s1 (intern sname nc1))
        (r0 (intern rname nc0)) (r1 (intern rname nc1)))
-  (test-true import-conflict-0
+
+   (test-true import-conflict-0
              (handler-case
                  (progn (import s1 nc0) nil)
                (ext:name-conflict (c)
@@ -351,7 +352,7 @@
                                 (return nil))))
                          (progn (import s1 nc0) nil))))
   ;; Resolving a conflict in favor of the new symbol
-  (test-true import-conflict-2
+   (test-true import-conflict-2
              (handler-bind
                  ((ext:name-conflict
                     (lambda (c)
@@ -361,13 +362,15 @@
                       (and (null (symbol-package s0))
                            (equal (multiple-value-list (find-symbol sname nc0))
                                   (list s1 :internal))))))
-  ;; Resolving a conflict in favor of the old symbol
+
+   ;; Resolving a conflict in favor of the old symbol
   (test-true import-conflict-3
              (handler-bind
                  ((ext:name-conflict
                     (lambda (c)
                       (invoke-restart (find-restart 'ext:resolve-conflict c) r0))))
-               (progn (import r1 nc0)
+               (progn (format t "NC0 is locked: ~s" (core:package-is-locked "NC0"))
+                      (import r1 nc0)
                       (equal (multiple-value-list (find-symbol rname nc0))
                              (list r0 :internal)))))
   (delete-package nc0) (delete-package nc1))
@@ -601,6 +604,7 @@
 ;; everything should error when locked
 (let ((sym (intern "BAR" "FOO")))
   (core:package-lock "FOO")
+  (test locked_is_locked (core:package-is-locked "FOO") (T))
   (test-expect-error locked-shadow (shadow sym "FOO") :type core:package-lock-violation)
   (test-expect-error locked-import (import sym "FOO") :type core:package-lock-violation)
   (test-expect-error locked-unintern (unintern sym "FOO") :type core:package-lock-violation)
@@ -617,6 +621,7 @@
 
 ;; should all work again when unlocked
 (core:package-unlock "FOO")
+(test unlocked_is_locked (core:package-is-locked "FOO") (NIL))
 (test-finishes unlocked-shadow (shadow 'foo::bar "FOO"))
 (test-finishes unlocked-import (import 'foo::bar "FOO"))
 (test-finishes unlocked-unintern (unintern 'foo::bar "FOO"))
@@ -630,4 +635,3 @@
 (test-finishes unlocked-add-nickname (ext:package-add-nickname "FOO" "FO")) 
 (test-finishes unlocked-remove-nickname (ext:package-remove-nickname "FOO" "FO"))
 (test-finishes unlocked-intern (intern "BAR" "FOO"))
-
