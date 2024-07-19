@@ -962,9 +962,9 @@ T_mv Package_O::intern(SimpleString_sp name) {
     Symbol_sp sym = values;
     MultipleValues& mvn = core::lisp_multipleValues();
     Symbol_sp status = gc::As<Symbol_sp>(mvn.valueGet(1, values.number_of_values()));
-    if (this->getSystemLockedP() || this->getUserLockedP())
-      goto package_lock_violation;
     if (status.nilp()) {
+      if (this->getSystemLockedP() || this->getUserLockedP())
+        goto package_lock_violation;
       sym = Symbol_O::create(name);
       client_validate(name);
       sym->makunbound();
