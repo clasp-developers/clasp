@@ -13,6 +13,13 @@
 
 (in-package :sys)
 
+(defun check-package-lock (name operation) ;; testing
+  (let ((package (symbol-package name)))
+    (when (and package (core:package-is-locked package))
+      (core:package-lock-violation package
+                                   "trying to ~s ~s"
+                                   operation name))))
+
 (defmacro unless (pred &rest body)
   "Syntax: (unless test {form}*)
 If TEST evaluates to NIL, then evaluates FORMs and returns all values of the
@@ -21,6 +28,7 @@ last FORM.  If not, simply returns NIL."
 
 (defmacro defmacro (name lambda-list &body body &environment env)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (check-package-lock ',name 'defmacro)
      (funcall #'(setf macro-function)
               #',(ext:parse-macro name lambda-list body env)
               ',name)
@@ -45,6 +53,7 @@ variable.  FORM defaults to NIL.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   `(LOCALLY (DECLARE (SPECIAL ,var))
      (eval-when (:compile-toplevel :load-toplevel :execute)
+       (check-package-lock ',var 'defvar)
        (SYS:*MAKE-SPECIAL ',var))
     ,@(when form-sp
 	  `((UNLESS (BOUNDP ',var)
@@ -66,6 +75,7 @@ the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   `(LOCALLY (DECLARE (SPECIAL ,var))
      (eval-when (:compile-toplevel :load-toplevel :execute)
+       (check-package-lock ',var 'defparameter)
        (SYS:*MAKE-SPECIAL ',var))
      (SETQ ,var ,form)
     ,@(when (and core:*current-source-pos-info*
@@ -81,6 +91,7 @@ existing value."
   (let ((value (gensym)))
     `(PROGN
        (eval-when (:compile-toplevel :load-toplevel :execute)
+         (check-package-lock ',var 'defconstant)
          (let ((,value ,form))
            (cond ((core:symbol-constantp ',var)
                   (unless (,test ,value (symbol-value ',var))
@@ -98,7 +109,6 @@ existing value."
 
 (defmacro defconstant (var form &optional doc-string)
   "Syntax: (defconstant symbol form [doc])
-
 Declares that the global variable named by SYMBOL is a constant with the value
 of FORM as its constant value.  The doc-string DOC, if supplied, is saved as a
 VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
@@ -114,12 +124,15 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
    (multiple-value-bind (decls body doc-string) 
        (si:process-declarations body t)
      (let* ((doclist (when doc-string (list doc-string)))
+            (sname (si::function-block-name name))
             (global-function
               `#'(lambda ,lambda-list
                    (declare (core:lambda-name ,name) ,@decls) 
                    ,@doclist
-                   (block ,(si::function-block-name name) ,@body))))
-       `(progn
+                   (block ,sname ,@body))))
+       `(progn          
+          (eval-when (:execute)
+             (check-package-lock ',sname 'defun))
           (eval-when (:compile-toplevel)
             ;; this function won't be ready for a while, but it's okay as there's no
             ;; compiler to run :compile-toplevel forms anyway.
@@ -145,8 +158,9 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
           (error 'type-error :datum cmf :expected-type '(or function null)))))
 
 (defmacro define-compiler-macro (name vl &rest body &environment env)
-  ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
+  ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro  
   `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (check-package-lock ',(core::function-block-name name) 'define-compiler-macro)
      (funcall #'(setf compiler-macro-function)
               (function ,(ext:parse-compiler-macro name vl body env))
               ',name)
