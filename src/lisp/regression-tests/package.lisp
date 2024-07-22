@@ -597,10 +597,10 @@
   (delete-package chil)
   (delete-package par0) (delete-package par1) (delete-package par2))
 
+
 ;; package locking tests
 (defpackage "FOO")
 (defpackage "BAR")
-
 ;; everything should error when locked
 (let ((sym (intern "BAR" "FOO")))
   (core:package-lock "FOO")
@@ -617,7 +617,32 @@
 (test-expect-error locked-delete (delete-package "FOO") :type core:package-lock-violation)
 (test-expect-error locked-add-nickname (ext:package-add-nickname "FOO" "FO") :type core:package-lock-violation)
 (test-expect-error locked-remove-nickname (ext:package-remove-nickname "FOO" "F") :type core:package-lock-violation)
-(test-expect-error locked-intern (intern "BAR" "FOO") :type core:package-lock-violation)
+(test-expect-error locked-intern (intern "BAZ" "FOO") :type core:package-lock-violation)
+;; need symbol
+(core:package-unlock "FOO")
+(symbol-package 'foo)
+(intern "FOO" "FOO")
+;; symbol operations
+(core:package-lock "FOO")
+(test-expect-error locked-defvar (core::defvar foo::foo) :type core:package-lock-violation)
+(test-expect-error locked-defmacro (core::defmacro foo::foo (foo) (+ foo 1)) :type core:package-lock-violation)
+(test-expect-error locked-defparameter (core::defparameter foo::foo 5) :type core:package-lock-violation)
+(test-expect-error locked-defconstant (core::defconstant foo::foo 5) :type core:package-lock-violation)
+(test-expect-error locked-defun (core::defun foo::foo (foo) (+ foo 1)) :type core:package-lock-violation)
+(test-expect-error locked-dcm (core::define-compiler-macro foo::foo (&whole form arg)
+   (if (atom arg)
+       `(expt ,arg 2)
+       (case (car arg)
+         (square (if (= (length arg) 2)
+                     `(expt ,(nth 1 arg) 4)
+                     form))
+         (expt   (if (= (length arg) 3)
+                     (if (numberp (nth 2 arg))
+                         `(expt ,(nth 1 arg) ,(* 2 (nth 2 arg)))
+                         `(expt ,(nth 1 arg) (* 2 ,(nth 2 arg))))
+                     form))
+         (otherwise `(expt ,arg 2)))))
+                  :type core:package-lock-violation)
 
 ;; should all work again when unlocked
 (core:package-unlock "FOO")
@@ -630,8 +655,29 @@
 (test-finishes unlocked-use (use-package "BAR" "FOO"))
 (test-finishes unlocked-unuse (unuse-package "BAR" "FOO"))
 (test-finishes unlocked-rename (rename-package "FOO" "FAA" '("F")))
-(test-finishes unlocked-delete (delete-package "FAA"))
-(defpackage "FOO")
-(test-finishes unlocked-add-nickname (ext:package-add-nickname "FOO" "FO")) 
+(rename-package "FAA" "FOO" '("F"))
+(test-finishes unlocked-add-nickname (ext:package-add-nickname "FOO" "FO"))
 (test-finishes unlocked-remove-nickname (ext:package-remove-nickname "FOO" "FO"))
 (test-finishes unlocked-intern (intern "BAR" "FOO"))
+;; symbol operations
+(test-finishes unlocked_defvar (core::defvar foo::foo)) 
+(test-finishes unlocked_defmacro (core::defmacro foo::foo (foo) (+ foo 1)))
+(test-finishes unlocked_defparameter (core::defparameter foo::foo 5))
+(test-finishes unlocked_defconstant (core::defconstant foo::bar 5))
+(test-finishes unlocked_defun (core::defun foo::foo (foo) (+ foo 1))) 
+(test-finishes unlocked_dcm (core::define-compiler-macro foo::foo (&whole form arg)
+   (if (atom arg)
+       `(expt ,arg 2)
+       (case (car arg)
+         (square (if (= (length arg) 2)
+                     `(expt ,(nth 1 arg) 4)
+                     form))
+         (expt   (if (= (length arg) 3)
+                     (if (numberp (nth 2 arg))
+                         `(expt ,(nth 1 arg) ,(* 2 (nth 2 arg)))
+                         `(expt ,(nth 1 arg) (* 2 ,(nth 2 arg))))
+                     form))
+         (otherwise `(expt ,arg 2))))))
+
+;; delete last bc we're still using it before
+(test-finishes unlocked-delete (delete-package "FOO"))
