@@ -770,8 +770,8 @@ void maybe_verify_dladdr( core::ClaspXepFunction& entryPoints,
                           core::T_sp code,
                           core::FunctionDescription_sp functionDescription,
                           gctools::GatherObjects* gatherP ) {
-  gatherP->_SimpleFunCount++;
   if (gc::IsA<llvmo::Library_sp>(code)) {
+    gatherP->_SimpleFunCount++;
     bool failed_dladdr = false;
     for (size_t ii = 0; ii < ClaspXepFunction::Entries; ++ii) {
       Dl_info info;
@@ -779,6 +779,11 @@ void maybe_verify_dladdr( core::ClaspXepFunction& entryPoints,
       if (gatherP->_uniqueEntryPoints.count(address)==0) {
         gatherP->_uniqueEntryPoints.insert(address);
         int ret = dladdr((void*)address, &info);
+        printf("%s:%d:%s dladdr ret=%d for entry point[%zu] %p for %s\n",
+                 __FILE__, __LINE__, __FUNCTION__,
+               ret,
+                 ii, (void*)address,
+                 _rep_(functionDescription->_functionName).c_str());
         if (ret == 0) {
           failed_dladdr = true;
           gatherP->_uniqueEntryPointsFailedDladdr.insert(address);
