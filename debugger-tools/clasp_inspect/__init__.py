@@ -853,10 +853,10 @@ def arg_to_tptr(debugger,args):
     return tptr
 
 def do_lisp_vm(debugger,arg):
-    fp = debugger.evaluate("vm._framePointer")
-    sp = debugger.evaluate("vm._stackPointer")
-    pc = debugger.evaluate("vm._pc")
-    instr = debugger.evaluate("*(unsigned char*)(vm._pc)")
+    fp = debugger.evaluate("my_thread->_VM._framePointer")
+    sp = debugger.evaluate("my_thread->_VM._stackPointer")
+    pc = debugger.evaluate("my_thread->_VM._pc")
+    instr = debugger.evaluate("*(unsigned char*)(my_thread->_VM._pc)")
     print("0x%x [%2d] %-20s | sp=0x%x fp=0x%x\n" % (pc, instr, global_codes[instr]._name, sp, fp ))
 
 
