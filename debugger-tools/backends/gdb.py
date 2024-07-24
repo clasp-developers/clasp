@@ -48,7 +48,10 @@ def evaluate_int(string):
     return int(gdb.parse_and_eval(string))
 
 def convenience_variable(name):
-    return gdb.convenience_variable(name)
+    if name.isdigit():
+        return gdb.history(int(name))
+    else:
+        return gdb.convenience_variable(name)
 
 def set_convenience_variable(name,val):
     gdb.set_convenience_variable(name,val)
