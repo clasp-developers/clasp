@@ -849,14 +849,14 @@ def arg_to_tptr(debugger,args):
     elif (is_int(arg,10)):
         tptr = int(arg,10)
     else:
-        tptr = int(debugger.evaluate(arg))
+        tptr = debugger.evaluate_int(arg)
     return tptr
 
 def do_lisp_vm(debugger,arg):
-    fp = debugger.evaluate("my_thread->_VM._framePointer")
-    sp = debugger.evaluate("my_thread->_VM._stackPointer")
-    pc = debugger.evaluate("my_thread->_VM._pc")
-    instr = debugger.evaluate("*(unsigned char*)(my_thread->_VM._pc)")
+    fp = debugger.evaluate_int("my_thread->_VM._framePointer")
+    sp = debugger.evaluate_int("my_thread->_VM._stackPointer")
+    pc = debugger.evaluate_int("my_thread->_VM._pc")
+    instr = debugger.evaluate_int("*(unsigned char*)(my_thread->_VM._pc)")
     print("0x%x [%2d] %-20s | sp=0x%x fp=0x%x\n" % (pc, instr, global_codes[instr]._name, sp, fp ))
 
 
@@ -962,7 +962,7 @@ def isBindingDynEnv(car_obj):
 
 def do_lisp_dump_dyn_env_stack(debugger_mod,arg):
     #print "In inspect args: %s" % args
-    tptr = debugger_mod.evaluate("my_thread->_DynEnvStackBottom.theObject")
+    tptr = debugger_mod.evaluate_int("my_thread->_DynEnvStackBottom.theObject")
     depth = 999999
     if (arg!=""):
         depth = int(arg)

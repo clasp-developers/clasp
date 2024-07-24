@@ -44,7 +44,7 @@ def dump_memory(address):
     print("------Dump from header")
     gdb.execute(cmd)
 
-def evaluate(string):
+def evaluate_int(string):
     return int(gdb.parse_and_eval(string))
 
 def convenience_variable(name):

@@ -30,7 +30,7 @@ def dump_memory(address,bytes=False):
     print("------Dump from header: %s" % cmd )
     debugger.HandleCommand(cmd)
     
-def evaluate(string):
+def evaluate_int(string):
     global debugger,process
     thread = process.GetSelectedThread()
     frame = thread.GetSelectedFrame()
@@ -38,10 +38,10 @@ def evaluate(string):
     return result
 
 def convenience_variable(name):
-    return evaluate("$%s" % name)
+    return evaluate_int("$%s" % name)
 
 def set_convenience_variable(name,val):
-    evaluate("uintptr_t $%s = %s" % (name, val))
+    evaluate_int("uintptr_t $%s = %s" % (name, val))
 
 def set_debugger(dbg):
     global debugger, process
