@@ -12,6 +12,7 @@ def dbg_print(msg):
 verbose = False   # turns on dbg_print(xxxx)
 debugger_mod = None
 inspector_mod = None
+VMFilter = None
 
 ByteOrder = 'little'
 
@@ -120,69 +121,65 @@ def clasp_python_info():
 #
 #
 
-class InlineFilter():
+class VMFrameFilter():
 
     def __init__(self):
-        self.name = "InlinedFrameFilter"
+        self.name = "VMFrameFilter"
         self.priority = 100
         self.enabled = True
         gdb.frame_filters[self.name] = self
 
     def filter(self, frame_iter):
-        frame_iter = map(InlinedFrameDecorator, frame_iter)
-        return frame_iter
+        return ElidingVMFrameIterator(frame_iter)
 
-class InlinedFrameDecorator(FrameDecorator):
-    
-    def __init__(self, fobj):
-        self.fobj = fobj
-        super(InlinedFrameDecorator, self).__init__(fobj)
+def bytecode_vm_frame_p(frame):
+    # Kinda fragile but I'm not sure what a better way is.
+    return "bytecode_vm" in frame.name()
 
-    def function(self):
-        global inspector_mod
-        global debugger_mod
-        dbg_print( "InlinedFrameDecorator:function inspector_mod %s" % inspector_mod)
-        frame = self.fobj.inferior_frame()
-        name = str(frame.name())
-        dbg_print("InlinedFrameDecorator::function name = %s" % name)
-        if frame.type() == gdb.INLINE_FRAME:
-            name = name + " [inlined]"
-        if (name == "bytecode_trampoline_with_stackmap"):
-            stackmap_var = frame.read_var("trampoline_save_args")
-            arg = "%s"%stackmap_var[0]
-            dbg_print("do_lisp_print arg= %s" % arg)
-            lisp_name = inspector_mod.function_name(debugger_mod,arg)
-            dbg_print("lisp_name = %s" % lisp_name )
-            name = "BYTECODE_FRAME(%s)"%lisp_name
-        return name
+def bytecode_call_frame_p(frame):
+    return "bytecode_call" in frame.name()
 
-    def frame_args(self):
-        frame = self.fobj.inferior_frame()
-        name = str(frame.name())
-        dbg_print("InlinedFrameDecorator::function name = %s" % name)
-        if (name == "bytecode_trampoline_with_stackmap"):
-            stackmap_var = frame.read_var("trampoline_save_args")
-            nargs = stackmap_var[1]
-            vargs = stackmap_var[2]
-            args = []
-            for iarg in range(0,nargs):
-                tptr = read_memory(vargs+(8*iarg),len=8)
-                try:
-                    varg = inspector_mod.do_lisp_print_value(debugger_mod,"%s"%tptr)
-                except:
-                    varg = "BADARG(0x%x)"%tptr
-                args.append( LispArg("a%d" % iarg, "%s"%varg))
-            return args
+class ElidingVMFrameIterator():
 
-class LispArg:
-    def __init__(self,name,value):
-        self._name = name
-        self._value = value
-    def symbol(self):
-        return self._name
-    def value(self):
-        return self._value
+    def __init__(self, ii):
+        self.input_iterator = ii
 
-    
+    def __iter__(self):
+        return self
 
-filter_inline = InlineFilter()
+    def __next__(self):
+        frame = next(self.input_iterator)
+
+        if (not bytecode_vm_frame_p(frame.inferior_frame())):
+            return frame
+
+        # We have a call to bytecode_vm.
+        # Eat frames until we hit bytecode_call.
+        # This should be ok since bytecode_vm is
+        # not called from elsewhere.
+        elision = [frame] # frames we're going to elide.
+        while True:
+            try:
+                frame = next(self.input_iterator)
+            except StopIteration: # no bytecode_call somehow
+                return frame
+            if bytecode_call_frame_p(frame.inferior_frame()):
+                # Done.
+                return ElidingVMFrameDecorator(frame, elision)
+            else:
+                # OK, so this frame sucks and we're skipping it.
+                # Not sure this will add in the right order
+                # but ohhhhh well
+                elision.append(frame)
+
+class ElidingVMFrameDecorator(FrameDecorator):
+
+    def __init__(self, frame, elided_frames):
+        super(ElidingVMFrameDecorator, self).__init__(frame)
+        self.frame = frame
+        self.elided_frames = elided_frames
+
+    def elided(self):
+        return self.elided_frames
+
+vm_frame_filter = VMFrameFilter()
