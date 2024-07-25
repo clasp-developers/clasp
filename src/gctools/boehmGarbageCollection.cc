@@ -95,13 +95,6 @@ void callback_reachable_object(gctools::BaseHeader_s* ptr, void* client_data) {
   } else {
     it->second.update(sz);
   }
-#if 0
-  if (stamp==(gctools::GCStampEnum)(gctools::STAMPWTAG_core__Symbol_O>>gctools::Header_s::wtag_width)) {
-    #error "ptr is a base pointer - it cant be cast to Symbol_O"
-    core::Symbol_O* sym = (core::Symbol_O*)ptr;
-    printf("%s:%d symbol %s\n", __FILE__, __LINE__, sym->formattedName(true).c_str());
-  }
-#endif
 }
 
 void boehm_callback_reachable_object_find_stamps(void* ptr, size_t sz, void* client_data) {
