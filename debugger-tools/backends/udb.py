@@ -121,6 +121,8 @@ def clasp_python_info():
 #
 #
 
+# This filter collapses bytecode_vm and intermediates into an
+# overall bytecode_call.
 class VMFrameFilter():
 
     def __init__(self):
@@ -165,21 +167,61 @@ class ElidingVMFrameIterator():
                 return frame
             if bytecode_call_frame_p(frame.inferior_frame()):
                 # Done.
-                return ElidingVMFrameDecorator(frame, elision)
+                return ElidingFrameDecorator(frame, elision)
             else:
                 # OK, so this frame sucks and we're skipping it.
                 # Not sure this will add in the right order
                 # but ohhhhh well
                 elision.append(frame)
 
-class ElidingVMFrameDecorator(FrameDecorator):
+class ElidingFrameDecorator(FrameDecorator):
 
     def __init__(self, frame, elided_frames):
-        super(ElidingVMFrameDecorator, self).__init__(frame)
+        super(ElidingFrameDecorator, self).__init__(frame)
         self.frame = frame
         self.elided_frames = elided_frames
 
     def elided(self):
         return self.elided_frames
 
-vm_frame_filter = VMFrameFilter()
+# This filter elides inline frames, since we have a lot of em.
+class InlineFrameFilter():
+
+    def __init__(self):
+        self.name = "InlineFrameFilter"
+        self.priority = 99
+        self.enabled = True
+        gdb.frame_filters[self.name] = self
+
+    def filter(self, frame_iter):
+        return InlineFrameIterator(frame_iter)
+
+class InlineFrameIterator():
+
+    def __init__(self, ii):
+        self.input_iterator = ii
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        frame = next(self.input_iterator)
+
+        if (not frame.inferior_frame().type() == gdb.INLINE_FRAME):
+            return frame
+
+        # Eat frames until we hit something not inlined.
+        elision = [frame] # frames we're going to elide.
+        while True:
+            try:
+                frame = next(self.input_iterator)
+            except StopIteration: # no bytecode_call somehow
+                return frame
+            if frame.inferior_frame().type() == gdb.INLINE_FRAME:
+                elision.append(frame)
+            else:
+                # Done.
+                return ElidingFrameDecorator(frame, elision)
+
+vm_filter = VMFrameFilter()
+inline_filter = InlineFrameFilter()
