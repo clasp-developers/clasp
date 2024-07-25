@@ -205,6 +205,25 @@ class VMFrameDecorator(ElidingFrameDecorator):
         # Give up
         return super(VMFrameDecorator, self).function()
 
+    def frame_args(self):
+        # Pull from lcc_nargs and lcc_args, which are usually
+        # not optimized out.
+        inf = self.frame.inferior_frame()
+        nargs = inf.read_var("lcc_nargs")
+        args = inf.read_var("lcc_args")
+        if nargs.is_optimized_out or args.is_optimized_out:
+            return None
+        return [SymValWrapper("arg" + str(n), args[n]) for n in range(int(nargs))]
+
+class SymValWrapper():
+    def __init__(self, symbol, value):
+        self.sym = symbol
+        self.val = value
+    def value(self):
+        return self.val
+    def symbol(self):
+        return self.sym
+
 # This filter elides inline frames, since we have a lot of em.
 class InlineFrameFilter():
 
