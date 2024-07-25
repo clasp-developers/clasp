@@ -134,7 +134,7 @@ CL_DEFUN SimpleBitVector_sp core__sbv_bit_not(SimpleBitVector_sp vec, SimpleBitV
     }                                                                                                                              \
     i = nwords;                                                                                                                    \
     if (leftover != 0) {                                                                                                           \
-      bit_array_word mask = ((1 << leftover) - 1) << (BIT_ARRAY_WORD_BITS - leftover);                                             \
+      bit_array_word mask = (((bit_array_word)1 << leftover) - 1) << (BIT_ARRAY_WORD_BITS - leftover);                             \
       word = bytes[i] & mask;                                                                                                      \
       statement                                                                                                                    \
     }                                                                                                                              \
@@ -199,7 +199,9 @@ void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t>& res) {
   }
 }
 
-bool SimpleBitVector_isZero(SimpleBitVector_sp vec) { return core__sbv_zerop(vec); }
+bool SimpleBitVector_isZero(SimpleBitVector_sp vec) {
+  return core__sbv_zerop(vec);
+}
 
 bool BitVectorNs_O::equal(T_sp other) const {
   if (&*other == this)

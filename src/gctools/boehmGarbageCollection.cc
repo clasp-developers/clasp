@@ -555,21 +555,21 @@ void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
     OutputStream << "Total object memory usage (bytes): " << std::setw(10) << totalSize << '\n';
   }
 #endif
-  OutputStream << "Total GC_get_heap_size():        " << std::setw(12) << GC_get_heap_size() << '\n';
-  OutputStream << "Total GC_get_free_bytes():       " << std::setw(12) << GC_get_free_bytes() << '\n';
-  OutputStream << "Total GC_get_bytes_since_gc():   " << std::setw(12) << GC_get_bytes_since_gc() << '\n';
-  OutputStream << "Total GC_get_total_bytes():      " << std::setw(12) << GC_get_total_bytes() << '\n';
-  OutputStream << "Total number of JITDylibs:       " << std::setw(12) << cl__length(_lisp->_Roots._JITDylibs) << '\n';
-  OutputStream << "Total number of Libraries:       " << std::setw(12) << cl__length(_lisp->_Roots._AllLibraries) << '\n';
-  OutputStream << "Total number of ObjectFiles:     " << std::setw(12) << cl__length(_lisp->_Roots._AllObjectFiles) << '\n';
-  OutputStream << "Total number of CodeBlocks:      " << std::setw(12) << cl__length(_lisp->_Roots._AllCodeBlocks) << '\n';
-  OutputStream << "Total number of SimpleFun:       " << std::setw(12) << gatherObjects._SimpleFunCount << '\n';
+  OutputStream << "Total GC_get_heap_size():                      " << std::setw(12) << GC_get_heap_size() << '\n';
+  OutputStream << "Total GC_get_free_bytes():                     " << std::setw(12) << GC_get_free_bytes() << '\n';
+  OutputStream << "Total GC_get_bytes_since_gc():                 " << std::setw(12) << GC_get_bytes_since_gc() << '\n';
+  OutputStream << "Total GC_get_total_bytes():                    " << std::setw(12) << GC_get_total_bytes() << '\n';
+  OutputStream << "Total number of JITDylibs:                     " << std::setw(12) << cl__length(_lisp->_Roots._JITDylibs) << '\n';
+  OutputStream << "Total number of Libraries:                     " << std::setw(12) << cl__length(_lisp->_Roots._AllLibraries) << '\n';
+  OutputStream << "Total number of ObjectFiles:                   " << std::setw(12) << cl__length(_lisp->_Roots._AllObjectFiles) << '\n';
+  OutputStream << "Total number of CodeBlocks:                    " << std::setw(12) << cl__length(_lisp->_Roots._AllCodeBlocks) << '\n';
+  OutputStream << "Total number of library Simple(Core)Fun:       " << std::setw(12) << gatherObjects._SimpleFunCount << '\n';
   if (gatherObjects._SimpleFunFailedDladdrCount>0) {
-    OutputStream << "Total number of SimpleFun failed dladdr: " << std::setw(12) << gatherObjects._SimpleFunFailedDladdrCount << '\n';
+    OutputStream << "Total of library Simple(Core)Fun dladdr fails: " << std::setw(12) << gatherObjects._SimpleFunFailedDladdrCount << '\n';
   }
-  OutputStream << "Unique entry points:             " << std::setw(12) << gatherObjects._uniqueEntryPoints.size() << '\n';
+  OutputStream << "Unique library Simple(Core)Fun entry points:   " << std::setw(12) << gatherObjects._uniqueEntryPoints.size() << '\n';
   if (gatherObjects._uniqueEntryPointsFailedDladdr.size()>0) {
-    OutputStream << "Unique entry points failed dladdr: " << std::setw(10) << gatherObjects._uniqueEntryPointsFailedDladdr.size() << '\n';
+    OutputStream << "Unique library Simple(Core)Fun dladdr fails:   " << std::setw(10) << gatherObjects._uniqueEntryPointsFailedDladdr.size() << '\n';
   }
   delete static_ReachableClassKinds;
 }
