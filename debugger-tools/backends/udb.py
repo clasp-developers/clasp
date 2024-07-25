@@ -166,7 +166,7 @@ class ElidingVMFrameIterator():
                 return frame
             if bytecode_call_frame_p(frame.inferior_frame()):
                 # Done.
-                return ElidingFrameDecorator(frame, elision)
+                return VMFrameDecorator(frame, elision)
             else:
                 # OK, so this frame sucks and we're skipping it.
                 # Not sure this will add in the right order
@@ -182,6 +182,28 @@ class ElidingFrameDecorator(FrameDecorator):
 
     def elided(self):
         return self.elided_frames
+
+# Tries to get a Lisp function name.
+class VMFrameDecorator(ElidingFrameDecorator):
+
+    def function(self):
+        # Some of the elided frames are bytecode_vm calls.
+        # If they are, try to grab the closure argument.
+        for sframe in self.elided_frames:
+            inf = sframe.inferior_frame()
+            if bytecode_vm_frame_p(inf):
+                closure = inf.read_var("closure")
+                if closure.is_optimized_out:
+                    break
+                # We have something. Tag it,
+                tclosure = int(closure) | 1
+                # and then pass to the inspector
+                name = inspector_mod.function_name(debugger_mod, tclosure)
+                if (name == None):
+                    break
+                return str(name) + " [bytecode]"
+        # Give up
+        return super(VMFrameDecorator, self).function()
 
 # This filter elides inline frames, since we have a lot of em.
 class InlineFrameFilter():
