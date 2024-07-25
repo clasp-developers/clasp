@@ -1,6 +1,5 @@
 import gdb
 from gdb.FrameDecorator import FrameDecorator
-import itertools
 
 import struct
 from io import StringIO
