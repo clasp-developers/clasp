@@ -199,7 +199,9 @@ void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t>& res) {
   }
 }
 
-bool SimpleBitVector_isZero(SimpleBitVector_sp vec) { return core__sbv_zerop(vec); }
+bool SimpleBitVector_isZero(SimpleBitVector_sp vec) {
+  return core__sbv_zerop(vec);
+}
 
 bool BitVectorNs_O::equal(T_sp other) const {
   if (&*other == this)
