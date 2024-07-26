@@ -35,6 +35,7 @@
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;string-comparison0.lisp")
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;bit-array0.lisp")
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;bit-array1.lisp")
+(load-if-compiled-correctly "sys:src;lisp;regression-tests;bit-array2.lisp")
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;character0.lisp")
 #+unicode
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;unicode.lisp")
