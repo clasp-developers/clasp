@@ -424,7 +424,11 @@ class Cons_O(T_O):
         cdrObj = translate_tagged_ptr(self._debugger,self.cdr())
         cdrStr = cdrObj.__repr__()
         return "( %s . %s )" % ( carStr, cdrStr )
-#        return ( "(0x%x . 0x%x )" % (self.car(), self.cdr()))
+    def __str__(self):
+        # FIXME: Print proper lists nicely.
+        scar = str(translate_tagged_ptr(self._debugger, self.car()))
+        scdr = str(translate_tagged_ptr(self._debugger, self.cdr()))
+        return "(" + scar + " . " + scdr + ")"
         
 class General_O(T_O):
     def __init__(self,debugger,tclient):
@@ -515,7 +519,12 @@ class General_O(T_O):
     
     def __repr__(self):
         return "a %s @0x%x" % (self._className, self._tptr) 
-   
+
+    def __str__(self):
+        if self.nilp():
+            return "()"
+        else:
+            return repr(self)
 
 class Array_O(General_O):
     def __init__(self,debugger,address):
@@ -620,6 +629,10 @@ class Symbol_O(General_O):
             return "Symbol[%s::%s]" % (self._Package.name().str(),self._Name.str())
         except:
             return "Symbol[%s %s]" % (self._Package, self._Name )
+    def __str__(self):
+        if (self._Package.nilp() and self._Name.str() == "UNBOUND"):
+            return "#<UNBOUND>"
+        return self._Package.name().str() + "::" + self._Name.str()
 
 class Rack_O(General_O):
     def __init__(self,debugger,tptr):
@@ -790,7 +803,7 @@ def translate_tagged_ptr(debugger,tptr):
                     return Rack_O(debugger,tptr)
                 if (name in ["core::Function_O", "core::FuncallableInstance_O", "core::Closure_O", "core::BuiltinClosure_O"]):
                     return Function_O(debugger,tptr)
-                if (name in ["core::GlobalBytecodeSimpleFun_O", "core::GlobalSimpleFun_O"]):
+                if (name in ["core::BytecodeSimpleFun_O", "core::SimpleCoreFun_O", "SimpleFun_O"]):
                     return SimpleFun_O(debugger,tptr)
                 if (name=="llvmo::JITDylib_O"):
                     return JITDylib_O(debugger,tptr)
@@ -849,14 +862,14 @@ def arg_to_tptr(debugger,args):
     elif (is_int(arg,10)):
         tptr = int(arg,10)
     else:
-        tptr = int(debugger.evaluate(arg))
+        tptr = debugger.evaluate_int(arg)
     return tptr
 
 def do_lisp_vm(debugger,arg):
-    fp = debugger.evaluate("vm._framePointer")
-    sp = debugger.evaluate("vm._stackPointer")
-    pc = debugger.evaluate("vm._pc")
-    instr = debugger.evaluate("*(unsigned char*)(vm._pc)")
+    fp = debugger.evaluate_int("my_thread->_VM._framePointer")
+    sp = debugger.evaluate_int("my_thread->_VM._stackPointer")
+    pc = debugger.evaluate_int("my_thread->_VM._pc")
+    instr = debugger.evaluate_int("*(unsigned char*)(my_thread->_VM._pc)")
     print("0x%x [%2d] %-20s | sp=0x%x fp=0x%x\n" % (pc, instr, global_codes[instr]._name, sp, fp ))
 
 
@@ -962,7 +975,7 @@ def isBindingDynEnv(car_obj):
 
 def do_lisp_dump_dyn_env_stack(debugger_mod,arg):
     #print "In inspect args: %s" % args
-    tptr = debugger_mod.evaluate("my_thread->_DynEnvStackBottom.theObject")
+    tptr = debugger_mod.evaluate_int("my_thread->_DynEnvStackBottom.theObject")
     depth = 999999
     if (arg!=""):
         depth = int(arg)
@@ -1004,9 +1017,10 @@ def do_lisp_print_value(debugger_mod,arg):
 #
 # Return the name of a function given a tagged pointer that is a function object
 #
-def function_name(debugger_mod,arg):
-    tptr = arg_to_tptr(debugger_mod,arg)
+def function_name(debugger_mod,tptr):
     fn = translate_tagged_ptr(debugger_mod,tptr)
+    if (not (isinstance(fn, Function_O) or isinstance(fn, SimpleFun_O))):
+        return None
     fn_name = fn.name()
     if (isinstance(fn_name,Symbol_O)):
         name = fn_name
@@ -1310,4 +1324,3 @@ def print_disassembly(vm,instructions,labels):
         if (instr._address in labels):
             print("%s:" % labels[instr._address]._name)
         print_instruction(vm,instr,labels)
-

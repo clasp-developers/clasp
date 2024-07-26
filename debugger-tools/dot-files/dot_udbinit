@@ -1,4 +1,4 @@
-source -s -v debugger-tools/udb-loader.py
+source -s -v debugger-tools/gdb-loader.py
 
 set pagination off
 

@@ -1,6 +1,5 @@
 import gdb
 from gdb.FrameDecorator import FrameDecorator
-import itertools
 
 import struct
 from io import StringIO
@@ -12,6 +11,7 @@ def dbg_print(msg):
 verbose = False   # turns on dbg_print(xxxx)
 debugger_mod = None
 inspector_mod = None
+VMFilter = None
 
 ByteOrder = 'little'
 
@@ -44,11 +44,14 @@ def dump_memory(address):
     print("------Dump from header")
     gdb.execute(cmd)
 
-def evaluate(string):
+def evaluate_int(string):
     return int(gdb.parse_and_eval(string))
 
 def convenience_variable(name):
-    return gdb.convenience_variable(name)
+    if name.isdigit(): # if it's all digits, interpret it as a history ref
+        return gdb.history(int(name))
+    else:
+        return gdb.convenience_variable(name)
 
 def set_convenience_variable(name,val):
     gdb.set_convenience_variable(name,val)
@@ -117,69 +120,149 @@ def clasp_python_info():
 #
 #
 
-class InlineFilter():
+# This filter collapses bytecode_vm and intermediates into an
+# overall bytecode_call.
+class VMFrameFilter():
 
     def __init__(self):
-        self.name = "InlinedFrameFilter"
+        self.name = "VMFrameFilter"
         self.priority = 100
         self.enabled = True
         gdb.frame_filters[self.name] = self
 
     def filter(self, frame_iter):
-        frame_iter = map(InlinedFrameDecorator, frame_iter)
-        return frame_iter
+        return ElidingVMFrameIterator(frame_iter)
 
-class InlinedFrameDecorator(FrameDecorator):
-    
-    def __init__(self, fobj):
-        self.fobj = fobj
-        super(InlinedFrameDecorator, self).__init__(fobj)
+def bytecode_vm_frame_p(frame):
+    # Kinda fragile but I'm not sure what a better way is.
+    return "bytecode_vm" in frame.name()
+
+def bytecode_call_frame_p(frame):
+    return "bytecode_call" in frame.name()
+
+class ElidingVMFrameIterator():
+
+    def __init__(self, ii):
+        self.input_iterator = ii
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        frame = next(self.input_iterator)
+
+        if (not bytecode_vm_frame_p(frame.inferior_frame())):
+            return frame
+
+        # We have a call to bytecode_vm.
+        # Eat frames until we hit bytecode_call.
+        # This should be ok since bytecode_vm is
+        # not called from elsewhere.
+        elision = [frame] # frames we're going to elide.
+        while True:
+            try:
+                frame = next(self.input_iterator)
+            except StopIteration: # no bytecode_call somehow
+                return frame
+            if bytecode_call_frame_p(frame.inferior_frame()):
+                # Done.
+                return VMFrameDecorator(frame, elision)
+            else:
+                # OK, so this frame sucks and we're skipping it.
+                # Not sure this will add in the right order
+                # but ohhhhh well
+                elision.append(frame)
+
+class ElidingFrameDecorator(FrameDecorator):
+
+    def __init__(self, frame, elided_frames):
+        super(ElidingFrameDecorator, self).__init__(frame)
+        self.frame = frame
+        self.elided_frames = elided_frames
+
+    def elided(self):
+        return self.elided_frames
+
+# Tries to get a Lisp function name.
+class VMFrameDecorator(ElidingFrameDecorator):
 
     def function(self):
-        global inspector_mod
-        global debugger_mod
-        dbg_print( "InlinedFrameDecorator:function inspector_mod %s" % inspector_mod)
-        frame = self.fobj.inferior_frame()
-        name = str(frame.name())
-        dbg_print("InlinedFrameDecorator::function name = %s" % name)
-        if frame.type() == gdb.INLINE_FRAME:
-            name = name + " [inlined]"
-        if (name == "bytecode_trampoline_with_stackmap"):
-            stackmap_var = frame.read_var("trampoline_save_args")
-            arg = "%s"%stackmap_var[0]
-            dbg_print("do_lisp_print arg= %s" % arg)
-            lisp_name = inspector_mod.function_name(debugger_mod,arg)
-            dbg_print("lisp_name = %s" % lisp_name )
-            name = "BYTECODE_FRAME(%s)"%lisp_name
-        return name
+        # Some of the elided frames are bytecode_vm calls.
+        # If they are, try to grab the closure argument.
+        if inspector_mod != None:
+            for sframe in self.elided_frames:
+                inf = sframe.inferior_frame()
+                if bytecode_vm_frame_p(inf):
+                    closure = inf.read_var("closure")
+                    if closure.is_optimized_out:
+                        break
+                    # We have something. Tag it,
+                    tclosure = int(closure) | 1
+                    # and then pass to the inspector
+                    name = inspector_mod.function_name(debugger_mod, tclosure)
+                    if (name == None):
+                        break
+                    return str(name) + " [bytecode]"
+        # Give up
+        return super(VMFrameDecorator, self).function()
 
     def frame_args(self):
-        frame = self.fobj.inferior_frame()
-        name = str(frame.name())
-        dbg_print("InlinedFrameDecorator::function name = %s" % name)
-        if (name == "bytecode_trampoline_with_stackmap"):
-            stackmap_var = frame.read_var("trampoline_save_args")
-            nargs = stackmap_var[1]
-            vargs = stackmap_var[2]
-            args = []
-            for iarg in range(0,nargs):
-                tptr = read_memory(vargs+(8*iarg),len=8)
-                try:
-                    varg = inspector_mod.do_lisp_print_value(debugger_mod,"%s"%tptr)
-                except:
-                    varg = "BADARG(0x%x)"%tptr
-                args.append( LispArg("a%d" % iarg, "%s"%varg))
-            return args
+        # Pull from lcc_nargs and lcc_args, which are usually
+        # not optimized out.
+        inf = self.frame.inferior_frame()
+        nargs = inf.read_var("lcc_nargs")
+        args = inf.read_var("lcc_args")
+        if nargs.is_optimized_out or args.is_optimized_out:
+            return None
+        return [SymValWrapper("arg" + str(n), args[n]) for n in range(int(nargs))]
 
-class LispArg:
-    def __init__(self,name,value):
-        self._name = name
-        self._value = value
-    def symbol(self):
-        return self._name
+class SymValWrapper():
+    def __init__(self, symbol, value):
+        self.sym = symbol
+        self.val = value
     def value(self):
-        return self._value
+        return self.val
+    def symbol(self):
+        return self.sym
 
-    
+# This filter elides inline frames, since we have a lot of em.
+class InlineFrameFilter():
 
-filter_inline = InlineFilter()
+    def __init__(self):
+        self.name = "InlineFrameFilter"
+        self.priority = 99
+        self.enabled = True
+        gdb.frame_filters[self.name] = self
+
+    def filter(self, frame_iter):
+        return InlineFrameIterator(frame_iter)
+
+class InlineFrameIterator():
+
+    def __init__(self, ii):
+        self.input_iterator = ii
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        frame = next(self.input_iterator)
+
+        if (not frame.inferior_frame().type() == gdb.INLINE_FRAME):
+            return frame
+
+        # Eat frames until we hit something not inlined.
+        elision = [frame] # frames we're going to elide.
+        while True:
+            try:
+                frame = next(self.input_iterator)
+            except StopIteration: # no bytecode_call somehow
+                return frame
+            if frame.inferior_frame().type() == gdb.INLINE_FRAME:
+                elision.append(frame)
+            else:
+                # Done.
+                return ElidingFrameDecorator(frame, elision)
+
+vm_filter = VMFrameFilter()
+inline_filter = InlineFrameFilter()
