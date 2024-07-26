@@ -739,12 +739,10 @@ bool Package_O::usePackage(Package_sp usePackage) {
     // That function only returns once conflicts are resolved, so go around
     // again (rechecking for conflicts because multithreading makes this hard)
     // FIXME: This doesn't actually perfectly solve multithreading issues.
-
-    return false; // so it doesn't go through to package_lock_violation 
-package_lock_violation:
+  }
+  package_lock_violation:
     eval::funcall(core::_sym_package_lock_violation, this->asSmartPtr(), core::lisp_createStr("using ~s"), usePackage->name());
     return false;
-  }
 }
 
 bool Package_O::unusePackage_no_outer_lock(Package_sp usePackage) {

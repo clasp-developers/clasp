@@ -182,10 +182,10 @@
    (handler-bind ((error #'(lambda(c)
                              (declare (ignore c))
                              (invoke-restart 'continue))))
-     (export sym (find-package :core)))
+      (export sym (find-package :cl-user)))
    (multiple-value-bind
          (symbol status)
-       (find-symbol (symbol-name sym) (find-package :core))
+       (find-symbol (symbol-name sym) (find-package :cl-user))
      (and symbol (eq :external status)))))
 
 (defpackage #:foo-bar-4
@@ -481,6 +481,7 @@
        (aname "A") (a0 (intern aname nc0)) (a1 (intern aname nc1))
        (bname "B") (b0 (intern bname nc0)) (b1 (intern bname nc1)))
   (export (list a1 b1) nc1)
+
   ;; Exactly two conflicts are signaled and resolvable
   (test-true use-package-conflict-0
         (let ((a-resolved nil) (b-resolved nil))
@@ -506,6 +507,7 @@
                              (t (return nil)))))))
               (use-package nc1 nc0))
             (and a-resolved b-resolved))))
+
   ;; a0, the old present symbol, was chosen: a0 shadows.
   (test-true use-package-conflict-1
         (and (equal (multiple-value-list (find-symbol aname nc0))
