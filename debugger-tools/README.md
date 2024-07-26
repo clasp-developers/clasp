@@ -16,6 +16,8 @@ ln -s /path/to/gdb/loader.py /usr/share/gdb/auto-load/usr/local/bin/iclasp-gdb.p
 
 and then the distinction will load whenever you start debugging clasp. Note that the actual executable is `iclasp` here rather than `clasp`, which is a symlink.
 
+If that doesn't work, you can source the extension in your initfile. Some examples are provided in `dot-files/`. Keep in mind that this will load the extension any time you run your debugger, even if you're debugging something other than Clasp.
+
 # Caveats
 
 In order for the debugger to get much information from Clasp, Clasp has to have actually initialized a few variables read by the extension. If you start your debugger with an inferior Clasp rather than attaching to an existing process, this may not immediately be done.
