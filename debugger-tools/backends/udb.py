@@ -189,19 +189,20 @@ class VMFrameDecorator(ElidingFrameDecorator):
     def function(self):
         # Some of the elided frames are bytecode_vm calls.
         # If they are, try to grab the closure argument.
-        for sframe in self.elided_frames:
-            inf = sframe.inferior_frame()
-            if bytecode_vm_frame_p(inf):
-                closure = inf.read_var("closure")
-                if closure.is_optimized_out:
-                    break
-                # We have something. Tag it,
-                tclosure = int(closure) | 1
-                # and then pass to the inspector
-                name = inspector_mod.function_name(debugger_mod, tclosure)
-                if (name == None):
-                    break
-                return str(name) + " [bytecode]"
+        if inspector_mod != None:
+            for sframe in self.elided_frames:
+                inf = sframe.inferior_frame()
+                if bytecode_vm_frame_p(inf):
+                    closure = inf.read_var("closure")
+                    if closure.is_optimized_out:
+                        break
+                    # We have something. Tag it,
+                    tclosure = int(closure) | 1
+                    # and then pass to the inspector
+                    name = inspector_mod.function_name(debugger_mod, tclosure)
+                    if (name == None):
+                        break
+                    return str(name) + " [bytecode]"
         # Give up
         return super(VMFrameDecorator, self).function()
 

@@ -8,7 +8,7 @@ import importlib
 inspector_mod = None
 debugger_mod = None
 
-dir = os.path.dirname(os.path.expanduser(__file__))
+dir = os.path.dirname(os.path.realpath(__file__))
 print( "\n\n\nLoading clasp udb python extension from directory = %s" % dir)
 
 sys.path.insert(0,dir)
@@ -31,7 +31,6 @@ def maybeReloadModules(verbose=False):
       debugger_mod = importlib.import_module("backends.udb")
     else:
       importlib.reload(debugger_mod)
-    print( "maybeReloadModules verbose = %s" % verbose)
     inspector_mod.load_clasp_layout(debugger_mod,verbose)
     # Tell the debugger_mod about the inspector_mod
     debugger_mod.install_debugger_inspector(debugger_mod,inspector_mod)
