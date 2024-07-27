@@ -779,11 +779,13 @@ void maybe_verify_dladdr( core::ClaspXepFunction& entryPoints,
       if (gatherP->_uniqueEntryPoints.count(address)==0) {
         gatherP->_uniqueEntryPoints.insert(address);
         int ret = dladdr((void*)address, &info);
+#if 0
         printf("%s:%d:%s dladdr ret=%d for entry point[%zu] %p for %s\n",
                  __FILE__, __LINE__, __FUNCTION__,
                ret,
                  ii, (void*)address,
                  _rep_(functionDescription->_functionName).c_str());
+#endif
         if (ret == 0) {
           failed_dladdr = true;
           gatherP->_uniqueEntryPointsFailedDladdr.insert(address);
