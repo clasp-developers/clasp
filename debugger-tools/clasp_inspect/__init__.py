@@ -630,8 +630,11 @@ class Symbol_O(General_O):
         except:
             return "Symbol[%s %s]" % (self._Package, self._Name )
     def __str__(self):
-        if (self._Package.nilp() and self._Name.str() == "UNBOUND"):
-            return "#<UNBOUND>"
+        if (self._Package.nilp()):
+            if self._Name.str() == "UNBOUND":
+                return "#<UNBOUND>"
+            else:
+                return "#:" + self._Name.str()
         return self._Package.name().str() + "::" + self._Name.str()
 
 class Rack_O(General_O):
