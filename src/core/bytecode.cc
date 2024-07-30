@@ -767,6 +767,51 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       vm._stackPointer = sp;
       return gctools::return_type(nil<T_O>().raw_(), 0);
     }
+    case vm_catch_8: {
+      int8_t rel = *(pc + 1);
+      DBG_VM("catch-8 %" PRId8 "\n", rel);
+      unsigned char* target = pc + rel;
+      bool thrown = true;
+      pc += 2;
+      T_sp tag((gctools::Tagged)(vm.pop(sp)));
+      vm._pc = pc;
+      call_with_catch(tag, [&]() {
+        T_mv result = bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
+        thrown = false;
+        return result;
+      });
+      if (thrown) pc = target;
+      else pc = vm._pc;
+      break;
+    }
+    case vm_catch_16: {
+      int16_t rel = read_s16(pc + 1);
+      DBG_VM("catch-8 %" PRId16 "\n", rel);
+      unsigned char* target = pc + rel;
+      bool thrown = true;
+      pc += 3;
+      T_sp tag((gctools::Tagged)(vm.pop(sp)));
+      vm._pc = pc;
+      call_with_catch(tag, [&]() {
+        T_mv result = bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
+        thrown = false;
+        return result;
+      });
+      if (thrown) pc = target;
+      else pc = vm._pc;
+      break;
+    }
+    case vm_throw: {
+      DBG_VM("throw\n");
+      T_sp tag((gctools::Tagged)(vm.pop(sp)));
+      sjlj_throw(tag);
+    }
+    case vm_catch_close: {
+      DBG_VM("entry-close\n");
+      vm._pc = pc + 1;
+      vm._stackPointer = sp;
+      return gctools::return_type(nil<T_O>().raw_(), 0);
+    }
     case vm_special_bind: {
       uint8_t c = *(++pc);
       DBG_VM("special-bind %" PRIu8 "\n", c);
