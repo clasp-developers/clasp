@@ -2707,6 +2707,8 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
     compile_the(oCar(rest), oCadr(rest), env, context);
   else if (head == cl::_sym_catch)
     compile_catch(oCar(rest), oCdr(rest), env, context);
+  else if (head == cl::_sym_throw)
+    compile_throw(oCar(rest), oCadr(rest), env, context);
   // basic optimization
   else if (head == cl::_sym_funcall
            // Do a basic syntax check so that (funcall) fails properly.
