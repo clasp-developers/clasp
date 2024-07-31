@@ -3,6 +3,7 @@ src/lisp/modules/asdf/
 src/mps/
 src/bdwgc/
 src/libatomic_ops/
+src/schubfach/
 GPATH
 GRTAGS
 GTAGS
