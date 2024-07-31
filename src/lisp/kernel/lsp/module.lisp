@@ -35,6 +35,10 @@ elements are key/values passed to ASDF:REGISTER-IMMUTABLE-SYSTEM. For
 example, (:ASDF :VERSION \"3.0.0\") will register ASDF as immutable with
 version number of 3.0.0")
 
+(defvar *primary-systems* nil
+    "The primary systems that should immediately be registered when ASDF
+has been initially provided.")
+
 ;;;; PROVIDE and REQUIRE
 
 (defun provide (module-name)
@@ -44,9 +48,17 @@ Module-name is a string designator"
     (pushnew module-as-string *modules* :test #'string=)
     (when (and (find-package :asdf)
                (string= "ASDF" (string-upcase module-as-string)))
-      (let ((register-immutable-system (find-symbol "REGISTER-IMMUTABLE-SYSTEM" :asdf)))
+      (let ((find-system (find-symbol "FIND-SYSTEM" :asdf))
+            (register-immutable-system (find-symbol (if (ext:getenv "CLASP_MUTABLE_SYSTEMS")
+                                                        "REGISTER-PRELOADED-SYSTEM"
+                                                        "REGISTER-IMMUTABLE-SYSTEM")
+                                                    :asdf)))
+        (dolist (name *primary-systems*)
+          (funcall find-system name nil))
         (dolist (args *immutable-systems*)
-          (apply register-immutable-system args)))))
+          (apply register-immutable-system args))
+        (setf *primary-systems* nil
+              *immutable-systems* nil))))
   t)
 
 (defparameter *requiring* nil)
