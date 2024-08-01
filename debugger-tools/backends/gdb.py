@@ -134,11 +134,19 @@ class VMFrameFilter():
         return ElidingVMFrameIterator(frame_iter)
 
 def bytecode_vm_frame_p(frame):
-    # Kinda fragile but I'm not sure what a better way is.
-    return "bytecode_vm" in frame.name()
+    fname = frame.name()
+    if (fname == None):
+        return False
+    else:
+        # Kinda fragile but I'm not sure what a better way is.
+        return "bytecode_vm" in fname
 
 def bytecode_call_frame_p(frame):
-    return "bytecode_call" in frame.name()
+    fname = frame.name()
+    if (fname == None):
+        return False
+    else:
+        return "bytecode_call" in fname
 
 class ElidingVMFrameIterator():
 
