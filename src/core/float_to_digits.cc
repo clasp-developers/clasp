@@ -63,7 +63,7 @@ template <typename T> T_mv float_to_digits(T_sp tdigits, T number, T_sp round_po
   for (auto ch : std::to_string(decimal.significand))
     digits->vectorPushExtend(clasp_make_character(ch), 64);
 
-  return Values(clasp_make_fixnum(significand == 0 ? 0 : position), digits);
+  return Values(clasp_make_fixnum((decimal.significand == 0) ? 0 : position), digits);
 }
 
 CL_LAMBDA(digits number position relativep);
