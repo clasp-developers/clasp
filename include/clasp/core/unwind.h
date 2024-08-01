@@ -351,4 +351,20 @@ template <typename Boundf> auto call_with_variable_bound(Symbol_sp sym, T_sp val
   return call_with_cell_bound(sym->ensureVariableCell(), val, bound);
 }
 
+template <typename Boundf> __attribute__((optnone)) T_mv fprogv(List_sp symbols, List_sp values, Boundf&& bound) {
+  if (symbols.consp()) {
+    Symbol_sp sym = CONS_CAR(symbols).as<Symbol_O>();
+    List_sp nsymbols = CONS_CDR(symbols);
+    if (values.consp()) {
+      return call_with_variable_bound(sym, CONS_CAR(values),
+                                      [&]() { return fprogv(nsymbols, CONS_CDR(values), bound); });
+    } else { // out of values - make unbound
+      return call_with_variable_bound(sym, unbound<T_O>(),
+                                      [&]() { return fprogv(nsymbols, nil<T_O>(), bound); });
+    }
+  } else { // no symbols
+    return bound();
+  }
+}
+
 }; // namespace core
