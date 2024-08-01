@@ -2497,17 +2497,21 @@ void compile_throw(T_sp tag, T_sp rform, Lexenv_sp env, const Context ctxt) {
 
 void compile_unwind_protect(T_sp protect, List_sp cleanup,
                             Lexenv_sp env, const Context ctxt) {
-  // Make the cleanup closure.
-  // Duplicates a bit of code from compile_function.
-  Cfunction_sp cleanupt = compile_lambda(nil<T_O>(), Cons_O::createList(Cons_O::create(cl::_sym_progn, cleanup)), env, ctxt.module(), ctxt.source_info());
-  ComplexVector_T_sp closed = cleanupt->closed();
-  for (size_t i = 0; i < closed->length(); ++i)
-    ctxt.reference_lexical_info((*closed)[i].as_assert<LexicalInfo_O>());
-  // Actual protect instruction
-  ctxt.assemble1(vm_protect, ctxt.cfunction_index(cleanupt));
-  // and the body...
-  compile_form(protect, env, ctxt.sub_de(cl::_sym_unwind_protect));
-  ctxt.assemble0(vm_cleanup);
+  if (cleanup.nilp()) { // trivial
+    compile_form(protect, env, ctxt);
+  } else {
+    // Make the cleanup closure.
+    // Duplicates a bit of code from compile_function.
+    Cfunction_sp cleanupt = compile_lambda(nil<T_O>(), Cons_O::createList(Cons_O::create(cl::_sym_progn, cleanup)), env, ctxt.module(), ctxt.source_info());
+    ComplexVector_T_sp closed = cleanupt->closed();
+    for (size_t i = 0; i < closed->length(); ++i)
+      ctxt.reference_lexical_info((*closed)[i].as_assert<LexicalInfo_O>());
+    // Actual protect instruction
+    ctxt.assemble1(vm_protect, ctxt.cfunction_index(cleanupt));
+    // and the body...
+    compile_form(protect, env, ctxt.sub_de(cl::_sym_unwind_protect));
+    ctxt.assemble0(vm_cleanup);
+  }
 }
 
 void compile_progv(T_sp syms, T_sp vals, List_sp body, Lexenv_sp env, const Context ctxt) {
