@@ -2517,8 +2517,8 @@ void compile_unwind_protect(T_sp protect, List_sp cleanup,
 void compile_progv(T_sp syms, T_sp vals, List_sp body, Lexenv_sp env, const Context ctxt) {
   compile_form(syms, env, ctxt.sub_receiving(1));
   compile_form(vals, env, ctxt.sub_receiving(1));
-  ctxt.assemble0(vm_progv);
-  compile_progn(body, env, ctxt);
+  ctxt.assemble1(vm_progv, ctxt.env_index());
+  compile_progn(body, env, ctxt.sub_de(clasp_make_fixnum(1)));
   ctxt.emit_unbind(1);
 }
 
@@ -2732,6 +2732,8 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
     compile_throw(oCar(rest), oCadr(rest), env, context);
   else if (head == cl::_sym_unwind_protect)
     compile_unwind_protect(oCar(rest), oCdr(rest), env, context);
+  else if (head == cl::_sym_progv)
+    compile_progv(oCar(rest), oCadr(rest), oCddr(rest), env, context);
   // basic optimization
   else if (head == cl::_sym_funcall
            // Do a basic syntax check so that (funcall) fails properly.

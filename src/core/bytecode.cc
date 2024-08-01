@@ -850,7 +850,19 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       vm._stackPointer = sp;
       // This return value is not actually used - we're just returning from
       // a bytecode_vm recursively invoked by vm_special_bind above.
+      // (or vm_progv)
       return gctools::return_type(nil<T_O>().raw_(), 0);
+    }
+    case vm_progv: {
+      uint8_t c = *(++pc); // environment
+      DBG_VM1("progv %" PRIu8 "\n", c);
+      T_sp vals((gctools::Tagged)(vm.pop(sp)));
+      T_sp vars((gctools::Tagged)(vm.pop(sp)));
+      vm._pc = ++pc;
+      fprogv(vars, vals, [&]() { return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args); });
+      sp = vm._stackPointer;
+      pc = vm._pc;
+      break;
     }
     case vm_fdefinition: {
       // We have function cells in the literals vector. While these are
@@ -1398,6 +1410,18 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc++;
     break;
   }
+  case vm_progv: {
+    uint8_t low = *(++pc);
+    uint16_t c = low + (*(++pc) << 8);
+    DBG_VM1("long progv %" PRIu16 "\n", c);
+    T_sp vals((gctools::Tagged)(vm.pop(sp)));
+    T_sp vars((gctools::Tagged)(vm.pop(sp)));
+    vm._pc = ++pc;
+    fprogv(vars, vals, [&]() { return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args); });
+    sp = vm._stackPointer;
+    pc = vm._pc;
+    break;
+  }    
   case vm_fdesignator: {
     uint8_t low = *(++pc);
     uint16_t n = low + (*(++pc) << 8);

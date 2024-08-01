@@ -85,7 +85,7 @@
     ("symbol-value" 49 ((constant-arg 1)) ((constant-arg 2)))
     ("symbol-value-set" 50 ((constant-arg 1)) ((constant-arg 2)))
     ("unbind" 51)
-    ("progv" 52)
+    ("progv" 52 ((constant-arg 1)) ((constant-arg 2)))
     ("fdefinition" 53 ((constant-arg 1)) ((constant-arg 2)))
     ("nil" 54)
     ("eq" 55)
