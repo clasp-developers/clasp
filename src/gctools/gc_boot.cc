@@ -70,6 +70,7 @@ void dump_data_types(std::ostream& fout, const std::string& indent) {
   DTNAME(ctype_long, "long", sizeof(long));
   DTNAME(ctype_long_long, "long_long", sizeof(long long));
   DTNAME(ctype_char, "char", sizeof(char));
+  DTNAME(ctype_char32_t, "char32_t", sizeof(char32_t));
   DTNAME(ctype__Bool, "_Bool", sizeof(bool));
   DTNAME(ctype_enum_core__StreamMode, "enum_core__StreamMode", sizeof(int));
   DTNAME(ctype_const_char_ptr, "const_char_ptr", sizeof(const char*));

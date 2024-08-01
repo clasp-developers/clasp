@@ -66,7 +66,7 @@
 #define LTV_DI_OP_DECLS 3
 #define LTV_DI_OP_THE 4
 #define LTV_DI_OP_BLOCK 5
-#define LTV_DI_OP_EXIT 6
+#define LTV_DI_OP_CATCH 6
 #define LTV_DI_OP_MACRO 7
 #define LTV_DI_OP_IF 8
 #define LTV_DI_OP_TAGBODY 9
@@ -832,12 +832,6 @@ struct loadltv {
     return BytecodeAstBlock_O::make(start, end, name, receiving);
   }
 
-  T_sp di_op_exit() {
-    Integer_sp start = Integer_O::create(read_u32()), end = Integer_O::create(read_u32());
-    int32_t receiving = read_s32();
-    return BytecodeAstExit_O::make(start, end, receiving);
-  }
-
   T_sp di_op_macro() {
     Integer_sp start = Integer_O::create(read_u32()), end = Integer_O::create(read_u32());
     T_sp macro_name = get_ltv(read_index());
@@ -886,9 +880,6 @@ struct loadltv {
         break;
       case LTV_DI_OP_BLOCK:
         vargs.push_back(di_op_block());
-        break;
-      case LTV_DI_OP_EXIT:
-        vargs.push_back(di_op_exit());
         break;
       case LTV_DI_OP_MACRO:
         vargs.push_back(di_op_macro());

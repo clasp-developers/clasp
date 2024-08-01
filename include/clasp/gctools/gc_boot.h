@@ -52,6 +52,7 @@ enum Data_types {
   ctype_long,
   ctype_long_long,
   ctype_char,
+  ctype_char32_t,
   ctype__Bool,
   ctype_enum_core__StreamMode,
   ctype_core__FrameStamp,
