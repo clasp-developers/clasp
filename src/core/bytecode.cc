@@ -915,6 +915,41 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
+    case vm_protect: {
+      uint8_t c = *(++pc);
+      DBG_VM("protect %" PRIu8 "\n", c);
+      // Build a closure - this works mostly like make_closure.
+      T_sp fn_sp((gctools::Tagged)literals[c]);
+      BytecodeSimpleFun_sp fn = fn_sp.as_assert<BytecodeSimpleFun_O>();
+      size_t nclosed = fn->environmentSize();
+      DBG_VM("  nclosed = %zu\n", nclosed);
+      // Technically we could avoid consing a closure when nclosed = 0
+      // but I don't know that it's worth the trouble.
+      Closure_sp cleanup = Closure_O::make_bytecode_closure(fn, nclosed);
+      vm.copyto(sp, nclosed, (T_O**)(cleanup->_Slots.data()));
+      vm.drop(sp, nclosed);
+      // Now stick it onto the dynamic environment.
+      vm._pc = ++pc;
+      T_mv result = funwind_protect([&]() {
+        return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
+      },
+        [&]() { eval::funcall(cleanup); });
+      // copied from vm_call - required to avoid the cleanup's values
+      // for... some reason. I'm not totally sure.
+      multipleValues.setN(result.raw_(), result.number_of_values());
+      sp = vm._stackPointer;
+      pc = vm._pc;
+      break;
+    }
+    case vm_cleanup: {
+      DBG_VM("cleanup\n");
+      vm._pc = pc + 1;
+      vm._stackPointer = sp;
+      // We need to return the actual current values, or at least
+      // their correct count, so that funwind_protect can save them.
+      size_t nvalues = multipleValues.getSize();
+      return gctools::return_type(multipleValues.valueGet(0, nvalues).raw_(), nvalues);
+    }
     case vm_encell: {
       // abbreviation for ref N; make-cell; set N
       uint8_t n = *(++pc);
@@ -1381,6 +1416,27 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     vm.push(sp, fun);
     VM_RECORD_PLAYBACK(fun, "long called-fdefinition");
     pc++;
+    break;
+  }
+  case vm_protect: {
+    uint8_t low = *(++pc);
+    uint16_t c = low + (*(++pc) << 8);
+    DBG_VM1("long protect %" PRIu16 "\n", c);
+    T_sp fn_sp((gctools::Tagged)literals[c]);
+    BytecodeSimpleFun_sp fn = fn_sp.as_assert<BytecodeSimpleFun_O>();
+    size_t nclosed = fn->environmentSize();
+    DBG_VM("  nclosed = %zu\n", nclosed);
+    Closure_sp cleanup = Closure_O::make_bytecode_closure(fn, nclosed);
+    vm.copyto(sp, nclosed, (T_O**)(cleanup->_Slots.data()));
+    vm.drop(sp, nclosed);
+    vm._pc = ++pc;
+    T_mv result = funwind_protect([&]() {
+      return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
+    },
+      [&]() { eval::funcall(cleanup); });
+    multipleValues.setN(result.raw_(), result.number_of_values());
+    sp = vm._stackPointer;
+    pc = vm._pc;
     break;
   }
   case vm_encell: {

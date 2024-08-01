@@ -2397,6 +2397,8 @@ static void compile_exit(LexicalInfo_sp exit_de, Label_sp exit, const Context co
         context.maybe_emit_entry_close(gc::As_unsafe<LexicalInfo_sp>(interde));
       else if (interde == cl::_sym_catch)
         context.assemble0(vm_catch_close);
+      else if (interde == cl::_sym_unwind_protect)
+        context.assemble0(vm_cleanup);
       else // must be a count of specials
         context.emit_unbind(interde.unsafe_fixnum());
     }
@@ -2491,6 +2493,21 @@ void compile_throw(T_sp tag, T_sp rform, Lexenv_sp env, const Context ctxt) {
   compile_form(tag, env, ctxt.sub_receiving(1));
   compile_form(rform, env, ctxt.sub_receiving(-1));
   ctxt.assemble0(vm_throw);
+}
+
+void compile_unwind_protect(T_sp protect, List_sp cleanup,
+                            Lexenv_sp env, const Context ctxt) {
+  // Make the cleanup closure.
+  // Duplicates a bit of code from compile_function.
+  Cfunction_sp cleanupt = compile_lambda(nil<T_O>(), Cons_O::createList(Cons_O::create(cl::_sym_progn, cleanup)), env, ctxt.module(), ctxt.source_info());
+  ComplexVector_T_sp closed = cleanupt->closed();
+  for (size_t i = 0; i < closed->length(); ++i)
+    ctxt.reference_lexical_info((*closed)[i].as_assert<LexicalInfo_O>());
+  // Actual protect instruction
+  ctxt.assemble1(vm_protect, ctxt.cfunction_index(cleanupt));
+  // and the body...
+  compile_form(protect, env, ctxt.sub_de(cl::_sym_unwind_protect));
+  ctxt.assemble0(vm_cleanup);
 }
 
 void compile_progv(T_sp syms, T_sp vals, List_sp body, Lexenv_sp env, const Context ctxt) {
@@ -2709,6 +2726,8 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
     compile_catch(oCar(rest), oCdr(rest), env, context);
   else if (head == cl::_sym_throw)
     compile_throw(oCar(rest), oCadr(rest), env, context);
+  else if (head == cl::_sym_unwind_protect)
+    compile_unwind_protect(oCar(rest), oCdr(rest), env, context);
   // basic optimization
   else if (head == cl::_sym_funcall
            // Do a basic syntax check so that (funcall) fails properly.
