@@ -272,7 +272,7 @@ public:
 
 };
 
-// Information about a BLOCK form.
+// Information about a BLOCK (or, despite the name, CATCH) form.
 // START and END delineate the block's extent.
 // RECEIVING indicates what values the block returns.
 FORWARD(BytecodeAstBlock);
