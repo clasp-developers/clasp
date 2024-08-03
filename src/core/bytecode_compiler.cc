@@ -2475,9 +2475,12 @@ void compile_catch(T_sp tag, List_sp body, Lexenv_sp env, const Context ctxt) {
   compile_form(tag, env, ctxt.sub_receiving(1));
   Label_sp target = Label_O::make();
   Label_sp normal_label = Label_O::make();
+  Label_sp start = Label_O::make();
   // We force multiple values, as with block.
   bool r1p = ctxt.receiving() == 1;
   ctxt.emit_catch(target);
+  start->contextualize(ctxt);
+  ctxt.push_debug_info(BytecodeAstBlock_O::make(start, target, cl::_sym_catch, ctxt.receiving()));
   compile_progn(body, env, ctxt.sub_de(cl::_sym_catch));
   ctxt.assemble0(vm_catch_close);
   if (r1p)
