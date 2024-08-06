@@ -41,24 +41,32 @@ has been initially provided.")
 
 ;;;; PROVIDE and REQUIRE
 
+(defun normalize-module-name (module-name)
+  (let ((name (string module-name)))
+    (or (find name '("asdf" "uiop" "sockets" "sb-bsd-sockets") :test #'string-equal)
+        name)))
+
 (defun provide (module-name)
   "Adds a new module name to *MODULES* indicating that it has been loaded.
 Module-name is a string designator"
-  (let ((module-as-string (string module-name)))
-    (pushnew module-as-string *modules* :test #'string=)
-    (when (and (find-package :asdf)
-               (string= "ASDF" (string-upcase module-as-string)))
-      (let ((find-system (find-symbol "FIND-SYSTEM" :asdf))
-            (register-immutable-system (find-symbol (if (ext:getenv "CLASP_MUTABLE_SYSTEMS")
-                                                        "REGISTER-PRELOADED-SYSTEM"
-                                                        "REGISTER-IMMUTABLE-SYSTEM")
-                                                    :asdf)))
-        (dolist (name *primary-systems*)
-          (funcall find-system name nil))
-        (dolist (args *immutable-systems*)
-          (apply register-immutable-system args))
-        (setf *primary-systems* nil
-              *immutable-systems* nil))))
+  (let ((name (normalize-module-name module-name)))
+    (unless (member name *modules* :test #'string=)
+      (push name *modules*)
+      (when (and (find-package :asdf)
+                 (string= "asdf" name))
+        (let ((find-system (find-symbol "FIND-SYSTEM" :asdf))
+              (register-immutable-system (find-symbol (if (ext:getenv "CLASP_MUTABLE_SYSTEMS")
+                                                          "REGISTER-PRELOADED-SYSTEM"
+                                                          "REGISTER-IMMUTABLE-SYSTEM")
+                                                      :asdf)))
+          (apply register-immutable-system
+                 (or (find "asdf" *immutable-systems*
+                           :test #'string-equal :key #'car)
+                     (list "asdf")))
+          (dolist (name *primary-systems*)
+            (funcall find-system name nil))
+          (dolist (args *immutable-systems*)
+            (apply register-immutable-system args))))))
   t)
 
 (defparameter *requiring* nil)
@@ -74,7 +82,7 @@ ext:*MODULE-PROVIDER-FUNCTIONS* are called in order with MODULE-NAME
 as an argument, until one of them returns non-NIL.  User code is
 responsible for calling PROVIDE to indicate a successful load of the
 module."
-  (let ((name (string module-name)))
+  (let ((name (normalize-module-name module-name)))
     (when (member name *requiring* :test #'string=)
       (require-error "~@<Could not ~S ~A: circularity detected. Please check ~
            your configuration.~:@>" 'require module-name))
