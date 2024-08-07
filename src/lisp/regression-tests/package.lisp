@@ -182,10 +182,10 @@
    (handler-bind ((error #'(lambda(c)
                              (declare (ignore c))
                              (invoke-restart 'continue))))
-     (export sym (find-package :core)))
+      (export sym (find-package :cl-user)))
    (multiple-value-bind
          (symbol status)
-       (find-symbol (symbol-name sym) (find-package :core))
+       (find-symbol (symbol-name sym) (find-package :cl-user))
      (and symbol (eq :external status)))))
 
 (defpackage #:foo-bar-4
@@ -332,7 +332,8 @@
        (sname "TEST") (rname "TSET")
        (s0 (intern sname nc0)) (s1 (intern sname nc1))
        (r0 (intern rname nc0)) (r1 (intern rname nc1)))
-  (test-true import-conflict-0
+
+   (test-true import-conflict-0
              (handler-case
                  (progn (import s1 nc0) nil)
                (ext:name-conflict (c)
@@ -351,7 +352,7 @@
                                 (return nil))))
                          (progn (import s1 nc0) nil))))
   ;; Resolving a conflict in favor of the new symbol
-  (test-true import-conflict-2
+   (test-true import-conflict-2
              (handler-bind
                  ((ext:name-conflict
                     (lambda (c)
@@ -361,13 +362,15 @@
                       (and (null (symbol-package s0))
                            (equal (multiple-value-list (find-symbol sname nc0))
                                   (list s1 :internal))))))
-  ;; Resolving a conflict in favor of the old symbol
+
+   ;; Resolving a conflict in favor of the old symbol
   (test-true import-conflict-3
              (handler-bind
                  ((ext:name-conflict
                     (lambda (c)
                       (invoke-restart (find-restart 'ext:resolve-conflict c) r0))))
-               (progn (import r1 nc0)
+               (progn (format t "NC0 is locked: ~s" (core:package-is-locked "NC0"))
+                      (import r1 nc0)
                       (equal (multiple-value-list (find-symbol rname nc0))
                              (list r0 :internal)))))
   (delete-package nc0) (delete-package nc1))
@@ -478,6 +481,7 @@
        (aname "A") (a0 (intern aname nc0)) (a1 (intern aname nc1))
        (bname "B") (b0 (intern bname nc0)) (b1 (intern bname nc1)))
   (export (list a1 b1) nc1)
+
   ;; Exactly two conflicts are signaled and resolvable
   (test-true use-package-conflict-0
         (let ((a-resolved nil) (b-resolved nil))
@@ -503,6 +507,7 @@
                              (t (return nil)))))))
               (use-package nc1 nc0))
             (and a-resolved b-resolved))))
+
   ;; a0, the old present symbol, was chosen: a0 shadows.
   (test-true use-package-conflict-1
         (and (equal (multiple-value-list (find-symbol aname nc0))
@@ -593,3 +598,88 @@
              (member s2 (package-shadowing-symbols chil))))
   (delete-package chil)
   (delete-package par0) (delete-package par1) (delete-package par2))
+
+
+;; package locking tests
+(defpackage "FOO")
+(defpackage "BAR")
+;; everything should error when locked
+(let ((sym (intern "BAR" "FOO")))
+  (core:package-lock "FOO")
+  (test locked_is_locked (core:package-is-locked "FOO") (T))
+  (test-expect-error locked-shadow (shadow sym "FOO") :type core:package-lock-violation)
+  (test-expect-error locked-import (import sym "FOO") :type core:package-lock-violation)
+  (test-expect-error locked-unintern (unintern sym "FOO") :type core:package-lock-violation)
+  (test-expect-error locked-export (export sym "FOO") :type core:package-lock-violation)
+  (test-expect-error locked-unexport (unexport sym "FOO") :type core:package-lock-violation)
+)
+(test-expect-error locked-use (use-package "BAR" "FOO") :type core:package-lock-violation)
+(test-expect-error locked-unuse (unuse-package "BAR" "FOO") :type core:package-lock-violation)
+(test-expect-error locked-rename (rename-package "FOO" "FAA" '("F")) :type core:package-lock-violation)
+(test-expect-error locked-delete (delete-package "FOO") :type core:package-lock-violation)
+(test-expect-error locked-add-nickname (ext:package-add-nickname "FOO" "FO") :type core:package-lock-violation)
+(test-expect-error locked-remove-nickname (ext:package-remove-nickname "FOO" "F") :type core:package-lock-violation)
+(test-expect-error locked-intern (intern "BAZ" "FOO") :type core:package-lock-violation)
+;; need symbol
+(core:package-unlock "FOO")
+(symbol-package 'foo)
+(intern "FOO" "FOO")
+;; symbol operations
+(core:package-lock "FOO")
+(test-expect-error locked-defvar (core::defvar foo::foo) :type core:package-lock-violation)
+(test-expect-error locked-defmacro (core::defmacro foo::foo (foo) (+ foo 1)) :type core:package-lock-violation)
+(test-expect-error locked-defparameter (core::defparameter foo::foo 5) :type core:package-lock-violation)
+(test-expect-error locked-defconstant (core::defconstant foo::foo 5) :type core:package-lock-violation)
+(test-expect-error locked-defun (core::defun foo::foo (foo) (+ foo 1)) :type core:package-lock-violation)
+(test-expect-error locked-dcm (core::define-compiler-macro foo::foo (&whole form arg)
+   (if (atom arg)
+       `(expt ,arg 2)
+       (case (car arg)
+         (square (if (= (length arg) 2)
+                     `(expt ,(nth 1 arg) 4)
+                     form))
+         (expt   (if (= (length arg) 3)
+                     (if (numberp (nth 2 arg))
+                         `(expt ,(nth 1 arg) ,(* 2 (nth 2 arg)))
+                         `(expt ,(nth 1 arg) (* 2 ,(nth 2 arg))))
+                     form))
+         (otherwise `(expt ,arg 2)))))
+                  :type core:package-lock-violation)
+
+;; should all work again when unlocked
+(core:package-unlock "FOO")
+(test unlocked_is_locked (core:package-is-locked "FOO") (NIL))
+(test-finishes unlocked-shadow (shadow 'foo::bar "FOO"))
+(test-finishes unlocked-import (import 'foo::bar "FOO"))
+(test-finishes unlocked-unintern (unintern 'foo::bar "FOO"))
+(test-finishes unlocked-export (export 'foo::bar "FOO"))
+(test-finishes unlocked-unexport (unexport 'foo::bar "FOO"))
+(test-finishes unlocked-use (use-package "BAR" "FOO"))
+(test-finishes unlocked-unuse (unuse-package "BAR" "FOO"))
+(test-finishes unlocked-rename (rename-package "FOO" "FAA" '("F")))
+(rename-package "FAA" "FOO" '("F"))
+(test-finishes unlocked-add-nickname (ext:package-add-nickname "FOO" "FO"))
+(test-finishes unlocked-remove-nickname (ext:package-remove-nickname "FOO" "FO"))
+(test-finishes unlocked-intern (intern "BAR" "FOO"))
+;; symbol operations
+(test-finishes unlocked_defvar (core::defvar foo::foo)) 
+(test-finishes unlocked_defmacro (core::defmacro foo::foo (foo) (+ foo 1)))
+(test-finishes unlocked_defparameter (core::defparameter foo::foo 5))
+(test-finishes unlocked_defconstant (core::defconstant foo::bar 5))
+(test-finishes unlocked_defun (core::defun foo::foo (foo) (+ foo 1))) 
+(test-finishes unlocked_dcm (core::define-compiler-macro foo::foo (&whole form arg)
+   (if (atom arg)
+       `(expt ,arg 2)
+       (case (car arg)
+         (square (if (= (length arg) 2)
+                     `(expt ,(nth 1 arg) 4)
+                     form))
+         (expt   (if (= (length arg) 3)
+                     (if (numberp (nth 2 arg))
+                         `(expt ,(nth 1 arg) ,(* 2 (nth 2 arg)))
+                         `(expt ,(nth 1 arg) (* 2 ,(nth 2 arg))))
+                     form))
+         (otherwise `(expt ,arg 2))))))
+
+;; delete last bc we're still using it before
+(test-finishes unlocked-delete (delete-package "FOO"))
