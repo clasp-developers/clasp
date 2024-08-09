@@ -2,15 +2,6 @@
 
 ;;; Misc
 
-(defparameter *debug-dtree* nil)
-#+(or)(defmacro dtree-log (fmt &rest args)
-  `(when *debug-dtree*
-     (format t ,fmt ,@args)))
-
-(defmacro dtree-log (fmt &rest args)
-  (declare (ignore fmt args))
-  nil)
-
 (defun insert-sorted (item lst &optional (test #'<) (key #'identity))
   (if (null lst)
       (list item)
@@ -124,21 +115,17 @@
 
 (defun bc-basic-tree (call-history specializer-profile)
   (assert (not (null call-history)))
-  (dtree-log "Entered bc-basic-tree call-history: ~a specializer-profile: ~a~%" (core:safe-repr call-history) (core::safe-repr specializer-profile))
   (let ((last-specialized (position nil specializer-profile :from-end t :test-not #'eq))
         (first-specialized (position-if #'identity specializer-profile)))
-    (dtree-log "A first-specialized ~a last-specialized ~a~%" first-specialized last-specialized)
     (let ((specializer-indices (when (and (integerp first-specialized) (integerp last-specialized))
                                  (loop for index from first-specialized to last-specialized
                                      when (elt specializer-profile index)
                                        collect index))))
-      (dtree-log "B specializer-indices ~s~%" specializer-indices)
       (when (null last-specialized)
         ;; no specialization - we go immediately to the outcome
         ;; (we could assert all outcomes are identical)
         (return-from bc-basic-tree (values (cdr (first call-history)) 0)))
       ;; usual case
-      (dtree-log "C~%")
       (loop with result = (make-test :index (car specializer-indices))
             with specialized-length = (1+ last-specialized)
             for (specializers . outcome) in call-history
