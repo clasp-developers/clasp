@@ -132,7 +132,6 @@
      &aux (gfun-name (or (core:function-name gfun) name :anonymous)))
   (declare (ignore slot-names))
   ;; Check the validity of several fields.
-  (mlog "standard.lisp::shared-initialize:before instance -> {} l-l-p -> {}  lambda-list -> {}%N" (core:safe-repr gfun) l-l-p (core:safe-repr lambda-list))
   (when a-o-p
     (unless l-l-p
       (core:simple-program-error "When defining generic function ~A
@@ -184,16 +183,13 @@ Not a valid documentation object ~A"
        &allow-other-keys)
   (declare (ignore slot-names argument-precedence-order)
            (core:lambda-name shared-initialize.generic-function))
-  (mlog "generic.lisp::shared-initialize :after entered gfun -> {} lambda-list -> {}%N" (core:safe-repr gfun) (core:safe-repr lambda-list))
   ;; Coerce a method combination if required.
   (let ((combination (generic-function-method-combination gfun)))
     (unless (typep combination 'method-combination)
       (setf (%generic-function-method-combination gfun)
 	    (find-method-combination gfun (first combination) (rest combination)))))
   ;; If we have a new lambda list but no argument precedence, default the latter.
-  (mlog "generic.lisp::shared-initialize :after l-l-p -> {}  (not a-o-p) -> {}%N" (core:safe-repr l-l-p) (core:safe-repr (not a-o-p)))
   (when (and l-l-p (not a-o-p))
-    (mlog "generic.lisp::shared-initialize :after (lambda-list-required-arguments lambda-list)->{}%N" (core:safe-repr (lambda-list-required-arguments lambda-list)))
     (setf (%generic-function-argument-precedence-order gfun)
 	  (lambda-list-required-arguments lambda-list)))
   ;; If we have a new name, set the internal name.
@@ -231,7 +227,6 @@ Not a valid documentation object ~A"
   (invalidate-discriminating-function gfun))
 
 (defmethod reinitialize-instance :after ((gfun standard-generic-function) &rest initargs)
-  (mlog "generic.lisp::reinitialize-instance :after initargs -> {}%N" (core:safe-repr initargs))
   (update-dependents gfun initargs)
   ;; Check if the redefinition is trivial.
   ;; I am not sure of the fine details here. What happens if you reinitialize-instance
@@ -262,18 +257,14 @@ Not a valid documentation object ~A"
        (generic-function-class (class-of gfun) gfcp)
        (delete-methods nil)
        &allow-other-keys)
-  (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> {}  name -> {} args -> {}%N" gfun name args)
   ;; modify the existing object
   (setf args (copy-list args))
   (remf args :generic-function-class)
   (remf args :declare)
   (remf args :environment)
   (remf args :delete-methods)
-  (mlog "In ensure-generic-function-using-class B%N")
-
   (when (symbolp generic-function-class)
     (setf generic-function-class (find-class generic-function-class)))
-  (mlog "In ensure-generic-function-using-class C%N")
   (when gfcp
     ;; ANSI DEFGENERIC talks about the possibility of change-class-ing a
     ;; generic function, but AMOP specifically rules this possibility out.
@@ -281,21 +272,15 @@ Not a valid documentation object ~A"
     (unless (eq generic-function-class (class-of gfun))
       (error "Cannot change the class of generic function ~a from ~a to ~a. See AMOP, ENSURE-GENERIC-FUNCTION-USING-CLASS."
              name (class-name (class-of gfun)) (class-name generic-function-class))))
-  (mlog "In ensure-generic-function-using-class D%N")
   (when (and method-class-p (symbolp method-class))
     (setf args (list* :method-class (find-class method-class) args)))
-  (mlog "In ensure-generic-function-using-class E%N")
   (when delete-methods
     (dolist (m (copy-list (generic-function-methods gfun)))
       (when (getf (method-plist m) :method-from-defgeneric-p)
 	(remove-method gfun m))))
-  (mlog "In ensure-generic-function-using-class F%N")
   (if (eq (class-of gfun) generic-function-class)
-      (progn
-        (mlog "In ensure-generic-function-using-class F: About to reinitialize-instance args->{}%N" (core:safe-repr args))
-	(apply #'reinitialize-instance gfun :name name args))
-      (progn
-	(apply #'change-class gfun generic-function-class :name name args))))
+      (apply #'reinitialize-instance gfun :name name args)
+      (apply #'change-class gfun generic-function-class :name name args)))
 
 (defmethod ensure-generic-function-using-class
     ((gfun null) name &rest args &key
@@ -304,7 +289,6 @@ Not a valid documentation object ~A"
                                    (delete-methods nil)
                                    &allow-other-keys)
   (declare (ignore delete-methods gfun))
-  (mlog "In ensure-generic-function-using-class (gfun null) gfun -> {}  name -> {} args -> {}%N" gfun name args)
   ;; else create a new generic function object
   (setf args (copy-list args))
   (remf args :generic-function-class)
