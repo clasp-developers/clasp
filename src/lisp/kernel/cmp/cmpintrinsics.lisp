@@ -634,19 +634,13 @@ Boehm and MPS use a single pointer"
 ;; Parse the function arguments into a calling-convention
 
 (defun initialize-calling-convention (llvm-function arity &key debug-on cleavir-lambda-list-analysis rest-alloc)
-  (cmp-log "llvm-function: {}%N" llvm-function)
   (let ((arguments (llvm-sys:get-argument-list llvm-function)))
-    (cmp-log "llvm-function arguments: {}%N" (llvm-sys:get-argument-list llvm-function))
-    (cmp-log "llvm-function isVarArg: {}%N" (llvm-sys:is-var-arg llvm-function))
     (let ((register-save-area* (when debug-on (alloca-register-save-area arity :label "register-save-area")))
           (closure (first arguments)))
-      (cmp-log "A%N")
       (unless (first arguments)
         (error "initialize-calling-convention for arguments ~a - the closure is NIL" arguments))
-      (cmp-log "A%N")
       (cond
         ((eq arity :general-entry)
-         (cmp-log "B%N")
          (let* ((nargs (second arguments))
                 (args (third arguments))
                 (vaslist* (alloca-vaslist)))
@@ -694,8 +688,6 @@ Boehm and MPS use a single pointer"
 
 ;; (Maybe) generate code to store registers in memory. Return value unspecified.  
 (defun maybe-spill-to-register-save-area (arity register-save-area* registers)
-  (cmp-log "maybe-spill-to-register-save-area register-save-area* -> {}%N" register-save-area*)
-  (cmp-log "maybe-spill-to-register-save-area registers -> {}%N" registers)
   (when register-save-area*
     (let ((words (irc-arity-info arity)))
       (flet ((spill-reg (idx reg addr-name)
@@ -1117,7 +1109,6 @@ and initialize it with an array consisting of one function pointer."
     (codegen-shutdown module shutdown-function-name gcroots-in-module)
     (make-boot-function-global-variable
      module startup-shutdown-id :position startup-shutdown-id)
-    (cmp-log-dump-module *the-module*)
     (values)))
 
 
@@ -1169,7 +1160,6 @@ It has appending linkage.")
                               "-" name-suffix)
                        :type "ll"
                        :defaults full-directory)))
-    (cmp-log "Dumping module to {}%N" output-path)
     (ensure-directories-exist output-path)
     output-path))
 
@@ -1216,7 +1206,6 @@ they are dumped into /tmp"
   "If called under COMPILE-FILE the modules are dumped into the
 same directory as the COMPILE-FILE output.  If called under COMPILE
 they are dumped into /tmp"
-  (cmp-log "About to dump module - {}%N" name-modifier)
   (if *compile-file-output-pathname*
       (compile-file-quick-module-dump module name-modifier *compile-file-debug-dump-module*)
       (compile-quick-module-dump module name-modifier *compile-debug-dump-module*)))

@@ -176,23 +176,16 @@ Compile a Lisp source stream and return a corresponding LLVM module."
          (module (llvm-create-module name))
          run-all-name)
     (unless module (error "module is NIL"))
-    (cmp-log "About to with-module%N")
     (with-module (:module module
                   :optimize (when optimize #'llvm-sys:optimize-module)
                   :optimize-level optimize-level)
       ;; (1) Generate the code
-      (cmp-log "About to with-debug-info-generator%N")
       (with-debug-info-generator (:module *the-module*
                                   :pathname *compile-file-source-debug-pathname*)
-        (cmp-log "About to with-make-new-run-all%N")
         (with-make-new-run-all (run-all-function name)
-          (cmp-log "About to with-literal-table%N")
           (with-literal-table (:id 0)
-            (cmp-log "About to loop-read-and-compile-file-forms%N")
             (loop-read-and-compile-file-forms source-sin environment))
           (setf run-all-name (llvm-sys:get-name run-all-function))))
-      (cmp-log "About to verify the module%N")
-      (cmp-log-dump-module *the-module*)
       (irc-verify-module-safe *the-module*)
       (quick-module-dump *the-module* "preoptimize")
       ;; (2) Add the CTOR next

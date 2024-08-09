@@ -80,11 +80,9 @@
     
 (defmacro with-dbg-compile-unit ((source-pathname) &rest body)
   (let ((path (gensym))
-        (file (gensym))
-        (dir-name (gensym)))
+        (file (gensym)))
     `(let* ((,path (pathname ,source-pathname))
             (,file *dbg-current-file*)
-            (,dir-name (directory-namestring ,path))
             (*dbg-function-metadata-cache* (make-hash-table :test #'equal))
             (*dbg-compile-unit* (llvm-sys:create-compile-unit
                                  *the-module-dibuilder* ; dibuilder
@@ -104,11 +102,6 @@
                                  "" ; 15 SysRoot (-isysroot value)
                                  "" ; 16 SDK
                                  )))
-       (declare (ignorable ,dir-name)) ; cmp-log may expand empty
-       (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: {}%N" *dbg-compile-unit*)
-       (cmp-log "with-dbg-compile-unit source-pathname: {}%N" ,source-pathname)
-       (cmp-log "with-dbg-compile-unit file-name: [{}]%N" ,file)
-       (cmp-log "with-dbg-compile-unit dir-name: [{}]%N" ,dir-name)
        ,@body)))
 
 (defun do-make-create-file-args (pathname logical-pathname)
@@ -220,7 +213,6 @@
        ,@body)))
                                              
 (defmacro with-dbg-function ((&key lineno function-type function) &rest body)
-  (cmp-log "Entered with-dbg-function%N")
   `(do-dbg-function
        (lambda () (progn ,@body))
      ,lineno ,function-type ,function))
@@ -238,7 +230,6 @@
                                                                      *dbg-current-scope*
                                                                      *dbg-current-file*
                                                                      lineno 0)))
-            (cmp-log "with-dbg-lexical-block%N")
             (funcall closure)))
         (funcall closure))))
   

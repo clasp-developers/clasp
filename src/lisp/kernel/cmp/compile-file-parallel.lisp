@@ -1,24 +1,6 @@
 
 (in-package :cmp)
 
-#+(or)
-(defmacro cf2-log (fmt &rest args)
-  `(format *error-output* ,fmt ,@args))
-(defmacro cf2-log (fmt &rest args) (declare (ignore fmt args)))
-
-#+(or)
-(progn
-  (defparameter *cfp-message-mutex* (mp:make-lock :name "message-mutex"))
-  (defmacro cfp-log (fmt &rest args)
-    `(unwind-protect
-          (progn
-            (mp:get-lock *cfp-message-mutex*)
-            (format *error-output* ,fmt ,@args)
-            (finish-output *error-output*))
-       (mp:giveup-lock *cfp-message-mutex*))))
-;;;#+(or)
-(defmacro cfp-log (fmt &rest args) (declare (ignore fmt args)))
-
 (defclass thread-pool ()
   ((%queue :initarg :queue :reader thread-pool-queue)
    (%threads :initarg :threads :reader thread-pool-threads)))
@@ -36,9 +18,7 @@
          (loop for job = (core:dequeue queue :timeout 1.0 :timeout-val nil)
                until (eq job :quit)
                when job
-                 do (cfp-log "Thread ~a working on ~s~%"
-                             (mp:process-name mp:*current-process*) job)
-                    (block nil
+                 do (block nil
                       (handler-bind
                           ((serious-condition
                              (lambda (e)
@@ -53,10 +33,7 @@
                              (lambda (n) (push n (job-notes job)) (muffle-note n)))
                            ((not (or ext:compiler-note serious-condition warning))
                              (lambda (c) (push c (job-other-conditions job)))))
-                        (apply function job arguments)))
-                    (cfp-log "Thread ~a done with job~%"
-                             (mp:process-name mp:*current-process*)))
-      (cfp-log "Leaving thread ~a~%" (mp:process-name mp:*current-process*)))))
+                        (apply function job arguments)))))))
 
 (defgeneric report-job-conditions (job)
   (:method ((job job))
@@ -96,15 +73,12 @@
 (defun thread-pool-quit (pool)
   (loop with queue = (thread-pool-queue pool)
         for thread in (thread-pool-threads pool)
-        do (cfp-log "Sending two :quit (why not?) for thread ~a~%"
-                    (mp:process-name thread))
-           (core:atomic-enqueue queue :quit)
+        do (core:atomic-enqueue queue :quit)
            (core:atomic-enqueue queue :quit)))
 
 (defun thread-pool-join (pool)
   (loop for thread in (thread-pool-threads pool)
-        do (mp:process-join thread)
-           (cfp-log "Process-join of thread ~a~%" (mp:process-name thread))))
+        do (mp:process-join thread)))
 
 ;;;
 
@@ -175,8 +149,6 @@
           (make-boot-function-global-variable module run-all-function
                                                     :position (ast-job-form-index job)
                                                     )))
-      (cmp-log "About to verify the module%N")
-      (cmp-log-dump-module module)
       (irc-verify-module-safe module)
       (quick-module-dump module (format nil "preoptimize~a" (ast-job-form-index job)))
       ;; ALWAYS link the builtins in, inline them and then remove them.
@@ -272,7 +244,6 @@ multithreaded performance that we should explore."
                                 'cl:compile-file)
          #+(or cclasp eclasp)(eclector.reader:*client* cmp:*cst-client*)
          ast-jobs
-         (_ (cfp-log "Starting the pool of threads~%"))
          (job-args `(:optimize ,optimize :optimize-level ,optimize-level
                      :intermediate-output-type ,intermediate-output-type))
          (pool (make-thread-pool (if compile-from-module

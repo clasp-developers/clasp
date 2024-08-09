@@ -106,48 +106,10 @@ Options are :tagbody :go :all :eh-landing-pads
   (setq *compile-debug-dump-module* t)
   (core:fmt t "!%N!%N!\n!  Turning on compiler debugging\n!\n!\n!\n"))
 
-
-;;#+(or)
-(progn
-  (defmacro debug-print-i32 (num) (declare (ignore num)) nil)
-  (defmacro cmp-log-dump-function (fn) (declare (ignore fn)) nil)
-  (defmacro cmp-log-dump-module (fn) (declare (ignore fn)) nil)
-  (defmacro cmp-log (fmt &rest args) (declare (ignore fmt args)) nil)
-  (defun is-debug-compiler-on () nil))
-
 (defvar *suppress-llvm-output* nil)
 
 ;; List of function names which have been declared NOTINLINE.
 (defvar *notinlines* nil)
-
-#+(or)
-(progn
-  (eval-when (:compile-toplevel :load-toplevel :execute)
-    (core:fmt *error-output* "!%N!%N!   WARNING - cmp-log (bclasp compiler debugging) is on - Disable the macros in cmpsetup.lisp\n!\n!\n!\n"))
-  (defun is-debug-compiler-on ()
-    *debug-compiler*)
-  (defmacro debug-print-i32 (num)
-    `(if (is-debug-compiler-on)
-	 (irc-intrinsic "debugPrintI32" (jit-constant-i32 ,num))
-	 nil))
-  (defmacro cmp-log (fmt &rest args)
-      `(if (is-debug-compiler-on)
-           (progn
-             (core:fmt t "CMP-LOG ")
-             (core:fmt t ,fmt ,@args))
-           nil)))
-
-(defmacro cmp-log-compile-file-dump-module (module &optional (name-modifier ""))
-  `(when *debug-compiler*
-     (compile-file-quick-module-dump ,module ,name-modifier)))
-
-(defmacro cmp-log-dump-function (fn) (declare (ignore fn)) nil)
-
-(defmacro cmp-log-dump-module (module)
-  `(if (is-debug-compiler-on)
-       (llvm-sys:dump-module ,module)
-       nil))
-
 
 ;; When Cleavir is installed set the value of *cleavir-compile-hook* to use it to compile forms
 ;; It expects a function of one argument (lambda (form) ...) that will generate code in the

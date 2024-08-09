@@ -638,8 +638,6 @@ representing a tagged fixnum."
 
 (defun irc-prev-inst-terminator-inst-p ()
   (let ((cur-block (irc-get-insert-block)))
-    (cmp-log "irc-prev-inst-terminator-inst-p dumping current block:%N")
-    (cmp-log "    cur-block -> {}%N" cur-block)
     (if cur-block
 	(if (= (llvm-sys:basic-block-size cur-block) 0)
 	    nil
@@ -817,7 +815,6 @@ Otherwise do a variable shift."
 
 (defun irc-phi-add-incoming (phi-node value basic-block)
   (unless value
-    (cmp-log-dump-module *the-module*)
     (error "value is NULL for phi-node ~a basic-block ~a" phi-node basic-block))
   (llvm-sys:add-incoming phi-node value basic-block))
 
@@ -1051,7 +1048,6 @@ function-description - for debugging."
   ;; MULTIPLE-ENTRY-POINT first return value is list of entry points
   (let ((rev-xep-aritys '()))
     (dolist (arity (list* :general-entry (subseq (list 0 1 2 3 4 5 6 7 8) +entry-point-arity-begin+ +entry-point-arity-end+)))
-      (cmp-log "Creating xep function for {}%N" arity)
       (let* ((xep-function-name (concatenate 'string function-name (format nil "-xep~a" (if (eq arity :general-entry) "" arity))))
              (fn (if (generate-function-for-arity-p arity cleavir-lambda-list-analysis)
                      (let* ((function-type (fn-prototype arity))
@@ -1066,7 +1062,6 @@ function-description - for debugging."
                      ))
              (xep-arity (make-xep-arity :arity arity :function-or-placeholder fn)))
         (push xep-arity rev-xep-aritys)))
-    (cmp-log "Created xep-arities%N")
     (let* ((xep-aritys (nreverse rev-xep-aritys))
            (entry-point-reference (irc-create-global-entry-point-reference xep-aritys
                                                                            module
@@ -1077,7 +1072,6 @@ function-description - for debugging."
                                              :arities xep-aritys
                                              :entry-point-reference entry-point-reference
                                              :local-function local-function)))
-      (cmp-log "Created entry-point-info {}%N" entry-point-info)
       entry-point-info)))
 
 (defun irc-pointer-cast (from totype &optional (label ""))
@@ -1105,9 +1099,7 @@ function-description - for debugging."
 (defmacro with-irbuilder ((irbuilder) &rest code)
   "Set *irbuilder* to the given IRBuilder"
   `(let ((*irbuilder* ,irbuilder))
-     (cmp-log "Switching to irbuilder --> {}%N" (core:fmt nil "{}" *irbuilder*))
-     (multiple-value-prog1 (progn ,@code)
-       (cmp-log "Leaving irbuilder --> {}%N" (core:fmt nil "{}" *irbuilder*)))))
+     ,@code))
 
 ;;; ALLOCA functions
 
@@ -1253,9 +1245,7 @@ function-description - for debugging."
          (ep-bc (irc-bit-cast ep-i8** %i8**% "ep-bc"))
          (ep-arity-i8** (irc-typed-gep %i8*% ep-bc (list arity-index) (format nil "xep-~a-i8**" arity)))
          (ep-arity-i8*  (irc-typed-load %i8*% ep-arity-i8** (format nil "xep-~a-i8*" arity))))
-    (cmp-log "Got ep-arity-i8* -> {}%N" ep-arity-i8*)
-    (prog1 (irc-bit-cast ep-arity-i8* function-type "ep")
-      (cmp-log-dump-module *the-module*))))
+    (irc-bit-cast ep-arity-i8* function-type "ep")))
 
 
 ;;; Our present convention is that Lisp functions uniformly have
@@ -1444,17 +1434,14 @@ function-description - for debugging."
 
 (defun irc-verify-function (fn &optional (continue t))
   (when *verify-llvm-functions*
-    (cmp-log "At top of irc-verify-function  ---- about to verify-function - if there is a problem it will not return%N")
     (multiple-value-bind (failed-verify error-msg)
         (llvm-sys:verify-function fn)
-      (if failed-verify
-          (progn
-            (core:fmt t "!!!!!!!!!!! Function in module failed to verify !!!!!!!!!!!!!!!!!!!%N")
-            (core:fmt t "llvm::verifyFunction error[{}]%N" error-msg)
-            (if continue
-                (break "Error when trying to verify-function")
-                (error "Failed function verify")))
-          (cmp-log "--------------  Function verified OK!!!!!!!%N")))))
+      (when failed-verify
+        (core:fmt t "!!!!!!!!!!! Function in module failed to verify !!!!!!!!!!!!!!!!!!!%N")
+        (core:fmt t "llvm::verifyFunction error[{}]%N" error-msg)
+        (if continue
+            (break "Error when trying to verify-function")
+            (error "Failed function verify"))))))
 
 (defun declare-function-in-module (module dispatch-name primitive-info)
   (let ((return-ty (primitive-return-type primitive-info))

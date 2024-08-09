@@ -116,13 +116,6 @@
 
 (defparameter *nexti* 10000)
 
-#+(or)
-(defmacro blog (fmt &rest fargs)
-  `(core:fmt *error-output* ,fmt ,@fargs))
-(defmacro blog (fmt &rest fargs)
-  (declare (ignore fmt fargs))
-  nil)
-
 ;;; FOREIGN-CALL, FOREIGN-CALL-POINTER
 
 (defun function-type-create-on-the-fly (foreign-types)
