@@ -5,27 +5,23 @@
 (defmacro ext::lexical-var (name depth index)
   `(ext::lexical-var ,name ,depth ,index))
 
-;;; to work with fpe-exceptions
-(defun ext::get-fpe-parameters (traps all-traps)
-  (ext:with-current-source-form (traps)
-    (let ((result nil))
-      (dolist (trap all-traps)
-        (push trap result)
-        (push (if (find trap traps) nil t) result))
-      (reverse result))))
-
 (defmacro ext:with-float-traps-masked (traps &body body)
   (let ((previous (gensym "PREVIOUS"))
-        (all-traps '(:underflow :overflow :inexact :invalid :divide-by-zero :denormalized-operand)))
-    (unless (subsetp traps all-traps)
-      (warn "Unknown float traps ~a ignored" (set-difference traps all-traps)))
-    `(let ((,previous (core::get-current-fpe-mask)))
+        (mask (reduce (lambda (bits trap)
+                        (logior bits
+                                (ecase trap
+                                  (:underflow core:+fe-underflow+)
+                                  (:overflow core:+fe-overflow+)
+                                  (:invalid core:+fe-invalid+)
+                                  (:inexact core:+fe-inexact+)
+                                  (:divide-by-zero core:+fe-divbyzero+)
+                                  (:denormalized-operand 0))))
+                      traps
+                      :initial-value 0)))
+    `(let ((,previous (core:fe-disable-except ,mask)))
        (unwind-protect
-            (progn
-              (core::enable-fpe-masks
-               ,@(ext::get-fpe-parameters traps all-traps))
-               ,@body)
-              (core::set-current-fpe-mask ,previous)))))
+            (progn ,@body)
+         (core:fe-restore-except ,previous)))))
 
 ;;
 ;; Some helper macros for working with iterators

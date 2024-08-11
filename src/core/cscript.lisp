@@ -37,7 +37,6 @@
            #~"num_arith.cc"
            #~"numberToString.cc"
            #~"num_co.cc"
-           #~"fp_env.cc"
            #~"load.cc"
            #~"bignum.cc"
            #~"write_object.cc"

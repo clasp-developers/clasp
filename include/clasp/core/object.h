@@ -577,7 +577,8 @@ inline void clasp_sxhash(T_sp obj, HashGenerator& hg) {
     hg.addValue(obj.unsafe_fixnum());
     return;
   } else if (obj.single_floatp()) {
-    hg.addValue((gc::Fixnum)::std::abs((int)::floor(obj.unsafe_single_float())));
+    float value = obj.unsafe_single_float();
+    hg.addValue((std::fpclassify(value) == FP_ZERO) ? 0u : float_convert<float>::to_bits(value));
     return;
   } else if (obj.characterp()) {
     hg.addValue(obj.unsafe_character());
@@ -598,7 +599,8 @@ inline void clasp_sxhash(T_sp obj, Hash1Generator& hg) {
     hg.addValue(obj.unsafe_fixnum());
     return;
   } else if (obj.single_floatp()) {
-    hg.addValue((gc::Fixnum)::std::abs((int)::floor(obj.unsafe_single_float())));
+    float value = obj.unsafe_single_float();
+    hg.addValue((std::fpclassify(value) == FP_ZERO) ? 0u : float_convert<float>::to_bits(value));
     return;
   } else if (obj.characterp()) {
     hg.addValue(obj.unsafe_character());

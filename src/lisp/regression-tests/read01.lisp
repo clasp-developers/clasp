@@ -13,21 +13,23 @@
       ((1.111 1.111 1.111d0 1.111d0)))
 
 (test read-2
-      (with-output-to-string (*standard-output*)
-        (let ((*read-default-float-format* 'single-float)
-              (*print-readably* nil))
-          (print (read-from-string (format nil "12~40,2f" most-positive-single-float)))))
+      (ext:with-float-traps-masked (:invalid :overflow :underflow :divide-by-zero)
+        (with-output-to-string (*standard-output*)
+          (let ((*read-default-float-format* 'single-float)
+                (*print-readably* nil))
+            (print (read-from-string (format nil "12~40,2f" most-positive-single-float))))))
       ("
 #.ext:single-float-positive-infinity "))
 
 (test-true read-3
-           (string-equal
-            (concatenate 'string (string #\Newline)
-                         "#.ext:double-float-positive-infinity ")
-            (with-output-to-string (*standard-output*)
-              (let ((*read-default-float-format* 'double-float)
-                    (*print-readably* nil))
-                (print (read-from-string (format nil "12~308,2f" most-positive-double-float)))))))
+           (ext:with-float-traps-masked (:invalid :overflow :underflow :divide-by-zero)
+             (string-equal
+              (concatenate 'string (string #\Newline)
+                           "#.ext:double-float-positive-infinity ")
+              (with-output-to-string (*standard-output*)
+                (let ((*read-default-float-format* 'double-float)
+                      (*print-readably* nil))
+                  (print (read-from-string (format nil "12~308,2f" most-positive-double-float))))))))
 
 
 ;;; Reader-errors
@@ -379,9 +381,10 @@
     float)
 
 (test-type PRINT.SHORT-FLOAT.RANDOM.simplyfied
-      (let ((*read-base* 7))
-        (read-from-string "2.8821837e-39"))
-      float)
+           (ext:with-float-traps-masked (:invalid :overflow :underflow :divide-by-zero)
+             (let ((*read-base* 7))
+               (read-from-string "2.8821837e-39")))
+           float)
 
 #+kpoeck
 (test
@@ -396,24 +399,28 @@
          (write-to-string -59990859179/64657108615))))))
 
 (test-type PRINT.SINGLE-FLOAT.RANDOM.simplyfied.1
-    (let ((*READ-DEFAULT-FLOAT-FORMAT* 'SINGLE-FLOAT))
-      (read-from-string "1.8218674e-39"))
-    single-float)
+           (ext:with-float-traps-masked (:invalid :overflow :underflow :divide-by-zero)
+             (let ((*READ-DEFAULT-FLOAT-FORMAT* 'SINGLE-FLOAT))
+               (read-from-string "1.8218674e-39")))
+           single-float)
 
 (test-type PRINT.SINGLE-FLOAT.RANDOM.simplyfied.2
-    (let ((*READ-DEFAULT-FLOAT-FORMAT* 'DOUBLE-FLOAT))
-      (read-from-string "1.8218674e-39"))
-    double-float)
+           (ext:with-float-traps-masked (:invalid :overflow :underflow :divide-by-zero)
+             (let ((*READ-DEFAULT-FLOAT-FORMAT* 'DOUBLE-FLOAT))
+               (read-from-string "1.8218674e-39")))
+           double-float)
 
 (test-type PRINT.SINGLE-FLOAT.RANDOM.simplyfied.3
-    (let ((*READ-DEFAULT-FLOAT-FORMAT* 'short-float))
-      (read-from-string "1.8218674e-39"))
-    short-float)
+           (ext:with-float-traps-masked (:invalid :overflow :underflow :divide-by-zero)
+             (let ((*READ-DEFAULT-FLOAT-FORMAT* 'short-float))
+               (read-from-string "1.8218674e-39")))
+           short-float)
 
 (test-type PRINT.SINGLE-FLOAT.RANDOM.simplyfied.4
-    (let ((*READ-DEFAULT-FLOAT-FORMAT* 'LONG-FLOAT))
-      (read-from-string "1.8218674e-39"))
-    LONG-FLOAT)
+           (ext:with-float-traps-masked (:invalid :overflow :underflow :divide-by-zero)
+             (let ((*READ-DEFAULT-FLOAT-FORMAT* 'LONG-FLOAT))
+               (read-from-string "1.8218674e-39")))
+           LONG-FLOAT)
 
 (test-type PRINT.RATIOS.RANDOM.simplyfied.2
     (let ((num 16/13)
