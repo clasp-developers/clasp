@@ -563,6 +563,7 @@ void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
   OutputStream << "Total number of Libraries:                     " << std::setw(12) << cl__length(_lisp->_Roots._AllLibraries) << '\n';
   OutputStream << "Total number of ObjectFiles:                   " << std::setw(12) << cl__length(_lisp->_Roots._AllObjectFiles) << '\n';
   OutputStream << "Total number of CodeBlocks:                    " << std::setw(12) << cl__length(_lisp->_Roots._AllCodeBlocks) << '\n';
+#ifdef USE_PRECISE_GC
   OutputStream << "Total number of library Simple(Core)Fun:       " << std::setw(12) << gatherObjects._SimpleFunCount << '\n';
   if (gatherObjects._SimpleFunFailedDladdrCount>0) {
     OutputStream << "Total of library Simple(Core)Fun dladdr fails: " << std::setw(12) << gatherObjects._SimpleFunFailedDladdrCount << '\n';
@@ -571,6 +572,7 @@ void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
   if (gatherObjects._uniqueEntryPointsFailedDladdr.size()>0) {
     OutputStream << "Unique library Simple(Core)Fun dladdr fails:   " << std::setw(10) << gatherObjects._uniqueEntryPointsFailedDladdr.size() << '\n';
   }
+#endif
   delete static_ReachableClassKinds;
 }
 

@@ -57,6 +57,7 @@ enum Data_types {
   ctype_core__FrameStamp,
   ctype_const_char_ptr,
   ctype_size_t,
+  ctype_char32_t,
   ctype_opaque_ptr,
   CXX_FIXUP_OFFSET,
   ATOMIC_POD_OFFSET_unsigned_short,
