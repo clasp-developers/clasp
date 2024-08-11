@@ -400,7 +400,7 @@ private:
 
 public:
   static DoubleFloat_sp create(double nm) {
-    ASSERT_NOT_NAN(nm);
+    ENSURE_NOT_NAN(nm);
     auto v = gctools::GC<DoubleFloat_O>::allocate_with_default_constructor();
     v->set(nm);
     return v;
@@ -417,7 +417,7 @@ public:
   double get() const { return this->_Value; };
   Number_sp signum_() const override;
   Number_sp abs_() const override {
-    ASSERT_NOT_NAN(this->_Value);
+    ENSURE_NOT_NAN(this->_Value);
     return DoubleFloat_O::create(fabs(this->_Value));
   };
   bool isnan_() const override { return std::isnan(this->_Value); }; // NaN is supposed to be the only value that != itself!!!!

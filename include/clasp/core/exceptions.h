@@ -68,6 +68,7 @@ extern core::Symbol_sp& _sym_name;
 #define SIMPLE_WARN(...) core::eval::funcall(cl::_sym_warn, core::SimpleBaseString_O::make(fmt::format(__VA_ARGS__)))
 #define ERROR(_type_, _initializers_) lisp_error(_type_, _initializers_)
 #define SIMPLE_ERROR(...) ::core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::format(__VA_ARGS__))
+#define CLASP_ERROR(string, ...) ::core::lisp_error(::core::_sym_simpleProgramError, ::core::Cons_O::createList(kw::_sym_format_control, ::core::SimpleBaseString_O::make(string), kw::_sym_format_arguments, ::core::Cons_O::createList(__VA_ARGS__)))
 /*! Error for when an index is out of range - eg: beyond the end of a string */
 #define TYPE_ERROR_INDEX(_seq_, _idx_)                                                                                             \
   ERROR(cl::_sym_simpleTypeError,                                                                                                  \
@@ -465,7 +466,7 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
   if (!(x))                                                                                                                        \
   ::core::assert_failure(__FILE__, __LINE__, __FUNCTION__, #x)
 #define ASSERT(x) lisp_ASSERT(x)
-#define ASSERT_NOT_NAN(x) unlikely_if(std::isnan(x)) core::lisp_nan_error();
+#define ENSURE_NOT_NAN(x) unlikely_if(std::isnan(x)) core::lisp_floating_point_invalid_operation();
 #define ASSERT_DO(x)                                                                                                               \
   do {                                                                                                                             \
     x;                                                                                                                             \
@@ -528,7 +529,7 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
   {}
 #define ASSERT(x)                                                                                                                  \
   {}
-#define ASSERT_NOT_NAN(x)                                                                                                          \
+#define ENSURE_NOT_NAN(x)                                                                                                          \
   {}
 #define lisp_ASSERTP(l, x, e)                                                                                                      \
   {}

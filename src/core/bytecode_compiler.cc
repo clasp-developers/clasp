@@ -2266,8 +2266,10 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Contex
     }
     if (ctxt.receiving() == -1)
       ctxt.assemble0(vm_pop);
-  } else
-    UNREACHABLE();
+  } else if (std::holds_alternative<ConstantVarInfoV>(info)) {
+    // FIXME: Better error (warning?)
+    SIMPLE_ERROR("Cannot modify constant {}", var->__repr__());
+  } else UNREACHABLE();
 }
 
 void compile_setq(List_sp pairs, Lexenv_sp env, const Context ctxt) {
