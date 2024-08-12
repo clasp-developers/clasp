@@ -217,7 +217,7 @@
   (let ((old-rack (si:instance-rack instance))
         (new-rack (make-rack-for-class (class-of instance))))
     (multiple-value-bind (added-slots discarded-slots property-list)
-        (update-instance-aux (si:instance-rack instance) new-rack)
+        (update-instance-aux old-rack new-rack)
       (setf (si:instance-rack instance) new-rack)
       ;; If U-I-F-R-C signals an error or otherwise nonlocally exits, roll back
       ;; the instance. This does not seem to be required by the standard, but
