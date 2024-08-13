@@ -1135,12 +1135,14 @@ CL_DEFUN T_sp cl__fmakunbound(T_sp functionName) {
       if (dname.consp()) {
         Symbol_sp name = gc::As<Symbol_sp>(oCar(dname));
         if (name.notnilp() && oCdr(dname).nilp()) {
+          name->check_package_lock("fmakunbounding (setf ~s)");
           name->fmakunbound_setf();
           return functionName;
         }
       }
     }
   } else if (Symbol_sp sym = functionName.asOrNull<Symbol_O>()) {
+    sym->check_package_lock("fmakunbounding ~s");
     sym->fmakunbound();
     return sym;
   }
