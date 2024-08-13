@@ -1,13 +1,23 @@
 (in-package #:clasp-tests)
 
+;;; Make some temporary packages and delete them afterwards,
+;;; so that tests can be run in whatever order, or repeatedly, or etc.
+(defmacro with-packages ((&rest names) &body body)
+  `(let (,@(loop for name in names
+                 collect `(,name (make-package
+                                  (gensym (symbol-name ',name))))))
+     (unwind-protect (progn ,@body)
+       ,@(loop for name in names
+               ;; may have been deleted by body, which is ok
+               collect `(when (package-name ,name)
+                          (delete-package ,name))))))
+
 ;; Test for #433: unexport not accepting designators
-(let* ((package-name (symbol-name (gensym)))
-       (package (make-package package-name)))
-  (export (list (intern "FOO" package) (intern "BAR" package)) package)
-  (test-true unexport-designators
-        (unexport (list (find-symbol "FOO" package) (find-symbol "BAR" package))
-                  package-name))
-  (delete-package package))
+(with-packages (package)
+  (let ((syms (list (intern "FOO" package) (intern "BAR" package))))
+    (export syms package)
+    (test-true unexport-designators
+               (unexport syms (package-name package)))))
 
 ;; Test for #417: characters not working as package designators
 (let ((package (make-package "Z")))
@@ -599,87 +609,65 @@
   (delete-package chil)
   (delete-package par0) (delete-package par1) (delete-package par2))
 
-
-;; package locking tests
-(defpackage "FOO")
-(defpackage "BAR")
 ;; everything should error when locked
-(let ((sym (intern "BAR" "FOO")))
-  (core:package-lock "FOO")
-  (test locked_is_locked (core:package-is-locked "FOO") (T))
-  (test-expect-error locked-shadow (shadow sym "FOO") :type core:package-lock-violation)
-  (test-expect-error locked-import (import sym "FOO") :type core:package-lock-violation)
-  (test-expect-error locked-unintern (unintern sym "FOO") :type core:package-lock-violation)
-  (test-expect-error locked-export (export sym "FOO") :type core:package-lock-violation)
-  (test-expect-error locked-unexport (unexport sym "FOO") :type core:package-lock-violation)
-)
-(test-expect-error locked-use (use-package "BAR" "FOO") :type core:package-lock-violation)
-(test-expect-error locked-unuse (unuse-package "BAR" "FOO") :type core:package-lock-violation)
-(test-expect-error locked-rename (rename-package "FOO" "FAA" '("F")) :type core:package-lock-violation)
-(test-expect-error locked-delete (delete-package "FOO") :type core:package-lock-violation)
-(test-expect-error locked-add-nickname (ext:package-add-nickname "FOO" "FO") :type core:package-lock-violation)
-(test-expect-error locked-remove-nickname (ext:package-remove-nickname "FOO" "F") :type core:package-lock-violation)
-(test-expect-error locked-intern (intern "BAZ" "FOO") :type core:package-lock-violation)
-;; need symbol
-(core:package-unlock "FOO")
-(symbol-package 'foo)
-(intern "FOO" "FOO")
-;; symbol operations
-(core:package-lock "FOO")
-(test-expect-error locked-defvar (core::defvar foo::foo) :type core:package-lock-violation)
-(test-expect-error locked-defmacro (core::defmacro foo::foo (foo) (+ foo 1)) :type core:package-lock-violation)
-(test-expect-error locked-defparameter (core::defparameter foo::foo 5) :type core:package-lock-violation)
-(test-expect-error locked-defconstant (core::defconstant foo::foo 5) :type core:package-lock-violation)
-(test-expect-error locked-defun (core::defun foo::foo (foo) (+ foo 1)) :type core:package-lock-violation)
-(test-expect-error locked-dcm (core::define-compiler-macro foo::foo (&whole form arg)
-   (if (atom arg)
-       `(expt ,arg 2)
-       (case (car arg)
-         (square (if (= (length arg) 2)
-                     `(expt ,(nth 1 arg) 4)
-                     form))
-         (expt   (if (= (length arg) 3)
-                     (if (numberp (nth 2 arg))
-                         `(expt ,(nth 1 arg) ,(* 2 (nth 2 arg)))
-                         `(expt ,(nth 1 arg) (* 2 ,(nth 2 arg))))
-                     form))
-         (otherwise `(expt ,arg 2)))))
-                  :type core:package-lock-violation)
-
-;; should all work again when unlocked
-(core:package-unlock "FOO")
-(test unlocked_is_locked (core:package-is-locked "FOO") (NIL))
-(test-finishes unlocked-shadow (shadow 'foo::bar "FOO"))
-(test-finishes unlocked-import (import 'foo::bar "FOO"))
-(test-finishes unlocked-export (export 'foo::bar "FOO"))
-(test-finishes unlocked-unexport (unexport 'foo::bar "FOO"))
-(test-finishes unlocked-unintern (unintern 'foo::bar "FOO"))
-(test-finishes unlocked-use (use-package "BAR" "FOO"))
-(test-finishes unlocked-unuse (unuse-package "BAR" "FOO"))
-(test-finishes unlocked-rename (rename-package "FOO" "FAA" '("F")))
-(rename-package "FAA" "FOO" '("F"))
-(test-finishes unlocked-add-nickname (ext:package-add-nickname "FOO" "FO"))
-(test-finishes unlocked-remove-nickname (ext:package-remove-nickname "FOO" "FO"))
-(test-finishes unlocked-intern (intern "BAR" "FOO"))
-;; symbol operations
-(test-finishes unlocked_defvar (core::defvar foo::foo)) 
-(test-finishes unlocked_defmacro (core::defmacro foo::foo (foo) (+ foo 1)))
-(test-finishes unlocked_defparameter (core::defparameter foo::foo 5))
-(test-finishes unlocked_defconstant (core::defconstant foo::bar 5))
-(test-finishes unlocked_defun (core::defun foo::foo (foo) (+ foo 1))) 
-(test-finishes unlocked_dcm (core::define-compiler-macro foo::foo (&whole form arg)
-   (if (atom arg)
-       `(expt ,arg 2)
-       (case (car arg)
-         (square (if (= (length arg) 2)
-                     `(expt ,(nth 1 arg) 4)
-                     form))
-         (expt   (if (= (length arg) 3)
-                     (if (numberp (nth 2 arg))
-                         `(expt ,(nth 1 arg) ,(* 2 (nth 2 arg)))
-                         `(expt ,(nth 1 arg) (* 2 ,(nth 2 arg))))
-                     form))
-         (otherwise `(expt ,arg 2))))))
-
-;; delete last bc we're still using it before
-(test-finishes unlocked-delete (delete-package "FOO"))
+(with-packages (foo bar)
+  (let ((sym (intern "BAZ" foo)))
+    (setf (fdefinition sym) (lambda ())) ; for fmakunbound test
+    (core:package-lock foo)
+    (test locked_is_locked (core:package-is-locked foo) (T))
+    (macrolet ((test-violation (name form)
+                 `(test-expect-error ,name ,form
+                                     :type core:package-lock-violation)))
+      (test-violation locked-shadow (shadow sym foo))
+      (test-violation locked-import (import sym foo))
+      (test-violation locked-unintern (unintern sym foo))
+      (test-violation locked-export (export sym foo))
+      (test-violation locked-unexport (unexport sym foo))
+      (test-violation locked-use (use-package bar foo))
+      (test-violation locked-unuse (unuse-package bar foo))
+      (test-violation locked-rename (rename-package foo "FAA" '("F")))
+      (test-violation locked-delete (delete-package foo))
+      (test-violation locked-add-nickname
+                      (ext:package-add-nickname foo "FO"))
+      (test-violation locked-remove-nickname
+                      (ext:package-remove-nickname foo "F"))
+      (test-violation locked-intern (intern "BAZZZ" foo))
+      (test-violation locked-special (proclaim `(special ,sym)))
+      (test-violation locked-fdefinition
+                      (setf (fdefinition sym) (lambda ())))
+      (test-violation locked-fmakunbound (fmakunbound sym))
+      (test-violation locked-macro
+                      (setf (macro-function sym) (constantly nil)))
+      (test-violation locked-compiler-macro
+                      (setf (compiler-macro-function sym)
+                            (constantly nil)))
+      (test-violation locked-defconstant
+                      (eval `(defconstant ,sym 19))))
+    ;; Now test unlocking works.
+    (core:package-unlock foo)
+    (test unlocked_is_locked (core:package-is-locked foo) (NIL))
+    (test-finishes unlocked-shadow (shadow sym foo))
+    (test-finishes unlocked-import (import sym foo))
+    (test-finishes unlocked-export (export sym foo))
+    (test-finishes unlocked-unexport (unexport sym foo))
+    (test-finishes unlocked-unintern (unintern sym foo))
+    (test-finishes unlocked-use (use-package bar foo))
+    (test-finishes unlocked-unuse (unuse-package bar foo))
+    (test-finishes unlocked-rename (rename-package foo "FAA" '("F")))
+    (rename-package foo "FOO" '("F"))
+    (test-finishes unlocked-add-nickname (ext:package-add-nickname foo "FO"))
+    (test-finishes unlocked-remove-nickname (ext:package-remove-nickname foo "FO"))
+    (test-finishes unlocked-intern (intern "BAR" foo))
+    (test-finishes unlocked-special (proclaim `(special ,sym)))
+    (test-finishes unlocked-symbol-value
+                   (setf (symbol-value sym) 19))
+    (test-finishes unlocked-fdefinition
+                   (setf (fdefinition sym) (lambda ())))
+    (test-finishes unlocked-fmakunbound (fmakunbound sym))
+    (test-finishes unlocked-macro
+                   (setf (macro-function sym) (constantly nil)))
+    (test-finishes unlocked-compiler-macro
+                   (setf (compiler-macro-function sym)
+                         (constantly nil)))
+    ;; delete last bc we're still using it before
+    (test-finishes unlocked-delete (delete-package "FOO"))))
