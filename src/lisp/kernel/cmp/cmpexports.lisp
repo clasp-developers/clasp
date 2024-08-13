@@ -132,9 +132,6 @@
             calling-convention-vaslist.va-arg
             calling-convention-nargs
             calling-convention-register-args
-            cmp-log
-            cmp-log-dump-module
-            cmp-log-dump-function
             make-file-metadata
             make-function-metadata
             function-info

@@ -58,7 +58,6 @@
        (list (list #'update-instance-for-different-class
                    (list old-data new-data))
              (list #'shared-initialize (list new-data added-slots)))))
-    (mlog "change.lisp update-instance-for-different-class about to apply shared-initialize%N")
     (apply #'shared-initialize new-data added-slots initargs)))
 
 ;;; Mutate new-rack based on old-rack, for change-class.
@@ -178,7 +177,6 @@
      (list (list #'update-instance-for-redefined-class
                  (list instance added-slots discarded-slots property-list))
            (list #'shared-initialize (list instance added-slots)))))
-  (mlog "change.lisp update-instance-for-redefined-class about to apply shared-initialize%N")
   (apply #'shared-initialize instance added-slots initargs))
 
 ;;; This function works on racks directly rather than instances,
@@ -219,7 +217,7 @@
   (let ((old-rack (si:instance-rack instance))
         (new-rack (make-rack-for-class (class-of instance))))
     (multiple-value-bind (added-slots discarded-slots property-list)
-        (update-instance-aux (si:instance-rack instance) new-rack)
+        (update-instance-aux old-rack new-rack)
       (setf (si:instance-rack instance) new-rack)
       ;; If U-I-F-R-C signals an error or otherwise nonlocally exits, roll back
       ;; the instance. This does not seem to be required by the standard, but

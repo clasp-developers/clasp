@@ -174,11 +174,6 @@
         collect (call-method-aux gf nmethod)))
 
 (defun std-expand-apply-method (method method-arguments arguments env)
-  (mlog "combin.lisp:std-expand-apply-method method -> {} method-arguments -> {} arguments -> {} env -> {}%N"
-        (core:safe-repr method)
-        (core:safe-repr method-arguments)
-        (core:safe-repr arguments)
-        (core:safe-repr env))
   (destructuring-bind (&optional ((&rest next-methods))) method-arguments
     (let ((arg-info (argforms-to-arg-info arguments env)))
       (cond

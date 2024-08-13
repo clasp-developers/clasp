@@ -289,7 +289,6 @@
                     (format-directive-params first-semi)
                   (setf newline-string
                         (with-output-to-string (stream)
-                          (fmt-log "line 2609")
                           (setf args
                                 (interpret-directive-list stream
                                                           (pop segments)

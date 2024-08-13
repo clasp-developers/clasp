@@ -19,29 +19,10 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; For debugging this file
-;;; (Which happens a fair amount, because it's where CLOS begins use.)
-
-;;; This will print every form as its compiled
-#+mlog
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (format t "Starting fixup.lisp")
-  (setq *echo-repl-tpl-read* t)
-  (setq *load-print* t)
-  (setq *echo-repl-read* t))
-
-#+mlog
-(eval-when (:compile-toplevel :execute)
-  (setq core::*debug-dispatch* t))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Define generics for core functions.
 
 (defun function-to-method (name lambda-list specializers
                            &optional satiation-specializers (function (fdefinition name)))
-  (mlog "function-to-method: name -> {} specializers -> {}  lambda-list -> {}%N" name specializers lambda-list)
-  (mlog "function-to-method:  function -> {}%N" function)
   ;; since we still have method.lisp's add-method in place, it will try to add
   ;; the function-to-method-temp entry to *early-methods*. but then we unbind
   ;; that, so things are a bit screwy. We do it more manually.
@@ -70,7 +51,6 @@
             into new-call-history
           finally (append-generic-function-call-history f new-call-history))
     ;; Finish setup
-    (mlog "function-to-method: installed method%N")
     (core:setf-lambda-list f lambda-list) ; hook up the introspection
     ;; (setf generic-function-name) itself goes through here, so to minimize
     ;; bootstrap headaches we use the underlying writer directly.
@@ -116,8 +96,6 @@
                     '(new-name generic-function)
                     '(t standard-generic-function))
 
-(mlog "done with the first function-to-methods%N")
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Satiate
@@ -128,8 +106,6 @@
 
 (dolist (method-info *early-methods*)
   (compute-gf-specializer-profile (fdefinition (car method-info))))
-
-(mlog "About to satiate%N")
 
 ;;; Trickiness here.
 ;;; During build we first load this file as source. In that case we add only
@@ -145,8 +121,6 @@
   (satiate-minimal-generic-functions))
 (eval-when (:load-toplevel)
   (satiate-clos))
-
-(mlog "Done satiating%N")
 
 ;;; Generic functions can be called now!
 
@@ -181,30 +155,21 @@
 ;;; so after this they will do generic function calls.
 
 (defun ensure-generic-function (name &rest args &key &allow-other-keys)
-  (mlog "ensure-generic-function  name -> {}  args -> {} %N" name args)
-  (mlog "(not (fboundp name)) -> {}%N" (not (fboundp name)))
   (let ((gfun (si::traced-old-definition name)))
     (cond ((not (legal-generic-function-name-p name))
 	   (core:simple-program-error "~A is not a valid generic function name" name))
           ((not (fboundp name))
-           (mlog "A gfun -> {} name -> {}  args -> {}%N" gfun name args)
-           ;;           (break "About to setf (fdefinition name)")
-           (mlog "#'ensure-generic-function-using-class -> {}%N" #'ensure-generic-function-using-class )
 	   (setf (fdefinition name)
 		 (apply #'ensure-generic-function-using-class gfun name args)))
           ((si::instancep (or gfun (setf gfun (fdefinition name))))
-           (mlog "B%N")
 	   (let ((new-gf (apply #'ensure-generic-function-using-class gfun name args)))
 	     new-gf))
 	  ((special-operator-p name)
-           (mlog "C%N")
 	   (core:simple-program-error "The special operator ~A is not a valid name for a generic function" name))
 	  ((macro-function name)
-           (mlog "D%N")
 	   (core:simple-program-error
             "The symbol ~A is bound to a macro and is not a valid name for a generic function" name))
           ((not *clos-booted*)
-           (mlog "E%N")
            (setf (fdefinition name)
 		 (apply #'ensure-generic-function-using-class nil name args))
            (fdefinition name))
@@ -286,8 +251,6 @@
   ;; during boot it's a structure accessor
   (declare (notinline method-qualifiers remove-method))
   (declare (notinline reinitialize-instance)) ; bootstrap stuff
-
-  (mlog "fixup.lisp::add-method entered for gf {}%N" (core:safe-repr gf))
   ;;
   ;; 1) The method must not be already installed in another generic function.
   ;;
@@ -302,19 +265,15 @@ and cannot be added to ~A." method other-gf gf)))
   ;;    function does.
   ;;
   (let ((new-lambda-list (method-lambda-list method)))
-    (mlog "fixup.lisp::add-method (slot-boundp gf 'lambda-list) -> {}%N" (slot-boundp gf 'lambda-list))
     (if (slot-boundp gf 'lambda-list)
 	(let ((old-lambda-list (generic-function-lambda-list gf)))
 	  (unless (congruent-lambda-p old-lambda-list new-lambda-list)
 	    (error "Cannot add the method ~A to the generic function ~A because their lambda lists ~A and ~A are not congruent."
 		   method gf new-lambda-list old-lambda-list))
           ;; Add any keywords from the method to the gf display lambda list.
-          (mlog "fixup.lisp::add-method About to call maybe-augment-generic-function-lambda-list new-lambda-list->{}%N" (core:safe-repr new-lambda-list))
           (maybe-augment-generic-function-lambda-list gf new-lambda-list))
-	(progn
-          (mlog "fixup.lisp::add-method About to call reinitialize-instance lambda-list ->{}%N" (core:safe-repr (method-lambda-list-for-gf new-lambda-list)))
-          (reinitialize-instance
-           gf :lambda-list (method-lambda-list-for-gf new-lambda-list)))))
+        (reinitialize-instance
+         gf :lambda-list (method-lambda-list-for-gf new-lambda-list))))
   ;;
   ;; 3) Finally, it is inserted in the list of methods, and the method is
   ;;    marked as belonging to a generic function.
@@ -506,17 +465,14 @@ and cannot be added to ~A." method other-gf gf)))
 (%satiate map-dependents (standard-generic-function core:closure)
           (standard-class core:closure))
 
-(mlog "TOP: defgeneric update-dependent%N")
 (defgeneric update-dependent (object dependent &rest initargs))
 
 ;; After this, update-dependents will work
 (setf *clos-booted* 'map-dependents)
 
-(mlog "TOP: (defclass initargs-updater ()%N")
 (defclass initargs-updater ()
   ())
 
-(mlog "TOP: (defun recursively-update-class-initargs-cache (a-class)%N")
 (defun recursively-update-class-initargs-cache (a-class)
   ;; Bug #588: If a class is forward referenced and you define an initialize-instance
   ;; (or whatever) method on it, it got here and tried to compute valid initargs, which
@@ -526,7 +482,6 @@ and cannot be added to ~A." method other-gf gf)))
     (precompute-valid-initarg-keywords a-class)
     (mapc #'recursively-update-class-initargs-cache (class-direct-subclasses a-class))))
 
-(mlog "TOP: (defmethod update-dependent ((object generic-function) (dep initargs-updater)%N")
 (defmethod update-dependent ((object generic-function) (dep initargs-updater)
 			     &rest initargs
                              &key ((add-method added-method) nil am-p)
@@ -546,32 +501,27 @@ and cannot be added to ~A." method other-gf gf)))
 ;; that the loader can't handle yet.
 ;; We could use NOTINLINE now that bclasp handles it,
 ;; but we don't need to go through make-instance's song and dance anyway.
-(mlog "TOP: (let ((x (with-early-make-instance () (x (find-class 'initargs-updater)) x)))%N")
 (let ((x (with-early-make-instance () (x (find-class 'initargs-updater)) x)))
   (add-dependent #'shared-initialize x)
   (add-dependent #'initialize-instance x)
   (add-dependent #'allocate-instance x))
 
 ;; can't satiate this one, because the environment class will vary.
-(mlog "TOP: (function-to-method 'make-method-lambda%N")
 (function-to-method 'make-method-lambda
                     '(gf method lambda-form environment)
                     '(standard-generic-function standard-method t t))
 
 ;; ditto
-(mlog "TOP: (function-to-method 'expand-apply-method%N")
 (function-to-method 'expand-apply-method
                     '(method method-arguments arguments env)
                     '(standard-method t t t)
                     nil
                     #'std-expand-apply-method)
 
-(mlog "TOP: (function-to-method 'compute-discriminating-function '(gf)%N")
 (function-to-method 'compute-discriminating-function '(gf)
                     '(standard-generic-function)
                     '((standard-generic-function)))
 
-(mlog "TOP: (function-to-method 'print-object%N")
 (function-to-method 'print-object
                     '(object stream)
                     '(t t))
