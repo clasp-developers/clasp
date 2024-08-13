@@ -104,7 +104,10 @@ Successes: ~d~%"
   `(test ,name (values ,form) (,type) :test 'typep :description ,description))
 
 (defmacro test-finishes (name form &key description)
-  `(test-true ,name (handler-case (progn ,form t) (serious-condition () nil)) :description ,description))
+  `(test ,name (handler-case (progn ,form nil)
+                 (serious-condition (e) e))
+         (nil)
+         :description ,description))
 
 (defun load-if-compiled-correctly (file)
   (handler-case
