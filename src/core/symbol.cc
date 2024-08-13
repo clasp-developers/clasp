@@ -507,7 +507,10 @@ ClassHolder_sp Symbol_O::find_class_holder() {
 }
 #endif
 
-void Symbol_O::makeSpecial() { this->setf_specialP(true); }
+void Symbol_O::makeSpecial() {
+  this->check_package_lock("proclaiming ~s special");
+  this->setf_specialP(true);
+}
 
 CL_LISPIFY_NAME("core:STARmakeSpecial");
 CL_LAMBDA(symbol);
@@ -698,6 +701,16 @@ void Symbol_O::remove_package(Package_sp pkg) {
     }
   }
 };
+
+// Signal an error if this is a symbol in a locked package.
+void Symbol_O::check_package_lock(const char* fmt) {
+  T_sp p = this->homePackage();
+  if (p.isA<Package_O>()) {
+    Package_sp pkg = p.as_unsafe<Package_O>();
+    if (pkg->getSystemLockedP() || pkg->getUserLockedP())
+      FEpackage_lock_violation(pkg, fmt, 1, this->asSmartPtr());
+  }
+}
 
 DOCGROUP(clasp);
 CL_DEFUN bool core__no_thread_local_bindingp(T_sp object) { return gctools::tagged_no_thread_local_bindingp(object.raw_()); }

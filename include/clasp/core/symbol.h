@@ -385,6 +385,9 @@ public: // packages, the name, misc
   /*! Convenience function, export yourself and return yourself */
   Symbol_sp exportYourself(bool doit = true);
 
+  // Error if our package is locked. fmt takes one argument (the sym)
+  void check_package_lock(const char* fmt);
+
   void dump() override;
 
   void __write__(T_sp stream) const override; // in write_symbol.cc
