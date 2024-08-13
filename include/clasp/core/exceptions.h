@@ -629,6 +629,7 @@ void FEargument_number_error(T_sp supplied, T_sp min, T_sp max);
 T_sp CEerror(T_sp c, const char* fmt, int numArgs, ...);
 
 void FEpackage_error(const char* fmt, T_sp package, int nargs, ...);
+[[noreturn]] void FEpackage_lock_violation(T_sp pkg, const char* fmt, int nargs, ...);
 void CEpackage_error(const char* fmt, const char* continue_message, T_sp package, int nargs, ...);
 void Warn(T_sp datum, List_sp arguments);
 
