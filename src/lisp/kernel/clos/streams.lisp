@@ -908,7 +908,7 @@ truename."))
   "Some functions in CL package are expected to be generic. We make them so."
   (unless (and (not (member :eclasp *features*)) (member :staging *features*))
     (provide '#:gray-streams)
-    (let ((lockedcl (si::package-is-locked "COMMON-LISP")))
+    (let ((lockedcl (si::package-locked-p "COMMON-LISP")))
       (si::package-unlock "COMMON-LISP") 
       (loop with gray-package = (find-package "GRAY")
             finally (if lockedcl (si::package-lock "COMMON-LISP"))   

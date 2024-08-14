@@ -1,6 +1,6 @@
 (in-package #:clasp-tests)
 
-(let ((lockedcl (si::package-is-locked "COMMON-LISP")) (lockedcore (si::package-is-locked "CORE")))
+(let ((lockedcl (si:package-locked-p "COMMON-LISP")) (lockedcore (si:package-locked-p "CORE")))
   (core:package-unlock "CORE")
   (core:package-unlock "CL")
   ;; Assert that this compilation does not invoke any unwinds.

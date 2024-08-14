@@ -66,7 +66,7 @@ CL_DEFUN Package_sp core__package_unlock(T_sp pkg) {
   package->setSystemLockedP (false);
   return package;
 }
-CL_DEFUN bool core__package_is_locked(T_sp pkg) {
+CL_DEFUN bool core__package_locked_p(T_sp pkg) {
   Package_sp package = coerce::packageDesignator(pkg);
   return (package->getUserLockedP() || package->getSystemLockedP());
 }
