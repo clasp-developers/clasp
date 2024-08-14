@@ -1459,7 +1459,7 @@ CL_DEFUN List_sp cl__member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp tes
   }
   if (tlist.nilp())
     return nil<T_O>();
-  QERROR_WRONG_TYPE_NTH_ARG(2, tlist, cl::_sym_list);
+  ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_member, 2, tlist, cl::_sym_list);
   UNREACHABLE();
 }
 
