@@ -520,7 +520,9 @@ void Package_O::initialize() {
 }
 
 bool Package_O::lockedP() const {
-  return (this->getSystemLockedP() || this->getUserLockedP());
+  return (this->getSystemLockedP() || this->getUserLockedP())
+    // if we're in an implementation package, we're good
+    && (_lisp->getCurrentPackage() != this->asSmartPtr());
 }
 
 string Package_O::packageName() const { return this->_Name->get_std_string(); }
