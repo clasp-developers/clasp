@@ -691,12 +691,12 @@ void Symbol_O::dump() {
 void Symbol_O::remove_package(Package_sp pkg) {
   // can't even understand the syntax of this, cast of package to T_sp?
   // T_sp tpkg(pkg);
-  if ((pkg->getSystemLockedP()) || (pkg->getUserLockedP()))
+  if (pkg->lockedP())
     return;
   T_sp home = this->getPackage();
   if (!home.nilp()) {
     Package_sp home_package = coerce::packageDesignator(home);
-    if ((home_package == pkg) && !home_package->getSystemLockedP() && !home_package->getUserLockedP()) {
+    if ((home_package == pkg) && !home_package->lockedP()) {
       this->setPackage(nil<T_O>());
     }
   }
@@ -707,7 +707,7 @@ void Symbol_O::check_package_lock(const char* fmt) {
   T_sp p = this->homePackage();
   if (p.isA<Package_O>()) {
     Package_sp pkg = p.as_unsafe<Package_O>();
-    if (pkg->getSystemLockedP() || pkg->getUserLockedP())
+    if (pkg->lockedP())
       CEpackage_lock_violation(pkg, fmt, 1, this->asSmartPtr());
   }
 }

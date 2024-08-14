@@ -198,11 +198,13 @@ public:
 
   void setSystemLockedP(bool value) { this->systemLockedP = value; }
 
-  bool getSystemLockedP() { return this->systemLockedP; }
+  bool getSystemLockedP() const { return this->systemLockedP; }
 
   void setUserLockedP(bool value) { this->userLockedP = value; }
 
-  bool getUserLockedP() { return this->userLockedP; }
+  bool getUserLockedP() const { return this->userLockedP; }
+
+  bool lockedP() const;
 
   void setZombieP(bool value) { this->zombieP = value; }
 

@@ -68,7 +68,7 @@ CL_DEFUN Package_sp core__package_unlock(T_sp pkg) {
 }
 CL_DEFUN bool core__package_locked_p(T_sp pkg) {
   Package_sp package = coerce::packageDesignator(pkg);
-  return (package->getUserLockedP() || package->getSystemLockedP());
+  return package->lockedP();
 }
 CL_LAMBDA(package new-name &optional nick-names);
 CL_DECLARE();
@@ -80,8 +80,7 @@ CL_DEFUN Package_sp cl__rename_package(T_sp pkg, T_sp newNameDesig, T_sp nickNam
   List_sp nickNames = coerce::listOfStringDesignators(nickNameDesigs);
   bool ignore_lock = false;
  retry:
-  if (!ignore_lock
-      && (package->getSystemLockedP() || package->getUserLockedP()))
+  if (!ignore_lock && package->lockedP())
       goto package_lock_violation;
   // Remove the old names from the Lisp system
   _lisp->unmapNameToPackage(package->_Name);
@@ -119,7 +118,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp ext__package_add_nickname(T_sp pkg, T_sp nick) {
   Package_sp package = coerce::packageDesignator(pkg);
   String_sp nickname = coerce::stringDesignator(nick);
-  if (package->getSystemLockedP() || package->getUserLockedP()) {
+  if (package->lockedP()) {
     CEpackage_lock_violation(package, "adding nickname ~s", 1, nickname);
   }
   T_sp packageUsingNickName = _lisp->findPackage(nickname);
@@ -144,7 +143,7 @@ A package error is signalled, if package does not exist)dx")
 DOCGROUP(clasp);
 CL_DEFUN T_sp ext__package_remove_nickname(T_sp pkg, T_sp nick) {
   Package_sp package = coerce::packageDesignator(pkg);
-  if (package->getSystemLockedP() || package->getUserLockedP()) {
+  if (package->lockedP()) {
     CEpackage_lock_violation(package, "removing nickname ~s", 1,
                              coerce::stringDesignator(nick));
   }
@@ -287,7 +286,7 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj) {
     return nil<T_O>();
   }
   Package_sp pkg = gc::As<Package_sp>(potentialPkg);
-  if ((pkg->getSystemLockedP()) || (pkg->getUserLockedP())) {
+  if (pkg->lockedP()) {
     CEpackage_lock_violation(pkg, "deleting package", 0);
   }
 
@@ -520,6 +519,10 @@ void Package_O::initialize() {
   this->_AmpPackage = false;
 }
 
+bool Package_O::lockedP() const {
+  return (this->getSystemLockedP() || this->getUserLockedP());
+}
+
 string Package_O::packageName() const { return this->_Name->get_std_string(); }
 
 void Package_O::setName(SimpleString_sp n) {
@@ -718,7 +721,7 @@ bool Package_O::usePackage(Package_sp usePackage) {
     FindConflicts findConflicts(this->asSmartPtr());
     {
       WITH_PACKAGE_READ_LOCK(this);
-      if (!ignore_lock && (this->getSystemLockedP() || this->getUserLockedP()))
+      if (!ignore_lock && this->lockedP())
         goto package_lock_violation;
       if (this->usingPackageP_no_lock(usePackage)) {
         LOG("You are already using that package");
@@ -792,7 +795,7 @@ bool Package_O::unusePackage(Package_sp usePackage) {
  retry:
   {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
-    if (!ignore_lock && (this->getSystemLockedP() || this->getUserLockedP()))
+    if (!ignore_lock && this->lockedP())
       goto package_lock_violation;
     return this->unusePackage_no_outer_lock(usePackage);
   } // release lock
@@ -827,8 +830,7 @@ void Package_O::_export2(Symbol_sp sym) {
   bool ignore_lock = false;
  start: {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
-    if (!ignore_lock
-        && (this->getSystemLockedP() || this->getUserLockedP()))
+    if (!ignore_lock && this->lockedP())
       goto package_lock_violation;
     T_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
     Symbol_sp foundSym = gc::As<Symbol_sp>(values);
@@ -886,8 +888,7 @@ bool Package_O::shadow(String_sp ssymbolName) {
     Symbol_mv values = this->findSymbol_SimpleString_no_lock(symbolName);
     shadowSym = values;
     MultipleValues& mvn = core::lisp_multipleValues();
-    if (!ignore_lock
-        && (this->getSystemLockedP() || this->getUserLockedP())) {
+    if (!ignore_lock && this->lockedP()) {
       goto package_lock_violation;
     }
     status = gc::As<Symbol_sp>(mvn.valueGet(1, values.number_of_values()));
@@ -924,8 +925,7 @@ void Package_O::unexport(Symbol_sp sym) {
  start: {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
     // Don't allow unexporting from locked packages
-    if (!ignore_lock
-        && (this->getSystemLockedP() || this->getUserLockedP()))
+    if (!ignore_lock && this->lockedP())
       goto package_lock_violation;
     SimpleString_sp nameKey = sym->_Name;
     T_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
@@ -984,8 +984,7 @@ T_mv Package_O::intern(SimpleString_sp name) {
     MultipleValues& mvn = core::lisp_multipleValues();
     Symbol_sp status = gc::As<Symbol_sp>(mvn.valueGet(1, values.number_of_values()));
     if (status.nilp()) {
-      if (!ignore_lock
-          && (this->getSystemLockedP() || this->getUserLockedP()))
+      if (!ignore_lock && this->lockedP())
         goto package_lock_violation;
       sym = Symbol_O::create(name);
       client_validate(name);
@@ -1049,8 +1048,7 @@ bool Package_O::unintern(Symbol_sp sym) {
  start: {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
     // Don't allow uninterning from locked packages (e.g. CL)
-    if (!ignore_lock
-        && (this->getSystemLockedP()) || (this->getUserLockedP()))
+    if (!ignore_lock && this->lockedP())
       goto package_lock_violation;
     SimpleString_sp nameKey = sym->_Name;
     if (this->_Shadowing->contains(sym)) {
@@ -1111,8 +1109,7 @@ void Package_O::import1(Symbol_sp symbolToImport) {
   bool ignore_lock = false;
  start: {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
-    if (!ignore_lock
-        && (this->getSystemLockedP() || this->getUserLockedP())) {
+    if (!ignore_lock && this->lockedP()) {
       goto package_lock_violation;
     }
     SimpleString_sp nameKey = symbolToImport->_Name;
