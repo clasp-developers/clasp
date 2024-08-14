@@ -1365,14 +1365,27 @@
                             nil)))
         (if (and w ovf e (> elen e))   ;exponent overflow
             (dotimes (i w) (write-char ovf stream))
-            (multiple-value-bind (fstr flen lpoint)
+            (multiple-value-bind (fstr flen lpoint tpoint dpos)
                 (sys::flonum-to-string number spaceleft fdig (- expt) fmin)
+              (when (and (plusp k)
+                         (< k dpos))
+                (incf expt (- dpos k))
+                (setf estr (decimal-string (abs expt))
+                      tpoint nil)
+                (loop for pos from dpos downto k
+                      do (setf (char fstr pos) (if (= pos k) #\. (char fstr (1- pos))))))
+              (when (eql fdig 0)
+                (setq tpoint nil))
               (when w
                 (decf spaceleft flen)
                 (when lpoint
                   (if (> spaceleft 0)
                       (decf spaceleft)
-                      (setq lpoint nil))))
+                      (setq lpoint nil)))
+                (when tpoint
+                  (if (> spaceleft 0)
+                      (decf spaceleft)
+                      (setq tpoint nil))))
               (cond ((and w (< spaceleft 0) ovf)
                      ;;significand overflow
                      (dotimes (i w) (write-char ovf stream)))
@@ -1383,6 +1396,7 @@
                            (if atsign (write-char #\+ stream)))
                        (when lpoint (write-char #\0 stream))
                        (write-string fstr stream)
+                       (when tpoint (write-char #\0 stream))
                        (write-char (if marker
                                        marker
                                        (format-exponent-marker number))

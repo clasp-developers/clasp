@@ -212,6 +212,10 @@
   :repository "https://github.com/ivmai/libatomic_ops.git"
   :directory "src/libatomic_ops/"
   :commit "v7.6.12")
+ (:name :schubfach
+  :repository "https://github.com/yitzchak/schubfach.git"
+  :directory "src/schubfach/"
+  :branch "main")
  (:name :cando
   :repository "https://github.com/cando-developers/cando.git"
   :directory "extensions/cando/"
