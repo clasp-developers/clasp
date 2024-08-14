@@ -78,7 +78,10 @@ CL_DEFUN Package_sp cl__rename_package(T_sp pkg, T_sp newNameDesig, T_sp nickNam
   Package_sp package = coerce::packageDesignator(pkg);
   SimpleString_sp newName = coerce::packageNameDesignator(newNameDesig);
   List_sp nickNames = coerce::listOfStringDesignators(nickNameDesigs);
-  if (package->getSystemLockedP() || package->getUserLockedP())
+  bool ignore_lock = false;
+ retry:
+  if (!ignore_lock
+      && (package->getSystemLockedP() || package->getUserLockedP()))
       goto package_lock_violation;
   // Remove the old names from the Lisp system
   _lisp->unmapNameToPackage(package->_Name);
@@ -94,7 +97,8 @@ CL_DEFUN Package_sp cl__rename_package(T_sp pkg, T_sp newNameDesig, T_sp nickNam
   package->setNicknames(nickNames);
   return package;
  package_lock_violation:
-  FEpackage_lock_violation(package, "renaming ~s", 1, newNameDesig);
+  CEpackage_lock_violation(package, "renaming ~s", 1, newNameDesig);
+  goto retry;
 };
 
 CL_LAMBDA(pkg);
@@ -116,7 +120,7 @@ CL_DEFUN T_sp ext__package_add_nickname(T_sp pkg, T_sp nick) {
   Package_sp package = coerce::packageDesignator(pkg);
   String_sp nickname = coerce::stringDesignator(nick);
   if (package->getSystemLockedP() || package->getUserLockedP()) {
-    FEpackage_lock_violation(package, "adding nickname ~s", 1, nickname);
+    CEpackage_lock_violation(package, "adding nickname ~s", 1, nickname);
   }
   T_sp packageUsingNickName = _lisp->findPackage(nickname);
   if (packageUsingNickName.notnilp()) {
@@ -141,7 +145,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp ext__package_remove_nickname(T_sp pkg, T_sp nick) {
   Package_sp package = coerce::packageDesignator(pkg);
   if (package->getSystemLockedP() || package->getUserLockedP()) {
-    FEpackage_lock_violation(package, "removing nickname ~s", 1,
+    CEpackage_lock_violation(package, "removing nickname ~s", 1,
                              coerce::stringDesignator(nick));
   }
   unlikely_if(package->getNicknames().nilp()) return nil<T_O>();
@@ -284,7 +288,7 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj) {
   }
   Package_sp pkg = gc::As<Package_sp>(potentialPkg);
   if ((pkg->getSystemLockedP()) || (pkg->getUserLockedP())) {
-    FEpackage_lock_violation(pkg, "deleting package", 0);
+    CEpackage_lock_violation(pkg, "deleting package", 0);
   }
 
   if (pkg->getZombieP()) { // already deleted
@@ -709,11 +713,12 @@ bool FindConflicts::mapKeyValue(T_sp key, T_sp value) {
 
 bool Package_O::usePackage(Package_sp usePackage) {
   LOG("In usePackage this[{}]  using package[{}]", _rep_(this->name()), _rep_(usePackage->name()));
+  bool ignore_lock = false;
   while (true) {
     FindConflicts findConflicts(this->asSmartPtr());
     {
       WITH_PACKAGE_READ_LOCK(this);
-      if (this->getSystemLockedP() || this->getUserLockedP())
+      if (!ignore_lock && (this->getSystemLockedP() || this->getUserLockedP()))
         goto package_lock_violation;
       if (this->usingPackageP_no_lock(usePackage)) {
         LOG("You are already using that package");
@@ -727,9 +732,10 @@ bool Package_O::usePackage(Package_sp usePackage) {
     } // release package lock
     return true;
   name_conflict:
-    if (core::_sym_use_package_name_conflict->fboundp())
+    if (core::_sym_use_package_name_conflict->fboundp()) {
       eval::funcall(core::_sym_use_package_name_conflict, this->asSmartPtr(), usePackage, findConflicts._conflicts);
-    else
+      continue;
+    } else
       SIMPLE_ERROR(
           "Conflicts from USE-PACKAGE and name conflict function not yet installed: symbols {} using package {} used package {}",
           _rep_(findConflicts._conflicts), _rep_(this->asSmartPtr()), _rep_(usePackage));
@@ -737,10 +743,11 @@ bool Package_O::usePackage(Package_sp usePackage) {
     // That function only returns once conflicts are resolved, so go around
     // again (rechecking for conflicts because multithreading makes this hard)
     // FIXME: This doesn't actually perfectly solve multithreading issues.
+  package_lock_violation:
+    CEpackage_lock_violation(this->asSmartPtr(), "using ~s", 1,
+                             usePackage->name());
+    ignore_lock = true;
   }
- package_lock_violation:
-  FEpackage_lock_violation(this->asSmartPtr(), "using ~s", 1,
-                           usePackage->name());
 }
 
 bool Package_O::unusePackage_no_outer_lock(Package_sp usePackage) {
@@ -781,15 +788,19 @@ bool Package_O::unusePackage_no_inner_lock(Package_sp usePackage) {
 }
 
 bool Package_O::unusePackage(Package_sp usePackage) {
+  bool ignore_lock = false;
+ retry:
   {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
-    if (this->getSystemLockedP() || this->getUserLockedP())
+    if (!ignore_lock && (this->getSystemLockedP() || this->getUserLockedP()))
       goto package_lock_violation;
     return this->unusePackage_no_outer_lock(usePackage);
   } // release lock
  package_lock_violation:
-  FEpackage_lock_violation(this->asSmartPtr(), "unusing ~s", 1,
+  CEpackage_lock_violation(this->asSmartPtr(), "unusing ~s", 1,
                            usePackage->name());
+  ignore_lock = true;
+  goto retry;
 }
 
 // Return a list of packages that will have a conflict if this package
@@ -813,9 +824,11 @@ void Package_O::_export2(Symbol_sp sym) {
   SimpleString_sp nameKey = sym->_Name;
   MultipleValues& mvn = core::lisp_multipleValues();
   List_sp conflicts;
+  bool ignore_lock = false;
  start: {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
-    if (this->getSystemLockedP() || this->getUserLockedP())
+    if (!ignore_lock
+        && (this->getSystemLockedP() || this->getUserLockedP()))
       goto package_lock_violation;
     T_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
     Symbol_sp foundSym = gc::As<Symbol_sp>(values);
@@ -860,17 +873,21 @@ void Package_O::_export2(Symbol_sp sym) {
   // Conflict has been resolved by shadowing-import. Start over.
   goto start;
  package_lock_violation:
-  FEpackage_lock_violation(this->asSmartPtr(), "exporting ~s", 1, sym);
+  CEpackage_lock_violation(this->asSmartPtr(), "exporting ~s", 1, sym);
+  ignore_lock = true;
+  goto start;
 }
 
 bool Package_O::shadow(String_sp ssymbolName) {
   SimpleString_sp symbolName = coerce::simple_string(ssymbolName);
   Symbol_sp shadowSym, status;
-  {WITH_PACKAGE_READ_WRITE_LOCK(this);
+  bool ignore_lock = false;
+ start: {WITH_PACKAGE_READ_WRITE_LOCK(this);
     Symbol_mv values = this->findSymbol_SimpleString_no_lock(symbolName);
     shadowSym = values;
     MultipleValues& mvn = core::lisp_multipleValues();
-    if (this->getSystemLockedP() || this->getUserLockedP()) {
+    if (!ignore_lock
+        && (this->getSystemLockedP() || this->getUserLockedP())) {
       goto package_lock_violation;
     }
     status = gc::As<Symbol_sp>(mvn.valueGet(1, values.number_of_values()));
@@ -885,8 +902,10 @@ bool Package_O::shadow(String_sp ssymbolName) {
     return true;
   } // release lock
  package_lock_violation:
-  FEpackage_lock_violation(this->asSmartPtr(), "shadowing ~s", 1,
+  CEpackage_lock_violation(this->asSmartPtr(), "shadowing ~s", 1,
                            ssymbolName);
+  ignore_lock = true;
+  goto start;
 }
 
 bool Package_O::shadow(List_sp symbolNames) {
@@ -901,10 +920,12 @@ void Package_O::unexport(Symbol_sp sym) {
   // Make sure we don't signal an error without releasing the lock first.
   // (The printer will try to access the package name or something, and hang.)
   MultipleValues& mvn = core::lisp_multipleValues();
-  {
+  bool ignore_lock = false;
+ start: {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
     // Don't allow unexporting from locked packages
-    if (this->getSystemLockedP() || this->getUserLockedP())
+    if (!ignore_lock
+        && (this->getSystemLockedP() || this->getUserLockedP()))
       goto package_lock_violation;
     SimpleString_sp nameKey = sym->_Name;
     T_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
@@ -923,7 +944,9 @@ void Package_O::unexport(Symbol_sp sym) {
                   "and cannot be unexported.",
                   this->asSmartPtr(), 2, sym.raw_(), this->asSmartPtr().raw_());
  package_lock_violation:
-  FEpackage_lock_violation(this->asSmartPtr(), "unexporting ~s", 1, sym);
+  CEpackage_lock_violation(this->asSmartPtr(), "unexporting ~s", 1, sym);
+  ignore_lock = true;
+  goto start;
 }
 
 void Package_O::add_symbol_to_package_no_lock(SimpleString_sp nameKey, Symbol_sp sym, bool exportp) {
@@ -951,7 +974,8 @@ void Package_O::bootstrap_add_symbol_to_package(const char* symName, Symbol_sp s
 }
 
 T_mv Package_O::intern(SimpleString_sp name) {
-  {
+  bool ignore_lock = false;
+ start: {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
     // client_validate(ame);
     Symbol_mv values = this->findSymbol_SimpleString_no_lock(name);
@@ -960,7 +984,8 @@ T_mv Package_O::intern(SimpleString_sp name) {
     MultipleValues& mvn = core::lisp_multipleValues();
     Symbol_sp status = gc::As<Symbol_sp>(mvn.valueGet(1, values.number_of_values()));
     if (status.nilp()) {
-      if (this->getSystemLockedP() || this->getUserLockedP())
+      if (!ignore_lock
+          && (this->getSystemLockedP() || this->getUserLockedP()))
         goto package_lock_violation;
       sym = Symbol_O::create(name);
       client_validate(name);
@@ -980,7 +1005,9 @@ T_mv Package_O::intern(SimpleString_sp name) {
   } // release lock
 
   package_lock_violation:
-  FEpackage_lock_violation(this->asSmartPtr(), "interning ~s", 1, name);
+  CEpackage_lock_violation(this->asSmartPtr(), "interning ~s", 1, name);
+  ignore_lock = true;
+  goto start;
 }
 
 // This function is called by both unintern and shadowingImport.
@@ -1018,10 +1045,12 @@ bool Package_O::unintern_unsafe(Symbol_sp sym) {
 
 bool Package_O::unintern(Symbol_sp sym) {
   List_sp candidates = nil<List_V>(); // conflict resolution candidates
-  {
+  bool ignore_lock = false;
+ start: {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
     // Don't allow uninterning from locked packages (e.g. CL)
-    if ((this->getSystemLockedP()) || (this->getUserLockedP()))
+    if (!ignore_lock
+        && (this->getSystemLockedP()) || (this->getUserLockedP()))
       goto package_lock_violation;
     SimpleString_sp nameKey = sym->_Name;
     if (this->_Shadowing->contains(sym)) {
@@ -1062,7 +1091,9 @@ bool Package_O::unintern(Symbol_sp sym) {
   eval::funcall(_sym_unintern_name_conflict, this->asSmartPtr(), sym, candidates);
   return true;
  package_lock_violation:
-  FEpackage_lock_violation(this->asSmartPtr(), "uninterning ~s", 1, sym);
+  CEpackage_lock_violation(this->asSmartPtr(), "uninterning ~s", 1, sym);
+  ignore_lock = true;
+  goto start;
 }
 
 bool Package_O::isExported(Symbol_sp sym) {
@@ -1077,9 +1108,11 @@ bool Package_O::isExported(Symbol_sp sym) {
 
 void Package_O::import1(Symbol_sp symbolToImport) {
   Symbol_sp foundSymbol;
-  {
+  bool ignore_lock = false;
+ start: {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
-    if (this->getSystemLockedP() || this->getUserLockedP()) {
+    if (!ignore_lock
+        && (this->getSystemLockedP() || this->getUserLockedP())) {
       goto package_lock_violation;
     }
     SimpleString_sp nameKey = symbolToImport->_Name;
@@ -1100,8 +1133,10 @@ void Package_O::import1(Symbol_sp symbolToImport) {
   eval::funcall(_sym_import_name_conflict, this->asSmartPtr(), foundSymbol, symbolToImport);
   return;
  package_lock_violation:
-  FEpackage_lock_violation(this->asSmartPtr(), "importing ~s", 1,
+  CEpackage_lock_violation(this->asSmartPtr(), "importing ~s", 1,
                            symbolToImport);
+  ignore_lock = true;
+  goto start;
 }
 
 void Package_O::import(List_sp symbols) {

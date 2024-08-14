@@ -796,15 +796,16 @@ void FEpackage_error(const char* fmt, T_sp package, int nargs, ...) {
                 fmtargs, kw::_sym_package, package);
 }
 
-void FEpackage_lock_violation(T_sp pkg, const char* fmt,
+void CEpackage_lock_violation(T_sp pkg, const char* fmt,
                               int nargs, ...) {
   va_list args;
   va_start(args, nargs);
   List_sp fmtargs = clasp_grab_rest_args(args, nargs);
   va_end(args);
-  core__apply2(coerce::calledFunctionDesignator(core::_sym_package_lock_violation),
-               fmtargs, pkg, core::lisp_createStr(fmt));
-  UNREACHABLE();
+  eval::funcall(core::_sym_signalSimpleError, core::_sym_package_lock_violation,
+                SimpleBaseString_O::make("Ignore the package lock."),
+                SimpleBaseString_O::make(fmt), fmtargs,
+                kw::_sym_package, pkg);
 }
 
 void Warn(T_sp datum, List_sp arguments) { core__apply1(core::coerce::calledFunctionDesignator(cl::_sym_warn), arguments, datum); }

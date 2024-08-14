@@ -708,7 +708,7 @@ void Symbol_O::check_package_lock(const char* fmt) {
   if (p.isA<Package_O>()) {
     Package_sp pkg = p.as_unsafe<Package_O>();
     if (pkg->getSystemLockedP() || pkg->getUserLockedP())
-      FEpackage_lock_violation(pkg, fmt, 1, this->asSmartPtr());
+      CEpackage_lock_violation(pkg, fmt, 1, this->asSmartPtr());
   }
 }
 
