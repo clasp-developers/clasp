@@ -10339,8 +10339,6 @@
 {fixed-field :offset-type-cxx-identifier "ATOMIC_POD_OFFSET__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::Package_O" :layout-offset-field-names ("_KeywordPackage")}
 {fixed-field :offset-type-cxx-identifier "ATOMIC_POD_OFFSET__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::Package_O" :layout-offset-field-names ("_AmpPackage")}
-{fixed-field :offset-type-cxx-identifier "ATOMIC_POD_OFFSET__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::Package_O"
              :layout-offset-field-names ("_ActsLikeKeywordPackage")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"

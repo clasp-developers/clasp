@@ -516,7 +516,6 @@ void Package_O::initialize() {
   this->_Shadowing->setupThreadSafeHashTable();
 #endif
   this->_KeywordPackage = false;
-  this->_AmpPackage = false;
 }
 
 bool Package_O::lockedP() const {

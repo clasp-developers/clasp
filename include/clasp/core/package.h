@@ -60,7 +60,6 @@ public: // instance variables
   gctools::Vec0<Package_sp> _UsingPackages;
   gctools::Vec0<Package_sp> _PackagesUsedBy;
   std::atomic<bool> _KeywordPackage;
-  std::atomic<bool> _AmpPackage;
   std::atomic<bool> _ActsLikeKeywordPackage;
   List_sp _Nicknames;
   List_sp _LocalNicknames;
