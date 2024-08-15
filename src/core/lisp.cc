@@ -455,11 +455,10 @@ void Lisp::startupLispEnvironment() {
     _lisp->_Roots._CorePackage = gc::As<Package_sp>(_lisp->findPackage(CorePkg));
     _lisp->_Roots._KeywordPackage = gc::As<Package_sp>(_lisp->findPackage(KeywordPkg));
     _lisp->_Roots._CommonLispPackage = gc::As<Package_sp>(_lisp->findPackage(ClPkg));
-    /*
-    _lisp->_Roots._CorePackage->setSystemLockedP(true);
-    _lisp->_Roots._KeywordPackage->setSystemLockedP(true);
-    _lisp->_Roots._CommonLispPackage->setSystemLockedP(true);
-*/
+    _lisp->_Roots._CorePackage->setSystemPackageP(true);
+    _lisp->_Roots._KeywordPackage->setSystemPackageP(true);
+    _lisp->_Roots._CommonLispPackage->setSystemPackageP(true);
+    // TODO: lock those packages here
     //
     // fixme2022 Rip this package out if we don't need it to store the reference compiler
     //

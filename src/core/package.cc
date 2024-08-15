@@ -56,19 +56,17 @@ namespace core {
 DOCGROUP(clasp);
 CL_DEFUN Package_sp core__package_lock(T_sp pkg) { 
   Package_sp package = coerce::packageDesignator(pkg); 
-  package->setUserLockedP(true);
-  package->setSystemLockedP (true);
+  package->setLockedP(true);
   return package; 
 }
 CL_DEFUN Package_sp core__package_unlock(T_sp pkg) {
   Package_sp package = coerce::packageDesignator(pkg);
-  package->setUserLockedP(false);
-  package->setSystemLockedP (false);
+  package->setLockedP(false);
   return package;
 }
 CL_DEFUN bool core__package_locked_p(T_sp pkg) {
   Package_sp package = coerce::packageDesignator(pkg);
-  return package->lockedP();
+  return package->getLockedP();
 }
 CL_LAMBDA(package new-name &optional nick-names);
 CL_DECLARE();
@@ -518,7 +516,7 @@ void Package_O::initialize() {
 }
 
 bool Package_O::lockedP() const {
-  return (this->getSystemLockedP() || this->getUserLockedP())
+  return this->getLockedP()
     // if we're in an implementation package, we're good
     && (_lisp->getCurrentPackage() != this->asSmartPtr());
 }

@@ -82,11 +82,14 @@ private:
   // Returns a list of packages that will newly conflict.
   List_sp export_conflicts(SimpleString_sp nameKey, Symbol_sp sym);
   // flag masks.
-  const uint16_t flag_zombie = 0x01;
-  const uint16_t flag_syslock = 0x02;
-  const uint16_t flag_userlock = 0x04;
-  const uint16_t flag_keyword = 0x08;
-  const uint16_t flag_actskw = 0x10;
+  static const uint16_t flag_zombie = 0x01; // is the package deleted?
+  // is it a system package? (unused for now)
+  static const uint16_t flag_sys = 0x02;
+  // is it locked? (i.e. unintern blocked, etc., not the mutex)
+  static const uint16_t flag_lock = 0x04;
+  // is this the keyword package?
+  static const uint16_t flag_keyword = 0x08;
+  static const uint16_t flag_actskw = 0x10;
 
 public:
   string packageName() const;
@@ -199,11 +202,13 @@ private:
     else _Flags.fetch_and(~n, std::memory_order_relaxed);
   }
 public:
-  void setSystemLockedP(bool value) { setFlag(value, flag_syslock); }
-  bool getSystemLockedP() const { return getFlag(flag_syslock); }
-  void setUserLockedP(bool value) { setFlag(value, flag_userlock); }
-  bool getUserLockedP() const { return getFlag(flag_userlock); }
+  void setSystemPackageP(bool value) { setFlag(value, flag_sys); }
+  bool getSystemPackageP() const { return getFlag(flag_sys); }
+  void setLockedP(bool value) { setFlag(value, flag_lock); }
+  bool getLockedP() const { return getFlag(flag_lock); }
 
+  // is this package locked? accounting for implementation packages
+  // (use this instead of getLockedP most of the time)
   bool lockedP() const;
 
   void setZombieP(bool value) { setFlag(value, flag_zombie); }

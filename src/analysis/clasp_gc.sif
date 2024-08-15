@@ -5512,16 +5512,6 @@
 {fixed-field :offset-type-cxx-identifier "ATOMIC_POD_OFFSET_unsigned_short"
              :offset-ctype "unsigned short" :offset-base-ctype "core::Package_O"
              :layout-offset-field-names ("_Flags")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_short" :offset-ctype "unsigned short"
-             :offset-base-ctype "core::Package_O" :layout-offset-field-names ("flag_zombie")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_short" :offset-ctype "unsigned short"
-             :offset-base-ctype "core::Package_O" :layout-offset-field-names ("flag_syslock")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_short" :offset-ctype "unsigned short"
-             :offset-base-ctype "core::Package_O" :layout-offset-field-names ("flag_userlock")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_short" :offset-ctype "unsigned short"
-             :offset-base-ctype "core::Package_O" :layout-offset-field-names ("flag_keyword")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_short" :offset-ctype "unsigned short"
-             :offset-base-ctype "core::Package_O" :layout-offset-field-names ("flag_actskw")}
 {class-kind :stamp-name "STAMPWTAG_core__FileStatus_O" :stamp-key "core::FileStatus_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
