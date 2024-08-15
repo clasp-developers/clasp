@@ -65,6 +65,7 @@
     	(:size                  integer)
     	(:export-from		{package-name}*)
     	(:local-nicknames       (nickname package-name)*)
+        (:lock                  {boolean})
 
   :EXPORT-FROM is an extension to DEFPACKAGE.
   If a symbol is interned in the package being created and
@@ -79,13 +80,17 @@
   by FIND-PACKAGE and all implicit uses thereof to refer to the
   package named by PACKAGE-NAME.
   See also EXT:PACKAGE-LOCAL-NICKNAMES, EXT:ADD-PACKAGE-LOCAL-NICKNAME,
-  EXT:REMOVE-PACKAGE-LOCAL-NICKNAME, EXT:PACKAGE-LOCALLY-NICKNAMED-BY-LIST."
+  EXT:REMOVE-PACKAGE-LOCAL-NICKNAME, EXT:PACKAGE-LOCALLY-NICKNAMED-BY-LIST.
+
+  :LOCK is an extension to DEFPACKAGE.
+  If specified and T, the package is initially locked, like the CL package. Otherwise, it is unlocked."
 
   (dolist (option options)
     (unless (member (first option)
 		    '(:DOCUMENTATION :SIZE :NICKNAMES :SHADOW
 		      :SHADOWING-IMPORT-FROM :USE :IMPORT-FROM :INTERN :EXPORT
-		      :EXPORT-FROM :LOCAL-NICKNAMES) :test #'eq)
+		      :EXPORT-FROM :LOCAL-NICKNAMES :LOCK)
+                    :test #'eq)
       (cerror "Proceed, ignoring this option."
 	      "~s is not a valid DEFPACKAGE option." option)))
   (labels ((to-string (x) (if (numberp x) x (string x)))
@@ -110,7 +115,7 @@
 	     output))
     ;;; clhs 11.2.19 defpackage
     ;;; An error of type program-error should be signaled if :size or :documentation appears more than once.
-    (dolist (option '(:DOCUMENTATION :SIZE)) ; could add more later.
+    (dolist (option '(:DOCUMENTATION :SIZE :LOCK))
       (when (<= 2 (count option options ':key #'car))
 	(simple-program-error "DEFPACKAGE option ~s specified more than once."
                               option)))
@@ -128,7 +133,12 @@
            (local-nicknames-list
              (loop for option in options
                    when (eq (car option) :local-nicknames)
-                     append (cdr option))))
+                     append (cdr option)))
+           (lock
+             (loop for option in options
+                   when (eq (car option) :lock)
+                     ;; FIXME: type check
+                     return (second option))))
       (dolist (duplicate (find-duplicates shadowed-symbol-names
 					  interned-symbol-names
 					  (loop for list in shadowing-imported-from-symbol-names-list append (rest list))
@@ -163,7 +173,8 @@
 	',shadowing-imported-from-symbol-names-list
 	',imported-from-symbol-names-list
 	',exported-from-package-names
-        ',local-nicknames-list)))))
+        ',local-nicknames-list
+        ',lock)))))
 
 
 (defun dodefpackage (name
@@ -176,7 +187,8 @@
                      shadowing-imported-from-symbol-names-list
                      imported-from-symbol-names-list
                      exported-from-package-names
-                     local-nicknames-list)
+                     local-nicknames-list
+                     lockp)
   (if (find-package name)
       (progn ; (rename-package name name)
         (when nicknames
@@ -217,7 +229,9 @@
          "~a is not a valid ~a specification"
          spec :local-nicknames))
       (destructuring-bind (nickname actual) spec
-        (ext:add-package-local-nickname nickname actual))))
+        (ext:add-package-local-nickname nickname actual)))
+    (when lockp
+      (ext:lock-package *package*)))
   (find-package name))
 
 (defun find-or-make-symbol (name package)
