@@ -2908,14 +2908,14 @@ If the source location of a match contains the string source-path-identifier the
                                       &key
                                         source-namestrings
                                         (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))
-                                        pjobs)
+                                        (pjobs 1))
   (unless source-namestrings
     (setf source-namestrings (clang-tool:source-namestrings compilation-tool-database)))
   (clang-tool:with-compilation-tool-database compilation-tool-database
     (setf *project* (parallel-search-all-threaded compilation-tool-database
                                                   :source-namestrings source-namestrings
                                                   :output-file output-file
-                                                  :jobs core::*number-of-jobs*)
+                                                  :jobs pjobs)
           *analysis* (analyze-project *project*)
           (analysis-inline *analysis*) '("core::Cons_O"))
     (generate-code *analysis* :output-file (make-pathname :type "cc" :defaults output-file))
