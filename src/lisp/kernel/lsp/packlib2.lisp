@@ -3,6 +3,7 @@
 ;;;; This is actually more of them than we have here- there are
 ;;;; some places where we need to be signaling continuable
 ;;;; errors and aren't.
+;;;; package lock macros also go here because why not.
 
 (in-package #:ext)
 
@@ -10,6 +11,23 @@
   `(core:call-with-package-read-lock ,package (lambda () ,@body)))
 (defmacro with-package-read-write-lock ((package) &body body)
   `(core:call-with-package-read-write-lock ,package (lambda () ,@body)))
+
+(defmacro ext:with-unlocked-packages ((&rest packages) &body body)
+  ;; FIXME? technically prone to TOCTOU races,
+  ;; since package locks don't use the package lock (confusing, yes)
+  (let ((unlocked-packages (gensym "UNLOCKED-PACKAGES")))
+    `(let ((,unlocked-packages ()))
+       (unwind-protect
+            (progn
+              (dolist (p ',packages)
+                (let ((p (find-package p)))
+                  (when (ext:package-locked-p p)
+                    (push p ,unlocked-packages)
+                    (ext:unlock-package p))))
+              ,@body)
+         (dolist (p ,unlocked-packages)
+           (when (package-name p) ; make sure it hasn't been deleted
+             (ext:lock-package p)))))))
 
 (defun package-local-nicknames (package-designator)
   "Return an alist (string . package) of local nicknames in the given package.
