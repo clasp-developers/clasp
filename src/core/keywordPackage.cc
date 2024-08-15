@@ -155,12 +155,4 @@ SYMBOL_EXPORT_SC_(KeywordPkg, use_mps);
 SYMBOL_EXPORT_SC_(KeywordPkg, utf_8);
 SYMBOL_EXPORT_SC_(KeywordPkg, verbose);
 
-core::Package_sp initialize_keywordPackage() {
-  list<string> lnicknames = {"KW"};
-  ;
-  list<string> luse;
-  core::Package_sp keywordPackage = _lisp->makePackage("KEYWORD", lnicknames, luse);
-  keywordPackage->setKeywordPackage(true);
-  return keywordPackage;
-}
 }; // namespace kw
