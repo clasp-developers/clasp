@@ -534,8 +534,8 @@ CL_LISPIFY_NAME("core:PackageHashTables");
 CL_DEFMETHOD T_mv Package_O::hashTables() const {
   WITH_PACKAGE_READ_LOCK(this);
   List_sp useList = nil<List_V>();
-  for (auto ci = this->_UsingPackages.begin(); ci != this->_UsingPackages.end(); ci++) {
-    useList = Cons_O::create(*ci, useList);
+  for (auto ci : this->_UsingPackages) {
+    useList = Cons_O::create(ci, useList);
   }
   return Values(this->_ExternalSymbols, this->_InternalSymbols, useList);
 }
@@ -596,8 +596,7 @@ Symbol_mv Package_O::findSymbol_SimpleString_no_lock(SimpleString_sp nameKey) co
     return Values(val, kw::_sym_internal);
   }
   {
-    for (auto it = this->_UsingPackages.begin(); it != this->_UsingPackages.end(); it++) {
-      Package_sp upkg = *it;
+    for (auto upkg : this->_UsingPackages) {
       LOG("Looking in package[{}]", _rep_(upkg));
       T_mv eu = upkg->_ExternalSymbols->gethash(nameKey, nil<T_O>());
       val = gc::As<Symbol_sp>(eu);
@@ -629,8 +628,8 @@ Symbol_mv Package_O::findSymbol(String_sp s) const {
 List_sp Package_O::packageUseList() {
   WITH_PACKAGE_READ_LOCK(this);
   List_sp res = nil<List_V>();
-  for (auto si = this->_UsingPackages.begin(); si != this->_UsingPackages.end(); si++) {
-    res = Cons_O::create(*si, res);
+  for (auto si : this->_UsingPackages) {
+    res = Cons_O::create(si, res);
   }
   return res;
 }
@@ -638,8 +637,8 @@ List_sp Package_O::packageUseList() {
 List_sp Package_O::packageUsedByList() {
   WITH_PACKAGE_READ_LOCK(this);
   List_sp res = nil<List_V>();
-  for (auto si = this->_PackagesUsedBy.begin(); si != this->_PackagesUsedBy.end(); si++) {
-    res = Cons_O::create(*si, res);
+  for (auto si : this->_PackagesUsedBy) {
+    res = Cons_O::create(si, res);
   }
   return res;
 }
@@ -647,15 +646,15 @@ List_sp Package_O::packageUsedByList() {
 T_mv Package_O::packageHashTables() const {
   WITH_PACKAGE_READ_LOCK(this);
   List_sp usingPackages = nil<List_V>();
-  for (auto si = this->_UsingPackages.begin(); si != this->_UsingPackages.end(); si++) {
-    usingPackages = Cons_O::create(*si, usingPackages);
+  for (auto si : this->_UsingPackages) {
+    usingPackages = Cons_O::create(si, usingPackages);
   }
   return Values(this->_ExternalSymbols, this->_InternalSymbols, usingPackages);
 }
 
 bool Package_O::usingPackageP_no_lock(Package_sp usePackage) const {
-  for (auto it = this->_UsingPackages.begin(); it != this->_UsingPackages.end(); ++it) {
-    if ((*it) == usePackage)
+  for (auto it : this->_UsingPackages) {
+    if (it == usePackage)
       return true;
   }
   return false;
@@ -1060,11 +1059,11 @@ bool Package_O::unintern(Symbol_sp sym) {
       // This is a list of symbols with the same name as the symbol
       // being uninterned that are exported by packages this package uses.
       MultipleValues& mvn = core::lisp_multipleValues();
-      for (auto it = this->_UsingPackages.begin(); it != this->_UsingPackages.end(); it++) {
+      for (auto it : this->_UsingPackages) {
         Symbol_sp uf, status;
         {
           // FIXME: We don't have a lock on the other package!
-          Symbol_mv values = (*it)->findSymbol_SimpleString_no_lock(nameKey);
+          Symbol_mv values = it->findSymbol_SimpleString_no_lock(nameKey);
           uf = values;
           status = gc::As<Symbol_sp>(mvn.valueGet(1, values.number_of_values()));
         }
