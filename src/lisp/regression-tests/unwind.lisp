@@ -1,8 +1,9 @@
 (in-package #:clasp-tests)
 
-(let ((lockedcl (si:package-locked-p "COMMON-LISP")) (lockedcore (si:package-locked-p "CORE")))
-  (core:package-unlock "CORE")
-  (core:package-unlock "CL")
+(let ((lockedcl (ext:package-locked-p "COMMON-LISP"))
+      (lockedcore (ext:package-locked-p "CORE")))
+  (ext:unlock-package "CORE")
+  (ext:unlock-package "CL")
   ;; Assert that this compilation does not invoke any unwinds.
   (test compile-file-no-unwind
         (let ((unwinds (gctools:thread-local-unwinds)))
@@ -16,6 +17,6 @@
         (0)
   )
 
-  (if lockedcl (si::package-lock "COMMON-LISP"))
-  (if lockedcore (si::package-lock "CORE"))
+  (when lockedcl (ext:lock-package "COMMON-LISP"))
+  (when lockedcore (ext:lock-package "CORE"))
 )

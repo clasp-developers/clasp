@@ -54,17 +54,17 @@ THE SOFTWARE.
 namespace core {
 
 DOCGROUP(clasp);
-CL_DEFUN Package_sp core__package_lock(T_sp pkg) { 
+CL_DEFUN Package_sp ext__lock_package(T_sp pkg) { 
   Package_sp package = coerce::packageDesignator(pkg); 
   package->setLockedP(true);
   return package; 
 }
-CL_DEFUN Package_sp core__package_unlock(T_sp pkg) {
+CL_DEFUN Package_sp ext__unlock_package(T_sp pkg) {
   Package_sp package = coerce::packageDesignator(pkg);
   package->setLockedP(false);
   return package;
 }
-CL_DEFUN bool core__package_locked_p(T_sp pkg) {
+CL_DEFUN bool ext__package_locked_p(T_sp pkg) {
   Package_sp package = coerce::packageDesignator(pkg);
   return package->getLockedP();
 }

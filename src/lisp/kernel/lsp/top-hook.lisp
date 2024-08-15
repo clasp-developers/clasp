@@ -27,8 +27,8 @@
         do (funcall hook)))
 
 (defun sys::standard-toplevel ()
-  (core:package-lock "COMMON-LISP")
-  (core:package-lock "CORE")
+  (ext:lock-package "COMMON-LISP")
+  (ext:lock-package "CORE")
   
   (let ((core:*use-interpreter-for-eval* nil))
     #-staging (when (ext:getenv "CLASP_AUTOCOMPILATION")

@@ -379,7 +379,7 @@
                  ((ext:name-conflict
                     (lambda (c)
                       (invoke-restart (find-restart 'ext:resolve-conflict c) r0))))
-               (progn (format t "NC0 is locked: ~s" (core:package-locked-p "NC0"))
+               (progn (format t "NC0 is locked: ~s" (ext:package-locked-p "NC0"))
                       (import r1 nc0)
                       (equal (multiple-value-list (find-symbol rname nc0))
                              (list r0 :internal)))))
@@ -613,8 +613,8 @@
 (with-packages (foo bar)
   (let ((sym (intern "BAZ" foo)))
     (setf (fdefinition sym) (lambda ())) ; for fmakunbound test
-    (core:package-lock foo)
-    (test locked_is_locked (core:package-locked-p foo) (T))
+    (ext:lock-package foo)
+    (test locked_is_locked (ext:package-locked-p foo) (T))
     (macrolet ((test-violation (name form)
                  `(test-expect-error ,name ,form
                                      :type core:package-lock-violation)))
@@ -644,8 +644,8 @@
       (test-violation locked-defconstant
                       (eval `(defconstant ,sym 19))))
     ;; Now test unlocking works.
-    (core:package-unlock foo)
-    (test unlocked_is_locked (core:package-locked-p foo) (NIL))
+    (ext:unlock-package foo)
+    (test unlocked_is_locked (ext:package-locked-p foo) (NIL))
     (test-finishes unlocked-shadow (shadow sym foo))
     (test-finishes unlocked-import (import sym foo))
     (test-finishes unlocked-export (export sym foo))
