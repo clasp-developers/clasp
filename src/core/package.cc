@@ -515,7 +515,6 @@ void Package_O::initialize() {
   this->_ExternalSymbols->setupThreadSafeHashTable();
   this->_Shadowing->setupThreadSafeHashTable();
 #endif
-  this->_KeywordPackage = false;
 }
 
 bool Package_O::lockedP() const {
