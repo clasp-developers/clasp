@@ -259,7 +259,7 @@ CL_DEFUN T_sp cl__use_package(T_sp packages_to_use_desig, T_sp package_desig) {
   List_sp packages_to_use = coerce::listOfPackageDesignators(packages_to_use_desig);
   Package_sp package = coerce::packageDesignator(package_desig);
   for (auto cur : packages_to_use) {
-    Package_sp package_to_use = gc::As<Package_sp>(oCar(cur));
+    Package_sp package_to_use = oCar(cur).as_unsafe<Package_O>();
     package->usePackage(package_to_use);
   }
   return _lisp->_true();
@@ -1210,12 +1210,24 @@ void Package_O::removeImplementationPackage(Package_sp implementor) {
   }
 }
 
-// TODO: SBCL functions accept a list, analogous to USE-PACKAGE.
-CL_LAMBDA(implementor &optional (package *package*));
+CL_LAMBDA(implementors &optional (package *package*));
 CL_DEFUN void ext__add_implementation_package(T_sp impl, T_sp pkg) {
-  Package_sp implementor = coerce::packageDesignator(impl);
+  List_sp implementors = coerce::listOfPackageDesignators(impl);
   Package_sp package = coerce::packageDesignator(pkg);
-  package->addImplementationPackage(implementor);
+  for (auto cur : implementors) {
+    Package_sp implementor = oCar(cur).as_unsafe<Package_O>();
+    package->addImplementationPackage(implementor);
+  }
+}
+
+CL_LAMBDA(implmentors& optional(package* package*))
+CL_DEFUN void ext__remove_implementation_package(T_sp impl, T_sp pkg) {
+  List_sp implementors = coerce::listOfPackageDesignators(impl);
+  Package_sp package = coerce::packageDesignator(pkg);
+  for (auto cur : implementors) {
+    Package_sp implementor = oCar(cur).as_unsafe<Package_O>();
+    package->removeImplementationPackage(implementor);
+  }
 }
 
 }; // namespace core
