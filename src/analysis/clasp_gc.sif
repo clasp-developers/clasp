@@ -5504,6 +5504,10 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::List_V>" :offset-base-ctype "core::Package_O"
              :layout-offset-field-names ("_LocalNicknames")}
+{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
+             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>>"
+             :offset-base-ctype "core::Package_O"
+             :layout-offset-field-names ("_Implementors" "._Vector" "._Contents")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::Package_O"
              :layout-offset-field-names ("_Documentation")}

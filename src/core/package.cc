@@ -68,6 +68,16 @@ CL_DEFUN bool ext__package_locked_p(T_sp pkg) {
   Package_sp package = coerce::packageDesignator(pkg);
   return package->getLockedP();
 }
+
+CL_DEFUN List_sp ext__package_implemented_by_list(T_sp pkg) {
+  Package_sp package = coerce::packageDesignator(pkg);
+  List_sp res = nil<List_V>();
+  for (auto imp : package->_Implementors) {
+    res = Cons_O::create(imp, res);
+  }
+  return res;
+}
+
 CL_LAMBDA(package new-name &optional nick-names);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(renamePackage)dx");
@@ -516,9 +526,14 @@ void Package_O::initialize() {
 }
 
 bool Package_O::lockedP() const {
-  return this->getLockedP()
+  if (this->getLockedP()) {
     // if we're in an implementation package, we're good
-    && (_lisp->getCurrentPackage() != this->asSmartPtr());
+    Package_sp current = _lisp->getCurrentPackage();
+    for (auto p : this->_Implementors) {
+      if (p == current) return false;
+    }
+    return true;
+  } else return false; // not locked at all
 }
 
 string Package_O::packageName() const { return this->_Name->get_std_string(); }
@@ -1180,6 +1195,19 @@ void Package_O::dumpSymbols() {
   string all = this->allSymbols();
   printf("%s:%d Package %s\n", __FILE__, __LINE__, _rep_(this->_Name).c_str());
   printf("%s\n", all.c_str());
+}
+
+void Package_O::addImplementationPackage(Package_sp implementor) {
+  this->_Implementors.push_back(implementor);
+}
+
+void Package_O::removeImplementationPackage(Package_sp implementor) {
+  for (auto it = this->_Implementors.begin();
+       it != this->_Implementors.end();
+       ++it) {
+    if ((*it) == implementor)
+      this->_Implementors.erase(it);
+  }
 }
 
 }; // namespace core

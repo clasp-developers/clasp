@@ -61,6 +61,7 @@ public: // instance variables
   gctools::Vec0<Package_sp> _PackagesUsedBy;
   List_sp _Nicknames;
   List_sp _LocalNicknames;
+  gctools::Vec0<Package_sp> _Implementors;
   T_sp _Documentation;
 #ifdef CLASP_THREADS
   mutable mp::SharedMutex _Lock;
@@ -176,6 +177,9 @@ public:
   bool unusePackage_no_outer_lock(Package_sp usePackage);
   bool unusePackage_no_inner_lock(Package_sp usePackage);
 
+  void addImplementationPackage(Package_sp);
+  void removeImplementationPackage(Package_sp);
+
   bool usingPackageP_no_lock(Package_sp pkg) const;
   /*! Return true if we are using the package */
   bool usingPackageP(Package_sp pkg) const;
@@ -226,7 +230,11 @@ public:
   // Not default constructable
   Package_O()
       : _Flags(0), _Nicknames(nil<T_O>()), _LocalNicknames(nil<T_O>()), _Documentation(nil<T_O>()),
-        _Lock(PACKAGE__NAMEWORD){};
+        _Lock(PACKAGE__NAMEWORD){
+    // by default, packages implement themselves.
+    // this can be changed later.
+    this->_Implementors.push_back(this->asSmartPtr());
+  };
 
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
     if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
