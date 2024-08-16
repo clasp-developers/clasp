@@ -66,6 +66,7 @@
     	(:export-from		{package-name}*)
     	(:local-nicknames       (nickname package-name)*)
         (:lock                  {boolean})
+        (:implement             {package-name}*)
 
   :EXPORT-FROM is an extension to DEFPACKAGE.
   If a symbol is interned in the package being created and
@@ -83,13 +84,16 @@
   EXT:REMOVE-PACKAGE-LOCAL-NICKNAME, EXT:PACKAGE-LOCALLY-NICKNAMED-BY-LIST.
 
   :LOCK is an extension to DEFPACKAGE.
-  If specified and T, the package is initially locked, like the CL package. Otherwise, it is unlocked."
+  If specified and T, the package is initially locked, like the CL package. Otherwise, it is unlocked.
+
+  :IMPLEMENT is an extension to DEFPACKAGE.
+  The newly defined package is made an implementation package of any packages specified."
 
   (dolist (option options)
     (unless (member (first option)
 		    '(:DOCUMENTATION :SIZE :NICKNAMES :SHADOW
 		      :SHADOWING-IMPORT-FROM :USE :IMPORT-FROM :INTERN :EXPORT
-		      :EXPORT-FROM :LOCAL-NICKNAMES :LOCK)
+		      :EXPORT-FROM :LOCAL-NICKNAMES :LOCK :IMPLEMENT)
                     :test #'eq)
       (cerror "Proceed, ignoring this option."
 	      "~s is not a valid DEFPACKAGE option." option)))
@@ -138,7 +142,8 @@
              (loop for option in options
                    when (eq (car option) :lock)
                      ;; FIXME: type check
-                     return (second option))))
+                     return (second option)))
+           (implement (option-values ':implement options)))
       (dolist (duplicate (find-duplicates shadowed-symbol-names
 					  interned-symbol-names
 					  (loop for list in shadowing-imported-from-symbol-names-list append (rest list))
@@ -174,7 +179,7 @@
 	',imported-from-symbol-names-list
 	',exported-from-package-names
         ',local-nicknames-list
-        ',lock)))))
+        ',lock ',implement)))))
 
 
 (defun dodefpackage (name
@@ -188,7 +193,7 @@
                      imported-from-symbol-names-list
                      exported-from-package-names
                      local-nicknames-list
-                     lockp)
+                     lockp implement)
   (if (find-package name)
       (progn ; (rename-package name name)
         (when nicknames
@@ -231,7 +236,9 @@
       (destructuring-bind (nickname actual) spec
         (ext:add-package-local-nickname nickname actual)))
     (when lockp
-      (ext:lock-package *package*)))
+      (ext:lock-package *package*))
+    (dolist (pkg implement)
+      (ext:add-implementation-package *package* pkg)))
   (find-package name))
 
 (defun find-or-make-symbol (name package)

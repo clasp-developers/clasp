@@ -5,7 +5,6 @@
   (:export #:precompile-constructor)
   (:export #:invalidate-class-reinitializers*)
   (:export #:invalidate-changers* #:invalidate-class-changers
-           #:invalidate-designated-changers))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (ext:add-implementation-package '#:static-gfs '#:cl))
+           #:invalidate-designated-changers)
+  ;; make-instance compiler macro
+  (:implement #:cl))
