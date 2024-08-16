@@ -103,3 +103,13 @@ See also: :LOCAL-NICKNAMES option to DEFPACKAGE."
     (dolist (p (list-all-packages) result)
       (when (find package (package-local-nicknames p) :key #'cdr :test #'eq)
         (push p result)))))
+
+(defun package-implements-list (package-designator)
+  "Return a list of packages that the designated package implements.
+See also: :IMPLEMENT option to DEFPACKAGE."
+  (let ((package (find-package package-designator))
+        (result nil))
+    (when (null package) (error 'package-error :package package))
+    (dolist (p (list-all-packages) result)
+      (when (find package (package-implemented-by-list p))
+        (push p result)))))

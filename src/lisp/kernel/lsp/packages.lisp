@@ -236,6 +236,7 @@
             add-package-local-nickname
             remove-package-local-nickname
             package-locally-nicknamed-by-list
+            package-implements-list
             with-unlocked-packages
             keep-old change-nick ; restarts for add-package-local-nicknames
             ;; symbol name conflicts
