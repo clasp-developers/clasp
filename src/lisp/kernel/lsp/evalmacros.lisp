@@ -15,7 +15,10 @@
 
 (defun check-package-lock (name operation) ;; testing
   (let ((package (symbol-package name)))
-    (when (and package (ext:package-locked-p package))
+    (when (and package (ext:package-locked-p package)
+               (not (member
+                     *package*
+                     (ext:package-implemented-by-list package))))
       (core:package-lock-violation package
                                    "trying to ~s ~s"
                                    operation name))))

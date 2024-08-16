@@ -27,7 +27,6 @@
         do (funcall hook)))
 
 (defun sys::standard-toplevel ()
-  (ext:lock-package "COMMON-LISP")
   (ext:lock-package "CORE")
   
   (let ((core:*use-interpreter-for-eval* nil))

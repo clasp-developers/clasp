@@ -461,7 +461,9 @@ void Lisp::startupLispEnvironment() {
     // Set up implementation packages
     _lisp->_Roots._CommonLispPackage->addImplementationPackage(_lisp->_Roots._CorePackage);
     _lisp->_Roots._CommonLispPackage->addImplementationPackage(_lisp->findPackage(ClosPkg).as<Package_O>());
+    _lisp->_Roots._CommonLispPackage->addImplementationPackage(_lisp->findPackage(CompPkg).as<Package_O>());
     // TODO: lock those packages here
+    _lisp->_Roots._CommonLispPackage->setLockedP(true);
     //
     // fixme2022 Rip this package out if we don't need it to store the reference compiler
     //

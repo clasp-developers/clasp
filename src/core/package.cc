@@ -1210,4 +1210,12 @@ void Package_O::removeImplementationPackage(Package_sp implementor) {
   }
 }
 
+// TODO: SBCL functions accept a list, analogous to USE-PACKAGE.
+CL_LAMBDA(implementor &optional (package *package*));
+CL_DEFUN void ext__add_implementation_package(T_sp impl, T_sp pkg) {
+  Package_sp implementor = coerce::packageDesignator(impl);
+  Package_sp package = coerce::packageDesignator(pkg);
+  package->addImplementationPackage(implementor);
+}
+
 }; // namespace core
