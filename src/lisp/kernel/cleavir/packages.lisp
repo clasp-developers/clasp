@@ -39,8 +39,8 @@
    #:inline-ast
    )
   (:export #:primop-rtype-info)
-  ;; for describe-compiler-policy
-  (:implement #:ext))
+  ;; for ext:describe-compiler-policy, CL compiler macros
+  (:implement #:ext #:cl))
 
 (defpackage #:clasp-cleavir-ast
   (:nicknames #:cc-ast)
