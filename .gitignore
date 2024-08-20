@@ -59,3 +59,4 @@ src/analysis/*.lst
 src/analysis/*.cc
 bench/
 repos-*.sexp
+*__pycache__*

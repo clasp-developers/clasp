@@ -31,5 +31,4 @@ THE SOFTWARE.
 
 namespace kw {
 
-core::Package_sp initialize_keywordPackage();
 };

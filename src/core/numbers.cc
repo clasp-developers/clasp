@@ -2355,9 +2355,6 @@ static Number_sp expt_zero(Number_sp x, Number_sp y) {
   Number_sp z;
   ty = clasp_t_of(y);
   tx = clasp_t_of(x);
-  if (clasp_unlikely(!gc::IsA<Number_sp>(x))) {
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Number_O);
-  }
   /* INV: The most specific numeric types come first. */
   switch ((ty > tx) ? ty : tx) {
   case number_Fixnum:
@@ -2377,10 +2374,8 @@ static Number_sp expt_zero(Number_sp x, Number_sp y) {
                   (ty == number_Complex) ? gc::As<Number_sp>(gc::As<Complex_sp>(y)->real()) : y);
     return clasp_make_complex(gc::As<Real_sp>(z), clasp_make_fixnum(0));
   default:
-    /* We will never reach this */
-    (void)0;
+      UNREACHABLE();
   }
-  UNREACHABLE();
 }
 
 Number_sp clasp_expt(Number_sp x, Number_sp y) {
@@ -2391,9 +2386,6 @@ Number_sp clasp_expt(Number_sp x, Number_sp y) {
   }
   ty = clasp_t_of(y);
   tx = clasp_t_of(x);
-  if (clasp_unlikely(!gc::IsA<Number_sp>(x))) {
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Number_O);
-  }
   if (clasp_zerop(x)) {
     z = clasp_times(x, y);
     if (!clasp_plusp((ty == number_Complex) ? gc::As<Complex_sp>(y)->real() : gc::As<Real_sp>(y)))

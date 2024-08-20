@@ -166,9 +166,6 @@ extern core::Symbol_sp& _sym_name;
 #define ERROR_WRONG_TYPE_NTH_ARG(_fn_, _nth_, _datum_, _expectedType_)                                                             \
   core__wrong_type_nth_arg(__FILE__, __LINE__, _fn_, _nth_, _datum_, _expectedType_)
 
-#define QERROR_WRONG_TYPE_NTH_ARG(_nth_, _datum_, _expectedType_)                                                                  \
-  core__wrong_type_nth_arg(__FILE__, __LINE__, core::lisp_intern(__FUNCTION__, CurrentPkg), _nth_, _datum_, _expectedType_)
-
 #define ARITHMETIC_ERROR(_operation_, _operands_)                                                                                  \
   ERROR(cl::_sym_arithmeticError, core::lisp_createList(kw::_sym_operation, _operation_, kw::_sym_operands, _operands_))
 
@@ -629,6 +626,7 @@ void FEargument_number_error(T_sp supplied, T_sp min, T_sp max);
 T_sp CEerror(T_sp c, const char* fmt, int numArgs, ...);
 
 void FEpackage_error(const char* fmt, T_sp package, int nargs, ...);
+void CEpackage_lock_violation(T_sp pkg, const char* fmt, int nargs, ...);
 void CEpackage_error(const char* fmt, const char* continue_message, T_sp package, int nargs, ...);
 void Warn(T_sp datum, List_sp arguments);
 

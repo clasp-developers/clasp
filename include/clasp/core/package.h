@@ -59,18 +59,14 @@ public: // instance variables
   SimpleString_sp _Name;
   gctools::Vec0<Package_sp> _UsingPackages;
   gctools::Vec0<Package_sp> _PackagesUsedBy;
-  std::atomic<bool> _KeywordPackage;
-  std::atomic<bool> _AmpPackage;
-  std::atomic<bool> _ActsLikeKeywordPackage;
   List_sp _Nicknames;
   List_sp _LocalNicknames;
+  gctools::Vec0<Package_sp> _Implementors;
   T_sp _Documentation;
 #ifdef CLASP_THREADS
   mutable mp::SharedMutex _Lock;
 #endif
-  bool systemLockedP = false;
-  bool userLockedP = false;
-  bool zombieP = false;
+  std::atomic<uint16_t> _Flags;
 
 public: // Creation class functions
   static Package_sp create(const string& p);
@@ -86,6 +82,15 @@ public:
 private:
   // Returns a list of packages that will newly conflict.
   List_sp export_conflicts(SimpleString_sp nameKey, Symbol_sp sym);
+  // flag masks.
+  static const uint16_t flag_zombie = 0x01; // is the package deleted?
+  // is it a system package? (unused for now)
+  static const uint16_t flag_sys = 0x02;
+  // is it locked? (i.e. unintern blocked, etc., not the mutex)
+  static const uint16_t flag_lock = 0x04;
+  // is this the keyword package?
+  static const uint16_t flag_keyword = 0x08;
+  static const uint16_t flag_actskw = 0x10;
 
 public:
   string packageName() const;
@@ -105,11 +110,6 @@ public:
   void setLocalNicknames(List_sp localNicknames) { this->_LocalNicknames = localNicknames; }
   List_sp getLocalNicknames() const { return this->_LocalNicknames; }
   T_sp findPackageByLocalNickname(String_sp);
-  void setKeywordPackage(bool b) { this->_KeywordPackage = b; };
-  bool isKeywordPackage() const { return this->_KeywordPackage; };
-  // Cando makes a package that acts like the keyword package (symbol values are symbols and all symbols extern)
-  void setActsLikeKeywordPackage(bool b) { this->_ActsLikeKeywordPackage = b; };
-  bool actsLikeKeywordPackage() const { return this->_KeywordPackage || this->_ActsLikeKeywordPackage; };
 
   string allSymbols();
 
@@ -177,6 +177,9 @@ public:
   bool unusePackage_no_outer_lock(Package_sp usePackage);
   bool unusePackage_no_inner_lock(Package_sp usePackage);
 
+  void addImplementationPackage(Package_sp);
+  void removeImplementationPackage(Package_sp);
+
   bool usingPackageP_no_lock(Package_sp pkg) const;
   /*! Return true if we are using the package */
   bool usingPackageP(Package_sp pkg) const;
@@ -195,24 +198,43 @@ public:
 
   /*! Map over the Internal key/value pairs */
   void mapInternals(KeyValueMapper* mapper);
+private:
+  inline uint16_t flags() const { return _Flags.load(std::memory_order_relaxed); }
+  inline bool getFlag(uint16_t n) const { return !!(flags() & n); }
+  inline void setFlag(bool flag, uint16_t n) {
+    if (flag) _Flags.fetch_or(n, std::memory_order_relaxed);
+    else _Flags.fetch_and(~n, std::memory_order_relaxed);
+  }
+public:
+  void setSystemPackageP(bool value) { setFlag(value, flag_sys); }
+  bool getSystemPackageP() const { return getFlag(flag_sys); }
+  void setLockedP(bool value) { setFlag(value, flag_lock); }
+  bool getLockedP() const { return getFlag(flag_lock); }
 
-  void setSystemLockedP(bool value) { this->systemLockedP = value; }
+  // is this package locked? accounting for implementation packages
+  // (use this instead of getLockedP most of the time)
+  bool lockedP() const;
 
-  bool getSystemLockedP() { return this->systemLockedP; }
+  void setZombieP(bool value) { setFlag(value, flag_zombie); }
+  bool getZombieP() { return getFlag(flag_zombie); }
+  void setKeywordPackage(bool b) { setFlag(b, flag_keyword); }
+  bool isKeywordPackage() const { return getFlag(flag_keyword); }
+  // Cando makes a package that acts like the keyword package (symbol values are symbols and all symbols extern)
+  void setActsLikeKeywordPackage(bool b) { setFlag(b, flag_actskw); }
+  bool actsLikeKeywordPackage() const {
+    return isKeywordPackage() || getFlag(flag_actskw);
+  }
 
-  void setUserLockedP(bool value) { this->userLockedP = value; }
-
-  bool getUserLockedP() { return this->userLockedP; }
-
-  void setZombieP(bool value) { this->zombieP = value; }
-
-  bool getZombieP() { return this->zombieP; }
 
 public:
   // Not default constructable
   Package_O()
-      : _ActsLikeKeywordPackage(false), _Nicknames(nil<T_O>()), _LocalNicknames(nil<T_O>()), _Documentation(nil<T_O>()),
-        _Lock(PACKAGE__NAMEWORD){};
+      : _Flags(0), _Nicknames(nil<T_O>()), _LocalNicknames(nil<T_O>()), _Documentation(nil<T_O>()),
+        _Lock(PACKAGE__NAMEWORD){
+    // by default, packages implement themselves.
+    // this can be changed later.
+    this->_Implementors.push_back(this->asSmartPtr());
+  };
 
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
     if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {

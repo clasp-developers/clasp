@@ -576,10 +576,6 @@ also known as unix-domain sockets."))
       (sb-ext:cancel-finalization socket))
     stream))
 
-(defmethod ext::stream-fd ((socket socket))
-  (socket-file-descriptor socket))
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; ERROR HANDLING

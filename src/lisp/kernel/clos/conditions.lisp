@@ -995,17 +995,14 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
       (check-chosen-symbol chosen-symbol candidates)
       (shadowing-import (list chosen-symbol) package))))
 
-(define-condition core:package-lock-violation (package-error)
-  ((%format-control :initarg :format-control
-                    :reader package-lock-violation-format-control)
-   (%format-arguments :initarg :format-arguments
-                      :reader package-lock-violation-format-arguments))
+(define-condition core:package-lock-violation (package-error simple-condition)
+  ()
   (:report
    (lambda (condition stream)
      (format stream "~@<Lock on package ~a violated when ~?~:@>"
              (package-error-package condition)
-             (package-lock-violation-format-control condition)
-             (package-lock-violation-format-arguments condition)))))
+             (simple-condition-format-control condition)
+             (simple-condition-format-arguments condition)))))
 
 (defun core:package-lock-violation (package
                                     format-control &rest format-arguments)

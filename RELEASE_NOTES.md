@@ -1,5 +1,9 @@
 # Version 2.7.0 (LLVM15-18) Pending
 
+## Added
+* Package lock support, based on SBCL's. Currently ignores local
+  bindings. Thanks @bumblingbats.
+
 ## Fixed
 * Pathnames and filesystem operations support Unicode (#1595).
 * Package names support Unicode (#1596).

@@ -1756,6 +1756,8 @@ CL_DEFUN Rational_sp core__unix_get_local_time_zone() {
   return Rational_O::create(make_fixnum(mw), make_fixnum(60));
 }
 
+SYMBOL_EXPORT_SC_(CorePkg, mkdir);
+
 CL_LAMBDA(dir mode);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(mkdir)dx");
@@ -1768,7 +1770,7 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
     Fixnum_sp fnMode(gc::As<Fixnum_sp>(mode));
     modeint = unbox_fixnum(fnMode);
     if (modeint < 0 || modeint > 0777) {
-      QERROR_WRONG_TYPE_NTH_ARG(2, mode, cl::_sym_fixnum);
+      ERROR_WRONG_TYPE_NTH_ARG(core::_sym_mkdir, 2, mode, Integer_O::makeIntegerType(0, 0777));
     }
   }
   {

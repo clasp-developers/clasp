@@ -636,7 +636,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp cl__digit_char_p(Character_sp c, Fixnum_sp radix) {
   Fixnum basis = unbox_fixnum(radix);
   if (basis < 2 || basis > 36) {
-    QERROR_WRONG_TYPE_NTH_ARG(2, radix, Integer_O::makeIntegerType(2, 36));
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_digitCharP, 2, radix, Integer_O::makeIntegerType(2, 36));
   }
   Fixnum value = clasp_digitp(clasp_as_claspCharacter(c), basis);
   if (value < 0)
