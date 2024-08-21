@@ -383,6 +383,43 @@ SYMBOL_EXPORT_SC_(KeywordPkg, sig_block);
 SYMBOL_EXPORT_SC_(KeywordPkg, sig_unblock);
 SYMBOL_EXPORT_SC_(KeywordPkg, sig_setmask);
 
+// Get this thread's current signal mask.
+CL_DEFUN List_sp core__get_sigmask() {
+  ql::list sigs;
+  sigset_t mask;
+  pthread_sigmask(SIG_UNBLOCK, NULL, &mask);
+  // Maybe some macro magic would make this part less dumb.
+  if (sigismember(&mask, SIGABRT)) sigs << core::_sym_signal_SIGABRT;
+  if (sigismember(&mask, SIGALRM)) sigs << core::_sym_signal_SIGALRM;
+  if (sigismember(&mask, SIGBUS)) sigs << core::_sym_signal_SIGBUS;
+  if (sigismember(&mask, SIGCHLD)) sigs << core::_sym_signal_SIGCHLD;
+  if (sigismember(&mask, SIGCONT)) sigs << core::_sym_signal_SIGCONT;
+  if (sigismember(&mask, SIGFPE)) sigs << core::_sym_signal_SIGFPE;
+  if (sigismember(&mask, SIGHUP)) sigs << core::_sym_signal_SIGHUP;
+  if (sigismember(&mask, SIGILL)) sigs << core::_sym_signal_SIGILL;
+  if (sigismember(&mask, SIGINT)) sigs << core::_sym_signal_SIGINT;
+  if (sigismember(&mask, SIGKILL)) sigs << core::_sym_signal_SIGKILL;
+  if (sigismember(&mask, SIGPIPE)) sigs << core::_sym_signal_SIGPIPE;
+  if (sigismember(&mask, SIGQUIT)) sigs << core::_sym_signal_SIGQUIT;
+  if (sigismember(&mask, SIGSEGV)) sigs << core::_sym_signal_SIGSEGV;
+  if (sigismember(&mask, SIGSTOP)) sigs << core::_sym_signal_SIGSTOP;
+  if (sigismember(&mask, SIGTERM)) sigs << core::_sym_signal_SIGTERM;
+  if (sigismember(&mask, SIGTSTP)) sigs << core::_sym_signal_SIGTSTP;
+  if (sigismember(&mask, SIGTTIN)) sigs << core::_sym_signal_SIGTTIN;
+  if (sigismember(&mask, SIGTTOU)) sigs << core::_sym_signal_SIGTTOU;
+  if (sigismember(&mask, SIGUSR1)) sigs << core::_sym_signal_SIGUSR1;
+  if (sigismember(&mask, SIGUSR2)) sigs << core::_sym_signal_SIGUSR2;
+  if (sigismember(&mask, SIGPROF)) sigs << core::_sym_signal_SIGPROF;
+  if (sigismember(&mask, SIGSYS)) sigs << core::_sym_signal_SIGSYS;
+  if (sigismember(&mask, SIGTRAP)) sigs << core::_sym_signal_SIGTRAP;
+  if (sigismember(&mask, SIGURG)) sigs << core::_sym_signal_SIGURG;
+  if (sigismember(&mask, SIGVTALRM)) sigs << core::_sym_signal_SIGVTALRM;
+  if (sigismember(&mask, SIGXCPU)) sigs << core::_sym_signal_SIGXCPU;
+  if (sigismember(&mask, SIGXFSZ)) sigs << core::_sym_signal_SIGXFSZ;
+  // done
+  return sigs.cons();
+}
+
 CL_DOCSTRING(R"(Like the unix function sigthreadmask. 
 The **how** argument can be one of :sig-setmask, :sig-block, :sig-unblock.
 The **old-set** can be a core:sigset or nil (NULL).
