@@ -89,7 +89,7 @@ void sjlj_unwind_invalidate(DestDynEnv_sp dest) {
         thread->dynEnvStackSet(CONS_CDR(iter));
       else
         thread->dynEnvStackSet(iter);
-      longjmp(*(dest->target), index);
+      _longjmp(*(dest->target), index);
     } else {
       thread->dynEnvStackSet(iter);
       diter->proceed();
@@ -99,7 +99,7 @@ void sjlj_unwind_invalidate(DestDynEnv_sp dest) {
 
 [[noreturn]] void UnwindProtectDynEnv_O::proceed() {
   my_thread->dynEnvStackSet(CONS_CDR(my_thread->dynEnvStackGet()));
-  longjmp(*(this->target), 1); // 1 irrelevant
+  _longjmp(*(this->target), 1); // 1 irrelevant
 }
 
 void BindingDynEnv_O::proceed() { this->cell->unbind(this->old); }
