@@ -107,8 +107,6 @@ LtvcReturn ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t fptr_i
 LtvcReturn ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t fptr_index, const char* name);
 LtvcReturn ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t fptr_index, const char* name);
 
-void cc_throw(core::T_O* tag, core::T_O* resultP);
-
 void cc_invoke_startup_functions();
 void cc_validate_tagged_pointer(core::T_O* ptr);
 
