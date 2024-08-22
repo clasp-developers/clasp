@@ -1713,41 +1713,27 @@ static Integer_sp mantissa_and_exponent_from_ratio(Integer_sp num, Integer_sp de
   return quotient;
 }
 
-float Ratio_O::as_float_() const {
-  gc::Fixnum exponent;
-  Integer_sp mantissa =
-      mantissa_and_exponent_from_ratio(this->_numerator, this->_denominator, std::numeric_limits<float>::digits, &exponent);
-  return std::ldexp(mantissa.fixnump() ? static_cast<float>(mantissa.unsafe_fixnum()) : mantissa->as_float_(), exponent);
+template <typename Float> inline Float ratio_to_float(Integer_sp num, Integer_sp den) {
+  struct float_convert<Float>::quadruple q = {
+    .sign = 1
+  };
+
+  if (clasp_minusp(num)) {
+    q.sign = -1;
+    num = gc::As_unsafe<Integer_sp>(clasp_negate(num));
+  }
+
+  q.exponent = clasp_integer_length(num) - clasp_integer_length(den) - float_convert<Float>::significand_width - 1;
+  q.significand = clasp_to_integral<typename float_convert<Float>::uint_t>(clasp_integer_divide(clasp_ash(num, -q.exponent), den));
+
+  return float_convert<Float>::from_quadruple(q);
 }
 
-double Ratio_O::as_double_() const {
-  gc::Fixnum exponent;
-  Integer_sp mantissa =
-      mantissa_and_exponent_from_ratio(this->_numerator, this->_denominator, std::numeric_limits<double>::digits, &exponent);
-  return std::ldexp(mantissa.fixnump() ? static_cast<double>(mantissa.unsafe_fixnum()) : mantissa->as_double_(), exponent);
+float Ratio_O::as_float_() const { return ratio_to_float<float>(this->_numerator, this->_denominator); }
 
-  /*if ((this->_numerator).fixnump() && (this->_denominator).fixnump()) {
-    double d = clasp_to_double(this->_numerator);
-    d /= clasp_to_double(this->_denominator);
-    return d;
-  } else {
-    gc::Fixnum exponent;
-    Integer_sp mantissa = mantissa_and_exponent_from_ratio(this->_numerator, this->_denominator, DBL_MANT_DIG, &exponent);
-    double output;
-    if (mantissa.fixnump())
-      output = mantissa.unsafe_fixnum();
-    else
-      output = mantissa->as_double_();
-    return std::ldexp(output, exponent);
-  }*/
-}
+double Ratio_O::as_double_() const { return ratio_to_float<double>(this->_numerator, this->_denominator); }
 
-LongFloat Ratio_O::as_long_float_() const {
-  gc::Fixnum exponent;
-  Integer_sp mantissa =
-      mantissa_and_exponent_from_ratio(this->_numerator, this->_denominator, std::numeric_limits<LongFloat>::digits, &exponent);
-  return std::ldexp(mantissa.fixnump() ? static_cast<LongFloat>(mantissa.unsafe_fixnum()) : mantissa->as_long_float_(), exponent);
-}
+LongFloat Ratio_O::as_long_float_() const { return ratio_to_float<LongFloat>(this->_numerator, this->_denominator); }
 
 string Ratio_O::__repr__() const {
   stringstream ss;

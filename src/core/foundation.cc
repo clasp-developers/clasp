@@ -214,10 +214,6 @@ CL_DEFUN void core__dump_class_ids() { reg::dump_class_ids(); }
 
 SYMBOL_EXPORT_SC_(ClPkg,floating_point_invalid_operation);
 
-void lisp_floating_point_invalid_operation() {
-  lisp_error(cl::_sym_floating_point_invalid_operation,nil<core::T_O>());
-}
-
 void lisp_errorExpectedList(core::T_O* v) {
   T_sp tv((gctools::Tagged)v);
   TYPE_ERROR(tv, cl::_sym_list);

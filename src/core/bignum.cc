@@ -799,35 +799,39 @@ Number_sp Bignum_O::oneMinus_() const { return next_fadd(this->limbs(), this->le
 
 Number_sp Bignum_O::onePlus_() const { return next_fadd(this->limbs(), this->length(), 1); }
 
-double next_to_double(mp_size_t len, const mp_limb_t* limbs) {
-  // MPN does not seem to export a float conversion function,
-  // so we roll our own. FIXME: Could get bad with float rounding
-  // or otherwise as I'm making this up as I go.
+template <typename Float> Float limbs_to_float(mp_size_t len, const mp_limb_t* limbs) {
+  constexpr size_t limb_width = sizeof(mp_limb_t) * 8;
   mp_size_t size = std::abs(len);
+  struct float_convert<Float>::quadruple q = {
+    .category = float_convert<Float>::category::finite, .significand = 0, .exponent = (size - 1) * limb_width,
+    .sign = (len < 0) ? -1 : 1
+  };
+  size_t shift = float_convert<Float>::significand_width + 1;
+  size_t width = std::bit_width(limbs[size - 1]);
 
-  // There are no length zero bignums.
-  // If the bignum is only one long, we just convert directly.
-  if (len == 1)
-    return static_cast<double>(limbs[0]);
-  else if (len == -1)
-    return -static_cast<double>(limbs[0]);
+  if (width >= shift) {
+    q.significand = limbs[size - 1] >> (width - shift);
+    q.exponent += width - shift;
+  } else {
+    q.significand = limbs[size - 1];
+    shift -= width;
 
-  // Otherwise, we just use the most significant two limbs.
-  // Assuming the float format has at most 128 bits of significand,
-  // the lower limbs ought to be irrelevant.
-  // (In fact one 64-bit number would probably be enough, but
-  //  it's possible the high bits of this number are almost all zero.)
-  double ultimate = static_cast<double>(limbs[size - 1]);
-  double penultimate = static_cast<double>(limbs[size - 2]);
-  double soon = penultimate + std::ldexp(ultimate, 64);
-  return std::ldexp(((len < 0) ? -soon : soon), 64 * (size - 2));
+    for (mp_size_t i = size - 2; i > -1 && shift > 0; i--) {
+      size_t limb_shift = std::min(shift, limb_width);
+      q.significand = (q.significand << limb_shift) | (limbs[i] >> (limb_width - limb_shift));
+      q.exponent -= limb_shift;
+      shift -= limb_shift;
+    }
+  }
+
+  return float_convert<Float>::from_quadruple(q);
 }
 
-float Bignum_O::as_float_() const { return static_cast<float>(mpz_get_d(this->mpz().get_mpz_t())); }
+float Bignum_O::as_float_() const { return limbs_to_float<float>(this->length(), this->limbs()); }
 
-double Bignum_O::as_double_() const { return mpz_get_d(this->mpz().get_mpz_t()); }
+double Bignum_O::as_double_() const { return limbs_to_float<double>(this->length(), this->limbs()); }
 
-LongFloat Bignum_O::as_long_float_() const { return static_cast<LongFloat>(next_to_double(this->length(), this->limbs())); }
+LongFloat Bignum_O::as_long_float_() const { return limbs_to_float<LongFloat>(this->length(), this->limbs()); }
 
 DOCGROUP(clasp);
 CL_DEFUN int core__next_compare(Bignum_sp left, Bignum_sp right) {

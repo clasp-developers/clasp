@@ -36,6 +36,7 @@ THE SOFTWARE.
 
 #include <fmt/format.h>
 #include <fmt/ostream.h>
+#include <clasp/core/float_util.h>
 #include <clasp/core/newhash.h>
 #include <clasp/core/commonLispPackage.fwd.h>
 #include <clasp/core/corePackage.fwd.h>
