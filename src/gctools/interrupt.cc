@@ -3,10 +3,6 @@
 #if defined(__i386__) || defined(__x86_64__)
 #include <xmmintrin.h>
 #endif
-#ifdef __aarch64__
-#include <cfenv>
-#include <fenv.h>
-#endif
 #include <llvm/Support/ErrorHandling.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/symbol.h>
@@ -19,8 +15,8 @@
 #include <clasp/core/mpPackage.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/lispList.h>
-#include <clasp/core/fp_env.h>
 #include <clasp/gctools/interrupt.h>
+#include <clasp/core/numbers.h>
 
 SYMBOL_EXPORT_SC_(CorePkg, terminal_interrupt);
 SYMBOL_EXPORT_SC_(ExtPkg, illegal_instruction);
@@ -296,85 +292,44 @@ int global_signalTrap = 0;
 int global_pollTicksGC = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
 
 DOCGROUP(clasp);
-CL_DEFUN void core__disable_all_fpe_masks() {
-#if defined(__i386__) || defined(__x86_64__)
-  _MM_SET_EXCEPTION_MASK(_MM_MASK_MASK);
-#elif defined(__aarch64__)
-  std::fenv_t env;
-  std::feholdexcept(&env);
-#else
-  printf("%s:%d:%s Add support for FPE masks for this architecture\n", __FILE__, __LINE__, __FUNCTION__);
-#endif
-}
-
-CL_LAMBDA(&key underflow overflow inexact invalid divide-by-zero denormalized-operand);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(core::enable-fpe-masks)dx");
-DOCGROUP(clasp);
-CL_DEFUN void core__enable_fpe_masks(core::T_sp underflow, core::T_sp overflow, core::T_sp inexact, core::T_sp invalid,
-                                     core::T_sp divide_by_zero, core::T_sp denormalized_operand) {
-  // See https://doc.rust-lang.org/stable/core/arch/x86_64/fn._mm_setcsr.html
-  // mask all -> no fpe-exceptions
-#if defined(__i386__) || defined(__x86_64__)
-  _MM_SET_EXCEPTION_MASK(_MM_MASK_MASK);
-  if (underflow.notnilp())
-    _mm_setcsr(_mm_getcsr() & (~_MM_MASK_UNDERFLOW));
-  if (overflow.notnilp())
-    _mm_setcsr(_mm_getcsr() & (~_MM_MASK_OVERFLOW));
-  if (inexact.notnilp())
-    _mm_setcsr(_mm_getcsr() & (~_MM_MASK_INEXACT));
-  if (invalid.notnilp())
-    _mm_setcsr(_mm_getcsr() & (~_MM_MASK_INVALID));
-  if (divide_by_zero.notnilp())
-    _mm_setcsr(_mm_getcsr() & (~_MM_MASK_DIV_ZERO));
-  if (denormalized_operand.notnilp())
-    _mm_setcsr(_mm_getcsr() & (~_MM_MASK_DENORM));
-#elif defined(CLASP_APPLE_SILICON)
-  std::fenv_t env;
-  std::fegetenv(&env);
-  env.__fpcr = (underflow.notnilp() ? __fpcr_trap_underflow : 0) | (overflow.notnilp() ? __fpcr_trap_overflow : 0) |
-               (inexact.notnilp() ? __fpcr_trap_inexact : 0) | (invalid.notnilp() ? __fpcr_trap_invalid : 0) |
-               (divide_by_zero.notnilp() ? __fpcr_trap_divbyzero : 0) | (denormalized_operand.notnilp() ? __fpcr_trap_denormal : 0);
-  std::fesetenv(&env);
-#else
-  printf("%s:%d:%s Add support for FPE masks for this architecture\n", __FILE__, __LINE__, __FUNCTION__);
-#endif
+CL_DEFUN int core__fe_enable_except(int ex) {
+  feclearexcept(FE_ALL_EXCEPT);
+  int prev = feenableexcept(ex);
+  _lisp->setTrapFpeBits(fegetexcept());
+  return prev;
 }
 
 DOCGROUP(clasp);
-CL_DEFUN core::Fixnum_sp core__get_current_fpe_mask() {
-#if defined(__i386__) || defined(__x86_64__)
-  unsigned int before = _MM_GET_EXCEPTION_MASK();
-  return core::clasp_make_fixnum(before);
-#elif defined(__aarch64__)
-  std::fenv_t env;
-  std::fegetenv(&env);
-  return core::clasp_make_fixnum(env.__fpcr);
-#else
-  printf("%s:%d:%s Add support for FPE masks for this architecture\n", __FILE__, __LINE__, __FUNCTION__);
-  abort();
-#endif
+CL_DEFUN int core__fe_disable_except(int ex) {
+  feclearexcept(FE_ALL_EXCEPT);
+  int prev = fedisableexcept(ex);
+  _lisp->setTrapFpeBits(fegetexcept());
+  return prev;
 }
 
 DOCGROUP(clasp);
-CL_DEFUN void core__set_current_fpe_mask(core::Fixnum_sp mask) {
-  Fixnum value = core::unbox_fixnum(mask);
-#if defined(__i386__) || defined(__x86_64__)
-  _MM_SET_EXCEPTION_MASK(value);
-#elif defined(__aarch64__)
-  std::fenv_t env;
-  std::fegetenv(&env);
-  env.__fpcr = value;
-  std::fesetenv(&env);
-#else
-  printf("%s:%d:%s Add support for FPE masks for this architecture\n", __FILE__, __LINE__, __FUNCTION__);
-#endif
+CL_DEFUN int core__fe_get_except() {
+  return fegetexcept();
+}
+
+DOCGROUP(clasp);
+CL_DEFUN int core__fe_restore_except(int ex) {
+  feclearexcept(FE_ALL_EXCEPT);
+  int prev = feenableexcept(ex);
+  fedisableexcept(~ex);
+  _lisp->setTrapFpeBits(fegetexcept());
+  return prev;
 }
 
 void handle_fpe(int signo, siginfo_t* info, void* context) {
   (void)context; // unused
-  // printf("Enter handle_fpe Signo: %d Errno:%d Code:%d\n", (info->si_signo), (info->si_errno), (info->si_code));
-  // init_float_traps(); // WHY
+  if (_lisp) {
+    // If _lisp has started then restore the traps that existed before the SIGFPE. This is needed on at least amd64 because the
+    // masked traps are reset before SIGFPE is raised.
+    feenableexcept(_lisp->getTrapFpeBits());
+    fedisableexcept(~_lisp->getTrapFpeBits());
+  }
+
   // TODO: Get operation and operands when possible.
   // Probably off the call stack.
   switch (info->si_code) {
@@ -403,6 +358,27 @@ void handle_fpe(int signo, siginfo_t* info, void* context) {
     handle_signal_now(signo);
   }
 }
+
+#ifdef CLASP_APPLE_SILICON
+void handle_ill(int signo, siginfo_t* info, void* context) {
+  int esr;
+  if (info->si_code == ILL_ILLTRP && ((esr = static_cast<ucontext_t*>(context)->uc_mcontext->__es.__esr) >> 26 & 0x3f) == 0x2C) {
+    if (esr & FE_INEXACT) {
+      NO_INITIALIZERS_ERROR(cl::_sym_floatingPointInexact);
+    } else if (esr & FE_UNDERFLOW) {
+      NO_INITIALIZERS_ERROR(cl::_sym_floatingPointUnderflow);
+    } else if (esr & FE_OVERFLOW) {
+      NO_INITIALIZERS_ERROR(cl::_sym_floatingPointOverflow);
+    } else if (esr & FE_DIVBYZERO) {
+      NO_INITIALIZERS_ERROR(cl::_sym_divisionByZero);
+    } else if (esr & FE_INVALID) {
+      NO_INITIALIZERS_ERROR(cl::_sym_floatingPointInvalidOperation);
+    }
+  }
+  
+  handle_signal_now(signo);
+}
+#endif
 
 void handle_segv(int signo, siginfo_t* info, void* context) {
   (void)context; // unused
@@ -467,8 +443,12 @@ void initialize_signals(int clasp_signal) {
     INIT_SIGNALI(SIGBUS, (SA_NODEFER | SA_RESTART), handle_bus);
   }
   INIT_SIGNALI(SIGFPE, (SA_NODEFER | SA_RESTART), handle_fpe);
-  // Handle all signals that would terminate clasp (and can be caught)
+#ifdef CLASP_APPLE_SILICON
+  INIT_SIGNALI(SIGILL, (SA_NODEFER | SA_RESTART), handle_ill);
+#else
   INIT_SIGNAL(SIGILL, (SA_NODEFER | SA_RESTART), handle_signal_now);
+#endif
+  // Handle all signals that would terminate clasp (and can be caught)
   INIT_SIGNAL(SIGPIPE, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGALRM, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGTTIN, (SA_NODEFER | SA_RESTART), handle_signal_now);
@@ -486,8 +466,6 @@ void initialize_signals(int clasp_signal) {
 #endif
   INIT_SIGNAL(SIGXFSZ, (SA_NODEFER | SA_RESTART), handle_signal_now);
 
-  // FIXME: Move?
-  init_float_traps();
   llvm::install_fatal_error_handler(fatal_error_handler, NULL);
 }
 

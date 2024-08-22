@@ -202,7 +202,7 @@ Lisp::GCRoots::GCRoots()
   this->_SingleDispatchGenericFunctions.store(nil<core::T_O>());
 };
 
-Lisp::Lisp() : _Booted(false), _MpiEnabled(false), _MpiRank(0), _MpiSize(1), _BootClassTableIsValid(true) {
+Lisp::Lisp() : _Booted(false), _MpiEnabled(false), _MpiRank(0), _MpiSize(1), _BootClassTableIsValid(true), _TrapFpeBits(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW) {
   //  this->_Roots._Bindings.reserve(1024); // moved to Lisp::initialize()
 }
 
@@ -564,6 +564,8 @@ void Lisp::startupLispEnvironment() {
 
   this->_Roots._PrintSymbolsProperly = true;
   mpip::Mpi_O::initializeGlobals(_lisp);
+  feenableexcept(_TrapFpeBits);
+  fedisableexcept(~_TrapFpeBits);
   _lisp->_Roots._Started = true;
 
   //

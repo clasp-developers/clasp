@@ -13,6 +13,22 @@
 (defparameter *test-marker-table* (make-hash-table))
 (defparameter *duplicate-tests* nil)
 
+(defun message (level control-string &rest args)
+  "Display a message using ANSI highlighting if possible. LEVEL should be NIL, :ERR,
+:WARN or :EMPH."
+  (fresh-line *standard-output*)
+  (when (interactive-stream-p *standard-output*)
+    (format t "~c[~dm" #\escape
+            (case level
+              (:err      31)
+              (:warn     33)
+              (:emph     32)
+              (otherwise 0))))
+  (apply #'format t control-string args)
+  (when (interactive-stream-p *standard-output*)
+    (format t "~c[0m" #\escape))
+  (terpri *standard-output*))
+
 (defun reset-clasp-tests ()
   (setq *expected-failed-tests* nil
         *unexpected-failed-tests* nil
@@ -32,18 +48,18 @@
   (push file&error *files-failed-to-compile*))
   
 (defun show-test-summary ()
-  (format t "~@[~%Failures:~%  ~/pprint-fill/~%~]~
+  (message :emph "~@[~%Failures:~%  ~/pprint-fill/~%~]~
 ~@[~%Unexpected Successes:~%  ~/pprint-fill/~%~]~
 ~@[~%Expected Failures:~%  ~/pprint-fill/~%~]
-Successes: ~d~%"
+Successes: ~d"
           (reverse *unexpected-failed-tests*) (reverse *unexpected-passed-tests*)
           (reverse *expected-failed-tests*) (length *expected-passed-tests*))
   (when *files-failed-to-compile*
     (dolist (file&error *files-failed-to-compile*)
-      (format t "Compilation error for file ~a with error  ~a~%" (first file&error)(second file&error))))
+      (message :err "Compilation error for file ~a with error  ~a" (first file&error)(second file&error))))
   (when *duplicate-tests*
     (dolist (test *duplicate-tests*)
-      (format t "Duplicate test ~a~%" test)))
+      (message :warn "Duplicate test ~a" test)))
   (not *unexpected-failed-tests*))
 
 (defvar *all-runtime-errors* nil)
@@ -54,24 +70,26 @@ Successes: ~d~%"
   (if (member name *expected-failures*)
       (push name *expected-failed-tests*)
       (push name *unexpected-failed-tests*))
-  (format t "~&Failed ~s~%Unexpected error~%~t~a~%while evaluating~%~t~a~%"
-          name error form)
-  (when description (format t "~s~%" description)))
+  (message :err "Failed ~s" name)
+  (message :warn "Unexpected error~%~t~a~%while evaluating~%~t~a"
+           error form)
+  (when description (message :info "~s" description)))
 
 (defun %fail-test (name form expected actual description test)
   (if (member name *expected-failures*)
       (push name *expected-failed-tests*)
       (push name *unexpected-failed-tests*))
-  (format t "~&Failed ~s~%Wanted values ~s to~%~{~t~a~%~}but got~%~{~t~a~%~}"
-          name test expected actual)
-  (format t "while evaluating~%~t~a~%" form)
-  (when description (format t "~s~%" description)))
+  (message :err "Failed ~s" name)
+  (message :warn "Wanted values ~s to~%~{~t~a~%~}but got~%~{~t~a~%~}"
+           test expected actual)
+  (message :warn "while evaluating~%~t~a~%" form)
+  (when description (message :info "~s" description)))
 
 (defun %succeed-test (name)
   (if (member name *expected-failures*)
       (push name *unexpected-passed-tests*)
       (push name *expected-passed-tests*))
-  (format t "~&Passed ~s~%" name))
+  (message :info "Passed ~s" name))
 
 (defun %test (name form thunk expected &key description (test 'equalp))
   (note-test name)
@@ -120,7 +138,7 @@ Successes: ~d~%"
           (load fasl)))
     (error (e)
       (note-compile-error (list file e))
-      (format t "Regression: compile-file of ~a failed with ~a~%" file e))))
+      (message :err "Regression: compile-file of ~a failed with ~a" file e))))
 
 (defun no-handler-case-load-if-compiled-correctly (file)
   (multiple-value-bind

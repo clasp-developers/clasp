@@ -823,9 +823,9 @@ double next_to_double(mp_size_t len, const mp_limb_t* limbs) {
   return std::ldexp(((len < 0) ? -soon : soon), 64 * (size - 2));
 }
 
-float Bignum_O::as_float_() const { return static_cast<float>(next_to_double(this->length(), this->limbs())); }
+float Bignum_O::as_float_() const { return static_cast<float>(mpz_get_d(this->mpz().get_mpz_t())); }
 
-double Bignum_O::as_double_() const { return next_to_double(this->length(), this->limbs()); }
+double Bignum_O::as_double_() const { return mpz_get_d(this->mpz().get_mpz_t()); }
 
 LongFloat Bignum_O::as_long_float_() const { return static_cast<LongFloat>(next_to_double(this->length(), this->limbs())); }
 

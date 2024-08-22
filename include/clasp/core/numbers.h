@@ -30,6 +30,7 @@
 #include <cmath>
 #include <math.h>
 #include <limits.h>
+#include <cfenv>
 #pragma GCC diagnostic push
 // #pragma GCC diagnostic ignored "-Wunused-local-typedef"
 #pragma GCC diagnostic pop
@@ -58,6 +59,73 @@
 #define CLASP_PI_L 3.14159265358979323846264338327950288l
 #define CLASP_PI2_D 1.57079632679489661923132169163975144
 #define CLASP_PI2_L 1.57079632679489661923132169163975144l
+
+#ifdef _TARGET_OS_DARWIN
+
+#if defined(__aarch64__)
+#define __FE_EXCEPT_SHIFT 8
+#elif defined(__amd64__)
+#define __FE_EXCEPT_SHIFT 7
+#else
+#error "Don't know how to provide FPE for this platform."
+#endif
+
+#define __FE_ALL_EXCEPT FE_ALL_EXCEPT
+
+inline int feenableexcept(int excepts) {
+  static fenv_t fenv;
+  unsigned int new_excepts = excepts & __FE_ALL_EXCEPT;
+  unsigned int old_excepts = 0;
+
+  if (fegetenv(&fenv)) {
+    return -1;
+  }
+
+#ifdef __aarch64__
+  old_excepts = (fenv.__fpcr >> __FE_EXCEPT_SHIFT) & __FE_ALL_EXCEPT;
+  fenv.__fpcr |= new_excepts << __FE_EXCEPT_SHIFT;
+#else
+  old_excepts = ~fenv.__control & __FE_ALL_EXCEPT;
+  fenv.__control &= ~new_excepts;
+  fenv.__mxcsr &= ~(new_excepts << __FE_EXCEPT_SHIFT);
+#endif
+
+  return fesetenv(&fenv) ? -1 : old_excepts;
+}
+
+inline int fedisableexcept(int excepts) {
+  static fenv_t fenv;
+  unsigned int new_excepts = excepts & __FE_ALL_EXCEPT;
+  unsigned int old_excepts = 0;
+
+  if (fegetenv(&fenv)) {
+    return -1;
+  }
+
+#ifdef __aarch64__
+  old_excepts = (fenv.__fpcr >> __FE_EXCEPT_SHIFT) & __FE_ALL_EXCEPT;
+  fenv.__fpcr &= ~(new_excepts << __FE_EXCEPT_SHIFT);
+#else
+  old_excepts = ~fenv.__control & __FE_ALL_EXCEPT;
+  fenv.__control |= new_excepts;
+  fenv.__mxcsr |= new_excepts << __FE_EXCEPT_SHIFT;
+#endif
+
+  return fesetenv(&fenv) ? -1 : old_excepts;
+}
+
+inline int fegetexcept() {
+  static fenv_t fenv;
+  if (fegetenv(&fenv))
+    return -1;
+#ifdef __aarch64__
+  return (fenv.__fpcr >> __FE_EXCEPT_SHIFT) & __FE_ALL_EXCEPT;
+#else
+  return ~fenv.__control & __FE_ALL_EXCEPT;
+#endif
+}
+
+#endif
 
 namespace cl {
 extern core::Symbol_sp& _sym_Integer_O; // CL:INTEGER
@@ -400,7 +468,6 @@ private:
 
 public:
   static DoubleFloat_sp create(double nm) {
-    ENSURE_NOT_NAN(nm);
     auto v = gctools::GC<DoubleFloat_O>::allocate_with_default_constructor();
     v->set(nm);
     return v;
@@ -417,7 +484,6 @@ public:
   double get() const { return this->_Value; };
   Number_sp signum_() const override;
   Number_sp abs_() const override {
-    ENSURE_NOT_NAN(this->_Value);
     return DoubleFloat_O::create(fabs(this->_Value));
   };
   bool isnan_() const override { return std::isnan(this->_Value); }; // NaN is supposed to be the only value that != itself!!!!

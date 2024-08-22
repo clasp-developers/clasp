@@ -334,13 +334,19 @@
 (test-true infinity-6 (ext:float-infinity-p ext:double-float-negative-infinity))
 (test-true infinity-7 (ext:float-infinity-p ext:long-float-positive-infinity))
 (test-true infinity-8 (ext:float-infinity-p ext:long-float-negative-infinity))
-(test-true infinity-9 (ext:float-infinity-p (+ most-positive-long-float most-positive-long-float)))
+(test-true infinity-9 (ext:with-float-traps-masked (:overflow)
+                        (ext:float-infinity-p (+ most-positive-long-float
+                                                 most-positive-long-float))))
 
 ;;; nan
-(test-true nan-1 (ext:float-nan-p (/ 0s0 0s0)))
-(test-true nan-2 (ext:float-nan-p (/ 0.0 0.0)))
-(test-true nan-3 (ext:float-nan-p (/ 0d0 0d0)))
-(test-true nan-4 (ext:float-nan-p (/ 0l0 0l0)))
+(test-true nan-1 (ext:with-float-traps-masked (:invalid)
+                   (ext:float-nan-p (/ 0s0 0s0))))
+(test-true nan-2 (ext:with-float-traps-masked (:invalid)
+                   (ext:float-nan-p (/ 0.0 0.0))))
+(test-true nan-3 (ext:with-float-traps-masked (:invalid)
+                   (ext:float-nan-p (/ 0d0 0d0))))
+(test-true nan-4 (ext:with-float-traps-masked (:invalid)
+                   (ext:float-nan-p (/ 0l0 0l0))))
 
 
 (test signum-1 (signum most-negative-fixnum) (-1))
@@ -350,24 +356,32 @@
 (test signum-3 (SIGNUM (COMPLEX 3/5 4/5)) (#c(0.6 0.8)))
 
 (test-true sqrt-big-ratio-1 
-      (let ((result 
-             (SQRT 28022395738783732117648967388274923619871355234097921/122167958641777737216225939000892255646232346624)))
-        (and (typep result 'float)(not (ext:float-nan-p result)))))
+  (ext:with-float-traps-masked (:invalid :overflow :underflow :divide-by-zero)
+    (let ((result
+            (SQRT 28022395738783732117648967388274923619871355234097921/122167958641777737216225939000892255646232346624)))
+      (and (typep result 'float)(not (ext:float-nan-p result))))))
 
 (test-true sqrt-bignum-should-fit-in-single-float-1
-      (let ((result 
-             (sqrt 28022395738783732117648967388274923619871355234097921)))
-        (and (typep result 'float)(not (ext:float-nan-p result))(not (ext:float-infinity-p result)))))
+  (ext:with-float-traps-masked (:invalid :overflow :underflow :divide-by-zero)
+    (let ((result
+            (sqrt 28022395738783732117648967388274923619871355234097921)))
+      (and (typep result 'float)
+           (not (ext:float-nan-p result))
+           (not (ext:float-infinity-p result))))))
 
 (test-true sqrt-bignum-does-not-fit-in-single-float-overflow-1
-      (let ((result 
-             (sqrt 2802239573878373211764896738827492361987135523409792123423423468273647283642783467283643456837465347653487563847658346587346523847687324678236487234687234627834687234678236478237687623423426862843627834623846782346234239479283472934798237498273423467823642342342837468723467283462348762378462342347862344998)))
-        (and (typep result 'float)(ext:float-infinity-p result))))
+  (ext:with-float-traps-masked (:invalid :overflow :underflow :divide-by-zero)
+    (let ((result
+            (sqrt 2802239573878373211764896738827492361987135523409792123423423468273647283642783467283643456837465347653487563847658346587346523847687324678236487234687234627834687234678236478237687623423426862843627834623846782346234239479283472934798237498273423467823642342342837468723467283462348762378462342347862344998)))
+      (and (typep result 'float)
+           (ext:float-infinity-p result)))))
 
 (test-true sqrt-bignum-should-fit-in-single-float-overflow-2
-      (let ((result 
-             (sqrt 280223957387837321176489673882749236198713552340979212342342346827364728364278346728364345683746534765348756384765834658734652384768732467823648723468723462783468723467823647823768762342342686284362783462384678234623423947928347293479823749827342346782364234234283746872346728346234876237846234234786234499889)))
-        (and (typep result 'float)(ext:float-infinity-p result))))
+  (ext:with-float-traps-masked (:invalid :overflow :underflow :divide-by-zero)
+    (let ((result
+            (sqrt 280223957387837321176489673882749236198713552340979212342342346827364728364278346728364345683746534765348756384765834658734652384768732467823648723468723462783468723467823647823768762342342686284362783462384678234623423947928347293479823749827342346782364234234283746872346728346234876237846234234786234499889)))
+      (and (typep result 'float)
+           (ext:float-infinity-p result)))))
 
 ;;; the following all have &rest numbers+ in the definition, so need at least 1 argument
 (test-expect-error number-compare-1 (=) :type program-error)

@@ -1531,7 +1531,9 @@ CL_DEFMETHOD Integer_sp ShortFloat_O::castToInteger() const {
 
 Number_sp ShortFloat_O::abs_() const { return ShortFloat_O::create(fabs(this->_Value)); }
 
-void ShortFloat_O::sxhash_(HashGenerator& hg) const { hg.addValue(std::abs(::floor(this->_Value))); }
+void ShortFloat_O::sxhash_(HashGenerator& hg) const {
+  hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<float>::to_bits(this->_Value));
+}
 
 bool ShortFloat_O::eql_(T_sp obj) const {
   if (this->eq(obj))
@@ -1573,7 +1575,9 @@ CL_DEFMETHOD Integer_sp DoubleFloat_O::castToInteger() const {
 
 Number_sp DoubleFloat_O::signum_() const { return DoubleFloat_O::create(this->_Value > 0.0 ? 1 : (this->_Value < 0.0 ? -1 : 0)); }
 
-void DoubleFloat_O::sxhash_(HashGenerator& hg) const { hg.addValue(std::abs(::floor(this->_Value))); }
+void DoubleFloat_O::sxhash_(HashGenerator& hg) const {
+  hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<double>::to_bits(this->_Value));
+}
 
 bool DoubleFloat_O::eql_(T_sp obj) const {
   if (this->eq(obj))
@@ -1630,7 +1634,9 @@ string LongFloat_O::valueAsString() const {
 
 Number_sp LongFloat_O::abs() const { return LongFloat_O::create(fabs(this->_Value)); }
 
-void LongFloat_O::sxhash(HashGenerator& hg) const { hg.addValue(std::abs(::floor(this->_Value))); }
+void LongFloat_O::sxhash(HashGenerator& hg) const {
+  hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<LongFloat>::to_bits(this->_Value));
+}
 
 bool LongFloat_O::eql(T_sp obj) const {
   if (this->eq(obj))
@@ -1664,11 +1670,6 @@ string LongFloat_O::__repr__() const {
 #endif
 
 // --------------------------------------------------------------------------------
-
-float Ratio_O::as_float_() const {
-  double d = this->as_double_();
-  return d;
-}
 
 // translated from https://gitlab.com/embeddable-common-lisp/ecl/blob/develop/src/c/number.d#L663
 static Integer_sp mantissa_and_exponent_from_ratio(Integer_sp num, Integer_sp den, int digits, gc::Fixnum* exponent) {
@@ -1712,8 +1713,20 @@ static Integer_sp mantissa_and_exponent_from_ratio(Integer_sp num, Integer_sp de
   return quotient;
 }
 
+float Ratio_O::as_float_() const {
+  gc::Fixnum exponent;
+  Integer_sp mantissa =
+      mantissa_and_exponent_from_ratio(this->_numerator, this->_denominator, std::numeric_limits<float>::digits, &exponent);
+  return std::ldexp(mantissa.fixnump() ? static_cast<float>(mantissa.unsafe_fixnum()) : mantissa->as_float_(), exponent);
+}
+
 double Ratio_O::as_double_() const {
-  if ((this->_numerator).fixnump() && (this->_denominator).fixnump()) {
+  gc::Fixnum exponent;
+  Integer_sp mantissa =
+      mantissa_and_exponent_from_ratio(this->_numerator, this->_denominator, std::numeric_limits<double>::digits, &exponent);
+  return std::ldexp(mantissa.fixnump() ? static_cast<double>(mantissa.unsafe_fixnum()) : mantissa->as_double_(), exponent);
+
+  /*if ((this->_numerator).fixnump() && (this->_denominator).fixnump()) {
     double d = clasp_to_double(this->_numerator);
     d /= clasp_to_double(this->_denominator);
     return d;
@@ -1725,13 +1738,15 @@ double Ratio_O::as_double_() const {
       output = mantissa.unsafe_fixnum();
     else
       output = mantissa->as_double_();
-    return ldexp(output, exponent);
-  }
+    return std::ldexp(output, exponent);
+  }*/
 }
 
 LongFloat Ratio_O::as_long_float_() const {
-  double d = this->as_double_();
-  return d;
+  gc::Fixnum exponent;
+  Integer_sp mantissa =
+      mantissa_and_exponent_from_ratio(this->_numerator, this->_denominator, std::numeric_limits<LongFloat>::digits, &exponent);
+  return std::ldexp(mantissa.fixnump() ? static_cast<LongFloat>(mantissa.unsafe_fixnum()) : mantissa->as_long_float_(), exponent);
 }
 
 string Ratio_O::__repr__() const {
@@ -2924,16 +2939,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Return the IEEE754 binary32 (single) representation of a single float, as an integer.)dx");
 DOCGROUP(clasp);
 CL_DEFUN Integer_sp ext__single_float_to_bits(SingleFloat_sp singleFloat) {
-  // NOTE: This and the later ones are probably undefined behavior,
-  // though Clang seems to support them fine.
-  // I don't know a conforming way to do this other than converting to
-  // bytes, but that's a pretty annoying way to go about this.
-  union {
-    float f;
-    uint32_t i;
-  } converter;
-  converter.f = unbox_single_float(singleFloat);
-  return Integer_O::create(converter.i);
+  return Integer_O::create(float_convert<float>::to_bits(unbox_single_float(singleFloat)));
 }
 
 CL_LAMBDA(bit-representation);
@@ -2941,13 +2947,8 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Convert an IEEE754 binary32 (single) representation, an integer, to a single float.)dx");
 DOCGROUP(clasp);
-CL_DEFUN SingleFloat_sp ext__bits_to_single_float(Fixnum_sp fixnum) {
-  union {
-    float f;
-    uint32_t i;
-  } converter;
-  converter.i = unbox_fixnum(fixnum);
-  return make_single_float(converter.f);
+CL_DEFUN SingleFloat_sp ext__bits_to_single_float(Integer_sp integer) {
+  return make_single_float(float_convert<float>::from_bits(clasp_to_uint32_t(integer)));
 };
 
 CL_LAMBDA(doubleFloat);
@@ -2956,12 +2957,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Return the IEEE754 binary64 (double) bit representation of a double float as an integer.)dx");
 DOCGROUP(clasp);
 CL_DEFUN Integer_sp ext__double_float_to_bits(DoubleFloat_sp doubleFloat) {
-  union {
-    double d;
-    uint64_t i;
-  } converter;
-  converter.d = doubleFloat->get();
-  return Integer_O::create(converter.i);
+  return Integer_O::create(float_convert<double>::to_bits(doubleFloat->get()));
 }
 
 CL_LAMBDA(bit-representation);
@@ -2970,12 +2966,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Convert an IEEE754 binary64 (double) representation, an integer, to a double float.)dx");
 DOCGROUP(clasp);
 CL_DEFUN DoubleFloat_sp ext__bits_to_double_float(Integer_sp integer) {
-  union {
-    double d;
-    uint64_t i;
-  } converter;
-  converter.i = clasp_to_uint64_t(integer);
-  return clasp_make_double_float(converter.d);
+  return clasp_make_double_float(float_convert<double>::from_bits(clasp_to_uint64_t(integer)));
 }
 
 }; // namespace core

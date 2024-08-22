@@ -463,7 +463,6 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
   if (!(x))                                                                                                                        \
   ::core::assert_failure(__FILE__, __LINE__, __FUNCTION__, #x)
 #define ASSERT(x) lisp_ASSERT(x)
-#define ENSURE_NOT_NAN(x) unlikely_if(std::isnan(x)) core::lisp_floating_point_invalid_operation();
 #define ASSERT_DO(x)                                                                                                               \
   do {                                                                                                                             \
     x;                                                                                                                             \
@@ -525,8 +524,6 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
 #define lisp_ASSERT(l, x)                                                                                                          \
   {}
 #define ASSERT(x)                                                                                                                  \
-  {}
-#define ENSURE_NOT_NAN(x)                                                                                                          \
   {}
 #define lisp_ASSERTP(l, x, e)                                                                                                      \
   {}

@@ -108,7 +108,7 @@ CL_DEFUN Float_sp cl__float(Real_sp x, T_sp y) {
   case number_Ratio:
     switch (ty) {
     case number_SingleFloat:
-      return clasp_make_single_float(clasp_to_double(x));
+      return clasp_make_single_float(clasp_to_float(x));
     case number_DoubleFloat:
       return clasp_make_double_float(clasp_to_double(x));
 #ifdef CLASP_LONG_FLOAT
@@ -317,7 +317,7 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp& quotie
   case_SingleFloat_v_Bignum:
   case_SingleFloat_v_SingleFloat:
   case_SingleFloat_v_Ratio : {
-    float n = clasp_to_double(divisor);
+    float n = clasp_to_float(divisor);
     float p = dividend.unsafe_single_float() / n;
     float q = std::trunc(p);
     quotient = _clasp_float_to_integer(q);
@@ -788,14 +788,14 @@ CL_DEFUN Number_sp cl__scale_float(Number_sp x, Number_sp y) {
   }
   switch (clasp_t_of(x)) {
   case number_SingleFloat:
-    x = clasp_make_single_float(ldexpf(x.unsafe_single_float(), k));
+    x = clasp_make_single_float(std::ldexp(x.unsafe_single_float(), k));
     break;
   case number_DoubleFloat:
-    x = clasp_make_double_float(ldexp(gc::As_unsafe<DoubleFloat_sp>(x)->get(), k));
+    x = clasp_make_double_float(std::ldexp(gc::As_unsafe<DoubleFloat_sp>(x)->get(), k));
     break;
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat:
-    x = clasp_make_long_float(ldexpl(clasp_long_float(x), k));
+    x = clasp_make_long_float(std::ldexp(clasp_long_float(x), k));
     break;
 #endif
   default:
