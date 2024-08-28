@@ -718,23 +718,27 @@
       (check-type val bir:linear-datum)
       (write-variable (car cell) val inserter context))))
 
+;;; used by make-closure and protect instructions.
+(defun make-closure (template inserter context)
+  (let* ((irfun (make-bir-function template inserter))
+         (enclose-out (make-instance 'bir:output
+                        :name (core:function-name template)))
+         (nclosed (bcfun/nvars template))
+         (closed (nreverse (subseq (stack context) 0 nclosed)))
+         (real-closed (mapcar #'resolve-closed closed)))
+    (assert (every (lambda (v) (typep v '(or bir:come-from
+                                          (cons bir:variable))))
+                   real-closed))
+    (build:insert inserter 'bir:enclose
+                  :code irfun :outputs (list enclose-out))
+    (add-function context template irfun real-closed)
+    (setf (stack context) (nthcdr nclosed (stack context)))
+    enclose-out))
+
 (defmethod compile-instruction ((mnemonic (eql :make-closure))
                                 inserter context &rest args)
   (destructuring-bind ((template)) args
-    (let* ((irfun (make-bir-function template inserter))
-           (enclose-out (make-instance 'bir:output
-                          :name (core:function-name template)))
-           (nclosed (bcfun/nvars template))
-           (closed (nreverse (subseq (stack context) 0 nclosed)))
-           (real-closed (mapcar #'resolve-closed closed)))
-      (assert (every (lambda (v) (typep v '(or bir:come-from
-                                            (cons bir:variable))))
-                     real-closed))
-      (build:insert inserter 'bir:enclose
-                    :code irfun :outputs (list enclose-out))
-      (add-function context template irfun real-closed)
-      (setf (stack context) (nthcdr nclosed (stack context)))
-      (stack-push enclose-out context))))
+    (stack-push (make-closure template inserter context) context)))
 
 (defmethod compile-instruction ((mnemonic (eql :make-uninitialized-closure))
                                 inserter context &rest args)
@@ -1229,6 +1233,28 @@
                     :inputs (list fdef-out desig)
                     :outputs (list out))
       (stack-push out context))))
+
+(defmethod compile-instruction ((mnemonic (eql :protect))
+                                inserter context &rest args)
+  (destructuring-bind ((template)) args
+    (let ((cleanup (make-closure template inserter context))
+          (body (build:make-iblock inserter :name '#:protect)))
+      (build:terminate inserter 'bir:unwind-protect
+                       :inputs (list cleanup) :next (list body))
+      (build:begin inserter body))))
+
+(defmethod compile-instruction ((mnemonic (eql :cleanup))
+                                inserter context &rest args)
+  (declare (ignore context))
+  (destructuring-bind () args
+    (let* ((protect (bir:dynamic-environment inserter))
+           (ib (build:make-iblock
+                inserter :name '#:post-protection
+                         :dynamic-environment (bir:parent protect))))
+      (build:terminate inserter 'bir:jump
+                       :inputs () :outputs ()
+                       :next (list ib))
+      (build:begin inserter ib))))
 
 (defmethod compile-instruction ((mnemonic (eql :nil))
                                 inserter context &rest args)

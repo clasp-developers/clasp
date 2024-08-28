@@ -1212,16 +1212,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(progvFunction)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp func) {
-  if (symbols.consp()) {
-    if (values.consp()) {
-      return call_with_variable_bound(gc::As<Symbol_sp>(CONS_CAR(symbols)), CONS_CAR(values),
-                                      [&]() { return core__progv_function(CONS_CDR(symbols), oCdr(values), func); });
-    } else {
-      return call_with_variable_bound(gc::As<Symbol_sp>(CONS_CAR(symbols)), unbound<T_O>(),
-                                      [&]() { return core__progv_function(CONS_CDR(symbols), nil<core::T_O>(), func); });
-    }
-  } else
-    return eval::funcall(func);
+  return fprogv(symbols, values, [&]() { return eval::funcall(func); });
 }
 
 DOCGROUP(clasp);

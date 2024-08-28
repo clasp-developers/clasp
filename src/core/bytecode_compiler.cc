@@ -2395,6 +2395,10 @@ static void compile_exit(LexicalInfo_sp exit_de, Label_sp exit, const Context co
         break;
       if (gc::IsA<LexicalInfo_sp>(interde))
         context.maybe_emit_entry_close(gc::As_unsafe<LexicalInfo_sp>(interde));
+      else if (interde == cl::_sym_catch)
+        context.assemble0(vm_catch_close);
+      else if (interde == cl::_sym_unwind_protect)
+        context.assemble0(vm_cleanup);
       else // must be a count of specials
         context.emit_unbind(interde.unsafe_fixnum());
     }
@@ -2470,11 +2474,22 @@ void compile_return_from(T_sp name, T_sp valuef, Lexenv_sp env, const Context ct
 void compile_catch(T_sp tag, List_sp body, Lexenv_sp env, const Context ctxt) {
   compile_form(tag, env, ctxt.sub_receiving(1));
   Label_sp target = Label_O::make();
+  Label_sp normal_label = Label_O::make();
+  Label_sp start = Label_O::make();
+  // We force multiple values, as with block.
+  bool r1p = ctxt.receiving() == 1;
   ctxt.emit_catch(target);
-  // FIXME: maybe should be a T context to match throw
-  compile_progn(body, env, ctxt);
+  start->contextualize(ctxt);
+  ctxt.push_debug_info(BytecodeAstBlock_O::make(start, target, cl::_sym_catch, ctxt.receiving()));
+  compile_progn(body, env, ctxt.sub_de(cl::_sym_catch));
   ctxt.assemble0(vm_catch_close);
+  if (r1p)
+    ctxt.emit_jump(normal_label);
   target->contextualize(ctxt);
+  if (r1p) {
+    ctxt.assemble0(vm_push);
+    normal_label->contextualize(ctxt);
+  }
 }
 
 void compile_throw(T_sp tag, T_sp rform, Lexenv_sp env, const Context ctxt) {
@@ -2483,11 +2498,30 @@ void compile_throw(T_sp tag, T_sp rform, Lexenv_sp env, const Context ctxt) {
   ctxt.assemble0(vm_throw);
 }
 
+void compile_unwind_protect(T_sp protect, List_sp cleanup,
+                            Lexenv_sp env, const Context ctxt) {
+  if (cleanup.nilp()) { // trivial
+    compile_form(protect, env, ctxt);
+  } else {
+    // Make the cleanup closure.
+    // Duplicates a bit of code from compile_function.
+    Cfunction_sp cleanupt = compile_lambda(nil<T_O>(), Cons_O::createList(Cons_O::create(cl::_sym_progn, cleanup)), env, ctxt.module(), ctxt.source_info());
+    ComplexVector_T_sp closed = cleanupt->closed();
+    for (size_t i = 0; i < closed->length(); ++i)
+      ctxt.reference_lexical_info((*closed)[i].as_assert<LexicalInfo_O>());
+    // Actual protect instruction
+    ctxt.assemble1(vm_protect, ctxt.cfunction_index(cleanupt));
+    // and the body...
+    compile_form(protect, env, ctxt.sub_de(cl::_sym_unwind_protect));
+    ctxt.assemble0(vm_cleanup);
+  }
+}
+
 void compile_progv(T_sp syms, T_sp vals, List_sp body, Lexenv_sp env, const Context ctxt) {
   compile_form(syms, env, ctxt.sub_receiving(1));
   compile_form(vals, env, ctxt.sub_receiving(1));
-  ctxt.assemble0(vm_progv);
-  compile_progn(body, env, ctxt);
+  ctxt.assemble1(vm_progv, ctxt.env_index());
+  compile_progn(body, env, ctxt.sub_de(clasp_make_fixnum(1)));
   ctxt.emit_unbind(1);
 }
 
@@ -2695,6 +2729,14 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
     compile_eval_when(oCar(rest), oCdr(rest), env, context);
   else if (head == cl::_sym_the)
     compile_the(oCar(rest), oCadr(rest), env, context);
+  else if (head == cl::_sym_catch)
+    compile_catch(oCar(rest), oCdr(rest), env, context);
+  else if (head == cl::_sym_throw)
+    compile_throw(oCar(rest), oCadr(rest), env, context);
+  else if (head == cl::_sym_unwind_protect)
+    compile_unwind_protect(oCar(rest), oCdr(rest), env, context);
+  else if (head == cl::_sym_progv)
+    compile_progv(oCar(rest), oCadr(rest), oCddr(rest), env, context);
   // basic optimization
   else if (head == cl::_sym_funcall
            // Do a basic syntax check so that (funcall) fails properly.

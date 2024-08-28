@@ -272,7 +272,7 @@ public:
 
 };
 
-// Information about a BLOCK form.
+// Information about a BLOCK (or, despite the name, CATCH) form.
 // START and END delineate the block's extent.
 // RECEIVING indicates what values the block returns.
 FORWARD(BytecodeAstBlock);
@@ -296,33 +296,6 @@ public:
   CL_DEFMETHOD Fixnum receiving() const { return this->_receiving; }
   CL_LISPIFY_NAME(BytecodeAstBlock/name)
   CL_DEFMETHOD T_sp name() const { return this->_name; }
-};
-
-// Indicates a nonlocal exit. This is used by the compiler to ensure consistency
-// when compiling the unreachable code following an exit.
-// The idea is that this unreachable code can be compiled as if the exit only
-// acted as a nonexiting form.
-// For example take (foo (return (bar)) ...); computation of the remaining
-// arguments and the call to FOO are unreachable, but if the argument was just
-// (bar), this unreachable code would just need to have one value added to the
-// stack and to be in whatever dynamic environment is in place before.
-FORWARD(BytecodeAstExit);
-class BytecodeAstExit_O : public BytecodeDebugInfo_O {
-  LISP_CLASS(core, CorePkg, BytecodeAstExit_O, "BytecodeAstExit", BytecodeDebugInfo_O);
-
-public:
-  BytecodeAstExit_O(T_sp start, T_sp end, int receiving) : BytecodeDebugInfo_O(start, end), _receiving(receiving) {}
-  CL_LISPIFY_NAME(BytecodeAstExit/make)
-  CL_DEF_CLASS_METHOD
-  static BytecodeAstExit_sp make(T_sp start, T_sp end, int receiving) {
-    return gctools::GC<BytecodeAstExit_O>::allocate<gctools::RuntimeStage>(start, end, receiving);
-  }
-
-public:
-  int _receiving; // meaning is as for compiler contexts
-public:
-  CL_LISPIFY_NAME(BytecodeAstExit/receiving)
-  CL_DEFMETHOD Fixnum receiving() const { return this->_receiving; }
 };
 
 // Indicates that a macroexpansion occurred. This is used to

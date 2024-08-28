@@ -1484,12 +1484,6 @@
     :name (ensure-constant (core:bytecode-ast-block/name item))
     :receiving (core:bytecode-ast-block/receiving item)))
 
-(defmethod process-debug-info ((item core:bytecode-ast-exit))
-  (make-instance 'debug-info-exit
-    :start (core:bytecode-debug-info/start item)
-    :end (core:bytecode-debug-info/end item)
-    :receiving (core:bytecode-ast-exit/receiving item)))
-
 (defmethod process-debug-info ((item core:bytecode-debug-macroexpansion))
   (make-instance 'debug-info-macroexpansion
     :start (core:bytecode-debug-info/start item)
