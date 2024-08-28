@@ -2185,6 +2185,7 @@ COMPILE-FILE will use the default *clasp-env*."
   (bir-transformations:module-eliminate-come-froms module)
   (maybe-debug-transformation module :eliminate-come-froms)
   (bir-transformations:find-module-local-calls module)
+  (bir-transformations:interpolate-module-calls module)
   (maybe-debug-transformation module :local-calls)
   (bir-transformations:module-optimize-variables module)
   (maybe-debug-transformation module :optimize-vars)
