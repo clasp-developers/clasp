@@ -74,25 +74,10 @@
 ;;; coalescence is still really possible.
 (defclass cons-creator (vcreator) ())
 
-(defclass rplaca-init (effect)
+(defclass initialize-cons (effect)
   ((%cons :initarg :cons :reader rplac-cons :type cons-creator)
-   (%value :initarg :value :reader rplac-value :type creator)))
-
-(defmethod print-object ((object rplaca-init) stream)
-  (print-unreadable-object (object stream :type t)
-    (format stream "~d ~d"
-            (pindex (rplac-cons object)) (pindex (rplac-value object))))
-  object)
-
-(defclass rplacd-init (effect)
-  ((%cons :initarg :cons :reader rplac-cons :type cons-creator)
-   (%value :initarg :value :reader rplac-value :type creator)))
-
-(defmethod print-object ((object rplacd-init) stream)
-  (print-unreadable-object (object stream :type t)
-    (format stream "~d ~d"
-            (pindex (rplac-cons object)) (pindex (rplac-value object))))
-  object)
+   (%car :initarg :car :reader rplac-car :type creator)
+   (%cdr :initarg :cdr :reader rplac-cdr :type creator)))
 
 ;;; dimensions and element-type are encoded with the array since
 ;;; they shouldn't really need to be coalesced.
@@ -504,21 +489,19 @@
           (lambda (c)
             (let ((const (find-constant c)))
               (assert const)
-              (add-instruction (make-instance 'rplaca-init
+              (add-instruction (make-instance 'initialize-cons
                                  :cons const
-                                 :value (ensure-constant (car c))))
-              (add-instruction (make-instance 'rplacd-init
-                                 :cons const
-                                 :value (ensure-constant (cdr c))))))
+                                 :car (ensure-constant (car c))
+                                 :cdr (ensure-constant (cdr c))))))
           value)
          (find-constant value))
         (t
          (let ((cons (add-creator
                       value (make-instance 'cons-creator :prototype value))))
-           (add-instruction (make-instance 'rplaca-init
-                              :cons cons :value (ensure-constant (car value))))
-           (add-instruction (make-instance 'rplacd-init
-                              :cons cons :value (ensure-constant (cdr value))))
+           (add-instruction (make-instance 'initialize-cons
+                              :cons cons
+                              :car (ensure-constant (car value))
+                              :cdr (ensure-constant (cdr value))))
            cons))))
 
 (defmethod add-constant ((value array))
@@ -829,8 +812,7 @@
     (ratio 67)
     (complex 68)
     (cons 69 sind)
-    (rplaca 70 ind1 ind2) ; (setf (car [ind1]) [ind2])
-    (rplacd 71 ind1 ind2)
+    (initialize-cons 70 consind carind cdrind)
     (make-array 74 sind rank . dims)
     (setf-row-major-aref 75 arrayind rmindex valueind)
     (make-hash-table 76 sind test count)
@@ -938,15 +920,11 @@
 (defmethod encode ((inst cons-creator) stream)
   (write-mnemonic 'cons stream))
 
-(defmethod encode ((inst rplaca-init) stream)
-  (write-mnemonic 'rplaca stream)
+(defmethod encode ((inst initialize-cons) stream)
+  (write-mnemonic 'initialize-cons stream)
   (write-index (rplac-cons inst) stream)
-  (write-index (rplac-value inst) stream))
-
-(defmethod encode ((inst rplacd-init) stream)
-  (write-mnemonic 'rplacd stream)
-  (write-index (rplac-cons inst) stream)
-  (write-index (rplac-value inst) stream))
+  (write-index (rplac-car inst) stream)
+  (write-index (rplac-cdr inst) stream))
 
 (defun write-dimensions (dimensions stream)
   (let ((rank (length dimensions)))

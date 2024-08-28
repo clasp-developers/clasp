@@ -29,8 +29,7 @@
 #define LTV_OP_NIL 65
 #define LTV_OP_T 66
 #define LTV_OP_CONS 69
-#define LTV_OP_RPLACA 70
-#define LTV_OP_RPLACD 71
+#define LTV_OP_INIT_CONS 70
 #define LTV_OP_MAKE_ARRAY 74
 #define LTV_OP_SRMA 75
 #define LTV_OP_HASHT 76
@@ -295,13 +294,9 @@ struct loadltv {
 
   void op_cons() { set_ltv(Cons_O::create(nil<T_O>(), nil<T_O>()), next_index()); }
 
-  void op_rplaca() {
+  void op_init_cons() {
     Cons_sp c = gc::As<Cons_sp>(get_ltv(read_index()));
     c->rplaca(get_ltv(read_index()));
-  }
-
-  void op_rplacd() {
-    Cons_sp c = gc::As<Cons_sp>(get_ltv(read_index()));
     c->rplacd(get_ltv(read_index()));
   }
 
@@ -995,11 +990,8 @@ struct loadltv {
     case LTV_OP_CONS:
       op_cons();
       break;
-    case LTV_OP_RPLACA:
-      op_rplaca();
-      break;
-    case LTV_OP_RPLACD:
-      op_rplacd();
+    case LTV_OP_INIT_CONS:
+      op_init_cons();
       break;
     case LTV_OP_MAKE_ARRAY:
       op_array();
