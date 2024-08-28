@@ -30,6 +30,7 @@
 #define LTV_OP_T 66
 #define LTV_OP_CONS 69
 #define LTV_OP_INIT_CONS 70
+#define LTV_OP_BASE_STRING 72
 #define LTV_OP_MAKE_ARRAY 74
 #define LTV_OP_INIT_ARRAY 75
 #define LTV_OP_HASHT 76
@@ -298,6 +299,15 @@ struct loadltv {
     Cons_sp c = gc::As<Cons_sp>(get_ltv(read_index()));
     c->rplaca(get_ltv(read_index()));
     c->rplacd(get_ltv(read_index()));
+  }
+
+  void op_base_string() {
+    uint16_t len = read_u16();
+    SimpleBaseString_sp str = SimpleBaseString_O::makeSize(len);
+    // careful, we're directly referencing the array data here
+    unsigned char* data = (unsigned char*)(str->rowMajorAddressOfElement_(0));
+    stream_read_byte8(_stream, data, len);
+    set_ltv(str, next_index());
   }
 
   enum class UAETCode : uint8_t {
@@ -992,6 +1002,9 @@ struct loadltv {
       break;
     case LTV_OP_INIT_CONS:
       op_init_cons();
+      break;
+    case LTV_OP_BASE_STRING:
+      op_base_string();
       break;
     case LTV_OP_MAKE_ARRAY:
       op_array();

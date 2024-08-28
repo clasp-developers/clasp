@@ -93,6 +93,10 @@
    ;; A list of creators as long as the array's total size.
    (%values :initarg :values :reader array-values :type list)))
 
+;;; Special cases of array-creator, since they're very very common
+;;; for e.g. symbol names.
+(defclass base-string-creator (vcreator) ())
+
 (defclass hash-table-creator (vcreator)
   ((%test :initarg :test :reader hash-table-creator-test :type symbol)
    (%count :initarg :count :reader hash-table-creator-count
@@ -526,6 +530,17 @@
                        collect (ensure-constant e)))))
     arr))
 
+(defmethod add-constant ((value string))
+  (case (array-element-type value)
+    ((base-char) (let ((L (length value)))
+                   (if (< L #.(ash 1 16))
+                       (add-creator
+                        value
+                        (make-instance 'base-string-creator
+                          :prototype value))
+                       (call-next-method))))
+    (otherwise (call-next-method))))
+
 (defmethod add-constant ((value hash-table))
   (let ((ht (add-creator
              value
@@ -815,6 +830,7 @@
     (complex 68)
     (cons 69 sind)
     (initialize-cons 70 consind carind cdrind)
+    (base-string 72 size . data)
     (make-array 74 sind rank . dims)
     (initialize-array 75 arrayind . valueinds)
     (make-hash-table 76 sind test count)
@@ -1048,6 +1064,13 @@
   ;; length is implicit from the array being initialized
   (loop for c in (array-values inst)
         do (write-index c stream)))
+
+(defmethod encode ((inst base-string-creator) stream)
+  (write-mnemonic 'base-string stream)
+  (write-b16 (length (prototype inst)) stream)
+  (loop for c across (prototype inst)
+        for code = (char-code c)
+        do (write-byte code stream)))
 
 ;;; Arrays are encoded with two codes: One for the packing, and one
 ;;; for the element type. The latter is in place so that, hopefully,
