@@ -21,14 +21,6 @@
 
 (in-package "CLOS")
 
-#+(or)
-(eval-when (:compile-toplevel :execute :load-toplevel)
-  (push :mlog *features*)
-  (defmacro mlog (fmt &rest fmtargs)
-    `(core:fmt *error-output* ,fmt ,@fmtargs)))
-;;;#+(or)
-(defmacro mlog (fmt &rest fmtargs) (declare (ignore fmt fmtargs)))
-
 ;;; ----------------------------------------------------------------------
 ;;; Class SPECIALIZER
 

@@ -13,6 +13,16 @@
 
 (in-package :sys)
 
+(defun check-package-lock (name operation) ;; testing
+  (let ((package (symbol-package name)))
+    (when (and package (ext:package-locked-p package)
+               (not (member
+                     *package*
+                     (ext:package-implemented-by-list package))))
+      (core:package-lock-violation package
+                                   "trying to ~s ~s"
+                                   operation name))))
+
 (defmacro unless (pred &rest body)
   "Syntax: (unless test {form}*)
 If TEST evaluates to NIL, then evaluates FORMs and returns all values of the
@@ -98,7 +108,6 @@ existing value."
 
 (defmacro defconstant (var form &optional doc-string)
   "Syntax: (defconstant symbol form [doc])
-
 Declares that the global variable named by SYMBOL is a constant with the value
 of FORM as its constant value.  The doc-string DOC, if supplied, is saved as a
 VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
@@ -114,12 +123,13 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
    (multiple-value-bind (decls body doc-string) 
        (si:process-declarations body t)
      (let* ((doclist (when doc-string (list doc-string)))
+            (sname (si::function-block-name name))
             (global-function
               `#'(lambda ,lambda-list
                    (declare (core:lambda-name ,name) ,@decls) 
                    ,@doclist
-                   (block ,(si::function-block-name name) ,@body))))
-       `(progn
+                   (block ,sname ,@body))))
+       `(progn 
           (eval-when (:compile-toplevel)
             ;; this function won't be ready for a while, but it's okay as there's no
             ;; compiler to run :compile-toplevel forms anyway.
@@ -137,6 +147,8 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 
 (defun (setf compiler-macro-function) (cmf name &optional environment)
   (declare (ignore environment))
+  (check-package-lock (core::function-block-name name)
+                      'define-compiler-macro)
   ;; Basically ETYPECASE.
   (if (functionp cmf)
       (funcall #'(setf gethash) cmf name *compiler-macros*)
@@ -145,7 +157,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
           (error 'type-error :datum cmf :expected-type '(or function null)))))
 
 (defmacro define-compiler-macro (name vl &rest body &environment env)
-  ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
+  ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro  
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (funcall #'(setf compiler-macro-function)
               (function ,(ext:parse-compiler-macro name vl body env))

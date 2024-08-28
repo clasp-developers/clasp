@@ -5498,30 +5498,24 @@
              :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>>"
              :offset-base-ctype "core::Package_O"
              :layout-offset-field-names ("_PackagesUsedBy" "._Vector" "._Contents")}
-{fixed-field :offset-type-cxx-identifier "ATOMIC_POD_OFFSET__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::Package_O" :layout-offset-field-names ("_KeywordPackage")}
-{fixed-field :offset-type-cxx-identifier "ATOMIC_POD_OFFSET__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::Package_O" :layout-offset-field-names ("_AmpPackage")}
-{fixed-field :offset-type-cxx-identifier "ATOMIC_POD_OFFSET__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::Package_O"
-             :layout-offset-field-names ("_ActsLikeKeywordPackage")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::List_V>" :offset-base-ctype "core::Package_O"
              :layout-offset-field-names ("_Nicknames")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::List_V>" :offset-base-ctype "core::Package_O"
              :layout-offset-field-names ("_LocalNicknames")}
+{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
+             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>>"
+             :offset-base-ctype "core::Package_O"
+             :layout-offset-field-names ("_Implementors" "._Vector" "._Contents")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::Package_O"
              :layout-offset-field-names ("_Documentation")}
 {fixed-field :offset-type-cxx-identifier "CXX_SHARED_MUTEX_OFFSET" :offset-ctype "mp::SharedMutex"
              :offset-base-ctype "core::Package_O" :layout-offset-field-names ("_Lock")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::Package_O" :layout-offset-field-names ("systemLockedP")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::Package_O" :layout-offset-field-names ("userLockedP")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::Package_O" :layout-offset-field-names ("zombieP")}
+{fixed-field :offset-type-cxx-identifier "ATOMIC_POD_OFFSET_unsigned_short"
+             :offset-ctype "unsigned short" :offset-base-ctype "core::Package_O"
+             :layout-offset-field-names ("_Flags")}
 {class-kind :stamp-name "STAMPWTAG_core__FileStatus_O" :stamp-key "core::FileStatus_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -5836,6 +5830,8 @@
              :offset-base-ctype "core::Lisp" :layout-offset-field-names ("_MpiRank")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "core::Lisp" :layout-offset-field-names ("_MpiSize")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::Lisp" :layout-offset-field-names ("_TrapFpeBits")}
 {fixed-field :offset-type-cxx-identifier "ATOMIC_POD_OFFSET_unsigned_int"
              :offset-ctype "unsigned int" :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_EnvironmentId")}

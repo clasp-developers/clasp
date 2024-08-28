@@ -1,13 +1,23 @@
 (in-package #:clasp-tests)
 
+;;; Make some temporary packages and delete them afterwards,
+;;; so that tests can be run in whatever order, or repeatedly, or etc.
+(defmacro with-packages ((&rest names) &body body)
+  `(let (,@(loop for name in names
+                 collect `(,name (make-package
+                                  (gensym (symbol-name ',name))))))
+     (unwind-protect (progn ,@body)
+       ,@(loop for name in names
+               ;; may have been deleted by body, which is ok
+               collect `(when (package-name ,name)
+                          (delete-package ,name))))))
+
 ;; Test for #433: unexport not accepting designators
-(let* ((package-name (symbol-name (gensym)))
-       (package (make-package package-name)))
-  (export (list (intern "FOO" package) (intern "BAR" package)) package)
-  (test-true unexport-designators
-        (unexport (list (find-symbol "FOO" package) (find-symbol "BAR" package))
-                  package-name))
-  (delete-package package))
+(with-packages (package)
+  (let ((syms (list (intern "FOO" package) (intern "BAR" package))))
+    (export syms package)
+    (test-true unexport-designators
+               (unexport syms (package-name package)))))
 
 ;; Test for #417: characters not working as package designators
 (let ((package (make-package "Z")))
@@ -182,10 +192,10 @@
    (handler-bind ((error #'(lambda(c)
                              (declare (ignore c))
                              (invoke-restart 'continue))))
-     (export sym (find-package :core)))
+      (export sym (find-package :cl-user)))
    (multiple-value-bind
          (symbol status)
-       (find-symbol (symbol-name sym) (find-package :core))
+       (find-symbol (symbol-name sym) (find-package :cl-user))
      (and symbol (eq :external status)))))
 
 (defpackage #:foo-bar-4
@@ -332,7 +342,8 @@
        (sname "TEST") (rname "TSET")
        (s0 (intern sname nc0)) (s1 (intern sname nc1))
        (r0 (intern rname nc0)) (r1 (intern rname nc1)))
-  (test-true import-conflict-0
+
+   (test-true import-conflict-0
              (handler-case
                  (progn (import s1 nc0) nil)
                (ext:name-conflict (c)
@@ -351,7 +362,7 @@
                                 (return nil))))
                          (progn (import s1 nc0) nil))))
   ;; Resolving a conflict in favor of the new symbol
-  (test-true import-conflict-2
+   (test-true import-conflict-2
              (handler-bind
                  ((ext:name-conflict
                     (lambda (c)
@@ -361,13 +372,15 @@
                       (and (null (symbol-package s0))
                            (equal (multiple-value-list (find-symbol sname nc0))
                                   (list s1 :internal))))))
-  ;; Resolving a conflict in favor of the old symbol
+
+   ;; Resolving a conflict in favor of the old symbol
   (test-true import-conflict-3
              (handler-bind
                  ((ext:name-conflict
                     (lambda (c)
                       (invoke-restart (find-restart 'ext:resolve-conflict c) r0))))
-               (progn (import r1 nc0)
+               (progn (format t "NC0 is locked: ~s" (ext:package-locked-p "NC0"))
+                      (import r1 nc0)
                       (equal (multiple-value-list (find-symbol rname nc0))
                              (list r0 :internal)))))
   (delete-package nc0) (delete-package nc1))
@@ -478,6 +491,7 @@
        (aname "A") (a0 (intern aname nc0)) (a1 (intern aname nc1))
        (bname "B") (b0 (intern bname nc0)) (b1 (intern bname nc1)))
   (export (list a1 b1) nc1)
+
   ;; Exactly two conflicts are signaled and resolvable
   (test-true use-package-conflict-0
         (let ((a-resolved nil) (b-resolved nil))
@@ -503,6 +517,7 @@
                              (t (return nil)))))))
               (use-package nc1 nc0))
             (and a-resolved b-resolved))))
+
   ;; a0, the old present symbol, was chosen: a0 shadows.
   (test-true use-package-conflict-1
         (and (equal (multiple-value-list (find-symbol aname nc0))
@@ -593,3 +608,66 @@
              (member s2 (package-shadowing-symbols chil))))
   (delete-package chil)
   (delete-package par0) (delete-package par1) (delete-package par2))
+
+;; everything should error when locked
+(with-packages (foo bar)
+  (let ((sym (intern "BAZ" foo)))
+    (setf (fdefinition sym) (lambda ())) ; for fmakunbound test
+    (ext:lock-package foo)
+    (test locked_is_locked (ext:package-locked-p foo) (T))
+    (macrolet ((test-violation (name form)
+                 `(test-expect-error ,name ,form
+                                     :type core:package-lock-violation)))
+      (test-violation locked-shadow (shadow sym foo))
+      (test-violation locked-import (import sym foo))
+      (test-violation locked-unintern (unintern sym foo))
+      (test-violation locked-export (export sym foo))
+      (test-violation locked-unexport (unexport sym foo))
+      (test-violation locked-use (use-package bar foo))
+      (test-violation locked-unuse (unuse-package bar foo))
+      (test-violation locked-rename (rename-package foo "FAA" '("F")))
+      (test-violation locked-delete (delete-package foo))
+      (test-violation locked-add-nickname
+                      (ext:package-add-nickname foo "FO"))
+      (test-violation locked-remove-nickname
+                      (ext:package-remove-nickname foo "F"))
+      (test-violation locked-intern (intern "BAZZZ" foo))
+      (test-violation locked-special (proclaim `(special ,sym)))
+      (test-violation locked-fdefinition
+                      (setf (fdefinition sym) (lambda ())))
+      (test-violation locked-fmakunbound (fmakunbound sym))
+      (test-violation locked-macro
+                      (setf (macro-function sym) (constantly nil)))
+      (test-violation locked-compiler-macro
+                      (setf (compiler-macro-function sym)
+                            (constantly nil)))
+      (test-violation locked-defconstant
+                      (eval `(defconstant ,sym 19))))
+    ;; Now test unlocking works.
+    (ext:unlock-package foo)
+    (test unlocked_is_locked (ext:package-locked-p foo) (NIL))
+    (test-finishes unlocked-shadow (shadow sym foo))
+    (test-finishes unlocked-import (import sym foo))
+    (test-finishes unlocked-export (export sym foo))
+    (test-finishes unlocked-unexport (unexport sym foo))
+    (test-finishes unlocked-unintern (unintern sym foo))
+    (test-finishes unlocked-use (use-package bar foo))
+    (test-finishes unlocked-unuse (unuse-package bar foo))
+    (test-finishes unlocked-rename (rename-package foo "FAA" '("F")))
+    (rename-package foo "FOO" '("F"))
+    (test-finishes unlocked-add-nickname (ext:package-add-nickname foo "FO"))
+    (test-finishes unlocked-remove-nickname (ext:package-remove-nickname foo "FO"))
+    (test-finishes unlocked-intern (intern "BAR" foo))
+    (test-finishes unlocked-special (proclaim `(special ,sym)))
+    (test-finishes unlocked-symbol-value
+                   (setf (symbol-value sym) 19))
+    (test-finishes unlocked-fdefinition
+                   (setf (fdefinition sym) (lambda ())))
+    (test-finishes unlocked-fmakunbound (fmakunbound sym))
+    (test-finishes unlocked-macro
+                   (setf (macro-function sym) (constantly nil)))
+    (test-finishes unlocked-compiler-macro
+                   (setf (compiler-macro-function sym)
+                         (constantly nil)))
+    ;; delete last bc we're still using it before
+    (test-finishes unlocked-delete (delete-package "FOO"))))

@@ -108,7 +108,7 @@ CL_DEFUN Float_sp cl__float(Real_sp x, T_sp y) {
   case number_Ratio:
     switch (ty) {
     case number_SingleFloat:
-      return clasp_make_single_float(clasp_to_double(x));
+      return clasp_make_single_float(clasp_to_float(x));
     case number_DoubleFloat:
       return clasp_make_double_float(clasp_to_double(x));
 #ifdef CLASP_LONG_FLOAT
@@ -116,10 +116,10 @@ CL_DEFUN Float_sp cl__float(Real_sp x, T_sp y) {
       return clasp_make_long_float(clasp_to_long_float(x)).as<Real_O>();
 #endif
     default:
-      QERROR_WRONG_TYPE_NTH_ARG(2, y, cl::_sym_float);
+      ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_float, 2, y, cl::_sym_float);
     }
   default:
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Real_O);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_float, 1, x, cl::_sym_Real_O);
   }
 }
 
@@ -155,7 +155,7 @@ CL_DEFUN Integer_sp cl__numerator(Rational_sp x) {
   case number_Bignum:
     return gc::As_unsafe<Integer_sp>(x);
   default:
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Rational_O);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_numerator, 1, x, cl::_sym_Rational_O);
   }
 }
 
@@ -172,7 +172,7 @@ CL_DEFUN Number_sp cl__denominator(Rational_sp x) {
   case number_Bignum:
     return clasp_make_fixnum(1);
   default:
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Rational_O);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_denominator, 1, x, cl::_sym_Rational_O);
   }
 }
 
@@ -317,7 +317,7 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp& quotie
   case_SingleFloat_v_Bignum:
   case_SingleFloat_v_SingleFloat:
   case_SingleFloat_v_Ratio : {
-    float n = clasp_to_double(divisor);
+    float n = clasp_to_float(divisor);
     float p = dividend.unsafe_single_float() / n;
     float q = std::trunc(p);
     quotient = _clasp_float_to_integer(q);
@@ -416,7 +416,7 @@ Real_mv clasp_floor1(Real_sp x) {
   }
 #endif
   default:
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Real_O);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_floor, 1, x, cl::_sym_Real_O);
   }
 }
 
@@ -482,7 +482,7 @@ Real_mv clasp_ceiling1(Real_sp x) {
   }
 #endif
   default:
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Real_O);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_ceiling, 1, x, cl::_sym_Real_O);
   }
 }
 
@@ -535,7 +535,7 @@ Real_mv clasp_truncate1(Real_sp x) {
   }
 #endif
   default:
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Real_O);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_truncate, 1, x, cl::_sym_Real_O);
   }
 }
 
@@ -661,7 +661,7 @@ Real_mv clasp_round1(Real_sp x) {
   }
 #endif
   default:
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Real_O);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_round, 1, x, cl::_sym_Real_O);
   }
 }
 
@@ -769,7 +769,7 @@ CL_DEFUN Number_mv cl__decode_float(Float_sp x) {
   }
 #endif
   default:
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_float);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_decodeFloat, 1, x, cl::_sym_float);
   }
   return Values(x, clasp_make_fixnum(e), clasp_make_single_float(s));
 }
@@ -784,22 +784,22 @@ CL_DEFUN Number_sp cl__scale_float(Number_sp x, Number_sp y) {
   if (CLASP_FIXNUMP(y)) {
     k = y.unsafe_fixnum();
   } else {
-    QERROR_WRONG_TYPE_NTH_ARG(2, y, cl::_sym_fixnum);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_scaleFloat, 2, y, cl::_sym_fixnum);
   }
   switch (clasp_t_of(x)) {
   case number_SingleFloat:
-    x = clasp_make_single_float(ldexpf(x.unsafe_single_float(), k));
+    x = clasp_make_single_float(std::ldexp(x.unsafe_single_float(), k));
     break;
   case number_DoubleFloat:
-    x = clasp_make_double_float(ldexp(gc::As_unsafe<DoubleFloat_sp>(x)->get(), k));
+    x = clasp_make_double_float(std::ldexp(gc::As_unsafe<DoubleFloat_sp>(x)->get(), k));
     break;
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat:
-    x = clasp_make_long_float(ldexpl(clasp_long_float(x), k));
+    x = clasp_make_long_float(std::ldexp(clasp_long_float(x), k));
     break;
 #endif
   default:
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_float);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_scaleFloat, 1, x, cl::_sym_float);
   }
   return x;
 }
@@ -817,9 +817,8 @@ int clasp_signbit(Number_sp x) {
     return signbit(clasp_long_float(x));
 #endif
   default:
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_float);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_floatSign, 1, x, cl::_sym_float);
   }
-  SIMPLE_ERROR("Illegal argument for clasp_signbit: {}", _rep_(x));
 }
 
 CL_LAMBDA(x &optional (y nil yp));
@@ -852,7 +851,7 @@ CL_DEFUN Float_sp cl__float_sign(Float_sp x, T_sp oy, T_sp yp) {
   }
 #endif
   default:
-    QERROR_WRONG_TYPE_NTH_ARG(2, y, cl::_sym_float);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_floatSign, 2, y, cl::_sym_float);
   }
   return y;
 }
@@ -877,7 +876,7 @@ CL_DEFUN Integer_sp cl__float_digits(Float_sp x) {
     break;
 #endif
   default:
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_float);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_floatDigits, 1, x, cl::_sym_float);
   }
   return ix;
 }
@@ -938,7 +937,7 @@ CL_DEFUN Integer_sp cl__float_precision(Float_sp x) {
   }
 #endif
   default:
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_float);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_floatPrecision, 1, x, cl::_sym_float);
   }
   return clasp_make_fixnum(precision);
 }
@@ -1015,7 +1014,7 @@ CL_DEFUN Real_mv cl__integer_decode_float(Float_sp x) {
     break;
   }
   default:
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_float);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_integer_decode_float, 1, x, cl::_sym_float);
   }
   ASSERT(rx.notnilp());
   return Values(rx, clasp_make_fixnum(e), clasp_make_fixnum(s));
@@ -1047,7 +1046,7 @@ CL_DEFUN Real_sp cl__realpart(Number_sp x) {
   case number_Complex:
     return gc::As_unsafe<Complex_sp>(x)->real();
   default:
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Number_O);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_realpart, 1, x, cl::_sym_Number_O);
   }
 }
 
@@ -1073,7 +1072,7 @@ CL_DEFUN Real_sp cl__imagpart(Number_sp x) {
   case number_Complex:
     return gc::As_unsafe<Complex_sp>(x)->imaginary();
   default:
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Number_O);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_imagpart, 1, x, cl::_sym_Number_O);
   }
 }
 

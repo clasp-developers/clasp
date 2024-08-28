@@ -56,6 +56,41 @@ namespace core {
 [[noreturn]] void lisp_error_simple(const char* functionName, const char* fileName, int lineNumber, const std::string& str);
 void lisp_debugLogWrite(const char* fileName, const char* funcName, uint lineNumber, uint column, const std::string& message,
                         uint debugFlags = DEBUG_CPP_FUNCTION);
+
+template <typename Float> struct float_convert {
+  static constexpr uint16_t significand_width = std::numeric_limits<Float>::digits;
+  static constexpr uint16_t exponent_width = std::bit_width((unsigned int)std::numeric_limits<Float>::max_exponent);
+  static constexpr uint16_t sign_width = 1;
+  static constexpr bool has_hidden_bit = ((sign_width + exponent_width + significand_width) % 8) != 0;
+  static constexpr uint16_t storage_width = sign_width + exponent_width + significand_width + ((has_hidden_bit) ? -1 : 0);
+  static constexpr int32_t exponent_bias = std::numeric_limits<Float>::max_exponent + significand_width - 2;
+  using uint_t =
+      std::conditional_t<storage_width <= 8, uint8_t,
+                         std::conditional_t<storage_width <= 16, uint16_t,
+                                            std::conditional_t<storage_width <= 32, uint32_t,
+                                                               std::conditional_t<storage_width <= 64, uint64_t, __uint128_t>>>>;
+  static constexpr uint16_t exponent_shift = storage_width - sign_width - exponent_width;
+  static constexpr uint16_t sign_shift = storage_width - sign_width;
+  static constexpr uint_t significand_mask = (uint_t{1} << (significand_width + ((has_hidden_bit) ? -1 : 0))) - uint_t{1};
+  static constexpr uint_t exponent_mask = ((uint_t{1} << exponent_width) - uint_t{1}) << exponent_shift;
+  static constexpr uint_t sign_mask = ((uint_t{1} << sign_width) - uint_t{1}) << sign_shift;
+
+  typedef union {
+    Float f;
+    uint_t b;
+  } convert_t;
+
+  static inline uint_t to_bits(Float f) {
+    convert_t convert = {.f = f};
+    return convert.b;
+  }
+
+  static inline Float from_bits(uint_t b) {
+    convert_t convert = {.b = b};
+    return convert.f;
+  }
+};
+
 }; // namespace core
 
 template <typename Char> struct fmt::formatter<core::T_sp, Char> : fmt::formatter<fmt::basic_string_view<Char>> {

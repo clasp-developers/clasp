@@ -1928,7 +1928,7 @@
     ;; Read and compile the forms.
     (loop with eof = (gensym "EOF")
           with *compile-time-too* = nil
-          with eclector.reader:*client* = (make-instance 'eclector.readtable::clasp-tracking-elector-client)
+          with eclector.reader:*client* = (make-instance 'cmp::clasp-tracking-elector-client)
           with cfsdp = (core:file-scope cmp::*compile-file-source-debug-pathname*)
           with cfsdl = cmp::*compile-file-source-debug-lineno*
           with cfsdo = cmp::*compile-file-source-debug-offset*

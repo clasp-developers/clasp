@@ -2,6 +2,8 @@
   (unless (find-package "CLASP-DEBUG")
     (make-package "CLASP-DEBUG" :use '("CL")))
   (in-package #:clasp-debug)
+  ;; we intern several symbols below
+  (ext:add-implementation-package "CLASP-DEBUG" "CLOS")
   (flet ((%export (names)
            (export (mapcar (lambda (s) (intern (symbol-name s))) names))))
     (%export '(#:code-source-line-pathname
@@ -450,7 +452,7 @@ Note that as such, the frame returned may not be visible."
     core::catch-lambda core::throw-lambda
     core::unwind-protected-lambda core::unwind-cleanup-lambda
     core::mvc-argument-lambda core::progv-lambda
-    clos::interpret-dtree-program clos::dispatch-miss-va
+    clos::dispatch-miss-va
     clos::perform-outcome
     clos::dispatch-miss clos::invalidated-dispatch-function
     clos::invalidated-discriminating-function

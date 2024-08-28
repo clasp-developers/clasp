@@ -211,7 +211,7 @@ DynEnv_O::SearchStatus sjlj_unwind_search(DestDynEnv_sp dest);
 template <typename Protf, typename Cleanupf> T_mv funwind_protect(Protf&& protected_thunk, Cleanupf&& cleanup_thunk) {
   jmp_buf target;
   T_mv result;
-  if (setjmp(target)) {
+  if (_setjmp(target)) {
     // We have longjmped here. Clean up.
     // Remember to save return values, in case the cleanup thunk
     // messes with them.
@@ -260,7 +260,7 @@ template <typename Protf, typename Cleanupf> T_mv funwind_protect(Protf&& protec
 template <typename Blockf> T_mv call_with_escape(Blockf&& block) {
   jmp_buf target;
   void* frame = __builtin_frame_address(0);
-  if (setjmp(target)) {
+  if (_setjmp(target)) {
     core::MultipleValues& mv = core::lisp_multipleValues();
     T_mv result = mv.readFromMultipleValue0(mv.getSize());
     return result;
@@ -297,7 +297,7 @@ template <typename Tagbodyf> void call_with_tagbody(Tagbodyf&& tagbody) {
   /* Per the standard, we can't store the result of setjmp in a variable or
    * anything. So we kind of fake it via the dest index we set ourselves. */
   size_t index = 0;
-  if (setjmp(target))
+  if (_setjmp(target))
     index = my_thread->_UnwindDestIndex;
 again:
   try {
@@ -316,7 +316,7 @@ again:
 
 template <typename Catchf> T_mv call_with_catch(T_sp tag, Catchf&& cf) {
   jmp_buf target;
-  if (setjmp(target)) {
+  if (_setjmp(target)) {
     core::MultipleValues& mv = core::lisp_multipleValues();
     T_mv result = mv.readFromMultipleValue0(mv.getSize());
     return result;

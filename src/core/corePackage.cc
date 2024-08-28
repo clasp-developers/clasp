@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <float.h>
 #include <stdio.h>
 #include <sys/wait.h>
+#include <cfenv>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
@@ -149,7 +150,6 @@ SYMBOL_EXPORT_SC_(CorePkg, STARdebugSourcePosInfoSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugStartupSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugVaslistSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_accessorsSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, STARdebug_dispatchSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_dtree_interpreterSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_fastgfSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_hash_tableSTAR)
@@ -204,6 +204,11 @@ SYMBOL_EXPORT_SC_(CorePkg, _PLUS_run_all_function_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_standardReadtable_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_type_header_value_map_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_variant_name_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_fe_divbyzero_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_fe_inexact_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_fe_invalid_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_fe_underflow_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_fe_overflow_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, arguments);
 SYMBOL_EXPORT_SC_(CorePkg, array_out_of_bounds);
 SYMBOL_EXPORT_SC_(CorePkg, breakstep);
@@ -566,6 +571,11 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym__PLUS_bitcode_name_PLUS_->defconstant(SimpleBaseString_O::make(BITCODE_NAME));
   _sym__PLUS_executable_name_PLUS_->defconstant(SimpleBaseString_O::make(EXECUTABLE_NAME));
   _sym__PLUS_application_name_PLUS_->defconstant(SimpleBaseString_O::make(APP_NAME));
+  _sym__PLUS_fe_divbyzero_PLUS_->defconstant(clasp_make_fixnum(FE_DIVBYZERO));
+  _sym__PLUS_fe_inexact_PLUS_->defconstant(clasp_make_fixnum(FE_INEXACT));
+  _sym__PLUS_fe_invalid_PLUS_->defconstant(clasp_make_fixnum(FE_INVALID));
+  _sym__PLUS_fe_underflow_PLUS_->defconstant(clasp_make_fixnum(FE_UNDERFLOW));
+  _sym__PLUS_fe_overflow_PLUS_->defconstant(clasp_make_fixnum(FE_OVERFLOW));
   _sym_STARbuild_libSTAR->defconstant(SimpleBaseString_O::make(BUILD_LIB));
   _sym_STARbuild_stlibSTAR->defconstant(SimpleBaseString_O::make(BUILD_STLIB));
   _sym_STARbuild_linkflagsSTAR->defconstant(SimpleBaseString_O::make(BUILD_LINKFLAGS));
@@ -711,7 +721,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARbuiltin_single_dispatch_method_namesSTAR->defparameter(nil<core::T_O>());
   _sym_STARbuiltin_macro_function_namesSTAR->defparameter(nil<core::T_O>());
   _sym_STARbuiltin_setf_function_namesSTAR->defparameter(nil<core::T_O>());
-  _sym_STARdebug_dispatchSTAR->defparameter(nil<core::T_O>());
   _sym_STARdebug_valuesSTAR->defparameter(nil<core::T_O>());
   _sym_STARdebug_hash_tableSTAR->defparameter(nil<core::T_O>());
   _sym_STARforeign_data_reader_callbackSTAR->defparameter(nil<core::T_O>());

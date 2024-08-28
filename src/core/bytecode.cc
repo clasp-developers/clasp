@@ -720,7 +720,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       vm.setreg(fp, n, env.raw_());
       gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->dynEnvStackGet());
       DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
-      setjmp(target);
+      _setjmp(target);
     again:
       try {
         bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
@@ -1268,7 +1268,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     vm.setreg(fp, n, env.raw_());
     gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->dynEnvStackGet());
     DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
-    setjmp(target);
+    _setjmp(target);
   again:
     try {
       bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);

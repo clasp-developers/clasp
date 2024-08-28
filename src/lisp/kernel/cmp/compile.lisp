@@ -13,8 +13,6 @@
      (multiple-value-prog1
          (with-irbuilder ((llvm-sys:make-irbuilder (thread-local-llvm-context)))
            ,@body)
-       (cmp-log "About to optimize-module%N")
-       ;;(cmp-log-dump-module ,module)
        (when (and ,optimize ,optimize-level (null ,dry-run)) (funcall ,optimize ,module ,optimize-level )))))
 
 (defun compile-with-hook (compile-hook definition env)

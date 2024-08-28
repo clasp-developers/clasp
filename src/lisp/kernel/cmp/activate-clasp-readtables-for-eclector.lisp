@@ -1,4 +1,4 @@
-(in-package :eclector.readtable)
+(in-package #:cmp)
 
 (defmethod eclector.readtable:syntax-type  ((readtable cl:readtable) char)
   (core:syntax-type readtable char))
@@ -118,7 +118,7 @@
   (setq core:*read-hook* 'read-with-eclector)
   (setq core:*read-preserving-whitespace-hook* 'read-preserving-whitespace-with-eclector))
 
-(eclector.readtable::init-clasp-as-eclector-reader)
+(init-clasp-as-eclector-reader)
 
 (defun patch-object (client value-old seen-objects)
   (multiple-value-bind (state object*)

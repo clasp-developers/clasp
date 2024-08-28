@@ -12,18 +12,11 @@
 
 (in-package "CLOS")
 
-#+(or)
-(defmacro dbg-standard (fmt &rest args)
-  `(format t ,fmt ,@args))
-(defmacro dbg-standard (fmt &rest args) (declare (ignore fmt args)))
-
 ;;; ----------------------------------------------------------------------
 ;;; INSTANCES INITIALIZATION AND REINITIALIZATION
 ;;;
 
 (defmethod initialize-instance ((instance T) core:&va-rest initargs)
-  (dbg-standard "standard.lisp:29  initialize-instance unbound instance ->~a~%" (eq (core:unbound) instance))
-  (mlog "standard.lisp:26 about to apply shared-initialize%N")
   (apply #'shared-initialize instance 'T initargs))
 
 (defmethod reinitialize-instance ((instance T ) &rest initargs)
@@ -31,13 +24,11 @@
   ;; NOTE: This dynamic extent declaration relies on the fact clasp's APPLY
   ;; does not reuse rest lists. If it did, a method on #'shared-initialize,
   ;; or whatever, could potentially let the rest list escape.
-  (mlog "standard.lisp::reinitialize-instance instance initargs -> {}%N" (core:safe-repr initargs))
   (when initargs
     (check-initargs-uncached
      (class-of instance) initargs
      (list (list #'reinitialize-instance (list instance))
            (list #'shared-initialize (list instance t)))))
-  (mlog "standard.lisp:40 about to apply shared-initialize initargs -> {}%N" (core:safe-repr initargs))
   (apply #'shared-initialize instance '() initargs))
 
 (defmethod shared-initialize ((instance T) slot-names core:&va-rest initargs)
@@ -61,7 +52,6 @@
   ;;       ()
   ;;            no slots are set from initforms
   ;;
-  (mlog "standard.lisp::shared-initialize instance -> {} initargs -> {}%N" (core:safe-repr instance) (core:list-from-vaslist initargs))
   (let* ((class (class-of instance)))
     ;; initialize-instance slots
     (dolist (slotd (class-slots class))
@@ -150,7 +140,6 @@
 
 (defmethod make-instance ((class class) &rest initargs)
   (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
-  (dbg-standard "standard.lisp:128  make-instance class ->~a~%" class)
   ;; Without finalization we can not find initargs.
   (unless (class-finalized-p class)
     (finalize-inheritance class))
@@ -165,8 +154,6 @@
 			(precompute-valid-initarg-keywords class)))))
     (check-initargs class initargs keywords))
   (let ((instance (apply #'allocate-instance class initargs)))
-    #+mlog(or instance (error "allocate-instance returned NIL!!!!!!! class -> ~a initargs -> ~a" class initargs))
-    (dbg-standard "standard.lisp:143   allocate-instance class -> ~a  instance checking if unbound -> ~a~%" class (eq instance (core:unbound)))
     (apply #'initialize-instance instance initargs)
     instance))
 
@@ -242,7 +229,6 @@
     ((class class) &rest initargs &key direct-slots)
   (declare (dynamic-extent initargs) ; see NOTE in reinitialize-instance/T
            (ignore initargs direct-slots))
-  (dbg-standard "standard.lisp:227  initialize-instance class->~a~%" class)
   (finalize-unless-forward class)
   ;; In this case we are assigning the stamp for the first time.
   (core:class-new-stamp class))
@@ -252,8 +238,6 @@
                               &key (direct-superclasses () dscp)
                                 (direct-slots nil direct-slots-p))
   (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
-  ;; verify that the inheritance list makes sense
-  (dbg-standard "standard.lisp:238 shared-initialize of class-> ~a direct-superclasses-> ~a~%" class direct-superclasses)
   ;;; Convert the list of direct slots into actual slot definitions.
   (when direct-slots-p
     (setf initargs
@@ -321,7 +305,6 @@
 	(remove child (%class-direct-subclasses parent))))
 
 (defun check-direct-superclasses (class supplied-superclasses)
-  (dbg-standard "check-direct-superclasses class -> ~a  supplied-superclasses->~a  (type-of ~a) -> ~a~%" class supplied-superclasses class (type-of class))
   (if supplied-superclasses
       (loop for superclass in supplied-superclasses
 	 ;; Until we process streams.lisp there are some invalid combinations

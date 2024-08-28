@@ -34,12 +34,10 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
                                                     ))
         (irbuilder-alloca (llvm-sys:make-irbuilder (thread-local-llvm-context)))
         (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context))))
-    (cmp-log "Setting special variables do-make-new-run-all%N")
     (let* ((*run-all-function* run-all-fn)
            (*irbuilder-run-all-alloca* irbuilder-alloca)
            (*irbuilder-run-all-body* irbuilder-body)
            (*current-function* run-all-fn))
-      (cmp-log "Entering with-dbg-function%N")
       (cmp:with-guaranteed-*current-source-pos-info* ()
         (cmp:with-dbg-function (:lineno 0
                                 :function run-all-fn
@@ -47,7 +45,6 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
           ;; Set up dummy debug info for these irbuilders
           (let ((entry-bb (irc-basic-block-create "entry" run-all-fn)))
             (irc-set-insert-point-basic-block entry-bb irbuilder-alloca))
-          (cmp-log "bb work do-make-new-run-all%N")
           (let ((body-bb (irc-basic-block-create "body" run-all-fn)))
             (irc-set-insert-point-basic-block body-bb irbuilder-body)
             ;; Setup exception handling and cleanup landing pad
@@ -55,9 +52,7 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
               (let ((entry-branch (irc-br body-bb)))
                 (irc-set-insert-point-instruction entry-branch irbuilder-alloca)
                 (with-irbuilder (irbuilder-body)
-                  (progn
-                    (cmp-log "running body do-make-new-run-all%N")
-                    (funcall body run-all-fn))
+                  (funcall body run-all-fn)
                   (irc-ret-null-t*))))))))
     (values run-all-fn)))
 

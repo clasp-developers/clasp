@@ -49,6 +49,8 @@ THE SOFTWARE.
 
 namespace core {
 
+SYMBOL_EXPORT_SC_(CorePkg, next_to_string);
+
 CL_LAMBDA(buffer x base);
 CL_DECLARE();
 DOCGROUP(clasp);
@@ -56,7 +58,7 @@ CL_DEFUN StrNs_sp core__next_to_string(StrNs_sp buffer, Bignum_sp bn, Fixnum_sp 
   const char* num_to_text = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   int ibase = unbox_fixnum(base);
   if (ibase < 2 || ibase > 36) {
-    QERROR_WRONG_TYPE_NTH_ARG(3, base, Cons_O::createList(cl::_sym_integer, make_fixnum(2), make_fixnum(36)));
+    ERROR_WRONG_TYPE_NTH_ARG(core::_sym_next_to_string, 3, base, Cons_O::createList(cl::_sym_integer, make_fixnum(2), make_fixnum(36)));
   }
   mp_size_t len = bn->length();
   mp_size_t size = std::abs(len);
@@ -168,7 +170,7 @@ CL_DEFUN StrNs_sp core__integer_to_string(StrNs_sp buffer, Integer_sp integer, F
   } else if (Bignum_sp bi = integer.asOrNull<Bignum_O>()) {
     core__next_to_string(buffer, bi, base);
   } else {
-    QERROR_WRONG_TYPE_NTH_ARG(2, base, cl::_sym_integer);
+    ERROR_WRONG_TYPE_NTH_ARG(core::_sym_integerToString, 2, base, cl::_sym_integer);
   }
   return buffer;
 }

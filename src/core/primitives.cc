@@ -722,6 +722,7 @@ DOCGROUP(clasp);
 CL_DEFUN_SETF T_sp setf_macro_function(Function_sp function, Symbol_sp symbol, T_sp env) {
   Function_sp namedFunction;
   (void)env; // ignore
+  symbol->check_package_lock("setting ~s's macro-function");
   symbol->setf_macroP(true);
   symbol->setf_symbolFunction(function);
   return function;
@@ -891,6 +892,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Set whether SYMBOL is known to be a constant. Use cautiously.)dx");
 DOCGROUP(clasp);
 CL_DEFUN_SETF T_sp setf_symbol_constantp(T_sp value, Symbol_sp symbol) {
+  symbol->check_package_lock("defining ~s as constant");
   symbol->setReadOnly(value.notnilp());
   return value;
 }
@@ -1014,6 +1016,7 @@ CL_DEFUN_SETF T_sp setf_fdefinition(Function_sp function, T_sp name) {
   Symbol_sp symbol;
   Function_sp functionObject;
   if ((symbol = name.asOrNull<Symbol_O>())) {
+    symbol->check_package_lock("setting ~s's fdefinition");
     symbol->setf_macroP(false);
     symbol->setf_symbolFunction(function);
     return function;
@@ -1024,6 +1027,7 @@ CL_DEFUN_SETF T_sp setf_fdefinition(Function_sp function, T_sp name) {
       if (cur2.consp()) {
         symbol = gc::As<Symbol_sp>(oCar(cur2));
         if (symbol.notnilp() && oCdr(cur2).nilp()) {
+          symbol->check_package_lock("setting (setf ~s)'s fdefinition");
           symbol->setSetfFdefinition(function);
           return function;
         }
@@ -1131,12 +1135,14 @@ CL_DEFUN T_sp cl__fmakunbound(T_sp functionName) {
       if (dname.consp()) {
         Symbol_sp name = gc::As<Symbol_sp>(oCar(dname));
         if (name.notnilp() && oCdr(dname).nilp()) {
+          name->check_package_lock("fmakunbounding (setf ~s)");
           name->fmakunbound_setf();
           return functionName;
         }
       }
     }
   } else if (Symbol_sp sym = functionName.asOrNull<Symbol_O>()) {
+    sym->check_package_lock("fmakunbounding ~s");
     sym->fmakunbound();
     return sym;
   }

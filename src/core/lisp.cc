@@ -202,7 +202,7 @@ Lisp::GCRoots::GCRoots()
   this->_SingleDispatchGenericFunctions.store(nil<core::T_O>());
 };
 
-Lisp::Lisp() : _Booted(false), _MpiEnabled(false), _MpiRank(0), _MpiSize(1), _BootClassTableIsValid(true) {
+Lisp::Lisp() : _Booted(false), _MpiEnabled(false), _MpiRank(0), _MpiSize(1), _BootClassTableIsValid(true), _TrapFpeBits(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW) {
   //  this->_Roots._Bindings.reserve(1024); // moved to Lisp::initialize()
 }
 
@@ -455,9 +455,25 @@ void Lisp::startupLispEnvironment() {
     _lisp->_Roots._CorePackage = gc::As<Package_sp>(_lisp->findPackage(CorePkg));
     _lisp->_Roots._KeywordPackage = gc::As<Package_sp>(_lisp->findPackage(KeywordPkg));
     _lisp->_Roots._CommonLispPackage = gc::As<Package_sp>(_lisp->findPackage(ClPkg));
-    _lisp->_Roots._CorePackage->setSystemLockedP(true);
-    _lisp->_Roots._KeywordPackage->setSystemLockedP(true);
-    _lisp->_Roots._CommonLispPackage->setSystemLockedP(true);
+    _lisp->_Roots._CorePackage->setSystemPackageP(true);
+    _lisp->_Roots._KeywordPackage->setSystemPackageP(true);
+    _lisp->_Roots._CommonLispPackage->setSystemPackageP(true);
+    // Set up implementation packages
+    _lisp->_Roots._CommonLispPackage->addImplementationPackage(_lisp->_Roots._CorePackage);
+    _lisp->_Roots._CommonLispPackage->addImplementationPackage(_lisp->findPackage(ClosPkg).as<Package_O>());
+    _lisp->_Roots._CommonLispPackage->addImplementationPackage(_lisp->findPackage(CompPkg).as<Package_O>());
+
+    _lisp->findPackage(ClosPkg).as<Package_O>()->addImplementationPackage(_lisp->_Roots._CorePackage);
+    _lisp->findPackage(ClosPkg).as<Package_O>()->addImplementationPackage(_lisp->findPackage(CompPkg).as<Package_O>());
+
+    _lisp->findPackage(ExtPkg).as<Package_O>()->addImplementationPackage(_lisp->_Roots._CorePackage);
+    _lisp->findPackage(ExtPkg).as<Package_O>()->addImplementationPackage(_lisp->findPackage(ClosPkg).as<Package_O>());
+
+    _lisp->_Roots._CommonLispPackage->setLockedP(true);
+    //_lisp->_Roots._CorePackage->setLockedP(true);
+    //_lisp->findPackage(CompPkg).as<Package_O>()->setLockedP(true);
+    _lisp->findPackage(ClosPkg).as<Package_O>()->setLockedP(true);
+    _lisp->findPackage(ExtPkg).as<Package_O>()->setLockedP(true);
     //
     // fixme2022 Rip this package out if we don't need it to store the reference compiler
     //
@@ -548,6 +564,8 @@ void Lisp::startupLispEnvironment() {
 
   this->_Roots._PrintSymbolsProperly = true;
   mpip::Mpi_O::initializeGlobals(_lisp);
+  feenableexcept(_TrapFpeBits);
+  fedisableexcept(~_TrapFpeBits);
   _lisp->_Roots._Started = true;
 
   //
@@ -1457,7 +1475,7 @@ CL_DEFUN List_sp cl__member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp tes
   }
   if (tlist.nilp())
     return nil<T_O>();
-  QERROR_WRONG_TYPE_NTH_ARG(2, tlist, cl::_sym_list);
+  ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_member, 2, tlist, cl::_sym_list);
   UNREACHABLE();
 }
 

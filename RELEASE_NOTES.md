@@ -1,5 +1,13 @@
 # Version 2.7.0 (LLVM15-18) Pending
 
+## Added
+* Package lock support, based on SBCL's. Currently ignores local
+  bindings. Thanks @bumblingbats.
+
+## Changed
+* Floating point exceptions FE_INVALID, FE_OVERFLOW and FE_DIVBYZERO
+  now signal the corresponding lisp errors by default.
+
 ## Fixed
 * Pathnames and filesystem operations support Unicode (#1595).
 * Package names support Unicode (#1596).

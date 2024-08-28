@@ -379,6 +379,7 @@ public:
   bool _MpiEnabled;
   int _MpiRank;
   int _MpiSize;
+  int _TrapFpeBits; // Current FPE traps needed for restoration in SIGFPE for amd64.
   /*! Keep track of every new environment that is created */
   std::atomic<uint> _EnvironmentId;
 
@@ -451,8 +452,8 @@ public:
   void setFileScope(const string& fileName, FileScope_sp fileInfo);
 
 public:
-  /*! Takes the place of ECL trap_fpe_bits - for now trap everything */
-  int trapFpeBits() { return ~0; };
+  int getTrapFpeBits() { return _TrapFpeBits; };
+  void setTrapFpeBits(int bits) { _TrapFpeBits = bits; }
 
 public:
 #if 0

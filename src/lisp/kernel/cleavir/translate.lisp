@@ -2228,8 +2228,6 @@ COMPILE-FILE will use the default *clasp-env*."
                 "repl-code"))))
     ;; Link the C++ intrinsics into the module
     (cmp::with-module (:module module)
-      (cmp::cmp-log "Dumping module%N")
-      (cmp::cmp-log-dump-module module)
       (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
           (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
             (literal:with-rtv

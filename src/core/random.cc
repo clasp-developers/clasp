@@ -95,14 +95,18 @@ CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
     BIGNUM_NORMALIZE(len, res);
     return cl__mod(bignum_result(len, res), gbn);
   } else if (DoubleFloat_sp df = olimit.asOrNull<DoubleFloat_O>()) {
-    if (df->get() > 0.0) {
+    if (df->get() == DBL_TRUE_MIN) {
+      return DoubleFloat_O::create(0.0);
+    } else if (df->get() > 0.0) {
       std::uniform_real_distribution<> range(0.0, df->get());
       return DoubleFloat_O::create(range(random_state->_Producer._value));
     } else
       TYPE_ERROR_cl_random(olimit);
   } else if (olimit.single_floatp()) {
     float flimit = olimit.unsafe_single_float();
-    if (flimit > 0.0f) {
+    if (flimit == FLT_TRUE_MIN) {
+      return clasp_make_single_float(0.0f);
+    } else if (flimit > 0.0f) {
       std::uniform_real_distribution<> range(0.0, flimit);
       return clasp_make_single_float(range(random_state->_Producer._value));
     } else

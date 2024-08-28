@@ -58,8 +58,6 @@
 
 (defun install-method (name qualifiers specializers lambda-list fun &rest options)
   (declare (notinline ensure-generic-function))
-  (mlog "kernel.lisp::install-method  name -> {}  lambda-list -> {} %N" (core:safe-repr name) (core:safe-repr lambda-list))
-;  (record-definition 'method `(method ,name ,@qualifiers ,specializers))
   (let* ((gf (ensure-generic-function name))
 	 (method (make-method (generic-function-method-class gf)
 			      qualifiers specializers lambda-list
@@ -165,37 +163,9 @@
 	 when (applicable-method-p method args)
 	 collect method))))
 
-#+mlog
-(defun std-compute-applicable-methods-using-classes (gf classes)
-  (declare (optimize (speed 3)))
-  (with-early-accessors
-      (+eql-specializer-slots+ +standard-generic-function-slots+)
-    (flet ((applicable-method-p (method classes)
-             (loop for spec in (safe-method-specializers method)
-                   for class in classes
-                   always (cond ((eql-specializer-p spec)
-                                 ;; EQL specializer invalidate computation                       
-                                 ;; we return NIL                                                
-                                 (when (si::of-class-p (eql-specializer-object spec) class)
-                                   (return-from std-compute-applicable-methods-using-classes
-                                     (values nil nil)))
-                                 nil)
-                                ((si::subclassp class spec))))))
-      (mlog "std-compute-applicable-methods-using-classes gf -> {} classes -> {}%N" gf (length classes))
-      (let ((result (sort-applicable-methods
-                     gf
-                     (loop for method in (generic-function-methods gf)
-                           when (applicable-method-p method classes)
-                             collect method)
-                     classes)))
-        (mlog "  result -> {}%N" result)
-        (values result t)))))
-
-#-mlog
 (defun std-compute-applicable-methods-using-classes (gf classes)
   (declare (optimize (speed 3)))
   (with-early-accessors (+eql-specializer-slots+ +standard-generic-function-slots+)
-    (mlog "std-compute-applicable-methods-using-classes gf -> {} classes -> {}%N" (core:safe-repr gf) (length classes))
     (flet ((applicable-method-p (method classes)
 	     (loop for spec in (safe-method-specializers method)
 		for class in classes

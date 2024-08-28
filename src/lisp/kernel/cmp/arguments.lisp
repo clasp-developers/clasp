@@ -38,7 +38,6 @@
   ;; cc is the calling-convention object.
   (dolist (req (cdr reqargs))
     (let ((arg (calling-convention-vaslist.va-arg cc)))
-      (cmp-log "(calling-convention-vaslist.va-arg cc) -> {}%N" arg)
       (funcall *argument-out* arg req))))
 
 ;;; Unlike the other compile-*-arguments, this one returns a value-
@@ -371,7 +370,6 @@ a_p = a_p_temp; a = a_temp;
 					 allow-other-keys
 					 calling-conv
                                          &key argument-out (safep t))
-  (cmp-log "Entered compile-general-lambda-list-code%N")
   (let* ((*argument-out* argument-out)
          (nargs (calling-convention-nargs calling-conv))
          (nreq (car reqargs))
@@ -415,7 +413,6 @@ a_p = a_p_temp; a = a_temp;
               ;; we could use it in the error check to save a subtraction, though.
               (compile-optional-arguments optargs nreq calling-conv iNIL iT))
             (when safep
-              (cmp-log "Last if-too-many-arguments {} {}" cmax nargs)
               (compile-error-if-too-many-arguments wrong-nargs-block cmax nargs)))))))
 
 
@@ -543,21 +540,13 @@ a_p = a_p_temp; a = a_temp;
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs varest-p)
       (core:process-lambda-list lambda-list 'function)
     (declare (ignore auxargs allow-other-keys varest-p key-flag))
-    (cmp-log "reqargs = {}%N" reqargs)
-    (cmp-log "optargs = {}%N" optargs)
-    (cmp-log "rest-var = {}%N" rest-var)
-    (cmp-log "keyargs = {}%N" keyargs)
     (let ((args '()))
       (dolist (req (rest reqargs))
-        (cmp-log "req-name = {}%N" req)
         (push req args))
       (do ((cur (rest optargs) (cdddr cur)))
           ((null cur) nil)
         (let ((opt-name (car cur))
               (opt-flag (cadr cur)))
-          (cmp-log "opt cur = {}%N" cur)
-          (cmp-log "opt-name = {}%N" opt-name)
-          (cmp-log "opt-flag = {}%N" opt-flag)
           (push opt-name args)
           (when opt-flag (push opt-flag args))))
       (when rest-var (push rest-var args))
@@ -565,8 +554,6 @@ a_p = a_p_temp; a = a_temp;
           ((null cur) nil)
         (let ((key-name (caddr cur))
               (key-flag (cadddr cur)))
-          (cmp-log "key-name = {}%N" key-name)
-          (cmp-log "key-flag = {}%N" key-flag)
           (push key-name args)
           (when key-flag (push key-flag args))))
       (nreverse args))))
@@ -577,7 +564,6 @@ a_p = a_p_temp; a = a_temp;
   ;; 2) optional arguments are (<lexical location> <lexical location>)
   ;; 3) keyword arguments are (<symbol> <lexical location> <lexical location>)
   ;; this lets us cheap out on parsing, except &rest and &allow-other-keys.
-  (cmp-log "calculate-cleavir-lambda-list-analysis lambda-list -> {}%N" lambda-list)
   (let (required optional rest-type rest key aok-p key-flag
                  (required-count 0) (optional-count 0) (key-count 0))
     (dolist (item lambda-list)
@@ -646,13 +632,9 @@ a_p = a_p_temp; a = a_temp;
 (defun compile-lambda-list-code (cleavir-lambda-list-analysis calling-conv arity
                                  &key argument-out (safep t))
   "Return T if arguments were processed and NIL if they were not"
-  (cmp-log "about to compile-lambda-list-code cleavir-lambda-list-analysis: {}%N" cleavir-lambda-list-analysis)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
       (process-cleavir-lambda-list-analysis cleavir-lambda-list-analysis)
     (declare (ignore unused-auxs))
-    (cmp-log "    reqargs -> {}%N" reqargs)
-    (cmp-log "    optargs -> {}%N" optargs)
-    (cmp-log "    keyargs -> {}%N" keyargs)
     (cond
       ((eq arity :general-entry)
        (compile-general-lambda-list-code reqargs 

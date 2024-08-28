@@ -27,6 +27,8 @@
         do (funcall hook)))
 
 (defun sys::standard-toplevel ()
+  (ext:lock-package "CORE")
+  
   (let ((core:*use-interpreter-for-eval* nil))
     #-staging (when (ext:getenv "CLASP_AUTOCOMPILATION")
                 (funcall 'ext:start-autocompilation))

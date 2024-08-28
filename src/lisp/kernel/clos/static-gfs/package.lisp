@@ -5,4 +5,6 @@
   (:export #:precompile-constructor)
   (:export #:invalidate-class-reinitializers*)
   (:export #:invalidate-changers* #:invalidate-class-changers
-           #:invalidate-designated-changers))
+           #:invalidate-designated-changers)
+  ;; make-instance compiler macro
+  (:implement #:cl))

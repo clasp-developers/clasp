@@ -252,8 +252,6 @@ Modification
 
 Proceed with caution.
 
-There are informational debug macros. mlog is defined in hierarchy.lsp and is good if you have a problem before generic function calls. Various places use mlog, which just expands into nothing normally. However, mlog puts out a lot of output, and once generic functions start being called this output will be too voluminous for humans to make serious use of.
-
 At the top of closfastgf is a thing putting :debug-fastgf in *features*. This is how you debug problems with generic function calls. There's a lot of output so it dumps it into a file in /tmp based on the PID. What it essentially does is log the dispatch miss "slow path" in which a generic function has to compute a new effective method etc.
 
 If a function should be satiated but isn't, this will be represented in this log as infinite recursive calls, like "Dispatch miss for <whatever> ... Dispatch miss for <whatever> ..." This indicates that the dispatch miss code is itself trying to call the function. The solution is probably to throw the function into satiation.lsp. There is a recursion checker enabled when log-fastgf is on, but it might not always work.

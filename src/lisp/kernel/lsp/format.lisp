@@ -20,9 +20,6 @@
 
 (in-package "SYS")
 
-;;(defmacro fmt-log (&rest args) `(core:fmt t "FMT-LOG: {}%N" (list ,@args)))
-(defmacro fmt-log (&rest args) (declare (ignore args)))
-
 (pushnew :cdr-7 *features*)
 
 ;;;; Float printing.
@@ -445,12 +442,10 @@
                (*output-layout-mode* nil)
                (*default-format-error-control-string* string)
                (*logical-block-popper* nil))
-          (fmt-log "line 498")
           (interpret-directive-list stream (tokenize-control-string string)
                                     orig-args args)))))
 
 (defun interpret-directive-list (stream directives orig-args args)
-  (fmt-log "interpret-directive-list directives: " directives " orig-args: " orig-args " args: " args)
   (if directives
       (let ((directive (car directives)))
         (etypecase directive
@@ -605,7 +600,6 @@
 ;;; 
 (defmacro next-arg (&optional offset)
   `(progn
-     (fmt-log "Getting next arg from: " args)
      (when (null args)
        (error 'format-error
               :complaint "No more arguments."
@@ -722,13 +716,11 @@
 (defmacro interpret-bind-defaults (specs params &body body)
   (once-only ((params params))
     (collect ((bindings))
-      (fmt-log "line 776 specs: " specs  )
       (dolist (spec specs)
         (destructuring-bind (var default) spec
           (bindings `(,var (let* ((param-and-offset (pop ,params))
                                   (offset (car param-and-offset))
                                   (param (cdr param-and-offset)))
-                             (fmt-log "MEISTER param-and-offset: " param-and-offset)
                              (case param
                                (:arg (or (next-arg offset) ,default))
                                (:remaining (length args))
@@ -801,7 +793,6 @@
                       mincol colinc minpad padchar atsignp))
 
 (def-format-directive #\A (colonp atsignp params)
-  (fmt-log "format-directive A")
   (if params
       (expand-bind-defaults ((mincol 0) (colinc 1) (minpad 0)
                              (padchar #\space))
@@ -1374,14 +1365,27 @@
                             nil)))
         (if (and w ovf e (> elen e))   ;exponent overflow
             (dotimes (i w) (write-char ovf stream))
-            (multiple-value-bind (fstr flen lpoint)
+            (multiple-value-bind (fstr flen lpoint tpoint dpos)
                 (sys::flonum-to-string number spaceleft fdig (- expt) fmin)
+              (when (and (plusp k)
+                         (< k dpos))
+                (incf expt (- dpos k))
+                (setf estr (decimal-string (abs expt))
+                      tpoint nil)
+                (loop for pos from dpos downto k
+                      do (setf (char fstr pos) (if (= pos k) #\. (char fstr (1- pos))))))
+              (when (eql fdig 0)
+                (setq tpoint nil))
               (when w
                 (decf spaceleft flen)
                 (when lpoint
                   (if (> spaceleft 0)
                       (decf spaceleft)
-                      (setq lpoint nil))))
+                      (setq lpoint nil)))
+                (when tpoint
+                  (if (> spaceleft 0)
+                      (decf spaceleft)
+                      (setq tpoint nil))))
               (cond ((and w (< spaceleft 0) ovf)
                      ;;significand overflow
                      (dotimes (i w) (write-char ovf stream)))
@@ -1392,6 +1396,7 @@
                            (if atsign (write-char #\+ stream)))
                        (when lpoint (write-char #\0 stream))
                        (write-string fstr stream)
+                       (when tpoint (write-char #\0 stream))
                        (write-char (if marker
                                        marker
                                        (format-exponent-marker number))
@@ -1819,9 +1824,7 @@
                                                 (if atsignp
                                                     :capitalize-first
                                                     :downcase)))))
-        (fmt-log "line 2012")
         (setf args (interpret-directive-list stream before orig-args args))
-        (fmt-log "line 2014 args: " args)
         after)
       #+(or ecl clasp)
       (let* ((posn (position close directives))
@@ -1831,7 +1834,6 @@
                                     :adjustable t :fill-pointer 0)))
         (unwind-protect
              (with-output-to-string (stream string)
-               (fmt-log "line 2025")
                (setf args (interpret-directive-list stream before orig-args args)))
           (princ (funcall
                   (if colonp
@@ -1909,7 +1911,6 @@
      remaining)))
 
 (defun expand-maybe-conditional (sublist)
-  (fmt-log "expand-maybe-conditional")
   (flet ((hairy ()
            `(let ((prev-args args)
                   (arg ,(expand-next-arg)))
@@ -1979,50 +1980,35 @@
 
 (def-complex-format-interpreter #\[ (colonp atsignp params directives)
   (multiple-value-bind
-      (sublists last-semi-with-colon-p remaining)
+        (sublists last-semi-with-colon-p remaining)
       (parse-conditional-directive directives)
-    (fmt-log "line 2174 colonp: " colonp " atsignp: " atsignp " params: " params " directives: " directives " args:" args)
     (setf args
-          (progn
-            (fmt-log "line 2177 args: " args)
-            (if atsignp
-                (progn
-                  (fmt-log "line 2180 args: " args)
-                  (if colonp
+          (if atsignp
+              (if colonp
+                  (error 'format-error
+                         :complaint
+                         "Cannot specify both the colon and at-sign modifiers.")
+                  (if (cdr sublists)
                       (error 'format-error
                              :complaint
-                             "Cannot specify both the colon and at-sign modifiers.")
-                      (progn
-                        (fmt-log "line 2182 args:" args)
-                        (if (cdr sublists)
-                            (error 'format-error
-                                   :complaint
-                                   "Can only specify one section")
-                            (progn
-                              (fmt-log "line 2188 params: " params " args: " args)
-                              (interpret-bind-defaults () params
-                                                       (let ((prev-args args)
-                                                             (arg (next-arg)))
-                                                         (if arg
-                                                             (progn
-                                                               (fmt-log "line 2203")
-                                                               (interpret-directive-list stream
-                                                                                       (car sublists)
-                                                                                       orig-args
-                                                                                       prev-args))
-                                                             args))))))))
+                             "Can only specify one section")
+                      (interpret-bind-defaults () params
+                        (let ((prev-args args)
+                              (arg (next-arg)))
+                          (if arg
+                              (interpret-directive-list stream
+                                                        (car sublists)
+                                                        orig-args
+                                                        prev-args)
+                              args)))))
               (if colonp
                   (if (= (length sublists) 2)
                       (interpret-bind-defaults () params
                         (if (next-arg)
-                            (progn
-                              (fmt-log "line 2215")
-                              (interpret-directive-list stream (car sublists)
-                                                        orig-args args))
-                            (progn
-                              (fmt-log "line 2218")
-                              (interpret-directive-list stream (cadr sublists)
-                                                        orig-args args))))
+                            (interpret-directive-list stream (car sublists)
+                                                      orig-args args)
+                            (interpret-directive-list stream (cadr sublists)
+                                                      orig-args args)))
                       (error 'format-error
                              :complaint
                              "Must specify exactly two sections."))
@@ -2031,12 +2017,11 @@
                                          (pop sublists)))
                            (last (1- (length sublists)))
                            (sublist
-                            (if (<= 0 index last)
-                                (nth (- last index) sublists)
-                                default)))
-                      (fmt-log "2233")
+                             (if (<= 0 index last)
+                                 (nth (- last index) sublists)
+                                 default)))
                       (interpret-directive-list stream sublist orig-args
-                                                args)))))))
+                                                args))))))
     remaining))
 
 (def-complex-format-directive #\; ()
@@ -2209,10 +2194,8 @@
                                     :control-string string
                                     :offset (1- end)))))
                      (formatter-aux stream insides orig-args args))
-                   (progn
-                     (fmt-log "line 2409")
-                     (interpret-directive-list stream insides
-                                             orig-args args))))
+                   (interpret-directive-list stream insides
+                                             orig-args args)))
              (bind-args (orig-args args)
                (if colonp
                    (let* ((arg (next-arg))
