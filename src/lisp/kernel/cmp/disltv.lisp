@@ -271,7 +271,7 @@
                 :packing-info packing-info
                 :uaet-code uaet-code
                 :prototype array)))))
-
+#+(or)
 (defmethod %load-instruction ((mnemonic (eql 'setf-row-major-aref)) stream)
   (let ((array (read-creator stream)) (index (read-ub16 stream))
         (value (read-creator stream)))
@@ -722,6 +722,7 @@
                  `(make-array ',dims
                               :element-type ',(decode-uaet (uaet-code inst))
                               :initial-contents ,(prototype inst))))))))
+#+(or)
 (defmethod disassemble-instruction ((inst setf-aref))
   `(setf (row-major-aref (% ,(index (setf-aref-array inst)))
                          ,(setf-aref-index inst))

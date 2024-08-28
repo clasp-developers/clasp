@@ -86,11 +86,12 @@
    (%packing-info :initarg :packing-info :reader packing-info)
    (%uaet-code :initarg :uaet-code :reader uaet-code)))
 
-;; row-major.
-(defclass setf-aref (effect)
-  ((%array :initarg :array :reader setf-aref-array :type array-creator)
-   (%index :initarg :index :reader setf-aref-index :type (integer 0))
-   (%value :initarg :value :reader setf-aref-value :type creator)))
+;;; Initialize contents of a general (T) array. This is a separate instruction
+;;; because such arrays may contain themselves.
+(defclass initialize-array (effect)
+  ((%array :initarg :array :reader initialized-array :type array-creator)
+   ;; A list of creators as long as the array's total size.
+   (%values :initarg :values :reader array-values :type list)))
 
 (defclass hash-table-creator (vcreator)
   ((%test :initarg :test :reader hash-table-creator-test :type symbol)
@@ -514,14 +515,15 @@
                (make-instance 'array-creator
                  :prototype value :dimensions (array-dimensions value)
                  :packing-info info :uaet-code uaet-code))))
-    (when (eq info-type t) ; general - dump setf-arefs for elements.
+    (when (eq info-type t) ; general - dump an initialize-array for elements.
       ;; (we have to separate initialization here in case the array
       ;;  contains itself. packed arrays can't contain themselves)
-      (loop for i below (array-total-size value)
-            do (add-instruction
-                (make-instance 'setf-aref
-                  :array arr :index i
-                  :value (ensure-constant (row-major-aref value i))))))
+      (add-instruction
+       (make-instance 'initialize-array
+         :array arr
+         :values (loop for i below (array-total-size value)
+                       for e = (row-major-aref value i)
+                       collect (ensure-constant e)))))
     arr))
 
 (defmethod add-constant ((value hash-table))
@@ -814,7 +816,7 @@
     (cons 69 sind)
     (initialize-cons 70 consind carind cdrind)
     (make-array 74 sind rank . dims)
-    (setf-row-major-aref 75 arrayind rmindex valueind)
+    (initialize-array 75 arrayind . valueinds)
     (make-hash-table 76 sind test count)
     (setf-gethash 77 htind keyind valueind)
     (make-sb64 78 sind sb64)
@@ -1037,14 +1039,15 @@
             ((equal packing-type '(signed-byte 64))
              (dump (write-b64 elem stream)))
             ;; TODO: Signed bytes
-            ((equal packing-type 't)) ; handled by setf-aref instructions
+            ((equal packing-type 't)) ; handled by initialize-array
             (t (error "BUG: Unknown packing-type ~s" packing-type))))))
 
-(defmethod encode ((inst setf-aref) stream)
-  (write-mnemonic 'setf-row-major-aref stream)
-  (write-index (setf-aref-array inst) stream)
-  (write-b16 (setf-aref-index inst) stream)
-  (write-index (setf-aref-value inst) stream))
+(defmethod encode ((inst initialize-array) stream)
+  (write-mnemonic 'initialize-array stream)
+  (write-index (initialized-array inst) stream)
+  ;; length is implicit from the array being initialized
+  (loop for c in (array-values inst)
+        do (write-index c stream)))
 
 ;;; Arrays are encoded with two codes: One for the packing, and one
 ;;; for the element type. The latter is in place so that, hopefully,

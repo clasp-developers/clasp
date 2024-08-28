@@ -31,7 +31,7 @@
 #define LTV_OP_CONS 69
 #define LTV_OP_INIT_CONS 70
 #define LTV_OP_MAKE_ARRAY 74
-#define LTV_OP_SRMA 75
+#define LTV_OP_INIT_ARRAY 75
 #define LTV_OP_HASHT 76
 #define LTV_OP_SHASH 77
 #define LTV_OP_SB64 78
@@ -498,11 +498,11 @@ struct loadltv {
     fill_array(arr, total, packing_code);
   }
 
-  void op_srma() {
+  void op_init_array() {
     Array_sp arr = gc::As<Array_sp>(get_ltv(read_index()));
-    size_t aindex = read_u16();
-    T_sp value = get_ltv(read_index());
-    arr->rowMajorAset(aindex, value);
+    size_t ats = arr->arrayTotalSize();
+    for (size_t i = 0; i < ats; ++i)
+      arr->rowMajorAset(i, get_ltv(read_index()));
   }
 
   void op_hasht() {
@@ -996,9 +996,9 @@ struct loadltv {
     case LTV_OP_MAKE_ARRAY:
       op_array();
       break;
-    case LTV_OP_SRMA:
-      op_srma();
-      break; // (setf row-major-aref)
+    case LTV_OP_INIT_ARRAY:
+      op_init_array();
+      break;
     case LTV_OP_HASHT:
       op_hasht();
       break; // make-hash-table
