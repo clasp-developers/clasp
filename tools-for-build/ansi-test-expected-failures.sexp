@@ -21,8 +21,6 @@ LOAD-TRUENAME.1
 #-bytecode PEEK-CHAR.ERROR.1
 PRINT.SYMBOL.RANDOM.3
 PRINT.SYMBOL.RANDOM.4
-PRINT.DOUBLE-FLOAT.RANDOM
-PRINT.LONG-FLOAT.RANDOM
 
 ;;; Clasp extends graphic-char-p to include space-like characters
 FORMAT.C.2A
