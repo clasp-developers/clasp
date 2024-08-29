@@ -2457,9 +2457,6 @@ Number_sp clasp_atan2(Number_sp y, Number_sp x) {
   case_ShortFloat_v_Fixnum:
   case_ShortFloat_v_Ratio:
   case_ShortFloat_v_ShortFloat:
-#ifdef CLASP_SHORT_FLOAT
-    return clasp_make_short_float(std::atan2f(clasp_to_short_float(y), clasp_to_short_float(x)));
-#endif
   case_Bignum_v_Bignum:
   case_Bignum_v_Fixnum:
   case_Bignum_v_Ratio:
@@ -2478,7 +2475,7 @@ Number_sp clasp_atan2(Number_sp y, Number_sp x) {
   case_SingleFloat_v_Ratio:
   case_SingleFloat_v_ShortFloat:
   case_SingleFloat_v_SingleFloat:
-    return clasp_make_single_float(std::atan2f(clasp_to_float(y), clasp_to_float(x)));
+    return clasp_make_single_float(atan2f(clasp_to_float(y), clasp_to_float(x)));
   case_Bignum_v_LongFloat:
   case_DoubleFloat_v_LongFloat:
   case_Fixnum_v_LongFloat:
@@ -2493,7 +2490,7 @@ Number_sp clasp_atan2(Number_sp y, Number_sp x) {
   case_ShortFloat_v_LongFloat:
   case_SingleFloat_v_LongFloat:
 #ifdef CLASP_LONG_FLOAT
-    return clasp_make_long_float(std::atan2l(clasp_to_long_float(y), clasp_to_long_float(x)));
+    return clasp_make_long_float(atan2l(clasp_to_long_float(y), clasp_to_long_float(x)));
 #endif
   case_Bignum_v_DoubleFloat:
   case_DoubleFloat_v_Bignum:
@@ -2506,7 +2503,7 @@ Number_sp clasp_atan2(Number_sp y, Number_sp x) {
   case_Ratio_v_DoubleFloat:
   case_ShortFloat_v_DoubleFloat:
   case_SingleFloat_v_DoubleFloat:
-    return clasp_make_double_float(std::atan2(clasp_to_double(y), clasp_to_double(x)));
+    return clasp_make_double_float(atan2(clasp_to_double(y), clasp_to_double(x)));
   default:
     TYPE_ERROR(gctools::IsA<Real_sp>(y) ? x : y, cl::_sym_Real_O);
   }
@@ -2516,20 +2513,17 @@ Number_sp clasp_atan2(Number_sp y, Number_sp x) {
 Number_sp clasp_atan1(Number_sp y) {
   switch (clasp_t_of(y)) {
   case number_ShortFloat:
-#ifdef CLASP_SHORT_FLOAT
-    return clasp_make_short_float(std::atanf(clasp_to_short_float(y)));
-#endif
   case number_Bignum:
   case number_Fixnum:
   case number_Ratio:
   case number_SingleFloat:
-    return clasp_make_single_float(std::atanf(clasp_to_float(y)));
+    return clasp_make_single_float(atanf(clasp_to_float(y)));
   case number_LongFloat:
 #ifdef CLASP_LONG_FLOAT
-    return clasp_make_long_float(std::atanl(clasp_to_long_float(y)));
+    return clasp_make_long_float(atanl(clasp_to_long_float(y)));
 #endif
   case number_DoubleFloat:
-    return clasp_make_double_float(std::atan(clasp_to_double(y)));
+    return clasp_make_double_float(atan(clasp_to_double(y)));
   case number_Complex: {
     Number_sp z = clasp_times(_lisp->imaginaryUnit(), y);
 #if 0 /* ANSI states it should be this first part */
