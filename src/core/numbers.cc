@@ -2475,7 +2475,11 @@ Number_sp clasp_atan2(Number_sp y, Number_sp x) {
   case_SingleFloat_v_Ratio:
   case_SingleFloat_v_ShortFloat:
   case_SingleFloat_v_SingleFloat:
+#ifdef _TARGET_OS_DARWIN
+    return clasp_make_single_float(atan2(clasp_to_double(y), clasp_to_double(x)));
+#else
     return clasp_make_single_float(atan2f(clasp_to_float(y), clasp_to_float(x)));
+#endif
   case_Bignum_v_LongFloat:
   case_DoubleFloat_v_LongFloat:
   case_Fixnum_v_LongFloat:
@@ -2517,7 +2521,11 @@ Number_sp clasp_atan1(Number_sp y) {
   case number_Fixnum:
   case number_Ratio:
   case number_SingleFloat:
+#ifdef _TARGET_OS_DARWIN
+    return clasp_make_single_float(atan(clasp_to_double(y)));
+#else
     return clasp_make_single_float(atanf(clasp_to_float(y)));
+#endif
   case number_LongFloat:
 #ifdef CLASP_LONG_FLOAT
     return clasp_make_long_float(atanl(clasp_to_long_float(y)));
