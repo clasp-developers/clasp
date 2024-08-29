@@ -96,6 +96,8 @@
 ;;; Special cases of array-creator, since they're very very common
 ;;; for e.g. symbol names.
 (defclass base-string-creator (vcreator) ())
+(defclass utf8-string-creator (vcreator)
+  ((%nbytes :initarg :nbytes :reader nbytes :type (unsigned-byte 16))))
 
 (defclass hash-table-creator (vcreator)
   ((%test :initarg :test :reader hash-table-creator-test :type symbol)
@@ -530,6 +532,15 @@
                        collect (ensure-constant e)))))
     arr))
 
+(defun utf8-length (string)
+  (loop for c across string
+        for cpoint = (char-code c)
+        sum (cond ((< cpoint #x80) 1)
+                  ((< cpoint #x800) 2)
+                  ((< cpoint #x10000) 3)
+                  ((< cpoint #x110000) 4)
+                  (t (error "Codepoint #x~x for ~:c too big" cpoint c)))))
+
 (defmethod add-constant ((value string))
   (case (array-element-type value)
     ((base-char) (let ((L (length value)))
@@ -538,6 +549,13 @@
                         value
                         (make-instance 'base-string-creator
                           :prototype value))
+                       (call-next-method))))
+    ((character) (let ((L (utf8-length value)))
+                   (if (< L #.(ash 1 16))
+                       (add-creator
+                        value
+                        (make-instance 'utf8-string-creator
+                          :prototype value :nbytes L))
                        (call-next-method))))
     (otherwise (call-next-method))))
 
@@ -831,6 +849,7 @@
     (cons 69 sind)
     (initialize-cons 70 consind carind cdrind)
     (base-string 72 size . data)
+    (utf8-string 73 nbytes . data)
     (make-array 74 sind rank . dims)
     (initialize-array 75 arrayind . valueinds)
     (make-hash-table 76 sind test count)
@@ -1071,6 +1090,14 @@
   (loop for c across (prototype inst)
         for code = (char-code c)
         do (write-byte code stream)))
+
+;;; Here we encode the number of bytes rather than the number of chars.
+;;; This is smarter, since it means the I/O can be batched.
+(defmethod encode ((inst utf8-string-creator) stream)
+  (write-mnemonic 'utf8-string stream)
+  (write-b16 (nbytes inst) stream)
+  (loop for c across (prototype inst)
+        do (write-utf8-codepoint (char-code c) stream)))
 
 ;;; Arrays are encoded with two codes: One for the packing, and one
 ;;; for the element type. The latter is in place so that, hopefully,

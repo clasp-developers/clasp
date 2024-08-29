@@ -31,6 +31,7 @@
 #define LTV_OP_CONS 69
 #define LTV_OP_INIT_CONS 70
 #define LTV_OP_BASE_STRING 72
+#define LTV_OP_UTF8_STRING 73
 #define LTV_OP_MAKE_ARRAY 74
 #define LTV_OP_INIT_ARRAY 75
 #define LTV_OP_HASHT 76
@@ -217,8 +218,7 @@ struct loadltv {
   }
 
   // Read a UTF-8 continuation byte or signal an error if invalid.
-  inline uint8_t read_continuation_byte() {
-    uint8_t byte = read_u8();
+  inline uint8_t continuation_byte(uint8_t byte) {
     if (byte >> 6 == 0b10)
       return byte & 0b111111;
     else SIMPLE_ERROR("Invalid UTF-8 in FASL: invalid continuation byte {:02x}", byte);
@@ -231,16 +231,16 @@ struct loadltv {
       return head;
     else if (head >> 5 == 0b110)
       return (claspCharacter)(head & 0b11111) << 6
-        | read_continuation_byte();
+        | continuation_byte(read_u8());
     else if (head >> 4 == 0b1110)
       return (claspCharacter)(head & 0b1111) << 12
-        | (claspCharacter)read_continuation_byte() << 6
-        | read_continuation_byte();
+        | (claspCharacter)continuation_byte(read_u8()) << 6
+        | continuation_byte(read_u8());
     else if (head >> 3 == 0b11110)
       return (claspCharacter)(head & 0b111) << 18
-        | (claspCharacter)read_continuation_byte() << 12
-        | (claspCharacter)read_continuation_byte() << 6
-        | read_continuation_byte();
+        | (claspCharacter)continuation_byte(read_u8()) << 12
+        | (claspCharacter)continuation_byte(read_u8()) << 6
+        | continuation_byte(read_u8());
     else SIMPLE_ERROR("Invalid UTF-8 in FASL: invalid header byte {:02x}", head);
   }
 
@@ -304,10 +304,60 @@ struct loadltv {
   void op_base_string() {
     uint16_t len = read_u16();
     SimpleBaseString_sp str = SimpleBaseString_O::makeSize(len);
-    // careful, we're directly referencing the array data here
+    // careful, we're directly writing into the array data here
     unsigned char* data = (unsigned char*)(str->rowMajorAddressOfElement_(0));
     stream_read_byte8(_stream, data, len);
     set_ltv(str, next_index());
+  }
+
+  // Read a continuation byte from a buffer.
+  inline uint8_t buf_u8(unsigned char* bytes, size_t& index, size_t blen) {
+    if (index >= blen)
+      // FIXME: better error?
+      SIMPLE_ERROR("Invalid UTF-8 in FASL: Expected continuation byte, got EOF");
+    return bytes[index++];
+  }
+
+  // Read a UTF-8 encoded character from a buffer.
+  // duplicate code with read_utf8(). too bad, so sad
+  inline claspCharacter buf_u8_char(unsigned char* bytes,
+                                    size_t& index, size_t blen) {
+    uint8_t head = bytes[index++];
+    if (head >> 7 == 0) return head;
+    else if (head >> 5 == 0b110)
+      return (claspCharacter)(head & 0b11111) << 6
+        | continuation_byte(buf_u8(bytes, index, blen));
+    else if (head >> 4 == 0b1110)
+      return (claspCharacter)(head & 0b1111) << 12
+        | (claspCharacter)continuation_byte(buf_u8(bytes, index, blen)) << 6
+        | continuation_byte(buf_u8(bytes, index, blen));
+    else if (head >> 3 == 0b11110)
+      return (claspCharacter)(head & 0b111) << 18
+        | (claspCharacter)continuation_byte(buf_u8(bytes, index, blen)) << 12
+        | (claspCharacter)continuation_byte(buf_u8(bytes, index, blen)) << 6
+        | continuation_byte(buf_u8(bytes, index, blen));
+    else SIMPLE_ERROR("Invalid UTF-8 in FASL: invalid header byte {:02x}", head);
+  }
+
+  // Decode a utf8 byte array into a character string.
+  // Return the number of characters.
+  size_t fill_utf8_string(SimpleCharacterString_sp str,
+                          unsigned char* bytes, size_t blen) {
+    size_t len = 0;
+    size_t bindex = 0;
+    while (bindex < blen)
+      (*str)[len++] = buf_u8_char(bytes, bindex, blen);
+    return len;
+  }
+
+  void op_utf8_string() {
+    uint16_t blen = read_u16();
+    unsigned char* bytes = (unsigned char*)malloc(blen);
+    stream_read_byte8(_stream, bytes, blen);
+    SimpleCharacterString_sp buf = SimpleCharacterString_O::make(blen); // max
+    size_t len = fill_utf8_string(buf, bytes, blen);
+    free(bytes);
+    set_ltv(buf->unsafe_subseq(0, len), next_index());
   }
 
   enum class UAETCode : uint8_t {
@@ -1005,6 +1055,9 @@ struct loadltv {
       break;
     case LTV_OP_BASE_STRING:
       op_base_string();
+      break;
+    case LTV_OP_UTF8_STRING:
+      op_utf8_string();
       break;
     case LTV_OP_MAKE_ARRAY:
       op_array();
