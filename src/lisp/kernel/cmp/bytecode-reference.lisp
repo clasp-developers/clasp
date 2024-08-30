@@ -127,8 +127,8 @@
   ;; just pretty weird all around.
   (let* ((more-start (second (first args)))
          (kci (second (second args)))
-         (aokp (logbitp (if longp 15 7) kci))
-         (key-count (logand kci (if longp #x7fff #x7f)))
+         (aokp (logbitp 0 kci))
+         (key-count (ash kci -1))
          (keystart (second (third args)))
          (keys nil)
          (framestart (second (fourth args))))

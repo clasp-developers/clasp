@@ -555,25 +555,26 @@ void Context::emit_lexical_set(LexicalVarInfo_sp info) const { LexSetFixup_O::ma
 
 void Context::emit_parse_key_args(size_t max_count, size_t key_count, size_t keystart, size_t indx, bool aokp) const {
   ComplexVector_byte8_t_sp bytecode = this->cfunction()->bytecode();
-  if ((max_count < (1 << 8)) && (key_count < (1 << 8)) && (keystart < (1 << 8)) && (indx < (1 << 8))) {
+  size_t key_count_info = (key_count << 1) | (aokp ? 0b1 : 0b0);
+  if ((max_count < (1 << 8)) && (key_count_info < (1 << 8)) && (keystart < (1 << 8)) && (indx < (1 << 8))) {
     bytecode->vectorPushExtend(vm_parse_key_args);
     bytecode->vectorPushExtend(max_count);
-    bytecode->vectorPushExtend(key_count | (aokp ? 0x80 : 0));
+    bytecode->vectorPushExtend(key_count_info);
     bytecode->vectorPushExtend(keystart);
     bytecode->vectorPushExtend(indx);
-  } else if ((max_count < (1 << 16)) && (key_count < (1 << 16)) && (keystart < (1 << 16)) && (indx < (1 << 16))) {
+  } else if ((max_count < (1 << 16)) && (key_count_info < (1 << 16)) && (keystart < (1 << 16)) && (indx < (1 << 16))) {
     bytecode->vectorPushExtend(vm_long);
     bytecode->vectorPushExtend(vm_parse_key_args);
     bytecode->vectorPushExtend(max_count & 0xff);
     bytecode->vectorPushExtend(max_count >> 8);
-    bytecode->vectorPushExtend(key_count & 0xff);
-    bytecode->vectorPushExtend((key_count >> 8) | (aokp ? 0x80 : 0));
+    bytecode->vectorPushExtend(key_count_info & 0xff);
+    bytecode->vectorPushExtend(key_count_info >> 8);
     bytecode->vectorPushExtend(keystart & 0xff);
     bytecode->vectorPushExtend(keystart >> 8);
     bytecode->vectorPushExtend(indx & 0xff);
     bytecode->vectorPushExtend(indx >> 8);
   } else
-    SIMPLE_ERROR("Bytecode compiler limit reached: keyarg indices too large: %zu %zu %zu %zu", max_count, key_count, keystart,
+    SIMPLE_ERROR("Bytecode compiler limit reached: keyarg indices too large: %zu %zu %zu %zu", max_count, key_count_info, keystart,
                  indx);
 }
 

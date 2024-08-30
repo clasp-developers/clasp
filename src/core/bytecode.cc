@@ -455,8 +455,8 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       uint8_t key_frame_start = *(++pc);
       DBG_VM("parse-key-args %" PRIu8 " %" PRIu8 " %" PRIu8 " %" PRIu8 "\n", more_start, key_count_info, key_literal_start,
              key_frame_start);
-      uint8_t key_count = key_count_info & 0x7f;
-      bool ll_aokp = key_count_info & 0x80;
+      uint8_t key_count = key_count_info >> 1;
+      bool ll_aokp = key_count_info & 0x1;
       bool aokp = false;
       T_sp unknown_keys = nil<T_O>();
       // Set keyword arguments to unbound.
@@ -1209,8 +1209,8 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     uint16_t key_frame_start = key_frame_start_low + (*(pc + 8) << 8);
     DBG_VM("long parse-key-args %" PRIu16 " %" PRIu16 " %" PRIu16 " %" PRIu16 "\n", more_start, key_count_info, key_literal_start,
            key_frame_start);
-    uint16_t key_count = key_count_info & 0x7fff;
-    bool ll_aokp = key_count_info & 0x8000;
+    uint16_t key_count = key_count_info >> 1;
+    bool ll_aokp = key_count_info & 0x1;
     bool aokp = false;
     T_sp unknown_keys = nil<T_O>();
     // Set keyword arguments to unbound.
