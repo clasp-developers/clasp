@@ -1578,6 +1578,29 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
   warn_ignorance(ibindings.cons());
 }
 
+Context gen1bind(Symbol_sp var, bool specialp, List_sp declares, Label_sp end,
+                 Lexenv_sp& env, const Context ctxt) {
+  if (specialp) {
+    env = env->add_specials(Cons_O::createList(var));
+    ctxt.emit_special_bind(var);
+    return ctxt.sub_de(Integer_O::create(1));
+  } else {
+    Label_sp begin_label = Label_O::make();
+    size_t frame_start = env->frameEnd();
+    env = env->bind1var(var, ctxt);
+    LexicalVarInfo_sp lvinfo = gc::As_assert<LexicalVarInfo_sp>(env->variableInfo(var));
+    ctxt.maybe_emit_make_cell(lvinfo);
+    ctxt.assemble1(vm_set, frame_start);
+    lvinfo->lex()->setIgnore(binding_ignore(var, declares));
+    lvinfo->lex()->setDecls(decls_for_var(var, declares));
+    // Set up debug info
+    begin_label->contextualize(ctxt);
+    Cons_sp dpair = Cons_O::create(var, lvinfo->lex());
+    ctxt.push_debug_info(BytecodeDebugVars_O::make(begin_label, end, Cons_O::createList(dpair)));
+    return ctxt;
+  }
+}
+
 void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Context ectxt) {
   List_sp declares = nil<T_O>();
   gc::Nilable<String_sp> docstring;
@@ -1588,7 +1611,6 @@ void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Contex
   Lexenv_sp new_env = env;
   Context ctxt = ectxt;
   Label_sp end_label = Label_O::make();
-  ql::list debug_bindings;
   ql::list ibindings;
   for (auto cur : bindings) {
     T_sp binding = oCar(cur);
@@ -1604,24 +1626,10 @@ void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Contex
     compile_form(valf, new_env, ctxt.sub_receiving(1));
     if (special_binding_p(var, specials, env)) {
       ++special_binding_count;
-      new_env = new_env->add_specials(Cons_O::createList(var));
-      ctxt.emit_special_bind(var);
-      ctxt = ctxt.sub_de(Integer_O::create(1));
+      ctxt = gen1bind(var, true, declares, end_label, new_env, ctxt);
     } else {
-      Label_sp begin_label = Label_O::make();
-      size_t frame_start = new_env->frameEnd();
-      new_env = new_env->bind1var(var, ctxt);
-      LexicalVarInfo_sp lvinfo = gc::As_assert<LexicalVarInfo_sp>(new_env->variableInfo(var));
-      ctxt.maybe_emit_make_cell(lvinfo);
-      ctxt.assemble1(vm_set, frame_start);
-      lvinfo->lex()->setIgnore(binding_ignore(var, declares));
-      lvinfo->lex()->setDecls(decls_for_var(var, declares));
-      // Set up debug info
-      begin_label->contextualize(ctxt);
-      Cons_sp dpair = Cons_O::create(var, lvinfo->lex());
-      ctxt.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, Cons_O::createList(dpair)));
-      debug_bindings << dpair;
-      ibindings << Cons_O::createList(var, lvinfo->lex(),
+      ctxt = gen1bind(var, false, declares, end_label, new_env, ctxt);
+      ibindings << Cons_O::createList(var, new_env->variableInfo(var).as_assert<LexicalVarInfo_O>()->lex(),
                                       source_location_for(binding, ctxt.source_info()));
     }
   }
@@ -1850,23 +1858,14 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     } else {
       context.assemble1(vm_listify_rest_args, max_count);
     }
-    new_env = new_env->bind1var(rest, context);
-    optkey_env = optkey_env->bind1var(rest, context);
-    auto lvinfo = gc::As_assert<LexicalVarInfo_sp>(new_env->variableInfo(rest));
     if (special_binding_p(rest, specials, env)) {
-      context.assemble1(vm_ref, lvinfo->frameIndex());
-      context.emit_special_bind(rest);
       ++special_binding_count;
-      new_env = new_env->add_specials(Cons_O::createList(rest));
+      gen1bind(rest, true, declares, end_label, new_env, context);
     } else {
-      context.maybe_emit_encage(lvinfo);
-      Label_sp begin_label = Label_O::make();
-      begin_label->contextualize(context);
-      T_sp dpair = Cons_O::create(rest, lvinfo->lex());
-      context.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, Cons_O::createList(dpair)));
-      lvinfo->lex()->setIgnore(binding_ignore(rest, declares));
-      lvinfo->lex()->setDecls(decls_for_var(rest, declares));
-      ibindings << Cons_O::createList(rest, lvinfo->lex(), context.source_info());
+      gen1bind(rest, false, declares, end_label, new_env, context);
+      optkey_env = optkey_env->bind1var(rest, context);
+      ibindings << Cons_O::createList(rest, new_env->variableInfo(rest).as_assert<LexicalVarInfo_O>()->lex(),
+                                      context.source_info());
     }
   }
   if (key_flag.notnilp()) {

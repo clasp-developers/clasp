@@ -432,7 +432,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         T_sp tobj((gctools::Tagged)lcc_args[i]);
         rest << tobj;
       }
-      vm.setreg(fp, start, rest.cons().raw_());
+      vm.push(sp, rest.cons().raw_());
       pc++;
       break;
     }
@@ -444,7 +444,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       uint8_t start = *(++pc);
       DBG_VM("vaslistify-rest-args %" PRIu8 "\n", start);
       auto theVaslist = vm.alloca_vaslist2(sp, lcc_args + start, lcc_nargs - start);
-      vm.setreg(fp, start, theVaslist);
+      vm.push(sp, theVaslist);
       pc++;
       break;
     }
@@ -1194,7 +1194,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
       T_sp tobj((gctools::Tagged)lcc_args[i]);
       rest << tobj;
     }
-    vm.setreg(fp, start, rest.cons().raw_());
+    vm.push(sp, rest.cons().raw_());
     pc += 3;
     break;
   }
