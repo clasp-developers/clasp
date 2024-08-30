@@ -2358,21 +2358,21 @@ static Number_sp expt_zero(Number_sp x, Number_sp y) {
   tx = clasp_t_of(x);
   /* INV: The most specific numeric types come first. */
   switch ((ty > tx) ? ty : tx) {
-  case number_Fixnum:
-  case number_Bignum:
-  case number_Ratio:
+  case NumberType::Fixnum:
+  case NumberType::Bignum:
+  case NumberType::Ratio:
     return clasp_make_fixnum(1);
-  case number_SingleFloat:
+  case NumberType::SingleFloat:
     return clasp_make_single_float(1.0f);
-  case number_DoubleFloat:
+  case NumberType::DoubleFloat:
     return DoubleFloat_O::create(1.0);
 #ifdef CLASP_LONG_FLOAT
-  case number_LongFloat:
+  case NumberType::LongFloat:
     return LongFloat_O::create(1.0);
 #endif
-  case number_Complex:
-    z = expt_zero((tx == number_Complex) ? gc::As<Number_sp>(gc::As<Complex_sp>(x)->real()) : x,
-                  (ty == number_Complex) ? gc::As<Number_sp>(gc::As<Complex_sp>(y)->real()) : y);
+  case NumberType::Complex:
+    z = expt_zero((tx == NumberType::Complex) ? gc::As<Number_sp>(gc::As<Complex_sp>(x)->real()) : x,
+                  (ty == NumberType::Complex) ? gc::As<Number_sp>(gc::As<Complex_sp>(y)->real()) : y);
     return clasp_make_complex(gc::As<Real_sp>(z), clasp_make_fixnum(0));
   default:
       UNREACHABLE();
@@ -2389,9 +2389,9 @@ Number_sp clasp_expt(Number_sp x, Number_sp y) {
   tx = clasp_t_of(x);
   if (clasp_zerop(x)) {
     z = clasp_times(x, y);
-    if (!clasp_plusp((ty == number_Complex) ? gc::As<Complex_sp>(y)->real() : gc::As<Real_sp>(y)))
+    if (!clasp_plusp((ty == NumberType::Complex) ? gc::As<Complex_sp>(y)->real() : gc::As<Real_sp>(y)))
       z = clasp_divide(clasp_make_fixnum(1), z);
-  } else if (ty != number_Fixnum && ty != number_Bignum) {
+  } else if (ty != NumberType::Fixnum && ty != NumberType::Bignum) {
     // Use the general definition, a^b = exp(b log(a))
     /* The following could be just
            z = clasp_log1(x);
@@ -2448,91 +2448,48 @@ CL_DEFUN Number_sp cl__expt(Number_sp x, Number_sp y) { return clasp_expt(x, y);
     See file '../Copyright' for full details.
 */
 
-Number_sp clasp_atan2(Number_sp y, Number_sp x) {
-  MATH_DISPATCH_BEGIN(x, y) {
-  case_Bignum_v_ShortFloat:
-  case_Fixnum_v_ShortFloat:
-  case_Ratio_v_ShortFloat:
-  case_ShortFloat_v_Bignum:
-  case_ShortFloat_v_Fixnum:
-  case_ShortFloat_v_Ratio:
-  case_ShortFloat_v_ShortFloat:
-  case_Bignum_v_Bignum:
-  case_Bignum_v_Fixnum:
-  case_Bignum_v_Ratio:
-  case_Bignum_v_SingleFloat:
-  case_Fixnum_v_Bignum:
-  case_Fixnum_v_Fixnum:
-  case_Fixnum_v_Ratio:
-  case_Fixnum_v_SingleFloat:
-  case_Ratio_v_Bignum:
-  case_Ratio_v_Fixnum:
-  case_Ratio_v_Ratio:
-  case_Ratio_v_SingleFloat:
-  case_ShortFloat_v_SingleFloat:
-  case_SingleFloat_v_Bignum:
-  case_SingleFloat_v_Fixnum:
-  case_SingleFloat_v_Ratio:
-  case_SingleFloat_v_ShortFloat:
-  case_SingleFloat_v_SingleFloat:
+Number_sp Number_O::atan2(Number_sp y, Number_sp x) {
+  switch (number_type(y) | number_type(x)) {
+  case NumberType::ShortFloat:
+  case NumberType::Fixnum:
+  case NumberType::Bignum:
+  case NumberType::Ratio:
+  case NumberType::SingleFloat:
 #ifdef _TARGET_OS_DARWIN
-    return clasp_make_single_float(atan2(clasp_to_double(y), clasp_to_double(x)));
+    return clasp_make_single_float(std::atan2(clasp_to_double(y), clasp_to_double(x)));
 #else
-    return clasp_make_single_float(atan2f(clasp_to_float(y), clasp_to_float(x)));
+    return clasp_make_single_float(std::atan2(clasp_to_float(y), clasp_to_float(x)));
 #endif
-  case_Bignum_v_LongFloat:
-  case_DoubleFloat_v_LongFloat:
-  case_Fixnum_v_LongFloat:
-  case_LongFloat_v_Bignum:
-  case_LongFloat_v_DoubleFloat:
-  case_LongFloat_v_Fixnum:
-  case_LongFloat_v_LongFloat:
-  case_LongFloat_v_Ratio:
-  case_LongFloat_v_ShortFloat:
-  case_LongFloat_v_SingleFloat:
-  case_Ratio_v_LongFloat:
-  case_ShortFloat_v_LongFloat:
-  case_SingleFloat_v_LongFloat:
+  case NumberType::LongFloat:
 #ifdef CLASP_LONG_FLOAT
-    return clasp_make_long_float(atan2l(clasp_to_long_float(y), clasp_to_long_float(x)));
+    return clasp_make_long_float(std::atan2(clasp_to_long_float(y), clasp_to_long_float(x)));
 #endif
-  case_Bignum_v_DoubleFloat:
-  case_DoubleFloat_v_Bignum:
-  case_DoubleFloat_v_DoubleFloat:
-  case_DoubleFloat_v_Fixnum:
-  case_DoubleFloat_v_Ratio:
-  case_DoubleFloat_v_ShortFloat:
-  case_DoubleFloat_v_SingleFloat:
-  case_Fixnum_v_DoubleFloat:
-  case_Ratio_v_DoubleFloat:
-  case_ShortFloat_v_DoubleFloat:
-  case_SingleFloat_v_DoubleFloat:
-    return clasp_make_double_float(atan2(clasp_to_double(y), clasp_to_double(x)));
+  case NumberType::DoubleFloat:
+    return clasp_make_double_float(std::atan2(clasp_to_double(y), clasp_to_double(x)));
   default:
     TYPE_ERROR(gctools::IsA<Real_sp>(y) ? x : y, cl::_sym_Real_O);
   }
-  MATH_DISPATCH_END();
 }
 
-Number_sp clasp_atan1(Number_sp y) {
-  switch (clasp_t_of(y)) {
-  case number_ShortFloat:
-  case number_Bignum:
-  case number_Fixnum:
-  case number_Ratio:
-  case number_SingleFloat:
+Number_sp Number_O::atan(Number_sp y) {
+  switch (number_type(y)) {
+  case NumberType::ShortFloat:
+  case NumberType::Bignum:
+  case NumberType::Fixnum:
+  case NumberType::Ratio:
+  case NumberType::SingleFloat:
 #ifdef _TARGET_OS_DARWIN
-    return clasp_make_single_float(atan(clasp_to_double(y)));
+    return clasp_make_single_float(std::atan(clasp_to_double(y)));
 #else
-    return clasp_make_single_float(atanf(clasp_to_float(y)));
+    return clasp_make_single_float(std::atan(clasp_to_float(y)));
 #endif
-  case number_LongFloat:
+  case NumberType::LongFloat:
 #ifdef CLASP_LONG_FLOAT
-    return clasp_make_long_float(atanl(clasp_to_long_float(y)));
+    return clasp_make_long_float(std::atan(clasp_to_long_float(y)));
 #endif
-  case number_DoubleFloat:
-    return clasp_make_double_float(atan(clasp_to_double(y)));
-  case number_Complex: {
+  case NumberType::DoubleFloat:
+    return clasp_make_double_float(std::atan(clasp_to_double(y)));
+  case NumberType::Complex: {
     Number_sp z = clasp_times(_lisp->imaginaryUnit(), y);
 #if 0 /* ANSI states it should be this first part */
     z = clasp_plus(clasp_log1(clasp_one_plus(z)),
@@ -2563,10 +2520,10 @@ CL_DOCSTRING(R"dx(atan)dx");
 DOCGROUP(clasp);
 CL_DEFUN Number_sp cl__atan(Number_sp x, T_sp y) {
   if (y.nilp())
-    return clasp_atan1(x);
+    return Number_O::atan(x);
 
   if (gctools::IsA<Number_sp>(y))
-    return clasp_atan2(x, y.as_unsafe<Number_O>());
+    return Number_O::atan2(x, y.as_unsafe<Number_O>());
 
   TYPE_ERROR(y, cl::_sym_Number_O);
 }
@@ -2612,7 +2569,7 @@ Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i) {
   a = gc::As<Real_sp>(clasp_divide(a, p));
   a = gc::As<Real_sp>(clasp_plus(clasp_divide(clasp_log1p(clasp_times(a, a)), make_fixnum(2)), clasp_log1(p)));
 OUTPUT:
-  p = gc::As<Real_sp>(clasp_atan2(i, r));
+  p = gc::As<Real_sp>(Number_O::atan2(i, r));
   return clasp_make_complex(a, p);
 }
 

@@ -74,13 +74,13 @@ CL_DEFUN T_mv core__float_to_digits(T_sp tdigits, Float_sp number, T_sp position
   ASSERT(tdigits.nilp() || gc::IsA<Str8Ns_sp>(tdigits));
 
   switch (clasp_t_of(number)) {
-  case number_SingleFloat:
+  case NumberType::SingleFloat:
     return float_to_digits<float>(tdigits, unbox_single_float(gc::As<SingleFloat_sp>(number)), position, relativep);
-  case number_DoubleFloat:
+  case NumberType::DoubleFloat:
     return float_to_digits<double>(tdigits, gc::As<DoubleFloat_sp>(number)->get(), position, relativep);
     break;
 #ifdef CLASP_LONG_FLOAT
-  case number_LongFloat:
+  case NumberType::LongFloat:
     return float_to_digits<LongFloat>(tdigits, gc::As<LongFloat_sp>(number)->get(), position, relativep);
 #endif
   default:

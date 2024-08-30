@@ -59,21 +59,21 @@ static void print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
   T_sp r = cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue();
   gc::Fixnum e;
   switch (clasp_t_of(gc::As<Number_sp>(number))) {
-  case number_SingleFloat:
+  case NumberType::SingleFloat:
     e = (r == cl::_sym_single_float || r == cl::_sym_ShortFloat_O) ? 'e' : 'f';
     break;
-  case number_ShortFloat:
+  case NumberType::ShortFloat:
     e = (r == cl::_sym_single_float || r == cl::_sym_ShortFloat_O) ? 'e' : 'f';
     break;
 #ifdef ECL_LONG_FLOAT
-  case number_LongFloat:
+  case NumberType::LongFloat:
     e = (r == @'long-float') ? 'e' : 'l';
     break;
-  case number_DoubleFloat:
+  case NumberType::DoubleFloat:
     e = (r == @'double-float') ? 'e' : 'd';
     break;
 #else
-  case number_DoubleFloat:
+  case NumberType::DoubleFloat:
     e = (r == cl::_sym_DoubleFloat_O || r == cl::_sym_LongFloat_O) ? 'e' : 'd';
     break;
 #endif

@@ -139,17 +139,21 @@ core::Fixnum not_fixnum_error(core::T_sp o);
 
 // TYPE IDS
 
-typedef enum {
-  number_Fixnum = 0,
-  number_Bignum = 1,
-  number_Ratio = 2,
-  number_ShortFloat = 3,
-  number_SingleFloat = 4,
-  number_DoubleFloat = 5,
-  number_LongFloat = 6,
-  number_Complex = 7,
-  number_NUM = 8
-} NumberType;
+enum class NumberType : uint8_t {
+  Fixnum = 0,
+  Bignum = 1,
+  Ratio = 2,
+  ShortFloat = 3,
+  SingleFloat = 4,
+  DoubleFloat = 5,
+  LongFloat = 6,
+  Complex = 7,
+  NUM = 8
+};
+
+inline NumberType operator|(NumberType x, NumberType y) {
+  return static_cast<NumberType>(std::max(static_cast<uint8_t>(x), static_cast<uint8_t>(y)));
+}
 
 // TYPE TEMPLATES
 
@@ -269,6 +273,31 @@ public:
   virtual void sxhash_(HashGenerator& hg) const override { SUBIMP(); };
   Number_O(){};
   virtual ~Number_O(){};
+
+  inline static NumberType number_type(Number_sp n) {
+    if (n.fixnump())
+      return NumberType::Fixnum;
+    else if (n.single_floatp())
+      return NumberType::SingleFloat;
+    else if (gc::IsA<Bignum_sp>(n))
+      return NumberType::Bignum;
+    else if (gc::IsA<Ratio_sp>(n))
+      return NumberType::Ratio;
+    else if (gc::IsA<ShortFloat_sp>(n))
+      return NumberType::ShortFloat;
+    else if (gc::IsA<DoubleFloat_sp>(n))
+      return NumberType::DoubleFloat;
+#ifdef CLASP_LONG_FLOAT
+    else if (gc::IsA<LongFloat_sp>(n))
+      return NumberType::LongFloat;
+#endif
+    else if (gc::IsA<Complex_sp>(n))
+      return NumberType::Complex;
+    UNREACHABLE();
+  }
+
+  static Number_sp atan(Number_sp num);
+  static Number_sp atan2(Number_sp y, Number_sp x);
 };
 
 SMART(Real);
@@ -696,8 +725,6 @@ inline Number_sp clasp_divide(Number_sp na, Number_sp nb) { return contagion_div
 
 inline int clasp_number_compare(Number_sp x, Number_sp y) { return basic_compare(x, y); };
 
-Number_sp clasp_atan2(Number_sp x, Number_sp y);
-
 inline Number_sp float_sqrt(float f) {
   if (f < 0.0) {
     return Complex_O::create(clasp_make_single_float(0.0), clasp_make_single_float(sqrtf(-f)));
@@ -818,31 +845,31 @@ template <typename Char> struct fmt::formatter<core::NumberType, Char> : fmt::fo
   auto format(const core::NumberType& o, FormatContext& ctx) const -> typename FormatContext::iterator {
     fmt::basic_string_view<Char> name = "unknown";
     switch (o) {
-    case core::number_Fixnum:
+    case core::NumberType::Fixnum:
       name = "Fixnum";
       break;
-    case core::number_Bignum:
+    case core::NumberType::Bignum:
       name = "Bignum";
       break;
-    case core::number_Ratio:
+    case core::NumberType::Ratio:
       name = "Ratio";
       break;
-    case core::number_ShortFloat:
+    case core::NumberType::ShortFloat:
       name = "ShortFloat";
       break;
-    case core::number_SingleFloat:
+    case core::NumberType::SingleFloat:
       name = "SingleFloat";
       break;
-    case core::number_DoubleFloat:
+    case core::NumberType::DoubleFloat:
       name = "DoubleFloat";
       break;
-    case core::number_LongFloat:
+    case core::NumberType::LongFloat:
       name = "LongFloat";
       break;
-    case core::number_Complex:
+    case core::NumberType::Complex:
       name = "Complex";
       break;
-    case core::number_NUM:
+    case core::NumberType::NUM:
       name = "NUM";
       break;
     }
@@ -994,23 +1021,23 @@ CL_DEFUN inline Number_sp clasp_negate(Number_sp num) {
 
 inline NumberType clasp_t_of(Number_sp n) {
   if (n.fixnump())
-    return number_Fixnum;
+    return NumberType::Fixnum;
   else if (n.single_floatp())
-    return number_SingleFloat;
+    return NumberType::SingleFloat;
   else if (gc::IsA<Bignum_sp>(n))
-    return number_Bignum;
+    return NumberType::Bignum;
   else if (gc::IsA<Ratio_sp>(n))
-    return number_Ratio;
+    return NumberType::Ratio;
   else if (gc::IsA<ShortFloat_sp>(n))
-    return number_ShortFloat;
+    return NumberType::ShortFloat;
   else if (gc::IsA<DoubleFloat_sp>(n))
-    return number_DoubleFloat;
+    return NumberType::DoubleFloat;
 #ifdef CLASP_LONG_FLOAT
   else if (gc::IsA<LongFloat_sp>(n))
-    return number_LongFloat;
+    return NumberType::LongFloat;
 #endif
   else if (gc::IsA<Complex_sp>(n))
-    return number_Complex;
+    return NumberType::Complex;
   UNREACHABLE();
 }
 
