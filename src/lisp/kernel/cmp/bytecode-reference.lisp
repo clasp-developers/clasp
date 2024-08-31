@@ -130,15 +130,14 @@
          (aokp (logbitp 0 kci))
          (key-count (ash kci -1))
          (keystart (second (third args)))
-         (keys nil)
-         (framestart (second (fourth args))))
+         (keys nil))
     ;; Gather the keys
     (do ((i 0 (1+ i)))
         ((= i key-count) (setq keys (nreverse keys)))
       (push (aref literals (+ keystart i)) keys))
     ;; Print
-    (format t "~&  ~:[~;long ~]~a~:[~;-aok~] ~d ~d '~s ~d"
-            longp name aokp more-start key-count keys framestart)))
+    (format t "~&  ~:[~;long ~]~a~:[~;-aok~] ~d ~d '~s"
+            longp name aokp more-start key-count keys)))
 
 (defvar *functions-to-disassemble*)
 
