@@ -1888,36 +1888,33 @@ Number_sp Complex_O::reciprocal_() const {
 */
 
 Number_sp DoubleFloat_O::sqrt_() const {
-  if (clasp_minusp(this->asSmartPtr())) {
-    Number_sp x = clasp_sqrt(clasp_negate(this->asSmartPtr()));
-    return clasp_make_complex(DoubleFloat_O::create(0.0), gc::As<Real_sp>(x));
-  } else {
-    return DoubleFloat_O::create(::sqrt(this->_Value));
-  }
+  if (std::signbit(_Value))
+    return clasp_make_complex(create(0.0), create(std::sqrt(-_Value)));
+
+  return create(std::sqrt(_Value));
 }
 
 #ifdef CLASP_LONG_FLOAT
 Number_sp LongFloat_O::sqrt_() const {
-  if (this->minusp()) {
-    Number_sp x = this->negate()->sqrt();
-    return clasp_make_complex(LongFloat_O::create(0.0), x.as<Real_O>());
-  } else {
-    return LongFloat_O::create(sqrtl(this->_Value));
-  }
+  if (std::signbit(_Value))
+    return clasp_make_complex(create(0.0), create(std::sqrt(-_Value)));
+
+  return create(std::sqrt(_Value));
 }
 #endif
 
 Number_sp Complex_O::sqrt_() const { return cl__expt(this->asSmartPtr(), _lisp->plusHalf()); }
+
 Number_sp Bignum_O::sqrt_() const {
   // Could move the <0 logic out to another function, to share
   // hypothetically we could use mpn_sqrtrem instead, but i imagine it's slower.
   // We convert to a double for maximum range, but return a single as required
   // by CLHS.
-  double z = this->as_double_();
-  if (z < 0)
-    return clasp_make_complex(clasp_make_single_float(0.0), clasp_make_single_float(sqrt(-z)));
-  else
-    return clasp_make_single_float(sqrt(z));
+  double z = cast<double>();
+  if (std::signbit(z))
+    return clasp_make_complex(clasp_make_single_float(0.0), clasp_make_single_float(std::sqrt(-z)));
+
+  return clasp_make_single_float(std::sqrt(z));
 }
 
 Number_sp Bignum_O::reciprocal_() const {

@@ -799,39 +799,11 @@ Number_sp Bignum_O::oneMinus_() const { return next_fadd(this->limbs(), this->le
 
 Number_sp Bignum_O::onePlus_() const { return next_fadd(this->limbs(), this->length(), 1); }
 
-template <typename Float> Float limbs_to_float(mp_size_t len, const mp_limb_t* limbs) {
-  constexpr size_t limb_width = sizeof(mp_limb_t) * 8;
-  mp_size_t size = std::abs(len);
-  struct float_convert<Float>::quadruple q = {
-    .category = float_convert<Float>::category::finite, .significand = 0, .exponent = (size - 1) * limb_width,
-    .sign = (len < 0) ? -1 : 1
-  };
-  size_t shift = float_convert<Float>::significand_width + 1;
-  size_t width = std::bit_width(limbs[size - 1]);
+float Bignum_O::as_float_() const { return cast<float>(); }
 
-  if (width >= shift) {
-    q.significand = limbs[size - 1] >> (width - shift);
-    q.exponent += width - shift;
-  } else {
-    q.significand = limbs[size - 1];
-    shift -= width;
+double Bignum_O::as_double_() const { return cast<double>(); }
 
-    for (mp_size_t i = size - 2; i > -1 && shift > 0; i--) {
-      size_t limb_shift = std::min(shift, limb_width);
-      q.significand = (q.significand << limb_shift) | (limbs[i] >> (limb_width - limb_shift));
-      q.exponent -= limb_shift;
-      shift -= limb_shift;
-    }
-  }
-
-  return float_convert<Float>::from_quadruple(q);
-}
-
-float Bignum_O::as_float_() const { return limbs_to_float<float>(this->length(), this->limbs()); }
-
-double Bignum_O::as_double_() const { return limbs_to_float<double>(this->length(), this->limbs()); }
-
-LongFloat Bignum_O::as_long_float_() const { return limbs_to_float<LongFloat>(this->length(), this->limbs()); }
+LongFloat Bignum_O::as_long_float_() const { return cast<LongFloat>(); }
 
 DOCGROUP(clasp);
 CL_DEFUN int core__next_compare(Bignum_sp left, Bignum_sp right) {

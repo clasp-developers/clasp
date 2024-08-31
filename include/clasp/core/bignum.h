@@ -122,6 +122,7 @@ public: // Functions here
   Number_sp sqrt_() const override;
   Number_sp reciprocal_() const override;
   Rational_sp rational_() const final { return this->asSmartPtr(); };
+
   virtual float as_float_() const override;
   virtual double as_double_() const override;
   virtual LongFloat as_long_float_() const override;
@@ -138,6 +139,34 @@ public: // Functions here
   virtual bool eql_(T_sp obj) const override;
   virtual bool evenp_() const override { return !((this->limbs())[0] & 1); }
   virtual bool oddp_() const override { return (this->limbs())[0] & 1; }
+
+  template<std::floating_point Float> Float cast() const {
+    constexpr size_t limb_width = sizeof(mp_limb_t) * 8;
+    mp_size_t size = _limbs.length();
+    struct float_convert<Float>::quadruple q = {
+      .category = float_convert<Float>::category::finite, .significand = 0, .exponent = (size - 1) * limb_width,
+      .sign = (_limbs.signedLength() < 0) ? -1 : 1
+    };
+    size_t shift = float_convert<Float>::significand_width + 1;
+    size_t width = std::bit_width(_limbs[size - 1]);
+
+    if (width >= shift) {
+      q.significand = _limbs[size - 1] >> (width - shift);
+      q.exponent += width - shift;
+    } else {
+      q.significand = _limbs[size - 1];
+      shift -= width;
+
+      for (mp_size_t i = size - 2; i > -1 && shift > 0; i--) {
+        size_t limb_shift = std::min(shift, limb_width);
+        q.significand = (q.significand << limb_shift) | (_limbs[i] >> (limb_width - limb_shift));
+        q.exponent -= limb_shift;
+        shift -= limb_shift;
+      }
+    }
+
+    return float_convert<Float>::from_quadruple(q);
+  }
 
   template <std::unsigned_integral integral> integral to_integral() const {
     constexpr auto limb_width = sizeof(mp_limb_t) * 8;
