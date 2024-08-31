@@ -155,41 +155,6 @@ inline NumberType operator|(NumberType x, NumberType y) {
   return static_cast<NumberType>(std::max(static_cast<uint8_t>(x), static_cast<uint8_t>(y)));
 }
 
-// TYPE TEMPLATES
-
-template <typename T> gc::smart_ptr<T> immediate_fixnum(Fixnum f) { return gc::make_tagged_fixnum<core::Fixnum_I>(f); };
-template <typename T> gc::smart_ptr<T> immediate_single_float(float f) {
-  return gc::make_tagged_single_float<core::SingleFloat_I>(f);
-};
-
-template <typename FLOAT> inline FLOAT _log1p(FLOAT x) { HARD_IMPLEMENT_ME(); }
-
-template <> inline float _log1p<float>(float x) {
-  float u = (float)1 + x;
-  if (u == 1) {
-    return (float)0;
-  }
-  return (logf(u) * x) / (u - (float)1);
-}
-
-template <> inline double _log1p<double>(double x) {
-  double u = (double)1 + x;
-  if (u == 1) {
-    return (double)0;
-  }
-  return (log(u) * x) / (u - (double)1);
-}
-
-#ifdef CLASP_LONG_FLOAT
-template <> inline LongFloat _log1p<LongFloat>(LongFloat x) {
-  LongFloat u = (LongFloat)1 + x;
-  if (u == 1) {
-    return (LongFloat)0;
-  }
-  return (logl(u) * x) / (u - (LongFloat)1);
-}
-#endif
-
 bool clasp_zerop(Number_sp num);
 bool clasp_plusp(Real_sp num);
 bool clasp_minusp(Real_sp num);
@@ -212,11 +177,17 @@ SingleFloat_sp clasp_make_single_float(float d);
 DoubleFloat_sp clasp_make_double_float(double d);
 Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i);
 void clasp_report_divide_by_zero(Number_sp x);
-}; // namespace core
 
-namespace core {
+template <typename T> inline Number_sp make_number(T x);
+
+template <> inline Number_sp make_number(float x) { return gc::make_tagged_single_float<core::SingleFloat_I>(x); }
 
 typedef double LongFloat;
+
+template <typename Float> inline Float _log1p(Float x) {
+  Float u = Float{1} + x;
+  return (u == Float{1}) ? Float{0} : ((std::log(u) * x) / (u - Float{1}));
+}
 
 Number_sp contagion_add(Number_sp na, Number_sp nb);
 Number_sp contagion_sub(Number_sp na, Number_sp nb);
@@ -556,6 +527,9 @@ public:
   DoubleFloat_O() : _Value(0.0){};
   virtual ~DoubleFloat_O(){};
 };
+
+template <> inline Number_sp make_number(double x) { return DoubleFloat_O::create(x); }
+
 }; // namespace core
 
 namespace core {
@@ -718,6 +692,13 @@ public:
   virtual ~Ratio_O(){};
 };
 
+template <std::integral T> inline Number_sp make_number(T x) {
+  if (x <= gc::most_positive_fixnum && x >= gc::most_negative_fixnum)
+    return gc::make_tagged_fixnum<core::Fixnum_I>(x);
+
+  return Integer_O::create(x);
+}
+
 inline Number_sp clasp_plus(Number_sp na, Number_sp nb) { return contagion_add(na, nb); };
 inline Number_sp clasp_minus(Number_sp na, Number_sp nb) { return contagion_sub(na, nb); };
 inline Number_sp clasp_times(Number_sp na, Number_sp nb) { return contagion_mul(na, nb); };
@@ -725,12 +706,11 @@ inline Number_sp clasp_divide(Number_sp na, Number_sp nb) { return contagion_div
 
 inline int clasp_number_compare(Number_sp x, Number_sp y) { return basic_compare(x, y); };
 
-inline Number_sp float_sqrt(float f) {
-  if (f < 0.0) {
-    return Complex_O::create(clasp_make_single_float(0.0), clasp_make_single_float(sqrtf(-f)));
-  } else {
-    return clasp_make_single_float(sqrtf(f));
-  }
+template<typename Float> inline Number_sp _sqrt(Float f) {
+  if (std::signbit(f))
+    return Complex_O::create(make_number(Float{0.0}), make_number(std::sqrt(-f)));
+
+  return make_number(std::sqrt(f));
 }
 
 inline Number_sp clasp_log1(Number_sp x) {
@@ -928,9 +908,9 @@ CL_DEFUN inline Number_sp clasp_abs(Number_sp num) {
       fixnum = (MOST_POSITIVE_FIXNUM + 1);
       return Integer_O::create(fixnum);
     } else
-      return immediate_fixnum<Number_O>(std::abs(fixnum));
+      return make_number(std::abs(fixnum));
   } else if (num.single_floatp()) {
-    return immediate_single_float<Number_O>(std::fabs(num.unsafe_single_float()));
+    return make_number(std::fabs(num.unsafe_single_float()));
   }
   return num->abs_();
 }
@@ -941,17 +921,17 @@ CL_DEFUN inline Number_sp clasp_signum(Number_sp num) {
   if (num.fixnump()) {
     Fixnum fn = num.unsafe_fixnum();
     if (fn == 0)
-      return immediate_fixnum<Number_O>(0);
+      return make_number(0);
     if (fn > 0)
-      return immediate_fixnum<Number_O>(1);
-    return immediate_fixnum<Number_O>(-1);
+      return make_number(1);
+    return make_number(-1);
   } else if (num.single_floatp()) {
     float fl = num.unsafe_single_float();
     if (fl == 0.0)
-      return immediate_single_float<Number_O>(0.0);
+      return make_number(0.0);
     if (fl < 0.0)
-      return immediate_single_float<Number_O>(-1.0);
-    return immediate_single_float<Number_O>(1.0);
+      return make_number(-1.0);
+    return make_number(1.0);
   }
   return num->signum_();
 }
@@ -964,11 +944,9 @@ inline Number_sp clasp_one_plus(Number_sp num) {
       fixnum = (MOST_POSITIVE_FIXNUM + 1);
       return Integer_O::create(fixnum);
     } else
-      return immediate_fixnum<Number_O>(fixnum + 1);
+      return make_number(fixnum + 1);
   } else if (num.single_floatp()) {
-    float fl = num.unsafe_single_float();
-    fl += 1.0;
-    return immediate_single_float<Number_O>(fl);
+    return make_number(num.unsafe_single_float() + 1.0f);
   }
   return num->onePlus_();
 }
@@ -981,11 +959,9 @@ inline Number_sp clasp_one_minus(Number_sp num) {
       fixnum = (MOST_NEGATIVE_FIXNUM - 1);
       return Integer_O::create(fixnum);
     } else
-      return immediate_fixnum<Number_O>(fixnum - 1);
+      return make_number(fixnum - 1);
   } else if (num.single_floatp()) {
-    float fl = num.unsafe_single_float();
-    fl -= 1.0;
-    return immediate_single_float<Number_O>(fl);
+    return make_number(num.unsafe_single_float() - 1.0f);
   }
   return num->oneMinus_();
 }
@@ -1010,11 +986,11 @@ CL_DEFUN inline Number_sp clasp_negate(Number_sp num) {
       fixnum = (MOST_POSITIVE_FIXNUM + 1);
       return Integer_O::create(fixnum);
     } else
-      return immediate_fixnum<Number_O>(-fixnum);
+      return make_number(-fixnum);
   } else if (num.single_floatp()) {
     float fl = num.unsafe_single_float();
     fl = -fl;
-    return immediate_single_float<Number_O>(fl);
+    return make_number(fl);
   }
   return num->negate_();
 }
@@ -1076,7 +1052,7 @@ inline Integer_sp clasp_shift_right(Integer_sp n, Fixnum nbits) {
       y = (y < 0) ? -1 : 0;
     else
       y >>= nbits;
-    return immediate_fixnum<Integer_O>(y);
+    return make_number(y);
   } else {
     return n->shift_right(nbits);
   }
@@ -1124,13 +1100,12 @@ LongFloat clasp_to_long_double(core::Number_sp);
 // END OF CLASP_TO_... FUNCTIONS
 
 inline Number_sp clasp_sqrt(Number_sp z) {
-  if (z.fixnump()) {
-    float f = z.unsafe_fixnum();
-    return float_sqrt(f);
-  } else if (z.single_floatp()) {
-    float f = z.unsafe_single_float();
-    return float_sqrt(f);
-  }
+  if (z.fixnump())
+    return _sqrt((float)z.unsafe_fixnum());
+
+  if (z.single_floatp())
+    return _sqrt(z.unsafe_single_float());
+
   return z->sqrt_();
 }
 
