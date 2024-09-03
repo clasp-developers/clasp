@@ -1131,11 +1131,11 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::SimpleVector_int32_t_O>"
              :offset-base-ctype "chem::EnergyNonbond_O"
-             :layout-offset-field-names ("_NumberOfExcludedAtomIndices")}
+             :layout-offset-field-names ("_NumberOfExcludedAtomIndexes")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::SimpleVector_int32_t_O>"
              :offset-base-ctype "chem::EnergyNonbond_O"
-             :layout-offset-field-names ("_ExcludedAtomIndices")}
+             :layout-offset-field-names ("_ExcludedAtomIndexes")}
 {class-kind :stamp-name "STAMPWTAG_chem__EnergyPeriodicBoundaryConditionsNonbond_O"
             :stamp-key "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
             :parent-class "chem::EnergyNonbond_O" :lisp-class-base "chem::EnergyNonbond_O"
@@ -1233,11 +1233,11 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::SimpleVector_int32_t_O>"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
-             :layout-offset-field-names ("_NumberOfExcludedAtomIndices")}
+             :layout-offset-field-names ("_NumberOfExcludedAtomIndexes")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::SimpleVector_int32_t_O>"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
-             :layout-offset-field-names ("_ExcludedAtomIndices")}
+             :layout-offset-field-names ("_ExcludedAtomIndexes")}
 {class-kind :stamp-name "STAMPWTAG_chem__EnergyAnchorRestraint_O"
             :stamp-key "chem::EnergyAnchorRestraint_O" :parent-class "chem::EnergyComponent_O"
             :lisp-class-base "chem::EnergyComponent_O" :root-class "core::T_O" :stamp-wtag 3
@@ -1630,7 +1630,7 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
              :offset-base-ctype "chem::AtomTable_O"
-             :layout-offset-field-names ("_AtomTableIndices")}
+             :layout-offset-field-names ("_AtomTableIndexes")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::ComplexVector_int32_t_O>"
              :offset-base-ctype "chem::AtomTable_O" :layout-offset-field-names ("_ResiduePointers")}
@@ -3611,7 +3611,7 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::ComplexVector_byte32_t_O>"
              :offset-base-ctype "chem::SuperposableConformationCollection_O"
-             :layout-offset-field-names ("_SuperposeAtomIndices")}
+             :layout-offset-field-names ("_SuperposeAtomIndexes")}
 {class-kind :stamp-name "STAMPWTAG_asttooling__PresumedLoc_O"
             :stamp-key "asttooling::PresumedLoc_O" :parent-class "core::CxxObject_O"
             :lisp-class-base "core::CxxObject_O" :root-class "core::T_O" :stamp-wtag 3
@@ -3757,7 +3757,7 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::ComplexVector_byte32_t_O>"
              :offset-base-ctype "chem::SuperposeEngine_O"
-             :layout-offset-field-names ("_FixedIndices")}
+             :layout-offset-field-names ("_FixedIndexes")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<geom::ComplexVectorCoordinate_O>"
              :offset-base-ctype "chem::SuperposeEngine_O"
@@ -3765,7 +3765,7 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::ComplexVector_byte32_t_O>"
              :offset-base-ctype "chem::SuperposeEngine_O"
-             :layout-offset-field-names ("_MoveableIndices")}
+             :layout-offset-field-names ("_MoveableIndexes")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<geom::ComplexVectorCoordinate_O>"
              :offset-base-ctype "chem::SuperposeEngine_O"
@@ -3777,7 +3777,7 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::ComplexVector_byte32_t_O>"
              :offset-base-ctype "chem::SuperposeSelectedAtoms_O"
-             :layout-offset-field-names ("_FixedIndices")}
+             :layout-offset-field-names ("_FixedIndexes")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<geom::ComplexVectorCoordinate_O>"
              :offset-base-ctype "chem::SuperposeSelectedAtoms_O"
@@ -3785,7 +3785,7 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::ComplexVector_byte32_t_O>"
              :offset-base-ctype "chem::SuperposeSelectedAtoms_O"
-             :layout-offset-field-names ("_MoveableIndices")}
+             :layout-offset-field-names ("_MoveableIndexes")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<geom::ComplexVectorCoordinate_O>"
              :offset-base-ctype "chem::SuperposeSelectedAtoms_O"
@@ -4044,7 +4044,7 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::ComplexVector_byte32_t_O>"
              :offset-base-ctype "chem::ConformationExplorer_O"
-             :layout-offset-field-names ("_SuperposeAtomIndices")}
+             :layout-offset-field-names ("_SuperposeAtomIndexes")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
              :offset-base-ctype "chem::ConformationExplorer_O"
