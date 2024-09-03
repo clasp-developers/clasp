@@ -1116,14 +1116,9 @@ CL_DEFUN Number_sp cl__file_write_date(T_sp pathspec) {
   Pathname_sp pathname = cl__pathname(pathspec);
   String_sp filename = coerce_to_posix_filename(pathname);
   struct stat filestatus;
-  time = nil<Number_O>();
-  if (safe_stat((char*)filename->get_path_string().c_str(), &filestatus) >= 0) {
-    Number_sp accJan1st1970UT(Integer_O::create((gc::Fixnum)(24 * 60 * 60)));
-    accJan1st1970UT = contagion_mul(accJan1st1970UT, Integer_O::create((gc::Fixnum)(17 + 365 * 70)));
-    time = Integer_O::create((gc::Fixnum)filestatus.st_mtime);
-    time = contagion_add(time, accJan1st1970UT);
-  }
-  return time;
+  if (safe_stat((char*)filename->get_path_string().c_str(), &filestatus) >= 0)
+    return make_number(filestatus.st_mtime) * make_number(24 * 60 * 60 * 17 + 365 * 70);
+  return nil<Number_O>();
 }
 
 CL_LAMBDA(file);

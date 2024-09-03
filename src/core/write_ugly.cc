@@ -142,10 +142,10 @@ void Integer_O::__write__(T_sp stream) const {
 void Ratio_O::__write__(T_sp stream) const {
   SafeBufferStr8Ns buffer;
   int print_base = clasp_print_base();
-  core__integer_to_string(buffer._Buffer, this->numerator(), make_fixnum(print_base),
+  core__integer_to_string(buffer._Buffer, this->_numerator, make_fixnum(print_base),
                           cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(), false);
   buffer._Buffer->vectorPushExtend('/');
-  core__integer_to_string(buffer._Buffer, this->denominator(), make_fixnum(print_base), false, false);
+  core__integer_to_string(buffer._Buffer, this->_denominator, make_fixnum(print_base), false, false);
   cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), nil<T_O>());
 }
 

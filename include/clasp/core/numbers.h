@@ -130,7 +130,7 @@ inline int fegetexcept() {
 namespace cl {
 extern core::Symbol_sp& _sym_Integer_O; // CL:INTEGER
 extern core::Symbol_sp& _sym_Real_O;    // CL:INTEGER
-};                                      // namespace cl
+}; // namespace cl
 
 namespace core {
 // TYPE ERRORS
@@ -193,6 +193,17 @@ Number_sp contagion_add(Number_sp na, Number_sp nb);
 Number_sp contagion_sub(Number_sp na, Number_sp nb);
 Number_sp contagion_mul(Number_sp na, Number_sp nb);
 Number_sp contagion_div(Number_sp na, Number_sp nb);
+
+inline Number_sp operator+(const Number_sp x, const Number_sp y) { return contagion_add(x, y); }
+inline Number_sp operator-(const Number_sp x, const Number_sp y) { return contagion_sub(x, y); }
+inline Number_sp operator*(const Number_sp x, const Number_sp y) { return contagion_mul(x, y); }
+inline Number_sp operator/(const Number_sp x, const Number_sp y) { return contagion_div(x, y); }
+inline Number_sp operator-(const Number_sp x) { return clasp_negate(x); }
+inline Number_sp& operator+=(Number_sp& x, const Number_sp y) { return x = contagion_add(x, y); }
+inline Number_sp& operator-=(Number_sp& x, const Number_sp y) { return x = contagion_sub(x, y); }
+inline Number_sp& operator*=(Number_sp& x, const Number_sp y) { return x = contagion_mul(x, y); }
+inline Number_sp& operator/=(Number_sp& x, const Number_sp y) { return x = contagion_div(x, y); }
+
 int basic_compare(Number_sp na, Number_sp nb);
 
 SMART(Number);
@@ -204,6 +215,12 @@ public:
   static Number_sp create(gc::Fixnum val);
   //	static Number_sp create(size_t val);
 public:
+  virtual Real_sp realpart_() const { SUBCLASS_MUST_IMPLEMENT(); };
+  virtual Real_sp imagpart_() const { SUBCLASS_MUST_IMPLEMENT(); };
+
+  virtual Number_sp numerator_() const;
+  virtual Number_sp denominator_() const;
+
   virtual Number_sp signum_() const { SUBCLASS_MUST_IMPLEMENT(); };
   virtual Number_sp reciprocal_() const { SUBCLASS_MUST_IMPLEMENT(); };
   virtual Number_sp abs_() const { SUBCLASS_MUST_IMPLEMENT(); };
@@ -242,8 +259,8 @@ public:
   virtual Number_sp tanh_() const { SUBIMP(); };
 
   virtual void sxhash_(HashGenerator& hg) const override { SUBIMP(); };
-  Number_O(){};
-  virtual ~Number_O(){};
+  Number_O() {};
+  virtual ~Number_O() {};
 
   inline static NumberType number_type(Number_sp n) {
     if (n.fixnump())
@@ -267,7 +284,16 @@ public:
     UNREACHABLE();
   }
 
+  inline static Real_sp realpart(const Number_sp number) {
+    if (number.fixnump() || number.single_floatp())
+      return number;
+    return number->realpart_();
+  }
+
+  inline static Real_sp imagpart(const Number_sp number);
+
   static Number_sp atan(Number_sp num);
+
   static Number_sp atan2(Number_sp y, Number_sp x);
 };
 
@@ -276,14 +302,16 @@ class Real_O : public Number_O {
   LISP_ABSTRACT_CLASS(core, ClPkg, Real_O, "real", Number_O);
 
 public:
+  virtual Real_sp realpart_() const override { return asSmartPtr(); }
+
   virtual double as_double_() const override { SUBIMP(); };
 
   // functions shared by all Real
   virtual bool plusp_() const { SUBIMP(); };
   virtual bool minusp_() const { SUBIMP(); };
 
-  Real_O(){};
-  virtual ~Real_O(){};
+  Real_O() {};
+  virtual ~Real_O() {};
 };
 
 SMART(Rational);
@@ -307,8 +335,12 @@ public:
   virtual Number_sp cosh_() const override;
   virtual Number_sp tanh_() const override;
 
-  Rational_O(){};
-  virtual ~Rational_O(){};
+  Rational_O() {};
+  virtual ~Rational_O() {};
+
+  inline static Integer_sp numerator(Rational_sp x);
+
+  inline static Integer_sp denominator(Rational_sp x);
 };
 
 SMART(Integer);
@@ -345,6 +377,8 @@ public:
   };
 
 public:
+  Real_sp imagpart_() const override;
+
   virtual mpz_class mpz() const { SUBIMP(); };
   virtual bool evenp_() const { SUBIMP(); };
   virtual bool oddp_() const { SUBIMP(); };
@@ -362,8 +396,8 @@ public:
   virtual Integer_sp shift_right(gc::Fixnum nbits) const { SUBIMP(); };
 
   virtual void __write__(T_sp strm) const override;
-  Integer_O(){};
-  virtual ~Integer_O(){};
+  Integer_O() {};
+  virtual ~Integer_O() {};
 };
 }; // namespace core
 
@@ -390,8 +424,8 @@ public:
   virtual bool isnan_() const { SUBIMP(); };
   virtual bool isinf_() const { SUBIMP(); };
 
-  Float_O(){};
-  virtual ~Float_O(){};
+  Float_O() {};
+  virtual ~Float_O() {};
 };
 
 SMART(ShortFloat);
@@ -483,13 +517,13 @@ public:
   void set(double val) { this->_Value = val; };
   double get() const { return this->_Value; };
   Number_sp signum_() const override;
-  Number_sp abs_() const override {
-    return DoubleFloat_O::create(fabs(this->_Value));
-  };
+  Number_sp abs_() const override { return DoubleFloat_O::create(fabs(this->_Value)); };
   bool isnan_() const override { return std::isnan(this->_Value); }; // NaN is supposed to be the only value that != itself!!!!
   bool isinf_() const override { return std::isinf(this->_Value); };
 
 public:
+  Real_sp imagpart_() const override { return create(0.0); }
+
   virtual bool eql_(T_sp obj) const override;
 
   // math routines shared by all numbers
@@ -524,8 +558,8 @@ public:
   virtual Number_sp cosh_() const override;
   virtual Number_sp tanh_() const override;
   virtual Rational_sp rational_() const final { return DoubleFloat_O::rational(this->_Value); };
-  DoubleFloat_O() : _Value(0.0){};
-  virtual ~DoubleFloat_O(){};
+  DoubleFloat_O() : _Value(0.0) {};
+  virtual ~DoubleFloat_O() {};
 };
 
 template <> inline Number_sp make_number(double x) { return DoubleFloat_O::create(x); }
@@ -572,8 +606,8 @@ public:
   }
 
 public:
-  Real_sp real() const { return this->_real; };
-  Real_sp imaginary() const { return this->_imaginary; };
+  Real_sp realpart_() const override { return this->_real; };
+  Real_sp imagpart_() const override { return this->_imaginary; };
 
   void sxhash_(HashGenerator& hg) const override;
   //	virtual Number_sp copy() const;
@@ -614,9 +648,9 @@ public:
 
   virtual void __write__(T_sp strm) const override;
 
-  Complex_O(Real_sp r, Real_sp i) : _real(r), _imaginary(i){};
-  Complex_O() : _real(clasp_make_single_float(0.0)), _imaginary(clasp_make_single_float(0.0)){};
-  virtual ~Complex_O(){};
+  Complex_O(Real_sp r, Real_sp i) : _real(r), _imaginary(i) {};
+  Complex_O() : _real(clasp_make_single_float(0.0)), _imaginary(clasp_make_single_float(0.0)) {};
+  virtual ~Complex_O() {};
 };
 
 SMART(Ratio);
@@ -624,7 +658,7 @@ class Ratio_O : public Rational_O {
   LISP_CLASS(core, ClPkg, Ratio_O, "ratio", Rational_O);
 
 public:
-  GCPRIVATE : Integer_sp _numerator;
+  Integer_sp _numerator;
   Integer_sp _denominator;
 
 public:
@@ -653,8 +687,8 @@ public:
   virtual Number_sp negate_() const override {
     return Ratio_O::create_primitive(gc::As<Integer_sp>(clasp_negate(this->_numerator)), gc::As<Integer_sp>(this->_denominator));
   };
-  Integer_sp numerator() const { return this->_numerator; };
-  Integer_sp denominator() const { return this->_denominator; };
+  virtual Number_sp numerator_() const override { return this->_numerator; };
+  virtual Number_sp denominator_() const override { return this->_denominator; };
 
   void sxhash_(HashGenerator& hg) const override;
   //	virtual Number_sp copy() const;
@@ -688,8 +722,8 @@ public:
 
   virtual void __write__(T_sp strm) const override;
 
-  Ratio_O() : _numerator(clasp_make_fixnum(0)), _denominator(clasp_make_fixnum(1)){};
-  virtual ~Ratio_O(){};
+  Ratio_O() : _numerator(clasp_make_fixnum(0)), _denominator(clasp_make_fixnum(1)) {};
+  virtual ~Ratio_O() {};
 };
 
 template <std::integral T> inline Number_sp make_number(T x) {
@@ -706,7 +740,7 @@ inline Number_sp clasp_divide(Number_sp na, Number_sp nb) { return contagion_div
 
 inline int clasp_number_compare(Number_sp x, Number_sp y) { return basic_compare(x, y); };
 
-template<typename Float1, typename Float2 = Float1> inline Number_sp _sqrt(Float1 f) {
+template <typename Float1, typename Float2 = Float1> inline Number_sp _sqrt(Float1 f) {
   if (std::signbit(f))
     return Complex_O::create(make_number(Float2{0.0}), make_number(static_cast<Float2>(std::sqrt(-f))));
 
@@ -1218,6 +1252,26 @@ inline bool clasp_float_infinity_p(Float_sp num) {
   }
   // test for isinf not for isnan, good old friend copy paste
   return num->isinf_();
+}
+
+inline Real_sp Number_O::imagpart(const Number_sp number) {
+  if (number.fixnump())
+    return make_number(0);
+  if (number.single_floatp())
+    return make_number(0.0f);
+  return number->imagpart_();
+}
+
+inline Integer_sp Rational_O::numerator(Rational_sp x) {
+  if (x.fixnump())
+    return x;
+  return x->numerator_();
+}
+
+inline Integer_sp Rational_O::denominator(Rational_sp x) {
+  if (x.fixnump())
+    return make_number(1);
+  return x->denominator_();
 }
 
 }; // namespace core

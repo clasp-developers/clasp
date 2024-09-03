@@ -209,43 +209,28 @@ CL_DEFUN Number_sp contagion_add(Number_sp na, Number_sp nb) {
   case_Fixnum_v_Bignum:
     return core__next_fadd(gc::As_unsafe<Bignum_sp>(nb), na.unsafe_fixnum());
   case_Fixnum_v_Ratio:
-  case_Bignum_v_Ratio: {
-    // NOTE: All of the numbers are either fixnums or bignums,
-    // so this could be more efficient maybe.
-    Ratio_sp rat = gc::As_unsafe<Ratio_sp>(nb);
-    Integer_sp den = rat->denominator();
-    Integer_sp new_num = gc::As_unsafe<Integer_sp>(contagion_add(rat->numerator(), contagion_mul(na, den)));
-    // result is a ratio, not an integer.
-    return Ratio_O::create(new_num, den);
-  }
-  case_Fixnum_v_SingleFloat: { return clasp_make_single_float(clasp_to_float(na) + clasp_to_float(nb)); }
-  case_Fixnum_v_DoubleFloat: { return DoubleFloat_O::create(clasp_to_double(na) + clasp_to_double(nb)); }
+  case_Bignum_v_Ratio:
+    return Rational_O::create(nb->numerator_() + na * nb->denominator_(), nb->denominator_());
+  case_Fixnum_v_SingleFloat:
+    return clasp_make_single_float(clasp_to_float(na) + clasp_to_float(nb));
+  case_Fixnum_v_DoubleFloat:
+    return DoubleFloat_O::create(clasp_to_double(na) + clasp_to_double(nb));
   case_Bignum_v_Fixnum:
     return core__next_fadd(gc::As_unsafe<Bignum_sp>(na), nb.unsafe_fixnum());
   case_Bignum_v_Bignum:
     return core__next_add(gc::As_unsafe<Bignum_sp>(na), gc::As_unsafe<Bignum_sp>(nb));
   case_Bignum_v_SingleFloat:
-  case_Ratio_v_SingleFloat: { return clasp_make_single_float(clasp_to_float(na) + clasp_to_float(nb)); }
+  case_Ratio_v_SingleFloat:
+    return clasp_make_single_float(clasp_to_float(na) + clasp_to_float(nb));
   case_Bignum_v_DoubleFloat:
-  case_Ratio_v_DoubleFloat: { return DoubleFloat_O::create(clasp_to_double(na) + clasp_to_double(nb)); }
+  case_Ratio_v_DoubleFloat:
+    return DoubleFloat_O::create(clasp_to_double(na) + clasp_to_double(nb));
   case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum: {
-    Ratio_sp rat = gc::As_unsafe<Ratio_sp>(na);
-    Integer_sp den = rat->denominator();
-    Integer_sp new_num = gc::As_unsafe<Integer_sp>(contagion_add(rat->numerator(), contagion_mul(nb, den)));
-    // result is a ratio, not an integer.
-    return Ratio_O::create(new_num, den);
-  }
-  case_Ratio_v_Ratio: {
-    Ratio_sp ra = gc::As<Ratio_sp>(na);
-    Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    // ra.num/ra.den + rb.num/rb.den = (ra.num*rb.den+rb.num*ra.den)/ra.den*rb.den
-    Number_sp n1 = contagion_mul(ra->numerator(), rb->denominator());
-    Number_sp n2 = contagion_mul(ra->denominator(), rb->numerator());
-    Number_sp d = contagion_mul(ra->denominator(), rb->denominator());
-    Number_sp n = contagion_add(n1, n2);
-    return Rational_O::create(gc::As_unsafe<Integer_sp>(n), gc::As_unsafe<Integer_sp>(d));
-  }
+  case_Ratio_v_Bignum:
+    return Rational_O::create(na->numerator_() + nb * na->denominator_(), na->denominator_());
+  case_Ratio_v_Ratio:
+    return Rational_O::create(na->numerator_() * nb->denominator_() + nb->numerator_() * na->denominator_(),
+                              na->denominator_() * nb->denominator_());
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
   case_SingleFloat_v_Ratio:
@@ -276,12 +261,8 @@ CL_DEFUN Number_sp contagion_add(Number_sp na, Number_sp nb) {
   case_Complex_v_Ratio:
   case_Complex_v_Bignum:
   case_Complex_v_SingleFloat:
-  case_Complex_v_DoubleFloat: {
-    Number_sp aux = na;
-    na = nb;
-    nb = aux;
-    goto Complex_v_Y;
-  }
+  case_Complex_v_DoubleFloat:
+    return clasp_make_complex(nb + na->realpart_(), na->imagpart_());
   case_Fixnum_v_Complex:
   case_Bignum_v_Complex:
   case_Ratio_v_Complex:
@@ -290,14 +271,9 @@ CL_DEFUN Number_sp contagion_add(Number_sp na, Number_sp nb) {
 #ifdef CLASP_LONG_FLOAT
   case_LongFloat_v_Complex:
 #endif
-  Complex_v_Y:
-    return clasp_make_complex(gc::As<Real_sp>(contagion_add(na, gc::As<Complex_sp>(nb)->real())),
-                              gc::As<Complex_sp>(nb)->imaginary());
-  case_Complex_v_Complex: {
-    Real_sp r = gc::As<Real_sp>(contagion_add(gc::As<Complex_sp>(na)->real(), gc::As<Complex_sp>(nb)->real()));
-    Real_sp i = gc::As<Real_sp>(contagion_add(gc::As<Complex_sp>(na)->imaginary(), gc::As<Complex_sp>(nb)->imaginary()));
-    return clasp_make_complex(r, i);
-  } break;
+    return clasp_make_complex(na + nb->realpart_(), nb->imagpart_());
+  case_Complex_v_Complex:
+    return clasp_make_complex(na->realpart_() + nb->realpart_(), na->imagpart_() + nb->imagpart_());
   default:
     not_comparable_error(na, nb);
   };
@@ -315,19 +291,18 @@ CL_DEFUN Number_sp contagion_sub(Number_sp na, Number_sp nb) {
     return Integer_O::create(static_cast<gc::Fixnum>(fa - fb));
   }
   case_Fixnum_v_Ratio:
-  case_Bignum_v_Ratio: {
-    // x - a/b = xb/b - a/b = (xb-a)/b
-    Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    Number_sp n1 = contagion_mul(na, rb->denominator());
-    Number_sp n = contagion_sub(n1, rb->numerator());
-    return Ratio_O::create(gc::As_unsafe<Integer_sp>(n), rb->denominator());
-  }
-  case_Fixnum_v_SingleFloat: { return clasp_make_single_float(clasp_to_float(na) - clasp_to_float(nb)); }
-  case_Fixnum_v_DoubleFloat: { return DoubleFloat_O::create(clasp_to_double(na) - clasp_to_double(nb)); }
+  case_Bignum_v_Ratio:
+    return Rational_O::create(na * nb->denominator_() - nb->numerator_(), nb->denominator_());
+  case_Fixnum_v_SingleFloat:
+    return clasp_make_single_float(clasp_to_float(na) - clasp_to_float(nb));
+  case_Fixnum_v_DoubleFloat:
+    return DoubleFloat_O::create(clasp_to_double(na) - clasp_to_double(nb));
   case_Ratio_v_SingleFloat:
-  case_Bignum_v_SingleFloat: { return clasp_make_single_float(clasp_to_float(na) - clasp_to_float(nb)); }
+  case_Bignum_v_SingleFloat:
+    return clasp_make_single_float(clasp_to_float(na) - clasp_to_float(nb));
   case_Ratio_v_DoubleFloat:
-  case_Bignum_v_DoubleFloat: { return DoubleFloat_O::create(clasp_to_double(na) - clasp_to_double(nb)); }
+  case_Bignum_v_DoubleFloat:
+    return DoubleFloat_O::create(clasp_to_double(na) - clasp_to_double(nb));
   case_Fixnum_v_Bignum:
     return core__next_fsub(na.unsafe_fixnum(), gc::As_unsafe<Bignum_sp>(nb));
   case_Bignum_v_Fixnum:
@@ -335,23 +310,11 @@ CL_DEFUN Number_sp contagion_sub(Number_sp na, Number_sp nb) {
   case_Bignum_v_Bignum:
     return core__next_sub(gc::As_unsafe<Bignum_sp>(na), gc::As_unsafe<Bignum_sp>(nb));
   case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum: {
-    // a/b - x = a/b - xb/b = (a-xb)/b
-    Ratio_sp ra = gc::As<Ratio_sp>(na);
-    Number_sp n2 = contagion_mul(nb, ra->denominator());
-    Number_sp n = contagion_sub(ra->numerator(), n2);
-    return Ratio_O::create(gc::As_unsafe<Integer_sp>(n), ra->denominator());
-  }
-  case_Ratio_v_Ratio: {
-    // a/b - c/d = (ad-bc)/bd
-    Ratio_sp ra = gc::As<Ratio_sp>(na);
-    Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    Number_sp n1 = contagion_mul(ra->numerator(), rb->denominator());
-    Number_sp n2 = contagion_mul(ra->denominator(), rb->numerator());
-    Number_sp n = contagion_sub(n1, n2);
-    Number_sp d = contagion_mul(ra->denominator(), rb->denominator());
-    return Rational_O::create(gc::As_unsafe<Integer_sp>(n), gc::As_unsafe<Integer_sp>(d));
-  }
+  case_Ratio_v_Bignum:
+    return Ratio_O::create(na->numerator_() - nb * na->denominator_(), na->denominator_());
+  case_Ratio_v_Ratio:
+    return Rational_O::create(na->numerator_() * nb->denominator_() - na->denominator_() * nb->numerator_(),
+                              na->denominator_() * nb->denominator_());
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
   case_SingleFloat_v_Ratio:
@@ -382,23 +345,17 @@ CL_DEFUN Number_sp contagion_sub(Number_sp na, Number_sp nb) {
   case_Complex_v_Ratio:
   case_Complex_v_Bignum:
   case_Complex_v_SingleFloat:
-  case_Complex_v_DoubleFloat: {
-    return clasp_make_complex(gc::As<Real_sp>(contagion_sub(gc::As<Complex_sp>(na)->real(), nb)),
-                              gc::As<Complex_sp>(na)->imaginary());
-  }
+  case_Complex_v_DoubleFloat:
+    return clasp_make_complex(na->realpart_() - nb, na->imagpart_());
   case_Fixnum_v_Complex:
   case_Bignum_v_Complex:
   case_Ratio_v_Complex:
   case_SingleFloat_v_Complex:
   case_DoubleFloat_v_Complex:
   case_LongFloat_v_Complex:
-    return clasp_make_complex(gc::As<Real_sp>(contagion_sub(na, gc::As<Complex_sp>(nb)->real())),
-                              gc::As<Real_sp>(clasp_negate(gc::As<Complex_sp>(nb)->imaginary())));
-  case_Complex_v_Complex: {
-    Real_sp r = gc::As<Real_sp>(contagion_sub(gc::As<Complex_sp>(na)->real(), gc::As<Complex_sp>(nb)->real()));
-    Real_sp i = gc::As<Real_sp>(contagion_sub(gc::As<Complex_sp>(na)->imaginary(), gc::As<Complex_sp>(nb)->imaginary()));
-    return clasp_make_complex(r, i);
-  } break;
+    return clasp_make_complex(na - nb->realpart_(), -nb->imagpart_());
+  case_Complex_v_Complex:
+    return clasp_make_complex(na->realpart_() - nb->realpart_(), na->imagpart_() - nb->imagpart_());
   default:
     not_comparable_error(na, nb);
   };
@@ -427,34 +384,27 @@ CL_DEFUN Number_sp contagion_mul(Number_sp na, Number_sp nb) {
   case_Fixnum_v_Bignum:
     return core__next_fmul(gc::As_unsafe<Bignum_sp>(nb), na.unsafe_fixnum());
   case_Fixnum_v_Ratio:
-  case_Bignum_v_Ratio: {
-    Ratio_sp rat = gc::As_unsafe<Ratio_sp>(nb);
-    Integer_sp new_num = gc::As_unsafe<Integer_sp>(contagion_mul(na, rat->numerator()));
-    return Rational_O::create(new_num, rat->denominator());
-  }
-  case_Fixnum_v_SingleFloat: { return clasp_make_single_float(clasp_to_float(na) * clasp_to_float(nb)); }
-  case_Fixnum_v_DoubleFloat: { return DoubleFloat_O::create(clasp_to_double(na) * clasp_to_double(nb)); }
+  case_Bignum_v_Ratio:
+    return Rational_O::create(na * nb->numerator_(), nb->denominator_());
+  case_Fixnum_v_SingleFloat:
+    return clasp_make_single_float(clasp_to_float(na) * clasp_to_float(nb));
+  case_Fixnum_v_DoubleFloat:
+    return DoubleFloat_O::create(clasp_to_double(na) * clasp_to_double(nb));
   case_Bignum_v_Fixnum:
     return core__next_fmul(gc::As_unsafe<Bignum_sp>(na), nb.unsafe_fixnum());
   case_Bignum_v_Bignum:
     return core__next_mul(gc::As_unsafe<Bignum_sp>(na), gc::As_unsafe<Bignum_sp>(nb));
   case_Bignum_v_SingleFloat:
-  case_Ratio_v_SingleFloat: { return clasp_make_single_float(clasp_to_float(na) * clasp_to_float(nb)); }
+  case_Ratio_v_SingleFloat:
+    return clasp_make_single_float(clasp_to_float(na) * clasp_to_float(nb));
   case_Bignum_v_DoubleFloat:
-  case_Ratio_v_DoubleFloat: { return DoubleFloat_O::create(clasp_to_double(na) * clasp_to_double(nb)); }
+  case_Ratio_v_DoubleFloat:
+    return DoubleFloat_O::create(clasp_to_double(na) * clasp_to_double(nb));
   case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum: {
-    Ratio_sp rat = gc::As_unsafe<Ratio_sp>(na);
-    Integer_sp new_num = gc::As_unsafe<Integer_sp>(contagion_mul(nb, rat->numerator()));
-    return Rational_O::create(new_num, rat->denominator());
-  }
-  case_Ratio_v_Ratio: {
-    Ratio_sp ra = gc::As<Ratio_sp>(na);
-    Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    Number_sp num = contagion_mul(ra->numerator(), rb->numerator());
-    Number_sp den = contagion_mul(ra->denominator(), rb->denominator());
-    return Rational_O::create(gc::As_unsafe<Integer_sp>(num), gc::As_unsafe<Integer_sp>(den));
-  }
+  case_Ratio_v_Bignum:
+    return Rational_O::create(nb * na->numerator_(), na->denominator_());
+  case_Ratio_v_Ratio:
+    return Rational_O::create(na->numerator_() * nb->numerator_(), na->denominator_() * nb->denominator_());
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
   case_SingleFloat_v_Ratio:
@@ -485,62 +435,29 @@ CL_DEFUN Number_sp contagion_mul(Number_sp na, Number_sp nb) {
   case_Complex_v_Bignum:
   case_Complex_v_Ratio:
   case_Complex_v_SingleFloat:
-  case_Complex_v_DoubleFloat: {
-    Number_sp aux = na;
-    na = nb;
-    nb = aux;
-    goto Complex_v_Y;
-  }
+  case_Complex_v_DoubleFloat:
+    return clasp_make_complex(nb * na->realpart_(), nb * na->imagpart_());
   case_Fixnum_v_Complex:
   case_Bignum_v_Complex:
   case_Ratio_v_Complex:
   case_SingleFloat_v_Complex:
   case_DoubleFloat_v_Complex:
   case_LongFloat_v_Complex:
-  Complex_v_Y:
-    return clasp_make_complex(gc::As<Real_sp>(contagion_mul(na, gc::As<Complex_sp>(nb)->real())),
-                              gc::As<Real_sp>(contagion_mul(na, gc::As<Complex_sp>(nb)->imaginary())));
+    return clasp_make_complex(na * nb->realpart_(), na * nb->imagpart_());
   case_Complex_v_Complex: {
     Complex_sp ca = gc::As<Complex_sp>(na);
     Complex_sp cb = gc::As<Complex_sp>(nb);
-    Real_sp x = ca->real();
-    Real_sp y = ca->imaginary();
-    Real_sp u = cb->real();
-    Real_sp v = cb->imaginary();
+    Real_sp x = ca->realpart_();
+    Real_sp y = ca->imagpart_();
+    Real_sp u = cb->realpart_();
+    Real_sp v = cb->imagpart_();
     // (x + yi)(u + vi) = (xu - yv) + (xv + yu)i.
-    return clasp_make_complex(gc::As<Real_sp>(contagion_sub(contagion_mul(x, u), contagion_mul(y, v))),
-                              gc::As<Real_sp>(contagion_add(contagion_mul(x, v), contagion_mul(y, u))));
+    return clasp_make_complex(x * u - y * v, x * v + y * u);
   } break;
   default:
     not_comparable_error(na, nb);
   };
   MATH_DISPATCH_END();
-}
-
-// Forward declaration for contagion_div
-Number_sp contagion_div(Number_sp na, Number_sp nb);
-
-Number_sp complex_divide(Real_sp ar, Real_sp ai, Real_sp br, Real_sp bi) {
-  // Compute (ar+ai*i)/(br+bi*i).
-  // Just multiply the numerator and denominator by (br - bi*i)
-  // to end up with ar*br+ai*bi/z real and ai*br-ar*bi imaginary,
-  // where z is br^2+bi*2.
-#define realmul(A, B) gc::As_unsafe<Real_sp>(contagion_mul((A), (B)))
-#define realadd(A, B) gc::As_unsafe<Real_sp>(contagion_add((A), (B)))
-#define realsub(A, B) gc::As_unsafe<Real_sp>(contagion_sub((A), (B)))
-#define realdiv(A, B) gc::As_unsafe<Real_sp>(contagion_div((A), (B)))
-  Real_sp absB2 = realadd(realmul(br, br), realmul(bi, bi));
-  Real_sp rnum = realadd(realmul(ar, br), realmul(ai, bi));
-  Real_sp inum = realsub(realmul(ai, br), realmul(ar, bi));
-  Real_sp realpart = realdiv(rnum, absB2);
-  // note: could save a bit of time by checking if inum is zero,
-  // and if so not bothering to compute imagpart
-  Real_sp imagpart = realdiv(inum, absB2);
-  return clasp_make_complex(realpart, imagpart);
-#undef realmul
-#undef realadd
-#undef realsub
-#undef realdiv
 }
 
 CL_NAME("TWO-ARG-/");
@@ -552,11 +469,10 @@ CL_DEFUN Number_sp contagion_div(Number_sp na, Number_sp nb) {
   case_Bignum_v_Fixnum:
   case_Fixnum_v_Bignum:
   case_Bignum_v_Bignum:
-    return Rational_O::create(gc::As_unsafe<Integer_sp>(na), gc::As_unsafe<Integer_sp>(nb));
+    return Rational_O::create(na, nb);
   case_Fixnum_v_Ratio:
   case_Bignum_v_Ratio:
-    return Rational_O::create(gc::As<Integer_sp>(contagion_mul(na, gc::As<Ratio_sp>(nb)->denominator())),
-                              gc::As<Ratio_sp>(nb)->numerator());
+    return Rational_O::create(na * nb->denominator_(), nb->numerator_());
   case_Fixnum_v_SingleFloat:
     return clasp_make_single_float(clasp_to_float(na) / clasp_to_float(nb));
   case_Fixnum_v_DoubleFloat:
@@ -568,17 +484,10 @@ CL_DEFUN Number_sp contagion_div(Number_sp na, Number_sp nb) {
   case_Ratio_v_DoubleFloat:
     return DoubleFloat_O::create(clasp_to_double(na) / clasp_to_double(nb));
   case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum: {
-    Integer_sp z = gc::As<Integer_sp>(contagion_mul(gc::As<Ratio_sp>(na)->denominator(), nb));
-    return Rational_O::create(gc::As<Ratio_sp>(na)->numerator(), z);
-  }
-  case_Ratio_v_Ratio: {
-    Ratio_sp ra = gc::As<Ratio_sp>(na);
-    Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    Integer_sp num = gc::As<Integer_sp>(contagion_mul(ra->numerator(), rb->denominator()));
-    Integer_sp denom = gc::As<Integer_sp>(contagion_mul(ra->denominator(), rb->numerator()));
-    return Rational_O::create(num, denom);
-  }
+  case_Ratio_v_Bignum:
+    return Rational_O::create(na->numerator_(), na->denominator_() * nb);
+  case_Ratio_v_Ratio:
+    return Rational_O::create(na->numerator_() * nb->denominator_(), na->denominator_() * nb->numerator_());
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Ratio:
   case_SingleFloat_v_Bignum:
@@ -608,23 +517,21 @@ CL_DEFUN Number_sp contagion_div(Number_sp na, Number_sp nb) {
   case_Complex_v_Ratio:
   case_Complex_v_SingleFloat:
   case_Complex_v_DoubleFloat:
-  case_Complex_v_LongFloat: {
-    Complex_sp ca = gc::As<Complex_sp>(na);
-    return clasp_make_complex(gc::As<Real_sp>(contagion_div(ca->real(), nb)), gc::As<Real_sp>(contagion_div(ca->imaginary(), nb)));
-  }
+  case_Complex_v_LongFloat:
+    return clasp_make_complex(na->realpart_() / nb, na->imagpart_() / nb);
   case_Fixnum_v_Complex:
   case_Bignum_v_Complex:
   case_Ratio_v_Complex:
   case_SingleFloat_v_Complex:
   case_DoubleFloat_v_Complex:
   case_LongFloat_v_Complex: {
-    Complex_sp cb = gc::As_unsafe<Complex_sp>(nb);
-    return complex_divide(gc::As_unsafe<Real_sp>(na), clasp_make_fixnum(0), cb->real(), cb->imaginary());
+    Number_sp divisor = nb->realpart_() * nb->realpart_() + nb->imagpart_() * nb->imagpart_();
+    return clasp_make_complex(na * nb->realpart_() / divisor, -na * nb->imagpart_() / divisor);
   }
   case_Complex_v_Complex: {
-    Complex_sp ca = gc::As<Complex_sp>(na);
-    Complex_sp cb = gc::As<Complex_sp>(nb);
-    return complex_divide(ca->real(), ca->imaginary(), cb->real(), cb->imaginary());
+    Number_sp divisor = nb->realpart_() * nb->realpart_() + nb->imagpart_() * nb->imagpart_();
+    return clasp_make_complex((na->realpart_() * nb->realpart_() + na->imagpart_() * nb->imagpart_()) / divisor,
+                              (na->imagpart_() * nb->realpart_() - na->realpart_() * nb->imagpart_()) / divisor);
   }
   }
   MATH_DISPATCH_END();
@@ -639,7 +546,7 @@ CL_DEFUN Number_sp cl___PLUS_(List_sp numbers) {
     return make_fixnum(0);
   Number_sp result = gc::As<Number_sp>(oCar(numbers));
   for (auto cur : (List_sp)oCdr(numbers)) {
-    result = contagion_add(result, gc::As<Number_sp>(oCar(cur)));
+    result += gc::As<Number_sp>(oCar(cur));
   }
   return result;
 }
@@ -654,7 +561,7 @@ CL_DEFUN Number_sp cl___TIMES_(List_sp numbers) {
     return make_fixnum(1);
   Number_sp result = gc::As<Number_sp>(oCar(numbers));
   for (auto cur : (List_sp)oCdr(numbers)) {
-    result = contagion_mul(result, gc::As<Number_sp>(oCar(cur)));
+    result *= gc::As<Number_sp>(oCar(cur));
   }
   return result;
 }
@@ -670,7 +577,7 @@ CL_DEFUN Number_sp cl___MINUS_(Number_sp num, List_sp numbers) {
   }
   Number_sp result = num;
   for (auto cur : (List_sp)(numbers)) {
-    result = contagion_sub(result, gc::As<Number_sp>(oCar(cur)));
+    result -= gc::As<Number_sp>(oCar(cur));
   }
   return result;
 }
@@ -684,7 +591,7 @@ CL_DEFUN Number_sp cl___DIVIDE_(Number_sp num, List_sp numbers) {
   }
   Number_sp result = num;
   for (auto cur : (List_sp)(numbers)) {
-    result = contagion_div(result, gc::As<Number_sp>(oCar(cur)));
+    result /= gc::As<Number_sp>(oCar(cur));
   }
   return result;
 }
@@ -800,7 +707,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
   case_Fixnum_v_Ratio:
   case_Bignum_v_Ratio: {
     Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    Integer_sp trunc = clasp_integer_divide(rb->numerator(), rb->denominator());
+    Integer_sp trunc = clasp_integer_divide(rb->numerator_(), rb->denominator_());
     int res = basic_compare(na, trunc);
     if (res == 0)
       return (clasp_minusp(rb) ? 1 : -1);
@@ -890,7 +797,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
   case_Ratio_v_Fixnum:
   case_Ratio_v_Bignum: {
     Ratio_sp ra = gc::As<Ratio_sp>(na);
-    Integer_sp trunc = clasp_integer_divide(ra->numerator(), ra->denominator());
+    Integer_sp trunc = clasp_integer_divide(ra->numerator_(), ra->denominator_());
     int res = basic_compare(trunc, nb);
     if (res == 0)
       return (clasp_minusp(ra) ? -1 : 1);
@@ -903,15 +810,13 @@ int basic_compare(Number_sp na, Number_sp nb) {
     // Failing that, use a/b <=> c/d is equivalent to ad <=> bc.
     Ratio_sp ra = gc::As<Ratio_sp>(na);
     Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    Integer_sp ta = clasp_integer_divide(ra->numerator(), ra->denominator());
-    Integer_sp tb = clasp_integer_divide(rb->numerator(), rb->denominator());
+    Integer_sp ta = clasp_integer_divide(ra->numerator_(), ra->denominator_());
+    Integer_sp tb = clasp_integer_divide(rb->numerator_(), rb->denominator_());
     int res = basic_compare(ta, tb);
     if (res != 0)
       return res;
     else {
-      Number_sp left = contagion_mul(ra->numerator(), rb->denominator());
-      Number_sp right = contagion_mul(rb->numerator(), ra->denominator());
-      return basic_compare(left, right);
+      return basic_compare(ra->numerator_() * rb->denominator_(), rb->numerator_() * ra->denominator_());
     }
   }
   case_SingleFloat_v_Fixnum: {
@@ -1160,7 +1065,7 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
     // ratios are normalized
     Ratio_sp ra = gc::As<Ratio_sp>(na);
     Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    return (basic_equalp(ra->numerator(), rb->numerator()) && basic_equalp(ra->denominator(), rb->denominator()));
+    return (basic_equalp(ra->numerator_(), rb->numerator_()) && basic_equalp(ra->denominator_(), rb->denominator_()));
   }
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
@@ -1224,10 +1129,9 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
   case_DoubleFloat_v_Complex:
   case_LongFloat_v_Complex:
   Complex_v_Y:
-    return (clasp_zerop(gc::As<Complex_sp>(nb)->imaginary()) && basic_equalp(na, gc::As<Complex_sp>(nb)->real()));
+    return (clasp_zerop(nb->imagpart_()) && basic_equalp(na, nb->realpart_()));
   case_Complex_v_Complex:
-    return (basic_equalp(gc::As<Complex_sp>(na)->real(), gc::As<Complex_sp>(nb)->real()) &&
-            basic_equalp(gc::As<Complex_sp>(na)->imaginary(), gc::As<Complex_sp>(nb)->imaginary()));
+    return (basic_equalp(na->realpart_(), nb->realpart_()) && basic_equalp(na->imagpart_(), nb->imagpart_()));
   default:
     not_comparable_error(na, nb);
   };
@@ -2347,8 +2251,8 @@ static Number_sp expt_zero(Number_sp x, Number_sp y) {
     return LongFloat_O::create(1.0);
 #endif
   case NumberType::Complex:
-    z = expt_zero((tx == NumberType::Complex) ? gc::As<Number_sp>(gc::As<Complex_sp>(x)->real()) : x,
-                  (ty == NumberType::Complex) ? gc::As<Number_sp>(gc::As<Complex_sp>(y)->real()) : y);
+    z = expt_zero((tx == NumberType::Complex) ? gc::As<Number_sp>(x->realpart_()) : x,
+                  (ty == NumberType::Complex) ? gc::As<Number_sp>(y->realpart_()) : y);
     return clasp_make_complex(gc::As<Real_sp>(z), clasp_make_fixnum(0));
   default:
     UNREACHABLE();
@@ -2365,7 +2269,7 @@ Number_sp clasp_expt(Number_sp x, Number_sp y) {
   tx = clasp_t_of(x);
   if (clasp_zerop(x)) {
     z = clasp_times(x, y);
-    if (!clasp_plusp((ty == NumberType::Complex) ? gc::As<Complex_sp>(y)->real() : gc::As<Real_sp>(y)))
+    if (!clasp_plusp((ty == NumberType::Complex) ? y->realpart_() : gc::As<Real_sp>(y)))
       z = clasp_divide(clasp_make_fixnum(1), z);
   } else if (ty != NumberType::Fixnum && ty != NumberType::Bignum) {
     // Use the general definition, a^b = exp(b log(a))
@@ -2596,7 +2500,7 @@ Number_sp LongFloat_O::log1_() const {
 }
 #endif
 
-Number_sp Complex_O::log1_() const { return clasp_log1_complex_inner(this->real(), this->imaginary()); }
+Number_sp Complex_O::log1_() const { return clasp_log1_complex_inner(this->realpart_(), this->imagpart_()); }
 
 Number_sp Number_O::log1p_() const { return clasp_log1_complex_inner(clasp_one_plus(this->asSmartPtr()), clasp_make_fixnum(0)); }
 
@@ -2653,7 +2557,7 @@ Number_sp LongFloat_O::log1p() const {
 
 Number_sp clasp_log2(Number_sp x, Number_sp y) { return clasp_divide(clasp_log1(y), clasp_log1(x)); }
 
-Number_sp Complex_O::log1p_() const { return clasp_log1_complex_inner(clasp_one_plus(this->real()), this->imaginary()); }
+Number_sp Complex_O::log1p_() const { return clasp_log1_complex_inner(clasp_one_plus(this->realpart_()), this->imagpart_()); }
 
 CL_LAMBDA(number &optional base);
 CL_DECLARE();
@@ -2899,5 +2803,11 @@ DOCGROUP(clasp);
 CL_DEFUN Number_sp cl__rationalize(Real_sp num) { return cl__rational(num); };
 
 Integer_sp clasp_make_integer(size_t s) { return Integer_O::create((uint64_t)s); }
+
+Real_sp Integer_O::imagpart_() const { return make_number(0); }
+
+Number_sp Number_O::numerator_() const { return asSmartPtr(); }
+
+Number_sp Number_O::denominator_() const { return make_number(1); }
 
 }; // namespace core
