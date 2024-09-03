@@ -927,11 +927,11 @@ CL_DEFUN inline Number_sp clasp_signum(Number_sp num) {
     return make_number(-1);
   } else if (num.single_floatp()) {
     float fl = num.unsafe_single_float();
-    if (fl == 0.0)
-      return make_number(0.0);
-    if (fl < 0.0)
-      return make_number(-1.0);
-    return make_number(1.0);
+    if (fl == 0.0f)
+      return make_number(0.0f);
+    if (fl < 0.0f)
+      return make_number(-1.0f);
+    return make_number(1.0f);
   }
   return num->signum_();
 }

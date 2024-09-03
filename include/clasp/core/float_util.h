@@ -160,6 +160,20 @@ template <typename Float> struct float_convert {
 
     return from_bits(b);
   };
+
+  template <std::integral Integral> static Float from_integral(Integral i) {
+    quadruple q = {.category = category::finite, .sign = (i < 0) ? -1 : 1};
+    i = std::abs(i);
+    int32_t shift = std::bit_width(i) - std::bit_width(std::numeric_limits<uint_t>::max);
+    if (shift > 0) {
+      q.significand = i >> shift;
+      q.exponent = shift;
+    } else {
+      q.significand = i;
+    }
+
+    return from_quadruple(q);
+  }
 };
 
 } // namespace core
