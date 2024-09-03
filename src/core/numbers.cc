@@ -1894,7 +1894,7 @@ Number_sp LongFloat_O::sqrt_() const { return _sqrt(_Value); }
 
 Number_sp Complex_O::sqrt_() const { return cl__expt(this->asSmartPtr(), _lisp->plusHalf()); }
 
-Number_sp Bignum_O::sqrt_() const { return _sqrt(cast<double>()); }
+Number_sp Bignum_O::sqrt_() const { return _sqrt(cast<float>()); }
 
 Number_sp Bignum_O::reciprocal_() const {
   if (this->minusp_())
