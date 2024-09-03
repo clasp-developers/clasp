@@ -256,7 +256,7 @@
          ;; - Bike, who's spent a solid two days staring at IR incomprehendingly
          (primitive         "_setjmp" :i32 (list :jmp-buf-tag*) :returns-twice t)
          (primitive-unwinds "_longjmp" :void (list :jmp-buf-tag* :i32) :does-not-return t)
-         ;;         (primitive-unwinds "cc_throw" :void (list :t*) :does-not-return t)
+         (primitive-unwinds "cc_throw" :void (list :t*) :does-not-return t)
          (primitive-unwinds "cc_createAndPushBlockDynenv" :t* (list :i8* :i8* :jmp-buf-tag*))
          (primitive-unwinds "cc_createAndPushTagbodyDynenv" :t* (list :i8* :i8* :jmp-buf-tag*))
          (primitive         "cc_initializeAndPushCleanupDynenv" :t* (list :i8* :i8* :jmp-buf-tag*))

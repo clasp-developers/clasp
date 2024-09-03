@@ -915,6 +915,11 @@ void* cc_dynenv_frame(T_O* dynenv) {
   sjlj_unwind(gc::As<LexDynEnv_sp>(tde), index);
 }
 
+[[noreturn]] void cc_throw(T_O* tagg) {
+  T_sp tag((gctools::Tagged)tagg);
+  sjlj_throw(tag);
+}
+
 T_O* cc_get_unwind_dest() {
   NO_UNWIND_BEGIN();
   return my_thread->_UnwindDest.raw_();

@@ -70,9 +70,9 @@
                           "comp::LoadTimeValueInfo_O" "core::SimpleMDArray_double_O"
                           "chem::ScoringFunction_O" "core::Complex_O"
                           "chem::ConformationCollectionEntry_O" "core::TagbodyDynEnv_O"
-                          "geom::OMatrix_O" "llvmo::ValueAsMetadata_O" "core::BytecodeAstExit_O"
-                          "chem::EnergyDihedral" "llvmo::ConstantExpr_O" "core::VariableCell_O"
-                          "llvmo::ConstantPointerNull_O" "llvmo::VectorType_O" "chem::FFStretch_O"
+                          "geom::OMatrix_O" "llvmo::ValueAsMetadata_O" "chem::EnergyDihedral"
+                          "llvmo::ConstantPointerNull_O" "llvmo::ConstantExpr_O"
+                          "core::VariableCell_O" "llvmo::VectorType_O" "chem::FFStretch_O"
                           "chem::IterateRestraints_O" "chem::FFNonbondDb_O" "llvmo::StructType_O"
                           "chem::EnergyNonbond_O" "core::ComplexVector_int16_t_O"
                           "chem::EnergySketchNonbond_O" "core::GFBytecodeSimpleFun_O"
@@ -5734,17 +5734,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "core::BytecodeAstDecls_O" :layout-offset-field-names ("_decls")}
-{class-kind :stamp-name "STAMPWTAG_core__BytecodeAstExit_O" :stamp-key "core::BytecodeAstExit_O"
-            :parent-class "core::BytecodeDebugInfo_O" :lisp-class-base "core::BytecodeDebugInfo_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BytecodeAstExit_O" :layout-offset-field-names ("_start")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BytecodeAstExit_O" :layout-offset-field-names ("_end")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "core::BytecodeAstExit_O" :layout-offset-field-names ("_receiving")}
 {class-kind :stamp-name "STAMPWTAG_clasp_ffi__ForeignTypeSpec_O"
             :stamp-key "clasp_ffi::ForeignTypeSpec_O" :parent-class "core::General_O"
             :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3

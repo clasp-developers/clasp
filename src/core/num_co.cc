@@ -942,82 +942,45 @@ CL_DEFUN Integer_sp cl__float_precision(Float_sp x) {
   return clasp_make_fixnum(precision);
 }
 
+template <typename Float> inline Real_mv integer_decode_float(Float f) {
+  struct float_convert<Float>::quadruple q;
+
+  // IEEE-754-2019 7.2.j specifies that NaN or infinity should result in FE_INVALID for integer producing operations.
+  switch (std::fpclassify(f)) {
+  case FP_INFINITE:
+    feraiseexcept(FE_INVALID);
+    q = float_convert<Float>::to_quadruple(std::signbit(f) ? std::numeric_limits<Float>::min() : std::numeric_limits<Float>::max());
+    break;
+  case FP_NAN:
+    feraiseexcept(FE_INVALID);
+    q = float_convert<Float>::to_quadruple(std::signbit(f) ? Float{-0.0} : Float{0.0});
+    break;
+  default:
+    q = float_convert<Float>::to_quadruple(f);
+    break;
+  }
+
+  return Values(Integer_O::create(q.significand), clasp_make_fixnum(q.exponent), clasp_make_fixnum(q.sign));
+}
+
 CL_LAMBDA(x);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(integer_decode_float)dx");
 DOCGROUP(clasp);
 CL_DEFUN Real_mv cl__integer_decode_float(Float_sp x) {
-  int e = 0, s = 1;
-  Real_sp rx(nil<Real_O>());
   switch (clasp_t_of(x)) {
 #ifdef CLASP_LONG_FLOAT
-  case number_LongFloat: {
-    LongFloat d = clasp_long_float(x);
-    if (std::isfinite(d)) {
-      if (std::signbit(d)) {
-        s = -1;
-        d = -d;
-      }
-      if (d == 0.0) {
-        e = 0;
-        rx = clasp_make_fixnum(0);
-      } else {
-        d = frexpl(d, &e);
-        rx = _clasp_long_double_to_integer(ldexpl(d, LDBL_MANT_DIG));
-        e -= LDBL_MANT_DIG;
-      }
-    } else {
-      SIMPLE_ERROR("Can't decode NaN or infinity {}", _rep_(x));
-    }
-    break;
-  }
+  case number_LongFloat:
+    return integer_decode_float(gc::As_unsafe<LongFloat_sp>(x)->get());
 #endif
-  case number_DoubleFloat: {
-    double d = gc::As_unsafe<DoubleFloat_sp>(x)->get();
-    if (std::isfinite(d)) {
-      if (std::signbit(d)) {
-        s = -1;
-        d = -d;
-      }
-      if (d == 0.0) {
-        e = 0;
-        rx = clasp_make_fixnum(0);
-      } else {
-        d = frexp(d, &e);
-        rx = _clasp_double_to_integer(ldexp(d, DBL_MANT_DIG));
-        e -= DBL_MANT_DIG;
-      }
-    } else {
-      SIMPLE_ERROR("Can't decode NaN or infinity {}", _rep_(x));
-    }
-    break;
-  }
-  case number_SingleFloat: {
-    float d = x.unsafe_single_float();
-    if (std::isfinite(d)) {
-      if (std::signbit(d)) {
-        s = -1;
-        d = -d;
-      }
-      if (d == 0.0) {
-        e = 0;
-        rx = clasp_make_fixnum(0);
-      } else {
-        d = frexpf(d, &e);
-        rx = _clasp_double_to_integer(ldexp(d, FLT_MANT_DIG));
-        e -= FLT_MANT_DIG;
-      }
-    } else {
-      SIMPLE_ERROR("Can't decode NaN or infinity {}", _rep_(x));
-    }
-    break;
-  }
+  case number_DoubleFloat:
+    return integer_decode_float(gc::As_unsafe<DoubleFloat_sp>(x)->get());
+  case number_SingleFloat:
+    return integer_decode_float(x.unsafe_single_float());
   default:
     ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_integer_decode_float, 1, x, cl::_sym_float);
   }
-  ASSERT(rx.notnilp());
-  return Values(rx, clasp_make_fixnum(e), clasp_make_fixnum(s));
 }
 
 CL_LAMBDA(r &optional (i 0));

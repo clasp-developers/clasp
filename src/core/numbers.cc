@@ -1713,41 +1713,27 @@ static Integer_sp mantissa_and_exponent_from_ratio(Integer_sp num, Integer_sp de
   return quotient;
 }
 
-float Ratio_O::as_float_() const {
-  gc::Fixnum exponent;
-  Integer_sp mantissa =
-      mantissa_and_exponent_from_ratio(this->_numerator, this->_denominator, std::numeric_limits<float>::digits, &exponent);
-  return std::ldexp(mantissa.fixnump() ? static_cast<float>(mantissa.unsafe_fixnum()) : mantissa->as_float_(), exponent);
+template <typename Float> inline Float ratio_to_float(Integer_sp num, Integer_sp den) {
+  struct float_convert<Float>::quadruple q = {
+    .sign = 1
+  };
+
+  if (clasp_minusp(num)) {
+    q.sign = -1;
+    num = gc::As_unsafe<Integer_sp>(clasp_negate(num));
+  }
+
+  q.exponent = clasp_integer_length(num) - clasp_integer_length(den) - float_convert<Float>::significand_width - 1;
+  q.significand = clasp_to_integral<typename float_convert<Float>::uint_t>(clasp_integer_divide(clasp_ash(num, -q.exponent), den));
+
+  return float_convert<Float>::from_quadruple(q);
 }
 
-double Ratio_O::as_double_() const {
-  gc::Fixnum exponent;
-  Integer_sp mantissa =
-      mantissa_and_exponent_from_ratio(this->_numerator, this->_denominator, std::numeric_limits<double>::digits, &exponent);
-  return std::ldexp(mantissa.fixnump() ? static_cast<double>(mantissa.unsafe_fixnum()) : mantissa->as_double_(), exponent);
+float Ratio_O::as_float_() const { return ratio_to_float<float>(this->_numerator, this->_denominator); }
 
-  /*if ((this->_numerator).fixnump() && (this->_denominator).fixnump()) {
-    double d = clasp_to_double(this->_numerator);
-    d /= clasp_to_double(this->_denominator);
-    return d;
-  } else {
-    gc::Fixnum exponent;
-    Integer_sp mantissa = mantissa_and_exponent_from_ratio(this->_numerator, this->_denominator, DBL_MANT_DIG, &exponent);
-    double output;
-    if (mantissa.fixnump())
-      output = mantissa.unsafe_fixnum();
-    else
-      output = mantissa->as_double_();
-    return std::ldexp(output, exponent);
-  }*/
-}
+double Ratio_O::as_double_() const { return ratio_to_float<double>(this->_numerator, this->_denominator); }
 
-LongFloat Ratio_O::as_long_float_() const {
-  gc::Fixnum exponent;
-  Integer_sp mantissa =
-      mantissa_and_exponent_from_ratio(this->_numerator, this->_denominator, std::numeric_limits<LongFloat>::digits, &exponent);
-  return std::ldexp(mantissa.fixnump() ? static_cast<LongFloat>(mantissa.unsafe_fixnum()) : mantissa->as_long_float_(), exponent);
-}
+LongFloat Ratio_O::as_long_float_() const { return ratio_to_float<LongFloat>(this->_numerator, this->_denominator); }
 
 string Ratio_O::__repr__() const {
   stringstream ss;
@@ -2462,109 +2448,99 @@ CL_DEFUN Number_sp cl__expt(Number_sp x, Number_sp y) { return clasp_expt(x, y);
     See file '../Copyright' for full details.
 */
 
-static double clasp_atan2_double(double y, double x) {
-  if (std::signbit(x)) {
-    if (std::signbit(y)) {
-      return -CLASP_PI_D + atan(-y / -x);
-    } else if (y == 0) {
-      return CLASP_PI_D;
-    } else {
-      return CLASP_PI_D - atan(y / -x);
-    }
-  } else if (x == 0) {
-    if (std::signbit(y)) {
-      return -CLASP_PI2_D;
-    } else if (y == 0) {
-      return x / y; /* Produces a NaN */
-    } else {
-      return CLASP_PI2_D;
-    }
-  } else {
-    if (std::signbit(y)) {
-      return -atan(-y / x);
-    } else if (y == 0) {
-      return (double)0;
-    } else {
-      return atan(y / x);
-    }
-  }
-}
-
-#ifdef CLASP_LONG_FLOAT
-static LongFloat clasp_atan2_LongFloat(LongFloat y, LongFloat x) {
-  if (signbit(x)) {
-    if (signbit(y)) {
-      return -CLASP_PI_L + atanl(-y / -x);
-    } else if (y == 0) {
-      return CLASP_PI_L;
-    } else {
-      return CLASP_PI_L - atanl(y / -x);
-    }
-  } else if (x == 0) {
-    if (signbit(y)) {
-      return -CLASP_PI2_L;
-    } else if (y == 0) {
-      return x / y; /* Produces a NaN */
-    } else {
-      return CLASP_PI2_L;
-    }
-  } else {
-    if (signbit(y)) {
-      return -atanl(-y / x);
-    } else if (y == 0) {
-      return (LongFloat)0;
-    } else {
-      return atanl(y / x);
-    }
-  }
-}
-#endif
-
 Number_sp clasp_atan2(Number_sp y, Number_sp x) {
-  Number_sp output;
-  {
-#ifdef CLASP_LONG_FLOAT
-    NumberType tx = clasp_t_of(x);
-    NumberType ty = clasp_t_of(y);
-    if (tx < ty)
-      tx = ty;
-    if (tx == number_LongFloat) {
-      LongFloat d = clasp_atan2_LongFloat(y->as_long_float(), x->as_long_float());
-      output = clasp_make_long_float(d);
-    } else {
-      double dx = x->as_double();
-      double dy = y->as_double();
-      double dz = clasp_atan2_double(dy, dx);
-      if (tx == number_DoubleFloat) {
-        output = clasp_make_double_float(dz);
-      } else {
-        output = clasp_make_single_float(dz);
-      }
-    }
+  MATH_DISPATCH_BEGIN(x, y) {
+  case_Bignum_v_ShortFloat:
+  case_Fixnum_v_ShortFloat:
+  case_Ratio_v_ShortFloat:
+  case_ShortFloat_v_Bignum:
+  case_ShortFloat_v_Fixnum:
+  case_ShortFloat_v_Ratio:
+  case_ShortFloat_v_ShortFloat:
+  case_Bignum_v_Bignum:
+  case_Bignum_v_Fixnum:
+  case_Bignum_v_Ratio:
+  case_Bignum_v_SingleFloat:
+  case_Fixnum_v_Bignum:
+  case_Fixnum_v_Fixnum:
+  case_Fixnum_v_Ratio:
+  case_Fixnum_v_SingleFloat:
+  case_Ratio_v_Bignum:
+  case_Ratio_v_Fixnum:
+  case_Ratio_v_Ratio:
+  case_Ratio_v_SingleFloat:
+  case_ShortFloat_v_SingleFloat:
+  case_SingleFloat_v_Bignum:
+  case_SingleFloat_v_Fixnum:
+  case_SingleFloat_v_Ratio:
+  case_SingleFloat_v_ShortFloat:
+  case_SingleFloat_v_SingleFloat:
+#ifdef _TARGET_OS_DARWIN
+    return clasp_make_single_float(atan2(clasp_to_double(y), clasp_to_double(x)));
 #else
-    double dy = clasp_to_double(y);
-    double dx = clasp_to_double(x);
-    double dz = clasp_atan2_double(dy, dx);
-    if (clasp_t_of(x) == number_DoubleFloat || clasp_t_of(y) == number_DoubleFloat) {
-      output = clasp_make_double_float(dz);
-    } else {
-      output = clasp_make_single_float(dz);
-    }
+    return clasp_make_single_float(atan2f(clasp_to_float(y), clasp_to_float(x)));
 #endif
+  case_Bignum_v_LongFloat:
+  case_DoubleFloat_v_LongFloat:
+  case_Fixnum_v_LongFloat:
+  case_LongFloat_v_Bignum:
+  case_LongFloat_v_DoubleFloat:
+  case_LongFloat_v_Fixnum:
+  case_LongFloat_v_LongFloat:
+  case_LongFloat_v_Ratio:
+  case_LongFloat_v_ShortFloat:
+  case_LongFloat_v_SingleFloat:
+  case_Ratio_v_LongFloat:
+  case_ShortFloat_v_LongFloat:
+  case_SingleFloat_v_LongFloat:
+#ifdef CLASP_LONG_FLOAT
+    return clasp_make_long_float(atan2l(clasp_to_long_float(y), clasp_to_long_float(x)));
+#endif
+  case_Bignum_v_DoubleFloat:
+  case_DoubleFloat_v_Bignum:
+  case_DoubleFloat_v_DoubleFloat:
+  case_DoubleFloat_v_Fixnum:
+  case_DoubleFloat_v_Ratio:
+  case_DoubleFloat_v_ShortFloat:
+  case_DoubleFloat_v_SingleFloat:
+  case_Fixnum_v_DoubleFloat:
+  case_Ratio_v_DoubleFloat:
+  case_ShortFloat_v_DoubleFloat:
+  case_SingleFloat_v_DoubleFloat:
+    return clasp_make_double_float(atan2(clasp_to_double(y), clasp_to_double(x)));
+  default:
+    TYPE_ERROR(gctools::IsA<Real_sp>(y) ? x : y, cl::_sym_Real_O);
   }
-  return output;
+  MATH_DISPATCH_END();
 }
 
 Number_sp clasp_atan1(Number_sp y) {
-  if (clasp_t_of(y) == number_Complex) {
+  switch (clasp_t_of(y)) {
+  case number_ShortFloat:
+  case number_Bignum:
+  case number_Fixnum:
+  case number_Ratio:
+  case number_SingleFloat:
+#ifdef _TARGET_OS_DARWIN
+    return clasp_make_single_float(atan(clasp_to_double(y)));
+#else
+    return clasp_make_single_float(atanf(clasp_to_float(y)));
+#endif
+  case number_LongFloat:
+#ifdef CLASP_LONG_FLOAT
+    return clasp_make_long_float(atanl(clasp_to_long_float(y)));
+#endif
+  case number_DoubleFloat:
+    return clasp_make_double_float(atan(clasp_to_double(y)));
+  case number_Complex: {
+    Number_sp z = clasp_times(_lisp->imaginaryUnit(), y);
 #if 0 /* ANSI states it should be this first part */
-    Number_sp z = clasp_times(cl_core.imag_unit, y);
     z = clasp_plus(clasp_log1(clasp_one_plus(z)),
                    clasp_log1(clasp_minus(clasp_make_fixnum(1), z)));
     z = clasp_divide(z, clasp_times(clasp_make_fixnum(2),
                                     cl_core.imag_unit));
 #else
-    Number_sp z1, z = clasp_times(_lisp->imaginaryUnit(), y);
+    Number_sp z1;
     z = clasp_one_plus(z);
     z1 = clasp_times(y, y);
     z1 = clasp_one_plus(z1);
@@ -2574,8 +2550,9 @@ Number_sp clasp_atan1(Number_sp y) {
     z = clasp_times(_lisp->imaginaryUnitNegative(), z);
 #endif /* ANSI */
     return z;
-  } else {
-    return clasp_atan2(y, clasp_make_fixnum(1));
+  }
+  default:
+    TYPE_ERROR(y, cl::_sym_Number_O);
   }
 }
 
@@ -2585,12 +2562,13 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(atan)dx");
 DOCGROUP(clasp);
 CL_DEFUN Number_sp cl__atan(Number_sp x, T_sp y) {
-  /* INV: type check in clasp_atan() & clasp_atan2() */
-  /* FIXME clasp_atan() and clasp_atan2() produce generic errors
-           without recovery and function information. */
   if (y.nilp())
     return clasp_atan1(x);
-  return clasp_atan2(x, gc::As<Number_sp>(y));
+
+  if (gctools::IsA<Number_sp>(y))
+    return clasp_atan2(x, y.as_unsafe<Number_O>());
+
+  TYPE_ERROR(y, cl::_sym_Number_O);
 }
 
 /* ----------------------------------------------------------------------

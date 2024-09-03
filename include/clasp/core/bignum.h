@@ -86,6 +86,12 @@ public: // Functions here
   static Bignum_sp create(int64_t v) { return create_from_limbs((v < 0) ? -1 : 1, std::abs(v), true); }
 #endif
   static Bignum_sp create(uint64_t v) { return create_from_limbs(1, v, true); }
+  static Bignum_sp create(__uint128_t v) {
+    Bignum_sp b = create_from_limbs(2);
+    b->_limbs[0] = static_cast<mp_limb_t>(v);
+    b->_limbs[1] = static_cast<mp_limb_t>(v >> 64);
+    return b;
+  }
   static Bignum_sp create(double d) {
     // KLUDGE: there is no mpn function for converting from a double.
     // However, this conses, which we shouldn't need to do.
@@ -133,7 +139,26 @@ public: // Functions here
   virtual bool evenp_() const override { return !((this->limbs())[0] & 1); }
   virtual bool oddp_() const override { return (this->limbs())[0] & 1; }
 
-  template <std::integral integral> integral to_integral() const {
+  template <std::unsigned_integral integral> integral to_integral() const {
+    constexpr auto limb_width = sizeof(mp_limb_t) * 8;
+    constexpr auto integral_width = std::bit_width(std::numeric_limits<integral>::max());
+    constexpr auto max_limb_count = 1 + ((sizeof(integral) - 1) / sizeof(mp_limb_t));
+
+    const mp_limb_t* limbs = this->limbs();
+    mp_size_t len = this->length();
+
+    if ((len > -1) && ((limb_width * (len - 1) + std::bit_width(limbs[len - 1])) <= integral_width)) {
+      integral value = 0;
+      for (mp_size_t i = 0; i < length(); i++)
+        value |= (integral)limbs[i] << (i * limb_width);
+      return value;
+    }
+
+    TYPE_ERROR(this->asSmartPtr(), Cons_O::createList(cl::_sym_Integer_O, Integer_O::create(std::numeric_limits<integral>::min()),
+                                                      Integer_O::create(std::numeric_limits<integral>::max())));
+  }
+
+  template <std::signed_integral integral> integral to_integral() const {
     integral mn = std::numeric_limits<integral>::min();
     integral mx = std::numeric_limits<integral>::max();
     // First, if integral can only hold fixnums, conversion will always fail.

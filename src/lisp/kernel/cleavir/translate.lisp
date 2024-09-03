@@ -538,6 +538,12 @@
            (list cont (%size_t destination-id))))))
   (cmp:irc-unreachable))
 
+(defmethod translate-terminator ((instruction bir:throwi) abi next)
+  (declare (ignore abi next))
+  (%intrinsic-invoke-if-landing-pad-or-call
+   "cc_throw" (list (in (first (bir:inputs instruction)))))
+  (cmp:irc-unreachable))
+
 (defmethod translate-terminator ((instruction bir:unwind-protect) abi next)
   (declare (ignore abi))
   (let* ((cleanup (cmp:irc-basic-block-create "unwind-protect-cleanup"))
@@ -2179,6 +2185,7 @@ COMPILE-FILE will use the default *clasp-env*."
   (bir-transformations:module-eliminate-come-froms module)
   (maybe-debug-transformation module :eliminate-come-froms)
   (bir-transformations:find-module-local-calls module)
+  (bir-transformations:interpolate-module-calls module)
   (maybe-debug-transformation module :local-calls)
   (bir-transformations:module-optimize-variables module)
   (maybe-debug-transformation module :optimize-vars)
