@@ -687,6 +687,8 @@ public:
   virtual Number_sp negate_() const override {
     return Ratio_O::create_primitive(gc::As<Integer_sp>(clasp_negate(this->_numerator)), gc::As<Integer_sp>(this->_denominator));
   };
+  virtual Real_sp imagpart_() const override;
+
   virtual Number_sp numerator_() const override { return this->_numerator; };
   virtual Number_sp denominator_() const override { return this->_denominator; };
 

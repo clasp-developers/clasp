@@ -2810,4 +2810,6 @@ Number_sp Number_O::numerator_() const { return asSmartPtr(); }
 
 Number_sp Number_O::denominator_() const { return make_number(1); }
 
+Real_sp Ratio_O::imagpart_() const { return make_number(0); }
+
 }; // namespace core
