@@ -1768,7 +1768,7 @@ Number_sp Ratio_O::signum_() const {
   return clasp_signum(this->_numerator);
 }
 
-Number_sp Ratio_O::sqrt_() const { return _sqrt(this->as_float_()); }
+Number_sp Ratio_O::sqrt_() const { return _sqrt<double, float>(this->as_double_()); }
 
 Number_sp Ratio_O::reciprocal_() const {
   Integer_sp num = this->_numerator, denom = this->_denominator;
@@ -1894,7 +1894,7 @@ Number_sp LongFloat_O::sqrt_() const { return _sqrt(_Value); }
 
 Number_sp Complex_O::sqrt_() const { return cl__expt(this->asSmartPtr(), _lisp->plusHalf()); }
 
-Number_sp Bignum_O::sqrt_() const { return _sqrt(cast<float>()); }
+Number_sp Bignum_O::sqrt_() const { return _sqrt<double, float>(cast<double>()); }
 
 Number_sp Bignum_O::reciprocal_() const {
   if (this->minusp_())

@@ -706,11 +706,11 @@ inline Number_sp clasp_divide(Number_sp na, Number_sp nb) { return contagion_div
 
 inline int clasp_number_compare(Number_sp x, Number_sp y) { return basic_compare(x, y); };
 
-template<typename Float> inline Number_sp _sqrt(Float f) {
+template<typename Float1, typename Float2 = Float1> inline Number_sp _sqrt(Float1 f) {
   if (std::signbit(f))
-    return Complex_O::create(make_number(Float{0.0}), make_number(std::sqrt(-f)));
+    return Complex_O::create(make_number(Float2{0.0}), make_number(static_cast<Float2>(std::sqrt(-f))));
 
-  return make_number(std::sqrt(f));
+  return make_number(static_cast<Float2>(std::sqrt(f)));
 }
 
 inline Number_sp clasp_log1(Number_sp x) {
