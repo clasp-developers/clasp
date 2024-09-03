@@ -225,9 +225,9 @@ public:
         OnFinalized(llvm::jitlink::InProcessMemoryManager::FinalizedAlloc(ea));
       }
       virtual void abandon(OnAbandonedFunction OnAbandoned) {
-        printf("%s:%d:%s I have no idea what to do here\n", __FILE__, __LINE__, __FUNCTION__);
+        printf("%s:%d:%s I have no idea what to do here - calling OnAbandoned and continuing\n", __FILE__, __LINE__, __FUNCTION__);
+        OnAbandoned(std::move(llvm::Error::success()));
       }
-
     private:
       Error applyProtections() {
         JITMemoryReadExecute(BL);
