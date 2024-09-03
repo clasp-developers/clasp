@@ -125,7 +125,7 @@
  (:name :eclector
   :repository "https://github.com/s-expressionists/Eclector.git"
   :directory "src/lisp/kernel/contrib/Eclector/"
-  :commit "0.9.0")
+  :commit "master")
  (:name :esrap ; Needed both by the host and eclasp
   :repository "https://github.com/scymtym/esrap.git"
   :directory "src/lisp/kernel/contrib/esrap/"
