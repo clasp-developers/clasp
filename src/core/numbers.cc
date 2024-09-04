@@ -197,7 +197,7 @@ CL_DEFUN Real_sp cl__max(Real_sp max, List_sp nums) {
 CL_NAME("TWO-ARG-+-FIXNUM-FIXNUM");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN Number_sp two_arg__PLUS_FF(Fixnum fa, Fixnum fb) { return Integer_O::create(static_cast<gc::Fixnum>(fa + fb)); }
+CL_DEFUN Number_sp two_arg__PLUS_FF(Fixnum fa, Fixnum fb) { return make_number(fa + fb); }
 
 CL_NAME("TWO-ARG-+");
 CL_UNWIND_COOP(true);
@@ -205,7 +205,7 @@ DOCGROUP(clasp);
 CL_DEFUN Number_sp contagion_add(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum:
-    return two_arg__PLUS_FF(na.unsafe_fixnum(), nb.unsafe_fixnum());
+    return make_number(na.unsafe_fixnum() + nb.unsafe_fixnum());
   case_Fixnum_v_Bignum:
     return core__next_fadd(gc::As_unsafe<Bignum_sp>(nb), na.unsafe_fixnum());
   case_Fixnum_v_Ratio:
