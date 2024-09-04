@@ -1117,7 +1117,7 @@ CL_DEFUN Number_sp cl__file_write_date(T_sp pathspec) {
   String_sp filename = coerce_to_posix_filename(pathname);
   struct stat filestatus;
   if (safe_stat((char*)filename->get_path_string().c_str(), &filestatus) >= 0)
-    return make_number(filestatus.st_mtime) * make_number(24 * 60 * 60 * 17 + 365 * 70);
+    return make_number(filestatus.st_mtime) * make_number(24 * 60 * 60 * (17 + 365 * 70));
   return nil<Number_O>();
 }
 

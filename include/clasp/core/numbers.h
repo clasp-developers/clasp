@@ -522,7 +522,7 @@ public:
   bool isinf_() const override { return std::isinf(this->_Value); };
 
 public:
-  Real_sp imagpart_() const override { return create(0.0); }
+  Real_sp imagpart_() const override { return create(std::copysign(0.0, _Value)); }
 
   virtual bool eql_(T_sp obj) const override;
 
@@ -1260,7 +1260,7 @@ inline Real_sp Number_O::imagpart(const Number_sp number) {
   if (number.fixnump())
     return make_number(0);
   if (number.single_floatp())
-    return make_number(0.0f);
+    return make_number(std::copysign(0.0f, number.unsafe_single_float()));
   return number->imagpart_();
 }
 
