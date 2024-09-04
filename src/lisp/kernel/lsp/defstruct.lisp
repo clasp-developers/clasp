@@ -35,24 +35,34 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Environment access
+;;; Environment access and structure descriptions
+;;; A structure description is a list
+;;; (TYPE CONSTRUCTOR SLOT*)
+;;; TYPE is STRUCTURE-OBJECT, VECTOR, or LIST.
+;;; CONSTRUCTOR is a function name or NIL for no constructor.
+;;; Slot descriptions are as described down this file.
 ;;;
 
+(defun make-structure-description (type constructor slotds)
+  (list* type constructor slotds))
+(defun structure-description-type (description) (first description))
+(defun structure-description-constructor (description) (second description))
+(defun structure-description-slot-descriptions (description)
+  (cddr description))
+
 ;;; FIXME: these should take environments
+(defun structure-description (name)
+  (get-sysprop name 'structure-description))
+(defun (setf structure-description) (description name)
+  (setf (get-sysprop name 'structure-description) description))
 (defun structure-type (name)
-  (get-sysprop name 'structure-type))
-(defun (setf structure-type) (type name)
-  (setf (get-sysprop name 'structure-type) type))
+  (structure-description-type (structure-description name)))
 (defun structure-slot-descriptions (name)
-  (get-sysprop name 'structure-slot-descriptions))
-(defun (setf structure-slot-descriptions) (descriptions name)
-  (setf (get-sysprop name 'structure-slot-descriptions) descriptions))
+  (structure-description-slot-descriptions (structure-description name)))
 (defun structure-constructor (name)
-  (get-sysprop name 'structure-constructor))
-(defun (setf structure-constructor) (constructor name)
-  (setf (get-sysprop name 'structure-constructor) constructor))
+  (structure-description-constructor (structure-description name)))
 (defun names-structure-p (name)
-  (structure-type name))
+  (not (not (structure-description name))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -60,7 +70,8 @@
 
 ;;; Used by #S reader
 (defun make-structure (name initargs)
-  (unless (names-structure-p name) (error "~s is not a structure class." name))
+  (unless (names-structure-p name)
+    (error "~s is not a structure class." name))
   (let ((constructor (structure-constructor name)))
     (if constructor
         (apply constructor initargs)
@@ -586,8 +597,11 @@
                 type name)))
     `(progn
        (eval-when (:compile-toplevel :load-toplevel :execute)
-         (setf (structure-type ',name) ',type-base
-               (structure-slot-descriptions ',name) ',slot-descriptions))
+         (setf (structure-description ',name)
+               ',(make-structure-description
+                  type-base
+                  (second (assoc :kw-constructor options))
+                  slot-descriptions)))
        ,@(when (eq type-base 'structure-object)
            `((defclass ,name ,(if include (list include) nil)
                (,@(mapcar #'defstruct-slotd->defclass-slotd slot-descriptions))
@@ -625,9 +639,6 @@
        ,@(mapcar (defstruct-option-expander name type-base element-type
                    included-size slot-descriptions)
                  options)
-       ,@(let ((kwcon (second (assoc :kw-constructor options))))
-           (when kwcon
-             `((setf (structure-constructor ',name) ',kwcon))))
        ',name)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
