@@ -316,3 +316,8 @@
           (declare (ignorable #'macro-function-shadowing.f))
           (e (macro-function-shadowing.f))))
       ((macro-function-shadowing.f)))
+
+;;; This returned junk due to my VM mistake and caused me no end of grief.
+(test single-value-catch
+      (let ((c (catch 'foo 4))) c)
+      (4))
