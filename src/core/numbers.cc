@@ -2556,13 +2556,13 @@ Number_sp clasp_atan1(Number_sp y) {
   }
 }
 
-CL_LAMBDA(x &optional y);
+CL_LAMBDA(x &optional (y nil yp));
 CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(atan)dx");
 DOCGROUP(clasp);
-CL_DEFUN Number_sp cl__atan(Number_sp x, T_sp y) {
-  if (y.nilp())
+CL_DEFUN Number_sp cl__atan(Number_sp x, T_sp y, bool yp) {
+  if (!yp)
     return clasp_atan1(x);
 
   if (gctools::IsA<Number_sp>(y))
