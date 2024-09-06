@@ -442,7 +442,8 @@ SEQUENCEs, where K is the minimum length of the given SEQUENCEs."
                                                     :initial-value (length sequence)
                                                     :key #'length))
                              function sequence more-sequences)))
-                (if (typep result result-type)
+                (if (or (not (consp result-type))
+                        (typep result result-type))
                     result
                     (error 'type-error
                            :datum result

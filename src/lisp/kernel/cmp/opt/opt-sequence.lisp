@@ -167,20 +167,22 @@
                      ;; types we kind of just give up.
                      ;; MAKE-SEQUENCE handles any length check.
                      ;; TODO: Call SEQUENCE:MAP for user sequence types, maybe.
-                     (let ((ssyms (gensym-list sequences "SEQUENCE"))
-                           (result (gensym "RESULT")))
+                     (let* ((ssyms (gensym-list sequences "SEQUENCE"))
+                            (result (gensym "RESULT"))
+                            (result-form `(core::map-into-sequence
+                                           (make-sequence ',type
+                                                          (min ,@(loop for ssym in ssyms
+                                                                       collect `(length ,ssym))))
+                                           ,function ,@ssyms)))
                        `(let (,@(mapcar #'list ssyms sequences))
-                          (let ((,result
-                                  (core::map-into-sequence
-                                   (make-sequence ',type
-                                                  (min ,@(loop for ssym in ssyms
-                                                               collect `(length ,ssym))))
-                                   ,function ,@ssyms)))
-                            (if (typep ,result ',type)
-                                ,result
-                                (error 'type-error
-                                       :datum ,result
-                                       :expected-type ',type))))))))))
+                          ,(if (consp type)
+                               `(let ((,result ,result-form))
+                                  (if (typep ,result ',type)
+                                      ,result
+                                      (error 'type-error
+                                             :datum ,result
+                                             :expected-type ',type)))
+                               result-form))))))))
       form))
 
 ;;;
