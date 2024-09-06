@@ -435,12 +435,19 @@ SEQUENCEs, where K is the minimum length of the given SEQUENCEs."
                       (error-sequence-length result result-type l))))
                 result)
               ;; ditto note in CONCATENATE above
-              (let ((length
-                      (reduce #'min more-sequences
-                              :initial-value (length sequence)
-                              :key #'length)))
-                (apply #'map-into (make-sequence result-type length)
-                       function sequence more-sequences))))
+              (let ((result
+                      (apply #'map-into
+                             (make-sequence result-type
+                                            (reduce #'min more-sequences
+                                                    :initial-value (length sequence)
+                                                    :key #'length))
+                             function sequence more-sequences)))
+                (if (or (not (consp result-type))
+                        (typep result result-type))
+                    result
+                    (error 'type-error
+                           :datum result
+                           :expected-type result-type)))))
         (apply #'map-for-effect function sequence more-sequences))))
 
 (defun map-to-list (function &rest sequences)
