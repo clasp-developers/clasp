@@ -1281,9 +1281,9 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
 			   for value in values
 			   collect (assert-prompt place-name value)))))))
 
-(define-condition step () ())
+(define-condition step-condition () ())
 
-(define-condition clasp-debug:step-form (step)
+(define-condition clasp-debug:step-form (step-condition)
   ((%source :initarg :source :reader source))
   (:report (lambda (condition stream)
              (format stream "Evaluating form: ~s" (source condition)))))
