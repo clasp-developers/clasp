@@ -290,6 +290,7 @@
     (setf (creator index)
           (make-instance 'hash-table-creator :test test :count count))))
 
+#+(or)
 (defmethod %load-instruction ((mnemonic (eql 'setf-gethash)) stream)
   (let ((ht (read-creator stream))
         (key (read-creator stream)) (value (read-creator stream)))
@@ -731,6 +732,7 @@
   `(<- (% ,(index inst)) (make-hash-table
                           :test ',(hash-table-creator-test inst)
                           :count ,(hash-table-creator-count inst))))
+#+(or)
 (defmethod disassemble-instruction ((inst setf-gethash))
   `(setf (gethash (% ,(index (setf-gethash-key inst)))
                   (% ,(index (setf-gethash-hash-table inst))))

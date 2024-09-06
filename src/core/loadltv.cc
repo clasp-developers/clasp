@@ -35,7 +35,7 @@
 #define LTV_OP_MAKE_ARRAY 74
 #define LTV_OP_INIT_ARRAY 75
 #define LTV_OP_HASHT 76
-#define LTV_OP_SHASH 77
+#define LTV_OP_INIT_HASHT 77
 #define LTV_OP_SB64 78
 #define LTV_OP_PACKAGE 79
 #define LTV_OP_BIGNUM 80
@@ -592,11 +592,12 @@ struct loadltv {
             index);
   }
 
-  void op_shash() {
+  void op_init_hasht() {
     HashTableBase_sp ht = gc::As<HashTableBase_sp>(get_ltv(read_index()));
-    T_sp key = get_ltv(read_index());
-    T_sp val = get_ltv(read_index());
-    ht->hash_table_setf_gethash(key, val);
+    uint32_t count = read_u32();
+    for (size_t i = 0; i < count; ++i)
+      ht->hash_table_setf_gethash(get_ltv(read_index()),
+                                  get_ltv(read_index()));
   }
 
   void op_sb64() {
@@ -1068,9 +1069,9 @@ struct loadltv {
     case LTV_OP_HASHT:
       op_hasht();
       break; // make-hash-table
-    case LTV_OP_SHASH:
-      op_shash();
-      break; // (setf gethash)
+    case LTV_OP_INIT_HASHT:
+      op_init_hasht();
+      break; // initialize-hash-table
     case LTV_OP_SB64:
       op_sb64();
       break;

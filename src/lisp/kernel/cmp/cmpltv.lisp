@@ -104,11 +104,16 @@
    (%count :initarg :count :reader hash-table-creator-count
            :type (integer 0))))
 
-(defclass setf-gethash (effect)
-  ((%hash-table :initarg :hash-table :reader setf-gethash-hash-table
-                :type hash-table-creator)
-   (%key :initarg :key :reader setf-gethash-key :type creator)
-   (%value :initarg :value :reader setf-gethash-value :type creator)))
+;;; Initialize contents of a hash table. Separate instruction because
+;;; circular references are possible.
+(defclass initialize-hash-table (effect)
+  ((%table :initarg :table :reader initialized-table :type hash-table-creator)
+   ;; We have to store the count ourselves, since the hash table size may
+   ;; not be identical to the number of elements.
+   (%count :initarg :count :reader initialized-table-count
+           :type (unsigned-byte 32))
+   ;; An alist of creators for all the keys and values in the table.
+   (%alist :initarg :alist :reader alist :type list)))
 
 (defclass symbol-creator (vcreator)
   (;; Is there actually a point to trying to coalesce symbol names?
@@ -564,13 +569,17 @@
              value
              (make-instance 'hash-table-creator :prototype value
                             :test (hash-table-test value)
-                            :count (hash-table-count value)))))
-    (maphash (lambda (k v)
-               (add-instruction
-                (make-instance 'setf-gethash
-                  :hash-table ht
-                  :key (ensure-constant k) :value (ensure-constant v))))
-             value)
+                            :count (hash-table-count value))))
+        (count (hash-table-count value))
+        (alist nil))
+    (unless (zerop count) ; empty table; nothing to initialize
+      (maphash (lambda (k v)
+                 (let ((ck (ensure-constant k)) (cv (ensure-constant v)))
+                   (push (cons ck cv) alist)))
+               value)
+      (add-instruction
+       (make-instance 'initialize-hash-table
+         :table ht :count count :alist alist)))
     ht))
 
 (defmethod add-constant ((value symbol))
@@ -853,7 +862,7 @@
     (make-array 74 sind rank . dims)
     (initialize-array 75 arrayind . valueinds)
     (make-hash-table 76 sind test count)
-    (setf-gethash 77 htind keyind valueind)
+    (initialize-hash-table 77 htind keyind valueind)
     (make-sb64 78 sind sb64)
     (find-package 79 sind nameind)
     (make-bignum 80 sind size . words) ; size is signed
@@ -1178,11 +1187,13 @@
     (write-byte testcode stream)
     (write-b16 count stream)))
 
-(defmethod encode ((inst setf-gethash) stream)
-  (write-mnemonic 'setf-gethash stream)
-  (write-index (setf-gethash-hash-table inst) stream)
-  (write-index (setf-gethash-key inst) stream)
-  (write-index (setf-gethash-value inst) stream))
+(defmethod encode ((inst initialize-hash-table) stream)
+  (write-mnemonic 'initialize-hash-table stream)
+  (write-index (initialized-table inst) stream)
+  (write-b32 (initialized-table-count inst) stream)
+  (loop for (k . v) in (alist inst)
+        do (write-index k stream)
+           (write-index v stream)))
 
 (defmethod encode ((inst singleton-creator) stream)
   (ecase (prototype inst)
