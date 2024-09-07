@@ -327,7 +327,7 @@ CL call to (core:magic-intern ...)"
 (esrap:defrule whitespace (+ (or #\space #\tab #\newline))
   (:constant nil))
 
-(esrap:defrule alphanumeric (or ":" (alphanumericp character)))
+(esrap:defrule alphanumeric (or ":" "_" (alphanumericp character)))
 
 (esrap:defrule cidentifier (not-integer (+ alphanumeric))
   (:lambda (s)

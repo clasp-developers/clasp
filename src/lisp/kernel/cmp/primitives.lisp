@@ -74,11 +74,11 @@
   "ltvc functions are used to construct the byte-code interpreter"
   `(progn
      ,@(mapcar (lambda (op)
-                 (list* (if (first op) 'primitive-unwinds 'primitive)
-                        (second op)
+                 (list* (if (second op) 'primitive-unwinds 'primitive)
+                        (third op)
                         :ltvc-return
-                        (list* 'list :gcroots-in-module* (third op))
-                        :ltvc t (cdddr op)))
+                        (list* 'list :gcroots-in-module* (fourth op))
+                        :ltvc t (cddddr op)))
                cmpref:*startup-primitives-as-list*)
      ,@'((primitive         "ltvc_lookup_literal" :t* (list :gcroots-in-module* :size_t))
          (primitive         "ltvc_lookup_transient" :t* (list :gcroots-in-module* :i8 :size_t))
@@ -421,8 +421,13 @@
 (defun lookup-type (type-name)
   (case type-name
     (:bignum %bignum%)
-    (:double-float %double%)
+    #+short-float (:short-float %short-float%)
+    #+short-float (:binary16 %short-float%)
     (:single-float %float%)
+    (:double-float %double%)
+    #+long-float (:long-float %long-float%)
+    #+long-float (:binary80 %long-float%)
+    #+long-float (:binary128 %long-float%)
     (:fn-start-up* %fn-start-up*%)
     (:gcroots-in-module* %gcroots-in-module*%)
     (:i1 %i1%)
@@ -435,7 +440,6 @@
     (:i8* %i8*%)
     (:i8** %i8**%)
     (:jmp-buf-tag* %jmp-buf-tag*%)
-    #+long-float (:long-float %long-float%)
     (:ltv** %ltv**%)
     (:ltvc-return %ltvc-return%)
     (:metadata %metadata%)

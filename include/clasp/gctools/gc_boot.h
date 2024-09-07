@@ -40,6 +40,7 @@ enum Data_types {
   CONSTANT_ARRAY_OFFSET,
   ctype_double,
   ctype_float,
+  ctype_long_double,
   ctype_int,
   ctype_short,
   ctype_unsigned_char,

@@ -56,7 +56,8 @@
              ;; (make-sequence nil...) is weird shit that we leave to runtime.
              form)
             ((eq kind 'list)
-             (let ((ss (gensym "SIZE")) (r (gensym "RESULT")))
+             (let ((ss (gensym "SIZE"))
+                   (r (gensym "RESULT")))
                `(let* ((,ss ,size)
                        (,r (make-list ,ss :initial-element ,initial-element)))
                   ,@(when length
@@ -64,15 +65,15 @@
                           (core::error-sequence-length ,r ',type ,ss))))
                   ,r)))
             ((consp kind) ; (VECTOR uaet)
-             (let ((uaet (second kind)) (r (gensym "RESULT")) (ss (gensym "SIZE")))
+             (let ((uaet (second kind))
+                   (r (gensym "RESULT"))
+                   (ss (gensym "SIZE")))
                `(let* ((,ss ,size)
                        ;; negative size will crash sys:make-vector
                        (,r
                          (if (< ,ss 0)
                              (error 'type-error :datum ,ss :expected-type '(integer 0 *))
-                             (sys:make-vector ',uaet ,ss))))
-                  ,@(when iesp
-                      `((si::fill-array-with-elt ,r ,initial-element 0 nil)))
+                             (sys:make-vector ',uaet ,ss nil nil nil 0 ,initial-element ,iesp))))
                   ,@(unless (null length)
                       `((unless (eql ,ss ',length)
                           (si::error-sequence-length ,r ',type ,ss))))

@@ -102,6 +102,8 @@ Returns a complex number whose realpart and imagpart are the values of (COS
 THETA) and (SIN THETA) respectively."
   (complex (cos theta) (sin theta)))
 
+;;; this is defined in numbers.h
+#+(or)
 (defun asin (x)
   "Args: (number)
 Returns the arc sine of NUMBER."
@@ -110,20 +112,22 @@ Returns the arc sine of NUMBER."
       #-clasp-min
       (let* ((x (float x))
 	     (xr (float x 1l0)))
-	(declare (long-float xr))
-	(if (and (<= -1.0 xr) (<= xr 1.0))
-	    (float (core:num-op-asin xr) x)
-	    (complex-asin x)))))
+	      (declare (long-float xr))
+	      (if (and (<= -1.0 xr) (<= xr 1.0))
+	          (float (core:num-op-asin xr) x)
+	          (complex-asin x)))))
 
 ;; Ported from CMUCL
 (defun complex-asin (z)
   (declare (number z))
   (let ((sqrt-1-z (sqrt (- 1 z)))
-	(sqrt-1+z (sqrt (+ 1 z))))
+	      (sqrt-1+z (sqrt (+ 1 z))))
     (complex (atan (realpart z) (realpart (* sqrt-1-z sqrt-1+z)))
-	     (asinh (imagpart (* (conjugate sqrt-1-z)
-				 sqrt-1+z))))))
+	           (asinh (imagpart (* (conjugate sqrt-1-z)
+				                         sqrt-1+z))))))
 
+;;; this is defined in numbers.h
+#+(or)
 (defun acos (x)
   "Args: (number)
 Returns the arc cosine of NUMBER."

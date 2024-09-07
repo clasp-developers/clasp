@@ -121,33 +121,33 @@
 ;;; Return a new INSTRUCTION instance.
 (defgeneric %load-instruction (mnemonic stream))
 
-(defmethod %load-instruction ((mnemonic (eql 'nil)) stream)
+(defmethod %load-instruction ((mnemonic (eql :nil)) stream)
   (declare (ignore stream))
   (let ((index (next-index)))
     (dbgprint " (nil ~d)" index)
     (setf (creator index)
           (make-instance 'singleton-creator :prototype nil))))
 
-(defmethod %load-instruction ((mnemonic (eql 't)) stream)
+(defmethod %load-instruction ((mnemonic (eql :t)) stream)
   (declare (ignore stream))
   (let ((index (next-index)))
     (dbgprint " (t ~d)" index)
     (setf (creator index)
           (make-instance 'singleton-creator :prototype t))))
 
-(defmethod %load-instruction ((mnemonic (eql 'cons)) stream)
+(defmethod %load-instruction ((mnemonic (eql :cons)) stream)
   (declare (ignore stream))
   (let ((index (next-index)))
     (dbgprint " (cons ~d)" index)
     (setf (creator index)
           (make-instance 'cons-creator))))
 
-(defmethod %load-instruction ((mnemonic (eql 'rplaca)) stream)
+(defmethod %load-instruction ((mnemonic (eql :rplaca)) stream)
   (let ((cons (read-creator stream)) (value (read-creator stream)))
     (dbgprint " (rplaca ~s ~s)" cons value)
     (make-instance 'rplaca-init :cons cons :value value)))
 
-(defmethod %load-instruction ((mnemonic (eql 'rplacd)) stream)
+(defmethod %load-instruction ((mnemonic (eql :rplacd)) stream)
   (let ((cons (read-creator stream)) (value (read-creator stream)))
     (dbgprint " (rplacd ~s ~s)" cons value)
     (make-instance 'rplacd-init :cons cons :value value)))
@@ -207,7 +207,7 @@
           (t ; invalid. should we err or just warn?
            (error "Invalid UTF-8 header byte: ~x" b0)))))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-array)) stream)
+(defmethod %load-instruction ((mnemonic (eql :make-array)) stream)
   (let* ((index (next-index)) (uaet-code (read-byte stream))
          (uaet (decode-uaet uaet-code))
          (packing-code (read-byte stream))
@@ -276,13 +276,13 @@
                 :uaet-code uaet-code
                 :prototype array)))))
 
-(defmethod %load-instruction ((mnemonic (eql 'setf-row-major-aref)) stream)
+(defmethod %load-instruction ((mnemonic (eql :setf-row-major-aref)) stream)
   (let ((array (read-creator stream)) (index (read-ub16 stream))
         (value (read-creator stream)))
     (dbgprint " (setf (row-major-aref ~s ~d) ~s)" array index value)
     (make-instance 'setf-aref :array array :index index :value value)))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-hash-table)) stream)
+(defmethod %load-instruction ((mnemonic (eql :make-hash-table)) stream)
   (let* ((index (next-index)) (testcode (read-byte stream))
          (test (ecase testcode
                  ((#b00) 'eq)
@@ -294,25 +294,25 @@
     (setf (creator index)
           (make-instance 'hash-table-creator :test test :count count))))
 
-(defmethod %load-instruction ((mnemonic (eql 'setf-gethash)) stream)
+(defmethod %load-instruction ((mnemonic (eql :setf-gethash)) stream)
   (let ((ht (read-creator stream))
         (key (read-creator stream)) (value (read-creator stream)))
     (dbgprint " (setf (gethash ~s ~s) ~s)" key ht value)
     (make-instance 'setf-gethash :hash-table ht :key key :value value)))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-sb64)) stream)
+(defmethod %load-instruction ((mnemonic (eql :make-sb64)) stream)
   (let ((index (next-index)) (fix (read-sb64 stream)))
     (dbgprint " (make-sb64 ~d ~d)" index fix)
     (setf (creator index)
           (make-instance 'sb64-creator :prototype fix))))
 
-(defmethod %load-instruction ((mnemonic (eql 'find-package)) stream)
+(defmethod %load-instruction ((mnemonic (eql :find-package)) stream)
   (let ((index (next-index)) (name (read-creator stream)))
     (dbgprint " (find-package ~d ~s)" index name)
     (setf (creator index)
           (make-instance 'package-creator :name name))))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-bignum)) stream)
+(defmethod %load-instruction ((mnemonic (eql :make-bignum)) stream)
   (let* ((index (next-index))
          (ssize (read-sb64 stream)) (result 0) (size (abs ssize)))
     (loop repeat size
@@ -322,40 +322,40 @@
     (dbgprint " (make-bignum ~d ~d ~d)" index ssize result)
     (setf (creator index) (make-instance 'bignum-creator :prototype result))))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-single-float)) stream)
+(defmethod %load-instruction ((mnemonic (eql :make-binary32)) stream)
   (let ((index (next-index))
         (float (ext:bits-to-single-float (read-ub32 stream))))
     (dbgprint " (make-single-float ~d ~e)" index float)
     (setf (creator index)
           (make-instance 'single-float-creator :prototype float))))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-double-float)) stream)
+(defmethod %load-instruction ((mnemonic (eql :make-binary64)) stream)
   (let ((index (next-index))
         (float (ext:bits-to-double-float (read-ub64 stream))))
     (dbgprint " (make-double-float ~d ~e)" index float)
     (setf (creator index)
           (make-instance 'double-float-creator :prototype float))))
 
-(defmethod %load-instruction ((mnemonic (eql 'ratio)) stream)
+(defmethod %load-instruction ((mnemonic (eql :ratio)) stream)
   (let ((index (next-index))
         (num (read-creator stream)) (den (read-creator stream)))
     (dbgprint " (ratio ~d ~d ~d)" index num den)
     (setf (creator index)
           (make-instance 'ratio-creator :numerator num :denominator den))))
 
-(defmethod %load-instruction ((mnemonic (eql 'complex)) stream)
+(defmethod %load-instruction ((mnemonic (eql :complex)) stream)
   (let ((index (next-index))
         (real (read-creator stream)) (imag (read-creator stream)))
     (dbgprint " (complex ~d ~s ~s)" index real imag)
     (setf (creator index)
           (make-instance 'complex-creator :realpart real :imagpart imag))))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-symbol)) stream)
+(defmethod %load-instruction ((mnemonic (eql :make-symbol)) stream)
   (let ((index (next-index)) (name (read-creator stream)))
     (dbgprint " (make-symbol ~d ~s)" index name)
     (setf (creator index) (make-instance 'symbol-creator :name name))))
 
-(defmethod %load-instruction ((mnemonic (eql 'intern)) stream)
+(defmethod %load-instruction ((mnemonic (eql :intern)) stream)
   (let ((index (next-index))
         (pkg (read-creator stream)) (name (read-creator stream)))
     (dbgprint " (intern ~d ~s ~s)" index name pkg)
@@ -363,13 +363,13 @@
           (make-instance 'interned-symbol-creator
             :package pkg :name name))))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-character)) stream)
+(defmethod %load-instruction ((mnemonic (eql :make-character)) stream)
   (let ((index (next-index)) (char (code-char (read-ub32 stream))))
     (dbgprint " (make-character ~d ~:c)" index char)
     (setf (creator index)
           (make-instance 'character-creator :prototype char))))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-pathname)) stream)
+(defmethod %load-instruction ((mnemonic (eql :make-pathname)) stream)
   (let ((index (next-index))
         (host (read-creator stream)) (device (read-creator stream))
         (directory (read-creator stream)) (name (read-creator stream))
@@ -382,7 +382,7 @@
             :directory directory :name name
             :type type :version version))))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-bytecode-function)) stream)
+(defmethod %load-instruction ((mnemonic (eql :make-bytecode-function)) stream)
   (let ((index (next-index))
         (entry-point (read-ub32 stream))
         (size (if (and (= *load-major* 0) (< *load-minor* 8))
@@ -398,7 +398,7 @@
             :nlocals nlocals :nclosed nclosed
             :module module))))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-bytecode-module)) stream)
+(defmethod %load-instruction ((mnemonic (eql :make-bytecode-module)) stream)
   (let ((index (next-index)) (len (read-ub32 stream)))
     (dbgprint " (make-bytecode-module ~d ~d)" index len)
     (setf (creator index)
@@ -406,7 +406,7 @@
             (read-sequence lispcode stream)
             (make-instance 'bytemodule-creator :lispcode lispcode)))))
 
-(defmethod %load-instruction ((mnemonic (eql 'setf-literals)) stream)
+(defmethod %load-instruction ((mnemonic (eql :setf-literals)) stream)
   (if (and (= *load-major* 0) (<= *load-minor* 6))
       (let ((module (read-creator stream)) (literals (read-creator stream)))
         (dbgprint " (setf (literals ~s) ~s)" module literals)
@@ -420,26 +420,26 @@
         (make-instance 'setf-literals
           :module module :literals literals))))
 
-(defmethod %load-instruction ((mnemonic (eql 'fdefinition)) stream)
+(defmethod %load-instruction ((mnemonic (eql :fdefinition)) stream)
   (let ((index (next-index)) (name (read-creator stream)))
     (dbgprint " (fdefinition ~d ~s)" index name)
     (setf (creator index) (make-instance 'fdefinition-lookup :name name))))
 
-(defmethod %load-instruction ((mnemonic (eql 'fcell)) stream)
+(defmethod %load-instruction ((mnemonic (eql :fcell)) stream)
   (let ((index (next-index)) (name (read-creator stream)))
     (dbgprint " (fcell ~d ~s)" index name)
     (setf (creator index) (make-instance 'fcell-lookup :name name))))
 
-(defmethod %load-instruction ((mnemonic (eql 'vcell)) stream)
+(defmethod %load-instruction ((mnemonic (eql :vcell)) stream)
   (let ((index (next-index)) (name (read-creator stream)))
     (dbgprint " (vcell ~d ~s)" index name)
     (setf (creator index) (make-instance 'vcell-lookup :name name))))
 
-(defmethod %load-instruction ((mnemonic (eql 'symbol-value)) stream)
+(defmethod %load-instruction ((mnemonic (eql :symbol-value)) stream)
   (let ((index (next-index)) (name (read-creator stream)))
     (setf (creator index) (make-instance 'vdefinition :name name))))
 
-(defmethod %load-instruction ((mnemonic (eql 'funcall-create)) stream)
+(defmethod %load-instruction ((mnemonic (eql :funcall-create)) stream)
   (let ((index (next-index)) (fun (read-creator stream))
         (args (if (and (= *load-major* 0) (<= *load-minor* 4))
                   ()
@@ -450,7 +450,7 @@
           (make-instance 'general-creator
             :function fun :arguments args))))
 
-(defmethod %load-instruction ((mnemonic (eql 'funcall-initialize)) stream)
+(defmethod %load-instruction ((mnemonic (eql :funcall-initialize)) stream)
   (let ((fun (read-creator stream))
         (args (if (and (= *load-major* 0) (<= *load-minor* 4))
                   ()
@@ -459,12 +459,12 @@
     (dbgprint " (funcall-initialize ~s~{ ~s~})" fun args)
     (make-instance 'general-initializer :function fun :arguments args)))
 
-(defmethod %load-instruction ((mnemonic (eql 'find-class)) stream)
+(defmethod %load-instruction ((mnemonic (eql :find-class)) stream)
   (let ((index (next-index)) (name (read-creator stream)))
     (dbgprint " (find-class ~d ~s)" index name)
     (setf (creator index) (make-instance 'class-creator :name name))))
 
-(defmethod %load-instruction ((mnemonic (eql 'init-object-array)) stream)
+(defmethod %load-instruction ((mnemonic (eql :init-object-array)) stream)
   (let ((nobjs (read-ub64 stream)))
     (dbgprint " (init-object-array ~d)" nobjs)
     (setf *index-bytes* (max (ash 1 (1- (ceiling (integer-length nobjs) 8)))
@@ -475,7 +475,7 @@
 
 (defun read-mnemonic (stream)
   (let* ((opcode (read-byte stream))
-         (info (find opcode +ops+ :key #'second)))
+         (info (find opcode cmpref:+bytecode-ltv-ops+ :key #'second)))
     (if info
         (first info)
         (error "BUG: Unknown opcode ~x" opcode))))
@@ -504,7 +504,7 @@
     (make-instance 'unknown-attr :name ncreator :bytes bytes)))
 
 #+clasp
-(defmethod %load-attribute ((mnemonic (eql 'source-pos-info)) ncreator stream)
+(defmethod %load-attribute ((mnemonic (eql :source-pos-info)) ncreator stream)
   (let ((nbytes (read-ub32 stream))
         (fun (read-creator stream)) (path (read-creator stream))
         (line (read-ub64 stream)) (col (read-ub64 stream))
@@ -516,7 +516,7 @@
       :lineno line :column col :filepos pos)))
 
 #+clasp
-(defmethod %load-attribute ((mnemonic (eql 'module-debug-info)) ncreator stream)
+(defmethod %load-attribute ((mnemonic (eql :module-debug-info)) ncreator stream)
   (read-ub32 stream) ; nbytes
   (let* ((mod (read-creator stream))
          (ninfos (read-ub32 stream))
@@ -538,11 +538,11 @@
 (defun load-debug-info (stream)
   (%load-debug-info (read-di-mnemonic stream) stream))
 
-(defmethod %load-debug-info ((mnemonic (eql 'function)) stream)
+(defmethod %load-debug-info ((mnemonic (eql :function)) stream)
   (make-instance 'debug-info-function
     :function (read-creator stream)))
 
-(defmethod %load-debug-info ((mnemonic (eql 'vars)) stream)
+(defmethod %load-debug-info ((mnemonic (eql :vars)) stream)
   (make-instance 'debug-info-vars
     :start (read-ub32 stream) :end (read-ub32 stream)
     :vars (loop repeat (read-ub16 stream)
@@ -566,7 +566,7 @@
                           :cellp cellp :dxp dx :ignore ignore :inline inline
                           :decls decls))))
 
-(defmethod %load-debug-info ((mnemonic (eql 'location)) stream)
+(defmethod %load-debug-info ((mnemonic (eql :location)) stream)
   (make-instance 'debug-info-location
     :start (read-ub32 stream)
     :end (read-ub32 stream)
@@ -575,25 +575,25 @@
     :column (read-ub64 stream)
     :filepos (read-ub64 stream)))
 
-(defmethod %load-debug-info ((mnemonic (eql 'decls)) stream)
+(defmethod %load-debug-info ((mnemonic (eql :decls)) stream)
   (make-instance 'debug-info-decls
     :start (read-ub32 stream)
     :end (read-ub32 stream)
     :decls (read-creator stream)))
 
-(defmethod %load-debug-info ((mnemonic (eql 'the)) stream)
+(defmethod %load-debug-info ((mnemonic (eql :the)) stream)
   (make-instance 'debug-info-the
     :start (read-ub32 stream) :end (read-ub32 stream)
     :type (read-creator stream)
     :receiving (read-sb32 stream)))
 
-(defmethod %load-debug-info ((mnemonic (eql 'if)) stream)
+(defmethod %load-debug-info ((mnemonic (eql :if)) stream)
   (make-instance 'debug-ast-if
     :start (read-ub32 stream)
     :end (read-ub32 stream)
     :receiving (read-sb32 stream)))
 
-(defmethod %load-debug-info ((mnemonic (eql 'tagbody)) stream)
+(defmethod %load-debug-info ((mnemonic (eql :tagbody)) stream)
   (make-instance 'debug-ast-tagbody
     :start (read-ub32 stream) :end (read-ub32 stream)
     :tags (loop repeat (read-ub16 stream)
@@ -601,18 +601,18 @@
                 for ip = (read-ub32 stream)
                 collect (cons tag ip))))
 
-(defmethod %load-debug-info ((mnemonic (eql 'block)) stream)
+(defmethod %load-debug-info ((mnemonic (eql :block)) stream)
   (make-instance 'debug-info-block
     :start (read-ub32 stream) :end (read-ub32 stream)
     :name (read-creator stream)
     :receiving (read-sb32 stream)))
 
-(defmethod %load-debug-info ((mnemonic (eql 'exit)) stream)
+(defmethod %load-debug-info ((mnemonic (eql :exit)) stream)
   (make-instance 'debug-info-exit
     :start (read-ub32 stream) :end (read-ub32 stream)
     :receiving (read-sb32 stream)))
 
-(defmethod %load-debug-info ((mnemonic (eql 'macro)) stream)
+(defmethod %load-debug-info ((mnemonic (eql :macro)) stream)
   (make-instance 'debug-info-macroexpansion
     :start (read-ub32 stream) :end (read-ub32 stream)
     :macro-name (read-creator stream)))
@@ -634,7 +634,7 @@
                           acreator))))
     (%load-attribute (or (gethash aname *attr-map*) aname) acreator stream)))
 
-(defmethod %load-instruction ((mnemonic (eql 'attribute)) stream)
+(defmethod %load-instruction ((mnemonic (eql :attribute)) stream)
   (load-attribute stream))
 
 ;;;

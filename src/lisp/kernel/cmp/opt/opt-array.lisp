@@ -14,6 +14,10 @@
     ((character) (values 'core:make-simple-vector-character 'core:make-simple-mdarray-character))
     ((single-float) (values 'core:make-simple-vector-single-float 'core:make-simple-mdarray-single-float))
     ((double-float) (values 'core:make-simple-vector-double-float 'core:make-simple-mdarray-double-float))
+    #+short-float
+    ((short-float) (values 'core:make-simple-vector-short-float 'core:make-simple-mdarray-short-float))
+    #+long-float
+    ((long-float) (values 'core:make-simple-vector-long-float 'core:make-simple-mdarray-long-float))
     ((ext:integer2) (values 'core:make-simple-vector-int2 'core:make-simple-mdarray-int2))
     ((ext:byte2) (values 'core:make-simple-vector-byte2 'core:make-simple-mdarray-byte2))
     ((ext:integer4) (values 'core:make-simple-vector-int4 'core:make-simple-mdarray-int4))

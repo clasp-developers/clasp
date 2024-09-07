@@ -41,7 +41,6 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/cleavirPrimopsPackage.fwd.h>
 #include <clasp/core/hashTable.h>
-#include <clasp/core/mathDispatch.h>
 #include <clasp/core/num_arith.h>
 #include <clasp/gctools/pointer_tagging.h>
 #include <clasp/core/wrappers.h>
@@ -72,64 +71,40 @@ core::Fixnum not_fixnum_error(core::T_sp o) { TYPE_ERROR(o, cl::_sym_fixnum); }
 void clasp_report_divide_by_zero(Number_sp x) { ERROR_DIVISION_BY_ZERO(clasp_make_fixnum(1), x); }
 
 Number_sp clasp_make_complex(Real_sp r, Real_sp i) {
-  // need to check whether i is 0
-  // A bignum better not be 0
-  // if realpart is a rational and imagpart is the rational number zero, the result of complex is realpart, a rational.
   if (i.fixnump() && cl__rationalp(r)) {
-    Fixnum fn = i.unsafe_fixnum();
-    if (fn == 0)
+    if (i.unsafe_fixnum() == 0)
       return r;
-    else
-      return Complex_O::create(r, i);
+    return Complex_O::create(r, i);
   }
-  // If imagpart is not supplied, the imaginary part is a zero of the same type as realpart;
-  // perhaps need to distinguish better whether i is supplied or not
-  if (cl__floatp(r) && i.fixnump() && clasp_zerop(i)) {
-    if (r.single_floatp())
-      i = clasp_make_single_float(0.0);
-    else if (core__double_float_p(r))
-      i = DoubleFloat_O::create(0.0);
-    else if (core__long_float_p(r))
-      i = LongFloat_O::create(0.0l);
-    // short floats are not really implemented
+
+  if (!cl__floatp(r) && !cl__floatp(i))
+    return Complex_O::create(r, i);
+
+  if (r.single_floatp()) {
+    if (i.isA<DoubleFloat_O>())
+      return Complex_O::create(DoubleFloat_O::coerce(r), i);
+    if (i.isA<LongFloat_O>())
+      return Complex_O::create(LongFloat_O::coerce(r), i);
+    return Complex_O::create(r, SingleFloat_dummy_O::coerce(i));
   }
-  // If either realpart or imagpart is a float, the non-float is converted to a float before the complex is created.
-  // does that mean, I need to distinguish single and double-float? PDietz seem to assume so
-  else if (cl__floatp(r) && !cl__floatp(i)) {
-    if (r.single_floatp())
-      i = cl__float(i, clasp_make_single_float(1.0));
-    else
-      i = cl__float(i, DoubleFloat_O::create(1.0));
-  } else if (cl__floatp(i) && !cl__floatp(r)) {
-    if (i.single_floatp())
-      r = cl__float(r, clasp_make_single_float(1.0));
-    else
-      r = cl__float(r, DoubleFloat_O::create(1.0));
-  } else if (cl__floatp(i) && cl__floatp(r)) {
-    // the highest type of both wins single -> double -> long
-    if (r.single_floatp()) {
-      if (!(i.single_floatp())) {
-        // r should be of type of i
-        if (core__double_float_p(i))
-          r = DoubleFloat_O::create((double)r.unsafe_single_float());
-        else
-          r = LongFloat_O::create((long)r.unsafe_single_float());
-      }
-    } else if (core__double_float_p(r)) {
-      if (!(core__double_float_p(i))) {
-        if (core__long_float_p(i))
-          r = LongFloat_O::create(clasp_to_long_float(r));
-        else
-          i = DoubleFloat_O::create((double)i.unsafe_single_float());
-      }
-    } else if (core__long_float_p(r))
-      if (!(core__long_float_p(i))) {
-        if (i.single_floatp())
-          i = DoubleFloat_O::create((double)i.unsafe_single_float());
-        else
-          i = LongFloat_O::create(clasp_to_long_float(i));
-      }
+
+  if (r.isA<DoubleFloat_O>()) {
+    if (i.isA<LongFloat_O>())
+      return Complex_O::create(LongFloat_O::coerce(r), i);
+    return Complex_O::create(r, DoubleFloat_O::coerce(i));
   }
+
+  if (r.isA<LongFloat_O>()) {
+    return Complex_O::create(r, LongFloat_O::coerce(i));
+  }
+
+  if (i.single_floatp())
+    return Complex_O::create(SingleFloat_dummy_O::coerce(r), i);
+  if (i.isA<DoubleFloat_O>())
+    return Complex_O::create(DoubleFloat_O::coerce(r), i);
+  if (i.isA<LongFloat_O>())
+    return Complex_O::create(LongFloat_O::coerce(r), i);
+
   return Complex_O::create(r, i);
 }
 
@@ -138,7 +113,35 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(zerop)dx");
 DOCGROUP(clasp);
-CL_DEFUN bool cl__zerop(Number_sp num) { return clasp_zerop(num); }
+CL_DEFUN bool cl__zerop(Number_sp num) { return Number_O::zerop(num); }
+
+CL_LAMBDA(num);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(minusp)dx");
+DOCGROUP(clasp);
+CL_DEFUN bool cl__minusp(Real_sp num) { return Real_O::minusp(num); }
+
+CL_LAMBDA(num);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(plusp)dx");
+DOCGROUP(clasp);
+CL_DEFUN bool cl__plusp(Real_sp num) { return Real_O::plusp(num); }
+
+CL_LAMBDA(num);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(evenp)dx");
+DOCGROUP(clasp);
+CL_DEFUN bool cl__evenp(Integer_sp num) { return Integer_O::evenp(num); }
+
+CL_LAMBDA(num);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(oddp)dx");
+DOCGROUP(clasp);
+CL_DEFUN bool cl__oddp(Integer_sp num) { return Integer_O::oddp(num); }
 
 CL_LAMBDA();
 CL_DECLARE();
@@ -152,14 +155,14 @@ CL_DEFUN Fixnum_sp core__fixnum_number_of_bits() {
 
 Real_sp clasp_max2(Real_sp x, Real_sp y) {
   Real_sp max = x;
-  if (clasp_number_compare(max, y) < 0)
+  if (Number_O::compare(max, y) < 0)
     max = y;
   return max;
 }
 
 Real_sp clasp_min2(Real_sp x, Real_sp y) {
   Real_sp min = x;
-  if (clasp_number_compare(min, y) > 0)
+  if (Number_O::compare(min, y) > 0)
     min = y;
   return min;
 }
@@ -170,7 +173,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(min)dx");
 DOCGROUP(clasp);
 CL_DEFUN Real_sp cl__min(Real_sp min, List_sp nums) {
-  /* INV: type check occurs in clasp_number_compare() for the rest of
+  /* INV: type check occurs in Number_O::compare() for the rest of
            numbers, but for the first argument it's due to the Real_sp decl
            above. */
   for (auto cur : nums) {
@@ -202,433 +205,198 @@ CL_DEFUN Number_sp two_arg__PLUS_FF(Fixnum fa, Fixnum fb) { return Integer_O::cr
 CL_NAME("TWO-ARG-+");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN Number_sp contagion_add(Number_sp na, Number_sp nb) {
-  MATH_DISPATCH_BEGIN(na, nb) {
-  case_Fixnum_v_Fixnum:
-    return two_arg__PLUS_FF(na.unsafe_fixnum(), nb.unsafe_fixnum());
-  case_Fixnum_v_Bignum:
-    return core__next_fadd(gc::As_unsafe<Bignum_sp>(nb), na.unsafe_fixnum());
-  case_Fixnum_v_Ratio:
-  case_Bignum_v_Ratio : {
-    // NOTE: All of the numbers are either fixnums or bignums,
-    // so this could be more efficient maybe.
-    Ratio_sp rat = gc::As_unsafe<Ratio_sp>(nb);
-    Integer_sp den = rat->denominator();
-    Integer_sp new_num = gc::As_unsafe<Integer_sp>(contagion_add(rat->numerator(), contagion_mul(na, den)));
-    // result is a ratio, not an integer.
-    return Ratio_O::create(new_num, den);
-  }
-  case_Fixnum_v_SingleFloat : { return clasp_make_single_float(clasp_to_float(na) + clasp_to_float(nb)); }
-  case_Fixnum_v_DoubleFloat : { return DoubleFloat_O::create(clasp_to_double(na) + clasp_to_double(nb)); }
-  case_Bignum_v_Fixnum:
-    return core__next_fadd(gc::As_unsafe<Bignum_sp>(na), nb.unsafe_fixnum());
-  case_Bignum_v_Bignum:
-    return core__next_add(gc::As_unsafe<Bignum_sp>(na), gc::As_unsafe<Bignum_sp>(nb));
-  case_Bignum_v_SingleFloat:
-  case_Ratio_v_SingleFloat : { return clasp_make_single_float(clasp_to_float(na) + clasp_to_float(nb)); }
-  case_Bignum_v_DoubleFloat:
-  case_Ratio_v_DoubleFloat : { return DoubleFloat_O::create(clasp_to_double(na) + clasp_to_double(nb)); }
-  case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum : {
-    Ratio_sp rat = gc::As_unsafe<Ratio_sp>(na);
-    Integer_sp den = rat->denominator();
-    Integer_sp new_num = gc::As_unsafe<Integer_sp>(contagion_add(rat->numerator(), contagion_mul(nb, den)));
-    // result is a ratio, not an integer.
-    return Ratio_O::create(new_num, den);
-  }
-  case_Ratio_v_Ratio : {
-    Ratio_sp ra = gc::As<Ratio_sp>(na);
-    Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    // ra.num/ra.den + rb.num/rb.den = (ra.num*rb.den+rb.num*ra.den)/ra.den*rb.den
-    Number_sp n1 = contagion_mul(ra->numerator(), rb->denominator());
-    Number_sp n2 = contagion_mul(ra->denominator(), rb->numerator());
-    Number_sp d = contagion_mul(ra->denominator(), rb->denominator());
-    Number_sp n = contagion_add(n1, n2);
-    return Rational_O::create(gc::As_unsafe<Integer_sp>(n), gc::As_unsafe<Integer_sp>(d));
-  }
-  case_SingleFloat_v_Fixnum:
-  case_SingleFloat_v_Bignum:
-  case_SingleFloat_v_Ratio:
-    return clasp_make_single_float(clasp_to_float(na) + clasp_to_float(nb));
-  case_SingleFloat_v_SingleFloat:
-    return clasp_make_single_float(clasp_to_float(na) + clasp_to_float(nb));
-  case_SingleFloat_v_DoubleFloat:
-  case_DoubleFloat_v_Fixnum:
-  case_DoubleFloat_v_Bignum:
-  case_DoubleFloat_v_Ratio:
-  case_DoubleFloat_v_SingleFloat:
-  case_DoubleFloat_v_DoubleFloat:
-    return DoubleFloat_O::create(clasp_to_double(na) + clasp_to_double(nb));
+CL_DEFUN Number_sp Number_O::add_nn(Number_sp na, Number_sp nb) {
+  Complex_sp ca = na.asOrNull<Complex_O>(), cb = nb.asOrNull<Complex_O>();
+  if (ca && cb)
+    return clasp_make_complex(ca->real() + cb->real(), ca->imaginary() + cb->imaginary());
+  if (ca)
+    return clasp_make_complex(ca->real() + nb, ca->imaginary());
+  if (cb)
+    return clasp_make_complex(na + cb->real(), cb->imaginary());
+
 #ifdef CLASP_LONG_FLOAT
-  case_Fixnum_v_LongFloat:
-  case_Ratio_v_LongFloat:
-  case_SingleFloat_v_LongFloat:
-  case_DoubleFloat_v_LongFloat:
-  case_LongFloat_v_Fixnum:
-  case_LongFloat_v_Ratio:
-  case_LongFloat_v_SingleFloat:
-  case_LongFloat_v_DoubleFloat:
-  case_LongFloat_v_LongFloat:
-    return LongFloat_O::create(na->as_long_float() + nb->as_long_float());
-  case_Complex_v_LongFloat:
-#endif // CLASP_LONG_FLOAT
-  case_Complex_v_Fixnum:
-  case_Complex_v_Ratio:
-  case_Complex_v_Bignum:
-  case_Complex_v_SingleFloat:
-  case_Complex_v_DoubleFloat : {
-    Number_sp aux = na;
-    na = nb;
-    nb = aux;
-    goto Complex_v_Y;
-  }
-  case_Fixnum_v_Complex:
-  case_Bignum_v_Complex:
-  case_Ratio_v_Complex:
-  case_SingleFloat_v_Complex:
-  case_DoubleFloat_v_Complex:
-#ifdef CLASP_LONG_FLOAT
-  case_LongFloat_v_Complex:
+  if (na.isA<LongFloat_O>() || nb.isA<LongFloat_O>())
+    return LongFloat_O::create(as_long_float(na) + as_long_float(nb));
 #endif
-  Complex_v_Y:
-    return clasp_make_complex(gc::As<Real_sp>(contagion_add(na, gc::As<Complex_sp>(nb)->real())),
-                              gc::As<Complex_sp>(nb)->imaginary());
-  case_Complex_v_Complex : {
-    Real_sp r = gc::As<Real_sp>(contagion_add(gc::As<Complex_sp>(na)->real(), gc::As<Complex_sp>(nb)->real()));
-    Real_sp i = gc::As<Real_sp>(contagion_add(gc::As<Complex_sp>(na)->imaginary(), gc::As<Complex_sp>(nb)->imaginary()));
-    return clasp_make_complex(r, i);
-  } break;
-  default:
-    not_comparable_error(na, nb);
-  };
-  MATH_DISPATCH_END();
+
+  if (na.isA<DoubleFloat_O>() || nb.isA<DoubleFloat_O>())
+    return DoubleFloat_O::create(as_double_float(na) + as_double_float(nb));
+
+  if (na.single_floatp() || nb.single_floatp())
+    return SingleFloat_dummy_O::create(as_single_float(na) + as_single_float(nb));
+
+#ifdef CLASP_SHORT_FLOAT
+  if (na.short_floatp() || nb.short_floatp())
+    return ShortFloat_O::create(as_short_float(na) + as_short_float(nb));
+#endif
+
+  Ratio_sp ra = na.asOrNull<Ratio_O>(), rb = nb.asOrNull<Ratio_O>();
+  if (ra && rb)
+    return Rational_O::create(ra->numerator() * rb->denominator() + ra->denominator() * rb->numerator(),
+                              ra->denominator() * rb->denominator());
+  if (ra)
+    return Ratio_O::create(ra->numerator() + nb * ra->denominator(), ra->denominator());
+  if (rb)
+    return Ratio_O::create(na * rb->denominator() + rb->numerator(), rb->denominator());
+
+  Bignum_sp ba = na.asOrNull<Bignum_O>(), bb = nb.asOrNull<Bignum_O>();
+  if (ba && bb)
+    return add_bb(ba, bb);
+  if (ba)
+    return add_bx(ba, nb.unsafe_fixnum());
+  if (bb)
+    return add_bx(bb, na.unsafe_fixnum());
+
+  return Integer_O::create(na.unsafe_fixnum() + nb.unsafe_fixnum());
 };
 
 CL_NAME("TWO-ARG--");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN Number_sp contagion_sub(Number_sp na, Number_sp nb) {
-  MATH_DISPATCH_BEGIN(na, nb) {
-  case_Fixnum_v_Fixnum : {
-    Fixnum fa = na.unsafe_fixnum();
-    Fixnum fb = nb.unsafe_fixnum();
-    return Integer_O::create(static_cast<gc::Fixnum>(fa - fb));
-  }
-  case_Fixnum_v_Ratio:
-  case_Bignum_v_Ratio : {
-    // x - a/b = xb/b - a/b = (xb-a)/b
-    Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    Number_sp n1 = contagion_mul(na, rb->denominator());
-    Number_sp n = contagion_sub(n1, rb->numerator());
-    return Ratio_O::create(gc::As_unsafe<Integer_sp>(n), rb->denominator());
-  }
-  case_Fixnum_v_SingleFloat : { return clasp_make_single_float(clasp_to_float(na) - clasp_to_float(nb)); }
-  case_Fixnum_v_DoubleFloat : { return DoubleFloat_O::create(clasp_to_double(na) - clasp_to_double(nb)); }
-  case_Ratio_v_SingleFloat:
-  case_Bignum_v_SingleFloat : { return clasp_make_single_float(clasp_to_float(na) - clasp_to_float(nb)); }
-  case_Ratio_v_DoubleFloat:
-  case_Bignum_v_DoubleFloat : { return DoubleFloat_O::create(clasp_to_double(na) - clasp_to_double(nb)); }
-  case_Fixnum_v_Bignum:
-    return core__next_fsub(na.unsafe_fixnum(), gc::As_unsafe<Bignum_sp>(nb));
-  case_Bignum_v_Fixnum:
-    return core__next_fadd(gc::As_unsafe<Bignum_sp>(na), -(nb.unsafe_fixnum()));
-  case_Bignum_v_Bignum:
-    return core__next_sub(gc::As_unsafe<Bignum_sp>(na), gc::As_unsafe<Bignum_sp>(nb));
-  case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum : {
-    // a/b - x = a/b - xb/b = (a-xb)/b
-    Ratio_sp ra = gc::As<Ratio_sp>(na);
-    Number_sp n2 = contagion_mul(nb, ra->denominator());
-    Number_sp n = contagion_sub(ra->numerator(), n2);
-    return Ratio_O::create(gc::As_unsafe<Integer_sp>(n), ra->denominator());
-  }
-  case_Ratio_v_Ratio : {
-    // a/b - c/d = (ad-bc)/bd
-    Ratio_sp ra = gc::As<Ratio_sp>(na);
-    Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    Number_sp n1 = contagion_mul(ra->numerator(), rb->denominator());
-    Number_sp n2 = contagion_mul(ra->denominator(), rb->numerator());
-    Number_sp n = contagion_sub(n1, n2);
-    Number_sp d = contagion_mul(ra->denominator(), rb->denominator());
-    return Rational_O::create(gc::As_unsafe<Integer_sp>(n), gc::As_unsafe<Integer_sp>(d));
-  }
-  case_SingleFloat_v_Fixnum:
-  case_SingleFloat_v_Bignum:
-  case_SingleFloat_v_Ratio:
-    return clasp_make_single_float(clasp_to_float(na) - clasp_to_float(nb));
-  case_SingleFloat_v_SingleFloat:
-    return clasp_make_single_float(clasp_to_float(na) - clasp_to_float(nb));
-  case_SingleFloat_v_DoubleFloat:
-  case_DoubleFloat_v_Fixnum:
-  case_DoubleFloat_v_Bignum:
-  case_DoubleFloat_v_Ratio:
-  case_DoubleFloat_v_SingleFloat:
-  case_DoubleFloat_v_DoubleFloat:
-    return DoubleFloat_O::create(clasp_to_double(na) - clasp_to_double(nb));
+CL_DEFUN Number_sp Number_O::sub_nn(Number_sp na, Number_sp nb) {
+  Complex_sp ca = na.asOrNull<Complex_O>(), cb = nb.asOrNull<Complex_O>();
+  if (ca && cb)
+    return clasp_make_complex(ca->real() - cb->real(), ca->imaginary() - cb->imaginary());
+  if (ca)
+    return clasp_make_complex(ca->real() - nb, ca->imaginary());
+  if (cb)
+    return clasp_make_complex(na - cb->real(), -cb->imaginary());
+
 #ifdef CLASP_LONG_FLOAT
-  case_Fixnum_v_LongFloat:
-  case_Ratio_v_LongFloat:
-  case_SingleFloat_v_LongFloat:
-  case_DoubleFloat_v_LongFloat:
-  case_LongFloat_v_Fixnum:
-  case_LongFloat_v_Ratio:
-  case_LongFloat_v_SingleFloat:
-  case_LongFloat_v_DoubleFloat:
-  case_LongFloat_v_LongFloat:
-    return LongFloat_O::create(na->as_long_float() - nb->as_long_float());
+  if (na.isA<LongFloat_O>() || nb.isA<LongFloat_O>())
+    return LongFloat_O::create(as_long_float(na) - as_long_float(nb));
 #endif
-  case_Complex_v_LongFloat:
-  case_Complex_v_Fixnum:
-  case_Complex_v_Ratio:
-  case_Complex_v_Bignum:
-  case_Complex_v_SingleFloat:
-  case_Complex_v_DoubleFloat : {
-    return clasp_make_complex(gc::As<Real_sp>(contagion_sub(gc::As<Complex_sp>(na)->real(), nb)),
-                              gc::As<Complex_sp>(na)->imaginary());
-  }
-  case_Fixnum_v_Complex:
-  case_Bignum_v_Complex:
-  case_Ratio_v_Complex:
-  case_SingleFloat_v_Complex:
-  case_DoubleFloat_v_Complex:
-  case_LongFloat_v_Complex:
-    return clasp_make_complex(gc::As<Real_sp>(contagion_sub(na, gc::As<Complex_sp>(nb)->real())),
-                              gc::As<Real_sp>(clasp_negate(gc::As<Complex_sp>(nb)->imaginary())));
-  case_Complex_v_Complex : {
-    Real_sp r = gc::As<Real_sp>(contagion_sub(gc::As<Complex_sp>(na)->real(), gc::As<Complex_sp>(nb)->real()));
-    Real_sp i = gc::As<Real_sp>(contagion_sub(gc::As<Complex_sp>(na)->imaginary(), gc::As<Complex_sp>(nb)->imaginary()));
-    return clasp_make_complex(r, i);
-  } break;
-  default:
-    not_comparable_error(na, nb);
-  };
-  MATH_DISPATCH_END();
+
+  if (na.isA<DoubleFloat_O>() || nb.isA<DoubleFloat_O>())
+    return DoubleFloat_O::create(as_double_float(na) - as_double_float(nb));
+
+  if (na.single_floatp() || nb.single_floatp())
+    return SingleFloat_dummy_O::create(as_single_float(na) - as_single_float(nb));
+
+#ifdef CLASP_SHORT_FLOAT
+  if (na.short_floatp() || nb.short_floatp())
+    return ShortFloat_O::create(as_short_float(na) - as_short_float(nb));
+#endif
+
+  Ratio_sp ra = na.asOrNull<Ratio_O>(), rb = nb.asOrNull<Ratio_O>();
+  if (ra && rb)
+    return Rational_O::create(ra->numerator() * rb->denominator() - ra->denominator() * rb->numerator(),
+                              ra->denominator() * rb->denominator());
+  if (ra)
+    return Ratio_O::create(ra->numerator() - nb * ra->denominator(), ra->denominator());
+  if (rb)
+    return Ratio_O::create(na * rb->denominator() - rb->numerator(), rb->denominator());
+
+  Bignum_sp ba = na.asOrNull<Bignum_O>(), bb = nb.asOrNull<Bignum_O>();
+  if (ba && bb)
+    return sub_bb(ba, bb);
+  if (ba)
+    return add_bx(ba, -nb.unsafe_fixnum());
+  if (bb)
+    return sub_xb(na.unsafe_fixnum(), bb);
+
+  return Integer_O::create(na.unsafe_fixnum() - nb.unsafe_fixnum());
 }
 
 CL_NAME("TWO-ARG-*");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN Number_sp contagion_mul(Number_sp na, Number_sp nb) {
-  MATH_DISPATCH_BEGIN(na, nb) {
-  case_Fixnum_v_Fixnum : {
-    // We want to detect when Fixnum * Fixnum multiplication will overflow and only then use bignum arithmetic.
-    // But C++ doesn't give us a way to do that - so we use the __builtin_mul_overflow clang builtin.
-    // It will return false if there is no overflow and the multiplication result will be in fr.
-    // The return value fr may over
-    // If it doesn't overflow - then this will be faster than always using bignum arithmetic.
-    Fixnum fa = na.unsafe_fixnum();
-    Fixnum fb = nb.unsafe_fixnum();
-    Fixnum fr;
-    bool overflow = __builtin_mul_overflow(fa, fb, &fr);
-    if (!overflow)
-      return Integer_O::create(fr);
-    return core__mul_fixnums(fa, fb);
-  }
-  case_Fixnum_v_Bignum:
-    return core__next_fmul(gc::As_unsafe<Bignum_sp>(nb), na.unsafe_fixnum());
-  case_Fixnum_v_Ratio:
-  case_Bignum_v_Ratio : {
-    Ratio_sp rat = gc::As_unsafe<Ratio_sp>(nb);
-    Integer_sp new_num = gc::As_unsafe<Integer_sp>(contagion_mul(na, rat->numerator()));
-    return Rational_O::create(new_num, rat->denominator());
-  }
-  case_Fixnum_v_SingleFloat : { return clasp_make_single_float(clasp_to_float(na) * clasp_to_float(nb)); }
-  case_Fixnum_v_DoubleFloat : { return DoubleFloat_O::create(clasp_to_double(na) * clasp_to_double(nb)); }
-  case_Bignum_v_Fixnum:
-    return core__next_fmul(gc::As_unsafe<Bignum_sp>(na), nb.unsafe_fixnum());
-  case_Bignum_v_Bignum:
-    return core__next_mul(gc::As_unsafe<Bignum_sp>(na), gc::As_unsafe<Bignum_sp>(nb));
-  case_Bignum_v_SingleFloat:
-  case_Ratio_v_SingleFloat : { return clasp_make_single_float(clasp_to_float(na) * clasp_to_float(nb)); }
-  case_Bignum_v_DoubleFloat:
-  case_Ratio_v_DoubleFloat : { return DoubleFloat_O::create(clasp_to_double(na) * clasp_to_double(nb)); }
-  case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum : {
-    Ratio_sp rat = gc::As_unsafe<Ratio_sp>(na);
-    Integer_sp new_num = gc::As_unsafe<Integer_sp>(contagion_mul(nb, rat->numerator()));
-    return Rational_O::create(new_num, rat->denominator());
-  }
-  case_Ratio_v_Ratio : {
-    Ratio_sp ra = gc::As<Ratio_sp>(na);
-    Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    Number_sp num = contagion_mul(ra->numerator(), rb->numerator());
-    Number_sp den = contagion_mul(ra->denominator(), rb->denominator());
-    return Rational_O::create(gc::As_unsafe<Integer_sp>(num), gc::As_unsafe<Integer_sp>(den));
-  }
-  case_SingleFloat_v_Fixnum:
-  case_SingleFloat_v_Bignum:
-  case_SingleFloat_v_Ratio:
-  case_SingleFloat_v_SingleFloat:
-    return clasp_make_single_float(clasp_to_float(na) * clasp_to_float(nb));
-  case_SingleFloat_v_DoubleFloat:
-  case_DoubleFloat_v_Fixnum:
-  case_DoubleFloat_v_Bignum:
-  case_DoubleFloat_v_Ratio:
-  case_DoubleFloat_v_SingleFloat:
-  case_DoubleFloat_v_DoubleFloat:
-    return DoubleFloat_O::create(clasp_to_double(na) * clasp_to_double(nb));
+CL_DEFUN Number_sp Number_O::mul_nn(Number_sp na, Number_sp nb) {
+  Complex_sp ca = na.asOrNull<Complex_O>(), cb = nb.asOrNull<Complex_O>();
+  if (ca && cb)
+    return clasp_make_complex(ca->real() * cb->real() - ca->imaginary() * cb->imaginary(),
+                              ca->real() * cb->imaginary() + ca->imaginary() * cb->real());
+  if (ca)
+    return clasp_make_complex(ca->real() * nb, ca->imaginary() * nb);
+  if (cb)
+    return clasp_make_complex(na * cb->real(), na * cb->imaginary());
+
 #ifdef CLASP_LONG_FLOAT
-  case_Fixnum_v_LongFloat:
-  case_Bignum_v_LongFloat:
-  case_Ratio_v_LongFloat:
-  case_SingleFloat_v_LongFloat:
-  case_DoubleFloat_v_LongFloat:
-  case_LongFloat_v_Fixnum:
-  case_LongFloat_v_Ratio:
-  case_LongFloat_v_SingleFloat:
-  case_LongFloat_v_DoubleFloat:
-  case_LongFloat_v_LongFloat:
-    return LongFloat_O::create(na->as_long_float() * nb->as_long_float());
+  if (na.isA<LongFloat_O>() || nb.isA<LongFloat_O>())
+    return LongFloat_O::create(as_long_float(na) * as_long_float(nb));
 #endif
-  case_Complex_v_LongFloat:
-  case_Complex_v_Fixnum:
-  case_Complex_v_Bignum:
-  case_Complex_v_Ratio:
-  case_Complex_v_SingleFloat:
-  case_Complex_v_DoubleFloat : {
-    Number_sp aux = na;
-    na = nb;
-    nb = aux;
-    goto Complex_v_Y;
-  }
-  case_Fixnum_v_Complex:
-  case_Bignum_v_Complex:
-  case_Ratio_v_Complex:
-  case_SingleFloat_v_Complex:
-  case_DoubleFloat_v_Complex:
-  case_LongFloat_v_Complex:
-  Complex_v_Y:
-    return clasp_make_complex(gc::As<Real_sp>(contagion_mul(na, gc::As<Complex_sp>(nb)->real())),
-                              gc::As<Real_sp>(contagion_mul(na, gc::As<Complex_sp>(nb)->imaginary())));
-  case_Complex_v_Complex : {
-    Complex_sp ca = gc::As<Complex_sp>(na);
-    Complex_sp cb = gc::As<Complex_sp>(nb);
-    Real_sp x = ca->real();
-    Real_sp y = ca->imaginary();
-    Real_sp u = cb->real();
-    Real_sp v = cb->imaginary();
-    // (x + yi)(u + vi) = (xu - yv) + (xv + yu)i.
-    return clasp_make_complex(gc::As<Real_sp>(contagion_sub(contagion_mul(x, u), contagion_mul(y, v))),
-                              gc::As<Real_sp>(contagion_add(contagion_mul(x, v), contagion_mul(y, u))));
-  } break;
-  default:
-    not_comparable_error(na, nb);
-  };
-  MATH_DISPATCH_END();
-}
 
-// Forward declaration for contagion_div
-Number_sp contagion_div(Number_sp na, Number_sp nb);
+  if (na.isA<DoubleFloat_O>() || nb.isA<DoubleFloat_O>())
+    return DoubleFloat_O::create(as_double_float(na) * as_double_float(nb));
 
-Number_sp complex_divide(Real_sp ar, Real_sp ai, Real_sp br, Real_sp bi) {
-  // Compute (ar+ai*i)/(br+bi*i).
-  // Just multiply the numerator and denominator by (br - bi*i)
-  // to end up with ar*br+ai*bi/z real and ai*br-ar*bi imaginary,
-  // where z is br^2+bi*2.
-#define realmul(A, B) gc::As_unsafe<Real_sp>(contagion_mul((A), (B)))
-#define realadd(A, B) gc::As_unsafe<Real_sp>(contagion_add((A), (B)))
-#define realsub(A, B) gc::As_unsafe<Real_sp>(contagion_sub((A), (B)))
-#define realdiv(A, B) gc::As_unsafe<Real_sp>(contagion_div((A), (B)))
-  Real_sp absB2 = realadd(realmul(br, br), realmul(bi, bi));
-  Real_sp rnum = realadd(realmul(ar, br), realmul(ai, bi));
-  Real_sp inum = realsub(realmul(ai, br), realmul(ar, bi));
-  Real_sp realpart = realdiv(rnum, absB2);
-  // note: could save a bit of time by checking if inum is zero,
-  // and if so not bothering to compute imagpart
-  Real_sp imagpart = realdiv(inum, absB2);
-  return clasp_make_complex(realpart, imagpart);
-#undef realmul
-#undef realadd
-#undef realsub
-#undef realdiv
+  if (na.single_floatp() || nb.single_floatp())
+    return SingleFloat_dummy_O::create(as_single_float(na) * as_single_float(nb));
+
+#ifdef CLASP_SHORT_FLOAT
+  if (na.short_floatp() || nb.short_floatp())
+    return ShortFloat_O::create(as_short_float(na) * as_short_float(nb));
+#endif
+
+  Ratio_sp ra = na.asOrNull<Ratio_O>(), rb = nb.asOrNull<Ratio_O>();
+  if (ra && rb)
+    return Rational_O::create(ra->numerator() * rb->numerator(), ra->denominator() * rb->denominator());
+  if (ra)
+    return Rational_O::create(ra->numerator() * nb, ra->denominator());
+  if (rb)
+    return Rational_O::create(na * rb->numerator(), rb->denominator());
+
+  Bignum_sp ba = na.asOrNull<Bignum_O>(), bb = nb.asOrNull<Bignum_O>();
+  if (ba && bb)
+    return mul_bb(ba, bb);
+  if (ba)
+    return mul_bx(ba, nb.unsafe_fixnum());
+  if (bb)
+    return mul_bx(bb, na.unsafe_fixnum());
+
+  // We want to detect when Fixnum * Fixnum multiplication will overflow and only then use bignum arithmetic.
+  // But C++ doesn't give us a way to do that - so we use the __builtin_mul_overflow clang builtin.
+  // It will return false if there is no overflow and the multiplication result will be in fr.
+  // The return value fr may over
+  // If it doesn't overflow - then this will be faster than always using bignum arithmetic.
+  Fixnum fa = na.unsafe_fixnum(), fb = nb.unsafe_fixnum(), fr;
+  bool overflow = __builtin_mul_overflow(fa, fb, &fr);
+  if (!overflow)
+    return Integer_O::create(fr);
+  return core__mul_fixnums(fa, fb);
 }
 
 CL_NAME("TWO-ARG-/");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN Number_sp contagion_div(Number_sp na, Number_sp nb) {
-  MATH_DISPATCH_BEGIN(na, nb) {
-  case_Fixnum_v_Fixnum:
-  case_Bignum_v_Fixnum:
-  case_Fixnum_v_Bignum:
-  case_Bignum_v_Bignum:
-    return Rational_O::create(gc::As_unsafe<Integer_sp>(na), gc::As_unsafe<Integer_sp>(nb));
-  case_Fixnum_v_Ratio:
-  case_Bignum_v_Ratio:
-    return Rational_O::create(gc::As<Integer_sp>(contagion_mul(na, gc::As<Ratio_sp>(nb)->denominator())),
-                              gc::As<Ratio_sp>(nb)->numerator());
-  case_Fixnum_v_SingleFloat:
-    return clasp_make_single_float(clasp_to_float(na) / clasp_to_float(nb));
-  case_Fixnum_v_DoubleFloat:
-    return DoubleFloat_O::create(clasp_to_double(na) / clasp_to_double(nb));
-  case_Bignum_v_SingleFloat:
-  case_Ratio_v_SingleFloat:
-    return clasp_make_single_float(clasp_to_float(na) / clasp_to_float(nb));
-  case_Bignum_v_DoubleFloat:
-  case_Ratio_v_DoubleFloat:
-    return DoubleFloat_O::create(clasp_to_double(na) / clasp_to_double(nb));
-  case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum : {
-    Integer_sp z = gc::As<Integer_sp>(contagion_mul(gc::As<Ratio_sp>(na)->denominator(), nb));
-    return Rational_O::create(gc::As<Ratio_sp>(na)->numerator(), z);
+CL_DEFUN Number_sp Number_O::div_nn(Number_sp na, Number_sp nb) {
+  Complex_sp ca = na.asOrNull<Complex_O>(), cb = nb.asOrNull<Complex_O>();
+  if (ca && cb) {
+    Number_sp den = cb->real() * cb->real() + cb->imaginary() * cb->imaginary();
+    return clasp_make_complex((ca->real() * cb->real() + ca->imaginary() * cb->imaginary()) / den,
+                              (ca->imaginary() * cb->real() - ca->real() * cb->imaginary()) / den);
   }
-  case_Ratio_v_Ratio : {
-    Ratio_sp ra = gc::As<Ratio_sp>(na);
-    Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    Integer_sp num = gc::As<Integer_sp>(contagion_mul(ra->numerator(), rb->denominator()));
-    Integer_sp denom = gc::As<Integer_sp>(contagion_mul(ra->denominator(), rb->numerator()));
-    return Rational_O::create(num, denom);
+  if (ca)
+    return clasp_make_complex(ca->real() / nb, ca->imaginary() / nb);
+  if (cb) {
+    Number_sp den = cb->real() * cb->real() + cb->imaginary() * cb->imaginary();
+    return clasp_make_complex((na * cb->real()) / den, -(na * cb->imaginary()) / den);
   }
-  case_SingleFloat_v_Fixnum:
-  case_SingleFloat_v_Ratio:
-  case_SingleFloat_v_Bignum:
-  case_SingleFloat_v_SingleFloat:
-    return clasp_make_single_float(clasp_to_float(na) / clasp_to_float(nb));
-  case_SingleFloat_v_DoubleFloat:
-  case_DoubleFloat_v_Fixnum:
-  case_DoubleFloat_v_Ratio:
-  case_DoubleFloat_v_Bignum:
-  case_DoubleFloat_v_SingleFloat:
-  case_DoubleFloat_v_DoubleFloat:
-    return DoubleFloat_O::create(clasp_to_double(na) / clasp_to_double(nb));
+
 #ifdef CLASP_LONG_FLOAT
-  case_Fixnum_v_LongFloat:
-  case_Ratio_v_LongFloat:
-  case_SingleFloat_v_LongFloat:
-  case_DoubleFloat_v_LongFloat:
-  case_LongFloat_v_Fixnum:
-  case_LongFloat_v_Ratio:
-  case_LongFloat_v_SingleFloat:
-  case_LongFloat_v_DoubleFloat:
-  case_LongFloat_v_LongFloat:
-    return LongFloat_O::create(na->as_long_float() / nb->as_long_float());
+  if (na.isA<LongFloat_O>() || nb.isA<LongFloat_O>())
+    return LongFloat_O::create(as_long_float(na) / as_long_float(nb));
 #endif
-  case_Complex_v_Fixnum:
-  case_Complex_v_Bignum:
-  case_Complex_v_Ratio:
-  case_Complex_v_SingleFloat:
-  case_Complex_v_DoubleFloat:
-  case_Complex_v_LongFloat : {
-    Complex_sp ca = gc::As<Complex_sp>(na);
-    return clasp_make_complex(gc::As<Real_sp>(contagion_div(ca->real(), nb)), gc::As<Real_sp>(contagion_div(ca->imaginary(), nb)));
-  }
-  case_Fixnum_v_Complex:
-  case_Bignum_v_Complex:
-  case_Ratio_v_Complex:
-  case_SingleFloat_v_Complex:
-  case_DoubleFloat_v_Complex:
-  case_LongFloat_v_Complex : {
-    Complex_sp cb = gc::As_unsafe<Complex_sp>(nb);
-    return complex_divide(gc::As_unsafe<Real_sp>(na), clasp_make_fixnum(0), cb->real(), cb->imaginary());
-  }
-  case_Complex_v_Complex : {
-    Complex_sp ca = gc::As<Complex_sp>(na);
-    Complex_sp cb = gc::As<Complex_sp>(nb);
-    return complex_divide(ca->real(), ca->imaginary(), cb->real(), cb->imaginary());
-  }
-  }
-  MATH_DISPATCH_END();
-  not_comparable_error(na, nb);
+
+  if (na.isA<DoubleFloat_O>() || nb.isA<DoubleFloat_O>())
+    return DoubleFloat_O::create(as_double_float(na) / as_double_float(nb));
+
+  if (na.single_floatp() || nb.single_floatp())
+    return SingleFloat_dummy_O::create(as_single_float(na) / as_single_float(nb));
+
+#ifdef CLASP_SHORT_FLOAT
+  if (na.short_floatp() || nb.short_floatp())
+    return ShortFloat_O::create(as_short_float(na) / as_short_float(nb));
+#endif
+
+  Ratio_sp ra = na.asOrNull<Ratio_O>(), rb = nb.asOrNull<Ratio_O>();
+  if (ra && rb)
+    return Rational_O::create(ra->numerator() * rb->denominator(), ra->denominator() * rb->numerator());
+  if (ra)
+    return Rational_O::create(ra->numerator(), ra->denominator() * nb);
+  if (rb)
+    return Rational_O::create(na * rb->denominator(), rb->numerator());
+
+  return Rational_O::create(na, nb);
 }
 
 CL_LAMBDA(&rest numbers);
@@ -639,7 +407,7 @@ CL_DEFUN Number_sp cl___PLUS_(List_sp numbers) {
     return make_fixnum(0);
   Number_sp result = gc::As<Number_sp>(oCar(numbers));
   for (auto cur : (List_sp)oCdr(numbers)) {
-    result = contagion_add(result, gc::As<Number_sp>(oCar(cur)));
+    result += gc::As<Number_sp>(oCar(cur));
   }
   return result;
 }
@@ -654,7 +422,7 @@ CL_DEFUN Number_sp cl___TIMES_(List_sp numbers) {
     return make_fixnum(1);
   Number_sp result = gc::As<Number_sp>(oCar(numbers));
   for (auto cur : (List_sp)oCdr(numbers)) {
-    result = contagion_mul(result, gc::As<Number_sp>(oCar(cur)));
+    result *= gc::As<Number_sp>(oCar(cur));
   }
   return result;
 }
@@ -670,7 +438,7 @@ CL_DEFUN Number_sp cl___MINUS_(Number_sp num, List_sp numbers) {
   }
   Number_sp result = num;
   for (auto cur : (List_sp)(numbers)) {
-    result = contagion_sub(result, gc::As<Number_sp>(oCar(cur)));
+    result -= gc::As<Number_sp>(oCar(cur));
   }
   return result;
 }
@@ -684,7 +452,7 @@ CL_DEFUN Number_sp cl___DIVIDE_(Number_sp num, List_sp numbers) {
   }
   Number_sp result = num;
   for (auto cur : (List_sp)(numbers)) {
-    result = contagion_div(result, gc::As<Number_sp>(oCar(cur)));
+    result /= gc::As<Number_sp>(oCar(cur));
   }
   return result;
 }
@@ -711,339 +479,258 @@ CL_DEFUN Number_sp cl___DIVIDE_(Number_sp num, List_sp numbers) {
     See file '../Copyright' for full details.
 */
 
-/*
- * In Common Lisp, comparisons between floats and integers are performed
- * via an intermediate rationalization of the floating point number. In C,
- * on the other hand, the comparison is performed by converting the integer
- * into a floating point number. However, if the double type is too small
- * this may lead to a loss of precision and two numbers being told equal
- * when, by Common Lisp standards, would not.
- */
-static int double_fix_compare(Fixnum n, double d) {
-  if ((double)n < d) {
-    return -1;
-  } else if ((double)n > d) {
-    return +1;
-  } else if (sizeof(double) > sizeof(Fixnum)) {
-    return 0;
-  } else {
-    /* When we reach here, the double type has no
-     * significant decimal part. However, as explained
-     * above, the double type is too small and integers
-     * may coerce to the same double number giving a false
-     * positive. Hence we perform the comparison in
-     * integer space. */
-    Fixnum m = d;
-    if (n == m) {
-      return 0;
-    } else if (n > m) {
-      return +1;
-    } else {
-      return -1;
-    }
-  }
-}
-
-#ifdef CLASP_LONG_FLOAT
-static int long_double_fix_compare(Fixnum n, LongFloat d) {
-  if ((LongFloat)n < d) {
-    return -1;
-  } else if ((LongFloat)n > d) {
-    return +1;
-  } else if (sizeof(LongFloat) > sizeof(Fixnum)) {
-    return 0;
-  } else {
-    Fixnum m = d;
-    if (n == m) {
-      return 0;
-    } else if (n > m) {
-      return +1;
-    } else {
-      return -1;
-    }
-  }
-}
-#endif
-
 /* ----------------------------------------------------------------------
 
-   basic_compare
+   Number_O::compare
 
 */
+
+template <std::floating_point Float> int compare_bignum_float(Bignum_sp x, Float y) {
+  constexpr size_t limb_width = 8 * sizeof(mp_limb_t);
+  auto q = float_convert<Float>::float_to_quadruple(y);
+
+  if (q.category != float_convert<Float>::category::finite)
+    return q.sign;
+
+  bool negative = Real_O::minusp(x);
+
+  if (negative && (q.significand == 0 || q.sign > 0))
+    return -1;
+
+  if (!negative && (q.significand == 0 || q.sign < 0))
+    return 1;
+
+  int64_t xlen = clasp_integer_length(x);
+  int64_t ylen = std::bit_width(q.significand) + q.exponent;
+
+  if (xlen < ylen)
+    return -q.sign;
+
+  if (xlen > ylen)
+    return q.sign;
+
+  const mp_limb_t* limbs = x->limbs();
+
+  size_t width = std::bit_width(q.significand);
+  typename float_convert<Float>::uint_t xsig = 0;
+  bool first = true;
+
+  for (mp_size_t i = std::abs(x->length()) - 1; i > -1; i--) {
+    mp_limb_t z = limbs[i];
+
+    if (width > 0) {
+      auto w = first ? std::bit_width(z) : limb_width;
+      auto shift = std::min(w, width);
+      xsig = (xsig << shift) | (z >> (w - shift));
+      z &= (mp_limb_t{1} << (w - shift)) - mp_limb_t{1};
+      width -= shift;
+      first = false;
+
+      // if (width == 0)
+      //   fmt::print("{} {}\n", xsig, q.significand);
+
+      if (width == 0 && xsig < q.significand)
+        return -q.sign;
+      if (width == 0 && xsig > q.significand)
+        return q.sign;
+    }
+
+    if (width == 0 && z != 0)
+      return q.sign;
+  }
+
+  return 0;
+}
+
+template <typename T> inline int compare_pod(T x, T y) {
+  if (x < y)
+    return -1;
+  if (x > y)
+    return 1;
+  return 0;
+}
+
+template <std::floating_point Float> inline int compare_fixnum_float(Fixnum a, Float b) {
+  // We can't use C's comparison because it promotes ints to floats,
+  // which is the opposite of how CL is defined.
+  // If b is out of range, this is easy. Also covers infinities.
+  // We do this instead of the more obvious most_positive_fixnum
+  // comparison mpf, being not-a-power-of-two, cannot be exactly
+  // represented and clang whines about that.
+  if (b > ((gc::Fixnum)1 << gc::fixnum_bits))
+    return -1;
+  else if (b < -((gc::Fixnum)1 << gc::fixnum_bits))
+    return 1;
+
+  gctools::Fixnum ib = b; // per C std, truncates (towards zero).
+  if (a < ib)
+    return -1;
+  else if (a > ib)
+    return 1;
+  // a == trunc(b), so we have to check on b's frac part.
+  // examples: 3.2 3, -3.2 -3, -0.2 0, 0.2 0, 0.0 0
+  else if (b > ib)
+    return -1;
+  else if (b < ib)
+    return 1;
+  else
+    return 0;
+}
+
+template <std::floating_point Float> inline int compare_rational_float(Ratio_sp x, Float y) {
+  if (std::isinf(y))
+    return std::signbit(y) ? 1 : -1;
+  return Number_O::compare(x, float_to_rational(y));
+}
 
 /*! Return -1 if a<b
       0 if a == b
       +1 if a > b
     */
-int basic_compare(Number_sp na, Number_sp nb) {
-  MATH_DISPATCH_BEGIN(na, nb) {
-  case_Fixnum_v_Fixnum : {
-    gctools::Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
-    gctools::Fixnum fb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
-    if (fa < fb)
-      return -1;
-    else if (fa > fb)
-      return 1;
-    else
-      return 0;
+int Number_O::compare(const Real_sp na, const Real_sp nb) {
+  Ratio_sp ra = na.asOrNull<Ratio_O>(), rb = nb.asOrNull<Ratio_O>();
+  if (ra && rb) {
+    // First, divide through the ratios and compare those.
+    // That can give us an answer not requiring consing larger numbers.
+    // Failing that, use a/b <=> c/d is equivalent to ad <=> bc.
+    Integer_sp ta = clasp_integer_divide(ra->numerator(), ra->denominator());
+    Integer_sp tb = clasp_integer_divide(rb->numerator(), rb->denominator());
+    int res = compare(ta, tb);
+    if (res != 0)
+      return res;
+    else {
+      return compare(ra->numerator() * rb->denominator(), rb->numerator() * ra->denominator());
+    }
   }
-  case_Fixnum_v_Bignum : {
-    // Bignums are outside the range of fixnums, so this is easy.
-    // That is, negative bignums are < all fixnums,
-    // and positive bignums are > all fixnums.
-    Bignum_sp bb = gc::As_unsafe<Bignum_sp>(nb);
-    if (bb->minusp_())
-      return 1;
-    else
-      return -1;
-  }
-  case_Fixnum_v_Ratio:
-  case_Bignum_v_Ratio : {
-    Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    Integer_sp trunc = clasp_integer_divide(rb->numerator(), rb->denominator());
-    int res = basic_compare(na, trunc);
+  if (ra) {
+#ifdef CLASP_LONG_FLOAT
+    if (nb.isA<LongFloat_O>())
+      return compare_rational_float(ra, nb.as_unsafe<LongFloat_O>()->get());
+#endif
+    if (nb.isA<DoubleFloat_O>())
+      return compare_rational_float(ra, nb.as_unsafe<DoubleFloat_O>()->get());
+    if (nb.single_floatp())
+      return compare_rational_float(ra, nb.unsafe_single_float());
+#ifdef CLASP_SHORT_FLOAT
+    if (nb.short_floatp())
+      return compare_rational_float(ra, nb.unsafe_short_float());
+#endif
+    Integer_sp trunc = clasp_integer_divide(ra->numerator(), ra->denominator());
+    int res = compare(trunc, nb);
     if (res == 0)
-      return (clasp_minusp(rb) ? 1 : -1);
+      return (Real_O::minusp(ra) ? -1 : 1);
     else
       return res;
   }
-  // We can't use C's comparison because it promotes ints to floats,
-  // which is the opposite of how CL is defined.
-  case_Fixnum_v_SingleFloat : {
-    float b = nb.unsafe_single_float();
-    // If b is out of range, this is easy. Also covers infinities.
-    // We do this instead of the more obvious most_positive_fixnum
-    // comparison mpf, being not-a-power-of-two, cannot be exactly
-    // represented and clang whines about that.
-    if (b > ((gc::Fixnum)1 << gc::fixnum_bits))
-      return -1;
-    else if (b < -((gc::Fixnum)1 << gc::fixnum_bits))
-      return 1;
-
-    gctools::Fixnum a = na.unsafe_fixnum();
-    gctools::Fixnum ib = b; // per C std, truncates (towards zero).
-    if (a < ib)
-      return -1;
-    else if (a > ib)
-      return 1;
-    // a == trunc(b), so we have to check on b's frac part.
-    // examples: 3.2 3, -3.2 -3, -0.2 0, 0.2 0, 0.0 0
-    else if (b > ib)
-      return -1;
-    else if (b < ib)
-      return 1;
+  if (rb) {
+#ifdef CLASP_LONG_FLOAT
+    if (na.isA<LongFloat_O>())
+      return -compare_rational_float(rb, na.as_unsafe<LongFloat_O>()->get());
+#endif
+    if (na.isA<DoubleFloat_O>())
+      return -compare_rational_float(rb, na.as_unsafe<DoubleFloat_O>()->get());
+    if (na.single_floatp())
+      return -compare_rational_float(rb, na.unsafe_single_float());
+#ifdef CLASP_SHORT_FLOAT
+    if (na.short_floatp())
+      return -compare_rational_float(rb, na.unsafe_short_float());
+#endif
+    Integer_sp trunc = clasp_integer_divide(rb->numerator(), rb->denominator());
+    int res = compare(na, trunc);
+    if (res == 0)
+      return (Real_O::minusp(rb) ? 1 : -1);
     else
-      return 0;
+      return res;
   }
-  // FIXME: Efficiency
-  case_Bignum_v_SingleFloat:
-  case_Ratio_v_SingleFloat : {
-    float s = nb.unsafe_single_float();
-    if (std::isinf(s)) {
-      if (s > 0.0f)
-        return -1;
-      else
-        return 1;
-    } else
-      return basic_compare(na, DoubleFloat_O::rational(s));
-  }
-  case_Fixnum_v_DoubleFloat : {
-    double b = clasp_to_double(nb);
-    if (b > ((gc::Fixnum)1 << gc::fixnum_bits))
-      return -1;
-    else if (b < -((gc::Fixnum)1 << gc::fixnum_bits))
-      return 1;
 
-    gctools::Fixnum a = na.unsafe_fixnum();
-    gctools::Fixnum ib = b;
-    if (a < ib)
-      return -1;
-    else if (a > ib)
-      return 1;
-    else if (b > ib)
-      return -1;
-    else if (b < ib)
-      return 1;
-    else
-      return 0;
-  }
-  case_Bignum_v_DoubleFloat:
-  case_Ratio_v_DoubleFloat : {
-    DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(nb);
-    if (d->isinf_()) {
-      if (d->plusp_())
-        return -1;
-      else
-        return 1;
-    } else
-      return basic_compare(na, d->rational_());
-  }
-  case_Bignum_v_Fixnum : {
-    Bignum_sp ba = gc::As_unsafe<Bignum_sp>(na);
+  Bignum_sp ba = na.asOrNull<Bignum_O>(), bb = nb.asOrNull<Bignum_O>();
+  if (ba && bb)
+    return core__next_compare(ba, bb);
+  if (ba) {
+#ifdef CLASP_LONG_FLOAT
+    if (nb.isA<LongFloat_O>())
+      return compare_bignum_float(ba, nb.as_unsafe<LongFloat_O>()->get());
+#endif
+    if (nb.isA<DoubleFloat_O>())
+      return compare_bignum_float(ba, nb.as_unsafe<DoubleFloat_O>()->get());
+    if (nb.single_floatp())
+      return compare_bignum_float(ba, nb.unsafe_single_float());
+#ifdef CLASP_SHORT_FLOAT
+    if (nb.short_floatp())
+      return compare_bignum_float(ba, nb.unsafe_short_float());
+#endif
     if (ba->plusp_())
       return 1;
     else
       return -1;
   }
-  case_Bignum_v_Bignum:
-    return core__next_compare(gc::As_unsafe<Bignum_sp>(na), gc::As_unsafe<Bignum_sp>(nb));
-  case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum : {
-    Ratio_sp ra = gc::As<Ratio_sp>(na);
-    Integer_sp trunc = clasp_integer_divide(ra->numerator(), ra->denominator());
-    int res = basic_compare(trunc, nb);
-    if (res == 0)
-      return (clasp_minusp(ra) ? -1 : 1);
-    else
-      return res;
-  }
-  case_Ratio_v_Ratio : {
-    // First, divide through the ratios and compare those.
-    // That can give us an answer not requiring consing larger numbers.
-    // Failing that, use a/b <=> c/d is equivalent to ad <=> bc.
-    Ratio_sp ra = gc::As<Ratio_sp>(na);
-    Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    Integer_sp ta = clasp_integer_divide(ra->numerator(), ra->denominator());
-    Integer_sp tb = clasp_integer_divide(rb->numerator(), rb->denominator());
-    int res = basic_compare(ta, tb);
-    if (res != 0)
-      return res;
-    else {
-      Number_sp left = contagion_mul(ra->numerator(), rb->denominator());
-      Number_sp right = contagion_mul(rb->numerator(), ra->denominator());
-      return basic_compare(left, right);
-    }
-  }
-  case_SingleFloat_v_Fixnum : {
-    float a = na.unsafe_single_float();
-    if (a > ((gc::Fixnum)1 << gc::fixnum_bits))
-      return 1;
-    else if (a < -((gc::Fixnum)1 << gc::fixnum_bits))
-      return -1;
-
-    gctools::Fixnum b = nb.unsafe_fixnum();
-    gctools::Fixnum ia = a;
-    if (ia < b)
-      return -1;
-    else if (ia > b)
-      return 1;
-    else if (a > ia)
-      return 1;
-    else if (a < ia)
-      return -1;
-    else
-      return 0;
-  }
-  case_SingleFloat_v_Bignum:
-  case_SingleFloat_v_Ratio : {
-    float s = na.unsafe_single_float();
-    if (std::isinf(s)) {
-      if (s > 0.0f)
-        return 1;
-      else
-        return -1;
-    } else
-      return basic_compare(DoubleFloat_O::rational(s), nb);
-  }
-  case_SingleFloat_v_SingleFloat : {
-    float a = na.unsafe_single_float();
-    float b = nb.unsafe_single_float();
-    if (a < b)
-      return -1;
-    else if (a > b)
-      return 1;
-    else
-      return 0;
-  }
-  case_DoubleFloat_v_Fixnum : {
-    double a = clasp_to_double(na);
-    if (a > ((gc::Fixnum)1 << gc::fixnum_bits))
-      return 1;
-    else if (a < -((gc::Fixnum)1 << gc::fixnum_bits))
-      return -1;
-
-    gctools::Fixnum b = nb.unsafe_fixnum();
-    gctools::Fixnum ia = a;
-    if (ia < b)
-      return -1;
-    else if (a > b)
-      return 1;
-    else if (a > ia)
-      return 1;
-    else if (a < ia)
-      return -1;
-    else
-      return 0;
-  }
-  case_DoubleFloat_v_Bignum:
-  case_DoubleFloat_v_Ratio : {
-    DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(na);
-    if (d->isinf_()) {
-      if (d->plusp_())
-        return 1;
-      else
-        return -1;
-    } else
-      return basic_compare(d->rational_(), nb);
-  }
-  case_SingleFloat_v_DoubleFloat:
-  case_DoubleFloat_v_SingleFloat:
-  case_DoubleFloat_v_DoubleFloat : {
-    double a = clasp_to_double(na);
-    double b = clasp_to_double(nb);
-    if (a < b)
-      return -1;
-    else if (a > b)
-      return 1;
-    else
-      return 0;
-  }
+  if (bb) {
 #ifdef CLASP_LONG_FLOAT
-  case_Fixnum_v_LongFloat:
-    return long_double_fix_compare(gc::As<Fixnum_sp>(na)->get(), nb.as<LongFloat_O>()->get());
-    break;
-  case_LongFloat_v_Fixnum:
-    return -long_double_fix_compare(gc::As<Fixnum_sp>(nb)->get(), na.as<LongFloat_O>()->get());
-    break;
-  case_Bignum_v_LongFloat:
-  case_Ratio_v_LongFloat:
-  case_SingleFloat_v_LongFloat:
-  case_DoubleFloat_v_LongFloat:
-  case_LongFloat_v_Ratio:
-  case_LongFloat_v_SingleFloat:
-  case_LongFloat_v_DoubleFloat:
-  case_LongFloat_v_LongFloat : {
-    LongFloat a = na->as_long_float();
-    LongFloat b = nb->as_long_float();
-    if (a < b)
-      return -1;
-    if (a == b)
-      return 0;
-    return 1;
-  }
+    if (na.isA<LongFloat_O>())
+      return -compare_bignum_float(bb, na.as_unsafe<LongFloat_O>()->get());
 #endif
-  default:
-    not_comparable_error(na, nb);
-  };
-  MATH_DISPATCH_END();
-}
-
-/// this is used for comparison of reals, not for complex, so use Real_sp
-T_sp numbers_monotonic(int s, int t, List_sp args) {
-  Real_sp c = gc::As<Real_sp>(oCar(args));
-  Real_sp d;
-  int dir;
-  args = oCdr(args);
-  while (args.notnilp()) {
-    d = gc::As<Real_sp>(oCar(args));
-    dir = s * basic_compare(c, d);
-    if (dir < t)
-      return _lisp->_false();
-    c = d;
-    args = oCdr(args);
+    if (na.isA<DoubleFloat_O>())
+      return -compare_bignum_float(bb, na.as_unsafe<DoubleFloat_O>()->get());
+    if (na.single_floatp())
+      return -compare_bignum_float(bb, na.unsafe_single_float());
+#ifdef CLASP_SHORT_FLOAT
+    if (na.short_floatp())
+      return -compare_bignum_float(bb, na.unsafe_short_float());
+#endif
+    if (bb->minusp_())
+      return 1;
+    else
+      return -1;
   }
-  return _lisp->_true();
-};
+
+  if (na.fixnump() && nb.fixnump())
+    return compare_pod(na.unsafe_fixnum(), nb.unsafe_fixnum());
+  if (na.fixnump()) {
+#ifdef CLASP_LONG_FLOAT
+    if (nb.isA<LongFloat_O>())
+      return compare_fixnum_float(na.unsafe_fixnum(), nb.as_unsafe<LongFloat_O>()->get());
+#endif
+    if (nb.isA<DoubleFloat_O>())
+      return compare_fixnum_float(na.unsafe_fixnum(), nb.as_unsafe<DoubleFloat_O>()->get());
+    if (nb.single_floatp())
+      return compare_fixnum_float(na.unsafe_fixnum(), nb.unsafe_single_float());
+#ifdef CLASP_SHORT_FLOAT
+    if (nb.short_floatp())
+      return compare_fixnum_float(na.unsafe_fixnum(), nb.unsafe_short_float());
+#endif
+    not_comparable_error(na, nb);
+  }
+  if (nb.fixnump()) {
+#ifdef CLASP_LONG_FLOAT
+    if (na.isA<LongFloat_O>())
+      return -compare_fixnum_float(nb.unsafe_fixnum(), na.as_unsafe<LongFloat_O>()->get());
+#endif
+    if (na.isA<DoubleFloat_O>())
+      return -compare_fixnum_float(nb.unsafe_fixnum(), na.as_unsafe<DoubleFloat_O>()->get());
+    if (na.single_floatp())
+      return -compare_fixnum_float(nb.unsafe_fixnum(), na.unsafe_single_float());
+#ifdef CLASP_SHORT_FLOAT
+    if (na.short_floatp())
+      return -compare_fixnum_float(nb.unsafe_fixnum(), na.unsafe_short_float());
+#endif
+    not_comparable_error(na, nb);
+  }
+
+#ifdef CLASP_LONG_FLOAT
+  if (na.isA<LongFloat_O>() || nb.isA<LongFloat_O>())
+    return compare_pod(Number_O::as_long_float(na), Number_O::as_long_float(nb));
+#endif
+  if (na.isA<DoubleFloat_O>() || nb.isA<DoubleFloat_O>())
+    return compare_pod(Number_O::as_double_float(na), Number_O::as_double_float(nb));
+  if (na.single_floatp() || nb.single_floatp())
+    return compare_pod(Number_O::as_single_float(na), Number_O::as_single_float(nb));
+#ifdef CLASP_SHORT_FLOAT
+  if (na.short_floatp() || nb.short_floatp())
+    return compare_pod(Number_O::as_short_float(na), Number_O::as_short_float(nb));
+#endif
+
+  not_comparable_error(na, nb);
+}
 
 T_sp numbers_monotonic_vaslist(int s, int t, Vaslist_sp args) {
   Real_sp c = gc::As<Real_sp>(args->next_arg());
@@ -1051,7 +738,7 @@ T_sp numbers_monotonic_vaslist(int s, int t, Vaslist_sp args) {
   int dir;
   while (args->nargs() > 0) {
     d = gc::As<Real_sp>(args->next_arg());
-    dir = s * basic_compare(c, d);
+    dir = s * Number_O::compare(c, d);
     if (dir < t)
       return _lisp->_false();
     c = d;
@@ -1062,22 +749,22 @@ T_sp numbers_monotonic_vaslist(int s, int t, Vaslist_sp args) {
 CL_NAME("TWO-ARG-<");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN bool two_arg__LT_(Number_sp x, Number_sp y) { return basic_compare(x, y) == -1; }
+CL_DEFUN bool two_arg__LT_(Number_sp x, Number_sp y) { return Number_O::compare(x, y) == -1; }
 
 CL_NAME("TWO-ARG-<=");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN bool two_arg__LE_(Number_sp x, Number_sp y) { return basic_compare(x, y) != 1; }
+CL_DEFUN bool two_arg__LE_(Number_sp x, Number_sp y) { return Number_O::compare(x, y) != 1; }
 
 CL_NAME("TWO-ARG->");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN bool two_arg__GT_(Number_sp x, Number_sp y) { return basic_compare(x, y) == 1; }
+CL_DEFUN bool two_arg__GT_(Number_sp x, Number_sp y) { return Number_O::compare(x, y) == 1; }
 
 CL_NAME("TWO-ARG->=");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN bool two_arg__GE_(Number_sp x, Number_sp y) { return basic_compare(x, y) != -1; }
+CL_DEFUN bool two_arg__GE_(Number_sp x, Number_sp y) { return Number_O::compare(x, y) != -1; }
 
 CL_LAMBDA(core:&va-rest args);
 CL_UNWIND_COOP(true);
@@ -1119,119 +806,133 @@ CL_DEFUN T_sp cl___GE_(Vaslist_sp args) {
   return numbers_monotonic_vaslist(1, 0, args);
 };
 
+bool basic_equalp(Number_sp na, Number_sp nb);
+
+template <std::floating_point Float> bool equalp_ratio_float(Ratio_sp x, Float y) {
+  auto q = float_convert<Float>::float_to_quadruple(y);
+
+  if (q.category != float_convert<Float>::category::finite || q.significand == 0 || q.exponent >= 0 ||
+      (q.sign > 0 && Real_O::minusp(x)) || (q.sign < 0 && Real_O::plusp(x)))
+    return false;
+
+  return basic_equalp(x, float_to_rational(y));
+}
+
 /*! Return true if two numbers are equal otherwise false */
 bool basic_equalp(Number_sp na, Number_sp nb) {
-  MATH_DISPATCH_BEGIN(na, nb) {
-  case_Fixnum_v_Fixnum : {
-    gctools::Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
-    gctools::Fixnum fb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
-    return fa == fb;
-  }
-  case_Fixnum_v_Bignum:
-  case_Bignum_v_Fixnum:
-    // bignums are never in fixnum range.
-    return false;
-  case_Fixnum_v_Ratio:
-  case_Ratio_v_Fixnum:
-  case_Bignum_v_Ratio:
-  case_Ratio_v_Bignum:
+  Complex_sp ca = na.asOrNull<Complex_O>(), cb = nb.asOrNull<Complex_O>();
+  if (ca && cb)
+    return basic_equalp(ca->real(), cb->real()) && basic_equalp(ca->imaginary(), cb->imaginary());
+  if (ca)
+    return Number_O::zerop(ca->imaginary()) && basic_equalp(ca->real(), nb);
+  if (cb)
+    return Number_O::zerop(cb->imaginary()) && basic_equalp(cb->real(), na);
+
+  Ratio_sp ra = na.asOrNull<Ratio_O>(), rb = nb.asOrNull<Ratio_O>();
+  if (ra && rb)
+    return basic_equalp(ra->numerator(), rb->numerator()) && basic_equalp(ra->denominator(), rb->denominator());
+  if (ra) {
+#ifdef CLASP_LONG_FLOAT
+    if (nb.isA<LongFloat_O>())
+      return equalp_ratio_float(ra, nb.as_unsafe<LongFloat_O>()->get());
+#endif
+    if (nb.isA<DoubleFloat_O>())
+      return equalp_ratio_float(ra, nb.as_unsafe<DoubleFloat_O>()->get());
+    if (nb.single_floatp())
+      return equalp_ratio_float(ra, nb.unsafe_single_float());
+#ifdef CLASP_SHORT_FLOAT
+    if (nb.short_floatp())
+      return equalp_ratio_float(ra, nb.unsafe_short_float());
+#endif
     // Normalized ratios are never integers.
     return false;
-  case_Fixnum_v_SingleFloat:
-  case_Bignum_v_SingleFloat:
-  case_Ratio_v_SingleFloat : {
-    float s = nb.unsafe_single_float();
-    if (std::isinf(s))
-      return false;
-    else
-      return basic_equalp(na, DoubleFloat_O::rational(s));
   }
-  case_Fixnum_v_DoubleFloat:
-  case_Bignum_v_DoubleFloat:
-  case_Ratio_v_DoubleFloat : {
-    DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(nb);
-    if (d->isinf_())
-      return false;
-    else
-      return basic_equalp(na, d->rational_());
+  if (rb) {
+#ifdef CLASP_LONG_FLOAT
+    if (na.isA<LongFloat_O>())
+      return equalp_ratio_float(rb, na.as_unsafe<LongFloat_O>()->get());
+#endif
+    if (na.isA<DoubleFloat_O>())
+      return equalp_ratio_float(rb, na.as_unsafe<DoubleFloat_O>()->get());
+    if (na.single_floatp())
+      return equalp_ratio_float(rb, na.unsafe_single_float());
+#ifdef CLASP_SHORT_FLOAT
+    if (na.short_floatp())
+      return equalp_ratio_float(rb, na.unsafe_short_float());
+#endif
+    // Normalized ratios are never integers.
+    return false;
   }
-  case_Bignum_v_Bignum : { return (core__next_compare(gc::As_unsafe<Bignum_sp>(na), gc::As_unsafe<Bignum_sp>(nb)) == 0); }
-  case_Ratio_v_Ratio : {
-    // ratios are normalized
-    Ratio_sp ra = gc::As<Ratio_sp>(na);
-    Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    return (basic_equalp(ra->numerator(), rb->numerator()) && basic_equalp(ra->denominator(), rb->denominator()));
+
+  Bignum_sp ba = na.asOrNull<Bignum_O>(), bb = nb.asOrNull<Bignum_O>();
+  if (ba && bb)
+    return core__next_compare(ba, bb) == 0;
+  if (ba) {
+#ifdef CLASP_LONG_FLOAT
+    if (nb.isA<LongFloat_O>())
+      return compare_bignum_float(ba, nb.as_unsafe<LongFloat_O>()->get()) == 0;
+#endif
+    if (nb.isA<DoubleFloat_O>())
+      return compare_bignum_float(ba, nb.as_unsafe<DoubleFloat_O>()->get()) == 0;
+    if (nb.single_floatp())
+      return compare_bignum_float(ba, nb.unsafe_single_float()) == 0;
+#ifdef CLASP_SHORT_FLOAT
+    if (nb.short_floatp())
+      return compare_bignum_float(ba, nb.unsafe_short_float()) == 0;
+#endif
+    // bignums are never in fixnum range.
+    return false;
   }
-  case_SingleFloat_v_Fixnum:
-  case_SingleFloat_v_Bignum:
-  case_SingleFloat_v_Ratio : {
-    float s = na.unsafe_single_float();
-    if (std::isinf(s))
-      return false;
-    else
-      return basic_equalp(DoubleFloat_O::rational(s), nb);
+  if (bb) {
+#ifdef CLASP_LONG_FLOAT
+    if (na.isA<LongFloat_O>())
+      return compare_bignum_float(bb, na.as_unsafe<LongFloat_O>()->get()) == 0;
+#endif
+    if (na.isA<DoubleFloat_O>())
+      return compare_bignum_float(bb, na.as_unsafe<DoubleFloat_O>()->get()) == 0;
+    if (na.single_floatp())
+      return compare_bignum_float(bb, na.unsafe_single_float()) == 0;
+#ifdef CLASP_SHORT_FLOAT
+    if (na.short_floatp())
+      return compare_bignum_float(bb, na.unsafe_short_float()) == 0;
+#endif
+    // bignums are never in fixnum range.
+    return false;
   }
-  case_SingleFloat_v_SingleFloat : {
-    float a = clasp_to_float(na);
-    float b = clasp_to_float(nb);
-    return a == b;
-  }
-  case_DoubleFloat_v_Fixnum:
-  case_DoubleFloat_v_Bignum:
-  case_DoubleFloat_v_Ratio : {
-    DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(na);
-    if (d->isinf_())
-      return false;
-    else
-      return basic_equalp(d->rational_(), nb);
-  }
-  case_SingleFloat_v_DoubleFloat:
-  case_DoubleFloat_v_SingleFloat:
-  case_DoubleFloat_v_DoubleFloat : {
-    double a = clasp_to_double(na);
-    double b = clasp_to_double(nb);
-    return a == b;
-  }
-  case_Fixnum_v_LongFloat:
-  case_Bignum_v_LongFloat:
-  case_Ratio_v_LongFloat:
-  case_SingleFloat_v_LongFloat:
-  case_DoubleFloat_v_LongFloat:
-  case_LongFloat_v_Fixnum:
-  case_LongFloat_v_Ratio:
-  case_LongFloat_v_SingleFloat:
-  case_LongFloat_v_DoubleFloat:
-  case_LongFloat_v_LongFloat : {
-    LongFloat a = clasp_to_long_float(na);
-    LongFloat b = clasp_to_long_float(nb);
-    return a == b;
-  }
-  case_Complex_v_LongFloat:
-  case_Complex_v_Fixnum:
-  case_Complex_v_Bignum:
-  case_Complex_v_Ratio:
-  case_Complex_v_SingleFloat:
-  case_Complex_v_DoubleFloat : {
-    Number_sp aux = na;
-    na = nb;
-    nb = aux;
-    goto Complex_v_Y;
-  }
-  case_Fixnum_v_Complex:
-  case_Bignum_v_Complex:
-  case_Ratio_v_Complex:
-  case_SingleFloat_v_Complex:
-  case_DoubleFloat_v_Complex:
-  case_LongFloat_v_Complex:
-  Complex_v_Y:
-    return (clasp_zerop(gc::As<Complex_sp>(nb)->imaginary()) && basic_equalp(na, gc::As<Complex_sp>(nb)->real()));
-  case_Complex_v_Complex:
-    return (basic_equalp(gc::As<Complex_sp>(na)->real(), gc::As<Complex_sp>(nb)->real()) &&
-            basic_equalp(gc::As<Complex_sp>(na)->imaginary(), gc::As<Complex_sp>(nb)->imaginary()));
-  default:
-    not_comparable_error(na, nb);
-  };
-  MATH_DISPATCH_END();
+
+#ifdef CLASP_LONG_FLOAT
+  if (na.isA<LongFloat_O>())
+    return nb.fixnump() ? compare_fixnum_float(nb.unsafe_fixnum(), na.as_unsafe<LongFloat_O>()->get()) == 0
+                        : na.as_unsafe<LongFloat_O>()->get() == Number_O::as_long_float(nb);
+  if (nb.isA<LongFloat_O>())
+    return na.fixnump() ? compare_fixnum_float(na.unsafe_fixnum(), nb.as_unsafe<LongFloat_O>()->get()) == 0
+                        : nb.as_unsafe<LongFloat_O>()->get() == Number_O::as_long_float(na);
+#endif
+
+  if (na.isA<DoubleFloat_O>())
+    return nb.fixnump() ? compare_fixnum_float(nb.unsafe_fixnum(), na.as_unsafe<DoubleFloat_O>()->get()) == 0
+                        : na.as_unsafe<DoubleFloat_O>()->get() == Number_O::as_double_float(nb);
+  if (nb.isA<DoubleFloat_O>())
+    return na.fixnump() ? compare_fixnum_float(na.unsafe_fixnum(), nb.as_unsafe<DoubleFloat_O>()->get()) == 0
+                        : nb.as_unsafe<DoubleFloat_O>()->get() == Number_O::as_double_float(na);
+
+  if (na.single_floatp())
+    return nb.fixnump() ? compare_fixnum_float(nb.unsafe_fixnum(), na.unsafe_single_float()) == 0
+                        : na.unsafe_single_float() == Number_O::as_single_float(nb);
+  if (nb.single_floatp())
+    return na.fixnump() ? compare_fixnum_float(na.unsafe_fixnum(), nb.unsafe_single_float()) == 0
+                        : nb.unsafe_single_float() == Number_O::as_single_float(na);
+
+#ifdef CLASP_SHORT_FLOAT
+  if (na.short_floatp())
+    return nb.fixnump() ? compare_fixnum_float(nb.unsafe_fixnum(), na.unsafe_short_float()) == 0
+                        : na.unsafe_short_float() == Number_O::as_short_float(nb);
+  if (nb.short_floatp())
+    return na.fixnump() ? compare_fixnum_float(na.unsafe_fixnum(), nb.unsafe_short_float()) == 0
+                        : nb.unsafe_short_float() == Number_O::as_short_float(na);
+#endif
+
+  return na.unsafe_fixnum() == nb.unsafe_fixnum();
 }
 
 CL_NAME("TWO-ARG-=");
@@ -1333,8 +1034,6 @@ SYMBOL_EXPORT_SC_(CorePkg, logand_2op);
 SYMBOL_EXPORT_SC_(CorePkg, logxor_2op);
 SYMBOL_EXPORT_SC_(CorePkg, logior_2op);
 SYMBOL_EXPORT_SC_(CorePkg, logeqv_2op);
-
-Number_sp Number_O::create(double val) { return DoubleFloat_O::create(val); }
 
 bool Number_O::equal(T_sp obj) const {
   if (this->eq(obj))
@@ -1467,18 +1166,17 @@ Integer_sp Integer_O::create(unsigned long v) {
 }
 #endif
 
-Integer_sp Integer_O::create(std::floating_point auto v) {
+/*Integer_sp Integer_O::create(std::floating_point auto v) {
   // Why >= and <? Because most-negative-fixnum is a negative power of
   // two, exactly representable by a float. most-positive-fixnum is
   // slightly less than a positive power of two. So (double)mpf is a
   // double that, cast to an integer, will be (1+ mpf). We want a bignum
   // out of that.
-  if (v >= static_cast<decltype(v)>(gc::most_negative_fixnum) &&
-      v < static_cast<decltype(v)>(gc::most_positive_fixnum))
+  if (v >= static_cast<decltype(v)>(gc::most_negative_fixnum) && v < static_cast<decltype(v)>(gc::most_positive_fixnum))
     return clasp_make_fixnum(v);
   else
     return Bignum_O::create(v);
-}
+}*/
 
 template Integer_sp Integer_O::create(float v);
 template Integer_sp Integer_O::create(double v);
@@ -1506,60 +1204,17 @@ SYMBOL_EXPORT_SC_(ClPkg, logxor);
 
 namespace core {
 
-// ------------------------------------------------------------------------
-
-Number_sp ShortFloat_O::reciprocal_() const { return ShortFloat_O::create(1.0 / this->_Value); }
-
-Number_sp ShortFloat_O::signum_() const { return ShortFloat_O::create(this->_Value > 0.0 ? 1 : (this->_Value < 0.0 ? -1 : 0)); }
-
-float ShortFloat_O::as_float_() const { return (float)this->_Value; }
-
-double ShortFloat_O::as_double_() const { return (double)this->_Value; }
-
-LongFloat ShortFloat_O::as_long_float_() const { return (LongFloat)this->_Value; }
-
-CL_LISPIFY_NAME("core:castToInteger");
-CL_DEFMETHOD Integer_sp ShortFloat_O::castToInteger() const {
-  if (this->_Value < 0) {
-    float f = -this->_Value;
-    int cf = *(int*)&f;
-    return gc::As<Integer_sp>(clasp_negate(Integer_O::create((gc::Fixnum)cf)));
-  }
-  int cf = *(int*)&this->_Value;
-  return Integer_O::create((gc::Fixnum)cf);
-}
-
-Number_sp ShortFloat_O::abs_() const { return ShortFloat_O::create(fabs(this->_Value)); }
-
-void ShortFloat_O::sxhash_(HashGenerator& hg) const {
-  hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<float>::to_bits(this->_Value));
-}
-
-bool ShortFloat_O::eql_(T_sp obj) const {
-  if (this->eq(obj))
-    return true;
-  if (gc::IsA<Number_sp>(obj)) {
-    Number_sp num = gc::As<Number_sp>(obj);
-    return this->get() == clasp_to_double(num);
-  }
-  return false;
-}
-
-string ShortFloat_O::__repr__() const {
-  stringstream ss;
-  ss << this->_Value;
-  return ss.str();
-}
-
 //--------------------------------------------------
 
 Number_sp DoubleFloat_O::reciprocal_() const { return DoubleFloat_O::create(1.0 / this->_Value); }
 
-float DoubleFloat_O::as_float_() const { return (float)this->_Value; }
+short_float_t DoubleFloat_O::as_short_float_() const { return (short_float_t)this->_Value; }
 
-double DoubleFloat_O::as_double_() const { return (double)this->_Value; }
+single_float_t DoubleFloat_O::as_single_float_() const { return (float)this->_Value; }
 
-LongFloat DoubleFloat_O::as_long_float_() const { return (LongFloat)this->_Value; }
+double_float_t DoubleFloat_O::as_double_float_() const { return (double)this->_Value; }
+
+long_float_t DoubleFloat_O::as_long_float_() const { return (long_float_t)this->_Value; }
 
 CL_LISPIFY_NAME("core:castToInteger");
 CL_DEFMETHOD Integer_sp DoubleFloat_O::castToInteger() const {
@@ -1573,21 +1228,17 @@ CL_DEFMETHOD Integer_sp DoubleFloat_O::castToInteger() const {
   return Integer_O::create((gctools::Fixnum)cf);
 }
 
-Number_sp DoubleFloat_O::signum_() const { return DoubleFloat_O::create(this->_Value > 0.0 ? 1 : (this->_Value < 0.0 ? -1 : 0)); }
+Number_sp DoubleFloat_O::signum_() const { return create(_signum(_Value)); }
 
 void DoubleFloat_O::sxhash_(HashGenerator& hg) const {
-  hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<double>::to_bits(this->_Value));
+  hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<double>::float_to_bits(this->_Value));
 }
 
 bool DoubleFloat_O::eql_(T_sp obj) const {
   if (this->eq(obj))
     return true;
-  if (DoubleFloat_sp other = obj.asOrNull<DoubleFloat_O>()) {
-    ASSERT(sizeof(this->_Value) == sizeof(int64_t));
-    int64_t me = *(int64_t*)(&this->_Value);
-    int64_t them = *(int64_t*)(&other->_Value);
-    return me == them;
-  }
+  if (DoubleFloat_sp other = obj.asOrNull<DoubleFloat_O>())
+    return _Value == other->get() && std::signbit(_Value) == std::signbit(other->get());
   return false;
 }
 
@@ -1602,11 +1253,13 @@ string DoubleFloat_O::__repr__() const {
 // LongFloat stuff
 
 #ifdef CLASP_LONG_FLOAT
-float LongFloat_O::as_float() const { return (float)this->_Value; }
+short_float_t LongFloat_O::as_short_float_() const { return (short_float_t)this->_Value; }
 
-double LongFloat_O::as_double() const { return (double)this->_Value; }
+single_float_t LongFloat_O::as_single_float_() const { return (float)this->_Value; }
 
-LongFloat LongFloat_O::as_long_float() const { return (LongFloat)this->_Value; }
+double_float_t LongFloat_O::as_double_float_() const { return (double)this->_Value; }
+
+long_float_t LongFloat_O::as_long_float_() const { return (long_float_t)this->_Value; }
 
 CL_LISPIFY_NAME("core:castToInteger");
 CL_DEFMETHOD Integer_sp LongFloat_O::castToInteger() const {
@@ -1622,45 +1275,21 @@ CL_DEFMETHOD Integer_sp LongFloat_O::castToInteger() const {
 #endif
 }
 
-Number_sp LongFloat_O::copy() const { return LongFloat_O::create(this->_Value); }
+Number_sp LongFloat_O::reciprocal_() const { return LongFloat_O::create(long_float_t{1.0} / this->_Value); }
 
-Number_sp LongFloat_O::reciprocal_() const { return LongFloat_O::create(1.0 / this->_Value); }
-
-string LongFloat_O::valueAsString() const {
-  stringstream ss;
-  ss << this->_Value;
-  return ss.str();
+void LongFloat_O::sxhash_(HashGenerator& hg) const {
+  hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<long_float_t>::float_to_bits(this->_Value));
 }
 
-Number_sp LongFloat_O::abs() const { return LongFloat_O::create(fabs(this->_Value)); }
-
-void LongFloat_O::sxhash(HashGenerator& hg) const {
-  hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<LongFloat>::to_bits(this->_Value));
-}
-
-bool LongFloat_O::eql(T_sp obj) const {
+bool LongFloat_O::eql_(T_sp obj) const {
   if (this->eq(obj))
     return true;
-  if (gc::IsA<Number_sp>(obj)) {
-    Number_sp num = obj.as<Number_O>();
-    return this->get() == num->as_double();
-  }
+  if (LongFloat_sp other = obj.asOrNull<LongFloat_O>())
+    return _Value == other->get() && std::signbit(_Value) == std::signbit(other->get());
   return false;
 }
 
-bool LongFloat_O::eqn(T_sp obj) const {
-  if (core__long_float_p(obj)) {
-    LongFloat_sp t = obj.as<LongFloat_O>();
-    return this->get() == t->get();
-  } else if (core__fixnump(obj)) {
-    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
-    return this->get() == t->get();
-  }
-  ASSERT(!cl__numberp(obj));
-  return false;
-}
-
-Number_sp LongFloat_O::signum() const { return LongFloat_O::create(this->_Value > 0.0 ? 1 : (this->_Value < 0.0 ? -1 : 0)); }
+Number_sp LongFloat_O::signum_() const { return create(_signum(_Value)); }
 
 string LongFloat_O::__repr__() const {
   stringstream ss;
@@ -1681,7 +1310,7 @@ static Integer_sp mantissa_and_exponent_from_ratio(Integer_sp num, Integer_sp de
    * appropriate exponent.
    */
   bool negative = false;
-  if (clasp_minusp(num)) {
+  if (Real_O::minusp(num)) {
     negative = true;
     num = gc::As_unsafe<Integer_sp>(clasp_negate(num));
   }
@@ -1700,7 +1329,7 @@ static Integer_sp mantissa_and_exponent_from_ratio(Integer_sp num, Integer_sp de
     quotient = clasp_ash(quotient, -1);
   }
   /* round quotient */
-  if (clasp_oddp(quotient)) {
+  if (Integer_O::oddp(quotient)) {
     quotient = gc::As_unsafe<Integer_sp>(clasp_one_plus(quotient));
   }
   /* shift out the remaining unnecessary digit of quotient */
@@ -1718,22 +1347,24 @@ template <typename Float> inline Float ratio_to_float(Integer_sp num, Integer_sp
     .sign = 1
   };
 
-  if (clasp_minusp(num)) {
+  if (Real_O::minusp(num)) {
     q.sign = -1;
     num = gc::As_unsafe<Integer_sp>(clasp_negate(num));
   }
 
-  q.exponent = clasp_integer_length(num) - clasp_integer_length(den) - float_convert<Float>::significand_width - 1;
+  q.exponent = clasp_integer_length(num) - clasp_integer_length(den) - float_convert<Float>::traits::significand_width - 1;
   q.significand = clasp_to_integral<typename float_convert<Float>::uint_t>(clasp_integer_divide(clasp_ash(num, -q.exponent), den));
 
-  return float_convert<Float>::from_quadruple(q);
+  return float_convert<Float>::quadruple_to_float(q);
 }
 
-float Ratio_O::as_float_() const { return ratio_to_float<float>(this->_numerator, this->_denominator); }
+short_float_t Ratio_O::as_short_float_() const { return ratio_to_float<short_float_t>(this->_numerator, this->_denominator); }
 
-double Ratio_O::as_double_() const { return ratio_to_float<double>(this->_numerator, this->_denominator); }
+single_float_t Ratio_O::as_single_float_() const { return ratio_to_float<float>(this->_numerator, this->_denominator); }
 
-LongFloat Ratio_O::as_long_float_() const { return ratio_to_float<LongFloat>(this->_numerator, this->_denominator); }
+double_float_t Ratio_O::as_double_float_() const { return ratio_to_float<double>(this->_numerator, this->_denominator); }
+
+long_float_t Ratio_O::as_long_float_() const { return ratio_to_float<long_float_t>(this->_numerator, this->_denominator); }
 
 string Ratio_O::__repr__() const {
   stringstream ss;
@@ -1742,7 +1373,8 @@ string Ratio_O::__repr__() const {
 }
 
 Number_sp Ratio_O::abs_() const {
-  return Ratio_O::create_primitive(gc::As_unsafe<Integer_sp>(clasp_abs(gc::As<Integer_sp>(this->_numerator))), this->_denominator);
+  return Ratio_O::create_primitive(gc::As_unsafe<Integer_sp>(Number_O::abs(gc::As<Integer_sp>(this->_numerator))),
+                                   this->_denominator);
 }
 
 bool Ratio_O::eql_(T_sp obj) const {
@@ -1765,11 +1397,15 @@ void Ratio_O::sxhash_(HashGenerator& hg) const {
 }
 
 Number_sp Ratio_O::signum_() const {
-  ASSERT(clasp_plusp(this->_denominator));
-  return clasp_signum(this->_numerator);
+  ASSERT(Real_O::plusp(this->_denominator));
+  return signum(this->_numerator);
 }
 
-Number_sp Ratio_O::sqrt_() const { return float_sqrt(this->as_float_()); }
+CL_PKG_NAME(ClPkg, signum);
+DOCGROUP(clasp)
+CL_DEFUN Number_sp cl__signum(Number_sp num) { return Number_O::signum(num); }
+
+Number_sp Ratio_O::sqrt_() const { return float_sqrt(this->as_single_float_()); }
 
 Number_sp Ratio_O::reciprocal_() const {
   Integer_sp num = this->_numerator, denom = this->_denominator;
@@ -1781,7 +1417,7 @@ Number_sp Ratio_O::reciprocal_() const {
       return clasp_negate(denom);
     }
   }
-  if (clasp_minusp(num)) {
+  if (Real_O::minusp(num)) {
     Integer_sp indenom = gc::As_unsafe<Integer_sp>(clasp_negate(denom));
     Integer_sp innum = gc::As_unsafe<Integer_sp>(clasp_negate(num));
     return Ratio_O::create_primitive(indenom, innum);
@@ -1807,7 +1443,7 @@ void Ratio_O::setf_numerator_denominator(Integer_sp inum, Integer_sp idenom) {
     }
     return;
   }
-  if (clasp_minusp(idenom)) {
+  if (Real_O::minusp(idenom)) {
     this->_numerator = gc::As<Integer_sp>(clasp_negate(num));
     this->_denominator = gc::As<Integer_sp>(clasp_negate(denom));
   } else {
@@ -1822,7 +1458,7 @@ Number_sp Complex_O::signum_() const {
   if (this->zerop_())
     return this->asSmartPtr();
   else
-    return clasp_divide(this->asSmartPtr(), this->abs_());
+    return this->asSmartPtr() / this->abs_();
 }
 
 string Complex_O::__repr__() const {
@@ -1851,17 +1487,14 @@ bool Complex_O::eql_(T_sp o) const {
   return false;
 }
 
-Number_sp Complex_O::abs_() const {
-  return clasp_sqrt(clasp_plus(clasp_times(this->_real, this->_real), clasp_times(this->_imaginary, this->_imaginary)));
-}
+Number_sp Complex_O::abs_() const { return Number_O::sqrt(this->_real * this->_real + this->_imaginary * this->_imaginary); }
 
 Number_sp Complex_O::reciprocal_() const {
   // 1/(a+bi) = (a-bi)/(a^2+b^2) by basic algebra.
   // alternately we could just clasp_divide. I dunno if reciprocal_ is terribly necessary.
-  Real_sp square_modulus =
-      gc::As_unsafe<Real_sp>(clasp_plus(clasp_times(this->_real, this->_real), clasp_times(this->_imaginary, this->_imaginary)));
-  return Complex_O::create(gc::As_unsafe<Real_sp>(clasp_divide(this->_real, square_modulus)),
-                           gc::As_unsafe<Real_sp>(clasp_divide(clasp_negate(this->_imaginary), square_modulus)));
+  Real_sp square_modulus = gc::As_unsafe<Real_sp>(this->_real * this->_real + this->_imaginary * this->_imaginary);
+  return Complex_O::create(gc::As_unsafe<Real_sp>(this->_real / square_modulus),
+                           gc::As_unsafe<Real_sp>(clasp_negate(this->_imaginary) / square_modulus));
 }
 
 /* ----------------------------------------------------------------------
@@ -1888,22 +1521,18 @@ Number_sp Complex_O::reciprocal_() const {
 */
 
 Number_sp DoubleFloat_O::sqrt_() const {
-  if (clasp_minusp(this->asSmartPtr())) {
-    Number_sp x = clasp_sqrt(clasp_negate(this->asSmartPtr()));
-    return clasp_make_complex(DoubleFloat_O::create(0.0), gc::As<Real_sp>(x));
-  } else {
-    return DoubleFloat_O::create(::sqrt(this->_Value));
-  }
+  if (_Value < 0.0)
+    return clasp_make_complex(DoubleFloat_O::create(0.0), DoubleFloat_O::create(std::sqrt(-_Value)));
+
+  return DoubleFloat_O::create(std::sqrt(this->_Value));
 }
 
 #ifdef CLASP_LONG_FLOAT
 Number_sp LongFloat_O::sqrt_() const {
-  if (this->minusp()) {
-    Number_sp x = this->negate()->sqrt();
-    return clasp_make_complex(LongFloat_O::create(0.0), x.as<Real_O>());
-  } else {
-    return LongFloat_O::create(sqrtl(this->_Value));
-  }
+  if (_Value < long_float_t{0.0})
+    return clasp_make_complex(LongFloat_O::create(long_float_t{0.0}), LongFloat_O::create(std::sqrt(-_Value)));
+
+  return LongFloat_O::create(std::sqrt(_Value));
 }
 #endif
 
@@ -1913,11 +1542,11 @@ Number_sp Bignum_O::sqrt_() const {
   // hypothetically we could use mpn_sqrtrem instead, but i imagine it's slower.
   // We convert to a double for maximum range, but return a single as required
   // by CLHS.
-  double z = this->as_double_();
+  double z = this->as_double_float_();
   if (z < 0)
-    return clasp_make_complex(clasp_make_single_float(0.0), clasp_make_single_float(sqrt(-z)));
+    return clasp_make_complex(clasp_make_single_float(0.0), clasp_make_single_float(std::sqrt(-z)));
   else
-    return clasp_make_single_float(sqrt(z));
+    return clasp_make_single_float(std::sqrt(z));
 }
 
 Number_sp Bignum_O::reciprocal_() const {
@@ -1932,7 +1561,14 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(sqrt)dx");
 DOCGROUP(clasp);
-CL_DEFUN Number_sp cl__sqrt(Number_sp x) { return clasp_sqrt(x); };
+CL_DEFUN Number_sp cl__sqrt(Number_sp x) { return Number_O::sqrt(x); };
+
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(abs)dx");
+DOCGROUP(clasp);
+CL_DEFUN Number_sp cl__abs(Number_sp x) { return Number_O::abs(x); };
 
 /* ----------------------------------------------------------------------
 
@@ -1958,12 +1594,12 @@ CL_DEFUN Number_sp cl__sqrt(Number_sp x) { return clasp_sqrt(x); };
     See file '../Copyright' for full details.
 */
 
-Number_sp Rational_O::sin_() const { return clasp_make_single_float(sinf(this->as_float_())); }
+Number_sp Rational_O::sin_() const { return clasp_make_single_float(std::sin(this->as_single_float_())); }
 
-Number_sp DoubleFloat_O::sin_() const { return DoubleFloat_O::create(::sin(this->_Value)); }
+Number_sp DoubleFloat_O::sin_() const { return DoubleFloat_O::create(std::sin(this->_Value)); }
 
 #ifdef CLASP_LONG_FLOAT
-Number_sp LongFloat_O::sin_() const { return LongFloat_O::create(sinl(this->_Value)); }
+Number_sp LongFloat_O::sin_() const { return LongFloat_O::create(std::sin(this->_Value)); }
 #endif
 
 Number_sp Complex_O::sin_() const {
@@ -1974,8 +1610,8 @@ Number_sp Complex_O::sin_() const {
         */
   Number_sp dx = this->_real;
   Number_sp dy = this->_imaginary;
-  Number_sp a = clasp_times(clasp_sin(dx), clasp_cosh(dy)); // clasp_sin(dx), clasp_cosh(dy));
-  Number_sp b = clasp_times(clasp_cos(dx), clasp_sinh(dy)); // clasp_cos(dx), clasp_sinh(dy));
+  Number_sp a = Number_O::sin(dx) * Number_O::cosh(dy); // clasp_sin(dx), clasp_cosh(dy));
+  Number_sp b = Number_O::cos(dx) * Number_O::sinh(dy); // clasp_cos(dx), clasp_sinh(dy));
   return clasp_make_complex(gc::As<Real_sp>(a), gc::As<Real_sp>(b));
 }
 
@@ -1984,7 +1620,88 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(sin)dx");
 DOCGROUP(clasp);
-CL_DEFUN Number_sp cl__sin(Number_sp x) { return clasp_sin(x); }
+CL_DEFUN Number_sp cl__sin(Number_sp x) { return Number_O::sin(x); }
+
+Number_sp Rational_O::asin_() const { return _asin(this->as_single_float_()); }
+
+Number_sp DoubleFloat_O::asin_() const { return _asin(this->_Value); }
+
+#ifdef CLASP_LONG_FLOAT
+Number_sp LongFloat_O::asin_() const { return _asin(this->_Value); }
+#endif
+
+template <std::floating_point Float> inline std::complex<Float> _asin2(Float real, Float imag) {
+#ifdef _TARGET_OS_DARWIN2
+  return (std::fpclassify(real) == FP_ZERO) ? -std::log(-imag + std::sqrt(std::complex<Float>(Float{1} + imag, Float{0})))
+                                            : std::asin(std::complex<Float>(real, imag));
+#else
+  return std::asin(std::complex<Float>(real, imag));
+#endif
+}
+
+Number_sp Complex_O::asin_() const {
+#ifdef CLASP_LONG_FLOAT
+  if (_real.isA<LongFloat_O>())
+    return make_complex(_asin2(_real->as_long_float_(), _imaginary->as_long_float_()));
+#endif
+  if (_real.isA<DoubleFloat_O>())
+    return make_complex(_asin2(_real->as_double_float_(), _imaginary->as_double_float_()));
+#ifdef CLASP_SHORT_FLOAT
+  if (_real.short_floatp())
+    return make_complex(_asin2(_real.unsafe_short_float(), _imaginary.unsafe_short_float()));
+#endif
+  return make_complex((std::complex<single_float_t>)_asin2<double_float_t>(clasp_to_float(_real), clasp_to_float(_imaginary)));
+}
+
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(asin)dx");
+DOCGROUP(clasp);
+CL_DEFUN Number_sp cl__asin(Number_sp x) { return Number_O::asin(x); }
+
+Number_sp Rational_O::acos_() const { return _acos(this->as_single_float_()); }
+
+Number_sp DoubleFloat_O::acos_() const { return _acos(this->_Value); }
+
+#ifdef CLASP_LONG_FLOAT
+Number_sp LongFloat_O::acos_() const { return _acos(this->_Value); }
+#endif
+
+template <std::floating_point Float> inline std::complex<Float> _acos2(Float real, Float imag) {
+#ifdef _TARGET_OS_DARWIN2
+  return (std::fpclassify(real) == FP_ZERO)
+             ? std::numbers::pi_v<Float> / 2 + std::log(-imag + std::sqrt(std::complex<Float>(Float{1} + imag, Float{0})))
+             : std::acos(std::complex<Float>(real, imag));
+#else
+  return std::acos(std::complex<Float>(real, imag));
+#endif
+}
+
+Number_sp Complex_O::acos_() const {
+#ifdef CLASP_LONG_FLOAT
+  if (_real.isA<LongFloat_O>())
+    return make_complex(_acos2(_real->as_long_float_(), _imaginary->as_long_float_()));
+#endif
+  if (_real.isA<DoubleFloat_O>())
+    return make_complex(_acos2(_real->as_double_float_(), _imaginary->as_double_float_()));
+#ifdef CLASP_SHORT_FLOAT
+  if (_real.short_floatp())
+    return make_complex(_acos2(_real.unsafe_short_float(), _imaginary.unsafe_short_float()));
+#endif
+#ifdef _TARGET_OS_DARWIN
+  return make_complex((std::complex<single_float_t>)_acos2<double_float_t>(clasp_to_float(_real), clasp_to_float(_imaginary)));
+#else  
+  return make_complex(_acos2(clasp_to_float(_real), clasp_to_float(_imaginary)));
+#endif
+}
+
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(acos)dx");
+DOCGROUP(clasp);
+CL_DEFUN Number_sp cl__acos(Number_sp x) { return Number_O::acos(x); }
 
 /* ----------------------------------------------------------------------
 
@@ -2009,12 +1726,12 @@ CL_DEFUN Number_sp cl__sin(Number_sp x) { return clasp_sin(x); }
     See file '../Copyright' for full details.
 */
 
-Number_sp Rational_O::cos_() const { return clasp_make_single_float(cosf(this->as_float_())); }
+Number_sp Rational_O::cos_() const { return clasp_make_single_float(std::cos(this->as_single_float_())); }
 
-Number_sp DoubleFloat_O::cos_() const { return DoubleFloat_O::create(::cos(this->_Value)); }
+Number_sp DoubleFloat_O::cos_() const { return DoubleFloat_O::create(std::cos(this->_Value)); }
 
 #ifdef CLASP_LONG_FLOAT
-Number_sp LongFloat_O::cos_() const { return LongFloat_O::create(cosl(this->_Value)); }
+Number_sp LongFloat_O::cos_() const { return LongFloat_O::create(std::cos(this->_Value)); }
 #endif
 
 Number_sp Complex_O::cos_() const {
@@ -2023,9 +1740,9 @@ Number_sp Complex_O::cos_() const {
         */
   Number_sp dx = this->_real;
   Number_sp dy = this->_imaginary;
-  Number_sp a = clasp_times(clasp_cos(dx), clasp_cosh(dy));               // clasp_cos(dx), clasp_cosh(dy));
-  Number_sp b = clasp_times(clasp_negate(clasp_sin(dx)), clasp_sinh(dy)); // clasp_negate(clasp_sin(dx)), clasp_sinh(dy));
-  return clasp_make_complex(gc::As<Real_sp>(a), gc::As<Real_sp>(b));      // clasp_make_complex(a, b);
+  Number_sp a = Number_O::cos(dx) * Number_O::cosh(dy);               // clasp_cos(dx), clasp_cosh(dy));
+  Number_sp b = clasp_negate(Number_O::sin(dx)) * Number_O::sinh(dy); // clasp_negate(clasp_sin(dx)), clasp_sinh(dy));
+  return clasp_make_complex(gc::As<Real_sp>(a), gc::As<Real_sp>(b));  // clasp_make_complex(a, b);
 }
 
 CL_LAMBDA(x);
@@ -2033,7 +1750,7 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(cos)dx");
 DOCGROUP(clasp);
-CL_DEFUN Number_sp cl__cos(Number_sp x) { return clasp_cos(x); }
+CL_DEFUN Number_sp cl__cos(Number_sp x) { return Number_O::cos(x); }
 
 /* ----------------------------------------------------------------------
 
@@ -2069,18 +1786,18 @@ static double safe_tanf(double x) { return tan(x); }
 #define safe_tanf(x) tanf(x)
 #endif
 
-Number_sp Rational_O::tan_() const { return clasp_make_single_float(safe_tanf(this->as_float_())); }
+Number_sp Rational_O::tan_() const { return clasp_make_single_float(safe_tanf(this->as_single_float_())); }
 
-Number_sp DoubleFloat_O::tan_() const { return DoubleFloat_O::create(::tan(this->_Value)); }
+Number_sp DoubleFloat_O::tan_() const { return DoubleFloat_O::create(std::tan(this->_Value)); }
 
 #ifdef CLASP_LONG_FLOAT
-Number_sp LongFloat_O::tan_() const { return LongFloat_O::create(tanl(this->_Value)); }
+Number_sp LongFloat_O::tan_() const { return LongFloat_O::create(std::tan(this->_Value)); }
 #endif
 
 Number_sp Complex_O::tan_() const {
   Number_sp a = this->sin_();
   Number_sp b = this->cos_();
-  return clasp_divide(a, b);
+  return a / b;
 }
 
 CL_LAMBDA(x);
@@ -2088,7 +1805,7 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(tan)dx");
 DOCGROUP(clasp);
-CL_DEFUN Number_sp cl__tan(Number_sp x) { return clasp_tan(x); }
+CL_DEFUN Number_sp cl__tan(Number_sp x) { return Number_O::tan(x); }
 
 /* ----------------------------------------------------------------------
 
@@ -2111,12 +1828,12 @@ CL_DEFUN Number_sp cl__tan(Number_sp x) { return clasp_tan(x); }
     See file '../Copyright' for full details.
 */
 
-Number_sp Rational_O::sinh_() const { return clasp_make_single_float(sinhf(this->as_float_())); }
+Number_sp Rational_O::sinh_() const { return clasp_make_single_float(std::sinh(this->as_single_float_())); }
 
-Number_sp DoubleFloat_O::sinh_() const { return DoubleFloat_O::create(::sinh(this->_Value)); }
+Number_sp DoubleFloat_O::sinh_() const { return DoubleFloat_O::create(std::sinh(this->_Value)); }
 
 #ifdef CLASP_LONG_FLOAT
-Number_sp LongFloat_O::sinh_() const { return LongFloat_O::create(sinhl(this->_Value)); }
+Number_sp LongFloat_O::sinh_() const { return LongFloat_O::create(std::sinh(this->_Value)); }
 #endif
 
 Number_sp Complex_O::sinh_() const {
@@ -2128,8 +1845,8 @@ Number_sp Complex_O::sinh_() const {
         */
   Number_sp dx = this->_real;
   Number_sp dy = this->_imaginary;
-  Number_sp a = clasp_times(clasp_sinh(dx), clasp_cos(dy));
-  Number_sp b = clasp_times(clasp_cosh(dx), clasp_sin(dy));
+  Number_sp a = Number_O::sinh(dx) * Number_O::cos(dy);
+  Number_sp b = Number_O::cosh(dx) * Number_O::sin(dy);
   return clasp_make_complex(gc::As<Real_sp>(a), gc::As<Real_sp>(b));
 }
 
@@ -2138,7 +1855,7 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(sinh)dx");
 DOCGROUP(clasp);
-CL_DEFUN Number_sp cl__sinh(Number_sp x) { return clasp_sinh(x); }
+CL_DEFUN Number_sp cl__sinh(Number_sp x) { return Number_O::sinh(x); }
 
 /* ----------------------------------------------------------------------
 
@@ -2161,12 +1878,12 @@ CL_DEFUN Number_sp cl__sinh(Number_sp x) { return clasp_sinh(x); }
     See file '../Copyright' for full details.
 */
 
-Number_sp Rational_O::cosh_() const { return clasp_make_single_float(coshf(this->as_float_())); }
+Number_sp Rational_O::cosh_() const { return clasp_make_single_float(std::cosh(this->as_single_float_())); }
 
-Number_sp DoubleFloat_O::cosh_() const { return DoubleFloat_O::create(::cosh(this->_Value)); }
+Number_sp DoubleFloat_O::cosh_() const { return DoubleFloat_O::create(std::cosh(this->_Value)); }
 
 #ifdef CLASP_LONG_FLOAT
-Number_sp LongFloat_O::cosh_() const { return LongFloat_O::create(coshl(this->_Value)); }
+Number_sp LongFloat_O::cosh_() const { return LongFloat_O::create(std::cosh(this->_Value)); }
 #endif
 
 Number_sp Complex_O::cosh_() const {
@@ -2178,8 +1895,8 @@ Number_sp Complex_O::cosh_() const {
         */
   Number_sp dx = this->_real;
   Number_sp dy = this->_imaginary;
-  Number_sp a = clasp_times(clasp_cosh(dx), clasp_cos(dy));          // clasp_cosh(dx), clasp_cos(dy));
-  Number_sp b = clasp_times(clasp_sinh(dx), clasp_sin(dy));          // clasp_sinh(dx), clasp_sin(dy));
+  Number_sp a = Number_O::cosh(dx) * Number_O::cos(dy);              // Number_O::cosh(dx), Number_O::cos(dy));
+  Number_sp b = Number_O::sinh(dx) * Number_O::sin(dy);              // Number_O::sinh(dx), Number_O::sin(dy));
   return clasp_make_complex(gc::As<Real_sp>(a), gc::As<Real_sp>(b)); // clasp_make_complex(a, b);
 }
 
@@ -2188,7 +1905,7 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(cosh)dx");
 DOCGROUP(clasp);
-CL_DEFUN Number_sp cl__cosh(Number_sp x) { return clasp_cosh(x); }
+CL_DEFUN Number_sp cl__cosh(Number_sp x) { return Number_O::cosh(x); }
 
 /* ----------------------------------------------------------------------
 
@@ -2212,18 +1929,18 @@ CL_DEFUN Number_sp cl__cosh(Number_sp x) { return clasp_cosh(x); }
     See file '../Copyright' for full details.
 */
 
-Number_sp Rational_O::tanh_() const { return clasp_make_single_float(tanhf(this->as_float_())); }
+Number_sp Rational_O::tanh_() const { return clasp_make_single_float(std::tanh(this->as_single_float_())); }
 
-Number_sp DoubleFloat_O::tanh_() const { return DoubleFloat_O::create(::tanh(this->_Value)); }
+Number_sp DoubleFloat_O::tanh_() const { return DoubleFloat_O::create(std::tanh(this->_Value)); }
 
 #ifdef CLASP_LONG_FLOAT
-Number_sp LongFloat_O::tanh_() const { return LongFloat_O::create(tanhl(this->_Value)); }
+Number_sp LongFloat_O::tanh_() const { return LongFloat_O::create(std::tanh(this->_Value)); }
 #endif
 
 Number_sp Complex_O::tanh_() const {
   Number_sp a = this->sinh_();
   Number_sp b = this->cosh_();
-  return clasp_divide(a, b);
+  return a / b;
 }
 
 CL_LAMBDA(x);
@@ -2231,7 +1948,7 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(tanh)dx");
 DOCGROUP(clasp);
-CL_DEFUN Number_sp cl__tanh(Number_sp x) { return clasp_tanh(x); }
+CL_DEFUN Number_sp cl__tanh(Number_sp x) { return Number_O::tanh(x); }
 
 /* ----------------------------------------------------------------------
 
@@ -2289,22 +2006,22 @@ CL_DEFUN Number_sp cl__conjugate(Number_sp x) { return clasp_conjugate(x); }
     See file '../Copyright' for full details.
 */
 
-Number_sp Rational_O::exp_() const { return clasp_make_single_float(expf(this->as_float_())); }
+Number_sp Rational_O::exp_() const { return clasp_make_single_float(std::exp(this->as_single_float_())); }
 
-Number_sp DoubleFloat_O::exp_() const { return DoubleFloat_O::create(::exp(this->_Value)); }
+Number_sp DoubleFloat_O::exp_() const { return DoubleFloat_O::create(std::exp(this->_Value)); }
 
 #ifdef CLASP_LONG_FLOAT
-Number_sp LongFloat_O::exp_() const { return LongFloat_O::create(expl(this->_Value)); }
+Number_sp LongFloat_O::exp_() const { return LongFloat_O::create(std::exp(this->_Value)); }
 #endif
 
 Number_sp Complex_O::exp_() const {
   Real_sp y, y1;
   y = this->_imaginary;
   Real_sp x = gc::As<Real_sp>(clasp_exp(this->_real));
-  y1 = gc::As<Real_sp>(clasp_cos(y)); // clasp_cos(y);
-  y = gc::As<Real_sp>(clasp_sin(y));  // clasp_sin(y);
+  y1 = gc::As<Real_sp>(Number_O::cos(y)); // Number_O::cos(y);
+  y = gc::As<Real_sp>(Number_O::sin(y));  // Number_O::sin(y);
   Complex_sp cy = gc::As_unsafe<Complex_sp>(clasp_make_complex(y1, y));
-  return clasp_times(x, cy);
+  return x * cy;
 }
 
 CL_LAMBDA(x);
@@ -2352,56 +2069,53 @@ Fixnum clasp_fixnum_expt(Fixnum x, Fixnum y) {
 }
 
 static Number_sp expt_zero(Number_sp x, Number_sp y) {
-  NumberType ty, tx;
-  Number_sp z;
-  ty = clasp_t_of(y);
-  tx = clasp_t_of(x);
-  /* INV: The most specific numeric types come first. */
-  switch ((ty > tx) ? ty : tx) {
-  case number_Fixnum:
-  case number_Bignum:
-  case number_Ratio:
-    return clasp_make_fixnum(1);
-  case number_SingleFloat:
-    return clasp_make_single_float(1.0f);
-  case number_DoubleFloat:
-    return DoubleFloat_O::create(1.0);
+  Complex_sp cx = x.asOrNull<Complex_O>(), cy = y.asOrNull<Complex_O>();
+  if (cx && cy)
+    return clasp_make_complex(expt_zero(cx->real(), cy->real()), clasp_make_fixnum(0));
+  if (cx)
+    return clasp_make_complex(expt_zero(cx->real(), y), clasp_make_fixnum(0));
+  if (cy)
+    return clasp_make_complex(expt_zero(x, cy->real()), clasp_make_fixnum(0));
+
 #ifdef CLASP_LONG_FLOAT
-  case number_LongFloat:
-    return LongFloat_O::create(1.0);
+  if (x.isA<LongFloat_O>() || y.isA<LongFloat_O>())
+    return LongFloat_O::create(long_float_t{1});
 #endif
-  case number_Complex:
-    z = expt_zero((tx == number_Complex) ? gc::As<Number_sp>(gc::As<Complex_sp>(x)->real()) : x,
-                  (ty == number_Complex) ? gc::As<Number_sp>(gc::As<Complex_sp>(y)->real()) : y);
-    return clasp_make_complex(gc::As<Real_sp>(z), clasp_make_fixnum(0));
-  default:
-      UNREACHABLE();
-  }
+
+  if (x.isA<DoubleFloat_O>() || y.isA<DoubleFloat_O>())
+    return DoubleFloat_O::create(double_float_t{1});
+
+  if (x.single_floatp() || y.single_floatp())
+    return SingleFloat_dummy_O::create(single_float_t{1});
+
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp() || y.short_floatp())
+    return ShortFloat_O::create(short_float_t{1});
+#endif
+
+  return clasp_make_fixnum(1);
 }
 
 Number_sp clasp_expt(Number_sp x, Number_sp y) {
-  NumberType ty, tx;
-  Number_sp z;
-  if (clasp_unlikely(clasp_zerop(y))) {
+  if (clasp_unlikely(Number_O::zerop(y))) {
     return expt_zero(x, y);
   }
-  ty = clasp_t_of(y);
-  tx = clasp_t_of(x);
-  if (clasp_zerop(x)) {
-    z = clasp_times(x, y);
-    if (!clasp_plusp((ty == number_Complex) ? gc::As<Complex_sp>(y)->real() : gc::As<Real_sp>(y)))
-      z = clasp_divide(clasp_make_fixnum(1), z);
-  } else if (ty != number_Fixnum && ty != number_Bignum) {
+  Number_sp z;
+  if (Number_O::zerop(x)) {
+    z = x * y;
+    if (!Real_O::plusp(y.isA<Complex_O>() ? y.as_unsafe<Complex_O>()->real() : y.as<Real_O>()))
+      z = clasp_make_fixnum(1) / z;
+  } else if (!y.isA<Integer_O>()) {
     // Use the general definition, a^b = exp(b log(a))
     /* The following could be just
            z = clasp_log1(x);
            however, Maxima expects EXPT to have double accuracy
            when the first argument is integer and the second
            is double-float */
-    z = clasp_log1(clasp_times(x, expt_zero(x, y)));
-    z = clasp_times(z, y);
+    z = clasp_log1(x * expt_zero(x, y));
+    z = z * y;
     z = cl__exp(z);
-  } else if (clasp_minusp(gc::As<Real_sp>(y))) {
+  } else if (Real_O::minusp(y)) {
     z = clasp_negate(y);
     z = clasp_expt(x, z);
     z = clasp_reciprocal(z);
@@ -2410,12 +2124,12 @@ Number_sp clasp_expt(Number_sp x, Number_sp y) {
     Integer_sp iy = gc::As<Integer_sp>(y);
     do {
       // Exponentiation by squaring.
-      if (!clasp_evenp(iy))
-        z = clasp_times(z, x);
+      if (!Integer_O::evenp(iy))
+        z = z * x;
       iy = clasp_shift_right(iy, 1); // divide by two
-      if (clasp_zerop(iy))
+      if (Number_O::zerop(iy))
         break;
-      x = clasp_times(x, x);
+      x = x * x;
     } while (1);
   }
   return z;
@@ -2448,112 +2162,52 @@ CL_DEFUN Number_sp cl__expt(Number_sp x, Number_sp y) { return clasp_expt(x, y);
     See file '../Copyright' for full details.
 */
 
-Number_sp clasp_atan2(Number_sp y, Number_sp x) {
-  MATH_DISPATCH_BEGIN(x, y) {
-  case_Bignum_v_ShortFloat:
-  case_Fixnum_v_ShortFloat:
-  case_Ratio_v_ShortFloat:
-  case_ShortFloat_v_Bignum:
-  case_ShortFloat_v_Fixnum:
-  case_ShortFloat_v_Ratio:
-  case_ShortFloat_v_ShortFloat:
-  case_Bignum_v_Bignum:
-  case_Bignum_v_Fixnum:
-  case_Bignum_v_Ratio:
-  case_Bignum_v_SingleFloat:
-  case_Fixnum_v_Bignum:
-  case_Fixnum_v_Fixnum:
-  case_Fixnum_v_Ratio:
-  case_Fixnum_v_SingleFloat:
-  case_Ratio_v_Bignum:
-  case_Ratio_v_Fixnum:
-  case_Ratio_v_Ratio:
-  case_Ratio_v_SingleFloat:
-  case_ShortFloat_v_SingleFloat:
-  case_SingleFloat_v_Bignum:
-  case_SingleFloat_v_Fixnum:
-  case_SingleFloat_v_Ratio:
-  case_SingleFloat_v_ShortFloat:
-  case_SingleFloat_v_SingleFloat:
-#ifdef _TARGET_OS_DARWIN
-    return clasp_make_single_float(atan2(clasp_to_double(y), clasp_to_double(x)));
-#else
-    return clasp_make_single_float(atan2f(clasp_to_float(y), clasp_to_float(x)));
-#endif
-  case_Bignum_v_LongFloat:
-  case_DoubleFloat_v_LongFloat:
-  case_Fixnum_v_LongFloat:
-  case_LongFloat_v_Bignum:
-  case_LongFloat_v_DoubleFloat:
-  case_LongFloat_v_Fixnum:
-  case_LongFloat_v_LongFloat:
-  case_LongFloat_v_Ratio:
-  case_LongFloat_v_ShortFloat:
-  case_LongFloat_v_SingleFloat:
-  case_Ratio_v_LongFloat:
-  case_ShortFloat_v_LongFloat:
-  case_SingleFloat_v_LongFloat:
+Number_sp Number_O::atan2(Real_sp y, Real_sp x) {
 #ifdef CLASP_LONG_FLOAT
-    return clasp_make_long_float(atan2l(clasp_to_long_float(y), clasp_to_long_float(x)));
+  if (x.isA<LongFloat_O>() || y.isA<LongFloat_O>())
+    return LongFloat_O::create(std::atan2(as_long_float(y), as_long_float(x)));
 #endif
-  case_Bignum_v_DoubleFloat:
-  case_DoubleFloat_v_Bignum:
-  case_DoubleFloat_v_DoubleFloat:
-  case_DoubleFloat_v_Fixnum:
-  case_DoubleFloat_v_Ratio:
-  case_DoubleFloat_v_ShortFloat:
-  case_DoubleFloat_v_SingleFloat:
-  case_Fixnum_v_DoubleFloat:
-  case_Ratio_v_DoubleFloat:
-  case_ShortFloat_v_DoubleFloat:
-  case_SingleFloat_v_DoubleFloat:
-    return clasp_make_double_float(atan2(clasp_to_double(y), clasp_to_double(x)));
-  default:
-    TYPE_ERROR(gctools::IsA<Real_sp>(y) ? x : y, cl::_sym_Real_O);
-  }
-  MATH_DISPATCH_END();
+
+  if (x.isA<DoubleFloat_O>() || y.isA<DoubleFloat_O>())
+    return DoubleFloat_O::create(std::atan2(as_double_float(y), as_double_float(x)));
+
+#ifdef CLASP_SHORT_FLOAT
+  if ((na.short_floatp() && !nb.single_floatp()) || (!na.single_floatp() && nb.short_floatp()))
+    return ShortFloat_O::create(std::atan2(as_short_float(y), as_short_float(x)));
+#endif
+
+#ifdef _TARGET_OS_DARWIN
+  return SingleFloat_dummy_O::create(std::atan2(as_double_float(y), as_double_float(x)));
+#else
+  return SingleFloat_dummy_O::create(std::atan2(as_single_float(y), as_single_float(x)));
+#endif
 }
 
-Number_sp clasp_atan1(Number_sp y) {
-  switch (clasp_t_of(y)) {
-  case number_ShortFloat:
-  case number_Bignum:
-  case number_Fixnum:
-  case number_Ratio:
-  case number_SingleFloat:
+Number_sp Rational_O::atan_() const {
 #ifdef _TARGET_OS_DARWIN
-    return clasp_make_single_float(atan(clasp_to_double(y)));
+  return SingleFloat_dummy_O::create(std::atan(as_double_float_()));
 #else
-    return clasp_make_single_float(atanf(clasp_to_float(y)));
+  return SingleFloat_dummy_O::create(std::atan(as_single_float_()));
 #endif
-  case number_LongFloat:
+}
+
+Number_sp DoubleFloat_O::atan_() const { return DoubleFloat_O::create(std::atan(_Value)); }
+
 #ifdef CLASP_LONG_FLOAT
-    return clasp_make_long_float(atanl(clasp_to_long_float(y)));
+Number_sp LongFloat_O::atan_() const { return LongFloat_O::create(std::atan(_Value)); }
 #endif
-  case number_DoubleFloat:
-    return clasp_make_double_float(atan(clasp_to_double(y)));
-  case number_Complex: {
-    Number_sp z = clasp_times(_lisp->imaginaryUnit(), y);
-#if 0 /* ANSI states it should be this first part */
-    z = clasp_plus(clasp_log1(clasp_one_plus(z)),
-                   clasp_log1(clasp_minus(clasp_make_fixnum(1), z)));
-    z = clasp_divide(z, clasp_times(clasp_make_fixnum(2),
-                                    cl_core.imag_unit));
-#else
-    Number_sp z1;
-    z = clasp_one_plus(z);
-    z1 = clasp_times(y, y);
-    z1 = clasp_one_plus(z1);
-    z1 = clasp_sqrt(z1);
-    z = clasp_divide(z, z1);
-    z = clasp_log1(z);
-    z = clasp_times(_lisp->imaginaryUnitNegative(), z);
-#endif /* ANSI */
-    return z;
-  }
-  default:
-    TYPE_ERROR(y, cl::_sym_Number_O);
-  }
+
+Number_sp Complex_O::atan_() const {
+  Number_sp z = _lisp->imaginaryUnit() * asSmartPtr();
+  Number_sp z1;
+  z = clasp_one_plus(z);
+  z1 = asSmartPtr() * asSmartPtr();
+  z1 = clasp_one_plus(z1);
+  z1 = Number_O::sqrt(z1);
+  z = z / z1;
+  z = clasp_log1(z);
+  z = _lisp->imaginaryUnitNegative() * z;
+  return z;
 }
 
 CL_LAMBDA(x &optional (y nil yp));
@@ -2563,10 +2217,10 @@ CL_DOCSTRING(R"dx(atan)dx");
 DOCGROUP(clasp);
 CL_DEFUN Number_sp cl__atan(Number_sp x, T_sp y, bool yp) {
   if (!yp)
-    return clasp_atan1(x);
+    return Number_O::atan(x);
 
   if (gctools::IsA<Number_sp>(y))
-    return clasp_atan2(x, y.as_unsafe<Number_O>());
+    return Number_O::atan2(x, y.as_unsafe<Number_O>());
 
   TYPE_ERROR(y, cl::_sym_Number_O);
 }
@@ -2591,9 +2245,9 @@ CL_DEFUN Number_sp cl__atan(Number_sp x, T_sp y, bool yp) {
 */
 
 Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i) {
-  Real_sp a = gc::As<Real_sp>(clasp_abs(r));
-  Real_sp p = gc::As<Real_sp>(clasp_abs(i));
-  int rel = clasp_number_compare(a, p);
+  Real_sp a = gc::As<Real_sp>(Number_O::abs(r));
+  Real_sp p = gc::As<Real_sp>(Number_O::abs(i));
+  int rel = Number_O::compare(a, p);
   if (rel > 0) {
     Real_sp aux = p;
     p = a;
@@ -2602,17 +2256,17 @@ Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i) {
     /* if a == p,
      * log(sqrt(a^2+p^2)) = log(2a^2)/2
      */
-    a = gc::As<Real_sp>(clasp_times(a, a));
-    a = gc::As<Real_sp>(clasp_divide(clasp_log1(clasp_plus(a, a)), make_fixnum(2)));
+    a = gc::As<Real_sp>(a * a);
+    a = gc::As<Real_sp>(clasp_log1(a + a) / make_fixnum(2));
     goto OUTPUT;
   }
   /* For the real part of the output we use the formula
    *	log(sqrt(p^2 + a^2)) = log(sqrt(p^2*(1 + (a/p)^2)))
    *			     = log(p) + log(1 + (a/p)^2)/2; */
-  a = gc::As<Real_sp>(clasp_divide(a, p));
-  a = gc::As<Real_sp>(clasp_plus(clasp_divide(clasp_log1p(clasp_times(a, a)), make_fixnum(2)), clasp_log1(p)));
+  a = gc::As<Real_sp>(a / p);
+  a = gc::As<Real_sp>(clasp_log1p(a * a) / make_fixnum(2) + clasp_log1(p));
 OUTPUT:
-  p = gc::As<Real_sp>(clasp_atan2(i, r));
+  p = gc::As<Real_sp>(Number_O::atan2(i, r));
   return clasp_make_complex(a, p);
 }
 
@@ -2637,29 +2291,27 @@ Number_sp Bignum_O::log1_() const {
 }
 
 Number_sp Rational_O::log1_() const {
-  float f = this->as_float_();
+  float f = this->as_single_float_();
   if (f < 0)
     return clasp_log1_complex_inner(this->asSmartPtr(), clasp_make_fixnum(0));
-  return clasp_make_single_float(logf(this->as_float_()));
+  return clasp_make_single_float(logf(this->as_single_float_()));
 }
 
 Number_sp DoubleFloat_O::log1_() const {
-  double f = this->as_double_();
-  if (std::isnan(f))
+  if (std::isnan(_Value))
     return this->asSmartPtr();
-  if (f < 0)
+  if (_Value < 0)
     return clasp_log1_complex_inner(this->asSmartPtr(), clasp_make_fixnum(0));
-  return clasp_make_double_float(log(f));
+  return clasp_make_double_float(std::log(_Value));
 }
 
 #ifdef CLASP_LONG_FLOAT
 Number_sp LongFloat_O::log1_() const {
-  LongFloat f = this->as_long_float();
-  if (std::isnan(f))
+  if (std::isnan(_Value))
     return this->asSmartPtr();
-  if (f < 0)
+  if (_Value < 0)
     return clasp_log1_complex_inner(this->asSmartPtr(), clasp_make_fixnum(0));
-  return clasp_make_long_float(logl(f));
+  return clasp_make_long_float(std::log(_Value));
 }
 #endif
 
@@ -2668,57 +2320,37 @@ Number_sp Complex_O::log1_() const { return clasp_log1_complex_inner(this->real(
 Number_sp Number_O::log1p_() const { return clasp_log1_complex_inner(clasp_one_plus(this->asSmartPtr()), clasp_make_fixnum(0)); }
 
 Number_sp Rational_O::log1p_() const {
-  float f = this->as_float_();
+  float f = this->as_single_float_();
   if (f < -1)
     return this->Base::log1p_();
   return clasp_make_single_float(_log1p(f));
 }
 
-// translated from ECL cl_rational
-Rational_sp DoubleFloat_O::rational(double d) {
-  if (d == 0) {
-    return clasp_make_fixnum(0);
-  }
-  int e;
-  d = frexp(d, &e);
-  e -= DBL_MANT_DIG;
-  Integer_sp x = _clasp_double_to_integer(ldexp(d, DBL_MANT_DIG));
-#if 0 //(FLT_RADIX == 2) // runtime is sane (or at least IEEE 754)
-  if (e > 0)
-    return clasp_shift_left(x, e);
-  else if (e < 0)
-    // Efficiency note: This could be done faster by exploiting the fact
-    // that the denominator is a power of two. Rather than take the full
-    // gcd, you can just shift out any shared less significant zero bits.
-    return Rational_O::create(x, clasp_shift_left(clasp_make_fixnum(1), -e));
-  else return x;
-#else
-  Number_sp radixexp = clasp_expt(clasp_make_fixnum(FLT_RADIX), clasp_make_fixnum(e));
-  return gc::As_unsafe<Integer_sp>(clasp_times(x, radixexp));
+Rational_sp DoubleFloat_O::as_rational_() const { return float_to_rational(_Value); }
+
+#ifdef CLASP_LONG_FLOAT
+Rational_sp LongFloat_O::as_rational_() const { return float_to_rational(_Value); }
 #endif
-}
 
 Number_sp DoubleFloat_O::log1p_() const {
-  double f = this->as_double_();
-  if (std::isnan(f))
+  if (std::isnan(_Value))
     return this->asSmartPtr();
-  if (f < -1)
+  if (_Value < -1)
     return clasp_log1_complex_inner(clasp_one_plus(this->asSmartPtr()), clasp_make_fixnum(0));
-  return clasp_make_double_float(_log1p(f));
+  return clasp_make_double_float(_log1p(_Value));
 }
 
 #ifdef CLASP_LONG_FLOAT
-Number_sp LongFloat_O::log1p() const {
-  LongFloat f = this->as_long_float();
-  if (std::isnan(f))
+Number_sp LongFloat_O::log1p_() const {
+  if (std::isnan(_Value))
     return this->asSmartPtr();
-  if (f < -1)
+  if (_Value < -1)
     return clasp_log1_complex_inner(clasp_one_plus(this->asSmartPtr()), clasp_make_fixnum(0));
-  return clasp_make_long_float(_log1p(f));
+  return clasp_make_long_float(_log1p(_Value));
 }
 #endif
 
-Number_sp clasp_log2(Number_sp x, Number_sp y) { return clasp_divide(clasp_log1(y), clasp_log1(x)); }
+Number_sp clasp_log2(Number_sp x, Number_sp y) { return clasp_log1(y) / clasp_log1(x); }
 
 Number_sp Complex_O::log1p_() const { return clasp_log1_complex_inner(clasp_one_plus(this->real()), this->imaginary()); }
 
@@ -2780,16 +2412,14 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(doc(float-nan-p)dx");
 DOCGROUP(clasp);
-CL_DEFUN bool ext__float_nan_p(Float_sp i) {
-  return clasp_float_nan_p(i);
-};
+CL_DEFUN bool ext__float_nan_p(Float_sp i) { return Float_O::isnan(i); };
 
 CL_LAMBDA(i);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(float-infinity-p)dx");
 DOCGROUP(clasp);
-CL_DEFUN bool ext__float_infinity_p(Float_sp i) { return clasp_float_infinity_p(i); };
+CL_DEFUN bool ext__float_infinity_p(Float_sp i) { return Float_O::isinf(i); };
 
 SYMBOL_EXPORT_SC_(ClPkg, sqrt);
 SYMBOL_EXPORT_SC_(ClPkg, sin);
@@ -2848,7 +2478,7 @@ float clasp_to_float(core::Number_sp x) {
   if (x.single_floatp()) {
     return (float)x.unsafe_single_float();
   }
-  return x->as_float_();
+  return x->as_single_float_();
 }
 
 double clasp_to_double(core::Number_sp x) {
@@ -2859,7 +2489,7 @@ double clasp_to_double(core::Number_sp x) {
     double d = x.unsafe_single_float();
     return d;
   }
-  return x->as_double_();
+  return x->as_double_float_();
 };
 
 double clasp_to_double(core::Integer_sp x) {
@@ -2867,7 +2497,7 @@ double clasp_to_double(core::Integer_sp x) {
     double d = x.unsafe_fixnum();
     return d;
   }
-  return x->as_double_();
+  return x->as_double_float_();
 };
 
 double clasp_to_double(core::T_sp x) {
@@ -2878,7 +2508,7 @@ double clasp_to_double(core::T_sp x) {
     double d = x.unsafe_single_float();
     return d;
   } else if (gc::IsA<Number_sp>(x)) {
-    return gc::As_unsafe<Number_sp>(x)->as_double_();
+    return gc::As_unsafe<Number_sp>(x)->as_double_float_();
   }
   TYPE_ERROR(x, cl::_sym_Number_O);
 }
@@ -2891,25 +2521,54 @@ double clasp_to_double(core::Real_sp x) {
     double d = x.unsafe_single_float();
     return d;
   } else if (gc::IsA<Number_sp>(x)) {
-    return gc::As_unsafe<Number_sp>(x)->as_double_();
+    return gc::As_unsafe<Number_sp>(x)->as_double_float_();
   }
   TYPE_ERROR(x, Cons_O::createList(cl::_sym_Real_O));
 }
 
 double clasp_to_double(core::General_sp x) {
   if (gc::IsA<Number_sp>(x)) {
-    return gc::As_unsafe<Number_sp>(x)->as_double_();
+    return gc::As_unsafe<Number_sp>(x)->as_double_float_();
   }
   TYPE_ERROR(x, cl::_sym_Number_O);
 };
 
 double clasp_to_double(core::DoubleFloat_sp x) { return x->get(); };
 
-LongFloat clasp_to_long_float(Number_sp x) { return x->as_long_float_(); };
+long_float_t clasp_to_long_float(Number_sp x) {
+  if (x.fixnump())
+    return (long_float_t)x.unsafe_fixnum();
 
-LongFloat clasp_to_long_double(Number_sp x) { return x->as_long_float_(); };
+  if (x.single_floatp())
+    return (long_float_t)x.unsafe_single_float();
+
+  if (x.isA<Real_O>())
+    return x->as_long_float_();
+
+  TYPE_ERROR(x, cl::_sym_Real_O);
+};
 
 // --- END OF TRANSLATORS ---
+
+#ifdef CLASP_SHORT_FLOAT
+CL_LAMBDA(float);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(Return the bit representation of a short float as an integer.)dx");
+DOCGROUP(clasp);
+CL_DEFUN Integer_sp ext__short_float_to_bits(ShortFloat_sp x) {
+  return Integer_O::create(float_convert<short_float_t>::float_to_bits(x.unsafe_short_float()));
+}
+
+CL_LAMBDA(bit-representation);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(Convert a bit representation, an integer, to a short float.)dx");
+DOCGROUP(clasp);
+CL_DEFUN LongFloat_sp ext__bits_to_short_float(Integer_sp integer) {
+  return ShortFloat_O::create(float_convert<short_float_t>::bits_to_float(clasp_to_uint16_t(integer)));
+}
+#endif
 
 CL_LAMBDA(singleFloat);
 CL_DECLARE();
@@ -2917,7 +2576,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Return the IEEE754 binary32 (single) representation of a single float, as an integer.)dx");
 DOCGROUP(clasp);
 CL_DEFUN Integer_sp ext__single_float_to_bits(SingleFloat_sp singleFloat) {
-  return Integer_O::create(float_convert<float>::to_bits(unbox_single_float(singleFloat)));
+  return Integer_O::create(float_convert<float>::float_to_bits(unbox_single_float(singleFloat)));
 }
 
 CL_LAMBDA(bit-representation);
@@ -2926,7 +2585,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Convert an IEEE754 binary32 (single) representation, an integer, to a single float.)dx");
 DOCGROUP(clasp);
 CL_DEFUN SingleFloat_sp ext__bits_to_single_float(Integer_sp integer) {
-  return make_single_float(float_convert<float>::from_bits(clasp_to_uint32_t(integer)));
+  return make_single_float(float_convert<float>::bits_to_float(clasp_to_uint32_t(integer)));
 };
 
 CL_LAMBDA(doubleFloat);
@@ -2935,7 +2594,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Return the IEEE754 binary64 (double) bit representation of a double float as an integer.)dx");
 DOCGROUP(clasp);
 CL_DEFUN Integer_sp ext__double_float_to_bits(DoubleFloat_sp doubleFloat) {
-  return Integer_O::create(float_convert<double>::to_bits(doubleFloat->get()));
+  return Integer_O::create(float_convert<double>::float_to_bits(doubleFloat->get()));
 }
 
 CL_LAMBDA(bit-representation);
@@ -2944,8 +2603,28 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Convert an IEEE754 binary64 (double) representation, an integer, to a double float.)dx");
 DOCGROUP(clasp);
 CL_DEFUN DoubleFloat_sp ext__bits_to_double_float(Integer_sp integer) {
-  return clasp_make_double_float(float_convert<double>::from_bits(clasp_to_uint64_t(integer)));
+  return clasp_make_double_float(float_convert<double>::bits_to_float(clasp_to_uint64_t(integer)));
 }
+
+#ifdef CLASP_LONG_FLOAT
+CL_LAMBDA(longFloat);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(Return the bit representation of a long float as an integer.)dx");
+DOCGROUP(clasp);
+CL_DEFUN Integer_sp ext__long_float_to_bits(LongFloat_sp longFloat) {
+  return Integer_O::create(float_convert<long_float_t>::float_to_bits(longFloat->get()));
+}
+
+CL_LAMBDA(bit-representation);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(Convert a bit representation, an integer, to a long float.)dx");
+DOCGROUP(clasp);
+CL_DEFUN LongFloat_sp ext__bits_to_long_float(Integer_sp integer) {
+  return clasp_make_long_float(float_convert<long_float_t>::bits_to_float(clasp_to_integral<__uint128_t>(integer)));
+}
+#endif
 
 }; // namespace core
 
@@ -2953,20 +2632,62 @@ namespace core {
 
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN Number_sp cl__rational(Real_sp num) {
-  if (num.fixnump())
-    return num;
-  if (num.single_floatp())
-    return DoubleFloat_O::rational(num.unsafe_single_float());
-  if (gc::IsA<Number_sp>(num))
-    return gc::As_unsafe<Number_sp>(num)->rational_();
-  TYPE_ERROR(num, cl::_sym_Real_O);
-};
+ CL_DEFUN Rational_sp cl__rational(Real_sp num) { return Rational_O::coerce(num); }
 
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN Number_sp cl__rationalize(Real_sp num) { return cl__rational(num); };
+CL_DEFUN Rational_sp cl__rationalize(Real_sp num) { return Rational_O::coerce(num); };
 
 Integer_sp clasp_make_integer(size_t s) { return Integer_O::create((uint64_t)s); }
+
+#ifdef CLASP_SHORT_FLOAT
+ShortFloat_sp ShortFloat_dummy_O::coerce(Number_sp x) {
+  if (x.fixnump())
+    return create(x.unsafe_fixnum());
+  if (x.short_floatp())
+    return x;
+  if (x.single_floatp())
+    return (short_float_t)x.unsafe_single_float();
+  if (x.isA<Real_O>())
+    return create(x->as_short_float_());
+  TYPE_ERROR(x, cl::_sym_Real_O);
+}
+#endif
+
+SingleFloat_sp SingleFloat_dummy_O::coerce(Number_sp x) {
+  if (x.fixnump())
+    return create(x.unsafe_fixnum());
+  if (x.single_floatp())
+    return x;
+  if (x.isA<Real_O>())
+    return create(x->as_single_float_());
+  TYPE_ERROR(x, cl::_sym_Real_O);
+}
+
+DoubleFloat_sp DoubleFloat_O::coerce(Number_sp x) {
+  if (x.fixnump())
+    return create(x.unsafe_fixnum());
+  if (x.single_floatp())
+    return create(x.unsafe_single_float());
+  if (x.isA<DoubleFloat_O>())
+    return x;
+  if (x.isA<Real_O>())
+    return create(x->as_double_float_());
+  TYPE_ERROR(x, cl::_sym_Real_O);
+}
+
+#ifdef CLASP_LONG_FLOAT
+LongFloat_sp LongFloat_O::coerce(Number_sp x) {
+  if (x.fixnump())
+    return create(x.unsafe_fixnum());
+  if (x.single_floatp())
+    return create(x.unsafe_single_float());
+  if (x.isA<LongFloat_O>())
+    return x;
+  if (x.isA<Real_O>())
+    return create(x->as_long_float_());
+  TYPE_ERROR(x, cl::_sym_Real_O);
+}
+#endif
 
 }; // namespace core

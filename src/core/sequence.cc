@@ -204,14 +204,14 @@ size_t_pair sequenceKeywordStartEnd(Symbol_sp fn_name, T_sp sequence, Fixnum_sp 
   size_t_pair p;
   size_t l;
   p.length = l = cl__length(sequence);
-  unlikely_if(!core__fixnump(start) || clasp_minusp(start)) {
+  unlikely_if(!core__fixnump(start) || Real_O::minusp(start)) {
     ERROR_WRONG_TYPE_KEY_ARG(fn_name, kw::_sym_start, start, cl::_sym_UnsignedByte);
   }
   p.start = unbox_fixnum(start);
   if (end.nilp()) {
     p.end = l;
   } else {
-    unlikely_if(!core__fixnump(end) || clasp_minusp(gc::As<Fixnum_sp>(end))) {
+    unlikely_if(!core__fixnump(end) || Real_O::minusp(gc::As<Fixnum_sp>(end))) {
       ERROR_WRONG_TYPE_KEY_ARG(fn_name, kw::_sym_end, end, Cons_O::createList(cl::_sym_or, cl::_sym_null, cl::_sym_UnsignedByte));
     }
     p.end = unbox_fixnum(gc::As<Fixnum_sp>(end));
@@ -242,7 +242,7 @@ size_t_pair sequenceStartEnd(Symbol_sp fn_name, size_t vector_length, size_t sta
   if (end.nilp()) {
     p.end = l;
   } else {
-    unlikely_if(!core__fixnump(end) || clasp_minusp(gc::As<Fixnum_sp>(end))) {
+    unlikely_if(!core__fixnump(end) || Real_O::minusp(gc::As<Fixnum_sp>(end))) {
       FUNCTION_WRONG_TYPE_ARG(fn_name, end, Cons_O::createList(cl::_sym_or, cl::_sym_null, cl::_sym_UnsignedByte));
     }
     p.end = unbox_fixnum(gc::As<Fixnum_sp>(end));

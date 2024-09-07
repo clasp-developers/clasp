@@ -313,17 +313,20 @@
   (set-ltv-info :size_t "size_t" "size_t")
   (set-ltv-info :t* "T_O*" "object" t)
   (set-ltv-info :i8* "string" "string")
+  (set-ltv-info :short-float "short_float_t" "binary16")
   (set-ltv-info :single-float "float" "float")
   (set-ltv-info :double-float "double" "double")
+  (set-ltv-info :binary80 "long_float_t" "binary80")
+  (set-ltv-info :binary128 "long_float_t" "binary128")
   (set-ltv-info :uintptr_t "uintptr_t" "size_t")
   (set-ltv-info :bignum "T_O*" "bignum")
   (set-ltv-info :unknown "UNKNOWN" "UNKNOWN")
   )
 
 (defun build-one-ltv-function (op &optional (stream *standard-output*))
-  (destructuring-bind (unwindsp name arg-types &key varargs)
+  (destructuring-bind (code unwindsp name arg-types &key varargs)
       op
-    (declare (ignore unwindsp))
+    (declare (ignore code unwindsp))
     (format stream "void parse_~a(gctools::GCRootsInModule* roots, char*& bytecode, char* byteend, bool log) {~%" name)
     (format stream "  if (log) printf(\"%s:%d:%s parse_~a\\n\", __FILE__, __LINE__, __FUNCTION__);~%" name)
     (let* ((arg-index 0)
@@ -371,17 +374,25 @@
 
 (defun build-ltv-switch (primitives &optional (stream *standard-output*))
   (format stream "#ifdef DEFINE_LTV_SWITCH~%")
-  (let ((code 65))
-    (dolist (prim primitives)
-      (let ((func-name (second prim)))
-        (format stream "  case ~a: parse_~a(roots,bytecode,byteend,log);~%" code func-name)
-        (format stream "           break;~%")
-        (incf code))))
+  (dolist (prim primitives)
+    (format stream "  case ~a:~%    parse_~a(roots, bytecode, byteend, log);~%    break;~%"
+            (first prim) (third prim)))
   (format stream "#endif // DEFINE_LTV_SWITCH~%"))
 
 (defun build-ltv-machine (&optional (stream *standard-output*))
   (build-ltv-functions *startup-primitives-as-list* stream)
   (build-ltv-switch *startup-primitives-as-list* stream))
+
+(defun build-bytecode-ltv-ops (&optional (stream *standard-output*))
+  (format stream "~%#ifdef DEFINE_BYTECODE_LTV_OPS~%enum class bytecode_ltv : uint8_t {~%")
+  (dolist (op +bytecode-ltv-ops+)
+    (format stream "  ~(~a~) = ~a,~%"
+            (substitute #\_ #\- (symbol-name (first op))) (second op)))
+  (format stream "};~%enum class bytecode_uaet : uint8_t {~%")
+  (loop for (key code) on +uaet-codes+ by #'cddr
+        do (format stream "  ~(~a~) = ~a,~%"
+                   (substitute #\_ #\- (symbol-name key)) code))
+  (format stream "};~%#endif~%"))
 
 ;;; entry point
 
@@ -391,4 +402,5 @@
   (clos:dump-gf-bytecode-virtual-machine fout)
   (clos:dump-gf-bytecode-virtual-machine-macro-names fout)
   (clos:dump-python-gf-bytecode-virtual-machine fout)
-  (build-ltv-machine fout))
+  (build-ltv-machine fout)
+  (build-bytecode-ltv-ops fout))

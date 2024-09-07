@@ -95,19 +95,40 @@ CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
     BIGNUM_NORMALIZE(len, res);
     return cl__mod(bignum_result(len, res), gbn);
   } else if (DoubleFloat_sp df = olimit.asOrNull<DoubleFloat_O>()) {
-    if (df->get() == DBL_TRUE_MIN) {
+    if (df->get() == std::numeric_limits<double>::denorm_min()) {
       return DoubleFloat_O::create(0.0);
     } else if (df->get() > 0.0) {
-      std::uniform_real_distribution<> range(0.0, df->get());
+      std::uniform_real_distribution<double_float_t> range(0.0, df->get());
       return DoubleFloat_O::create(range(random_state->_Producer._value));
     } else
       TYPE_ERROR_cl_random(olimit);
+#ifdef CLASP_SHORT_FLOAT
+  } else if (olimit.short_floatp()) {
+    short_float_t flimit = olimit.unsafe_short_float();
+    if (flimit == std::numeric_limits<short_float_t>::denorm_min()) {
+      return ShortFloat_O::create(short_float_t{0});
+    } else if (flimit > short_float_t{0}) {
+      std::uniform_real_distribution<single_float_t> range(short_float_t{0}, flimit);
+      return ShortFloat_O::create(range(random_state->_Producer._value));
+    } else
+      TYPE_ERROR_cl_random(olimit);
+#endif
+#ifdef CLASP_LONG_FLOAT
+  } else if (LongFloat_sp lf = olimit.asOrNull<LongFloat_O>()) {
+    if (lf->get() == std::numeric_limits<long_float_t>::denorm_min()) {
+      return LongFloat_O::create(long_float_t{0.0});
+    } else if (lf->get() > long_float_t{0.0}) {
+      std::uniform_real_distribution<long_float_t> range(long_float_t{0.0}, lf->get());
+      return LongFloat_O::create(range(random_state->_Producer._value));
+    } else
+      TYPE_ERROR_cl_random(olimit);
+#endif
   } else if (olimit.single_floatp()) {
     float flimit = olimit.unsafe_single_float();
-    if (flimit == FLT_TRUE_MIN) {
+    if (flimit == std::numeric_limits<float>::denorm_min()) {
       return clasp_make_single_float(0.0f);
     } else if (flimit > 0.0f) {
-      std::uniform_real_distribution<> range(0.0, flimit);
+      std::uniform_real_distribution<single_float_t> range(0.0, flimit);
       return clasp_make_single_float(range(random_state->_Producer._value));
     } else
       TYPE_ERROR_cl_random(olimit);

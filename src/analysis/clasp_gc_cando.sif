@@ -37,10 +37,10 @@
                           "core::SimpleVector_byte4_t_O" "llvmo::UndefValue_O"
                           "chem::EstimateStretch" "llvmo::CallBase_O" "chem::ChemInfoNode_O"
                           "core::Path_O" "mp::SharedMutex_O" "chem::BoundingBox_O"
-                          "adapt::QDomNode_O" "chem::StructureComparer_O"
-                          "asttooling::DerivableASTFrontendAction" "core::InstanceCreator_O"
-                          "core::Scope_O" "chem::BondLogical_O" "chem::MoleculeGraph_O"
-                          "chem::BondToAtomTest_O" "chem::FFAngleDb_O"
+                          "core::ComplexVector_long_float_O" "adapt::QDomNode_O"
+                          "chem::StructureComparer_O" "asttooling::DerivableASTFrontendAction"
+                          "core::InstanceCreator_O" "core::Scope_O" "chem::BondLogical_O"
+                          "chem::MoleculeGraph_O" "chem::BondToAtomTest_O" "chem::FFAngleDb_O"
                           "core::BytecodeDebugLocation_O" "chem::FFTypeRule_O"
                           "llvmo::InsertPoint_O" "core::FunctionDescription_O"
                           "core::ComplexVector_double_O" "core::StrWNs_O"
@@ -89,11 +89,12 @@
                           "core::StrNs_O" "comp::GlobalFunInfo_O" "clasp_ffi::ForeignData_O"
                           "llvmo::CallInst_O" "chem::VirtualAtom_O" "core::BytecodeAstDecls_O"
                           "chem::AfterMatchBondToAtomTest_O" "core::DoubleFloat_O"
-                          "adapt::AdaptExposer_O" "core::DebuggerFrame_O"
-                          "chem::ConformationExplorerEntryStage_O" "comp::LocalMacroInfo_O"
-                          "chem::FrameRecognizer_O" "chem::CalculatePositionAlongBond_O"
-                          "comp::LexFixup_O" "core::StringStream_O" "llvmo::LibraryBase_O"
-                          "core::Sigset_O" "core::MDArray_int32_t_O" "adapt::SymbolList_O"
+                          "core::ComplexVector_short_float_O" "core::DebuggerFrame_O"
+                          "chem::ConformationExplorerEntryStage_O" "adapt::AdaptExposer_O"
+                          "comp::LocalMacroInfo_O" "chem::FrameRecognizer_O"
+                          "chem::CalculatePositionAlongBond_O" "comp::LexFixup_O"
+                          "core::StringStream_O" "llvmo::LibraryBase_O" "core::Sigset_O"
+                          "core::MDArray_int32_t_O" "adapt::SymbolList_O"
                           "chem::CalculatePositionUsingInternals_O"
                           "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
                           "asttooling::AsttoolingExposer_O" "chem::HybridizationInfo"
@@ -108,7 +109,8 @@
                           "chem::EnergyAnchorRestraint" "core::MDArray_int4_t_O"
                           "core::WeakKeyHashTable_O" "chem::FFNonbondCrossTerm" "core::Rack_O"
                           "core::MDArrayBaseChar_O" "core::UserData_O" "core::ExternalObject_O"
-                          "llvmo::DINode_O" "llvmo::GlobalVariable_O" "core::BroadcastStream_O"
+                          "llvmo::DINode_O" "llvmo::GlobalVariable_O"
+                          "core::SimpleVector_short_float_O" "core::BroadcastStream_O"
                           "chem::FFBaseDb_O" "chem::AbstractLargeSquareMatrix_O" "core::General_O"
                           "core::BytecodeSimpleFun_O" "llvmo::MemoryBuffer_O" "llvmo::ObjectFile_O"
                           "chem::ConformationExplorerMatch_O" "llvmo::Library_O" "core::Closure_O"
@@ -181,18 +183,21 @@
                           "llvmo::IRBuilderBase_O" "units::Unit_O" "core::Null_O"
                           "chem::RingFinder_O" "chem::IterateBonds_O" "core::RequiredArgument"
                           "core::SingleDispatchMethod_O" "chem::CDFragment_O" "comp::VarInfo_O"
-                          "core::CxxObject_O" "llvmo::ReturnInst_O" "llvmo::FunctionType_O"
-                          "clbind::DummyCreator_O" "chem::EnergyDihedralRestraint"
-                          "core::MDArray_byte16_t_O" "llvmo::DIContext_O"
-                          "chem::FFNonbondCrossTermTable_O" "llvmo::JITDylib_O" "llvmo::Type_O"
-                          "chem::Command_O" "core::Pointer_O" "llvmo::UnreachableInst_O"
-                          "core::ComplexVector_int64_t_O" "chem::FFParameterBaseDb_O"
-                          "core::FileScope_O" "core::SimpleMDArray_byte4_t_O" "core::Float_O"
+                          "core::CxxObject_O" "core::SimpleVector_long_float_O"
+                          "llvmo::ReturnInst_O" "llvmo::FunctionType_O" "clbind::DummyCreator_O"
+                          "chem::EnergyDihedralRestraint" "core::MDArray_byte16_t_O"
+                          "llvmo::DIContext_O" "chem::FFNonbondCrossTermTable_O"
+                          "llvmo::JITDylib_O" "llvmo::Type_O" "chem::Command_O" "core::Pointer_O"
+                          "llvmo::UnreachableInst_O" "core::ComplexVector_int64_t_O"
+                          "core::SimpleMDArray_short_float_O" "chem::FFParameterBaseDb_O"
+                          "core::SimpleMDArray_long_float_O" "core::FileScope_O"
+                          "core::SimpleMDArray_byte4_t_O" "core::Float_O"
                           "chem::EnergySketchStretch" "chem::ResidueTest_O"
                           "chem::RestraintDistance_O" "llvmo::DIDerivedType_O" "chem::SmartsRoot_O"
                           "chem::TwisterDriver_O" "comp::EntryCloseFixup_O"
                           "core::SimpleVector_int64_t_O" "llvmo::ConstantDataSequential_O"
                           "chem::SuperposeEngine_O" "comp::EntryFixup_O"
+                          "core::MDArray_short_float_O"
                           "chem::BeyondThresholdFixedNonbondRestraint" "units::NamedUnit_O"
                           "core::MDArray_double_O" "llvmo::StoreInst_O" "llvmo::DebugLoc_O"
                           "chem::ResidueList_O" "core::WeakPointer_O" "core::DestDynEnv_O"
@@ -231,8 +236,9 @@
                           "core::SynonymStream_O" "core::Ratio_O" "core::BytecodeModule_O"
                           "core::MDArray_int2_t_O" "core::ComplexVector_byte2_t_O"
                           "chem::FixedNonbondRestraint" "llvmo::ExecutionEngine_O"
-                          "core::ClassRepCreator_O" "core::SimpleVector_int16_t_O"
-                          "llvmo::Attribute_O" "core::DerivableCxxObject_O" "llvmo::SwitchInst_O"
+                          "core::ClassRepCreator_O" "core::MDArray_long_float_O"
+                          "core::SimpleVector_int16_t_O" "llvmo::Attribute_O"
+                          "core::DerivableCxxObject_O" "llvmo::SwitchInst_O"
                           "core::SymbolToEnumConverter_O" "chem::RestrainedPiBond_O"
                           "chem::ConformationCollection_O" "core::SingleDispatchGenericFunction_O"
                           "core::ComplexVector_int32_t_O" "chem::StepReport_O" "geom::Color_O"
@@ -6094,11 +6100,11 @@
 {class-kind :stamp-name "STAMPWTAG_core__LongFloat_O" :stamp-key "core::LongFloat_O"
             :parent-class "core::Float_O" :lisp-class-base "core::Float_O" :root-class "core::T_O"
             :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "ctype_long_double" :offset-ctype "long double"
+             :offset-base-ctype "core::LongFloat_O" :layout-offset-field-names ("_Value")}
 {class-kind :stamp-name "STAMPWTAG_core__ShortFloat_O" :stamp-key "core::ShortFloat_O"
             :parent-class "core::Float_O" :lisp-class-base "core::Float_O" :root-class "core::T_O"
             :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ctype_float" :offset-ctype "float"
-             :offset-base-ctype "core::ShortFloat_O" :layout-offset-field-names ("_Value")}
 {class-kind :stamp-name "STAMPWTAG_core__Complex_O" :stamp-key "core::Complex_O"
             :parent-class "core::Number_O" :lisp-class-base "core::Number_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -7139,6 +7145,36 @@
                    :length-field-names ("_Dimensions" "._MaybeSignedLength")
                    :end-field-names ("_Dimensions" "._MaybeSignedLength")}
 {variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
+{class-kind :stamp-name "STAMPWTAG_core__SimpleMDArray_long_float_O"
+            :stamp-key "core::SimpleMDArray_long_float_O"
+            :parent-class "core::template_SimpleArray<core::SimpleMDArray_long_float_O,core::SimpleVector_long_float_O,core::SimpleMDArray_O>"
+            :lisp-class-base "core::SimpleMDArray_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "CONSTANT_ARRAY_OFFSET" :offset-ctype "UnknownType"
+             :offset-base-ctype "core::SimpleMDArray_long_float_O"
+             :layout-offset-field-names ("_Length")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::SimpleMDArray_long_float_O"
+             :layout-offset-field-names ("_FillPointerOrLengthOrDummy")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::SimpleMDArray_long_float_O"
+             :layout-offset-field-names ("_ArrayTotalSize")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Array_O>"
+             :offset-base-ctype "core::SimpleMDArray_long_float_O"
+             :layout-offset-field-names ("_Data")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::SimpleMDArray_long_float_O"
+             :layout-offset-field-names ("_DisplacedIndexOffset")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::SimpleMDArray_long_float_O"
+             :layout-offset-field-names ("_Flags" "._Flags")}
+{variable-array0 :offset-base-ctype "core::SimpleMDArray_long_float_O"
+                 :field-names ("_Dimensions" "._Data")}
+{variable-capacity :ctype "unsigned long" :offset-base-ctype "core::SimpleMDArray_long_float_O"
+                   :length-field-names ("_Dimensions" "._MaybeSignedLength")
+                   :end-field-names ("_Dimensions" "._MaybeSignedLength")}
+{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
 {class-kind :stamp-name "STAMPWTAG_core__SimpleMDArrayCharacter_O"
             :stamp-key "core::SimpleMDArrayCharacter_O"
             :parent-class "core::template_SimpleArray<core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::SimpleMDArray_O>"
@@ -7286,6 +7322,36 @@
 {variable-array0 :offset-base-ctype "core::SimpleMDArray_byte64_t_O"
                  :field-names ("_Dimensions" "._Data")}
 {variable-capacity :ctype "unsigned long" :offset-base-ctype "core::SimpleMDArray_byte64_t_O"
+                   :length-field-names ("_Dimensions" "._MaybeSignedLength")
+                   :end-field-names ("_Dimensions" "._MaybeSignedLength")}
+{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
+{class-kind :stamp-name "STAMPWTAG_core__SimpleMDArray_short_float_O"
+            :stamp-key "core::SimpleMDArray_short_float_O"
+            :parent-class "core::template_SimpleArray<core::SimpleMDArray_short_float_O,core::SimpleVector_short_float_O,core::SimpleMDArray_O>"
+            :lisp-class-base "core::SimpleMDArray_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "CONSTANT_ARRAY_OFFSET" :offset-ctype "UnknownType"
+             :offset-base-ctype "core::SimpleMDArray_short_float_O"
+             :layout-offset-field-names ("_Length")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::SimpleMDArray_short_float_O"
+             :layout-offset-field-names ("_FillPointerOrLengthOrDummy")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::SimpleMDArray_short_float_O"
+             :layout-offset-field-names ("_ArrayTotalSize")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Array_O>"
+             :offset-base-ctype "core::SimpleMDArray_short_float_O"
+             :layout-offset-field-names ("_Data")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::SimpleMDArray_short_float_O"
+             :layout-offset-field-names ("_DisplacedIndexOffset")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::SimpleMDArray_short_float_O"
+             :layout-offset-field-names ("_Flags" "._Flags")}
+{variable-array0 :offset-base-ctype "core::SimpleMDArray_short_float_O"
+                 :field-names ("_Dimensions" "._Data")}
+{variable-capacity :ctype "unsigned long" :offset-base-ctype "core::SimpleMDArray_short_float_O"
                    :length-field-names ("_Dimensions" "._MaybeSignedLength")
                    :end-field-names ("_Dimensions" "._MaybeSignedLength")}
 {variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
@@ -7685,6 +7751,36 @@
 {variable-array0 :offset-base-ctype "core::ComplexVector_byte16_t_O"
                  :field-names ("_Dimensions" "._Data")}
 {variable-capacity :ctype "unsigned long" :offset-base-ctype "core::ComplexVector_byte16_t_O"
+                   :length-field-names ("_Dimensions" "._MaybeSignedLength")
+                   :end-field-names ("_Dimensions" "._MaybeSignedLength")}
+{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
+{class-kind :stamp-name "STAMPWTAG_core__ComplexVector_long_float_O"
+            :stamp-key "core::ComplexVector_long_float_O"
+            :parent-class "core::template_Vector<core::ComplexVector_long_float_O,core::SimpleVector_long_float_O,core::ComplexVector_O>"
+            :lisp-class-base "core::ComplexVector_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "CONSTANT_ARRAY_OFFSET" :offset-ctype "UnknownType"
+             :offset-base-ctype "core::ComplexVector_long_float_O"
+             :layout-offset-field-names ("_Length")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::ComplexVector_long_float_O"
+             :layout-offset-field-names ("_FillPointerOrLengthOrDummy")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::ComplexVector_long_float_O"
+             :layout-offset-field-names ("_ArrayTotalSize")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Array_O>"
+             :offset-base-ctype "core::ComplexVector_long_float_O"
+             :layout-offset-field-names ("_Data")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::ComplexVector_long_float_O"
+             :layout-offset-field-names ("_DisplacedIndexOffset")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::ComplexVector_long_float_O"
+             :layout-offset-field-names ("_Flags" "._Flags")}
+{variable-array0 :offset-base-ctype "core::ComplexVector_long_float_O"
+                 :field-names ("_Dimensions" "._Data")}
+{variable-capacity :ctype "unsigned long" :offset-base-ctype "core::ComplexVector_long_float_O"
                    :length-field-names ("_Dimensions" "._MaybeSignedLength")
                    :end-field-names ("_Dimensions" "._MaybeSignedLength")}
 {variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
@@ -8140,6 +8236,36 @@
                    :length-field-names ("_Dimensions" "._MaybeSignedLength")
                    :end-field-names ("_Dimensions" "._MaybeSignedLength")}
 {variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
+{class-kind :stamp-name "STAMPWTAG_core__ComplexVector_short_float_O"
+            :stamp-key "core::ComplexVector_short_float_O"
+            :parent-class "core::template_Vector<core::ComplexVector_short_float_O,core::SimpleVector_short_float_O,core::ComplexVector_O>"
+            :lisp-class-base "core::ComplexVector_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "CONSTANT_ARRAY_OFFSET" :offset-ctype "UnknownType"
+             :offset-base-ctype "core::ComplexVector_short_float_O"
+             :layout-offset-field-names ("_Length")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::ComplexVector_short_float_O"
+             :layout-offset-field-names ("_FillPointerOrLengthOrDummy")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::ComplexVector_short_float_O"
+             :layout-offset-field-names ("_ArrayTotalSize")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Array_O>"
+             :offset-base-ctype "core::ComplexVector_short_float_O"
+             :layout-offset-field-names ("_Data")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::ComplexVector_short_float_O"
+             :layout-offset-field-names ("_DisplacedIndexOffset")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::ComplexVector_short_float_O"
+             :layout-offset-field-names ("_Flags" "._Flags")}
+{variable-array0 :offset-base-ctype "core::ComplexVector_short_float_O"
+                 :field-names ("_Dimensions" "._Data")}
+{variable-capacity :ctype "unsigned long" :offset-base-ctype "core::ComplexVector_short_float_O"
+                   :length-field-names ("_Dimensions" "._MaybeSignedLength")
+                   :end-field-names ("_Dimensions" "._MaybeSignedLength")}
+{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
 {class-kind :stamp-name "STAMPWTAG_core__ComplexVector_int64_t_O"
             :stamp-key "core::ComplexVector_int64_t_O"
             :parent-class "core::template_Vector<core::ComplexVector_int64_t_O,core::SimpleVector_int64_t_O,core::ComplexVector_O>"
@@ -8167,6 +8293,63 @@
 {variable-array0 :offset-base-ctype "core::ComplexVector_int64_t_O"
                  :field-names ("_Dimensions" "._Data")}
 {variable-capacity :ctype "unsigned long" :offset-base-ctype "core::ComplexVector_int64_t_O"
+                   :length-field-names ("_Dimensions" "._MaybeSignedLength")
+                   :end-field-names ("_Dimensions" "._MaybeSignedLength")}
+{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
+{class-kind :stamp-name "STAMPWTAG_core__MDArray_short_float_O"
+            :stamp-key "core::MDArray_short_float_O"
+            :parent-class "core::template_Array<core::MDArray_short_float_O,core::SimpleMDArray_short_float_O,core::SimpleVector_short_float_O,core::MDArray_O>"
+            :lisp-class-base "core::MDArray_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "CONSTANT_ARRAY_OFFSET" :offset-ctype "UnknownType"
+             :offset-base-ctype "core::MDArray_short_float_O"
+             :layout-offset-field-names ("_Length")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::MDArray_short_float_O"
+             :layout-offset-field-names ("_FillPointerOrLengthOrDummy")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::MDArray_short_float_O"
+             :layout-offset-field-names ("_ArrayTotalSize")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Array_O>"
+             :offset-base-ctype "core::MDArray_short_float_O" :layout-offset-field-names ("_Data")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::MDArray_short_float_O"
+             :layout-offset-field-names ("_DisplacedIndexOffset")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::MDArray_short_float_O"
+             :layout-offset-field-names ("_Flags" "._Flags")}
+{variable-array0 :offset-base-ctype "core::MDArray_short_float_O"
+                 :field-names ("_Dimensions" "._Data")}
+{variable-capacity :ctype "unsigned long" :offset-base-ctype "core::MDArray_short_float_O"
+                   :length-field-names ("_Dimensions" "._MaybeSignedLength")
+                   :end-field-names ("_Dimensions" "._MaybeSignedLength")}
+{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
+{class-kind :stamp-name "STAMPWTAG_core__MDArray_long_float_O"
+            :stamp-key "core::MDArray_long_float_O"
+            :parent-class "core::template_Array<core::MDArray_long_float_O,core::SimpleMDArray_long_float_O,core::SimpleVector_long_float_O,core::MDArray_O>"
+            :lisp-class-base "core::MDArray_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "CONSTANT_ARRAY_OFFSET" :offset-ctype "UnknownType"
+             :offset-base-ctype "core::MDArray_long_float_O" :layout-offset-field-names ("_Length")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::MDArray_long_float_O"
+             :layout-offset-field-names ("_FillPointerOrLengthOrDummy")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::MDArray_long_float_O"
+             :layout-offset-field-names ("_ArrayTotalSize")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Array_O>"
+             :offset-base-ctype "core::MDArray_long_float_O" :layout-offset-field-names ("_Data")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::MDArray_long_float_O"
+             :layout-offset-field-names ("_DisplacedIndexOffset")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::MDArray_long_float_O"
+             :layout-offset-field-names ("_Flags" "._Flags")}
+{variable-array0 :offset-base-ctype "core::MDArray_long_float_O"
+                 :field-names ("_Dimensions" "._Data")}
+{variable-capacity :ctype "unsigned long" :offset-base-ctype "core::MDArray_long_float_O"
                    :length-field-names ("_Dimensions" "._MaybeSignedLength")
                    :end-field-names ("_Dimensions" "._MaybeSignedLength")}
 {variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
@@ -8387,6 +8570,20 @@
 {fixed-field :offset-type-cxx-identifier "CONSTANT_ARRAY_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "core::AbstractSimpleVector_O"
              :layout-offset-field-names ("_Length")}
+{class-kind :stamp-name "STAMPWTAG_core__SimpleVector_long_float_O"
+            :stamp-key "core::SimpleVector_long_float_O"
+            :parent-class "core::template_SimpleVector<core::SimpleVector_long_float_O,long double,core::AbstractSimpleVector_O>"
+            :lisp-class-base "core::AbstractSimpleVector_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "CONSTANT_ARRAY_OFFSET" :offset-ctype "UnknownType"
+             :offset-base-ctype "core::SimpleVector_long_float_O"
+             :layout-offset-field-names ("_Length")}
+{variable-array0 :offset-base-ctype "core::SimpleVector_long_float_O"
+                 :field-names ("_Data" "._Data")}
+{variable-capacity :ctype "long double" :offset-base-ctype "core::SimpleVector_long_float_O"
+                   :length-field-names ("_Data" "._MaybeSignedLength")
+                   :end-field-names ("_Data" "._MaybeSignedLength")}
+{variable-field-only :offset-type-cxx-identifier "ctype_long_double" :fixup-type "long double"}
 {class-kind :stamp-name "STAMPWTAG_core__SimpleVector_byte32_t_O"
             :stamp-key "core::SimpleVector_byte32_t_O"
             :parent-class "core::template_SimpleVector<core::SimpleVector_byte32_t_O,unsigned int,core::AbstractSimpleVector_O>"
@@ -8491,6 +8688,20 @@
 {variable-capacity :ctype "Vector3" :offset-base-ctype "geom::SimpleVectorCoordinate_O"
                    :length-field-names ("_Data" "._MaybeSignedLength")
                    :end-field-names ("_Data" "._MaybeSignedLength")}
+{class-kind :stamp-name "STAMPWTAG_core__SimpleVector_short_float_O"
+            :stamp-key "core::SimpleVector_short_float_O"
+            :parent-class "core::template_SimpleVector<core::SimpleVector_short_float_O,float,core::AbstractSimpleVector_O>"
+            :lisp-class-base "core::AbstractSimpleVector_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "CONSTANT_ARRAY_OFFSET" :offset-ctype "UnknownType"
+             :offset-base-ctype "core::SimpleVector_short_float_O"
+             :layout-offset-field-names ("_Length")}
+{variable-array0 :offset-base-ctype "core::SimpleVector_short_float_O"
+                 :field-names ("_Data" "._Data")}
+{variable-capacity :ctype "float" :offset-base-ctype "core::SimpleVector_short_float_O"
+                   :length-field-names ("_Data" "._MaybeSignedLength")
+                   :end-field-names ("_Data" "._MaybeSignedLength")}
+{variable-field-only :offset-type-cxx-identifier "ctype_float" :fixup-type "float"}
 {class-kind :stamp-name "STAMPWTAG_core__SimpleString_O" :stamp-key "core::SimpleString_O"
             :parent-class "core::AbstractSimpleVector_O"
             :lisp-class-base "core::AbstractSimpleVector_O" :root-class "core::T_O" :stamp-wtag 3
@@ -11141,6 +11352,15 @@
                    :length-field-names ("_Capacity") :end-field-names ("_End")}
 {variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
                      :fixup-type "gctools::smart_ptr<chem::Bond_O>"}
+{container-kind :stamp-name "STAMPWTAG_gctools__GCArray_moveable_long_double_"
+                :stamp-key "gctools::GCArray_moveable<long double>"
+                :parent-class "gctools::GCContainer" :lisp-class-base nil
+                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
+{variable-array0 :offset-base-ctype "gctools::GCArray_moveable<long double>" :field-names ("_Data")}
+{variable-capacity :ctype "long double" :offset-base-ctype "gctools::GCArray_moveable<long double>"
+                   :length-field-names ("_MaybeSignedLength")
+                   :end-field-names ("_MaybeSignedLength")}
+{variable-field-only :offset-type-cxx-identifier "ctype_long_double" :fixup-type "long double"}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_core__T_O___"
                 :stamp-key "gctools::GCVector_moveable<core::T_O *>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil

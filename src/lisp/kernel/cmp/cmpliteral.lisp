@@ -26,8 +26,12 @@
 (defstruct (literal-node-closure (:type vector) (:include literal-dnode) :named) function-index function entry-point-ref)
 
 (defstruct (function-datum (:type vector) :named) index)
+#+short-float
+(defstruct (short-float-datum (:type vector) :named) value)
 (defstruct (single-float-datum (:type vector) :named) value)
 (defstruct (double-float-datum (:type vector) :named) value)
+#+long-float
+(defstruct (long-float-datum (:type vector) :named) value)
 (defstruct (immediate-datum (:type vector) :named) value)
 (defstruct (datum (:type vector) :named) kind index literal-node-creator)
 
@@ -137,6 +141,8 @@
   (entry-point-coalesce (make-similarity-table #'eq))
   (package-coalesce (make-similarity-table #'eq))
   (double-float-coalesce (make-similarity-table #'eql))
+  #+long-float
+  (long-float-coalesce (make-similarity-table #'eql))
   (fcell-coalesce (make-similarity-table #'equal))
   (vcell-coalesce (make-similarity-table #'eq))
   (llvm-values (make-hash-table))
@@ -447,15 +453,33 @@ rewrite the slot in the literal table to store a closure."
   (add-creator "ltvc_make_package" index package
                (load-time-reference-literal (package-name package) read-only-p :toplevelp nil)))
 
+#+short-float/binary16
+(defun ltv/short-float (value index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp read-only-p))
+  (let* ((constant (make-short-float-datum :value value)))
+    (add-creator "ltvc_make_binary16" index value constant)))
+
 (defun ltv/single-float (single index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp read-only-p))
   (let* ((constant (make-single-float-datum :value single)))
-    (add-creator "ltvc_make_float" index single constant)))
+    (add-creator "ltvc_make_binary32" index single constant)))
 
 (defun ltv/double-float (double index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp read-only-p))
   (let* ((constant (make-double-float-datum :value double)))
-    (add-creator "ltvc_make_double" index double constant)))
+    (add-creator "ltvc_make_binary64" index double constant)))
+
+#+long-float/binary80
+(defun ltv/long-float (value index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp read-only-p))
+  (let* ((constant (make-long-float-datum :value value)))
+    (add-creator "ltvc_make_binary80" index value constant)))
+
+#+long-float/binary128
+(defun ltv/long-float (value index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp read-only-p))
+  (let* ((constant (make-long-float-datum :value value)))
+    (add-creator "ltvc_make_binary128" index value constant)))
 
 (defun call-with-constant-arguments-p (form &optional env)
   (and (consp form)
@@ -513,9 +537,13 @@ rewrite the slot in the literal table to store a closure."
     ((consp object) (values (literal-machine-cons-coalesce *literal-machine*) #'ltv/cons))
     ((fixnump object) (values nil #'ltv/fixnum))
     ((characterp object) (values nil #'ltv/character))
+    #+short-float
+    ((core:short-float-p  object) (values nil #'ltv/short-float))
     ((core:single-float-p  object) (values nil #'ltv/single-float))
     ((symbolp object) (values (literal-machine-symbol-coalesce literal-machine) #'ltv/symbol))
     ((double-float-p object) (values (literal-machine-double-float-coalesce literal-machine) #'ltv/double-float))
+    #+long-float
+    ((long-float-p object) (values (literal-machine-long-float-coalesce literal-machine) #'ltv/long-float))
     ((core:ratiop object) (values (literal-machine-ratio-coalesce literal-machine) #'ltv/ratio))
     ((sys:function-description-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/function-description))
     ((sys:core-fun-generator-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/local-entry-point))
@@ -544,8 +572,12 @@ rewrite the slot in the literal table to store a closure."
     ((core:bignump arg) (core:ltvc-write-bignum arg stream byte-index))
     ((immediate-datum-p arg)
      (core:ltvc-write-object #\i (immediate-datum-value arg) stream byte-index))
+    #+short-float
+    ((short-float-datum-p arg) (core:ltvc-write-short-float (long-float-datum-value arg) stream byte-index))
     ((single-float-datum-p arg) (core:ltvc-write-float (single-float-datum-value arg) stream byte-index))
     ((double-float-datum-p arg) (core:ltvc-write-double (double-float-datum-value arg) stream byte-index))
+    #+long-float
+    ((long-float-datum-p arg) (core:ltvc-write-long-float (long-float-datum-value arg) stream byte-index))
     ((literal-dnode-p arg)
      (cond
        ((transient-datum-p (literal-dnode-datum arg))
@@ -960,11 +992,8 @@ and  return the sorted values and the constant-table or (values nil nil)."
 
 (defun build-c++-byte-codes (primitives)
   (let ((map (make-hash-table :test #'equal)))
-    (let ((code 65))
-      (dolist (prim primitives)
-        (let ((func-name (second prim)))
-          (setf (gethash func-name map) code)
-          (incf code))))
+    (dolist (prim primitives)
+      (setf (gethash (third prim) map) (first prim)))
     map))
 
 (defvar *byte-codes* (build-c++-byte-codes cmpref:*startup-primitives-as-list*))

@@ -102,8 +102,8 @@ FORWARD(General);
 class RootClass {
 public:
   static core::Symbol_sp static_classSymbol() { return UNDEFINED_SYMBOL; };
-  static void set_static_creator(gc::smart_ptr<core::Creator_O> cb){};
-  explicit RootClass(){};
+  static void set_static_creator(gc::smart_ptr<core::Creator_O> cb) {};
+  explicit RootClass() {};
 };
 
 template <class T_Base> struct LispBases1 {
@@ -206,11 +206,11 @@ public:
         ,
         _debug(debug)
 #endif
-            {
+  {
 #ifdef DEBUG_HASH_GENERATOR
 //    if (this->_debug) lisp_write(fmt::format("{} ctor HG@{}\n", CPP_SOURCE(), (void*)this));
 #endif
-            };
+  };
 
   /*! Return true if can still accept parts */
   bool isFilling() const { return (this->_NextPartIndex < MaxParts) || (this->_Depth >= MaxDepth); }
@@ -375,7 +375,7 @@ class T_O : public RootClass {
 private:
   friend class CoreExposer;
   LISP_ABSTRACT_CLASS(core, ClPkg, T_O, "T", ::RootClass);
-  T_O(){};
+  T_O() {};
 };
 
 }; // namespace core
@@ -395,7 +395,7 @@ class General_O : public T_O {
   LISP_CLASS(core, CorePkg, General_O, "General", T_O);
 
 public:
-  General_O(){};
+  General_O() {};
 
   virtual void sxhash_(HashGenerator& hg) const;
   virtual void sxhash_equal(HashGenerator& hg) const;
@@ -406,8 +406,8 @@ public:
   virtual void validateCodePointer(void** funcPtr, size_t sizeofFuncPtr) {
     // Do nothing currently
   }
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup){
-      // Do nothing by default
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+    // Do nothing by default
   };
   virtual void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** address) {
     printf("%s:%d:%s Should never be called - subclass must implement\n", __FILE__, __LINE__, __FUNCTION__);
@@ -511,15 +511,13 @@ inline CL_DEFUN bool cl__eql(T_sp x, T_sp y) {
   if (x.fixnump()) {
     return x.raw_() == y.raw_();
   } else if (x.single_floatp()) {
-    if (y.single_floatp()) {
-      return gc::tagged_single_float_masked(x.raw_()) == gc::tagged_single_float_masked(y.raw_());
-    }
-    return false;
+    if (!y.single_floatp())
+      return false;
+    single_float_t xf = x.unsafe_single_float();
+    single_float_t yf = y.unsafe_single_float();
+    return xf == yf && std::signbit(xf) == std::signbit(yf);
   } else if (x.characterp()) {
-    if (y.characterp()) {
-      return x.unsafe_character() == y.unsafe_character();
-    }
-    return false;
+    return y.characterp() && x.unsafe_character() == y.unsafe_character();
   } else if (x.consp()) {
     return x.raw_() == y.raw_();
   } else if (x.generalp()) {
@@ -579,7 +577,7 @@ inline void clasp_sxhash(T_sp obj, HashGenerator& hg) {
     return;
   } else if (obj.single_floatp()) {
     float value = obj.unsafe_single_float();
-    hg.addValue((std::fpclassify(value) == FP_ZERO) ? 0u : float_convert<float>::to_bits(value));
+    hg.addValue((std::fpclassify(value) == FP_ZERO) ? 0u : float_convert<float>::float_to_bits(value));
     return;
   } else if (obj.characterp()) {
     hg.addValue(obj.unsafe_character());
@@ -601,7 +599,7 @@ inline void clasp_sxhash(T_sp obj, Hash1Generator& hg) {
     return;
   } else if (obj.single_floatp()) {
     float value = obj.unsafe_single_float();
-    hg.addValue((std::fpclassify(value) == FP_ZERO) ? 0u : float_convert<float>::to_bits(value));
+    hg.addValue((std::fpclassify(value) == FP_ZERO) ? 0u : float_convert<float>::float_to_bits(value));
     return;
   } else if (obj.characterp()) {
     hg.addValue(obj.unsafe_character());
