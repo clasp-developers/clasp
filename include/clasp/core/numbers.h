@@ -177,12 +177,12 @@ template <> inline double _log1p<double>(double x) {
 }
 
 #ifdef CLASP_LONG_FLOAT
-template <> inline LongFloat _log1p<LongFloat>(LongFloat x) {
-  LongFloat u = (LongFloat)1 + x;
+template <> inline long_float_t _log1p<long_float_t>(long_float_t x) {
+  long_float_t u = (long_float_t)1 + x;
   if (u == 1) {
-    return (LongFloat)0;
+    return (long_float_t)0;
   }
-  return (logl(u) * x) / (u - (LongFloat)1);
+  return (logl(u) * x) / (u - (long_float_t)1);
 }
 #endif
 
@@ -211,8 +211,6 @@ void clasp_report_divide_by_zero(Number_sp x);
 }; // namespace core
 
 namespace core {
-
-typedef double LongFloat;
 
 Number_sp contagion_add(Number_sp na, Number_sp nb);
 Number_sp contagion_sub(Number_sp na, Number_sp nb);
@@ -257,7 +255,7 @@ public:
   virtual LongLongInt as_LongLongInt_() const { SUBIMP(); };
   virtual float as_float_() const { SUBIMP(); };
   virtual double as_double_() const { SUBIMP(); }
-  virtual LongFloat as_long_float_() const { SUBIMP(); };
+  virtual long_float_t as_long_float_() const { SUBIMP(); };
 
   virtual Number_sp sin_() const { SUBIMP(); };
   virtual Number_sp cos_() const { SUBIMP(); };
@@ -436,7 +434,7 @@ public:
 
   virtual float as_float_() const override;
   virtual double as_double_() const override;
-  virtual LongFloat as_long_float_() const override;
+  virtual long_float_t as_long_float_() const override;
 
   Integer_sp castToInteger() const override;
 
@@ -511,7 +509,7 @@ public:
 
   virtual float as_float_() const override;
   virtual double as_double_() const override;
-  virtual LongFloat as_long_float_() const override;
+  virtual long_float_t as_long_float_() const override;
 
   Integer_sp castToInteger() const override;
 
@@ -536,9 +534,9 @@ class LongFloat_O : public Float_O {
 
 public:
 private:
-  //  LongFloat _Value;
+  //  long_float_t _Value;
 public:
-  static DoubleFloat_sp create(LongFloat nm) { return DoubleFloat_O::create(nm); };
+  static DoubleFloat_sp create(long_float_t nm) { return DoubleFloat_O::create(nm); };
 
 public:
   //    virtual Rational_sp rational_() const final { return DoubleFloat_O::rational(this->_Value); };
@@ -675,7 +673,7 @@ public:
 
   virtual float as_float_() const override;
   virtual double as_double_() const override;
-  virtual LongFloat as_long_float_() const override;
+  virtual long_float_t as_long_float_() const override;
 
   // functions shared by all Real
 
@@ -764,7 +762,7 @@ inline gctools::Fixnum clasp_safe_fixnum(Number_sp x) { return gc::As<Fixnum_sp>
 #endif
 
 #ifdef CLASP_LONG_FLOAT
-inline LongFloat clasp_long_float(Number_sp x) { return x.as<LongFloat_O>()->get(); }
+inline long_float_t clasp_long_float(Number_sp x) { return x.as<LongFloat_O>()->get(); }
 #endif
 
 Number_sp clasp_make_complex(Real_sp r, Real_sp i);
@@ -775,16 +773,16 @@ inline Integer_sp _clasp_float_to_integer(float d) { return Integer_O::create(d)
 
 inline Integer_sp _clasp_double_to_integer(double d) { return Integer_O::create(d); }
 
-inline Integer_sp _clasp_long_float_to_integer(LongFloat d) { return Integer_O::create(d); }
+inline Integer_sp _clasp_long_float_to_integer(long_float_t d) { return Integer_O::create(d); }
 
-inline Integer_sp _clasp_long_double_to_integer(LongFloat d) { return Integer_O::create(d); }
+inline Integer_sp _clasp_long_double_to_integer(long_float_t d) { return Integer_O::create(d); }
 
 inline SingleFloat_sp clasp_make_single_float(float d) { return gc::make_tagged_single_float<core::SingleFloat_I>(d); }
 
 inline DoubleFloat_sp clasp_make_double_float(double d) { return DoubleFloat_O::create(d); }
 
 #ifdef CLASP_LONG_FLOAT
-inline LongFloat_sp clasp_make_long_float(LongFloat d) { return LongFloat_O::create(d); }
+inline LongFloat_sp clasp_make_long_float(long_float_t d) { return LongFloat_O::create(d); }
 #endif
 
 #define CLASP_REAL_TYPE_P(y) (gc::IsA<Real_sp>(y))
@@ -1091,8 +1089,8 @@ ssize_t clasp_to_ssize_t(core::T_sp);
 mpz_class clasp_to_mpz(core::T_sp);
 
 float clasp_to_float(core::Number_sp);
-LongFloat clasp_to_long_float(core::Number_sp);
-LongFloat clasp_to_long_double(core::Number_sp);
+long_float_t clasp_to_long_float(core::Number_sp);
+long_float_t clasp_to_long_double(core::Number_sp);
 
 // END OF CLASP_TO_... FUNCTIONS
 

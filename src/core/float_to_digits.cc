@@ -81,7 +81,7 @@ CL_DEFUN T_mv core__float_to_digits(T_sp tdigits, Float_sp number, T_sp position
     break;
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat:
-    return float_to_digits<LongFloat>(tdigits, gc::As<LongFloat_sp>(number)->get(), position, relativep);
+    return float_to_digits<long_float_t>(tdigits, gc::As<LongFloat_sp>(number)->get(), position, relativep);
 #endif
   default:
     SIMPLE_ERROR("Illegal type");

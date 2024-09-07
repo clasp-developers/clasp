@@ -831,7 +831,7 @@ float Bignum_O::as_float_() const { return limbs_to_float<float>(this->length(),
 
 double Bignum_O::as_double_() const { return limbs_to_float<double>(this->length(), this->limbs()); }
 
-LongFloat Bignum_O::as_long_float_() const { return limbs_to_float<LongFloat>(this->length(), this->limbs()); }
+long_float_t Bignum_O::as_long_float_() const { return limbs_to_float<long_float_t>(this->length(), this->limbs()); }
 
 DOCGROUP(clasp);
 CL_DEFUN int core__next_compare(Bignum_sp left, Bignum_sp right) {

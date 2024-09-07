@@ -232,9 +232,9 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp& quotie
   }
 #ifdef CLASP_LONG_FLOAT
   case_Fixnum_v_LongFloat : {
-    LongFloat n = clasp_long_float(divisor);
-    LongFloat p = dividend.unsafe_fixnum() / n;
-    LongFloat q = std::trunc(p);
+    long_float_t n = clasp_long_float(divisor);
+    long_float_t p = dividend.unsafe_fixnum() / n;
+    long_float_t q = std::trunc(p);
     quotient = _clasp_long_double_to_integer(q);
     remainder = clasp_make_long_float(p * n - q * n);
     return;
@@ -277,9 +277,9 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp& quotie
   }
 #ifdef CLASP_LONG_FLOAT
   case_Bignum_v_LongFloat : {
-    LongFloat n = clasp_long_float(divisor);
-    LongFloat p = gc::As_unsafe<Bignum_sp>(dividend)->as_long_float_() / n;
-    LongFloat q = std::trunc(p);
+    long_float_t n = clasp_long_float(divisor);
+    long_float_t p = gc::As_unsafe<Bignum_sp>(dividend)->as_long_float_() / n;
+    long_float_t q = std::trunc(p);
     quotient = _clasp_long_double_to_integer(q);
     remainder = clasp_make_long_float(p * n - q * n);
     return;
@@ -347,9 +347,9 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp& quotie
   case_LongFloat_v_SingleFloat:
   case_LongFloat_v_DoubleFloat:
   case_LongFloat_v_LongFloat : {
-    LongFloat n = clasp_to_long_double(divisor);
-    LongFloat p = clasp_long_float(dividend) / n;
-    LongFloat q = std::trunc(p);
+    long_float_t n = clasp_to_long_double(divisor);
+    long_float_t p = clasp_long_float(dividend) / n;
+    long_float_t q = std::trunc(p);
     quotient = _clasp_long_double_to_integer(q);
     remainder = clasp_make_long_float(p * n - q * n);
     return;
@@ -406,11 +406,11 @@ Real_mv clasp_floor1(Real_sp x) {
   }
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat: {
-    LongFloat d = clasp_long_float(x);
+    long_float_t d = clasp_long_float(x);
     if (std::isnan(d))
       return Values(x, clasp_make_fixnum(0));
     else {
-      LongFloat y = floorl(d);
+      long_float_t y = floorl(d);
       return Values(_clasp_long_double_to_integer(y), v1 = clasp_make_long_float(d - y));
     }
   }
@@ -476,8 +476,8 @@ Real_mv clasp_ceiling1(Real_sp x) {
   }
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat: {
-    LongFloat d = clasp_long_float(x);
-    LongFloat y = ceill(d);
+    long_float_t d = clasp_long_float(x);
+    long_float_t y = ceill(d);
     return Values(_clasp_long_double_to_integer(y), clasp_make_long_float(d - y));
   }
 #endif
@@ -529,8 +529,8 @@ Real_mv clasp_truncate1(Real_sp x) {
   }
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat: {
-    LongFloat d = clasp_long_float(x);
-    LongFloat y = d > 0 ? floorl(d) : ceill(d);
+    long_float_t d = clasp_long_float(x);
+    long_float_t y = d > 0 ? floorl(d) : ceill(d);
     return Values(_clasp_long_double_to_integer(y), clasp_make_long_float(d - y));
   }
 #endif
@@ -574,9 +574,9 @@ static double round_double(double d) {
 }
 
 #ifdef CLASP_LONG_FLOAT
-static LongFloat round_long_double(LongFloat d) {
+static long_float_t round_long_double(long_float_t d) {
   if (d >= 0) {
-    LongFloat q = floorl(d += 0.5);
+    long_float_t q = floorl(d += 0.5);
     if (q == d) {
       int i = (int)fmodl(q, 10);
       if (i & 1) {
@@ -655,8 +655,8 @@ Real_mv clasp_round1(Real_sp x) {
   }
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat: {
-    LongFloat d = clasp_long_float(x);
-    LongFloat q = round_long_double(d);
+    long_float_t d = clasp_long_float(x);
+    long_float_t q = round_long_double(d);
     return Values(_clasp_long_double_to_integer(q), clasp_make_long_float(d - q));
   }
 #endif
@@ -752,7 +752,7 @@ CL_DEFUN Number_mv cl__decode_float(Float_sp x) {
   }
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat: {
-    LongFloat d = clasp_long_float(x);
+    long_float_t d = clasp_long_float(x);
     if (std::isfinite(d)) {
       if (d >= 0.0)
         s = 1;
@@ -844,7 +844,7 @@ CL_DEFUN Float_sp cl__float_sign(Float_sp x, T_sp oy, T_sp yp) {
   }
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat: {
-    LongFloat f = clasp_long_float(y);
+    long_float_t f = clasp_long_float(y);
     if (std::signbit(f) != negativep)
       y = clasp_make_long_float(-f);
     break;
@@ -921,7 +921,7 @@ CL_DEFUN Integer_sp cl__float_precision(Float_sp x) {
   }
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat: {
-    LongFloat f = clasp_long_float(x);
+    long_float_t f = clasp_long_float(x);
     if (f == 0.0) {
       precision = 0;
     } else {

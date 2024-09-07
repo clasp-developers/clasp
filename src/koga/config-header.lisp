@@ -162,6 +162,16 @@
                      "ALWAYS_INLINE_MPS_ALLOCATIONS" (always-inline-mps-allocations configuration))))
 
 (defmethod print-epilogue (configuration (name (eql :config-h)) output-stream)
+  (format output-stream "~
+#ifdef __cplusplus
+namespace core {
+typedef ~a short_float_t;
+typedef ~a single_float_t;
+typedef ~a double_float_t;
+typedef ~a long_float_t;
+};
+#endif~%" (%short-float configuration) (%single-float configuration)
+      (%double-float configuration) (%long-float configuration))
   (write-endif output-stream))
 
 (defmethod print-prologue (configuration (name (eql :version-h)) output-stream)

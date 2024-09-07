@@ -887,7 +887,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token& token, bool only_dot
           return clasp_make_single_float(f); // ShortFloat_O::create(f) crashes
         } else if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_LongFloat_O) {
           string numstr = tokenStr(sin, token, start - token.data())->get_std_string();
-          LongFloat l = ::strtod(numstr.c_str(), &lastValid);
+          long_float_t l = ::strtod(numstr.c_str(), &lastValid);
           return LongFloat_O::create(l);
         } else {
           SIMPLE_ERROR("Handle *read-default-float-format* of {}", _rep_(cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue()));
@@ -921,7 +921,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token& token, bool only_dot
         char* lastValid = NULL;
         string numstr = fix_exponent_char(tokenStr(sin, token, start - token.data())->get_std_string().c_str());
 #ifdef CLASP_LONG_FLOAT
-        LongFloat d = ::strtold(numstr.c_str(), &lastValid);
+        long_float_t d = ::strtold(numstr.c_str(), &lastValid);
         return LongFloat_O::create(d);
 #else
         double d = ::strtod(numstr.c_str(), &lastValid);

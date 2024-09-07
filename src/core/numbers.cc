@@ -745,12 +745,12 @@ static int double_fix_compare(Fixnum n, double d) {
 }
 
 #ifdef CLASP_LONG_FLOAT
-static int long_double_fix_compare(Fixnum n, LongFloat d) {
-  if ((LongFloat)n < d) {
+static int long_double_fix_compare(Fixnum n, long_float_t d) {
+  if ((long_float_t)n < d) {
     return -1;
-  } else if ((LongFloat)n > d) {
+  } else if ((long_float_t)n > d) {
     return +1;
-  } else if (sizeof(LongFloat) > sizeof(Fixnum)) {
+  } else if (sizeof(long_float_t) > sizeof(Fixnum)) {
     return 0;
   } else {
     Fixnum m = d;
@@ -1013,8 +1013,8 @@ int basic_compare(Number_sp na, Number_sp nb) {
   case_LongFloat_v_SingleFloat:
   case_LongFloat_v_DoubleFloat:
   case_LongFloat_v_LongFloat : {
-    LongFloat a = na->as_long_float();
-    LongFloat b = nb->as_long_float();
+    long_float_t a = na->as_long_float();
+    long_float_t b = nb->as_long_float();
     if (a < b)
       return -1;
     if (a == b)
@@ -1202,8 +1202,8 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
   case_LongFloat_v_SingleFloat:
   case_LongFloat_v_DoubleFloat:
   case_LongFloat_v_LongFloat : {
-    LongFloat a = clasp_to_long_float(na);
-    LongFloat b = clasp_to_long_float(nb);
+    long_float_t a = clasp_to_long_float(na);
+    long_float_t b = clasp_to_long_float(nb);
     return a == b;
   }
   case_Complex_v_LongFloat:
@@ -1516,7 +1516,7 @@ float ShortFloat_O::as_float_() const { return (float)this->_Value; }
 
 double ShortFloat_O::as_double_() const { return (double)this->_Value; }
 
-LongFloat ShortFloat_O::as_long_float_() const { return (LongFloat)this->_Value; }
+long_float_t ShortFloat_O::as_long_float_() const { return (long_float_t)this->_Value; }
 
 CL_LISPIFY_NAME("core:castToInteger");
 CL_DEFMETHOD Integer_sp ShortFloat_O::castToInteger() const {
@@ -1559,7 +1559,7 @@ float DoubleFloat_O::as_float_() const { return (float)this->_Value; }
 
 double DoubleFloat_O::as_double_() const { return (double)this->_Value; }
 
-LongFloat DoubleFloat_O::as_long_float_() const { return (LongFloat)this->_Value; }
+long_float_t DoubleFloat_O::as_long_float_() const { return (long_float_t)this->_Value; }
 
 CL_LISPIFY_NAME("core:castToInteger");
 CL_DEFMETHOD Integer_sp DoubleFloat_O::castToInteger() const {
@@ -1606,7 +1606,7 @@ float LongFloat_O::as_float() const { return (float)this->_Value; }
 
 double LongFloat_O::as_double() const { return (double)this->_Value; }
 
-LongFloat LongFloat_O::as_long_float() const { return (LongFloat)this->_Value; }
+long_float_t LongFloat_O::as_long_float() const { return (long_float_t)this->_Value; }
 
 CL_LISPIFY_NAME("core:castToInteger");
 CL_DEFMETHOD Integer_sp LongFloat_O::castToInteger() const {
@@ -1635,7 +1635,7 @@ string LongFloat_O::valueAsString() const {
 Number_sp LongFloat_O::abs() const { return LongFloat_O::create(fabs(this->_Value)); }
 
 void LongFloat_O::sxhash(HashGenerator& hg) const {
-  hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<LongFloat>::to_bits(this->_Value));
+  hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<long_float_t>::to_bits(this->_Value));
 }
 
 bool LongFloat_O::eql(T_sp obj) const {
@@ -1733,7 +1733,7 @@ float Ratio_O::as_float_() const { return ratio_to_float<float>(this->_numerator
 
 double Ratio_O::as_double_() const { return ratio_to_float<double>(this->_numerator, this->_denominator); }
 
-LongFloat Ratio_O::as_long_float_() const { return ratio_to_float<LongFloat>(this->_numerator, this->_denominator); }
+long_float_t Ratio_O::as_long_float_() const { return ratio_to_float<long_float_t>(this->_numerator, this->_denominator); }
 
 string Ratio_O::__repr__() const {
   stringstream ss;
@@ -2654,7 +2654,7 @@ Number_sp DoubleFloat_O::log1_() const {
 
 #ifdef CLASP_LONG_FLOAT
 Number_sp LongFloat_O::log1_() const {
-  LongFloat f = this->as_long_float();
+  long_float_t f = this->as_long_float();
   if (std::isnan(f))
     return this->asSmartPtr();
   if (f < 0)
@@ -2709,7 +2709,7 @@ Number_sp DoubleFloat_O::log1p_() const {
 
 #ifdef CLASP_LONG_FLOAT
 Number_sp LongFloat_O::log1p() const {
-  LongFloat f = this->as_long_float();
+  long_float_t f = this->as_long_float();
   if (std::isnan(f))
     return this->asSmartPtr();
   if (f < -1)
@@ -2905,9 +2905,9 @@ double clasp_to_double(core::General_sp x) {
 
 double clasp_to_double(core::DoubleFloat_sp x) { return x->get(); };
 
-LongFloat clasp_to_long_float(Number_sp x) { return x->as_long_float_(); };
+long_float_t clasp_to_long_float(Number_sp x) { return x->as_long_float_(); };
 
-LongFloat clasp_to_long_double(Number_sp x) { return x->as_long_float_(); };
+long_float_t clasp_to_long_double(Number_sp x) { return x->as_long_float_(); };
 
 // --- END OF TRANSLATORS ---
 
