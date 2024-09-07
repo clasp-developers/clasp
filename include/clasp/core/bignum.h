@@ -69,7 +69,7 @@ public: // Functions here
     return b;
   };
   static Bignum_sp create(const mpz_class&);
-  static Bignum_sp create(gc::Fixnum fix) { return create_from_limbs((fix < 0) ? -1 : 1, std::abs(fix), true); }
+  /*static Bignum_sp create(gc::Fixnum fix) { return create_from_limbs((fix < 0) ? -1 : 1, std::abs(fix), true); }
 #if !defined(CLASP_UNSIGNED_LONG_LONG_IS_UINT64)
   static Bignum_sp create(unsigned long long ull) {
     ASSERT(sizeof(unsigned long long) <= sizeof(mp_limb_t));
@@ -91,13 +91,45 @@ public: // Functions here
     b->_limbs[0] = static_cast<mp_limb_t>(v);
     b->_limbs[1] = static_cast<mp_limb_t>(v >> 64);
     return b;
+  }*/
+
+  template <std::signed_integral Integral> static Bignum_sp create(Integral v) {
+    bool negative = v < 0;
+    v = std::abs(v);
+    int len = (std::bit_width(v) + 8 * sizeof(mp_limb_t)) / sizeof(mp_limb_t);
+    Bignum_sp b = create_from_limbs(negative ? -len : len);
+
+    for (int i = 0; i < len; i++) {
+      b->_limbs[i] = static_cast<mp_limb_t>(v);
+      v = v >> (sizeof(mp_limb_t) * 8);
+    }
+
+    return b;
   }
-  static Bignum_sp create(double d) {
-    // KLUDGE: there is no mpn function for converting from a double.
-    // However, this conses, which we shouldn't need to do.
-    mpz_class rop;
-    mpz_set_d(rop.get_mpz_t(), d);
-    return create(rop);
+
+  template <std::unsigned_integral Integral> static Bignum_sp create(Integral v) {
+    int len = (std::bit_width(v) + 8 * sizeof(mp_limb_t)) / sizeof(mp_limb_t);
+    Bignum_sp b = create_from_limbs(len);
+
+    for (int i = 0; i < len; i++) {
+      b->_limbs[i] = static_cast<mp_limb_t>(v);
+      v = v >> (sizeof(mp_limb_t) * 8);
+    }
+
+    return b;
+  }
+
+  static Bignum_sp create(gc::Fixnum fix) { return create_from_limbs((fix < 0) ? -1 : 1, std::abs(fix), true); }
+
+  static Bignum_sp create(long long fix) { return create_from_limbs((fix < 0) ? -1 : 1, std::abs(fix), true); }
+
+  template <std::floating_point Float> static Bignum_sp create(Float v) {
+    auto q = float_convert<Float>::to_quadruple(v);
+    Bignum_sp b = clasp_ash(create(q.significand), q.exponent);
+    if (q.sign < 0)
+      return clasp_negate(b);
+
+    return b;
   }
 
   static Bignum_sp make(const string& value_in_string);
@@ -226,5 +258,12 @@ template <std::integral integral> integral clasp_to_integral(T_sp obj) {
   else
     TYPE_ERROR(obj, Cons_O::createList(cl::_sym_Integer_O, Integer_O::create(mn), Integer_O::create(mx)));
 };
+
+template <std::floating_point Float> Integer_sp Integer_O::create(Float v) {
+  if (v >= static_cast<Float>(gc::most_negative_fixnum) && v < static_cast<Float>(gc::most_positive_fixnum))
+    return clasp_make_fixnum(v);
+  else
+    return Bignum_O::create(v);
+}
 
 }; // namespace core

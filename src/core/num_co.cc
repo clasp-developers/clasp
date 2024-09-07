@@ -110,10 +110,10 @@ CL_DEFUN Float_sp cl__float(Real_sp x, T_sp y) {
     case number_SingleFloat:
       return clasp_make_single_float(clasp_to_float(x));
     case number_DoubleFloat:
-      return clasp_make_double_float(clasp_to_double(x));
+      return DoubleFloat_O::create(clasp_to_double(x));
 #ifdef CLASP_LONG_FLOAT
     case number_LongFloat:
-      return clasp_make_long_float(clasp_to_long_float(x)).as<Real_O>();
+      return LongFloat_O::create(clasp_to_long_float(x));
 #endif
     default:
       ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_float, 2, y, cl::_sym_float);
@@ -391,7 +391,7 @@ Real_mv clasp_floor1(Real_sp x) {
     if (std::isnan(d))
       return Values(x, clasp_make_fixnum(0));
     else {
-      float y = floorf(d);
+      float y = std::floor(d);
       return Values(_clasp_float_to_integer(y), clasp_make_single_float(d - y));
     }
   }
@@ -400,7 +400,7 @@ Real_mv clasp_floor1(Real_sp x) {
     if (std::isnan(d))
       return Values(x, clasp_make_fixnum(0));
     else {
-      double y = floor(d);
+      double y = std::floor(d);
       return Values(_clasp_double_to_integer(y), clasp_make_double_float(d - y));
     }
   }
@@ -410,8 +410,8 @@ Real_mv clasp_floor1(Real_sp x) {
     if (std::isnan(d))
       return Values(x, clasp_make_fixnum(0));
     else {
-      long_float_t y = floorl(d);
-      return Values(_clasp_long_double_to_integer(y), v1 = clasp_make_long_float(d - y));
+      long_float_t y = std::floor(d);
+      return Values(_clasp_long_double_to_integer(y), clasp_make_long_float(d - y));
     }
   }
 #endif

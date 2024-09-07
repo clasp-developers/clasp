@@ -55,11 +55,6 @@
 //       LongFloat_O
 //   Complex_O
 
-#define CLASP_PI_D 3.14159265358979323846264338327950288
-#define CLASP_PI_L 3.14159265358979323846264338327950288l
-#define CLASP_PI2_D 1.57079632679489661923132169163975144
-#define CLASP_PI2_L 1.57079632679489661923132169163975144l
-
 #ifdef _TARGET_OS_DARWIN
 
 #if defined(__aarch64__)
@@ -158,33 +153,13 @@ template <typename T> gc::smart_ptr<T> immediate_single_float(float f) {
   return gc::make_tagged_single_float<core::SingleFloat_I>(f);
 };
 
-template <typename FLOAT> inline FLOAT _log1p(FLOAT x) { HARD_IMPLEMENT_ME(); }
-
-template <> inline float _log1p<float>(float x) {
-  float u = (float)1 + x;
-  if (u == 1) {
-    return (float)0;
+template <typename Float> inline Float _log1p(Float x) {
+  Float u = Float{1} + x;
+  if (u == Float{1}) {
+    return Float{0};
   }
-  return (logf(u) * x) / (u - (float)1);
+  return (std::log(u) * x) / (u - Float{1});
 }
-
-template <> inline double _log1p<double>(double x) {
-  double u = (double)1 + x;
-  if (u == 1) {
-    return (double)0;
-  }
-  return (log(u) * x) / (u - (double)1);
-}
-
-#ifdef CLASP_LONG_FLOAT
-template <> inline long_float_t _log1p<long_float_t>(long_float_t x) {
-  long_float_t u = (long_float_t)1 + x;
-  if (u == 1) {
-    return (long_float_t)0;
-  }
-  return (logl(u) * x) / (u - (long_float_t)1);
-}
-#endif
 
 bool clasp_zerop(Number_sp num);
 bool clasp_plusp(Real_sp num);
@@ -319,7 +294,8 @@ public:
 
   static Integer_sp create(std::signed_integral auto v);
   static Integer_sp create(std::unsigned_integral auto v);
-  static Integer_sp create(std::floating_point auto v);
+
+  template<std::floating_point Float> static Integer_sp create(Float v);
 
   static Integer_sp create(int8_t v);
   static Integer_sp create(uint8_t v);
@@ -491,7 +467,7 @@ public:
   virtual bool eql_(T_sp obj) const override;
 
   // math routines shared by all numbers
-  bool zerop_() const override { return this->_Value == 0.0; };
+  bool zerop_() const override { return std::fpclassify(this->_Value) == FP_ZERO; };
   virtual Number_sp negate_() const override { return DoubleFloat_O::create(-this->_Value); };
 
   // Shared by real
@@ -525,27 +501,91 @@ public:
   DoubleFloat_O() : _Value(0.0){};
   virtual ~DoubleFloat_O(){};
 };
+
 }; // namespace core
+
+#ifdef CLASP_LONG_FLOAT
+template <> struct gctools::GCInfo<core::LongFloat_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = atomic;
+};
+#endif
 
 namespace core {
 SMART(LongFloat);
 class LongFloat_O : public Float_O {
-  LISP_ABSTRACT_CLASS(core, ClPkg, LongFloat_O, "LongFloat", Float_O);
+#ifdef CLASP_LONG_FLOAT
+  LISP_CLASS(core, ClPkg, LongFloat_O, "long-float", Float_O);
+#else
+  LISP_ABSTRACT_CLASS(core, ClPkg, LongFloat_O, "long-float", Float_O);
+#endif
 
-public:
 private:
-  //  long_float_t _Value;
-public:
-  static DoubleFloat_sp create(long_float_t nm) { return DoubleFloat_O::create(nm); };
+  long_float_t _Value;
 
 public:
-  //    virtual Rational_sp rational_() const final { return DoubleFloat_O::rational(this->_Value); };
+#ifdef CLASP_LONG_FLOAT
+  static LongFloat_sp create(long_float_t nm) {
+    auto v = gctools::GC<LongFloat_O>::allocate_with_default_constructor();
+    v->set(nm);
+    return v;
+  };
+
+  void sxhash_(HashGenerator& hg) const override;
+  string __repr__() const override;
+  void set(long_float_t val) { this->_Value = val; };
+  long_float_t get() const { return this->_Value; };
+  Number_sp signum_() const override;
+  Number_sp abs_() const override {
+    return LongFloat_O::create(fabs(this->_Value));
+  };
+  bool isnan_() const override { return std::isnan(this->_Value); }; // NaN is supposed to be the only value that != itself!!!!
+  bool isinf_() const override { return std::isinf(this->_Value); };
+
+  virtual bool eql_(T_sp obj) const override;
+
+  // math routines shared by all numbers
+  bool zerop_() const override { return std::fpclassify(this->_Value) == FP_ZERO; };
+  virtual Number_sp negate_() const override { return LongFloat_O::create(-this->_Value); };
+
+  // Shared by real
+  bool plusp_() const override { return this->_Value > long_float_t{0.0}; };
+  bool minusp_() const override { return this->_Value < long_float_t{0.0}; };
+
+  virtual Number_sp reciprocal_() const override;
+  virtual Number_sp sqrt_() const override;
+
+  virtual Number_sp onePlus_() const override { return create(this->_Value + long_float_t{1.0}); };
+  virtual Number_sp oneMinus_() const override { return create(this->_Value - long_float_t{1.0}); };
+
+  virtual Number_sp log1_() const override;
+  virtual Number_sp log1p_() const override;
+
+  virtual float as_float_() const override;
+  virtual double as_double_() const override;
+  virtual long_float_t as_long_float_() const override;
+
+  Integer_sp castToInteger() const override;
+
+  virtual Number_sp exp_() const override;
+
+  virtual Number_sp sin_() const override;
+  virtual Number_sp cos_() const override;
+  virtual Number_sp tan_() const override;
+  virtual Number_sp sinh_() const override;
+  virtual Number_sp cosh_() const override;
+  virtual Number_sp tanh_() const override;
+  virtual Rational_sp rational_() const override;
+  LongFloat_O() : _Value(long_float_t{0.0}){};
+  virtual ~LongFloat_O(){};
+#else
+  inline static DoubleFloat_sp create(long_float_t nm) { return DoubleFloat_O::create(nm); }
 
   DEFAULT_CTOR_DTOR(LongFloat_O);
+#endif
 };
-}; // namespace core
 
-namespace core {
 SMART(Complex);
 class Complex_O : public Number_O {
   LISP_CLASS(core, ClPkg, Complex_O, "complex", Number_O);

@@ -60,10 +60,23 @@ template <typename Float> T_mv float_to_digits(T_sp tdigits, Float number, T_sp 
     }
   }
 
-  for (auto ch : std::to_string(decimal.significand))
-    digits->vectorPushExtend(clasp_make_character(ch), 64);
+  if (decimal.significand == 0) {
+    digits->vectorPushExtend(clasp_make_character('0'));
+    return Values(clasp_make_fixnum(0), digits);
+  }
 
-  return Values(clasp_make_fixnum((decimal.significand == 0) ? 0 : position), digits);
+  std::string buffer;
+
+  while (decimal.significand != 0) {
+    auto d = std::div(decimal.significand, 10);
+    buffer.push_back(d.rem + '0');
+    decimal.significand = d.quot;
+  }
+
+  for (auto iter = buffer.rbegin(); iter < buffer.rend(); iter++)
+    digits->vectorPushExtend(clasp_make_character(*iter), 64);
+
+  return Values(clasp_make_fixnum(position), digits);
 }
 
 CL_LAMBDA(digits number position relativep);

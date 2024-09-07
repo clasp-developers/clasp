@@ -59,21 +59,29 @@ static void print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
   T_sp r = cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue();
   gc::Fixnum e;
   switch (clasp_t_of(gc::As<Number_sp>(number))) {
+#ifdef CLASP_SHORT_FLOAT
+  case number_ShortFloat:
+    e = (r == cl::_sym_ShortFloat_O) ? 'e' : 's';
+    break;
+  case number_SingleFloat:
+    e = (r == cl::_sym_single_float) ? 'e' : 'f';
+    break;
+#else
+  case number_ShortFloat:
   case number_SingleFloat:
     e = (r == cl::_sym_single_float || r == cl::_sym_ShortFloat_O) ? 'e' : 'f';
     break;
-  case number_ShortFloat:
-    e = (r == cl::_sym_single_float || r == cl::_sym_ShortFloat_O) ? 'e' : 'f';
-    break;
-#ifdef ECL_LONG_FLOAT
-  case number_LongFloat:
-    e = (r == @'long-float') ? 'e' : 'l';
-    break;
+#endif
+#ifdef CLASP_LONG_FLOAT
   case number_DoubleFloat:
-    e = (r == @'double-float') ? 'e' : 'd';
+    e = (r == cl::_sym_DoubleFloat_O) ? 'e' : 'd';
+    break;
+  case number_LongFloat:
+    e = (r == cl::_sym_LongFloat_O) ? 'e' : 'l';
     break;
 #else
   case number_DoubleFloat:
+  case number_LongFloat:
     e = (r == cl::_sym_DoubleFloat_O || r == cl::_sym_LongFloat_O) ? 'e' : 'd';
     break;
 #endif
