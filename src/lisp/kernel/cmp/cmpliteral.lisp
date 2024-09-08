@@ -28,6 +28,8 @@
 (defstruct (function-datum (:type vector) :named) index)
 (defstruct (single-float-datum (:type vector) :named) value)
 (defstruct (double-float-datum (:type vector) :named) value)
+#+long-float
+(defstruct (long-float-datum (:type vector) :named) value)
 (defstruct (immediate-datum (:type vector) :named) value)
 (defstruct (datum (:type vector) :named) kind index literal-node-creator)
 
@@ -137,6 +139,8 @@
   (entry-point-coalesce (make-similarity-table #'eq))
   (package-coalesce (make-similarity-table #'eq))
   (double-float-coalesce (make-similarity-table #'eql))
+  #+long-float
+  (long-float-coalesce (make-similarity-table #'eql))
   (fcell-coalesce (make-similarity-table #'equal))
   (vcell-coalesce (make-similarity-table #'eq))
   (llvm-values (make-hash-table))
@@ -457,6 +461,12 @@ rewrite the slot in the literal table to store a closure."
   (let* ((constant (make-double-float-datum :value double)))
     (add-creator "ltvc_make_double" index double constant)))
 
+#+long-float
+(defun ltv/long-float (value index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp read-only-p))
+  (let* ((constant (make-long-float-datum :value value)))
+    (add-creator "ltvc_make_long_float" index value constant)))
+
 (defun call-with-constant-arguments-p (form &optional env)
   (and (consp form)
        (core:proper-list-p (rest form))
@@ -516,6 +526,8 @@ rewrite the slot in the literal table to store a closure."
     ((core:single-float-p  object) (values nil #'ltv/single-float))
     ((symbolp object) (values (literal-machine-symbol-coalesce literal-machine) #'ltv/symbol))
     ((double-float-p object) (values (literal-machine-double-float-coalesce literal-machine) #'ltv/double-float))
+    #+long-float
+    ((long-float-p object) (values (literal-machine-long-float-coalesce literal-machine) #'ltv/long-float))
     ((core:ratiop object) (values (literal-machine-ratio-coalesce literal-machine) #'ltv/ratio))
     ((sys:function-description-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/function-description))
     ((sys:core-fun-generator-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/local-entry-point))
@@ -546,6 +558,8 @@ rewrite the slot in the literal table to store a closure."
      (core:ltvc-write-object #\i (immediate-datum-value arg) stream byte-index))
     ((single-float-datum-p arg) (core:ltvc-write-float (single-float-datum-value arg) stream byte-index))
     ((double-float-datum-p arg) (core:ltvc-write-double (double-float-datum-value arg) stream byte-index))
+    #+long-float
+    ((long-float-datum-p arg) (core:ltvc-write-long-float (long-float-datum-value arg) stream byte-index))
     ((literal-dnode-p arg)
      (cond
        ((transient-datum-p (literal-dnode-datum arg))

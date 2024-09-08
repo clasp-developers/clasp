@@ -315,6 +315,7 @@
   (set-ltv-info :i8* "string" "string")
   (set-ltv-info :single-float "float" "float")
   (set-ltv-info :double-float "double" "double")
+  (set-ltv-info :long-float "long_float_t" "long_float")
   (set-ltv-info :uintptr_t "uintptr_t" "size_t")
   (set-ltv-info :bignum "T_O*" "bignum")
   (set-ltv-info :unknown "UNKNOWN" "UNKNOWN")

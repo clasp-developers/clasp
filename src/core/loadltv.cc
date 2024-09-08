@@ -40,6 +40,7 @@
 #define LTV_OP_BIGNUM 80
 #define LTV_OP_FLOAT 90
 #define LTV_OP_DOUBLE 91
+#define LTV_OP_X86_FP80 92
 #define LTV_OP_RATIO 67
 #define LTV_OP_COMPLEX 68
 #define LTV_OP_SYMBOL 81
@@ -216,6 +217,16 @@ struct loadltv {
     return converter.d;
   }
 
+  inline long double read_x86_fp80() {
+    union {
+      long double d;
+      unsigned char bytes[10];
+    } converter;
+
+    stream_read_byte8(_stream, converter.bytes, 10);
+    return converter.d;
+  }
+
   // Read a UTF-8 continuation byte or signal an error if invalid.
   inline uint8_t read_continuation_byte() {
     uint8_t byte = read_u8();
@@ -339,12 +350,12 @@ struct loadltv {
       return cl::_sym_base_char;
     case UAETCode::character:
       return cl::_sym_character;
-    // case UAETCode::short_float: return cl::_sym_ShortFloat_O;
+    // case UAETCode::short_float: return cl::_sym_short_float;
     case UAETCode::single_float:
       return cl::_sym_single_float;
     case UAETCode::double_float:
-      return cl::_sym_DoubleFloat_O;
-    // case UAETCode::long_float: return cl::_sym_LongFloat_O;
+      return cl::_sym_double_float;
+    // case UAETCode::long_float: return cl::_sym_long_float;
     // case UAETCode::complex_short:
     // case UAETCode::complex_single:
     // case UAETCode::complex_double:
@@ -572,6 +583,11 @@ struct loadltv {
   void op_double() {
     size_t index = next_index();
     set_ltv(clasp_make_double_float(read_f64()), index);
+  }
+
+  void op_x86_fp80() {
+    size_t index = next_index();
+    set_ltv(LongFloat_O::create(read_x86_fp80()), index);
   }
 
   void op_ratio() {
@@ -1027,6 +1043,9 @@ struct loadltv {
       break;
     case LTV_OP_DOUBLE:
       op_double();
+      break;
+    case LTV_OP_X86_FP80:
+      op_x86_fp80();
       break;
     case LTV_OP_RATIO:
       op_ratio();

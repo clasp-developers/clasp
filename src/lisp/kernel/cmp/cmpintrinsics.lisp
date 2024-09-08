@@ -188,7 +188,7 @@ names to offsets."
 
 (define-symbol-macro %float% (llvm-sys:type-get-float-ty (thread-local-llvm-context)))
 (define-symbol-macro %double% (llvm-sys:type-get-double-ty (thread-local-llvm-context)))
-#+long-float (define-symbol-macro %long-float% (llvm-sys:type-get-long-float-ty (thread-local-llvm-context)))
+#+long-float (define-symbol-macro %long-float% (llvm-sys:type-get-x86-fp80-ty (thread-local-llvm-context)))
 
 (define-symbol-macro %size_t% #+64-bit %i64%
                               #+32-bit %i32%)

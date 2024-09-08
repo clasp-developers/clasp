@@ -205,6 +205,7 @@
   (append-cflags configuration "-O3 -g -fPIC" :type :cflags :debug nil)
   (append-cflags configuration "-O0 -g" :type :cxxflags :debug t)
   (append-cflags configuration "-O0 -g" :type :cflags :debug t)
+  (append-cflags configuration "-fconstexpr-steps=10000000" :type :cxxflags)
   (append-cflags configuration
                  (if (string= (%long-float configuration)
                               (%double-float configuration))

@@ -801,10 +801,6 @@ inline gctools::Fixnum clasp_safe_fixnum(Number_sp x) { return gc::As<Fixnum_sp>
   }
 #endif
 
-#ifdef CLASP_LONG_FLOAT
-inline long_float_t clasp_long_float(Number_sp x) { return x.as<LongFloat_O>()->get(); }
-#endif
-
 Number_sp clasp_make_complex(Real_sp r, Real_sp i);
 
 inline Fixnum_sp clasp_make_fixnum(gc::Fixnum i) { return make_fixnum(i); }
@@ -1130,7 +1126,6 @@ mpz_class clasp_to_mpz(core::T_sp);
 
 float clasp_to_float(core::Number_sp);
 long_float_t clasp_to_long_float(core::Number_sp);
-long_float_t clasp_to_long_double(core::Number_sp);
 
 // END OF CLASP_TO_... FUNCTIONS
 

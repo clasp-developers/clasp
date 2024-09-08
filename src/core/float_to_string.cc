@@ -61,7 +61,7 @@ static void print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
   switch (clasp_t_of(gc::As<Number_sp>(number))) {
 #ifdef CLASP_SHORT_FLOAT
   case number_ShortFloat:
-    e = (r == cl::_sym_ShortFloat_O) ? 'e' : 's';
+    e = (r == cl::_sym_short_float) ? 'e' : 's';
     break;
   case number_SingleFloat:
     e = (r == cl::_sym_single_float) ? 'e' : 'f';
@@ -69,20 +69,20 @@ static void print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
 #else
   case number_ShortFloat:
   case number_SingleFloat:
-    e = (r == cl::_sym_single_float || r == cl::_sym_ShortFloat_O) ? 'e' : 'f';
+    e = (r == cl::_sym_single_float || r == cl::_sym_short_float) ? 'e' : 'f';
     break;
 #endif
 #ifdef CLASP_LONG_FLOAT
   case number_DoubleFloat:
-    e = (r == cl::_sym_DoubleFloat_O) ? 'e' : 'd';
+    e = (r == cl::_sym_double_float) ? 'e' : 'd';
     break;
   case number_LongFloat:
-    e = (r == cl::_sym_LongFloat_O) ? 'e' : 'l';
+    e = (r == cl::_sym_long_float) ? 'e' : 'l';
     break;
 #else
   case number_DoubleFloat:
   case number_LongFloat:
-    e = (r == cl::_sym_DoubleFloat_O || r == cl::_sym_LongFloat_O) ? 'e' : 'd';
+    e = (r == cl::_sym_double_float || r == cl::_sym_long_float) ? 'e' : 'd';
     break;
 #endif
   default:

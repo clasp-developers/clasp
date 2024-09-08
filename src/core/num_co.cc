@@ -142,6 +142,17 @@ CL_DEFUN DoubleFloat_sp core__to_double_float(Real_sp x) {
     return clasp_make_double_float(clasp_to_double(x));
 }
 
+#ifdef CLASP_LONG_FLOAT
+CL_UNWIND_COOP(true);
+DOCGROUP(clasp);
+CL_DEFUN LongFloat_sp core__to_long_float(Real_sp x) {
+  if (gc::IsA<LongFloat_sp>(x))
+    return gc::As_unsafe<LongFloat_sp>(x);
+  else
+    return clasp_make_long_float(clasp_to_long_float(x));
+}
+#endif
+
 CL_LAMBDA(x);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
@@ -232,7 +243,7 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp& quotie
   }
 #ifdef CLASP_LONG_FLOAT
   case_Fixnum_v_LongFloat : {
-    long_float_t n = clasp_long_float(divisor);
+    long_float_t n = clasp_to_long_float(divisor);
     long_float_t p = dividend.unsafe_fixnum() / n;
     long_float_t q = std::trunc(p);
     quotient = _clasp_long_double_to_integer(q);
@@ -277,8 +288,8 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp& quotie
   }
 #ifdef CLASP_LONG_FLOAT
   case_Bignum_v_LongFloat : {
-    long_float_t n = clasp_long_float(divisor);
-    long_float_t p = gc::As_unsafe<Bignum_sp>(dividend)->as_long_float_() / n;
+    long_float_t n = clasp_to_long_float(divisor);
+    long_float_t p = clasp_to_long_float(dividend) / n;
     long_float_t q = std::trunc(p);
     quotient = _clasp_long_double_to_integer(q);
     remainder = clasp_make_long_float(p * n - q * n);
@@ -347,8 +358,8 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp& quotie
   case_LongFloat_v_SingleFloat:
   case_LongFloat_v_DoubleFloat:
   case_LongFloat_v_LongFloat : {
-    long_float_t n = clasp_to_long_double(divisor);
-    long_float_t p = clasp_long_float(dividend) / n;
+    long_float_t n = clasp_to_long_float(divisor);
+    long_float_t p = clasp_to_long_float(dividend) / n;
     long_float_t q = std::trunc(p);
     quotient = _clasp_long_double_to_integer(q);
     remainder = clasp_make_long_float(p * n - q * n);
@@ -406,7 +417,7 @@ Real_mv clasp_floor1(Real_sp x) {
   }
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat: {
-    long_float_t d = clasp_long_float(x);
+    long_float_t d = clasp_to_long_float(x);
     if (std::isnan(d))
       return Values(x, clasp_make_fixnum(0));
     else {
@@ -476,7 +487,7 @@ Real_mv clasp_ceiling1(Real_sp x) {
   }
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat: {
-    long_float_t d = clasp_long_float(x);
+    long_float_t d = clasp_to_long_float(x);
     long_float_t y = ceill(d);
     return Values(_clasp_long_double_to_integer(y), clasp_make_long_float(d - y));
   }
@@ -529,7 +540,7 @@ Real_mv clasp_truncate1(Real_sp x) {
   }
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat: {
-    long_float_t d = clasp_long_float(x);
+    long_float_t d = clasp_to_long_float(x);
     long_float_t y = d > 0 ? floorl(d) : ceill(d);
     return Values(_clasp_long_double_to_integer(y), clasp_make_long_float(d - y));
   }
@@ -655,7 +666,7 @@ Real_mv clasp_round1(Real_sp x) {
   }
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat: {
-    long_float_t d = clasp_long_float(x);
+    long_float_t d = clasp_to_long_float(x);
     long_float_t q = round_long_double(d);
     return Values(_clasp_long_double_to_integer(q), clasp_make_long_float(d - q));
   }
@@ -752,7 +763,7 @@ CL_DEFUN Number_mv cl__decode_float(Float_sp x) {
   }
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat: {
-    long_float_t d = clasp_long_float(x);
+    long_float_t d = clasp_to_long_float(x);
     if (std::isfinite(d)) {
       if (d >= 0.0)
         s = 1;
@@ -795,7 +806,7 @@ CL_DEFUN Number_sp cl__scale_float(Number_sp x, Number_sp y) {
     break;
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat:
-    x = clasp_make_long_float(std::ldexp(clasp_long_float(x), k));
+    x = clasp_make_long_float(std::ldexp(clasp_to_long_float(x), k));
     break;
 #endif
   default:
@@ -814,7 +825,7 @@ int clasp_signbit(Number_sp x) {
     return std::signbit(gc::As_unsafe<DoubleFloat_sp>(x)->get());
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat:
-    return signbit(clasp_long_float(x));
+    return signbit(clasp_to_long_float(x));
 #endif
   default:
     ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_floatSign, 1, x, cl::_sym_float);
@@ -844,7 +855,7 @@ CL_DEFUN Float_sp cl__float_sign(Float_sp x, T_sp oy, T_sp yp) {
   }
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat: {
-    long_float_t f = clasp_long_float(y);
+    long_float_t f = clasp_to_long_float(y);
     if (std::signbit(f) != negativep)
       y = clasp_make_long_float(-f);
     break;
@@ -921,7 +932,7 @@ CL_DEFUN Integer_sp cl__float_precision(Float_sp x) {
   }
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat: {
-    long_float_t f = clasp_long_float(x);
+    long_float_t f = clasp_to_long_float(x);
     if (f == 0.0) {
       precision = 0;
     } else {
@@ -1030,7 +1041,7 @@ CL_DEFUN Real_sp cl__imagpart(Number_sp x) {
     return DoubleFloat_O::create((float)0 * gc::As_unsafe<DoubleFloat_sp>(x)->get());
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat:
-    return LongFloat_O::create((float)0 * clasp_long_float(x));
+    return LongFloat_O::create((float)0 * clasp_to_long_float(x));
 #endif
   case number_Complex:
     return gc::As_unsafe<Complex_sp>(x)->imaginary();

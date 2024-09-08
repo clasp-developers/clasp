@@ -144,8 +144,12 @@
               :type creator)
    (%imagpart :initarg :imagpart :reader complex-creator-imagpart
               :type creator)))
+#+short-float
+(defclass short-float-creator (number-creator) ())
 (defclass single-float-creator (number-creator) ())
 (defclass double-float-creator (number-creator) ())
+#+long-float
+(defclass long-float-creator (number-creator) ())
 
 (defclass character-creator (vcreator) ())
 
@@ -587,12 +591,27 @@
      ((signed-byte 64) (make-instance 'sb64-creator :prototype value))
      (integer (make-instance 'bignum-creator :prototype value)))))
 
-(defmethod add-constant ((value float))
+#+short-float
+(defmethod add-constant ((value short-float))
   (add-creator
    value
-   (etypecase value
-     (double-float (make-instance 'double-float-creator :prototype value))
-     (single-float (make-instance 'single-float-creator :prototype value)))))
+   (make-instance 'short-float-creator :prototype value)))
+
+(defmethod add-constant ((value single-float))
+  (add-creator
+   value
+   (make-instance 'single-float-creator :prototype value)))
+
+(defmethod add-constant ((value double-float))
+  (add-creator
+   value
+   (make-instance 'double-float-creator :prototype value)))
+
+#+long-float
+(defmethod add-constant ((value long-float))
+  (add-creator
+   value
+   (make-instance 'long-float-creator :prototype value)))
 
 (defmethod add-constant ((value ratio))
   ;; In most cases it's probably pointless to try to coalesce the numerator
@@ -847,6 +866,7 @@
     (setf-literals 89) ; make_random_state. compatibility is a sham here anyway
     (make-single-float 90 sind ub32)
     (make-double-float 91 sind ub64)
+    (make-long-float 92 sind ub80)
     (funcall-create 93 sind find nargs . args)
     (funcall-initialize 94 find nargs . args)
     (fdefinition 95 find nameind)
@@ -875,6 +895,7 @@
         for byte = (ldb (byte 8 i) int)
         do (write-byte byte stream)))
 
+(defun write-b80 (word stream) (write-b word 10 stream))
 (defun write-b64 (word stream) (write-b word 8 stream))
 (defun write-b32 (word stream) (write-b word 4 stream))
 (defun write-b16 (word stream) (write-b word 2 stream))
@@ -1208,6 +1229,11 @@
 (defmethod encode ((inst double-float-creator) stream)
   (write-mnemonic 'make-double-float stream)
   (write-b64 (ext:double-float-to-bits (prototype inst)) stream))
+
+#+long-float
+(defmethod encode ((inst long-float-creator) stream)
+  (write-mnemonic 'make-long-float stream)
+  (write-b80 (ext:long-float-to-bits (prototype inst)) stream))
 
 (defmethod encode ((inst ratio-creator) stream)
   (write-mnemonic 'ratio stream)

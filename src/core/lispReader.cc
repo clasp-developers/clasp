@@ -877,15 +877,15 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token& token, bool only_dot
           string numstr = tokenStr(sin, token, start - token.data())->get_std_string();
           float f = ::strtof(numstr.c_str(), &lastValid);
           return clasp_make_single_float(f);
-        } else if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_DoubleFloat_O) {
+        } else if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_double_float) {
           string numstr = tokenStr(sin, token, start - token.data())->get_std_string();
           double d = ::strtod(numstr.c_str(), &lastValid);
           return DoubleFloat_O::create(d);
-        } else if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_ShortFloat_O) {
+        } else if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_short_float) {
           string numstr = tokenStr(sin, token, start - token.data())->get_std_string();
           float f = ::strtof(numstr.c_str(), &lastValid);
           return clasp_make_single_float(f); // ShortFloat_O::create(f) crashes
-        } else if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_LongFloat_O) {
+        } else if (cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue() == cl::_sym_long_float) {
           string numstr = tokenStr(sin, token, start - token.data())->get_std_string();
           long_float_t l = ::strtod(numstr.c_str(), &lastValid);
           return LongFloat_O::create(l);

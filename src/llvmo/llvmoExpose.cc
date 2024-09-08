@@ -3460,10 +3460,18 @@ CL_EXTERN_DEFMETHOD(Type_O, &llvm::Type::getScalarType);
 
 CL_LISPIFY_NAME("type-get-void-ty");
 CL_EXTERN_DEFUN((llvm::Type * (*)(llvm::LLVMContext & C)) & llvm::Type::getVoidTy);
+CL_LISPIFY_NAME("type-get-half-ty");
+CL_EXTERN_DEFUN((llvm::Type * (*)(llvm::LLVMContext & C)) & llvm::Type::getHalfTy);
+CL_LISPIFY_NAME("type-get-bfloat-ty");
+CL_EXTERN_DEFUN((llvm::Type * (*)(llvm::LLVMContext & C)) & llvm::Type::getBFloatTy);
 CL_LISPIFY_NAME("type-get-float-ty");
 CL_EXTERN_DEFUN((llvm::Type * (*)(llvm::LLVMContext & C)) & llvm::Type::getFloatTy);
 CL_LISPIFY_NAME("type-get-double-ty");
 CL_EXTERN_DEFUN((llvm::Type * (*)(llvm::LLVMContext & C)) & llvm::Type::getDoubleTy);
+CL_LISPIFY_NAME("type-get-x86-fp80-ty");
+CL_EXTERN_DEFUN((llvm::Type * (*)(llvm::LLVMContext & C)) & llvm::Type::getX86_FP80Ty);
+CL_LISPIFY_NAME("type-get-fp128-ty");
+CL_EXTERN_DEFUN((llvm::Type * (*)(llvm::LLVMContext & C)) & llvm::Type::getFP128Ty);
 
 CL_LISPIFY_NAME("type-get-metadata-ty");
 CL_EXTERN_DEFUN((llvm::Type * (*)(llvm::LLVMContext & C)) & llvm::Type::getMetadataTy);

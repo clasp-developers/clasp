@@ -836,6 +836,9 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
 #ifdef DEFAULT_OUTPUT_TYPE_BYTECODE
   features = Cons_O::create(_lisp->internKeyword("BYTECODE"), features);
 #endif
+#ifdef CLASP_LONG_FLOAT
+  features = Cons_O::create(_lisp->internKeyword("LONG-FLOAT"), features);
+#endif
   cl::_sym_STARfeaturesSTAR->exportYourself()->defparameter(features);
 }
 

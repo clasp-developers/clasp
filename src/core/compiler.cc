@@ -1481,6 +1481,30 @@ double ltvc_read_double(char*& bytecode, char* byteend, bool log) {
   return data;
 }
 
+#ifdef CLASP_LONG_FLOAT
+DOCGROUP(clasp);
+CL_DEFUN size_t core__ltvc_write_long_float(T_sp object, T_sp stream, size_t index) {
+  SELF_DOCUMENT(long_float_t, stream, index);
+  long_float_t data = gc::As<LongFloat_sp>(object)->get();
+  clasp_write_characters((char*)&data, sizeof(data), stream);
+  index += sizeof(data);
+  return index;
+}
+
+long_float_t ltvc_read_long_float(char*& bytecode, char* byteend, bool log) {
+  SELF_CHECK(long_float_t, stream, index);
+  long_float_t data;
+  if (bytecode > byteend - sizeof(data))
+    SIMPLE_ERROR("Unexpected EOF");
+  for (size_t i = 0; i < sizeof(data); ++i) {
+    ((char*)&data)[i] = *bytecode++;
+  }
+  if (log)
+    printf("%s:%d:%s -> '%lf'\n", __FILE__, __LINE__, __FUNCTION__, data);
+  return data;
+}
+#endif
+
 CL_DOCSTRING(R"dx(tag is (0|1|2) where 0==literal, 1==transient, 2==immediate)dx");
 DOCGROUP(clasp);
 CL_DEFUN size_t core__ltvc_write_object(T_sp ttag, T_sp index_or_immediate, T_sp stream, size_t index) {
