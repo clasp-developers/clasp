@@ -38,12 +38,19 @@ THE SOFTWARE.
 namespace core {
 
 template <typename Float> T_mv float_to_digits(T_sp tdigits, Float number, T_sp round_position, T_sp relativep) {
-  StrNs_sp digits = tdigits.nilp() ? gc::As<StrNs_sp>(core__make_vector(cl::_sym_base_char, 10, true, clasp_make_fixnum(0)))
-                                   : gc::As<StrNs_sp>(tdigits);
-
+  const char* num_to_text = "0123456789";
   schubfach::decimal_float decimal = number;
   auto digit_count = decimal.math.count_digits(decimal.significand);
   auto position = decimal.exponent + digit_count;
+
+  StrNs_sp digits;
+
+  if (tdigits.nilp()) {
+    digits = gc::As<StrNs_sp>(core__make_vector(cl::_sym_base_char, digit_count, true, clasp_make_fixnum(digit_count)));
+  } else {
+    digits = gc::As<StrNs_sp>(tdigits);
+    digits->resize(digit_count);
+  }
 
   if (round_position.notnilp()) {
     int pos = gc::As<Fixnum_sp>(round_position).unsafe_fixnum();
@@ -60,21 +67,22 @@ template <typename Float> T_mv float_to_digits(T_sp tdigits, Float number, T_sp 
     }
   }
 
-  if (decimal.significand == 0) {
-    digits->vectorPushExtend(clasp_make_character('0'));
-    return Values(clasp_make_fixnum(0), digits);
+  if (decimal.significand == 0)
+    position = 0;
+
+  if (Str8Ns_sp buffer8 = digits.asOrNull<Str8Ns_O>()) {
+    for (size_t i = 0; i < digit_count; i++) {
+      auto rem = decimal.significand % 10u;
+      decimal.significand /= 10u;
+      (*buffer8)[digit_count - i - 1] = num_to_text[rem];
+    }
+  } else if (StrWNs_sp bufferw = digits.asOrNull<StrWNs_O>()) {
+    for (size_t i = 0; i < digit_count; i++) {
+      auto rem = decimal.significand % 10u;
+      decimal.significand /= 10u;
+      (*bufferw)[digit_count - i - 1] = num_to_text[rem];
+    }
   }
-
-  std::string buffer;
-
-  while (decimal.significand != 0) {
-    auto d = std::div(decimal.significand, 10);
-    buffer.push_back(d.rem + '0');
-    decimal.significand = d.quot;
-  }
-
-  for (auto iter = buffer.rbegin(); iter < buffer.rend(); iter++)
-    digits->vectorPushExtend(clasp_make_character(*iter), 64);
 
   return Values(clasp_make_fixnum(position), digits);
 }
