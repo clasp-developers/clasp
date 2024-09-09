@@ -215,7 +215,7 @@
  (:name :schubfach
   :repository "https://github.com/yitzchak/schubfach.git"
   :directory "src/schubfach/"
-  :branch "main")
+  :branch "big")
  (:name :cando
   :repository "https://github.com/cando-developers/cando.git"
   :directory "extensions/cando/"

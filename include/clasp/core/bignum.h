@@ -33,6 +33,23 @@ THE SOFTWARE.
 #include <concepts> // integral
 
 namespace core {
+
+template <class T>
+concept unsigned_limb =
+    std::is_integral<T>::value && std::is_unsigned<T>::value && std::is_nothrow_convertible<T, mp_limb_t>::value;
+
+template <class T>
+concept unsigned_limbs =
+    std::is_integral<T>::value && std::is_unsigned<T>::value && !std::is_nothrow_convertible<T, mp_limb_t>::value;
+
+template <class T>
+concept signed_limb =
+    std::is_integral<T>::value && std::is_signed<T>::value && std::is_nothrow_convertible<T, mp_limb_t>::value;
+
+template <class T>
+concept signed_limbs =
+    std::is_integral<T>::value && std::is_signed<T>::value && !std::is_nothrow_convertible<T, mp_limb_t>::value;
+
 class Bignum_O;
 };
 
@@ -69,59 +86,46 @@ public: // Functions here
     return b;
   };
   static Bignum_sp create(const mpz_class&);
-  /*static Bignum_sp create(gc::Fixnum fix) { return create_from_limbs((fix < 0) ? -1 : 1, std::abs(fix), true); }
-#if !defined(CLASP_UNSIGNED_LONG_LONG_IS_UINT64)
-  static Bignum_sp create(unsigned long long ull) {
-    ASSERT(sizeof(unsigned long long) <= sizeof(mp_limb_t));
-    return create_from_limbs(1, ull, true);
-  }
-#endif
-#if !defined(CLASP_LONG_LONG_IS_INT64)
-  static Bignum_sp create(long long ll) {
-    ASSERT(sizeof(long long) <= sizeof(mp_limb_t));
-    return create_from_limbs((ll < 0) ? -1 : 1, std::abs(ll), true);
-  }
-#endif
-#if !defined(CLASP_FIXNUM_IS_INT64)
-  static Bignum_sp create(int64_t v) { return create_from_limbs((v < 0) ? -1 : 1, std::abs(v), true); }
-#endif
-  static Bignum_sp create(uint64_t v) { return create_from_limbs(1, v, true); }
-  static Bignum_sp create(__uint128_t v) {
-    Bignum_sp b = create_from_limbs(2);
-    b->_limbs[0] = static_cast<mp_limb_t>(v);
-    b->_limbs[1] = static_cast<mp_limb_t>(v >> 64);
-    return b;
-  }*/
 
-  template <std::signed_integral Integral> static Bignum_sp create(Integral v) {
-    bool negative = v < 0;
-    v = std::abs(v);
-    int len = (std::bit_width(v) + 8 * sizeof(mp_limb_t)) / sizeof(mp_limb_t);
-    Bignum_sp b = create_from_limbs(negative ? -len : len);
-
-    for (int i = 0; i < len; i++) {
-      b->_limbs[i] = static_cast<mp_limb_t>(v);
-      v = v >> (sizeof(mp_limb_t) * 8);
-    }
-
+  template <unsigned_limb T> static Bignum_sp create(T v) {
+    Bignum_sp b = create_from_limbs(1);
+    b->_limbs[0] = v;
     return b;
   }
 
-  template <std::unsigned_integral Integral> static Bignum_sp create(Integral v) {
-    int len = (std::bit_width(v) + 8 * sizeof(mp_limb_t)) / sizeof(mp_limb_t);
+  template <signed_limb T> static Bignum_sp create(T v) {
+    Bignum_sp b = create_from_limbs((v < 0) ? -1 : 1);
+    b->_limbs[0] = std::abs(v);
+    return b;
+  }
+
+  template <unsigned_limbs T> static Bignum_sp create(T v) {
+    constexpr size_t limb_width = 8 * sizeof(mp_limb_t);
+    size_t len = (std::bit_width(v) + limb_width - 1) / limb_width;
     Bignum_sp b = create_from_limbs(len);
 
-    for (int i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
       b->_limbs[i] = static_cast<mp_limb_t>(v);
-      v = v >> (sizeof(mp_limb_t) * 8);
+      v = v >> limb_width;
     }
 
     return b;
   }
 
-  static Bignum_sp create(gc::Fixnum fix) { return create_from_limbs((fix < 0) ? -1 : 1, std::abs(fix), true); }
+  template <signed_limbs T> static Bignum_sp create(T v) {
+    constexpr size_t limb_width = 8 * sizeof(mp_limb_t);
+    bool negative = v < 0;
+    v = std::abs(v);
+    size_t len = (std::bit_width(v) + limb_width - 1) / limb_width;
+    Bignum_sp b = create_from_limbs(negative ? -len : len);
 
-  static Bignum_sp create(long long fix) { return create_from_limbs((fix < 0) ? -1 : 1, std::abs(fix), true); }
+    for (size_t i = 0; i < len; i++) {
+      b->_limbs[i] = static_cast<mp_limb_t>(v);
+      v = v >> limb_width;
+    }
+
+    return b;
+  }
 
   template <std::floating_point Float> static Bignum_sp create(Float v) {
     auto q = float_convert<Float>::to_quadruple(v);

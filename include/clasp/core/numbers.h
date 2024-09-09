@@ -125,7 +125,7 @@ inline int fegetexcept() {
 namespace cl {
 extern core::Symbol_sp& _sym_Integer_O; // CL:INTEGER
 extern core::Symbol_sp& _sym_Real_O;    // CL:INTEGER
-};                                      // namespace cl
+}; // namespace cl
 
 namespace core {
 // TYPE ERRORS
@@ -240,8 +240,8 @@ public:
   virtual Number_sp tanh_() const { SUBIMP(); };
 
   virtual void sxhash_(HashGenerator& hg) const override { SUBIMP(); };
-  Number_O(){};
-  virtual ~Number_O(){};
+  Number_O() {};
+  virtual ~Number_O() {};
 };
 
 SMART(Real);
@@ -255,8 +255,8 @@ public:
   virtual bool plusp_() const { SUBIMP(); };
   virtual bool minusp_() const { SUBIMP(); };
 
-  Real_O(){};
-  virtual ~Real_O(){};
+  Real_O() {};
+  virtual ~Real_O() {};
 };
 
 SMART(Rational);
@@ -280,8 +280,8 @@ public:
   virtual Number_sp cosh_() const override;
   virtual Number_sp tanh_() const override;
 
-  Rational_O(){};
-  virtual ~Rational_O(){};
+  Rational_O() {};
+  virtual ~Rational_O() {};
 };
 
 SMART(Integer);
@@ -295,7 +295,7 @@ public:
   static Integer_sp create(std::signed_integral auto v);
   static Integer_sp create(std::unsigned_integral auto v);
 
-  template<std::floating_point Float> static Integer_sp create(Float v);
+  template <std::floating_point Float> static Integer_sp create(Float v);
 
   static Integer_sp create(int8_t v);
   static Integer_sp create(uint8_t v);
@@ -336,8 +336,8 @@ public:
   virtual Integer_sp shift_right(gc::Fixnum nbits) const { SUBIMP(); };
 
   virtual void __write__(T_sp strm) const override;
-  Integer_O(){};
-  virtual ~Integer_O(){};
+  Integer_O() {};
+  virtual ~Integer_O() {};
 };
 }; // namespace core
 
@@ -364,8 +364,8 @@ public:
   virtual bool isnan_() const { SUBIMP(); };
   virtual bool isinf_() const { SUBIMP(); };
 
-  Float_O(){};
-  virtual ~Float_O(){};
+  Float_O() {};
+  virtual ~Float_O() {};
 };
 
 SMART(ShortFloat);
@@ -419,6 +419,10 @@ public:
 
 class SingleFloat_dummy_O : public Float_O {
   LISP_ABSTRACT_CLASS(core, ClPkg, SingleFloat_dummy_O, "SingleFloat", Float_O);
+
+  inline static SingleFloat_sp create(float x) { return gc::make_tagged_single_float<core::SingleFloat_I>(x); };
+
+  static SingleFloat_sp coerce(Number_sp x);
 };
 
 inline SingleFloat_sp make_single_float(float x) { return gc::make_tagged_single_float<core::SingleFloat_I>(x); };
@@ -447,6 +451,8 @@ public:
     return v;
   };
 
+  static DoubleFloat_sp coerce(Number_sp x);
+
 public:
   static Rational_sp rational(double val);
 
@@ -457,9 +463,7 @@ public:
   void set(double val) { this->_Value = val; };
   double get() const { return this->_Value; };
   Number_sp signum_() const override;
-  Number_sp abs_() const override {
-    return DoubleFloat_O::create(fabs(this->_Value));
-  };
+  Number_sp abs_() const override { return DoubleFloat_O::create(std::abs(this->_Value)); };
   bool isnan_() const override { return std::isnan(this->_Value); }; // NaN is supposed to be the only value that != itself!!!!
   bool isinf_() const override { return std::isinf(this->_Value); };
 
@@ -498,8 +502,8 @@ public:
   virtual Number_sp cosh_() const override;
   virtual Number_sp tanh_() const override;
   virtual Rational_sp rational_() const final { return DoubleFloat_O::rational(this->_Value); };
-  DoubleFloat_O() : _Value(0.0){};
-  virtual ~DoubleFloat_O(){};
+  DoubleFloat_O() : _Value(0.0) {};
+  virtual ~DoubleFloat_O() {};
 };
 
 }; // namespace core
@@ -532,14 +536,14 @@ public:
     return v;
   };
 
+  static LongFloat_sp coerce(Number_sp x);
+
   void sxhash_(HashGenerator& hg) const override;
   string __repr__() const override;
   void set(long_float_t val) { this->_Value = val; };
   long_float_t get() const { return this->_Value; };
   Number_sp signum_() const override;
-  Number_sp abs_() const override {
-    return LongFloat_O::create(fabs(this->_Value));
-  };
+  Number_sp abs_() const override { return LongFloat_O::create(std::abs(this->_Value)); };
   bool isnan_() const override { return std::isnan(this->_Value); }; // NaN is supposed to be the only value that != itself!!!!
   bool isinf_() const override { return std::isinf(this->_Value); };
 
@@ -577,10 +581,12 @@ public:
   virtual Number_sp cosh_() const override;
   virtual Number_sp tanh_() const override;
   virtual Rational_sp rational_() const override;
-  LongFloat_O() : _Value(long_float_t{0.0}){};
-  virtual ~LongFloat_O(){};
+  LongFloat_O() : _Value(long_float_t{0.0}) {};
+  virtual ~LongFloat_O() {};
 #else
   inline static DoubleFloat_sp create(long_float_t nm) { return DoubleFloat_O::create(nm); }
+
+  inline static DoubleFloat_sp coerce(Number_sp x) { return DoubleFloat_O::coerce(x); }
 
   DEFAULT_CTOR_DTOR(LongFloat_O);
 #endif
@@ -649,9 +655,9 @@ public:
 
   virtual void __write__(T_sp strm) const override;
 
-  Complex_O(Real_sp r, Real_sp i) : _real(r), _imaginary(i){};
-  Complex_O() : _real(clasp_make_single_float(0.0)), _imaginary(clasp_make_single_float(0.0)){};
-  virtual ~Complex_O(){};
+  Complex_O(Real_sp r, Real_sp i) : _real(r), _imaginary(i) {};
+  Complex_O() : _real(clasp_make_single_float(0.0)), _imaginary(clasp_make_single_float(0.0)) {};
+  virtual ~Complex_O() {};
 };
 
 SMART(Ratio);
@@ -723,8 +729,8 @@ public:
 
   virtual void __write__(T_sp strm) const override;
 
-  Ratio_O() : _numerator(clasp_make_fixnum(0)), _denominator(clasp_make_fixnum(1)){};
-  virtual ~Ratio_O(){};
+  Ratio_O() : _numerator(clasp_make_fixnum(0)), _denominator(clasp_make_fixnum(1)) {};
+  virtual ~Ratio_O() {};
 };
 
 inline Number_sp clasp_plus(Number_sp na, Number_sp nb) { return contagion_add(na, nb); };
@@ -1125,6 +1131,7 @@ ssize_t clasp_to_ssize_t(core::T_sp);
 mpz_class clasp_to_mpz(core::T_sp);
 
 float clasp_to_float(core::Number_sp);
+double clasp_to_double(core::Number_sp);
 long_float_t clasp_to_long_float(core::Number_sp);
 
 // END OF CLASP_TO_... FUNCTIONS

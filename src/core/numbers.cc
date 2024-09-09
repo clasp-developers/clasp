@@ -72,64 +72,40 @@ core::Fixnum not_fixnum_error(core::T_sp o) { TYPE_ERROR(o, cl::_sym_fixnum); }
 void clasp_report_divide_by_zero(Number_sp x) { ERROR_DIVISION_BY_ZERO(clasp_make_fixnum(1), x); }
 
 Number_sp clasp_make_complex(Real_sp r, Real_sp i) {
-  // need to check whether i is 0
-  // A bignum better not be 0
-  // if realpart is a rational and imagpart is the rational number zero, the result of complex is realpart, a rational.
   if (i.fixnump() && cl__rationalp(r)) {
-    Fixnum fn = i.unsafe_fixnum();
-    if (fn == 0)
+    if (i.unsafe_fixnum() == 0)
       return r;
-    else
-      return Complex_O::create(r, i);
+    return Complex_O::create(r, i);
   }
-  // If imagpart is not supplied, the imaginary part is a zero of the same type as realpart;
-  // perhaps need to distinguish better whether i is supplied or not
-  if (cl__floatp(r) && i.fixnump() && clasp_zerop(i)) {
-    if (r.single_floatp())
-      i = clasp_make_single_float(0.0);
-    else if (core__double_float_p(r))
-      i = DoubleFloat_O::create(0.0);
-    else if (core__long_float_p(r))
-      i = LongFloat_O::create(0.0l);
-    // short floats are not really implemented
+
+  if (!cl__floatp(r) && !cl__floatp(i))
+    return Complex_O::create(r, i);
+
+  if (r.single_floatp()) {
+    if (i.isA<DoubleFloat_O>())
+      return Complex_O::create(DoubleFloat_O::coerce(r), i);
+    if (i.isA<LongFloat_O>())
+      return Complex_O::create(LongFloat_O::coerce(r), i);
+    return Complex_O::create(r, SingleFloat_dummy_O::coerce(i));
   }
-  // If either realpart or imagpart is a float, the non-float is converted to a float before the complex is created.
-  // does that mean, I need to distinguish single and double-float? PDietz seem to assume so
-  else if (cl__floatp(r) && !cl__floatp(i)) {
-    if (r.single_floatp())
-      i = cl__float(i, clasp_make_single_float(1.0));
-    else
-      i = cl__float(i, DoubleFloat_O::create(1.0));
-  } else if (cl__floatp(i) && !cl__floatp(r)) {
-    if (i.single_floatp())
-      r = cl__float(r, clasp_make_single_float(1.0));
-    else
-      r = cl__float(r, DoubleFloat_O::create(1.0));
-  } else if (cl__floatp(i) && cl__floatp(r)) {
-    // the highest type of both wins single -> double -> long
-    if (r.single_floatp()) {
-      if (!(i.single_floatp())) {
-        // r should be of type of i
-        if (core__double_float_p(i))
-          r = DoubleFloat_O::create((double)r.unsafe_single_float());
-        else
-          r = LongFloat_O::create((long)r.unsafe_single_float());
-      }
-    } else if (core__double_float_p(r)) {
-      if (!(core__double_float_p(i))) {
-        if (core__long_float_p(i))
-          r = LongFloat_O::create(clasp_to_long_float(r));
-        else
-          i = DoubleFloat_O::create((double)i.unsafe_single_float());
-      }
-    } else if (core__long_float_p(r))
-      if (!(core__long_float_p(i))) {
-        if (i.single_floatp())
-          i = DoubleFloat_O::create((double)i.unsafe_single_float());
-        else
-          i = LongFloat_O::create(clasp_to_long_float(i));
-      }
+
+  if (r.isA<DoubleFloat_O>()) {
+    if (i.isA<LongFloat_O>())
+      return Complex_O::create(LongFloat_O::coerce(r), i);
+    return Complex_O::create(r, DoubleFloat_O::coerce(i));
   }
+
+  if (r.isA<LongFloat_O>()) {
+    return Complex_O::create(r, LongFloat_O::coerce(i));
+  }
+
+  if (i.single_floatp())
+    return Complex_O::create(SingleFloat_dummy_O::coerce(r), i);
+  if (i.isA<DoubleFloat_O>())
+    return Complex_O::create(DoubleFloat_O::coerce(r), i);
+  if (i.isA<LongFloat_O>())
+    return Complex_O::create(LongFloat_O::coerce(r), i);
+
   return Complex_O::create(r, i);
 }
 
@@ -2979,5 +2955,35 @@ DOCGROUP(clasp);
 CL_DEFUN Number_sp cl__rationalize(Real_sp num) { return cl__rational(num); };
 
 Integer_sp clasp_make_integer(size_t s) { return Integer_O::create((uint64_t)s); }
+
+SingleFloat_sp SingleFloat_dummy_O::coerce(Number_sp x) {
+  if (x.fixnump())
+    return create(x.unsafe_fixnum());
+  if (x.single_floatp())
+    return x;
+  return create(x->as_float_());
+}
+
+DoubleFloat_sp DoubleFloat_O::coerce(Number_sp x) {
+  if (x.fixnump())
+    return create(x.unsafe_fixnum());
+  if (x.single_floatp())
+    return create(x.unsafe_single_float());
+  if (x.isA<DoubleFloat_O>())
+    return x;
+  return create(x->as_double_());
+}
+
+#ifdef CLASP_LONG_FLOAT
+LongFloat_sp LongFloat_O::coerce(Number_sp x) {
+  if (x.fixnump())
+    return create(x.unsafe_fixnum());
+  if (x.single_floatp())
+    return create(x.unsafe_single_float());
+  if (x.isA<LongFloat_O>())
+    return x;
+  return create(x->as_long_float_());
+}
+#endif
 
 }; // namespace core

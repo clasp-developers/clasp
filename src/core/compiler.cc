@@ -1500,7 +1500,7 @@ long_float_t ltvc_read_long_float(char*& bytecode, char* byteend, bool log) {
     ((char*)&data)[i] = *bytecode++;
   }
   if (log)
-    printf("%s:%d:%s -> '%lf'\n", __FILE__, __LINE__, __FUNCTION__, data);
+    fmt::print("{}:{}:{} -> '{}'\n", __FILE__, __LINE__, __FUNCTION__, data);
   return data;
 }
 #endif
