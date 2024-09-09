@@ -1606,9 +1606,8 @@ void LongFloat_O::sxhash_(HashGenerator& hg) const {
 bool LongFloat_O::eql_(T_sp obj) const {
   if (this->eq(obj))
     return true;
-  if (gc::IsA<Number_sp>(obj)) {
-    return _Value == clasp_to_long_float(obj.as_unsafe<Number_O>());
-  }
+  if (LongFloat_sp other = obj.asOrNull<LongFloat_O>())
+    return _Value == other->get();
   return false;
 }
 
@@ -2873,7 +2872,10 @@ long_float_t clasp_to_long_float(Number_sp x) {
   if (x.single_floatp())
     return (long_float_t)x.unsafe_single_float();
 
-  return x->as_long_float_();
+  if (x.isA<Real_O>())
+    return x->as_long_float_();
+
+  TYPE_ERROR(x, cl::_sym_Real_O);
 };
 
 // --- END OF TRANSLATORS ---
@@ -2961,7 +2963,9 @@ SingleFloat_sp SingleFloat_dummy_O::coerce(Number_sp x) {
     return create(x.unsafe_fixnum());
   if (x.single_floatp())
     return x;
-  return create(x->as_float_());
+  if (x.isA<Real_O>())
+    return create(x->as_float_());
+  TYPE_ERROR(x, cl::_sym_Real_O);
 }
 
 DoubleFloat_sp DoubleFloat_O::coerce(Number_sp x) {
@@ -2971,7 +2975,9 @@ DoubleFloat_sp DoubleFloat_O::coerce(Number_sp x) {
     return create(x.unsafe_single_float());
   if (x.isA<DoubleFloat_O>())
     return x;
-  return create(x->as_double_());
+  if (x.isA<Real_O>())
+    return create(x->as_double_());
+  TYPE_ERROR(x, cl::_sym_Real_O);
 }
 
 #ifdef CLASP_LONG_FLOAT
@@ -2982,7 +2988,9 @@ LongFloat_sp LongFloat_O::coerce(Number_sp x) {
     return create(x.unsafe_single_float());
   if (x.isA<LongFloat_O>())
     return x;
-  return create(x->as_long_float_());
+  if (x.isA<Real_O>())
+    return create(x->as_long_float_());
+  TYPE_ERROR(x, cl::_sym_Real_O);
 }
 #endif
 
