@@ -189,6 +189,26 @@ struct loadltv {
     return (b0 << 56) | (b1 << 48) | (b2 << 40) | (b3 << 32) | (b4 << 24) | (b5 << 16) | (b6 << 8) | (b7 << 0);
   }
 
+  inline __uint128_t read_u80() {
+    unsigned char bytes[10];
+    stream_read_byte8(_stream, bytes, 10);
+    return (__uint128_t{bytes[0]} << 72) | (__uint128_t{bytes[1]} << 64) | (__uint128_t{bytes[2]} << 56) |
+           (__uint128_t{bytes[3]} << 48) | (__uint128_t{bytes[4]} << 40) | (__uint128_t{bytes[5]} << 32) |
+           (__uint128_t{bytes[6]} << 24) | (__uint128_t{bytes[7]} << 16) | (__uint128_t{bytes[8]} << 8) |
+           (__uint128_t{bytes[9]} << 0);
+  }
+
+  inline __uint128_t read_u128() {
+    unsigned char bytes[16];
+    stream_read_byte8(_stream, bytes, 16);
+    return (__uint128_t{bytes[0]} << 120) | (__uint128_t{bytes[1]} << 112) | (__uint128_t{bytes[2]} << 104) |
+           (__uint128_t{bytes[3]} << 96) | (__uint128_t{bytes[4]} << 88) | (__uint128_t{bytes[5]} << 80) |
+           (__uint128_t{bytes[6]} << 72) | (__uint128_t{bytes[7]} << 64) | (__uint128_t{bytes[8]} << 56) |
+           (__uint128_t{bytes[9]} << 48) | (__uint128_t{bytes[10]} << 40) | (__uint128_t{bytes[11]} << 32) |
+           (__uint128_t{bytes[12]} << 24) | (__uint128_t{bytes[13]} << 16) | (__uint128_t{bytes[14]} << 8) |
+           (__uint128_t{bytes[15]} << 0);
+  }
+
   inline int64_t read_s64() {
     uint64_t dw = read_u64();
     union {
@@ -220,10 +240,9 @@ struct loadltv {
   inline long double read_x86_fp80() {
     union {
       long double d;
-      unsigned char bytes[10];
+      __uint128_t i;
     } converter;
-
-    stream_read_byte8(_stream, converter.bytes, 10);
+    converter.i = read_u80();
     return converter.d;
   }
 
