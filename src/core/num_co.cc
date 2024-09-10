@@ -220,7 +220,7 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp& quotie
   case_Bignum_v_Ratio : {
     Ratio_sp ry = gc::As<Ratio_sp>(divisor);
     Real_sp subr;
-    Number_sp product = clasp_times(dividend, ry->denominator());
+    Number_sp product = dividend * ry->denominator();
     clasp_truncate(gc::As_unsafe<Real_sp>(product), ry->numerator(), quotient, subr);
     remainder = Rational_O::create(gc::As_unsafe<Integer_sp>(subr), ry->denominator());
     return;
@@ -300,9 +300,9 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp& quotie
     Ratio_sp rx = gc::As_unsafe<Ratio_sp>(dividend);
     Ratio_sp ry = gc::As_unsafe<Ratio_sp>(divisor);
     Real_sp subr;
-    Real_sp c1 = gc::As_unsafe<Real_sp>(clasp_times(rx->numerator(), ry->denominator()));
-    Real_sp c2 = gc::As_unsafe<Real_sp>(clasp_times(ry->numerator(), rx->denominator()));
-    Real_sp nd = gc::As_unsafe<Real_sp>(clasp_times(rx->denominator(), ry->denominator()));
+    Real_sp c1 = gc::As_unsafe<Real_sp>(rx->numerator() * ry->denominator());
+    Real_sp c2 = gc::As_unsafe<Real_sp>(ry->numerator() * rx->denominator());
+    Real_sp nd = gc::As_unsafe<Real_sp>(rx->denominator() * ry->denominator());
     clasp_truncate(c1, c2, quotient, subr);
     remainder = Rational_O::create(gc::As_unsafe<Integer_sp>(subr), gc::As_unsafe<Integer_sp>(nd));
     return;
@@ -318,10 +318,10 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp& quotie
     // (truncate x/y z) = q, r/y.
     Ratio_sp rx = gc::As_unsafe<Ratio_sp>(dividend);
     Integer_sp den = rx->denominator();
-    Real_sp ndiv = gc::As_unsafe<Real_sp>(clasp_times(den, divisor));
+    Real_sp ndiv = gc::As_unsafe<Real_sp>(den * divisor);
     Real_sp subr;
     clasp_truncate(rx->numerator(), ndiv, quotient, subr);
-    remainder = gc::As_unsafe<Real_sp>(clasp_divide(subr, den));
+    remainder = gc::As_unsafe<Real_sp>(subr / den);
     return;
   }
   case_SingleFloat_v_Fixnum:
@@ -378,7 +378,7 @@ static void clasp_floor(Real_sp dividend, Real_sp divisor, Integer_sp& quotient,
   clasp_truncate(dividend, divisor, t0, t1);
   if (!(clasp_zerop(t1)) && (clasp_minusp(divisor) ? clasp_plusp(dividend) : clasp_minusp(dividend))) {
     quotient = gc::As_unsafe<Integer_sp>(clasp_one_minus(t0));
-    remainder = gc::As_unsafe<Real_sp>(clasp_plus(t1, divisor));
+    remainder = gc::As_unsafe<Real_sp>(t1 + divisor);
   } else {
     quotient = t0;
     remainder = t1;
@@ -456,7 +456,7 @@ static void clasp_ceiling(Real_sp dividend, Real_sp divisor, Integer_sp& quotien
   clasp_truncate(dividend, divisor, t0, t1);
   if (!(clasp_zerop(t1)) && (clasp_minusp(divisor) ? clasp_minusp(dividend) : clasp_plusp(dividend))) {
     quotient = gc::As_unsafe<Integer_sp>(clasp_one_plus(t0));
-    remainder = gc::As_unsafe<Real_sp>(clasp_minus(t1, divisor));
+    remainder = gc::As_unsafe<Real_sp>(t1 - divisor);
   } else {
     quotient = t0;
     remainder = t1;
@@ -613,15 +613,15 @@ static void clasp_round(Real_sp dividend, Real_sp divisor, Integer_sp& quotient,
     return;
   }
 
-  Real_sp threshold = gc::As_unsafe<Real_sp>(clasp_divide(clasp_abs(divisor), clasp_make_fixnum(2)));
+  Real_sp threshold = gc::As_unsafe<Real_sp>(clasp_abs(divisor) / clasp_make_fixnum(2));
   int c = clasp_number_compare(rem, threshold);
   if (c > 0 || (c == 0 && clasp_oddp(tru))) {
     if (clasp_minusp(divisor)) {
-      quotient = gc::As_unsafe<Integer_sp>(contagion_sub(tru, clasp_make_fixnum(1)));
-      remainder = gc::As_unsafe<Real_sp>(contagion_add(rem, divisor));
+      quotient = gc::As_unsafe<Integer_sp>(tru - clasp_make_fixnum(1));
+      remainder = rem + divisor;
     } else {
       quotient = gc::As_unsafe<Integer_sp>(clasp_one_plus(tru));
-      remainder = gc::As_unsafe<Real_sp>(contagion_sub(rem, divisor));
+      remainder = gc::As_unsafe<Real_sp>(rem - divisor);
     }
     return;
   }
@@ -630,10 +630,10 @@ static void clasp_round(Real_sp dividend, Real_sp divisor, Integer_sp& quotient,
   if (c < 0 || (c == 0 && clasp_oddp(tru))) {
     if (clasp_minusp(divisor)) {
       quotient = gc::As_unsafe<Integer_sp>(clasp_one_plus(tru));
-      remainder = gc::As_unsafe<Real_sp>(contagion_sub(rem, divisor));
+      remainder = gc::As_unsafe<Real_sp>(rem - divisor);
     } else {
-      quotient = gc::As_unsafe<Integer_sp>(contagion_sub(tru, clasp_make_fixnum(1)));
-      remainder = gc::As_unsafe<Real_sp>(contagion_add(rem, divisor));
+      quotient = gc::As_unsafe<Integer_sp>(tru - clasp_make_fixnum(1));
+      remainder = rem + divisor;
     }
     return;
   }

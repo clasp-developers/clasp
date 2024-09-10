@@ -171,8 +171,6 @@ Number_sp clasp_signum(Number_sp num);
 Number_sp clasp_one_plus(Number_sp num);
 Number_sp clasp_one_minus(Number_sp num);
 Number_sp clasp_negate(Number_sp num);
-bool clasp_float_nan_p(Float_sp num);
-bool clasp_float_infinity_p(Float_sp num);
 NumberType clasp_t_of(Number_sp num);
 Integer_sp clasp_shift_left(Integer_sp num, Fixnum nbits);
 Integer_sp clasp_shift_right(Integer_sp num, Fixnum nbits);
@@ -187,10 +185,6 @@ void clasp_report_divide_by_zero(Number_sp x);
 
 namespace core {
 
-Number_sp contagion_add(Number_sp na, Number_sp nb);
-Number_sp contagion_sub(Number_sp na, Number_sp nb);
-Number_sp contagion_mul(Number_sp na, Number_sp nb);
-Number_sp contagion_div(Number_sp na, Number_sp nb);
 int basic_compare(Number_sp na, Number_sp nb);
 
 SMART(Number);
@@ -198,10 +192,8 @@ class Number_O : public General_O {
   LISP_ABSTRACT_CLASS(core, ClPkg, Number_O, "number", General_O);
 
 public:
-  static Number_sp create(double val);
-  static Number_sp create(gc::Fixnum val);
-  //	static Number_sp create(size_t val);
-public:
+  template<typename T> inline static Number_sp create(T x);
+
   virtual Number_sp signum_() const { SUBCLASS_MUST_IMPLEMENT(); };
   virtual Number_sp reciprocal_() const { SUBCLASS_MUST_IMPLEMENT(); };
   virtual Number_sp abs_() const { SUBCLASS_MUST_IMPLEMENT(); };
@@ -233,6 +225,7 @@ public:
   virtual long_float_t as_long_float_() const { SUBIMP(); };
 
   virtual Number_sp sin_() const { SUBIMP(); };
+  virtual Number_sp asin_() const { SUBIMP(); };
   virtual Number_sp cos_() const { SUBIMP(); };
   virtual Number_sp tan_() const { SUBIMP(); };
   virtual Number_sp sinh_() const { SUBIMP(); };
@@ -242,7 +235,32 @@ public:
   virtual void sxhash_(HashGenerator& hg) const override { SUBIMP(); };
   Number_O() {};
   virtual ~Number_O() {};
+
+  inline static Number_sp sqrt(const Number_sp x);
+
+  inline static Number_sp sin(const Number_sp x);
+  inline static Number_sp asin(const Number_sp x);
+  inline static Number_sp cos(const Number_sp x);
+  inline static Number_sp tan(const Number_sp x);
+  inline static Number_sp sinh(const Number_sp x);
+  inline static Number_sp cosh(const Number_sp x);
+  inline static Number_sp tanh(const Number_sp x);
+
+  static Number_sp add(Number_sp na, Number_sp nb);
+  static Number_sp sub(Number_sp na, Number_sp nb);
+  static Number_sp mul(Number_sp na, Number_sp nb);
+  static Number_sp div(Number_sp na, Number_sp nb);
 };
+
+inline Number_sp operator+(const Number_sp x, const Number_sp y) { return Number_O::add(x, y); }
+inline Number_sp operator-(const Number_sp x, const Number_sp y) { return Number_O::sub(x, y); }
+inline Number_sp operator*(const Number_sp x, const Number_sp y) { return Number_O::mul(x, y); }
+inline Number_sp operator/(const Number_sp x, const Number_sp y) { return Number_O::div(x, y); }
+
+inline Number_sp operator+=(Number_sp& x, const Number_sp y) { return x = Number_O::add(x, y); };
+inline Number_sp operator-=(Number_sp& x, const Number_sp y) { return x = Number_O::sub(x, y); };
+inline Number_sp operator*=(Number_sp& x, const Number_sp y) { return x = Number_O::mul(x, y); };
+inline Number_sp operator/=(Number_sp& x, const Number_sp y) { return x = Number_O::div(x, y); };
 
 SMART(Real);
 class Real_O : public Number_O {
@@ -274,6 +292,7 @@ public:
   virtual Number_sp exp_() const override;
 
   virtual Number_sp sin_() const override;
+  virtual Number_sp asin_() const override;
   virtual Number_sp cos_() const override;
   virtual Number_sp tan_() const override;
   virtual Number_sp sinh_() const override;
@@ -363,9 +382,28 @@ public:
 
   virtual bool isnan_() const { SUBIMP(); };
   virtual bool isinf_() const { SUBIMP(); };
+  virtual int fpclassify_() const { SUBIMP(); };
 
   Float_O() {};
   virtual ~Float_O() {};
+
+  inline static bool isnan(Float_sp x) {
+    if (x.single_floatp())
+      return std::isnan(x.unsafe_single_float());
+    return x->isnan_();
+  }
+
+  inline static bool isinf(Float_sp x) {
+    if (x.single_floatp())
+      return std::isinf(x.unsafe_single_float());
+    return x->isinf_();
+  }
+
+  inline static int fpclassify(Float_sp x) {
+    if (x.single_floatp())
+      return std::fpclassify(x.unsafe_single_float());
+    return x->fpclassify_();
+  }
 };
 
 SMART(ShortFloat);
@@ -391,6 +429,7 @@ public:
   Number_sp abs_() const override;
   bool isnan_() const override { return std::isnan(this->_Value); }; // NaN is supposed to be the only value that != itself!
   bool isinf_() const override { return std::isinf(this->_Value); };
+  int fpclassify_() const override { return std::fpclassify(_Value); }
 
 public:
   //	virtual	bool	eqn(T_sp obj) const;
@@ -466,6 +505,7 @@ public:
   Number_sp abs_() const override { return DoubleFloat_O::create(std::abs(this->_Value)); };
   bool isnan_() const override { return std::isnan(this->_Value); }; // NaN is supposed to be the only value that != itself!!!!
   bool isinf_() const override { return std::isinf(this->_Value); };
+  int fpclassify_() const override { return std::fpclassify(_Value); }
 
 public:
   virtual bool eql_(T_sp obj) const override;
@@ -496,6 +536,7 @@ public:
   virtual Number_sp exp_() const override;
 
   virtual Number_sp sin_() const override;
+  virtual Number_sp asin_() const override;
   virtual Number_sp cos_() const override;
   virtual Number_sp tan_() const override;
   virtual Number_sp sinh_() const override;
@@ -546,6 +587,7 @@ public:
   Number_sp abs_() const override { return LongFloat_O::create(std::abs(this->_Value)); };
   bool isnan_() const override { return std::isnan(this->_Value); }; // NaN is supposed to be the only value that != itself!!!!
   bool isinf_() const override { return std::isinf(this->_Value); };
+  int fpclassify_() const override { return std::fpclassify(_Value); }
 
   virtual bool eql_(T_sp obj) const override;
 
@@ -575,6 +617,7 @@ public:
   virtual Number_sp exp_() const override;
 
   virtual Number_sp sin_() const override;
+  virtual Number_sp asin_() const override;
   virtual Number_sp cos_() const override;
   virtual Number_sp tan_() const override;
   virtual Number_sp sinh_() const override;
@@ -644,6 +687,7 @@ public:
   virtual Number_sp exp_() const override;
 
   virtual Number_sp sin_() const override;
+  virtual Number_sp asin_() const override;
   virtual Number_sp cos_() const override;
   virtual Number_sp tan_() const override;
   virtual Number_sp sinh_() const override;
@@ -710,11 +754,10 @@ public:
 public:
   virtual bool eql_(T_sp obj) const override;
 
-  Number_sp onePlus_() const override {
-    return create(gc::As<Integer_sp>(contagion_add(this->_numerator, this->_denominator)), this->_denominator);
-  };
+  Number_sp onePlus_() const override { return create(_numerator + _denominator, _denominator); };
+
   Number_sp oneMinus_() const override {
-    return create(gc::As<Integer_sp>(contagion_sub(this->_numerator, this->_denominator)), this->_denominator);
+    return create(gc::As<Integer_sp>(this->_numerator - this->_denominator), this->_denominator);
   };
 
   virtual float as_float_() const override;
@@ -732,11 +775,6 @@ public:
   Ratio_O() : _numerator(clasp_make_fixnum(0)), _denominator(clasp_make_fixnum(1)) {};
   virtual ~Ratio_O() {};
 };
-
-inline Number_sp clasp_plus(Number_sp na, Number_sp nb) { return contagion_add(na, nb); };
-inline Number_sp clasp_minus(Number_sp na, Number_sp nb) { return contagion_sub(na, nb); };
-inline Number_sp clasp_times(Number_sp na, Number_sp nb) { return contagion_mul(na, nb); };
-inline Number_sp clasp_divide(Number_sp na, Number_sp nb) { return contagion_div(na, nb); };
 
 inline int clasp_number_compare(Number_sp x, Number_sp y) { return basic_compare(x, y); };
 
@@ -1136,17 +1174,6 @@ long_float_t clasp_to_long_float(core::Number_sp);
 
 // END OF CLASP_TO_... FUNCTIONS
 
-inline Number_sp clasp_sqrt(Number_sp z) {
-  if (z.fixnump()) {
-    float f = z.unsafe_fixnum();
-    return float_sqrt(f);
-  } else if (z.single_floatp()) {
-    float f = z.unsafe_single_float();
-    return float_sqrt(f);
-  }
-  return z->sqrt_();
-}
-
 CL_LISPIFY_NAME(reciprocal);
 DOCGROUP(clasp)
 CL_DEFUN inline Number_sp clasp_reciprocal(Number_sp x) {
@@ -1184,56 +1211,6 @@ inline Number_sp clasp_exp(Number_sp x) {
   return x->exp_();
 }
 
-inline Number_sp clasp_sin(Number_sp x) {
-  if (x.fixnump()) {
-    float f = x.unsafe_fixnum();
-    return clasp_make_single_float(sinf(f));
-  } else if (x.single_floatp())
-    return clasp_make_single_float(sinf(x.unsafe_single_float()));
-  return x->sin_();
-}
-inline Number_sp clasp_cos(Number_sp x) {
-  if (x.fixnump()) {
-    float f = x.unsafe_fixnum();
-    return clasp_make_single_float(cosf(f));
-  } else if (x.single_floatp())
-    return clasp_make_single_float(cosf(x.unsafe_single_float()));
-  return x->cos_();
-}
-inline Number_sp clasp_tan(Number_sp x) {
-  if (x.fixnump()) {
-    float f = x.unsafe_fixnum();
-    return clasp_make_single_float(tanf(f));
-  } else if (x.single_floatp())
-    return clasp_make_single_float(tanf(x.unsafe_single_float()));
-  return x->tan_();
-}
-
-inline Number_sp clasp_sinh(Number_sp x) {
-  if (x.fixnump()) {
-    float f = x.unsafe_fixnum();
-    return clasp_make_single_float(sinhf(f));
-  } else if (x.single_floatp())
-    return clasp_make_single_float(sinhf(x.unsafe_single_float()));
-  return x->sinh_();
-}
-inline Number_sp clasp_cosh(Number_sp x) {
-  if (x.fixnump()) {
-    float f = x.unsafe_fixnum();
-    return clasp_make_single_float(coshf(f));
-  } else if (x.single_floatp())
-    return clasp_make_single_float(coshf(x.unsafe_single_float()));
-  return x->cosh_();
-}
-inline Number_sp clasp_tanh(Number_sp x) {
-  if (x.fixnump()) {
-    float f = x.unsafe_fixnum();
-    return clasp_make_single_float(tanhf(f));
-  } else if (x.single_floatp())
-    return clasp_make_single_float(tanhf(x.unsafe_single_float()));
-  return x->tanh_();
-}
-
 inline Number_sp clasp_conjugate(Number_sp x) {
   if (gc::IsA<Complex_sp>(x))
     return gc::As_unsafe<Complex_sp>(x)->conjugate();
@@ -1241,21 +1218,78 @@ inline Number_sp clasp_conjugate(Number_sp x) {
     return x;
 }
 
-inline bool clasp_float_nan_p(Float_sp num) {
-  if (num.single_floatp()) {
-    float f = num.unsafe_single_float();
-    return std::isnan(f);
-  }
-  return num->isnan_();
+inline Number_sp Number_O::sqrt(const Number_sp x) {
+  if (x.fixnump())
+    return float_sqrt((single_float_t)x.unsafe_fixnum());
+  if (x.single_floatp())
+    return float_sqrt(x.unsafe_single_float());
+  return x->sqrt_();
 }
 
-inline bool clasp_float_infinity_p(Float_sp num) {
-  if (num.single_floatp()) {
-    float f = num.unsafe_single_float();
-    return std::isinf(f);
-  }
-  // test for isinf not for isnan, good old friend copy paste
-  return num->isinf_();
+inline Number_sp Number_O::sin(const Number_sp x) {
+  if (x.fixnump())
+    return SingleFloat_dummy_O::create(std::sin((single_float_t)x.unsafe_fixnum()));
+  if (x.single_floatp())
+    return SingleFloat_dummy_O::create(std::sin(x.unsafe_single_float()));
+  return x->sin_();
 }
+
+inline Number_sp Number_O::asin(const Number_sp x) {
+  if (x.fixnump())
+    return SingleFloat_dummy_O::create(std::asin((single_float_t)x.unsafe_fixnum()));
+  if (x.single_floatp())
+    return SingleFloat_dummy_O::create(std::asin(x.unsafe_single_float()));
+  return x->asin_();
+}
+
+inline Number_sp Number_O::cos(Number_sp x) {
+  if (x.fixnump())
+    return SingleFloat_dummy_O::create(std::cos((single_float_t)x.unsafe_fixnum()));
+  if (x.single_floatp())
+    return SingleFloat_dummy_O::create(std::cos(x.unsafe_single_float()));
+  return x->cos_();
+}
+
+inline Number_sp Number_O::tan(Number_sp x) {
+  if (x.fixnump())
+    return SingleFloat_dummy_O::create(std::tan((single_float_t)x.unsafe_fixnum()));
+  if (x.single_floatp())
+    return SingleFloat_dummy_O::create(std::tan(x.unsafe_single_float()));
+  return x->tan_();
+}
+
+inline Number_sp Number_O::sinh(Number_sp x) {
+  if (x.fixnump())
+    return SingleFloat_dummy_O::create(std::sinh((single_float_t)x.unsafe_fixnum()));
+  if (x.single_floatp())
+    return SingleFloat_dummy_O::create(std::sinh(x.unsafe_single_float()));
+  return x->sinh_();
+}
+
+inline Number_sp Number_O::cosh(Number_sp x) {
+  if (x.fixnump())
+    return SingleFloat_dummy_O::create(std::cosh((single_float_t)x.unsafe_fixnum()));
+  if (x.single_floatp())
+    return SingleFloat_dummy_O::create(std::cosh(x.unsafe_single_float()));
+  return x->cosh_();
+}
+
+inline Number_sp Number_O::tanh(Number_sp x) {
+  if (x.fixnump())
+    return SingleFloat_dummy_O::create(std::tanh((single_float_t)x.unsafe_fixnum()));
+  if (x.single_floatp())
+    return SingleFloat_dummy_O::create(std::tanh(x.unsafe_single_float()));
+  return x->tanh_();
+}
+
+template <> inline Number_sp Number_O::create(single_float_t x) { return SingleFloat_dummy_O::create(x); }
+
+template <> inline Number_sp Number_O::create(double_float_t x) { return DoubleFloat_O::create(x); }
+
+#ifdef CLASP_LONG_FLOAT
+template <> inline Number_sp Number_O::create(long_float_t x) { return LongFloat_O::create(x); }
+#endif
+
+//template <std::integral T> inline Number_sp Number_O::create(T x) { return Integer_O::create(x); }
 
 }; // namespace core

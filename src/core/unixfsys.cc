@@ -1119,9 +1119,8 @@ CL_DEFUN Number_sp cl__file_write_date(T_sp pathspec) {
   time = nil<Number_O>();
   if (safe_stat((char*)filename->get_path_string().c_str(), &filestatus) >= 0) {
     Number_sp accJan1st1970UT(Integer_O::create((gc::Fixnum)(24 * 60 * 60)));
-    accJan1st1970UT = contagion_mul(accJan1st1970UT, Integer_O::create((gc::Fixnum)(17 + 365 * 70)));
-    time = Integer_O::create((gc::Fixnum)filestatus.st_mtime);
-    time = contagion_add(time, accJan1st1970UT);
+    accJan1st1970UT = accJan1st1970UT * Integer_O::create((gc::Fixnum)(17 + 365 * 70));
+    time = Integer_O::create((gc::Fixnum)filestatus.st_mtime) + accJan1st1970UT;
   }
   return time;
 }

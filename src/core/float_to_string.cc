@@ -98,9 +98,9 @@ static void print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
 
 T_sp core_float_to_string_free(Float_sp number, Number_sp e_min, Number_sp e_max) {
   gc::Fixnum base = 0, e;
-  if (clasp_float_nan_p(number)) {
+  if (Float_O::isnan(number)) {
     return eval::funcall(ext::_sym_float_nan_string, number);
-  } else if (clasp_float_infinity_p(number)) {
+  } else if (Float_O::isinf(number)) {
     return eval::funcall(ext::_sym_float_infinity_string, number);
   }
   T_mv mv_exp = core__float_to_digits(nil<T_O>(), number, nil<T_O>(), nil<T_O>());

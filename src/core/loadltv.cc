@@ -594,7 +594,7 @@ struct loadltv {
     size_t index = next_index();
     Integer_sp num = gc::As<Integer_sp>(get_ltv(read_index()));
     Integer_sp den = gc::As<Integer_sp>(get_ltv(read_index()));
-    set_ltv(contagion_div(num, den), index);
+    set_ltv(Ratio_O::create(num, den), index);
   }
 
   void op_complex() {

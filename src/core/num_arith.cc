@@ -146,10 +146,10 @@ CL_DEFUN Integer_sp cl__lcm(List_sp nums) {
     Integer_sp numi = gc::As<Integer_sp>(oCar(nums));
     nums = oCdr(nums);
     yidx++;
-    Number_sp t = clasp_times(lcm, numi);
+    Number_sp t = lcm * numi;
     Number_sp g = clasp_gcd(numi, lcm);
     if (!clasp_zerop(g)) {
-      lcm = gc::As<Integer_sp>(clasp_divide(t, g));
+      lcm = gc::As<Integer_sp>(t / g);
     }
   }
   return clasp_minusp(lcm) ? gc::As<Integer_sp>(clasp_negate(lcm)) : gc::As<Integer_sp>(lcm);

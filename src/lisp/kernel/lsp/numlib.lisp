@@ -110,19 +110,19 @@ Returns the arc sine of NUMBER."
       #-clasp-min
       (let* ((x (float x))
 	     (xr (float x 1l0)))
-	(declare (long-float xr))
-	(if (and (<= -1.0 xr) (<= xr 1.0))
-	    (float (core:num-op-asin xr) x)
-	    (complex-asin x)))))
+	      (declare (long-float xr))
+	      (if (and (<= -1.0 xr) (<= xr 1.0))
+	          (float (core:num-op-asin xr) x)
+	          (complex-asin x)))))
 
 ;; Ported from CMUCL
 (defun complex-asin (z)
   (declare (number z))
   (let ((sqrt-1-z (sqrt (- 1 z)))
-	(sqrt-1+z (sqrt (+ 1 z))))
+	      (sqrt-1+z (sqrt (+ 1 z))))
     (complex (atan (realpart z) (realpart (* sqrt-1-z sqrt-1+z)))
-	     (asinh (imagpart (* (conjugate sqrt-1-z)
-				 sqrt-1+z))))))
+	           (asinh (imagpart (* (conjugate sqrt-1-z)
+				                         sqrt-1+z))))))
 
 (defun acos (x)
   "Args: (number)

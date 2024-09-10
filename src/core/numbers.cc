@@ -178,7 +178,7 @@ CL_DEFUN Number_sp two_arg__PLUS_FF(Fixnum fa, Fixnum fb) { return Integer_O::cr
 CL_NAME("TWO-ARG-+");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN Number_sp contagion_add(Number_sp na, Number_sp nb) {
+CL_DEFUN Number_sp Number_O::add(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum:
     return two_arg__PLUS_FF(na.unsafe_fixnum(), nb.unsafe_fixnum());
@@ -190,7 +190,7 @@ CL_DEFUN Number_sp contagion_add(Number_sp na, Number_sp nb) {
     // so this could be more efficient maybe.
     Ratio_sp rat = gc::As_unsafe<Ratio_sp>(nb);
     Integer_sp den = rat->denominator();
-    Integer_sp new_num = gc::As_unsafe<Integer_sp>(contagion_add(rat->numerator(), contagion_mul(na, den)));
+    Integer_sp new_num = rat->numerator() + na * den;
     // result is a ratio, not an integer.
     return Ratio_O::create(new_num, den);
   }
@@ -208,7 +208,7 @@ CL_DEFUN Number_sp contagion_add(Number_sp na, Number_sp nb) {
   case_Ratio_v_Bignum: {
     Ratio_sp rat = gc::As_unsafe<Ratio_sp>(na);
     Integer_sp den = rat->denominator();
-    Integer_sp new_num = gc::As_unsafe<Integer_sp>(contagion_add(rat->numerator(), contagion_mul(nb, den)));
+    Integer_sp new_num = gc::As_unsafe<Integer_sp>(rat->numerator() + nb * den);
     // result is a ratio, not an integer.
     return Ratio_O::create(new_num, den);
   }
@@ -216,10 +216,10 @@ CL_DEFUN Number_sp contagion_add(Number_sp na, Number_sp nb) {
     Ratio_sp ra = gc::As<Ratio_sp>(na);
     Ratio_sp rb = gc::As<Ratio_sp>(nb);
     // ra.num/ra.den + rb.num/rb.den = (ra.num*rb.den+rb.num*ra.den)/ra.den*rb.den
-    Number_sp n1 = contagion_mul(ra->numerator(), rb->denominator());
-    Number_sp n2 = contagion_mul(ra->denominator(), rb->numerator());
-    Number_sp d = contagion_mul(ra->denominator(), rb->denominator());
-    Number_sp n = contagion_add(n1, n2);
+    Number_sp n1 = ra->numerator() * rb->denominator();
+    Number_sp n2 = ra->denominator() * rb->numerator();
+    Number_sp d = ra->denominator() * rb->denominator();
+    Number_sp n = n1 + n2;
     return Rational_O::create(gc::As_unsafe<Integer_sp>(n), gc::As_unsafe<Integer_sp>(d));
   }
   case_SingleFloat_v_Fixnum:
@@ -252,12 +252,8 @@ CL_DEFUN Number_sp contagion_add(Number_sp na, Number_sp nb) {
   case_Complex_v_Ratio:
   case_Complex_v_Bignum:
   case_Complex_v_SingleFloat:
-  case_Complex_v_DoubleFloat: {
-    Number_sp aux = na;
-    na = nb;
-    nb = aux;
-    goto Complex_v_Y;
-  }
+  case_Complex_v_DoubleFloat:
+    return clasp_make_complex(gc::As<Real_sp>(nb + gc::As<Complex_sp>(na)->real()), gc::As<Complex_sp>(na)->imaginary());
   case_Fixnum_v_Complex:
   case_Bignum_v_Complex:
   case_Ratio_v_Complex:
@@ -266,12 +262,10 @@ CL_DEFUN Number_sp contagion_add(Number_sp na, Number_sp nb) {
 #ifdef CLASP_LONG_FLOAT
   case_LongFloat_v_Complex:
 #endif
-  Complex_v_Y:
-    return clasp_make_complex(gc::As<Real_sp>(contagion_add(na, gc::As<Complex_sp>(nb)->real())),
-                              gc::As<Complex_sp>(nb)->imaginary());
+    return clasp_make_complex(gc::As<Real_sp>(na + gc::As<Complex_sp>(nb)->real()), gc::As<Complex_sp>(nb)->imaginary());
   case_Complex_v_Complex: {
-    Real_sp r = gc::As<Real_sp>(contagion_add(gc::As<Complex_sp>(na)->real(), gc::As<Complex_sp>(nb)->real()));
-    Real_sp i = gc::As<Real_sp>(contagion_add(gc::As<Complex_sp>(na)->imaginary(), gc::As<Complex_sp>(nb)->imaginary()));
+    Real_sp r = gc::As<Real_sp>(gc::As<Complex_sp>(na)->real() + gc::As<Complex_sp>(nb)->real());
+    Real_sp i = gc::As<Real_sp>(gc::As<Complex_sp>(na)->imaginary() + gc::As<Complex_sp>(nb)->imaginary());
     return clasp_make_complex(r, i);
   } break;
   default:
@@ -283,7 +277,7 @@ CL_DEFUN Number_sp contagion_add(Number_sp na, Number_sp nb) {
 CL_NAME("TWO-ARG--");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN Number_sp contagion_sub(Number_sp na, Number_sp nb) {
+CL_DEFUN Number_sp Number_O::sub(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum: {
     Fixnum fa = na.unsafe_fixnum();
@@ -294,8 +288,8 @@ CL_DEFUN Number_sp contagion_sub(Number_sp na, Number_sp nb) {
   case_Bignum_v_Ratio: {
     // x - a/b = xb/b - a/b = (xb-a)/b
     Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    Number_sp n1 = contagion_mul(na, rb->denominator());
-    Number_sp n = contagion_sub(n1, rb->numerator());
+    Number_sp n1 = na * rb->denominator();
+    Number_sp n = n1 - rb->numerator();
     return Ratio_O::create(gc::As_unsafe<Integer_sp>(n), rb->denominator());
   }
   case_Fixnum_v_SingleFloat: { return clasp_make_single_float(clasp_to_float(na) - clasp_to_float(nb)); }
@@ -314,18 +308,18 @@ CL_DEFUN Number_sp contagion_sub(Number_sp na, Number_sp nb) {
   case_Ratio_v_Bignum: {
     // a/b - x = a/b - xb/b = (a-xb)/b
     Ratio_sp ra = gc::As<Ratio_sp>(na);
-    Number_sp n2 = contagion_mul(nb, ra->denominator());
-    Number_sp n = contagion_sub(ra->numerator(), n2);
+    Number_sp n2 = nb * ra->denominator();
+    Number_sp n = ra->numerator() - n2;
     return Ratio_O::create(gc::As_unsafe<Integer_sp>(n), ra->denominator());
   }
   case_Ratio_v_Ratio: {
     // a/b - c/d = (ad-bc)/bd
     Ratio_sp ra = gc::As<Ratio_sp>(na);
     Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    Number_sp n1 = contagion_mul(ra->numerator(), rb->denominator());
-    Number_sp n2 = contagion_mul(ra->denominator(), rb->numerator());
-    Number_sp n = contagion_sub(n1, n2);
-    Number_sp d = contagion_mul(ra->denominator(), rb->denominator());
+    Number_sp n1 = ra->numerator() * rb->denominator();
+    Number_sp n2 = ra->denominator() * rb->numerator();
+    Number_sp n = n1 - n2;
+    Number_sp d = ra->denominator() * rb->denominator();
     return Rational_O::create(gc::As_unsafe<Integer_sp>(n), gc::As_unsafe<Integer_sp>(d));
   }
   case_SingleFloat_v_Fixnum:
@@ -359,8 +353,7 @@ CL_DEFUN Number_sp contagion_sub(Number_sp na, Number_sp nb) {
   case_Complex_v_Bignum:
   case_Complex_v_SingleFloat:
   case_Complex_v_DoubleFloat: {
-    return clasp_make_complex(gc::As<Real_sp>(contagion_sub(gc::As<Complex_sp>(na)->real(), nb)),
-                              gc::As<Complex_sp>(na)->imaginary());
+    return clasp_make_complex(gc::As<Real_sp>(gc::As<Complex_sp>(na)->real() - nb), gc::As<Complex_sp>(na)->imaginary());
   }
   case_Fixnum_v_Complex:
   case_Bignum_v_Complex:
@@ -368,11 +361,11 @@ CL_DEFUN Number_sp contagion_sub(Number_sp na, Number_sp nb) {
   case_SingleFloat_v_Complex:
   case_DoubleFloat_v_Complex:
   case_LongFloat_v_Complex:
-    return clasp_make_complex(gc::As<Real_sp>(contagion_sub(na, gc::As<Complex_sp>(nb)->real())),
+    return clasp_make_complex(gc::As<Real_sp>(na - gc::As<Complex_sp>(nb)->real()),
                               gc::As<Real_sp>(clasp_negate(gc::As<Complex_sp>(nb)->imaginary())));
   case_Complex_v_Complex: {
-    Real_sp r = gc::As<Real_sp>(contagion_sub(gc::As<Complex_sp>(na)->real(), gc::As<Complex_sp>(nb)->real()));
-    Real_sp i = gc::As<Real_sp>(contagion_sub(gc::As<Complex_sp>(na)->imaginary(), gc::As<Complex_sp>(nb)->imaginary()));
+    Real_sp r = gc::As<Real_sp>(gc::As<Complex_sp>(na)->real() - gc::As<Complex_sp>(nb)->real());
+    Real_sp i = gc::As<Real_sp>(gc::As<Complex_sp>(na)->imaginary() - gc::As<Complex_sp>(nb)->imaginary());
     return clasp_make_complex(r, i);
   } break;
   default:
@@ -384,7 +377,7 @@ CL_DEFUN Number_sp contagion_sub(Number_sp na, Number_sp nb) {
 CL_NAME("TWO-ARG-*");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN Number_sp contagion_mul(Number_sp na, Number_sp nb) {
+CL_DEFUN Number_sp Number_O::mul(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum: {
     // We want to detect when Fixnum * Fixnum multiplication will overflow and only then use bignum arithmetic.
@@ -405,7 +398,7 @@ CL_DEFUN Number_sp contagion_mul(Number_sp na, Number_sp nb) {
   case_Fixnum_v_Ratio:
   case_Bignum_v_Ratio: {
     Ratio_sp rat = gc::As_unsafe<Ratio_sp>(nb);
-    Integer_sp new_num = gc::As_unsafe<Integer_sp>(contagion_mul(na, rat->numerator()));
+    Integer_sp new_num = gc::As_unsafe<Integer_sp>(na * rat->numerator());
     return Rational_O::create(new_num, rat->denominator());
   }
   case_Fixnum_v_SingleFloat: { return clasp_make_single_float(clasp_to_float(na) * clasp_to_float(nb)); }
@@ -421,14 +414,14 @@ CL_DEFUN Number_sp contagion_mul(Number_sp na, Number_sp nb) {
   case_Ratio_v_Fixnum:
   case_Ratio_v_Bignum: {
     Ratio_sp rat = gc::As_unsafe<Ratio_sp>(na);
-    Integer_sp new_num = gc::As_unsafe<Integer_sp>(contagion_mul(nb, rat->numerator()));
+    Integer_sp new_num = gc::As_unsafe<Integer_sp>(nb * rat->numerator());
     return Rational_O::create(new_num, rat->denominator());
   }
   case_Ratio_v_Ratio: {
     Ratio_sp ra = gc::As<Ratio_sp>(na);
     Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    Number_sp num = contagion_mul(ra->numerator(), rb->numerator());
-    Number_sp den = contagion_mul(ra->denominator(), rb->denominator());
+    Number_sp num = ra->numerator() * rb->numerator();
+    Number_sp den = ra->denominator() * rb->denominator();
     return Rational_O::create(gc::As_unsafe<Integer_sp>(num), gc::As_unsafe<Integer_sp>(den));
   }
   case_SingleFloat_v_Fixnum:
@@ -474,8 +467,8 @@ CL_DEFUN Number_sp contagion_mul(Number_sp na, Number_sp nb) {
   case_DoubleFloat_v_Complex:
   case_LongFloat_v_Complex:
   Complex_v_Y:
-    return clasp_make_complex(gc::As<Real_sp>(contagion_mul(na, gc::As<Complex_sp>(nb)->real())),
-                              gc::As<Real_sp>(contagion_mul(na, gc::As<Complex_sp>(nb)->imaginary())));
+    return clasp_make_complex(gc::As<Real_sp>(na * gc::As<Complex_sp>(nb)->real()),
+                              gc::As<Real_sp>(na * gc::As<Complex_sp>(nb)->imaginary()));
   case_Complex_v_Complex: {
     Complex_sp ca = gc::As<Complex_sp>(na);
     Complex_sp cb = gc::As<Complex_sp>(nb);
@@ -484,8 +477,7 @@ CL_DEFUN Number_sp contagion_mul(Number_sp na, Number_sp nb) {
     Real_sp u = cb->real();
     Real_sp v = cb->imaginary();
     // (x + yi)(u + vi) = (xu - yv) + (xv + yu)i.
-    return clasp_make_complex(gc::As<Real_sp>(contagion_sub(contagion_mul(x, u), contagion_mul(y, v))),
-                              gc::As<Real_sp>(contagion_add(contagion_mul(x, v), contagion_mul(y, u))));
+    return clasp_make_complex(x * u - y * v, x * v + y * u);
   } break;
   default:
     not_comparable_error(na, nb);
@@ -493,36 +485,19 @@ CL_DEFUN Number_sp contagion_mul(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_END();
 }
 
-// Forward declaration for contagion_div
-Number_sp contagion_div(Number_sp na, Number_sp nb);
-
 Number_sp complex_divide(Real_sp ar, Real_sp ai, Real_sp br, Real_sp bi) {
   // Compute (ar+ai*i)/(br+bi*i).
   // Just multiply the numerator and denominator by (br - bi*i)
   // to end up with ar*br+ai*bi/z real and ai*br-ar*bi imaginary,
   // where z is br^2+bi*2.
-#define realmul(A, B) gc::As_unsafe<Real_sp>(contagion_mul((A), (B)))
-#define realadd(A, B) gc::As_unsafe<Real_sp>(contagion_add((A), (B)))
-#define realsub(A, B) gc::As_unsafe<Real_sp>(contagion_sub((A), (B)))
-#define realdiv(A, B) gc::As_unsafe<Real_sp>(contagion_div((A), (B)))
-  Real_sp absB2 = realadd(realmul(br, br), realmul(bi, bi));
-  Real_sp rnum = realadd(realmul(ar, br), realmul(ai, bi));
-  Real_sp inum = realsub(realmul(ai, br), realmul(ar, bi));
-  Real_sp realpart = realdiv(rnum, absB2);
-  // note: could save a bit of time by checking if inum is zero,
-  // and if so not bothering to compute imagpart
-  Real_sp imagpart = realdiv(inum, absB2);
-  return clasp_make_complex(realpart, imagpart);
-#undef realmul
-#undef realadd
-#undef realsub
-#undef realdiv
+  Real_sp absB2 = br * br + bi * bi;
+  return clasp_make_complex((ar * br + ai * bi) / absB2, (ai * br - ar * bi) / absB2);
 }
 
 CL_NAME("TWO-ARG-/");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN Number_sp contagion_div(Number_sp na, Number_sp nb) {
+CL_DEFUN Number_sp Number_O::div(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum:
   case_Bignum_v_Fixnum:
@@ -531,7 +506,7 @@ CL_DEFUN Number_sp contagion_div(Number_sp na, Number_sp nb) {
     return Rational_O::create(gc::As_unsafe<Integer_sp>(na), gc::As_unsafe<Integer_sp>(nb));
   case_Fixnum_v_Ratio:
   case_Bignum_v_Ratio:
-    return Rational_O::create(gc::As<Integer_sp>(contagion_mul(na, gc::As<Ratio_sp>(nb)->denominator())),
+    return Rational_O::create(gc::As<Integer_sp>(na * gc::As<Ratio_sp>(nb)->denominator()),
                               gc::As<Ratio_sp>(nb)->numerator());
   case_Fixnum_v_SingleFloat:
     return clasp_make_single_float(clasp_to_float(na) / clasp_to_float(nb));
@@ -545,14 +520,14 @@ CL_DEFUN Number_sp contagion_div(Number_sp na, Number_sp nb) {
     return DoubleFloat_O::create(clasp_to_double(na) / clasp_to_double(nb));
   case_Ratio_v_Fixnum:
   case_Ratio_v_Bignum: {
-    Integer_sp z = gc::As<Integer_sp>(contagion_mul(gc::As<Ratio_sp>(na)->denominator(), nb));
+    Integer_sp z = gc::As<Integer_sp>(gc::As<Ratio_sp>(na)->denominator() * nb);
     return Rational_O::create(gc::As<Ratio_sp>(na)->numerator(), z);
   }
   case_Ratio_v_Ratio: {
     Ratio_sp ra = gc::As<Ratio_sp>(na);
     Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    Integer_sp num = gc::As<Integer_sp>(contagion_mul(ra->numerator(), rb->denominator()));
-    Integer_sp denom = gc::As<Integer_sp>(contagion_mul(ra->denominator(), rb->numerator()));
+    Integer_sp num = gc::As<Integer_sp>(ra->numerator() * rb->denominator());
+    Integer_sp denom = gc::As<Integer_sp>(ra->denominator() * rb->numerator());
     return Rational_O::create(num, denom);
   }
   case_SingleFloat_v_Fixnum:
@@ -586,7 +561,7 @@ CL_DEFUN Number_sp contagion_div(Number_sp na, Number_sp nb) {
   case_Complex_v_DoubleFloat:
   case_Complex_v_LongFloat: {
     Complex_sp ca = gc::As<Complex_sp>(na);
-    return clasp_make_complex(gc::As<Real_sp>(contagion_div(ca->real(), nb)), gc::As<Real_sp>(contagion_div(ca->imaginary(), nb)));
+    return clasp_make_complex(gc::As<Real_sp>(ca->real() / nb), gc::As<Real_sp>(ca->imaginary() / nb));
   }
   case_Fixnum_v_Complex:
   case_Bignum_v_Complex:
@@ -615,7 +590,7 @@ CL_DEFUN Number_sp cl___PLUS_(List_sp numbers) {
     return make_fixnum(0);
   Number_sp result = gc::As<Number_sp>(oCar(numbers));
   for (auto cur : (List_sp)oCdr(numbers)) {
-    result = contagion_add(result, gc::As<Number_sp>(oCar(cur)));
+    result += gc::As<Number_sp>(oCar(cur));
   }
   return result;
 }
@@ -630,7 +605,7 @@ CL_DEFUN Number_sp cl___TIMES_(List_sp numbers) {
     return make_fixnum(1);
   Number_sp result = gc::As<Number_sp>(oCar(numbers));
   for (auto cur : (List_sp)oCdr(numbers)) {
-    result = contagion_mul(result, gc::As<Number_sp>(oCar(cur)));
+    result *= gc::As<Number_sp>(oCar(cur));
   }
   return result;
 }
@@ -646,7 +621,7 @@ CL_DEFUN Number_sp cl___MINUS_(Number_sp num, List_sp numbers) {
   }
   Number_sp result = num;
   for (auto cur : (List_sp)(numbers)) {
-    result = contagion_sub(result, gc::As<Number_sp>(oCar(cur)));
+    result -= gc::As<Number_sp>(oCar(cur));
   }
   return result;
 }
@@ -660,7 +635,7 @@ CL_DEFUN Number_sp cl___DIVIDE_(Number_sp num, List_sp numbers) {
   }
   Number_sp result = num;
   for (auto cur : (List_sp)(numbers)) {
-    result = contagion_div(result, gc::As<Number_sp>(oCar(cur)));
+    result /= gc::As<Number_sp>(oCar(cur));
   }
   return result;
 }
@@ -885,9 +860,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
     if (res != 0)
       return res;
     else {
-      Number_sp left = contagion_mul(ra->numerator(), rb->denominator());
-      Number_sp right = contagion_mul(rb->numerator(), ra->denominator());
-      return basic_compare(left, right);
+      return basic_compare(ra->numerator() * rb->denominator(), rb->numerator() * ra->denominator());
     }
   }
   case_SingleFloat_v_Fixnum: {
@@ -985,6 +958,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
   case_Ratio_v_LongFloat:
   case_SingleFloat_v_LongFloat:
   case_DoubleFloat_v_LongFloat:
+  case_LongFloat_v_Bignum:
   case_LongFloat_v_Ratio:
   case_LongFloat_v_SingleFloat:
   case_LongFloat_v_DoubleFloat:
@@ -1175,6 +1149,7 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
   case_DoubleFloat_v_LongFloat:
   case_LongFloat_v_Fixnum:
   case_LongFloat_v_Ratio:
+  case_LongFloat_v_Bignum:
   case_LongFloat_v_SingleFloat:
   case_LongFloat_v_DoubleFloat:
   case_LongFloat_v_LongFloat: {
@@ -1309,8 +1284,6 @@ SYMBOL_EXPORT_SC_(CorePkg, logand_2op);
 SYMBOL_EXPORT_SC_(CorePkg, logxor_2op);
 SYMBOL_EXPORT_SC_(CorePkg, logior_2op);
 SYMBOL_EXPORT_SC_(CorePkg, logeqv_2op);
-
-Number_sp Number_O::create(double val) { return DoubleFloat_O::create(val); }
 
 bool Number_O::equal(T_sp obj) const {
   if (this->eq(obj))
@@ -1773,7 +1746,7 @@ Number_sp Complex_O::signum_() const {
   if (this->zerop_())
     return this->asSmartPtr();
   else
-    return clasp_divide(this->asSmartPtr(), this->abs_());
+    return this->asSmartPtr() / this->abs_();
 }
 
 string Complex_O::__repr__() const {
@@ -1802,17 +1775,14 @@ bool Complex_O::eql_(T_sp o) const {
   return false;
 }
 
-Number_sp Complex_O::abs_() const {
-  return clasp_sqrt(clasp_plus(clasp_times(this->_real, this->_real), clasp_times(this->_imaginary, this->_imaginary)));
-}
+Number_sp Complex_O::abs_() const { return Number_O::sqrt(this->_real * this->_real + this->_imaginary * this->_imaginary); }
 
 Number_sp Complex_O::reciprocal_() const {
   // 1/(a+bi) = (a-bi)/(a^2+b^2) by basic algebra.
   // alternately we could just clasp_divide. I dunno if reciprocal_ is terribly necessary.
-  Real_sp square_modulus =
-      gc::As_unsafe<Real_sp>(clasp_plus(clasp_times(this->_real, this->_real), clasp_times(this->_imaginary, this->_imaginary)));
-  return Complex_O::create(gc::As_unsafe<Real_sp>(clasp_divide(this->_real, square_modulus)),
-                           gc::As_unsafe<Real_sp>(clasp_divide(clasp_negate(this->_imaginary), square_modulus)));
+  Real_sp square_modulus = gc::As_unsafe<Real_sp>(this->_real * this->_real + this->_imaginary * this->_imaginary);
+  return Complex_O::create(gc::As_unsafe<Real_sp>(this->_real / square_modulus),
+                           gc::As_unsafe<Real_sp>(clasp_negate(this->_imaginary) / square_modulus));
 }
 
 /* ----------------------------------------------------------------------
@@ -1862,9 +1832,9 @@ Number_sp Bignum_O::sqrt_() const {
   // by CLHS.
   double z = this->as_double_();
   if (z < 0)
-    return clasp_make_complex(clasp_make_single_float(0.0), clasp_make_single_float(sqrt(-z)));
+    return clasp_make_complex(clasp_make_single_float(0.0), clasp_make_single_float(std::sqrt(-z)));
   else
-    return clasp_make_single_float(sqrt(z));
+    return clasp_make_single_float(std::sqrt(z));
 }
 
 Number_sp Bignum_O::reciprocal_() const {
@@ -1879,7 +1849,7 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(sqrt)dx");
 DOCGROUP(clasp);
-CL_DEFUN Number_sp cl__sqrt(Number_sp x) { return clasp_sqrt(x); };
+CL_DEFUN Number_sp cl__sqrt(Number_sp x) { return Number_O::sqrt(x); };
 
 /* ----------------------------------------------------------------------
 
@@ -1921,8 +1891,8 @@ Number_sp Complex_O::sin_() const {
         */
   Number_sp dx = this->_real;
   Number_sp dy = this->_imaginary;
-  Number_sp a = clasp_times(clasp_sin(dx), clasp_cosh(dy)); // clasp_sin(dx), clasp_cosh(dy));
-  Number_sp b = clasp_times(clasp_cos(dx), clasp_sinh(dy)); // clasp_cos(dx), clasp_sinh(dy));
+  Number_sp a = Number_O::sin(dx) * Number_O::cosh(dy); // clasp_sin(dx), clasp_cosh(dy));
+  Number_sp b = Number_O::cos(dx) * Number_O::sinh(dy); // clasp_cos(dx), clasp_sinh(dy));
   return clasp_make_complex(gc::As<Real_sp>(a), gc::As<Real_sp>(b));
 }
 
@@ -1931,7 +1901,45 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(sin)dx");
 DOCGROUP(clasp);
-CL_DEFUN Number_sp cl__sin(Number_sp x) { return clasp_sin(x); }
+CL_DEFUN Number_sp cl__sin(Number_sp x) { return Number_O::sin(x); }
+
+/*template<typename Float> Number_sp _asin(Float r, Float i) {
+  if (i == Float{0} && r >= Float{-1} && r <= Float{1})
+    return Number_O::create(std::asin(r));
+
+  Number_sp sqrt_1_z = Number_O::sqrt(clasp_make_complex(Float{1} - r, i) (- 1 z)))
+              (sqrt-1+z (sqrt (+ 1 z))))
+    (complex (atan (realpart z) (realpart (* sqrt-1-z sqrt-1+z)))
+                   (asinh (imagpart (* (conjugate sqrt-1-z)
+                                                         sqrt-1+z))))))*/
+
+Number_sp Rational_O::asin_() const { return SingleFloat_dummy_O::create(std::sin(this->as_float_())); }
+
+Number_sp DoubleFloat_O::asin_() const { return DoubleFloat_O::create(std::sin(this->_Value)); }
+
+#ifdef CLASP_LONG_FLOAT
+Number_sp LongFloat_O::asin_() const { return LongFloat_O::create(std::sin(this->_Value)); }
+#endif
+
+Number_sp Complex_O::asin_() const {
+  /*
+          z = x + I y
+          z = x + I y
+          sin(z) = sinh(I z) = sinh(-y + I x)
+        */
+  Number_sp dx = this->_real;
+  Number_sp dy = this->_imaginary;
+  Number_sp a = Number_O::sin(dx) * Number_O::cosh(dy); // clasp_sin(dx), clasp_cosh(dy));
+  Number_sp b = Number_O::cos(dx) * Number_O::sinh(dy); // clasp_cos(dx), clasp_sinh(dy));
+  return clasp_make_complex(gc::As<Real_sp>(a), gc::As<Real_sp>(b));
+}
+
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(asin)dx");
+DOCGROUP(clasp);
+CL_DEFUN Number_sp cl__asin(Number_sp x) { return Number_O::asin(x); }
 
 /* ----------------------------------------------------------------------
 
@@ -1970,9 +1978,9 @@ Number_sp Complex_O::cos_() const {
         */
   Number_sp dx = this->_real;
   Number_sp dy = this->_imaginary;
-  Number_sp a = clasp_times(clasp_cos(dx), clasp_cosh(dy));               // clasp_cos(dx), clasp_cosh(dy));
-  Number_sp b = clasp_times(clasp_negate(clasp_sin(dx)), clasp_sinh(dy)); // clasp_negate(clasp_sin(dx)), clasp_sinh(dy));
-  return clasp_make_complex(gc::As<Real_sp>(a), gc::As<Real_sp>(b));      // clasp_make_complex(a, b);
+  Number_sp a = Number_O::cos(dx) * Number_O::cosh(dy);               // clasp_cos(dx), clasp_cosh(dy));
+  Number_sp b = clasp_negate(Number_O::sin(dx)) * Number_O::sinh(dy); // clasp_negate(clasp_sin(dx)), clasp_sinh(dy));
+  return clasp_make_complex(gc::As<Real_sp>(a), gc::As<Real_sp>(b));  // clasp_make_complex(a, b);
 }
 
 CL_LAMBDA(x);
@@ -1980,7 +1988,7 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(cos)dx");
 DOCGROUP(clasp);
-CL_DEFUN Number_sp cl__cos(Number_sp x) { return clasp_cos(x); }
+CL_DEFUN Number_sp cl__cos(Number_sp x) { return Number_O::cos(x); }
 
 /* ----------------------------------------------------------------------
 
@@ -2027,7 +2035,7 @@ Number_sp LongFloat_O::tan_() const { return LongFloat_O::create(std::tan(this->
 Number_sp Complex_O::tan_() const {
   Number_sp a = this->sin_();
   Number_sp b = this->cos_();
-  return clasp_divide(a, b);
+  return a / b;
 }
 
 CL_LAMBDA(x);
@@ -2035,7 +2043,7 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(tan)dx");
 DOCGROUP(clasp);
-CL_DEFUN Number_sp cl__tan(Number_sp x) { return clasp_tan(x); }
+CL_DEFUN Number_sp cl__tan(Number_sp x) { return Number_O::tan(x); }
 
 /* ----------------------------------------------------------------------
 
@@ -2075,8 +2083,8 @@ Number_sp Complex_O::sinh_() const {
         */
   Number_sp dx = this->_real;
   Number_sp dy = this->_imaginary;
-  Number_sp a = clasp_times(clasp_sinh(dx), clasp_cos(dy));
-  Number_sp b = clasp_times(clasp_cosh(dx), clasp_sin(dy));
+  Number_sp a = Number_O::sinh(dx) * Number_O::cos(dy);
+  Number_sp b = Number_O::cosh(dx) * Number_O::sin(dy);
   return clasp_make_complex(gc::As<Real_sp>(a), gc::As<Real_sp>(b));
 }
 
@@ -2085,7 +2093,7 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(sinh)dx");
 DOCGROUP(clasp);
-CL_DEFUN Number_sp cl__sinh(Number_sp x) { return clasp_sinh(x); }
+CL_DEFUN Number_sp cl__sinh(Number_sp x) { return Number_O::sinh(x); }
 
 /* ----------------------------------------------------------------------
 
@@ -2125,8 +2133,8 @@ Number_sp Complex_O::cosh_() const {
         */
   Number_sp dx = this->_real;
   Number_sp dy = this->_imaginary;
-  Number_sp a = clasp_times(clasp_cosh(dx), clasp_cos(dy));          // clasp_cosh(dx), clasp_cos(dy));
-  Number_sp b = clasp_times(clasp_sinh(dx), clasp_sin(dy));          // clasp_sinh(dx), clasp_sin(dy));
+  Number_sp a = Number_O::cosh(dx) * Number_O::cos(dy);              // Number_O::cosh(dx), Number_O::cos(dy));
+  Number_sp b = Number_O::sinh(dx) * Number_O::sin(dy);              // Number_O::sinh(dx), Number_O::sin(dy));
   return clasp_make_complex(gc::As<Real_sp>(a), gc::As<Real_sp>(b)); // clasp_make_complex(a, b);
 }
 
@@ -2135,7 +2143,7 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(cosh)dx");
 DOCGROUP(clasp);
-CL_DEFUN Number_sp cl__cosh(Number_sp x) { return clasp_cosh(x); }
+CL_DEFUN Number_sp cl__cosh(Number_sp x) { return Number_O::cosh(x); }
 
 /* ----------------------------------------------------------------------
 
@@ -2170,7 +2178,7 @@ Number_sp LongFloat_O::tanh_() const { return LongFloat_O::create(std::tanh(this
 Number_sp Complex_O::tanh_() const {
   Number_sp a = this->sinh_();
   Number_sp b = this->cosh_();
-  return clasp_divide(a, b);
+  return a / b;
 }
 
 CL_LAMBDA(x);
@@ -2178,7 +2186,7 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(tanh)dx");
 DOCGROUP(clasp);
-CL_DEFUN Number_sp cl__tanh(Number_sp x) { return clasp_tanh(x); }
+CL_DEFUN Number_sp cl__tanh(Number_sp x) { return Number_O::tanh(x); }
 
 /* ----------------------------------------------------------------------
 
@@ -2248,10 +2256,10 @@ Number_sp Complex_O::exp_() const {
   Real_sp y, y1;
   y = this->_imaginary;
   Real_sp x = gc::As<Real_sp>(clasp_exp(this->_real));
-  y1 = gc::As<Real_sp>(clasp_cos(y)); // clasp_cos(y);
-  y = gc::As<Real_sp>(clasp_sin(y));  // clasp_sin(y);
+  y1 = gc::As<Real_sp>(Number_O::cos(y)); // Number_O::cos(y);
+  y = gc::As<Real_sp>(Number_O::sin(y));  // Number_O::sin(y);
   Complex_sp cy = gc::As_unsafe<Complex_sp>(clasp_make_complex(y1, y));
-  return clasp_times(x, cy);
+  return x * cy;
 }
 
 CL_LAMBDA(x);
@@ -2335,9 +2343,9 @@ Number_sp clasp_expt(Number_sp x, Number_sp y) {
   ty = clasp_t_of(y);
   tx = clasp_t_of(x);
   if (clasp_zerop(x)) {
-    z = clasp_times(x, y);
+    z = x * y;
     if (!clasp_plusp((ty == number_Complex) ? gc::As<Complex_sp>(y)->real() : gc::As<Real_sp>(y)))
-      z = clasp_divide(clasp_make_fixnum(1), z);
+      z = clasp_make_fixnum(1) / z;
   } else if (ty != number_Fixnum && ty != number_Bignum) {
     // Use the general definition, a^b = exp(b log(a))
     /* The following could be just
@@ -2345,8 +2353,8 @@ Number_sp clasp_expt(Number_sp x, Number_sp y) {
            however, Maxima expects EXPT to have double accuracy
            when the first argument is integer and the second
            is double-float */
-    z = clasp_log1(clasp_times(x, expt_zero(x, y)));
-    z = clasp_times(z, y);
+    z = clasp_log1(x * expt_zero(x, y));
+    z = z * y;
     z = cl__exp(z);
   } else if (clasp_minusp(gc::As<Real_sp>(y))) {
     z = clasp_negate(y);
@@ -2358,11 +2366,11 @@ Number_sp clasp_expt(Number_sp x, Number_sp y) {
     do {
       // Exponentiation by squaring.
       if (!clasp_evenp(iy))
-        z = clasp_times(z, x);
+        z = z * x;
       iy = clasp_shift_right(iy, 1); // divide by two
       if (clasp_zerop(iy))
         break;
-      x = clasp_times(x, x);
+      x = x * x;
     } while (1);
   }
   return z;
@@ -2480,21 +2488,20 @@ Number_sp clasp_atan1(Number_sp y) {
   case number_DoubleFloat:
     return clasp_make_double_float(atan(clasp_to_double(y)));
   case number_Complex: {
-    Number_sp z = clasp_times(_lisp->imaginaryUnit(), y);
+    Number_sp z = _lisp->imaginaryUnit() * y;
 #if 0 /* ANSI states it should be this first part */
-    z = clasp_plus(clasp_log1(clasp_one_plus(z)),
-                   clasp_log1(clasp_minus(clasp_make_fixnum(1), z)));
-    z = clasp_divide(z, clasp_times(clasp_make_fixnum(2),
-                                    cl_core.imag_unit));
+    z = clasp_log1(clasp_one_plus(z)) + clasp_log1(clasp_minus(clasp_make_fixnum(1), z));
+    z = z / clasp_make_fixnum(2 *
+                                    cl_core.imag_unit);
 #else
     Number_sp z1;
     z = clasp_one_plus(z);
-    z1 = clasp_times(y, y);
+    z1 = y * y;
     z1 = clasp_one_plus(z1);
-    z1 = clasp_sqrt(z1);
-    z = clasp_divide(z, z1);
+    z1 = Number_O::sqrt(z1);
+    z = z / z1;
     z = clasp_log1(z);
-    z = clasp_times(_lisp->imaginaryUnitNegative(), z);
+    z = _lisp->imaginaryUnitNegative() * z;
 #endif /* ANSI */
     return z;
   }
@@ -2549,15 +2556,15 @@ Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i) {
     /* if a == p,
      * log(sqrt(a^2+p^2)) = log(2a^2)/2
      */
-    a = gc::As<Real_sp>(clasp_times(a, a));
-    a = gc::As<Real_sp>(clasp_divide(clasp_log1(clasp_plus(a, a)), make_fixnum(2)));
+    a = gc::As<Real_sp>(a * a);
+    a = gc::As<Real_sp>(clasp_log1(a + a) / make_fixnum(2));
     goto OUTPUT;
   }
   /* For the real part of the output we use the formula
    *	log(sqrt(p^2 + a^2)) = log(sqrt(p^2*(1 + (a/p)^2)))
    *			     = log(p) + log(1 + (a/p)^2)/2; */
-  a = gc::As<Real_sp>(clasp_divide(a, p));
-  a = gc::As<Real_sp>(clasp_plus(clasp_divide(clasp_log1p(clasp_times(a, a)), make_fixnum(2)), clasp_log1(p)));
+  a = gc::As<Real_sp>(a / p);
+  a = gc::As<Real_sp>(clasp_log1p(a * a) / make_fixnum(2) + clasp_log1(p));
 OUTPUT:
   p = gc::As<Real_sp>(clasp_atan2(i, r));
   return clasp_make_complex(a, p);
@@ -2639,7 +2646,7 @@ Rational_sp DoubleFloat_O::rational(double d) {
   else return x;
 #else
   Number_sp radixexp = clasp_expt(clasp_make_fixnum(FLT_RADIX), clasp_make_fixnum(e));
-  return gc::As_unsafe<Integer_sp>(clasp_times(x, radixexp));
+  return gc::As_unsafe<Integer_sp>(x * radixexp);
 #endif
 }
 
@@ -2680,7 +2687,7 @@ Number_sp LongFloat_O::log1p_() const {
 }
 #endif
 
-Number_sp clasp_log2(Number_sp x, Number_sp y) { return clasp_divide(clasp_log1(y), clasp_log1(x)); }
+Number_sp clasp_log2(Number_sp x, Number_sp y) { return clasp_log1(y) / clasp_log1(x); }
 
 Number_sp Complex_O::log1p_() const { return clasp_log1_complex_inner(clasp_one_plus(this->real()), this->imaginary()); }
 
@@ -2742,14 +2749,14 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(doc(float-nan-p)dx");
 DOCGROUP(clasp);
-CL_DEFUN bool ext__float_nan_p(Float_sp i) { return clasp_float_nan_p(i); };
+CL_DEFUN bool ext__float_nan_p(Float_sp i) { return Float_O::isnan(i); };
 
 CL_LAMBDA(i);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(float-infinity-p)dx");
 DOCGROUP(clasp);
-CL_DEFUN bool ext__float_infinity_p(Float_sp i) { return clasp_float_infinity_p(i); };
+CL_DEFUN bool ext__float_infinity_p(Float_sp i) { return Float_O::isinf(i); };
 
 SYMBOL_EXPORT_SC_(ClPkg, sqrt);
 SYMBOL_EXPORT_SC_(ClPkg, sin);

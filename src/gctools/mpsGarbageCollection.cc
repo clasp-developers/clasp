@@ -758,8 +758,8 @@ size_t processMpsMessages(size_t& finalizations) {
 #if 0
 //        printf("%s:%d Leaving processMpsMessages\n",__FILE__,__LINE__);
   core::Number_sp endTime = core::cl__get_internal_run_time().as<core::Number_O>();
-  core::Number_sp deltaTime = core::contagion_mul(core::contagion_sub(endTime,startTime),core::make_fixnum(1000));
-  core::Number_sp deltaSeconds = core::contagion_div(deltaTime,cl::_sym_internalTimeUnitsPerSecond->symbolValue().as<core::Number_O>());
+  core::Number_sp deltaTime = (endTime - startTime) * core::make_fixnum(1000);
+  core::Number_sp deltaSeconds = deltaTime / cl::_sym_internalTimeUnitsPerSecond->symbolValue().as<core::Number_O>();
   printf("%s:%d [processMpsMessages %s millisecs for  %d finalization/ %d gc-start/ %d gc messages]\n", __FILE__, __LINE__, _rep_(deltaSeconds).c_str(), mFinalize, mGcStart, mGc );
   fflush(stdout);
 #endif
