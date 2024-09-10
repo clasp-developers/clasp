@@ -31,6 +31,7 @@
 #include <math.h>
 #include <limits.h>
 #include <cfenv>
+#include <complex>
 #pragma GCC diagnostic push
 // #pragma GCC diagnostic ignored "-Wunused-local-typedef"
 #pragma GCC diagnostic pop
@@ -193,6 +194,7 @@ class Number_O : public General_O {
 
 public:
   template<typename T> inline static Number_sp create(T x);
+  template<typename Float> inline static Number_sp create(const std::complex<Float> x);
 
   virtual Number_sp signum_() const { SUBCLASS_MUST_IMPLEMENT(); };
   virtual Number_sp reciprocal_() const { SUBCLASS_MUST_IMPLEMENT(); };
@@ -1234,11 +1236,19 @@ inline Number_sp Number_O::sin(const Number_sp x) {
   return x->sin_();
 }
 
+template<std::floating_point Float> Number_sp _asin(Float z) {
+  if (z >= Float{-1} && z <= Float{1})
+    return Number_O::create(std::asin(z));
+
+  return Complex_O::create(Number_O::create(std::copysign(std::numbers::pi_v<Float> * Float{0.5}, z)),
+                           Number_O::create(std::asinh(std::copysign(std::sqrt(z * z - Float{1.0}), -z))));
+}
+
 inline Number_sp Number_O::asin(const Number_sp x) {
   if (x.fixnump())
-    return SingleFloat_dummy_O::create(std::asin((single_float_t)x.unsafe_fixnum()));
+    return _asin((single_float_t)x.unsafe_fixnum());
   if (x.single_floatp())
-    return SingleFloat_dummy_O::create(std::asin(x.unsafe_single_float()));
+    return _asin(x.unsafe_single_float());
   return x->asin_();
 }
 
@@ -1289,6 +1299,10 @@ template <> inline Number_sp Number_O::create(double_float_t x) { return DoubleF
 #ifdef CLASP_LONG_FLOAT
 template <> inline Number_sp Number_O::create(long_float_t x) { return LongFloat_O::create(x); }
 #endif
+
+template <typename Float> inline Number_sp Number_O::create(const std::complex<Float> x) {
+  return Complex_O::create(create(x.real()), create(x.imag()));
+}
 
 //template <std::integral T> inline Number_sp Number_O::create(T x) { return Integer_O::create(x); }
 

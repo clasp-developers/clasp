@@ -102,6 +102,7 @@ Returns a complex number whose realpart and imagpart are the values of (COS
 THETA) and (SIN THETA) respectively."
   (complex (cos theta) (sin theta)))
 
+#+(or)
 (defun asin (x)
   "Args: (number)
 Returns the arc sine of NUMBER."

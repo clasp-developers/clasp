@@ -1903,35 +1903,20 @@ CL_DOCSTRING(R"dx(sin)dx");
 DOCGROUP(clasp);
 CL_DEFUN Number_sp cl__sin(Number_sp x) { return Number_O::sin(x); }
 
-/*template<typename Float> Number_sp _asin(Float r, Float i) {
-  if (i == Float{0} && r >= Float{-1} && r <= Float{1})
-    return Number_O::create(std::asin(r));
+Number_sp Rational_O::asin_() const { return _asin(this->as_float_()); }
 
-  Number_sp sqrt_1_z = Number_O::sqrt(clasp_make_complex(Float{1} - r, i) (- 1 z)))
-              (sqrt-1+z (sqrt (+ 1 z))))
-    (complex (atan (realpart z) (realpart (* sqrt-1-z sqrt-1+z)))
-                   (asinh (imagpart (* (conjugate sqrt-1-z)
-                                                         sqrt-1+z))))))*/
-
-Number_sp Rational_O::asin_() const { return SingleFloat_dummy_O::create(std::sin(this->as_float_())); }
-
-Number_sp DoubleFloat_O::asin_() const { return DoubleFloat_O::create(std::sin(this->_Value)); }
+Number_sp DoubleFloat_O::asin_() const { return _asin(this->_Value); }
 
 #ifdef CLASP_LONG_FLOAT
-Number_sp LongFloat_O::asin_() const { return LongFloat_O::create(std::sin(this->_Value)); }
+Number_sp LongFloat_O::asin_() const { return _asin(this->_Value); }
 #endif
 
 Number_sp Complex_O::asin_() const {
-  /*
-          z = x + I y
-          z = x + I y
-          sin(z) = sinh(I z) = sinh(-y + I x)
-        */
-  Number_sp dx = this->_real;
-  Number_sp dy = this->_imaginary;
-  Number_sp a = Number_O::sin(dx) * Number_O::cosh(dy); // clasp_sin(dx), clasp_cosh(dy));
-  Number_sp b = Number_O::cos(dx) * Number_O::sinh(dy); // clasp_cos(dx), clasp_sinh(dy));
-  return clasp_make_complex(gc::As<Real_sp>(a), gc::As<Real_sp>(b));
+  if (_real.isA<LongFloat_O>())
+    return Number_O::create(std::asin(std::complex(_real->as_long_float_(), _imaginary->as_long_float_())));
+  if (_real.isA<DoubleFloat_O>())
+    return Number_O::create(std::asin(std::complex(_real->as_double_(), _imaginary->as_double_())));
+  return Number_O::create(std::asin(std::complex(clasp_to_float(_real), clasp_to_float(_imaginary))));
 }
 
 CL_LAMBDA(x);
