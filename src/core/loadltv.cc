@@ -219,32 +219,13 @@ struct loadltv {
     return converter.i;
   }
 
-  inline float read_f32() {
-    union {
-      float f;
-      uint32_t i;
-    } converter;
-    converter.i = read_u32();
-    return converter.f;
-  }
+  inline float read_f32() { return float_convert<float>::from_bits(read_u32()); }
 
-  inline double read_f64() {
-    union {
-      double d;
-      uint64_t i;
-    } converter;
-    converter.i = read_u64();
-    return converter.d;
-  }
+  inline double read_f64() { return float_convert<double>::from_bits(read_u64()); }
 
   inline long double read_x86_fp80() {
-    union {
-      long double d;
-      __uint128_t i;
-    } converter;
-    converter.i = read_u80();
-    return converter.d;
-  }
+    __uint128_t b = read_u80();
+    return float_convert<long double>::from_bits(b); }
 
   // Read a UTF-8 continuation byte or signal an error if invalid.
   inline uint8_t read_continuation_byte() {

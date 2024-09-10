@@ -35,6 +35,18 @@ THE SOFTWARE.
 namespace core {
 
 template <class T>
+concept unsigned_limb = std::is_integral<T>::value && std::is_unsigned<T>::value && sizeof(T) <= sizeof(mp_limb_t);
+
+template <class T>
+concept unsigned_limbs = std::is_integral<T>::value && std::is_unsigned<T>::value && sizeof(T) > sizeof(mp_limb_t);
+
+template <class T>
+concept signed_limb = std::is_integral<T>::value && std::is_signed<T>::value && sizeof(T) <= sizeof(mp_limb_t);
+
+template <class T>
+concept signed_limbs = std::is_integral<T>::value && std::is_signed<T>::value && sizeof(T) > sizeof(mp_limb_t);
+
+/*template <class T>
 concept unsigned_limb =
     std::is_integral<T>::value && std::is_unsigned<T>::value && std::is_nothrow_convertible<T, mp_limb_t>::value;
 
@@ -48,7 +60,7 @@ concept signed_limb =
 
 template <class T>
 concept signed_limbs =
-    std::is_integral<T>::value && std::is_signed<T>::value && !std::is_nothrow_convertible<T, mp_limb_t>::value;
+    std::is_integral<T>::value && std::is_signed<T>::value && !std::is_nothrow_convertible<T, mp_limb_t>::value;*/
 
 class Bignum_O;
 };
@@ -114,14 +126,15 @@ public: // Functions here
 
   template <signed_limbs T> static Bignum_sp create(T v) {
     constexpr size_t limb_width = 8 * sizeof(mp_limb_t);
+    using UT = typename std::make_unsigned<T>::type;
     bool negative = v < 0;
-    v = std::abs(v);
-    size_t len = (std::bit_width(v) + limb_width - 1) / limb_width;
+    UT w = std::abs(v);
+    size_t len = (std::bit_width(w) + limb_width - 1) / limb_width;
     Bignum_sp b = create_from_limbs(negative ? -len : len);
 
     for (size_t i = 0; i < len; i++) {
-      b->_limbs[i] = static_cast<mp_limb_t>(v);
-      v = v >> limb_width;
+      b->_limbs[i] = static_cast<mp_limb_t>(w);
+      w = w >> limb_width;
     }
 
     return b;

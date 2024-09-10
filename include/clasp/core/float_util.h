@@ -33,12 +33,12 @@ template <typename Float> struct float_convert {
 
   typedef union {
     Float f;
-    uint_t b;
+    unsigned _BitInt(storage_width) b;
   } convert_t;
 
   static inline uint_t to_bits(Float f) {
     convert_t convert = {.f = f};
-    return convert.b;
+    return uint_t{convert.b};
   }
 
   static inline Float from_bits(uint_t b) {
