@@ -401,16 +401,20 @@ CL_DEFUN Number_sp Number_O::mul(Number_sp na, Number_sp nb) {
     Integer_sp new_num = gc::As_unsafe<Integer_sp>(na * rat->numerator());
     return Rational_O::create(new_num, rat->denominator());
   }
-  case_Fixnum_v_SingleFloat: { return clasp_make_single_float(clasp_to_float(na) * clasp_to_float(nb)); }
-  case_Fixnum_v_DoubleFloat: { return DoubleFloat_O::create(clasp_to_double(na) * clasp_to_double(nb)); }
+  case_Fixnum_v_SingleFloat:
+    return clasp_make_single_float(clasp_to_float(na) * clasp_to_float(nb));
+  case_Fixnum_v_DoubleFloat:
+    return DoubleFloat_O::create(clasp_to_double(na) * clasp_to_double(nb));
   case_Bignum_v_Fixnum:
     return core__next_fmul(gc::As_unsafe<Bignum_sp>(na), nb.unsafe_fixnum());
   case_Bignum_v_Bignum:
     return core__next_mul(gc::As_unsafe<Bignum_sp>(na), gc::As_unsafe<Bignum_sp>(nb));
   case_Bignum_v_SingleFloat:
-  case_Ratio_v_SingleFloat: { return clasp_make_single_float(clasp_to_float(na) * clasp_to_float(nb)); }
+  case_Ratio_v_SingleFloat:
+    return clasp_make_single_float(clasp_to_float(na) * clasp_to_float(nb));
   case_Bignum_v_DoubleFloat:
-  case_Ratio_v_DoubleFloat: { return DoubleFloat_O::create(clasp_to_double(na) * clasp_to_double(nb)); }
+  case_Ratio_v_DoubleFloat:
+    return DoubleFloat_O::create(clasp_to_double(na) * clasp_to_double(nb));
   case_Ratio_v_Fixnum:
   case_Ratio_v_Bignum: {
     Ratio_sp rat = gc::As_unsafe<Ratio_sp>(na);
@@ -443,6 +447,7 @@ CL_DEFUN Number_sp Number_O::mul(Number_sp na, Number_sp nb) {
   case_SingleFloat_v_LongFloat:
   case_DoubleFloat_v_LongFloat:
   case_LongFloat_v_Fixnum:
+  case_LongFloat_v_Bignum:
   case_LongFloat_v_Ratio:
   case_LongFloat_v_SingleFloat:
   case_LongFloat_v_DoubleFloat:
@@ -454,12 +459,9 @@ CL_DEFUN Number_sp Number_O::mul(Number_sp na, Number_sp nb) {
   case_Complex_v_Bignum:
   case_Complex_v_Ratio:
   case_Complex_v_SingleFloat:
-  case_Complex_v_DoubleFloat: {
-    Number_sp aux = na;
-    na = nb;
-    nb = aux;
-    goto Complex_v_Y;
-  }
+  case_Complex_v_DoubleFloat:
+    return clasp_make_complex(gc::As<Real_sp>(nb * gc::As<Complex_sp>(na)->real()),
+                              gc::As<Real_sp>(nb * gc::As<Complex_sp>(na)->imaginary()));
   case_Fixnum_v_Complex:
   case_Bignum_v_Complex:
   case_Ratio_v_Complex:
@@ -476,7 +478,6 @@ CL_DEFUN Number_sp Number_O::mul(Number_sp na, Number_sp nb) {
     Real_sp y = ca->imaginary();
     Real_sp u = cb->real();
     Real_sp v = cb->imaginary();
-    // (x + yi)(u + vi) = (xu - yv) + (xv + yu)i.
     return clasp_make_complex(x * u - y * v, x * v + y * u);
   } break;
   default:
@@ -506,8 +507,7 @@ CL_DEFUN Number_sp Number_O::div(Number_sp na, Number_sp nb) {
     return Rational_O::create(gc::As_unsafe<Integer_sp>(na), gc::As_unsafe<Integer_sp>(nb));
   case_Fixnum_v_Ratio:
   case_Bignum_v_Ratio:
-    return Rational_O::create(gc::As<Integer_sp>(na * gc::As<Ratio_sp>(nb)->denominator()),
-                              gc::As<Ratio_sp>(nb)->numerator());
+    return Rational_O::create(gc::As<Integer_sp>(na * gc::As<Ratio_sp>(nb)->denominator()), gc::As<Ratio_sp>(nb)->numerator());
   case_Fixnum_v_SingleFloat:
     return clasp_make_single_float(clasp_to_float(na) / clasp_to_float(nb));
   case_Fixnum_v_DoubleFloat:
@@ -721,6 +721,59 @@ static int long_double_fix_compare(Fixnum n, long_float_t d) {
    basic_compare
 
 */
+
+template<std::floating_point Float> int compare_bignum_float(Bignum_sp x, Float y) {
+  constexpr size_t limb_width = 8 * sizeof(mp_limb_t);
+  auto q = float_convert<Float>::to_quadruple(y);
+
+  if (q.category != float_convert<Float>::category::finite)
+      return q.sign;
+
+  bool negative = clasp_minusp(x);
+
+  if (negative && (q.significand == 0 || q.sign > 0))
+    return -1;
+
+  if (!negative && (q.significand == 0 || q.sign < 0))
+    return 1;
+
+  int64_t xlen = clasp_integer_length(x);
+  int64_t ylen = std::bit_width(q.significand) + q.exponent;
+
+  if (xlen < ylen)
+    return q.sign;
+
+  if (xlen > ylen)
+    return -q.sign;
+
+  const mp_limb_t* limbs = x->limbs();
+
+  size_t width = std::bit_width(q.significand);
+  typename float_convert<Float>::uint_t xsig = 0;
+  bool first = true;
+
+  for (mp_size_t i = std::abs(x->length()) - 1; i > -1; i--) {
+    mp_limb_t z = limbs[i];
+
+    if (width > 0) {
+      auto w = first ? std::bit_width(z) : limb_width;
+      auto shift = std::min(w, width);
+      xsig = (xsig << shift) | (z >> (w - shift));
+      z &= (1 << (w - shift)) - 1;
+      width -= shift;
+
+      if (width == 0 && q.significand > xsig)
+        return q.sign;
+      if (width == 0 && q.significand < xsig)
+        return -q.sign;
+    }
+
+    if (z != 0)
+      return q.sign;
+  }
+
+  return 0;
+}
 
 /*! Return -1 if a<b
       0 if a == b

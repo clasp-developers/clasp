@@ -98,7 +98,7 @@ CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
     if (df->get() == std::numeric_limits<double>::denorm_min()) {
       return DoubleFloat_O::create(0.0);
     } else if (df->get() > 0.0) {
-      std::uniform_real_distribution<> range(0.0, df->get());
+      std::uniform_real_distribution<double_float_t> range(0.0, df->get());
       return DoubleFloat_O::create(range(random_state->_Producer._value));
     } else
       TYPE_ERROR_cl_random(olimit);
@@ -107,7 +107,7 @@ CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
     if (lf->get() == std::numeric_limits<long_float_t>::denorm_min()) {
       return LongFloat_O::create(long_float_t{0.0});
     } else if (lf->get() > long_float_t{0.0}) {
-      std::uniform_real_distribution<> range(long_float_t{0.0}, lf->get());
+      std::uniform_real_distribution<long_float_t> range(long_float_t{0.0}, lf->get());
       return LongFloat_O::create(range(random_state->_Producer._value));
     } else
       TYPE_ERROR_cl_random(olimit);
@@ -117,7 +117,7 @@ CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
     if (flimit == std::numeric_limits<float>::denorm_min()) {
       return clasp_make_single_float(0.0f);
     } else if (flimit > 0.0f) {
-      std::uniform_real_distribution<> range(0.0, flimit);
+      std::uniform_real_distribution<single_float_t> range(0.0, flimit);
       return clasp_make_single_float(range(random_state->_Producer._value));
     } else
       TYPE_ERROR_cl_random(olimit);

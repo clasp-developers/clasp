@@ -410,7 +410,7 @@
        (t ty2)))
     ((long-float)
      (case ty2
-       ((integer ratio rational short-float single-float long-float)
+       ((integer ratio rational short-float single-float double-float)
         #+long-float 'long-float
         #-long-float 'double-float)
        (t ty2)))
