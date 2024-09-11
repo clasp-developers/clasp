@@ -229,6 +229,7 @@ public:
   virtual Number_sp sin_() const { SUBIMP(); };
   virtual Number_sp asin_() const { SUBIMP(); };
   virtual Number_sp cos_() const { SUBIMP(); };
+  virtual Number_sp acos_() const { SUBIMP(); };
   virtual Number_sp tan_() const { SUBIMP(); };
   virtual Number_sp sinh_() const { SUBIMP(); };
   virtual Number_sp cosh_() const { SUBIMP(); };
@@ -243,6 +244,7 @@ public:
   inline static Number_sp sin(const Number_sp x);
   inline static Number_sp asin(const Number_sp x);
   inline static Number_sp cos(const Number_sp x);
+  inline static Number_sp acos(const Number_sp x);
   inline static Number_sp tan(const Number_sp x);
   inline static Number_sp sinh(const Number_sp x);
   inline static Number_sp cosh(const Number_sp x);
@@ -296,6 +298,7 @@ public:
   virtual Number_sp sin_() const override;
   virtual Number_sp asin_() const override;
   virtual Number_sp cos_() const override;
+  virtual Number_sp acos_() const override;
   virtual Number_sp tan_() const override;
   virtual Number_sp sinh_() const override;
   virtual Number_sp cosh_() const override;
@@ -540,6 +543,7 @@ public:
   virtual Number_sp sin_() const override;
   virtual Number_sp asin_() const override;
   virtual Number_sp cos_() const override;
+  virtual Number_sp acos_() const override;
   virtual Number_sp tan_() const override;
   virtual Number_sp sinh_() const override;
   virtual Number_sp cosh_() const override;
@@ -621,6 +625,7 @@ public:
   virtual Number_sp sin_() const override;
   virtual Number_sp asin_() const override;
   virtual Number_sp cos_() const override;
+  virtual Number_sp acos_() const override;
   virtual Number_sp tan_() const override;
   virtual Number_sp sinh_() const override;
   virtual Number_sp cosh_() const override;
@@ -691,6 +696,7 @@ public:
   virtual Number_sp sin_() const override;
   virtual Number_sp asin_() const override;
   virtual Number_sp cos_() const override;
+  virtual Number_sp acos_() const override;
   virtual Number_sp tan_() const override;
   virtual Number_sp sinh_() const override;
   virtual Number_sp cosh_() const override;
@@ -1258,6 +1264,22 @@ inline Number_sp Number_O::cos(Number_sp x) {
   if (x.single_floatp())
     return SingleFloat_dummy_O::create(std::cos(x.unsafe_single_float()));
   return x->cos_();
+}
+
+template<std::floating_point Float> Number_sp _acos(Float z) {
+  if (z >= Float{-1} && z <= Float{1})
+    return Number_O::create(std::acos(z));
+
+  return Complex_O::create(Number_O::create((z > Float{0.0}) ? Float{0.0} : std::numbers::pi_v<Float>),
+                           Number_O::create(std::asinh(std::copysign(std::sqrt(z * z - Float{1.0}), z))));
+}
+
+inline Number_sp Number_O::acos(const Number_sp x) {
+  if (x.fixnump())
+    return _acos((single_float_t)x.unsafe_fixnum());
+  if (x.single_floatp())
+    return _acos(x.unsafe_single_float());
+  return x->acos_();
 }
 
 inline Number_sp Number_O::tan(Number_sp x) {

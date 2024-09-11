@@ -1979,6 +1979,29 @@ CL_DOCSTRING(R"dx(asin)dx");
 DOCGROUP(clasp);
 CL_DEFUN Number_sp cl__asin(Number_sp x) { return Number_O::asin(x); }
 
+Number_sp Rational_O::acos_() const { return _acos(this->as_float_()); }
+
+Number_sp DoubleFloat_O::acos_() const { return _acos(this->_Value); }
+
+#ifdef CLASP_LONG_FLOAT
+Number_sp LongFloat_O::acos_() const { return _acos(this->_Value); }
+#endif
+
+Number_sp Complex_O::acos_() const {
+  if (_real.isA<LongFloat_O>())
+    return Number_O::create(std::acos(std::complex(_real->as_long_float_(), _imaginary->as_long_float_())));
+  if (_real.isA<DoubleFloat_O>())
+    return Number_O::create(std::acos(std::complex(_real->as_double_(), _imaginary->as_double_())));
+  return Number_O::create(std::acos(std::complex(clasp_to_float(_real), clasp_to_float(_imaginary))));
+}
+
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(acos)dx");
+DOCGROUP(clasp);
+CL_DEFUN Number_sp cl__acos(Number_sp x) { return Number_O::acos(x); }
+
 /* ----------------------------------------------------------------------
 
    cos

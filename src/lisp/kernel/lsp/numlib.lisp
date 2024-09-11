@@ -102,6 +102,7 @@ Returns a complex number whose realpart and imagpart are the values of (COS
 THETA) and (SIN THETA) respectively."
   (complex (cos theta) (sin theta)))
 
+;;; this is defined in numbers.h
 #+(or)
 (defun asin (x)
   "Args: (number)
@@ -125,6 +126,8 @@ Returns the arc sine of NUMBER."
 	           (asinh (imagpart (* (conjugate sqrt-1-z)
 				                         sqrt-1+z))))))
 
+;;; this is defined in numbers.h
+#+(or)
 (defun acos (x)
   "Args: (number)
 Returns the arc cosine of NUMBER."
