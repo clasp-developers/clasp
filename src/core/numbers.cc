@@ -130,6 +130,20 @@ CL_DOCSTRING(R"dx(plusp)dx");
 DOCGROUP(clasp);
 CL_DEFUN bool cl__plusp(Real_sp num) { return Real_O::plusp(num); }
 
+CL_LAMBDA(num);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(evenp)dx");
+DOCGROUP(clasp);
+CL_DEFUN bool cl__evenp(Integer_sp num) { return Integer_O::evenp(num); }
+
+CL_LAMBDA(num);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(oddp)dx");
+DOCGROUP(clasp);
+CL_DEFUN bool cl__oddp(Integer_sp num) { return Integer_O::oddp(num); }
+
 CL_LAMBDA();
 CL_DECLARE();
 CL_UNWIND_COOP(true);
@@ -1687,7 +1701,7 @@ static Integer_sp mantissa_and_exponent_from_ratio(Integer_sp num, Integer_sp de
     quotient = clasp_ash(quotient, -1);
   }
   /* round quotient */
-  if (clasp_oddp(quotient)) {
+  if (Integer_O::oddp(quotient)) {
     quotient = gc::As_unsafe<Integer_sp>(clasp_one_plus(quotient));
   }
   /* shift out the remaining unnecessary digit of quotient */
@@ -1729,7 +1743,7 @@ string Ratio_O::__repr__() const {
 }
 
 Number_sp Ratio_O::abs_() const {
-  return Ratio_O::create_primitive(gc::As_unsafe<Integer_sp>(clasp_abs(gc::As<Integer_sp>(this->_numerator))), this->_denominator);
+  return Ratio_O::create_primitive(gc::As_unsafe<Integer_sp>(Number_O::abs(gc::As<Integer_sp>(this->_numerator))), this->_denominator);
 }
 
 bool Ratio_O::eql_(T_sp obj) const {
@@ -1913,6 +1927,13 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(sqrt)dx");
 DOCGROUP(clasp);
 CL_DEFUN Number_sp cl__sqrt(Number_sp x) { return Number_O::sqrt(x); };
+
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(abs)dx");
+DOCGROUP(clasp);
+CL_DEFUN Number_sp cl__abs(Number_sp x) { return Number_O::abs(x); };
 
 /* ----------------------------------------------------------------------
 
@@ -2436,7 +2457,7 @@ Number_sp clasp_expt(Number_sp x, Number_sp y) {
     Integer_sp iy = gc::As<Integer_sp>(y);
     do {
       // Exponentiation by squaring.
-      if (!clasp_evenp(iy))
+      if (!Integer_O::evenp(iy))
         z = z * x;
       iy = clasp_shift_right(iy, 1); // divide by two
       if (Number_O::zerop(iy))
@@ -2616,8 +2637,8 @@ CL_DEFUN Number_sp cl__atan(Number_sp x, T_sp y, bool yp) {
 */
 
 Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i) {
-  Real_sp a = gc::As<Real_sp>(clasp_abs(r));
-  Real_sp p = gc::As<Real_sp>(clasp_abs(i));
+  Real_sp a = gc::As<Real_sp>(Number_O::abs(r));
+  Real_sp p = gc::As<Real_sp>(Number_O::abs(i));
   int rel = clasp_number_compare(a, p);
   if (rel > 0) {
     Real_sp aux = p;

@@ -162,9 +162,6 @@ template <typename Float> inline Float _log1p(Float x) {
   return (std::log(u) * x) / (u - Float{1});
 }
 
-bool clasp_evenp(Integer_sp num);
-bool clasp_oddp(Integer_sp num);
-Number_sp clasp_abs(Number_sp num);
 Number_sp clasp_signum(Number_sp num);
 Number_sp clasp_one_plus(Number_sp num);
 Number_sp clasp_one_minus(Number_sp num);
@@ -198,6 +195,9 @@ public:
   virtual Number_sp abs_() const { SUBCLASS_MUST_IMPLEMENT(); };
   virtual bool equal(T_sp obj) const override;
   virtual bool equalp(T_sp obj) const override;
+
+  virtual Number_sp realpart_() const { SUBIMP(); };
+  virtual Number_sp imagpart_() const { SUBIMP(); };
 
   // log(x) (i.e. natural log)
   virtual Number_sp log1_() const { SUBIMP(); };
@@ -244,6 +244,10 @@ public:
     return x->zerop_();
   }
 
+  inline static Number_sp realpart(const Number_sp x);
+  inline static Number_sp imagpart(const Number_sp x);
+
+  inline static Number_sp abs(const Number_sp x);
   inline static Number_sp sqrt(const Number_sp x);
 
   inline static Number_sp sin(const Number_sp x);
@@ -276,6 +280,9 @@ class Real_O : public Number_O {
   LISP_ABSTRACT_CLASS(core, ClPkg, Real_O, "real", Number_O);
 
 public:
+  Number_sp realpart_() const override { return asSmartPtr(); }
+  Number_sp imagpart_() const override { return clasp_make_fixnum(0); }
+
   virtual double as_double_() const override { SUBIMP(); };
 
   // functions shared by all Real
@@ -383,6 +390,18 @@ public:
   virtual void __write__(T_sp strm) const override;
   Integer_O() {};
   virtual ~Integer_O() {};
+
+  inline static bool evenp(const Integer_sp x) {
+    if (x.fixnump())
+      return (x.unsafe_fixnum() % 2) == 0;
+    return x->evenp_();
+  }
+
+  inline static bool oddp(const Integer_sp x) {
+    if (x.fixnump())
+      return (x.unsafe_fixnum() % 2) != 0;
+    return x->oddp_();
+  }
 };
 }; // namespace core
 
@@ -505,7 +524,6 @@ SMART(DoubleFloat);
 class DoubleFloat_O : public Float_O {
   LISP_CLASS(core, ClPkg, DoubleFloat_O, "double-float", Float_O);
 
-public:
 private:
   double _Value;
 
@@ -518,15 +536,16 @@ public:
 
   static DoubleFloat_sp coerce(Number_sp x);
 
-public:
   static Rational_sp rational(double val);
 
-public:
   void sxhash_(HashGenerator& hg) const override;
   //	virtual Number_sp copy() const;
   string __repr__() const override;
   void set(double val) { this->_Value = val; };
   double get() const { return this->_Value; };
+
+  Number_sp imagpart_() const override;
+
   Number_sp signum_() const override;
   Number_sp abs_() const override { return DoubleFloat_O::create(std::abs(this->_Value)); };
   bool isnan_() const override { return std::isnan(this->_Value); }; // NaN is supposed to be the only value that != itself!!!!
@@ -610,6 +629,9 @@ public:
   string __repr__() const override;
   void set(long_float_t val) { this->_Value = val; };
   long_float_t get() const { return this->_Value; };
+
+  Number_sp imagpart_() const override;
+
   Number_sp signum_() const override;
   Number_sp abs_() const override { return LongFloat_O::create(std::abs(this->_Value)); };
   bool isnan_() const override { return std::isnan(this->_Value); }; // NaN is supposed to be the only value that != itself!!!!
@@ -690,6 +712,10 @@ public:
   void sxhash_(HashGenerator& hg) const override;
   //	virtual Number_sp copy() const;
   string __repr__() const override;
+
+  Number_sp realpart_() const override { return _real; }
+  Number_sp imagpart_() const override { return _imaginary; }
+
   Number_sp signum_() const override;
   Number_sp abs_() const override;
   Rational_sp rational_() const override { TYPE_ERROR(this->asSmartPtr(), cl::_sym_Real_O); };
@@ -959,42 +985,6 @@ template <typename Char> struct fmt::formatter<core::NumberType, Char> : fmt::fo
 
 namespace core {
 
-CL_PKG_NAME(ClPkg, evenp);
-CL_DEFUN inline bool clasp_evenp(Integer_sp num) {
-  if (num.fixnump()) {
-    return (num.unsafe_fixnum() % 2) == 0;
-  }
-  return num->evenp_();
-}
-
-CL_PKG_NAME(ClPkg, oddp);
-DOCGROUP(clasp)
-CL_DEFUN inline bool clasp_oddp(Integer_sp num) {
-  // for negative numbers num % 2 == 1 does not work, since -1 is returned
-  if (num.fixnump()) {
-    return (num.unsafe_fixnum() % 2) != 0;
-  }
-  // now num must be a bignum, works fine
-  return num->oddp_();
-}
-
-CL_PKG_NAME(ClPkg, abs);
-DOCGROUP(clasp)
-CL_DEFUN inline Number_sp clasp_abs(Number_sp num) {
-  if (num.fixnump()) {
-    gc::Fixnum fixnum = num.unsafe_fixnum();
-    if (fixnum == MOST_NEGATIVE_FIXNUM) {
-      // will overflow to a bignum
-      fixnum = (MOST_POSITIVE_FIXNUM + 1);
-      return Integer_O::create(fixnum);
-    } else
-      return immediate_fixnum<Number_O>(std::abs(fixnum));
-  } else if (num.single_floatp()) {
-    return immediate_single_float<Number_O>(std::fabs(num.unsafe_single_float()));
-  }
-  return num->abs_();
-}
-
 CL_PKG_NAME(ClPkg, signum);
 DOCGROUP(clasp)
 CL_DEFUN inline Number_sp clasp_signum(Number_sp num) {
@@ -1173,6 +1163,18 @@ long_float_t clasp_to_long_float(core::Number_sp);
 
 // END OF CLASP_TO_... FUNCTIONS
 
+template <> inline Number_sp Number_O::create(single_float_t x) { return SingleFloat_dummy_O::create(x); }
+
+template <> inline Number_sp Number_O::create(double_float_t x) { return DoubleFloat_O::create(x); }
+
+#ifdef CLASP_LONG_FLOAT
+template <> inline Number_sp Number_O::create(long_float_t x) { return LongFloat_O::create(x); }
+#endif
+
+template <typename Float> inline Number_sp Number_O::create(const std::complex<Float> x) {
+  return Complex_O::create(create(x.real()), create(x.imag()));
+}
+
 CL_LISPIFY_NAME(reciprocal);
 DOCGROUP(clasp)
 CL_DEFUN inline Number_sp clasp_reciprocal(Number_sp x) {
@@ -1215,6 +1217,18 @@ inline Number_sp clasp_conjugate(Number_sp x) {
     return gc::As_unsafe<Complex_sp>(x)->conjugate();
   else
     return x;
+}
+
+inline Number_sp Number_O::abs(Number_sp x) {
+  if (x.fixnump()) {
+    gc::Fixnum fixnum = x.unsafe_fixnum();
+    if (fixnum == MOST_NEGATIVE_FIXNUM)
+      return Integer_O::create(MOST_POSITIVE_FIXNUM + 1);
+    return clasp_make_fixnum(std::abs(fixnum));
+  }
+  if (x.single_floatp())
+    return Number_O::create(std::abs(x.unsafe_single_float()));
+  return x->abs_();
 }
 
 inline Number_sp Number_O::sqrt(const Number_sp x) {
@@ -1305,16 +1319,18 @@ inline Number_sp Number_O::tanh(Number_sp x) {
   return x->tanh_();
 }
 
-template <> inline Number_sp Number_O::create(single_float_t x) { return SingleFloat_dummy_O::create(x); }
+inline Number_sp Number_O::realpart(const Number_sp x) {
+  if (x.fixnump() || x.single_floatp())
+    return x;
+  return x->realpart_();
+}
 
-template <> inline Number_sp Number_O::create(double_float_t x) { return DoubleFloat_O::create(x); }
-
-#ifdef CLASP_LONG_FLOAT
-template <> inline Number_sp Number_O::create(long_float_t x) { return LongFloat_O::create(x); }
-#endif
-
-template <typename Float> inline Number_sp Number_O::create(const std::complex<Float> x) {
-  return Complex_O::create(create(x.real()), create(x.imag()));
+inline Number_sp Number_O::imagpart(const Number_sp x) {
+  if (x.fixnump())
+    return clasp_make_fixnum(0);
+  if (x.single_floatp())
+    return create(single_float_t{0.0});
+  return x->imagpart_();
 }
 
 //template <std::integral T> inline Number_sp Number_O::create(T x) { return Integer_O::create(x); }
