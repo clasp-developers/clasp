@@ -1329,7 +1329,7 @@ inline Number_sp Number_O::imagpart(const Number_sp x) {
   if (x.fixnump())
     return clasp_make_fixnum(0);
   if (x.single_floatp())
-    return create(single_float_t{0.0});
+    return create(std::copysign(single_float_t{0.0}, x.unsafe_single_float()));
   return x->imagpart_();
 }
 

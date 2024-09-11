@@ -2749,7 +2749,7 @@ Rational_sp LongFloat_O::rational_() const {
   Number_sp n = Integer_O::create(q.significand);
 
   if (q.exponent < 0) {
-    n = Ratio_O::create(n, clasp_ash(clasp_make_fixnum(1), -q.exponent));
+    n /= clasp_ash(clasp_make_fixnum(1), -q.exponent);
   } else if (q.exponent > 0) {
     n = clasp_ash(n, q.exponent);
   }

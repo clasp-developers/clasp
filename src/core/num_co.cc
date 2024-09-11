@@ -966,9 +966,9 @@ CL_DOCSTRING(R"dx(complex)dx");
 DOCGROUP(clasp);
 CL_DEFUN Complex_sp cl__complex(Real_sp r, Real_sp i) { return gc::As_unsafe<Complex_sp>(clasp_make_complex(r, i)); }
 
-Number_sp DoubleFloat_O::imagpart_() const { return create(double_float_t{0.0}); }
+Number_sp DoubleFloat_O::imagpart_() const { return create(std::copysign(double_float_t{0.0}, _Value)); }
 
-Number_sp LongFloat_O::imagpart_() const { return create(long_float_t{0.0}); }
+Number_sp LongFloat_O::imagpart_() const { return create(std::copysign(long_float_t{0.0}, _Value)); }
 
 CL_LAMBDA(x);
 CL_DECLARE();
