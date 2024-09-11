@@ -731,11 +731,11 @@ CL_DEFUN bool cl__logbitp(Integer_sp index, Integer_sp i) {
         return (len < 0);
     }
   } else {
-    if (clasp_minusp(index))
+    if (Real_O::minusp(index))
       goto NEGINDEX;
     // Index is a bignum.
     // We don't support bignums with that many bits, so we're out of range.
-    if (clasp_minusp(i))
+    if (Real_O::minusp(i))
       return true;
     else
       return false;

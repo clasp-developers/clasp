@@ -162,9 +162,6 @@ template <typename Float> inline Float _log1p(Float x) {
   return (std::log(u) * x) / (u - Float{1});
 }
 
-bool clasp_zerop(Number_sp num);
-bool clasp_plusp(Real_sp num);
-bool clasp_minusp(Real_sp num);
 bool clasp_evenp(Integer_sp num);
 bool clasp_oddp(Integer_sp num);
 Number_sp clasp_abs(Number_sp num);
@@ -239,6 +236,14 @@ public:
   Number_O() {};
   virtual ~Number_O() {};
 
+  inline static bool zerop(Number_sp x) {
+    if (x.fixnump())
+      return x.unsafe_fixnum() == 0;
+    if (x.single_floatp())
+      return x.unsafe_single_float() == 0.0;
+    return x->zerop_();
+  }
+
   inline static Number_sp sqrt(const Number_sp x);
 
   inline static Number_sp sin(const Number_sp x);
@@ -279,6 +284,22 @@ public:
 
   Real_O() {};
   virtual ~Real_O() {};
+
+  inline static bool plusp(Real_sp x) {
+    if (x.fixnump())
+      return x.unsafe_fixnum() > 0;
+    if (x.single_floatp())
+      return x.unsafe_single_float() > single_float_t{0.0};
+    return x->plusp_();
+  }
+
+  inline static bool minusp(Real_sp x) {
+    if (x.fixnump())
+      return x.unsafe_fixnum() < 0;
+    if (x.single_floatp())
+      return x.unsafe_single_float() < single_float_t{0.0};
+    return x->minusp_();
+  }
 };
 
 SMART(Rational);
@@ -678,7 +699,7 @@ public:
   virtual bool eql_(T_sp obj) const override;
 
   // math routines shared by all numbers
-  bool zerop_() const override { return (clasp_zerop(this->_real) && clasp_zerop(this->_imaginary)); };
+  bool zerop_() const override { return (zerop(this->_real) && zerop(this->_imaginary)); };
   virtual Number_sp negate_() const override {
     return Complex_O::create(gc::As<Real_sp>(clasp_negate(this->_real)), gc::As<Real_sp>(clasp_negate(this->_imaginary)));
   };
@@ -742,7 +763,7 @@ public:
   void setf_numerator_denominator(core::Integer_sp num, core::Integer_sp denom);
 
 public:
-  virtual bool zerop_() const override { return clasp_zerop(this->_numerator); };
+  virtual bool zerop_() const override { return zerop(this->_numerator); };
   virtual Number_sp negate_() const override {
     return Ratio_O::create_primitive(gc::As<Integer_sp>(clasp_negate(this->_numerator)), gc::As<Integer_sp>(this->_denominator));
   };
@@ -774,9 +795,9 @@ public:
 
   // functions shared by all Real
 
-  bool plusp_() const override { return clasp_plusp(this->_numerator); }
+  bool plusp_() const override { return plusp(this->_numerator); }
 
-  bool minusp_() const override { return clasp_minusp(this->_numerator); }
+  bool minusp_() const override { return minusp(this->_numerator); }
 
   virtual void __write__(T_sp strm) const override;
 
@@ -938,26 +959,6 @@ template <typename Char> struct fmt::formatter<core::NumberType, Char> : fmt::fo
 
 namespace core {
 
-CL_PKG_NAME(ClPkg, plusp);
-CL_DEFUN inline bool clasp_plusp(Real_sp num) {
-  if (num.fixnump()) {
-    return num.unsafe_fixnum() > 0;
-  } else if (num.single_floatp()) {
-    return num.unsafe_single_float() > 0.0;
-  }
-  return num->plusp_();
-}
-
-CL_PKG_NAME(ClPkg, minusp);
-CL_DEFUN inline bool clasp_minusp(Real_sp num) {
-  if (num.fixnump()) {
-    return num.unsafe_fixnum() < 0;
-  } else if (num.single_floatp()) {
-    return num.unsafe_single_float() < 0.0;
-  }
-  return num->minusp_();
-}
-
 CL_PKG_NAME(ClPkg, evenp);
 CL_DEFUN inline bool clasp_evenp(Integer_sp num) {
   if (num.fixnump()) {
@@ -1047,16 +1048,6 @@ inline Number_sp clasp_one_minus(Number_sp num) {
     return immediate_single_float<Number_O>(fl);
   }
   return num->oneMinus_();
-}
-
-inline bool clasp_zerop(Number_sp num) {
-  if (num.fixnump()) {
-    return num.unsafe_fixnum() == 0;
-  } else if (num.single_floatp()) {
-    float fl = num.unsafe_single_float();
-    return fl == 0.0;
-  }
-  return num->zerop_();
 }
 
 CL_LISPIFY_NAME(negate);

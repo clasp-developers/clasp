@@ -511,15 +511,13 @@ inline CL_DEFUN bool cl__eql(T_sp x, T_sp y) {
   if (x.fixnump()) {
     return x.raw_() == y.raw_();
   } else if (x.single_floatp()) {
-    if (y.single_floatp()) {
-      return gc::tagged_single_float_masked(x.raw_()) == gc::tagged_single_float_masked(y.raw_());
-    }
-    return false;
+    if (!y.single_floatp())
+      return false;
+    single_float_t xf = x.unsafe_single_float();
+    single_float_t yf = y.unsafe_single_float();
+    return xf == yf && std::signbit(xf) == std::signbit(yf);
   } else if (x.characterp()) {
-    if (y.characterp()) {
-      return x.unsafe_character() == y.unsafe_character();
-    }
-    return false;
+    return y.characterp() && x.unsafe_character() == y.unsafe_character();
   } else if (x.consp()) {
     return x.raw_() == y.raw_();
   } else if (x.generalp()) {

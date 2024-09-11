@@ -455,7 +455,7 @@ DOCGROUP(clasp);
 CL_DEFUN bool cl__remhash(T_sp key, HashTableBase_sp ht) { return ht->remhash(key); };
 
 T_sp HashTable_O::clrhash() {
-  ASSERT(!clasp_zerop(this->_RehashSize));
+  ASSERT(!Number_O::zerop(this->_RehashSize));
   this->_HashTableCount = 0;
   T_sp no_key = ::no_key<T_O>();
   this->_Table.resize(0, KeyValuePair(no_key, no_key));
@@ -473,7 +473,7 @@ void HashTable_O::setup(uint sz, Number_sp rehashSize, double rehashThreshold) {
   HT_WRITE_LOCK(this);
   sz = this->resizeEmptyTable_no_lock(sz);
   this->_RehashSize = rehashSize;
-  ASSERT(!clasp_zerop(this->_RehashSize));
+  ASSERT(!Number_O::zerop(this->_RehashSize));
   this->_RehashThreshold = maybeFixRehashThreshold(rehashThreshold);
 }
 
@@ -1033,7 +1033,7 @@ CL_DEFUN_SETF T_sp setf_gethash(T_sp value, T_sp key, HashTableBase_sp hash_tabl
 KeyValuePair* HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
   //        printf("%s:%d rehash of hash-table@%p\n", __FILE__, __LINE__,  this );
   DEBUG_HASH_TABLE1({ core::clasp_write_string(fmt::format("{}:{} rehash_no_lock\n", __FILE__, __LINE__)); });
-  ASSERTF(!clasp_zerop(this->_RehashSize), "RehashSize is zero - it shouldn't be");
+  ASSERTF(!Number_O::zerop(this->_RehashSize), "RehashSize is zero - it shouldn't be");
 #ifdef DEBUG_HASH_TABLE_DEBUG
   if (this->_Debug) {
     core::T_sp info = Cons_O::createList(INTERN_(kw, rehash), findKey);

@@ -376,7 +376,7 @@ static void clasp_floor(Real_sp dividend, Real_sp divisor, Integer_sp& quotient,
   Integer_sp t0;
   Real_sp t1;
   clasp_truncate(dividend, divisor, t0, t1);
-  if (!(clasp_zerop(t1)) && (clasp_minusp(divisor) ? clasp_plusp(dividend) : clasp_minusp(dividend))) {
+  if (!(Number_O::zerop(t1)) && (Real_O::minusp(divisor) ? Real_O::plusp(dividend) : Real_O::minusp(dividend))) {
     quotient = gc::As_unsafe<Integer_sp>(clasp_one_minus(t0));
     remainder = gc::As_unsafe<Real_sp>(t1 + divisor);
   } else {
@@ -454,7 +454,7 @@ static void clasp_ceiling(Real_sp dividend, Real_sp divisor, Integer_sp& quotien
   Integer_sp t0;
   Real_sp t1;
   clasp_truncate(dividend, divisor, t0, t1);
-  if (!(clasp_zerop(t1)) && (clasp_minusp(divisor) ? clasp_minusp(dividend) : clasp_plusp(dividend))) {
+  if (!(Number_O::zerop(t1)) && (Real_O::minusp(divisor) ? Real_O::minusp(dividend) : Real_O::plusp(dividend))) {
     quotient = gc::As_unsafe<Integer_sp>(clasp_one_plus(t0));
     remainder = gc::As_unsafe<Real_sp>(t1 - divisor);
   } else {
@@ -607,7 +607,7 @@ static void clasp_round(Real_sp dividend, Real_sp divisor, Integer_sp& quotient,
   clasp_truncate(dividend, divisor, tru, rem);
 
   // If they divide, no need to round
-  if (clasp_zerop(rem)) {
+  if (Number_O::zerop(rem)) {
     quotient = tru;
     remainder = rem;
     return;
@@ -616,7 +616,7 @@ static void clasp_round(Real_sp dividend, Real_sp divisor, Integer_sp& quotient,
   Real_sp threshold = gc::As_unsafe<Real_sp>(clasp_abs(divisor) / clasp_make_fixnum(2));
   int c = clasp_number_compare(rem, threshold);
   if (c > 0 || (c == 0 && clasp_oddp(tru))) {
-    if (clasp_minusp(divisor)) {
+    if (Real_O::minusp(divisor)) {
       quotient = gc::As_unsafe<Integer_sp>(tru - clasp_make_fixnum(1));
       remainder = rem + divisor;
     } else {
@@ -628,7 +628,7 @@ static void clasp_round(Real_sp dividend, Real_sp divisor, Integer_sp& quotient,
   threshold = gc::As_unsafe<Real_sp>(clasp_negate(threshold));
   c = clasp_number_compare(rem, threshold);
   if (c < 0 || (c == 0 && clasp_oddp(tru))) {
-    if (clasp_minusp(divisor)) {
+    if (Real_O::minusp(divisor)) {
       quotient = gc::As_unsafe<Integer_sp>(clasp_one_plus(tru));
       remainder = gc::As_unsafe<Real_sp>(rem - divisor);
     } else {
@@ -873,23 +873,29 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(floatDigits)dx");
 DOCGROUP(clasp);
 CL_DEFUN Integer_sp cl__float_digits(Float_sp x) {
-  Integer_sp ix(nil<Integer_O>());
   switch (clasp_t_of(x)) {
   case number_SingleFloat:
-    ix = clasp_make_fixnum(FLT_MANT_DIG);
-    break;
+    return clasp_make_fixnum(std::numeric_limits<single_float_t>::digits);
   case number_DoubleFloat:
-    ix = clasp_make_fixnum(DBL_MANT_DIG);
-    break;
+    return clasp_make_fixnum(std::numeric_limits<double_float_t>::digits);
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat:
-    ix = clasp_make_fixnum(LDBL_MANT_DIG);
-    break;
+    return clasp_make_fixnum(std::numeric_limits<long_float_t>::digits);
 #endif
   default:
     ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_floatDigits, 1, x, cl::_sym_float);
   }
-  return ix;
+}
+
+template <std::floating_point Float> size_t float_precision(Float f) {
+  switch (std::fpclassify(f)) {
+  case FP_ZERO:
+    return 0;
+  case FP_SUBNORMAL:
+    return 1 - std::numeric_limits<Float>::min_exponent + std::ilogb(f) + std::numeric_limits<Float>::digits;
+  default:
+    return std::numeric_limits<Float>::digits;
+  }
 }
 
 CL_LAMBDA(value);
@@ -898,59 +904,18 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(floatPrecision)dx");
 DOCGROUP(clasp);
 CL_DEFUN Integer_sp cl__float_precision(Float_sp x) {
-  int precision = 0;
   switch (clasp_t_of(x)) {
-  case number_SingleFloat: {
-    float f = x.unsafe_single_float();
-    if (f == 0.0) {
-      precision = 0;
-    } else {
-      int exp;
-      frexpf(f, &exp);
-      if (exp >= FLT_MIN_EXP) {
-        precision = FLT_MANT_DIG;
-      } else {
-        precision = FLT_MANT_DIG - (FLT_MIN_EXP - exp);
-      }
-    }
-    break;
-  }
-  case number_DoubleFloat: {
-    double f = gc::As_unsafe<DoubleFloat_sp>(x)->get();
-    if (f == 0.0) {
-      precision = 0;
-    } else {
-      int exp;
-      frexp(f, &exp);
-      if (exp >= DBL_MIN_EXP) {
-        precision = DBL_MANT_DIG;
-      } else {
-        precision = DBL_MANT_DIG - (DBL_MIN_EXP - exp);
-      }
-    }
-    break;
-  }
+  case number_SingleFloat:
+    return clasp_make_fixnum(float_precision(x.unsafe_single_float()));
+  case number_DoubleFloat:
+    return clasp_make_fixnum(float_precision(gc::As_unsafe<DoubleFloat_sp>(x)->get()));
 #ifdef CLASP_LONG_FLOAT
-  case number_LongFloat: {
-    long_float_t f = clasp_to_long_float(x);
-    if (f == 0.0) {
-      precision = 0;
-    } else {
-      int exp;
-      frexp(f, &exp);
-      if (exp >= LDBL_MIN_EXP) {
-        precision = LDBL_MANT_DIG;
-      } else {
-        precision = LDBL_MANT_DIG - (LDBL_MIN_EXP - exp);
-      }
-    }
-    break;
-  }
+  case number_LongFloat:
+    return clasp_make_fixnum(float_precision(gc::As_unsafe<LongFloat_sp>(x)->get()));
 #endif
   default:
     ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_floatPrecision, 1, x, cl::_sym_float);
   }
-  return clasp_make_fixnum(precision);
 }
 
 template <typename Float> inline Real_mv integer_decode_float(Float f) {

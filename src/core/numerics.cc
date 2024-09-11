@@ -98,7 +98,7 @@ vector<int> bignumToMixedBaseDigits(const Bignum& index, const vector<int>& base
 }
 CL_DEFUN
 List_sp core__positive_integer_to_mixed_base_digits(core::Integer_sp number, List_sp bases) {
-  if (!(clasp_zerop(number) || clasp_plusp(number))) {
+  if (!(Number_O::zerop(number) || Real_O::plusp(number))) {
     SIMPLE_ERROR("The number {} must be zero or positive", _rep_(number));
   }
   vector<int> ibases;

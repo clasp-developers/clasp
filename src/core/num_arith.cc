@@ -94,7 +94,7 @@ CL_DEFUN Integer_sp cl__gcd(List_sp nums) {
   Integer_sp gcd = gc::As<Integer_sp>(oCar(nums));
   nums = oCdr(nums);
   if (nums.nilp()) {
-    return (clasp_minusp(gcd) ? gc::As<Integer_sp>(clasp_negate(gcd)) : gcd);
+    return (Real_O::minusp(gcd) ? gc::As<Integer_sp>(clasp_negate(gcd)) : gcd);
   }
   while (nums.consp()) {
     gcd = clasp_gcd(gcd, gc::As<Integer_sp>(oCar(nums)));
@@ -148,11 +148,11 @@ CL_DEFUN Integer_sp cl__lcm(List_sp nums) {
     yidx++;
     Number_sp t = lcm * numi;
     Number_sp g = clasp_gcd(numi, lcm);
-    if (!clasp_zerop(g)) {
+    if (!Number_O::zerop(g)) {
       lcm = gc::As<Integer_sp>(t / g);
     }
   }
-  return clasp_minusp(lcm) ? gc::As<Integer_sp>(clasp_negate(lcm)) : gc::As<Integer_sp>(lcm);
+  return Real_O::minusp(lcm) ? gc::As<Integer_sp>(clasp_negate(lcm)) : gc::As<Integer_sp>(lcm);
 };
 
 SYMBOL_EXPORT_SC_(ClPkg, gcd);

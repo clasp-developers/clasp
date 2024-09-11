@@ -114,7 +114,21 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(zerop)dx");
 DOCGROUP(clasp);
-CL_DEFUN bool cl__zerop(Number_sp num) { return clasp_zerop(num); }
+CL_DEFUN bool cl__zerop(Number_sp num) { return Number_O::zerop(num); }
+
+CL_LAMBDA(num);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(minusp)dx");
+DOCGROUP(clasp);
+CL_DEFUN bool cl__minusp(Real_sp num) { return Real_O::minusp(num); }
+
+CL_LAMBDA(num);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(plusp)dx");
+DOCGROUP(clasp);
+CL_DEFUN bool cl__plusp(Real_sp num) { return Real_O::plusp(num); }
 
 CL_LAMBDA();
 CL_DECLARE();
@@ -729,7 +743,7 @@ template<std::floating_point Float> int compare_bignum_float(Bignum_sp x, Float 
   if (q.category != float_convert<Float>::category::finite)
       return q.sign;
 
-  bool negative = clasp_minusp(x);
+  bool negative = Real_O::minusp(x);
 
   if (negative && (q.significand == 0 || q.sign > 0))
     return -1;
@@ -807,7 +821,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
     Integer_sp trunc = clasp_integer_divide(rb->numerator(), rb->denominator());
     int res = basic_compare(na, trunc);
     if (res == 0)
-      return (clasp_minusp(rb) ? 1 : -1);
+      return (Real_O::minusp(rb) ? 1 : -1);
     else
       return res;
   }
@@ -897,7 +911,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
     Integer_sp trunc = clasp_integer_divide(ra->numerator(), ra->denominator());
     int res = basic_compare(trunc, nb);
     if (res == 0)
-      return (clasp_minusp(ra) ? -1 : 1);
+      return (Real_O::minusp(ra) ? -1 : 1);
     else
       return res;
   }
@@ -1228,7 +1242,7 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
   case_DoubleFloat_v_Complex:
   case_LongFloat_v_Complex:
   Complex_v_Y:
-    return (clasp_zerop(gc::As<Complex_sp>(nb)->imaginary()) && basic_equalp(na, gc::As<Complex_sp>(nb)->real()));
+    return (Number_O::zerop(gc::As<Complex_sp>(nb)->imaginary()) && basic_equalp(na, gc::As<Complex_sp>(nb)->real()));
   case_Complex_v_Complex:
     return (basic_equalp(gc::As<Complex_sp>(na)->real(), gc::As<Complex_sp>(nb)->real()) &&
             basic_equalp(gc::As<Complex_sp>(na)->imaginary(), gc::As<Complex_sp>(nb)->imaginary()));
@@ -1583,12 +1597,8 @@ void DoubleFloat_O::sxhash_(HashGenerator& hg) const {
 bool DoubleFloat_O::eql_(T_sp obj) const {
   if (this->eq(obj))
     return true;
-  if (DoubleFloat_sp other = obj.asOrNull<DoubleFloat_O>()) {
-    ASSERT(sizeof(this->_Value) == sizeof(int64_t));
-    int64_t me = *(int64_t*)(&this->_Value);
-    int64_t them = *(int64_t*)(&other->_Value);
-    return me == them;
-  }
+  if (DoubleFloat_sp other = obj.asOrNull<DoubleFloat_O>())
+    return _Value == other->get() && std::signbit(_Value) == std::signbit(other->get());
   return false;
 }
 
@@ -1633,7 +1643,7 @@ bool LongFloat_O::eql_(T_sp obj) const {
   if (this->eq(obj))
     return true;
   if (LongFloat_sp other = obj.asOrNull<LongFloat_O>())
-    return _Value == other->get();
+    return _Value == other->get() && std::signbit(_Value) == std::signbit(other->get());
   return false;
 }
 
@@ -1658,7 +1668,7 @@ static Integer_sp mantissa_and_exponent_from_ratio(Integer_sp num, Integer_sp de
    * appropriate exponent.
    */
   bool negative = false;
-  if (clasp_minusp(num)) {
+  if (Real_O::minusp(num)) {
     negative = true;
     num = gc::As_unsafe<Integer_sp>(clasp_negate(num));
   }
@@ -1695,7 +1705,7 @@ template <typename Float> inline Float ratio_to_float(Integer_sp num, Integer_sp
     .sign = 1
   };
 
-  if (clasp_minusp(num)) {
+  if (Real_O::minusp(num)) {
     q.sign = -1;
     num = gc::As_unsafe<Integer_sp>(clasp_negate(num));
   }
@@ -1742,7 +1752,7 @@ void Ratio_O::sxhash_(HashGenerator& hg) const {
 }
 
 Number_sp Ratio_O::signum_() const {
-  ASSERT(clasp_plusp(this->_denominator));
+  ASSERT(Real_O::plusp(this->_denominator));
   return clasp_signum(this->_numerator);
 }
 
@@ -1758,7 +1768,7 @@ Number_sp Ratio_O::reciprocal_() const {
       return clasp_negate(denom);
     }
   }
-  if (clasp_minusp(num)) {
+  if (Real_O::minusp(num)) {
     Integer_sp indenom = gc::As_unsafe<Integer_sp>(clasp_negate(denom));
     Integer_sp innum = gc::As_unsafe<Integer_sp>(clasp_negate(num));
     return Ratio_O::create_primitive(indenom, innum);
@@ -1784,7 +1794,7 @@ void Ratio_O::setf_numerator_denominator(Integer_sp inum, Integer_sp idenom) {
     }
     return;
   }
-  if (clasp_minusp(idenom)) {
+  if (Real_O::minusp(idenom)) {
     this->_numerator = gc::As<Integer_sp>(clasp_negate(num));
     this->_denominator = gc::As<Integer_sp>(clasp_negate(denom));
   } else {
@@ -2398,14 +2408,14 @@ static Number_sp expt_zero(Number_sp x, Number_sp y) {
 Number_sp clasp_expt(Number_sp x, Number_sp y) {
   NumberType ty, tx;
   Number_sp z;
-  if (clasp_unlikely(clasp_zerop(y))) {
+  if (clasp_unlikely(Number_O::zerop(y))) {
     return expt_zero(x, y);
   }
   ty = clasp_t_of(y);
   tx = clasp_t_of(x);
-  if (clasp_zerop(x)) {
+  if (Number_O::zerop(x)) {
     z = x * y;
-    if (!clasp_plusp((ty == number_Complex) ? gc::As<Complex_sp>(y)->real() : gc::As<Real_sp>(y)))
+    if (!Real_O::plusp((ty == number_Complex) ? gc::As<Complex_sp>(y)->real() : gc::As<Real_sp>(y)))
       z = clasp_make_fixnum(1) / z;
   } else if (ty != number_Fixnum && ty != number_Bignum) {
     // Use the general definition, a^b = exp(b log(a))
@@ -2417,7 +2427,7 @@ Number_sp clasp_expt(Number_sp x, Number_sp y) {
     z = clasp_log1(x * expt_zero(x, y));
     z = z * y;
     z = cl__exp(z);
-  } else if (clasp_minusp(gc::As<Real_sp>(y))) {
+  } else if (Real_O::minusp(gc::As<Real_sp>(y))) {
     z = clasp_negate(y);
     z = clasp_expt(x, z);
     z = clasp_reciprocal(z);
@@ -2429,7 +2439,7 @@ Number_sp clasp_expt(Number_sp x, Number_sp y) {
       if (!clasp_evenp(iy))
         z = z * x;
       iy = clasp_shift_right(iy, 1); // divide by two
-      if (clasp_zerop(iy))
+      if (Number_O::zerop(iy))
         break;
       x = x * x;
     } while (1);
