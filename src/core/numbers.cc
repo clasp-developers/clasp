@@ -49,6 +49,23 @@ THE SOFTWARE.
 
 namespace core {
 
+template <std::floating_point Float> Rational_sp float_to_rational(Float f) {
+  auto q = float_convert<long_float_t>::to_quadruple(f);
+
+  Number_sp n = Integer_O::create(q.significand);
+
+  if (q.exponent < 0) {
+    n /= clasp_ash(clasp_make_fixnum(1), -q.exponent);
+  } else if (q.exponent > 0) {
+    n = clasp_ash(n, q.exponent);
+  }
+
+  if (q.sign < 0)
+    return clasp_negate(n);
+
+  return n;
+}
+
 core::Fixnum not_fixnum_error(core::T_sp o) { TYPE_ERROR(o, cl::_sym_fixnum); }
 
 [[noreturn]] void not_comparable_error(Number_sp na, Number_sp nb) {
@@ -750,12 +767,12 @@ static int long_double_fix_compare(Fixnum n, long_float_t d) {
 
 */
 
-template<std::floating_point Float> int compare_bignum_float(Bignum_sp x, Float y) {
+template <std::floating_point Float> int compare_bignum_float(Bignum_sp x, Float y) {
   constexpr size_t limb_width = 8 * sizeof(mp_limb_t);
   auto q = float_convert<Float>::to_quadruple(y);
 
   if (q.category != float_convert<Float>::category::finite)
-      return q.sign;
+    return q.sign;
 
   bool negative = Real_O::minusp(x);
 
@@ -791,10 +808,10 @@ template<std::floating_point Float> int compare_bignum_float(Bignum_sp x, Float 
       width -= shift;
       first = false;
 
-      //if (width == 0)
-      //  fmt::print("{} {}\n", xsig, q.significand);
+      // if (width == 0)
+      //   fmt::print("{} {}\n", xsig, q.significand);
 
-      if (width == 0 && xsig < q.significand )
+      if (width == 0 && xsig < q.significand)
         return -q.sign;
       if (width == 0 && xsig > q.significand)
         return q.sign;
@@ -807,7 +824,7 @@ template<std::floating_point Float> int compare_bignum_float(Bignum_sp x, Float 
   return 0;
 }
 
-template<typename T> inline int compare_pod(T x, T y) {
+template <typename T> inline int compare_pod(T x, T y) {
   if (x < y)
     return -1;
   if (x > y)
@@ -815,7 +832,7 @@ template<typename T> inline int compare_pod(T x, T y) {
   return 0;
 }
 
-template<std::floating_point Float> inline int compare_fixnum_float(Fixnum a, Float b) {
+template <std::floating_point Float> inline int compare_fixnum_float(Fixnum a, Float b) {
   // We can't use C's comparison because it promotes ints to floats,
   // which is the opposite of how CL is defined.
   // If b is out of range, this is easy. Also covers infinities.
@@ -832,8 +849,8 @@ template<std::floating_point Float> inline int compare_fixnum_float(Fixnum a, Fl
     return -1;
   else if (a > ib)
     return 1;
-    // a == trunc(b), so we have to check on b's frac part.
-    // examples: 3.2 3, -3.2 -3, -0.2 0, 0.2 0, 0.0 0
+  // a == trunc(b), so we have to check on b's frac part.
+  // examples: 3.2 3, -3.2 -3, -0.2 0, 0.2 0, 0.0 0
   else if (b > ib)
     return -1;
   else if (b < ib)
@@ -1089,6 +1106,18 @@ CL_DEFUN T_sp cl___GE_(Vaslist_sp args) {
   return numbers_monotonic_vaslist(1, 0, args);
 };
 
+bool basic_equalp(Number_sp na, Number_sp nb);
+
+template <std::floating_point Float> bool equalp_ratio_float(Ratio_sp x, Float y) {
+  auto q = float_convert<Float>::to_quadruple(y);
+
+  if (q.category != float_convert<Float>::category::finite || q.significand == 0 || q.exponent >= 0 ||
+      (q.sign > 0 && Real_O::minusp(x)) || (q.sign < 0 && Real_O::plusp(x)))
+    return false;
+
+  return basic_equalp(x, float_to_rational(y));
+}
+
 /*! Return true if two numbers are equal otherwise false */
 bool basic_equalp(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
@@ -1105,23 +1134,25 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
     // Normalized ratios are never integers.
     return false;
   case_Fixnum_v_SingleFloat:
-  case_Bignum_v_SingleFloat:
-  case_Ratio_v_SingleFloat: {
+  case_Bignum_v_SingleFloat: {
     float s = nb.unsafe_single_float();
     if (std::isinf(s))
       return false;
     else
       return basic_equalp(na, DoubleFloat_O::rational(s));
   }
+  case_Ratio_v_SingleFloat:
+    return equalp_ratio_float(na, nb.unsafe_single_float());
   case_Fixnum_v_DoubleFloat:
-  case_Bignum_v_DoubleFloat:
-  case_Ratio_v_DoubleFloat: {
+  case_Bignum_v_DoubleFloat: {
     DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(nb);
     if (d->isinf_())
       return false;
     else
       return basic_equalp(na, d->rational_());
   }
+  case_Ratio_v_DoubleFloat:
+    return equalp_ratio_float(na, nb->as_double_());
   case_Bignum_v_Bignum:
     return core__next_compare(gc::As_unsafe<Bignum_sp>(na), gc::As_unsafe<Bignum_sp>(nb)) == 0;
   case_Ratio_v_Ratio: {
@@ -1131,36 +1162,40 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
     return (basic_equalp(ra->numerator(), rb->numerator()) && basic_equalp(ra->denominator(), rb->denominator()));
   }
   case_SingleFloat_v_Fixnum:
-  case_SingleFloat_v_Bignum:
-  case_SingleFloat_v_Ratio: {
+  case_SingleFloat_v_Bignum: {
     float s = na.unsafe_single_float();
     if (std::isinf(s))
       return false;
     else
       return basic_equalp(DoubleFloat_O::rational(s), nb);
   }
+  case_SingleFloat_v_Ratio:
+    return equalp_ratio_float(nb, na.unsafe_single_float());
   case_SingleFloat_v_SingleFloat:
     return na.unsafe_single_float() == nb.unsafe_single_float();
   case_DoubleFloat_v_Fixnum:
-  case_DoubleFloat_v_Bignum:
-  case_DoubleFloat_v_Ratio: {
+  case_DoubleFloat_v_Bignum: {
     DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(na);
     if (d->isinf_())
       return false;
     else
       return basic_equalp(d->rational_(), nb);
   }
+  case_DoubleFloat_v_Ratio:
+    return equalp_ratio_float(nb, na->as_double_());
   case_SingleFloat_v_DoubleFloat:
   case_DoubleFloat_v_SingleFloat:
   case_DoubleFloat_v_DoubleFloat:
     return clasp_to_double(na) == clasp_to_double(nb);
+  case_Ratio_v_LongFloat:
+    return equalp_ratio_float(na, clasp_to_long_float(nb));
+  case_LongFloat_v_Ratio:
+    return equalp_ratio_float(nb, clasp_to_long_float(na));
   case_Fixnum_v_LongFloat:
   case_Bignum_v_LongFloat:
-  case_Ratio_v_LongFloat:
   case_SingleFloat_v_LongFloat:
   case_DoubleFloat_v_LongFloat:
   case_LongFloat_v_Fixnum:
-  case_LongFloat_v_Ratio:
   case_LongFloat_v_Bignum:
   case_LongFloat_v_SingleFloat:
   case_LongFloat_v_DoubleFloat:
@@ -1666,7 +1701,8 @@ string Ratio_O::__repr__() const {
 }
 
 Number_sp Ratio_O::abs_() const {
-  return Ratio_O::create_primitive(gc::As_unsafe<Integer_sp>(Number_O::abs(gc::As<Integer_sp>(this->_numerator))), this->_denominator);
+  return Ratio_O::create_primitive(gc::As_unsafe<Integer_sp>(Number_O::abs(gc::As<Integer_sp>(this->_numerator))),
+                                   this->_denominator);
 }
 
 bool Ratio_O::eql_(T_sp obj) const {
@@ -2666,22 +2702,7 @@ Rational_sp DoubleFloat_O::rational(double d) {
 }
 
 #ifdef CLASP_LONG_FLOAT
-Rational_sp LongFloat_O::rational_() const {
-  auto q = float_convert<long_float_t>::to_quadruple(_Value);
-
-  Number_sp n = Integer_O::create(q.significand);
-
-  if (q.exponent < 0) {
-    n /= clasp_ash(clasp_make_fixnum(1), -q.exponent);
-  } else if (q.exponent > 0) {
-    n = clasp_ash(n, q.exponent);
-  }
-
-  if (q.sign < 0)
-    return clasp_negate(n);
-
-  return n;
-}
+Rational_sp LongFloat_O::rational_() const { return float_to_rational(_Value); }
 #endif
 
 Number_sp DoubleFloat_O::log1p_() const {
