@@ -707,60 +707,6 @@ CL_DEFUN Number_sp cl___DIVIDE_(Number_sp num, List_sp numbers) {
     See file '../Copyright' for full details.
 */
 
-/*
- * In Common Lisp, comparisons between floats and integers are performed
- * via an intermediate rationalization of the floating point number. In C,
- * on the other hand, the comparison is performed by converting the integer
- * into a floating point number. However, if the double type is too small
- * this may lead to a loss of precision and two numbers being told equal
- * when, by Common Lisp standards, would not.
- */
-static int double_fix_compare(Fixnum n, double d) {
-  if ((double)n < d) {
-    return -1;
-  } else if ((double)n > d) {
-    return +1;
-  } else if (sizeof(double) > sizeof(Fixnum)) {
-    return 0;
-  } else {
-    /* When we reach here, the double type has no
-     * significant decimal part. However, as explained
-     * above, the double type is too small and integers
-     * may coerce to the same double number giving a false
-     * positive. Hence we perform the comparison in
-     * integer space. */
-    Fixnum m = d;
-    if (n == m) {
-      return 0;
-    } else if (n > m) {
-      return +1;
-    } else {
-      return -1;
-    }
-  }
-}
-
-#ifdef CLASP_LONG_FLOAT
-static int long_double_fix_compare(Fixnum n, long_float_t d) {
-  if ((long_float_t)n < d) {
-    return -1;
-  } else if ((long_float_t)n > d) {
-    return +1;
-  } else if (sizeof(long_float_t) > sizeof(Fixnum)) {
-    return 0;
-  } else {
-    Fixnum m = d;
-    if (n == m) {
-      return 0;
-    } else if (n > m) {
-      return +1;
-    } else {
-      return -1;
-    }
-  }
-}
-#endif
-
 /* ----------------------------------------------------------------------
 
    Number_O::compare
@@ -859,6 +805,12 @@ template <std::floating_point Float> inline int compare_fixnum_float(Fixnum a, F
     return 0;
 }
 
+template <std::floating_point Float> inline int compare_rational_float(Ratio_sp x, Float y) {
+  if (std::isinf(y))
+    return std::signbit(y) ? 1 : -1;
+  return Number_O::compare(x, float_to_rational(y));
+}
+
 /*! Return -1 if a<b
       0 if a == b
       +1 if a > b
@@ -891,30 +843,14 @@ int Number_O::compare(const Number_sp na, const Number_sp nb) {
     return compare_fixnum_float(na.unsafe_fixnum(), nb.unsafe_single_float());
   case_Bignum_v_SingleFloat:
     return compare_bignum_float(na, nb.unsafe_single_float());
-  case_Ratio_v_SingleFloat: {
-    float s = nb.unsafe_single_float();
-    if (std::isinf(s)) {
-      if (s > 0.0f)
-        return -1;
-      else
-        return 1;
-    } else
-      return compare(na, DoubleFloat_O::rational(s));
-  }
+  case_Ratio_v_SingleFloat:
+    return compare_rational_float(na, nb.unsafe_single_float());
   case_Fixnum_v_DoubleFloat:
     return compare_fixnum_float(na.unsafe_fixnum(), clasp_to_double(nb));
   case_Bignum_v_DoubleFloat:
     return compare_bignum_float(na, nb->as_double_());
-  case_Ratio_v_DoubleFloat: {
-    DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(nb);
-    if (d->isinf_()) {
-      if (d->plusp_())
-        return -1;
-      else
-        return 1;
-    } else
-      return compare(na, d->rational_());
-  }
+  case_Ratio_v_DoubleFloat:
+    return compare_rational_float(na, nb->as_double_());
   case_Bignum_v_Fixnum: {
     Bignum_sp ba = gc::As_unsafe<Bignum_sp>(na);
     if (ba->plusp_())
@@ -953,32 +889,16 @@ int Number_O::compare(const Number_sp na, const Number_sp nb) {
     return -compare_fixnum_float(nb.unsafe_fixnum(), na.unsafe_single_float());
   case_SingleFloat_v_Bignum:
     return -compare_bignum_float(nb, na.unsafe_single_float());
-  case_SingleFloat_v_Ratio: {
-    float s = na.unsafe_single_float();
-    if (std::isinf(s)) {
-      if (s > 0.0f)
-        return 1;
-      else
-        return -1;
-    } else
-      return compare(DoubleFloat_O::rational(s), nb);
-  }
+  case_SingleFloat_v_Ratio:
+    return -compare_rational_float(nb, na.unsafe_single_float());
   case_SingleFloat_v_SingleFloat:
     return compare_pod(na.unsafe_single_float(), nb.unsafe_single_float());
   case_DoubleFloat_v_Fixnum:
     return -compare_fixnum_float(nb.unsafe_fixnum(), clasp_to_double(na));
   case_DoubleFloat_v_Bignum:
     return -compare_bignum_float(nb, na->as_double_());
-  case_DoubleFloat_v_Ratio: {
-    DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(na);
-    if (d->isinf_()) {
-      if (d->plusp_())
-        return 1;
-      else
-        return -1;
-    } else
-      return compare(d->rational_(), nb);
-  }
+  case_DoubleFloat_v_Ratio:
+    return -compare_rational_float(nb, na->as_double_());
   case_SingleFloat_v_DoubleFloat:
   case_DoubleFloat_v_SingleFloat:
   case_DoubleFloat_v_DoubleFloat:
@@ -993,15 +913,9 @@ int Number_O::compare(const Number_sp na, const Number_sp nb) {
   case_LongFloat_v_Bignum:
     return -compare_bignum_float(nb, na->as_long_float_());
   case_Ratio_v_LongFloat:
-  case_LongFloat_v_Ratio: {
-    long_float_t a = clasp_to_long_float(na);
-    long_float_t b = clasp_to_long_float(nb);
-    if (a < b)
-      return -1;
-    if (a == b)
-      return 0;
-    return 1;
-  }
+    return compare_rational_float(na, nb->as_long_float_());
+  case_LongFloat_v_Ratio:
+    return -compare_rational_float(nb, na->as_long_float_());
   case_SingleFloat_v_LongFloat:
   case_DoubleFloat_v_LongFloat:
   case_LongFloat_v_SingleFloat:

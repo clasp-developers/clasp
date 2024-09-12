@@ -46,22 +46,6 @@ concept signed_limb = std::is_integral<T>::value && std::is_signed<T>::value && 
 template <class T>
 concept signed_limbs = std::is_integral<T>::value && std::is_signed<T>::value && sizeof(T) > sizeof(mp_limb_t);
 
-/*template <class T>
-concept unsigned_limb =
-    std::is_integral<T>::value && std::is_unsigned<T>::value && std::is_nothrow_convertible<T, mp_limb_t>::value;
-
-template <class T>
-concept unsigned_limbs =
-    std::is_integral<T>::value && std::is_unsigned<T>::value && !std::is_nothrow_convertible<T, mp_limb_t>::value;
-
-template <class T>
-concept signed_limb =
-    std::is_integral<T>::value && std::is_signed<T>::value && std::is_nothrow_convertible<T, mp_limb_t>::value;
-
-template <class T>
-concept signed_limbs =
-    std::is_integral<T>::value && std::is_signed<T>::value && !std::is_nothrow_convertible<T, mp_limb_t>::value;*/
-
 class Bignum_O;
 };
 
