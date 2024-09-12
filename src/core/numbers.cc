@@ -156,14 +156,14 @@ CL_DEFUN Fixnum_sp core__fixnum_number_of_bits() {
 
 Real_sp clasp_max2(Real_sp x, Real_sp y) {
   Real_sp max = x;
-  if (clasp_number_compare(max, y) < 0)
+  if (Number_O::compare(max, y) < 0)
     max = y;
   return max;
 }
 
 Real_sp clasp_min2(Real_sp x, Real_sp y) {
   Real_sp min = x;
-  if (clasp_number_compare(min, y) > 0)
+  if (Number_O::compare(min, y) > 0)
     min = y;
   return min;
 }
@@ -174,7 +174,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(min)dx");
 DOCGROUP(clasp);
 CL_DEFUN Real_sp cl__min(Real_sp min, List_sp nums) {
-  /* INV: type check occurs in clasp_number_compare() for the rest of
+  /* INV: type check occurs in Number_O::compare() for the rest of
            numbers, but for the first argument it's due to the Real_sp decl
            above. */
   for (auto cur : nums) {
@@ -746,7 +746,7 @@ static int long_double_fix_compare(Fixnum n, long_float_t d) {
 
 /* ----------------------------------------------------------------------
 
-   basic_compare
+   Number_O::compare
 
 */
 
@@ -769,10 +769,10 @@ template<std::floating_point Float> int compare_bignum_float(Bignum_sp x, Float 
   int64_t ylen = std::bit_width(q.significand) + q.exponent;
 
   if (xlen < ylen)
-    return q.sign;
+    return -q.sign;
 
   if (xlen > ylen)
-    return -q.sign;
+    return q.sign;
 
   const mp_limb_t* limbs = x->limbs();
 
@@ -789,11 +789,15 @@ template<std::floating_point Float> int compare_bignum_float(Bignum_sp x, Float 
       xsig = (xsig << shift) | (z >> (w - shift));
       z &= (1 << (w - shift)) - 1;
       width -= shift;
+      first = false;
 
-      if (width == 0 && q.significand > xsig)
-        return q.sign;
-      if (width == 0 && q.significand < xsig)
+      //if (width == 0)
+      //  fmt::print("{} {}\n", xsig, q.significand);
+
+      if (width == 0 && xsig < q.significand )
         return -q.sign;
+      if (width == 0 && xsig > q.significand)
+        return q.sign;
     }
 
     if (z != 0)
@@ -807,7 +811,7 @@ template<std::floating_point Float> int compare_bignum_float(Bignum_sp x, Float 
       0 if a == b
       +1 if a > b
     */
-int basic_compare(Number_sp na, Number_sp nb) {
+int Number_O::compare(const Number_sp na, const Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum: {
     gctools::Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
@@ -833,7 +837,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
   case_Bignum_v_Ratio: {
     Ratio_sp rb = gc::As<Ratio_sp>(nb);
     Integer_sp trunc = clasp_integer_divide(rb->numerator(), rb->denominator());
-    int res = basic_compare(na, trunc);
+    int res = compare(na, trunc);
     if (res == 0)
       return (Real_O::minusp(rb) ? 1 : -1);
     else
@@ -869,6 +873,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
   }
   // FIXME: Efficiency
   case_Bignum_v_SingleFloat:
+    return compare_bignum_float(na, nb.unsafe_single_float());
   case_Ratio_v_SingleFloat: {
     float s = nb.unsafe_single_float();
     if (std::isinf(s)) {
@@ -877,7 +882,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
       else
         return 1;
     } else
-      return basic_compare(na, DoubleFloat_O::rational(s));
+      return compare(na, DoubleFloat_O::rational(s));
   }
   case_Fixnum_v_DoubleFloat: {
     double b = clasp_to_double(nb);
@@ -900,6 +905,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
       return 0;
   }
   case_Bignum_v_DoubleFloat:
+    return compare_bignum_float(na, nb->as_double_());
   case_Ratio_v_DoubleFloat: {
     DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(nb);
     if (d->isinf_()) {
@@ -908,7 +914,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
       else
         return 1;
     } else
-      return basic_compare(na, d->rational_());
+      return compare(na, d->rational_());
   }
   case_Bignum_v_Fixnum: {
     Bignum_sp ba = gc::As_unsafe<Bignum_sp>(na);
@@ -923,7 +929,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
   case_Ratio_v_Bignum: {
     Ratio_sp ra = gc::As<Ratio_sp>(na);
     Integer_sp trunc = clasp_integer_divide(ra->numerator(), ra->denominator());
-    int res = basic_compare(trunc, nb);
+    int res = compare(trunc, nb);
     if (res == 0)
       return (Real_O::minusp(ra) ? -1 : 1);
     else
@@ -937,11 +943,11 @@ int basic_compare(Number_sp na, Number_sp nb) {
     Ratio_sp rb = gc::As<Ratio_sp>(nb);
     Integer_sp ta = clasp_integer_divide(ra->numerator(), ra->denominator());
     Integer_sp tb = clasp_integer_divide(rb->numerator(), rb->denominator());
-    int res = basic_compare(ta, tb);
+    int res = compare(ta, tb);
     if (res != 0)
       return res;
     else {
-      return basic_compare(ra->numerator() * rb->denominator(), rb->numerator() * ra->denominator());
+      return compare(ra->numerator() * rb->denominator(), rb->numerator() * ra->denominator());
     }
   }
   case_SingleFloat_v_Fixnum: {
@@ -965,6 +971,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
       return 0;
   }
   case_SingleFloat_v_Bignum:
+    return -compare_bignum_float(nb, na.unsafe_single_float());
   case_SingleFloat_v_Ratio: {
     float s = na.unsafe_single_float();
     if (std::isinf(s)) {
@@ -973,7 +980,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
       else
         return -1;
     } else
-      return basic_compare(DoubleFloat_O::rational(s), nb);
+      return compare(DoubleFloat_O::rational(s), nb);
   }
   case_SingleFloat_v_SingleFloat: {
     float a = na.unsafe_single_float();
@@ -1006,6 +1013,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
       return 0;
   }
   case_DoubleFloat_v_Bignum:
+    return -compare_bignum_float(nb, na->as_double_());
   case_DoubleFloat_v_Ratio: {
     DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(na);
     if (d->isinf_()) {
@@ -1014,7 +1022,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
       else
         return -1;
     } else
-      return basic_compare(d->rational_(), nb);
+      return compare(d->rational_(), nb);
   }
   case_SingleFloat_v_DoubleFloat:
   case_DoubleFloat_v_SingleFloat:
@@ -1036,10 +1044,12 @@ int basic_compare(Number_sp na, Number_sp nb) {
     return -long_double_fix_compare(nb.unsafe_fixnum(), na.as<LongFloat_O>()->get());
     break;
   case_Bignum_v_LongFloat:
+    return compare_bignum_float(na, nb->as_long_float_());
+  case_LongFloat_v_Bignum:
+    return -compare_bignum_float(nb, na->as_long_float_());
   case_Ratio_v_LongFloat:
   case_SingleFloat_v_LongFloat:
   case_DoubleFloat_v_LongFloat:
-  case_LongFloat_v_Bignum:
   case_LongFloat_v_Ratio:
   case_LongFloat_v_SingleFloat:
   case_LongFloat_v_DoubleFloat:
@@ -1067,7 +1077,7 @@ T_sp numbers_monotonic(int s, int t, List_sp args) {
   args = oCdr(args);
   while (args.notnilp()) {
     d = gc::As<Real_sp>(oCar(args));
-    dir = s * basic_compare(c, d);
+    dir = s * Number_O::compare(c, d);
     if (dir < t)
       return _lisp->_false();
     c = d;
@@ -1082,7 +1092,7 @@ T_sp numbers_monotonic_vaslist(int s, int t, Vaslist_sp args) {
   int dir;
   while (args->nargs() > 0) {
     d = gc::As<Real_sp>(args->next_arg());
-    dir = s * basic_compare(c, d);
+    dir = s * Number_O::compare(c, d);
     if (dir < t)
       return _lisp->_false();
     c = d;
@@ -1093,22 +1103,22 @@ T_sp numbers_monotonic_vaslist(int s, int t, Vaslist_sp args) {
 CL_NAME("TWO-ARG-<");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN bool two_arg__LT_(Number_sp x, Number_sp y) { return basic_compare(x, y) == -1; }
+CL_DEFUN bool two_arg__LT_(Number_sp x, Number_sp y) { return Number_O::compare(x, y) == -1; }
 
 CL_NAME("TWO-ARG-<=");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN bool two_arg__LE_(Number_sp x, Number_sp y) { return basic_compare(x, y) != 1; }
+CL_DEFUN bool two_arg__LE_(Number_sp x, Number_sp y) { return Number_O::compare(x, y) != 1; }
 
 CL_NAME("TWO-ARG->");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN bool two_arg__GT_(Number_sp x, Number_sp y) { return basic_compare(x, y) == 1; }
+CL_DEFUN bool two_arg__GT_(Number_sp x, Number_sp y) { return Number_O::compare(x, y) == 1; }
 
 CL_NAME("TWO-ARG->=");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN bool two_arg__GE_(Number_sp x, Number_sp y) { return basic_compare(x, y) != -1; }
+CL_DEFUN bool two_arg__GE_(Number_sp x, Number_sp y) { return Number_O::compare(x, y) != -1; }
 
 CL_LAMBDA(core:&va-rest args);
 CL_UNWIND_COOP(true);
@@ -2639,7 +2649,7 @@ CL_DEFUN Number_sp cl__atan(Number_sp x, T_sp y, bool yp) {
 Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i) {
   Real_sp a = gc::As<Real_sp>(Number_O::abs(r));
   Real_sp p = gc::As<Real_sp>(Number_O::abs(i));
-  int rel = clasp_number_compare(a, p);
+  int rel = Number_O::compare(a, p);
   if (rel > 0) {
     Real_sp aux = p;
     p = a;

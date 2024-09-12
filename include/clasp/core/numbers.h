@@ -180,8 +180,6 @@ void clasp_report_divide_by_zero(Number_sp x);
 
 namespace core {
 
-int basic_compare(Number_sp na, Number_sp nb);
-
 SMART(Number);
 class Number_O : public General_O {
   LISP_ABSTRACT_CLASS(core, ClPkg, Number_O, "number", General_O);
@@ -263,6 +261,8 @@ public:
   static Number_sp sub(Number_sp na, Number_sp nb);
   static Number_sp mul(Number_sp na, Number_sp nb);
   static Number_sp div(Number_sp na, Number_sp nb);
+
+  static int compare(const Number_sp na, const Number_sp nb);
 };
 
 inline Number_sp operator+(const Number_sp x, const Number_sp y) { return Number_O::add(x, y); }
@@ -831,8 +831,6 @@ public:
   virtual ~Ratio_O() {};
 };
 
-inline int clasp_number_compare(Number_sp x, Number_sp y) { return basic_compare(x, y); };
-
 Number_sp clasp_atan2(Number_sp x, Number_sp y);
 
 inline Number_sp float_sqrt(float f) {
@@ -939,10 +937,10 @@ Real_mv clasp_round2(Real_sp x, Real_sp y);
 Real_sp clasp_max2(Real_sp x, Real_sp y);
 Real_sp clasp_min2(Real_sp x, Real_sp y);
 
-#define clasp_lowereq(x, y) (clasp_number_compare((x), (y)) <= 0)
-#define clasp_greatereq(x, y) (clasp_number_compare((x), (y)) >= 0)
-#define clasp_lower(x, y) (clasp_number_compare((x), (y)) < 0)
-#define clasp_greater(x, y) (clasp_number_compare((x), (y)) > 0)
+#define clasp_lowereq(x, y) (Number_O::compare((x), (y)) <= 0)
+#define clasp_greatereq(x, y) (Number_O::compare((x), (y)) >= 0)
+#define clasp_lower(x, y) (Number_O::compare((x), (y)) < 0)
+#define clasp_greater(x, y) (Number_O::compare((x), (y)) > 0)
 
 }; // namespace core
 

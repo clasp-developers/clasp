@@ -614,7 +614,7 @@ static void clasp_round(Real_sp dividend, Real_sp divisor, Integer_sp& quotient,
   }
 
   Real_sp threshold = gc::As_unsafe<Real_sp>(Number_O::abs(divisor) / clasp_make_fixnum(2));
-  int c = clasp_number_compare(rem, threshold);
+  int c = Number_O::compare(rem, threshold);
   if (c > 0 || (c == 0 && Integer_O::oddp(tru))) {
     if (Real_O::minusp(divisor)) {
       quotient = gc::As_unsafe<Integer_sp>(tru - clasp_make_fixnum(1));
@@ -626,7 +626,7 @@ static void clasp_round(Real_sp dividend, Real_sp divisor, Integer_sp& quotient,
     return;
   }
   threshold = gc::As_unsafe<Real_sp>(clasp_negate(threshold));
-  c = clasp_number_compare(rem, threshold);
+  c = Number_O::compare(rem, threshold);
   if (c < 0 || (c == 0 && Integer_O::oddp(tru))) {
     if (Real_O::minusp(divisor)) {
       quotient = gc::As_unsafe<Integer_sp>(clasp_one_plus(tru));
