@@ -45,13 +45,6 @@ template <typename Float> T_mv float_to_digits(T_sp tdigits, Float number, T_sp 
 
   StrNs_sp digits;
 
-  if (tdigits.nilp()) {
-    digits = gc::As<StrNs_sp>(core__make_vector(cl::_sym_base_char, digit_count, true, clasp_make_fixnum(digit_count)));
-  } else {
-    digits = gc::As<StrNs_sp>(tdigits);
-    digits->resize(digit_count);
-  }
-
   if (round_position.notnilp()) {
     int pos = gc::As<Fixnum_sp>(round_position).unsafe_fixnum();
     pos = relativep.nilp() ? (position - pos) : (pos + 1);
@@ -64,11 +57,19 @@ template <typename Float> T_mv float_to_digits(T_sp tdigits, Float number, T_sp 
     if (pos < digit_count) {
       decltype(decimal.significand) divisor = std::pow(10, digit_count - pos);
       decimal.significand = (decimal.significand + (divisor / 2)) / divisor;
+      digit_count = decimal.math.count_digits(decimal.significand);
     }
   }
 
   if (decimal.significand == 0)
     position = 0;
+
+  if (tdigits.nilp()) {
+    digits = gc::As<StrNs_sp>(core__make_vector(cl::_sym_base_char, digit_count, true, clasp_make_fixnum(digit_count)));
+  } else {
+    digits = gc::As<StrNs_sp>(tdigits);
+    digits->resize(digit_count);
+  }
 
   if (Str8Ns_sp buffer8 = digits.asOrNull<Str8Ns_O>()) {
     for (size_t i = 0; i < digit_count; i++) {
