@@ -807,22 +807,49 @@ template<std::floating_point Float> int compare_bignum_float(Bignum_sp x, Float 
   return 0;
 }
 
+template<typename T> inline int compare_pod(T x, T y) {
+  if (x < y)
+    return -1;
+  if (x > y)
+    return 1;
+  return 0;
+}
+
+template<std::floating_point Float> inline int compare_fixnum_float(Fixnum a, Float b) {
+  // We can't use C's comparison because it promotes ints to floats,
+  // which is the opposite of how CL is defined.
+  // If b is out of range, this is easy. Also covers infinities.
+  // We do this instead of the more obvious most_positive_fixnum
+  // comparison mpf, being not-a-power-of-two, cannot be exactly
+  // represented and clang whines about that.
+  if (b > ((gc::Fixnum)1 << gc::fixnum_bits))
+    return -1;
+  else if (b < -((gc::Fixnum)1 << gc::fixnum_bits))
+    return 1;
+
+  gctools::Fixnum ib = b; // per C std, truncates (towards zero).
+  if (a < ib)
+    return -1;
+  else if (a > ib)
+    return 1;
+    // a == trunc(b), so we have to check on b's frac part.
+    // examples: 3.2 3, -3.2 -3, -0.2 0, 0.2 0, 0.0 0
+  else if (b > ib)
+    return -1;
+  else if (b < ib)
+    return 1;
+  else
+    return 0;
+}
+
 /*! Return -1 if a<b
       0 if a == b
       +1 if a > b
     */
 int Number_O::compare(const Number_sp na, const Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
-  case_Fixnum_v_Fixnum: {
-    gctools::Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
-    gctools::Fixnum fb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
-    if (fa < fb)
-      return -1;
-    else if (fa > fb)
-      return 1;
-    else
-      return 0;
-  }
+  case_Fixnum_v_Fixnum:
+    return compare_pod(na.unsafe_fixnum(), nb.unsafe_fixnum());
   case_Fixnum_v_Bignum: {
     // Bignums are outside the range of fixnums, so this is easy.
     // That is, negative bignums are < all fixnums,
@@ -843,35 +870,8 @@ int Number_O::compare(const Number_sp na, const Number_sp nb) {
     else
       return res;
   }
-  // We can't use C's comparison because it promotes ints to floats,
-  // which is the opposite of how CL is defined.
-  case_Fixnum_v_SingleFloat: {
-    float b = nb.unsafe_single_float();
-    // If b is out of range, this is easy. Also covers infinities.
-    // We do this instead of the more obvious most_positive_fixnum
-    // comparison mpf, being not-a-power-of-two, cannot be exactly
-    // represented and clang whines about that.
-    if (b > ((gc::Fixnum)1 << gc::fixnum_bits))
-      return -1;
-    else if (b < -((gc::Fixnum)1 << gc::fixnum_bits))
-      return 1;
-
-    gctools::Fixnum a = na.unsafe_fixnum();
-    gctools::Fixnum ib = b; // per C std, truncates (towards zero).
-    if (a < ib)
-      return -1;
-    else if (a > ib)
-      return 1;
-    // a == trunc(b), so we have to check on b's frac part.
-    // examples: 3.2 3, -3.2 -3, -0.2 0, 0.2 0, 0.0 0
-    else if (b > ib)
-      return -1;
-    else if (b < ib)
-      return 1;
-    else
-      return 0;
-  }
-  // FIXME: Efficiency
+  case_Fixnum_v_SingleFloat:
+    return compare_fixnum_float(na.unsafe_fixnum(), nb.unsafe_single_float());
   case_Bignum_v_SingleFloat:
     return compare_bignum_float(na, nb.unsafe_single_float());
   case_Ratio_v_SingleFloat: {
@@ -884,26 +884,8 @@ int Number_O::compare(const Number_sp na, const Number_sp nb) {
     } else
       return compare(na, DoubleFloat_O::rational(s));
   }
-  case_Fixnum_v_DoubleFloat: {
-    double b = clasp_to_double(nb);
-    if (b > ((gc::Fixnum)1 << gc::fixnum_bits))
-      return -1;
-    else if (b < -((gc::Fixnum)1 << gc::fixnum_bits))
-      return 1;
-
-    gctools::Fixnum a = na.unsafe_fixnum();
-    gctools::Fixnum ib = b;
-    if (a < ib)
-      return -1;
-    else if (a > ib)
-      return 1;
-    else if (b > ib)
-      return -1;
-    else if (b < ib)
-      return 1;
-    else
-      return 0;
-  }
+  case_Fixnum_v_DoubleFloat:
+    return compare_fixnum_float(na.unsafe_fixnum(), clasp_to_double(nb));
   case_Bignum_v_DoubleFloat:
     return compare_bignum_float(na, nb->as_double_());
   case_Ratio_v_DoubleFloat: {
@@ -950,26 +932,8 @@ int Number_O::compare(const Number_sp na, const Number_sp nb) {
       return compare(ra->numerator() * rb->denominator(), rb->numerator() * ra->denominator());
     }
   }
-  case_SingleFloat_v_Fixnum: {
-    float a = na.unsafe_single_float();
-    if (a > ((gc::Fixnum)1 << gc::fixnum_bits))
-      return 1;
-    else if (a < -((gc::Fixnum)1 << gc::fixnum_bits))
-      return -1;
-
-    gctools::Fixnum b = nb.unsafe_fixnum();
-    gctools::Fixnum ia = a;
-    if (ia < b)
-      return -1;
-    else if (ia > b)
-      return 1;
-    else if (a > ia)
-      return 1;
-    else if (a < ia)
-      return -1;
-    else
-      return 0;
-  }
+  case_SingleFloat_v_Fixnum:
+    return -compare_fixnum_float(nb.unsafe_fixnum(), na.unsafe_single_float());
   case_SingleFloat_v_Bignum:
     return -compare_bignum_float(nb, na.unsafe_single_float());
   case_SingleFloat_v_Ratio: {
@@ -982,36 +946,10 @@ int Number_O::compare(const Number_sp na, const Number_sp nb) {
     } else
       return compare(DoubleFloat_O::rational(s), nb);
   }
-  case_SingleFloat_v_SingleFloat: {
-    float a = na.unsafe_single_float();
-    float b = nb.unsafe_single_float();
-    if (a < b)
-      return -1;
-    else if (a > b)
-      return 1;
-    else
-      return 0;
-  }
-  case_DoubleFloat_v_Fixnum: {
-    double a = clasp_to_double(na);
-    if (a > ((gc::Fixnum)1 << gc::fixnum_bits))
-      return 1;
-    else if (a < -((gc::Fixnum)1 << gc::fixnum_bits))
-      return -1;
-
-    gctools::Fixnum b = nb.unsafe_fixnum();
-    gctools::Fixnum ia = a;
-    if (ia < b)
-      return -1;
-    else if (a > b)
-      return 1;
-    else if (a > ia)
-      return 1;
-    else if (a < ia)
-      return -1;
-    else
-      return 0;
-  }
+  case_SingleFloat_v_SingleFloat:
+    return compare_pod(na.unsafe_single_float(), nb.unsafe_single_float());
+  case_DoubleFloat_v_Fixnum:
+    return -compare_fixnum_float(nb.unsafe_fixnum(), clasp_to_double(na));
   case_DoubleFloat_v_Bignum:
     return -compare_bignum_float(nb, na->as_double_());
   case_DoubleFloat_v_Ratio: {
@@ -1026,34 +964,19 @@ int Number_O::compare(const Number_sp na, const Number_sp nb) {
   }
   case_SingleFloat_v_DoubleFloat:
   case_DoubleFloat_v_SingleFloat:
-  case_DoubleFloat_v_DoubleFloat: {
-    double a = clasp_to_double(na);
-    double b = clasp_to_double(nb);
-    if (a < b)
-      return -1;
-    else if (a > b)
-      return 1;
-    else
-      return 0;
-  }
+  case_DoubleFloat_v_DoubleFloat:
+    return compare_pod(clasp_to_double(na), clasp_to_double(nb));
 #ifdef CLASP_LONG_FLOAT
   case_Fixnum_v_LongFloat:
-    return long_double_fix_compare(na.unsafe_fixnum(), nb.as<LongFloat_O>()->get());
-    break;
+    return compare_fixnum_float(na.unsafe_fixnum(), nb.as<LongFloat_O>()->get());
   case_LongFloat_v_Fixnum:
-    return -long_double_fix_compare(nb.unsafe_fixnum(), na.as<LongFloat_O>()->get());
-    break;
+    return -compare_fixnum_float(nb.unsafe_fixnum(), na.as<LongFloat_O>()->get());
   case_Bignum_v_LongFloat:
     return compare_bignum_float(na, nb->as_long_float_());
   case_LongFloat_v_Bignum:
     return -compare_bignum_float(nb, na->as_long_float_());
   case_Ratio_v_LongFloat:
-  case_SingleFloat_v_LongFloat:
-  case_DoubleFloat_v_LongFloat:
-  case_LongFloat_v_Ratio:
-  case_LongFloat_v_SingleFloat:
-  case_LongFloat_v_DoubleFloat:
-  case_LongFloat_v_LongFloat: {
+  case_LongFloat_v_Ratio: {
     long_float_t a = clasp_to_long_float(na);
     long_float_t b = clasp_to_long_float(nb);
     if (a < b)
@@ -1062,6 +985,12 @@ int Number_O::compare(const Number_sp na, const Number_sp nb) {
       return 0;
     return 1;
   }
+  case_SingleFloat_v_LongFloat:
+  case_DoubleFloat_v_LongFloat:
+  case_LongFloat_v_SingleFloat:
+  case_LongFloat_v_DoubleFloat:
+  case_LongFloat_v_LongFloat:
+    return compare_pod(clasp_to_long_float(na), clasp_to_long_float(nb));
 #endif
   default:
     not_comparable_error(na, nb);
@@ -1163,11 +1092,8 @@ CL_DEFUN T_sp cl___GE_(Vaslist_sp args) {
 /*! Return true if two numbers are equal otherwise false */
 bool basic_equalp(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
-  case_Fixnum_v_Fixnum: {
-    gctools::Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
-    gctools::Fixnum fb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
-    return fa == fb;
-  }
+  case_Fixnum_v_Fixnum:
+    return na.unsafe_fixnum() == nb.unsafe_fixnum();
   case_Fixnum_v_Bignum:
   case_Bignum_v_Fixnum:
     // bignums are never in fixnum range.
@@ -1196,7 +1122,8 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
     else
       return basic_equalp(na, d->rational_());
   }
-  case_Bignum_v_Bignum: { return (core__next_compare(gc::As_unsafe<Bignum_sp>(na), gc::As_unsafe<Bignum_sp>(nb)) == 0); }
+  case_Bignum_v_Bignum:
+    return core__next_compare(gc::As_unsafe<Bignum_sp>(na), gc::As_unsafe<Bignum_sp>(nb)) == 0;
   case_Ratio_v_Ratio: {
     // ratios are normalized
     Ratio_sp ra = gc::As<Ratio_sp>(na);
@@ -1212,11 +1139,8 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
     else
       return basic_equalp(DoubleFloat_O::rational(s), nb);
   }
-  case_SingleFloat_v_SingleFloat: {
-    float a = clasp_to_float(na);
-    float b = clasp_to_float(nb);
-    return a == b;
-  }
+  case_SingleFloat_v_SingleFloat:
+    return na.unsafe_single_float() == nb.unsafe_single_float();
   case_DoubleFloat_v_Fixnum:
   case_DoubleFloat_v_Bignum:
   case_DoubleFloat_v_Ratio: {
@@ -1228,11 +1152,8 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
   }
   case_SingleFloat_v_DoubleFloat:
   case_DoubleFloat_v_SingleFloat:
-  case_DoubleFloat_v_DoubleFloat: {
-    double a = clasp_to_double(na);
-    double b = clasp_to_double(nb);
-    return a == b;
-  }
+  case_DoubleFloat_v_DoubleFloat:
+    return clasp_to_double(na) == clasp_to_double(nb);
   case_Fixnum_v_LongFloat:
   case_Bignum_v_LongFloat:
   case_Ratio_v_LongFloat:
@@ -1243,30 +1164,22 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
   case_LongFloat_v_Bignum:
   case_LongFloat_v_SingleFloat:
   case_LongFloat_v_DoubleFloat:
-  case_LongFloat_v_LongFloat: {
-    long_float_t a = clasp_to_long_float(na);
-    long_float_t b = clasp_to_long_float(nb);
-    return a == b;
-  }
+  case_LongFloat_v_LongFloat:
+    return clasp_to_long_float(na) == clasp_to_long_float(nb);
   case_Complex_v_LongFloat:
   case_Complex_v_Fixnum:
   case_Complex_v_Bignum:
   case_Complex_v_Ratio:
   case_Complex_v_SingleFloat:
-  case_Complex_v_DoubleFloat: {
-    Number_sp aux = na;
-    na = nb;
-    nb = aux;
-    goto Complex_v_Y;
-  }
+  case_Complex_v_DoubleFloat:
+    return Number_O::zerop(gc::As<Complex_sp>(na)->imaginary()) && basic_equalp(nb, gc::As<Complex_sp>(na)->real());
   case_Fixnum_v_Complex:
   case_Bignum_v_Complex:
   case_Ratio_v_Complex:
   case_SingleFloat_v_Complex:
   case_DoubleFloat_v_Complex:
   case_LongFloat_v_Complex:
-  Complex_v_Y:
-    return (Number_O::zerop(gc::As<Complex_sp>(nb)->imaginary()) && basic_equalp(na, gc::As<Complex_sp>(nb)->real()));
+    return Number_O::zerop(gc::As<Complex_sp>(nb)->imaginary()) && basic_equalp(na, gc::As<Complex_sp>(nb)->real());
   case_Complex_v_Complex:
     return (basic_equalp(gc::As<Complex_sp>(na)->real(), gc::As<Complex_sp>(nb)->real()) &&
             basic_equalp(gc::As<Complex_sp>(na)->imaginary(), gc::As<Complex_sp>(nb)->imaginary()));
