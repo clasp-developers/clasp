@@ -929,23 +929,6 @@ int Number_O::compare(const Number_sp na, const Number_sp nb) {
   MATH_DISPATCH_END();
 }
 
-/// this is used for comparison of reals, not for complex, so use Real_sp
-T_sp numbers_monotonic(int s, int t, List_sp args) {
-  Real_sp c = gc::As<Real_sp>(oCar(args));
-  Real_sp d;
-  int dir;
-  args = oCdr(args);
-  while (args.notnilp()) {
-    d = gc::As<Real_sp>(oCar(args));
-    dir = s * Number_O::compare(c, d);
-    if (dir < t)
-      return _lisp->_false();
-    c = d;
-    args = oCdr(args);
-  }
-  return _lisp->_true();
-};
-
 T_sp numbers_monotonic_vaslist(int s, int t, Vaslist_sp args) {
   Real_sp c = gc::As<Real_sp>(args->next_arg());
   Real_sp d;
@@ -1048,23 +1031,15 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
     // Normalized ratios are never integers.
     return false;
   case_Fixnum_v_SingleFloat:
-  case_Bignum_v_SingleFloat: {
-    float s = nb.unsafe_single_float();
-    if (std::isinf(s))
-      return false;
-    else
-      return basic_equalp(na, DoubleFloat_O::rational(s));
-  }
+    return compare_fixnum_float(na.unsafe_fixnum(), nb.unsafe_single_float()) == 0;
+  case_Bignum_v_SingleFloat:
+    return compare_bignum_float(na, nb.unsafe_single_float()) == 0;
   case_Ratio_v_SingleFloat:
     return equalp_ratio_float(na, nb.unsafe_single_float());
   case_Fixnum_v_DoubleFloat:
-  case_Bignum_v_DoubleFloat: {
-    DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(nb);
-    if (d->isinf_())
-      return false;
-    else
-      return basic_equalp(na, d->rational_());
-  }
+    return compare_fixnum_float(na.unsafe_fixnum(), nb->as_double_()) == 0;
+  case_Bignum_v_DoubleFloat:
+    return compare_bignum_float(na, nb->as_double_()) == 0;
   case_Ratio_v_DoubleFloat:
     return equalp_ratio_float(na, nb->as_double_());
   case_Bignum_v_Bignum:
@@ -1073,28 +1048,20 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
     // ratios are normalized
     Ratio_sp ra = gc::As<Ratio_sp>(na);
     Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    return (basic_equalp(ra->numerator(), rb->numerator()) && basic_equalp(ra->denominator(), rb->denominator()));
+    return basic_equalp(ra->numerator(), rb->numerator()) && basic_equalp(ra->denominator(), rb->denominator());
   }
   case_SingleFloat_v_Fixnum:
-  case_SingleFloat_v_Bignum: {
-    float s = na.unsafe_single_float();
-    if (std::isinf(s))
-      return false;
-    else
-      return basic_equalp(DoubleFloat_O::rational(s), nb);
-  }
+    return compare_fixnum_float(nb.unsafe_fixnum(), na.unsafe_single_float()) == 0;
+  case_SingleFloat_v_Bignum:
+    return compare_bignum_float(nb, na.unsafe_single_float()) == 0;
   case_SingleFloat_v_Ratio:
     return equalp_ratio_float(nb, na.unsafe_single_float());
   case_SingleFloat_v_SingleFloat:
     return na.unsafe_single_float() == nb.unsafe_single_float();
   case_DoubleFloat_v_Fixnum:
-  case_DoubleFloat_v_Bignum: {
-    DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(na);
-    if (d->isinf_())
-      return false;
-    else
-      return basic_equalp(d->rational_(), nb);
-  }
+    return compare_fixnum_float(nb.unsafe_fixnum(), na->as_double_()) == 0;
+  case_DoubleFloat_v_Bignum:
+    return compare_bignum_float(nb, na->as_double_()) == 0;
   case_DoubleFloat_v_Ratio:
     return equalp_ratio_float(nb, na->as_double_());
   case_SingleFloat_v_DoubleFloat:
@@ -1105,12 +1072,16 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
     return equalp_ratio_float(na, clasp_to_long_float(nb));
   case_LongFloat_v_Ratio:
     return equalp_ratio_float(nb, clasp_to_long_float(na));
-  case_Fixnum_v_LongFloat:
   case_Bignum_v_LongFloat:
+    return compare_bignum_float(na, nb->as_long_float_()) == 0;
+  case_LongFloat_v_Bignum:
+    return compare_bignum_float(nb, na->as_long_float_()) == 0;
+  case_Fixnum_v_LongFloat:
+    return compare_fixnum_float(na.unsafe_fixnum(), nb->as_long_float_()) == 0;
+  case_LongFloat_v_Fixnum:
+    return compare_fixnum_float(nb.unsafe_fixnum(), na->as_long_float_()) == 0;
   case_SingleFloat_v_LongFloat:
   case_DoubleFloat_v_LongFloat:
-  case_LongFloat_v_Fixnum:
-  case_LongFloat_v_Bignum:
   case_LongFloat_v_SingleFloat:
   case_LongFloat_v_DoubleFloat:
   case_LongFloat_v_LongFloat:
@@ -1130,8 +1101,8 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
   case_LongFloat_v_Complex:
     return Number_O::zerop(gc::As<Complex_sp>(nb)->imaginary()) && basic_equalp(na, gc::As<Complex_sp>(nb)->real());
   case_Complex_v_Complex:
-    return (basic_equalp(gc::As<Complex_sp>(na)->real(), gc::As<Complex_sp>(nb)->real()) &&
-            basic_equalp(gc::As<Complex_sp>(na)->imaginary(), gc::As<Complex_sp>(nb)->imaginary()));
+    return basic_equalp(gc::As<Complex_sp>(na)->real(), gc::As<Complex_sp>(nb)->real()) &&
+           basic_equalp(gc::As<Complex_sp>(na)->imaginary(), gc::As<Complex_sp>(nb)->imaginary());
   default:
     not_comparable_error(na, nb);
   };
