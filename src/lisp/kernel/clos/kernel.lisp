@@ -214,23 +214,17 @@
                                 args-specializers)))
 
 (defun compare-specializers-lists (spec-list-1 spec-list-2 args-specializers)
-  (when (or spec-list-1 spec-list-2)
-    (ecase (compare-specializers (first spec-list-1)
-				 (first spec-list-2)
-				 (first args-specializers))
-      (1 '1)
-      (2 '2)
-      (= 
-       (compare-specializers-lists (cdr spec-list-1)
-				   (cdr spec-list-2)
-				   (cdr args-specializers)))
-      ((nil)
-       (error "The type specifiers ~S and ~S can not be disambiguated~
+  (loop for spec1 in spec-list-1 for spec2 in spec-list-2
+        for arg-specializer in args-specializers
+        for c = (compare-specializers spec1 spec2 arg-specializer)
+        do (case c
+             ;; if =, just keep going
+             ((1) (return 1))
+             ((2) (return 2))
+             ((nil)
+              (error "The type specifiers ~S and ~S can not be disambiguated~
                   with respect to the argument specializer: ~S"
-	      (or (car spec-list-1) t)
-	      (or (car spec-list-2) t)
-	      (car args-specializers)))))
-  )
+	             (or spec1 t) (or spec2 t) arg-specializer)))))
 
 (defun fast-subtypep (spec1 spec2)
   ;; Specialized version of subtypep which uses the fact that spec1
