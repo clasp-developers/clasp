@@ -251,10 +251,14 @@
       (cond ((eq spec-1 spec-2) '=)
             ((fast-subtypep spec-1 spec-2) '1)
             ((fast-subtypep spec-2 spec-1) '2)
-            ((eql-specializer-p spec-1) '1) ; is this engough?
-            ((eql-specializer-p spec-2) '2) ; Beppe
-            ((member spec-1 (member spec-2 cpl)) '2)
-            ((member spec-2 (member spec-1 cpl)) '1)
+            ;; Per CLHS 7.6.6.1.2, an eql specializer is considered
+            ;; more specific than a class. Also, for an eql specializer
+            ;; to be compared to a class here, they must both be
+            ;; applicable, and as such the eql is a "sub specializer".
+            ((eql-specializer-p spec-1) '1)
+            ((eql-specializer-p spec-2) '2)
+            ((member spec-1 (rest (member spec-2 cpl))) '2)
+            ((member spec-2 (rest (member spec-1 cpl))) '1)
 	    ;; This will force an error in the caller
 	    (t nil)))))
 
