@@ -193,20 +193,18 @@
         (setf args-specializers
               (funcall f (subseq args-specializers 0
                                  (length (generic-function-argument-precedence-order gf))))))
-      ;; then order the list
-      (do* ((scan applicable-list)
-            (most-specific (first scan) (first scan))
-            (ordered-list))
-           ((null (cdr scan))
-            (when most-specific
-              ;; at least one method
-              (nreverse
-               (push most-specific ordered-list))))
-        (dolist (meth (cdr scan))
-          (when (eql (compare-methods most-specific meth args-specializers f) 2)
-            (setq most-specific meth)))
-        (setq scan (delete most-specific scan))
-        (push most-specific ordered-list)))))
+      ;; then order the list. Simple selection sort. FIXME?
+      ;; note that this mutates the list, so be sure applicable-list
+      ;; is fresh.
+      (loop for to-sort on applicable-list
+            do (loop for comparees on (rest to-sort)
+                     for comparee = (first comparees)
+                     for most-specific = (first to-sort)
+                     when (eql (compare-methods most-specific comparee
+                                                args-specializers f)
+                               2)
+                       do (rotatef (first comparees) (first to-sort))))
+      applicable-list)))
 
 (defun compare-methods (method-1 method-2 args-specializers f)
   (let* ((specializers-list-1 (safe-method-specializers method-1))
