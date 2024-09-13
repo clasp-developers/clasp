@@ -750,7 +750,7 @@ template <std::floating_point Float> int compare_bignum_float(Bignum_sp x, Float
       auto w = first ? std::bit_width(z) : limb_width;
       auto shift = std::min(w, width);
       xsig = (xsig << shift) | (z >> (w - shift));
-      z &= (1 << (w - shift)) - 1;
+      z &= (mp_limb_t{1} << (w - shift)) - mp_limb_t{1};
       width -= shift;
       first = false;
 
@@ -763,7 +763,7 @@ template <std::floating_point Float> int compare_bignum_float(Bignum_sp x, Float
         return q.sign;
     }
 
-    if (z != 0)
+    if (width == 0 && z != 0)
       return q.sign;
   }
 

@@ -100,6 +100,8 @@ LtvcReturn ltvc_make_float(gctools::GCRootsInModule* holder, char tag, size_t in
 LtvcReturn ltvc_make_double(gctools::GCRootsInModule* holder, char tag, size_t index, double f);
 #ifdef CLASP_LONG_FLOAT
 LtvcReturn ltvc_make_long_float(gctools::GCRootsInModule* holder, char tag, size_t index, core::long_float_t f);
+#else
+LtvcReturn ltvc_make_long_float(gctools::GCRootsInModule* holder, char tag, size_t index, core::long_float_t f);
 #endif
 LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* lambdaName, size_t function_index,
                         size_t function_info_index);

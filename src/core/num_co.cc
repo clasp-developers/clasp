@@ -968,7 +968,9 @@ CL_DEFUN Complex_sp cl__complex(Real_sp r, Real_sp i) { return gc::As_unsafe<Com
 
 Number_sp DoubleFloat_O::imagpart_() const { return create(std::copysign(double_float_t{0.0}, _Value)); }
 
+#ifdef CLASP_LONG_FLOAT
 Number_sp LongFloat_O::imagpart_() const { return create(std::copysign(long_float_t{0.0}, _Value)); }
+#endif
 
 CL_LAMBDA(x);
 CL_DECLARE();

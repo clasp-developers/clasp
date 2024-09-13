@@ -1503,6 +1503,19 @@ long_float_t ltvc_read_long_float(char*& bytecode, char* byteend, bool log) {
     fmt::print("{}:{}:{} -> '{}'\n", __FILE__, __LINE__, __FUNCTION__, data);
   return data;
 }
+#else
+double_float_t ltvc_read_long_float(char*& bytecode, char* byteend, bool log) {
+  SELF_CHECK(long_float_t, stream, index);
+  char data[8];
+  if (bytecode > byteend - sizeof(data))
+    SIMPLE_ERROR("Unexpected EOF");
+  for (size_t i = 0; i < sizeof(data); ++i) {
+    data[i] = *bytecode++;
+  }
+  if (log)
+    fmt::print("{}:{}:{} -> '{}'\n", __FILE__, __LINE__, __FUNCTION__, data);
+  return double_float_t{0.0};
+}
 #endif
 
 CL_DOCSTRING(R"dx(tag is (0|1|2) where 0==literal, 1==transient, 2==immediate)dx");
