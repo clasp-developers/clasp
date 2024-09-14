@@ -925,14 +925,14 @@ template <typename Float> inline Real_mv integer_decode_float(Float f) {
   switch (std::fpclassify(f)) {
   case FP_INFINITE:
     feraiseexcept(FE_INVALID);
-    q = float_convert<Float>::to_quadruple(std::signbit(f) ? std::numeric_limits<Float>::min() : std::numeric_limits<Float>::max());
+    q = float_convert<Float>::float_to_quadruple(std::signbit(f) ? std::numeric_limits<Float>::min() : std::numeric_limits<Float>::max());
     break;
   case FP_NAN:
     feraiseexcept(FE_INVALID);
-    q = float_convert<Float>::to_quadruple(std::signbit(f) ? Float{-0.0} : Float{0.0});
+    q = float_convert<Float>::float_to_quadruple(std::signbit(f) ? Float{-0.0} : Float{0.0});
     break;
   default:
-    q = float_convert<Float>::to_quadruple(f);
+    q = float_convert<Float>::float_to_quadruple(f);
     break;
   }
 

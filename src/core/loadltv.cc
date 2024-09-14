@@ -8,17 +8,17 @@
 #include <sys/mman.h>
 #include <clasp/core/core.h>
 #include <clasp/core/bformat.h>
-#include <clasp/core/ql.h>                // ql::list
-#include <clasp/core/primitives.h>        // core__ensure_function_cell
-#include <clasp/core/bytecode.h>          // modules, functions
-#include <clasp/core/lispStream.h>        // I/O
-#include <clasp/core/hashTable.h>         // making hash tables
-#include <clasp/core/bignum.h>            // making bignums
-#include <clasp/core/package.h>           // making packages
-#include <clasp/core/pathname.h>          // making pathnames
-#include <clasp/core/unixfsys.h>          // cl__truename
-#include <clasp/llvmo/llvmoPackage.h>     // cmp__compile_trampoline
-#include <clasp/llvmo/llvmoExpose.h>      // native module stuff
+#include <clasp/core/ql.h>            // ql::list
+#include <clasp/core/primitives.h>    // core__ensure_function_cell
+#include <clasp/core/bytecode.h>      // modules, functions
+#include <clasp/core/lispStream.h>    // I/O
+#include <clasp/core/hashTable.h>     // making hash tables
+#include <clasp/core/bignum.h>        // making bignums
+#include <clasp/core/package.h>       // making packages
+#include <clasp/core/pathname.h>      // making pathnames
+#include <clasp/core/unixfsys.h>      // cl__truename
+#include <clasp/llvmo/llvmoPackage.h> // cmp__compile_trampoline
+#include <clasp/llvmo/llvmoExpose.h>  // native module stuff
 #include <clasp/llvmo/jit.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/core/lispStream.h>        // stream_read_byte8
@@ -187,20 +187,47 @@ struct loadltv {
     return converter.i;
   }
 
-  inline float read_binary32() { return float_convert<float>::from_bits(read_u32()); }
+  inline long double read_binary16() {
+    __uint128_t b = read_u80();
+#ifdef CLASP_SHORT_FLOAT_BINARY16
+    return float_convert<short_float_t>::bits_to_float(b);
+#else
+    return float_convert<short_float_t>::quadruple_to_float(
+        float_convert<short_float_t>::bits_to_quadruple<float_traits<5, 11>>(b));
+#endif
+  }
 
-  inline double read_binary64() { return float_convert<double>::from_bits(read_u64()); }
+  inline float read_binary32() { return float_convert<float>::bits_to_float(read_u32()); }
+
+  inline double read_binary64() { return float_convert<double>::bits_to_float(read_u64()); }
 
   inline long double read_binary80() {
     __uint128_t b = read_u80();
-    return float_convert<long double>::from_bits(b); }
+#ifdef CLASP_LONG_FLOAT_BINARY80
+    return float_convert<long_float_t>::bits_to_float(b);
+#else
+    return float_convert<long_float_t>::quadruple_to_float(
+        float_convert<long_float_t>::bits_to_quadruple<float_traits<15, 64>>(b));
+#endif
+  }
+
+  inline long double read_binary128() {
+    __uint128_t b = read_u128();
+#ifdef CLASP_LONG_FLOAT_BINARY128
+    return float_convert<long_float_t>::bits_to_float(b);
+#else
+    return float_convert<long_float_t>::quadruple_to_float(
+        float_convert<long_float_t>::bits_to_quadruple<float_traits<15, 113>>(b));
+#endif
+  }
 
   // Read a UTF-8 continuation byte or signal an error if invalid.
   inline uint8_t read_continuation_byte() {
     uint8_t byte = read_u8();
     if (byte >> 6 == 0b10)
       return byte & 0b111111;
-    else SIMPLE_ERROR("Invalid UTF-8 in FASL: invalid continuation byte {:02x}", byte);
+    else
+      SIMPLE_ERROR("Invalid UTF-8 in FASL: invalid continuation byte {:02x}", byte);
   }
 
   // Read a UTF-8 encoded character.
@@ -209,18 +236,14 @@ struct loadltv {
     if (head >> 7 == 0)
       return head;
     else if (head >> 5 == 0b110)
-      return (claspCharacter)(head & 0b11111) << 6
-        | read_continuation_byte();
+      return (claspCharacter)(head & 0b11111) << 6 | read_continuation_byte();
     else if (head >> 4 == 0b1110)
-      return (claspCharacter)(head & 0b1111) << 12
-        | (claspCharacter)read_continuation_byte() << 6
-        | read_continuation_byte();
+      return (claspCharacter)(head & 0b1111) << 12 | (claspCharacter)read_continuation_byte() << 6 | read_continuation_byte();
     else if (head >> 3 == 0b11110)
-      return (claspCharacter)(head & 0b111) << 18
-        | (claspCharacter)read_continuation_byte() << 12
-        | (claspCharacter)read_continuation_byte() << 6
-        | read_continuation_byte();
-    else SIMPLE_ERROR("Invalid UTF-8 in FASL: invalid header byte {:02x}", head);
+      return (claspCharacter)(head & 0b111) << 18 | (claspCharacter)read_continuation_byte() << 12 |
+             (claspCharacter)read_continuation_byte() << 6 | read_continuation_byte();
+    else
+      SIMPLE_ERROR("Invalid UTF-8 in FASL: invalid header byte {:02x}", head);
   }
 
   inline uint8_t read_opcode() { return read_u8(); }
@@ -240,9 +263,7 @@ struct loadltv {
     }
   }
 
-  inline size_t next_index() {
-    return _next_index++;
-  }
+  inline size_t next_index() { return _next_index++; }
 
   void check_initialization() {
     // bool vectors are apparently stupid and weird so using std algorithms
@@ -543,6 +564,11 @@ struct loadltv {
     set_ltv(bignum_result(ssize, limbs), index);
   }
 
+  void op_binary16() {
+    size_t index = next_index();
+    set_ltv(ShortFloat_O::create(read_binary16()), index);
+  }
+
   void op_binary32() {
     size_t index = next_index();
     set_ltv(clasp_make_single_float(read_binary32()), index);
@@ -556,6 +582,11 @@ struct loadltv {
   void op_binary80() {
     size_t index = next_index();
     set_ltv(LongFloat_O::create(read_binary80()), index);
+  }
+
+  void op_binary128() {
+    size_t index = next_index();
+    set_ltv(LongFloat_O::create(read_binary128()), index);
   }
 
   void op_ratio() {
@@ -1033,6 +1064,9 @@ struct loadltv {
     case bytecode_ltv::setf_literals:
       op_slits();
       break; // setf literals
+    case bytecode_ltv::make_binary16:
+      op_binary16();
+      break;
     case bytecode_ltv::make_binary32:
       op_binary32();
       break;
@@ -1041,6 +1075,9 @@ struct loadltv {
       break;
     case bytecode_ltv::make_binary80:
       op_binary80();
+      break;
+    case bytecode_ltv::make_binary128:
+      op_binary128();
       break;
     case bytecode_ltv::funcall_create:
       op_create();
@@ -1106,7 +1143,7 @@ CL_DEFUN bool load_bytecode(T_sp filename, bool verbose, bool print, T_sp extern
 struct ltv_MmapInfo {
   uint8_t* _Memory;
   size_t _Len;
-  ltv_MmapInfo(uint8_t* mem, size_t len) : _Memory(mem), _Len(len){};
+  ltv_MmapInfo(uint8_t* mem, size_t len) : _Memory(mem), _Len(len) {};
 };
 
 CL_LAMBDA(output-designator files &optional (verbose nil));

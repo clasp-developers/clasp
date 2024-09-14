@@ -50,7 +50,7 @@ THE SOFTWARE.
 namespace core {
 
 template <std::floating_point Float> Rational_sp float_to_rational(Float f) {
-  auto q = float_convert<long_float_t>::to_quadruple(f);
+  auto q = float_convert<long_float_t>::float_to_quadruple(f);
 
   Number_sp n = Integer_O::create(q.significand);
 
@@ -715,7 +715,7 @@ CL_DEFUN Number_sp cl___DIVIDE_(Number_sp num, List_sp numbers) {
 
 template <std::floating_point Float> int compare_bignum_float(Bignum_sp x, Float y) {
   constexpr size_t limb_width = 8 * sizeof(mp_limb_t);
-  auto q = float_convert<Float>::to_quadruple(y);
+  auto q = float_convert<Float>::float_to_quadruple(y);
 
   if (q.category != float_convert<Float>::category::finite)
     return q.sign;
@@ -1006,7 +1006,7 @@ CL_DEFUN T_sp cl___GE_(Vaslist_sp args) {
 bool basic_equalp(Number_sp na, Number_sp nb);
 
 template <std::floating_point Float> bool equalp_ratio_float(Ratio_sp x, Float y) {
-  auto q = float_convert<Float>::to_quadruple(y);
+  auto q = float_convert<Float>::float_to_quadruple(y);
 
   if (q.category != float_convert<Float>::category::finite || q.significand == 0 || q.exponent >= 0 ||
       (q.sign > 0 && Real_O::minusp(x)) || (q.sign < 0 && Real_O::plusp(x)))
@@ -1404,7 +1404,7 @@ CL_DEFMETHOD Integer_sp ShortFloat_O::castToInteger() const {
 Number_sp ShortFloat_O::abs_() const { return ShortFloat_O::create(fabs(this->_Value)); }
 
 void ShortFloat_O::sxhash_(HashGenerator& hg) const {
-  hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<float>::to_bits(this->_Value));
+  hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<float>::float_to_bits(this->_Value));
 }
 
 bool ShortFloat_O::eql_(T_sp obj) const {
@@ -1448,7 +1448,7 @@ CL_DEFMETHOD Integer_sp DoubleFloat_O::castToInteger() const {
 Number_sp DoubleFloat_O::signum_() const { return DoubleFloat_O::create(this->_Value > 0.0 ? 1 : (this->_Value < 0.0 ? -1 : 0)); }
 
 void DoubleFloat_O::sxhash_(HashGenerator& hg) const {
-  hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<double>::to_bits(this->_Value));
+  hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<double>::float_to_bits(this->_Value));
 }
 
 bool DoubleFloat_O::eql_(T_sp obj) const {
@@ -1493,7 +1493,7 @@ CL_DEFMETHOD Integer_sp LongFloat_O::castToInteger() const {
 Number_sp LongFloat_O::reciprocal_() const { return LongFloat_O::create(long_float_t{1.0} / this->_Value); }
 
 void LongFloat_O::sxhash_(HashGenerator& hg) const {
-  hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<long_float_t>::to_bits(this->_Value));
+  hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<long_float_t>::float_to_bits(this->_Value));
 }
 
 bool LongFloat_O::eql_(T_sp obj) const {
@@ -1567,10 +1567,10 @@ template <typename Float> inline Float ratio_to_float(Integer_sp num, Integer_sp
     num = gc::As_unsafe<Integer_sp>(clasp_negate(num));
   }
 
-  q.exponent = clasp_integer_length(num) - clasp_integer_length(den) - float_convert<Float>::significand_width - 1;
+  q.exponent = clasp_integer_length(num) - clasp_integer_length(den) - float_convert<Float>::traits::significand_width - 1;
   q.significand = clasp_to_integral<typename float_convert<Float>::uint_t>(clasp_integer_divide(clasp_ash(num, -q.exponent), den));
 
-  return float_convert<Float>::from_quadruple(q);
+  return float_convert<Float>::quadruple_to_float(q);
 }
 
 float Ratio_O::as_float_() const { return ratio_to_float<float>(this->_numerator, this->_denominator); }
@@ -2814,7 +2814,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Return the IEEE754 binary32 (single) representation of a single float, as an integer.)dx");
 DOCGROUP(clasp);
 CL_DEFUN Integer_sp ext__single_float_to_bits(SingleFloat_sp singleFloat) {
-  return Integer_O::create(float_convert<float>::to_bits(unbox_single_float(singleFloat)));
+  return Integer_O::create(float_convert<float>::float_to_bits(unbox_single_float(singleFloat)));
 }
 
 CL_LAMBDA(bit-representation);
@@ -2823,7 +2823,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Convert an IEEE754 binary32 (single) representation, an integer, to a single float.)dx");
 DOCGROUP(clasp);
 CL_DEFUN SingleFloat_sp ext__bits_to_single_float(Integer_sp integer) {
-  return make_single_float(float_convert<float>::from_bits(clasp_to_uint32_t(integer)));
+  return make_single_float(float_convert<float>::bits_to_float(clasp_to_uint32_t(integer)));
 };
 
 CL_LAMBDA(doubleFloat);
@@ -2832,7 +2832,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Return the IEEE754 binary64 (double) bit representation of a double float as an integer.)dx");
 DOCGROUP(clasp);
 CL_DEFUN Integer_sp ext__double_float_to_bits(DoubleFloat_sp doubleFloat) {
-  return Integer_O::create(float_convert<double>::to_bits(doubleFloat->get()));
+  return Integer_O::create(float_convert<double>::float_to_bits(doubleFloat->get()));
 }
 
 CL_LAMBDA(bit-representation);
@@ -2841,7 +2841,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Convert an IEEE754 binary64 (double) representation, an integer, to a double float.)dx");
 DOCGROUP(clasp);
 CL_DEFUN DoubleFloat_sp ext__bits_to_double_float(Integer_sp integer) {
-  return clasp_make_double_float(float_convert<double>::from_bits(clasp_to_uint64_t(integer)));
+  return clasp_make_double_float(float_convert<double>::bits_to_float(clasp_to_uint64_t(integer)));
 }
 
 #ifdef CLASP_LONG_FLOAT
@@ -2851,7 +2851,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Return the bit representation of a long float as an integer.)dx");
 DOCGROUP(clasp);
 CL_DEFUN Integer_sp ext__long_float_to_bits(LongFloat_sp longFloat) {
-  return Integer_O::create(float_convert<long_float_t>::to_bits(longFloat->get()));
+  return Integer_O::create(float_convert<long_float_t>::float_to_bits(longFloat->get()));
 }
 
 CL_LAMBDA(bit-representation);
@@ -2860,7 +2860,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Convert a bit representation, an integer, to a long float.)dx");
 DOCGROUP(clasp);
 CL_DEFUN LongFloat_sp ext__bits_to_long_float(Integer_sp integer) {
-  return clasp_make_long_float(float_convert<long_float_t>::from_bits(clasp_to_integral<__uint128_t>(integer)));
+  return clasp_make_long_float(float_convert<long_float_t>::bits_to_float(clasp_to_integral<__uint128_t>(integer)));
 }
 #endif
 

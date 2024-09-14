@@ -125,7 +125,7 @@ public: // Functions here
   }
 
   template <std::floating_point Float> static Bignum_sp create(Float v) {
-    auto q = float_convert<Float>::to_quadruple(v);
+    auto q = float_convert<Float>::float_to_quadruple(v);
     Bignum_sp b = clasp_ash(create(q.significand), q.exponent);
     if (q.sign < 0)
       return clasp_negate(b);

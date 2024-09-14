@@ -515,7 +515,7 @@ void HashTable_O::sxhash_eql(HashGenerator& hg, T_sp obj) {
     return;
   }
   case gctools::single_float_tag: {
-    hg.addValue0(float_convert<float>::to_bits(obj.unsafe_single_float()));
+    hg.addValue0(float_convert<float>::float_to_bits(obj.unsafe_single_float()));
     return;
   }
   case gctools::character_tag: {
@@ -547,7 +547,7 @@ void HashTable_O::sxhash_eql(Hash1Generator& hg, T_sp obj) {
     return;
   } else if (obj.single_floatp()) {
     if (hg.isFilling()) {
-      hg.addValue(float_convert<float>::to_bits(obj.unsafe_single_float()));
+      hg.addValue(float_convert<float>::float_to_bits(obj.unsafe_single_float()));
     }
     return;
   } else if (obj.characterp()) {
@@ -575,7 +575,7 @@ void HashTable_O::sxhash_equal(HashGenerator& hg, T_sp obj) {
     return;
   } else if (obj.single_floatp()) {
     if (hg.isFilling()) {
-      hg.addValue(float_convert<float>::to_bits(obj.unsafe_single_float()));
+      hg.addValue(float_convert<float>::float_to_bits(obj.unsafe_single_float()));
     }
     return;
   } else if (obj.characterp()) {
@@ -617,7 +617,7 @@ void HashTable_O::sxhash_equalp(HashGenerator& hg, T_sp obj) {
   } else if (obj.single_floatp()) {
     if (hg.isFilling()) {
       float value = obj.unsafe_single_float();
-      hg.addValue((std::fpclassify(value) == FP_ZERO) ? 0u : float_convert<float>::to_bits(value));
+      hg.addValue((std::fpclassify(value) == FP_ZERO) ? 0u : float_convert<float>::float_to_bits(value));
     }
     return;
   } else if (obj.characterp()) {

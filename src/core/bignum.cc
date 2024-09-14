@@ -806,7 +806,7 @@ template <typename Float> Float limbs_to_float(mp_size_t len, const mp_limb_t* l
     .category = float_convert<Float>::category::finite, .significand = 0, .exponent = (size - 1) * limb_width,
     .sign = (len < 0) ? -1 : 1
   };
-  size_t shift = float_convert<Float>::significand_width + 1;
+  size_t shift = float_convert<Float>::traits::significand_width + 1;
   size_t width = std::bit_width(limbs[size - 1]);
 
   if (width >= shift) {
@@ -824,7 +824,7 @@ template <typename Float> Float limbs_to_float(mp_size_t len, const mp_limb_t* l
     }
   }
 
-  return float_convert<Float>::from_quadruple(q);
+  return float_convert<Float>::quadruple_to_float(q);
 }
 
 float Bignum_O::as_float_() const { return limbs_to_float<float>(this->length(), this->limbs()); }
