@@ -974,11 +974,8 @@ and  return the sorted values and the constant-table or (values nil nil)."
 
 (defun build-c++-byte-codes (primitives)
   (let ((map (make-hash-table :test #'equal)))
-    (let ((code 65))
-      (dolist (prim primitives)
-        (let ((func-name (second prim)))
-          (setf (gethash func-name map) code)
-          (incf code))))
+    (dolist (prim primitives)
+      (setf (gethash (third prim) map) (first prim)))
     map))
 
 (defvar *byte-codes* (build-c++-byte-codes cmpref:*startup-primitives-as-list*))

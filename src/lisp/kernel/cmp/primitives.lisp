@@ -74,11 +74,11 @@
   "ltvc functions are used to construct the byte-code interpreter"
   `(progn
      ,@(mapcar (lambda (op)
-                 (list* (if (first op) 'primitive-unwinds 'primitive)
-                        (second op)
+                 (list* (if (second op) 'primitive-unwinds 'primitive)
+                        (third op)
                         :ltvc-return
-                        (list* 'list :gcroots-in-module* (third op))
-                        :ltvc t (cdddr op)))
+                        (list* 'list :gcroots-in-module* (fourth op))
+                        :ltvc t (cddddr op)))
                cmpref:*startup-primitives-as-list*)
      ,@'((primitive         "ltvc_lookup_literal" :t* (list :gcroots-in-module* :size_t))
          (primitive         "ltvc_lookup_transient" :t* (list :gcroots-in-module* :i8 :size_t))

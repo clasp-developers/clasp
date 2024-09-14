@@ -25,41 +25,9 @@
 #include <clasp/core/bytecode_compiler.h> // btb_bcfun_p
 #include <clasp/core/evaluator.h>         // eval::funcall
 
-// FIXME: Move these to the generated file thingie
-#define LTV_OP_NIL 65
-#define LTV_OP_T 66
-#define LTV_OP_CONS 69
-#define LTV_OP_RPLACA 70
-#define LTV_OP_RPLACD 71
-#define LTV_OP_MAKE_ARRAY 74
-#define LTV_OP_SRMA 75
-#define LTV_OP_HASHT 76
-#define LTV_OP_SHASH 77
-#define LTV_OP_SB64 78
-#define LTV_OP_PACKAGE 79
-#define LTV_OP_BIGNUM 80
-#define LTV_OP_FLOAT 90
-#define LTV_OP_DOUBLE 91
-#define LTV_OP_X86_FP80 92
-#define LTV_OP_RATIO 67
-#define LTV_OP_COMPLEX 68
-#define LTV_OP_SYMBOL 81
-#define LTV_OP_INTERN 82
-#define LTV_OP_CHARACTER 83
-#define LTV_OP_PATHNAME 85
-#define LTV_OP_BCFUNC 87
-#define LTV_OP_BCMOD 88
-#define LTV_OP_SLITS 89
-#define LTV_OP_CREATE 93
-#define LTV_OP_INIT 94
-#define LTV_OP_FDEF 95
-#define LTV_OP_FCELL 96
-#define LTV_OP_VCELL 97
-#define LTV_OP_CLASS 98
-#define LTV_OP_INIT_OBJECT_ARRAY 99
-#define LTV_OP_ENVIRONMENT 100
-#define LTV_OP_SYMBOL_VALUE 101
-#define LTV_OP_ATTR 255
+#define DEFINE_BYTECODE_LTV_OPS
+#include <virtualMachine.h>
+#undef DEFINE_BYTECODE_LTV_OPS
 
 #define LTV_DI_OP_FUNCTION 0
 #define LTV_DI_OP_VARS 1
@@ -223,7 +191,7 @@ struct loadltv {
 
   inline double read_f64() { return float_convert<double>::from_bits(read_u64()); }
 
-  inline long double read_x86_fp80() {
+  inline long double read_binary80() {
     __uint128_t b = read_u80();
     return float_convert<long double>::from_bits(b); }
 
@@ -585,9 +553,9 @@ struct loadltv {
     set_ltv(clasp_make_double_float(read_f64()), index);
   }
 
-  void op_x86_fp80() {
+  void op_binary80() {
     size_t index = next_index();
-    set_ltv(LongFloat_O::create(read_x86_fp80()), index);
+    set_ltv(LongFloat_O::create(read_binary80()), index);
   }
 
   void op_ratio() {
@@ -1001,107 +969,107 @@ struct loadltv {
   void load_instruction() {
     uint8_t opcode = read_opcode();
     // fmt::print("op {:02x}\n", opcode);
-    switch (opcode) {
-    case LTV_OP_NIL:
+    switch (bytecode_ltv{opcode}) {
+    case bytecode_ltv::nil:
       op_nil();
       break;
-    case LTV_OP_T:
+    case bytecode_ltv::t:
       op_t();
       break;
-    case LTV_OP_CONS:
-      op_cons();
-      break;
-    case LTV_OP_RPLACA:
-      op_rplaca();
-      break;
-    case LTV_OP_RPLACD:
-      op_rplacd();
-      break;
-    case LTV_OP_MAKE_ARRAY:
-      op_array();
-      break;
-    case LTV_OP_SRMA:
-      op_srma();
-      break; // (setf row-major-aref)
-    case LTV_OP_HASHT:
-      op_hasht();
-      break; // make-hash-table
-    case LTV_OP_SHASH:
-      op_shash();
-      break; // (setf gethash)
-    case LTV_OP_SB64:
-      op_sb64();
-      break;
-    case LTV_OP_PACKAGE:
-      op_package();
-      break;
-    case LTV_OP_BIGNUM:
-      op_bignum();
-      break;
-    case LTV_OP_FLOAT:
-      op_float();
-      break;
-    case LTV_OP_DOUBLE:
-      op_double();
-      break;
-    case LTV_OP_X86_FP80:
-      op_x86_fp80();
-      break;
-    case LTV_OP_RATIO:
+    case bytecode_ltv::ratio:
       op_ratio();
       break;
-    case LTV_OP_COMPLEX:
+    case bytecode_ltv::complex:
       op_complex();
       break;
-    case LTV_OP_SYMBOL:
+    case bytecode_ltv::cons:
+      op_cons();
+      break;
+    case bytecode_ltv::rplaca:
+      op_rplaca();
+      break;
+    case bytecode_ltv::rplacd:
+      op_rplacd();
+      break;
+    case bytecode_ltv::make_array:
+      op_array();
+      break;
+    case bytecode_ltv::setf_row_major_aref:
+      op_srma();
+      break; // (setf row-major-aref)
+    case bytecode_ltv::make_hash_table:
+      op_hasht();
+      break; // make-hash-table
+    case bytecode_ltv::setf_gethash:
+      op_shash();
+      break; // (setf gethash)
+    case bytecode_ltv::make_sb64:
+      op_sb64();
+      break;
+    case bytecode_ltv::find_package:
+      op_package();
+      break;
+    case bytecode_ltv::make_bignum:
+      op_bignum();
+      break;
+    case bytecode_ltv::make_symbol:
       op_symbol();
       break;
-    case LTV_OP_INTERN:
+    case bytecode_ltv::intern:
       op_intern();
       break;
-    case LTV_OP_CHARACTER:
+    case bytecode_ltv::make_character:
       op_character();
       break;
-    case LTV_OP_PATHNAME:
+    case bytecode_ltv::make_pathname:
       op_pathname();
       break;
-    case LTV_OP_BCFUNC:
+    case bytecode_ltv::make_bytecode_function:
       op_bcfunc();
       break;
-    case LTV_OP_BCMOD:
+    case bytecode_ltv::make_bytecode_module:
       op_bcmod();
       break;
-    case LTV_OP_SLITS:
+    case bytecode_ltv::setf_literals:
       op_slits();
       break; // setf literals
-    case LTV_OP_FDEF:
-      op_fdef();
+    case bytecode_ltv::make_single_float:
+      op_float();
       break;
-    case LTV_OP_FCELL:
-      op_fcell();
+    case bytecode_ltv::make_double_float:
+      op_double();
       break;
-    case LTV_OP_VCELL:
-      op_vcell();
+    case bytecode_ltv::make_long_float:
+      op_binary80();
       break;
-    case LTV_OP_CREATE:
+    case bytecode_ltv::funcall_create:
       op_create();
       break; // funcall-create
-    case LTV_OP_INIT:
+    case bytecode_ltv::funcall_initialize:
       op_init();
       break; // funcall-initialize
-    case LTV_OP_CLASS:
+    case bytecode_ltv::fdefinition:
+      op_fdef();
+      break;
+    case bytecode_ltv::fcell:
+      op_fcell();
+      break;
+    case bytecode_ltv::vcell:
+      op_vcell();
+      break;
+    case bytecode_ltv::find_class:
       op_class();
       break;
-    case LTV_OP_INIT_OBJECT_ARRAY:
+    case bytecode_ltv::init_object_array:
       op_init_object_array();
       break;
-    case LTV_OP_ENVIRONMENT:
+    case bytecode_ltv::environment:
       op_environment();
       break;
-    case LTV_OP_SYMBOL_VALUE:
+    case bytecode_ltv::symbol_value:
       op_symbol_value();
       break;
-    case LTV_OP_ATTR:
+    case bytecode_ltv::attribute:
       op_attribute();
       break;
     default:
