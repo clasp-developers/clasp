@@ -53,13 +53,13 @@ template <typename Float> struct float_convert {
 
   struct quadruple {
     category category;
-    uint_t significand;
+    __uint128_t significand;
     int32_t exponent;
     int16_t sign;
   };
 
   template<typename Traits = traits>
-  static quadruple bits_to_quadruple(uint_t b) {
+  static quadruple bits_to_quadruple(Traits::uint_t b) {
     quadruple q;
 
     q.significand = b & Traits::significand_mask;
@@ -91,7 +91,7 @@ template <typename Float> struct float_convert {
   }
 
   template<typename Traits = traits>
-  static uint_t quadruple_to_bits(quadruple q) {
+  static Traits::uint_t quadruple_to_bits(quadruple q) {
     typename Traits::uint_t b = 0;
 
     if (q.sign < 0)
@@ -109,7 +109,7 @@ template <typename Float> struct float_convert {
       break;
     default:
       if (q.significand != 0) {
-        uint_t significand = q.significand;
+        __uint128_t significand = q.significand;
         int32_t exponent = q.exponent;
         int32_t shift = std::bit_width(significand) - Traits::significand_width;
 

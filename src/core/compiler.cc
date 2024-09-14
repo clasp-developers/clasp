@@ -1443,7 +1443,7 @@ CL_DEFUN size_t core__ltvc_write_short_float(T_sp object, T_sp stream, size_t in
   return index;
 }
 
-long_float_t ltvc_read_long_float(char*& bytecode, char* byteend, bool log) {
+long_float_t ltvc_read_short_float(char*& bytecode, char* byteend, bool log) {
   SELF_CHECK(long_float_t, stream, index);
   long_float_t data;
   if (bytecode > byteend - sizeof(data))
@@ -1527,33 +1527,43 @@ CL_DEFUN size_t core__ltvc_write_long_float(T_sp object, T_sp stream, size_t ind
   index += sizeof(data);
   return index;
 }
-
-long_float_t ltvc_read_long_float(char*& bytecode, char* byteend, bool log) {
-  SELF_CHECK(long_float_t, stream, index);
-  long_float_t data;
-  if (bytecode > byteend - sizeof(data))
-    SIMPLE_ERROR("Unexpected EOF");
-  for (size_t i = 0; i < sizeof(data); ++i) {
-    ((char*)&data)[i] = *bytecode++;
-  }
-  if (log)
-    fmt::print("{}:{}:{} -> '{}'\n", __FILE__, __LINE__, __FUNCTION__, data);
-  return data;
-}
-#else
-double_float_t ltvc_read_long_float(char*& bytecode, char* byteend, bool log) {
-  SELF_CHECK(long_float_t, stream, index);
-  char data[8];
-  if (bytecode > byteend - sizeof(data))
-    SIMPLE_ERROR("Unexpected EOF");
-  for (size_t i = 0; i < sizeof(data); ++i) {
-    data[i] = *bytecode++;
-  }
-  if (log)
-    fmt::print("{}:{}:{} -> '{}'\n", __FILE__, __LINE__, __FUNCTION__, data);
-  return double_float_t{0.0};
-}
 #endif
+
+long_float_t ltvc_read_binary80(char*& bytecode, char* byteend, bool log) {
+  SELF_CHECK(long_float_t, stream, index);
+  using convert = float_convert<long_float_t>;
+  __uint128_t bits = 0;
+  if (bytecode > byteend - 10)
+    SIMPLE_ERROR("Unexpected EOF");
+  for (size_t i = 0; i < 10; ++i) {
+    ((char*)&bits)[i] = *bytecode++;
+  }
+  if (log)
+    fmt::print("{}:{}:{} -> '{}'\n", __FILE__, __LINE__, __FUNCTION__, bits);
+#ifdef CLASP_LONG_FLOAT_BINARY80
+    return convert::bits_to_float(bits);
+#else
+    return convert::quadruple_to_float(convert::bits_to_quadruple<float_traits<15, 64>>(bits));
+#endif
+}
+
+double_float_t ltvc_read_binary128(char*& bytecode, char* byteend, bool log) {
+  SELF_CHECK(long_float_t, stream, index);
+  using convert = float_convert<long_float_t>;
+  __uint128_t bits = 0;
+  if (bytecode > byteend - 16)
+    SIMPLE_ERROR("Unexpected EOF");
+  for (size_t i = 0; i < 16; ++i) {
+    ((char*)&bits)[i] = *bytecode++;
+  }
+  if (log)
+    fmt::print("{}:{}:{} -> '{}'\n", __FILE__, __LINE__, __FUNCTION__, bits);
+#ifdef CLASP_LONG_FLOAT_BINARY128
+    return convert::bits_to_float(bits);
+#else
+    return convert::quadruple_to_float(convert::bits_to_quadruple<float_traits<15, 113>>(bits));
+#endif
+}
 
 CL_DOCSTRING(R"dx(tag is (0|1|2) where 0==literal, 1==transient, 2==immediate)dx");
 DOCGROUP(clasp);

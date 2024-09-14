@@ -57,7 +57,7 @@
     ( 91 nil "ltvc_make_random_state"         (:i8 :size_t :t*))
     ( 92 nil "ltvc_make_binary32"             (:i8 :size_t :single-float))
     ( 93 nil "ltvc_make_binary64"             (:i8 :size_t :double-float))
-    ( 94 nil "ltvc_make_binary80"             (:i8 :size_t :long-float))
+    ( 94 nil "ltvc_make_binary80"             (:i8 :size_t :binary80))
     ( 95 t   "ltvc_set_mlf_creator_funcall"   (:i8 :size_t :size_t :i8*))
     ( 96 t   "ltvc_mlf_init_funcall"          (:size_t :i8*))
     ( 97 t   "ltvc_mlf_init_basic_call"       (:t* :size_t) :varargs t)
@@ -65,7 +65,7 @@
     ( 99 t   "ltvc_set_ltv_funcall"           (:i8 :size_t :size_t :i8*))
     (100 t   "ltvc_toplevel_funcall"          (:size_t :i8*))
     (102 nil "ltvc_make_binary16"             (:i8 :size_t :short-float))
-    (103 nil "ltvc_make_binary128"            (:i8 :size_t :long-float))))
+    (103 nil "ltvc_make_binary128"            (:i8 :size_t :binary128))))
 
 ;;; Bytecode LTV Ops
 ;;; Instruction set is copied from Clasp for now. "sind" in the below means an

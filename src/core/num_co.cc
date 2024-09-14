@@ -936,7 +936,7 @@ template <typename Float> inline Real_mv integer_decode_float(Float f) {
     break;
   }
 
-  return Values(Integer_O::create(q.significand), clasp_make_fixnum(q.exponent), clasp_make_fixnum(q.sign));
+  return Values(Integer_O::create((typename float_convert<Float>::uint_t)q.significand), clasp_make_fixnum(q.exponent), clasp_make_fixnum(q.sign));
 }
 
 CL_LAMBDA(x);

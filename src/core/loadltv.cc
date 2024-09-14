@@ -187,37 +187,39 @@ struct loadltv {
     return converter.i;
   }
 
-  inline long double read_binary16() {
+  inline single_float_t read_binary16() {
+    using convert = float_convert<short_float_t>;
     __uint128_t b = read_u80();
 #ifdef CLASP_SHORT_FLOAT_BINARY16
-    return float_convert<short_float_t>::bits_to_float(b);
+    return convert::bits_to_float(b);
 #else
-    return float_convert<short_float_t>::quadruple_to_float(
-        float_convert<short_float_t>::bits_to_quadruple<float_traits<5, 11>>(b));
+    return convert::quadruple_to_float(convert::bits_to_quadruple<float_traits<5, 11>>(b));
 #endif
   }
 
-  inline float read_binary32() { return float_convert<float>::bits_to_float(read_u32()); }
+  inline single_float_t read_binary32() { return float_convert<single_float_t>::bits_to_float(read_u32()); }
 
-  inline double read_binary64() { return float_convert<double>::bits_to_float(read_u64()); }
+  inline double_float_t read_binary64() { return float_convert<double_float_t>::bits_to_float(read_u64()); }
 
-  inline long double read_binary80() {
+  inline long_float_t read_binary80() {
+    using convert = float_convert<long_float_t>;
     __uint128_t b = read_u80();
 #ifdef CLASP_LONG_FLOAT_BINARY80
-    return float_convert<long_float_t>::bits_to_float(b);
+    auto q = convert::bits_to_quadruple(b);
+    return convert::bits_to_float(b);
 #else
-    return float_convert<long_float_t>::quadruple_to_float(
-        float_convert<long_float_t>::bits_to_quadruple<float_traits<15, 64>>(b));
+    auto q = convert::bits_to_quadruple<float_traits<15, 64>>(b);
+    return convert::quadruple_to_float(convert::bits_to_quadruple<float_traits<15, 64>>(b));
 #endif
   }
 
-  inline long double read_binary128() {
+  inline long_float_t read_binary128() {
+    using convert = float_convert<long_float_t>;
     __uint128_t b = read_u128();
 #ifdef CLASP_LONG_FLOAT_BINARY128
-    return float_convert<long_float_t>::bits_to_float(b);
+    return convert::bits_to_float(b);
 #else
-    return float_convert<long_float_t>::quadruple_to_float(
-        float_convert<long_float_t>::bits_to_quadruple<float_traits<15, 113>>(b));
+    return convert::quadruple_to_float(convert::bits_to_quadruple<float_traits<15, 113>>(b));
 #endif
   }
 
