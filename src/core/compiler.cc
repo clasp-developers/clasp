@@ -1433,6 +1433,43 @@ T_O* ltvc_read_bignum(char*& bytecode, char* byteend, bool log) {
   return reinterpret_cast<T_O*>(Bignum_O::create_from_limbs(length, 0, false, size, limbs).raw_());
 }
 
+#ifdef CLASP_SHORT_FLOAT
+DOCGROUP(clasp);
+CL_DEFUN size_t core__ltvc_write_short_float(T_sp object, T_sp stream, size_t index) {
+  SELF_DOCUMENT(long_short_t, stream, index);
+  long_float_t data = gc::As<LongFloat_sp>(object)->get();
+  clasp_write_characters((char*)&data, sizeof(data), stream);
+  index += sizeof(data);
+  return index;
+}
+
+long_float_t ltvc_read_long_float(char*& bytecode, char* byteend, bool log) {
+  SELF_CHECK(long_float_t, stream, index);
+  long_float_t data;
+  if (bytecode > byteend - sizeof(data))
+    SIMPLE_ERROR("Unexpected EOF");
+  for (size_t i = 0; i < sizeof(data); ++i) {
+    ((char*)&data)[i] = *bytecode++;
+  }
+  if (log)
+    fmt::print("{}:{}:{} -> '{}'\n", __FILE__, __LINE__, __FUNCTION__, data);
+  return data;
+}
+#else
+double_float_t ltvc_read_binary16(char*& bytecode, char* byteend, bool log) {
+  SELF_CHECK(long_float_t, stream, index);
+  char data[2];
+  if (bytecode > byteend - sizeof(data))
+    SIMPLE_ERROR("Unexpected EOF");
+  for (size_t i = 0; i < sizeof(data); ++i) {
+    data[i] = *bytecode++;
+  }
+  if (log)
+    fmt::print("{}:{}:{} -> '{}'\n", __FILE__, __LINE__, __FUNCTION__, data);
+  return short_float_t{0.0};
+}
+#endif
+
 DOCGROUP(clasp);
 CL_DEFUN size_t core__ltvc_write_float(T_sp object, T_sp stream, size_t index) {
   SELF_DOCUMENT(float, stream, index);

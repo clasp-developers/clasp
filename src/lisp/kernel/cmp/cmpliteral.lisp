@@ -454,18 +454,24 @@ rewrite the slot in the literal table to store a closure."
 (defun ltv/single-float (single index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp read-only-p))
   (let* ((constant (make-single-float-datum :value single)))
-    (add-creator "ltvc_make_float" index single constant)))
+    (add-creator "ltvc_make_binary32" index single constant)))
 
 (defun ltv/double-float (double index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp read-only-p))
   (let* ((constant (make-double-float-datum :value double)))
-    (add-creator "ltvc_make_double" index double constant)))
+    (add-creator "ltvc_make_binary64" index double constant)))
 
-#+long-float
+#+long-float/binary80
 (defun ltv/long-float (value index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp read-only-p))
   (let* ((constant (make-long-float-datum :value value)))
-    (add-creator "ltvc_make_long_float" index value constant)))
+    (add-creator "ltvc_make_binary80" index value constant)))
+
+#+long-float/binary128
+(defun ltv/long-float (value index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp read-only-p))
+  (let* ((constant (make-long-float-datum :value value)))
+    (add-creator "ltvc_make_binary128" index value constant)))
 
 (defun call-with-constant-arguments-p (form &optional env)
   (and (consp form)

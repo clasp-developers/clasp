@@ -55,15 +55,17 @@
     ( 89 nil "ltvc_ensure_fcell"              (:i8 :size_t :t*))
     ( 90 nil "ltvc_ensure_vcell"              (:i8 :size_t :t*))
     ( 91 nil "ltvc_make_random_state"         (:i8 :size_t :t*))
-    ( 92 nil "ltvc_make_float"                (:i8 :size_t :single-float))
-    ( 93 nil "ltvc_make_double"               (:i8 :size_t :double-float))
-    ( 94 nil "ltvc_make_long_float"           (:i8 :size_t :long-float))
+    ( 92 nil "ltvc_make_binary32"             (:i8 :size_t :single-float))
+    ( 93 nil "ltvc_make_binary64"             (:i8 :size_t :double-float))
+    ( 94 nil "ltvc_make_binary80"             (:i8 :size_t :long-float))
     ( 95 t   "ltvc_set_mlf_creator_funcall"   (:i8 :size_t :size_t :i8*))
     ( 96 t   "ltvc_mlf_init_funcall"          (:size_t :i8*))
     ( 97 t   "ltvc_mlf_init_basic_call"       (:t* :size_t) :varargs t)
     ( 98 t   "ltvc_mlf_create_basic_call"     (:i8 :size_t :t* :size_t) :varargs t)
     ( 99 t   "ltvc_set_ltv_funcall"           (:i8 :size_t :size_t :i8*))
-    (100 t   "ltvc_toplevel_funcall"          (:size_t :i8*))))
+    (100 t   "ltvc_toplevel_funcall"          (:size_t :i8*))
+    (102 nil "ltvc_make_binary16"             (:i8 :size_t :short-float))
+    (103 nil "ltvc_make_binary128"            (:i8 :size_t :long-float))))
 
 ;;; Bytecode LTV Ops
 ;;; Instruction set is copied from Clasp for now. "sind" in the below means an
@@ -92,9 +94,9 @@
     (:make-bytecode-function 87) ; ltvc_make_global_entry_point
     (:make-bytecode-module 88) ; ltvc_make_local_entry_point - overriding
     (:setf-literals 89) ; make_random_state. compatibility is a sham here anyway
-    (:make-single-float 90 sind ub32)
-    (:make-double-float 91 sind ub64)
-    (:make-long-float 92 sind ub80)
+    (:make-binary32 90 sind ub32)
+    (:make-binary64 91 sind ub64)
+    (:make-binary80 92 sind ub80)
     (:funcall-create 93 sind find nargs . args)
     (:funcall-initialize 94 find nargs . args)
     (:fdefinition 95 find nameind)
@@ -107,4 +109,6 @@
     (:init-object-array 99 ub64)
     (:environment 100)
     (:symbol-value 101)
+    (:make-binary16 102 sind ub16)
+    (:make-binary128 103 sind ub128)
     (:attribute 255 name nbytes . data)))

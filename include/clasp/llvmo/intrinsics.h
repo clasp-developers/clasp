@@ -96,13 +96,11 @@ LtvcReturn ltvc_ensure_vcell(gctools::GCRootsInModule* holder, char tag, size_t 
 LtvcReturn ltvc_make_package(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* package_name_t);
 LtvcReturn ltvc_make_random_state(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* random_state_string_t);
 LtvcReturn ltvc_find_class(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* class_name_t);
-LtvcReturn ltvc_make_float(gctools::GCRootsInModule* holder, char tag, size_t index, float f);
-LtvcReturn ltvc_make_double(gctools::GCRootsInModule* holder, char tag, size_t index, double f);
-#ifdef CLASP_LONG_FLOAT
-LtvcReturn ltvc_make_long_float(gctools::GCRootsInModule* holder, char tag, size_t index, core::long_float_t f);
-#else
-LtvcReturn ltvc_make_long_float(gctools::GCRootsInModule* holder, char tag, size_t index, core::long_float_t f);
-#endif
+LtvcReturn ltvc_make_binary16(gctools::GCRootsInModule* holder, char tag, size_t index, core::short_float_t f);
+LtvcReturn ltvc_make_binary32(gctools::GCRootsInModule* holder, char tag, size_t index, core::single_float_t f);
+LtvcReturn ltvc_make_binary64(gctools::GCRootsInModule* holder, char tag, size_t index, core::double_float_t f);
+LtvcReturn ltvc_make_binary80(gctools::GCRootsInModule* holder, char tag, size_t index, core::long_float_t f);
+LtvcReturn ltvc_make_binary128(gctools::GCRootsInModule* holder, char tag, size_t index, core::long_float_t f);
 LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* lambdaName, size_t function_index,
                         size_t function_info_index);
 LtvcReturn ltvc_allocate_instance(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* klass);

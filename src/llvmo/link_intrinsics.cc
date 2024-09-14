@@ -419,35 +419,40 @@ LtvcReturnVoid ltvc_make_random_state(gctools::GCRootsInModule* holder, char tag
   NO_UNWIND_END();
 }
 
-LtvcReturnVoid ltvc_make_float(gctools::GCRootsInModule* holder, char tag, size_t index, float f) {
+LtvcReturnVoid ltvc_make_binary16(gctools::GCRootsInModule* holder, char tag, size_t index, core::short_float_t f) {
   NO_UNWIND_BEGIN();
   core::T_sp val = clasp_make_single_float(f);
   LTVCRETURN holder->setTaggedIndex(tag, index, val.tagged_());
   NO_UNWIND_END();
 }
 
-LtvcReturnVoid ltvc_make_double(gctools::GCRootsInModule* holder, char tag, size_t index, double f) {
+LtvcReturnVoid ltvc_make_binary32(gctools::GCRootsInModule* holder, char tag, size_t index, core::single_float_t f) {
   NO_UNWIND_BEGIN();
-  core::T_sp val = clasp_make_double_float(f);
+  core::T_sp val = clasp_make_single_float(f);
   LTVCRETURN holder->setTaggedIndex(tag, index, val.tagged_());
   NO_UNWIND_END();
 }
 
-#ifdef CLASP_LONG_FLOAT
-LtvcReturnVoid ltvc_make_long_float(gctools::GCRootsInModule* holder, char tag, size_t index, core::long_float_t f) {
+LtvcReturnVoid ltvc_make_binary64(gctools::GCRootsInModule* holder, char tag, size_t index, core::double_float_t f) {
+  NO_UNWIND_BEGIN();
+  core::T_sp val = DoubleFloat_O::create(f);
+  LTVCRETURN holder->setTaggedIndex(tag, index, val.tagged_());
+  NO_UNWIND_END();
+}
+
+LtvcReturnVoid ltvc_make_binary80(gctools::GCRootsInModule* holder, char tag, size_t index, core::long_float_t f) {
   NO_UNWIND_BEGIN();
   core::T_sp val = LongFloat_O::create(f);
   LTVCRETURN holder->setTaggedIndex(tag, index, val.tagged_());
   NO_UNWIND_END();
 }
-#else
-LtvcReturnVoid ltvc_make_long_float(gctools::GCRootsInModule* holder, char tag, size_t index, core::long_float_t f) {
+
+LtvcReturnVoid ltvc_make_binary128(gctools::GCRootsInModule* holder, char tag, size_t index, core::long_float_t f) {
   NO_UNWIND_BEGIN();
   core::T_sp val = LongFloat_O::create(f);
   LTVCRETURN holder->setTaggedIndex(tag, index, val.tagged_());
   NO_UNWIND_END();
 }
-#endif
 
 gctools::Tagged ltvc_lookup_literal(gctools::GCRootsInModule* holder, size_t index) {
   return holder->getTaggedIndex(LITERAL_TAG_CHAR, index);

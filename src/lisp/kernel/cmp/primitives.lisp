@@ -421,6 +421,7 @@
 (defun lookup-type (type-name)
   (case type-name
     (:bignum %bignum%)
+    (:short-float %short-float%)
     (:double-float %double%)
     (:single-float %float%)
     (:fn-start-up* %fn-start-up*%)

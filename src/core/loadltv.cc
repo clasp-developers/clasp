@@ -187,9 +187,9 @@ struct loadltv {
     return converter.i;
   }
 
-  inline float read_f32() { return float_convert<float>::from_bits(read_u32()); }
+  inline float read_binary32() { return float_convert<float>::from_bits(read_u32()); }
 
-  inline double read_f64() { return float_convert<double>::from_bits(read_u64()); }
+  inline double read_binary64() { return float_convert<double>::from_bits(read_u64()); }
 
   inline long double read_binary80() {
     __uint128_t b = read_u80();
@@ -409,10 +409,10 @@ struct loadltv {
       READ_ARRAY(SimpleCharacterString_sp, read_utf8(), clasp_make_character(read_utf8()));
       break;
     case UAETCode::single_float:
-      READ_ARRAY(SimpleVector_float_sp, read_f32(), clasp_make_single_float(read_f32()));
+      READ_ARRAY(SimpleVector_float_sp, read_binary32(), clasp_make_single_float(read_binary32()));
       break;
     case UAETCode::double_float:
-      READ_ARRAY(SimpleVector_double_sp, read_f64(), clasp_make_double_float(read_f64()));
+      READ_ARRAY(SimpleVector_double_sp, read_binary64(), clasp_make_double_float(read_binary64()));
       break;
     case UAETCode::bit:
       fill_sub_byte(array, total_size, 1);
@@ -543,14 +543,14 @@ struct loadltv {
     set_ltv(bignum_result(ssize, limbs), index);
   }
 
-  void op_float() {
+  void op_binary32() {
     size_t index = next_index();
-    set_ltv(clasp_make_single_float(read_f32()), index);
+    set_ltv(clasp_make_single_float(read_binary32()), index);
   }
 
-  void op_double() {
+  void op_binary64() {
     size_t index = next_index();
-    set_ltv(clasp_make_double_float(read_f64()), index);
+    set_ltv(clasp_make_double_float(read_binary64()), index);
   }
 
   void op_binary80() {
@@ -1033,13 +1033,13 @@ struct loadltv {
     case bytecode_ltv::setf_literals:
       op_slits();
       break; // setf literals
-    case bytecode_ltv::make_single_float:
-      op_float();
+    case bytecode_ltv::make_binary32:
+      op_binary32();
       break;
-    case bytecode_ltv::make_double_float:
-      op_double();
+    case bytecode_ltv::make_binary64:
+      op_binary64();
       break;
-    case bytecode_ltv::make_long_float:
+    case bytecode_ltv::make_binary80:
       op_binary80();
       break;
     case bytecode_ltv::funcall_create:

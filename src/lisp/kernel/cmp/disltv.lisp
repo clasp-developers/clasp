@@ -322,14 +322,14 @@
     (dbgprint " (make-bignum ~d ~d ~d)" index ssize result)
     (setf (creator index) (make-instance 'bignum-creator :prototype result))))
 
-(defmethod %load-instruction ((mnemonic (eql :make-single-float)) stream)
+(defmethod %load-instruction ((mnemonic (eql :make-binary32)) stream)
   (let ((index (next-index))
         (float (ext:bits-to-single-float (read-ub32 stream))))
     (dbgprint " (make-single-float ~d ~e)" index float)
     (setf (creator index)
           (make-instance 'single-float-creator :prototype float))))
 
-(defmethod %load-instruction ((mnemonic (eql :make-double-float)) stream)
+(defmethod %load-instruction ((mnemonic (eql :make-binary64)) stream)
   (let ((index (next-index))
         (float (ext:bits-to-double-float (read-ub64 stream))))
     (dbgprint " (make-double-float ~d ~e)" index float)

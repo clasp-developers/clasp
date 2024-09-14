@@ -351,13 +351,13 @@ Tried to define constant #~d, but it was already defined"
                   finally (return (if negp (- result) result)))))
     (+ *index-bytes* 8 (* 8 (abs ssize)))))
 
-(defmethod %load-instruction ((mnemonic (eql :make-single-float)) stream)
+(defmethod %load-instruction ((mnemonic (eql :make-binary32)) stream)
   (let ((index (read-index stream)) (bits (read-ub32 stream)))
     (dbgprint " (make-single-float ~d #x~4,'0x)" index bits)
     (setf (constant index) (ext:bits-to-single-float bits)))
   (+ *index-bytes* 4))
 
-(defmethod %load-instruction ((mnemonic (eql :make-double-float)) stream)
+(defmethod %load-instruction ((mnemonic (eql :make-binary64)) stream)
   (let ((index (read-index stream)) (bits (read-ub64 stream)))
     (dbgprint " (make-double-float ~d #x~8,'0x)" index bits)
     (setf (constant index) (ext:bits-to-double-float bits)))

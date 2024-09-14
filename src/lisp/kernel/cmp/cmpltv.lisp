@@ -853,10 +853,11 @@
         for byte = (ldb (byte 8 i) int)
         do (write-byte byte stream)))
 
-(defun write-b80 (word stream) (write-b word 10 stream))
-(defun write-b64 (word stream) (write-b word 8 stream))
-(defun write-b32 (word stream) (write-b word 4 stream))
-(defun write-b16 (word stream) (write-b word 2 stream))
+(defun write-b128 (word stream) (write-b word 16 stream))
+(defun write-b80  (word stream) (write-b word 10 stream))
+(defun write-b64  (word stream) (write-b word 8 stream))
+(defun write-b32  (word stream) (write-b word 4 stream))
+(defun write-b16  (word stream) (write-b word 2 stream))
 
 (defconstant +magic+ #x8d7498b1) ; randomly chosen bytes.
 
@@ -1181,17 +1182,22 @@
           do (write-b64 word stream))))
 
 (defmethod encode ((inst single-float-creator) stream)
-  (write-mnemonic :make-single-float stream)
+  (write-mnemonic :make-binary32 stream)
   (write-b32 (ext:single-float-to-bits (prototype inst)) stream))
 
 (defmethod encode ((inst double-float-creator) stream)
-  (write-mnemonic :make-double-float stream)
+  (write-mnemonic :make-binary64 stream)
   (write-b64 (ext:double-float-to-bits (prototype inst)) stream))
 
-#+long-float
+#+long-float/binary80
 (defmethod encode ((inst long-float-creator) stream)
-  (write-mnemonic :make-long-float stream)
+  (write-mnemonic :make-binary80 stream)
   (write-b80 (ext:long-float-to-bits (prototype inst)) stream))
+
+#+long-float/binary128
+(defmethod encode ((inst long-float-creator) stream)
+  (write-mnemonic :make-binary128 stream)
+  (write-b128 (ext:long-float-to-bits (prototype inst)) stream))
 
 (defmethod encode ((inst ratio-creator) stream)
   (write-mnemonic :ratio stream)

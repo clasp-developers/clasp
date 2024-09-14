@@ -313,6 +313,7 @@
   (set-ltv-info :size_t "size_t" "size_t")
   (set-ltv-info :t* "T_O*" "object" t)
   (set-ltv-info :i8* "string" "string")
+  (set-ltv-info :short-float "short_float_t" "binary16")
   (set-ltv-info :single-float "float" "float")
   (set-ltv-info :double-float "double" "double")
   (set-ltv-info :long-float "long_float_t" "long_float")
