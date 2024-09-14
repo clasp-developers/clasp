@@ -52,6 +52,35 @@ THE SOFTWARE.
 //#define USE_MPS
 //#endif
 
+#include <float.h>
+
+namespace core {
+
+#ifdef USE_SHORT_FLOAT
+#define CLASP_SHORT_FLOAT
+#define CLASP_SHORT_FLOAT_BINARY16
+typedef _Float16 short_float_t;
+#else
+typedef float short_float_t;
+#endif
+
+typedef float single_float_t;
+
+typedef double double_float_t;
+
+#if defined(USE_LONG_FLOAT) && LDBL_MANT_DIG == 64
+#define CLASP_LONG_FLOAT
+#define CLASP_LONG_FLOAT_BINARY80
+typedef long double long_float_t;
+#elif defined(USE_LONG_FLOAT) && LDBL_MANT_DIG == 113
+#define CLASP_LONG_FLOAT
+#define CLASP_LONG_FLOAT_BINARY128
+typedef long double long_float_t;
+#else
+typedef double long_float_t;
+#endif
+};
+
 /*! Old way of doing #= and ## used alists which are slow
   Switch to hash-tables to speed things up */
 #define USE_SHARP_EQUAL_HASH_TABLES 1

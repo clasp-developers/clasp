@@ -206,12 +206,7 @@
   (append-cflags configuration "-O0 -g" :type :cxxflags :debug t)
   (append-cflags configuration "-O0 -g" :type :cflags :debug t)
   (append-cflags configuration "-fconstexpr-steps=10000000" :type :cxxflags)
-  (append-cflags configuration
-                 (if (string= (%long-float configuration)
-                              (%double-float configuration))
-                     "-std=c++20"
-                     "-std=gnu++20")
-                 :type :cxxflags)
+  (append-cflags configuration "-std=gnu++20" :type :cxxflags)
   #+darwin (append-cflags configuration "-stdlib=libc++" :type :cxxflags)
   #+darwin (append-cflags configuration "-I/usr/local/include")
   #+linux (append-cflags configuration "-fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -fno-stack-protector -stdlib=libstdc++"
