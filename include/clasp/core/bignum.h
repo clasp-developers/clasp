@@ -155,6 +155,7 @@ public: // Functions here
   Number_sp sqrt_() const override;
   Number_sp reciprocal_() const override;
   Rational_sp rational_() const final { return this->asSmartPtr(); };
+  virtual short_float_t as_short_float_() const override;
   virtual float as_float_() const override;
   virtual double as_double_() const override;
   virtual long_float_t as_long_float_() const override;

@@ -1113,8 +1113,8 @@ if not possible."
       (RATIO (RATIO * *))
       
       (RATIONAL (OR INTEGER RATIO))
-      (FLOAT (OR SINGLE-FLOAT DOUBLE-FLOAT
-              #+long-float LONG-FLOAT))
+      (FLOAT (OR #+short-float SHORT-FLOAT SINGLE-FLOAT
+                 DOUBLE-FLOAT #+long-float LONG-FLOAT))
       (REAL (OR INTEGER
              #+short-float SHORT-FLOAT
              SINGLE-FLOAT
@@ -1317,61 +1317,66 @@ if not possible."
 (defun canonical-type (type)
   (declare (notinline clos::classp))
   (cond ((find-registered-tag type))
-	((eq type 'T) -1)
-	((eq type 'NIL) 0)
+	      ((eq type 'T) -1)
+	      ((eq type 'NIL) 0)
         ((symbolp type)
-	 (let ((expander (ext:type-expander type)))
-	   (cond (expander
-		  (canonical-type (funcall expander type nil)))
-		 ((find-built-in-tag type))
-		 (t (let ((class (find-class type nil)))
-		      (if class
-			  (progn
-			    (register-class class))
-			  (progn
-			    (throw '+canonical-type-failure+ nil))
-			  ))))))
-	((consp type)
-	 (case (first type)
-	   (AND (apply #'logand (mapcar #'canonical-type (rest type))))
-	   (OR (apply #'logior (mapcar #'canonical-type (rest type))))
-	   (NOT (lognot (canonical-type (second type))))
-	   ((EQL MEMBER) (apply #'logior (mapcar #'register-member-type (rest type))))
-	   (SATISFIES (register-satisfies-type type))
-	   ((INTEGER SINGLE-FLOAT DOUBLE-FLOAT RATIO #+long-float LONG-FLOAT)
-	    (register-interval-type type))
-	   ((FLOAT)
-	    (canonical-type `(OR (SINGLE-FLOAT ,@(rest type))
-				 (DOUBLE-FLOAT ,@(rest type))
-				 #+long-float
-				 (LONG-FLOAT ,@(rest type)))))
-	   ((REAL)
-	    (canonical-type `(OR (INTEGER ,@(rest type))
-				 (RATIO ,@(rest type))
-				 (SINGLE-FLOAT ,@(rest type))
-				 (DOUBLE-FLOAT ,@(rest type))
-				 #+long-float
-				 (LONG-FLOAT ,@(rest type)))))
-	   ((RATIONAL)
-	    (canonical-type `(OR (INTEGER ,@(rest type))
-				 (RATIO ,@(rest type)))))
-	   (COMPLEX
-	    (or (find-built-in-tag type)
-		(canonical-complex-type (second type))))
-	   (CONS (apply #'register-cons-type (rest type)))
-	   (ARRAY (logior (register-array-type `(COMPLEX-ARRAY ,@(rest type)))
-			  (register-array-type `(SIMPLE-ARRAY ,@(rest type)))))
-	   ((COMPLEX-ARRAY SIMPLE-ARRAY) (register-array-type type))
-	   (FUNCTION (canonical-type 'FUNCTION))
-	   (t (let ((expander (ext:type-expander (first type))))
-		(if expander
-		    (canonical-type (funcall expander type nil))
-		    (unless (assoc (first type) *elementary-types*)
-		      (throw '+canonical-type-failure+ nil)))))))
-	((clos::classp type)
-	 (register-class type))
-	(t
-	 (error-type-specifier type))))
+	       (let ((expander (ext:type-expander type)))
+	         (cond (expander
+		              (canonical-type (funcall expander type nil)))
+		             ((find-built-in-tag type))
+		             (t (let ((class (find-class type nil)))
+		                  (if class
+			                    (progn
+			                      (register-class class))
+			                    (progn
+			                      (throw '+canonical-type-failure+ nil))
+			                    ))))))
+	      ((consp type)
+	       (case (first type)
+	         (AND (apply #'logand (mapcar #'canonical-type (rest type))))
+	         (OR (apply #'logior (mapcar #'canonical-type (rest type))))
+	         (NOT (lognot (canonical-type (second type))))
+	         ((EQL MEMBER) (apply #'logior (mapcar #'register-member-type (rest type))))
+	         (SATISFIES (register-satisfies-type type))
+	         ((INTEGER #+short-float SHORT-FLOAT SINGLE-FLOAT
+                     DOUBLE-FLOAT RATIO #+long-float LONG-FLOAT)
+	          (register-interval-type type))
+	         ((FLOAT)
+	          (canonical-type `(OR #+short-float
+				                         (SHORT-FLOAT ,@(rest type))
+                                 (SINGLE-FLOAT ,@(rest type))
+				                         (DOUBLE-FLOAT ,@(rest type))
+				                         #+long-float
+				                         (LONG-FLOAT ,@(rest type)))))
+	         ((REAL)
+	          (canonical-type `(OR (INTEGER ,@(rest type))
+				                         (RATIO ,@(rest type))
+                                 #+short-float
+                                 (SHORT-FLOAT ,@(rest type))
+				                         (SINGLE-FLOAT ,@(rest type))
+				                         (DOUBLE-FLOAT ,@(rest type))
+				                         #+long-float
+				                         (LONG-FLOAT ,@(rest type)))))
+	         ((RATIONAL)
+	          (canonical-type `(OR (INTEGER ,@(rest type))
+				                         (RATIO ,@(rest type)))))
+	         (COMPLEX
+	          (or (find-built-in-tag type)
+		            (canonical-complex-type (second type))))
+	         (CONS (apply #'register-cons-type (rest type)))
+	         (ARRAY (logior (register-array-type `(COMPLEX-ARRAY ,@(rest type)))
+			                    (register-array-type `(SIMPLE-ARRAY ,@(rest type)))))
+	         ((COMPLEX-ARRAY SIMPLE-ARRAY) (register-array-type type))
+	         (FUNCTION (canonical-type 'FUNCTION))
+	         (t (let ((expander (ext:type-expander (first type))))
+		            (if expander
+		                (canonical-type (funcall expander type nil))
+		                (unless (assoc (first type) *elementary-types*)
+		                  (throw '+canonical-type-failure+ nil)))))))
+	      ((clos::classp type)
+	       (register-class type))
+	      (t
+	       (error-type-specifier type))))
 
 (defun safe-canonical-type (type)
   (catch '+canonical-type-failure+

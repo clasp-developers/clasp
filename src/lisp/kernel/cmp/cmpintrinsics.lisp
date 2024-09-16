@@ -186,6 +186,8 @@ names to offsets."
 (define-symbol-macro %word% #+64-bit %i64% #+32-bit %i32%)
 (define-symbol-macro %uint% %i32%) ; FIXME: export from C++ probably
 
+#+short-float/binary16
+(define-symbol-macro %long-float% (llvm-sys:type-get-half-ty (thread-local-llvm-context)))
 (define-symbol-macro %float% (llvm-sys:type-get-float-ty (thread-local-llvm-context)))
 (define-symbol-macro %double% (llvm-sys:type-get-double-ty (thread-local-llvm-context)))
 #+long-float/binary80

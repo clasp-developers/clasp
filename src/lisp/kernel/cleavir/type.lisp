@@ -363,6 +363,9 @@
   (derive-type-predicate object 'rational *clasp-system*))
 (define-deriver floatp (object)
   (derive-type-predicate object 'float *clasp-system*))
+#+short-float
+(define-deriver core:short-float-p (object)
+  (derive-type-predicate object 'short-float *clasp-system*))
 (define-deriver core:single-float-p (object)
   (derive-type-predicate object 'single-float *clasp-system*))
 (define-deriver core:double-float-p (object)

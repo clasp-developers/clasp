@@ -1378,54 +1378,11 @@ SYMBOL_EXPORT_SC_(ClPkg, logxor);
 
 namespace core {
 
-// ------------------------------------------------------------------------
-
-Number_sp ShortFloat_O::reciprocal_() const { return ShortFloat_O::create(1.0 / this->_Value); }
-
-Number_sp ShortFloat_O::signum_() const { return ShortFloat_O::create(this->_Value > 0.0 ? 1 : (this->_Value < 0.0 ? -1 : 0)); }
-
-float ShortFloat_O::as_float_() const { return (float)this->_Value; }
-
-double ShortFloat_O::as_double_() const { return (double)this->_Value; }
-
-long_float_t ShortFloat_O::as_long_float_() const { return (long_float_t)this->_Value; }
-
-CL_LISPIFY_NAME("core:castToInteger");
-CL_DEFMETHOD Integer_sp ShortFloat_O::castToInteger() const {
-  if (this->_Value < 0) {
-    float f = -this->_Value;
-    int cf = *(int*)&f;
-    return gc::As<Integer_sp>(clasp_negate(Integer_O::create((gc::Fixnum)cf)));
-  }
-  int cf = *(int*)&this->_Value;
-  return Integer_O::create((gc::Fixnum)cf);
-}
-
-Number_sp ShortFloat_O::abs_() const { return ShortFloat_O::create(fabs(this->_Value)); }
-
-void ShortFloat_O::sxhash_(HashGenerator& hg) const {
-  hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<float>::float_to_bits(this->_Value));
-}
-
-bool ShortFloat_O::eql_(T_sp obj) const {
-  if (this->eq(obj))
-    return true;
-  if (gc::IsA<Number_sp>(obj)) {
-    Number_sp num = gc::As<Number_sp>(obj);
-    return this->get() == clasp_to_double(num);
-  }
-  return false;
-}
-
-string ShortFloat_O::__repr__() const {
-  stringstream ss;
-  ss << this->_Value;
-  return ss.str();
-}
-
 //--------------------------------------------------
 
 Number_sp DoubleFloat_O::reciprocal_() const { return DoubleFloat_O::create(1.0 / this->_Value); }
+
+short_float_t DoubleFloat_O::as_short_float_() const { return (short_float_t)this->_Value; }
 
 float DoubleFloat_O::as_float_() const { return (float)this->_Value; }
 
@@ -1445,7 +1402,7 @@ CL_DEFMETHOD Integer_sp DoubleFloat_O::castToInteger() const {
   return Integer_O::create((gctools::Fixnum)cf);
 }
 
-Number_sp DoubleFloat_O::signum_() const { return DoubleFloat_O::create(this->_Value > 0.0 ? 1 : (this->_Value < 0.0 ? -1 : 0)); }
+Number_sp DoubleFloat_O::signum_() const { return create(_signum(_Value)); }
 
 void DoubleFloat_O::sxhash_(HashGenerator& hg) const {
   hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<double>::float_to_bits(this->_Value));
@@ -1470,6 +1427,8 @@ string DoubleFloat_O::__repr__() const {
 // LongFloat stuff
 
 #ifdef CLASP_LONG_FLOAT
+short_float_t LongFloat_O::as_short_float_() const { return (short_float_t)this->_Value; }
+
 float LongFloat_O::as_float_() const { return (float)this->_Value; }
 
 double LongFloat_O::as_double_() const { return (double)this->_Value; }
@@ -1504,7 +1463,7 @@ bool LongFloat_O::eql_(T_sp obj) const {
   return false;
 }
 
-Number_sp LongFloat_O::signum_() const { return LongFloat_O::create(this->_Value > 0.0 ? 1 : (this->_Value < 0.0 ? -1 : 0)); }
+Number_sp LongFloat_O::signum_() const { return create(_signum(_Value)); }
 
 string LongFloat_O::__repr__() const {
   stringstream ss;
@@ -1572,6 +1531,8 @@ template <typename Float> inline Float ratio_to_float(Integer_sp num, Integer_sp
 
   return float_convert<Float>::quadruple_to_float(q);
 }
+
+short_float_t Ratio_O::as_short_float_() const { return ratio_to_float<short_float_t>(this->_numerator, this->_denominator); }
 
 float Ratio_O::as_float_() const { return ratio_to_float<float>(this->_numerator, this->_denominator); }
 
@@ -2885,6 +2846,20 @@ DOCGROUP(clasp);
 CL_DEFUN Number_sp cl__rationalize(Real_sp num) { return cl__rational(num); };
 
 Integer_sp clasp_make_integer(size_t s) { return Integer_O::create((uint64_t)s); }
+
+#ifdef CLASP_SHORT_FLOAT
+ShortFloat_sp ShortFloat_dummy_O::coerce(Number_sp x) {
+  if (x.fixnump())
+    return create(x.unsafe_fixnum());
+  if (x.short_floatp())
+    return x;
+  if (x.single_floatp())
+    return (short_float_t)x.unsafe_single_float();
+  if (x.isA<Real_O>())
+    return create(x->as_short_float_());
+  TYPE_ERROR(x, cl::_sym_Real_O);
+}
+#endif
 
 SingleFloat_sp SingleFloat_dummy_O::coerce(Number_sp x) {
   if (x.fixnump())

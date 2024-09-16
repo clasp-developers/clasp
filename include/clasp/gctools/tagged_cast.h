@@ -32,6 +32,9 @@ template <typename TOPTR, typename FROMPTR> struct TaggedCast {
 
 namespace core {
 class Fixnum_I {};
+#ifdef CLASP_SHORT_FLOAT
+class ShortFloat_I {};
+#endif
 class SingleFloat_I {};
 class Character_I {};
 class Integer_O;
@@ -42,7 +45,6 @@ class T_O;
 class Instance_O;
 class Float_O;
 typedef Fixnum_I Fixnum_O;
-typedef SingleFloat_I SingleFloat_O;
 typedef Character_I Character_O;
 }; // namespace core
 
@@ -156,11 +158,26 @@ template <> struct TaggedCast<core::Real_O*, core::SingleFloat_I*> {
     return NULL;
   }
 };
+#ifdef CLASP_SHORT_FLOAT
+template <> struct TaggedCast<core::Real_O*, core::ShortFloat_I*> {
+  typedef core::Real_O* ToType;
+  typedef core::ShortFloat_I* FromType;
+  inline static bool isA(FromType ptr) { return true; }
+  inline static ToType castOrNULL(FromType client) {
+    if (TaggedCast<ToType, FromType>::isA(client))
+      return reinterpret_cast<ToType>(client);
+    return NULL;
+  }
+};
+#endif
 template <typename FROM> struct TaggedCast<core::Real_O*, FROM> {
   typedef core::Real_O* ToType;
   typedef FROM FromType;
   inline static bool isA(FromType ptr) {
     return tagged_fixnump(ptr) || tagged_single_floatp(ptr) ||
+#ifdef CLASP_SHORT_FLOAT
+           tagged_short_floatp(ptr) ||
+#endif
            (tagged_generalp(ptr) && (FromGeneralCast<ToType>::isA((core::General_O*)untag_general(ptr))));
   }
   inline static ToType castOrNULL(FromType client) {
@@ -200,6 +217,18 @@ template <> struct TaggedCast<core::Number_O*, core::SingleFloat_I*> {
     return NULL;
   }
 };
+#ifdef CLASP_SHORT_FLOAT
+template <> struct TaggedCast<core::Number_O*, core::ShortFloat_I*> {
+  typedef core::Number_O* ToType;
+  typedef core::ShortFloat_I* FromType;
+  inline static bool isA(FromType ptr) { return true; }
+  inline static ToType castOrNULL(FromType client) {
+    if (TaggedCast<ToType, FromType>::isA(client))
+      return reinterpret_cast<ToType>(client);
+    return NULL;
+  }
+};
+#endif
 }; // namespace gctools
 
 namespace gctools {
@@ -208,6 +237,9 @@ template <typename FROM> struct TaggedCast<core::Number_O*, FROM> {
   typedef FROM FromType;
   inline static bool isA(FromType ptr) {
     return tagged_fixnump(ptr) || tagged_single_floatp(ptr) ||
+#ifdef CLASP_SHORT_FLOAT
+           tagged_short_floatp(ptr) ||
+#endif
            (tagged_generalp(ptr) && (FromGeneralCast<ToType>::isA((core::General_O*)untag_general(ptr))));
   }
   inline static ToType castOrNULL(FromType client) {
@@ -256,6 +288,18 @@ template <> struct TaggedCast<core::T_O*, core::SingleFloat_I*> {
     return NULL;
   }
 };
+#ifdef CLASP_SHORT_FLOAT
+template <> struct TaggedCast<core::T_O*, core::ShortFloat_I*> {
+  typedef core::T_O* ToType;
+  typedef core::ShortFloat_I* FromType;
+  inline static bool isA(FromType ptr) { return true; }
+  inline static ToType castOrNULL(FromType client) {
+    if (TaggedCast<ToType, FromType>::isA(client))
+      return reinterpret_cast<ToType>(client);
+    return NULL;
+  }
+};
+#endif
 template <> struct TaggedCast<core::T_O*, core::Character_I*> {
   typedef core::T_O* ToType;
   typedef core::Character_I* FromType;
@@ -285,6 +329,14 @@ template <> struct TaggedCast<core::SingleFloat_I*, core::SingleFloat_I*> {
   inline static bool isA(FromType ptr) { return true; }
   inline static ToType castOrNULL(FromType client) { return client; }
 };
+#ifdef CLASP_SHORT_FLOAT
+template <> struct TaggedCast<core::ShortFloat_I*, core::ShortFloat_I*> {
+  typedef core::ShortFloat_I* ToType;
+  typedef core::ShortFloat_I* FromType;
+  inline static bool isA(FromType ptr) { return true; }
+  inline static ToType castOrNULL(FromType client) { return client; }
+};
+#endif
 // Cast from anything to SingleFloat_I*
 template <typename FROM> struct TaggedCast<core::SingleFloat_I*, FROM> {
   typedef core::SingleFloat_I* ToType;
@@ -297,6 +349,19 @@ template <typename FROM> struct TaggedCast<core::SingleFloat_I*, FROM> {
     return NULL;
   }
 };
+#ifdef CLASP_SHORT_FLOAT
+template <typename FROM> struct TaggedCast<core::ShortFloat_I*, FROM> {
+  typedef core::ShortFloat_I* ToType;
+  typedef FROM FromType;
+  inline static bool isA(FromType ptr) { return tagged_short_floatp(ptr); }
+  inline static ToType castOrNULL(FromType client) {
+    if (TaggedCast<core::ShortFloat_I*, FromType>::isA(client)) {
+      return reinterpret_cast<ToType>(client);
+    }
+    return NULL;
+  }
+};
+#endif
 
 template <> struct TaggedCast<core::Float_O*, core::Float_O*> {
   typedef core::Float_O* ToType;
@@ -314,12 +379,27 @@ template <> struct TaggedCast<core::Float_O*, core::SingleFloat_I*> {
     return NULL;
   }
 };
+#ifdef CLASP_SHORT_FLOAT
+template <> struct TaggedCast<core::Float_O*, core::ShortFloat_I*> {
+  typedef core::Float_O* ToType;
+  typedef core::ShortFloat_I* FromType;
+  inline static bool isA(FromType ptr) { return true; };
+  inline static ToType castOrNULL(FromType client) {
+    if (TaggedCast<ToType, FromType>::isA(client))
+      return reinterpret_cast<ToType>(client);
+    return NULL;
+  }
+};
+#endif
 
 template <typename FROM> struct TaggedCast<core::Float_O*, FROM> {
   typedef core::Float_O* ToType;
   typedef FROM FromType;
   inline static bool isA(FromType ptr) {
     return tagged_single_floatp(ptr) ||
+#ifdef CLASP_SHORT_FLOAT
+           tagged_short_floatp(ptr) ||
+#endif
            (tagged_generalp(ptr) && (FromGeneralCast<ToType>::isA((core::General_O*)untag_general(ptr))));
   }
   inline static ToType castOrNULL(FromType client) {

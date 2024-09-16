@@ -42,14 +42,21 @@
 #define FIXNUM0_TAG 0x00
 #define FIXNUM1_TAG 0x04 // fixnum means lower two bits are zero so two tags
 #define FIXNUM_SHIFT 2
-#define GENERAL_TAG 0x01
-#define CHARACTER_TAG 0x02
+#define GENERAL_TAG 0b001
+#define CHARACTER_TAG 0b010
+#define CHARACTER_SHIFT TAG_BITS
 #define CONS_TAG 0x03
 #define VASLIST0_TAG 0x05
-#define SINGLE_FLOAT_TAG 0x06
 #define UNBOUND_TAG 0x07
+#ifdef CLASP_SHORT_FLOAT
+#define SHORT_FLOAT_TAG 0b1100
+#define SINGLE_FLOAT_TAG 0b1101
+#define SHORT_FLOAT_SHIFT (TAG_BITS + 1)
+#define SINGLE_FLOAT_SHIFT (TAG_BITS + 1)
+#else
+#define SINGLE_FLOAT_TAG 0b110
 #define SINGLE_FLOAT_SHIFT TAG_BITS
-#define CHARACTER_SHIFT TAG_BITS
+#endif
 #if TAG_BITS == 3
 #define CLASP_ALIGNMENT 8
 #define ZERO_TAG_MASK 0x07

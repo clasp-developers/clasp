@@ -32,6 +32,7 @@
 #include <limits.h>
 #include <cfenv>
 #include <complex>
+#include <numbers>
 #pragma GCC diagnostic push
 // #pragma GCC diagnostic ignored "-Wunused-local-typedef"
 #pragma GCC diagnostic pop
@@ -185,8 +186,8 @@ class Number_O : public General_O {
   LISP_ABSTRACT_CLASS(core, ClPkg, Number_O, "number", General_O);
 
 public:
-  template<typename T> inline static Number_sp create(T x);
-  template<typename Float> inline static Number_sp create(const std::complex<Float> x);
+  template <typename T> inline static Number_sp create(T x);
+  template <typename Float> inline static Number_sp create(const std::complex<Float> x);
 
   virtual Number_sp signum_() const { SUBCLASS_MUST_IMPLEMENT(); };
   virtual Number_sp reciprocal_() const { SUBCLASS_MUST_IMPLEMENT(); };
@@ -217,6 +218,7 @@ public:
 
   virtual uint as_uint_() const { SUBIMP(); }
   virtual LongLongInt as_LongLongInt_() const { SUBIMP(); };
+  virtual short_float_t as_short_float_() const { SUBIMP(); };
   virtual float as_float_() const { SUBIMP(); };
   virtual double as_double_() const { SUBIMP(); }
   virtual long_float_t as_long_float_() const { SUBIMP(); };
@@ -237,8 +239,12 @@ public:
   inline static bool zerop(Number_sp x) {
     if (x.fixnump())
       return x.unsafe_fixnum() == 0;
+#ifdef CLASP_SHORT_FLOAT
+    if (x.short_floatp())
+      return std::fpclassify(x.unsafe_short_float()) == FP_ZERO;
+#endif
     if (x.single_floatp())
-      return x.unsafe_single_float() == 0.0;
+      return std::fpclassify(x.unsafe_single_float()) == FP_ZERO;
     return x->zerop_();
   }
 
@@ -295,6 +301,10 @@ public:
   inline static bool plusp(Real_sp x) {
     if (x.fixnump())
       return x.unsafe_fixnum() > 0;
+#ifdef CLASP_SHORT_FLOAT
+    if (x.short_floatp())
+      return x.unsafe_short_float() > short_float_t{0.0};
+#endif
     if (x.single_floatp())
       return x.unsafe_single_float() > single_float_t{0.0};
     return x->plusp_();
@@ -303,6 +313,10 @@ public:
   inline static bool minusp(Real_sp x) {
     if (x.fixnump())
       return x.unsafe_fixnum() < 0;
+#ifdef CLASP_SHORT_FLOAT
+    if (x.short_floatp())
+      return x.unsafe_short_float() < short_float_t{0.0};
+#endif
     if (x.single_floatp())
       return x.unsafe_single_float() < single_float_t{0.0};
     return x->minusp_();
@@ -433,72 +447,34 @@ public:
   virtual ~Float_O() {};
 
   inline static bool isnan(Float_sp x) {
+#ifdef CLASP_SHORT_FLOAT
+    if (x.short_floatp())
+      return std::isnan(x.unsafe_short_float());
+#endif
     if (x.single_floatp())
       return std::isnan(x.unsafe_single_float());
     return x->isnan_();
   }
 
   inline static bool isinf(Float_sp x) {
+#ifdef CLASP_SHORT_FLOAT
+    if (x.short_floatp())
+      return std::isinf(x.unsafe_short_float());
+#endif
     if (x.single_floatp())
       return std::isinf(x.unsafe_single_float());
     return x->isinf_();
   }
 
   inline static int fpclassify(Float_sp x) {
+#ifdef CLASP_SHORT_FLOAT
+    if (x.short_floatp())
+      return std::fpclassify(x.unsafe_short_float());
+#endif
     if (x.single_floatp())
       return std::fpclassify(x.unsafe_single_float());
     return x->fpclassify_();
   }
-};
-
-SMART(ShortFloat);
-class ShortFloat_O : public Float_O {
-  LISP_ABSTRACT_CLASS(core, ClPkg, ShortFloat_O, "ShortFloat", Float_O);
-
-private:
-  float _Value;
-
-public:
-  static ShortFloat_sp create(float nm) {
-    auto sf = gctools::GC<ShortFloat_O>::allocate_with_default_constructor();
-    sf->_Value = nm;
-    return sf;
-  };
-
-public:
-  float get() const { return this->_Value; };
-  void sxhash_(HashGenerator& hg) const override;
-  //	virtual Number_sp copy() const;
-  Number_sp signum_() const override;
-  string __repr__() const override;
-  Number_sp abs_() const override;
-  bool isnan_() const override { return std::isnan(this->_Value); }; // NaN is supposed to be the only value that != itself!
-  bool isinf_() const override { return std::isinf(this->_Value); };
-  int fpclassify_() const override { return std::fpclassify(_Value); }
-
-public:
-  //	virtual	bool	eqn(T_sp obj) const;
-  virtual bool eql_(T_sp obj) const override;
-  virtual Number_sp reciprocal_() const override;
-
-  // math routines shared by all numbers
-  virtual bool zerop_() const override { return this->_Value == 0.0; };
-  virtual Number_sp negate_() const override { return ShortFloat_O::create(-this->_Value); };
-
-  virtual Number_sp onePlus_() const override { return ShortFloat_O::create(this->_Value + 1.0); };
-  virtual Number_sp oneMinus_() const override { return ShortFloat_O::create(this->_Value - 1.0); };
-
-  // shared by real
-  virtual bool plusp_() const override { return this->_Value > 0.0; };
-  virtual bool minusp_() const override { return this->_Value < 0.0; };
-
-  virtual float as_float_() const override;
-  virtual double as_double_() const override;
-  virtual long_float_t as_long_float_() const override;
-
-  Integer_sp castToInteger() const override;
-
-  DEFAULT_CTOR_DTOR(ShortFloat_O);
 };
 
 class SingleFloat_dummy_O : public Float_O {
@@ -507,6 +483,20 @@ class SingleFloat_dummy_O : public Float_O {
   inline static SingleFloat_sp create(float x) { return gc::make_tagged_single_float<core::SingleFloat_I>(x); };
 
   static SingleFloat_sp coerce(Number_sp x);
+};
+
+class ShortFloat_O : public Float_O {
+  LISP_ABSTRACT_CLASS(core, ClPkg, ShortFloat_O, "ShortFloat", Float_O);
+
+#ifdef CLASP_SHORT_FLOAT
+  inline static ShortFloat_sp create(float x) { return gc::make_tagged_short_float<core::SingleFloat_I>(x); };
+
+  static ShortFloat_sp coerce(Number_sp x);
+#else
+  inline static SingleFloat_sp create(float x) { return gc::make_tagged_single_float<core::SingleFloat_I>(x); };
+
+  inline static SingleFloat_sp coerce(Number_sp x) { return SingleFloat_dummy_O::coerce(x); }
+#endif
 };
 
 inline SingleFloat_sp make_single_float(float x) { return gc::make_tagged_single_float<core::SingleFloat_I>(x); };
@@ -572,6 +562,7 @@ public:
   virtual Number_sp log1_() const override;
   virtual Number_sp log1p_() const override;
 
+  virtual short_float_t as_short_float_() const override;
   virtual float as_float_() const override;
   virtual double as_double_() const override;
   virtual long_float_t as_long_float_() const override;
@@ -657,6 +648,7 @@ public:
   virtual Number_sp log1_() const override;
   virtual Number_sp log1p_() const override;
 
+  virtual short_float_t as_short_float_() const override;
   virtual float as_float_() const override;
   virtual double as_double_() const override;
   virtual long_float_t as_long_float_() const override;
@@ -815,6 +807,7 @@ public:
     return create(gc::As<Integer_sp>(this->_numerator - this->_denominator), this->_denominator);
   };
 
+  virtual short_float_t as_short_float_() const override;
   virtual float as_float_() const override;
   virtual double as_double_() const override;
   virtual long_float_t as_long_float_() const override;
@@ -847,7 +840,18 @@ inline Number_sp clasp_log1(Number_sp x) {
     if (f < 0)
       return clasp_log1_complex_inner(x, clasp_make_fixnum(0));
     return clasp_make_single_float(logf(f));
-  } else if (x.single_floatp()) {
+  }
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp()) {
+    short_float_t f = x.unsafe_short_float();
+    if (std::isnan(f))
+      return x;
+    if (f < 0)
+      return clasp_log1_complex_inner(x, clasp_make_fixnum(0));
+    return ShortFloat_O::create(logf(f));
+  }
+#endif
+  if (x.single_floatp()) {
     float f = x.unsafe_single_float();
     if (std::isnan(f))
       return x;
@@ -864,7 +868,18 @@ inline Number_sp clasp_log1p(Number_sp x) {
     if (f < -1)
       return clasp_log1_complex_inner(clasp_one_plus(x), clasp_make_fixnum(0));
     return clasp_make_single_float(_log1p(f));
-  } else if (x.single_floatp()) {
+  }
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp()) {
+    short_float_t f = x.unsafe_short_float();
+    if (std::isnan(f))
+      return x;
+    if (f < -1)
+      return clasp_log1_complex_inner(clasp_one_plus(x), clasp_make_fixnum(0));
+    return ShortFloat_O::create(_log1p(f));
+  }
+#endif
+  if (x.single_floatp()) {
     float f = x.unsafe_single_float();
     if (std::isnan(f))
       return x;
@@ -881,22 +896,6 @@ Real_sp cl__mod(Real_sp, Real_sp);
 Integer_sp clasp_ash(Integer_sp x, int bits);
 
 inline gctools::Fixnum clasp_safe_fixnum(Number_sp x) { return gc::As<Fixnum_sp>(x).unsafe_fixnum(); }
-
-#if 0
-  inline gctools::Fixnum clasp_fixnum(Number_sp x) {
-    return unbox_fixnum(Fixnum_sp(x));
-  }
-
-  inline float clasp_single_float(Number_sp x) {
-    if (x.single_floatp()) {
-      return unbox_single_float(x);
-    }
-  }
-
-  inline double clasp_double_float(Number_sp x) {
-    return gc::As<DoubleFloat_sp>(x)->get();
-  }
-#endif
 
 Number_sp clasp_make_complex(Real_sp r, Real_sp i);
 
@@ -983,6 +982,10 @@ template <typename Char> struct fmt::formatter<core::NumberType, Char> : fmt::fo
 
 namespace core {
 
+template <std::floating_point Float> inline Float _signum(Float x) {
+  return (std::fpclassify(x) == FP_ZERO) ? x : std::copysign(Float{1}, x);
+}
+
 CL_PKG_NAME(ClPkg, signum);
 DOCGROUP(clasp)
 CL_DEFUN inline Number_sp clasp_signum(Number_sp num) {
@@ -993,14 +996,13 @@ CL_DEFUN inline Number_sp clasp_signum(Number_sp num) {
     if (fn > 0)
       return immediate_fixnum<Number_O>(1);
     return immediate_fixnum<Number_O>(-1);
-  } else if (num.single_floatp()) {
-    float fl = num.unsafe_single_float();
-    if (fl == 0.0)
-      return immediate_single_float<Number_O>(0.0);
-    if (fl < 0.0)
-      return immediate_single_float<Number_O>(-1.0);
-    return immediate_single_float<Number_O>(1.0);
   }
+#ifdef CLASP_SHORT_FLOAT
+  if (num.short_floatp())
+    return ShortFloat_O::create(_signum(num.unsafe_short_float()));
+#endif
+  if (num.single_floatp())
+    return SingleFloat_dummy_O::create(_signum(num.unsafe_single_float()));
   return num->signum_();
 }
 
@@ -1013,11 +1015,13 @@ inline Number_sp clasp_one_plus(Number_sp num) {
       return Integer_O::create(fixnum);
     } else
       return immediate_fixnum<Number_O>(fixnum + 1);
-  } else if (num.single_floatp()) {
-    float fl = num.unsafe_single_float();
-    fl += 1.0;
-    return immediate_single_float<Number_O>(fl);
   }
+#ifdef CLASP_SHORT_FLOAT
+  if (num.short_floatp())
+    return ShortFloat_O::create(num.unsafe_short_float() + short_float_t{1});
+#endif
+  if (num.single_floatp())
+    return SingleFloat_dummy_O::create(num.unsafe_single_float() + single_float_t{1});
   return num->onePlus_();
 }
 
@@ -1030,11 +1034,13 @@ inline Number_sp clasp_one_minus(Number_sp num) {
       return Integer_O::create(fixnum);
     } else
       return immediate_fixnum<Number_O>(fixnum - 1);
-  } else if (num.single_floatp()) {
-    float fl = num.unsafe_single_float();
-    fl -= 1.0;
-    return immediate_single_float<Number_O>(fl);
   }
+#ifdef CLASP_SHORT_FLOAT
+  if (num.short_floatp())
+    return ShortFloat_O::create(num.unsafe_short_float() - short_float_t{1});
+#endif
+  if (num.single_floatp())
+    return SingleFloat_dummy_O::create(num.unsafe_single_float() - single_float_t{1});
   return num->oneMinus_();
 }
 
@@ -1049,17 +1055,23 @@ CL_DEFUN inline Number_sp clasp_negate(Number_sp num) {
       return Integer_O::create(fixnum);
     } else
       return immediate_fixnum<Number_O>(-fixnum);
-  } else if (num.single_floatp()) {
-    float fl = num.unsafe_single_float();
-    fl = -fl;
-    return immediate_single_float<Number_O>(fl);
   }
+#ifdef CLASP_SHORT_FLOAT
+  if (num.short_floatp())
+    return ShortFloat_O::create(-num.unsafe_short_float());
+#endif
+  if (num.single_floatp())
+    return SingleFloat_dummy_O::create(-num.unsafe_single_float());
   return num->negate_();
 }
 
 inline NumberType clasp_t_of(Number_sp n) {
   if (n.fixnump())
     return number_Fixnum;
+#ifdef CLASP_SHORT_FLOAT
+  else if (n.short_floatp())
+    return number_ShortFloat;
+#endif
   else if (n.single_floatp())
     return number_SingleFloat;
   else if (gc::IsA<Bignum_sp>(n))
@@ -1107,6 +1119,7 @@ inline Integer_sp clasp_shift_left(Integer_sp n, Fixnum bits) {
   } else
     return n->shift_left(bits);
 }
+
 inline Integer_sp clasp_shift_right(Integer_sp n, Fixnum nbits) {
   if (n.fixnump()) {
     Fixnum y = n.unsafe_fixnum();
@@ -1161,6 +1174,10 @@ long_float_t clasp_to_long_float(core::Number_sp);
 
 // END OF CLASP_TO_... FUNCTIONS
 
+#ifdef CLASP_SHORT_FLOAT
+template <> inline Number_sp Number_O::create(short_float_t x) { return ShortFloat_O::create(x); }
+#endif
+
 template <> inline Number_sp Number_O::create(single_float_t x) { return SingleFloat_dummy_O::create(x); }
 
 template <> inline Number_sp Number_O::create(double_float_t x) { return DoubleFloat_O::create(x); }
@@ -1192,21 +1209,25 @@ CL_DEFUN inline Number_sp clasp_reciprocal(Number_sp x) {
       else
         return Ratio_O::create_primitive(clasp_make_fixnum(-1), clasp_make_fixnum(-fx));
     }
-  } else if (x.single_floatp()) {
-    float f = x.unsafe_single_float();
-    return clasp_make_single_float(1.0 / f);
   }
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp())
+    return ShortFloat_O::create(short_float_t{1.0} / x.unsafe_short_float());
+#endif
+  if (x.single_floatp())
+    return clasp_make_single_float(single_float_t{1.0} / x.unsafe_single_float());
   return x->reciprocal_();
 }
 
 inline Number_sp clasp_exp(Number_sp x) {
-  if (x.fixnump()) {
-    float f = x.unsafe_fixnum();
-    return clasp_make_single_float(expf(f));
-  } else if (x.single_floatp()) {
-    float f = x.unsafe_single_float();
-    return clasp_make_single_float(expf(f));
-  }
+  if (x.fixnump())
+    return clasp_make_single_float(std::exp((single_float_t)x.unsafe_fixnum()));
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp())
+    return ShortFloat_O::create(std::exp(x.unsafe_short_float()));
+#endif
+  if (x.single_floatp())
+    return clasp_make_single_float(std::exp(x.unsafe_single_float()));
   return x->exp_();
 }
 
@@ -1224,6 +1245,10 @@ inline Number_sp Number_O::abs(Number_sp x) {
       return Integer_O::create(MOST_POSITIVE_FIXNUM + 1);
     return clasp_make_fixnum(std::abs(fixnum));
   }
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp())
+    return Number_O::create(std::abs(x.unsafe_short_float()));
+#endif
   if (x.single_floatp())
     return Number_O::create(std::abs(x.unsafe_single_float()));
   return x->abs_();
@@ -1232,6 +1257,10 @@ inline Number_sp Number_O::abs(Number_sp x) {
 inline Number_sp Number_O::sqrt(const Number_sp x) {
   if (x.fixnump())
     return float_sqrt((single_float_t)x.unsafe_fixnum());
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp())
+    return Number_O::create(std::sqrt(x.unsafe_short_float()));
+#endif
   if (x.single_floatp())
     return float_sqrt(x.unsafe_single_float());
   return x->sqrt_();
@@ -1240,12 +1269,16 @@ inline Number_sp Number_O::sqrt(const Number_sp x) {
 inline Number_sp Number_O::sin(const Number_sp x) {
   if (x.fixnump())
     return SingleFloat_dummy_O::create(std::sin((single_float_t)x.unsafe_fixnum()));
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp())
+    return Number_O::create(std::sin(x.unsafe_short_float()));
+#endif
   if (x.single_floatp())
     return SingleFloat_dummy_O::create(std::sin(x.unsafe_single_float()));
   return x->sin_();
 }
 
-template<std::floating_point Float> Number_sp _asin(Float z) {
+template <std::floating_point Float> Number_sp _asin(Float z) {
   if (z >= Float{-1} && z <= Float{1})
     return Number_O::create(std::asin(z));
 
@@ -1256,6 +1289,10 @@ template<std::floating_point Float> Number_sp _asin(Float z) {
 inline Number_sp Number_O::asin(const Number_sp x) {
   if (x.fixnump())
     return _asin((single_float_t)x.unsafe_fixnum());
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp())
+    return _asin(x.unsafe_short_float());
+#endif
   if (x.single_floatp())
     return _asin(x.unsafe_single_float());
   return x->asin_();
@@ -1264,12 +1301,16 @@ inline Number_sp Number_O::asin(const Number_sp x) {
 inline Number_sp Number_O::cos(Number_sp x) {
   if (x.fixnump())
     return SingleFloat_dummy_O::create(std::cos((single_float_t)x.unsafe_fixnum()));
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp())
+    return ShortFloat_O::create(std::cos(x.unsafe_short_float()));
+#endif
   if (x.single_floatp())
     return SingleFloat_dummy_O::create(std::cos(x.unsafe_single_float()));
   return x->cos_();
 }
 
-template<std::floating_point Float> Number_sp _acos(Float z) {
+template <std::floating_point Float> Number_sp _acos(Float z) {
   if (z >= Float{-1} && z <= Float{1})
     return Number_O::create(std::acos(z));
 
@@ -1280,6 +1321,10 @@ template<std::floating_point Float> Number_sp _acos(Float z) {
 inline Number_sp Number_O::acos(const Number_sp x) {
   if (x.fixnump())
     return _acos((single_float_t)x.unsafe_fixnum());
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp())
+    return _acos(x.unsafe_short_float());
+#endif
   if (x.single_floatp())
     return _acos(x.unsafe_single_float());
   return x->acos_();
@@ -1288,6 +1333,10 @@ inline Number_sp Number_O::acos(const Number_sp x) {
 inline Number_sp Number_O::tan(Number_sp x) {
   if (x.fixnump())
     return SingleFloat_dummy_O::create(std::tan((single_float_t)x.unsafe_fixnum()));
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp())
+    return ShortFloat_O::create(std::tan(x.unsafe_short_float()));
+#endif
   if (x.single_floatp())
     return SingleFloat_dummy_O::create(std::tan(x.unsafe_single_float()));
   return x->tan_();
@@ -1296,6 +1345,10 @@ inline Number_sp Number_O::tan(Number_sp x) {
 inline Number_sp Number_O::sinh(Number_sp x) {
   if (x.fixnump())
     return SingleFloat_dummy_O::create(std::sinh((single_float_t)x.unsafe_fixnum()));
+#ifdef CLASP_SHORT_FLOAT
+  if (x.single_floatp())
+    return ShortFloat_O::create(std::sinh(x.unsafe_short_float()));
+#endif
   if (x.single_floatp())
     return SingleFloat_dummy_O::create(std::sinh(x.unsafe_single_float()));
   return x->sinh_();
@@ -1304,6 +1357,10 @@ inline Number_sp Number_O::sinh(Number_sp x) {
 inline Number_sp Number_O::cosh(Number_sp x) {
   if (x.fixnump())
     return SingleFloat_dummy_O::create(std::cosh((single_float_t)x.unsafe_fixnum()));
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp())
+    return ShortFloat_O::create(std::cosh(x.unsafe_short_float()));
+#endif
   if (x.single_floatp())
     return SingleFloat_dummy_O::create(std::cosh(x.unsafe_single_float()));
   return x->cosh_();
@@ -1312,25 +1369,38 @@ inline Number_sp Number_O::cosh(Number_sp x) {
 inline Number_sp Number_O::tanh(Number_sp x) {
   if (x.fixnump())
     return SingleFloat_dummy_O::create(std::tanh((single_float_t)x.unsafe_fixnum()));
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp())
+    return ShortFloat_O::create(std::tanh(x.unsafe_short_float()));
+#endif
   if (x.single_floatp())
     return SingleFloat_dummy_O::create(std::tanh(x.unsafe_single_float()));
   return x->tanh_();
 }
 
 inline Number_sp Number_O::realpart(const Number_sp x) {
+#ifdef CLASP_SHORT_FLOAT
+  if (x.fixnump() || x.single_floatp() || x.short_floatp())
+    return x;
+#else
   if (x.fixnump() || x.single_floatp())
     return x;
+#endif
   return x->realpart_();
 }
 
 inline Number_sp Number_O::imagpart(const Number_sp x) {
   if (x.fixnump())
     return clasp_make_fixnum(0);
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp())
+    return create(std::copysign(short_float_t{0.0}, x.unsafe_short_float()));
+#endif
   if (x.single_floatp())
     return create(std::copysign(single_float_t{0.0}, x.unsafe_single_float()));
   return x->imagpart_();
 }
 
-//template <std::integral T> inline Number_sp Number_O::create(T x) { return Integer_O::create(x); }
+// template <std::integral T> inline Number_sp Number_O::create(T x) { return Integer_O::create(x); }
 
 }; // namespace core

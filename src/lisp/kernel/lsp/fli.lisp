@@ -178,6 +178,7 @@
             #+int128 :uint128 #+int128 cmp::%i128%
             :size cmp::%size_t%
             :ssize cmp::%size_t%
+            ;#+short-float :short-float #+short-float cmp::%short-float%
             :single-float cmp::%float%
             :float cmp::%float%
             :double cmp::%double%

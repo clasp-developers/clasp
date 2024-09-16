@@ -1442,33 +1442,25 @@ CL_DEFUN size_t core__ltvc_write_short_float(T_sp object, T_sp stream, size_t in
   index += sizeof(data);
   return index;
 }
-
-long_float_t ltvc_read_short_float(char*& bytecode, char* byteend, bool log) {
-  SELF_CHECK(long_float_t, stream, index);
-  long_float_t data;
-  if (bytecode > byteend - sizeof(data))
-    SIMPLE_ERROR("Unexpected EOF");
-  for (size_t i = 0; i < sizeof(data); ++i) {
-    ((char*)&data)[i] = *bytecode++;
-  }
-  if (log)
-    fmt::print("{}:{}:{} -> '{}'\n", __FILE__, __LINE__, __FUNCTION__, data);
-  return data;
-}
-#else
-double_float_t ltvc_read_binary16(char*& bytecode, char* byteend, bool log) {
-  SELF_CHECK(long_float_t, stream, index);
-  char data[2];
-  if (bytecode > byteend - sizeof(data))
-    SIMPLE_ERROR("Unexpected EOF");
-  for (size_t i = 0; i < sizeof(data); ++i) {
-    data[i] = *bytecode++;
-  }
-  if (log)
-    fmt::print("{}:{}:{} -> '{}'\n", __FILE__, __LINE__, __FUNCTION__, data);
-  return short_float_t{0.0};
-}
 #endif
+
+short_float_t ltvc_read_binary16(char*& bytecode, char* byteend, bool log) {
+  SELF_CHECK(short_float_t, stream, index);
+  using convert = float_convert<short_float_t>;
+  __uint16_t bits = 0;
+  if (bytecode > byteend - 2)
+    SIMPLE_ERROR("Unexpected EOF");
+  for (size_t i = 0; i < 2; ++i) {
+    ((char*)&bits)[i] = *bytecode++;
+  }
+  if (log)
+    fmt::print("{}:{}:{} -> '{}'\n", __FILE__, __LINE__, __FUNCTION__, bits);
+#ifdef CLASP_SHORT_FLOAT_BINARY16
+    return convert::bits_to_float(bits);
+#else
+    return convert::quadruple_to_float(convert::bits_to_quadruple<float_traits<5, 11>>(bits));
+#endif
+}
 
 DOCGROUP(clasp);
 CL_DEFUN size_t core__ltvc_write_float(T_sp object, T_sp stream, size_t index) {
@@ -1547,7 +1539,7 @@ long_float_t ltvc_read_binary80(char*& bytecode, char* byteend, bool log) {
 #endif
 }
 
-double_float_t ltvc_read_binary128(char*& bytecode, char* byteend, bool log) {
+long_float_t ltvc_read_binary128(char*& bytecode, char* byteend, bool log) {
   SELF_CHECK(long_float_t, stream, index);
   using convert = float_convert<long_float_t>;
   __uint128_t bits = 0;

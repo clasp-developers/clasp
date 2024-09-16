@@ -6097,8 +6097,6 @@
 {class-kind :stamp-name "STAMPWTAG_core__ShortFloat_O" :stamp-key "core::ShortFloat_O"
             :parent-class "core::Float_O" :lisp-class-base "core::Float_O" :root-class "core::T_O"
             :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ctype_float" :offset-ctype "float"
-             :offset-base-ctype "core::ShortFloat_O" :layout-offset-field-names ("_Value")}
 {class-kind :stamp-name "STAMPWTAG_core__Complex_O" :stamp-key "core::Complex_O"
             :parent-class "core::Number_O" :lisp-class-base "core::Number_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

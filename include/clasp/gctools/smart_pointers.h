@@ -124,8 +124,11 @@ public:
   bool same_as_keyP() const { return tagged_same_as_keyp(this->theObject); };
   bool characterp() const { return tagged_characterp<Type*>(this->theObject); };
   claspCharacter unsafe_character() const { return untag_character(this->theObject); };
-  bool single_floatp() const { return tagged_single_floatp<Type*>(this->theObject); };
   float unsafe_single_float() const { return untag_single_float<Type*>(this->theObject); };
+#ifdef CLASP_SHORT_FLOAT
+  bool short_floatp() const { return tagged_short_floatp<Type*>(this->theObject); };
+  short_float_t unsafe_short_float() const { return untag_short_float<Type*>(this->theObject); };
+#endif
   // This replaces pointerp()
   bool objectp() const { return this->generalp() || this->consp(); };
   bool generalp() const { return tagged_generalp<Type*>(this->theObject); };
@@ -364,6 +367,10 @@ public:
   claspCharacter unsafe_character() const { return untag_character(this->theObject); };
   bool single_floatp() const { return tagged_single_floatp<Type*>(this->theObject); };
   float unsafe_single_float() const { return untag_single_float<Type*>(this->theObject); };
+#ifdef CLASP_SHORT_FLOAT
+  bool short_floatp() const { return tagged_short_floatp<Type*>(this->theObject); };
+  short_float_t unsafe_short_float() const { return untag_short_float<Type*>(this->theObject); };
+#endif
   Fixnum asFixnum() const {
     GCTOOLS_ASSERT(this->fixnump());
     return untag_fixnum<Type*>(this->theObject);
@@ -709,6 +716,10 @@ public:
   inline Fixnum unsafe_fixnum() const { return untag_fixnum(this->theObject); };
   bool single_floatp() const { return tagged_single_floatp<Type*>(this->theObject); };
   float unsafe_single_float() const { return untag_single_float<Type*>(this->theObject); };
+#ifdef CLASP_SHORT_FLOAT
+  bool short_floatp() const { return tagged_short_floatp<Type*>(this->theObject); };
+  float unsafe_short_float() const { return untag_short_float<Type*>(this->theObject); };
+#endif
   bool valistp() const { return tagged_vaslistp(this->theObject); };
   void* unsafe_valist() const { return untag_vaslist(this->theObject); };
   void* safe_valist() const {
@@ -895,6 +906,10 @@ public:
   claspCharacter unsafe_character() const { return untag_character(this->theObject); };
   bool single_floatp() const { return tagged_single_floatp<Type*>(this->theObject); };
   float unsafe_single_float() const { return untag_single_float<Type*>(this->theObject); };
+#ifdef CLASP_SHORT_FLOAT
+  bool short_floatp() const { return tagged_short_floatp<Type*>(this->theObject); };
+  short_float_t unsafe_short_float() const { return untag_short_float<Type*>(this->theObject); };
+#endif
   // This replaces pointerp()
   bool objectp() const { return this->generalp() || this->consp(); };
   bool generalp() const { return tagged_generalp<Type*>(this->theObject); };
@@ -1058,6 +1073,10 @@ public:
   claspCharacter unsafe_character() const { return untag_character(this->theObject); };
   bool single_floatp() const { return tagged_single_floatp<Type*>(this->theObject); };
   float unsafe_single_float() const { return untag_single_float<Type*>(this->theObject); };
+#ifdef CLASP_SHORT_FLOAT
+  bool short_floatp() const { return tagged_short_floatp<Type*>(this->theObject); };
+  short_float_t unsafe_short_float() const { return untag_short_float<Type*>(this->theObject); };
+#endif
   // This replaces pointerp()
   bool objectp() const { return this->generalp() || this->consp(); };
   bool generalp() const { return tagged_generalp<Type*>(this->theObject); };
@@ -1219,6 +1238,10 @@ public:
   claspCharacter unsafe_character() const { return untag_character(this->theObject); };
   bool single_floatp() const { return tagged_single_floatp<Type*>(this->theObject); };
   float unsafe_single_float() const { return untag_single_float<Type*>(this->theObject); };
+#ifdef CLASP_SHORT_FLOAT
+  bool short_floatp() const { return tagged_short_floatp<Type*>(this->theObject); };
+  short_float_t unsafe_short_float() const { return untag_short_float<Type*>(this->theObject); };
+#endif
   // This replaces pointerp()
   bool objectp() const { return this->generalp() || this->consp(); };
   bool generalp() const { return tagged_generalp<Type*>(this->theObject); };

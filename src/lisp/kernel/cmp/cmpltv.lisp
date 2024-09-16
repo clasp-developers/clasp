@@ -1181,6 +1181,11 @@
           for word = (ldb (byte 64 pos) anumber)
           do (write-b64 word stream))))
 
+#+short-float/binary16
+(defmethod encode ((inst short-float-creator) stream)
+  (write-mnemonic :make-binary16 stream)
+  (write-b16 (ext:short-float-to-bits (prototype inst)) stream))
+
 (defmethod encode ((inst single-float-creator) stream)
   (write-mnemonic :make-binary32 stream)
   (write-b32 (ext:single-float-to-bits (prototype inst)) stream))

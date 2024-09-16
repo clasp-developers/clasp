@@ -26,6 +26,8 @@
 (defstruct (literal-node-closure (:type vector) (:include literal-dnode) :named) function-index function entry-point-ref)
 
 (defstruct (function-datum (:type vector) :named) index)
+#+short-float
+(defstruct (short-float-datum (:type vector) :named) value)
 (defstruct (single-float-datum (:type vector) :named) value)
 (defstruct (double-float-datum (:type vector) :named) value)
 #+long-float
@@ -451,6 +453,12 @@ rewrite the slot in the literal table to store a closure."
   (add-creator "ltvc_make_package" index package
                (load-time-reference-literal (package-name package) read-only-p :toplevelp nil)))
 
+#+short-float/binary16
+(defun ltv/short-float (value index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp read-only-p))
+  (let* ((constant (make-short-float-datum :value value)))
+    (add-creator "ltvc_make_binary16" index value constant)))
+
 (defun ltv/single-float (single index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp read-only-p))
   (let* ((constant (make-single-float-datum :value single)))
@@ -529,6 +537,8 @@ rewrite the slot in the literal table to store a closure."
     ((consp object) (values (literal-machine-cons-coalesce *literal-machine*) #'ltv/cons))
     ((fixnump object) (values nil #'ltv/fixnum))
     ((characterp object) (values nil #'ltv/character))
+    #+short-float
+    ((core:short-float-p  object) (values nil #'ltv/short-float))
     ((core:single-float-p  object) (values nil #'ltv/single-float))
     ((symbolp object) (values (literal-machine-symbol-coalesce literal-machine) #'ltv/symbol))
     ((double-float-p object) (values (literal-machine-double-float-coalesce literal-machine) #'ltv/double-float))
@@ -562,6 +572,8 @@ rewrite the slot in the literal table to store a closure."
     ((core:bignump arg) (core:ltvc-write-bignum arg stream byte-index))
     ((immediate-datum-p arg)
      (core:ltvc-write-object #\i (immediate-datum-value arg) stream byte-index))
+    #+short-float
+    ((short-float-datum-p arg) (core:ltvc-write-short-float (long-float-datum-value arg) stream byte-index))
     ((single-float-datum-p arg) (core:ltvc-write-float (single-float-datum-value arg) stream byte-index))
     ((double-float-datum-p arg) (core:ltvc-write-double (double-float-datum-value arg) stream byte-index))
     #+long-float
