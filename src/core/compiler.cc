@@ -1269,11 +1269,17 @@ SYMBOL_EXPORT_SC_(CorePkg, callWithVariableBound);
 
 template <typename T> char document() { return '\0'; };
 template <> char document<char>() { return 'c'; };
-template <> char document<size_t>() { return 's'; };
+template <> char document<size_t>() { return 'z'; };
 template <> char document<char*>() { return 'S'; };
 template <> char document<T_O*>() { return 'O'; };
+#ifdef CLASP_SHORT_FLOAT
+template <> char document<short_float_t>() { return 's'; };
+#endif
 template <> char document<float>() { return 'f'; };
 template <> char document<double>() { return 'd'; };
+#ifdef CLASP_LONG_FLOAT
+template <> char document<long_float_t>() { return 'l'; };
+#endif
 template <> char document<ClaspXepAnonymousFunction>() { return 'f'; };
 
 char ll_read_char(T_sp stream, bool log, size_t& index) {
@@ -1437,7 +1443,11 @@ T_O* ltvc_read_bignum(char*& bytecode, char* byteend, bool log) {
 DOCGROUP(clasp);
 CL_DEFUN size_t core__ltvc_write_short_float(T_sp object, T_sp stream, size_t index) {
   SELF_DOCUMENT(long_short_t, stream, index);
-  long_float_t data = gc::As<LongFloat_sp>(object)->get();
+  uint16_t bits = float_convert<short_float_t>::float_to_bits(object.unsafe_short_float());
+  clasp_write_characters((char*)bits, 2, stream);
+  index += 2;
+  return index;
+
   clasp_write_characters((char*)&data, sizeof(data), stream);
   index += sizeof(data);
   return index;
@@ -1447,7 +1457,7 @@ CL_DEFUN size_t core__ltvc_write_short_float(T_sp object, T_sp stream, size_t in
 short_float_t ltvc_read_binary16(char*& bytecode, char* byteend, bool log) {
   SELF_CHECK(short_float_t, stream, index);
   using convert = float_convert<short_float_t>;
-  __uint16_t bits = 0;
+  uint16_t bits = 0;
   if (bytecode > byteend - 2)
     SIMPLE_ERROR("Unexpected EOF");
   for (size_t i = 0; i < 2; ++i) {
@@ -1514,9 +1524,14 @@ double ltvc_read_double(char*& bytecode, char* byteend, bool log) {
 DOCGROUP(clasp);
 CL_DEFUN size_t core__ltvc_write_long_float(T_sp object, T_sp stream, size_t index) {
   SELF_DOCUMENT(long_float_t, stream, index);
-  long_float_t data = gc::As<LongFloat_sp>(object)->get();
-  clasp_write_characters((char*)&data, sizeof(data), stream);
-  index += sizeof(data);
+#ifdef CLASP_LONG_FLOAT_BINARY80
+  constexpr size_t width = 10;
+#else
+  constexpr size_t width = 16;
+#endif
+  unsigned _BitInt(width * 8) bits = float_convert<long_float_t>::float_to_bits(gc::As<LongFloat_sp>(object)->get());
+  clasp_write_characters((char*)&bits, width, stream);
+  index += width;
   return index;
 }
 #endif
@@ -1524,14 +1539,14 @@ CL_DEFUN size_t core__ltvc_write_long_float(T_sp object, T_sp stream, size_t ind
 long_float_t ltvc_read_binary80(char*& bytecode, char* byteend, bool log) {
   SELF_CHECK(long_float_t, stream, index);
   using convert = float_convert<long_float_t>;
-  __uint128_t bits = 0;
+  unsigned _BitInt(80) bits = 0;
   if (bytecode > byteend - 10)
     SIMPLE_ERROR("Unexpected EOF");
   for (size_t i = 0; i < 10; ++i) {
     ((char*)&bits)[i] = *bytecode++;
   }
   if (log)
-    fmt::print("{}:{}:{} -> '{}'\n", __FILE__, __LINE__, __FUNCTION__, bits);
+    fmt::print("{}:{}:{} -> '{}'\n", __FILE__, __LINE__, __FUNCTION__, (__uint128_t)bits);
 #ifdef CLASP_LONG_FLOAT_BINARY80
     return convert::bits_to_float(bits);
 #else
@@ -1542,14 +1557,14 @@ long_float_t ltvc_read_binary80(char*& bytecode, char* byteend, bool log) {
 long_float_t ltvc_read_binary128(char*& bytecode, char* byteend, bool log) {
   SELF_CHECK(long_float_t, stream, index);
   using convert = float_convert<long_float_t>;
-  __uint128_t bits = 0;
+  unsigned _BitInt(128) bits = 0;
   if (bytecode > byteend - 16)
     SIMPLE_ERROR("Unexpected EOF");
   for (size_t i = 0; i < 16; ++i) {
     ((char*)&bits)[i] = *bytecode++;
   }
   if (log)
-    fmt::print("{}:{}:{} -> '{}'\n", __FILE__, __LINE__, __FUNCTION__, bits);
+    fmt::print("{}:{}:{} -> '{}'\n", __FILE__, __LINE__, __FUNCTION__, (__uint128_t)bits);
 #ifdef CLASP_LONG_FLOAT_BINARY128
     return convert::bits_to_float(bits);
 #else
@@ -1710,7 +1725,7 @@ void start_code_interpreter(gctools::GCRootsInModule* roots, char* bytecode, siz
         fasoFile = objectFile->_FasoName->get_std_string();
         fasoIndex = objectFile->_FasoIndex;
       }
-      SIMPLE_ERROR("While loading the faso file {} {} an illegal byte-code %d was detected. This usually happens when a faso file "
+      SIMPLE_ERROR("While loading the faso file {} {} an illegal byte-code {} was detected. This usually happens when a faso file "
                    "is out of date and the byte code has changed in the meantime.",
                    fasoFile, fasoIndex, (int)c);
     }

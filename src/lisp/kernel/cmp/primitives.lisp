@@ -422,9 +422,12 @@
   (case type-name
     (:bignum %bignum%)
     #+short-float (:short-float %short-float%)
+    #+short-float (:binary16 %short-float%)
     (:single-float %float%)
     (:double-float %double%)
     #+long-float (:long-float %long-float%)
+    #+long-float (:binary80 %long-float%)
+    #+long-float (:binary128 %long-float%)
     (:fn-start-up* %fn-start-up*%)
     (:gcroots-in-module* %gcroots-in-module*%)
     (:i1 %i1%)
