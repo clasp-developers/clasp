@@ -299,6 +299,8 @@ public:
   inline static Number_sp realpart(const Number_sp x);
   inline static Number_sp imagpart(const Number_sp x);
 
+  inline static Number_sp negate(const Number_sp x);
+
   inline static Number_sp abs(const Number_sp x);
   inline static Number_sp sqrt(const Number_sp x);
 
@@ -318,6 +320,8 @@ public:
 
   static int compare(const Number_sp na, const Number_sp nb);
 };
+
+inline Number_sp operator-(const Number_sp x) { return Number_O::negate(x); }
 
 inline Number_sp operator+(const Number_sp x, const Number_sp y) { return Number_O::add(x, y); }
 inline Number_sp operator-(const Number_sp x, const Number_sp y) { return Number_O::sub(x, y); }
@@ -1447,6 +1451,25 @@ inline Number_sp Number_O::imagpart(const Number_sp x) {
   if (x.single_floatp())
     return create(std::copysign(single_float_t{0.0}, x.unsafe_single_float()));
   return x->imagpart_();
+}
+
+inline Number_sp Number_O::negate(const Number_sp num) {
+  if (num.fixnump()) {
+    gc::Fixnum fixnum = num.unsafe_fixnum();
+    if (fixnum == MOST_NEGATIVE_FIXNUM) {
+      // will overflow to a bignum when negated
+      fixnum = (MOST_POSITIVE_FIXNUM + 1);
+      return Integer_O::create(fixnum);
+    } else
+      return immediate_fixnum<Number_O>(-fixnum);
+  }
+#ifdef CLASP_SHORT_FLOAT
+  if (num.short_floatp())
+    return ShortFloat_O::create(-num.unsafe_short_float());
+#endif
+  if (num.single_floatp())
+    return SingleFloat_dummy_O::create(-num.unsafe_single_float());
+  return num->negate_();
 }
 
 // template <std::integral T> inline Number_sp Number_O::create(T x) { return Integer_O::create(x); }

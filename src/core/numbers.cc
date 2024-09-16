@@ -255,7 +255,7 @@ CL_DEFUN Number_sp Number_O::add(Number_sp na, Number_sp nb) {
   if (ra)
     return Ratio_O::create(ra->numerator() + nb * ra->denominator(), ra->denominator());
   if (rb)
-    return Ratio_O::create(rb->numerator() + na * rb->denominator(), rb->denominator());
+    return Ratio_O::create(na * rb->denominator() + rb->numerator(), rb->denominator());
 
   Bignum_sp ba = na.asOrNull<Bignum_O>(), bb = nb.asOrNull<Bignum_O>();
   if (ba && bb)
@@ -263,109 +263,57 @@ CL_DEFUN Number_sp Number_O::add(Number_sp na, Number_sp nb) {
   if (ba)
     return core__next_fadd(ba, nb.unsafe_fixnum());
   if (bb)
-    return core__next_fadd(bb), na.unsafe_fixnum());
+    return core__next_fadd(bb, na.unsafe_fixnum());
 
-  return two_arg__PLUS_FF(na.unsafe_fixnum(), nb.unsafe_fixnum());
+  return Integer_O::create(na.unsafe_fixnum() + nb.unsafe_fixnum());
 };
 
 CL_NAME("TWO-ARG--");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
 CL_DEFUN Number_sp Number_O::sub(Number_sp na, Number_sp nb) {
-  MATH_DISPATCH_BEGIN(na, nb) {
-  case_Fixnum_v_Fixnum: {
-    Fixnum fa = na.unsafe_fixnum();
-    Fixnum fb = nb.unsafe_fixnum();
-    return Integer_O::create(static_cast<gc::Fixnum>(fa - fb));
-  }
-  case_Fixnum_v_Ratio:
-  case_Bignum_v_Ratio: {
-    // x - a/b = xb/b - a/b = (xb-a)/b
-    Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    Number_sp n1 = na * rb->denominator();
-    Number_sp n = n1 - rb->numerator();
-    return Ratio_O::create(gc::As_unsafe<Integer_sp>(n), rb->denominator());
-  }
-  case_Fixnum_v_SingleFloat: { return clasp_make_single_float(clasp_to_float(na) - clasp_to_float(nb)); }
-  case_Fixnum_v_DoubleFloat: { return DoubleFloat_O::create(clasp_to_double(na) - clasp_to_double(nb)); }
-  case_Ratio_v_SingleFloat:
-  case_Bignum_v_SingleFloat: { return clasp_make_single_float(clasp_to_float(na) - clasp_to_float(nb)); }
-  case_Ratio_v_DoubleFloat:
-  case_Bignum_v_DoubleFloat: { return DoubleFloat_O::create(clasp_to_double(na) - clasp_to_double(nb)); }
-  case_Fixnum_v_Bignum:
-    return core__next_fsub(na.unsafe_fixnum(), gc::As_unsafe<Bignum_sp>(nb));
-  case_Bignum_v_Fixnum:
-    return core__next_fadd(gc::As_unsafe<Bignum_sp>(na), -(nb.unsafe_fixnum()));
-  case_Bignum_v_Bignum:
-    return core__next_sub(gc::As_unsafe<Bignum_sp>(na), gc::As_unsafe<Bignum_sp>(nb));
-  case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum: {
-    // a/b - x = a/b - xb/b = (a-xb)/b
-    Ratio_sp ra = gc::As<Ratio_sp>(na);
-    Number_sp n2 = nb * ra->denominator();
-    Number_sp n = ra->numerator() - n2;
-    return Ratio_O::create(gc::As_unsafe<Integer_sp>(n), ra->denominator());
-  }
-  case_Ratio_v_Ratio: {
-    // a/b - c/d = (ad-bc)/bd
-    Ratio_sp ra = gc::As<Ratio_sp>(na);
-    Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    Number_sp n1 = ra->numerator() * rb->denominator();
-    Number_sp n2 = ra->denominator() * rb->numerator();
-    Number_sp n = n1 - n2;
-    Number_sp d = ra->denominator() * rb->denominator();
-    return Rational_O::create(gc::As_unsafe<Integer_sp>(n), gc::As_unsafe<Integer_sp>(d));
-  }
-  case_SingleFloat_v_Fixnum:
-  case_SingleFloat_v_Bignum:
-  case_SingleFloat_v_Ratio:
-    return clasp_make_single_float(clasp_to_float(na) - clasp_to_float(nb));
-  case_SingleFloat_v_SingleFloat:
-    return clasp_make_single_float(clasp_to_float(na) - clasp_to_float(nb));
-  case_SingleFloat_v_DoubleFloat:
-  case_DoubleFloat_v_Fixnum:
-  case_DoubleFloat_v_Bignum:
-  case_DoubleFloat_v_Ratio:
-  case_DoubleFloat_v_SingleFloat:
-  case_DoubleFloat_v_DoubleFloat:
-    return DoubleFloat_O::create(clasp_to_double(na) - clasp_to_double(nb));
+  Complex_sp ca = na.asOrNull<Complex_O>(), cb = nb.asOrNull<Complex_O>();
+  if (ca && cb)
+    return clasp_make_complex(ca->real() - cb->real(), ca->imaginary() - cb->imaginary());
+  if (ca)
+    return clasp_make_complex(ca->real() - nb, ca->imaginary());
+  if (cb)
+    return clasp_make_complex(na - cb->real(), -cb->imaginary());
+
 #ifdef CLASP_LONG_FLOAT
-  case_Fixnum_v_LongFloat:
-  case_Ratio_v_LongFloat:
-  case_SingleFloat_v_LongFloat:
-  case_DoubleFloat_v_LongFloat:
-  case_LongFloat_v_Fixnum:
-  case_LongFloat_v_Ratio:
-  case_LongFloat_v_SingleFloat:
-  case_LongFloat_v_DoubleFloat:
-  case_LongFloat_v_LongFloat:
-    return LongFloat_O::create(clasp_to_long_float(na) - clasp_to_long_float(nb));
+  if (na.isA<LongFloat_O>() || nb.isA<LongFloat_O>())
+    return LongFloat_O::create(as_long_float(na) - as_long_float(nb));
 #endif
-  case_Complex_v_LongFloat:
-  case_Complex_v_Fixnum:
-  case_Complex_v_Ratio:
-  case_Complex_v_Bignum:
-  case_Complex_v_SingleFloat:
-  case_Complex_v_DoubleFloat: {
-    return clasp_make_complex(gc::As<Real_sp>(gc::As<Complex_sp>(na)->real() - nb), gc::As<Complex_sp>(na)->imaginary());
-  }
-  case_Fixnum_v_Complex:
-  case_Bignum_v_Complex:
-  case_Ratio_v_Complex:
-  case_SingleFloat_v_Complex:
-  case_DoubleFloat_v_Complex:
-  case_LongFloat_v_Complex:
-    return clasp_make_complex(gc::As<Real_sp>(na - gc::As<Complex_sp>(nb)->real()),
-                              gc::As<Real_sp>(clasp_negate(gc::As<Complex_sp>(nb)->imaginary())));
-  case_Complex_v_Complex: {
-    Real_sp r = gc::As<Real_sp>(gc::As<Complex_sp>(na)->real() - gc::As<Complex_sp>(nb)->real());
-    Real_sp i = gc::As<Real_sp>(gc::As<Complex_sp>(na)->imaginary() - gc::As<Complex_sp>(nb)->imaginary());
-    return clasp_make_complex(r, i);
-  } break;
-  default:
-    not_comparable_error(na, nb);
-  };
-  MATH_DISPATCH_END();
+
+  if (na.isA<DoubleFloat_O>() || nb.isA<DoubleFloat_O>())
+    return DoubleFloat_O::create(as_double_float(na) - as_double_float(nb));
+
+  if (na.single_floatp() || nb.single_floatp())
+    return SingleFloat_dummy_O::create(as_single_float(na) - as_single_float(nb));
+
+#ifdef CLASP_SHORT_FLOAT
+  if (na.short_floatp() || nb.short_floatp())
+    return ShortFloat_O::create(as_short_float(na) - as_short_float(nb));
+#endif
+
+  Ratio_sp ra = na.asOrNull<Ratio_O>(), rb = nb.asOrNull<Ratio_O>();
+  if (ra && rb)
+    return Rational_O::create(ra->numerator() * rb->denominator() - ra->denominator() * rb->numerator(),
+                              ra->denominator() * rb->denominator());
+  if (ra)
+    return Ratio_O::create(ra->numerator() - nb * ra->denominator(), ra->denominator());
+  if (rb)
+    return Ratio_O::create(na * rb->denominator() - rb->numerator(), rb->denominator());
+
+  Bignum_sp ba = na.asOrNull<Bignum_O>(), bb = nb.asOrNull<Bignum_O>();
+  if (ba && bb)
+    return core__next_sub(ba, bb);
+  if (ba)
+    return core__next_fadd(ba, -nb.unsafe_fixnum());
+  if (bb)
+    return core__next_fsub(na.unsafe_fixnum(), bb);
+
+  return Integer_O::create(na.unsafe_fixnum() - nb.unsafe_fixnum());
 }
 
 CL_NAME("TWO-ARG-*");
