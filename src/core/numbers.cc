@@ -320,112 +320,57 @@ CL_NAME("TWO-ARG-*");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
 CL_DEFUN Number_sp Number_O::mul(Number_sp na, Number_sp nb) {
-  MATH_DISPATCH_BEGIN(na, nb) {
-  case_Fixnum_v_Fixnum: {
-    // We want to detect when Fixnum * Fixnum multiplication will overflow and only then use bignum arithmetic.
-    // But C++ doesn't give us a way to do that - so we use the __builtin_mul_overflow clang builtin.
-    // It will return false if there is no overflow and the multiplication result will be in fr.
-    // The return value fr may over
-    // If it doesn't overflow - then this will be faster than always using bignum arithmetic.
-    Fixnum fa = na.unsafe_fixnum();
-    Fixnum fb = nb.unsafe_fixnum();
-    Fixnum fr;
-    bool overflow = __builtin_mul_overflow(fa, fb, &fr);
-    if (!overflow)
-      return Integer_O::create(fr);
-    return core__mul_fixnums(fa, fb);
-  }
-  case_Fixnum_v_Bignum:
-    return core__next_fmul(gc::As_unsafe<Bignum_sp>(nb), na.unsafe_fixnum());
-  case_Fixnum_v_Ratio:
-  case_Bignum_v_Ratio: {
-    Ratio_sp rat = gc::As_unsafe<Ratio_sp>(nb);
-    Integer_sp new_num = gc::As_unsafe<Integer_sp>(na * rat->numerator());
-    return Rational_O::create(new_num, rat->denominator());
-  }
-  case_Fixnum_v_SingleFloat:
-    return clasp_make_single_float(clasp_to_float(na) * clasp_to_float(nb));
-  case_Fixnum_v_DoubleFloat:
-    return DoubleFloat_O::create(clasp_to_double(na) * clasp_to_double(nb));
-  case_Bignum_v_Fixnum:
-    return core__next_fmul(gc::As_unsafe<Bignum_sp>(na), nb.unsafe_fixnum());
-  case_Bignum_v_Bignum:
-    return core__next_mul(gc::As_unsafe<Bignum_sp>(na), gc::As_unsafe<Bignum_sp>(nb));
-  case_Bignum_v_SingleFloat:
-  case_Ratio_v_SingleFloat:
-    return clasp_make_single_float(clasp_to_float(na) * clasp_to_float(nb));
-  case_Bignum_v_DoubleFloat:
-  case_Ratio_v_DoubleFloat:
-    return DoubleFloat_O::create(clasp_to_double(na) * clasp_to_double(nb));
-  case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum: {
-    Ratio_sp rat = gc::As_unsafe<Ratio_sp>(na);
-    Integer_sp new_num = gc::As_unsafe<Integer_sp>(nb * rat->numerator());
-    return Rational_O::create(new_num, rat->denominator());
-  }
-  case_Ratio_v_Ratio: {
-    Ratio_sp ra = gc::As<Ratio_sp>(na);
-    Ratio_sp rb = gc::As<Ratio_sp>(nb);
-    Number_sp num = ra->numerator() * rb->numerator();
-    Number_sp den = ra->denominator() * rb->denominator();
-    return Rational_O::create(gc::As_unsafe<Integer_sp>(num), gc::As_unsafe<Integer_sp>(den));
-  }
-  case_SingleFloat_v_Fixnum:
-  case_SingleFloat_v_Bignum:
-  case_SingleFloat_v_Ratio:
-  case_SingleFloat_v_SingleFloat:
-    return clasp_make_single_float(clasp_to_float(na) * clasp_to_float(nb));
-  case_SingleFloat_v_DoubleFloat:
-  case_DoubleFloat_v_Fixnum:
-  case_DoubleFloat_v_Bignum:
-  case_DoubleFloat_v_Ratio:
-  case_DoubleFloat_v_SingleFloat:
-  case_DoubleFloat_v_DoubleFloat:
-    return DoubleFloat_O::create(clasp_to_double(na) * clasp_to_double(nb));
+  Complex_sp ca = na.asOrNull<Complex_O>(), cb = nb.asOrNull<Complex_O>();
+  if (ca && cb)
+    return clasp_make_complex(ca->real() * cb->real() - ca->imaginary() * cb->imaginary(),
+                              ca->real() * cb->imaginary() + ca->imaginary() * cb->real());
+  if (ca)
+    return clasp_make_complex(ca->real() * nb, ca->imaginary() * nb);
+  if (cb)
+    return clasp_make_complex(na * cb->real(), na * cb->imaginary());
+
 #ifdef CLASP_LONG_FLOAT
-  case_Fixnum_v_LongFloat:
-  case_Bignum_v_LongFloat:
-  case_Ratio_v_LongFloat:
-  case_SingleFloat_v_LongFloat:
-  case_DoubleFloat_v_LongFloat:
-  case_LongFloat_v_Fixnum:
-  case_LongFloat_v_Bignum:
-  case_LongFloat_v_Ratio:
-  case_LongFloat_v_SingleFloat:
-  case_LongFloat_v_DoubleFloat:
-  case_LongFloat_v_LongFloat:
-    return LongFloat_O::create(clasp_to_long_float(na) * clasp_to_long_float(nb));
+  if (na.isA<LongFloat_O>() || nb.isA<LongFloat_O>())
+    return LongFloat_O::create(as_long_float(na) * as_long_float(nb));
 #endif
-  case_Complex_v_LongFloat:
-  case_Complex_v_Fixnum:
-  case_Complex_v_Bignum:
-  case_Complex_v_Ratio:
-  case_Complex_v_SingleFloat:
-  case_Complex_v_DoubleFloat:
-    return clasp_make_complex(gc::As<Real_sp>(nb * gc::As<Complex_sp>(na)->real()),
-                              gc::As<Real_sp>(nb * gc::As<Complex_sp>(na)->imaginary()));
-  case_Fixnum_v_Complex:
-  case_Bignum_v_Complex:
-  case_Ratio_v_Complex:
-  case_SingleFloat_v_Complex:
-  case_DoubleFloat_v_Complex:
-  case_LongFloat_v_Complex:
-  Complex_v_Y:
-    return clasp_make_complex(gc::As<Real_sp>(na * gc::As<Complex_sp>(nb)->real()),
-                              gc::As<Real_sp>(na * gc::As<Complex_sp>(nb)->imaginary()));
-  case_Complex_v_Complex: {
-    Complex_sp ca = gc::As<Complex_sp>(na);
-    Complex_sp cb = gc::As<Complex_sp>(nb);
-    Real_sp x = ca->real();
-    Real_sp y = ca->imaginary();
-    Real_sp u = cb->real();
-    Real_sp v = cb->imaginary();
-    return clasp_make_complex(x * u - y * v, x * v + y * u);
-  } break;
-  default:
-    not_comparable_error(na, nb);
-  };
-  MATH_DISPATCH_END();
+
+  if (na.isA<DoubleFloat_O>() || nb.isA<DoubleFloat_O>())
+    return DoubleFloat_O::create(as_double_float(na) * as_double_float(nb));
+
+  if (na.single_floatp() || nb.single_floatp())
+    return SingleFloat_dummy_O::create(as_single_float(na) * as_single_float(nb));
+
+#ifdef CLASP_SHORT_FLOAT
+  if (na.short_floatp() || nb.short_floatp())
+    return ShortFloat_O::create(as_short_float(na) * as_short_float(nb));
+#endif
+
+  Ratio_sp ra = na.asOrNull<Ratio_O>(), rb = nb.asOrNull<Ratio_O>();
+  if (ra && rb)
+    return Rational_O::create(ra->numerator() * rb->numerator(), ra->denominator() * rb->denominator());
+  if (ra)
+    return Rational_O::create(ra->numerator() * nb, ra->denominator());
+  if (rb)
+    return Rational_O::create(na * rb->numerator(), rb->denominator());
+
+  Bignum_sp ba = na.asOrNull<Bignum_O>(), bb = nb.asOrNull<Bignum_O>();
+  if (ba && bb)
+    return core__next_mul(ba, bb);
+  if (ba)
+    return core__next_fmul(ba, nb.unsafe_fixnum());
+  if (bb)
+    return core__next_fmul(bb, na.unsafe_fixnum());
+
+  // We want to detect when Fixnum * Fixnum multiplication will overflow and only then use bignum arithmetic.
+  // But C++ doesn't give us a way to do that - so we use the __builtin_mul_overflow clang builtin.
+  // It will return false if there is no overflow and the multiplication result will be in fr.
+  // The return value fr may over
+  // If it doesn't overflow - then this will be faster than always using bignum arithmetic.
+  Fixnum fa = na.unsafe_fixnum(), fb = nb.unsafe_fixnum(), fr;
+  bool overflow = __builtin_mul_overflow(fa, fb, &fr);
+  if (!overflow)
+    return Integer_O::create(fr);
+  return core__mul_fixnums(fa, fb);
 }
 
 Number_sp complex_divide(Real_sp ar, Real_sp ai, Real_sp br, Real_sp bi) {
