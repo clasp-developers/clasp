@@ -33,7 +33,7 @@ template <uint16_t ExponentWidth, uint16_t SignificandWidth> struct float_traits
 template <typename Float> struct float_convert {
   using traits =
       float_traits<std::bit_width((unsigned int)std::numeric_limits<Float>::max_exponent), std::numeric_limits<Float>::digits>;
-  using uint_t = traits::uint_t;
+  using uint_t = typename traits::uint_t;
   enum class category { finite, quiet_nan, signaling_nan, infinity };
 
   typedef union {
@@ -59,7 +59,7 @@ template <typename Float> struct float_convert {
   };
 
   template<typename Traits = traits>
-  static quadruple bits_to_quadruple(Traits::uint_t b) {
+  static quadruple bits_to_quadruple(typename Traits::uint_t b) {
     quadruple q;
 
     q.significand = b & Traits::significand_mask;
@@ -91,7 +91,7 @@ template <typename Float> struct float_convert {
   }
 
   template<typename Traits = traits>
-  static Traits::uint_t quadruple_to_bits(quadruple q) {
+  static typename Traits::uint_t quadruple_to_bits(quadruple q) {
     typename Traits::uint_t b = 0;
 
     if (q.sign < 0)
