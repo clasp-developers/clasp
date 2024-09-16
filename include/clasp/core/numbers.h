@@ -248,6 +248,54 @@ public:
     return x->zerop_();
   }
 
+  inline static short_float_t as_short_float(const Number_sp x) {
+    if (x.fixnump())
+      return (short_float_t)x.unsafe_fixnum();
+#ifdef CLASP_SHORT_FLOAT
+    if (x.short_floatp())
+      return (short_float_t)x.unsafe_short_float();
+#endif
+    if (x.single_floatp())
+      return (short_float_t)x.unsafe_single_float();
+    return x->as_short_float_();
+  }
+
+  inline static single_float_t as_single_float(const Number_sp x) {
+    if (x.fixnump())
+      return (single_float_t)x.unsafe_fixnum();
+#ifdef CLASP_SHORT_FLOAT
+    if (x.short_floatp())
+      return (single_float_t)x.unsafe_short_float();
+#endif
+    if (x.single_floatp())
+      return (single_float_t)x.unsafe_single_float();
+    return x->as_float_();
+  }
+
+  inline static double_float_t as_double_float(const Number_sp x) {
+    if (x.fixnump())
+      return (double_float_t)x.unsafe_fixnum();
+#ifdef CLASP_SHORT_FLOAT
+    if (x.short_floatp())
+      return (double_float_t)x.unsafe_short_float();
+#endif
+    if (x.single_floatp())
+      return (double_float_t)x.unsafe_single_float();
+    return x->as_double_();
+  }
+
+  inline static long_float_t as_long_float(const Number_sp x) {
+    if (x.fixnump())
+      return (long_float_t)x.unsafe_fixnum();
+#ifdef CLASP_SHORT_FLOAT
+    if (x.short_floatp())
+      return (long_float_t)x.unsafe_short_float();
+#endif
+    if (x.single_floatp())
+      return (long_float_t)x.unsafe_single_float();
+    return x->as_long_float_();
+  }
+
   inline static Number_sp realpart(const Number_sp x);
   inline static Number_sp imagpart(const Number_sp x);
 
