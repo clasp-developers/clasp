@@ -1590,12 +1590,21 @@ Number_sp DoubleFloat_O::asin_() const { return _asin(this->_Value); }
 Number_sp LongFloat_O::asin_() const { return _asin(this->_Value); }
 #endif
 
+template <std::floating_point Float> inline std::complex<Float> _asin2(Float real, Float imag) {
+#ifdef _TARGET_OS_LINUX
+  return (std::fpclassify(real) == FP_ZERO) ? std::complex<Float>(Float{0}, -std::log(-imag + std::sqrt(Float{1} + imag)))
+                                            : std::asin(std::complex<Float>(real, imag));
+#else
+  return std::asin(std::complex<Float>(real, imag));
+#endif
+}
+
 Number_sp Complex_O::asin_() const {
   if (_real.isA<LongFloat_O>())
-    return Number_O::create(std::asin(std::complex(_real->as_long_float_(), _imaginary->as_long_float_())));
+    return Number_O::create(_asin2(_real->as_long_float_(), _imaginary->as_long_float_()));
   if (_real.isA<DoubleFloat_O>())
-    return Number_O::create(std::asin(std::complex(_real->as_double_float_(), _imaginary->as_double_float_())));
-  return Number_O::create(std::asin(std::complex(clasp_to_float(_real), clasp_to_float(_imaginary))));
+    return Number_O::create(_asin2(_real->as_double_float_(), _imaginary->as_double_float_()));
+  return Number_O::create(_asin2(clasp_to_float(_real), clasp_to_float(_imaginary)));
 }
 
 CL_LAMBDA(x);
@@ -1613,12 +1622,22 @@ Number_sp DoubleFloat_O::acos_() const { return _acos(this->_Value); }
 Number_sp LongFloat_O::acos_() const { return _acos(this->_Value); }
 #endif
 
+template <std::floating_point Float> inline std::complex<Float> _acos2(Float real, Float imag) {
+#ifdef _TARGET_OS_LINUX
+  return (std::fpclassify(real) == FP_ZERO)
+             ? std::complex<Float>(std::numbers::pi_v<Float> / 2, std::log(-imag + std::sqrt(Float{1} + imag)))
+             : std::asin(std::complex<Float>(real, imag));
+#else
+  return std::asin(std::complex<Float>(real, imag));
+#endif
+}
+
 Number_sp Complex_O::acos_() const {
   if (_real.isA<LongFloat_O>())
-    return Number_O::create(std::acos(std::complex(_real->as_long_float_(), _imaginary->as_long_float_())));
+    return Number_O::create(_acos2(_real->as_long_float_(), _imaginary->as_long_float_()));
   if (_real.isA<DoubleFloat_O>())
-    return Number_O::create(std::acos(std::complex(_real->as_double_float_(), _imaginary->as_double_float_())));
-  return Number_O::create(std::acos(std::complex(clasp_to_float(_real), clasp_to_float(_imaginary))));
+    return Number_O::create(_acos2(_real->as_double_float_(), _imaginary->as_double_float_()));
+  return Number_O::create(_acos2(clasp_to_float(_real), clasp_to_float(_imaginary)));
 }
 
 CL_LAMBDA(x);
@@ -1994,31 +2013,31 @@ Fixnum clasp_fixnum_expt(Fixnum x, Fixnum y) {
 }
 
 static Number_sp expt_zero(Number_sp x, Number_sp y) {
-  NumberType ty, tx;
-  Number_sp z;
-  ty = clasp_t_of(y);
-  tx = clasp_t_of(x);
-  /* INV: The most specific numeric types come first. */
-  switch ((ty > tx) ? ty : tx) {
-  case number_Fixnum:
-  case number_Bignum:
-  case number_Ratio:
-    return clasp_make_fixnum(1);
-  case number_SingleFloat:
-    return clasp_make_single_float(1.0f);
-  case number_DoubleFloat:
-    return DoubleFloat_O::create(1.0);
+  Complex_sp cx = x.asOrNull<Complex_O>(), cy = y.asOrNull<Complex_O>();
+  if (cx || cy)
+    return clasp_make_complex(expt_zero(cx->real(), cy->real()), clasp_make_fixnum(0));
+  if (cx)
+    return clasp_make_complex(expt_zero(cx->real(), y), clasp_make_fixnum(0));
+  if (cy)
+    return clasp_make_complex(expt_zero(x, cy->real()), clasp_make_fixnum(0));
+
 #ifdef CLASP_LONG_FLOAT
-  case number_LongFloat:
-    return LongFloat_O::create(1.0);
+  if (x.isA<LongFloat_O>() || y.isA<LongFloat_O>())
+    return LongFloat_O::create(long_float_t{1});
 #endif
-  case number_Complex:
-    z = expt_zero((tx == number_Complex) ? gc::As<Number_sp>(gc::As<Complex_sp>(x)->real()) : x,
-                  (ty == number_Complex) ? gc::As<Number_sp>(gc::As<Complex_sp>(y)->real()) : y);
-    return clasp_make_complex(gc::As<Real_sp>(z), clasp_make_fixnum(0));
-  default:
-    UNREACHABLE();
-  }
+
+  if (x.isA<DoubleFloat_O>() || y.isA<DoubleFloat_O>())
+    return DoubleFloat_O::create(double_float_t{1});
+
+  if (x.single_floatp() || y.single_floatp())
+    return SingleFloat_dummy_O::create(single_float_t{1});
+
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp() || y.short_floatp())
+    return ShortFloat_O::create(short_float_t{1});
+#endif
+
+  return clasp_make_fixnum(1);
 }
 
 Number_sp clasp_expt(Number_sp x, Number_sp y) {
