@@ -272,7 +272,7 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp& quotie
   // case_Bignum_v_Ratio: above
   case_Bignum_v_SingleFloat: {
     float n = divisor.unsafe_single_float();
-    float p = gc::As_unsafe<Bignum_sp>(dividend)->as_float_() / n;
+    float p = gc::As_unsafe<Bignum_sp>(dividend)->as_single_float_() / n;
     float q = std::trunc(p);
     quotient = _clasp_float_to_integer(q);
     remainder = clasp_make_single_float(p * n - q * n);
@@ -280,7 +280,7 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp& quotie
   }
   case_Bignum_v_DoubleFloat: {
     double n = gc::As_unsafe<DoubleFloat_sp>(divisor)->get();
-    double p = gc::As_unsafe<Bignum_sp>(dividend)->as_double_() / n;
+    double p = gc::As_unsafe<Bignum_sp>(dividend)->as_double_float_() / n;
     double q = std::trunc(p);
     quotient = _clasp_double_to_integer(q);
     remainder = clasp_make_double_float(p * n - q * n);

@@ -219,8 +219,8 @@ public:
   virtual uint as_uint_() const { SUBIMP(); }
   virtual LongLongInt as_LongLongInt_() const { SUBIMP(); };
   virtual short_float_t as_short_float_() const { SUBIMP(); };
-  virtual float as_float_() const { SUBIMP(); };
-  virtual double as_double_() const { SUBIMP(); }
+  virtual single_float_t as_single_float_() const { SUBIMP(); };
+  virtual double_float_t as_double_float_() const { SUBIMP(); }
   virtual long_float_t as_long_float_() const { SUBIMP(); };
 
   virtual Number_sp sin_() const { SUBIMP(); };
@@ -228,6 +228,7 @@ public:
   virtual Number_sp cos_() const { SUBIMP(); };
   virtual Number_sp acos_() const { SUBIMP(); };
   virtual Number_sp tan_() const { SUBIMP(); };
+  virtual Number_sp atan_() const { SUBIMP(); };
   virtual Number_sp sinh_() const { SUBIMP(); };
   virtual Number_sp cosh_() const { SUBIMP(); };
   virtual Number_sp tanh_() const { SUBIMP(); };
@@ -269,7 +270,7 @@ public:
 #endif
     if (x.single_floatp())
       return (single_float_t)x.unsafe_single_float();
-    return x->as_float_();
+    return x->as_single_float_();
   }
 
   inline static double_float_t as_double_float(const Number_sp x) {
@@ -281,7 +282,7 @@ public:
 #endif
     if (x.single_floatp())
       return (double_float_t)x.unsafe_single_float();
-    return x->as_double_();
+    return x->as_double_float_();
   }
 
   inline static long_float_t as_long_float(const Number_sp x) {
@@ -309,6 +310,8 @@ public:
   inline static Number_sp cos(const Number_sp x);
   inline static Number_sp acos(const Number_sp x);
   inline static Number_sp tan(const Number_sp x);
+  static Number_sp atan2(Real_sp y, Real_sp x);
+  inline static Number_sp atan(Number_sp y);
   inline static Number_sp sinh(const Number_sp x);
   inline static Number_sp cosh(const Number_sp x);
   inline static Number_sp tanh(const Number_sp x);
@@ -318,7 +321,7 @@ public:
   static Number_sp mul(Number_sp na, Number_sp nb);
   static Number_sp div(Number_sp na, Number_sp nb);
 
-  static int compare(const Number_sp na, const Number_sp nb);
+  static int compare(const Real_sp na, const Real_sp nb);
 };
 
 inline Number_sp operator-(const Number_sp x) { return Number_O::negate(x); }
@@ -341,7 +344,7 @@ public:
   Number_sp realpart_() const override { return asSmartPtr(); }
   Number_sp imagpart_() const override { return clasp_make_fixnum(0); }
 
-  virtual double as_double_() const override { SUBIMP(); };
+  virtual double_float_t as_double_float_() const override { SUBIMP(); };
 
   // functions shared by all Real
   virtual bool plusp_() const { SUBIMP(); };
@@ -394,6 +397,7 @@ public:
   virtual Number_sp cos_() const override;
   virtual Number_sp acos_() const override;
   virtual Number_sp tan_() const override;
+  virtual Number_sp atan_() const override;
   virtual Number_sp sinh_() const override;
   virtual Number_sp cosh_() const override;
   virtual Number_sp tanh_() const override;
@@ -615,8 +619,8 @@ public:
   virtual Number_sp log1p_() const override;
 
   virtual short_float_t as_short_float_() const override;
-  virtual float as_float_() const override;
-  virtual double as_double_() const override;
+  virtual single_float_t as_single_float_() const override;
+  virtual double_float_t as_double_float_() const override;
   virtual long_float_t as_long_float_() const override;
 
   Integer_sp castToInteger() const override;
@@ -628,6 +632,7 @@ public:
   virtual Number_sp cos_() const override;
   virtual Number_sp acos_() const override;
   virtual Number_sp tan_() const override;
+  virtual Number_sp atan_() const override;
   virtual Number_sp sinh_() const override;
   virtual Number_sp cosh_() const override;
   virtual Number_sp tanh_() const override;
@@ -701,8 +706,8 @@ public:
   virtual Number_sp log1p_() const override;
 
   virtual short_float_t as_short_float_() const override;
-  virtual float as_float_() const override;
-  virtual double as_double_() const override;
+  virtual single_float_t as_single_float_() const override;
+  virtual double_float_t as_double_float_() const override;
   virtual long_float_t as_long_float_() const override;
 
   Integer_sp castToInteger() const override;
@@ -714,6 +719,7 @@ public:
   virtual Number_sp cos_() const override;
   virtual Number_sp acos_() const override;
   virtual Number_sp tan_() const override;
+  virtual Number_sp atan_() const override;
   virtual Number_sp sinh_() const override;
   virtual Number_sp cosh_() const override;
   virtual Number_sp tanh_() const override;
@@ -789,6 +795,7 @@ public:
   virtual Number_sp cos_() const override;
   virtual Number_sp acos_() const override;
   virtual Number_sp tan_() const override;
+  virtual Number_sp atan_() const override;
   virtual Number_sp sinh_() const override;
   virtual Number_sp cosh_() const override;
   virtual Number_sp tanh_() const override;
@@ -860,8 +867,8 @@ public:
   };
 
   virtual short_float_t as_short_float_() const override;
-  virtual float as_float_() const override;
-  virtual double as_double_() const override;
+  virtual single_float_t as_single_float_() const override;
+  virtual double_float_t as_double_float_() const override;
   virtual long_float_t as_long_float_() const override;
 
   // functions shared by all Real
@@ -875,8 +882,6 @@ public:
   Ratio_O() : _numerator(clasp_make_fixnum(0)), _denominator(clasp_make_fixnum(1)) {};
   virtual ~Ratio_O() {};
 };
-
-Number_sp clasp_atan2(Number_sp x, Number_sp y);
 
 inline Number_sp float_sqrt(float f) {
   if (f < 0.0) {
@@ -1392,6 +1397,26 @@ inline Number_sp Number_O::tan(Number_sp x) {
   if (x.single_floatp())
     return SingleFloat_dummy_O::create(std::tan(x.unsafe_single_float()));
   return x->tan_();
+}
+
+inline Number_sp Number_O::atan(Number_sp x) {
+  if (x.fixnump())
+#ifdef _TARGET_OS_DARWIN
+    return SingleFloat_dummy_O::create(std::atan((double_float_t)x.unsafe_fixnum()));
+#else
+    return SingleFloat_dummy_O::create(std::atan((single_float_t)x.unsafe_fixnum()));
+#endif
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp())
+    return ShortFloat_O::create(std::atan(x.unsafe_short_float()));
+#endif
+  if (x.single_floatp())
+#ifdef _TARGET_OS_DARWIN
+    return SingleFloat_dummy_O::create(std::atan((double_float_t)x.unsafe_single_float()));
+#else
+    return SingleFloat_dummy_O::create(std::atan(x.unsafe_single_float()));
+#endif
+  return x->atan_();
 }
 
 inline Number_sp Number_O::sinh(Number_sp x) {

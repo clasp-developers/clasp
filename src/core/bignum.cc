@@ -829,9 +829,9 @@ template <typename Float> Float limbs_to_float(mp_size_t len, const mp_limb_t* l
 
 short_float_t Bignum_O::as_short_float_() const { return limbs_to_float<short_float_t>(this->length(), this->limbs()); }
 
-float Bignum_O::as_float_() const { return limbs_to_float<float>(this->length(), this->limbs()); }
+single_float_t Bignum_O::as_single_float_() const { return limbs_to_float<float>(this->length(), this->limbs()); }
 
-double Bignum_O::as_double_() const { return limbs_to_float<double>(this->length(), this->limbs()); }
+double_float_t Bignum_O::as_double_float_() const { return limbs_to_float<double>(this->length(), this->limbs()); }
 
 long_float_t Bignum_O::as_long_float_() const { return limbs_to_float<long_float_t>(this->length(), this->limbs()); }
 
