@@ -902,7 +902,9 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init_class_kind(core::MDArray_byte16_t_O);
   Init_class_kind(core::SimpleMDArray_O);
   Init_class_kind(core::SimpleMDArray_int8_t_O);
+  Init_class_kind(core::SimpleMDArray_short_float_O);
   Init_class_kind(core::SimpleMDArray_double_O);
+  Init_class_kind(core::SimpleMDArray_long_float_O);
   Init_class_kind(core::SimpleMDArray_byte32_t_O);
   Init_class_kind(core::SimpleMDArrayT_O);
   Init_class_kind(core::SimpleMDArray_int2_t_O);
@@ -923,8 +925,12 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init_class_kind(core::SimpleMDArray_int64_t_O);
   Init_class_kind(core::MDArray_int4_t_O);
   Init_class_kind(core::MDArray_double_O);
+  Init_class_kind(core::MDArray_short_float_O);
+  Init_class_kind(core::MDArray_long_float_O);
   Init_class_kind(core::ComplexVector_O);
+  Init_class_kind(core::ComplexVector_short_float_O);
   Init_class_kind(core::ComplexVector_double_O);
+  Init_class_kind(core::ComplexVector_long_float_O);
   Init_class_kind(core::ComplexVector_int8_t_O);
   Init_class_kind(core::ComplexVector_byte64_t_O);
   Init_class_kind(core::ComplexVector_T_O);
@@ -953,7 +959,9 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init_class_kind(core::SimpleVector_int4_t_O);
   Init_class_kind(core::SimpleVector_byte32_t_O);
   Init_class_kind(core::SimpleVector_size_t_O);
+  Init_class_kind(core::SimpleVector_short_float_O);
   Init_class_kind(core::SimpleVector_double_O);
+  Init_class_kind(core::SimpleVector_long_float_O);
   Init_class_kind(core::SimpleVector_byte64_t_O);
   Init_class_kind(core::SimpleVector_int2_t_O);
   Init_class_kind(core::SimpleVector_int64_t_O);

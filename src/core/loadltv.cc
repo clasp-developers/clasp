@@ -308,29 +308,29 @@ struct loadltv {
   }
 
   enum class UAETCode : uint8_t {
-    nil = 0b00000000,
-    base_char = 0b10000000,
-    character = 0b11000000,
-    short_float = 0b10100000,
-    single_float = 0b00100000,
-    double_float = 0b01100000,
-    long_float = 0b11100000,
-    complex_short = 0b10110000,
+    nil =            0b00000000,
+    base_char =      0b10000000,
+    character =      0b11000000,
+    short_float =    0b10100000,
+    single_float =   0b00100000,
+    double_float =   0b01100000,
+    long_float =     0b11100000,
+    complex_short =  0b10110000,
     complex_single = 0b00110000,
     complex_double = 0b01110000,
-    complex_long = 0b11110000,
-    bit = 0b00000001,
-    ub2 = 0b00000010,
-    ub4 = 0b00000011,
-    ub8 = 0b00000100,
-    ub16 = 0b00000101,
-    ub32 = 0b00000110,
-    ub64 = 0b00000111,
-    sb8 = 0b10000100,
-    sb16 = 0b10000101,
-    sb32 = 0b10000110,
-    sb64 = 0b10000111,
-    t = 0b11111111
+    complex_long =   0b11110000,
+    bit =            0b00000001,
+    ub2 =            0b00000010,
+    ub4 =            0b00000011,
+    ub8 =            0b00000100,
+    ub16 =           0b00000101,
+    ub32 =           0b00000110,
+    ub64 =           0b00000111,
+    sb8 =            0b10000100,
+    sb16 =           0b10000101,
+    sb32 =           0b10000110,
+    sb64 =           0b10000111,
+    t =              0b11111111
   };
 
   T_sp decode_uaet(uint8_t code) {
@@ -341,12 +341,18 @@ struct loadltv {
       return cl::_sym_base_char;
     case UAETCode::character:
       return cl::_sym_character;
-    // case UAETCode::short_float: return cl::_sym_short_float;
+#ifdef CLASP_SHORT_FLOAT
+    case UAETCode::short_float:
+      return cl::_sym_short_float;
+#endif
     case UAETCode::single_float:
       return cl::_sym_single_float;
     case UAETCode::double_float:
       return cl::_sym_double_float;
-    // case UAETCode::long_float: return cl::_sym_long_float;
+#ifdef CLASP_LONG_FLOAT
+    case UAETCode::long_float:
+      return cl::_sym_long_float;
+#endif
     // case UAETCode::complex_short:
     // case UAETCode::complex_single:
     // case UAETCode::complex_double:
@@ -437,6 +443,16 @@ struct loadltv {
     case UAETCode::double_float:
       READ_ARRAY(SimpleVector_double_sp, read_binary64(), clasp_make_double_float(read_binary64()));
       break;
+#ifdef CLASP_LONG_FLOAT_BINARY80
+    case UAETCode::double_float:
+        READ_ARRAY(SimpleVector_double_sp, read_binary80(), LongFloat_O::create(read_binary80()));
+      break;
+#endif
+#ifdef CLASP_LONG_FLOAT_BINARY128
+    case UAETCode::double_float:
+        READ_ARRAY(SimpleVector_double_sp, read_binary80(), LongFloat_O::create(read_binary80()));
+      break;
+#endif
     case UAETCode::bit:
       fill_sub_byte(array, total_size, 1);
       break;

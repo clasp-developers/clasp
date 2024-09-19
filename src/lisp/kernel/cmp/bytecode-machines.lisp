@@ -388,6 +388,10 @@
   (dolist (op +bytecode-ltv-ops+)
     (format stream "  ~(~a~) = ~a,~%"
             (substitute #\_ #\- (symbol-name (first op))) (second op)))
+  (format stream "};~%enum class bytecode_uaet : uint8_t {~%")
+  (loop for (key code) on +uaet-codes+ by #'cddr
+        do (format stream "  ~(~a~) = ~a,~%"
+                   (substitute #\_ #\- (symbol-name key)) code))
   (format stream "};~%#endif~%"))
 
 ;;; entry point

@@ -1008,8 +1008,10 @@ public:
 
 #include <clasp/core/array_t.h>
 #include <clasp/core/string.h>
-#include <clasp/core/array_double.h>
+#include <clasp/core/array_short_float.h>
 #include <clasp/core/array_float.h>
+#include <clasp/core/array_double.h>
+#include <clasp/core/array_long_float.h>
 #include <clasp/core/array_size_t.h>
 #include <clasp/core/array_fixnum.h>
 #include <clasp/core/array_int64.h>

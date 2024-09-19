@@ -112,3 +112,32 @@
     (:make-binary16 102 sind ub16)
     (:make-binary128 103 sind ub128)
     (:attribute 255 name nbytes . data)))
+
+(defvar +uaet-codes+
+  '(:nil                #b00000000
+    :t                  #b00000001
+    :base-char          #b00100000
+    :character          #b00100001
+    :binary16           #b01000000
+    :binary32           #b01000001
+    :binary64           #b01000010
+    :binary80           #b01000011
+    :binary128          #b01000111
+    :complex-binary16   #b01100000
+    :complex-binary32   #b01100001
+    :complex-binary64   #b01100010
+    :complex-binary80   #b01100011
+    :complex-binary128  #b01100100
+    :unsigned-byte1     #b10000000
+    :unsigned-byte2     #b10000001
+    :unsigned-byte4     #b10000010
+    :unsigned-byte8     #b10000011
+    :unsigned-byte16    #b10000100
+    :unsigned-byte32    #b10000101
+    :unsigned-byte64    #b10000110
+    :unsigned-byte128   #b10000111
+    :signed-byte8       #b10100011
+    :signed-byte16      #b10100100
+    :signed-byte32      #b10100101
+    :signed-byte64      #b10100110
+    :signed-byte128     #b10100111))
