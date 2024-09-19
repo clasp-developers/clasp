@@ -31,7 +31,7 @@ public:
   typedef specialized_SimpleVector_long_float TemplatedBase;
 
   static value_type default_initial_element(void) { return 0.0; }
-  static value_type from_object(T_sp obj) { return core::LongFloat_O::coerce(obj); };
+  static value_type from_object(T_sp obj) { return core::Number_O::as_long_float(obj); };
   static T_sp to_object(const value_type& v) { return core::LongFloat_O::create(v); };
 
   SimpleVector_long_float_O(size_t length, value_type initialElement = value_type(), bool initialElementSupplied = false,

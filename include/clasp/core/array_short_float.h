@@ -31,7 +31,7 @@ public:
   typedef specialized_SimpleVector_short_float TemplatedBase;
 
   static value_type default_initial_element(void) { return 0.0; }
-  static value_type from_object(T_sp obj) { return core::ShortFloat_O::coerce(obj); };
+  static value_type from_object(T_sp obj) { return core::Number_O::as_short_float(obj); };
   static T_sp to_object(const value_type& v) { return core::ShortFloat_O::create(v); };
 
   SimpleVector_short_float_O(size_t length, value_type initialElement = value_type(), bool initialElementSupplied = false,

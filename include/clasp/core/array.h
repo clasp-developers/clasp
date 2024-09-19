@@ -101,6 +101,8 @@ extern core::Symbol_sp& _sym_bit;
 extern core::Symbol_sp& _sym_float;
 extern core::Symbol_sp& _sym_double_float;
 extern core::Symbol_sp& _sym_single_float;
+extern core::Symbol_sp& _sym_short_float;
+extern core::Symbol_sp& _sym_long_float;
 extern core::Symbol_sp& _sym_UnsignedByte;
 extern core::Symbol_sp& _sym_T_O;
 extern core::Symbol_sp& _sym_simple_string;

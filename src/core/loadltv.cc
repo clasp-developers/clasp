@@ -444,12 +444,12 @@ struct loadltv {
       READ_ARRAY(SimpleVector_double_sp, read_binary64(), clasp_make_double_float(read_binary64()));
       break;
 #ifdef CLASP_LONG_FLOAT_BINARY80
-    case UAETCode::double_float:
+    case UAETCode::long_float:
         READ_ARRAY(SimpleVector_double_sp, read_binary80(), LongFloat_O::create(read_binary80()));
       break;
 #endif
 #ifdef CLASP_LONG_FLOAT_BINARY128
-    case UAETCode::double_float:
+    case UAETCode::long_float:
         READ_ARRAY(SimpleVector_double_sp, read_binary80(), LongFloat_O::create(read_binary80()));
       break;
 #endif
