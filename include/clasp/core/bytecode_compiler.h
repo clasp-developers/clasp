@@ -4,6 +4,10 @@
 #include <clasp/core/common.h>
 #include <clasp/core/compPackage.fwd.h>
 
+#define VM_CODES
+#include <virtualMachine.h>
+#undef VM_CODES
+
 namespace comp {
 
 using namespace core;
@@ -463,10 +467,10 @@ public:
   size_t env_index() const;
   size_t closure_index(T_sp info) const;
   void push_debug_info(T_sp info) const;
-  void assemble0(uint8_t opcode) const;
-  void assemble1(uint8_t opcode, size_t operand1) const;
-  void assemble2(uint8_t opcode, size_t operand1, size_t operand2) const;
-  void emit_control_label(Label_sp, uint8_t opcode8, uint8_t opcode16, uint8_t opcode24) const;
+  void assemble0(vm_code opcode) const;
+  void assemble1(vm_code opcode, size_t operand1) const;
+  void assemble2(vm_code opcode, size_t operand1, size_t operand2) const;
+  void emit_control_label(Label_sp, vm_code opcode8, vm_code opcode16, vm_code opcode24) const;
   void emit_jump(Label_sp label) const;
   void emit_jump_if(Label_sp label) const;
   void emit_entry_or_save_sp(LexicalInfo_sp info) const;
@@ -612,16 +616,16 @@ class ControlLabelFixup_O : public LabelFixup_O {
   LISP_CLASS(comp, CompPkg, ControlLabelFixup_O, "ControlLabelFixup", LabelFixup_O);
 
 public:
-  uint8_t _opcode8;
-  uint8_t _opcode16;
-  uint8_t _opcode24;
+  vm_code _opcode8;
+  vm_code _opcode16;
+  vm_code _opcode24;
 
 public:
-  ControlLabelFixup_O(Label_sp label, uint8_t opcode8, uint8_t opcode16, uint8_t opcode24)
-      : LabelFixup_O(label, 2), _opcode8(opcode8), _opcode16(opcode16), _opcode24(opcode24) {}
+  ControlLabelFixup_O(Label_sp label, vm_code opcode8, vm_code opcode16, vm_code opcode24)
+    : LabelFixup_O(label, 2), _opcode8(opcode8), _opcode16(opcode16), _opcode24(opcode24) {}
   CL_LISPIFY_NAME(ControlLabelFixup/make)
   CL_DEF_CLASS_METHOD
-  static ControlLabelFixup_sp make(Label_sp label, uint8_t opcode8, uint8_t opcode16, uint8_t opcode24) {
+  static ControlLabelFixup_sp make(Label_sp label, vm_code opcode8, vm_code opcode16, vm_code opcode24) {
     return gctools::GC<ControlLabelFixup_O>::allocate<gctools::RuntimeStage>(label, opcode8, opcode16, opcode24);
   }
 
@@ -673,19 +677,19 @@ class LexRefFixup_O : public LexFixup_O {
   LISP_CLASS(comp, CompPkg, LexRefFixup_O, "LexRefFixup", LexFixup_O);
 
 public:
-  uint8_t _opcode;
+  vm_code _opcode;
 
 public:
   LexRefFixup_O() : LexFixup_O() {}
-  LexRefFixup_O(LexicalInfo_sp lex, uint8_t opcode) : LexFixup_O(lex, 0), _opcode(opcode) {}
+  LexRefFixup_O(LexicalInfo_sp lex, vm_code opcode) : LexFixup_O(lex, 0), _opcode(opcode) {}
   CL_LISPIFY_NAME(LexRefFixup/make)
   CL_DEF_CLASS_METHOD
-  static LexRefFixup_sp make(LexicalInfo_sp lex, uint8_t opcode) {
+  static LexRefFixup_sp make(LexicalInfo_sp lex, vm_code opcode) {
     return gctools::GC<LexRefFixup_O>::allocate<gctools::RuntimeStage>(lex, opcode);
   }
 
 public:
-  uint8_t opcode() { return this->_opcode; }
+  vm_code opcode() { return this->_opcode; }
   virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
   virtual size_t resize();
 };

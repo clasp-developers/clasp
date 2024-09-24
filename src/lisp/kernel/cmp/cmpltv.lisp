@@ -864,7 +864,7 @@
 (defun write-magic (stream) (write-b32 +magic+ stream))
 
 (defparameter *major-version* 0)
-(defparameter *minor-version* 14)
+(defparameter *minor-version* 15)
 
 (defun write-version (stream)
   (write-b16 *major-version* stream)
@@ -987,7 +987,7 @@
   (let* ((packing-info (packing-info inst))
          (dims (dimensions inst))
          (packing-type (first packing-info))
-         (packing-code (getf cmpref::+uaet-codes+ (second packing-info))))
+         (packing-code (getf cmpref:+uaet-codes+ (second packing-info))))
     (write-byte packing-code stream)
     (write-dimensions dims stream)
     (macrolet ((dump (&rest forms)
@@ -1112,7 +1112,7 @@
   (assoc t +array-packing-infos+))
 
 (defun find-uaet-code (uaet)
-  (getf cmpref::+uaet-codes+ (second (%uaet-info uaet))))
+  (getf cmpref:+uaet-codes+ (second (%uaet-info uaet))))
 
 (defun array-packing-info (array)
   ;; TODO? As mentioned above, we could pack arrays more efficiently
@@ -1648,23 +1648,9 @@
   (write-b64 (column attr) stream)
   (write-b64 (filepos attr) stream))
 
-(defvar +debug-info-ops+
-  '((function 0)
-    (vars 1)
-    (location 2)
-    (decls 3)
-    (the 4)
-    (block 5)
-    (exit 6)
-    (macro 7)
-    (if 8)
-    (tagbody 9)))
-
 (defun debug-info-opcode (mnemonic)
-  (let ((inst (assoc mnemonic +debug-info-ops+)))
-    (if inst
-        (second inst)
-        (error "unknown debug info mnemonic ~a" mnemonic))))
+  (or (getf cmpref:+debug-info-ops+ mnemonic)
+      (error "unknown debug info mnemonic ~a" mnemonic)))
 
 (defun write-debug-info-mnemonic (mnemonic stream)
   (write-byte (debug-info-opcode mnemonic) stream))
@@ -1672,7 +1658,7 @@
 (defgeneric info-length (info))
 
 (defmethod encode ((info debug-info-function) stream)
-  (write-debug-info-mnemonic 'function stream)
+  (write-debug-info-mnemonic :function stream)
   (write-index (di-function info) stream))
 (defmethod info-length ((info debug-info-function))
   (+ 1 *index-bytes*))
@@ -1694,7 +1680,7 @@
     result))
 
 (defmethod encode ((info debug-info-vars) stream)
-  (write-debug-info-mnemonic 'vars stream)
+  (write-debug-info-mnemonic :vars stream)
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (let ((vars (vars info)))
@@ -1713,7 +1699,7 @@
            sum (* *index-bytes* (length (decls var))))))
 
 (defmethod encode ((info debug-info-location) stream)
-  (write-debug-info-mnemonic 'location stream)
+  (write-debug-info-mnemonic :location stream)
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (write-index (di-pathname info) stream)
@@ -1724,7 +1710,7 @@
   (+ 1 4 4 *index-bytes* 8 8 8))
 
 (defmethod encode ((info debug-info-decls) stream)
-  (write-debug-info-mnemonic 'decls stream)
+  (write-debug-info-mnemonic :decls stream)
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (write-index (decls info) stream))
@@ -1732,7 +1718,7 @@
   (+ 1 4 4 *index-bytes*))
 
 (defmethod encode ((info debug-info-the) stream)
-  (write-debug-info-mnemonic 'the stream)
+  (write-debug-info-mnemonic :the stream)
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (write-index (di-type info) stream)
@@ -1741,7 +1727,7 @@
   (+ 1 4 4 *index-bytes* 4))
 
 (defmethod encode ((info debug-ast-if) stream)
-  (write-debug-info-mnemonic 'if stream)
+  (write-debug-info-mnemonic :if stream)
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (write-b32 (di-receiving info) stream))
@@ -1749,7 +1735,7 @@
   (+ 1 4 4 4))
 
 (defmethod encode ((info debug-ast-tagbody) stream)
-  (write-debug-info-mnemonic 'tagbody stream)
+  (write-debug-info-mnemonic :tagbody stream)
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (write-b16 (length (di-tags info)) stream)
@@ -1761,7 +1747,7 @@
                 (+ *index-bytes* 4))))
 
 (defmethod encode ((info debug-info-block) stream)
-  (write-debug-info-mnemonic 'block stream)
+  (write-debug-info-mnemonic :block stream)
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (write-index (name info) stream)
@@ -1770,7 +1756,7 @@
   (+ 1 4 4 *index-bytes* 4))
 
 (defmethod encode ((info debug-info-exit) stream)
-  (write-debug-info-mnemonic 'exit stream)
+  (write-debug-info-mnemonic :exit stream)
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (write-b32 (di-receiving info) stream))
@@ -1778,7 +1764,7 @@
   (+ 1 4 4 4))
 
 (defmethod encode ((info debug-info-macroexpansion) stream)
-  (write-debug-info-mnemonic 'macro stream)
+  (write-debug-info-mnemonic :macro stream)
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (write-index (di-macro-name info) stream))

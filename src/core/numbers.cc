@@ -2647,7 +2647,7 @@ ShortFloat_sp ShortFloat_dummy_O::coerce(Number_sp x) {
   if (x.short_floatp())
     return x;
   if (x.single_floatp())
-    return (short_float_t)x.unsafe_single_float();
+    return create((short_float_t)x.unsafe_single_float());
   if (x.isA<Real_O>())
     return create(x->as_short_float_());
   TYPE_ERROR(x, cl::_sym_Real_O);
@@ -2657,6 +2657,10 @@ ShortFloat_sp ShortFloat_dummy_O::coerce(Number_sp x) {
 SingleFloat_sp SingleFloat_dummy_O::coerce(Number_sp x) {
   if (x.fixnump())
     return create(x.unsafe_fixnum());
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp())
+    return create((single_float_t)x.unsafe_short_float());
+#endif
   if (x.single_floatp())
     return x;
   if (x.isA<Real_O>())
@@ -2667,6 +2671,10 @@ SingleFloat_sp SingleFloat_dummy_O::coerce(Number_sp x) {
 DoubleFloat_sp DoubleFloat_O::coerce(Number_sp x) {
   if (x.fixnump())
     return create(x.unsafe_fixnum());
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp())
+    return create((double_float_t)x.unsafe_short_float());
+#endif
   if (x.single_floatp())
     return create(x.unsafe_single_float());
   if (x.isA<DoubleFloat_O>())
@@ -2680,6 +2688,10 @@ DoubleFloat_sp DoubleFloat_O::coerce(Number_sp x) {
 LongFloat_sp LongFloat_O::coerce(Number_sp x) {
   if (x.fixnump())
     return create(x.unsafe_fixnum());
+#ifdef CLASP_SHORT_FLOAT
+  if (x.short_floatp())
+    return create((long_float_t)x.unsafe_short_float());
+#endif
   if (x.single_floatp())
     return create(x.unsafe_single_float());
   if (x.isA<LongFloat_O>())

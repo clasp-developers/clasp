@@ -261,7 +261,108 @@
 
 (in-package :cmpref)
 
+(defvar +reserved-c++-keywords+
+  '("alignas"
+    "alignof"
+    "and"
+    "and_eq"
+    "asm"
+    "atomic_cancel"
+    "atomic_commit"
+    "atomic_noexcept"
+    "auto"
+    "bitand"
+    "bitor"
+    "bool"
+    "break"
+    "case"
+    "catch"
+    "char"
+    "char8_t"
+    "char16_t"
+    "char32_t"
+    "class"
+    "compl"
+    "concept"
+    "const"
+    "consteval"
+    "constexpr"
+    "constinit"
+    "const_cast"
+    "continue"
+    "co_await"
+    "co_return"
+    "co_yield"
+    "decltype"
+    "default"
+    "delete"
+    "do"
+    "double"
+    "dynamic_cast"
+    "else"
+    "enum"
+    "explicit"
+    "export"
+    "extern"
+    "false"
+    "float"
+    "for"
+    "friend"
+    "goto"
+    "if"
+    "inline"
+    "int"
+    "long"
+    "mutable"
+    "namespace"
+    "new"
+    "noexcept"
+    "not"
+    "not_eq"
+    "nullptr"
+    "operator"
+    "or"
+    "or_eq"
+    "private"
+    "protected"
+    "public"
+    "reflexpr"
+    "register"
+    "reinterpret_cast"
+    "requires"
+    "return"
+    "short"
+    "signed"
+    "sizeof"
+    "static"
+    "static_assert"
+    "static_cast"
+    "struct"
+    "switch"
+    "synchronized"
+    "template"
+    "this"
+    "thread_local"
+    "throw"
+    "true"
+    "try"
+    "typedef"
+    "typeid"
+    "typename"
+    "union"
+    "unsigned"
+    "using"
+    "virtual"
+    "void"
+    "volatile"
+    "wchar_t"
+    "while"
+    "xor"
+    "xor_eq"))
+
 (defun c++ify (name)
+  (when (member name +reserved-c++-keywords+ :test #'equalp)
+    (setf name (concatenate 'string "_" name)))
   (flet ((submatch (substr remain)
            (let ((sublen (length substr)))
              (and (>= (length remain) sublen) (string= substr remain :start2 0 :end2 sublen)))))
@@ -292,10 +393,10 @@
                  (dolist (item *full-codes*)
                    (let* ((name (first item))
                           (opcode (second item))
-                          (sym-name (format nil "vm_~a" (c++ify name))))
+                          (sym-name (c++ify name)))
                      (push (format nil "~a=~a" sym-name opcode) rev-codes)))
                  (nreverse rev-codes))))
-    (format fout "enum vm_codes {~%~{   ~a~^,~^~%~} };~%" enums))
+    (format fout "enum class vm_code : uint8_t {~%~{   ~a~^,~^~%~} };~%" enums))
   (terpri fout)
   (write-line "#endif // VM_CODES" fout))
 
@@ -387,11 +488,15 @@
   (format stream "~%#ifdef DEFINE_BYTECODE_LTV_OPS~%enum class bytecode_ltv : uint8_t {~%")
   (dolist (op +bytecode-ltv-ops+)
     (format stream "  ~(~a~) = ~a,~%"
-            (substitute #\_ #\- (symbol-name (first op))) (second op)))
+            (c++ify (symbol-name (first op))) (second op)))
   (format stream "};~%enum class bytecode_uaet : uint8_t {~%")
   (loop for (key code) on +uaet-codes+ by #'cddr
         do (format stream "  ~(~a~) = ~a,~%"
-                   (substitute #\_ #\- (symbol-name key)) code))
+                   (c++ify (symbol-name key)) code))
+  (format stream "};~%enum class bytecode_debug_info : uint8_t {~%")
+  (loop for (key code) on +debug-info-ops+ by #'cddr
+        do (format stream "  ~(~a~) = ~a,~%"
+                   (c++ify (symbol-name key)) code))
   (format stream "};~%#endif~%"))
 
 ;;; entry point

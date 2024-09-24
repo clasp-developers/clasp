@@ -29,23 +29,12 @@
 #include <virtualMachine.h>
 #undef DEFINE_BYTECODE_LTV_OPS
 
-#define LTV_DI_OP_FUNCTION 0
-#define LTV_DI_OP_VARS 1
-#define LTV_DI_OP_LOCATION 2
-#define LTV_DI_OP_DECLS 3
-#define LTV_DI_OP_THE 4
-#define LTV_DI_OP_BLOCK 5
-#define LTV_DI_OP_CATCH 6
-#define LTV_DI_OP_MACRO 7
-#define LTV_DI_OP_IF 8
-#define LTV_DI_OP_TAGBODY 9
-
 namespace core {
 
 #define BC_HEADER_SIZE 16
 
 #define BC_VERSION_MAJOR 0
-#define BC_VERSION_MINOR 14
+#define BC_VERSION_MINOR 15
 
 // versions are std::arrays so that we can compare them.
 typedef std::array<uint16_t, 2> BCVersion;
@@ -908,32 +897,32 @@ struct loadltv {
 
     for (uint32_t icount = read_u32(); icount > 0; --icount) {
       uint8_t op = read_u8();
-      switch (op) {
-      case LTV_DI_OP_FUNCTION:
+      switch (bytecode_debug_info{op}) {
+      case bytecode_debug_info::function:
         vargs.push_back(di_op_function());
         break;
-      case LTV_DI_OP_VARS:
+      case bytecode_debug_info::vars:
         vargs.push_back(di_op_vars());
         break;
-      case LTV_DI_OP_LOCATION:
+      case bytecode_debug_info::location:
         vargs.push_back(di_op_location());
         break;
-      case LTV_DI_OP_DECLS:
+      case bytecode_debug_info::decls:
         vargs.push_back(di_op_decls());
         break;
-      case LTV_DI_OP_THE:
+      case bytecode_debug_info::the:
         vargs.push_back(di_op_the());
         break;
-      case LTV_DI_OP_BLOCK:
+      case bytecode_debug_info::block:
         vargs.push_back(di_op_block());
         break;
-      case LTV_DI_OP_MACRO:
+      case bytecode_debug_info::macro:
         vargs.push_back(di_op_macro());
         break;
-      case LTV_DI_OP_IF:
+      case bytecode_debug_info::_if:
         vargs.push_back(di_op_if());
         break;
-      case LTV_DI_OP_TAGBODY:
+      case bytecode_debug_info::tagbody:
         vargs.push_back(di_op_tagbody());
         break;
       default:

@@ -5,6 +5,8 @@
 
 (export '(*startup-primitives-as-list*
           +bytecode-ltv-ops+
+          +uaet-codes+
+          +debug-info-ops+
           generate-virtual-machine-header))
 
 (in-package #:cmpref)
@@ -141,3 +143,15 @@
     :signed-byte32      #b10100101
     :signed-byte64      #b10100110
     :signed-byte128     #b10100111))
+
+(defvar +debug-info-ops+
+  '(:function 0
+    :vars 1
+    :location 2
+    :decls 3
+    :the 4
+    :block 5
+    :exit 6
+    :macro 7
+    :if 8
+    :tagbody 9))
