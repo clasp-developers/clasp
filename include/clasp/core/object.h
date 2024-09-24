@@ -515,6 +515,7 @@ inline CL_DEFUN bool cl__eql(T_sp x, T_sp y) {
       return false;
     single_float_t xf = x.unsafe_single_float();
     single_float_t yf = y.unsafe_single_float();
+    // signbit is included in the comparison because (EQL 0.0 -0.0) is non-NIL.
     return xf == yf && std::signbit(xf) == std::signbit(yf);
   } else if (x.characterp()) {
     return y.characterp() && x.unsafe_character() == y.unsafe_character();

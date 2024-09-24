@@ -96,7 +96,7 @@ public: // Functions here
   }
 
   template <unsigned_limbs T> static Bignum_sp create(T v) {
-    constexpr size_t limb_width = 8 * sizeof(mp_limb_t);
+    constexpr size_t limb_width = CHAR_BIT * sizeof(mp_limb_t);
     size_t len = (std::bit_width(v) + limb_width - 1) / limb_width;
     Bignum_sp b = create_from_limbs(len);
 
@@ -109,7 +109,7 @@ public: // Functions here
   }
 
   template <signed_limbs T> static Bignum_sp create(T v) {
-    constexpr size_t limb_width = 8 * sizeof(mp_limb_t);
+    constexpr size_t limb_width = CHAR_BIT * sizeof(mp_limb_t);
     using UT = typename std::make_unsigned<T>::type;
     bool negative = v < 0;
     UT w = std::abs(v);
