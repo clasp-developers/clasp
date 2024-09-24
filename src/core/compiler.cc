@@ -75,6 +75,8 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 #include <clasp/core/unwind.h> // funwind_protect
 
+#define FASO_VERSION 1
+
 namespace core {
 
 std::atomic<size_t> global_jit_compile_counter;
@@ -532,7 +534,7 @@ void setup_FasoHeader(FasoHeader* header) {
   header->_Magic[1] = FASO_MAGIC_NUMBER_1;
   header->_Magic[2] = FASO_MAGIC_NUMBER_2;
   header->_Magic[3] = FASO_MAGIC_NUMBER_3;
-  header->_Version = 0;
+  header->_Version = FASO_VERSION;
   header->_PageSize = getpagesize();
 }
 
@@ -643,8 +645,13 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
     }
     close(fd);
     FasoHeader* header = (FasoHeader*)memory;
-    if (header->_Magic[0] == FASO_MAGIC_NUMBER_0 && header->_Magic[1] == FASO_MAGIC_NUMBER_1 &&
-        header->_Magic[2] == FASO_MAGIC_NUMBER_2 && header->_Magic[3] == FASO_MAGIC_NUMBER_3) {
+    if (header->_Magic[0] != FASO_MAGIC_NUMBER_0 || header->_Magic[1] != FASO_MAGIC_NUMBER_1 ||
+        header->_Magic[2] != FASO_MAGIC_NUMBER_2 || header->_Magic[3] != FASO_MAGIC_NUMBER_3) {
+      SIMPLE_ERROR("Illegal and unknown file type - magic number: %X%X%X%X\n", (uint8_t)header->_Magic[0],
+                   (uint8_t)header->_Magic[1], (uint8_t)header->_Magic[2], (uint8_t)header->_Magic[3]);
+    } else if (header->_Version != FASO_VERSION) {
+      SIMPLE_ERROR("FASL version {:04x} is not readable by this loader", header->_Version);
+    } else {
       size_t object0_offset = (header->_HeaderPageCount * header->_PageSize);
       if (verbose)
         clasp_write_string(
@@ -660,9 +667,6 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
         if (verbose)
           clasp_write_string(fmt::format("allObjectFiles.size() = {}\n", allObjectFiles.size()));
       }
-    } else {
-      SIMPLE_ERROR("Illegal and unknown file type - magic number: %X%X%X%X\n", (uint8_t)header->_Magic[0],
-                   (uint8_t)header->_Magic[1], (uint8_t)header->_Magic[2], (uint8_t)header->_Magic[3]);
     }
   }
   FasoHeader* header = (FasoHeader*)malloc(FasoHeader::calculateSize(allObjectFiles.size()));
@@ -767,6 +771,8 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
   close(fd); // Ok to close file descriptor after mmap
   llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
   FasoHeader* header = (FasoHeader*)memory;
+  if (header->_Version != FASO_VERSION)
+    SIMPLE_ERROR("FASL version {:04x} is not readable by this loader", header->_Version);
   llvmo::JITDylib_sp jitDylib;
   for (size_t fasoIndex = 0; fasoIndex < header->_NumberOfObjectFiles; ++fasoIndex) {
     if (!jitDylib || header->_ObjectFiles[fasoIndex]._ObjectId == 0) {
