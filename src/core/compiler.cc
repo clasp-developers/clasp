@@ -650,7 +650,7 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
       SIMPLE_ERROR("Illegal and unknown file type - magic number: %X%X%X%X\n", (uint8_t)header->_Magic[0],
                    (uint8_t)header->_Magic[1], (uint8_t)header->_Magic[2], (uint8_t)header->_Magic[3]);
     } else if (header->_Version != FASO_VERSION) {
-      SIMPLE_ERROR("FASL version {:04x} is not readable by this loader", header->_Version);
+      SIMPLE_ERROR("FASO version {:04x} is not readable by this loader", header->_Version);
     } else {
       size_t object0_offset = (header->_HeaderPageCount * header->_PageSize);
       if (verbose)
@@ -772,7 +772,7 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
   llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
   FasoHeader* header = (FasoHeader*)memory;
   if (header->_Version != FASO_VERSION)
-    SIMPLE_ERROR("FASL version {:04x} is not readable by this loader", header->_Version);
+    SIMPLE_ERROR("FASO version {:04x} is not readable by this loader", header->_Version);
   llvmo::JITDylib_sp jitDylib;
   for (size_t fasoIndex = 0; fasoIndex < header->_NumberOfObjectFiles; ++fasoIndex) {
     if (!jitDylib || header->_ObjectFiles[fasoIndex]._ObjectId == 0) {
