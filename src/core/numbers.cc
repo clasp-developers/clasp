@@ -210,9 +210,9 @@ CL_DEFUN Number_sp Number_O::add_nn(Number_sp na, Number_sp nb) {
   if (ca && cb)
     return clasp_make_complex(ca->real() + cb->real(), ca->imaginary() + cb->imaginary());
   if (ca)
-    return clasp_make_complex(ca->real() + nb, ca->imaginary());
+    return clasp_make_complex(ca->real() + nb.as_unsafe<Real_O>(), ca->imaginary());
   if (cb)
-    return clasp_make_complex(na + cb->real(), cb->imaginary());
+    return clasp_make_complex(na.as_unsafe<Real_O>() + cb->real(), cb->imaginary());
 
 #ifdef CLASP_LONG_FLOAT
   if (na.isA<LongFloat_O>() || nb.isA<LongFloat_O>())
@@ -235,9 +235,9 @@ CL_DEFUN Number_sp Number_O::add_nn(Number_sp na, Number_sp nb) {
     return Rational_O::create(ra->numerator() * rb->denominator() + ra->denominator() * rb->numerator(),
                               ra->denominator() * rb->denominator());
   if (ra)
-    return Ratio_O::create(ra->numerator() + nb * ra->denominator(), ra->denominator());
+    return Ratio_O::create(ra->numerator() + nb.as_unsafe<Integer_O>() * ra->denominator(), ra->denominator());
   if (rb)
-    return Ratio_O::create(na * rb->denominator() + rb->numerator(), rb->denominator());
+    return Ratio_O::create(na.as_unsafe<Integer_O>() * rb->denominator() + rb->numerator(), rb->denominator());
 
   Bignum_sp ba = na.asOrNull<Bignum_O>(), bb = nb.asOrNull<Bignum_O>();
   if (ba && bb)
@@ -258,9 +258,9 @@ CL_DEFUN Number_sp Number_O::sub_nn(Number_sp na, Number_sp nb) {
   if (ca && cb)
     return clasp_make_complex(ca->real() - cb->real(), ca->imaginary() - cb->imaginary());
   if (ca)
-    return clasp_make_complex(ca->real() - nb, ca->imaginary());
+    return clasp_make_complex(ca->real() - nb.as_unsafe<Real_O>(), ca->imaginary());
   if (cb)
-    return clasp_make_complex(na - cb->real(), -cb->imaginary());
+    return clasp_make_complex(na.as_unsafe<Real_O>() - cb->real(), -cb->imaginary());
 
 #ifdef CLASP_LONG_FLOAT
   if (na.isA<LongFloat_O>() || nb.isA<LongFloat_O>())
@@ -283,9 +283,9 @@ CL_DEFUN Number_sp Number_O::sub_nn(Number_sp na, Number_sp nb) {
     return Rational_O::create(ra->numerator() * rb->denominator() - ra->denominator() * rb->numerator(),
                               ra->denominator() * rb->denominator());
   if (ra)
-    return Ratio_O::create(ra->numerator() - nb * ra->denominator(), ra->denominator());
+    return Ratio_O::create(ra->numerator() - nb.as_unsafe<Integer_O>() * ra->denominator(), ra->denominator());
   if (rb)
-    return Ratio_O::create(na * rb->denominator() - rb->numerator(), rb->denominator());
+    return Ratio_O::create(na.as_unsafe<Integer_O>() * rb->denominator() - rb->numerator(), rb->denominator());
 
   Bignum_sp ba = na.asOrNull<Bignum_O>(), bb = nb.asOrNull<Bignum_O>();
   if (ba && bb)
@@ -307,9 +307,9 @@ CL_DEFUN Number_sp Number_O::mul_nn(Number_sp na, Number_sp nb) {
     return clasp_make_complex(ca->real() * cb->real() - ca->imaginary() * cb->imaginary(),
                               ca->real() * cb->imaginary() + ca->imaginary() * cb->real());
   if (ca)
-    return clasp_make_complex(ca->real() * nb, ca->imaginary() * nb);
+    return clasp_make_complex(ca->real() * nb.as_unsafe<Real_O>(), ca->imaginary() * nb.as_unsafe<Real_O>());
   if (cb)
-    return clasp_make_complex(na * cb->real(), na * cb->imaginary());
+    return clasp_make_complex(na.as_unsafe<Real_O>() * cb->real(), na.as_unsafe<Real_O>() * cb->imaginary());
 
 #ifdef CLASP_LONG_FLOAT
   if (na.isA<LongFloat_O>() || nb.isA<LongFloat_O>())
@@ -331,9 +331,9 @@ CL_DEFUN Number_sp Number_O::mul_nn(Number_sp na, Number_sp nb) {
   if (ra && rb)
     return Rational_O::create(ra->numerator() * rb->numerator(), ra->denominator() * rb->denominator());
   if (ra)
-    return Rational_O::create(ra->numerator() * nb, ra->denominator());
+    return Rational_O::create(ra->numerator() * nb.as_unsafe<Integer_O>(), ra->denominator());
   if (rb)
-    return Rational_O::create(na * rb->numerator(), rb->denominator());
+    return Rational_O::create(na.as_unsafe<Integer_O>() * rb->numerator(), rb->denominator());
 
   Bignum_sp ba = na.asOrNull<Bignum_O>(), bb = nb.asOrNull<Bignum_O>();
   if (ba && bb)
@@ -361,15 +361,15 @@ DOCGROUP(clasp);
 CL_DEFUN Number_sp Number_O::div_nn(Number_sp na, Number_sp nb) {
   Complex_sp ca = na.asOrNull<Complex_O>(), cb = nb.asOrNull<Complex_O>();
   if (ca && cb) {
-    Number_sp den = cb->real() * cb->real() + cb->imaginary() * cb->imaginary();
+    Real_sp den = cb->real() * cb->real() + cb->imaginary() * cb->imaginary();
     return clasp_make_complex((ca->real() * cb->real() + ca->imaginary() * cb->imaginary()) / den,
                               (ca->imaginary() * cb->real() - ca->real() * cb->imaginary()) / den);
   }
   if (ca)
-    return clasp_make_complex(ca->real() / nb, ca->imaginary() / nb);
+    return clasp_make_complex(ca->real() / nb.as_unsafe<Real_O>(), ca->imaginary() / nb.as_unsafe<Real_O>());
   if (cb) {
-    Number_sp den = cb->real() * cb->real() + cb->imaginary() * cb->imaginary();
-    return clasp_make_complex((na * cb->real()) / den, -(na * cb->imaginary()) / den);
+    Real_sp den = cb->real() * cb->real() + cb->imaginary() * cb->imaginary();
+    return clasp_make_complex((na.as_unsafe<Real_O>() * cb->real()) / den, -(na.as_unsafe<Real_O>() * cb->imaginary()) / den);
   }
 
 #ifdef CLASP_LONG_FLOAT
@@ -392,11 +392,11 @@ CL_DEFUN Number_sp Number_O::div_nn(Number_sp na, Number_sp nb) {
   if (ra && rb)
     return Rational_O::create(ra->numerator() * rb->denominator(), ra->denominator() * rb->numerator());
   if (ra)
-    return Rational_O::create(ra->numerator(), ra->denominator() * nb);
+    return Rational_O::create(ra->numerator(), ra->denominator() * nb.as_unsafe<Integer_O>());
   if (rb)
-    return Rational_O::create(na * rb->denominator(), rb->numerator());
+    return Rational_O::create(na.as_unsafe<Integer_O>() * rb->denominator(), rb->numerator());
 
-  return Rational_O::create(na, nb);
+  return Rational_O::create(na.as_unsafe<Integer_O>(), nb.as_unsafe<Integer_O>());
 }
 
 CL_LAMBDA(&rest numbers);
@@ -749,22 +749,22 @@ T_sp numbers_monotonic_vaslist(int s, int t, Vaslist_sp args) {
 CL_NAME("TWO-ARG-<");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN bool two_arg__LT_(Number_sp x, Number_sp y) { return Number_O::compare(x, y) == -1; }
+CL_DEFUN bool two_arg__LT_(Real_sp x, Real_sp y) { return Number_O::compare(x, y) == -1; }
 
 CL_NAME("TWO-ARG-<=");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN bool two_arg__LE_(Number_sp x, Number_sp y) { return Number_O::compare(x, y) != 1; }
+CL_DEFUN bool two_arg__LE_(Real_sp x, Real_sp y) { return Number_O::compare(x, y) != 1; }
 
 CL_NAME("TWO-ARG->");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN bool two_arg__GT_(Number_sp x, Number_sp y) { return Number_O::compare(x, y) == 1; }
+CL_DEFUN bool two_arg__GT_(Real_sp x, Real_sp y) { return Number_O::compare(x, y) == 1; }
 
 CL_NAME("TWO-ARG->=");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN bool two_arg__GE_(Number_sp x, Number_sp y) { return Number_O::compare(x, y) != -1; }
+CL_DEFUN bool two_arg__GE_(Real_sp x, Real_sp y) { return Number_O::compare(x, y) != -1; }
 
 CL_LAMBDA(core:&va-rest args);
 CL_UNWIND_COOP(true);
@@ -1494,7 +1494,7 @@ Number_sp Complex_O::reciprocal_() const {
   // alternately we could just clasp_divide. I dunno if reciprocal_ is terribly necessary.
   Real_sp square_modulus = gc::As_unsafe<Real_sp>(this->_real * this->_real + this->_imaginary * this->_imaginary);
   return Complex_O::create(gc::As_unsafe<Real_sp>(this->_real / square_modulus),
-                           gc::As_unsafe<Real_sp>(clasp_negate(this->_imaginary) / square_modulus));
+                           gc::As_unsafe<Real_sp>(-this->_imaginary / square_modulus));
 }
 
 /* ----------------------------------------------------------------------
@@ -1691,7 +1691,7 @@ Number_sp Complex_O::acos_() const {
 #endif
 #ifdef _TARGET_OS_DARWIN
   return make_complex((std::complex<single_float_t>)_acos2<double_float_t>(clasp_to_float(_real), clasp_to_float(_imaginary)));
-#else  
+#else
   return make_complex(_acos2(clasp_to_float(_real), clasp_to_float(_imaginary)));
 #endif
 }
@@ -2015,13 +2015,8 @@ Number_sp LongFloat_O::exp_() const { return LongFloat_O::create(std::exp(this->
 #endif
 
 Number_sp Complex_O::exp_() const {
-  Real_sp y, y1;
-  y = this->_imaginary;
-  Real_sp x = gc::As<Real_sp>(clasp_exp(this->_real));
-  y1 = gc::As<Real_sp>(Number_O::cos(y)); // Number_O::cos(y);
-  y = gc::As<Real_sp>(Number_O::sin(y));  // Number_O::sin(y);
-  Complex_sp cy = gc::As_unsafe<Complex_sp>(clasp_make_complex(y1, y));
-  return x * cy;
+  return clasp_exp(_real) *
+         clasp_make_complex(Number_O::cos(_imaginary).as_unsafe<Real_O>(), Number_O::sin(_imaginary).as_unsafe<Real_O>());
 }
 
 CL_LAMBDA(x);
@@ -2071,11 +2066,11 @@ Fixnum clasp_fixnum_expt(Fixnum x, Fixnum y) {
 static Number_sp expt_zero(Number_sp x, Number_sp y) {
   Complex_sp cx = x.asOrNull<Complex_O>(), cy = y.asOrNull<Complex_O>();
   if (cx && cy)
-    return clasp_make_complex(expt_zero(cx->real(), cy->real()), clasp_make_fixnum(0));
+    return clasp_make_complex(expt_zero(cx->real(), cy->real()).as_unsafe<Real_O>(), clasp_make_fixnum(0));
   if (cx)
-    return clasp_make_complex(expt_zero(cx->real(), y), clasp_make_fixnum(0));
+    return clasp_make_complex(expt_zero(cx->real(), y).as_unsafe<Real_O>(), clasp_make_fixnum(0));
   if (cy)
-    return clasp_make_complex(expt_zero(x, cy->real()), clasp_make_fixnum(0));
+    return clasp_make_complex(expt_zero(x, cy->real()).as_unsafe<Real_O>(), clasp_make_fixnum(0));
 
 #ifdef CLASP_LONG_FLOAT
   if (x.isA<LongFloat_O>() || y.isA<LongFloat_O>())
@@ -2115,7 +2110,7 @@ Number_sp clasp_expt(Number_sp x, Number_sp y) {
     z = clasp_log1(x * expt_zero(x, y));
     z = z * y;
     z = cl__exp(z);
-  } else if (Real_O::minusp(y)) {
+  } else if (Real_O::minusp(y.as<Real_O>())) {
     z = clasp_negate(y);
     z = clasp_expt(x, z);
     z = clasp_reciprocal(z);
@@ -2198,10 +2193,10 @@ Number_sp LongFloat_O::atan_() const { return LongFloat_O::create(std::atan(_Val
 #endif
 
 Number_sp Complex_O::atan_() const {
-  Number_sp z = _lisp->imaginaryUnit() * asSmartPtr();
+  Number_sp z = _lisp->imaginaryUnit().as_unsafe<Number_O>() * asSmartPtr();
   Number_sp z1;
   z = clasp_one_plus(z);
-  z1 = asSmartPtr() * asSmartPtr();
+  z1 = asSmartPtr().as_unsafe<Number_O>() * asSmartPtr().as_unsafe<Number_O>();
   z1 = clasp_one_plus(z1);
   z1 = Number_O::sqrt(z1);
   z = z / z1;
@@ -2219,8 +2214,8 @@ CL_DEFUN Number_sp cl__atan(Number_sp x, T_sp y, bool yp) {
   if (!yp)
     return Number_O::atan(x);
 
-  if (gctools::IsA<Number_sp>(y))
-    return Number_O::atan2(x, y.as_unsafe<Number_O>());
+  if (gctools::IsA<Real_sp>(y))
+    return Number_O::atan2(x.as_unsafe<Real_O>(), y.as_unsafe<Real_O>());
 
   TYPE_ERROR(y, cl::_sym_Number_O);
 }
@@ -2266,7 +2261,7 @@ Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i) {
   a = gc::As<Real_sp>(a / p);
   a = gc::As<Real_sp>(clasp_log1p(a * a) / make_fixnum(2) + clasp_log1(p));
 OUTPUT:
-  p = gc::As<Real_sp>(Number_O::atan2(i, r));
+  p = gc::As<Real_sp>(Number_O::atan2(i.as_unsafe<Real_O>(), r.as_unsafe<Real_O>()));
   return clasp_make_complex(a, p);
 }
 
@@ -2632,7 +2627,7 @@ namespace core {
 
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
- CL_DEFUN Rational_sp cl__rational(Real_sp num) { return Rational_O::coerce(num); }
+CL_DEFUN Rational_sp cl__rational(Real_sp num) { return Rational_O::coerce(num); }
 
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
@@ -2645,7 +2640,7 @@ ShortFloat_sp ShortFloat_dummy_O::coerce(Number_sp x) {
   if (x.fixnump())
     return create(x.unsafe_fixnum());
   if (x.short_floatp())
-    return x;
+    return gc::As_unsafe<ShortFloat_sp>(x);
   if (x.single_floatp())
     return create((short_float_t)x.unsafe_single_float());
   if (x.isA<Real_O>())
@@ -2662,7 +2657,7 @@ SingleFloat_sp SingleFloat_dummy_O::coerce(Number_sp x) {
     return create((single_float_t)x.unsafe_short_float());
 #endif
   if (x.single_floatp())
-    return x;
+    return gc::As_unsafe<SingleFloat_sp>(x);
   if (x.isA<Real_O>())
     return create(x->as_single_float_());
   TYPE_ERROR(x, cl::_sym_Real_O);
@@ -2678,7 +2673,7 @@ DoubleFloat_sp DoubleFloat_O::coerce(Number_sp x) {
   if (x.single_floatp())
     return create(x.unsafe_single_float());
   if (x.isA<DoubleFloat_O>())
-    return x;
+    return x.as_unsafe<DoubleFloat_O>();
   if (x.isA<Real_O>())
     return create(x->as_double_float_());
   TYPE_ERROR(x, cl::_sym_Real_O);
@@ -2695,7 +2690,7 @@ LongFloat_sp LongFloat_O::coerce(Number_sp x) {
   if (x.single_floatp())
     return create(x.unsafe_single_float());
   if (x.isA<LongFloat_O>())
-    return x;
+    return x.as_unsafe<LongFloat_O>();
   if (x.isA<Real_O>())
     return create(x->as_long_float_());
   TYPE_ERROR(x, cl::_sym_Real_O);

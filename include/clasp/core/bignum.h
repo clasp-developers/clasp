@@ -126,9 +126,9 @@ public: // Functions here
 
   template <std::floating_point Float> static Bignum_sp create(Float v) {
     auto q = float_convert<Float>::float_to_quadruple(v);
-    Bignum_sp b = clasp_ash(create(q.significand), q.exponent);
+    Bignum_sp b = gc::As_unsafe<Bignum_sp>(clasp_ash(create(q.significand), q.exponent))                      ;
     if (q.sign < 0)
-      return clasp_negate(b);
+      return gc::As_unsafe<Bignum_sp>(clasp_negate(b));
 
     return b;
   }
@@ -231,9 +231,9 @@ Integer_sp bignum_result(mp_size_t, const mp_limb_t*);
 Bignum_sp core__mul_fixnums(Fixnum, Fixnum);
 Bignum_sp core__next_lshift(Bignum_sp, Fixnum);
 Integer_sp core__next_rshift(Bignum_sp, Fixnum);
-T_mv core__next_truncate(Bignum_sp, Bignum_sp);
+Number_mv core__next_truncate(Bignum_sp, Bignum_sp);
 Integer_sp fix_divided_by_next(Fixnum, Bignum_sp);
-T_mv core__next_ftruncate(Bignum_sp, Fixnum);
+Number_mv core__next_ftruncate(Bignum_sp, Fixnum);
 Integer_sp core__next_gcd(Bignum_sp, Bignum_sp);
 Integer_sp core__next_fgcd(Bignum_sp, Fixnum);
 int core__next_compare(Bignum_sp, Bignum_sp);

@@ -99,7 +99,7 @@ T_sp core_float_to_string_free(Float_sp number, Number_sp e_min, Number_sp e_max
     insert_char(buffer, base++, '-');
   }
   /* Do we have to print in exponent notation? */
-  if (clasp_lowereq(exp, e_min) || clasp_lowereq(e_max, exp)) {
+  if (clasp_lowereq(exp, e_min.as<Real_O>()) || clasp_lowereq(e_max.as<Real_O>(), exp)) {
     insert_char(buffer, base + 1, '.');
     if (gc::As<StrNs_sp>(buffer)->fillPointer() == base + 2)
       buffer->vectorPushExtend(clasp_make_character('0'));

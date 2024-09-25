@@ -55,9 +55,9 @@ namespace core {
 Integer_sp clasp_integer_divide(Integer_sp x, Integer_sp y) {
   Bignum_sp bx = x.asOrNull<Bignum_O>(), by = y.asOrNull<Bignum_O>();
   if (bx && by)
-    return core__next_truncate(bx, by);
+    return core__next_truncate(bx, by).as_unsafe<Integer_O>();
   if (bx)
-    return core__next_ftruncate(bx, y.unsafe_fixnum());
+    return core__next_ftruncate(bx, y.unsafe_fixnum()).as_unsafe<Integer_O>();
   if (by)
     return fix_divided_by_next(x.unsafe_fixnum(), by);
 

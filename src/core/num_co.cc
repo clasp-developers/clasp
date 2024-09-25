@@ -89,7 +89,7 @@ DOCGROUP(clasp);
 CL_DEFUN Float_sp cl__float(Real_sp x, T_sp y, bool yp) {
   if (!yp) {
     if (x.isA<Float_O>())
-      return x;
+      return x.as_unsafe<Float_O>();
     return SingleFloat_dummy_O::coerce(x);
   }
 
@@ -143,7 +143,7 @@ CL_DEFUN Integer_sp cl__numerator(Rational_sp x) {
   if (rx)
     return rx->numerator();
   if (x.fixnump())
-    return x;
+    return x.as_unsafe<Integer_O>();
 
   return x.as<Integer_O>();
 }
@@ -178,19 +178,19 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp& quotie
     Real_sp subr;
     clasp_truncate(rdividend->numerator() * rdivisor->denominator(), rdivisor->numerator() * rdividend->denominator(), quotient,
                    subr);
-    remainder = Rational_O::create(subr, rdividend->denominator() * rdivisor->denominator());
+    remainder = Rational_O::create(subr.as<Integer_O>(), rdividend->denominator() * rdivisor->denominator());
     return;
   }
   if (rdividend) {
     Real_sp subr;
-    clasp_truncate(rdividend->numerator(), rdividend->denominator() * divisor, quotient, subr);
-    remainder = subr / rdividend->denominator();
+    clasp_truncate(rdividend->numerator(), rdividend->denominator().as_unsafe<Real_O>() * divisor, quotient, subr);
+    remainder = subr / rdividend->denominator().as_unsafe<Real_O>();
     return;
   }
   if (rdivisor && dividend.isA<Integer_O>()) {
     Real_sp subr;
-    clasp_truncate(dividend * rdivisor->denominator(), rdivisor->numerator(), quotient, subr);
-    remainder = Rational_O::create(subr, rdivisor->denominator());
+    clasp_truncate(dividend * rdivisor->denominator().as_unsafe<Real_O>(), rdivisor->numerator(), quotient, subr);
+    remainder = Rational_O::create(subr.as<Integer_O>(), rdivisor->denominator());
     return;
   }
 
@@ -220,14 +220,14 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp& quotie
 
   Bignum_sp bdividend = dividend.asOrNull<Bignum_O>(), bdivisor = divisor.asOrNull<Bignum_O>();
   if (bdividend && bdivisor) {
-    T_mv mvr = core__next_truncate(bdividend, bdivisor);
-    quotient = mvr;
+    Number_mv mvr = core__next_truncate(bdividend, bdivisor);
+    quotient = mvr.as<Integer_O>();
     MultipleValues& mvn = core::lisp_multipleValues();
-    remainder = mvn.valueGet(1, mvr.number_of_values());
+    remainder = mvn.valueGet(1, mvr.number_of_values()).as<Real_O>();
     return;
   }
   if (bdividend) {
-    T_mv rmv = core__next_ftruncate(bdividend, divisor.unsafe_fixnum());
+    Number_mv rmv = core__next_ftruncate(bdividend, divisor.unsafe_fixnum());
     quotient = gc::As_unsafe<Integer_sp>(rmv);
     MultipleValues& mvn = core::lisp_multipleValues();
     remainder = gc::As_unsafe<Integer_sp>(mvn.valueGet(1, rmv.number_of_values()));
@@ -289,7 +289,7 @@ Real_mv clasp_floor1(Real_sp x) {
     Integer_sp v0;
     Real_sp tv1;
     clasp_floor(rx->numerator(), rx->denominator(), v0, tv1);
-    return Values(v0, Ratio_O::create(tv1, rx->denominator()));
+    return Values(v0, Ratio_O::create(tv1.as_unsafe<Integer_O>(), rx->denominator()));
   }
 
 #ifdef CLASP_LONG_FLOAT
@@ -366,7 +366,7 @@ Real_mv clasp_ceiling1(Real_sp x) {
     Integer_sp v0;
     Real_sp tv1;
     clasp_ceiling(rx->numerator(), rx->denominator(), v0, tv1);
-    return Values(v0, Ratio_O::create(tv1, rx->denominator()));
+    return Values(v0, Ratio_O::create(tv1.as_unsafe<Integer_O>(), rx->denominator()));
   }
 
 #ifdef CLASP_LONG_FLOAT
@@ -430,7 +430,7 @@ Real_mv clasp_truncate1(Real_sp x) {
     Integer_sp v0;
     Real_sp tv1;
     clasp_truncate(rx->numerator(), rx->denominator(), v0, tv1);
-    return Values(v0, Ratio_O::create(tv1, rx->denominator()));
+    return Values(v0, Ratio_O::create(tv1.as_unsafe<Integer_O>(), rx->denominator()));
   }
 
 #ifdef CLASP_LONG_FLOAT
@@ -538,7 +538,7 @@ Real_mv clasp_round1(Real_sp x) {
     Integer_sp v0;
     Real_sp tv1;
     clasp_round(rx->numerator(), rx->denominator(), v0, tv1);
-    return Values(v0, Ratio_O::create(tv1, rx->denominator()));
+    return Values(v0, Ratio_O::create(tv1.as_unsafe<Integer_O>(), rx->denominator()));
   }
 
 #ifdef CLASP_LONG_FLOAT
@@ -827,10 +827,10 @@ CL_DOCSTRING(R"dx(complex)dx");
 DOCGROUP(clasp);
 CL_DEFUN Complex_sp cl__complex(Real_sp r, Real_sp i) { return gc::As_unsafe<Complex_sp>(clasp_make_complex(r, i)); }
 
-Number_sp DoubleFloat_O::imagpart_() const { return create(std::copysign(double_float_t{0.0}, _Value)); }
+Real_sp DoubleFloat_O::imagpart_() const { return create(std::copysign(double_float_t{0.0}, _Value)); }
 
 #ifdef CLASP_LONG_FLOAT
-Number_sp LongFloat_O::imagpart_() const { return create(std::copysign(long_float_t{0.0}, _Value)); }
+Real_sp LongFloat_O::imagpart_() const { return create(std::copysign(long_float_t{0.0}, _Value)); }
 #endif
 
 CL_LAMBDA(x);

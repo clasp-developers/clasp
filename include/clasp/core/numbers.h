@@ -179,8 +179,8 @@ public:
   virtual bool equal(T_sp obj) const override;
   virtual bool equalp(T_sp obj) const override;
 
-  virtual Number_sp realpart_() const { SUBIMP(); };
-  virtual Number_sp imagpart_() const { SUBIMP(); };
+  virtual Real_sp realpart_() const { SUBIMP(); };
+  virtual Real_sp imagpart_() const { SUBIMP(); };
 
   // log(x) (i.e. natural log)
   virtual Number_sp log1_() const { SUBIMP(); };
@@ -281,8 +281,8 @@ public:
     return x->as_long_float_();
   }
 
-  inline static Number_sp realpart(const Number_sp x);
-  inline static Number_sp imagpart(const Number_sp x);
+  inline static Real_sp realpart(const Number_sp x);
+  inline static Real_sp imagpart(const Number_sp x);
 
   inline static Number_sp negate(const Number_sp x);
   inline static Number_sp signum(const Number_sp num);
@@ -319,15 +319,37 @@ public:
 };
 
 inline Number_sp operator-(const Number_sp x) { return Number_O::negate(x); }
+inline Integer_sp operator-(const Integer_sp x) { return gc::As_unsafe<Integer_sp>(Number_O::negate(x)); }
+inline Real_sp operator-(const Real_sp x) { return gc::As_unsafe<Real_sp>(Number_O::negate(x)); }
 
 inline Number_sp operator+(const Number_sp x, const Number_sp y) { return Number_O::add_nn(x, y); }
+inline Integer_sp operator+(const Integer_sp x, const Integer_sp y) { return gc::As_unsafe<Integer_sp>(Number_O::add_nn(x, y)); }
+inline Real_sp operator+(const Real_sp x, const Real_sp y) { return gc::As_unsafe<Real_sp>(Number_O::add_nn(x, y)); }
+
 inline Number_sp operator-(const Number_sp x, const Number_sp y) { return Number_O::sub_nn(x, y); }
+inline Integer_sp operator-(const Integer_sp x, const Integer_sp y) { return gc::As_unsafe<Integer_sp>(Number_O::sub_nn(x, y)); }
+inline Real_sp operator-(const Real_sp x, const Real_sp y) { return gc::As_unsafe<Real_sp>(Number_O::sub_nn(x, y)); }
+
 inline Number_sp operator*(const Number_sp x, const Number_sp y) { return Number_O::mul_nn(x, y); }
+inline Integer_sp operator*(const Integer_sp x, const Integer_sp y) { return gc::As_unsafe<Integer_sp>(Number_O::mul_nn(x, y)); }
+inline Real_sp operator*(const Real_sp x, const Real_sp y) { return gc::As_unsafe<Real_sp>(Number_O::mul_nn(x, y)); }
+
 inline Number_sp operator/(const Number_sp x, const Number_sp y) { return Number_O::div_nn(x, y); }
+inline Rational_sp operator/(const Integer_sp x, const Integer_sp y) { return gc::As_unsafe<Rational_sp>(Number_O::div_nn(x, y)); }
+inline Real_sp operator/(const Real_sp x, const Real_sp y) { return gc::As_unsafe<Real_sp>(Number_O::div_nn(x, y)); }
 
 inline Number_sp operator+=(Number_sp& x, const Number_sp y) { return x = Number_O::add_nn(x, y); };
+inline Integer_sp operator+=(Integer_sp& x, const Integer_sp y) { return x = gc::As_unsafe<Integer_sp>(Number_O::add_nn(x, y)); };
+inline Real_sp operator+=(Real_sp& x, const Real_sp y) { return x = gc::As_unsafe<Real_sp>(Number_O::add_nn(x, y)); };
+
 inline Number_sp operator-=(Number_sp& x, const Number_sp y) { return x = Number_O::sub_nn(x, y); };
+inline Integer_sp operator-=(Integer_sp& x, const Integer_sp y) { return x = gc::As_unsafe<Integer_sp>(Number_O::sub_nn(x, y)); };
+inline Real_sp operator-=(Real_sp& x, const Real_sp y) { return x = gc::As_unsafe<Real_sp>(Number_O::sub_nn(x, y)); };
+
 inline Number_sp operator*=(Number_sp& x, const Number_sp y) { return x = Number_O::mul_nn(x, y); };
+inline Integer_sp operator*=(Integer_sp& x, const Integer_sp y) { return x = gc::As_unsafe<Integer_sp>(Number_O::mul_nn(x, y)); };
+inline Real_sp operator*=(Real_sp& x, const Real_sp y) { return x = gc::As_unsafe<Real_sp>(Number_O::mul_nn(x, y)); };
+
 inline Number_sp operator/=(Number_sp& x, const Number_sp y) { return x = Number_O::div_nn(x, y); };
 
 SMART(Real);
@@ -335,8 +357,8 @@ class Real_O : public Number_O {
   LISP_ABSTRACT_CLASS(core, ClPkg, Real_O, "real", Number_O);
 
 public:
-  Number_sp realpart_() const override { return asSmartPtr(); }
-  Number_sp imagpart_() const override { return clasp_make_fixnum(0); }
+  Real_sp realpart_() const override { return asSmartPtr(); }
+  Real_sp imagpart_() const override { return clasp_make_fixnum(0); }
 
   virtual double_float_t as_double_float_() const override { SUBIMP(); };
 
@@ -591,7 +613,7 @@ public:
   void set(double val) { this->_Value = val; };
   double get() const { return this->_Value; };
 
-  Number_sp imagpart_() const override;
+  Real_sp imagpart_() const override;
 
   Number_sp signum_() const override;
   Number_sp abs_() const override { return DoubleFloat_O::create(std::abs(this->_Value)); };
@@ -681,7 +703,7 @@ public:
   void set(long_float_t val) { this->_Value = val; };
   long_float_t get() const { return this->_Value; };
 
-  Number_sp imagpart_() const override;
+  Real_sp imagpart_() const override;
 
   Number_sp signum_() const override;
   Number_sp abs_() const override { return LongFloat_O::create(std::abs(this->_Value)); };
@@ -770,8 +792,8 @@ public:
   //	virtual Number_sp copy() const;
   string __repr__() const override;
 
-  Number_sp realpart_() const override { return _real; }
-  Number_sp imagpart_() const override { return _imaginary; }
+  Real_sp realpart_() const override { return _real; }
+  Real_sp imagpart_() const override { return _imaginary; }
 
   Number_sp signum_() const override;
   Number_sp abs_() const override;
@@ -966,18 +988,18 @@ template <std::floating_point Float> inline Rational_sp float_to_rational(Float 
   if (q.exponent < 0) {
     n /= clasp_ash(clasp_make_fixnum(1), -q.exponent);
   } else if (q.exponent > 0) {
-    n = clasp_ash(n, q.exponent);
+    n = clasp_ash(n.as_unsafe<Integer_O>(), q.exponent);
   }
 
   if (q.sign < 0)
-    return clasp_negate(n);
+    return clasp_negate(n).as_unsafe<Rational_O>();
 
-  return n;
+  return n.as_unsafe<Rational_O>();
 }
 
 inline Rational_sp Rational_O::coerce(const Real_sp x) {
   if (x.fixnump())
-    return x;
+    return x.as_unsafe<Rational_O>();
 #ifdef CLASP_SHORT_FLOAT
   if (x.short_floatp())
     return float_to_rational(x.unsafe_short_float());
@@ -986,7 +1008,6 @@ inline Rational_sp Rational_O::coerce(const Real_sp x) {
     return float_to_rational(x.unsafe_single_float());
   return gc::As_unsafe<Number_sp>(x)->as_rational_();
 }
-
 
 Number_sp cl__expt(Number_sp x, Number_sp y);
 Real_sp cl__mod(Real_sp, Real_sp);
@@ -1423,18 +1444,18 @@ inline Number_sp Number_O::tanh(Number_sp x) {
   return x->tanh_();
 }
 
-inline Number_sp Number_O::realpart(const Number_sp x) {
+inline Real_sp Number_O::realpart(const Number_sp x) {
 #ifdef CLASP_SHORT_FLOAT
   if (x.fixnump() || x.single_floatp() || x.short_floatp())
-    return x;
+    return x.as_unsafe<Real_O>();
 #else
   if (x.fixnump() || x.single_floatp())
-    return x;
+    return x.as_unsafe<Real_O>();
 #endif
   return x->realpart_();
 }
 
-inline Number_sp Number_O::imagpart(const Number_sp x) {
+inline Real_sp Number_O::imagpart(const Number_sp x) {
   if (x.fixnump())
     return clasp_make_fixnum(0);
 #ifdef CLASP_SHORT_FLOAT
