@@ -30,8 +30,6 @@ class SimpleVector_long_float_O : public specialized_SimpleVector_long_float {
 public:
   typedef specialized_SimpleVector_long_float TemplatedBase;
 
-  size_t length() const override { return this->_Data.length(); };
-
   static value_type default_initial_element(void) { return long_float_t{0.0}; }
   static value_type from_object(T_sp obj) { return core::Number_O::as_long_float(obj.as<Number_O>()); };
   static T_sp to_object(const value_type& v) { return core::LongFloat_O::create(v); };

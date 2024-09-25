@@ -226,7 +226,7 @@ public: // Functions here
   /*! length() doesn't dispatch - it reaches into the subclass
       through the _Length[0] array to read the first size_t element
       which is the Length/FillPointer for vectors and a Dummy value for arrays */
-  virtual size_t length() const { return this->_Length[0]; };
+  size_t length() const { return this->_Length[0]; };
   virtual bool equal(T_sp other) const override = 0;
   virtual bool equalp(T_sp other) const override = 0;
   virtual size_t arrayTotalSize() const = 0;
