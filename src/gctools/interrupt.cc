@@ -335,24 +335,24 @@ void handle_fpe(int signo, siginfo_t* info, void* context) {
   switch (info->si_code) {
 #ifdef _TARGET_OS_DARWIN
   case FPE_NOOP:
-    NO_INITIALIZERS_ERROR(cl::_sym_arithmeticError);
+    ARITHMETIC_ERROR(nil<core::T_O>(), nil<core::T_O>());
 #endif
   case FPE_INTDIV:
-    NO_INITIALIZERS_ERROR(cl::_sym_divisionByZero);
+    DIVISION_BY_ZERO(nil<core::T_O>(), nil<core::T_O>());
   case FPE_INTOVF:
-    NO_INITIALIZERS_ERROR(cl::_sym_arithmeticError);
+    ARITHMETIC_ERROR(nil<core::T_O>(), nil<core::T_O>());
   case FPE_FLTDIV:
-    NO_INITIALIZERS_ERROR(cl::_sym_divisionByZero);
+    DIVISION_BY_ZERO(nil<core::T_O>(), nil<core::T_O>());
   case FPE_FLTOVF:
-    NO_INITIALIZERS_ERROR(cl::_sym_floatingPointOverflow);
+    FLOATING_POINT_OVERFLOW(nil<core::T_O>(), nil<core::T_O>());
   case FPE_FLTUND:
-    NO_INITIALIZERS_ERROR(cl::_sym_floatingPointUnderflow);
+    FLOATING_POINT_UNDERFLOW(nil<core::T_O>(), nil<core::T_O>());
   case FPE_FLTRES:
-    NO_INITIALIZERS_ERROR(cl::_sym_floatingPointInexact);
+    FLOATING_POINT_INEXACT(nil<core::T_O>(), nil<core::T_O>());
   case FPE_FLTINV:
-    NO_INITIALIZERS_ERROR(cl::_sym_floatingPointInvalidOperation);
+    FLOATING_POINT_INVALID_OPERATION(nil<core::T_O>(), nil<core::T_O>());
   case FPE_FLTSUB:
-    NO_INITIALIZERS_ERROR(cl::_sym_arithmeticError);
+    ARITHMETIC_ERROR(nil<core::T_O>(), nil<core::T_O>());
   default: // FIXME: signal a better error.
     // Can end up here with e.g. SI_USER if it originated from kill
     handle_signal_now(signo);
@@ -364,15 +364,15 @@ void handle_ill(int signo, siginfo_t* info, void* context) {
   int esr;
   if (info->si_code == ILL_ILLTRP && ((esr = static_cast<ucontext_t*>(context)->uc_mcontext->__es.__esr) >> 26 & 0x3f) == 0x2C) {
     if (esr & FE_INEXACT) {
-      NO_INITIALIZERS_ERROR(cl::_sym_floatingPointInexact);
+      FLOATING_POINT_INEXACT(nil<core::T_O>(), nil<core::T_O>());
     } else if (esr & FE_UNDERFLOW) {
-      NO_INITIALIZERS_ERROR(cl::_sym_floatingPointUnderflow);
+      FLOATING_POINT_UNDERFLOW(nil<core::T_O>(), nil<core::T_O>());
     } else if (esr & FE_OVERFLOW) {
-      NO_INITIALIZERS_ERROR(cl::_sym_floatingPointOverflow);
+      FLOATING_POINT_OVERFLOW(nil<core::T_O>(), nil<core::T_O>());
     } else if (esr & FE_DIVBYZERO) {
-      NO_INITIALIZERS_ERROR(cl::_sym_divisionByZero);
+      DIVISION_BY_ZERO(nil<core::T_O>(), nil<core::T_O>());
     } else if (esr & FE_INVALID) {
-      NO_INITIALIZERS_ERROR(cl::_sym_floatingPointInvalidOperation);
+      FLOATING_POINT_INVALID_OPERATION(nil<core::T_O>(), nil<core::T_O>());
     }
   }
   

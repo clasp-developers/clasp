@@ -173,6 +173,21 @@ extern core::Symbol_sp& _sym_name;
   ERROR(cl::_sym_divisionByZero,                                                                                                   \
         core::lisp_createList(kw::_sym_operation, cl::_sym__DIVIDE_, kw::_sym_operands, core::lisp_createList(_x_, _y_)))
 
+#define DIVISION_BY_ZERO(_operation_, _operands_)                                                                                  \
+  ERROR(cl::_sym_divisionByZero, core::lisp_createList(kw::_sym_operation, _operation_, kw::_sym_operands, _operands_))
+
+#define FLOATING_POINT_OVERFLOW(_operation_, _operands_)                                                                                  \
+  ERROR(cl::_sym_floatingPointOverflow, core::lisp_createList(kw::_sym_operation, _operation_, kw::_sym_operands, _operands_))
+
+#define FLOATING_POINT_UNDERFLOW(_operation_, _operands_)                                                                                  \
+  ERROR(cl::_sym_floatingPointUnderflow, core::lisp_createList(kw::_sym_operation, _operation_, kw::_sym_operands, _operands_))
+
+#define FLOATING_POINT_INEXACT(_operation_, _operands_)                                                                                  \
+  ERROR(cl::_sym_floatingPointInexact, core::lisp_createList(kw::_sym_operation, _operation_, kw::_sym_operands, _operands_))
+
+#define FLOATING_POINT_INVALID_OPERATION(_operation_, _operands_)                                                                                  \
+  ERROR(cl::_sym_floatingPointInvalidOperation, core::lisp_createList(kw::_sym_operation, _operation_, kw::_sym_operands, _operands_))
+
 #define ERROR_UNDEFINED_FUNCTION(_f_) ERROR(::cl::_sym_undefinedFunction, core::lisp_createList(kw::_sym_name, _f_));
 #define FE_ERROR(_type_, _args_)
 
