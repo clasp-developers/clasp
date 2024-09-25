@@ -178,7 +178,7 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp& quotie
     Real_sp subr;
     clasp_truncate(rdividend->numerator() * rdivisor->denominator(), rdivisor->numerator() * rdividend->denominator(), quotient,
                    subr);
-    remainder = Rational_O::create(subr.as<Integer_O>(), rdividend->denominator() * rdivisor->denominator());
+    remainder = Rational_O::create(gc::As<Integer_sp>(subr), rdividend->denominator() * rdivisor->denominator());
     return;
   }
   if (rdividend) {
@@ -190,7 +190,7 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp& quotie
   if (rdivisor && dividend.isA<Integer_O>()) {
     Real_sp subr;
     clasp_truncate(dividend * rdivisor->denominator().as_unsafe<Real_O>(), rdivisor->numerator(), quotient, subr);
-    remainder = Rational_O::create(subr.as<Integer_O>(), rdivisor->denominator());
+    remainder = Rational_O::create(gc::As<Integer_sp>(subr), rdivisor->denominator());
     return;
   }
 

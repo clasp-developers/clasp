@@ -1268,7 +1268,7 @@ CL_DEFMETHOD Integer_sp LongFloat_O::castToInteger() const {
   if (this->_Value < 0) {
     double f = -this->_Value;
     long long int cf = *(long long int*)&f;
-    return Integer_O::create(cf)->negate().as<Integer_O>();
+    return gc::As<Integer_sp>(Integer_O::create(cf)->negate());
   }
   long long int cf = *(long long int*)&this->_Value;
   return Integer_O::create(cf);
