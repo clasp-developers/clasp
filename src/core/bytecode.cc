@@ -781,7 +781,10 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         return result;
       });
       if (thrown) pc = target;
-      else pc = vm._pc;
+      else {
+        pc = vm._pc;
+        sp = vm._stackPointer;
+      }
       break;
     }
     case vm_catch_16: {
@@ -798,7 +801,10 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         return result;
       });
       if (thrown) pc = target;
-      else pc = vm._pc;
+      else {
+        pc = vm._pc;
+        sp = vm._stackPointer;
+      }
       break;
     }
     case vm_throw: {
