@@ -753,7 +753,7 @@ Pathname_sp clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t* ep, 
     T_sp tversion = version_mv;
     MultipleValues& mvn = core::lisp_multipleValues();
     Fixnum_sp parsed_length = gc::As<Fixnum_sp>(mvn.valueGet(1, version_mv.number_of_values()));
-    if (unbox_fixnum(parsed_length) == cl__length(aux) && cl__integerp(tversion) && clasp_plusp(gc::As<Integer_sp>(tversion))) {
+    if (unbox_fixnum(parsed_length) == cl__length(aux) && cl__integerp(tversion) && Real_O::plusp(gc::As<Integer_sp>(tversion))) {
       version = gc::As<Integer_sp>(tversion);
     } else if (cl__string_equal(aux, kw::_sym_newest).notnilp()) {
       version = kw::_sym_newest;

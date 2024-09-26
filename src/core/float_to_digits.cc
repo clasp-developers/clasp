@@ -38,12 +38,12 @@ THE SOFTWARE.
 namespace core {
 
 template <typename Float> T_mv float_to_digits(T_sp tdigits, Float number, T_sp round_position, T_sp relativep) {
-  StrNs_sp digits = tdigits.nilp() ? gc::As<StrNs_sp>(core__make_vector(cl::_sym_base_char, 10, true, clasp_make_fixnum(0)))
-                                   : gc::As<StrNs_sp>(tdigits);
-
+  const char* num_to_text = "0123456789";
   schubfach::decimal_float decimal = number;
   auto digit_count = decimal.math.count_digits(decimal.significand);
   auto position = decimal.exponent + digit_count;
+
+  StrNs_sp digits;
 
   if (round_position.notnilp()) {
     int pos = gc::As<Fixnum_sp>(round_position).unsafe_fixnum();
@@ -57,13 +57,35 @@ template <typename Float> T_mv float_to_digits(T_sp tdigits, Float number, T_sp 
     if (pos < digit_count) {
       decltype(decimal.significand) divisor = std::pow(10, digit_count - pos);
       decimal.significand = (decimal.significand + (divisor / 2)) / divisor;
+      digit_count = decimal.math.count_digits(decimal.significand);
     }
   }
 
-  for (auto ch : std::to_string(decimal.significand))
-    digits->vectorPushExtend(clasp_make_character(ch), 64);
+  if (decimal.significand == 0)
+    position = 0;
 
-  return Values(clasp_make_fixnum((decimal.significand == 0) ? 0 : position), digits);
+  if (tdigits.nilp()) {
+    digits = gc::As<StrNs_sp>(core__make_vector(cl::_sym_base_char, digit_count, true, clasp_make_fixnum(digit_count)));
+  } else {
+    digits = gc::As<StrNs_sp>(tdigits);
+    digits->resize(digit_count);
+  }
+
+  if (Str8Ns_sp buffer8 = digits.asOrNull<Str8Ns_O>()) {
+    for (size_t i = 0; i < digit_count; i++) {
+      auto rem = decimal.significand % 10u;
+      decimal.significand /= 10u;
+      (*buffer8)[digit_count - i - 1] = num_to_text[rem];
+    }
+  } else if (StrWNs_sp bufferw = digits.asOrNull<StrWNs_O>()) {
+    for (size_t i = 0; i < digit_count; i++) {
+      auto rem = decimal.significand % 10u;
+      decimal.significand /= 10u;
+      (*bufferw)[digit_count - i - 1] = num_to_text[rem];
+    }
+  }
+
+  return Values(clasp_make_fixnum(position), digits);
 }
 
 CL_LAMBDA(digits number position relativep);
@@ -72,20 +94,19 @@ CL_DOCSTRING(R"dx(float_to_digits)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__float_to_digits(T_sp tdigits, Float_sp number, T_sp position, T_sp relativep) {
   ASSERT(tdigits.nilp() || gc::IsA<Str8Ns_sp>(tdigits));
-
-  switch (clasp_t_of(number)) {
-  case number_SingleFloat:
-    return float_to_digits<float>(tdigits, unbox_single_float(gc::As<SingleFloat_sp>(number)), position, relativep);
-  case number_DoubleFloat:
-    return float_to_digits<double>(tdigits, gc::As<DoubleFloat_sp>(number)->get(), position, relativep);
-    break;
 #ifdef CLASP_LONG_FLOAT
-  case number_LongFloat:
-    return float_to_digits<LongFloat>(tdigits, gc::As<LongFloat_sp>(number)->get(), position, relativep);
+  if (number.isA<LongFloat_O>())
+    return float_to_digits<long_float_t>(tdigits, number.as_unsafe<LongFloat_O>()->get(), position, relativep);
 #endif
-  default:
-    SIMPLE_ERROR("Illegal type");
-  }
+  if (number.isA<DoubleFloat_O>())
+    return float_to_digits<double_float_t>(tdigits, number.as_unsafe<DoubleFloat_O>()->get(), position, relativep);
+  if (number.single_floatp())
+    return float_to_digits<single_float_t>(tdigits, number.unsafe_single_float(), position, relativep);
+#ifdef CLASP_SHORT_FLOAT
+  if (number.short_floatp())
+    return float_to_digits<short_float_t>(tdigits, number.unsafe_short_float(), position, relativep);
+#endif
+  SIMPLE_ERROR("Illegal type");
 }
 
 SYMBOL_EXPORT_SC_(CorePkg, float_to_digits);

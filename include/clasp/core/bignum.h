@@ -33,6 +33,19 @@ THE SOFTWARE.
 #include <concepts> // integral
 
 namespace core {
+
+template <class T>
+concept unsigned_limb = std::is_integral<T>::value && std::is_unsigned<T>::value && sizeof(T) <= sizeof(mp_limb_t);
+
+template <class T>
+concept unsigned_limbs = std::is_integral<T>::value && std::is_unsigned<T>::value && sizeof(T) > sizeof(mp_limb_t);
+
+template <class T>
+concept signed_limb = std::is_integral<T>::value && std::is_signed<T>::value && sizeof(T) <= sizeof(mp_limb_t);
+
+template <class T>
+concept signed_limbs = std::is_integral<T>::value && std::is_signed<T>::value && sizeof(T) > sizeof(mp_limb_t);
+
 class Bignum_O;
 };
 
@@ -69,35 +82,55 @@ public: // Functions here
     return b;
   };
   static Bignum_sp create(const mpz_class&);
-  static Bignum_sp create(gc::Fixnum fix) { return create_from_limbs((fix < 0) ? -1 : 1, std::abs(fix), true); }
-#if !defined(CLASP_UNSIGNED_LONG_LONG_IS_UINT64)
-  static Bignum_sp create(unsigned long long ull) {
-    ASSERT(sizeof(unsigned long long) <= sizeof(mp_limb_t));
-    return create_from_limbs(1, ull, true);
-  }
-#endif
-#if !defined(CLASP_LONG_LONG_IS_INT64)
-  static Bignum_sp create(long long ll) {
-    ASSERT(sizeof(long long) <= sizeof(mp_limb_t));
-    return create_from_limbs((ll < 0) ? -1 : 1, std::abs(ll), true);
-  }
-#endif
-#if !defined(CLASP_FIXNUM_IS_INT64)
-  static Bignum_sp create(int64_t v) { return create_from_limbs((v < 0) ? -1 : 1, std::abs(v), true); }
-#endif
-  static Bignum_sp create(uint64_t v) { return create_from_limbs(1, v, true); }
-  static Bignum_sp create(__uint128_t v) {
-    Bignum_sp b = create_from_limbs(2);
-    b->_limbs[0] = static_cast<mp_limb_t>(v);
-    b->_limbs[1] = static_cast<mp_limb_t>(v >> 64);
+
+  template <unsigned_limb T> static Bignum_sp create(T v) {
+    Bignum_sp b = create_from_limbs(1);
+    b->_limbs[0] = v;
     return b;
   }
-  static Bignum_sp create(double d) {
-    // KLUDGE: there is no mpn function for converting from a double.
-    // However, this conses, which we shouldn't need to do.
-    mpz_class rop;
-    mpz_set_d(rop.get_mpz_t(), d);
-    return create(rop);
+
+  template <signed_limb T> static Bignum_sp create(T v) {
+    Bignum_sp b = create_from_limbs((v < 0) ? -1 : 1);
+    b->_limbs[0] = std::abs(v);
+    return b;
+  }
+
+  template <unsigned_limbs T> static Bignum_sp create(T v) {
+    constexpr size_t limb_width = CHAR_BIT * sizeof(mp_limb_t);
+    size_t len = (std::bit_width(v) + limb_width - 1) / limb_width;
+    Bignum_sp b = create_from_limbs(len);
+
+    for (size_t i = 0; i < len; i++) {
+      b->_limbs[i] = static_cast<mp_limb_t>(v);
+      v = v >> limb_width;
+    }
+
+    return b;
+  }
+
+  template <signed_limbs T> static Bignum_sp create(T v) {
+    constexpr size_t limb_width = CHAR_BIT * sizeof(mp_limb_t);
+    using UT = typename std::make_unsigned<T>::type;
+    bool negative = v < 0;
+    UT w = std::abs(v);
+    size_t len = (std::bit_width(w) + limb_width - 1) / limb_width;
+    Bignum_sp b = create_from_limbs(negative ? -len : len);
+
+    for (size_t i = 0; i < len; i++) {
+      b->_limbs[i] = static_cast<mp_limb_t>(w);
+      w = w >> limb_width;
+    }
+
+    return b;
+  }
+
+  template <std::floating_point Float> static Bignum_sp create(Float v) {
+    auto q = float_convert<Float>::float_to_quadruple(v);
+    Bignum_sp b = gc::As_unsafe<Bignum_sp>(clasp_ash(create(q.significand), q.exponent))                      ;
+    if (q.sign < 0)
+      return gc::As_unsafe<Bignum_sp>(clasp_negate(b));
+
+    return b;
   }
 
   static Bignum_sp make(const string& value_in_string);
@@ -121,10 +154,11 @@ public: // Functions here
   Number_sp log1_() const override;
   Number_sp sqrt_() const override;
   Number_sp reciprocal_() const override;
-  Rational_sp rational_() const final { return this->asSmartPtr(); };
-  virtual float as_float_() const override;
-  virtual double as_double_() const override;
-  virtual LongFloat as_long_float_() const override;
+  Rational_sp as_rational_() const override { return this->asSmartPtr(); };
+  virtual short_float_t as_short_float_() const override;
+  virtual single_float_t as_single_float_() const override;
+  virtual double as_double_float_() const override;
+  virtual long_float_t as_long_float_() const override;
 
   virtual bool zerop_() const override { return false; }
   virtual bool plusp_() const override { return (this->length() > 0); }
@@ -194,20 +228,14 @@ public: // Functions here
 
 Bignum_sp core__next_from_fixnum(Fixnum);
 Integer_sp bignum_result(mp_size_t, const mp_limb_t*);
-Integer_sp core__next_fmul(Bignum_sp, Fixnum);
-Bignum_sp core__next_mul(Bignum_sp, Bignum_sp);
 Bignum_sp core__mul_fixnums(Fixnum, Fixnum);
 Bignum_sp core__next_lshift(Bignum_sp, Fixnum);
 Integer_sp core__next_rshift(Bignum_sp, Fixnum);
-T_mv core__next_truncate(Bignum_sp, Bignum_sp);
+Number_mv core__next_truncate(Bignum_sp, Bignum_sp);
 Integer_sp fix_divided_by_next(Fixnum, Bignum_sp);
-T_mv core__next_ftruncate(Bignum_sp, Fixnum);
+Number_mv core__next_ftruncate(Bignum_sp, Fixnum);
 Integer_sp core__next_gcd(Bignum_sp, Bignum_sp);
 Integer_sp core__next_fgcd(Bignum_sp, Fixnum);
-Integer_sp core__next_add(Bignum_sp, Bignum_sp);
-Integer_sp core__next_sub(Bignum_sp, Bignum_sp);
-Integer_sp core__next_fadd(Bignum_sp, Fixnum);
-Integer_sp core__next_fsub(Fixnum, Bignum_sp);
 int core__next_compare(Bignum_sp, Bignum_sp);
 
 template <std::integral integral> integral clasp_to_integral(T_sp obj) {
@@ -226,5 +254,12 @@ template <std::integral integral> integral clasp_to_integral(T_sp obj) {
   else
     TYPE_ERROR(obj, Cons_O::createList(cl::_sym_Integer_O, Integer_O::create(mn), Integer_O::create(mx)));
 };
+
+template <std::floating_point Float> Integer_sp Integer_O::create(Float v) {
+  if (v >= static_cast<Float>(gc::most_negative_fixnum) && v < static_cast<Float>(gc::most_positive_fixnum))
+    return clasp_make_fixnum(v);
+  else
+    return Bignum_O::create(v);
+}
 
 }; // namespace core

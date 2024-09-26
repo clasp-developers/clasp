@@ -87,13 +87,13 @@ template <> struct from_object<const double&> {
 template <> struct from_object<long double> {
   typedef long double DeclareType;
   DeclareType _v;
-  from_object(core::T_sp o) : _v(core::clasp_to_long_double(gc::As<core::Number_sp>(o))) {};
+  from_object(core::T_sp o) : _v(core::clasp_to_long_float(gc::As<core::Number_sp>(o))) {};
 };
 
 template <> struct from_object<const long double&> {
   typedef long double DeclareType;
   DeclareType _v;
-  from_object(core::T_sp o) : _v(core::clasp_to_long_double(gc::As<core::Number_sp>(o))) {};
+  from_object(core::T_sp o) : _v(core::clasp_to_long_float(gc::As<core::Number_sp>(o))) {};
 };
 
 template <> struct from_object<bool> {
@@ -214,16 +214,12 @@ template <> struct to_object<const double&> {
 
 template <> struct to_object<long double> {
   typedef long double DeclareType;
-  static core::T_sp convert(DeclareType v) {
-    return core::clasp_make_double_float(static_cast<double>(v));
-  }
+  static core::T_sp convert(DeclareType v) { return core::LongFloat_O::create(v); }
 };
 
 template <> struct to_object<const long double&> {
   typedef const long double& DeclareType;
-  static core::T_sp convert(DeclareType v) {
-    return core::clasp_make_double_float(static_cast<double>(v));
-  }
+  static core::T_sp convert(DeclareType v) { return core::LongFloat_O::create(v); }
 };
 
 template <> struct to_object<mpz_class> {

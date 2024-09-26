@@ -8,75 +8,33 @@
 #include <sys/mman.h>
 #include <clasp/core/core.h>
 #include <clasp/core/bformat.h>
-#include <clasp/core/ql.h>                // ql::list
-#include <clasp/core/primitives.h>        // core__ensure_function_cell
-#include <clasp/core/bytecode.h>          // modules, functions
-#include <clasp/core/lispStream.h>        // I/O
-#include <clasp/core/hashTable.h>         // making hash tables
-#include <clasp/core/bignum.h>            // making bignums
-#include <clasp/core/package.h>           // making packages
-#include <clasp/core/pathname.h>          // making pathnames
-#include <clasp/core/unixfsys.h>          // cl__truename
-#include <clasp/llvmo/llvmoPackage.h>     // cmp__compile_trampoline
-#include <clasp/llvmo/llvmoExpose.h>      // native module stuff
+#include <clasp/core/ql.h>            // ql::list
+#include <clasp/core/primitives.h>    // core__ensure_function_cell
+#include <clasp/core/bytecode.h>      // modules, functions
+#include <clasp/core/lispStream.h>    // I/O
+#include <clasp/core/hashTable.h>     // making hash tables
+#include <clasp/core/bignum.h>        // making bignums
+#include <clasp/core/package.h>       // making packages
+#include <clasp/core/pathname.h>      // making pathnames
+#include <clasp/core/unixfsys.h>      // cl__truename
+#include <clasp/llvmo/llvmoPackage.h> // cmp__compile_trampoline
+#include <clasp/llvmo/llvmoExpose.h>  // native module stuff
 #include <clasp/llvmo/jit.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/core/lispStream.h>        // stream_read_byte8
 #include <clasp/core/bytecode_compiler.h> // btb_bcfun_p
 #include <clasp/core/evaluator.h>         // eval::funcall
 
-// FIXME: Move these to the generated file thingie
-#define LTV_OP_NIL 65
-#define LTV_OP_T 66
-#define LTV_OP_CONS 69
-#define LTV_OP_RPLACA 70
-#define LTV_OP_RPLACD 71
-#define LTV_OP_MAKE_ARRAY 74
-#define LTV_OP_SRMA 75
-#define LTV_OP_HASHT 76
-#define LTV_OP_SHASH 77
-#define LTV_OP_SB64 78
-#define LTV_OP_PACKAGE 79
-#define LTV_OP_BIGNUM 80
-#define LTV_OP_FLOAT 90
-#define LTV_OP_DOUBLE 91
-#define LTV_OP_RATIO 67
-#define LTV_OP_COMPLEX 68
-#define LTV_OP_SYMBOL 81
-#define LTV_OP_INTERN 82
-#define LTV_OP_CHARACTER 83
-#define LTV_OP_PATHNAME 85
-#define LTV_OP_BCFUNC 87
-#define LTV_OP_BCMOD 88
-#define LTV_OP_SLITS 89
-#define LTV_OP_CREATE 93
-#define LTV_OP_INIT 94
-#define LTV_OP_FDEF 95
-#define LTV_OP_FCELL 96
-#define LTV_OP_VCELL 97
-#define LTV_OP_CLASS 98
-#define LTV_OP_INIT_OBJECT_ARRAY 99
-#define LTV_OP_ENVIRONMENT 100
-#define LTV_OP_SYMBOL_VALUE 101
-#define LTV_OP_ATTR 255
-
-#define LTV_DI_OP_FUNCTION 0
-#define LTV_DI_OP_VARS 1
-#define LTV_DI_OP_LOCATION 2
-#define LTV_DI_OP_DECLS 3
-#define LTV_DI_OP_THE 4
-#define LTV_DI_OP_BLOCK 5
-#define LTV_DI_OP_CATCH 6
-#define LTV_DI_OP_MACRO 7
-#define LTV_DI_OP_IF 8
-#define LTV_DI_OP_TAGBODY 9
+#define DEFINE_BYTECODE_LTV_OPS
+#include <virtualMachine.h>
+#undef DEFINE_BYTECODE_LTV_OPS
 
 namespace core {
 
 #define BC_HEADER_SIZE 16
 
 #define BC_VERSION_MAJOR 0
-#define BC_VERSION_MINOR 14
+#define BC_VERSION_MINOR 15
 
 // versions are std::arrays so that we can compare them.
 typedef std::array<uint16_t, 2> BCVersion;
@@ -188,6 +146,26 @@ struct loadltv {
     return (b0 << 56) | (b1 << 48) | (b2 << 40) | (b3 << 32) | (b4 << 24) | (b5 << 16) | (b6 << 8) | (b7 << 0);
   }
 
+  inline __uint128_t read_u80() {
+    unsigned char bytes[10];
+    stream_read_byte8(_stream, bytes, 10);
+    return (__uint128_t{bytes[0]} << 72) | (__uint128_t{bytes[1]} << 64) | (__uint128_t{bytes[2]} << 56) |
+           (__uint128_t{bytes[3]} << 48) | (__uint128_t{bytes[4]} << 40) | (__uint128_t{bytes[5]} << 32) |
+           (__uint128_t{bytes[6]} << 24) | (__uint128_t{bytes[7]} << 16) | (__uint128_t{bytes[8]} << 8) |
+           (__uint128_t{bytes[9]} << 0);
+  }
+
+  inline __uint128_t read_u128() {
+    unsigned char bytes[16];
+    stream_read_byte8(_stream, bytes, 16);
+    return (__uint128_t{bytes[0]} << 120) | (__uint128_t{bytes[1]} << 112) | (__uint128_t{bytes[2]} << 104) |
+           (__uint128_t{bytes[3]} << 96) | (__uint128_t{bytes[4]} << 88) | (__uint128_t{bytes[5]} << 80) |
+           (__uint128_t{bytes[6]} << 72) | (__uint128_t{bytes[7]} << 64) | (__uint128_t{bytes[8]} << 56) |
+           (__uint128_t{bytes[9]} << 48) | (__uint128_t{bytes[10]} << 40) | (__uint128_t{bytes[11]} << 32) |
+           (__uint128_t{bytes[12]} << 24) | (__uint128_t{bytes[13]} << 16) | (__uint128_t{bytes[14]} << 8) |
+           (__uint128_t{bytes[15]} << 0);
+  }
+
   inline int64_t read_s64() {
     uint64_t dw = read_u64();
     union {
@@ -198,22 +176,40 @@ struct loadltv {
     return converter.i;
   }
 
-  inline float read_f32() {
-    union {
-      float f;
-      uint32_t i;
-    } converter;
-    converter.i = read_u32();
-    return converter.f;
+  inline single_float_t read_binary16() {
+    using convert = float_convert<short_float_t>;
+    __uint128_t b = read_u80();
+#ifdef CLASP_SHORT_FLOAT_BINARY16
+    return convert::bits_to_float(b);
+#else
+    return convert::quadruple_to_float(convert::bits_to_quadruple<float_traits<5, 11>>(b));
+#endif
   }
 
-  inline double read_f64() {
-    union {
-      double d;
-      uint64_t i;
-    } converter;
-    converter.i = read_u64();
-    return converter.d;
+  inline single_float_t read_binary32() { return float_convert<single_float_t>::bits_to_float(read_u32()); }
+
+  inline double_float_t read_binary64() { return float_convert<double_float_t>::bits_to_float(read_u64()); }
+
+  inline long_float_t read_binary80() {
+    using convert = float_convert<long_float_t>;
+    __uint128_t b = read_u80();
+#ifdef CLASP_LONG_FLOAT_BINARY80
+    auto q = convert::bits_to_quadruple(b);
+    return convert::bits_to_float(b);
+#else
+    auto q = convert::bits_to_quadruple<float_traits<15, 64>>(b);
+    return convert::quadruple_to_float(convert::bits_to_quadruple<float_traits<15, 64>>(b));
+#endif
+  }
+
+  inline long_float_t read_binary128() {
+    using convert = float_convert<long_float_t>;
+    __uint128_t b = read_u128();
+#ifdef CLASP_LONG_FLOAT_BINARY128
+    return convert::bits_to_float(b);
+#else
+    return convert::quadruple_to_float(convert::bits_to_quadruple<float_traits<15, 113>>(b));
+#endif
   }
 
   // Read a UTF-8 continuation byte or signal an error if invalid.
@@ -221,7 +217,8 @@ struct loadltv {
     uint8_t byte = read_u8();
     if (byte >> 6 == 0b10)
       return byte & 0b111111;
-    else SIMPLE_ERROR("Invalid UTF-8 in FASL: invalid continuation byte {:02x}", byte);
+    else
+      SIMPLE_ERROR("Invalid UTF-8 in FASL: invalid continuation byte {:02x}", byte);
   }
 
   // Read a UTF-8 encoded character.
@@ -230,18 +227,14 @@ struct loadltv {
     if (head >> 7 == 0)
       return head;
     else if (head >> 5 == 0b110)
-      return (claspCharacter)(head & 0b11111) << 6
-        | read_continuation_byte();
+      return (claspCharacter)(head & 0b11111) << 6 | read_continuation_byte();
     else if (head >> 4 == 0b1110)
-      return (claspCharacter)(head & 0b1111) << 12
-        | (claspCharacter)read_continuation_byte() << 6
-        | read_continuation_byte();
+      return (claspCharacter)(head & 0b1111) << 12 | (claspCharacter)read_continuation_byte() << 6 | read_continuation_byte();
     else if (head >> 3 == 0b11110)
-      return (claspCharacter)(head & 0b111) << 18
-        | (claspCharacter)read_continuation_byte() << 12
-        | (claspCharacter)read_continuation_byte() << 6
-        | read_continuation_byte();
-    else SIMPLE_ERROR("Invalid UTF-8 in FASL: invalid header byte {:02x}", head);
+      return (claspCharacter)(head & 0b111) << 18 | (claspCharacter)read_continuation_byte() << 12 |
+             (claspCharacter)read_continuation_byte() << 6 | read_continuation_byte();
+    else
+      SIMPLE_ERROR("Invalid UTF-8 in FASL: invalid header byte {:02x}", head);
   }
 
   inline uint8_t read_opcode() { return read_u8(); }
@@ -261,9 +254,7 @@ struct loadltv {
     }
   }
 
-  inline size_t next_index() {
-    return _next_index++;
-  }
+  inline size_t next_index() { return _next_index++; }
 
   void check_initialization() {
     // bool vectors are apparently stupid and weird so using std algorithms
@@ -305,73 +296,81 @@ struct loadltv {
     c->rplacd(get_ltv(read_index()));
   }
 
-  enum class UAETCode : uint8_t {
-    nil = 0b00000000,
-    base_char = 0b10000000,
-    character = 0b11000000,
-    short_float = 0b10100000,
-    single_float = 0b00100000,
-    double_float = 0b01100000,
-    long_float = 0b11100000,
-    complex_short = 0b10110000,
-    complex_single = 0b00110000,
-    complex_double = 0b01110000,
-    complex_long = 0b11110000,
-    bit = 0b00000001,
-    ub2 = 0b00000010,
-    ub4 = 0b00000011,
-    ub8 = 0b00000100,
-    ub16 = 0b00000101,
-    ub32 = 0b00000110,
-    ub64 = 0b00000111,
-    sb8 = 0b10000100,
-    sb16 = 0b10000101,
-    sb32 = 0b10000110,
-    sb64 = 0b10000111,
-    t = 0b11111111
-  };
-
   T_sp decode_uaet(uint8_t code) {
-    switch (UAETCode{code}) {
-    case UAETCode::nil:
+    switch (bytecode_uaet{code}) {
+    case bytecode_uaet::nil:
       return nil<T_O>();
-    case UAETCode::base_char:
+    case bytecode_uaet::base_char:
       return cl::_sym_base_char;
-    case UAETCode::character:
+    case bytecode_uaet::character:
       return cl::_sym_character;
-    // case UAETCode::short_float: return cl::_sym_ShortFloat_O;
-    case UAETCode::single_float:
+    case bytecode_uaet::binary16:
+#ifdef CLASP_SHORT_FLOAT
+      return cl::_sym_short_float;
+#else
       return cl::_sym_single_float;
-    case UAETCode::double_float:
-      return cl::_sym_DoubleFloat_O;
-    // case UAETCode::long_float: return cl::_sym_LongFloat_O;
-    // case UAETCode::complex_short:
-    // case UAETCode::complex_single:
-    // case UAETCode::complex_double:
-    // case UAETCode::complex_long:
-    case UAETCode::bit:
+#endif
+    case bytecode_uaet::binary32:
+      return cl::_sym_single_float;
+    case bytecode_uaet::binary64:
+      return cl::_sym_double_float;
+    case bytecode_uaet::binary80:
+#ifdef CLASP_LONG_FLOAT
+      return cl::_sym_long_float;
+#else
+      return cl::_sym_double_float;
+#endif
+    case bytecode_uaet::binary128:
+#ifdef CLASP_LONG_FLOAT
+      return cl::_sym_long_float;
+#else
+      return cl::_sym_double_float;
+#endif
+    case bytecode_uaet::complex_binary16:
+#ifdef CLASP_SHORT_FLOAT
+      return Cons_O::createList(cl::_sym_complex, cl::_sym_short_float);
+#else
+      return Cons_O::createList(cl::_sym_complex, cl::_sym_single_float);
+#endif
+    case bytecode_uaet::complex_binary32:
+      return Cons_O::createList(cl::_sym_complex, cl::_sym_single_float);
+    case bytecode_uaet::complex_binary64:
+      return Cons_O::createList(cl::_sym_complex, cl::_sym_double_float);
+    case bytecode_uaet::complex_binary80:
+#ifdef CLASP_LONG_FLOAT
+      return Cons_O::createList(cl::_sym_complex, cl::_sym_long_float);
+#else
+      return Cons_O::createList(cl::_sym_complex, cl::_sym_double_float);
+#endif
+    case bytecode_uaet::complex_binary128:
+#ifdef CLASP_LONG_FLOAT
+      return Cons_O::createList(cl::_sym_complex, cl::_sym_long_float);
+#else
+      return Cons_O::createList(cl::_sym_complex, cl::_sym_double_float);
+#endif
+    case bytecode_uaet::unsigned_byte1:
       return cl::_sym_bit;
-    case UAETCode::ub2:
+    case bytecode_uaet::unsigned_byte2:
       return ext::_sym_byte2;
-    case UAETCode::ub4:
+    case bytecode_uaet::unsigned_byte4:
       return ext::_sym_byte4;
-    case UAETCode::ub8:
+    case bytecode_uaet::unsigned_byte8:
       return ext::_sym_byte8;
-    case UAETCode::ub16:
+    case bytecode_uaet::unsigned_byte16:
       return ext::_sym_byte16;
-    case UAETCode::ub32:
+    case bytecode_uaet::unsigned_byte32:
       return ext::_sym_byte32;
-    case UAETCode::ub64:
+    case bytecode_uaet::unsigned_byte64:
       return ext::_sym_byte64;
-    case UAETCode::sb8:
+    case bytecode_uaet::signed_byte8:
       return ext::_sym_integer8;
-    case UAETCode::sb16:
+    case bytecode_uaet::signed_byte16:
       return ext::_sym_integer16;
-    case UAETCode::sb32:
+    case bytecode_uaet::signed_byte32:
       return ext::_sym_integer32;
-    case UAETCode::sb64:
+    case bytecode_uaet::signed_byte64:
       return ext::_sym_integer64;
-    case UAETCode::t:
+    case bytecode_uaet::t:
       return cl::_sym_T_O;
     default:
       SIMPLE_ERROR("Invalid FASL: Unknown UAET code {:02x}", code);
@@ -420,55 +419,76 @@ struct loadltv {
     for (size_t i = 0; i < total_size; ++i)                                                                                        \
       array->rowMajorAset(i, (EXTEXPR));                                                                                           \
   }
-    switch (UAETCode{packing}) {
-    case UAETCode::nil:
+    switch (bytecode_uaet{packing}) {
+    case bytecode_uaet::nil:
       break;
-    case UAETCode::base_char:
+    case bytecode_uaet::base_char:
       READ_ARRAY(SimpleBaseString_sp, read_u8(), clasp_make_character(read_u8()));
       break;
-    case UAETCode::character:
+    case bytecode_uaet::character:
       READ_ARRAY(SimpleCharacterString_sp, read_utf8(), clasp_make_character(read_utf8()));
       break;
-    case UAETCode::single_float:
-      READ_ARRAY(SimpleVector_float_sp, read_f32(), clasp_make_single_float(read_f32()));
+    case bytecode_uaet::binary16:
+#ifdef CLASP_SHORT_FLOAT
+      READ_ARRAY(SimpleVector_short_float_sp, read_binary16(), ShortFloat_O::create(read_binary16()));
+#else
+      READ_ARRAY(SimpleVector_float_sp, read_binary16(), SingleFloat_dummy_O::create(read_binary16()));
+#endif
       break;
-    case UAETCode::double_float:
-      READ_ARRAY(SimpleVector_double_sp, read_f64(), clasp_make_double_float(read_f64()));
+    case bytecode_uaet::binary32:
+      READ_ARRAY(SimpleVector_float_sp, read_binary32(), clasp_make_single_float(read_binary32()));
       break;
-    case UAETCode::bit:
+    case bytecode_uaet::binary64:
+      READ_ARRAY(SimpleVector_double_sp, read_binary64(), clasp_make_double_float(read_binary64()));
+      break;
+    case bytecode_uaet::binary80:
+#ifdef CLASP_LONG_FLOAT
+      READ_ARRAY(SimpleVector_long_float_sp, read_binary80(), LongFloat_O::create(read_binary80()));
+#else
+      READ_ARRAY(SimpleVector_double_sp, read_binary80(), DoubleFloat_O::create(read_binary80()));
+#endif
+      break;
+    case bytecode_uaet::binary128:
+#ifdef CLASP_LONG_FLOAT
+      READ_ARRAY(SimpleVector_long_float_sp, read_binary128(), LongFloat_O::create(read_binary128()));
+#else
+      READ_ARRAY(SimpleVector_double_sp, read_binary128(), DoubleFloat_O::create(read_binary128()));
+#endif
+      break;
+    case bytecode_uaet::unsigned_byte1:
       fill_sub_byte(array, total_size, 1);
       break;
-    case UAETCode::ub2:
+    case bytecode_uaet::unsigned_byte2:
       fill_sub_byte(array, total_size, 2);
       break;
-    case UAETCode::ub4:
+    case bytecode_uaet::unsigned_byte4:
       fill_sub_byte(array, total_size, 4);
       break;
-    case UAETCode::ub8:
+    case bytecode_uaet::unsigned_byte8:
       READ_ARRAY(SimpleVector_byte8_t_sp, read_u8(), clasp_make_fixnum(read_u8()));
       break;
-    case UAETCode::ub16:
+    case bytecode_uaet::unsigned_byte16:
       READ_ARRAY(SimpleVector_byte16_t_sp, read_u16(), clasp_make_fixnum(read_u16()));
       break;
-    case UAETCode::ub32:
+    case bytecode_uaet::unsigned_byte32:
       READ_ARRAY(SimpleVector_byte32_t_sp, read_u32(), clasp_make_fixnum(read_u32()));
       break;
-    case UAETCode::ub64:
+    case bytecode_uaet::unsigned_byte64:
       READ_ARRAY(SimpleVector_byte64_t_sp, read_u64(), Integer_O::create(read_u64()));
       break;
-    case UAETCode::sb8:
+    case bytecode_uaet::signed_byte8:
       READ_ARRAY(SimpleVector_int8_t_sp, read_s8(), clasp_make_fixnum(read_s8()));
       break;
-    case UAETCode::sb16:
+    case bytecode_uaet::signed_byte16:
       READ_ARRAY(SimpleVector_int16_t_sp, read_s16(), clasp_make_fixnum(read_s16()));
       break;
-    case UAETCode::sb32:
+    case bytecode_uaet::signed_byte32:
       READ_ARRAY(SimpleVector_int32_t_sp, read_s32(), clasp_make_fixnum(read_s32()));
       break;
-    case UAETCode::sb64:
+    case bytecode_uaet::signed_byte64:
       READ_ARRAY(SimpleVector_int64_t_sp, read_s64(), Integer_O::create(read_s64()));
       break;
-    case UAETCode::t:
+    case bytecode_uaet::t:
       break; // handled by setf row-major-aref
     default:
       SIMPLE_ERROR("Not implemented: packing code {:02x}", packing);
@@ -564,21 +584,36 @@ struct loadltv {
     set_ltv(bignum_result(ssize, limbs), index);
   }
 
-  void op_float() {
+  void op_binary16() {
     size_t index = next_index();
-    set_ltv(clasp_make_single_float(read_f32()), index);
+    set_ltv(ShortFloat_O::create(read_binary16()), index);
   }
 
-  void op_double() {
+  void op_binary32() {
     size_t index = next_index();
-    set_ltv(clasp_make_double_float(read_f64()), index);
+    set_ltv(clasp_make_single_float(read_binary32()), index);
+  }
+
+  void op_binary64() {
+    size_t index = next_index();
+    set_ltv(clasp_make_double_float(read_binary64()), index);
+  }
+
+  void op_binary80() {
+    size_t index = next_index();
+    set_ltv(LongFloat_O::create(read_binary80()), index);
+  }
+
+  void op_binary128() {
+    size_t index = next_index();
+    set_ltv(LongFloat_O::create(read_binary128()), index);
   }
 
   void op_ratio() {
     size_t index = next_index();
     Integer_sp num = gc::As<Integer_sp>(get_ltv(read_index()));
     Integer_sp den = gc::As<Integer_sp>(get_ltv(read_index()));
-    set_ltv(contagion_div(num, den), index);
+    set_ltv(Ratio_O::create(num, den), index);
   }
 
   void op_complex() {
@@ -862,32 +897,32 @@ struct loadltv {
 
     for (uint32_t icount = read_u32(); icount > 0; --icount) {
       uint8_t op = read_u8();
-      switch (op) {
-      case LTV_DI_OP_FUNCTION:
+      switch (bytecode_debug_info{op}) {
+      case bytecode_debug_info::function:
         vargs.push_back(di_op_function());
         break;
-      case LTV_DI_OP_VARS:
+      case bytecode_debug_info::vars:
         vargs.push_back(di_op_vars());
         break;
-      case LTV_DI_OP_LOCATION:
+      case bytecode_debug_info::location:
         vargs.push_back(di_op_location());
         break;
-      case LTV_DI_OP_DECLS:
+      case bytecode_debug_info::decls:
         vargs.push_back(di_op_decls());
         break;
-      case LTV_DI_OP_THE:
+      case bytecode_debug_info::the:
         vargs.push_back(di_op_the());
         break;
-      case LTV_DI_OP_BLOCK:
+      case bytecode_debug_info::block:
         vargs.push_back(di_op_block());
         break;
-      case LTV_DI_OP_MACRO:
+      case bytecode_debug_info::macro:
         vargs.push_back(di_op_macro());
         break;
-      case LTV_DI_OP_IF:
+      case bytecode_debug_info::_if:
         vargs.push_back(di_op_if());
         break;
-      case LTV_DI_OP_TAGBODY:
+      case bytecode_debug_info::tagbody:
         vargs.push_back(di_op_tagbody());
         break;
       default:
@@ -985,104 +1020,113 @@ struct loadltv {
   void load_instruction() {
     uint8_t opcode = read_opcode();
     // fmt::print("op {:02x}\n", opcode);
-    switch (opcode) {
-    case LTV_OP_NIL:
+    switch (bytecode_ltv{opcode}) {
+    case bytecode_ltv::nil:
       op_nil();
       break;
-    case LTV_OP_T:
+    case bytecode_ltv::t:
       op_t();
       break;
-    case LTV_OP_CONS:
-      op_cons();
-      break;
-    case LTV_OP_RPLACA:
-      op_rplaca();
-      break;
-    case LTV_OP_RPLACD:
-      op_rplacd();
-      break;
-    case LTV_OP_MAKE_ARRAY:
-      op_array();
-      break;
-    case LTV_OP_SRMA:
-      op_srma();
-      break; // (setf row-major-aref)
-    case LTV_OP_HASHT:
-      op_hasht();
-      break; // make-hash-table
-    case LTV_OP_SHASH:
-      op_shash();
-      break; // (setf gethash)
-    case LTV_OP_SB64:
-      op_sb64();
-      break;
-    case LTV_OP_PACKAGE:
-      op_package();
-      break;
-    case LTV_OP_BIGNUM:
-      op_bignum();
-      break;
-    case LTV_OP_FLOAT:
-      op_float();
-      break;
-    case LTV_OP_DOUBLE:
-      op_double();
-      break;
-    case LTV_OP_RATIO:
+    case bytecode_ltv::ratio:
       op_ratio();
       break;
-    case LTV_OP_COMPLEX:
+    case bytecode_ltv::complex:
       op_complex();
       break;
-    case LTV_OP_SYMBOL:
+    case bytecode_ltv::cons:
+      op_cons();
+      break;
+    case bytecode_ltv::rplaca:
+      op_rplaca();
+      break;
+    case bytecode_ltv::rplacd:
+      op_rplacd();
+      break;
+    case bytecode_ltv::make_array:
+      op_array();
+      break;
+    case bytecode_ltv::setf_row_major_aref:
+      op_srma();
+      break; // (setf row-major-aref)
+    case bytecode_ltv::make_hash_table:
+      op_hasht();
+      break; // make-hash-table
+    case bytecode_ltv::setf_gethash:
+      op_shash();
+      break; // (setf gethash)
+    case bytecode_ltv::make_sb64:
+      op_sb64();
+      break;
+    case bytecode_ltv::find_package:
+      op_package();
+      break;
+    case bytecode_ltv::make_bignum:
+      op_bignum();
+      break;
+    case bytecode_ltv::make_symbol:
       op_symbol();
       break;
-    case LTV_OP_INTERN:
+    case bytecode_ltv::intern:
       op_intern();
       break;
-    case LTV_OP_CHARACTER:
+    case bytecode_ltv::make_character:
       op_character();
       break;
-    case LTV_OP_PATHNAME:
+    case bytecode_ltv::make_pathname:
       op_pathname();
       break;
-    case LTV_OP_BCFUNC:
+    case bytecode_ltv::make_bytecode_function:
       op_bcfunc();
       break;
-    case LTV_OP_BCMOD:
+    case bytecode_ltv::make_bytecode_module:
       op_bcmod();
       break;
-    case LTV_OP_SLITS:
+    case bytecode_ltv::setf_literals:
       op_slits();
       break; // setf literals
-    case LTV_OP_FDEF:
-      op_fdef();
+    case bytecode_ltv::make_binary16:
+      op_binary16();
       break;
-    case LTV_OP_FCELL:
-      op_fcell();
+    case bytecode_ltv::make_binary32:
+      op_binary32();
       break;
-    case LTV_OP_VCELL:
-      op_vcell();
+    case bytecode_ltv::make_binary64:
+      op_binary64();
       break;
-    case LTV_OP_CREATE:
+    case bytecode_ltv::make_binary80:
+      op_binary80();
+      break;
+    case bytecode_ltv::make_binary128:
+      op_binary128();
+      break;
+    case bytecode_ltv::funcall_create:
       op_create();
       break; // funcall-create
-    case LTV_OP_INIT:
+    case bytecode_ltv::funcall_initialize:
       op_init();
       break; // funcall-initialize
-    case LTV_OP_CLASS:
+    case bytecode_ltv::fdefinition:
+      op_fdef();
+      break;
+    case bytecode_ltv::fcell:
+      op_fcell();
+      break;
+    case bytecode_ltv::vcell:
+      op_vcell();
+      break;
+    case bytecode_ltv::find_class:
       op_class();
       break;
-    case LTV_OP_INIT_OBJECT_ARRAY:
+    case bytecode_ltv::init_object_array:
       op_init_object_array();
       break;
-    case LTV_OP_ENVIRONMENT:
+    case bytecode_ltv::environment:
       op_environment();
       break;
-    case LTV_OP_SYMBOL_VALUE:
+    case bytecode_ltv::symbol_value:
       op_symbol_value();
       break;
-    case LTV_OP_ATTR:
+    case bytecode_ltv::attribute:
       op_attribute();
       break;
     default:
@@ -1119,7 +1163,7 @@ CL_DEFUN bool load_bytecode(T_sp filename, bool verbose, bool print, T_sp extern
 struct ltv_MmapInfo {
   uint8_t* _Memory;
   size_t _Len;
-  ltv_MmapInfo(uint8_t* mem, size_t len) : _Memory(mem), _Len(len){};
+  ltv_MmapInfo(uint8_t* mem, size_t len) : _Memory(mem), _Len(len) {};
 };
 
 CL_LAMBDA(output-designator files &optional (verbose nil));

@@ -4,14 +4,14 @@
 
 namespace core {
 
-template <typename Float> struct float_convert {
-  static constexpr uint16_t significand_width = std::numeric_limits<Float>::digits;
-  static constexpr uint16_t exponent_width = std::bit_width((unsigned int)std::numeric_limits<Float>::max_exponent);
+template <uint16_t ExponentWidth, uint16_t SignificandWidth> struct float_traits {
+  static constexpr uint16_t exponent_width = ExponentWidth;
+  static constexpr uint16_t significand_width = SignificandWidth;
   static constexpr uint16_t sign_width = 1;
   static constexpr bool has_hidden_bit = ((sign_width + exponent_width + significand_width) % 8) != 0;
   static constexpr uint16_t storage_width = sign_width + exponent_width + significand_width + ((has_hidden_bit) ? -1 : 0);
-  static constexpr int32_t exponent_bias = std::numeric_limits<Float>::max_exponent + significand_width - 2;
-  static constexpr int32_t max_exponent = std::numeric_limits<Float>::max_exponent - significand_width;
+  static constexpr int32_t exponent_bias = (1 << (exponent_width - 1)) + significand_width - 2;
+  static constexpr int32_t max_exponent = (1 << (exponent_width - 1)) - significand_width;
   static constexpr int32_t min_exponent = 2 - exponent_bias - significand_width;
   static constexpr int32_t min_normalized_exponent = 1 - exponent_bias;
   using uint_t =
@@ -28,56 +28,61 @@ template <typename Float> struct float_convert {
   static constexpr uint_t exponent_mask = ((uint_t{1} << exponent_width) - uint_t{1}) << exponent_shift;
   static constexpr uint_t sign_mask = ((uint_t{1} << sign_width) - uint_t{1}) << sign_shift;
   static constexpr uint_t nan_type_mask = uint_t{1} << (significand_width + ((has_hidden_bit) ? -2 : -1));
+};
 
+template <typename Float> struct float_convert {
+  using traits =
+      float_traits<std::bit_width((unsigned int)std::numeric_limits<Float>::max_exponent), std::numeric_limits<Float>::digits>;
+  using uint_t = typename traits::uint_t;
   enum class category { finite, quiet_nan, signaling_nan, infinity };
 
   typedef union {
     Float f;
-    uint_t b;
+    unsigned _BitInt(traits::storage_width) b;
   } convert_t;
 
-  static inline uint_t to_bits(Float f) {
+  static inline uint_t float_to_bits(Float f) {
     convert_t convert = {.f = f};
-    return convert.b;
+    return uint_t{convert.b};
   }
 
-  static inline Float from_bits(uint_t b) {
+  static inline Float bits_to_float(uint_t b) {
     convert_t convert = {.b = b};
     return convert.f;
   }
 
   struct quadruple {
     category category;
-    uint_t significand;
+    __uint128_t significand;
     int32_t exponent;
     int16_t sign;
   };
 
-  static quadruple to_quadruple(Float f) {
+  template<typename Traits = traits>
+  static quadruple bits_to_quadruple(typename Traits::uint_t b) {
     quadruple q;
-    uint_t b = to_bits(f);
 
-    q.significand = b & significand_mask;
-    q.exponent = static_cast<int32_t>((b & exponent_mask) >> exponent_shift);
-    q.sign = (b & sign_mask) ? int32_t{-1} : int32_t{1};
+    q.significand = b & Traits::significand_mask;
+    q.exponent = static_cast<int32_t>((b & Traits::exponent_mask) >> Traits::exponent_shift);
+    q.sign = (b & Traits::sign_mask) ? int32_t{-1} : int32_t{1};
 
-    if (q.exponent != non_finite_exponent) {
+    if (q.exponent != Traits::non_finite_exponent) {
       q.category = category::finite;
       if (q.exponent != 0) {
         // Normal non-zero
-        q.significand |= hidden_bit;
-        q.exponent -= exponent_bias;
+        q.significand |= Traits::hidden_bit;
+        q.exponent -= Traits::exponent_bias;
       } else if (q.significand != 0) {
         // Subnormal
-        int32_t shift = significand_width - std::bit_width(q.significand);
+        int32_t shift = Traits::significand_width - std::bit_width(q.significand);
         q.significand = q.significand << shift;
-        q.exponent = 1 - exponent_bias - shift;
+        q.exponent = 1 - Traits::exponent_bias - shift;
       }
     } else if (q.significand == 0) {
       q.category = category::infinity;
-    } else if (q.significand & nan_type_mask) {
+    } else if (q.significand & Traits::nan_type_mask) {
       q.category = category::quiet_nan;
-      q.significand &= ~nan_type_mask;
+      q.significand &= ~Traits::nan_type_mask;
     } else {
       q.category = category::signaling_nan;
     }
@@ -85,27 +90,28 @@ template <typename Float> struct float_convert {
     return q;
   }
 
-  static Float from_quadruple(quadruple q) {
-    uint_t b = 0;
+  template<typename Traits = traits>
+  static typename Traits::uint_t quadruple_to_bits(quadruple q) {
+    typename Traits::uint_t b = 0;
 
     if (q.sign < 0)
-      b |= sign_mask;
+      b |= Traits::sign_mask;
 
     switch (q.category) {
     case category::infinity:
-      b |= exponent_mask;
+      b |= Traits::exponent_mask;
       break;
     case category::quiet_nan:
-      b |= exponent_mask | nan_type_mask | (q.significand & payload_mask);
+      b |= Traits::exponent_mask | Traits::nan_type_mask | (q.significand & Traits::payload_mask);
       break;
     case category::signaling_nan:
-      b |= exponent_mask | ((q.significand == 0) ? uint_t{1} : (q.significand & payload_mask));
+      b |= Traits::exponent_mask | ((q.significand == 0) ? uint_t{1} : (q.significand & Traits::payload_mask));
       break;
     default:
       if (q.significand != 0) {
-        uint_t significand = q.significand;
+        __uint128_t significand = q.significand;
         int32_t exponent = q.exponent;
-        int32_t shift = std::bit_width(significand) - significand_width;
+        int32_t shift = std::bit_width(significand) - Traits::significand_width;
 
         // If we don't have enough bits then right shift.
         if (shift < 0) {
@@ -115,15 +121,15 @@ template <typename Float> struct float_convert {
         }
 
         // Check for subnormals and set the shift needed to normalize.
-        if ((exponent + shift) < min_normalized_exponent) {
-          shift = min_normalized_exponent - exponent;
+        if ((exponent + shift) < Traits::min_normalized_exponent) {
+          shift = Traits::min_normalized_exponent - exponent;
         }
 
         // If we shift away all of the bits that is an underflow.
         if (shift > std::bit_width(significand)) {
           feraiseexcept(FE_UNDERFLOW);
           // Return +/- zero if traps masked.
-          return from_bits(b);
+          return b;
         }
 
         // Round if we have extra bits.
@@ -135,31 +141,35 @@ template <typename Float> struct float_convert {
         }
 
         // Check one more time to ensure rounding hasn't increased the width.
-        shift = std::max(static_cast<int>(std::bit_width(significand) - significand_width), 0);
+        shift = std::max(static_cast<int>(std::bit_width(significand) - Traits::significand_width), 0);
         significand = significand >> shift;
         exponent += shift;
 
         // Check for overflow.
-        if (exponent > max_exponent) {
+        if (exponent > Traits::max_exponent) {
           feraiseexcept(FE_OVERFLOW);
           // Return +/- infinity if traps masked.
-          return from_bits(b | exponent_mask);
+          return b | Traits::exponent_mask;
         }
 
-        if (std::bit_width(significand) < significand_width) {
+        if (std::bit_width(significand) < Traits::significand_width) {
           // Subnormals
-          b |= significand & significand_mask;
+          b |= significand & Traits::significand_mask;
         } else {
           // Normal
-          b |= (significand & significand_mask) |
-               ((static_cast<uint_t>(exponent + exponent_bias) << exponent_shift) & exponent_mask);
+          b |= (significand & Traits::significand_mask) |
+               ((static_cast<uint_t>(exponent + Traits::exponent_bias) << Traits::exponent_shift) & Traits::exponent_mask);
         }
       }
       break;
     }
 
-    return from_bits(b);
+    return b;
   };
+
+  inline static Float quadruple_to_float(quadruple q) { return bits_to_float(quadruple_to_bits(q)); }
+
+  inline static quadruple float_to_quadruple(Float f) { return bits_to_quadruple(float_to_bits(f)); }
 };
 
 } // namespace core

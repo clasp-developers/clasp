@@ -613,6 +613,16 @@ is not compatible with snapshots.")
                     :initarg :dependency-file
                     :initform nil
                     :documentation "Path to dependency-file")
+   (use-short-float :accessor use-short-float
+                    :initarg :use-short-float
+                    :initform nil
+                    :type boolean
+                    :documentation "Enable short-float")
+   (use-long-float :accessor use-long-float
+                   :initarg :use-long-float
+                   :initform t
+                   :type boolean
+                   :documentation "Enable long-float")
    (units :accessor units
           :initform '(:git :describe :cpu-count #+darwin :xcode :base :default-target :pkg-config
                            :clang :llvm :ar :cc :cxx :dis :mpi :nm :etags :ctags :objcopy :jupyter

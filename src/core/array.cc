@@ -537,8 +537,6 @@ void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixn
   size_t iLen = unbox_fixnum(len);
   if (iLen == 0)
     return;
-  ASSERTF(dest->rank() == 1, "dest array must be rank 1 - instead it is {}", dest->rank());
-  ASSERTF(orig->rank() == 1, "orig array must be rank 1 - instead it is {}", orig->rank());
   size_t iDestStart = unbox_fixnum(destStart);
   size_t iOrigStart = unbox_fixnum(origStart);
   if ((iLen + iDestStart) >= dest->arrayTotalSize())
@@ -796,6 +794,16 @@ DEFMAKESIMPLEVECTOR(base_char, SimpleBaseString_O, SimpleBaseString_sp);
 DEFMAKESIMPLEVECTOR(character, SimpleCharacterString_O, SimpleCharacterString_sp);
 DEFMAKESIMPLEVECTOR(single_float, SimpleVector_float_O, SimpleVector_float_sp);
 DEFMAKESIMPLEVECTOR(double_float, SimpleVector_double_O, SimpleVector_double_sp);
+#ifdef CLASP_SHORT_FLOAT
+DEFMAKESIMPLEVECTOR(short_float, SimpleVector_short_float_O, SimpleVector_short_float_sp);
+#else
+DEFMAKESIMPLEVECTOR(short_float, SimpleVector_float_O, SimpleVector_float_sp);
+#endif
+#ifdef CLASP_LONG_FLOAT
+DEFMAKESIMPLEVECTOR(long_float, SimpleVector_long_float_O, SimpleVector_long_float_sp);
+#else
+DEFMAKESIMPLEVECTOR(long_float, SimpleVector_double_O, SimpleVector_double_sp);
+#endif
 DEFMAKESIMPLEVECTOR(int2, SimpleVector_int2_t_O, SimpleVector_int2_t_sp);
 DEFMAKESIMPLEVECTOR(byte2, SimpleVector_byte2_t_O, SimpleVector_byte2_t_sp);
 DEFMAKESIMPLEVECTOR(int4, SimpleVector_int4_t_O, SimpleVector_int4_t_sp);
@@ -832,8 +840,18 @@ CL_DEFUN SimpleMDArrayT_sp core__make_simple_mdarray_t(List_sp dimensions, T_sp 
 DEFMAKESIMPLEMDARRAY(bit, SimpleMDArrayBit_O, SimpleMDArrayBit_sp, SimpleBitVector_O);
 DEFMAKESIMPLEMDARRAY(base_char, SimpleMDArrayBaseChar_O, SimpleMDArrayBaseChar_sp, SimpleBaseString_O);
 DEFMAKESIMPLEMDARRAY(character, SimpleMDArrayCharacter_O, SimpleMDArrayCharacter_sp, SimpleCharacterString_O);
+#ifdef CLASP_SHORT_FLOAT
+DEFMAKESIMPLEMDARRAY(short_float, SimpleMDArray_short_float_O, SimpleMDArray_short_float_sp, SimpleVector_short_float_O);
+#else
+DEFMAKESIMPLEMDARRAY(short_float, SimpleMDArray_float_O, SimpleMDArray_float_sp, SimpleVector_float_O);
+#endif
 DEFMAKESIMPLEMDARRAY(single_float, SimpleMDArray_float_O, SimpleMDArray_float_sp, SimpleVector_float_O);
 DEFMAKESIMPLEMDARRAY(double_float, SimpleMDArray_double_O, SimpleMDArray_double_sp, SimpleVector_double_O);
+#ifdef CLASP_LONG_FLOAT
+DEFMAKESIMPLEMDARRAY(long_float, SimpleMDArray_long_float_O, SimpleMDArray_long_float_sp, SimpleVector_long_float_O);
+#else
+DEFMAKESIMPLEMDARRAY(long_float, SimpleMDArray_double_O, SimpleMDArray_double_sp, SimpleVector_double_O);
+#endif
 DEFMAKESIMPLEMDARRAY(int2, SimpleMDArray_int2_t_O, SimpleMDArray_int2_t_sp, SimpleVector_int2_t_O);
 DEFMAKESIMPLEMDARRAY(byte2, SimpleMDArray_byte2_t_O, SimpleMDArray_byte2_t_sp, SimpleVector_byte2_t_O);
 DEFMAKESIMPLEMDARRAY(int4, SimpleMDArray_int4_t_O, SimpleMDArray_int4_t_sp, SimpleVector_int4_t_O);
@@ -877,6 +895,14 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type, size_t dimension, bool a
     MAKE(SimpleCharacterString_O, StrWNs_O)
   } else if (element_type == cl::_sym_double_float) {
     MAKE(SimpleVector_double_O, ComplexVector_double_O)
+#ifdef CLASP_SHORT_FLOAT
+  } else if (element_type == cl::_sym_short_float) {
+    MAKE(SimpleVector_short_float_O, ComplexVector_short_float_O)
+#endif
+#ifdef CLASP_LONG_FLOAT
+  } else if (element_type == cl::_sym_long_float) {
+    MAKE(SimpleVector_long_float_O, ComplexVector_long_float_O)
+#endif
   } else if (element_type == cl::_sym_single_float) {
     MAKE(SimpleVector_float_O, ComplexVector_float_O)
   } else if (element_type == ext::_sym_integer2) {
@@ -929,6 +955,14 @@ CL_DEFUN Vector_sp core__make_static_vector(T_sp element_type, size_t dimension,
     MAKE(SimpleCharacterString_O)
   } else if (element_type == cl::_sym_double_float) {
     MAKE(SimpleVector_double_O)
+#ifdef CLASP_SHORT_FLOAT
+  } else if (element_type == cl::_sym_short_float) {
+    MAKE(SimpleVector_short_float_O)
+#endif
+#ifdef CLASP_LONG_FLOAT
+  } else if (element_type == cl::_sym_long_float) {
+    MAKE(SimpleVector_long_float_O)
+#endif
   } else if (element_type == cl::_sym_single_float) {
     MAKE(SimpleVector_float_O)
   } else if (element_type == cl::_sym_bit) {
@@ -986,6 +1020,14 @@ CL_DEFUN MDArray_sp core__make_mdarray(List_sp dimensions, T_sp element_type, bo
     MAKE(MDArrayT_O, SimpleVector_O)
   } else if (element_type == cl::_sym_double_float) {
     MAKE(MDArray_double_O, SimpleVector_double_O)
+#ifdef CLASP_SHORT_FLOAT
+  } else if (element_type == cl::_sym_short_float) {
+    MAKE(MDArray_short_O, SimpleVector_short_float_O)
+#endif
+#ifdef CLASP_LONG_FLOAT
+  } else if (element_type == cl::_sym_long_float) {
+    MAKE(MDArray_long_float_O, SimpleVector_long_float_O)
+#endif
   } else if (element_type == cl::_sym_single_float) {
     MAKE(MDArray_float_O, SimpleVector_float_O)
   } else if (element_type == cl::_sym_bit) {
@@ -1217,6 +1259,50 @@ CL_DEFUN bool ext__array_no_nans_p(Array_sp array) {
     for (size_t ii = 0; ii < sa->length(); ii++)
       if (std::isnan((*sa)[ii]))
         return false;
+#ifdef CLASP_SHORT_FLOAT
+  } else if (gc::IsA<SimpleVector_short_float_sp>(array)) {
+    auto sa = gc::As_unsafe<SimpleVector_short_float_sp>(array);
+    for (size_t ii = 0; ii < sa->length(); ii++)
+      if (std::isnan((*sa)[ii]))
+        return false;
+  } else if (gc::IsA<MDArray_short_float_sp>(array)) {
+    auto sa = gc::As_unsafe<MDArray_short_float_sp>(array);
+    for (size_t ii = 0; ii < sa->length(); ii++)
+      if (std::isnan((*sa)[ii]))
+        return false;
+  } else if (gc::IsA<SimpleMDArray_short_float_sp>(array)) {
+    auto sa = gc::As_unsafe<SimpleMDArray_short_float_sp>(array);
+    for (size_t ii = 0; ii < sa->length(); ii++)
+      if (std::isnan((*sa)[ii]))
+        return false;
+  } else if (gc::IsA<ComplexVector_short_float_sp>(array)) {
+    auto sa = gc::As_unsafe<ComplexVector_short_float_sp>(array);
+    for (size_t ii = 0; ii < sa->length(); ii++)
+      if (std::isnan((*sa)[ii]))
+        return false;
+#endif
+#ifdef CLASP_LONG_FLOAT
+  } else if (gc::IsA<SimpleVector_long_float_sp>(array)) {
+    auto sa = gc::As_unsafe<SimpleVector_long_float_sp>(array);
+    for (size_t ii = 0; ii < sa->length(); ii++)
+      if (std::isnan((*sa)[ii]))
+        return false;
+  } else if (gc::IsA<MDArray_long_float_sp>(array)) {
+    auto sa = gc::As_unsafe<MDArray_long_float_sp>(array);
+    for (size_t ii = 0; ii < sa->length(); ii++)
+      if (std::isnan((*sa)[ii]))
+        return false;
+  } else if (gc::IsA<SimpleMDArray_long_float_sp>(array)) {
+    auto sa = gc::As_unsafe<SimpleMDArray_long_float_sp>(array);
+    for (size_t ii = 0; ii < sa->length(); ii++)
+      if (std::isnan((*sa)[ii]))
+        return false;
+  } else if (gc::IsA<ComplexVector_long_float_sp>(array)) {
+    auto sa = gc::As_unsafe<ComplexVector_long_float_sp>(array);
+    for (size_t ii = 0; ii < sa->length(); ii++)
+      if (std::isnan((*sa)[ii]))
+        return false;
+#endif
   }
   return true;
 }

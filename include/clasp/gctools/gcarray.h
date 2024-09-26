@@ -30,9 +30,12 @@ THE SOFTWARE.
 
 namespace gctools {
 
-template <class T> class GCArray_moveable : public GCContainer {
+// The following class is packed to ensure that no padding is inserted
+// before _MaybeSignedLength. Padding will break our non-virtual
+// length method.
+template <class T> class __attribute__((__packed__)) GCArray_moveable : public GCContainer {
 public:
-  GCArray_moveable(){};
+  GCArray_moveable() {};
 
 public:
   typedef T value_type;
@@ -92,7 +95,7 @@ public:
 // how C++ reference semantics work.
 template <class T> class GCArray_atomic : public GCContainer {
 public:
-  GCArray_atomic(){};
+  GCArray_atomic() {};
 
 public:
   int64_t _Length; // Index one beyond the total number of elements allocated
@@ -130,7 +133,7 @@ template <typename Array> void Array0_dump(const Array& v, const char* head = ""
 
 template <class T> class GCArraySignedLength_moveable : public GCArray_moveable<T> {
 public:
-  GCArraySignedLength_moveable(){};
+  GCArraySignedLength_moveable() {};
 
 public:
   GCArraySignedLength_moveable(int64_t length, const T& initialElement, bool initialElementSupplied, size_t initialContentsSize = 0,

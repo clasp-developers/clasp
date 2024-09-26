@@ -1109,19 +1109,18 @@ CL_LAMBDA(pathspec);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(file_write_date)dx");
 DOCGROUP(clasp);
-CL_DEFUN Number_sp cl__file_write_date(T_sp pathspec) {
-  Number_sp time;
+CL_DEFUN T_sp cl__file_write_date(T_sp pathspec) {
+  T_sp time;
   if (pathspec.nilp())
     SIMPLE_ERROR("{} was about to pass nil to pathname", __FUNCTION__);
   Pathname_sp pathname = cl__pathname(pathspec);
   String_sp filename = coerce_to_posix_filename(pathname);
   struct stat filestatus;
-  time = nil<Number_O>();
+  time = nil<T_O>();
   if (safe_stat((char*)filename->get_path_string().c_str(), &filestatus) >= 0) {
-    Number_sp accJan1st1970UT(Integer_O::create((gc::Fixnum)(24 * 60 * 60)));
-    accJan1st1970UT = contagion_mul(accJan1st1970UT, Integer_O::create((gc::Fixnum)(17 + 365 * 70)));
-    time = Integer_O::create((gc::Fixnum)filestatus.st_mtime);
-    time = contagion_add(time, accJan1st1970UT);
+    Integer_sp accJan1st1970UT = Integer_O::create((gc::Fixnum)(24 * 60 * 60));
+    accJan1st1970UT = accJan1st1970UT * Integer_O::create((gc::Fixnum)(17 + 365 * 70));
+    time = Integer_O::create((gc::Fixnum)filestatus.st_mtime) + accJan1st1970UT;
   }
   return time;
 }

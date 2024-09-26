@@ -101,6 +101,8 @@ extern core::Symbol_sp& _sym_bit;
 extern core::Symbol_sp& _sym_float;
 extern core::Symbol_sp& _sym_double_float;
 extern core::Symbol_sp& _sym_single_float;
+extern core::Symbol_sp& _sym_short_float;
+extern core::Symbol_sp& _sym_long_float;
 extern core::Symbol_sp& _sym_UnsignedByte;
 extern core::Symbol_sp& _sym_T_O;
 extern core::Symbol_sp& _sym_simple_string;
@@ -1008,8 +1010,10 @@ public:
 
 #include <clasp/core/array_t.h>
 #include <clasp/core/string.h>
-#include <clasp/core/array_double.h>
+#include <clasp/core/array_short_float.h>
 #include <clasp/core/array_float.h>
+#include <clasp/core/array_double.h>
+#include <clasp/core/array_long_float.h>
 #include <clasp/core/array_size_t.h>
 #include <clasp/core/array_fixnum.h>
 #include <clasp/core/array_int64.h>

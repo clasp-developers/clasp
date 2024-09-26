@@ -769,7 +769,7 @@ CL_DEFUN T_sp cl__special_operator_p(Symbol_sp sym) {
 CL_DEFUN Integer_sp core__ash_left(Integer_sp integer, Integer_sp count) {
   if (count.fixnump())
     return clasp_shift_left(integer, count.unsafe_fixnum());
-  else if (clasp_zerop(integer))
+  else if (Number_O::zerop(integer))
     return integer;
   else
     SIMPLE_ERROR("ash for bignum count not implemented");
@@ -779,7 +779,7 @@ CL_DEFUN Integer_sp core__ash_right(Integer_sp integer, Integer_sp count) {
   if (count.fixnump())
     return clasp_shift_right(integer, count.unsafe_fixnum());
   // bignum zero is impossible, so: all digits gone.
-  else if (clasp_minusp(integer))
+  else if (Real_O::minusp(integer))
     return clasp_make_fixnum(-1);
   else
     return clasp_make_fixnum(0);
@@ -801,15 +801,15 @@ CL_DEFUN Integer_sp cl__ash(Integer_sp integer, Integer_sp count) {
     // count is bignum
     // We don't have integers with more than most-positive-fixnum digits,
     // so this operation is now pretty trivial.
-    if (clasp_plusp(count)) {
-      if (clasp_zerop(integer))
+    if (Real_O::plusp(count)) {
+      if (Number_O::zerop(integer))
         return integer;
       // result will not fit in memory, giveup (FIXME: storage-condition?)
       else
         SIMPLE_ERROR("ash for bignum count not implemented");
-    } else if (clasp_minusp(count)) {
+    } else if (Real_O::minusp(count)) {
       // Count is a negative bignum, so all digits are gone.
-      if (clasp_minusp(integer))
+      if (Real_O::minusp(integer))
         return clasp_make_fixnum(-1);
       else
         return clasp_make_fixnum(0);
@@ -1583,7 +1583,7 @@ CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
     StringPushString(ss, sx);
     core__integer_to_string(ss, gc::As<Integer_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()), clasp_make_fixnum(10));
     // If and only if no explicit suffix is supplied, *gensym-counter* is incremented after it is used.
-    if (clasp_minusp(counter))
+    if (Real_O::minusp(counter))
       TYPE_ERROR(counter, cl::_sym_UnsignedByte);
     if (counter.fixnump()) {
       Fixnum gensymCounter = counter.unsafe_fixnum() + 1;
@@ -1600,7 +1600,7 @@ CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
     }
     return Symbol_O::create(ss->asMinimalSimpleString());
   }
-  if ((x.fixnump() || gc::IsA<Integer_sp>(x)) && (!(clasp_minusp(gc::As_unsafe<Integer_sp>(x))))) {
+  if ((x.fixnump() || gc::IsA<Integer_sp>(x)) && (!(Real_O::minusp(gc::As_unsafe<Integer_sp>(x))))) {
     SafeBufferStr8Ns ss;
     ss.string()->vectorPushExtend('G');
     core__integer_to_string(ss.string(), gc::As_unsafe<Integer_sp>(x), clasp_make_fixnum(10));
@@ -1623,12 +1623,16 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
     return (Values(cl::_sym_character));
   else if (x.single_floatp())
     return (Values(cl::_sym_single_float));
+#ifdef CLASP_SHORT_FLOAT
+  else if (x.short_floatp())
+    return (Values(cl::_sym_short_float));
+#endif
   else if (x.consp())
     return (Values(cl::_sym_list));
   else if (x.generalp()) {
     General_sp gx(x.unsafe_general());
     if (gc::IsA<DoubleFloat_sp>(gx))
-      return (Values(cl::_sym_DoubleFloat_O));
+      return (Values(cl::_sym_double_float));
     else if (gc::IsA<Symbol_sp>(gx))
       return (Values(cl::_sym_Symbol_O));
     else if (gx.nilp())
@@ -1639,7 +1643,7 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
       return (Values(cl::_sym_Ratio_O));
 #ifdef CLASP_LONG_FLOAT
     else if (gc::IsA<LongFloat_sp>(gx))
-      return (Values(cl::_sym_LongFloat_O));
+      return (Values(cl::_sym_long_float));
 #endif
     else if (gc::IsA<Complex_sp>(gx))
       return (Values(cl::_sym_Complex_O));

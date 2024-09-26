@@ -306,29 +306,32 @@
               (if (ratiop object)
                   ,(real-interval-test `(the ratio object) low high)
                   nil)))
-        ;; only singles and doubles actually exist.
-        ;; FIXME: write in this assumption better in case we change it later.
-        ((short-float single-float)
+        #+short-float
+        ((short-float)
+         `(if (core:short-float-p object)
+              ,(real-interval-test `(the ,head object) low high)
+              nil))
+        ((#-short-float short-float single-float)
          `(if (core:single-float-p object)
               ,(real-interval-test `(the ,head object) low high)
               nil))
-        ((double-float long-float)
+        ((double-float #-long-float long-float)
          `(if (core:double-float-p object)
               ,(real-interval-test `(the ,head object) low high)
               nil))
+        #+long-float
+        ((long-float)
+         `(if (core:long-float-p object)
+              ,(real-interval-test `(the ,head object) low high)
+              nil))
         ((float)
-         `(if (if (core:single-float-p object)
-                  t
-                  (if (core:double-float-p object) t nil))
+         `(if (floatp object)
               ,(real-interval-test `(the float object) low high)
               nil))
         ((real)
          `(or ,(integral-interval-typep-form low high)
-              (if (if (core:single-float-p object)
-                      t
-                      (if (core:double-float-p object)
-                          t
-                          (if (ratiop object) t nil)))
+              (if (or (floatp object)
+                      (rationalp object))
                   ,(real-interval-test '(the real object) low high)
                   nil))))))
 
@@ -466,10 +469,14 @@
           ((character base-char) (da `(character object)))
           ;; make sure we don't convert other floats
           ((float) (da `(if (floatp object) object (float object))))
-          ((short-float) (da `(float object 0.0s0)))
-          ((single-float) (da `(float object 0.0f0)))
-          ((double-float) (da `(float object 0.0d0)))
-          ((long-float) (da `(float object 0.0l0)))
+          #+short-float
+          ((short-float) (da `(core:to-short-float object)))
+          ((#-short-float short-float single-float)
+           (da `(core:to-single-float object)))
+          ((double-float #-long-float long-float)
+           (da `(core:to-double-float object)))
+          #+long-float
+          ((long-float) (da `(core:to-long-float object)))
           ((function) (da `(coerce-to-function object)))
           ((complex)
            ;; This is the only case where the returned value

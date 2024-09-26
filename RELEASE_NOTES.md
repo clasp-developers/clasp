@@ -3,6 +3,9 @@
 ## Added
 * Package lock support, based on SBCL's. Currently ignores local
   bindings. Thanks @bumblingbats.
+* Add support for 80-bit and 128-bit LONG-FLOAT. Extended precision
+  LONG-FLOAT is available on amd64 and non-Apply arm64 platforms. It
+  is automatically detected and enabled.
 
 ## Changed
 * Floating point exceptions FE_INVALID, FE_OVERFLOW and FE_DIVBYZERO

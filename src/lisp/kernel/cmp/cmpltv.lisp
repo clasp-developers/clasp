@@ -144,8 +144,12 @@
               :type creator)
    (%imagpart :initarg :imagpart :reader complex-creator-imagpart
               :type creator)))
+#+short-float
+(defclass short-float-creator (number-creator) ())
 (defclass single-float-creator (number-creator) ())
 (defclass double-float-creator (number-creator) ())
+#+long-float
+(defclass long-float-creator (number-creator) ())
 
 (defclass character-creator (vcreator) ())
 
@@ -587,12 +591,27 @@
      ((signed-byte 64) (make-instance 'sb64-creator :prototype value))
      (integer (make-instance 'bignum-creator :prototype value)))))
 
-(defmethod add-constant ((value float))
+#+short-float
+(defmethod add-constant ((value short-float))
   (add-creator
    value
-   (etypecase value
-     (double-float (make-instance 'double-float-creator :prototype value))
-     (single-float (make-instance 'single-float-creator :prototype value)))))
+   (make-instance 'short-float-creator :prototype value)))
+
+(defmethod add-constant ((value single-float))
+  (add-creator
+   value
+   (make-instance 'single-float-creator :prototype value)))
+
+(defmethod add-constant ((value double-float))
+  (add-creator
+   value
+   (make-instance 'double-float-creator :prototype value)))
+
+#+long-float
+(defmethod add-constant ((value long-float))
+  (add-creator
+   value
+   (make-instance 'long-float-creator :prototype value)))
 
 (defmethod add-constant ((value ratio))
   ;; In most cases it's probably pointless to try to coalesce the numerator
@@ -819,47 +838,6 @@
 ;;; bytes, or etc. powers of two based on how many constants there are. E.g. if
 ;;; there are 200 constants indices will be one byte, but if there are 300
 ;;; indices will be two bytes.
-;;; Instruction set is copied from Clasp for now. "sind" in the below means an
-;;; index that the allocated object will be stored into. This may need some
-;;; review later.
-;;; Operations are as follows:
-(defparameter +ops+
-  '((nil 65 sind)
-    (t 66 sind)
-    (ratio 67)
-    (complex 68)
-    (cons 69 sind)
-    (rplaca 70 ind1 ind2) ; (setf (car [ind1]) [ind2])
-    (rplacd 71 ind1 ind2)
-    (make-array 74 sind rank . dims)
-    (setf-row-major-aref 75 arrayind rmindex valueind)
-    (make-hash-table 76 sind test count)
-    (setf-gethash 77 htind keyind valueind)
-    (make-sb64 78 sind sb64)
-    (find-package 79 sind nameind)
-    (make-bignum 80 sind size . words) ; size is signed
-    (make-symbol 81) ; make-bitvector in clasp
-    (intern 82 sind packageind nameind) ; make-symbol in clasp
-    (make-character 83 sind ub32) ; ub64 in clasp, i think?
-    (make-pathname 85)
-    (make-bytecode-function 87) ; ltvc_make_global_entry_point
-    (make-bytecode-module 88) ; ltvc_make_local_entry_point - overriding
-    (setf-literals 89) ; make_random_state. compatibility is a sham here anyway
-    (make-single-float 90 sind ub32)
-    (make-double-float 91 sind ub64)
-    (funcall-create 93 sind find nargs . args)
-    (funcall-initialize 94 find nargs . args)
-    (fdefinition 95 find nameind)
-    (fcell 96 find nameind)
-    (vcell 97 vind nameind)
-    (find-class 98 sind cnind)
-    ;; set-ltv-funcall in clasp- redundant
-    #+(or) ; obsolete as of v0.3
-    (make-specialized-array 97 sind rank dims etype . elems)
-    (init-object-array 99 ub64)
-    (environment 100)
-    (symbol-value 101)
-    (attribute 255 name nbytes . data)))
 
 ;;; STREAM is a ub8 stream.
 (defgeneric encode (instruction stream))
@@ -875,16 +853,18 @@
         for byte = (ldb (byte 8 i) int)
         do (write-byte byte stream)))
 
-(defun write-b64 (word stream) (write-b word 8 stream))
-(defun write-b32 (word stream) (write-b word 4 stream))
-(defun write-b16 (word stream) (write-b word 2 stream))
+(defun write-b128 (word stream) (write-b word 16 stream))
+(defun write-b80  (word stream) (write-b word 10 stream))
+(defun write-b64  (word stream) (write-b word 8 stream))
+(defun write-b32  (word stream) (write-b word 4 stream))
+(defun write-b16  (word stream) (write-b word 2 stream))
 
 (defconstant +magic+ #x8d7498b1) ; randomly chosen bytes.
 
 (defun write-magic (stream) (write-b32 +magic+ stream))
 
 (defparameter *major-version* 0)
-(defparameter *minor-version* 14)
+(defparameter *minor-version* 15)
 
 (defun write-version (stream)
   (write-b16 *major-version* stream)
@@ -915,7 +895,7 @@
                     stream)))
 
 (defun opcode (mnemonic)
-  (let ((inst (assoc mnemonic +ops+ :test #'equal)))
+  (let ((inst (assoc mnemonic cmpref:+bytecode-ltv-ops+ :test #'equal)))
     (if inst
         (second inst)
         (error "unknown mnemonic ~a" mnemonic))))
@@ -936,15 +916,15 @@
       ((8) (write-b64 position stream)))))
 
 (defmethod encode ((inst cons-creator) stream)
-  (write-mnemonic 'cons stream))
+  (write-mnemonic :cons stream))
 
 (defmethod encode ((inst rplaca-init) stream)
-  (write-mnemonic 'rplaca stream)
+  (write-mnemonic :rplaca stream)
   (write-index (rplac-cons inst) stream)
   (write-index (rplac-value inst) stream))
 
 (defmethod encode ((inst rplacd-init) stream)
-  (write-mnemonic 'rplacd stream)
+  (write-mnemonic :rplacd stream)
   (write-index (rplac-cons inst) stream)
   (write-index (rplac-value inst) stream))
 
@@ -1002,12 +982,12 @@
 	 (error "Code point #x~x is out of range for UTF-8" cpoint))))
 
 (defmethod encode ((inst array-creator) stream)
-  (write-mnemonic 'make-array stream)
+  (write-mnemonic :make-array stream)
   (write-byte (uaet-code inst) stream)
   (let* ((packing-info (packing-info inst))
          (dims (dimensions inst))
          (packing-type (first packing-info))
-         (packing-code (second packing-info)))
+         (packing-code (getf cmpref:+uaet-codes+ (second packing-info))))
     (write-byte packing-code stream)
     (write-dimensions dims stream)
     (macrolet ((dump (&rest forms)
@@ -1020,10 +1000,19 @@
              (dump (write-byte (char-code elem) stream)))
             ((equal packing-type 'character)
              (dump (write-utf8-codepoint (char-code elem) stream)))
+            #+short-float
+            ((equal packing-type 'short-float)
+             (dump (write-b16 (ext:short-float-to-bits elem) stream)))
             ((equal packing-type 'single-float)
              (dump (write-b32 (ext:single-float-to-bits elem) stream)))
             ((equal packing-type 'double-float)
              (dump (write-b64 (ext:double-float-to-bits elem) stream)))
+            #+long-float/binary80
+            ((equal packing-type 'long-float)
+             (dump (write-b80 (ext:long-float-to-bits elem) stream)))
+            #+long-float/binary128
+            ((equal packing-type 'long-float)
+             (dump (write-b128 (ext:long-float-to-bits elem) stream)))
             ((equal packing-type '(complex single-float))
              (dump (write-b32 (ext:single-float-to-bits (realpart elem))
                               stream)
@@ -1063,7 +1052,7 @@
             (t (error "BUG: Unknown packing-type ~s" packing-type))))))
 
 (defmethod encode ((inst setf-aref) stream)
-  (write-mnemonic 'setf-row-major-aref stream)
+  (write-mnemonic :setf-row-major-aref stream)
   (write-index (setf-aref-array inst) stream)
   (write-b16 (setf-aref-index inst) stream)
   (write-index (setf-aref-value inst) stream))
@@ -1083,30 +1072,37 @@
 ;;; will upgrade to ext:byte8 no problem.
 ;;; TODO: For version 1, put more thought into these IDs.
 (defvar +array-packing-infos+
-  '((nil                    #b00000000)
-    (base-char              #b10000000)
-    (character              #b11000000)
-    ;;(short-float          #b10100000) ; i.e. binary16
-    (single-float           #b00100000) ; binary32
-    (double-float           #b01100000) ; binary64
-    ;;(long-float           #b11100000) ; binary128?
-    ;;((complex short...)   #b10110000)
-    ((complex single-float) #b00110000)
-    ((complex double-float) #b01110000)
-    ;;((complex long...)    #b11110000)
-    (bit                    #b00000001) ; (2^(code-1)) bits
-    ((unsigned-byte 2)      #b00000010)
-    ((unsigned-byte 4)      #b00000011)
-    ((unsigned-byte 8)      #b00000100)
-    ((unsigned-byte 16)     #b00000101)
-    ((unsigned-byte 32)     #b00000110)
-    ((unsigned-byte 64)     #b00000111)
-    ;;((unsigned-byte 128) ??)
-    ((signed-byte 8)        #b10000100)
-    ((signed-byte 16)       #b10000101)
-    ((signed-byte 32)       #b10000110)
-    ((signed-byte 64)       #b10000111)
-    (t                      #b11111111)))
+  '((nil                    :nil)
+    (base-char              :base-char)
+    (character              :character)
+    (short-float            #+short-float :binary16
+                            #-short-float :binary32)
+    (single-float           :binary32)
+    (double-float           :binary64)
+    (long-float             #+long-float/binary80  :binary80
+                            #+long-float/binary128 :binary128
+                            #-long-float           :binary64)
+    ((complex short-float)  #+short-float :complex-binary16
+                            #-short-float :complex-binary32)
+    ((complex single-float) :complex-binary32)
+    ((complex double-float) :complex-binary64)
+    ((complex long-float)   #+long-float/binary80  :complex-binary80
+                            #+long-float/binary128 :complex-binary128
+                            #-long-float           :complex-binary64)
+    (bit                    :unsigned-byte1)
+    ((unsigned-byte 2)      :unsigned-byte2)
+    ((unsigned-byte 4)      :unsigned-byte4)
+    ((unsigned-byte 8)      :unsigned-byte8)
+    ((unsigned-byte 16)     :unsigned-byte16)
+    ((unsigned-byte 32)     :unsigned-byte32)
+    ((unsigned-byte 64)     :unsigned-byte64)
+    ((unsigned-byte 128)    :unsigned-byte128)
+    ((signed-byte 8)        :signed-byte8)
+    ((signed-byte 16)       :signed-byte16)
+    ((signed-byte 32)       :signed-byte32)
+    ((signed-byte 64)       :signed-byte64)
+    ((signed-byte 128)      :signed-byte128)
+    (t                      :t)))
 
 (defun %uaet-info (uaet)
   (dolist (info +array-packing-infos+)
@@ -1115,7 +1111,8 @@
   ;; subtypep not doing so well. default to general.
   (assoc t +array-packing-infos+))
 
-(defun find-uaet-code (uaet) (second (%uaet-info uaet)))
+(defun find-uaet-code (uaet)
+  (getf cmpref:+uaet-codes+ (second (%uaet-info uaet))))
 
 (defun array-packing-info (array)
   ;; TODO? As mentioned above, we could pack arrays more efficiently
@@ -1143,40 +1140,40 @@
          ;; reaches the rehash threshold. I am not sure how to deal with this
          ;; in a portable fashion. (we could just invert a provided rehash-size?)
          (count (min (hash-table-creator-count inst) #xffff)))
-    (write-mnemonic 'make-hash-table stream)
+    (write-mnemonic :make-hash-table stream)
     (write-byte testcode stream)
     (write-b16 count stream)))
 
 (defmethod encode ((inst setf-gethash) stream)
-  (write-mnemonic 'setf-gethash stream)
+  (write-mnemonic :setf-gethash stream)
   (write-index (setf-gethash-hash-table inst) stream)
   (write-index (setf-gethash-key inst) stream)
   (write-index (setf-gethash-value inst) stream))
 
 (defmethod encode ((inst singleton-creator) stream)
   (ecase (prototype inst)
-    ((nil) (write-mnemonic 'nil stream))
-    ((t) (write-mnemonic 't stream))))
+    ((nil) (write-mnemonic :nil stream))
+    ((t) (write-mnemonic :t stream))))
 
 (defmethod encode ((inst symbol-creator) stream)
-  (write-mnemonic 'make-symbol stream)
+  (write-mnemonic :make-symbol stream)
   (write-index (symbol-creator-name inst) stream))
 
 (defmethod encode ((inst interned-symbol-creator) stream)
-  (write-mnemonic 'intern stream)
+  (write-mnemonic :intern stream)
   (write-index (symbol-creator-package inst) stream)
   (write-index (symbol-creator-name inst) stream))
 
 (defmethod encode ((inst package-creator) stream)
-  (write-mnemonic 'find-package stream)
+  (write-mnemonic :find-package stream)
   (write-index (package-creator-name inst) stream))
 
 (defmethod encode ((inst character-creator) stream)
-  (write-mnemonic 'make-character stream)
+  (write-mnemonic :make-character stream)
   (write-b32 (char-code (prototype inst)) stream))
 
 (defmethod encode ((inst pathname-creator) stream)
-  (write-mnemonic 'make-pathname stream)
+  (write-mnemonic :make-pathname stream)
   (write-index (pathname-creator-host inst) stream)
   (write-index (pathname-creator-device inst) stream)
   (write-index (pathname-creator-directory inst) stream)
@@ -1185,12 +1182,12 @@
   (write-index (pathname-creator-version inst) stream))
 
 (defmethod encode ((inst sb64-creator) stream)
-  (write-mnemonic 'make-sb64 stream)
+  (write-mnemonic :make-sb64 stream)
   (write-b64 (prototype inst) stream))
 
 (defmethod encode ((inst bignum-creator) stream)
   ;; uses sign-magnitude representation.
-  (write-mnemonic 'make-bignum stream)
+  (write-mnemonic :make-bignum stream)
   (let* ((number (prototype inst))
          (anumber (abs number))
          (nwords (ceiling (integer-length anumber) 64))
@@ -1201,63 +1198,78 @@
           for word = (ldb (byte 64 pos) anumber)
           do (write-b64 word stream))))
 
+#+short-float/binary16
+(defmethod encode ((inst short-float-creator) stream)
+  (write-mnemonic :make-binary16 stream)
+  (write-b16 (ext:short-float-to-bits (prototype inst)) stream))
+
 (defmethod encode ((inst single-float-creator) stream)
-  (write-mnemonic 'make-single-float stream)
+  (write-mnemonic :make-binary32 stream)
   (write-b32 (ext:single-float-to-bits (prototype inst)) stream))
 
 (defmethod encode ((inst double-float-creator) stream)
-  (write-mnemonic 'make-double-float stream)
+  (write-mnemonic :make-binary64 stream)
   (write-b64 (ext:double-float-to-bits (prototype inst)) stream))
 
+#+long-float/binary80
+(defmethod encode ((inst long-float-creator) stream)
+  (write-mnemonic :make-binary80 stream)
+  (write-b80 (ext:long-float-to-bits (prototype inst)) stream))
+
+#+long-float/binary128
+(defmethod encode ((inst long-float-creator) stream)
+  (write-mnemonic :make-binary128 stream)
+  (write-b128 (ext:long-float-to-bits (prototype inst)) stream))
+
 (defmethod encode ((inst ratio-creator) stream)
-  (write-mnemonic 'ratio stream)
+  (write-mnemonic :ratio stream)
   (write-index (ratio-creator-numerator inst) stream)
   (write-index (ratio-creator-denominator inst) stream))
 
 (defmethod encode ((inst complex-creator) stream)
-  (write-mnemonic 'complex stream)
+  (write-mnemonic :complex stream)
   (write-index (complex-creator-realpart inst) stream)
   (write-index (complex-creator-imagpart inst) stream))
 
 (defmethod encode ((inst fdefinition-lookup) stream)
-  (write-mnemonic 'fdefinition stream)
+  (write-mnemonic :fdefinition stream)
   (write-index (name inst) stream))
 
 (defmethod encode ((inst fcell-lookup) stream)
-  (write-mnemonic 'fcell stream)
+  (write-mnemonic :fcell stream)
   (write-index (name inst) stream))
 
 (defmethod encode ((inst vcell-lookup) stream)
-  (write-mnemonic 'vcell stream)
+  (write-mnemonic :vcell stream)
   (write-index (name inst) stream))
 
 (defmethod encode ((inst environment-lookup) stream)
-  (write-mnemonic 'environment stream))
+  (write-mnemonic :environment stream))
 
 (defmethod encode ((inst vdefinition) stream)
-  (write-mnemonic 'symbol-value stream)
+  (write-mnemonic :symbol-value stream)
   (write-index (name inst) stream))
 
 (defmethod encode ((inst general-creator) stream)
-  (write-mnemonic 'funcall-create stream)
+  (write-mnemonic :funcall-create stream)
   (write-index (general-function inst) stream)
   (write-b16 (length (general-arguments inst)) stream)
   (loop for arg in (general-arguments inst)
         do (write-index arg stream)))
 
 (defmethod encode ((inst general-initializer) stream)
-  (write-mnemonic 'funcall-initialize stream)
+  (write-mnemonic :funcall-initialize stream)
   (write-index (general-function inst) stream)
   (write-b16 (length (general-arguments inst)) stream)
   (loop for arg in (general-arguments inst)
         do (write-index arg stream)))
 
 (defmethod encode ((inst class-creator) stream)
-  (write-mnemonic 'find-class stream)
+  (write-mnemonic :find-class stream)
   (write-index (class-creator-name inst) stream))
 
 (defmethod encode ((inst load-time-value-creator) stream)
-  (write-mnemonic 'funcall-create stream)
+  (write-mnemonic :funcall-create stream)
   (write-index (load-time-value-creator-function inst) stream)
   ;; no arguments
   (write-b16 0 stream))
@@ -1336,7 +1348,7 @@
 (defmethod encode ((inst bytefunction-creator) stream)
   ;; four bytes for the entry point, two for the nlocals and nclosed,
   ;; then indices.
-  (write-mnemonic 'make-bytecode-function stream)
+  (write-mnemonic :make-bytecode-function stream)
   (write-b32 (entry-point inst) stream)
   (write-b32 (size inst) stream)
   (write-b16 (nlocals inst) stream)
@@ -1578,7 +1590,7 @@
 
 (defmethod encode ((inst bytemodule-creator) stream)
   ;; Write instructions.
-  (write-mnemonic 'make-bytecode-module stream)
+  (write-mnemonic :make-bytecode-module stream)
   (let* ((lispcode (bytemodule-lispcode inst))
          (len (length lispcode)))
     (when (> len #.(ash 1 32))
@@ -1587,7 +1599,7 @@
     (write-sequence lispcode stream)))
 
 (defmethod encode ((inst setf-literals) stream)
-  (write-mnemonic 'setf-literals stream)
+  (write-mnemonic :setf-literals stream)
   (write-index (setf-literals-module inst) stream)
   (let ((literals (setf-literals-literals inst)))
     (write-b16 (length literals) stream)
@@ -1597,7 +1609,7 @@
 ;;;
 
 (defmethod encode :before ((attr attribute) stream)
-  (write-mnemonic 'attribute stream)
+  (write-mnemonic :attribute stream)
   (write-index (name attr) stream))
 
 (defmethod encode ((attr unknown-attr) stream)
@@ -1636,23 +1648,9 @@
   (write-b64 (column attr) stream)
   (write-b64 (filepos attr) stream))
 
-(defvar +debug-info-ops+
-  '((function 0)
-    (vars 1)
-    (location 2)
-    (decls 3)
-    (the 4)
-    (block 5)
-    (exit 6)
-    (macro 7)
-    (if 8)
-    (tagbody 9)))
-
 (defun debug-info-opcode (mnemonic)
-  (let ((inst (assoc mnemonic +debug-info-ops+)))
-    (if inst
-        (second inst)
-        (error "unknown debug info mnemonic ~a" mnemonic))))
+  (or (getf cmpref:+debug-info-ops+ mnemonic)
+      (error "unknown debug info mnemonic ~a" mnemonic)))
 
 (defun write-debug-info-mnemonic (mnemonic stream)
   (write-byte (debug-info-opcode mnemonic) stream))
@@ -1660,7 +1658,7 @@
 (defgeneric info-length (info))
 
 (defmethod encode ((info debug-info-function) stream)
-  (write-debug-info-mnemonic 'function stream)
+  (write-debug-info-mnemonic :function stream)
   (write-index (di-function info) stream))
 (defmethod info-length ((info debug-info-function))
   (+ 1 *index-bytes*))
@@ -1682,7 +1680,7 @@
     result))
 
 (defmethod encode ((info debug-info-vars) stream)
-  (write-debug-info-mnemonic 'vars stream)
+  (write-debug-info-mnemonic :vars stream)
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (let ((vars (vars info)))
@@ -1701,7 +1699,7 @@
            sum (* *index-bytes* (length (decls var))))))
 
 (defmethod encode ((info debug-info-location) stream)
-  (write-debug-info-mnemonic 'location stream)
+  (write-debug-info-mnemonic :location stream)
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (write-index (di-pathname info) stream)
@@ -1712,7 +1710,7 @@
   (+ 1 4 4 *index-bytes* 8 8 8))
 
 (defmethod encode ((info debug-info-decls) stream)
-  (write-debug-info-mnemonic 'decls stream)
+  (write-debug-info-mnemonic :decls stream)
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (write-index (decls info) stream))
@@ -1720,7 +1718,7 @@
   (+ 1 4 4 *index-bytes*))
 
 (defmethod encode ((info debug-info-the) stream)
-  (write-debug-info-mnemonic 'the stream)
+  (write-debug-info-mnemonic :the stream)
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (write-index (di-type info) stream)
@@ -1729,7 +1727,7 @@
   (+ 1 4 4 *index-bytes* 4))
 
 (defmethod encode ((info debug-ast-if) stream)
-  (write-debug-info-mnemonic 'if stream)
+  (write-debug-info-mnemonic :if stream)
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (write-b32 (di-receiving info) stream))
@@ -1737,7 +1735,7 @@
   (+ 1 4 4 4))
 
 (defmethod encode ((info debug-ast-tagbody) stream)
-  (write-debug-info-mnemonic 'tagbody stream)
+  (write-debug-info-mnemonic :tagbody stream)
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (write-b16 (length (di-tags info)) stream)
@@ -1749,7 +1747,7 @@
                 (+ *index-bytes* 4))))
 
 (defmethod encode ((info debug-info-block) stream)
-  (write-debug-info-mnemonic 'block stream)
+  (write-debug-info-mnemonic :block stream)
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (write-index (name info) stream)
@@ -1758,7 +1756,7 @@
   (+ 1 4 4 *index-bytes* 4))
 
 (defmethod encode ((info debug-info-exit) stream)
-  (write-debug-info-mnemonic 'exit stream)
+  (write-debug-info-mnemonic :exit stream)
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (write-b32 (di-receiving info) stream))
@@ -1766,7 +1764,7 @@
   (+ 1 4 4 4))
 
 (defmethod encode ((info debug-info-macroexpansion) stream)
-  (write-debug-info-mnemonic 'macro stream)
+  (write-debug-info-mnemonic :macro stream)
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (write-index (di-macro-name info) stream))
@@ -1807,7 +1805,7 @@
           do (write-index creator stream))))
 
 (defmethod encode ((init init-object-array) stream)
-  (write-mnemonic 'init-object-array stream)
+  (write-mnemonic :init-object-array stream)
   (write-b64 (init-object-array-count init) stream))
 
 ;;;

@@ -234,8 +234,9 @@ CL_DEFUN string core__next_primitive_string(Bignum_sp num) {
   return ss.str();
 }
 
+CL_NAME(two-arg-*-bignum-fixnum)
 DOCGROUP(clasp);
-CL_DEFUN Integer_sp core__next_fmul(Bignum_sp left, Fixnum right) {
+CL_DEFUN Integer_sp Number_O::mul_bx(Bignum_sp left, Fixnum right) {
   if (right == 0)
     return clasp_make_fixnum(0);
   mp_size_t llen = left->length();
@@ -354,8 +355,9 @@ Integer_sp Bignum_O::shift_right(Fixnum shift) const {
     return this->asSmartPtr();
 }
 
+CL_NAME(two-arg-*-bignum-bignum)
 DOCGROUP(clasp);
-CL_DEFUN Bignum_sp core__next_mul(Bignum_sp left, Bignum_sp right) {
+CL_DEFUN Bignum_sp Number_O::mul_bb(Bignum_sp left, Bignum_sp right) {
   // NOTE: The mpz_ functions detect when left = right (analogously) and use
   // mpn_sqr instead. I don't _think_ this is required, given they're untouched anyway.
   mp_size_t llen = left->length(), rlen = right->length();
@@ -403,8 +405,9 @@ CL_DEFUN Bignum_sp core__mul_fixnums(Fixnum left, Fixnum right) {
 }
 
 DOCGROUP(clasp);
-CL_DEFUN T_mv core__next_truncate(Bignum_sp dividend, Bignum_sp divisor) {
-  ASSERT(dividend != divisor); // "No overlap is permitted between arguments"
+CL_DEFUN Number_mv core__next_truncate(Bignum_sp dividend, Bignum_sp divisor) {
+  if (dividend == divisor)
+    return Values(clasp_make_fixnum(1), clasp_make_fixnum(0));
   mp_size_t dividend_length = dividend->length();
   mp_size_t divisor_length = divisor->length();
   mp_size_t dividend_size = std::abs(dividend_length);
@@ -434,7 +437,7 @@ CL_DEFUN T_mv core__next_truncate(Bignum_sp dividend, Bignum_sp divisor) {
 // Truncating a fixnum by a bignum will always get you zero
 // so there's no function for that.
 DOCGROUP(clasp);
-CL_DEFUN T_mv core__next_ftruncate(Bignum_sp dividend, Fixnum divisor) {
+CL_DEFUN Number_mv core__next_ftruncate(Bignum_sp dividend, Fixnum divisor) {
   if (divisor == 0)
     ERROR_DIVISION_BY_ZERO(dividend, clasp_make_fixnum(divisor));
   mp_limb_t positive_divisor = std::abs(divisor);
@@ -749,13 +752,15 @@ Integer_sp next_add(const mp_limb_t* llimbs, mp_size_t llen, const mp_limb_t* rl
   return bignum_result(result_len, result_limbs);
 }
 
+CL_NAME(two-arg-+-bignum-bignum)
 DOCGROUP(clasp);
-CL_DEFUN Integer_sp core__next_add(Bignum_sp left, Bignum_sp right) {
+CL_DEFUN Integer_sp Number_O::add_bb(Bignum_sp left, Bignum_sp right) {
   return next_add(left->limbs(), left->length(), right->limbs(), right->length());
 }
 
+CL_NAME(two-arg---bignum-bignum)
 DOCGROUP(clasp);
-CL_DEFUN Integer_sp core__next_sub(Bignum_sp left, Bignum_sp right) {
+CL_DEFUN Integer_sp Number_O::sub_bb(Bignum_sp left, Bignum_sp right) {
   return next_add(left->limbs(), left->length(), right->limbs(), -(right->length()));
 }
 
@@ -787,13 +792,15 @@ Integer_sp next_fadd(const mp_limb_t* limbs, mp_size_t len, Fixnum right) {
   return bignum_result(result_len, result_limbs);
 }
 
+CL_NAME(two-arg-+-bignum-fixnum)
 DOCGROUP(clasp);
-CL_DEFUN Integer_sp core__next_fadd(Bignum_sp left, Fixnum right) { return next_fadd(left->limbs(), left->length(), right); }
+CL_DEFUN Integer_sp Number_O::add_bx(Bignum_sp left, Fixnum right) { return next_fadd(left->limbs(), left->length(), right); }
 
 // bignum - fixnum is trivially bignum +-fixnum, but fixnum - bignum
 // is very slightly trickier
+CL_NAME(two-arg---fixnum-bignum)
 DOCGROUP(clasp);
-CL_DEFUN Integer_sp core__next_fsub(Fixnum left, Bignum_sp right) { return next_fadd(right->limbs(), -(right->length()), left); }
+CL_DEFUN Integer_sp Number_O::sub_xb(Fixnum left, Bignum_sp right) { return next_fadd(right->limbs(), -(right->length()), left); }
 
 Number_sp Bignum_O::oneMinus_() const { return next_fadd(this->limbs(), this->length(), -1); }
 
@@ -806,7 +813,7 @@ template <typename Float> Float limbs_to_float(mp_size_t len, const mp_limb_t* l
     .category = float_convert<Float>::category::finite, .significand = 0, .exponent = (size - 1) * limb_width,
     .sign = (len < 0) ? -1 : 1
   };
-  size_t shift = float_convert<Float>::significand_width + 1;
+  size_t shift = float_convert<Float>::traits::significand_width + 1;
   size_t width = std::bit_width(limbs[size - 1]);
 
   if (width >= shift) {
@@ -824,14 +831,16 @@ template <typename Float> Float limbs_to_float(mp_size_t len, const mp_limb_t* l
     }
   }
 
-  return float_convert<Float>::from_quadruple(q);
+  return float_convert<Float>::quadruple_to_float(q);
 }
 
-float Bignum_O::as_float_() const { return limbs_to_float<float>(this->length(), this->limbs()); }
+short_float_t Bignum_O::as_short_float_() const { return limbs_to_float<short_float_t>(this->length(), this->limbs()); }
 
-double Bignum_O::as_double_() const { return limbs_to_float<double>(this->length(), this->limbs()); }
+single_float_t Bignum_O::as_single_float_() const { return limbs_to_float<float>(this->length(), this->limbs()); }
 
-LongFloat Bignum_O::as_long_float_() const { return limbs_to_float<LongFloat>(this->length(), this->limbs()); }
+double_float_t Bignum_O::as_double_float_() const { return limbs_to_float<double>(this->length(), this->limbs()); }
+
+long_float_t Bignum_O::as_long_float_() const { return limbs_to_float<long_float_t>(this->length(), this->limbs()); }
 
 DOCGROUP(clasp);
 CL_DEFUN int core__next_compare(Bignum_sp left, Bignum_sp right) {

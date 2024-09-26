@@ -44,6 +44,8 @@
                  "INCLUDED_FROM_CLASP" t
                  "INHERITED_FROM_SRC" t
                  "NDEBUG" t
+                 "USE_SHORT_FLOAT" (use-short-float configuration)
+                 "USE_LONG_FLOAT" (use-long-float configuration)
                  "BUILD_EXTENSION" (and (extensions configuration) t)
                  "DEFAULT_STARTUP_TYPE" (if (extensions configuration) :|cloExtensionImage| :|cloBaseImage|)
                  "CLASP_EXTENSIONS" (and (extensions configuration) t)

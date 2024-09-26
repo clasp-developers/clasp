@@ -175,7 +175,7 @@ CL_DEFUN T_sp cl__nth(Integer_sp idx, List_sp arg) {
       else
         return arg.unsafe_cons()->onth(n);
     } else { // index is a bignum, i.e. out of range
-      if (clasp_plusp(idx))
+      if (Real_O::plusp(idx))
         return nil<T_O>();
       else
         TYPE_ERROR(idx, cl::_sym_UnsignedByte);
@@ -200,7 +200,7 @@ CL_DEFUN T_sp cl__nthcdr(Integer_sp idx, List_sp arg) {
       else
         return arg.unsafe_cons()->onthcdr(n);
     } else { // bignum, out of range
-      if (clasp_plusp(idx))
+      if (Real_O::plusp(idx))
         return nil<T_O>();
       else
         TYPE_ERROR(idx, cl::_sym_UnsignedByte);
@@ -259,7 +259,7 @@ CL_DEFUN List_sp cl__butlast(List_sp ll, Integer_sp in) {
       return head;
     }
   } else { // must be a bignum
-    if (clasp_plusp(in))
+    if (Real_O::plusp(in))
       return nil<T_O>();
     else
       TYPE_ERROR(in, cl::_sym_UnsignedByte);
@@ -296,7 +296,7 @@ CL_DEFUN List_sp cl__nbutlast(List_sp l, Integer_sp in) {
     return nil<T_O>();
   } else {
     // if it is a positive bignum, return nil
-    if (clasp_plusp(in))
+    if (Real_O::plusp(in))
       return nil<T_O>();
     else
       // negative bignum
@@ -353,7 +353,7 @@ CL_DEFUN T_sp cl__last(List_sp list, Integer_sp in) {
       return clist->last(n);
     TYPE_ERROR(list, cl::_sym_list);
   } else { // must be a bignum
-    if (clasp_plusp(in))
+    if (Real_O::plusp(in))
       return list;
     else
       TYPE_ERROR(in, cl::_sym_UnsignedByte);

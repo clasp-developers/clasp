@@ -210,6 +210,11 @@ static const uintptr_t character_shift = CHARACTER_SHIFT;
 static const uintptr_t single_float_tag = SINGLE_FLOAT_TAG;
 static const uintptr_t single_float_shift = SINGLE_FLOAT_SHIFT;
 static const uintptr_t single_float_mask = 0x1FFFFFFFFF; // single-floats are in these 32+5bits
+#ifdef CLASP_SHORT_FLOAT
+static const uintptr_t short_float_tag = SHORT_FLOAT_TAG;
+static const uintptr_t short_float_shift = SHORT_FLOAT_SHIFT;
+static const uintptr_t short_float_mask = 0x1FFFFFFFFF; // single-floats are in these 32+5bits
+#endif
 
 /* These values define the Stamp ranges for different kinds of
    objects.  There are the following kinds of objects:
@@ -234,6 +239,9 @@ static const uintptr_t unshifted_stamp_first_instance = 65536;
 static const char* tagged_fixnum_str = "FIXNUM";
 static const char* tagged_character_str = "CHARACTER";
 static const char* tagged_single_float_str = "SINGLE-FLOAT";
+#ifdef CLASP_SHORT_FLOAT
+static const char* tagged_short_float_str = "SHORT-FLOAT";
+#endif
 static const char* tagged_object_str = "OBJECT";
 static const char* tagged_cons_str = "CONS";
 static const char* tagged_unbound_str = "UNBOUND";
@@ -332,6 +340,7 @@ template <class T> inline claspCharacter untag_character(T ptr) {
 template <class T> inline bool tagged_characterp(T ptr) {
   return ((reinterpret_cast<uintptr_t>(ptr) & immediate_mask) == character_tag);
 };
+
 template <class T> inline T tag_single_float(float fn) {
   GCTOOLS_ASSERT(sizeof(uintptr_t) == 8);
   GCTOOLS_ASSERT(sizeof(float) == 4);
@@ -355,6 +364,32 @@ template <class T> inline float untag_single_float(T const ptr) {
 template <class T> inline bool tagged_single_floatp(T ptr) {
   return ((reinterpret_cast<uintptr_t>(ptr) & immediate_mask) == single_float_tag);
 };
+
+#ifdef CLASP_SHORT_FLOAT
+template <class T> inline T tag_short_float(float fn) {
+  GCTOOLS_ASSERT(sizeof(uintptr_t) == 8);
+  GCTOOLS_ASSERT(sizeof(float) == 4);
+  uintptr_t val;
+  memcpy(&val, &fn, sizeof(fn));
+  return reinterpret_cast<T>((val << short_float_shift) + short_float_tag);
+}
+template <class T> inline uintptr_t tagged_short_float_masked(T const ptr) {
+  return reinterpret_cast<uintptr_t>(reinterpret_cast<uintptr_t>(ptr) & short_float_mask);
+}
+template <class T> inline float untag_short_float(T const ptr) {
+  GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & immediate_mask) == short_float_tag);
+  GCTOOLS_ASSERT(sizeof(uintptr_t) == 8);
+  GCTOOLS_ASSERT(sizeof(float) == 4);
+  uintptr_t val(reinterpret_cast<uintptr_t>(ptr));
+  float result;
+  val >>= short_float_shift;
+  memcpy(&result, &val, sizeof(result));
+  return result;
+}
+template <class T> inline bool tagged_short_floatp(T ptr) {
+  return ((reinterpret_cast<uintptr_t>(ptr) & immediate_mask) == short_float_tag);
+};
+#endif
 
 template <class T> inline bool tagged_generalp(T ptr) { return ((uintptr_t)(ptr)&ptag_mask) == general_tag; }
 
@@ -414,6 +449,12 @@ template <typename T> std::string tag_str(T tagged_obj) {
   if (tagged_single_floatp(tagged_obj)) {
     return std::string(tagged_single_float_str);
   }
+
+#ifdef CLASP_SHORT_FLOAT
+  if (tagged_short_floatp(tagged_obj)) {
+    return std::string(tagged_short_float_str);
+  }
+#endif
 
   if (tagged_generalp(tagged_obj)) {
     return std::string(tagged_general_str);

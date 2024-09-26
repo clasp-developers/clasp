@@ -10,7 +10,7 @@
         (dolist (type (list 'short-float 'single-float 'double-float 'long-float) (reverse result))
           (let ((*read-default-float-format* type))
             (push (read-from-string "1.111") result))))
-      ((1.111 1.111 1.111d0 1.111d0)))
+      ((1.111s0 1.111f0 1.111d0 1.111l0)))
 
 (test read-2
       (ext:with-float-traps-masked (:invalid :overflow :underflow :divide-by-zero)

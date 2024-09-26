@@ -59,6 +59,7 @@ void dump_data_types(std::ostream& fout, const std::string& indent) {
   DTNAME(CONSTANT_ARRAY_OFFSET, "constant_array", sizeof(void*));
   DTNAME(ctype_double, "double", sizeof(double));
   DTNAME(ctype_float, "float", sizeof(float));
+  DTNAME(ctype_long_double, "long double", sizeof(long double));
   DTNAME(ctype_int, "int", sizeof(int));
   DTNAME(ctype_short, "short", sizeof(short));
   DTNAME(ctype_unsigned_char, "unsigned_char", sizeof(unsigned char));

@@ -4384,7 +4384,7 @@ cl_index FileStream_O::read_sequence(T_sp data, cl_index start, cl_index end) {
          * decoders consume bytes in multiples of the byte size. */
         T_sp fp = position();
         if (fp.fixnump()) {
-          set_position(contagion_sub(gc::As_unsafe<Number_sp>(fp), make_fixnum((buffer_end - buffer_pos) / (_byte_size / 8))));
+          set_position(gc::As_unsafe<Number_sp>(fp) - make_fixnum((buffer_end - buffer_pos) / (_byte_size / 8)));
         } else {
           SIMPLE_ERROR("clasp_file_position is not a number");
         }
@@ -4880,7 +4880,7 @@ T_sp PosixFileStream_O::set_position(T_sp pos) {
     mode = SEEK_END;
   } else {
     if (_byte_size != 8) {
-      pos = clasp_times(gc::As<Number_sp>(pos), make_fixnum(_byte_size / 8));
+      pos = gc::As<Number_sp>(pos) * make_fixnum(_byte_size / 8);
     }
     disp = clasp_integer_to_off_t(pos);
     mode = SEEK_SET;
@@ -5113,7 +5113,7 @@ T_sp CFileStream_O::set_position(T_sp pos) {
     mode = SEEK_END;
   } else {
     if (_byte_size != 8) {
-      pos = clasp_times(gc::As<Integer_sp>(pos), make_fixnum(_byte_size / 8));
+      pos = gc::As<Integer_sp>(pos) * make_fixnum(_byte_size / 8);
     }
     disp = clasp_integer_to_off_t(pos);
     mode = SEEK_SET;

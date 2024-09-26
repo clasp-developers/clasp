@@ -48,38 +48,25 @@ THE SOFTWARE.
 #include <clasp/core/bignum.h>
 #include <clasp/core/num_arith.h>
 #include <clasp/core/wrappers.h>
-#include <clasp/core/mathDispatch.h>
 
 namespace core {
 
 // This is a truncating division.
 Integer_sp clasp_integer_divide(Integer_sp x, Integer_sp y) {
-  MATH_DISPATCH_BEGIN(x, y) {
-  case_Fixnum_v_Fixnum : {
-    Fixnum fy = y.unsafe_fixnum();
-    if (fy == 0)
-      ERROR_DIVISION_BY_ZERO(x, y);
-    else
-      // Note that / truncates towards zero as of C++11, as we want.
-      return clasp_make_fixnum(x.unsafe_fixnum() / fy);
-  }
-  case_Fixnum_v_Bignum:
-    return fix_divided_by_next(x.unsafe_fixnum(), gc::As_unsafe<Bignum_sp>(x));
-  case_Bignum_v_Fixnum : {
-    T_mv trunc = core__next_ftruncate(gc::As_unsafe<Bignum_sp>(x), y.unsafe_fixnum());
-    return gc::As_unsafe<Integer_sp>(trunc);
-  }
-  case_Bignum_v_Bignum : {
-    // FIXME: MPN doesn't export a quotient-only division that I can see,
-    // but we could call a version of truncate that doesn't cons up the
-    // actual bignum for the remainder, hypothetically.
-    // Would save some heap allocation.
-    T_mv trunc = core__next_truncate(gc::As_unsafe<Bignum_sp>(x), gc::As_unsafe<Bignum_sp>(y));
-    return gc::As_unsafe<Integer_sp>(trunc);
-  }
-  };
-  MATH_DISPATCH_END();
-  UNREACHABLE();
+  Bignum_sp bx = x.asOrNull<Bignum_O>(), by = y.asOrNull<Bignum_O>();
+  if (bx && by)
+    return core__next_truncate(bx, by).as_unsafe<Integer_O>();
+  if (bx)
+    return core__next_ftruncate(bx, y.unsafe_fixnum()).as_unsafe<Integer_O>();
+  if (by)
+    return fix_divided_by_next(x.unsafe_fixnum(), by);
+
+  Fixnum fy = y.unsafe_fixnum();
+  if (fy == 0)
+    ERROR_DIVISION_BY_ZERO(x, y);
+  else
+    // Note that / truncates towards zero as of C++11, as we want.
+    return clasp_make_fixnum(x.unsafe_fixnum() / fy);
 }
 
 CL_LAMBDA(&rest nums);
@@ -94,7 +81,7 @@ CL_DEFUN Integer_sp cl__gcd(List_sp nums) {
   Integer_sp gcd = gc::As<Integer_sp>(oCar(nums));
   nums = oCdr(nums);
   if (nums.nilp()) {
-    return (clasp_minusp(gcd) ? gc::As<Integer_sp>(clasp_negate(gcd)) : gcd);
+    return (Real_O::minusp(gcd) ? gc::As<Integer_sp>(clasp_negate(gcd)) : gcd);
   }
   while (nums.consp()) {
     gcd = clasp_gcd(gcd, gc::As<Integer_sp>(oCar(nums)));
@@ -114,19 +101,15 @@ gc::Fixnum gcd(gc::Fixnum a, gc::Fixnum b) {
 }
 
 Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx) {
-  MATH_DISPATCH_BEGIN(x, y) {
-  case_Fixnum_v_Fixnum:
-    return clasp_make_fixnum(gcd(x.unsafe_fixnum(), y.unsafe_fixnum()));
-  case_Fixnum_v_Bignum:
-    return core__next_fgcd(gc::As_unsafe<Bignum_sp>(y), x.unsafe_fixnum());
-  case_Bignum_v_Fixnum:
-    return core__next_fgcd(gc::As_unsafe<Bignum_sp>(x), y.unsafe_fixnum());
-  case_Bignum_v_Bignum:
-    return core__next_gcd(gc::As_unsafe<Bignum_sp>(x), gc::As_unsafe<Bignum_sp>(y));
-  default:
-    UNREACHABLE();
-  };
-  MATH_DISPATCH_END();
+  Bignum_sp bx = x.asOrNull<Bignum_O>(), by = y.asOrNull<Bignum_O>();
+  if (bx && by)
+    return core__next_gcd(bx, by);
+  if (bx)
+    return core__next_fgcd(bx, y.unsafe_fixnum());
+  if (by)
+    return core__next_fgcd(by, x.unsafe_fixnum());
+
+  return clasp_make_fixnum(gcd(x.unsafe_fixnum(), y.unsafe_fixnum()));
 }
 
 CL_LAMBDA(&rest args);
@@ -146,13 +129,13 @@ CL_DEFUN Integer_sp cl__lcm(List_sp nums) {
     Integer_sp numi = gc::As<Integer_sp>(oCar(nums));
     nums = oCdr(nums);
     yidx++;
-    Number_sp t = clasp_times(lcm, numi);
+    Number_sp t = lcm * numi;
     Number_sp g = clasp_gcd(numi, lcm);
-    if (!clasp_zerop(g)) {
-      lcm = gc::As<Integer_sp>(clasp_divide(t, g));
+    if (!Number_O::zerop(g)) {
+      lcm = gc::As<Integer_sp>(t / g);
     }
   }
-  return clasp_minusp(lcm) ? gc::As<Integer_sp>(clasp_negate(lcm)) : gc::As<Integer_sp>(lcm);
+  return Real_O::minusp(lcm) ? gc::As<Integer_sp>(clasp_negate(lcm)) : gc::As<Integer_sp>(lcm);
 };
 
 SYMBOL_EXPORT_SC_(ClPkg, gcd);

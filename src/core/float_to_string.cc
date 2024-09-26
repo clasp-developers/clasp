@@ -55,32 +55,27 @@ static void insert_char(StrNs_sp buffer, cl_index where, gc::Fixnum c) {
  * FREE FORMAT (FIXED OR EXPONENT) OF FLOATS
  */
 
-static void print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
+static void print_float_exponent(T_sp buffer, Float_sp number, gc::Fixnum exp) {
   T_sp r = cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue();
-  gc::Fixnum e;
-  switch (clasp_t_of(gc::As<Number_sp>(number))) {
-  case number_SingleFloat:
-    e = (r == cl::_sym_single_float || r == cl::_sym_ShortFloat_O) ? 'e' : 'f';
-    break;
-  case number_ShortFloat:
-    e = (r == cl::_sym_single_float || r == cl::_sym_ShortFloat_O) ? 'e' : 'f';
-    break;
-#ifdef ECL_LONG_FLOAT
-  case number_LongFloat:
-    e = (r == @'long-float') ? 'e' : 'l';
-    break;
-  case number_DoubleFloat:
-    e = (r == @'double-float') ? 'e' : 'd';
-    break;
+  char e = 'e';
+#ifdef CLASP_SHORT_FLOAT
+  if (number.short_floatp())
+    e = (r == cl::_sym_short_float) ? 'e' : 's';
+  else if (number.single_floatp())
+    e = (r == cl::_sym_single_float) ? 'e' : 'f';
 #else
-  case number_DoubleFloat:
-    e = (r == cl::_sym_DoubleFloat_O || r == cl::_sym_LongFloat_O) ? 'e' : 'd';
-    break;
+  if (number.single_floatp())
+    e = (r == cl::_sym_single_float || r == cl::_sym_short_float) ? 'e' : 'f';
 #endif
-  default:
-    SIMPLE_ERROR("Handle additional enumeration values value={} t_of={}", _rep_(number).c_str(),
-                 clasp_t_of(gc::As<Number_sp>(number)));
-  }
+#ifdef CLASP_LONG_FLOAT
+  else if (number.isA<DoubleFloat_O>())
+    e = (r == cl::_sym_double_float) ? 'e' : 'd';
+  else if (number.isA<LongFloat_O>())
+    e = (r == cl::_sym_long_float) ? 'e' : 'l';
+#else
+  else if (number.isA<DoubleFloat_O>())
+    e = (r == cl::_sym_double_float || r == cl::_sym_long_float) ? 'e' : 'd';
+#endif
   if (e != 'e' || exp != 0) {
     StrNs_sp sbuffer = gc::As<StrNs_sp>(buffer);
     sbuffer->vectorPushExtend(clasp_make_character(e));
@@ -90,9 +85,9 @@ static void print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
 
 T_sp core_float_to_string_free(Float_sp number, Number_sp e_min, Number_sp e_max) {
   gc::Fixnum base = 0, e;
-  if (clasp_float_nan_p(number)) {
+  if (Float_O::isnan(number)) {
     return eval::funcall(ext::_sym_float_nan_string, number);
-  } else if (clasp_float_infinity_p(number)) {
+  } else if (Float_O::isinf(number)) {
     return eval::funcall(ext::_sym_float_infinity_string, number);
   }
   T_mv mv_exp = core__float_to_digits(nil<T_O>(), number, nil<T_O>(), nil<T_O>());
@@ -104,7 +99,7 @@ T_sp core_float_to_string_free(Float_sp number, Number_sp e_min, Number_sp e_max
     insert_char(buffer, base++, '-');
   }
   /* Do we have to print in exponent notation? */
-  if (clasp_lowereq(exp, e_min) || clasp_lowereq(e_max, exp)) {
+  if (clasp_lowereq(exp, e_min.as<Real_O>()) || clasp_lowereq(e_max.as<Real_O>(), exp)) {
     insert_char(buffer, base + 1, '.');
     if (gc::As<StrNs_sp>(buffer)->fillPointer() == base + 2)
       buffer->vectorPushExtend(clasp_make_character('0'));

@@ -9,10 +9,6 @@
 #include <clasp/core/bytecode.h>
 #include <algorithm> // max
 
-#define VM_CODES
-#include <virtualMachine.h>
-#undef VM_CODES
-
 namespace comp {
 
 using namespace core;
@@ -249,7 +245,7 @@ void assemble_maybe_long(const Context context, uint8_t opcode, List_sp operands
     }
   }
   if (longp) {
-    bytecode->vectorPushExtend(vm_long);
+    bytecode->vectorPushExtend((uint8_t)vm_code::_long);
     bytecode->vectorPushExtend(opcode);
     for (auto cur : operands) {
       uint16_t operand = clasp_to_integral<uint16_t>(oCar(cur));
@@ -486,7 +482,8 @@ size_t Context::env_index() const {
   ComplexVector_T_sp literals = this->cfunction()->module()->literals();
   for (size_t i = 0; i < literals->length(); ++i) {
     T_sp slit = (*literals)[i];
-    if (gc::IsA<EnvInfo_sp>(slit)) return i;
+    if (gc::IsA<EnvInfo_sp>(slit))
+      return i;
   }
   Fixnum_sp nind = literals->vectorPushExtend(EnvInfo_O::make());
   return nind.unsafe_fixnum();
@@ -504,11 +501,11 @@ size_t Context::closure_index(T_sp info) const {
 void Context::push_debug_info(T_sp info) const { this->cfunction()->debug_info()->vectorPushExtend(info); }
 
 void Context::emit_jump(Label_sp label) const {
-  ControlLabelFixup_O::make(label, vm_jump_8, vm_jump_16, vm_jump_24)->contextualize(*this);
+  ControlLabelFixup_O::make(label, vm_code::jump_8, vm_code::jump_16, vm_code::jump_24)->contextualize(*this);
 }
 
 void Context::emit_jump_if(Label_sp label) const {
-  ControlLabelFixup_O::make(label, vm_jump_if_8, vm_jump_if_16, vm_jump_if_24)->contextualize(*this);
+  ControlLabelFixup_O::make(label, vm_code::jump_if_8, vm_code::jump_if_16, vm_code::jump_if_24)->contextualize(*this);
 }
 
 void Context::emit_entry_or_save_sp(LexicalInfo_sp dynenv) const { EntryFixup_O::make(dynenv)->contextualize(*this); }
@@ -516,7 +513,7 @@ void Context::emit_entry_or_save_sp(LexicalInfo_sp dynenv) const { EntryFixup_O:
 void Context::emit_ref_or_restore_sp(LexicalInfo_sp dynenv) const { RestoreSPFixup_O::make(dynenv)->contextualize(*this); }
 
 void Context::emit_exit(Label_sp label) const {
-  ControlLabelFixup_O::make(label, vm_exit_8, vm_exit_16, vm_exit_24)->contextualize(*this);
+  ControlLabelFixup_O::make(label, vm_code::exit_8, vm_code::exit_16, vm_code::exit_24)->contextualize(*this);
 }
 
 void Context::emit_exit_or_jump(LexicalInfo_sp dynenv, Label_sp label) const {
@@ -526,7 +523,7 @@ void Context::emit_exit_or_jump(LexicalInfo_sp dynenv, Label_sp label) const {
 void Context::maybe_emit_entry_close(LexicalInfo_sp dynenv) const { EntryCloseFixup_O::make(dynenv)->contextualize(*this); }
 
 void Context::emit_catch(Label_sp label) const {
-  ControlLabelFixup_O::make(label, vm_catch_8, vm_catch_16, 0)->contextualize(*this);
+  ControlLabelFixup_O::make(label, vm_code::catch_8, vm_code::catch_16, vm_code::catch_16)->contextualize(*this);
 }
 
 void Context::emit_jump_if_supplied(Label_sp label, size_t ind) const {
@@ -536,17 +533,17 @@ void Context::emit_jump_if_supplied(Label_sp label, size_t ind) const {
 // Push the immutable value or cell of lexical in CONTEXT.
 void Context::reference_lexical_info(LexicalInfo_sp info) const {
   if (info->cfunction() == this->cfunction())
-    this->assemble1(vm_ref, info->frameIndex());
+    this->assemble1(vm_code::ref, info->frameIndex());
   else
-    this->assemble1(vm_closure, this->closure_index(info));
+    this->assemble1(vm_code::closure, this->closure_index(info));
 }
 
 void Context::maybe_emit_make_cell(LexicalVarInfo_sp info) const {
-  LexRefFixup_O::make(info->lex(), vm_make_cell)->contextualize(*this);
+  LexRefFixup_O::make(info->lex(), vm_code::make_cell)->contextualize(*this);
 }
 
 void Context::maybe_emit_cell_ref(LexicalVarInfo_sp info) const {
-  LexRefFixup_O::make(info->lex(), vm_cell_ref)->contextualize(*this);
+  LexRefFixup_O::make(info->lex(), vm_code::cell_ref)->contextualize(*this);
 }
 
 void Context::maybe_emit_encage(LexicalVarInfo_sp info) const { EncageFixup_O::make(info->lex())->contextualize(*this); }
@@ -556,14 +553,14 @@ void Context::emit_lexical_set(LexicalVarInfo_sp info) const { LexSetFixup_O::ma
 void Context::emit_parse_key_args(size_t max_count, size_t key_count, size_t keystart, size_t indx, bool aokp) const {
   ComplexVector_byte8_t_sp bytecode = this->cfunction()->bytecode();
   if ((max_count < (1 << 8)) && (key_count < (1 << 8)) && (keystart < (1 << 8)) && (indx < (1 << 8))) {
-    bytecode->vectorPushExtend(vm_parse_key_args);
+    bytecode->vectorPushExtend((uint8_t)vm_code::parse_key_args);
     bytecode->vectorPushExtend(max_count);
     bytecode->vectorPushExtend(key_count | (aokp ? 0x80 : 0));
     bytecode->vectorPushExtend(keystart);
     bytecode->vectorPushExtend(indx);
   } else if ((max_count < (1 << 16)) && (key_count < (1 << 16)) && (keystart < (1 << 16)) && (indx < (1 << 16))) {
-    bytecode->vectorPushExtend(vm_long);
-    bytecode->vectorPushExtend(vm_parse_key_args);
+    bytecode->vectorPushExtend((uint8_t)vm_code::_long);
+    bytecode->vectorPushExtend((uint8_t)vm_code::parse_key_args);
     bytecode->vectorPushExtend(max_count & 0xff);
     bytecode->vectorPushExtend(max_count >> 8);
     bytecode->vectorPushExtend(key_count & 0xff);
@@ -577,31 +574,31 @@ void Context::emit_parse_key_args(size_t max_count, size_t key_count, size_t key
                  indx);
 }
 
-void Context::assemble0(uint8_t opcode) const { this->cfunction()->bytecode()->vectorPushExtend(opcode); }
+void Context::assemble0(vm_code opcode) const { this->cfunction()->bytecode()->vectorPushExtend((uint8_t)opcode); }
 
-void Context::assemble1(uint8_t opcode, size_t operand) const {
+void Context::assemble1(vm_code opcode, size_t operand) const {
   ComplexVector_byte8_t_sp bytecode = this->cfunction()->bytecode();
   if (operand < (1 << 8)) {
-    bytecode->vectorPushExtend(opcode);
+    bytecode->vectorPushExtend((uint8_t)opcode);
     bytecode->vectorPushExtend(operand);
   } else if (operand < (1 << 16)) {
-    bytecode->vectorPushExtend(vm_long);
-    bytecode->vectorPushExtend(opcode);
+    bytecode->vectorPushExtend((uint8_t)vm_code::_long);
+    bytecode->vectorPushExtend((uint8_t)opcode);
     bytecode->vectorPushExtend(operand & 0xff);
     bytecode->vectorPushExtend(operand >> 8);
   } else
     SIMPLE_ERROR("Bytecode compiler limit reached: operand %zu too large", operand);
 }
 
-void Context::assemble2(uint8_t opcode, size_t operand1, size_t operand2) const {
+void Context::assemble2(vm_code opcode, size_t operand1, size_t operand2) const {
   ComplexVector_byte8_t_sp bytecode = this->cfunction()->bytecode();
   if ((operand1 < (1 << 8)) && (operand2 < (1 << 8))) {
-    bytecode->vectorPushExtend(opcode);
+    bytecode->vectorPushExtend((uint8_t)opcode);
     bytecode->vectorPushExtend(operand1);
     bytecode->vectorPushExtend(operand2);
   } else if ((operand1 < (1 << 16)) && (operand2 < (1 << 16))) {
-    bytecode->vectorPushExtend(vm_long);
-    bytecode->vectorPushExtend(opcode);
+    bytecode->vectorPushExtend((uint8_t)vm_code::_long);
+    bytecode->vectorPushExtend((uint8_t)opcode);
     bytecode->vectorPushExtend(operand1 & 0xff);
     bytecode->vectorPushExtend(operand1 >> 8);
     bytecode->vectorPushExtend(operand2 & 0xff);
@@ -613,12 +610,12 @@ void Context::assemble2(uint8_t opcode, size_t operand1, size_t operand2) const 
 void Context::emit_bind(size_t count, size_t offset) const {
   switch (count) {
   case 1:
-    this->assemble1(vm_set, offset);
+    this->assemble1(vm_code::set, offset);
     break;
   case 0:
     break;
   default:
-    this->assemble2(vm_bind, count, offset);
+    this->assemble2(vm_code::bind, count, offset);
     break;
   }
 }
@@ -626,13 +623,13 @@ void Context::emit_bind(size_t count, size_t offset) const {
 void Context::emit_call(size_t argcount) const {
   switch (this->receiving()) {
   case 1:
-    this->assemble1(vm_call_receive_one, argcount);
+    this->assemble1(vm_code::call_receive_one, argcount);
     break;
   case -1:
-    this->assemble1(vm_call, argcount);
+    this->assemble1(vm_code::call, argcount);
     break;
   default:
-    this->assemble2(vm_call_receive_fixed, argcount, this->receiving());
+    this->assemble2(vm_code::call_receive_fixed, argcount, this->receiving());
     break;
   }
 }
@@ -640,22 +637,22 @@ void Context::emit_call(size_t argcount) const {
 void Context::emit_mv_call() const {
   switch (this->receiving()) {
   case 1:
-    this->assemble0(vm_mv_call_receive_one);
+    this->assemble0(vm_code::mv_call_receive_one);
     break;
   case -1:
-    this->assemble0(vm_mv_call);
+    this->assemble0(vm_code::mv_call);
     break;
   default:
-    this->assemble1(vm_mv_call_receive_fixed, this->receiving());
+    this->assemble1(vm_code::mv_call_receive_fixed, this->receiving());
     break;
   }
 }
 
-void Context::emit_special_bind(Symbol_sp sym) const { this->assemble1(vm_special_bind, this->vcell_index(sym)); }
+void Context::emit_special_bind(Symbol_sp sym) const { this->assemble1(vm_code::special_bind, this->vcell_index(sym)); }
 
 void Context::emit_unbind(size_t count) const {
   for (size_t i = 0; i < count; ++i)
-    this->assemble0(vm_unbind);
+    this->assemble0(vm_code::unbind);
 }
 
 size_t Annotation_O::module_position() { return this->pposition() + gc::As_assert<Cfunction_sp>(this->cfunction())->pposition(); }
@@ -683,18 +680,18 @@ void Fixup_O::contextualize(const Context ctxt) {
 
 ptrdiff_t LabelFixup_O::delta() { return this->label()->module_position() - this->module_position(); }
 
-static void emit_control_label_fixup(size_t size, size_t offset, size_t position, SimpleVector_byte8_t_sp code, uint8_t opcode8,
-                                     uint8_t opcode16, uint8_t opcode24) {
+static void emit_control_label_fixup(size_t size, size_t offset, size_t position, SimpleVector_byte8_t_sp code, vm_code opcode8,
+                                     vm_code opcode16, vm_code opcode24) {
   // Offset is a size_t so it's a positive integer i.e. dumpable.
   switch (size) {
   case 2:
-    (*code)[position] = opcode8;
+      (*code)[position] = (uint8_t)opcode8;
     break;
   case 3:
-    (*code)[position] = opcode16;
+    (*code)[position] = (uint8_t)opcode16;
     break;
   case 4:
-    (*code)[position] = opcode24;
+    (*code)[position] = (uint8_t)opcode24;
     break;
   default:
     SIMPLE_ERROR("Assembler bug: Impossible size %zu", size);
@@ -726,23 +723,23 @@ size_t ControlLabelFixup_O::resize() { return resize_control_label_fixup(this->d
 void JumpIfSuppliedFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
   uint16_t index = this->iindex();
   if (index > 0xff)
-    (*code)[position++] = vm_long;
+    (*code)[position++] = (uint8_t)vm_code::_long;
   size_t size = this->size();
   bool s16 = false;
   switch (size) {
   case 3:
-    (*code)[position++] = vm_jump_if_supplied_8;
+    (*code)[position++] = (uint8_t)vm_code::jump_if_supplied_8;
     break;
   case 4:
     s16 = true;
-    (*code)[position++] = vm_jump_if_supplied_16;
+    (*code)[position++] = (uint8_t)vm_code::jump_if_supplied_16;
     break;
   case 5:
-    (*code)[position++] = vm_jump_if_supplied_8;
+    (*code)[position++] = (uint8_t)vm_code::jump_if_supplied_8;
     break;
   case 6:
     s16 = true;
-    (*code)[position] = vm_jump_if_supplied_16;
+    (*code)[position] = (uint8_t)vm_code::jump_if_supplied_16;
     break;
   default:
     SIMPLE_ERROR("Assembler bug: Impossible size %zu", size);
@@ -760,11 +757,16 @@ size_t JumpIfSuppliedFixup_O::resize() {
   ptrdiff_t delta = this->delta();
   uint16_t index = this->iindex();
   if ((-(1 << 7) <= delta) && (delta <= (1 << 7) - 1)) {
-    if (index > 0xff) return 5;
-    else return 3;
-  } if ((-(1 << 15) <= delta) && (delta <= (1 << 15) - 1)) {
-    if (index > 0xff) return 6;
-    else return 4;
+    if (index > 0xff)
+      return 5;
+    else
+      return 3;
+  }
+  if ((-(1 << 15) <= delta) && (delta <= (1 << 15) - 1)) {
+    if (index > 0xff)
+      return 6;
+    else
+      return 4;
   } else
     SIMPLE_ERROR("Bytecode compiler limit reached: Fixup delta too large");
 }
@@ -773,7 +775,7 @@ void LexRefFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
   size_t size = this->size();
   switch (size) {
   case 1:
-    (*code)[position] = this->opcode();
+    (*code)[position] = (uint8_t)this->opcode();
     break;
   default:
     UNREACHABLE();
@@ -787,12 +789,12 @@ void EncageFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
   size_t index = this->lex()->frameIndex();
   switch (size) {
   case 2: // FIXME: Use assemble_into?
-    (*code)[position] = vm_encell;
+    (*code)[position] = (uint8_t)vm_code::encell;
     (*code)[position + 1] = index;
     break;
   case 4:
-    (*code)[position] = vm_long;
-    (*code)[position + 1] = vm_encell;
+    (*code)[position] = (uint8_t)vm_code::_long;
+    (*code)[position + 1] = (uint8_t)vm_code::encell;
     (*code)[position + 2] = index & 0xff;
     (*code)[position + 3] = index >> 8;
     break;
@@ -818,26 +820,26 @@ void LexSetFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
   size_t index = this->lex()->frameIndex();
   switch (size) {
   case 2:
-    (*code)[position] = vm_set;
+      (*code)[position] = (uint8_t)vm_code::set;
     (*code)[position + 1] = index;
     break;
   case 3:
-    (*code)[position] = vm_ref;
+    (*code)[position] = (uint8_t)vm_code::ref;
     (*code)[position + 1] = index;
-    (*code)[position + 2] = vm_cell_set;
+    (*code)[position + 2] = (uint8_t)vm_code::cell_set;
     break;
   case 4:
-    (*code)[position] = vm_long;
-    (*code)[position + 1] = vm_set;
+    (*code)[position] = (uint8_t)vm_code::_long;
+    (*code)[position + 1] = (uint8_t)vm_code::set;
     (*code)[position + 2] = index & 0xff;
     (*code)[position + 3] = index >> 8;
     break;
   case 5:
-    (*code)[position] = vm_long;
-    (*code)[position + 1] = vm_ref;
+    (*code)[position] = (uint8_t)vm_code::_long;
+    (*code)[position + 1] = (uint8_t)vm_code::ref;
     (*code)[position + 2] = index & 0xff;
     (*code)[position + 3] = index >> 8;
-    (*code)[position + 4] = vm_cell_set;
+    (*code)[position + 4] = (uint8_t)vm_code::cell_set;
     break;
   default:
     UNREACHABLE();
@@ -864,11 +866,11 @@ size_t LexSetFixup_O::resize() {
 void EntryFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
   size_t index = this->lex()->frameIndex();
   if (index >= 1 << 8)
-    (*code)[position++] = vm_long;
+    (*code)[position++] = (uint8_t)vm_code::_long;
   if (this->lex()->closedOverP())
-    (*code)[position] = vm_entry;
+    (*code)[position] = (uint8_t)vm_code::entry;
   else
-    (*code)[position] = vm_save_sp;
+    (*code)[position] = (uint8_t)vm_code::save_sp;
   if (index < 1 << 8)
     (*code)[position + 1] = index;
   else {
@@ -882,11 +884,11 @@ size_t EntryFixup_O::resize() { return (this->lex()->frameIndex() < 1 << 8) ? 2 
 void RestoreSPFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
   size_t index = this->lex()->frameIndex();
   if (index >= 1 << 8)
-    (*code)[position++] = vm_long;
+    (*code)[position++] = (uint8_t)vm_code::_long;
   if (this->lex()->closedOverP())
-    (*code)[position] = vm_ref;
+    (*code)[position] = (uint8_t)vm_code::ref;
   else
-    (*code)[position] = vm_restore_sp;
+    (*code)[position] = (uint8_t)vm_code::restore_sp;
   if (index < 1 << 8)
     (*code)[position + 1] = index;
   else {
@@ -899,9 +901,9 @@ size_t RestoreSPFixup_O::resize() { return (this->lex()->frameIndex() < 1 << 8) 
 
 void ExitFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
   if (this->lex()->closedOverP())
-    emit_control_label_fixup(this->size(), this->delta(), position, code, vm_exit_8, vm_exit_16, vm_exit_24);
+    emit_control_label_fixup(this->size(), this->delta(), position, code, vm_code::exit_8, vm_code::exit_16, vm_code::exit_24);
   else
-    emit_control_label_fixup(this->size(), this->delta(), position, code, vm_jump_8, vm_jump_16, vm_jump_24);
+    emit_control_label_fixup(this->size(), this->delta(), position, code, vm_code::jump_8, vm_code::jump_16, vm_code::jump_24);
 }
 
 size_t ExitFixup_O::resize() { return resize_control_label_fixup(this->delta()); }
@@ -909,7 +911,7 @@ size_t ExitFixup_O::resize() { return resize_control_label_fixup(this->delta());
 void EntryCloseFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
   switch (this->size()) {
   case 1:
-    (*code)[position] = vm_entry_close;
+    (*code)[position] = (uint8_t)vm_code::entry_close;
     break;
   default:
     UNREACHABLE();
@@ -1001,9 +1003,7 @@ static void resolve_debug_vars(BytecodeDebugVars_sp info) {
       if (gc::IsA<LexicalInfo_sp>(tlvinfo)) {
         T_sp name = entry->car();
         LexicalInfo_sp lvinfo = gc::As_unsafe<LexicalInfo_sp>(tlvinfo);
-        auto bdv = BytecodeDebugVar_O::make(name, lvinfo->frameIndex(),
-                                            lvinfo->indirectLexicalP(),
-                                            lvinfo->decls());
+        auto bdv = BytecodeDebugVar_O::make(name, lvinfo->frameIndex(), lvinfo->indirectLexicalP(), lvinfo->decls());
         cur->setCar(bdv);
       }
     }
@@ -1108,9 +1108,7 @@ Function_sp Cfunction_O::link_function() {
 // For using a cfunction as a debug info (in BTB).
 // These only work after the module has been linked.
 CL_LISPIFY_NAME("core:bytecode-debug-info/start")
-CL_DEFMETHOD T_sp Cfunction_O::start() const {
-  return clasp_make_fixnum(this->entry_point()->module_position());
-}
+CL_DEFMETHOD T_sp Cfunction_O::start() const { return clasp_make_fixnum(this->entry_point()->module_position()); }
 CL_LISPIFY_NAME("core:bytecode-debug-info/end")
 CL_DEFMETHOD T_sp Cfunction_O::end() const {
   return clasp_make_fixnum(this->entry_point()->module_position() + this->final_size());
@@ -1184,8 +1182,8 @@ void Module_O::link_load() {
     Fixnum_sp ep = clasp_make_fixnum(cfunction->entry_point()->module_position());
     Pointer_sp trampoline = llvmo::cmp__compile_trampoline(cfunction->nname());
     BytecodeSimpleFun_sp func =
-        core__makeBytecodeSimpleFun(fdesc, bytecode_module, cfunction->nlocals(), cfunction->closed()->length(),
-                                          ep.unsafe_fixnum(), cfunction->final_size(), trampoline);
+        core__makeBytecodeSimpleFun(fdesc, bytecode_module, cfunction->nlocals(), cfunction->closed()->length(), ep.unsafe_fixnum(),
+                                    cfunction->final_size(), trampoline);
     cfunction->setInfo(func);
   }
   // Replace the cfunctions in the cmodule literal vector with
@@ -1211,8 +1209,8 @@ void Module_O::link_load() {
       (*literals)[i] = gc::As_unsafe<VariableCellInfo_sp>(lit)->vname()->ensureVariableCell();
     else if (gc::IsA<EnvInfo_sp>(lit))
       (*literals)[i] = nil<T_O>(); // the only environment we have
-    else SIMPLE_ERROR("BUG: Weird thing in compiler literals vector: {}",
-                      _rep_(lit));
+    else
+      SIMPLE_ERROR("BUG: Weird thing in compiler literals vector: {}", _rep_(lit));
   }
   // Also replace the cfunctions in the debug info.
   // We just modify the vector rather than cons a new one since create_debug_info
@@ -1249,16 +1247,16 @@ void compile_literal(T_sp literal, Lexenv_sp env, const Context context) {
     return; // No value required, so do nothing
   case 1:
     if (literal.nilp())
-      context.assemble0(vm_nil);
+      context.assemble0(vm_code::nil);
     else
-      context.assemble1(vm_const, context.literal_index(literal));
+      context.assemble1(vm_code::_const, context.literal_index(literal));
     return;
   case -1: // values
     if (literal.nilp())
-      context.assemble0(vm_nil);
+      context.assemble0(vm_code::nil);
     else
-      context.assemble1(vm_const, context.literal_index(literal));
-    context.assemble0(vm_pop);
+      context.assemble1(vm_code::_const, context.literal_index(literal));
+    context.assemble0(vm_code::pop);
     return;
   default:
     // FIXME: Just need to pad in some NILs.
@@ -1297,13 +1295,13 @@ inline static bool code_walking_p() {
 
 SYMBOL_EXPORT_SC_(CompPkg, warn_used_ignored_variable);
 CL_DEFUN void cmp__warn_used_ignored_variable(T_sp name, T_sp sourceloc) {
-  (void)name; (void)sourceloc;
+  (void)name;
+  (void)sourceloc;
 }
 
 // Function is called whenever a lexical is referenced, to issue a
 // warning with appropriate source location.
-static void maybe_warn_used(T_sp name, LexicalInfo_sp lex,
-                            T_sp sloc, bool funp) {
+static void maybe_warn_used(T_sp name, LexicalInfo_sp lex, T_sp sloc, bool funp) {
   if (lex->ignore() == LexicalInfo_O::IgnoreStatus::IGNORE) {
     T_sp rname = funp ? Cons_O::createList(cl::_sym_Function_O, name) : name;
     eval::funcall(_sym_warn_used_ignored_variable, rname, sloc);
@@ -1333,16 +1331,16 @@ void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
       LexicalVarInfo_sp lvinfo = std::get<LexicalVarInfoV>(info).info();
       if (lvinfo->funct() == context.cfunction())
         // Local variable, just read it.
-        context.assemble1(vm_ref, lvinfo->frameIndex());
+        context.assemble1(vm_code::ref, lvinfo->frameIndex());
       else { // closed over
         lvinfo->setClosedOverP(true);
-        context.assemble1(vm_closure, context.closure_index(lvinfo->lex()));
+        context.assemble1(vm_code::closure, context.closure_index(lvinfo->lex()));
       }
       context.maybe_emit_cell_ref(lvinfo);
       lvinfo->lex()->setReadP(true);
       maybe_warn_used(sym, lvinfo->lex(), context.source_info(), false);
     } else if (std::holds_alternative<SpecialVarInfoV>(info))
-      context.assemble1(vm_symbol_value, context.vcell_index(sym));
+      context.assemble1(vm_code::symbol_value, context.vcell_index(sym));
     else if (std::holds_alternative<ConstantVarInfoV>(info)) {
       compile_literal(std::get<ConstantVarInfoV>(info).value(), env, context);
       // Avoid the pop code below - compile-literal handles it.
@@ -1350,11 +1348,11 @@ void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
     } else if (std::holds_alternative<NoVarInfoV>(info)) {
       if (_sym_warn_undefined_global_variable->fboundp() && !code_walking_p())
         eval::funcall(_sym_warn_undefined_global_variable, context.source_info(), sym);
-      context.assemble1(vm_symbol_value, context.vcell_index(sym));
+      context.assemble1(vm_code::symbol_value, context.vcell_index(sym));
     }
     if (context.receiving() == -1)
       // Values return - put value in mv vector.
-      context.assemble0(vm_pop);
+      context.assemble0(vm_code::pop);
   }
 }
 
@@ -1405,7 +1403,8 @@ bool special_binding_p(Symbol_sp sym, List_sp specials, Lexenv_sp env) {
 LexicalInfo_O::IgnoreStatus binding_ignore(T_sp name, List_sp decls) {
   for (auto cur : decls) {
     T_sp decl = oCar(cur);
-    if (!gc::IsA<Cons_sp>(decl) || !gc::IsA<Cons_sp>(oCdr(decl))) continue;
+    if (!gc::IsA<Cons_sp>(decl) || !gc::IsA<Cons_sp>(oCdr(decl)))
+      continue;
     if (oCar(decl) == cl::_sym_ignore) {
       for (auto cv : gc::As_unsafe<List_sp>(oCdr(decl))) {
         if (cl__equal(oCar(cv), name))
@@ -1426,26 +1425,28 @@ LexicalInfo_O::IgnoreStatus binding_ignore(T_sp name, List_sp decls) {
 SYMBOL_EXPORT_SC_(CompPkg, warn_unused_variable);
 SYMBOL_EXPORT_SC_(CompPkg, warn_set_unused_variable);
 CL_DEFUN void cmp__warn_unused_variable(T_sp name, T_sp sourceloc) {
-  (void)name; (void)sourceloc;
+  (void)name;
+  (void)sourceloc;
 }
-CL_DEFUN void cmp__warn_set_unused_variable(T_sp name, T_sp sourceloc)
-{
-  (void)name; (void)sourceloc;
+CL_DEFUN void cmp__warn_set_unused_variable(T_sp name, T_sp sourceloc) {
+  (void)name;
+  (void)sourceloc;
 }
 
 // Emit warnings for unused variables etc.
 // Bindings is an alist of (name . lexical-info).
 static void warn_ignorance(List_sp bindings) {
-  if (code_walking_p()) return;
+  if (code_walking_p())
+    return;
   for (auto cur : bindings) {
     LexicalInfo_sp lex = gc::As_assert<LexicalInfo_sp>(oCadar(cur));
-    if (lex->ignore() == LexicalInfo_O::IgnoreStatus::NOIGNORE
-        && !lex->readP()) {
+    if (lex->ignore() == LexicalInfo_O::IgnoreStatus::NOIGNORE && !lex->readP()) {
       T_sp name = oCaar(cur);
       T_sp sloc = oCaddar(cur);
       if (lex->setP())
         eval::funcall(_sym_warn_set_unused_variable, name, sloc);
-      else eval::funcall(_sym_warn_unused_variable, name, sloc);
+      else
+        eval::funcall(_sym_warn_unused_variable, name, sloc);
     }
   }
 }
@@ -1500,8 +1501,7 @@ static List_sp decls_for_fun(T_sp funname, List_sp decls) {
       if (spec == cl::_sym_dynamic_extent || spec == cl::_sym_ignore || spec == cl::_sym_ignorable) {
         for (auto ncur : (List_sp)rest) {
           T_sp ncurn = oCar(ncur);
-          if (gc::IsA<Cons_sp>(ncurn) && oCar(ncurn) == cl::_sym_Function_O
-              && oCadr(ncurn) == funname && oCddr(ncurn).nilp()) {
+          if (gc::IsA<Cons_sp>(ncurn) && oCar(ncurn) == cl::_sym_Function_O && oCadr(ncurn) == funname && oCddr(ncurn).nilp()) {
             result << spec;
             break;
           }
@@ -1532,7 +1532,7 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
   Label_sp begin_label = Label_O::make();
   Label_sp end_label = Label_O::make();
   ql::list debug_bindings; // alist (name . LexicalInfo)
-  ql::list ibindings; // (name lex source). FIXME merge w/ above.
+  ql::list ibindings;      // (name lex source). FIXME merge w/ above.
   // now get processing
   for (auto cur : bindings) {
     T_sp binding = oCar(cur);
@@ -1555,8 +1555,7 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
       ++lexical_binding_count;
       LexicalVarInfo_sp lvinfo = gc::As_assert<LexicalVarInfo_sp>(post_binding_env->variableInfo(var));
       debug_bindings << Cons_O::create(var, lvinfo->lex());
-      ibindings << Cons_O::createList(var, lvinfo->lex(),
-                                      source_location_for(binding, ctxt.source_info()));
+      ibindings << Cons_O::createList(var, lvinfo->lex(), source_location_for(binding, ctxt.source_info()));
       lvinfo->lex()->setIgnore(binding_ignore(var, declares));
       lvinfo->lex()->setDecls(decls_for_var(var, declares));
       ctxt.maybe_emit_make_cell(lvinfo);
@@ -1613,7 +1612,7 @@ void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Contex
       new_env = new_env->bind1var(var, ctxt);
       LexicalVarInfo_sp lvinfo = gc::As_assert<LexicalVarInfo_sp>(new_env->variableInfo(var));
       ctxt.maybe_emit_make_cell(lvinfo);
-      ctxt.assemble1(vm_set, frame_start);
+      ctxt.assemble1(vm_code::set, frame_start);
       lvinfo->lex()->setIgnore(binding_ignore(var, declares));
       lvinfo->lex()->setDecls(decls_for_var(var, declares));
       // Set up debug info
@@ -1621,8 +1620,7 @@ void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Contex
       Cons_sp dpair = Cons_O::create(var, lvinfo->lex());
       ctxt.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, Cons_O::createList(dpair)));
       debug_bindings << dpair;
-      ibindings << Cons_O::createList(var, lvinfo->lex(),
-                                      source_location_for(binding, ctxt.source_info()));
+      ibindings << Cons_O::createList(var, lvinfo->lex(), source_location_for(binding, ctxt.source_info()));
     }
   }
   new_env = new_env->add_decls(declares);
@@ -1656,8 +1654,8 @@ static T_sp extract_lambda_list_from_declares(List_sp declares, T_sp defaultll) 
   return defaultll;
 }
 
-Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, LexicalVarInfo_sp varinfo, Symbol_sp supplied_var, bool var_specialp, bool supplied_specialp, const Context context,
-                                       Lexenv_sp env) {
+Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, LexicalVarInfo_sp varinfo, Symbol_sp supplied_var,
+                                       bool var_specialp, bool supplied_specialp, const Context context, Lexenv_sp env) {
   Label_sp supplied_label = Label_O::make();
   Label_sp next_label = Label_O::make();
   context.emit_jump_if_supplied(supplied_label, varinfo->frameIndex());
@@ -1669,7 +1667,7 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, Lexi
   // Bind the var to the default, and the suppliedvar to NIL if applicable.
   // We push the suppliedp value first because it's bound second.
   if (supplied_var.notnilp())
-    context.assemble0(vm_nil);
+    context.assemble0(vm_code::nil);
   compile_form(defaulting_form, env, context.sub_receiving(1));
   // And actually set the variable, if we're lexical.
   context.emit_jump(next_label);
@@ -1690,7 +1688,7 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, Lexi
   supplied_label->contextualize(context);
   if (supplied_var.notnilp())
     compile_literal(cl::_sym_T_O, env, context.sub_receiving(1));
-  context.assemble1(vm_ref, varinfo->frameIndex());
+  context.assemble1(vm_code::ref, varinfo->frameIndex());
   next_label->contextualize(context);
   // Bind the main variable if it's special.
   // We emit this one special bind after the branch for the same reason as with the
@@ -1699,7 +1697,7 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, Lexi
     context.emit_special_bind(var);
   else {
     context.maybe_emit_make_cell(varinfo);
-    context.assemble1(vm_set, varinfo->frameIndex());
+    context.assemble1(vm_code::set, varinfo->frameIndex());
   }
   // The suppliedp value was pushed most recently, so bind that first.
   // We do it this way after the branch so that the suppliedp var has a dominating bind
@@ -1712,7 +1710,7 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, Lexi
       context.maybe_emit_make_cell(lsinfo);
       // This is a separate set because the variable and its optionalp usually
       // don't have contiguous indices.
-      context.assemble1(vm_set, lsinfo->frameIndex());
+      context.assemble1(vm_code::set, lsinfo->frameIndex());
     }
   }
   // That's it for code generation. Now return the new environment.
@@ -1721,10 +1719,8 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, Lexi
 
 // Generate BytecodeDebug whatsits for optional/key variables.
 // Also set the ignore and other declarations.
-void annotate_optional_or_key_item(Symbol_sp key_var, Symbol_sp supplied_var,
-                                   List_sp decls, Label_sp end,
-                                   const Context ctxt, Lexenv_sp env)
-{
+void annotate_optional_or_key_item(Symbol_sp key_var, Symbol_sp supplied_var, List_sp decls, Label_sp end, const Context ctxt,
+                                   Lexenv_sp env) {
   ql::list dvars;
   VarInfoV kinfo = var_info_v(key_var, env);
   if (std::holds_alternative<LexicalVarInfoV>(kinfo)) {
@@ -1774,7 +1770,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
   size_t max_count = min_count + optional_count;
   bool morep = restarg._ArgTarget.notnilp() || key_flag.notnilp();
   Label_sp end_label = Label_O::make(); // for debug info
-  ql::list ibindings; // for ignore. &optional/&key not included FIXME
+  ql::list ibindings;                   // for ignore. &optional/&key not included FIXME
   ql::list lreqs;
   for (auto& it : reqs)
     lreqs << it._ArgTarget;
@@ -1785,17 +1781,17 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
   entry_point->contextualize(context);
   // Generate argument count check.
   if ((min_count > 0) && (min_count == max_count) && !morep)
-    context.assemble1(vm_check_arg_count_EQ, min_count);
+    context.assemble1(vm_code::check_arg_count_EQ, min_count);
   else {
     if (min_count > 0)
-      context.assemble1(vm_check_arg_count_GE, min_count);
+      context.assemble1(vm_code::check_arg_count_GE, min_count);
     if (!morep)
-      context.assemble1(vm_check_arg_count_LE, max_count);
+      context.assemble1(vm_code::check_arg_count_LE, max_count);
   }
   if (min_count > 0) {
     Label_sp begin_label = Label_O::make();
     // Bind the required arguments.
-    context.assemble1(vm_bind_required_args, min_count);
+    context.assemble1(vm_code::bind_required_args, min_count);
     ql::list debugbindings;
     ql::list debugdecls;
     ql::list sreqs; // required parameters that are special
@@ -1806,7 +1802,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
       auto lvinfo = gc::As_assert<LexicalVarInfo_sp>(new_env->variableInfo(var));
       if (special_binding_p(var, specials, env)) {
         sreqs << var;
-        context.assemble1(vm_ref, lvinfo->frameIndex());
+        context.assemble1(vm_code::ref, lvinfo->frameIndex());
         context.emit_special_bind(var);
         ++special_binding_count; // not in lisp - bug?
       } else {
@@ -1815,8 +1811,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
         debugbindings << dpair;
         lvinfo->lex()->setIgnore(binding_ignore(var, declares));
         lvinfo->lex()->setDecls(decls_for_var(var, declares));
-        ibindings << Cons_O::createList(var, lvinfo->lex(),
-                                        context.source_info());
+        ibindings << Cons_O::createList(var, lvinfo->lex(), context.source_info());
       }
     }
     new_env = new_env->add_specials(sreqs.cons());
@@ -1827,7 +1822,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
   if (optional_count > 0) {
     // Generate code to bind the provided optional args, unprovided args will
     // be initialized with the unbound marker.
-    context.assemble2(vm_bind_optional_args, min_count, optional_count);
+    context.assemble2(vm_code::bind_optional_args, min_count, optional_count);
     // Mark the locations of each optional. Note that we do this even if
     // the variable will be specially bound, to match the placement by
     // bind_optional_args.
@@ -1846,15 +1841,15 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     Symbol_sp rest = restarg._ArgTarget;
     bool varestp = restarg.VaRest;
     if (varestp) {
-      context.assemble1(vm_vaslistify_rest_args, max_count);
+      context.assemble1(vm_code::vaslistify_rest_args, max_count);
     } else {
-      context.assemble1(vm_listify_rest_args, max_count);
+      context.assemble1(vm_code::listify_rest_args, max_count);
     }
     new_env = new_env->bind1var(rest, context);
     optkey_env = optkey_env->bind1var(rest, context);
     auto lvinfo = gc::As_assert<LexicalVarInfo_sp>(new_env->variableInfo(rest));
     if (special_binding_p(rest, specials, env)) {
-      context.assemble1(vm_ref, lvinfo->frameIndex());
+      context.assemble1(vm_code::ref, lvinfo->frameIndex());
       context.emit_special_bind(rest);
       ++special_binding_count;
       new_env = new_env->add_specials(Cons_O::createList(rest));
@@ -1905,15 +1900,14 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
       bool supplied_special_p = supplied_var.notnilp() && special_binding_p(supplied_var, specials, env);
       new_env = compile_optional_or_key_item(optional_var, defaulting_form, varinfo, supplied_var, optional_special_p,
                                              supplied_special_p, context, new_env);
-      annotate_optional_or_key_item(optional_var, supplied_var, declares, end_label,
-                                    context, new_env);
+      annotate_optional_or_key_item(optional_var, supplied_var, declares, end_label, context, new_env);
       if (optional_special_p)
         ++special_binding_count;
       else
         ibindings << Cons_O::createList(optional_var, varinfo->lex(), context.source_info());
       if (supplied_special_p)
         ++special_binding_count;
-      else if (supplied_var.notnilp()){
+      else if (supplied_var.notnilp()) {
         T_sp lexvarinfo = var_info(supplied_var, new_env);
         ibindings << Cons_O::createList(supplied_var, gc::As_assert<LexicalVarInfo_sp>(lexvarinfo)->lex(), context.source_info());
       }
@@ -1928,10 +1922,9 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
       bool key_special_p = special_binding_p(key_var, specials, env);
       auto varinfo = gc::As_assert<LexicalVarInfo_sp>(var_info(key_var, optkey_env));
       bool supplied_special_p = supplied_var.notnilp() && special_binding_p(supplied_var, specials, env);
-      new_env = compile_optional_or_key_item(key_var, defaulting_form, varinfo, supplied_var, key_special_p,
-                                             supplied_special_p, context, new_env);
-      annotate_optional_or_key_item(key_var, supplied_var, declares,
-                                    end_label, context, new_env);
+      new_env = compile_optional_or_key_item(key_var, defaulting_form, varinfo, supplied_var, key_special_p, supplied_special_p,
+                                             context, new_env);
+      annotate_optional_or_key_item(key_var, supplied_var, declares, end_label, context, new_env);
       if (key_special_p)
         ++special_binding_count;
       else
@@ -1939,7 +1932,8 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
       if (supplied_special_p)
         ++special_binding_count;
       else if (supplied_var.notnilp())
-        ibindings << Cons_O::createList(supplied_var, gc::As_assert<LexicalVarInfo_sp>(var_info(supplied_var, new_env))->lex(), context.source_info());
+        ibindings << Cons_O::createList(supplied_var, gc::As_assert<LexicalVarInfo_sp>(var_info(supplied_var, new_env))->lex(),
+                                        context.source_info());
     }
   }
   // Generate aux and the body as a let*.
@@ -1991,7 +1985,7 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
   // We pass the original body w/declarations to compile-with-lambda-list
   // so that it can do its own handling of specials, etc.
   compile_with_lambda_list(lambda_list, body, lenv, context);
-  context.assemble0(vm_return);
+  context.assemble0(vm_code::_return);
   if (all_declares.notnilp() || source_info.notnilp())
     end->contextualize(context);
   return function;
@@ -2019,16 +2013,16 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
       ctxt.reference_lexical_info(gc::As_assert<LexicalInfo_sp>((*closed)[i]));
     }
     if (closed->length() == 0) // don't need to actually close
-      ctxt.assemble1(vm_const, ctxt.cfunction_index(fun));
+      ctxt.assemble1(vm_code::_const, ctxt.cfunction_index(fun));
     else
-      ctxt.assemble1(vm_make_closure, ctxt.cfunction_index(fun));
+      ctxt.assemble1(vm_code::make_closure, ctxt.cfunction_index(fun));
   } else { // ought to be a function name
     FunInfoV info = fun_info_v(fnameoid, env);
     if (std::holds_alternative<GlobalFunInfoV>(info) || std::holds_alternative<NoFunInfoV>(info)) {
       if (std::holds_alternative<NoFunInfoV>(info) // Warn
           && _sym_register_global_function_ref->fboundp() && !code_walking_p())
         eval::funcall(_sym_register_global_function_ref, fnameoid, ctxt.source_info());
-      ctxt.assemble1(vm_fdefinition, ctxt.fcell_index(fnameoid));
+      ctxt.assemble1(vm_code::fdefinition, ctxt.fcell_index(fnameoid));
     } else if (std::holds_alternative<LocalFunInfoV>(info)) {
       LocalFunInfo_sp lfinfo = std::get<LocalFunInfoV>(info).info();
       lfinfo->lex()->setReadP(true);
@@ -2040,7 +2034,7 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
   }
   // Coerce to values if necessary.
   if (mvp)
-    ctxt.assemble0(vm_pop);
+    ctxt.assemble0(vm_code::pop);
 }
 
 // Compile a function designator knowing that it will be immediately
@@ -2055,16 +2049,16 @@ void compile_called_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
       ctxt.reference_lexical_info(gc::As_assert<LexicalInfo_sp>((*closed)[i]));
     }
     if (closed->length() == 0) // don't need to actually close
-      ctxt.assemble1(vm_const, ctxt.cfunction_index(fun));
+      ctxt.assemble1(vm_code::_const, ctxt.cfunction_index(fun));
     else
-      ctxt.assemble1(vm_make_closure, ctxt.cfunction_index(fun));
+      ctxt.assemble1(vm_code::make_closure, ctxt.cfunction_index(fun));
   } else { // ought to be a function name
     FunInfoV info = fun_info_v(fnameoid, env);
     if (std::holds_alternative<GlobalFunInfoV>(info) || std::holds_alternative<NoFunInfoV>(info)) {
       if (std::holds_alternative<NoFunInfoV>(info) // Warn
           && _sym_register_global_function_ref->fboundp() && !code_walking_p())
         eval::funcall(_sym_register_global_function_ref, fnameoid, ctxt.source_info());
-      ctxt.assemble1(vm_called_fdefinition, ctxt.fcell_index(fnameoid));
+      ctxt.assemble1(vm_code::called_fdefinition, ctxt.fcell_index(fnameoid));
     } else if (std::holds_alternative<LocalFunInfoV>(info)) {
       LocalFunInfo_sp lfinfo = std::get<LocalFunInfoV>(info).info();
       lfinfo->lex()->setReadP(true);
@@ -2083,7 +2077,7 @@ void compile_fdesignator(T_sp fform, Lexenv_sp env, const Context ctxt) {
   // If we get (function ...) or (lambda ...), which is quite common
   // e.g. in (funcall #'(setf...) ...)
   // and (multiple-value-call (lambda ...mv-bind code ...) form)
-  // we don't need to emit a vm_fdesignator instruction or anything.
+  // we don't need to emit a vm_code::fdesignator instruction or anything.
   // TODO: We could do something smarter if given 'foo or a constant,
   // but those are more marginal.
   // This function basically bypasses compile_form. As such we need to
@@ -2105,7 +2099,7 @@ void compile_fdesignator(T_sp fform, Lexenv_sp env, const Context ctxt) {
   }
   // default
   compile_form(fform, env, ctxt.sub_receiving(1));
-  ctxt.assemble1(vm_fdesignator, ctxt.env_index());
+  ctxt.assemble1(vm_code::fdesignator, ctxt.env_index());
 }
 
 void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Context ctxt) {
@@ -2147,8 +2141,7 @@ void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Contex
     lex->setIgnore(binding_ignore(fname, declares));
     lex->setDecls(decls_for_fun(name, declares));
     debugbindings << Cons_O::create(fname, lex);
-    ibindings << Cons_O::createList(fname, lex,
-                                    source_location_for(oCar(cur), ctxt.source_info()));
+    ibindings << Cons_O::createList(fname, lex, source_location_for(oCar(cur), ctxt.source_info()));
   }
   T_sp dbindings = debugbindings.cons();
   if (dbindings.notnilp())
@@ -2193,18 +2186,17 @@ void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Cont
     size_t literal_index = ctxt.cfunction_index(fun);
     LocalFunInfo_sp lfi = gc::As_assert<LocalFunInfo_sp>(fun_info(name, new_env));
     if (fun->closed()->length() == 0) // not a closure- easy
-      ctxt.assemble1(vm_const, literal_index);
+      ctxt.assemble1(vm_code::_const, literal_index);
     else {
       closures << Cons_O::create(fun, clasp_make_fixnum(lfi->frameIndex()));
-      ctxt.assemble1(vm_make_uninitialized_closure, literal_index);
+      ctxt.assemble1(vm_code::make_uninitialized_closure, literal_index);
     }
     T_sp fname = Cons_O::createList(cl::_sym_Function_O, name);
     LexicalInfo_sp lex = lfi->lex();
     lex->setIgnore(binding_ignore(fname, body_declares));
     lex->setDecls(decls_for_fun(name, body_declares));
     debugbindings << Cons_O::create(fname, lex);
-    ibindings << Cons_O::createList(fname, lex,
-                                    source_location_for(definition, ctxt.source_info()));
+    ibindings << Cons_O::createList(fname, lex, source_location_for(definition, ctxt.source_info()));
   }
   ctxt.emit_bind(fun_count, env->frameEnd());
   T_sp dbindings = debugbindings.cons();
@@ -2219,7 +2211,7 @@ void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Cont
       LexicalInfo_sp info = gc::As_assert<LexicalInfo_sp>((*closed)[i]);
       ctxt.reference_lexical_info(info);
     }
-    ctxt.assemble1(vm_initialize_closure, oCdar(cur).unsafe_fixnum());
+    ctxt.assemble1(vm_code::initialize_closure, oCdar(cur).unsafe_fixnum());
   }
   compile_locally(body, new_env, ctxt);
   end_label->contextualize(ctxt);
@@ -2242,11 +2234,11 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Contex
     // alter it.
     // but if we're not returning a value we don't actually have to do that crap.
     if (ctxt.receiving() != 0) {
-      ctxt.assemble0(vm_dup);
+      ctxt.assemble0(vm_code::dup);
     }
-    ctxt.assemble1(vm_symbol_value_set, ctxt.vcell_index(var));
+    ctxt.assemble1(vm_code::symbol_value_set, ctxt.vcell_index(var));
     if (ctxt.receiving() == -1) // need values
-      ctxt.assemble0(vm_pop);
+      ctxt.assemble0(vm_code::pop);
   } else if (std::holds_alternative<LexicalVarInfoV>(info)) {
     LexicalVarInfo_sp lvinfo = std::get<LexicalVarInfoV>(info).info();
     bool localp = (lvinfo->funct() == ctxt.cfunction());
@@ -2256,29 +2248,30 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Contex
     compile_form(valf, env, ctxt.sub_receiving(1));
     // Similar concerns to specials above (for closure variables)
     if (ctxt.receiving() != 0) {
-      ctxt.assemble0(vm_dup);
+      ctxt.assemble0(vm_code::dup);
     }
     if (localp)
       ctxt.emit_lexical_set(lvinfo);
     else { // we already know we need a cell, so don't bother w/ a fixup.
-      ctxt.assemble1(vm_closure, ctxt.closure_index(lvinfo->lex()));
-      ctxt.assemble0(vm_cell_set);
+      ctxt.assemble1(vm_code::closure, ctxt.closure_index(lvinfo->lex()));
+      ctxt.assemble0(vm_code::cell_set);
     }
     if (ctxt.receiving() == -1)
-      ctxt.assemble0(vm_pop);
+      ctxt.assemble0(vm_code::pop);
   } else if (std::holds_alternative<ConstantVarInfoV>(info)) {
     // FIXME: Better error (warning?)
     SIMPLE_ERROR("Cannot modify constant {}", var->__repr__());
-  } else UNREACHABLE();
+  } else
+    UNREACHABLE();
 }
 
 void compile_setq(List_sp pairs, Lexenv_sp env, const Context ctxt) {
   if (pairs.nilp()) {
     // degenerate case
     if (ctxt.receiving() != 0) {
-      ctxt.assemble0(vm_nil);
+      ctxt.assemble0(vm_code::nil);
       if (ctxt.receiving() == -1)
-        ctxt.assemble0(vm_pop);
+        ctxt.assemble0(vm_code::pop);
     }
   } else {
     do {
@@ -2318,8 +2311,7 @@ void compile_the(T_sp type, T_sp form, Lexenv_sp env, const Context ctxt) {
 
 void compile_if(T_sp cond, T_sp thn, T_sp els, Lexenv_sp env, const Context ctxt) {
   compile_form(cond, env, ctxt.sub_receiving(1));
-  Label_sp then_label = Label_O::make(),
-    else_label = Label_O::make();
+  Label_sp then_label = Label_O::make(), else_label = Label_O::make();
   Label_sp done_label = Label_O::make();
   ctxt.emit_jump_if(then_label);
   else_label->contextualize(ctxt);
@@ -2380,9 +2372,9 @@ void compile_tagbody(List_sp statements, Lexenv_sp env, const Context ctxt) {
   }
   // return nil if we really have to
   if (ctxt.receiving() != 0) {
-    ctxt.assemble0(vm_nil);
+    ctxt.assemble0(vm_code::nil);
     if (ctxt.receiving() == -1)
-      ctxt.assemble0(vm_pop);
+      ctxt.assemble0(vm_code::pop);
   }
 }
 
@@ -2396,9 +2388,9 @@ static void compile_exit(LexicalInfo_sp exit_de, Label_sp exit, const Context co
       if (gc::IsA<LexicalInfo_sp>(interde))
         context.maybe_emit_entry_close(gc::As_unsafe<LexicalInfo_sp>(interde));
       else if (interde == cl::_sym_catch)
-        context.assemble0(vm_catch_close);
+        context.assemble0(vm_code::catch_close);
       else if (interde == cl::_sym_unwind_protect)
-        context.assemble0(vm_cleanup);
+        context.assemble0(vm_code::cleanup);
       else // must be a count of specials
         context.emit_unbind(interde.unsafe_fixnum());
     }
@@ -2440,7 +2432,7 @@ void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ct
   // If we're returning multiple values, the local and nonlocal returns just
   // store into the multiple values, so no problem there.
   // If we're returning exactly one value, the local just pushes one, and
-  // the nonlocal stores into the MV which is then vm_push'd to the stack.
+  // the nonlocal stores into the MV which is then vm_code::push'd to the stack.
   bool r1p = ctxt.receiving() == 1;
   compile_progn(body, nenv, ctxt.sub_de(blex));
   if (r1p)
@@ -2449,7 +2441,7 @@ void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ct
   // When we need 1 value, we have to make sure that the
   // "exceptional" case pushes a single value onto the stack.
   if (r1p) {
-    ctxt.assemble0(vm_push);
+    ctxt.assemble0(vm_code::push);
     normal_label->contextualize(ctxt);
   }
   ctxt.maybe_emit_entry_close(blex);
@@ -2482,12 +2474,12 @@ void compile_catch(T_sp tag, List_sp body, Lexenv_sp env, const Context ctxt) {
   start->contextualize(ctxt);
   ctxt.push_debug_info(BytecodeAstBlock_O::make(start, target, cl::_sym_catch, ctxt.receiving()));
   compile_progn(body, env, ctxt.sub_de(cl::_sym_catch));
-  ctxt.assemble0(vm_catch_close);
+  ctxt.assemble0(vm_code::catch_close);
   if (r1p)
     ctxt.emit_jump(normal_label);
   target->contextualize(ctxt);
   if (r1p) {
-    ctxt.assemble0(vm_push);
+    ctxt.assemble0(vm_code::push);
     normal_label->contextualize(ctxt);
   }
 }
@@ -2495,32 +2487,32 @@ void compile_catch(T_sp tag, List_sp body, Lexenv_sp env, const Context ctxt) {
 void compile_throw(T_sp tag, T_sp rform, Lexenv_sp env, const Context ctxt) {
   compile_form(tag, env, ctxt.sub_receiving(1));
   compile_form(rform, env, ctxt.sub_receiving(-1));
-  ctxt.assemble0(vm_throw);
+  ctxt.assemble0(vm_code::_throw);
 }
 
-void compile_unwind_protect(T_sp protect, List_sp cleanup,
-                            Lexenv_sp env, const Context ctxt) {
+void compile_unwind_protect(T_sp protect, List_sp cleanup, Lexenv_sp env, const Context ctxt) {
   if (cleanup.nilp()) { // trivial
     compile_form(protect, env, ctxt);
   } else {
     // Make the cleanup closure.
     // Duplicates a bit of code from compile_function.
-    Cfunction_sp cleanupt = compile_lambda(nil<T_O>(), Cons_O::createList(Cons_O::create(cl::_sym_progn, cleanup)), env, ctxt.module(), ctxt.source_info());
+    Cfunction_sp cleanupt = compile_lambda(nil<T_O>(), Cons_O::createList(Cons_O::create(cl::_sym_progn, cleanup)), env,
+                                           ctxt.module(), ctxt.source_info());
     ComplexVector_T_sp closed = cleanupt->closed();
     for (size_t i = 0; i < closed->length(); ++i)
       ctxt.reference_lexical_info((*closed)[i].as_assert<LexicalInfo_O>());
     // Actual protect instruction
-    ctxt.assemble1(vm_protect, ctxt.cfunction_index(cleanupt));
+    ctxt.assemble1(vm_code::protect, ctxt.cfunction_index(cleanupt));
     // and the body...
     compile_form(protect, env, ctxt.sub_de(cl::_sym_unwind_protect));
-    ctxt.assemble0(vm_cleanup);
+    ctxt.assemble0(vm_code::cleanup);
   }
 }
 
 void compile_progv(T_sp syms, T_sp vals, List_sp body, Lexenv_sp env, const Context ctxt) {
   compile_form(syms, env, ctxt.sub_receiving(1));
   compile_form(vals, env, ctxt.sub_receiving(1));
-  ctxt.assemble1(vm_progv, ctxt.env_index());
+  ctxt.assemble1(vm_code::progv, ctxt.env_index());
   compile_progn(body, env, ctxt.sub_de(clasp_make_fixnum(1)));
   ctxt.emit_unbind(1);
 }
@@ -2534,11 +2526,11 @@ void compile_multiple_value_call(T_sp fform, List_sp aforms, Lexenv_sp env, cons
     T_sp first = oCar(aforms);
     List_sp rest = gc::As<List_sp>(oCdr(aforms));
     compile_form(first, env, ctxt.sub_receiving(-1));
-    ctxt.assemble0(vm_push_values);
+    ctxt.assemble0(vm_code::push_values);
     if (rest.notnilp()) {
       for (auto cur : rest) {
         compile_form(oCar(cur), env, ctxt.sub_receiving(-1));
-        ctxt.assemble0(vm_append_values);
+        ctxt.assemble0(vm_code::append_values);
       }
     }
     ctxt.emit_mv_call();
@@ -2549,11 +2541,11 @@ void compile_multiple_value_prog1(T_sp fform, List_sp forms, Lexenv_sp env, cons
   compile_form(fform, env, ctxt);
   // We only need to actually save anything with all-values returns.
   if (ctxt.receiving() == -1)
-    ctxt.assemble0(vm_push_values);
+    ctxt.assemble0(vm_code::push_values);
   for (auto cur : forms)
     compile_form(oCar(cur), env, ctxt.sub_receiving(0));
   if (ctxt.receiving() == -1)
-    ctxt.assemble0(vm_pop_values);
+    ctxt.assemble0(vm_code::pop_values);
 }
 
 // Compile a call, where the function is already on the stack.
@@ -2596,11 +2588,11 @@ void compile_load_time_value(T_sp form, T_sp tread_only_p, Lexenv_sp env, const 
   case 0:
     break; // no value required, so compile nothing
   case 1:
-    context.assemble1(vm_const, ind);
+    context.assemble1(vm_code::_const, ind);
     break;
   case -1: // all values
-    context.assemble1(vm_const, ind);
-    context.assemble0(vm_pop);
+    context.assemble1(vm_code::_const, ind);
+    context.assemble0(vm_code::pop);
     break;
   default:
     SIMPLE_ERROR("BUG: Don't know how to compile LTV returning %" PFixnum " values", context.receiving());

@@ -205,10 +205,8 @@
   (append-cflags configuration "-O3 -g -fPIC" :type :cflags :debug nil)
   (append-cflags configuration "-O0 -g" :type :cxxflags :debug t)
   (append-cflags configuration "-O0 -g" :type :cflags :debug t)
-  (append-cflags configuration (if (broken-stdlib configuration)
-                                   "-std=c++17 -Wno-c++20-extensions"
-                                   "-std=c++20")
-                               :type :cxxflags)
+  (append-cflags configuration "-fconstexpr-steps=10000000" :type :cxxflags)
+  (append-cflags configuration "-std=gnu++20" :type :cxxflags)
   #+darwin (append-cflags configuration "-stdlib=libc++" :type :cxxflags)
   #+darwin (append-cflags configuration "-I/usr/local/include")
   #+linux (append-cflags configuration "-fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -fno-stack-protector -stdlib=libstdc++"

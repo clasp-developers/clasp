@@ -227,15 +227,15 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       VM_RECORD_PLAYBACK(vm._stackPointer, "stackPointer");
     }
 #endif
-    switch (*pc) {
-    case vm_ref: {
+    switch ((vm_code)*pc) {
+    case vm_code::ref: {
       uint8_t n = *(++pc);
       DBG_VM1("ref %" PRIu8 "\n", n);
       vm.push(sp, *(vm.reg(fp, n)));
       pc++;
       break;
     }
-    case vm_const: {
+    case vm_code::_const: {
       uint8_t n = *(++pc);
       DBG_VM1("const %" PRIu8 "\n", n);
       T_O* value = literals[n];
@@ -244,14 +244,14 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_closure: {
+    case vm_code::closure: {
       uint8_t n = *(++pc);
       DBG_VM("closure %" PRIu8 "\n", n);
       vm.push(sp, closed[n]);
       pc++;
       break;
     }
-    case vm_call: {
+    case vm_code::call: {
       uint8_t nargs = *(++pc);
       DBG_VM1("call %" PRIu8 "\n", nargs);
       T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
@@ -266,7 +266,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_call_receive_one: {
+    case vm_code::call_receive_one: {
       uint8_t nargs = *(++pc);
       DBG_VM1("call-receive-one %" PRIu8 "\n", nargs);
       T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
@@ -291,7 +291,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_call_receive_fixed: {
+    case vm_code::call_receive_fixed: {
       uint8_t nargs = *(++pc);
       uint8_t nvals = *(++pc);
       DBG_VM("call-receive-fixed %" PRIu8 " %" PRIu8 "\n", nargs, nvals);
@@ -312,7 +312,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_bind: {
+    case vm_code::bind: {
       uint8_t nelems = *(++pc);
       uint8_t base = *(++pc);
       DBG_VM1("bind %" PRIu8 " %" PRIu8 "\n", nelems, base);
@@ -321,14 +321,14 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_set: {
+    case vm_code::set: {
       uint8_t n = *(++pc);
       DBG_VM("set %" PRIu8 "\n", n);
       vm.setreg(fp, n, vm.pop(sp));
       pc++;
       break;
     }
-    case vm_make_cell: {
+    case vm_code::make_cell: {
       DBG_VM1("make-cell\n");
       T_sp car((gctools::Tagged)(vm.pop(sp)));
       T_sp cdr((gctools::Tagged)nil<T_O>().raw_());
@@ -336,14 +336,14 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_cell_ref: {
+    case vm_code::cell_ref: {
       DBG_VM1("cell-ref\n");
       T_sp cons((gctools::Tagged)vm.pop(sp));
       vm.push(sp, cons.unsafe_cons()->car().raw_());
       pc++;
       break;
     }
-    case vm_cell_set: {
+    case vm_code::cell_set: {
       DBG_VM("cell-set\n");
       T_sp cons((gctools::Tagged)vm.pop(sp));
       Cons_sp ccons = gc::As_assert<Cons_sp>(cons);
@@ -353,7 +353,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_make_closure: {
+    case vm_code::make_closure: {
       uint8_t c = *(++pc);
       DBG_VM("make-closure %" PRIu8 "\n", c);
       T_sp fn_sp((gctools::Tagged)literals[c]);
@@ -368,7 +368,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_make_uninitialized_closure: {
+    case vm_code::make_uninitialized_closure: {
       uint8_t c = *(++pc);
       DBG_VM("make-uninitialized-closure %" PRIu8 "\n", c);
       T_sp fn_sp((gctools::Tagged)literals[c]);
@@ -380,7 +380,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_initialize_closure: {
+    case vm_code::initialize_closure: {
       uint8_t c = *(++pc);
       DBG_VM("initialize-closure %" PRIu8 "\n", c);
       T_sp tclosure((gctools::Tagged)(*(vm.reg(fp, c))));
@@ -395,21 +395,21 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_return: {
+    case vm_code::_return: {
       DBG_VM1("return\n");
       // since the stack pointer is a local variable we don't need to
       // adjust it.
       size_t nvalues = multipleValues.getSize();
       return gctools::return_type(multipleValues.valueGet(0, nvalues).raw_(), nvalues);
     }
-    case vm_bind_required_args: {
+    case vm_code::bind_required_args: {
       uint8_t nargs = *(++pc);
       DBG_VM("bind-required-args %" PRIu8 "\n", nargs);
       vm.copytoreg(fp, lcc_args, nargs, 0);
       pc++;
       break;
     }
-    case vm_bind_optional_args: {
+    case vm_code::bind_optional_args: {
       uint8_t nreq = *(++pc);
       uint8_t nopt = *(++pc);
       DBG_VM("bind-optional-args %" PRIu8 " %" PRIu8 "\n", nreq, nopt);
@@ -424,7 +424,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_listify_rest_args: {
+    case vm_code::listify_rest_args: {
       uint8_t start = *(++pc);
       DBG_VM("listify-rest-args %" PRIu8 "\n", start);
       ql::list rest;
@@ -436,7 +436,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_vaslistify_rest_args: {
+    case vm_code::vaslistify_rest_args: {
       //
       // This pushes two vaslist structures (each two words that look like fixnums)
       // onto the stack.  the theVaslist_backup is used by vaslist_rewind
@@ -448,7 +448,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_parse_key_args: {
+    case vm_code::parse_key_args: {
       uint8_t more_start = *(++pc);
       uint8_t key_count_info = *(++pc);
       uint8_t key_literal_start = *(++pc);
@@ -501,25 +501,25 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_jump_8: {
+    case vm_code::jump_8: {
       int8_t rel = *(pc + 1);
       DBG_VM1("jump %" PRId8 "\n", rel);
       pc += rel;
       break;
     }
-    case vm_jump_16: {
+    case vm_code::jump_16: {
       int16_t rel = read_s16(pc + 1);
       DBG_VM("jump %" PRId16 "\n", rel);
       pc += rel;
       break;
     }
-    case vm_jump_24: {
+    case vm_code::jump_24: {
       int32_t rel = read_label(pc, 3);
       DBG_VM("jump %" PRId32 "\n", rel);
       pc += rel;
       break;
     }
-    case vm_jump_if_8: {
+    case vm_code::jump_if_8: {
       int8_t rel = *(pc + 1);
       DBG_VM1("jump-if %" PRId8 "\n", rel);
       T_sp tval((gctools::Tagged)vm.pop(sp));
@@ -530,7 +530,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         pc += 2;
       break;
     }
-    case vm_jump_if_16: {
+    case vm_code::jump_if_16: {
       int16_t rel = read_s16(pc + 1);
       DBG_VM("jump-if %" PRId16 "\n", rel);
       T_sp tval((gctools::Tagged)vm.pop(sp));
@@ -540,7 +540,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         pc += 3;
       break;
     }
-    case vm_jump_if_24: {
+    case vm_code::jump_if_24: {
       int32_t rel = read_label(pc, 3);
       DBG_VM("jump-if %" PRId32 "\n", rel);
       T_sp tval((gctools::Tagged)vm.pop(sp));
@@ -550,7 +550,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         pc += 4;
       break;
     }
-    case vm_jump_if_supplied_8: {
+    case vm_code::jump_if_supplied_8: {
       uint8_t slot = *(pc + 1);
       int32_t rel = *(pc + 2);
       DBG_VM("jump-if-supplied %" PRIu8 " %" PRId8 "\n", slot, rel);
@@ -561,7 +561,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         pc += rel;
       break;
     }
-    case vm_jump_if_supplied_16: {
+    case vm_code::jump_if_supplied_16: {
       uint8_t slot = *(pc + 1);
       int16_t rel = read_s16(pc + 2);
       DBG_VM("jump-if-supplied %" PRIu8 " %" PRId16 "\n", slot, rel);
@@ -572,7 +572,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         pc += rel;
       break;
     }
-    case vm_check_arg_count_LE: {
+    case vm_code::check_arg_count_LE: {
       uint8_t max_nargs = *(++pc);
       DBG_VM("check-arg-count<= %" PRIu8 "\n", max_nargs);
       if (lcc_nargs > max_nargs) {
@@ -582,7 +582,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_check_arg_count_GE: {
+    case vm_code::check_arg_count_GE: {
       uint8_t min_nargs = *(++pc);
       DBG_VM("check-arg-count>= %" PRIu8 "\n", min_nargs);
       if (lcc_nargs < min_nargs) {
@@ -592,7 +592,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_check_arg_count_EQ: {
+    case vm_code::check_arg_count_EQ: {
       uint8_t req_nargs = *(++pc);
       DBG_VM1("check-arg-count= %" PRIu8 "\n", req_nargs);
       if (lcc_nargs != req_nargs) {
@@ -602,7 +602,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_push_values: {
+    case vm_code::push_values: {
       // TODO: Direct copy?
       DBG_VM("push-values\n");
       size_t nvalues = multipleValues.getSize();
@@ -614,7 +614,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_append_values: {
+    case vm_code::append_values: {
       DBG_VM("append-values\n");
       T_sp texisting_values((gctools::Tagged)vm.pop(sp));
       size_t existing_values = texisting_values.unsafe_fixnum();
@@ -627,7 +627,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_pop_values: {
+    case vm_code::pop_values: {
       DBG_VM("pop-values\n");
       T_sp texisting_values((gctools::Tagged)vm.pop(sp));
       size_t existing_values = texisting_values.unsafe_fixnum();
@@ -638,7 +638,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_mv_call: {
+    case vm_code::mv_call: {
       DBG_VM("mv-call\n");
       T_sp tnargs((gctools::Tagged)vm.pop(sp));
       size_t nargs = tnargs.unsafe_fixnum();
@@ -655,7 +655,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_mv_call_receive_one: {
+    case vm_code::mv_call_receive_one: {
       DBG_VM("mv-call-receive-one\n");
       T_sp tnargs((gctools::Tagged)vm.pop(sp));
       size_t nargs = tnargs.unsafe_fixnum();
@@ -673,7 +673,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_mv_call_receive_fixed: {
+    case vm_code::mv_call_receive_fixed: {
       uint8_t nvals = *(++pc);
       DBG_VM("mv-call-receive-fixed %" PRIu8 "\n", nvals);
       T_sp tnargs((gctools::Tagged)vm.pop(sp));
@@ -695,21 +695,21 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_save_sp: {
+    case vm_code::save_sp: {
       uint8_t n = *(++pc);
       DBG_VM("save sp %" PRIu8 "\n", n);
       vm.savesp(fp, sp, n);
       pc++;
       break;
     }
-    case vm_restore_sp: {
+    case vm_code::restore_sp: {
       uint8_t n = *(++pc);
       DBG_VM("restore sp %" PRIu8 "\n", n);
       vm.restoresp(fp, sp, n);
       pc++;
       break;
     }
-    case vm_entry: {
+    case vm_code::entry: {
       uint8_t n = *(++pc);
       DBG_VM("entry %" PRIu8 "\n", n);
       pc++;
@@ -735,7 +735,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       }
       break;
     }
-    case vm_exit_8: {
+    case vm_code::exit_8: {
       int8_t rel = *(pc + 1);
       DBG_VM("exit %" PRId8 "\n", rel);
       vm._pc = pc + rel;
@@ -743,7 +743,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       TagbodyDynEnv_sp tde = gc::As_assert<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
     }
-    case vm_exit_16: {
+    case vm_code::exit_16: {
       int16_t rel = read_s16(pc + 1);
       DBG_VM("exit %" PRId16 "\n", rel);
       vm._pc = pc + rel;
@@ -751,7 +751,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       TagbodyDynEnv_sp tde = gc::As_assert<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
     }
-    case vm_exit_24: {
+    case vm_code::exit_24: {
       int32_t rel = read_label(pc, 3);
       DBG_VM("exit %" PRId32 "\n", rel);
       vm._pc = pc + rel;
@@ -759,15 +759,15 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       TagbodyDynEnv_sp tde = gc::As_assert<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
     }
-    case vm_entry_close: {
+    case vm_code::entry_close: {
       DBG_VM("entry-close\n");
       // This sham return value just gets us out of the bytecode_vm call in
-      // vm_entry, above.
+      // vm_code::entry, above.
       vm._pc = pc + 1;
       vm._stackPointer = sp;
       return gctools::return_type(nil<T_O>().raw_(), 0);
     }
-    case vm_catch_8: {
+    case vm_code::catch_8: {
       int8_t rel = *(pc + 1);
       DBG_VM("catch-8 %" PRId8 "\n", rel);
       unsigned char* target = pc + rel;
@@ -787,7 +787,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       }
       break;
     }
-    case vm_catch_16: {
+    case vm_code::catch_16: {
       int16_t rel = read_s16(pc + 1);
       DBG_VM("catch-8 %" PRId16 "\n", rel);
       unsigned char* target = pc + rel;
@@ -807,18 +807,18 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       }
       break;
     }
-    case vm_throw: {
+    case vm_code::_throw: {
       DBG_VM("throw\n");
       T_sp tag((gctools::Tagged)(vm.pop(sp)));
       sjlj_throw(tag);
     }
-    case vm_catch_close: {
+    case vm_code::catch_close: {
       DBG_VM("entry-close\n");
       vm._pc = pc + 1;
       vm._stackPointer = sp;
       return gctools::return_type(nil<T_O>().raw_(), 0);
     }
-    case vm_special_bind: {
+    case vm_code::special_bind: {
       uint8_t c = *(++pc);
       DBG_VM("special-bind %" PRIu8 "\n", c);
       T_sp value((gctools::Tagged)(vm.pop(sp)));
@@ -831,7 +831,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc = vm._pc;
       break;
     }
-    case vm_symbol_value: {
+    case vm_code::symbol_value: {
       uint8_t c = *(++pc);
       DBG_VM("symbol-value %" PRIu8 "\n", c);
       T_sp cell_sp((gctools::Tagged)literals[c]);
@@ -840,7 +840,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_symbol_value_set: {
+    case vm_code::symbol_value_set: {
       uint8_t c = *(++pc);
       DBG_VM("symbol-value-set %" PRIu8 "\n", c);
       T_sp cell_sp((gctools::Tagged)literals[c]);
@@ -850,7 +850,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_unbind: {
+    case vm_code::unbind: {
       DBG_VM("unbind\n");
       vm._pc = pc + 1;
       vm._stackPointer = sp;
@@ -859,7 +859,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       // (or vm_progv)
       return gctools::return_type(nil<T_O>().raw_(), 0);
     }
-    case vm_progv: {
+    case vm_code::progv: {
       uint8_t c = *(++pc); // environment
       DBG_VM1("progv %" PRIu8 "\n", c);
       T_sp vals((gctools::Tagged)(vm.pop(sp)));
@@ -870,10 +870,10 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc = vm._pc;
       break;
     }
-    case vm_fdefinition: {
+    case vm_code::fdefinition: {
       // We have function cells in the literals vector. While these are
       // themselves callable, we have to resolve the cell because we
-      // use vm_fdefinition for lookup of #'foo.
+      // use vm_code::fdefinition for lookup of #'foo.
       uint8_t c = *(++pc);
       DBG_VM1("fdefinition %" PRIu8 "\n", c);
       T_sp cell((gctools::Tagged)literals[c]);
@@ -883,25 +883,25 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_nil:
+    case vm_code::nil:
       DBG_VM("nil\n");
       vm.push(sp, nil<T_O>().raw_());
       pc++;
       break;
-    case vm_push: {
+    case vm_code::push: {
       DBG_VM1("push\n");
       vm.push(sp, multipleValues.valueGet(0, multipleValues.getSize()).raw_());
       pc++;
       break;
     }
-    case vm_pop: {
+    case vm_code::pop: {
       DBG_VM1("pop\n");
       T_sp obj((gctools::Tagged)vm.pop(sp));
       multipleValues.set1(obj);
       pc++;
       break;
     }
-    case vm_dup: {
+    case vm_code::dup: {
       DBG_VM1("dup\n");
       T_O* obj = vm.pop(sp);
       vm.push(sp, obj);
@@ -909,7 +909,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_fdesignator: {
+    case vm_code::fdesignator: {
       uint8_t c = *(++pc); // ignored environment parameter
       DBG_VM1("fdesignator %" PRIu8 "\n", c);
       T_sp desig((gctools::Tagged)vm.pop(sp));
@@ -919,7 +919,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_called_fdefinition: {
+    case vm_code::called_fdefinition: {
       // This is like FDEFINITION except that we know the result will
       // just be called. So, we can just use the cell directly
       // without checking fboundedness, and this is just like const.
@@ -933,7 +933,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_protect: {
+    case vm_code::protect: {
       uint8_t c = *(++pc);
       DBG_VM("protect %" PRIu8 "\n", c);
       // Build a closure - this works mostly like make_closure.
@@ -952,14 +952,14 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
       },
         [&]() { eval::funcall(cleanup); });
-      // copied from vm_call - required to avoid the cleanup's values
+      // copied from vm_code::call - required to avoid the cleanup's values
       // for... some reason. I'm not totally sure.
       multipleValues.setN(result.raw_(), result.number_of_values());
       sp = vm._stackPointer;
       pc = vm._pc;
       break;
     }
-    case vm_cleanup: {
+    case vm_code::cleanup: {
       DBG_VM("cleanup\n");
       vm._pc = pc + 1;
       vm._stackPointer = sp;
@@ -968,7 +968,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       size_t nvalues = multipleValues.getSize();
       return gctools::return_type(multipleValues.valueGet(0, nvalues).raw_(), nvalues);
     }
-    case vm_encell: {
+    case vm_code::encell: {
       // abbreviation for ref N; make-cell; set N
       uint8_t n = *(++pc);
       DBG_VM1("encell %" PRIu8 "\n", n);
@@ -977,7 +977,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       pc++;
       break;
     }
-    case vm_long: {
+    case vm_code::_long: {
       // In a separate function to facilitate better icache utilization
       // by bytecode_vm (hopefully)
       pc++;
@@ -999,8 +999,8 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
 static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, MultipleValues& multipleValues, T_O** literals,
                                     T_O** closed, Closure_O* closure, core::T_O** fp, core::T_O** sp, size_t lcc_nargs,
                                     core::T_O** lcc_args, uint8_t sub_opcode) {
-  switch (sub_opcode) {
-  case vm_ref: {
+  switch ((vm_code)sub_opcode) {
+  case vm_code::ref: {
     uint8_t low = *(pc + 1);
     uint16_t n = low + (*(pc + 2) << 8);
     DBG_VM1("long ref %" PRIu16 "\n", n);
@@ -1008,7 +1008,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 3;
     break;
   }
-  case vm_const: {
+  case vm_code::_const: {
     uint8_t low = *(++pc);
     uint16_t n = low + (*(++pc) << 8);
     DBG_VM1("long const %" PRIu16 "\n", n);
@@ -1018,7 +1018,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc++;
     break;
   }
-  case vm_closure: {
+  case vm_code::closure: {
     uint8_t low = *(pc + 1);
     uint16_t n = low + (*(pc + 2) << 8);
     DBG_VM1("long closure %" PRIu16 "\n", n);
@@ -1026,7 +1026,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 3;
     break;
   }
-  case vm_call: {
+  case vm_code::call: {
     uint8_t low = *(pc + 1);
     uint16_t nargs = low + (*(pc + 2) << 8);
     DBG_VM1("long call %" PRIu16 "\n", nargs);
@@ -1042,7 +1042,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 3;
     break;
   }
-  case vm_call_receive_one: {
+  case vm_code::call_receive_one: {
     uint8_t low = *(pc + 1);
     uint16_t nargs = low + (*(pc + 2) << 8);
     DBG_VM1("long call-receive-one %" PRIu16 "\n", nargs);
@@ -1068,7 +1068,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 3;
     break;
   }
-  case vm_call_receive_fixed: {
+  case vm_code::call_receive_fixed: {
     uint8_t low_nargs = *(pc + 1);
     uint16_t nargs = low_nargs + (*(pc + 2) << 8);
     uint8_t low_nvals = *(pc + 3);
@@ -1091,7 +1091,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 5;
     break;
   }
-  case vm_bind: {
+  case vm_code::bind: {
     uint8_t low_count = *(pc + 1);
     uint16_t count = low_count + (*(pc + 2) << 8);
     uint8_t low_offset = *(pc + 3);
@@ -1102,7 +1102,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 5;
     break;
   }
-  case vm_set: {
+  case vm_code::set: {
     uint8_t low = *(pc + 1);
     uint16_t n = low + (*(pc + 2) << 8);
     DBG_VM("long set %" PRIu16 "\n", n);
@@ -1110,7 +1110,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 3;
     break;
   }
-  case vm_fdefinition: {
+  case vm_code::fdefinition: {
     uint8_t low = *(++pc);
     uint16_t n = low + (*(++pc) << 8);
     DBG_VM1("long fdefinition %" PRIu16 "\n", n);
@@ -1121,7 +1121,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc++;
     break;
   }
-  case vm_make_closure: {
+  case vm_code::make_closure: {
     uint8_t low = *(pc + 1);
     uint16_t c = low + (*(pc + 2) << 8);
     DBG_VM("long make-closure %" PRIu16 "\n", c);
@@ -1137,7 +1137,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 3;
     break;
   }
-  case vm_make_uninitialized_closure: {
+  case vm_code::make_uninitialized_closure: {
     uint8_t low = *(pc + 1);
     uint16_t c = low + (*(pc + 2) << 8);
     DBG_VM("long make-uninitialized-closure %" PRIu16 "\n", c);
@@ -1150,7 +1150,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 3;
     break;
   }
-  case vm_initialize_closure: {
+  case vm_code::initialize_closure: {
     uint8_t low = *(pc + 1);
     uint16_t c = low + (*(pc + 2) << 8);
     DBG_VM("long initialize-closure %" PRIu16 "\n", c);
@@ -1166,7 +1166,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 3;
     break;
   }
-  case vm_bind_required_args: {
+  case vm_code::bind_required_args: {
     uint8_t low = *(pc + 1);
     uint16_t nargs = low + (*(pc + 2) << 8);
     DBG_VM("long bind-required-args %" PRIu16 "\n", nargs);
@@ -1174,7 +1174,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 3;
     break;
   }
-  case vm_bind_optional_args: {
+  case vm_code::bind_optional_args: {
     uint8_t nreq_low = *(pc + 1);
     uint16_t nreq = nreq_low + (*(pc + 2) << 8);
     uint8_t nopt_low = *(pc + 3);
@@ -1191,7 +1191,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 5;
     break;
   }
-  case vm_listify_rest_args: {
+  case vm_code::listify_rest_args: {
     uint8_t low = *(pc + 1);
     uint16_t start = low + (*(pc + 2) << 8);
     DBG_VM("long listify-rest-args %" PRIu16 "\n", start);
@@ -1204,7 +1204,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 3;
     break;
   }
-  case vm_parse_key_args: {
+  case vm_code::parse_key_args: {
     uint8_t more_start_low = *(pc + 1);
     uint16_t more_start = more_start_low + (*(pc + 2) << 8);
     uint8_t key_count_info_low = *(pc + 3);
@@ -1258,7 +1258,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 9;
     break;
   }
-  case vm_jump_if_supplied_8: {
+  case vm_code::jump_if_supplied_8: {
     uint8_t low = *(pc + 1);
     uint16_t slot = low + (*(pc + 2) << 8);
     int32_t rel = *(pc + 3);
@@ -1270,7 +1270,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
       pc += rel - 1; // -1 for the long opcode at pc-1
     break;
   }
-  case vm_jump_if_supplied_16: {
+  case vm_code::jump_if_supplied_16: {
     uint8_t low = *(pc + 1);
     uint16_t slot = low + (*(pc + 2) << 8);
     int32_t rel = read_s16(pc + 3);
@@ -1282,7 +1282,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
       pc += rel - 1; // -1 for the long opcode at pc-1
     break;
   }
-  case vm_check_arg_count_LE: {
+  case vm_code::check_arg_count_LE: {
     uint8_t low = *(pc + 1);
     uint16_t max_nargs = low + (*(pc + 2) << 8);
     DBG_VM("long check-arg-count<= %" PRIu16 "\n", max_nargs);
@@ -1293,7 +1293,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 3;
     break;
   }
-  case vm_check_arg_count_GE: {
+  case vm_code::check_arg_count_GE: {
     uint8_t low = *(pc + 1);
     uint16_t min_nargs = low + (*(pc + 2) << 8);
     DBG_VM("long check-arg-count>= %" PRIu16 "\n", min_nargs);
@@ -1304,7 +1304,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 3;
     break;
   }
-  case vm_check_arg_count_EQ: {
+  case vm_code::check_arg_count_EQ: {
     uint8_t low = *(pc + 1);
     uint16_t req_nargs = low + (*(pc + 2) << 8);
     DBG_VM1("long check-arg-count= %" PRIu16 "\n", req_nargs);
@@ -1315,7 +1315,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 3;
     break;
   }
-  case vm_mv_call_receive_fixed: {
+  case vm_code::mv_call_receive_fixed: {
     uint8_t low = *(pc + 1);
     uint16_t nvals = low + (*(pc + 2) << 8);
     DBG_VM("long mv-call-receive-fixed %" PRIu16 "\n", nvals);
@@ -1338,7 +1338,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 3;
     break;
   }
-  case vm_save_sp: {
+  case vm_code::save_sp: {
     uint8_t low = *(pc + 1);
     uint16_t n = low + (*(pc + 2) << 8);
     DBG_VM("long save sp %" PRIu16 "\n", n);
@@ -1346,7 +1346,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 3;
     break;
   }
-  case vm_restore_sp: {
+  case vm_code::restore_sp: {
     uint8_t low = *(pc + 1);
     uint16_t n = low + (*(pc + 2) << 8);
     DBG_VM("long restore sp %" PRIu16 "\n", n);
@@ -1354,7 +1354,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc += 3;
     break;
   }
-  case vm_entry: {
+  case vm_code::entry: {
     uint8_t low = *(++pc);
     uint16_t n = low + (*(++pc) << 8);
     DBG_VM("long entry %" PRIu16 "\n", n);
@@ -1381,7 +1381,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     }
     break;
   }
-  case vm_special_bind: {
+  case vm_code::special_bind: {
     uint8_t low = *(pc + 1);
     uint16_t c = low + (*(pc + 2) << 8);
     DBG_VM("long special-bind %" PRIu16 "\n", c);
@@ -1395,7 +1395,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     sp = vm._stackPointer;
     break;
   }
-  case vm_symbol_value: {
+  case vm_code::symbol_value: {
     uint8_t low = *(++pc);
     uint16_t n = low + (*(++pc) << 8);
     DBG_VM1("long symbol-value %" PRIu16 "\n", n);
@@ -1405,7 +1405,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc++;
     break;
   }
-  case vm_symbol_value_set: {
+  case vm_code::symbol_value_set: {
     uint8_t low = *(++pc);
     uint16_t n = low + (*(++pc) << 8);
     DBG_VM1("long symbol-value %" PRIu16 "\n", n);
@@ -1416,7 +1416,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc++;
     break;
   }
-  case vm_progv: {
+  case vm_code::progv: {
     uint8_t low = *(++pc);
     uint16_t c = low + (*(++pc) << 8);
     DBG_VM1("long progv %" PRIu16 "\n", c);
@@ -1428,7 +1428,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc = vm._pc;
     break;
   }    
-  case vm_fdesignator: {
+  case vm_code::fdesignator: {
     uint8_t low = *(++pc);
     uint16_t n = low + (*(++pc) << 8);
     DBG_VM1("long fdesignator %" PRIu16 "\n", n);
@@ -1438,7 +1438,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc++;
     break;
   }
-  case vm_called_fdefinition: {
+  case vm_code::called_fdefinition: {
     uint8_t low = *(++pc);
     uint16_t n = low + (*(++pc) << 8);
     DBG_VM1("long called-fdefinition %" PRIu16 "\n", n);
@@ -1448,7 +1448,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc++;
     break;
   }
-  case vm_protect: {
+  case vm_code::protect: {
     uint8_t low = *(++pc);
     uint16_t c = low + (*(++pc) << 8);
     DBG_VM1("long protect %" PRIu16 "\n", c);
@@ -1469,7 +1469,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     pc = vm._pc;
     break;
   }
-  case vm_encell: {
+  case vm_code::encell: {
     uint8_t low = *(++pc);
     uint16_t n = low + (*(++pc) << 8);
     DBG_VM1("encell %" PRIu16 "\n", n);

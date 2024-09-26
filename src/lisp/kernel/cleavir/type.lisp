@@ -363,10 +363,16 @@
   (derive-type-predicate object 'rational *clasp-system*))
 (define-deriver floatp (object)
   (derive-type-predicate object 'float *clasp-system*))
+#+short-float
+(define-deriver core:short-float-p (object)
+  (derive-type-predicate object 'short-float *clasp-system*))
 (define-deriver core:single-float-p (object)
   (derive-type-predicate object 'single-float *clasp-system*))
 (define-deriver core:double-float-p (object)
   (derive-type-predicate object 'double-float *clasp-system*))
+#+long-float
+(define-deriver core:long-float-p (object)
+  (derive-type-predicate object 'long-float *clasp-system*))
 (define-deriver integerp (object)
   (derive-type-predicate object 'integer *clasp-system*))
 (define-deriver core:fixnump (object)
@@ -393,7 +399,9 @@
        (t ty2)))
     ((short-float)
      (case ty2
-       ((integer ratio rational short-float) 'single-float)
+       ((integer ratio rational short-float)
+        #+short-float 'short-float
+        #-short-float 'single-float)
        (t ty2)))
     ((single-float)
      (case ty2
@@ -405,7 +413,9 @@
        (t ty2)))
     ((long-float)
      (case ty2
-       ((integer ratio rational short-float single-float long-float) 'double-float)
+       ((integer ratio rational short-float single-float double-float)
+        #+long-float 'long-float
+        #-long-float 'double-float)
        (t ty2)))
     ((float)
      (case ty2
@@ -769,7 +779,7 @@
   (flet ((%coerce (num)
            (ecase kind
              ((integer rational) (rational num))
-             ((single-float double-float float) (coerce num kind))
+             ((short-float single-float double-float long-float float) (coerce num kind))
              ((real) num))))
     (cond ((null bound) '*)
           ((consp bound) (list (%coerce (car bound))))
@@ -846,6 +856,7 @@
             ((single-float) (if (eq (ctype:range-kind y sys) 'double-float)
                                 'double-float 'single-float))
             ((double-float) 'double-float)
+            ((long-float) 'long-float)
             ((float) 'float)
             ((integer)
              (let ((ykind (ctype:range-kind y sys)))
@@ -940,7 +951,8 @@
                  ((integer rational single-float)
                   (ctype:range 'single-float 0f0 (float pi 0f0) sys))
                  ((double-float) (ctype:range 'double-float 0d0 pi sys))
-                 ((float real) (ctype:range 'float 0d0 pi sys)))
+                 ((long-float) (ctype:range 'long-float 0l0 pi sys))
+                 ((float real) (ctype:range 'float 0l0 pi sys)))
                (env:parse-type-specifier 'number nil sys)))
          (env:parse-type-specifier 'number nil sys))
      sys)))
@@ -966,6 +978,7 @@
                                    (case kind
                                      ((single-float) 0f0)
                                      ((double-float float) 0d0)
+                                     ((long-float) 0l0)
                                      (t 0)))
                                   ((or (not high) (< low (abs high)))
                                    (if lxp (list low) low))
@@ -1011,6 +1024,8 @@
                     (derive-to-float num 'single-float sys))
                    ((ctype:subtypep proto (ctype:range 'double-float '* '* sys) sys)
                     (derive-to-float num 'double-float sys))
+                   ((ctype:subtypep proto (ctype:range 'long-float '* '* sys) sys)
+                    (derive-to-float num 'long-float sys))
                    (t floatt))))
       (ctype:single-value
        (cond ((eq protop t) (float2)) ; definitely supplied
@@ -1024,6 +1039,10 @@
 (define-deriver core:to-double-float (num)
   (let ((sys *clasp-system*))
     (ctype:single-value (derive-to-float num 'double-float sys) sys)))
+#+long-float
+(define-deriver core:to-long-float (num)
+  (let ((sys *clasp-system*))
+    (ctype:single-value (derive-to-float num 'long-float sys) sys)))
 
 (define-deriver random (max &optional random-state)
   (declare (ignore random-state))
@@ -1043,6 +1062,8 @@
             (ctype:range 'single-float 0f0 '* sys))
            ((subtypep max (ctype:range 'double-float 0d0 '* sys))
             (ctype:range 'double-float 0d0 '* sys))
+           ((subtypep max (ctype:range 'long-float 0l0 '* sys))
+            (ctype:range 'long-float 0l0 '* sys))
            (t (env:parse-type-specifier '(real 0) nil sys)))
      sys)))
 
@@ -1398,6 +1419,10 @@
   (def core:make-simple-vector-character character)
   (def core:make-simple-vector-single-float single-float)
   (def core:make-simple-vector-double-float double-float)
+  #+short-float
+  (def core:make-simple-vector-short-float short-float)
+  #+long-float
+  (def core:make-simple-vector-long-float long-float)
   (def core:make-simple-vector-int2 ext:integer2)
   (def core:make-simple-vector-byte2 ext:byte2)
   (def core:make-simple-vector-int4 ext:integer4)
