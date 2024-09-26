@@ -221,16 +221,16 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp& quotie
   Bignum_sp bdividend = dividend.asOrNull<Bignum_O>(), bdivisor = divisor.asOrNull<Bignum_O>();
   if (bdividend && bdivisor) {
     Number_mv mvr = core__next_truncate(bdividend, bdivisor);
-    quotient = mvr.as<Integer_O>();
+    quotient = gc::As_unsafe<Integer_sp>(mvr);
     MultipleValues& mvn = core::lisp_multipleValues();
-    remainder = mvn.valueGet(1, mvr.number_of_values()).as<Real_O>();
+    remainder = gc::As_unsafe<Real_sp>(mvn.valueGet(1, mvr.number_of_values()));
     return;
   }
   if (bdividend) {
     Number_mv rmv = core__next_ftruncate(bdividend, divisor.unsafe_fixnum());
     quotient = gc::As_unsafe<Integer_sp>(rmv);
     MultipleValues& mvn = core::lisp_multipleValues();
-    remainder = gc::As_unsafe<Integer_sp>(mvn.valueGet(1, rmv.number_of_values()));
+    remainder = gc::As_unsafe<Real_sp>(mvn.valueGet(1, rmv.number_of_values()));
     return;
   }
   if (bdivisor) {

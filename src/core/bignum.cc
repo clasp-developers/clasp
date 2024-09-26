@@ -406,7 +406,8 @@ CL_DEFUN Bignum_sp core__mul_fixnums(Fixnum left, Fixnum right) {
 
 DOCGROUP(clasp);
 CL_DEFUN Number_mv core__next_truncate(Bignum_sp dividend, Bignum_sp divisor) {
-  ASSERT(dividend != divisor); // "No overlap is permitted between arguments"
+  if (dividend == divisor)
+    return Values(clasp_make_fixnum(1), clasp_make_fixnum(0));
   mp_size_t dividend_length = dividend->length();
   mp_size_t divisor_length = divisor->length();
   mp_size_t dividend_size = std::abs(dividend_length);

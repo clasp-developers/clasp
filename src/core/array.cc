@@ -537,8 +537,6 @@ void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixn
   size_t iLen = unbox_fixnum(len);
   if (iLen == 0)
     return;
-  ASSERTF(dest->rank() == 1, "dest array must be rank 1 - instead it is {}", dest->rank());
-  ASSERTF(orig->rank() == 1, "orig array must be rank 1 - instead it is {}", orig->rank());
   size_t iDestStart = unbox_fixnum(destStart);
   size_t iOrigStart = unbox_fixnum(origStart);
   if ((iLen + iDestStart) >= dest->arrayTotalSize())
