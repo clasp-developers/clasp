@@ -215,11 +215,11 @@
  (:name :schubfach
   :repository "https://github.com/yitzchak/schubfach.git"
   :directory "src/schubfach/"
-  :branch "big")
+  :branch "main")
  (:name :cando
   :repository "https://github.com/cando-developers/cando.git"
   :directory "extensions/cando/"
-  :branch "fp4"
+  :branch "main"
   :extension :cando)
  (:name :seqan-clasp
   :repository "https://github.com/clasp-developers/seqan-clasp.git"
