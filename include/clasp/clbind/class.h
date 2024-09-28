@@ -754,12 +754,6 @@ private:
 
     return *this;
   }
-
-public:
-  template <class Getter, class Setter>
-  class_& def_property(const std::string& prefix, Getter g, Setter s, const char* docstring = "") {
-    this->property_impl(prefix, g, s);
-  }
 };
 } // namespace clbind
 

@@ -90,7 +90,6 @@ class DerivableFrontendActionFactory;
 #undef DECLARE_FORWARDS
 #endif
 #endif
-namespace gctools {
 
 ////////////////////////////////////////////////////////////
 //
@@ -108,7 +107,6 @@ namespace gctools {
 #undef GC_STAMP_SELECTORS
 #endif
 #endif
-}; // namespace gctools
 
 extern "C" {
 bool valid_stamp(gctools::stamp_t kind);
