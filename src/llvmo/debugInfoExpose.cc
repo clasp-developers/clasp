@@ -311,10 +311,21 @@ CL_LISPIFY_NAME(createParameterVariable);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createParameterVariable);
 
 CL_LISPIFY_NAME(insertDbgValueIntrinsicBasicBlock);
+#if LLVM_VERSION_MAJOR < 19
 CL_EXTERN_DEFMETHOD(DIBuilder_O, (llvm::Instruction * (llvm::DIBuilder::*)(llvm::Value * Val, llvm::DILocalVariable* VarInfo,
                                                                            llvm::DIExpression* Expr, const llvm::DILocation* DL,
                                                                            llvm::BasicBlock* InsertAtEnd)) &
                                      llvm::DIBuilder::insertDbgValueIntrinsic);
+#else
+CL_DEFMETHOD core::T_sp DIBuilder_O::insertDbgValueIntrinsicBasicBlock(llvm::Value* Val, llvm::DILocalVariable* VarInfo,
+                                                                       llvm::DIExpression* Expr, const llvm::DILocation* DL,
+                                                                       llvm::BasicBlock* InsertAtEnd) {
+  auto result = _ptr->insertDbgValueIntrinsic(Val, VarInfo, Expr, DL, InsertAtEnd);
+  if (result.is<llvm::Instruction*>())
+    return translate::to_object<llvm::Instruction*>::convert(result.get<llvm::Instruction*>());
+  SIMPLE_ERROR("Don't know what to do with returned value from insertDbgValueIntrinsic.");
+}
+#endif
 
 CL_LISPIFY_NAME(finalize);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::finalize);

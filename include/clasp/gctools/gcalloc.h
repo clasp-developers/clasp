@@ -839,7 +839,7 @@ public:
     size_t capacity = length + 1;
     size_t size = sizeof_container_with_header<OT>(capacity);
     if (static_container_p)
-      return GCObjectAllocator<OT>::template static_allocate_kind(
+      return GCObjectAllocator<OT>::static_allocate_kind(
           Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag), size, length,
           std::forward<ARGS>(args)...);
     else

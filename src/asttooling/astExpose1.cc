@@ -373,7 +373,9 @@ void initialize_astExpose() {
   scope_Decl_CXXRecord.def("hasDefinition", &clang::CXXRecordDecl::hasDefinition);
   scope_Decl_CXXRecord.def("isPolymorphic", &clang::CXXRecordDecl::isPolymorphic);
   scope_Decl_ClassTemplateSpecialization.def("getTemplateArgs", &clang::ClassTemplateSpecializationDecl::getTemplateArgs);
+  #if LLVM_VERSION_MAJOR < 19
   scope_Decl_ClassTemplateSpecialization.def("getTypeAsWritten", &clang::ClassTemplateSpecializationDecl::getTypeAsWritten);
+  #endif
   scope_Decl_ClassTemplateSpecialization.def("getPointOfInstantiation",
                                              &clang::ClassTemplateSpecializationDecl::getPointOfInstantiation);
   scope_Decl_ClassTemplateSpecialization.def("getSpecializedTemplate",

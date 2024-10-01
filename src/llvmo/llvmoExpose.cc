@@ -246,7 +246,7 @@ const char* my_LLVMSymbolLookupCallback(void* DisInfo, uint64_t ReferenceValue, 
     }
     if (symbol[0] == LITERALS_NAME[0] && strlen(symbol) > strlen(LITERALS_NAME) &&
         strncmp(LITERALS_NAME, symbol + 1, strlen(LITERALS_NAME)) == 0) {
-      ss << "[" << dbg_safe_repr((uintptr_t) * (uintptr_t*)ReferenceValue) << "]";
+      ss << "[" << dbg_safe_repr((uintptr_t)*(uintptr_t*)ReferenceValue) << "]";
     }
     ss << "}";
     strcpy(global_LLVMSymbolLookupCallbackBuffer, ss.str().c_str());
@@ -372,7 +372,11 @@ CL_DEFUN Linker_sp Linker_O::make(Module_sp module) {
   return self;
 };
 
-static void expectNoDiags(const llvm::DiagnosticInfo& DI, void* C) { printf("%s:%d Got a diagnostic\n", __FILE__, __LINE__); }
+#if LLVM_VERSION_MAJOR < 19
+static void expectNoDiags(const llvm::DiagnosticInfo& DI, void* C) { fmt::print("{}:{} Got a diagnostic\n", __FILE__, __LINE__); }
+#else
+static void expectNoDiags(const llvm::DiagnosticInfo* DI, void* C) { fmt::print("{}:{} Got a diagnostic\n", __FILE__, __LINE__); }
+#endif
 
 }; // namespace llvmo
 namespace {
@@ -552,7 +556,7 @@ namespace llvmo {
 
 struct Safe_raw_pwrite_stream {
   llvm::raw_pwrite_stream* ostreamP;
-  Safe_raw_pwrite_stream() : ostreamP(NULL){};
+  Safe_raw_pwrite_stream() : ostreamP(NULL) {};
   void set_stream(llvm::raw_pwrite_stream* s) { ostreamP = s; };
   llvm::raw_pwrite_stream* get_stream() const { return ostreamP; };
   ~Safe_raw_pwrite_stream() {
@@ -730,12 +734,12 @@ CL_DEFUN Triple_sp Triple_O::make(const string& triple) {
 };
 
 CL_PKG_NAME(LlvmoPkg,"triple-normalize");
-CL_EXTERN_DEFUN((std::string(*)(llvm::StringRef str)) & llvm::Triple::normalize);
+CL_EXTERN_DEFUN((std::string(*)(llvm::StringRef str))&llvm::Triple::normalize);
 
 CL_LISPIFY_NAME(getTriple);
 CL_EXTERN_DEFMETHOD(Triple_O, &llvm::Triple::getTriple);
 CL_LISPIFY_NAME(getArchName);
-CL_EXTERN_DEFMETHOD(Triple_O, (llvm::StringRef(llvm::Triple::*)() const) & llvm::Triple::getArchName);
+CL_EXTERN_DEFMETHOD(Triple_O, (llvm::StringRef(llvm::Triple::*)() const)&llvm::Triple::getArchName);
 CL_LISPIFY_NAME(getVendorName);
 CL_EXTERN_DEFMETHOD(Triple_O, &llvm::Triple::getVendorName);
 CL_LISPIFY_NAME(getOSName);
@@ -1403,8 +1407,8 @@ CL_EXTERN_DEFMETHOD(Module_O, (llvm::GlobalVariable * (llvm::Module::*)(llvm::St
 CL_LISPIFY_NAME(getNamedGlobal);
 CL_EXTERN_DEFMETHOD(Module_O, (llvm::GlobalVariable * (llvm::Module::*)(llvm::StringRef)) & llvm::Module::getNamedGlobal);
 CL_LISPIFY_NAME(getOrInsertFunction);
-CL_EXTERN_DEFMETHOD(Module_O, (llvm::FunctionCallee(llvm::Module::*)(llvm::StringRef, llvm::FunctionType*)) &
-                                  llvm::Module::getOrInsertFunction);
+CL_EXTERN_DEFMETHOD(Module_O, (llvm::FunctionCallee(llvm::Module::*)(llvm::StringRef,
+                                                                     llvm::FunctionType*))&llvm::Module::getOrInsertFunction);
 CL_LISPIFY_NAME(getOrInsertGlobal);
 CL_EXTERN_DEFMETHOD(Module_O, (llvm::Constant * (llvm::Module::*)(llvm::StringRef, llvm::Type*)) & llvm::Module::getOrInsertGlobal);
 CL_LISPIFY_NAME(getDataLayoutStr);
@@ -1826,9 +1830,11 @@ namespace llvmo {
 CL_LAMBDA("module type is-constant linkage initializer name &optional (insert-before nil) (thread-local-mode 'llvm-sys:not-thread-local)");
 CL_LISPIFY_NAME(make-global-variable);
 DOCGROUP(clasp);
-CL_DEFUN GlobalVariable_sp GlobalVariable_O::make(Module_sp mod, Type_sp type, bool isConstant, llvm::GlobalValue::LinkageTypes linkage,
+CL_DEFUN GlobalVariable_sp GlobalVariable_O::make(Module_sp mod, Type_sp type, bool isConstant,
+                                                  llvm::GlobalValue::LinkageTypes linkage,
                                                   /*Constant_sp*/ core::T_sp initializer, core::String_sp name,
-                                                  /*GlobalVariable_sp*/ core::T_sp insertBefore, llvm::GlobalValue::ThreadLocalMode threadLocalMode) {
+                                                  /*GlobalVariable_sp*/ core::T_sp insertBefore,
+                                                  llvm::GlobalValue::ThreadLocalMode threadLocalMode) {
   auto me = gctools::GC<GlobalVariable_O>::allocate_with_default_constructor();
   llvm::Constant* llvm_initializer = NULL;
   if (initializer.notnilp()) {
@@ -1967,7 +1973,7 @@ CL_DEFUN llvm::Instruction* llvm_sys__replace_call(llvm::Function* func, llvm::I
 
 // FIXME: Should be made into a generic function or something.
 CL_LISPIFY_NAME(getCallingConv);
-CL_EXTERN_DEFMETHOD(CallBase_O, (llvmo::ClaspCallingConv(llvm::CallBase::*)()) & CallBase_O::ExternalType::getCallingConv);
+CL_EXTERN_DEFMETHOD(CallBase_O, (llvmo::ClaspCallingConv(llvm::CallBase::*)())&CallBase_O::ExternalType::getCallingConv);
 CL_LISPIFY_NAME(setCallingConv);
 CL_EXTERN_DEFMETHOD(CallBase_O, (void(llvm::CallBase::*)(llvmo::ClaspCallingConv)) & CallBase_O::ExternalType::setCallingConv);
 
@@ -2271,7 +2277,11 @@ CL_DEFUN APInt_sp APInt_O::makeAPIntWidth(core::Integer_sp value, uint width, bo
       for (size_t i = 0; i < size; ++i)
         words[i] = limbs[i];
     // Note that APInt has its own storage, so it's fine that words expires.
+#if LLVM_VERSION_MAJOR < 19    
     apint = llvm::APInt(width, llvm::makeArrayRef(words, size));
+#else
+    apint = llvm::APInt(width, llvm::ArrayRef(words, size));
+#endif
   }
   self->_value = apint;
   return self;
@@ -2641,10 +2651,17 @@ CL_DEFUN llvm::Value* CreateFNeg(llvmo::IRBuilderBase_O::ExternalType* object, l
 CL_LISPIFY_NAME(CreateNeg);
 // CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateNeg);
 DOCGROUP(clasp);
+#if LLVM_VERSION_MAJOR < 19
 CL_DEFUN llvm::Value* CreateNeg(llvmo::IRBuilderBase_O::ExternalType* object, llvm::Value* V, const llvm::Twine& Name, bool HasNUW,
                                 bool HasNSW) {
   return object->CreateNeg(V, Name, HasNUW, HasNSW);
 }
+#else
+CL_DEFUN llvm::Value* CreateNeg(llvmo::IRBuilderBase_O::ExternalType* object, llvm::Value* V, const llvm::Twine& Name,
+                                bool HasNSW) {
+  return object->CreateNeg(V, Name, HasNSW);
+}
+#endif
 
 CL_LISPIFY_NAME(CreateSRem);
 // CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateSRem);
@@ -2804,8 +2821,10 @@ CL_LISPIFY_NAME(CreateFRem);
 CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFRem);
 CL_LISPIFY_NAME(CreateNSWNeg);
 CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateNSWNeg);
+#if LLVM_VERSION_MAJOR < 19
 CL_LISPIFY_NAME(CreateNUWNeg);
 CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateNUWNeg);
+#endif
 CL_LISPIFY_NAME(CreateStore);
 CL_EXTERN_DEFMETHOD(IRBuilderBase_O,
                     (llvm::StoreInst * (llvm::IRBuilderBase::*)(llvm::Value * Val, llvm::Value* Ptr, bool isVolatile)) &
@@ -3311,7 +3330,7 @@ CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::empty);
 CL_LISPIFY_NAME(arg_size);
 CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::arg_size);
 CL_LISPIFY_NAME(getCallingConv);
-CL_EXTERN_DEFMETHOD(Function_O, (llvmo::ClaspCallingConv(llvm::Function::*)()) & Function_O::ExternalType::getCallingConv);
+CL_EXTERN_DEFMETHOD(Function_O, (llvmo::ClaspCallingConv(llvm::Function::*)())&Function_O::ExternalType::getCallingConv);
 CL_LISPIFY_NAME(setCallingConv);
 CL_EXTERN_DEFMETHOD(Function_O, (void(llvm::Function::*)(llvmo::ClaspCallingConv)) & Function_O::ExternalType::setCallingConv);
 CL_LISPIFY_NAME(setDoesNotThrow);
@@ -3556,7 +3575,8 @@ namespace llvmo {
 CL_LAMBDA(context &key elements name is-packed);
 CL_LISPIFY_NAME(struct-type-create);
 DOCGROUP(clasp);
-CL_DEFUN StructType_sp StructType_O::make(LLVMContext_sp context, core::T_sp elements, llvm::StringRef srname, core::T_sp isPacked) {
+CL_DEFUN StructType_sp StructType_O::make(LLVMContext_sp context, core::T_sp elements, llvm::StringRef srname,
+                                          core::T_sp isPacked) {
   llvm::StructType* result = NULL;
   if (elements.notnilp()) {
     vector<llvm::Type*> velements;

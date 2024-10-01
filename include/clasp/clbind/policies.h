@@ -130,13 +130,13 @@ template <class... PTypes> struct policies {
   bool m_auto_export = true;
   bool m_setf = false;
   void describe() {
-    printf("%s:%d Descibing Policy\n", __FILE__, __LINE__);
+    fmt::print("{}:{} Descibing Policy\n", __FILE__, __LINE__);
     if (this->m_lambda_list != "") {
-      printf("lambda_list = %s\n", this->m_lambda_list.c_str());
+      fmt::print("lambda_list = {}\n", this->m_lambda_list);
     } else {
-      printf("keyword_list = %s\n", this->keyword_list().c_str());
+      fmt::print("keyword_list = {}\n", this->keywordList());
     }
-    printf("Docstring = %s\n", this->m_doc_string.c_str());
+    fmt::print("Docstring = {}\n", this->m_doc_string.c_str());
   }
   std::string keywordList() const {
     if (this->m_keywords.size() == 0) {

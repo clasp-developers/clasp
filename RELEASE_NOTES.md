@@ -1,11 +1,12 @@
-# Version 2.7.0 (LLVM15-18) Pending
+# Version 2.7.0 (LLVM15-19) Pending
 
 ## Added
 * Package lock support, based on SBCL's. Currently ignores local
   bindings. Thanks @bumblingbats.
 * Add support for 80-bit and 128-bit LONG-FLOAT. Extended precision
-  LONG-FLOAT is available on amd64 and non-Apply arm64 platforms. It
+  LONG-FLOAT is available on amd64 and non-Apple arm64 platforms. It
   is automatically detected and enabled.
+* LLVM19 support.  
 
 ## Changed
 * Floating point exceptions FE_INVALID, FE_OVERFLOW and FE_DIVBYZERO
