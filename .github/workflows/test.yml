@@ -68,7 +68,7 @@ jobs:
       run: |
         brew update
         brew upgrade
-        brew install boost fmt gmp llvm ninja pkg-config sbcl netcdf
+        brew install boost fmt gmp llvm lld ninja pkg-config sbcl netcdf
     - name: Checkout repository
       uses: actions/checkout@v4
 
