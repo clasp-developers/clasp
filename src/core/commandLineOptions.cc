@@ -444,7 +444,8 @@ CommandLineOptions::CommandLineOptions(int argc, const char* argv[])
       _FreezeStartupType(false), _HasDescribeFile(false), _StartupFile(""), _ExportedSymbolsCheck(false),
       _ExportedSymbolsSave(false), _RandomNumberSeed(0), _NoInform(false), _NoPrint(false), _DebuggerDisabled(false),
       _Interactive(true), _Version(false), _SilentStartup(true), _GenerateTrampolines(false),
-      _RCFileName(std::string(getenv("HOME")) + "/.clasprc"), _NoRc(false), _PauseForDebugger(false) {
+      _RCFileName((getenv("CLASP_RC_PATH") != NULL) ? getenv("CLASP_RC_PATH") : (std::string(getenv("HOME")) + "/.clasprc")), _NoRc(false),
+      _PauseForDebugger(false) {
   if (argc == 0) {
     this->_RawArguments.push_back("./");
   } else {

@@ -4,6 +4,7 @@
 #   make -f apptainer/makefile
 #
 
-rm -rf build-apptainer/*
+#rm -rf build-apptainer/*
 tar --exclude-vcs -cvf systems.tar -C $HOME ./common-lisp 
 apptainer build -F --bind $PWD:/mnt cando.sif apptainer/cando-arch.def
+apptainer overlay create --size 1024 --create-dir /home/cando cando.sif
