@@ -1,5 +1,4 @@
 namespace gctools {
-#ifdef USE_MPS
 extern void bad_cons_mps_reserve_error();
 
 template <typename RuntimeStage, typename ConsType, typename Register, typename... ARGS>
@@ -163,5 +162,4 @@ inline PTR_TYPE do_mps_weak_allocation(size_t allocate_size, mps_ap_t& allocatio
   GC_LOG(("malloc@%p %zu bytes\n", obj, allocate_size));
   return tagged_obj;
 }
-#endif // #ifdef USE_MPS
 };     // namespace gctools

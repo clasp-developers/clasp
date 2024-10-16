@@ -11,7 +11,6 @@ namespace gctools {
 #define DO_GENERAL_ALLOC(true_size) DOALLOC(true_size)
 #define DO_UNCOLLECTABLE_ALLOC(true_size) DOALLOC(true_size)
 
-#ifdef USE_MMTK
 template <typename Cons, typename... ARGS> inline Cons* do_mmtk_cons_allocation(size_t true_size, ARGS&&... args) {
   RAII_DISABLE_INTERRUPTS();
 #ifdef USE_PRECISE_GC
@@ -27,7 +26,6 @@ template <typename Cons, typename... ARGS> inline Cons* do_mmtk_cons_allocation(
   new (cons) Cons(std::forward<ARGS>(args)...);
   return cons;
 }
-#endif
 
 inline Header_s* do_mmtk_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   RAII_DISABLE_INTERRUPTS();
