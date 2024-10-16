@@ -429,28 +429,21 @@ __attribute__((noinline)) void startupBoehm(gctools::ClaspInfo* claspInfo) {
   GC_set_warn_proc(clasp_warn_proc);
   //  GC_enable_incremental();
   GC_init();
-  // ctor sets up my_thread
+
   gctools::ThreadLocalStateLowLevel* thread_local_state_low_level = new gctools::ThreadLocalStateLowLevel(claspInfo);
   my_thread_low_level = thread_local_state_low_level;
 
-#if 1
+  // ctor sets up my_thread
   core::ThreadLocalState* thread_local_stateP =
       (core::ThreadLocalState*)ALIGNED_GC_MALLOC_UNCOLLECTABLE(sizeof(core::ThreadLocalState));
   new (thread_local_stateP) core::ThreadLocalState(false);
-  claspInfo->_threadLocalStateP = thread_local_stateP;
-#else
-  core::ThreadLocalState thread_local_state(false); // special ctor that does not require _Nil be defined
-  my_thread = &thread_local_state;
-#endif
-  core::transfer_StartupInfo_to_my_thread();
+
 #if 1
   // I'm not sure if this needs to be done for the main thread
   GC_stack_base gc_stack_base;
   GC_get_stack_base(&gc_stack_base);
   GC_register_my_thread(&gc_stack_base);
 #endif
-  thread_local_stateP->startUpVM();
-  core::global_options = new core::CommandLineOptions(claspInfo->_argc, claspInfo->_argv);
 
 #ifndef SCRAPING
 #define ALL_PREGCSTARTUPS_CALLS

@@ -1093,7 +1093,6 @@ __attribute__((noinline)) void startupMemoryPoolSystem(gctools::ClaspInfo* clasp
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create awl pool");
-  core::global_options = new core::CommandLineOptions(claspInfo->_argc, claspInfo->_argv);
 
 #ifndef SCRAPING
 #define ALL_PREGCSTARTUPS_CALLS
@@ -1158,7 +1157,6 @@ __attribute__((noinline)) void startupMemoryPoolSystem(gctools::ClaspInfo* clasp
     core::ThreadLocalState thread_local_state;
     my_thread_low_level = &thread_local_state_low_level;
     my_thread = &thread_local_state;
-    core::transfer_StartupInfo_to_my_thread();
 
     // Create the allocation points
     my_thread_allocation_points.initializeAllocationPoints();
