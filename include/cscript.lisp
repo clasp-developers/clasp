@@ -3,7 +3,7 @@
 (k:sources :install-code
            #~"clasp/asttooling/"
            #~"clasp/cffi-old/"
-           #~"clasp/clbin/"
+           #~"clasp/clbind/"
            #~"clasp/cffi-old/"
            #~"clasp/core/"
            #~"clasp/external/"
@@ -18,7 +18,7 @@
 (k:sources :etags
            #~"clasp/asttooling/"
            #~"clasp/cffi-old/"
-           #~"clasp/clbin/"
+           #~"clasp/clbind/"
            #~"clasp/cffi-old/"
            #~"clasp/core/"
            #~"clasp/external/"
