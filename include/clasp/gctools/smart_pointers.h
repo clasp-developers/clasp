@@ -2,8 +2,6 @@
 
 // Disable this once we have List_sp working
 #define USE_BAD_CAST_ERROR 1
-// Turn these on only if x.nilp() are found in ASSERT(...) statements
-#define ALLOW_NIL_OTHER 1
 
 /*
   File: smart_pointers.h
@@ -39,7 +37,46 @@
 #include <iostream>
 #include <cstring>
 
-template <class Ret, class Sub> Ret lisp_subscript(Sub sub){};
+#ifndef SCRAPING
+#ifdef USE_PRECISE_GC
+#define DECLARE_FORWARDS
+#include CLASP_GC_CC
+#undef DECLARE_FORWARDS
+#else
+#define DECLARE_FORWARDS
+#include INIT_CLASSES_INC_H
+#undef DECLARE_FORWARDS
+#endif
+#endif
+
+namespace gctools {
+
+#if (defined(DO_ASSERT_TYPE_CAST) && !defined(SCRAPING))
+template <typename T1, typename T2> struct Inherits : std::false_type {};
+// This is the only place that we include INIT_CLASSES_INC_H into a build
+// that uses USE_PRECISE_GC - the static analyzer doesn't generate the inheritance
+// relationship - so we use the one from INIT_CLASSES_INC_H
+#define DECLARE_INHERITANCE
+#include INIT_CLASSES_INC_H
+#undef DECLARE_INHERITANCE
+/// Add special Inheritance info here
+template <> struct Inherits<core::Number_O, ::core::SingleFloat_I> : public std::true_type {};
+template <> struct Inherits<core::Real_O, ::core::SingleFloat_I> : public std::true_type {};
+template <> struct Inherits<core::Float_O, ::core::SingleFloat_I> : public std::true_type {};
+template <> struct Inherits<core::Number_O, ::core::Fixnum_I> : public std::true_type {};
+template <> struct Inherits<core::Real_O, ::core::Fixnum_I> : public std::true_type {};
+template <> struct Inherits<core::Rational_O, ::core::Fixnum_I> : public std::true_type {};
+template <> struct Inherits<core::Integer_O, ::core::Fixnum_I> : public std::true_type {};
+
+/// Stop special Inheritance
+#else
+template <typename T1, typename T2> struct Inherits : std::true_type {};
+#endif
+
+template <typename T1, typename T2> void TestInheritance() {
+  static_assert(Inherits<T1, T2>::value, "Second class MUST inherit from first class - for the expression to compile");
+};
+}; // namespace gctools
 
 namespace gctools {
 template <class T> class base_ptr {
@@ -56,24 +93,13 @@ public:
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & ptag_mask) == 0);
   };
   inline base_ptr(const return_type& rt) : theObject((Type*)rt.ret0[0]){};
-#ifdef BASE_PTR_COPY_CTOR
-  inline base_ptr(const base_ptr<Type>& obj) : theObject(obj.theObject){};
-#endif
 
-#ifndef DO_ASSERT_TYPE_CAST
-  template <class From> inline base_ptr(base_ptr<From> const& rhs) : theObject(reinterpret_cast<Type*>(rhs.theObject)){};
-#else
-#if 1
-  template <class From> inline base_ptr(base_ptr<From> const& rhs) {
-    if (TaggedCast<Type*, From*>::isA(rhs.theObject)) {
-      this->theObject = reinterpret_cast<Type*>(
-          rhs.raw_()); // TaggedCast<Type *, From *>::castOrNULL(rhs.theObject); //reinterpret_cast<From*>(rhs.raw_()));
-      return;
-    }
-    core::lisp_errorCast<Type, From>(rhs.theObject);
+  template <class From> inline base_ptr(base_ptr<From> const& rhs)
+    : theObject(reinterpret_cast<Type*>(rhs.theObject)) {
+#ifdef DO_ASSERT_TYPE_CAST
+    TestInheritance<Type, From>();
+#endif
   }
-#endif
-#endif
 
   uintptr_t ptag() const { return reinterpret_cast<uintptr_t>(this->theObject) & ptag_mask; };
 
@@ -146,8 +172,6 @@ public:
     return ret;
   }
 
-  template <class o_class> inline bool isA() { return TaggedCast<o_class*, Type*>::isA(this->theObject); }
-
   template <class o_class> inline bool isA() const { return TaggedCast<o_class*, Type*>::isA(this->theObject); }
 
   /*! Return the offset in bytes between this.px and this - you need to modify the base
@@ -180,14 +204,11 @@ public:
 
   inline Type* untag_object() const { return ::gctools::untag_object(this->theObject); }
 
-  bool _NULLp() const { return this->theObject == NULL; };
-
   /*! If theObject!=NULL then return true */
   explicit operator bool() const { return this->theObject != NULL; };
 
-  inline return_type as_return_type() { return return_type(this->theObject, 1); };
+  inline return_type as_return_type() const { return return_type(this->theObject, 1); };
 
-#if ALLOW_NIL_OTHER
   bool nilp() const { return tagged_nilp(this->theObject); }
   bool notnilp() const { return (!this->nilp()); };
   bool isTrue() const { return !this->nilp(); };
@@ -195,11 +216,7 @@ public:
     GCTOOLS_ASSERT(this->consp());
     return reinterpret_cast<core::Cons_O*>(reinterpret_cast<uintptr_t>(this->theObject) - cons_tag);
   };
-#else
-  // bool nilp() const { return tagged_nilp(this->theObject); }
-  // bool notnilp() const { return (!this->nilp());};
-  bool isTrue() const { return true; };
-#endif
+
   bool objectp() const { return this->generalp() || this->consp(); };
   bool generalp() const { return tagged_generalp<Type*>(this->theObject); };
   core::General_O* unsafe_general() const {
@@ -262,47 +279,6 @@ public:
 };
 }; // namespace gctools
 
-#ifndef SCRAPING
-#ifdef USE_PRECISE_GC
-#define DECLARE_FORWARDS
-#include CLASP_GC_CC
-#undef DECLARE_FORWARDS
-#else
-#define DECLARE_FORWARDS
-#include INIT_CLASSES_INC_H
-#undef DECLARE_FORWARDS
-#endif
-#endif
-
-namespace gctools {
-
-#if (defined(DO_ASSERT_TYPE_CAST) && !defined(SCRAPING))
-template <typename T1, typename T2> struct Inherits : std::false_type {};
-// This is the only place that we include INIT_CLASSES_INC_H into a build
-// that uses USE_PRECISE_GC - the static analyzer doesn't generate the inheritance
-// relationship - so we use the one from INIT_CLASSES_INC_H
-#define DECLARE_INHERITANCE
-#include INIT_CLASSES_INC_H
-#undef DECLARE_INHERITANCE
-/// Add special Inheritance info here
-template <> struct Inherits<core::Number_O, ::core::SingleFloat_I> : public std::true_type {};
-template <> struct Inherits<core::Real_O, ::core::SingleFloat_I> : public std::true_type {};
-template <> struct Inherits<core::Float_O, ::core::SingleFloat_I> : public std::true_type {};
-template <> struct Inherits<core::Number_O, ::core::Fixnum_I> : public std::true_type {};
-template <> struct Inherits<core::Real_O, ::core::Fixnum_I> : public std::true_type {};
-template <> struct Inherits<core::Rational_O, ::core::Fixnum_I> : public std::true_type {};
-template <> struct Inherits<core::Integer_O, ::core::Fixnum_I> : public std::true_type {};
-
-/// Stop special Inheritance
-#else
-template <typename T1, typename T2> struct Inherits : std::true_type {};
-#endif
-
-template <typename T1, typename T2> void TestInheritance() {
-  static_assert(Inherits<T1, T2>::value, "Second class MUST inherit from first class - for the expression to compile");
-};
-}; // namespace gctools
-
 namespace gctools {
 template <typename Type> class smart_ptr : public base_ptr<Type> {
 public:
@@ -314,20 +290,12 @@ public:
   inline smart_ptr(const return_type& rt) : base_ptr<Type>(rt){};
   inline smart_ptr(base_ptr<Type> orig) : base_ptr<Type>((Tagged)orig.raw_()){};
 
-  template <class To> To cast() {
-    printf("%s:%d implement me\n", __FILE__, __LINE__);
-    abort();
-  };
-
-#ifndef DO_ASSERT_TYPE_CAST
-  template <class From> inline smart_ptr(smart_ptr<From> const& rhs) : base_ptr<Type>((Tagged)rhs.raw_()){};
-#else
-#if 1
-  template <class From> inline smart_ptr(smart_ptr<From> const& rhs) : base_ptr<Type>((Tagged)rhs.raw_()) {
+  template <class From> inline smart_ptr(smart_ptr<From> const& rhs)
+    : base_ptr<Type>((Tagged)rhs.raw_()) {
+#ifdef DO_ASSERT_TYPE_CAST
     TestInheritance<Type, From>();
+#endif
   };
-#endif
-#endif
 };
 
 }; // namespace gctools
@@ -406,9 +374,6 @@ template <typename To_SP> inline To_SP As(const return_type& rhs) {
 
 // Cast the type without any concern if it is appropriate
 template <typename To_SP, typename From_SP> inline To_SP As_unsafe(From_SP const& rhs) {
-#ifdef DEBUG_ASSERT
-//   GCTOOLS_ASSERT(TaggedCast<typename To_SP::Type*, typename From_SP::Type*>::isA(rhs));
-#endif
   To_SP ret((Tagged)rhs.raw_());
   return ret;
 }
@@ -434,21 +399,15 @@ public:
   Type* theObject;
 
 public:
-  template <class Ret> Ret cast();
-
-public:
   // Default constructor, set theObject to NULL
   smart_ptr() noexcept : theObject((Type*)NULL){};
   explicit inline smart_ptr(Type* ptr) : theObject(ptr){};
   /*! Create a smart pointer from an existing tagged pointer */
   explicit inline smart_ptr(Tagged ptr) : theObject((Type*)ptr){};
-#ifdef SMART_PTR_COPY_CTOR
-  inline smart_ptr(const smart_ptr<Type>& obj) : theObject((Type*)obj.theObject){};
-#endif
   inline smart_ptr(const return_type& rt) : theObject((Type*)rt.ret0[0]){};
   template <class From> inline smart_ptr(smart_ptr<From> const& rhs) : theObject((Type*)rhs.theObject){};
 
-  inline return_type as_return_type() { return return_type(this->theObject, 1); };
+  inline return_type as_return_type() const { return return_type(this->theObject, 1); };
 
   template <class o_class> inline smart_ptr<o_class> asOrNull() {
     return smart_ptr<o_class>((Tagged)TaggedCast<o_class*, Type*>::castOrNULL(this->theObject));
@@ -502,18 +461,12 @@ public:
     return ret;
   }
 
-  template <class o_class> inline bool isA() {
-    smart_ptr<o_class> ret = this->asOrNull<o_class>();
-    return ((bool)ret);
-  }
-
   template <class o_class> inline bool isA() const {
     smart_ptr<o_class> ret = this->asOrNull<o_class>();
     return ((bool)ret);
   }
 
 public:
-  inline operator bool() { return this->theObject != NULL; };
   inline operator bool() const { return this->theObject != NULL; };
   inline Type* untag_object() const { return ::gctools::untag_object(this->theObject); }
   /*! Dereferencing operator - remove the other tag */
@@ -544,7 +497,6 @@ public:
   Type*& rawRef_() { return this->theObject; };
   inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<core::T_O*>(p); }
   void reset_() { this->theObject = NULL; };
-  bool _NULLp() const { return this->theObject == NULL; };
 
 public:
   /*! Get the pointer typcast to an integer quantity for hashing */
@@ -621,11 +573,11 @@ public:
   };
 
 public:
-  inline operator bool() { return this->theObject != NULL; };
+  inline operator bool() const { return this->theObject != NULL; };
   inline operator smart_ptr<core::T_O>() const { return smart_ptr<core::T_O>((Tagged)this->theObject); };
 
 public:
-  inline return_type as_return_type() { return return_type(this->theObject, 1); };
+  inline return_type as_return_type() const { return return_type(this->theObject, 1); };
   inline bool unboundp() const { return tagged_unboundp(this->theObject); };
   inline bool boundp() const { return !tagged_unboundp(this->theObject); };
   inline bool nilp() const { return tagged_nilp(this->theObject); }
@@ -661,10 +613,6 @@ public:
   explicit inline smart_ptr(Tagged ptr) : base_ptr((Tagged)ptr){};
   explicit inline smart_ptr(Type* ptr) : base_ptr((Type*)ptr){};
   inline smart_ptr(base_ptr<core::Symbol_O> orig) : base_ptr<core::Symbol_O>((Tagged)orig.raw_()){};
-
-#ifdef SMART_PTR_COPY_CTOR
-  inline smart_ptr(const smart_ptr<Type>& obj) : theObject(obj.theObject){};
-#endif
 
   template <class From> inline smart_ptr(smart_ptr<From> const& rhs) {
     if (LIKELY(rhs.objectp())) {
@@ -737,12 +685,10 @@ public:
 
   Type* untag_object() const { return ::gctools::untag_object(this->theObject); }
 
-  bool _NULLp() const { return this->theObject == NULL; };
-
   /*! If theObject!=NULL then return true */
   explicit operator bool() const { return this->theObject != NULL; };
 
-  inline return_type as_return_type() { return return_type(this->theObject, 1); };
+  inline return_type as_return_type() const { return return_type(this->theObject, 1); };
   inline bool nilp() const { return tagged_nilp(this->theObject); }
   inline bool notnilp() const { return (!this->nilp()); };
   inline bool isTrue() const { return !this->nilp(); };
@@ -830,10 +776,6 @@ public:
   explicit inline smart_ptr(Type* ptr) : base_ptr((Type*)ptr){};
   inline smart_ptr(base_ptr<core::SimpleVector_O> orig) : base_ptr<core::SimpleVector_O>((Tagged)orig.raw_()){};
 
-#ifdef SMART_PTR_COPY_CTOR
-  inline smart_ptr(const smart_ptr<Type>& obj) : theObject(obj.theObject){};
-#endif
-
   template <class From> inline smart_ptr(smart_ptr<From> const& rhs) {
     if (LIKELY(rhs.objectp())) {
       Type* px = TaggedCast<Type*, From*>::castOrNULL(rhs.theObject);
@@ -904,12 +846,10 @@ public:
 
   Type* untag_object() const { return ::gctools::untag_object(this->theObject); }
 
-  bool _NULLp() const { return this->theObject == NULL; };
-
   /*! If theObject!=NULL then return true */
   explicit operator bool() const { return this->theObject != NULL; };
 
-  inline return_type as_return_type() { return return_type(this->theObject, 1); };
+  inline return_type as_return_type() const { return return_type(this->theObject, 1); };
   inline bool nilp() const { return tagged_nilp(this->theObject); }
   inline bool notnilp() const { return (!this->nilp()); };
   inline bool isTrue() const { return !this->nilp(); };
@@ -995,10 +935,6 @@ public:
   explicit inline smart_ptr(Type* ptr) : base_ptr((Type*)ptr){};
   inline smart_ptr(base_ptr<core::HashTableEqual_O> orig) : base_ptr<core::HashTableEqual_O>((Tagged)orig.raw_()){};
 
-#ifdef SMART_PTR_COPY_CTOR
-  inline smart_ptr(const smart_ptr<Type>& obj) : theObject(obj.theObject){};
-#endif
-
   template <class From> inline smart_ptr(smart_ptr<From> const& rhs) {
     if (LIKELY(rhs.objectp())) {
       Type* px = TaggedCast<Type*, From*>::castOrNULL(rhs.theObject);
@@ -1069,12 +1005,10 @@ public:
 
   Type* untag_object() const { return ::gctools::untag_object(this->theObject); }
 
-  bool _NULLp() const { return this->theObject == NULL; };
-
   /*! If theObject!=NULL then return true */
   explicit operator bool() const { return this->theObject != NULL; };
 
-  inline return_type as_return_type() { return return_type(this->theObject, 1); };
+  inline return_type as_return_type() const { return return_type(this->theObject, 1); };
   inline bool nilp() const { return tagged_nilp(this->theObject); }
   inline bool notnilp() const { return (!this->nilp()); };
   inline bool isTrue() const { return !this->nilp(); };
@@ -1232,7 +1166,6 @@ public:
 
   inline core::T_O* raw_() const { return reinterpret_cast<core::T_O*>(this->theObject); }
   inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
-  bool _NULLp() const { return this->theObject == NULL; };
 
   template <class U> inline bool operator==(smart_ptr<U> const other) const { return this->theObject == other.theObject; }
 
@@ -1296,7 +1229,7 @@ public:
     return reinterpret_cast<core::Cons_O*>(reinterpret_cast<uintptr_t>(this->theObject) - cons_tag);
   };
   inline bool objectp() const { return this->generalp() || this->consp(); };
-  inline return_type as_return_type() { return return_type(this->theObject, 1); };
+  inline return_type as_return_type() const { return return_type(this->theObject, 1); };
   inline bool nilp() const { return tagged_nilp(this->theObject); };
   inline bool notnilp() const { return !this->nilp(); };
   inline bool isTrue() const { return !this->nilp(); };
@@ -1346,7 +1279,6 @@ public:
 
   core::T_O* raw_() const { return reinterpret_cast<Type*>(this->theObject); }
   inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
-  bool _NULLp() const { return this->theObject == NULL; };
 
   template <class U> inline bool operator==(smart_ptr<U> const other) const { return this->theObject == other.theObject; }
 
@@ -1485,18 +1417,6 @@ template <class T> gctools::smart_ptr<T> deleted() {
   gctools::smart_ptr<T> x((gctools::Tagged)gctools::tag_deleted<T*>());
   return x;
 }
-
-namespace gctools {
-
-template <class TO, class FROM> smart_ptr<TO> dynamic_pointer_cast(const smart_ptr<FROM>& ptr) {
-  return smart_ptr<TO>(dynamic_cast<TO*>(ptr.pxget()));
-};
-
-template <class TO, class FROM> smart_ptr<TO> dynamic_pointer_cast(FROM ptr) {
-  return smart_ptr<TO>(dynamic_cast<typename TO::PointerType>(ptr.pxget()));
-};
-
-}; // namespace gctools
 
 namespace core {
 using gctools::Fixnum;
@@ -1710,7 +1630,7 @@ public:
     this->theObject = reinterpret_cast<Type*>(orig.theObject);
     return *this;
   }
-  inline return_type as_return_type() { return return_type(this->theObject, 1); };
+  inline return_type as_return_type() const { return return_type(this->theObject, 1); };
   inline bool nilp() const { return tagged_nilp(this->theObject); }
   inline bool notnilp() const { return !tagged_nilp(this->theObject); }
 

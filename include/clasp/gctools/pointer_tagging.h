@@ -2,9 +2,6 @@
 
 // Disable this once we have List_sp working
 #define USE_BAD_CAST_ERROR 1
-// Turn these on only if x.nilp() are found in ASSERT(...) statements
-#define ALLOW_NIL_OTHER 1
-// #define ALLOW_CONS_NIL 1
 
 /*
   File: smart_pointers.h
@@ -61,7 +58,6 @@ typedef int64_t integer64_t;
 
 namespace core {
 struct Vaslist;
-class Code_S;
 }; // namespace core
 
 namespace gctools {
@@ -236,22 +232,6 @@ static const uintptr_t unshifted_stamp_last_alien = 65535;
 static const uintptr_t unshifted_stamp_first_instance = 65536;
 // static const uintptr_t unshifted_stamp_last_instance  = ((uintptr_t)most_positive_fixnum)<<1;
 
-static const char* tagged_fixnum_str = "FIXNUM";
-static const char* tagged_character_str = "CHARACTER";
-static const char* tagged_single_float_str = "SINGLE-FLOAT";
-#ifdef CLASP_SHORT_FLOAT
-static const char* tagged_short_float_str = "SHORT-FLOAT";
-#endif
-static const char* tagged_object_str = "OBJECT";
-static const char* tagged_cons_str = "CONS";
-static const char* tagged_unbound_str = "UNBOUND";
-static const char* tagged_deleted_str = "DELETED";
-static const char* tagged_same_as_key_str = "SAME-AS -EY";
-static const char* tagged_vaslist_str = "VALIST";
-static const char* tagged_nil_str = "NIL";
-static const char* tagged_general_str = "GENERAL";
-static const char* tagged_function_description_str = "FUNCTION_DESCRIPTION";
-
 template <class T> T ptag(T ptr) { return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(ptr) & ptag_mask); };
 
 template <class T> inline bool tagged_consp(T ptr) { return (reinterpret_cast<uintptr_t>(ptag(ptr)) == cons_tag); };
@@ -410,78 +390,5 @@ template <class Type> inline Type untag_object(Type tagged_obj) {
   GCTOOLS_ASSERT(tagged_objectp(tagged_obj));
   return reinterpret_cast<Type>((uintptr_t)tagged_obj & ptr_mask);
 }
-
-// This returns a string containing info if and which tagged object is given
-// as parameter.
-template <typename T> std::string tag_str(T tagged_obj) {
-  if (tagged_consp(tagged_obj)) {
-    return std::string(tagged_cons_str);
-  }
-
-  if (tagged_nilp(tagged_obj)) {
-    return std::string(tagged_nil_str);
-  }
-
-  if (tagged_unboundp(tagged_obj)) {
-    return std::string(tagged_unbound_str);
-  }
-
-  if (tagged_deletedp(tagged_obj)) {
-    return std::string(tagged_deleted_str);
-  }
-
-  if (tagged_same_as_keyp(tagged_obj)) {
-    return std::string(tagged_same_as_key_str);
-  }
-
-  if (tagged_vaslistp(tagged_obj)) {
-    return std::string(tagged_vaslist_str);
-  }
-
-  if (tagged_fixnump(tagged_obj)) {
-    return std::string(tagged_fixnum_str);
-  }
-
-  if (tagged_characterp(tagged_obj)) {
-    return std::string(tagged_character_str);
-  }
-
-  if (tagged_single_floatp(tagged_obj)) {
-    return std::string(tagged_single_float_str);
-  }
-
-#ifdef CLASP_SHORT_FLOAT
-  if (tagged_short_floatp(tagged_obj)) {
-    return std::string(tagged_short_float_str);
-  }
-#endif
-
-  if (tagged_generalp(tagged_obj)) {
-    return std::string(tagged_general_str);
-  }
-
-  if (tagged_function_descriptionp(tagged_obj)) {
-    return std::string(tagged_function_description_str);
-  }
-
-  if (tagged_objectp(tagged_obj)) {
-    return std::string(tagged_object_str);
-  }
-
-  return std::string("*** UNKNOW_TAG ***");
-
-}; // tag_str
-
-template <typename T> std::string tag_info(T tagged_obj) {
-  std::stringstream ss;
-
-  ss << "<object tag info:";
-  ss << " type id: " << typeid(T).name();
-  ss << " tag: " << tag_str(tagged_obj);
-  ss << ">";
-
-  return ss.str();
-
-}; // tag_info
 
 }; // namespace gctools
