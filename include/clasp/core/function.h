@@ -19,7 +19,6 @@ FORWARD(SimpleCoreFun);
 FORWARD(CoreFun);
 FORWARD(Function);
 FORWARD(ClosureBase);
-FORWARD(BuiltinClosure);
 FORWARD(Closure);
 FORWARD(BytecodeModule);
 FORWARD(SimpleVector_byte32_t);

@@ -948,7 +948,7 @@ List_sp lisp_lexical_variable_names(List_sp lambda_list, bool& trivial_wrapper);
 List_sp lisp_parse_declares(const string& packageName, const string& declarestring);
 
 void lisp_defineSingleDispatchMethod(T_sp name, Symbol_sp classSymbol,
-                                     SimpleFun_sp entry, size_t TemplateDispatchOn = 0,
+                                     Function_sp entry, size_t TemplateDispatchOn = 0,
                                      bool useTemplateDispatchOn = false, const string& lambda_list = "",
                                      const string& declares = "", const string& docstring = "", bool autoExport = true,
                                      int number_of_required_arguments = -1, std::set<int> pureOutIndices = std::set<int>());
@@ -956,7 +956,7 @@ void lisp_defineSingleDispatchMethod(T_sp name, Symbol_sp classSymbol,
 typedef enum { symbol_function, symbol_function_setf, symbol_function_macro } SymbolFunctionEnum;
 
 void lisp_bytecode_defun(SymbolFunctionEnum kind, Symbol_sp sym, const string& packageName,
-                         SimpleFun_sp fc, const string& arguments = "", const string& declares = "",
+                         Function_sp fc, const string& arguments = "", const string& declares = "",
                          const string& docstring = "", const string& sourceFile = "", int lineNumber = 0,
                          int numberOfRequiredArguments = 0, bool autoExport = true,
                          const std::set<int>& skipIndices = std::set<int>());
