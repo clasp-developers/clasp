@@ -192,7 +192,7 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +vas
 namespace gctools {
 /*! Specialization of smart_ptr<T> on core::Vaslist
  */
-template <> class smart_ptr<core::Vaslist> { // : public tagged_ptr<core::Vaslist> {
+template <> class smart_ptr<core::Vaslist> {
 public:
   typedef core::Vaslist Type;
   Type* theObject;
