@@ -1123,7 +1123,6 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
 #define RESULT_OK 1
 #define EXTRA_ARGUMENTS , void* user_data
 
-#undef DEBUG_MPS_SIZE
 #define OBJECT_SKIP_IN_OBJECT_SCAN blah_blah_blah_error
 #define OBJECT_SCAN isl_obj_scan
 #include "obj_scan.cc"

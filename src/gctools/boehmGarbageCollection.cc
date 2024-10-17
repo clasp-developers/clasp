@@ -392,10 +392,6 @@ void boehm_clear_finalizer_list(gctools::Tagged object_tagged) {
   }
 }
 
-#ifdef USE_BOEHM_MEMORY_MARKER
-int globalBoehmMarker = 0;
-#endif
-
 }; // namespace gctools
 
 #ifndef SCRAPING

@@ -268,26 +268,6 @@ CL_DEFUN void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceSta
 #endif
 };
 
-CL_LAMBDA(&optional marker);
-DOCGROUP(clasp);
-CL_DEFUN Fixnum gctools__gc_marker(core::Fixnum_sp marker) {
-#if defined(USE_BOEHM)
-#ifdef USE_BOEHM_MEMORY_MARKER
-  if (marker.nilp()) {
-    return gctools::globalBoehmMarker;
-  }
-  ASSERT(marker.fixnump());
-  Fixnum oldm = gctools::globalBoehmMarker;
-  Fixnum m = marker.unsafe_fixnum();
-  gctools::globalBoehmMarker = m;
-  return oldm;
-#endif
-#else
-  MISSING_GC_SUPPORT();
-#endif
-  return 0;
-}
-
 SYMBOL_EXPORT_SC_(GcToolsPkg, STARallocPatternStackSTAR);
 SYMBOL_EXPORT_SC_(GcToolsPkg, ramp);
 SYMBOL_EXPORT_SC_(GcToolsPkg, rampCollectAll);
@@ -582,14 +562,6 @@ CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
 }; // namespace gctools
 
 namespace gctools {
-#ifdef USE_MPS
-DOCGROUP(clasp);
-CL_DEFUN void gctools__enable_underscanning(bool us) { global_underscanning = us; }
-
-#endif
-}; // namespace gctools
-
-namespace gctools {
 /*! Call finalizer_callback with no arguments when object is finalized.*/
 DOCGROUP(clasp);
 CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback) {
@@ -734,21 +706,6 @@ CL_DEFUN void gctools__debug_allocations(core::T_sp debugOn) { _GlobalDebugAlloc
 bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& ss) {
   core::List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
   bool debugging = false;
-  bool use_boehm_memory_marker = false;
-#ifdef USE_BOEHM_MEMORY_MARKER
-  use_boehm_memory_marker = true;
-  debugging = true;
-#endif
-  if (buildReport)
-    ss << (fmt::format("USE_BOEHM_MEMORY_MARKER = {}\n", (use_boehm_memory_marker ? "**DEFINED**" : "undefined")));
-
-  bool mps_recognize_zero_tags = false;
-#ifdef MPS_RECOGNIZE_ZERO_TAGS
-  mps_recognize_zero_tags = true;
-  debugging = true;
-#endif
-  if (buildReport)
-    ss << (fmt::format("MPS_RECOGNIZE_ZERO_TAGS = {}\n", (mps_recognize_zero_tags ? "**DEFINED**" : "undefined")));
 
   bool use_symbols_in_global_array = false;
 #ifdef USE_SYMBOLS_IN_GLOBAL_ARRAY
@@ -805,19 +762,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport)
     ss << (fmt::format("DEBUG_STACK_TELEMETRY = {}\n", (debug_stack_telemetry ? "**DEFINED**" : "undefined")));
-
-  bool debug_mps_underscanning = false;
-#ifdef DEBUG_MPS_UNDERSCANNING
-  debug_mps_underscanning = true;
-  bool debug_mps_underscanning_initial = true;
-  debugging = true;
-#else
-  bool debug_mps_underscanning_initial = false;
-#endif
-  if (buildReport)
-    ss << (fmt::format("DEBUG_MPS_UNDERSCANNING = {}\n", (debug_mps_underscanning ? "**DEFINED**" : "undefined")));
-  if (buildReport)
-    ss << (fmt::format("DEBUG_MPS_UNDERSCANNING_INITIAL = {}\n", (debug_mps_underscanning_initial ? "true" : "false")));
 
   bool debug_recursive_allocations = false;
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
@@ -986,16 +930,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport)
     ss << (fmt::format("DEBUG_JIT_LOG_SYMBOLS = {}\n", (debug_jit_log_symbols ? "**DEFINED**" : "undefined")));
-
-  bool debug_mps_size = false;
-#ifdef DEBUG_MPS_SIZE
-  debug_mps_size = true;
-  debugging = true;
-  if (setFeatures)
-    features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MPS_SIZE"), features);
-#endif
-  if (buildReport)
-    ss << (fmt::format("DEBUG_MPS_SIZE = {}\n", (debug_mps_size ? "**DEFINED**" : "undefined")));
 
   bool sanitize_memory = false;
 #ifdef SANITIZE_MEMORY

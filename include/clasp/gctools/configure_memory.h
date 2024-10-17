@@ -2,13 +2,6 @@
 
 #define TAGGED_POINTER 1
 
-/// USE_BOEHM_MEMORY_MARKER may be useful for debugging processes that cons memory
-/// I lets you write an integer (by using (gctools:gc-marker <int>) into the header
-/// of every object allocated while that marker is set.
-/// Then you can use (room t <int>) to dump only those objects marked with the marker
-
-// #define USE_BOEHM_MEMORY_MARKER
-
 /// Tracking allocations with TRACK_ALLOCATIONS keeps a count of
 /// exactly how many bytes are CONSed by Clasp
 /// Compiling min-boehm-recompile with it defined 4:54 min and off 4.56 min

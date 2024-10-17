@@ -196,12 +196,6 @@ MpsMetrics globalMpsMetrics;
    --------------------------------------------------
 */
 
-#ifdef DEBUG_MPS_UNDERSCANNING
-bool global_underscanning = true;
-#else
-bool global_underscanning = false;
-#endif
-
 // The pools - if you add a pool - assign it an integer index
 // in the id_from_pool and pool_from_id functions
 mps_pool_t global_cons_pool;
