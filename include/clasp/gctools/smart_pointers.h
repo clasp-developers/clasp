@@ -36,6 +36,7 @@
 
 #include <iostream>
 #include <cstring>
+#include <type_traits> // is_base_of
 
 #ifndef SCRAPING
 #ifdef USE_PRECISE_GC
@@ -52,13 +53,7 @@
 namespace gctools {
 
 #if (defined(DO_ASSERT_TYPE_CAST) && !defined(SCRAPING))
-template <typename T1, typename T2> struct Inherits : std::false_type {};
-// This is the only place that we include INIT_CLASSES_INC_H into a build
-// that uses USE_PRECISE_GC - the static analyzer doesn't generate the inheritance
-// relationship - so we use the one from INIT_CLASSES_INC_H
-#define DECLARE_INHERITANCE
-#include INIT_CLASSES_INC_H
-#undef DECLARE_INHERITANCE
+template <typename Super, typename Sub> struct Inherits : std::is_base_of<Super, Sub> {};
 /// Add special Inheritance info here
 template <> struct Inherits<core::Number_O, ::core::SingleFloat_I> : public std::true_type {};
 template <> struct Inherits<core::Real_O, ::core::SingleFloat_I> : public std::true_type {};
