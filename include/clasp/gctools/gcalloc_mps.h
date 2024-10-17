@@ -8,7 +8,7 @@ __attribute__((always_inline))
 inline
 #endif
 smart_ptr<ConsType>
-do_cons_mps_allocation(mps_ap_t& allocation_point, const char* ap_name, ARGS&&... args) {
+do_cons_allocation(mps_ap_t& allocation_point, const char* ap_name, ARGS&&... args) {
   gc::smart_ptr<ConsType> tagged_obj;
   {
     RAII_DISABLE_INTERRUPTS();
@@ -111,7 +111,7 @@ general_mps_allocation(const Header_s::BadgeStampWtagMtag& the_header, size_t si
 };
 
 template <class PTR_TYPE, typename... ARGS>
-inline PTR_TYPE do_mps_weak_allocation(size_t allocate_size, mps_ap_t& allocation_point, const char* ap_name, ARGS&&... args) {
+inline PTR_TYPE do_weak_allocation(size_t allocate_size, mps_ap_t& allocation_point, const char* ap_name, ARGS&&... args) {
   typedef typename PTR_TYPE::Type T;
   typedef typename GCHeader<T>::HeaderType HeadT;
   PTR_TYPE tagged_obj;

@@ -20,7 +20,7 @@
 #endif
 
 namespace gctools {
-template <typename Stage, typename Cons, typename... ARGS> inline Cons* do_boehm_cons_allocation(size_t size, ARGS&&... args) {
+template <typename Stage, typename Cons, typename... ARGS> inline Cons* do_cons_allocation(size_t size, ARGS&&... args) {
   RAIIAllocationStage<Stage> stage(my_thread_low_level);
 #ifdef USE_PRECISE_GC
   ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(
@@ -38,7 +38,7 @@ template <typename Stage, typename Cons, typename... ARGS> inline Cons* do_boehm
 }
 
 template <typename Stage = RuntimeStage>
-inline Header_s* do_boehm_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
+inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   RAIIAllocationStage<Stage> stage(my_thread_low_level);
   size_t true_size = size;
 #ifdef DEBUG_GUARD
@@ -62,7 +62,7 @@ inline Header_s* do_boehm_atomic_allocation(const Header_s::StampWtagMtag& the_h
   return header;
 };
 
-inline Header_s* do_boehm_weak_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
+inline Header_s* do_weak_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   RAII_DISABLE_INTERRUPTS();
   size_t true_size = size;
 #ifdef USE_PRECISE_GC
@@ -82,7 +82,7 @@ inline Header_s* do_boehm_weak_allocation(const Header_s::StampWtagMtag& the_hea
 };
 
 template <typename Stage = RuntimeStage>
-inline Header_s* do_boehm_general_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
+inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   RAIIAllocationStage<Stage> stage(my_thread_low_level);
   size_t true_size = size;
 #ifdef DEBUG_GUARD
@@ -110,7 +110,7 @@ inline Header_s* do_boehm_general_allocation(const Header_s::StampWtagMtag& the_
   return header;
 };
 
-inline Header_s* do_boehm_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
+inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   RAII_DISABLE_INTERRUPTS();
   size_t true_size = size;
 #ifdef DEBUG_GUARD

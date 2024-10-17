@@ -11,7 +11,7 @@ namespace gctools {
 #define DO_GENERAL_ALLOC(true_size) DOALLOC(true_size)
 #define DO_UNCOLLECTABLE_ALLOC(true_size) DOALLOC(true_size)
 
-template <typename Cons, typename... ARGS> inline Cons* do_mmtk_cons_allocation(size_t true_size, ARGS&&... args) {
+template <typename Cons, typename... ARGS> inline Cons* do_cons_allocation(size_t true_size, ARGS&&... args) {
   RAII_DISABLE_INTERRUPTS();
 #ifdef USE_PRECISE_GC
   Header_s* header = DO_CONS_ALLOC(true_size);
@@ -27,7 +27,7 @@ template <typename Cons, typename... ARGS> inline Cons* do_mmtk_cons_allocation(
   return cons;
 }
 
-inline Header_s* do_mmtk_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
+inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   RAII_DISABLE_INTERRUPTS();
   size_t true_size = size;
 #ifdef DEBUG_GUARD
@@ -50,7 +50,7 @@ inline Header_s* do_mmtk_atomic_allocation(const Header_s::StampWtagMtag& the_he
   return header;
 };
 
-inline Header_s* do_mmtk_weak_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
+inline Header_s* do_weak_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   RAII_DISABLE_INTERRUPTS();
   size_t true_size = size;
 #ifdef USE_PRECISE_GC
@@ -68,7 +68,7 @@ inline Header_s* do_mmtk_weak_allocation(const Header_s::StampWtagMtag& the_head
   return header;
 };
 
-inline Header_s* do_mmtk_general_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
+inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   RAII_DISABLE_INTERRUPTS();
   size_t true_size = size;
 #ifdef DEBUG_GUARD
@@ -93,7 +93,7 @@ inline Header_s* do_mmtk_general_allocation(const Header_s::StampWtagMtag& the_h
   return header;
 };
 
-inline Header_s* do_mmtk_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
+inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   RAII_DISABLE_INTERRUPTS();
   size_t true_size = size;
 #ifdef DEBUG_GUARD
