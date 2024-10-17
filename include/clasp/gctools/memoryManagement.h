@@ -154,7 +154,6 @@ extern void obj_dump_base(void* base);
 };
 
 namespace gctools {
-extern int global_signalTrap;
 extern bool global_debuggerOnSIGABRT; // If this is false then SIGABRT is processed normally and it will lead to termination of the
                                       // program. See core__exit!
 };                                    // namespace gctools

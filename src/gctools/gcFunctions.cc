@@ -256,159 +256,23 @@ CL_DEFUN void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceSta
 #endif
 };
 
-SYMBOL_EXPORT_SC_(GcToolsPkg, STARallocPatternStackSTAR);
 SYMBOL_EXPORT_SC_(GcToolsPkg, ramp);
 SYMBOL_EXPORT_SC_(GcToolsPkg, rampCollectAll);
 
 DOCGROUP(clasp);
 CL_DEFUN void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
-#if defined(USE_MPS)
-  mps_alloc_pattern_t mps_pat;
-  if (pattern == _sym_ramp) {
-    mps_pat = mps_alloc_pattern_ramp();
-  } else if (pattern == _sym_rampCollectAll) {
-    mps_pat = mps_alloc_pattern_ramp_collect_all();
-  } else {
-    TYPE_ERROR(pattern, core::Cons_O::createList(cl::_sym_or, _sym_ramp, _sym_rampCollectAll));
-  }
-  core::List_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
-  patternStack = core::Cons_O::create(pattern, patternStack);
-  gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(patternStack);
-  mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_pat);
-  mps_ap_alloc_pattern_begin(my_thread_allocation_points._cons_allocation_point, mps_pat);
-  mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point, mps_pat);
-#else
-  // Do nothing
-#endif
+  // to be implemented - based on old MPS code that would
+  // alert the GC about the pattern of memory allocations coming up.
 };
 
 DOCGROUP(clasp);
 CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
-  core::Symbol_sp pattern(nil<core::Symbol_O>());
-#if defined(USE_MPS)
-  core::List_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
-  if (patternStack.nilp())
-    return nil<core::Symbol_O>();
-  pattern = gc::As<core::Symbol_sp>(oCar(patternStack));
-  gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(oCdr(patternStack));
-  mps_alloc_pattern_t mps_pat;
-  if (pattern == _sym_ramp) {
-    mps_pat = mps_alloc_pattern_ramp();
-  } else {
-    mps_pat = mps_alloc_pattern_ramp_collect_all();
-  }
-  mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point, mps_pat);
-  mps_ap_alloc_pattern_end(my_thread_allocation_points._cons_allocation_point, mps_pat);
-  mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_pat);
-#else
-  // Do nothing
-#endif
-  return pattern;
+  return nil<core::Symbol_O>();
 };
 
 }; // namespace gctools
 
-#ifdef USE_MPS
-struct MemoryMeasure {
-  size_t _Count;
-  size_t _Size;
-  MemoryMeasure() : _Count(0), _Size(0){};
-};
-
-struct MemoryCopy {
-  uintptr_t _address;
-  MemoryCopy(uintptr_t start) : _address(start){};
-};
-
-extern "C" {
-
-void amc_apply_measure(mps_addr_t client, void* p, size_t s) {
-  MemoryMeasure* count = (MemoryMeasure*)p;
-  count->_Count++;
-  mps_addr_t next = obj_skip(client);
-  count->_Size += ((size_t)next - (size_t)client);
-}
-
-void amc_apply_copy(mps_addr_t client, void* p, size_t s) {
-  MemoryCopy* cpy = (MemoryCopy*)p;
-  mps_addr_t next = obj_skip(client);
-  size_t size = ((size_t)next - (size_t)client);
-  void* header = reinterpret_cast<void*>(gctools::GeneralPtrToHeaderPtr(client));
-  memcpy((void*)cpy->_address, (void*)header, size);
-  cpy->_address += size;
-};
-};
-#endif // USE_MPS
-
-extern "C" {
-
-#ifdef USE_MPS
-#define SCAN_STRUCT_T int
-#define ADDR_T mps_addr_t
-#define SCAN_BEGIN(xxx)
-#define SCAN_END(xxx)
-#define POINTER_FIX(field)
-#define EXTRA_ARGUMENTS
-#define RESULT_TYPE GC_RESULT
-#define RESULT_OK MPS_RES_OK
-#define OBJECT_SCAN fixup_objects
-#define OBJECT_SKIP_IN_OBJECT_SCAN obj_skip_debug
-#define GENERAL_PTR_TO_HEADER_PTR(_client_) gctools::GeneralPtrToHeaderPtr(_client_)
-#include "obj_scan.cc"
-#undef GENERAL_PTR_TO_HEADER_PTR
-#undef RESULT_OK
-#undef RESULT_TYPE
-#undef EXTRA_ARGUMENTS
-#undef OBJ_SCAN
-#undef SCAN_STRUCT_T
-#endif // USE_MPS
-};
-
 namespace gctools {
-
-#ifdef USE_MPS
-void walk_memory(mps_pool_t pool, mps_amc_apply_stepper_t stepper, void* pdata, size_t psize) {
-  mps_arena_park(global_arena);
-  mps_amc_apply(pool, stepper, pdata, psize);
-  mps_arena_release(global_arena);
-}
-
-DOCGROUP(clasp);
-CL_DEFUN core::T_mv gctools__measure_memory() {
-  MemoryMeasure count;
-  walk_memory(global_amc_pool, amc_apply_measure, (void*)&count, sizeof(count));
-  walk_memory(global_amcz_pool, amc_apply_measure, (void*)&count, sizeof(count));
-  return Values(core::make_fixnum(count._Count), core::make_fixnum(count._Size));
-}
-
-DOCGROUP(clasp);
-CL_DEFUN void gctools__copy_memory() {
-  MemoryMeasure amc_measure;
-  {
-    walk_memory(global_amc_pool, amc_apply_measure, (void*)&amc_measure, sizeof(amc_measure));
-    uintptr_t amc_buffer = (uintptr_t)malloc(amc_measure._Size + 100000);
-    MemoryCopy cpy(amc_buffer);
-    walk_memory(global_amc_pool, amc_apply_copy, (void*)&cpy, sizeof(cpy));
-    uintptr_t start = amc_buffer + sizeof(gctools::Header_s);
-    uintptr_t stop = cpy._address + sizeof(gctools::Header_s);
-    printf("%s:%d  fixup_objects from %p to %p\n", __FILE__, __LINE__, (void*)start, (void*)stop);
-    // AMC pool needs fixup
-    fixup_objects(0, (void*)start, (void*)stop);
-    free((void*)amc_buffer);
-  }
-  // AMCZ pool doesn't need to be fixedup
-  MemoryMeasure amcz_measure;
-  {
-    walk_memory(global_amcz_pool, amc_apply_measure, (void*)&amcz_measure, sizeof(amcz_measure));
-    uintptr_t amcz_buffer = (uintptr_t)malloc(amcz_measure._Size + 100000);
-    MemoryCopy cpy(amcz_buffer);
-    walk_memory(global_amcz_pool, amc_apply_copy, (void*)&cpy, sizeof(cpy));
-    free((void*)amcz_buffer);
-  }
-  printf("%s:%d Copied and fixed up %lu bytes from AMC and copied %lu bytes from AMCZ\n", __FILE__, __LINE__, amc_measure._Size,
-         amcz_measure._Size);
-}
-#endif // USE_MPS
 
 SYMBOL_EXPORT_SC_(KeywordPkg, test);
 
@@ -496,9 +360,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Return a list of addresses of objects with the given stamp)dx");
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp gctools__objects_with_stamp(core::T_sp stamp) {
-#if defined(USE_MPS)
-  SIMPLE_ERROR("Add support for MPS");
-#elif defined(USE_BOEHM)
+#if defined(USE_BOEHM)
   if (stamp.fixnump()) {
     gctools::FindStamp findStamp((gctools::GCStampEnum)stamp.unsafe_fixnum());
 #if GC_VERSION_MAJOR >= 7 && GC_VERSION_MINOR >= 6
@@ -524,9 +386,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Return a list of addresses of objects with the given stamp)dx");
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
-#if defined(USE_MPS)
-  SIMPLE_ERROR("Add support for MPS");
-#elif defined(USE_BOEHM)
+#if defined(USE_BOEHM)
   if (obj.fixnump()) {
     void* base = GC_base((void*)obj.unsafe_fixnum());
     gctools::FindOwner findOwner(base);
@@ -565,10 +425,6 @@ CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback
   // Register the finalizer with the GC
 #if defined(USE_BOEHM)
   boehm_set_finalizer_list(object.tagged_(), finalizers.tagged_());
-#elif defined(USE_MPS)
-  if (object.generalp() || object.consp()) {
-    my_mps_finalize(object.raw_());
-  }
 #elif defined(USE_MMTK)
   MISSING_GC_SUPPORT();
 #endif
@@ -585,9 +441,7 @@ DOCGROUP(clasp);
 CL_DEFUN int gctools__invoke_finalizers() {
 #if defined(USE_BOEHM)
   return GC_invoke_finalizers();
-#elif defined(USE_MPS)
-  MISSING_GC_SUPPORT();
-#elif defined(USE_MMTK)
+#else
   MISSING_GC_SUPPORT();
 #endif
 }
@@ -601,12 +455,7 @@ CL_DEFUN void gctools__definalize(core::T_sp object) {
     ht->remhash(object);
 #if defined(USE_BOEHM)
   boehm_clear_finalizer_list(object.tagged_());
-#elif defined(USE_MPS)
-  // Don't use mps_definalize here - definalize is taken care of by erasing the weak-key-hash-table
-  // entry above.  We may still need to get a finalization message if this class needs
-  // its destructor be called.
-  MISSING_GC_SUPPORT();
-#elif defined(USE_MMTK)
+#else
   MISSING_GC_SUPPORT();
 #endif
 }
@@ -640,12 +489,7 @@ CL_DEFUN void gctools__garbage_collect() {
 #if defined(USE_BOEHM)
   GC_gcollect();
   GC_invoke_finalizers();
-#elif defined(USE_MPS)
-  mps_arena_collect(global_arena);
-  size_t finalizations;
-  processMpsMessages(finalizations);
-  mps_arena_release(global_arena);
-#elif defined(USE_MMTK)
+#else
   MISSING_GC_SUPPORT();
 #endif
   //        printf("Garbage collection done\n");
@@ -662,28 +506,6 @@ CL_DEFUN core::T_sp gctools__get_stamp_name_map() {
   }
   return l;
 }
-
-CL_DOCSTRING(R"dx(Process finalizers)dx");
-DOCGROUP(clasp);
-CL_LAMBDA(&optional verbose);
-CL_DEFUN void gctools__cleanup(bool verbose) {
-#ifdef USE_MPS
-  size_t finalizations;
-  size_t messages = processMpsMessages(finalizations);
-  if (verbose) {
-    core::clasp_write_string(fmt::format("Processed {} finalization messages and {} total messages\n", messages, finalizations));
-  }
-#endif
-}
-
-CL_DOCSTRING(R"dx(Set the number of signal polling ticks per GC cleanup and message processing.)dx");
-CL_LAMBDA(&optional verbose);
-DOCGROUP(clasp);
-CL_DEFUN void gctools__poll_ticks_per_cleanup(int ticks) {
-#ifdef USE_MPS
-  global_pollTicksPerCleanup = ticks;
-#endif
-};
 
 #define ARGS_gctools__debug_allocations "(arg)"
 #define DECL_gctools__debug_allocations ""
@@ -1216,13 +1038,4 @@ CL_DEFUN void gctools__walk_frame_pointers_on_stack() {
   return;
 }
 
-
-void initialize_gc_functions() {
-  _sym_STARallocPatternStackSTAR->defparameter(nil<core::T_O>());
-#ifdef USE_MPS
-//  core::af_def(GcToolsPkg, "mpsTelemetrySet", &gctools__mpsTelemetrySet);
-//  core::af_def(GcToolsPkg, "mpsTelemetryReset", &gctools__mpsTelemetryReset);
-//  core::af_def(GcToolsPkg, "mpsTelemetryFlush", &gctools__mpsTelemetryFlush);
-#endif
-};
 }; // namespace gctools

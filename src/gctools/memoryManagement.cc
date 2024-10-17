@@ -74,8 +74,6 @@ extern "C" {
 void gc_park() {
 #if defined(USE_BOEHM)
   boehm_park();
-#elif defined(USE_MPS)
-  mps_park();
 #elif defined(USE_MMTK)
 
 #endif
@@ -84,8 +82,6 @@ void gc_park() {
 void gc_release() {
 #if defined(USE_BOEHM)
   boehm_release();
-#elif defined(USE_MPS)
-  mps_release();
 #elif defined(USE_MMTK)
   MISSING_GC_SUPPORT();
 #endif
@@ -253,10 +249,6 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_addre
       ++idx;
     }
   }
-#ifdef USE_MPS
-  // MPS registers the roots with the GC and doesn't need a shadow table
-  mps_register_roots(reinterpret_cast<void*>(module_mem), num_roots);
-#endif
 }
 
 core::T_O* read_gcroots_in_module(GCRootsInModule* roots, size_t index) { return (core::T_O*)(roots->getLiteral(index)); }
@@ -285,10 +277,6 @@ CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
     ct.setLiteral(i, arg.tagged_());
     ++i;
   }
-#ifdef USE_MPS
-  // MPS registers the roots with the GC and doesn't need a shadow table
-  mps_register_roots(reinterpret_cast<void*>(module_mem), nargs);
-#endif
 }
 
 }; // namespace gctools
@@ -340,9 +328,7 @@ void register_thread(mp::Process_sp process, void* stack_base) {
   GC_stack_base gc_stack_base;
   GC_get_stack_base(&gc_stack_base);
   GC_register_my_thread(&gc_stack_base);
-#elif defined(USE_MPS)
-  my_mps_thread_reg(&process->thr_o._value);
-#elif defined(USE_MMTK)
+#else
   MISSING_GC_SUPPORT();
 #endif
 };
@@ -351,10 +337,7 @@ void unregister_thread(mp::Process_sp process) {
 #if defined(USE_BOEHM)
   // ----   Boehm stuff needs to be done in the thread function
   GC_unregister_my_thread();
-#elif defined(USE_MPS)
-  my_mps_thread_deref(process->thr_o._value);
-//  printf("%s:%d  add support to add threads for MPS\n", __FILE__, __LINE__ );
-#elif defined(USE_MMTK)
+#else
   MISSING_GC_SUPPORT();
 #endif
 };

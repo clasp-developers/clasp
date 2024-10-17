@@ -83,32 +83,17 @@ const char* obj_kind_name(core::T_O* tagged_ptr) {
 }
 
 bool valid_stamp(gctools::stamp_t stamp) {
-#if defined(USE_MPS)
-  size_t stamp_index = (size_t)stamp;
-  if (stamp_index < global_stamp_max)
-    return true;
-  return false;
-#elif defined(USE_BOEHM)
+#if defined(USE_BOEHM)
   if (stamp <= STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max)) {
     return true;
   }
   return false;
-#elif defined(USE_MMTK)
+#else
   MISSING_GC_SUPPORT();
 #endif
 }
 const char* obj_name(gctools::stamp_t stamp) {
-#if defined(USE_MPS)
-  if (stamp == (gctools::stamp_t)STAMPWTAG_null) {
-    return "UNDEFINED";
-  }
-  if (stamp > (STAMPWTAG_max))
-    stamp = gctools::GCStamp<core::Instance_O>::StampWtag;
-  size_t stamp_index = (size_t)stamp;
-  ASSERT(stamp_index <= global_stamp_max);
-  //  printf("%s:%d obj_name stamp= %d  stamp_index = %d\n", __FILE__, __LINE__, stamp, stamp_index);
-  return global_stamp_info[stamp_index].name;
-#elif defined(USE_BOEHM)
+#if defined(USE_BOEHM)
   if (stamp <= global_unshifted_nowhere_stamp_names.size()) {
     //    printf("%s:%d obj_name stamp= %lu\n", __FILE__, __LINE__, stamp);
     return global_unshifted_nowhere_stamp_names[stamp].c_str();
@@ -116,7 +101,7 @@ const char* obj_name(gctools::stamp_t stamp) {
   printf("%s:%d obj_name stamp = %lu is out of bounds - max is %lu\n", __FILE__, __LINE__, (uintptr_t)stamp,
          global_unshifted_nowhere_stamp_names.size());
   return "BoehmNoClass";
-#elif defined(USE_MMTK)
+#else
   MISSING_GC_SUPPORT();
 #endif
 }
@@ -164,106 +149,6 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj) {
 #endif
 #undef DECLARE_ALL_SYMBOLS
 #undef ADJUST_SYMBOL_INDEX
-
-extern "C" {
-using namespace gctools;
-#ifdef USE_MPS
-/*! I'm using a format_header so MPS gives me the object-pointer */
-#define OBJECT_SKIP obj_skip_debug
-#define ADDR_T mps_addr_t
-#define GENERAL_PTR_TO_HEADER_PTR gctools::GeneralPtrToHeaderPtr
-#include "obj_scan.cc"
-#undef GENERAL_PTR_TO_HEADER_PTR
-#undef ADDR_T
-#undef OBJECT_SKIP
-
-mps_addr_t obj_skip(mps_addr_t client) {
-  size_t objectSize;
-  return obj_skip_debug(client, false, objectSize);
-}
-
-mps_addr_t obj_skip_debug_wrong_size(mps_addr_t client, void* header, size_t stamp_wtag_mtag, size_t stamp, size_t allocate_size,
-                                     size_t skip_size, int delta) {
-  printf(
-      "%s:%d Bad size calc header@%p header->stamp_wtag_mtag._value(%lu) obj_skip(stamp %lu) allocate_size -> %lu  obj_skip -> %lu "
-      "delta -> %d\n         About to recalculate the size - connect a debugger and break on obj_skip_debug_wrong_size to trap\n",
-      __FILE__, __LINE__, (void*)header, stamp_wtag_mtag, stamp, allocate_size, skip_size, delta);
-  size_t objectSize;
-  return obj_skip_debug(client, true, objectSize);
-}
-#endif // USE_MPS
-};
-
-#ifdef USE_MPS
-
-struct ValidateObjects {};
-
-template <typename Op> inline void operate(core::T_O** ptr) { printf("%s:%d Illegal operate\n", __FILE__, __LINE__); }
-
-template <> inline void operate<ValidateObjects>(core::T_O** ptr) {
-  printf("%s:%d Validate the pointer at %p\n", __FILE__, __LINE__, ptr);
-}
-#endif // USE_MPS
-
-// ------------------------------------------------------------
-//
-// The following MUST match the code in obj_scan
-//
-extern "C" {
-
-#ifdef USE_MPS
-#define SCAN_STRUCT_T mps_ss_t
-#define ADDR_T mps_addr_t
-#define SCAN_BEGIN(xxx) MPS_SCAN_BEGIN(xxx)
-#define SCAN_END(xxx) MPS_SCAN_END(xxx)
-#define RESULT_TYPE GC_RESULT
-#define RESULT_OK MPS_RES_OK
-#define EXTRA_ARGUMENTS
-#define OBJECT_SCAN obj_scan
-#define OBJECT_SKIP_IN_OBJECT_SCAN obj_skip_debug
-#define GENERAL_PTR_TO_HEADER_PTR gctools::GeneralPtrToHeaderPtr
-#include "obj_scan.cc"
-#undef GENERAL_PTR_TO_HEADER_PTR
-#undef OBJECT_SCAN
-#undef EXTRA_ARGUMENTS
-#undef SCAN_STRUCT_T
-#undef RESULT_OK
-#undef RESULT_TYPE
-#endif
-
-};
-
-#ifdef USE_MPS
-extern "C" {
-mps_res_t main_thread_roots_scan(mps_ss_t ss, void* gc__p, size_t gc__s) {
-  MPS_SCAN_BEGIN(ss) {
-#ifndef RUNNING_PRECISEPREP
-#define GC_GLOBALS
-#include CLASP_GC_CC
-#undef GC_GLOBALS
-#endif
-    for (int i = 0; i < global_symbol_count; ++i) {
-      SMART_PTR_FIX(global_symbols[i]);
-    }
-  }
-  MPS_SCAN_END(ss);
-  return MPS_RES_OK;
-}
-};
-#endif // USE_MPS
-
-//
-// We don't want the static analyzer gc-builder.lisp to see the generated scanners
-//
-#ifdef USE_MPS
-#ifndef RUNNING_PRECISEPREP
-#ifndef SCRAPING
-#define HOUSEKEEPING_SCANNERS
-#include CLASP_GC_CC
-#undef HOUSEKEEPING_SCANNERS
-#endif // ifdef USE_MPS
-#endif // ifndef RUNNING_PRECISEPREP
-#endif // ifdef USE_MPS
 
 //
 // Bootstrapping
