@@ -156,11 +156,6 @@ template <typename T> size_t dumpResults(const std::string& name, T* data, std::
     if (sz < 1)
       break;
     idx += 1;
-#if 0
-    if ( idx % 100 == 0 ) {
-      gctools::poll_signals();
-    }
-#endif
   }
   return totalSize;
 }
@@ -462,9 +457,6 @@ __attribute__((noinline)) void startupBoehm(gctools::ClaspInfo* claspInfo) {
 
 void shutdownBoehm() {
   GC_FREE(my_thread);
-#if 0
-  GC_unregister_my_thread();
-#endif
   delete my_thread_low_level;
 }
 

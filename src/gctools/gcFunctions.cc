@@ -170,18 +170,6 @@ CL_DEFUN core::T_sp core__header_value(core::T_sp obj) {
   SIMPLE_ERROR("The object {} is not a general object and doesn't have a header-value", _rep_(obj));
 }
 
-#if 0
-CL_DOCSTRING(R"dx(Return the header value for the object)dx");
-DOCGROUP(clasp);
-CL_DEFUN core::T_sp core__header_value_to_stamp(core::T_sp value) {
-  if (value.fixnump()) {
-    Fixnum fvalue = value.unsafe_fixnum();
-    return core::make_fixnum(Header_s::value_to_stamp(fvalue));
-  }
-  TYPE_ERROR(value,cl::_sym_fixnum);
-}
-#endif
-
 DOCGROUP(clasp);
 CL_DEFUN core::T_mv gctools__tagged_pointer_mps_test() {
   // Return the values used to identify tagged pointers (PTR&POINTER_TAG_MASK)==POINTER_TAG_EQ

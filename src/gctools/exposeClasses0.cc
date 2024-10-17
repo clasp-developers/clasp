@@ -152,10 +152,6 @@ void create_packages() {
 #undef CREATE_ALL_PACKAGES
 }
 
-void define_base_classes() { IMPLEMENT_MEF("define_base_classes"); }
-
-void calculate_class_precedence_lists() { IMPLEMENT_MEF("calculate_class_precendence_lists"); }
-
 // ------------------------------------------------------------
 //
 // Generate type specifier -> header value (range) map
