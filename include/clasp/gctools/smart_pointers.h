@@ -107,23 +107,10 @@ public:
     other.theObject = temp;
   };
 
-  template <class o_class> inline base_ptr<o_class> asOrNull() {
-    o_class* cast = TaggedCast<o_class*, Type*>::castOrNULL(this->theObject);
-    base_ptr<o_class> ret((Tagged)cast);
-    return ret;
-  }
-
   template <class o_class> inline base_ptr<o_class> asOrNull() const {
     o_class* cast = TaggedCast<o_class*, Type*>::castOrNULL(this->theObject);
     base_ptr<o_class> ret((Tagged)cast);
     return ret;
-  }
-
-  template <class o_class> inline base_ptr<o_class> as() {
-    base_ptr<o_class> ret = this->asOrNull<o_class>();
-    if (ret)
-      return ret;
-    core::lisp_errorCast<o_class, Type>(this->theObject);
   }
 
   template <class o_class> inline base_ptr<o_class> as() const {
@@ -133,22 +120,7 @@ public:
     core::lisp_errorCast<o_class, Type>(this->theObject);
   }
 
-  template <class o_class> inline base_ptr<o_class> as_unsafe() {
-    base_ptr<o_class> ret((Tagged)this->theObject);
-    return ret;
-  }
-
   template <class o_class> inline base_ptr<o_class> as_unsafe() const {
-    base_ptr<o_class> ret((Tagged)this->theObject);
-    return ret;
-  }
-
-  template <class o_class> inline base_ptr<o_class> as_assert() {
-#ifdef DEBUG_ASSERT
-    if (!TaggedCast<o_class*, Type*>::isA(this->theObject)) {
-      throw_hard_error_failed_assertion("as_assert failed!");
-    }
-#endif
     base_ptr<o_class> ret((Tagged)this->theObject);
     return ret;
   }
@@ -165,22 +137,9 @@ public:
 
   template <class o_class> inline bool isA() const { return TaggedCast<o_class*, Type*>::isA(this->theObject); }
 
-  /*! Return the offset in bytes between this.px and this - you need to modify the base
-          class of base_ptr to make px protected */
-  //	int offset_of_px_from_this() const { return ((char*)(&this->px)) - ((char*)(this));}
-  /*! Return the size in bytes of px - you need to modify the base class
-          of base_ptr to make px protected */
-  //	int size_of_px() const { return sizeof(this->px); };
-
   int number_of_values() const { return this->theObject == NULL ? 0 : 1; };
 
   /*! Dereferencing operator - remove the other tag */
-  inline Type* operator->() {
-    GCTOOLS_ASSERT(this->theObject);
-    GCTOOLS_ASSERT(this->generalp());
-    return untag_general(this->theObject);
-  };
-
   inline Type* operator->() const {
     GCTOOLS_ASSERT(this->theObject);
     GCTOOLS_ASSERT(this->generalp());
@@ -397,19 +356,8 @@ public:
 
   inline return_type as_return_type() const { return return_type(this->theObject, 1); };
 
-  template <class o_class> inline smart_ptr<o_class> asOrNull() {
-    return smart_ptr<o_class>((Tagged)TaggedCast<o_class*, Type*>::castOrNULL(this->theObject));
-  }
-
   template <class o_class> inline smart_ptr<o_class> asOrNull() const {
     return smart_ptr<o_class>((Tagged)TaggedCast<o_class*, Type*>::castOrNULL(this->theObject));
-  }
-
-  template <class o_class> inline smart_ptr<o_class> as() {
-    smart_ptr<o_class> ret = this->asOrNull<o_class>();
-    if (ret)
-      return ret;
-    ::core::lisp_errorCast<o_class, Type>(this->theObject);
   }
 
   template <class o_class> inline smart_ptr<o_class> as() const {
@@ -419,22 +367,7 @@ public:
     core::lisp_errorCast<o_class, Type>(this->theObject);
   }
 
-  template <class o_class> inline smart_ptr<o_class> as_unsafe() {
-    smart_ptr<o_class> ret((Tagged)this->theObject);
-    return ret;
-  }
-
   template <class o_class> inline smart_ptr<o_class> as_unsafe() const {
-    smart_ptr<o_class> ret((Tagged)this->theObject);
-    return ret;
-  }
-
-  template <class o_class> inline smart_ptr<o_class> as_assert() {
-#ifdef DEBUG_ASSERT
-    if (!TaggedCast<o_class*, Type*>::isA(this->theObject)) {
-      throw_hard_error_failed_assertion("as_assert failed!");
-    }
-#endif
     smart_ptr<o_class> ret((Tagged)this->theObject);
     return ret;
   }
@@ -458,10 +391,6 @@ public:
   inline operator bool() const { return this->theObject != NULL; };
   inline Type* untag_object() const { return ::gctools::untag_object(this->theObject); }
   /*! Dereferencing operator - remove the other tag */
-  inline Type* operator->() {
-    GCTOOLS_ASSERT(this->theObject);
-    return this->untag_object();
-  };
   inline Type* operator->() const {
     GCTOOLS_ASSERT(this->theObject);
     return this->untag_object();
@@ -591,11 +520,6 @@ template <> class smart_ptr<core::Symbol_O> : public base_ptr<core::Symbol_O> {
 public:
   // Default constructor, set theObject to NULL
   smart_ptr() noexcept : base_ptr<core::Symbol_O>(tag_unbound<Tagged>()){};
-  //    	explicit smart_ptr(uintptr_t p) : theObject(p) {}; // TODO: this converts ints to smart_ptr's - its dangerous
-  //! Construct a FRAME object - I need to get rid of these
-  // smart_ptr( core::T_O** p ) : theObject(tag_vaslist(p)) { /*printf("%s:%d Creating Frame \n", __FILE__, __LINE__ );*/ };
-  // smart_ptr( Type* objP) : theObject(tag_object(objP)) {};
-  //  explicit smart_ptr( void* objP) : theObject(reinterpret_cast<Type*>(objP)) {};
 
   /*! Create a smart pointer from an existing tagged pointer */
   explicit inline smart_ptr(Tagged ptr) : base_ptr((Tagged)ptr){};
@@ -636,31 +560,14 @@ public:
     other.theObject = temp;
   }
 
-  template <class o_class> inline smart_ptr<o_class> asOrNull() {
-    o_class* cast = TaggedCast<o_class*, Type*>::castOrNULL(this->theObject);
-    return smart_ptr<o_class>((Tagged)cast);
-  }
-
   template <class o_class> inline smart_ptr<o_class> asOrNull() const {
     o_class* cast = TaggedCast<o_class*, Type*>::castOrNULL(this->theObject);
     return smart_ptr<o_class>((Tagged)cast);
   }
 
-  /*! Return the offset in bytes between this.px and this - you need to modify the base
-          class of smart_ptr to make px protected */
-  //	int offset_of_px_from_this() const { return ((char*)(&this->px)) - ((char*)(this));}
-  /*! Return the size in bytes of px - you need to modify the base class
-          of smart_ptr to make px protected */
-  //	int size_of_px() const { return sizeof(this->px); };
-
   int number_of_values() const { return this->theObject == NULL ? 0 : 1; };
 
   /*! Dereferencing operator - remove the other tag */
-  inline Type* operator->() {
-    GCTOOLS_ASSERT(this->generalp());
-    return untag_general(this->theObject);
-  };
-
   inline Type* operator->() const {
     GCTOOLS_ASSERT(this->generalp());
     return untag_general(this->theObject);
@@ -753,11 +660,6 @@ public:
 public:
   // Default constructor, set theObject to NULL
   smart_ptr() noexcept : base_ptr<core::SimpleVector_O>((core::SimpleVector_O*)NULL){};
-  //    	explicit smart_ptr(uintptr_t p) : theObject(p) {}; // TODO: this converts ints to smart_ptr's - its dangerous
-  //! Construct a FRAME object - I need to get rid of these
-  // smart_ptr( core::T_O** p ) : theObject(tag_vaslist(p)) { /*printf("%s:%d Creating Frame \n", __FILE__, __LINE__ );*/ };
-  // smart_ptr( Type* objP) : theObject(tag_object(objP)) {};
-  //  explicit smart_ptr( void* objP) : theObject(reinterpret_cast<Type*>(objP)) {};
 
   /*! Create a smart pointer from an existing tagged pointer */
   explicit inline smart_ptr(Tagged ptr) : base_ptr((Tagged)ptr){};
@@ -797,31 +699,14 @@ public:
     other.theObject = temp;
   }
 
-  template <class o_class> inline smart_ptr<o_class> asOrNull() {
-    o_class* cast = TaggedCast<o_class*, Type*>::castOrNULL(this->theObject);
-    return smart_ptr<o_class>((Tagged)cast);
-  }
-
   template <class o_class> inline smart_ptr<o_class> asOrNull() const {
     o_class* cast = TaggedCast<o_class*, Type*>::castOrNULL(this->theObject);
     return smart_ptr<o_class>((Tagged)cast);
   }
 
-  /*! Return the offset in bytes between this.px and this - you need to modify the base
-          class of smart_ptr to make px protected */
-  //	int offset_of_px_from_this() const { return ((char*)(&this->px)) - ((char*)(this));}
-  /*! Return the size in bytes of px - you need to modify the base class
-          of smart_ptr to make px protected */
-  //	int size_of_px() const { return sizeof(this->px); };
-
   int number_of_values() const { return this->theObject == NULL ? 0 : 1; };
 
   /*! Dereferencing operator - remove the other tag */
-  Type* operator->() {
-    GCTOOLS_ASSERT(this->generalp());
-    return untag_general(this->theObject);
-  };
-
   Type* operator->() const {
     GCTOOLS_ASSERT(this->generalp());
     return untag_general(this->theObject);
@@ -912,11 +797,6 @@ public:
 public:
   // Default constructor, set theObject to NULL
   smart_ptr() noexcept : base_ptr<core::HashTableEqual_O>((core::HashTableEqual_O*)NULL){};
-  //    	explicit smart_ptr(uintptr_t p) : theObject(p) {}; // TODO: this converts ints to smart_ptr's - its dangerous
-  //! Construct a FRAME object - I need to get rid of these
-  // smart_ptr( core::T_O** p ) : theObject(tag_vaslist(p)) { /*printf("%s:%d Creating Frame \n", __FILE__, __LINE__ );*/ };
-  // smart_ptr( Type* objP) : theObject(tag_object(objP)) {};
-  //  explicit smart_ptr( void* objP) : theObject(reinterpret_cast<Type*>(objP)) {};
 
   /*! Create a smart pointer from an existing tagged pointer */
   explicit inline smart_ptr(Tagged ptr) : base_ptr((Tagged)ptr){};
@@ -956,31 +836,14 @@ public:
     other.theObject = temp;
   }
 
-  template <class o_class> inline smart_ptr<o_class> asOrNull() {
-    o_class* cast = TaggedCast<o_class*, Type*>::castOrNULL(this->theObject);
-    return smart_ptr<o_class>((Tagged)cast);
-  }
-
   template <class o_class> inline smart_ptr<o_class> asOrNull() const {
     o_class* cast = TaggedCast<o_class*, Type*>::castOrNULL(this->theObject);
     return smart_ptr<o_class>((Tagged)cast);
   }
 
-  /*! Return the offset in bytes between this.px and this - you need to modify the base
-          class of smart_ptr to make px protected */
-  //	int offset_of_px_from_this() const { return ((char*)(&this->px)) - ((char*)(this));}
-  /*! Return the size in bytes of px - you need to modify the base class
-          of smart_ptr to make px protected */
-  //	int size_of_px() const { return sizeof(this->px); };
-
   int number_of_values() const { return this->theObject == NULL ? 0 : 1; };
 
   /*! Dereferencing operator - remove the other tag */
-  Type* operator->() {
-    GCTOOLS_ASSERT(this->generalp());
-    return untag_general(this->theObject);
-  };
-
   Type* operator->() const {
     GCTOOLS_ASSERT(this->generalp());
     return untag_general(this->theObject);
@@ -1125,9 +988,6 @@ public:
     return smart_ptr<core::T_O>((Tagged) const_cast<core::T_O* const>(reinterpret_cast<core::T_O*>(this->theObject)));
   };
 
-  //	operator smart_ptr<core::List_V>() const { return smart_ptr<core::List_V>((Tagged)const_cast<core::T_O*
-  // const>(reinterpret_cast<core::T_O*>(this->theObject)));};
-
   inline core::Cons_O* untag_object() const { return this->unsafe_cons(); }
 
   inline void swap(smart_ptr<core::Cons_O>& other) {
@@ -1138,10 +998,6 @@ public:
   }
 
   /*! Dereferencing operator - remove the other tag */
-  inline core::Cons_O* operator->() {
-    GCTOOLS_ASSERT(this->consp());
-    return this->unsafe_cons();
-  };
   inline core::Cons_O* operator->() const {
     GCTOOLS_ASSERT(this->consp());
     return this->unsafe_cons();
@@ -1247,10 +1103,6 @@ public:
   }
 
   /*! Dereferencing operator - remove the other tag */
-  inline Type* operator->() {
-    GCTOOLS_ASSERT(this->objectp());
-    return this->untag_object();
-  };
   inline Type* operator->() const {
     GCTOOLS_ASSERT(this->objectp());
     return this->untag_object();
@@ -1473,19 +1325,6 @@ public:
   explicit inline operator bool() const { return this->thePointer != NULL; }
 
   // Should never need to convert types
-  template <class o_class> inline tagged_pointer<o_class> asOrNull() {
-    if (this->generalp()) {
-      o_class* cast = dynamic_cast<o_class*>(untag_general<T*>(this->thePointer));
-      if (cast == NULL)
-        return tagged_pointer<o_class>();
-      tagged_pointer<o_class> ret(cast);
-      return ret;
-    }
-    throw_hard_error("Illegal tagged pointer for tagged_pointer");
-    // unreachable
-    tagged_pointer<o_class> fail;
-    return fail;
-  }
 
   template <class o_class> inline tagged_pointer<o_class> asOrNull() const {
     if (this->generalp()) {
@@ -1499,12 +1338,6 @@ public:
     // unreachable
     tagged_pointer<o_class> fail;
     return fail;
-  }
-  template <class o_class> inline tagged_pointer<o_class> as() {
-    tagged_pointer<o_class> ret = this->asOrNull<o_class>();
-    if (ret)
-      return ret;
-    throw_hard_error("Illegal cast of tagged_pointer");
   }
 
   template <class o_class> inline tagged_pointer<o_class> as() const {
@@ -1525,20 +1358,8 @@ namespace gctools {
 /// Common Lisp type hierarchy (is that the term)
 ///
 
-template <> inline smart_ptr<core::List_V> smart_ptr<core::T_O>::asOrNull<core::List_V>() {
-  if (this->consp() || this->nilp())
-    return smart_ptr<core::List_V>((Tagged)this->theObject);
-  return smart_ptr<core::List_V>();
-};
-
 template <> inline smart_ptr<core::List_V> smart_ptr<core::T_O>::asOrNull<core::List_V>() const {
   if (this->consp() || this->nilp())
-    return smart_ptr<core::List_V>((Tagged)this->theObject);
-  return smart_ptr<core::List_V>();
-};
-
-template <> inline smart_ptr<core::List_V> smart_ptr<core::Symbol_O>::asOrNull<core::List_V>() {
-  if (this->nilp())
     return smart_ptr<core::List_V>((Tagged)this->theObject);
   return smart_ptr<core::List_V>();
 };
