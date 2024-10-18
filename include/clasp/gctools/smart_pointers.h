@@ -219,11 +219,11 @@ public:
     GCTOOLS_ASSERT(false); // BF("Implement me"));
   }
 
-  template <class U> inline bool operator==(base_ptr<U> const other) const {
+  template <class U> inline bool operator==(const base_ptr<U>& other) const {
     return reinterpret_cast<uintptr_t>(this->theObject) == reinterpret_cast<uintptr_t>(other.theObject);
   }
 
-  template <class U> inline bool operator!=(base_ptr<U> const other) const {
+  template <class U> inline bool operator!=(const base_ptr<U>& other) const {
     return reinterpret_cast<uintptr_t>(this->theObject) != reinterpret_cast<uintptr_t>(other.theObject);
   }
 };
@@ -538,112 +538,30 @@ public:
     }
   }
 
-  uintptr_t ptag() const { return reinterpret_cast<uintptr_t>(this->theObject) & ptag_mask; };
-
-public:
-  //----------------------------------------------------------------------
-  //
-  // Constructors
-  //
-  //
-  // Make a tagged fixnum
-
-  /*! Get the pointer typcast to an integer quantity for hashing */
-  uintptr_t intptr() const { return ((uintptr_t)(this->theObject)); };
-
-  void reset_() { this->theObject = NULL; };
-
-  inline void swap(smart_ptr<Type>& other) {
-    Type* temp;
-    temp = this->theObject;
-    this->theObject = other.theObject;
-    other.theObject = temp;
-  }
-
+  // specialized for List_V below.
   template <class o_class> inline smart_ptr<o_class> asOrNull() const {
-    o_class* cast = TaggedCast<o_class*, Type*>::castOrNULL(this->theObject);
-    return smart_ptr<o_class>((Tagged)cast);
+    return this->base_ptr<Type>::asOrNull<o_class>();
   }
 
-  int number_of_values() const { return this->theObject == NULL ? 0 : 1; };
-
-  /*! Dereferencing operator - remove the other tag */
-  inline Type* operator->() const {
-    GCTOOLS_ASSERT(this->generalp());
-    return untag_general(this->theObject);
-  };
-
-  inline Type& operator*() const {
-    GCTOOLS_ASSERT(this->objectp());
-    return *(this->untag_object());
-  };
-
-  Type* untag_object() const { return ::gctools::untag_object(this->theObject); }
-
-  /*! If theObject!=NULL then return true */
-  explicit operator bool() const { return this->theObject != NULL; };
-
-  inline return_type as_return_type() const { return return_type(this->theObject, 1); };
-  inline bool nilp() const { return tagged_nilp(this->theObject); }
-  inline bool notnilp() const { return (!this->nilp()); };
-  inline bool isTrue() const { return !this->nilp(); };
-  inline bool fixnump() const { return tagged_fixnump(this->theObject); };
-  Fixnum unsafe_fixnum() const { return untag_fixnum(this->theObject); };
-  inline bool unboundp() const { return tagged_unboundp(this->theObject); };
-  bool boundp() const { return !tagged_unboundp(this->theObject); };
-  bool no_keyp() const { return tagged_no_keyp(this->theObject); };
-  bool deletedp() const { return tagged_deletedp(this->theObject); };
-  bool same_as_keyP() const { return tagged_same_as_keyp(this->theObject); };
-  bool characterp() const { return tagged_characterp<Type*>(this->theObject); };
-  claspCharacter unsafe_character() const { return untag_character(this->theObject); };
-  bool single_floatp() const { return tagged_single_floatp<Type*>(this->theObject); };
-  float unsafe_single_float() const { return untag_single_float<Type*>(this->theObject); };
-#ifdef CLASP_SHORT_FLOAT
-  bool short_floatp() const { return tagged_short_floatp<Type*>(this->theObject); };
-  short_float_t unsafe_short_float() const { return untag_short_float<Type*>(this->theObject); };
-#endif
-  // This replaces pointerp()
-  bool objectp() const { return this->generalp() || this->consp(); };
-  bool generalp() const { return tagged_generalp<Type*>(this->theObject); };
-  bool consp() const { return tagged_consp<Type*>(this->theObject); };
-  core::Cons_O* unsafe_cons() const {
-    GCTOOLS_ASSERT(this->consp());
-    return reinterpret_cast<core::Cons_O*>(reinterpret_cast<uintptr_t>(this->theObject) - cons_tag);
-  };
-
-  Fixnum asFixnum() const {
-    GCTOOLS_ASSERT(this->fixnump());
-    return untag_fixnum<Type*>(this->theObject);
-  };
-  /*! Return the raw smart_ptr value interpreted as a T_O* */
-  inline core::T_O* raw_() const { return reinterpret_cast<core::T_O*>(this->theObject); }
-  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
-
-  inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type*>(p); }
-
-  /*! This should almost NEVER be used!!!!!!
-          The only reason to ever use this is when theObject will be set to NULL
-          and you are sure that it will not be interpreted as a Fixnum!!!
-
-          List actual uses here:
-          gcweak.h>>WeakPointerManager
-          gcweak.h>>~WeakPointerManager
-          gcweak.h>>Mapping(const Type& val)
-          gcweak.h>>Buckets::set
-          intrinsics.cc>>cc_loadTimeValueReference
-        */
-  Type*& rawRef_() { return this->theObject; };
-
-  /*! Check if this tagged theObject matches the templated type.
-          The most common case is this is an object.*/
-  bool valid() const {
-    GCTOOLS_ASSERT(false); // BF("Implement me"));
-    return true;
+  // We need these because C++ gets stupid with implicit conversions for
+  // templated functions.
+  template <class o_class> inline smart_ptr<o_class> as() const {
+    return this->base_ptr<Type>::as<o_class>();
+  }
+  template <class o_class> inline smart_ptr<o_class> as_unsafe() const {
+    return this->base_ptr<Type>::as_unsafe<o_class>();
+  }
+  template <class o_class> inline smart_ptr<o_class> as_assert() const {
+    return this->base_ptr<Type>::as_assert<o_class>();
+  }
+  template <class U> inline bool operator==(const smart_ptr<U>& other) const {
+    // i don't think there's any simple way to call the base function. bleh.
+    return reinterpret_cast<uintptr_t>(this->theObject) == reinterpret_cast<uintptr_t>(other.theObject);
   }
 
-  template <class U> inline bool operator==(smart_ptr<U> const other) const { return this->theObject == other.theObject; }
-
-  template <class U> inline bool operator!=(smart_ptr<U> const other) const { return this->theObject != other.theObject; }
+  template <class U> inline bool operator!=(const smart_ptr<U>& other) const {
+    return reinterpret_cast<uintptr_t>(this->theObject) != reinterpret_cast<uintptr_t>(other.theObject);
+  }
 };
 }; // namespace gctools
 
@@ -677,108 +595,20 @@ public:
       this->theObject = reinterpret_cast<Type*>(rhs.theObject);
     }
   }
-  uintptr_t ptag() const { return reinterpret_cast<uintptr_t>(this->theObject) & ptag_mask; };
-
-public:
-  //----------------------------------------------------------------------
-  //
-  // Constructors
-  //
-  //
-  // Make a tagged fixnum
-
-  /*! Get the pointer typcast to an integer quantity for hashing */
-  uintptr_t intptr() const { return ((uintptr_t)(this->theObject)); };
-
-  void reset_() { this->theObject = NULL; };
-
-  inline void swap(smart_ptr<Type>& other) {
-    Type* temp;
-    temp = this->theObject;
-    this->theObject = other.theObject;
-    other.theObject = temp;
-  }
 
   template <class o_class> inline smart_ptr<o_class> asOrNull() const {
-    o_class* cast = TaggedCast<o_class*, Type*>::castOrNULL(this->theObject);
-    return smart_ptr<o_class>((Tagged)cast);
+    return this->base_ptr<Type>::asOrNull<o_class>();
+  }
+  template <class o_class> inline smart_ptr<o_class> as() const {
+    return this->base_ptr<Type>::as<o_class>();
+  }
+  template <class o_class> inline smart_ptr<o_class> as_unsafe() const {
+    return this->base_ptr<Type>::as_unsafe<o_class>();
+  }
+  template <class o_class> inline smart_ptr<o_class> as_assert() const {
+    return this->base_ptr<Type>::as_assert<o_class>();
   }
 
-  int number_of_values() const { return this->theObject == NULL ? 0 : 1; };
-
-  /*! Dereferencing operator - remove the other tag */
-  Type* operator->() const {
-    GCTOOLS_ASSERT(this->generalp());
-    return untag_general(this->theObject);
-  };
-
-  Type& operator*() const {
-    GCTOOLS_ASSERT(this->objectp());
-    return *(this->untag_object());
-  };
-
-  Type* untag_object() const { return ::gctools::untag_object(this->theObject); }
-
-  /*! If theObject!=NULL then return true */
-  explicit operator bool() const { return this->theObject != NULL; };
-
-  inline return_type as_return_type() const { return return_type(this->theObject, 1); };
-  inline bool nilp() const { return tagged_nilp(this->theObject); }
-  inline bool notnilp() const { return (!this->nilp()); };
-  inline bool isTrue() const { return !this->nilp(); };
-  inline bool fixnump() const { return tagged_fixnump(this->theObject); };
-  Fixnum unsafe_fixnum() const { return untag_fixnum(this->theObject); };
-  inline bool unboundp() const { return tagged_unboundp(this->theObject); };
-  bool boundp() const { return !tagged_unboundp(this->theObject); };
-  bool no_keyp() const { return tagged_no_keyp(this->theObject); };
-  bool deletedp() const { return tagged_deletedp(this->theObject); };
-  bool same_as_keyP() const { return tagged_same_as_keyp(this->theObject); };
-  bool characterp() const { return tagged_characterp<Type*>(this->theObject); };
-  claspCharacter unsafe_character() const { return untag_character(this->theObject); };
-  bool single_floatp() const { return tagged_single_floatp<Type*>(this->theObject); };
-  float unsafe_single_float() const { return untag_single_float<Type*>(this->theObject); };
-#ifdef CLASP_SHORT_FLOAT
-  bool short_floatp() const { return tagged_short_floatp<Type*>(this->theObject); };
-  short_float_t unsafe_short_float() const { return untag_short_float<Type*>(this->theObject); };
-#endif
-  // This replaces pointerp()
-  bool objectp() const { return this->generalp() || this->consp(); };
-  bool generalp() const { return tagged_generalp<Type*>(this->theObject); };
-  bool consp() const { return tagged_consp<Type*>(this->theObject); };
-  core::Cons_O* unsafe_cons() const {
-    GCTOOLS_ASSERT(this->consp());
-    return reinterpret_cast<core::Cons_O*>(reinterpret_cast<uintptr_t>(this->theObject) - cons_tag);
-  };
-
-  Fixnum asFixnum() const {
-    GCTOOLS_ASSERT(this->fixnump());
-    return untag_fixnum<Type*>(this->theObject);
-  };
-  /*! Return the raw smart_ptr value interpreted as a T_O* */
-  inline core::T_O* raw_() const { return reinterpret_cast<core::T_O*>(this->theObject); }
-  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
-
-  inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type*>(p); }
-
-  /*! This should almost NEVER be used!!!!!!
-          The only reason to ever use this is when theObject will be set to NULL
-          and you are sure that it will not be interpreted as a Fixnum!!!
-
-          List actual uses here:
-          gcweak.h>>WeakPointerManager
-          gcweak.h>>~WeakPointerManager
-          gcweak.h>>Mapping(const Type& val)
-          gcweak.h>>Buckets::set
-          intrinsics.cc>>cc_loadTimeValueReference
-        */
-  Type*& rawRef_() { return this->theObject; };
-
-  /*! Check if this tagged theObject matches the templated type.
-          The most common case is this is an object.*/
-  bool valid() const {
-    GCTOOLS_ASSERT(false); // BF("Implement me"));
-    return true;
-  }
 
   template <class U> inline bool operator==(smart_ptr<U> const other) const { return this->theObject == other.theObject; }
 
@@ -814,108 +644,20 @@ public:
       this->theObject = reinterpret_cast<Type*>(rhs.theObject);
     }
   }
-  uintptr_t ptag() const { return reinterpret_cast<uintptr_t>(this->theObject) & ptag_mask; };
-
-public:
-  //----------------------------------------------------------------------
-  //
-  // Constructors
-  //
-  //
-  // Make a tagged fixnum
-
-  /*! Get the pointer typcast to an integer quantity for hashing */
-  uintptr_t intptr() const { return ((uintptr_t)(this->theObject)); };
-
-  void reset_() { this->theObject = NULL; };
-
-  inline void swap(smart_ptr<Type>& other) {
-    Type* temp;
-    temp = this->theObject;
-    this->theObject = other.theObject;
-    other.theObject = temp;
-  }
 
   template <class o_class> inline smart_ptr<o_class> asOrNull() const {
-    o_class* cast = TaggedCast<o_class*, Type*>::castOrNULL(this->theObject);
-    return smart_ptr<o_class>((Tagged)cast);
+    return this->base_ptr<Type>::asOrNull<o_class>();
+  }
+  template <class o_class> inline smart_ptr<o_class> as() const {
+    return this->base_ptr<Type>::as<o_class>();
+  }
+  template <class o_class> inline smart_ptr<o_class> as_unsafe() const {
+    return this->base_ptr<Type>::as_unsafe<o_class>();
+  }
+  template <class o_class> inline smart_ptr<o_class> as_assert() const {
+    return this->base_ptr<Type>::as_assert<o_class>();
   }
 
-  int number_of_values() const { return this->theObject == NULL ? 0 : 1; };
-
-  /*! Dereferencing operator - remove the other tag */
-  Type* operator->() const {
-    GCTOOLS_ASSERT(this->generalp());
-    return untag_general(this->theObject);
-  };
-
-  Type& operator*() const {
-    GCTOOLS_ASSERT(this->objectp());
-    return *(this->untag_object());
-  };
-
-  Type* untag_object() const { return ::gctools::untag_object(this->theObject); }
-
-  /*! If theObject!=NULL then return true */
-  explicit operator bool() const { return this->theObject != NULL; };
-
-  inline return_type as_return_type() const { return return_type(this->theObject, 1); };
-  inline bool nilp() const { return tagged_nilp(this->theObject); }
-  inline bool notnilp() const { return (!this->nilp()); };
-  inline bool isTrue() const { return !this->nilp(); };
-  inline bool fixnump() const { return tagged_fixnump(this->theObject); };
-  Fixnum unsafe_fixnum() const { return untag_fixnum(this->theObject); };
-  inline bool unboundp() const { return tagged_unboundp(this->theObject); };
-  bool boundp() const { return !tagged_unboundp(this->theObject); };
-  bool no_keyp() const { return tagged_no_keyp(this->theObject); };
-  bool deletedp() const { return tagged_deletedp(this->theObject); };
-  bool same_as_keyP() const { return tagged_same_as_keyp(this->theObject); };
-  bool characterp() const { return tagged_characterp<Type*>(this->theObject); };
-  claspCharacter unsafe_character() const { return untag_character(this->theObject); };
-  bool single_floatp() const { return tagged_single_floatp<Type*>(this->theObject); };
-  float unsafe_single_float() const { return untag_single_float<Type*>(this->theObject); };
-#ifdef CLASP_SHORT_FLOAT
-  bool short_floatp() const { return tagged_short_floatp<Type*>(this->theObject); };
-  short_float_t unsafe_short_float() const { return untag_short_float<Type*>(this->theObject); };
-#endif
-  // This replaces pointerp()
-  bool objectp() const { return this->generalp() || this->consp(); };
-  bool generalp() const { return tagged_generalp<Type*>(this->theObject); };
-  bool consp() const { return tagged_consp<Type*>(this->theObject); };
-  core::Cons_O* unsafe_cons() const {
-    GCTOOLS_ASSERT(this->consp());
-    return reinterpret_cast<core::Cons_O*>(reinterpret_cast<uintptr_t>(this->theObject) - cons_tag);
-  };
-
-  Fixnum asFixnum() const {
-    GCTOOLS_ASSERT(this->fixnump());
-    return untag_fixnum<Type*>(this->theObject);
-  };
-  /*! Return the raw smart_ptr value interpreted as a T_O* */
-  inline core::T_O* raw_() const { return reinterpret_cast<core::T_O*>(this->theObject); }
-  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
-
-  inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type*>(p); }
-
-  /*! This should almost NEVER be used!!!!!!
-          The only reason to ever use this is when theObject will be set to NULL
-          and you are sure that it will not be interpreted as a Fixnum!!!
-
-          List actual uses here:
-          gcweak.h>>WeakPointerManager
-          gcweak.h>>~WeakPointerManager
-          gcweak.h>>Mapping(const Type& val)
-          gcweak.h>>Buckets::set
-          intrinsics.cc>>cc_loadTimeValueReference
-        */
-  Type*& rawRef_() { return this->theObject; };
-
-  /*! Check if this tagged theObject matches the templated type.
-          The most common case is this is an object.*/
-  bool valid() const {
-    GCTOOLS_ASSERT(false); // BF("Implement me"));
-    return true;
-  }
 
   template <class U> inline bool operator==(smart_ptr<U> const other) const { return this->theObject == other.theObject; }
 
