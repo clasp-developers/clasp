@@ -68,9 +68,8 @@ template <> struct Inherits<core::Integer_O, ::core::Fixnum_I> : public std::tru
 template <typename T1, typename T2> struct Inherits : std::true_type {};
 #endif
 
-template <typename T1, typename T2> void TestInheritance() {
-  static_assert(Inherits<T1, T2>::value, "Second class MUST inherit from first class - for the expression to compile");
-};
+template <typename Super, typename Sub>
+concept InheritsC = Inherits<Super, Sub>::value;
 }; // namespace gctools
 
 namespace gctools {
@@ -90,11 +89,8 @@ public:
   inline base_ptr(const return_type& rt) : theObject((Type*)rt.ret0[0]){};
 
   template <class From> inline base_ptr(base_ptr<From> const& rhs)
-    : theObject(reinterpret_cast<Type*>(rhs.theObject)) {
-#ifdef DO_ASSERT_TYPE_CAST
-    TestInheritance<Type, From>();
-#endif
-  }
+    requires InheritsC<Type, From>
+    : theObject(reinterpret_cast<Type*>(rhs.theObject)) {}
 
   uintptr_t ptag() const { return reinterpret_cast<uintptr_t>(this->theObject) & ptag_mask; };
 
@@ -286,11 +282,8 @@ public:
   inline smart_ptr(base_ptr<Type> orig) : base_ptr<Type>((Tagged)orig.raw_()){};
 
   template <class From> inline smart_ptr(smart_ptr<From> const& rhs)
-    : base_ptr<Type>((Tagged)rhs.raw_()) {
-#ifdef DO_ASSERT_TYPE_CAST
-    TestInheritance<Type, From>();
-#endif
-  };
+    requires InheritsC<Type, From>
+    : base_ptr<Type>((Tagged)rhs.raw_()) {}
 };
 
 }; // namespace gctools
