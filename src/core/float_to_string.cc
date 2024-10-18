@@ -21,6 +21,7 @@
 #include <clasp/core/numerics.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/num_co.h>
+#include <clasp/core/symbol.h>
 #include <clasp/core/numberToString.h>
 #include <clasp/core/float_to_digits.h>
 namespace core {

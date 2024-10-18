@@ -1,7 +1,6 @@
 #pragma once
 
 #include <clasp/core/object.h>
-#include <clasp/core/symbol.h>
 
 namespace kw {
 EXTERN_SYMBOL(dispatch_function);

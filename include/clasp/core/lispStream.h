@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include <vector>
 #include <set>
 #include <clasp/core/object.h>
+#include <clasp/core/symbol.h>
 #include <clasp/core/numerics.h>
 #include <clasp/core/character.h>
 #include <clasp/core/array.fwd.h>
