@@ -50,7 +50,9 @@
 (defparameter *source-classes*
   '((#P"*.c" . c-source)
     (#P"*.cc" . cc-source)
+    (#P"*.cxx" . cc-source)
     (#P"*.h" . h-source)
+    (#P"*.hpp" . h-source)
     (#P"*.lsp" . lisp-source)
     (#P"*.lisp" . lisp-source)
     (#P"*.ninja" . ninja-source)
