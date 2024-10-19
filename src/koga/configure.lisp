@@ -908,33 +908,64 @@ the function to the overall configuration."
 -d suffix if debugging is enabled."
   (format nil "~a~:[~;-d~]" (variant-name variant) (variant-debug variant)))
 
+(defun library-info (library path kind)
+  (flet ((lib-ext ()
+           (cond ((and (uiop:os-macosx-p) (eql kind :dynamic))
+                  ".dylib")
+                 ((and (uiop:os-macosx-p) (eql kind :static))
+                  ".a")
+                 ((and (uiop:os-unix-p) (eql kind :dynamic))
+                  ".so")
+                 ((and (uiop:os-unix-p) (eql kind :static))
+                  ".a"))))
+    (let ((path-namestring (uiop:native-namestring path))
+          (pathname (uiop:merge-pathnames* (uiop:strcat "lib" library (lib-ext)) path))
+          (ldflag nil)
+          (ldlib nil))
+      (when (uiop:file-exists-p pathname)
+        (setq ldflag (uiop:strcat "-L" path-namestring))
+        (setq ldlib (uiop:strcat "-l" library)))
+      (values ldflag ldlib))))
+
 (defun configure-library (configuration library &rest rest
-                          &key required min-version max-version &allow-other-keys)
+                          &key required min-version max-version path kind
+                          &allow-other-keys)
   "Configure a library"
   (message :info "Configuring library ~a" library)
   (flet ((failure (control-string &rest args)
            (apply #'message (if required :err :warn) control-string args)
            nil))
     (let ((version (run-program-capture (list (pkg-config configuration) "--modversion" library))))
-      (cond ((not version)
-             (failure "Module ~a not found." library))
-            ((and min-version
-                  (uiop:version< version min-version))
-             (failure "Module ~a with a version of ~a is less then minimum version of ~a." library version min-version))
-            ((and max-version
-                  (uiop:version<= max-version version))
-             (failure "Module ~a with a version of ~a is not less then maximum version of ~a." library version max-version))
-            (t
-             (apply #'append-cflags configuration
-                                    (run-program-capture (list (pkg-config configuration) "--cflags" library))
-                                    rest)
-             (apply #'append-ldflags configuration
-                                     (run-program-capture (list (pkg-config configuration) "--libs-only-L" library))
-                                     rest)
-             (apply #'append-ldlibs configuration
-                                    (run-program-capture (list (pkg-config configuration) "--libs-only-l" library))
-                                    rest)
-             t)))))
+      (multiple-value-bind (ldflag ldlib)
+          (library-info library path kind)
+        (message nil "Info for library ~a: ldflag: ~S, ldlib: ~S" library ldflag ldlib)
+        (cond ((and (not version) (not ldlib))
+               (failure "Module ~a not found." library))
+              ((and ldflag ldlib)
+               (apply #'append-ldflags configuration
+                      ldflag
+                      rest)
+               (apply #'append-ldlibs configuration
+                      ldlib
+                      rest)
+               t)
+              ((and min-version
+                    (uiop:version< version min-version))
+               (failure "Module ~a with a version of ~a is less then minimum version of ~a." library version min-version))
+              ((and max-version
+                    (uiop:version<= max-version version))
+               (failure "Module ~a with a version of ~a is not less then maximum version of ~a." library version max-version))
+              (t
+               (apply #'append-cflags configuration
+                      (run-program-capture (list (pkg-config configuration) "--cflags" library))
+                      rest)
+               (apply #'append-ldflags configuration
+                      (run-program-capture (list (pkg-config configuration) "--libs-only-L" library))
+                      rest)
+               (apply #'append-ldlibs configuration
+                      (run-program-capture (list (pkg-config configuration) "--libs-only-l" library))
+                      rest)
+               t))))))
 
 (defun library (&rest rest)
   "Configure a library with the current configuration state."
