@@ -8,6 +8,7 @@
            #:framework
            #:help
            #:includes
+           #:defines
            #:library
            #:make-source
            #:make-source-output

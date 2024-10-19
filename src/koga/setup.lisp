@@ -203,10 +203,10 @@ accumulated plists from each PRINT-VARIANT-TARGET-SOURCE is passed as keys."))
                                      (eql name (getf source :name))))
                               sources)
         if source
-          do (message :info "Found repo definition for extension ~a. Using that to location extension directory." name)
+          do (message :info "Found repo definition for extension ~a. Using that to locate extension directory." name)
              (recurse (getf source :directory))
         else
-          do (message :info "Did not find repo definition for extension ~a. Assuming extension is in ~a" name directory)
+          do (message :info "Did not find repo definition for extension ~a. Assuming extension is in directory \"~a\"." name directory)
              (recurse directory))
   (loop for script = (pop (scripts *configuration*))
         for *script-path* = (when script (uiop:pathname-directory-pathname script))

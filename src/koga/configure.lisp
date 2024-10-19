@@ -952,6 +952,10 @@ the function to the overall configuration."
                    (format nil "~{-I~a~^ ~}" (mapcar (lambda (source)
                                                        (normalize-directory (resolve-source source)))
                                                      paths)))))
+(defun defines (&rest define-strings)
+  "Add -DXXX=YYY defines to the current configuration."
+  (append-cflags *configuration*
+                 (format nil "~{-D~a~^ ~}" define-strings)))
 
 (defun systems (&rest rest)
   (loop for system in rest
