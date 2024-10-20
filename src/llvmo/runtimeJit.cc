@@ -226,7 +226,13 @@ public:
       }
       virtual void abandon(OnAbandonedFunction OnAbandoned) {
         printf("%s:%d:%s I have no idea what to do here - calling OnAbandoned and continuing\n", __FILE__, __LINE__, __FUNCTION__);
-        OnAbandoned(std::move(llvm::Error::success()));
+        if (getenv("CLASP_TRAP_ONABANDONED")!=NULL) {
+          printf("!\n!\n!\n!\n         You set CLASP_TRAP_ONABANDONED - sleeping for 9999 seconds - connect using debugger to pid %d\n!\n!\n!\n!\n", getpid());
+          sleep(9999);
+        }
+        printf("!\n!\n!\n!\n         If you want to trap here set CLASP_TRAP_ONABANDONED - restarting for now\n!\n!\n!\n!\n");
+        exit(1);
+        //OnAbandoned(std::move(llvm::Error::success()));
       }
     private:
       Error applyProtections() {
