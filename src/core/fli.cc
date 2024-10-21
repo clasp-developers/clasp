@@ -1174,7 +1174,7 @@ core::T_sp PERCENTmem_set_unsigned_char(core::Integer_sp address, core::T_sp val
   return mk_fixnum_uint8(tmp);
 }
 
-const struct section_64* get_section_data(const char* segment_name, const char* section_name) {
+/*const struct section_64* get_section_data(const char* segment_name, const char* section_name) {
   const struct section_64* p_section = (struct section_64*)NULL;
 
 #if defined(__APPLE__)
@@ -1205,6 +1205,6 @@ core::T_mv PERCENTget_section_data(core::String_sp sp_segment_name, core::String
   return Values(nil<core::T_O>(), nil<core::T_O>());
 
 #endif
-}
+}*/
 
 }; // namespace clasp_ffi
