@@ -623,6 +623,11 @@ is not compatible with snapshots.")
                    :initform t
                    :type boolean
                    :documentation "Enable long-float")
+   (libraries :accessor libraries
+              :initarg :libraries
+              :initform nil
+              :type list
+              :documentation "Local overrides for pkgconfig libraries.")
    (units :accessor units
           :initform '(:git :describe :cpu-count #+darwin :xcode :base :default-target :pkg-config
                            :clang :llvm :ar :cc :cxx :dis :mpi :nm :etags :ctags :objcopy :jupyter
@@ -911,12 +916,24 @@ the function to the overall configuration."
 (defun configure-library (configuration library &rest rest
                           &key required min-version max-version &allow-other-keys)
   "Configure a library"
-  (message :info "Configuring library ~a" library)
+  (message :emph "Configuring library ~a" library)
   (flet ((failure (control-string &rest args)
            (apply #'message (if required :err :warn) control-string args)
-           nil))
-    (let ((version (run-program-capture (list (pkg-config configuration) "--modversion" library))))
-      (cond ((not version)
+           nil)
+         (apply-flags (&key cflags ldflags ldlibs)
+           (when cflags
+             (apply #'append-cflags configuration cflags rest))
+           (when ldflags
+             (apply #'append-ldflags configuration ldflags rest))
+           (when ldlibs
+             (apply #'append-ldlibs configuration ldlibs rest))
+           t))
+    (let ((pair (assoc library (libraries configuration) :test #'equalp))
+          (version nil))
+      (cond (pair
+             (message :info "Override configuration found for library ~a." library)
+             (apply #'apply-flags (cdr pair)))
+            ((not (setf version (run-program-capture (list (pkg-config configuration) "--modversion" library))))
              (failure "Module ~a not found." library))
             ((and min-version
                   (uiop:version< version min-version))
@@ -925,16 +942,10 @@ the function to the overall configuration."
                   (uiop:version<= max-version version))
              (failure "Module ~a with a version of ~a is not less then maximum version of ~a." library version max-version))
             (t
-             (apply #'append-cflags configuration
-                                    (run-program-capture (list (pkg-config configuration) "--cflags" library))
-                                    rest)
-             (apply #'append-ldflags configuration
-                                     (run-program-capture (list (pkg-config configuration) "--libs-only-L" library))
-                                     rest)
-             (apply #'append-ldlibs configuration
-                                    (run-program-capture (list (pkg-config configuration) "--libs-only-l" library))
-                                    rest)
-             t)))))
+             (message :info "Found version ~a of library ~a." version library)
+             (apply-flags :cflags (run-program-capture (list (pkg-config configuration) "--cflags" library))
+                          :ldflags (run-program-capture (list (pkg-config configuration) "--libs-only-L" library))
+                          :ldlibs (run-program-capture (list (pkg-config configuration) "--libs-only-l" library))))))))
 
 (defun library (&rest rest)
   "Configure a library with the current configuration state."
