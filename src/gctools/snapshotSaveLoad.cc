@@ -2725,7 +2725,7 @@ void* snapshot_save_impl(void* data) {
 #ifdef _TARGET_OS_DARWIN
     cmd = CXX_BINARY " " BUILD_LINKFLAGS " -o" + snapshot_data->_FileName +
           " -sectcreate " SNAPSHOT_SEGMENT " " SNAPSHOT_SECTION " " + filename + " -Wl,-force_load," + snapshot_data->_LibDir +
-          "/libiclasp.a -lclasp" BUILD_LIB;
+          "/libiclasp.a -lclasp " BUILD_LIB;
 #endif
 
     std::cout << "Link command:" << std::endl << std::flush;
