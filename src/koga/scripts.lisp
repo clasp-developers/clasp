@@ -353,3 +353,26 @@ make $2 l=clasp CLASP=$CLASP"))
   (write-string (alexandria:read-file-into-string (second (uiop:command-line-arguments)))
                  stream)
   (write-line \")trampoline\\\";\" stream))"))
+
+(defmethod print-prologue (configuration (name (eql :libclasp-pc)) output-stream)
+  (format output-stream "~
+Name: Clasp library core
+Description: Common dynamic core of Clasp
+URL: https://github.com/clasp-developers/clasp
+Version: ~a
+~@[Required: ~{~a~^, ~}~]
+Cflags: -I~a
+Libs: -L~a -lclasp~%"
+          (version configuration)
+          (loop for (name min-version max-version) in (libraries configuration)
+                when (and (null min-version)
+                          (null max-version))
+                  collect name
+                else when (equalp min-version max-version)
+                  collect (format nil "~a = ~a" name min-version)
+                else when min-version
+                  collect (format nil "~a >= ~a" name min-version)
+                else
+                  collect (format nil "~a <= ~a" name max-version))
+          (make-source "include/" :install-share)
+          (make-source "" :install-lib)))

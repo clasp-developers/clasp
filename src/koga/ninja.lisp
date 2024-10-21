@@ -4,6 +4,12 @@
   (declare (ignore configuration name))
   (ninja:make-line-wrapping-stream (ninja:make-timestamp-preserving-stream path)))
 
+(defun wrap-with-env (configuration executable-name)
+  (if (reproducible-build configuration)
+      (format nil "LD_LIBRARY_PATH=~a ~a"
+              (make-source "lib/" :variant) executable-name)
+      executable-name))
+
 (defun lisp-command (script &optional arguments)
   (concatenate 'string
                "$lisp "
@@ -381,8 +387,8 @@
           (products (mapcar (lambda (source)
                               (make-source (source-path source) :package-share))
                             generated))
-          (lib (make-source "libclasp.so" :variant-lib))
-          (lib-installed (make-source "libclasp.so" :package-lib))
+          (lib (make-source #+darwin "libclasp.dylib" #-darwin "libclasp.so" :variant-lib))
+          (lib-installed (make-source #+darwin "libclasp.dylib" #-darwin "libclasp.so" :package-lib))
           (filtered-sifs (if *variant-precise*
                              (sort sifs
                                    (lambda (x y)
@@ -429,7 +435,7 @@
           (exe-installed (make-source "iclasp" :package-bin))
           (ilib (make-source "libiclasp.a" :variant-lib))
           (ilib-installed (make-source "libiclasp.a" :package-lib))
-          (lib (make-source "libclasp.so" :variant-lib))
+          (lib (make-source #+darwin "libclasp.dylib" #-darwin "libclasp.so" :variant-lib))
           (symlink (make-source (if (member :cando (extensions configuration))
                                     "cando"
                                     "clasp")
@@ -537,8 +543,7 @@
          (output (make-source module-name :variant-lib))
          (install-output (make-source module-name :package-lib))
          (iclasp (make-source "iclasp" :variant))
-         (clasp-with-env (format nil "LD_LIBRARY_PATH=~a ~a"
-                                 (make-source "lib/" :variant) iclasp)))
+         (clasp-with-env (wrap-with-env configuration iclasp)))
     (ninja:write-build output-stream :compile-module
                        :clasp clasp-with-env
                        :inputs (list source)
@@ -561,8 +566,7 @@
   (let* ((vimage (image-source configuration nil))
          (vimage-installed (image-source configuration nil :package-lib))
          (iclasp (make-source "iclasp" :variant))
-         (clasp-with-env (format nil "LD_LIBRARY_PATH=~a ~a"
-                                 (make-source "lib/" :variant) iclasp)))
+         (clasp-with-env (wrap-with-env configuration iclasp)))
     (ninja:write-build output-stream :load-cclasp
                        :clasp clasp-with-env
                        :source (make-kernel-source-list configuration sources)
@@ -685,8 +689,7 @@
           (eimage (image-source configuration t))
           (eimage-installed (image-source configuration t :package-lib))
           (iclasp (make-source "iclasp" :variant))
-           (clasp-with-env (format nil "LD_LIBRARY_PATH=~a ~a"
-                                   (make-source "lib/" :variant) iclasp))
+           (clasp-with-env (wrap-with-env configuration iclasp))
           (eclasp-sources (member #P"src/lisp/kernel/stage/extension/0-begin.lisp" sources :key #'source-path :test #'equal)))
       (ninja:write-build output-stream :load-eclasp
                          :clasp clasp-with-env
@@ -744,8 +747,7 @@
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :regression-tests)) sources
      &key &allow-other-keys
-     &aux (clasp (format nil "LD_LIBRARY_PATH=~a ~a"
-                         (make-source "lib/" :variant) (make-source "iclasp" :variant))))
+     &aux (clasp (wrap-with-env configuration (make-source "iclasp" :variant))))
   (ninja:write-build output-stream :regression-tests
                      :clasp clasp
                      :inputs (list (build-name "cclasp"))
@@ -808,8 +810,7 @@
     (configuration (name (eql :ninja)) output-stream (target (eql :analyzer)) sources
      &key &allow-other-keys)
   (ninja:write-build output-stream :compile-systems
-                     :clasp (format nil "LD_LIBRARY_PATH=~a ~a"
-                                    (make-source "lib/" :variant) (make-source "iclasp" :variant))
+                     :clasp (wrap-with-env configuration (make-source "iclasp" :variant))
                      :inputs sources
                      :implicit-inputs (list (build-name "cclasp"))
                      :systems "clasp-analyzer"
@@ -825,8 +826,7 @@
   (declare (ignore configuration name target))
   (unless (or *variant-prep* *variant-precise* *variant-debug*)
     (ninja:write-build output-stream :analyze-file
-                       :clasp (format nil "LD_LIBRARY_PATH=~a ~a"
-                                      (make-source "lib/" :variant) (make-source "iclasp" :variant))
+                       :clasp (wrap-with-env configuration (make-source "iclasp" :variant))
                        :inputs (list source)
                        :implicit-inputs (list (build-name "cclasp")
                                               (build-name "generated" :gc :boehm)
@@ -846,8 +846,7 @@
                                          :code)))              
   (unless (or *variant-prep* *variant-precise* *variant-debug*)
     (ninja:write-build output-stream :analyze-generate
-                       :clasp (format nil "LD_LIBRARY_PATH=~a ~a"
-                                      (make-source "lib/" :variant) (make-source "iclasp" :variant))
+                       :clasp (wrap-with-env configuration (make-source "iclasp" :variant))
                        :inputs outputs
                        :implicit-inputs (list (build-name "cclasp")
                                               (build-name "generated" :gc :boehm)
@@ -875,8 +874,7 @@
      &key objects &allow-other-keys
      &aux (cclasp (build-name (if (extensions configuration) :eclasp :cclasp)))
           (iclasp (make-source "iclasp" :variant))
-          (clasp-with-env (format nil "LD_LIBRARY_PATH=~a ~a"
-                                  (make-source "lib/" :variant) iclasp)))
+          (clasp-with-env (wrap-with-env configuration iclasp)))
   (declare (ignore objects))
   (flet ((snapshot (name &key ignore-extensions)
            (let* ((executable (make-source (build-name name) :variant))
