@@ -39,7 +39,7 @@
 
 (defparameter *variant-bitcode-name*
   nil
-  "The full name of the current variant (with debugging suffix).")
+  "The full name of thye current variant (with debugging suffix).")
 
 (defparameter *variant-cflags*
   nil
@@ -659,6 +659,8 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"asdf-test.bash" :build))
                                                          :bench
                                                          (list (make-source #P"bench.lisp" :build))
+                                                         :libclasp-pc
+                                                         (list (make-source #P"libclasp.pc" :build))
                                                          :ninja
                                                          (list (make-source #P"build.ninja" :build)
                                                                :libclasp :iclasp :cclasp :modules :eclasp
@@ -686,6 +688,9 @@ is not compatible with snapshots.")
                                                                :iclasp)))
             :type hash-table
             :documentation "The configuration outputs with the associated targets.")
+   (libraries :accessor libraries
+              :initform nil
+              :type list)
    (targets :accessor targets
             :initform (make-hash-table)
             :type hash-table
@@ -902,6 +907,8 @@ the function to the overall configuration."
                           &key required min-version max-version &allow-other-keys)
   "Configure a library"
   (message :info "Configuring library ~a" library)
+  (when required
+    (push (list library min-version max-version) (libraries configuration)))
   (flet ((failure (control-string &rest args)
            (apply #'message (if required :err :warn) control-string args)
            nil))
