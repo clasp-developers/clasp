@@ -200,7 +200,8 @@
 -Wno-deprecated-anon-enum-enum-conversion"))
   (loop for variant in (variants configuration)
         do (append-cflags variant (format nil "-I~a" (variant-bitcode-name variant)))
-           (append-cflags variant (format nil "-I~a/generated" (variant-bitcode-name variant))))
+           (append-cflags variant (format nil "-I~a/generated" (variant-bitcode-name variant)))
+           (append-ldflags variant (format nil "-L~a/lib" (variant-bitcode-name variant))))
   (append-cflags configuration "-O3 -g -fPIC" :type :cxxflags :debug nil)
   (append-cflags configuration "-O3 -g -fPIC" :type :cflags :debug nil)
   (append-cflags configuration "-O0 -g" :type :cxxflags :debug t)
@@ -303,22 +304,35 @@ has not been set."
 
 (defmethod configure-unit (configuration (unit (eql :reproducible)))
   "Configure for a reproducible build."
-  (when (reproducible-build configuration)
-    (message :emph "Configuring reproducible build")
-    (append-cflags configuration
-                   (format nil "-ffile-prefix-map=..=~a"
-                           (normalize-directory (root :install-share))))
-    (loop for variant in (variants configuration)
-          do (append-cflags variant
-                            (format nil "-ffile-prefix-map=~a=~a -ffile-prefix-map=~a=~a"
-                                    (normalize-directory (make-pathname :directory (list :relative
-                                                                                         (variant-bitcode-name variant)
-                                                                                         "generated")))
-                                    (normalize-directory (root :install-generated))
-                                    (normalize-directory (make-pathname :directory (list :relative
-                                                                                         (variant-bitcode-name variant)
-                                                                                         "lib")))
-                                    (normalize-directory (root :install-lib)))))))                                    
+  (cond ((reproducible-build configuration)
+         (message :emph "Configuring reproducible build")
+         (append-cflags configuration
+                        (format nil "-ffile-prefix-map=..=~a"
+                                (normalize-directory (root :install-share))))
+         (loop for variant in (variants configuration)
+               do (append-cflags variant
+                                 (format nil "-ffile-prefix-map=~a=~a -ffile-prefix-map=~a=~a"
+                                         (normalize-directory (make-pathname :directory (list :relative
+                                                                                              (variant-bitcode-name variant)
+                                                                                              "generated")))
+                                         (normalize-directory (root :install-generated))
+                                         (normalize-directory (make-pathname :directory (list :relative
+                                                                                              (variant-bitcode-name variant)
+                                                                                              "lib")))
+                                         (normalize-directory (root :install-lib))))))
+        (t
+         (message :emph "Configuring non-reproducible build")
+         (loop for variant in (variants configuration)
+               do (append-ldflags variant
+                                  (format nil "-Wl,-rpath,~a"
+                                          (normalize-directory
+                                           (uiop:ensure-absolute-pathname
+                                            (merge-pathnames
+                                             (make-pathname :directory (list :relative
+                                                                             (variant-bitcode-name variant)
+                                                                             "lib"))
+                                             (root :build))
+                                            (uiop:getcwd)))))))))
 
 (defmethod configure-unit (configuration (unit (eql :asdf)))
   "Configure ASDF"
