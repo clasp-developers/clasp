@@ -324,7 +324,7 @@ has not been set."
          (message :emph "Configuring non-reproducible build")
          (loop for variant in (variants configuration)
                do (append-ldflags variant
-                                  (format nil "-Wl,--enable-new-dtags,-rpath,~a"
+                                  (format nil "-Wl,-rpath,~a"
                                           (normalize-directory
                                            (uiop:ensure-absolute-pathname
                                             (merge-pathnames
