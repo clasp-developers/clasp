@@ -1183,10 +1183,10 @@ core::T_sp PERCENTmem_set_unsigned_char(core::Integer_sp address, core::T_sp val
 #endif
 
   return p_section;
-}
+}*/
 
 core::T_mv PERCENTget_section_data(core::String_sp sp_segment_name, core::String_sp sp_section_name) {
-#if defined(__APPLE__)
+/*#if defined(__APPLE__)
 
   const struct section_64* p_section = (struct section_64*)NULL;
   unsigned long section_size = 0;
@@ -1200,11 +1200,10 @@ core::T_mv PERCENTget_section_data(core::String_sp sp_segment_name, core::String
     return Values(nil<core::T_O>(), _lisp->_true());
   }
 
-#else
-
+#else*/
   return Values(nil<core::T_O>(), nil<core::T_O>());
 
-#endif
-}*/
+//#endif
+}
 
 }; // namespace clasp_ffi
