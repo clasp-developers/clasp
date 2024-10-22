@@ -674,11 +674,6 @@ namespace kw {
 extern gctools::smart_ptr<core::Symbol_O>& _sym_datum;
 extern gctools::smart_ptr<core::Symbol_O>& _sym_expected_type;
 } // namespace kw
-namespace core {
-extern gctools::smart_ptr<core::T_O> lisp_createList(gctools::smart_ptr<core::T_O> a1, gctools::smart_ptr<core::T_O> a2,
-                                                     gctools::smart_ptr<core::T_O> a3, gctools::smart_ptr<core::T_O> a4);
-[[noreturn]] extern void lisp_error(gctools::smart_ptr<core::T_O> baseCondition, gctools::smart_ptr<core::T_O> initializers);
-} // namespace core
 
 namespace gctools {
 
@@ -807,13 +802,11 @@ public:
   inline smart_ptr() noexcept : theObject(NULL){};
   inline smart_ptr(const return_type& rt) : theObject((Type*)rt.ret0[0]){};
   inline smart_ptr(smart_ptr<core::T_O> other) {
-    LIKELY_if(other.consp()) { this->theObject = other.theObject; }
-    else if (other.nilp()) {
+    // Null_O does not exist, so we have to do some shenanigans here.
+    if (other.consp() || other.nilp()) [[likely]]
       this->theObject = other.theObject;
-    }
-    else {
-      lisp_error(cl::_sym_type_error, core::lisp_createList(kw::_sym_datum, other, kw::_sym_expected_type, cl::_sym_list));
-    }
+    else [[unlikely]]
+      core::lisp_errorExpectedList(other.theObject);
   }
   inline smart_ptr(smart_ptr<core::Cons_O> other) : theObject(other.raw_()) { GCTOOLS_ASSERT(other.consp()); };
   // Constructor that takes Cons_O* assumes its untagged
