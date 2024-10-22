@@ -753,6 +753,33 @@ public:
   inline core::T_O* raw_() const { return reinterpret_cast<core::T_O*>(this->theObject); }
   inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
 
+  template <class o_class> inline smart_ptr<o_class> asOrNull() const {
+    o_class* cast = TaggedCast<o_class*, Type*>::castOrNULL(this->theObject);
+    smart_ptr<o_class> ret((Tagged)cast);
+    return ret;
+  }
+  template <class o_class> inline smart_ptr<o_class> as() const {
+    smart_ptr<o_class> ret = this->asOrNull<o_class>();
+    if (ret)
+      return ret;
+    core::lisp_errorCast<o_class, Type>(this->theObject);
+  }
+  template <class o_class> inline smart_ptr<o_class> as_unsafe() const {
+    smart_ptr<o_class> ret((Tagged)this->theObject);
+    return ret;
+  }
+  template <class o_class> inline smart_ptr<o_class> as_assert() const {
+#ifdef DEBUG_ASSERT
+    if (!TaggedCast<o_class*, Type*>::isA(this->theObject)) {
+      throw_hard_error_failed_assertion("as_assert failed!");
+    }
+#endif
+    smart_ptr<o_class> ret((Tagged)this->theObject);
+    return ret;
+  }
+  template <class o_class> inline bool isA() const { return TaggedCast<o_class*, Type*>::isA(this->theObject); }
+
+
   template <class U> inline bool operator==(smart_ptr<U> const other) const { return this->theObject == other.theObject; }
 
   template <class U> inline bool operator!=(smart_ptr<U> const other) const { return this->theObject != other.theObject; }
@@ -861,6 +888,32 @@ public:
 
   core::T_O* raw_() const { return reinterpret_cast<Type*>(this->theObject); }
   inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
+  
+  template <class o_class> inline smart_ptr<o_class> asOrNull() const {
+    o_class* cast = TaggedCast<o_class*, Type*>::castOrNULL(this->theObject);
+    smart_ptr<o_class> ret((Tagged)cast);
+    return ret;
+  }
+  template <class o_class> inline smart_ptr<o_class> as() const {
+    smart_ptr<o_class> ret = this->asOrNull<o_class>();
+    if (ret)
+      return ret;
+    core::lisp_errorCast<o_class, Type>(this->theObject);
+  }
+  template <class o_class> inline smart_ptr<o_class> as_unsafe() const {
+    smart_ptr<o_class> ret((Tagged)this->theObject);
+    return ret;
+  }
+  template <class o_class> inline smart_ptr<o_class> as_assert() const {
+#ifdef DEBUG_ASSERT
+    if (!TaggedCast<o_class*, Type*>::isA(this->theObject)) {
+      throw_hard_error_failed_assertion("as_assert failed!");
+    }
+#endif
+    smart_ptr<o_class> ret((Tagged)this->theObject);
+    return ret;
+  }
+  template <class o_class> inline bool isA() const { return TaggedCast<o_class*, Type*>::isA(this->theObject); }
 
   template <class U> inline bool operator==(smart_ptr<U> const other) const { return this->theObject == other.theObject; }
 
@@ -1230,12 +1283,6 @@ namespace gc = gctools;
 namespace gctools {
 // List_sp <-- T_sp
 template <> inline core::List_sp As(core::T_sp const& rhs) { return core::List_sp(rhs); }
-}; // namespace gctools
-
-namespace gctools {
-template <typename ToType, typename FromType> smart_ptr<ToType> reinterpret_cast_smart_ptr(smart_ptr<FromType> x) {
-  return smart_ptr<ToType>((Tagged)x.raw_());
-}
 }; // namespace gctools
 
 namespace core {
