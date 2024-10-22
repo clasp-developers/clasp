@@ -380,8 +380,7 @@ public:
     StrongBucketKind = ((2 << mtag_shift) | weak_mtag),
     WeakMappingKind = ((3 << mtag_shift) | weak_mtag),
     StrongMappingKind = ((4 << mtag_shift) | weak_mtag),
-    WeakPointerKind = ((5 << mtag_shift) | weak_mtag),
-    MaxWeakKind = ((6 << mtag_shift) | weak_mtag)
+    MaxWeakKind = ((5 << mtag_shift) | weak_mtag)
   } WeakKinds;
 
   //

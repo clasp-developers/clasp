@@ -3646,20 +3646,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               break;
             }
 #endif
-#if 0
-            case gctools::Header_s::WeakPointerKind: {
-              auto obj = gctools::GCWeakPointerAllocator<gctools::WeakPointer>::snapshot_save_load_allocate(&init);
-              gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
-              set_forwarding_pointer(header,((void*)fwd),this->_info);
-              DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu  fwd: %p\n")
-                              % (void*) obj.raw_()
-                              % (void*) header
-                              % (uintptr_t)kind
-                              % (void*)fwd );
-              root_holder.add((void*)obj.raw_());
-              break;
-            }
-#endif
             default:
               printf("%s:%d:%s  Handle allocate weak objects\n", __FILE__, __LINE__, __FUNCTION__);
               break;

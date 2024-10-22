@@ -675,8 +675,6 @@ bool BaseHeader_s::preciseIsPolymorphic() const {
       return std::is_polymorphic<WeakBucketsObjectType>();
     } else if (this->_badge_stamp_wtag_mtag._value == StrongBucketKind) {
       return std::is_polymorphic<StrongBucketsObjectType>();
-    } else if (this->_badge_stamp_wtag_mtag._value == WeakPointerKind) {
-      return std::is_polymorphic<WeakPointer>();
     }
   }
   return false;

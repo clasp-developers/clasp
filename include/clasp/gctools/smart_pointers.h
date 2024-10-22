@@ -205,8 +205,6 @@ public:
           and you are sure that it will not be interpreted as a Fixnum!!!
 
           List actual uses here:
-          gcweak.h>>WeakPointerManager
-          gcweak.h>>~WeakPointerManager
           gcweak.h>>Mapping(const Type& val)
           gcweak.h>>Buckets::set
           intrinsics.cc>>cc_loadTimeValueReference
@@ -402,8 +400,6 @@ public:
   /*! This should almost NEVER be used!!!!!!
 
           List all uses of rawRef_ here:
-          gcweak.h>>WeakPointerManager
-          gcweak.h>>~WeakPointerManager
           gcweak.h>>Mapping(const Type& val)
           gcweak.h>>Buckets::set
           intrinsics.cc>>cc_loadTimeValueReference
