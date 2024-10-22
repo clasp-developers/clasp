@@ -598,9 +598,6 @@ public:
     );
   };
 
-  // A constructor used by the iterator to bypass any tagged pointer checking
-  explicit inline smart_ptr(Tagged ptr, bool dummy) : theObject(reinterpret_cast<core::Cons_O*>(ptr)){};
-
 public:
   explicit operator bool() const { return this->theObject != NULL; }
 
@@ -685,7 +682,6 @@ public:
  */
 
 namespace gctools {
-// my comment
 class List_sp_iterator;
 
 template <> class smart_ptr<core::List_V> {
@@ -812,26 +808,21 @@ public:
 
   template <class U> inline bool operator!=(smart_ptr<U> const other) const { return this->theObject != other.theObject; }
 
-public:
 private:
-  template <bool fast> class List_sp_iterator {
+  class List_sp_iterator {
   public:
-    // This is the end iterator - it sets the ptr to the symbol NIL!
-    // Note: It's spoofing the iterator ptr field by sticking
-    // the SYMBOL NIL into a slot that is set up to be a tagged CONS!!!!
-    // This is what we have to do to make things fast.
-    // To do this I'm using a special smart_ptr<core::Cons_O> constructor
-    // that takes TWO arguments, where the second one is a dummy
-    //
-    // XXX: What happens if someone tries to increment end()?
-    //    Answer: Something bad - don't do this
-    List_sp_iterator() : ptr((Tagged)tag_nil<core::Cons_O*>(), false) {}
-    List_sp_iterator(const core::List_sp& ptr) : ptr(ptr.asCons()){};
+    List_sp_iterator() : ptr() {}
+    List_sp_iterator(const core::List_sp& other)
+      : ptr(other.consp() ? other.unsafe_cons() : NULL){};
     List_sp_iterator& operator++() {
-      GCTOOLS_ASSERT(this->consp());
-      core::T_O* rawcdr = cons_cdr(&*ptr).raw_();
-      unlikely_if(!tagged_consp(rawcdr) && !tagged_nilp(rawcdr)) { core::lisp_errorExpectedList(rawcdr); }
-      ptr.rawRef_() = reinterpret_cast<core::Cons_O*>(rawcdr);
+      // iterating past the end will fault.
+      smart_ptr<core::T_O> next = cons_cdr(ptr.unsafe_cons());
+      if (next.consp()) [[likely]]
+        ptr = next.as_unsafe<core::Cons_O>();
+      else if (next.nilp())
+        ptr = smart_ptr<core::Cons_O>();
+      else [[unlikely]]
+        core::lisp_errorExpectedList(next.raw_());
       return *this;
     }
     List_sp_iterator& operator++(int) { // postfix
@@ -839,21 +830,21 @@ private:
       ++*this;
       return *clone;
     }
-    bool consp() const { return tagged_consp(ptr.raw_()); };
-    bool nilp() const { return tagged_nilp(ptr.raw_()); };
-    inline smart_ptr<core::Cons_O>* operator->() { return &ptr; }
-    inline const smart_ptr<core::Cons_O>* operator->() const { return &ptr; }
     inline const smart_ptr<core::Cons_O>& operator*() const { return ptr; }
     inline smart_ptr<core::Cons_O>& operator*() { return ptr; }
-    // Unsafe but fast cast of T_O* to Cons_O* - should only be done within a loop
-    /* smart_ptr<core::Cons_O> operator*() { return smart_ptr<core::Cons_O>((Tagged)(ptr)); } */
+    inline bool operator==(const List_sp_iterator& other) const {
+      return ptr.theObject == other.ptr.theObject;
+    }
+    inline bool operator!=(const List_sp_iterator& other) const {
+      return ptr.theObject != other.ptr.theObject;
+    }
   public:
+    // either a real cons, or invalid (theObject = NULL) at end() and farther
     smart_ptr<core::Cons_O> ptr;
   };
 
 public:
-  typedef List_sp_iterator<false> iterator;
-  typedef List_sp_iterator<true> fast_iterator;
+  typedef List_sp_iterator iterator;
 
 public:
   iterator begin() {
@@ -872,32 +863,7 @@ public:
   }
   iterator const end() const { return iterator(); }
 
-private:
-  class fast_iterator_proxy {
-  public:
-    fast_iterator_proxy(const core::List_sp& ptr) : ptr(ptr) {}
-    fast_iterator begin() {
-      if (ptr.consp())
-        return fast_iterator(ptr);
-      else
-        return fast_iterator();
-    }
-    fast_iterator end() { return fast_iterator(); }
-
-    fast_iterator const begin() const {
-      if (ptr.consp())
-        return fast_iterator(ptr);
-      else
-        return fast_iterator();
-    }
-    fast_iterator const end() const { return fast_iterator(); }
-
-  private:
-    const core::List_sp& ptr;
-  };
-
 public:
-  fast_iterator_proxy full() { return fast_iterator_proxy(*this); }
 
   smart_ptr<core::List_V>& operator=(const smart_ptr<core::List_V>& other) {
     this->theObject = other.theObject;
@@ -910,15 +876,6 @@ public:
     return *this;
   };
 };
-
-inline bool operator==(const core::List_sp::iterator& a, const core::List_sp::iterator& b) { return UNLIKELY(*a == *b); }
-inline bool operator!=(const core::List_sp::iterator& a, const core::List_sp::iterator& b) { return LIKELY(*a != *b); }
-// XXX: BAD VOODOO!
-// Justification:
-// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2243.html#the-range-based-for-statement
-// Range-for will, supposedly, use != as current != end, always.
-inline bool operator==(const core::List_sp::fast_iterator& a, const core::List_sp::fast_iterator& b) { return !a->consp(); }
-inline bool operator!=(const core::List_sp::fast_iterator& a, const core::List_sp::fast_iterator& b) { return a->consp(); }
 }; // namespace gctools
 
 template <class T> gctools::smart_ptr<T> nil() {
