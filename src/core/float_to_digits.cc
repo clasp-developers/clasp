@@ -75,13 +75,13 @@ template <typename Float> T_mv float_to_digits(T_sp tdigits, Float number, T_sp 
     for (size_t i = 0; i < digit_count; i++) {
       auto rem = decimal.significand % 10u;
       decimal.significand /= 10u;
-      (*buffer8)[digit_count - i - 1] = num_to_text[rem];
+      buffer8[digit_count - i - 1] = num_to_text[rem];
     }
   } else if (StrWNs_sp bufferw = digits.asOrNull<StrWNs_O>()) {
     for (size_t i = 0; i < digit_count; i++) {
       auto rem = decimal.significand % 10u;
       decimal.significand /= 10u;
-      (*bufferw)[digit_count - i - 1] = num_to_text[rem];
+      bufferw[digit_count - i - 1] = num_to_text[rem];
     }
   }
 

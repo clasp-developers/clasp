@@ -37,6 +37,7 @@
 #include <iostream>
 #include <cstring>
 #include <type_traits> // is_base_of
+#include <utility> // declval
 
 #ifndef SCRAPING
 #ifdef USE_PRECISE_GC
@@ -73,6 +74,11 @@ concept InheritsC = Inherits<Super, Sub>::value;
 }; // namespace gctools
 
 namespace gctools {
+// I'd like to make this private or better yet anonymous,
+// but I guess that's not allowed.
+template <typename O, typename Index>
+concept Indexable = requires(O o, Index i) { o[i]; };
+
 template <class T> class base_ptr {
 public:
   typedef T Type;
@@ -153,6 +159,16 @@ public:
   };
 
   inline Type* untag_object() const { return ::gctools::untag_object(this->theObject); }
+
+  // pass to underlying object, if it has an operator[].
+  template <typename S> requires Indexable<Type, S>
+  inline decltype(auto) operator[](S index) {
+    return (*untag_object())[index];
+  }
+  template <typename S> requires Indexable<const Type, S>
+  inline decltype(auto) operator[](S index) const {
+    return (*untag_object())[index];
+  }
 
   /*! If theObject!=NULL then return true */
   explicit operator bool() const { return this->theObject != NULL; };

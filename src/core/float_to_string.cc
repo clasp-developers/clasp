@@ -48,7 +48,7 @@ static void insert_char(StrNs_sp buffer, cl_index where, gc::Fixnum c) {
   } else {
     StrWNs_sp bufferw = gc::As_unsafe<StrWNs_sp>(buffer);
     memmove(&(*bufferw)[where + 1], &(*bufferw)[where], (end - where) * bufferw->elementSizeInBytes());
-    (*bufferw)[where] = c;
+    bufferw[where] = c;
   }
 }
 

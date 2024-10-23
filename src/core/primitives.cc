@@ -1532,10 +1532,10 @@ CL_DEFUN Symbol_sp core__gensym_quick(SimpleBaseString_sp prefix, size_t suffix)
   size_t suffixlen = (suffix < 2) ? 1 : std::ceil(std::log10(suffix));
   auto name = SimpleBaseString_O::make(prefixlen + suffixlen);
   for (size_t i = 0; i < prefixlen; ++i)
-    (*name)[i] = (*prefix)[i];
+    name[i] = prefix[i];
   for (size_t j = prefixlen + suffixlen - 1; j >= prefixlen; --j) {
     auto div = std::div(suffix, 10);
-    (*name)[j] = div.rem + '0';
+    name[j] = div.rem + '0';
     suffix = div.quot;
   }
   return Symbol_O::create(name);
@@ -1546,10 +1546,10 @@ CL_DEFUN Symbol_sp core__gensym_quick_char(SimpleCharacterString_sp prefix, size
   size_t suffixlen = (suffix < 2) ? 1 : std::ceil(std::log10(suffix));
   auto name = SimpleCharacterString_O::make(prefixlen + suffixlen);
   for (size_t i = 0; i < prefixlen; ++i)
-    (*name)[i] = (*prefix)[i];
+    name[i] = prefix[i];
   for (size_t j = prefixlen + suffixlen - 1; j >= prefixlen; --j) {
     auto div = std::div(suffix, 10);
-    (*name)[j] = div.rem + '0';
+    name[j] = div.rem + '0';
     suffix = div.quot;
   }
   return Symbol_O::create(name);
@@ -1911,8 +1911,8 @@ CL_DEFUN SimpleVector_byte8_t_sp core__character_string_that_fits_in_base_string
     SimpleCharacterString_sp sarray = gc::As_unsafe<SimpleCharacterString_sp>(tarray);
     SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make(sarray->length(), 0, false);
     for (int i = 0; i < sarray->length(); ++i) {
-      int c = (*sarray)[i];
-      (*result)[i] = c;
+      int c = sarray[i];
+      result[i] = c;
     }
     return result;
   } else if (gc::IsA<StrWNs_sp>(tarray)) {
@@ -1922,8 +1922,8 @@ CL_DEFUN SimpleVector_byte8_t_sp core__character_string_that_fits_in_base_string
     sarray->asAbstractSimpleVectorRange(basesv, start, end);
     SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make((end - start), 0, false);
     for (int i = 0; i < sarray->length(); ++i) {
-      int c = (*sarray)[i];
-      (*result)[i] = c;
+      int c = sarray[i];
+      result[i] = c;
     }
     return result;
   }

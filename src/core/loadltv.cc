@@ -410,14 +410,14 @@ struct loadltv {
     // FIXME: Inefficient.
     // Really we ought to be able to read(2) stuff in directly sometimes.
     // And can we do the simple form here for multidimensional arrays?
-#define READ_ARRAY(BaseType, EXPR, EXTEXPR)                                                                                        \
-  if (gc::IsA<BaseType>(array)) {                                                                                                  \
-    BaseType sv = gc::As_unsafe<BaseType>(array);                                                                                  \
-    for (size_t i = 0; i < total_size; ++i)                                                                                        \
-      (*sv)[i] = (EXPR);                                                                                                           \
-  } else {                                                                                                                         \
-    for (size_t i = 0; i < total_size; ++i)                                                                                        \
-      array->rowMajorAset(i, (EXTEXPR));                                                                                           \
+#define READ_ARRAY(BaseType, EXPR, EXTEXPR)       \
+  if (gc::IsA<BaseType>(array)) {                 \
+    BaseType sv = gc::As_unsafe<BaseType>(array); \
+    for (size_t i = 0; i < total_size; ++i)       \
+      sv[i] = (EXPR);                             \
+  } else {                                        \
+    for (size_t i = 0; i < total_size; ++i)       \
+      array->rowMajorAset(i, (EXTEXPR));          \
   }
     switch (bytecode_uaet{packing}) {
     case bytecode_uaet::nil:
@@ -680,7 +680,7 @@ struct loadltv {
     SimpleVector_sp lits = SimpleVector_O::make(len);
     mod->setf_literals(lits);
     for (size_t i = 0; i < len; ++i)
-      (*lits)[i] = get_ltv(read_index());
+      lits[i] = get_ltv(read_index());
   }
 
   void op_fdef() {
