@@ -37,7 +37,7 @@
 #include <iostream>
 #include <cstring>
 #include <type_traits> // is_base_of
-#include <utility> // declval
+#include <ranges>
 
 #ifndef SCRAPING
 #ifdef USE_PRECISE_GC
@@ -168,6 +168,20 @@ public:
   template <typename S> requires Indexable<const Type, S>
   inline decltype(auto) operator[](S index) const {
     return (*untag_object())[index];
+  }
+
+  // and if it's a range, forward begin and end
+  decltype(auto) begin() requires std::ranges::range<Type> {
+    return untag_object()->begin();
+  }
+  decltype(auto) end() requires std::ranges::range<Type> {
+    return untag_object()->end();
+  }
+  decltype(auto) begin() const requires std::ranges::range<const Type> {
+    return untag_object()->begin();
+  }
+  decltype(auto) end() const requires std::ranges::range<const Type> {
+    return untag_object()->end();
   }
 
   /*! If theObject!=NULL then return true */

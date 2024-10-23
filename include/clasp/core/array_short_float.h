@@ -53,10 +53,7 @@ public:
   short_float_t& getElement(size_t i) { return this->operator[](i); };
   void setElement(size_t i, short_float_t v) { this->operator[](i) = v; };
   void addToElement(size_t i, short_float_t v) { this->operator[](i) += v; };
-  void zero() {
-    for (size_t i(0), iEnd(this->length()); i < iEnd; ++i)
-      this->operator[](i) = short_float_t{0.0};
-  };
+  void zero() { for (auto& e : *this) e = short_float_t{0.0}; };
   size_t size() const { return this->length(); };
 };
 

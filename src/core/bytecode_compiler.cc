@@ -926,7 +926,7 @@ size_t EntryCloseFixup_O::resize() { return (this->lex()->closedOverP()) ? 1 : 0
 void Module_O::initialize_cfunction_positions() {
   size_t position = 0;
   ComplexVector_T_sp cfunctions = this->cfunctions();
-  for (T_sp tfunction : *cfunctions) {
+  for (auto const& tfunction : cfunctions) {
     Cfunction_sp cfunction = gc::As_assert<Cfunction_sp>(tfunction);
     cfunction->setPosition(position);
     position += cfunction->bytecode()->length();
@@ -953,9 +953,9 @@ void Module_O::resolve_fixup_sizes() {
   ComplexVector_T_sp cfunctions = this->cfunctions();
   do {
     changedp = false;
-    for (T_sp tfunction : *cfunctions) {
+    for (auto const& tfunction : cfunctions) {
       ComplexVector_T_sp annotations = gc::As_assert<Cfunction_sp>(tfunction)->annotations();
-      for (T_sp tannot : *annotations) {
+      for (auto const& tannot : annotations) {
         if (gc::IsA<Fixup_sp>(tannot)) {
           Fixup_sp fixup = gc::As_unsafe<Fixup_sp>(tannot);
           size_t old_size = fixup->size();
@@ -1031,7 +1031,7 @@ SimpleVector_sp Module_O::create_debug_info() {
   // We add one to each since we put in the functions as well.
   // Replace all labels.
   size_t ndebugs = 0;
-  for (T_sp tfunction : *cfunctions) {
+  for (auto const& tfunction : cfunctions) {
     Cfunction_sp function = gc::As_assert<Cfunction_sp>(tfunction);
     ndebugs += 1 + function->debug_info()->length();
   }
@@ -1039,10 +1039,10 @@ SimpleVector_sp Module_O::create_debug_info() {
   // For each cfunction, put the cfunction in the debug infos,
   // and then the cfunction's infos.
   size_t ind = 0;
-  for (T_sp tfunction : *cfunctions) {
+  for (auto const& tfunction : cfunctions) {
     Cfunction_sp function = gc::As_assert<Cfunction_sp>(tfunction);
     debuginfos[ind++] = function;
-    for (T_sp info : *(function->debug_info())) {
+    for (auto const& info : function->debug_info()) {
       debuginfos[ind++] = info;
       // Resolve labels, etc.
       if (gc::IsA<BytecodeDebugVars_sp>(info))
@@ -1069,12 +1069,12 @@ SimpleVector_byte8_t_sp Module_O::create_bytecode() {
   SimpleVector_byte8_t_sp bytecode = SimpleVector_byte8_t_O::make(this->bytecode_size());
   size_t index = 0;
   ComplexVector_T_sp cfunctions = this->cfunctions();
-  for (T_sp tfunction : *cfunctions) {
+  for (auto const& tfunction : cfunctions) {
     Cfunction_sp function = gc::As_assert<Cfunction_sp>(tfunction);
     ComplexVector_byte8_t_sp cfunction_bytecode = function->bytecode();
     size_t position = 0;
     ComplexVector_T_sp annotations = function->annotations();
-    for (T_sp tannot : *annotations) {
+    for (auto const& tannot : annotations) {
       if (gc::IsA<Fixup_sp>(tannot)) {
         Fixup_sp annotation = gc::As_unsafe<Fixup_sp>(tannot);
         if (annotation->size() != 0) {
@@ -1122,8 +1122,7 @@ CL_DEFMETHOD T_sp Cfunction_O::end() const {
 bool btb_bcfun_p(BytecodeSimpleFun_sp fun, SimpleVector_sp debug_info) {
   size_t start = fun->entryPcN();
   size_t end = start + fun->bytecodeSize();
-  for (size_t i = 0; i < debug_info->length(); ++i) {
-    T_sp tinfo = debug_info[i];
+  for (auto const& tinfo : debug_info) {
     if (gc::IsA<BytecodeAstDecls_sp>(tinfo)) {
       BytecodeAstDecls_sp info = gc::As_unsafe<BytecodeAstDecls_sp>(tinfo);
       size_t infostart = info->start().unsafe_fixnum();
@@ -1165,7 +1164,7 @@ void Module_O::link_load() {
   BytecodeModule_sp bytecode_module = BytecodeModule_O::make(bytecode);
   ComplexVector_T_sp cfunctions = cmodule->cfunctions();
   // Create the real function objects.
-  for (T_sp tfun : *cfunctions) {
+  for (auto const& tfun : cfunctions) {
     Cfunction_sp cfunction = gc::As_assert<Cfunction_sp>(tfun);
     T_sp sourcePathname = nil<T_O>();
     int lineno = -1;
@@ -1218,10 +1217,9 @@ void Module_O::link_load() {
   // Also replace the cfunctions in the debug info.
   // We just modify the vector rather than cons a new one since create_debug_info
   // already created a fresh vector for us.
-  for (size_t i = 0; i < debug_info->length(); ++i) {
-    T_sp info = debug_info[i];
+  for (auto& info : debug_info) {
     if (gc::IsA<Cfunction_sp>(info))
-      debug_info[i] = gc::As_unsafe<Cfunction_sp>(info)->info();
+      info = gc::As_unsafe<Cfunction_sp>(info)->info();
   }
   // Now just install the bytecode and Bob's your uncle.
   bytecode_module->setf_literals(literals);
@@ -1232,7 +1230,7 @@ void Module_O::link_load() {
   // We can only do native compilations after the module is
   // fully realized above.
   if (_sym_STARautocompile_hookSTAR->boundP() && _sym_STARautocompile_hookSTAR->symbolValue().notnilp()) {
-    for (T_sp tfun : *cfunctions) {
+    for (auto const& tfun : cfunctions) {
       Cfunction_sp cfun = gc::As_assert<Cfunction_sp>(tfun);
       BytecodeSimpleFun_sp fun = cfun->info();
       if (btb_bcfun_p(fun, debug_info)) {
@@ -2012,9 +2010,8 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
     Cfunction_sp fun =
         compile_lambda(oCadr(fnameoid), oCddr(fnameoid), env, ctxt.module(), source_location_for(fnameoid, ctxt.source_info()));
     ComplexVector_T_sp closed = fun->closed();
-    for (size_t i = 0; i < closed->length(); ++i) {
-      ctxt.reference_lexical_info(gc::As_assert<LexicalInfo_sp>(closed[i]));
-    }
+    for (auto const& c : closed)
+      ctxt.reference_lexical_info(gc::As_assert<LexicalInfo_sp>(c));
     if (closed->length() == 0) // don't need to actually close
       ctxt.assemble1(vm_code::_const, ctxt.cfunction_index(fun));
     else
@@ -2048,9 +2045,8 @@ void compile_called_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
     Cfunction_sp fun =
         compile_lambda(oCadr(fnameoid), oCddr(fnameoid), env, ctxt.module(), source_location_for(fnameoid, ctxt.source_info()));
     ComplexVector_T_sp closed = fun->closed();
-    for (size_t i = 0; i < closed->length(); ++i) {
-      ctxt.reference_lexical_info(gc::As_assert<LexicalInfo_sp>(closed[i]));
-    }
+    for (auto const& c : closed)
+      ctxt.reference_lexical_info(gc::As_assert<LexicalInfo_sp>(c));
     if (closed->length() == 0) // don't need to actually close
       ctxt.assemble1(vm_code::_const, ctxt.cfunction_index(fun));
     else
@@ -2210,10 +2206,8 @@ void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Cont
   for (auto cur : gc::As_assert<List_sp>(closures.cons())) {
     Cfunction_sp cf = gc::As_unsafe<Cfunction_sp>(oCaar(cur));
     ComplexVector_T_sp closed = cf->closed();
-    for (size_t i = 0; i < closed->length(); ++i) {
-      LexicalInfo_sp info = gc::As_assert<LexicalInfo_sp>(closed[i]);
-      ctxt.reference_lexical_info(info);
-    }
+    for (auto const& c : closed)
+      ctxt.reference_lexical_info(c.as_assert<LexicalInfo_O>());
     ctxt.assemble1(vm_code::initialize_closure, oCdar(cur).unsafe_fixnum());
   }
   compile_locally(body, new_env, ctxt);
@@ -2501,9 +2495,8 @@ void compile_unwind_protect(T_sp protect, List_sp cleanup, Lexenv_sp env, const 
     // Duplicates a bit of code from compile_function.
     Cfunction_sp cleanupt = compile_lambda(nil<T_O>(), Cons_O::createList(Cons_O::create(cl::_sym_progn, cleanup)), env,
                                            ctxt.module(), ctxt.source_info());
-    ComplexVector_T_sp closed = cleanupt->closed();
-    for (size_t i = 0; i < closed->length(); ++i)
-      ctxt.reference_lexical_info(closed[i].as_assert<LexicalInfo_O>());
+    for (auto const& c : cleanupt->closed())
+      ctxt.reference_lexical_info(c.as_assert<LexicalInfo_O>());
     // Actual protect instruction
     ctxt.assemble1(vm_code::protect, ctxt.cfunction_index(cleanupt));
     // and the body...
