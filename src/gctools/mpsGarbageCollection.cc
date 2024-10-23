@@ -74,7 +74,6 @@ extern "C" {
 #include "clasp/mps/code/mpscmvff.h" // MVFF pool
 #include "clasp/mps/code/mpscamc.h"  // AMC pool
 #include "clasp/mps/code/mpscsnc.h"  // SNC pool
-#include <clasp/gctools/mygc.h>
 };
 
 #include <clasp/gctools/gctoolsPackage.h>
