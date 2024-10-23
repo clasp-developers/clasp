@@ -248,11 +248,11 @@ public:
   }
 
   template <class U> inline bool operator==(const base_ptr<U>& other) const {
-    return reinterpret_cast<uintptr_t>(this->theObject) == reinterpret_cast<uintptr_t>(other.theObject);
+    return this->theObject == other.theObject;
   }
 
   template <class U> inline bool operator!=(const base_ptr<U>& other) const {
-    return reinterpret_cast<uintptr_t>(this->theObject) != reinterpret_cast<uintptr_t>(other.theObject);
+    return this->theObject != other.theObject;
   }
 };
 }; // namespace gctools
@@ -333,7 +333,7 @@ template <typename To_SP, typename From_SP> inline To_SP As(From_SP const& rhs) 
   }
   // If the cast didn't work then signal a type error
   gctools::GCStampEnum expectedStampWtag = gctools::GCStamp<typename To_SP::Type>::StampWtag;
-  lisp_errorBadCastStampWtag((size_t)expectedStampWtag, reinterpret_cast<core::T_O*>(rhs.raw_()));
+  lisp_errorBadCastStampWtag((size_t)expectedStampWtag, rhs.raw_());
   HARD_UNREACHABLE();
 }
 template <typename To_SP> inline To_SP As(const return_type& rhs) {
@@ -477,11 +477,11 @@ public:
   inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
   inline core::Cons_O* unsafe_cons() const {
     GCTOOLS_ASSERT(this->consp());
-    return reinterpret_cast<core::Cons_O*>(untag_cons(this->theObject));
+    return untag_cons(reinterpret_cast<core::Cons_O*>(this->theObject));
   };
   core::General_O* unsafe_general() const {
     GCTOOLS_ASSERT(this->generalp());
-    return reinterpret_cast<core::General_O*>(reinterpret_cast<uintptr_t>(this->theObject) - general_tag);
+    return untag_general(reinterpret_cast<core::General_O*>(this->theObject));
   };
   template <class U> inline bool operator==(smart_ptr<U> const other) const { return this->theObject == other.theObject; }
 
@@ -582,11 +582,11 @@ public:
   }
   template <class U> inline bool operator==(const smart_ptr<U>& other) const {
     // i don't think there's any simple way to call the base function. bleh.
-    return reinterpret_cast<uintptr_t>(this->theObject) == reinterpret_cast<uintptr_t>(other.theObject);
+    return this->theObject == other.theObject;
   }
 
   template <class U> inline bool operator!=(const smart_ptr<U>& other) const {
-    return reinterpret_cast<uintptr_t>(this->theObject) != reinterpret_cast<uintptr_t>(other.theObject);
+    return this->theObject != other.theObject;
   }
 };
 }; // namespace gctools
@@ -619,9 +619,7 @@ public:
           Any ptr passed to this constructor must have the CONS tag.
         */
   explicit inline smart_ptr(Tagged ptr) : theObject(reinterpret_cast<core::Cons_O*>(ptr)) {
-    GCTOOLS_ASSERT(!ptr || tagged_consp<core::Cons_O*>(reinterpret_cast<core::Cons_O*>(ptr))
-                   //			   ||tagged_nilp<core::Cons_O>(reinterpret_cast<core::Cons_O*>(ptr))
-    );
+    GCTOOLS_ASSERT(!ptr || tagged_consp<core::Cons_O*>(reinterpret_cast<core::Cons_O*>(ptr)));
   };
 
 public:
