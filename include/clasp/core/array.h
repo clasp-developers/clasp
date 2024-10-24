@@ -26,6 +26,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
+#include <algorithm> // range algorithms
 #include <clasp/core/array.fwd.h>
 #include <clasp/core/clasp_gmpxx.h>
 #include <clasp/core/object.h>
@@ -150,48 +151,6 @@ namespace core {
 [[noreturn]] void notVectorError(T_sp array);
 
 size_t calculateArrayTotalSizeAndValidateDimensions(List_sp dim_desig, size_t& rank);
-
-template <class SimpleType> Array_sp templated_ranged_reverse(const SimpleType& me, size_t start, size_t end) {
-  size_t new_length = end - start;
-  size_t last_index = end - 1;
-  gctools::smart_ptr<SimpleType> newVec = SimpleType::make(new_length);
-  for (size_t i = 0; i < new_length; ++i) {
-    (*newVec)[i] = me[last_index - i];
-  }
-  return newVec;
-}
-template <class T> void templated_swapElements(T& x, size_t xi, size_t yi) {
-  typename T::simple_element_type u = x[xi];
-  x[xi] = x[yi];
-  x[yi] = u;
-}
-template <class MaybeTemplatedSimpleType>
-Array_sp templated_ranged_nreverse(MaybeTemplatedSimpleType& me, size_t start, size_t end) {
-  size_t length = end - start;
-  size_t halfpoint = length / 2;
-  size_t lastElement = end - 1;
-  for (size_t i = 0; i < halfpoint; ++i) {
-    templated_swapElements(me, start + i, lastElement - i);
-  }
-  return me.asSmartPtr();
-}
-
-template <class T> Array_sp templated_reverse_VectorNs(T& me) {
-  AbstractSimpleVector_sp bsv;
-  size_t start, end;
-  me.asAbstractSimpleVectorRange(bsv, start, end);
-  auto sv = gc::As_unsafe<gctools::smart_ptr<typename T::simple_type>>(bsv);
-  return templated_ranged_reverse<typename T::simple_type>(*sv, start, end);
-}
-
-template <class T> void templated_nreverse_VectorNs(T& me) {
-  AbstractSimpleVector_sp bsv;
-  size_t start, end;
-  me.asAbstractSimpleVectorRange(bsv, start, end);
-  auto sv = gc::As_unsafe<gctools::smart_ptr<typename T::simple_type>>(bsv);
-  templated_ranged_nreverse(*sv, start, end);
-}
-
 }; // namespace core
 
 namespace core {
@@ -551,9 +510,14 @@ public:
     }
   };
   virtual Array_sp reverse() const final {
-    return templated_ranged_reverse<leaf_type>(*reinterpret_cast<const leaf_type*>(this), 0, this->length());
+    auto result = leaf_type::make(this->length());
+    std::ranges::reverse_copy(*this, result.begin());
+    return result;
   };
-  virtual Array_sp nreverse() final { return templated_ranged_nreverse(*this, 0, this->length()); };
+  virtual Array_sp nreverse() final {
+    std::ranges::reverse(*this);
+    return this->asSmartPtr();
+  }
   CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final { (*this)[idx] = leaf_type::from_object(value); }
   CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final { return leaf_type::to_object((*this)[idx]); }
   CL_METHOD_OVERLOAD virtual void vset(size_t idx, T_sp value) final { (*this)[idx] = leaf_type::from_object(value); }
@@ -587,14 +551,15 @@ public:
   typedef gctools::GCBitUnitArray_moveable<BitUnitBitWidth, Signedp> bitunit_array_type;
   typedef typename bitunit_array_type::value_type value_type;
   typedef value_type simple_element_type;
-  // Iterators very hacky.
-  typedef value_type* iterator;
-  typedef const value_type* const_iterator;
   /* See GCBitUnitArray_moveable - short version is, we don't have pointers into
    * sub-byte arrays for obvious reasons, so we use proxies. */
   typedef typename bitunit_array_type::reference reference_type;
   typedef value_type const_reference_type;
-
+  typedef typename bitunit_array_type::iterator iterator;
+  typedef typename bitunit_array_type::const_iterator const_iterator;
+  static_assert(std::random_access_iterator<iterator>);
+  static_assert(std::random_access_iterator<const_iterator>);
+  static_assert(std::indirectly_copyable<const_iterator, iterator>);
 public:
   // E.g., for three bits, we range from -4 to 3 signed, or 0 to 7 unsigned.
   static const value_type min_value = Signedp ? -(1 << (BitUnitBitWidth - 1)) : 0;
@@ -622,6 +587,10 @@ public:
     BOUNDS_ASSERT_LT(index, this->length());
     return this->_Data.ref(index);
   }
+  iterator begin() { return this->_Data.begin(); }
+  iterator end() { return this->_Data.end(); }
+  const_iterator begin() const { return this->_Data.begin(); }
+  const_iterator end() const { return this->_Data.end(); }
   bit_array_word* bytes() { return &this->_Data[0]; }
   size_t byteslen() { return bitunit_array_type::nwords_for_length(this->length()); }
   // Given an initial element, replicate it into a bit_array_word. E.g. 01 becomes 01010101...01
@@ -646,9 +615,14 @@ public:
   static value_type default_initial_element(void) { return 0; }
   virtual T_sp element_type() const override final { return leaf_type::static_element_type(); }
   virtual Array_sp reverse() const final {
-    return templated_ranged_reverse<leaf_type>(*reinterpret_cast<const leaf_type*>(this), 0, this->length());
+    auto result = leaf_type::make(this->length());
+    std::ranges::reverse_copy(*this, result.begin());
+    return result;
   }
-  virtual Array_sp nreverse() final { return templated_ranged_nreverse(*this, 0, this->length()); }
+  virtual Array_sp nreverse() final {
+    std::ranges::reverse(*this);
+    return this->asSmartPtr();
+  }
   CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final { (*this)[idx] = from_object(value); }
   CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final { return to_object((*this)[idx]); }
   CL_METHOD_OVERLOAD virtual void vset(size_t idx, T_sp value) final { (*this)[idx] = from_object(value); }
@@ -691,10 +665,10 @@ public:
 
 public:
   // The types that define what this class does
-  typedef MyParentType Base;
-  typedef MyArrayType /*eg: ComplexVector_T_O*/ my_array_type;
-  typedef MySimpleArrayType /*eg: ComplexVector_T_O*/ my_simple_array_type;
-  typedef MySimpleType /*eg: SimpleVector_O*/ simple_type;
+  typedef MyParentType Base; /* e.g. MDArray_O */
+  typedef MyArrayType /*eg: MDArrayT_O */ my_array_type;
+  typedef MySimpleArrayType /*eg: SimpleMDArrayT_O */ my_simple_array_type;
+  typedef MySimpleType /*eg: SimpleVector_O */ simple_type;
   typedef typename simple_type::simple_element_type /*eg: T_sp*/ simple_element_type;
   typedef typename simple_type::reference_type /* e.g. T_sp& */ reference_type;
   typedef typename simple_type::const_reference_type /* e.g. const T_sp & */ const_reference_type;
@@ -753,27 +727,50 @@ public:
 
 public:
   // Iterators
-  iterator begin() { return &(*this)[0]; };
-  iterator end() { return &(*this)[this->length()]; };
-  const_iterator begin() const { return &(*this)[0]; };
-  const_iterator end() const { return &(*this)[this->length()]; };
+  iterator begin() {
+    Array_sp data = this->_Data;
+    size_t offset = this->_DisplacedIndexOffset;
+    while (!data.isA<simple_type>()) [[unlikely]] {
+      // if it's not simple, it's either a complex vector, a simple mdarray, or an
+      // mdarray, and all of those are subclasses of mdarray.
+      offset += data.as_unsafe<Base>()->_DisplacedIndexOffset;
+      data = data.as_unsafe<Base>()->_Data;
+    }
+    return data.as_unsafe<simple_type>().begin() + offset;
+  };
+  iterator end() { return begin() + this->arrayTotalSize(); };
+  const_iterator begin() const {
+    Array_sp data = this->_Data;
+    size_t offset = this->_DisplacedIndexOffset;
+    while (!data.isA<simple_type>()) [[unlikely]] {
+      offset += data.as_unsafe<Base>()->_DisplacedIndexOffset;
+      data = data.as_unsafe<Base>()->_Data;
+    }
+    const gc::smart_ptr<simple_type> s = data.as_unsafe<simple_type>();
+    return s.begin() + offset;
+  }
+  const_iterator end() const { return begin() + this->arrayTotalSize(); };
 
 public:
   void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
     LIKELY_if(gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) {
       sv = gc::As<AbstractSimpleVector_sp>(this->_Data);
       start = this->_DisplacedIndexOffset;
-      end = start + this->length();
+      end = start + this->arrayTotalSize();
     }
     else {
       this->_Data->asAbstractSimpleVectorRange(sv, start, end);
       start += this->_DisplacedIndexOffset;
-      end = start + this->length();
+      end = start + this->arrayTotalSize();
     }
   }
-  virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
+  virtual Array_sp reverse() const final {
+    auto result = simple_type::make(this->length());
+    std::ranges::reverse_copy(*this, result.begin());
+    return result;
+  }
   virtual Array_sp nreverse() final {
-    templated_nreverse_VectorNs(*this);
+    std::ranges::reverse(*this);
     return this->asSmartPtr();
   };
   virtual void resize(size_t size, T_sp initElement = nil<T_O>(), bool initElementSupplied = false) final {
@@ -856,10 +853,29 @@ public:
 
 public:
   // Iterators
-  iterator begin() { return &(*this)[0]; };
-  iterator end() { return &(*this)[this->length()]; };
-  const_iterator begin() const { return &(*this)[0]; };
-  const_iterator end() const { return &(*this)[this->length()]; };
+  iterator begin() {
+    Array_sp data = this->_Data;
+    size_t offset = this->_DisplacedIndexOffset;
+    while (!data.isA<simple_type>()) [[unlikely]] {
+      // if it's not simple, it's either a complex vector, a simple mdarray, or an
+      // mdarray, and all of those are subclasses of mdarray.
+      offset += data.as_unsafe<Base>()->_DisplacedIndexOffset;
+      data = data.as_unsafe<Base>()->_Data;
+    }
+    return data.as_unsafe<simple_type>().begin() + offset;
+  };
+  iterator end() { return begin() + this->length(); };
+  const_iterator begin() const {
+    Array_sp data = this->_Data;
+    size_t offset = this->_DisplacedIndexOffset;
+    while (!data.isA<simple_type>()) [[unlikely]] {
+      offset += data.as_unsafe<Base>()->_DisplacedIndexOffset;
+      data = data.as_unsafe<Base>()->_Data;
+    }
+    const gc::smart_ptr<simple_type> s = data.as_unsafe<simple_type>();
+    return s.begin() + offset;
+  };
+  const_iterator end() const { return begin() + this->length(); };
 
 public:
   void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
@@ -875,9 +891,13 @@ public:
       return;
     }
   }
-  virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
+  virtual Array_sp reverse() const final {
+    auto result = simple_type::make(this->length());
+    std::ranges::reverse_copy(*this, result.begin());
+    return result;
+  }
   virtual Array_sp nreverse() final {
-    templated_nreverse_VectorNs(*this);
+    std::ranges::reverse(*this);
     return this->asSmartPtr();
   };
   virtual void resize(size_t size, T_sp initElement = nil<T_O>(), bool initElementSupplied = false) final {
@@ -978,15 +998,24 @@ public:
 
 public:
   // Iterators
-  iterator begin() { return &(*this)[0]; };
-  iterator end() { return &(*this)[this->length()]; };
-  const_iterator begin() const { return &(*this)[0]; };
-  const_iterator end() const { return &(*this)[this->length()]; };
+  iterator begin() { return this->_Data.template as_assert<simple_type>().begin(); }
+  iterator end() { return begin() + this->arrayTotalSize(); };
+  const_iterator begin() const {
+    // FIXME: const overloading for as_assert would make this easier
+    // but require const correctness in a lot of other places.
+    const auto dat = this->_Data.template as_assert<simple_type>();
+    return dat.begin();
+  }
+  const_iterator end() const { return begin() + this->arrayTotalSize(); };
 
 public:
-  virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
+  virtual Array_sp reverse() const final {
+    auto result = simple_type::make(this->length());
+    std::ranges::reverse_copy(*this, result.begin());
+    return result;
+  }
   virtual Array_sp nreverse() final {
-    templated_nreverse_VectorNs(*this);
+    std::ranges::reverse(*this);
     return this->asSmartPtr();
   };
   virtual void resize(size_t size, T_sp initElement = nil<T_O>(), bool initElementSupplied = false) final {

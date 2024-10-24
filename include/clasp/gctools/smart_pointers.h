@@ -178,10 +178,13 @@ public:
     return untag_object()->end();
   }
   decltype(auto) begin() const requires std::ranges::range<const Type> {
-    return untag_object()->begin();
+    // FIXME: const overload untag_object to avoid this crap
+    const Type* p = untag_object();
+    return p->begin();
   }
   decltype(auto) end() const requires std::ranges::range<const Type> {
-    return untag_object()->end();
+    const Type* p = untag_object();
+    return p->end();
   }
 
   /*! If theObject!=NULL then return true */
