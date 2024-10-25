@@ -696,36 +696,6 @@ public: // make array
   }
 
 public:
-  // Primary functions/operators for operator[] that handle displacement
-  // There's a non-const and a const version of each
-  template <typename array_type> reference_type unsafe_indirectReference(size_t index) {
-    array_type& vecns = *reinterpret_cast<array_type*>(&*this->_Data);
-    return vecns[this->_DisplacedIndexOffset + index];
-  }
-  reference_type operator[](size_t index) {
-    BOUNDS_ASSERT(index < this->arrayTotalSize());
-    LIKELY_if(gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) {
-      return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset + index];
-    }
-    if (gc::IsA<my_smart_ptr_type>(this->_Data))
-      return this->unsafe_indirectReference<my_array_type>(index);
-    return this->unsafe_indirectReference<my_simple_array_type>(index);
-  }
-  template <typename array_type> const_reference_type unsafe_indirectReference(size_t index) const {
-    array_type& vecns = *reinterpret_cast<array_type*>(&*this->_Data);
-    return vecns[this->_DisplacedIndexOffset + index];
-  }
-  const_reference_type operator[](size_t index) const {
-    BOUNDS_ASSERT(index < this->arrayTotalSize());
-    LIKELY_if(gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) {
-      return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset + index];
-    }
-    if (gc::IsA<my_smart_ptr_type>(this->_Data))
-      return this->unsafe_indirectReference<my_array_type>(index);
-    return this->unsafe_indirectReference<my_simple_array_type>(index);
-  }
-
-public:
   // Iterators
   iterator begin() {
     Array_sp data = this->_Data;
@@ -750,6 +720,14 @@ public:
     return s.begin() + offset;
   }
   const_iterator end() const { return begin() + this->arrayTotalSize(); };
+  reference_type operator[](size_t index) {
+    BOUNDS_ASSERT(index < this->arrayTotalSize());
+    return this->begin()[index];
+  }
+  const_reference_type operator[](size_t index) const {
+    BOUNDS_ASSERT(index < this->arrayTotalSize());
+    return this->begin()[index];
+  }
 
 public:
   void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
@@ -817,39 +795,13 @@ public:
   typedef gctools::smart_ptr<my_array_type> my_smart_ptr_type;
   typedef gctools::GCArray_moveable<simple_element_type> simple_vector_type;
   typedef typename MDArray_O::value_type dimension_element_type;
+  static_assert(std::random_access_iterator<iterator>);
+  static_assert(std::random_access_iterator<const_iterator>);
 
 public:
   // vector
   template_Vector(size_t dimension, T_sp fillPointer, Array_sp data, bool displacedToP, Fixnum_sp displacedIndexOffset)
       : Base(dimension, fillPointer, data, displacedToP, displacedIndexOffset){};
-
-public:
-  // Primary functions/operators for operator[] that handle displacement
-  // There's a non-const and a const version of each
-  reference_type unsafe_indirectReference(size_t index) {
-    my_array_type& vecns = *reinterpret_cast<my_array_type*>(&*this->_Data);
-    return vecns[this->_DisplacedIndexOffset + index];
-  }
-  reference_type operator[](size_t index) {
-    BOUNDS_ASSERT(index < this->arrayTotalSize());
-    // FIXME: This is sketchy - we treat everything but a simple vector as being a complex vector.
-    // ASSUMING ComplexVector_O and MDArray_O have the same data layout, this should work.
-    // The definition in template_Array is similarly sketchy in the case of an mdarray displaced
-    // to a complex vector.
-    LIKELY_if(gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) return (
-        *reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset + index];
-    else return this->unsafe_indirectReference(index);
-  }
-  const_reference_type unsafe_indirectReference(size_t index) const {
-    my_array_type& vecns = *reinterpret_cast<my_array_type*>(&*this->_Data);
-    return vecns[this->_DisplacedIndexOffset + index];
-  }
-  const_reference_type operator[](size_t index) const {
-    BOUNDS_ASSERT(index < this->arrayTotalSize());
-    LIKELY_if(gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) return (
-        *reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset + index];
-    else return this->unsafe_indirectReference(index);
-  }
 
 public:
   // Iterators
@@ -876,6 +828,14 @@ public:
     return s.begin() + offset;
   };
   const_iterator end() const { return begin() + this->length(); };
+  reference_type operator[](size_t index) {
+    BOUNDS_ASSERT(index < this->arrayTotalSize());
+    return this->begin()[index];
+  }
+  const_reference_type operator[](size_t index) const {
+    BOUNDS_ASSERT(index < this->arrayTotalSize());
+    return this->begin()[index];
+  }
 
 public:
   void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
@@ -985,18 +945,6 @@ public: // make array
   }
 
 public:
-  // Primary functions/operators for operator[] that handle displacement
-  // There's a non-const and a const version of each
-  reference_type operator[](size_t index) {
-    BOUNDS_ASSERT(index < this->arrayTotalSize());
-    return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[index];
-  }
-  const_reference_type operator[](size_t index) const {
-    BOUNDS_ASSERT(index < this->arrayTotalSize());
-    return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[index];
-  }
-
-public:
   // Iterators
   iterator begin() { return this->_Data.template as_assert<simple_type>().begin(); }
   iterator end() { return begin() + this->arrayTotalSize(); };
@@ -1007,6 +955,14 @@ public:
     return dat.begin();
   }
   const_iterator end() const { return begin() + this->arrayTotalSize(); };
+  reference_type operator[](size_t index) {
+    BOUNDS_ASSERT(index < this->arrayTotalSize());
+    return this->begin()[index];
+  }
+  const_reference_type operator[](size_t index) const {
+    BOUNDS_ASSERT(index < this->arrayTotalSize());
+    return this->begin()[index];
+  }
 
 public:
   virtual Array_sp reverse() const final {
