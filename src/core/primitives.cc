@@ -1891,16 +1891,10 @@ CL_DEFUN SimpleVector_byte8_t_sp core__base_string_to_octets(T_sp tarray) {
   }
   if (gc::IsA<SimpleBaseString_sp>(tarray)) {
     SimpleBaseString_sp sarray = gc::As_unsafe<SimpleBaseString_sp>(tarray);
-    SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make(sarray->length(), 0, false, sarray->length(), &(*sarray)[0]);
-    return result;
+    return SimpleVector_byte8_t_O::make(sarray);
   } else if (gc::IsA<Str8Ns_sp>(tarray)) {
     Str8Ns_sp sarray = gc::As_unsafe<Str8Ns_sp>(tarray);
-    AbstractSimpleVector_sp basesv;
-    size_t start, end;
-    sarray->asAbstractSimpleVectorRange(basesv, start, end);
-    SimpleBaseString_sp sbs = gc::As_unsafe<SimpleBaseString_sp>(basesv);
-    SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make((end - start), 0, false, (end - start), &(*sbs)[start]);
-    return result;
+    return SimpleVector_byte8_t_O::make(sarray);
   }
   SIMPLE_ERROR("Don't get here");
 }
@@ -1909,23 +1903,10 @@ DOCGROUP(clasp);
 CL_DEFUN SimpleVector_byte8_t_sp core__character_string_that_fits_in_base_string_to_octets(T_sp tarray) {
   if (gc::IsA<SimpleCharacterString_sp>(tarray)) {
     SimpleCharacterString_sp sarray = gc::As_unsafe<SimpleCharacterString_sp>(tarray);
-    SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make(sarray->length(), 0, false);
-    for (int i = 0; i < sarray->length(); ++i) {
-      int c = sarray[i];
-      result[i] = c;
-    }
-    return result;
+    return SimpleVector_byte8_t_O::make(sarray);
   } else if (gc::IsA<StrWNs_sp>(tarray)) {
     StrWNs_sp sarray = gc::As_unsafe<StrWNs_sp>(tarray);
-    AbstractSimpleVector_sp basesv;
-    size_t start, end;
-    sarray->asAbstractSimpleVectorRange(basesv, start, end);
-    SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make((end - start), 0, false);
-    for (int i = 0; i < sarray->length(); ++i) {
-      int c = sarray[i];
-      result[i] = c;
-    }
-    return result;
+    return SimpleVector_byte8_t_O::make(sarray);
   }
   SIMPLE_ERROR("Handle Don't get here");
 }

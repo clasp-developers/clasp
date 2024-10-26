@@ -479,6 +479,14 @@ public:
   template_SimpleVector(size_t length, value_type initialElement = value_type(), bool initialElementSupplied = false,
                         size_t initialContentsSize = 0, const value_type* initialContents = NULL)
       : Base(), _Data(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};
+  template_SimpleVector(size_t length, const value_type& initialElement)
+    : Base(), _Data(length, initialElement) {};
+  template <std::ranges::sized_range R>
+  template_SimpleVector(R&& initialContents)
+    : Base(), _Data(initialContents) {};
+  template <std::input_iterator I, std::sized_sentinel_for<I> S>
+  template_SimpleVector(I first, S last)
+    : Base(), _Data(first, last) {};
 
 public:
   static void never_invoke_allocator() { gctools::GCAbstractAllocator<template_SimpleVector>::never_invoke_allocator(); };

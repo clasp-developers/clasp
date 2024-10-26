@@ -77,6 +77,20 @@ public:
     }
 #endif
   }
+  GCArray_moveable(int64_t size, const T& initialElement)
+    : _MaybeSignedLength(size) {
+    std::fill(_Data, _Data + size, initialElement);
+  }
+  template <std::ranges::sized_range R>
+  GCArray_moveable(R&& initialContents)
+    : _MaybeSignedLength(std::ranges::size(initialContents)) {
+    std::ranges::copy(initialContents, _Data);
+  }
+  template <std::input_iterator I, std::sized_sentinel_for<I> S>
+  GCArray_moveable(I first, S last)
+    : _MaybeSignedLength(last - first) {
+    std::ranges::copy(first, last, _Data);
+  }
 
 public:
   inline uint64_t size() const { return this->length(); };
