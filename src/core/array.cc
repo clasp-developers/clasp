@@ -1221,87 +1221,55 @@ CL_DEFUN T_mv ext__pinned_objects_funcall(List_sp objects, T_sp thunk) {
 CL_DEFUN bool ext__array_no_nans_p(Array_sp array) {
   if (gc::IsA<SimpleVector_float_sp>(array)) {
     auto sa = gc::As_unsafe<SimpleVector_float_sp>(array);
-    for (size_t ii = 0; ii < sa->length(); ii++)
-      if (std::isnan((*sa)[ii]))
-        return false;
+    for (auto const& e : sa) if (std::isnan(e)) return false;
   } else if (gc::IsA<MDArray_float_sp>(array)) {
     auto sa = gc::As_unsafe<MDArray_float_sp>(array);
-    for (size_t ii = 0; ii < sa->length(); ii++)
-      if (std::isnan((*sa)[ii]))
-        return false;
+    for (auto const& e : sa) if (std::isnan(e)) return false;
   } else if (gc::IsA<SimpleMDArray_float_sp>(array)) {
     auto sa = gc::As_unsafe<SimpleMDArray_float_sp>(array);
-    for (size_t ii = 0; ii < sa->length(); ii++)
-      if (std::isnan((*sa)[ii]))
-        return false;
+    for (auto const& e : sa) if (std::isnan(e)) return false;
   } else if (gc::IsA<ComplexVector_float_sp>(array)) {
     auto sa = gc::As_unsafe<ComplexVector_float_sp>(array);
-    for (size_t ii = 0; ii < sa->length(); ii++)
-      if (std::isnan((*sa)[ii]))
-        return false;
+    for (auto const& e : sa) if (std::isnan(e)) return false;
   } else if (gc::IsA<SimpleVector_double_sp>(array)) {
     auto sa = gc::As_unsafe<SimpleVector_double_sp>(array);
-    for (size_t ii = 0; ii < sa->length(); ii++)
-      if (std::isnan((*sa)[ii]))
-        return false;
+    for (auto const& e : sa) if (std::isnan(e)) return false;
   } else if (gc::IsA<MDArray_double_sp>(array)) {
     auto sa = gc::As_unsafe<MDArray_double_sp>(array);
-    for (size_t ii = 0; ii < sa->length(); ii++)
-      if (std::isnan((*sa)[ii]))
-        return false;
+    for (auto const& e : sa) if (std::isnan(e)) return false;
   } else if (gc::IsA<SimpleMDArray_double_sp>(array)) {
     auto sa = gc::As_unsafe<SimpleMDArray_double_sp>(array);
-    for (size_t ii = 0; ii < sa->length(); ii++)
-      if (std::isnan((*sa)[ii]))
-        return false;
+    for (auto const& e : sa) if (std::isnan(e)) return false;
   } else if (gc::IsA<ComplexVector_double_sp>(array)) {
     auto sa = gc::As_unsafe<ComplexVector_double_sp>(array);
-    for (size_t ii = 0; ii < sa->length(); ii++)
-      if (std::isnan((*sa)[ii]))
-        return false;
+    for (auto const& e : sa) if (std::isnan(e)) return false;
 #ifdef CLASP_SHORT_FLOAT
   } else if (gc::IsA<SimpleVector_short_float_sp>(array)) {
     auto sa = gc::As_unsafe<SimpleVector_short_float_sp>(array);
-    for (size_t ii = 0; ii < sa->length(); ii++)
-      if (std::isnan((*sa)[ii]))
-        return false;
+    for (auto const& e : sa) if (std::isnan(e)) return false;
   } else if (gc::IsA<MDArray_short_float_sp>(array)) {
     auto sa = gc::As_unsafe<MDArray_short_float_sp>(array);
-    for (size_t ii = 0; ii < sa->length(); ii++)
-      if (std::isnan((*sa)[ii]))
-        return false;
+    for (auto const& e : sa) if (std::isnan(e)) return false;
   } else if (gc::IsA<SimpleMDArray_short_float_sp>(array)) {
     auto sa = gc::As_unsafe<SimpleMDArray_short_float_sp>(array);
-    for (size_t ii = 0; ii < sa->length(); ii++)
-      if (std::isnan((*sa)[ii]))
-        return false;
+    for (auto const& e : sa) if (std::isnan(e)) return false;
   } else if (gc::IsA<ComplexVector_short_float_sp>(array)) {
     auto sa = gc::As_unsafe<ComplexVector_short_float_sp>(array);
-    for (size_t ii = 0; ii < sa->length(); ii++)
-      if (std::isnan((*sa)[ii]))
-        return false;
+    for (auto const& e : sa) if (std::isnan(e)) return false;
 #endif
 #ifdef CLASP_LONG_FLOAT
   } else if (gc::IsA<SimpleVector_long_float_sp>(array)) {
     auto sa = gc::As_unsafe<SimpleVector_long_float_sp>(array);
-    for (size_t ii = 0; ii < sa->length(); ii++)
-      if (std::isnan((*sa)[ii]))
-        return false;
+    for (auto const& e : sa) if (std::isnan(e)) return false;
   } else if (gc::IsA<MDArray_long_float_sp>(array)) {
     auto sa = gc::As_unsafe<MDArray_long_float_sp>(array);
-    for (size_t ii = 0; ii < sa->length(); ii++)
-      if (std::isnan((*sa)[ii]))
-        return false;
+    for (auto const& e : sa) if (std::isnan(e)) return false;
   } else if (gc::IsA<SimpleMDArray_long_float_sp>(array)) {
     auto sa = gc::As_unsafe<SimpleMDArray_long_float_sp>(array);
-    for (size_t ii = 0; ii < sa->length(); ii++)
-      if (std::isnan((*sa)[ii]))
-        return false;
+    for (auto const& e : sa) if (std::isnan(e)) return false;
   } else if (gc::IsA<ComplexVector_long_float_sp>(array)) {
     auto sa = gc::As_unsafe<ComplexVector_long_float_sp>(array);
-    for (size_t ii = 0; ii < sa->length(); ii++)
-      if (std::isnan((*sa)[ii]))
-        return false;
+    for (auto const& e : sa) if (std::isnan(e)) return false;
 #endif
   }
   return true;

@@ -1,6 +1,5 @@
 #pragma once
 
-#if defined(USE_BOEHM)
 #if TAG_BITS == 3
 #define ALIGNED_GC_MALLOC(sz) MAYBE_MONITOR_ALLOC(GC_MALLOC(sz), sz)
 #define ALIGNED_GC_MALLOC_ATOMIC(sz) MAYBE_MONITOR_ALLOC(GC_MALLOC_ATOMIC(sz), sz)
@@ -19,11 +18,9 @@
 #define ALIGNED_GC_MALLOC_UNCOLLECTABLE(sz)                                                                                        \
   MAYBE_VERIFY_ALIGNMENT((void*)gctools::AlignUp((uintptr_t)GC_MALLOC_UNCOLLECTABLE(sz + Alignment())))
 #endif
-#endif
 
 namespace gctools {
-#ifdef USE_BOEHM
-template <typename Stage, typename Cons, typename... ARGS> inline Cons* do_boehm_cons_allocation(size_t size, ARGS&&... args) {
+template <typename Stage, typename Cons, typename... ARGS> inline Cons* do_cons_allocation(size_t size, ARGS&&... args) {
   RAIIAllocationStage<Stage> stage(my_thread_low_level);
 #ifdef USE_PRECISE_GC
   ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(
@@ -39,11 +36,9 @@ template <typename Stage, typename Cons, typename... ARGS> inline Cons* do_boehm
   new (cons) Cons(std::forward<ARGS>(args)...);
   return cons;
 }
-#endif
 
-#ifdef USE_BOEHM
 template <typename Stage = RuntimeStage>
-inline Header_s* do_boehm_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
+inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   RAIIAllocationStage<Stage> stage(my_thread_low_level);
   size_t true_size = size;
 #ifdef DEBUG_GUARD
@@ -66,10 +61,8 @@ inline Header_s* do_boehm_atomic_allocation(const Header_s::StampWtagMtag& the_h
 #endif
   return header;
 };
-#endif
 
-#ifdef USE_BOEHM
-inline Header_s* do_boehm_weak_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
+inline Header_s* do_weak_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   RAII_DISABLE_INTERRUPTS();
   size_t true_size = size;
 #ifdef USE_PRECISE_GC
@@ -87,11 +80,9 @@ inline Header_s* do_boehm_weak_allocation(const Header_s::StampWtagMtag& the_hea
 #endif
   return header;
 };
-#endif
 
-#ifdef USE_BOEHM
 template <typename Stage = RuntimeStage>
-inline Header_s* do_boehm_general_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
+inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   RAIIAllocationStage<Stage> stage(my_thread_low_level);
   size_t true_size = size;
 #ifdef DEBUG_GUARD
@@ -118,10 +109,8 @@ inline Header_s* do_boehm_general_allocation(const Header_s::StampWtagMtag& the_
 #endif
   return header;
 };
-#endif
 
-#ifdef USE_BOEHM
-inline Header_s* do_boehm_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
+inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   RAII_DISABLE_INTERRUPTS();
   size_t true_size = size;
 #ifdef DEBUG_GUARD
@@ -147,5 +136,4 @@ inline Header_s* do_boehm_uncollectable_allocation(const Header_s::StampWtagMtag
 #endif
   return header;
 };
-#endif
 }; // namespace gctools

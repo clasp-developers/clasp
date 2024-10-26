@@ -542,69 +542,6 @@ typedef gctools::smart_ptr<core::T_O> MappingValueType;
 typedef gctools::Mapping<BucketValueType, BucketValueType, gctools::WeakLinks> WeakMappingObjectType;
 typedef gctools::Mapping<BucketValueType, BucketValueType, gctools::StrongLinks> StrongMappingObjectType;
 
-struct WeakPointer : public WeakObject {
-#ifdef USE_BACKCASTABLE_POINTERS
-  typedef gctools::tagged_backcastable_base_ptr<core::T_O> value_type;
-#else
-  typedef gctools::smart_ptr<core::T_O> value_type;
-#endif
-
-  WeakPointer(const value_type& val) : value(val){};
-
-  value_type value;
-};
-
-struct WeakPointerManager {
-  WeakPointerManager(){};
-  typedef typename gctools::WeakPointer::value_type value_type;
-  typedef WeakPointerManager MyType;
-  typedef gctools::GCWeakPointerAllocator<WeakPointer> AllocatorType;
-
-  WeakPointerManager(const value_type& val) {
-    if (!val.objectp()) {
-      printf("%s:%d WeakPointerManager - only  objectp() objects can be added to Mapping\n", __FILE__, __LINE__);
-      abort();
-    }
-  }
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wexceptions"
-  virtual ~WeakPointerManager() {
-#if defined(USE_BOEHM)
-    GCTOOLS_ASSERT(this->pointer->value.objectp());
-    if (!unboundOrDeletedOrSplatted(this->pointer->value)) {
-      int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->pointer->value.rawRef_()));
-      if (!result) {
-        printf("%s:%d The link was not registered as a disappearing link!", __FILE__, __LINE__);
-        abort();
-      }
-    }
-#else
-    MISSING_GC_SUPPORT();
-#endif
-  };
-#pragma clang diagnostic pop
-
-  // This will need to be a tagged_backcastable_base_ptr
-  gctools::tagged_pointer<WeakPointer> pointer;
-  core::T_mv value() const {
-    core::T_mv result_mv;
-    safeRun<void()>([&result_mv, this]() -> void {
-      if ((bool)this->pointer->value) {
-        result_mv = Values(gctools::smart_ptr<core::T_O>(this->pointer->value), core::lisp_true());
-        return;
-      }
-      result_mv = Values(nil<core::T_O>(), nil<core::T_O>());
-    });
-    return result_mv;
-  }
-
-  bool valid() const {
-    bool result;
-    safeRun<void()>([&result, this]() -> void { result = (bool)this->pointer->value; });
-    return result;
-  }
-};
-
 template <typename FROM>
 struct TaggedCast<gctools::BucketsBase<gctools::smart_ptr<core::T_O>, gctools::smart_ptr<core::T_O>>*, FROM> {
   typedef gctools::BucketsBase<gctools::smart_ptr<core::T_O>, gctools::smart_ptr<core::T_O>>* ToType;

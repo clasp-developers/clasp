@@ -203,8 +203,8 @@ CL_DEFUN Vector_sp core__hash_table_pairs(HashTableBase_sp hash_table_base) {
     for (size_t it(0), itEnd(hash_table->_Table.size()); it < itEnd; ++it) {
       KeyValuePair& entry = hash_table->_Table[it];
       if (!entry._Key.no_keyp() && !entry._Key.deletedp()) {
-        (*keyvalues)[idx++] = entry._Key;
-        (*keyvalues)[idx++] = entry._Value;
+        keyvalues[idx++] = entry._Key;
+        keyvalues[idx++] = entry._Value;
       }
     }
     return keyvalues;

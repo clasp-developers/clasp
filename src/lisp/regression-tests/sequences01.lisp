@@ -353,19 +353,19 @@
              (let ((new (nreverse array)))
                (array-has-fill-pointer-p new))))
 
-(test-true reverse-1
-           (equalp #(3 2 1)
-                   (reverse
-                    (make-array 3 :displaced-to
-                                (make-array 5 :initial-contents (list 0 1 2 3 4))
-                                  :displaced-index-offset 1))))
+(test reverse-1
+      (reverse
+       (make-array 3 :displaced-to
+                   (make-array 5 :initial-contents (list 0 1 2 3 4))
+                     :displaced-index-offset 1))
+      (#(3 2 1)))
 
-(test-true nreverse-2
-           (equalp #(3 2 1)
-                   (nreverse
-                    (make-array 3 :displaced-to
-                                (make-array 5 :initial-contents (list 0 1 2 3 4))
-                                  :displaced-index-offset 1))))
+(test nreverse-2
+      (nreverse
+       (make-array 3 :displaced-to
+                   (make-array 5 :initial-contents (list 0 1 2 3 4))
+                     :displaced-index-offset 1))
+      (#(3 2 1)))
 
 (test assoc-1
       (locally (declare (notinline assoc))

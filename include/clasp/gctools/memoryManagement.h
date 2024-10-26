@@ -53,7 +53,6 @@ struct ClaspInfo {
   int _argc;
   const char** _argv;
   size_t _stackMax;
-  core::ThreadLocalState* _threadLocalStateP;
   core::LispHolder* _lispHolder;
   bool _mpiEnabled;
   int _mpiRank;
@@ -155,7 +154,6 @@ extern void obj_dump_base(void* base);
 };
 
 namespace gctools {
-extern int global_signalTrap;
 extern bool global_debuggerOnSIGABRT; // If this is false then SIGABRT is processed normally and it will lead to termination of the
                                       // program. See core__exit!
 };                                    // namespace gctools
@@ -382,8 +380,7 @@ public:
     StrongBucketKind = ((2 << mtag_shift) | weak_mtag),
     WeakMappingKind = ((3 << mtag_shift) | weak_mtag),
     StrongMappingKind = ((4 << mtag_shift) | weak_mtag),
-    WeakPointerKind = ((5 << mtag_shift) | weak_mtag),
-    MaxWeakKind = ((6 << mtag_shift) | weak_mtag)
+    MaxWeakKind = ((5 << mtag_shift) | weak_mtag)
   } WeakKinds;
 
   //

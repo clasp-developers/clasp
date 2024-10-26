@@ -56,40 +56,6 @@ Layout_code* get_stamp_layout_codes() {
 };
 }; // namespace gctools
 
-#if 0 /// Moved to exposeFunctions1.cc
-
-#ifndef SCRAPING
-#define EXPOSE_FUNCTION_SIGNATURES
-#include INIT_FUNCTIONS_INC_H
-#undef EXPOSE_FUNCTION_SIGNATURES
-#endif
-
-#ifndef SCRAPING
-#define EXPOSE_FUNCTION_BINDINGS_HELPERS
-#undef EXPOSE_FUNCTION_BINDINGS
-#include INIT_FUNCTIONS_INC_H
-#undef EXPOSE_FUNCTION_BINDINGS_HELPERS
-#endif
-
-extern "C" {
-
-#ifndef SCRAPING
-#include C_WRAPPERS_H
-#endif
-};
-
-void initialize_exposeFunctions1()
-{
-//  printf("%s:%d About to initialize_functions\n", __FILE__, __LINE__ );
-#ifndef SCRAPING
-#define EXPOSE_FUNCTION_BINDINGS
-#include INIT_FUNCTIONS_INC_H
-#undef EXPOSE_FUNCTION_BINDINGS
-#endif
-};
-
-#endif // Moved to exposeFunctions1.cc
-
 extern void initialize_exposeFunctions1();
 extern void initialize_exposeFunctions2();
 extern void initialize_exposeFunctions3();
@@ -117,32 +83,17 @@ const char* obj_kind_name(core::T_O* tagged_ptr) {
 }
 
 bool valid_stamp(gctools::stamp_t stamp) {
-#if defined(USE_MPS)
-  size_t stamp_index = (size_t)stamp;
-  if (stamp_index < global_stamp_max)
-    return true;
-  return false;
-#elif defined(USE_BOEHM)
+#if defined(USE_BOEHM)
   if (stamp <= STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max)) {
     return true;
   }
   return false;
-#elif defined(USE_MMTK)
+#else
   MISSING_GC_SUPPORT();
 #endif
 }
 const char* obj_name(gctools::stamp_t stamp) {
-#if defined(USE_MPS)
-  if (stamp == (gctools::stamp_t)STAMPWTAG_null) {
-    return "UNDEFINED";
-  }
-  if (stamp > (STAMPWTAG_max))
-    stamp = gctools::GCStamp<core::Instance_O>::StampWtag;
-  size_t stamp_index = (size_t)stamp;
-  ASSERT(stamp_index <= global_stamp_max);
-  //  printf("%s:%d obj_name stamp= %d  stamp_index = %d\n", __FILE__, __LINE__, stamp, stamp_index);
-  return global_stamp_info[stamp_index].name;
-#elif defined(USE_BOEHM)
+#if defined(USE_BOEHM)
   if (stamp <= global_unshifted_nowhere_stamp_names.size()) {
     //    printf("%s:%d obj_name stamp= %lu\n", __FILE__, __LINE__, stamp);
     return global_unshifted_nowhere_stamp_names[stamp].c_str();
@@ -150,7 +101,7 @@ const char* obj_name(gctools::stamp_t stamp) {
   printf("%s:%d obj_name stamp = %lu is out of bounds - max is %lu\n", __FILE__, __LINE__, (uintptr_t)stamp,
          global_unshifted_nowhere_stamp_names.size());
   return "BoehmNoClass";
-#elif defined(USE_MMTK)
+#else
   MISSING_GC_SUPPORT();
 #endif
 }
@@ -198,209 +149,6 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj) {
 #endif
 #undef DECLARE_ALL_SYMBOLS
 #undef ADJUST_SYMBOL_INDEX
-
-extern "C" {
-using namespace gctools;
-#ifdef USE_MPS
-/*! I'm using a format_header so MPS gives me the object-pointer */
-#define OBJECT_SKIP obj_skip_debug
-#define ADDR_T mps_addr_t
-#define GENERAL_PTR_TO_HEADER_PTR gctools::GeneralPtrToHeaderPtr
-#include "obj_scan.cc"
-#undef GENERAL_PTR_TO_HEADER_PTR
-#undef ADDR_T
-#undef OBJECT_SKIP
-
-mps_addr_t obj_skip(mps_addr_t client) {
-  size_t objectSize;
-  return obj_skip_debug(client, false, objectSize);
-}
-
-mps_addr_t obj_skip_debug_wrong_size(mps_addr_t client, void* header, size_t stamp_wtag_mtag, size_t stamp, size_t allocate_size,
-                                     size_t skip_size, int delta) {
-  printf(
-      "%s:%d Bad size calc header@%p header->stamp_wtag_mtag._value(%lu) obj_skip(stamp %lu) allocate_size -> %lu  obj_skip -> %lu "
-      "delta -> %d\n         About to recalculate the size - connect a debugger and break on obj_skip_debug_wrong_size to trap\n",
-      __FILE__, __LINE__, (void*)header, stamp_wtag_mtag, stamp, allocate_size, skip_size, delta);
-  size_t objectSize;
-  return obj_skip_debug(client, true, objectSize);
-}
-#endif // USE_MPS
-
-#if 0
-#if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
-#define OBJECT_SKIP obj_skip_debug
-#define ADDR_T void*
-#include "obj_scan.cc"
-#undef ADDR_T
-#undef OBJECT_SKIP
-
-void* obj_skip(void* client) {
-  size_t objectSize;
-  return obj_skip_debug(client,false,objectSize);
-}
-#endif
-
-
-
-__attribute__((noinline))  void* obj_skip_debug_wrong_size(void* client,
-                                                           void* header,
-                                                           size_t stamp_wtag_mtag,
-                                                           size_t stamp,
-                                                           size_t allocate_size,
-                                                           size_t skip_size,
-                                                           int delta) {
-  printf("%s:%d Bad size calc header@%p header->stamp_wtag_mtag._value(%lu) obj_skip(stamp %lu) allocate_size -> %lu  obj_skip -> %lu delta -> %d\n         About to recalculate the size - connect a debugger and break on obj_skip_debug_wrong_size to trap\n",
-         __FILE__, __LINE__, (void*)header, stamp_wtag_mtag, stamp, allocate_size, skip_size, delta );
-  size_t objectSize;
-  return obj_skip_debug(client,true,objectSize);
-}
-#endif // #if defined(USE_BOEHM)&&defined(USE_PRECISE_GC)
-};
-
-#ifdef USE_MPS
-
-struct ValidateObjects {};
-
-template <typename Op> inline void operate(core::T_O** ptr) { printf("%s:%d Illegal operate\n", __FILE__, __LINE__); }
-
-template <> inline void operate<ValidateObjects>(core::T_O** ptr) {
-  printf("%s:%d Validate the pointer at %p\n", __FILE__, __LINE__, ptr);
-}
-#endif // USE_MPS
-
-// ------------------------------------------------------------
-//
-// The following MUST match the code in obj_scan
-//
-extern "C" {
-
-#ifdef USE_MPS
-#define SCAN_STRUCT_T mps_ss_t
-#define ADDR_T mps_addr_t
-#define SCAN_BEGIN(xxx) MPS_SCAN_BEGIN(xxx)
-#define SCAN_END(xxx) MPS_SCAN_END(xxx)
-#define RESULT_TYPE GC_RESULT
-#define RESULT_OK MPS_RES_OK
-#define EXTRA_ARGUMENTS
-#define OBJECT_SCAN obj_scan
-#define OBJECT_SKIP_IN_OBJECT_SCAN obj_skip_debug
-#define GENERAL_PTR_TO_HEADER_PTR gctools::GeneralPtrToHeaderPtr
-#include "obj_scan.cc"
-#undef GENERAL_PTR_TO_HEADER_PTR
-#undef OBJECT_SCAN
-#undef EXTRA_ARGUMENTS
-#undef SCAN_STRUCT_T
-#undef RESULT_OK
-#undef RESULT_TYPE
-#endif
-
-#if 0
-#if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
-#define SCAN_STRUCT_T void*
-#define ADDR_T void*
-#define SCAN_BEGIN(xxx)
-#define SCAN_END(xxx)
-#define RESULT_TYPE struct GC_ms_entry*
-#define RESULT_OK msp
-#define EXTRA_ARGUMENTS , struct GC_ms_entry *msp, struct GC_ms_entry *msl
-#define POINTER_FIX(_addr_)                                                                                                        \
-  {                                                                                                                                \
-    gctools::Tagged* taggedP = (gctools::Tagged*)_addr_;                                                                           \
-    if (gctools::tagged_objectp(*taggedP)) {                                                                                       \
-      gctools::Tagged tagged_obj = *taggedP;                                                                                       \
-      gctools::Tagged obj = gctools::untag_object<gctools::Tagged>(tagged_obj);                                                    \
-      msp = ((GC_word)(obj) >= (GC_word)GC_least_plausible_heap_addr && (GC_word)(obj) <= (GC_word)GC_greatest_plausible_heap_addr \
-                 ? GC_mark_and_push((void*)obj, msp, msl, (void**)_addr_)                                                          \
-                 : (msp));                                                                                                         \
-    }                                                                                                                              \
-  }
-#define OBJECT_SCAN obj_mark_low_level
-#define OBJECT_SKIP_IN_OBJECT_SCAN obj_skip_debug
-#define CLIENT_PTR_TO_HEADER_PTR(client) gctools::GeneralPtrToHeaderPtr(client)
-#include "obj_scan.cc"
-#undef CLIENT_PTR_TO_HEADER_PTR
-#undef OBJECT_SCAN
-#undef POINTER_FIX
-#undef EXTRA_ARGUMENTS
-#undef SCAN_STRUCT_T
-#undef RESULT_OK
-#undef RESULT_TYPE
-
-struct GC_ms_entry* object_mark_proc(unsigned long* addr, struct GC_ms_entry *msp, struct GC_ms_entry *msl, GC_word env) {
-  printf("%s:%d In object_mark_proc\n", __FILE__, __LINE__ );
-  return obj_mark_low_level( NULL, (void*)addr, (void*)((char*)addr+1), msp, msl );
-}
-
-#endif // defined(USE_BOEHM)&&defined(USE_PRECISE_GC)
-
-#endif // 0
-};
-
-#if 0 // def USE_MPS
-extern "C" {
-/*! I'm using a format_header so MPS gives me the object-pointer */
-#define GC_FINALIZE_METHOD
-void obj_finalize(mps_addr_t client) {
-  // The client must have a valid header
-  DEBUG_THROW_IF_INVALID_CLIENT(client);
-  mps_addr_t next_client = obj_skip(client);
-  size_t block_size = (char*)next_client-(char*)client;
-#ifndef RUNNING_PRECISEPREP
-#define GC_OBJ_FINALIZE_TABLE
-#include CLASP_GC_CC
-#undef GC_OBJ_FINALIZE_TABLE
-#endif // ifndef RUNNING_PRECISEPREP
-  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(const_cast<void*>(GeneralPtrToHeaderPtr(client)));
-  ASSERTF(header->_stamp_wtag_mtag.stampP(), "obj_finalized called without a valid object");
-  gctools::GCStampEnum stamp = (GCStampEnum)(header->_stamp_wtag_mtag.stamp_());
-#ifndef RUNNING_PRECISEPREP
-  size_t table_index = (size_t)stamp;
-  goto *(OBJ_FINALIZE_table[table_index]);
-#define GC_OBJ_FINALIZE
-#include CLASP_GC_CC
-#undef GC_OBJ_FINALIZE
-#endif // ifndef RUNNING_PRECISEPREP
- finalize_done:
-  // Now replace the object with a pad object
-  header->_stamp_wtag_mtag.setPadSize(block_size);
-  header->_stamp_wtag_mtag.setPad(Header_s::pad_mtag);
-}; // obj_finalize
-}; // extern "C"
-#undef GC_FINALIZE_METHOD
-#endif // ifdef USE_MPS
-
-#ifdef USE_MPS
-extern "C" {
-mps_res_t main_thread_roots_scan(mps_ss_t ss, void* gc__p, size_t gc__s) {
-  MPS_SCAN_BEGIN(ss) {
-#ifndef RUNNING_PRECISEPREP
-#define GC_GLOBALS
-#include CLASP_GC_CC
-#undef GC_GLOBALS
-#endif
-    for (int i = 0; i < global_symbol_count; ++i) {
-      SMART_PTR_FIX(global_symbols[i]);
-    }
-  }
-  MPS_SCAN_END(ss);
-  return MPS_RES_OK;
-}
-};
-#endif // USE_MPS
-
-//
-// We don't want the static analyzer gc-builder.lisp to see the generated scanners
-//
-#ifdef USE_MPS
-#ifndef RUNNING_PRECISEPREP
-#ifndef SCRAPING
-#define HOUSEKEEPING_SCANNERS
-#include CLASP_GC_CC
-#undef HOUSEKEEPING_SCANNERS
-#endif // ifdef USE_MPS
-#endif // ifndef RUNNING_PRECISEPREP
-#endif // ifdef USE_MPS
 
 //
 // Bootstrapping
@@ -461,219 +209,6 @@ void allocate_symbols(core::BootStrapCoreSymbolMap* symbols){
 #undef ALLOCATE_ALL_SYMBOLS
 };
 
-#if 0 // expose classes
-template <class TheClass>
-NOINLINE void set_one_static_class_Header() {
-  ShiftedStamp the_stamp = gctools::NextStampWtag(0 /* Get from the Stamp */,gctools::GCStamp<TheClass>::Stamp);
-  if (gctools::GCStamp<TheClass>::Stamp!=0) {
-    TheClass::static_StampWtagMtag = gctools::Header_s::StampWtagMtag::make_Value<TheClass>();
-  } else {
-#ifdef USE_MPS
-    if (core::global_initialize_builtin_classes) {
-      printf("!\n!\n! %s:%d While initializing builtin classes with MPS clasp\n!\n!\n! A class was found without a Stamp - this happens if you haven't run the static analyzer since adding a class\n! Go run the static analyzer.\n!\n!\n!\n", __FILE__, __LINE__ );
-      abort();
-    }
-#endif
-    TheClass::static_StampWtagMtag = gctools::Header_s::StampWtagMtag::make_unknown(the_stamp);
-  }
-}
-
-
-template <class TheClass>
-NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(UnshiftedStamp theStamp, core::Symbol_sp classSymbol, core::Instance_sp metaClass)
-{
-  core::SimpleFun_sp entryPoint = core::makeSimpleFunAndFunctionDescription<TheClass>(kw::_sym_create);
-  auto cb = gctools::GC<TheClass>::allocate(entryPoint);
-  gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(theStamp,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
-  class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,classSymbol);
-//  reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
-//  TheClass::static_class = class_val;
-  _lisp->boot_setf_findClass(classSymbol,class_val);
-//  core::core__setf_find_class(class_val,classSymbol);
-  return class_val;
-}
-
-
-template <class TheClass>
-NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_class(core::Instance_sp metaClass)
-{
-  core::SimpleFun_sp entryPoint = core::makeSimpleFunAndFunctionDescription<core::BuiltInObjectCreator<TheClass>>(nil<core::T_O>());
-  core::Creator_sp cb = gc::As<core::Creator_sp>(gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate(entryPoint));
-  TheClass::set_static_creator(cb);
-  gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(TheClass::static_StampWtagMtag.shifted_stamp(),metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
-  class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,TheClass::static_classSymbol());
-  reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
-  TheClass::setStaticClass(class_val);
-//  core::core__setf_find_class(class_val,TheClass::static_classSymbol()); //,true,nil<core::T_O>()
-  _lisp->boot_setf_findClass(TheClass::static_classSymbol(),class_val);
-  return class_val;
-}
-
-template <class TheMetaClass>
-struct TempClass {
-  static gctools::smart_ptr<TheMetaClass> holder;
-};
-
-
-std::map<std::string,size_t> global_unshifted_nowhere_stamp_name_map;
-std::vector<std::string> global_unshifted_nowhere_stamp_names;
-// Keep track of the where information given an unshifted_nowhere_stamp
-std::vector<size_t> global_unshifted_nowhere_stamp_where_map;
-size_t _global_last_stamp = 0;
-
-//#define DUMP_NAMES 1
-
-void register_stamp_name(const std::string& stamp_name, UnshiftedStamp unshifted_stamp) {
-  if (unshifted_stamp==0) return;
-  size_t stamp_where = gctools::Header_s::StampWtagMtag::get_stamp_where(unshifted_stamp);
-  size_t stamp_num = gctools::Header_s::StampWtagMtag::make_nowhere_stamp(unshifted_stamp);
-#ifdef DUMP_NAMES
-  printf("%s:%d  stamp_num=%u  name=%s\n", __FILE__, __LINE__, stamp_num,stamp_name.c_str());
-#endif
-  global_unshifted_nowhere_stamp_name_map[stamp_name] = stamp_num;
-  if (stamp_num>=global_unshifted_nowhere_stamp_names.size()) {
-    global_unshifted_nowhere_stamp_names.resize(stamp_num+1,"");
-  }
-  global_unshifted_nowhere_stamp_names[stamp_num] = stamp_name;
-  if (stamp_num>=global_unshifted_nowhere_stamp_where_map.size()) {
-    global_unshifted_nowhere_stamp_where_map.resize(stamp_num+1,0);
-  }
-  global_unshifted_nowhere_stamp_where_map[stamp_num] = stamp_where;
-}
-
-void define_builtin_cxx_classes() {
-#ifndef SCRAPING
-#define GC_ENUM_NAMES
-#if !defined(USE_PRECISE_GC)
-#include INIT_CLASSES_INC_H
-#else
-#include CLASP_GC_CC
-#endif
-#undef GC_ENUM_NAMES
-#endif
-}
-
-
-void create_packages()
-{
-#define CREATE_ALL_PACKAGES
-#ifndef SCRAPING
-#include SYMBOLS_SCRAPED_INC_H
-#endif
-#undef CREATE_ALL_PACKAGES
-}
-
-
-void define_base_classes()
-{
-  IMPLEMENT_MEF("define_base_classes");
-}
-
-
-void calculate_class_precedence_lists()
-{
-  IMPLEMENT_MEF("calculate_class_precendence_lists");
-}
-
-// ------------------------------------------------------------
-//
-// Generate type specifier -> header value (range) map
-//
-
-template <typename TSingle>
-void add_single_typeq_test(const string& cname, core::HashTable_sp theMap) {
-  Fixnum header_val = gctools::Header_s::StampWtagMtag::GenerateHeaderValue<TSingle>();
-//  printf("%s:%d Header value for type %s -> %lld    stamp: %u  flags: %zu\n", __FILE__, __LINE__, _rep_(TSingle::static_class_symbol).c_str(), header_val, gctools::GCStamp<TSingle>::Stamp, gctools::GCStamp<TSingle>::Flags);
-  theMap->setf_gethash(TSingle::static_classSymbol(),core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<TSingle>()));
-}
-
-template <typename TRangeFirst,typename TRangeLast>
-void add_range_typeq_test(const string& cname, core::HashTable_sp theMap) {
-  
-  theMap->setf_gethash(TRangeFirst::static_classSymbol(),
-                       core::Cons_O::create(core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<TRangeFirst>()),
-                                            core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<TRangeLast>())));
-}
-template <typename TSingle>
-void add_single_typeq_test_instance(core::HashTable_sp theMap) {
-  theMap->setf_gethash(TSingle::static_classSymbol(),core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<TSingle>()));
-}
-
-template <typename TRangeFirst,typename TRangeLast>
-void add_range_typeq_test_instance(core::HashTable_sp theMap) {
-  theMap->setf_gethash(TRangeFirst::static_classSymbol(),
-                       core::Cons_O::create(core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<TRangeFirst>()),
-                                            core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<TRangeLast>())));
-}
-  
-void initialize_typeq_map() {
-  core::HashTableEqual_sp classNameToLispName = core::HashTableEqual_O::create_default();
-  core::HashTableEq_sp theTypeqMap = core::HashTableEq_O::create_default();
-#define ADD_SINGLE_TYPEQ_TEST(type, stamp)                                                                                         \
-  {                                                                                                                                \
-    classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type), type::static_classSymbol());                          \
-    theTypeqMap->setf_gethash(type::static_classSymbol(),                                                                          \
-                              core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type>()));                   \
-  }
-#define ADD_RANGE_TYPEQ_TEST(type_low, type_high, stamp_low, stamp_high)                                                           \
-  {                                                                                                                                \
-    classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type_low), type_low::static_classSymbol());                  \
-    theTypeqMap->setf_gethash(                                                                                                     \
-        type_low::static_classSymbol(),                                                                                            \
-        core::Cons_O::create(core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type_low>()),                 \
-                             core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type_high>())));              \
-  }
-#ifndef SCRAPING
-#if !defined(USE_PRECISE_GC)
-#define GC_TYPEQ
-#include INIT_CLASSES_INC_H // REPLACED CLASP_GC_CC
-#undef GC_TYPEQ
-#else
-#define GC_TYPEQ
-#include CLASP_GC_CC
-#undef GC_TYPEQ
-#endif
-#endif
-  core::_sym__PLUS_class_name_to_lisp_name_PLUS_->defparameter(classNameToLispName);
-  core::_sym__PLUS_type_header_value_map_PLUS_->defparameter(theTypeqMap);
-};
-
-// ----------------------------------------------------------------------
-//
-// Expose classes and methods
-//
-// Code generated by scraper
-//
-//
-#include <clasp/core/wrappers.h>
-#include <clasp/core/external_wrappers.h>
-
-#ifndef SCRAPING
-// include INIT_CLASSES_INC_H despite USE_PRECISE_GC
-#define EXPOSE_STATIC_CLASS_VARIABLES
-#include INIT_CLASSES_INC_H
-#undef EXPOSE_STATIC_CLASS_VARIABLES
-#endif
-
-#ifndef SCRAPING
-// include INIT_CLASSES_INC_H despite USE_PRECISE_GC
-#define EXPOSE_METHODS
-#include INIT_CLASSES_INC_H
-#undef EXPOSE_METHODS
-#endif
-
-void initialize_enums()
-{
-// include INIT_CLASSES_INC_H despite USE_PRECISE_GC
-#ifndef SCRAPING
-#define ALL_ENUMS
-#include <generated/enum_inc.h>
-#undef ALL_ENUMS
-#endif
-};
-
-#endif // #if 0  expose classes
-
 extern void initialize_exposeClasses1();
 extern void initialize_exposeClasses2();
 extern void initialize_exposeClasses3();
@@ -683,12 +218,6 @@ void initialize_classes_and_methods() {
   initialize_exposeClasses2();
   initialize_exposeClasses3();
 }
-
-#if 0
-#define MPS_LOG(x) printf("%s:%d %s\n", __FILE__, __LINE__, x);
-#else
-#define MPS_LOG(x)
-#endif
 
 void dumpBoehmLayoutTables(std::ostream& fout) {
 #define LAYOUT_STAMP(_class_) (gctools::GCStamp<_class_>::StampWtag >> gctools::BaseHeader_s::wtag_width)
@@ -1149,14 +678,11 @@ extern void initialize_allocate_metaclasses(core::BootStrapCoreSymbolMap& bootSt
 void initialize_clasp() {
   // The bootStrapCoreSymbolMap keeps track of packages and symbols while they
   // are half-way initialized.
-  MPS_LOG("initialize_clasp");
   core::BootStrapCoreSymbolMap bootStrapCoreSymbolMap;
   setup_bootstrap_packages(&bootStrapCoreSymbolMap);
 
-  MPS_LOG("initialize_clasp allocate_symbols");
   allocate_symbols(&bootStrapCoreSymbolMap);
 
-  MPS_LOG("initialize_clasp set_static_class_symbols");
   set_static_class_symbols(&bootStrapCoreSymbolMap);
 
   // Initialize metaclasses

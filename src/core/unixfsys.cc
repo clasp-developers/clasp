@@ -609,7 +609,7 @@ CL_DEFUN core::Str8Ns_sp ext__getcwd() {
   ::free((void*)ok);
 #if defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
   // Add a terminal '/' if there is none.
-  if ((*output)[output->fillPointer() - 1] != DIR_SEPARATOR_CHAR) {
+  if (output[output->fillPointer() - 1] != DIR_SEPARATOR_CHAR) {
     output->vectorPushExtend(DIR_SEPARATOR_CHAR);
   }
 #endif
@@ -725,11 +725,11 @@ CL_DEFUN T_sp core__readlink(String_sp filename) {
     clasp_enable_interrupts();
     size += 256;
   } while (written == size - 256);
-  (*output)[written] = '\0';
+  output[written] = '\0';
   kind = file_kind((const char*)output->rowMajorAddressOfElement_(0), false);
   if (kind == kw::_sym_directory) {
-    (*output)[written++] = DIR_SEPARATOR_CHAR;
-    (*output)[written] = '\0';
+    output[written++] = DIR_SEPARATOR_CHAR;
+    output[written] = '\0';
   }
   output->fillPointerSet(written);
   return output;

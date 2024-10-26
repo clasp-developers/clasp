@@ -62,20 +62,17 @@ DOCGROUP(clasp);
 CL_DEFUN List_sp core__put_f(List_sp place, T_sp value, T_sp indicator) {
   auto it = place.begin();
   auto end = place.end();
-  List_sp cur;
-  while (it.consp()) {
-    cur = *it; // cur is guaranteed to be a Cons_sp
+  while (it != end) {
+    List_sp cur = *it; // cur is guaranteed to be a Cons_sp
     ++it;
-    if (!it.consp())
-      break;
+    if (it == end) // odd plist
+      SIMPLE_ERROR("odd plist: {}", _rep_(place));
     if (oCar(cur) == indicator) {
       (*it)->rplaca(value); // *it is guaranteed to be a Cons_sp
       return place;
     }
     ++it;
   }
-  if (it != end)
-    SIMPLE_ERROR("type_error_plist {}", _rep_(place));
   place = Cons_O::create(value, place);
   place = Cons_O::create(indicator, place);
   return place;

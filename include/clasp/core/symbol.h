@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/array.h>
+#include <clasp/core/function.h>
 #include <clasp/core/environment.fwd.h>
 // #include <clasp/core/lisp.h>
 
@@ -69,9 +70,7 @@ struct only_at_startup {};
 
 #define NO_THREAD_LOCAL_BINDINGS std::numeric_limits<uint32_t>::max()
 SMART(Package);
-SMART(NamedFunction);
 FORWARD(ClassHolder);
-FORWARD(FunctionCell);
 
 // FIXME: Not the best place for this class, probably.
 FORWARD(VariableCell);

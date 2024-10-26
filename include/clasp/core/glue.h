@@ -26,48 +26,6 @@ THE SOFTWARE.
 */
 /* -^- */
 
-template <class to_class, class from_class>
-inline gctools::smart_ptr<to_class> safe_downcast(const gctools::smart_ptr<from_class>& c) {
-  if (c.nilp())
-    return _Nil<to_class>();
-  gctools::smart_ptr<to_class> dc = gctools::dynamic_pointer_cast<to_class>(c);
-  if (dc.objectp())
-    return dc;
-  lisp_throwUnexpectedType(c, to_class::static_classSymbol());
-  return _Nil<to_class>();
-}
-
-template <> inline gctools::smart_ptr<core::T_O> safe_downcast(const gctools::smart_ptr<core::T_O>& c) { return c; }
-
-template <> inline gctools::smart_ptr<core::Cons_O> safe_downcast(const gctools::smart_ptr<core::Cons_O>& c) { return c; }
-
-template <> inline gctools::smart_ptr<core::Symbol_O> safe_downcast(const gctools::smart_ptr<core::Symbol_O>& c) { return c; }
-
-/*! Downcast multiple_values<
- */
-
-template <class to_class, class from_class>
-inline gctools::multiple_values<to_class> safe_downcast(const gctools::multiple_values<from_class>& c) {
-  if (c.nilp())
-    return gctools::multiple_values<to_class>(_Nil<to_class>(), c.number_of_values());
-  gctools::multiple_values<to_class> dc = gctools::dynamic_pointer_cast<to_class>(c);
-  if (dc.pointerp())
-    return dc;
-  lisp_throwUnexpectedType(c, to_class::static_classSymbol());
-  // dummy return */
-  return gctools::multiple_values<to_class>(_Nil<to_class>(), 1);
-}
-
-template <> inline gctools::multiple_values<core::T_O> safe_downcast(const gctools::multiple_values<core::T_O>& c) { return c; }
-
-template <> inline gctools::multiple_values<core::Cons_O> safe_downcast(const gctools::multiple_values<core::Cons_O>& c) {
-  return c;
-}
-
-template <> inline gctools::multiple_values<core::Symbol_O> safe_downcast(const gctools::multiple_values<core::Symbol_O>& c) {
-  return c;
-}
-
 #define T_P const core::T_sp&
 
 namespace translate {

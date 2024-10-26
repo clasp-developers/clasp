@@ -227,10 +227,13 @@ void assemble(const Context context, uint8_t opcode, List_sp operands) {
   }
 }
 
+template <typename T>
+[[deprecated]] inline constexpr void print_type(T&& t, const char* msg=nullptr) {}
+
 CL_LAMBDA(code position &rest values);
 CL_DEFUN void assemble_into(SimpleVector_byte8_t_sp code, size_t position, List_sp values) {
   for (auto cur : values)
-    (*code)[position++] = clasp_to_integral<uint8_t>(oCar(cur));
+    code[position++] = clasp_to_integral<uint8_t>(oCar(cur));
 }
 
 void assemble_maybe_long(const Context context, uint8_t opcode, List_sp operands) {
@@ -417,7 +420,7 @@ size_t Context::literal_index(T_sp literal) const {
   ComplexVector_T_sp literals = this->cfunction()->module()->literals();
   // FIXME: Smarter POSITION
   for (size_t i = 0; i < literals->length(); ++i) {
-    T_sp slit = (*literals)[i];
+    T_sp slit = literals[i];
     if (gc::IsA<ConstantInfo_sp>(slit) && gc::As_unsafe<ConstantInfo_sp>(slit)->value() == literal)
       return i;
   }
@@ -446,7 +449,7 @@ size_t Context::cfunction_index(Cfunction_sp fun) const {
   ComplexVector_T_sp literals = this->cfunction()->module()->literals();
   // FIXME: Smarter POSITION
   for (size_t i = 0; i < literals->length(); ++i) {
-    T_sp slit = (*literals)[i];
+    T_sp slit = literals[i];
     if (gc::IsA<Cfunction_sp>(slit) && slit == fun)
       return i;
   }
@@ -458,7 +461,7 @@ size_t Context::fcell_index(T_sp name) const {
   ComplexVector_T_sp literals = this->cfunction()->module()->literals();
   // FIXME: Smarter POSITION
   for (size_t i = 0; i < literals->length(); ++i) {
-    T_sp slit = (*literals)[i];
+    T_sp slit = literals[i];
     if (gc::IsA<FunctionCellInfo_sp>(slit) && gc::As_unsafe<FunctionCellInfo_sp>(slit)->fname() == name)
       return i;
   }
@@ -470,7 +473,7 @@ size_t Context::vcell_index(Symbol_sp name) const {
   ComplexVector_T_sp literals = this->cfunction()->module()->literals();
   // FIXME: Smarter POSITION
   for (size_t i = 0; i < literals->length(); ++i) {
-    T_sp slit = (*literals)[i];
+    T_sp slit = literals[i];
     if (gc::IsA<VariableCellInfo_sp>(slit) && gc::As_unsafe<VariableCellInfo_sp>(slit)->vname() == name)
       return i;
   }
@@ -481,7 +484,7 @@ size_t Context::vcell_index(Symbol_sp name) const {
 size_t Context::env_index() const {
   ComplexVector_T_sp literals = this->cfunction()->module()->literals();
   for (size_t i = 0; i < literals->length(); ++i) {
-    T_sp slit = (*literals)[i];
+    T_sp slit = literals[i];
     if (gc::IsA<EnvInfo_sp>(slit))
       return i;
   }
@@ -492,7 +495,7 @@ size_t Context::env_index() const {
 size_t Context::closure_index(T_sp info) const {
   ComplexVector_T_sp closed = this->cfunction()->closed();
   for (size_t i = 0; i < closed->length(); ++i)
-    if ((*closed)[i] == info)
+    if (closed[i] == info)
       return i;
   Fixnum_sp nind = closed->vectorPushExtend(info);
   return nind.unsafe_fixnum();
@@ -685,20 +688,20 @@ static void emit_control_label_fixup(size_t size, size_t offset, size_t position
   // Offset is a size_t so it's a positive integer i.e. dumpable.
   switch (size) {
   case 2:
-      (*code)[position] = (uint8_t)opcode8;
+      code[position] = (uint8_t)opcode8;
     break;
   case 3:
-    (*code)[position] = (uint8_t)opcode16;
+    code[position] = (uint8_t)opcode16;
     break;
   case 4:
-    (*code)[position] = (uint8_t)opcode24;
+    code[position] = (uint8_t)opcode24;
     break;
   default:
     SIMPLE_ERROR("Assembler bug: Impossible size %zu", size);
   }
   for (size_t i = 0; i < size - 1; ++i) {
     // Write the offset one byte at a time, starting with the LSB.
-    (*code)[position + i + 1] = offset & 0xff;
+    code[position + i + 1] = offset & 0xff;
     offset >>= 8;
   }
 }
@@ -723,34 +726,34 @@ size_t ControlLabelFixup_O::resize() { return resize_control_label_fixup(this->d
 void JumpIfSuppliedFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
   uint16_t index = this->iindex();
   if (index > 0xff)
-    (*code)[position++] = (uint8_t)vm_code::_long;
+    code[position++] = (uint8_t)vm_code::_long;
   size_t size = this->size();
   bool s16 = false;
   switch (size) {
   case 3:
-    (*code)[position++] = (uint8_t)vm_code::jump_if_supplied_8;
+    code[position++] = (uint8_t)vm_code::jump_if_supplied_8;
     break;
   case 4:
     s16 = true;
-    (*code)[position++] = (uint8_t)vm_code::jump_if_supplied_16;
+    code[position++] = (uint8_t)vm_code::jump_if_supplied_16;
     break;
   case 5:
-    (*code)[position++] = (uint8_t)vm_code::jump_if_supplied_8;
+    code[position++] = (uint8_t)vm_code::jump_if_supplied_8;
     break;
   case 6:
     s16 = true;
-    (*code)[position] = (uint8_t)vm_code::jump_if_supplied_16;
+    code[position] = (uint8_t)vm_code::jump_if_supplied_16;
     break;
   default:
     SIMPLE_ERROR("Assembler bug: Impossible size %zu", size);
   }
-  (*code)[position++] = index & 0xff;
+  code[position++] = index & 0xff;
   if (index > 0xff)
-    (*code)[position++] = index >> 8;
+    code[position++] = index >> 8;
   size_t offset = this->delta();
-  (*code)[position++] = offset & 0xff;
+  code[position++] = offset & 0xff;
   if (s16)
-    (*code)[position] = offset >> 8;
+    code[position] = offset >> 8;
 }
 
 size_t JumpIfSuppliedFixup_O::resize() {
@@ -775,7 +778,7 @@ void LexRefFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
   size_t size = this->size();
   switch (size) {
   case 1:
-    (*code)[position] = (uint8_t)this->opcode();
+    code[position] = (uint8_t)this->opcode();
     break;
   default:
     UNREACHABLE();
@@ -789,14 +792,14 @@ void EncageFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
   size_t index = this->lex()->frameIndex();
   switch (size) {
   case 2: // FIXME: Use assemble_into?
-    (*code)[position] = (uint8_t)vm_code::encell;
-    (*code)[position + 1] = index;
+    code[position] = (uint8_t)vm_code::encell;
+    code[position + 1] = index;
     break;
   case 4:
-    (*code)[position] = (uint8_t)vm_code::_long;
-    (*code)[position + 1] = (uint8_t)vm_code::encell;
-    (*code)[position + 2] = index & 0xff;
-    (*code)[position + 3] = index >> 8;
+    code[position] = (uint8_t)vm_code::_long;
+    code[position + 1] = (uint8_t)vm_code::encell;
+    code[position + 2] = index & 0xff;
+    code[position + 3] = index >> 8;
     break;
   default:
     UNREACHABLE();
@@ -820,26 +823,26 @@ void LexSetFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
   size_t index = this->lex()->frameIndex();
   switch (size) {
   case 2:
-      (*code)[position] = (uint8_t)vm_code::set;
-    (*code)[position + 1] = index;
+    code[position] = (uint8_t)vm_code::set;
+    code[position + 1] = index;
     break;
   case 3:
-    (*code)[position] = (uint8_t)vm_code::ref;
-    (*code)[position + 1] = index;
-    (*code)[position + 2] = (uint8_t)vm_code::cell_set;
+    code[position] = (uint8_t)vm_code::ref;
+    code[position + 1] = index;
+    code[position + 2] = (uint8_t)vm_code::cell_set;
     break;
   case 4:
-    (*code)[position] = (uint8_t)vm_code::_long;
-    (*code)[position + 1] = (uint8_t)vm_code::set;
-    (*code)[position + 2] = index & 0xff;
-    (*code)[position + 3] = index >> 8;
+    code[position] = (uint8_t)vm_code::_long;
+    code[position + 1] = (uint8_t)vm_code::set;
+    code[position + 2] = index & 0xff;
+    code[position + 3] = index >> 8;
     break;
   case 5:
-    (*code)[position] = (uint8_t)vm_code::_long;
-    (*code)[position + 1] = (uint8_t)vm_code::ref;
-    (*code)[position + 2] = index & 0xff;
-    (*code)[position + 3] = index >> 8;
-    (*code)[position + 4] = (uint8_t)vm_code::cell_set;
+    code[position] = (uint8_t)vm_code::_long;
+    code[position + 1] = (uint8_t)vm_code::ref;
+    code[position + 2] = index & 0xff;
+    code[position + 3] = index >> 8;
+    code[position + 4] = (uint8_t)vm_code::cell_set;
     break;
   default:
     UNREACHABLE();
@@ -866,16 +869,16 @@ size_t LexSetFixup_O::resize() {
 void EntryFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
   size_t index = this->lex()->frameIndex();
   if (index >= 1 << 8)
-    (*code)[position++] = (uint8_t)vm_code::_long;
+    code[position++] = (uint8_t)vm_code::_long;
   if (this->lex()->closedOverP())
-    (*code)[position] = (uint8_t)vm_code::entry;
+    code[position] = (uint8_t)vm_code::entry;
   else
-    (*code)[position] = (uint8_t)vm_code::save_sp;
+    code[position] = (uint8_t)vm_code::save_sp;
   if (index < 1 << 8)
-    (*code)[position + 1] = index;
+    code[position + 1] = index;
   else {
-    (*code)[position + 1] = index & 0xff;
-    (*code)[position + 2] = index >> 8;
+    code[position + 1] = index & 0xff;
+    code[position + 2] = index >> 8;
   }
 }
 
@@ -884,16 +887,16 @@ size_t EntryFixup_O::resize() { return (this->lex()->frameIndex() < 1 << 8) ? 2 
 void RestoreSPFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
   size_t index = this->lex()->frameIndex();
   if (index >= 1 << 8)
-    (*code)[position++] = (uint8_t)vm_code::_long;
+    code[position++] = (uint8_t)vm_code::_long;
   if (this->lex()->closedOverP())
-    (*code)[position] = (uint8_t)vm_code::ref;
+    code[position] = (uint8_t)vm_code::ref;
   else
-    (*code)[position] = (uint8_t)vm_code::restore_sp;
+    code[position] = (uint8_t)vm_code::restore_sp;
   if (index < 1 << 8)
-    (*code)[position + 1] = index;
+    code[position + 1] = index;
   else {
-    (*code)[position + 1] = index & 0xff;
-    (*code)[position + 2] = index >> 8;
+    code[position + 1] = index & 0xff;
+    code[position + 2] = index >> 8;
   }
 }
 
@@ -911,7 +914,7 @@ size_t ExitFixup_O::resize() { return resize_control_label_fixup(this->delta());
 void EntryCloseFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
   switch (this->size()) {
   case 1:
-    (*code)[position] = (uint8_t)vm_code::entry_close;
+    code[position] = (uint8_t)vm_code::entry_close;
     break;
   default:
     UNREACHABLE();
@@ -923,7 +926,7 @@ size_t EntryCloseFixup_O::resize() { return (this->lex()->closedOverP()) ? 1 : 0
 void Module_O::initialize_cfunction_positions() {
   size_t position = 0;
   ComplexVector_T_sp cfunctions = this->cfunctions();
-  for (T_sp tfunction : *cfunctions) {
+  for (auto const& tfunction : cfunctions) {
     Cfunction_sp cfunction = gc::As_assert<Cfunction_sp>(tfunction);
     cfunction->setPosition(position);
     position += cfunction->bytecode()->length();
@@ -935,13 +938,13 @@ void Fixup_O::update_positions(size_t increase) {
   ComplexVector_T_sp annotations = funct->annotations();
   size_t nannot = annotations->length();
   for (size_t idx = this->iindex() + 1; idx < nannot; ++idx) {
-    gc::As_assert<Annotation_sp>((*annotations)[idx])->_position += increase;
+    gc::As_assert<Annotation_sp>(annotations[idx])->_position += increase;
   }
   funct->_extra += increase;
   ComplexVector_T_sp functions = funct->module()->cfunctions();
   size_t nfuns = functions->length();
   for (size_t idx = funct->iindex() + 1; idx < nfuns; ++idx) {
-    gc::As_assert<Cfunction_sp>((*functions)[idx])->_position += increase;
+    gc::As_assert<Cfunction_sp>(functions[idx])->_position += increase;
   }
 }
 
@@ -950,9 +953,9 @@ void Module_O::resolve_fixup_sizes() {
   ComplexVector_T_sp cfunctions = this->cfunctions();
   do {
     changedp = false;
-    for (T_sp tfunction : *cfunctions) {
+    for (auto const& tfunction : cfunctions) {
       ComplexVector_T_sp annotations = gc::As_assert<Cfunction_sp>(tfunction)->annotations();
-      for (T_sp tannot : *annotations) {
+      for (auto const& tannot : annotations) {
         if (gc::IsA<Fixup_sp>(tannot)) {
           Fixup_sp fixup = gc::As_unsafe<Fixup_sp>(tannot);
           size_t old_size = fixup->size();
@@ -971,7 +974,7 @@ void Module_O::resolve_fixup_sizes() {
 
 size_t Module_O::bytecode_size() {
   ComplexVector_T_sp cfunctions = this->cfunctions();
-  T_sp tlast_cfunction = (*cfunctions)[cfunctions->length() - 1];
+  T_sp tlast_cfunction = cfunctions[cfunctions->length() - 1];
   Cfunction_sp last_cfunction = gc::As_assert<Cfunction_sp>(tlast_cfunction);
   return last_cfunction->pposition() + last_cfunction->final_size();
 }
@@ -1028,7 +1031,7 @@ SimpleVector_sp Module_O::create_debug_info() {
   // We add one to each since we put in the functions as well.
   // Replace all labels.
   size_t ndebugs = 0;
-  for (T_sp tfunction : *cfunctions) {
+  for (auto const& tfunction : cfunctions) {
     Cfunction_sp function = gc::As_assert<Cfunction_sp>(tfunction);
     ndebugs += 1 + function->debug_info()->length();
   }
@@ -1036,11 +1039,11 @@ SimpleVector_sp Module_O::create_debug_info() {
   // For each cfunction, put the cfunction in the debug infos,
   // and then the cfunction's infos.
   size_t ind = 0;
-  for (T_sp tfunction : *cfunctions) {
+  for (auto const& tfunction : cfunctions) {
     Cfunction_sp function = gc::As_assert<Cfunction_sp>(tfunction);
-    (*debuginfos)[ind++] = function;
-    for (T_sp info : *(function->debug_info())) {
-      (*debuginfos)[ind++] = info;
+    debuginfos[ind++] = function;
+    for (auto const& info : function->debug_info()) {
+      debuginfos[ind++] = info;
       // Resolve labels, etc.
       if (gc::IsA<BytecodeDebugVars_sp>(info))
         resolve_debug_vars(gc::As_unsafe<BytecodeDebugVars_sp>(info));
@@ -1058,7 +1061,7 @@ static void replace_bytecode(SimpleVector_byte8_t_sp dest, ComplexVector_byte8_t
                              size_t end2) {
   size_t index1, index2;
   for (index1 = start1, index2 = start2; index2 < end2; ++index1, ++index2) {
-    (*dest)[index1] = (*src)[index2];
+    dest[index1] = src[index2];
   }
 }
 
@@ -1066,12 +1069,12 @@ SimpleVector_byte8_t_sp Module_O::create_bytecode() {
   SimpleVector_byte8_t_sp bytecode = SimpleVector_byte8_t_O::make(this->bytecode_size());
   size_t index = 0;
   ComplexVector_T_sp cfunctions = this->cfunctions();
-  for (T_sp tfunction : *cfunctions) {
+  for (auto const& tfunction : cfunctions) {
     Cfunction_sp function = gc::As_assert<Cfunction_sp>(tfunction);
     ComplexVector_byte8_t_sp cfunction_bytecode = function->bytecode();
     size_t position = 0;
     ComplexVector_T_sp annotations = function->annotations();
-    for (T_sp tannot : *annotations) {
+    for (auto const& tannot : annotations) {
       if (gc::IsA<Fixup_sp>(tannot)) {
         Fixup_sp annotation = gc::As_unsafe<Fixup_sp>(tannot);
         if (annotation->size() != 0) {
@@ -1119,8 +1122,7 @@ CL_DEFMETHOD T_sp Cfunction_O::end() const {
 bool btb_bcfun_p(BytecodeSimpleFun_sp fun, SimpleVector_sp debug_info) {
   size_t start = fun->entryPcN();
   size_t end = start + fun->bytecodeSize();
-  for (size_t i = 0; i < debug_info->length(); ++i) {
-    T_sp tinfo = (*debug_info)[i];
+  for (auto const& tinfo : debug_info) {
     if (gc::IsA<BytecodeAstDecls_sp>(tinfo)) {
       BytecodeAstDecls_sp info = gc::As_unsafe<BytecodeAstDecls_sp>(tinfo);
       size_t infostart = info->start().unsafe_fixnum();
@@ -1162,7 +1164,7 @@ void Module_O::link_load() {
   BytecodeModule_sp bytecode_module = BytecodeModule_O::make(bytecode);
   ComplexVector_T_sp cfunctions = cmodule->cfunctions();
   // Create the real function objects.
-  for (T_sp tfun : *cfunctions) {
+  for (auto const& tfun : cfunctions) {
     Cfunction_sp cfunction = gc::As_assert<Cfunction_sp>(tfun);
     T_sp sourcePathname = nil<T_O>();
     int lineno = -1;
@@ -1193,32 +1195,31 @@ void Module_O::link_load() {
   // Also also record mutable LTVs.
   ql::list mutableLTVs;
   for (size_t i = 0; i < literal_length; ++i) {
-    T_sp lit = (*cmodule_literals)[i];
+    T_sp lit = cmodule_literals[i];
     if (gc::IsA<Cfunction_sp>(lit))
-      (*literals)[i] = gc::As_unsafe<Cfunction_sp>(lit)->info();
+      literals[i] = gc::As_unsafe<Cfunction_sp>(lit)->info();
     else if (gc::IsA<LoadTimeValueInfo_sp>(lit)) {
       LoadTimeValueInfo_sp ltvinfo = gc::As_unsafe<LoadTimeValueInfo_sp>(lit);
-      (*literals)[i] = ltvinfo->eval();
+      literals[i] = ltvinfo->eval();
       if (!ltvinfo->read_only_p())
         mutableLTVs << Integer_O::create(i);
     } else if (gc::IsA<ConstantInfo_sp>(lit))
-      (*literals)[i] = gc::As_unsafe<ConstantInfo_sp>(lit)->value();
+      literals[i] = gc::As_unsafe<ConstantInfo_sp>(lit)->value();
     else if (gc::IsA<FunctionCellInfo_sp>(lit))
-      (*literals)[i] = core__ensure_function_cell(gc::As_unsafe<FunctionCellInfo_sp>(lit)->fname());
+      literals[i] = core__ensure_function_cell(gc::As_unsafe<FunctionCellInfo_sp>(lit)->fname());
     else if (gc::IsA<VariableCellInfo_sp>(lit))
-      (*literals)[i] = gc::As_unsafe<VariableCellInfo_sp>(lit)->vname()->ensureVariableCell();
+      literals[i] = gc::As_unsafe<VariableCellInfo_sp>(lit)->vname()->ensureVariableCell();
     else if (gc::IsA<EnvInfo_sp>(lit))
-      (*literals)[i] = nil<T_O>(); // the only environment we have
+      literals[i] = nil<T_O>(); // the only environment we have
     else
       SIMPLE_ERROR("BUG: Weird thing in compiler literals vector: {}", _rep_(lit));
   }
   // Also replace the cfunctions in the debug info.
   // We just modify the vector rather than cons a new one since create_debug_info
   // already created a fresh vector for us.
-  for (size_t i = 0; i < debug_info->length(); ++i) {
-    T_sp info = (*debug_info)[i];
+  for (auto& info : debug_info) {
     if (gc::IsA<Cfunction_sp>(info))
-      (*debug_info)[i] = gc::As_unsafe<Cfunction_sp>(info)->info();
+      info = gc::As_unsafe<Cfunction_sp>(info)->info();
   }
   // Now just install the bytecode and Bob's your uncle.
   bytecode_module->setf_literals(literals);
@@ -1229,7 +1230,7 @@ void Module_O::link_load() {
   // We can only do native compilations after the module is
   // fully realized above.
   if (_sym_STARautocompile_hookSTAR->boundP() && _sym_STARautocompile_hookSTAR->symbolValue().notnilp()) {
-    for (T_sp tfun : *cfunctions) {
+    for (auto const& tfun : cfunctions) {
       Cfunction_sp cfun = gc::As_assert<Cfunction_sp>(tfun);
       BytecodeSimpleFun_sp fun = cfun->info();
       if (btb_bcfun_p(fun, debug_info)) {
@@ -2009,9 +2010,8 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
     Cfunction_sp fun =
         compile_lambda(oCadr(fnameoid), oCddr(fnameoid), env, ctxt.module(), source_location_for(fnameoid, ctxt.source_info()));
     ComplexVector_T_sp closed = fun->closed();
-    for (size_t i = 0; i < closed->length(); ++i) {
-      ctxt.reference_lexical_info(gc::As_assert<LexicalInfo_sp>((*closed)[i]));
-    }
+    for (auto const& c : closed)
+      ctxt.reference_lexical_info(gc::As_assert<LexicalInfo_sp>(c));
     if (closed->length() == 0) // don't need to actually close
       ctxt.assemble1(vm_code::_const, ctxt.cfunction_index(fun));
     else
@@ -2045,9 +2045,8 @@ void compile_called_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
     Cfunction_sp fun =
         compile_lambda(oCadr(fnameoid), oCddr(fnameoid), env, ctxt.module(), source_location_for(fnameoid, ctxt.source_info()));
     ComplexVector_T_sp closed = fun->closed();
-    for (size_t i = 0; i < closed->length(); ++i) {
-      ctxt.reference_lexical_info(gc::As_assert<LexicalInfo_sp>((*closed)[i]));
-    }
+    for (auto const& c : closed)
+      ctxt.reference_lexical_info(gc::As_assert<LexicalInfo_sp>(c));
     if (closed->length() == 0) // don't need to actually close
       ctxt.assemble1(vm_code::_const, ctxt.cfunction_index(fun));
     else
@@ -2207,10 +2206,8 @@ void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Cont
   for (auto cur : gc::As_assert<List_sp>(closures.cons())) {
     Cfunction_sp cf = gc::As_unsafe<Cfunction_sp>(oCaar(cur));
     ComplexVector_T_sp closed = cf->closed();
-    for (size_t i = 0; i < closed->length(); ++i) {
-      LexicalInfo_sp info = gc::As_assert<LexicalInfo_sp>((*closed)[i]);
-      ctxt.reference_lexical_info(info);
-    }
+    for (auto const& c : closed)
+      ctxt.reference_lexical_info(c.as_assert<LexicalInfo_O>());
     ctxt.assemble1(vm_code::initialize_closure, oCdar(cur).unsafe_fixnum());
   }
   compile_locally(body, new_env, ctxt);
@@ -2498,9 +2495,8 @@ void compile_unwind_protect(T_sp protect, List_sp cleanup, Lexenv_sp env, const 
     // Duplicates a bit of code from compile_function.
     Cfunction_sp cleanupt = compile_lambda(nil<T_O>(), Cons_O::createList(Cons_O::create(cl::_sym_progn, cleanup)), env,
                                            ctxt.module(), ctxt.source_info());
-    ComplexVector_T_sp closed = cleanupt->closed();
-    for (size_t i = 0; i < closed->length(); ++i)
-      ctxt.reference_lexical_info((*closed)[i].as_assert<LexicalInfo_O>());
+    for (auto const& c : cleanupt->closed())
+      ctxt.reference_lexical_info(c.as_assert<LexicalInfo_O>());
     // Actual protect instruction
     ctxt.assemble1(vm_code::protect, ctxt.cfunction_index(cleanupt));
     // and the body...

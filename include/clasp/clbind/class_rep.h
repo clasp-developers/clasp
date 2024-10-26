@@ -58,6 +58,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/numbers.h>
+#include <clasp/core/symbol.h>
 #include <clasp/clbind/class_registry.h>
 #include <clasp/clbind/primitives.h>
 #include <clasp/clbind/typeid.h>

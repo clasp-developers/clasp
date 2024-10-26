@@ -33,19 +33,21 @@ public:
   SimpleVector_O(size_t length, value_type initialElement = default_initial_element(), bool initialElementSupplied = true,
                  size_t initialContentsSize = 0, const value_type* initialContents = NULL)
       : TemplatedBase(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};
+  template <std::ranges::sized_range R>
+  // the length arg is necessary even though it's unused, because it's
+  // passed by the allocate_container machinery.
+  // the length was computed by make below from the range anyway.
+  SimpleVector_O(size_t length, R&& initialContents)
+    : TemplatedBase(initialContents) { (void)length; };
   static SimpleVector_sp make(size_t length, T_sp initialElement = nil<T_O>(), bool initialElementSupplied = true,
                               size_t initialContentsSize = 0, const T_sp* initialContents = NULL, bool static_vector_p = false) {
     auto bs = gctools::GC<SimpleVector_O>::allocate_container<gctools::RuntimeStage>(
         static_vector_p, length, initialElement, initialElementSupplied, initialContentsSize, initialContents);
     return bs;
   }
-  // Used in one place in lisp.cc. FIXME: Maybe remove?
-  static SimpleVector_sp make(const gc::Vec0<T_sp>& objs) {
-    size_t len = objs.size();
-    if (len == 0)
-      return make(0);
-    else
-      return make(len, nil<T_O>(), true, len, &(objs[0]));
+  template <std::ranges::sized_range R>
+  static SimpleVector_sp make(R&& initialContents) {
+    return gctools::GC<SimpleVector_O>::allocate_container<gctools::RuntimeStage>(false, std::ranges::ssize(initialContents), initialContents);
   }
 
 public:

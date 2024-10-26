@@ -627,8 +627,7 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::emitModule(core::T_sp stream, core::T_s
 
   if (stream == kw::_sym_simple_vector_byte8) {
     SYMBOL_EXPORT_SC_(KeywordPkg, simple_vector_byte8);
-    core::SimpleVector_byte8_t_sp vector_byte8 = core::SimpleVector_byte8_t_O::make(
-        stringOutput.size(), 0, false, stringOutput.size(), (const unsigned char*)stringOutput.data());
+    core::SimpleVector_byte8_t_sp vector_byte8 = core::SimpleVector_byte8_t_O::make(stringOutput);
     if (dwo_stream.notnilp()) {
       SIMPLE_ERROR("dwo_stream must be nil");
     }

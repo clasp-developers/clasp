@@ -500,7 +500,7 @@ void Instance_O::lowLevel_calculateClassPrecedenceList() {
     printf("%s:%d About to do topological_sort\n", __FILE__, __LINE__);
     for (size_t zi(0), ziEnd(cl__length(arrayedSupers)); zi < ziEnd; ++zi) {
       stringstream ss;
-      ss << fmt::format("graph[{}/name={}] = ", zi , arrayedSupers->operator[](zi).as<Instance_O>()->instanceClassName());
+      ss << fmt::format("graph[{}/name={}] = ", zi , arrayedSupers[zi].as<Instance_O>()->instanceClassName());
       for (list<int>::const_iterator it = graph[zi].begin(); it != graph[zi].end(); it++) {
         ss << *it << "-> ";
       }
@@ -516,7 +516,7 @@ void Instance_O::lowLevel_calculateClassPrecedenceList() {
     stringstream ss;
     ss << "Topologically sorted superclasses ";
     for (deque<int>::const_reverse_iterator it = topo_order.rbegin(); it != topo_order.rend(); it++) {
-      Instance_sp mc = arrayedSupers->operator[](*it).as<Instance_O>();
+      Instance_sp mc = arrayedSupers[*it].as<Instance_O>();
       ss << "-> " << mc->className() << "/" << mc->instanceClassName();
     }
     LOG("{}" , ss.str());
@@ -524,7 +524,7 @@ void Instance_O::lowLevel_calculateClassPrecedenceList() {
 #endif
   List_sp cpl = nil<T_O>();
   for (deque<int>::const_reverse_iterator it = topo_order.rbegin(); it != topo_order.rend(); it++) {
-    Instance_sp mc = gc::As<Instance_sp>(arrayedSupers->operator[](*it));
+    Instance_sp mc = gc::As<Instance_sp>(arrayedSupers[*it]);
     LOG("pushing superclass[{}] to front of ClassPrecedenceList", mc->instanceClassName());
     cpl = Cons_O::create(mc, cpl);
   }

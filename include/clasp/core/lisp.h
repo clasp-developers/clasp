@@ -85,7 +85,6 @@ extern bool global_initialize_builtin_classes;
 class Bundle;
 class CallStack;
 SMART(Intrinsic);
-SMART(NamedFunction);
 SMART(Reader);
 SMART(FunctionValueEnvironment);
 SMART(Package);

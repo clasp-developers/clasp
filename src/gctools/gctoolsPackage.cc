@@ -79,9 +79,6 @@ void GcToolsExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose 
     SYMBOL_EXPORT_SC_(GcToolsPkg, templated_class_jump_table_index);
     SYMBOL_EXPORT_SC_(GcToolsPkg, container_jump_table_index);
     SYMBOL_EXPORT_SC_(GcToolsPkg, layout_end);
-
-    initialize_gc_functions();
-    // nothing
   }; break;
   case candoGlobals: {
     core::SymbolToEnumConverter_sp conv = core::SymbolToEnumConverter_O::create("stamp field layout cmds");

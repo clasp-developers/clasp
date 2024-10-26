@@ -598,7 +598,7 @@ CL_DEFUN Closure_sp core__make_closure(SimpleFun_sp sfun, Vaslist_sp closed) {
   size_t nclosed = closed->nargs();
   Closure_sp closure = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, nclosed, sfun);
   for (size_t idx = 0; idx < nclosed; ++idx)
-    (*closure)[idx] = closed->next_arg();
+    closure[idx] = closed->next_arg();
   return closure;
 }
 
@@ -739,13 +739,13 @@ SimpleFun_sp FunctionCell_O::cachedUnboundSimpleFun(T_sp name) {
 
 FunctionCell_sp FunctionCell_O::make(T_sp name) {
   Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1, cachedUnboundSimpleFun(name));
-  (*cf)[0] = name;
+  cf[0] = name;
   return FunctionCell_O::make(name, cf);
 }
 
 void FunctionCell_O::fmakunbound(T_sp name) {
   Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1, cachedUnboundSimpleFun(name));
-  (*cf)[0] = name;
+  cf[0] = name;
   real_function_set(cf);
 }
 

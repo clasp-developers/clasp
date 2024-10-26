@@ -937,7 +937,7 @@ string fix_method_lambda(core::Symbol_sp class_symbol, const string& lambda) {
 SYMBOL_EXPORT_SC_(KeywordPkg, body);
 SYMBOL_EXPORT_SC_(KeywordPkg, docstring);
 
-static Function_sp bytecompile_wrapper(SimpleFun_sp entry, List_sp vars, Symbol_sp name, List_sp lambda_list) {
+static Function_sp bytecompile_wrapper(Function_sp entry, List_sp vars, Symbol_sp name, List_sp lambda_list) {
   /*
   // Add the name to the list so we know to compile it later when the
   // native compiler is up.
@@ -958,7 +958,7 @@ static Function_sp bytecompile_wrapper(SimpleFun_sp entry, List_sp vars, Symbol_
 }
 
 void lisp_defineSingleDispatchMethod(T_sp name, Symbol_sp classSymbol,
-                                     SimpleFun_sp method_body, size_t TemplateDispatchOn, bool useTemplateDispatchOn,
+                                     Function_sp method_body, size_t TemplateDispatchOn, bool useTemplateDispatchOn,
                                      const string& raw_arguments, const string& declares, const string& docstring, bool autoExport,
                                      int number_of_required_arguments, const std::set<int> pureOutIndices) {
   string arguments = fix_method_lambda(classSymbol, raw_arguments);
@@ -1044,7 +1044,7 @@ Symbol_sp lispify_intern(const string& name, const string& defaultPackageName, b
 SYMBOL_EXPORT_SC_(CorePkg, bytecode_wrapper);
 
 void lisp_bytecode_defun(SymbolFunctionEnum kind, Symbol_sp sym, const string& packageName,
-                         SimpleFun_sp entry, const string& arguments, const string& declares, const string& docstring,
+                         Function_sp entry, const string& arguments, const string& declares, const string& docstring,
                          const string& sourceFile, int lineNumber, int numberOfRequiredArguments, bool autoExport,
                          const std::set<int>& skipIndices) {
   List_sp lambda_list = lisp_parse_arguments(packageName, arguments, numberOfRequiredArguments, skipIndices);

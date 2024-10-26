@@ -1578,7 +1578,7 @@ bool bytecode_function_contains_address_p(BytecodeSimpleFun_sp fun, void* pc) {
 T_sp bytecode_function_for_pc(BytecodeModule_sp module, void* pc) {
   T_sp debuginfo = module->debugInfo();
   if (debuginfo.notnilp()) {
-    for (auto info : *(gc::As_assert<SimpleVector_sp>(module->debugInfo()))) {
+    for (auto const& info : module->debugInfo().as_assert<SimpleVector_O>()) {
       if (gc::IsA<BytecodeSimpleFun_sp>(info) &&
           bytecode_function_contains_address_p(gc::As_unsafe<BytecodeSimpleFun_sp>(info), pc))
         return info;
@@ -1597,7 +1597,7 @@ T_sp bytecode_spi_for_pc(BytecodeModule_sp module, void* pc) {
   size_t best_start = 0;
   size_t best_end = SIZE_MAX;
   T_sp best_spi = nil<T_O>();
-  for (T_sp info : *(gc::As_assert<SimpleVector_sp>(module->debugInfo()))) {
+  for (T_sp info : module->debugInfo().as_assert<SimpleVector_O>()) {
     if (gc::IsA<BytecodeDebugLocation_sp>(info)) {
       BytecodeDebugLocation_sp entry = gc::As_unsafe<BytecodeDebugLocation_sp>(info);
       size_t start = entry->start().unsafe_fixnum();
@@ -1617,7 +1617,7 @@ List_sp bytecode_bindings_for_pc(BytecodeModule_sp module, void* pc, T_O** fp) {
   void* start = bytecode->rowMajorAddressOfElement_(0);
   ptrdiff_t bpc = (byte8_t*)pc - (byte8_t*)start;
   ql::list bindings;
-  for (T_sp info : *(gc::As_assert<SimpleVector_sp>(module->debugInfo()))) {
+  for (T_sp info : module->debugInfo().as_assert<SimpleVector_O>()) {
     if (gc::IsA<BytecodeDebugVars_sp>(info)) {
       BytecodeDebugVars_sp entry = gc::As_unsafe<BytecodeDebugVars_sp>(info);
       size_t start = entry->start().unsafe_fixnum();

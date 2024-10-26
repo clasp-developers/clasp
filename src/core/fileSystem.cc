@@ -499,7 +499,7 @@ Pathname_sp homedirPathname(T_sp tuser) {
   } else {
     namestring = SimpleBaseString_O::make("/");
   }
-  if ((*namestring)[0] == '~') {
+  if (namestring[0] == '~') {
     SIMPLE_ERROR("Not a valid home pathname {}", _rep_(namestring));
   }
   i = namestring->length();

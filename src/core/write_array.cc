@@ -366,13 +366,13 @@ void unsafe_write_SimpleBaseString(SimpleBaseString_sp str, size_t start, size_t
   cl_index ndx;
   if (!clasp_print_escape() && !clasp_print_readably()) {
     for (ndx = start; ndx < end; ndx++) {
-      claspChar c = (*str)[ndx];
+      claspChar c = str[ndx];
       stream_write_char(stream, c);
     }
   } else {
     stream_write_char(stream, '"');
     for (ndx = start; ndx < end; ndx++) {
-      claspChar c = (*str)[ndx];
+      claspChar c = str[ndx];
       if (c == '"' || c == '\\')
         stream_write_char(stream, '\\');
       stream_write_char(stream, c);
@@ -385,15 +385,15 @@ void unsafe_write_SimpleCharacterString(SimpleCharacterString_sp str, size_t sta
   cl_index ndx;
   if (!clasp_print_escape() && !clasp_print_readably()) {
     for (ndx = start; ndx < end; ndx++) {
-      stream_write_char(stream, (*str)[ndx]);
+      stream_write_char(stream, str[ndx]);
     }
   } else {
     stream_write_char(stream, '"');
     for (ndx = start; ndx < end; ndx++) {
-      claspCharacter c = (*str)[ndx];
+      claspCharacter c = str[ndx];
       if (c == '"' || c == '\\')
         stream_write_char(stream, '\\');
-      stream_write_char(stream, (*str)[ndx]);
+      stream_write_char(stream, str[ndx]);
     }
     stream_write_char(stream, '"');
   }

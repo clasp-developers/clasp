@@ -29,7 +29,7 @@ SimpleBitVector_sp SimpleBitVector_O::make(const string& bv) {
   SimpleBitVector_sp x = SimpleBitVector_O::make(dim);
   for (int i = 0; i < dim; i++) {
     char elt = bv[i + 2];
-    (*x)[i] = elt - '0';
+    x[i] = elt - '0';
   }
   return x;
 }
@@ -193,7 +193,7 @@ void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t>& res) {
   res.clear();
   i = SimpleBitVector_lowestIndex(x);
   for (; i != x->length(); i++) {
-    if ((*x)[i]) {
+    if (x[i]) {
       res.push_back(i);
     }
   }

@@ -68,11 +68,6 @@ RESULT_TYPE WEAK_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_ARGUME
         POINTER_FIX((core::T_O**)&obj->bucket.rawRef_());
         client = (ADDR_T)((char*)client + sizeof(gctools::StrongMappingObjectType) + sizeof(gctools::Header_s));
       } break;
-      case gctools::Header_s::WeakPointerKind: {
-        gctools::WeakPointer* obj = reinterpret_cast<gctools::WeakPointer*>(client);
-        POINTER_FIX((core::T_O**)&obj->value.rawRef_());
-        client = (ADDR_T)((char*)client + sizeof(gctools::WeakPointer) + sizeof(gctools::Header_s));
-      } break;
       default:
         THROW_HARD_ERROR("handle other weak kind {}", header._badge_stamp_wtag_mtag._value);
       }
@@ -112,10 +107,6 @@ ADDR_T WEAK_SKIP(ADDR_T client, bool dbg, size_t& objectSize) {
     case gctools::Header_s::StrongMappingKind: {
       GCWEAK_LOG(fmt::format("StrongMappingKind"));
       objectSize = gctools::AlignUp(sizeof(gctools::StrongMappingObjectType));
-    } break;
-    case gctools::Header_s::WeakPointerKind: {
-      GCWEAK_LOG(fmt::format("WeakPointerKind"));
-      objectSize = gctools::AlignUp(sizeof(gctools::WeakPointer));
     } break;
     }
   } else {

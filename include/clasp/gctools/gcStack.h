@@ -168,12 +168,6 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +vas
     return obj;
   }
 
-  void set_from_other_Vaslist(Vaslist* other, size_t arg_idx) {
-    this->_ShiftedNargs = other->_ShiftedNargs - (arg_idx << NargsShift); // remaining arguments
-    this->_Args = other->_Args + arg_idx;                                 // advance to start on remaining args
-    this->check_nargs();
-  }
-
   inline core::T_O** args() const { return this->_Args; }
 
   static T_O* make_shifted_nargs(size_t nargs) { return (T_O*)(nargs << NargsShift); }
@@ -192,7 +186,7 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +vas
 namespace gctools {
 /*! Specialization of smart_ptr<T> on core::Vaslist
  */
-template <> class smart_ptr<core::Vaslist> { // : public tagged_ptr<core::Vaslist> {
+template <> class smart_ptr<core::Vaslist> {
 public:
   typedef core::Vaslist Type;
   Type* theObject;
@@ -201,41 +195,28 @@ public:
   // Default constructor, set theObject to NULL
   smart_ptr() : theObject((Type*)NULL){};
   explicit inline smart_ptr(core::Vaslist* ptr)
-      : theObject((Type*)gctools::tag_vaslist<Type*>(ptr)){
-            //    GCTOOLS_ASSERT(this->vaslistp());
-        };
+      : theObject((Type*)gctools::tag_vaslist<Type*>(ptr)){};
   /*! Create a smart pointer from an existing tagged pointer */
   explicit inline smart_ptr(Tagged ptr)
-      : theObject((Type*)ptr){
-            //    GCTOOLS_ASSERT(this->theObject == NULL || this->vaslistp());
-        };
+      : theObject((Type*)ptr){};
 
-  inline Type* operator->() {
-    //    GCTOOLS_ASSERT(this->vaslistp());
-    return reinterpret_cast<Type*>(this->unsafe_valist());
-  };
+  inline Type* operator->() { return unsafe_valist(); };
 
-  inline const Type* operator->() const {
-    //    GCTOOLS_ASSERT(this->vaslistp());
-    return reinterpret_cast<Type*>(this->unsafe_valist());
-  };
+  inline const Type* operator->() const { return unsafe_valist(); }
 
-  inline Type& operator*() {
-    //    GCTOOLS_ASSERT(this->vaslistp());
-    return *reinterpret_cast<Type*>(this->unsafe_valist());
-  };
+  inline Type& operator*() { return *unsafe_valist(); }
 
 public:
   inline operator bool() { return this->theObject != NULL; };
 
 public:
-  inline bool nilp() const { return tagged_nilp(this->theObject); }
-  inline bool notnilp() const { return (!this->nilp()); };
-  inline bool fixnump() const { return tagged_fixnump(this->theObject); };
+  inline bool nilp() const { return false; }
+  inline bool notnilp() const { return true; };
+  inline bool fixnump() const { return false; };
   inline bool generalp() const { return tagged_generalp(this->theObject); };
-  inline bool consp() const { return tagged_consp(this->theObject); };
-  inline bool objectp() const { return this->generalp() || this->consp(); };
-  inline Type* unsafe_valist() const { return reinterpret_cast<Type*>(untag_vaslist(this->theObject)); };
+  inline bool consp() const { return false; };
+  inline bool objectp() const { return this->generalp(); };
+  inline Type* unsafe_valist() const { return untag_vaslist(this->theObject); };
   inline core::T_O* raw_() const { return reinterpret_cast<core::T_O*>(this->theObject); };
   inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
 };
