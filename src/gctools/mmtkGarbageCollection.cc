@@ -37,12 +37,6 @@ THE SOFTWARE.
 #include <clasp/core/compiler.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 
-#ifndef SCRAPING
-#define ALL_PREGCSTARTUPS_EXTERN
-#include PRE_GC_STARTUP_INC_H
-#undef ALL_PREGCSTARTUPS_EXTERN
-#endif
-
 THREAD_LOCAL MMTk_Mutator my_mutator;
 
 namespace gctools {

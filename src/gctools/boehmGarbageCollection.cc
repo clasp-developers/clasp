@@ -389,12 +389,6 @@ void boehm_clear_finalizer_list(gctools::Tagged object_tagged) {
 
 }; // namespace gctools
 
-#ifndef SCRAPING
-#define ALL_PREGCSTARTUPS_EXTERN
-#include PRE_GC_STARTUP_INC_H
-#undef ALL_PREGCSTARTUPS_EXTERN
-#endif
-
 namespace gctools {
 __attribute__((noinline)) void startupBoehm(gctools::ClaspInfo* claspInfo) {
   GC_set_handle_fork(1);
@@ -434,12 +428,6 @@ __attribute__((noinline)) void startupBoehm(gctools::ClaspInfo* claspInfo) {
   GC_stack_base gc_stack_base;
   GC_get_stack_base(&gc_stack_base);
   GC_register_my_thread(&gc_stack_base);
-#endif
-
-#ifndef SCRAPING
-#define ALL_PREGCSTARTUPS_CALLS
-#include PRE_GC_STARTUP_INC_H
-#undef ALL_PREGCSTARTUPS_CALLS
 #endif
 
   //

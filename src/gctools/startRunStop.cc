@@ -165,6 +165,12 @@ static void clasp_terminate_handler(void) {
 
 }; // namespace gctools
 
+#ifndef SCRAPING
+#define ALL_PREGCSTARTUPS_EXTERN
+#include PRE_GC_STARTUP_INC_H
+#undef ALL_PREGCSTARTUPS_EXTERN
+#endif
+
 extern "C" {
 
 int startup_clasp(void** stackMarker, gctools::ClaspInfo* claspInfo, int* exitCode) {
@@ -263,6 +269,14 @@ int startup_clasp(void** stackMarker, gctools::ClaspInfo* claspInfo, int* exitCo
 #endif
   gctools::initialize_signals(DEFAULT_THREAD_INTERRUPT_SIGNAL);
 
+  core::global_options = new core::CommandLineOptions(claspInfo->_argc, claspInfo->_argv);
+  
+#ifndef SCRAPING
+#define ALL_PREGCSTARTUPS_CALLS
+#include PRE_GC_STARTUP_INC_H
+#undef ALL_PREGCSTARTUPS_CALLS
+#endif
+    
 #if defined(USE_MPS)
   gctools::startupMemoryPoolSystem(claspInfo);
 #elif defined(USE_BOEHM)
@@ -272,7 +286,6 @@ int startup_clasp(void** stackMarker, gctools::ClaspInfo* claspInfo, int* exitCo
                                          claspInfo->_mpiSize);
 #endif
 
-  core::global_options = new core::CommandLineOptions(claspInfo->_argc, claspInfo->_argv);
   core::transfer_StartupInfo_to_my_thread();
   my_thread->startUpVM();
 

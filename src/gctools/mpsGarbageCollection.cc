@@ -175,12 +175,6 @@ extern mps_addr_t cons_skip(mps_addr_t client);
 extern mps_addr_t weak_obj_skip(mps_addr_t client);
 };
 
-#ifndef SCRAPING
-#define ALL_PREGCSTARTUPS_EXTERN
-#include PRE_GC_STARTUP_INC_H
-#undef ALL_PREGCSTARTUPS_EXTERN
-#endif
-
 namespace gctools {
 
 THREAD_LOCAL ThreadLocalAllocationPoints my_thread_allocation_points;
@@ -1086,12 +1080,6 @@ __attribute__((noinline)) void startupMemoryPoolSystem(gctools::ClaspInfo* clasp
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create awl pool");
-
-#ifndef SCRAPING
-#define ALL_PREGCSTARTUPS_CALLS
-#include PRE_GC_STARTUP_INC_H
-#undef ALL_PREGCSTARTUPS_CALLS
-#endif // ifndef SCRAPING
 
   // register the current and only thread
   mps_thr_t global_thread;
