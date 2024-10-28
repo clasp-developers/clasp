@@ -25,8 +25,7 @@ SYMBOL_EXPORT_SC_(ExtPkg, bus_error);
 
 namespace gctools {
 
-/*! The value of the signal that clasp uses to interrupt threads */
-int global_signal = SIGUSR2;
+// Flag used in wait_for_user_signal.
 bool global_user_signal = false;
 
 /*! Signal info is in CONS set by ADD_SIGNAL macro at bottom */
@@ -63,71 +62,18 @@ CL_DEFUN core::T_mv core__signal_info(int sig) { return Values(safe_signal_name(
 
 // INTERRUPTS
 
-static bool do_interrupt_thread(mp::Process_sp process) {
-  fflush(stdout);
-#ifdef ECL_WINDOWS_THREADS
-#ifndef ECL_USE_GUARD_PAGE
-#error "Cannot implement ecl_interrupt_process without guard pages"
-#endif
-  HANDLE thread = (HANDLE)process->process.thread;
-  CONTEXT context;
-  void* trap_address = process->process.env;
-  DWORD guard = PAGE_GUARD | PAGE_READWRITE;
-  int ok = 1;
-  if (SuspendThread(thread) == (DWORD)-1) {
-    FEwin32_error("Unable to suspend thread ~A", 1, process);
-    ok = 0;
-    goto EXIT;
-  }
-  process->process.interrupt = ECL_T;
-  if (!VirtualProtect(process->process.env, sizeof(struct cl_env_struct), guard, &guard)) {
-    FEwin32_error("Unable to protect memory from thread ~A", 1, process);
-    ok = 0;
-  }
-RESUME:
-  if (!QueueUserAPC(wakeup_function, thread, 0)) {
-    FEwin32_error("Unable to queue APC call to thread ~A", 1, process);
-    ok = 0;
-  }
-  if (ResumeThread(thread) == (DWORD)-1) {
-    FEwin32_error("Unable to resume thread ~A", 1, process);
-    ok = 0;
-    goto EXIT;
-  }
-EXIT:
-  return ok;
-#else
-  int signal = global_signal;
-  if (pthread_kill(process->_TheThread._value, signal)) {
-    FElibc_error("Unable to interrupt process ~A", 1, process);
-  }
-  return 1;
-#endif
-}
-
 static void queue_signal_or_interrupt(core::ThreadLocalState*, core::T_sp, bool);
-void clasp_interrupt_process(mp::Process_sp process, core::T_sp function) {
+void clasp_interrupt_process(mp::Process_sp process, core::Function_sp function) {
   /*
    * Lifted from the ECL source code.  meister 2017
    * We first ensure that the process is active and running
    * and past the initialization phase, where it has set up
-   * the environment. Then:
-   * - In Windows it sets up a trap in the stack, so that the
-   *   uncaught exception handler can catch it and process it.
-   * - In POSIX systems it sends a user level interrupt to
-   *   the thread, which then decides how to act.
-   *
-   * If FUNCTION is NIL, we just intend to wake up the process
-   * from some call to ecl_musleep() Queue the interrupt for any
-   * process stage that can potentially receive a signal  */
-  if (function.notnilp() && (process->_Phase >= mp::Nascent)) {
-    // printf("%s:%d clasp_interrupt_process queuing signal\n", __FILE__, __LINE__);
-    function = core::coerce::functionDesignator(function);
+   * the environment. Then add the interrupt to the process's
+   * queue, and it will examine it at its own leisure.
+   */
+  if (process->_Phase >= mp::Nascent) {
     queue_signal_or_interrupt(process->_ThreadInfo, function, true);
   }
-  /* ... but only deliver if the process is still alive */
-  if (process->_Phase == mp::Active)
-    do_interrupt_thread(process);
 }
 
 inline bool interrupts_disabled_by_C() { return my_thread_low_level->_DisableInterrupts; }
@@ -394,12 +340,6 @@ void fatal_error_handler(void* user_data, const char* reason, bool gen_crash_dia
   abort();
 }
 
-void wake_up_thread(int sig) {
-  const char* msg = "In wake_up_thread interrupt.cc:296\n";
-  int len = strlen(msg);
-  write(1, msg, len);
-}
-
 // SIGNALS INITIALIZATION
 
 void initialize_signals(int clasp_signal) {
@@ -428,7 +368,6 @@ void initialize_signals(int clasp_signal) {
   // to deal with it the same way - not defer.
 
   INIT_SIGNAL(clasp_signal, (SA_NODEFER | SA_RESTART | SA_ONSTACK), handle_or_queue_signal);
-  INIT_SIGNAL(global_signal, (SA_RESTART), wake_up_thread);
   INIT_SIGNAL(SIGINT, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);
 #ifdef SIGINFO
   INIT_SIGNAL(SIGINFO, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);

@@ -625,8 +625,9 @@ CL_DEFUN core::T_sp mp__process_enable(Process_sp process) {
 CL_DOCSTRING(R"dx(Interrupt the given process to make it call the given function with no arguments. Return no values.)dx");
 DOCGROUP(clasp);
 CL_DEFUN void mp__interrupt_process(Process_sp process, core::T_sp func) {
-  unlikely_if(process->_Phase != Active) { FEerror("Cannot interrupt the inactive process ~A", 1, process); }
-  clasp_interrupt_process(process, func);
+  if (process->_Phase != Active) [[unlikely]]
+    FEerror("Cannot interrupt the inactive process ~A", 1, process);
+  clasp_interrupt_process(process, core::coerce::functionDesignator(func));
 };
 
 SYMBOL_EXPORT_SC_(MpPkg, exit_process);
