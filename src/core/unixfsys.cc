@@ -128,14 +128,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, up);
 SYMBOL_EXPORT_SC_(KeywordPkg, version);
 SYMBOL_EXPORT_SC_(KeywordPkg, wild);
 
-#if defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_FREEBSD)
-#define sigthreadmask(HOW, NEW, OLD) sigprocmask((HOW), (NEW), (OLD))
-#endif
-
-#if defined(_TARGET_OS_LINUX)
-#define sigthreadmask(HOW, NEW, OLD) sigprocmask((HOW), (NEW), (OLD))
-#endif
-
 namespace core {
 
 String_sp clasp_strerror(int e) { return SimpleBaseString_O::make(std::string(strerror(e))); }
@@ -420,7 +412,7 @@ CL_DEFUN List_sp core__get_sigmask() {
   return sigs.cons();
 }
 
-CL_DOCSTRING(R"(Like the unix function sigthreadmask. 
+CL_DOCSTRING(R"(Like the unix function pthread_sigmask. 
 The **how** argument can be one of :sig-setmask, :sig-block, :sig-unblock.
 The **old-set** can be a core:sigset or nil (NULL).
 Returns (values NIL(success)/T(fail) errno)")
@@ -442,7 +434,7 @@ CL_DEFUN T_mv core__sigthreadmask(Symbol_sp how, Sigset_sp set, T_sp old_set) {
   } else {
     SIMPLE_ERROR("Illegal how argument {} - must be one of :sig-block, :sig-unblock, or :sig-setmask", _rep_(how));
   }
-  int result = sigthreadmask(ihow, &set->_sigset._value, old_setp);
+  int result = pthread_sigmask(ihow, &set->_sigset._value, old_setp);
   if (result == 0) {
     return Values(nil<T_O>(), nil<T_O>());
   } else {
@@ -1957,9 +1949,9 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
         sigaddset(&new_sigset, SIGINT);
         sigaddset(&new_sigset, SIGCHLD);
 
-        rc = sigthreadmask(SIG_SETMASK, &new_sigset, &old_sigset); // TODO: Check return value
+        rc = pthread_sigmask(SIG_SETMASK, &new_sigset, &old_sigset); // TODO: Check return value
         rc = execvp(execvp_args[0], (char* const*)execvp_args.data());
-        sigthreadmask(SIG_SETMASK, &old_sigset, NULL); // Restore signal mask
+        pthread_sigmask(SIG_SETMASK, &old_sigset, NULL); // Restore signal mask
 
         if (rc == -1) // An  error has occurred during - we do a retry
         {
