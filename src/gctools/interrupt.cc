@@ -197,22 +197,7 @@ void wait_for_user_signal(const char* message) {
   if (std::getenv("CLASP_EXIT_ON_WAIT_FOR_USER_SIGNAL")) {
     exit(1);
   }
-  double dsec = 0.1;
-  double seconds = floor(dsec);
-  double frac_seconds = dsec - seconds;
-  double nanoseconds = (frac_seconds * 1000000000.0);
-  timespec ts;
-  while (!global_user_signal) {
-    ts.tv_sec = seconds;
-    ts.tv_nsec = nanoseconds;
-    int code = nanosleep(&ts, &ts);
-    if (code < 0) {
-      if (errno == EINTR)
-        continue;
-      printf("%s:%d:%s nanosleep return error: %d\n", __FILE__, __LINE__, __FUNCTION__, errno);
-      abort();
-    }
-  }
+  while (!global_user_signal) pause();
   printf("%s:%d:%s Received SIGUSR1\n", __FILE__, __LINE__, __FUNCTION__);
   global_user_signal = false;
 }
