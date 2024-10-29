@@ -178,14 +178,20 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx()dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__cas_car(T_sp order, T_sp old, T_sp newv, Cons_sp c) { return c->carCAS(old, newv, std::memory_order_seq_cst); }
+CL_DEFUN T_sp core__cas_car(T_sp order, T_sp old, T_sp newv, Cons_sp c) {
+  c->carCAS(old, newv, std::memory_order_seq_cst);
+  return old;
+}
 
 CL_LAMBDA(order old new cons);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx()dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__cas_cdr(T_sp order, T_sp old, T_sp newv, Cons_sp c) { return c->cdrCAS(old, newv, std::memory_order_seq_cst); }
+CL_DEFUN T_sp core__cas_cdr(T_sp order, T_sp old, T_sp newv, Cons_sp c) {
+  c->cdrCAS(old, newv, std::memory_order_seq_cst);
+  return old;
+}
 
 CL_LAMBDA(osize &key initial-element);
 CL_DECLARE();
