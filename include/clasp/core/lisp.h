@@ -210,7 +210,6 @@ struct globals_t {
 #endif
   mutable mp::SharedMutex _ThePathnameTranslationsMutex; // Protect _ThePathnameTranslations
   mutable mp::SharedMutex _JITLogMutex;                  // Protect _jit logging
-  mutable mp::SharedMutex _UnixSignalHandlersMutex;      // Protect _UnixSignalHandlers
   mutable mp::SharedMutex _CodeBlocksMutex;
   uint _StackWarnSize;
   uint _StackSampleCount;
@@ -253,7 +252,7 @@ public:
         _MonitorMutex(LOGMUTEX_NAMEWORD),
 #endif
         _ThePathnameTranslationsMutex(PNTRANSL_NAMEWORD), _JITLogMutex(JITLOG___NAMEWORD),
-        _UnixSignalHandlersMutex(UNIXSIGN_NAMEWORD), _CodeBlocksMutex(CODEBLOK_NAMEWORD),
+        _CodeBlocksMutex(CODEBLOK_NAMEWORD),
         _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
         _StackSampleCount(0), _StackSampleSize(0), _StackSampleMax(0), _ReplCounter(1), _Bundle(NULL), _DebugStream(NULL),
         _SingleStepLevel(UndefinedUnsignedInt), _MakePackageCallback(NULL), _ExportSymbolCallback(NULL),
@@ -331,7 +330,6 @@ public:
     Complex_sp _ImaginaryUnit;
     Complex_sp _ImaginaryUnitNegative;
     Ratio_sp _PlusHalf;
-    List_sp _UnixSignalHandlers;
     //    DynamicBindingStack _Bindings;
     HashTableEqual_sp _SourceFileIndices;   // map<string,int>
     HashTableEqual_sp _PackageNameIndexMap; // map<string,int>

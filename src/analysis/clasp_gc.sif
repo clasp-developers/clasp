@@ -5962,9 +5962,6 @@
              :offset-ctype "gctools::smart_ptr<core::Ratio_O>" :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_Roots" "._PlusHalf")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>" :offset-base-ctype "core::Lisp"
-             :layout-offset-field-names ("_Roots" "._UnixSignalHandlers")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::HashTableEqual_O>"
              :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_Roots" "._SourceFileIndices")}

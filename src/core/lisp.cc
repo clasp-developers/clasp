@@ -196,7 +196,7 @@ Lisp::GCRoots::GCRoots()
 #ifdef CLASP_THREADS
       _UnboundCellFunctionEntryPoint(unbound<SimpleFun_O>()), _ActiveThreads(nil<T_O>()), _DefaultSpecialBindings(nil<T_O>()),
 #endif
-      _NullStream(nil<T_O>()), _UnixSignalHandlers(nil<T_O>()), _PrintSymbolsProperly(false), _TheSystemIsUp(false),
+      _NullStream(nil<T_O>()), _PrintSymbolsProperly(false), _TheSystemIsUp(false),
       _Started(false) {
   this->_JITDylibs.store(nil<core::T_O>());
   this->_SingleDispatchGenericFunctions.store(nil<core::T_O>());
@@ -589,7 +589,6 @@ void Lisp::startupLispEnvironment() {
   mp::_sym_STARcurrent_processSTAR->defparameter(my_thread->_Process);
   this->add_process(my_thread->_Process);
   my_thread->_Process->_Phase = mp::Active;
-  gctools::initialize_unix_signal_handlers();
   this->_Booted = true;
 
   globals_->_InitFileName = "sys:src;lisp;" KERNEL_NAME ";init.lisp";

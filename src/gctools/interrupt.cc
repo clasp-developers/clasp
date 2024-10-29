@@ -28,38 +28,6 @@ namespace gctools {
 // Flag used in wait_for_user_signal.
 bool global_user_signal = false;
 
-/*! Signal info is in CONS set by ADD_SIGNAL macro at bottom */
-core::T_sp safe_signal_name(int sig) {
-  WITH_READ_LOCK(globals_->_UnixSignalHandlersMutex);
-  core::T_sp key = core::clasp_make_fixnum(sig);
-  if (_lisp->_Booted) {
-    core::T_sp cur = core__alist_assoc_eql(_lisp->_Roots._UnixSignalHandlers, key);
-    if (cur.notnilp()) {
-      return oCadr(cur); // return the signal name
-    }
-  }
-  return key;
-}
-
-/*! Signal info is in CONS set by ADD_SIGNAL macro at bottom */
-core::T_sp safe_signal_handler(int sig) {
-  WITH_READ_LOCK(globals_->_UnixSignalHandlersMutex);
-  core::T_sp key = core::clasp_make_fixnum(sig);
-  if (_lisp->_Booted) {
-    core::T_sp cur = core__alist_assoc_eql(_lisp->_Roots._UnixSignalHandlers, key);
-    if (cur.notnilp()) {
-      return oCaddr(cur); // return the signal handler
-    }
-  }
-  return key;
-}
-
-CL_LAMBDA(signal);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(return Current handler for signal)dx");
-DOCGROUP(clasp);
-CL_DEFUN core::T_mv core__signal_info(int sig) { return Values(safe_signal_name(sig), safe_signal_handler(sig)); }
-
 // INTERRUPTS
 
 static void queue_signal_or_interrupt(core::ThreadLocalState*, core::T_sp, bool);
@@ -172,15 +140,20 @@ CL_DEFUN int core__enable_disable_signals(int signal, int mod) {
 
 // This is both a signal handler and called by signal handlers.
 void handle_signal_now(int sig) {
-  // If there's a handler function in the alist, call it.
+  // If there's a specific handler, call it.
   // Otherwise signal a generic, resumable error.
-  core::Symbol_sp handler = safe_signal_handler(sig);
-  if (handler->fboundp()) {
-    core::eval::funcall(handler->symbolFunction());
-  } else {
+  switch (sig) {
+  case SIGINT:
+      core::eval::funcall(core::_sym_terminal_interrupt->symbolFunction());
+      break;
+  case SIGILL:
+      core::eval::funcall(ext::_sym_illegal_instruction->symbolFunction());
+      break;
+  default: {
     core::T_sp signal_code = core::clasp_make_fixnum(sig);
     core::cl__cerror(ext::_sym_ignore_signal->symbolValue(), ext::_sym_unix_signal_received,
-                     core::Cons_O::createList(kw::_sym_code, signal_code, kw::_sym_handler, handler));
+                     core::Cons_O::createList(kw::_sym_code, signal_code));
+  }
   }
 }
 
@@ -387,26 +360,6 @@ void initialize_signals() {
   llvm::install_fatal_error_handler(fatal_error_handler, NULL);
 }
 
-#define ADD_SIGNAL_SYMBOL(sig, sigsym, handler)                                                                                    \
-  {                                                                                                                                \
-    core::List_sp info = core::Cons_O::createList(core::clasp_make_fixnum(sig), sigsym, handler);                                  \
-    _lisp->_Roots._UnixSignalHandlers = core::Cons_O::create(info, _lisp->_Roots._UnixSignalHandlers);                             \
-  }
-#define ADD_SIGNAL(sig, name, handler)                                                                                             \
-  {                                                                                                                                \
-    core::Symbol_sp sigsym = _lisp->intern(name, KeywordPkg);                                                                      \
-    ADD_SIGNAL_SYMBOL(sig, sigsym, handler);                                                                                       \
-  }
-
-CL_LAMBDA(signal symbol function);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(Set current handler for signal)dx");
-DOCGROUP(clasp);
-CL_DEFUN void core__push_unix_signal_handler(int signal, core::Symbol_sp name, core::Symbol_sp handler) {
-  WITH_READ_WRITE_LOCK(globals_->_UnixSignalHandlersMutex);
-  ADD_SIGNAL_SYMBOL(signal, name, handler);
-}
-
 CL_LAMBDA();
 CL_DOCSTRING(R"dx(Get alist of Signal-name . Signal-code alist of known signal (Posix + extra))dx");
 DOCGROUP(clasp);
@@ -528,130 +481,5 @@ CL_DEFUN core::List_sp core__signal_code_alist() {
 #endif
   return alist;
 }
-
-void initialize_unix_signal_handlers() {
-#ifdef SIGHUP
-  ADD_SIGNAL(SIGHUP, "SIGHUP", nil<core::T_O>());
-#endif
-#ifdef SIGINT
-  ADD_SIGNAL(SIGINT, "SIGINT", core::_sym_terminal_interrupt);
-#endif
-#ifdef SIGQUIT
-  ADD_SIGNAL(SIGQUIT, "SIGQUIT", nil<core::T_O>());
-#endif
-#ifdef SIGILL
-  ADD_SIGNAL(SIGILL, "SIGILL", ext::_sym_illegal_instruction);
-#endif
-#ifdef SIGTRAP
-  ADD_SIGNAL(SIGTRAP, "SIGTRAP", nil<core::T_O>());
-#endif
-#ifdef SIGABRT
-  ADD_SIGNAL(SIGABRT, "SIGABRT", nil<core::T_O>());
-#endif
-#ifdef SIGEMT
-  ADD_SIGNAL(SIGEMT, "SIGEMT", nil<core::T_O>());
-#endif
-/*
-// We do install a sigfpe handler in initialize_signals
-#ifdef SIGFPE
-        ADD_SIGNAL( SIGFPE, "SIGFPE", nil<core::T_O>());
-#endif
-*/
-#ifdef SIGKILL
-  ADD_SIGNAL(SIGKILL, "SIGKILL", nil<core::T_O>());
-#endif
-/*
-// These take a parameter, so will fail if called here, since handle_signal_now call with no parameters
-// We do install correct handlers in initialize_signals
-#ifdef SIGBUS
-        ADD_SIGNAL( SIGBUS, "SIGBUS", ext::_sym_bus_error);
-#endif
-#ifdef SIGSEGV
-        ADD_SIGNAL( SIGSEGV, "SIGSEGV", ext::_sym_segmentation_violation);
-#endif
-*/
-#ifdef SIGSYS
-  ADD_SIGNAL(SIGSYS, "SIGSYS", nil<core::T_O>());
-#endif
-#ifdef SIGPIPE
-  ADD_SIGNAL(SIGPIPE, "SIGPIPE", nil<core::T_O>());
-#endif
-#ifdef SIGALRM
-  ADD_SIGNAL(SIGALRM, "SIGALRM", nil<core::T_O>());
-#endif
-#ifdef SIGTERM
-  ADD_SIGNAL(SIGTERM, "SIGTERM", nil<core::T_O>());
-#endif
-#ifdef SIGURG
-  ADD_SIGNAL(SIGURG, "SIGURG", nil<core::T_O>());
-#endif
-#ifdef SIGSTOP
-  ADD_SIGNAL(SIGSTOP, "SIGSTOP", nil<core::T_O>());
-#endif
-
-#ifdef SIGTSTP
-  ADD_SIGNAL(SIGTSTP, "SIGTSTP", nil<core::T_O>());
-#endif
-#ifdef SIGCONT
-  ADD_SIGNAL(SIGCONT, "SIGCONT", nil<core::T_O>());
-#endif
-/*
-// core::_sym_wait_for_all_processes is undefined
-#ifdef SIGCHLD
-        ADD_SIGNAL( SIGCHLD, "SIGCHLD", core::_sym_wait_for_all_processes);
-#endif
-*/
-#ifdef SIGTTIN
-  ADD_SIGNAL(SIGTTIN, "SIGTTIN", nil<core::T_O>());
-#endif
-#ifdef SIGTTOU
-  ADD_SIGNAL(SIGTTOU, "SIGTTOU", nil<core::T_O>());
-#endif
-#ifdef SIGIO
-  ADD_SIGNAL(SIGIO, "SIGIO", nil<core::T_O>());
-#endif
-#ifdef SIGXCPU
-  // SIGXCPU is used by boehm to stop threads - this causes problems with boehm in the precise mode
-#if !(defined(USE_BOEHM) && defined(USE_PRECISE_GC))
-  ADD_SIGNAL(SIGXCPU, "SIGXCPU", nil<core::T_O>());
-#endif
-#endif
-#ifdef SIGXFSZ
-  ADD_SIGNAL(SIGXFSZ, "SIGXFSZ", nil<core::T_O>());
-#endif
-#ifdef SIGVTALRM
-  ADD_SIGNAL(SIGVTALRM, "SIGVTALRM", nil<core::T_O>());
-#endif
-#ifdef SIGPROF
-  ADD_SIGNAL(SIGPROF, "SIGPROF", nil<core::T_O>());
-#endif
-#ifdef SIGWINCH
-  ADD_SIGNAL(SIGWINCH, "SIGWINCH", nil<core::T_O>());
-#endif
-/*
-ext::_sym_information_interrupt is undefined
-#ifdef SIGINFO
-        ADD_SIGNAL( SIGINFO, "SIGINFO", ext::_sym_information_interrupt);
-#endif
-*/
-#if 0
-#ifdef SIGUSR1
-        ADD_SIGNAL( SIGUSR1, "SIGUSR1", nil<core::T_O>());
-#endif
-#endif
-#ifdef SIGUSR2
-#ifdef _TARGET_OS_DARWIN
-  ADD_SIGNAL(SIGUSR2, "SIGUSR2", nil<core::T_O>());
-#endif
-/*
-#ifdef _TARGET_OS_LINUX
-        ADD_SIGNAL( SIGUSR2, "SIGUSR2", ext::_sym_information_interrupt);
-#endif
-*/
-#endif
-#ifdef SIGTHR
-  ADD_SIGNAL(SIGTHR, "SIGTHR", nil<core::T_O>());
-#endif
-};
 
 }; // namespace gctools
