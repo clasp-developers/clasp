@@ -262,12 +262,8 @@ int startup_clasp(void** stackMarker, gctools::ClaspInfo* claspInfo, int* exitCo
   //
   stringstream ssdummy;
   walk_stamp_field_layout_tables(gctools::precise_info, ssdummy);
-#ifdef SIGRTMIN
-#define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGRTMIN + 2
-#else
-#define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGUSR1
-#endif
-  gctools::initialize_signals(DEFAULT_THREAD_INTERRUPT_SIGNAL);
+
+  gctools::initialize_signals();
 
   core::global_options = new core::CommandLineOptions(claspInfo->_argc, claspInfo->_argv);
   

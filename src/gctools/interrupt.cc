@@ -327,8 +327,7 @@ void fatal_error_handler(void* user_data, const char* reason, bool gen_crash_dia
 
 // SIGNALS INITIALIZATION
 
-void initialize_signals(int clasp_signal) {
-  // clasp_signal is the signal that we use as a thread interrupt.
+void initialize_signals() {
 #define INIT_SIGNAL(sig, flags, handler)                                                                                           \
   new_action.sa_handler = handler;                                                                                                 \
   sigemptyset(&new_action.sa_mask);                                                                                                \
@@ -352,7 +351,6 @@ void initialize_signals(int clasp_signal) {
   // Lisp code. If that happens, and a signal is received again, we want
   // to deal with it the same way - not defer.
 
-  INIT_SIGNAL(clasp_signal, (SA_NODEFER | SA_RESTART | SA_ONSTACK), handle_or_queue_signal);
   INIT_SIGNAL(SIGINT, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);
 #ifdef SIGINFO
   INIT_SIGNAL(SIGINFO, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);

@@ -12,7 +12,7 @@ inline void handle_all_queued_interrupts<SnapshotLoadStage>(){
     // Do nothing
 };
 
-void initialize_signals(int clasp_signal);
+void initialize_signals();
 void initialize_unix_signal_handlers();
 
 // Use the following mechanism to pause clasp
