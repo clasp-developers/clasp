@@ -23,6 +23,73 @@ SYMBOL_EXPORT_SC_(ExtPkg, illegal_instruction);
 SYMBOL_EXPORT_SC_(ExtPkg, segmentation_violation);
 SYMBOL_EXPORT_SC_(ExtPkg, bus_error);
 
+/* Stupid preprocessor nonsense to save some typing.
+ * Undefined at the bottom of the file. */
+#ifdef SIGSYS
+#define DOSIGSYS(MAC) MAC(SYS)
+#else
+#define DOSIGSYS(MAC)
+#endif
+#ifdef SIGTRAP
+#define DOSIGTRAP(MAC) MAC(TRAP)
+#else
+#define DOSIGTRAP(MAC)
+#endif
+#ifdef SIGVTALRM
+#define DOSIGVTALRM(MAC) MAC(VTALRM)
+#else
+#define DOSIGVTALRM(MAC)
+#endif
+#ifdef SIGXCPU
+#define DOSIGXCPU(MAC) MAC(XCPU)
+#else
+#define DOSIGXCPU(MAC)
+#endif
+#ifdef SIGXFSZ
+#define DOSIGXFSZ(MAC) MAC(XFSZ)
+#else
+#define DOSIGXFSZ(MAC)
+#endif
+#ifdef SIGPOLL
+#define DOSIGPOLL(MAC) MAC(POLL)
+#else
+#define DOSIGPOLL(MAC)
+#endif
+#ifdef SIGPROF
+#define DOSIGPROF(MAC) MAC(PROF)
+#else
+#define DOSIGPROF(MAC)
+#endif
+#ifdef SIGEMT
+#define DOSIGEMT(MAC) MAC(EMT)
+#else
+#define DOSIGEMT(MAC)
+#endif
+#ifdef SIGIO
+#define DOSIGIO(MAC) MAC(IO)
+#else
+#define DOSIGIO(MAC)
+#endif
+#ifdef SIGPWR
+#define DOSIGPWR(MAC) MAC(PWR)
+#else
+#define DOSIGPWR(MAC)
+#endif
+#ifdef SIGTHR
+#define DOSIGTHR(MAC) MAC(THR)
+#else
+#define DOSIGTHR(MAC)
+#endif
+
+#define DO_ALL_SIGNALS(MAC) \
+  MAC(ABRT); MAC(ALRM); MAC(BUS); MAC(CHLD); MAC(CONT); MAC(FPE); MAC(HUP);\
+  MAC(ILL); MAC(INT); MAC(KILL); MAC(PIPE); MAC(QUIT); MAC(SEGV); MAC(STOP);\
+  MAC(TERM); MAC(TSTP); MAC(TTIN); MAC(TTOU); MAC(USR1); MAC(USR2);\
+  MAC(WINCH); MAC(URG);\
+  DOSIGSYS(MAC); DOSIGTRAP(MAC); DOSIGVTALRM(MAC); DOSIGXCPU(MAC);\
+  DOSIGXFSZ(MAC); DOSIGPOLL(MAC); DOSIGPROF(MAC); DOSIGEMT(MAC);\
+  DOSIGIO(MAC); DOSIGPWR(MAC); DOSIGTHR(MAC);
+
 namespace gctools {
 
 // Flag used in wait_for_user_signal.
@@ -30,7 +97,7 @@ bool global_user_signal = false;
 
 // INTERRUPTS
 
-static void queue_signal_or_interrupt(core::ThreadLocalState*, core::T_sp, bool);
+static void enqueue_interrupt(core::ThreadLocalState*, core::T_sp);
 void clasp_interrupt_process(mp::Process_sp process, core::T_sp function) {
   /*
    * Lifted from the ECL source code.  meister 2017
@@ -40,7 +107,7 @@ void clasp_interrupt_process(mp::Process_sp process, core::T_sp function) {
    * queue, and it will examine it at its own leisure.
    */
   if (process->_Phase >= mp::Nascent) {
-    queue_signal_or_interrupt(process->_ThreadInfo, function, true);
+    enqueue_interrupt(process->_ThreadInfo, function);
   }
 }
 
@@ -48,71 +115,98 @@ inline bool interrupts_disabled_by_C() { return my_thread_low_level->_DisableInt
 
 inline bool interrupts_disabled_by_lisp() { return core::_sym_STARinterrupts_enabledSTAR->symbolValue().notnilp(); }
 
-// SIGNAL QUEUE
-// This is a regular lisp list. We keep a few extra conses lying around
-// and use those rather than allocate within signal handlers.
-// Objects in the queue are either fixnums, representing signals, or
-// functions, representing interrupts.
-
-static void queue_signal_or_interrupt(core::ThreadLocalState* thread, core::T_sp thing, bool allocate) {
-  mp::SafeSpinLock spinlock(thread->_SparePendingInterruptRecordsSpinLock);
-  core::T_sp record;
-  if (allocate) {
-    record = core::Cons_O::create(nil<core::T_O>(), nil<core::T_O>());
-  } else {
-    record = thread->_SparePendingInterruptRecords;
-    if (record.consp()) {
-      thread->_SparePendingInterruptRecords = record.unsafe_cons()->cdr();
-    }
+// INTERRUPT QUEUE
+// Very simple atomic queue, but I still had to consult with a paper:
+// Valois, John D. "Implementing lock-free queues." Proceedings of the seventh international conference on Parallel and Distributed Computing Systems. 1994.
+// The ABA problem mentioned there shouldn't matter since we always use fresh
+// conses for the new tails. Technically I guess we could reallocate one by
+// coincidence but that seems really unlikely?
+static void enqueue_interrupt(core::ThreadLocalState* thread, core::T_sp thing) {
+  core::Cons_sp record = core::Cons_O::create(thing, nil<core::T_O>());
+  // relaxed because queueing an interrupt does not synchronize with queueing
+  // another interrupt
+  core::Cons_sp tail = thread->_PendingInterruptsTail.load(std::memory_order_relaxed);
+  while (true) {
+    core::T_sp ntail = nil<core::T_O>();
+    if (tail->cdrCAS(ntail, record, std::memory_order_release)) break;
+    else tail = ntail.as_assert<core::Cons_O>();
   }
-  if (record.consp()) {
-    record.unsafe_cons()->rplaca(thing);
-    record.unsafe_cons()->rplacd(nil<core::T_O>());
-    thread->_PendingInterrupts = clasp_nconc(thread->_PendingInterrupts, record);
-  }
+  thread->_PendingInterruptsTail.compare_exchange_strong(tail, record,
+                                                         std::memory_order_release);
 }
 
-static void queue_signal(int signo) { queue_signal_or_interrupt(my_thread, core::clasp_make_fixnum(signo), false); }
+static void queue_signal(int signo) {
+  sigaddset(&my_thread->_PendingSignals, signo); // sigaddset is AS-safe
+  // It's possible this handler could be interrupted between these two lines.
+  // If it's interrupted and the signal is queued/the handler returns,
+  // it doesn't matter. If it's interrupted and the handler escapes, we have
+  // a queued signal without the flag being set, which is a little unfortunate
+  // but not a huge deal - another signal will set the flag for one thing.
+  // It also shouldn't be a problem since we only really jump from synchronously
+  // delivered signals (segv, etc) which could only be signaled here if something
+  // has gone very deeply wrong.
+  // On GNU we have sigisemptyset which could be used instead of a separate flag,
+  // and that would solve the problem, but that's only on GNU, plus it's
+  // necessarily a little slower than a simple flag.
+  my_thread->_PendingSignalsP.store(true, std::memory_order_release);
+}
 
 // Pop a thing from the queue.
-// NOTE: Don't call this unless you're holding the spare records spinlock.
-core::T_sp pop_signal_or_interrupt(core::ThreadLocalState* thread) {
-  core::T_sp value;
-  core::Cons_sp record;
-  { // <---- brace for spinlock scope
-    mp::SafeSpinLock spinlock(thread->_SparePendingInterruptRecordsSpinLock);
-    record = gc::As<core::Cons_sp>(thread->_PendingInterrupts);
-    value = record->car();
-    thread->_PendingInterrupts = record->cdr();
-    if (value.fixnump() || gc::IsA<core::Symbol_sp>(value)) {
-      // Conses that contain fixnum or symbol values are recycled onto the
-      // _SparePendingInterruptRecords stack
-      record->rplacd(thread->_SparePendingInterruptRecords);
-      thread->_SparePendingInterruptRecords = record;
-    }
-  }
-  return value;
+core::T_sp dequeue_interrupt(core::ThreadLocalState* thread) {
+  // Use acquire-release since sending an interrupt synchronizes-with processing
+  // that interrupt.
+  core::Cons_sp head = thread->_PendingInterruptsHead.load(std::memory_order_acquire);
+  core::T_sp next;
+  core::Cons_sp cnext;
+  do {
+    next = head->cdr();
+    if (next.nilp()) return next; // nothing to dequeue
+    cnext = next.as_assert<core::Cons_O>();
+  } while (!thread->_PendingInterruptsHead.compare_exchange_weak(head, cnext,
+                                                                 std::memory_order_acq_rel));
+  core::T_sp interrupt = cnext->car();
+  // We need to keep the new head where it is so the queue is never empty
+  // (empty queues make atomicity hard-to-impossible)
+  // but we should spike the next to make the interrupt collectible later.
+  cnext->rplaca(nil<core::T_O>());
+  return interrupt;
 }
 
 // Perform one action (presumably popped from the queue).
-void handle_queued_signal_or_interrupt(core::T_sp signal_code) {
-  if (signal_code.fixnump()) { // signal
-    handle_signal_now(signal_code.unsafe_fixnum());
-  } else if (mp::_sym_signal_interrupt->fboundp()) {
+void handle_queued_interrupt(core::T_sp signal_code) {
+  if (mp::_sym_signal_interrupt->fboundp()) {
     core::eval::funcall(mp::_sym_signal_interrupt->symbolFunction(),
                         signal_code);
   }
-  // otherwise junk or we're really early,
+  // otherwise we're really early,
   // but this is pretty low level so just silently ignore
+}
+
+static void handle_one_signal(int signum) {
+  if (sigismember(&my_thread->_PendingSignals, signum)) {
+    sigdelset(&my_thread->_PendingSignals, signum);
+    handle_signal_now(signum);
+  }
+}
+
+static void handle_pending_signals() {
+  my_thread->_PendingSignalsP.store(false, std::memory_order_release);
+#define TRYSIG(NAME) handle_one_signal(SIG##NAME)
+  DO_ALL_SIGNALS(TRYSIG);
+#undef TRYSIG
 }
 
 // Do all the queued actions, emptying the queue.
 template <> void handle_all_queued_interrupts<RuntimeStage>() {
-  while (my_thread->_PendingInterrupts.consp()) {
-    // printf("%s:%d:%s Handling a signal - there are pending interrupts\n", __FILE__, __LINE__, __FUNCTION__ );
-    core::T_sp sig = pop_signal_or_interrupt(my_thread);
-    // printf("%s:%d:%s Handling a signal: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(sig).c_str() );
-    handle_queued_signal_or_interrupt(sig);
+  if (my_thread->_PendingSignalsP.load(std::memory_order_acquire))
+    handle_pending_signals();
+  // Check that the queue has actually been created.
+  if (my_thread->_PendingInterruptsHead.load(std::memory_order_acquire)) { 
+    while (true) {
+      core::T_sp i = dequeue_interrupt(my_thread);
+      if (i.nilp()) break;
+      handle_queued_interrupt(i);
+    }
   }
 }
 
@@ -347,6 +441,10 @@ void initialize_signals() {
   INIT_SIGNAL(SIGUSR1, (SA_NODEFER | SA_RESTART), handle_SIGUSR1);
   INIT_SIGNAL(SIGSYS, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGTRAP, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  // These termination signals we respond to when we're good and ready.
+  INIT_SIGNAL(SIGTERM, (SA_NODEFER | SA_RESTART), queue_signal);
+  INIT_SIGNAL(SIGQUIT, (SA_NODEFER | SA_RESTART), queue_signal);
+  INIT_SIGNAL(SIGHUP, (SA_NODEFER | SA_RESTART), queue_signal);
 #ifdef SIGVTALRM
   INIT_SIGNAL(SIGVTALRM, (SA_NODEFER | SA_RESTART), handle_signal_now);
 #endif
@@ -364,52 +462,24 @@ CL_DOCSTRING(R"dx(Get alist of Signal-name . Signal-code alist of known signal (
 DOCGROUP(clasp);
 CL_DEFUN core::List_sp core__signal_code_alist() {
   core::List_sp alist = nil<core::T_O>();
-#define DEFSIG(SIG) \
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern(#SIG, KeywordPkg), core::clasp_make_fixnum(SIG)), alist);
-  // POSIX required signals
-  DEFSIG(SIGABRT); DEFSIG(SIGALRM); DEFSIG(SIGBUS);
-  DEFSIG(SIGCHLD); DEFSIG(SIGCONT); DEFSIG(SIGFPE); DEFSIG(SIGHUP);
-  DEFSIG(SIGILL); DEFSIG(SIGINT); DEFSIG(SIGKILL); DEFSIG(SIGPIPE);
-  DEFSIG(SIGQUIT); DEFSIG(SIGSEGV); DEFSIG(SIGSTOP); DEFSIG(SIGTERM);
-  DEFSIG(SIGTSTP); DEFSIG(SIGTTIN); DEFSIG(SIGTTOU);
-  DEFSIG(SIGUSR1); DEFSIG(SIGUSR2);
-  DEFSIG(SIGWINCH); DEFSIG(SIGURG);
-  // XSI extensions
-#ifdef SIGSYS
-  DEFSIG(SIGSYS);
-#endif
-#ifdef SIGTRAP
-  DEFSIG(SIGTRAP);
-#endif
-#ifdef SIGVTALRM
-  DEFSIG(SIGVTALRM);
-#endif
-#ifdef SIGXCPU
-  DEFSIG(SIGXCPU);
-#endif
-#ifdef SIGXFSZ
-  DEFSIG(SIGXFSZ);
-#endif
-  // random other common stuff
-#ifdef SIGPOLL
-  DEFSIG(SIGPOLL);
-#endif
-#ifdef SIGPROF
-  DEFSIG(SIGPROF);
-#endif
-#ifdef SIGEMT
-  DEFSIG(SIGEMT);
-#endif
-#ifdef SIGIO
-  DEFSIG(SIGIO);
-#endif
-#ifdef SIGPWR
-  DEFSIG(SIGPWR);
-#endif
-#ifdef SIGTHR
-  DEFSIG(SIGTHR);
-#endif
+#define DEFSIG(NAME) \
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIG" #NAME, KeywordPkg), core::clasp_make_fixnum(SIG##NAME)), alist);
+  DO_ALL_SIGNALS(DEFSIG);
+#undef DEFSIG
   return alist;
 }
+
+#undef DOSIGTHR
+#undef DOSIGPWR
+#undef DOSIGIO
+#undef DOSIGEMT
+#undef DOSIGPROF
+#undef DOSIGPOLL
+#undef DOSIGXFSZ
+#undef DOSIGXCPU
+#undef DOSIGVTALRM
+#undef DOSIGTRAP
+#undef DOSIGSYS
+#undef DO_ALL_SIGNALS
 
 }; // namespace gctools

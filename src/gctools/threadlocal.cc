@@ -179,8 +179,13 @@ VirtualMachine::~VirtualMachine() {
 // ThreadLocalState::finish_initialization_main_thread() after the Nil symbol is
 // in GC managed memory.
 ThreadLocalState::ThreadLocalState(bool dummy)
-    : _unwinds(0), _PendingInterrupts(), _CleanupFunctions(NULL), _ObjectFiles(), _BufferStr8NsPool(), _BufferStrWNsPool(),
-      _Breakstep(false), _BreakstepFrame(NULL), _DynEnvStackBottom(), _UnwindDest(), _DtreeInterpreterCallCount(0) {
+  : _unwinds(0), _CleanupFunctions(NULL), _ObjectFiles(), _BufferStr8NsPool(), _BufferStrWNsPool(), _PendingSignalsP(false),
+    // initialized with null pointers so that dequeue_interrupt
+    // can see that the queue is not yet available.
+    // Default-initializing an atomic default-initializes the underlying object
+    // only in C++20 and beyond.
+    _PendingInterruptsHead(), _PendingInterruptsTail(),
+    _Breakstep(false), _BreakstepFrame(NULL), _DynEnvStackBottom(), _UnwindDest(), _DtreeInterpreterCallCount(0) {
   my_thread = this;
 #ifdef _TARGET_OS_DARWIN
   pthread_threadid_np(NULL, &this->_Tid);
@@ -190,6 +195,7 @@ ThreadLocalState::ThreadLocalState(bool dummy)
   this->_xorshf_x = rand();
   this->_xorshf_y = rand();
   this->_xorshf_z = rand();
+  sigemptyset(&this->_PendingSignals);
 }
 
 pid_t ThreadLocalState::safe_fork() {
@@ -220,8 +226,6 @@ void ThreadLocalState::finish_initialization_main_thread(core::T_sp theNilObject
   //  printf("%s:%d:%s reinitialize symbols here once _Nil is defined\n", __FILE__, __LINE__, __FUNCTION__ );
   // Reinitialize all threadlocal lists once NIL is defined
   // We work with theObject here directly because it's very early in the bootstrapping
-  if (this->_PendingInterrupts.theObject)
-    goto ERR;
   if (this->_ObjectFiles.theObject)
     goto ERR;
   if (this->_BufferStr8NsPool.theObject)
@@ -232,7 +236,6 @@ void ThreadLocalState::finish_initialization_main_thread(core::T_sp theNilObject
     goto ERR;
   if (this->_UnwindDest.theObject)
     goto ERR;
-  this->_PendingInterrupts.theObject = theNilObject.theObject;
   this->_ObjectFiles.theObject = theNilObject.theObject;
   this->_BufferStr8NsPool.theObject = theNilObject.theObject;
   this->_BufferStrWNsPool.theObject = theNilObject.theObject;
@@ -246,8 +249,9 @@ ERR:
 
 // This is for constructing ThreadLocalState for threads
 ThreadLocalState::ThreadLocalState()
-    : _unwinds(0), _PendingInterrupts(nil<core::T_O>()), _ObjectFiles(nil<core::T_O>()), _CleanupFunctions(NULL), _Breakstep(false),
-      _BreakstepFrame(NULL), _DynEnvStackBottom(nil<core::T_O>()), _UnwindDest(nil<core::T_O>()) {
+  : _unwinds(0), _ObjectFiles(nil<core::T_O>()), _CleanupFunctions(NULL), _Breakstep(false), _PendingSignalsP(false),
+    _PendingInterruptsHead(), _PendingInterruptsTail(),
+    _BreakstepFrame(NULL), _DynEnvStackBottom(nil<core::T_O>()), _UnwindDest(nil<core::T_O>()) {
   my_thread = this;
 #ifdef _TARGET_OS_DARWIN
   pthread_threadid_np(NULL, &this->_Tid);
@@ -259,6 +263,7 @@ ThreadLocalState::ThreadLocalState()
   this->_xorshf_x = rand();
   this->_xorshf_y = rand();
   this->_xorshf_z = rand();
+  sigemptyset(&this->_PendingSignals);
 }
 
 static void dumpDynEnvStack(T_sp stack) {
@@ -412,8 +417,9 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize
 #else
   this->_WriteToStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream());
 #endif
-  this->_PendingInterrupts = nil<T_O>();
-  this->_SparePendingInterruptRecords = cl__make_list(clasp_make_fixnum(16), nil<T_O>());
+  core::Cons_sp intqueue = core::Cons_O::create(nil<core::T_O>(), nil<core::T_O>());
+  this->_PendingInterruptsHead.store(intqueue, std::memory_order_release);
+  this->_PendingInterruptsTail.store(intqueue, std::memory_order_release);
 };
 
 }; // namespace core

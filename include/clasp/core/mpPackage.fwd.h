@@ -275,23 +275,6 @@ extern int clasp_musleep(double dsec, bool alertable);
 }
 
 namespace mp {
-struct SpinLock {
-public:
-  void lock() {
-    while (lck.test_and_set(std::memory_order_acquire)) {
-    }
-  }
-
-  void unlock() { lck.clear(std::memory_order_release); }
-
-private:
-  std::atomic_flag lck;
-};
-struct SafeSpinLock {
-  SpinLock& _SpinLock;
-  SafeSpinLock(SpinLock& l) : _SpinLock(l) { _SpinLock.lock(); };
-  ~SafeSpinLock() { _SpinLock.unlock(); }
-};
 
 extern "C" void mutex_lock_enter(char* nameword);
 extern "C" void mutex_lock_return(char* nameword);

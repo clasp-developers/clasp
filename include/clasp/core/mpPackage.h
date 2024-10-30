@@ -57,22 +57,6 @@ template <typename T> struct RAIILock {
 };
 #endif
 
-namespace mp {
-inline core::T_sp atomic_get_and_set_to_Nil(mp::SpinLock& spinlock, core::T_sp& slot) noexcept {
-  mp::SafeSpinLock l(spinlock);
-  core::T_sp old = slot;
-  slot = nil<core::T_O>();
-  return old;
-}
-inline void atomic_push(mp::SpinLock& spinlock, core::T_sp& slot, core::T_sp object) {
-  core::Cons_sp cons = core::Cons_O::create(object, nil<core::T_O>());
-  mp::SafeSpinLock l(spinlock);
-  core::T_sp car = slot;
-  cons->rplacd(car);
-  slot = cons;
-}
-}; // namespace mp
-
 #define DEFAULT_THREAD_STACK_SIZE 8388608
 namespace mp {
 

@@ -290,11 +290,10 @@ struct ThreadLocalState {
   core::T_sp _ObjectFiles;
   mp::Process_sp _Process;
   DynamicBindingStack _Bindings;
-  /*! Pending interrupts */
-  List_sp _PendingInterrupts;
-  /*! Save CONS records so we don't need to do allocations
-      to add to _PendingInterrupts */
-  List_sp _SparePendingInterruptRecords; // signal_queue on ECL
+  std::atomic<core::Cons_sp> _PendingInterruptsHead;
+  std::atomic<core::Cons_sp> _PendingInterruptsTail;
+  sigset_t _PendingSignals;
+  std::atomic<bool> _PendingSignalsP;
   List_sp _BufferStr8NsPool;
   List_sp _BufferStrWNsPool;
   StringOutputStream_sp _BFormatStringOutputStream;
@@ -323,7 +322,6 @@ struct ThreadLocalState {
   size_t _xorshf_y;
   size_t _xorshf_z;
   CleanupFunctionNode* _CleanupFunctions;
-  mp::SpinLock _SparePendingInterruptRecordsSpinLock;
   uint64_t _BytesAllocated;
   uint64_t _Tid;
   uintptr_t _BacktraceBasePointer;

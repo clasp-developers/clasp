@@ -1367,9 +1367,12 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
 
 (define-condition mp:suspension-interrupt (mp:interrupt) ())
 
-;; got a serious signal (e.g. SIGTERM but not necessarily)
-(define-condition serious-signal (mp:cancellation-interrupt)
-  ((%signal :initarg :signal :reader serious-signal-signal)))
+;; terminate the program. I'm making it a subset of cancellation because
+;; it cancels the particular thread as well obviously, and because if you
+;; want to block one kind of termination you might want to block the other.
+;; Not sure whether to export this specifically.
+(define-condition termination-interrupt (mp:cancellation-interrupt)
+  ((%signal :initarg :signal :reader termination-signal)))
 
 (defun mp:interrupt (process &optional (datum nil datump) &rest arguments)
   (check-type process mp:process)
@@ -1413,6 +1416,15 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
 
 (defmethod mp:service-interrupt ((i mp:cancellation-interrupt))
   (mp:abort-process i))
+(defmethod mp:service-interrupt ((i termination-interrupt))
+  (case (termination-signal i)
+    ((:sigabrt) (write-line "Aborted" *debug-io*))
+    ((:sigterm) (write-line "Terminated" *debug-io*))
+    ((:sigkill) (write-line "Killed" *debug-io*))
+    ((:sigquit) (write-line "Quit" *debug-io*))
+    ((:sighup) (write-line "Hangup" *debug-io*))
+    (otherwise (write-line "Terminated by signal" *debug-io*)))
+  (ext:quit 1))
 
 (defmethod mp:service-interrupt ((i mp:call-interrupt))
   (funcall (mp:call-interrupt-function i)))
@@ -1423,15 +1435,20 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
 ;; called from C++ (posix_signal_interrupt)
 (defun mp:posix-interrupt (sig)
   (let* ((signals (load-time-value (core:signal-code-alist) t))
-         (pair (rassoc sig signals))
-         (this (mp:current-process)))
-    (cond ((not pair)
-           (mp:interrupt this "Received POSIX signal: ~d" sig))
-          ((member (car pair)
-                   '(:sigabrt :sigterm :sigkill :sigquit :sigterm))
-           (mp:interrupt this 'serious-signal :signal (car pair)))
-          (t
-           (mp:interrupt this "Received POSIX signal: ~a (~d)" (car pair) sig)))))
+         (pair (rassoc sig signals)))
+    (mp:signal-interrupt
+     (cond ((not pair)
+            (make-condition 'mp:simple-interactive-interrupt
+                            :format-control "Received POSIX signal: ~d"
+                            :format-arguments (list sig)))
+           ((member (car pair)
+                    '(:sigabrt :sigterm :sigkill :sigquit :sighup))
+            (make-condition 'termination-interrupt
+                            :signal (car pair)))
+           (t
+            (make-condition 'mp:simple-interactive-interrupt
+                            :format-control "Received POSIX signal: ~a (~d)"
+                            :format-arguments (list (car pair) sig)))))))
 
 ;;; ----------------------------------------------------------------------
 ;;; ECL's interface to the toplevel and debugger
