@@ -327,3 +327,7 @@ public:
 };
 void mp__interrupt_process(Process_sp process, core::T_sp func);
 }; // namespace mp
+
+namespace mp {
+void posix_signal_interrupt(int);
+}; // namespace mp

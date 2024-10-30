@@ -449,8 +449,8 @@
 
 			   
 ;;; COERCE-TO-CONDITION
-;;;  Internal routine used in ERROR, CERROR, BREAK, and WARN for parsing the
-;;;  hairy argument conventions into a single argument that's directly usable 
+;;;  Internal routine used in ERROR, CERROR, WARN, and MP:INTERRUPT for parsing
+;;;  the hairy argument conventions into a single argument that's directly usable
 ;;;  by all the other routines.
 
 (defun coerce-to-condition (datum arguments default-type function-name)
@@ -624,18 +624,6 @@ No information available on cause. This may be a bug in Clasp."))
 This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp itself."
              (memory-condition-address condition)))))
 (defun ext:bus-error (address) (error 'ext:bus-error :address address))
-
-(define-condition ext:unix-signal-received ()
-  ((code :type fixnum
-         :initform 0
-         :initarg :code
-         :reader ext:unix-signal-received-code)
-   (handler :initarg :handler
-            :initform nil
-            :reader ext:unix-signal-received-handler))
-  (:report (lambda (condition stream)
-             (format stream "Serious signal ~D caught."
-                     (ext:unix-signal-received-code condition)))))
 
 (define-condition type-error (error)
   ((datum :INITARG :DATUM :READER type-error-datum)
@@ -1203,11 +1191,6 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
                      (format-warning-control-string condition)
                      (format-warning-expected condition)
                      (format-warning-observed condition)))))
-
-(define-condition ext:interactive-interrupt (serious-condition)
-  ()
-  (:report "Console interrupt."))
-
 
 
 (defun signal-simple-error (condition-type continue-message format-control format-args
@@ -1353,6 +1336,102 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
     (use-value (c)
       :report "Replace the bogus sequence with a character"
       (if (characterp c) c (code-char c)))))
+
+;;; ----------------------------------------------------------------------
+;;;
+;;; Interrupts
+;;;
+
+(define-condition mp:interrupt () ())
+
+(defgeneric mp:service-interrupt (mp:interrupt))
+
+(define-condition ext:interactive-interrupt (mp:interrupt)
+  ()
+  (:report "Console interrupt."))
+
+;; it's in EXT for backward compatibility. Eventually it should just be MP.
+(import 'ext:interactive-interrupt "MP")
+(export 'ext:interactive-interrupt "MP")
+
+(define-condition mp:simple-interrupt (simple-condition mp:interrupt) ())
+(define-condition mp:simple-interactive-interrupt (mp:simple-interrupt
+                                                   ext:interactive-interrupt)
+  ())
+
+(define-condition mp:cancellation-interrupt (mp:interrupt) ())
+
+(define-condition mp:call-interrupt (mp:interrupt)
+  ((%function :initarg :function :reader mp:call-interrupt-function
+              :type function)))
+
+(define-condition mp:suspension-interrupt (mp:interrupt) ())
+
+;; got a serious signal (e.g. SIGTERM but not necessarily)
+(define-condition serious-signal (mp:cancellation-interrupt)
+  ((%signal :initarg :signal :reader serious-signal-signal)))
+
+(defun mp:interrupt (process &optional (datum nil datump) &rest arguments)
+  (check-type process mp:process)
+  (let ((condition (if datump
+                       (coerce-to-condition datum arguments
+                                            'mp:simple-interactive-interrupt
+                                            'mp:interrupt)
+                       (make-condition 'mp:simple-interactive-interrupt
+                                       "Interactive interrupt."))))
+    (check-type condition mp:interrupt "an interrupt")
+    (mp:queue-interrupt process condition)))
+
+;;; Internal, used by interrupt machinery. Return value ignored.
+(defun mp:signal-interrupt (interrupt)
+  (mp:without-interrupts
+    (restart-case (signal interrupt)
+      (continue ()
+        :report "Ignore the interruption and proceed from where things left off."
+        (return-from mp:signal-interrupt))))
+  (mp:service-interrupt interrupt))
+
+;;; for backward compatibility (e.g. bordeaux)
+(defun mp:interrupt-process (process function)
+  (check-type process mp:process)
+  (check-type function function)
+  (mp:interrupt process 'mp:call-interrupt :function function))
+
+(defun mp:process-kill (process)
+  ;; FIXME: This function should maybe be the more chaotic SIGKILL version,
+  ;; while cancel-thread (cancel-process?) is the nicer interrupt.
+  (mp:interrupt process 'mp:cancellation-interrupt))
+
+(defun mp:process-suspend (process)
+  (mp:interrupt process 'mp:suspension-interrupt))
+
+(defmethod mp:service-interrupt ((i ext:interactive-interrupt))
+  ;; kinda duplicates BREAK.
+  (clasp-debug:with-truncated-stack ()
+    (with-simple-restart (continue "Return from interactive interruption.")
+      (let ((*debugger-hook* nil)) (invoke-debugger i)))))
+
+(defmethod mp:service-interrupt ((i mp:cancellation-interrupt))
+  (mp:abort-process i))
+
+(defmethod mp:service-interrupt ((i mp:call-interrupt))
+  (funcall (mp:call-interrupt-function i)))
+
+(defmethod mp:service-interrupt ((i mp:suspension-interrupt))
+  (mp:suspend-loop))
+
+;; called from C++ (posix_signal_interrupt)
+(defun mp:posix-interrupt (sig)
+  (let* ((signals (load-time-value (core:signal-code-alist) t))
+         (pair (rassoc sig signals))
+         (this (mp:current-process)))
+    (cond ((not pair)
+           (mp:interrupt this "Received POSIX signal: ~d" sig))
+          ((member (car pair)
+                   '(:sigabrt :sigterm :sigkill :sigquit :sigterm))
+           (mp:interrupt this 'serious-signal :signal (car pair)))
+          (t
+           (mp:interrupt this "Received POSIX signal: ~a (~d)" (car pair) sig)))))
 
 ;;; ----------------------------------------------------------------------
 ;;; ECL's interface to the toplevel and debugger

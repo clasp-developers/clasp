@@ -31,7 +31,7 @@ bool global_user_signal = false;
 // INTERRUPTS
 
 static void queue_signal_or_interrupt(core::ThreadLocalState*, core::T_sp, bool);
-void clasp_interrupt_process(mp::Process_sp process, core::Function_sp function) {
+void clasp_interrupt_process(mp::Process_sp process, core::T_sp function) {
   /*
    * Lifted from the ECL source code.  meister 2017
    * We first ensure that the process is active and running
@@ -98,9 +98,12 @@ core::T_sp pop_signal_or_interrupt(core::ThreadLocalState* thread) {
 void handle_queued_signal_or_interrupt(core::T_sp signal_code) {
   if (signal_code.fixnump()) { // signal
     handle_signal_now(signal_code.unsafe_fixnum());
-  } else if (gc::IsA<core::Function_sp>(signal_code)) { // interrupt
-    core::eval::funcall(signal_code);
+  } else if (mp::_sym_signal_interrupt->fboundp()) {
+    core::eval::funcall(mp::_sym_signal_interrupt->symbolFunction(),
+                        signal_code);
   }
+  // otherwise junk or we're really early,
+  // but this is pretty low level so just silently ignore
 }
 
 // Do all the queued actions, emptying the queue.
@@ -149,11 +152,7 @@ void handle_signal_now(int sig) {
   case SIGILL:
       core::eval::funcall(ext::_sym_illegal_instruction->symbolFunction());
       break;
-  default: {
-    core::T_sp signal_code = core::clasp_make_fixnum(sig);
-    core::cl__cerror(ext::_sym_ignore_signal->symbolValue(), ext::_sym_unix_signal_received,
-                     core::Cons_O::createList(kw::_sym_code, signal_code));
-  }
+  default: mp::posix_signal_interrupt(sig); break;
   }
 }
 

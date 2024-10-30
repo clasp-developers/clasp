@@ -122,6 +122,7 @@ void debug_mutex_unlock(Mutex* m) {
 namespace mp {
 
 SYMBOL_EXPORT_SC_(MpPkg, STARcurrent_processSTAR);
+SYMBOL_EXPORT_SC_(MpPkg, signal_interrupt);
 
 CL_DEFUN
 Process_sp mp__current_process() {
@@ -421,7 +422,7 @@ CL_DOCSTRING(
 DOCGROUP(clasp);
 CL_DEFUN bool mp__process_active_p(Process_sp p) { return (p->_Phase == Active); }
 
-// Internal function used only in process_suspend (which is external).
+// Internal function used only for process-suspend (which is external).
 // FIXME: Don't actually export.
 SYMBOL_EXPORT_SC_(MpPkg, suspend_loop);
 DOCGROUP(clasp);
@@ -433,15 +434,6 @@ CL_DEFUN void mp__suspend_loop() {
     if (!(this_process->_SuspensionCV._value.wait(this_process->_SuspensionMutex._value)))
       SIMPLE_ERROR("BUG: pthread_cond_wait ran into an error");
   }
-};
-
-CL_DOCSTRING(R"dx(Stop a process from executing temporarily. Execution may be restarted with PROCESS-RESUME.)dx");
-DOCGROUP(clasp);
-CL_DEFUN void mp__process_suspend(Process_sp process) {
-  if (process->_Phase == Active)
-    mp__interrupt_process(process, _sym_suspend_loop);
-  else
-    SIMPLE_ERROR("Cannot suspend inactive process {}", core::_rep_(process));
 };
 
 CL_DOCSTRING(R"dx(Restart execution in a suspended process.)dx");
@@ -622,18 +614,24 @@ CL_DEFUN core::T_sp mp__process_enable(Process_sp process) {
   }
 }
 
-CL_DOCSTRING(R"dx(Interrupt the given process to make it call the given function with no arguments. Return no values.)dx");
+CL_DOCSTRING(R"dx(Internal. Queue the given interrupt to the thread's pending interrupt list. Returns no values.")dx");
 DOCGROUP(clasp);
-CL_DEFUN void mp__interrupt_process(Process_sp process, core::T_sp func) {
+CL_DEFUN void mp__queue_interrupt(Process_sp process, core::T_sp interrupt) {
   if (process->_Phase != Active) [[unlikely]]
-    FEerror("Cannot interrupt the inactive process ~A", 1, process);
-  clasp_interrupt_process(process, core::coerce::functionDesignator(func));
-};
+    FEerror("Cannot interrupt the inactive process ~a", 1, process);
+  clasp_interrupt_process(process, interrupt);
+}
 
-SYMBOL_EXPORT_SC_(MpPkg, exit_process);
-CL_DOCSTRING(R"dx(Force a process to end. This function is not intended for regular usage and is not reliable.)dx");
-DOCGROUP(clasp);
-CL_DEFUN void mp__process_kill(Process_sp process) { mp__interrupt_process(process, _sym_exit_process); }
+SYMBOL_EXPORT_SC_(MpPkg, posix_interrupt);
+void posix_signal_interrupt(int sig) {
+  if (_sym_posix_interrupt->fboundp())
+    core::eval::funcall(_sym_posix_interrupt->symbolFunction(),
+                        core::clasp_make_fixnum(sig));
+  else
+    core::cl__cerror(core::SimpleBaseString_O::make("Ignore signal"),
+                     core::SimpleBaseString_O::make("Received POSIX signal ~d"),
+                     core::Cons_O::createList(core::clasp_make_fixnum(sig)));
+}
 
 CL_LAMBDA(&rest values);
 CL_DOCSTRING(R"dx(Immediately end the current process)dx");

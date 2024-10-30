@@ -2,7 +2,7 @@
 
 namespace gctools {
 
-void clasp_interrupt_process(mp::Process_sp process, core::Function_sp function);
+void clasp_interrupt_process(mp::Process_sp process, core::T_sp function);
 
 void handle_signal_now(int signo);
 template <typename Stage = RuntimeStage> void handle_all_queued_interrupts();
