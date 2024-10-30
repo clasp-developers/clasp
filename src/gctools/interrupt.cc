@@ -364,119 +364,50 @@ CL_DOCSTRING(R"dx(Get alist of Signal-name . Signal-code alist of known signal (
 DOCGROUP(clasp);
 CL_DEFUN core::List_sp core__signal_code_alist() {
   core::List_sp alist = nil<core::T_O>();
-/* these are all posix signals */
-#ifdef SIGHUP
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGHUP", KeywordPkg), core::clasp_make_fixnum(SIGHUP)), alist);
-#endif
-#ifdef SIGINT
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGINT", KeywordPkg), core::clasp_make_fixnum(SIGINT)), alist);
-#endif
-#ifdef SIGQUIT
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGQUIT", KeywordPkg), core::clasp_make_fixnum(SIGQUIT)), alist);
-#endif
-#ifdef SIGILL
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGILL", KeywordPkg), core::clasp_make_fixnum(SIGILL)), alist);
+#define DEFSIG(SIG) \
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern(#SIG, KeywordPkg), core::clasp_make_fixnum(SIG)), alist);
+  // POSIX required signals
+  DEFSIG(SIGABRT); DEFSIG(SIGALRM); DEFSIG(SIGBUS);
+  DEFSIG(SIGCHLD); DEFSIG(SIGCONT); DEFSIG(SIGFPE); DEFSIG(SIGHUP);
+  DEFSIG(SIGILL); DEFSIG(SIGINT); DEFSIG(SIGKILL); DEFSIG(SIGPIPE);
+  DEFSIG(SIGQUIT); DEFSIG(SIGSEGV); DEFSIG(SIGSTOP); DEFSIG(SIGTERM);
+  DEFSIG(SIGTSTP); DEFSIG(SIGTTIN); DEFSIG(SIGTTOU);
+  DEFSIG(SIGUSR1); DEFSIG(SIGUSR2);
+  DEFSIG(SIGWINCH); DEFSIG(SIGURG);
+  // XSI extensions
+#ifdef SIGSYS
+  DEFSIG(SIGSYS);
 #endif
 #ifdef SIGTRAP
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTRAP", KeywordPkg), core::clasp_make_fixnum(SIGTRAP)), alist);
-#endif
-#ifdef SIGABRT
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGABRT", KeywordPkg), core::clasp_make_fixnum(SIGABRT)), alist);
-#endif
-#ifdef SIGPOLL
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGPOLL", KeywordPkg), core::clasp_make_fixnum(SIGPOLL)), alist);
-#endif
-#ifdef SIGFPE
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGFPE", KeywordPkg), core::clasp_make_fixnum(SIGFPE)), alist);
-#endif
-#ifdef SIGKILL
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGKILL", KeywordPkg), core::clasp_make_fixnum(SIGKILL)), alist);
-#endif
-#ifdef SIGBUS
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGBUS", KeywordPkg), core::clasp_make_fixnum(SIGBUS)), alist);
-#endif
-#ifdef SIGSEGV
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGSEGV", KeywordPkg), core::clasp_make_fixnum(SIGSEGV)), alist);
-#endif
-#ifdef SIGSYS
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGSYS", KeywordPkg), core::clasp_make_fixnum(SIGSYS)), alist);
-#endif
-#ifdef SIGPIPE
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGPIPE", KeywordPkg), core::clasp_make_fixnum(SIGPIPE)), alist);
-#endif
-#ifdef SIGALRM
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGALRM", KeywordPkg), core::clasp_make_fixnum(SIGALRM)), alist);
-#endif
-#ifdef SIGTERM
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTERM", KeywordPkg), core::clasp_make_fixnum(SIGTERM)), alist);
-#endif
-#ifdef SIGURG
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGURG", KeywordPkg), core::clasp_make_fixnum(SIGURG)), alist);
-#endif
-#ifdef SIGSTOP
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGSTOP", KeywordPkg), core::clasp_make_fixnum(SIGSTOP)), alist);
-#endif
-
-#if 0
-#ifdef SIGTSTP
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTSTP",KeywordPkg), core::clasp_make_fixnum(SIGTSTP)), alist);
-#endif
-#ifdef SIGCONT
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGCONT",KeywordPkg), core::clasp_make_fixnum(SIGCONT)), alist);
-#endif
-#endif
-
-#ifdef SIGCHLD
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGCHLD", KeywordPkg), core::clasp_make_fixnum(SIGCHLD)), alist);
-#endif
-#ifdef SIGTTIN
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTTIN", KeywordPkg), core::clasp_make_fixnum(SIGTTIN)), alist);
-#endif
-#ifdef SIGTTOU
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTTOU", KeywordPkg), core::clasp_make_fixnum(SIGTTOU)), alist);
-#endif
-#ifdef SIGXCPU
-  // SIGXCPU is used by boehm to stop threads - this causes problems with boehm in the precise mode
-#if !(defined(USE_BOEHM) && defined(USE_PRECISE_GC))
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGXCPU", KeywordPkg), core::clasp_make_fixnum(SIGXCPU)), alist);
-#endif
-#endif
-#ifdef SIGXFSZ
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGXFSZ", KeywordPkg), core::clasp_make_fixnum(SIGXFSZ)), alist);
+  DEFSIG(SIGTRAP);
 #endif
 #ifdef SIGVTALRM
-  alist =
-      core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGVTALRM", KeywordPkg), core::clasp_make_fixnum(SIGVTALRM)), alist);
+  DEFSIG(SIGVTALRM);
+#endif
+#ifdef SIGXCPU
+  DEFSIG(SIGXCPU);
+#endif
+#ifdef SIGXFSZ
+  DEFSIG(SIGXFSZ);
+#endif
+  // random other common stuff
+#ifdef SIGPOLL
+  DEFSIG(SIGPOLL);
 #endif
 #ifdef SIGPROF
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGPROF", KeywordPkg), core::clasp_make_fixnum(SIGPROF)), alist);
+  DEFSIG(SIGPROF);
 #endif
-#if 0
-#ifdef SIGUSR1
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGUSR1",KeywordPkg), core::clasp_make_fixnum(SIGUSR1)), alist);
-#endif
-#endif
-#ifdef SIGUSR2
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGUSR2", KeywordPkg), core::clasp_make_fixnum(SIGUSR2)), alist);
-#endif
-
-  /* Additional Signals */
-
 #ifdef SIGEMT
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGEMT", KeywordPkg), core::clasp_make_fixnum(SIGEMT)), alist);
+  DEFSIG(SIGEMT);
 #endif
 #ifdef SIGIO
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGIO", KeywordPkg), core::clasp_make_fixnum(SIGIO)), alist);
+  DEFSIG(SIGIO);
 #endif
-#ifdef SIGWINCH
-  alist =
-      core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGWINCH", KeywordPkg), core::clasp_make_fixnum(SIGWINCH)), alist);
-#endif
-#ifdef SIGINFO
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGINFO", KeywordPkg), core::clasp_make_fixnum(SIGINFO)), alist);
+#ifdef SIGPWR
+  DEFSIG(SIGPWR);
 #endif
 #ifdef SIGTHR
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTHR", KeywordPkg), core::clasp_make_fixnum(SIGTHR)), alist);
+  DEFSIG(SIGTHR);
 #endif
   return alist;
 }
