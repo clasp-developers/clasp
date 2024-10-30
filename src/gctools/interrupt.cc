@@ -182,6 +182,7 @@ void handle_queued_interrupt(core::T_sp signal_code) {
   // but this is pretty low level so just silently ignore
 }
 
+void handle_signal_now(int);
 static void handle_one_signal(int signum) {
   if (sigismember(&my_thread->_PendingSignals, signum)) {
     sigdelset(&my_thread->_PendingSignals, signum);
@@ -212,26 +213,6 @@ template <> void handle_all_queued_interrupts<RuntimeStage>() {
 
 DOCGROUP(clasp);
 CL_DEFUN void core__check_pending_interrupts() { handle_all_queued_interrupts(); }
-
-SYMBOL_EXPORT_SC_(CorePkg, call_lisp_symbol_handler);
-void lisp_signal_handler(int sig) { core::eval::funcall(core::_sym_call_lisp_symbol_handler, core::clasp_make_fixnum(sig)); }
-
-DOCGROUP(clasp);
-CL_DEFUN int core__enable_disable_signals(int signal, int mod) {
-  struct sigaction new_action;
-  if (mod == 0)
-    new_action.sa_handler = SIG_IGN;
-  else if (mod == 1)
-    new_action.sa_handler = SIG_DFL;
-  else
-    new_action.sa_handler = lisp_signal_handler;
-  sigemptyset(&new_action.sa_mask);
-  new_action.sa_flags = (SA_NODEFER | SA_RESTART);
-  if (sigaction(signal, &new_action, NULL) == 0)
-    return 0;
-  else
-    return -1;
-}
 
 // HANDLERS
 

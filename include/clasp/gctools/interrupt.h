@@ -4,7 +4,6 @@ namespace gctools {
 
 void clasp_interrupt_process(mp::Process_sp process, core::T_sp function);
 
-void handle_signal_now(int signo);
 template <typename Stage = RuntimeStage> void handle_all_queued_interrupts();
 
 template <>
@@ -13,7 +12,6 @@ inline void handle_all_queued_interrupts<SnapshotLoadStage>(){
 };
 
 void initialize_signals();
-void initialize_unix_signal_handlers();
 
 // Use the following mechanism to pause clasp
 #define USE_USER_SIGNAL 1

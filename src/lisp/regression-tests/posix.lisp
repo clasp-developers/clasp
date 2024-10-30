@@ -1,14 +1,5 @@
 (in-package #:clasp-tests)
 
-;;; Cannot really change a handler here, so just check read operations
-(test get-signal-handler
-      (let ((handler (ext:get-signal-handler :sigpipe)))
-        (or handler t))
-      (t))
-
-(test-expect-error get-signal-handler-wrong-signal
-                   (ext:get-signal-handler :sig-non-existant)
-                   :type simple-error)
 (test-true stat-all
       (ext:stat "sys:src;lisp;regression-tests;run-all.lisp"))
 
