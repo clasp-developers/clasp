@@ -53,7 +53,7 @@
                           "core::BytecodeAstDecls_O" "core::DoubleFloat_O"
                           "core::ComplexVector_short_float_O" "core::DebuggerFrame_O"
                           "comp::LocalMacroInfo_O" "comp::LexFixup_O" "core::StringStream_O"
-                          "llvmo::LibraryBase_O" "core::Sigset_O" "core::MDArray_int32_t_O"
+                          "llvmo::LibraryBase_O" "core::MDArray_int32_t_O"
                           "asttooling::AsttoolingExposer_O" "llvmo::IntegerType_O"
                           "comp::GlobalMacroInfo_O" "core::MDArray_int64_t_O"
                           "core::SimpleMDArray_size_t_O" "comp::VariableCellInfo_O"
@@ -4714,9 +4714,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
              :offset-base-ctype "comp::VariableCellInfo_O" :layout-offset-field-names ("_vname")}
-{class-kind :stamp-name "STAMPWTAG_core__Sigset_O" :stamp-key "core::Sigset_O"
-            :parent-class "core::General_O" :lisp-class-base "core::General_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {class-kind :stamp-name "STAMPWTAG_core__DebuggerFrame_O" :stamp-key "core::DebuggerFrame_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

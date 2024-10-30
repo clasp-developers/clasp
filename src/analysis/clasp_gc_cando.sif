@@ -93,9 +93,8 @@
                           "chem::ConformationExplorerEntryStage_O" "adapt::AdaptExposer_O"
                           "comp::LocalMacroInfo_O" "chem::FrameRecognizer_O"
                           "chem::CalculatePositionAlongBond_O" "comp::LexFixup_O"
-                          "core::StringStream_O" "llvmo::LibraryBase_O" "core::Sigset_O"
-                          "core::MDArray_int32_t_O" "adapt::SymbolList_O"
-                          "chem::CalculatePositionUsingInternals_O"
+                          "core::StringStream_O" "llvmo::LibraryBase_O" "core::MDArray_int32_t_O"
+                          "adapt::SymbolList_O" "chem::CalculatePositionUsingInternals_O"
                           "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
                           "asttooling::AsttoolingExposer_O" "chem::HybridizationInfo"
                           "llvmo::IntegerType_O" "chem::AtomInfo" "chem::EnergyDihedral_O"
@@ -5832,9 +5831,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
              :offset-base-ctype "comp::VariableCellInfo_O" :layout-offset-field-names ("_vname")}
-{class-kind :stamp-name "STAMPWTAG_core__Sigset_O" :stamp-key "core::Sigset_O"
-            :parent-class "core::General_O" :lisp-class-base "core::General_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {class-kind :stamp-name "STAMPWTAG_core__RandomState_O" :stamp-key "core::RandomState_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

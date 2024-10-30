@@ -611,7 +611,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init_class_kind(llvmo::Target_O);
   Init_class_kind(llvmo::Linker_O);
   Init_class_kind(core::SmallMultimap_O);
-  Init_class_kind(core::Sigset_O);
   Init_class_kind(core::RandomState_O);
   Init_class_kind(core::HashTableBase_O);
   Init_class_kind(core::WeakKeyHashTable_O);

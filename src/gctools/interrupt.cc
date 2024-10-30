@@ -90,6 +90,10 @@ SYMBOL_EXPORT_SC_(ExtPkg, bus_error);
   DOSIGXFSZ(MAC); DOSIGPOLL(MAC); DOSIGPROF(MAC); DOSIGEMT(MAC);\
   DOSIGIO(MAC); DOSIGPWR(MAC); DOSIGTHR(MAC);
 
+#define SIGEXPORT(NAME) SYMBOL_EXPORT_SC_(CorePkg, signal_SIG##NAME)
+DO_ALL_SIGNALS(SIGEXPORT)
+#undef SIGNEXPORT
+
 namespace gctools {
 
 // Flag used in wait_for_user_signal.
