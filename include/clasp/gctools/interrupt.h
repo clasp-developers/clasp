@@ -2,8 +2,6 @@
 
 namespace gctools {
 
-void clasp_interrupt_process(mp::Process_sp process, core::T_sp function);
-
 template <typename Stage = RuntimeStage> void handle_all_queued_interrupts();
 
 template <>

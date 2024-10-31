@@ -156,6 +156,7 @@ public:
   }
   string __repr__() const override;
   string phase_as_string() const;
+  void interrupt(core::T_sp interrupt);
 };
 }; // namespace mp
 

@@ -11,9 +11,7 @@
 #include <clasp/core/debugger.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/core/hashTableEq.h>
 #include <clasp/core/mpPackage.h>
-#include <clasp/core/designators.h>
 #include <clasp/core/lispList.h>
 #include <clasp/gctools/interrupt.h>
 #include <clasp/core/numbers.h>
@@ -101,87 +99,9 @@ bool global_user_signal = false;
 
 // INTERRUPTS
 
-static void enqueue_interrupt(core::ThreadLocalState*, core::T_sp);
-void clasp_interrupt_process(mp::Process_sp process, core::T_sp function) {
-  /*
-   * Lifted from the ECL source code.  meister 2017
-   * We first ensure that the process is active and running
-   * and past the initialization phase, where it has set up
-   * the environment. Then add the interrupt to the process's
-   * queue, and it will examine it at its own leisure.
-   */
-  if (process->_Phase >= mp::Nascent) {
-    enqueue_interrupt(process->_ThreadInfo, function);
-    if (process->_ThreadInfo->blockingp())
-      // The thread is blocked on something, so wake it up with a signal.
-      // We use SIGCONT since it's kinda obscure and waking up processes is
-      // what it's for, though perhaps not in this way originally.
-      // FIXME?: We could use pthread_sigqueue to stick in some extra info
-      // in order to disambiguate our wakeups from others' a bit.
-      pthread_kill(process->_TheThread._value, SIGCONT);
-  }
-}
-
 inline bool interrupts_disabled_by_C() { return my_thread_low_level->_DisableInterrupts; }
 
 inline bool interrupts_disabled_by_lisp() { return core::_sym_STARinterrupts_enabledSTAR->symbolValue().notnilp(); }
-
-// INTERRUPT QUEUE
-// Very simple atomic queue, but I still had to consult with a paper:
-// Valois, John D. "Implementing lock-free queues." Proceedings of the seventh international conference on Parallel and Distributed Computing Systems. 1994.
-// The ABA problem mentioned there shouldn't matter since we always use fresh
-// conses for the new tails. Technically I guess we could reallocate one by
-// coincidence but that seems really unlikely?
-static void enqueue_interrupt(core::ThreadLocalState* thread, core::T_sp thing) {
-  core::Cons_sp record = core::Cons_O::create(thing, nil<core::T_O>());
-  // relaxed because queueing an interrupt does not synchronize with queueing
-  // another interrupt
-  core::Cons_sp tail = thread->_PendingInterruptsTail.load(std::memory_order_relaxed);
-  while (true) {
-    core::T_sp ntail = nil<core::T_O>();
-    if (tail->cdrCAS(ntail, record, std::memory_order_release)) break;
-    else tail = ntail.as_assert<core::Cons_O>();
-  }
-  thread->_PendingInterruptsTail.compare_exchange_strong(tail, record,
-                                                         std::memory_order_release);
-}
-
-static void enqueue_signal(int signo) {
-  sigaddset(&my_thread->_PendingSignals, signo); // sigaddset is AS-safe
-  // It's possible this handler could be interrupted between these two lines.
-  // If it's interrupted and the signal is queued/the handler returns,
-  // it doesn't matter. If it's interrupted and the handler escapes, we have
-  // a queued signal without the flag being set, which is a little unfortunate
-  // but not a huge deal - another signal will set the flag for one thing.
-  // It also shouldn't be a problem since we only really jump from synchronously
-  // delivered signals (segv, etc) which could only be signaled here if something
-  // has gone very deeply wrong.
-  // On GNU we have sigisemptyset which could be used instead of a separate flag,
-  // and that would solve the problem, but that's only on GNU, plus it's
-  // necessarily a little slower than a simple flag.
-  my_thread->_PendingSignalsP.store(true, std::memory_order_release);
-}
-
-// Pop a thing from the queue.
-core::T_sp dequeue_interrupt(core::ThreadLocalState* thread) {
-  // Use acquire-release since sending an interrupt synchronizes-with processing
-  // that interrupt.
-  core::Cons_sp head = thread->_PendingInterruptsHead.load(std::memory_order_acquire);
-  core::T_sp next;
-  core::Cons_sp cnext;
-  do {
-    next = head->cdr();
-    if (next.nilp()) return next; // nothing to dequeue
-    cnext = next.as_assert<core::Cons_O>();
-  } while (!thread->_PendingInterruptsHead.compare_exchange_weak(head, cnext,
-                                                                 std::memory_order_acq_rel));
-  core::T_sp interrupt = cnext->car();
-  // We need to keep the new head where it is so the queue is never empty
-  // (empty queues make atomicity hard-to-impossible)
-  // but we should spike the next to make the interrupt collectible later.
-  cnext->rplaca(nil<core::T_O>());
-  return interrupt;
-}
 
 // Perform one action (presumably popped from the queue).
 void handle_queued_interrupt(core::T_sp signal_code) {
@@ -194,9 +114,9 @@ void handle_queued_interrupt(core::T_sp signal_code) {
 }
 
 void handle_signal_now(int);
-static void handle_one_signal(int signum) {
-  if (sigismember(&my_thread->_PendingSignals, signum)) {
-    sigdelset(&my_thread->_PendingSignals, signum);
+static void handle_one_signal(sigset_t* pending, int signum) {
+  if (sigismember(pending, signum)) {
+    sigdelset(pending, signum);
     handle_signal_now(signum);
   }
 }
@@ -206,12 +126,13 @@ static void enqueue_or_handle_signal(int signo) {
   if (my_thread->blockingp())
     handle_signal_now(signo);
   else
-    enqueue_signal(signo);
+    my_thread->enqueue_signal(signo);
 }
 
 static void handle_pending_signals() {
-  my_thread->_PendingSignalsP.store(false, std::memory_order_release);
-#define TRYSIG(NAME) handle_one_signal(SIG##NAME)
+  my_thread->clear_pending_signals_p();
+  sigset_t* pending = my_thread->pending_signals();
+#define TRYSIG(NAME) handle_one_signal(pending, SIG##NAME)
   DO_ALL_SIGNALS(TRYSIG);
 #undef TRYSIG
 }
@@ -219,9 +140,9 @@ static void handle_pending_signals() {
 // Handle just interrupts and not signals. Used in the SIGCONT handler.
 static void handle_queued_interrupts() {
   // Check that the queue has actually been created.
-  if (my_thread->_PendingInterruptsHead.load(std::memory_order_acquire)) { 
+  if (my_thread->interrupt_queue_validp()) {
     while (true) {
-      core::T_sp i = dequeue_interrupt(my_thread);
+      core::T_sp i = my_thread->dequeue_interrupt();
       if (i.nilp()) break;
       handle_queued_interrupt(i);
     }
@@ -230,7 +151,7 @@ static void handle_queued_interrupts() {
 
 // Do all the queued actions, emptying the queue.
 template <> void handle_all_queued_interrupts<RuntimeStage>() {
-  if (my_thread->_PendingSignalsP.load(std::memory_order_acquire))
+  if (my_thread->pending_signals_p())
     handle_pending_signals();
   handle_queued_interrupts();
 }
@@ -268,7 +189,7 @@ void handle_SIGCONT(int sig) {
     handle_signal_now(sig); // pass on the SIGCONT, in case someone cares
     // Nothing jumped out of here, so we're back to blocking.
     my_thread->set_blockingp(true);
-  } else enqueue_signal(sig);
+  } else my_thread->enqueue_signal(sig);
 }
 
 void setup_user_signal() { signal(SIGUSR1, handle_SIGUSR1); }
@@ -292,10 +213,10 @@ void handle_or_enqueue_signal(int signo) {
   if (my_thread->blockingp())
     handle_signal_now(signo);
   else if (interrupts_disabled_by_lisp()) {
-    enqueue_signal(signo);
+    my_thread->enqueue_signal(signo);
   } else if (interrupts_disabled_by_C()) {
     my_thread_low_level->_DisableInterrupts = 3;
-    enqueue_signal(signo);
+    my_thread->enqueue_signal(signo);
   } else {
     handle_signal_now(signo);
   }

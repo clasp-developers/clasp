@@ -381,6 +381,47 @@ void ThreadLocalState::popObjectFile() {
   SIMPLE_ERROR("There were no more object files");
 }
 
+// INTERRUPT QUEUE
+// Very simple atomic queue, but I still had to consult with a paper:
+// Valois, John D. "Implementing lock-free queues." Proceedings of the seventh international conference on Parallel and Distributed Computing Systems. 1994.
+// The ABA problem mentioned there shouldn't matter since we always use fresh
+// conses for the new tails. Technically I guess we could reallocate one by
+// coincidence but that seems really unlikely?
+void ThreadLocalState::enqueue_interrupt(core::T_sp interrupt) {
+  core::Cons_sp record = core::Cons_O::create(interrupt, nil<core::T_O>());
+  // relaxed because queueing an interrupt does not synchronize with queueing
+  // another interrupt
+  core::Cons_sp tail = _PendingInterruptsTail.load(std::memory_order_relaxed);
+  while (true) {
+    core::T_sp ntail = nil<core::T_O>();
+    if (tail->cdrCAS(ntail, record, std::memory_order_release)) break;
+    else tail = ntail.as_assert<core::Cons_O>();
+  }
+  _PendingInterruptsTail.compare_exchange_strong(tail, record,
+                                                 std::memory_order_release);
+}
+
+// Pop a thing from the interrupt queue. Returns NIL if the queue is empty.
+core::T_sp ThreadLocalState::dequeue_interrupt() {
+  // Use acquire-release since sending an interrupt synchronizes-with processing
+  // that interrupt.
+  core::Cons_sp head = _PendingInterruptsHead.load(std::memory_order_acquire);
+  core::T_sp next;
+  core::Cons_sp cnext;
+  do {
+    next = head->cdr();
+    if (next.nilp()) return next; // nothing to dequeue
+    cnext = next.as_assert<core::Cons_O>();
+  } while (!_PendingInterruptsHead.compare_exchange_weak(head, cnext,
+                                                         std::memory_order_acq_rel));
+  core::T_sp interrupt = cnext->car();
+  // We need to keep the new head where it is so the queue is never empty
+  // (empty queues make atomicity hard-to-impossible)
+  // but we should spike the next to make the interrupt collectible later.
+  cnext->rplaca(nil<core::T_O>());
+  return interrupt;
+}
+
 void ThreadLocalState::startUpVM() { this->_VM.startup(); }
 
 ThreadLocalState::~ThreadLocalState() {}

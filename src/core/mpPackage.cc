@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 
 #include <sched.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -327,6 +328,26 @@ string SharedMutex_O::__repr__() const {
   return ss.str();
 }
 
+void Process_O::interrupt(core::T_sp interrupt) {
+   /*
+   * Lifted from the ECL source code.  meister 2017
+   * We first ensure that the process is active and running
+   * and past the initialization phase, where it has set up
+   * the environment. Then add the interrupt to the process's
+   * queue, and it will examine it at its own leisure.
+   */
+  if (_Phase >= mp::Nascent) {
+    _ThreadInfo->enqueue_interrupt(interrupt);
+    if (_ThreadInfo->blockingp())
+      // The thread is blocked on something, so wake it up with a signal.
+      // We use SIGCONT since it's kinda obscure and waking up processes is
+      // what it's for, though perhaps not in this way originally.
+      // FIXME?: We could use pthread_sigqueue to stick in some extra info
+      // in order to disambiguate our wakeups from others' a bit.
+      pthread_kill(_TheThread._value, SIGCONT);
+  }
+}
+
 string Process_O::phase_as_string() const {
   switch (this->_Phase) {
   case Nascent:
@@ -619,7 +640,7 @@ DOCGROUP(clasp);
 CL_DEFUN void mp__queue_interrupt(Process_sp process, core::T_sp interrupt) {
   if (process->_Phase != Active) [[unlikely]]
     FEerror("Cannot interrupt the inactive process ~a", 1, process);
-  clasp_interrupt_process(process, interrupt);
+  process->interrupt(interrupt);
 }
 
 SYMBOL_EXPORT_SC_(MpPkg, posix_interrupt);
