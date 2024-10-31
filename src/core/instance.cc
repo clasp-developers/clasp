@@ -761,11 +761,6 @@ CL_DEFUN bool core__has_creator(Instance_sp c) {
 }; // namespace core
 
 namespace core {
-ClassReadLock::ClassReadLock(mp::SharedMutex_sp lock) : _Lock(lock) { this->_Lock->shared_lock(); }
-ClassReadLock::~ClassReadLock() { this->_Lock->shared_unlock(); }
-
-ClassWriteLock::ClassWriteLock(mp::SharedMutex_sp lock) : _Lock(lock) { this->_Lock->write_lock(); }
-ClassWriteLock::~ClassWriteLock() { this->_Lock->write_unlock(); }
 
 CL_DEFMETHOD Instance_sp ClassHolder_O::class_get() const { return this->_Class.load(std::memory_order_relaxed); }
 CL_DEFMETHOD void ClassHolder_O::class_set(Instance_sp cl) { this->_Class.store(cl, std::memory_order_relaxed); }
