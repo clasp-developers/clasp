@@ -112,6 +112,13 @@ void clasp_interrupt_process(mp::Process_sp process, core::T_sp function) {
    */
   if (process->_Phase >= mp::Nascent) {
     enqueue_interrupt(process->_ThreadInfo, function);
+    if (process->_ThreadInfo->blockingp())
+      // The thread is blocked on something, so wake it up with a signal.
+      // We use SIGCONT since it's kinda obscure and waking up processes is
+      // what it's for, though perhaps not in this way originally.
+      // FIXME?: We could use pthread_sigqueue to stick in some extra info
+      // in order to disambiguate our wakeups from others' a bit.
+      pthread_kill(process->_TheThread._value, SIGCONT);
   }
 }
 
@@ -139,7 +146,7 @@ static void enqueue_interrupt(core::ThreadLocalState* thread, core::T_sp thing) 
                                                          std::memory_order_release);
 }
 
-static void queue_signal(int signo) {
+static void enqueue_signal(int signo) {
   sigaddset(&my_thread->_PendingSignals, signo); // sigaddset is AS-safe
   // It's possible this handler could be interrupted between these two lines.
   // If it's interrupted and the signal is queued/the handler returns,
@@ -194,6 +201,14 @@ static void handle_one_signal(int signum) {
   }
 }
 
+// Enqueue a signal unless we're in a blocking call - in that case handle it now.
+static void enqueue_or_handle_signal(int signo) {
+  if (my_thread->blockingp())
+    handle_signal_now(signo);
+  else
+    enqueue_signal(signo);
+}
+
 static void handle_pending_signals() {
   my_thread->_PendingSignalsP.store(false, std::memory_order_release);
 #define TRYSIG(NAME) handle_one_signal(SIG##NAME)
@@ -201,10 +216,8 @@ static void handle_pending_signals() {
 #undef TRYSIG
 }
 
-// Do all the queued actions, emptying the queue.
-template <> void handle_all_queued_interrupts<RuntimeStage>() {
-  if (my_thread->_PendingSignalsP.load(std::memory_order_acquire))
-    handle_pending_signals();
+// Handle just interrupts and not signals. Used in the SIGCONT handler.
+static void handle_queued_interrupts() {
   // Check that the queue has actually been created.
   if (my_thread->_PendingInterruptsHead.load(std::memory_order_acquire)) { 
     while (true) {
@@ -213,6 +226,13 @@ template <> void handle_all_queued_interrupts<RuntimeStage>() {
       handle_queued_interrupt(i);
     }
   }
+}
+
+// Do all the queued actions, emptying the queue.
+template <> void handle_all_queued_interrupts<RuntimeStage>() {
+  if (my_thread->_PendingSignalsP.load(std::memory_order_acquire))
+    handle_pending_signals();
+  handle_queued_interrupts();
 }
 
 DOCGROUP(clasp);
@@ -238,6 +258,19 @@ void handle_signal_now(int sig) {
 // This is both a signal handler and called by signal handlers.
 void handle_SIGUSR1(int sig) { global_user_signal = true; }
 
+// This handler is a bit special because we use SIGCONT to interrupt threads
+// that are blocked on a syscall or whatever.
+void handle_SIGCONT(int sig) {
+  if (my_thread->blockingp()) {
+    // Disable (most) async interrupts as we call user code.
+    my_thread->set_blockingp(false);
+    handle_queued_interrupts();
+    handle_signal_now(sig); // pass on the SIGCONT, in case someone cares
+    // Nothing jumped out of here, so we're back to blocking.
+    my_thread->set_blockingp(true);
+  } else enqueue_signal(sig);
+}
+
 void setup_user_signal() { signal(SIGUSR1, handle_SIGUSR1); }
 
 void wait_for_user_signal(const char* message) {
@@ -255,12 +288,14 @@ void wait_for_user_signal(const char* message) {
 
 CL_DEFUN void gctools__wait_for_user_signal(const std::string& msg) { wait_for_user_signal(msg.c_str()); }
 
-void handle_or_queue_signal(int signo) {
-  if (interrupts_disabled_by_lisp()) {
-    queue_signal(signo);
+void handle_or_enqueue_signal(int signo) {
+  if (my_thread->blockingp())
+    handle_signal_now(signo);
+  else if (interrupts_disabled_by_lisp()) {
+    enqueue_signal(signo);
   } else if (interrupts_disabled_by_C()) {
     my_thread_low_level->_DisableInterrupts = 3;
-    queue_signal(signo);
+    enqueue_signal(signo);
   } else {
     handle_signal_now(signo);
   }
@@ -402,12 +437,12 @@ void initialize_signals() {
   // Lisp code. If that happens, and a signal is received again, we want
   // to deal with it the same way - not defer.
 
-  INIT_SIGNAL(SIGINT, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);
+  INIT_SIGNAL(SIGINT, (SA_NODEFER | SA_RESTART), handle_or_enqueue_signal);
 #ifdef SIGINFO
-  INIT_SIGNAL(SIGINFO, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);
+  INIT_SIGNAL(SIGINFO, (SA_NODEFER | SA_RESTART), handle_or_enqueue_signal);
 #endif
   if (!getenv("CLASP_DONT_HANDLE_CRASH_SIGNALS")) {
-    INIT_SIGNAL(SIGABRT, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);
+    INIT_SIGNAL(SIGABRT, (SA_NODEFER | SA_RESTART), handle_or_enqueue_signal);
     INIT_SIGNALI(SIGSEGV, (SA_NODEFER | SA_RESTART | SA_ONSTACK), handle_segv);
     INIT_SIGNALI(SIGBUS, (SA_NODEFER | SA_RESTART), handle_bus);
   }
@@ -427,9 +462,9 @@ void initialize_signals() {
   INIT_SIGNAL(SIGSYS, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGTRAP, (SA_NODEFER | SA_RESTART), handle_signal_now);
   // These termination signals we respond to when we're good and ready.
-  INIT_SIGNAL(SIGTERM, (SA_NODEFER | SA_RESTART), queue_signal);
-  INIT_SIGNAL(SIGQUIT, (SA_NODEFER | SA_RESTART), queue_signal);
-  INIT_SIGNAL(SIGHUP, (SA_NODEFER | SA_RESTART), queue_signal);
+  INIT_SIGNAL(SIGTERM, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
+  INIT_SIGNAL(SIGQUIT, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
+  INIT_SIGNAL(SIGHUP, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
 #ifdef SIGVTALRM
   INIT_SIGNAL(SIGVTALRM, (SA_NODEFER | SA_RESTART), handle_signal_now);
 #endif
@@ -438,6 +473,8 @@ void initialize_signals() {
   INIT_SIGNAL(SIGXCPU, (SA_NODEFER | SA_RESTART), handle_signal_now);
 #endif
   INIT_SIGNAL(SIGXFSZ, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  // This one we use specially to wake up blocking threads.
+  INIT_SIGNAL(SIGCONT, (SA_NODEFER | SA_RESTART), handle_SIGCONT);
 
   llvm::install_fatal_error_handler(fatal_error_handler, NULL);
 }

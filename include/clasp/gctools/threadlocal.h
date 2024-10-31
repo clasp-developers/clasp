@@ -294,6 +294,7 @@ struct ThreadLocalState {
   std::atomic<core::Cons_sp> _PendingInterruptsTail;
   sigset_t _PendingSignals;
   std::atomic<bool> _PendingSignalsP;
+  std::atomic<bool> _BlockingP;
   List_sp _BufferStr8NsPool;
   List_sp _BufferStrWNsPool;
   StringOutputStream_sp _BFormatStringOutputStream;
@@ -369,6 +370,9 @@ public:
   inline DynamicBindingStack& bindings() { return this->_Bindings; };
 
   void startUpVM();
+
+  inline void set_blockingp(bool b) { _BlockingP.store(b, std::memory_order_release); }
+  inline bool blockingp() const { return _BlockingP.load(std::memory_order_acquire); }
 
   ~ThreadLocalState();
 };
