@@ -81,7 +81,7 @@ THE SOFTWARE.
 #include <clasp/core/lispReader.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/wrappers.h>
-#include <clasp/gctools/interrupt.h>
+#include <clasp/gctools/park.h> // BEGIN_PARK/END_PARK
 #include <version.h>
 #include <llvm/Config/llvm-config.h>
 
