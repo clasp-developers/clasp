@@ -1457,6 +1457,9 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
   ;; while cancel-thread (cancel-process?) is the nicer interrupt.
   (mp:interrupt process 'mp:cancellation-interrupt))
 
+(defun mp:process-cancel (process) ; the nicer version.
+  (mp:interrupt process 'mp:cancellation-interrupt))
+
 (defun mp:process-suspend (process)
   (mp:interrupt process 'mp:suspension-interrupt))
 

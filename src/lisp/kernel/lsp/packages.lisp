@@ -126,7 +126,7 @@
             atomic-pushnew atomic-pushnew-explicit
             ;; interrupts
             interrupt service-interrupt interrupt-process
-            process-kill process-suspend
+            process-kill process-cancel process-suspend
             simple-interrupt simple-interactive-interrupt
             cancellation-interrupt suspension-interrupt
             call-interrupt call-interrupt-function
