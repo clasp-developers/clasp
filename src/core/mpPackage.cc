@@ -131,17 +131,6 @@ Process_sp mp__current_process() {
   return this_process;
 }
 
-// This keeps track of a process on the list of active threads.
-// Also makes sure its phase is set as it exits.
-struct SafeRegisterDeregisterProcessWithLisp {
-  Process_sp _Process;
-  SafeRegisterDeregisterProcessWithLisp(Process_sp p) : _Process(p) { _lisp->add_process(_Process); }
-  ~SafeRegisterDeregisterProcessWithLisp() {
-    _Process->_Phase = Exited;
-    _lisp->remove_process(_Process);
-  }
-};
-
 void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
   if (bindings.consp()) {
     core::Cons_sp pair = gc::As<core::Cons_sp>(CONS_CAR(bindings));
@@ -179,7 +168,7 @@ void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
   }
 }
 
-__attribute__((noinline)) void start_thread_inner(uintptr_t uniqueId, void* cold_end_of_stack) {
+__attribute__((noinline)) void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
 #ifdef USE_MPS
   // use mask
   mps_thr_t thr_o;
@@ -197,26 +186,6 @@ __attribute__((noinline)) void start_thread_inner(uintptr_t uniqueId, void* cold
     abort();
   };
 #endif
-  // Look for the process
-  Process_sp process;
-  core::List_sp processes;
-  {
-    WITH_READ_LOCK(globals_->_ActiveThreadsMutex);
-    processes = _lisp->_Roots._ActiveThreads;
-    bool foundIt = false;
-    for (auto cur : processes) {
-      Process_sp proc = gc::As<Process_sp>(CONS_CAR(cur));
-      if (proc->_UniqueID == uniqueId) {
-        foundIt = true;
-        process = proc;
-      }
-    }
-    if (!foundIt) {
-      printf("%s:%d A child process started up with the uniqueId %lu but its Process_O could not be found\n", __FILE__, __LINE__,
-             uniqueId);
-      abort();
-    }
-  }
   // Tell the process what MPS thr_o and root is
 #ifdef USE_MPS
   process->thr_o = thr_o;
@@ -259,15 +228,12 @@ __attribute__((noinline)) void start_thread_inner(uintptr_t uniqueId, void* cold
 
 // This is the function actually passed to pthread_create.
 void* start_thread(void* vinfo) {
-  ThreadStartInfo* info = (ThreadStartInfo*)vinfo;
-  uintptr_t uniqueId = info->_UniqueID;
-  delete info;
   void* cold_end_of_stack = &cold_end_of_stack;
   ////////////////////////////////////////////////////////////
   //
   // MPS setup of thread
   //
-  start_thread_inner(uniqueId, cold_end_of_stack);
+  start_thread_inner(static_cast<Process_O*>(vinfo)->asSmartPtr(), cold_end_of_stack);
   //  my_thread->destroy_sigaltstack();
   return NULL;
 }
@@ -326,6 +292,26 @@ string SharedMutex_O::__repr__() const {
 #endif
   ss << ">";
   return ss.str();
+}
+
+int Process_O::startProcess() {
+  _lisp->add_process(this->asSmartPtr());
+  pthread_attr_t attr;
+  int result;
+  result = pthread_attr_init(&attr);
+  result = pthread_attr_setstacksize(&attr, this->_StackSize);
+  if (result != 0)
+    return result;
+  this->_Phase = Active;
+  // We pass ourselves into the thread being created.
+  // There is a subtlety here - something needs to be keeping the thread alive.
+  // If this function returns before the thread is fully created, this process
+  // could hypothetically garbage collected if it's not otherwise accessible.
+  // That's why we have to do _lisp->add_process - it keeps it globally accessible
+  // and so the problem is solved.
+  result = pthread_create(&this->_TheThread._value, &attr, start_thread, (void*)this);
+  pthread_attr_destroy(&attr);
+  return result;
 }
 
 void Process_O::interrupt(core::T_sp interrupt) {
@@ -396,7 +382,6 @@ CL_DOCSTRING(R"dx(Start execution of a nascent process. Return no values.)dx");
 DOCGROUP(clasp);
 CL_DEFUN void mp__process_start(Process_sp process) {
   if (process->_Phase == Nascent) {
-    _lisp->add_process(process);
     process->startProcess();
   } else
     SIMPLE_ERROR("The process {} has already started.", core::_rep_(process));
@@ -413,9 +398,6 @@ CL_DEFUN Process_sp mp__process_run_function(core::T_sp name, core::T_sp functio
 #endif
   if (cl__functionp(function)) {
     Process_sp process = Process_O::make_process(name, function, nil<core::T_O>(), special_bindings, DEFAULT_THREAD_STACK_SIZE);
-    // The process needs to be added to the list of processes before process->start() is called.
-    // The child process code needs this to find the process in the list
-    _lisp->add_process(process);
     process->startProcess();
     return process;
   }

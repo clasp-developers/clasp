@@ -4853,8 +4853,6 @@
 {class-kind :stamp-name "STAMPWTAG_mp__Process_O" :stamp-key "mp::Process_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
-             :offset-base-ctype "mp::Process_O" :layout-offset-field-names ("_UniqueID")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "mp::Process_O"
              :layout-offset-field-names ("_Parent")}

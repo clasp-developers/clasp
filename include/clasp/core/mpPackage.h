@@ -60,16 +60,6 @@ template <typename T> struct RAIILock {
 #define DEFAULT_THREAD_STACK_SIZE 8388608
 namespace mp {
 
-// NOTE DO NOT PUT GC managed pointers in here unless you designate this
-// as containing roots!!!!!!!!!!
-// This struct is to pass info from the parent thread to the child thread.
-struct ThreadStartInfo {
-  uintptr_t _UniqueID;
-  ThreadStartInfo(uintptr_t id) : _UniqueID(id){};
-};
-
-extern std::atomic<uintptr_t> global_process_UniqueID;
-
 typedef enum {
   Nascent = 0, // Has not yet started, may proceed to Active
   Inactive,
@@ -105,7 +95,6 @@ public:
   };
 
 public:
-  uintptr_t _UniqueID;
   core::T_sp _Parent;
   core::T_sp _Name;
   core::T_sp _Function;
@@ -132,7 +121,7 @@ public:
 public:
   Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments, core::List_sp initialSpecialBindings = nil<core::T_O>(),
             size_t stack_size = 8 * 1024 * 1024)
-      : _UniqueID(global_process_UniqueID++), _Parent(nil<core::T_O>()), _Name(name), _Function(function), _Arguments(arguments),
+      : _Parent(nil<core::T_O>()), _Name(name), _Function(function), _Arguments(arguments),
         _InitialSpecialBindings(initialSpecialBindings), _ReturnValuesList(nil<core::T_O>()), _Aborted(false),
         _AbortCondition(nil<core::T_O>()), _ThreadInfo(NULL), _Phase(Nascent), _SuspensionMutex(SUSPBARR_NAMEWORD),
         _StackSize(stack_size) {
@@ -141,19 +130,7 @@ public:
     }
   };
 
-  int startProcess() {
-    pthread_attr_t attr;
-    int result;
-    result = pthread_attr_init(&attr);
-    result = pthread_attr_setstacksize(&attr, this->_StackSize);
-    if (result != 0)
-      return result;
-    this->_Phase = Active;
-    ThreadStartInfo* info = new ThreadStartInfo(this->_UniqueID); // delete this in start_thread
-    result = pthread_create(&this->_TheThread._value, &attr, start_thread, (void*)info);
-    pthread_attr_destroy(&attr);
-    return result;
-  }
+  int startProcess();
   string __repr__() const override;
   string phase_as_string() const;
   void interrupt(core::T_sp interrupt);
