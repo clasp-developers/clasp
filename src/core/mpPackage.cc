@@ -131,30 +131,31 @@ Process_sp mp__current_process() {
   return this_process;
 }
 
-void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
+void Process_O::runInner(core::List_sp bindings) {
+  core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR, this->asSmartPtr());
   if (bindings.consp()) {
     core::Cons_sp pair = gc::As<core::Cons_sp>(CONS_CAR(bindings));
     core::DynamicScopeManager scope(gc::As<core::Symbol_sp>(pair->car()), core::eval::evaluate(pair->cdr(), nil<core::T_O>()));
-    do_start_thread_inner(process, CONS_CDR(bindings));
+    runInner(CONS_CDR(bindings));
   } else {
-    core::List_sp args = process->_Arguments;
-    process->_Phase = Active;
+    _Phase = Active;
     core::T_mv result_mv;
-    {
-      try {
-        result_mv = core::core__apply0(core::coerce::calledFunctionDesignator(process->_Function), args);
-      } catch (ExitProcess& e) {
+    try {
+      result_mv = core::core__apply0(core::coerce::calledFunctionDesignator(_Function), _Arguments);
+    } catch (ExitProcess& e) {
         // Exiting specially. Don't touch _ReturnValuesList - it's initialized to NIL just fine,
         // and may have been set by mp:exit-process.
-        return;
-      } catch (AbortProcess& e) {
+      _Phase = Exited;
+      return;
+    } catch (AbortProcess& e) {
         // Exiting specially for some weird reason. Mark this as an abort.
         // NOTE: Should probably catch all attempts to exit, i.e. catch (...),
         // but that might be a problem for the main thread.
-        process->_Aborted = true;
-        return;
-      }
+      _Aborted = true;
+      _Phase = Exited;
+      return;
     }
+    _Phase = Exited;
     ql::list return_values;
     int nv = result_mv.number_of_values();
     core::MultipleValues& mv = core::lisp_multipleValues();
@@ -164,52 +165,26 @@ void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
       for (int i = 1; i < nv; ++i)
         return_values << mv.valueGet(i, result_mv.number_of_values());
     }
-    process->_ReturnValuesList = return_values.result();
+    _ReturnValuesList = return_values.result();
   }
 }
 
-__attribute__((noinline)) void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
-#ifdef USE_MPS
-  // use mask
-  mps_thr_t thr_o;
-  mps_res_t res = mps_thread_reg(&thr_o, global_arena);
-  if (res != MPS_RES_OK) {
-    printf("%s:%d Could not register thread\n", __FILE__, __LINE__);
-    abort();
-  }
-  mps_root_t root;
-  res = mps_root_create_thread_tagged(&root, global_arena, mps_rank_ambig(), 0, thr_o, mps_scan_area_masked,
-                                      gctools::pointer_tag_mask, gctools::pointer_tag_eq,
-                                      reinterpret_cast<mps_addr_t>(const_cast<void*>(cold_end_of_stack)));
-  if (res != MPS_RES_OK) {
-    printf("%s:%d Could not create thread stack roots\n", __FILE__, __LINE__);
-    abort();
-  };
-#endif
-  // Tell the process what MPS thr_o and root is
-#ifdef USE_MPS
-  process->thr_o = thr_o;
-  process->root = root;
-#endif
+__attribute__((noinline))
+void Process_O::run(void* cold_end_of_stack) {
   gctools::ThreadLocalStateLowLevel thread_local_state_low_level(cold_end_of_stack);
   core::ThreadLocalState thread_local_state;
   thread_local_state.startUpVM();
   my_thread_low_level = &thread_local_state_low_level;
   my_thread = &thread_local_state;
-//  printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
-#ifdef USE_MPS
-  gctools::my_thread_allocation_points.initializeAllocationPoints();
-#endif
-  my_thread->initialize_thread(process, true);
+  my_thread->initialize_thread(this->asSmartPtr(), true);
   //  my_thread->create_sigaltstack();
-  process->_ThreadInfo = my_thread;
-  // Set the mp:*current-process* variable to the current process
-  core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR, process);
-  core::List_sp reversed_bindings = core::cl__reverse(process->_InitialSpecialBindings);
-  do_start_thread_inner(process, reversed_bindings);
+  _ThreadInfo = my_thread;
+
+  // We're ready to run Lisp
+  runInner(core::cl__reverse(_InitialSpecialBindings));
+
   // Remove the process
-  process->_Phase = Exited;
-  _lisp->remove_process(process);
+  _lisp->remove_process(this->asSmartPtr());
 #ifdef DEBUG_MONITOR_SUPPORT
   // When enabled, maintain a thread-local map of strings to FILE*
   // used for logging. This is so that per-thread log files can be
@@ -221,20 +196,15 @@ __attribute__((noinline)) void start_thread_inner(Process_sp process, void* cold
 #endif
 #ifdef USE_MPS
   gctools::my_thread_allocation_points.destroyAllocationPoints();
-  mps_root_destroy(process->root._value);
-  mps_thread_dereg(process->thr_o._value);
+  mps_root_destroy(root._value);
+  mps_thread_dereg(thr_o._value);
 #endif
 };
 
 // This is the function actually passed to pthread_create.
 void* start_thread(void* vinfo) {
   void* cold_end_of_stack = &cold_end_of_stack;
-  ////////////////////////////////////////////////////////////
-  //
-  // MPS setup of thread
-  //
-  start_thread_inner(static_cast<Process_O*>(vinfo)->asSmartPtr(), cold_end_of_stack);
-  //  my_thread->destroy_sigaltstack();
+  static_cast<Process_O*>(vinfo)->run(cold_end_of_stack);
   return NULL;
 }
 

@@ -131,9 +131,12 @@ public:
   };
 
   int startProcess();
+  void run(void* stackTop); // the function the thread actually runs, mostly
   string __repr__() const override;
   string phase_as_string() const;
   void interrupt(core::T_sp interrupt);
+private:
+  void runInner(core::List_sp bindings);
 };
 }; // namespace mp
 
