@@ -1435,7 +1435,7 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
                        (make-condition 'mp:simple-interactive-interrupt
                                        "Interactive interrupt."))))
     (check-type condition mp:interrupt "an interrupt")
-    (mp:queue-interrupt process condition)))
+    (mp:enqueue-interrupt process condition)))
 
 ;;; Internal, used by interrupt machinery. Return value ignored.
 (defun mp:signal-interrupt (interrupt)

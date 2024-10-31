@@ -617,9 +617,9 @@ CL_DEFUN core::T_sp mp__process_enable(Process_sp process) {
   }
 }
 
-CL_DOCSTRING(R"dx(Internal. Queue the given interrupt to the thread's pending interrupt list. Returns no values.")dx");
+CL_DOCSTRING(R"dx(Internal. Enqueue the given interrupt to the thread's pending interrupt list. Returns no values.")dx");
 DOCGROUP(clasp);
-CL_DEFUN void mp__queue_interrupt(Process_sp process, core::T_sp interrupt) {
+CL_DEFUN void mp__enqueue_interrupt(Process_sp process, core::T_sp interrupt) {
   if (process->_Phase != Active) [[unlikely]]
     FEerror("Cannot interrupt the inactive process ~a", 1, process);
   process->interrupt(interrupt);
