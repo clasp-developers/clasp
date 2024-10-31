@@ -1371,8 +1371,60 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
 ;; it cancels the particular thread as well obviously, and because if you
 ;; want to block one kind of termination you might want to block the other.
 ;; Not sure whether to export this specifically.
-(define-condition termination-interrupt (mp:cancellation-interrupt)
-  ((%signal :initarg :signal :reader termination-signal)))
+(define-condition termination-interrupt (mp:cancellation-interrupt) ())
+
+;; Do nothing. Good for ignorable signals.
+(define-condition nop-interrupt (mp:interrupt) ())
+
+;; Interrupts that are also errors - they go into the debugger as if they had
+;; been called by ERROR instead of INTERRUPT.
+(define-condition error-interrupt (error mp:interrupt) ())
+
+;;; POSIX signals
+(macrolet ((defposix (name super string)
+             (let ((cname (find-symbol (symbol-name name) "CORE")))
+               (when cname
+                 `(define-condition ,cname (,super)
+                    ()
+                    (:report ,string))))))
+  ;; Many of these are never actually signaled (e.g. FPE) but are included
+  ;; for completeness. Possibly they should be signaled in unusual situations,
+  ;; e.g. being caused by a manual kill(2) or raise(3).
+  ;; Some are obviously impossible, like sigkill and sigstop.
+  ;; Also, the below superclasses are pretty ad-hoc - feel free to change them
+  ;; if you have a good reason.
+  (defposix #:sigabrt termination-interrupt "Abort signal.")
+  (defposix #:sigalrm nop-interrupt "Alarm signal.")
+  (defposix #:sigbus error-interrupt "Bus error.")
+  (defposix #:sigchld nop-interrupt "Child process stopped or terminated.")
+  (defposix #:sigcont nop-interrupt "Continue signal.")
+  (defposix #:sigemt nop-interrupt "Emulator trap.")
+  (defposix #:sigfpe error-interrupt "Floating point exception.")
+  (defposix #:sighup termination-interrupt "Hangup.")
+  (defposix #:sigill error-interrupt "Illegal instruction.")
+  (defposix #:sigint ext:interactive-interrupt "Interruption signal.")
+  (defposix #:sigio nop-interrupt "I/O now ready.")
+  (defposix #:sigkill termination-interrupt "Kill signal.")
+  (defposix #:sigpipe error-interrupt "Broken pipe.")
+  (defposix #:sigpoll nop-interrupt "Polled event occurred.")
+  (defposix #:sigprof nop-interrupt "Profiling signal.")
+  (defposix #:sigpwr nop-interrupt "Power failure.")
+  (defposix #:sigquit termination-interrupt "Quit signal.")
+  (defposix #:sigsegv error-interrupt "Segmentation fault.")
+  (defposix #:sigstop nop-interrupt "Stop signal.")
+  (defposix #:sigtstp nop-interrupt "Stop typed.")
+  (defposix #:sigsys error-interrupt "Bad syscall.")
+  (defposix #:sigterm termination-interrupt "Termination signal.")
+  (defposix #:sigtrap nop-interrupt "Trace/breakpoint trap.")
+  (defposix #:sigttin nop-interrupt "Terminal input for background process.")
+  (defposix #:sigttou nop-interrupt "Terminal output for background process.")
+  (defposix #:sigurg error-interrupt "Urgent condition on socket.")
+  (defposix #:sigusr1 nop-interrupt "User signal 1.")
+  (defposix #:sigusr2 nop-interrupt "User signal 2.")
+  (defposix #:sigvtalrm nop-interrupt "Virtual alarm.")
+  (defposix #:sigxcpu nop-interrupt "CPU time limit exceeded.")
+  (defposix #:sigxfsz nop-interrupt "File size limit exceeded.")
+  (defposix #:sigwinch nop-interrupt "Window resize signal."))
 
 (defun mp:interrupt (process &optional (datum nil datump) &rest arguments)
   (check-type process mp:process)
@@ -1414,16 +1466,13 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
     (with-simple-restart (continue "Return from interactive interruption.")
       (let ((*debugger-hook* nil)) (invoke-debugger i)))))
 
+(defmethod mp:service-interrupt ((i error-interrupt))
+  (clasp-debug:with-truncated-stack () (invoke-debugger i)))
+
 (defmethod mp:service-interrupt ((i mp:cancellation-interrupt))
   (mp:abort-process i))
 (defmethod mp:service-interrupt ((i termination-interrupt))
-  (case (termination-signal i)
-    ((:sigabrt) (write-line "Aborted" *debug-io*))
-    ((:sigterm) (write-line "Terminated" *debug-io*))
-    ((:sigkill) (write-line "Killed" *debug-io*))
-    ((:sigquit) (write-line "Quit" *debug-io*))
-    ((:sighup) (write-line "Hangup" *debug-io*))
-    (otherwise (write-line "Terminated by signal" *debug-io*)))
+  (format *debug-io* "~&Terminating Clasp due to interrupt: ~a~%" i)
   (ext:quit 1))
 
 (defmethod mp:service-interrupt ((i mp:call-interrupt))
@@ -1432,23 +1481,18 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
 (defmethod mp:service-interrupt ((i mp:suspension-interrupt))
   (mp:suspend-loop))
 
+(defmethod mp:service-interrupt ((i nop-interrupt)))
+
 ;; called from C++ (posix_signal_interrupt)
 (defun mp:posix-interrupt (sig)
   (let* ((signals (load-time-value (core:signal-code-alist) t))
          (pair (rassoc sig signals)))
     (mp:signal-interrupt
-     (cond ((not pair)
-            (make-condition 'mp:simple-interactive-interrupt
-                            :format-control "Received POSIX signal: ~d"
-                            :format-arguments (list sig)))
-           ((member (car pair)
-                    '(:sigabrt :sigterm :sigkill :sigquit :sighup))
-            (make-condition 'termination-interrupt
-                            :signal (car pair)))
-           (t
-            (make-condition 'mp:simple-interactive-interrupt
-                            :format-control "Received POSIX signal: ~a (~d)"
-                            :format-arguments (list (car pair) sig)))))))
+     (if pair
+         (make-condition (first pair))
+         (make-condition 'mp:simple-interactive-interrupt
+                         :format-control "Received POSIX signal: ~d"
+                         :format-arguments (list sig))))))
 
 ;;; ----------------------------------------------------------------------
 ;;; ECL's interface to the toplevel and debugger

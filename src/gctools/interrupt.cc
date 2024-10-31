@@ -90,7 +90,7 @@ SYMBOL_EXPORT_SC_(ExtPkg, bus_error);
   DOSIGXFSZ(MAC); DOSIGPOLL(MAC); DOSIGPROF(MAC); DOSIGEMT(MAC);\
   DOSIGIO(MAC); DOSIGPWR(MAC); DOSIGTHR(MAC);
 
-#define SIGEXPORT(NAME) SYMBOL_EXPORT_SC_(CorePkg, signal_SIG##NAME)
+#define SIGEXPORT(NAME) SYMBOL_EXPORT_SC_(CorePkg, SIG##NAME)
 DO_ALL_SIGNALS(SIGEXPORT)
 #undef SIGNEXPORT
 
@@ -448,7 +448,7 @@ DOCGROUP(clasp);
 CL_DEFUN core::List_sp core__signal_code_alist() {
   core::List_sp alist = nil<core::T_O>();
 #define DEFSIG(NAME) \
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIG" #NAME, KeywordPkg), core::clasp_make_fixnum(SIG##NAME)), alist);
+  alist = core::Cons_O::create(core::Cons_O::create(core::_sym_SIG##NAME, core::clasp_make_fixnum(SIG##NAME)), alist);
   DO_ALL_SIGNALS(DEFSIG);
 #undef DEFSIG
   return alist;
