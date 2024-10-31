@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 #include <clasp/core/mpPackage.fwd.h>
 #include <clasp/core/sequence.h> // cl__reverse
+#include <clasp/gctools/park.h>
 
 namespace mp {
 FORWARD(Process);
@@ -62,13 +63,14 @@ namespace mp {
 
 typedef enum {
   Nascent = 0, // Has not yet started, may proceed to Active
-  Inactive,
   Booting,
   Active,    // Running, may proceed to Suspended or Exited
   Suspended, // Temporarily paused, may proceed to Active or Exited
   Exited
 } // Finished running, permanent state.
-ProcessPhase;
+  ProcessPhase;
+// Graph of all legal transitions:
+// Nascent -> Booting -> Active -> Exited, Active -> Suspended -> Active
 
 class Process_O : public core::CxxObject_O {
   LISP_CLASS(mp, MpPkg, Process_O, "Process", core::CxxObject_O);
@@ -133,10 +135,26 @@ public:
   int startProcess();
   void run(void* stackTop); // the function the thread actually runs, mostly
   string __repr__() const override;
+  inline ProcessPhase phase() const { return _Phase.load(std::memory_order_acquire); }
   string phase_as_string() const;
   void interrupt(core::T_sp interrupt);
+  void suspend();
+  void resume();
 private:
   void runInner(core::List_sp bindings);
+  inline void updatePhase(ProcessPhase n) {
+    _Phase.store(n, std::memory_order_release);
+    _Phase.notify_all();
+  }
+  // Like the above, but CASs and tells you if it worked.
+  inline bool updatePhaseFrom(ProcessPhase old, ProcessPhase n) {
+    bool r = _Phase.compare_exchange_strong(old, n, std::memory_order_acq_rel);
+    if (r) _Phase.notify_all();
+    return r;
+  }
+  inline void waitPhase(ProcessPhase old) {
+    BEGIN_PARK { _Phase.wait(old, std::memory_order_acquire); } END_PARK;
+  }
 };
 }; // namespace mp
 

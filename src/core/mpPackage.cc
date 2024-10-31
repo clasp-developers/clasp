@@ -138,24 +138,24 @@ void Process_O::runInner(core::List_sp bindings) {
     core::DynamicScopeManager scope(gc::As<core::Symbol_sp>(pair->car()), core::eval::evaluate(pair->cdr(), nil<core::T_O>()));
     runInner(CONS_CDR(bindings));
   } else {
-    _Phase = Active;
+    updatePhase(Active);
     core::T_mv result_mv;
     try {
       result_mv = core::core__apply0(core::coerce::calledFunctionDesignator(_Function), _Arguments);
     } catch (ExitProcess& e) {
         // Exiting specially. Don't touch _ReturnValuesList - it's initialized to NIL just fine,
         // and may have been set by mp:exit-process.
-      _Phase = Exited;
+      updatePhase(Exited);
       return;
     } catch (AbortProcess& e) {
         // Exiting specially for some weird reason. Mark this as an abort.
         // NOTE: Should probably catch all attempts to exit, i.e. catch (...),
         // but that might be a problem for the main thread.
       _Aborted = true;
-      _Phase = Exited;
+      updatePhase(Exited);
       return;
     }
-    _Phase = Exited;
+    updatePhase(Exited);
     ql::list return_values;
     int nv = result_mv.number_of_values();
     core::MultipleValues& mv = core::lisp_multipleValues();
@@ -265,6 +265,9 @@ string SharedMutex_O::__repr__() const {
 }
 
 int Process_O::startProcess() {
+  if (!updatePhaseFrom(Nascent, Booting))
+    // Some other process has started this up - bow out gracefully.
+    return 0;
   _lisp->add_process(this->asSmartPtr());
   pthread_attr_t attr;
   int result;
@@ -272,7 +275,6 @@ int Process_O::startProcess() {
   result = pthread_attr_setstacksize(&attr, this->_StackSize);
   if (result != 0)
     return result;
-  this->_Phase = Active;
   // We pass ourselves into the thread being created.
   // There is a subtlety here - something needs to be keeping the thread alive.
   // If this function returns before the thread is fully created, this process
@@ -292,22 +294,44 @@ void Process_O::interrupt(core::T_sp interrupt) {
    * the environment. Then add the interrupt to the process's
    * queue, and it will examine it at its own leisure.
    */
-  if (_Phase >= mp::Nascent) {
-    _ThreadInfo->enqueue_interrupt(interrupt);
-    if (_ThreadInfo->blockingp())
-      // The thread is blocked on something, so wake it up with a signal.
-      // We use SIGCONT since it's kinda obscure and waking up processes is
-      // what it's for, though perhaps not in this way originally.
-      // FIXME?: We could use pthread_sigqueue to stick in some extra info
-      // in order to disambiguate our wakeups from others' a bit.
-      pthread_kill(_TheThread._value, SIGCONT);
-  }
+  do {
+    ProcessPhase p = phase();
+    switch (p) {
+    case Active:
+    case Suspended: {
+        _ThreadInfo->enqueue_interrupt(interrupt);
+        if (_ThreadInfo->blockingp())
+          // The thread is blocked on something, so wake it up with a signal.
+          // We use SIGCONT since it's kinda obscure and waking up processes is
+          // what it's for, though perhaps not in this way originally.
+          // FIXME?: We could use pthread_sigqueue to stick in some extra info
+          // in order to disambiguate our wakeups from others' a bit.
+          pthread_kill(_TheThread._value, SIGCONT);
+        return;
+      }
+    case Exited: return; // we were too slow! oh well, who cares.
+    case Nascent: SIMPLE_ERROR("Cannot interrupt unstarted process.");
+    case Booting: waitPhase(p);
+    }
+  } while (true);
 }
 
+// This function must only be called from within the process.
+// which in turn means the _Phase must be Active.
+void Process_O::suspend() {
+  updatePhase(Suspended);
+  waitPhase(Suspended); // c++20 guarantees this never wakes spuriously.
+}
+
+// This function is called from outside the process.
+void Process_O::resume() { updatePhaseFrom(Suspended, Active); }
+
 string Process_O::phase_as_string() const {
-  switch (this->_Phase) {
+  switch (phase()) {
   case Nascent:
     return "(Not yet started)";
+  case Booting:
+      return "(Booting)";
   case Active:
     return "(Running)";
   case Suspended:
@@ -342,19 +366,16 @@ CL_DEFUN core::SimpleBaseString_sp mp__process_phase_string(Process_sp process) 
 
 CL_DOCSTRING(R"dx(Current Phase of the process. Nascent = 0, Active = 1, Suspended = 2, Exited = 3)dx");
 DOCGROUP(clasp);
-CL_DEFUN int mp__process_phase(Process_sp process) { return process->_Phase; };
+CL_DEFUN int mp__process_phase(Process_sp process) { return process->phase(); };
 
 CL_DOCSTRING(R"dx(Return the owner of the lock - this may be NIL if it's not locked.)dx");
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp mp__lock_owner(Mutex_sp m) { return m->_Owner; }
 
-CL_DOCSTRING(R"dx(Start execution of a nascent process. Return no values.)dx");
+CL_DOCSTRING(R"dx(Start execution of a nascent process. If the process has already started, does nothing. Return no values.)dx");
 DOCGROUP(clasp);
 CL_DEFUN void mp__process_start(Process_sp process) {
-  if (process->_Phase == Nascent) {
-    process->startProcess();
-  } else
-    SIMPLE_ERROR("The process {} has already started.", core::_rep_(process));
+  process->startProcess();
 };
 
 CL_DOCSTRING(
@@ -391,9 +412,9 @@ CL_DEFUN core::T_sp mp__thread_id(Process_sp p) {
 }
 
 CL_DOCSTRING(
-    R"dx(Return true iff the process is active, i.e. is currently executed. More specifically, this means it has been started and is not currently suspended.)dx");
+    R"dx(Return true iff the process is active, i.e. is currently executing. More specifically, this means it has been started and is not currently suspended.)dx");
 DOCGROUP(clasp);
-CL_DEFUN bool mp__process_active_p(Process_sp p) { return (p->_Phase == Active); }
+CL_DEFUN bool mp__process_active_p(Process_sp p) { return (p->phase() == Active); }
 
 // Internal function used only for process-suspend (which is external).
 // FIXME: Don't actually export.
@@ -401,25 +422,12 @@ SYMBOL_EXPORT_SC_(MpPkg, suspend_loop);
 DOCGROUP(clasp);
 CL_DEFUN void mp__suspend_loop() {
   Process_sp this_process = gc::As<Process_sp>(_sym_STARcurrent_processSTAR->symbolValue());
-  RAIILock<Mutex> lock(this_process->_SuspensionMutex._value);
-  this_process->_Phase = Suspended;
-  while (this_process->_Phase == Suspended) {
-    if (!(this_process->_SuspensionCV._value.wait(this_process->_SuspensionMutex._value)))
-      SIMPLE_ERROR("BUG: pthread_cond_wait ran into an error");
-  }
+  this_process->suspend();
 };
 
 CL_DOCSTRING(R"dx(Restart execution in a suspended process.)dx");
 DOCGROUP(clasp);
-CL_DEFUN void mp__process_resume(Process_sp process) {
-  if (process->_Phase == Suspended) {
-    RAIILock<Mutex> lock(process->_SuspensionMutex._value);
-    process->_Phase = Active;
-    if (!(process->_SuspensionCV._value.signal()))
-      SIMPLE_ERROR("BUG: pthread_cond_signal ran into an error");
-  } else
-    SIMPLE_ERROR("Cannot resume a process ({}) that has not been suspended", core::_rep_(process));
-};
+CL_DEFUN void mp__process_resume(Process_sp process) { process->resume(); }
 
 CL_DOCSTRING(
     R"dx(Inform the scheduler that the current process doesn't need control for the moment. It may or may not use this information. Returns no values.)dx");
@@ -445,9 +453,9 @@ CL_DOCSTRING(
     R"dx(Wait for the given process to finish executing. If the process's function returns normally, those values are returned. If the process exited due to EXIT-PROCESS, the values provided to that function are returned. If the process was not started or aborted by ABORT-PROCESS or a control transfer, an error of type PROCESS-JOIN-ERROR is signaled.)dx");
 DOCGROUP(clasp);
 CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
-  if (process->_Phase == Nascent)
+  if (process->phase() == Nascent)
     ERROR(_sym_process_join_error, core::lisp_createList(kw::_sym_process, process));
-  if (process->_Phase != Exited) {
+  if (process->phase() != Exited) {
     pthread_join(process->_TheThread._value, NULL);
   }
   if (process->_Aborted)
@@ -467,8 +475,6 @@ CL_DEFUN core::T_sp mp__process_preset(Process_sp process, core::T_sp function, 
 CL_DOCSTRING(R"dx(Internal. Enqueue the given interrupt to the thread's pending interrupt list. Returns no values.")dx");
 DOCGROUP(clasp);
 CL_DEFUN void mp__enqueue_interrupt(Process_sp process, core::T_sp interrupt) {
-  if (process->_Phase != Active) [[unlikely]]
-    FEerror("Cannot interrupt the inactive process ~a", 1, process);
   process->interrupt(interrupt);
 }
 
