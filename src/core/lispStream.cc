@@ -1639,11 +1639,10 @@ void maybe_clearerr(T_sp strm) {
 }
 
 int restartable_io_error(T_sp strm, const char* s) {
-  cl_env_ptr the_env = clasp_process_env();
   volatile int old_errno = errno;
   /* clasp_disable_interrupts(); ** done by caller */
   maybe_clearerr(strm);
-  clasp_enable_interrupts_env(the_env);
+  clasp_enable_interrupts();
   if (old_errno == EINTR) {
     return 1;
   } else {
@@ -1654,10 +1653,9 @@ int restartable_io_error(T_sp strm, const char* s) {
 }
 
 void io_error(T_sp strm) {
-  cl_env_ptr the_env = clasp_process_env();
   /* clasp_disable_interrupts(); ** done by caller */
   maybe_clearerr(strm);
-  clasp_enable_interrupts_env(the_env);
+  clasp_enable_interrupts();
   file_libc_error(core::_sym_simpleStreamError, strm, "Read or write operation signaled an error", 0);
 }
 
@@ -1800,11 +1798,10 @@ claspCharacter StreamCursor::update(claspCharacter c) {
 AnsiStream_O::~AnsiStream_O() { close(nil<T_O>()); };
 
 int AnsiStream_O::restartable_io_error(const char* s) {
-  cl_env_ptr the_env = clasp_process_env();
   volatile int old_errno = errno;
   /* clasp_disable_interrupts(); ** done by caller */
   maybe_clearerr(this->asSmartPtr());
-  clasp_enable_interrupts_env(the_env);
+  clasp_enable_interrupts();
   if (old_errno == EINTR) {
     return 1;
   } else {
@@ -4168,28 +4165,25 @@ T_sp FileStream_O::truename() const { return cl__truename((_open && _temp_filena
  */
 
 int safe_open(const char* filename, int flags, clasp_mode_t mode) {
-  const cl_env_ptr the_env = clasp_process_env();
-  clasp_disable_interrupts_env(the_env);
+  clasp_disable_interrupts();
   int output = open(filename, flags, mode);
-  clasp_enable_interrupts_env(the_env);
+  clasp_enable_interrupts();
   return output;
 }
 
 static int safe_close(int f) {
-  const cl_env_ptr the_env = clasp_process_env();
   int output;
-  clasp_disable_interrupts_env(the_env);
+  clasp_disable_interrupts();
   output = close(f);
-  clasp_enable_interrupts_env(the_env);
+  clasp_enable_interrupts();
   return output;
 }
 
 static FILE* safe_fopen(const char* filename, const char* mode) {
-  const cl_env_ptr the_env = clasp_process_env();
   FILE* output;
-  clasp_disable_interrupts_env(the_env);
+  clasp_disable_interrupts();
   output = fopen(filename, mode);
-  clasp_enable_interrupts_env(the_env);
+  clasp_enable_interrupts();
   return output;
 }
 
@@ -4236,9 +4230,8 @@ int sflags(const char* mode, int* optr) {
 }
 
 static FILE* safe_fdopen(int fildes, const char* mode) {
-  const cl_env_ptr the_env = clasp_process_env();
   FILE* output;
-  clasp_disable_interrupts_env(the_env);
+  clasp_disable_interrupts();
   output = fdopen(fildes, mode);
   if (output == NULL) {
     std::string serr = strerror(errno);
@@ -4261,16 +4254,15 @@ static FILE* safe_fdopen(int fildes, const char* mode) {
            output, fildes, mode, info.st_mode, serr.c_str());
     perror("In safe_fdopen");
   }
-  clasp_enable_interrupts_env(the_env);
+  clasp_enable_interrupts();
   return output;
 }
 
 static int safe_fclose(FILE* stream) {
-  const cl_env_ptr the_env = clasp_process_env();
   int output;
-  clasp_disable_interrupts_env(the_env);
+  clasp_disable_interrupts();
   output = fclose(stream);
-  clasp_enable_interrupts_env(the_env);
+  clasp_enable_interrupts();
   return output;
 }
 
@@ -4792,15 +4784,14 @@ ListenResult PosixFileStream_O::listen() {
   if (_byte_stack.notnilp())
     return listen_result_available;
   if (_flags & CLASP_STREAM_MIGHT_SEEK) {
-    cl_env_ptr the_env = clasp_process_env();
     clasp_off_t disp, onew;
-    clasp_disable_interrupts_env(the_env);
+    clasp_disable_interrupts();
     disp = lseek(_file_descriptor, 0, SEEK_CUR);
-    clasp_enable_interrupts_env(the_env);
+    clasp_enable_interrupts();
     if (disp != (clasp_off_t)-1) {
-      clasp_disable_interrupts_env(the_env);
+      clasp_disable_interrupts();
       onew = lseek(_file_descriptor, 0, SEEK_END);
-      clasp_enable_interrupts_env(the_env);
+      clasp_enable_interrupts();
       lseek(_file_descriptor, disp, SEEK_SET);
       if (onew == disp) {
         return listen_result_no_char;
@@ -5062,7 +5053,6 @@ bool CFileStream_O::interactive_p() const { return isatty(fileno(_file)); }
 T_sp CFileStream_O::length() {
   T_sp output = clasp_file_len(fileno(_file)); // NIL or Integer_sp
   if (_byte_size != 8 && output.notnilp()) {
-    //            const cl_env_ptr the_env = clasp_process_env();
     T_mv output_mv = clasp_floor2(gc::As_unsafe<Integer_sp>(output), make_fixnum(_byte_size / 8));
     // and now lets use the calculated value
     output = output_mv;
@@ -5281,14 +5271,13 @@ cl_index ConsoleStream_O::read_byte8(unsigned char* c, cl_index n) {
   unlikely_if(_byte_stack.notnilp()) { return consume_byte_stack(c, n); }
   else {
     cl_index len = 0;
-    cl_env_ptr the_env = clasp_process_env();
     DWORD nchars;
     unsigned char aux[4];
     for (len = 0; len < n;) {
       int i, ok;
-      clasp_disable_interrupts_env(the_env);
+      clasp_disable_interrupts();
       ok = ReadConsole(_handle, &aux, 1, &nchars, NULL);
-      clasp_enable_interrupts_env(the_env);
+      clasp_enable_interrupts();
       unlikely_if(!ok) { FEwin32_error("Cannot read from console", 0); }
       for (i = 0; i < nchars; i++) {
         if (len < n) {

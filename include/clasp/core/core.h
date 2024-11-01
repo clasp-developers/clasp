@@ -1092,31 +1092,6 @@ template <class T> core::Symbol_sp lisp_classSymbol() {
 #endif
 
 namespace core {
-struct cl_env {};
-typedef cl_env* cl_env_ptr;
-
-inline cl_env_ptr clasp_process_env() {
-  return NULL;
-#if 0
-#ifdef ECL_WINDOWS_THREADS
-  return TlsGetValue(cl_env_key);
-#else
-  struct cl_env_struct *rv = pthread_getspecific(cl_env_key);
-  if (rv)
-    return rv;
-  ecl_thread_internal_error("pthread_getspecific() failed.");
-  return NULL;
-#endif
-#endif
-};
-
-inline void clasp_disable_interrupts_env(const cl_env_ptr){};
-inline void clasp_enable_interrupts_env(const cl_env_ptr){};
-//    inline void clasp_disable_interrupts() {};
-//    inline void clasp_enable_interrupts() {};
-}; // namespace core
-
-namespace core {
 void core__mangledSymbols(T_sp stream_designator);
 };
 
