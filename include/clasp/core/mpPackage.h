@@ -62,15 +62,15 @@ template <typename T> struct RAIILock {
 namespace mp {
 
 typedef enum {
-  Nascent = 0, // Has not yet started, may proceed to Active
-  Booting,
-  Active,    // Running, may proceed to Suspended or Exited
-  Suspended, // Temporarily paused, may proceed to Active or Exited
-  Exited
+  Nascent = 0, // Has not yet started; proceeds to Booting when started
+  Booting, // Has been started but isn't ready for Lisp; proceeds to Running
+  Running, // Running normally; may proceed to Suspended or Exited
+  Suspended, // Temporarily paused; may proceed to Running or Exited
+  Exited // Halt state
 } // Finished running, permanent state.
   ProcessPhase;
 // Graph of all legal transitions:
-// Nascent -> Booting -> Active -> Exited, Active -> Suspended -> Active
+// Nascent -> Booting -> Running -> Exited, Running -> Suspended -> Running
 
 class Process_O : public core::CxxObject_O {
   LISP_CLASS(mp, MpPkg, Process_O, "Process", core::CxxObject_O);

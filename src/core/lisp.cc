@@ -588,7 +588,7 @@ void Lisp::startupLispEnvironment() {
   //
   mp::_sym_STARcurrent_processSTAR->defparameter(my_thread->_Process);
   this->add_process(my_thread->_Process);
-  my_thread->_Process->_Phase = mp::Active;
+  my_thread->_Process->_Phase = mp::Running;
   this->_Booted = true;
 
   globals_->_InitFileName = "sys:src;lisp;" KERNEL_NAME ";init.lisp";

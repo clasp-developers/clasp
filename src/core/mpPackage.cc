@@ -138,7 +138,7 @@ void Process_O::runInner(core::List_sp bindings) {
     core::DynamicScopeManager scope(gc::As<core::Symbol_sp>(pair->car()), core::eval::evaluate(pair->cdr(), nil<core::T_O>()));
     runInner(CONS_CDR(bindings));
   } else {
-    updatePhase(Active);
+    updatePhase(Running);
     core::T_mv result_mv;
     try {
       result_mv = core::core__apply0(core::coerce::calledFunctionDesignator(_Function), _Arguments);
@@ -297,7 +297,7 @@ void Process_O::interrupt(core::T_sp interrupt) {
   do {
     ProcessPhase p = phase();
     switch (p) {
-    case Active:
+    case Running:
     case Suspended: {
         _ThreadInfo->enqueue_interrupt(interrupt);
         if (_ThreadInfo->blockingp())
@@ -317,14 +317,14 @@ void Process_O::interrupt(core::T_sp interrupt) {
 }
 
 // This function must only be called from within the process.
-// which in turn means the _Phase must be Active.
+// which in turn means the _Phase must already be Running.
 void Process_O::suspend() {
   updatePhase(Suspended);
   waitPhase(Suspended); // c++20 guarantees this never wakes spuriously.
 }
 
 // This function is called from outside the process.
-void Process_O::resume() { updatePhaseFrom(Suspended, Active); }
+void Process_O::resume() { updatePhaseFrom(Suspended, Running); }
 
 string Process_O::phase_as_string() const {
   switch (phase()) {
@@ -332,7 +332,7 @@ string Process_O::phase_as_string() const {
     return "(Not yet started)";
   case Booting:
       return "(Booting)";
-  case Active:
+  case Running:
     return "(Running)";
   case Suspended:
     return "(Suspended)";
@@ -364,7 +364,7 @@ CL_DEFUN core::SimpleBaseString_sp mp__process_phase_string(Process_sp process) 
   return core::SimpleBaseString_O::make(process->phase_as_string());
 };
 
-CL_DOCSTRING(R"dx(Current Phase of the process. Nascent = 0, Active = 1, Suspended = 2, Exited = 3)dx");
+CL_DOCSTRING(R"dx(Current Phase of the process. Nascent = 0, Running = 1, Suspended = 2, Exited = 3)dx");
 DOCGROUP(clasp);
 CL_DEFUN int mp__process_phase(Process_sp process) { return process->phase(); };
 
@@ -414,7 +414,10 @@ CL_DEFUN core::T_sp mp__thread_id(Process_sp p) {
 CL_DOCSTRING(
     R"dx(Return true iff the process is active, i.e. is currently executing. More specifically, this means it has been started and is not currently suspended.)dx");
 DOCGROUP(clasp);
-CL_DEFUN bool mp__process_active_p(Process_sp p) { return (p->phase() == Active); }
+CL_DEFUN bool mp__process_active_p(Process_sp p) {
+  auto phase = p->phase();
+  return phase == Running || phase == Booting;
+}
 
 // Internal function used only for process-suspend (which is external).
 // FIXME: Don't actually export.
