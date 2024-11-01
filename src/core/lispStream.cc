@@ -1638,27 +1638,6 @@ void maybe_clearerr(T_sp strm) {
     clearerr(s->_file);
 }
 
-int restartable_io_error(T_sp strm, const char* s) {
-  volatile int old_errno = errno;
-  /* clasp_disable_interrupts(); ** done by caller */
-  maybe_clearerr(strm);
-  clasp_enable_interrupts();
-  if (old_errno == EINTR) {
-    return 1;
-  } else {
-    String_sp temp = SimpleBaseString_O::make(std::string(s, strlen(s)));
-    file_libc_error(core::_sym_simpleStreamError, strm, "C operation (~A) signaled an error.", 1, temp.raw_());
-    return 0;
-  }
-}
-
-void io_error(T_sp strm) {
-  /* clasp_disable_interrupts(); ** done by caller */
-  maybe_clearerr(strm);
-  clasp_enable_interrupts();
-  file_libc_error(core::_sym_simpleStreamError, strm, "Read or write operation signaled an error", 0);
-}
-
 void wrong_file_handler(T_sp strm) { FEerror("Internal error: stream ~S has no valid C file handler.", 1, strm.raw_()); }
 
 #ifdef CLASP_UNICODE
@@ -1797,18 +1776,33 @@ claspCharacter StreamCursor::update(claspCharacter c) {
 
 AnsiStream_O::~AnsiStream_O() { close(nil<T_O>()); };
 
-int AnsiStream_O::restartable_io_error(const char* s) {
-  volatile int old_errno = errno;
-  /* clasp_disable_interrupts(); ** done by caller */
-  maybe_clearerr(this->asSmartPtr());
-  clasp_enable_interrupts();
-  if (old_errno == EINTR) {
-    return 1;
-  } else {
-    String_sp temp = SimpleBaseString_O::make(std::string(s, strlen(s)));
-    file_libc_error(core::_sym_simpleStreamError, this->asSmartPtr(), "C operation (~A) signaled an error.", 1, temp.raw_());
-    return 0;
+static SimpleBaseString_sp lisp_strerror(int errnum) {
+  // strerror is not thread safe so we don't want to use it.
+  // strerror_r doesn't provide a way to ask how big a buffer you need,
+  // other than trying it and handling the error, because POSIX is silly.
+  // We just assume error messages are at most 255 long (plus null).
+  // ALSO, with _GNU_SOURCE we get the GNU strerror_r which returns a char*
+  // instead of a string, so that's super. I don't want to mess with those
+  // settings so here's code for both.
+  // The condition is straight out of man 3 strerror_r.
+  char buf[256];
+#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && !_GNU_SOURCE
+  switch (strerror_r(errnum, buf, 256)) {
+  case 0: return SimpleBaseString_O::make(buf);
+  case EINVAL: return SimpleBaseString_O::make("Unknown error");
+  default: return SimpleBaseString_O::make("C error too long (BUG in Clasp)");
   }
+#else // GNU strerror_r
+  return SimpleBaseString_O::make(strerror_r(errnum, buf, 256));
+#endif
+}
+
+[[noreturn]] void AnsiStream_O::io_error(const char* s) {
+  volatile int old_errno = errno;
+  maybe_clearerr(this->asSmartPtr());
+  String_sp errop = SimpleBaseString_O::make(std::string(s));
+  String_sp errmsg = lisp_strerror(old_errno);
+  file_libc_error(core::_sym_simpleStreamError, this->asSmartPtr(), "C operation (~A) signaled an error:~%~t~a", 2, errop.raw_(), errmsg.raw_());
 }
 
 T_sp AnsiStream_O::close(T_sp _abort) {
@@ -4750,8 +4744,9 @@ cl_index PosixFileStream_O::read_byte8(unsigned char* c, cl_index n) {
   clasp_disable_interrupts();
   do {
     out = read(_file_descriptor, c, sizeof(char) * n);
-  } while (out < 0 && restartable_io_error("read"));
+  } while (out < 0 && errno == EINTR);
   clasp_enable_interrupts();
+  if (out < 0) io_error("read");
 
   return out;
 }
@@ -4773,8 +4768,9 @@ cl_index PosixFileStream_O::write_byte8(unsigned char* c, cl_index n) {
   clasp_disable_interrupts();
   do {
     out = write(_file_descriptor, c, sizeof(char) * n);
-  } while (out < 0 && restartable_io_error("write"));
+  } while (out < 0 && errno == EINTR);
   clasp_enable_interrupts();
+  if (out < 0) io_error("write");
   return out;
 }
 
@@ -4842,7 +4838,7 @@ T_sp PosixFileStream_O::position() {
   clasp_disable_interrupts();
   offset = lseek(_file_descriptor, 0, SEEK_CUR);
   clasp_enable_interrupts();
-  unlikely_if(offset < 0) io_error(asSmartPtr());
+  unlikely_if(offset < 0) io_error("lseek");
   if (sizeof(clasp_off_t) == sizeof(long)) {
     output = Integer_O::create((gctools::Fixnum)offset);
   } else {
@@ -4977,11 +4973,16 @@ cl_index CFileStream_O::read_byte8(unsigned char* c, cl_index n) {
   unlikely_if(_byte_stack.notnilp()) return consume_byte_stack(c, n);
 
   gctools::Fixnum out = 0;
+  // POSIX defines fread to (unlike C) report a bunch of different errors
+  // in errno. These errors are the same as for fgetc and include basically
+  // the same stuff you can get from read(2).
   clasp_disable_interrupts();
   do {
     out = fread(c, sizeof(char), n, _file);
-  } while (out < n && ferror(_file) && restartable_io_error("fread"));
+  } while (out < 0 && ferror(_file) && errno == EINTR);
   clasp_enable_interrupts();
+  // note: EOF we leave to the caller to figure out
+  if (out < n && ferror(_file)) io_error("fread");
 
   return out;
 }
@@ -5005,10 +5006,12 @@ cl_index CFileStream_O::write_byte8(unsigned char* c, cl_index n) {
 
   cl_index out;
   clasp_disable_interrupts();
+  // See note about POSIX error behavior for fread, above.
   do {
     out = fwrite(c, sizeof(char), n, _file);
-  } while (out < n && restartable_io_error("fwrite"));
+  } while (out < 0 && ferror(_file) && errno == EINTR);
   clasp_enable_interrupts();
+  if (out < n && ferror(_file)) io_error("fwrite");
   return out;
 }
 
@@ -5041,9 +5044,10 @@ void CFileStream_O::clear_output() { check_output(); }
 void CFileStream_O::force_output() {
   check_output();
   clasp_disable_interrupts();
-  while ((fflush(_file) == EOF) && restartable_io_error("fflush"))
-    (void)0;
+  int r;
+  while ((r = fflush(_file) == EOF) && errno == EINTR) {}
   clasp_enable_interrupts();
+  if (r == EOF) io_error("fflush");
 }
 
 void CFileStream_O::finish_output() { force_output(); }

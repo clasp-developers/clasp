@@ -736,7 +736,7 @@ List_sp clasp_grab_rest_args(va_list args, int nargs) {
   return l.cons();
 }
 
-void file_libc_error(T_sp error_type, T_sp stream, const char* msg, int narg, ...) {
+[[noreturn]] void file_libc_error(T_sp error_type, T_sp stream, const char* msg, int narg, ...) {
   va_list args;
   T_sp error = SimpleBaseString_O::make(std::string(strerror(errno)));
   va_start(args, narg);

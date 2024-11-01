@@ -336,7 +336,6 @@ void not_a_character_stream(T_sp s);
 void not_a_binary_stream(T_sp s);
 void unread_error(T_sp strm);
 void unread_twice(T_sp strm);
-void io_error(T_sp strm);
 #ifdef CLASP_UNICODE
 cl_index encoding_error(T_sp strm, unsigned char* buffer, claspCharacter c);
 claspCharacter decoding_error(T_sp strm, unsigned char** buffer, int length, unsigned char* buffer_end);
@@ -405,7 +404,7 @@ public:
   AnsiStream_O() : _open(true){};
   virtual ~AnsiStream_O(); // nontrivial
 
-  int restartable_io_error(const char* s);
+  [[noreturn]] void io_error(const char* s);
 
   virtual T_sp close(T_sp abort);
 
