@@ -107,8 +107,6 @@ public:
   core::T_sp _AbortCondition;
   core::ThreadLocalState* _ThreadInfo;
   std::atomic<ProcessPhase> _Phase;
-  dont_expose<Mutex> _SuspensionMutex;
-  dont_expose<ConditionVariable> _SuspensionCV;
   //    dont_expose<ConditionVariable> _ExitBarrier;
   size_t _StackSize;
   dont_expose<pthread_t> _TheThread;
@@ -125,7 +123,7 @@ public:
             size_t stack_size = 8 * 1024 * 1024)
       : _Parent(nil<core::T_O>()), _Name(name), _Function(function), _Arguments(arguments),
         _InitialSpecialBindings(initialSpecialBindings), _ReturnValuesList(nil<core::T_O>()), _Aborted(false),
-        _AbortCondition(nil<core::T_O>()), _ThreadInfo(NULL), _Phase(Nascent), _SuspensionMutex(SUSPBARR_NAMEWORD),
+        _AbortCondition(nil<core::T_O>()), _ThreadInfo(NULL), _Phase(Nascent),
         _StackSize(stack_size) {
     if (!function) {
       printf("%s:%d Trying to create a process and the function is NULL\n", __FILE__, __LINE__);
