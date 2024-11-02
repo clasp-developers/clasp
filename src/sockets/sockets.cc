@@ -63,6 +63,7 @@ THE SOFTWARE.
 #include <clasp/sockets/socketsPackage.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/gctools/park.h>
 
 namespace sockets {
 
@@ -259,9 +260,14 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketReceive(int fd,            // #0
   cl_index len;
   struct sockaddr_in name;
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr_in);
-  len =
-      recvfrom(fd, REINTERPRET_CAST(char*, safe_buffer_pointer(buffer, length)), length, flags, (struct sockaddr*)&name, &addr_len);
-  unlikely_if(len == -1) return Values(core::make_fixnum(-1), core::make_fixnum(errno));
+  BEGIN_PARK {
+    do {
+      len =
+        recvfrom(fd, REINTERPRET_CAST(char*, safe_buffer_pointer(buffer, length)), length, flags, (struct sockaddr*)&name, &addr_len);
+    } while (len == -1 && errno == EINTR);
+  } END_PARK;
+  if (len == -1) [[unlikely]]
+    return Values(core::make_fixnum(-1), core::make_fixnum(errno));
   else {
     uint32_t ip = ntohl(name.sin_addr.s_addr);
     uint16_t port = ntohs(name.sin_port);
@@ -439,7 +445,11 @@ CL_DEFUN core::Integer_sp sockets_internal__ll_socketSendAddress(int fd,        
     setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, REINTERPRET_CAST(char*, &sockopt), sizeof(int));
   }
 #endif
-  len = sendto(sock, REINTERPRET_CAST(char*, buffer), length, flags, (struct sockaddr*)&sockaddr, sizeof(struct sockaddr_in));
+  BEGIN_PARK {
+    do {
+      len = sendto(sock, REINTERPRET_CAST(char*, buffer), length, flags, (struct sockaddr*)&sockaddr, sizeof(struct sockaddr_in));
+    } while (len == -1 && errno == EINTR);
+  } END_PARK;
   return core::Integer_O::create((gc::Fixnum)(len));
 }
 
@@ -468,7 +478,11 @@ CL_DEFUN core::Integer_sp sockets_internal__ll_socketSendNoAddress(int fb,      
     setsockopt(fb, SOL_SOCKET, SO_NOSIGPIPE, REINTERPRET_CAST(char*, &sockopt), sizeof(int));
   }
 #endif
-  len = send(sock, REINTERPRET_CAST(char*, buffer), length, flags);
+  BEGIN_PARK {
+    do {
+      len = send(sock, REINTERPRET_CAST(char*, buffer), length, flags);
+    } while (len == -1 && errno == EINTR);
+  } END_PARK;
   return core::Integer_O::create((gc::Fixnum)(len));
 }
 
