@@ -1,7 +1,7 @@
 (in-package #:clasp-tests)
 
 ;;; These tests are all a little arcane in order to manage something that will
-;;; succeed or fail without hanging.
+;;; succeed or fail without hanging. (That perhaps needs some work.)
 
 ;;; Create a process NAME that waits until BODY has executed before executing,
 ;;; and wait for it to end.
@@ -77,3 +77,13 @@
         (ignore-errors (mp:process-join proc))
         cell)
       ((t)))
+
+(test input-interruptible
+      (let* ((cell t)
+             (proc (mp:process-run-function
+                    'input-interruptible-test
+                    (lambda () (read) (setf cell nil)))))
+        (mp:process-cancel proc)
+        (ignore-errors (mp:process-join proc))
+        cell)
+      (t))
