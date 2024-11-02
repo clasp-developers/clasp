@@ -1084,9 +1084,6 @@ template <class T> core::Symbol_sp lisp_classSymbol() {
 }; // namespace reg
 #define KERNEL_NAME "kernel"
 
-#define clasp_disable_interrupts()
-#define clasp_enable_interrupts()
-
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
