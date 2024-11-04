@@ -20,14 +20,14 @@ From: ghcr.io/yitzchak/archlinux-makepkg:latest
     export PATH="/home/cando/miniconda3/bin:${PATH}"
     conda install -y -c conda-forge jupyterlab sidecar ambertools
     jupyter-lab build
-    mkdir /home/cando/.cache
-    cando -e "(load -e "(ql:quickload :cando-jupyter)" -e "(core:exit)"
+#    mkdir /home/cando/.cache
+    cando -e "(ql:quickload :cando-jupyter)" -e "(core:exit)"
     chmod -R ugo+rw /home/cando/
 
 %environment
     export PATH="/home/cando/miniconda3/bin:${PATH}"
     export AMBERHOME=/home/cando/miniconda3
-    export XDG_CACHE_HOME=/home/cando/.cache
+#    export XDG_CACHE_HOME=/home/cando/.cache
 
 
 
