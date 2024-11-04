@@ -372,6 +372,7 @@ void initialize_signals() {
   INIT_SIGNAL(SIGTTOU, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
   INIT_SIGNAL(SIGPROF, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
   INIT_SIGNAL(SIGUSR1, (SA_NODEFER | SA_RESTART), handle_SIGUSR1);
+  INIT_SIGNAL(SIGUSR2, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
   INIT_SIGNAL(SIGSYS, (SA_NODEFER | SA_RESTART), handle_signal_now); // can be signaled synchronously by bad syscall
   INIT_SIGNAL(SIGTRAP, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
   // These termination signals we respond to when we're good and ready.
@@ -381,11 +382,13 @@ void initialize_signals() {
 #ifdef SIGVTALRM
   INIT_SIGNAL(SIGVTALRM, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
 #endif
+  INIT_SIGNAL(SIGURG, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
   // SIGXCPU is used by boehm to stop threads - this causes problems with boehm in the precise mode
 #if !(defined(USE_BOEHM) && defined(USE_PRECISE_GC))
   INIT_SIGNAL(SIGXCPU, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
 #endif
   INIT_SIGNAL(SIGXFSZ, (SA_NODEFER | SA_RESTART), handle_signal_now); // signaled synchronously by some syscalls
+  INIT_SIGNAL(SIGWINCH, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
   // This one we use specially to wake up blocking threads.
   INIT_SIGNAL(SIGCONT, (SA_NODEFER | SA_RESTART), handle_SIGCONT);
 
