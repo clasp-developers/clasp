@@ -34,12 +34,20 @@ public:
   SimpleVector_byte8_t_O(size_t length, value_type initialElement = value_type(), bool initialElementSupplied = false,
                          size_t initialContentsSize = 0, const value_type* initialContents = NULL)
       : TemplatedBase(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};
+  template <std::ranges::sized_range R>
+  SimpleVector_byte8_t_O(size_t length, R&& initialContents)
+    : TemplatedBase(initialContents) { (void)length; };
+
   static smart_ptr_type make(size_t length, value_type initialElement = value_type(), bool initialElementSupplied = false,
                              size_t initialContentsSize = 0, const value_type* initialContents = NULL,
                              bool static_vector_p = false) {
     auto bs = gctools::GC<my_type>::allocate_container<gctools::RuntimeStage>(
         static_vector_p, length, initialElement, initialElementSupplied, initialContentsSize, initialContents);
     return bs;
+  }
+  template <std::ranges::sized_range R>
+  static smart_ptr_type make(R&& initialContents) {
+    return gctools::GC<my_type>::allocate_container<gctools::RuntimeStage>(false, std::ranges::ssize(initialContents), initialContents);
   }
 
 public:

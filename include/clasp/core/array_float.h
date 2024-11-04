@@ -57,10 +57,7 @@ public: // Provide the API that I used for NVector_sp
   float& getElement(size_t i) { return this->operator[](i); };
   void setElement(size_t i, float v) { this->operator[](i) = v; };
   void addToElement(size_t i, float v) { this->operator[](i) += v; };
-  void zero() {
-    for (size_t i(0), iEnd(this->length()); i < iEnd; ++i)
-      this->operator[](i) = 0.0;
-  };
+  void zero() { for (auto& e : *this) e = 0.0; };
   size_t size() const { return this->length(); };
 };
 }; // namespace core

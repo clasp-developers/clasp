@@ -319,37 +319,14 @@ public:
 };
 
 inline Number_sp operator-(const Number_sp x) { return Number_O::negate(x); }
-inline Integer_sp operator-(const Integer_sp x) { return gc::As_unsafe<Integer_sp>(Number_O::negate(x)); }
-inline Real_sp operator-(const Real_sp x) { return gc::As_unsafe<Real_sp>(Number_O::negate(x)); }
-
 inline Number_sp operator+(const Number_sp x, const Number_sp y) { return Number_O::add_nn(x, y); }
-inline Integer_sp operator+(const Integer_sp x, const Integer_sp y) { return gc::As_unsafe<Integer_sp>(Number_O::add_nn(x, y)); }
-inline Real_sp operator+(const Real_sp x, const Real_sp y) { return gc::As_unsafe<Real_sp>(Number_O::add_nn(x, y)); }
-
 inline Number_sp operator-(const Number_sp x, const Number_sp y) { return Number_O::sub_nn(x, y); }
-inline Integer_sp operator-(const Integer_sp x, const Integer_sp y) { return gc::As_unsafe<Integer_sp>(Number_O::sub_nn(x, y)); }
-inline Real_sp operator-(const Real_sp x, const Real_sp y) { return gc::As_unsafe<Real_sp>(Number_O::sub_nn(x, y)); }
-
 inline Number_sp operator*(const Number_sp x, const Number_sp y) { return Number_O::mul_nn(x, y); }
-inline Integer_sp operator*(const Integer_sp x, const Integer_sp y) { return gc::As_unsafe<Integer_sp>(Number_O::mul_nn(x, y)); }
-inline Real_sp operator*(const Real_sp x, const Real_sp y) { return gc::As_unsafe<Real_sp>(Number_O::mul_nn(x, y)); }
-
 inline Number_sp operator/(const Number_sp x, const Number_sp y) { return Number_O::div_nn(x, y); }
-inline Rational_sp operator/(const Integer_sp x, const Integer_sp y) { return gc::As_unsafe<Rational_sp>(Number_O::div_nn(x, y)); }
-inline Real_sp operator/(const Real_sp x, const Real_sp y) { return gc::As_unsafe<Real_sp>(Number_O::div_nn(x, y)); }
 
 inline Number_sp operator+=(Number_sp& x, const Number_sp y) { return x = Number_O::add_nn(x, y); };
-inline Integer_sp operator+=(Integer_sp& x, const Integer_sp y) { return x = gc::As_unsafe<Integer_sp>(Number_O::add_nn(x, y)); };
-inline Real_sp operator+=(Real_sp& x, const Real_sp y) { return x = gc::As_unsafe<Real_sp>(Number_O::add_nn(x, y)); };
-
 inline Number_sp operator-=(Number_sp& x, const Number_sp y) { return x = Number_O::sub_nn(x, y); };
-inline Integer_sp operator-=(Integer_sp& x, const Integer_sp y) { return x = gc::As_unsafe<Integer_sp>(Number_O::sub_nn(x, y)); };
-inline Real_sp operator-=(Real_sp& x, const Real_sp y) { return x = gc::As_unsafe<Real_sp>(Number_O::sub_nn(x, y)); };
-
 inline Number_sp operator*=(Number_sp& x, const Number_sp y) { return x = Number_O::mul_nn(x, y); };
-inline Integer_sp operator*=(Integer_sp& x, const Integer_sp y) { return x = gc::As_unsafe<Integer_sp>(Number_O::mul_nn(x, y)); };
-inline Real_sp operator*=(Real_sp& x, const Real_sp y) { return x = gc::As_unsafe<Real_sp>(Number_O::mul_nn(x, y)); };
-
 inline Number_sp operator/=(Number_sp& x, const Number_sp y) { return x = Number_O::div_nn(x, y); };
 
 SMART(Real);
@@ -393,6 +370,16 @@ public:
     return x->minusp_();
   }
 };
+
+inline Real_sp operator-(const Real_sp x) { return gc::As_unsafe<Real_sp>(Number_O::negate(x)); }
+inline Real_sp operator+(const Real_sp x, const Real_sp y) { return gc::As_unsafe<Real_sp>(Number_O::add_nn(x, y)); }
+inline Real_sp operator-(const Real_sp x, const Real_sp y) { return gc::As_unsafe<Real_sp>(Number_O::sub_nn(x, y)); }
+inline Real_sp operator*(const Real_sp x, const Real_sp y) { return gc::As_unsafe<Real_sp>(Number_O::mul_nn(x, y)); }
+inline Real_sp operator/(const Real_sp x, const Real_sp y) { return gc::As_unsafe<Real_sp>(Number_O::div_nn(x, y)); }
+
+inline Real_sp operator+=(Real_sp& x, const Real_sp y) { return x = gc::As_unsafe<Real_sp>(Number_O::add_nn(x, y)); };
+inline Real_sp operator-=(Real_sp& x, const Real_sp y) { return x = gc::As_unsafe<Real_sp>(Number_O::sub_nn(x, y)); };
+inline Real_sp operator*=(Real_sp& x, const Real_sp y) { return x = gc::As_unsafe<Real_sp>(Number_O::mul_nn(x, y)); };
 
 SMART(Rational);
 class Rational_O : public Real_O {
@@ -491,6 +478,17 @@ public:
     return x->oddp_();
   }
 };
+
+inline Integer_sp operator-(const Integer_sp x) { return gc::As_unsafe<Integer_sp>(Number_O::negate(x)); }
+inline Integer_sp operator+(const Integer_sp x, const Integer_sp y) { return gc::As_unsafe<Integer_sp>(Number_O::add_nn(x, y)); }
+inline Integer_sp operator-(const Integer_sp x, const Integer_sp y) { return gc::As_unsafe<Integer_sp>(Number_O::sub_nn(x, y)); }
+inline Integer_sp operator*(const Integer_sp x, const Integer_sp y) { return gc::As_unsafe<Integer_sp>(Number_O::mul_nn(x, y)); }
+inline Rational_sp operator/(const Integer_sp x, const Integer_sp y) { return gc::As_unsafe<Rational_sp>(Number_O::div_nn(x, y)); }
+
+inline Integer_sp operator+=(Integer_sp& x, const Integer_sp y) { return x = gc::As_unsafe<Integer_sp>(Number_O::add_nn(x, y)); };
+inline Integer_sp operator-=(Integer_sp& x, const Integer_sp y) { return x = gc::As_unsafe<Integer_sp>(Number_O::sub_nn(x, y)); };
+inline Integer_sp operator*=(Integer_sp& x, const Integer_sp y) { return x = gc::As_unsafe<Integer_sp>(Number_O::mul_nn(x, y)); };
+
 }; // namespace core
 
 namespace core {

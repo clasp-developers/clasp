@@ -95,8 +95,6 @@
                  "DEBUG_STORES" (debug-stores configuration)
                  "DEBUG_ENSURE_VALID_OBJECT" (debug-ensure-valid-object configuration)
                  "DEBUG_QUICK_VALIDATE" (debug-quick-validate configuration)
-                 "DEBUG_MPS_SIZE" (debug-mps-size configuration)
-                 "DEBUG_MPS_UNDERSCANNING" (debug-mps-underscanning configuration)
                  "DEBUG_DONT_OPTIMIZE_BCLASP" (debug-dont-optimize-bclasp configuration)
                  "DEBUG_RECURSIVE_ALLOCATIONS" (debug-recursive-allocations configuration)
                  "DEBUG_ALLOC_ALIGNMENT" (debug-alloc-alignment configuration)

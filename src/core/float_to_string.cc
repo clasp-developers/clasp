@@ -21,6 +21,7 @@
 #include <clasp/core/numerics.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/num_co.h>
+#include <clasp/core/symbol.h>
 #include <clasp/core/numberToString.h>
 #include <clasp/core/float_to_digits.h>
 namespace core {
@@ -47,7 +48,7 @@ static void insert_char(StrNs_sp buffer, cl_index where, gc::Fixnum c) {
   } else {
     StrWNs_sp bufferw = gc::As_unsafe<StrWNs_sp>(buffer);
     memmove(&(*bufferw)[where + 1], &(*bufferw)[where], (end - where) * bufferw->elementSizeInBytes());
-    (*bufferw)[where] = c;
+    bufferw[where] = c;
   }
 }
 

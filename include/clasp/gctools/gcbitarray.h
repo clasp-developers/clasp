@@ -28,6 +28,7 @@ THE SOFTWARE.
 /* -^- */
 
 #include <type_traits> // for std::conditional
+#include <iterator>
 
 namespace gctools {
 
@@ -58,7 +59,7 @@ public:
   bit_array_word _Data[0];
 
 public:
-  // Type for bit units, as used by the external inteface.
+  // Type for bit units, as used by the external interface.
   typedef typename std::conditional<Signedp != 0, signed char, unsigned char>::type value_type;
 
 public:
@@ -170,8 +171,9 @@ private:
   }
   // Get a pointer to the word the given index uses.
   bit_array_word* word(size_t idx) { return &(this->_Data[idx / number_of_bit_units_in_word]); }
+  const bit_array_word* word(size_t idx) const { return &(this->_Data[idx / number_of_bit_units_in_word]); }
   // Get the offset value for the given index.
-  size_t offset(size_t idx) { return (shift_to_0 - (idx % number_of_bit_units_in_word)) * bit_unit_bit_width; }
+  size_t offset(size_t idx) const { return (shift_to_0 - (idx % number_of_bit_units_in_word)) * bit_unit_bit_width; }
 
 public:
   class reference {
@@ -184,10 +186,9 @@ public:
     // The idea is taken from std::bitset<n>::reference, and more specifically
     // libgcc's version.
     // I don't know why this constructor gets a reference instead of a pointer.
-    reference(GCBitUnitArray_moveable& arr, size_t idx) noexcept {
-      word = arr.word(idx);
-      offset = arr.offset(idx);
-    }
+    reference(GCBitUnitArray_moveable& arr, size_t idx) noexcept
+      : word(arr.word(idx)), offset(arr.offset(idx)) {}
+    reference(bit_array_word* w, size_t o) noexcept : word(w), offset(o) {}
     reference(const reference&) = default;
     ~reference() noexcept {}
 
@@ -198,7 +199,11 @@ public:
       return (*word & mask) >> offset;
     }
     // Set raw bits
-    void assign(unsigned char x) noexcept {
+    // This is const in that the reference itself is not modified.
+    // This "shallow constness" property of this class
+    // is needed for algorithms to work
+    // (e.g. ranges::reverse_copy in core/array.h)
+    void assign(unsigned char x) const noexcept {
       bit_array_word packedVal = (x & bit_unit_mask) << offset;
       bit_array_word mask = ~(bit_unit_mask << offset);
       *word = (*word & mask) | packedVal;
@@ -206,7 +211,7 @@ public:
 
   public:
     // arr[i] = x
-    reference& operator=(value_type x) noexcept {
+    const reference& operator=(value_type x) const noexcept {
       assign(unsign(x));
       return *this;
     }
@@ -215,7 +220,7 @@ public:
     // a[i] = b[i], and yes this is required.
     // I don't understand C++ deeply enough, luckily, but a[i] = b[i]
     // seems to be a nop without this.
-    reference& operator=(const reference& x) noexcept {
+    const reference& operator=(const reference& x) const noexcept {
       assign(x.raw());
       return *this;
     }
@@ -224,5 +229,192 @@ public:
   // Like operator[] but for a sub byte unit.
   reference ref(size_t idx) { return reference(*this, idx); }
   value_type ref(size_t idx) const { return bitUnit(idx); }
+
+  class iterator { // a random access iterator in terms of bitunit refs.
+  private:
+    // NOTE: Keep these in this order so that the defaulted operator<=> is correct.
+    bit_array_word* word;
+    size_t offset; // reminder: low bits are low indices, so this moves backwards.
+  public:
+    typedef ptrdiff_t difference_type;
+    typedef value_type value_type;
+  public:
+    // random access iterators must be default constructible.
+    // I don't think the resulting object is required to be valid at all though.
+    iterator() {};
+    iterator(GCBitUnitArray_moveable& arr, size_t idx) noexcept
+      : word(arr.word(idx)), offset(arr.offset(idx)) {};
+    iterator(bit_array_word* w, size_t o) noexcept : word(w), offset(o) {};
+  public:
+    reference operator*() const { return reference(word, offset); }
+    iterator& operator++() {
+      if (offset == 0) {
+        word++;
+        offset = bits_in_word - bit_unit_bit_width;
+      } else offset -= bit_unit_bit_width;
+      return *this;
+    }
+    iterator operator++(int) {
+      iterator r(*this);
+      ++*this;
+      return r;
+    }
+    iterator& operator--() {
+      if (offset == bits_in_word - bit_unit_bit_width) {
+        word--;
+        offset = 0;
+      } else offset += bit_unit_bit_width;
+      return *this;
+    }
+    iterator operator--(int) {
+      iterator r(*this);
+      --*this;
+      return r;
+    }
+    iterator& operator+=(ptrdiff_t n) {
+      word += n / number_of_bit_units_in_word;
+      if ((n * bit_unit_bit_width) % bits_in_word > offset) ++word;
+      offset = (offset - (n * bit_unit_bit_width)) % bits_in_word; // underflow ok
+      return *this;
+    }
+    iterator& operator-=(ptrdiff_t n) {
+      word -= n / number_of_bit_units_in_word;
+      if ((n * bit_unit_bit_width) % bits_in_word > bits_in_word - offset) --word;
+      offset = (offset + n * bit_unit_bit_width) % bits_in_word;
+      return *this;
+    }
+    iterator operator+(ptrdiff_t n) const {
+      iterator r(*this);
+      r += n;
+      return r;
+    }
+    friend iterator operator+(difference_type n, const iterator& i) { return i + n; }
+    iterator operator-(ptrdiff_t n) const {
+      iterator r(*this);
+      r -= n;
+      return r;
+    }
+    ptrdiff_t operator-(const iterator& o) const {
+      return (word - o.word) * number_of_bit_units_in_word
+        + ((ssize_t)o.offset - (ssize_t)offset) / bit_unit_bit_width;
+    }
+    reference operator[](size_t i) const {
+      bit_array_word* nword = word + i / number_of_bit_units_in_word;
+      if ((i * bit_unit_bit_width) % bits_in_word > offset) ++nword;
+      size_t noffset = (offset - (i * bit_unit_bit_width)) % bits_in_word;
+      return reference(nword, noffset);
+    }
+    // This causes a warning from -Wc++20pcompat for some reason?
+    // FIXME: Use this instead of the boring operator definitions below
+    //auto operator<=>(const iterator&) const = default;
+    bool operator==(const iterator& o) const {
+      return word == o.word && offset == o.offset;
+    }
+    bool operator!=(const iterator& o) const { return !(*this == o); }
+    bool operator<(const iterator& o) const {
+      return word < o.word || (word == o.word && offset > o.offset);
+    }
+    bool operator<=(const iterator& o) const {
+      return word < o.word || (word == o.word && offset >= o.offset);
+    }
+    bool operator>(const iterator& o) const { return o < *this; }
+    bool operator>=(const iterator& o) const { return o <= *this; }
+  }; // class iterator
+  class const_iterator { // a random access iterator that returns just bit units.
+  private:
+    const bit_array_word* word;
+    size_t offset;
+  public:
+    typedef ptrdiff_t difference_type;
+    typedef value_type value_type;
+  public:
+    const_iterator() {};
+    const_iterator(GCBitUnitArray_moveable const& arr, size_t idx) noexcept
+      : word(arr.word(idx)), offset(arr.offset(idx)) {};
+    const_iterator(const bit_array_word* w, size_t o) noexcept
+      : word(w), offset(o) {};
+  public:
+    value_type operator*() const {
+      bit_array_word mask = bit_unit_mask << offset;
+      return sign((*word & mask) >> offset);
+    }
+    const_iterator& operator++() {
+      if (offset == 0) {
+        word++;
+        offset = bits_in_word - bit_unit_bit_width;
+      } else offset -= bit_unit_bit_width;
+      return *this;
+    }
+    const_iterator operator++(int) {
+      const_iterator r(*this);
+      ++*this;
+      return r;
+    }
+    const_iterator& operator--() {
+      if (offset == bits_in_word - bit_unit_bit_width) {
+        word--;
+        offset = 0;
+      } else offset += bit_unit_bit_width;
+      return *this;
+    }
+    const_iterator operator--(int) {
+      const_iterator r(*this);
+      --*this;
+      return r;
+    }
+    const_iterator& operator+=(ptrdiff_t n) {
+      word += n / number_of_bit_units_in_word;
+      if ((n * bit_unit_bit_width) % bits_in_word > offset) ++word;
+      offset = (offset - (n * bit_unit_bit_width)) % bits_in_word; // underflow ok
+      return *this;
+    }
+    const_iterator& operator-=(ptrdiff_t n) {
+      word -= n / number_of_bit_units_in_word;
+      if ((n * bit_unit_bit_width) % bits_in_word > bits_in_word - offset) --word;
+      offset = (offset + n * bit_unit_bit_width) % bits_in_word;
+      return *this;
+    }
+    const_iterator operator+(ptrdiff_t n) const {
+      const_iterator r(*this);
+      r += n;
+      return r;
+    }
+    friend const_iterator operator+(difference_type n, const const_iterator& i) {
+      return i + n;
+    }
+    const_iterator operator-(ptrdiff_t n) const {
+      const_iterator r(*this);
+      r -= n;
+      return r;
+    }
+    ptrdiff_t operator-(const const_iterator& o) const {
+      return (word - o.word) * number_of_bit_units_in_word
+        + ((ssize_t)o.offset - (ssize_t)offset) / bit_unit_bit_width;
+    }
+    value_type operator[](size_t i) const {
+      const bit_array_word* nword = word + i / bits_in_word;
+      if ((i * bit_unit_bit_width) % bits_in_word > offset) ++nword;
+      size_t noffset = (offset - (i * bit_unit_bit_width)) % bits_in_word;
+      bit_array_word mask = bit_unit_mask << noffset;
+      return sign((*nword & mask) >> noffset);
+    }
+    //auto operator<=>(const const_iterator&) const = default;
+    bool operator==(const const_iterator& o) const {
+      return word == o.word && offset == o.offset;
+    }
+    bool operator!=(const const_iterator& o) const { return !(*this == o); }
+    bool operator<(const const_iterator& o) const {
+      return word < o.word || (word == o.word && offset > o.offset);
+    }
+    bool operator<=(const const_iterator& o) const {
+      return word < o.word || (word == o.word && offset >= o.offset);
+    }
+    bool operator>(const const_iterator& o) const { return o < *this; }
+    bool operator>=(const const_iterator& o) const { return o <= *this; }
+  }; // class const_iterator
+  iterator begin() { return iterator(*this, 0); }
+  iterator end() { return iterator(*this, _Length); }
+  const_iterator begin() const { return const_iterator(*this, 0); }
+  const_iterator end() const { return const_iterator(*this, _Length); }
 };
 } // namespace gctools

@@ -933,21 +933,6 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
         }
         base = (char*)base + sizeof(StrongMappingObjectType);
       } break;
-      case WeakPointerKind: {
-        WeakPointer* obj = reinterpret_cast<WeakPointer*>(base);
-        // MPS_FIX12(ss,reinterpret_cast<mps_addr_t*>(&(obj->value.raw_())));
-        core::T_O* p = reinterpret_cast<core::T_O*>(obj->value.raw_());
-        if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
-          core::T_O* pobj = gctools::untag_object<core::T_O*>(p);
-          core::T_O* tag = gctools::ptag<core::T_O*>(p);
-          mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t*>(&pobj));
-          if (res != MPS_RES_OK)
-            return res;
-          p = reinterpret_cast<core::T_O*>(reinterpret_cast<uintptr_t>(pobj) | reinterpret_cast<uintptr_t>(tag));
-          obj->value.setRaw_((gc::Tagged)(p)); // reinterpret_cast<gctools::Header_s*>(p);
-        }
-        base = (char*)base + sizeof(WeakPointer);
-      } break;
       default:
         THROW_HARD_ERROR("Handle other weak kind {}", weakObj->kind());
       }
@@ -984,10 +969,6 @@ mps_addr_t weak_obj_skip_debug(mps_addr_t base, bool dbg) {
   case StrongMappingKind: {
     GCWEAK_LOG(fmt::format("StrongMappingKind"));
     base = (char*)base + sizeof(StrongMappingObjectType);
-  } break;
-  case WeakPointerKind: {
-    GCWEAK_LOG(fmt::format("WeakPointerKind"));
-    base = (char*)base + sizeof(WeakPointer);
   } break;
   case WeakFwdKind: {
     GCWEAK_LOG(fmt::format("WeakFwdKind"));

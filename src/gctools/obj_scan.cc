@@ -194,38 +194,12 @@ RESULT_TYPE OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_ARGU
           }
         }
         client = (ADDR_T)((char*)client + gctools::AlignUp(size + sizeof(gctools::Header_s)) + header.tail_size());
-#ifdef DEBUG_MPS_SIZE
-        {
-          size_t scan_size = ((char*)client - (char*)oldClient);
-          size_t objectSize;
-          size_t skip_size = ((char*)OBJECT_SKIP_IN_OBJECT_SCAN(oldClient, false, objectSize) - (char*)oldClient);
-          if (scan_size != skip_size) {
-            printf("%s:%d The size of the object at client %p with stamp %u will not be calculated properly - obj_scan -> %lu  "
-                   "obj_skip -> %lu\n",
-                   __FILE__, __LINE__, (void*)oldClient, header._badge_stamp_wtag_mtag.stamp_(), scan_size, skip_size);
-            size_t objectSize;
-            OBJECT_SKIP_IN_OBJECT_SCAN(oldClient, false, objectSize);
-          }
-        }
-#endif
       } else {
         gctools::tagged_stamp_t mtag = header_value.mtag();
         switch (mtag) {
 #ifdef USE_MPS
         case gctools::Header_s::fwd_mtag: {
           client = (ADDR_T)((char*)(client) + header._badge_stamp_wtag_mtag.fwdSize());
-#ifdef DEBUG_MPS_SIZE
-          {
-            size_t scan_size = ((char*)client - (char*)oldClient);
-            size_t objectSize;
-            size_t skip_size = ((char*)OBJECT_SKIP_IN_OBJECT_SCAN(oldClient, false, objectSize) - (char*)oldClient);
-            if (scan_size != skip_size) {
-              printf(
-                  "%s:%d The size of the object with fwd_mtag will not be calculated properly - obj_scan -> %lu  obj_skip -> %lu\n",
-                  __FILE__, __LINE__, scan_size, skip_size);
-            }
-          }
-#endif
           break;
         }
         case gctools::Header_s::pad_mtag: {
@@ -234,18 +208,6 @@ RESULT_TYPE OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_ARGU
           } else if (header._badge_stamp_wtag_mtag.padP()) {
             client = (ADDR_T)((char*)(client) + header._badge_stamp_wtag_mtag.padSize());
           }
-#ifdef DEBUG_MPS_SIZE
-          {
-            size_t scan_size = ((char*)client - (char*)oldClient);
-            size_t objectSize;
-            size_t skip_size = ((char*)OBJECT_SKIP_IN_OBJECT_SCAN(oldClient, false, objectSize) - (char*)oldClient);
-            if (scan_size != skip_size) {
-              printf(
-                  "%s:%d The size of the object with pad_mtag will not be calculated properly - obj_scan -> %lu  obj_skip -> %lu\n",
-                  __FILE__, __LINE__, scan_size, skip_size);
-            }
-          }
-#endif
           break;
         }
 #endif // USE_MPS

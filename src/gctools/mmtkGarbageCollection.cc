@@ -37,12 +37,6 @@ THE SOFTWARE.
 #include <clasp/core/compiler.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 
-#ifndef SCRAPING
-#define ALL_PREGCSTARTUPS_EXTERN
-#include PRE_GC_STARTUP_INC_H
-#undef ALL_PREGCSTARTUPS_EXTERN
-#endif
-
 THREAD_LOCAL MMTk_Mutator my_mutator;
 
 namespace gctools {
@@ -57,7 +51,6 @@ __attribute__((noinline)) int initializeMmtk(int argc, char* argv[], bool mpiEna
   core::ThreadLocalState thread_local_state(false); // special ctor that does not require _Nil be defined
   my_thread_low_level = &thread_local_state_low_level;
   my_thread = &thread_local_state;
-  core::transfer_StartupInfo_to_my_thread();
 
 #if 0
   // I'm not sure if this needs to be done for the main thread
@@ -65,8 +58,6 @@ __attribute__((noinline)) int initializeMmtk(int argc, char* argv[], bool mpiEna
   GC_get_stack_base(&gc_stack_base);
   GC_register_my_thread(&gc_stack_base);
 #endif
-
-  core::global_options = new core::CommandLineOptions(argc, argv);
 
 #ifndef SCRAPING
 #define ALL_PREGCSTARTUPS_CALLS

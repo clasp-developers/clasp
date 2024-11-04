@@ -49,6 +49,9 @@ extern core::Symbol_sp& _sym_cellError;
 namespace kw {
 extern core::Symbol_sp& _sym_name;
 };
+namespace core {
+[[noreturn]] extern void lisp_error(gctools::smart_ptr<T_O> baseCondition, gctools::smart_ptr<T_O> initializers);
+};
 
 /* ------------------------------------------------------------
  * Macros for errors and diagnostics

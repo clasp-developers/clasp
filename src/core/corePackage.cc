@@ -354,44 +354,6 @@ SYMBOL_SC_(CorePkg, test_not);
 SYMBOL_SC_(CorePkg, universalErrorHandler);
 SYMBOL_SC_(CorePkg, unrecognizedKeywordArgumentError);
 
-void testConses() {
-  printf("%s:%d Testing Conses and iterators\n", __FILE__, __LINE__);
-  List_sp cur = nil<T_O>();
-  for (int i = 1; i < 1000; ++i) {
-    cur = Cons_O::create(make_fixnum(i), cur);
-  }
-  List_sp l = coerce_to_list(cur);
-  for (int trials = 0; trials < 3; ++trials) {
-    int times = 0xdead;
-    long long fastCount = 0;
-    LightTimer fastTimer;
-    fastTimer.reset();
-    fastTimer.start();
-    for (int i = 0; i < times; ++i) {
-      for (auto c : l.full()) {
-        T_sp t = c->car();
-        fastCount += unbox_fixnum(gc::As<Fixnum_sp>(t));
-      }
-    }
-    fastTimer.stop();
-    printf("%s:%d Fast list traversal time: %lf counted %lld elements\n", __FILE__, __LINE__, fastTimer.getAccumulatedTime(),
-           fastCount);
-    long long normalCount = 0;
-    LightTimer normalTimer;
-    normalTimer.reset();
-    normalTimer.start();
-    for (int i = 0; i < times; ++i) {
-      for (auto c : l) {
-        T_sp t = c->car();
-        normalCount += unbox_fixnum(gc::As<Fixnum_sp>(t));
-      }
-    }
-    normalTimer.stop();
-    printf("%s:%d Normal list traversal time: %lf counted %lld elements\n", __FILE__, __LINE__, normalTimer.getAccumulatedTime(),
-           normalCount);
-  }
-};
-
 void setNilable(gc::Nilable<String_sp>& val, bool s) {
   if (!s) {
     val = nil<String_O>();
@@ -429,7 +391,6 @@ void testNilable() {
 
 void testFeatures() {
   testNilable();
-  testConses();
 }
 
 CoreExposer_O::CoreExposer_O(LispPtr lisp) : Exposer_O(lisp, CorePkg){};

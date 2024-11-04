@@ -54,17 +54,6 @@ void mps_regsiter_root_address(gctools::Tagged* ptr);
 
 namespace gctools {
 
-extern bool global_underscanning;
-#ifdef DEBUG_MPS_UNDERSCANNING
-#define DEBUG_MPS_UNDERSCANNING_TESTS()                                                                                            \
-  if (global_underscanning) {                                                                                                      \
-    mps_arena_collect(global_arena);                                                                                               \
-    mps_arena_release(global_arena);                                                                                               \
-  }
-#else
-#define DEBUG_MPS_UNDERSCANNING_TESTS()
-#endif
-
 struct MpsMetrics {
   std::atomic<size_t> finalizationRequests;
   std::atomic<size_t> nonMovingAllocations;

@@ -10,7 +10,6 @@ settings in string stream */
 bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& ss);
 
 void gctools__garbage_collect();
-void gctools__cleanup(bool verbose = false);
 
 void initialize_gc_functions();
 

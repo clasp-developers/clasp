@@ -336,8 +336,8 @@ void prepare_vm(core::T_O* lcc_closure, GFBytecodeSimpleFun_sp& gfep, SimpleVect
   DTILOG("---- program length: %d\n", program->length());                                                                          \
   DTIDO(                                                                                                                           \
       for (size_t i = 0; i < program->length(); ++i) {                                                                             \
-        DTILOG("[%lu @%p] : %5u \n", i, (void*)(i + ip), (*program)[i]);                                                           \
-      } for (size_t i = 0; i < literal_vec->length(); ++i) { DTILOG("literal[%lu] : %s \n", i, _safe_rep_((*literal_vec)[i])); });
+        DTILOG("[%lu @%p] : %5u \n", i, (void*)(i + ip), program[i]);                                                           \
+      } for (size_t i = 0; i < literal_vec->length(); ++i) { DTILOG("literal[%lu] : %s \n", i, _safe_rep_(literal_vec[i])); });
 
 [[noreturn]] void wrongNumberOfArgumentsForGenericFunction(T_O* lcc_closure, size_t nargs) {
   Function_sp closure((gctools::Tagged)lcc_closure);
@@ -498,7 +498,7 @@ GFBytecodeSimpleFun_sp GFBytecodeSimpleFun_O::make(Function_sp generic_function)
   SimpleVector_byte8_t_sp bytecode = gc::As<SimpleVector_byte8_t_sp>(compiled);
   MultipleValues& mv = my_thread->_MultipleValues;
   // SimpleVector_sp entryPoints = mv.second(compiled.number_of_values());
-  SimpleVector_sp literals = mv.third(compiled.number_of_values());
+  SimpleVector_sp literals = gc::As<SimpleVector_sp>(mv.third(compiled.number_of_values()));
   size_t specialized_length = mv.fourth(compiled.number_of_values()).unsafe_fixnum();
   auto obj = gctools::GC<GFBytecodeSimpleFun_O>::allocate(fdesc, 0, bytecode, literals, generic_function, specialized_length);
   return obj;
@@ -555,8 +555,8 @@ CL_DEFUN T_mv core__build_single_dispatch_bytecode(List_sp call_history, size_t 
   if (dispatch_argument_index >= 5)
     SIMPLE_ERROR("Not supported dispatching on args after DTREE_OP_FARG4");
   ASSERT(DTREE_OP_FARG0 == (DTREE_OP_FARG1 - 1) == (DTREE_OP_FARG2 - 2) == (DTREE_OP_FARG3 - 3) == (DTREE_OP_FARG4 - 4));
-  (*bytecode)[0] = DTREE_OP_FARG0 + dispatch_argument_index;
-  (*bytecode)[1] = DTREE_OP_STAMP_READ;
+  bytecode[0] = DTREE_OP_FARG0 + dispatch_argument_index;
+  bytecode[1] = DTREE_OP_STAMP_READ;
   size_t ip = 2;
   std::vector<size_t> fixups;
   for (size_t ii = 0; ii < cl__length(call_history); ++ii) {
@@ -564,16 +564,16 @@ CL_DEFUN T_mv core__build_single_dispatch_bytecode(List_sp call_history, size_t 
     Instance_sp specializer_class = gc::As_assert<Instance_sp>(cl__elt(specializers, dispatch_argument_index));
     T_sp stamp_for_instances = specializer_class->instanceRef(Instance_O::REF_CLASS_STAMP_FOR_INSTANCES_);
     T_sp efm = oCdr(cl__elt(call_history, ii));
-    (*bytecode)[ip + 0] = DTREE_OP_SD_EQ_BRANCH;
-    (*bytecode)[ip + DTREE_SD_STAMP_OFFSET] = ii; // stamp index in literals
-    (*bytecode)[ip + DTREE_SD_FAIL_OFFSET] = 5;   // skip EFM
-    (*bytecode)[ip] = DTREE_OP_EFFECTIVE_METHOD;
-    (*bytecode)[ip + DTREE_EFFECTIVE_METHOD_OFFSET] = nentries + ii; // index into literals for EFM
+    bytecode[ip + 0] = DTREE_OP_SD_EQ_BRANCH;
+    bytecode[ip + DTREE_SD_STAMP_OFFSET] = ii; // stamp index in literals
+    bytecode[ip + DTREE_SD_FAIL_OFFSET] = 5;   // skip EFM
+    bytecode[ip] = DTREE_OP_EFFECTIVE_METHOD;
+    bytecode[ip + DTREE_EFFECTIVE_METHOD_OFFSET] = nentries + ii; // index into literals for EFM
     (*literals)[ii] = stamp_for_instances;
     (*literals)[ii + nentries] = efm;
     ip += 5;
   }
-  (*bytecode)[ip++] = DTREE_OP_SINGLE_DISPATCH_MISS;
+  bytecode[ip++] = DTREE_OP_SINGLE_DISPATCH_MISS;
   ASSERT(bytecode_length);
   return Values(bytecode, literals);
 }

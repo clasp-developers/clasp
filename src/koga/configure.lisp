@@ -432,16 +432,6 @@
                          :initform nil
                          :type boolean
                          :documentation "quick/cheap validate if on and comprehensive validate if not")
-   (debug-mps-size :accessor debug-mps-size
-                   :initarg :debug-mps-size
-                   :initform nil
-                   :type boolean
-                   :documentation "check that the size of the MPS object will be calculated properly by obj_skip")
-   (debug-mps-underscanning :accessor debug-mps-underscanning
-                            :initarg :debug-mps-underscanning
-                            :initform nil
-                            :type boolean
-                            :documentation "Very expensive - does a mps_arena_collect/mps_arena_release for each allocation")
    (debug-dont-optimize-bclasp :accessor debug-dont-optimize-bclasp
                                :initarg :debug-dont-optimize-bclasp
                                :initform nil
@@ -952,6 +942,10 @@ the function to the overall configuration."
                    (format nil "~{-I~a~^ ~}" (mapcar (lambda (source)
                                                        (normalize-directory (resolve-source source)))
                                                      paths)))))
+(defun defines (&rest define-strings)
+  "Add -DXXX=YYY defines to the current configuration."
+  (append-cflags *configuration*
+                 (format nil "~{-D~a~^ ~}" define-strings)))
 
 (defun systems (&rest rest)
   (loop for system in rest

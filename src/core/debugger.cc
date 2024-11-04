@@ -490,7 +490,7 @@ std::string dbg_safe_repr(uintptr_t raw) {
       core::SimpleVector_sp svobj = gc::As_unsafe<core::SimpleVector_sp>(obj);
       ss << "#(";
       for (size_t i = 0, iEnd(svobj->length()); i < iEnd; ++i) {
-        ss << dbg_safe_repr((uintptr_t)((*svobj)[i]).raw_()) << " ";
+        ss << dbg_safe_repr((uintptr_t)(svobj[i]).raw_()) << " ";
       }
       ss << ")" REPR_ADDR(raw);
     } else if (gc::IsA<core::FuncallableInstance_sp>(obj)) {

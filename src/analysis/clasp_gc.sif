@@ -656,14 +656,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<comp::Label_O>"
              :offset-base-ctype "comp::ControlLabelFixup_O" :layout-offset-field-names ("_label")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_char" :offset-ctype "unsigned char"
-             :offset-base-ctype "comp::ControlLabelFixup_O" :layout-offset-field-names ("_opcode8")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_char" :offset-ctype "unsigned char"
-             :offset-base-ctype "comp::ControlLabelFixup_O"
-             :layout-offset-field-names ("_opcode16")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_char" :offset-ctype "unsigned char"
-             :offset-base-ctype "comp::ControlLabelFixup_O"
-             :layout-offset-field-names ("_opcode24")}
 {class-kind :stamp-name "STAMPWTAG_comp__JumpIfSuppliedFixup_O"
             :stamp-key "comp::JumpIfSuppliedFixup_O" :parent-class "comp::LabelFixup_O"
             :lisp-class-base "comp::LabelFixup_O" :root-class "core::T_O" :stamp-wtag 3
@@ -790,8 +782,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<comp::LexicalInfo_O>"
              :offset-base-ctype "comp::LexRefFixup_O" :layout-offset-field-names ("_lex")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_char" :offset-ctype "unsigned char"
-             :offset-base-ctype "comp::LexRefFixup_O" :layout-offset-field-names ("_opcode")}
 {class-kind :stamp-name "STAMPWTAG_comp__RestoreSPFixup_O" :stamp-key "comp::RestoreSPFixup_O"
             :parent-class "comp::LexFixup_O" :lisp-class-base "comp::LexFixup_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

@@ -282,7 +282,7 @@ public:
         JITLinkDylib* jitlinkdylib = llvm::cast<JITLinkDylib>(jitdylib);
         if (jitlinkdylib == JD) theJITDylib = one;
         //DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s one JITDylib_sp = %p JITDylib* = %p JITLinkDylib* = %p\n", __FILE__, __LINE__, __FUNCTION__, one.raw_(), one->wrappedPtr(), llvm::cast<JITLinkDylib>(one->wrappedPtr()) ));
-        cur = gctools::reinterpret_cast_smart_ptr<::core::Cons_O>(cur)->cdr();
+        cur = CONS_CDR(cur);
       }
       if (theJITDylib.unboundp()) {
         printf("%s:%d:%s Could not identify the JITDylib_sp for JITLinkDylib* %p\n", __FILE__, __LINE__, __FUNCTION__, JD );

@@ -286,10 +286,6 @@ void handle_or_queue_signal(int signo) {
 
 // false == SIGABRT invokes debugger, true == terminate (used in core__exit)
 bool global_debuggerOnSIGABRT = true;
-#define INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP 16386
-int global_pollTicksPerCleanup = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
-int global_signalTrap = 0;
-int global_pollTicksGC = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
 
 DOCGROUP(clasp);
 CL_DEFUN int core__fe_enable_except(int ex) {

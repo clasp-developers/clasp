@@ -158,16 +158,16 @@ ComplexVector_T_sp sortDispatchVectorByClassPrecedence(ComplexVector_T_sp dispat
   gctools::Vec0<Instance_sp> classes;
   classes.resize(dispatchVector->length() / 2);
   for (size_t ii = 0; ii < dispatchVector->length(); ii += 2) {
-    classes[ii / 2] = gc::As<Instance_sp>((*dispatchVector)[ii]);
+    classes[ii / 2] = gc::As<Instance_sp>(dispatchVector[ii]);
   }
   OrderByClassPrecedence orderer;
   sort::quickSortVec0(classes, 0, classes.size(), orderer);
   ComplexVector_T_sp sorted = ComplexVector_T_O::make(dispatchVector->length(), nil<T_O>(), make_fixnum(0));
   for (size_t ii = 0; ii < classes.size(); ii++) {
     for (size_t jj = 0; jj < dispatchVector->length(); jj += 2) {
-      if ((*dispatchVector)[jj] == classes[ii]) {
+      if (dispatchVector[jj] == classes[ii]) {
         sorted->vectorPushExtend(classes[ii]);
-        sorted->vectorPushExtend((*dispatchVector)[jj + 1]);
+        sorted->vectorPushExtend(dispatchVector[jj + 1]);
         goto FOUND;
       }
     }
@@ -183,8 +183,8 @@ ComplexVector_T_sp sortDispatchVectorByClassPrecedence(ComplexVector_T_sp dispat
 void recursivelySatiate(FuncallableInstance_sp gfun, Instance_sp dispatchClass, SingleDispatchMethod_sp method,
                         ComplexVector_T_sp newDispatchVector) {
   for (size_t ii = 0; ii < newDispatchVector->length(); ii += 2) {
-    if (dispatchClass == gc::As<Instance_sp>((*newDispatchVector)[ii])) {
-      (*newDispatchVector)[ii + 1] = method;
+    if (dispatchClass == gc::As<Instance_sp>(newDispatchVector[ii])) {
+      newDispatchVector[ii + 1] = method;
       goto FOUND;
     }
   }

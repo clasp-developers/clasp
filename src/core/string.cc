@@ -950,9 +950,9 @@ CL_DOCSTRING(R"dx(CLHS schar)dx");
 DOCGROUP(clasp);
 CL_DEFUN Character_sp cl__schar(AbstractSimpleVector_sp str, size_t idx) {
   if (SimpleBaseString_sp sb = str.asOrNull<SimpleBaseString_O>()) {
-    return clasp_make_character((*sb)[idx]);
+    return clasp_make_character(sb[idx]);
   } else if (SimpleCharacterString_sp sc = str.asOrNull<SimpleCharacterString_O>()) {
-    return clasp_make_character((*sc)[idx]);
+    return clasp_make_character(sc[idx]);
   }
   TYPE_ERROR(str, cl::_sym_simple_string);
 }
@@ -963,13 +963,13 @@ DOCGROUP(clasp);
 CL_DEFUN Character_sp cl__char(String_sp str, size_t idx) {
   /* Return the character at idx - ignore fill pointers */
   if (SimpleBaseString_sp sb = str.asOrNull<SimpleBaseString_O>()) {
-    return clasp_make_character((*sb)[idx]);
+    return clasp_make_character(sb[idx]);
   } else if (Str8Ns_sp s8 = str.asOrNull<Str8Ns_O>()) {
-    return clasp_make_character((*s8)[idx]);
+    return clasp_make_character(s8[idx]);
   } else if (SimpleCharacterString_sp sc = str.asOrNull<SimpleCharacterString_O>()) {
-    return clasp_make_character((*sc)[idx]);
+    return clasp_make_character(sc[idx]);
   } else if (StrWNs_sp sw = str.asOrNull<StrWNs_O>()) {
-    return clasp_make_character((*sw)[idx]);
+    return clasp_make_character(sw[idx]);
   }
   TYPE_ERROR(str, cl::_sym_string);
 };
@@ -981,13 +981,13 @@ CL_DOCSTRING(R"dx(CLHS (setf char))dx");
 DOCGROUP(clasp);
 CL_DEFUN_SETF Character_sp core__char_set(Character_sp c, String_sp str, size_t idx) {
   if (SimpleBaseString_sp sb = str.asOrNull<SimpleBaseString_O>()) {
-    (*sb)[idx] = c.unsafe_character();
+    sb[idx] = c.unsafe_character();
   } else if (Str8Ns_sp s8 = str.asOrNull<Str8Ns_O>()) {
-    (*s8)[idx] = c.unsafe_character();
+    s8[idx] = c.unsafe_character();
   } else if (SimpleCharacterString_sp sc = str.asOrNull<SimpleCharacterString_O>()) {
-    (*sc)[idx] = c.unsafe_character();
+    sc[idx] = c.unsafe_character();
   } else if (StrWNs_sp sw = str.asOrNull<StrWNs_O>()) {
-    (*sw)[idx] = c.unsafe_character();
+    sw[idx] = c.unsafe_character();
   } else {
     TYPE_ERROR(str, cl::_sym_string);
   }
@@ -1528,11 +1528,11 @@ AGAIN:
     SimpleCharacterString_sp swx = gc::As_unsafe<SimpleCharacterString_sp>(bsv);
     SimpleBaseString_sp y = SimpleBaseString_O::make(wx->length());
     for (size_t index(0); index < wx->length(); ++index) {
-      claspCharacter c = (*swx)[index + start];
+      claspCharacter c = swx[index + start];
       if (!clasp_base_char_p(c)) {
         SIMPLE_ERROR("Cannot coerce string {} to a base-string", _rep_(x));
       }
-      (*y)[index] = c;
+      y[index] = c;
     }
     return y;
   }
@@ -1540,11 +1540,11 @@ AGAIN:
     SimpleCharacterString_sp sx = gc::As_unsafe<SimpleCharacterString_sp>(x);
     SimpleBaseString_sp y = SimpleBaseString_O::make(sx->length());
     for (size_t index(0); index < sx->length(); ++index) {
-      claspCharacter c = (*sx)[index];
+      claspCharacter c = sx[index];
       if (!clasp_base_char_p(c)) {
         SIMPLE_ERROR("Cannot coerce string {} to a base-string", _rep_(x));
       }
-      (*y)[index] = c;
+      y[index] = c;
     }
     return y;
   }

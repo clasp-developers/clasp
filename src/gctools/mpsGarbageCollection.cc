@@ -74,7 +74,6 @@ extern "C" {
 #include "clasp/mps/code/mpscmvff.h" // MVFF pool
 #include "clasp/mps/code/mpscamc.h"  // AMC pool
 #include "clasp/mps/code/mpscsnc.h"  // SNC pool
-#include <clasp/gctools/mygc.h>
 };
 
 #include <clasp/gctools/gctoolsPackage.h>
@@ -176,12 +175,6 @@ extern mps_addr_t cons_skip(mps_addr_t client);
 extern mps_addr_t weak_obj_skip(mps_addr_t client);
 };
 
-#ifndef SCRAPING
-#define ALL_PREGCSTARTUPS_EXTERN
-#include PRE_GC_STARTUP_INC_H
-#undef ALL_PREGCSTARTUPS_EXTERN
-#endif
-
 namespace gctools {
 
 THREAD_LOCAL ThreadLocalAllocationPoints my_thread_allocation_points;
@@ -195,12 +188,6 @@ MpsMetrics globalMpsMetrics;
    --------------------------------------------------
    --------------------------------------------------
 */
-
-#ifdef DEBUG_MPS_UNDERSCANNING
-bool global_underscanning = true;
-#else
-bool global_underscanning = false;
-#endif
 
 // The pools - if you add a pool - assign it an integer index
 // in the id_from_pool and pool_from_id functions
@@ -1093,13 +1080,6 @@ __attribute__((noinline)) void startupMemoryPoolSystem(gctools::ClaspInfo* clasp
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create awl pool");
-  core::global_options = new core::CommandLineOptions(claspInfo->_argc, claspInfo->_argv);
-
-#ifndef SCRAPING
-#define ALL_PREGCSTARTUPS_CALLS
-#include PRE_GC_STARTUP_INC_H
-#undef ALL_PREGCSTARTUPS_CALLS
-#endif // ifndef SCRAPING
 
   // register the current and only thread
   mps_thr_t global_thread;
@@ -1158,7 +1138,6 @@ __attribute__((noinline)) void startupMemoryPoolSystem(gctools::ClaspInfo* clasp
     core::ThreadLocalState thread_local_state;
     my_thread_low_level = &thread_local_state_low_level;
     my_thread = &thread_local_state;
-    core::transfer_StartupInfo_to_my_thread();
 
     // Create the allocation points
     my_thread_allocation_points.initializeAllocationPoints();

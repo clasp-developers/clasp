@@ -1123,7 +1123,6 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
 #define RESULT_OK 1
 #define EXTRA_ARGUMENTS , void* user_data
 
-#undef DEBUG_MPS_SIZE
 #define OBJECT_SKIP_IN_OBJECT_SCAN blah_blah_blah_error
 #define OBJECT_SCAN isl_obj_scan
 #include "obj_scan.cc"
@@ -3639,20 +3638,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
               set_forwarding_pointer(header,((void*)fwd),this->_info);
               DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu fwd: %p\n")
-                              % (void*) obj.raw_()
-                              % (void*) header
-                              % (uintptr_t)kind
-                              % (void*)fwd );
-              root_holder.add((void*)obj.raw_());
-              break;
-            }
-#endif
-#if 0
-            case gctools::Header_s::WeakPointerKind: {
-              auto obj = gctools::GCWeakPointerAllocator<gctools::WeakPointer>::snapshot_save_load_allocate(&init);
-              gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
-              set_forwarding_pointer(header,((void*)fwd),this->_info);
-              DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu  fwd: %p\n")
                               % (void*) obj.raw_()
                               % (void*) header
                               % (uintptr_t)kind

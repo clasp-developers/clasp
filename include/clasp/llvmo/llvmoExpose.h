@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolToEnumConverter.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/array.h>
+#include <clasp/core/symbol.h>
 #include <clasp/core/ql.h>
 #include <llvm/Object/SymbolSize.h>
 #include <llvm/IR/DerivedTypes.h>

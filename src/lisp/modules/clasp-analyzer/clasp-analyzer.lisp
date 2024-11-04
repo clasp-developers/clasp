@@ -454,8 +454,6 @@ This could change the value of stamps for specific classes - but that would brea
 
 (defstruct (gcbitunitarray-moveable-ctype (:include container)))
 
-(defstruct (gcstring-moveable-ctype (:include container)))
-
 ;; //////////////////////////////////////////////////////////////////////
 ;;
 ;; Compile linear layouts of classes
@@ -570,9 +568,6 @@ This could change the value of stamps for specific classes - but that would brea
   ())
 
 (defclass gcvector-offset (container-offset)
-  ())
-
-(defclass gcstring-offset (container-offset)
   ())
 
 (defmethod offset-type-c++-identifier ((x offset))
@@ -1003,8 +998,7 @@ Generate offsets for every array element that exposes the fields in elements."
   (let ((pointee (pointer-ctype-pointee x)))
     (cond
       ((or (gcvector-moveable-ctype-p pointee)
-           (gcarray-moveable-ctype-p pointee)
-           (gcstring-moveable-ctype-p pointee))
+           (gcarray-moveable-ctype-p pointee))
        (list (make-instance 'pointer-offset :base base :offset-type x)))
       ((is-alloc-p (pointer-ctype-pointee x) (analysis-project analysis))
        (list (make-instance 'pointer-offset :base base :offset-type x)))
@@ -1178,8 +1172,6 @@ can be saved and reloaded within the project for later analysis"
            ((string= name "GCArray_atomic")
               (gclog "          Found a GCArray_atomic~%")
               (make-gcarray-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl)))
-           ((string= name "GCString_moveable")
-            (make-gcstring-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl)))
            ((string= name "map")
             (make-std-map-ctype :key decl-key :name name))
            ((string= name "basic_string")
@@ -1888,7 +1880,6 @@ so that they don't have to be constantly recalculated"
 (defmethod contains-fixptr-impl-p ((x pointer-ctype) project)
   (cond
     ((container-p (pointer-ctype-pointee x)) t)
-    ((string= (ctype-key (pointer-ctype-pointee x)) "gctools::GCString_moveable<char>" ) t)
     ((contains-fixptr-impl-p (pointer-ctype-pointee x) project) 
      t
      )
@@ -2449,8 +2440,8 @@ Recursively analyze x and return T if x contains fixable pointers."
   (let ((pointee (pointer-ctype-pointee x)))
     (cond
       ((or (gcvector-moveable-ctype-p pointee)
-           (gcarray-moveable-ctype-p pointee)
-           (gcstring-moveable-ctype-p pointee)) :raw-tagged-pointer-fix)
+           (gcarray-moveable-ctype-p pointee))
+       :raw-tagged-pointer-fix)
       ((is-alloc-p (pointer-ctype-pointee x) (analysis-project analysis))
        :raw-tagged-pointer-fix)
       ((fixable-pointee-p (pointer-ctype-pointee x))

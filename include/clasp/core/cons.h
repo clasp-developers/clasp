@@ -89,8 +89,8 @@ T_sp oEighth(T_sp o);
 T_sp oNinth(T_sp o);
 T_sp oTenth(T_sp o);
 
-#define CONS_CAR(x) (gctools::reinterpret_cast_smart_ptr<::core::Cons_O>(x)->car())
-#define CONS_CDR(x) (gctools::reinterpret_cast_smart_ptr<::core::Cons_O>(x)->cdr())
+#define CONS_CAR(x) ((x).as_unsafe<core::Cons_O>()->car())
+#define CONS_CDR(x) ((x).as_unsafe<core::Cons_O>()->cdr())
 #define CAR(x) oCar(x)
 #define CDR(x) oCdr(x)
 }; // namespace core
@@ -621,13 +621,11 @@ DOCGROUP(clasp)
 CL_DEFUN inline T_sp oTenth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))))))); }
 
 inline T_sp cons_car(T_sp x) {
-  ASSERT(x.consp());
-  return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->car();
+  return x.as_assert<Cons_O>()->car();
 };
 
 inline T_sp cons_cdr(T_sp x) {
-  ASSERT(x.consp());
-  return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->cdr();
+  return x.as_assert<Cons_O>()->cdr();
 };
 
 inline T_sp cons_car(Cons_sp x) {

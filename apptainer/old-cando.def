@@ -1,10 +1,14 @@
 BootStrap: docker
 From: ubuntu:lunar
 
+%files
+    $HOME/Downloads/UDB-Corporate-8.0.0 /downloads/udb
+
 %post
     apt-get update
     apt-get upgrade -y
     apt-get install -y -o Dpkg::Options::="--force-overwrite" nano wget sudo git locales curl python3-pip iputils-ping iproute2 nodejs npm binutils-gold clang-16 libclang-16-dev libfmt-dev libboost-dev libclang-cpp16-dev libelf-dev libgmp-dev libunwind-dev llvm-16 ninja-build sbcl pkg-config libnetcdf-dev libczmq-dev libexpat1-dev
+    (cd /downloads/udb; make install)
     echo 'en_US.UTF-8 UTF-8' >/etc/locale.gen
     locale-gen
     cd /mnt

@@ -470,8 +470,7 @@ struct property_registration : registration {
     using VariadicGetterType = WRAPPER_Getter<reg::null_type, Class, Get>;
     core::SimpleFun_sp entryPoint = makeSimpleFunAndFunctionDescription<VariadicGetterType>(sym);
     maybe_register_symbol_using_dladdr((void*)VariadicGetterType::entry_point);
-    auto raw_getter = gc::GC<VariadicGetterType>::allocate(entryPoint, get);
-    core::BuiltinClosure_sp getter = gc::As<core::BuiltinClosure_sp>(raw_getter);
+    auto getter = gc::GC<VariadicGetterType>::allocate(entryPoint, get);
     lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares,
                                     m_doc_string, true, 1);
     core::T_sp setf_name = core::Cons_O::createList(cl::_sym_setf, sym);
@@ -479,8 +478,7 @@ struct property_registration : registration {
     core::SimpleFun_sp setterEntryPoint =
         makeSimpleFunAndFunctionDescription<VariadicSetterType>(setf_name);
     maybe_register_symbol_using_dladdr((void*)VariadicSetterType::entry_point);
-    auto raw_setter = gc::GC<VariadicSetterType>::allocate(setterEntryPoint, set);
-    core::BuiltinClosure_sp setter = gc::As<core::BuiltinClosure_sp>(raw_setter);
+    auto setter = gc::GC<VariadicSetterType>::allocate(setterEntryPoint, set);
     lisp_defineSingleDispatchMethod(setf_name, classSymbol, setter, 1, true, m_arguments, m_declares,
                                     m_doc_string, true, 2);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
