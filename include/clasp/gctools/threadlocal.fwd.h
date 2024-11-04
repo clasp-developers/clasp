@@ -87,7 +87,7 @@ struct GlobalAllocationProfiler {
 
 struct ThreadLocalStateLowLevel {
   void* _StackTop;
-  int _DisableInterrupts;
+  bool _DisableInterrupts;
   GlobalAllocationProfiler _Allocations;
   // Time unwinds
   std::chrono::time_point<std::chrono::high_resolution_clock> _start_unwind;

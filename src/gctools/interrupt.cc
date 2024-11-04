@@ -99,9 +99,11 @@ bool global_user_signal = false;
 
 // INTERRUPTS
 
-inline bool interrupts_disabled_by_C() { return my_thread_low_level->_DisableInterrupts; }
-
-inline bool interrupts_disabled_by_lisp() { return core::_sym_STARinterrupts_enabledSTAR->symbolValue().notnilp(); }
+inline bool interrupts_disabled_p() {
+  return my_thread_low_level->_DisableInterrupts
+    || (my_thread->interrupt_queue_validp() // KLUDGE to not trigger problems if we do this early.
+        && core::_sym_STARinterrupts_enabledSTAR->symbolValue().nilp());
+}
 
 // Perform one action (presumably popped from the queue).
 void handle_queued_interrupt(core::T_sp signal_code) {
@@ -137,7 +139,8 @@ static void handle_pending_signals() {
 #undef TRYSIG
 }
 
-// Handle just interrupts and not signals. Used in the SIGCONT handler.
+// Handle just interrupts and not signals. Used in the SIGCONT handler,
+// which checks if interrupts are disabled itself.
 static void handle_queued_interrupts() {
   // Check that the queue has actually been created.
   if (my_thread->interrupt_queue_validp()) {
@@ -149,11 +152,14 @@ static void handle_queued_interrupts() {
   }
 }
 
-// Do all the queued actions, emptying the queue.
+// Do all the queued actions, emptying the queue -
+// unless interrupts have been disabled.
 template <> void handle_all_queued_interrupts<RuntimeStage>() {
-  if (my_thread->pending_signals_p())
-    handle_pending_signals();
-  handle_queued_interrupts();
+  if (!interrupts_disabled_p()) {
+    if (my_thread->pending_signals_p())
+      handle_pending_signals();
+    handle_queued_interrupts();
+  }
 }
 
 DOCGROUP(clasp);
@@ -182,7 +188,7 @@ void handle_SIGUSR1(int sig) { global_user_signal = true; }
 // This handler is a bit special because we use SIGCONT to interrupt threads
 // that are blocked on a syscall or whatever.
 void handle_SIGCONT(int sig) {
-  if (my_thread->blockingp()) {
+  if (my_thread->blockingp() && !interrupts_disabled_p()) {
     // Disable (most) async interrupts as we call user code.
     my_thread->set_blockingp(false);
     handle_queued_interrupts();
