@@ -231,3 +231,13 @@
   :directory "extensions/seqan-clasp/seqan/"
   :branch "main"
   :extension :seqan-clasp))
+ (:name :pythonic-string-reader
+  :repository "https://github.com/smithzvk/pythonic-string-reader.git"
+  :directory "src/lisp/kernel/contrib/pythonic-string-reader/"
+  :branch "master"
+  :extension :cando)
+ (:name :mgl-pax
+  :repository "https://github.com/melisgl/mgl-pax.git"
+  :directory "src/lisp/kernel/contrib/mgl-pax/"
+  :branch "master"
+  :extension :cando)
