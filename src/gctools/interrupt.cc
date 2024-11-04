@@ -215,19 +215,6 @@ void wait_for_user_signal(const char* message) {
 
 CL_DEFUN void gctools__wait_for_user_signal(const std::string& msg) { wait_for_user_signal(msg.c_str()); }
 
-void handle_or_enqueue_signal(int signo) {
-  if (my_thread->blockingp())
-    handle_signal_now(signo);
-  else if (interrupts_disabled_by_lisp()) {
-    my_thread->enqueue_signal(signo);
-  } else if (interrupts_disabled_by_C()) {
-    my_thread_low_level->_DisableInterrupts = 3;
-    my_thread->enqueue_signal(signo);
-  } else {
-    handle_signal_now(signo);
-  }
-}
-
 // false == SIGABRT invokes debugger, true == terminate (used in core__exit)
 bool global_debuggerOnSIGABRT = true;
 
@@ -295,7 +282,7 @@ void handle_fpe(int signo, siginfo_t* info, void* context) {
     ARITHMETIC_ERROR(nil<core::T_O>(), nil<core::T_O>());
   default: // FIXME: signal a better error.
     // Can end up here with e.g. SI_USER if it originated from kill
-    handle_signal_now(signo);
+    enqueue_or_handle_signal(signo);
   }
 }
 
@@ -314,9 +301,8 @@ void handle_ill(int signo, siginfo_t* info, void* context) {
     } else if (esr & FE_INVALID) {
       FLOATING_POINT_INVALID_OPERATION(nil<core::T_O>(), nil<core::T_O>());
     }
-  }
-  
-  handle_signal_now(signo);
+  } else
+    enqueue_or_handle_signal(signo);
 }
 #endif
 
@@ -364,12 +350,12 @@ void initialize_signals() {
   // Lisp code. If that happens, and a signal is received again, we want
   // to deal with it the same way - not defer.
 
-  INIT_SIGNAL(SIGINT, (SA_NODEFER | SA_RESTART), handle_or_enqueue_signal);
+  INIT_SIGNAL(SIGINT, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
 #ifdef SIGINFO
-  INIT_SIGNAL(SIGINFO, (SA_NODEFER | SA_RESTART), handle_or_enqueue_signal);
+  INIT_SIGNAL(SIGINFO, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
 #endif
   if (!getenv("CLASP_DONT_HANDLE_CRASH_SIGNALS")) {
-    INIT_SIGNAL(SIGABRT, (SA_NODEFER | SA_RESTART), handle_or_enqueue_signal);
+    INIT_SIGNAL(SIGABRT, (SA_NODEFER | SA_RESTART), handle_signal_now);
     INIT_SIGNALI(SIGSEGV, (SA_NODEFER | SA_RESTART | SA_ONSTACK), handle_segv);
     INIT_SIGNALI(SIGBUS, (SA_NODEFER | SA_RESTART), handle_bus);
   }
@@ -380,26 +366,26 @@ void initialize_signals() {
   INIT_SIGNAL(SIGILL, (SA_NODEFER | SA_RESTART), handle_signal_now);
 #endif
   // Handle all signals that would terminate clasp (and can be caught)
-  INIT_SIGNAL(SIGPIPE, (SA_NODEFER | SA_RESTART), handle_signal_now);
-  INIT_SIGNAL(SIGALRM, (SA_NODEFER | SA_RESTART), handle_signal_now);
-  INIT_SIGNAL(SIGTTIN, (SA_NODEFER | SA_RESTART), handle_signal_now);
-  INIT_SIGNAL(SIGTTOU, (SA_NODEFER | SA_RESTART), handle_signal_now);
-  INIT_SIGNAL(SIGPROF, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGPIPE, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
+  INIT_SIGNAL(SIGALRM, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
+  INIT_SIGNAL(SIGTTIN, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
+  INIT_SIGNAL(SIGTTOU, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
+  INIT_SIGNAL(SIGPROF, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
   INIT_SIGNAL(SIGUSR1, (SA_NODEFER | SA_RESTART), handle_SIGUSR1);
-  INIT_SIGNAL(SIGSYS, (SA_NODEFER | SA_RESTART), handle_signal_now);
-  INIT_SIGNAL(SIGTRAP, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGSYS, (SA_NODEFER | SA_RESTART), handle_signal_now); // can be signaled synchronously by bad syscall
+  INIT_SIGNAL(SIGTRAP, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
   // These termination signals we respond to when we're good and ready.
   INIT_SIGNAL(SIGTERM, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
   INIT_SIGNAL(SIGQUIT, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
   INIT_SIGNAL(SIGHUP, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
 #ifdef SIGVTALRM
-  INIT_SIGNAL(SIGVTALRM, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGVTALRM, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
 #endif
   // SIGXCPU is used by boehm to stop threads - this causes problems with boehm in the precise mode
 #if !(defined(USE_BOEHM) && defined(USE_PRECISE_GC))
-  INIT_SIGNAL(SIGXCPU, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGXCPU, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
 #endif
-  INIT_SIGNAL(SIGXFSZ, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGXFSZ, (SA_NODEFER | SA_RESTART), handle_signal_now); // signaled synchronously by some syscalls
   // This one we use specially to wake up blocking threads.
   INIT_SIGNAL(SIGCONT, (SA_NODEFER | SA_RESTART), handle_SIGCONT);
 
