@@ -230,7 +230,7 @@
   :repository "https://github.com/seqan/seqan.git"
   :directory "extensions/seqan-clasp/seqan/"
   :branch "main"
-  :extension :seqan-clasp))
+  :extension :seqan-clasp)
  (:name :pythonic-string-reader
   :repository "https://github.com/smithzvk/pythonic-string-reader.git"
   :directory "src/lisp/kernel/contrib/pythonic-string-reader/"
@@ -240,4 +240,4 @@
   :repository "https://github.com/melisgl/mgl-pax.git"
   :directory "src/lisp/kernel/contrib/mgl-pax/"
   :branch "master"
-  :extension :cando)
+  :extension :cando))
