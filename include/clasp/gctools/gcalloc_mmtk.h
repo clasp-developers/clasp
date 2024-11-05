@@ -12,7 +12,6 @@ namespace gctools {
 #define DO_UNCOLLECTABLE_ALLOC(true_size) DOALLOC(true_size)
 
 template <typename Cons, typename... ARGS> inline Cons* do_cons_allocation(size_t true_size, ARGS&&... args) {
-  RAII_DISABLE_INTERRUPTS();
 #ifdef USE_PRECISE_GC
   Header_s* header = DO_CONS_ALLOC(true_size);
 #ifdef DEBUG_BOEHMPRECISE_ALLOC
@@ -28,7 +27,6 @@ template <typename Cons, typename... ARGS> inline Cons* do_cons_allocation(size_
 }
 
 inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
-  RAII_DISABLE_INTERRUPTS();
   size_t true_size = size;
 #ifdef DEBUG_GUARD
   size_t tail_size = ((rand() % 8) + 1) * Alignment();
@@ -51,7 +49,6 @@ inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header,
 };
 
 inline Header_s* do_weak_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
-  RAII_DISABLE_INTERRUPTS();
   size_t true_size = size;
 #ifdef USE_PRECISE_GC
   Header_s* header = DO_WEAK_ALLOC(true_size);
@@ -69,7 +66,6 @@ inline Header_s* do_weak_allocation(const Header_s::StampWtagMtag& the_header, s
 };
 
 inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
-  RAII_DISABLE_INTERRUPTS();
   size_t true_size = size;
 #ifdef DEBUG_GUARD
   size_t tail_size = ((rand() % 8) + 1) * Alignment();
@@ -94,7 +90,6 @@ inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header
 };
 
 inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
-  RAII_DISABLE_INTERRUPTS();
   size_t true_size = size;
 #ifdef DEBUG_GUARD
   size_t tail_size = ((rand() % 8) + 1) * Alignment();
