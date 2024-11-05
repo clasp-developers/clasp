@@ -3805,7 +3805,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
 #ifdef DEBUG_GUARD
     // only works when DEBUG_GUARD is on
     printf("%s:%d:%s DEBUG_GUARD ON Testing snapshot load memory\n", __FILE__, __LINE__, __FUNCTION__);
-    gctools::GatherObjects gather;
+    gctools::GatherObjects gather(gctools::room_test);
     gctools::gatherAllObjects(gather);
     printf("%s:%d:%s DEBUG_GUARD ON snapshot load memory test report\n", __FILE__, __LINE__, __FUNCTION__);
     dump_test_results(stdout, gather);

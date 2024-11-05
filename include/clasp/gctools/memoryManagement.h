@@ -742,9 +742,9 @@ public:
 #if !defined(DEBUG_GUARD)
   Header_s(const BadgeStampWtagMtag& k) : BaseHeader_s(k){};
   Header_s(Header_s* headerptr) : BaseHeader_s(headerptr->_badge_stamp_wtag_mtag){};
-  Header_s(Header_s* headerptr, bool dummy) : BaseHeader_s(headerptr->_badge_stamp_wtag_mtag, dummy) {
+  Header_s(Header_s* headerptr, bool verbose) : BaseHeader_s(headerptr->_badge_stamp_wtag_mtag, verbose) {
 #ifdef DEBUG_BADGE_SSL
-    if (dummy)
+    if (verbose)
       printf("%s:%d:%s    this = %p   headerptr badge = %u   badge = %u\n", __FILE__, __LINE__, __FUNCTION__, (void*)this,
              headerptr->_badge_stamp_wtag_mtag._header_badge.load(), this->_badge_stamp_wtag_mtag._header_badge.load());
 #endif
@@ -765,6 +765,17 @@ public:
   Header_s(Header_s* headerptr)
       : BaseHeader_s(headerptr->_badge_stamp_wtag_mtag), _guard(GUARD1), _tail_start(0), _tail_size(0), _source(headerptr->_source),
         _guard2(GUARD2), _dup_badge_stamp_wtag_mtag(headerptr->_badge_stamp_wtag_mtag){};
+  Header_s(Header_s* headerptr, bool verbose)
+    : BaseHeader_s(headerptr->_badge_stamp_wtag_mtag, verbose), _guard(GUARD1),
+      _tail_start(0), _tail_size(0), _source(headerptr->_source),
+      _guard2(GUARD2), _dup_badge_stamp_wtag_mtag(headerptr->_badge_stamp_wtag_mtag)
+  {
+#ifdef DEBUG_BADGE_SSL
+    if (verbose)
+      printf("%s:%d:%s    this = %p   headerptr badge = %u   badge = %u\n", __FILE__, __LINE__, __FUNCTION__, (void*)this,
+             headerptr->_badge_stamp_wtag_mtag._header_badge.load(), this->_badge_stamp_wtag_mtag._header_badge.load());
+#endif
+  }
 
 #endif
 
