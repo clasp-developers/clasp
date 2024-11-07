@@ -204,6 +204,18 @@ DynEnv_O::SearchStatus sjlj_unwind_search(DestDynEnv_sp dest);
   sjlj_unwind_proceed(gc::As_unsafe<DestDynEnv_sp>(my_thread->_UnwindDest), my_thread->_UnwindDestIndex);
 }
 
+template <typename Boundf> inline auto call_with_cell_bound(VariableCell_sp cell, T_sp val, Boundf&& bound) {
+  DynamicScopeManager scope(cell, val);
+  gctools::StackAllocate<BindingDynEnv_O> bde(cell, scope.oldBinding());
+  gctools::StackAllocate<Cons_O> sa_ec(bde.asSmartPtr(), my_thread->dynEnvStackGet());
+  DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
+  return bound();
+}
+
+template <typename Boundf> auto call_with_variable_bound(Symbol_sp sym, T_sp val, Boundf&& bound) {
+  return call_with_cell_bound(sym->ensureVariableCell(), val, bound);
+}
+
 /* Functional unwind protect. Provided as a template function to reduce
  * runtime overhead by essentially inlining. Both thunks should accept no
  * arguments, and protected_thunk should return a T_mv.
@@ -223,7 +235,8 @@ template <typename Protf, typename Cleanupf> T_mv funwind_protect(Protf&& protec
     size_t nvals = multipleValues.getSize();
     T_O* mv_temp[nvals];
     multipleValues.saveToTemp(nvals, mv_temp);
-    cleanup_thunk();
+    call_with_variable_bound(core::_sym_STARinterrupts_enabledSTAR, nil<T_O>(),
+                             cleanup_thunk);
     multipleValues.loadFromTemp(nvals, mv_temp);
     my_thread->_UnwindDestIndex = dindex;
     my_thread->_UnwindDest = dest;
@@ -242,14 +255,16 @@ template <typename Protf, typename Cleanupf> T_mv funwind_protect(Protf&& protec
       size_t nvals = multipleValues.getSize();
       T_O* mv_temp[nvals];
       multipleValues.saveToTemp(nvals, mv_temp);
-      cleanup_thunk();
+      call_with_variable_bound(core::_sym_STARinterrupts_enabledSTAR, nil<T_O>(),
+                               cleanup_thunk);
       multipleValues.loadFromTemp(nvals, mv_temp);
       throw;
     }
     size_t nvals = result.number_of_values();
     T_O* mv_temp[nvals];
     returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
-    cleanup_thunk();
+    call_with_variable_bound(core::_sym_STARinterrupts_enabledSTAR, nil<T_O>(),
+                               cleanup_thunk);
     return returnTypeLoadFromTemp(nvals, mv_temp);
   }
 }
@@ -337,18 +352,6 @@ template <typename Catchf> T_mv call_with_catch(T_sp tag, Catchf&& cf) {
         // checkme return T_mv::createFromValues();
       }
     }
-}
-
-template <typename Boundf> inline auto call_with_cell_bound(VariableCell_sp cell, T_sp val, Boundf&& bound) {
-  DynamicScopeManager scope(cell, val);
-  gctools::StackAllocate<BindingDynEnv_O> bde(cell, scope.oldBinding());
-  gctools::StackAllocate<Cons_O> sa_ec(bde.asSmartPtr(), my_thread->dynEnvStackGet());
-  DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
-  return bound();
-}
-
-template <typename Boundf> auto call_with_variable_bound(Symbol_sp sym, T_sp val, Boundf&& bound) {
-  return call_with_cell_bound(sym->ensureVariableCell(), val, bound);
 }
 
 template <typename Boundf> __attribute__((optnone)) T_mv fprogv(List_sp symbols, List_sp values, Boundf&& bound) {

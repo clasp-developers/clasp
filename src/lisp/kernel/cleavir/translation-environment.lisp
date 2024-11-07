@@ -249,3 +249,21 @@
 (defun find-llvm-function-info (function)
   (or (gethash function *function-info*)
       (error "Missing llvm function info for BIR function ~a." function)))
+
+;;; Binding and unbinding special variables
+(defun bind-special (cellv value)
+  (let* ((bde-cons-mem (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
+                                      :label "binding-dynenv-cons-mem"))
+         (bde-mem (cmp:alloca-i8 cmp:+binding-dynenv-size+
+                                 :alignment cmp:+alignment+
+                                 :label "binding-dynenv-mem"))
+         (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil))
+         (ind (%intrinsic-call "cc_getCellTLIndex" (list cellv)))
+         (old (%intrinsic-call "cc_specialBind" (list ind value))))
+    (%intrinsic-call "cc_initializeAndPushBindingDynenv"
+                     (list bde-mem bde-cons-mem cellv old))
+    (values ind old old-de-stack)))
+
+(defun unbind-special (index old-value old-de-stack)
+  (%intrinsic-call "cc_specialUnbind" (list index old-value))
+  (%intrinsic-call "cc_set_dynenv_stack" (list old-de-stack)))

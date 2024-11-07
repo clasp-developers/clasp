@@ -89,9 +89,8 @@
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
     (let ((bb (cmp:irc-basic-block-create "unbind-special-variable")))
       (cmp:irc-begin-block bb)
-      ;; These functions cannot throw, so no landing pad needed
-      (%intrinsic-call "cc_specialUnbind" (list index old-value))
-      (%intrinsic-call "cc_set_dynenv_stack" (list de-stack))
+      ;; These calls cannot throw, so no landing pad needed
+      (unbind-special index old-value de-stack)
       (cmp:irc-br next)
       bb)))
 

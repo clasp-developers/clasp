@@ -604,28 +604,16 @@
 
 (defmethod translate-terminator ((instruction bir:constant-bind) abi next)
   (declare (ignore abi))
-  (let* ((bde-cons-mem (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
-                                      :label "binding-dynenv-cons-mem"))
-         (bde-mem (cmp:alloca-i8 cmp:+binding-dynenv-size+
-                                 :alignment cmp:+alignment+
-                                 :label "binding-dynenv-mem"))
-         (inputs (bir:inputs instruction))
+  (let* ((inputs (bir:inputs instruction))
          (cellv (translate-constant-value (first inputs)))
-         (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil))
-         (val (in (second inputs)))
-         (ind (%intrinsic-call "cc_getCellTLIndex" (list cellv)))
-         (old (%intrinsic-call "cc_specialBind" (list ind val))))
-    (%intrinsic-call "cc_initializeAndPushBindingDynenv"
-                     (list bde-mem bde-cons-mem cellv old))
-    (setf (dynenv-storage instruction) (list ind old old-de-stack)))
+         (val (in (second inputs))))
+    (setf (dynenv-storage instruction)
+          (multiple-value-list (bind-special cellv val))))
   (cmp:irc-br (first next)))
 
 (defmethod undo-dynenv ((dynenv bir:constant-bind) tmv)
   (declare (ignore tmv))
-  (let ((store (dynenv-storage dynenv)))
-    (%intrinsic-call "cc_specialUnbind"
-                     (list (first store) (second store)))
-    (%intrinsic-call "cc_set_dynenv_stack" (list (third store)))))
+  (apply #'unbind-special (dynenv-storage dynenv)))
 
 (defmethod translate-simple-instruction ((instruction bir:thei) abi)
   (declare (ignore abi))
