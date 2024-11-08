@@ -1342,9 +1342,12 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
 ;;; Interrupts
 ;;;
 
-(define-condition mp:interrupt () ())
+(define-condition mp:interrupt ()
+  ()
+  (:documentation "Abstract base class for interrupt conditions. All conditions signaled by SIGNAL-PENDING-INTERRUPTS are of this type."))
 
-(defgeneric mp:service-interrupt (mp:interrupt))
+(defgeneric mp:service-interrupt (mp:interrupt)
+  (:documentation "Execute the action represented by an interrupt. Not intended to be called by programmers."))
 
 (define-condition ext:interactive-interrupt (mp:interrupt)
   ()
@@ -1359,22 +1362,27 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
                                                    ext:interactive-interrupt)
   ())
 
-(define-condition mp:cancellation-interrupt (mp:interrupt) ())
+(define-condition mp:cancellation-interrupt (mp:interrupt) ()
+  (:documentation "A request to a thread to abort computation."))
 
 (define-condition mp:call-interrupt (mp:interrupt)
   ((%function :initarg :function :reader mp:call-interrupt-function
-              :type function)))
+              :type function))
+  (:documentation "A request to call a thunk."))
 
-(define-condition mp:suspension-interrupt (mp:interrupt) ())
+(define-condition mp:suspension-interrupt (mp:interrupt) ()
+  (:documentation "A request to pause computation."))
 
 ;; terminate the program. I'm making it a subset of cancellation because
 ;; it cancels the particular thread as well obviously, and because if you
 ;; want to block one kind of termination you might want to block the other.
 ;; Not sure whether to export this specifically.
-(define-condition termination-interrupt (mp:cancellation-interrupt) ())
+(define-condition termination-interrupt (mp:cancellation-interrupt) ()
+  (:documentation "A request to terminate Clasp entirely."))
 
 ;; Do nothing. Good for ignorable signals.
-(define-condition nop-interrupt (mp:interrupt) ())
+(define-condition nop-interrupt (mp:interrupt) ()
+  (:documentation "An interrput with no further behavior if unhandled."))
 
 ;; Interrupts that are also errors - they go into the debugger as if they had
 ;; been called by ERROR instead of INTERRUPT.
@@ -1426,16 +1434,28 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
   (defposix #:sigxfsz nop-interrupt "File size limit exceeded.")
   (defposix #:sigwinch nop-interrupt "Window resize signal."))
 
+(defun designated-interrupt (datum datump arguments)
+  (if datump
+      (coerce-to-condition datum arguments
+                           'mp:simple-interactive-interrupt
+                           'mp:interrupt)
+      (make-condition 'mp:simple-interactive-interrupt
+                      "Interactive interrupt.")))
+
 (defun mp:interrupt (process &optional (datum nil datump) &rest arguments)
+  "Send the given PROCESS an interrupt request.
+If the process is alive/running, the interrupt is placed on the PROCESS's pending interrupt list. If the process is not yet started, an error is signaled. If the process has already exited, the interrupt is discarded.
+DATUM and ARGUMENTS are designators for an interrupt of default type SIMPLE-INTERACTIVE-INTERRUPT. If DATUM is not specified, a SIMPLE-INTERACTIVE-INTERRUPT with default message is created.
+The interrupt will be SIGNALed in the process at some time when it calls SIGNAL-PENDING-INTERRUPTS and interrupts are not blocked (by WITHOUT-INTERRUPTS). This can happen implicitly at implementation-defined times, or when the process is blocking on grabbing a lock, waiting on a condition variable, sleeping, or waiting for input.
+Interrupts are implicitly blocked while signaling an interrupt, and while unwind-protect cleanups are executed. They can be reenabled temporarily with WITH-INTERRUPTS."
   (check-type process mp:process)
-  (let ((condition (if datump
-                       (coerce-to-condition datum arguments
-                                            'mp:simple-interactive-interrupt
-                                            'mp:interrupt)
-                       (make-condition 'mp:simple-interactive-interrupt
-                                       "Interactive interrupt."))))
+  (let ((condition (designated-interrupt datum datump arguments)))
     (check-type condition mp:interrupt "an interrupt")
     (mp:enqueue-interrupt process condition)))
+
+(defun mp:signal-pending-interrupts ()
+  "Signal all currently pending interrupts for this process. Note that even if this call returns, the pending interrupt list may not be empty, because the process could have been interrupted again."
+  (core:check-pending-interrupts))
 
 ;;; Internal, used by interrupt machinery. Return value ignored.
 (defun mp:signal-interrupt (interrupt)
@@ -1445,6 +1465,11 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
         :report "Ignore the interruption and proceed from where things left off."
         (return-from mp:signal-interrupt))))
   (mp:service-interrupt interrupt))
+
+(defun mp:raise (&optional (datum nil datump) &rest arguments)
+  "Signal a designated interrupt right now, i.e. synchronously. As this does not go through the SIGNAL-PENDING-INTERRUPTS function, this will not actually add the interrupt to the process's pending interrupts, and is not affected by interrupts being blocked."
+  ;; name analogous to raise(3)
+  (mp:signal-interrupt (designated-interrupt datum datump arguments)))
 
 ;;; for backward compatibility (e.g. bordeaux)
 (defun mp:interrupt-process (process function)

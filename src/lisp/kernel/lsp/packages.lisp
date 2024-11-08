@@ -130,6 +130,7 @@
             simple-interrupt simple-interactive-interrupt
             cancellation-interrupt suspension-interrupt
             call-interrupt call-interrupt-function
+            signal-pending-interrupts raise
             ))
   (core:select-package "CORE"))
 

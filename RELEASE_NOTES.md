@@ -7,6 +7,9 @@
   LONG-FLOAT is available on amd64 and non-Apple arm64 platforms. It
   is automatically detected and enabled.
 * LLVM19 support.  
+* Interrupts have now been organized into a coherent interface.
+  Clasp will signal conditions of type MP:INTERRUPT at opportune
+  times, and these conditions can be handled like any others.
 
 ## Changed
 * Floating point exceptions FE_INVALID, FE_OVERFLOW and FE_DIVBYZERO
@@ -15,6 +18,8 @@
 ## Fixed
 * Pathnames and filesystem operations support Unicode (#1595).
 * Package names support Unicode (#1596).
+* Clasp threads can now be more reliably interrupted while they are
+  blocking (e.g. waiting to grab a mutex, or for input).
 
 # Version 2.6.0 (LLVM15-18) 2024-06-03
 

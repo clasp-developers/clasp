@@ -16,6 +16,32 @@
 #include <clasp/gctools/interrupt.h>
 #include <clasp/core/numbers.h>
 
+/*
+ * Interrupts! Oh boy! Get ready for chaos and difficulty.
+ * Generally speaking we try to avoid truly asynchronous interrupt
+ * signals. Instead, we queue them, and only fire at given safe points
+ * by calling handle_all_queued_interrupts
+ * (aka core:check-pending-interrupts, mp:signal-pending-interrupts).
+ * Currently these safe points are when we allocate but that will
+ * probably change in the future.
+ * To fire an interrupt, we make an interrupt object, which is just a
+ * Lisp condition (defined in conditions.lisp), and SIGNAL it. It can
+ * then be handled. If it's not, we call SERVICE-INTERRUPT to do
+ * whatever the interrupt says to do.
+ *
+ * We do accept asynchronous interrupts when we're just waiting, e.g.
+ * from sleep, waiting to grab a lock, etc. See park.cc for details.
+ *
+ * POSIX signals are treated as interrupts for the most part because
+ * they can always arrive asynchronously (via kill(2) etc). Some
+ * of them we handle immediately because they can arrive such that if
+ * the signal handler returns or is the default, the process will be
+ * killed. For example SEGV will be signaled like this if we have a
+ * memory problem. It is nontrivial to differentiate whether a signal
+ * is used in this way and we're probably not doing it correctly
+ * in all cases.
+ */
+
 SYMBOL_EXPORT_SC_(CorePkg, terminal_interrupt);
 SYMBOL_EXPORT_SC_(ExtPkg, illegal_instruction);
 SYMBOL_EXPORT_SC_(ExtPkg, segmentation_violation);
