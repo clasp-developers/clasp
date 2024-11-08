@@ -101,8 +101,7 @@
       ;; pop the dynenv.
       (let ((de-stack (dynenv-storage u-p-instruction)))
         (%intrinsic-call "cc_set_dynenv_stack" (list de-stack)))
-      (let ((thunk (in (first (cleavir-bir:inputs u-p-instruction))))
-            (protection-dynenv (cleavir-bir:parent u-p-instruction)))
+      (let ((thunk (in (first (cleavir-bir:inputs u-p-instruction)))))
         ;; There is a subtle point here with regard to unwinding out of a cleanup
         ;; form. CLHS 5.2 specifies that when unwinding begins, exit points between
         ;; the unwind point and the destination are "abandoned" and can no longer be
@@ -124,10 +123,7 @@
                ;; Probably challenging to arrange in C++, though.
                (mv-temp (cmp:alloca-temp-values nvals)))
           (%intrinsic-call "cc_save_all_values" (list nvals mv-temp))
-          ;; FIXME: Should this be never-entry?
-          (cmp:with-landing-pad (maybe-entry-landing-pad
-                                 protection-dynenv *tags*)
-            (closure-call-or-invoke thunk nil))
+          (gen-call-cleanup u-p-instruction)
           (%intrinsic-call "cc_load_all_values" (list nvals mv-temp))))
       (cmp:irc-br next)
       bb)))
