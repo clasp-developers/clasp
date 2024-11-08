@@ -195,17 +195,8 @@ CL_DEFUN void core__check_pending_interrupts() { handle_all_queued_interrupts();
 
 // This is both a signal handler and called by signal handlers.
 void handle_signal_now(int sig) {
-  // If there's a specific handler, call it.
-  // Otherwise signal a generic, resumable error.
-  switch (sig) {
-  case SIGINT:
-      core::eval::funcall(core::_sym_terminal_interrupt->symbolFunction());
-      break;
-  case SIGILL:
-      core::eval::funcall(ext::_sym_illegal_instruction->symbolFunction());
-      break;
-  default: mp::posix_signal_interrupt(sig); break;
-  }
+  // calls mp:posix-interrupt.
+  mp::posix_signal_interrupt(sig);
 }
 
 // This is both a signal handler and called by signal handlers.

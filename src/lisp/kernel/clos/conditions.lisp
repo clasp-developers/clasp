@@ -606,15 +606,6 @@ or return to an outer frame, undoing all the function calls so far."
   (:REPORT "Memory limit reached. Please jump to an outer pointer, quit program and enlarge the
 memory limits before executing the program again."))
 
-(define-condition ext:illegal-instruction (error)
-  ()
-  (:REPORT "Illegal instruction.
-
-No information available on cause. This may be a bug in Clasp."))
-
-;; Called by signal handlers
-(defun ext:illegal-instruction () (error 'ext:illegal-instruction))
-
 (define-condition ext:bus-error (error)
   ((address :initarg :address :reader memory-condition-address))
   (:report
@@ -1493,6 +1484,11 @@ Interrupts are implicitly blocked while signaling an interrupt, and while unwind
   (clasp-debug:with-truncated-stack ()
     (with-simple-restart (continue "Return from interactive interruption.")
       (let ((*debugger-hook* nil)) (invoke-debugger i)))))
+
+;;; For an external signal, call this complicated function
+;;; (defined in top.lisp) that lets the user pick a thread and stuff.
+(defmethod mp:service-interrupt ((i core:sigint))
+  (core:terminal-interrupt))
 
 (defmethod mp:service-interrupt ((i error-interrupt))
   (clasp-debug:with-truncated-stack () (invoke-debugger i)))
