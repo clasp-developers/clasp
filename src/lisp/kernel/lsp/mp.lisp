@@ -19,6 +19,7 @@
   (:import-from :CORE "WITH-UNIQUE-NAMES")
   (:export "WITH-LOCK" "WITH-RWLOCK" "WITHOUT-INTERRUPTS" "WITH-INTERRUPTS"
            "WITH-LOCAL-INTERRUPTS" "WITH-RESTORED-INTERRUPTS" "ALLOW-WITH-INTERRUPTS"
+           "INTERRUPTIBLEP"
            "ABORT-PROCESS"))
 
 #+threads
@@ -88,6 +89,10 @@ WITHOUT-INTERRUPTS in:
              ,@body))
        (when si:*interrupts-enabled*
          (si::check-pending-interrupts)))))
+
+(defun mp:interruptiblep ()
+  "Returns true iff the current process is interruptible (i.e. not in a WITHOUT-INTERRUPTS block)."
+  si:*interrupts-enabled*)
 
 #+threads
 (defmacro with-interrupts (&body body)
