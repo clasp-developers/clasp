@@ -419,9 +419,9 @@ __attribute__((noinline)) void startupBoehm(gctools::ClaspInfo* claspInfo) {
   my_thread_low_level = thread_local_state_low_level;
 
   // ctor sets up my_thread
-  core::ThreadLocalState* thread_local_stateP =
-      (core::ThreadLocalState*)ALIGNED_GC_MALLOC_UNCOLLECTABLE(sizeof(core::ThreadLocalState));
-  new (thread_local_stateP) core::ThreadLocalState(false);
+  my_thread =
+    (core::ThreadLocalState*)ALIGNED_GC_MALLOC_UNCOLLECTABLE(sizeof(core::ThreadLocalState));
+  new (my_thread) core::ThreadLocalState(false);
 
 #if 1
   // I'm not sure if this needs to be done for the main thread

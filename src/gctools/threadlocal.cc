@@ -186,7 +186,6 @@ ThreadLocalState::ThreadLocalState(bool dummy)
     // only in C++20 and beyond.
     _PendingInterruptsHead(), _PendingInterruptsTail(),
     _Breakstep(false), _BreakstepFrame(NULL), _DynEnvStackBottom(), _UnwindDest(), _DtreeInterpreterCallCount(0) {
-  my_thread = this;
 #ifdef _TARGET_OS_DARWIN
   pthread_threadid_np(NULL, &this->_Tid);
 #else
@@ -252,7 +251,6 @@ ThreadLocalState::ThreadLocalState()
   : _unwinds(0), _ObjectFiles(nil<core::T_O>()), _CleanupFunctions(NULL), _Breakstep(false), _PendingSignalsP(false),
     _PendingInterruptsHead(), _PendingInterruptsTail(),
     _BreakstepFrame(NULL), _DynEnvStackBottom(nil<core::T_O>()), _UnwindDest(nil<core::T_O>()) {
-  my_thread = this;
 #ifdef _TARGET_OS_DARWIN
   pthread_threadid_np(NULL, &this->_Tid);
 #else
