@@ -128,7 +128,6 @@ public:
   List_sp hash_table_bucket(size_t index);
   /*! If findKey is defined then search it as you rehash and return resulting keyValuePair CONS */
   KeyValuePair* rehash_no_lock(bool expandTable, T_sp findKey);
-  KeyValuePair* rehash_upgrade_write_lock(bool expandTable, T_sp findKey);
   CL_LISPIFY_NAME("hash-table-buckets");
   //    CL_DEFMETHOD ComplexVector_T_sp hash_table_buckets() const { return this->_HashTable; };
   CL_LISPIFY_NAME("hash-table-shared-mutex");

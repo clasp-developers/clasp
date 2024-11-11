@@ -1120,28 +1120,6 @@ KeyValuePair* HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
   return foundKeyValuePair;
 }
 
-KeyValuePair* HashTable_O::rehash_upgrade_write_lock(bool expandTable, T_sp findKey) {
-  if (this->_Mutex) {
-  tryAgain:
-    if (this->_Mutex->write_try_lock(true /*upgrade*/)) {
-      KeyValuePair* result = this->rehash_no_lock(expandTable, findKey);
-      // Releasing the read lock will be done by the caller using RAII
-      this->_Mutex->write_unlock(false /*releaseReadLock*/);
-      return result;
-    }
-#if defined(_TARGET_OS_LINUX)
-    sched_yield();
-#elif defined(_TARGET_OS_DARWIN)
-    pthread_yield_np();
-#else
-    pthread_yield();
-#endif
-    goto tryAgain;
-  } else {
-    return this->rehash_no_lock(expandTable, findKey);
-  }
-}
-
 string HashTable_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->_classNameAsString();

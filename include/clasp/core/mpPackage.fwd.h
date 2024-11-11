@@ -444,7 +444,7 @@ public:
   /* Pass true for upgrade if you want to upgrade a read lock to a write lock.
     Be careful though!!!! If two threads try to upgrade at the same time
     there will be a deadlock unless they do it in a loop using withTryLock(true).
-    See the hashTable.cc rehash_upgrade_write_lock for an example. */
+   */
   bool writeTryLock(bool upgrade = false) {
     if (!mWriteMutex._value.lock(false))
       return false;
