@@ -4082,7 +4082,7 @@ void register_object_file_with_gdb(const llvm::object::ObjectFile& Obj,
   if (global_jit_descriptor == NULL) {
     global_jit_descriptor = new mp::Mutex(JITGDBIF_NAMEWORD);
   }
-  mp::RAIIReadWriteLock<mp::Mutex> safe_lock(*global_jit_descriptor);
+  WITH_READ_WRITE_LOCK(*global_jit_descriptor);
   llvm::JITEventListener* listener = JITEventListener::createGDBRegistrationListener();
   listener->notifyObjectLoaded(Key, Obj, loadedObjectInfo);
 }

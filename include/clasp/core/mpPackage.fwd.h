@@ -30,6 +30,8 @@ THE SOFTWARE.
 #include <cassert>
 #include <atomic>
 #include <thread>
+#include <mutex>
+#include <shared_mutex>
 #include <array>
 #include <unordered_map>
 #include <vector>
@@ -523,20 +525,8 @@ struct ConditionVariable {
 };
 
 #ifdef CLASP_THREADS
-template <typename T> struct RAIIReadLock {
-  T& _Mutex;
-  RAIIReadLock(T& p) : _Mutex(p) { _Mutex.shared_lock(); }
-  ~RAIIReadLock() { _Mutex.shared_unlock(); }
-};
-
-template <typename T> struct RAIIReadWriteLock {
-  T& _Mutex;
-  RAIIReadWriteLock(T& p) : _Mutex(p) { _Mutex.lock(); }
-  ~RAIIReadWriteLock() { _Mutex.unlock(); }
-};
-
-#define WITH_READ_LOCK(mutex) mp::RAIIReadLock<decltype(mutex)> lock__(mutex)
-#define WITH_READ_WRITE_LOCK(mutex) mp::RAIIReadWriteLock<decltype(mutex)> lock__(mutex)
+#define WITH_READ_LOCK(mutex) std::shared_lock lock__(mutex)
+#define WITH_READ_WRITE_LOCK(mutex) std::unique_lock lock__(mutex)
 #else
 #define WITH_READ_LOCK(m)
 #define WITH_READ_WRITE_LOCK(m)
