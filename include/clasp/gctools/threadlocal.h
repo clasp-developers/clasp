@@ -109,14 +109,14 @@ struct VirtualMachine {
   // grow and etc.
   static constexpr size_t MaxStackWords = 65536;
   bool _Running;
-  core::T_O** _stackBottom;
+  core::T_O** _stackBottom = nullptr;
   size_t _stackBytes;
   core::T_O** _stackTop;
   core::T_O** _stackGuard;
   core::T_O** _stackPointer;
   // only used by debugger
   // has to be initialized because bytecode_call reads it
-  core::T_O** _framePointer = NULL;
+  core::T_O** _framePointer = nullptr;
 #ifdef DEBUG_VIRTUAL_MACHINE
   core::T_O* _data;
   core::T_O* _data1;

@@ -171,7 +171,10 @@ VirtualMachine::~VirtualMachine() {
 #if 1
   this->disable_guards();
 #endif
-  gctools::RootClassAllocator<T_O>::freeRoots(this->_stackBottom);
+  // In snapshot load we make threads with no VM.
+  // We have nothing to free and _stackBottom is just its initial NULL.
+  if (this->_stackBottom)
+    gctools::RootClassAllocator<T_O>::freeRoots(this->_stackBottom);
 }
 
 // For main thread initialization - it happens too early and _Nil is undefined

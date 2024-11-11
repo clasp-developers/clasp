@@ -3474,6 +3474,12 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               // lookup will cause multicore linking and with multicore linking we have to do things after this in a thread safe way
               size_t objectId = allocatedObjectFile->_ObjectId;
               pool.push_task([&obj_claspJIT, jitdylib, objectId]() {
+                // do_lookup can allocate, so set up a bit of a Lisp thread.
+                void* stacktop = &stacktop;
+                gctools::ThreadLocalStateLowLevel tlsll(stacktop);
+                core::ThreadLocalState tls;
+                my_thread_low_level = &tlsll;
+                my_thread = &tls;
                 std::string start;
                 std::string shutdown;
                 core::startup_shutdown_names(objectId, "", start, shutdown);
