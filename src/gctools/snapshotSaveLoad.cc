@@ -3077,17 +3077,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         lookup.addLibrary(libraryPath, fout); // for debugging pass a stream
 //        printf("%s:%d:%s ------ Registered library: %s @ %p\n", __FILE__, __LINE__, __FUNCTION__, libraryPath.c_str(),
 //        (void*)start );
-#if 0
-        ISLLibraryHeader_s& libhead = *libheader;
-        printf("%s:%d:%s &libhead = %p\n", __FILE__, __LINE__, __FUNCTION__, &libhead );
-        printf("%s:%d:%s (&libhead - fileHeader) = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)((uintptr_t)libheader - (uintptr_t)fileHeader));
-        printf("%s:%d:%s libhead._Size = %lu\n", __FILE__, __LINE__, __FUNCTION__, libhead._Size );
-        printf("%s:%d:%s libhead._SymbolBufferOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libhead._SymbolBufferOffset );
-        printf("%s:%d:%s libhead._SymbolInfoOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libhead._SymbolInfoOffset );
-        printf("%s:%d:%s libheader = %p\n", __FILE__, __LINE__, __FUNCTION__, libheader );
-        printf("%s:%d:%s libheader->_SymbolInfoOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libheader->_SymbolInfoOffset );
-        printf("%s:%d:%s libheader->_SymbolBufferOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libheader->_SymbolBufferOffset );
-#endif
         size_t symbolBufferSize = libheader->_SymbolInfoOffset - libheader->_SymbolBufferOffset;
         //        printf("%s:%d:%s symbolBufferSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, symbolBufferSize );
         lib._SymbolBuffer.resize(symbolBufferSize);
@@ -3258,13 +3247,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
             //            printf("%s:%d:%s !!!!!!!!!!!!!! main - save it\n", __FILE__, __LINE__, __FUNCTION__ );
             obj_mainJITDylib = obj_jd;
           }
-#if 0
-          // This is where we create the llvm::JITDylib and stick it into the JITDylib_O
-          llvmo::JITDylib* llvm_jitdylib = &*(obj_claspJIT->_LLJIT->createJITDylib(sname));
-          printf("%s:%d:%s !!!!!!!!!!!!!! stick llvm_jitdylib %p into JITDylib_O* \n", __FILE__, __LINE__, __FUNCTION__ );
-          obj_claspJIT->registerJITDylibAfterLoad(&*obj_jd);
-          llvm_jitdylib->addGenerator(llvm::cantFail(llvmo::DynamicLibrarySearchGenerator::GetForCurrentProcess(obj_claspJIT->_LLJIT->getDataLayout().getGlobalPrefix())));
-#endif
           // new (&*obj_jd) llvmo::JITDylib_O(name,llvm_jitdylib);
           DBG_SL("   Write forward ptr JITDylib_sp %p into snapshot_JITDylib_O_header %p val %p fwdP() %d\n", obj_jd.raw_(),
                  snapshot_JITDylib_O_header, *(void**)snapshot_JITDylib_O_header,
