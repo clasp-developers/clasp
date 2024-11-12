@@ -81,12 +81,6 @@ template <class OT> struct GCObjectInitializer<tagged_pointer<OT>, false> {
 
 #if defined(USE_BOEHM) || defined(USE_MPS) || defined(USE_MMTK)
 
-#if defined(USE_BOEHM)
-namespace gctools {
-template <class T> class root_allocator {};
-}; // namespace gctools
-#endif
-
 inline void* verify_alignment(void* ptr) {
   if ((((uintptr_t)ptr) & gctools::ptr_mask) != (uintptr_t)ptr) {
     printf("%s:%d The pointer at %p is not aligned properly\n", __FILE__, __LINE__, ptr);
@@ -120,8 +114,6 @@ namespace gctools {
 
 class DontRegister {};
 class DoRegister {};
-
-template <int F> struct Foo {};
 
 template <typename Stage, typename Cons, typename Register = DontRegister> struct ConsSizeCalculator {
   static inline size_t value() {
@@ -174,23 +166,11 @@ template <class T> struct RootClassAllocator {
     return tagged_obj;
   }
 
-  template <class... ARGS> static T* untagged_allocate(ARGS&&... args) { return allocate(args...); }
-
   static void deallocate(gctools::tagged_pointer<T> memory) {
 #if defined(USE_BOEHM)
     GC_FREE(&*memory);
 #elif defined(USE_MPS) && !defined(RUNNING_PRECISEPREP)
     throw_hard_error("I need a way to deallocate MPS allocated objects that are not moveable or collectable");
-    GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
-#elif defined(USE_MMTK)
-    MISSING_GC_SUPPORT();
-#endif
-  };
-
-  static void untagged_deallocate(void* memory) {
-#if defined(USE_BOEHM)
-    GC_FREE(memory);
-#elif defined(USE_MPS)
     GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
 #elif defined(USE_MMTK)
     MISSING_GC_SUPPORT();
@@ -666,19 +646,6 @@ public:
   }
 
   /*! Allocate enough space for capacity elements, but set the length to length */
-
-  // Allocates an object with proper header and everything.
-  // Uses the underlying constructor. Like, GC<SimpleVector_O>::allocate_container(...)
-  // ends up passing the ... to the SimpleVector_O constructor.
-  template <typename... ARGS>
-  static smart_pointer_type allocate_container_partial_scan(size_t dataScanSize, int64_t length, ARGS&&... args) {
-    size_t capacity = std::abs(length);
-    size_t size = sizeof_container_with_header<OT>(capacity);
-    size_t scanSize = sizeof_container_with_header<OT>(dataScanSize);
-    return GCObjectAllocator<OT>::allocate_kind_partial_scan(
-        scanSize, Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag), size, length,
-        std::forward<ARGS>(args)...);
-  }
 
   template <typename... ARGS>
   static smart_pointer_type allocate_bitunit_container(bool static_container_p, size_t length, ARGS&&... args) {
