@@ -38,56 +38,6 @@ THE SOFTWARE.
 
 namespace core {
 
-enum SignalEnum {
-  signal_SIGABRT = SIGABRT,
-  signal_SIGALRM = SIGALRM,
-  signal_SIGBUS = SIGBUS,
-  signal_SIGCHLD = SIGCHLD,
-  signal_SIGCONT = SIGCONT,
-  signal_SIGFPE = SIGFPE,
-  signal_SIGHUP = SIGHUP,
-  signal_SIGILL = SIGILL,
-  signal_SIGINT = SIGINT,
-  signal_SIGKILL = SIGKILL,
-  signal_SIGPIPE = SIGPIPE,
-  signal_SIGQUIT = SIGQUIT,
-  signal_SIGSEGV = SIGSEGV,
-  signal_SIGSTOP = SIGSTOP,
-  signal_SIGTERM = SIGTERM,
-  signal_SIGTSTP = SIGTSTP,
-  signal_SIGTTIN = SIGTTIN,
-  signal_SIGTTOU = SIGTTOU,
-  signal_SIGUSR1 = SIGUSR1,
-  signal_SIGUSR2 = SIGUSR2,
-  //      signal_SIGPOLL = SIGPOLL,
-  signal_SIGPROF = SIGPROF,
-  signal_SIGSYS = SIGSYS,
-  signal_SIGTRAP = SIGTRAP,
-  signal_SIGURG = SIGURG,
-  signal_SIGVTALRM = SIGVTALRM,
-  signal_SIGXCPU = SIGXCPU,
-  signal_SIGXFSZ = SIGXFSZ,
-};
-
-FORWARD(Sigset);
-class Sigset_O : public General_O {
-  CL_DOCSTRING(R"(Wraps the unix sigset_t data type used to represent a signal set.)")
-  LISP_CLASS(core, CorePkg, Sigset_O, "Sigset", General_O);
-
-public: // Simple default ctor/dtor
-  Sigset_O();
-
-public: // instance variables here
-  dont_expose<sigset_t> _sigset;
-
-public: // Functions here
-  int sigset_sigaddset(SignalEnum sym);
-}; // Sigset class
-
-}; // namespace core
-
-namespace core {
-
 Integer_sp clasp_file_len(int f);
 int clasp_backup_open(const char* filename, int option, int mode);
 
@@ -106,5 +56,3 @@ T_sp core__mkstemp(String_sp thetemplate);
 namespace ext {
 core::Str8Ns_sp ext__getcwd();
 };
-
-DECLARE_ENUM_SYMBOL_TRANSLATOR(core::SignalEnum, core::_sym__PLUS_SignalEnumConverter_PLUS_);

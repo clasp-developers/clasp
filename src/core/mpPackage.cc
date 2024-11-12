@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 
 #include <sched.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -122,6 +123,7 @@ void debug_mutex_unlock(Mutex* m) {
 namespace mp {
 
 SYMBOL_EXPORT_SC_(MpPkg, STARcurrent_processSTAR);
+SYMBOL_EXPORT_SC_(MpPkg, signal_interrupt);
 
 CL_DEFUN
 Process_sp mp__current_process() {
@@ -129,41 +131,31 @@ Process_sp mp__current_process() {
   return this_process;
 }
 
-// This keeps track of a process on the list of active threads.
-// Also makes sure its phase is set as it exits.
-struct SafeRegisterDeregisterProcessWithLisp {
-  Process_sp _Process;
-  SafeRegisterDeregisterProcessWithLisp(Process_sp p) : _Process(p) { _lisp->add_process(_Process); }
-  ~SafeRegisterDeregisterProcessWithLisp() {
-    _Process->_Phase = Exited;
-    _lisp->remove_process(_Process);
-  }
-};
-
-void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
+void Process_O::runInner(core::List_sp bindings) {
+  core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR, this->asSmartPtr());
   if (bindings.consp()) {
     core::Cons_sp pair = gc::As<core::Cons_sp>(CONS_CAR(bindings));
     core::DynamicScopeManager scope(gc::As<core::Symbol_sp>(pair->car()), core::eval::evaluate(pair->cdr(), nil<core::T_O>()));
-    do_start_thread_inner(process, CONS_CDR(bindings));
+    runInner(CONS_CDR(bindings));
   } else {
-    core::List_sp args = process->_Arguments;
-    process->_Phase = Active;
+    updatePhase(Running);
     core::T_mv result_mv;
-    {
-      try {
-        result_mv = core::core__apply0(core::coerce::calledFunctionDesignator(process->_Function), args);
-      } catch (ExitProcess& e) {
+    try {
+      result_mv = core::core__apply0(core::coerce::calledFunctionDesignator(_Function), _Arguments);
+    } catch (ExitProcess& e) {
         // Exiting specially. Don't touch _ReturnValuesList - it's initialized to NIL just fine,
         // and may have been set by mp:exit-process.
-        return;
-      } catch (AbortProcess& e) {
+      updatePhase(Exited);
+      return;
+    } catch (AbortProcess& e) {
         // Exiting specially for some weird reason. Mark this as an abort.
         // NOTE: Should probably catch all attempts to exit, i.e. catch (...),
         // but that might be a problem for the main thread.
-        process->_Aborted = true;
-        return;
-      }
+      _Aborted = true;
+      updatePhase(Exited);
+      return;
     }
+    updatePhase(Exited);
     ql::list return_values;
     int nv = result_mv.number_of_values();
     core::MultipleValues& mv = core::lisp_multipleValues();
@@ -173,72 +165,26 @@ void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
       for (int i = 1; i < nv; ++i)
         return_values << mv.valueGet(i, result_mv.number_of_values());
     }
-    process->_ReturnValuesList = return_values.result();
+    _ReturnValuesList = return_values.result();
   }
 }
 
-__attribute__((noinline)) void start_thread_inner(uintptr_t uniqueId, void* cold_end_of_stack) {
-#ifdef USE_MPS
-  // use mask
-  mps_thr_t thr_o;
-  mps_res_t res = mps_thread_reg(&thr_o, global_arena);
-  if (res != MPS_RES_OK) {
-    printf("%s:%d Could not register thread\n", __FILE__, __LINE__);
-    abort();
-  }
-  mps_root_t root;
-  res = mps_root_create_thread_tagged(&root, global_arena, mps_rank_ambig(), 0, thr_o, mps_scan_area_masked,
-                                      gctools::pointer_tag_mask, gctools::pointer_tag_eq,
-                                      reinterpret_cast<mps_addr_t>(const_cast<void*>(cold_end_of_stack)));
-  if (res != MPS_RES_OK) {
-    printf("%s:%d Could not create thread stack roots\n", __FILE__, __LINE__);
-    abort();
-  };
-#endif
-  // Look for the process
-  Process_sp process;
-  core::List_sp processes;
-  {
-    WITH_READ_LOCK(globals_->_ActiveThreadsMutex);
-    processes = _lisp->_Roots._ActiveThreads;
-    bool foundIt = false;
-    for (auto cur : processes) {
-      Process_sp proc = gc::As<Process_sp>(CONS_CAR(cur));
-      if (proc->_UniqueID == uniqueId) {
-        foundIt = true;
-        process = proc;
-      }
-    }
-    if (!foundIt) {
-      printf("%s:%d A child process started up with the uniqueId %lu but its Process_O could not be found\n", __FILE__, __LINE__,
-             uniqueId);
-      abort();
-    }
-  }
-  // Tell the process what MPS thr_o and root is
-#ifdef USE_MPS
-  process->thr_o = thr_o;
-  process->root = root;
-#endif
+__attribute__((noinline))
+void Process_O::run(void* cold_end_of_stack) {
   gctools::ThreadLocalStateLowLevel thread_local_state_low_level(cold_end_of_stack);
   core::ThreadLocalState thread_local_state;
   thread_local_state.startUpVM();
   my_thread_low_level = &thread_local_state_low_level;
   my_thread = &thread_local_state;
-//  printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
-#ifdef USE_MPS
-  gctools::my_thread_allocation_points.initializeAllocationPoints();
-#endif
-  my_thread->initialize_thread(process, true);
+  my_thread->initialize_thread(this->asSmartPtr(), true);
   //  my_thread->create_sigaltstack();
-  process->_ThreadInfo = my_thread;
-  // Set the mp:*current-process* variable to the current process
-  core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR, process);
-  core::List_sp reversed_bindings = core::cl__reverse(process->_InitialSpecialBindings);
-  do_start_thread_inner(process, reversed_bindings);
+  _ThreadInfo = my_thread;
+
+  // We're ready to run Lisp
+  runInner(core::cl__reverse(_InitialSpecialBindings));
+
   // Remove the process
-  process->_Phase = Exited;
-  _lisp->remove_process(process);
+  _lisp->remove_process(this->asSmartPtr());
 #ifdef DEBUG_MONITOR_SUPPORT
   // When enabled, maintain a thread-local map of strings to FILE*
   // used for logging. This is so that per-thread log files can be
@@ -250,23 +196,15 @@ __attribute__((noinline)) void start_thread_inner(uintptr_t uniqueId, void* cold
 #endif
 #ifdef USE_MPS
   gctools::my_thread_allocation_points.destroyAllocationPoints();
-  mps_root_destroy(process->root._value);
-  mps_thread_dereg(process->thr_o._value);
+  mps_root_destroy(root._value);
+  mps_thread_dereg(thr_o._value);
 #endif
 };
 
 // This is the function actually passed to pthread_create.
 void* start_thread(void* vinfo) {
-  ThreadStartInfo* info = (ThreadStartInfo*)vinfo;
-  uintptr_t uniqueId = info->_UniqueID;
-  delete info;
   void* cold_end_of_stack = &cold_end_of_stack;
-  ////////////////////////////////////////////////////////////
-  //
-  // MPS setup of thread
-  //
-  start_thread_inner(uniqueId, cold_end_of_stack);
-  //  my_thread->destroy_sigaltstack();
+  static_cast<Process_O*>(vinfo)->run(cold_end_of_stack);
   return NULL;
 }
 
@@ -326,11 +264,75 @@ string SharedMutex_O::__repr__() const {
   return ss.str();
 }
 
+int Process_O::startProcess() {
+  if (!updatePhaseFrom(Nascent, Booting))
+    // Some other process has started this up - bow out gracefully.
+    return 0;
+  _lisp->add_process(this->asSmartPtr());
+  pthread_attr_t attr;
+  int result;
+  result = pthread_attr_init(&attr);
+  result = pthread_attr_setstacksize(&attr, this->_StackSize);
+  if (result != 0)
+    return result;
+  // We pass ourselves into the thread being created.
+  // There is a subtlety here - something needs to be keeping the thread alive.
+  // If this function returns before the thread is fully created, this process
+  // could hypothetically garbage collected if it's not otherwise accessible.
+  // That's why we have to do _lisp->add_process - it keeps it globally accessible
+  // and so the problem is solved.
+  result = pthread_create(&this->_TheThread._value, &attr, start_thread, (void*)this);
+  pthread_attr_destroy(&attr);
+  return result;
+}
+
+void Process_O::interrupt(core::T_sp interrupt) {
+   /*
+   * Lifted from the ECL source code.  meister 2017
+   * We first ensure that the process is active and running
+   * and past the initialization phase, where it has set up
+   * the environment. Then add the interrupt to the process's
+   * queue, and it will examine it at its own leisure.
+   */
+  do {
+    ProcessPhase p = phase();
+    switch (p) {
+    case Running:
+    case Suspended: {
+        _ThreadInfo->enqueue_interrupt(interrupt);
+        if (_ThreadInfo->blockingp())
+          // The thread is blocked on something, so wake it up with a signal.
+          // We use SIGCONT since it's kinda obscure and waking up processes is
+          // what it's for, though perhaps not in this way originally.
+          // FIXME?: We could use pthread_sigqueue to stick in some extra info
+          // in order to disambiguate our wakeups from others' a bit.
+          pthread_kill(_TheThread._value, SIGCONT);
+        return;
+      }
+    case Exited: return; // we were too slow! oh well, who cares.
+    case Nascent: SIMPLE_ERROR("Cannot interrupt unstarted process.");
+    case Booting: waitPhase(p);
+    }
+  } while (true);
+}
+
+// This function must only be called from within the process.
+// which in turn means the _Phase must already be Running.
+void Process_O::suspend() {
+  updatePhase(Suspended);
+  waitPhase(Suspended); // c++20 guarantees this never wakes spuriously.
+}
+
+// This function is called from outside the process.
+void Process_O::resume() { updatePhaseFrom(Suspended, Running); }
+
 string Process_O::phase_as_string() const {
-  switch (this->_Phase) {
+  switch (phase()) {
   case Nascent:
     return "(Not yet started)";
-  case Active:
+  case Booting:
+      return "(Booting)";
+  case Running:
     return "(Running)";
   case Suspended:
     return "(Suspended)";
@@ -362,22 +364,18 @@ CL_DEFUN core::SimpleBaseString_sp mp__process_phase_string(Process_sp process) 
   return core::SimpleBaseString_O::make(process->phase_as_string());
 };
 
-CL_DOCSTRING(R"dx(Current Phase of the process. Nascent = 0, Active = 1, Suspended = 2, Exited = 3)dx");
+CL_DOCSTRING(R"dx(Current Phase of the process. Nascent = 0, Running = 1, Suspended = 2, Exited = 3)dx");
 DOCGROUP(clasp);
-CL_DEFUN int mp__process_phase(Process_sp process) { return process->_Phase; };
+CL_DEFUN int mp__process_phase(Process_sp process) { return process->phase(); };
 
 CL_DOCSTRING(R"dx(Return the owner of the lock - this may be NIL if it's not locked.)dx");
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp mp__lock_owner(Mutex_sp m) { return m->_Owner; }
 
-CL_DOCSTRING(R"dx(Start execution of a nascent process. Return no values.)dx");
+CL_DOCSTRING(R"dx(Start execution of a nascent process. If the process has already started, does nothing. Return no values.)dx");
 DOCGROUP(clasp);
 CL_DEFUN void mp__process_start(Process_sp process) {
-  if (process->_Phase == Nascent) {
-    _lisp->add_process(process);
-    process->startProcess();
-  } else
-    SIMPLE_ERROR("The process {} has already started.", core::_rep_(process));
+  process->startProcess();
 };
 
 CL_DOCSTRING(
@@ -391,9 +389,6 @@ CL_DEFUN Process_sp mp__process_run_function(core::T_sp name, core::T_sp functio
 #endif
   if (cl__functionp(function)) {
     Process_sp process = Process_O::make_process(name, function, nil<core::T_O>(), special_bindings, DEFAULT_THREAD_STACK_SIZE);
-    // The process needs to be added to the list of processes before process->start() is called.
-    // The child process code needs this to find the process in the list
-    _lisp->add_process(process);
     process->startProcess();
     return process;
   }
@@ -417,44 +412,25 @@ CL_DEFUN core::T_sp mp__thread_id(Process_sp p) {
 }
 
 CL_DOCSTRING(
-    R"dx(Return true iff the process is active, i.e. is currently executed. More specifically, this means it has been started and is not currently suspended.)dx");
+    R"dx(Return true iff the process is active, i.e. is currently executing. More specifically, this means it has been started and is not currently suspended.)dx");
 DOCGROUP(clasp);
-CL_DEFUN bool mp__process_active_p(Process_sp p) { return (p->_Phase == Active); }
+CL_DEFUN bool mp__process_active_p(Process_sp p) {
+  auto phase = p->phase();
+  return phase == Running || phase == Booting;
+}
 
-// Internal function used only in process_suspend (which is external).
+// Internal function used only for process-suspend (which is external).
 // FIXME: Don't actually export.
 SYMBOL_EXPORT_SC_(MpPkg, suspend_loop);
 DOCGROUP(clasp);
 CL_DEFUN void mp__suspend_loop() {
   Process_sp this_process = gc::As<Process_sp>(_sym_STARcurrent_processSTAR->symbolValue());
-  RAIILock<Mutex> lock(this_process->_SuspensionMutex._value);
-  this_process->_Phase = Suspended;
-  while (this_process->_Phase == Suspended) {
-    if (!(this_process->_SuspensionCV._value.wait(this_process->_SuspensionMutex._value)))
-      SIMPLE_ERROR("BUG: pthread_cond_wait ran into an error");
-  }
-};
-
-CL_DOCSTRING(R"dx(Stop a process from executing temporarily. Execution may be restarted with PROCESS-RESUME.)dx");
-DOCGROUP(clasp);
-CL_DEFUN void mp__process_suspend(Process_sp process) {
-  if (process->_Phase == Active)
-    mp__interrupt_process(process, _sym_suspend_loop);
-  else
-    SIMPLE_ERROR("Cannot suspend inactive process {}", core::_rep_(process));
+  this_process->suspend();
 };
 
 CL_DOCSTRING(R"dx(Restart execution in a suspended process.)dx");
 DOCGROUP(clasp);
-CL_DEFUN void mp__process_resume(Process_sp process) {
-  if (process->_Phase == Suspended) {
-    RAIILock<Mutex> lock(process->_SuspensionMutex._value);
-    process->_Phase = Active;
-    if (!(process->_SuspensionCV._value.signal()))
-      SIMPLE_ERROR("BUG: pthread_cond_signal ran into an error");
-  } else
-    SIMPLE_ERROR("Cannot resume a process ({}) that has not been suspended", core::_rep_(process));
-};
+CL_DEFUN void mp__process_resume(Process_sp process) { process->resume(); }
 
 CL_DOCSTRING(
     R"dx(Inform the scheduler that the current process doesn't need control for the moment. It may or may not use this information. Returns no values.)dx");
@@ -480,9 +456,9 @@ CL_DOCSTRING(
     R"dx(Wait for the given process to finish executing. If the process's function returns normally, those values are returned. If the process exited due to EXIT-PROCESS, the values provided to that function are returned. If the process was not started or aborted by ABORT-PROCESS or a control transfer, an error of type PROCESS-JOIN-ERROR is signaled.)dx");
 DOCGROUP(clasp);
 CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
-  if (process->_Phase == Nascent)
+  if (process->phase() == Nascent)
     ERROR(_sym_process_join_error, core::lisp_createList(kw::_sym_process, process));
-  if (process->_Phase != Exited) {
+  if (process->phase() != Exited) {
     pthread_join(process->_TheThread._value, NULL);
   }
   if (process->_Aborted)
@@ -499,140 +475,22 @@ CL_DEFUN core::T_sp mp__process_preset(Process_sp process, core::T_sp function, 
   return process;
 }
 
-CL_DEFUN core::T_sp mp__process_enable(Process_sp process) {
-  /* process_env and ok are changed after the setjmp call in
-   * ECL_UNWIND_PROTECT_BEGIN, so they need to be declared volatile */
-  // core::cl_env_ptr the_env = core::clasp_process_env();
-  volatile int ok = 0;
-  core::funwind_protect(
-      [&]() {
-        /* Try to gain exclusive access to the process at the same
-         * time we ensure that it is inactive. This prevents two
-         * concurrent calls to process-enable from different threads
-         * on the same process */
-        auto inactive = Inactive;
-        unlikely_if(!process->_Phase.compare_exchange_strong(inactive, Booting)) {
-          FEerror("Cannot enable the running process ~A.", 1, process);
-        }
-        process->_Parent = mp__current_process();
-#if 0
-    process->process.trap_fpe_bits =
-        process->process.parent->process.env->trap_fpe_bits;
-#endif
-    /* Link environment and process together */
-#if 0
-    // We don't have process environments
-    process_env = _ecl_alloc_env(the_env);
-    process_env->own_process = process;
-    process->process.env = process_env;
-    /* Immediately list the process such that its environment is
-     * marked by the gc when its contents are allocated */
-    ecl_list_process(process);
-
-    /* Now we can safely allocate memory for the environment contents
-     * and store pointers to it in the environment */
-    ecl_init_env(process_env);
-
-    process_env->trap_fpe_bits = process->process.trap_fpe_bits;
-    process_env->bindings_array = process->process.initial_bindings;
-    process_env->thread_local_bindings_size = 
-        process_env->bindings_array->vector.dim;
-    process_env->thread_local_bindings =
-        process_env->bindings_array->vector.self.t;
-#endif
-
-        SIMPLE_WARN("Handle the exit_barrier");
-#if 0
-    /* Activate the barrier so that processes can immediately start waiting. */
-    mp_barrier_unblock(1, process->process.exit_barrier);
-
-    /* Block the thread with this spinlock until it is ready */
-    process->process.start_stop_spinlock = ECL_T;
-
-    ecl_disable_interrupts_env(the_env);
-#ifdef ECL_WINDOWS_THREADS
-    {
-      HANDLE code;
-      DWORD threadId;
-
-      code = (HANDLE)CreateThread(NULL, 0, thread_entry_point, process, 0, &threadId);
-      ok = (process->process.thread = code) != NULL;
-    }
-#else
-    {
-      int code;
-      pthread_attr_t pthreadattr;
-
-      pthread_attr_init(&pthreadattr);
-      pthread_attr_setdetachstate(&pthreadattr, PTHREAD_CREATE_DETACHED);
-      /*
-       * Block all asynchronous signals until the thread is completely
-       * set up. The synchronous signals SIGSEGV and SIGBUS are needed
-       * by the gc and thus can't be blocked.
-       */
-#ifdef HAVE_SIGPROCMASK
-      {
-        sigset_t new, previous;
-        sigfillset(&new);
-        sigdelset(&new, SIGSEGV);
-        sigdelset(&new, SIGBUS);
-        pthread_sigmask(SIG_BLOCK, &new, &previous);
-        code = pthread_create(&process->process.thread, &pthreadattr,
-                              thread_entry_point, process);
-        pthread_sigmask(SIG_SETMASK, &previous, NULL);
-      }
-#else
-      code = pthread_create(&process->process.thread, &pthreadattr,
-                            thread_entry_point, process);
-#endif
-      ok = (code == 0);
-    }
-#endif
-    ecl_enable_interrupts_env(the_env);
-#endif // #if 0
-        return Values0<core::T_O>();
-      },
-      [&]() { // ECL_UNWIND_PROTECT_THREAD_SAFE_EXIT {
-        if (!ok) {
-          SIMPLE_WARN("ecl_unlist_process");
-#if 0
-        /* INV: interrupts are already disabled through thread safe
-         * unwind-protect */
-        ecl_unlist_process(process);
-        /* Disable the barrier and alert possible waiting processes. */
-        mp_barrier_unblock(3, process->process.exit_barrier,
-                           @':disable', ECL_T);
-        process->process.phase = ECL_PROCESS_INACTIVE;
-        process->process.env = NULL;
-        if (process_env != NULL)
-          _ecl_dealloc_env(process_env);
-#endif
-        }
-        /* Unleash the thread */
-        SIMPLE_WARN("ecl_giveup_spinlock");
-#if 0      
-      ecl_giveup_spinlock(&process->process.start_stop_spinlock);
-#endif
-      });
-
-  if (ok) {
-    return process;
-  } else {
-    return nil<core::T_O>();
-  }
+CL_DOCSTRING(R"dx(Internal. Enqueue the given interrupt to the thread's pending interrupt list. Returns no values.")dx");
+DOCGROUP(clasp);
+CL_DEFUN void mp__enqueue_interrupt(Process_sp process, core::T_sp interrupt) {
+  process->interrupt(interrupt);
 }
 
-CL_DOCSTRING(R"dx(Interrupt the given process to make it call the given function with no arguments. Return no values.)dx");
-DOCGROUP(clasp);
-CL_DEFUN void mp__interrupt_process(Process_sp process, core::T_sp func) {
-  unlikely_if(process->_Phase != Active) { FEerror("Cannot interrupt the inactive process ~A", 1, process); }
-  clasp_interrupt_process(process, func);
-};
-
-SYMBOL_EXPORT_SC_(MpPkg, exit_process);
-CL_DOCSTRING(R"dx(Force a process to end. This function is not intended for regular usage and is not reliable.)dx");
-DOCGROUP(clasp);
-CL_DEFUN void mp__process_kill(Process_sp process) { mp__interrupt_process(process, _sym_exit_process); }
+SYMBOL_EXPORT_SC_(MpPkg, posix_interrupt);
+void posix_signal_interrupt(int sig) {
+  if (_sym_posix_interrupt->fboundp())
+    core::eval::funcall(_sym_posix_interrupt->symbolFunction(),
+                        core::clasp_make_fixnum(sig));
+  else
+    core::cl__cerror(core::SimpleBaseString_O::make("Ignore signal"),
+                     core::SimpleBaseString_O::make("Received POSIX signal ~d"),
+                     core::Cons_O::createList(core::clasp_make_fixnum(sig)));
+}
 
 CL_LAMBDA(&rest values);
 CL_DOCSTRING(R"dx(Immediately end the current process)dx");

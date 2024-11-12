@@ -63,6 +63,7 @@ THE SOFTWARE.
 #include <clasp/sockets/socketsPackage.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/gctools/park.h>
 
 namespace sockets {
 
@@ -212,9 +213,7 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByAddress(core::Vector_sp addres
   vector[1] = unbox_fixnum(gc::As<core::Fixnum_sp>(address->rowMajorAref(1)));
   vector[2] = unbox_fixnum(gc::As<core::Fixnum_sp>(address->rowMajorAref(2)));
   vector[3] = unbox_fixnum(gc::As<core::Fixnum_sp>(address->rowMajorAref(3)));
-  clasp_disable_interrupts();
   hostent = gethostbyaddr(REINTERPRET_CAST(const char*, vector), 4, AF_INET);
-  clasp_enable_interrupts();
   if (hostent != NULL) {
     char** aliases;
     char** addrs;
@@ -261,11 +260,14 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketReceive(int fd,            // #0
   cl_index len;
   struct sockaddr_in name;
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr_in);
-  clasp_disable_interrupts();
-  len =
-      recvfrom(fd, REINTERPRET_CAST(char*, safe_buffer_pointer(buffer, length)), length, flags, (struct sockaddr*)&name, &addr_len);
-  clasp_enable_interrupts();
-  unlikely_if(len == -1) return Values(core::make_fixnum(-1), core::make_fixnum(errno));
+  BEGIN_PARK {
+    do {
+      len =
+        recvfrom(fd, REINTERPRET_CAST(char*, safe_buffer_pointer(buffer, length)), length, flags, (struct sockaddr*)&name, &addr_len);
+    } while (len == -1 && errno == EINTR);
+  } END_PARK;
+  if (len == -1) [[unlikely]]
+    return Values(core::make_fixnum(-1), core::make_fixnum(errno));
   else {
     uint32_t ip = ntohl(name.sin_addr.s_addr);
     uint16_t port = ntohs(name.sin_port);
@@ -299,10 +301,8 @@ DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__ll_socketBind_inetSocket(int port, int ip0, int ip1, int ip2, int ip3, int socketFileDescriptor) {
   struct sockaddr_in sockaddr;
   int output;
-  clasp_disable_interrupts();
   fill_inet_sockaddr(&sockaddr, port, ip0, ip1, ip2, ip3);
   output = ::bind(socketFileDescriptor, (struct sockaddr*)&sockaddr, sizeof(struct sockaddr_in));
-  clasp_enable_interrupts();
   return output;
 }
 
@@ -315,9 +315,7 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketAccept_inetSocket(int sfd) {
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr_in);
   int new_fd;
 
-  clasp_disable_interrupts();
   new_fd = accept(sfd, (struct sockaddr*)&sockaddr, &addr_len);
-  clasp_enable_interrupts();
 
   int return0 = new_fd;
   core::T_sp return1 = nil<core::T_O>();
@@ -344,10 +342,8 @@ CL_DEFUN int sockets_internal__ll_socketConnect_inetSocket(int port, int ip0, in
                                                            int socket_file_descriptor) {
   struct sockaddr_in sockaddr;
   int output;
-  clasp_disable_interrupts();
   fill_inet_sockaddr(&sockaddr, port, ip0, ip1, ip2, ip3);
   output = connect(socket_file_descriptor, (struct sockaddr*)&sockaddr, sizeof(struct sockaddr_in));
-  clasp_enable_interrupts();
   return output;
 }
 
@@ -360,9 +356,7 @@ CL_DEFUN int sockets_internal__ll_socketPeername_inetSocket(int fd, core::Vector
   struct sockaddr_in name;
   socklen_t len = sizeof(struct sockaddr_in);
   int ret;
-  clasp_disable_interrupts();
   ret = getpeername(fd, (struct sockaddr*)&name, &len);
-  clasp_enable_interrupts();
 
   if (ret == 0) {
     uint32_t ip = ntohl(name.sin_addr.s_addr);
@@ -388,9 +382,7 @@ CL_DEFUN int sockets_internal__ll_socketName(int fd, core::Vector_sp vector) {
   socklen_t len = sizeof(struct sockaddr_in);
   int ret;
 
-  clasp_disable_interrupts();
   ret = getsockname(fd, (struct sockaddr*)&name, &len);
-  clasp_enable_interrupts();
 
   if (ret == 0) {
     uint32_t ip = ntohl(name.sin_addr.s_addr);
@@ -446,7 +438,6 @@ CL_DEFUN core::Integer_sp sockets_internal__ll_socketSendAddress(int fd,        
   struct sockaddr_in sockaddr;
   ssize_t len;
 
-  clasp_disable_interrupts();
   fill_inet_sockaddr(&sockaddr, secondAddress, ip0, ip1, ip2, ip3);
 #if (MSG_NOSIGNAL == 0) && defined(SO_NOSIGPIPE)
   {
@@ -454,8 +445,11 @@ CL_DEFUN core::Integer_sp sockets_internal__ll_socketSendAddress(int fd,        
     setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, REINTERPRET_CAST(char*, &sockopt), sizeof(int));
   }
 #endif
-  len = sendto(sock, REINTERPRET_CAST(char*, buffer), length, flags, (struct sockaddr*)&sockaddr, sizeof(struct sockaddr_in));
-  clasp_enable_interrupts();
+  BEGIN_PARK {
+    do {
+      len = sendto(sock, REINTERPRET_CAST(char*, buffer), length, flags, (struct sockaddr*)&sockaddr, sizeof(struct sockaddr_in));
+    } while (len == -1 && errno == EINTR);
+  } END_PARK;
   return core::Integer_O::create((gc::Fixnum)(len));
 }
 
@@ -478,15 +472,17 @@ CL_DEFUN core::Integer_sp sockets_internal__ll_socketSendNoAddress(int fb,      
   int flags = (oob ? MSG_OOB : 0) | (eor ? MSG_EOR : 0) | (dontroute ? MSG_DONTROUTE : 0) | (dontwait ? MSG_DONTWAIT : 0) |
               (nosignal ? MSG_NOSIGNAL : 0) | (confirm ? MSG_CONFIRM : 0);
   ssize_t len;
-  clasp_disable_interrupts();
 #if (MSG_NOSIGNAL == 0) && defined(SO_NOSIGPIPE)
   {
     int sockopt = nosignal;
     setsockopt(fb, SOL_SOCKET, SO_NOSIGPIPE, REINTERPRET_CAST(char*, &sockopt), sizeof(int));
   }
 #endif
-  len = send(sock, REINTERPRET_CAST(char*, buffer), length, flags);
-  clasp_enable_interrupts();
+  BEGIN_PARK {
+    do {
+      len = send(sock, REINTERPRET_CAST(char*, buffer), length, flags);
+    } while (len == -1 && errno == EINTR);
+  } END_PARK;
   return core::Integer_O::create((gc::Fixnum)(len));
 }
 
@@ -505,9 +501,7 @@ CL_DEFUN int sockets_internal__ll_socketBind_localSocket(int fd, const string& n
   strncpy(sockaddr.sun_path, name.c_str(), sizeof(sockaddr.sun_path));
   sockaddr.sun_path[sizeof(sockaddr.sun_path) - 1] = '\0';
 
-  clasp_disable_interrupts();
   output = ::bind(fd, (struct sockaddr*)&sockaddr, sizeof(struct sockaddr_un));
-  clasp_enable_interrupts();
   return output;
 }
 
@@ -518,10 +512,7 @@ DOCGROUP(clasp);
 CL_DEFUN core::T_mv sockets_internal__ll_socketAccept_localSocket(int socketFileDescriptor) {
   struct sockaddr_un sockaddr;
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr_un);
-  int new_fd;
-  clasp_disable_interrupts();
-  new_fd = accept(socketFileDescriptor, (struct sockaddr*)&sockaddr, &addr_len);
-  clasp_enable_interrupts();
+  int new_fd = accept(socketFileDescriptor, (struct sockaddr*)&sockaddr, &addr_len);
   core::T_sp second_ret = nil<core::T_O>();
   if (new_fd != -1) {
     second_ret = core::SimpleBaseString_O::make(sockaddr.sun_path);
@@ -543,9 +534,7 @@ CL_DEFUN int sockets_internal__ll_socketConnect_localSocket(int fd, int family, 
   strncpy(sockaddr.sun_path, path.c_str(), sizeof(sockaddr.sun_path));
   sockaddr.sun_path[sizeof(sockaddr.sun_path) - 1] = '\0';
 
-  clasp_disable_interrupts();
   output = connect(fd, (struct sockaddr*)&sockaddr, sizeof(struct sockaddr_un));
-  clasp_enable_interrupts();
 
   return output;
 }
@@ -559,9 +548,7 @@ CL_DEFUN core::T_sp sockets_internal__ll_socketPeername_localSocket(int fd) {
   socklen_t len = sizeof(struct sockaddr_un);
   int ret;
 
-  clasp_disable_interrupts();
   ret = getpeername(fd, (struct sockaddr*)&name, &len);
-  clasp_enable_interrupts();
 
   if (ret == 0) {
     return core::SimpleBaseString_O::make(name.sun_path);
@@ -583,9 +570,7 @@ DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__ll_setfNonBlockingMode(int fd, int nblock) {
   int oldflags = fcntl(fd, F_GETFL, NULL);
   int newflags = (oldflags & ~O_NONBLOCK) | (nblock ? O_NONBLOCK : 0);
-  clasp_disable_interrupts();
   int ret = fcntl(fd, F_SETFL, newflags);
-  clasp_enable_interrupts();
   return ret;
 }
 
@@ -654,9 +639,7 @@ CL_DEFUN core::Integer_sp sockets_internal__ll_getSockoptInt(int fd, int level, 
   int sockopt, ret;
   socklen_t socklen = sizeof(int);
 
-  clasp_disable_interrupts();
   ret = getsockopt(fd, level, constant, REINTERPRET_CAST(char*, &sockopt), &socklen);
-  clasp_enable_interrupts();
 
   return (ret == 0) ? core::Integer_O::create((gc::Fixnum)sockopt) : nil<core::Integer_O>();
 }
@@ -666,12 +649,10 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(ll_getSockoptBool)dx");
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp sockets_internal__ll_getSockoptBool(int fd, int level, int constant) {
-  int sockopt, ret;
+  int sockopt;
   socklen_t socklen = sizeof(int);
 
-  clasp_disable_interrupts();
-  ret = getsockopt(fd, level, constant, REINTERPRET_CAST(char*, &sockopt), &socklen);
-  clasp_enable_interrupts();
+  int ret = getsockopt(fd, level, constant, REINTERPRET_CAST(char*, &sockopt), &socklen);
   return (ret == 0) ? _lisp->_boolean(sockopt) : nil<core::T_O>();
 }
 
@@ -682,10 +663,7 @@ DOCGROUP(clasp);
 CL_DEFUN core::DoubleFloat_sp sockets_internal__ll_getSockoptTimeval(int fd, int level, int constant) {
   struct timeval tv;
   socklen_t socklen = sizeof(struct timeval);
-  int ret;
-  clasp_disable_interrupts();
-  ret = getsockopt(fd, level, constant, REINTERPRET_CAST(char*, &tv), &socklen);
-  clasp_enable_interrupts();
+  int ret = getsockopt(fd, level, constant, REINTERPRET_CAST(char*, &tv), &socklen);
   return (ret == 0) ? core::DoubleFloat_O::create((double)tv.tv_sec + ((double)tv.tv_usec) / 1000000.0)
                     : nil<core::DoubleFloat_O>();
 }
@@ -697,11 +675,8 @@ DOCGROUP(clasp);
 CL_DEFUN core::Integer_sp sockets_internal__ll_getSockoptLinger(int fd, int level, int constant) {
   struct linger sockopt;
   socklen_t socklen = sizeof(struct linger);
-  int ret;
 
-  clasp_disable_interrupts();
-  ret = getsockopt(fd, level, constant, REINTERPRET_CAST(char*, &sockopt), &socklen);
-  clasp_enable_interrupts();
+  int ret = getsockopt(fd, level, constant, REINTERPRET_CAST(char*, &sockopt), &socklen);
 
   return (ret == 0) ? core::Integer_O::create((gc::Fixnum)((sockopt.l_onoff != 0) ? sockopt.l_linger : 0)) : nil<core::Integer_O>();
 }
@@ -712,11 +687,8 @@ CL_DOCSTRING(R"dx(ll_setSockoptInt)dx");
 DOCGROUP(clasp);
 CL_DEFUN bool sockets_internal__ll_setSockoptInt(int fd, int level, int constant, int value) {
   int sockopt = value;
-  int ret;
 
-  clasp_disable_interrupts();
-  ret = setsockopt(fd, level, constant, REINTERPRET_CAST(char*, &sockopt), sizeof(int));
-  clasp_enable_interrupts();
+  int ret = setsockopt(fd, level, constant, REINTERPRET_CAST(char*, &sockopt), sizeof(int));
 
   return (ret == 0) ? true : false;
 }
@@ -729,9 +701,7 @@ CL_DEFUN bool sockets_internal__ll_setSockoptBool(int fd, int level, int constan
   int sockopt = value ? 1 : 0;
   int ret;
 
-  clasp_disable_interrupts();
   ret = setsockopt(fd, level, constant, REINTERPRET_CAST(char*, &sockopt), sizeof(int));
-  clasp_enable_interrupts();
 
   return (ret == 0) ? true : false;
 }
@@ -745,11 +715,9 @@ CL_DEFUN bool sockets_internal__ll_setSockoptTimeval(int fd, int level, int cons
   double tmp = value;
   int ret;
 
-  clasp_disable_interrupts();
   tv.tv_sec = (int)tmp;
   tv.tv_usec = (int)((tmp - floor(tmp)) * 1000000.0);
   ret = setsockopt(fd, level, constant, &tv, sizeof(struct timeval));
-  clasp_enable_interrupts();
 
   return (ret == 0) ? true : false;
 }
@@ -760,16 +728,13 @@ CL_DOCSTRING(R"dx(ll_setSockoptLinger)dx");
 DOCGROUP(clasp);
 CL_DEFUN bool sockets_internal__ll_setSockoptLinger(int fd, int level, int constant, int value) {
   struct linger sockopt = {0, 0};
-  int ret;
 
   if (value > 0) {
     sockopt.l_onoff = 1;
     sockopt.l_linger = value;
   }
 
-  clasp_disable_interrupts();
-  ret = setsockopt(fd, level, constant, REINTERPRET_CAST(char*, &sockopt), sizeof(struct linger));
-  clasp_enable_interrupts();
+  int ret = setsockopt(fd, level, constant, REINTERPRET_CAST(char*, &sockopt), sizeof(struct linger));
 
   return (ret == 0) ? true : false;
 }

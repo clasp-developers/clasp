@@ -184,23 +184,14 @@
                                                                (core:getpid))))
                      ;;;(llvm-sys:create-lljit-thread-pool) ;;; Done by fork
                      (ext:disable-debugger)
-                     (let ((new-sigset (core:make-cxx-object 'core:sigset))
-                           (old-sigset (core:make-cxx-object 'core:sigset))
-                           (start-time (get-internal-run-time))
+                     (let ((start-time (get-internal-run-time))
                            (start-bytes (gctools:bytes-allocated)))
-                       (core:sigset-sigaddset new-sigset 'core:signal-sigint)
-                       (core:sigset-sigaddset new-sigset 'core:signal-sigchld)
-                       (multiple-value-bind (fail errno)
-                           (core:sigthreadmask :sig-setmask new-sigset old-sigset)
-                         (compile-kernel-file entry :output-type output-type :silent t :verbose t)
-                         (core:sigthreadmask :sig-setmask old-sigset nil)
-                         (when fail
-                           (message :err "sigthreadmask has an error errno = {}" errno))
-                         (message :info "; Child time run({:.3f} secs) consed({} bytes)"
-                                  (float (/ (- (get-internal-run-time) start-time)
-                                            internal-time-units-per-second))
-                                  (- (gctools:bytes-allocated) start-bytes))
-                         (sys:c_exit))))
+                       (compile-kernel-file entry :output-type output-type :silent t :verbose t)
+                       (message :info "; Child time run({:.3f} secs) consed({} bytes)"
+                                (float (/ (- (get-internal-run-time) start-time)
+                                          internal-time-units-per-second))
+                                (- (gctools:bytes-allocated) start-bytes))
+                       (sys:c_exit)))
                     (t
                      (started-one (funcall #'(setf gethash)
                                            (list* :pid pid

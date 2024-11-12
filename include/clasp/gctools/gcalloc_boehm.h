@@ -63,7 +63,6 @@ inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header,
 };
 
 inline Header_s* do_weak_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
-  RAII_DISABLE_INTERRUPTS();
   size_t true_size = size;
 #ifdef USE_PRECISE_GC
   Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC(true_size));
@@ -111,7 +110,6 @@ inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header
 };
 
 inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
-  RAII_DISABLE_INTERRUPTS();
   size_t true_size = size;
 #ifdef DEBUG_GUARD
   size_t tail_size = ((my_thread_random() % 8) + 1) * Alignment();

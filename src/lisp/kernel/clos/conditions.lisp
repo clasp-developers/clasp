@@ -449,8 +449,8 @@
 
 			   
 ;;; COERCE-TO-CONDITION
-;;;  Internal routine used in ERROR, CERROR, BREAK, and WARN for parsing the
-;;;  hairy argument conventions into a single argument that's directly usable 
+;;;  Internal routine used in ERROR, CERROR, WARN, and MP:INTERRUPT for parsing
+;;;  the hairy argument conventions into a single argument that's directly usable
 ;;;  by all the other routines.
 
 (defun coerce-to-condition (datum arguments default-type function-name)
@@ -606,15 +606,6 @@ or return to an outer frame, undoing all the function calls so far."
   (:REPORT "Memory limit reached. Please jump to an outer pointer, quit program and enlarge the
 memory limits before executing the program again."))
 
-(define-condition ext:illegal-instruction (error)
-  ()
-  (:REPORT "Illegal instruction.
-
-No information available on cause. This may be a bug in Clasp."))
-
-;; Called by signal handlers
-(defun ext:illegal-instruction () (error 'ext:illegal-instruction))
-
 (define-condition ext:bus-error (error)
   ((address :initarg :address :reader memory-condition-address))
   (:report
@@ -624,18 +615,6 @@ No information available on cause. This may be a bug in Clasp."))
 This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp itself."
              (memory-condition-address condition)))))
 (defun ext:bus-error (address) (error 'ext:bus-error :address address))
-
-(define-condition ext:unix-signal-received ()
-  ((code :type fixnum
-         :initform 0
-         :initarg :code
-         :reader ext:unix-signal-received-code)
-   (handler :initarg :handler
-            :initform nil
-            :reader ext:unix-signal-received-handler))
-  (:report (lambda (condition stream)
-             (format stream "Serious signal ~D caught."
-                     (ext:unix-signal-received-code condition)))))
 
 (define-condition type-error (error)
   ((datum :INITARG :DATUM :READER type-error-datum)
@@ -1203,11 +1182,6 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
                      (format-warning-control-string condition)
                      (format-warning-expected condition)
                      (format-warning-observed condition)))))
-
-(define-condition ext:interactive-interrupt (serious-condition)
-  ()
-  (:report "Console interrupt."))
-
 
 
 (defun signal-simple-error (condition-type continue-message format-control format-args
@@ -1353,6 +1327,196 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
     (use-value (c)
       :report "Replace the bogus sequence with a character"
       (if (characterp c) c (code-char c)))))
+
+;;; ----------------------------------------------------------------------
+;;;
+;;; Interrupts
+;;;
+
+(define-condition mp:interrupt ()
+  ()
+  (:documentation "Abstract base class for interrupt conditions. All conditions signaled by SIGNAL-PENDING-INTERRUPTS are of this type."))
+
+(defgeneric mp:service-interrupt (mp:interrupt)
+  (:documentation "Execute the action represented by an interrupt. Not intended to be called by programmers."))
+
+(define-condition ext:interactive-interrupt (mp:interrupt)
+  ()
+  (:report "Console interrupt."))
+
+;; it's in EXT for backward compatibility. Eventually it should just be MP.
+(import 'ext:interactive-interrupt "MP")
+(export 'ext:interactive-interrupt "MP")
+
+(define-condition mp:simple-interrupt (simple-condition mp:interrupt) ())
+(define-condition mp:simple-interactive-interrupt (mp:simple-interrupt
+                                                   ext:interactive-interrupt)
+  ())
+
+(define-condition mp:cancellation-interrupt (mp:interrupt) ()
+  (:documentation "A request to a thread to abort computation."))
+
+(define-condition mp:call-interrupt (mp:interrupt)
+  ((%function :initarg :function :reader mp:call-interrupt-function
+              :type function))
+  (:documentation "A request to call a thunk."))
+
+(define-condition mp:suspension-interrupt (mp:interrupt) ()
+  (:documentation "A request to pause computation."))
+
+;; terminate the program. I'm making it a subset of cancellation because
+;; it cancels the particular thread as well obviously, and because if you
+;; want to block one kind of termination you might want to block the other.
+;; Not sure whether to export this specifically.
+(define-condition termination-interrupt (mp:cancellation-interrupt) ()
+  (:documentation "A request to terminate Clasp entirely."))
+
+;; Do nothing. Good for ignorable signals.
+(define-condition nop-interrupt (mp:interrupt) ()
+  (:documentation "An interrput with no further behavior if unhandled."))
+
+;; Interrupts that are also errors - they go into the debugger as if they had
+;; been called by ERROR instead of INTERRUPT.
+(define-condition error-interrupt (error mp:interrupt) ())
+
+;;; POSIX signals
+(macrolet ((defposix (name super string)
+             (let ((cname (find-symbol (symbol-name name) "CORE")))
+               (when cname
+                 `(define-condition ,cname (,super)
+                    ()
+                    (:report ,string))))))
+  ;; Many of these are never actually signaled (e.g. FPE) but are included
+  ;; for completeness. Possibly they should be signaled in unusual situations,
+  ;; e.g. being caused by a manual kill(2) or raise(3).
+  ;; Some are obviously impossible, like sigkill and sigstop.
+  ;; Also, the below superclasses are pretty ad-hoc - feel free to change them
+  ;; if you have a good reason.
+  (defposix #:sigabrt termination-interrupt "Abort signal.")
+  (defposix #:sigalrm nop-interrupt "Alarm signal.")
+  (defposix #:sigbus error-interrupt "Bus error.")
+  (defposix #:sigchld nop-interrupt "Child process stopped or terminated.")
+  (defposix #:sigcont nop-interrupt "Continue signal.")
+  (defposix #:sigemt nop-interrupt "Emulator trap.")
+  (defposix #:sigfpe error-interrupt "Floating point exception.")
+  (defposix #:sighup termination-interrupt "Hangup.")
+  (defposix #:sigill error-interrupt "Illegal instruction.")
+  (defposix #:sigint ext:interactive-interrupt "Interruption signal.")
+  (defposix #:sigio nop-interrupt "I/O now ready.")
+  (defposix #:sigkill termination-interrupt "Kill signal.")
+  (defposix #:sigpipe error-interrupt "Broken pipe.")
+  (defposix #:sigpoll nop-interrupt "Polled event occurred.")
+  (defposix #:sigprof nop-interrupt "Profiling signal.")
+  (defposix #:sigpwr nop-interrupt "Power failure.")
+  (defposix #:sigquit termination-interrupt "Quit signal.")
+  (defposix #:sigsegv error-interrupt "Segmentation fault.")
+  (defposix #:sigstop nop-interrupt "Stop signal.")
+  (defposix #:sigtstp nop-interrupt "Stop typed.")
+  (defposix #:sigsys error-interrupt "Bad syscall.")
+  (defposix #:sigterm termination-interrupt "Termination signal.")
+  (defposix #:sigtrap nop-interrupt "Trace/breakpoint trap.")
+  (defposix #:sigttin nop-interrupt "Terminal input for background process.")
+  (defposix #:sigttou nop-interrupt "Terminal output for background process.")
+  (defposix #:sigurg error-interrupt "Urgent condition on socket.")
+  (defposix #:sigusr1 nop-interrupt "User signal 1.")
+  (defposix #:sigusr2 nop-interrupt "User signal 2.")
+  (defposix #:sigvtalrm nop-interrupt "Virtual alarm.")
+  (defposix #:sigxcpu nop-interrupt "CPU time limit exceeded.")
+  (defposix #:sigxfsz nop-interrupt "File size limit exceeded.")
+  (defposix #:sigwinch nop-interrupt "Window resize signal."))
+
+(defun designated-interrupt (datum datump arguments)
+  (if datump
+      (coerce-to-condition datum arguments
+                           'mp:simple-interactive-interrupt
+                           'mp:interrupt)
+      (make-condition 'mp:simple-interactive-interrupt
+                      "Interactive interrupt.")))
+
+(defun mp:interrupt (process &optional (datum nil datump) &rest arguments)
+  "Send the given PROCESS an interrupt request.
+If the process is alive/running, the interrupt is placed on the PROCESS's pending interrupt list. If the process is not yet started, an error is signaled. If the process has already exited, the interrupt is discarded.
+DATUM and ARGUMENTS are designators for an interrupt of default type SIMPLE-INTERACTIVE-INTERRUPT. If DATUM is not specified, a SIMPLE-INTERACTIVE-INTERRUPT with default message is created.
+The interrupt will be SIGNALed in the process at some time when it calls SIGNAL-PENDING-INTERRUPTS and interrupts are not blocked (by WITHOUT-INTERRUPTS). This can happen implicitly at implementation-defined times, or when the process is blocking on grabbing a lock, waiting on a condition variable, sleeping, or waiting for input.
+Interrupts are implicitly blocked while signaling an interrupt, and while unwind-protect cleanups are executed. They can be reenabled temporarily with WITH-INTERRUPTS."
+  (check-type process mp:process)
+  (let ((condition (designated-interrupt datum datump arguments)))
+    (check-type condition mp:interrupt "an interrupt")
+    (mp:enqueue-interrupt process condition)))
+
+(defun mp:signal-pending-interrupts ()
+  "Signal all currently pending interrupts for this process. Note that even if this call returns, the pending interrupt list may not be empty, because the process could have been interrupted again."
+  (core:check-pending-interrupts))
+
+;;; Internal, used by interrupt machinery. Return value ignored.
+(defun mp:signal-interrupt (interrupt)
+  (mp:without-interrupts
+    (restart-case (signal interrupt)
+      (continue ()
+        :report "Ignore the interruption and proceed from where things left off."
+        (return-from mp:signal-interrupt))))
+  (mp:service-interrupt interrupt))
+
+(defun mp:raise (&optional (datum nil datump) &rest arguments)
+  "Signal a designated interrupt right now, i.e. synchronously. As this does not go through the SIGNAL-PENDING-INTERRUPTS function, this will not actually add the interrupt to the process's pending interrupts, and is not affected by interrupts being blocked."
+  ;; name analogous to raise(3)
+  (mp:signal-interrupt (designated-interrupt datum datump arguments)))
+
+;;; for backward compatibility (e.g. bordeaux)
+(defun mp:interrupt-process (process function)
+  (check-type process mp:process)
+  (check-type function function)
+  (mp:interrupt process 'mp:call-interrupt :function function))
+
+(defun mp:process-kill (process)
+  ;; FIXME: This function should maybe be the more chaotic SIGKILL version,
+  ;; while cancel-thread (cancel-process?) is the nicer interrupt.
+  (mp:interrupt process 'mp:cancellation-interrupt))
+
+(defun mp:process-cancel (process) ; the nicer version.
+  (mp:interrupt process 'mp:cancellation-interrupt))
+
+(defun mp:process-suspend (process)
+  (mp:interrupt process 'mp:suspension-interrupt))
+
+(defmethod mp:service-interrupt ((i ext:interactive-interrupt))
+  ;; kinda duplicates BREAK.
+  (clasp-debug:with-truncated-stack ()
+    (with-simple-restart (continue "Return from interactive interruption.")
+      (let ((*debugger-hook* nil)) (invoke-debugger i)))))
+
+;;; For an external signal, call this complicated function
+;;; (defined in top.lisp) that lets the user pick a thread and stuff.
+(defmethod mp:service-interrupt ((i core:sigint))
+  (core:terminal-interrupt))
+
+(defmethod mp:service-interrupt ((i error-interrupt))
+  (clasp-debug:with-truncated-stack () (invoke-debugger i)))
+
+(defmethod mp:service-interrupt ((i mp:cancellation-interrupt))
+  (mp:abort-process i))
+(defmethod mp:service-interrupt ((i termination-interrupt))
+  (format *debug-io* "~&Terminating Clasp due to interrupt: ~a~%" i)
+  (ext:quit 1))
+
+(defmethod mp:service-interrupt ((i mp:call-interrupt))
+  (funcall (mp:call-interrupt-function i)))
+
+(defmethod mp:service-interrupt ((i mp:suspension-interrupt))
+  (mp:suspend-loop))
+
+(defmethod mp:service-interrupt ((i nop-interrupt)))
+
+;; called from C++ (posix_signal_interrupt)
+(defun mp:posix-interrupt (sig)
+  (let* ((signals (load-time-value (core:signal-code-alist) t))
+         (pair (rassoc sig signals)))
+    (mp:signal-interrupt
+     (if pair
+         (make-condition (first pair))
+         (make-condition 'mp:simple-interactive-interrupt
+                         :format-control "Received POSIX signal: ~d"
+                         :format-arguments (list sig))))))
 
 ;;; ----------------------------------------------------------------------
 ;;; ECL's interface to the toplevel and debugger

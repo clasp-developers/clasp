@@ -120,9 +120,6 @@ CL_DEFUN void gctools__change_sigchld_sigport_handlers() {
 }
 
 DOCGROUP(clasp);
-CL_DEFUN core::T_sp gctools__unix_signal_handlers() { return _lisp->_Roots._UnixSignalHandlers; }
-
-DOCGROUP(clasp);
 CL_DEFUN void gctools__deallocate_unmanaged_instance(core::T_sp obj) { obj_deallocate_unmanaged_instance(obj); }
 
 CL_DOCSTRING(R"dx(Return bytes allocated (values clasp-calculated-bytes))dx");

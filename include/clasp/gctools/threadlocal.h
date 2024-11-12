@@ -109,14 +109,14 @@ struct VirtualMachine {
   // grow and etc.
   static constexpr size_t MaxStackWords = 65536;
   bool _Running;
-  core::T_O** _stackBottom;
+  core::T_O** _stackBottom = nullptr;
   size_t _stackBytes;
   core::T_O** _stackTop;
   core::T_O** _stackGuard;
   core::T_O** _stackPointer;
   // only used by debugger
   // has to be initialized because bytecode_call reads it
-  core::T_O** _framePointer = NULL;
+  core::T_O** _framePointer = nullptr;
 #ifdef DEBUG_VIRTUAL_MACHINE
   core::T_O* _data;
   core::T_O* _data1;
@@ -290,11 +290,11 @@ struct ThreadLocalState {
   core::T_sp _ObjectFiles;
   mp::Process_sp _Process;
   DynamicBindingStack _Bindings;
-  /*! Pending interrupts */
-  List_sp _PendingInterrupts;
-  /*! Save CONS records so we don't need to do allocations
-      to add to _PendingInterrupts */
-  List_sp _SparePendingInterruptRecords; // signal_queue on ECL
+  std::atomic<core::Cons_sp> _PendingInterruptsHead;
+  std::atomic<core::Cons_sp> _PendingInterruptsTail;
+  sigset_t _PendingSignals;
+  std::atomic<bool> _PendingSignalsP;
+  std::atomic<bool> _BlockingP;
   List_sp _BufferStr8NsPool;
   List_sp _BufferStrWNsPool;
   StringOutputStream_sp _BFormatStringOutputStream;
@@ -323,7 +323,6 @@ struct ThreadLocalState {
   size_t _xorshf_y;
   size_t _xorshf_z;
   CleanupFunctionNode* _CleanupFunctions;
-  mp::SpinLock _SparePendingInterruptRecordsSpinLock;
   uint64_t _BytesAllocated;
   uint64_t _Tid;
   uintptr_t _BacktraceBasePointer;
@@ -371,6 +370,38 @@ public:
   inline DynamicBindingStack& bindings() { return this->_Bindings; };
 
   void startUpVM();
+
+  inline void enqueue_signal(int signo) {
+    // Called from signal handlers.
+    sigaddset(&_PendingSignals, signo); // sigaddset is AS-safe
+    // It's possible this handler could be interrupted between these two lines.
+    // If it's interrupted and the signal is queued/the handler returns,
+    // it doesn't matter. If it's interrupted and the handler escapes, we have
+    // a queued signal without the flag being set, which is a little unfortunate
+    // but not a huge deal - another signal will set the flag for one thing.
+    // It also shouldn't be a problem since we only really jump from synchronously
+    // delivered signals (segv, etc) which could only be signaled here if something
+    // has gone very deeply wrong.
+    // On GNU we have sigisemptyset which could be used instead of a separate flag,
+    // and that would solve the problem, but that's only on GNU, plus it's
+    // necessarily a little slower than a simple flag.
+    _PendingSignalsP.store(true, std::memory_order_release);
+  }
+  inline bool pending_signals_p() {
+    return _PendingSignalsP.load(std::memory_order_acquire);
+  }
+  inline void clear_pending_signals_p() {
+    _PendingSignalsP.store(false, std::memory_order_release);
+  }
+  inline sigset_t* pending_signals() { return &_PendingSignals; }
+  void enqueue_interrupt(core::T_sp interrupt);
+  // Check if the interrupt queue is ready for dequeueing.
+  inline bool interrupt_queue_validp() {
+    return static_cast<bool>(_PendingInterruptsHead.load(std::memory_order_acquire));
+  }
+  core::T_sp dequeue_interrupt();
+  inline void set_blockingp(bool b) { _BlockingP.store(b, std::memory_order_release); }
+  inline bool blockingp() const { return _BlockingP.load(std::memory_order_acquire); }
 
   ~ThreadLocalState();
 };

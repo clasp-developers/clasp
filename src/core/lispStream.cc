@@ -82,6 +82,7 @@ THE SOFTWARE.
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/bits.h>
+#include <clasp/gctools/park.h>
 
 namespace core {
 
@@ -1638,29 +1639,6 @@ void maybe_clearerr(T_sp strm) {
     clearerr(s->_file);
 }
 
-int restartable_io_error(T_sp strm, const char* s) {
-  cl_env_ptr the_env = clasp_process_env();
-  volatile int old_errno = errno;
-  /* clasp_disable_interrupts(); ** done by caller */
-  maybe_clearerr(strm);
-  clasp_enable_interrupts_env(the_env);
-  if (old_errno == EINTR) {
-    return 1;
-  } else {
-    String_sp temp = SimpleBaseString_O::make(std::string(s, strlen(s)));
-    file_libc_error(core::_sym_simpleStreamError, strm, "C operation (~A) signaled an error.", 1, temp.raw_());
-    return 0;
-  }
-}
-
-void io_error(T_sp strm) {
-  cl_env_ptr the_env = clasp_process_env();
-  /* clasp_disable_interrupts(); ** done by caller */
-  maybe_clearerr(strm);
-  clasp_enable_interrupts_env(the_env);
-  file_libc_error(core::_sym_simpleStreamError, strm, "Read or write operation signaled an error", 0);
-}
-
 void wrong_file_handler(T_sp strm) { FEerror("Internal error: stream ~S has no valid C file handler.", 1, strm.raw_()); }
 
 #ifdef CLASP_UNICODE
@@ -1695,13 +1673,9 @@ claspCharacter decoding_error(T_sp stream, unsigned char** buffer, int length, u
 void wsock_error(const char* err_msg, T_sp strm) {
   char* msg;
   T_sp msg_obj;
-  /* clasp_disable_interrupts(); ** done by caller */
-  {
-    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER, 0, WSAGetLastError(), 0, (void*)&msg, 0, NULL);
-    msg_obj = make_base_string_copy(msg);
-    LocalFree(msg);
-  }
-  clasp_enable_interrupts();
+  FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER, 0, WSAGetLastError(), 0, (void*)&msg, 0, NULL);
+  msg_obj = make_base_string_copy(msg);
+  LocalFree(msg);
   FEerror(err_msg, 2, strm.raw_(), msg_obj.raw_());
 }
 #endif
@@ -1799,19 +1773,33 @@ claspCharacter StreamCursor::update(claspCharacter c) {
 
 AnsiStream_O::~AnsiStream_O() { close(nil<T_O>()); };
 
-int AnsiStream_O::restartable_io_error(const char* s) {
-  cl_env_ptr the_env = clasp_process_env();
-  volatile int old_errno = errno;
-  /* clasp_disable_interrupts(); ** done by caller */
-  maybe_clearerr(this->asSmartPtr());
-  clasp_enable_interrupts_env(the_env);
-  if (old_errno == EINTR) {
-    return 1;
-  } else {
-    String_sp temp = SimpleBaseString_O::make(std::string(s, strlen(s)));
-    file_libc_error(core::_sym_simpleStreamError, this->asSmartPtr(), "C operation (~A) signaled an error.", 1, temp.raw_());
-    return 0;
+static SimpleBaseString_sp lisp_strerror(int errnum) {
+  // strerror is not thread safe so we don't want to use it.
+  // strerror_r doesn't provide a way to ask how big a buffer you need,
+  // other than trying it and handling the error, because POSIX is silly.
+  // We just assume error messages are at most 255 long (plus null).
+  // ALSO, with _GNU_SOURCE we get the GNU strerror_r which returns a char*
+  // instead of a string, so that's super. I don't want to mess with those
+  // settings so here's code for both.
+  // The condition is straight out of man 3 strerror_r.
+  char buf[256];
+#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && !_GNU_SOURCE
+  switch (strerror_r(errnum, buf, 256)) {
+  case 0: return SimpleBaseString_O::make(buf);
+  case EINVAL: return SimpleBaseString_O::make("Unknown error");
+  default: return SimpleBaseString_O::make("C error too long (BUG in Clasp)");
   }
+#else // GNU strerror_r
+  return SimpleBaseString_O::make(strerror_r(errnum, buf, 256));
+#endif
+}
+
+[[noreturn]] void AnsiStream_O::io_error(const char* s) {
+  volatile int old_errno = errno;
+  maybe_clearerr(this->asSmartPtr());
+  String_sp errop = SimpleBaseString_O::make(std::string(s));
+  String_sp errmsg = lisp_strerror(old_errno);
+  file_libc_error(core::_sym_simpleStreamError, this->asSmartPtr(), "C operation (~A) signaled an error:~%~t~a", 2, errop.raw_(), errmsg.raw_());
 }
 
 T_sp AnsiStream_O::close(T_sp _abort) {
@@ -4163,33 +4151,33 @@ T_sp FileStream_O::pathname() const { return cl__parse_namestring(_filename); }
 
 T_sp FileStream_O::truename() const { return cl__truename((_open && _temp_filename.notnilp()) ? _temp_filename : _filename); }
 
-/**********************************************************************
- * UNINTERRUPTED OPERATIONS
- */
-
 int safe_open(const char* filename, int flags, clasp_mode_t mode) {
-  const cl_env_ptr the_env = clasp_process_env();
-  clasp_disable_interrupts_env(the_env);
-  int output = open(filename, flags, mode);
-  clasp_enable_interrupts_env(the_env);
+  int output;
+  BEGIN_PARK {
+    do {
+      output = open(filename, flags, mode);
+    } while (output < 0 && errno == EINTR);
+  } END_PARK;
   return output;
 }
 
 static int safe_close(int f) {
-  const cl_env_ptr the_env = clasp_process_env();
   int output;
-  clasp_disable_interrupts_env(the_env);
-  output = close(f);
-  clasp_enable_interrupts_env(the_env);
+  BEGIN_PARK {
+    do {
+      output = close(f);
+    } while (output < 0 && errno == EINTR);
+  } END_PARK;
   return output;
 }
 
 static FILE* safe_fopen(const char* filename, const char* mode) {
-  const cl_env_ptr the_env = clasp_process_env();
   FILE* output;
-  clasp_disable_interrupts_env(the_env);
-  output = fopen(filename, mode);
-  clasp_enable_interrupts_env(the_env);
+  BEGIN_PARK {
+    do {
+      output = fopen(filename, mode);
+    } while (!output && errno == EINTR);
+  } END_PARK;
   return output;
 }
 
@@ -4236,41 +4224,39 @@ int sflags(const char* mode, int* optr) {
 }
 
 static FILE* safe_fdopen(int fildes, const char* mode) {
-  const cl_env_ptr the_env = clasp_process_env();
   FILE* output;
-  clasp_disable_interrupts_env(the_env);
-  output = fdopen(fildes, mode);
-  if (output == NULL) {
-    std::string serr = strerror(errno);
-    struct stat info;
-    [[maybe_unused]] int fstat_error = fstat(fildes, &info);
-    int flags, fdflags, tmp, oflags;
-    if ((flags = sflags(mode, &oflags)) == 0)
-      perror("sflags failed");
-    if ((fdflags = fcntl(fildes, F_GETFL, 0)) < 0)
-      perror("fcntl failed");
-    tmp = fdflags & O_ACCMODE;
-    if (tmp != O_RDWR && (tmp != (oflags & O_ACCMODE))) {
-      printf("%s:%d fileds: %d fdflags = %d\n", __FUNCTION__, __LINE__, fildes, fdflags);
-      printf("%s:%d | (tmp[%d] != O_RDWR[%d]) -> %d\n", __FUNCTION__, __LINE__, tmp, O_RDWR, (tmp != O_RDWR));
-      printf("%s:%d | (tmp[%d] != (oflags[%d] & O_ACCMODE[%d])[%d]) -> %d\n", __FUNCTION__, __LINE__, tmp, oflags, O_ACCMODE,
-             (oflags & O_ACCMODE), (tmp != (oflags & O_ACCMODE)));
-      perror("About to signal EINVAL");
+  BEGIN_PARK { // FIXME: better error behavior? what is all this
+    output = fdopen(fildes, mode);
+    if (output == NULL) {
+      std::string serr = strerror(errno);
+      struct stat info;
+      [[maybe_unused]] int fstat_error = fstat(fildes, &info);
+      int flags, fdflags, tmp, oflags;
+      if ((flags = sflags(mode, &oflags)) == 0)
+        perror("sflags failed");
+      if ((fdflags = fcntl(fildes, F_GETFL, 0)) < 0)
+        perror("fcntl failed");
+      tmp = fdflags & O_ACCMODE;
+      if (tmp != O_RDWR && (tmp != (oflags & O_ACCMODE))) {
+        printf("%s:%d fileds: %d fdflags = %d\n", __FUNCTION__, __LINE__, fildes, fdflags);
+        printf("%s:%d | (tmp[%d] != O_RDWR[%d]) -> %d\n", __FUNCTION__, __LINE__, tmp, O_RDWR, (tmp != O_RDWR));
+        printf("%s:%d | (tmp[%d] != (oflags[%d] & O_ACCMODE[%d])[%d]) -> %d\n", __FUNCTION__, __LINE__, tmp, oflags, O_ACCMODE,
+               (oflags & O_ACCMODE), (tmp != (oflags & O_ACCMODE)));
+        perror("About to signal EINVAL");
+      }
+      printf("%s:%d | Failed to create FILE* %p for file descriptor %d mode: %s | info.st_mode = %08x | %s\n", __FUNCTION__, __LINE__,
+             output, fildes, mode, info.st_mode, serr.c_str());
+      perror("In safe_fdopen");
     }
-    printf("%s:%d | Failed to create FILE* %p for file descriptor %d mode: %s | info.st_mode = %08x | %s\n", __FUNCTION__, __LINE__,
-           output, fildes, mode, info.st_mode, serr.c_str());
-    perror("In safe_fdopen");
-  }
-  clasp_enable_interrupts_env(the_env);
+  } END_PARK;
   return output;
 }
 
 static int safe_fclose(FILE* stream) {
-  const cl_env_ptr the_env = clasp_process_env();
   int output;
-  clasp_disable_interrupts_env(the_env);
-  output = fclose(stream);
-  clasp_enable_interrupts_env(the_env);
+  BEGIN_PARK {
+    output = fclose(stream);
+  } END_PARK;
   return output;
 }
 
@@ -4755,11 +4741,12 @@ cl_index PosixFileStream_O::read_byte8(unsigned char* c, cl_index n) {
 
   gctools::Fixnum out = 0;
 
-  clasp_disable_interrupts();
-  do {
-    out = read(_file_descriptor, c, sizeof(char) * n);
-  } while (out < 0 && restartable_io_error("read"));
-  clasp_enable_interrupts();
+  BEGIN_PARK {
+    do {
+      out = read(_file_descriptor, c, sizeof(char) * n);
+    } while (out < 0 && errno == EINTR);
+  } END_PARK;
+  if (out < 0) io_error("read");
 
   return out;
 }
@@ -4778,11 +4765,12 @@ cl_index PosixFileStream_O::write_byte8(unsigned char* c, cl_index n) {
   }
 
   gctools::Fixnum out;
-  clasp_disable_interrupts();
-  do {
-    out = write(_file_descriptor, c, sizeof(char) * n);
-  } while (out < 0 && restartable_io_error("write"));
-  clasp_enable_interrupts();
+  BEGIN_PARK {
+    do {
+      out = write(_file_descriptor, c, sizeof(char) * n);
+    } while (out < 0 && errno == EINTR);
+  } END_PARK;
+  if (out < 0) io_error("write");
   return out;
 }
 
@@ -4792,15 +4780,10 @@ ListenResult PosixFileStream_O::listen() {
   if (_byte_stack.notnilp())
     return listen_result_available;
   if (_flags & CLASP_STREAM_MIGHT_SEEK) {
-    cl_env_ptr the_env = clasp_process_env();
     clasp_off_t disp, onew;
-    clasp_disable_interrupts_env(the_env);
     disp = lseek(_file_descriptor, 0, SEEK_CUR);
-    clasp_enable_interrupts_env(the_env);
     if (disp != (clasp_off_t)-1) {
-      clasp_disable_interrupts_env(the_env);
       onew = lseek(_file_descriptor, 0, SEEK_END);
-      clasp_enable_interrupts_env(the_env);
       lseek(_file_descriptor, disp, SEEK_SET);
       if (onew == disp) {
         return listen_result_no_char;
@@ -4848,10 +4831,8 @@ T_sp PosixFileStream_O::position() {
   T_sp output;
   clasp_off_t offset;
 
-  clasp_disable_interrupts();
   offset = lseek(_file_descriptor, 0, SEEK_CUR);
-  clasp_enable_interrupts();
-  unlikely_if(offset < 0) io_error(asSmartPtr());
+  unlikely_if(offset < 0) io_error("lseek");
   if (sizeof(clasp_off_t) == sizeof(long)) {
     output = Integer_O::create((gctools::Fixnum)offset);
   } else {
@@ -4986,11 +4967,16 @@ cl_index CFileStream_O::read_byte8(unsigned char* c, cl_index n) {
   unlikely_if(_byte_stack.notnilp()) return consume_byte_stack(c, n);
 
   gctools::Fixnum out = 0;
-  clasp_disable_interrupts();
-  do {
-    out = fread(c, sizeof(char), n, _file);
-  } while (out < n && ferror(_file) && restartable_io_error("fread"));
-  clasp_enable_interrupts();
+  // POSIX defines fread to (unlike C) report a bunch of different errors
+  // in errno. These errors are the same as for fgetc and include basically
+  // the same stuff you can get from read(2).
+  BEGIN_PARK {
+    do {
+      out = fread(c, sizeof(char), n, _file);
+    } while (out < 0 && ferror(_file) && errno == EINTR);
+  } END_PARK;
+  // note: EOF we leave to the caller to figure out
+  if (out < n && ferror(_file)) io_error("fread");
 
   return out;
 }
@@ -5013,11 +4999,13 @@ cl_index CFileStream_O::write_byte8(unsigned char* c, cl_index n) {
   }
 
   cl_index out;
-  clasp_disable_interrupts();
-  do {
-    out = fwrite(c, sizeof(char), n, _file);
-  } while (out < n && restartable_io_error("fwrite"));
-  clasp_enable_interrupts();
+  BEGIN_PARK {
+    // See note about POSIX error behavior for fread, above.
+    do {
+      out = fwrite(c, sizeof(char), n, _file);
+    } while (out < 0 && ferror(_file) && errno == EINTR);
+  } END_PARK;
+  if (out < n && ferror(_file)) io_error("fwrite");
   return out;
 }
 
@@ -5038,21 +5026,20 @@ void CFileStream_O::clear_input() {
     /* Do not stop here: the FILE structure needs also to be flushed */
   }
 #endif
-  while (_file_listen() == listen_result_available) {
-    clasp_disable_interrupts();
-    getc(_file);
-    clasp_enable_interrupts();
-  }
+  while (_file_listen() == listen_result_available) getc(_file);
 }
 
 void CFileStream_O::clear_output() { check_output(); }
 
 void CFileStream_O::force_output() {
   check_output();
-  clasp_disable_interrupts();
-  while ((fflush(_file) == EOF) && restartable_io_error("fflush"))
-    (void)0;
-  clasp_enable_interrupts();
+  int r;
+  BEGIN_PARK {
+    do {
+      r = fflush(_file);
+    } while (r == EOF && errno == EINTR);
+  } END_PARK;
+  if (r == EOF) io_error("fflush");
 }
 
 void CFileStream_O::finish_output() { force_output(); }
@@ -5062,7 +5049,6 @@ bool CFileStream_O::interactive_p() const { return isatty(fileno(_file)); }
 T_sp CFileStream_O::length() {
   T_sp output = clasp_file_len(fileno(_file)); // NIL or Integer_sp
   if (_byte_size != 8 && output.notnilp()) {
-    //            const cl_env_ptr the_env = clasp_process_env();
     T_mv output_mv = clasp_floor2(gc::As_unsafe<Integer_sp>(output), make_fixnum(_byte_size / 8));
     // and now lets use the calculated value
     output = output_mv;
@@ -5076,11 +5062,7 @@ T_sp CFileStream_O::length() {
 
 T_sp CFileStream_O::position() {
   T_sp output;
-  clasp_off_t offset;
-
-  clasp_disable_interrupts();
-  offset = clasp_ftello(_file);
-  clasp_enable_interrupts();
+  clasp_off_t offset = clasp_ftello(_file);
   if (offset < 0) {
     return make_fixnum(0);
     // io_error(strm);
@@ -5118,9 +5100,9 @@ T_sp CFileStream_O::set_position(T_sp pos) {
     disp = clasp_integer_to_off_t(pos);
     mode = SEEK_SET;
   }
-  clasp_disable_interrupts();
-  mode = clasp_fseeko(_file, disp, mode);
-  clasp_enable_interrupts();
+  BEGIN_PARK {
+    mode = clasp_fseeko(_file, disp, mode);
+  } END_PARK;
   return mode ? nil<T_O>() : _lisp->_true();
 }
 
@@ -5175,12 +5157,11 @@ cl_index WinsockStream_O::read_byte8(unsigned char* c, cl_index n) {
   if (n > 0) {
     unlikely_if(INVALID_SOCKET == _socket) wrong_file_handler(asSmartPtr());
     else {
-      clasp_disable_interrupts();
-      len = recv(_socket, c, n, 0);
-      unlikely_if(len == SOCKET_ERROR) wsock_error("Cannot read bytes from Windows "
-                                                   "socket ~S.~%~A",
-                                                   strm);
-      clasp_enable_interrupts();
+      BEGIN_PARK {
+        len = recv(_socket, c, n, 0);
+      } END_PARK;
+      if (len == SOCKET_ERROR) [[unlikely]]
+        wsock_error("Cannot read bytes from Windows socket ~S.~%~A", strm);
     }
   }
   return (len > 0) ? len : EOF;
@@ -5192,21 +5173,18 @@ cl_index WinsockStream_O::write_byte8(unsigned char* c, cl_index n) {
   unsigned char* p;
   unlikely_if(INVALID_SOCKET == _socket) wrong_file_handler(asSmartPtr());
   else {
-    clasp_disable_interrupts();
-    do {
-      cl_index res = send(_socket, c + out, n, 0);
-      unlikely_if(res == SOCKET_ERROR) {
-        wsock_error("Cannot write bytes to Windows"
-                    " socket ~S.~%~A",
-                    strm);
-        break; /* stop writing */
-      }
-      else {
-        out += res;
-        n -= res;
-      }
-    } while (n > 0);
-    clasp_enable_interrupts();
+    cl_index res;
+    BEGIN_PARK {
+      do {
+        res = send(_socket, c + out, n, 0);
+        if (res == SOCKET_ERROR) [[unlikely]] break;
+        else { out += res; n -= res; }
+      } while (n > 0);
+    } END_PARK;
+    if (res == SOCKET_ERROR) [[unlikely]]
+      wsock_error("Cannot write bytes to Windows"
+                  " socket ~S.~%~A",
+                  strm);
   }
   return out;
 }
@@ -5222,12 +5200,11 @@ ListenResult WinsockStream_O::listen() {
 
     FD_ZERO(&fds);
     FD_SET(_socket, &fds);
-    clasp_disable_interrupts();
-    result = select(0, &fds, NULL, NULL, &tv);
-    unlikely_if(result == SOCKET_ERROR) wsock_error("Cannot listen on Windows "
-                                                    "socket ~S.~%~A",
-                                                    strm);
-    clasp_enable_interrupts();
+    BEGIN_PARK {
+      result = select(0, &fds, NULL, NULL, &tv);
+    } END_PARK;
+    if (result == SOCKET_ERROR) [[unlikely]]
+      wsock_error("Cannot listen on Windows socket ~S.~%~A", strm);
     return (result > 0 ? listen_result_available : listen_result_no_char);
   }
 }
@@ -5242,10 +5219,10 @@ T_sp WinsockStream_O::close(T_sp abort) {
   if (_open) {
     _open = false;
     int failed;
-    clasp_disable_interrupts();
-    failed = closesocket(_socket);
-    clasp_enable_interrupts();
-    unlikely_if(failed < 0) cannot_close(asSmartPtr());
+    BEGIN_PARK {
+      failed = closesocket(_socket);
+    } END_PARK;
+    if (failed < 0) [[unlikely]] cannot_close(asSmartPtr());
     _socket = INVALID_SOCKET;
   }
   return _lisp->_true();
@@ -5281,14 +5258,13 @@ cl_index ConsoleStream_O::read_byte8(unsigned char* c, cl_index n) {
   unlikely_if(_byte_stack.notnilp()) { return consume_byte_stack(c, n); }
   else {
     cl_index len = 0;
-    cl_env_ptr the_env = clasp_process_env();
     DWORD nchars;
     unsigned char aux[4];
     for (len = 0; len < n;) {
       int i, ok;
-      clasp_disable_interrupts_env(the_env);
-      ok = ReadConsole(_handle, &aux, 1, &nchars, NULL);
-      clasp_enable_interrupts_env(the_env);
+      BEGIN_PARK {
+        ok = ReadConsole(_handle, &aux, 1, &nchars, NULL);
+      } END_PARK;
       unlikely_if(!ok) { FEwin32_error("Cannot read from console", 0); }
       for (i = 0; i < nchars; i++) {
         if (len < n) {

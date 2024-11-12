@@ -663,7 +663,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   std::list<string> nicknames;
   std::list<string> use_packages;
   _sym_STARdebug_fsetSTAR->defparameter(nil<core::T_O>());
-  ext::_sym_ignore_signal->defparameter(SimpleBaseString_O::make("Ignore signal"));
+
   ext::_sym_STARinvoke_debugger_hookSTAR->defparameter(nil<core::T_O>());
   _sym_STARinterrupts_enabledSTAR->defparameter(_lisp->_true());
   _sym_STARallow_with_interruptsSTAR->defparameter(_lisp->_true());

@@ -128,14 +128,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, up);
 SYMBOL_EXPORT_SC_(KeywordPkg, version);
 SYMBOL_EXPORT_SC_(KeywordPkg, wild);
 
-#if defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_FREEBSD)
-#define sigthreadmask(HOW, NEW, OLD) sigprocmask((HOW), (NEW), (OLD))
-#endif
-
-#if defined(_TARGET_OS_LINUX)
-#define sigthreadmask(HOW, NEW, OLD) sigprocmask((HOW), (NEW), (OLD))
-#endif
-
 namespace core {
 
 String_sp clasp_strerror(int e) { return SimpleBaseString_O::make(std::string(strerror(e))); }
@@ -219,9 +211,7 @@ static int safe_chdir(const char* path, T_sp tprefix) {
     return safe_chdir(ss.str().c_str(), nil<T_O>());
   } else {
     int output;
-    clasp_disable_interrupts();
-    output = chdir((char*)path);
-    clasp_enable_interrupts();
+    output = chdir(path);
     return output;
   }
 }
@@ -308,148 +298,6 @@ CL_DEFUN T_mv core__wait() {
   return Values(make_fixnum(p), make_fixnum(status));
 };
 
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGABRT);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGALRM);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGBUS);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGCHLD);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGCONT);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGFPE);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGHUP);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGILL);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGINT);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGKILL);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGPIPE);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGQUIT);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGSEGV);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGSTOP);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGTERM);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGTSTP);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGTTIN);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGTTOU);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGUSR1);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGUSR2);
-// SYMBOL_EXPORT_SC_(CorePkg,signal_SIGPOLL);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGPROF);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGSYS);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGTRAP);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGURG);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGVTALRM);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGXCPU);
-SYMBOL_EXPORT_SC_(CorePkg, signal_SIGXFSZ);
-
-SYMBOL_EXPORT_SC_(CorePkg, _PLUS_SignalEnumConverter_PLUS_);
-
-CL_BEGIN_ENUM(SignalEnum, _sym__PLUS_SignalEnumConverter_PLUS_, "Signals");
-CL_VALUE_ENUM(_sym_signal_SIGABRT, signal_SIGABRT);
-CL_VALUE_ENUM(_sym_signal_SIGALRM, signal_SIGALRM);
-CL_VALUE_ENUM(_sym_signal_SIGBUS, signal_SIGBUS);
-CL_VALUE_ENUM(_sym_signal_SIGCHLD, signal_SIGCHLD);
-CL_VALUE_ENUM(_sym_signal_SIGCONT, signal_SIGCONT);
-CL_VALUE_ENUM(_sym_signal_SIGFPE, signal_SIGFPE);
-CL_VALUE_ENUM(_sym_signal_SIGHUP, signal_SIGHUP);
-CL_VALUE_ENUM(_sym_signal_SIGILL, signal_SIGILL);
-CL_VALUE_ENUM(_sym_signal_SIGINT, signal_SIGINT);
-CL_VALUE_ENUM(_sym_signal_SIGKILL, signal_SIGKILL);
-CL_VALUE_ENUM(_sym_signal_SIGPIPE, signal_SIGPIPE);
-CL_VALUE_ENUM(_sym_signal_SIGQUIT, signal_SIGQUIT);
-CL_VALUE_ENUM(_sym_signal_SIGSEGV, signal_SIGSEGV);
-CL_VALUE_ENUM(_sym_signal_SIGSTOP, signal_SIGSTOP);
-CL_VALUE_ENUM(_sym_signal_SIGTERM, signal_SIGTERM);
-CL_VALUE_ENUM(_sym_signal_SIGTSTP, signal_SIGTSTP);
-CL_VALUE_ENUM(_sym_signal_SIGTTIN, signal_SIGTTIN);
-CL_VALUE_ENUM(_sym_signal_SIGTTOU, signal_SIGTTOU);
-CL_VALUE_ENUM(_sym_signal_SIGUSR1, signal_SIGUSR1);
-CL_VALUE_ENUM(_sym_signal_SIGUSR2, signal_SIGUSR2);
-// CL_VALUE_ENUM(_sym_signal_SIGPOLL,signal_SIGPOLL);
-CL_VALUE_ENUM(_sym_signal_SIGPROF, signal_SIGPROF);
-CL_VALUE_ENUM(_sym_signal_SIGSYS, signal_SIGSYS);
-CL_VALUE_ENUM(_sym_signal_SIGTRAP, signal_SIGTRAP);
-CL_VALUE_ENUM(_sym_signal_SIGURG, signal_SIGURG);
-CL_VALUE_ENUM(_sym_signal_SIGVTALRM, signal_SIGVTALRM);
-CL_VALUE_ENUM(_sym_signal_SIGXCPU, signal_SIGXCPU);
-CL_VALUE_ENUM(_sym_signal_SIGXFSZ, signal_SIGXFSZ);
-CL_END_ENUM(_sym__PLUS_SignalEnumConverter_PLUS_);
-
-Sigset_O::Sigset_O() { sigemptyset(&this->_sigset._value); };
-
-SYMBOL_EXPORT_SC_(KeywordPkg, sigchld);
-SYMBOL_EXPORT_SC_(KeywordPkg, sigint);
-CL_DOCSTRING(R"(Like the unix function //sigaddset//. The second argument is a symbol that can currently be one of
-:sigchld or :sigint correspoding to the SIGCHLD and SIGINT arguments of the unix function.
-The int result of sigaddset is returned.)")
-CL_DEFMETHOD int Sigset_O::sigset_sigaddset(SignalEnum signo) { return sigaddset(&(this->_sigset._value), (int)signo); }
-
-SYMBOL_EXPORT_SC_(KeywordPkg, sig_block);
-SYMBOL_EXPORT_SC_(KeywordPkg, sig_unblock);
-SYMBOL_EXPORT_SC_(KeywordPkg, sig_setmask);
-
-// Get this thread's current signal mask.
-CL_DEFUN List_sp core__get_sigmask() {
-  ql::list sigs;
-  sigset_t mask;
-  pthread_sigmask(SIG_UNBLOCK, NULL, &mask);
-  // Maybe some macro magic would make this part less dumb.
-  if (sigismember(&mask, SIGABRT)) sigs << core::_sym_signal_SIGABRT;
-  if (sigismember(&mask, SIGALRM)) sigs << core::_sym_signal_SIGALRM;
-  if (sigismember(&mask, SIGBUS)) sigs << core::_sym_signal_SIGBUS;
-  if (sigismember(&mask, SIGCHLD)) sigs << core::_sym_signal_SIGCHLD;
-  if (sigismember(&mask, SIGCONT)) sigs << core::_sym_signal_SIGCONT;
-  if (sigismember(&mask, SIGFPE)) sigs << core::_sym_signal_SIGFPE;
-  if (sigismember(&mask, SIGHUP)) sigs << core::_sym_signal_SIGHUP;
-  if (sigismember(&mask, SIGILL)) sigs << core::_sym_signal_SIGILL;
-  if (sigismember(&mask, SIGINT)) sigs << core::_sym_signal_SIGINT;
-  if (sigismember(&mask, SIGKILL)) sigs << core::_sym_signal_SIGKILL;
-  if (sigismember(&mask, SIGPIPE)) sigs << core::_sym_signal_SIGPIPE;
-  if (sigismember(&mask, SIGQUIT)) sigs << core::_sym_signal_SIGQUIT;
-  if (sigismember(&mask, SIGSEGV)) sigs << core::_sym_signal_SIGSEGV;
-  if (sigismember(&mask, SIGSTOP)) sigs << core::_sym_signal_SIGSTOP;
-  if (sigismember(&mask, SIGTERM)) sigs << core::_sym_signal_SIGTERM;
-  if (sigismember(&mask, SIGTSTP)) sigs << core::_sym_signal_SIGTSTP;
-  if (sigismember(&mask, SIGTTIN)) sigs << core::_sym_signal_SIGTTIN;
-  if (sigismember(&mask, SIGTTOU)) sigs << core::_sym_signal_SIGTTOU;
-  if (sigismember(&mask, SIGUSR1)) sigs << core::_sym_signal_SIGUSR1;
-  if (sigismember(&mask, SIGUSR2)) sigs << core::_sym_signal_SIGUSR2;
-  if (sigismember(&mask, SIGPROF)) sigs << core::_sym_signal_SIGPROF;
-  if (sigismember(&mask, SIGSYS)) sigs << core::_sym_signal_SIGSYS;
-  if (sigismember(&mask, SIGTRAP)) sigs << core::_sym_signal_SIGTRAP;
-  if (sigismember(&mask, SIGURG)) sigs << core::_sym_signal_SIGURG;
-  if (sigismember(&mask, SIGVTALRM)) sigs << core::_sym_signal_SIGVTALRM;
-  if (sigismember(&mask, SIGXCPU)) sigs << core::_sym_signal_SIGXCPU;
-  if (sigismember(&mask, SIGXFSZ)) sigs << core::_sym_signal_SIGXFSZ;
-  // done
-  return sigs.cons();
-}
-
-CL_DOCSTRING(R"(Like the unix function sigthreadmask. 
-The **how** argument can be one of :sig-setmask, :sig-block, :sig-unblock.
-The **old-set** can be a core:sigset or nil (NULL).
-Returns (values NIL(success)/T(fail) errno)")
-DOCGROUP(clasp);
-CL_DEFUN T_mv core__sigthreadmask(Symbol_sp how, Sigset_sp set, T_sp old_set) {
-  sigset_t* old_setp;
-  if (old_set.nilp()) {
-    old_setp = NULL;
-  } else {
-    old_setp = &(gc::As<Sigset_sp>(old_set)->_sigset._value);
-  }
-  int ihow;
-  if (how == kw::_sym_sig_block) {
-    ihow = SIG_BLOCK;
-  } else if (how == kw::_sym_sig_unblock) {
-    ihow = SIG_UNBLOCK;
-  } else if (how == kw::_sym_sig_setmask) {
-    ihow = SIG_SETMASK;
-  } else {
-    SIMPLE_ERROR("Illegal how argument {} - must be one of :sig-block, :sig-unblock, or :sig-setmask", _rep_(how));
-  }
-  int result = sigthreadmask(ihow, &set->_sigset._value, old_setp);
-  if (result == 0) {
-    return Values(nil<T_O>(), nil<T_O>());
-  } else {
-    return Values(_lisp->_true(), make_fixnum(errno));
-  }
-}
-
 CL_DOCSTRING(R"dx(Wraps the WIFEXITED(status) macro of the posix wait function.)dx");
 DOCGROUP(clasp);
 CL_DEFUN bool core__wifexited(Fixnum_sp fstatus) {
@@ -524,18 +372,14 @@ CL_DEFUN T_sp ext__chdir(T_sp dir, T_sp change_default_pathname_defaults) {
 
 static int safe_stat(const char* path, struct stat* sb) {
   int output;
-  clasp_disable_interrupts();
   output = stat(path, sb);
-  clasp_enable_interrupts();
   return output;
 }
 
 #ifdef HAVE_LSTAT
 static int safe_lstat(const char* path, struct stat* sb) {
   int output;
-  clasp_disable_interrupts();
   output = lstat(path, sb);
-  clasp_enable_interrupts();
   return output;
 }
 #endif
@@ -720,9 +564,7 @@ CL_DEFUN T_sp core__readlink(String_sp filename) {
   Symbol_sp kind;
   do {
     output = Str8Ns_O::make(size + 2, '*', true, clasp_make_fixnum(0));
-    clasp_disable_interrupts();
     written = readlink((char*)filename->get_path_string().c_str(), (char*)output->rowMajorAddressOfElement_(0), size);
-    clasp_enable_interrupts();
     size += 256;
   } while (written == size - 256);
   output[written] = '\0';
@@ -950,35 +792,29 @@ int clasp_backup_open(const char* filename, int option, int mode) {
   stringstream sbackup;
   sbackup << filename << ".BAK";
   string backupfilename = sbackup.str();
-  clasp_disable_interrupts();
 #if defined(CLASP_MS_WINDOWS_HOST)
   /* Windows' rename doesn't replace an existing file */
+  // FIXME: Classic TOCTOU bug here.
   if (access(backupfilename, F_OK) == 0 && unlink(backupfilename)) {
-    clasp_enable_interrupts();
     FElibc_error("Cannot remove the file ~S", 1, ecl_make_constant_base_string(backupfilename, -1));
   }
 #endif
   if (rename(filename, backupfilename.c_str())) {
-    clasp_enable_interrupts();
     SIMPLE_ERROR("Cannot rename the file {} to {}.", _rep_(SimpleBaseString_O::make(std::string(filename))), backupfilename);
   }
-  clasp_enable_interrupts();
   return open(filename, option, mode);
 }
 
 Integer_sp clasp_file_len(int f) {
-  clasp_disable_interrupts();
 #if 1
   size_t pos = lseek(f, 0, SEEK_CUR);
   lseek(f, 0, SEEK_END);
   size_t size = lseek(f, 0, SEEK_CUR);
   lseek(f, pos, SEEK_SET);
-  clasp_enable_interrupts();
   return Integer_O::create((gc::Fixnum)(size));
 #else
   struct stat filestatus;
   fstat(f, &filestatus);
-  clasp_enable_interrupts();
   return Integer_O::create((gc::Fixnum)(filestatus.st_size));
 #endif
 }
@@ -1036,13 +872,9 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
       rmtree(new_filename->get_path_string().c_str());
     }
   }
-  {
-    clasp_disable_interrupts();
-    if (rename((char*)old_filename->get_path_string().c_str(), (char*)new_filename->get_path_string().c_str()) == 0) {
-      goto SUCCESS;
-    }
+  if (rename((char*)old_filename->get_path_string().c_str(), (char*)new_filename->get_path_string().c_str()) == 0) {
+    goto SUCCESS;
   }
-  clasp_enable_interrupts();
   {
     T_sp c_error = clasp_strerror(errno);
     std::string msg = "Unable to rename file ~S to ~S.~%C library error: ~S";
@@ -1055,7 +887,6 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
   }
 
 SUCCESS:
-  clasp_enable_interrupts();
   new_truename = cl__truename(pnewn);
   // The first result value is newn with any missing components filled by a merge-pathnames
   return Values(pnewn, old_truename, new_truename);
@@ -1075,9 +906,7 @@ CL_DEFUN T_sp cl__delete_file(T_sp file) {
   String_sp filename = coerce_to_posix_filename(path);
   int ok;
 
-  clasp_disable_interrupts();
   ok = (isdir ? rmdir : unlink)((char*)filename->get_path_string().c_str());
-  clasp_enable_interrupts();
 
   if (ok < 0) {
     std::string msg =
@@ -1150,9 +979,7 @@ CL_DEFUN T_sp cl__file_author(T_sp file) {
 #ifdef HAVE_PWD_H
   {
     struct passwd* pwent;
-    clasp_disable_interrupts();
     pwent = ::getpwuid(filestatus.st_uid);
-    clasp_enable_interrupts();
     output = SimpleBaseString_O::make(pwent->pw_name);
   }
 #else
@@ -1248,7 +1075,6 @@ static T_sp list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, in
   struct dirent* entry;
   MultipleValues& mvn = core::lisp_multipleValues();
 
-  clasp_disable_interrupts();
   dir = opendir((char*)gc::As<String_sp>(prefix)->get_path_string().c_str());
   if (dir == NULL) {
     out = nil<T_O>();
@@ -1282,7 +1108,6 @@ static T_sp list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, in
     out = Cons_O::create(Cons_O::create(component_path, kind), out);
   }
   closedir(dir);
-  clasp_enable_interrupts();
 OUTPUT:
   return cl__nreverse(out);
 }
@@ -1326,10 +1151,8 @@ CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
   string outname = outss.str();
   std::vector<char> dst_path(outname.begin(), outname.end());
   dst_path.push_back('\0');
-  clasp_disable_interrupts();
   fd = mkstemp(&dst_path[0]);
   outname.assign(dst_path.begin(), dst_path.end() - 1);
-  clasp_enable_interrupts();
   T_sp output;
   if (fd < 0) {
     output = nil<T_O>();
@@ -1357,10 +1180,8 @@ CL_DEFUN T_sp core__mkstemp_fd(String_sp thetemplate) {
   string outname = outss.str();
   std::vector<char> dst_path(outname.begin(), outname.end());
   dst_path.push_back('\0');
-  clasp_disable_interrupts();
   fd = mkstemp(&dst_path[0]);
   outname.assign(dst_path.begin(), dst_path.end() - 1);
-  clasp_enable_interrupts();
   T_sp output;
   if (fd < 0) {
     output = nil<T_O>();
@@ -1391,13 +1212,11 @@ CL_DEFUN T_sp core__mkdtemp(String_sp thetemplate) {
   string outname = outss.str();
   std::vector<char> dst_path(outname.begin(), outname.end());
   dst_path.push_back('\0');
-  clasp_disable_interrupts();
   const char* dirname = mkdtemp(&dst_path[0]);
   if (dirname == NULL) {
     SIMPLE_ERROR("There was an error in mkdtemp - errno {}", errno);
   }
   outname.assign(dst_path.begin(), dst_path.end() - 1);
-  clasp_enable_interrupts();
   T_sp output;
   outname = outname + "/";
   output = cl__truename(SimpleBaseString_O::make(outname));
@@ -1434,10 +1253,8 @@ si_get_library_pathname(void)
 	cl_index len, ep;
         s = ecl_alloc_adjustable_base_string(cl_core.path_max);
         buffer = (char*)s->c_str();
-	clasp_disable_interrupts();
 	hnd = GetModuleHandle("ecl.dll");
 	len = GetModuleFileName(hnd, buffer, cl_core.path_max-1);
-	clasp_enable_interrupts();
 	if (len == 0) {
 		FEerror("GetModuleFileName failed (last error = ~S)",
 			1, ecl_make_fixnum(GetLastError()));
@@ -1522,10 +1339,8 @@ T_sp core__mkstemp(T_sp template)
     for (s = strTempDir; *s; s++)
 	if (*s == '/')
 	    *s = '\\';
-    clasp_disable_interrupts();
     ok = GetTempFileName(strTempDir, (char*)file->c_str(), 0,
 			 strTempFileName);
-    clasp_enable_interrupts();
     if (!ok) {
 	output = nil<T_O>();
     } else {
@@ -1540,7 +1355,6 @@ T_sp core__mkstemp(T_sp template)
     output = ecl_alloc_simple_base_string(l + 6);
     memcpy(output->c_str(), template->c_str(), l);
     memcpy(output->c_str() + l, "XXXXXX", 6);
-    clasp_disable_interrupts();
 #ifdef HAVE_MKSTEMP
     fd = mkstemp((char*)output->c_str());
 #else
@@ -1550,7 +1364,6 @@ T_sp core__mkstemp(T_sp template)
 	fd = -1;
     }
 #endif
-    clasp_enable_interrupts();
     if (fd < 0) {
 	output = nil<T_O>();
     } else {
@@ -1603,7 +1416,6 @@ CL_DEFUN T_sp core__copy_file(T_sp orig, T_sp dest) {
   if (dest.nilp())
     SIMPLE_ERROR("In {} the destination pathname is NIL", __FUNCTION__);
   String_sp sdest = core__coerce_to_filename(dest);
-  clasp_disable_interrupts();
   in = fopen(sorig->get_path_string().c_str(), "r");
   if (in) {
     out = fopen(sdest->get_path_string().c_str(), "w");
@@ -1620,7 +1432,6 @@ CL_DEFUN T_sp core__copy_file(T_sp orig, T_sp dest) {
     }
     fclose(in);
   }
-  clasp_enable_interrupts();
   if (ok)
     return _lisp->_true();
   return nil<T_O>();
@@ -1820,13 +1631,11 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
     }
     filename = gc::As_unsafe<String_sp>(filename->subseq(0, make_fixnum(last)));
   }
-//    clasp_disable_interrupts();
 #if defined(CLASP_MS_WINDOWS_HOST)
   ok = mkdir((char*)filename->c_str());
 #else
   ok = mkdir((char*)filename->get_path_string().c_str(), modeint);
 #endif
-  //    clasp_enable_interrupts();
 
   if (UNLIKELY(ok < 0)) {
     T_sp c_error = clasp_strerror(errno);
@@ -1957,9 +1766,9 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
         sigaddset(&new_sigset, SIGINT);
         sigaddset(&new_sigset, SIGCHLD);
 
-        rc = sigthreadmask(SIG_SETMASK, &new_sigset, &old_sigset); // TODO: Check return value
+        rc = pthread_sigmask(SIG_SETMASK, &new_sigset, &old_sigset); // TODO: Check return value
         rc = execvp(execvp_args[0], (char* const*)execvp_args.data());
-        sigthreadmask(SIG_SETMASK, &old_sigset, NULL); // Restore signal mask
+        pthread_sigmask(SIG_SETMASK, &old_sigset, NULL); // Restore signal mask
 
         if (rc == -1) // An  error has occurred during - we do a retry
         {

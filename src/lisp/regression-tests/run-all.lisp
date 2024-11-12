@@ -57,6 +57,7 @@
     "float-features"
     "debug"
     "mp"
+    "interrupt"
     "posix"
     "btb"
 ;;; When we have system construction before debug.lisp, debug.lisp will fail

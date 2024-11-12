@@ -196,7 +196,7 @@ Lisp::GCRoots::GCRoots()
 #ifdef CLASP_THREADS
       _UnboundCellFunctionEntryPoint(unbound<SimpleFun_O>()), _ActiveThreads(nil<T_O>()), _DefaultSpecialBindings(nil<T_O>()),
 #endif
-      _NullStream(nil<T_O>()), _UnixSignalHandlers(nil<T_O>()), _PrintSymbolsProperly(false), _TheSystemIsUp(false),
+      _NullStream(nil<T_O>()), _PrintSymbolsProperly(false), _TheSystemIsUp(false),
       _Started(false) {
   this->_JITDylibs.store(nil<core::T_O>());
   this->_SingleDispatchGenericFunctions.store(nil<core::T_O>());
@@ -588,8 +588,7 @@ void Lisp::startupLispEnvironment() {
   //
   mp::_sym_STARcurrent_processSTAR->defparameter(my_thread->_Process);
   this->add_process(my_thread->_Process);
-  my_thread->_Process->_Phase = mp::Active;
-  gctools::initialize_unix_signal_handlers();
+  my_thread->_Process->_Phase = mp::Running;
   this->_Booted = true;
 
   globals_->_InitFileName = "sys:src;lisp;" KERNEL_NAME ";init.lisp";
@@ -1562,7 +1561,6 @@ CL_DOCSTRING(R"dx(find-class)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
   // ASSERTF(env.nilp(), "Handle non nil environment");
-  //  ClassReadLock _guard(_lisp->_Roots._ClassTableMutex);
   T_sp ch = core__find_class_holder(symbol, env);
   if (ch.nilp()) {
     printf("%s:%d core__find_class_holder returned NIL for symbol %s\n", __FILE__, __LINE__, symbol->formattedName(true).c_str());
@@ -1599,7 +1597,6 @@ CL_DEFUN T_sp core__setf_find_class(T_sp newValue, Symbol_sp name) {
     }
     return _lisp->boot_setf_findClass(name, gc::As<Instance_sp>(newValue));
   }
-  //  ClassWriteLock _guard(_lisp->_Roots._ClassTableMutex);
   HashTable_sp ht = _lisp->_Roots._ClassTable;
   T_sp tcell = ht->gethash(name, nil<T_O>());
   if (tcell.notnilp()) {

@@ -58,7 +58,6 @@ SYMBOL_EXPORT_SC_(ExtPkg, decoding_error);
 SYMBOL_EXPORT_SC_(ExtPkg, encoding_error);
 SYMBOL_EXPORT_SC_(ExtPkg, float_infinity_string);
 SYMBOL_EXPORT_SC_(ExtPkg, float_nan_string);
-SYMBOL_EXPORT_SC_(ExtPkg, ignore_signal);
 SYMBOL_EXPORT_SC_(ExtPkg, lambda_block);
 SYMBOL_EXPORT_SC_(ExtPkg, lexicalVar);
 SYMBOL_EXPORT_SC_(ExtPkg, llvmRegisterVar);

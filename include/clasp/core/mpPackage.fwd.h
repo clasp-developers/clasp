@@ -30,9 +30,12 @@ THE SOFTWARE.
 #include <cassert>
 #include <atomic>
 #include <thread>
+#include <mutex>
+#include <shared_mutex>
 #include <array>
 #include <unordered_map>
 #include <vector>
+#include <clasp/gctools/park.h> // BEGIN_PARK, END_PARK
 
 PACKAGE_USE("COMMON-LISP");
 NAMESPACE_PACKAGE_ASSOCIATION(mp, MpPkg, "MP")
@@ -185,22 +188,26 @@ public:
         shared_locks_array[register_index].value.store(recursion_depth + 1, std::memory_order_release); // if recursive -> release
       else {
         shared_locks_array[register_index].value.store(recursion_depth + 1, std::memory_order_seq_cst); // if first -> sequential
-        while (want_x_lock.load(std::memory_order_seq_cst)) {
-          shared_locks_array[register_index].value.store(recursion_depth, std::memory_order_seq_cst);
-          for (size_t i = 0; want_x_lock.load(std::memory_order_seq_cst); ++i)
-            if (i % 100000 == 0)
-              std::this_thread::yield();
-          shared_locks_array[register_index].value.store(recursion_depth + 1, std::memory_order_seq_cst);
-        }
+        BEGIN_PARK {
+          while (want_x_lock.load(std::memory_order_seq_cst)) {
+            shared_locks_array[register_index].value.store(recursion_depth, std::memory_order_seq_cst);
+            for (size_t i = 0; want_x_lock.load(std::memory_order_seq_cst); ++i)
+              if (i % 100000 == 0)
+                std::this_thread::yield();
+            shared_locks_array[register_index].value.store(recursion_depth + 1, std::memory_order_seq_cst);
+          }
+        } END_PARK;
       }
       // (shared_locks_array[register_index] == 2 && want_x_lock == false) ||     // first shared lock
       // (shared_locks_array[register_index] > 2)                                 // recursive shared lock
     } else {
       if (owner_thread_id.load(std::memory_order_acquire) != get_fast_this_thread_id()) {
         size_t i = 0;
-        for (bool flag = false; !want_x_lock.compare_exchange_weak(flag, true, std::memory_order_seq_cst); flag = false)
-          if (++i % 100000 == 0)
-            std::this_thread::yield();
+        BEGIN_PARK {
+          for (bool flag = false; !want_x_lock.compare_exchange_weak(flag, true, std::memory_order_seq_cst); flag = false)
+            if (++i % 100000 == 0)
+              std::this_thread::yield();
+        } END_PARK;
         owner_thread_id.store(get_fast_this_thread_id(), std::memory_order_release);
       }
       ++recursive_xlock_count;
@@ -230,16 +237,17 @@ public:
       assert(shared_locks_array[register_index].value.load(std::memory_order_acquire) == 1);
 
     if (owner_thread_id.load(std::memory_order_acquire) != get_fast_this_thread_id()) {
-      size_t i = 0;
-      for (bool flag = false; !want_x_lock.compare_exchange_weak(flag, true, std::memory_order_seq_cst); flag = false)
-        if (++i % 1000000 == 0)
-          std::this_thread::yield();
+      BEGIN_PARK {
+        size_t i = 0;
+        for (bool flag = false; !want_x_lock.compare_exchange_weak(flag, true, std::memory_order_seq_cst); flag = false)
+          if (++i % 1000000 == 0)
+            std::this_thread::yield();
 
-      owner_thread_id.store(get_fast_this_thread_id(), std::memory_order_release);
+        owner_thread_id.store(get_fast_this_thread_id(), std::memory_order_release);
 
-      for (auto& i : shared_locks_array)
-        while (i.value.load(std::memory_order_seq_cst) > 1)
-          ;
+        for (auto& i : shared_locks_array)
+          while (i.value.load(std::memory_order_seq_cst) > 1);
+      } END_PARK;
     }
 
     ++recursive_xlock_count;
@@ -275,23 +283,6 @@ extern int clasp_musleep(double dsec, bool alertable);
 }
 
 namespace mp {
-struct SpinLock {
-public:
-  void lock() {
-    while (lck.test_and_set(std::memory_order_acquire)) {
-    }
-  }
-
-  void unlock() { lck.clear(std::memory_order_release); }
-
-private:
-  std::atomic_flag lck;
-};
-struct SafeSpinLock {
-  SpinLock& _SpinLock;
-  SafeSpinLock(SpinLock& l) : _SpinLock(l) { _SpinLock.lock(); };
-  ~SafeSpinLock() { _SpinLock.unlock(); }
-};
 
 extern "C" void mutex_lock_enter(char* nameword);
 extern "C" void mutex_lock_return(char* nameword);
@@ -321,12 +312,10 @@ void debug_mutex_unlock(Mutex* m);
 #define LOGMUTEX_NAMEWORD 0x004554554d474f4c
 #define PNTRANSL_NAMEWORD 0x00534e4152544e50
 #define JITLOG___NAMEWORD 0x005f474f4c54494a
-#define UNIXSIGN_NAMEWORD 0x0047495358494e55
 #define CODEBLOK_NAMEWORD 0x004f4445424c4f4b
 #define DEBGINFO_NAMEWORD 0x00464e4947424544
 #define OPENDYLB_NAMEWORD 0x004c59444e45504f
 #define STCKMAPS_NAMEWORD 0x0050414d4b435453
-#define SUSPBARR_NAMEWORD 0x0052424250535553
 #define DISSASSM_NAMEWORD 0x0053534153534944
 #define JITGDBIF_NAMEWORD 0x004942444754494a
 #define MPSMESSG_NAMEWORD 0x005353454d53504d // MPSMESSG
@@ -356,7 +345,10 @@ struct Mutex {
 #ifdef DEBUG_DTRACE_LOCK_PROBE
       DtraceLockProbe _guard((char*)&this->_NameWord);
 #endif
-      bool result = (pthread_mutex_lock(&this->_Mutex) == 0);
+      bool result;
+      BEGIN_PARK {
+        result = (pthread_mutex_lock(&this->_Mutex) == 0);
+      } END_PARK;
       ++this->_Counter;
       return result;
     }
@@ -414,6 +406,8 @@ struct SharedMutex : public sf::contention_free_shared_mutex<> {
 inline void muSleep(uint usec) { core::clasp_musleep(usec / 1000000.0, false); };
 
 /* I derived this code from https://oroboro.com/upgradable-read-write-locks/ */
+// NOTE: We don't need to BEGIN_PARK/END_PARK since it uses Mutex, which
+// already does that.
 class UpgradableSharedMutex {
 public:
   UpgradableSharedMutex(){};
@@ -452,7 +446,7 @@ public:
   /* Pass true for upgrade if you want to upgrade a read lock to a write lock.
     Be careful though!!!! If two threads try to upgrade at the same time
     there will be a deadlock unless they do it in a loop using withTryLock(true).
-    See the hashTable.cc rehash_upgrade_write_lock for an example. */
+   */
   bool writeTryLock(bool upgrade = false) {
     if (!mWriteMutex._value.lock(false))
       return false;
@@ -501,7 +495,11 @@ struct ConditionVariable {
   pthread_cond_t _ConditionVariable;
   ConditionVariable() { pthread_cond_init(&this->_ConditionVariable, NULL); };
   ~ConditionVariable() { pthread_cond_destroy(&this->_ConditionVariable); };
-  bool wait(Mutex& m) { return pthread_cond_wait(&this->_ConditionVariable, &m._Mutex) == 0; }
+  bool wait(Mutex& m) {
+    BEGIN_PARK {
+      return pthread_cond_wait(&this->_ConditionVariable, &m._Mutex) == 0;
+    } END_PARK;
+  }
   bool timed_wait(Mutex& m, double timeout) {
     struct timespec timeToWait;
     struct timeval now;
@@ -517,7 +515,9 @@ struct ConditionVariable {
       timeToWait.tv_sec++;
       timeToWait.tv_nsec -= 1000000000;
     }
-    int rt = pthread_cond_timedwait(&this->_ConditionVariable, &m._Mutex, &timeToWait);
+    int rt;
+    BEGIN_PARK {
+      rt = pthread_cond_timedwait(&this->_ConditionVariable, &m._Mutex, &timeToWait);} END_PARK;
     return rt == 0;
   }
   bool signal() { return pthread_cond_signal(&this->_ConditionVariable) == 0; }
@@ -525,20 +525,8 @@ struct ConditionVariable {
 };
 
 #ifdef CLASP_THREADS
-template <typename T> struct RAIIReadLock {
-  T& _Mutex;
-  RAIIReadLock(T& p) : _Mutex(p) { _Mutex.shared_lock(); }
-  ~RAIIReadLock() { _Mutex.shared_unlock(); }
-};
-
-template <typename T> struct RAIIReadWriteLock {
-  T& _Mutex;
-  RAIIReadWriteLock(T& p) : _Mutex(p) { _Mutex.lock(); }
-  ~RAIIReadWriteLock() { _Mutex.unlock(); }
-};
-
-#define WITH_READ_LOCK(mutex) mp::RAIIReadLock<decltype(mutex)> lock__(mutex)
-#define WITH_READ_WRITE_LOCK(mutex) mp::RAIIReadWriteLock<decltype(mutex)> lock__(mutex)
+#define WITH_READ_LOCK(mutex) std::shared_lock lock__(mutex)
+#define WITH_READ_WRITE_LOCK(mutex) std::unique_lock lock__(mutex)
 #else
 #define WITH_READ_LOCK(m)
 #define WITH_READ_WRITE_LOCK(m)

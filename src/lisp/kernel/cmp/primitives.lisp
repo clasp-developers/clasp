@@ -269,7 +269,9 @@
          (primitive         "cc_set_unwind_dest" :void (list :t*))
          (primitive         "cc_get_unwind_dest_index" :size_t (list))
          (primitive         "cc_set_unwind_dest_index" :void (list :size_t))
-         (primitive-unwinds "cc_sjlj_continue_unwinding" :void nil :does-not-return t)
+         ;; While this obviously unwinds, it does so by SJLJ and will
+         ;; never throw an exception.
+         (primitive         "cc_sjlj_continue_unwinding" :void nil :does-not-return t)
          (primitive         "cc_saveMultipleValue0" :void (list :tmv))
          (primitive         "cc_restoreMultipleValue0" :return-type nil)
          (primitive         "llvm.frameaddress.p0" :i8* (list :i32))

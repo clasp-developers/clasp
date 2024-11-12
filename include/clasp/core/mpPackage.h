@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 #include <clasp/core/mpPackage.fwd.h>
 #include <clasp/core/sequence.h> // cl__reverse
+#include <clasp/gctools/park.h>
 
 namespace mp {
 FORWARD(Process);
@@ -57,44 +58,19 @@ template <typename T> struct RAIILock {
 };
 #endif
 
-namespace mp {
-inline core::T_sp atomic_get_and_set_to_Nil(mp::SpinLock& spinlock, core::T_sp& slot) noexcept {
-  mp::SafeSpinLock l(spinlock);
-  core::T_sp old = slot;
-  slot = nil<core::T_O>();
-  return old;
-}
-inline void atomic_push(mp::SpinLock& spinlock, core::T_sp& slot, core::T_sp object) {
-  core::Cons_sp cons = core::Cons_O::create(object, nil<core::T_O>());
-  mp::SafeSpinLock l(spinlock);
-  core::T_sp car = slot;
-  cons->rplacd(car);
-  slot = cons;
-}
-}; // namespace mp
-
 #define DEFAULT_THREAD_STACK_SIZE 8388608
 namespace mp {
 
-// NOTE DO NOT PUT GC managed pointers in here unless you designate this
-// as containing roots!!!!!!!!!!
-// This struct is to pass info from the parent thread to the child thread.
-struct ThreadStartInfo {
-  uintptr_t _UniqueID;
-  ThreadStartInfo(uintptr_t id) : _UniqueID(id){};
-};
-
-extern std::atomic<uintptr_t> global_process_UniqueID;
-
 typedef enum {
-  Nascent = 0, // Has not yet started, may proceed to Active
-  Inactive,
-  Booting,
-  Active,    // Running, may proceed to Suspended or Exited
-  Suspended, // Temporarily paused, may proceed to Active or Exited
-  Exited
+  Nascent = 0, // Has not yet started; proceeds to Booting when started
+  Booting, // Has been started but isn't ready for Lisp; proceeds to Running
+  Running, // Running normally; may proceed to Suspended or Exited
+  Suspended, // Temporarily paused; may proceed to Running or Exited
+  Exited // Halt state
 } // Finished running, permanent state.
-ProcessPhase;
+  ProcessPhase;
+// Graph of all legal transitions:
+// Nascent -> Booting -> Running -> Exited, Running -> Suspended -> Running
 
 class Process_O : public core::CxxObject_O {
   LISP_CLASS(mp, MpPkg, Process_O, "Process", core::CxxObject_O);
@@ -121,7 +97,6 @@ public:
   };
 
 public:
-  uintptr_t _UniqueID;
   core::T_sp _Parent;
   core::T_sp _Name;
   core::T_sp _Function;
@@ -132,8 +107,6 @@ public:
   core::T_sp _AbortCondition;
   core::ThreadLocalState* _ThreadInfo;
   std::atomic<ProcessPhase> _Phase;
-  dont_expose<Mutex> _SuspensionMutex;
-  dont_expose<ConditionVariable> _SuspensionCV;
   //    dont_expose<ConditionVariable> _ExitBarrier;
   size_t _StackSize;
   dont_expose<pthread_t> _TheThread;
@@ -148,30 +121,38 @@ public:
 public:
   Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments, core::List_sp initialSpecialBindings = nil<core::T_O>(),
             size_t stack_size = 8 * 1024 * 1024)
-      : _UniqueID(global_process_UniqueID++), _Parent(nil<core::T_O>()), _Name(name), _Function(function), _Arguments(arguments),
+      : _Parent(nil<core::T_O>()), _Name(name), _Function(function), _Arguments(arguments),
         _InitialSpecialBindings(initialSpecialBindings), _ReturnValuesList(nil<core::T_O>()), _Aborted(false),
-        _AbortCondition(nil<core::T_O>()), _ThreadInfo(NULL), _Phase(Nascent), _SuspensionMutex(SUSPBARR_NAMEWORD),
+        _AbortCondition(nil<core::T_O>()), _ThreadInfo(NULL), _Phase(Nascent),
         _StackSize(stack_size) {
     if (!function) {
       printf("%s:%d Trying to create a process and the function is NULL\n", __FILE__, __LINE__);
     }
   };
 
-  int startProcess() {
-    pthread_attr_t attr;
-    int result;
-    result = pthread_attr_init(&attr);
-    result = pthread_attr_setstacksize(&attr, this->_StackSize);
-    if (result != 0)
-      return result;
-    this->_Phase = Active;
-    ThreadStartInfo* info = new ThreadStartInfo(this->_UniqueID); // delete this in start_thread
-    result = pthread_create(&this->_TheThread._value, &attr, start_thread, (void*)info);
-    pthread_attr_destroy(&attr);
-    return result;
-  }
+  int startProcess();
+  void run(void* stackTop); // the function the thread actually runs, mostly
   string __repr__() const override;
+  inline ProcessPhase phase() const { return _Phase.load(std::memory_order_acquire); }
   string phase_as_string() const;
+  void interrupt(core::T_sp interrupt);
+  void suspend();
+  void resume();
+private:
+  void runInner(core::List_sp bindings);
+  inline void updatePhase(ProcessPhase n) {
+    _Phase.store(n, std::memory_order_release);
+    _Phase.notify_all();
+  }
+  // Like the above, but CASs and tells you if it worked.
+  inline bool updatePhaseFrom(ProcessPhase old, ProcessPhase n) {
+    bool r = _Phase.compare_exchange_strong(old, n, std::memory_order_acq_rel);
+    if (r) _Phase.notify_all();
+    return r;
+  }
+  inline void waitPhase(ProcessPhase old) {
+    BEGIN_PARK { _Phase.wait(old, std::memory_order_acquire); } END_PARK;
+  }
 };
 }; // namespace mp
 
@@ -326,4 +307,8 @@ public:
   string __repr__() const override;
 };
 void mp__interrupt_process(Process_sp process, core::T_sp func);
+}; // namespace mp
+
+namespace mp {
+void posix_signal_interrupt(int);
 }; // namespace mp

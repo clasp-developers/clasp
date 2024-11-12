@@ -171,7 +171,10 @@ VirtualMachine::~VirtualMachine() {
 #if 1
   this->disable_guards();
 #endif
-  gctools::RootClassAllocator<T_O>::freeRoots(this->_stackBottom);
+  // In snapshot load we make threads with no VM.
+  // We have nothing to free and _stackBottom is just its initial NULL.
+  if (this->_stackBottom)
+    gctools::RootClassAllocator<T_O>::freeRoots(this->_stackBottom);
 }
 
 // For main thread initialization - it happens too early and _Nil is undefined
@@ -179,9 +182,13 @@ VirtualMachine::~VirtualMachine() {
 // ThreadLocalState::finish_initialization_main_thread() after the Nil symbol is
 // in GC managed memory.
 ThreadLocalState::ThreadLocalState(bool dummy)
-    : _unwinds(0), _PendingInterrupts(), _CleanupFunctions(NULL), _ObjectFiles(), _BufferStr8NsPool(), _BufferStrWNsPool(),
-      _Breakstep(false), _BreakstepFrame(NULL), _DynEnvStackBottom(), _UnwindDest(), _DtreeInterpreterCallCount(0) {
-  my_thread = this;
+  : _unwinds(0), _CleanupFunctions(NULL), _ObjectFiles(), _BufferStr8NsPool(), _BufferStrWNsPool(), _PendingSignalsP(false),
+    // initialized with null pointers so that dequeue_interrupt
+    // can see that the queue is not yet available.
+    // Default-initializing an atomic default-initializes the underlying object
+    // only in C++20 and beyond.
+    _PendingInterruptsHead(), _PendingInterruptsTail(),
+    _Breakstep(false), _BreakstepFrame(NULL), _DynEnvStackBottom(), _UnwindDest(), _DtreeInterpreterCallCount(0) {
 #ifdef _TARGET_OS_DARWIN
   pthread_threadid_np(NULL, &this->_Tid);
 #else
@@ -190,6 +197,7 @@ ThreadLocalState::ThreadLocalState(bool dummy)
   this->_xorshf_x = rand();
   this->_xorshf_y = rand();
   this->_xorshf_z = rand();
+  sigemptyset(&this->_PendingSignals);
 }
 
 pid_t ThreadLocalState::safe_fork() {
@@ -220,8 +228,6 @@ void ThreadLocalState::finish_initialization_main_thread(core::T_sp theNilObject
   //  printf("%s:%d:%s reinitialize symbols here once _Nil is defined\n", __FILE__, __LINE__, __FUNCTION__ );
   // Reinitialize all threadlocal lists once NIL is defined
   // We work with theObject here directly because it's very early in the bootstrapping
-  if (this->_PendingInterrupts.theObject)
-    goto ERR;
   if (this->_ObjectFiles.theObject)
     goto ERR;
   if (this->_BufferStr8NsPool.theObject)
@@ -232,7 +238,6 @@ void ThreadLocalState::finish_initialization_main_thread(core::T_sp theNilObject
     goto ERR;
   if (this->_UnwindDest.theObject)
     goto ERR;
-  this->_PendingInterrupts.theObject = theNilObject.theObject;
   this->_ObjectFiles.theObject = theNilObject.theObject;
   this->_BufferStr8NsPool.theObject = theNilObject.theObject;
   this->_BufferStrWNsPool.theObject = theNilObject.theObject;
@@ -246,9 +251,9 @@ ERR:
 
 // This is for constructing ThreadLocalState for threads
 ThreadLocalState::ThreadLocalState()
-    : _unwinds(0), _PendingInterrupts(nil<core::T_O>()), _ObjectFiles(nil<core::T_O>()), _CleanupFunctions(NULL), _Breakstep(false),
-      _BreakstepFrame(NULL), _DynEnvStackBottom(nil<core::T_O>()), _UnwindDest(nil<core::T_O>()) {
-  my_thread = this;
+  : _unwinds(0), _ObjectFiles(nil<core::T_O>()), _CleanupFunctions(NULL), _Breakstep(false), _PendingSignalsP(false),
+    _PendingInterruptsHead(), _PendingInterruptsTail(),
+    _BreakstepFrame(NULL), _DynEnvStackBottom(nil<core::T_O>()), _UnwindDest(nil<core::T_O>()) {
 #ifdef _TARGET_OS_DARWIN
   pthread_threadid_np(NULL, &this->_Tid);
 #else
@@ -259,6 +264,7 @@ ThreadLocalState::ThreadLocalState()
   this->_xorshf_x = rand();
   this->_xorshf_y = rand();
   this->_xorshf_z = rand();
+  sigemptyset(&this->_PendingSignals);
 }
 
 static void dumpDynEnvStack(T_sp stack) {
@@ -376,6 +382,47 @@ void ThreadLocalState::popObjectFile() {
   SIMPLE_ERROR("There were no more object files");
 }
 
+// INTERRUPT QUEUE
+// Very simple atomic queue, but I still had to consult with a paper:
+// Valois, John D. "Implementing lock-free queues." Proceedings of the seventh international conference on Parallel and Distributed Computing Systems. 1994.
+// The ABA problem mentioned there shouldn't matter since we always use fresh
+// conses for the new tails. Technically I guess we could reallocate one by
+// coincidence but that seems really unlikely?
+void ThreadLocalState::enqueue_interrupt(core::T_sp interrupt) {
+  core::Cons_sp record = core::Cons_O::create(interrupt, nil<core::T_O>());
+  // relaxed because queueing an interrupt does not synchronize with queueing
+  // another interrupt
+  core::Cons_sp tail = _PendingInterruptsTail.load(std::memory_order_relaxed);
+  while (true) {
+    core::T_sp ntail = nil<core::T_O>();
+    if (tail->cdrCAS(ntail, record, std::memory_order_release)) break;
+    else tail = ntail.as_assert<core::Cons_O>();
+  }
+  _PendingInterruptsTail.compare_exchange_strong(tail, record,
+                                                 std::memory_order_release);
+}
+
+// Pop a thing from the interrupt queue. Returns NIL if the queue is empty.
+core::T_sp ThreadLocalState::dequeue_interrupt() {
+  // Use acquire-release since sending an interrupt synchronizes-with processing
+  // that interrupt.
+  core::Cons_sp head = _PendingInterruptsHead.load(std::memory_order_acquire);
+  core::T_sp next;
+  core::Cons_sp cnext;
+  do {
+    next = head->cdr();
+    if (next.nilp()) return next; // nothing to dequeue
+    cnext = next.as_assert<core::Cons_O>();
+  } while (!_PendingInterruptsHead.compare_exchange_weak(head, cnext,
+                                                         std::memory_order_acq_rel));
+  core::T_sp interrupt = cnext->car();
+  // We need to keep the new head where it is so the queue is never empty
+  // (empty queues make atomicity hard-to-impossible)
+  // but we should spike the next to make the interrupt collectible later.
+  cnext->rplaca(nil<core::T_O>());
+  return interrupt;
+}
+
 void ThreadLocalState::startUpVM() { this->_VM.startup(); }
 
 ThreadLocalState::~ThreadLocalState() {}
@@ -412,8 +459,9 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize
 #else
   this->_WriteToStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream());
 #endif
-  this->_PendingInterrupts = nil<T_O>();
-  this->_SparePendingInterruptRecords = cl__make_list(clasp_make_fixnum(16), nil<T_O>());
+  core::Cons_sp intqueue = core::Cons_O::create(nil<core::T_O>(), nil<core::T_O>());
+  this->_PendingInterruptsHead.store(intqueue, std::memory_order_release);
+  this->_PendingInterruptsTail.store(intqueue, std::memory_order_release);
 };
 
 }; // namespace core

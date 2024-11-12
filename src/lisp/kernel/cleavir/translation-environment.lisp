@@ -249,3 +249,41 @@
 (defun find-llvm-function-info (function)
   (or (gethash function *function-info*)
       (error "Missing llvm function info for BIR function ~a." function)))
+
+;;; Binding and unbinding special variables
+(defun bind-special (cellv value)
+  (let* ((bde-cons-mem (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
+                                      :label "binding-dynenv-cons-mem"))
+         (bde-mem (cmp:alloca-i8 cmp:+binding-dynenv-size+
+                                 :alignment cmp:+alignment+
+                                 :label "binding-dynenv-mem"))
+         (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil))
+         (ind (%intrinsic-call "cc_getCellTLIndex" (list cellv)))
+         (old (%intrinsic-call "cc_specialBind" (list ind value))))
+    (%intrinsic-call "cc_initializeAndPushBindingDynenv"
+                     (list bde-mem bde-cons-mem cellv old))
+    (values ind old old-de-stack)))
+
+(defun unbind-special (index old-value old-de-stack)
+  (%intrinsic-call "cc_specialUnbind" (list index old-value))
+  (%intrinsic-call "cc_set_dynenv_stack" (list old-de-stack)))
+
+(defun gen-call-cleanup (uwprotect-inst)
+  (let (;; KLUDGE: In order to reenable interrupts when throwing
+        ;; an exception out, we use a fake constant bind to generate
+        ;; a landing pad. This only needs its class identity,
+        ;; dynenv-storage, and parent to be handled right by
+        ;; landing-pad.lisp.
+        ;; I can't think of a cleaner way to do this.
+        (bind (make-instance 'bir:constant-bind
+                :iblock (bir:iblock uwprotect-inst))))
+    (multiple-value-bind (ind old old-destack)
+        (bind-special (literal:constants-table-value
+                       (literal:reference-variable-cell
+                        'core:*interrupts-enabled*)
+                       :literal-name "*INTERRUPTS-ENABLED*")
+                      (%nil))
+      (setf (dynenv-storage bind) (list ind old old-destack))
+      (cmp:with-landing-pad (maybe-entry-landing-pad bind *tags*)
+        (closure-call-or-invoke (in (first (bir:inputs uwprotect-inst))) nil))
+      (unbind-special ind old old-destack))))

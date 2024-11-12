@@ -27,6 +27,8 @@ THE SOFTWARE.
 */
 /* -^- */
 
+#include <clasp/core/core.h> // DEBUG_FRAME (in configure_clasp.h)
+
 namespace gctools {
 
 /*! Frame: A class that maintains an array of T_O* pointers on a thread-local stack for setting up calls.

@@ -81,6 +81,7 @@ THE SOFTWARE.
 #include <clasp/core/lispReader.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/gctools/park.h> // BEGIN_PARK/END_PARK
 #include <version.h>
 #include <llvm/Config/llvm-config.h>
 
@@ -99,16 +100,15 @@ int clasp_musleep(double dsec, bool alertable) {
   ts.tv_sec = seconds;
   ts.tv_nsec = nanoseconds;
   int code;
-AGAIN:
-  code = nanosleep(&ts, &ts);
+ AGAIN:
+  BEGIN_PARK {
+    code = nanosleep(&ts, &ts);
+  } END_PARK;
   int old_errno = errno;
-  gctools::handle_all_queued_interrupts();
-  {
-    if (code < 0 && old_errno == EINTR && !alertable) {
-      goto AGAIN;
-    } else if (code < 0) {
-      printf("%s:%d nanosleep returned code = %d  errno = %d\n", __FILE__, __LINE__, code, errno);
-    }
+  if (code < 0 && old_errno == EINTR && !alertable) {
+    goto AGAIN;
+  } else if (code < 0) {
+    printf("%s:%d nanosleep returned code = %d  errno = %d\n", __FILE__, __LINE__, code, old_errno);
   }
   return code;
 }

@@ -15,6 +15,7 @@
            #~"threadlocal.cc"
            #~"gc_boot.cc"
            #~"interrupt.cc"
+           #~"park.cc"
            #~"gcFunctions.cc"
            #~"snapshotSaveLoad.cc"
            #~"gctoolsPackage.cc"

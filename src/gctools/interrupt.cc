@@ -11,235 +11,209 @@
 #include <clasp/core/debugger.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/core/hashTableEq.h>
 #include <clasp/core/mpPackage.h>
-#include <clasp/core/designators.h>
 #include <clasp/core/lispList.h>
 #include <clasp/gctools/interrupt.h>
 #include <clasp/core/numbers.h>
+
+/*
+ * Interrupts! Oh boy! Get ready for chaos and difficulty.
+ * Generally speaking we try to avoid truly asynchronous interrupt
+ * signals. Instead, we queue them, and only fire at given safe points
+ * by calling handle_all_queued_interrupts
+ * (aka core:check-pending-interrupts, mp:signal-pending-interrupts).
+ * Currently these safe points are when we allocate but that will
+ * probably change in the future.
+ * To fire an interrupt, we make an interrupt object, which is just a
+ * Lisp condition (defined in conditions.lisp), and SIGNAL it. It can
+ * then be handled. If it's not, we call SERVICE-INTERRUPT to do
+ * whatever the interrupt says to do.
+ *
+ * We do accept asynchronous interrupts when we're just waiting, e.g.
+ * from sleep, waiting to grab a lock, etc. See park.cc for details.
+ *
+ * POSIX signals are treated as interrupts for the most part because
+ * they can always arrive asynchronously (via kill(2) etc). Some
+ * of them we handle immediately because they can arrive such that if
+ * the signal handler returns or is the default, the process will be
+ * killed. For example SEGV will be signaled like this if we have a
+ * memory problem. It is nontrivial to differentiate whether a signal
+ * is used in this way and we're probably not doing it correctly
+ * in all cases.
+ */
 
 SYMBOL_EXPORT_SC_(CorePkg, terminal_interrupt);
 SYMBOL_EXPORT_SC_(ExtPkg, illegal_instruction);
 SYMBOL_EXPORT_SC_(ExtPkg, segmentation_violation);
 SYMBOL_EXPORT_SC_(ExtPkg, bus_error);
 
+/* Stupid preprocessor nonsense to save some typing.
+ * Undefined at the bottom of the file. */
+#ifdef SIGSYS
+#define DOSIGSYS(MAC) MAC(SYS)
+#else
+#define DOSIGSYS(MAC)
+#endif
+#ifdef SIGTRAP
+#define DOSIGTRAP(MAC) MAC(TRAP)
+#else
+#define DOSIGTRAP(MAC)
+#endif
+#ifdef SIGVTALRM
+#define DOSIGVTALRM(MAC) MAC(VTALRM)
+#else
+#define DOSIGVTALRM(MAC)
+#endif
+#ifdef SIGXCPU
+#define DOSIGXCPU(MAC) MAC(XCPU)
+#else
+#define DOSIGXCPU(MAC)
+#endif
+#ifdef SIGXFSZ
+#define DOSIGXFSZ(MAC) MAC(XFSZ)
+#else
+#define DOSIGXFSZ(MAC)
+#endif
+#ifdef SIGPOLL
+#define DOSIGPOLL(MAC) MAC(POLL)
+#else
+#define DOSIGPOLL(MAC)
+#endif
+#ifdef SIGPROF
+#define DOSIGPROF(MAC) MAC(PROF)
+#else
+#define DOSIGPROF(MAC)
+#endif
+#ifdef SIGEMT
+#define DOSIGEMT(MAC) MAC(EMT)
+#else
+#define DOSIGEMT(MAC)
+#endif
+#ifdef SIGIO
+#define DOSIGIO(MAC) MAC(IO)
+#else
+#define DOSIGIO(MAC)
+#endif
+#ifdef SIGPWR
+#define DOSIGPWR(MAC) MAC(PWR)
+#else
+#define DOSIGPWR(MAC)
+#endif
+#ifdef SIGTHR
+#define DOSIGTHR(MAC) MAC(THR)
+#else
+#define DOSIGTHR(MAC)
+#endif
+
+#define DO_ALL_SIGNALS(MAC) \
+  MAC(ABRT); MAC(ALRM); MAC(BUS); MAC(CHLD); MAC(CONT); MAC(FPE); MAC(HUP);\
+  MAC(ILL); MAC(INT); MAC(KILL); MAC(PIPE); MAC(QUIT); MAC(SEGV); MAC(STOP);\
+  MAC(TERM); MAC(TSTP); MAC(TTIN); MAC(TTOU); MAC(USR1); MAC(USR2);\
+  MAC(WINCH); MAC(URG);\
+  DOSIGSYS(MAC); DOSIGTRAP(MAC); DOSIGVTALRM(MAC); DOSIGXCPU(MAC);\
+  DOSIGXFSZ(MAC); DOSIGPOLL(MAC); DOSIGPROF(MAC); DOSIGEMT(MAC);\
+  DOSIGIO(MAC); DOSIGPWR(MAC); DOSIGTHR(MAC);
+
+#define SIGEXPORT(NAME) SYMBOL_EXPORT_SC_(CorePkg, SIG##NAME)
+DO_ALL_SIGNALS(SIGEXPORT)
+#undef SIGNEXPORT
+
 namespace gctools {
 
-/*! The value of the signal that clasp uses to interrupt threads */
-int global_signal = SIGUSR2;
+// Flag used in wait_for_user_signal.
 bool global_user_signal = false;
-
-/*! Signal info is in CONS set by ADD_SIGNAL macro at bottom */
-core::T_sp safe_signal_name(int sig) {
-  WITH_READ_LOCK(globals_->_UnixSignalHandlersMutex);
-  core::T_sp key = core::clasp_make_fixnum(sig);
-  if (_lisp->_Booted) {
-    core::T_sp cur = core__alist_assoc_eql(_lisp->_Roots._UnixSignalHandlers, key);
-    if (cur.notnilp()) {
-      return oCadr(cur); // return the signal name
-    }
-  }
-  return key;
-}
-
-/*! Signal info is in CONS set by ADD_SIGNAL macro at bottom */
-core::T_sp safe_signal_handler(int sig) {
-  WITH_READ_LOCK(globals_->_UnixSignalHandlersMutex);
-  core::T_sp key = core::clasp_make_fixnum(sig);
-  if (_lisp->_Booted) {
-    core::T_sp cur = core__alist_assoc_eql(_lisp->_Roots._UnixSignalHandlers, key);
-    if (cur.notnilp()) {
-      return oCaddr(cur); // return the signal handler
-    }
-  }
-  return key;
-}
-
-CL_LAMBDA(signal);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(return Current handler for signal)dx");
-DOCGROUP(clasp);
-CL_DEFUN core::T_mv core__signal_info(int sig) { return Values(safe_signal_name(sig), safe_signal_handler(sig)); }
 
 // INTERRUPTS
 
-static bool do_interrupt_thread(mp::Process_sp process) {
-  fflush(stdout);
-#ifdef ECL_WINDOWS_THREADS
-#ifndef ECL_USE_GUARD_PAGE
-#error "Cannot implement ecl_interrupt_process without guard pages"
-#endif
-  HANDLE thread = (HANDLE)process->process.thread;
-  CONTEXT context;
-  void* trap_address = process->process.env;
-  DWORD guard = PAGE_GUARD | PAGE_READWRITE;
-  int ok = 1;
-  if (SuspendThread(thread) == (DWORD)-1) {
-    FEwin32_error("Unable to suspend thread ~A", 1, process);
-    ok = 0;
-    goto EXIT;
-  }
-  process->process.interrupt = ECL_T;
-  if (!VirtualProtect(process->process.env, sizeof(struct cl_env_struct), guard, &guard)) {
-    FEwin32_error("Unable to protect memory from thread ~A", 1, process);
-    ok = 0;
-  }
-RESUME:
-  if (!QueueUserAPC(wakeup_function, thread, 0)) {
-    FEwin32_error("Unable to queue APC call to thread ~A", 1, process);
-    ok = 0;
-  }
-  if (ResumeThread(thread) == (DWORD)-1) {
-    FEwin32_error("Unable to resume thread ~A", 1, process);
-    ok = 0;
-    goto EXIT;
-  }
-EXIT:
-  return ok;
-#else
-  int signal = global_signal;
-  if (pthread_kill(process->_TheThread._value, signal)) {
-    FElibc_error("Unable to interrupt process ~A", 1, process);
-  }
-  return 1;
-#endif
-}
-
-static void queue_signal_or_interrupt(core::ThreadLocalState*, core::T_sp, bool);
-void clasp_interrupt_process(mp::Process_sp process, core::T_sp function) {
-  /*
-   * Lifted from the ECL source code.  meister 2017
-   * We first ensure that the process is active and running
-   * and past the initialization phase, where it has set up
-   * the environment. Then:
-   * - In Windows it sets up a trap in the stack, so that the
-   *   uncaught exception handler can catch it and process it.
-   * - In POSIX systems it sends a user level interrupt to
-   *   the thread, which then decides how to act.
-   *
-   * If FUNCTION is NIL, we just intend to wake up the process
-   * from some call to ecl_musleep() Queue the interrupt for any
-   * process stage that can potentially receive a signal  */
-  if (function.notnilp() && (process->_Phase >= mp::Nascent)) {
-    // printf("%s:%d clasp_interrupt_process queuing signal\n", __FILE__, __LINE__);
-    function = core::coerce::functionDesignator(function);
-    queue_signal_or_interrupt(process->_ThreadInfo, function, true);
-  }
-  /* ... but only deliver if the process is still alive */
-  if (process->_Phase == mp::Active)
-    do_interrupt_thread(process);
-}
-
-inline bool interrupts_disabled_by_C() { return my_thread_low_level->_DisableInterrupts; }
-
-inline bool interrupts_disabled_by_lisp() { return core::_sym_STARinterrupts_enabledSTAR->symbolValue().notnilp(); }
-
-// SIGNAL QUEUE
-// This is a regular lisp list. We keep a few extra conses lying around
-// and use those rather than allocate within signal handlers.
-// Objects in the queue are either fixnums, representing signals, or
-// functions, representing interrupts.
-
-static void queue_signal_or_interrupt(core::ThreadLocalState* thread, core::T_sp thing, bool allocate) {
-  mp::SafeSpinLock spinlock(thread->_SparePendingInterruptRecordsSpinLock);
-  core::T_sp record;
-  if (allocate) {
-    record = core::Cons_O::create(nil<core::T_O>(), nil<core::T_O>());
-  } else {
-    record = thread->_SparePendingInterruptRecords;
-    if (record.consp()) {
-      thread->_SparePendingInterruptRecords = record.unsafe_cons()->cdr();
-    }
-  }
-  if (record.consp()) {
-    record.unsafe_cons()->rplaca(thing);
-    record.unsafe_cons()->rplacd(nil<core::T_O>());
-    thread->_PendingInterrupts = clasp_nconc(thread->_PendingInterrupts, record);
-  }
-}
-
-static void queue_signal(int signo) { queue_signal_or_interrupt(my_thread, core::clasp_make_fixnum(signo), false); }
-
-// Pop a thing from the queue.
-// NOTE: Don't call this unless you're holding the spare records spinlock.
-core::T_sp pop_signal_or_interrupt(core::ThreadLocalState* thread) {
-  core::T_sp value;
-  core::Cons_sp record;
-  { // <---- brace for spinlock scope
-    mp::SafeSpinLock spinlock(thread->_SparePendingInterruptRecordsSpinLock);
-    record = gc::As<core::Cons_sp>(thread->_PendingInterrupts);
-    value = record->car();
-    thread->_PendingInterrupts = record->cdr();
-    if (value.fixnump() || gc::IsA<core::Symbol_sp>(value)) {
-      // Conses that contain fixnum or symbol values are recycled onto the
-      // _SparePendingInterruptRecords stack
-      record->rplacd(thread->_SparePendingInterruptRecords);
-      thread->_SparePendingInterruptRecords = record;
-    }
-  }
-  return value;
+inline bool interrupts_disabled_p() {
+  return my_thread_low_level->_DisableInterrupts
+    || (my_thread->interrupt_queue_validp() // KLUDGE to not trigger problems if we do this early.
+        && core::_sym_STARinterrupts_enabledSTAR->symbolValue().nilp());
 }
 
 // Perform one action (presumably popped from the queue).
-void handle_queued_signal_or_interrupt(core::T_sp signal_code) {
-  if (signal_code.fixnump()) { // signal
-    handle_signal_now(signal_code.unsafe_fixnum());
-  } else if (gc::IsA<core::Function_sp>(signal_code)) { // interrupt
-    core::eval::funcall(signal_code);
+void handle_queued_interrupt(core::T_sp signal_code) {
+  if (mp::_sym_signal_interrupt->fboundp()) {
+    core::eval::funcall(mp::_sym_signal_interrupt->symbolFunction(),
+                        signal_code);
+  }
+  // otherwise we're really early,
+  // but this is pretty low level so just silently ignore
+}
+
+void handle_signal_now(int);
+static void handle_one_signal(sigset_t* pending, int signum) {
+  if (sigismember(pending, signum)) {
+    sigdelset(pending, signum);
+    handle_signal_now(signum);
   }
 }
 
-// Do all the queued actions, emptying the queue.
+// Enqueue a signal unless we're in a blocking call - in that case handle it now.
+static void enqueue_or_handle_signal(int signo) {
+  if (my_thread->blockingp())
+    handle_signal_now(signo);
+  else
+    my_thread->enqueue_signal(signo);
+}
+
+static void handle_pending_signals() {
+  my_thread->clear_pending_signals_p();
+  sigset_t* pending = my_thread->pending_signals();
+#define TRYSIG(NAME) handle_one_signal(pending, SIG##NAME)
+  DO_ALL_SIGNALS(TRYSIG);
+#undef TRYSIG
+}
+
+// Handle just interrupts and not signals. Used in the SIGCONT handler,
+// which checks if interrupts are disabled itself.
+static void handle_queued_interrupts() {
+  // Check that the queue has actually been created.
+  if (my_thread->interrupt_queue_validp()) {
+    while (true) {
+      core::T_sp i = my_thread->dequeue_interrupt();
+      if (i.nilp()) break;
+      handle_queued_interrupt(i);
+    }
+  }
+}
+
+// Do all the queued actions, emptying the queue -
+// unless interrupts have been disabled.
 template <> void handle_all_queued_interrupts<RuntimeStage>() {
-  while (my_thread->_PendingInterrupts.consp()) {
-    // printf("%s:%d:%s Handling a signal - there are pending interrupts\n", __FILE__, __LINE__, __FUNCTION__ );
-    core::T_sp sig = pop_signal_or_interrupt(my_thread);
-    // printf("%s:%d:%s Handling a signal: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(sig).c_str() );
-    handle_queued_signal_or_interrupt(sig);
+  if (!interrupts_disabled_p()) {
+    if (my_thread->pending_signals_p())
+      handle_pending_signals();
+    handle_queued_interrupts();
   }
 }
 
 DOCGROUP(clasp);
 CL_DEFUN void core__check_pending_interrupts() { handle_all_queued_interrupts(); }
 
-SYMBOL_EXPORT_SC_(CorePkg, call_lisp_symbol_handler);
-void lisp_signal_handler(int sig) { core::eval::funcall(core::_sym_call_lisp_symbol_handler, core::clasp_make_fixnum(sig)); }
-
-DOCGROUP(clasp);
-CL_DEFUN int core__enable_disable_signals(int signal, int mod) {
-  struct sigaction new_action;
-  if (mod == 0)
-    new_action.sa_handler = SIG_IGN;
-  else if (mod == 1)
-    new_action.sa_handler = SIG_DFL;
-  else
-    new_action.sa_handler = lisp_signal_handler;
-  sigemptyset(&new_action.sa_mask);
-  new_action.sa_flags = (SA_NODEFER | SA_RESTART);
-  if (sigaction(signal, &new_action, NULL) == 0)
-    return 0;
-  else
-    return -1;
-}
-
 // HANDLERS
 
 // This is both a signal handler and called by signal handlers.
 void handle_signal_now(int sig) {
-  // If there's a handler function in the alist, call it.
-  // Otherwise signal a generic, resumable error.
-  core::Symbol_sp handler = safe_signal_handler(sig);
-  if (handler->fboundp()) {
-    core::eval::funcall(handler->symbolFunction());
-  } else {
-    core::T_sp signal_code = core::clasp_make_fixnum(sig);
-    core::cl__cerror(ext::_sym_ignore_signal->symbolValue(), ext::_sym_unix_signal_received,
-                     core::Cons_O::createList(kw::_sym_code, signal_code, kw::_sym_handler, handler));
-  }
+  // calls mp:posix-interrupt.
+  mp::posix_signal_interrupt(sig);
 }
 
 // This is both a signal handler and called by signal handlers.
 void handle_SIGUSR1(int sig) { global_user_signal = true; }
+
+// This handler is a bit special because we use SIGCONT to interrupt threads
+// that are blocked on a syscall or whatever.
+void handle_SIGCONT(int sig) {
+  if (my_thread->blockingp() && !interrupts_disabled_p()) {
+    // Disable (most) async interrupts as we call user code.
+    my_thread->set_blockingp(false);
+    handle_queued_interrupts();
+    handle_signal_now(sig); // pass on the SIGCONT, in case someone cares
+    // Nothing jumped out of here, so we're back to blocking.
+    my_thread->set_blockingp(true);
+  } else my_thread->enqueue_signal(sig);
+}
 
 void setup_user_signal() { signal(SIGUSR1, handle_SIGUSR1); }
 
@@ -251,38 +225,12 @@ void wait_for_user_signal(const char* message) {
   if (std::getenv("CLASP_EXIT_ON_WAIT_FOR_USER_SIGNAL")) {
     exit(1);
   }
-  double dsec = 0.1;
-  double seconds = floor(dsec);
-  double frac_seconds = dsec - seconds;
-  double nanoseconds = (frac_seconds * 1000000000.0);
-  timespec ts;
-  while (!global_user_signal) {
-    ts.tv_sec = seconds;
-    ts.tv_nsec = nanoseconds;
-    int code = nanosleep(&ts, &ts);
-    if (code < 0) {
-      if (errno == EINTR)
-        continue;
-      printf("%s:%d:%s nanosleep return error: %d\n", __FILE__, __LINE__, __FUNCTION__, errno);
-      abort();
-    }
-  }
+  while (!global_user_signal) pause();
   printf("%s:%d:%s Received SIGUSR1\n", __FILE__, __LINE__, __FUNCTION__);
   global_user_signal = false;
 }
 
 CL_DEFUN void gctools__wait_for_user_signal(const std::string& msg) { wait_for_user_signal(msg.c_str()); }
-
-void handle_or_queue_signal(int signo) {
-  if (interrupts_disabled_by_lisp()) {
-    queue_signal(signo);
-  } else if (interrupts_disabled_by_C()) {
-    my_thread_low_level->_DisableInterrupts = 3;
-    queue_signal(signo);
-  } else {
-    handle_signal_now(signo);
-  }
-}
 
 // false == SIGABRT invokes debugger, true == terminate (used in core__exit)
 bool global_debuggerOnSIGABRT = true;
@@ -351,7 +299,7 @@ void handle_fpe(int signo, siginfo_t* info, void* context) {
     ARITHMETIC_ERROR(nil<core::T_O>(), nil<core::T_O>());
   default: // FIXME: signal a better error.
     // Can end up here with e.g. SI_USER if it originated from kill
-    handle_signal_now(signo);
+    enqueue_or_handle_signal(signo);
   }
 }
 
@@ -370,9 +318,8 @@ void handle_ill(int signo, siginfo_t* info, void* context) {
     } else if (esr & FE_INVALID) {
       FLOATING_POINT_INVALID_OPERATION(nil<core::T_O>(), nil<core::T_O>());
     }
-  }
-  
-  handle_signal_now(signo);
+  } else
+    enqueue_or_handle_signal(signo);
 }
 #endif
 
@@ -394,16 +341,9 @@ void fatal_error_handler(void* user_data, const char* reason, bool gen_crash_dia
   abort();
 }
 
-void wake_up_thread(int sig) {
-  const char* msg = "In wake_up_thread interrupt.cc:296\n";
-  int len = strlen(msg);
-  write(1, msg, len);
-}
-
 // SIGNALS INITIALIZATION
 
-void initialize_signals(int clasp_signal) {
-  // clasp_signal is the signal that we use as a thread interrupt.
+void initialize_signals() {
 #define INIT_SIGNAL(sig, flags, handler)                                                                                           \
   new_action.sa_handler = handler;                                                                                                 \
   sigemptyset(&new_action.sa_mask);                                                                                                \
@@ -427,14 +367,12 @@ void initialize_signals(int clasp_signal) {
   // Lisp code. If that happens, and a signal is received again, we want
   // to deal with it the same way - not defer.
 
-  INIT_SIGNAL(clasp_signal, (SA_NODEFER | SA_RESTART | SA_ONSTACK), handle_or_queue_signal);
-  INIT_SIGNAL(global_signal, (SA_RESTART), wake_up_thread);
-  INIT_SIGNAL(SIGINT, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);
+  INIT_SIGNAL(SIGINT, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
 #ifdef SIGINFO
-  INIT_SIGNAL(SIGINFO, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);
+  INIT_SIGNAL(SIGINFO, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
 #endif
   if (!getenv("CLASP_DONT_HANDLE_CRASH_SIGNALS")) {
-    INIT_SIGNAL(SIGABRT, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);
+    INIT_SIGNAL(SIGABRT, (SA_NODEFER | SA_RESTART), handle_signal_now);
     INIT_SIGNALI(SIGSEGV, (SA_NODEFER | SA_RESTART | SA_ONSTACK), handle_segv);
     INIT_SIGNALI(SIGBUS, (SA_NODEFER | SA_RESTART), handle_bus);
   }
@@ -445,44 +383,33 @@ void initialize_signals(int clasp_signal) {
   INIT_SIGNAL(SIGILL, (SA_NODEFER | SA_RESTART), handle_signal_now);
 #endif
   // Handle all signals that would terminate clasp (and can be caught)
-  INIT_SIGNAL(SIGPIPE, (SA_NODEFER | SA_RESTART), handle_signal_now);
-  INIT_SIGNAL(SIGALRM, (SA_NODEFER | SA_RESTART), handle_signal_now);
-  INIT_SIGNAL(SIGTTIN, (SA_NODEFER | SA_RESTART), handle_signal_now);
-  INIT_SIGNAL(SIGTTOU, (SA_NODEFER | SA_RESTART), handle_signal_now);
-  INIT_SIGNAL(SIGPROF, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGPIPE, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
+  INIT_SIGNAL(SIGALRM, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
+  INIT_SIGNAL(SIGTTIN, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
+  INIT_SIGNAL(SIGTTOU, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
+  INIT_SIGNAL(SIGPROF, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
   INIT_SIGNAL(SIGUSR1, (SA_NODEFER | SA_RESTART), handle_SIGUSR1);
-  INIT_SIGNAL(SIGSYS, (SA_NODEFER | SA_RESTART), handle_signal_now);
-  INIT_SIGNAL(SIGTRAP, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGUSR2, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
+  INIT_SIGNAL(SIGSYS, (SA_NODEFER | SA_RESTART), handle_signal_now); // can be signaled synchronously by bad syscall
+  INIT_SIGNAL(SIGTRAP, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
+  // These termination signals we respond to when we're good and ready.
+  INIT_SIGNAL(SIGTERM, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
+  INIT_SIGNAL(SIGQUIT, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
+  INIT_SIGNAL(SIGHUP, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
 #ifdef SIGVTALRM
-  INIT_SIGNAL(SIGVTALRM, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGVTALRM, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
 #endif
+  INIT_SIGNAL(SIGURG, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
   // SIGXCPU is used by boehm to stop threads - this causes problems with boehm in the precise mode
 #if !(defined(USE_BOEHM) && defined(USE_PRECISE_GC))
-  INIT_SIGNAL(SIGXCPU, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGXCPU, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
 #endif
-  INIT_SIGNAL(SIGXFSZ, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGXFSZ, (SA_NODEFER | SA_RESTART), handle_signal_now); // signaled synchronously by some syscalls
+  INIT_SIGNAL(SIGWINCH, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
+  // This one we use specially to wake up blocking threads.
+  INIT_SIGNAL(SIGCONT, (SA_NODEFER | SA_RESTART), handle_SIGCONT);
 
   llvm::install_fatal_error_handler(fatal_error_handler, NULL);
-}
-
-#define ADD_SIGNAL_SYMBOL(sig, sigsym, handler)                                                                                    \
-  {                                                                                                                                \
-    core::List_sp info = core::Cons_O::createList(core::clasp_make_fixnum(sig), sigsym, handler);                                  \
-    _lisp->_Roots._UnixSignalHandlers = core::Cons_O::create(info, _lisp->_Roots._UnixSignalHandlers);                             \
-  }
-#define ADD_SIGNAL(sig, name, handler)                                                                                             \
-  {                                                                                                                                \
-    core::Symbol_sp sigsym = _lisp->intern(name, KeywordPkg);                                                                      \
-    ADD_SIGNAL_SYMBOL(sig, sigsym, handler);                                                                                       \
-  }
-
-CL_LAMBDA(signal symbol function);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(Set current handler for signal)dx");
-DOCGROUP(clasp);
-CL_DEFUN void core__push_unix_signal_handler(int signal, core::Symbol_sp name, core::Symbol_sp handler) {
-  WITH_READ_WRITE_LOCK(globals_->_UnixSignalHandlersMutex);
-  ADD_SIGNAL_SYMBOL(signal, name, handler);
 }
 
 CL_LAMBDA();
@@ -490,246 +417,24 @@ CL_DOCSTRING(R"dx(Get alist of Signal-name . Signal-code alist of known signal (
 DOCGROUP(clasp);
 CL_DEFUN core::List_sp core__signal_code_alist() {
   core::List_sp alist = nil<core::T_O>();
-/* these are all posix signals */
-#ifdef SIGHUP
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGHUP", KeywordPkg), core::clasp_make_fixnum(SIGHUP)), alist);
-#endif
-#ifdef SIGINT
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGINT", KeywordPkg), core::clasp_make_fixnum(SIGINT)), alist);
-#endif
-#ifdef SIGQUIT
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGQUIT", KeywordPkg), core::clasp_make_fixnum(SIGQUIT)), alist);
-#endif
-#ifdef SIGILL
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGILL", KeywordPkg), core::clasp_make_fixnum(SIGILL)), alist);
-#endif
-#ifdef SIGTRAP
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTRAP", KeywordPkg), core::clasp_make_fixnum(SIGTRAP)), alist);
-#endif
-#ifdef SIGABRT
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGABRT", KeywordPkg), core::clasp_make_fixnum(SIGABRT)), alist);
-#endif
-#ifdef SIGPOLL
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGPOLL", KeywordPkg), core::clasp_make_fixnum(SIGPOLL)), alist);
-#endif
-#ifdef SIGFPE
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGFPE", KeywordPkg), core::clasp_make_fixnum(SIGFPE)), alist);
-#endif
-#ifdef SIGKILL
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGKILL", KeywordPkg), core::clasp_make_fixnum(SIGKILL)), alist);
-#endif
-#ifdef SIGBUS
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGBUS", KeywordPkg), core::clasp_make_fixnum(SIGBUS)), alist);
-#endif
-#ifdef SIGSEGV
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGSEGV", KeywordPkg), core::clasp_make_fixnum(SIGSEGV)), alist);
-#endif
-#ifdef SIGSYS
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGSYS", KeywordPkg), core::clasp_make_fixnum(SIGSYS)), alist);
-#endif
-#ifdef SIGPIPE
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGPIPE", KeywordPkg), core::clasp_make_fixnum(SIGPIPE)), alist);
-#endif
-#ifdef SIGALRM
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGALRM", KeywordPkg), core::clasp_make_fixnum(SIGALRM)), alist);
-#endif
-#ifdef SIGTERM
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTERM", KeywordPkg), core::clasp_make_fixnum(SIGTERM)), alist);
-#endif
-#ifdef SIGURG
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGURG", KeywordPkg), core::clasp_make_fixnum(SIGURG)), alist);
-#endif
-#ifdef SIGSTOP
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGSTOP", KeywordPkg), core::clasp_make_fixnum(SIGSTOP)), alist);
-#endif
-
-#if 0
-#ifdef SIGTSTP
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTSTP",KeywordPkg), core::clasp_make_fixnum(SIGTSTP)), alist);
-#endif
-#ifdef SIGCONT
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGCONT",KeywordPkg), core::clasp_make_fixnum(SIGCONT)), alist);
-#endif
-#endif
-
-#ifdef SIGCHLD
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGCHLD", KeywordPkg), core::clasp_make_fixnum(SIGCHLD)), alist);
-#endif
-#ifdef SIGTTIN
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTTIN", KeywordPkg), core::clasp_make_fixnum(SIGTTIN)), alist);
-#endif
-#ifdef SIGTTOU
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTTOU", KeywordPkg), core::clasp_make_fixnum(SIGTTOU)), alist);
-#endif
-#ifdef SIGXCPU
-  // SIGXCPU is used by boehm to stop threads - this causes problems with boehm in the precise mode
-#if !(defined(USE_BOEHM) && defined(USE_PRECISE_GC))
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGXCPU", KeywordPkg), core::clasp_make_fixnum(SIGXCPU)), alist);
-#endif
-#endif
-#ifdef SIGXFSZ
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGXFSZ", KeywordPkg), core::clasp_make_fixnum(SIGXFSZ)), alist);
-#endif
-#ifdef SIGVTALRM
-  alist =
-      core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGVTALRM", KeywordPkg), core::clasp_make_fixnum(SIGVTALRM)), alist);
-#endif
-#ifdef SIGPROF
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGPROF", KeywordPkg), core::clasp_make_fixnum(SIGPROF)), alist);
-#endif
-#if 0
-#ifdef SIGUSR1
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGUSR1",KeywordPkg), core::clasp_make_fixnum(SIGUSR1)), alist);
-#endif
-#endif
-#ifdef SIGUSR2
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGUSR2", KeywordPkg), core::clasp_make_fixnum(SIGUSR2)), alist);
-#endif
-
-  /* Additional Signals */
-
-#ifdef SIGEMT
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGEMT", KeywordPkg), core::clasp_make_fixnum(SIGEMT)), alist);
-#endif
-#ifdef SIGIO
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGIO", KeywordPkg), core::clasp_make_fixnum(SIGIO)), alist);
-#endif
-#ifdef SIGWINCH
-  alist =
-      core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGWINCH", KeywordPkg), core::clasp_make_fixnum(SIGWINCH)), alist);
-#endif
-#ifdef SIGINFO
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGINFO", KeywordPkg), core::clasp_make_fixnum(SIGINFO)), alist);
-#endif
-#ifdef SIGTHR
-  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTHR", KeywordPkg), core::clasp_make_fixnum(SIGTHR)), alist);
-#endif
+#define DEFSIG(NAME) \
+  alist = core::Cons_O::create(core::Cons_O::create(core::_sym_SIG##NAME, core::clasp_make_fixnum(SIG##NAME)), alist);
+  DO_ALL_SIGNALS(DEFSIG);
+#undef DEFSIG
   return alist;
 }
 
-void initialize_unix_signal_handlers() {
-#ifdef SIGHUP
-  ADD_SIGNAL(SIGHUP, "SIGHUP", nil<core::T_O>());
-#endif
-#ifdef SIGINT
-  ADD_SIGNAL(SIGINT, "SIGINT", core::_sym_terminal_interrupt);
-#endif
-#ifdef SIGQUIT
-  ADD_SIGNAL(SIGQUIT, "SIGQUIT", nil<core::T_O>());
-#endif
-#ifdef SIGILL
-  ADD_SIGNAL(SIGILL, "SIGILL", ext::_sym_illegal_instruction);
-#endif
-#ifdef SIGTRAP
-  ADD_SIGNAL(SIGTRAP, "SIGTRAP", nil<core::T_O>());
-#endif
-#ifdef SIGABRT
-  ADD_SIGNAL(SIGABRT, "SIGABRT", nil<core::T_O>());
-#endif
-#ifdef SIGEMT
-  ADD_SIGNAL(SIGEMT, "SIGEMT", nil<core::T_O>());
-#endif
-/*
-// We do install a sigfpe handler in initialize_signals
-#ifdef SIGFPE
-        ADD_SIGNAL( SIGFPE, "SIGFPE", nil<core::T_O>());
-#endif
-*/
-#ifdef SIGKILL
-  ADD_SIGNAL(SIGKILL, "SIGKILL", nil<core::T_O>());
-#endif
-/*
-// These take a parameter, so will fail if called here, since handle_signal_now call with no parameters
-// We do install correct handlers in initialize_signals
-#ifdef SIGBUS
-        ADD_SIGNAL( SIGBUS, "SIGBUS", ext::_sym_bus_error);
-#endif
-#ifdef SIGSEGV
-        ADD_SIGNAL( SIGSEGV, "SIGSEGV", ext::_sym_segmentation_violation);
-#endif
-*/
-#ifdef SIGSYS
-  ADD_SIGNAL(SIGSYS, "SIGSYS", nil<core::T_O>());
-#endif
-#ifdef SIGPIPE
-  ADD_SIGNAL(SIGPIPE, "SIGPIPE", nil<core::T_O>());
-#endif
-#ifdef SIGALRM
-  ADD_SIGNAL(SIGALRM, "SIGALRM", nil<core::T_O>());
-#endif
-#ifdef SIGTERM
-  ADD_SIGNAL(SIGTERM, "SIGTERM", nil<core::T_O>());
-#endif
-#ifdef SIGURG
-  ADD_SIGNAL(SIGURG, "SIGURG", nil<core::T_O>());
-#endif
-#ifdef SIGSTOP
-  ADD_SIGNAL(SIGSTOP, "SIGSTOP", nil<core::T_O>());
-#endif
-
-#ifdef SIGTSTP
-  ADD_SIGNAL(SIGTSTP, "SIGTSTP", nil<core::T_O>());
-#endif
-#ifdef SIGCONT
-  ADD_SIGNAL(SIGCONT, "SIGCONT", nil<core::T_O>());
-#endif
-/*
-// core::_sym_wait_for_all_processes is undefined
-#ifdef SIGCHLD
-        ADD_SIGNAL( SIGCHLD, "SIGCHLD", core::_sym_wait_for_all_processes);
-#endif
-*/
-#ifdef SIGTTIN
-  ADD_SIGNAL(SIGTTIN, "SIGTTIN", nil<core::T_O>());
-#endif
-#ifdef SIGTTOU
-  ADD_SIGNAL(SIGTTOU, "SIGTTOU", nil<core::T_O>());
-#endif
-#ifdef SIGIO
-  ADD_SIGNAL(SIGIO, "SIGIO", nil<core::T_O>());
-#endif
-#ifdef SIGXCPU
-  // SIGXCPU is used by boehm to stop threads - this causes problems with boehm in the precise mode
-#if !(defined(USE_BOEHM) && defined(USE_PRECISE_GC))
-  ADD_SIGNAL(SIGXCPU, "SIGXCPU", nil<core::T_O>());
-#endif
-#endif
-#ifdef SIGXFSZ
-  ADD_SIGNAL(SIGXFSZ, "SIGXFSZ", nil<core::T_O>());
-#endif
-#ifdef SIGVTALRM
-  ADD_SIGNAL(SIGVTALRM, "SIGVTALRM", nil<core::T_O>());
-#endif
-#ifdef SIGPROF
-  ADD_SIGNAL(SIGPROF, "SIGPROF", nil<core::T_O>());
-#endif
-#ifdef SIGWINCH
-  ADD_SIGNAL(SIGWINCH, "SIGWINCH", nil<core::T_O>());
-#endif
-/*
-ext::_sym_information_interrupt is undefined
-#ifdef SIGINFO
-        ADD_SIGNAL( SIGINFO, "SIGINFO", ext::_sym_information_interrupt);
-#endif
-*/
-#if 0
-#ifdef SIGUSR1
-        ADD_SIGNAL( SIGUSR1, "SIGUSR1", nil<core::T_O>());
-#endif
-#endif
-#ifdef SIGUSR2
-#ifdef _TARGET_OS_DARWIN
-  ADD_SIGNAL(SIGUSR2, "SIGUSR2", nil<core::T_O>());
-#endif
-/*
-#ifdef _TARGET_OS_LINUX
-        ADD_SIGNAL( SIGUSR2, "SIGUSR2", ext::_sym_information_interrupt);
-#endif
-*/
-#endif
-#ifdef SIGTHR
-  ADD_SIGNAL(SIGTHR, "SIGTHR", nil<core::T_O>());
-#endif
-};
+#undef DOSIGTHR
+#undef DOSIGPWR
+#undef DOSIGIO
+#undef DOSIGEMT
+#undef DOSIGPROF
+#undef DOSIGPOLL
+#undef DOSIGXFSZ
+#undef DOSIGXCPU
+#undef DOSIGVTALRM
+#undef DOSIGTRAP
+#undef DOSIGSYS
+#undef DO_ALL_SIGNALS
 
 }; // namespace gctools

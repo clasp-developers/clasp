@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/array.h>
 #include <clasp/core/hashTable.fwd.h>
-#include <clasp/core/mpPackage.fwd.h>
 #include <clasp/core/instance.fwd.h>
 // may need more later
 #include <clasp/gctools/gc_interface.h>
@@ -273,21 +272,6 @@ template <typename FROM> struct TaggedCast<core::Instance_O*, FROM> {
   }
 };
 }; // namespace gctools
-
-namespace core {
-struct ClassReadLock {
-  mp::SharedMutex_sp _Lock;
-  ClassReadLock(mp::SharedMutex_sp lock);
-  ~ClassReadLock();
-};
-
-struct ClassWriteLock {
-  mp::SharedMutex_sp _Lock;
-  ClassWriteLock(mp::SharedMutex_sp lock);
-  ~ClassWriteLock();
-};
-
-}; // namespace core
 
 namespace core {
 SMART(ClassHolder);

@@ -124,6 +124,13 @@
             atomic-incf atomic-decf atomic-incf-explicit atomic-decf-explicit
             atomic-push atomic-push-explicit atomic-pop atomic-pop-explicit
             atomic-pushnew atomic-pushnew-explicit
+            ;; interrupts
+            interrupt service-interrupt interrupt-process
+            process-kill process-cancel process-suspend
+            simple-interrupt simple-interactive-interrupt
+            cancellation-interrupt suspension-interrupt
+            call-interrupt call-interrupt-function
+            signal-pending-interrupts raise
             ))
   (core:select-package "CORE"))
 

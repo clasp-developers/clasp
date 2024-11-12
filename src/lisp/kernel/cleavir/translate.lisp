@@ -544,6 +544,18 @@
    "cc_throw" (list (in (first (bir:inputs instruction)))))
   (cmp:irc-unreachable))
 
+(defun gen-call-cleanup (uwprotect-inst)
+  (multiple-value-bind (ind old old-destack)
+      (bind-special (literal:constants-table-value
+                     (literal:reference-variable-cell
+                      'core:*interrupts-enabled*)
+                     :literal-name "*INTERRUPTS-ENABLED*")
+                    (%nil))
+    (cmp:with-landing-pad (maybe-entry-landing-pad
+                           (bir:parent uwprotect-inst) *tags*)
+      (closure-call-or-invoke (in (first (bir:inputs uwprotect-inst))) nil))
+    (unbind-special ind old old-destack)))
+
 (defmethod translate-terminator ((instruction bir:unwind-protect) abi next)
   (declare (ignore abi))
   (let* ((cleanup (cmp:irc-basic-block-create "unwind-protect-cleanup"))
@@ -572,60 +584,38 @@
            (nvals (%intrinsic-call "cc_nvalues" nil "nvals"))
            (mv-temp (cmp:alloca-temp-values nvals)))
       (%intrinsic-call "cc_save_all_values" (list nvals mv-temp))
-      (cmp:with-landing-pad (maybe-entry-landing-pad (bir:parent instruction)
-                                                     *tags*)
-        (closure-call-or-invoke (in (first (bir:inputs instruction))) nil)
-        (%intrinsic-call "cc_load_all_values" (list nvals mv-temp))
-        (%intrinsic-call "cc_set_unwind_dest_index" (list index))
-        (%intrinsic-call "cc_set_unwind_dest" (list dest))
-        (%intrinsic-invoke-if-landing-pad-or-call "cc_sjlj_continue_unwinding" nil))
-      (cmp:irc-unreachable)))
-  #+(or)
-  (cmp:irc-br (first next)))
+      (gen-call-cleanup instruction)
+      (%intrinsic-call "cc_load_all_values" (list nvals mv-temp))
+      (%intrinsic-call "cc_set_unwind_dest_index" (list index))
+      (%intrinsic-call "cc_set_unwind_dest" (list dest))
+      (%intrinsic-call "cc_sjlj_continue_unwinding" nil)
+      (cmp:irc-unreachable))))
 
 (defmethod undo-dynenv ((dynenv bir:unwind-protect) tmv)
-  (flet ((cleanup ()
-           ;; This is maybe-entry for the sake of e.g.
-           ;; (block nil (unwind-protect (... (return ...)) ... (return ...)))
-           (cmp:with-landing-pad (maybe-entry-landing-pad
-                                  (bir:parent dynenv) *tags*)
-             (closure-call-or-invoke (in (first (bir:inputs dynenv))) nil))))
-    (%intrinsic-call "cc_set_dynenv_stack" (list (dynenv-storage dynenv)))
-    ;; We have to save values around it if we're in the middle of
-    ;; returning values.
-    (if tmv
-        (let* ((nvals (cmp:irc-tmv-nret tmv))
-               (primary (cmp:irc-tmv-primary tmv))
-               (mv-temp (cmp:alloca-temp-values nvals)))
-          (%intrinsic-call "cc_save_values" (list nvals primary mv-temp))
-          (cleanup)
-          (%intrinsic-call "cc_load_values" (list nvals mv-temp)))
-        (cleanup))))
+  (%intrinsic-call "cc_set_dynenv_stack" (list (dynenv-storage dynenv)))
+  ;; We have to save values around it if we're in the middle of
+  ;; returning values.
+  (if tmv
+      (let* ((nvals (cmp:irc-tmv-nret tmv))
+             (primary (cmp:irc-tmv-primary tmv))
+             (mv-temp (cmp:alloca-temp-values nvals)))
+        (%intrinsic-call "cc_save_values" (list nvals primary mv-temp))
+        (gen-call-cleanup dynenv)
+        (%intrinsic-call "cc_load_values" (list nvals mv-temp)))
+      (gen-call-cleanup dynenv)))
 
 (defmethod translate-terminator ((instruction bir:constant-bind) abi next)
   (declare (ignore abi))
-  (let* ((bde-cons-mem (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
-                                      :label "binding-dynenv-cons-mem"))
-         (bde-mem (cmp:alloca-i8 cmp:+binding-dynenv-size+
-                                 :alignment cmp:+alignment+
-                                 :label "binding-dynenv-mem"))
-         (inputs (bir:inputs instruction))
+  (let* ((inputs (bir:inputs instruction))
          (cellv (translate-constant-value (first inputs)))
-         (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil))
-         (val (in (second inputs)))
-         (ind (%intrinsic-call "cc_getCellTLIndex" (list cellv)))
-         (old (%intrinsic-call "cc_specialBind" (list ind val))))
-    (%intrinsic-call "cc_initializeAndPushBindingDynenv"
-                     (list bde-mem bde-cons-mem cellv old))
-    (setf (dynenv-storage instruction) (list ind old old-de-stack)))
+         (val (in (second inputs))))
+    (setf (dynenv-storage instruction)
+          (multiple-value-list (bind-special cellv val))))
   (cmp:irc-br (first next)))
 
 (defmethod undo-dynenv ((dynenv bir:constant-bind) tmv)
   (declare (ignore tmv))
-  (let ((store (dynenv-storage dynenv)))
-    (%intrinsic-call "cc_specialUnbind"
-                     (list (first store) (second store)))
-    (%intrinsic-call "cc_set_dynenv_stack" (list (third store)))))
+  (apply #'unbind-special (dynenv-storage dynenv)))
 
 (defmethod translate-simple-instruction ((instruction bir:thei) abi)
   (declare (ignore abi))
