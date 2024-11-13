@@ -494,10 +494,11 @@ void posix_signal_interrupt(int sig) {
   if (_sym_posix_interrupt->fboundp())
     core::eval::funcall(_sym_posix_interrupt->symbolFunction(),
                         core::clasp_make_fixnum(sig));
-  else
-    core::cl__cerror(core::SimpleBaseString_O::make("Ignore signal"),
-                     core::SimpleBaseString_O::make("Received POSIX signal ~d"),
-                     core::Cons_O::createList(core::clasp_make_fixnum(sig)));
+  // If it's too early to call into Lisp, we do nothing
+  // and return. This makes it so that, for example, an ABRT signal
+  // will not be handled and thus terminate the process, rather than
+  // be "handled" so a few dozen ABRTs need to be sent to actually
+  // kill the process.
   multipleValues.loadFromTemp(nvals, mv_temp);
 }
 
