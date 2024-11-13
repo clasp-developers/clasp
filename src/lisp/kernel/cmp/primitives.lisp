@@ -272,6 +272,7 @@
          ;; While this obviously unwinds, it does so by SJLJ and will
          ;; never throw an exception.
          (primitive         "cc_sjlj_continue_unwinding" :void nil :does-not-return t)
+         (primitive-unwinds "cc_signal_interrupts" :void (list))
          (primitive         "cc_saveMultipleValue0" :void (list :tmv))
          (primitive         "cc_restoreMultipleValue0" :return-type nil)
          (primitive         "llvm.frameaddress.p0" :i8* (list :i32))
