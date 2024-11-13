@@ -483,6 +483,14 @@ CL_DEFUN void mp__enqueue_interrupt(Process_sp process, core::T_sp interrupt) {
 
 SYMBOL_EXPORT_SC_(MpPkg, posix_interrupt);
 void posix_signal_interrupt(int sig) {
+  // Save multiple values so that everything's as it was
+  // if we return from these calls.
+  core::MultipleValues& multipleValues = core::lisp_multipleValues();
+  size_t nvals = multipleValues.getSize();
+  core::T_O* mv_temp[nvals];
+  multipleValues.saveToTemp(nvals, mv_temp);
+  // Signal our Lisp signal.
+  // mp:posix-interrupt is defined in clos/conditions.lisp.
   if (_sym_posix_interrupt->fboundp())
     core::eval::funcall(_sym_posix_interrupt->symbolFunction(),
                         core::clasp_make_fixnum(sig));
@@ -490,6 +498,7 @@ void posix_signal_interrupt(int sig) {
     core::cl__cerror(core::SimpleBaseString_O::make("Ignore signal"),
                      core::SimpleBaseString_O::make("Received POSIX signal ~d"),
                      core::Cons_O::createList(core::clasp_make_fixnum(sig)));
+  multipleValues.loadFromTemp(nvals, mv_temp);
 }
 
 CL_LAMBDA(&rest values);
