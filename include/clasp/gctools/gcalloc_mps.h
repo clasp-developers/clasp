@@ -27,7 +27,6 @@ do_cons_allocation(mps_ap_t& allocation_point, const char* ap_name, ARGS&&... ar
     MAYBE_VERIFY_ALIGNMENT((void*)addr);
     //      printf("%s:%d cons_mps_allocation addr=%p size=%lu\n", __FILE__, __LINE__, addr, sizeof(Cons));
   }
-  handle_all_queued_interrupts();
   return tagged_obj;
 };
 
@@ -73,7 +72,6 @@ general_mps_allocation(const Header_s::BadgeStampWtagMtag& the_header, size_t si
 #ifdef DEBUG_VALIDATE_GUARD
   header->validate();
 #endif
-  handle_all_queued_interrupts();
   globalMpsMetrics.totalMemoryAllocated += allocate_size;
   return tagged_obj;
 };
@@ -101,7 +99,6 @@ inline PTR_TYPE do_weak_allocation(size_t allocate_size, mps_ap_t& allocation_po
   } while (!mps_commit(allocation_point, addr, allocate_size));
   MAYBE_VERIFY_ALIGNMENT((void*)addr);
   my_thread_low_level->_Allocations.registerAllocation(STAMPWTAG_null, allocate_size);
-  handle_all_queued_interrupts();
   if (!obj)
     throw_hard_error("Could not allocate from GCBucketAllocator<Buckets<VT,VT,WeakLinks>>");
   GC_LOG(("malloc@%p %zu bytes\n", obj, allocate_size));

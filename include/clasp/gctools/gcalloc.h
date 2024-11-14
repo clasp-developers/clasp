@@ -170,7 +170,6 @@ template <class T> struct RootClassAllocator {
     Header_s* base = do_uncollectable_allocation(the_header, size);
     T* obj = HeaderPtrToGeneralPtr<T>(base);
     new (obj) T(std::forward<ARGS>(args)...);
-    handle_all_queued_interrupts();
     gctools::tagged_pointer<T> tagged_obj(obj);
     return tagged_obj;
   }
@@ -234,7 +233,6 @@ template <class Stage, class Cons, class Register> struct ConsAllocator {
     Cons* cons;
     size_t cons_size = ConsSizeCalculator<Stage, Cons, Register>::value();
     cons = do_cons_allocation<Stage, Cons, ARGS...>(cons_size, std::forward<ARGS>(args)...);
-    handle_all_queued_interrupts<Stage>();
     return smart_ptr<Cons>((Tagged)tag_cons(cons));
   }
 
@@ -400,7 +398,6 @@ template <class OT> struct GCObjectAppropriatePoolAllocator<OT, unmanaged> {
     Header_s* base = do_uncollectable_allocation(the_header, size);
     OT* obj = HeaderPtrToGeneralPtr<OT>(base);
     new (obj) OT(std::forward<ARGS>(args)...);
-    handle_all_queued_interrupts();
     gctools::smart_ptr<OT> sp(obj);
     return sp;
   }
@@ -512,7 +509,6 @@ public:
     GCObjectInitializer<OT, /*gctools::*/ GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
     GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
-    handle_all_queued_interrupts();
     return sp;
   };
 
@@ -524,7 +520,6 @@ public:
     GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
     GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
-    handle_all_queued_interrupts<Stage>();
     return sp;
   };
 
@@ -545,7 +540,6 @@ public:
             the_header, size, std::forward<ARGS>(args)...);
     GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
     GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
-    handle_all_queued_interrupts();
     return sp;
   };
 
@@ -753,7 +747,6 @@ public:
     size_t size = sizeof_container_with_header<TY>(num);
     Header_s* base = do_general_allocation(the_header, size);
     container_pointer myAddress = HeaderPtrToGeneralPtr<TY>(base);
-    handle_all_queued_interrupts();
     return gctools::tagged_pointer<container_type>(myAddress);
   }
 
@@ -835,7 +828,6 @@ public:
     // prepend a one pointer header with a pointer to the typeinfo.name
     Header_s* base = do_general_allocation(the_header, size);
     container_pointer myAddress = HeaderPtrToGeneralPtr<TY>(base);
-    handle_all_queued_interrupts();
     return myAddress;
   }
 

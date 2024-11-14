@@ -1805,6 +1805,9 @@
              (source-pos-info (function-source-pos-info ir)))
         ;; Tail call the real function.
         (cmp:with-debug-info-source-position (source-pos-info)
+          ;; but first, check for interrupts now that we have a source
+          (%intrinsic-invoke-if-landing-pad-or-call
+           "cc_signal_interrupts" ())
           (let* ((function-type (llvm-sys:get-function-type (main-function llvm-function-info)))
                  (arguments
                    (mapcar (lambda (arg)

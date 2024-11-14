@@ -70,6 +70,7 @@ extern "C" {
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/core/exceptions.h>
 #include <clasp/core/unwind.h>
+#include <clasp/gctools/interrupt.h>
 
 #if defined(_TARGET_OS_DARWIN)
 #include <mach-o/ldsyms.h>
@@ -977,6 +978,10 @@ void debugFileScopeHandle(int* sourceFileInfoHandleP) {
   FileScope_sp sfi = gc::As<FileScope_sp>(core::core__file_scope(fn));
   printf("%s:%d debugFileScopeHandle[%d] --> %s\n", __FILE__, __LINE__, sfindex, _rep_(sfi).c_str());
   NO_UNWIND_END();
+}
+
+void cc_signal_interrupts() {
+  gctools::handle_all_queued_interrupts();
 }
 };
 

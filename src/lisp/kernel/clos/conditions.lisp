@@ -1511,12 +1511,9 @@ Interrupts are implicitly blocked while signaling an interrupt, and while unwind
 (defun mp:posix-interrupt (sig)
   (let* ((signals (load-time-value (core:signal-code-alist) t))
          (pair (rassoc sig signals)))
-    (mp:signal-interrupt
-     (if pair
-         (make-condition (first pair))
-         (make-condition 'mp:simple-interactive-interrupt
-                         :format-control "Received POSIX signal: ~d"
-                         :format-arguments (list sig))))))
+    (if pair
+        (mp:raise (first pair))
+        (mp:raise "Received POSIX signal: ~d" sig))))
 
 ;;; ----------------------------------------------------------------------
 ;;; ECL's interface to the toplevel and debugger

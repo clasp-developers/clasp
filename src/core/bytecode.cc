@@ -14,6 +14,7 @@
 #include <clasp/core/ql.h>
 #include <clasp/core/designators.h> // calledFunctionDesignator
 #include <clasp/core/evaluator.h>   // eval::funcall
+#include <clasp/gctools/interrupt.h> // handle_all_queued_interrupts
 
 #define VM_CODES
 #include <virtualMachine.h>
@@ -1498,6 +1499,7 @@ extern "C" {
 #define BYTECODE_COMPILE_THRESHOLD 65535
 
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args) {
+  gctools::handle_all_queued_interrupts();
   core::Closure_O* closure = gctools::untag_general<core::Closure_O*>((core::Closure_O*)lcc_closure);
   ASSERT(gc::IsA<core::BytecodeSimpleFun_sp>(closure->entryPoint()));
   auto entry = closure->entryPoint();
