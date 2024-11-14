@@ -33,7 +33,7 @@ THE SOFTWARE.
 // #define DEBUG_CONS_ALLOC 1
 
 #include <limits>
-#include <clasp/gctools/interrupt.h>
+#include <clasp/gctools/smart_pointers.h>
 #include <clasp/gctools/threadlocal.fwd.h>
 #include <clasp/gctools/snapshotSaveLoad.fwd.h>
 
@@ -45,39 +45,14 @@ extern uintptr_t global_strong_weak_kind;
 };
 
 namespace gctools {
-template <class OT, bool Needed = true> struct GCObjectInitializer {};
-
-template <class OT> struct GCObjectInitializer<OT, true> {
-  typedef smart_ptr<OT> smart_pointer_type;
-  static void initializeIfNeeded(smart_pointer_type sp) {
-    if (sp.generalp()) {
+template <class OT>
+static void initializeIfNeeded(smart_ptr<OT> sp) {
+  if constexpr (GCInfo<OT>::NeedsInitialization) {
+    if (sp.generalp()) // FIXME: Ought to be statically determinable
       sp.unsafe_general()->initialize();
-    }
-  };
-};
-
-template <class OT> struct GCObjectInitializer<OT, false> {
-  typedef smart_ptr<OT> smart_pointer_type;
-  static void initializeIfNeeded(smart_pointer_type sp){
-      // initialize not needed
-  };
-};
-
-#ifdef TAGGED_POINTER
-template <class OT> struct GCObjectInitializer<tagged_pointer<OT>, true> {
-  typedef tagged_pointer<OT> functor_pointer_type;
-  static void initializeIfNeeded(functor_pointer_type sp) {
-    throw_hard_error("Figure out why this is being invoked, you should never need to initialize a functor!");
-  };
-};
-template <class OT> struct GCObjectInitializer<tagged_pointer<OT>, false> {
-  typedef tagged_pointer<OT> functor_pointer_type;
-  static void initializeIfNeeded(functor_pointer_type sp){
-      // initialize not needed
-  };
-};
-#endif // end TAGGED_POINTER
-} // namespace gctools
+  }
+}
+}; // namespace gctools
 
 #if defined(USE_BOEHM) || defined(USE_MPS) || defined(USE_MMTK)
 
@@ -431,30 +406,21 @@ template <class OT> void BoehmFinalizer(void* base, void* data) {
 }
 #endif
 
-template <class OT, bool Needed = true> struct GCObjectFinalizer {
-  typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
-  static void finalizeIfNeeded(smart_pointer_type sp) {
+template <class OT>
+static void finalizeIfNeeded(smart_ptr<OT> sp) {
+  if constexpr(GCInfo<OT>::NeedsFinalization) {
 #if defined(USE_BOEHM)
     void* dummyData;
     BoehmFinalizerFn dummyFn;
-    //    printf("%s:%d About to register finalize base -> %p\n", __FILE__, __LINE__, (void*)sp.tagged_());
     GC_register_finalizer_no_order(SmartPtrToBasePtr(sp), BoehmFinalizer<OT>, NULL, &dummyFn, &dummyData);
-//    printf("%s:%d Finished finalize sp -> %p\n", __FILE__, __LINE__, (void*)sp.tagged_());
 #elif defined(USE_MMTK)
     printf("%s:%d:%s Add finalization support for mmtk\n", __FILE__, __LINE__, __FUNCTION__);
 #elif defined(USE_MPS)
     // Defined in mpsGarbageCollection.cc
     my_mps_finalize(sp.raw_());
 #endif
-  };
-};
-
-template <class OT> struct GCObjectFinalizer<OT, false> {
-  typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
-  static void finalizeIfNeeded(smart_pointer_type sp){
-      // finalize not needed
-  };
-};
+  }
+}
 } // namespace gctools
 
 namespace gctools {
@@ -475,8 +441,8 @@ public:
     pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
     new (ptr) OT(std::forward<ARGS>(args)...);
     smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
-    GCObjectInitializer<OT, /*gctools::*/ GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
-    GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
+    initializeIfNeeded(sp);
+    finalizeIfNeeded(sp);
     return sp;
   };
 
@@ -486,8 +452,8 @@ public:
     smart_pointer_type sp =
         GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind_partial_scan(
             scanSize, the_header, size, std::forward<ARGS>(args)...);
-    GCObjectInitializer<OT, /*gctools::*/ GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
-    GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
+    initializeIfNeeded(sp);
+    finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
     return sp;
   };
@@ -497,8 +463,8 @@ public:
     smart_pointer_type sp =
         GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::template allocate_in_appropriate_pool_kind<Stage>(
             the_header, size, std::forward<ARGS>(args)...);
-    GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
-    GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
+    initializeIfNeeded(sp);
+    finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
     return sp;
   };
@@ -507,8 +473,7 @@ public:
     smart_pointer_type sp =
         GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::snapshot_save_load_allocate(snapshot_save_load_init);
     // No initializer
-    //      GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
-    GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
+    finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
     return sp;
   };
@@ -518,8 +483,8 @@ public:
     smart_pointer_type sp =
         GCObjectAppropriatePoolAllocator<OT, unmanaged>::template allocate_in_appropriate_pool_kind<gctools::RuntimeStage>(
             the_header, size, std::forward<ARGS>(args)...);
-    GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
-    GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
+    initializeIfNeeded(sp);
+    finalizeIfNeeded(sp);
     return sp;
   };
 
@@ -534,7 +499,7 @@ public:
             the_header, size, that);
     // Copied objects are not initialized.
     // Copied objects are finalized if necessary
-    GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
+    finalizeIfNeeded(sp);
     return sp;
 #elif defined(USE_MMTK)
     MISSING_GC_SUPPORT();
@@ -545,7 +510,7 @@ public:
             the_header, size, that);
     // Copied objects are not initialized.
     // Copied objects are finalized if necessary
-    GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
+    finalizeIfNeeded(sp);
     return sp;
 #endif
   }
