@@ -142,36 +142,15 @@ template <class T> struct RootClassAllocator {
   }
 
   static void deallocate(gctools::tagged_pointer<T> memory) {
-#if defined(USE_BOEHM)
-    GC_FREE(&*memory);
-#elif defined(USE_MPS) && !defined(RUNNING_PRECISEPREP)
-    throw_hard_error("I need a way to deallocate MPS allocated objects that are not moveable or collectable");
-    GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
-#elif defined(USE_MMTK)
-    MISSING_GC_SUPPORT();
-#endif
+    do_free(&*memory);
   };
 
   static void* allocateRootsAndZero(size_t num) {
-#if defined(USE_BOEHM)
-    void* buffer = ALIGNED_GC_MALLOC_UNCOLLECTABLE(sizeof(void*) * num);
-    memset(buffer, 0, sizeof(void*) * num);
-    return buffer;
-#elif defined(USE_MPS)
-    void* buffer = NULL;
-    printf("%s:%d:%s Add support\n", __FILE__, __LINE__, __FUNCTION__);
-    return buffer;
-#elif defined(USE_MMTK)
-    MISSING_GC_SUPPORT();
-#endif
+    return do_allocate_zero(num);
   }
 
   static void freeRoots(void* roots) {
-#if defined(USE_BOEHM)
-    GC_FREE(roots);
-#else
-    MISSING_GC_SUPPORT();
-#endif
+    do_free(roots);
   };
 };
 
@@ -185,26 +164,18 @@ template <class Stage, class Cons, class Register> struct ConsAllocator {
   static smart_ptr<Cons>
   allocate(ARGS&&... args) {
     DO_DRAG_CONS_ALLOCATION();
-    Cons* cons;
     size_t cons_size = ConsSizeCalculator<Stage, Cons, Register>::value();
-    cons = do_cons_allocation<Stage, Cons, ARGS...>(cons_size, std::forward<ARGS>(args)...);
+    ConsHeader_s* header = do_cons_allocation<Stage, Cons>(cons_size);
+    Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
+    new (cons) Cons(std::forward<ARGS>(args)...);
     return smart_ptr<Cons>((Tagged)tag_cons(cons));
   }
 
 #ifdef USE_PRECISE_GC
   static smart_ptr<Cons> snapshot_save_load_allocate(Header_s::BadgeStampWtagMtag& the_header, core::T_sp car, core::T_sp cdr) {
-#if defined(USE_BOEHM)
-    Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(
-        STAMP_UNSHIFT_WTAG(STAMPWTAG_CONS), SizeofConsHeader() + sizeof(Cons), global_cons_kind, &global_cons_kind)); // wasMTAG
+    ConsHeader_s* header = do_cons_allocation<SnapshotLoadStage, Cons>(SizeofConsHeader() + sizeof(Cons));
     header->_badge_stamp_wtag_mtag._header_badge.store(the_header._header_badge.load());
     header->_badge_stamp_wtag_mtag._value = the_header._value;
-#elif defined(USE_MMTK)
-    Header_s* header = reinterpret_cast<Header_s*> do_mmtk_allocate_cons(STAMP_UNSHIFT_WTAG(STAMPWTAG_CONS),
-                                                                         SizeofConsHeader() + sizeof(Cons)); // wasMTAG
-    header->_badge_stamp_wtag_mtag = the_header;
-#else
-    MISSING_GC_SUPPORT();
-#endif
     Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
     new (cons) Cons(car, cdr);
     return smart_ptr<Cons>((Tagged)tag_cons(cons));
@@ -373,53 +344,20 @@ template <class OT> struct GCObjectAppropriatePoolAllocator<OT, unmanaged> {
   };
 
   static void deallocate(OT* memory) {
-#if defined(USE_BOEHM)
-    printf("%s:%d Using GC_FREE to free memory at@%p\n", __FILE__, __LINE__, memory);
-    GC_FREE(memory);
-#elif defined(USE_MMTK)
-    MISSING_GC_SUPPORT();
-#elif defined(USE_MPS) && !defined(RUNNING_PRECISEPREP)
-    throw_hard_error(" GCObjectAppropriatePoolAllocator<OT, unmanaged > I need a way to deallocate MPS allocated objects that are "
-                     "not moveable or collectable");
-    GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
-#endif
+    do_free(memory);
   };
 };
 } // namespace gctools
-
-typedef void (*BoehmFinalizerFn)(void* obj, void* data);
 
 extern "C" {
 void my_mps_finalize(core::T_O* tagged);
 };
 
 namespace gctools {
-extern void boehm_general_finalizer_from_BoehmFinalizer(void* client, void* dummy);
-
-#ifdef USE_BOEHM
-template <class OT> void BoehmFinalizer(void* base, void* data) {
-  //  printf("%s:%d:%s Finalizing base=%p\n", __FILE__, __LINE__, __FUNCTION__, base);
-  OT* client = HeaderPtrToGeneralPtr<OT>(base);
-  boehm_general_finalizer_from_BoehmFinalizer((void*)client, data);
-  client->~OT();
-  GC_FREE(base);
-}
-#endif
-
 template <class OT>
 static void finalizeIfNeeded(smart_ptr<OT> sp) {
-  if constexpr(GCInfo<OT>::NeedsFinalization) {
-#if defined(USE_BOEHM)
-    void* dummyData;
-    BoehmFinalizerFn dummyFn;
-    GC_register_finalizer_no_order(SmartPtrToBasePtr(sp), BoehmFinalizer<OT>, NULL, &dummyFn, &dummyData);
-#elif defined(USE_MMTK)
-    printf("%s:%d:%s Add finalization support for mmtk\n", __FILE__, __LINE__, __FUNCTION__);
-#elif defined(USE_MPS)
-    // Defined in mpsGarbageCollection.cc
-    my_mps_finalize(sp.raw_());
-#endif
-  }
+  if constexpr(GCInfo<OT>::NeedsFinalization)
+    do_register_destructor_finalizer<OT>(SmartPtrToBasePtr(sp));
 }
 } // namespace gctools
 
@@ -492,7 +430,6 @@ public:
     throw_hard_error("Never call this - it's only used to register with the redeye static analyzer");
   }
   static smart_pointer_type copy_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, const OT& that) {
-#if defined(USE_BOEHM)
     // Copied objects must be allocated in the appropriate pool
     smart_pointer_type sp =
         GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::template allocate_in_appropriate_pool_kind<gctools::RuntimeStage>(
@@ -501,18 +438,6 @@ public:
     // Copied objects are finalized if necessary
     finalizeIfNeeded(sp);
     return sp;
-#elif defined(USE_MMTK)
-    MISSING_GC_SUPPORT();
-#elif defined(USE_MPS)
-    // Copied objects must be allocated in the appropriate pool
-    smart_pointer_type sp =
-        GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::template allocate_in_appropriate_pool_kind<gctools::RuntimeStage>(
-            the_header, size, that);
-    // Copied objects are not initialized.
-    // Copied objects are finalized if necessary
-    finalizeIfNeeded(sp);
-    return sp;
-#endif
   }
 };
 }; // namespace gctools
@@ -783,32 +708,10 @@ public:
 
 namespace gctools {
 
-#ifdef USE_BOEHM
-inline void BoehmWeakLinkDebugFinalizer(void* base, void* data) {
-  printf("%s:%d Boehm finalized weak linked address %p at %p\n", __FILE__, __LINE__, base, data);
-}
-#endif
-
 struct WeakLinks {};
 struct StrongLinks {};
 
 template <class KT, class VT, class LT> struct Buckets;
-
-#ifdef USE_MPS
-//
-// Allocation point for weak links is different from strong links
-//
-template <typename StrongWeakType = StrongLinks> struct StrongWeakAllocationPoint {
-  static mps_ap_t& get() { return my_thread_allocation_points._strong_link_allocation_point; };
-  static const char* name() { return "strong_links"; };
-};
-
-template <> struct StrongWeakAllocationPoint<WeakLinks> {
-  static mps_ap_t& get() { return my_thread_allocation_points._weak_link_allocation_point; };
-  static const char* name() { return "weak_links"; };
-};
-
-#endif
 
 template <class VT> class GCBucketAllocator {};
 
