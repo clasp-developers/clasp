@@ -2125,13 +2125,6 @@ void crc32(const void* data, size_t n_bytes, uint32_t* crc) {
 
 namespace core {
 
-CL_DEFUN void core__withStackCons(T_sp car, T_sp cdr, T_sp fn) {
-  gc::StackAllocate<Cons_O> cons(car, cdr);
-  printf("%s:%d:%s The cons size is %lu\n", __FILE__, __LINE__, __FUNCTION__, sizeof(cons));
-  printf("%s:%d:%s The ConsSizeCalculator<Cons_O> size is %lu\n", __FILE__, __LINE__, __FUNCTION__,
-         gctools::ConsSizeCalculator<gctools::RuntimeStage, Cons_O>::value());
-  eval::funcall(fn, cons.asSmartPtr());
-}
 #if 0
 DOCGROUP(clasp);
 CL_DEFUN core::Test_sp core__makeTest() {

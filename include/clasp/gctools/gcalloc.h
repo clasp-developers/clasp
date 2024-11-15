@@ -87,33 +87,6 @@ extern void* malloc_kind_error(uintptr_t expected_kind, uintptr_t kind, uintptr_
 #define MAYBE_MONITOR_ALLOC(_alloc_, _sz_) (_alloc_)
 #endif
 
-namespace gctools {
-
-class DontRegister {};
-class DoRegister {};
-
-template <typename Stage, typename Cons, typename Register = DontRegister> struct ConsSizeCalculator {
-  static inline size_t value() {
-    //    printf("%s:%d:%s AlignUp(sizeof(Cons) %lu +SizeofConsHeader() %lu) = %lu  must be 24\n", __FILE__, __LINE__, __FUNCTION__,
-    //    sizeof(Cons),SizeofConsHeader(), AlignUp(sizeof(Cons)+SizeofConsHeader()) );
-    static_assert(sizeof(Cons) == 16);
-    static_assert(AlignUp(sizeof(Cons)) == 16);
-    static_assert(AlignUp(SizeofConsHeader()) == 8);
-    static_assert(AlignUp(sizeof(Cons) + SizeofConsHeader()) == 24);
-    size_t size = AlignUp(sizeof(Cons) + SizeofConsHeader());
-    return size;
-  }
-};
-
-template <typename Cons> struct ConsSizeCalculator<gctools::RuntimeStage, Cons, DoRegister> {
-  static inline size_t value() {
-    size_t size = ConsSizeCalculator<RuntimeStage, Cons, DontRegister>::value();
-    my_thread_low_level->_Allocations.registerAllocation(STAMPWTAG_CONS, size);
-    return size;
-  }
-};
-}; // namespace gctools
-
 uint32_t my_thread_random();
 
 #if defined(USE_BOEHM)
@@ -156,7 +129,7 @@ template <class T> struct RootClassAllocator {
   };
 };
 
-template <class Stage, class Cons, class Register> struct ConsAllocator {
+template <class Stage, class Cons> struct ConsAllocator {
   template <class... ARGS>
 #ifdef ALWAYS_INLINE_MPS_ALLOCATIONS
   __attribute__((always_inline))
@@ -166,7 +139,7 @@ template <class Stage, class Cons, class Register> struct ConsAllocator {
   static smart_ptr<Cons>
   allocate(ARGS&&... args) {
     DO_DRAG_CONS_ALLOCATION();
-    size_t cons_size = ConsSizeCalculator<Stage, Cons, Register>::value();
+    size_t cons_size = AlignUp(sizeof(Cons) + SizeofConsHeader());
     ConsHeader_s* header = do_cons_allocation<Stage, Cons>(cons_size);
     Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
     new (cons) Cons(std::forward<ARGS>(args)...);
@@ -175,7 +148,7 @@ template <class Stage, class Cons, class Register> struct ConsAllocator {
 
 #ifdef USE_PRECISE_GC
   static smart_ptr<Cons> snapshot_save_load_allocate(Header_s::BadgeStampWtagMtag& the_header, core::T_sp car, core::T_sp cdr) {
-    ConsHeader_s* header = do_cons_allocation<SnapshotLoadStage, Cons>(SizeofConsHeader() + sizeof(Cons));
+    ConsHeader_s* header = do_cons_allocation<SnapshotLoadStage, Cons>(AlignUp(SizeofConsHeader() + sizeof(Cons)));
     header->_badge_stamp_wtag_mtag._header_badge.store(the_header._header_badge.load());
     header->_badge_stamp_wtag_mtag._value = the_header._value;
     Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
