@@ -31,14 +31,14 @@ namespace gctools {
 
 struct SmallMultimapGetError : public std::exception {};
 
-template <class Key, class Value, class Compare, typename Allocator>
-class GCSmallMultimap : public GCVector<pair<Key, Value>, Allocator> {
+template <class Key, class Value, class Compare>
+class SmallMultimap : public GCVector<pair<Key, Value>> {
 public:
   typedef Compare key_compare;
   typedef Key key_type;
   typedef Value mapped_type;
   typedef pair<Key, Value> value_type;
-  typedef GCVector<value_type, Allocator> Base;
+  typedef GCVector<value_type> Base;
   typedef typename Base::iterator iterator;
   typedef typename Base::const_iterator const_iterator;
 
@@ -109,6 +109,9 @@ public:
     it = const_cast<iterator>(this->emplace(const_cast<const_iterator>(it), val));
     return pair<iterator, bool>(it, true);
   }
+  void insert2(Key key, Value value) {
+    insert(pair<Key, Value>(key, value));
+  }
 
   mapped_type& get(const key_type& k) {
     iterator it = this->find(k);
@@ -125,6 +128,15 @@ public:
     }
     return it->second;
   }
+};
+
+template <class K, class V, class Compare> class SmallMultimap_uncopyable : public SmallMultimap<K, V, Compare> {
+public:
+  typedef SmallMultimap<K, V, Compare> Base;
+
+public:
+  SmallMultimap_uncopyable() : Base(){};
+  SmallMultimap_uncopyable(const SmallMultimap_uncopyable<K, V, Compare>& other) : Base(){};
 };
 
 } // namespace gctools
