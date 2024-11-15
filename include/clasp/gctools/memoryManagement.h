@@ -391,7 +391,6 @@ public:
     uintptr_t _header_data[0]; // The 0th element overlaps StampWtagMtag values
     tagged_stamp_t _value;
     StampWtagMtag() : _value(0){};
-    StampWtagMtag(core::Cons_O* cons) : _value(cons_mtag){};
     StampWtagMtag(Value all) : _value(all){};
     StampWtagMtag(WeakKinds kind) : _value(kind){};
 
