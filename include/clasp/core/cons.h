@@ -169,11 +169,11 @@ public:
 #endif
   static Cons_sp
   create(T_sp car, T_sp cdr) {
-    gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<gctools::RuntimeStage, Cons_O, gctools::DoRegister>::allocate(car, cdr);
+    gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<gctools::RuntimeStage, Cons_O>::allocate(car, cdr);
     return ll;
   };
   template <typename Stage> static Cons_sp createAtStage(T_sp car, T_sp cdr) {
-    gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<Stage, Cons_O, gctools::DoRegister>::allocate(car, cdr);
+    gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<Stage, Cons_O>::allocate(car, cdr);
     return ll;
   };
 

@@ -33,6 +33,7 @@ template <typename Stage, typename Cons> inline ConsHeader_s* do_cons_allocation
 #endif
   const ConsHeader_s::StampWtagMtag stamp(ConsHeader_s::cons_mtag);
   new (header) ConsHeader_s(stamp);
+  stage.registerAllocation(STAMPWTAG_CONS, size);
   return header;
 }
 
