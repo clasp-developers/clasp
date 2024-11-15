@@ -44,12 +44,12 @@ private:
 
 namespace gctools {
 
-template <class Vec> class Vec0_impl {
+template <class T> class Vec0 {
 #if defined(USE_MPS) && !defined(RUNNING_PRECISEPREP)
   friend GC_RESULT(::obj_scan)(GC_SCAN_STATE_TYPE ss, GC_POINTER base, GC_POINTER limit);
 #endif
 public:
-  typedef Vec vector_type;
+  typedef GCVector<T> vector_type;
   typedef typename vector_type::value_type value_type;
   typedef typename vector_type::value_type* pointer_type;
   typedef value_type& reference;
@@ -63,14 +63,14 @@ public:
 
 public:
   vector_type _Vector;
-  Vec0_impl(bool dummy) : _Vector(dummy){}; // don't allocate GC memory ctor
-  Vec0_impl(){};
+  Vec0(bool dummy) : _Vector(dummy){}; // don't allocate GC memory ctor
+  Vec0(){};
 
 public:
-  typename Vec::pointer_to_moveable contents() const { return this->_Vector.contents(); };
+  typename vector_type::pointer_to_moveable contents() const { return this->_Vector.contents(); };
 
 public:
-  void swap(Vec0_impl& other) { this->_Vector.swap(other._Vector); };
+  void swap(Vec0& other) { this->_Vector.swap(other._Vector); };
   iterator begin() { return this->_Vector.begin(); };
   iterator end() { return this->_Vector.end(); };
   const_iterator begin() const { return this->_Vector.begin(); };
@@ -82,7 +82,7 @@ public:
   size_t capacity() const { return this->_Vector.capacity(); };
   size_t max_size() const { return ~(size_t)0; };
   pointer_type data() const { return this->_Vector._Contents->data(); };
-  inline void operator=(const Vec0_impl& other) { this->_Vector = other._Vector; }
+  inline void operator=(const Vec0& other) { this->_Vector = other._Vector; }
   inline reference operator[](size_t i) { return this->_Vector[i]; };
   inline const_reference operator[](size_t i) const { return this->_Vector[i]; };
   void resize(size_t n, const value_type& initialElement = value_type()) { this->_Vector.resize(n, initialElement); };
@@ -157,13 +157,6 @@ public:
   void clear() { this->_Array.clear(); };
 };
 
-template <class T> class Vec0 : public Vec0_impl<GCVector<T, GCContainerAllocator<GCVector_moveable<T>>>> {
-public:
-  typedef Vec0_impl<GCVector<T, GCContainerAllocator<GCVector_moveable<T>>>> Base;
-  Vec0(bool dummy) : Base(dummy){}; // don't allocate GC memory ctor
-  Vec0() : Base(){};
-};
-
 }; // namespace gctools
 
 namespace gctools {
@@ -172,46 +165,6 @@ public:
   typedef Vec0<T> Base;
   Vec0_uncopyable() : Base(){};
   Vec0_uncopyable(const Vec0_uncopyable<T>& orig) : Base(){};
-};
-
-template <class K, class V> class SmallMap : public GCSmallMap<K, V, GCContainerAllocator<GCVector_moveable<pair<K, V>>>> {
-public:
-  typedef GCSmallMap<K, V, GCContainerAllocator<GCVector_moveable<pair<K, V>>>> Base;
-  SmallMap() : Base(){};
-};
-
-template <class K, class V, class Compare>
-class SmallMultimap : public GCSmallMultimap<K, V, Compare, GCContainerAllocator<GCVector_moveable<pair<K, V>>>> {
-public:
-  typedef GCSmallMultimap<K, V, Compare, GCContainerAllocator<GCVector_moveable<pair<K, V>>>> Base;
-
-public:
-  void insert2(K key, V value) {
-    pair<K, V> key_value(key, value);
-    this->insert(key_value);
-  }
-
-  SmallMultimap() : Base(){};
-};
-
-template <class K, class V, class Compare> class SmallMultimap_uncopyable : public SmallMultimap<K, V, Compare> {
-public:
-  typedef SmallMultimap<K, V, Compare> Base;
-
-public:
-  void insert2(K key, V value) {
-    pair<K, V> key_value(key, value);
-    this->insert(key_value);
-  }
-
-  SmallMultimap_uncopyable() : Base(){};
-  SmallMultimap_uncopyable(const SmallMultimap_uncopyable<K, V, Compare>& other) : Base(){};
-};
-
-template <class K> class SmallOrderedSet : public GCSmallSet<K, GCContainerAllocator<GCVector_moveable<K>>> {
-public:
-  typedef GCSmallSet<K, GCContainerAllocator<GCVector_moveable<K>>> Base;
-  SmallOrderedSet() : Base(){};
 };
 
 }; // namespace gctools
