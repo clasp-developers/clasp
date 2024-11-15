@@ -359,18 +359,6 @@ public:
     return sp;
   };
 
-  template <typename... ARGS>
-  static smart_pointer_type allocate_kind_partial_scan(size_t scanSize, const Header_s::BadgeStampWtagMtag& the_header, size_t size,
-                                                       ARGS&&... args) {
-    smart_pointer_type sp =
-        GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind_partial_scan(
-            scanSize, the_header, size, std::forward<ARGS>(args)...);
-    initializeIfNeeded(sp);
-    finalizeIfNeeded(sp);
-    //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
-    return sp;
-  };
-
   template <typename Stage, typename... ARGS>
   static smart_pointer_type allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS&&... args) {
     smart_pointer_type sp =
@@ -544,10 +532,10 @@ public:
 }; // namespace gctools
 
 namespace gctools {
-template <class TY> class GCContainerAllocator /* : public GCAlloc<TY> */ {
+template <class container_type>
+class GCContainerAllocator /* : public GCAlloc<container_type> */ {
 public:
   // type definitions
-  typedef TY container_type;
   typedef container_type* container_pointer;
   typedef typename container_type::value_type value_type;
   typedef value_type* pointer;
@@ -570,15 +558,15 @@ public:
 
   // allocate but don't initialize num elements of type value_type
   gc::tagged_pointer<container_type> allocate(size_type num, const void* = 0) {
-    return allocate_kind(Header_s::BadgeStampWtagMtag::make<TY>(), num);
+    return allocate_kind(Header_s::BadgeStampWtagMtag::make<container_type>(), num);
   }
 
   // allocate but don't initialize num elements of type value_type
   gc::tagged_pointer<container_type> allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_type num, const void* = 0) {
     DO_DRAG_GENERAL_ALLOCATION();
-    size_t size = sizeof_container_with_header<TY>(num);
+    size_t size = sizeof_container_with_header<container_type>(num);
     Header_s* base = do_general_allocation(the_header, size);
-    container_pointer myAddress = HeaderPtrToGeneralPtr<TY>(base);
+    container_pointer myAddress = HeaderPtrToGeneralPtr<container_type>(base);
     return gctools::tagged_pointer<container_type>(myAddress);
   }
 
