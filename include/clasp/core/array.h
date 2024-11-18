@@ -489,9 +489,6 @@ public:
     : Base(), _Data(first, last) {};
 
 public:
-  static void never_invoke_allocator() { gctools::GCAbstractAllocator<template_SimpleVector>::never_invoke_allocator(); };
-
-public:
   leaf_smart_ptr_type copy(size_t length, value_type initialElement, bool initialElementSupplied) {
     return leaf_type::make(length, initialElement, initialElementSupplied, MIN(length, this->length()), this->begin());
   }
