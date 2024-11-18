@@ -51,6 +51,8 @@ String_sp clasp_strerror(int e);
 bool clasp_has_file_position(int filedescriptor);
 
 T_sp core__mkstemp(String_sp thetemplate);
+void core__chmod(T_sp file, T_sp mode);
+
 }; // namespace core
 
 namespace ext {
