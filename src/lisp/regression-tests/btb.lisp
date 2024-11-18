@@ -121,3 +121,17 @@
           (funcall cc) (funcall cc)
           (values (funcall c) warningsp failurep)))
       (3 nil nil))
+
+;;; meister ran into this in some complex cando code
+;;; errored out with #<VARIABLE R> fell through ETYPECASE expression.
+;;; Wanted one of LINEAR-DATUM (CONS LINEAR-DATUM)
+(test btb.misc-1
+      (let ((f (cmp:bytecompile
+                '(lambda ()
+                  (let ((ef (let (r)
+                              (flet ((f (a) (eql r a))) #'f))))
+                    ef)))))
+        (multiple-value-bind (cc warningsp failurep) (compile nil f)
+          (declare (ignore cc))
+          (values warningsp failurep)))
+      (nil nil))
