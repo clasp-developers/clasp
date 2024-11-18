@@ -405,7 +405,7 @@ void initialize_signals() {
   INIT_SIGNAL(SIGXCPU, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
 #endif
   INIT_SIGNAL(SIGXFSZ, (SA_NODEFER | SA_RESTART), handle_signal_now); // signaled synchronously by some syscalls
-  INIT_SIGNAL(SIGWINCH, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
+//  INIT_SIGNAL(SIGWINCH, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
   // This one we use specially to wake up blocking threads.
   INIT_SIGNAL(SIGCONT, (SA_NODEFER | SA_RESTART), handle_SIGCONT);
 
