@@ -387,9 +387,6 @@ public:
     return sp;
   };
 
-  static smart_pointer_type register_class_with_redeye() {
-    throw_hard_error("Never call this - it's only used to register with the redeye static analyzer");
-  }
   static smart_pointer_type copy_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, const OT& that) {
     // Copied objects must be allocated in the appropriate pool
     smart_pointer_type sp =
@@ -399,23 +396,6 @@ public:
     // Copied objects are finalized if necessary
     finalizeIfNeeded(sp);
     return sp;
-  }
-};
-}; // namespace gctools
-
-namespace gctools {
-template <class OT, bool Can> struct GCObjectDefaultConstructorAllocator {};
-
-template <class OT> struct GCObjectDefaultConstructorAllocator<OT, true> {
-  static smart_ptr<OT> allocate(const Header_s::BadgeStampWtagMtag& kind) {
-    // FIXSTAMP
-    return GCObjectAllocator<OT>::template allocate_kind<gctools::RuntimeStage>(kind, sizeof_with_header<OT>());
-  }
-};
-
-template <class OT> struct GCObjectDefaultConstructorAllocator<OT, false> {
-  [[noreturn]] static smart_ptr<OT> allocate(const Header_s::BadgeStampWtagMtag& kind) {
-    lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(OT::static_classSymbol());
   }
 };
 }; // namespace gctools
@@ -432,16 +412,6 @@ public:
   template <typename... ARGS> static smart_pointer_type root_allocate(ARGS&&... args) {
     return GCObjectAllocator<OT>::root_allocate_kind(Header_s::StampWtagMtag::make<OT>(), sizeof_with_header<OT>(),
                                                      std::forward<ARGS>(args)...);
-  }
-
-  template <typename... ARGS> static smart_pointer_type root_allocate_with_stamp(ARGS&&... args) {
-    return GCObjectAllocator<OT>::root_allocate_kind(Header_s::BadgeStampWtagMtag::make<OT>(), sizeof_with_header<OT>(),
-                                                     std::forward<ARGS>(args)...);
-  }
-
-  template <typename... ARGS> static smart_pointer_type never_invoke_allocator(ARGS&&... args) {
-    auto kind = GCStamp<OT>::StampWtag;
-    return GCObjectAllocator<OT>::allocate_kind(kind, 0, std::forward<ARGS>(args)...);
   }
 
   template <typename... ARGS> static smart_pointer_type allocate_kind(const Header_s::BadgeStampWtagMtag& kind, ARGS&&... args) {
@@ -461,8 +431,11 @@ public:
   }
 
   static smart_pointer_type allocate_with_default_constructor() {
-    return GCObjectDefaultConstructorAllocator<OT, std::is_default_constructible<OT>::value>::allocate(
-        Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag));
+    if constexpr(std::is_default_constructible_v<OT>) {
+      auto kind = Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag);
+      return GCObjectAllocator<OT>::template allocate_kind<gctools::RuntimeStage>(kind, sizeof_with_header<OT>());
+    } else
+      lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(OT::static_classSymbol());
   }
 
   /*! Allocate enough space for capacity elements, but set the length to length */
@@ -587,87 +560,6 @@ public:
 }; // namespace gctools
 
 namespace gctools {
-template <class TY> class GCAbstractAllocator /* : public GCAlloc<TY> */ {
-public:
-  // type definitions
-  typedef TY container_type;
-  typedef container_type* container_pointer;
-  typedef typename container_type::value_type value_type;
-  typedef value_type* pointer;
-  typedef const value_type* const_pointer;
-  typedef value_type& reference;
-  typedef const value_type& const_reference;
-  typedef std::size_t size_type;
-  /* constructors and destructor
-   * - nothing to do because the allocator has no state
-   */
-  GCAbstractAllocator() throw() {}
-  ~GCAbstractAllocator() throw() {}
-
-  // allocate but don't initialize num elements of type value_type
-  void never_invoke_allocate(){};
-};
-}; // namespace gctools
-
-namespace gctools {
-/*! This allocator is for allocating containers that are fixed in position and Capacity.
-      Things like the MultipleValues for multiple value return are allocated with this.
-      */
-
-template <class TY> class GCContainerNonMoveableAllocator /* : public GCAlloc<TY> */ {
-public:
-  // type definitions
-  typedef TY container_type;
-  typedef container_type* container_pointer;
-  typedef typename container_type::value_type value_type;
-  typedef value_type* pointer;
-  typedef const value_type* const_pointer;
-  typedef value_type& reference;
-  typedef const value_type& const_reference;
-  typedef std::size_t size_type;
-  typedef std::ptrdiff_t difference_type;
-
-  /* constructors and destructor
-   * - nothing to do because the allocator has no state
-   */
-  GCContainerNonMoveableAllocator() throw() {}
-  GCContainerNonMoveableAllocator(const GCContainerNonMoveableAllocator&) throw() {}
-  template <class U> GCContainerNonMoveableAllocator(const GCContainerNonMoveableAllocator<U>&) throw() {}
-  ~GCContainerNonMoveableAllocator() throw() {}
-
-  // return maximum number of elements that can be allocated
-  size_type max_size() const throw() { return std::numeric_limits<std::size_t>::max() / sizeof(value_type); }
-
-  // allocate but don't initialize num elements of type value_type
-  gctools::tagged_pointer<container_type> allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_type num,
-                                                        const void* = 0) {
-    DO_DRAG_GENERAL_ALLOCATION();
-    size_t size = sizeof_container_with_header<TY>(num);
-    // prepend a one pointer header with a pointer to the typeinfo.name
-    Header_s* base = do_general_allocation(the_header, size);
-    container_pointer myAddress = HeaderPtrToGeneralPtr<TY>(base);
-    return myAddress;
-  }
-
-  // initialize elements of allocated storage p with value value
-  template <typename... ARGS> void construct(pointer p, ARGS&&... args) {
-    // initialize memory with placement new
-    new ((void*)p) value_type(std::forward<ARGS>(args)...);
-  }
-
-  // destroy elements of initialized storage p
-  void destroy(pointer p) {
-    // Do nothing
-  }
-
-  // deallocate storage p of deleted elements
-  void deallocate(gctools::tagged_pointer<container_type> p, size_type num) {
-    // Do nothing
-  }
-};
-}; // namespace gctools
-
-namespace gctools {
 
 struct WeakLinks {};
 struct StrongLinks {};
@@ -774,33 +666,6 @@ public:
     new (myAddress) container_type(val);
     printf("%s:%d Check if Mapping has been initialized to unbound\n", __FILE__, __LINE__);
     return gctools::tagged_pointer<container_type>(myAddress);
-  }
-};
-
-template <class VT> class GCWeakPointerAllocator {
-public:
-  typedef VT value_type;
-  typedef value_type* value_pointer;
-  typedef typename VT::value_type contained_type;
-  /* constructors and destructor
-   * - nothing to do because the allocator has no state
-   */
-  GCWeakPointerAllocator() throw() {}
-  GCWeakPointerAllocator(const GCWeakPointerAllocator&) throw() {}
-  ~GCWeakPointerAllocator() throw() {}
-
-  // allocate but don't initialize num elements of type value_type
-  static gctools::tagged_pointer<value_type> allocate(Header_s::BadgeStampWtagMtag the_header, const contained_type& val) {
-    size_t size = sizeof_with_header<VT>();
-#ifdef DEBUG_GCWEAK
-    printf("%s:%d Allocating WeakPointer with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
-#endif
-    Header_s* base = do_weak_allocation(the_header, size);
-    VT* myAddress = (VT*)HeaderPtrToWeakPtr(base);
-    if (!myAddress)
-      throw_hard_error("Out of memory in allocate");
-    new (myAddress) VT(val);
-    return gctools::tagged_pointer<value_type>(myAddress);
   }
 };
 }; // namespace gctools
