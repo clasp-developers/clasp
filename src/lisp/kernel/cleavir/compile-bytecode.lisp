@@ -280,12 +280,27 @@
   (loop for a in annotations
         do (start-annotation a inserter context)))
 
+(defun annotation< (annot1 annot2)
+  ;; We keep ANNOTS sorted by end IP.
+  ;; If they tie on end IP, we use the reverse order of the starts.
+  ;; Imagine we have an annotation 5-13 and another 11-13.
+  ;; We want to start the 5-13, then start the 11-13, then end the 11-13.
+  ;; That's why we reverse order of the starts.
+  ;; If two annotations start and end at the same point there may be a
+  ;; problem. I don't think this can actually arise.
+  (let ((end1 (core:bytecode-debug-info/end annot1))
+        (end2 (core:bytecode-debug-info/end annot2)))
+    (cond ((< end1 end2) t)
+          ((= end1 end2)
+           (> (core:bytecode-debug-info/start annot1)
+              (core:bytecode-debug-info/start annot2)))
+          (t nil))))
+
 (defun add-annotations (annots next-annots)
   ;; We keep ANNOTS sorted by end IP.
   ;; FIXME? This could be done without consing, but it would be uglier.
-  (let ((sna (sort (copy-list next-annots) #'<
-                   :key #'core:bytecode-debug-info/end)))
-    (merge 'list annots sna #'< :key #'core:bytecode-debug-info/end)))
+  (let ((sna (sort (copy-list next-annots) #'annotation<)))
+    (merge 'list annots sna #'annotation<)))
 
 (defun end-annotations (ip annots inserter context)
   ;; ANNOTS are kept sorted by bdi/end, so this is easy.
