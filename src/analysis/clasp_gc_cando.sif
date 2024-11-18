@@ -1855,6 +1855,9 @@
              :offset-ctype "gctools::smart_ptr<kinematics::Joint_O>"
              :offset-base-ctype "kinematics::XyzJoint_O"
              :layout-offset-field-names ("_Children" "[4]")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<chem::Atom_O>"
+             :offset-base-ctype "kinematics::XyzJoint_O" :layout-offset-field-names ("_Atom")}
 {class-kind :stamp-name "STAMPWTAG_kinematics__StubJoint_O" :stamp-key "kinematics::StubJoint_O"
             :parent-class "kinematics::XyzJoint_O" :lisp-class-base "kinematics::XyzJoint_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -1909,6 +1912,21 @@
              :offset-ctype "gctools::smart_ptr<kinematics::Joint_O>"
              :offset-base-ctype "kinematics::StubJoint_O"
              :layout-offset-field-names ("_Children" "[4]")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<chem::Atom_O>"
+             :offset-base-ctype "kinematics::StubJoint_O" :layout-offset-field-names ("_Atom")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<chem::Atom_O>"
+             :offset-base-ctype "kinematics::StubJoint_O"
+             :layout-offset-field-names ("_ParentAtom")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<chem::Atom_O>"
+             :offset-base-ctype "kinematics::StubJoint_O"
+             :layout-offset-field-names ("_GrandParentAtom")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<chem::Atom_O>"
+             :offset-base-ctype "kinematics::StubJoint_O"
+             :layout-offset-field-names ("_GreatGrandParentAtom")}
 {class-kind :stamp-name "STAMPWTAG_kinematics__BondedJoint_O"
             :stamp-key "kinematics::BondedJoint_O" :parent-class "kinematics::Joint_O"
             :lisp-class-base "kinematics::Joint_O" :root-class "core::T_O" :stamp-wtag 3
