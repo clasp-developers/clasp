@@ -46,19 +46,16 @@ THE SOFTWARE.
 
 namespace core {
 T_sp InstanceCreator_O::creator_allocate() {
-  size_t size = gctools::sizeof_with_header<Instance_O>();
-  Instance_sp instance = gctools::GC<Instance_O>::allocate_instance(gctools::Header_s::BadgeStampWtagMtag::make_instance(), size);
+  Instance_sp instance = gctools::GC<Instance_O>::allocate();
   return instance;
 };
 }; // namespace core
 
 namespace core {
 T_sp FuncallableInstanceCreator_O::creator_allocate() {
-  size_t size = gctools::sizeof_with_header<FuncallableInstance_O>();
   SimpleFun_sp entryPoint =
     makeSimpleFunAndFunctionDescription<FuncallableInstance_O>(cl::_sym_lambda);
-  FuncallableInstance_sp instance = gctools::GC<FuncallableInstance_O>::allocate_instance(
-      gctools::Header_s::BadgeStampWtagMtag::make_funcallable_instance(), size, entryPoint);
+  FuncallableInstance_sp instance = gctools::GC<FuncallableInstance_O>::allocate(entryPoint);
   return instance;
 };
 }; // namespace core
