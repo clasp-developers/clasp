@@ -281,13 +281,6 @@ names to offsets."
 ;;
 ;; Setup smart-ptr constants
 ;;
-(multiple-value-bind (pointer-type pointer-px-offset)
-    (smart-pointer-details)
-  (declare (ignore pointer-type))
-  #+(or)(defvar +using-intrusive-reference-count+
-          (eq pointer-type 'core::intrusive-reference-counted-pointer))
-  (defvar +smart-ptr-px-offset+ pointer-px-offset))
-
 
 (defun smart-pointer-fields (data-ptr-type &rest additional-fields)
   "List the types that make up a smart_ptr.
