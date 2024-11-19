@@ -490,6 +490,11 @@ public:
 
   template <class U> inline bool operator!=(smart_ptr<U> const other) const { return this->theObject != other.theObject; }
 };
+/* Smart pointers should be trivial so they can be passed/returned
+ * in registers easily. But the default constructor is nontrivial,
+ * so we're merely trivially copyable.
+ */
+static_assert(std::is_trivially_copyable_v<core::T_sp>);
 }; // namespace gctools
 
 namespace gctools {

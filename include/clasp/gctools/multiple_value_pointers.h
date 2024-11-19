@@ -102,6 +102,7 @@ public:
 
 namespace core {
 typedef gctools::multiple_values<T_O> T_mv;
+static_assert(std::is_trivially_copyable_v<T_mv>);
 };
 
 extern core::T_mv ValuesFromCons(core::List_sp vals);
