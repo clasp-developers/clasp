@@ -216,29 +216,6 @@ CL_DEFUN Vector_sp core__hash_table_pairs(HashTableBase_sp hash_table_base) {
   TYPE_ERROR(hash_table_base, Cons_O::createList(cl::_sym_or, cl::_sym_HashTable_O, core::_sym_WeakKeyHashTable_O));
 }
 
-#if defined(USE_MPS)
-static int LockDepth = 0;
-struct HashTableLocker {
-  HashTableLocker() {
-    if (LockDepth == 0) {
-      //                printf("%s:%d clamping the arena\n", __FILE__, __LINE__ );
-      mps_arena_clamp(global_arena);
-    }
-    ++LockDepth;
-  };
-  ~HashTableLocker() {
-    if (LockDepth == 1) {
-      //                printf("%s:%d releasing the arena\n", __FILE__, __LINE__ );
-      mps_arena_release(global_arena);
-    }
-    --LockDepth;
-  }
-};
-#define HASH_TABLE_LOCK() HashTableLocker zzzzHashTableLocker;
-#elif defined(USE_BOEHM) || defined(USE_MMTK)
-#define HASH_TABLE_LOCK()
-#endif
-
 // ----------------------------------------------------------------------
 //
 
