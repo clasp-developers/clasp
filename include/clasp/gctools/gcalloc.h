@@ -419,11 +419,6 @@ public:
     return GCObjectAllocator<OT>::allocate_kind(kind, size, std::forward<ARGS>(args)...);
   }
 
-  template <typename... ARGS>
-  static smart_pointer_type allocate_instance(const Header_s::BadgeStampWtagMtag& kind, size_t size, ARGS&&... args) {
-    return GCObjectAllocator<OT>::template allocate_kind<gctools::RuntimeStage>(kind, size, std::forward<ARGS>(args)...);
-  }
-
   template <typename Stage = RuntimeStage, typename... ARGS> static smart_pointer_type allocate(ARGS&&... args) {
     auto kind = Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag);
     size_t size = sizeof_with_header<OT>();
