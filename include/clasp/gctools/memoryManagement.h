@@ -472,15 +472,6 @@ public:
       return mak;
     }
 
-    static StampWtagMtag make_instance() {
-      StampWtagMtag v(STAMPWTAG_INSTANCE);
-      return v;
-    }
-    static StampWtagMtag make_funcallable_instance() {
-      StampWtagMtag v(STAMPWTAG_FUNCALLABLE_INSTANCE);
-      return v;
-    }
-
   public:
     inline size_t mtag() const { return (size_t)(this->_value & mtag_mask); };
     bool invalidP() const {
