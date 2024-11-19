@@ -587,38 +587,6 @@ void register_thread(mp::Process_sp process, void* stackTop);
 void unregister_thread(mp::Process_sp process);
 }; // namespace gctools
 
-#if 0
-namespace dummy_namespace {
-#pragma clang diagnostic push
-#pragma clang diagnostic warning "-Wc++98-compat"
-/*! These tests can be used to determine if there is a non-trivial copy constructor
-    or destructor that would prevent smart_ptr and multiple_values from being
-    passed in registers or returned in registers.
-
-    Uncomment the #if 0 and look for copy constructors, destructors
-    IGNORE constructors - they are harmless for passing in registers.
-*/
-
-
-/*! If this union generates a compile-time error then multiple_values isn't
-      trivial and it will be passed as a pointer to the struct in memory
-      rather than in registers. */
-  union multiple_value_ptr_union_generates_a_compile_time_error_then_multiple_values_isnt_trivial {
-    gctools::multiple_values<core::T_O> _multiple_values;
-    uintptr_t _uintptr;
-  };
-
-  /*! If this union generates a compile-time error then smart_ptr isn't
-      trivial and it will be passed as a pointer to the struct in memory
-      rather than in registers. */
-  union smart_ptr_union_generates_a_compile_time_error_then_smart_ptr_isnt_trivial {
-    gctools::smart_ptr<core::T_O> _smart_ptr;
-    uintptr_t _uintptr;
-  };
-#pragma clang diagnostic pop
-};
-#endif
-
 namespace core {
 class Instance_O;
 typedef gc::smart_ptr<Instance_O> Instance_sp;
