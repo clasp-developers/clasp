@@ -1062,8 +1062,6 @@ void core__mangledSymbols(T_sp stream_designator);
 
 extern void* _ZTVN4core6LispE;
 
-#define CLASP_DEFAULT_CTOR
-
 #define FASO_MAGIC_NUMBER_0 0xbe
 #define FASO_MAGIC_NUMBER_1 0xbe
 #define FASO_MAGIC_NUMBER_2 0xde

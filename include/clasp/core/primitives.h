@@ -145,8 +145,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  Test_O() : Base(){};
-  ~Test_O() {}
 };
 
 typedef enum { undefined, snapshotFile, snapshotMemory, imageFile } StartupEnum;

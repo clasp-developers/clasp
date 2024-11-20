@@ -89,7 +89,6 @@ public:
   }
 
   //	virtual llvm::DILocation* operator ->() const { return (llvm::DILocation*)(this);};
-  DILocation_O() : Base() {};
 }; // DILocation_O
 }; // namespace llvmo
 
@@ -124,7 +123,6 @@ public:
   }
 
   //	virtual llvm::DINode* operator ->() const { return (llvm::DINode*)(this);};
-  DINode_O() : Base() {};
 }; // DINode_O
 }; // namespace llvmo
 
@@ -159,7 +157,6 @@ public:
   }
 
   //	virtual llvm::DIExpression* operator ->() const { return (llvm::DIExpression*)(this);};
-  DIExpression_O() : Base() {};
 }; // DIExpression_O
 }; // namespace llvmo
 
@@ -190,7 +187,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  DIScope_O() {};
 }; // DIScope_O
 }; // namespace llvmo
 /* from_object translators */
@@ -220,7 +216,6 @@ private:
 public:
   llvm::DINodeArray& get() { return this->_Val._value; };
   DINodeArray_O(const llvm::DINodeArray& v) : _Val(v) {};
-  DINodeArray_O() : Base() {};
 
 }; // DINodeArray_O
 }; // namespace llvmo
@@ -284,7 +279,6 @@ public:
   }
   std::string __repr__() const;
   std::string getPath() const;
-  DIFile_O() {};
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -317,7 +311,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  DILocalScope_O() {};
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -352,7 +345,6 @@ public:
   }
   std::string __repr__() const;
   std::string getSubprogram() const;
-  DISubprogram_O() {};
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -385,7 +377,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  DIType_O() {};
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -418,7 +409,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  DIBasicType_O() {};
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -451,7 +441,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  DIDerivedType_O() {};
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -484,7 +473,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  DICompositeType_O() {};
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -517,7 +505,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  DISubroutineType_O() {};
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -550,7 +537,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  DILexicalBlockBase_O() {};
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -584,7 +570,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  DILexicalBlock_O() {};
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -617,7 +602,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  DICompileUnit_O() {};
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -711,7 +695,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  DIVariable_O() {};
 }; // DIVariable_O
 }; // namespace llvmo
 /* from_object translators */
@@ -746,7 +729,6 @@ public:
   }
   std::string __repr__() const;
   std::string getVariableName() const;
-  DILocalVariable_O() {};
 };
 }; // namespace llvmo
 /* from_object translators */
