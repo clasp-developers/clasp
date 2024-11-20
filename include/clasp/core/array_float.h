@@ -20,7 +20,6 @@ class SimpleVector_float_O;
 typedef template_SimpleVector<SimpleVector_float_O, float, AbstractSimpleVector_O> specialized_SimpleVector_float;
 class SimpleVector_float_O : public specialized_SimpleVector_float {
   LISP_CLASS(core, CorePkg, SimpleVector_float_O, "SimpleVector_float", AbstractSimpleVector_O);
-  virtual ~SimpleVector_float_O(){};
 
 public:
   typedef specialized_SimpleVector_float TemplatedBase;
@@ -65,7 +64,6 @@ public: // Provide the API that I used for NVector_sp
 namespace core {
 class MDArray_float_O : public template_Array<MDArray_float_O, SimpleMDArray_float_O, SimpleVector_float_O, MDArray_O> {
   LISP_CLASS(core, CorePkg, MDArray_float_O, "MDArray_float", MDArray_O);
-  virtual ~MDArray_float_O(){};
 
 public:
   typedef template_Array<MDArray_float_O, SimpleMDArray_float_O, SimpleVector_float_O, MDArray_O> TemplatedBase;
@@ -79,7 +77,6 @@ public: // make array
 namespace core {
 class SimpleMDArray_float_O : public template_SimpleArray<SimpleMDArray_float_O, SimpleVector_float_O, SimpleMDArray_O> {
   LISP_CLASS(core, CorePkg, SimpleMDArray_float_O, "SimpleMDArray_float", SimpleMDArray_O);
-  virtual ~SimpleMDArray_float_O(){};
 
 public:
   typedef template_SimpleArray<SimpleMDArray_float_O, SimpleVector_float_O, SimpleMDArray_O> TemplatedBase;
@@ -92,7 +89,6 @@ public: // make array
 namespace core {
 class ComplexVector_float_O : public template_Vector<ComplexVector_float_O, SimpleVector_float_O, ComplexVector_O> {
   LISP_CLASS(core, CorePkg, ComplexVector_float_O, "ComplexVector_float", ComplexVector_O);
-  virtual ~ComplexVector_float_O(){};
 
 public:
   typedef template_Vector<ComplexVector_float_O, SimpleVector_float_O, ComplexVector_O> TemplatedBase;

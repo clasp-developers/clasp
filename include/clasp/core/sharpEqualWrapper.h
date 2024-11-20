@@ -55,7 +55,6 @@ public:
   string __repr__() const;
 
   SharpEqualWrapper_O(T_sp label) : _Value(_sym__PLUS_sharp_marker_PLUS_), _Label(label){};
-  virtual ~SharpEqualWrapper_O(){};
 };
 
 DOCGROUP(clasp)

@@ -56,7 +56,6 @@ public:
 
 public: // ctor/dtor for classes with shared virtual base
   explicit FileScope_O();
-  virtual ~FileScope_O(){};
   void initialize() override;
   GCPRIVATE : // instance variables here
               Pathname_sp _pathname;
