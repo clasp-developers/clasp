@@ -801,14 +801,6 @@ extern Layout_code* get_stamp_layout_codes();
 
 #if defined(USE_BOEHM) || defined(USE_MMTK)
 #define FRIEND_GC_SCANNER(nscl) friend gctools::Layout_code* gctools::get_stamp_layout_codes();
-#elif defined(USE_MPS)
-#ifdef RUNNING_PRECISEPREP
-#define FRIEND_GC_SCANNER(nscl)
-#else
-// #define FRIEND_GC_SCANNER(theclass) friend GC_RESULT gctools::obj_scan_helper<theclass>(mps_ss_t _ss, mps_word_t _mps_zs,
-// mps_word_t _mps_w, mps_word_t & _mps_ufs, mps_word_t _mps_wt, mps_addr_t & client);
-#define FRIEND_GC_SCANNER(dummy) friend gctools::Layout_code* gctools::get_stamp_layout_codes();
-#endif
 #endif
 
 namespace core {
