@@ -44,7 +44,6 @@ public:
   static DerivableCxxObject_sp create(T_sp type, List_sp slotNames);
 
 public:
-  explicit DerivableCxxObject_O() : Base(){};
   virtual Fixnum get_stamp_() const override = 0;
   virtual size_t get_size_() const = 0;
   virtual Instance_O* get_Instance_O_address_() = 0;

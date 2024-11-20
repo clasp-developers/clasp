@@ -165,9 +165,6 @@ public:
   size_t _Length[0];
 
 public:
-  Array_O(){};
-
-public:
   // Low level functions for access to contents
 
   virtual size_t elementSizeInBytes() const = 0;
@@ -260,16 +257,13 @@ class MDArray_O : public Array_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, MDArray_O, "mdarray", Array_O);
 
 public:
-  MDArray_O(){};
-
-public:
   typedef size_t value_type; // this is container - needs value_type
   typedef gctools::GCArray_moveable<value_type> vector_type;
   struct Flags {
-    Flags(){};
     size_t _Flags;
     static const size_t fillPointerFlag = 0x000001;
     static const size_t displacedToFlag = 0x000100;
+    Flags() = default;
     Flags(bool fillPointerP, bool displacedToP)
         : _Flags((fillPointerP ? fillPointerFlag : 0) | (displacedToP ? displacedToFlag : 0)){};
     bool fillPointerP() const { return this->_Flags & fillPointerFlag; };
@@ -365,7 +359,6 @@ class ComplexVector_O : public MDArray_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, ComplexVector_O, "ComplexVector", MDArray_O);
   // One dimension vector
 public:
-  CLASP_DEFAULT_CTOR ComplexVector_O(){};
   ComplexVector_O(size_t dimension, T_sp fillPointer, Array_sp data, bool displacedToP, Fixnum_sp displacedIndexOffset)
       : MDArray_O(Rank1(), dimension, fillPointer, data, displacedToP, displacedIndexOffset){};
 
@@ -377,9 +370,6 @@ public:
 namespace core {
 class SimpleMDArray_O : public MDArray_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, SimpleMDArray_O, "simple-mdarray", MDArray_O);
-
-public:
-  CLASP_DEFAULT_CTOR SimpleMDArray_O(){};
 
 public:
   // multiple dimensions
@@ -402,9 +392,6 @@ namespace core {
 
 class AbstractSimpleVector_O : public Array_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, AbstractSimpleVector_O, "AbstractSimpleVector", Array_O);
-
-public:
-  AbstractSimpleVector_O(){};
 
 public:
   virtual T_sp array_type() const override { return cl::_sym_simple_array; };
@@ -451,9 +438,6 @@ public:
 
 namespace core {
 template <typename MyLeafType, typename ValueType, typename MyParentType> class template_SimpleVector : public MyParentType {
-public:
-  template_SimpleVector(){};
-
 public:
   // The types that define what this class does
   typedef MyParentType Base;
@@ -542,8 +526,6 @@ public:
 namespace core {
 template <typename MyLeafType, int BitUnitBitWidth, int Signedp>
 class template_SimpleBitUnitVector : public AbstractSimpleVector_O {
-public:
-  CLASP_DEFAULT_CTOR template_SimpleBitUnitVector(){};
 
 public:
   typedef AbstractSimpleVector_O Base;
@@ -662,9 +644,6 @@ namespace core {
 template <typename MyArrayType, typename MySimpleArrayType, typename MySimpleType, typename MyParentType>
 class template_Array : public MyParentType {
 public:
-  CLASP_DEFAULT_CTOR template_Array(){};
-
-public:
   // The types that define what this class does
   typedef MyParentType Base; /* e.g. MDArray_O */
   typedef MyArrayType /*eg: MDArrayT_O */ my_array_type;
@@ -780,9 +759,6 @@ public:
 
 namespace core {
 template <typename MyArrayType, typename MySimpleType, typename MyParentType> class template_Vector : public MyParentType {
-public:
-  CLASP_DEFAULT_CTOR template_Vector(){};
-
 public:
   // The types that define what this class does
   typedef MyParentType Base;
@@ -913,9 +889,6 @@ public:
 
 namespace core {
 template <typename MyArrayType, typename MySimpleType, typename MyParentType> class template_SimpleArray : public MyParentType {
-public:
-  CLASP_DEFAULT_CTOR template_SimpleArray(){};
-
 public:
   // The types that define what this class does
   typedef MyParentType Base;
