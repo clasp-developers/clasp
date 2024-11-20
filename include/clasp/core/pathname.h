@@ -118,8 +118,6 @@ public:
   static Pathname_sp tilde_expand(Pathname_sp pathname);
 
 public:
-  Pathname_O(const Pathname_O& ss); //!< Copy constructor
-
   Pathname_O()
       : _Host(kw::_sym_unspecific), _Device(kw::_sym_unspecific), _Directory(nil<T_O>()), _Name(nil<T_O>()), _Type(nil<T_O>()),
         _Version(kw::_sym_unspecific){};
@@ -142,10 +140,6 @@ namespace core {
 SMART(LogicalPathname);
 class LogicalPathname_O : public Pathname_O {
   LISP_CLASS(core, ClPkg, LogicalPathname_O, "logical-pathname", Pathname_O);
-
-public:
-  LogicalPathname_O(const LogicalPathname_O& ss); //!< Copy constructor
-  LogicalPathname_O(){};
 };
 }; // namespace core
 

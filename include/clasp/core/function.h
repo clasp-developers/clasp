@@ -81,7 +81,6 @@ public:
   int column;           //  8 column
   int filepos;          //  9 filepos
 public:
-  FunctionDescription_O(){};
 
 public:
   // Accessors
@@ -113,7 +112,6 @@ class Function_O : public General_O {
   LISP_ABSTRACT_CLASS(core, ClPkg, Function_O, "FUNCTION", General_O);
 
 public:
-  CLASP_DEFAULT_CTOR Function_O(){};
   Function_O(SimpleFun_O* ep) : _TheSimpleFun(SimpleFun_sp((gctools::Tagged)(gctools::tag_general<SimpleFun_O*>(ep)))) {
     ASSERT(!gctools::tagged_generalp<SimpleFun_O*>(ep)); // on entry should not be tagged
   };
@@ -209,9 +207,6 @@ namespace core {
 FORWARD(SimpleFun);
 class SimpleFun_O : public Function_O {
   LISP_CLASS(core, CorePkg, SimpleFun_O, "SimpleFun", Function_O);
-
-public:
-  CLASP_DEFAULT_CTOR SimpleFun_O(){};
 
 public:
   FunctionDescription_sp _FunctionDescription;

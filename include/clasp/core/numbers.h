@@ -218,7 +218,6 @@ public:
   virtual Number_sp tanh_() const { SUBIMP(); };
 
   virtual void sxhash_(HashGenerator& hg) const override { SUBIMP(); };
-  Number_O() {};
 
   inline static bool zerop(Number_sp x) {
     if (x.fixnump())
@@ -342,8 +341,6 @@ public:
   virtual bool plusp_() const { SUBIMP(); };
   virtual bool minusp_() const { SUBIMP(); };
 
-  Real_O() {};
-
   inline static bool plusp(Real_sp x) {
     if (x.fixnump())
       return x.unsafe_fixnum() > 0;
@@ -403,8 +400,6 @@ public:
   virtual Number_sp cosh_() const override;
   virtual Number_sp tanh_() const override;
 
-  Rational_O() {};
-
   inline static Rational_sp coerce(const Real_sp x);
 };
 
@@ -460,7 +455,6 @@ public:
   virtual Integer_sp shift_right(gc::Fixnum nbits) const { SUBIMP(); };
 
   virtual void __write__(T_sp strm) const override;
-  Integer_O() {};
 
   inline static bool evenp(const Integer_sp x) {
     if (x.fixnump())
@@ -510,8 +504,6 @@ public:
   virtual bool isnan_() const { SUBIMP(); };
   virtual bool isinf_() const { SUBIMP(); };
   virtual int fpclassify_() const { SUBIMP(); };
-
-  Float_O() {};
 
   inline static bool isnan(Float_sp x) {
 #ifdef CLASP_SHORT_FLOAT

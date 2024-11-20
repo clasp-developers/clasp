@@ -957,8 +957,6 @@ public:
   int _file_descriptor;
 
 public:
-  PosixFileStream_O(){};
-
   static PosixFileStream_sp make(T_sp fname, int fd, StreamDirection smm, gctools::Fixnum byte_size = 8,
                                  int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(),
                                  T_sp tempName = nil<T_O>(), bool created = false);
@@ -1042,8 +1040,6 @@ public:
   SOCKET _socket;
 
 public:
-  WinsockStream_O(){};
-
   static T_sp make(T_sp fname, SOCKET socket, StreamDirection smm, gctools::Fixnum byte_size = 8,
                    int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>());
 
@@ -1066,8 +1062,6 @@ class ConsoleStream_O : public FileStream_O {
   HANDLE _handle;
 
 public:
-  ConsoleStream_O(){};
-
   static T_sp make(T_sp fname, HANDLE handle, StreamDirection smm, gctools::Fixnum byte_size = 8,
                    int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>());
 
