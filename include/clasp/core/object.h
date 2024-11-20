@@ -103,7 +103,7 @@ class RootClass {
 public:
   static core::Symbol_sp static_classSymbol() { return UNDEFINED_SYMBOL; };
   static void set_static_creator(gc::smart_ptr<core::Creator_O> cb) {};
-  explicit RootClass() {};
+  RootClass() {};
 };
 
 template <class T_Base> struct LispBases1 {
@@ -354,10 +354,10 @@ public:                                                                         
 
 #define DEFAULT_CTOR(oClass)                                                                                                       \
 public:                                                                                                                            \
-  explicit oClass() : oClass::Base(){}; /* default ctor */
+ oClass() = default;
 #define DEFAULT_DTOR(oClass)                                                                                                       \
 public:                                                                                                                            \
-  ~oClass(){};
+ ~oClass() = default;
 #define DEFAULT_CTOR_DTOR(oClass)                                                                                                  \
   DEFAULT_CTOR(oClass);                                                                                                            \
   DEFAULT_DTOR(oClass);                                                                                                            \
