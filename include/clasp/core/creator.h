@@ -62,7 +62,6 @@ public:
   }
 
   Creator_O(SimpleFun_sp ep) : Base(ep){};
-  virtual ~Creator_O(){};
 };
 
 template <class _W_> class WRAPPER_BuiltInObjectCreator : public core::Creator_O {

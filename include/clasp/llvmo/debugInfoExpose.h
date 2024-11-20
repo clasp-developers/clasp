@@ -90,7 +90,6 @@ public:
 
   //	virtual llvm::DILocation* operator ->() const { return (llvm::DILocation*)(this);};
   DILocation_O() : Base() {};
-  virtual ~DILocation_O() {};
 }; // DILocation_O
 }; // namespace llvmo
 
@@ -126,7 +125,6 @@ public:
 
   //	virtual llvm::DINode* operator ->() const { return (llvm::DINode*)(this);};
   DINode_O() : Base() {};
-  virtual ~DINode_O() {};
 }; // DINode_O
 }; // namespace llvmo
 
@@ -162,7 +160,6 @@ public:
 
   //	virtual llvm::DIExpression* operator ->() const { return (llvm::DIExpression*)(this);};
   DIExpression_O() : Base() {};
-  virtual ~DIExpression_O() {};
 }; // DIExpression_O
 }; // namespace llvmo
 
@@ -194,7 +191,6 @@ public:
     this->_ptr = ptr;
   }
   DIScope_O() {};
-  virtual ~DIScope_O() {}
 }; // DIScope_O
 }; // namespace llvmo
 /* from_object translators */
@@ -225,7 +221,6 @@ public:
   llvm::DINodeArray& get() { return this->_Val._value; };
   DINodeArray_O(const llvm::DINodeArray& v) : _Val(v) {};
   DINodeArray_O() : Base() {};
-  virtual ~DINodeArray_O() {}
 
 }; // DINodeArray_O
 }; // namespace llvmo
@@ -256,7 +251,6 @@ public:
   llvm::DITypeRefArray& get() { return this->_Val._value; };
   DITypeRefArray_O(const llvm::DITypeRefArray& val) : _Val(val) {};
   DITypeRefArray_O() : Base(), _Val((llvm::DITypeRefArray)NULL) {};
-  virtual ~DITypeRefArray_O() {}
 }; // DITypeRefArray_O
 }; // namespace llvmo
 
@@ -291,7 +285,6 @@ public:
   std::string __repr__() const;
   std::string getPath() const;
   DIFile_O() {};
-  virtual ~DIFile_O() {}
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -325,7 +318,6 @@ public:
     this->_ptr = ptr;
   }
   DILocalScope_O() {};
-  virtual ~DILocalScope_O() {}
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -361,7 +353,6 @@ public:
   std::string __repr__() const;
   std::string getSubprogram() const;
   DISubprogram_O() {};
-  virtual ~DISubprogram_O() {}
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -395,7 +386,6 @@ public:
     this->_ptr = ptr;
   }
   DIType_O() {};
-  virtual ~DIType_O() {}
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -429,7 +419,6 @@ public:
     this->_ptr = ptr;
   }
   DIBasicType_O() {};
-  virtual ~DIBasicType_O() {}
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -463,7 +452,6 @@ public:
     this->_ptr = ptr;
   }
   DIDerivedType_O() {};
-  virtual ~DIDerivedType_O() {}
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -497,7 +485,6 @@ public:
     this->_ptr = ptr;
   }
   DICompositeType_O() {};
-  virtual ~DICompositeType_O() {}
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -531,7 +518,6 @@ public:
     this->_ptr = ptr;
   }
   DISubroutineType_O() {};
-  virtual ~DISubroutineType_O() {}
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -565,7 +551,6 @@ public:
     this->_ptr = ptr;
   }
   DILexicalBlockBase_O() {};
-  virtual ~DILexicalBlockBase_O() {}
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -600,7 +585,6 @@ public:
     this->_ptr = ptr;
   }
   DILexicalBlock_O() {};
-  virtual ~DILexicalBlock_O() {}
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -634,7 +618,6 @@ public:
     this->_ptr = ptr;
   }
   DICompileUnit_O() {};
-  virtual ~DICompileUnit_O() {}
 };
 }; // namespace llvmo
 /* from_object translators */
@@ -729,7 +712,6 @@ public:
     this->_ptr = ptr;
   }
   DIVariable_O() {};
-  virtual ~DIVariable_O() {}
 }; // DIVariable_O
 }; // namespace llvmo
 /* from_object translators */
@@ -765,7 +747,6 @@ public:
   std::string __repr__() const;
   std::string getVariableName() const;
   DILocalVariable_O() {};
-  virtual ~DILocalVariable_O() {}
 };
 }; // namespace llvmo
 /* from_object translators */

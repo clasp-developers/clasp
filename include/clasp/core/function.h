@@ -194,7 +194,6 @@ public:
   virtual T_sp lambdaListHandler() const { SUBIMP(); };
   virtual T_sp lambdaList() const { return this->fdesc()->lambdaList(); }
   virtual string __repr__() const;
-  virtual ~Function_O(){};
 };
 }; // namespace core
 

@@ -29,7 +29,6 @@ namespace core {
 typedef template_SimpleBitUnitVector<SimpleBitVector_O, 1, false> specialized_SimpleBitVector;
 class SimpleBitVector_O : public specialized_SimpleBitVector {
   LISP_CLASS(core, ClPkg, SimpleBitVector_O, "simple-bit-vector", AbstractSimpleVector_O);
-  virtual ~SimpleBitVector_O(){};
 
 public:
   typedef specialized_SimpleBitVector TemplatedBase;
@@ -76,7 +75,6 @@ public:
 namespace core {
 class BitVectorNs_O : public template_Vector<BitVectorNs_O, SimpleBitVector_O, ComplexVector_O> {
   LISP_CLASS(core, CorePkg, BitVectorNs_O, "BitVectorNs", ComplexVector_O);
-  virtual ~BitVectorNs_O(){};
 
 public:
   typedef template_Vector<BitVectorNs_O, SimpleBitVector_O, ComplexVector_O> TemplatedBase;
@@ -116,7 +114,6 @@ public:
 namespace core {
 class MDArrayBit_O : public template_Array<MDArrayBit_O, SimpleMDArrayBit_O, SimpleBitVector_O, MDArray_O> {
   LISP_CLASS(core, CorePkg, MDArrayBit_O, "MDArrayBit", MDArray_O);
-  virtual ~MDArrayBit_O(){};
 
 public:
   typedef template_Array<MDArrayBit_O, SimpleMDArrayBit_O, SimpleBitVector_O, MDArray_O> TemplatedBase;
@@ -130,7 +127,6 @@ public: // make array
 namespace core {
 class SimpleMDArrayBit_O : public template_SimpleArray<SimpleMDArrayBit_O, SimpleBitVector_O, SimpleMDArray_O> {
   LISP_CLASS(core, CorePkg, SimpleMDArrayBit_O, "SimpleMDArrayBit", SimpleMDArray_O);
-  virtual ~SimpleMDArrayBit_O(){};
 
 public:
   typedef template_SimpleArray<SimpleMDArrayBit_O, SimpleBitVector_O, SimpleMDArray_O> TemplatedBase;

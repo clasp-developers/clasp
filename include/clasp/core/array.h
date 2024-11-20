@@ -156,7 +156,6 @@ size_t calculateArrayTotalSizeAndValidateDimensions(List_sp dim_desig, size_t& r
 namespace core {
 class Array_O : public General_O {
   LISP_ABSTRACT_CLASS(core, ClPkg, Array_O, "array", General_O);
-  virtual ~Array_O(){};
 
 public:
   /*! A hackish (clever?) way to get at the first element of all subclasses
@@ -259,7 +258,6 @@ namespace core {
 struct Rank1 {};
 class MDArray_O : public Array_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, MDArray_O, "mdarray", Array_O);
-  virtual ~MDArray_O(){};
 
 public:
   MDArray_O(){};
@@ -382,7 +380,6 @@ class SimpleMDArray_O : public MDArray_O {
 
 public:
   CLASP_DEFAULT_CTOR SimpleMDArray_O(){};
-  virtual ~SimpleMDArray_O(){};
 
 public:
   // multiple dimensions
@@ -405,7 +402,6 @@ namespace core {
 
 class AbstractSimpleVector_O : public Array_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, AbstractSimpleVector_O, "AbstractSimpleVector", Array_O);
-  virtual ~AbstractSimpleVector_O(){};
 
 public:
   AbstractSimpleVector_O(){};

@@ -20,7 +20,6 @@ class SimpleVector_size_t_O;
 typedef template_SimpleVector<SimpleVector_size_t_O, size_t, AbstractSimpleVector_O> specialized_SimpleVector_size_t;
 class SimpleVector_size_t_O : public specialized_SimpleVector_size_t {
   LISP_CLASS(core, CorePkg, SimpleVector_size_t_O, "SimpleVector_size_t", AbstractSimpleVector_O);
-  virtual ~SimpleVector_size_t_O(){};
 
 public:
   typedef specialized_SimpleVector_size_t TemplatedBase;
@@ -50,7 +49,6 @@ public:
 namespace core {
 class MDArray_size_t_O : public template_Array<MDArray_size_t_O, SimpleMDArray_size_t_O, SimpleVector_size_t_O, MDArray_O> {
   LISP_CLASS(core, CorePkg, MDArray_size_t_O, "MDArray_size_t", MDArray_O);
-  virtual ~MDArray_size_t_O(){};
 
 public:
   typedef template_Array<MDArray_size_t_O, SimpleMDArray_size_t_O, SimpleVector_size_t_O, MDArray_O> TemplatedBase;
@@ -64,7 +62,6 @@ public: // make array
 namespace core {
 class SimpleMDArray_size_t_O : public template_SimpleArray<SimpleMDArray_size_t_O, SimpleVector_size_t_O, SimpleMDArray_O> {
   LISP_CLASS(core, CorePkg, SimpleMDArray_size_t_O, "SimpleMDArray_size_t", SimpleMDArray_O);
-  virtual ~SimpleMDArray_size_t_O(){};
 
 public:
   typedef template_SimpleArray<SimpleMDArray_size_t_O, SimpleVector_size_t_O, SimpleMDArray_O> TemplatedBase;
@@ -77,7 +74,6 @@ public: // make array
 namespace core {
 class ComplexVector_size_t_O : public template_Vector<ComplexVector_size_t_O, SimpleVector_size_t_O, ComplexVector_O> {
   LISP_CLASS(core, CorePkg, ComplexVector_size_t_O, "ComplexVector_size_t", ComplexVector_O);
-  virtual ~ComplexVector_size_t_O(){};
 
 public:
   typedef template_Vector<ComplexVector_size_t_O, SimpleVector_size_t_O, ComplexVector_O> TemplatedBase;
