@@ -106,20 +106,6 @@ public:
   RootClass() {};
 };
 
-template <class T_Base> struct LispBases1 {
-  typedef T_Base Base1;
-  static inline bool baseClassSymbolsDefined() {
-    if (IS_SYMBOL_UNDEFINED(Base1::static_classSymbol())) {
-      throw_hard_error("Base class is not defined yet");
-    }
-    return true;
-  }
-
-  static inline core::Symbol_sp baseClass1Id() { return Base1::static_classSymbol(); }
-
-  static inline core::Symbol_sp baseClass2Id() { return UNDEFINED_SYMBOL; }
-};
-
 namespace core {
 extern void lisp_write(const std::string& s);
 };
@@ -339,7 +325,6 @@ public:                                                                         
 #define LISP_CLASS(aNamespace, aPackage, aClass, aClassName, aBaseClass)                                                           \
 public:                                                                                                                            \
   typedef aBaseClass Base;                                                                                                         \
-  typedef LispBases1<Base> Bases;                                                                                                  \
   COMMON_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName);                                                                    \
   static gctools::smart_ptr<aClass> create() { return gctools::GC<aClass>::allocate_with_default_constructor(); };                 \
   virtual core::Instance_sp __class() const OVERRIDE { return core::lisp_getStaticClass(aClass::static_ValueStampWtagMtag); }      \
@@ -348,7 +333,6 @@ public:                                                                         
 #define LISP_ABSTRACT_CLASS(aNamespace, aPackage, aClass, aClassName, b1)                                                          \
 public:                                                                                                                            \
   typedef b1 Base;                                                                                                                 \
-  typedef LispBases1<Base> Bases;                                                                                                  \
   COMMON_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName);
 #endif
 
