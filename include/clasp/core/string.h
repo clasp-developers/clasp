@@ -30,7 +30,6 @@ class SimpleString_O : public AbstractSimpleVector_O {
 
 public:
   CLASP_DEFAULT_CTOR SimpleString_O(){};
-  virtual ~SimpleString_O(){};
 };
 }; // namespace core
 
@@ -47,7 +46,6 @@ class SimpleBaseString_O;
 typedef template_SimpleVector<SimpleBaseString_O, claspChar, SimpleString_O> specialized_SimpleBaseString;
 class SimpleBaseString_O : public specialized_SimpleBaseString {
   LISP_CLASS(core, ClPkg, SimpleBaseString_O, "simple-base-string", SimpleString_O);
-  virtual ~SimpleBaseString_O(){};
 
 public:
   typedef specialized_SimpleBaseString TemplatedBase;
@@ -136,7 +134,6 @@ class SimpleCharacterString_O;
 typedef template_SimpleVector<SimpleCharacterString_O, claspCharacter, SimpleString_O> specialized_SimpleCharacterString;
 class SimpleCharacterString_O : public specialized_SimpleCharacterString {
   LISP_CLASS(core, CorePkg, SimpleCharacterString_O, "SimpleCharacterString", SimpleString_O);
-  virtual ~SimpleCharacterString_O(){};
 
 public:
   typedef specialized_SimpleCharacterString TemplatedBase;
@@ -216,7 +213,6 @@ class StrNs_O : public ComplexVector_O {
 
 public:
   CLASP_DEFAULT_CTOR StrNs_O(){};
-  virtual ~StrNs_O(){};
 
 public:
   StrNs_O(size_t dimension, T_sp fillPointer, Array_sp data, bool displacedToP, Fixnum_sp displacedIndexOffset)
@@ -241,7 +237,6 @@ public:
 namespace core {
 class Str8Ns_O : public template_Vector<Str8Ns_O, SimpleBaseString_O, StrNs_O> {
   LISP_CLASS(core, CorePkg, Str8Ns_O, "Str8Ns", StrNs_O);
-  virtual ~Str8Ns_O(){};
 
 public:
   // The types that define what this class does
@@ -315,7 +310,6 @@ public: // Str8Ns specific functions
 namespace core {
 class StrWNs_O : public template_Vector<StrWNs_O, SimpleCharacterString_O, StrNs_O> {
   LISP_CLASS(core, CorePkg, StrWNs_O, "StrWNs", StrNs_O);
-  virtual ~StrWNs_O(){};
 
 public:
   // The types that define what this class does
@@ -384,7 +378,6 @@ FORWARD(MDArrayBaseChar);
 namespace core {
 class MDArrayBaseChar_O : public template_Array<MDArrayBaseChar_O, SimpleMDArrayBaseChar_O, SimpleBaseString_O, MDArray_O> {
   LISP_CLASS(core, CorePkg, MDArrayBaseChar_O, "MDArrayBaseChar", MDArray_O);
-  virtual ~MDArrayBaseChar_O(){};
 
 public:
   typedef template_Array<MDArrayBaseChar_O, SimpleMDArrayBaseChar_O, SimpleBaseString_O, MDArray_O> TemplatedBase;
@@ -403,7 +396,6 @@ public:
 namespace core {
 class SimpleMDArrayBaseChar_O : public template_SimpleArray<SimpleMDArrayBaseChar_O, SimpleBaseString_O, SimpleMDArray_O> {
   LISP_CLASS(core, CorePkg, SimpleMDArrayBaseChar_O, "SimpleMDArrayBaseChar", SimpleMDArray_O);
-  virtual ~SimpleMDArrayBaseChar_O(){};
 
 public:
   typedef template_SimpleArray<SimpleMDArrayBaseChar_O, SimpleBaseString_O, SimpleMDArray_O> TemplatedBase;
@@ -421,7 +413,6 @@ FORWARD(MDArrayCharacter);
 namespace core {
 class MDArrayCharacter_O : public template_Array<MDArrayCharacter_O, SimpleMDArrayCharacter_O, SimpleCharacterString_O, MDArray_O> {
   LISP_CLASS(core, CorePkg, MDArrayCharacter_O, "MDArrayCharacter", MDArray_O);
-  virtual ~MDArrayCharacter_O(){};
 
 public:
   typedef template_Array<MDArrayCharacter_O, SimpleMDArrayCharacter_O, SimpleCharacterString_O, MDArray_O> TemplatedBase;
@@ -438,7 +429,6 @@ public:
 namespace core {
 class SimpleMDArrayCharacter_O : public template_SimpleArray<SimpleMDArrayCharacter_O, SimpleCharacterString_O, SimpleMDArray_O> {
   LISP_CLASS(core, CorePkg, SimpleMDArrayCharacter_O, "SimpleMDArrayCharacter", SimpleMDArray_O);
-  virtual ~SimpleMDArrayCharacter_O(){};
 
 public:
   typedef template_SimpleArray<SimpleMDArrayCharacter_O, SimpleCharacterString_O, SimpleMDArray_O> TemplatedBase;

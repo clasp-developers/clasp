@@ -47,7 +47,6 @@ class ConstructorCreator_O : public core::Creator_O {
 public:
   ConstructorCreator_O(core::SimpleFun_sp ep, core::Symbol_sp c) : Creator_O(ep), _mostDerivedClassSymbol(c){};
   core::Symbol_sp _mostDerivedClassSymbol;
-  virtual ~ConstructorCreator_O(){};
 };
 }; // namespace clbind
 
