@@ -314,7 +314,6 @@ public:                                                                         
   static core::Symbol_sp static_classSymbol() { return core::lisp_getStaticClassSymbol(oClass::static_ValueStampWtagMtag); };      \
   static string Package() { return oClass::static_packageName(); };                                                                \
   static string Pkg() { return Package(); };                                                                                       \
-  oClass(snapshotSaveLoad::snapshot_save_load_init_s* isl) { isl->fill((void*)this); };                                            \
   static void expose_to_clasp();
 
 #define LISP_TEMPLATE_CLASS(oClass) COMMON_CLASS_PARTS(CurrentPkg, oClass, typeid(oClass).name())
