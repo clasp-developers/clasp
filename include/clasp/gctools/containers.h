@@ -45,9 +45,6 @@ private:
 namespace gctools {
 
 template <class T> class Vec0 {
-#if defined(USE_MPS) && !defined(RUNNING_PRECISEPREP)
-  friend GC_RESULT(::obj_scan)(GC_SCAN_STATE_TYPE ss, GC_POINTER base, GC_POINTER limit);
-#endif
 public:
   typedef GCVector<T> vector_type;
   typedef typename vector_type::value_type value_type;
@@ -116,9 +113,6 @@ public:
 };
 
 template <class Arr> class Array0_impl {
-#if defined(USE_MPS) && !defined(RUNNING_PRECISEPREP)
-  friend GC_RESULT(::obj_scan)(GC_SCAN_STATE_TYPE ss, GC_POINTER base, GC_POINTER limit);
-#endif
 public:
   typedef Arr array_type;
   typedef typename array_type::value_type value_type;
