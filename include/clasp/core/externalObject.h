@@ -69,7 +69,6 @@ template <class Type, class WrapperType> gctools::smart_ptr<Type> RP_Create_wrap
 #define LISP_EXTERNAL_CLASS(oNamespace, oPackage, wrappedClass, aClass, nameOfWrappedClass, aClassBase)                            \
 public:                                                                                                                            \
   typedef aClassBase Base;                                                                                                         \
-  typedef LispBases1<Base> Bases;                                                                                                  \
   COMMON_CLASS_PARTS(oNamespace, oPackage, aClass, nameOfWrappedClass)                                                             \
   static gctools::smart_ptr<aClass> create() { return gctools::GC<aClass>::allocate_with_default_constructor(); };                 \
   virtual core::Instance_sp __class() const { return core::lisp_getStaticClass(aClass::static_ValueStampWtagMtag); }               \
