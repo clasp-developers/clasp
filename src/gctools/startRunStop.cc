@@ -185,7 +185,6 @@ int startup_clasp(void** stackMarker, gctools::ClaspInfo* claspInfo, int* exitCo
            __FUNCTION__, (uintptr_t)gctools::Header_s::weak_mtag, (uintptr_t)gctools::character_tag);
     abort();
   }
-  gctools::_global_stack_marker = (const char*)stackMarker;
   gctools::_global_stack_max_size = claspInfo->_stackMax;
   gctools::global_alignup_sizeof_header = gctools::AlignUp(sizeof(gctools::Header_s));
   gctools::global_sizeof_fwd = gctools::AlignUp(sizeof(gctools::Header_s));
