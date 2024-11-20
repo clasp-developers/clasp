@@ -38,6 +38,5 @@ class CxxObject_O : public General_O {
 public:
 public:
   explicit CxxObject_O() : Base(){};
-  virtual ~CxxObject_O(){};
 };
 }; // namespace core

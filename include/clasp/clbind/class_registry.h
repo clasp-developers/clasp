@@ -66,7 +66,6 @@ class ClassRegistry_O : public core::General_O {
 
 public:
   ClassRegistry_O(){};
-  virtual ~ClassRegistry_O(){};
 
 public:
   static ClassRegistry_sp get_registry();

@@ -22,7 +22,6 @@ class SimpleVector_byte2_t_O : public specialized_SimpleVector_byte2_t {
 
 public:
   CLASP_DEFAULT_CTOR SimpleVector_byte2_t_O(){};
-  virtual ~SimpleVector_byte2_t_O(){};
 
 public:
   typedef specialized_SimpleVector_byte2_t TemplatedBase;
@@ -45,7 +44,6 @@ public:
 namespace core {
 class MDArray_byte2_t_O : public template_Array<MDArray_byte2_t_O, SimpleMDArray_byte2_t_O, SimpleVector_byte2_t_O, MDArray_O> {
   LISP_CLASS(core, CorePkg, MDArray_byte2_t_O, "MDArray_byte2_t", MDArray_O);
-  virtual ~MDArray_byte2_t_O(){};
 
 public:
   typedef template_Array<MDArray_byte2_t_O, SimpleMDArray_byte2_t_O, SimpleVector_byte2_t_O, MDArray_O> TemplatedBase;
@@ -59,7 +57,6 @@ public: // make array
 namespace core {
 class SimpleMDArray_byte2_t_O : public template_SimpleArray<SimpleMDArray_byte2_t_O, SimpleVector_byte2_t_O, SimpleMDArray_O> {
   LISP_CLASS(core, CorePkg, SimpleMDArray_byte2_t_O, "SimpleMDArray_byte2_t", SimpleMDArray_O);
-  virtual ~SimpleMDArray_byte2_t_O(){};
 
 public:
   typedef template_SimpleArray<SimpleMDArray_byte2_t_O, SimpleVector_byte2_t_O, SimpleMDArray_O> TemplatedBase;
@@ -72,7 +69,6 @@ public: // make array
 namespace core {
 class ComplexVector_byte2_t_O : public template_Vector<ComplexVector_byte2_t_O, SimpleVector_byte2_t_O, ComplexVector_O> {
   LISP_CLASS(core, CorePkg, ComplexVector_byte2_t_O, "ComplexVector_byte2_t", ComplexVector_O);
-  virtual ~ComplexVector_byte2_t_O(){};
 
 public:
   typedef template_Vector<ComplexVector_byte2_t_O, SimpleVector_byte2_t_O, ComplexVector_O> TemplatedBase;
@@ -113,7 +109,6 @@ class SimpleVector_int2_t_O : public specialized_SimpleVector_int2_t {
 
 public:
   CLASP_DEFAULT_CTOR SimpleVector_int2_t_O(){};
-  virtual ~SimpleVector_int2_t_O(){};
 
 public:
   typedef specialized_SimpleVector_int2_t TemplatedBase;
@@ -136,7 +131,6 @@ public:
 namespace core {
 class MDArray_int2_t_O : public template_Array<MDArray_int2_t_O, SimpleMDArray_int2_t_O, SimpleVector_int2_t_O, MDArray_O> {
   LISP_CLASS(core, CorePkg, MDArray_int2_t_O, "MDArray_int2_t", MDArray_O);
-  virtual ~MDArray_int2_t_O(){};
 
 public:
   typedef template_Array<MDArray_int2_t_O, SimpleMDArray_int2_t_O, SimpleVector_int2_t_O, MDArray_O> TemplatedBase;
@@ -150,7 +144,6 @@ public: // make array
 namespace core {
 class SimpleMDArray_int2_t_O : public template_SimpleArray<SimpleMDArray_int2_t_O, SimpleVector_int2_t_O, SimpleMDArray_O> {
   LISP_CLASS(core, CorePkg, SimpleMDArray_int2_t_O, "SimpleMDArray_int2_t", SimpleMDArray_O);
-  virtual ~SimpleMDArray_int2_t_O(){};
 
 public:
   typedef template_SimpleArray<SimpleMDArray_int2_t_O, SimpleVector_int2_t_O, SimpleMDArray_O> TemplatedBase;
@@ -163,7 +156,6 @@ public: // make array
 namespace core {
 class ComplexVector_int2_t_O : public template_Vector<ComplexVector_int2_t_O, SimpleVector_int2_t_O, ComplexVector_O> {
   LISP_CLASS(core, CorePkg, ComplexVector_int2_t_O, "ComplexVector_int2_t", ComplexVector_O);
-  virtual ~ComplexVector_int2_t_O(){};
 
 public:
   typedef template_Vector<ComplexVector_int2_t_O, SimpleVector_int2_t_O, ComplexVector_O> TemplatedBase;

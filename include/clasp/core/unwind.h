@@ -23,7 +23,6 @@ public:
 
 public:
   DynEnv_O(){};
-  virtual ~DynEnv_O(){};
 
 public:
   /* Return information about this dynamic environment to the search
@@ -57,7 +56,6 @@ class UnknownDynEnv_O : public DynEnv_O {
 
 public:
   UnknownDynEnv_O() : DynEnv_O(){};
-  virtual ~UnknownDynEnv_O(){};
 
 public:
   virtual SearchStatus search() const { return FallBack; };
@@ -74,7 +72,6 @@ public:
 #endif
   DestDynEnv_O() : DynEnv_O(){};
   DestDynEnv_O(jmp_buf* a_target) : DynEnv_O(), target(a_target){};
-  virtual ~DestDynEnv_O(){};
   virtual SearchStatus search() const { return Continue; };
   virtual void proceed(){};
 #ifdef UNWIND_INVALIDATE_STRICT
@@ -94,7 +91,6 @@ public:
   void* frame; // for fallback
   LexDynEnv_O() : DestDynEnv_O(){};
   LexDynEnv_O(void* a_frame, jmp_buf* target) : DestDynEnv_O(target), frame(a_frame){};
-  virtual ~LexDynEnv_O(){};
 };
 
 // Dynenv for a CL:BLOCK.
@@ -105,7 +101,6 @@ class BlockDynEnv_O : public LexDynEnv_O {
 public:
   using LexDynEnv_O::LexDynEnv_O; // inherit constructor
   static BlockDynEnv_sp create(void* frame, jmp_buf* target) { return gctools::GC<BlockDynEnv_O>::allocate(frame, target); }
-  virtual ~BlockDynEnv_O(){};
   virtual bool unwound_dynenv_p() { return true; }
 };
 
@@ -117,7 +112,6 @@ class TagbodyDynEnv_O : public LexDynEnv_O {
 public:
   using LexDynEnv_O::LexDynEnv_O;
   static TagbodyDynEnv_sp create(void* frame, jmp_buf* target) { return gctools::GC<TagbodyDynEnv_O>::allocate(frame, target); }
-  virtual ~TagbodyDynEnv_O(){};
   virtual bool unwound_dynenv_p() { return false; }
 };
 
@@ -128,7 +122,6 @@ class CatchDynEnv_O : public DestDynEnv_O {
 public:
   T_sp tag;
   CatchDynEnv_O(jmp_buf* target, T_sp a_tag) : DestDynEnv_O(target), tag(a_tag) {}
-  virtual ~CatchDynEnv_O(){};
 
 public:
   virtual bool unwound_dynenv_p() { return true; }
@@ -140,7 +133,6 @@ class UnwindProtectDynEnv_O : public DynEnv_O {
 
 public:
   UnwindProtectDynEnv_O(jmp_buf* a_target) : target(a_target){};
-  virtual ~UnwindProtectDynEnv_O(){};
 
 public:
   jmp_buf* target;
@@ -157,7 +149,6 @@ class BindingDynEnv_O : public DynEnv_O {
 
 public:
   BindingDynEnv_O(VariableCell_sp a_cell, T_sp a_old) : DynEnv_O(), cell(a_cell), old(a_old){};
-  virtual ~BindingDynEnv_O(){};
   VariableCell_sp cell;
   T_sp old;
   virtual SearchStatus search() const { return Continue; };

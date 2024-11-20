@@ -124,7 +124,6 @@ public:
       : _Host(kw::_sym_unspecific), _Device(kw::_sym_unspecific), _Directory(nil<T_O>()), _Name(nil<T_O>()), _Type(nil<T_O>()),
         _Version(kw::_sym_unspecific){};
 
-  virtual ~Pathname_O(){};
 
   virtual bool equal(T_sp obj) const;
   virtual bool equalp(T_sp obj) const { return this->equal(obj); };
@@ -147,7 +146,6 @@ class LogicalPathname_O : public Pathname_O {
 public:
   LogicalPathname_O(const LogicalPathname_O& ss); //!< Copy constructor
   LogicalPathname_O(){};
-  virtual ~LogicalPathname_O(){};
 };
 }; // namespace core
 
