@@ -49,10 +49,9 @@ extern uintptr_t global_strong_weak_kind;
 namespace gctools {
 template <class OT>
 static void initializeIfNeeded(smart_ptr<OT> sp) {
-  if constexpr (GCInfo<OT>::NeedsInitialization) {
-    if (sp.generalp()) // FIXME: Ought to be statically determinable
+  if constexpr (GCInfo<OT>::NeedsInitialization
+                && Inherits<core::General_O, OT>::value)
       sp.unsafe_general()->initialize();
-  }
 }
 }; // namespace gctools
 
