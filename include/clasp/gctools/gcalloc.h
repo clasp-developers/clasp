@@ -190,7 +190,7 @@ template <class OT, GCInfo_policy Policy = normal> struct GCObjectAppropriatePoo
     uintptr_t guardBefore0 = *(uintptr_t*)((uintptr_t*)ptr - 1);
     uintptr_t guardAfter0 = *(uintptr_t*)((uintptr_t*)((char*)ptr + sizeWithHeader - sizeof(Header_s)) + 1);
 #endif
-    new (ptr) OT(snapshot_save_load_init);
+    snapshot_save_load_init->fill(ptr);
 #ifdef DEBUG_GUARD
     uintptr_t guardBefore1 = *(uintptr_t*)((uintptr_t*)ptr - 1);
     uintptr_t guardAfter1 = *(uintptr_t*)((uintptr_t*)((char*)ptr + sizeWithHeader - sizeof(Header_s)) + 1);
