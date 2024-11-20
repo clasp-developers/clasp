@@ -80,14 +80,6 @@ int iBootstrapKind(const string& name) {
   SIMPLE_ERROR("Illegal bootstrap-kind {}", name);
 }
 
-std::atomic<size_t> global_lexical_depth_counter;
-
-DOCGROUP(clasp);
-CL_DEFUN core::T_sp gctools__next_lexical_depth_counter() {
-  core::T_sp result = core::make_fixnum(++global_lexical_depth_counter);
-  return result;
-}
-
 DOCGROUP(clasp);
 CL_DEFUN core::Cons_sp gctools__bootstrap_kind_symbols() {
   core::Cons_sp list(nil<core::Cons_O>());
@@ -165,12 +157,6 @@ CL_DEFUN core::T_sp core__header_value(core::T_sp obj) {
     return core::clasp_make_integer(header->_badge_stamp_wtag_mtag._value);
   }
   SIMPLE_ERROR("The object {} is not a general object and doesn't have a header-value", _rep_(obj));
-}
-
-DOCGROUP(clasp);
-CL_DEFUN core::T_mv gctools__tagged_pointer_mps_test() {
-  // Return the values used to identify tagged pointers (PTR&POINTER_TAG_MASK)==POINTER_TAG_EQ
-  return Values(core::make_fixnum(POINTER_TAG_MASK), core::make_fixnum(POINTER_TAG_EQ));
 }
 
 CL_DOCSTRING(R"dx(Return the index part of the stamp.  Stamp indices are adjacent to each other.)dx");
@@ -350,60 +336,6 @@ CL_DEFUN void gctools__save_lisp_and_continue(core::T_sp filename, core::T_sp ex
   SIMPLE_ERROR("save-lisp-and-continue only works for precise GC");
 #endif
 }
-
-
-CL_LAMBDA(stamp);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(Return a list of addresses of objects with the given stamp)dx");
-DOCGROUP(clasp);
-CL_DEFUN core::T_sp gctools__objects_with_stamp(core::T_sp stamp) {
-#if defined(USE_BOEHM)
-  if (stamp.fixnump()) {
-    gctools::FindStamp findStamp((gctools::GCStampEnum)stamp.unsafe_fixnum());
-#if GC_VERSION_MAJOR >= 7 && GC_VERSION_MINOR >= 6
-    GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object_find_stamps, (void*)&findStamp);
-#else
-    SIMPLE_ERROR("The boehm function GC_enumerate_reachable_objects_inner is not available");
-#endif
-    core::List_sp result = nil<core::T_O>();
-    for (size_t ii = 0; ii < findStamp._addresses.size(); ii++) {
-      core::Pointer_sp ptr = core::Pointer_O::create((void*)findStamp._addresses[ii]);
-      result = core::Cons_O::create(ptr, result);
-    }
-    return result;
-  }
-#else
-  MISSING_GC_SUPPORT();
-#endif // USE_BOEHM
-  SIMPLE_ERROR("You must pass a stamp value");
-}
-
-CL_LAMBDA(address);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(Return a list of addresses of objects with the given stamp)dx");
-DOCGROUP(clasp);
-CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
-#if defined(USE_BOEHM)
-  if (obj.fixnump()) {
-    void* base = GC_base((void*)obj.unsafe_fixnum());
-    gctools::FindOwner findOwner(base);
-#if GC_VERSION_MAJOR >= 7 && GC_VERSION_MINOR >= 6
-    GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object_find_owners, (void*)&findOwner);
-#else
-    SIMPLE_ERROR("The boehm function GC_enumerate_reachable_objects_inner is not available");
-#endif
-    core::List_sp result = nil<core::T_O>();
-    for (size_t ii = 0; ii < findOwner._addresses.size(); ii++) {
-      result = core::Cons_O::create(core::Pointer_O::create(findOwner._addresses[ii]), result);
-    }
-    return result;
-  }
-#else
-  MISSING_GC_SUPPORT();
-#endif // USE_BOEHM
-  SIMPLE_ERROR("You must pass a pointer");
-}
-
 }; // namespace gctools
 
 namespace gctools {
@@ -459,8 +391,6 @@ CL_DEFUN void gctools__definalize(core::T_sp object) {
 
 }; // namespace gctools
 
-namespace gctools {};
-
 namespace gctools {
 
 DOCGROUP(clasp);
@@ -484,14 +414,6 @@ CL_DEFUN core::T_sp gctools__vtable_address(core::General_sp generalObject) {
   printf("%s:%d:%s  vtable pointer = %p\n", __FILE__, __LINE__, __FUNCTION__, vtable_ptr );
   return nil<core::T_O>();
 }
-
-DOCGROUP(clasp);
-CL_DEFUN core::T_sp gctools__stack_depth() {
-  int z = 0;
-  void* zp = &z;
-  size_t stackDepth = (char*)_global_stack_marker - (char*)zp;
-  return core::make_fixnum((uint)stackDepth);
-};
 
 DOCGROUP(clasp);
 CL_DEFUN void gctools__garbage_collect() {
@@ -1018,33 +940,6 @@ DOCGROUP(clasp);
 CL_DEFUN core::Integer_sp gctools__unwind_time_nanoseconds() {
   core::Integer_sp is = core::Integer_O::create(my_thread_low_level->_unwind_time.count());
   return is;
-}
-
-CL_DOCSTRING(R"doc(This is an attempt at a SAFE function that walks the frame-pointers on the stack.
-             It tests if memory is readable before it reads it and returns with a message if it isn't readable.)doc");
-CL_DEFUN void gctools__walk_frame_pointers_on_stack() {
-  // Get the current frame pointer
-  void **frame_pointer = (void**)__builtin_frame_address(0);
-  printf("Stack trace:\n");
-  size_t idx = 0;
-  while (frame_pointer) {
-    if (!is_memory_readable(frame_pointer+1,8) ) goto UNREADABLE_RETURN_ADDRESS;
-    void* return_address = *(frame_pointer+1);
-    printf("%5zu frame-pointer: %p   return-address: %p\n", idx, frame_pointer, return_address );
-    if (return_address==0) goto DONE;
-        // Move to the previous frame
-    if (!is_memory_readable(frame_pointer,8)) goto UNREADABLE_FRAME_POINTER;
-    frame_pointer = (void**)*frame_pointer;
-    ++idx;
-  }
- UNREADABLE_RETURN_ADDRESS:
-  printf("Could not read return_address at *(frame_pointer+1) %p - stopping\n", frame_pointer+1 );
-  return;
- UNREADABLE_FRAME_POINTER:
-  printf("Could not read frame_pointer at *frame_pointer %p - stopping\n", frame_pointer );
-  return;
- DONE:
-  return;
 }
 
 }; // namespace gctools

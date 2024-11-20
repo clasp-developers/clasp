@@ -66,7 +66,6 @@
 ;; Generate timings for all of the operations
 ;;
 (defun time-ops ()
-  (format t "Stack depth: ~a~%" (gctools:stack-depth))
   (do* ((i 1 (1+ i))
         (res (time-operation i) (time-operation i)))
        ((null res))

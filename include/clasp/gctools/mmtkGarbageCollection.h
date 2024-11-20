@@ -29,22 +29,6 @@ THE SOFTWARE.
 
 namespace gctools {
 
-// Given an interior_pointer
-// Return true and the base object if the interior_pointer points into an object
-// Return false and undefined for object if it does not.
-// This is the General_O object case
-template <typename GeneralType>
-inline bool tagged_pointer_from_interior_pointer(clasp_ptr_t interior_pointer, Tagged& tagged_pointer) {
-  printf("%s:%d:%s What do I do here?\n", __FILE__, __LINE__, __FUNCTION__);
-  return false;
-}
-
-// core::Cons_sp specializer
-template <> inline bool tagged_pointer_from_interior_pointer<core::Cons_O>(clasp_ptr_t interior_pointer, Tagged& tagged_pointer) {
-  printf("%s:%d:%s Need support for interior pointers.\n", __FILE__, __LINE__, __FUNCTION__);
-  return false;
-}
-
 int initializeMmtk(int argc, char* argv[], bool mpiEnabled, int mpiRank, int mpiSize);
 
 }; // namespace gctools

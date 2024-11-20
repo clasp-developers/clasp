@@ -151,7 +151,6 @@ namespace gctools {
 size_t global_sizeof_fwd;
 
 // GCStack _ThreadLocalStack;
-const char* _global_stack_marker;
 size_t _global_stack_max_size;
 /*! Keeps track of the next available header KIND value */
 stamp_t global_next_header_stamp = (stamp_t)STAMPWTAG_max + 1;

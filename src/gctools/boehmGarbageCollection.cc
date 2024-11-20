@@ -549,18 +549,6 @@ CL_DEFUN size_t core__dynamic_space_size() { return GC_get_total_bytes(); }
 
 CL_DEFUN size_t core__dynamic_usage() { return GC_get_heap_size(); }
 
-CL_DEFUN size_t core__gc_real_time() {
-  IMPLEMENT_MEF("Find a way to measure time spent gc'ing");
-  return 0;
-}
-
-CL_DEFUN core::T_sp core__gc_base(uint64_t addr)
-{
-  void* base = GC_base((void*)addr);
-  return core::Integer_O::create((uint64_t)base);
-}
-
-
 void clasp_gc_registerRoots(void* rootsStart, size_t numberOfRoots) {
 #ifdef CLASP_APPLE_SILICON
   //
