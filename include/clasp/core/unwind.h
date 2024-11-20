@@ -22,9 +22,6 @@ public:
   typedef enum { Continue, Proceed, OutOfExtent, Abandoned, FallBack } SearchStatus;
 
 public:
-  DynEnv_O(){};
-
-public:
   /* Return information about this dynamic environment to the search
    * phase. Return values mean the following:
    * - Continue: Nothing important needs to be noted.
@@ -55,9 +52,6 @@ class UnknownDynEnv_O : public DynEnv_O {
   LISP_CLASS(core, CorePkg, UnknownDynEnv_O, "UnknownDynEnv", DynEnv_O);
 
 public:
-  UnknownDynEnv_O() : DynEnv_O(){};
-
-public:
   virtual SearchStatus search() const { return FallBack; };
 };
 
@@ -70,7 +64,6 @@ public:
 #ifdef UNWIND_INVALIDATE_STRICT
   bool valid = true;
 #endif
-  DestDynEnv_O() : DynEnv_O(){};
   DestDynEnv_O(jmp_buf* a_target) : DynEnv_O(), target(a_target){};
   virtual SearchStatus search() const { return Continue; };
   virtual void proceed(){};
@@ -89,7 +82,6 @@ class LexDynEnv_O : public DestDynEnv_O {
 
 public:
   void* frame; // for fallback
-  LexDynEnv_O() : DestDynEnv_O(){};
   LexDynEnv_O(void* a_frame, jmp_buf* target) : DestDynEnv_O(target), frame(a_frame){};
 };
 
