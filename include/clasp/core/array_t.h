@@ -28,7 +28,6 @@ public:
 public:
   // Simple vectors include pointers, so they can't have uninitialized contents.
   // Therefore we always pass initialElementSupplied=true.
-  SimpleVector_O(){};
   SimpleVector_O(size_t length, value_type initialElement = default_initial_element(), bool initialElementSupplied = true,
                  size_t initialContentsSize = 0, const value_type* initialContents = NULL)
       : TemplatedBase(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};

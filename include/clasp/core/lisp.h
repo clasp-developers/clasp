@@ -156,9 +156,6 @@ class Exposer_O : public General_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, Exposer_O, "Exposer", General_O);
 
 public:
-  CLASP_DEFAULT_CTOR Exposer_O(){};
-
-public:
   typedef enum { candoClasses, candoFunctions, candoGlobals, pythonClasses, pythonFunctions, pythonGlobals } WhatToExpose;
 
 private:

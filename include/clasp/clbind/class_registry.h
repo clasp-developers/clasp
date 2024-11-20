@@ -63,10 +63,6 @@ FORWARD(ClassRegistry);
 class ClassRegistry_O : public core::General_O {
   LISP_CLASS(clbind, ClbindPkg, ClassRegistry_O, "ClassRegistry", core::General_O);
   void initialize() override;
-
-public:
-  ClassRegistry_O(){};
-
 public:
   static ClassRegistry_sp get_registry();
 

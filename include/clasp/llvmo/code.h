@@ -67,11 +67,6 @@ typedef enum { SaveState, RunState } CodeState_t;
 FORWARD(LibraryBase);
 class LibraryBase_O : public core::CxxObject_O {
   LISP_CLASS(llvmo, LlvmoPkg, LibraryBase_O, "LibraryBase", core::CxxObject_O);
-
-public:
-  CLASP_DEFAULT_CTOR LibraryBase_O(){};
-
-public:
 };
 
 FORWARD(CodeBlock);
@@ -182,9 +177,6 @@ class CodeBase_O;
 FORWARD(CodeBase);
 class CodeBase_O : public core::CxxObject_O {
   LISP_CLASS(llvmo, LlvmoPkg, CodeBase_O, "CodeBase", core::CxxObject_O);
-
-public:
-  CLASP_DEFAULT_CTOR CodeBase_O(){};
 
 public:
   virtual uintptr_t codeStart() const = 0;

@@ -105,9 +105,6 @@ class SimpleVector_int4_t_O : public specialized_SimpleVector_int4_t {
   LISP_CLASS(core, CorePkg, SimpleVector_int4_t_O, "SimpleVector_int4_t", AbstractSimpleVector_O);
 
 public:
-  CLASP_DEFAULT_CTOR SimpleVector_int4_t_O(){};
-
-public:
   typedef specialized_SimpleVector_int4_t TemplatedBase;
 
 public:

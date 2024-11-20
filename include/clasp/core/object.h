@@ -103,7 +103,6 @@ class RootClass {
 public:
   static core::Symbol_sp static_classSymbol() { return UNDEFINED_SYMBOL; };
   static void set_static_creator(gc::smart_ptr<core::Creator_O> cb) {};
-  RootClass() {};
 };
 
 namespace core {
@@ -357,7 +356,6 @@ class T_O : public RootClass {
 private:
   friend class CoreExposer;
   LISP_ABSTRACT_CLASS(core, ClPkg, T_O, "T", ::RootClass);
-  T_O() {};
 };
 
 }; // namespace core
@@ -377,8 +375,6 @@ class General_O : public T_O {
   LISP_CLASS(core, CorePkg, General_O, "General", T_O);
 
 public:
-  General_O() {};
-
   virtual void sxhash_(HashGenerator& hg) const;
   virtual void sxhash_equal(HashGenerator& hg) const;
   virtual void sxhash_equalp(HashGenerator& hg) const { return this->sxhash_equal(hg); };
