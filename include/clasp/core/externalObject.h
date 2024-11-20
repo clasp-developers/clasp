@@ -52,7 +52,6 @@ public:
 
 public:
   explicit ExternalObject_O() : Base(), _Class(nil<Instance_O>()){};
-  virtual ~ExternalObject_O(){};
 };
 
 template <class Type, class WrapperType> gctools::smart_ptr<Type> RP_Create_wrapped(WrapperType ptr) {
@@ -118,6 +117,5 @@ public:
   CL_DEFMETHOD void setHead(T_sp head) { this->_Head = head; };
   CL_DEFMETHOD void setTail(T_sp tail) { this->_Tail = tail; };
   explicit ImmobileObject_O(T_sp head, T_sp tail) : _Head(head), _Tail(tail){};
-  virtual ~ImmobileObject_O(){};
 };
 }; // namespace core
