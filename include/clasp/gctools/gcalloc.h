@@ -398,6 +398,21 @@ public:
     finalizeIfNeeded(sp);
     return sp;
   }
+
+  /*
+   * This function is referred to by all classes using the LISP_CLASS
+   * macro, but is never actually called by anything.
+   * The reason is that to decide if something is a "Lisp class",
+   * deserving of its own stamp and so on, the static analyzer looks
+   * for instantiations of this template (GCObjectAllocator) for the
+   * given class. Referencing this function in this template
+   * instantiates the template even if the function is never actually
+   * used. This allows us to discern Lisp classes even if they are
+   * never actually allocated (e.g., are abstract).
+   */
+  static void register_class_with_redeye() {
+    throw_hard_error("Never call this - it's only used to register with the redeye static analyzer");
+  }
 };
 }; // namespace gctools
 
