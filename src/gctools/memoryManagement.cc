@@ -866,10 +866,11 @@ void* GCRootsInModule::lookup_function(size_t index) {
 namespace gctools {
 
 /* Walk all of the roots, passing the address of each root and what it represents */
-void walkRoots(RootWalkCallback callback, void* data) {
-  callback((Tagged*)&_lisp, LispRoot, 0, data);
+template <typename RootWalkCallback>
+void walkRoots(RootWalkCallback&& callback, void* data) {
+  callback((Tagged*)&_lisp, data);
   for (size_t jj = 0; jj < global_symbol_count; ++jj) {
-    callback((Tagged*)&global_symbols[jj], SymbolRoot, jj, data);
+    callback((Tagged*)&global_symbols[jj], data);
   }
 };
 
@@ -1020,14 +1021,9 @@ void gatherAllObjects(GatherObjects& gather) {
 
   // Add the roots to the mark stack
   walkRoots(
-      +[](gctools::Tagged* rootAddress, RootType rootType, size_t rootIndex, void* data) {
+      +[](gctools::Tagged* rootAddress, void* data) {
         GatherObjects* gather = (GatherObjects*)data;
-        bool forceGeneralRoot = false;
-        if (rootType == LispRoot)
-          forceGeneralRoot = true;
-        else if (rootType == CoreSymbolRoot)
-          forceGeneralRoot = true;
-        MarkNode* node = new MarkNode(rootAddress, forceGeneralRoot);
+        MarkNode* node = new MarkNode(rootAddress);
         LOG("Push root: {}\n", *(void**)rootAddress);
         gather->pushMarkStack(node);
       },
@@ -1039,7 +1035,6 @@ void gatherAllObjects(GatherObjects& gather) {
     MarkNode* top = gather.popMarkStack();
     gctools::Tagged* objAddr = top->_ObjectAddr;
     gctools::Tagged tagged = *objAddr;
-    bool forceGeneralTag = top->_ForceGeneralRoot;
     uintptr_t tag = tagged & ptag_mask;
     uintptr_t client = tagged & ptr_mask;
     delete top;
@@ -1048,7 +1043,7 @@ void gatherAllObjects(GatherObjects& gather) {
     // Identify if the object is a general, cons or weak object
     //  This uses a combination of inspecting the tag and the mtag of the header
     //
-    if (forceGeneralTag || (tag == general_tag)) {
+    if (tag == general_tag) {
       // It may be general or weak - we must check the header now
       // GeneralPtrToHeaderPtr works for both general and weak objects because their
       // headers are guaranteed to be the same size
