@@ -1256,20 +1256,6 @@ struct SafeGCPark {
 };
 }; // namespace gctools
 
-namespace gctools {
-
-typedef enum { LispRoot, CoreSymbolRoot, SymbolRoot } RootType;
-
-/* When walking root objects, this callback is called repeatedly
-   with the address of the root.
-*/
-typedef void (*RootWalkCallback)(Tagged* rootAddress, RootType rootType, size_t rootIndex, void* userData);
-
-/* walkRoots must be provided by any GC */
-void walkRoots(RootWalkCallback callback, void* userData);
-
-}; // namespace gctools
-
 ////////////////////////////////////////////////////////////
 /*!
  * dont_expose<xxx>
@@ -1313,10 +1299,9 @@ extern PointerFix globalMemoryWalkPointerFix;
 
 struct MarkNode {
   gctools::Tagged* _ObjectAddr;
-  bool _ForceGeneralRoot;
   MarkNode* _Next;
-  MarkNode(gctools::Tagged* tt, bool forceGeneralRoot = false)
-      : _ObjectAddr(tt), _ForceGeneralRoot(forceGeneralRoot), _Next(NULL){};
+  MarkNode(gctools::Tagged* tt)
+      : _ObjectAddr(tt), _Next(NULL){};
 };
 
 struct GatherObjects {
