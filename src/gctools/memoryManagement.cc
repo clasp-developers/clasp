@@ -966,15 +966,9 @@ void gatherObjects(uintptr_t* fieldAddress, uintptr_t client, uintptr_t tag, voi
 #define WEAK_PTR_TO_HEADER_PTR(_general_) WeakPtrToHeaderPtr((void*)_general_)
 // #define HEADER_PTR_TO_WEAK_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
 
-#define SCAN_STRUCT_T int
 #define ADDR_T uintptr_t
-#define SCAN_BEGIN(ss)
-#define SCAN_END(ss)
-#define RESULT_TYPE int
-#define RESULT_OK 1
 #define EXTRA_ARGUMENTS , void* user_data
 
-#define OBJECT_SKIP_IN_OBJECT_SCAN blah_blah_blah_error
 #define OBJECT_SCAN mw_obj_scan
 #include "obj_scan.cc"
 #undef OBJECT_SCAN
@@ -1006,12 +1000,7 @@ void gatherObjects(uintptr_t* fieldAddress, uintptr_t client, uintptr_t tag, voi
 #undef WEAK_SKIP
 #undef WEAK_SCAN
 
-#undef SCAN_STRUCT_T
 #undef ADDR_T
-#undef SCAN_BEGIN
-#undef SCAN_END
-#undef RESULT_TYPE
-#undef RESULT_OK
 #undef EXTRA_ARGUMENTS
 
 void gatherAllObjects(GatherObjects& gather) {
@@ -1053,24 +1042,18 @@ void gatherAllObjects(GatherObjects& gather) {
         // It's a general object - walk it
         size_t objectSize;
         LOG("Mark/scan client: {}\n", *(void**)client);
-        mw_obj_skip(client, false, objectSize);
-        uintptr_t clientLimit = client + objectSize;
-        mw_obj_scan(0, client, clientLimit, &gather);
+        mw_obj_scan(client, &gather);
       } else {
         // It's a weak object - walk it
-        size_t objectSize;
-        uintptr_t clientLimit = mw_weak_skip(client, false, objectSize);
         LOG("Mark/scan weak client: {}\n", *(void**)client);
-        mw_weak_scan(0, client, clientLimit, &gather);
+        mw_weak_scan(client, &gather);
       }
     } else if (tag == cons_tag) {
       // It's a cons object - get the header
       Header_s* consHeader = (Header_s*)ConsPtrToHeaderPtr((void*)client);
       gather.mark(consHeader);
-      size_t consSize;
       LOG("Mark/scan cons client: {}\n", *(void**)client);
-      uintptr_t clientLimit = mw_cons_skip(client, consSize);
-      mw_cons_scan(0, client, clientLimit, &gather);
+      mw_cons_scan(client, &gather);
     }
   }
 }
