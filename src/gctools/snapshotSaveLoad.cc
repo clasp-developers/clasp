@@ -661,20 +661,6 @@ uintptr_t decodeVtable(Fixup* fixup, uintptr_t* vtablePtr, uintptr_t vtableRegio
   return (uintptr_t)ptr;
 }
 
-#if 0 // Deprecated
-void* encodePointer(Fixup* fixup, gctools::clasp_ptr_t address,size_t idx, gctools::clasp_ptr_t start) {
-  check_dladdr((uintptr_t)address);
-  uint8_t firstByte = *(uint8_t*)address; // read the first byte
-  uintptr_t offset = (uintptr_t)address - (uintptr_t)start;
-  if (!start) {
-    printf("%s:%d:%s The start address can not be zero!!!\n", __FILE__, __LINE__, __FUNCTION__ );
-  }
-  uintptr_t result = ((uintptr_t)firstByte << 56) | idx<<40 | offset;
-  DBG_SL_ENTRY_POINT(BF("Library base: %p encode %p/%d -> %p\n") % (void*)start % (void*)address % idx % (void*)result );
-  return (void*)result;
-}
-#endif
-
 size_t Fixup::ensureLibraryRegistered(uintptr_t address) {
   for (size_t idx = 0; idx < this->_ISLLibraries.size(); idx++) {
     if (((uintptr_t)this->_ISLLibraries[idx]._TextStart) <= address && address < ((uintptr_t)this->_ISLLibraries[idx]._TextEnd)) {
@@ -870,22 +856,10 @@ struct MemoryRange {
 MemoryRange globalISLBufferRange;
 
 gctools::Header_s* generalPointerToHeaderPointer(gctools::clasp_ptr_t general) {
-#if 0
-  // we used to only save the StampWtagMtag - but now save the whole header for debugging.
-  if (globalISLBufferRange.contains(general)) {
-    return (gctools::Header_s*)(general - sizeof(gctools::Header_s::BadgeStampWtagMtag));
-  }
-#endif
   return (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(general);
 }
 
 gctools::clasp_ptr_t headerPointerToGeneralPointer(gctools::Header_s* header) {
-#if 0
-  // we used to only save the StampWtagMtag - but now save the whole header for debugging.
-  if (globalISLBufferRange.contains((gctools::clasp_ptr_t)header)) {
-    return (gctools::clasp_ptr_t)((const char*)header + sizeof(gctools::Header_s::BadgeStampWtagMtag));
-  }
-#endif
   return (gctools::clasp_ptr_t)gctools::HeaderPtrToGeneralPtr<core::General_O>((void*)header);
 }
 
@@ -1290,14 +1264,6 @@ struct copy_buffer_t {
     this->_buffer += bytes;
     if ((this->_BufferStart <= addr) && (addr <= (this->_BufferStart + this->_Size)) &&
         (this->_BufferStart <= (addr + bytes) && ((addr + bytes) <= (this->_BufferStart + this->_Size)))) {
-#if 0
-      for ( size_t idx = 0; idx<bytes; idx++ ) {
-        if (addr[idx] != '\0') {
-          printf("%s:%d:%s About to overwrite non-zero memory at %p\n", __FILE__, __LINE__, __FUNCTION__, &addr[idx]);
-          abort();
-        }
-      }
-#endif
       memcpy((void*)addr, (const void*)source, bytes);
     } else {
       printf("%s:%d:%s The memcpy of range %p - %p will fall out of the allowed destination range %p - %p\n", __FILE__, __LINE__,
@@ -1589,14 +1555,6 @@ struct calculate_size_t : public walker_callback_t {
         //
         llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)client;
         size_t saveCodeSize = llvmo::ObjectFile_O::sizeofInState(code, llvmo::SaveState);
-        {
-          size_t runCodeSize;
-          isl_obj_skip((gctools::clasp_ptr_t)code, false, runCodeSize);
-#if 0
-          printf("%s:%d:%s Calculated size of ObjectFile_O in RunState: %lu  and in SaveState: %lu\n",
-                 __FILE__, __LINE__, __FUNCTION__, runCodeSize, saveCodeSize );
-#endif
-        }
         this->_TotalSize += sizeof(ISLGeneralHeader_s) + saveCodeSize;
         this->_ObjectFileCount++;
         if (!code->memoryBufferValid()) {
@@ -1971,17 +1929,6 @@ struct SaveSymbolCallback : public core::SymbolCallback {
             SymbolInfo(/*Debug*/ address, addressOffset, (uint)sname.size(), this->_Library._SymbolBuffer.size());
         std::copy(sname.begin(), sname.end(), std::back_inserter(this->_Library._SymbolBuffer));
         this->_Library._SymbolBuffer.push_back('\0');
-#if 0
-        printf("%s:%d:%s #%lu symbolLength: %u offset: %u match: %d  start: %p end: %p  %s\n",
-               __FILE__, __LINE__, __FUNCTION__,
-               ii,
-               this->_Library._SymbolInfo[ii]._SymbolLength,
-               this->_Library._SymbolInfo[ii]._SymbolOffset,
-               ((uintptr_t)address == (uintptr_t)start),
-               (void*)start,
-               (void*)end,
-               sname.c_str());
-#endif
         return;
       }
     }
@@ -2104,7 +2051,6 @@ struct LoadSymbolCallback : public core::SymbolCallback {
       const char* myName = (const char*)&this->_Library._SymbolBuffer[symbolOffset];
       uintptr_t mysymStart = (uintptr_t)lookup.lookupSymbol(myName);
       uintptr_t dlsymStart = (uintptr_t)dlsym(RTLD_DEFAULT, myName);
-#if 1
       if (mysymStart) {
         // do nothing - keep going
       } else if (dlsymStart) {
@@ -2123,18 +2069,6 @@ struct LoadSymbolCallback : public core::SymbolCallback {
         }
         abort();
       }
-#else
-      if (dlsymStart != 0 && mysymStart != dlsymStart) {
-        printf("%s:%d:%s Mismatch between mysymStart %p and dlsymStart %p for symbol %s - lookupSymbol with verbose=true\n",
-               __FILE__, __LINE__, __FUNCTION__, (void*)mysymStart, (void*)dlsymStart, myName);
-        lookup.lookupSymbol(myName, true);
-        abort();
-      }
-      if (!mysymStart) {
-        printf("%s:%d:%s Could not resolve address with dlsym for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, myName);
-        abort();
-      }
-#endif
       this->_Library._GroupedPointers[gpindex]._address = mysymStart;
 #ifdef DEBUG_ENTRY_POINTS
       printf("%s:%d:%s GroupedPointers[%lu] restored address %p  offset: %lu saved symbol address %p @%p\n     name: %s\n",
@@ -2227,11 +2161,7 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
 void updateRelocationTableAfterLoad(ISLLibrary& curLib, SymbolLookup& symbolLookup) {
   LoadSymbolCallback thing(curLib);
   curLib._GroupedPointers.resize(curLib._SymbolInfo.size(), GroupedPointer());
-#if 0
-  core::walk_loaded_objects_symbol_table( &thing );
-#else
   thing.loadSymbols(symbolLookup);
-#endif
   //  printf("%s:%d:%s  Library %s contains %lu grouped pointers\n", __FILE__, __LINE__, __FUNCTION__,
   //  curLib._Name.c_str(),curLib._GroupedPointers.size() );
   for (size_t ii = 0; ii < curLib._SymbolInfo.size(); ii++) {
@@ -2261,28 +2191,6 @@ void dump_test_results(FILE* fout, const gctools::GatherObjects& gather) {
     }
   }
 }
-
-#if 0
-void test_objects_t::callback(gctools::BaseHeader_s* header) {
-  if (header->_badge_stamp_wtag_mtag.stampP()) {
-    gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
-      //
-      // This is where we would test pointers and entry-points
-      //
-      // 1. entry points to library code -> offset
-      // 2. entry points to ObjectFile_O objects -> offset
-
-    isl_obj_scan(client, (void*)this->_info );
-  } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
-    gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToConsPtr(header);
-    isl_cons_scan(client, (void*)this->_info );
-  } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
-    gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
-    isl_weak_scan(clientStart, (void*)this->_info );
-  }
-}
-
-#endif
 
 size_t memory_test(bool dosleep, FILE* fout, const char* message) {
   //
@@ -2434,12 +2342,10 @@ void* snapshot_save_impl(void* data) {
   //
   // Switch to InfoOp
   //
-#if 1
   fixup._operation = InfoOp;
   DBG_SL_STEP(2, "Get info on objects for snapshot save\n");
   gather_info_for_snapshot_save_t gather_info(&fixup, &islInfo);
   walk_gathered_objects(gather_info, allObjects);
-#endif
   //
   // Switch to SaveOp
   //
@@ -2735,7 +2641,6 @@ void* snapshot_save_impl(void* data) {
   }
 
   DBG_SLS(" Done snapshot_save_impl\n");
-#if 1
   if (getenv("CLASP_PAUSE_EXIT")) {
     printf("%s:%d PID = %d  Paused at exit - press enter to continue: \n", __FILE__, __LINE__, getpid());
     fflush(stdout);
@@ -2745,7 +2650,6 @@ void* snapshot_save_impl(void* data) {
     while ((c = getchar()) != '\n' && c != EOF) {
     };
   }
-#endif
 
 #ifdef DEBUG_BADGE_SSL
   printf("%s:%d:%s global_badge_count = %lu\n", __FILE__, __LINE__, __FUNCTION__, global_badge_count);
@@ -3490,11 +3394,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           cur_header = next_header;
         }
         pool.wait_for_tasks();
-
-#if 0
-        gctools::setup_user_signal();
-        gctools::wait_for_user_signal("Paused at startup after object files added");
-#endif
         DBG_SL("8 Done working ObjectFiles\n");
       }
       char* pause_startup = getenv("CLASP_PAUSE_OBJECTS_ADDED");
@@ -3522,10 +3421,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               // Skip the NIL object we handled above
               countNullObjects++; // It's a Null_O object but its header has been obliterated by a fwd
             } else if (source_header->_badge_stamp_wtag_mtag.fwdP()) {
-#if 0
-              printf("%s:%d:%s About to skip allocation of the object in snapshot at snapshot_header %p - fwdPointer() = %p\n",
-                     __FILE__, __LINE__, __FUNCTION__, source_header, source_header->_badge_stamp_wtag_mtag.fwdPointer() );
-#endif
             } else if (generalHeader->_Header._badge_stamp_wtag_mtag._value ==
                        DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
               // Set the forwarding pointer defined above.
@@ -3578,7 +3473,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
             snapshot_save_load_init_s init(header, clientStart, clientEnd);
             gctools::Header_s::WeakKinds kind = (gctools::Header_s::WeakKinds)header->_badge_stamp_wtag_mtag._value;
             switch (kind) {
-#if 1
             case gctools::Header_s::WeakBucketKind: {
               auto obj = gctools::GCBucketAllocator<
                   gctools::Buckets<core::T_sp, core::T_sp, gctools::WeakLinks>>::snapshot_save_load_allocate(&init);
@@ -3599,33 +3493,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               root_holder.add((void*)obj.raw_());
               break;
             }
-#endif
-#if 0
-            case gctools::Header_s::WeakMappingKind: {
-              auto obj = gctools::GCMappingAllocator<gctools::Mapping<core::T_sp,core::T_sp,gctools::WeakLinks>>::snapshot_save_load_allocate(&init);
-              gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
-              set_forwarding_pointer(header,((void*)fwd),this->_info);
-              DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu fwd: %p\n")
-                              % (void*) obj.raw_()
-                              % (void*) header
-                              % (uintptr_t)kind
-                              % (void*)fwd );
-              root_holder.add((void*)obj.raw_());
-              break;
-            }
-            case gctools::Header_s::StrongBucketKind: {
-              auto obj = gctools::GCMappingAllocator<gctools::Mapping<core::T_sp,core::T_sp,gctools::StrongLinks>>::snapshot_save_load_allocate(&init);
-              gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
-              set_forwarding_pointer(header,((void*)fwd),this->_info);
-              DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu fwd: %p\n")
-                              % (void*) obj.raw_()
-                              % (void*) header
-                              % (uintptr_t)kind
-                              % (void*)fwd );
-              root_holder.add((void*)obj.raw_());
-              break;
-            }
-#endif
             default:
               printf("%s:%d:%s  Handle allocate weak objects\n", __FILE__, __LINE__, __FUNCTION__);
               break;
@@ -3707,7 +3574,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           // On MacOS this test may fail because symbols are always at least 8 bytes
           // so we will rely on newCodeLiteralsStart and newCodeLiteralsEnd being bounded
           // by newCodeDataStart/newCodeDataEnd
-#if 0
           DBG_OF(
               printf("%s:%d:%s BAD code fixup #%lu/%lu - the newCodeLiterals range %p - %p must be within the bounds of the newCodeData range %p - %p and it is not; the oldCodeClient->literalsSize()[%lu] != 0\n",
                      __FILE__, __LINE__, __FUNCTION__,
@@ -3718,8 +3584,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                      (void*)newCodeDataStart,
                      (void*)newCodeDataEnd,
                      oldCodeClient->literalsSize() ));
-//          abort();
-#endif
         } else {
           if (oldCodeClient->literalsSize() != 0) {
             if (getenv("CLASP_SNAPSHOT_OBJECT_FILE")) {
@@ -3813,21 +3677,12 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     // Release the temporary roots
     //
     DBG_SL("15 ======================= release temporary roots\n");
-#if 0
-    printf("%s:%d:%s Not releasing temporary roots\n", __FILE__, __LINE__, __FUNCTION__ );
-#else
     root_holder.release();
-#endif
 
     //
     // munmap the memory
     //
     DBG_SL("16 ======================= munmap snapshot memory\n");
-#if 0
-    printf("%s:%d:%s Not munmap'ing loaded snapshot - filling with 0xc0\n", __FILE__, __LINE__, __FUNCTION__ );
-  // Fill it with 0xc0
-//  memset(memory,0xc0,fsize);
-#else
     //  printf("%s:%d:%s munmap'ing loaded snapshot - filling with 0xc0\n", __FILE__, __LINE__, __FUNCTION__ );
     if (maybeStartOfSnapshot == NULL) {
       int res = munmap(memory, fsize);
@@ -3837,7 +3692,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       // It's a copy of the embedded snapshot
       free(memory);
     }
-#endif
 
     //
     // Initialize the main thread
@@ -3860,13 +3714,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     {
       char* pause_startup = getenv("CLASP_PAUSE_INIT");
       if (pause_startup) {
-#if 1
         gctools::wait_for_user_signal("Paused at startup before all initialization");
-#else
-        printf("%s:%d PID = %d Paused after snapshot-load - press enter to continue: \n", __FILE__, __LINE__, getpid());
-        fflush(stdout);
-        getchar();
-#endif
       }
     }
   }
