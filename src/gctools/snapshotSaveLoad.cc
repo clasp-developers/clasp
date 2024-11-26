@@ -1123,15 +1123,9 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
     };                                                                                                                             \
   }
 
-#define SCAN_STRUCT_T int
 #define ADDR_T gctools::clasp_ptr_t
-#define SCAN_BEGIN(ss)
-#define SCAN_END(ss)
-#define RESULT_TYPE int
-#define RESULT_OK 1
 #define EXTRA_ARGUMENTS , void* user_data
 
-#define OBJECT_SKIP_IN_OBJECT_SCAN blah_blah_blah_error
 #define OBJECT_SCAN isl_obj_scan
 #include "obj_scan.cc"
 #undef OBJECT_SCAN
@@ -1163,12 +1157,7 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
 #undef WEAK_SKIP
 #undef WEAK_SCAN
 
-#undef SCAN_STRUCT_T
 #undef ADDR_T
-#undef SCAN_BEGIN
-#undef SCAN_END
-#undef RESULT_TYPE
-#undef RESULT_OK
 #undef EXTRA_ARGUMENTS
 
 //
@@ -1859,29 +1848,22 @@ struct fixup_objects_t : public walker_callback_t {
       DebugSnapshotObjectFile foo(header,
                                   header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O));
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
-      size_t objectSize;
-      isl_obj_skip(client, false, objectSize);
       if (global_debugSnapshotObjectFile) {
         DBG_SL_FIXUP("fixup header ObjectFile\n");
       }
-      gctools::clasp_ptr_t client_limit = client + objectSize;
       //
       // This is where we would fixup pointers and entry-points
       //
       // 1. entry points to library code -> offset
       // 2. entry points to ObjectFile_O objects -> offset
 
-      isl_obj_scan(0, client, client_limit, (void*)this->_info);
+      isl_obj_scan(client, (void*)this->_info);
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToConsPtr(header);
-      size_t consSkip;
-      gctools::clasp_ptr_t client_limit = isl_cons_skip((gctools::clasp_ptr_t)client, consSkip);
-      isl_cons_scan(0, client, client_limit, (void*)this->_info);
+      isl_cons_scan(client, (void*)this->_info);
     } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
-      size_t objectSize;
-      gctools::clasp_ptr_t client_limit = isl_weak_skip(clientStart, false, objectSize);
-      isl_weak_scan(0, clientStart, client_limit, (void*)this->_info);
+      isl_weak_scan(clientStart, (void*)this->_info);
     }
   }
 };
@@ -2284,26 +2266,19 @@ void dump_test_results(FILE* fout, const gctools::GatherObjects& gather) {
 void test_objects_t::callback(gctools::BaseHeader_s* header) {
   if (header->_badge_stamp_wtag_mtag.stampP()) {
     gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
-    size_t objectSize;
-    isl_obj_skip(client,false,objectSize);
-    gctools::clasp_ptr_t client_limit = client + objectSize;
       //
       // This is where we would test pointers and entry-points
       //
       // 1. entry points to library code -> offset
       // 2. entry points to ObjectFile_O objects -> offset
 
-    isl_obj_scan( 0, client, client_limit, (void*)this->_info );
+    isl_obj_scan(client, (void*)this->_info );
   } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
     gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToConsPtr(header);
-    size_t consSkip;
-    gctools::clasp_ptr_t client_limit = isl_cons_skip((gctools::clasp_ptr_t)client,consSkip);
-    isl_cons_scan( 0, client, client_limit, (void*)this->_info );
+    isl_cons_scan(client, (void*)this->_info );
   } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
     gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
-    size_t objectSize;
-    gctools::clasp_ptr_t client_limit = isl_weak_skip(clientStart,false,objectSize);
-    isl_weak_scan( 0, clientStart, client_limit, (void*)this->_info );
+    isl_weak_scan(clientStart, (void*)this->_info );
   }
 }
 
@@ -2948,21 +2923,15 @@ struct relocate_objects_t : public walker_callback_t {
   void callback(gctools::BaseHeader_s* header) {
     if (header->_badge_stamp_wtag_mtag.stampP()) {
       gctools::clasp_ptr_t client = HEADER_PTR_TO_GENERAL_PTR(header);
-      size_t objectSize;
-      gctools::clasp_ptr_t client_limit = isl_obj_skip(client, false, objectSize);
-      isl_obj_scan(0, client, client_limit, (void*)this->_info);
+      isl_obj_scan(client, (void*)this->_info);
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HeaderPtrToConsPtr(header);
-      size_t consSize;
-      gctools::clasp_ptr_t client_limit = isl_cons_skip((gctools::clasp_ptr_t)client, consSize);
-      isl_cons_scan(0, client, client_limit, (void*)this->_info);
+      isl_cons_scan(client, (void*)this->_info);
       // printf("%s:%d:%s The object @ %p %s isPolymorphic->%d\n", __FILE__, __LINE__, __FUNCTION__, (void*)header,
       // header->description().c_str(), header->preciseIsPolymorphic());
     } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
-      size_t objectSize;
-      gctools::clasp_ptr_t client_limit = isl_weak_skip(clientStart, false, objectSize);
-      isl_weak_scan(0, clientStart, client_limit, (void*)this->_info);
+      isl_weak_scan(clientStart, (void*)this->_info);
     }
   }
 };
