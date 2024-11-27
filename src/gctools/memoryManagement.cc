@@ -874,8 +874,6 @@ void walkRoots(RootWalkCallback&& callback, void* data) {
   }
 };
 
-PointerFix globalMemoryWalkPointerFix;
-
 void gatherObjects(uintptr_t* fieldAddress, uintptr_t client, uintptr_t tag, void* userData) {
   GatherObjects* gather = (GatherObjects*)userData;
   BaseHeader_s* base;
@@ -949,16 +947,15 @@ void gatherObjects(uintptr_t* fieldAddress, uintptr_t client, uintptr_t tag, voi
   gather->pushMarkStack(node);
 }
 
-#define POINTER_FIX(_ptr_)                                                                                                         \
-  {                                                                                                                                \
-    uintptr_t* fieldP = reinterpret_cast<uintptr_t*>(_ptr_);                                                                       \
-    if (gctools::tagged_objectp(*fieldP)) {                                                                                        \
-      uintptr_t tagged_obj_ptr = *fieldP;                                                                                          \
-      uintptr_t obj = gctools::untag_object<uintptr_t>(tagged_obj_ptr);                                                            \
-      uintptr_t tag = (uintptr_t)gctools::ptag<uintptr_t>(tagged_obj_ptr);                                                         \
-      /*printf("%s:%d fixing fieldP@%p obj-> %p tag-> 0x%lx\n", __FILE__, __LINE__, (void*)fieldP, (void*)obj, (uintptr_t)tag);*/  \
-      (globalMemoryWalkPointerFix)(fieldP, obj, tag, user_data);                                                                   \
-    };                                                                                                                             \
+#define POINTER_FIX(_ptr_)                                                 \
+  {                                                                        \
+    uintptr_t* fieldP = reinterpret_cast<uintptr_t*>(_ptr_);               \
+    if (gctools::tagged_objectp(*fieldP)) {                                \
+      uintptr_t tagged_obj_ptr = *fieldP;                                  \
+      uintptr_t obj = gctools::untag_object<uintptr_t>(tagged_obj_ptr);    \
+      uintptr_t tag = (uintptr_t)gctools::ptag<uintptr_t>(tagged_obj_ptr); \
+      gatherObjects(fieldP, obj, tag, user_data);                          \
+    };                                                                     \
   }
 
 #define GENERAL_PTR_TO_HEADER_PTR(_general_) GeneralPtrToHeaderPtr((void*)_general_)
@@ -1005,8 +1002,6 @@ void gatherObjects(uintptr_t* fieldAddress, uintptr_t client, uintptr_t tag, voi
 
 void gatherAllObjects(GatherObjects& gather) {
   //  printf("%s:%d:%s entered \n", __FILE__, __LINE__, __FUNCTION__ );
-
-  globalMemoryWalkPointerFix = gatherObjects;
 
   // Add the roots to the mark stack
   walkRoots(
