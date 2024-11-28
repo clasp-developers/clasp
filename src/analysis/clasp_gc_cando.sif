@@ -1070,6 +1070,12 @@
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "chem::EnergyNonbond_O"
              :layout-offset-field-names ("_UsesExcludedAtoms")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "chem::EnergyNonbond_O"
+             :layout-offset-field-names ("_NonbondsKept")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "chem::EnergyNonbond_O"
+             :layout-offset-field-names ("_NonbondsDiscarded")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
              :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<chem::EnergyNonbond>>"
              :offset-base-ctype "chem::EnergyNonbond_O"
@@ -1129,6 +1135,12 @@
              :offset-ctype "gctools::smart_ptr<core::SimpleVector_int32_t_O>"
              :offset-base-ctype "chem::EnergyNonbond_O"
              :layout-offset-field-names ("_ExcludedAtomIndexes")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "chem::EnergyNonbond_O"
+             :layout-offset-field-names ("_InteractionsKept")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "chem::EnergyNonbond_O"
+             :layout-offset-field-names ("_InteractionsDiscarded")}
 {class-kind :stamp-name "STAMPWTAG_chem__EnergyPeriodicBoundaryConditionsNonbond_O"
             :stamp-key "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
             :parent-class "chem::EnergyNonbond_O" :lisp-class-base "chem::EnergyNonbond_O"
@@ -1161,6 +1173,12 @@
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_UsesExcludedAtoms")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
+             :layout-offset-field-names ("_NonbondsKept")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
+             :layout-offset-field-names ("_NonbondsDiscarded")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
              :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<chem::EnergyNonbond>>"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
@@ -1228,6 +1246,12 @@
              :offset-ctype "gctools::smart_ptr<core::SimpleVector_int32_t_O>"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_ExcludedAtomIndexes")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
+             :layout-offset-field-names ("_InteractionsKept")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
+             :layout-offset-field-names ("_InteractionsDiscarded")}
 {class-kind :stamp-name "STAMPWTAG_chem__EnergyAnchorRestraint_O"
             :stamp-key "chem::EnergyAnchorRestraint_O" :parent-class "chem::EnergyComponent_O"
             :lisp-class-base "chem::EnergyComponent_O" :root-class "core::T_O" :stamp-wtag 3
@@ -2878,10 +2902,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<chem::Matter_O>"
              :offset-base-ctype "chem::EnergyFunction_O" :layout-offset-field-names ("_Matter")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "chem::EnergyFunction_O"
-             :layout-offset-field-names ("_EnergyScale")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<chem::FFNonbondCrossTermTable_O>"
              :offset-base-ctype "chem::EnergyFunction_O"
@@ -4759,15 +4779,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyScale_O"
              :layout-offset-field-names ("_ScaleElectrostatic")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyScale_O"
-             :layout-offset-field-names ("_ChiralRestraintWeight")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyScale_O"
-             :layout-offset-field-names ("_ChiralRestraintOffset")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyScale_O"
-             :layout-offset-field-names ("_AnchorRestraintWeight")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyScale_O"
              :layout-offset-field-names ("_FixedNonbondRestraintWeight")}
@@ -12067,8 +12078,6 @@
 {variable-capacity :ctype "chem::EnergyNonbond"
                    :offset-base-ctype "gctools::GCVector_moveable<chem::EnergyNonbond>"
                    :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field :offset-type-cxx-identifier "ctype__Bool" :fixup-ctype-offset-type-key "_Bool"
-                :fixup-ctype-key "chem::EnergyNonbond" :layout-offset-field-names ("_Is14")}
 {variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
                 :fixup-ctype-offset-type-key "gctools::smart_ptr<chem::Atom_O>"
                 :fixup-ctype-key "chem::EnergyNonbond" :layout-offset-field-names ("_Atom1_enb")}
@@ -12085,6 +12094,8 @@
                 :fixup-ctype-key "chem::EnergyNonbond" :layout-offset-field-names ("term" ".I1")}
 {variable-field :offset-type-cxx-identifier "ctype_int" :fixup-ctype-offset-type-key "int"
                 :fixup-ctype-key "chem::EnergyNonbond" :layout-offset-field-names ("term" ".I2")}
+{variable-field :offset-type-cxx-identifier "ctype__Bool" :fixup-ctype-offset-type-key "_Bool"
+                :fixup-ctype-key "chem::EnergyNonbond" :layout-offset-field-names ("_Is14")}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___"
                 :stamp-key "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
