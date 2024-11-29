@@ -350,12 +350,15 @@ void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable,
   if (is_executable) {
     odli = new ExecutableLibraryInfo(libraryName, handle, symbol_table, reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
                                      reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
-                                     reinterpret_cast<gctools::clasp_ptr_t>(library_origin + text_segment_size), found,
+                                     reinterpret_cast<gctools::clasp_ptr_t>(library_origin + text_segment_size),
+                                     found,
                                      (gctools::clasp_ptr_t)vtableRegionStart, (gctools::clasp_ptr_t)vtableRegionEnd);
   } else {
     odli = new OpenDynamicLibraryInfo(libraryName, handle, symbol_table, reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
                                       reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
-                                      reinterpret_cast<gctools::clasp_ptr_t>(library_origin + text_segment_size));
+                                      reinterpret_cast<gctools::clasp_ptr_t>(library_origin + text_segment_size),
+                                     found,
+                                      (gctools::clasp_ptr_t)vtableRegionStart, (gctools::clasp_ptr_t)vtableRegionEnd);
   }
   if (callback)
     (*callback)(odli);
