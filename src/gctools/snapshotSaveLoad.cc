@@ -39,6 +39,10 @@
 #include <clasp/llvmo/jit.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 
+// Turn on debugging vtable pointer updates with libraries
+//#define DEBUG_ISLLIBRARIES 1
+
+
 #ifdef _TARGET_OS_LINUX
 #include <elf.h>
 #endif
@@ -2586,9 +2590,10 @@ void* snapshot_save_impl(void* data) {
 
   {
     DBG_SL_STEP(11, "snapshot_save fixing up vtable pointers\n");
+    core::lisp_write(fmt::format("Fixup vtable pointers\n"));
     gctools::clasp_ptr_t start;
     gctools::clasp_ptr_t end;
-    core::executableVtableSectionRange(start, end);
+    core::exclusiveVtableSectionRange(start, end);
     fixup_vtables_t fixup_vtables(&fixup, (uintptr_t)start, (uintptr_t)end, &islInfo);
     walk_snapshot_save_load_objects((ISLHeader_s*)snapshot._Memory->_BufferStart, fixup_vtables);
   }
@@ -3097,8 +3102,10 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         if (fout)
           fflush(fout); // flush fout if it's defined. --arguments option was passed
         updateRelocationTableAfterLoad(lib, lookup);
+        //printf("%s:%d:%s Done updateRelocationTableAfterLoad pushing library with name: %s\n", __FILE__, __LINE__, __FUNCTION__, lib._Name.c_str() );
 #ifdef DEBUG_ISLLIBRARIES
-        printf("%s:%d:%s Done updateRelocationTableAfterLoad pushing library with name: %s\n", __FILE__, __LINE__, __FUNCTION__, lib._Name.c_str() );
+        printf("%s:%d:%s push_back lib: %s  start: %p end: %p  vtableStart: %p vtableEnd: %p\n",
+               __FILE__, __LINE__, __FUNCTION__, lib._Name.c_str(), lib._TextStart, lib._TextEnd, (void*)lib._VtableStart, (void*)lib._VtableEnd);
 #endif
         fixup._ISLLibraries.push_back(lib);
       }
@@ -3119,7 +3126,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     DBG_SL("2 snapshot_load fixing up vtable pointers\n");
     gctools::clasp_ptr_t start;
     gctools::clasp_ptr_t end;
-    core::executableVtableSectionRange(start, end);
+    core::exclusiveVtableSectionRange(start, end);
     if (start == NULL) {
       printf("%s:%d:%s vtable section range start is NULL\n", __FILE__, __LINE__, __FUNCTION__);
     }
@@ -3194,9 +3201,11 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     DBG_SL("6 Allocate objects\n");
     {
       ISLHeader_s* start_header = reinterpret_cast<ISLHeader_s*>(islbuffer);
+#if 0
       gctools::clasp_ptr_t startVtables;
       gctools::clasp_ptr_t end;
-      core::executableVtableSectionRange(startVtables, end);
+      core::exclusiveVtableSectionRange(startVtables, end);
+#endif
       ISLHeader_s* next_header;
       ISLHeader_s* cur_header;
 
