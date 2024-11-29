@@ -119,7 +119,8 @@
                     :command "$cxx $variant-ldflags $ldflags -o$out $in $variant-ldlibs $ldlibs"
                     :description "Linking $out")
   (ninja:write-rule output-stream :link-lib
-                    :command "$cxx -shared $variant-ldflags $ldflags -o$out $in $variant-ldlibs $ldlibs"
+                    :command #+darwin "$cxx -dynamiclib $variant-ldflags $ldflags -install_name @rpath/$libname -o$out $in $variant-ldlibs $ldlibs"
+                             #-darwin "$cxx -shared $variant-ldflags $ldflags -o$out $in $variant-ldlibs $ldlibs"
                     :description "Linking $out")
   (ninja:write-rule output-stream :load-cclasp
                     :command "$clasp --norc --disable-mpi --ignore-image --feature clasp-min --load load-clasp.lisp -- base 0 $source"
@@ -387,8 +388,11 @@
           (products (mapcar (lambda (source)
                               (make-source (source-path source) :package-share))
                             generated))
-          (lib (make-source #+darwin "libclasp.dylib" #-darwin "libclasp.so" :variant-lib))
-          (lib-installed (make-source #+darwin "libclasp.dylib" #-darwin "libclasp.so" :package-lib))
+          (lib-name (if (static-linking-p configuration)
+                        "libclasp.a"
+                        #+darwin "libclasp.dylib" #-darwin "libclasp.so"))
+          (lib (make-source lib-name :variant-lib))
+          (lib-installed (make-source lib-name :package-lib))
           (filtered-sifs (if *variant-precise*
                              (sort sifs
                                    (lambda (x y)
@@ -406,11 +410,16 @@
   (ninja:write-build output-stream :phony
                      :outputs (list (build-name "generated"))
                      :inputs generated)
-  (ninja:write-build output-stream :link-lib
-                     :variant-ldflags *variant-ldflags*
-                     :variant-ldlibs *variant-ldlibs*
-                     :inputs objects
-                     :outputs (list lib))
+  (if (static-linking-p configuration)
+      (ninja:write-build output-stream :ar
+                         :inputs objects
+                         :outputs (list lib))
+      (ninja:write-build output-stream :link-lib
+                         :variant-ldflags *variant-ldflags*
+                         :variant-ldlibs *variant-ldlibs*
+                         :libname lib-name
+                         :inputs objects
+                         :outputs (list lib)))
   (ninja:write-build output-stream :phony
                      :inputs (list lib)
                      :outputs (list (build-name target)))

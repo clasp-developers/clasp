@@ -613,6 +613,11 @@ is not compatible with snapshots.")
                    :initform t
                    :type boolean
                    :documentation "Enable long-float")
+   (static-linking :accessor static-linking-p
+                   :initarg :static-linking
+                   :initform nil
+                   :type boolean
+                   :documentation "Static link Clasp library.")
    (units :accessor units
           :initform '(:git :describe :cpu-count #+darwin :xcode :base :default-target :pkg-config
                            :clang :llvm :ar :cc :cxx :dis :mpi :nm :etags :ctags :objcopy :jupyter
