@@ -74,7 +74,7 @@ struct ISLLibrary {
 struct Fixup {
   FixupOperation_ _operation;
   uintptr_t _memoryStart;
-  std::vector<ISLLibrary> _Libraries;
+  std::vector<ISLLibrary> _ISLLibraries;
   bool _trackAddressName;
   map<void*, std::string> _addressName;
 
