@@ -51,16 +51,12 @@ void boehm_callback_reachable_object_find_owners(void* ptr, size_t sz, void* cli
 namespace gctools {
 // ------------
 struct ReachableClass {
-  ReachableClass() : _Kind(gctools::STAMPWTAG_null){};
-  ReachableClass(gctools::GCStampEnum tn) : _Kind(tn), instances(0), totalSize(0) {}
   void update(size_t sz) {
     ++this->instances;
     this->totalSize += sz;
   };
-  gctools::GCStampEnum _Kind;
-  size_t instances;
-  size_t totalSize;
-  size_t print(std::ostringstream& output);
+  size_t instances = 0;
+  size_t totalSize = 0;
 };
 
 typedef map<gctools::GCStampEnum, ReachableClass> ReachableClassMap;
