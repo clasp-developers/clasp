@@ -874,10 +874,13 @@ void walkRoots(RootWalkCallback&& callback, void* data) {
   }
 };
 
-void gatherObjects(uintptr_t* fieldAddress, uintptr_t client, uintptr_t tag, void* userData) {
+void gatherObjects(uintptr_t* fieldAddress, void* userData) {
+  uintptr_t tagged_obj_ptr = *fieldAddress;
+  uintptr_t tag = ptag(tagged_obj_ptr);
   GatherObjects* gather = (GatherObjects*)userData;
   BaseHeader_s* base;
   if (tag == gctools::general_tag) {
+    uintptr_t client = untag_object(tagged_obj_ptr);
     Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client); // works for weak as well
     base = header;
     if (!header->isValidGeneralObject(gather)) {
@@ -893,6 +896,7 @@ void gatherObjects(uintptr_t* fieldAddress, uintptr_t client, uintptr_t tag, voi
       return;
     }
   } else if (tag == gctools::cons_tag) {
+    uintptr_t client = untag_object(tagged_obj_ptr);
     ConsHeader_s* consHeader = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)client);
     base = consHeader;
     if (!consHeader->isValidConsObject(gather)) {
@@ -909,54 +913,19 @@ void gatherObjects(uintptr_t* fieldAddress, uintptr_t client, uintptr_t tag, voi
       }
       return;
     }
-  } else {
-#ifdef RUNNING_PRECISEPREP
-    Header_s* base = NULL;
-#else
-    Header_s* base = (Header_s*)GC_base(fieldAddress);
-#endif
-    if (base == NULL) {
-      printf("%s:%d:%s Hit NULL base pointer for %p\n", __FILE__, __LINE__, __FUNCTION__, fieldAddress);
-    }
-    auto ii = gather->_corruptObjects.find(base);
-    if (ii == gather->_corruptObjects.end()) {
-      std::vector<uintptr_t> badPointers;
-      badPointers.push_back((uintptr_t)fieldAddress);
-      gather->_corruptObjects[base] = badPointers;
-    } else {
-      std::vector<uintptr_t>& badPointers = ii->second;
-      badPointers.push_back((uintptr_t)fieldAddress);
-    }
-    printf("%s:%d:%s Somehow a non general/cons object at %p value %p got into gatherObjects - this indicates memory corruption - "
-           "figure out why\n",
-           __FILE__, __LINE__, __FUNCTION__, (void*)fieldAddress, (void*)(client | tag));
-    return; // It's an immediate - it shouldn't have gotten here
-  }
-  //
-  // It's a good object maybe mark it
-  //
-  //
-  // If it's marked already then return
+  } else return; // vaslist or immediate, we don't need to walk
+
+  // It's a good object - mark it if it hasn't been already.
   if (gather->markedP(base))
     return;
-  //
-  // It hasn't been seen - mark it for scanning
-  //
-  MarkNode* node = new MarkNode(fieldAddress);
-  LOG("pushMarkStack: {}\n", *(void**)fieldAddress);
-  gather->pushMarkStack(node);
+  else {
+    MarkNode* node = new MarkNode(fieldAddress);
+    LOG("pushMarkStack: {}\n", *(void**)fieldAddress);
+    gather->pushMarkStack(node);
+  }
 }
 
-#define POINTER_FIX(_ptr_)                                                 \
-  {                                                                        \
-    uintptr_t* fieldP = reinterpret_cast<uintptr_t*>(_ptr_);               \
-    if (gctools::tagged_objectp(*fieldP)) {                                \
-      uintptr_t tagged_obj_ptr = *fieldP;                                  \
-      uintptr_t obj = gctools::untag_object<uintptr_t>(tagged_obj_ptr);    \
-      uintptr_t tag = (uintptr_t)gctools::ptag<uintptr_t>(tagged_obj_ptr); \
-      gatherObjects(fieldP, obj, tag, user_data);                          \
-    };                                                                     \
-  }
+#define POINTER_FIX(_ptr_) gatherObjects(reinterpret_cast<uintptr_t*>(_ptr_), user_data);
 
 #define GENERAL_PTR_TO_HEADER_PTR(_general_) GeneralPtrToHeaderPtr((void*)_general_)
 // #define HEADER_PTR_TO_GENERAL_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
