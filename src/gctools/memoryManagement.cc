@@ -1004,7 +1004,6 @@ void gatherAllObjects(GatherObjects& gather) {
       gather.mark(generalOrWeakHeader);
       if (!generalOrWeakHeader->_badge_stamp_wtag_mtag.weakObjectP()) {
         // It's a general object - walk it
-        size_t objectSize;
         LOG("Mark/scan client: {}\n", *(void**)client);
         mw_obj_scan(client, &gather);
       } else {
@@ -1019,6 +1018,70 @@ void gatherAllObjects(GatherObjects& gather) {
       LOG("Mark/scan cons client: {}\n", *(void**)client);
       mw_cons_scan(client, &gather);
     }
+  }
+}
+
+#define ADDR_T uintptr_t
+#define EXTRA_ARGUMENTS , std::stack<Tagged*>& markStack
+
+#define POINTER_FIX(_ptr_) markStack.push(reinterpret_cast<Tagged*>(_ptr_))
+
+#define OBJECT_SCAN mw2_obj_scan
+#include "obj_scan.cc"
+#undef OBJECT_SCAN
+
+#define CONS_SCAN mw2_cons_scan
+#include "cons_scan.cc"
+#undef CONS_SCAN
+
+#define WEAK_SCAN mw2_weak_scan
+#include "weak_scan.cc"
+#undef WEAK_SCAN
+
+#undef POINTER_FIX
+#undef ADDR_T
+#undef EXTRA_ARGUMENTS
+
+void mapAllObjects(void (*callback)(Tagged, void*), void* data) {
+  std::stack<Tagged*> markStack;
+  std::set<uintptr_t> markSet;
+
+  walkRoots([&](Tagged* rootAddress, void* data) {
+    markStack.push(rootAddress);
+  },
+    nullptr);
+
+  while (!markStack.empty()) {
+    // Pop a node and process it.
+    Tagged* field = markStack.top();
+    markStack.pop();
+
+    // If the field points to an unmarked object,
+    // mark it and walk.
+    gctools::Tagged tagged = *field;
+    uintptr_t tag = tagged & ptag_mask;
+
+    if (tag == general_tag) {
+      uintptr_t client = tagged & ptr_mask;
+      if (!markSet.contains(client)) { // not yet marked
+        markSet.insert(client);
+        Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
+        if (header->_badge_stamp_wtag_mtag.weakObjectP())
+          mw2_weak_scan(client, markStack);
+        else // general object
+          mw2_obj_scan(client, markStack);
+        // The object was unmarked and so hasn't been hit before-
+        // now's the time.
+        callback(tagged, data);
+      }
+    } else if (tag == cons_tag) {
+      uintptr_t client = tagged & ptr_mask;
+      if (!markSet.contains(client)) {
+        markSet.insert(client);
+        mw2_cons_scan(client, markStack);
+        callback(tagged, data);
+      }
+    } // otherwise it's an immediate and we ignore it.
   }
 }
 

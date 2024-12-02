@@ -259,33 +259,117 @@ namespace gctools {
 
 SYMBOL_EXPORT_SC_(KeywordPkg, test);
 
-CL_LAMBDA(&optional (x :default));
-CL_DECLARE();
-CL_DOCSTRING(
-    R"dx(room - Return info about the reachable objects in memory. x can be T, nil, :default and they control the amount of output produced.)dx");
-DOCGROUP(clasp);
-CL_DEFUN core::T_mv cl__room(core::Symbol_sp x) {
-  std::ostringstream OutputStream;
-  RoomVerbosity verb;
-  if (x == cl::_sym_T) {
-    verb = room_max;
-  } else if (x == kw::_sym_default) {
-    verb = room_default;
-  } else if (x == kw::_sym_test) {
-    verb = room_test;
-  } else if (x.nilp()) {
-    verb = room_min;
-  } else {
+inline RoomVerbosity roomVerbosity(core::Symbol_sp x) {
+  if (x == cl::_sym_T) return room_max;
+  else if (x == kw::_sym_default) return room_default;
+  else if (x == kw::_sym_test) return room_test;
+  else if (x.nilp()) return room_min;
+  else
     TYPE_ERROR(x, core::Cons_O::createList(cl::_sym_member, cl::_sym_T, cl::_sym_nil, kw::_sym_default));
+}
+
+size_t dumpReachableClassMap(const gctools::ReachableClassMap& data, std::ostream& OutputStream) {
+  // note: can't use RCMap::value_type as that has const key,
+  // rendering the vector unsortable.
+  vector<std::pair<gctools::GCStampEnum, gctools::ReachableClass>> values;
+  for (auto it : data) {
+    values.push_back(it); // copy for sorting
   }
-#if defined(USE_BOEHM) || defined(USE_MPS)
-  clasp_gc_room(OutputStream, verb);
-#else
-  MISSING_GC_SUPPORT();
-#endif
-  clasp_write_string(OutputStream.str(), cl::_sym_STARstandard_outputSTAR->symbolValue());
-  return Values0<core::T_O>();
+  size_t totalSize = 0;
+  sort(values.begin(), values.end(),
+       [](auto& x, auto& y) {
+         return (x.second.totalSize > y.second.totalSize);
+       });
+  for (auto it : values) {
+    Fixnum k = it.first;
+    const gctools::ReachableClass& rc = it.second;
+    string className;
+    if (k > 0 && k <= gctools::STAMPWTAG_max) {
+      const char* nm = obj_name(k);
+      if (nm) {
+        className = nm;
+        if (className.size() > 10) className = className.substr(10);
+      } else className = "NULL-NAME";
+    } else className = "UNKNOWN";
+    totalSize += rc.totalSize;
+    OutputStream << fmt::format("total_size: {:10d} count: {:8d} avg.sz: {:8d} {}/{}\n", rc.totalSize, rc.instances,
+                                (rc.totalSize / rc.instances), className, k);
+  }
+  return totalSize;
+}
+
+void displayClassKinds(const ReachableClassMap& rcmap, std::ostream& OutputStream) {
+  OutputStream << "-------------------- Reachable ClassKinds -------------------\n";
+  dumpReachableClassMap(rcmap, OutputStream);
+  OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(rcmap.size()) << " ClassKinds\n";
+}
+
+struct RoomSummary {
+  size_t consTotalSize = 0;
+  size_t consCount = 0;
+  size_t otherTotalSize = 0;
+  size_t otherCount = 0;
 };
+
+RoomSummary summarizeResults(const gctools::ReachableClassMap& data) {
+  RoomSummary summary;
+  for (auto it : data) {
+    Fixnum k = it.first;
+    gctools::ReachableClass rc = it.second;
+    size_t sz = rc.totalSize;
+
+    if (k == STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__Cons_O)) {
+      summary.consCount += rc.instances;
+      summary.consTotalSize += sz;
+    } else {
+      summary.otherCount += rc.instances;
+      summary.otherTotalSize += sz;
+    }
+  }
+  return summary;
+}
+
+void displayClassKindsSummary(const ReachableClassMap& rcmap, std::ostream& OutputStream) {
+  RoomSummary summary = summarizeResults(rcmap);
+  size_t totalSize = summary.consTotalSize + summary.otherTotalSize;
+  OutputStream << fmt::format("Walk of memory found {} different classes.\n",
+                              static_cast<uintptr_t>(rcmap.size()));
+  OutputStream << fmt::format("There are {} cons objects occupying {} bytes {:4.1f}% of memory.\n", summary.consCount,
+                              summary.consTotalSize, (float)summary.consTotalSize / totalSize * 100.0);
+  OutputStream << fmt::format("There are {} other objects occupying {} bytes {:4.1f}% of memory.\n", summary.otherCount,
+                              summary.otherTotalSize, (float)summary.otherTotalSize / totalSize * 100.0);
+}
+
+CL_LAMBDA(&optional (x :default));
+CL_DEFUN void cl__room(core::Symbol_sp x) {
+  std::ostringstream OutputStream;
+  RoomVerbosity verb = roomVerbosity(x);
+  // With precise GC, we can get per-class counts.
+#ifdef USE_PRECISE_GC
+  switch (verb) {
+  case room_max: {
+    ReachableClassMap rcmap;
+    fill_reachable_class_map(&rcmap);
+    displayClassKinds(rcmap, OutputStream);
+  } break;
+  case room_default: {
+    ReachableClassMap rcmap;
+    fill_reachable_class_map(&rcmap);
+    displayClassKindsSummary(rcmap, OutputStream);
+  } break;
+  default: break; // save some effort by not even computing the map
+  }
+#endif
+
+  // Summary statistics
+  OutputStream << "Total heap bytes:                              " << std::setw(12) << heap_size() << '\n';
+  OutputStream << "Free bytes:                                    " << std::setw(12) << free_bytes() << '\n';
+  OutputStream << "Bytes allocated since last GC:                 " << std::setw(12) << bytes_since_gc() << '\n';
+
+  // Write it all out.  
+  clasp_write_string(OutputStream.str(), cl::_sym_STARstandard_outputSTAR->symbolValue());
+}
+
 }; // namespace gctools
 
 namespace gctools {
