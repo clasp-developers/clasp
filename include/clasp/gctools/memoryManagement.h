@@ -1334,9 +1334,32 @@ struct GatherObjects {
 };
 
 void gatherAllObjects(GatherObjects& gather);
+void mapAllObjects(void (*)(Tagged, void*), void*);
 size_t objectSize(BaseHeader_s* header);
 
 bool is_memory_readable(const void* address, size_t bytes = 8);
+
+// Stuff for ROOM
+// This struct holds info about a given class for ROOM, specifically
+// how many instances of it there are, and how much memory those
+// instances take up (in bytes).
+struct ReachableClass {
+  void update(size_t sz) {
+    ++this->instances;
+    this->totalSize += sz;
+  };
+  size_t instances = 0;
+  size_t totalSize = 0;
+};
+
+typedef map<gctools::GCStampEnum, ReachableClass> ReachableClassMap;
+
+// These four are GC-defined.
+void fill_reachable_class_map(ReachableClassMap*);
+
+size_t heap_size();
+size_t free_bytes();
+size_t bytes_since_gc();
 
 }; // namespace gctools
 

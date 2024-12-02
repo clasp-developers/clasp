@@ -50,16 +50,6 @@ void boehm_callback_reachable_object_find_owners(void* ptr, size_t sz, void* cli
 
 namespace gctools {
 // ------------
-struct ReachableClass {
-  void update(size_t sz) {
-    ++this->instances;
-    this->totalSize += sz;
-  };
-  size_t instances = 0;
-  size_t totalSize = 0;
-};
-
-typedef map<gctools::GCStampEnum, ReachableClass> ReachableClassMap;
 
 struct FindStamp {
   gctools::GCStampEnum _stamp;
@@ -72,11 +62,6 @@ struct FindOwner {
   std::vector<void*> _addresses;
   FindOwner(void* pointer) : _pointer(pointer){};
 };
-
-/*!
- * claspgc_room - the GC specific implementation of ROOM
- */
-void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity);
 
 void clasp_gc_registerRoots(void* rootsStart, size_t numberOfRoots);
 void clasp_gc_deregisterRoots(void* rootsStart, size_t numberOfRoots);
