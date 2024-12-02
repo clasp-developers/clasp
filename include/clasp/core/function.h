@@ -556,9 +556,4 @@ namespace core {
 typedef gctools::return_type (*bytecode_trampoline_function)(unsigned char* pc, core::T_O* closure, size_t nargs, core::T_O** args);
 extern bytecode_trampoline_function bytecode_trampoline;
 
-
-void maybe_verify_dladdr( core::ClaspXepFunction& entryPoints,
-                          core::T_sp code,
-                          core::FunctionDescription_sp functionDescription,
-                          gctools::GatherObjects* gatherP );
 }; // namespace core
