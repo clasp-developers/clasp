@@ -58,44 +58,7 @@ void boehm_release() {
 }
 };
 
-static gctools::ReachableClassMap* static_ReachableClassKinds;
-static size_t invalidHeaderTotalSize = 0;
-
 extern "C" {
-void callback_reachable_object(gctools::BaseHeader_s* ptr, void* client_data) {
-  gctools::GatherObjects* gatherP = (gctools::GatherObjects*)client_data;
-  gctools::GCStampEnum stamp;
-  if (ptr->_badge_stamp_wtag_mtag.consObjectP()) {
-    stamp = (gctools::GCStampEnum)STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_CONS);
-  } else {
-    stamp = ptr->_badge_stamp_wtag_mtag.stamp_();
-    if (!valid_stamp(stamp)) {
-      printf("%s:%d:%s Invalid stamp %u\n", __FILE__, __LINE__, __FUNCTION__, stamp);
-    }
-  }
-  size_t sz = objectSize(ptr);
-  if (stamp == (gctools::GCStampEnum)STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__SimpleFun_O)) {
-    core::SimpleFun_O* fun = HeaderPtrToGeneralPtr<core::SimpleFun_O>(ptr);
-    core::maybe_verify_dladdr( fun->_EntryPoints,
-                               fun->_Code,
-                               fun->_FunctionDescription,
-                               gatherP );
-  } else if (stamp == (gctools::GCStampEnum)STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__SimpleCoreFun_O)) {
-    core::SimpleCoreFun_O* fun = HeaderPtrToGeneralPtr<core::SimpleCoreFun_O>(ptr);
-    core::maybe_verify_dladdr( fun->_EntryPoints,
-                               fun->_Code,
-                               fun->_FunctionDescription,
-                               gatherP );
-  }
-  gctools::ReachableClassMap::iterator it = static_ReachableClassKinds->find(stamp);
-  if (it == static_ReachableClassKinds->end()) {
-    gctools::ReachableClass reachableClass(stamp);
-    reachableClass.update(sz);
-    (*static_ReachableClassKinds)[stamp] = reachableClass;
-  } else {
-    it->second.update(sz);
-  }
-}
 
 void boehm_callback_reachable_object_find_stamps(void* ptr, size_t sz, void* client_data) {
   gctools::FindStamp* findStamp = (gctools::FindStamp*)client_data;
@@ -138,72 +101,6 @@ void boehm_callback_reachable_object_find_owners(void* ptr, size_t sz, void* cli
     }
   }
 }
-}
-
-size_t dumpResults(gctools::ReachableClassMap* data, std::ostringstream& OutputStream) {
-  // note: can't use RCMap::value_type as that has const key,
-  // rendering the vector unsortable.
-  vector<std::pair<gctools::GCStampEnum, gctools::ReachableClass>> values;
-  for (auto it : *data) {
-    values.push_back(it); // copy for sorting
-  }
-  size_t totalSize = 0;
-  sort(values.begin(), values.end(),
-       [](auto& x, auto& y) {
-         return (x.second.totalSize > y.second.totalSize);
-       });
-  for (auto it : values) {
-    Fixnum k = it.first;
-    gctools::ReachableClass rc = it.second;
-    string className;
-    if (k > 0 && k <= gctools::STAMPWTAG_max) {
-      const char* nm = obj_name(k);
-      if (nm) {
-        className = nm;
-        if (className.size() > 10) className = className.substr(10);
-      } else className = "NULL-NAME";
-    } else className = "UNKNOWN";
-    totalSize += rc.totalSize;
-    OutputStream << fmt::format("total_size: {:10d} count: {:8d} avg.sz: {:8d} {}/{}\n", rc.totalSize, rc.instances,
-                                (rc.totalSize / rc.instances), className, k);
-  }
-  return totalSize;
-}
-
-struct Summary {
-  size_t _consTotalSize;
-  size_t _consCount;
-  size_t _otherTotalSize;
-  size_t _otherCount;
-  Summary() : _consTotalSize(0), _consCount(0), _otherTotalSize(0), _otherCount(0){};
-};
-
-size_t summarizeResults(gctools::ReachableClassMap* data, Summary& summary) {
-  size_t totalSize = 0;
-  for (auto it : *data) {
-    Fixnum k = it.first;
-    gctools::ReachableClass rc = it.second;
-    size_t sz = rc.totalSize;
-
-    if (k == STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__Cons_O)) {
-      summary._consCount += rc.instances;
-      summary._consTotalSize += sz;
-    } else {
-      summary._otherCount += rc.instances;
-      summary._otherTotalSize += sz;
-    }
-    totalSize += sz;
-  }
-  return totalSize;
-}
-
-void* walk_garbage_collected_objects_with_alloc_lock(void* client_data) {
-  gctools::GatherObjects* gatherP = (gctools::GatherObjects*)client_data;
-  gatherAllObjects(*gatherP);
-  for (auto header : gatherP->_Marked) {
-    callback_reachable_object(header, client_data);
-  }
-  return NULL;
 }
 
 // ------------
@@ -450,74 +347,39 @@ void shutdownBoehm() {
   delete my_thread_low_level;
 }
 
-void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
-#ifdef USE_PRECISE_GC
-  //
-  // We only get good info when building with USE_PRECISE_GC
-  //
-  static_ReachableClassKinds = new (ReachableClassMap);
-  invalidHeaderTotalSize = 0;
-  gctools::GatherObjects gatherObjects(verbosity);
-  GC_call_with_alloc_lock(walk_garbage_collected_objects_with_alloc_lock, (void*)&gatherObjects);
-  size_t totalSize(0);
-  if (verbosity == room_max) {
-    OutputStream << "-------------------- Reachable ClassKinds -------------------\n";
-    totalSize += dumpResults(static_ReachableClassKinds, OutputStream);
-    OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
-  } else if (verbosity == room_default) {
-    Summary summary;
-    totalSize += summarizeResults(static_ReachableClassKinds, summary);
-    OutputStream << fmt::format("Walk of memory found {} different classes.\n",
-                                static_cast<uintptr_t>(static_ReachableClassKinds->size()));
-    OutputStream << fmt::format("There are {} cons objects occupying {} bytes {:4.1f}% of memory.\n", summary._consCount,
-                                summary._consTotalSize, (float)summary._consTotalSize / totalSize * 100.0);
-    OutputStream << fmt::format("There are {} other objects occupying {} bytes {:4.1f}% of memory.\n", summary._otherCount,
-                                summary._otherTotalSize, (float)summary._otherTotalSize / totalSize * 100.0);
-  } else if (verbosity == room_min) {
-    Summary summary;
-    totalSize += summarizeResults(static_ReachableClassKinds, summary);
-  } else if (verbosity == room_test) {
-    Summary summary;
-    totalSize += summarizeResults(static_ReachableClassKinds, summary);
-  }
-  if (gatherObjects._corruptObjects.size() > 0) {
-    OutputStream << fmt::format("There are {} object(s) that contain tagged pointers to invalid objects\n",
-                                gatherObjects._corruptObjects.size());
-    for (auto iter : gatherObjects._corruptObjects) {
-      OutputStream << fmt::format("Bad tagged pointer base -> {}\n", (void*)iter.first);
-      for (auto inner : iter.second) {
-        OutputStream << fmt::format("    Referenced at {}\n", (void*)inner);
-      }
-    }
-  } else {
-    OutputStream << fmt::format("All objects contain valid tagged pointers - memory is CLEAN!\n");
-  }
-  if (invalidHeaderTotalSize > 0) {
-    OutputStream << "Total invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
-  }
-  if (totalSize > 0) {
-    OutputStream << "Total object memory usage (bytes): " << std::setw(10) << totalSize << '\n';
-  }
-#endif
-  OutputStream << "Total GC_get_heap_size():                      " << std::setw(12) << GC_get_heap_size() << '\n';
-  OutputStream << "Total GC_get_free_bytes():                     " << std::setw(12) << GC_get_free_bytes() << '\n';
-  OutputStream << "Total GC_get_bytes_since_gc():                 " << std::setw(12) << GC_get_bytes_since_gc() << '\n';
-  OutputStream << "Total GC_get_total_bytes():                    " << std::setw(12) << GC_get_total_bytes() << '\n';
-  OutputStream << "Total number of JITDylibs:                     " << std::setw(12) << cl__length(_lisp->_Roots._JITDylibs) << '\n';
-  OutputStream << "Total number of Libraries:                     " << std::setw(12) << cl__length(_lisp->_Roots._AllLibraries) << '\n';
-  OutputStream << "Total number of ObjectFiles:                   " << std::setw(12) << cl__length(_lisp->_Roots._AllObjectFiles) << '\n';
-  OutputStream << "Total number of CodeBlocks:                    " << std::setw(12) << cl__length(_lisp->_Roots._AllCodeBlocks) << '\n';
-#ifdef USE_PRECISE_GC
-  OutputStream << "Total number of library Simple(Core)Fun:       " << std::setw(12) << gatherObjects._SimpleFunCount << '\n';
-  if (gatherObjects._SimpleFunFailedDladdrCount>0) {
-    OutputStream << "Total of library Simple(Core)Fun dladdr fails: " << std::setw(12) << gatherObjects._SimpleFunFailedDladdrCount << '\n';
-  }
-  OutputStream << "Unique library Simple(Core)Fun entry points:   " << std::setw(12) << gatherObjects._uniqueEntryPoints.size() << '\n';
-  if (gatherObjects._uniqueEntryPointsFailedDladdr.size()>0) {
-    OutputStream << "Unique library Simple(Core)Fun dladdr fails:   " << std::setw(10) << gatherObjects._uniqueEntryPointsFailedDladdr.size() << '\n';
-  }
-#endif
-  delete static_ReachableClassKinds;
+size_t heap_size() { return GC_get_heap_size(); }
+size_t free_bytes() { return GC_get_free_bytes(); }
+size_t bytes_since_gc() { return GC_get_bytes_since_gc(); }
+
+void roomMapper(Tagged tagged, void* data) {
+  ReachableClassMap* rcmap = (ReachableClassMap*)data;
+  uintptr_t tag = tagged & ptag_mask;
+  BaseHeader_s* header;
+  GCStampEnum stamp;
+
+  if (tag == general_tag) {
+    uintptr_t obj = tagged & ptr_mask;
+    header = (Header_s*)GeneralPtrToHeaderPtr((void*)obj);
+    stamp = header->_badge_stamp_wtag_mtag.stamp_();
+  } else if (tag == cons_tag) {
+    uintptr_t obj = tagged & ptr_mask;
+    header = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)obj);
+    stamp = (gctools::GCStampEnum)STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_CONS);
+  } else return; // immediate or vaslist
+
+  size_t sz = objectSize(header);
+
+  (*rcmap)[stamp].update(sz);
+}
+
+void* map_gc_objects_w_alloc_lock(void* data) {
+  mapAllObjects(roomMapper, data);
+  return nullptr;
+}
+
+void fill_reachable_class_map(ReachableClassMap* rcmap) {
+  GC_call_with_alloc_lock(map_gc_objects_w_alloc_lock,
+                          (void*)rcmap);
 }
 
 CL_DEFUN size_t core__dynamic_space_size() { return GC_get_total_bytes(); }
