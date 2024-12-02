@@ -140,22 +140,32 @@ void boehm_callback_reachable_object_find_owners(void* ptr, size_t sz, void* cli
 }
 }
 
-template <typename T> size_t dumpResults(const std::string& name, T* data, std::ostringstream& OutputStream) {
-  typedef typename T::value_type::second_type value_type;
-  vector<value_type> values;
+size_t dumpResults(gctools::ReachableClassMap* data, std::ostringstream& OutputStream) {
+  // note: can't use RCMap::value_type as that has const key,
+  // rendering the vector unsortable.
+  vector<std::pair<gctools::GCStampEnum, gctools::ReachableClass>> values;
   for (auto it : *data) {
-    values.push_back(it.second);
+    values.push_back(it); // copy for sorting
   }
-  size_t totalSize(0);
-  sort(values.begin(), values.end(), [](const value_type& x, const value_type& y) { return (x.totalSize > y.totalSize); });
-  size_t idx = 0;
+  size_t totalSize = 0;
+  sort(values.begin(), values.end(),
+       [](auto& x, auto& y) {
+         return (x.second.totalSize > y.second.totalSize);
+       });
   for (auto it : values) {
-    // Does that print? If so should go to the OutputStream
-    size_t sz = it.print(OutputStream);
-    totalSize += sz;
-    if (sz < 1)
-      break;
-    idx += 1;
+    Fixnum k = it.first;
+    gctools::ReachableClass rc = it.second;
+    string className;
+    if (k > 0 && k <= gctools::STAMPWTAG_max) {
+      const char* nm = obj_name(k);
+      if (nm) {
+        className = nm;
+        if (className.size() > 10) className = className.substr(10);
+      } else className = "NULL-NAME";
+    } else className = "UNKNOWN";
+    totalSize += rc.totalSize;
+    OutputStream << fmt::format("total_size: {:10d} count: {:8d} avg.sz: {:8d} {}/{}\n", rc.totalSize, rc.instances,
+                                (rc.totalSize / rc.instances), className, k);
   }
   return totalSize;
 }
@@ -168,29 +178,21 @@ struct Summary {
   Summary() : _consTotalSize(0), _consCount(0), _otherTotalSize(0), _otherCount(0){};
 };
 
-template <typename T> size_t summarizeResults(T* data, Summary& summary) {
-  typedef typename T::value_type::second_type value_type;
-  vector<value_type> values;
-  for (auto it : *data) {
-    values.push_back(it.second);
-  }
-  size_t idx = 0;
+size_t summarizeResults(gctools::ReachableClassMap* data, Summary& summary) {
   size_t totalSize = 0;
-  for (auto it : values) {
-    // Does that print? If so should go to the OutputStream
-    Fixnum k = it._Kind;
-    size_t sz = it.totalSize;
+  for (auto it : *data) {
+    Fixnum k = it.first;
+    gctools::ReachableClass rc = it.second;
+    size_t sz = rc.totalSize;
+
     if (k == STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__Cons_O)) {
-      summary._consCount += it.instances;
+      summary._consCount += rc.instances;
       summary._consTotalSize += sz;
     } else {
-      summary._otherCount += it.instances;
+      summary._otherCount += rc.instances;
       summary._otherTotalSize += sz;
     }
     totalSize += sz;
-    if (sz < 1)
-      break;
-    idx += 1;
   }
   return totalSize;
 }
@@ -448,33 +450,6 @@ void shutdownBoehm() {
   delete my_thread_low_level;
 }
 
-size_t ReachableClass::print(std::ostringstream& OutputStream) {
-  Fixnum k = this->_Kind;
-  string className;
-  if (k <= gctools::STAMPWTAG_max) {
-    const char* nm = obj_name(k);
-    if (k == 0) {
-      className = "UNKNOWN";
-    } else {
-      if (!nm) {
-        className = "NULL-NAME";
-      } else {
-        className = nm;
-        if (className.size() > 10) {
-          className = className.substr(10);
-        }
-      }
-    }
-    OutputStream << fmt::format("total_size: {:10d} count: {:8d} avg.sz: {:8d} {}/{}\n", this->totalSize, this->instances,
-                                (this->totalSize / this->instances), className, k);
-    return this->totalSize;
-  } else {
-    OutputStream << fmt::format("total_size: {:10d} count: {:8d} avg.sz: {:8d} {}/{}\n", this->totalSize, this->instances,
-                                (this->totalSize / this->instances), "UNKNOWN", k);
-    return this->totalSize;
-  }
-}
-
 void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
 #ifdef USE_PRECISE_GC
   //
@@ -487,7 +462,7 @@ void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
   size_t totalSize(0);
   if (verbosity == room_max) {
     OutputStream << "-------------------- Reachable ClassKinds -------------------\n";
-    totalSize += dumpResults("Reachable ClassKinds", static_ReachableClassKinds, OutputStream);
+    totalSize += dumpResults(static_ReachableClassKinds, OutputStream);
     OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
   } else if (verbosity == room_default) {
     Summary summary;
