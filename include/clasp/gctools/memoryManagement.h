@@ -1335,6 +1335,7 @@ struct GatherObjects {
 
 void gatherAllObjects(GatherObjects& gather);
 void mapAllObjects(void (*)(Tagged, void*), void*);
+std::set<uintptr_t> setOfAllObjects();
 size_t objectSize(BaseHeader_s* header);
 
 bool is_memory_readable(const void* address, size_t bytes = 8);
