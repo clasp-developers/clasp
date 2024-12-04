@@ -1592,9 +1592,15 @@ struct calculate_size_t : public walker_callback_t {
         _ObjectFileCount(0), _CodeCount(0){};
 };
 
-template <typename Walker> void walk_gathered_objects(Walker& walker, const gctools::GatherObjects& objects) {
-  for (auto obj : objects._Marked) {
-    walker.callback(obj);
+template <typename Walker> void walk_gathered_objects(Walker& walker, const std::set<gctools::Tagged>& objects) {
+  for (const auto& obj : objects) {
+    if (gctools::ptag(obj) == gctools::general_tag) {
+      gctools::Header_s* header = (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr((void*)(obj & gctools::ptr_mask));
+      walker.callback(header);
+    } else if (gctools::ptag(obj) == gctools::cons_tag) {
+      gctools::ConsHeader_s* header = (gctools::ConsHeader_s*)gctools::ConsPtrToHeaderPtr((void*)(obj & gctools::ptr_mask));
+      walker.callback(header);
+    } // else is impossible given how the set is constructed
   }
 }
 
@@ -2258,7 +2264,7 @@ CL_DEFUN size_t gctools__memory_test(core::T_sp filename) {
   return result;
 }
 
-/* This is not allowed to do any allocations. */
+/* This is not allowed to do any Lisp allocations. */
 void* snapshot_save_impl(void* data) {
   global_badge_count = 0;
   core::SaveLispAndDie* snapshot_data = (core::SaveLispAndDie*)data;
@@ -2268,8 +2274,7 @@ void* snapshot_save_impl(void* data) {
   // Gather all objects in memory
   //
 
-  gctools::GatherObjects allObjects(gctools::room_min);
-  gctools::gatherAllObjects(allObjects);
+  auto allObjects = gctools::setOfAllObjects();
 
   //
   // Start the snapshot save process

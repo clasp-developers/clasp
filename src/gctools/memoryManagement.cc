@@ -1085,6 +1085,49 @@ void mapAllObjects(void (*callback)(Tagged, void*), void* data) {
   }
 }
 
+// Used in snapshot save to avoid walking memory repeatedly.
+std::set<Tagged> setOfAllObjects() {
+  std::stack<Tagged*> markStack;
+  std::set<Tagged> markSet;
+
+  walkRoots([&](Tagged* rootAddress, void* data) {
+    markStack.push(rootAddress);
+  },
+    nullptr);
+
+  while (!markStack.empty()) {
+    // Pop a node and process it.
+    Tagged* field = markStack.top();
+    markStack.pop();
+
+    // If the field points to an unmarked object,
+    // mark it and walk.
+    gctools::Tagged tagged = *field;
+    uintptr_t tag = tagged & ptag_mask;
+
+    if (tag == general_tag) {
+      if (!markSet.contains(tagged)) { // not yet marked
+        markSet.insert(tagged);
+        uintptr_t client = tagged & ptr_mask;
+        Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
+        if (header->_badge_stamp_wtag_mtag.weakObjectP())
+          mw2_weak_scan(client, markStack);
+        else // general object
+          mw2_obj_scan(client, markStack);
+        // The object was unmarked and so hasn't been hit before-
+        // now's the time.
+      }
+    } else if (tag == cons_tag) {
+      if (!markSet.contains(tagged)) {
+        markSet.insert(tagged);
+        uintptr_t client = tagged & ptr_mask;
+        mw2_cons_scan(client, markStack);
+      }
+    } // otherwise it's an immediate and we ignore it.
+  }
+  return markSet; // hoping for NRVO optimization, i guess.
+}
+
 /* Return the size of the object */
 size_t objectSize(BaseHeader_s* header) {
   if (header->_badge_stamp_wtag_mtag.consObjectP()) {
