@@ -659,7 +659,7 @@ public:
 
 public:
   static constexpr size_t size() { return sizeof(ConsHeader_s); };
-  bool isValidConsObject(GatherObjects* gather) const;
+  bool isValidConsObject() const;
 };
 
 class Header_s : public BaseHeader_s {
@@ -682,7 +682,7 @@ public:
 #endif
 
 public:
-  bool isValidGeneralObject(GatherObjects* gather) const;
+  bool isValidGeneralObject() const;
   void validate() const;
   void quick_validate() const {
 #ifdef DEBUG_QUICK_VALIDATE
@@ -1335,7 +1335,8 @@ struct GatherObjects {
 
 void gatherAllObjects(GatherObjects& gather);
 void mapAllObjects(void (*)(Tagged, void*), void*);
-std::set<uintptr_t> setOfAllObjects();
+std::set<Tagged> setOfAllObjects();
+std::set<Tagged> memtest();
 size_t objectSize(BaseHeader_s* header);
 
 bool is_memory_readable(const void* address, size_t bytes = 8);

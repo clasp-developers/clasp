@@ -2177,22 +2177,14 @@ void updateRelocationTableAfterLoad(ISLLibrary& curLib, SymbolLookup& symbolLook
   }
 }
 
-void dump_test_results(FILE* fout, const gctools::GatherObjects& gather) {
+void dump_test_results(FILE* fout, const std::set<gctools::Tagged>& corrupt) {
   if (fout) {
-    fprintf(fout, "%s:%d:%s There are %lu objects in memory\n", __FILE__, __LINE__, __FUNCTION__, gather._Marked.size());
-    fprintf(fout, "%s:%d:%s There are %lu corrupt objects\n", __FILE__, __LINE__, __FUNCTION__, gather._corruptObjects.size());
-    if (gather._corruptObjects.size() > 0) {
-      size_t idx(0);
-      for (auto cur : gather._corruptObjects) {
-        std::vector<uintptr_t>& badPointers = cur.second;
-        gctools::Header_s* header = (gctools::Header_s*)cur.first;
-        gctools::GCStampEnum stamp = header->_badge_stamp_wtag_mtag.stamp_();
-        fprintf(fout, "#%lu -> header-pointer: %p[stamp:%lu]  -- addresses: \n", idx, (void*)cur.first, (uintptr_t)stamp);
+    fprintf(fout, "%s:%d:%s There are %lu corrupt objects\n", __FILE__, __LINE__, __FUNCTION__, corrupt.size());
+    if (corrupt.size() > 0) {
+      size_t idx = 0;
+      for (const auto& cur : corrupt) {
+        fprintf(fout, "#%lu -> %p\n", idx, (void*)cur);
         idx++;
-        for (auto ptr : badPointers) {
-          fprintf(fout, " address of slot: %p  contents of slot: %p\n", (void*)ptr, *((void**)ptr));
-        }
-        fprintf(fout, "\n");
       }
     }
   }
@@ -2203,22 +2195,12 @@ size_t memory_test(bool dosleep, FILE* fout, const char* message) {
   // For saving we may want to save snapshots and not die - so use noStomp forwarding.
   //
   core::lisp_write(fmt::format("Gathering base pointers for objects in memory\n"));
-  gctools::GatherObjects gather(gctools::room_test);
-  gctools::gatherAllObjects(gather);
-  core::lisp_write(fmt::format("Done gathering base pointers\n"));
+  auto corrupt = gctools::memtest();
 
-#if 0
-  // this will write out headers of ALL objects
-  if (fout) {
-    for ( auto xx : gather._Seen ) {
-      fprintf( fout, "obj %p\n", (void*)xx );
-    }
-  }
-#endif
   if (fout)
-    dump_test_results(fout, gather);
+    dump_test_results(fout, corrupt);
 
-  size_t result = gather._corruptObjects.size();
+  size_t result = corrupt.size();
   if (result == 0) {
     core::lisp_write(fmt::format("Gathered base pointers with zero corrupt objects detected\n"));
     if (message)
@@ -2227,7 +2209,7 @@ size_t memory_test(bool dosleep, FILE* fout, const char* message) {
     core::lisp_write(fmt::format("{} corrupt objects in memory test\n", result));
     if (message)
       core::lisp_write(fmt::format("  {}\n", message));
-    dump_test_results(stdout, gather);
+    dump_test_results(stdout, corrupt);
     if (dosleep) {
       core::lisp_write(fmt::format("!   Connect a debugger to pid {}\n", getpid()));
       sleep(1000000);
@@ -3653,11 +3635,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
 
 #ifdef DEBUG_GUARD
     // only works when DEBUG_GUARD is on
-    printf("%s:%d:%s DEBUG_GUARD ON Testing snapshot load memory\n", __FILE__, __LINE__, __FUNCTION__);
-    gctools::GatherObjects gather(gctools::room_test);
-    gctools::gatherAllObjects(gather);
-    printf("%s:%d:%s DEBUG_GUARD ON snapshot load memory test report\n", __FILE__, __LINE__, __FUNCTION__);
-    dump_test_results(stdout, gather);
+    memory_test(false, NULL, "DEBUG_GUARD ON Testing snapshot load memory");
 #endif
 
     //
