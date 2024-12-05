@@ -306,35 +306,8 @@ size_t heap_size() { return GC_get_heap_size(); }
 size_t free_bytes() { return GC_get_free_bytes(); }
 size_t bytes_since_gc() { return GC_get_bytes_since_gc(); }
 
-void roomMapper(Tagged tagged, void* data) {
-  ReachableClassMap* rcmap = (ReachableClassMap*)data;
-  uintptr_t tag = tagged & ptag_mask;
-  BaseHeader_s* header;
-  GCStampEnum stamp;
-
-  if (tag == general_tag) {
-    uintptr_t obj = tagged & ptr_mask;
-    header = (Header_s*)GeneralPtrToHeaderPtr((void*)obj);
-    stamp = header->_badge_stamp_wtag_mtag.stamp_();
-  } else if (tag == cons_tag) {
-    uintptr_t obj = tagged & ptr_mask;
-    header = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)obj);
-    stamp = (gctools::GCStampEnum)STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_CONS);
-  } else return; // immediate or vaslist
-
-  size_t sz = objectSize(header);
-
-  (*rcmap)[stamp].update(sz);
-}
-
-void* map_gc_objects_w_alloc_lock(void* data) {
-  mapAllObjects(roomMapper, data);
-  return nullptr;
-}
-
-void fill_reachable_class_map(ReachableClassMap* rcmap) {
-  GC_call_with_alloc_lock(map_gc_objects_w_alloc_lock,
-                          (void*)rcmap);
+void* call_with_stopped_world(void* (*f)(void*), void* data) {
+  return GC_call_with_alloc_lock(f, data);
 }
 
 CL_DEFUN size_t core__dynamic_space_size() { return GC_get_total_bytes(); }

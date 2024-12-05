@@ -340,6 +340,37 @@ void displayClassKindsSummary(const ReachableClassMap& rcmap, std::ostream& Outp
                               summary.otherTotalSize, (float)summary.otherTotalSize / totalSize * 100.0);
 }
 
+void roomMapper(Tagged tagged, void* data) {
+  ReachableClassMap* rcmap = (ReachableClassMap*)data;
+  uintptr_t tag = tagged & ptag_mask;
+  BaseHeader_s* header;
+  GCStampEnum stamp;
+
+  if (tag == general_tag) {
+    uintptr_t obj = tagged & ptr_mask;
+    header = (Header_s*)GeneralPtrToHeaderPtr((void*)obj);
+    stamp = header->_badge_stamp_wtag_mtag.stamp_();
+  } else if (tag == cons_tag) {
+    uintptr_t obj = tagged & ptr_mask;
+    header = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)obj);
+    stamp = (gctools::GCStampEnum)STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_CONS);
+  } else return; // immediate or vaslist
+
+  size_t sz = objectSize(header);
+
+  (*rcmap)[stamp].update(sz);
+}
+
+void* map_gc_objects_w_alloc_lock(void* data) {
+  mapAllObjects(roomMapper, data);
+  return nullptr;
+}
+
+void fill_reachable_class_map(ReachableClassMap* rcmap) {
+  call_with_stopped_world(map_gc_objects_w_alloc_lock,
+                          (void*)rcmap);
+}
+
 CL_LAMBDA(&optional (x :default));
 CL_DEFUN void cl__room(core::Symbol_sp x) {
   std::ostringstream OutputStream;
