@@ -527,14 +527,6 @@ public:
   typedef std::size_t size_type;
   typedef std::ptrdiff_t difference_type;
 
-  /* constructors and destructor
-   * - nothing to do because the allocator has no state
-   */
-  GCContainerAllocator() throw() {}
-  GCContainerAllocator(const GCContainerAllocator&) throw() {}
-  template <class U> GCContainerAllocator(const GCContainerAllocator<U>&) throw() {}
-  ~GCContainerAllocator() throw() {}
-
   // return maximum number of elements that can be allocated
   size_type max_size() const throw() { return std::numeric_limits<std::size_t>::max() / sizeof(value_type); }
 
@@ -592,13 +584,6 @@ public:
   typedef std::size_t size_type;
   typedef std::ptrdiff_t difference_type;
   static constexpr bool weakp = std::is_same_v<StrongWeakLinkType, WeakLinks>;
-
-  /* constructors and destructor
-   * - nothing to do because the allocator has no state
-   */
-  GCBucketAllocator() throw() {}
-  GCBucketAllocator(const GCBucketAllocator&) throw() {}
-  ~GCBucketAllocator() throw() {}
 
   // return maximum number of elements that can be allocated
   size_type max_size() const throw() { return std::numeric_limits<std::size_t>::max() / sizeof(value_type); }
@@ -661,12 +646,6 @@ public:
   typedef Mapping<VT, VT, StrongWeakLinkType> TY;
   typedef TY container_type;
   typedef TY* container_pointer;
-  /* constructors and destructor
-   * - nothing to do because the allocator has no state
-   */
-  GCMappingAllocator() throw() {}
-  GCMappingAllocator(const GCMappingAllocator&) throw() {}
-  ~GCMappingAllocator() throw() {}
 
   // allocate but don't initialize num elements of type value_type
   static gctools::tagged_pointer<container_type> allocate(Header_s::BadgeStampWtagMtag the_header, const VT& val) {

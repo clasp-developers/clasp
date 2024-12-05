@@ -117,12 +117,6 @@ public:
   // Assignment operator must destroy the existing contents
   GCVector<T>& operator=(const GCVector<T>& that) {
     if (this != &that) {
-      if (this->_Contents) {
-        Allocator alloc;
-        gctools::tagged_pointer<GCVector_moveable<T>> ptr = this->_Contents;
-        this->_Contents.reset_();
-        alloc.deallocate(ptr, ptr->_End);
-      }
       if (that._Contents) {
         allocator_type alloc;
         tagged_pointer_to_moveable implAddress = alloc.allocate(that._Contents->_Capacity);
@@ -159,14 +153,6 @@ public:
   GCVector() : _Contents() {
     this->reserve(8); // GC allocate 8 entries
   };
-  ~GCVector() {
-    if (this->_Contents) {
-      Allocator alloc;
-      gctools::tagged_pointer<GCVector_moveable<T>> ptr = this->_Contents;
-      this->_Contents.reset_();
-      alloc.deallocate(ptr, ptr->_End);
-    }
-  }
 
   size_t size() const { return this->_Contents ? this->_Contents->_End : 0; };
   size_t capacity() const { return this->_Contents ? this->_Contents->_Capacity : 0; };
@@ -224,7 +210,6 @@ public:
       // Deallocate the old one
       size_t num = oldVec->_End;
       oldVec->_End = 0;
-      alloc.deallocate(oldVec, num);
     }
   }
 
@@ -253,7 +238,6 @@ public:
       this->_Contents = vec;
       size_t num = oldVec->_End;
       oldVec->_End = 0;
-      alloc.deallocate(oldVec, num);
     }
   }
 
@@ -293,7 +277,6 @@ public:
         this->_Contents = vec;
         size_t num = oldVec->_End;
         oldVec->_End = 0;
-        alloc.deallocate(oldVec, num);
       }
     }
     // We are moving _End down
@@ -356,7 +339,6 @@ public:
       this->_Contents = vec;
       size_t num = oldVec->_End;
       oldVec->_End = 0;
-      alloc.deallocate(oldVec, num);
       return &(*this->_Contents)[iposition];
     }
     // slide the elements from position up to the end one element up
