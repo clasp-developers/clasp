@@ -539,13 +539,13 @@ void BaseHeader_s::validate() const {
   }
 }
 
-bool ConsHeader_s::isValidConsObject(GatherObjects* gather) const {
+bool ConsHeader_s::isValidConsObject() const {
   if (((uintptr_t)this & ptag_mask) != 0) {
     printf("%s:%d The cons header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
     abort();
   }
   void* gcBase;
-  if (gather->_Verbosity == room_test && !is_memory_readable((void*)this, 8))
+  if (!is_memory_readable((void*)this, 8))
     goto bad;
   gcBase = GC_base((void*)this);
   if (gcBase != (void*)this)
@@ -561,13 +561,13 @@ bad:
   return false;
 }
 
-bool Header_s::isValidGeneralObject(GatherObjects* gather) const {
+bool Header_s::isValidGeneralObject() const {
   if (((uintptr_t)this & ptag_mask) != 0) {
     printf("%s:%d The general header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
     abort();
   }
   void* gcBase;
-  if (gather->_Verbosity == room_test && !is_memory_readable((void*)this, 8))
+  if (!is_memory_readable((void*)this, 8))
     goto bad;
   gcBase = GC_base((void*)this);
   if (gcBase != (void*)this)
@@ -883,7 +883,7 @@ void gatherObjects(uintptr_t* fieldAddress, void* userData) {
     uintptr_t client = untag_object(tagged_obj_ptr);
     Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client); // works for weak as well
     base = header;
-    if (!header->isValidGeneralObject(gather)) {
+    if (!header->isValidGeneralObject()) {
       auto ii = gather->_corruptObjects.find(header);
       if (ii == gather->_corruptObjects.end()) {
         gather->_corruptObjects[header].push_back((uintptr_t)fieldAddress);
@@ -899,7 +899,7 @@ void gatherObjects(uintptr_t* fieldAddress, void* userData) {
     uintptr_t client = untag_object(tagged_obj_ptr);
     ConsHeader_s* consHeader = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)client);
     base = consHeader;
-    if (!consHeader->isValidConsObject(gather)) {
+    if (!consHeader->isValidConsObject()) {
       auto ii = gather->_corruptObjects.find(consHeader);
       if (ii == gather->_corruptObjects.end()) {
         std::vector<uintptr_t> badPointers;
@@ -1126,6 +1126,67 @@ std::set<Tagged> setOfAllObjects() {
     } // otherwise it's an immediate and we ignore it.
   }
   return markSet; // hoping for NRVO optimization, i guess.
+}
+
+// Check that all fields in all objects point to valid objects.
+// Return the set of tagged pointers located in fields that are not valid.
+std::set<Tagged> memtest() {
+  std::stack<Tagged*> markStack;
+  std::set<Tagged> markSet;
+  std::set<Tagged> corrupt;
+
+  walkRoots([&](Tagged* rootAddr, void* data) { markStack.push(rootAddr); }, nullptr);
+
+  while (!markStack.empty()) {
+    Tagged* field = markStack.top(); markStack.pop();
+    gctools::Tagged tagged = *field;
+
+    switch (tagged & ptag_mask) {
+    case general_tag: {
+      if (!markSet.contains(tagged)) {
+        markSet.insert(tagged);
+        uintptr_t client = tagged & ptr_mask;
+        Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
+        if (header->isValidGeneralObject()) {
+          if (header->_badge_stamp_wtag_mtag.weakObjectP())
+            mw2_weak_scan(client, markStack);
+          else mw2_obj_scan(client, markStack);
+        } else corrupt.insert(tagged);
+      }
+    } break;
+    case cons_tag: {
+      if (!markSet.contains(tagged)) {
+        markSet.insert(tagged);
+        uintptr_t client = tagged & ptr_mask;
+        ConsHeader_s* header = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)client);
+        if (header->isValidConsObject())
+          mw2_cons_scan(client, markStack);
+        else corrupt.insert(tagged);
+      }
+    } break;
+    case vaslist0_tag:
+#if TAG_BITS == 4
+    case vaslist1_tag:
+#endif
+        break; // not checked presently - FIXME
+    case fixnum00_tag:
+    case fixnum01_tag:
+#if TAG_BITS == 4
+    case fixnum10_tag:
+    case fixnum11_tag:
+#endif
+    case character_tag:
+    case single_float_tag:
+#ifdef CLASP_SHORT_FLOAT
+    case short_float_tag:
+#endif
+    case UNBOUND_TAG: // FIXME: put const definition in pointer_tagging.h somewhere?
+        break; // immediate, nothing to do
+    default: // unknown tag - object is corrupt
+        corrupt.insert(tagged); break;
+    }
+  }
+  return corrupt;
 }
 
 /* Return the size of the object */
