@@ -651,8 +651,6 @@ public:
 #endif
 };
 
-struct GatherObjects; // forward decl
-
 class ConsHeader_s : public BaseHeader_s {
 public:
   ConsHeader_s(const BadgeStampWtagMtag& k) : BaseHeader_s(k){};
@@ -1295,45 +1293,7 @@ template <typename Type> struct dont_expose {
 namespace gctools {
 
 typedef void (*PointerFix)(uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, void* user_data);
-extern PointerFix globalMemoryWalkPointerFix;
 
-struct MarkNode {
-  gctools::Tagged* _ObjectAddr;
-  MarkNode* _Next;
-  MarkNode(gctools::Tagged* tt)
-      : _ObjectAddr(tt), _Next(NULL){};
-};
-
-struct GatherObjects {
-  RoomVerbosity _Verbosity;
-  std::set<BaseHeader_s*> _Marked;
-  MarkNode* _Stack;
-  std::map<BaseHeader_s*, std::vector<uintptr_t>> _corruptObjects;
-  size_t _SimpleFunCount;
-  size_t _SimpleFunFailedDladdrCount;
-  std::set<void*>  _uniqueEntryPoints;
-  std::set<void*>  _uniqueEntryPointsFailedDladdr;
-  GatherObjects(RoomVerbosity v) : _Verbosity(v), _Stack(NULL), _SimpleFunCount(0), _SimpleFunFailedDladdrCount(0) {};
-
-  MarkNode* popMarkStack() {
-    if (this->_Stack) {
-      MarkNode* top = this->_Stack;
-      this->_Stack = top->_Next;
-      return top;
-    }
-    return NULL;
-  }
-  void pushMarkStack(MarkNode* node) {
-    node->_Next = this->_Stack;
-    this->_Stack = node;
-  }
-
-  void mark(Header_s* header) { this->_Marked.insert(header); }
-
-  bool markedP(BaseHeader_s* header) { return this->_Marked.find(header) != this->_Marked.end(); }
-};
-
-void gatherAllObjects(GatherObjects& gather);
 void mapAllObjects(void (*)(Tagged, void*), void*);
 std::set<Tagged> setOfAllObjects();
 std::set<Tagged> memtest();

@@ -874,168 +874,32 @@ void walkRoots(RootWalkCallback&& callback, void* data) {
   }
 };
 
-void gatherObjects(uintptr_t* fieldAddress, void* userData) {
-  uintptr_t tagged_obj_ptr = *fieldAddress;
-  uintptr_t tag = ptag(tagged_obj_ptr);
-  GatherObjects* gather = (GatherObjects*)userData;
-  BaseHeader_s* base;
-  if (tag == gctools::general_tag) {
-    uintptr_t client = untag_object(tagged_obj_ptr);
-    Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client); // works for weak as well
-    base = header;
-    if (!header->isValidGeneralObject()) {
-      auto ii = gather->_corruptObjects.find(header);
-      if (ii == gather->_corruptObjects.end()) {
-        gather->_corruptObjects[header].push_back((uintptr_t)fieldAddress);
-      } else {
-        std::vector<uintptr_t>& badPointers = ii->second;
-        if (std::find(badPointers.begin(), badPointers.end(), (uintptr_t)fieldAddress) != badPointers.end()) {
-          badPointers.push_back((uintptr_t)fieldAddress);
-        }
-      }
-      return;
-    }
-  } else if (tag == gctools::cons_tag) {
-    uintptr_t client = untag_object(tagged_obj_ptr);
-    ConsHeader_s* consHeader = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)client);
-    base = consHeader;
-    if (!consHeader->isValidConsObject()) {
-      auto ii = gather->_corruptObjects.find(consHeader);
-      if (ii == gather->_corruptObjects.end()) {
-        std::vector<uintptr_t> badPointers;
-        badPointers.push_back((uintptr_t)fieldAddress);
-        gather->_corruptObjects[consHeader] = badPointers;
-      } else {
-        std::vector<uintptr_t>& badPointers = ii->second;
-        if (std::find(badPointers.begin(), badPointers.end(), (uintptr_t)fieldAddress) != badPointers.end()) {
-          badPointers.push_back((uintptr_t)fieldAddress);
-        }
-      }
-      return;
-    }
-  } else return; // vaslist or immediate, we don't need to walk
-
-  // It's a good object - mark it if it hasn't been already.
-  if (gather->markedP(base))
-    return;
-  else {
-    MarkNode* node = new MarkNode(fieldAddress);
-    LOG("pushMarkStack: {}\n", *(void**)fieldAddress);
-    gather->pushMarkStack(node);
-  }
-}
-
-#define POINTER_FIX(_ptr_) gatherObjects(reinterpret_cast<uintptr_t*>(_ptr_), user_data);
-
 #define GENERAL_PTR_TO_HEADER_PTR(_general_) GeneralPtrToHeaderPtr((void*)_general_)
 // #define HEADER_PTR_TO_GENERAL_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
 #define WEAK_PTR_TO_HEADER_PTR(_general_) WeakPtrToHeaderPtr((void*)_general_)
 // #define HEADER_PTR_TO_WEAK_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
 
 #define ADDR_T uintptr_t
-#define EXTRA_ARGUMENTS , void* user_data
+#define EXTRA_ARGUMENTS , std::stack<Tagged*>& markStack
+
+#define POINTER_FIX(_ptr_) markStack.push(reinterpret_cast<Tagged*>(_ptr_))
 
 #define OBJECT_SCAN mw_obj_scan
-#include "obj_scan.cc"
-#undef OBJECT_SCAN
-
 #define OBJECT_SKIP mw_obj_skip
 #include "obj_scan.cc"
 #undef OBJECT_SKIP
-
-#define OBJECT_SKIP_IN_OBJECT_FWD mw_obj_skip
-#define OBJECT_FWD mw_obj_fwd
-#include "obj_scan.cc"
-#undef OBJECT_FWD
+#undef OBJECT_SCAN
 
 #define CONS_SCAN mw_cons_scan
 #define CONS_SKIP mw_cons_skip
-#define CONS_FWD mw_cons_fwd
-#define CONS_SKIP_IN_CONS_FWD mw_cons_skip
 #include "cons_scan.cc"
-#undef CONS_FWD
 #undef CONS_SKIP
 #undef CONS_SCAN
 
 #define WEAK_SCAN mw_weak_scan
 #define WEAK_SKIP mw_weak_skip
-#define WEAK_FWD mw_weak_fwd
-#define WEAK_SKIP_IN_WEAK_FWD mw_weak_skip
 #include "weak_scan.cc"
-#undef WEAK_FWD
 #undef WEAK_SKIP
-#undef WEAK_SCAN
-
-#undef ADDR_T
-#undef EXTRA_ARGUMENTS
-
-void gatherAllObjects(GatherObjects& gather) {
-  //  printf("%s:%d:%s entered \n", __FILE__, __LINE__, __FUNCTION__ );
-
-  // Add the roots to the mark stack
-  walkRoots(
-      +[](gctools::Tagged* rootAddress, void* data) {
-        GatherObjects* gather = (GatherObjects*)data;
-        MarkNode* node = new MarkNode(rootAddress);
-        LOG("Push root: {}\n", *(void**)rootAddress);
-        gather->pushMarkStack(node);
-      },
-      (void*)&gather);
-
-  // While there are objects on the mark stack scan
-  while (gather._Stack) {
-    // Take one object off the mark stack
-    MarkNode* top = gather.popMarkStack();
-    gctools::Tagged* objAddr = top->_ObjectAddr;
-    gctools::Tagged tagged = *objAddr;
-    uintptr_t tag = tagged & ptag_mask;
-    uintptr_t client = tagged & ptr_mask;
-    delete top;
-
-    //
-    // Identify if the object is a general, cons or weak object
-    //  This uses a combination of inspecting the tag and the mtag of the header
-    //
-    if (tag == general_tag) {
-      // It may be general or weak - we must check the header now
-      // GeneralPtrToHeaderPtr works for both general and weak objects because their
-      // headers are guaranteed to be the same size
-      Header_s* generalOrWeakHeader = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
-      gather.mark(generalOrWeakHeader);
-      if (!generalOrWeakHeader->_badge_stamp_wtag_mtag.weakObjectP()) {
-        // It's a general object - walk it
-        LOG("Mark/scan client: {}\n", *(void**)client);
-        mw_obj_scan(client, &gather);
-      } else {
-        // It's a weak object - walk it
-        LOG("Mark/scan weak client: {}\n", *(void**)client);
-        mw_weak_scan(client, &gather);
-      }
-    } else if (tag == cons_tag) {
-      // It's a cons object - get the header
-      Header_s* consHeader = (Header_s*)ConsPtrToHeaderPtr((void*)client);
-      gather.mark(consHeader);
-      LOG("Mark/scan cons client: {}\n", *(void**)client);
-      mw_cons_scan(client, &gather);
-    }
-  }
-}
-
-#define ADDR_T uintptr_t
-#define EXTRA_ARGUMENTS , std::stack<Tagged*>& markStack
-
-#define POINTER_FIX(_ptr_) markStack.push(reinterpret_cast<Tagged*>(_ptr_))
-
-#define OBJECT_SCAN mw2_obj_scan
-#include "obj_scan.cc"
-#undef OBJECT_SCAN
-
-#define CONS_SCAN mw2_cons_scan
-#include "cons_scan.cc"
-#undef CONS_SCAN
-
-#define WEAK_SCAN mw2_weak_scan
-#include "weak_scan.cc"
 #undef WEAK_SCAN
 
 #undef POINTER_FIX
@@ -1067,9 +931,9 @@ void mapAllObjects(void (*callback)(Tagged, void*), void* data) {
         markSet.insert(client);
         Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
         if (header->_badge_stamp_wtag_mtag.weakObjectP())
-          mw2_weak_scan(client, markStack);
+          mw_weak_scan(client, markStack);
         else // general object
-          mw2_obj_scan(client, markStack);
+          mw_obj_scan(client, markStack);
         // The object was unmarked and so hasn't been hit before-
         // now's the time.
         callback(tagged, data);
@@ -1078,7 +942,7 @@ void mapAllObjects(void (*callback)(Tagged, void*), void* data) {
       uintptr_t client = tagged & ptr_mask;
       if (!markSet.contains(client)) {
         markSet.insert(client);
-        mw2_cons_scan(client, markStack);
+        mw_cons_scan(client, markStack);
         callback(tagged, data);
       }
     } // otherwise it's an immediate and we ignore it.
@@ -1111,9 +975,9 @@ std::set<Tagged> setOfAllObjects() {
         uintptr_t client = tagged & ptr_mask;
         Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
         if (header->_badge_stamp_wtag_mtag.weakObjectP())
-          mw2_weak_scan(client, markStack);
+          mw_weak_scan(client, markStack);
         else // general object
-          mw2_obj_scan(client, markStack);
+          mw_obj_scan(client, markStack);
         // The object was unmarked and so hasn't been hit before-
         // now's the time.
       }
@@ -1121,7 +985,7 @@ std::set<Tagged> setOfAllObjects() {
       if (!markSet.contains(tagged)) {
         markSet.insert(tagged);
         uintptr_t client = tagged & ptr_mask;
-        mw2_cons_scan(client, markStack);
+        mw_cons_scan(client, markStack);
       }
     } // otherwise it's an immediate and we ignore it.
   }
@@ -1149,8 +1013,8 @@ std::set<Tagged> memtest() {
         Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
         if (header->isValidGeneralObject()) {
           if (header->_badge_stamp_wtag_mtag.weakObjectP())
-            mw2_weak_scan(client, markStack);
-          else mw2_obj_scan(client, markStack);
+            mw_weak_scan(client, markStack);
+          else mw_obj_scan(client, markStack);
         } else corrupt.insert(tagged);
       }
     } break;
@@ -1160,7 +1024,7 @@ std::set<Tagged> memtest() {
         uintptr_t client = tagged & ptr_mask;
         ConsHeader_s* header = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)client);
         if (header->isValidConsObject())
-          mw2_cons_scan(client, markStack);
+          mw_cons_scan(client, markStack);
         else corrupt.insert(tagged);
       }
     } break;
