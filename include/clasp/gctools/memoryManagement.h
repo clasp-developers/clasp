@@ -1317,7 +1317,7 @@ struct ReachableClass {
 typedef map<gctools::GCStampEnum, ReachableClass> ReachableClassMap;
 
 // These four are GC-defined.
-void fill_reachable_class_map(ReachableClassMap*);
+void* call_with_stopped_world(void* (*)(void*), void*);
 
 size_t heap_size();
 size_t free_bytes();
