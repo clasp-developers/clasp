@@ -1286,7 +1286,7 @@ struct SafeGCPark {
 
 template <typename Type> struct dont_expose {
   Type _value;
-  dont_expose(){};
+  dont_expose() = default;
   template <typename Arg> dont_expose(const Arg& val) : _value(val){};
 };
 

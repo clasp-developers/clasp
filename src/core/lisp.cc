@@ -206,8 +206,6 @@ Lisp::Lisp() : _Booted(false), _MpiEnabled(false), _MpiRank(0), _MpiSize(1), _Bo
   //  this->_Roots._Bindings.reserve(1024); // moved to Lisp::initialize()
 }
 
-Lisp::~Lisp(){};
-
 void Lisp::shutdownLispEnvironment() {
   this->_Booted = false;
   if (globals_->_DebugStream != NULL)
@@ -2382,8 +2380,6 @@ Exposer_O::Exposer_O(LispPtr lisp, const string& packageName) {
     lisp->makePackage(packageName, lnnames, lpkgs);
   }
 }
-
-Exposer_O::~Exposer_O(){};
 
 ChangePackage::ChangePackage(Package_sp newPackage) : _SavedPackage(_lisp->getCurrentPackage()) {
   _lisp->selectPackage(newPackage);
