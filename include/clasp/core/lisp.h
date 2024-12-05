@@ -168,8 +168,6 @@ public:
           doesn't exist it makes it - no nicknames allowed */
   Exposer_O(LispPtr lisp, const string& packageName);
 
-  virtual ~Exposer_O();
-
   /*! Return the packageName */
   string packageName() const { return this->_PackageName; };
 
@@ -804,8 +802,7 @@ public:
           if the names string is empty then untrace all functions. */
   void gdb_untrace_by_name(const char* name);
 
-  explicit Lisp();
-  virtual ~Lisp();
+  Lisp();
 };
 
 /*! Use RAII to safely allocate a buffer */

@@ -246,7 +246,6 @@ private:
 public:
   CatchThrow(T_sp tag) : _Tag(tag){};
   T_sp getTag() { return this->_Tag; };
-  /*ATTR_WEAK*/ virtual ~CatchThrow(){};
 };
 
 class ATTR_WEAK Unwind {
@@ -258,7 +257,6 @@ private:
 
 public:
   ATTR_WEAK Unwind(void* frame, size_t index) : _Frame(frame), _Index(index){};
-  /*ATTR_WEAK*/ virtual ~Unwind(){};
   void* getFrame() const { return this->_Frame; };
   size_t index() const { return this->_Index; };
 };
