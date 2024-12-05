@@ -43,26 +43,9 @@ extern "C" {
 // Do the same thing that mps_park and mps_release do
 void boehm_park();
 void boehm_release();
-
-void boehm_callback_reachable_object_find_stamps(void* ptr, size_t sz, void* client_data);
-void boehm_callback_reachable_object_find_owners(void* ptr, size_t sz, void* client_data);
 };
 
 namespace gctools {
-// ------------
-
-struct FindStamp {
-  gctools::GCStampEnum _stamp;
-  std::vector<void*> _addresses;
-  FindStamp(gctools::GCStampEnum stamp) : _stamp(stamp){};
-};
-
-struct FindOwner {
-  void* _pointer;
-  std::vector<void*> _addresses;
-  FindOwner(void* pointer) : _pointer(pointer){};
-};
-
 void clasp_gc_registerRoots(void* rootsStart, size_t numberOfRoots);
 void clasp_gc_deregisterRoots(void* rootsStart, size_t numberOfRoots);
 }; // namespace gctools

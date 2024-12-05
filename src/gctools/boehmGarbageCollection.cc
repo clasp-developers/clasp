@@ -58,51 +58,6 @@ void boehm_release() {
 }
 };
 
-extern "C" {
-
-void boehm_callback_reachable_object_find_stamps(void* ptr, size_t sz, void* client_data) {
-  gctools::FindStamp* findStamp = (gctools::FindStamp*)client_data;
-  gctools::Header_s* h = reinterpret_cast<gctools::Header_s*>(ptr);
-  gctools::GCStampEnum stamp = h->_badge_stamp_wtag_mtag.stamp_();
-  if (!valid_stamp(stamp)) {
-    if (sz == 32) {
-      stamp = (gctools::GCStampEnum)(gctools::STAMPWTAG_core__Cons_O >> gctools::Header_s::wtag_width);
-      //      printf("%s:%d cons stamp address: %p sz: %lu stamp: %lu\n", __FILE__, __LINE__, (void*)h, sz, stamp);
-    } else {
-      stamp = (gctools::GCStampEnum)0; // unknown uses 0
-    }
-  }
-  if (stamp == findStamp->_stamp) {
-    findStamp->_addresses.push_back(ptr);
-  }
-}
-
-void boehm_callback_reachable_object_find_owners(void* ptr, size_t sz, void* client_data) {
-  gctools::FindOwner* findOwner = (gctools::FindOwner*)client_data;
-  for (void** cur = (void**)ptr; cur < (void**)((void**)ptr + (sz / 8)); cur += 1) {
-    void* tp = *cur;
-    uintptr_t tag = (uintptr_t)tp & 0xf;
-    if (GC_is_heap_ptr(tp) && (tag == GENERAL_TAG || tag == CONS_TAG)) {
-      void* obj = gctools::untag_object(tp);
-      void* base = gctools::GeneralPtrToHeaderPtr(obj);
-#if 0
-      printf("%s:%d Looking at cur->%p\n", __FILE__, __LINE__, cur);
-      printf("%s:%d             tp->%p\n", __FILE__, __LINE__, tp);
-      printf("%s:%d           base->%p\n", __FILE__, __LINE__, base);
-      printf("%s:%d        pointer->%p\n", __FILE__, __LINE__, findOwner->_pointer);
-#endif
-      if (base == findOwner->_pointer) {
-        uintptr_t* uptr = (uintptr_t*)ptr;
-#ifdef USE_BOEHM
-        printf("%p  %s\n", ptr, obj_name((*uptr) >> 4));
-#endif
-        findOwner->_addresses.push_back((void*)uptr);
-      }
-    }
-  }
-}
-}
-
 // ------------
 
 namespace gctools {
