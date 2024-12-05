@@ -867,10 +867,10 @@ namespace gctools {
 
 /* Walk all of the roots, passing the address of each root and what it represents */
 template <typename RootWalkCallback>
-void walkRoots(RootWalkCallback&& callback, void* data) {
-  callback((Tagged*)&_lisp, data);
+void walkRoots(RootWalkCallback&& callback) {
+  callback((Tagged*)&_lisp);
   for (size_t jj = 0; jj < global_symbol_count; ++jj) {
-    callback((Tagged*)&global_symbols[jj], data);
+    callback((Tagged*)&global_symbols[jj]);
   }
 };
 
@@ -906,89 +906,54 @@ void walkRoots(RootWalkCallback&& callback, void* data) {
 #undef ADDR_T
 #undef EXTRA_ARGUMENTS
 
-void mapAllObjects(void (*callback)(Tagged, void*), void* data) {
+template <class Callback>
+static void mapAllObjectsInternal(std::set<Tagged>& markSet,
+                                  Callback callback) {
   std::stack<Tagged*> markStack;
-  std::set<uintptr_t> markSet;
 
-  walkRoots([&](Tagged* rootAddress, void* data) {
-    markStack.push(rootAddress);
-  },
-    nullptr);
+  walkRoots([&](Tagged* rootf) { markStack.push(rootf); }); // process all roots
 
   while (!markStack.empty()) {
-    // Pop a node and process it.
-    Tagged* field = markStack.top();
-    markStack.pop();
+    Tagged* field = markStack.top(); markStack.pop(); // pop a field
+    Tagged tagged = *field;
 
-    // If the field points to an unmarked object,
-    // mark it and walk.
-    gctools::Tagged tagged = *field;
-    uintptr_t tag = tagged & ptag_mask;
-
-    if (tag == general_tag) {
-      uintptr_t client = tagged & ptr_mask;
-      if (!markSet.contains(client)) { // not yet marked
-        markSet.insert(client);
+    switch(ptag(tagged)) {
+    case general_tag: { // general object: check weakness
+      if (!markSet.contains(tagged)) { // only process each object once
+        markSet.insert(tagged);
+        uintptr_t client = untag_object(tagged);
         Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
+        // the mw_foo_scan functions push all fields of the object
+        // onto the markStack to keep the loop going.
         if (header->_badge_stamp_wtag_mtag.weakObjectP())
           mw_weak_scan(client, markStack);
-        else // general object
-          mw_obj_scan(client, markStack);
-        // The object was unmarked and so hasn't been hit before-
-        // now's the time.
-        callback(tagged, data);
+        else mw_obj_scan(client, markStack);
+        // now's the time to callback. Could also go before the scan
+        callback(tagged);
       }
-    } else if (tag == cons_tag) {
-      uintptr_t client = tagged & ptr_mask;
-      if (!markSet.contains(client)) {
-        markSet.insert(client);
+    } break;
+    case cons_tag: {
+      if (!markSet.contains(tagged)) {
+        markSet.insert(tagged);
+        uintptr_t client = untag_object(tagged);
         mw_cons_scan(client, markStack);
-        callback(tagged, data);
+        callback(tagged);
       }
-    } // otherwise it's an immediate and we ignore it.
+    } break;
+    default: break; // immediate, vaslist, etc.: ignore
+    }
   }
+}
+
+void mapAllObjects(void (*callback)(Tagged, void*), void* data) {
+  std::set<Tagged> markSet;
+  mapAllObjectsInternal(markSet, [&](Tagged obj) { callback(obj, data); });
 }
 
 // Used in snapshot save to avoid walking memory repeatedly.
 std::set<Tagged> setOfAllObjects() {
-  std::stack<Tagged*> markStack;
   std::set<Tagged> markSet;
-
-  walkRoots([&](Tagged* rootAddress, void* data) {
-    markStack.push(rootAddress);
-  },
-    nullptr);
-
-  while (!markStack.empty()) {
-    // Pop a node and process it.
-    Tagged* field = markStack.top();
-    markStack.pop();
-
-    // If the field points to an unmarked object,
-    // mark it and walk.
-    gctools::Tagged tagged = *field;
-    uintptr_t tag = tagged & ptag_mask;
-
-    if (tag == general_tag) {
-      if (!markSet.contains(tagged)) { // not yet marked
-        markSet.insert(tagged);
-        uintptr_t client = tagged & ptr_mask;
-        Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
-        if (header->_badge_stamp_wtag_mtag.weakObjectP())
-          mw_weak_scan(client, markStack);
-        else // general object
-          mw_obj_scan(client, markStack);
-        // The object was unmarked and so hasn't been hit before-
-        // now's the time.
-      }
-    } else if (tag == cons_tag) {
-      if (!markSet.contains(tagged)) {
-        markSet.insert(tagged);
-        uintptr_t client = tagged & ptr_mask;
-        mw_cons_scan(client, markStack);
-      }
-    } // otherwise it's an immediate and we ignore it.
-  }
+  mapAllObjectsInternal(markSet, [](Tagged) {});
   return markSet; // hoping for NRVO optimization, i guess.
 }
 
@@ -999,7 +964,7 @@ std::set<Tagged> memtest() {
   std::set<Tagged> markSet;
   std::set<Tagged> corrupt;
 
-  walkRoots([&](Tagged* rootAddr, void* data) { markStack.push(rootAddr); }, nullptr);
+  walkRoots([&](Tagged* rootAddr) { markStack.push(rootAddr); });
 
   while (!markStack.empty()) {
     Tagged* field = markStack.top(); markStack.pop();
@@ -1032,7 +997,7 @@ std::set<Tagged> memtest() {
 #if TAG_BITS == 4
     case vaslist1_tag:
 #endif
-        break; // not checked presently - FIXME
+        break; // not checked presently - FIXME?
     case fixnum00_tag:
     case fixnum01_tag:
 #if TAG_BITS == 4
