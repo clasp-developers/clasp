@@ -112,7 +112,6 @@ template <> struct from_object<bool&> {
   typedef bool DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(!o.nilp()) {};
-  ~from_object(){/*non trivial*/};
 };
 
 template <> struct from_object<core::T_O*> {
@@ -250,7 +249,6 @@ template <> struct from_object<std::string&> {
   typedef std::string DeclareType;
   DeclareType _v;
   from_object(T_P o) : _v(string_get_std_string(o)){};
-  ~from_object(){/*non trivial*/};
 };
 
 template <> struct to_object<std::string, translate::adopt_pointer> {
