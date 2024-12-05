@@ -61,7 +61,7 @@ public:
 public:
   vector_type _Vector;
   Vec0(bool dummy) : _Vector(dummy){}; // don't allocate GC memory ctor
-  Vec0(){};
+  Vec0() = default;
 
 public:
   typename vector_type::pointer_to_moveable contents() const { return this->_Vector.contents(); };

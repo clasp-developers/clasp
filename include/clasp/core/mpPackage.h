@@ -182,7 +182,6 @@ public:
   core::T_sp _Owner;
   dont_expose<Mutex> _Mutex;
   Mutex_O(core::T_sp name, bool recursive) : _Name(name), _Owner(nil<T_O>()), _Mutex(Mutex(lisp_nameword(name), recursive)){};
-  ~Mutex_O() { printf("%s:%d:%s Finalizing Mutex_O @ %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)this); }
   bool lock(bool waitp) {
     bool locked = this->_Mutex._value.lock(waitp);
     if (locked)
