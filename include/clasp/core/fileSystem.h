@@ -36,6 +36,12 @@ THE SOFTWARE.
 #include <clasp/core/iterator.h>
 #include <clasp/core/pathname.fwd.h>
 
+template <> struct gctools::GCInfo<core::Path_O> {
+  static bool constexpr NeedsInitialization = true;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
 namespace core {
 
 SMART(Path);
