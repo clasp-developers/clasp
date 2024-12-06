@@ -102,8 +102,6 @@ template <class Proto> void safeRun(std::function<Proto> f) {
 namespace gctools {
 
 struct WeakObject {
-  WeakObject(){};
-
   virtual void* dependentPtr() const { return NULL; };
 };
 
@@ -124,6 +122,7 @@ struct weak_pad_s : public WeakObject {
 struct weak_pad1_s : public WeakObject {};
 
 template <class T, class U> struct BucketsBase : public WeakObject {
+  BucketsBase() = default;
   BucketsBase(int l)
       : _length(gctools::make_tagged_fixnum<core::Fixnum_I>(l)), _used(gctools::make_tagged_fixnum<core::Fixnum_I>(0)),
         _deleted(gctools::make_tagged_fixnum<core::Fixnum_I>(0)) {
@@ -132,9 +131,6 @@ template <class T, class U> struct BucketsBase : public WeakObject {
       this->bucket[i] = T((gctools::Tagged)gctools::tag_unbound<typename T::Type*>());
     }
   }
-
-  BucketsBase(){};
-  virtual ~BucketsBase(){};
 
   T& operator[](size_t idx) { return this->bucket[idx]; };
   typedef T value_type;
@@ -183,23 +179,6 @@ template <class T, class U> struct Buckets<T, U, WeakLinks> : public BucketsBase
   typedef typename BucketsBase<T, U>::value_type value_type;
   Buckets(int l) : BucketsBase<T, U>(l){};
   Buckets(snapshotSaveLoad::snapshot_save_load_init_s* isl) { isl->fill((void*)this); }
-  virtual ~Buckets() {
-#ifdef USE_BOEHM
-    for (size_t i(0), iEnd(this->length()); i < iEnd; ++i) {
-      if (!unboundOrDeletedOrSplatted(this->bucket[i])) {
-        //		    printf("%s:%d Buckets dtor idx: %zu unregister disappearing link @%p\n", __FILE__, __LINE__, i,
-        //&this->bucket[i].rawRef_());
-        int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket[i].rawRef_()));
-        if (!result) {
-          printf("%s:%d The link was not registered as a disappearing link!", __FILE__, __LINE__);
-          abort();
-        }
-      }
-    }
-#else
-    THROW_HARD_ERROR("Add support for other GCs");
-#endif
-  }
 
   void set(size_t idx, const value_type& val) {
     if (!(val.objectp() || val.deletedp() || val.unboundp())) {
@@ -240,7 +219,6 @@ template <class T, class U> struct Buckets<T, U, StrongLinks> : public BucketsBa
   typedef typename BucketsBase<T, U>::value_type value_type;
   Buckets(int l) : BucketsBase<T, U>(l){};
   Buckets(snapshotSaveLoad::snapshot_save_load_init_s* isl) { isl->fill((void*)this); }
-  virtual ~Buckets() {}
   void set(size_t idx, const value_type& val) {
     GCWEAK_LOG(fmt::format("Setting Buckets<T,U,StrongLinks> idx={}  address={}", idx, ((void*)(val.raw_()))));
     this->bucket[idx] = val;
@@ -253,9 +231,6 @@ typedef gctools::Buckets<BucketValueType, BucketValueType, gctools::StrongLinks>
 
 class WeakKeyHashTable {
   friend class core::WeakKeyHashTable_O;
-
-public:
-  WeakKeyHashTable(){};
 
 public:
   typedef BucketValueType value_type;
@@ -458,7 +433,6 @@ public:
 
 template <class T, class U> struct MappingBase : public WeakObject {
   MappingBase(const T& val) : bucket(val){};
-  virtual ~MappingBase(){};
   typedef T value_type;
   void* dependentPtr() const {
     if (this->dependent)
@@ -491,31 +465,11 @@ template <class T, class U> struct Mapping<T, U, WeakLinks> : public MappingBase
     THROW_HARD_ERROR("Add support for new GC");
 #endif
   };
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wexceptions"
-  virtual ~Mapping() {
-#if defined(USE_BOEHM)
-    GCTOOLS_ASSERT(this->bucket.objectp());
-    if (!unboundOrDeletedOrSplatted(this->bucket)) {
-      // printf("%s:%d Mapping unregister disappearing link\n", __FILE__, __LINE__);
-      int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket.rawRef_()));
-      if (!result) {
-        printf("%s:%d The link was not registered as a disappearing link!", __FILE__, __LINE__);
-        abort();
-      }
-    }
-#else
-    MISSING_GC_SUPPORT();
-#endif
-  }
-#pragma clang diagnostic pop
 };
 
 template <class T, class U> struct Mapping<T, U, StrongLinks> : public MappingBase<T, U> {
   typedef typename MappingBase<T, U>::value_type value_type;
   Mapping(const T& val) : MappingBase<T, U>(val){};
-  virtual ~Mapping() {}
 };
 
 typedef gctools::smart_ptr<core::T_O> MappingValueType;
