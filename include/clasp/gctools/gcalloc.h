@@ -53,8 +53,6 @@ static void initializeIfNeeded(smart_ptr<OT> sp) {
 }
 }; // namespace gctools
 
-#if defined(USE_BOEHM) || defined(USE_MPS) || defined(USE_MMTK)
-
 inline void* verify_alignment(void* ptr) {
   if ((((uintptr_t)ptr) & gctools::ptr_mask) != (uintptr_t)ptr) {
     printf("%s:%d The pointer at %p is not aligned properly\n", __FILE__, __LINE__, ptr);
@@ -657,5 +655,3 @@ public:
   }
 };
 }; // namespace gctools
-
-#endif // USE_BOEHM || USE_MPS || USE_MMTK

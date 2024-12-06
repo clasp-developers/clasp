@@ -799,9 +799,7 @@ struct Layout_code;
 extern Layout_code* get_stamp_layout_codes();
 }; // namespace gctools
 
-#if defined(USE_BOEHM) || defined(USE_MMTK)
 #define FRIEND_GC_SCANNER(nscl) friend gctools::Layout_code* gctools::get_stamp_layout_codes();
-#endif
 
 namespace core {
 
