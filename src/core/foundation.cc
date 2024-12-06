@@ -329,11 +329,6 @@ void assertion_failed(char const* expr, char const* function, char const* file, 
 }
 }; // namespace boost
 
-namespace llvm_interface {
-
-::llvm_interface::llvmAddSymbolCallbackType addSymbol = NULL;
-};
-
 NOINLINE void dbg_hook(const char* error) {
   // Do nothing
   // set a break point here to catch every error
