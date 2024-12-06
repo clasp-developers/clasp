@@ -803,8 +803,6 @@ extern Layout_code* get_stamp_layout_codes();
 
 namespace core {
 
-#define _NEW_(x) (new x)
-
 class DebugStream;
 
 /* Callbacks that initialize the Lisp environment have this structure*/
@@ -839,10 +837,6 @@ T_sp lisp_from_void_ptr(void* p);
 uint64_t lisp_nameword(T_sp name);
 
 List_sp lisp_copy_default_special_bindings();
-/*! Write characters to the stream */
-#if 0
-  gc::GCStack &lisp_threadLocalStack();
-#endif
 
 LispPtr lisp_fromObject(T_sp obj);
 string lisp_currentPackageName();
@@ -988,33 +982,9 @@ namespace core {
 
 typedef unsigned char ubyte;
 
-/* Callbacks that return a boolean value have this structure */
-typedef bool (*BoolReturnCallback)(LispPtr);
-
-/* Callbacks that return an integer value have this structure */
-typedef int (*IntReturnCallback)(LispPtr);
-
-/* Callbacks that return an object have this structure */
-typedef T_sp (*ObjectReturnCallback)(LispPtr);
-
-/*
- * These callback types are used to redirect screen output depending if we are
- * on a console or using WxWidgets
- */
-
-typedef void (*PrintvWriteCallback)(const char* outputBuffer);
-typedef void (*PrintvWriteCharCallback)(char outputChar);
-typedef void (*PrintvFlushCallback)();
-
 const char* trimSourceFilePathName(const char* fullPathName);
 
 }; // namespace core
-
-namespace llvm_interface {
-
-typedef void (*llvmAddSymbolCallbackType)(const core::Symbol_sp& sym);
-extern llvmAddSymbolCallbackType addSymbol;
-} // namespace llvm_interface
 
 #include <clasp/core/clasp_gmpxx.h>
 
