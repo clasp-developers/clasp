@@ -78,10 +78,6 @@ THE SOFTWARE.
 
 #include <functional>
 
-namespace core {
-string lisp_rep(T_sp obj);
-};
-
 namespace gctools {
 
 #if defined(USE_BOEHM) && !defined(CLASP_THREADS)
