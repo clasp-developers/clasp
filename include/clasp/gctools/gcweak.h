@@ -95,13 +95,7 @@ template <class Proto> void* wrapRun(void* wrappedFn) {
 }
 
 template <class Proto> void safeRun(std::function<Proto> f) {
-#ifdef DEBUG_GCWEAK
-  printf("Entered safeRun\n");
-#endif
   call_with_alloc_lock(wrapRun<Proto>, reinterpret_cast<void*>(&f));
-#ifdef DEBUG_GCWEAK
-  printf("Leaving safeRun\n");
-#endif
 };
 }; // namespace gctools
 
@@ -253,11 +247,7 @@ template <class T, class U> struct Buckets<T, U, StrongLinks> : public BucketsBa
   }
 };
 
-#ifdef USE_BACKCASTABLE_POINTERS
-typedef gctools::tagged_backcastable_base_ptr<core::T_O> BucketValueType;
-#else
 typedef gctools::smart_ptr<core::T_O> BucketValueType;
-#endif
 typedef gctools::Buckets<BucketValueType, BucketValueType, gctools::WeakLinks> WeakBucketsObjectType;
 typedef gctools::Buckets<BucketValueType, BucketValueType, gctools::StrongLinks> StrongBucketsObjectType;
 
@@ -528,11 +518,7 @@ template <class T, class U> struct Mapping<T, U, StrongLinks> : public MappingBa
   virtual ~Mapping() {}
 };
 
-#ifdef USE_BACKCASTABLE_POINTERS
-typedef gctools::tagged_backcastable_base_ptr<core::T_O> MappingValueType;
-#else
 typedef gctools::smart_ptr<core::T_O> MappingValueType;
-#endif
 typedef gctools::Mapping<BucketValueType, BucketValueType, gctools::WeakLinks> WeakMappingObjectType;
 typedef gctools::Mapping<BucketValueType, BucketValueType, gctools::StrongLinks> StrongMappingObjectType;
 
@@ -555,16 +541,3 @@ struct TaggedCast<gctools::BucketsBase<gctools::smart_ptr<core::T_O>, gctools::s
 };
 
 }; // namespace gctools
-
-#ifdef USE_MPS
-extern "C" {
-
-mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
-mps_addr_t weak_obj_skip(mps_addr_t base);
-mps_addr_t weak_obj_skip(mps_addr_t base);
-mps_addr_t weak_obj_skip_debug_wrong_size(mps_addr_t client, size_t allocate_size, size_t skip_size);
-void weak_obj_fwd(mps_addr_t old, mps_addr_t newv);
-mps_addr_t weak_obj_isfwd(mps_addr_t addr);
-void weak_obj_pad(mps_addr_t addr, size_t size);
-};
-#endif
