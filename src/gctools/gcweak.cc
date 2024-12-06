@@ -202,10 +202,10 @@ int WeakKeyHashTable::rehash_not_safe(const value_type& key, size_t& key_bucket)
       if (!(*newHashTable._Keys)[b].unboundp()) {
         printf("%s:%d About to copy key: %12p   at index %zu    to newHashTable at index: %zu\n", __FILE__, __LINE__,
                old_key.raw_(), i, b);
-        printf("Key = %s\n", core::lisp_rep(old_key).c_str());
-        printf("    original value@%p = %s\n", (*this->_Values)[i].raw_(), core::lisp_rep((*this->_Values)[i]).c_str());
+        printf("Key = %s\n", core::_rep_(old_key).c_str());
+        printf("    original value@%p = %s\n", (*this->_Values)[i].raw_(), core::_rep_((*this->_Values)[i]).c_str());
         printf("newHashTable value@%p = %s\n", (*newHashTable._Values)[b].raw_(),
-               core::lisp_rep((*newHashTable._Values)[b]).c_str());
+               core::_rep_((*newHashTable._Values)[b]).c_str());
         printf("--------- Original table\n");
         printf("%s\n", this->dump("Original").c_str());
         printf("--------- New table\n");
@@ -580,9 +580,9 @@ size_t StrongKeyHashTable::rehash_not_safe(size_t newLength, const value_type &k
       if ( !(*newHashTable._Keys)[b].unboundp() ) {
         printf("%s:%d About to copy key: %12p   at index %zu    to newHashTable at index: %zu\n", __FILE__, __LINE__,
                old_key.raw_(), i, b );
-        printf("Key = %s\n", core::lisp_rep(old_key).c_str());
-        printf("    original value@%p = %s\n", (*this->_Values)[i].raw_(), core::lisp_rep((*this->_Values)[i]).c_str());
-        printf("newHashTable value@%p = %s\n", (*newHashTable._Values)[b].raw_(), core::lisp_rep((*newHashTable._Values)[b]).c_str());
+        printf("Key = %s\n", core::_rep_(old_key).c_str());
+        printf("    original value@%p = %s\n", (*this->_Values)[i].raw_(), core::_rep_((*this->_Values)[i]).c_str());
+        printf("newHashTable value@%p = %s\n", (*newHashTable._Values)[b].raw_(), core::_rep_((*newHashTable._Values)[b]).c_str());
         printf("--------- Original table\n");
         printf("%s\n", this->dump("Original").c_str());
         printf("--------- New table\n");
