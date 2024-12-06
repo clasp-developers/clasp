@@ -456,22 +456,14 @@ CL_DEFUN void gctools__save_lisp_and_continue(core::T_sp filename, core::T_sp ex
 namespace gctools {
 /*! Call finalizer_callback with no arguments when object is finalized.*/
 DOCGROUP(clasp);
-CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback) {
-  // printf("%s:%d making a finalizer for %p calling %p\n", __FILE__, __LINE__, (void*)object.tagged_(),
-  // (void*)finalizer_callback.tagged_());
+CL_DEFUN void gctools__finalize(core::T_sp object, core::Function_sp finalizer_callback) {
   WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
   core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
   core::List_sp orig_finalizers = ht->gethash(object, nil<core::T_O>());
   core::List_sp finalizers = core::Cons_O::create(finalizer_callback, orig_finalizers);
-  //  printf("%s:%d      Adding finalizer to list new length --> %lu   list head %p\n", __FILE__, __LINE__,
-  //  core::cl__length(finalizers), (void*)finalizers.tagged_());
   ht->hash_table_setf_gethash(object, finalizers);
   // Register the finalizer with the GC
-#if defined(USE_BOEHM)
-  boehm_set_finalizer_list(object.tagged_(), finalizers.tagged_());
-#elif defined(USE_MMTK)
-  MISSING_GC_SUPPORT();
-#endif
+  set_finalizer_list(object, finalizers);
 };
 
 DOCGROUP(clasp);
@@ -482,26 +474,17 @@ CL_DEFUN core::T_sp gctools__finalizers(core::T_sp object) {
 }
 
 DOCGROUP(clasp);
-CL_DEFUN int gctools__invoke_finalizers() {
-#if defined(USE_BOEHM)
-  return GC_invoke_finalizers();
-#else
-  MISSING_GC_SUPPORT();
-#endif
+CL_DEFUN void gctools__invoke_finalizers() {
+  invoke_finalizers();
 }
 
 DOCGROUP(clasp);
 CL_DEFUN void gctools__definalize(core::T_sp object) {
-  //  printf("%s:%d erasing finalizers for %p\n", __FILE__, __LINE__, (void*)object.tagged_());
   WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
   core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
   if (ht->gethash(object))
     ht->remhash(object);
-#if defined(USE_BOEHM)
-  boehm_clear_finalizer_list(object.tagged_());
-#else
-  MISSING_GC_SUPPORT();
-#endif
+  clear_finalizer_list(object);
 }
 
 }; // namespace gctools
