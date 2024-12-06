@@ -501,13 +501,8 @@ CL_DEFUN core::T_sp gctools__vtable_address(core::General_sp generalObject) {
 
 DOCGROUP(clasp);
 CL_DEFUN void gctools__garbage_collect() {
-#if defined(USE_BOEHM)
-  GC_gcollect();
-  GC_invoke_finalizers();
-#else
-  MISSING_GC_SUPPORT();
-#endif
-  //        printf("Garbage collection done\n");
+  collect_garbage();
+  invoke_finalizers();
 };
 
 DOCGROUP(clasp);
