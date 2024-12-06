@@ -123,9 +123,7 @@ struct weak_pad1_s : public WeakObject {};
 
 template <class T, class U> struct BucketsBase : public WeakObject {
   BucketsBase() = default;
-  BucketsBase(int l)
-      : _length(gctools::make_tagged_fixnum<core::Fixnum_I>(l)), _used(gctools::make_tagged_fixnum<core::Fixnum_I>(0)),
-        _deleted(gctools::make_tagged_fixnum<core::Fixnum_I>(0)) {
+  BucketsBase(int l) : _length(l), _used(0), _deleted(0) {
     GCWEAK_LOG(fmt::format("Created BucketsBase with length: {}", this->length()));
     for (size_t i(0); i < l; ++i) {
       this->bucket[i] = T((gctools::Tagged)gctools::tag_unbound<typename T::Type*>());
@@ -136,9 +134,9 @@ template <class T, class U> struct BucketsBase : public WeakObject {
   typedef T value_type;
   typedef gctools::tagged_pointer<BucketsBase<U, T>> dependent_type;
   dependent_type dependent;                    /* the dependent object */
-  gctools::smart_ptr<core::Fixnum_I> _length;  /* number of buckets (tagged) */
-  gctools::smart_ptr<core::Fixnum_I> _used;    /* number of buckets in use (tagged) */
-  gctools::smart_ptr<core::Fixnum_I> _deleted; /* number of deleted buckets (tagged) */
+  size_t _length;                              /* number of buckets */
+  size_t _used;                                /* number of buckets in use */
+  size_t _deleted;                             /* number of deleted buckets */
   T bucket[0];                                 /* hash buckets */
 
   void* dependentPtr() const {
@@ -147,21 +145,12 @@ template <class T, class U> struct BucketsBase : public WeakObject {
     return NULL;
   };
 
-  int length() const {
-    GCTOOLS_ASSERT(this->_length.fixnump());
-    return this->_length.unsafe_fixnum();
-  };
-  void setLength(int l) { this->_length = gctools::make_tagged_fixnum<core::Fixnum_I>(l); };
-  int used() const {
-    GCTOOLS_ASSERT(this->_used.fixnump());
-    return this->_used.unsafe_fixnum();
-  };
-  void setUsed(int val) { this->_used = gctools::make_tagged_fixnum<core::Fixnum_I>(val); };
-  int deleted() const {
-    GCTOOLS_ASSERT(this->_deleted.fixnump());
-    return this->_deleted.unsafe_fixnum();
-  };
-  void setDeleted(int val) { this->_deleted = gctools::make_tagged_fixnum<core::Fixnum_I>(val); };
+  size_t length() const { return _length; }
+  void setLength(size_t l) { _length = l; }
+  int used() const { return _used; }
+  void setUsed(size_t val) { _used = val; }
+  int deleted() const { return _deleted; }
+  void setDeleted(size_t val) { _deleted = val; }
 };
 
 template <class T, class U, class Link> struct Buckets;
