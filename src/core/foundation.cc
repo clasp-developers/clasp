@@ -829,8 +829,6 @@ T_sp lisp_true() { return _lisp->_true(); }
 
 T_sp lisp_false() { return _lisp->_false(); }
 
-string lisp_rep(T_sp obj) { return _rep_(obj); }
-
 bool lisp_CoreBuiltInClassesInitialized() { return _lisp->CoreBuiltInClassesInitialized(); }
 
 bool lisp_BuiltInClassesInitialized() { return _lisp->BuiltInClassesInitialized(); }

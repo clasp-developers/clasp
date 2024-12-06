@@ -953,8 +953,6 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind, Symbol_sp sym, const string& p
 bool lisp_debugIsOn(const char* fileName, uint debugFlag = DEBUG_CPP_FUNCTION);
 
 DebugStream* lisp_debugLog();
-/*! Return a string representation of the object */
-string lisp_rep(T_sp obj);
 Symbol_sp lisp_internKeyword(const string& name);
 Symbol_sp lisp_intern(const string& name);
 Symbol_sp lisp_intern(const string& symbolName, const string& packageName);
