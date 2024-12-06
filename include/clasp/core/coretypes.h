@@ -63,7 +63,6 @@ class Stream_O;
 class SourcePosInfo_O;
 class FileScope_O;
 class WeakKeyHashTable_O;
-class StrongKeyHashTable_O;
 class DynamicScopeManager;
 
 class Function_O;
