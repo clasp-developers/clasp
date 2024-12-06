@@ -60,6 +60,8 @@ void boehm_release() {
 
 namespace gctools {
 
+void collect_garbage() { GC_gcollect(); }
+
 void clasp_warn_proc(char* msg, GC_word arg) {
 #if 0
   // This warning is annoying and comes up a lot but doesn't cause problems except for when building ironclad
