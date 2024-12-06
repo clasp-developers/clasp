@@ -1,19 +1,5 @@
 /* -^- */
-int gcFunctions_top;
 #include <clasp/core/foundation.h>
-
-#include <boost/mpl/list.hpp>
-#ifdef USE_BOEHM
-#include "src/bdwgc/include/gc_mark.h"
-#endif
-int gcFunctions_before;
-#ifdef USE_MPS
-extern "C" {
-#include <clasp/mps/code/mpscamc.h>
-};
-#endif
-
-int gcFunctions_after;
 
 #include <stdint.h>
 #include <unistd.h>
