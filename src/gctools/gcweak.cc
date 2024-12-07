@@ -103,7 +103,6 @@ void WeakKeyHashTable::setupThreadSafeHashTable() {
 }
 
 uint WeakKeyHashTable::sxhashKey(const value_type& key) {
-  GCWEAK_LOG(fmt::format("Calling lisp_hash for key: {}", (void*)lisp_badge(key)));
   return core::lisp_hash(static_cast<uintptr_t>(gctools::lisp_badge(key)));
 }
 
@@ -111,40 +110,19 @@ uint WeakKeyHashTable::sxhashKey(const value_type& key) {
           Return 1 if the element is found or an unbound or deleted entry is found.
           Return the entry index in (b)
         */
-size_t WeakKeyHashTable::find_no_lock(gctools::tagged_pointer<KeyBucketsType> keys, const value_type& key, size_t& b
-#ifdef DEBUG_FIND
-                                      ,
-                                      bool debugFind, stringstream* reportP
-#endif
-) {
+size_t WeakKeyHashTable::find_no_lock(gctools::tagged_pointer<KeyBucketsType> keys, const value_type& key, size_t& b) {
   unsigned long i, h, probe;
   unsigned long l = keys->length() - 1;
   int result = 0;
   h = WeakKeyHashTable::sxhashKey(key);
 
-#ifdef DEBUG_FIND
-  if (debugFind) {
-    *reportP << __FILE__ << ":" << __LINE__ << " starting find key = " << (void*)(key.raw_()) << " h = " << h << " l = " << l
-             << std::endl;
-  }
-#endif
   probe = (h >> 8) | 1;
   h &= l;
   i = h;
   do {
     value_type& k = (*keys)[i];
-#ifdef DEBUG_FIND
-    if (debugFind) {
-      *reportP << "  i = " << i << "   k = " << (void*)(k.raw_()) << std::endl;
-    }
-#endif
     if (k.unboundp() || k == key) {
       b = i;
-#ifdef DEBUG_FIND
-      if (debugFind && k != key) {
-        *reportP << "find  returning 1 b= " << b << " k = " << k.raw_() << std::endl;
-      }
-#endif
       return 1;
     }
 #if defined(USE_BOEHM)
@@ -178,36 +156,19 @@ int WeakKeyHashTable::rehash_not_safe(const value_type& key, size_t& key_bucket)
     SIMPLE_ERROR("Illegal rehash size {}", _rep_(this->_RehashSize));
   }
   int result;
-  GCWEAK_LOG(fmt::format("entered rehash newLength = {}", newLength));
   size_t i, length;
   // buckets_t new_keys, new_values;
   result = 0;
   length = this->_Keys->length();
   MyType newHashTable(newLength, this->_RehashSize, this->_RehashThreshold);
   newHashTable.initialize();
-  // new_keys = make_buckets(newLength, this->key_ap);
-  // new_values = make_buckets(newLength, this->value_ap);
-  // new_keys->dependent = new_values;
-  // new_values->dependent = new_keys;
   for (i = 0; i < length; ++i) {
     value_type& old_key = (*this->_Keys)[i];
     if (!old_key.unboundp() && !old_key.deletedp() && old_key.raw_()) {
       size_t found;
       size_t b;
       found = WeakKeyHashTable::find_no_lock(newHashTable._Keys, old_key, b);
-      GCTOOLS_ASSERT(found); // assert(found);            /* new table shouldn't be full */
-      if (!(*newHashTable._Keys)[b].unboundp()) {
-        printf("%s:%d About to copy key: %12p   at index %zu    to newHashTable at index: %zu\n", __FILE__, __LINE__,
-               old_key.raw_(), i, b);
-        printf("Key = %s\n", core::_rep_(old_key).c_str());
-        printf("    original value@%p = %s\n", (*this->_Values)[i].raw_(), core::_rep_((*this->_Values)[i]).c_str());
-        printf("newHashTable value@%p = %s\n", (*newHashTable._Values)[b].raw_(),
-               core::_rep_((*newHashTable._Values)[b]).c_str());
-        printf("--------- Original table\n");
-        printf("%s\n", this->dump("Original").c_str());
-        printf("--------- New table\n");
-        printf("%s\n", newHashTable.dump("Copy").c_str());
-      }
+      GCTOOLS_ASSERT(found); /* new table shouldn't be full */
       GCTOOLS_ASSERT((*newHashTable._Keys)[b].unboundp()); /* shouldn't be in new table */
       newHashTable._Keys->set(b, old_key);
       (*newHashTable._Values)[b] = (*this->_Values)[i];
@@ -233,88 +194,21 @@ int WeakKeyHashTable::rehash(const value_type& key, size_t& key_bucket) {
 /*! trySet returns 0 only if there is no room in the hash-table */
 int WeakKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
   HT_WRITE_LOCK(this);
-  GCWEAK_LOG(fmt::format("Entered trySet with key {}", tkey.raw_()));
   size_t b;
   if (tkey == value) {
     value = gctools::make_tagged_same_as_key<core::T_O>();
   }
   value_type key(tkey);
-#ifdef DEBUG_TRYSET
-  stringstream report;
-  report << "About to trySet with the key " << tkey.raw_() << std::endl;
-  report << this->dump("trySet-incoming WeakKeyHashTable: ") << std::endl;
-  // Count the number of times the key is in the table
-  int alreadyThere = 0;
-  int firstOtherIndex = 0;
-  for (int i(0); i < (*this->_Keys).length(); ++i) {
-    if ((*this->_Keys)[i] == tkey) {
-      firstOtherIndex = i;
-      ++alreadyThere;
-    }
-  }
-#endif
   size_t result = WeakKeyHashTable::find_no_lock(this->_Keys, key, b);
-  if ((!result || (*this->_Keys)[b] != key)) {
-    GCWEAK_LOG(fmt::format("then case - Returned from find with result = {}     (*this->_Keys)[b={}] = {}", result, b,
-                           (*this->_Keys)[b].raw_()));
-#ifdef DEBUG_TRYSET
-    if (alreadyThere) {
-      report << "Could not find the key @" << key.raw_() << std::endl;
-      if (!result) {
-        report << " because find return result = " << result
-               << " - which means that the hash table was searched and the key was not found before the hash list was exhausted"
-               << std::endl;
-      }
-      if ((*this->_Keys)[b] != key) {
-        report << " because find hit an empty (unbound or deleted) slot before it found the key" << std::endl;
-      }
-      report << " ...  about to check if mps_ld_isstale" << std::endl;
-    }
-#endif
-
-  } else {
-    GCWEAK_LOG(fmt::format("else case - Returned from find with result = {}     (*this->_Keys)[b={}] = {}", result, b,
-                           (*this->_Keys)[b].raw_()));
-    GCWEAK_LOG(fmt::format("Calling mps_ld_add for key: {}", (void*)key.raw_()));
-  }
   if ((*this->_Keys)[b].unboundp()) {
-    GCWEAK_LOG(fmt::format("Writing key over unbound entry"));
     this->_Keys->set(b, key);
     (*this->_Keys).setUsed((*this->_Keys).used() + 1);
-#ifdef DEBUG_GCWEAK
-    printf("%s:%d key was unboundp at %zu  used = %d\n", __FILE__, __LINE__, b, this->_Keys->used());
-#endif
   } else if ((*this->_Keys)[b].deletedp()) {
-    GCWEAK_LOG(fmt::format("Writing key over deleted entry"));
     this->_Keys->set(b, key);
     GCTOOLS_ASSERT((*this->_Keys).deleted() > 0);
     (*this->_Keys).setDeleted((*this->_Keys).deleted() - 1);
-#ifdef DEBUG_GCWEAK
-    printf("%s:%d key was deletedp at %zu  deleted = %d\n", __FILE__, __LINE__, b, (*this->_Keys).deleted());
-#endif // DEBUG_GCWEAK
   }
-  GCWEAK_LOG(fmt::format("Setting value at b = {}", b));
   (*this->_Values).set(b, value_type(value));
-#ifdef DEBUG_TRYSET
-  // Count the number of times the key is in the table
-  int count = 0;
-  int otherIndex;
-  for (int i(0); i < (*this->_Keys).length(); ++i) {
-    if ((*this->_Keys)[i] == tkey) {
-      if (i != b) {
-        otherIndex = i;
-      }
-      ++count;
-    }
-  }
-  if (count > 1) {
-    printf("Found %d duplicate keys %p in hash table\n", count, tkey.raw_());
-    printf("Log of trySet action:\n%s\n", report.str().c_str());
-    printf("The new key is at %zu and another instance of the key is at %d\n", b, otherIndex);
-    printf("%s\n", this->dump("Final trySet table").c_str());
-  }
-#endif
-  GCWEAK_LOG(fmt::format("Leaving trySet"));
   return 1;
 }
 
@@ -350,12 +244,9 @@ core::T_mv WeakKeyHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue) {
     value_type key(tkey);
     size_t pos;
     size_t result = gctools::WeakKeyHashTable::find_no_lock(this->_Keys, key, pos);
-    if (result) { // WeakKeyHashTable::find(this->_Keys,key,false,pos)) { //buckets_find(tbl, this->keys, key, NULL, &b)) {
+    if (result) {
       value_type& k = (*this->_Keys)[pos];
-      GCWEAK_LOG(fmt::format("gethash find successful pos = {}  k= {} k.unboundp()={} k.base_ref().deletedp()={} k.NULLp()={}", pos,
-                             k.raw_(), k.unboundp(), k.deletedp(), (bool)k));
       if (k.raw_() && !k.unboundp() && !k.deletedp()) {
-        GCWEAK_LOG(fmt::format("Returning success!"));
         core::T_sp value = smart_ptr<core::T_O>((*this->_Values)[pos]);
         if (value.same_as_keyP()) {
           value = smart_ptr<core::T_O>(k);
@@ -363,7 +254,6 @@ core::T_mv WeakKeyHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue) {
         result_mv = Values(value, core::lisp_true());
         return;
       }
-      GCWEAK_LOG(fmt::format("Falling through"));
     }
     result_mv = Values(defaultValue, nil<core::T_O>());
     return;
@@ -384,22 +274,22 @@ void WeakKeyHashTable::set(core::T_sp key, core::T_sp value) {
   });
 }
 
-#define HASH_TABLE_ITER(table_type, tablep, key, value)                                                                            \
-  gctools::tagged_pointer<table_type::KeyBucketsType> iter_Keys;                                                                   \
-  gctools::tagged_pointer<table_type::ValueBucketsType> iter_Values;                                                               \
-  core::T_sp key;                                                                                                                  \
-  core::T_sp value;                                                                                                                \
-  {                                                                                                                                \
-    HT_READ_LOCK(tablep);                                                                                                          \
-    iter_Keys = tablep->_Keys;                                                                                                     \
-    iter_Values = tablep->_Values;                                                                                                 \
-  }                                                                                                                                \
-  for (size_t it(0), itEnd(iter_Keys->length()); it < itEnd; ++it) {                                                               \
-    {                                                                                                                              \
-      HT_READ_LOCK(tablep);                                                                                                        \
-      key = (*iter_Keys)[it];                                                                                                      \
-      value = (*iter_Values)[it];                                                                                                  \
-    }                                                                                                                              \
+#define HASH_TABLE_ITER(table_type, tablep, key, value)              \
+  gctools::tagged_pointer<table_type::KeyBucketsType> iter_Keys;     \
+  gctools::tagged_pointer<table_type::ValueBucketsType> iter_Values; \
+  core::T_sp key;                                                    \
+  core::T_sp value;                                                  \
+  {                                                                  \
+    HT_READ_LOCK(tablep);                                            \
+    iter_Keys = tablep->_Keys;                                       \
+    iter_Values = tablep->_Values;                                   \
+  }                                                                  \
+  for (size_t it(0), itEnd(iter_Keys->length()); it < itEnd; ++it) { \
+    {                                                                \
+      HT_READ_LOCK(tablep);                                          \
+      key = (*iter_Keys)[it];                                        \
+      value = (*iter_Values)[it];                                    \
+    }                                                                \
     if (key.raw_() && !key.unboundp() && !key.deletedp())
 
 #define HASH_TABLE_ITER_END }
