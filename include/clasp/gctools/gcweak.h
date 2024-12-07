@@ -310,9 +310,8 @@ public:
   void maphashFn(core::T_sp fn);
   bool remhash(core::T_sp tkey);
   void clrhash();
+  core::Vector_sp pairs() const;
 };
-
-core::Vector_sp weak_key_hash_table_pairs(const gctools::WeakKeyHashTable& ht);
 
 // ======================================================================
 // ----------------------------------------------------------------------
