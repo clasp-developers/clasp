@@ -210,8 +210,7 @@ CL_DEFUN Vector_sp core__hash_table_pairs(HashTableBase_sp hash_table_base) {
     return keyvalues;
   } else if (gc::IsA<WeakKeyHashTable_sp>(hash_table_base)) {
     WeakKeyHashTable_sp hash_table = gc::As_unsafe<WeakKeyHashTable_sp>(hash_table_base);
-    gctools::WeakKeyHashTable& wkht = hash_table->_HashTable;
-    return gctools::weak_key_hash_table_pairs(wkht);
+    return hash_table->_HashTable.pairs();
   }
   TYPE_ERROR(hash_table_base, Cons_O::createList(cl::_sym_or, cl::_sym_HashTable_O, core::_sym_WeakKeyHashTable_O));
 }
