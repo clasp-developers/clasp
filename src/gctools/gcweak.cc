@@ -347,15 +347,14 @@ void WeakKeyHashTable::clrhash() {
   });
 };
 
-DOCGROUP(clasp);
-CL_DEFUN core::Vector_sp weak_key_hash_table_pairs(const gctools::WeakKeyHashTable& ht) {
-  size_t len = (*ht._Keys).length();
+core::Vector_sp WeakKeyHashTable::pairs() const {
+  size_t len = (*_Keys).length();
   core::ComplexVector_T_sp keyvalues = core::ComplexVector_T_O::make(len * 2, nil<core::T_O>(), core::make_fixnum(0));
-  HT_READ_LOCK(&ht);
+  HT_READ_LOCK(this);
   for (size_t i(0); i < len; ++i) {
-    if ((*ht._Keys)[i].raw_() && !(*ht._Keys)[i].unboundp() && !(*ht._Keys)[i].deletedp()) {
-      keyvalues->vectorPushExtend((*ht._Keys)[i], 16);
-      keyvalues->vectorPushExtend((*ht._Values)[i], 16);
+    if ((*_Keys)[i].raw_() && !(*_Keys)[i].unboundp() && !(*_Keys)[i].deletedp()) {
+      keyvalues->vectorPushExtend((*_Keys)[i], 16);
+      keyvalues->vectorPushExtend((*_Values)[i], 16);
     }
   }
   return keyvalues;
