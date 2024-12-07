@@ -69,12 +69,6 @@ THE SOFTWARE.
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-// #define DEBUG_GCWEAK
-#ifdef DEBUG_GCWEAK
-#define GCWEAK_LOG(x) printf("%s:%d %s\n", __FILE__, __LINE__, (x).str().c_str())
-#else
-#define GCWEAK_LOG(x)
-#endif
 
 #include <functional>
 
@@ -126,7 +120,6 @@ struct weak_pad1_s : public WeakObject {};
 template <class T, class U> struct BucketsBase : public WeakObject {
   BucketsBase() = default;
   BucketsBase(int l) : _length(l), _used(0), _deleted(0) {
-    GCWEAK_LOG(fmt::format("Created BucketsBase with length: {}", this->length()));
     for (size_t i(0); i < l; ++i) {
       this->bucket[i] = T((gctools::Tagged)gctools::tag_unbound<typename T::Type*>());
     }
@@ -199,7 +192,6 @@ template <class T, class U> struct Buckets<T, U, WeakLinks> : public BucketsBase
     if (base)
       GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket[idx].rawRef_()), base);
 #elif defined(USE_MPS)
-    GCWEAK_LOG(fmt::format("Setting Buckets<T,U,WeakLinks> idx={}  address={}", idx, ((void*)(val.raw_()))));
     this->bucket[idx] = val;
 #elif defined(USE_MMTK)
     THROW_HARD_ERROR("Add support for mmtk");
@@ -212,7 +204,6 @@ template <class T, class U> struct Buckets<T, U, StrongLinks> : public BucketsBa
   Buckets(int l) : BucketsBase<T, U>(l){};
   Buckets(snapshotSaveLoad::snapshot_save_load_init_s* isl) { isl->fill((void*)this); }
   void set(size_t idx, const value_type& val) {
-    GCWEAK_LOG(fmt::format("Setting Buckets<T,U,StrongLinks> idx={}  address={}", idx, ((void*)(val.raw_()))));
     this->bucket[idx] = val;
   }
 };
@@ -257,12 +248,7 @@ public:
           Return 1 if the element is found or an unbound or deleted entry is found.
           Return the entry index in (b)
         */
-  static size_t find_no_lock(gctools::tagged_pointer<KeyBucketsType> keys, const value_type& key, size_t& b
-#ifdef DEBUG_FIND
-                             ,
-                             bool debugFind = false, stringstream* reportP = NULL
-#endif
-  );
+  static size_t find_no_lock(gctools::tagged_pointer<KeyBucketsType> keys, const value_type& key, size_t& b);
 
 public:
   void setupThreadSafeHashTable();
