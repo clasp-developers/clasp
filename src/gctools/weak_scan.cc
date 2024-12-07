@@ -70,32 +70,23 @@ ADDR_T WEAK_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
 
 #ifdef WEAK_SKIP
 ADDR_T WEAK_SKIP(ADDR_T client, bool dbg, size_t& objectSize) {
-  GCWEAK_LOG(fmt::format("weak_obj_skip client={}", ((void*)client)));
   const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s*>(WEAK_PTR_TO_HEADER_PTR(client));
   if (header._badge_stamp_wtag_mtag.weakObjectP()) {
     switch (header._badge_stamp_wtag_mtag._value) {
     case gctools::Header_s::WeakBucketKind: {
       gctools::WeakBucketsObjectType* obj = reinterpret_cast<gctools::WeakBucketsObjectType*>(client);
-      GCWEAK_LOG(fmt::format("WeakBucketKind sizeof(WeakBucketsObjectType)={} + sizeof(typename "
-                             "WeakBucketsObjectType::value_type)={} * obj->length()={}",
-                             sizeof(WeakBucketsObjectType), sizeof(typename WeakBucketsObjectType::value_type), obj->length()));
       objectSize = gctools::AlignUp(sizeof(gctools::WeakBucketsObjectType) +
                                     sizeof(typename gctools::WeakBucketsObjectType::value_type) * obj->length());
     } break;
     case gctools::Header_s::StrongBucketKind: {
       gctools::StrongBucketsObjectType* obj = reinterpret_cast<gctools::StrongBucketsObjectType*>(client);
-      GCWEAK_LOG(fmt::format("StrongBucketKind sizeof(StrongBucketsObjectType)={} + sizeof(typename "
-                             "StrongBucketsObjectType::value_type)={} * obj->length()={}",
-                             sizeof(StrongBucketsObjectType), sizeof(typename StrongBucketsObjectType::value_type), obj->length()));
       objectSize = gctools::AlignUp(sizeof(gctools::StrongBucketsObjectType) +
                                     sizeof(typename gctools::StrongBucketsObjectType::value_type) * obj->length());
     } break;
     case gctools::Header_s::WeakMappingKind: {
-      GCWEAK_LOG(fmt::format("WeakMappingKind"));
       objectSize = gctools::AlignUp(sizeof(gctools::WeakMappingObjectType));
     } break;
     case gctools::Header_s::StrongMappingKind: {
-      GCWEAK_LOG(fmt::format("StrongMappingKind"));
       objectSize = gctools::AlignUp(sizeof(gctools::StrongMappingObjectType));
     } break;
     }
@@ -103,7 +94,6 @@ ADDR_T WEAK_SKIP(ADDR_T client, bool dbg, size_t& objectSize) {
     THROW_HARD_ERROR("Handle weak_obj_skip other weak kind {}", header._badge_stamp_wtag_mtag._value);
   }
   client = (ADDR_T)((char*)client + objectSize + sizeof(gctools::Header_s));
-  GCWEAK_LOG(fmt::format("weak_obj_skip returning client={}", ((void*)client)));
   return client;
 };
 #endif
