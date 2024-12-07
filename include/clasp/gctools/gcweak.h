@@ -88,15 +88,17 @@ inline void call_with_alloc_lock(fn_type fn, void* client_data) { fn(client_data
 
 #endif
 
-template <class Proto> void* wrapRun(void* wrappedFn) {
-  std::function<Proto>* fn = reinterpret_cast<std::function<Proto>*>(wrappedFn);
-  (*fn)();
-  return NULL;
+template <class F> requires std::invocable<F>
+static void* wrapRun(void* f) {
+  F* gf = (F*)f;
+  (*gf)();
+  return nullptr;
 }
 
-template <class Proto> void safeRun(std::function<Proto> f) {
-  call_with_alloc_lock(wrapRun<Proto>, reinterpret_cast<void*>(&f));
-};
+template <class F> requires std::invocable<F>
+void safeRun(F&& f) {
+  call_with_alloc_lock(wrapRun<F>, (void*)&f);
+}
 }; // namespace gctools
 
 namespace gctools {
@@ -294,13 +296,13 @@ public:
 
   bool fullp() const {
     bool fp;
-    safeRun<void()>([&fp, this]() -> void { fp = (*this->_Keys).used() >= (*this->_Keys).length() / 2; });
+    safeRun([&fp, this]() { fp = (*this->_Keys).used() >= (*this->_Keys).length() / 2; });
     return fp;
   }
 
   int tableSize() const {
     int result;
-    safeRun<void()>([&result, this]() -> void {
+    safeRun([&result, this]() {
       size_t used, deleted;
       used = this->_Keys->used();
       deleted = this->_Keys->deleted();
