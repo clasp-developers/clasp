@@ -160,12 +160,12 @@ struct HashTableReadLock {
   const HashTable_O* _hashTable;
   HashTableReadLock(const HashTable_O* ht) : _hashTable(ht) {
     if (this->_hashTable->_Mutex) {
-      this->_hashTable->_Mutex->shared_lock();
+      this->_hashTable->_Mutex->lock_shared();
     }
   }
   ~HashTableReadLock() {
     if (this->_hashTable->_Mutex) {
-      this->_hashTable->_Mutex->shared_unlock();
+      this->_hashTable->_Mutex->unlock_shared();
     }
   }
 };
@@ -173,12 +173,12 @@ struct HashTableWriteLock {
   const HashTable_O* _hashTable;
   HashTableWriteLock(const HashTable_O* ht, bool upgrade = false) : _hashTable(ht) {
     if (this->_hashTable->_Mutex) {
-      this->_hashTable->_Mutex->write_lock(upgrade);
+      this->_hashTable->_Mutex->lock(upgrade);
     }
   }
   ~HashTableWriteLock() {
     if (this->_hashTable->_Mutex) {
-      this->_hashTable->_Mutex->write_unlock();
+      this->_hashTable->_Mutex->unlock();
     }
   }
 };
