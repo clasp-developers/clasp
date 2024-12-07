@@ -226,7 +226,7 @@ int WeakKeyHashTable::rehash_not_safe(const value_type& key, size_t& key_bucket)
 
 int WeakKeyHashTable::rehash(const value_type& key, size_t& key_bucket) {
   int result;
-  safeRun<void()>([&result, this, &key, &key_bucket]() -> void { result = this->rehash_not_safe(key, key_bucket); });
+  safeRun([&result, this, &key, &key_bucket]() { result = this->rehash_not_safe(key, key_bucket); });
   return result;
 }
 
@@ -320,7 +320,7 @@ int WeakKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
 
 string WeakKeyHashTable::dump(const string& prefix) {
   stringstream sout;
-  safeRun<void()>([this, &prefix, &sout]() -> void {
+  safeRun([this, &prefix, &sout]() {
     HT_READ_LOCK(this);
     size_t i, length;
     length = this->_Keys->length();
@@ -345,7 +345,7 @@ string WeakKeyHashTable::dump(const string& prefix) {
 
 core::T_mv WeakKeyHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue) {
   core::T_mv result_mv;
-  safeRun<void()>([&result_mv, this, tkey, defaultValue]() -> void {
+  safeRun([&result_mv, this, tkey, defaultValue]() {
     HT_READ_LOCK(this);
     value_type key(tkey);
     size_t pos;
@@ -372,7 +372,7 @@ core::T_mv WeakKeyHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue) {
 }
 
 void WeakKeyHashTable::set(core::T_sp key, core::T_sp value) {
-  safeRun<void()>([key, value, this]() -> void {
+  safeRun([key, value, this]() {
     if (this->fullp_not_safe() || !this->trySet(key, value)) {
       int res;
       value_type dummyKey;
@@ -405,14 +405,14 @@ void WeakKeyHashTable::set(core::T_sp key, core::T_sp value) {
 #define HASH_TABLE_ITER_END }
 
 void WeakKeyHashTable::maphash(std::function<void(core::T_sp, core::T_sp)> const& fn) {
-  safeRun<void()>([fn, this]() -> void {
+  safeRun([fn, this]() {
     HASH_TABLE_ITER(WeakKeyHashTable, this, key, value) { fn(key, value); }
     HASH_TABLE_ITER_END;
   });
 }
 
 void WeakKeyHashTable::maphashFn(core::T_sp fn) {
-  safeRun<void()>([fn, this]() -> void {
+  safeRun([fn, this]() {
     HASH_TABLE_ITER(WeakKeyHashTable, this, key, value) { core::eval::funcall(fn, key, value); }
     HASH_TABLE_ITER_END;
   });
@@ -420,7 +420,7 @@ void WeakKeyHashTable::maphashFn(core::T_sp fn) {
 
 bool WeakKeyHashTable::remhash(core::T_sp tkey) {
   bool bresult = false;
-  safeRun<void()>([this, tkey, &bresult]() -> void {
+  safeRun([this, tkey, &bresult]() {
     HT_WRITE_LOCK(this);
     size_t b;
     value_type key(tkey);
@@ -445,7 +445,7 @@ bool WeakKeyHashTable::remhash(core::T_sp tkey) {
 }
 
 void WeakKeyHashTable::clrhash() {
-  safeRun<void()>([this]() -> void {
+  safeRun([this]() {
     HT_WRITE_LOCK(this);
     size_t len = (*this->_Keys).length();
     for (size_t i(0); i < len; ++i) {
