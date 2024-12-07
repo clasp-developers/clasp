@@ -45,12 +45,12 @@ struct WeakKeyHashTableReadLock {
   const WeakKeyHashTable* _hashTable;
   WeakKeyHashTableReadLock(const WeakKeyHashTable* ht) : _hashTable(ht) {
     if (this->_hashTable->_Mutex) {
-      this->_hashTable->_Mutex->shared_lock();
+      this->_hashTable->_Mutex->lock_shared();
     }
   }
   ~WeakKeyHashTableReadLock() {
     if (this->_hashTable->_Mutex) {
-      this->_hashTable->_Mutex->shared_unlock();
+      this->_hashTable->_Mutex->unlock_shared();
     }
   }
 };
@@ -58,12 +58,12 @@ struct WeakKeyHashTableWriteLock {
   const WeakKeyHashTable* _hashTable;
   WeakKeyHashTableWriteLock(const WeakKeyHashTable* ht, bool upgrade = false) : _hashTable(ht) {
     if (this->_hashTable->_Mutex) {
-      this->_hashTable->_Mutex->write_lock(upgrade);
+      this->_hashTable->_Mutex->lock(upgrade);
     }
   }
   ~WeakKeyHashTableWriteLock() {
     if (this->_hashTable->_Mutex) {
-      this->_hashTable->_Mutex->write_unlock();
+      this->_hashTable->_Mutex->unlock();
     }
   }
 };

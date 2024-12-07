@@ -354,6 +354,7 @@ struct Mutex {
     }
     return pthread_mutex_trylock(&this->_Mutex) == 0;
   };
+  bool try_lock() { return lock(false); } // for C++ Lockable
   void unlock() {
 #ifdef DEBUG_THREADS
     debug_mutex_unlock(this);
@@ -372,13 +373,24 @@ struct SharedMutex {
   size_t _b;
   SharedMutex(uint64_t nameword) : _r(nameword,false), _g(nameword,false), _b(0) {};
     // shared access
-  void shared_lock() {
+  void lock_shared() {
     this->_r.lock(true);
     ++this->_b;
     if (this->_b==256) this->_g.lock(true);
     this->_r.unlock();
   }
-  void shared_unlock() {
+  bool try_lock_shared() {
+    if (this->_r.try_lock()) {
+      if (this->_b>=255) {
+        this->_r.unlock();
+        return false;
+      } else {
+        ++this->_b;
+        return true;
+      }
+    } else return false;
+  }
+  void unlock_shared() {
     this->_r.lock(true);
     --this->_b;
     if (this->_b==0) this->_g.unlock();
@@ -397,9 +409,6 @@ struct SharedMutex : public sf::contention_free_shared_mutex<> {
   SharedMutex(){};
   uint64_t _r;
   SharedMutex(uint64_t nameword) : _r(nameword){};
-  // shared access
-  void shared_lock() { this->lock_shared(); }
-  void shared_unlock() { this->unlock_shared(); }
 };
 #endif
 
@@ -423,8 +432,8 @@ public:
   UpgradableSharedMutex(uint64_t nameword, uint maxReaders = 64, uint64_t writenameword = 0)
       : mReadMutex(nameword), mWriteMutex(writenameword ? writenameword : nameword), mReadsBlocked(false), mMaxReaders(maxReaders),
         mReaders(0){};
-  void readLock() {
-    while (1) {
+  void lock_shared() {
+    while (true) {
       mReadMutex._value.lock();
       if ((!mReadsBlocked) && (mReaders < mMaxReaders)) {
         mReaders++;
@@ -436,7 +445,19 @@ public:
     }
     assert(0);
   };
-  void readUnlock() {
+  bool try_lock_shared() {
+    if (mReadMutex._value.try_lock()) {
+      if ((!mReadsBlocked) && (mReaders < mMaxReaders)) {
+        mReaders++;
+        mReadMutex._value.unlock();
+        return true;
+      } else {
+        mReadMutex._value.unlock();
+        return false;
+      }
+    } else return false;
+  }
+  void unlock_shared() {
     mReadMutex._value.lock();
     assert(mReaders);
     mReaders--;
@@ -447,19 +468,19 @@ public:
     Be careful though!!!! If two threads try to upgrade at the same time
     there will be a deadlock unless they do it in a loop using withTryLock(true).
    */
-  bool writeTryLock(bool upgrade = false) {
+  bool try_lock(bool upgrade = false) {
     if (!mWriteMutex._value.lock(false))
       return false;
     waitReaders(upgrade ? 1 : 0);
     return true;
   }
-  void writeLock(bool upgrade = false) {
+  void lock(bool upgrade = false) {
     mWriteMutex._value.lock();
     waitReaders(upgrade ? 1 : 0);
   }
   /*! Pass true releaseReadLock if when you release the write lock it also
      releases the read lock */
-  void writeUnlock(bool releaseReadLock = false) {
+  void unlock(bool releaseReadLock = false) {
     mReadMutex._value.lock();
     if (releaseReadLock) {
       assert(mReaders <= 1);
