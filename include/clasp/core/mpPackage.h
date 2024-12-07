@@ -227,14 +227,13 @@ public:
   SharedMutex_O(core::T_sp readName, core::T_sp writeName = nil<core::T_O>())
       : _Name(readName), _Owner(nil<T_O>()),
         _SharedMutex(lisp_nameword(readName), 256, writeName.nilp() ? lisp_nameword(readName) : lisp_nameword(writeName)){};
-  void write_lock(bool upgrade = false) { this->_SharedMutex.writeLock(upgrade); };
-  bool write_try_lock(bool upgrade = false) { return this->_SharedMutex.writeTryLock(upgrade); };
-  void write_unlock(bool release_read_lock = false) { this->_SharedMutex.writeUnlock(release_read_lock); };
+  void lock(bool upgrade = false) { this->_SharedMutex.lock(upgrade); };
+  bool try_lock(bool upgrade = false) { return this->_SharedMutex.try_lock(upgrade); };
+  void unlock(bool release_read_lock = false) { this->_SharedMutex.unlock(release_read_lock); };
 
-  void read_lock() { this->_SharedMutex.readLock(); };
-  void read_unlock() { this->_SharedMutex.readUnlock(); };
-  void shared_lock() { this->_SharedMutex.readLock(); };
-  void shared_unlock() { this->_SharedMutex.readUnlock(); };
+  void lock_shared() { this->_SharedMutex.lock_shared(); };
+  bool try_lock_shared() { return this->_SharedMutex.try_lock_shared(); }
+  void unlock_shared() { this->_SharedMutex.unlock_shared(); };
   void setLockNames(core::SimpleBaseString_sp readLockName, core::SimpleBaseString_sp writeLockName);
   string __repr__() const override;
 
