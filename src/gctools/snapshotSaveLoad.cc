@@ -2727,7 +2727,15 @@ void* snapshot_save_impl(void* data) {
     }
 
     cmd = CXX_BINARY " " BUILD_LINKFLAGS " -L" + snapshot_data->_LibDir + " -o" + snapshot_data->_FileName + " " + obj_filename +
-          " -Wl,-whole-archive -liclasp -Wl,-no-whole-archive -lclasp " BUILD_LIB;
+          " -Wl,-whole-archive -liclasp"
+#ifndef CLASP_STATIC_LINKING
+          " -Wl,-no-whole-archive"
+#endif
+          " -lclasp "
+#ifdef CLASP_STATIC_LINKING
+          " -Wl,-no-whole-archive"
+#endif
+          BUILD_LIB;
 #endif
 #ifdef _TARGET_OS_DARWIN
     cmd = CXX_BINARY " " BUILD_LINKFLAGS " -o" + snapshot_data->_FileName +

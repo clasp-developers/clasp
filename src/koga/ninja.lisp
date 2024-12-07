@@ -388,11 +388,11 @@
           (products (mapcar (lambda (source)
                               (make-source (source-path source) :package-share))
                             generated))
-          (lib-name (if (static-linking-p configuration)
-                        "libclasp.a"
-                        #+darwin "libclasp.dylib" #-darwin "libclasp.so"))
-          (lib (make-source lib-name :variant-lib))
-          (lib-installed (make-source lib-name :package-lib))
+          (libclasp-name (lib-filename configuration "libclasp" :dynamic t))
+          (libclasp (make-source libclasp-name :variant-lib))
+          (libclasp-installed (make-source libclasp-name (if (static-linking-p configuration)
+                                                             :package-lib
+                                                             :package-syslib)))
           (filtered-sifs (if *variant-precise*
                              (sort sifs
                                    (lambda (x y)
@@ -413,15 +413,15 @@
   (if (static-linking-p configuration)
       (ninja:write-build output-stream :ar
                          :inputs objects
-                         :outputs (list lib))
+                         :outputs (list libclasp))
       (ninja:write-build output-stream :link-lib
                          :variant-ldflags *variant-ldflags*
                          :variant-ldlibs *variant-ldlibs*
-                         :libname lib-name
+                         :libname libclasp-name
                          :inputs objects
-                         :outputs (list lib)))
+                         :outputs (list libclasp)))
   (ninja:write-build output-stream :phony
-                     :inputs (list lib)
+                     :inputs (list libclasp)
                      :outputs (list (build-name target)))
   (when *variant-default*
     (loop for input in generated
@@ -430,10 +430,10 @@
                                 :inputs (list input)
                                 :outputs (list output)))
     (ninja:write-build output-stream :install-file
-                       :inputs (list lib)
-                       :outputs (list lib-installed))
+                       :inputs (list libclasp)
+                       :outputs (list libclasp-installed))
     (ninja:write-build output-stream :phony
-                       :inputs (list* lib-installed
+                       :inputs (list* libclasp-installed
                                       products)
                        :outputs (list "install_lib"))))
 
@@ -442,9 +442,10 @@
      &key objects sifs &allow-other-keys
      &aux (exe (make-source "iclasp" :variant))
           (exe-installed (make-source "iclasp" :package-bin))
-          (ilib (make-source "libiclasp.a" :variant-lib))
-          (ilib-installed (make-source "libiclasp.a" :package-lib))
-          (lib (make-source #+darwin "libclasp.dylib" #-darwin "libclasp.so" :variant-lib))
+          (libiclasp-name (lib-filename configuration "libiclasp"))
+          (libiclasp (make-source libiclasp-name :variant-lib))
+          (libiclasp-installed (make-source libiclasp-name :package-lib))
+          (libclasp (make-source (lib-filename configuration "libclasp" :dynamic t) :variant-lib))
           (symlink (make-source (if (member :cando (extensions configuration))
                                     "cando"
                                     "clasp")
@@ -459,12 +460,17 @@
           (cleap-symlink-installed (make-source "cleap" :package-bin)))
   (ninja:write-build output-stream :ar
                      :inputs objects
-                     :outputs (list ilib))
+                     :outputs (list libiclasp))
   (ninja:write-build output-stream :link
                      :variant-ldflags *variant-ldflags*
-                     :variant-ldlibs (format nil "-lclasp ~a" *variant-ldlibs*)
+                     :variant-ldlibs (concatenate 'string
+                                                  (if (static-linking-p configuration)
+                                                      #+darwin "-Wl,-all_load -lclasp -Wl,-noall_load "
+                                                      #-darwin "-Wl,-whole-archive -lclasp -Wl,-no-whole-archive"
+                                                      "-lclasp ")
+                                                  *variant-ldlibs*)
                      :inputs objects
-                     :order-only-inputs (list lib)
+                     :order-only-inputs (list libclasp)
                      :outputs (list exe))
   (ninja:write-build output-stream :symbolic-link
                      :inputs (list exe)
@@ -476,7 +482,7 @@
                        :target (file-namestring (source-path exe))
                        :outputs (list cleap-symlink)))
   (ninja:write-build output-stream :phony
-                     :inputs (append (list exe symlink ilib)
+                     :inputs (append (list exe symlink libiclasp)
                                      (when (member :cando (extensions configuration))
                                        (list cleap-symlink))
                                      (when (and *variant-default*
@@ -490,8 +496,8 @@
                        :inputs (list exe)
                        :outputs (list exe-installed))
     (ninja:write-build output-stream :install-file
-                       :inputs (list ilib)
-                       :outputs (list ilib-installed))
+                       :inputs (list libiclasp)
+                       :outputs (list libiclasp-installed))
     (ninja:write-build output-stream :symbolic-link
                        :inputs (list exe-installed)
                        :target (file-namestring (source-path exe-installed))
@@ -509,7 +515,7 @@
                                                            "install_extension_code"
                                                            "install_bin"
                                                            "install_lib"
-                                                           ilib-installed
+                                                           libiclasp-installed
                                                            exe-installed
                                                            symlink-installed)
                                                      (when (member :cando (extensions configuration))

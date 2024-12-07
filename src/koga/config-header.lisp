@@ -132,6 +132,7 @@
                  "CLASP_DEV_GENERATED_PATH" (namestring (merge-pathnames (root :variant-generated)
                                                                          (build-path configuration)))
                  "CLASP_DEV_INCLUDE_PATH" "include"
+                 "CLASP_STATIC_LINKING" (static-linking-p configuration)
                  "CLASP_INSTALL_SYS_PATH" (namestring (root :install-share))
                  "CLASP_INSTALL_LIB_PATH" (namestring (root :install-lib))
                  "CLASP_INSTALL_GENERATED_PATH" (namestring (root :install-generated))

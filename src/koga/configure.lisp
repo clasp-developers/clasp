@@ -141,6 +141,11 @@
              :initarg :lib-path
              :type pathname
              :documentation "The directory under which to install the Clasp libraries.")
+   (syslib-path :accessor syslib-path
+             :initform #P"/usr/local/lib/"
+             :initarg :syslib-path
+             :type pathname
+             :documentation "The directory under which to install the Clasp libraries.")
    (share-path :accessor share-path
                :initform #P"/usr/local/share/clasp/"
                :initarg :share-path
@@ -777,6 +782,14 @@ is not compatible with snapshots.")
                 (remove-if (lambda (feature)
                              (not (member feature +core-features+)))
                            *features*))))
+
+(defun lib-filename (configuration name &key (dynamic nil dynamicp))
+  (make-pathname :name name
+                 :type (if (or (static-linking-p configuration)
+                               (not dynamicp))
+                           "a"
+                           #+darwin "dylib"
+                           #-darwin "so")))
 
 (defun build-name (name
                    &key common
