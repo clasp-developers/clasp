@@ -163,6 +163,11 @@ static void clasp_terminate_handler(void) {
   abort();
 }
 
+CL_DEFUN void gctools__register_loaded_objects() {
+  core::add_library addlib;
+  core::startup_register_loaded_objects(&addlib);
+}
+
 }; // namespace gctools
 
 #ifndef SCRAPING

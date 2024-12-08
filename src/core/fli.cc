@@ -653,10 +653,17 @@ core::T_sp PERCENTdlclose(ForeignData_sp handle) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::T_sp PERCENTdlsym(core::String_sp name) {
-
+core::T_sp PERCENTdlsym(core::T_sp library, core::String_sp name) {
+  void *handle = NULL;
+  if (library == kw::_sym_rtld_default) {
+    handle = RTLD_DEFAULT;
+  } else if (library == kw::_sym_rtld_next) {
+    handle = RTLD_NEXT;
+  } else if (ForeignData_sp fd = library.asOrNull<ForeignData_O>()) {
+    handle = fd->raw_data();
+  }
   ForeignData_sp sp_sym;
-  auto result = core::do_dlsym(RTLD_DEFAULT, name->get_std_string().c_str());
+  auto result = core::do_dlsym(handle, name->get_std_string().c_str());
   void* p_sym = std::get<0>(result);
 
   if (!p_sym) {
@@ -1167,7 +1174,7 @@ core::T_sp PERCENTmem_set_unsigned_char(core::Integer_sp address, core::T_sp val
   return mk_fixnum_uint8(tmp);
 }
 
-const struct section_64* get_section_data(const char* segment_name, const char* section_name) {
+/*const struct section_64* get_section_data(const char* segment_name, const char* section_name) {
   const struct section_64* p_section = (struct section_64*)NULL;
 
 #if defined(__APPLE__)
@@ -1176,10 +1183,10 @@ const struct section_64* get_section_data(const char* segment_name, const char* 
 #endif
 
   return p_section;
-}
+}*/
 
 core::T_mv PERCENTget_section_data(core::String_sp sp_segment_name, core::String_sp sp_section_name) {
-#if defined(__APPLE__)
+/*#if defined(__APPLE__)
 
   const struct section_64* p_section = (struct section_64*)NULL;
   unsigned long section_size = 0;
@@ -1193,11 +1200,10 @@ core::T_mv PERCENTget_section_data(core::String_sp sp_segment_name, core::String
     return Values(nil<core::T_O>(), _lisp->_true());
   }
 
-#else
-
+#else*/
   return Values(nil<core::T_O>(), nil<core::T_O>());
 
-#endif
+//#endif
 }
 
 }; // namespace clasp_ffi

@@ -1,4 +1,4 @@
-(k:includes #~"" #~"clasp/main/")
+(k:includes #~"")
 
 (k:sources :install-code
            #~"clasp/asttooling/"
@@ -9,7 +9,6 @@
            #~"clasp/external/"
            #~"clasp/gctools/"
            #~"clasp/llvmo/"
-           #~"clasp/main/"
            #~"clasp/mpip/"
            #~"clasp/serveEvent/"
            #~"clasp/sockets/"
@@ -24,7 +23,6 @@
            #~"clasp/external/"
            #~"clasp/gctools/"
            #~"clasp/llvmo/"
-           #~"clasp/main/"
            #~"clasp/mpip/"
            #~"clasp/serveEvent/"
            #~"clasp/sockets/"

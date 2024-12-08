@@ -304,23 +304,21 @@ CL_DEFUN void core__walk_loaded_objects() {
 }
 
 int elf_startup_loaded_object_callback(struct dl_phdr_info* info, size_t size, void* data) {
-  //  printf("%s:%d:%s Startup registering loaded object %s\n", __FILE__, __LINE__, __FUNCTION__, info->dlpi_name);
+//  printf("%s:%d:%s --------- Startup registering loaded object %s\n", __FILE__, __LINE__, __FUNCTION__, info->dlpi_name);
   core::General_O general;
   gctools::clasp_ptr_t vtablePtr = *(gctools::clasp_ptr_t*)&general;
-  //  printf("%s:%d:%s one vtablePtr = %p\n", __FILE__, __LINE__, __FUNCTION__, vtablePtr );
+//  printf("%s:%d:%s a KNOWN vtablePtr = %p\n", __FILE__, __LINE__, __FUNCTION__, vtablePtr );
   ScanInfo* scan_callback_info = (ScanInfo*)data;
   bool is_executable = false;
   const char* libname;
   if (scan_callback_info->_Index == 0 && strlen(info->dlpi_name) == 0) {
     libname = getExecutablePath();
     is_executable = true;
-    // printf("%s:%d:%s getExecutablePath() libname %s is_executable = %d\n", __FILE__, __LINE__, __FUNCTION__, libname,
-    // is_executable );
+//    printf("%s:%d:%s getExecutablePath() libname %s is_executable = %d\n", __FILE__, __LINE__, __FUNCTION__, libname, is_executable );
   } else {
     libname = info->dlpi_name;
     is_executable = false;
-    // printf("%s:%d:%s info->dlpi_name libname %s is_executable = %d\n", __FILE__, __LINE__, __FUNCTION__, libname, is_executable
-    // );
+//    printf("%s:%d:%s info->dlpi_name libname %s is_executable = %d\n", __FILE__, __LINE__, __FUNCTION__, libname, is_executable );
   }
   gctools::clasp_ptr_t text_start;
   gctools::clasp_ptr_t text_end;
@@ -335,8 +333,7 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info* info, size_t size, v
     if (p_type == PT_LOAD && (info->dlpi_phdr[j].p_flags & 0x1)) { // executable
       text_start = (gctools::clasp_ptr_t)(info->dlpi_addr + info->dlpi_phdr[j].p_vaddr);
       text_end = (gctools::clasp_ptr_t)(text_start + info->dlpi_phdr[j].p_memsz);
-      // printf("%s:%d:%s      text_start = %p     text_end = %p\n    low = %p  high = %p  vtablePtr = %p\n", __FILE__, __LINE__,
-      // __FUNCTION__, (void*)text_start, (void*)text_end, low, high, vtablePtr );
+//      printf("%s:%d:%s      text_start = %p     text_end = %p    low = %p  high = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)text_start, (void*)text_end, low, high );
     }
     if (low <= vtablePtr && vtablePtr < high) {
       //
@@ -354,9 +351,9 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info* info, size_t size, v
         hasVtableSection = true;
         vtableSectionStart = low;
         vtableSectionEnd = high;
-        // printf("%s:%d:%s   set vtableSection Start/End = %p/%p\n", __FILE__, __LINE__, __FUNCTION__, low, high );
+//        printf("%s:%d:%s   set vtableSection Start/End = %p/%p\n", __FILE__, __LINE__, __FUNCTION__, low, high );
       }
-      // printf("%s:%d:%s Found vtableSection %p to %p\n", __FILE__, __LINE__, __FUNCTION__, vtableSectionStart, vtableSectionEnd );
+//      printf("%s:%d:%s Found vtableSection %p to %p\n", __FILE__, __LINE__, __FUNCTION__, vtableSectionStart, vtableSectionEnd );
     }
   }
   // printf("%s:%d:%s  About to call add_dynamic_library_using_origin libname = %s   is_executable = %d\n", __FILE__, __LINE__,
@@ -377,8 +374,7 @@ void startup_register_loaded_objects(add_dynamic_library* callback) {
     otherwise it uses handle to look up the start of the library. */
 void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable, const std::string& libraryName, bool use_origin,
                               uintptr_t library_origin, void* handle, gctools::clasp_ptr_t text_start,
-                              gctools::clasp_ptr_t text_end, bool hasVtableSection, gctools::clasp_ptr_t vtableSectionStart,
-                              gctools::clasp_ptr_t vtableSectionEnd) {
+                              gctools::clasp_ptr_t text_end, bool hasVtableSection, gctools::clasp_ptr_t vtableSectionStart, gctools::clasp_ptr_t vtableSectionEnd) {
   // printf("%s:%d:%s libraryName = %s   is_executable = %d\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), is_executable
   // );
   BT_LOG(("Starting to load library: %s\n", libraryName.c_str()));
@@ -421,7 +417,8 @@ void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable,
   } else {
     // printf("%s:%d:%s  Creating an OpenDynamicLibraryInfo\n", __FILE__, __LINE__, __FUNCTION__ );
     odli =
-        new OpenDynamicLibraryInfo(libraryName, handle, symbol_table, (gctools::clasp_ptr_t)library_origin, text_start, text_end);
+        new OpenDynamicLibraryInfo(libraryName, handle, symbol_table, (gctools::clasp_ptr_t)library_origin, text_start, text_end,
+                                   hasVtableSection, vtableSectionStart, vtableSectionEnd );
     loadable = Library;
   }
   TrapProblem trap(is_executable, libraryName, odli->loadableKind());
