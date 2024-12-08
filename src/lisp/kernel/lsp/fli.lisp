@@ -354,9 +354,14 @@
   (declare (ignore name))
   (multiple-value-bind (handle error)
       (%dlopen path)
-    (if (not handle)
-        (error "~A" error)
-        handle)))
+    (cond ((not handle)
+           (error "~A" error))
+          (t
+           (gctools:register-loaded-objects)
+           (let ((ptr (%foreign-symbol-pointer "startup_clasp_extension" handle)))
+             (when ptr
+               (%foreign-funcall-pointer ptr :void)))
+           handle))))
 
 (declaim (inline %close-foreign-library))
 (defun %close-foreign-library (ptr)
@@ -386,19 +391,6 @@
 (defun %foreign-symbol-pointer (name &optional module)
   "Return a pointer (of type ForeignData_sp / FOREIGN_DATA to a foreign symbol."
   (%dlsym (or module :rtld-default) name))
-
-;;; === FOREIGN EXTENSIONS ===
-
-(defun %load-extension-library (name path)
-  "Load an extension library to be found at path. (name is ignored)"
-  (multiple-value-bind (handle error)
-      (%dlopen path)
-    (unless handle
-      (error "~A" error))
-    (gctools:register-loaded-objects)
-    (let ((ptr (%foreign-symbol-pointer "startup_clasp_extension" handle)))
-      (%foreign-funcall-pointer ptr :void))
-    handle))
 
 ;;;----------------------------------------------------------------------------
 ;;;
@@ -544,7 +536,6 @@
             %foreign-funcall
             %foreign-funcall-pointer
             %load-foreign-library
-            %load-extension-library
             %close-foreign-library
             %foreign-symbol-pointer
             %foreign-type-size
