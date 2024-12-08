@@ -239,8 +239,9 @@ writing the build and variant outputs."
                               :install-generated install-generated
                               :package-bin (resolve-package-path (bin-path *configuration*))
                               :package-share (resolve-package-path (share-path *configuration*))
-                              :package-syslib (resolve-package-path (syslib-path *configuration*))
+                              :package-dylib (resolve-package-path (dylib-path *configuration*))
                               :package-lib (resolve-package-path (lib-path *configuration*))
+                              :package-pkgconfig (resolve-package-path (pkgconfig-path *configuration*))
                               :package-generated (resolve-package-path install-generated)
                               *root-paths*))
          (*extensions* (extensions *configuration*)))

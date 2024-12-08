@@ -29,3 +29,7 @@
            #@"source_info_inc.h"
            #@"symbols_scraped_inc.h"
            #@"terminators_inc.h")
+
+(k:sources :install-code
+           #~"bdwgc/include/"
+           #~"schubfach/")

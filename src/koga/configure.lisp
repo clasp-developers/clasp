@@ -39,7 +39,7 @@
 
 (defparameter *variant-bitcode-name*
   nil
-  "The full name of thye current variant (with debugging suffix).")
+  "The full name of the current variant (with debugging suffix).")
 
 (defparameter *variant-cflags*
   nil
@@ -141,16 +141,21 @@
              :initarg :lib-path
              :type pathname
              :documentation "The directory under which to install the Clasp libraries.")
-   (syslib-path :accessor syslib-path
-             :initform #P"/usr/local/lib/"
-             :initarg :syslib-path
-             :type pathname
-             :documentation "The directory under which to install the Clasp libraries.")
+   (dylib-path :accessor dylib-path
+               :initform #P"/usr/local/lib/"
+               :initarg :dylib-path
+               :type pathname
+               :documentation "The directory under which to install the Clasp dynamic libraries.")
    (share-path :accessor share-path
                :initform #P"/usr/local/share/clasp/"
                :initarg :share-path
                :type pathname
                :documentation "The directory under which to install shared Clasp files.")
+   (pkgconfig-path :accessor pkgconfig-path
+                   :initform #P"/usr/lib/pkgconfig/"
+                   :initarg :pkgconfig-path
+                   :type pathname
+                   :documentation "The directory under which to install the pkgconfig files.")
    (jupyter-path :accessor jupyter-path
                  :initform nil
                  :initarg :jupyter-path
@@ -671,6 +676,8 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"bench.lisp" :build))
                                                          :libclasp-pc
                                                          (list (make-source #P"libclasp.pc" :build))
+                                                         :libclasp-pc-variant
+                                                         (list (make-source #P"libclasp.pc" :variant))
                                                          :ninja
                                                          (list (make-source #P"build.ninja" :build)
                                                                :libclasp :iclasp :cclasp :modules :eclasp

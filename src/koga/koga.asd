@@ -6,7 +6,8 @@
                "closer-mop"
                "ninja"
                "shasht"
-               "trivial-features")
+               "trivial-features"
+               "split-sequence")
   :serial t
   :components ((:file "packages")
                (:file "utilities")

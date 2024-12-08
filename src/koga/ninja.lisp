@@ -206,7 +206,7 @@
      &aux (ll (make-source-output source :type "ll"))
           (bc (make-source-output source :type "bc"))
           (header (make-source "trampoline.h" :variant-generated))
-          (installed-header (make-source "trampoline.h" :installed-generated)))
+          (installed-header (make-source "include/trampoline.h" :package-share)))
   (declare (ignore configuration))
   (ninja:write-build output-stream :cxx-llvm
                      :variant-cxxflags *variant-cxxflags*
@@ -266,8 +266,12 @@
 (defmethod print-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :install-code)) sources
      &key outputs &allow-other-keys)
+  (declare (ignore configuration))
   (ninja:write-build output-stream :phony
-                     :inputs outputs
+                     :inputs (list* (make-source "include/trampoline.h" :package-share)
+                                    (make-source "include/config.h" :package-share)
+                                    (make-source "include/virtualMachine.h" :package-share)
+                                    outputs)
                      :outputs (list "install_code")))
 
 (defmethod print-target-source
@@ -308,14 +312,14 @@
     (configuration (name (eql :ninja)) output-stream (target (eql :vm-header)) sources
      &key &allow-other-keys
      &aux (header (make-source "virtualMachine.h" :variant-generated))
-          (installed-header (make-source "virtualMachine.h" :installed-generated)))
+          (installed-header (make-source "include/virtualMachine.h" :package-share)))
   (ninja:write-build output-stream :generate-vm-header
                      :inputs sources
                      :outputs (list header))
   (when *variant-default*
     (ninja:write-build output-stream :install-file
                                 :inputs (list header)
-                                :outputs (list installed-header))))  
+                                :outputs (list installed-header))))
 
 (defmethod print-variant-target-source
     (configuration (name (eql :ninja)) output-stream (target (eql :libclasp))
@@ -392,7 +396,8 @@
           (libclasp (make-source libclasp-name :variant-lib))
           (libclasp-installed (make-source libclasp-name (if (static-linking-p configuration)
                                                              :package-lib
-                                                             :package-syslib)))
+                                                             :package-dylib)))
+          (libclasp-pc-installed (make-source "libclasp.pc" :package-pkgconfig))
           (filtered-sifs (if *variant-precise*
                              (sort sifs
                                    (lambda (x y)
@@ -430,11 +435,21 @@
                                 :inputs (list input)
                                 :outputs (list output)))
     (ninja:write-build output-stream :install-file
+                                :inputs (list (make-source "config.h" :variant))
+                                :outputs (list (make-source "include/config.h" :package-share)))
+    (ninja:write-build output-stream :install-file
                        :inputs (list libclasp)
                        :outputs (list libclasp-installed))
+    (unless (static-linking-p configuration)
+      (ninja:write-build output-stream :install-file
+                         :inputs (list (make-source "libclasp.pc" :build))
+                         :outputs (list libclasp-pc-installed)))
     (ninja:write-build output-stream :phony
                        :inputs (list* libclasp-installed
-                                      products)
+                                      (if (static-linking-p configuration)
+                                          products
+                                          (cons libclasp-pc-installed
+                                                products)))
                        :outputs (list "install_lib"))))
 
 (defmethod print-variant-target-sources
