@@ -602,10 +602,10 @@ CL_DOCSTRING(R"dx(Returns the host's list of translations. Each translation is a
 two elements: from-wildcard and to-wildcard. From-wildcard is a logical
 pathname whose host is host. To-wildcard is a pathname.)dx")
 CL_DEFUN List_sp cl__logical_pathname_translations(String_sp host) {
-  KeyValuePair* pair = _lisp->pathnameTranslations_()->find(host);
-  if (!pair) // This type error should be (satisfies logical-host-p)
+  auto found = _lisp->pathnameTranslations_()->find(host);
+  if (found) return *found;
+  else // This type error should be (satisfies logical-host-p)
     TYPE_ERROR(host, cl::_sym_string);
-  return pair->_Value;
 }
 
 CL_LISPIFY_NAME("cl:logical-pathname-translations");

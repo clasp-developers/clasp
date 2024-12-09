@@ -567,21 +567,16 @@ CL_DEFMETHOD gc::Fixnum HashTable_O::hashIndex(T_sp key) const {
   return this->sxhashKey(key);
 }
 
-KeyValuePair* HashTable_O::find(T_sp key) {
+std::optional<T_sp> HashTable_O::find(T_sp key) {
   HT_READ_LOCK(this);
   cl_index index = this->sxhashKey(key);
   KeyValuePair* keyValue = this->searchTable_no_read_lock(key, index);
-  if (!keyValue)
-    return keyValue;
-  if (keyValue->_Value.no_keyp())
-    return nullptr;
-  return keyValue;
+  if (!keyValue || keyValue->_Value.no_keyp()) return std::optional<T_sp>();
+  else return std::optional<T_sp>(keyValue->_Value);
 }
 
 bool HashTable_O::contains(T_sp key) {
-  HT_READ_LOCK(this);
-  KeyValuePair* keyValue = this->find(key);
-  return keyValue != nullptr;
+  return this->find(key).has_value();
 }
 
 bool HashTable_O::remhash(T_sp key) {

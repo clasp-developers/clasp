@@ -155,8 +155,7 @@ public: // Functions here
   /*! Return true if the key is within the hash table */
   bool contains(T_sp key);
 
-  /*! Return the key/value pair in a CONS if found or NIL if not */
-  KeyValuePair* find(T_sp key);
+  std::optional<T_sp> find(T_sp key); // gethash but more convenient for C++
 
   T_mv gethash(T_sp key, T_sp defaultValue = nil<T_O>()) override;
   gc::Fixnum hashIndex(T_sp key) const;
