@@ -218,20 +218,6 @@ CL_DEFUN Vector_sp core__hash_table_pairs(HashTableBase_sp hash_table_base) {
 // ----------------------------------------------------------------------
 //
 
-#if 0
-void HashTable_O::set_thread_safe(bool thread_safe)
-{
-#ifdef CLASP_THREADS
-  if (thread_safe) {
-    SimpleBaseString_sp sbs = SimpleBaseString_O::make("HASHTABL");
-    this->_Mutex = mp::SharedMutex_O::make_shared_mutex(sbs);
-  } else {
-    this->_Mutex.reset_();
-  }
-#endif
-}
-#endif
-
 CL_LAMBDA(&key (test (function eql)) (size 0) (rehash-size 2.0) (rehash-threshold 0.7) weakness debug (thread-safe t) hash-function);
 CL_DECLARE();
 CL_DOCSTRING(
@@ -1132,63 +1118,11 @@ void dump_one_entry(HashTable_sp ht, size_t it, stringstream& ss, KeyValuePair& 
 #endif
 };
 
-CL_DEFMETHOD List_sp HashTable_O::hash_table_bucket(size_t index) {
-  KeyValuePair& entry = this->_Table[index];
-  if (!entry._Key.no_keyp() && !entry._Value.deletedp()) {
-    T_sp result = Cons_O::create(entry._Key, entry._Value);
-    return result;
-  }
-  return nil<T_O>();
-}
-
-CL_DEFMETHOD T_sp HashTable_O::hash_table_average_search_length() {
-  HT_READ_LOCK(this);
-  gc::Fixnum iend(this->_Table.size());
-  double sum = 0.0;
-  gc::Fixnum count = 0;
-  for (gc::Fixnum it(0), itEnd(iend); it < itEnd; ++it) {
-    const KeyValuePair& entry = this->_Table[it];
-    if (!(entry._Key.no_keyp() || entry._Key.deletedp())) {
-      HashGenerator hg;
-      gc::Fixnum index = this->sxhashKey(entry._Key, this->_Table.size(), hg);
-      gc::Fixnum delta;
-      if (index > it) {
-        delta = (it + iend) - index;
-      } else {
-        delta = (it - index);
-      }
-      //      printf("%s:%d  index = %lld  it = %lld  delta=%lld\n", __FILE__, __LINE__, index, it, delta );
-      sum = sum + delta;
-      count++;
-    }
-  }
-  if (count > 0) {
-    return core::clasp_make_double_float(sum / count);
-  }
-  return nil<T_O>();
-}
-
 CL_DEFMETHOD string HashTable_O::hash_table_dump() {
   stringstream ss;
   HT_READ_LOCK(this);
   verifyHashTable(true, ss, this, __FILE__, __LINE__);
   return ss.str();
-}
-
-void HashTable_O::hash_table_pointers_dump() {
-  HASH_TABLE_ITER(this, key, value) {
-    printf("%s:%d key@%p: %s  value@%p: %s\n", __FILE__, __LINE__, key.raw_(), _rep_(key).c_str(), value.raw_(),
-           _rep_(value).c_str());
-  }
-  HASH_TABLE_ITER_END;
-}
-
-void HashTable_O::hash_table_early_dump() {
-  HASH_TABLE_ITER(this, key, value) {
-    printf("%s:%d key@%p: %s  value@%p: %s\n", __FILE__, __LINE__, key.raw_(), _rep_(key).c_str(), value.raw_(),
-           _rep_(value).c_str());
-  }
-  HASH_TABLE_ITER_END;
 }
 
 void HashTable_O::mapHash(std::function<void(T_sp, T_sp)> const& fn) {
@@ -1214,12 +1148,6 @@ void HashTable_O::lowLevelMapHash(KeyValueMapper* mapper) const {
   HASH_TABLE_ITER_END;
 DONE:
   return;
-}
-
-CL_LISPIFY_NAME("core:hashTableNumberOfHashes");
-CL_DEFMETHOD int HashTable_O::hashTableNumberOfHashes() const {
-  HT_READ_LOCK(this);
-  return this->_Table.size();
 }
 
 string HashTable_O::keysAsString() {
@@ -1261,11 +1189,6 @@ CL_DEFUN T_sp cl__hash_table_test(HashTableBase_sp ht) { return ht->hash_table_t
 T_mv clasp_gethash_safe(T_sp key, T_sp thashTable, T_sp default_) {
   HashTable_sp hashTable = gc::As<HashTable_sp>(thashTable);
   return hashTable->gethash(key, default_);
-}
-
-CL_DEFUN void core__dont_ever_use_mangle_hash_table(HashTable_sp ht) {
-  uintptr_t* ptr = (uintptr_t*)&(ht->_Table);
-  *ptr = 41;
 }
 
 SYMBOL_EXPORT_SC_(ClPkg, make_hash_table);
