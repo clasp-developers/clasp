@@ -51,13 +51,13 @@ bool HashTableCustom_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   return c.notnilp();
 }
 
-gc::Fixnum HashTableCustom_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator& hg) const {
+void HashTableCustom_O::sxhashEffect(T_sp obj, HashGenerator& hg) const {
   T_sp hash = eval::funcall(hasher, obj);
   if (hash.fixnump()) {
     gc::Fixnum fxhash = hash.unsafe_fixnum();
     if (fxhash >= 0) {
       hg.addValue(fxhash);
-      return hg.hashBound(bound);
+      return;
     }
   }
   TYPE_ERROR(hash, Cons_O::createList(cl::_sym_and, cl::_sym_fixnum, Cons_O::createList(cl::_sym_Integer_O, Integer_O::create(0))));

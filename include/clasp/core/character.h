@@ -111,8 +111,6 @@ namespace core {
 
 inline bool clasp_invalid_base_char_p(claspCharacter c) { return (c <= 32) || (c == 127); }
 
-claspCharacter char_upcase(claspCharacter code);
-
 claspCharacter char_downcase(claspCharacter code);
 
 // See character.fwd.h for the following

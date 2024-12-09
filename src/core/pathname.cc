@@ -416,33 +416,21 @@ bool Pathname_O::equal(T_sp obj) const {
 }
 
 void Pathname_O::sxhash_equal(HashGenerator& hg) const {
-  if (hg.isFilling())
-    HashTable_O::sxhash_equal(hg, this->_Host);
-  if (hg.isFilling())
-    HashTable_O::sxhash_equal(hg, this->_Device);
-  if (hg.isFilling())
-    HashTable_O::sxhash_equal(hg, this->_Directory);
-  if (hg.isFilling())
-    HashTable_O::sxhash_equal(hg, this->_Name);
-  if (hg.isFilling())
-    HashTable_O::sxhash_equal(hg, this->_Type);
-  if (hg.isFilling())
-    HashTable_O::sxhash_equal(hg, this->_Version);
+  if (hg.isFilling()) clasp_sxhash(this->_Host, hg);
+  if (hg.isFilling()) clasp_sxhash(this->_Device, hg);
+  if (hg.isFilling()) clasp_sxhash(this->_Directory, hg);
+  if (hg.isFilling()) clasp_sxhash(this->_Name, hg);
+  if (hg.isFilling()) clasp_sxhash(this->_Type, hg);
+  if (hg.isFilling()) clasp_sxhash(this->_Version, hg);
 }
 
 void Pathname_O::sxhash_equalp(HashGenerator& hg) const {
-  if (hg.isFilling())
-    HashTable_O::sxhash_equalp(hg, this->_Host);
-  if (hg.isFilling())
-    HashTable_O::sxhash_equalp(hg, this->_Device);
-  if (hg.isFilling())
-    HashTable_O::sxhash_equalp(hg, this->_Directory);
-  if (hg.isFilling())
-    HashTable_O::sxhash_equalp(hg, this->_Name);
-  if (hg.isFilling())
-    HashTable_O::sxhash_equalp(hg, this->_Type);
-  if (hg.isFilling())
-    HashTable_O::sxhash_equalp(hg, this->_Version);
+  if (hg.isFilling()) clasp_sxhash_equalp(this->_Host, hg);
+  if (hg.isFilling()) clasp_sxhash_equalp(this->_Device, hg);
+  if (hg.isFilling()) clasp_sxhash_equalp(this->_Directory, hg);
+  if (hg.isFilling()) clasp_sxhash_equalp(this->_Name, hg);
+  if (hg.isFilling()) clasp_sxhash_equalp(this->_Type, hg);
+  if (hg.isFilling()) clasp_sxhash_equalp(this->_Version, hg);
 }
 
 Pathname_sp Pathname_O::tilde_expand(Pathname_sp pathname) {

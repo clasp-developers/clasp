@@ -133,10 +133,8 @@ namespace core {
 void Array_O::sxhash_equalp(HashGenerator& hg) const {
   // TODO:  Write optimized versions for different array types
   for (size_t i = 0; i < this->length(); ++i) {
-    if (!hg.isFilling())
-      break;
-    T_sp obj = this->rowMajorAref(i);
-    HashTable_O::sxhash_equalp(hg, obj);
+    if (!hg.isFilling()) break;
+    clasp_sxhash_equalp(this->rowMajorAref(i), hg);
   }
 }
 
