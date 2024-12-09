@@ -125,7 +125,11 @@ private:
   uint calculateHashTableCount() const;
 
   void rehash_no_lock(bool expandTable);
+  T_sp setf_gethash_no_write_lock(T_sp key, T_sp value);
 
+protected:
+  virtual KeyValuePair* searchTable_no_read_lock(T_sp key, cl_index index);
+  
 public:
   void rehash(bool expandTable);
 
@@ -136,9 +140,6 @@ public:
     else
       return nil<T_O>();
   };
-
-public:
-  virtual KeyValuePair* searchTable_no_read_lock(T_sp key, cl_index index);
 
 public: // Functions here
   virtual bool equalp(T_sp other) const override;
@@ -166,7 +167,6 @@ public: // Functions here
   gc::Fixnum hashIndex(T_sp key) const;
 
   T_sp hash_table_setf_gethash(T_sp key, T_sp value) override;
-  T_sp setf_gethash_no_write_lock(T_sp key, T_sp value);
   void setf_gethash(T_sp key, T_sp val) { this->hash_table_setf_gethash(key, val); };
 
   Number_sp rehash_size() const override;
