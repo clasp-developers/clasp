@@ -87,7 +87,7 @@ jobs:
     - name: Cando koga @ Ubuntu
       if: ${{ matrix.os == 'ubuntu-latest' && matrix.build == 'cando' }}
       run: |
-        ./koga --build-mode=${{ matrix.mode }} --extensions=cando,seqan-clasp
+        ./koga --build-mode=${{ matrix.mode }} --extensions=cando
     - name: Clasp koga @ MacOS=13
       if: ${{ matrix.os == 'macos-13' && matrix.build == 'clasp' }}
       run: |
@@ -99,11 +99,11 @@ jobs:
     - name: Cando koga @ MacOS-13
       if: ${{ matrix.os == 'macos-13' && matrix.build == 'cando' }}
       run: |
-        ./koga --build-mode=${{ matrix.mode }} --extensions=cando,seqan-clasp
+        ./koga --build-mode=${{ matrix.mode }} --extensions=cando
     - name: Cando koga @ MacOS-14
       if: ${{ matrix.os == 'macos-14' && matrix.build == 'cando' }}
       run: |
-        ./koga --build-mode=${{ matrix.mode }} --extensions=cando,seqan-clasp --cflags=-I/opt/homebrew/include --cppflags=-I/opt/homebrew/include --cxxflags=-I/opt/homebrew/include
+        ./koga --build-mode=${{ matrix.mode }} --extensions=cando --cflags=-I/opt/homebrew/include --cppflags=-I/opt/homebrew/include --cxxflags=-I/opt/homebrew/include
     - name: Build
       run: |
         ninja -C build
