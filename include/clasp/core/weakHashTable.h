@@ -79,14 +79,14 @@ public:
   gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
 
   void maphashLowLevel(std::function<void(T_sp, T_sp)> const& fn);
-  void maphash(T_sp functionDesig) override;
+  void maphash(T_sp functionDesig) const override;
 
   T_mv gethash(T_sp key, T_sp defaultValue = nil<T_O>()) override;
   bool remhash(T_sp key) override;
   T_sp clrhash() override;
-  Number_sp rehash_size() override;
-  double rehash_threshold() override;
-  T_sp hash_table_test() override;
+  Number_sp rehash_size() const override;
+  double rehash_threshold() const override;
+  T_sp hash_table_test() const override;
 
   string __repr__() const override;
 };

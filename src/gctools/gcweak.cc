@@ -295,14 +295,14 @@ void WeakKeyHashTable::set(core::T_sp key, core::T_sp value) {
 
 #define HASH_TABLE_ITER_END }
 
-void WeakKeyHashTable::maphash(std::function<void(core::T_sp, core::T_sp)> const& fn) {
+void WeakKeyHashTable::maphash(std::function<void(core::T_sp, core::T_sp)> const& fn) const {
   safeRun([fn, this]() {
     HASH_TABLE_ITER(WeakKeyHashTable, this, key, value) { fn(key, value); }
     HASH_TABLE_ITER_END;
   });
 }
 
-void WeakKeyHashTable::maphashFn(core::T_sp fn) {
+void WeakKeyHashTable::maphashFn(core::T_sp fn) const {
   safeRun([fn, this]() {
     HASH_TABLE_ITER(WeakKeyHashTable, this, key, value) { core::eval::funcall(fn, key, value); }
     HASH_TABLE_ITER_END;

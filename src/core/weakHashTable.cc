@@ -41,11 +41,11 @@ void WeakKeyHashTable_O::initialize() { this->_HashTable.initialize(); }
 
 namespace core {
 
-Number_sp WeakKeyHashTable_O::rehash_size() { return this->_HashTable._RehashSize; }
+Number_sp WeakKeyHashTable_O::rehash_size() const { return this->_HashTable._RehashSize; }
 
-double WeakKeyHashTable_O::rehash_threshold() { return this->_HashTable._RehashThreshold; }
+double WeakKeyHashTable_O::rehash_threshold() const { return this->_HashTable._RehashThreshold; }
 
-T_sp WeakKeyHashTable_O::hash_table_test() { return cl::_sym_eq; }
+T_sp WeakKeyHashTable_O::hash_table_test() const { return cl::_sym_eq; }
 
 void WeakKeyHashTable_O::describe(T_sp stream) {
   KeyBucketsType& keys = *this->_HashTable._Keys;
@@ -100,7 +100,7 @@ T_mv WeakKeyHashTable_O::gethash(T_sp key, T_sp defaultValue) { return this->_Ha
 
 void WeakKeyHashTable_O::maphashLowLevel(std::function<void(T_sp, T_sp)> const& fn) { this->_HashTable.maphash(fn); }
 
-void WeakKeyHashTable_O::maphash(T_sp func) { this->_HashTable.maphashFn(func); }
+void WeakKeyHashTable_O::maphash(T_sp func) const { this->_HashTable.maphashFn(func); }
 
 bool WeakKeyHashTable_O::remhash(T_sp tkey) { return this->_HashTable.remhash(tkey); }
 

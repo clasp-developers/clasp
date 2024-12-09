@@ -172,9 +172,9 @@ public: // Functions here
   T_sp setf_gethash_no_write_lock(T_sp key, T_sp value);
   void setf_gethash(T_sp key, T_sp val) { this->hash_table_setf_gethash(key, val); };
 
-  Number_sp rehash_size() override;
-  double rehash_threshold() override;
-  T_sp hash_table_test() override;
+  Number_sp rehash_size() const override;
+  double rehash_threshold() const override;
+  T_sp hash_table_test() const override;
 
   T_sp clrhash() override;
 
@@ -186,15 +186,15 @@ public: // Functions here
 
   void lowLevelMapHash(KeyValueMapper* mapper) const;
 
-  void maphash(T_sp fn) override;
+  void maphash(T_sp fn) const override;
 
-  void mapHash(std::function<void(T_sp, T_sp)> const& fn);
-  void maphash(std::function<void(T_sp, T_sp)> const& fn) { this->mapHash(fn); };
+  void mapHash(std::function<void(T_sp, T_sp)> const& fn) const;
+  void maphash(std::function<void(T_sp, T_sp)> const& fn) const { this->mapHash(fn); };
 
   /*! maps function across a hash table until the function returns false */
   bool /*terminatingMapHash*/ map_while_true(std::function<bool(T_sp, T_sp)> const& fn) const;
 
-  string keysAsString();
+  string keysAsString() const;
 
   /*! Look like a set */
   void insert(T_sp obj) { this->setf_gethash(obj, nil<T_O>()); };

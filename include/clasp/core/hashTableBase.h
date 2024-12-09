@@ -39,10 +39,10 @@ public:
   virtual T_sp hash_table_setf_gethash(T_sp key, T_sp value) = 0;
   virtual T_mv gethash(T_sp key, T_sp default_value) = 0;
   virtual bool remhash(T_sp key) = 0;
-  virtual Number_sp rehash_size() = 0;
-  virtual double rehash_threshold() = 0;
-  virtual T_sp hash_table_test() = 0;
-  virtual void maphash(T_sp function_desig) = 0;
+  virtual Number_sp rehash_size() const = 0;
+  virtual double rehash_threshold() const = 0;
+  virtual T_sp hash_table_test() const = 0;
+  virtual void maphash(T_sp function_desig) const = 0;
   virtual T_sp clrhash() = 0;
   virtual size_t hashTableCount() const = 0;
   virtual size_t hashTableSize() const = 0;
