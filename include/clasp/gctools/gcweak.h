@@ -306,8 +306,8 @@ public:
 
   core::T_mv gethash(core::T_sp tkey, core::T_sp defaultValue);
   void set(core::T_sp key, core::T_sp value);
-  void maphash(std::function<void(core::T_sp, core::T_sp)> const& fn);
-  void maphashFn(core::T_sp fn);
+  void maphash(std::function<void(core::T_sp, core::T_sp)> const& fn) const;
+  void maphashFn(core::T_sp fn) const;
   bool remhash(core::T_sp tkey);
   void clrhash();
   core::Vector_sp pairs() const;

@@ -331,7 +331,7 @@ HashTable_sp HashTable_O::create_thread_safe(T_sp test, SimpleBaseString_sp read
 
 #define HASH_TABLE_ITER_END }
 
-void HashTable_O::maphash(T_sp function_desig) {
+void HashTable_O::maphash(T_sp function_desig) const {
   Function_sp func = coerce::functionDesignator(function_desig);
   HASH_TABLE_ITER(this, key, value) { eval::funcall(func, key, value); }
   HASH_TABLE_ITER_END;
@@ -1091,7 +1091,7 @@ CL_DEFMETHOD string HashTable_O::hash_table_dump() {
   return ss.str();
 }
 
-void HashTable_O::mapHash(std::function<void(T_sp, T_sp)> const& fn) {
+void HashTable_O::mapHash(std::function<void(T_sp, T_sp)> const& fn) const {
   HASH_TABLE_ITER(this, key, value) { fn(key, value); }
   HASH_TABLE_ITER_END;
 }
@@ -1116,23 +1116,23 @@ DONE:
   return;
 }
 
-string HashTable_O::keysAsString() {
+string HashTable_O::keysAsString() const {
   stringstream ss;
   this->mapHash([&ss, this](T_sp key, T_sp val) { ss << _rep_(key) << " "; });
   return ss.str();
 }
 
-Number_sp HashTable_O::rehash_size() {
+Number_sp HashTable_O::rehash_size() const {
   HT_READ_LOCK(this);
   return this->_RehashSize;
 }
 
-double HashTable_O::rehash_threshold() {
+double HashTable_O::rehash_threshold() const {
   HT_READ_LOCK(this);
   return this->_RehashThreshold;
 }
 
-T_sp HashTable_O::hash_table_test() { return this->hashTableTest(); }
+T_sp HashTable_O::hash_table_test() const { return this->hashTableTest(); }
 
 CL_LAMBDA(arg);
 CL_DECLARE();
