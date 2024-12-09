@@ -253,6 +253,10 @@ public:
     if (hg.isFilling()) hg.hashObject(this->car());
     if (hg.isFilling()) hg.hashObject(this->cdr());
   }
+  inline void sxhash_equalp(HashGenerator& hg) const {
+    if (hg.isFilling()) hg.hashObjectEqualp(this->car());
+    if (hg.isFilling()) hg.hashObjectEqualp(this->cdr());
+  }
 
   bool equal(T_sp obj) const;
   bool equalp(T_sp obj) const;

@@ -452,6 +452,12 @@ void HashGenerator::hashObject(T_sp obj) {
   LIKELY_if(this->_Depth < MaxDepth) clasp_sxhash(obj, *this);
   this->_Depth = depth;
 }
+void HashGenerator::hashObjectEqualp(T_sp obj) {
+  int depth = this->_Depth;
+  ++this->_Depth;
+  LIKELY_if(this->_Depth < MaxDepth) clasp_sxhash_equalp(obj, *this);
+  this->_Depth = depth;
+}
 
 Fixnum bignum_hash(const mpz_class& bignum) {
   auto bn = bignum.get_mpz_t();

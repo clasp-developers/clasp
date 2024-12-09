@@ -267,6 +267,7 @@ public:
   }
 
   void hashObject(T_sp obj);
+  void hashObjectEqualp(T_sp obj);
 };
 }; // namespace core
 
@@ -592,6 +593,15 @@ inline void clasp_sxhash(T_sp obj, Hash1Generator& hg) {
   }
   SIMPLE_ERROR("Handle sxhash_ for object");
 };
+
+claspCharacter char_upcase(claspCharacter); // FIXME: bad location
+inline void clasp_sxhash_equalp(T_sp obj, HashGenerator& hg) {
+  if (obj.consp()) obj.as_unsafe<Cons_O>()->sxhash_equalp(hg);
+  else if (obj.generalp()) obj.as_unsafe<General_O>()->sxhash_equalp(hg);
+  else if (obj.characterp()) // fold case
+    hg.addValue(char_upcase(obj.unsafe_character()));
+  else clasp_sxhash(obj, hg);
+}
 }; // namespace core
 
 namespace core {

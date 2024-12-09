@@ -110,12 +110,6 @@ public:
                                          SimpleBaseString_sp writeLockName); // set everything up with defaults
 
 public:
-  static void sxhash_eq(Hash1Generator& running_hash, T_sp obj);
-  static void sxhash_eql(Hash1Generator& running_hash, T_sp obj);
-  static void sxhash_eq(HashGenerator& running_hash, T_sp obj);
-  static void sxhash_eql(HashGenerator& running_hash, T_sp obj);
-  static void sxhash_equal(HashGenerator& running_hash, T_sp obj);
-  static void sxhash_equalp(HashGenerator& running_hash, T_sp obj);
   void setupThreadSafeHashTable();
   void setupDebug();
 
@@ -126,10 +120,12 @@ private:
 
   void rehash_no_lock(bool expandTable);
   T_sp setf_gethash_no_write_lock(T_sp key, T_sp value);
+  gc::Fixnum sxhashKey(T_sp key) const; // NOTE: Only call with (read) lock held
 
 protected:
   virtual KeyValuePair* searchTable_no_read_lock(T_sp key, cl_index index);
-  
+  virtual void sxhashEffect(T_sp key, HashGenerator& hg) const { SUBIMP() };
+
 public:
   void rehash(bool expandTable);
 
@@ -154,7 +150,6 @@ public: // Functions here
 
   T_sp operator[](const std::string& key);
 
-  virtual gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, HashGenerator& hg) const;
   virtual bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
   /*! Return true if the key is within the hash table */

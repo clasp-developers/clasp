@@ -45,14 +45,11 @@ public:
   static HashTableEq_sp create_default();
   static HashTableEq_sp createFromPList(List_sp plist, Symbol_sp nilTerminatedValidKeywords[]);
 
-public:
-  static int sxhash_eq(T_sp obj);
-
 public: // Functions here
   virtual T_sp hashTableTest() const { return cl::_sym_eq; };
   bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
-  gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, HashGenerator& hg) const;
+  void sxhashEffect(T_sp key, HashGenerator& hg) const;
 };
 
 }; // namespace core

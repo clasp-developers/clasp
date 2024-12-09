@@ -93,9 +93,10 @@ NOT_FOUND:
 
 bool HashTableEq_O::keyTest(T_sp entryKey, T_sp searchKey) const { return cl__eq(entryKey, searchKey); }
 
-gc::Fixnum HashTableEq_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator& hg) const {
-  HashTable_O::sxhash_eq(hg, obj);
-  return hg.hashBound(bound);
+void HashTableEq_O::sxhashEffect(T_sp obj, HashGenerator& hg) const {
+  if (obj.generalp()) hg.addGeneralAddress(obj.as_unsafe<General_O>());
+  else if (obj.consp()) hg.addConsAddress(obj.as_unsafe<Cons_O>());
+  else hg.addValue((uintptr_t)obj.raw_());
 }
 
 }; // namespace core

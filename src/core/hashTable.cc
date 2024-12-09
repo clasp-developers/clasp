@@ -308,28 +308,13 @@ CL_DEFUN bool core__hash_table_entry_deleted_p(T_sp cons) {
 
 CL_LAMBDA(&rest args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(hash_eql generates an eql hash for a list of objects)dx");
-DOCGROUP(clasp);
-CL_DEFUN Fixnum core__hash_eql(List_sp args) {
-  HashGenerator hg;
-  for (auto cur : args) {
-    HashTable_O::sxhash_eql(hg, oCar(cur));
-    if (!hg.isFilling())
-      break;
-  }
-  return hg.rawhash();
-};
-
-CL_LAMBDA(&rest args);
-CL_DECLARE();
 CL_DOCSTRING(R"dx(hash_equal generates an equal hash for a list of objects)dx");
 DOCGROUP(clasp);
 CL_DEFUN Fixnum core__hash_equal(List_sp args) {
   HashGenerator hg;
   for (auto cur : args) {
-    HashTable_O::sxhash_equal(hg, oCar(cur));
-    if (hg.isFull())
-      break;
+    clasp_sxhash(oCar(cur), hg);
+    if (hg.isFull()) break;
   }
   return hg.rawhash();
 };
@@ -341,9 +326,8 @@ DOCGROUP(clasp);
 CL_DEFUN Fixnum core__hash_equalp(List_sp args) {
   HashGenerator hg;
   for (auto cur : args) {
-    HashTable_O::sxhash_equalp(hg, oCar(cur));
-    if (hg.isFull())
-      break;
+    clasp_sxhash_equalp(oCar(cur), hg);
+    if (hg.isFull()) break;
   }
   return hg.rawhash();
 };
@@ -374,153 +358,6 @@ void HashTable_O::setup(uint sz, Number_sp rehashSize, double rehashThreshold) {
   this->_RehashSize = rehashSize;
   ASSERT(!Number_O::zerop(this->_RehashSize));
   this->_RehashThreshold = maybeFixRehashThreshold(rehashThreshold);
-}
-
-void HashTable_O::sxhash_eq(HashGenerator& hg, T_sp obj) {
-  if (obj.generalp()) {
-    hg.addGeneralAddress(gc::As_unsafe<General_sp>(obj));
-    return;
-  } else if (obj.consp()) {
-    hg.addConsAddress(gc::As_unsafe<Cons_sp>(obj));
-    return;
-  } else {
-    hg.addValue((uintptr_t)obj.raw_());
-  }
-}
-
-void HashTable_O::sxhash_eq(Hash1Generator& hg, T_sp obj) {
-  if (obj.generalp()) {
-    hg.addGeneralAddress(gc::As_unsafe<General_sp>(obj));
-    return;
-  } else if (obj.consp()) {
-    hg.addConsAddress(gc::As_unsafe<Cons_sp>(obj));
-    return;
-  } else {
-    hg.addValue((uintptr_t)obj.raw_());
-  }
-}
-
-void HashTable_O::sxhash_eql(HashGenerator& hg, T_sp obj) {
-  uintptr_t tag = (uintptr_t)gctools::ptag<core::T_O*>(obj.raw_());
-  switch (tag) {
-  case gctools::fixnum00_tag:
-  case gctools::fixnum01_tag:
-#if TAG_BITS == 4
-  case gctools::fixnum10_tag:
-  case gctools::fixnum11_tag:
-#endif
-  {
-    hg.addValue0(obj.unsafe_fixnum());
-    return;
-  }
-  case gctools::single_float_tag: {
-    hg.addValue0(float_convert<float>::float_to_bits(obj.unsafe_single_float()));
-    return;
-  }
-  case gctools::character_tag: {
-    hg.addValue0(obj.unsafe_character());
-    return;
-  }
-  case gctools::general_tag: {
-    if (cl__numberp(obj)) {
-      hg.hashObject(obj);
-      return;
-    }
-    hg.addGeneralAddress(gc::As_unsafe<General_sp>(obj));
-    return;
-  }
-  case gctools::cons_tag: {
-    hg.addConsAddress(gc::As_unsafe<Cons_sp>(obj));
-    return;
-  }
-  default:
-    break;
-  }
-  SIMPLE_ERROR("Illegal object (object.raw_() = {}) for eql hash {}  tag = {}", (void*)obj.raw_(), _rep_(obj), tag);
-}
-
-void HashTable_O::sxhash_eql(Hash1Generator& hg, T_sp obj) {
-  if (obj.fixnump()) {
-    if (hg.isFilling())
-      hg.addValue(obj.unsafe_fixnum());
-    return;
-  } else if (obj.single_floatp()) {
-    if (hg.isFilling()) {
-      hg.addValue(float_convert<float>::float_to_bits(obj.unsafe_single_float()));
-    }
-    return;
-  } else if (obj.characterp()) {
-    if (hg.isFilling())
-      hg.addValue(obj.unsafe_character());
-    return;
-  } else if (obj.generalp()) {
-    if (gc::IsA<Number_sp>(obj)) {
-      hg.hashObject(obj);
-      return;
-    }
-    hg.addGeneralAddress(gc::As_unsafe<General_sp>(obj));
-    return;
-  } else if (obj.consp()) {
-    hg.addConsAddress(gc::As_unsafe<Cons_sp>(obj));
-    return;
-  }
-  SIMPLE_ERROR("Illegal object for eql hash {}", _rep_(obj));
-}
-
-void HashTable_O::sxhash_equal(HashGenerator& hg, T_sp obj) {
-  if (obj.fixnump()) {
-    if (hg.isFilling()) hg.addValue(obj.unsafe_fixnum());
-  } else if (obj.single_floatp()) {
-    if (hg.isFilling())
-      hg.addValue(float_convert<float>::float_to_bits(obj.unsafe_single_float()));
-  } else if (obj.characterp()) {
-    if (hg.isFilling()) hg.addValue(obj.unsafe_character());
-  } else if (obj.consp()) {
-    Cons_sp cobj = gc::As_unsafe<Cons_sp>(obj);
-    cobj->sxhash_equal(hg);
-  } else if (obj.generalp()) {
-    General_sp gobj = gc::As_unsafe<General_sp>(obj);
-    gobj->sxhash_equal(hg);
-  } else SIMPLE_ERROR("You cannot EQUAL hash on {}", _rep_(obj));
-}
-
-void HashTable_O::sxhash_equalp(HashGenerator& hg, T_sp obj) {
-  if (obj.fixnump()) {
-    if (hg.isFilling())
-      hg.addValue(obj.unsafe_fixnum());
-    return;
-  } else if (obj.single_floatp()) {
-    if (hg.isFilling()) {
-      float value = obj.unsafe_single_float();
-      hg.addValue((std::fpclassify(value) == FP_ZERO) ? 0u : float_convert<float>::float_to_bits(value));
-    }
-    return;
-  } else if (obj.characterp()) {
-    if (hg.isFilling())
-      hg.addValue(char_upcase(clasp_as_claspCharacter(gc::As<Character_sp>(obj))));
-    return;
-  } else if (obj.consp()) {
-    Cons_sp cobj = gc::As_unsafe<Cons_sp>(obj);
-    if (hg.isFilling())
-      HashTable_O::sxhash_equalp(hg, CONS_CAR(cobj));
-    if (hg.isFilling())
-      HashTable_O::sxhash_equalp(hg, CONS_CDR(cobj));
-    return;
-  } else if (obj.generalp()) {
-    if (cl__numberp(obj)) {
-      if (hg.isFilling())
-        hg.hashObject(obj);
-      return;
-    } else if (cl__stringp(obj)) {
-      SimpleString_sp upstr = cl__string_upcase(obj);
-      hg.hashObject(upstr);
-      return;
-    }
-    General_sp gobj = gc::As_unsafe<General_sp>(obj);
-    gobj->sxhash_equalp(hg);
-    return;
-  }
-  SIMPLE_ERROR("You cannot EQUALP hash on {}", _rep_(obj));
 }
 
 bool HashTable_O::equalp(T_sp other) const {
@@ -637,7 +474,13 @@ size_t HashTable_O::hashTableSize() const {
 
 bool HashTable_O::keyTest(T_sp entryKey, T_sp searchKey) const { SUBCLASS_MUST_IMPLEMENT(); }
 
-gc::Fixnum HashTable_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator& hg) const { SUBCLASS_MUST_IMPLEMENT(); }
+gc::Fixnum HashTable_O::sxhashKey(T_sp obj) const {
+  HashGenerator hg;
+  this->sxhashEffect(obj, hg);
+  // We don't use hashTableSize() here because sxhashKey is only called while
+  // the table is already locked.
+  return hg.hashBound(this->_Table.size());
+}
 
 CL_LAMBDA(key hash-table &optional default-value);
 CL_DOCSTRING(R"dx(gethash)dx");
@@ -704,16 +547,7 @@ CL_DEFUN void core__hash_table_force_rehash(HashTable_sp ht) {
 T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
   LOG("gethash looking for key[{}]", _rep_(key));
   HT_READ_LOCK(this);
-  HashGenerator hg;
-  size_t sz = this->_Table.size();
-  // #ifdef DEBUG_SLOW
-  if (sz == 0) {
-    printf("%s:%d:%s hash-table @%p table @%p size is zero\n", __FILE__, __LINE__, __FUNCTION__, this,
-           this->_Table._Vector._Contents.raw_());
-    gctools::wait_for_user_signal("bad hash-table");
-  }
-  // #endif
-  cl_index index = this->sxhashKey(key, sz, hg);
+  cl_index index = this->sxhashKey(key);
   KeyValuePair* keyValuePair = this->searchTable_no_read_lock(key, index);
   LOG("Found keyValueCons"); // % keyValueCons->__repr__() ); INFINITE-LOOP
   if (keyValuePair) {
@@ -730,15 +564,12 @@ T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
 
 CL_LISPIFY_NAME("core:hashIndex");
 CL_DEFMETHOD gc::Fixnum HashTable_O::hashIndex(T_sp key) const {
-  HashGenerator hg;
-  gc::Fixnum idx = this->sxhashKey(key, this->_Table.size(), hg);
-  return idx;
+  return this->sxhashKey(key);
 }
 
 KeyValuePair* HashTable_O::find(T_sp key) {
   HT_READ_LOCK(this);
-  HashGenerator hg;
-  cl_index index = this->sxhashKey(key, this->_Table.size(), hg);
+  cl_index index = this->sxhashKey(key);
   KeyValuePair* keyValue = this->searchTable_no_read_lock(key, index);
   if (!keyValue)
     return keyValue;
@@ -755,8 +586,7 @@ bool HashTable_O::contains(T_sp key) {
 
 bool HashTable_O::remhash(T_sp key) {
   HT_WRITE_LOCK(this);
-  HashGenerator hg;
-  cl_index index = this->sxhashKey(key, this->_Table.size(), hg);
+  cl_index index = this->sxhashKey(key);
   KeyValuePair* keyValuePair = this->searchTable_no_read_lock(key, index);
   if (keyValuePair) {
     keyValuePair->_Key = deleted<T_O>();
@@ -774,25 +604,8 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value) {
   if (key.no_keyp()) {
     SIMPLE_ERROR("Do not use {} as a key!!", _rep_(key));
   }
-#ifdef DEBUG_HASH_TABLE_DEBUG
-  HashGenerator hg(this->_Debug);
-#else
-  HashGenerator hg;
-#endif
 
-  cl_index index = this->sxhashKey(key, this->_Table.size(), hg);
-#ifdef DEBUG_HASH_TABLE_DEBUG
-  if (this->_Debug) {
-    core::T_sp info = Cons_O::createList(INTERN_(kw, setf_gethash), Cons_O::create(key, value), INTERN_(kw, index),
-                                         make_fixnum(index), INTERN_(kw, generator), hg.asList());
-    T_sp expected;
-    Cons_sp cell = core::Cons_O::create(info, nil<T_O>());
-    do {
-      expected = this->_History.load();
-      cell->rplacd(expected);
-    } while (!this->_History.compare_exchange_weak(expected, cell));
-  }
-#endif
+  cl_index index = this->sxhashKey(key);
   DEBUG_HASH_TABLE({
     core::clasp_write_string(fmt::format("{}:{}:{}   index = {}  this->_Table.size() = {}\n", __FILE__, __LINE__, __FUNCTION__,
                                          index, this->_Table.size()));
@@ -832,14 +645,11 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value) {
   goto NO_ROOM;
 ADD_KEY_VALUE:
   DEBUG_HASH_TABLE1({
-    HashGenerator hg2(this->_Debug);
-    cl_index index2 = this->sxhashKey(key, this->_Table.size(), hg2);
+    cl_index index2 = this->sxhashKey(key);
     if (index2 != index) {
       lisp_write(fmt::format("{}:{}:{} INDEX mismatch!!! key = {} badge = {} index = {} write = {} index2 = {} size = {}\n",
                              __FILE__, __LINE__, __FUNCTION__, _rep_(key), lisp_general_badge(gc::As_unsafe<General_sp>(key)),
                              index, write, index2, this->_Table.size()));
-      lisp_write(fmt::format("{} hg -> {}\n", CPP_SOURCE(), hg.asString()));
-      lisp_write(fmt::format("{} hg2 -> {}\n", CPP_SOURCE(), hg2.asString()));
     }
   });
   entryP->_Key = key;
