@@ -249,11 +249,9 @@ public:
 
 public:
   /*! Recursively hash the car and cdr parts - until the HashGenerator fills up */
-  inline void sxhash_(HashGenerator& hg) const {
-    if (hg.isFilling())
-      hg.hashObject(this->car());
-    if (hg.isFilling())
-      hg.hashObject(this->cdr());
+  inline void sxhash_equal(HashGenerator& hg) const {
+    if (hg.isFilling()) hg.hashObject(this->car());
+    if (hg.isFilling()) hg.hashObject(this->cdr());
   }
 
   bool equal(T_sp obj) const;

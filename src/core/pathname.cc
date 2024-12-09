@@ -415,21 +415,6 @@ bool Pathname_O::equal(T_sp obj) const {
   return false;
 }
 
-void Pathname_O::sxhash_(HashGenerator& hg) const {
-  if (hg.isFilling())
-    hg.hashObject(this->_Host);
-  if (hg.isFilling())
-    hg.hashObject(this->_Device);
-  if (hg.isFilling())
-    hg.hashObject(this->_Directory);
-  if (hg.isFilling())
-    hg.hashObject(this->_Name);
-  if (hg.isFilling())
-    hg.hashObject(this->_Type);
-  if (hg.isFilling())
-    hg.hashObject(this->_Version);
-}
-
 void Pathname_O::sxhash_equal(HashGenerator& hg) const {
   if (hg.isFilling())
     HashTable_O::sxhash_equal(hg, this->_Host);

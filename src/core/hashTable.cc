@@ -469,43 +469,19 @@ void HashTable_O::sxhash_eql(Hash1Generator& hg, T_sp obj) {
 
 void HashTable_O::sxhash_equal(HashGenerator& hg, T_sp obj) {
   if (obj.fixnump()) {
-    if (hg.isFilling())
-      hg.addValue(obj.unsafe_fixnum());
-    return;
+    if (hg.isFilling()) hg.addValue(obj.unsafe_fixnum());
   } else if (obj.single_floatp()) {
-    if (hg.isFilling()) {
-      hg.addValue(float_convert<float>::float_to_bits(obj.unsafe_single_float()));
-    }
-    return;
-  } else if (obj.characterp()) {
     if (hg.isFilling())
-      hg.addValue(obj.unsafe_character());
-    return;
+      hg.addValue(float_convert<float>::float_to_bits(obj.unsafe_single_float()));
+  } else if (obj.characterp()) {
+    if (hg.isFilling()) hg.addValue(obj.unsafe_character());
   } else if (obj.consp()) {
     Cons_sp cobj = gc::As_unsafe<Cons_sp>(obj);
-    if (hg.isFilling())
-      HashTable_O::sxhash_equal(hg, CONS_CAR(cobj));
-    if (hg.isFilling())
-      HashTable_O::sxhash_equal(hg, CONS_CDR(cobj));
-    return;
+    cobj->sxhash_equal(hg);
   } else if (obj.generalp()) {
-    if (cl__numberp(obj)) {
-      hg.hashObject(obj);
-      return;
-    } else if (String_sp str_obj = obj.asOrNull<String_O>()) {
-      if (hg.isFilling())
-        str_obj->sxhash_(hg);
-      return;
-    } else if (BitVector_sp bv_obj = obj.asOrNull<BitVector_O>()) {
-      if (hg.isFilling())
-        bv_obj->sxhash_(hg);
-      return;
-    }
     General_sp gobj = gc::As_unsafe<General_sp>(obj);
     gobj->sxhash_equal(hg);
-    return;
-  }
-  SIMPLE_ERROR("You cannot EQUAL hash on {}", _rep_(obj));
+  } else SIMPLE_ERROR("You cannot EQUAL hash on {}", _rep_(obj));
 }
 
 void HashTable_O::sxhash_equalp(HashGenerator& hg, T_sp obj) {

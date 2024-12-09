@@ -376,7 +376,6 @@ class General_O : public T_O {
   LISP_CLASS(core, CorePkg, General_O, "General", T_O);
 
 public:
-  virtual void sxhash_(HashGenerator& hg) const;
   virtual void sxhash_equal(HashGenerator& hg) const;
   virtual void sxhash_equalp(HashGenerator& hg) const { return this->sxhash_equal(hg); };
 
@@ -564,11 +563,11 @@ inline void clasp_sxhash(T_sp obj, HashGenerator& hg) {
     return;
   } else if (obj.consp()) {
     Cons_O* cons = obj.unsafe_cons();
-    cons->sxhash_(hg);
+    cons->sxhash_equal(hg);
     return;
   } else if (obj.generalp()) {
     General_O* general = obj.unsafe_general();
-    general->sxhash_(hg);
+    general->sxhash_equal(hg);
     return;
   }
   SIMPLE_ERROR("Handle sxhash_ for object");
