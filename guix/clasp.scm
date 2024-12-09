@@ -89,9 +89,11 @@
         #~(let ((clang #$(this-package-input "clang-toolchain")))
             (list "--build-mode=bytecode-faso"
                   "--reproducible-build"
-                  (string-append "--bin-path=" #$output "/bin")
-                  (string-append "--lib-path=" #$output "/lib/clasp")
-                  (string-append "--share-path=" #$output "/share/clasp")
+                  (string-append "--bin-path=" #$output "/bin/")
+                  (string-append "--lib-path=" #$output "/lib/clasp/")
+                  (string-append "--share-path=" #$output "/share/clasp/")
+                  (string-append "--dylib-path=" #$output "/lib/")
+                  (string-append "--pkgconfig-path=" #$output "/lib/pkgconfig/")
                   ;; Without --cc and --cxx, Clang is searched for in
                   ;; LLVM's /bin.
                   (string-append "--cc=" clang "/bin/clang")
