@@ -798,8 +798,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(hashTableForceRehash)dx");
 DOCGROUP(clasp);
 CL_DEFUN void core__hash_table_force_rehash(HashTable_sp ht) {
-  HT_WRITE_LOCK(&*ht);
-  ht->rehash_no_lock(false, no_key<T_O>());
+  ht->rehash(false);
 }
 
 T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
@@ -954,7 +953,7 @@ ADD_KEY_VALUE:
   VERIFY_HASH_TABLE_VA(this, write, key);
   if (this->_HashTableCount > this->_RehashThreshold * this->_Table.size()) {
     LOG("Expanding hash table");
-    this->rehash_no_lock(true, no_key<T_O>());
+    this->rehash_no_lock(true);
     VERIFY_HASH_TABLE(this);
   }
   return value;
@@ -970,7 +969,7 @@ NO_ROOM:
          __FILE__, __LINE__, this->_RehashThreshold, this->_HashTableCount, this->_Table.size());
   verifyHashTable(true, std::cerr, this, __FILE__, __LINE__);
   printf("%s:%d ---- done verify\n", __FILE__, __LINE__);
-  this->rehash_no_lock(true, no_key<T_O>());
+  this->rehash_no_lock(true);
   VERIFY_HASH_TABLE_VA(this, cur);
   return this->setf_gethash_no_write_lock(key, value);
   // ------------
@@ -992,13 +991,12 @@ CL_DEFUN_SETF T_sp setf_gethash(T_sp value, T_sp key, HashTableBase_sp hash_tabl
   return hash_table->hash_table_setf_gethash(key, value);
 }
 
-KeyValuePair* HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
-  //        printf("%s:%d rehash of hash-table@%p\n", __FILE__, __LINE__,  this );
+void HashTable_O::rehash_no_lock(bool expandTable) {
   DEBUG_HASH_TABLE1({ core::clasp_write_string(fmt::format("{}:{} rehash_no_lock\n", __FILE__, __LINE__)); });
   ASSERTF(!Number_O::zerop(this->_RehashSize), "RehashSize is zero - it shouldn't be");
 #ifdef DEBUG_HASH_TABLE_DEBUG
   if (this->_Debug) {
-    core::T_sp info = Cons_O::createList(INTERN_(kw, rehash), findKey);
+    core::T_sp info = INTERN_(kw, rehash);
     T_sp expected;
     Cons_sp cell = core::Cons_O::create(info, nil<T_O>());
     do {
@@ -1011,7 +1009,6 @@ KeyValuePair* HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
   gc::Fixnum curSize = this->_Table.size();
   ASSERTF(this->_Table.size() != 0, "HashTable is empty in expandHashTable curSize={}  this->_Table.size()= {} this shouldn't be",
           curSize, this->_Table.size());
-  KeyValuePair* foundKeyValuePair = nullptr;
   LOG("At start of expandHashTable current hash table size: {}", this->_Table.size());
   gc::Fixnum newSize = 0;
   if (expandTable) {
@@ -1034,19 +1031,6 @@ KeyValuePair* HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
     T_sp value = entry._Value;
     if (!key.no_keyp() && !key.deletedp()) {
       // key/value represent a valid entry in the hash table
-      //
-      // If findKey is not no_key and we haven't already found
-      // the value that it points to.
-      // then while we are rehashing the hash table we are also looking
-      // for the key it points to.
-      // Check if the current key matches findKey and if it does
-      // set foundKeyValuePair so that it will be returned when
-      // the rehash is complete.
-      if (foundKeyValuePair == nullptr && !findKey.no_keyp()) {
-        if (this->keyTest(key, findKey)) {
-          foundKeyValuePair = &entry;
-        }
-      }
       this->setf_gethash_no_write_lock(key, value);
     }
   }
@@ -1057,29 +1041,11 @@ KeyValuePair* HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
           this->_HashTableId % this->_InitialSize % this->_RehashCount % newSize % oldHashTableCount % this->_HashTableCount);
 #endif
   VERIFY_HASH_TABLE(this);
-  //
-  // The following lookup is important for (setf (gethash key ht) val) when using MPS
-  // If the lookup of a reference for the key failed because of a stale pointer
-  // then that triggers a rehash and rehash searches for the key/value
-  // in the OLD table as it rehashes.  So we can't return that reference
-  // because setf will then write into the OLD table!  So below
-  // we lookup the reference again with tableRef_no_read_lock because
-  // it is guaranteed to return a reference to the current table of the hash-table.
-  if (foundKeyValuePair != nullptr) {
-    // Return the foundKeyValuePair in the latest table
-    T_sp key = foundKeyValuePair->_Key;
-    HashGenerator hg;
-    cl_index index = this->sxhashKey(key, this->_Table.size(), hg);
-    foundKeyValuePair = this->tableRef_no_read_lock(foundKeyValuePair->_Key, index);
-  }
-  DEBUG_HASH_TABLE({
-    if (foundKeyValuePair) {
-      core::clasp_write_string(fmt::format("{}:{}:{}  Returning foundKeyValuePair: {},{} at {} \n", __FILE__, __LINE__,
-                                           __FUNCTION__, _rep_(foundKeyValuePair->_Key), _rep_(foundKeyValuePair->_Value),
-                                           (void*)&*foundKeyValuePair));
-    }
-  });
-  return foundKeyValuePair;
+}
+
+void HashTable_O::rehash(bool expandTable) {
+  HT_WRITE_LOCK(this);
+  rehash_no_lock(expandTable);
 }
 
 string HashTable_O::__repr__() const {

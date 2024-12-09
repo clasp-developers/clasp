@@ -124,9 +124,10 @@ private:
   uint resizeEmptyTable_no_lock(size_t sz);
   uint calculateHashTableCount() const;
 
+  void rehash_no_lock(bool expandTable);
+
 public:
-  /*! If findKey is defined then search it as you rehash and return resulting keyValuePair CONS */
-  KeyValuePair* rehash_no_lock(bool expandTable, T_sp findKey);
+  void rehash(bool expandTable);
 
   CL_LISPIFY_NAME("hash-table-shared-mutex");
   CL_DEFMETHOD T_sp hash_table_shared_mutex() const {
