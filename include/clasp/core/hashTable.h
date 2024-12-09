@@ -125,11 +125,9 @@ private:
   uint calculateHashTableCount() const;
 
 public:
-  List_sp hash_table_bucket(size_t index);
   /*! If findKey is defined then search it as you rehash and return resulting keyValuePair CONS */
   KeyValuePair* rehash_no_lock(bool expandTable, T_sp findKey);
-  CL_LISPIFY_NAME("hash-table-buckets");
-  //    CL_DEFMETHOD ComplexVector_T_sp hash_table_buckets() const { return this->_HashTable; };
+
   CL_LISPIFY_NAME("hash-table-shared-mutex");
   CL_DEFMETHOD T_sp hash_table_shared_mutex() const {
     if (this->_Mutex)
@@ -137,9 +135,8 @@ public:
     else
       return nil<T_O>();
   };
-  //    void set_thread_safe(bool thread_safe);
+
 public: // Functions here
-  virtual bool is_eq_hashtable() const { return false; }
   virtual bool equalp(T_sp other) const override;
 
   /*! See CLHS */
@@ -160,9 +157,6 @@ public: // Functions here
   /*! I'm not sure I need this and bucketsFind */
   virtual KeyValuePair* searchTable_no_read_lock(T_sp key, cl_index index);
   KeyValuePair* tableRef_no_read_lock(T_sp key, cl_index index);
-  //    List_sp findAssoc_no_lock(gc::Fixnum index, T_sp searchKey) const;
-
-  T_sp hash_table_average_search_length();
 
   /*! Return true if the key is within the hash table */
   bool contains(T_sp key);
@@ -188,8 +182,6 @@ public: // Functions here
   string __repr__() const override;
 
   string hash_table_dump();
-  void hash_table_pointers_dump();
-  void hash_table_early_dump();
 
   void lowLevelMapHash(KeyValueMapper* mapper) const;
 
@@ -201,11 +193,6 @@ public: // Functions here
   /*! maps function across a hash table until the function returns false */
   bool /*terminatingMapHash*/ map_while_true(std::function<bool(T_sp, T_sp)> const& fn) const;
 
-  /*! Return the number of entries in the HashTable Vector0 */
-  int hashTableNumberOfHashes() const;
-  /*! Return the start of the alist in the HashTable Vector0 at hash value */
-  //    List_sp hashTableAlistAtHash(int hash) const;
-
   string keysAsString();
 
   /*! Look like a set */
@@ -213,8 +200,6 @@ public: // Functions here
   /*! Return a Cons of all keys */
   List_sp keysAsCons();
 };
-
-// HashTable_mv af_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, DoubleFloat_sp orehash_threshold);
 
 T_mv clasp_gethash_safe(T_sp key, T_sp hashTable, T_sp default_);
 

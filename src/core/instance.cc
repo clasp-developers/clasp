@@ -442,8 +442,6 @@ void Instance_O::accumulateSuperClasses(HashTableEq_sp supers, ComplexVector_T_s
   //  printf("%s:%d arraySuperLength = %ld\n", __FILE__, __LINE__, arraySuperLength);
   T_sp index = clasp_make_fixnum(arraySuperLength);
   supers->setf_gethash(mc, index);
-  //  printf("%s:%d dumping supers hash-table\n", __FILE__, __LINE__ );
-  // supers->hash_table_early_dump();
   //  printf("%s:%d associating %s with %s\n", __FILE__, __LINE__, _rep_(mc).c_str(), _rep_(index).c_str());
   arrayedSupers->vectorPushExtend(mc);
   List_sp directSuperclasses = mc->directSuperclasses();

@@ -228,7 +228,7 @@ the corresponding VAR.  Returns NIL."
 
 #+(or)
 (defun hash-table-iterator (hash-table)
-  (let ((number-of-buckets (hash-table-number-of-hashes hash-table))
+  (let ((number-of-buckets (hash-table-size hash-table))
         (hash 0))
     (labels ((advance-hash-table-iterator ()
                (declare (core:lambda-name advance-hash-table-iterator))
