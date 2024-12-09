@@ -240,7 +240,6 @@ public: // Functions here
     return this->unsafe_setf_subseq(p.start, p.end, newVec);
   }
   void fillInitialContents(T_sp initialContents);
-  virtual void sxhash_(HashGenerator& hg) const override = 0;
   virtual void sxhash_equalp(HashGenerator& hg) const override;
   // --------------------------------------------------
   // Ranged operations with explicit limits
@@ -324,7 +323,6 @@ public:
   virtual size_t displacedIndexOffset() const override { return this->_DisplacedIndexOffset; }
   virtual bool arrayHasFillPointerP() const override { return this->_Flags.fillPointerP(); };
   virtual T_sp replaceArray(T_sp other) override;
-  virtual void sxhash_(HashGenerator& hg) const override;
   void fillPointerSet(size_t idx) override {
     // This better not be bigger than the vector size (must be a vector)
     if (idx > this->_ArrayTotalSize)
@@ -420,7 +418,6 @@ public:
   virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const {
     TYPE_ERROR(this->asSmartPtr(), Cons_O::createList(cl::_sym_string, cl::_sym_bit_vector));
   };
-  virtual void sxhash_(HashGenerator& hg) const override { this->General_O::sxhash_(hg); }
   virtual bool equal(T_sp other) const override { return this->eq(other); };
   virtual bool equalp(T_sp other) const override;
   void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const override {

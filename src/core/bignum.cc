@@ -54,7 +54,7 @@ Bignum_sp Bignum_O::create(const mpz_class& c) {
   return create_from_limbs(len, 0, false, count, dest);
 }
 
-void Bignum_O::sxhash_(HashGenerator& hg) const {
+void Bignum_O::sxhash_equal(HashGenerator& hg) const {
   mp_size_t len = this->length();
   if (!(hg.addValue(len)))
     return;

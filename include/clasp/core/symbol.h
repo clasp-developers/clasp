@@ -281,7 +281,6 @@ public: // Flags access
   void setf_specialP(bool m) { setFlag(m, IS_SPECIAL); }
   void makeSpecial(); // TODO: Redundant, remove?
 public:               // Hashing
-  void sxhash_(HashGenerator& hg) const override;
   void sxhash_equal(HashGenerator& hg) const override;
   void sxhash_equalp(HashGenerator& hg) const override { this->sxhash_equal(hg); };
 

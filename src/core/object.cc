@@ -373,17 +373,9 @@ string General_O::className() const {
   return this->__class()->_classNameAsString();
 }
 
-void General_O::sxhash_(HashGenerator& hg) const {
-  if (hg.isFilling()) {
-    hg.addGeneralAddress(this->asSmartPtr());
-  }
-}
-
 void General_O::sxhash_equal(HashGenerator& hg) const {
-  if (!hg.isFilling())
-    return;
-  hg.addGeneralAddress(this->asSmartPtr());
-  return;
+  if (hg.isFilling())
+    hg.addGeneralAddress(this->asSmartPtr());
 }
 
 bool General_O::eql_(T_sp obj) const { return this->eq(obj); }

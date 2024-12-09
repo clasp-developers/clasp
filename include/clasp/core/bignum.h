@@ -138,7 +138,7 @@ public: // Functions here
   mp_size_t length() const { return _limbs.signedLength(); }
   const mp_limb_t* limbs() const { return &(_limbs._Data[0]); }
 
-  void sxhash_(HashGenerator& hg) const;
+  void sxhash_equal(HashGenerator& hg) const;
 
   mpz_class mpz() const;
 

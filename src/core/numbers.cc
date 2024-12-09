@@ -1230,7 +1230,7 @@ CL_DEFMETHOD Integer_sp DoubleFloat_O::castToInteger() const {
 
 Number_sp DoubleFloat_O::signum_() const { return create(_signum(_Value)); }
 
-void DoubleFloat_O::sxhash_(HashGenerator& hg) const {
+void DoubleFloat_O::sxhash_equal(HashGenerator& hg) const {
   hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<double>::float_to_bits(this->_Value));
 }
 
@@ -1277,7 +1277,7 @@ CL_DEFMETHOD Integer_sp LongFloat_O::castToInteger() const {
 
 Number_sp LongFloat_O::reciprocal_() const { return LongFloat_O::create(long_float_t{1.0} / this->_Value); }
 
-void LongFloat_O::sxhash_(HashGenerator& hg) const {
+void LongFloat_O::sxhash_equal(HashGenerator& hg) const {
   hg.addValue((std::fpclassify(this->_Value) == FP_ZERO) ? 0u : float_convert<long_float_t>::float_to_bits(this->_Value));
 }
 
@@ -1389,11 +1389,9 @@ bool Ratio_O::eql_(T_sp obj) const {
   }
   return false;
 }
-void Ratio_O::sxhash_(HashGenerator& hg) const {
-  if (hg.isFilling())
-    hg.hashObject(this->_numerator);
-  if (hg.isFilling())
-    hg.hashObject(this->_denominator);
+void Ratio_O::sxhash_equal(HashGenerator& hg) const {
+  if (hg.isFilling()) hg.hashObject(this->_numerator);
+  if (hg.isFilling()) hg.hashObject(this->_denominator);
 }
 
 Number_sp Ratio_O::signum_() const {
@@ -1467,11 +1465,9 @@ string Complex_O::__repr__() const {
   return ss.str();
 }
 
-void Complex_O::sxhash_(HashGenerator& hg) const {
-  if (hg.isFilling())
-    hg.hashObject(this->_real);
-  if (hg.isFilling())
-    hg.hashObject(this->_imaginary);
+void Complex_O::sxhash_equal(HashGenerator& hg) const {
+  if (hg.isFilling()) hg.hashObject(this->_real);
+  if (hg.isFilling()) hg.hashObject(this->_imaginary);
 }
 
 bool Complex_O::eql_(T_sp o) const {

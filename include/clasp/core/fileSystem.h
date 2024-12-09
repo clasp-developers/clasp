@@ -78,7 +78,7 @@ public:
   void setPath(const std::filesystem::path& p);
   void setPathFromString(const string& path);
 
-  void sxhash_(HashGenerator& hg) const;
+  void sxhash_equal(HashGenerator& hg) const;
   Path_sp parent_path();
 
   /*! Return just the fileName (*--end) as a string*/

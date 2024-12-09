@@ -125,7 +125,6 @@ public:
 
   virtual bool equal(T_sp obj) const;
   virtual bool equalp(T_sp obj) const { return this->equal(obj); };
-  virtual void sxhash_(HashGenerator& hg) const;
   virtual void sxhash_equal(HashGenerator& hg) const;
   virtual void sxhash_equalp(HashGenerator& hg) const;
 

@@ -217,7 +217,7 @@ public:
   virtual Number_sp cosh_() const { SUBIMP(); };
   virtual Number_sp tanh_() const { SUBIMP(); };
 
-  virtual void sxhash_(HashGenerator& hg) const override { SUBIMP(); };
+  virtual void sxhash_equal(HashGenerator& hg) const override { SUBIMP(); };
 
   inline static bool zerop(Number_sp x) {
     if (x.fixnump())
@@ -592,7 +592,7 @@ public:
 
   static DoubleFloat_sp coerce(Number_sp x);
 
-  void sxhash_(HashGenerator& hg) const override;
+  void sxhash_equal(HashGenerator& hg) const override;
   //	virtual Number_sp copy() const;
   string __repr__() const override;
   void set(double val) { this->_Value = val; };
@@ -682,7 +682,7 @@ public:
 
   static LongFloat_sp coerce(Number_sp x);
 
-  void sxhash_(HashGenerator& hg) const override;
+  void sxhash_equal(HashGenerator& hg) const override;
   string __repr__() const override;
   void set(long_float_t val) { this->_Value = val; };
   long_float_t get() const { return this->_Value; };
@@ -771,7 +771,7 @@ public:
   Real_sp real() const { return this->_real; };
   Real_sp imaginary() const { return this->_imaginary; };
 
-  void sxhash_(HashGenerator& hg) const override;
+  void sxhash_equal(HashGenerator& hg) const override;
   //	virtual Number_sp copy() const;
   string __repr__() const override;
 
@@ -862,7 +862,7 @@ public:
   Integer_sp numerator() const { return this->_numerator; };
   Integer_sp denominator() const { return this->_denominator; };
 
-  void sxhash_(HashGenerator& hg) const override;
+  void sxhash_equal(HashGenerator& hg) const override;
   //	virtual Number_sp copy() const;
   string __repr__() const override;
   Number_sp signum_() const override;

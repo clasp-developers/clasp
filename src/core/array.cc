@@ -330,11 +330,6 @@ T_sp MDArray_O::replaceArray(T_sp other) {
 
 void MDArray_O::set_data(Array_sp a) { this->_Data = a; }
 
-void MDArray_O::sxhash_(HashGenerator& hg) const {
-  // Just to get it working. FIXME
-  this->General_O::sxhash_(hg);
-}
-
 Array_sp MDArray_O::unsafe_subseq(size_t start, size_t iend) const {
   return this->_Data->unsafe_subseq(start + this->_DisplacedIndexOffset, iend + this->_DisplacedIndexOffset);
 }
