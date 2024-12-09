@@ -199,18 +199,42 @@ void executablePath(std::string& name) {
   }
   SIMPLE_ERROR("Could not find the executablePath");
 }
-void executableVtableSectionRange(gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end) {
+
+void exclusiveVtableSectionRange(gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end) {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+  size_t numberOfVtableRanges = 0;
   for (auto& entry : debugInfo()._OpenDynamicLibraryHandles) {
-    if (entry.second->loadableKind() == Executable) {
-      ExecutableLibraryInfo* eli = dynamic_cast<ExecutableLibraryInfo*>(entry.second);
-      start = eli->_VtableSectionStart;
-      end = eli->_VtableSectionEnd;
-      // printf("%s:%d:%s start %p   end %p\n", __FILE__, __LINE__, __FUNCTION__, start, end );
-      return;
+    if (entry.second->_HasVtableSection) {
+        // This assumes there is only one vtable section!!!!!!!
+      start = entry.second->_VtableSectionStart;
+      end = entry.second->_VtableSectionEnd;
+      numberOfVtableRanges++;
+//      printf("%s:%d:%s  vtableRange# %lu library: %s  vtable section start %p   end %p\n", __FILE__, __LINE__, __FUNCTION__, numberOfVtableRanges, entry.first.c_str(), start, end );
     }
   }
-  SIMPLE_ERROR("Could not find the executableVtableSectionRange");
+  if (numberOfVtableRanges>1) {
+    printf("%s:%d:%s There can be only one vtable range in the executable or dynamic libraries - if there is more than one then we need to rearrange things and identify the vtable range that contains snapshot save/load-able objects\n", __FILE__, __LINE__, __FUNCTION__);
+    gctools::wait_for_user_signal("About to exit");
+  } else if (numberOfVtableRanges==0) {
+    printf("%s:%d:%s Could not find any vtable sections\n", __FILE__, __LINE__, __FUNCTION__);
+    gctools::wait_for_user_signal("About to exit");
+  }
+}
+
+CL_DEFUN void core__openDynamicLibraries() {
+  WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+  for (auto& entry : debugInfo()._OpenDynamicLibraryHandles) {
+    printf("%s:%d:%s  lib: %s exec %d\n", __FILE__, __LINE__, __FUNCTION__, entry.first.c_str(), entry.second->loadableKind()==Executable );
+    void* textstart = entry.second->_TextStart;
+    void* textend = entry.second->_TextEnd;
+    printf("%s:%d:%s  textStart: %p textEnd: %p \n", __FILE__, __LINE__, __FUNCTION__,  textstart, textend );
+    if (entry.second->_HasVtableSection) {
+      void* start = entry.second->_VtableSectionStart;
+      void* end = entry.second->_VtableSectionEnd;
+      printf("%s:%d:%s  vtableStart: %p vtableEnd: %p \n", __FILE__, __LINE__, __FUNCTION__,  start, end );
+      // printf("%s:%d:%s start %p   end %p\n", __FILE__, __LINE__, __FUNCTION__, start, end );
+    }
+  }
 }
 
 void executableTextSectionRange(gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end) {
@@ -222,12 +246,14 @@ void executableTextSectionRange(gctools::clasp_ptr_t& start, gctools::clasp_ptr_
       return;
     }
   }
-  SIMPLE_ERROR("Could not find the executableVtableSectionRange");
+  SIMPLE_ERROR("Could not find the executableTextSectionRange");
 }
 
 bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end,
                                std::string& libraryName, bool& executable, uintptr_t& vtableStart, uintptr_t& vtableEnd) {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+  vtableStart = 0;
+  vtableEnd = 0;
   for (auto entry : debugInfo()._OpenDynamicLibraryHandles) {
     //    printf("%s:%d:%s Looking at entry: %s start: %p end: %p\n", __FILE__, __LINE__, __FUNCTION__,
     //    entry.second._Filename.c_str(), entry.second._LibraryStart, entry.second._LibraryEnd );
@@ -238,17 +264,22 @@ bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_
         start = eli->_TextStart;
         end = eli->_TextEnd;
         executable = true;
-        vtableStart = (uintptr_t)eli->_VtableSectionStart;
-        vtableEnd = (uintptr_t)eli->_VtableSectionEnd;
+        if (eli->_HasVtableSection) {
+          vtableStart = (uintptr_t)eli->_VtableSectionStart;
+          vtableEnd = (uintptr_t)eli->_VtableSectionEnd;
+        }
         return true;
       }
-    } else if (entry.second->_TextStart <= address && address < entry.second->_TextEnd) {
+    } else if ((entry.second->_TextStart <= address && address < entry.second->_TextEnd)
+               || (entry.second->_HasVtableSection && entry.second->_VtableSectionStart<=address && address<entry.second->_VtableSectionEnd) ) {
       libraryName = entry.second->_Filename;
       start = entry.second->_TextStart;
       end = entry.second->_TextEnd;
       executable = false;
-      vtableStart = 0; // libraries don't have vtables we care about
-      vtableEnd = 0;
+      if (entry.second->_HasVtableSection) {
+        vtableStart = (uintptr_t)entry.second->_VtableSectionStart; // libraries don't have vtables we care about
+        vtableEnd = (uintptr_t)entry.second->_VtableSectionEnd;
+      }
       return true;
     }
   }
@@ -280,8 +311,8 @@ bool library_with_name(const std::string& name, bool isExecutable, std::string& 
         libraryName = entry.second->_Filename;
         start = (uintptr_t)(entry.second->_TextStart);
         end = (uintptr_t)(entry.second->_TextEnd);
-        vtableStart = 0; // (uintptr_t)entry.second->_VtableSectionStart;
-        vtableEnd = 0;   // (uintptr_t)entry.second->_VtableSectionEnd;
+        vtableStart = (uintptr_t)entry.second->_VtableSectionStart;
+        vtableEnd =  (uintptr_t)entry.second->_VtableSectionEnd;
         //      printf("%s:%d:%s isExecutable = %d name = %s  libraryName = %s\n", __FILE__, __LINE__, __FUNCTION__, isExecutable,
         //      name.c_str(), libraryName.c_str());
         return true;

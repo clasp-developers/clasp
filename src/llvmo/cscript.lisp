@@ -1,4 +1,4 @@
-(k:sources :iclasp
+(k:sources :libclasp
            #~"debugInfoExpose.cc"
            #~"debugLoc.cc"
            #~"llvmoDwarf.cc"

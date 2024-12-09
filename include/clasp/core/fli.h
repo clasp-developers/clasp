@@ -214,7 +214,7 @@ CL_DEFUN core::T_sp PERCENTdlopen(core::T_sp path_designator);
 DOCGROUP(clasp)
 CL_DEFUN core::T_sp PERCENTdlclose(ForeignData_sp handle);
 DOCGROUP(clasp)
-CL_DEFUN core::T_sp PERCENTdlsym(core::String_sp name);
+CL_DEFUN core::T_sp PERCENTdlsym(core::T_sp library, core::String_sp name);
 
 }; // namespace clasp_ffi
 

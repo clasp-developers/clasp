@@ -141,11 +141,21 @@
              :initarg :lib-path
              :type pathname
              :documentation "The directory under which to install the Clasp libraries.")
+   (dylib-path :accessor dylib-path
+               :initform #P"/usr/local/lib/"
+               :initarg :dylib-path
+               :type pathname
+               :documentation "The directory under which to install the Clasp dynamic libraries.")
    (share-path :accessor share-path
                :initform #P"/usr/local/share/clasp/"
                :initarg :share-path
                :type pathname
                :documentation "The directory under which to install shared Clasp files.")
+   (pkgconfig-path :accessor pkgconfig-path
+                   :initform #P"/usr/lib/pkgconfig/"
+                   :initarg :pkgconfig-path
+                   :type pathname
+                   :documentation "The directory under which to install the pkgconfig files.")
    (jupyter-path :accessor jupyter-path
                  :initform nil
                  :initarg :jupyter-path
@@ -613,6 +623,11 @@ is not compatible with snapshots.")
                    :initform t
                    :type boolean
                    :documentation "Enable long-float")
+   (static-linking :accessor static-linking-p
+                   :initarg :static-linking
+                   :initform nil
+                   :type boolean
+                   :documentation "Static link Clasp library.")
    (units :accessor units
           :initform '(:git :describe :cpu-count #+darwin :xcode :base :default-target :pkg-config
                            :clang :llvm :ar :cc :cxx :dis :mpi :nm :etags :ctags :objcopy :jupyter
@@ -659,9 +674,13 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"asdf-test.bash" :build))
                                                          :bench
                                                          (list (make-source #P"bench.lisp" :build))
+                                                         :libclasp-pc
+                                                         (list (make-source #P"libclasp.pc" :build))
+                                                         :libclasp-pc-variant
+                                                         (list (make-source #P"libclasp.pc" :variant))
                                                          :ninja
                                                          (list (make-source #P"build.ninja" :build)
-                                                               :iclasp :cclasp :modules :eclasp
+                                                               :libclasp :iclasp :cclasp :modules :eclasp
                                                                :eclasp-link :sclasp :install-bin :install-code
                                                                :clasp :regression-tests :analyzer :analyze
                                                                :tags :install-extension-code :vm-header
@@ -686,6 +705,9 @@ is not compatible with snapshots.")
                                                                :iclasp)))
             :type hash-table
             :documentation "The configuration outputs with the associated targets.")
+   (libraries :accessor libraries
+              :initform nil
+              :type list)
    (targets :accessor targets
             :initform (make-hash-table)
             :type hash-table
@@ -767,6 +789,14 @@ is not compatible with snapshots.")
                 (remove-if (lambda (feature)
                              (not (member feature +core-features+)))
                            *features*))))
+
+(defun lib-filename (configuration name &key (dynamic nil dynamicp))
+  (make-pathname :name name
+                 :type (if (or (static-linking-p configuration)
+                               (not dynamicp))
+                           "a"
+                           #+darwin "dylib"
+                           #-darwin "so")))
 
 (defun build-name (name
                    &key common
@@ -902,6 +932,8 @@ the function to the overall configuration."
                           &key required min-version max-version &allow-other-keys)
   "Configure a library"
   (message :info "Configuring library ~a" library)
+  (when required
+    (push (list library min-version max-version) (libraries configuration)))
   (flet ((failure (control-string &rest args)
            (apply #'message (if required :err :warn) control-string args)
            nil))

@@ -39,6 +39,10 @@
 #include <clasp/llvmo/jit.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 
+// Turn on debugging vtable pointer updates with libraries
+//#define DEBUG_ISLLIBRARIES 1
+
+
 #ifdef _TARGET_OS_LINUX
 #include <elf.h>
 #endif
@@ -596,7 +600,7 @@ bool virtualMethodP(uintptr_t* ptrptr) {
 
 
 void Fixup::registerVtablePointer(size_t libraryIndex, core::T_O* vtablePtrPtr) {
-  this->_Libraries[libraryIndex]._InternalPointers.emplace_back(VtablePointer, (uintptr_t*)vtablePtrPtr,
+  this->_ISLLibraries[libraryIndex]._InternalPointers.emplace_back(VtablePointer, (uintptr_t*)vtablePtrPtr,
                                                                 *(uintptr_t*)vtablePtrPtr);
 };
 
@@ -606,7 +610,7 @@ void Fixup::registerFunctionPointer(size_t libraryIndex, uintptr_t* functionPtrP
            __FILE__, __LINE__, __FUNCTION__, libraryIndex);
     abort();
   }
-  this->_Libraries[libraryIndex]._InternalPointers.emplace_back(FunctionPointer, (uintptr_t*)functionPtrPtr, *functionPtrPtr);
+  this->_ISLLibraries[libraryIndex]._InternalPointers.emplace_back(FunctionPointer, (uintptr_t*)functionPtrPtr, *functionPtrPtr);
 #ifdef DEBUG_ENTRY_POINTS
   printf("%s:%d:%s libraryIndex[%lu] functionPtrPtr @%p -> %p location: %s\n", 
          __FILE__, __LINE__, __FUNCTION__,
@@ -627,10 +631,10 @@ uintptr_t Fixup::fixedAddress(bool functionP, uintptr_t* ptrptr, const char* add
   uintptr_t codedAddress = *ptrptr;
   decodeRelocation_(codedAddress, firstByte, libidx, pointerIndex);
   //  printf("%s:%d:%s libidx = %lu pointerIndex = %lu\n", __FILE__, __LINE__, __FUNCTION__, libidx, pointerIndex );
-  uintptr_t address = this->_Libraries[libidx]._GroupedPointers[pointerIndex]._address;
+  uintptr_t address = this->_ISLLibraries[libidx]._GroupedPointers[pointerIndex]._address;
   //  printf("%s:%d:%s address = %p @ %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)address,
   //  &this->_libraries[libidx]._GroupedPointers[pointerIndex]._address );
-  uintptr_t addressOffset = this->_Libraries[libidx]._SymbolInfo[pointerIndex]._AddressOffset;
+  uintptr_t addressOffset = this->_ISLLibraries[libidx]._SymbolInfo[pointerIndex]._AddressOffset;
   //  printf("%s:%d:%s addressOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, addressOffset );
   uintptr_t ptr = address + addressOffset;
   if (functionP && *(uint8_t*)ptr != firstByte) {
@@ -670,11 +674,11 @@ void* encodePointer(Fixup* fixup, gctools::clasp_ptr_t address,size_t idx, gctoo
 #endif
 
 size_t Fixup::ensureLibraryRegistered(uintptr_t address) {
-  for (size_t idx = 0; idx < this->_Libraries.size(); idx++) {
-    if (((uintptr_t)this->_Libraries[idx]._TextStart) <= address && address < ((uintptr_t)this->_Libraries[idx]._TextEnd)) {
+  for (size_t idx = 0; idx < this->_ISLLibraries.size(); idx++) {
+    if (((uintptr_t)this->_ISLLibraries[idx]._TextStart) <= address && address < ((uintptr_t)this->_ISLLibraries[idx]._TextEnd)) {
       return idx;
     }
-    if (this->_Libraries[idx]._VtableStart <= address && address < this->_Libraries[idx]._VtableEnd) {
+    if (this->_ISLLibraries[idx]._VtableStart <= address && address < this->_ISLLibraries[idx]._VtableEnd) {
       return idx;
     }
   }
@@ -686,10 +690,12 @@ size_t Fixup::ensureLibraryRegistered(uintptr_t address) {
   bool isExecutable;
   core::lookup_address_in_library((gctools::clasp_ptr_t)address, start, end, libraryPath, isExecutable, vtableStart, vtableEnd);
   ISLLibrary lib(libraryPath, isExecutable, start, end, vtableStart, vtableEnd);
-  size_t idx = this->_Libraries.size();
-  //  printf("%s:%d:%s Registering library %s address: %p start: %p end: %p vtableStart: %p vtableEnd: %p \n", __FILE__, __LINE__,
-  //  __FUNCTION__, libraryPath.c_str(), address, start, end, vtableStart, vtableEnd );
-  this->_Libraries.push_back(lib);
+  size_t idx = this->_ISLLibraries.size();
+#ifdef DEBUG_ISLLIBRARIES
+  printf("%s:%d:%s Registering library %s address: %p start: %p end: %p vtableStart: %p vtableEnd: %p \n", __FILE__, __LINE__,
+         __FUNCTION__, libraryPath.c_str(), (void*)address, start, end, (void*)vtableStart, (void*)vtableEnd );
+#endif
+  this->_ISLLibraries.push_back(lib);
   return idx;
 };
 
@@ -2166,20 +2172,20 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
     OrderByAddress() {}
     bool operator()(const PointerBase& x, const PointerBase& y) { return x._address <= y._address; }
     void addLibraries(Fixup* fixup, SymbolLookup& symbolLookup) {
-      for (size_t idx = 0; idx < fixup->_Libraries.size(); idx++) {
+      for (size_t idx = 0; idx < fixup->_ISLLibraries.size(); idx++) {
         DBG_SLS("Adding library #%lu: %s\n", idx, fixup->_Libraries[idx]._Name.c_str());
-        symbolLookup.addLibrary(fixup->_Libraries[idx]._Name);
-        auto pointersBegin = fixup->_Libraries[idx]._InternalPointers.begin();
-        auto pointersEnd = fixup->_Libraries[idx]._InternalPointers.end();
+        symbolLookup.addLibrary(fixup->_ISLLibraries[idx]._Name);
+        auto pointersBegin = fixup->_ISLLibraries[idx]._InternalPointers.begin();
+        auto pointersEnd = fixup->_ISLLibraries[idx]._InternalPointers.end();
         if (pointersBegin < pointersEnd) {
           DBG_SLS("About to quickSortFirstCheckOrder _Pointers.size(): %lu\n", fixup->_Libraries[idx]._InternalPointers.size());
         }
       }
     }
     void identifyUnique(Fixup* fixup, SymbolLookup& symbolLookup) {
-      for (size_t idx = 0; idx < fixup->_Libraries.size(); idx++) {
+      for (size_t idx = 0; idx < fixup->_ISLLibraries.size(); idx++) {
         int groupPointerIdx = -1;
-        ISLLibrary& curLib = fixup->_Libraries[idx];
+        ISLLibrary& curLib = fixup->_ISLLibraries[idx];
     // printf("%s:%d:%s  Dealing with library#%lu:  %s @%p\n", __FILE__, __LINE__, __FUNCTION__, idx, curLib._Name.c_str(), &curLib
     // ); printf("%s:%d:%s  Number of pointers before extracting unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__,
     // curLib._InternalPointers.size() );
@@ -2584,9 +2590,10 @@ void* snapshot_save_impl(void* data) {
 
   {
     DBG_SL_STEP(11, "snapshot_save fixing up vtable pointers\n");
+    core::lisp_write(fmt::format("Fixup vtable pointers\n"));
     gctools::clasp_ptr_t start;
     gctools::clasp_ptr_t end;
-    core::executableVtableSectionRange(start, end);
+    core::exclusiveVtableSectionRange(start, end);
     fixup_vtables_t fixup_vtables(&fixup, (uintptr_t)start, (uintptr_t)end, &islInfo);
     walk_snapshot_save_load_objects((ISLHeader_s*)snapshot._Memory->_BufferStart, fixup_vtables);
   }
@@ -2605,20 +2612,20 @@ void* snapshot_save_impl(void* data) {
   DBG_SL_STEP(13, "Calculating library sizes\n");
   core::lisp_write(fmt::format("Calculate library sizes\n"));
   size_t librarySize = 0;
-  for (size_t idx = 0; idx < fixup._Libraries.size(); idx++) {
-    librarySize += fixup._Libraries[idx].writeSize();
+  for (size_t idx = 0; idx < fixup._ISLLibraries.size(); idx++) {
+    librarySize += fixup._ISLLibraries[idx].writeSize();
   }
   DBG_SL_STEP(14, "copy_buffer_t\n");
   snapshot._Libraries = new copy_buffer_t(librarySize);
   core::lisp_write(fmt::format("Copy buffer\n"));
-  for (size_t idx = 0; idx < fixup._Libraries.size(); idx++) {
-    size_t alignedLen = fixup._Libraries[idx].nameSize();
+  for (size_t idx = 0; idx < fixup._ISLLibraries.size(); idx++) {
+    size_t alignedLen = fixup._ISLLibraries[idx].nameSize();
     char* buffer = (char*)malloc(alignedLen);
-    ISLLibrary& lib = fixup._Libraries[idx];
+    ISLLibrary& lib = fixup._ISLLibraries[idx];
     memset(buffer, '\0', alignedLen);
     strcpy(buffer, lib._Name.c_str());
     ISLLibraryHeader_s libhead(Library, lib._Executable, lib.writeSize(), alignedLen, alignedLen + lib.symbolBufferSize(),
-                               fixup._Libraries[idx]._SymbolInfo.size());
+                               fixup._ISLLibraries[idx]._SymbolInfo.size());
 #if 0
     printf("%s:%d:%s ------ &libhead = %p\n", __FILE__, __LINE__, __FUNCTION__, &libhead );
     printf("%s:%d:%s buffer_offset = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)snapshot._Libraries->buffer_offset() );
@@ -2648,7 +2655,7 @@ void* snapshot_save_impl(void* data) {
   ISLFileHeader* fileHeader = snapshot._FileHeader;
   uintptr_t offset = snapshot._HeaderBuffer->_Size;
   fileHeader->_LibrariesOffset = offset;
-  fileHeader->_NumberOfLibraries = fixup._Libraries.size();
+  fileHeader->_NumberOfLibraries = fixup._ISLLibraries.size();
   offset += snapshot._Libraries->_Size;
   fileHeader->_SaveTimeMemoryAddress = (uintptr_t)snapshot._Memory->_BufferStart;
   fileHeader->_MemoryStart = offset;
@@ -2720,12 +2727,20 @@ void* snapshot_save_impl(void* data) {
     }
 
     cmd = CXX_BINARY " " BUILD_LINKFLAGS " -L" + snapshot_data->_LibDir + " -o" + snapshot_data->_FileName + " " + obj_filename +
-          " -Wl,-whole-archive -lclasp -Wl,-no-whole-archive " BUILD_LIB;
+          " -Wl,-whole-archive -liclasp"
+#ifndef CLASP_STATIC_LINKING
+          " -Wl,-no-whole-archive"
+#endif
+          " -lclasp "
+#ifdef CLASP_STATIC_LINKING
+          " -Wl,-no-whole-archive"
+#endif
+          BUILD_LIB;
 #endif
 #ifdef _TARGET_OS_DARWIN
     cmd = CXX_BINARY " " BUILD_LINKFLAGS " -o" + snapshot_data->_FileName +
           " -sectcreate " SNAPSHOT_SEGMENT " " SNAPSHOT_SECTION " " + filename + " -Wl,-force_load," + snapshot_data->_LibDir +
-          "/libclasp.a " BUILD_LIB;
+          "/libiclasp.a -lclasp " BUILD_LIB;
 #endif
 
     std::cout << "Link command:" << std::endl << std::flush;
@@ -3095,8 +3110,12 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         if (fout)
           fflush(fout); // flush fout if it's defined. --arguments option was passed
         updateRelocationTableAfterLoad(lib, lookup);
-        //        printf("%s:%d:%s Done updateRelocationTableAfterLoad\n", __FILE__, __LINE__, __FUNCTION__ );
-        fixup._Libraries.push_back(lib);
+        //printf("%s:%d:%s Done updateRelocationTableAfterLoad pushing library with name: %s\n", __FILE__, __LINE__, __FUNCTION__, lib._Name.c_str() );
+#ifdef DEBUG_ISLLIBRARIES
+        printf("%s:%d:%s push_back lib: %s  start: %p end: %p  vtableStart: %p vtableEnd: %p\n",
+               __FILE__, __LINE__, __FUNCTION__, lib._Name.c_str(), lib._TextStart, lib._TextEnd, (void*)lib._VtableStart, (void*)lib._VtableEnd);
+#endif
+        fixup._ISLLibraries.push_back(lib);
       }
       if (fout)
         fclose(fout); // Close fout if it's defined. --arguments option was passed
@@ -3115,7 +3134,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     DBG_SL("2 snapshot_load fixing up vtable pointers\n");
     gctools::clasp_ptr_t start;
     gctools::clasp_ptr_t end;
-    core::executableVtableSectionRange(start, end);
+    core::exclusiveVtableSectionRange(start, end);
     if (start == NULL) {
       printf("%s:%d:%s vtable section range start is NULL\n", __FILE__, __LINE__, __FUNCTION__);
     }
@@ -3190,9 +3209,11 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     DBG_SL("6 Allocate objects\n");
     {
       ISLHeader_s* start_header = reinterpret_cast<ISLHeader_s*>(islbuffer);
+#if 0
       gctools::clasp_ptr_t startVtables;
       gctools::clasp_ptr_t end;
-      core::executableVtableSectionRange(startVtables, end);
+      core::exclusiveVtableSectionRange(startVtables, end);
+#endif
       ISLHeader_s* next_header;
       ISLHeader_s* cur_header;
 
