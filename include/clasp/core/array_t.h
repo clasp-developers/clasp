@@ -16,7 +16,6 @@ class SimpleVector_O;
 typedef template_SimpleVector<SimpleVector_O, T_sp, AbstractSimpleVector_O> specialized_SimpleVector;
 class SimpleVector_O : public specialized_SimpleVector {
   LISP_CLASS(core, ClPkg, SimpleVector_O, "simple-vector", AbstractSimpleVector_O);
-  virtual ~SimpleVector_O(){};
 
 public:
   typedef specialized_SimpleVector TemplatedBase;
@@ -29,7 +28,6 @@ public:
 public:
   // Simple vectors include pointers, so they can't have uninitialized contents.
   // Therefore we always pass initialElementSupplied=true.
-  SimpleVector_O(){};
   SimpleVector_O(size_t length, value_type initialElement = default_initial_element(), bool initialElementSupplied = true,
                  size_t initialContentsSize = 0, const value_type* initialContents = NULL)
       : TemplatedBase(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};
@@ -63,7 +61,6 @@ public:
 namespace core {
 class MDArrayT_O : public template_Array<MDArrayT_O, SimpleMDArrayT_O, SimpleVector_O, MDArray_O> {
   LISP_CLASS(core, CorePkg, MDArrayT_O, "MDArrayT", MDArray_O);
-  virtual ~MDArrayT_O(){};
 
 public:
   typedef template_Array<MDArrayT_O, SimpleMDArrayT_O, SimpleVector_O, MDArray_O> TemplatedBase;
@@ -77,7 +74,6 @@ public: // make array
 namespace core {
 class SimpleMDArrayT_O : public template_SimpleArray<SimpleMDArrayT_O, SimpleVector_O, SimpleMDArray_O> {
   LISP_CLASS(core, CorePkg, SimpleMDArrayT_O, "SimpleMDArrayT", SimpleMDArray_O);
-  virtual ~SimpleMDArrayT_O(){};
 
 public:
   typedef template_SimpleArray<SimpleMDArrayT_O, SimpleVector_O, SimpleMDArray_O> TemplatedBase;
@@ -91,7 +87,6 @@ namespace core {
 FORWARD(ComplexVector_T);
 class ComplexVector_T_O : public template_Vector<ComplexVector_T_O, SimpleVector_O, ComplexVector_O> {
   LISP_CLASS(core, CorePkg, ComplexVector_T_O, "ComplexVector_T", ComplexVector_O);
-  virtual ~ComplexVector_T_O(){};
 
 public:
   typedef template_Vector<ComplexVector_T_O, SimpleVector_O, ComplexVector_O> TemplatedBase;

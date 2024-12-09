@@ -83,7 +83,6 @@ class BytecodeDebugInfo_O : public General_O {
   LISP_CLASS(core, CorePkg, BytecodeDebugInfo_O, "BytecodeDebugInfo", core::General_O);
 
 public:
-  BytecodeDebugInfo_O() {} // dummy required due to being inherited?
   BytecodeDebugInfo_O(T_sp start, T_sp end) : _start(start), _end(end) {}
 
 public:

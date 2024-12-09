@@ -63,7 +63,6 @@ public: // ctor/dtor for classes with shared virtual base
       : Base(ep), _Class(metaClass), _RealFunction(nil<Function_O>()){};
   FuncallableInstance_O(SimpleFun_sp ep, Instance_sp cl, Rack_sp rack)
       : Base(ep), _Rack(rack), _Class(cl), _RealFunction(nil<Function_O>()){};
-  virtual ~FuncallableInstance_O(){};
 
 public:
   // The order MUST be

@@ -156,10 +156,6 @@ template <> struct allocation_point<core::Cons_O> {
    ------------------------------------------------------------
 */
 
-/*! Return the block address of the object pointed to by the smart_ptr */
-#define GC_BASE_ADDRESS_FROM_SMART_PTR(_smartptr_) ((_smartptr_).pbase_ref())
-#define GC_BASE_ADDRESS_FROM_PTR(_ptr_) (const_cast<void*>(dynamic_cast<const void*>(_ptr_)))
-
 namespace gctools {
 template <typename T> class smart_ptr;
 };
@@ -227,25 +223,6 @@ extern size_t processMpsMessages(size_t& finalizations);
 namespace core {
 class ThreadLocalState;
 };
-
-namespace gctools {
-
-// Given an interior_pointer
-// Return true and the base object if the interior_pointer points into an object
-// Return false and undefined for object if it does not.
-// This is the General_O object case
-template <typename GeneralType>
-inline bool tagged_pointer_from_interior_pointer(clasp_ptr_t interior_pointer, Tagged& tagged_pointer) {
-  printf("%s:%d:%s What do I do here?\n", __FILE__, __LINE__, __FUNCTION__);
-  return false;
-}
-
-// core::Cons_sp specializer
-template <> inline bool tagged_pointer_from_interior_pointer<core::Cons_O>(clasp_ptr_t interior_pointer, Tagged& tagged_pointer) {
-  printf("%s:%d:%s What do I do here?\n", __FILE__, __LINE__, __FUNCTION__);
-  return false;
-}
-}; // namespace gctools
 
 namespace gctools {
 
