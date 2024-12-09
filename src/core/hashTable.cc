@@ -55,20 +55,6 @@ THE SOFTWARE.
 /**/ #define DEBUG_HASH_TABLE1(expr)
 #endif
 
-#if 0
-#define VERIFY_HASH_TABLE(xxx)                                                                                                     \
-  if (this->_Debug) {                                                                                                              \
-    verifyHashTable(true, std::cerr, xxx, __FILE__, __LINE__);                                                                     \
-  }
-#define VERIFY_HASH_TABLE_VA(xxx, ...)                                                                                             \
-  if (this->_Debug) {                                                                                                              \
-    verifyHashTable(true, std::cerr, xxx, __FILE__, __LINE__, __VA_ARGS__);                                                        \
-  }
-#else
-#define VERIFY_HASH_TABLE(xxx, ...)
-#define VERIFY_HASH_TABLE_VA(xxx, ...)
-#endif
-
 // #define DEBUG_LEVEL_FULL
 
 #include <limits>
@@ -106,54 +92,6 @@ namespace core {
 std::atomic<size_t> global_next_hash_table_id;
 
 size_t next_hash_table_id() { return global_next_hash_table_id++; }
-
-void verifyHashTable(bool print, std::ostream& ss, HashTable_O* ht, const char* filename, size_t line, size_t index = 0,
-                     T_sp key = nil<core::T_O>()) {
-  if (print) {
-    clasp_write_string(fmt::format("verifyHashTable HashTable {} size {}\n", (void*)ht, ht->_Table.size()));
-  }
-  size_t cnt = 0;
-  Vector_sp keys = core__make_vector(_lisp->_true(), ht->_HashTableCount + 16, true, make_fixnum(0));
-  for (size_t it(0), itEnd(ht->_Table.size()); it < itEnd; ++it) {
-    KeyValuePair& entry = ht->_Table[it];
-    if (!entry._Key.no_keyp() && !entry._Key.deletedp()) {
-      if (print) {
-        clasp_write_string(fmt::format("Entry[{}] at {}  key: {} badge: {}  value: {}\n", it, (void*)&entry, _rep_(entry._Key),
-                                       gctools::lisp_general_badge(gc::As_unsafe<General_sp>(entry._Key)), (entry._Value)));
-      }
-      keys->vectorPushExtend(entry._Key);
-    }
-  }
-  if (print) {
-    bool bad = false;
-    for (size_t it(0), itEnd(cl__length(keys)); it < itEnd; ++it) {
-      T_sp key = keys->rowMajorAref(it);
-      HashGenerator hg;
-      cl_index index = ht->sxhashKey(key, ht->_Table.size(), hg);
-      KeyValuePair* keyValue = ht->searchTable_no_read_lock(key, index);
-      if (!keyValue) {
-        clasp_write_string(fmt::format(
-            "{}:{} Could not find key {} badge = {} expected at or after Entry[{}] for ht->_Table.size() = {}\n", filename, line,
-            _rep_(key), gctools::lisp_general_badge(gc::As_unsafe<General_sp>(key)), index, ht->_Table.size()));
-        clasp_write_string(fmt::format("     hg.asList() -> \n{}\n", _rep_(hg.asList())));
-        bad = true;
-      }
-    }
-    if (bad) {
-#ifdef DEBUG_HASH_TABLE_DEBUG
-      clasp_write_string(fmt::format("     hash-table _History ->\n{}\n", _rep_(ht->_History.load())));
-#endif
-    }
-  }
-  if (!print) {
-    if (cl__length(keys) != ht->_HashTableCount) {
-      std::cerr << filename << ":" << line << " Working on index " << index << " - dumping hash-table\n";
-      verifyHashTable(true, std::cerr, ht, filename, line);
-      std::cerr << "    Added key: " << (void*)key.raw_();
-      SIMPLE_ERROR("{}:{} There is a mismatch in _HashTableCount {} vs calcd {}\n", filename, line, ht->_HashTableCount, cnt);
-    }
-  }
-}
 
 #ifdef CLASP_THREADS
 struct HashTableReadLock {
@@ -422,7 +360,6 @@ T_sp HashTable_O::clrhash() {
   T_sp no_key = ::no_key<T_O>();
   this->_Table.resize(0, KeyValuePair(no_key, no_key));
   this->setup(16, this->_RehashSize, this->_RehashThreshold);
-  VERIFY_HASH_TABLE(this);
   return this->asSmartPtr();
 }
 
@@ -640,7 +577,6 @@ List_sp HashTable_O::keysAsCons() {
 }
 
 void HashTable_O::fields(Record_sp node) {
-  VERIFY_HASH_TABLE(this);
   // this->Base::fields(node);
   node->field(INTERN_(core, rehash_size), this->_RehashSize);
   node->/*pod_*/ field(INTERN_(core, rehash_threshold), this->_RehashThreshold);
@@ -669,7 +605,6 @@ void HashTable_O::fields(Record_sp node) {
     IMPLEMENT_MEF("Add support to patch hash tables");
   } break;
   }
-  VERIFY_HASH_TABLE(this);
 }
 
 uint HashTable_O::resizeEmptyTable_no_lock(size_t sz) {
@@ -793,7 +728,6 @@ CL_DEFUN void core__hash_table_force_rehash(HashTable_sp ht) {
 T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
   LOG("gethash looking for key[{}]", _rep_(key));
   HT_READ_LOCK(this);
-  VERIFY_HASH_TABLE(this);
   HashGenerator hg;
   size_t sz = this->_Table.size();
   // #ifdef DEBUG_SLOW
@@ -851,10 +785,8 @@ bool HashTable_O::remhash(T_sp key) {
   if (keyValuePair) {
     keyValuePair->_Key = deleted<T_O>();
     this->_HashTableCount--;
-    VERIFY_HASH_TABLE(this);
     return true;
   }
-  VERIFY_HASH_TABLE(this);
   return false;
 }
 
@@ -904,7 +836,6 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value) {
     DEBUG_HASH_TABLE({
       core::clasp_write_string(fmt::format("{}:{}  After rplacd value: {}\n", __FILE__, __LINE__, _rep_(keyValuePair->_Value)));
     });
-    VERIFY_HASH_TABLE(this);
     return value;
   }
   DEBUG_HASH_TABLE({
@@ -939,11 +870,9 @@ ADD_KEY_VALUE:
   entryP->_Value = value;
   this->_HashTableCount++;
   DEBUG_HASH_TABLE({ core::clasp_write_string(fmt::format("{}:{} Found empty slot at index = {}\n", __FILE__, __LINE__, write)); });
-  VERIFY_HASH_TABLE_VA(this, write, key);
   if (this->_HashTableCount > this->_RehashThreshold * this->_Table.size()) {
     LOG("Expanding hash table");
     this->rehash_no_lock(true);
-    VERIFY_HASH_TABLE(this);
   }
   return value;
 NO_ROOM:
@@ -956,10 +885,7 @@ NO_ROOM:
   printf("%s:%d There is absolutely no room in the hash-table _RehashThreshold = %lf - _HashTableCount -> %lu size -> %lu "
          "increasing size\n",
          __FILE__, __LINE__, this->_RehashThreshold, this->_HashTableCount, this->_Table.size());
-  verifyHashTable(true, std::cerr, this, __FILE__, __LINE__);
-  printf("%s:%d ---- done verify\n", __FILE__, __LINE__);
   this->rehash_no_lock(true);
-  VERIFY_HASH_TABLE_VA(this, cur);
   return this->setf_gethash_no_write_lock(key, value);
   // ------------
   // Here we add the key
@@ -1029,7 +955,6 @@ void HashTable_O::rehash_no_lock(bool expandTable) {
              "%lu\n") %
           this->_HashTableId % this->_InitialSize % this->_RehashCount % newSize % oldHashTableCount % this->_HashTableCount);
 #endif
-  VERIFY_HASH_TABLE(this);
 }
 
 void HashTable_O::rehash(bool expandTable) {
@@ -1076,7 +1001,6 @@ void dump_one_entry(HashTable_sp ht, size_t it, stringstream& ss, KeyValuePair& 
 CL_DEFMETHOD string HashTable_O::hash_table_dump() {
   stringstream ss;
   HT_READ_LOCK(this);
-  verifyHashTable(true, ss, this, __FILE__, __LINE__);
   return ss.str();
 }
 
