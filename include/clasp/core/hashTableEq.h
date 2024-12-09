@@ -38,7 +38,8 @@ class HashTableEq_O : public HashTable_O {
   LISP_CLASS(core, CorePkg, HashTableEq_O, "HashTableEq", HashTable_O);
   DEFAULT_CTOR_DTOR(HashTableEq_O);
 
-private: // instance variables here
+public:
+  virtual KeyValuePair* searchTable_no_read_lock(T_sp key, cl_index index);
 public:
   static HashTableEq_sp create(uint sz, Number_sp rehashSize, double rehashThreshold);
   static HashTableEq_sp create_default();
@@ -49,7 +50,6 @@ public:
 
 public: // Functions here
   virtual T_sp hashTableTest() const { return cl::_sym_eq; };
-  virtual KeyValuePair* searchTable_no_read_lock(T_sp key, cl_index index);
   bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
   gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, HashGenerator& hg) const;
