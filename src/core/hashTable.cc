@@ -782,17 +782,6 @@ NOT_FOUND:
   return nullptr;
 }
 
-KeyValuePair* HashTable_O::tableRef_no_read_lock(T_sp key, cl_index index) {
-  DEBUG_HASH_TABLE({
-    core::clasp_write_string(fmt::format("{}:{}:{} key = {}  index = {}\n", __FILE__, __LINE__, __FUNCTION__, _rep_(key), index));
-  });
-  VERIFY_HASH_TABLE(this);
-  BOUNDS_ASSERT(index < this->_Table.size());
-  KeyValuePair* result = this->searchTable_no_read_lock(key, index);
-  VERIFY_HASH_TABLE(this);
-  return result;
-}
-
 CL_LAMBDA(ht);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(hashTableForceRehash)dx");
@@ -815,7 +804,7 @@ T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
   }
   // #endif
   cl_index index = this->sxhashKey(key, sz, hg);
-  KeyValuePair* keyValuePair = this->tableRef_no_read_lock(key, index);
+  KeyValuePair* keyValuePair = this->searchTable_no_read_lock(key, index);
   LOG("Found keyValueCons"); // % keyValueCons->__repr__() ); INFINITE-LOOP
   if (keyValuePair) {
     T_sp value = keyValuePair->_Value;
@@ -840,7 +829,7 @@ KeyValuePair* HashTable_O::find(T_sp key) {
   HT_READ_LOCK(this);
   HashGenerator hg;
   cl_index index = this->sxhashKey(key, this->_Table.size(), hg);
-  KeyValuePair* keyValue = this->tableRef_no_read_lock(key, index);
+  KeyValuePair* keyValue = this->searchTable_no_read_lock(key, index);
   if (!keyValue)
     return keyValue;
   if (keyValue->_Value.no_keyp())
@@ -858,7 +847,7 @@ bool HashTable_O::remhash(T_sp key) {
   HT_WRITE_LOCK(this);
   HashGenerator hg;
   cl_index index = this->sxhashKey(key, this->_Table.size(), hg);
-  KeyValuePair* keyValuePair = this->tableRef_no_read_lock(key, index);
+  KeyValuePair* keyValuePair = this->searchTable_no_read_lock(key, index);
   if (keyValuePair) {
     keyValuePair->_Key = deleted<T_O>();
     this->_HashTableCount--;
@@ -900,7 +889,7 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value) {
     core::clasp_write_string(fmt::format("{}:{}:{}   index = {}  this->_Table.size() = {}\n", __FILE__, __LINE__, __FUNCTION__,
                                          index, this->_Table.size()));
   });
-  KeyValuePair* keyValuePair = this->tableRef_no_read_lock(key, index);
+  KeyValuePair* keyValuePair = this->searchTable_no_read_lock(key, index);
   if (keyValuePair) {
     // rewrite value
     keyValuePair->_Value = value;

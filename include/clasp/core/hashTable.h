@@ -137,6 +137,9 @@ public:
       return nil<T_O>();
   };
 
+public:
+  virtual KeyValuePair* searchTable_no_read_lock(T_sp key, cl_index index);
+
 public: // Functions here
   virtual bool equalp(T_sp other) const override;
 
@@ -152,12 +155,6 @@ public: // Functions here
 
   virtual gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, HashGenerator& hg) const;
   virtual bool keyTest(T_sp entryKey, T_sp searchKey) const;
-
-  /*! I'm not sure I need this and tableRef */
-  List_sp bucketsFind_no_lock(T_sp key) const;
-  /*! I'm not sure I need this and bucketsFind */
-  virtual KeyValuePair* searchTable_no_read_lock(T_sp key, cl_index index);
-  KeyValuePair* tableRef_no_read_lock(T_sp key, cl_index index);
 
   /*! Return true if the key is within the hash table */
   bool contains(T_sp key);
