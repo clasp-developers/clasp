@@ -73,21 +73,14 @@ HashTableEq_sp HashTableEq_O::createFromPList(List_sp plist, Symbol_sp nilTermin
 }
 
 KeyValuePair* HashTableEq_O::searchTable_no_read_lock(T_sp key, cl_index index) {
-  for (size_t cur = index, curEnd(this->_Table.size()); cur < curEnd; ++cur) {
+  size_t tableSize = this->_Table.size();
+  size_t cur = index;
+  do {
     KeyValuePair& entry = this->_Table[cur];
-    if (entry._Key == key)
-      return &entry;
-    if (entry._Key.no_keyp())
-      goto NOT_FOUND;
-  }
-  for (size_t cur = 0, curEnd(index); cur < curEnd; ++cur) {
-    KeyValuePair& entry = this->_Table[cur];
-    if (entry._Key == key)
-      return &entry;
-    if (entry._Key.no_keyp())
-      goto NOT_FOUND;
-  }
-NOT_FOUND:
+    if (entry._Key == key) return &entry;
+    if (entry._Key.no_keyp()) break;
+    cur = (cur + 1) % tableSize;
+  } while (cur != index);
   return nullptr;
 }
 
