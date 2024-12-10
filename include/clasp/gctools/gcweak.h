@@ -71,6 +71,7 @@ THE SOFTWARE.
  */
 
 #include <functional>
+#include <optional>
 
 namespace gctools {
 
@@ -376,6 +377,34 @@ struct TaggedCast<gctools::BucketsBase<gctools::smart_ptr<core::T_O>, gctools::s
       return reinterpret_cast<ToType>(client);
     return NULL;
   }
+};
+
+// This structure is meant to be included directly (not as a pointer) in
+// a weak pointer object, e.g. WeakPointer_O. In order to ensure the pointer
+// is not scanned, this should be allocated with the "atomic" GC policy.
+struct WeakPointer {
+public:
+  WeakPointer(core::T_sp o);
+  std::optional<core::T_sp> value() const;
+public: // has to be public for precise GC reasons even though it's not scanned?
+  // This is a Tagged rather than a T_sp because something in gc_boot seems to
+  // check for T_sps in atomic (pointerless) objects. Rather than lie harder we
+  // can just do this and build a T_sp from it as required.
+  Tagged _value;
+  // flag needed to disambiguate fixnum 0 from splatted pointer
+  // not sure if other GCs need this, but i'd like to keep the structure
+  // consistent regardless of build parameters if possible.
+  bool _splattablep = false;
+#ifdef USE_BOEHM
+private:
+  // private stuff needed to get everything done within a callback
+  struct value_helper_s {
+    value_helper_s(const WeakPointer* w) : wp(w), result() {}
+    const WeakPointer* wp;
+    std::optional<core::T_sp> result;
+  };
+  static void* value_helper(void*);
+#endif // lacking real support, we have not-actually-weak pointers.
 };
 
 }; // namespace gctools

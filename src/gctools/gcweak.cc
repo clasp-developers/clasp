@@ -33,6 +33,7 @@ THE SOFTWARE.
 */
 /* -^- */
 #include <clasp/core/foundation.h>
+#include <clasp/gctools/memoryManagement.h>
 #include <clasp/gctools/gcweak.h>
 #include <clasp/core/object.h>
 #include <clasp/core/evaluator.h>
@@ -359,4 +360,35 @@ core::Vector_sp WeakKeyHashTable::pairs() const {
   }
   return keyvalues;
 };
+
+#ifdef USE_BOEHM
+WeakPointer::WeakPointer(core::T_sp o) : _value(o.tagged_()) {
+  if (o.objectp()) { // pointer, so we're actually weak
+    _splattablep = true;
+    // note: deregistered automatically if the weak pointer itself is dealloc'd
+    GC_general_register_disappearing_link((void**)&_value, &*o);
+  }
+}
+
+void* WeakPointer::value_helper(void* data) {
+  value_helper_s* vhsp = (value_helper_s*)data;
+  if (vhsp->wp->_value || !vhsp->wp->_splattablep) // not splatted
+    // construct a T_sp in the result
+    vhsp->result.emplace(vhsp->wp->_value);
+  // otherwise, leave the result default constructed (no T_sp)
+  return nullptr; // unused
+}
+
+std::optional<core::T_sp> WeakPointer::value() const {
+  value_helper_s vhs(this);
+  // TODO: Use GC_call_with_reader_lock, but it's too new
+  GC_call_with_alloc_lock(value_helper, &vhs);
+  return vhs.result;
+}
+#else // not-actually-weak pointers - TODO for your other GC!
+WeakPointer::WeakPointer(core::T_sp o) : _value(o.tagged_()) {}
+
+// always valid
+std::optional<core::T_sp> WeakPointer::value() const { return core::T_sp(_value); }
+#endif
 } // namespace gctools
