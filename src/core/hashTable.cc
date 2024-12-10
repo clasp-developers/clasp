@@ -530,21 +530,9 @@ CL_DEFUN void core__hash_table_force_rehash(HashTable_sp ht) {
 }
 
 T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
-  LOG("gethash looking for key[{}]", _rep_(key));
-  HT_READ_LOCK(this);
-  cl_index index = this->sxhashKey(key);
-  KeyValuePair* keyValuePair = this->searchTable_no_read_lock(key, index);
-  LOG("Found keyValueCons"); // % keyValueCons->__repr__() ); INFINITE-LOOP
-  if (keyValuePair) {
-    T_sp value = keyValuePair->_Value;
-    if (value.no_keyp()) {
-      LOG("valueOrUnbound is unbound - returning default");
-      return (Values(default_value, nil<T_O>()));
-    }
-    LOG("Found assoc - returning"); // : %s") % res->__repr__() );  INFINITE-LOOP
-    return Values(value, _lisp->_true());
-  }
-  return Values(default_value, nil<T_O>());
+  auto res = this->find(key);
+  if (res) return Values(*res, _lisp->_true());
+  else return Values(default_value, nil<T_O>());
 }
 
 CL_LISPIFY_NAME("core:hashIndex");
