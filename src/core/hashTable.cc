@@ -497,12 +497,11 @@ CL_DEFUN T_mv core__gethash3(T_sp key, T_sp hashTable, T_sp default_value) {
 };
 
 KeyValuePair* HashTable_O::searchTable_no_read_lock(T_sp key, cl_index index) {
-  KeyValuePair* table = &this->_Table[0]; // get the table for debugging
   size_t tableSize = this->_Table.size();
-  for (size_t cur = index, curEnd(tableSize); cur < curEnd; ++cur) {
-    KeyValuePair& entry = table[cur];
-    if (entry._Key.no_keyp())
-      goto NOT_FOUND;
+  size_t cur = index;
+  do {
+    KeyValuePair& entry = this->_Table[cur];
+    if (entry._Key.no_keyp()) break;
     if (!entry._Key.deletedp()) {
       DEBUG_HASH_TABLE(
           { core::clasp_write_string(fmt::format("{}:{} search-end !deletedp index = {}\n", __FILE__, __LINE__, cur)); });
@@ -516,22 +515,8 @@ KeyValuePair* HashTable_O::searchTable_no_read_lock(T_sp key, cl_index index) {
         return &entry;
       }
     }
-  }
-  for (size_t cur = 0, curEnd(index); cur < curEnd; ++cur) {
-    KeyValuePair& entry = table[cur];
-    if (entry._Key.no_keyp())
-      goto NOT_FOUND;
-    if (!entry._Key.deletedp()) {
-      DEBUG_HASH_TABLE(
-          { core::clasp_write_string(fmt::format("{}:{} search-begin !deletedp index = {}\n", __FILE__, __LINE__, cur)); });
-      if (this->keyTest(entry._Key, key)) {
-        DEBUG_HASH_TABLE(
-            { core::clasp_write_string(fmt::format("{}:{} search-begin found key index = {}\n", __FILE__, __LINE__, cur)); });
-        return &entry;
-      }
-    }
-  }
-NOT_FOUND:
+    cur = (cur + 1) % tableSize;
+  } while (cur != index); // loop over the whole table if necessary
   DEBUG_HASH_TABLE({ core::clasp_write_string(fmt::format("{}:{} key not found\n", __FILE__, __LINE__)); });
   return nullptr;
 }
