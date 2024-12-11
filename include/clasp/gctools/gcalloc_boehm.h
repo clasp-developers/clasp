@@ -4,11 +4,11 @@
 #define ALIGNED_GC_MALLOC(sz) MAYBE_MONITOR_ALLOC(GC_MALLOC(sz), sz)
 #define ALIGNED_GC_MALLOC_ATOMIC(sz) MAYBE_MONITOR_ALLOC(GC_MALLOC_ATOMIC(sz), sz)
 #define ALIGNED_GC_MALLOC_UNCOLLECTABLE(sz) MAYBE_MONITOR_ALLOC(GC_MALLOC_UNCOLLECTABLE(sz), sz)
-#define ALIGNED_GC_MALLOC_KIND(stmp, sz, knd, kndaddr) MAYBE_MONITOR_ALLOC(GC_malloc_kind_global(sz, knd), sz)
-#define ALIGNED_GC_MALLOC_STRONG_WEAK_KIND(sz, knd) MAYBE_MONITOR_ALLOC(GC_malloc_kind_global(sz, knd), sz)
+#define ALIGNED_GC_MALLOC_KIND(stmp, sz, knd, kndaddr) MAYBE_MONITOR_ALLOC(GC_malloc_kind(sz, knd), sz)
+#define ALIGNED_GC_MALLOC_STRONG_WEAK_KIND(sz, knd) MAYBE_MONITOR_ALLOC(GC_malloc_kind(sz, knd), sz)
 #define ALIGNED_GC_MALLOC_ATOMIC_KIND(stmp, sz, knd, kndaddr)                                                                      \
   MAYBE_MONITOR_ALLOC(                                                                                                             \
-      (knd == GC_I_PTRFREE) ? GC_malloc_kind_global(sz, knd) : malloc_kind_error(GC_I_PTRFREE, knd, sz, stmp, kndaddr), sz)
+      (knd == GC_I_PTRFREE) ? GC_malloc_kind(sz, knd) : malloc_kind_error(GC_I_PTRFREE, knd, sz, stmp, kndaddr), sz)
 #define ALIGNED_GC_MALLOC_UNCOLLECTABLE_KIND(stmp, sz, knd, kndaddr)                                                               \
   MAYBE_MONITOR_ALLOC(GC_generic_malloc_uncollectable(sz, knd), sz)
 #else

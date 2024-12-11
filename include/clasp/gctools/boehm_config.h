@@ -239,6 +239,10 @@
 /* Define to enable thread-local allocation optimization. */
 #define THREAD_LOCAL_ALLOC 1
 
+/* Not exported by BOEHM? - add more freelists to each thread,
+ * which lets our custom alloc kinds be done thread-locally. */
+#define THREAD_FREELISTS_KINDS 8
+
 /* Use Unicode (W) variant of Win32 API instead of ASCII (A) one. */
 /* #undef UNICODE */
 
