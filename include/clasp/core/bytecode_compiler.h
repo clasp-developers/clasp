@@ -63,9 +63,6 @@ public:
 
 class VarInfo_O : public General_O {
   LISP_ABSTRACT_CLASS(comp, CompPkg, VarInfo_O, "VarInfo", General_O);
-
-public:
-  VarInfo_O(){};
 };
 
 FORWARD(LexicalVarInfo);
@@ -196,9 +193,6 @@ typedef std::variant<NoVarInfoV, LexicalVarInfoV, SpecialVarInfoV, SymbolMacroVa
 FORWARD(FunInfo);
 class FunInfo_O : public General_O {
   LISP_ABSTRACT_CLASS(comp, CompPkg, FunInfo_O, "FunInfo", General_O);
-
-public:
-  FunInfo_O(){};
 };
 
 FORWARD(GlobalFunInfo);
@@ -208,7 +202,6 @@ class GlobalFunInfo_O : public FunInfo_O {
 public:
   T_sp _cmexpander = nil<T_O>(); // compiler macro expander
 public:
-  GlobalFunInfo_O() : FunInfo_O() {}
   GlobalFunInfo_O(T_sp expander) : FunInfo_O(), _cmexpander(expander) {}
   CL_LISPIFY_NAME(GlobalFunInfo/make)
   CL_DEF_CLASS_METHOD
@@ -548,7 +541,6 @@ class Label_O : public Annotation_O {
   LISP_CLASS(comp, CompPkg, Label_O, "Label", Annotation_O);
 
 public:
-  Label_O() : Annotation_O() {}
   CL_LISPIFY_NAME(Label/make)
   CL_DEF_CLASS_METHOD
   static Label_sp make() { return gctools::GC<Label_O>::allocate<gctools::RuntimeStage>(); }
@@ -568,7 +560,6 @@ public:
   size_t _initial_size;
 
 public:
-  Fixup_O() : Annotation_O() {} // default constructor for clasp
   Fixup_O(size_t initial_size) : Annotation_O(), _size(initial_size), _initial_size(initial_size) {}
   CL_DEFMETHOD size_t size() { return this->_size; }
   CL_LISPIFY_NAME(Fixup/setf-size)
@@ -602,7 +593,6 @@ public:
   Label_sp _label;
 
 public:
-  LabelFixup_O() : Fixup_O() {}
   LabelFixup_O(Label_sp label, size_t initial_size) : Fixup_O(initial_size), _label(label) {}
 
 public:
@@ -664,7 +654,6 @@ public:
   LexicalInfo_sp _lex;
 
 public:
-  LexFixup_O() : Fixup_O() {}
   LexFixup_O(LexicalInfo_sp lex, size_t initial_size) : Fixup_O(initial_size), _lex(lex) {}
 
 public:
@@ -680,7 +669,6 @@ public:
   vm_code _opcode;
 
 public:
-  LexRefFixup_O() : LexFixup_O() {}
   LexRefFixup_O(LexicalInfo_sp lex, vm_code opcode) : LexFixup_O(lex, 0), _opcode(opcode) {}
   CL_LISPIFY_NAME(LexRefFixup/make)
   CL_DEF_CLASS_METHOD
@@ -699,7 +687,6 @@ class EncageFixup_O : public LexFixup_O {
   LISP_CLASS(comp, CompPkg, EncageFixup_O, "EncageFixup", LexFixup_O);
 
 public:
-  EncageFixup_O() : LexFixup_O() {}
   EncageFixup_O(LexicalInfo_sp lex) : LexFixup_O(lex, 0) {}
   CL_LISPIFY_NAME(EncageFixup/make)
   CL_DEF_CLASS_METHOD
@@ -715,7 +702,6 @@ class LexSetFixup_O : public LexFixup_O {
   LISP_CLASS(comp, CompPkg, LexSetFixup_O, "LexSetFixup", LexFixup_O);
 
 public:
-  LexSetFixup_O() : LexFixup_O() {}
   LexSetFixup_O(LexicalInfo_sp lex) : LexFixup_O(lex, 0) {}
   CL_LISPIFY_NAME(LexSetFixup/make)
   CL_DEF_CLASS_METHOD
@@ -733,7 +719,6 @@ class EntryFixup_O : public LexFixup_O {
   LISP_CLASS(comp, CompPkg, EntryFixup_O, "EntryFixup", LexFixup_O);
 
 public:
-  EntryFixup_O() : LexFixup_O() {}
   EntryFixup_O(LexicalInfo_sp lex) : LexFixup_O(lex, 0) {}
   CL_LISPIFY_NAME(EntryFixup/make)
   CL_DEF_CLASS_METHOD
@@ -750,7 +735,6 @@ class RestoreSPFixup_O : public LexFixup_O {
   LISP_CLASS(comp, CompPkg, RestoreSPFixup_O, "RestoreSPFixup", LexFixup_O);
 
 public:
-  RestoreSPFixup_O() : LexFixup_O() {}
   RestoreSPFixup_O(LexicalInfo_sp lex) : LexFixup_O(lex, 0) {}
   CL_LISPIFY_NAME(RestoreSPFixup/make)
   CL_DEF_CLASS_METHOD
@@ -771,7 +755,6 @@ public:
   LexicalInfo_sp _lex;
 
 public:
-  ExitFixup_O() : LabelFixup_O() {}
   ExitFixup_O(LexicalInfo_sp lex, Label_sp label) : LabelFixup_O(label, 2), _lex(lex) {}
   CL_LISPIFY_NAME(ExitFixup/make)
   CL_DEF_CLASS_METHOD
@@ -791,7 +774,6 @@ class EntryCloseFixup_O : public LexFixup_O {
   LISP_CLASS(comp, CompPkg, EntryCloseFixup_O, "EntryCloseFixup", LexFixup_O);
 
 public:
-  EntryCloseFixup_O() : LexFixup_O() {}
   EntryCloseFixup_O(LexicalInfo_sp lex) : LexFixup_O(lex, 0) {}
   CL_LISPIFY_NAME(EntryCloseFixup/make)
   CL_DEF_CLASS_METHOD
@@ -907,8 +889,6 @@ public:
 FORWARD(EnvInfo)
 class EnvInfo_O : public General_O {
   LISP_CLASS(comp, CompPkg, EnvInfo_O, "EnvInfo", General_O);
-public:
-  EnvInfo_O() {}
 public:
   CL_LISPIFY_NAME(EnvInfo/make)
   CL_DEF_CLASS_METHOD

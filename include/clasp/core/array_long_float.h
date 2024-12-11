@@ -25,7 +25,6 @@ typedef template_SimpleVector<SimpleVector_long_float_O, long_float_t, AbstractS
 
 class SimpleVector_long_float_O : public specialized_SimpleVector_long_float {
   LISP_CLASS(core, CorePkg, SimpleVector_long_float_O, "SimpleVector_long_float", AbstractSimpleVector_O);
-  virtual ~SimpleVector_long_float_O() {};
 
 public:
   typedef specialized_SimpleVector_long_float TemplatedBase;
@@ -59,7 +58,6 @@ public:
 class MDArray_long_float_O
     : public template_Array<MDArray_long_float_O, SimpleMDArray_long_float_O, SimpleVector_long_float_O, MDArray_O> {
   LISP_CLASS(core, CorePkg, MDArray_long_float_O, "MDArray_long_float", MDArray_O);
-  virtual ~MDArray_long_float_O() {};
 
 public:
   typedef template_Array<MDArray_long_float_O, SimpleMDArray_long_float_O, SimpleVector_long_float_O, MDArray_O> TemplatedBase;
@@ -71,7 +69,6 @@ public:
 class SimpleMDArray_long_float_O
     : public template_SimpleArray<SimpleMDArray_long_float_O, SimpleVector_long_float_O, SimpleMDArray_O> {
   LISP_CLASS(core, CorePkg, SimpleMDArray_long_float_O, "SimpleMDArray_long_float", SimpleMDArray_O);
-  virtual ~SimpleMDArray_long_float_O() {};
 
 public:
   typedef template_SimpleArray<SimpleMDArray_long_float_O, SimpleVector_long_float_O, SimpleMDArray_O> TemplatedBase;
@@ -81,7 +78,6 @@ public:
 
 class ComplexVector_long_float_O : public template_Vector<ComplexVector_long_float_O, SimpleVector_long_float_O, ComplexVector_O> {
   LISP_CLASS(core, CorePkg, ComplexVector_long_float_O, "ComplexVector_long_float", ComplexVector_O);
-  virtual ~ComplexVector_long_float_O() {};
 
 public:
   typedef template_Vector<ComplexVector_long_float_O, SimpleVector_long_float_O, ComplexVector_O> TemplatedBase;

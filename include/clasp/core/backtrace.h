@@ -20,7 +20,6 @@ class
 
     DebuggerFrame_O : public General_O {
   LISP_CLASS(core, CorePkg, DebuggerFrame_O, "DebuggerFrame", General_O);
-  virtual ~DebuggerFrame_O(){};
 
 public:
   bool fieldsp() const override { return true; };
@@ -57,7 +56,6 @@ T_mv call_with_frame(std::function<T_mv(DebuggerFrame_sp)>);
 FORWARD(DebuggerLocal);
 class DebuggerLocal_O : public General_O {
   LISP_CLASS(core, CorePkg, DebuggerLocal_O, "DebuggerLocal", General_O);
-  virtual ~DebuggerLocal_O(){};
 
 public:
   DebuggerLocal_O(T_sp a_fname, T_sp a_name, T_sp a_declfile, T_sp a_declline)
