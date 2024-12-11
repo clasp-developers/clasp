@@ -61,7 +61,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
-        sudo apt install -y binutils-gold clang-15 libclang-15-dev libclang-cpp15-dev llvm-15 llvm-15-dev libelf-dev libgmp-dev libunwind-dev ninja-build sbcl libnetcdf-dev libexpat1-dev libfmt-dev libboost-all-dev
+        sudo apt install -y binutils-gold clang-18 libclang-18-dev libclang-cpp18-dev llvm-18 llvm-18-dev libelf-dev libgmp-dev libunwind-dev ninja-build sbcl libnetcdf-dev libexpat1-dev libfmt-dev libboost-all-dev
  
     - name: Install MacOS dependencies
       if: matrix.os == 'macos-13' || matrix.os == 'macos-14'
