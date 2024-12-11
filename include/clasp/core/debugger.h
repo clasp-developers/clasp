@@ -81,10 +81,15 @@ struct OpenDynamicLibraryInfo {
   gctools::clasp_ptr_t _LibraryStart;
   gctools::clasp_ptr_t _TextStart;
   gctools::clasp_ptr_t _TextEnd;
+  bool _HasVtableSection;
+  gctools::clasp_ptr_t _VtableSectionStart;
+  gctools::clasp_ptr_t _VtableSectionEnd;
   OpenDynamicLibraryInfo(const std::string& f, void* h, const SymbolTable& symbol_table, gctools::clasp_ptr_t libstart,
-                         gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd)
-      : _Filename(f), _Handle(h), _SymbolTable(symbol_table), _LibraryStart(libstart), _TextStart(textStart),
-        _TextEnd(textEnd){
+                         gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd,
+                        bool hasVtableSection,
+                         gctools::clasp_ptr_t vtableSectionStart, gctools::clasp_ptr_t vtableSectionEnd)
+      : _Filename(f), _Handle(h), _SymbolTable(symbol_table), _LibraryStart(libstart), _TextStart(textStart), _TextEnd(textEnd),
+  _HasVtableSection(hasVtableSection), _VtableSectionStart(vtableSectionStart), _VtableSectionEnd(vtableSectionEnd) {
             // printf("%s:%d:%s filename = %s\n", __FILE__, __LINE__, __FUNCTION__, f.c_str() );
         };
   virtual LoadableKind loadableKind() const { return Library; };
@@ -92,14 +97,10 @@ struct OpenDynamicLibraryInfo {
 };
 
 struct ExecutableLibraryInfo : OpenDynamicLibraryInfo {
-  bool _HasVtableSection;
-  gctools::clasp_ptr_t _VtableSectionStart;
-  gctools::clasp_ptr_t _VtableSectionEnd;
   ExecutableLibraryInfo(const std::string& f, void* h, const SymbolTable& symbol_table, gctools::clasp_ptr_t libstart,
-                        gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd, bool hasVtableSection,
-                        gctools::clasp_ptr_t vtableSectionStart, gctools::clasp_ptr_t vtableSectionEnd)
-      : OpenDynamicLibraryInfo(f, h, symbol_table, libstart, textStart, textEnd), _HasVtableSection(hasVtableSection),
-        _VtableSectionStart(vtableSectionStart), _VtableSectionEnd(vtableSectionEnd) {
+                        gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd,
+                        bool hasVtableSection, gctools::clasp_ptr_t vtableSectionStart, gctools::clasp_ptr_t vtableSectionEnd)
+      : OpenDynamicLibraryInfo(f, h, symbol_table, libstart, textStart, textEnd, hasVtableSection, vtableSectionStart, vtableSectionEnd ) {
 #if 0
     printf("%s:%d:%s filename = %s\n", __FILE__, __LINE__, __FUNCTION__, f.c_str() );
     if (vtableSectionStart==NULL) {
@@ -215,6 +216,6 @@ DebugInfo& debugInfo();
 
 void executablePath(std::string& name);
 void executableTextSectionRange(gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end);
-void executableVtableSectionRange(gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end);
+void exclusiveVtableSectionRange(gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end);
 
 }; // namespace core

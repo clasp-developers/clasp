@@ -353,3 +353,80 @@ make $2 l=clasp CLASP=$CLASP"))
   (write-string (alexandria:read-file-into-string (second (uiop:command-line-arguments)))
                  stream)
   (write-line \")trampoline\\\";\" stream))"))
+
+(defun path-flag-p (flag)
+  (and (> (length flag) 1)
+       (char= (char flag 0) #\-)
+       (find (char flag 1) "IL")))
+
+(defun escape-pc-value (value)
+  (with-output-to-string (stream)
+    (loop for ch across value
+          when (find ch "#\\")
+            do (write-char #\\ stream)
+          do (write-char ch stream))))
+
+(defun absolutify-flags (configuration flags)
+  (format nil "~{~a~^ ~}"
+          (mapcar (lambda (flag)
+                    (if (path-flag-p flag)
+                        (let ((path (uiop:ensure-directory-pathname (subseq flag 2))))
+                          (concatenate 'string (subseq flag 0 2)
+                                       (namestring (if (uiop:absolute-pathname-p path)
+                                                       path
+                                                       (uiop:ensure-absolute-pathname (merge-pathnames (uiop:ensure-directory-pathname path)
+                                                                                                       (build-path configuration))
+                                                                                      (uiop:getcwd))))))
+                        flag))
+                  (split-sequence:split-sequence #\space flags
+                                                 :remove-empty-subseqs t))))
+
+(defun write-pc (configuration output-stream cflags libs &key remove-include)
+  (flet ((normalize-version (version)
+           (if (char= #\. (char version 0))
+               (concatenate 'string "0" version)
+               version)))
+    (format output-stream "~
+Name: Clasp library core
+Description: Common dynamic core of Clasp
+URL: https://github.com/clasp-developers/clasp
+Version: ~a
+~@[Requires: ~{~a~^, ~}~]
+Cflags: ~a ~a
+Libs: ~a -lclasp~%"
+            (version configuration)
+            (loop for (name min-version max-version) in (libraries configuration)
+                  when (and (null min-version)
+                            (null max-version))
+                    collect name
+                  else when (equalp min-version max-version)
+                         collect (format nil "~a = ~a" name (normalize-version min-version))
+                  else when min-version
+                         collect (format nil "~a >= ~a" name (normalize-version min-version))
+                  else
+                    collect (format nil "~a <= ~a" name (normalize-version max-version)))
+            (escape-pc-value
+             (if remove-include
+                 (format nil "~{~a~^ ~}"
+                         (remove-if #'path-flag-p
+                                    (split-sequence:split-sequence #\space (cxxflags configuration)
+                                                                   :remove-empty-subseqs t)))
+                 (absolutify-flags configuration (cxxflags configuration))))
+            (escape-pc-value cflags)
+            (escape-pc-value libs))))
+
+(defmethod print-prologue (configuration (name (eql :libclasp-pc)) output-stream)
+  (write-pc configuration output-stream
+            (format nil "-I~a -I~a"
+                    (root :install-share)
+                    (make-source "include/" :install-share))
+            ""
+            :remove-include t))
+
+(defmethod print-prologue (configuration (name (eql :libclasp-pc-variant)) output-stream)
+  (write-pc configuration output-stream
+            (absolutify-flags configuration *variant-cxxflags*)
+            (absolutify-flags configuration
+                              (format nil "~a ~a"
+                                      *variant-ldflags*
+                                      *variant-ldlibs*))))

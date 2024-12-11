@@ -36,13 +36,9 @@
           (apply append
                  (list (string-append source-dir "/src/bdwgc")
                        (string-append source-dir "/src/libatomic_ops")
-                       (string-append source-dir "/src/lisp/modules/asdf")
-                       ;; This is a special case: the parent is omitted
-                       ;; from external-dirs, but added to descend-dirs.
-                       (string-append source-dir "/extensions/seqan-clasp/seqan"))
+                       (string-append source-dir "/src/lisp/modules/asdf"))
                  (map-in-order scandir-absolute external-dirs)))
          (descend-dirs `(,@git-dirs
-                         ,(string-append source-dir "/extensions/seqan-clasp")
                          ,@external-dirs))
          (predicates (map-in-order git-predicate (cons source-dir git-dirs))))
     (package
@@ -60,7 +56,7 @@
        (substitute-keyword-arguments (package-arguments clasp-cl)
          ((#:configure-flags flags '())
           #~(cons*
-             "--extensions=cando,seqan-clasp"
+             "--extensions=cando"
              ;; Had trouble simplifying this using find.
              ;; This is prepended because Koga keeps the first instance
              ;; of repeated options.

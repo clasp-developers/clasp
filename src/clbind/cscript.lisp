@@ -1,4 +1,4 @@
-(k:sources :iclasp
+(k:sources :libclasp
            #~"adapter.cc"
            #~"class_rep.cc"
            #~"open.cc"

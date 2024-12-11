@@ -1,4 +1,4 @@
-(k:sources :iclasp
+(k:sources :libclasp
            #~"dummy.cc"
            #~"mpPackage.cc"
            #~"nativeVector.cc"

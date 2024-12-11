@@ -473,6 +473,18 @@ CL_DEFUN core::T_mv gctools__memory_profile_status() {
                 core::make_fixnum(allocationSizeCounter), core::make_fixnum(allocationSizeThreshold));
 }
 
+
+CL_DEFUN core::T_sp gctools__object_address(core::General_sp generalObject) {
+  void* address = (void*)&(*generalObject);
+  printf("%s:%d:%s  address = %p\n", __FILE__, __LINE__, __FUNCTION__, address );
+  return nil<core::T_O>();
+}
+CL_DEFUN core::T_sp gctools__vtable_address(core::General_sp generalObject) {
+  void* vtable_ptr = *(void**)&(*generalObject);
+  printf("%s:%d:%s  vtable pointer = %p\n", __FILE__, __LINE__, __FUNCTION__, vtable_ptr );
+  return nil<core::T_O>();
+}
+
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp gctools__stack_depth() {
   int z = 0;
