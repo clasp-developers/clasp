@@ -66,7 +66,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt install -y sbcl
-          ./tools-for-build/nightly-version-bump --extensions=cando,seqan-clasp
+          ./tools-for-build/nightly-version-bump --extensions=cando
           rm -rf dependencies extensions src/lisp/kernel/contrib src/lisp/modules/asdf src/mps src/bdwgc src/libatomic_ops
       - name: Build Ubuntu packages
         uses: jtdor/build-deb-action@v1
@@ -152,7 +152,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt install -y sbcl
-          ./tools-for-build/nightly-version-bump --extensions=cando,seqan-clasp
+          ./tools-for-build/nightly-version-bump --extensions=cando
           echo "(:skip-sync t)" > config.sexp
       - name: Build Debian packages
         uses: jtdor/build-deb-action@v1
