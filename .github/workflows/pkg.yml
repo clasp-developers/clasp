@@ -29,8 +29,8 @@ jobs:
         run: |
           gpg --armor --output key.gpg --export ${{ steps.import_gpg.outputs.keyid }}
           rsync -e ssh key.gpg tools-for-build/cando.sh tools-for-build/clasp.sh tools-for-build/deb-cando.sh tools-for-build/deb-clasp.sh tools-for-build/arch-cando.sh tools-for-build/arch-clasp.sh ${{ secrets.WWW_USERNAME }}@www.thirdlaw.tech:/usr/local/www/apache24/data/pkg/
-  jammy_clasp:
-    name: Build Jammy Clasp
+  noble_clasp:
+    name: Build Noble Clasp
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -47,15 +47,15 @@ jobs:
         uses: jtdor/build-deb-action@v1
         with:
           buildpackage-opts: --build=binary --build-profiles=nocando
-          docker-image: ubuntu:jammy
+          docker-image: ubuntu:noble
           extra-build-deps: ca-certificates netbase
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: jammy_clasp
+          name: noble_clasp
           path: debian/artifacts/*.deb
-  jammy_cando:
-    name: Build Jammy Cando
+  noble_cando:
+    name: Build Noble Cando
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -72,19 +72,19 @@ jobs:
         uses: jtdor/build-deb-action@v1
         with:
           buildpackage-opts: --build=binary --build-profiles=noclasp
-          docker-image: ubuntu:jammy
+          docker-image: ubuntu:noble
           extra-build-deps: ca-certificates netbase
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: jammy_cando
+          name: noble_cando
           path: debian/artifacts/*.deb
-  jammy_repo:
-    name: Update Jammy Repository
+  noble_repo:
+    name: Update Noble Repository
     runs-on: ubuntu-latest
     needs:
-      - jammy_clasp
-      - jammy_cando
+      - noble_clasp
+      - noble_cando
     steps:
       - name: Import GPG key
         id: import_gpg
@@ -98,15 +98,15 @@ jobs:
           ssh-host: www.thirdlaw.tech
       - uses: actions/download-artifact@v3
         with:
-          name: jammy_clasp
-          path: jammy
+          name: noble_clasp
+          path: noble
       - uses: actions/download-artifact@v3
         with:
-          name: jammy_cando
-          path: jammy
+          name: noble_cando
+          path: noble
       - name: Generate Repository Index
         run: |
-          cd jammy
+          cd noble
           dpkg-scanpackages --multiversion . > Packages
           gzip -k -f Packages
           apt-ftparchive release . > Release
@@ -114,7 +114,7 @@ jobs:
           gpg --default-key ${{ steps.import_gpg.outputs.keyid }} --clearsign --output InRelease Release
       - name: Upload artifacts
         run: |
-          rsync -e ssh --delete-after --recursive jammy ${{ secrets.WWW_USERNAME }}@www.thirdlaw.tech:/usr/local/www/apache24/data/pkg/
+          rsync -e ssh --delete-after --recursive noble ${{ secrets.WWW_USERNAME }}@www.thirdlaw.tech:/usr/local/www/apache24/data/pkg/
   bookworm_clasp:
     name: Build Bookworm Clasp
     runs-on: ubuntu-latest
