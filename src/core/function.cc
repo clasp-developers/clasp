@@ -73,6 +73,21 @@ void SimpleFun_O::fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr
 #endif
 }
 
+bool SimpleFun_O::dladdrablep(std::set<void*>& uniques) {
+  if (this->_Code.isA<llvmo::Library_O>()) {
+    for (size_t ii = 0; ii < ClaspXepFunction::Entries; ++ii) {
+      void* address = (void*)this->_EntryPoints._EntryPoints[ii].load(std::memory_order_relaxed);
+      if (!uniques.contains(address)) {
+        Dl_info info;
+        uniques.insert(address);
+        if (dladdr(address, &info) == 0)
+          return false;
+      }
+    }
+  }
+  return true;
+}
+
 CL_DEFMETHOD Pointer_sp SimpleFun_O::defaultEntryAddress() const { SUBCLASS_MUST_IMPLEMENT(); }
 
 SimpleFun_O::SimpleFun_O(FunctionDescription_sp fdesc, T_sp code, const ClaspXepTemplate& entry_point)
@@ -194,6 +209,17 @@ void CoreFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup
   }
 #endif
 };
+
+bool CoreFun_O::dladdrablep(std::set<void*>& uniques) {
+  void* address = (void*)this->_Entry;
+  if (!uniques.contains(address)) {
+    Dl_info info;
+    uniques.insert(address);
+    if (dladdr(address, &info) == 0)
+      return false;
+  }
+  return true;
+}
 
 CL_LAMBDA(&key function-description entry-point-functions local-entry-point-index);
 DOCGROUP(clasp);

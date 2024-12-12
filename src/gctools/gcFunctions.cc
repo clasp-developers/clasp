@@ -387,28 +387,38 @@ CL_DEFUN void cl__room(core::Symbol_sp x) {
   clasp_write_string(OutputStream.str(), cl::_sym_STARstandard_outputSTAR->symbolValue());
 }
 
-size_t memory_test() {
+bool memory_test() {
   core::lisp_write("Testing coherence of objects in memory\n");
-  auto corrupt = gctools::memtest();
+  std::set<core::T_sp> undladdrableFuns;
+  auto corrupt = gctools::memtest(undladdrableFuns);
+  bool result = true;
 
-  size_t result = corrupt.size();
-  if (result == 0) {
-    core::lisp_write(fmt::format("Gathered base pointers with zero corrupt objects detected\n"));
-  } else if (result > 0) {
-    core::lisp_write(fmt::format("{} corrupt objects in memory test\n", result));
+  if (corrupt.empty()) {
+    core::lisp_write("Gathered base pointers with zero corrupt objects detected\n");
+  } else {
+    result = false;
+    core::lisp_write(fmt::format("{} corrupt objects in memory test\n", corrupt.size()));
     size_t idx = 0;
     for (const auto& cur : corrupt) {
       core::lisp_write(fmt::format("#{} -> {}\n", idx, (void*)cur));
       idx++;
     }
   }
+  if (undladdrableFuns.empty()) {
+    core::lisp_write("All function entry points are accessible via dlsym\n");
+  } else {
+    result = false;
+    core::lisp_write(fmt::format("{} functions had entry points inaccessible via dlsym\n", undladdrableFuns.size()));
+    for (const auto& cur : undladdrableFuns)
+      core::lisp_write(fmt::format("{}\n", _rep_(cur)));
+  }
+  
   return result;
 }
 
 CL_LAMBDA();
-CL_DOCSTRING("Walk all objects in memory and determine how many contain pointers that are not to valid objects. Return the number "
-             "of corrupt objects that were found. Writes a report to standard output.");
-CL_DEFUN size_t gctools__memory_test() {
+CL_DOCSTRING("Walk all objects in memory and determine how many contain pointers that are not to valid objects. Return true iff all pointers are valid. Writes a report to standard output.");
+CL_DEFUN bool gctools__memory_test() {
   // Collect twice to try and get the mark bits set properly
   GC_gcollect();
   GC_gcollect();

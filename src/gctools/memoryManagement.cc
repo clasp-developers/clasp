@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include <clasp/core/numbers.h>
 #include <clasp/core/array.h>
 #include <clasp/core/hashTable.h>
+#include <clasp/core/function.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/gctools/gc_boot.h>
@@ -958,11 +959,15 @@ std::set<Tagged> setOfAllObjects() {
 }
 
 // Check that all fields in all objects point to valid objects.
+// Also check for functions that can't be resolved with dlsym, since that's
+// important for snapshot save.
 // Return the set of tagged pointers located in fields that are not valid.
-std::set<Tagged> memtest() {
+std::set<Tagged> memtest(std::set<core::T_sp>& dladdrFailed) {
   std::stack<Tagged*> markStack;
   std::set<Tagged> markSet;
   std::set<Tagged> corrupt;
+
+  std::set<void*> uniqueEntryPoints;
 
   walkRoots([&](Tagged* rootAddr) { markStack.push(rootAddr); });
 
@@ -979,7 +984,20 @@ std::set<Tagged> memtest() {
         if (header->isValidGeneralObject()) {
           if (header->_badge_stamp_wtag_mtag.weakObjectP())
             mw_weak_scan(client, markStack);
-          else mw_obj_scan(client, markStack);
+          else {
+            mw_obj_scan(client, markStack);
+            // If this is a function, check its dladdrability.
+            core::T_sp tobj(tagged);
+            if (tobj.isA<core::SimpleFun_O>()) {
+              auto sfun = tobj.as_unsafe<core::SimpleFun_O>();
+              if (!sfun->dladdrablep(uniqueEntryPoints))
+                dladdrFailed.insert(sfun);
+            } else if (tobj.isA<core::CoreFun_O>()) {
+              auto sfun = tobj.as_unsafe<core::CoreFun_O>();
+              if (!sfun->dladdrablep(uniqueEntryPoints))
+                dladdrFailed.insert(sfun);
+            }
+          }
         } else corrupt.insert(tagged);
       }
     } break;

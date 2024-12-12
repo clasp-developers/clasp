@@ -231,6 +231,8 @@ public:
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
   void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr);
   CL_DEFMETHOD T_sp SimpleFun_code() const { return this->_Code; };
+  // Check if the entry points can be dladdr'd, for snapshot save purposes.
+  bool dladdrablep(std::set<void*>& uniqueEntries);
 };
 
 // Now that SimpleFun exists we can define these.
@@ -286,6 +288,7 @@ public:
   CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
   virtual Pointer_sp defaultEntryAddress() const;
+  bool dladdrablep(std::set<void*>& uniques);
   string __repr__() const;
 };
 
