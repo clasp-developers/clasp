@@ -54,7 +54,7 @@ namespace snapshotSaveLoad {
 // Run a memory test. If there are corrupt objects, print the message and wait
 // for a debugger connection.
 void debuggable_memory_test(const char* message) {
-  if (gctools::memory_test() != 0)
+  if (!gctools::memory_test())
     gctools::wait_for_user_signal(message);
 }
 
