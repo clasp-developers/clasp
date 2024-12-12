@@ -6,7 +6,9 @@
 
 (defun wrap-with-env (configuration executable-name)
   (if (reproducible-build configuration)
-      (format nil "LD_LIBRARY_PATH=~a ~a"
+      (format nil
+              #+darwin "DYLD_LIBRARY_PATH=~a ~a"
+              #-darwin "LD_LIBRARY_PATH=~a ~a"
               (make-source "lib/" :variant) executable-name)
       executable-name))
 
