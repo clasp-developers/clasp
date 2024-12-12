@@ -37,6 +37,8 @@
 #include <clasp/llvmo/code.h>
 #include <clasp/gctools/gc_boot.h>
 #include <clasp/llvmo/jit.h>
+#include <clasp/gctools/interrupt.h> // wait_for_user_signal
+#include <clasp/gctools/gcFunctions.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 
 // Turn on debugging vtable pointer updates with libraries
@@ -49,7 +51,12 @@
 
 namespace snapshotSaveLoad {
 
-size_t memory_test(bool dosleep, FILE* fout, const char* message = NULL);
+// Run a memory test. If there are corrupt objects, print the message and wait
+// for a debugger connection.
+void debuggable_memory_test(const char* message) {
+  if (gctools::memory_test() != 0)
+    gctools::wait_for_user_signal(message);
+}
 
 FixupOperation_ operation(Fixup* fixup) { return fixup->_operation; };
 
@@ -1050,7 +1057,7 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
            getpid());
     printf("%s:%d:%s       Running memory test\n", __FILE__, __LINE__, __FUNCTION__);
     fflush(stdout);
-    memory_test(true, NULL, "Memory test after bad forwarding pointer was discovered");
+    debuggable_memory_test("Memory test after bad forwarding pointer was discovered");
     printf("%s:%d:%s stage: %s Sleeping to connect a debugger to pid: %d\n", __FILE__, __LINE__, __FUNCTION__,
            globalPointerFixStage, getpid());
     sleep(1000000);
@@ -2177,75 +2184,6 @@ void updateRelocationTableAfterLoad(ISLLibrary& curLib, SymbolLookup& symbolLook
   }
 }
 
-void dump_test_results(FILE* fout, const std::set<gctools::Tagged>& corrupt) {
-  if (fout) {
-    fprintf(fout, "%s:%d:%s There are %lu corrupt objects\n", __FILE__, __LINE__, __FUNCTION__, corrupt.size());
-    if (corrupt.size() > 0) {
-      size_t idx = 0;
-      for (const auto& cur : corrupt) {
-        fprintf(fout, "#%lu -> %p\n", idx, (void*)cur);
-        idx++;
-      }
-    }
-  }
-}
-
-size_t memory_test(bool dosleep, FILE* fout, const char* message) {
-  //
-  // For saving we may want to save snapshots and not die - so use noStomp forwarding.
-  //
-  core::lisp_write(fmt::format("Gathering base pointers for objects in memory\n"));
-  auto corrupt = gctools::memtest();
-
-  if (fout)
-    dump_test_results(fout, corrupt);
-
-  size_t result = corrupt.size();
-  if (result == 0) {
-    core::lisp_write(fmt::format("Gathered base pointers with zero corrupt objects detected\n"));
-    if (message)
-      core::lisp_write(fmt::format("  {}\n", message));
-  } else if (result > 0) {
-    core::lisp_write(fmt::format("{} corrupt objects in memory test\n", result));
-    if (message)
-      core::lisp_write(fmt::format("  {}\n", message));
-    dump_test_results(stdout, corrupt);
-    if (dosleep) {
-      core::lisp_write(fmt::format("!   Connect a debugger to pid {}\n", getpid()));
-      sleep(1000000);
-    }
-  }
-  return result;
-}
-
-CL_LAMBDA(&key filename);
-CL_DOCSTRING("Walk all objects in memory and determine how many contain pointers that are not to valid objects. Return the number "
-             "of corrupt objects that were found.  If filename is provided then dump a report to that file.");
-CL_DEFUN size_t gctools__memory_test(core::T_sp filename) {
-  FILE* fout = NULL;
-  if (filename.notnilp()) {
-    if (gc::IsA<core::String_sp>(filename)) {
-      core::String_sp sfilename = gc::As_unsafe<core::String_sp>(filename);
-      std::string fname = sfilename->get_std_string();
-      fout = fopen(fname.c_str(), "w");
-      if (!fout) {
-        SIMPLE_ERROR("Could not open {}", fname);
-      }
-    } else {
-      SIMPLE_ERROR("filename must be a string");
-    }
-  }
-  //
-  // Collect twice to try and get the mark bits set properly
-  //
-  GC_gcollect();
-  GC_gcollect();
-  size_t result = memory_test(true, fout, NULL);
-  if (fout)
-    fclose(fout);
-  return result;
-}
-
 /* This is not allowed to do any Lisp allocations. */
 void* snapshot_save_impl(void* data) {
   global_badge_count = 0;
@@ -2710,7 +2648,7 @@ void snapshot_save(core::SaveLispAndDie& data) {
   // Test the memory before we do snapshot_save
   //
   gctools::gctools__garbage_collect();
-  memory_test(true, NULL, "In preparation for snapshot_save.");
+  debuggable_memory_test("In preparation for snapshot_save.");
 
   //
   // For saving we may want to save snapshots and continue (this is dangerous)
@@ -3634,8 +3572,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     }
 
 #ifdef DEBUG_GUARD
-    // only works when DEBUG_GUARD is on
-    memory_test(false, NULL, "DEBUG_GUARD ON Testing snapshot load memory");
+    memory_test();
 #endif
 
     //
