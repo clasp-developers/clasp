@@ -17,4 +17,6 @@ core::T_mv gctools__ensure_valid_object(core::T_mv obj);
 
 void cl__room(core::Symbol_sp x);
 
+size_t memory_test();
+
 }; // namespace gctools

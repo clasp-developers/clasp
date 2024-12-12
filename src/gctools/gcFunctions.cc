@@ -387,6 +387,38 @@ CL_DEFUN void cl__room(core::Symbol_sp x) {
   clasp_write_string(OutputStream.str(), cl::_sym_STARstandard_outputSTAR->symbolValue());
 }
 
+size_t memory_test() {
+  core::lisp_write("Testing coherence of objects in memory\n");
+  auto corrupt = gctools::memtest();
+
+  size_t result = corrupt.size();
+  if (result == 0) {
+    core::lisp_write(fmt::format("Gathered base pointers with zero corrupt objects detected\n"));
+  } else if (result > 0) {
+    core::lisp_write(fmt::format("{} corrupt objects in memory test\n", result));
+    size_t idx = 0;
+    for (const auto& cur : corrupt) {
+      core::lisp_write(fmt::format("#{} -> {}\n", idx, (void*)cur));
+      idx++;
+    }
+  }
+  return result;
+}
+
+CL_LAMBDA();
+CL_DOCSTRING("Walk all objects in memory and determine how many contain pointers that are not to valid objects. Return the number "
+             "of corrupt objects that were found. Writes a report to standard output.");
+CL_DEFUN size_t gctools__memory_test() {
+  // Collect twice to try and get the mark bits set properly
+  GC_gcollect();
+  GC_gcollect();
+  return memory_test();
+}
+
+// Check that all function entry points are symbolically attainable through dlsym.
+// This is needed for snapshots to work.
+// The first set passed is 
+
 }; // namespace gctools
 
 namespace gctools {
