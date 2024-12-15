@@ -589,7 +589,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         pos = sname.find(literals_name);
         if (pos != std::string::npos) {
           found_literals = true;
-          currentCode->_LiteralVectorStart = (uintptr_t)ssym->getAddress().getValue();
+          currentCode->setLiteralVectorStart((void*)ssym->getAddress().getValue());
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s currentCode = %p  _LiteralVectorStart -> %p\n"
                                     "   ssym->getSize() = %llu\n",
                                     __FILE__, __LINE__, __FUNCTION__, &*currentCode, (void*)currentCode->_LiteralVectorStart,
@@ -629,7 +629,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       abort();
     }
     //
-    void* literalStart = (void*)currentCode->_LiteralVectorStart;
+    void* literalStart = (void*)currentCode->getLiteralVectorStart();
     size_t literalCount = currentCode->_LiteralVectorSizeBytes / sizeof(void*);
     if (found_gcroots_in_module) {
       // if we have a GCRoots object, set it up properly.

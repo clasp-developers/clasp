@@ -76,6 +76,7 @@ THE SOFTWARE.
 
 #if defined(_TARGET_OS_DARWIN) && defined(__aarch64__)
 #define CLASP_APPLE_SILICON 1
+#define USE_MMAP_CODEBLOCK 1
 #endif
 
 // ----------------------------------------------------------------------------

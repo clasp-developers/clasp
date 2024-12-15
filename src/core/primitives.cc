@@ -836,27 +836,23 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(hook to invoke gdb)dx");
 DOCGROUP(clasp);
 NEVER_OPTIMIZE CL_DEFUN void core__gdb(T_sp msg) {
-  T_sp obj = msg;
-  string smsg = "No msg";
-  if (obj.notnilp()) {
-    smsg = _rep_(obj);
+  if (msg.notnilp()) {
+    string smsg = "No msg";
+    smsg = _rep_(msg);
+    dbg_hook(smsg.c_str());
   }
-  dbg_hook(smsg.c_str());
-  //  core__invoke_internal_debugger(nil<core::T_O>());
 };
 
-CL_LAMBDA(&optional msg);
+
+
+CL_LAMBDA(&optional obj);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(hook to invoke gdb)dx");
 DOCGROUP(clasp);
-CL_DEFUN void core__trap_execution(T_sp msg) {
-  T_sp obj = msg;
-  string smsg = "No msg";
-  if (obj.notnilp()) {
-    smsg = _rep_(obj);
-  }
-  printf("%s:%d In core__trap_execution: %s \n", __FILE__, __LINE__, smsg.c_str());
-  fflush(stdout);
+__attribute__((optnone))
+CL_DEFUN
+void core__trap_execution(T_sp obj) {
+  // do nothing
 };
 
 CL_LAMBDA(msg o);
