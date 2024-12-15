@@ -287,7 +287,7 @@
           (bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
       (cmp:irc-begin-block bb)
       ;; Lose the saved values alloca.
-      (%intrinsic-call "llvm.stackrestore" (list stackpos))
+      (%intrinsic-call cmp:+llvm.stackrestore+ (list stackpos))
       ;; Continue
       (cmp:irc-br
        (maybe-entry-processor (cleavir-bir:parent instruction) tags))
@@ -300,7 +300,7 @@
           (let ((bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
             (cmp:irc-begin-block bb)
             ;; Lose the saved values alloca.
-            (%intrinsic-call "llvm.stackrestore" (list stackpos))
+            (%intrinsic-call cmp:+llvm.stackrestore+ (list stackpos))
             ;; Continue
             (cmp:irc-br
              (maybe-entry-processor (cleavir-bir:parent inst) tags))

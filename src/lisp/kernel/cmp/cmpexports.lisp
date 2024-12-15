@@ -38,6 +38,8 @@
             xep-group-entry-point-reference
             xep-group-cleavir-lambda-list-analysis
             +c++-stamp-max+
+            +llvm.stacksave+
+            +llvm.stackrestore+
             %opaque-fn-prototype*%
             fn-prototype
             *cleavir-compile-file-hook*
