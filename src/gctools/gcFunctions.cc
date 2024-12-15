@@ -476,9 +476,9 @@ CL_DEFUN core::T_mv gctools__memory_profile_status() {
 
 CL_DEFUN core::T_sp gctools__object_address(core::General_sp generalObject) {
   void* address = (void*)&(*generalObject);
-  printf("%s:%d:%s  address = %p\n", __FILE__, __LINE__, __FUNCTION__, address );
-  return nil<core::T_O>();
+  return core::Integer_O::create((uint64_t)address);
 }
+
 CL_DEFUN core::T_sp gctools__vtable_address(core::General_sp generalObject) {
   void* vtable_ptr = *(void**)&(*generalObject);
   printf("%s:%d:%s  vtable pointer = %p\n", __FILE__, __LINE__, __FUNCTION__, vtable_ptr );

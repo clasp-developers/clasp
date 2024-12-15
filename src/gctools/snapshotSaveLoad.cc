@@ -94,6 +94,8 @@ bool pointer_in_gc_memory(void* pointer) {
     return true;
   return false;
 }
+
+
 const char* pointer_pool(void* pointer) {
   if (pointer_in_gc_memory(pointer))
     return "GC";
@@ -1731,7 +1733,7 @@ struct copy_objects_t : public walker_callback_t {
         newObjectFile->_DataCode._MaybeSignedLength = code->literalsSize();
         // Write the bytes for the literals
         char* literals_addr = this->_objects->write_buffer((char*)code->literalsStart(), code->literalsSize());
-        newObjectFile->_LiteralVectorStart = literals_addr - new_client;
+        newObjectFile->setLiteralVectorStart((void*)(literals_addr - new_client));;
         DBG_OF(printf("%s:%d:%s newObjectFile->_LiteralVectorStart     = 0x%lx literals_addr=%p  new_client= %p\n", __FILE__,
                       __LINE__, __FUNCTION__, newObjectFile->_LiteralVectorStart, literals_addr, new_client););
         newObjectFile->_LiteralVectorSizeBytes = code->literalsSize();

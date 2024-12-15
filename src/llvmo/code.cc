@@ -166,15 +166,30 @@ void* ObjectFile_O::literalsStart() const {
   return (void*)this->_LiteralVectorStart;
 }
 
+void ObjectFile_O::setLiteralVectorStart(void* start) {
+  this->_LiteralVectorStart = (uintptr_t)start;
+}
+
+void* ObjectFile_O::getLiteralVectorStart() {
+  return (void*)this->_LiteralVectorStart;
+}
 std::string ObjectFile_O::__repr__() const {
   stringstream ss;
   ss << "#<OBJECT-FILE " << core::_rep_(this->_CodeName);
   ss << " :faso-name " << core::_rep_(this->_FasoName);
   ss << " :faso-index " << this->_FasoIndex << " ";
+  ss << " :state ";
+  if (this->_State==RunState) {
+    ss << "Run";
+  } else {
+    ss << "Save";
+  }
   if (this->_MemoryBuffer) {
     ss << " :object-file @" << (void*)this->_MemoryBuffer->getBufferStart() << " ";
     ss << " :object-file-size " << (size_t)this->_MemoryBuffer->getBufferSize() << " ";
   }
+  ss << " :DataCode0 " << (void*)&(this->_DataCode[0]);
+  ss << " :LiteralVectorStart" << (void*)(this->_LiteralVectorStart);
   ss << " @" << (void*)this << ">";
   return ss.str();
 };
@@ -213,6 +228,17 @@ CL_DEFUN core::T_sp code_literal_ref(ObjectFile_sp code, size_t idx) {
   core::T_sp ret((gc::Tagged)(literals[idx]));
   return ret;
 }
+
+CL_DOCSTRING(R"dx(Return the address of an element from the Code object's literals vector. WARNING: Does not check bound.)dx");
+CL_LISPIFY_NAME(code_literal_address);
+DOCGROUP(clasp);
+CL_DEFUN core::T_sp code_literal_address(ObjectFile_sp code, size_t idx) {
+  core::T_O** literals = (core::T_O**)(code->literalsStart());
+  void* ptr = (void*)&literals[idx];
+  core::T_sp val = core::Integer_O::create((uint64_t)ptr);
+  return val;
+}
+
 
 CL_LISPIFY_NAME("CODE-LITERAL");
 CL_DEFUN_SETF core::T_sp code_literal_set(core::T_sp lit,
@@ -609,20 +635,30 @@ bool CodeBlock_O::calculate(BasicLayout& BL) {
 #endif
     uint64_t ZeroFillStart = Seg.ContentSize;
     size_t SegmentSize = (uintptr_t)gctools::AlignUp(ZeroFillStart + Seg.ZeroFillSize, Seg.Alignment.value());
+    uintptr_t baseOffset;
     void* base;
+    uintptr_t prevHeadOffset = headOffset;
+    uintptr_t prevTailOffset = tailOffset;
     const char* allocKind = "unk";
     if ((llvm::sys::Memory::MF_RWE_MASK & protFlags) == (llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE)) {
-      base = this->calculateHead(SegmentSize, Seg.Alignment.value(), headOffset);
+      baseOffset = this->calculateHeadOffset(SegmentSize, Seg.Alignment.value(), headOffset);
       allocKind = "head";
     } else if ((llvm::sys::Memory::MF_RWE_MASK & protFlags) == (llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_EXEC)) {
-      base = this->calculateTail(SegmentSize, Seg.Alignment.value(), tailOffset);
+      baseOffset = this->calculateTailOffset(SegmentSize, Seg.Alignment.value(), tailOffset);
       allocKind = "tail";
     } else {
-      base = this->calculateHead(SegmentSize, Seg.Alignment.value(), headOffset);
+      baseOffset = this->calculateHeadOffset(SegmentSize, Seg.Alignment.value(), headOffset);
       allocKind = "head";
     }
+    base = this->address(baseOffset);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s calculated %s from the base = %p - %p = %lu bytes \n", __FILE__, __LINE__, __FUNCTION__,
                               allocKind, base, (void*)((uintptr_t)base + SegmentSize), SegmentSize));
+#if 0
+    printf("%s:%d:%s allocKind %s base = %10lu _Head: %10lu  _Tail: %10lu  base: %p GC_base: %p\n", __FILE__, __LINE__, __FUNCTION__, allocKind, baseOffset, headOffset, tailOffset, base, GC_base(base) );
+    if (!(prevHeadOffset<= baseOffset && baseOffset<=prevTailOffset)) {
+      printf("       The baseOffset is out of range\n" );
+    }
+#endif
     Seg.Addr = (llvm::orc::ExecutorAddr)(uintptr_t)base;
     Seg.WorkingMem = jitTargetAddressToPointer<char*>((llvm::JITTargetAddress)base);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     wrote into Seg @ %p\n", __FILE__, __LINE__, __FUNCTION__, &Seg));
@@ -632,11 +668,10 @@ bool CodeBlock_O::calculate(BasicLayout& BL) {
   //
   // If the head overruns the tail then we don't have enough memory for this code.
   //
-  if (headAddress >= tailAddress)
-    return false;
+  if (headAddress >= tailAddress) return false;
 
   //
-  // If the headAddress and tailAddress are on different pages - then we don't have enough memory for this code
+  // If the headAddress and tailAddress are on the SAME PAGE - then we don't have enough memory for this code
   //
   size_t PageSize = getpagesize();
   if ((headAddress / PageSize) == (tailAddress / PageSize))
@@ -657,6 +692,13 @@ void* CodeBlock_O::calculateHead(uintptr_t size, uint32_t align, uintptr_t& head
   return (void*)head;
 }
 
+uintptr_t CodeBlock_O::calculateHeadOffset(uintptr_t size, uint32_t align, uintptr_t& headOffset) {
+  uintptr_t head = headOffset;
+  head = (uintptr_t)gctools::AlignUp((uintptr_t)head, align);
+  headOffset = (uintptr_t)head + size;
+  return head;
+}
+
 void* CodeBlock_O::calculateTail(uintptr_t size, uint32_t align, uintptr_t& tailOffset) {
   const unsigned char* tail = this->address(0) + tailOffset;
   tail = (const unsigned char*)gctools::AlignDown((uintptr_t)tail - size, align);
@@ -664,9 +706,20 @@ void* CodeBlock_O::calculateTail(uintptr_t size, uint32_t align, uintptr_t& tail
   return (void*)tail;
 }
 
+uintptr_t CodeBlock_O::calculateTailOffset(uintptr_t size, uint32_t align, uintptr_t& tailOffset) {
+  uintptr_t tail = tailOffset;
+  tail = (uintptr_t)gctools::AlignDown((uintptr_t)tail - size, align);
+  tailOffset = (uintptr_t)tail;
+  return tail;
+}
+
 std::string CodeBlock_O::__repr__() const {
   stringstream ss;
-  ss << "#<CODE-BLOCK>";
+  ss << "#<CODE-BLOCK";
+  ss << " :DataCode " << (void*)&(this->_DataCode[0]);
+  ss << " :DataCodeSize " << DefaultSize;
+  ss << " @ " << (void*)this;
+  ss << ">";
   return ss.str();
 }
 

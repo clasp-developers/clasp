@@ -554,6 +554,13 @@ CL_DEFUN size_t core__gc_real_time() {
   return 0;
 }
 
+CL_DEFUN core::T_sp core__gc_base(uint64_t addr)
+{
+  void* base = GC_base((void*)addr);
+  return core::Integer_O::create((uint64_t)base);
+}
+
+
 void clasp_gc_registerRoots(void* rootsStart, size_t numberOfRoots) {
 #ifdef USE_MMAP_CODEBLOCK
   //

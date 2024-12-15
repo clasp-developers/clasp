@@ -98,7 +98,8 @@ public:
   uintptr_t _TextSectionId;
   void* _StackmapStart;
   uintptr_t _StackmapSize;
-  // Absolute address of literals in memory - this must be in the _DataCode vector.
+  // Absolute address of literals in memory - this must be in the _DataCode vector when _State is Save
+  // and into a CodeBlock_O object when _State is Run
   uintptr_t _LiteralVectorStart;
   size_t _LiteralVectorSizeBytes; // size in bytes
   CodeBlock_sp _CodeBlock;
@@ -108,17 +109,17 @@ public:
   ObjectFile_O(core::SimpleBaseString_sp codename, std::unique_ptr<llvm::MemoryBuffer> buffer, size_t objectId,
                JITDylib_sp jitdylib, core::SimpleBaseString_sp fasoName, size_t fasoIndex)
       : _State(RunState), _CodeName(codename), _MemoryBuffer(std::move(buffer)), _ObjectId(objectId), _TheJITDylib(jitdylib),
-        _FasoName(fasoName), _FasoIndex(fasoIndex), _CodeBlock(unbound<CodeBlock_O>()) {
+        _FasoName(fasoName), _FasoIndex(fasoIndex), _LiteralVectorStart(0), _CodeBlock(unbound<CodeBlock_O>()) {
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   objectId = %lu\n", __FILE__, __LINE__, __FUNCTION__, objectId));
   };
   ObjectFile_O(core::SimpleBaseString_sp codename, JITDylib_sp jitdylib, size_t objectId)
       : _State(RunState), _CodeName(codename), _ObjectId(objectId), _TheJITDylib(jitdylib),
-        _CodeBlock(unbound<CodeBlock_O>()) {
+        _LiteralVectorStart(0), _CodeBlock(unbound<CodeBlock_O>()) {
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   codename = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(codename).c_str()));
   };
   ObjectFile_O(core::SimpleBaseString_sp codename, CodeBlock_sp codeBlock, JITDylib_sp dylib, size_t objectId)
       : _State(RunState), _CodeName(codename), _ObjectId(objectId), _TheJITDylib(dylib), _TextSectionStart(0),
-        _TextSectionEnd(0), _CodeBlock(codeBlock) {
+        _TextSectionEnd(0), _LiteralVectorStart(0), _CodeBlock(codeBlock) {
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s created with CodeBlock_sp   codename = %s CodeBlock = %s\n", __FILE__, __LINE__,
                               __FUNCTION__, _rep_(codename).c_str(), core::_rep_(codeBlock).c_str()));
   };
@@ -137,7 +138,7 @@ public:
   void* objectFileData() { return (void*)this->_MemoryBuffer->getBufferStart(); };
   size_t objectFileSizeAlignedUp() { return gctools::AlignUp(this->objectFileSize()); }
   llvm::Expected<std::unique_ptr<llvm::object::ObjectFile>> getObjectFile();
-
+  CL_DEFMETHOD CodeBlock_sp codeBlock() const { return this->_CodeBlock; };
   //
   // Code methods
   //
@@ -146,6 +147,8 @@ public:
   void* absoluteAddress(SectionedAddress_sp sa);
   size_t frontSize() const { return sizeof(*this); };
   size_t literalsSize() const { return this->_LiteralVectorSizeBytes; };
+  void* getLiteralVectorStart();
+  void setLiteralVectorStart(void* start);
   // The location of the literals vector in memory
   void* literalsStart() const;
   core::T_O** TOLiteralsStart() const { return (core::T_O**)literalsStart(); }
@@ -214,7 +217,6 @@ namespace llvmo {
  * We place the RWData at the top of the object so we can scan it for GC managed pointers.
  */
 #if defined(CLASP_APPLE_SILICON)
-#define USE_MMAP_CODEBLOCK 1
 #include <sys/mman.h>
 #endif
 
@@ -293,6 +295,8 @@ public:
   bool calculate(llvm::jitlink::BasicLayout& BL);
   void* calculateHead(uintptr_t size, uint32_t align, uintptr_t& headOffset);
   void* calculateTail(uintptr_t size, uint32_t align, uintptr_t& tailOffset);
+  uintptr_t calculateHeadOffset(uintptr_t size, uint32_t align, uintptr_t& headOffset);
+  uintptr_t calculateTailOffset(uintptr_t size, uint32_t align, uintptr_t& tailOffset);
   void describe() const;
 
   std::string __repr__() const;
