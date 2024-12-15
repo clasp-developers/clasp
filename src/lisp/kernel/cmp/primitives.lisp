@@ -1,13 +1,5 @@
 (in-package #:cmp)
 
-(defvar +llvm.stacksave+
-  #+(or llvm15 llvm16 llvm17)"llvm.stacksave"
-  #-(or llvm15 llvm16 llvm17)"llvm.stacksave.p0")
-
-(defvar +llvm.stackrestore+
-  #+(or llvm15 llvm16 llvm17)"llvm.stackrestore"
-  #-(or llvm15 llvm16 llvm17)"llvm.stackrestore.p0")
-
 (defstruct (primitive (:type vector) :named)
   return-type-name
   argument-type-names
@@ -132,7 +124,9 @@
          (primitive         "__gxx_personality_v0" :i32 nil :varargs t)
          (primitive         "__cxa_begin_catch" :i8* (list :i8*) )
          (primitive-unwinds "__cxa_end_catch" :void nil)
-         (primitive         "llvm.eh.typeid.for" :i32 (list :i8*))
+         (primitive #+(or llvm15 llvm16 llvm17)"llvm.eh.typeid.for"
+          #-(or llvm15 llvm16 llvm17)"llvm.eh.typeid.for.p0"
+          :i32 (list :i8*))
          (primitive-unwinds "cc_overflowed_signed_bignum" :t* (list :i64))
          (primitive         "llvm.sadd.with.overflow.i32" :{i32.i1} (list :i32 :i32))
          (primitive         "llvm.sadd.with.overflow.i64" :{i64.i1} (list :i64 :i64))
@@ -196,8 +190,14 @@
          (primitive         "llvm.lifetime.start" :void (list :i64 :i8*))
          (primitive         "llvm.lifetime.end" :void (list :i64 :i8*))
 
-         (primitive         +llvm.stacksave+ :i8* nil)
-         (primitive         +llvm.stackrestore+ :void (list :i8*))
+         (primitive
+          #+(or llvm15 llvm16 llvm17)"llvm.stacksave"
+          #-(or llvm15 llvm16 llvm17)"llvm.stacksave.p0"
+          :i8* nil)
+         (primitive
+          #+(or llvm15 llvm16 llvm17)"llvm.stackrestore"
+          #-(or llvm15 llvm16 llvm17)"llvm.stackrestore.p0"
+          :void (list :i8*))
 
          (primitive         "llvm.memcpy.p0.p0.i64" :void (list :i8* :i8* :i64 :i1))
          (primitive         "llvm.memmove.p0.p0.i64" :void (list :i8* :i8* :i64 :i1))
