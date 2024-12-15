@@ -571,13 +571,16 @@ void clasp_gc_registerRoots(void* rootsStart, size_t numberOfRoots) {
   //
   void* rootsEnd = (void*)((uintptr_t)rootsStart + numberOfRoots * sizeof(void*));
   if (rootsEnd != rootsStart) {
-    printf("%s:%d:%s GC_add_roots %p to %p\n", __FILE__, __LINE__, __FUNCTION__, rootsStart, rootsEnd);
+#if 0
+    // debugging
     void* base = GC_base(rootsStart);
+    printf("%s:%d:%s GC_add_roots %p to %p\n", __FILE__, __LINE__, __FUNCTION__, rootsStart, rootsEnd);
     if (base) {
       printf("    ---- the roots are INSIDE GC managed memory - GC_add_roots is not needed\n");
     } else {
       printf("    ---- the roots are OUTSIDE GC managed memory - GC_add_roots is NEEDED\n");
     }
+#endif
     GC_add_roots(rootsStart, rootsEnd);
   }
 #endif
