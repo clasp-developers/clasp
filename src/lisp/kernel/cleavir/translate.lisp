@@ -210,7 +210,10 @@
          (nvals (cmp:irc-tmv-nret tmv))
          (primary (cmp:irc-tmv-primary tmv))
          ;; NOTE: Must be done BEFORE the alloca*fea.
-         (save (%intrinsic-call cmp:+llvm.stacksave+ nil))
+         (save (%intrinsic-call
+                #+(or llvm15 llvm16 llvm17)"llvm.stacksave"
+                #-(or llvm15 llvm16 llvm17)"llvm.stacksave.p0"
+                nil))
          (mv-temp (cmp:alloca-temp-values nvals))
          (label (datum-name-as-string outp))
          (s2 (cmp::irc-make-vaslist nvals mv-temp label)))
@@ -232,12 +235,18 @@
       (%intrinsic-call "cc_set_dynenv_stack" (list old-de-stack)))))
 (defmethod undo-dynenv ((dynenv bir:values-save) tmv)
   (declare (ignore tmv))
-  (%intrinsic-call cmp:+llvm.stackrestore+ (list (dynenv-storage dynenv))))
+  (%intrinsic-call
+   #+(or llvm15 llvm16 llvm17)"llvm.stackrestore"
+   #-(or llvm15 llvm16 llvm17)"llvm.stackrestore.p0"
+   (list (dynenv-storage dynenv))))
 (defmethod undo-dynenv ((dynenv bir:values-collect) tmv)
   (declare (ignore tmv))
   (let ((storage (dynenv-storage dynenv)))
     (when storage
-      (%intrinsic-call cmp:+llvm.stackrestore+ (list storage)))))
+      (%intrinsic-call
+       #+(or llvm15 llvm16 llvm17)"llvm.stackrestore"
+       #-(or llvm15 llvm16 llvm17)"llvm.stackrestore.p0"
+       (list storage)))))
 
 (defun translate-local-unwind (jump tmv)
   (loop with target = (bir:dynamic-environment
@@ -1519,7 +1528,10 @@
                  for n = size then (cmp:irc-add n size "sum-nret")
                  collect n))
          (n-total-values (first (last partial-sums)))
-         (stacksave (%intrinsic-call cmp:+llvm.stacksave+ nil "values-collect"))
+         (stacksave (%intrinsic-call
+                     #+(or llvm15 llvm16 llvm17)"llvm.stacksave"
+                     #-(or llvm15 llvm16 llvm17)"llvm.stacksave.p0"
+                     nil "values-collect"))
          (tv-size
            ;; In order to store the primary value unconditionally below, we
            ;; need to allocate one extra word. This is important for the
@@ -1610,7 +1622,10 @@
                      in)
                     ((eq irt :multiple-values)
                      (let* ((nret (cmp:irc-tmv-nret in))
-                            (save (%intrinsic-call cmp:+llvm.stacksave+ nil))
+                            (save (%intrinsic-call
+                                   #+(or llvm15 llvm16 llvm17)"llvm.stacksave"
+                                   #-(or llvm15 llvm16 llvm17)"llvm.stacksave.p0"
+                                   nil))
                             (values (cmp:alloca-temp-values nret)))
                        (setf (dynenv-storage inst) save)
                        (%intrinsic-call "cc_save_values"
