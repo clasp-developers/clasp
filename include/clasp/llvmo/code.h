@@ -240,8 +240,8 @@ public:
 
 public:
   template <typename Stage> static CodeBlock_sp make(uintptr_t size) {
-#ifdef USE_MMAP_CODEBLOCK
-    CodeBlock_sp codeblock = gctools::GC<CodeBlock_O>::allocate<Stage>(size);
+#ifdef CLASP_APPLE_SILICON
+    CodeBlock_sp codeblock = gctools::GC<CodeBlock_O>::allocate<Stage>(0);
     void* mmappedBlock = mmap(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON | MAP_PRIVATE | MAP_JIT, -1, 0);
     if (mmappedBlock == MAP_FAILED || !mmappedBlock) {
       printf("%s:%d:%s mmap failed\n", __FILE__, __LINE__, __FUNCTION__);
@@ -272,21 +272,21 @@ public:
    *  Return false if it won't fit and true if it will and then lock in the allocation
    */
   void* dataStart() const {
-#ifdef USE_MMAP_CODEBLOCK
+#ifdef CLASP_APPLE_SILICON
     return (void*)this->_mmapBlock;
 #else
     return (void*)&this->_DataCode[0];
 #endif
   };
   void* dataEnd() const {
-#ifdef USE_MMAP_CODEBLOCK
+#ifdef CLASP_APPLE_SILICON
     return (void*)((uintptr_t)this->_mmapBlock + this->_HeadOffset);
 #else
     return (void*)&this->_DataCode[this->_HeadOffset];
 #endif
   };
   unsigned char* address(uintptr_t index) const {
-#ifdef USE_MMAP_CODEBLOCK
+#ifdef CLASP_APPLE_SILICON
     return (unsigned char*)((uintptr_t)this->_mmapBlock + index);
 #else
     return (unsigned char*)&this->_DataCode[index];
@@ -303,7 +303,7 @@ public:
 
   CodeBlock_O(uintptr_t totalSize)
       : _HeadOffset(0), _TailOffset(totalSize)
-#ifdef USE_MMAP_CODEBLOCK
+#ifdef CLASP_APPLE_SILICON
         ,
         _mmapBlock(NULL), _mmapSize(totalSize)
 #else
