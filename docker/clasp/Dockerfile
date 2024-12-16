@@ -1,33 +1,23 @@
-FROM ubuntu:jammy
+FROM ghcr.io/yitzchak/archlinux-makepkg:latest
 
-SHELL ["/bin/bash", "-c"]
+RUN sudo pacman-key --init && \
+    sudo pacman -Syu --noconfirm sbcl
 
-ARG D_USER=app
-ARG D_UID=1000
+RUN git clone https://aur.archlinux.org/clasp-cl.git && \
+    cd clasp-cl && \
+    makepkg --noconfirm --syncdeps --install --nocheck && \
+    cd .. && \
+    rm -rf clasp-cl
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV USER ${D_USER}
-ENV HOME /home/${D_USER}
-ENV PATH "${HOME}/.local/bin:${PATH}"
+USER root
+WORKDIR /root
 
-RUN apt-get update && \
-    apt-get dist-upgrade -y && \
-    apt-get install -o Dpkg::Options::="--force-overwrite" -y \
-        nano wget sudo ecl sbcl git locales curl && \
-    bash -c "$(curl -fsSL https://www.thirdlaw.tech/pkg/clasp.sh)"
+ENV XDG_CONFIG_HOME=/root/.config
+ENV XDG_DATA_HOME=/root/.local/share
+ENV XDG_CACHE_HOME=/root/.cache
 
-RUN echo 'en_US.UTF-8 UTF-8' >/etc/locale.gen
-RUN sudo -E locale-gen
-
-RUN useradd --create-home --shell=/bin/false --uid=${D_UID} ${D_USER} && \
-    usermod -aG sudo $D_USER && \
-    passwd -d $D_USER
-
-WORKDIR ${HOME}
-USER ${D_USER}
-
-RUN wget https://beta.quicklisp.org/quicklisp.lisp && \
+RUN curl -kLO https://beta.quicklisp.org/quicklisp.lisp && \
     sbcl --non-interactive --load quicklisp.lisp --eval "(quicklisp-quickstart:install)" --eval "(ql-util:without-prompting (ql:add-to-init-file))" && \
-    rm quicklisp.lisp && \
-    ecl --load ~/quicklisp/setup.lisp --eval "(ql-util:without-prompting (ql:add-to-init-file))" --eval "(quit)" && \
-    clasp --non-interactive --load ~/quicklisp/setup.lisp git  --eval "(ql-util:without-prompting (ql:add-to-init-file))"
+    clasp --non-interactive --load ~/quicklisp/setup.lisp --eval "(ql-util:without-prompting (ql:add-to-init-file))" && \
+    rm quicklisp.lisp
+
