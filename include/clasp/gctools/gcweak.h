@@ -407,4 +407,43 @@ private:
 #endif // lacking real support, we have not-actually-weak pointers.
 };
 
+// On Boehm this is not a real ephemeron - it's a weak pointer to the key,
+// and a strong pointer to the value that happens to get wiped with the key.
+// To see the difference, imagine having two inverse ephemerons {V1, V2} and
+// {V2, V1}, where V1 and V2 are some otherwise inaccessible objects. With real
+// ephemerons, the ephemeron values (V2 and V1) will not be scanned unless the
+// keys (V1 and V2) are otherwise inaccessible, which they are not, and so both
+// ephemerons can be wiped by the GC. With these boehm "ephemerons" V1 and V2
+// will be kept alive by the strong pointers and so both will be alive forever.
+// Another issue comes up when an ephemeron's value contains the only strong
+// references to the ephemeron's key; in a real ephemeron this will not keep the
+// ephemeron alive, but it will in these.
+
+// TL;DR: The Boehm interface does not seem to allow real ephemerons.
+// These pseudo ephemerons can at least handle some basic cases of weak hash
+// tables without entailing too bad of a memory leak.
+struct Ephemeron {
+public:
+  Ephemeron(core::T_sp key, core::T_sp value);
+  std::optional<core::T_sp> key() const;
+  std::optional<core::T_sp> value() const;
+public:
+#ifdef USE_BOEHM
+  GC_hidden_pointer _key;
+#else // FIXME for other GCs!
+  core::T_sp _key;
+#endif
+  core::T_sp _value;
+#ifdef USE_BOEHM
+private:
+  struct result_helper_s {
+    result_helper_s(const Ephemeron* e) : eph(e), result() {}
+    const Ephemeron* eph;
+    std::optional<core::T_sp> result;
+  };
+  static void* key_helper(void*);
+  static void* value_helper(void*);
+#endif
+};
+
 }; // namespace gctools

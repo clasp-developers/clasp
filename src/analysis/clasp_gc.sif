@@ -58,9 +58,9 @@
                           "comp::GlobalMacroInfo_O" "core::MDArray_int64_t_O"
                           "core::SimpleMDArray_size_t_O" "comp::VariableCellInfo_O"
                           "core::SmallMultimap_O" "core::Fixnum_dummy_O" "core::AuxArgument"
-                          "core::MDArray_int8_t_O" "llvmo::ConstantFP_O" "core::BytecodeDebugVar_O"
-                          "core::BlockDynEnv_O" "core::Cons_O" "clbind::detail::vertex"
-                          "llvmo::LLVMContext_O" "core::MDArray_int4_t_O"
+                          "core::MDArray_int8_t_O" "core::Ephemeron_O" "core::BytecodeDebugVar_O"
+                          "llvmo::ConstantFP_O" "core::BlockDynEnv_O" "core::Cons_O"
+                          "clbind::detail::vertex" "llvmo::LLVMContext_O" "core::MDArray_int4_t_O"
                           "core::WeakKeyHashTable_O" "core::Rack_O" "core::MDArrayBaseChar_O"
                           "core::UserData_O" "core::ExternalObject_O" "llvmo::DINode_O"
                           "llvmo::GlobalVariable_O" "core::SimpleVector_short_float_O"
@@ -4701,6 +4701,15 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "core::BytecodeDebugVar_O" :layout-offset-field-names ("_decls")}
+{class-kind :stamp-name "STAMPWTAG_core__Ephemeron_O" :stamp-key "core::Ephemeron_O"
+            :parent-class "core::General_O" :lisp-class-base "core::General_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::Ephemeron_O"
+             :layout-offset-field-names ("_ephemeron" "._key")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::Ephemeron_O"
+             :layout-offset-field-names ("_ephemeron" "._value")}
 {class-kind :stamp-name "STAMPWTAG_core__SmallMultimap_O" :stamp-key "core::SmallMultimap_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

@@ -58,4 +58,22 @@ public: // Functions here
   bool valid() const;
 };
 
+// WARNING: Not a real ephemeron on some GCs (boehm). See notes in gcweak.h.
+FORWARD(Ephemeron);
+class Ephemeron_O : public General_O {
+  LISP_CLASS(core, CorePkg, Ephemeron_O, "Ephemeron", General_O);
+  Ephemeron_O(T_sp key, T_sp value) : _ephemeron(key, value) {}
+
+public:
+  static Ephemeron_sp make(T_sp key, T_sp value);
+
+public:
+  gctools::Ephemeron _ephemeron;
+
+public:
+  T_sp key() const;
+  T_sp value() const;
+  bool valid() const;
+};
+
 }; // namespace core

@@ -54,4 +54,27 @@ CL_DEFMETHOD T_sp WeakPointer_O::value() const {
   else return nil<T_O>();
 }
 
+CL_LISPIFY_NAME(make-ephemeron);
+CL_DEFUN Ephemeron_sp Ephemeron_O::make(T_sp key, T_sp value) {
+  return gctools::GC<Ephemeron_O>::allocate(key, value);
+}
+
+CL_LISPIFY_NAME("ephemeron/key");
+CL_DEFMETHOD T_sp Ephemeron_O::key() const {
+  auto r = _ephemeron.key();
+  if (r) return *r;
+  else return nil<T_O>();
+}
+CL_LISPIFY_NAME("ephemeron/value");
+CL_DEFMETHOD T_sp Ephemeron_O::value() const {
+  auto r = _ephemeron.value();
+  if (r) return *r;
+  else return nil<T_O>();
+}
+
+CL_LISPIFY_NAME("ephemeron/validp");
+CL_DEFMETHOD bool Ephemeron_O::valid() const {
+  return _ephemeron.key().has_value();
+}
+
 }; // namespace core

@@ -391,4 +391,46 @@ WeakPointer::WeakPointer(core::T_sp o) : _value(o.tagged_()) {}
 // always valid
 std::optional<core::T_sp> WeakPointer::value() const { return core::T_sp(_value); }
 #endif
+
+#ifdef USE_BOEHM
+Ephemeron::Ephemeron(core::T_sp k, core::T_sp v)
+  : _key(GC_HIDE_POINTER(k.tagged_())), _value(v) {
+  GCTOOLS_ASSERT(_key); // basically asserts that ~0 is never passed in,
+  // since if it was there'd be no way to tell if it's splatted
+  if (k.objectp()) {
+    GC_general_register_disappearing_link((void**)&_key, &*k);
+    GC_general_register_disappearing_link((void**)&_value, &*k);
+  }
+}
+
+void* Ephemeron::key_helper(void* data) {
+  result_helper_s* rhsp = (result_helper_s*)data;
+  if (rhsp->eph->_key) // not splatted
+    rhsp->result.emplace((Tagged)GC_REVEAL_POINTER(rhsp->eph->_key));
+  return nullptr;
+}
+void* Ephemeron::value_helper(void* data) {
+  result_helper_s* rhsp = (result_helper_s*)data;
+  if (rhsp->eph->_value)
+    rhsp->result.emplace(rhsp->eph->_value);
+  return nullptr;
+}
+
+std::optional<core::T_sp> Ephemeron::key() const {
+  result_helper_s rhs(this);
+  // same TODO with GC_call_with_reader_lock.
+  GC_call_with_alloc_lock(key_helper, &rhs);
+  return rhs.result;
+}
+std::optional<core::T_sp> Ephemeron::value() const {
+  result_helper_s rhs(this);
+  GC_call_with_alloc_lock(value_helper, &rhs);
+  return rhs.result;
+}
+#else // not-actually-weak ephemeron default - FIXME for your GC!
+Ephemeron::Ephemeron(core::T_sp key, core::T_sp value) : _key(key), _value(value) {}
+
+std::optional<core::T_sp> Ephemeron::key() const { return _key; }
+std::optional<core::T_sp> Ephemeron::value() const { return _value; }
+#endif
 } // namespace gctools

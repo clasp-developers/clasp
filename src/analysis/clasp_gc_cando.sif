@@ -102,7 +102,7 @@
                           "comp::GlobalMacroInfo_O" "core::SimpleMDArray_size_t_O"
                           "core::MDArray_int64_t_O" "core::SmallMultimap_O"
                           "comp::VariableCellInfo_O" "core::Fixnum_dummy_O" "core::AuxArgument"
-                          "core::MDArray_int8_t_O" "core::BytecodeDebugVar_O"
+                          "core::MDArray_int8_t_O" "core::BytecodeDebugVar_O" "core::Ephemeron_O"
                           "chem::ZMatrixBondInternal_O" "llvmo::ConstantFP_O" "core::BlockDynEnv_O"
                           "core::Cons_O" "clbind::detail::vertex" "chem::ImproperTorsion_O"
                           "chem::ZMatrixAngleInternal_O" "chem::Rotamer_O" "llvmo::LLVMContext_O"
@@ -5853,6 +5853,15 @@
              :offset-base-ctype "mpip::Mpi_O" :layout-offset-field-names ("_Source")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "mpip::Mpi_O" :layout-offset-field-names ("_Tag")}
+{class-kind :stamp-name "STAMPWTAG_core__Ephemeron_O" :stamp-key "core::Ephemeron_O"
+            :parent-class "core::General_O" :lisp-class-base "core::General_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::Ephemeron_O"
+             :layout-offset-field-names ("_ephemeron" "._key")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::Ephemeron_O"
+             :layout-offset-field-names ("_ephemeron" "._value")}
 {class-kind :stamp-name "STAMPWTAG_comp__VariableCellInfo_O" :stamp-key "comp::VariableCellInfo_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
