@@ -1406,6 +1406,9 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(exit)dx");
 DOCGROUP(clasp);
 CL_DEFUN void core__exit(int exitValue) {
+#ifdef CLASP_APPLE_SILICON
+  exit(exitValue);
+#else
   gctools::global_debuggerOnSIGABRT = false;
   if (exitValue != 0) {
     if (core::_sym_STARexit_backtraceSTAR->symbolValue().notnilp()) {
@@ -1418,6 +1421,7 @@ CL_DEFUN void core__exit(int exitValue) {
   VirtualMachine& vm = my_thread->_VM;
   vm.shutdown();
   throw(ExitProgramException(exitValue));
+#endif
 };
 
 CL_LAMBDA(&optional (exit-value 0));

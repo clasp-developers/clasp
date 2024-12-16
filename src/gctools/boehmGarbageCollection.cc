@@ -562,7 +562,7 @@ CL_DEFUN core::T_sp core__gc_base(uint64_t addr)
 
 
 void clasp_gc_registerRoots(void* rootsStart, size_t numberOfRoots) {
-#ifdef USE_MMAP_CODEBLOCK
+#ifdef CLASP_APPLE_SILICON
   //
   // This is experimental for Apple Silicon M1 chip
   //
@@ -587,7 +587,7 @@ void clasp_gc_registerRoots(void* rootsStart, size_t numberOfRoots) {
 }
 
 void clasp_gc_deregisterRoots(void* rootsStart, size_t numberOfRoots) {
-#ifdef USE_MMAP_CODEBLOCK
+#ifdef CLASP_APPLE_SILICON
   //
   // This is experimental for Apple Silicon M1 chip
   //
