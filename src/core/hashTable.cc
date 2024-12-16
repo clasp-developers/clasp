@@ -296,16 +296,6 @@ CL_DEFUN T_sp cl__clrhash(HashTableBase_sp hash_table) {
   return hash_table;
 };
 
-CL_LAMBDA(cons);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(hashTableEntryDeletedP)dx");
-DOCGROUP(clasp);
-CL_DEFUN bool core__hash_table_entry_deleted_p(T_sp cons) {
-  if (!cons.consp())
-    SIMPLE_ERROR("Arg must be a cons");
-  return oCdr(gc::As<Cons_sp>(cons)).no_keyp();
-};
-
 CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(hash_equal generates an equal hash for a list of objects)dx");
