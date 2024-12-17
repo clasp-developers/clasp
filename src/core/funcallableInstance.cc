@@ -248,9 +248,9 @@ SYMBOL_EXPORT_SC_(CorePkg, STARdtreeSymbolsSTAR);
 void registerOneDtreeInfo(const std::string& name, int val) {
   printf("%s:%d:%s  name: %s   val: %d\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), val);
   if (_sym_STARdtreeSymbolsSTAR->symbolValue().nilp()) {
-    _sym_STARdtreeSymbolsSTAR->defparameter(HashTableEq_O::create_default());
+    _sym_STARdtreeSymbolsSTAR->defparameter(HashTable_O::createEq());
   }
-  HashTableEq_sp ht = gc::As<HashTableEq_sp>(_sym_STARdtreeSymbolsSTAR->symbolValue());
+  HashTable_sp ht = gc::As<HashTable_sp>(_sym_STARdtreeSymbolsSTAR->symbolValue());
   Symbol_sp key = lisp_upcase_intern(name, "KEYWORD");
   ht->setf_gethash(key, make_fixnum(val));
 }

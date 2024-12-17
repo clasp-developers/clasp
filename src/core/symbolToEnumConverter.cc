@@ -147,10 +147,10 @@ CL_DEFUN Fixnum core__enum_logical_or(SymbolToEnumConverter_sp converter, List_s
 
 void SymbolToEnumConverter_O::initialize() {
   this->Base::initialize();
-  this->_EnumToSymbol = HashTableEql_O::create_default();
-  this->_ArchiveSymbolToEnum = HashTableEq_O::create_default();
-  this->_EnumToArchiveSymbol = HashTableEql_O::create_default();
-  this->_SymbolToEnum = HashTableEq_O::create_default();
+  this->_EnumToSymbol = HashTable_O::createEql();
+  this->_ArchiveSymbolToEnum = HashTable_O::createEq();
+  this->_EnumToArchiveSymbol = HashTable_O::createEql();
+  this->_SymbolToEnum = HashTable_O::createEq();
 }
 #if 0
 void	SymbolToEnumConverter_O::archiveBase(ArchiveP node)

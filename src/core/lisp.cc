@@ -171,7 +171,7 @@ public:
   SimpleString_sp _substr;
   FindApropos(SimpleString_sp str) {
     this->_substr = str;
-    this->_symbols = HashTableEq_O::create_default();
+    this->_symbols = HashTable_O::createEq();
   };
   virtual bool mapKeyValue(T_sp key, T_sp value) {
     //    Bignum_sp skey = gc::As<Bignum_sp>(key);
@@ -226,9 +226,9 @@ void Lisp::initialize() {
   //  printf("%s:%d Initializing _lisp\n", __FILE__, __LINE__ );
 
   this->_Roots.charInfo.initialize();
-  this->_Roots._SourceFileIndices = HashTableEqual_O::create_default();
-  this->_Roots._PackageNameIndexMap = HashTableEqual_O::create_default();
-  this->_Roots._ThePathnameTranslations = HashTableEqualp_O::create_default();
+  this->_Roots._SourceFileIndices = HashTable_O::createEqual();
+  this->_Roots._PackageNameIndexMap = HashTable_O::createEqual();
+  this->_Roots._ThePathnameTranslations = HashTable_O::createEqualp();
 }
 
 template <class oclass> void setup_static_classSymbol(BootStrapCoreSymbolMap const& sidMap) {
@@ -501,7 +501,7 @@ void Lisp::startupLispEnvironment() {
 #endif
   {
     initialize_Lisp();
-    core::HashTableEql_sp ht = core::HashTableEql_O::create_default();
+    core::HashTable_sp ht = core::HashTable_O::createEql();
     core::_sym_STARcxxDocumentationSTAR->defparameter(ht);
     Readtable_sp readtable = Readtable_O::create_standard_readtable();
     cl::_sym_STARreadtableSTAR->defparameter(readtable);

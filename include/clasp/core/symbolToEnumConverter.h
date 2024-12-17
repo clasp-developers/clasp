@@ -53,10 +53,10 @@ public: // virtual functions inherited from Object
                * Used when errors are thrown
                */
               SimpleString_sp _WhatTheEnumsRepresent;
-  HashTableEql_sp _EnumToSymbol;
-  HashTableEq_sp _ArchiveSymbolToEnum;
-  HashTableEql_sp _EnumToArchiveSymbol;
-  HashTableEq_sp _SymbolToEnum;
+  HashTable_sp _EnumToSymbol;
+  HashTable_sp _ArchiveSymbolToEnum;
+  HashTable_sp _EnumToArchiveSymbol;
+  HashTable_sp _SymbolToEnum;
 
 public:
   List_sp enumSymbolsAsList() const;

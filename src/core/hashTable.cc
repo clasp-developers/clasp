@@ -244,6 +244,11 @@ HashTable_sp HashTable_O::create(T_sp test) {
   return ht;
 }
 
+HashTable_sp HashTable_O::createEq(size_t sz) { return HashTableEq_O::create(sz); }
+HashTable_sp HashTable_O::createEql() { return HashTableEql_O::create_default(); }
+HashTable_sp HashTable_O::createEqual() { return HashTableEqual_O::create_default(); }
+HashTable_sp HashTable_O::createEqualp() { return HashTableEqualp_O::create_default(); }
+
 HashTable_sp HashTable_O::create_thread_safe(T_sp test, SimpleBaseString_sp readLockName, SimpleBaseString_sp writeLockName) {
   Fixnum_sp size = make_fixnum(16);
   DoubleFloat_sp rehashSize = DoubleFloat_O::create(2.0);

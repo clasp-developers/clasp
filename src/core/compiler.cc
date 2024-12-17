@@ -1223,12 +1223,12 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
 
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__declared_global_inline_p(T_sp name) {
-  return gc::As<HashTableEqual_sp>(_sym_STARfunctions_to_inlineSTAR->symbolValue())->gethash(name);
+  return gc::As<HashTable_sp>(_sym_STARfunctions_to_inlineSTAR->symbolValue())->gethash(name);
 }
 
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__declared_global_notinline_p(T_sp name) {
-  return gc::As<HashTableEqual_sp>(_sym_STARfunctions_to_notinlineSTAR->symbolValue())->gethash(name);
+  return gc::As<HashTable_sp>(_sym_STARfunctions_to_notinlineSTAR->symbolValue())->gethash(name);
 }
 
 DOCGROUP(clasp);

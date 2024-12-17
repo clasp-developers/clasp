@@ -164,7 +164,7 @@ void initialize_documentation_primitives(LispPtr lisp) {
   SYMBOL_EXPORT_SC_(ExtPkg, annotate);
   SYMBOL_SC_(CorePkg, ensure_documentation);
   // TODO move help_file.dat definition somewhere better
-  //  _sym_STARdocumentation_poolSTAR->defparameter(Cons_O::createList(HashTableEql_O::create_default(),
+  //  _sym_STARdocumentation_poolSTAR->defparameter(Cons_O::createList(HashTable_O::createEql(),
   //  Str_O::create("help_file.dat"))); _sym_STARdocumentation_poolSTAR->exportYourself();
 }
 
