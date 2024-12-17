@@ -81,7 +81,7 @@ public:
   GCPRIVATE :
 
       /*! Index on the type_id.id converted to a core::Pointer and use EQL equality */
-      core::HashTableEql_sp m_classes;
+      core::HashTable_sp m_classes;
   //        std::map<type_id, ClassRep_sp> m_classes;
 
 #if 0

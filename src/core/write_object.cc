@@ -163,7 +163,7 @@ T_sp write_object(T_sp x, T_sp stream) {
     T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
 
     if (circle_counter.nilp()) {
-      HashTable_sp hash = HashTableEq_O::create(1024);
+      HashTable_sp hash = HashTable_O::createEq(1024);
       DynamicScopeManager scope(_sym_STARcircle_counterSTAR, _lisp->_true());
       DynamicScopeManager scope2(_sym_STARcircle_stackSTAR, hash);
       do_write_object_circle(x, _lisp->nullStream());

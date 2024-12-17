@@ -159,7 +159,7 @@ public:
     return this->isSubClassOf(lisp_classFromClassSymbol(oclass::static_classSymbol()));
   }
 
-  void accumulateSuperClasses(HashTableEq_sp supers, ComplexVector_T_sp arrayedSupers, Instance_sp mc);
+  void accumulateSuperClasses(HashTable_sp supers, ComplexVector_T_sp arrayedSupers, Instance_sp mc);
   void lowLevel_calculateClassPrecedenceList();
 
   virtual bool isSubClassOf(Instance_sp mc) const;

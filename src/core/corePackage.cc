@@ -523,7 +523,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _lisp->_Roots._TerminalIO = terminal_syn;
   cl::_sym_STARterminal_ioSTAR->defparameter(terminal_syn);
   _sym_STARdocumentation_poolSTAR->defparameter(
-      Cons_O::createList(HashTableEql_O::create_default(), SimpleBaseString_O::make("help_file.dat")));
+      Cons_O::createList(HashTable_O::createEql(), SimpleBaseString_O::make("help_file.dat")));
   _sym_STARdocumentation_poolSTAR->exportYourself();
   _sym_STARsystem_defsetf_update_functionsSTAR->defparameter(nil<T_O>());
   cl::_sym_STARmacroexpand_hookSTAR->defparameter(cl::_sym_funcall);
@@ -610,7 +610,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym__PLUS_WNOHANG_PLUS_->defconstant(make_fixnum(WNOHANG));
   cl::_sym_STARrandom_stateSTAR->defparameter(RandomState_O::create());
   // Set up a hash table to save JIT info
-  HashTableEqual_sp jit_save = HashTableEqual_O::create_default();
+  HashTable_sp jit_save = HashTable_O::createEqual();
 #ifdef CLASP_THREADS
   // When threading - make *jit-saved-symbol-info* a thread safe hash table
   SimpleBaseString_sp sbsr = SimpleBaseString_O::make("JITSAVR");
@@ -650,15 +650,15 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARdebugInterpretedClosureSTAR->defparameter(nil<T_O>());
   _sym_STARdebugFlowControlSTAR->defparameter(nil<T_O>());
   _sym_STARbacktraceSTAR->defparameter(nil<T_O>());
-  _sym_STARfunctions_to_inlineSTAR->defparameter(HashTableEqual_O::create_default());
-  _sym_STARfunctions_to_notinlineSTAR->defparameter(HashTableEqual_O::create_default());
+  _sym_STARfunctions_to_inlineSTAR->defparameter(HashTable_O::createEqual());
+  _sym_STARfunctions_to_notinlineSTAR->defparameter(HashTable_O::createEqual());
   _sym_STARextension_systemsSTAR->defparameter(EXTENSION_SYSTEMS);
   _sym_STARinitialize_hooksSTAR->defparameter(nil<T_O>());
   _sym_STARterminate_hooksSTAR->defparameter(nil<T_O>());
   SimpleBaseString_sp sbsr1 = SimpleBaseString_O::make("SYSPMNR");
   SimpleBaseString_sp sbsw1 = SimpleBaseString_O::make("SYSPMNW");
   _lisp->_Roots._Finalizers = WeakKeyHashTable_O::create();
-  _lisp->_Roots._Sysprop = gc::As<HashTableEql_sp>(HashTable_O::create_thread_safe(cl::_sym_eql, sbsr1, sbsw1));
+  _lisp->_Roots._Sysprop = HashTable_O::create_thread_safe(cl::_sym_eql, sbsr1, sbsw1);
   _sym_STARdebug_accessorsSTAR->defparameter(nil<T_O>());
   std::list<string> nicknames;
   std::list<string> use_packages;

@@ -528,7 +528,7 @@ const char* OrderedCharacterNames[] = {
 
 void CharacterInfo::initialize() {
   int num_chars = sizeof(OrderedCharacterNames) / sizeof(OrderedCharacterNames[0]);
-  this->_NamesToCharacterIndex = HashTableEqual_O::create_default();
+  this->_NamesToCharacterIndex = HashTable_O::createEqual();
   this->gCharacterNames.resize(num_chars, nil<T_O>());
   this->gIndexedCharacters.resize(num_chars, nil<T_O>());
   for (size_t fci = 0; fci < num_chars; ++fci) {

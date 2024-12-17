@@ -432,7 +432,7 @@ void Instance_O::CLASS_set_creator(Creator_sp cb) {
   this->instanceSet(REF_CLASS_CREATOR, cb);
 }
 
-void Instance_O::accumulateSuperClasses(HashTableEq_sp supers, ComplexVector_T_sp arrayedSupers, Instance_sp mc) {
+void Instance_O::accumulateSuperClasses(HashTable_sp supers, ComplexVector_T_sp arrayedSupers, Instance_sp mc) {
   if (IS_SYMBOL_UNDEFINED(mc->_className()))
     return;
   //	printf("%s:%d accumulateSuperClasses of: %s\n", __FILE__, __LINE__, _rep_(mc->className()).c_str() );
@@ -456,7 +456,7 @@ void Instance_O::accumulateSuperClasses(HashTableEq_sp supers, ComplexVector_T_s
 
 void Instance_O::lowLevel_calculateClassPrecedenceList() {
   using namespace boost;
-  HashTableEq_sp supers = HashTableEq_O::create_default();
+  HashTable_sp supers = HashTable_O::createEq();
   ComplexVector_T_sp arrayedSupers(ComplexVector_T_O::make(16, nil<T_O>(), clasp_make_fixnum(0)));
   if (!gc::IsA<ComplexVector_T_sp>(arrayedSupers)) {
     printf("%s:%d:%s The object must be a ComplexVector_T_sp but failed gc::IsA<ComplexVector_T_sp>()\n", __FILE__, __LINE__,

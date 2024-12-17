@@ -106,6 +106,10 @@ public: // instance variables here
 #endif
 public:
   static HashTable_sp create(T_sp test); // set everything up with defaults
+  static HashTable_sp createEq(size_t sz = 8);
+  static HashTable_sp createEql();
+  static HashTable_sp createEqual();
+  static HashTable_sp createEqualp();
   static HashTable_sp create_thread_safe(T_sp test, SimpleBaseString_sp readLockName,
                                          SimpleBaseString_sp writeLockName); // set everything up with defaults
 

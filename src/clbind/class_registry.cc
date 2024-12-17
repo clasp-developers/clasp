@@ -149,7 +149,7 @@ CLBIND_API void push_instance_metatable();
 
 void ClassRegistry_O::initialize() {
   this->Base::initialize();
-  this->m_classes = core::HashTableEql_O::create_default();
+  this->m_classes = core::HashTable_O::createEql();
 }
 
 ClassRegistry_sp ClassRegistry_O::get_registry() {
