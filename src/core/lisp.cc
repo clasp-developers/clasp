@@ -547,8 +547,6 @@ void Lisp::startupLispEnvironment() {
   {
     FILE* null_out = fopen("/dev/null", "w");
     this->_Roots._NullStream = CFileStream_O::make(str_create("/dev/null"), null_out, StreamDirection::io);
-    this->_Roots._RehashSize = DoubleFloat_O::create(2.0);
-    this->_Roots._RehashThreshold = DoubleFloat_O::create(maybeFixRehashThreshold(0.7));
     this->_Roots._ImaginaryUnit = Complex_O::create(0.0, 1.0);
     this->_Roots._ImaginaryUnitNegative = Complex_O::create(0.0, -1.0);
     this->_Roots._PlusHalf = Ratio_O::create_primitive(make_fixnum(1), make_fixnum(2));

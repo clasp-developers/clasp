@@ -318,8 +318,6 @@ public:
     //! Package names to packages
     gctools::Vec0<Package_sp> _Packages;
     //-----
-    DoubleFloat_sp _RehashSize;
-    DoubleFloat_sp _RehashThreshold;
     T_sp _NullStream;
     HashTableEqualp_sp _ThePathnameTranslations;
     Complex_sp _ImaginaryUnit;
@@ -511,8 +509,6 @@ public:
   void dump_apropos(const char* part) const;
 
 public:
-  DoubleFloat_sp rehashSize() const { return this->_Roots._RehashSize; };
-  DoubleFloat_sp rehashThreshold() const { return this->_Roots._RehashThreshold; };
   T_sp nullStream() const { return this->_Roots._NullStream; };
 
 public:

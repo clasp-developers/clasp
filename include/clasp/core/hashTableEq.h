@@ -41,6 +41,7 @@ class HashTableEq_O : public HashTable_O {
 protected:
   virtual KeyValuePair* searchTable_no_read_lock(T_sp key, cl_index index);
 public:
+  static HashTableEq_sp create(uint sz);
   static HashTableEq_sp create(uint sz, Number_sp rehashSize, double rehashThreshold);
   static HashTableEq_sp create_default();
   static HashTableEq_sp createFromPList(List_sp plist, Symbol_sp nilTerminatedValidKeywords[]);
