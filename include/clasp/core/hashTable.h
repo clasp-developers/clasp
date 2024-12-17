@@ -191,6 +191,8 @@ public: // Functions here
   void insert(T_sp obj) { this->setf_gethash(obj, nil<T_O>()); };
   /*! Return a Cons of all keys */
   List_sp keysAsCons();
+  /* Return a vector of all keys and values. */
+  Vector_sp pairs() const;
 };
 
 T_mv clasp_gethash_safe(T_sp key, T_sp hashTable, T_sp default_);
