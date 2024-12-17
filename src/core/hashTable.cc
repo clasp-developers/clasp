@@ -538,7 +538,7 @@ std::optional<T_sp> HashTable_O::find(T_sp key) {
   HT_READ_LOCK(this);
   cl_index index = this->sxhashKey(key);
   KeyValuePair* keyValue = this->searchTable_no_read_lock(key, index);
-  if (!keyValue || keyValue->_Value.no_keyp()) return std::optional<T_sp>();
+  if (!keyValue) return std::optional<T_sp>();
   else return std::optional<T_sp>(keyValue->_Value);
 }
 
