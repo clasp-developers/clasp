@@ -126,8 +126,9 @@ private:
   T_sp setf_gethash_no_write_lock(T_sp key, T_sp value);
   gc::Fixnum sxhashKey(T_sp key) const; // NOTE: Only call with (read) lock held
 
+  KeyValuePair* searchTable_no_read_lock(T_sp key, cl_index index);
+
 protected:
-  virtual KeyValuePair* searchTable_no_read_lock(T_sp key, cl_index index);
   virtual void sxhashEffect(T_sp key, HashGenerator& hg) const { SUBIMP() };
 
 public:
