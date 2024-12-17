@@ -934,4 +934,7 @@ truename."))
 
 (pushnew 'gray-streams-module-provider ext:*module-provider-functions*)
 
+#-staging (eval-when (:compile-toplevel :load-toplevel :execute)
+            (require '#:gray-streams))
+
 #+(or cclasp eclasp) (eval-when (:load-toplevel) (setf clos:*clos-booted* t))
