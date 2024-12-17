@@ -131,21 +131,25 @@ struct HashTableWriteLock {
 #define HT_WRITE_LOCK(me)
 #endif
 
+Vector_sp HashTable_O::pairs() const {
+  // FIXME: use maphash for this, but without the overhead of a std::function
+  HT_READ_LOCK(this);
+  SimpleVector_sp keyvalues = SimpleVector_O::make(_HashTableCount * 2);
+  size_t idx(0);
+  for (size_t it(0), itEnd(_Table.size()); it < itEnd; ++it) {
+    const KeyValuePair& entry = _Table[it];
+    if (!entry._Key.no_keyp() && !entry._Key.deletedp()) {
+      keyvalues[idx++] = entry._Key;
+      keyvalues[idx++] = entry._Value;
+    }
+  }
+  return keyvalues;
+}
+
 DOCGROUP(clasp);
 CL_DEFUN Vector_sp core__hash_table_pairs(HashTableBase_sp hash_table_base) {
   if (gc::IsA<HashTable_sp>(hash_table_base)) {
-    HashTable_sp hash_table = gc::As_unsafe<HashTable_sp>(hash_table_base);
-    HT_READ_LOCK(&*hash_table);
-    SimpleVector_sp keyvalues = SimpleVector_O::make(hash_table->_HashTableCount * 2);
-    size_t idx(0);
-    for (size_t it(0), itEnd(hash_table->_Table.size()); it < itEnd; ++it) {
-      KeyValuePair& entry = hash_table->_Table[it];
-      if (!entry._Key.no_keyp() && !entry._Key.deletedp()) {
-        keyvalues[idx++] = entry._Key;
-        keyvalues[idx++] = entry._Value;
-      }
-    }
-    return keyvalues;
+    return hash_table_base.as_unsafe<HashTable_O>()->pairs();
   } else if (gc::IsA<WeakKeyHashTable_sp>(hash_table_base)) {
     WeakKeyHashTable_sp hash_table = gc::As_unsafe<WeakKeyHashTable_sp>(hash_table_base);
     return hash_table->_HashTable.pairs();
@@ -717,30 +721,6 @@ string HashTable_O::__repr__() const {
   ss << " @" << (void*)(this) << ">";
   return ss.str();
 }
-
-#define DUMP_LOW_LEVEL 1
-
-void dump_one_entry(HashTable_sp ht, size_t it, stringstream& ss, KeyValuePair& entry) {
-  T_sp key = entry._Key;
-  T_sp value = entry._Value;
-#ifdef DUMP_LOW_LEVEL
-  ss << "     ( ";
-  size_t hi = ht->hashIndex(key);
-  if (hi != it)
-    ss << "!!!out-of-place-bucket!!! hi=" << hi;
-  ss << " hashIndex(key)=" << ht->hashIndex(key) << " ";
-  if ((key).consp()) {
-    List_sp ckey = key;
-    ss << "(cons " << oCar(ckey).raw_() << " . " << oCdr(ckey).raw_() << ")@" << (void*)ckey.raw_();
-  } else {
-    ss << key.raw_();
-  }
-  ss << ", " << value.raw_() << ")"
-     << " " << std::endl;
-#else
-  ss << "     " << _rep_(entry._Key) << " " << _rep_(entry._Value) << std::endl;
-#endif
-};
 
 CL_DEFMETHOD string HashTable_O::hash_table_dump() {
   stringstream ss;
