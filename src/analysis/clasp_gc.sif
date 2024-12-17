@@ -5944,13 +5944,6 @@
              :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_Roots" "._Packages" "._Vector" "._Contents")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::DoubleFloat_O>"
-             :offset-base-ctype "core::Lisp" :layout-offset-field-names ("_Roots" "._RehashSize")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::DoubleFloat_O>"
-             :offset-base-ctype "core::Lisp"
-             :layout-offset-field-names ("_Roots" "._RehashThreshold")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_Roots" "._NullStream")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
