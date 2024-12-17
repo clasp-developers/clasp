@@ -38,8 +38,6 @@ class HashTableEq_O : public HashTable_O {
   LISP_CLASS(core, CorePkg, HashTableEq_O, "HashTableEq", HashTable_O);
   DEFAULT_CTOR_DTOR(HashTableEq_O);
 
-protected:
-  virtual KeyValuePair* searchTable_no_read_lock(T_sp key, cl_index index);
 public:
   static HashTableEq_sp create(uint sz);
   static HashTableEq_sp create(uint sz, Number_sp rehashSize, double rehashThreshold);

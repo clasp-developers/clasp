@@ -76,18 +76,6 @@ HashTableEq_sp HashTableEq_O::createFromPList(List_sp plist, Symbol_sp nilTermin
   return ht;
 }
 
-KeyValuePair* HashTableEq_O::searchTable_no_read_lock(T_sp key, cl_index index) {
-  size_t tableSize = this->_Table.size();
-  size_t cur = index;
-  do {
-    KeyValuePair& entry = this->_Table[cur];
-    if (entry._Key == key) return &entry;
-    if (entry._Key.no_keyp()) break;
-    cur = (cur + 1) % tableSize;
-  } while (cur != index);
-  return nullptr;
-}
-
 bool HashTableEq_O::keyTest(T_sp entryKey, T_sp searchKey) const { return cl__eq(entryKey, searchKey); }
 
 void HashTableEq_O::sxhashEffect(T_sp obj, HashGenerator& hg) const {
