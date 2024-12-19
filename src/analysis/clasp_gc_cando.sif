@@ -1642,7 +1642,7 @@
              :offset-base-ctype "chem::AtomTable_O"
              :layout-offset-field-names ("_Atoms" "._Vector" "._Contents")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::AtomTable_O"
              :layout-offset-field-names ("_AtomTableIndexes")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -1744,7 +1744,7 @@
              :offset-base-ctype "chem::RingFinder_O"
              :layout-offset-field-names ("_edges" "._Vector" "._Contents")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEql_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::RingFinder_O" :layout-offset-field-names ("_rings")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
              :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>>>"
@@ -2441,11 +2441,11 @@
              :offset-base-ctype "chem::AddIonOctree_O"
              :layout-offset-field-names ("vaAtoms" "._Vector" "._Contents")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::AddIonOctree_O"
              :layout-offset-field-names ("atomsToResidues")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::AddIonOctree_O"
              :layout-offset-field-names ("residuesToMolecules")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -2513,7 +2513,7 @@
              :offset-ctype "std::basic_string<char,std::char_traits<char>,std::allocator<char>>"
              :offset-base-ctype "chem::CandoDatabase_O" :layout-offset-field-names ("_DateUpdated")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::CandoDatabase_O" :layout-offset-field-names ("_Topologys")}
 {class-kind :stamp-name "STAMPWTAG_chem__AbstractLargeSquareMatrix_O"
             :stamp-key "chem::AbstractLargeSquareMatrix_O" :parent-class "core::CxxObject_O"
@@ -2610,7 +2610,7 @@
             :lisp-class-base "chem::FFBaseDb_O" :root-class "core::T_O" :stamp-wtag 3
             :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::FFParameterBaseDb_O"
              :layout-offset-field-names ("_Parameters")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -2621,7 +2621,7 @@
             :parent-class "chem::FFParameterBaseDb_O" :lisp-class-base "chem::FFParameterBaseDb_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::FFItorDb_O" :layout-offset-field-names ("_Parameters")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
@@ -2630,7 +2630,7 @@
             :parent-class "chem::FFParameterBaseDb_O" :lisp-class-base "chem::FFParameterBaseDb_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::FFStretchDb_O" :layout-offset-field-names ("_Parameters")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
@@ -2644,7 +2644,7 @@
             :parent-class "chem::FFParameterBaseDb_O" :lisp-class-base "chem::FFParameterBaseDb_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::FFAngleDb_O" :layout-offset-field-names ("_Parameters")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
@@ -2664,7 +2664,7 @@
             :parent-class "chem::FFParameterBaseDb_O" :lisp-class-base "chem::FFParameterBaseDb_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::FFNonbondDb_O" :layout-offset-field-names ("_Parameters")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
@@ -2726,7 +2726,7 @@
             :parent-class "chem::FFParameterBaseDb_O" :lisp-class-base "chem::FFParameterBaseDb_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::FFPtorDb_O" :layout-offset-field-names ("_Parameters")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
@@ -3032,7 +3032,7 @@
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEqual_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::WildElementDict_O"
              :layout-offset-field-names ("_AtomWildCards")}
 {class-kind :stamp-name "STAMPWTAG_llvmo__CodeBlock_O" :stamp-key "llvmo::CodeBlock_O"
@@ -3082,7 +3082,7 @@
              :offset-base-ctype "chem::Structure_Old_ListEntry_O"
              :layout-offset-field-names ("_SuperposeCoordinates")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::Structure_Old_ListEntry_O"
              :layout-offset-field-names ("_Data")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
@@ -3239,7 +3239,7 @@
              :offset-base-ctype "chem::Structure_Old_List_O"
              :layout-offset-field-names ("_RmsCutOff")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::Structure_Old_List_O" :layout-offset-field-names ("_Data")}
 {class-kind :stamp-name "STAMPWTAG_chem__ReportBase_O" :stamp-key "chem::ReportBase_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
@@ -3590,7 +3590,7 @@
              :offset-base-ctype "chem::ConformationCollection_O"
              :layout-offset-field-names ("_AllAtoms" "._Contents")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::ConformationCollection_O"
              :layout-offset-field-names ("_Data")}
 {class-kind :stamp-name "STAMPWTAG_chem__SuperposableConformationCollection_O"
@@ -3611,7 +3611,7 @@
              :offset-base-ctype "chem::SuperposableConformationCollection_O"
              :layout-offset-field-names ("_AllAtoms" "._Contents")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::SuperposableConformationCollection_O"
              :layout-offset-field-names ("_Data")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
@@ -3629,7 +3629,7 @@
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "adapt::ObjectSet_O" :layout-offset-field-names ("_Set")}
 {class-kind :stamp-name "STAMPWTAG_chem__PdbMonomerConnectivity_O"
             :stamp-key "chem::PdbMonomerConnectivity_O" :parent-class "core::CxxObject_O"
@@ -3670,7 +3670,7 @@
              :offset-base-ctype "chem::ConformationExplorerEntry_O"
              :layout-offset-field-names ("_UniqueEntryIndex")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::ConformationExplorerEntry_O"
              :layout-offset-field-names ("_Binder")}
 {class-kind :stamp-name "STAMPWTAG_mp__ConditionVariable_O" :stamp-key "mp::ConditionVariable_O"
@@ -3740,7 +3740,7 @@
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "chem::SpanningLoop_O" :layout-offset-field-names ("iTempInt")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::SpanningLoop_O" :layout-offset-field-names ("_BackSpan")}
 {class-kind :stamp-name "STAMPWTAG_chem__ProperTorsion_O" :stamp-key "chem::ProperTorsion_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
@@ -3981,7 +3981,7 @@
              :offset-ctype "gctools::smart_ptr<chem::Root_O>"
              :offset-base-ctype "chem::ChemInfoMatch_O" :layout-offset-field-names ("_Root")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEql_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::ChemInfoMatch_O" :layout-offset-field-names ("_RingLookup")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::SimpleVector_O>"
@@ -4055,7 +4055,7 @@
              :offset-base-ctype "chem::ConformationExplorer_O"
              :layout-offset-field-names ("_SuperposeAtomIndexes")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::ConformationExplorer_O"
              :layout-offset-field-names ("_Binder")}
 {class-kind :stamp-name "STAMPWTAG_chem__ChemInfoGraph_O" :stamp-key "chem::ChemInfoGraph_O"
@@ -4065,7 +4065,7 @@
              :offset-ctype "gctools::smart_ptr<chem::Root_O>"
              :offset-base-ctype "chem::ChemInfoGraph_O" :layout-offset-field-names ("_Root")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::ChemInfoGraph_O"
              :layout-offset-field-names ("_nodes_to_index")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
@@ -4194,7 +4194,7 @@
              :offset-base-ctype "chem::ConformationExplorerEntryStage_O"
              :layout-offset-field-names ("_FinalCoordinates")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::ConformationExplorerEntryStage_O"
              :layout-offset-field-names ("_Binder")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
@@ -4223,7 +4223,7 @@
              :offset-base-ctype "chem::Trajectory_O"
              :layout-offset-field-names ("_Frames" "._Vector" "._Contents")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::Trajectory_O" :layout-offset-field-names ("_Namespace")}
 {class-kind :stamp-name "STAMPWTAG_chem__CalculatePosition_O"
             :stamp-key "chem::CalculatePosition_O" :parent-class "core::CxxObject_O"
@@ -4300,7 +4300,7 @@
              :offset-base-ctype "chem::ConformationCollectionEntry_O"
              :layout-offset-field-names ("_AllCoordinates")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::ConformationCollectionEntry_O"
              :layout-offset-field-names ("_Data")}
 {class-kind :stamp-name "STAMPWTAG_chem__ComplexRestraint_O" :stamp-key "chem::ComplexRestraint_O"
@@ -4373,7 +4373,7 @@
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::MoleculeGraph_O"
              :layout-offset-field-names ("_nodes_to_index")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -4735,7 +4735,7 @@
              :offset-base-ctype "chem::ElementsInfo_O"
              :layout-offset-field-names ("_atomicInfo" "._Vector" "._Contents")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::ElementsInfo_O"
              :layout-offset-field-names ("_elementFromAtomicSymbol")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
@@ -4857,7 +4857,7 @@
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "adapt::SymbolSet_O" :layout-offset-field-names ("_Symbols")}
 {class-kind :stamp-name "STAMPWTAG_chem__MapOfMonomerNamesToAtomIndexers_O"
             :stamp-key "chem::MapOfMonomerNamesToAtomIndexers_O" :parent-class "core::CxxObject_O"
@@ -6204,7 +6204,7 @@
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEql_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "clbind::ClassRegistry_O" :layout-offset-field-names ("m_classes")}
 {class-kind :stamp-name "STAMPWTAG_core__ClassHolder_O" :stamp-key "core::ClassHolder_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
@@ -6230,19 +6230,19 @@
              :offset-base-ctype "core::SymbolToEnumConverter_O"
              :layout-offset-field-names ("_WhatTheEnumsRepresent")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEql_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "core::SymbolToEnumConverter_O"
              :layout-offset-field-names ("_EnumToSymbol")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "core::SymbolToEnumConverter_O"
              :layout-offset-field-names ("_ArchiveSymbolToEnum")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEql_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "core::SymbolToEnumConverter_O"
              :layout-offset-field-names ("_EnumToArchiveSymbol")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "core::SymbolToEnumConverter_O"
              :layout-offset-field-names ("_SymbolToEnum")}
 {class-kind :stamp-name "STAMPWTAG_llvmo__Attribute_O" :stamp-key "llvmo::Attribute_O"
@@ -9515,7 +9515,7 @@
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "llvmo::ExecutionEngine_O" :layout-offset-field-names ("_ptr")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEqual_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "llvmo::ExecutionEngine_O"
              :layout-offset-field-names ("_DependentModules")}
 {class-kind :stamp-name "STAMPWTAG_llvmo__Type_O" :stamp-key "llvmo::Type_O"
@@ -9807,7 +9807,7 @@
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "llvmo::Module_O" :layout-offset-field-names ("_ptr")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEqual_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "llvmo::Module_O"
              :layout-offset-field-names ("_UniqueGlobalVariableStrings")}
 {class-kind :stamp-name "STAMPWTAG_llvmo__Target_O" :stamp-key "llvmo::Target_O"
@@ -10542,13 +10542,13 @@
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEqual_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "core::Package_O" :layout-offset-field-names ("_InternalSymbols")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEqual_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "core::Package_O" :layout-offset-field-names ("_ExternalSymbols")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "core::Package_O" :layout-offset-field-names ("_Shadowing")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::SimpleString_O>"
@@ -12426,8 +12426,7 @@
              :offset-ctype "gctools::smart_ptr<core::HashTable_O>" :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_Roots" "._ClassTable")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEqual_O>"
-             :offset-base-ctype "core::Lisp"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>" :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_Roots" ".charInfo" "._NamesToCharacterIndex")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
              :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>"
@@ -12516,8 +12515,7 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_Roots" "._NullStream")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEqualp_O>"
-             :offset-base-ctype "core::Lisp"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>" :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_Roots" "._ThePathnameTranslations")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Complex_O>" :offset-base-ctype "core::Lisp"
@@ -12529,12 +12527,10 @@
              :offset-ctype "gctools::smart_ptr<core::Ratio_O>" :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_Roots" "._PlusHalf")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEqual_O>"
-             :offset-base-ctype "core::Lisp"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>" :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_Roots" "._SourceFileIndices")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEqual_O>"
-             :offset-base-ctype "core::Lisp"
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>" :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_Roots" "._PackageNameIndexMap")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::Lisp"
