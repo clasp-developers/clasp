@@ -329,11 +329,6 @@ void assertion_failed(char const* expr, char const* function, char const* file, 
 }
 }; // namespace boost
 
-namespace llvm_interface {
-
-::llvm_interface::llvmAddSymbolCallbackType addSymbol = NULL;
-};
-
 NOINLINE void dbg_hook(const char* error) {
   // Do nothing
   // set a break point here to catch every error
@@ -833,8 +828,6 @@ Fixnum lisp_hash(uintptr_t x) {
 T_sp lisp_true() { return _lisp->_true(); }
 
 T_sp lisp_false() { return _lisp->_false(); }
-
-string lisp_rep(T_sp obj) { return _rep_(obj); }
 
 bool lisp_CoreBuiltInClassesInitialized() { return _lisp->CoreBuiltInClassesInitialized(); }
 

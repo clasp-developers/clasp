@@ -169,9 +169,6 @@ class Mutex_O : public core::CxxObject_O {
   LISP_CLASS(mp, MpPkg, Mutex_O, "Mutex", core::CxxObject_O);
 
 public:
-  CLASP_DEFAULT_CTOR Mutex_O(){};
-
-public:
   CL_LISPIFY_NAME("make-lock");
   CL_DOCSTRING("Create and return a fresh mutex with the given name.")
   CL_LAMBDA(&key (name "Anonymous Mutex"));
@@ -185,7 +182,6 @@ public:
   core::T_sp _Owner;
   dont_expose<Mutex> _Mutex;
   Mutex_O(core::T_sp name, bool recursive) : _Name(name), _Owner(nil<T_O>()), _Mutex(Mutex(lisp_nameword(name), recursive)){};
-  ~Mutex_O() { printf("%s:%d:%s Finalizing Mutex_O @ %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)this); }
   bool lock(bool waitp) {
     bool locked = this->_Mutex._value.lock(waitp);
     if (locked)
@@ -231,14 +227,13 @@ public:
   SharedMutex_O(core::T_sp readName, core::T_sp writeName = nil<core::T_O>())
       : _Name(readName), _Owner(nil<T_O>()),
         _SharedMutex(lisp_nameword(readName), 256, writeName.nilp() ? lisp_nameword(readName) : lisp_nameword(writeName)){};
-  void write_lock(bool upgrade = false) { this->_SharedMutex.writeLock(upgrade); };
-  bool write_try_lock(bool upgrade = false) { return this->_SharedMutex.writeTryLock(upgrade); };
-  void write_unlock(bool release_read_lock = false) { this->_SharedMutex.writeUnlock(release_read_lock); };
+  void lock(bool upgrade = false) { this->_SharedMutex.lock(upgrade); };
+  bool try_lock(bool upgrade = false) { return this->_SharedMutex.try_lock(upgrade); };
+  void unlock(bool release_read_lock = false) { this->_SharedMutex.unlock(release_read_lock); };
 
-  void read_lock() { this->_SharedMutex.readLock(); };
-  void read_unlock() { this->_SharedMutex.readUnlock(); };
-  void shared_lock() { this->_SharedMutex.readLock(); };
-  void shared_unlock() { this->_SharedMutex.readUnlock(); };
+  void lock_shared() { this->_SharedMutex.lock_shared(); };
+  bool try_lock_shared() { return this->_SharedMutex.try_lock_shared(); }
+  void unlock_shared() { this->_SharedMutex.unlock_shared(); };
   void setLockNames(core::SimpleBaseString_sp readLockName, core::SimpleBaseString_sp writeLockName);
   string __repr__() const override;
 

@@ -46,7 +46,6 @@ public:
     this->_QueueFront = 0;
     this->_QueueBack = 0;
   };
-  virtual ~IntQueue(){};
 
   bool empty() { return this->_QueueFront == this->_QueueBack; };
   bool notEmpty() { return this->_QueueFront != this->_QueueBack; };
@@ -101,7 +100,6 @@ private:
 
 public:
   IntStack() { this->_Next = 0; };
-  virtual ~IntStack(){};
   void reset();
   int size() { return this->_Next; };
   bool empty() { return this->_Next == 0; };

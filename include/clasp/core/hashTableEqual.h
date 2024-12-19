@@ -36,7 +36,6 @@ namespace core {
 FORWARD(HashTableEqual);
 class HashTableEqual_O : public HashTable_O {
   LISP_CLASS(core, CorePkg, HashTableEqual_O, "HashTableEqual", HashTable_O);
-  HashTableEqual_O(){};
 
 public:
   static HashTableEqual_sp create(uint sz, Number_sp rehashSize, double rehashThreshold);

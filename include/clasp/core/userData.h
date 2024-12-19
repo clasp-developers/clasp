@@ -55,7 +55,6 @@ public:
   }
   void* ptr() const { return this->_ptr; };
   explicit LightUserData_O() : Base(), _ptr(NULL){};
-  virtual ~LightUserData_O(){};
 };
 
 typedef void (*DestructUserDataFn)(void* data);

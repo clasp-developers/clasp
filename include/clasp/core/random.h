@@ -68,7 +68,6 @@ public: // ctor/dtor for classes with shared virtual base
     }
   };
   explicit RandomState_O(const RandomState_O& state) { this->_Producer._value = state._Producer._value; };
-  virtual ~RandomState_O() {}
 
   CL_DEFMETHOD std::string random_state_get() const {
     stringstream ss;

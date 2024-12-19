@@ -9,9 +9,6 @@ class NativeVector_int_O : public CxxObject_O {
   LISP_CLASS(core, CorePkg, NativeVector_int_O, "NativeVector<int>", CxxObject_O);
 
 public:
-  CLASP_DEFAULT_CTOR NativeVector_int_O(){};
-
-public:
   gctools::Vec0<int> _Vector;
 
 public:

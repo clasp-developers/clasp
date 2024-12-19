@@ -81,7 +81,6 @@ public:
   int column;           //  8 column
   int filepos;          //  9 filepos
 public:
-  FunctionDescription_O(){};
 
 public:
   // Accessors
@@ -113,7 +112,6 @@ class Function_O : public General_O {
   LISP_ABSTRACT_CLASS(core, ClPkg, Function_O, "FUNCTION", General_O);
 
 public:
-  CLASP_DEFAULT_CTOR Function_O(){};
   Function_O(SimpleFun_O* ep) : _TheSimpleFun(SimpleFun_sp((gctools::Tagged)(gctools::tag_general<SimpleFun_O*>(ep)))) {
     ASSERT(!gctools::tagged_generalp<SimpleFun_O*>(ep)); // on entry should not be tagged
   };
@@ -194,7 +192,6 @@ public:
   virtual T_sp lambdaListHandler() const { SUBIMP(); };
   virtual T_sp lambdaList() const { return this->fdesc()->lambdaList(); }
   virtual string __repr__() const;
-  virtual ~Function_O(){};
 };
 }; // namespace core
 
@@ -210,9 +207,6 @@ namespace core {
 FORWARD(SimpleFun);
 class SimpleFun_O : public Function_O {
   LISP_CLASS(core, CorePkg, SimpleFun_O, "SimpleFun", Function_O);
-
-public:
-  CLASP_DEFAULT_CTOR SimpleFun_O(){};
 
 public:
   FunctionDescription_sp _FunctionDescription;
@@ -237,6 +231,8 @@ public:
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
   void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr);
   CL_DEFMETHOD T_sp SimpleFun_code() const { return this->_Code; };
+  // Check if the entry points can be dladdr'd, for snapshot save purposes.
+  bool dladdrablep(std::set<void*>& uniqueEntries);
 };
 
 // Now that SimpleFun exists we can define these.
@@ -292,6 +288,7 @@ public:
   CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
   virtual Pointer_sp defaultEntryAddress() const;
+  bool dladdrablep(std::set<void*>& uniques);
   string __repr__() const;
 };
 
@@ -562,9 +559,4 @@ namespace core {
 typedef gctools::return_type (*bytecode_trampoline_function)(unsigned char* pc, core::T_O* closure, size_t nargs, core::T_O** args);
 extern bytecode_trampoline_function bytecode_trampoline;
 
-
-void maybe_verify_dladdr( core::ClaspXepFunction& entryPoints,
-                          core::T_sp code,
-                          core::FunctionDescription_sp functionDescription,
-                          gctools::GatherObjects* gatherP );
 }; // namespace core
