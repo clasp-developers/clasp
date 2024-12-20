@@ -206,19 +206,11 @@ CL_DEFUN List_sp cl__make_list(Fixnum size, T_sp initial_element) {
   else {
     T_sp result = nil<T_O>();
     for (size_t i = 0; i < size; i++) {
-      result = gctools::ConsAllocator<gctools::RuntimeStage, Cons_O, gctools::DontRegister>::allocate(initial_element, result);
+      result = Cons_O::create(initial_element, result);
     }
-    size_t cons_size = gctools::ConsSizeCalculator<gctools::RuntimeStage, Cons_O, gctools::DontRegister>::value();
-    my_thread_low_level->_Allocations.registerAllocation(gctools::STAMPWTAG_CONS, size * cons_size);
     return result;
   }
 };
-
-CL_UNWIND_COOP(true);
-DOCGROUP(clasp);
-CL_DEFUN size_t core__cons_size() {
-  return gctools::ConsSizeCalculator<gctools::RuntimeStage, Cons_O, gctools::DontRegister>::value();
-}
 
 Cons_sp Cons_O::createList(T_sp o1) { return (Cons_O::create(o1, nil<T_O>())); }
 

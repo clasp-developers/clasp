@@ -19,7 +19,6 @@ namespace core {
 typedef template_SimpleBitUnitVector<SimpleVector_byte4_t_O, 4, false> specialized_SimpleVector_byte4_t;
 class SimpleVector_byte4_t_O : public specialized_SimpleVector_byte4_t {
   LISP_CLASS(core, CorePkg, SimpleVector_byte4_t_O, "SimpleVector_byte4_t", AbstractSimpleVector_O);
-  virtual ~SimpleVector_byte4_t_O(){};
 
 public:
   typedef specialized_SimpleVector_byte4_t TemplatedBase;
@@ -42,7 +41,6 @@ public:
 namespace core {
 class MDArray_byte4_t_O : public template_Array<MDArray_byte4_t_O, SimpleMDArray_byte4_t_O, SimpleVector_byte4_t_O, MDArray_O> {
   LISP_CLASS(core, CorePkg, MDArray_byte4_t_O, "MDArray_byte4_t", MDArray_O);
-  virtual ~MDArray_byte4_t_O(){};
 
 public:
   typedef template_Array<MDArray_byte4_t_O, SimpleMDArray_byte4_t_O, SimpleVector_byte4_t_O, MDArray_O> TemplatedBase;
@@ -56,7 +54,6 @@ public: // make array
 namespace core {
 class SimpleMDArray_byte4_t_O : public template_SimpleArray<SimpleMDArray_byte4_t_O, SimpleVector_byte4_t_O, SimpleMDArray_O> {
   LISP_CLASS(core, CorePkg, SimpleMDArray_byte4_t_O, "SimpleMDArray_byte4_t", SimpleMDArray_O);
-  virtual ~SimpleMDArray_byte4_t_O(){};
 
 public:
   typedef template_SimpleArray<SimpleMDArray_byte4_t_O, SimpleVector_byte4_t_O, SimpleMDArray_O> TemplatedBase;
@@ -69,7 +66,6 @@ public: // make array
 namespace core {
 class ComplexVector_byte4_t_O : public template_Vector<ComplexVector_byte4_t_O, SimpleVector_byte4_t_O, ComplexVector_O> {
   LISP_CLASS(core, CorePkg, ComplexVector_byte4_t_O, "ComplexVector_byte4_t", ComplexVector_O);
-  virtual ~ComplexVector_byte4_t_O(){};
 
 public:
   typedef template_Vector<ComplexVector_byte4_t_O, SimpleVector_byte4_t_O, ComplexVector_O> TemplatedBase;
@@ -109,10 +105,6 @@ class SimpleVector_int4_t_O : public specialized_SimpleVector_int4_t {
   LISP_CLASS(core, CorePkg, SimpleVector_int4_t_O, "SimpleVector_int4_t", AbstractSimpleVector_O);
 
 public:
-  CLASP_DEFAULT_CTOR SimpleVector_int4_t_O(){};
-  virtual ~SimpleVector_int4_t_O(){};
-
-public:
   typedef specialized_SimpleVector_int4_t TemplatedBase;
 
 public:
@@ -133,7 +125,6 @@ public:
 namespace core {
 class MDArray_int4_t_O : public template_Array<MDArray_int4_t_O, SimpleMDArray_int4_t_O, SimpleVector_int4_t_O, MDArray_O> {
   LISP_CLASS(core, CorePkg, MDArray_int4_t_O, "MDArray_int4_t", MDArray_O);
-  virtual ~MDArray_int4_t_O(){};
 
 public:
   typedef template_Array<MDArray_int4_t_O, SimpleMDArray_int4_t_O, SimpleVector_int4_t_O, MDArray_O> TemplatedBase;
@@ -147,7 +138,6 @@ public: // make array
 namespace core {
 class SimpleMDArray_int4_t_O : public template_SimpleArray<SimpleMDArray_int4_t_O, SimpleVector_int4_t_O, SimpleMDArray_O> {
   LISP_CLASS(core, CorePkg, SimpleMDArray_int4_t_O, "SimpleMDArray_int4_t", SimpleMDArray_O);
-  virtual ~SimpleMDArray_int4_t_O(){};
 
 public:
   typedef template_SimpleArray<SimpleMDArray_int4_t_O, SimpleVector_int4_t_O, SimpleMDArray_O> TemplatedBase;
@@ -160,7 +150,6 @@ public: // make array
 namespace core {
 class ComplexVector_int4_t_O : public template_Vector<ComplexVector_int4_t_O, SimpleVector_int4_t_O, ComplexVector_O> {
   LISP_CLASS(core, CorePkg, ComplexVector_int4_t_O, "ComplexVector_int4_t", ComplexVector_O);
-  virtual ~ComplexVector_int4_t_O(){};
 
 public:
   typedef template_Vector<ComplexVector_int4_t_O, SimpleVector_int4_t_O, ComplexVector_O> TemplatedBase;

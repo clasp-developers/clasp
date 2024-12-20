@@ -35,12 +35,9 @@ class LoadTimeValues_O : public General_O {
   LISP_CLASS(core, CorePkg, LoadTimeValues_O, "LoadTimeValues", General_O);
 
 public: // Simple default ctor/dtor
-  LoadTimeValues_O() : Base(){};
-  virtual ~LoadTimeValues_O(){};
 
 public:       // ctor/dtor for classes with shared virtual base
               //    explicit LoadTimeValues_O(core::Instance_sp const& mc) : T_O(mc), ComplexVector_TWithFillPtr(mc) {};
-              //    virtual ~LoadTimeValues_O() {};
   GCPRIVATE : // instance variables here
               gctools::Vec0<T_sp>
                   _Objects;

@@ -76,6 +76,5 @@ public:
 public:
   explicit WrappedPointer_O() : Base(), Class_(nil<core::Instance_O>()){};
   virtual string __repr__() const;
-  virtual ~WrappedPointer_O(){};
 };
 }; // namespace core

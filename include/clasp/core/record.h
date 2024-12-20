@@ -45,7 +45,6 @@ public:       // Simple default ctor/dtor
   Record_O() : _stage(saving), _alist(nil<T_O>()), _Seen(nil<T_O>()){};
   Record_O(RecordStage stage, bool dummy, List_sp data);
   Record_O(RecordStage stage, T_sp callback) : _stage(stage), _patching_callback(callback), _Seen(nil<T_O>()){};
-  virtual ~Record_O(){};
 
 public:
   static Record_sp create_encoder() {

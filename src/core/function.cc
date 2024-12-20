@@ -73,6 +73,21 @@ void SimpleFun_O::fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr
 #endif
 }
 
+bool SimpleFun_O::dladdrablep(std::set<void*>& uniques) {
+  if (this->_Code.isA<llvmo::Library_O>()) {
+    for (size_t ii = 0; ii < ClaspXepFunction::Entries; ++ii) {
+      void* address = (void*)this->_EntryPoints._EntryPoints[ii].load(std::memory_order_relaxed);
+      if (!uniques.contains(address)) {
+        Dl_info info;
+        uniques.insert(address);
+        if (dladdr(address, &info) == 0)
+          return false;
+      }
+    }
+  }
+  return true;
+}
+
 CL_DEFMETHOD Pointer_sp SimpleFun_O::defaultEntryAddress() const { SUBCLASS_MUST_IMPLEMENT(); }
 
 SimpleFun_O::SimpleFun_O(FunctionDescription_sp fdesc, T_sp code, const ClaspXepTemplate& entry_point)
@@ -194,6 +209,17 @@ void CoreFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup
   }
 #endif
 };
+
+bool CoreFun_O::dladdrablep(std::set<void*>& uniques) {
+  void* address = (void*)this->_Entry;
+  if (!uniques.contains(address)) {
+    Dl_info info;
+    uniques.insert(address);
+    if (dladdr(address, &info) == 0)
+      return false;
+  }
+  return true;
+}
 
 CL_LAMBDA(&key function-description entry-point-functions local-entry-point-index);
 DOCGROUP(clasp);
@@ -764,43 +790,5 @@ Function_sp FunctionCell_O::fdefinition() const {
     ERROR_UNDEFINED_FUNCTION((*closure)[0]);
   }
 }
-
-
-void maybe_verify_dladdr( core::ClaspXepFunction& entryPoints,
-                          core::T_sp code,
-                          core::FunctionDescription_sp functionDescription,
-                          gctools::GatherObjects* gatherP ) {
-  if (gc::IsA<llvmo::Library_sp>(code)) {
-    gatherP->_SimpleFunCount++;
-    bool failed_dladdr = false;
-    for (size_t ii = 0; ii < ClaspXepFunction::Entries; ++ii) {
-      Dl_info info;
-      void* address = (void*)entryPoints._EntryPoints[ii].load();
-      if (gatherP->_uniqueEntryPoints.count(address)==0) {
-        gatherP->_uniqueEntryPoints.insert(address);
-        int ret = dladdr((void*)address, &info);
-#if 0
-        printf("%s:%d:%s dladdr ret=%d for entry point[%zu] %p for %s\n",
-                 __FILE__, __LINE__, __FUNCTION__,
-               ret,
-                 ii, (void*)address,
-                 _rep_(functionDescription->_functionName).c_str());
-#endif
-        if (ret == 0) {
-          failed_dladdr = true;
-          gatherP->_uniqueEntryPointsFailedDladdr.insert(address);
-          printf("%s:%d:%s dladdr failed on entry point[%zu] %p for %s\n",
-                 __FILE__, __LINE__, __FUNCTION__,
-                 ii, (void*)address,
-                 _rep_(functionDescription->_functionName).c_str());
-        }
-      }
-    }
-    if (failed_dladdr) {
-      gatherP->_SimpleFunFailedDladdrCount++;
-    }
-  }
-}
-
 
 }; // namespace core
