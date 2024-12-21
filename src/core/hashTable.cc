@@ -186,9 +186,6 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
   size_t isize = clasp_to_int(size);
   if (isize == 0)
     isize = 16;
-#ifdef DEBUG_REHASH_COUNT
-  this->_InitialSize = isize;
-#endif
   //	clasp_write_string(fmt::format("{}:{} - make_hash_table - fix me so that I grow by powers of 2\n" , __FILE__ , __LINE__ ));
   if (test == cl::_sym_eq || (cl::_sym_eq->fboundp() && test == cl::_sym_eq->symbolFunction())) {
     table = HashTableEq_O::create(isize, rehash_size, rehash_threshold);
@@ -214,14 +211,6 @@ void HashTable_O::setupThreadSafeHashTable() {
   SimpleBaseString_sp sbsread = SimpleBaseString_O::make("USRHSHR");
   SimpleBaseString_sp sbswrite = SimpleBaseString_O::make("USRHSHW");
   this->_Mutex = mp::SharedMutex_O::make_shared_mutex(sbsread, sbswrite);
-#endif
-}
-
-void HashTable_O::setupDebug() {
-#ifdef DEBUG_HASH_TABLE_DEBUG
-  this->_Debug = true;
-#else
-  // do nothing
 #endif
 }
 
@@ -662,17 +651,6 @@ CL_DEFUN_SETF T_sp setf_gethash(T_sp value, T_sp key, HashTableBase_sp hash_tabl
 void HashTable_O::rehash_no_lock(bool expandTable) {
   DEBUG_HASH_TABLE1({ core::clasp_write_string(fmt::format("{}:{} rehash_no_lock\n", __FILE__, __LINE__)); });
   ASSERTF(!Number_O::zerop(this->_RehashSize), "RehashSize is zero - it shouldn't be");
-#ifdef DEBUG_HASH_TABLE_DEBUG
-  if (this->_Debug) {
-    core::T_sp info = INTERN_(kw, rehash);
-    T_sp expected;
-    Cons_sp cell = core::Cons_O::create(info, nil<T_O>());
-    do {
-      expected = this->_History.load();
-      cell->rplacd(expected);
-    } while (!this->_History.compare_exchange_weak(expected, cell));
-  }
-#endif
 
   gc::Fixnum curSize = this->_Table.size();
   ASSERTF(this->_Table.size() != 0, "HashTable is empty in expandHashTable curSize={}  this->_Table.size()= {} this shouldn't be",
@@ -702,12 +680,6 @@ void HashTable_O::rehash_no_lock(bool expandTable) {
       this->setf_gethash_no_write_lock(key, value);
     }
   }
-#ifdef DEBUG_REHASH_COUNT
-  this->_RehashCount++;
-  MONITOR(BF("Hash-table rehash id %lu initial-size %lu rehash-number %lu rehash-size %lu oldHashTableCount %lu _HashTableCount "
-             "%lu\n") %
-          this->_HashTableId % this->_InitialSize % this->_RehashCount % newSize % oldHashTableCount % this->_HashTableCount);
-#endif
 }
 
 void HashTable_O::rehash(bool expandTable) {

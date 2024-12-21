@@ -347,11 +347,6 @@
                   :initform nil
                   :type boolean
                   :documentation "Generate per-thread logs in /tmp/dispatch-history/**  of the slow path of fastgf")
-   (debug-rehash-count :accessor debug-rehash-count
-                       :initarg :debug-rehash-count
-                       :initform nil
-                       :type boolean
-                       :documentation "Keep track of the number of times each hash table has been rehashed")
    (debug-monitor :accessor debug-monitor
                   :initarg :debug-monitor
                   :initform nil

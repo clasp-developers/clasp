@@ -33,8 +33,6 @@ THE SOFTWARE.
 #include <clasp/core/mpPackage.fwd.h>
 #include <clasp/core/corePackage.fwd.h>
 
-// #define DEBUG_HASH_TABLE_DEBUG
-
 namespace core {
 double maybeFixRehashThreshold(double rt);
 #define DEFAULT_REHASH_THRESHOLD 0.7
@@ -68,17 +66,8 @@ class HashTable_O : public HashTableBase_O {
 
   friend T_sp cl__maphash(T_sp function_desig, T_sp hash_table);
   HashTable_O()
-      :
-#ifdef DEBUG_REHASH_COUNT
-        _HashTableId(next_hash_table_id()), _RehashCount(0), _InitialSize(0),
-#endif
-        _RehashSize(nil<Number_O>()), _RehashThreshold(maybeFixRehashThreshold(0.7)), _HashTableCount(0)
-#ifdef DEBUG_HASH_TABLE_DEBUG
-        ,
-        _Debug(false), _History(nil<T_O>())
-#endif
+      : _RehashSize(nil<Number_O>()), _RehashThreshold(maybeFixRehashThreshold(0.7)), _HashTableCount(0)
                            {};
-  //	DEFAULT_CTOR_DTOR(HashTable_O);
   friend class HashTableEq_O;
   friend class HashTableEql_O;
   friend class HashTableEqual_O;
@@ -88,19 +77,10 @@ class HashTable_O : public HashTableBase_O {
   friend T_sp cl__clrhash(HashTable_sp hash_table);
 
 public: // instance variables here
-#ifdef DEBUG_REHASH_COUNT
-  size_t _HashTableId;
-  size_t _RehashCount;
-  size_t _InitialSize;
-#endif
   Number_sp _RehashSize;
   double _RehashThreshold;
   gctools::Vec0<KeyValuePair> _Table;
   size_t _HashTableCount;
-#ifdef DEBUG_HASH_TABLE_DEBUG
-  bool _Debug;
-  std::atomic<T_sp> _History;
-#endif
 #ifdef CLASP_THREADS
   mutable mp::SharedMutex_sp _Mutex;
 #endif
@@ -115,7 +95,6 @@ public:
 
 public:
   void setupThreadSafeHashTable();
-  void setupDebug();
 
 private:
   void setup(uint sz, Number_sp rehashSize, double rehashThreshold);
