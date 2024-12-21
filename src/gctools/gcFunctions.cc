@@ -767,19 +767,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (buildReport)
     ss << (fmt::format("DEBUG_FASTGF = {}\n", (debug_fastgf ? "**DEFINED**" : "undefined")));
 
-  bool debug_rehash_count = false;
-#ifdef DEBUG_REHASH_COUNT
-#ifndef DEBUG_MONITOR
-#error "DEBUG_MONITOR must also be enabled if DEBUG_REHASH_COUNT is turned on"
-#endif
-  debug_rehash_count = true;
-  debugging = true;
-  if (setFeatures)
-    features = core::Cons_O::create(_lisp->internKeyword("DEBUG-REHASH_COUNT"), features);
-#endif
-  if (buildReport)
-    ss << (fmt::format("DEBUG_REHASH_COUNT = {}\n", (debug_rehash_count ? "**DEFINED**" : "undefined")));
-
   bool debug_jit_log_symbols = false;
 #ifdef DEBUG_JIT_LOG_SYMBOLS
   if (!core::global_options->_SilentStartup) {

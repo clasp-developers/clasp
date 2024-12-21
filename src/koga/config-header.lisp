@@ -78,7 +78,6 @@
                  "DEBUG_TRACK_UNWINDS" (debug-track-unwinds configuration)
                  "DEBUG_NO_UNWIND" (debug-no-unwind configuration)
                  "DEBUG_STARTUP" (debug-startup configuration)
-                 "DEBUG_REHASH_COUNT" (debug-rehash-count configuration)
                  "DEBUG_MONITOR" (debug-monitor configuration)
                  "DEBUG_MONITOR_SUPPORT" (debug-monitor-support configuration)
                  "DEBUG_MEMORY_PROFILE" (debug-memory-profile configuration)
