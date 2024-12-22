@@ -224,16 +224,21 @@ public:
         llvm::orc::ExecutorAddr ea((uintptr_t)execMemory);
         OnFinalized(llvm::jitlink::InProcessMemoryManager::FinalizedAlloc(ea));
       }
+
       virtual void abandon(OnAbandonedFunction OnAbandoned) {
-        printf("%s:%d:%s I have no idea what to do here - calling OnAbandoned and continuing\n", __FILE__, __LINE__, __FUNCTION__);
-        if (getenv("CLASP_TRAP_ONABANDONED")!=NULL) {
-          printf("!\n!\n!\n!\n         You set CLASP_TRAP_ONABANDONED - sleeping for 9999 seconds - connect using debugger to pid %d\n!\n!\n!\n!\n", getpid());
-          sleep(9999);
+        size_t PageSize = getpagesize();
+        for (auto& KV : BL.segments()) {
+          auto& Seg = KV.second;
+          sys::MemoryBlock MB(Seg.WorkingMem, alignTo(Seg.ContentSize + Seg.ZeroFillSize, PageSize));
+          auto code = sys::Memory::releaseMappedMemory(MB);
+          if (code) {
+            OnAbandoned(std::move(llvm::errorCodeToError(code)));
+            return;
+          }
         }
-        printf("!\n!\n!\n!\n         If you want to trap here set CLASP_TRAP_ONABANDONED - restarting for now\n!\n!\n!\n!\n");
-        exit(1);
-        //OnAbandoned(std::move(llvm::Error::success()));
+        OnAbandoned(std::move(llvm::Error::success()));
       }
+
     private:
       Error applyProtections() {
         JITMemoryReadExecute(BL);
@@ -960,7 +965,8 @@ void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
 
   ObjectFile_sp code = lookupObjectFile(buffer->getBufferIdentifier().str());
   code->_MemoryBuffer = std::move(buffer);
-//  printf("%s:%d:%s loadedObjectFile %p  _MemoryBuffer = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)&*code, (void*)code->_MemoryBuffer.get() );
+  //  printf("%s:%d:%s loadedObjectFile %p  _MemoryBuffer = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)&*code,
+  //  (void*)code->_MemoryBuffer.get() );
   auto objf = code->getObjectFile();
   llvm::object::ObjectFile& of = *objf->get();
 #if defined(_TARGET_OS_LINUX)
