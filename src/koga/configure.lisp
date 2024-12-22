@@ -702,7 +702,7 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"generated/extension-immutable.lisp" :variant))
                                                          :compile-commands
                                                          (list (make-source #P"compile_commands.json" :variant)
-                                                               :iclasp)))
+                                                               :libclasp)))
             :type hash-table
             :documentation "The configuration outputs with the associated targets.")
    (libraries :accessor libraries

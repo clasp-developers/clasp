@@ -5,7 +5,7 @@
 ;; This file is used by boehm to create an AST and sif file to enable
 ;; the precise variants.
 (defmethod print-variant-target-sources
-    (configuration (name (eql :compile-commands)) output-stream (target (eql :iclasp)) sources
+    (configuration (name (eql :compile-commands)) output-stream (target (eql :libclasp)) sources
      &key &allow-other-keys)
   (shasht:write-json (loop with build-path = (merge-pathnames (build-path configuration)
                                                               (uiop:getcwd))
