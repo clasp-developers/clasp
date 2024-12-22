@@ -748,6 +748,9 @@ CL_EXTERN_DEFMETHOD(Triple_O, &llvm::Triple::getEnvironmentName);
 CL_LISPIFY_NAME(getOSAndEnvironmentName);
 CL_EXTERN_DEFMETHOD(Triple_O, &llvm::Triple::getOSAndEnvironmentName);
 
+CL_PKG_NAME(LlvmoPkg, "lookup-intrinsic-id");
+CL_EXTERN_DEFUN((llvm::Intrinsic::ID(*)(llvm::StringRef Name))&llvm::Function::lookupIntrinsicID);
+
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType);
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType_UnknownArch);
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType_arm);

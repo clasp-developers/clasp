@@ -156,10 +156,8 @@
         (when cleanup-p (llvm-sys:set-cleanup lpad t))
         (cmp:irc-store exception-structure *exn.slot*)
         (cmp:irc-store exception-selector *ehselector.slot*)
-        (let* ((typeid (%intrinsic-call
-                        #+(or llvm15 llvm16 llvm17)"llvm.eh.typeid.for"
-                        #-(or llvm15 llvm16 llvm17)"llvm.eh.typeid.for.p0"
-                        (list (cmp:irc-exception-typeid* 'cmp:typeid-core-unwind))))
+        (let* ((typeid (%intrinsic-call cmp:+intrinsic/llvm.eh.typeid.for.p0+
+                                        (list (cmp:irc-exception-typeid* 'cmp:typeid-core-unwind))))
                (matches-type (cmp:irc-icmp-eq exception-selector typeid)))
           ;; If the exception is Clasp's Unwind exception, we handle it.
           ;; Otherwise we go to the cleanup, or perhaps directly to the resume.
@@ -289,10 +287,8 @@
           (bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
       (cmp:irc-begin-block bb)
       ;; Lose the saved values alloca.
-      (%intrinsic-call
-       #+(or llvm15 llvm16 llvm17)"llvm.stackrestore"
-       #-(or llvm15 llvm16 llvm17)"llvm.stackrestore.p0"
-       (list stackpos))
+      (%intrinsic-call cmp:+intrinsic/llvm.stackrestore.p0+
+                       (list stackpos))
       ;; Continue
       (cmp:irc-br
        (maybe-entry-processor (cleavir-bir:parent instruction) tags))
@@ -305,10 +301,8 @@
           (let ((bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
             (cmp:irc-begin-block bb)
             ;; Lose the saved values alloca.
-            (%intrinsic-call
-             #+(or llvm15 llvm16 llvm17)"llvm.stackrestore"
-             #-(or llvm15 llvm16 llvm17)"llvm.stackrestore.p0"
-             (list stackpos))
+            (%intrinsic-call cmp:+intrinsic/llvm.stackrestore.p0+
+                             (list stackpos))
             ;; Continue
             (cmp:irc-br
              (maybe-entry-processor (cleavir-bir:parent inst) tags))
