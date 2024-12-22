@@ -37,8 +37,11 @@ FORWARD(HashTableEqualp);
 class HashTableEqualp_O : public HashTable_O {
   LISP_CLASS(core, CorePkg, HashTableEqualp_O, "HashTableEqualp", HashTable_O);
   DEFAULT_CTOR_DTOR(HashTableEqualp_O);
+  HashTableEqualp_O(Mapping_sp map, Number_sp rhsize, double rhthresh)
+    : HashTable_O(map, rhsize, rhthresh) {}
 
 public:
+  static HashTableEqualp_sp create(Mapping_sp, Number_sp, double);
   static HashTableEqualp_sp create(uint sz, Number_sp rehashSize, double rehashThreshold);
   static HashTableEqualp_sp create_default();
 

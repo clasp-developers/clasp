@@ -47,11 +47,56 @@ size_t next_hash_table_id();
 
 namespace core {
 
-class KeyValuePair {
+FORWARD(Mapping);
+class Mapping_O : public General_O {
+  LISP_ABSTRACT_CLASS(core, CorePkg, Mapping_O, "Mapping", General_O);
 public:
-  core::T_sp _Key;
-  core::T_sp _Value;
-  KeyValuePair(T_sp k, T_sp v) : _Key(k), _Value(v){};
+  virtual size_t size() const = 0;
+  virtual Mapping_sp realloc(size_t) const = 0;
+  virtual gctools::KVPair get(size_t) const = 0;
+  virtual void setValue(size_t, T_sp) = 0;
+  virtual void newEntry(size_t, T_sp, T_sp) = 0;
+  virtual void remove(size_t) = 0;
+};
+
+FORWARD(StrongMapping);
+class StrongMapping_O final : public Mapping_O {
+  LISP_CLASS(core, CorePkg, StrongMapping_O, "StrongMapping", Mapping_O);
+public:
+  // need typedefs for e.g. sizeof_container
+  typedef gctools::StrongMapping::value_type value_type;
+public:
+  StrongMapping_O(size_t size) : _Mapping(size) {}
+  static StrongMapping_sp make(size_t);
+public:
+  gctools::StrongMapping _Mapping;
+public:
+  virtual size_t size() const { return _Mapping.size(); }
+  virtual Mapping_sp realloc(size_t sz) const { return make(sz); }
+  virtual gctools::KVPair get(size_t i) const { return _Mapping.get(i); }
+  virtual void setValue(size_t i, T_sp v) { _Mapping.setValue(i, v); }
+  virtual void newEntry(size_t i, T_sp k, T_sp v) { _Mapping.newEntry(i, k, v); }
+  virtual void remove(size_t i) { _Mapping.remove(i); }
+};
+
+FORWARD(WeakKeyMapping);
+class WeakKeyMapping_O final : public Mapping_O {
+  LISP_CLASS(core, CorePkg, WeakKeyMapping_O, "WeakKeyMapping", Mapping_O);
+public:
+  // need typedefs for e.g. sizeof_container
+  typedef gctools::EphemeronMapping::value_type value_type;
+public:
+  WeakKeyMapping_O(size_t size) : _Mapping(size) {}
+  static WeakKeyMapping_sp make(size_t);
+public:
+  gctools::EphemeronMapping _Mapping;
+public:
+  virtual size_t size() const { return _Mapping.size(); }
+  virtual Mapping_sp realloc(size_t sz) const { return make(sz); }
+  virtual gctools::KVPair get(size_t i) const { return _Mapping.get(i); }
+  virtual void setValue(size_t i, T_sp v) { _Mapping.setValue(i, v); }
+  virtual void newEntry(size_t i, T_sp k, T_sp v) { _Mapping.newEntry(i, k, v); }
+  virtual void remove(size_t i) { _Mapping.remove(i); }
 };
 
 FORWARD(HashTable);
@@ -68,18 +113,17 @@ class HashTable_O : public HashTableBase_O {
   HashTable_O()
       : _RehashSize(nil<Number_O>()), _RehashThreshold(maybeFixRehashThreshold(0.7)), _HashTableCount(0)
                            {};
-  friend class HashTableEq_O;
-  friend class HashTableEql_O;
-  friend class HashTableEqual_O;
-  friend class HashTableEqualp_O;
-  friend class HashTableCustom_O;
+  HashTable_O(Mapping_sp mapping,
+              Number_sp rehashSize, double rehashThreshold)
+    : _RehashSize(rehashSize), _RehashThreshold(maybeFixRehashThreshold(rehashThreshold)),
+      _Table(mapping), _HashTableCount(0) {}
   friend T_sp cl__maphash(T_sp function_desig, HashTable_sp hash_table);
   friend T_sp cl__clrhash(HashTable_sp hash_table);
 
 public: // instance variables here
   Number_sp _RehashSize;
   double _RehashThreshold;
-  gctools::Vec0<KeyValuePair> _Table;
+  Mapping_sp _Table;
   size_t _HashTableCount;
 #ifdef CLASP_THREADS
   mutable mp::SharedMutex_sp _Mutex;
@@ -97,7 +141,6 @@ public:
   void setupThreadSafeHashTable();
 
 private:
-  void setup(uint sz, Number_sp rehashSize, double rehashThreshold);
   uint resizeEmptyTable_no_lock(size_t sz);
   uint calculateHashTableCount() const;
 
@@ -105,7 +148,7 @@ private:
   T_sp setf_gethash_no_write_lock(T_sp key, T_sp value);
   gc::Fixnum sxhashKey(T_sp key) const; // NOTE: Only call with (read) lock held
 
-  KeyValuePair* searchTable_no_read_lock(T_sp key, cl_index index);
+  std::optional<size_t> searchTable_no_read_lock(T_sp key, cl_index index);
 
 protected:
   virtual void sxhashEffect(T_sp key, HashGenerator& hg) const { SUBIMP() };

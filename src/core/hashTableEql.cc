@@ -36,18 +36,18 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
+HashTableEql_sp HashTableEql_O::create(Mapping_sp mapping, Number_sp rehashSize, double rehashThreshold) {
+  return gctools::GC<HashTableEql_O>::allocate(mapping, rehashSize, rehashThreshold);
+}
+
 HashTableEql_sp HashTableEql_O::create(uint sz, Number_sp rehashSize, double rehashThreshold) {
-  if (sz == 0)
-    sz = 16;
-  auto hashTable = gctools::GC<HashTableEql_O>::allocate_with_default_constructor();
-  hashTable->setup(sz, rehashSize, rehashThreshold);
-  return hashTable;
+  return create(StrongMapping_O::make(sz), rehashSize, rehashThreshold);
 }
 
 SYMBOL_EXPORT_SC_(ClPkg, eql);
 HashTableEql_sp HashTableEql_O::create_default() {
   DoubleFloat_sp rhs = DoubleFloat_O::create(2.0);
-  HashTableEql_sp ht = HashTableEql_O::create(16, rhs, DEFAULT_REHASH_THRESHOLD);
+  HashTableEql_sp ht = create(16, rhs, DEFAULT_REHASH_THRESHOLD);
   return ht;
 }
 

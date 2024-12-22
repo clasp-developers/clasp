@@ -49,11 +49,11 @@
                           "core::SimpleVector_byte32_t_O" "core::AnsiStream_O"
                           "core::KeywordArgument" "llvmo::Module_O" "core::SingleFloat_dummy_O"
                           "llvmo::DIExpression_O" "llvmo::InvokeInst_O" "core::StrNs_O"
-                          "comp::GlobalFunInfo_O" "clasp_ffi::ForeignData_O" "llvmo::CallInst_O"
-                          "core::BytecodeAstDecls_O" "core::DoubleFloat_O"
-                          "core::ComplexVector_short_float_O" "core::DebuggerFrame_O"
-                          "comp::LocalMacroInfo_O" "comp::LexFixup_O" "core::StringStream_O"
-                          "llvmo::LibraryBase_O" "core::MDArray_int32_t_O"
+                          "comp::GlobalFunInfo_O" "core::Mapping_O" "llvmo::CallInst_O"
+                          "clasp_ffi::ForeignData_O" "core::BytecodeAstDecls_O"
+                          "core::DoubleFloat_O" "core::ComplexVector_short_float_O"
+                          "core::DebuggerFrame_O" "comp::LocalMacroInfo_O" "comp::LexFixup_O"
+                          "core::StringStream_O" "llvmo::LibraryBase_O" "core::MDArray_int32_t_O"
                           "asttooling::AsttoolingExposer_O" "llvmo::IntegerType_O"
                           "comp::GlobalMacroInfo_O" "core::MDArray_int64_t_O"
                           "core::SimpleMDArray_size_t_O" "comp::VariableCellInfo_O"
@@ -73,7 +73,7 @@
                           "core::Unused_dummy_O" "llvmo::DWARFContext_O" "core::HashTableEqual_O"
                           "llvmo::Triple_O" "core::SimpleMDArray_byte64_t_O" "core::BitVectorNs_O"
                           "core::CoreExposer_O" "core::BytecodeDebugVars_O"
-                          "comp::JumpIfSuppliedFixup_O" "core::KeyValuePair" "llvmo::NamedMDNode_O"
+                          "comp::JumpIfSuppliedFixup_O" "llvmo::NamedMDNode_O"
                           "core::SimpleVector_byte16_t_O" "llvmo::ThreadSafeContext_O"
                           "llvmo::TargetMachine_O" "core::SimpleVector_byte64_t_O"
                           "core::SimpleCoreFunGenerator_O" "llvmo::Value_O"
@@ -82,8 +82,9 @@
                           "core::BytecodeDebugMacroexpansion_O" "llvmo::ConstantInt_O"
                           "comp::SpecialVarInfo_O" "core::SimpleMDArray_int16_t_O"
                           "comp::ControlLabelFixup_O" "llvmo::StructLayout_O"
-                          "core::SimpleMDArrayT_O" "llvmo::LoadInst_O" "llvmo::ConstantStruct_O"
-                          "core::Exposer_O" "core::DirectoryIterator_O" "core::MDArray_byte2_t_O"
+                          "core::SimpleMDArrayT_O" "core::StrongMapping_O" "llvmo::LoadInst_O"
+                          "llvmo::ConstantStruct_O" "core::Exposer_O" "gctools::Ephemeron"
+                          "core::DirectoryIterator_O" "core::MDArray_byte2_t_O"
                           "llvmo::DISubroutineType_O" "comp::LabelFixup_O" "comp::Cfunction_O"
                           "llvmo::MetadataAsValue_O" "core::SimpleBitVector_O"
                           "core::SimpleVector_int8_t_O" "llvmo::ResumeInst_O" "llvmo::Function_O"
@@ -128,29 +129,30 @@
                           "llvmo::LandingPadInst_O" "core::ImmobileObject_O" "core::Function_O"
                           "core::SimpleMDArray_int2_t_O" "core::HashTableEql_O"
                           "comp::ConstantInfo_O" "mp::ConditionVariable_O" "core::Real_O"
-                          "core::Lisp" "core::MDArray_byte8_t_O" "core::BytecodeAstThe_O"
-                          "core::FuncallableInstanceCreator_O" "core::StringOutputStream_O"
-                          "llvmo::AttributeSet_O" "llvmo::AtomicRMWInst_O" "comp::Module_O"
-                          "llvmo::MDBuilder_O" "core::SimpleVector_O" "llvmo::DISubprogram_O"
-                          "core::SymbolStorage" "llvmo::ArrayType_O"
-                          "core::SimpleMDArray_int64_t_O" "core::SimpleString_O"
-                          "llvmo::DIVariable_O" "core::SimpleMDArray_byte2_t_O"
-                          "llvmo::BlockAddress_O" "llvmo::DICompositeType_O"
-                          "llvmo::MCSubtargetInfo_O" "core::DerivableCxxClassCreator_O"
-                          "core::HashTableEq_O" "core::HashTableEqualp_O"
-                          "asttooling::PresumedLoc_O" "core::ConcatenatedStream_O" "comp::Fixup_O"
-                          "core::LexDynEnv_O" "core::FuncallableInstance_O" "clbind::detail::edge"
+                          "core::Lisp" "core::MDArray_byte8_t_O" "gctools::KVPair"
+                          "core::BytecodeAstThe_O" "core::FuncallableInstanceCreator_O"
+                          "core::StringOutputStream_O" "llvmo::AttributeSet_O"
+                          "llvmo::AtomicRMWInst_O" "comp::Module_O" "llvmo::MDBuilder_O"
+                          "core::SimpleVector_O" "llvmo::DISubprogram_O" "core::SymbolStorage"
+                          "llvmo::ArrayType_O" "core::SimpleMDArray_int64_t_O"
+                          "core::SimpleString_O" "llvmo::DIVariable_O"
+                          "core::SimpleMDArray_byte2_t_O" "llvmo::BlockAddress_O"
+                          "llvmo::DICompositeType_O" "llvmo::MCSubtargetInfo_O"
+                          "core::DerivableCxxClassCreator_O" "core::HashTableEq_O"
+                          "core::HashTableEqualp_O" "asttooling::PresumedLoc_O"
+                          "core::ConcatenatedStream_O" "comp::Fixup_O" "core::LexDynEnv_O"
+                          "core::FuncallableInstance_O" "clbind::detail::edge"
                           "core::SynonymStream_O" "core::BytecodeModule_O" "core::Ratio_O"
                           "core::MDArray_int2_t_O" "core::ComplexVector_byte2_t_O"
                           "llvmo::ExecutionEngine_O" "core::ClassRepCreator_O"
                           "core::MDArray_long_float_O" "core::SimpleVector_int16_t_O"
-                          "llvmo::Attribute_O" "core::DerivableCxxObject_O"
-                          "core::SymbolToEnumConverter_O" "llvmo::SwitchInst_O"
-                          "core::SingleDispatchGenericFunction_O" "core::ComplexVector_int32_t_O"
-                          "core::ComplexVector_byte4_t_O" "asttooling::SourceLocation_O"
-                          "core::LogicalPathname_O" "llvmo::TargetSubtargetInfo_O"
-                          "core::SimpleVector_double_O" "core::CFileStream_O"
-                          "core::SimpleMDArray_byte32_t_O" "core::Bignum_O"
+                          "llvmo::Attribute_O" "core::WeakKeyMapping_O"
+                          "core::DerivableCxxObject_O" "core::SymbolToEnumConverter_O"
+                          "llvmo::SwitchInst_O" "core::SingleDispatchGenericFunction_O"
+                          "core::ComplexVector_int32_t_O" "core::ComplexVector_byte4_t_O"
+                          "asttooling::SourceLocation_O" "core::LogicalPathname_O"
+                          "llvmo::TargetSubtargetInfo_O" "core::SimpleVector_double_O"
+                          "core::CFileStream_O" "core::SimpleMDArray_byte32_t_O" "core::Bignum_O"
                           "llvmo::LLVMTargetMachine_O" "core::ClassHolder_O"
                           "core::ComplexVector_byte32_t_O" "llvmo::UnaryInstruction_O"
                           "llvmo::GlobalValue_O" "llvmo::PointerType_O" "core::TwoWayStream_O")}
@@ -4764,6 +4766,37 @@
              :offset-base-ctype "core::DebuggerFrame_O" :layout-offset-field-names ("down")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::DebuggerFrame_O" :layout-offset-field-names ("is_xep")}
+{class-kind :stamp-name "STAMPWTAG_core__Mapping_O" :stamp-key "core::Mapping_O"
+            :parent-class "core::General_O" :lisp-class-base "core::General_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{class-kind :stamp-name "STAMPWTAG_core__WeakKeyMapping_O" :stamp-key "core::WeakKeyMapping_O"
+            :parent-class "core::Mapping_O" :lisp-class-base "core::Mapping_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{variable-array0 :offset-base-ctype "core::WeakKeyMapping_O"
+                 :field-names ("_Mapping" "._Data" "._Data")}
+{variable-capacity :ctype "gctools::Ephemeron" :offset-base-ctype "core::WeakKeyMapping_O"
+                   :length-field-names ("_Mapping" "._Data" "._MaybeSignedLength")
+                   :end-field-names ("_Mapping" "._Data" "._MaybeSignedLength")}
+{variable-field :offset-type-cxx-identifier "ctype_unsigned_long"
+                :fixup-ctype-offset-type-key "unsigned long" :fixup-ctype-key "gctools::Ephemeron"
+                :layout-offset-field-names ("_key")}
+{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::smart_ptr<core::T_O>"
+                :fixup-ctype-key "gctools::Ephemeron" :layout-offset-field-names ("_value")}
+{class-kind :stamp-name "STAMPWTAG_core__StrongMapping_O" :stamp-key "core::StrongMapping_O"
+            :parent-class "core::Mapping_O" :lisp-class-base "core::Mapping_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{variable-array0 :offset-base-ctype "core::StrongMapping_O"
+                 :field-names ("_Mapping" "._Data" "._Data")}
+{variable-capacity :ctype "gctools::KVPair" :offset-base-ctype "core::StrongMapping_O"
+                   :length-field-names ("_Mapping" "._Data" "._MaybeSignedLength")
+                   :end-field-names ("_Mapping" "._Data" "._MaybeSignedLength")}
+{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::smart_ptr<core::T_O>"
+                :fixup-ctype-key "gctools::KVPair" :layout-offset-field-names ("key")}
+{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::smart_ptr<core::T_O>"
+                :fixup-ctype-key "gctools::KVPair" :layout-offset-field-names ("value")}
 {class-kind :stamp-name "STAMPWTAG_core__RandomState_O" :stamp-key "core::RandomState_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -4874,10 +4907,9 @@
              :offset-base-ctype "core::HashTable_O" :layout-offset-field-names ("_RehashSize")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "core::HashTable_O" :layout-offset-field-names ("_RehashThreshold")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<core::KeyValuePair>>"
-             :offset-base-ctype "core::HashTable_O"
-             :layout-offset-field-names ("_Table" "._Vector" "._Contents")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
+             :offset-base-ctype "core::HashTable_O" :layout-offset-field-names ("_Table")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "core::HashTable_O" :layout-offset-field-names ("_HashTableCount")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -4893,10 +4925,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "core::HashTableEqualp_O"
              :layout-offset-field-names ("_RehashThreshold")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<core::KeyValuePair>>"
-             :offset-base-ctype "core::HashTableEqualp_O"
-             :layout-offset-field-names ("_Table" "._Vector" "._Contents")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
+             :offset-base-ctype "core::HashTableEqualp_O" :layout-offset-field-names ("_Table")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "core::HashTableEqualp_O"
              :layout-offset-field-names ("_HashTableCount")}
@@ -4912,10 +4943,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "core::HashTableEq_O"
              :layout-offset-field-names ("_RehashThreshold")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<core::KeyValuePair>>"
-             :offset-base-ctype "core::HashTableEq_O"
-             :layout-offset-field-names ("_Table" "._Vector" "._Contents")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
+             :offset-base-ctype "core::HashTableEq_O" :layout-offset-field-names ("_Table")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "core::HashTableEq_O"
              :layout-offset-field-names ("_HashTableCount")}
@@ -4931,10 +4961,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "core::HashTableEql_O"
              :layout-offset-field-names ("_RehashThreshold")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<core::KeyValuePair>>"
-             :offset-base-ctype "core::HashTableEql_O"
-             :layout-offset-field-names ("_Table" "._Vector" "._Contents")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
+             :offset-base-ctype "core::HashTableEql_O" :layout-offset-field-names ("_Table")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "core::HashTableEql_O"
              :layout-offset-field-names ("_HashTableCount")}
@@ -4950,10 +4979,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "core::HashTableEqual_O"
              :layout-offset-field-names ("_RehashThreshold")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<core::KeyValuePair>>"
-             :offset-base-ctype "core::HashTableEqual_O"
-             :layout-offset-field-names ("_Table" "._Vector" "._Contents")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
+             :offset-base-ctype "core::HashTableEqual_O" :layout-offset-field-names ("_Table")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "core::HashTableEqual_O"
              :layout-offset-field-names ("_HashTableCount")}
@@ -4970,10 +4998,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "core::HashTableCustom_O"
              :layout-offset-field-names ("_RehashThreshold")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<core::KeyValuePair>>"
-             :offset-base-ctype "core::HashTableCustom_O"
-             :layout-offset-field-names ("_Table" "._Vector" "._Contents")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
+             :offset-base-ctype "core::HashTableCustom_O" :layout-offset-field-names ("_Table")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "core::HashTableCustom_O"
              :layout-offset-field-names ("_HashTableCount")}
@@ -6095,6 +6122,22 @@
                    :length-field-names ("_MaybeSignedLength")
                    :end-field-names ("_MaybeSignedLength")}
 {variable-field-only :offset-type-cxx-identifier "ctype_signed_char" :fixup-type "signed char"}
+{container-kind :stamp-name "STAMPWTAG_gctools__GCArray_moveable_gctools__Ephemeron_"
+                :stamp-key "gctools::GCArray_moveable<gctools::Ephemeron>"
+                :parent-class "gctools::GCContainer" :lisp-class-base nil
+                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
+{variable-array0 :offset-base-ctype "gctools::GCArray_moveable<gctools::Ephemeron>"
+                 :field-names ("_Data")}
+{variable-capacity :ctype "gctools::Ephemeron"
+                   :offset-base-ctype "gctools::GCArray_moveable<gctools::Ephemeron>"
+                   :length-field-names ("_MaybeSignedLength")
+                   :end-field-names ("_MaybeSignedLength")}
+{variable-field :offset-type-cxx-identifier "ctype_unsigned_long"
+                :fixup-ctype-offset-type-key "unsigned long" :fixup-ctype-key "gctools::Ephemeron"
+                :layout-offset-field-names ("_key")}
+{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::smart_ptr<core::T_O>"
+                :fixup-ctype-key "gctools::Ephemeron" :layout-offset-field-names ("_value")}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___"
                 :stamp-key "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -6123,21 +6166,6 @@
                    :length-field-names ("_MaybeSignedLength")
                    :end-field-names ("_MaybeSignedLength")}
 {variable-field-only :offset-type-cxx-identifier "ctype_unsigned_char" :fixup-type "unsigned char"}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_"
-                :stamp-key "gctools::GCVector_moveable<core::KeyValuePair>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<core::KeyValuePair>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "core::KeyValuePair"
-                   :offset-base-ctype "gctools::GCVector_moveable<core::KeyValuePair>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<core::T_O>"
-                :fixup-ctype-key "core::KeyValuePair" :layout-offset-field-names ("_Key")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<core::T_O>"
-                :fixup-ctype-key "core::KeyValuePair" :layout-offset-field-names ("_Value")}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__"
                 :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -6349,6 +6377,22 @@
                    :length-field-names ("_MaybeSignedLength")
                    :end-field-names ("_MaybeSignedLength")}
 {variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
+{container-kind :stamp-name "STAMPWTAG_gctools__GCArray_moveable_gctools__KVPair_"
+                :stamp-key "gctools::GCArray_moveable<gctools::KVPair>"
+                :parent-class "gctools::GCContainer" :lisp-class-base nil
+                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
+{variable-array0 :offset-base-ctype "gctools::GCArray_moveable<gctools::KVPair>"
+                 :field-names ("_Data")}
+{variable-capacity :ctype "gctools::KVPair"
+                   :offset-base-ctype "gctools::GCArray_moveable<gctools::KVPair>"
+                   :length-field-names ("_MaybeSignedLength")
+                   :end-field-names ("_MaybeSignedLength")}
+{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::smart_ptr<core::T_O>"
+                :fixup-ctype-key "gctools::KVPair" :layout-offset-field-names ("key")}
+{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::smart_ptr<core::T_O>"
+                :fixup-ctype-key "gctools::KVPair" :layout-offset-field-names ("value")}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___"
                 :stamp-key "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil

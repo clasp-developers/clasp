@@ -403,34 +403,59 @@ Ephemeron::Ephemeron(core::T_sp k, core::T_sp v)
   }
 }
 
-void* Ephemeron::key_helper(void* data) {
-  result_helper_s* rhsp = (result_helper_s*)data;
-  if (rhsp->eph->_key) // not splatted
-    rhsp->result.emplace((Tagged)GC_REVEAL_POINTER(rhsp->eph->_key));
-  return nullptr;
+void Ephemeron::reinit(core::T_sp k, core::T_sp v) {
+  if (k.objectp()) {
+    // These will implicitly undo any previously registered
+    // disappearing link, according to Boehm docs.
+    // We undo the old registrations first so that it is not possible
+    // for the new _key to get wiped by the old key being collected,
+    // in the brief window before the _value is also put in.
+    // But FIXME: Do we need to put in a fence or something to ensure
+    // the key stays alive within reinit?
+    GC_general_register_disappearing_link((void**)&_key, &*k);
+    GC_general_register_disappearing_link((void**)&_value, &*k);
+  } else {
+    GC_unregister_disappearing_link((void**)&_key);
+    GC_unregister_disappearing_link((void**)&_value);
+  }
+  _value = v;
+  _key = GC_HIDE_POINTER(k.tagged_());
 }
-void* Ephemeron::value_helper(void* data) {
+
+void* Ephemeron::get_helper(void* data) {
   result_helper_s* rhsp = (result_helper_s*)data;
-  if (rhsp->eph->_value)
-    rhsp->result.emplace(rhsp->eph->_value);
+  if (rhsp->eph->_key) { // not splatted
+    rhsp->result.key = core::T_sp((Tagged)GC_REVEAL_POINTER(rhsp->eph->_key));
+    rhsp->result.value = rhsp->eph->_value;
+  } else {
+    rhsp->result.key = rhsp->result.value = deleted<core::T_O>();
+  }
   return nullptr;
 }
 
-std::optional<core::T_sp> Ephemeron::key() const {
+KVPair Ephemeron::get() const {
   result_helper_s rhs(this);
   // same TODO with GC_call_with_reader_lock.
-  GC_call_with_alloc_lock(key_helper, &rhs);
-  return rhs.result;
-}
-std::optional<core::T_sp> Ephemeron::value() const {
-  result_helper_s rhs(this);
-  GC_call_with_alloc_lock(value_helper, &rhs);
+  GC_call_with_alloc_lock(get_helper, &rhs);
   return rhs.result;
 }
 #else // not-actually-weak ephemeron default - FIXME for your GC!
 Ephemeron::Ephemeron(core::T_sp key, core::T_sp value) : _key(key), _value(value) {}
 
-std::optional<core::T_sp> Ephemeron::key() const { return _key; }
-std::optional<core::T_sp> Ephemeron::value() const { return _value; }
+void Ephemeron::reinit(core::T_sp k, core::T_sp v) {
+  _key = k; _value = v;
+}
+
+KVPair Ephemeron::get() const { return KVPair(_key, _value); }
 #endif
+
+// Clang says this definition has to be out-of-line. Sure whatever.
+const KVPair StrongMapping::initKV = {.key = core::T_sp(tag_no_key<Tagged>()),
+    .value = core::T_sp(tag_no_key<Tagged>())};
+
+// note that Ephemeron's constructor doesn't have to do anything
+// interesting for non-objects, so we shouldn't need to worry about
+// static constructor ordering.
+const Ephemeron EphemeronMapping::initEph{no_key<core::T_O>(), no_key<core::T_O>()};
+
 } // namespace gctools

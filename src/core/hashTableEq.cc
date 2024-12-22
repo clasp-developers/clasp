@@ -35,10 +35,12 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
+HashTableEq_sp HashTableEq_O::create(Mapping_sp mapping, Number_sp rehashSize, double rehashThreshold) {
+  return gctools::GC<HashTableEq_O>::allocate(mapping, rehashSize, rehashThreshold);
+}
+
 HashTableEq_sp HashTableEq_O::create(uint sz, Number_sp rehashSize, double rehashThreshold) {
-  auto hashTable = gctools::GC<HashTableEq_O>::allocate_with_default_constructor();
-  hashTable->setup(sz, rehashSize, rehashThreshold);
-  return hashTable;
+  return create(StrongMapping_O::make(sz), rehashSize, rehashThreshold);
 }
 
 HashTableEq_sp HashTableEq_O::create(uint sz) {
