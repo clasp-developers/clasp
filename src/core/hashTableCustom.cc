@@ -36,13 +36,13 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
+HashTableCustom_sp HashTableCustom_O::create(Mapping_sp mapping, Number_sp rehashSize, double rehashThreshold, Function_sp comparator, Function_sp hasher) {
+  return gctools::GC<HashTableCustom_O>::allocate(mapping, rehashSize, rehashThreshold, comparator, hasher);
+}
+
 HashTableCustom_sp HashTableCustom_O::create(uint sz, Number_sp rehashSize, double rehashThreshold, Function_sp comparator,
                                              Function_sp hasher) {
-  auto hashTable = gctools::GC<HashTableCustom_O>::allocate_with_default_constructor();
-  hashTable->setup(sz, rehashSize, rehashThreshold);
-  hashTable->comparator = comparator;
-  hashTable->hasher = hasher;
-  return hashTable;
+  return create(StrongMapping_O::make(sz), rehashSize, rehashThreshold, comparator, hasher);
 }
 
 bool HashTableCustom_O::keyTest(T_sp entryKey, T_sp searchKey) const {

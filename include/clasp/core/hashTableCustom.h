@@ -37,8 +37,12 @@ FORWARD(HashTableCustom);
 class HashTableCustom_O : public HashTable_O {
   LISP_CLASS(core, CorePkg, HashTableCustom_O, "HashTableCustom", HashTable_O);
   DEFAULT_CTOR_DTOR(HashTableCustom_O);
+  HashTableCustom_O(Mapping_sp map, Number_sp rhsize, double rhthresh, Function_sp ncomparator, Function_sp nhasher)
+    : HashTable_O(map, rhsize, rhthresh),
+      comparator(ncomparator), hasher(nhasher) {}
 
 public:
+  static HashTableCustom_sp create(Mapping_sp, Number_sp, double, Function_sp, Function_sp);
   static HashTableCustom_sp create(uint sz, Number_sp rehashSize, double rehashThreshold, Function_sp comparator,
                                    Function_sp hasher);
 

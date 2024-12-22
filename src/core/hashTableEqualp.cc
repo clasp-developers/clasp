@@ -35,15 +35,17 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
+HashTableEqualp_sp HashTableEqualp_O::create(Mapping_sp mapping, Number_sp rehashSize, double rehashThreshold) {
+  return gctools::GC<HashTableEqualp_O>::allocate(mapping, rehashSize, rehashThreshold);
+}
+
 HashTableEqualp_sp HashTableEqualp_O::create(uint sz, Number_sp rehashSize, double rehashThreshold) {
-  auto hashTable = gctools::GC<HashTableEqualp_O>::allocate_with_default_constructor();
-  hashTable->setup(sz, rehashSize, rehashThreshold);
-  return hashTable;
+  return create(StrongMapping_O::make(sz), rehashSize, rehashThreshold);
 }
 
 HashTableEqualp_sp HashTableEqualp_O::create_default() {
   DoubleFloat_sp rhs = DoubleFloat_O::create(2.0);
-  HashTableEqualp_sp ht = HashTableEqualp_O::create(16, rhs, DEFAULT_REHASH_THRESHOLD);
+  HashTableEqualp_sp ht = create(16, rhs, DEFAULT_REHASH_THRESHOLD);
   return ht;
 }
 

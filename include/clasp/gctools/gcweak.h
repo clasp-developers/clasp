@@ -407,6 +407,12 @@ private:
 #endif // lacking real support, we have not-actually-weak pointers.
 };
 
+// Used below in hash maps and ephemerons.
+struct KVPair {
+  core::T_sp key;
+  core::T_sp value;
+};
+
 // On Boehm this is not a real ephemeron - it's a weak pointer to the key,
 // and a strong pointer to the value that happens to get wiped with the key.
 // To see the difference, imagine having two inverse ephemerons {V1, V2} and
@@ -425,8 +431,23 @@ private:
 struct Ephemeron {
 public:
   Ephemeron(core::T_sp key, core::T_sp value);
-  std::optional<core::T_sp> key() const;
-  std::optional<core::T_sp> value() const;
+  // If the ephemeron is valid, return its key and value.
+  // Otherwise return (deleted, deleted).
+  KVPair get() const;
+  std::optional<core::T_sp> key() const {
+    auto p = get();
+    if (p.key.deletedp()) return std::nullopt;
+    else return p.key;
+  }
+  std::optional<core::T_sp> value() const {
+    auto p = get();
+    if (p.key.deletedp()) return std::nullopt;
+    else return p.value;
+  }
+  // Caller must ensure that the key is otherwise live,
+  // or else the value could remain while the key dies (memory leak)
+  void setValue(core::T_sp v) { _value = v; }
+  void reinit(core::T_sp k, core::T_sp v);
 public:
 #ifdef USE_BOEHM
   GC_hidden_pointer _key;
@@ -437,13 +458,59 @@ public:
 #ifdef USE_BOEHM
 private:
   struct result_helper_s {
-    result_helper_s(const Ephemeron* e) : eph(e), result() {}
+    result_helper_s(const Ephemeron* e) : eph(e) {}
     const Ephemeron* eph;
-    std::optional<core::T_sp> result;
+    KVPair result;
   };
-  static void* key_helper(void*);
-  static void* value_helper(void*);
+  static void* get_helper(void*);
 #endif
+};
+
+// These Mapping objects are used in hash tables.
+
+// A strong mapping isn't weak at all, obviously, but
+// this is the degenerate case.
+struct StrongMapping {
+public:
+  typedef GCArray_moveable<KVPair> vector_type;
+  // for e.g. sizeof_container
+  typedef typename vector_type::value_type value_type;
+private:
+  static const KVPair initKV;
+public:
+  StrongMapping(size_t size) : _Data(size, initKV) {}
+public:
+  vector_type _Data;
+public:
+  size_t size() const { return _Data.length(); }
+  KVPair get(size_t i) const { return _Data[i]; }
+  void setValue(size_t i, core::T_sp v) { _Data[i].value = v; }
+  void newEntry(size_t i, core::T_sp k, core::T_sp v) {
+    _Data[i].key = k;
+    _Data[i].value = v;
+  }
+  void remove(size_t i) {
+    _Data[i].key = core::T_sp(tag_deleted<Tagged>());
+    _Data[i].value = core::T_sp(tag_deleted<Tagged>());
+  }
+};
+
+struct EphemeronMapping {
+public:
+  typedef GCArray_moveable<Ephemeron> vector_type;
+  typedef typename vector_type::value_type value_type;
+private:
+  static const Ephemeron initEph;
+public:
+  EphemeronMapping(size_t size) : _Data(size, initEph) {}
+public:
+  vector_type _Data;
+public:
+  size_t size() const { return _Data.length(); }
+  KVPair get(size_t i) const { return _Data[i].get(); }
+  void setValue(size_t i, core::T_sp v) { _Data[i].setValue(v); }
+  void newEntry(size_t i, core::T_sp k, core::T_sp v) { _Data[i].reinit(k, v); }
+  void remove(size_t i) { _Data[i].reinit(deleted<core::T_O>(), deleted<core::T_O>()); }
 };
 
 }; // namespace gctools
