@@ -51,12 +51,33 @@ FORWARD(Mapping);
 class Mapping_O : public General_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, Mapping_O, "Mapping", General_O);
 public:
+  // This count is increased by newEntry and decreased by remove.
+  // It is therefore an exact count for strong mappings but potentially
+  // an undercount for weak mappings, for which the GC may delete an
+  // entry without decrementing this count. It is maintained anyway so
+  // that the hash table can decide to rehash based on an easily
+  // accessible count rather than having to iterate over the whole mapping.
+  // This means weak tables may be rehashed "early", but there's no harm
+  // done, and the count is reset to the exact count on rehash so error
+  // can't accumulate indefinitely.
+  size_t _Count = 0;
+public:
   virtual size_t size() const = 0;
+  virtual size_t count() const = 0; // exact
+  size_t countInexact() const { return _Count; }
   virtual Mapping_sp realloc(size_t) const = 0;
   virtual gctools::KVPair get(size_t) const = 0;
   virtual void setValue(size_t, T_sp) = 0;
   virtual void newEntry(size_t, T_sp, T_sp) = 0;
   virtual void remove(size_t) = 0;
+  size_t computeCount() const {
+    size_t count = 0, sz = size();
+    for (size_t i = 0; i < sz; ++i) {
+      auto p = get(i);
+      if (!p.key.no_keyp() && !p.key.deletedp()) ++count;
+    }
+    return count;
+  }
 };
 
 FORWARD(StrongMapping);
@@ -72,11 +93,18 @@ public:
   gctools::StrongMapping _Mapping;
 public:
   virtual size_t size() const { return _Mapping.size(); }
+  virtual size_t count() const { return _Count; }
   virtual Mapping_sp realloc(size_t sz) const { return make(sz); }
   virtual gctools::KVPair get(size_t i) const { return _Mapping.get(i); }
   virtual void setValue(size_t i, T_sp v) { _Mapping.setValue(i, v); }
-  virtual void newEntry(size_t i, T_sp k, T_sp v) { _Mapping.newEntry(i, k, v); }
-  virtual void remove(size_t i) { _Mapping.remove(i); }
+  virtual void newEntry(size_t i, T_sp k, T_sp v) {
+    _Mapping.newEntry(i, k, v);
+    _Count++;
+  }
+  virtual void remove(size_t i) {
+    _Mapping.remove(i);
+    _Count--;
+  }
 };
 
 FORWARD(WeakKeyMapping);
@@ -92,11 +120,12 @@ public:
   gctools::EphemeronMapping _Mapping;
 public:
   virtual size_t size() const { return _Mapping.size(); }
+  virtual size_t count() const { return computeCount(); }
   virtual Mapping_sp realloc(size_t sz) const { return make(sz); }
   virtual gctools::KVPair get(size_t i) const { return _Mapping.get(i); }
   virtual void setValue(size_t i, T_sp v) { _Mapping.setValue(i, v); }
-  virtual void newEntry(size_t i, T_sp k, T_sp v) { _Mapping.newEntry(i, k, v); }
-  virtual void remove(size_t i) { _Mapping.remove(i); }
+  virtual void newEntry(size_t i, T_sp k, T_sp v) { ++_Count; _Mapping.newEntry(i, k, v); }
+  virtual void remove(size_t i) { --_Count; _Mapping.remove(i); }
 };
 
 FORWARD(HashTable);
@@ -111,12 +140,12 @@ class HashTable_O : public HashTableBase_O {
 
   friend T_sp cl__maphash(T_sp function_desig, T_sp hash_table);
   HashTable_O()
-      : _RehashSize(nil<Number_O>()), _RehashThreshold(maybeFixRehashThreshold(0.7)), _HashTableCount(0)
+      : _RehashSize(nil<Number_O>()), _RehashThreshold(maybeFixRehashThreshold(0.7))
                            {};
   HashTable_O(Mapping_sp mapping,
               Number_sp rehashSize, double rehashThreshold)
     : _RehashSize(rehashSize), _RehashThreshold(maybeFixRehashThreshold(rehashThreshold)),
-      _Table(mapping), _HashTableCount(0) {}
+      _Table(mapping) {}
   friend T_sp cl__maphash(T_sp function_desig, HashTable_sp hash_table);
   friend T_sp cl__clrhash(HashTable_sp hash_table);
 
@@ -124,7 +153,6 @@ public: // instance variables here
   Number_sp _RehashSize;
   double _RehashThreshold;
   Mapping_sp _Table;
-  size_t _HashTableCount;
 #ifdef CLASP_THREADS
   mutable mp::SharedMutex_sp _Mutex;
 #endif
@@ -149,6 +177,9 @@ private:
   gc::Fixnum sxhashKey(T_sp key) const; // NOTE: Only call with (read) lock held
 
   std::optional<size_t> searchTable_no_read_lock(T_sp key, cl_index index);
+  inline size_t count_no_lock() const {
+    return _Table->count();
+  }
 
 protected:
   virtual void sxhashEffect(T_sp key, HashGenerator& hg) const { SUBIMP() };

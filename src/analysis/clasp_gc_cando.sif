@@ -5910,8 +5910,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
              :offset-base-ctype "core::HashTable_O" :layout-offset-field-names ("_Table")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
-             :offset-base-ctype "core::HashTable_O" :layout-offset-field-names ("_HashTableCount")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<mp::SharedMutex_O>"
              :offset-base-ctype "core::HashTable_O" :layout-offset-field-names ("_Mutex")}
@@ -5928,9 +5926,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
              :offset-base-ctype "core::HashTableEqualp_O" :layout-offset-field-names ("_Table")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
-             :offset-base-ctype "core::HashTableEqualp_O"
-             :layout-offset-field-names ("_HashTableCount")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<mp::SharedMutex_O>"
              :offset-base-ctype "core::HashTableEqualp_O" :layout-offset-field-names ("_Mutex")}
@@ -5946,9 +5941,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
              :offset-base-ctype "core::HashTableEq_O" :layout-offset-field-names ("_Table")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
-             :offset-base-ctype "core::HashTableEq_O"
-             :layout-offset-field-names ("_HashTableCount")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<mp::SharedMutex_O>"
              :offset-base-ctype "core::HashTableEq_O" :layout-offset-field-names ("_Mutex")}
@@ -5964,9 +5956,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
              :offset-base-ctype "core::HashTableEqual_O" :layout-offset-field-names ("_Table")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
-             :offset-base-ctype "core::HashTableEqual_O"
-             :layout-offset-field-names ("_HashTableCount")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<mp::SharedMutex_O>"
              :offset-base-ctype "core::HashTableEqual_O" :layout-offset-field-names ("_Mutex")}
@@ -5983,9 +5972,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
              :offset-base-ctype "core::HashTableCustom_O" :layout-offset-field-names ("_Table")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
-             :offset-base-ctype "core::HashTableCustom_O"
-             :layout-offset-field-names ("_HashTableCount")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<mp::SharedMutex_O>"
              :offset-base-ctype "core::HashTableCustom_O" :layout-offset-field-names ("_Mutex")}
@@ -6007,9 +5993,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
              :offset-base-ctype "core::HashTableEql_O" :layout-offset-field-names ("_Table")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
-             :offset-base-ctype "core::HashTableEql_O"
-             :layout-offset-field-names ("_HashTableCount")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<mp::SharedMutex_O>"
              :offset-base-ctype "core::HashTableEql_O" :layout-offset-field-names ("_Mutex")}
@@ -9900,9 +9883,13 @@
 {class-kind :stamp-name "STAMPWTAG_core__Mapping_O" :stamp-key "core::Mapping_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::Mapping_O" :layout-offset-field-names ("_Count")}
 {class-kind :stamp-name "STAMPWTAG_core__WeakKeyMapping_O" :stamp-key "core::WeakKeyMapping_O"
             :parent-class "core::Mapping_O" :lisp-class-base "core::Mapping_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::WeakKeyMapping_O" :layout-offset-field-names ("_Count")}
 {variable-array0 :offset-base-ctype "core::WeakKeyMapping_O"
                  :field-names ("_Mapping" "._Data" "._Data")}
 {variable-capacity :ctype "gctools::Ephemeron" :offset-base-ctype "core::WeakKeyMapping_O"
@@ -9917,6 +9904,8 @@
 {class-kind :stamp-name "STAMPWTAG_core__StrongMapping_O" :stamp-key "core::StrongMapping_O"
             :parent-class "core::Mapping_O" :lisp-class-base "core::Mapping_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::StrongMapping_O" :layout-offset-field-names ("_Count")}
 {variable-array0 :offset-base-ctype "core::StrongMapping_O"
                  :field-names ("_Mapping" "._Data" "._Data")}
 {variable-capacity :ctype "gctools::KVPair" :offset-base-ctype "core::StrongMapping_O"

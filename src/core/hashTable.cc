@@ -142,7 +142,7 @@ struct HashTableWriteLock {
 Vector_sp HashTable_O::pairs() const {
   // FIXME: use maphash for this, but without the overhead of a std::function
   HT_READ_LOCK(this);
-  SimpleVector_sp keyvalues = SimpleVector_O::make(_HashTableCount * 2);
+  SimpleVector_sp keyvalues = SimpleVector_O::make(_Table->count() * 2);
   size_t idx(0);
   for (size_t it(0), itEnd(_Table->size()); it < itEnd; ++it) {
     auto pair = _Table->get(it);
@@ -333,7 +333,6 @@ CL_DEFUN bool cl__remhash(T_sp key, HashTableBase_sp ht) { return ht->remhash(ke
 
 T_sp HashTable_O::clrhash() {
   HT_WRITE_LOCK(this);
-  this->_HashTableCount = 0;
   this->_Table = this->_Table->realloc(16);
   return this->asSmartPtr();
 }
@@ -407,7 +406,6 @@ void HashTable_O::fields(Record_sp node) {
 uint HashTable_O::resizeEmptyTable_no_lock(size_t sz) {
   if (sz < 16)
     sz = 16;
-  this->_HashTableCount = 0;
   this->_Table = this->_Table->realloc(sz);
   return sz;
 }
@@ -420,13 +418,12 @@ CL_DEFUN uint cl__hash_table_count(HashTableBase_sp ht) { return ht->hashTableCo
 
 size_t HashTable_O::hashTableCount() const {
   HT_READ_LOCK(this);
-  return this->_HashTableCount;
+  return _Table->count();
 }
 
 uint HashTable_O::calculateHashTableCount() const {
-  uint cnt = 0;
-  HASH_TABLE_ITER(this, _k, _v) { ++cnt; } HASH_TABLE_ITER_END;
-  return cnt;
+  HT_READ_LOCK(this);
+  return _Table->computeCount();
 }
 
 CL_LAMBDA(arg);
@@ -526,7 +523,6 @@ bool HashTable_O::remhash(T_sp key) {
   auto found = this->searchTable_no_read_lock(key, index);
   if (found) {
     _Table->remove(*found);
-    this->_HashTableCount--;
     return true;
   }
   return false;
@@ -564,9 +560,8 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value) {
   goto NO_ROOM;
 ADD_KEY_VALUE:
   _Table->newEntry(write, key, value);
-  this->_HashTableCount++;
   DEBUG_HASH_TABLE({ core::clasp_write_string(fmt::format("{}:{} Found empty slot at index = {}\n", __FILE__, __LINE__, write)); });
-  if (this->_HashTableCount > this->_RehashThreshold * this->_Table->size()) {
+  if (_Table->countInexact() > this->_RehashThreshold * this->_Table->size()) {
     LOG("Expanding hash table");
     this->rehash_no_lock(true);
   }
@@ -580,7 +575,7 @@ NO_ROOM:
   //
   printf("%s:%d There is absolutely no room in the hash-table _RehashThreshold = %lf - _HashTableCount -> %lu size -> %lu "
          "increasing size\n",
-         __FILE__, __LINE__, this->_RehashThreshold, this->_HashTableCount, this->_Table->size());
+         __FILE__, __LINE__, this->_RehashThreshold, this->hashTableCount(), this->_Table->size());
   this->rehash_no_lock(true);
   return this->setf_gethash_no_write_lock(key, value);
   // ------------
@@ -639,7 +634,7 @@ void HashTable_O::rehash(bool expandTable) {
 string HashTable_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->_classNameAsString();
-  ss << " :COUNT " << this->_HashTableCount;
+  ss << " :COUNT " << this->hashTableCount();
   // the calculator is only useful to check that the count is consistent;
   // uncomment this if you need to debug, but otherwise it's redundant.
   //    ss << " :calculated-entries " << this->calculateHashTableCount();
