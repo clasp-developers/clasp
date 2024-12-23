@@ -7,6 +7,10 @@
             codegen-startup-shutdown
             jit-startup-shutdown-function-names
             irc-simple-function-create
+            find-intrinsic-name
+            +intrinsic/llvm.eh.typeid.for.p0+
+            +intrinsic/llvm.stacksave.p0+
+            +intrinsic/llvm.stackrestore.p0+
             *primitives*
             primitive-argument-types
             primitive-varargs

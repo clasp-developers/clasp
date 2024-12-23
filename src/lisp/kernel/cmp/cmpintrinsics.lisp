@@ -1242,3 +1242,16 @@ is dumped to a file before the block and after the block."
         (format t "~a Function ~a~%" num-instructions func)))
     (format t "~a total~%" total)))
 
+(defun find-intrinsic-name (&rest names)
+  (dolist (name names (error "Unable to find a valid intrinsic from ~s" names))
+    (unless (zerop (llvm-sys:lookup-intrinsic-id name))
+      (return name))))
+
+(defvar +intrinsic/llvm.eh.typeid.for.p0+
+  (find-intrinsic-name "llvm.eh.typeid.for.p0" "llvm.eh.typeid.for"))
+
+(defvar +intrinsic/llvm.stacksave.p0+
+  (find-intrinsic-name "llvm.stacksave.p0" "llvm.stacksave"))
+
+(defvar +intrinsic/llvm.stackrestore.p0+
+  (find-intrinsic-name "llvm.stackrestore.p0" "llvm.stackrestore"))
