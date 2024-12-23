@@ -286,7 +286,7 @@ public:
     T_sp _TerminalIO;
     List_sp _ActiveThreads;
     List_sp _DefaultSpecialBindings;
-    WeakKeyHashTable_sp _Finalizers;
+    HashTable_sp _Finalizers;
     HashTable_sp _Sysprop;
     HashTable_sp _ClassTable;
     CharacterInfo charInfo; // Contains GC managed pointers

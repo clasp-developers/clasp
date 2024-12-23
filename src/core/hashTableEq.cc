@@ -39,6 +39,10 @@ HashTableEq_sp HashTableEq_O::create(Mapping_sp mapping, Number_sp rehashSize, d
   return gctools::GC<HashTableEq_O>::allocate(mapping, rehashSize, rehashThreshold);
 }
 
+HashTableEq_sp HashTableEq_O::create(Mapping_sp mapping) {
+  return create(mapping, SingleFloat_dummy_O::create(2.0), DEFAULT_REHASH_THRESHOLD);
+}
+
 HashTableEq_sp HashTableEq_O::create(uint sz, Number_sp rehashSize, double rehashThreshold) {
   return create(StrongMapping_O::make(sz), rehashSize, rehashThreshold);
 }

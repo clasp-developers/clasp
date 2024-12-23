@@ -12450,8 +12450,8 @@
              :offset-ctype "gctools::smart_ptr<core::List_V>" :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_Roots" "._DefaultSpecialBindings")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::WeakKeyHashTable_O>"
-             :offset-base-ctype "core::Lisp" :layout-offset-field-names ("_Roots" "._Finalizers")}
+             :offset-ctype "gctools::smart_ptr<core::HashTable_O>" :offset-base-ctype "core::Lisp"
+             :layout-offset-field-names ("_Roots" "._Finalizers")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::HashTable_O>" :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_Roots" "._Sysprop")}

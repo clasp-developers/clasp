@@ -486,7 +486,7 @@ namespace gctools {
 DOCGROUP(clasp);
 CL_DEFUN void gctools__finalize(core::T_sp object, core::Function_sp finalizer_callback) {
   WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
-  core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
+  core::HashTable_sp ht = _lisp->_Roots._Finalizers;
   core::List_sp orig_finalizers = ht->gethash(object, nil<core::T_O>());
   core::List_sp finalizers = core::Cons_O::create(finalizer_callback, orig_finalizers);
   ht->hash_table_setf_gethash(object, finalizers);
@@ -497,7 +497,7 @@ CL_DEFUN void gctools__finalize(core::T_sp object, core::Function_sp finalizer_c
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp gctools__finalizers(core::T_sp object) {
   WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
-  core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
+  core::HashTable_sp ht = _lisp->_Roots._Finalizers;
   return ht->gethash(object, nil<core::T_O>());
 }
 
@@ -509,7 +509,7 @@ CL_DEFUN void gctools__invoke_finalizers() {
 DOCGROUP(clasp);
 CL_DEFUN void gctools__definalize(core::T_sp object) {
   WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
-  core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
+  core::HashTable_sp ht = _lisp->_Roots._Finalizers;
   if (ht->gethash(object))
     ht->remhash(object);
   clear_finalizer_list(object);

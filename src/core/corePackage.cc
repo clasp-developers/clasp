@@ -657,7 +657,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARterminate_hooksSTAR->defparameter(nil<T_O>());
   SimpleBaseString_sp sbsr1 = SimpleBaseString_O::make("SYSPMNR");
   SimpleBaseString_sp sbsw1 = SimpleBaseString_O::make("SYSPMNW");
-  _lisp->_Roots._Finalizers = WeakKeyHashTable_O::create();
+  _lisp->_Roots._Finalizers = HashTable_O::createEqWeakKey();
   _lisp->_Roots._Sysprop = HashTable_O::create_thread_safe(cl::_sym_eql, sbsr1, sbsw1);
   _sym_STARdebug_accessorsSTAR->defparameter(nil<T_O>());
   std::list<string> nicknames;

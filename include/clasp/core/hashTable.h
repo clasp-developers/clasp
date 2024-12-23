@@ -159,6 +159,7 @@ public: // instance variables here
 public:
   static HashTable_sp create(T_sp test); // set everything up with defaults
   static HashTable_sp createEq(size_t sz = 8);
+  static HashTable_sp createEqWeakKey(size_t sz = 8);
   static HashTable_sp createEql();
   static HashTable_sp createEqual();
   static HashTable_sp createEqualp();

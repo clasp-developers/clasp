@@ -239,6 +239,7 @@ HashTable_sp HashTable_O::create(T_sp test) {
 }
 
 HashTable_sp HashTable_O::createEq(size_t sz) { return HashTableEq_O::create(sz); }
+HashTable_sp HashTable_O::createEqWeakKey(size_t sz) { return HashTableEq_O::create(WeakKeyMapping_O::make(sz)); }
 HashTable_sp HashTable_O::createEql() { return HashTableEql_O::create_default(); }
 HashTable_sp HashTable_O::createEqual() { return HashTableEqual_O::create_default(); }
 HashTable_sp HashTable_O::createEqualp() { return HashTableEqualp_O::create_default(); }

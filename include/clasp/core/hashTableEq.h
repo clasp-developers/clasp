@@ -41,6 +41,7 @@ class HashTableEq_O : public HashTable_O {
     : HashTable_O(map, rhsize, rhthresh) {}
 
 public:
+  static HashTableEq_sp create(Mapping_sp mapping);
   static HashTableEq_sp create(Mapping_sp mapping, Number_sp rehashSize, double rehashThreshold);
   static HashTableEq_sp create(uint sz);
   static HashTableEq_sp create(uint sz, Number_sp rehashSize, double rehashThreshold);
