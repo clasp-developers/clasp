@@ -173,9 +173,9 @@ __attribute__((noinline))
 void Process_O::run(void* cold_end_of_stack) {
   gctools::ThreadLocalStateLowLevel thread_local_state_low_level(cold_end_of_stack);
   core::ThreadLocalState thread_local_state;
-  thread_local_state.startUpVM();
   my_thread_low_level = &thread_local_state_low_level;
   my_thread = &thread_local_state;
+  my_thread->startUpVM();
   my_thread->initialize_thread(this->asSmartPtr(), true);
   //  my_thread->create_sigaltstack();
   _ThreadInfo = my_thread;
