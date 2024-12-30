@@ -227,7 +227,6 @@ template <class T, class U> struct Buckets<T, U, WeakLinks> : public BucketsBase
         throw_hard_error("The link was not registered as a disappearing link!");
     }
     this->bucket[idx] = val;
-    GCTOOLS_ASSERT(val.objectp());
     // We need the base of the object that we want a weak pointer to...
     // general, cons and later weak objects have different header sizes
     void* base = NULL;
@@ -499,7 +498,6 @@ template <class T, class U> struct Mapping<T, U, WeakLinks> : public MappingBase
     GCTOOLS_ASSERT(this->bucket.objectp());
     if (!unboundOrDeletedOrSplatted(this->bucket)) {
       // printf("%s:%d Mapping register disappearing link\n", __FILE__, __LINE__);
-      GCTOOLS_ASSERT(val.objectp());
       GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket.rawRef_()),
                                             reinterpret_cast<void*>(this->bucket.rawRef_()));
     }
