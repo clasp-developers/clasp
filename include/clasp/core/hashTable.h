@@ -70,6 +70,7 @@ public:
   virtual void setValue(size_t, T_sp) = 0;
   virtual void newEntry(size_t, T_sp, T_sp) = 0;
   virtual void remove(size_t) = 0;
+  virtual Symbol_sp weakness() = 0;
   size_t computeCount() const {
     size_t count = 0, sz = size();
     for (size_t i = 0; i < sz; ++i) {
@@ -105,6 +106,7 @@ public:
     _Mapping.remove(i);
     _Count--;
   }
+  virtual Symbol_sp weakness() { return nil<Symbol_O>(); }
 };
 
 FORWARD(WeakKeyMapping);
@@ -126,6 +128,7 @@ public:
   virtual void setValue(size_t i, T_sp v) { _Mapping.setValue(i, v); }
   virtual void newEntry(size_t i, T_sp k, T_sp v) { ++_Count; _Mapping.newEntry(i, k, v); }
   virtual void remove(size_t i) { --_Count; _Mapping.remove(i); }
+  virtual Symbol_sp weakness() { return kw::_sym_key; }
 };
 
 FORWARD(HashTable);
@@ -206,6 +209,9 @@ public: // Functions here
   size_t hashTableCount() const override;
   size_t hashTableSize() const override;
   size_t size() { return this->hashTableCount(); };
+
+  // Return a symbol representing the weakness type.
+  Symbol_sp weakness() { return _Table->weakness(); }
 
   T_sp operator[](const std::string& key);
 

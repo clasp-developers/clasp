@@ -227,7 +227,7 @@ CL_DEFUN Symbol_sp core__hash_table_weakness(T_sp ht) {
   if (gc::IsA<WeakKeyHashTable_sp>(ht)) {
     return kw::_sym_key;
   }
-  return nil<Symbol_O>();
+  return ht.as<HashTable_O>()->weakness();
 }
 
 HashTable_sp HashTable_O::create(T_sp test) {
