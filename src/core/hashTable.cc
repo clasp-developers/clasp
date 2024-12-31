@@ -78,7 +78,6 @@ THE SOFTWARE.
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/designators.h>
-#include <clasp/core/weakHashTable.h>
 #include <clasp/core/wrappers.h>
 #ifdef CLASP_THREADS
 #ifdef _TARGET_OS_LINUX
@@ -155,14 +154,8 @@ Vector_sp HashTable_O::pairs() const {
 }
 
 DOCGROUP(clasp);
-CL_DEFUN Vector_sp core__hash_table_pairs(HashTableBase_sp hash_table_base) {
-  if (gc::IsA<HashTable_sp>(hash_table_base)) {
-    return hash_table_base.as_unsafe<HashTable_O>()->pairs();
-  } else if (gc::IsA<WeakKeyHashTable_sp>(hash_table_base)) {
-    WeakKeyHashTable_sp hash_table = gc::As_unsafe<WeakKeyHashTable_sp>(hash_table_base);
-    return hash_table->_HashTable.pairs();
-  }
-  TYPE_ERROR(hash_table_base, Cons_O::createList(cl::_sym_or, cl::_sym_HashTable_O, core::_sym_WeakKeyHashTable_O));
+CL_DEFUN Vector_sp core__hash_table_pairs(HashTable_sp hash_table) {
+  return hash_table->pairs();
 }
 
 // ----------------------------------------------------------------------
@@ -224,9 +217,6 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(hash_table_weakness)dx");
 DOCGROUP(clasp);
 CL_DEFUN Symbol_sp core__hash_table_weakness(T_sp ht) {
-  if (gc::IsA<WeakKeyHashTable_sp>(ht)) {
-    return kw::_sym_key;
-  }
   return ht.as<HashTable_O>()->weakness();
 }
 
@@ -283,7 +273,7 @@ CL_LAMBDA(function-desig hash-table);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(see CLHS)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__maphash(T_sp function_desig, HashTableBase_sp hash_table) {
+CL_DEFUN T_sp cl__maphash(T_sp function_desig, HashTable_sp hash_table) {
   if (hash_table.nilp()) {
     SIMPLE_ERROR("maphash called with nil hash-table");
   }
@@ -295,7 +285,7 @@ CL_LAMBDA(hash-table);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(See CLHS)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__clrhash(HashTableBase_sp hash_table) {
+CL_DEFUN T_sp cl__clrhash(HashTable_sp hash_table) {
   hash_table->clrhash();
   return hash_table;
 };
@@ -330,7 +320,7 @@ CL_LAMBDA(key hashtable);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(remhash)dx");
 DOCGROUP(clasp);
-CL_DEFUN bool cl__remhash(T_sp key, HashTableBase_sp ht) { return ht->remhash(key); };
+CL_DEFUN bool cl__remhash(T_sp key, HashTable_sp ht) { return ht->remhash(key); };
 
 T_sp HashTable_O::clrhash() {
   HT_WRITE_LOCK(this);
@@ -415,7 +405,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(hash-table-count)dx");
 DOCGROUP(clasp);
-CL_DEFUN uint cl__hash_table_count(HashTableBase_sp ht) { return ht->hashTableCount(); }
+CL_DEFUN uint cl__hash_table_count(HashTable_sp ht) { return ht->hashTableCount(); }
 
 size_t HashTable_O::hashTableCount() const {
   HT_READ_LOCK(this);
@@ -431,7 +421,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(hash-table-size)dx");
 DOCGROUP(clasp);
-CL_DEFUN uint cl__hash_table_size(HashTableBase_sp ht) { return ht->hashTableSize(); }
+CL_DEFUN uint cl__hash_table_size(HashTable_sp ht) { return ht->hashTableSize(); }
 
 T_sp HashTable_O::operator[](const std::string& key) {
   T_sp tkey = _lisp->internKeyword(key);
@@ -461,7 +451,7 @@ gc::Fixnum HashTable_O::sxhashKey(T_sp obj) const {
 CL_LAMBDA(key hash-table &optional default-value);
 CL_DOCSTRING(R"dx(gethash)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_mv cl__gethash(T_sp key, HashTableBase_sp hashTable, T_sp default_value) {
+CL_DEFUN T_mv cl__gethash(T_sp key, HashTable_sp hashTable, T_sp default_value) {
   return hashTable->gethash(key, default_value);
 };
 
@@ -593,7 +583,7 @@ T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
 CL_LISPIFY_NAME("gethash")
 CL_LAMBDA(new-value key hash-table &optional default);
 DOCGROUP(clasp);
-CL_DEFUN_SETF T_sp setf_gethash(T_sp value, T_sp key, HashTableBase_sp hash_table, T_sp default_value) {
+CL_DEFUN_SETF T_sp setf_gethash(T_sp value, T_sp key, HashTable_sp hash_table, T_sp default_value) {
   (void)default_value;
   return hash_table->hash_table_setf_gethash(key, value);
 }
@@ -697,19 +687,19 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(hash-table-rehash-size)dx");
 DOCGROUP(clasp);
-CL_DEFUN Number_sp cl__hash_table_rehash_size(HashTableBase_sp ht) { return ht->rehash_size(); };
+CL_DEFUN Number_sp cl__hash_table_rehash_size(HashTable_sp ht) { return ht->rehash_size(); };
 
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(hash-table-rehash-threshold)dx");
 DOCGROUP(clasp);
-CL_DEFUN double cl__hash_table_rehash_threshold(HashTableBase_sp ht) { return ht->rehash_threshold(); };
+CL_DEFUN double cl__hash_table_rehash_threshold(HashTable_sp ht) { return ht->rehash_threshold(); };
 
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(hash-table-test)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__hash_table_test(HashTableBase_sp ht) { return ht->hash_table_test(); };
+CL_DEFUN T_sp cl__hash_table_test(HashTable_sp ht) { return ht->hash_table_test(); };
 
 T_mv clasp_gethash_safe(T_sp key, T_sp thashTable, T_sp default_) {
   HashTable_sp hashTable = gc::As<HashTable_sp>(thashTable);

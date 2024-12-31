@@ -3396,32 +3396,8 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
             gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(weakHeader + 1);
             gctools::clasp_ptr_t clientEnd = clientStart + weakHeader->_Size;
             snapshot_save_load_init_s init(header, clientStart, clientEnd);
-            gctools::Header_s::WeakKinds kind = (gctools::Header_s::WeakKinds)header->_badge_stamp_wtag_mtag._value;
-            switch (kind) {
-            case gctools::Header_s::WeakBucketKind: {
-              auto obj = gctools::GCBucketAllocator<
-                  gctools::Buckets<core::T_sp, core::T_sp, gctools::WeakLinks>>::snapshot_save_load_allocate(&init);
-              gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
-              set_forwarding_pointer(header, ((char*)fwd), &islInfo);
-              DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu  fwd: %p\n") % (void*)obj.raw_() % (void*)header %
-                              (uintptr_t)kind % (void*)fwd);
-              root_holder.add((void*)obj.raw_());
-              break;
-            }
-            case gctools::Header_s::StrongBucketKind: {
-              auto obj = gctools::GCBucketAllocator<
-                  gctools::Buckets<core::T_sp, core::T_sp, gctools::StrongLinks>>::snapshot_save_load_allocate(&init);
-              gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
-              set_forwarding_pointer(header, ((char*)fwd), &islInfo);
-              DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu  fwd: %p\n") % (void*)obj.raw_() % (void*)header %
-                              (uintptr_t)kind % (void*)fwd);
-              root_holder.add((void*)obj.raw_());
-              break;
-            }
-            default:
-              printf("%s:%d:%s  Handle allocate weak objects\n", __FILE__, __LINE__, __FUNCTION__);
-              break;
-            }
+            printf("%s:%d:%s  Handle allocate weak objects\n", __FILE__, __LINE__, __FUNCTION__);
+            break;
           } else {
             printf("%s:%d:%s Unknown header at offset 0x%lx qword: 0x%lx\n", __FILE__, __LINE__, __FUNCTION__,
                    (uintptr_t)cur_header - (uintptr_t)fileHeader, *(uintptr_t*)cur_header);

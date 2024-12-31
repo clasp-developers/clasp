@@ -671,11 +671,7 @@ bool BaseHeader_s::preciseIsPolymorphic() const {
   } else if (this->_badge_stamp_wtag_mtag.consObjectP()) {
     return false;
   } else if (this->_badge_stamp_wtag_mtag.weakObjectP()) {
-    if (this->_badge_stamp_wtag_mtag._value == WeakBucketKind) {
-      return std::is_polymorphic<WeakBucketsObjectType>();
-    } else if (this->_badge_stamp_wtag_mtag._value == StrongBucketKind) {
-      return std::is_polymorphic<StrongBucketsObjectType>();
-    }
+    return false;
   }
   return false;
 }

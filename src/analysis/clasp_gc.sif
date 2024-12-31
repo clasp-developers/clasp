@@ -24,7 +24,7 @@
                           "core::Scope_O" "core::BytecodeDebugLocation_O" "llvmo::InsertPoint_O"
                           "core::FunctionDescription_O" "core::ComplexVector_double_O"
                           "core::StrWNs_O" "core::UnknownDynEnv_O" "core::EchoStream_O"
-                          "core::HashTableBase_O" "core::SimpleMDArrayBit_O" "core::MDArrayBit_O"
+                          "core::SimpleMDArrayBit_O" "core::MDArrayBit_O"
                           "core::ComplexVector_byte16_t_O" "comp::BlockInfo_O"
                           "llvmo::DILocalScope_O" "asttooling::DerivableFrontendActionFactory"
                           "comp::Label_O" "core::ComplexVector_int2_t_O" "llvmo::DILexicalBlock_O"
@@ -61,17 +61,17 @@
                           "core::MDArray_int8_t_O" "core::Ephemeron_O" "core::BytecodeDebugVar_O"
                           "llvmo::ConstantFP_O" "core::BlockDynEnv_O" "core::Cons_O"
                           "clbind::detail::vertex" "llvmo::LLVMContext_O" "core::MDArray_int4_t_O"
-                          "core::WeakKeyHashTable_O" "core::Rack_O" "core::MDArrayBaseChar_O"
-                          "core::UserData_O" "core::ExternalObject_O" "llvmo::DINode_O"
-                          "llvmo::GlobalVariable_O" "core::SimpleVector_short_float_O"
-                          "core::BroadcastStream_O" "core::General_O" "llvmo::MemoryBuffer_O"
-                          "llvmo::ObjectFile_O" "core::BytecodeSimpleFun_O" "llvmo::Library_O"
-                          "core::Closure_O" "core::ComplexVector_size_t_O" "comp::RestoreSPFixup_O"
-                          "mpip::Mpi_O" "llvmo::DINodeArray_O" "llvmo::ConstantDataArray_O"
-                          "core::SmallMap_O" "core::Instance_O" "llvmo::TargetOptions_O"
-                          "core::CoreFunGenerator_O" "clasp_ffi::ForeignTypeSpec_O"
-                          "core::Unused_dummy_O" "llvmo::DWARFContext_O" "core::HashTableEqual_O"
-                          "llvmo::Triple_O" "core::SimpleMDArray_byte64_t_O" "core::BitVectorNs_O"
+                          "core::Rack_O" "core::MDArrayBaseChar_O" "core::UserData_O"
+                          "core::ExternalObject_O" "llvmo::DINode_O" "llvmo::GlobalVariable_O"
+                          "core::SimpleVector_short_float_O" "core::BroadcastStream_O"
+                          "core::General_O" "llvmo::MemoryBuffer_O" "llvmo::ObjectFile_O"
+                          "core::BytecodeSimpleFun_O" "llvmo::Library_O" "core::Closure_O"
+                          "core::ComplexVector_size_t_O" "comp::RestoreSPFixup_O" "mpip::Mpi_O"
+                          "llvmo::DINodeArray_O" "llvmo::ConstantDataArray_O" "core::SmallMap_O"
+                          "core::Instance_O" "llvmo::TargetOptions_O" "core::CoreFunGenerator_O"
+                          "clasp_ffi::ForeignTypeSpec_O" "core::Unused_dummy_O"
+                          "llvmo::DWARFContext_O" "core::HashTableEqual_O" "llvmo::Triple_O"
+                          "core::SimpleMDArray_byte64_t_O" "core::BitVectorNs_O"
                           "core::CoreExposer_O" "core::BytecodeDebugVars_O"
                           "comp::JumpIfSuppliedFixup_O" "llvmo::NamedMDNode_O"
                           "core::SimpleVector_byte16_t_O" "llvmo::ThreadSafeContext_O"
@@ -4877,131 +4877,6 @@
              :offset-base-ctype "comp::BlockInfo_O" :layout-offset-field-names ("_exit")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "comp::BlockInfo_O" :layout-offset-field-names ("_receiving")}
-{class-kind :stamp-name "STAMPWTAG_core__HashTableBase_O" :stamp-key "core::HashTableBase_O"
-            :parent-class "core::General_O" :lisp-class-base "core::General_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{class-kind :stamp-name "STAMPWTAG_core__WeakKeyHashTable_O" :stamp-key "core::WeakKeyHashTable_O"
-            :parent-class "core::HashTableBase_O" :lisp-class-base "core::HashTableBase_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
-             :offset-base-ctype "core::WeakKeyHashTable_O"
-             :layout-offset-field-names ("_HashTable" "._Length")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Number_O>"
-             :offset-base-ctype "core::WeakKeyHashTable_O"
-             :layout-offset-field-names ("_HashTable" "._RehashSize")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "core::WeakKeyHashTable_O"
-             :layout-offset-field-names ("_HashTable" "._RehashThreshold")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::Buckets<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>,gctools::WeakLinks>>"
-             :offset-base-ctype "core::WeakKeyHashTable_O"
-             :layout-offset-field-names ("_HashTable" "._Keys")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::Buckets<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>,gctools::StrongLinks>>"
-             :offset-base-ctype "core::WeakKeyHashTable_O"
-             :layout-offset-field-names ("_HashTable" "._Values")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<mp::SharedMutex_O>"
-             :offset-base-ctype "core::WeakKeyHashTable_O"
-             :layout-offset-field-names ("_HashTable" "._Mutex")}
-{class-kind :stamp-name "STAMPWTAG_core__HashTable_O" :stamp-key "core::HashTable_O"
-            :parent-class "core::HashTableBase_O" :lisp-class-base "core::HashTableBase_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Number_O>"
-             :offset-base-ctype "core::HashTable_O" :layout-offset-field-names ("_RehashSize")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "core::HashTable_O" :layout-offset-field-names ("_RehashThreshold")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
-             :offset-base-ctype "core::HashTable_O" :layout-offset-field-names ("_Table")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<mp::SharedMutex_O>"
-             :offset-base-ctype "core::HashTable_O" :layout-offset-field-names ("_Mutex")}
-{class-kind :stamp-name "STAMPWTAG_core__HashTableEqualp_O" :stamp-key "core::HashTableEqualp_O"
-            :parent-class "core::HashTable_O" :lisp-class-base "core::HashTable_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Number_O>"
-             :offset-base-ctype "core::HashTableEqualp_O"
-             :layout-offset-field-names ("_RehashSize")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "core::HashTableEqualp_O"
-             :layout-offset-field-names ("_RehashThreshold")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
-             :offset-base-ctype "core::HashTableEqualp_O" :layout-offset-field-names ("_Table")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<mp::SharedMutex_O>"
-             :offset-base-ctype "core::HashTableEqualp_O" :layout-offset-field-names ("_Mutex")}
-{class-kind :stamp-name "STAMPWTAG_core__HashTableEq_O" :stamp-key "core::HashTableEq_O"
-            :parent-class "core::HashTable_O" :lisp-class-base "core::HashTable_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Number_O>"
-             :offset-base-ctype "core::HashTableEq_O" :layout-offset-field-names ("_RehashSize")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "core::HashTableEq_O"
-             :layout-offset-field-names ("_RehashThreshold")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
-             :offset-base-ctype "core::HashTableEq_O" :layout-offset-field-names ("_Table")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<mp::SharedMutex_O>"
-             :offset-base-ctype "core::HashTableEq_O" :layout-offset-field-names ("_Mutex")}
-{class-kind :stamp-name "STAMPWTAG_core__HashTableEql_O" :stamp-key "core::HashTableEql_O"
-            :parent-class "core::HashTable_O" :lisp-class-base "core::HashTable_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Number_O>"
-             :offset-base-ctype "core::HashTableEql_O" :layout-offset-field-names ("_RehashSize")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "core::HashTableEql_O"
-             :layout-offset-field-names ("_RehashThreshold")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
-             :offset-base-ctype "core::HashTableEql_O" :layout-offset-field-names ("_Table")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<mp::SharedMutex_O>"
-             :offset-base-ctype "core::HashTableEql_O" :layout-offset-field-names ("_Mutex")}
-{class-kind :stamp-name "STAMPWTAG_core__HashTableEqual_O" :stamp-key "core::HashTableEqual_O"
-            :parent-class "core::HashTable_O" :lisp-class-base "core::HashTable_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Number_O>"
-             :offset-base-ctype "core::HashTableEqual_O" :layout-offset-field-names ("_RehashSize")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "core::HashTableEqual_O"
-             :layout-offset-field-names ("_RehashThreshold")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
-             :offset-base-ctype "core::HashTableEqual_O" :layout-offset-field-names ("_Table")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<mp::SharedMutex_O>"
-             :offset-base-ctype "core::HashTableEqual_O" :layout-offset-field-names ("_Mutex")}
-{class-kind :stamp-name "STAMPWTAG_core__HashTableCustom_O" :stamp-key "core::HashTableCustom_O"
-            :parent-class "core::HashTable_O" :lisp-class-base "core::HashTable_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Number_O>"
-             :offset-base-ctype "core::HashTableCustom_O"
-             :layout-offset-field-names ("_RehashSize")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "core::HashTableCustom_O"
-             :layout-offset-field-names ("_RehashThreshold")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
-             :offset-base-ctype "core::HashTableCustom_O" :layout-offset-field-names ("_Table")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<mp::SharedMutex_O>"
-             :offset-base-ctype "core::HashTableCustom_O" :layout-offset-field-names ("_Mutex")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Function_O>"
-             :offset-base-ctype "core::HashTableCustom_O" :layout-offset-field-names ("comparator")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Function_O>"
-             :offset-base-ctype "core::HashTableCustom_O" :layout-offset-field-names ("hasher")}
 {class-kind :stamp-name "STAMPWTAG_core__FunctionDescription_O"
             :stamp-key "core::FunctionDescription_O" :parent-class "core::General_O"
             :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3
@@ -5730,6 +5605,103 @@
 {class-kind :stamp-name "STAMPWTAG_core__FileStatus_O" :stamp-key "core::FileStatus_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{class-kind :stamp-name "STAMPWTAG_core__HashTable_O" :stamp-key "core::HashTable_O"
+            :parent-class "core::General_O" :lisp-class-base "core::General_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Number_O>"
+             :offset-base-ctype "core::HashTable_O" :layout-offset-field-names ("_RehashSize")}
+{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
+             :offset-base-ctype "core::HashTable_O" :layout-offset-field-names ("_RehashThreshold")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
+             :offset-base-ctype "core::HashTable_O" :layout-offset-field-names ("_Table")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<mp::SharedMutex_O>"
+             :offset-base-ctype "core::HashTable_O" :layout-offset-field-names ("_Mutex")}
+{class-kind :stamp-name "STAMPWTAG_core__HashTableEqualp_O" :stamp-key "core::HashTableEqualp_O"
+            :parent-class "core::HashTable_O" :lisp-class-base "core::HashTable_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Number_O>"
+             :offset-base-ctype "core::HashTableEqualp_O"
+             :layout-offset-field-names ("_RehashSize")}
+{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
+             :offset-base-ctype "core::HashTableEqualp_O"
+             :layout-offset-field-names ("_RehashThreshold")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
+             :offset-base-ctype "core::HashTableEqualp_O" :layout-offset-field-names ("_Table")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<mp::SharedMutex_O>"
+             :offset-base-ctype "core::HashTableEqualp_O" :layout-offset-field-names ("_Mutex")}
+{class-kind :stamp-name "STAMPWTAG_core__HashTableEq_O" :stamp-key "core::HashTableEq_O"
+            :parent-class "core::HashTable_O" :lisp-class-base "core::HashTable_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Number_O>"
+             :offset-base-ctype "core::HashTableEq_O" :layout-offset-field-names ("_RehashSize")}
+{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
+             :offset-base-ctype "core::HashTableEq_O"
+             :layout-offset-field-names ("_RehashThreshold")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
+             :offset-base-ctype "core::HashTableEq_O" :layout-offset-field-names ("_Table")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<mp::SharedMutex_O>"
+             :offset-base-ctype "core::HashTableEq_O" :layout-offset-field-names ("_Mutex")}
+{class-kind :stamp-name "STAMPWTAG_core__HashTableEql_O" :stamp-key "core::HashTableEql_O"
+            :parent-class "core::HashTable_O" :lisp-class-base "core::HashTable_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Number_O>"
+             :offset-base-ctype "core::HashTableEql_O" :layout-offset-field-names ("_RehashSize")}
+{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
+             :offset-base-ctype "core::HashTableEql_O"
+             :layout-offset-field-names ("_RehashThreshold")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
+             :offset-base-ctype "core::HashTableEql_O" :layout-offset-field-names ("_Table")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<mp::SharedMutex_O>"
+             :offset-base-ctype "core::HashTableEql_O" :layout-offset-field-names ("_Mutex")}
+{class-kind :stamp-name "STAMPWTAG_core__HashTableEqual_O" :stamp-key "core::HashTableEqual_O"
+            :parent-class "core::HashTable_O" :lisp-class-base "core::HashTable_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Number_O>"
+             :offset-base-ctype "core::HashTableEqual_O" :layout-offset-field-names ("_RehashSize")}
+{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
+             :offset-base-ctype "core::HashTableEqual_O"
+             :layout-offset-field-names ("_RehashThreshold")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
+             :offset-base-ctype "core::HashTableEqual_O" :layout-offset-field-names ("_Table")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<mp::SharedMutex_O>"
+             :offset-base-ctype "core::HashTableEqual_O" :layout-offset-field-names ("_Mutex")}
+{class-kind :stamp-name "STAMPWTAG_core__HashTableCustom_O" :stamp-key "core::HashTableCustom_O"
+            :parent-class "core::HashTable_O" :lisp-class-base "core::HashTable_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Number_O>"
+             :offset-base-ctype "core::HashTableCustom_O"
+             :layout-offset-field-names ("_RehashSize")}
+{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
+             :offset-base-ctype "core::HashTableCustom_O"
+             :layout-offset-field-names ("_RehashThreshold")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Mapping_O>"
+             :offset-base-ctype "core::HashTableCustom_O" :layout-offset-field-names ("_Table")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<mp::SharedMutex_O>"
+             :offset-base-ctype "core::HashTableCustom_O" :layout-offset-field-names ("_Mutex")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Function_O>"
+             :offset-base-ctype "core::HashTableCustom_O" :layout-offset-field-names ("comparator")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Function_O>"
+             :offset-base-ctype "core::HashTableCustom_O" :layout-offset-field-names ("hasher")}
 {class-kind :stamp-name "STAMPWTAG_comp__FunctionCellInfo_O" :stamp-key "comp::FunctionCellInfo_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

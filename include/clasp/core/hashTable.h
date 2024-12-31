@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/record.h>
 #include <clasp/core/array.h>
-#include <clasp/core/hashTableBase.h>
 #include <clasp/core/mpPackage.fwd.h>
 #include <clasp/core/corePackage.fwd.h>
 
@@ -132,12 +131,12 @@ public:
 };
 
 FORWARD(HashTable);
-class HashTable_O : public HashTableBase_O {
+class HashTable_O : public General_O {
+  LISP_CLASS(core, ClPkg, HashTable_O, "HashTable", General_O);
   friend T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness,
                                   T_sp debug, T_sp thread_safe, T_sp hashf);
   friend class HashTableReadLock;
   friend class HashTableWriteLock;
-  LISP_CLASS(core, ClPkg, HashTable_O, "HashTable", HashTableBase_O);
   bool fieldsp() const override { return true; };
   void fields(Record_sp node) override;
 
@@ -206,8 +205,8 @@ public: // Functions here
   virtual T_sp hashTableTest() const { SUBIMP(); };
 
   /*! Return a count of the number of keys */
-  size_t hashTableCount() const override;
-  size_t hashTableSize() const override;
+  size_t hashTableCount() const;
+  size_t hashTableSize() const;
   size_t size() { return this->hashTableCount(); };
 
   // Return a symbol representing the weakness type.
@@ -222,19 +221,19 @@ public: // Functions here
 
   std::optional<T_sp> find(T_sp key); // gethash but more convenient for C++
 
-  T_mv gethash(T_sp key, T_sp defaultValue = nil<T_O>()) override;
+  T_mv gethash(T_sp key, T_sp defaultValue = nil<T_O>());
   gc::Fixnum hashIndex(T_sp key) const;
 
-  T_sp hash_table_setf_gethash(T_sp key, T_sp value) override;
+  T_sp hash_table_setf_gethash(T_sp key, T_sp value);
   void setf_gethash(T_sp key, T_sp val) { this->hash_table_setf_gethash(key, val); };
 
-  Number_sp rehash_size() const override;
-  double rehash_threshold() const override;
-  T_sp hash_table_test() const override;
+  Number_sp rehash_size() const;
+  double rehash_threshold() const;
+  T_sp hash_table_test() const;
 
-  T_sp clrhash() override;
+  T_sp clrhash();
 
-  bool remhash(T_sp key) override;
+  bool remhash(T_sp key);
 
   string __repr__() const override;
 
@@ -242,7 +241,7 @@ public: // Functions here
 
   void lowLevelMapHash(KeyValueMapper* mapper) const;
 
-  void maphash(T_sp fn) const override;
+  void maphash(T_sp fn) const;
 
   void mapHash(std::function<void(T_sp, T_sp)> const& fn) const;
   void maphash(std::function<void(T_sp, T_sp)> const& fn) const { this->mapHash(fn); };

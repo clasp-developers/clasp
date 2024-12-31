@@ -558,7 +558,7 @@ struct loadltv {
   }
 
   void op_shash() {
-    HashTableBase_sp ht = gc::As<HashTableBase_sp>(get_ltv(read_index()));
+    HashTable_sp ht = gc::As<HashTable_sp>(get_ltv(read_index()));
     T_sp key = get_ltv(read_index());
     T_sp val = get_ltv(read_index());
     ht->hash_table_setf_gethash(key, val);

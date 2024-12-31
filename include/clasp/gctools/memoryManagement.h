@@ -375,14 +375,6 @@ public:
   //
   typedef uint32_t badge_t;
 
-  typedef enum {
-    WeakBucketKind = ((1 << mtag_shift) | weak_mtag),
-    StrongBucketKind = ((2 << mtag_shift) | weak_mtag),
-    WeakMappingKind = ((3 << mtag_shift) | weak_mtag),
-    StrongMappingKind = ((4 << mtag_shift) | weak_mtag),
-    MaxWeakKind = ((5 << mtag_shift) | weak_mtag)
-  } WeakKinds;
-
   //
   //
   struct Dummy_s {};
@@ -392,7 +384,6 @@ public:
     tagged_stamp_t _value;
     StampWtagMtag() : _value(0){};
     StampWtagMtag(Value all) : _value(all){};
-    StampWtagMtag(WeakKinds kind) : _value(kind){};
 
     // WHAT IS GOING ON
     //      StampWtagMtag(UnshiftedStamp stamp, badge_t badge) : _value(shift_unshifted_stamp(stamp)), _header_badge(badge) {};
@@ -557,7 +548,6 @@ public:
       }
 #endif
     };
-    BadgeStampWtagMtag(WeakKinds kind) : StampWtagMtag(kind), _header_badge((uintptr_t)this & 0xFFFFFFFF){};
   };
 
   static inline int Stamp(StampWtagMtag stamp_wtag_mtag) {
