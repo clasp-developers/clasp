@@ -962,10 +962,10 @@ std::set<Tagged> setOfAllObjects() {
 // Also check for functions that can't be resolved with dlsym, since that's
 // important for snapshot save.
 // Return the set of tagged pointers located in fields that are not valid.
-std::set<Tagged> memtest(std::set<core::T_sp>& dladdrFailed) {
+std::set<Tagged*> memtest(std::set<core::T_sp>& dladdrFailed) {
   std::stack<Tagged*> markStack;
   std::set<Tagged> markSet;
-  std::set<Tagged> corrupt;
+  std::set<Tagged*> corrupt;
 
   std::set<void*> uniqueEntryPoints;
 
@@ -1004,7 +1004,9 @@ std::set<Tagged> memtest(std::set<core::T_sp>& dladdrFailed) {
                 dladdrFailed.insert(sfun);
             }*/
           }
-        } else corrupt.insert(tagged);
+        } else {
+          corrupt.insert(field);
+        }
       }
     } break;
     case cons_tag: {
@@ -1014,7 +1016,9 @@ std::set<Tagged> memtest(std::set<core::T_sp>& dladdrFailed) {
         ConsHeader_s* header = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)client);
         if (header->isValidConsObject())
           mw_cons_scan(client, markStack);
-        else corrupt.insert(tagged);
+        else {
+          corrupt.insert(field);
+        }
       }
     } break;
     case vaslist0_tag:
@@ -1036,7 +1040,7 @@ std::set<Tagged> memtest(std::set<core::T_sp>& dladdrFailed) {
     case UNBOUND_TAG: // FIXME: put const definition in pointer_tagging.h somewhere?
         break; // immediate, nothing to do
     default: // unknown tag - object is corrupt
-        corrupt.insert(tagged); break;
+        corrupt.insert(field); break;
     }
   }
   return corrupt;

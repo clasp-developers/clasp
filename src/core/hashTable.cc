@@ -770,8 +770,8 @@ KeyValuePair* HashTable_O::searchTable_no_read_lock(T_sp key, cl_index index) {
         DEBUG_HASH_TABLE({
           core::clasp_write_string(
               fmt::format("{}:{} search-end found key index = {} entry._Key->{}\n .... {}\n  key->{}\n .... {}\n", __FILE__,
-                          __LINE__, cur, (void*)entry._Key.raw_(), dbg_safe_repr((uintptr_t)(void*)entry._Key.raw_()).c_str(),
-                          (void*)key.raw_(), dbg_safe_repr((uintptr_t)(void*)key.raw_()).c_str()));
+                          __LINE__, cur, (void*)entry._Key.raw_(), dbg_safe_repr((void*)entry._Key.raw_()).c_str(),
+                          (void*)key.raw_(), dbg_safe_repr((void*)key.raw_()).c_str()));
         });
         return &entry;
       }

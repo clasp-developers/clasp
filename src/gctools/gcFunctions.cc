@@ -28,6 +28,7 @@
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/core/compiler.h>
+#include <clasp/core/debugger.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
 
@@ -399,8 +400,14 @@ bool memory_test() {
     result = false;
     core::lisp_write(fmt::format("{} corrupt objects in memory test\n", corrupt.size()));
     size_t idx = 0;
-    for (const auto& cur : corrupt) {
-      core::lisp_write(fmt::format("#{} -> {}\n", idx, (void*)cur));
+    for (const auto& field : corrupt) {
+      auto cur = *field;
+      void* base = GC_base(field);
+      if (base) {
+        core::lisp_write(fmt::format("#{} -> {} @{} base: {} == {}\n", idx, (void*)cur, (void*)field, (void*)base, (std::string)dbg_safe_repr(base)));
+      } else {
+        core::lisp_write(fmt::format("#{} -> {} @{} base: NULL\n", idx, (void*)cur, (void*)field ));
+      }
       idx++;
     }
   }

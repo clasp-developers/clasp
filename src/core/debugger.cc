@@ -484,16 +484,26 @@ extern "C" {
 
 /*! Generate text representation of a objects without using the lisp printer!
 This code MUST be bulletproof!  It must work under the most memory corrupted conditions */
-std::string dbg_safe_repr(uintptr_t raw) {
+std::string dbg_safe_repr_depth(int depth, void* raw) {
   stringstream ss;
-  core::T_sp obj((gc::Tagged)raw);
-  if (gc::tagged_generalp((gc::Tagged)raw) || gc::tagged_consp((gc::Tagged)raw)) {
-    // protect us from bad pointers
-    if (raw < 0x1000) {
-      ss << "BAD-TAGGED-POINTER(" REPR_ADDR(raw) << ")";
-      return ss.str();
-    }
+  if (depth==0) {
+    ss << "#<EXCEEDED-DEPTH>";
+    return ss.str();
   }
+  gctools::Header_s* header = (gctools::Header_s*)GC_base(raw);
+  if (header==NULL) {
+    ss << "#<NON-GC-POINTER=" << (void*)raw<<">";
+    return ss.str();
+  }
+  gctools::clasp_ptr_t client = NULL;
+  if (header->_badge_stamp_wtag_mtag.stampP()) {
+    client = (gctools::clasp_ptr_t)((uintptr_t)gctools::HeaderPtrToGeneralPtr<core::General_O>((gctools::clasp_ptr_t)header) | GENERAL_TAG);
+  } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
+    client = (gctools::clasp_ptr_t)((uintptr_t)gctools::HeaderPtrToConsPtr(header) | CONS_TAG);
+  } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
+    client = (gctools::clasp_ptr_t)((uintptr_t)gctools::HeaderPtrToWeakPtr(header) | GENERAL_TAG);
+  }
+  core::T_sp obj((gc::Tagged)client);
   if (obj.generalp()) {
     if (gc::IsA<core::Symbol_sp>(obj)) {
       core::Symbol_sp sym = gc::As_unsafe<core::Symbol_sp>(obj);
@@ -521,7 +531,7 @@ std::string dbg_safe_repr(uintptr_t raw) {
       core::SimpleVector_sp svobj = gc::As_unsafe<core::SimpleVector_sp>(obj);
       ss << "#(";
       for (size_t i = 0, iEnd(svobj->length()); i < iEnd; ++i) {
-        ss << dbg_safe_repr((uintptr_t)(svobj[i]).raw_()) << " ";
+        ss << dbg_safe_repr_depth(depth-1,(void*)(svobj[i]).raw_()) << " ";
       }
       ss << ")" REPR_ADDR(raw);
     } else if (gc::IsA<core::FuncallableInstance_sp>(obj)) {
@@ -566,12 +576,12 @@ std::string dbg_safe_repr(uintptr_t raw) {
   } else if (obj.consp()) {
     ss << "(";
     while (obj.consp()) {
-      ss << dbg_safe_repr((uintptr_t)CONS_CAR(obj).raw_()) << " ";
+      ss << dbg_safe_repr_depth(depth-1,(void*)CONS_CAR(obj).raw_()) << " ";
       obj = CONS_CDR(obj);
     }
     if (obj.notnilp()) {
       ss << ". ";
-      ss << dbg_safe_repr((uintptr_t)obj.raw_());
+      ss << dbg_safe_repr_depth(depth-1,(void*)obj.raw_());
     }
     ss << ")";
   } else if (obj.fixnump()) {
@@ -593,7 +603,7 @@ std::string dbg_safe_repr(uintptr_t raw) {
     ss << ":nargs " << vaslist->nargs();
     ss << " :contents (";
     for (size_t ii = 0; ii < vaslist->nargs(); ii++) {
-      ss << dbg_safe_repr((uintptr_t)vaslist->relative_indexed_arg(ii)) << " ";
+      ss << dbg_safe_repr_depth(depth-1,(void*)vaslist->relative_indexed_arg(ii)) << " ";
     }
     ss << ")$>";
   } else if (obj.unboundp()) {
@@ -610,15 +620,18 @@ std::string dbg_safe_repr(uintptr_t raw) {
   }
   return ss.str();
 }
+
+std::string dbg_safe_repr(void* raw) {
+  return dbg_safe_repr_depth(10,raw);
+}
 };
 
-string _safe_rep_(core::T_sp obj) { return dbg_safe_repr((uintptr_t)obj.raw_()); }
+string _safe_rep_(core::T_sp obj) { return dbg_safe_repr((void*)obj.raw_()); }
 
 extern "C" {
 
-void dbg_safe_print(uintptr_t raw) { printf(" %s", dbg_safe_repr(raw).c_str()); }
-
-void dbg_safe_println(uintptr_t raw) { printf(" %s\n", dbg_safe_repr(raw).c_str()); }
+void dbg_safe_print(void* raw) { printf(" %s", dbg_safe_repr(raw).c_str()); }
+void dbg_safe_println(void* raw) { printf(" %s\n", dbg_safe_repr(raw).c_str()); }
 };
 
 extern "C" {
@@ -658,7 +671,7 @@ namespace core {
 
 DOCGROUP(clasp);
 CL_DEFUN std::string core__safe_repr(core::T_sp obj) {
-  std::string result = dbg_safe_repr((uintptr_t)obj.raw_());
+  std::string result = dbg_safe_repr((void*)obj.raw_());
   return result;
 }
 
