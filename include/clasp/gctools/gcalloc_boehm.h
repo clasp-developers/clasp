@@ -4,12 +4,12 @@
 #define ALIGNED_GC_MALLOC(sz) MAYBE_MONITOR_ALLOC(GC_MALLOC(sz), sz)
 #define ALIGNED_GC_MALLOC_ATOMIC(sz) MAYBE_MONITOR_ALLOC(GC_MALLOC_ATOMIC(sz), sz)
 #define ALIGNED_GC_MALLOC_UNCOLLECTABLE(sz) MAYBE_MONITOR_ALLOC(GC_MALLOC_UNCOLLECTABLE(sz), sz)
-#define ALIGNED_GC_MALLOC_KIND(stmp, sz, knd, kndaddr) MAYBE_MONITOR_ALLOC(GC_malloc_kind_global(sz, knd), sz)
+#define ALIGNED_GC_MALLOC_KIND(sz, knd) MAYBE_MONITOR_ALLOC(GC_malloc_kind_global(sz, knd), sz)
 #define ALIGNED_GC_MALLOC_STRONG_WEAK_KIND(sz, knd) MAYBE_MONITOR_ALLOC(GC_malloc_kind_global(sz, knd), sz)
 #define ALIGNED_GC_MALLOC_ATOMIC_KIND(stmp, sz, knd, kndaddr)                                                                      \
   MAYBE_MONITOR_ALLOC(                                                                                                             \
       (knd == GC_I_PTRFREE) ? GC_malloc_kind_global(sz, knd) : malloc_kind_error(GC_I_PTRFREE, knd, sz, stmp, kndaddr), sz)
-#define ALIGNED_GC_MALLOC_UNCOLLECTABLE_KIND(stmp, sz, knd, kndaddr)                                                               \
+#define ALIGNED_GC_MALLOC_UNCOLLECTABLE_KIND(sz, knd)                                                                              \
   MAYBE_MONITOR_ALLOC(GC_generic_malloc_uncollectable(sz, knd), sz)
 #else
 #error "There is more work to do to support more than 3 tag bits"
@@ -24,7 +24,7 @@ template <typename Stage, typename Cons, typename... ARGS> inline Cons* do_cons_
   RAIIAllocationStage<Stage> stage(my_thread_low_level);
 #ifdef USE_PRECISE_GC
   ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(
-      ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_WTAG(STAMPWTAG_CONS), size, global_cons_kind, &global_cons_kind)); // wasMTAG
+      ALIGNED_GC_MALLOC_KIND(size, global_cons_kind)); // wasMTAG
 #ifdef DEBUG_BOEHMPRECISE_ALLOC
   printf("%s:%d:%s cons = %p\n", __FILE__, __LINE__, __FUNCTION__, cons);
 #endif
@@ -62,14 +62,14 @@ inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header,
   return header;
 };
 
+template <bool weakp>
 inline Header_s* do_weak_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   size_t true_size = size;
-#ifdef USE_PRECISE_GC
-  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC(true_size));
-//   Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_STRONG_WEAK_KIND_ATOMIC(true_size,global_strong_weak_kind));
-#else
-  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC(true_size));
-#endif
+  Header_s* header;
+  if constexpr(weakp)
+    header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC(true_size));
+  else
+    header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(true_size, GC_I_NORMAL));
   my_thread_low_level->_Allocations.registerWeakAllocation(the_header._value, true_size);
 #ifdef DEBUG_GUARD
   memset(header, 0x00, true_size);
@@ -92,7 +92,7 @@ inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header
   auto stamp = the_header.stamp();
   auto& kind = global_stamp_layout[stamp].boehm._kind;
   GCTOOLS_ASSERT(kind != KIND_UNDEFINED);
-  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(stamp, true_size, kind, &kind));
+  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(true_size, kind));
 #ifdef DEBUG_BOEHMPRECISE_ALLOC
   printf("%s:%d:%s header = %p\n", __FILE__, __LINE__, __FUNCTION__, header);
 #endif
@@ -117,8 +117,7 @@ inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_
 #endif
 #ifdef USE_PRECISE_GC
   Header_s* header = reinterpret_cast<Header_s*>(
-      ALIGNED_GC_MALLOC_UNCOLLECTABLE_KIND(the_header.stamp(), true_size, global_stamp_layout[the_header.stamp()].boehm._kind,
-                                           &global_stamp_layout[the_header.stamp()].boehm._kind));
+      ALIGNED_GC_MALLOC_UNCOLLECTABLE_KIND(true_size, global_stamp_layout[the_header.stamp()].boehm._kind));
 #ifdef DEBUG_BOEHMPRECISE_ALLOC
   printf("%s:%d:%s header = %p\n", __FILE__, __LINE__, __FUNCTION__, header);
 #endif

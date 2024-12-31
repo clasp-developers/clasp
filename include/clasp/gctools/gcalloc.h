@@ -33,6 +33,7 @@ THE SOFTWARE.
 // #define DEBUG_CONS_ALLOC 1
 
 #include <limits>
+#include <type_traits> // is_same_v
 #include <clasp/gctools/interrupt.h>
 #include <clasp/gctools/threadlocal.fwd.h>
 #include <clasp/gctools/snapshotSaveLoad.fwd.h>
@@ -239,8 +240,7 @@ template <class Stage, class Cons, class Register> struct ConsAllocator {
 #ifdef USE_PRECISE_GC
   static smart_ptr<Cons> snapshot_save_load_allocate(Header_s::BadgeStampWtagMtag& the_header, core::T_sp car, core::T_sp cdr) {
 #if defined(USE_BOEHM)
-    Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(
-        STAMP_UNSHIFT_WTAG(STAMPWTAG_CONS), SizeofConsHeader() + sizeof(Cons), global_cons_kind, &global_cons_kind)); // wasMTAG
+    Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(SizeofConsHeader() + sizeof(Cons), global_cons_kind)); // wasMTAG
     header->_badge_stamp_wtag_mtag._header_badge.store(the_header._header_badge.load());
     header->_badge_stamp_wtag_mtag._value = the_header._value;
 #elif defined(USE_MMTK)
@@ -892,6 +892,7 @@ public:
   typedef const value_type& const_reference;
   typedef std::size_t size_type;
   typedef std::ptrdiff_t difference_type;
+  static constexpr bool weakp = std::is_same_v<StrongWeakLinkType, WeakLinks>;
 
   /* constructors and destructor
    * - nothing to do because the allocator has no state
@@ -906,7 +907,7 @@ public:
   // allocate but don't initialize num elements of type value_type
   static gctools::tagged_pointer<container_type> allocate(Header_s::BadgeStampWtagMtag the_header, size_type num, const void* = 0) {
     size_t size = sizeof_container_with_header<container_type>(num);
-    Header_s* base = do_weak_allocation(the_header, size);
+    Header_s* base = do_weak_allocation<weakp>(the_header, size);
     container_pointer myAddress = (container_pointer)HeaderPtrToWeakPtr(base);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
@@ -919,7 +920,7 @@ public:
 
   static gctools::tagged_pointer<container_type> snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* init) {
     size_t size = (init->_clientEnd - init->_clientStart) + SizeofWeakHeader();
-    Header_s* base = do_weak_allocation(init->_headStart->_badge_stamp_wtag_mtag, size);
+    Header_s* base = do_weak_allocation<weakp>(init->_headStart->_badge_stamp_wtag_mtag, size);
 #ifdef DEBUG_GUARD
     // Copy the source from the image save/load memory.
     base->_source = init->_headStart->_source;
@@ -971,7 +972,7 @@ public:
   // allocate but don't initialize num elements of type value_type
   static gctools::tagged_pointer<container_type> allocate(Header_s::BadgeStampWtagMtag the_header, const VT& val) {
     size_t size = sizeof_with_header<container_type>();
-    Header_s* base = do_weak_allocation(the_header, size);
+    Header_s* base = do_weak_allocation<std::is_same_v<StrongWeakLinkType, WeakLinks>>(the_header, size);
     container_pointer myAddress = (container_pointer)HeaderPtrToWeakPtr(base);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
@@ -999,7 +1000,7 @@ public:
 #ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating WeakPointer with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
 #endif
-    Header_s* base = do_weak_allocation(the_header, size);
+    Header_s* base = do_weak_allocation<true>(the_header, size);
     VT* myAddress = (VT*)HeaderPtrToWeakPtr(base);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
