@@ -29,11 +29,11 @@ THE SOFTWARE.
 
 namespace gctools {
 
-template <class Key, typename Allocator> class GCSmallSet : public GCVector<Key, Allocator> {
+template <class Key> class SmallOrderedSet : public GCVector<Key> {
 public:
   typedef Key key_type;
   typedef Key value_type;
-  typedef GCVector<value_type, Allocator> Base;
+  typedef GCVector<value_type> Base;
   typedef typename Base::iterator iterator;
   typedef typename Base::const_iterator const_iterator;
 

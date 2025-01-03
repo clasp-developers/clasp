@@ -493,27 +493,6 @@ CL_DOCSTRING(R"dx(Return the UNBOUND value)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__unbound() { return unbound<T_O>(); };
 
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING(R"dx(smartPointerDetails - returns (values ptr-type px-offset px-size))dx");
-CL_DOCSTRING_LONG(
-    R"dx(The ptr-type is the type of pointer used to pass objects - either MPS-GARBAGE-COLLECTION or INTRUSIVE-REFERENCE-COUNTED-POINTER. The px-offset is the number of bytes offset of the smart_ptr data pointer from the start of the smart_ptr and px-size is the size of the data pointer)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_mv core__smart_pointer_details() {
-  SYMBOL_SC_(CorePkg, intrusiveReferenceCountedPointer);
-  SYMBOL_SC_(CorePkg, sharedReferenceCountedPointer);
-  SYMBOL_SC_(CorePkg, mpsGarbageCollection);
-#if defined(USE_MPS)
-  Symbol_sp ptrType = _sym_mpsGarbageCollection;
-#else
-  Symbol_sp ptrType = _sym_intrusiveReferenceCountedPointer;
-#endif
-  T_sp dummy;
-  Fixnum_sp pxOffset = make_fixnum(0);
-  Fixnum_sp pxSize = make_fixnum((gctools::Fixnum)gctools::pointer_size);
-  return Values(ptrType, pxOffset, pxSize);
-}
-
 CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(values)dx");
@@ -2027,9 +2006,7 @@ int tak_aux(int x, int y, int z, bool allocate) {
     return tak_aux(tak_aux(x - 1, y, z, allocate), tak_aux(y - 1, z, x, allocate), tak_aux(z - 1, x, y, allocate), allocate);
   } else {
     if (allocate) {
-#ifdef USE_BOEHM
-      GC_MALLOC(128);
-#endif
+      SimpleVector_byte8_t_O::make(128);
     }
     return z;
   }
@@ -2052,9 +2029,7 @@ int ctak_aux(int x, int y, int z, bool allocate) {
   if (!(y < x)) {
     Ctak ret(z);
     if (allocate) {
-#ifdef USE_BOEHM
-      GC_MALLOC(128);
-#endif
+      SimpleVector_byte8_t_O::make(128);
     }
     throw ret;
   } else {
@@ -2125,13 +2100,6 @@ void crc32(const void* data, size_t n_bytes, uint32_t* crc) {
 
 namespace core {
 
-CL_DEFUN void core__withStackCons(T_sp car, T_sp cdr, T_sp fn) {
-  gc::StackAllocate<Cons_O> cons(car, cdr);
-  printf("%s:%d:%s The cons size is %lu\n", __FILE__, __LINE__, __FUNCTION__, sizeof(cons));
-  printf("%s:%d:%s The ConsSizeCalculator<Cons_O> size is %lu\n", __FILE__, __LINE__, __FUNCTION__,
-         gctools::ConsSizeCalculator<gctools::RuntimeStage, Cons_O>::value());
-  eval::funcall(fn, cons.asSmartPtr());
-}
 #if 0
 DOCGROUP(clasp);
 CL_DEFUN core::Test_sp core__makeTest() {

@@ -20,7 +20,7 @@
 #endif
 
 namespace gctools {
-template <typename Stage, typename Cons, typename... ARGS> inline Cons* do_cons_allocation(size_t size, ARGS&&... args) {
+template <typename Stage, typename Cons> inline ConsHeader_s* do_cons_allocation(size_t size) {
   RAIIAllocationStage<Stage> stage(my_thread_low_level);
 #ifdef USE_PRECISE_GC
   ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(
@@ -31,10 +31,10 @@ template <typename Stage, typename Cons, typename... ARGS> inline Cons* do_cons_
 #else
   ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(ALIGNED_GC_MALLOC(size));
 #endif
-  Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
-  new (header) ConsHeader_s(cons);
-  new (cons) Cons(std::forward<ARGS>(args)...);
-  return cons;
+  const ConsHeader_s::StampWtagMtag stamp(ConsHeader_s::cons_mtag);
+  new (header) ConsHeader_s(stamp);
+  stage.registerAllocation(STAMPWTAG_CONS, size);
+  return header;
 }
 
 template <typename Stage = RuntimeStage>
@@ -133,4 +133,30 @@ inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_
 #endif
   return header;
 };
+
+// Allocate a blank T_O* vector. This is used for the bytecode VM.
+inline void* do_allocate_zero(size_t num) {
+  void* buffer = ALIGNED_GC_MALLOC_UNCOLLECTABLE(sizeof(void*) * num);
+  memset(buffer, 0, sizeof(void*) * num);
+  return buffer;
+}
+
+extern void boehm_general_finalizer_from_BoehmFinalizer(void* client, void* dummy);
+template <class OT> void BoehmFinalizer(void* base, void* data) {
+  //  printf("%s:%d:%s Finalizing base=%p\n", __FILE__, __LINE__, __FUNCTION__, base);
+  OT* client = HeaderPtrToGeneralPtr<OT>(base);
+  boehm_general_finalizer_from_BoehmFinalizer((void*)client, data);
+  client->~OT();
+  GC_FREE(base);
+}
+
+typedef void (*BoehmFinalizerFn)(void* obj, void* data);
+template <class OT>
+inline void do_register_destructor_finalizer(void* baseptr) {
+  void* dummyData;
+  BoehmFinalizerFn dummyFn;
+  GC_register_finalizer_no_order(baseptr, BoehmFinalizer<OT>, NULL, &dummyFn, &dummyData);
+}
+
+inline void do_free(void* ptr) { GC_FREE(ptr); }
 }; // namespace gctools

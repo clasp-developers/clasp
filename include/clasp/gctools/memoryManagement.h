@@ -22,6 +22,8 @@
 // Define compile-time flags that effect structure sizes
 //
 #include <atomic>
+#include <set>
+#include <utility> // pair
 #include <clasp/gctools/configure_memory.h>
 #include <clasp/gctools/hardErrors.h>
 
@@ -391,7 +393,6 @@ public:
     uintptr_t _header_data[0]; // The 0th element overlaps StampWtagMtag values
     tagged_stamp_t _value;
     StampWtagMtag() : _value(0){};
-    StampWtagMtag(core::Cons_O* cons) : _value(cons_mtag){};
     StampWtagMtag(Value all) : _value(all){};
     StampWtagMtag(WeakKinds kind) : _value(kind){};
 
@@ -471,15 +472,6 @@ public:
     static StampWtagMtag make_StampWtagMtag(StampWtagMtag vvv) {
       StampWtagMtag mak(vvv);
       return mak;
-    }
-
-    static StampWtagMtag make_instance() {
-      StampWtagMtag v(STAMPWTAG_INSTANCE);
-      return v;
-    }
-    static StampWtagMtag make_funcallable_instance() {
-      StampWtagMtag v(STAMPWTAG_FUNCALLABLE_INSTANCE);
-      return v;
     }
 
   public:
@@ -661,15 +653,13 @@ public:
 #endif
 };
 
-struct GatherObjects; // forward decl
-
 class ConsHeader_s : public BaseHeader_s {
 public:
   ConsHeader_s(const BadgeStampWtagMtag& k) : BaseHeader_s(k){};
 
 public:
   static constexpr size_t size() { return sizeof(ConsHeader_s); };
-  bool isValidConsObject(GatherObjects* gather) const;
+  bool isValidConsObject() const;
 };
 
 class Header_s : public BaseHeader_s {
@@ -692,7 +682,7 @@ public:
 #endif
 
 public:
-  bool isValidGeneralObject(GatherObjects* gather) const;
+  bool isValidGeneralObject() const;
   void validate() const;
   void quick_validate() const {
 #ifdef DEBUG_QUICK_VALIDATE
@@ -1266,20 +1256,6 @@ struct SafeGCPark {
 };
 }; // namespace gctools
 
-namespace gctools {
-
-typedef enum { LispRoot, CoreSymbolRoot, SymbolRoot } RootType;
-
-/* When walking root objects, this callback is called repeatedly
-   with the address of the root.
-*/
-typedef void (*RootWalkCallback)(Tagged* rootAddress, RootType rootType, size_t rootIndex, void* userData);
-
-/* walkRoots must be provided by any GC */
-void walkRoots(RootWalkCallback callback, void* userData);
-
-}; // namespace gctools
-
 ////////////////////////////////////////////////////////////
 /*!
  * dont_expose<xxx>
@@ -1312,56 +1288,48 @@ void walkRoots(RootWalkCallback callback, void* userData);
 
 template <typename Type> struct dont_expose {
   Type _value;
-  dont_expose(){};
+  dont_expose() = default;
   template <typename Arg> dont_expose(const Arg& val) : _value(val){};
 };
 
 namespace gctools {
 
 typedef void (*PointerFix)(uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, void* user_data);
-extern PointerFix globalMemoryWalkPointerFix;
 
-struct MarkNode {
-  gctools::Tagged* _ObjectAddr;
-  bool _ForceGeneralRoot;
-  MarkNode* _Next;
-  MarkNode(gctools::Tagged* tt, bool forceGeneralRoot = false)
-      : _ObjectAddr(tt), _ForceGeneralRoot(forceGeneralRoot), _Next(NULL){};
-};
-
-struct GatherObjects {
-  RoomVerbosity _Verbosity;
-  std::set<BaseHeader_s*> _Marked;
-  MarkNode* _Stack;
-  std::map<BaseHeader_s*, std::vector<uintptr_t>> _corruptObjects;
-  size_t _SimpleFunCount;
-  size_t _SimpleFunFailedDladdrCount;
-  std::set<void*>  _uniqueEntryPoints;
-  std::set<void*>  _uniqueEntryPointsFailedDladdr;
-  GatherObjects(RoomVerbosity v) : _Verbosity(v), _Stack(NULL), _SimpleFunCount(0), _SimpleFunFailedDladdrCount(0) {};
-
-  MarkNode* popMarkStack() {
-    if (this->_Stack) {
-      MarkNode* top = this->_Stack;
-      this->_Stack = top->_Next;
-      return top;
-    }
-    return NULL;
-  }
-  void pushMarkStack(MarkNode* node) {
-    node->_Next = this->_Stack;
-    this->_Stack = node;
-  }
-
-  void mark(Header_s* header) { this->_Marked.insert(header); }
-
-  bool markedP(BaseHeader_s* header) { return this->_Marked.find(header) != this->_Marked.end(); }
-};
-
-void gatherAllObjects(GatherObjects& gather);
+void mapAllObjects(void (*)(Tagged, void*), void*);
+std::set<Tagged> setOfAllObjects();
+std::set<std::pair<Tagged, Tagged*>> memtest(std::set<core::T_sp>&);
 size_t objectSize(BaseHeader_s* header);
 
 bool is_memory_readable(const void* address, size_t bytes = 8);
+
+// Stuff for ROOM
+// This struct holds info about a given class for ROOM, specifically
+// how many instances of it there are, and how much memory those
+// instances take up (in bytes).
+struct ReachableClass {
+  void update(size_t sz) {
+    ++this->instances;
+    this->totalSize += sz;
+  };
+  size_t instances = 0;
+  size_t totalSize = 0;
+};
+
+typedef map<gctools::GCStampEnum, ReachableClass> ReachableClassMap;
+
+// These eight are GC-defined.
+void collect_garbage();
+
+void* call_with_stopped_world(void* (*)(void*), void*);
+
+void set_finalizer_list(core::T_sp, core::List_sp);
+void clear_finalizer_list(core::T_sp);
+void invoke_finalizers();
+
+size_t heap_size();
+size_t free_bytes();
+size_t bytes_since_gc();
 
 }; // namespace gctools
 

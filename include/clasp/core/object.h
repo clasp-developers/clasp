@@ -103,21 +103,6 @@ class RootClass {
 public:
   static core::Symbol_sp static_classSymbol() { return UNDEFINED_SYMBOL; };
   static void set_static_creator(gc::smart_ptr<core::Creator_O> cb) {};
-  explicit RootClass() {};
-};
-
-template <class T_Base> struct LispBases1 {
-  typedef T_Base Base1;
-  static inline bool baseClassSymbolsDefined() {
-    if (IS_SYMBOL_UNDEFINED(Base1::static_classSymbol())) {
-      throw_hard_error("Base class is not defined yet");
-    }
-    return true;
-  }
-
-  static inline core::Symbol_sp baseClass1Id() { return Base1::static_classSymbol(); }
-
-  static inline core::Symbol_sp baseClass2Id() { return UNDEFINED_SYMBOL; }
 };
 
 namespace core {
@@ -329,7 +314,6 @@ public:                                                                         
   static string Package() { return oClass::static_packageName(); };                                                                \
   static string Pkg() { return Package(); };                                                                                       \
   static void register_class_with_redeye() { gctools::GCObjectAllocator<oClass>::register_class_with_redeye(); }                   \
-  oClass(snapshotSaveLoad::snapshot_save_load_init_s* isl) { isl->fill((void*)this); };                                            \
   static void expose_to_clasp();
 
 #define LISP_TEMPLATE_CLASS(oClass) COMMON_CLASS_PARTS(CurrentPkg, oClass, typeid(oClass).name())
@@ -340,7 +324,6 @@ public:                                                                         
 #define LISP_CLASS(aNamespace, aPackage, aClass, aClassName, aBaseClass)                                                           \
 public:                                                                                                                            \
   typedef aBaseClass Base;                                                                                                         \
-  typedef LispBases1<Base> Bases;                                                                                                  \
   COMMON_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName);                                                                    \
   static gctools::smart_ptr<aClass> create() { return gctools::GC<aClass>::allocate_with_default_constructor(); };                 \
   virtual core::Instance_sp __class() const OVERRIDE { return core::lisp_getStaticClass(aClass::static_ValueStampWtagMtag); }      \
@@ -349,16 +332,15 @@ public:                                                                         
 #define LISP_ABSTRACT_CLASS(aNamespace, aPackage, aClass, aClassName, b1)                                                          \
 public:                                                                                                                            \
   typedef b1 Base;                                                                                                                 \
-  typedef LispBases1<Base> Bases;                                                                                                  \
   COMMON_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName);
 #endif
 
 #define DEFAULT_CTOR(oClass)                                                                                                       \
 public:                                                                                                                            \
-  explicit oClass() : oClass::Base(){}; /* default ctor */
+ oClass() = default;
 #define DEFAULT_DTOR(oClass)                                                                                                       \
 public:                                                                                                                            \
-  ~oClass(){};
+ ~oClass() = default;
 #define DEFAULT_CTOR_DTOR(oClass)                                                                                                  \
   DEFAULT_CTOR(oClass);                                                                                                            \
   DEFAULT_DTOR(oClass);                                                                                                            \
@@ -375,7 +357,6 @@ class T_O : public RootClass {
 private:
   friend class CoreExposer;
   LISP_ABSTRACT_CLASS(core, ClPkg, T_O, "T", ::RootClass);
-  T_O() {};
 };
 
 }; // namespace core
@@ -395,8 +376,6 @@ class General_O : public T_O {
   LISP_CLASS(core, CorePkg, General_O, "General", T_O);
 
 public:
-  General_O() {};
-
   virtual void sxhash_(HashGenerator& hg) const;
   virtual void sxhash_equal(HashGenerator& hg) const;
   virtual void sxhash_equalp(HashGenerator& hg) const { return this->sxhash_equal(hg); };

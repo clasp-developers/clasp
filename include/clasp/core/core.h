@@ -587,38 +587,6 @@ void register_thread(mp::Process_sp process, void* stackTop);
 void unregister_thread(mp::Process_sp process);
 }; // namespace gctools
 
-#if 0
-namespace dummy_namespace {
-#pragma clang diagnostic push
-#pragma clang diagnostic warning "-Wc++98-compat"
-/*! These tests can be used to determine if there is a non-trivial copy constructor
-    or destructor that would prevent smart_ptr and multiple_values from being
-    passed in registers or returned in registers.
-
-    Uncomment the #if 0 and look for copy constructors, destructors
-    IGNORE constructors - they are harmless for passing in registers.
-*/
-
-
-/*! If this union generates a compile-time error then multiple_values isn't
-      trivial and it will be passed as a pointer to the struct in memory
-      rather than in registers. */
-  union multiple_value_ptr_union_generates_a_compile_time_error_then_multiple_values_isnt_trivial {
-    gctools::multiple_values<core::T_O> _multiple_values;
-    uintptr_t _uintptr;
-  };
-
-  /*! If this union generates a compile-time error then smart_ptr isn't
-      trivial and it will be passed as a pointer to the struct in memory
-      rather than in registers. */
-  union smart_ptr_union_generates_a_compile_time_error_then_smart_ptr_isnt_trivial {
-    gctools::smart_ptr<core::T_O> _smart_ptr;
-    uintptr_t _uintptr;
-  };
-#pragma clang diagnostic pop
-};
-#endif
-
 namespace core {
 class Instance_O;
 typedef gc::smart_ptr<Instance_O> Instance_sp;
@@ -831,21 +799,9 @@ struct Layout_code;
 extern Layout_code* get_stamp_layout_codes();
 }; // namespace gctools
 
-#if defined(USE_BOEHM) || defined(USE_MMTK)
 #define FRIEND_GC_SCANNER(nscl) friend gctools::Layout_code* gctools::get_stamp_layout_codes();
-#elif defined(USE_MPS)
-#ifdef RUNNING_PRECISEPREP
-#define FRIEND_GC_SCANNER(nscl)
-#else
-// #define FRIEND_GC_SCANNER(theclass) friend GC_RESULT gctools::obj_scan_helper<theclass>(mps_ss_t _ss, mps_word_t _mps_zs,
-// mps_word_t _mps_w, mps_word_t & _mps_ufs, mps_word_t _mps_wt, mps_addr_t & client);
-#define FRIEND_GC_SCANNER(dummy) friend gctools::Layout_code* gctools::get_stamp_layout_codes();
-#endif
-#endif
 
 namespace core {
-
-#define _NEW_(x) (new x)
 
 class DebugStream;
 
@@ -881,10 +837,6 @@ T_sp lisp_from_void_ptr(void* p);
 uint64_t lisp_nameword(T_sp name);
 
 List_sp lisp_copy_default_special_bindings();
-/*! Write characters to the stream */
-#if 0
-  gc::GCStack &lisp_threadLocalStack();
-#endif
 
 LispPtr lisp_fromObject(T_sp obj);
 string lisp_currentPackageName();
@@ -1001,8 +953,6 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind, Symbol_sp sym, const string& p
 bool lisp_debugIsOn(const char* fileName, uint debugFlag = DEBUG_CPP_FUNCTION);
 
 DebugStream* lisp_debugLog();
-/*! Return a string representation of the object */
-string lisp_rep(T_sp obj);
 Symbol_sp lisp_internKeyword(const string& name);
 Symbol_sp lisp_intern(const string& name);
 Symbol_sp lisp_intern(const string& symbolName, const string& packageName);
@@ -1030,33 +980,9 @@ namespace core {
 
 typedef unsigned char ubyte;
 
-/* Callbacks that return a boolean value have this structure */
-typedef bool (*BoolReturnCallback)(LispPtr);
-
-/* Callbacks that return an integer value have this structure */
-typedef int (*IntReturnCallback)(LispPtr);
-
-/* Callbacks that return an object have this structure */
-typedef T_sp (*ObjectReturnCallback)(LispPtr);
-
-/*
- * These callback types are used to redirect screen output depending if we are
- * on a console or using WxWidgets
- */
-
-typedef void (*PrintvWriteCallback)(const char* outputBuffer);
-typedef void (*PrintvWriteCharCallback)(char outputChar);
-typedef void (*PrintvFlushCallback)();
-
 const char* trimSourceFilePathName(const char* fullPathName);
 
 }; // namespace core
-
-namespace llvm_interface {
-
-typedef void (*llvmAddSymbolCallbackType)(const core::Symbol_sp& sym);
-extern llvmAddSymbolCallbackType addSymbol;
-} // namespace llvm_interface
 
 #include <clasp/core/clasp_gmpxx.h>
 
@@ -1093,8 +1019,6 @@ void core__mangledSymbols(T_sp stream_designator);
 };
 
 extern void* _ZTVN4core6LispE;
-
-#define CLASP_DEFAULT_CTOR
 
 #define FASO_MAGIC_NUMBER_0 0xbe
 #define FASO_MAGIC_NUMBER_1 0xbe

@@ -150,13 +150,13 @@ bool library_with_name(const std::string& name, bool isExecutable, std::string& 
 
 }; // namespace core
 
-extern "C" std::string dbg_safe_repr(uintptr_t raw);
 
 std::string _safe_rep_(core::T_sp obj);
 
 extern "C" {
-void dbg_safe_print(uintptr_t raw);
-void dbg_safe_println(uintptr_t raw);
+std::string dbg_safe_repr(void* raw);
+void dbg_safe_print(void* raw);
+void dbg_safe_println(void* raw);
 void dbg_safe_backtrace();
 void dbg_primitive_print_backtrace();
 };

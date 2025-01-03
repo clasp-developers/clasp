@@ -32,10 +32,8 @@ namespace core {
 FORWARD(HashTableBase);
 class HashTableBase_O : public General_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, HashTableBase_O, "HashTableBase", core::General_O);
-  HashTableBase_O(){};
 
 public:
-  virtual ~HashTableBase_O(){};
 
 public:
   virtual T_sp hash_table_setf_gethash(T_sp key, T_sp value) = 0;

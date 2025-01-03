@@ -28,6 +28,8 @@ THE SOFTWARE.
 
 #define DEBUG_LEVEL_NONE
 
+#include <stack>
+#include <utility> // pair
 #include <unistd.h>
 #include <fcntl.h>
 #include <clasp/core/foundation.h>
@@ -37,6 +39,7 @@ THE SOFTWARE.
 #include <clasp/core/numbers.h>
 #include <clasp/core/array.h>
 #include <clasp/core/hashTable.h>
+#include <clasp/core/function.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/gctools/gc_boot.h>
@@ -151,7 +154,6 @@ namespace gctools {
 size_t global_sizeof_fwd;
 
 // GCStack _ThreadLocalStack;
-const char* _global_stack_marker;
 size_t _global_stack_max_size;
 /*! Keeps track of the next available header KIND value */
 stamp_t global_next_header_stamp = (stamp_t)STAMPWTAG_max + 1;
@@ -540,13 +542,13 @@ void BaseHeader_s::validate() const {
   }
 }
 
-bool ConsHeader_s::isValidConsObject(GatherObjects* gather) const {
+bool ConsHeader_s::isValidConsObject() const {
   if (((uintptr_t)this & ptag_mask) != 0) {
     printf("%s:%d The cons header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
     abort();
   }
   void* gcBase;
-  if (gather->_Verbosity == room_test && !is_memory_readable((void*)this, 8))
+  if (!is_memory_readable((void*)this, 8))
     goto bad;
   gcBase = GC_base((void*)this);
   if (gcBase != (void*)this)
@@ -562,13 +564,13 @@ bad:
   return false;
 }
 
-bool Header_s::isValidGeneralObject(GatherObjects* gather) const {
+bool Header_s::isValidGeneralObject() const {
   if (((uintptr_t)this & ptag_mask) != 0) {
     printf("%s:%d The general header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
     abort();
   }
   void* gcBase;
-  if (gather->_Verbosity == room_test && !is_memory_readable((void*)this, 8))
+  if (!is_memory_readable((void*)this, 8))
     goto bad;
   gcBase = GC_base((void*)this);
   if (gcBase != (void*)this)
@@ -867,218 +869,191 @@ void* GCRootsInModule::lookup_function(size_t index) {
 namespace gctools {
 
 /* Walk all of the roots, passing the address of each root and what it represents */
-void walkRoots(RootWalkCallback callback, void* data) {
-  callback((Tagged*)&_lisp, LispRoot, 0, data);
+template <typename RootWalkCallback>
+void walkRoots(RootWalkCallback&& callback) {
+  callback((Tagged*)&_lisp);
   for (size_t jj = 0; jj < global_symbol_count; ++jj) {
-    callback((Tagged*)&global_symbols[jj], SymbolRoot, jj, data);
+    callback((Tagged*)&global_symbols[jj]);
   }
 };
-
-PointerFix globalMemoryWalkPointerFix;
-
-void gatherObjects(uintptr_t* fieldAddress, uintptr_t client, uintptr_t tag, void* userData) {
-  GatherObjects* gather = (GatherObjects*)userData;
-  BaseHeader_s* base;
-  if (tag == gctools::general_tag) {
-    Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client); // works for weak as well
-    base = header;
-    if (!header->isValidGeneralObject(gather)) {
-      auto ii = gather->_corruptObjects.find(header);
-      if (ii == gather->_corruptObjects.end()) {
-        gather->_corruptObjects[header].push_back((uintptr_t)fieldAddress);
-      } else {
-        std::vector<uintptr_t>& badPointers = ii->second;
-        if (std::find(badPointers.begin(), badPointers.end(), (uintptr_t)fieldAddress) != badPointers.end()) {
-          badPointers.push_back((uintptr_t)fieldAddress);
-        }
-      }
-      return;
-    }
-  } else if (tag == gctools::cons_tag) {
-    ConsHeader_s* consHeader = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)client);
-    base = consHeader;
-    if (!consHeader->isValidConsObject(gather)) {
-      auto ii = gather->_corruptObjects.find(consHeader);
-      if (ii == gather->_corruptObjects.end()) {
-        std::vector<uintptr_t> badPointers;
-        badPointers.push_back((uintptr_t)fieldAddress);
-        gather->_corruptObjects[consHeader] = badPointers;
-      } else {
-        std::vector<uintptr_t>& badPointers = ii->second;
-        if (std::find(badPointers.begin(), badPointers.end(), (uintptr_t)fieldAddress) != badPointers.end()) {
-          badPointers.push_back((uintptr_t)fieldAddress);
-        }
-      }
-      return;
-    }
-  } else {
-#ifdef RUNNING_PRECISEPREP
-    Header_s* base = NULL;
-#else
-    Header_s* base = (Header_s*)GC_base(fieldAddress);
-#endif
-    if (base == NULL) {
-      printf("%s:%d:%s Hit NULL base pointer for %p\n", __FILE__, __LINE__, __FUNCTION__, fieldAddress);
-    }
-    auto ii = gather->_corruptObjects.find(base);
-    if (ii == gather->_corruptObjects.end()) {
-      std::vector<uintptr_t> badPointers;
-      badPointers.push_back((uintptr_t)fieldAddress);
-      gather->_corruptObjects[base] = badPointers;
-    } else {
-      std::vector<uintptr_t>& badPointers = ii->second;
-      badPointers.push_back((uintptr_t)fieldAddress);
-    }
-    printf("%s:%d:%s Somehow a non general/cons object at %p value %p got into gatherObjects - this indicates memory corruption - "
-           "figure out why\n",
-           __FILE__, __LINE__, __FUNCTION__, (void*)fieldAddress, (void*)(client | tag));
-    return; // It's an immediate - it shouldn't have gotten here
-  }
-  //
-  // It's a good object maybe mark it
-  //
-  //
-  // If it's marked already then return
-  if (gather->markedP(base))
-    return;
-  //
-  // It hasn't been seen - mark it for scanning
-  //
-  MarkNode* node = new MarkNode(fieldAddress);
-  LOG("pushMarkStack: {}\n", *(void**)fieldAddress);
-  gather->pushMarkStack(node);
-}
-
-#define POINTER_FIX(_ptr_)                                                                                                         \
-  {                                                                                                                                \
-    uintptr_t* fieldP = reinterpret_cast<uintptr_t*>(_ptr_);                                                                       \
-    if (gctools::tagged_objectp(*fieldP)) {                                                                                        \
-      uintptr_t tagged_obj_ptr = *fieldP;                                                                                          \
-      uintptr_t obj = gctools::untag_object<uintptr_t>(tagged_obj_ptr);                                                            \
-      uintptr_t tag = (uintptr_t)gctools::ptag<uintptr_t>(tagged_obj_ptr);                                                         \
-      /*printf("%s:%d fixing fieldP@%p obj-> %p tag-> 0x%lx\n", __FILE__, __LINE__, (void*)fieldP, (void*)obj, (uintptr_t)tag);*/  \
-      (globalMemoryWalkPointerFix)(fieldP, obj, tag, user_data);                                                                   \
-    };                                                                                                                             \
-  }
 
 #define GENERAL_PTR_TO_HEADER_PTR(_general_) GeneralPtrToHeaderPtr((void*)_general_)
 // #define HEADER_PTR_TO_GENERAL_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
 #define WEAK_PTR_TO_HEADER_PTR(_general_) WeakPtrToHeaderPtr((void*)_general_)
 // #define HEADER_PTR_TO_WEAK_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
 
-#define SCAN_STRUCT_T int
 #define ADDR_T uintptr_t
-#define SCAN_BEGIN(ss)
-#define SCAN_END(ss)
-#define RESULT_TYPE int
-#define RESULT_OK 1
-#define EXTRA_ARGUMENTS , void* user_data
+#define EXTRA_ARGUMENTS , Tagged containingObject, std::stack<std::pair<Tagged, Tagged*>>& markStack
 
-#define OBJECT_SKIP_IN_OBJECT_SCAN blah_blah_blah_error
+#define POINTER_FIX(_ptr_) markStack.emplace(containingObject, reinterpret_cast<Tagged*>(_ptr_))
+
 #define OBJECT_SCAN mw_obj_scan
-#include "obj_scan.cc"
-#undef OBJECT_SCAN
-
 #define OBJECT_SKIP mw_obj_skip
 #include "obj_scan.cc"
 #undef OBJECT_SKIP
-
-#define OBJECT_SKIP_IN_OBJECT_FWD mw_obj_skip
-#define OBJECT_FWD mw_obj_fwd
-#include "obj_scan.cc"
-#undef OBJECT_FWD
+#undef OBJECT_SCAN
 
 #define CONS_SCAN mw_cons_scan
 #define CONS_SKIP mw_cons_skip
-#define CONS_FWD mw_cons_fwd
-#define CONS_SKIP_IN_CONS_FWD mw_cons_skip
 #include "cons_scan.cc"
-#undef CONS_FWD
 #undef CONS_SKIP
 #undef CONS_SCAN
 
 #define WEAK_SCAN mw_weak_scan
 #define WEAK_SKIP mw_weak_skip
-#define WEAK_FWD mw_weak_fwd
-#define WEAK_SKIP_IN_WEAK_FWD mw_weak_skip
 #include "weak_scan.cc"
-#undef WEAK_FWD
 #undef WEAK_SKIP
 #undef WEAK_SCAN
 
-#undef SCAN_STRUCT_T
+#undef POINTER_FIX
 #undef ADDR_T
-#undef SCAN_BEGIN
-#undef SCAN_END
-#undef RESULT_TYPE
-#undef RESULT_OK
 #undef EXTRA_ARGUMENTS
 
-void gatherAllObjects(GatherObjects& gather) {
-  //  printf("%s:%d:%s entered \n", __FILE__, __LINE__, __FUNCTION__ );
+template <class Callback>
+static void mapAllObjectsInternal(std::set<Tagged>& markSet,
+                                  Callback callback) {
+  std::stack<std::pair<Tagged, Tagged*>> markStack;
 
-  globalMemoryWalkPointerFix = gatherObjects;
+  // process all roots
+  walkRoots([&](Tagged* rootf) { markStack.emplace(0, rootf); });
 
-  // Add the roots to the mark stack
-  walkRoots(
-      +[](gctools::Tagged* rootAddress, RootType rootType, size_t rootIndex, void* data) {
-        GatherObjects* gather = (GatherObjects*)data;
-        bool forceGeneralRoot = false;
-        if (rootType == LispRoot)
-          forceGeneralRoot = true;
-        else if (rootType == CoreSymbolRoot)
-          forceGeneralRoot = true;
-        MarkNode* node = new MarkNode(rootAddress, forceGeneralRoot);
-        LOG("Push root: {}\n", *(void**)rootAddress);
-        gather->pushMarkStack(node);
-      },
-      (void*)&gather);
+  while (!markStack.empty()) {
+    // pop a field. we don't need the containing object.
+    Tagged* field = markStack.top().second; markStack.pop();
+    Tagged tagged = *field;
 
-  // While there are objects on the mark stack scan
-  while (gather._Stack) {
-    // Take one object off the mark stack
-    MarkNode* top = gather.popMarkStack();
-    gctools::Tagged* objAddr = top->_ObjectAddr;
-    gctools::Tagged tagged = *objAddr;
-    bool forceGeneralTag = top->_ForceGeneralRoot;
-    uintptr_t tag = tagged & ptag_mask;
-    uintptr_t client = tagged & ptr_mask;
-    delete top;
-
-    //
-    // Identify if the object is a general, cons or weak object
-    //  This uses a combination of inspecting the tag and the mtag of the header
-    //
-    if (forceGeneralTag || (tag == general_tag)) {
-      // It may be general or weak - we must check the header now
-      // GeneralPtrToHeaderPtr works for both general and weak objects because their
-      // headers are guaranteed to be the same size
-      Header_s* generalOrWeakHeader = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
-      gather.mark(generalOrWeakHeader);
-      if (!generalOrWeakHeader->_badge_stamp_wtag_mtag.weakObjectP()) {
-        // It's a general object - walk it
-        size_t objectSize;
-        LOG("Mark/scan client: {}\n", *(void**)client);
-        mw_obj_skip(client, false, objectSize);
-        uintptr_t clientLimit = client + objectSize;
-        mw_obj_scan(0, client, clientLimit, &gather);
-      } else {
-        // It's a weak object - walk it
-        size_t objectSize;
-        uintptr_t clientLimit = mw_weak_skip(client, false, objectSize);
-        LOG("Mark/scan weak client: {}\n", *(void**)client);
-        mw_weak_scan(0, client, clientLimit, &gather);
+    switch(ptag(tagged)) {
+    case general_tag: { // general object: check weakness
+      if (!markSet.contains(tagged)) { // only process each object once
+        markSet.insert(tagged);
+        uintptr_t client = untag_object(tagged);
+        Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
+        // the mw_foo_scan functions push all fields of the object
+        // onto the markStack to keep the loop going.
+        if (header->_badge_stamp_wtag_mtag.weakObjectP())
+          mw_weak_scan(client, tagged, markStack);
+        else mw_obj_scan(client, tagged, markStack);
+        // now's the time to callback. Could also go before the scan
+        callback(tagged);
       }
-    } else if (tag == cons_tag) {
-      // It's a cons object - get the header
-      Header_s* consHeader = (Header_s*)ConsPtrToHeaderPtr((void*)client);
-      gather.mark(consHeader);
-      size_t consSize;
-      LOG("Mark/scan cons client: {}\n", *(void**)client);
-      uintptr_t clientLimit = mw_cons_skip(client, consSize);
-      mw_cons_scan(0, client, clientLimit, &gather);
+    } break;
+    case cons_tag: {
+      if (!markSet.contains(tagged)) {
+        markSet.insert(tagged);
+        uintptr_t client = untag_object(tagged);
+        mw_cons_scan(client, tagged, markStack);
+        callback(tagged);
+      }
+    } break;
+    default: break; // immediate, vaslist, etc.: ignore
     }
   }
+}
+
+void mapAllObjects(void (*callback)(Tagged, void*), void* data) {
+  std::set<Tagged> markSet;
+  mapAllObjectsInternal(markSet, [&](Tagged obj) { callback(obj, data); });
+}
+
+// Used in snapshot save to avoid walking memory repeatedly.
+std::set<Tagged> setOfAllObjects() {
+  std::set<Tagged> markSet;
+  mapAllObjectsInternal(markSet, [](Tagged) {});
+  return markSet; // hoping for NRVO optimization, i guess.
+}
+
+// Check that all fields in all objects point to valid objects.
+// Also check for functions that can't be resolved with dlsym, since that's
+// important for snapshot save.
+// Return the set of corrupt fields, represented as pairs of a non-corrupt
+// object and the address of a field within that object; the object contained
+// in that field is corrupt.
+// If a corrupt object is accessible in multiple fields, only one field containing
+// it is returned.
+std::set<std::pair<Tagged, Tagged*>> memtest(std::set<core::T_sp>& dladdrFailed) {
+  std::stack<std::pair<Tagged, Tagged*>> markStack;
+  std::set<Tagged> markSet;
+  std::set<std::pair<Tagged, Tagged*>> corrupt;
+
+  std::set<void*> uniqueEntryPoints;
+
+  walkRoots([&](Tagged* rootAddr) { markStack.emplace(0, rootAddr); });
+
+  while (!markStack.empty()) {
+    auto p = markStack.top(); markStack.pop();
+    Tagged containingObject = p.first;
+    Tagged* field = p.second;
+    Tagged tagged = *field;
+
+    switch (tagged & ptag_mask) {
+    case general_tag: {
+      if (!markSet.contains(tagged)) {
+        markSet.insert(tagged);
+        uintptr_t client = tagged & ptr_mask;
+        Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
+        if (header->isValidGeneralObject()) {
+          if (header->_badge_stamp_wtag_mtag.weakObjectP())
+            mw_weak_scan(client, tagged, markStack);
+          else {
+            mw_obj_scan(client, tagged, markStack);
+            // If this is a function, check its dladdrability.
+            core::T_sp tobj(tagged);
+            if (tobj.isA<core::SimpleFun_O>()) {
+              auto sfun = tobj.as_unsafe<core::SimpleFun_O>();
+              if (!sfun->dladdrablep(uniqueEntryPoints))
+                dladdrFailed.insert(sfun);
+            }
+            // This CoreFun check seems like it should work, but
+            // snapshots in a FASO build trip it.
+            // TODO figure that out?
+            // Snapshots seem to work without this test, anyway.
+            /*
+            else if (tobj.isA<core::CoreFun_O>()) {
+              auto sfun = tobj.as_unsafe<core::CoreFun_O>();
+              if (!sfun->dladdrablep(uniqueEntryPoints))
+                dladdrFailed.insert(sfun);
+            }*/
+          }
+        } else {
+          corrupt.emplace(containingObject, field);
+        }
+      }
+    } break;
+    case cons_tag: {
+      if (!markSet.contains(tagged)) {
+        markSet.insert(tagged);
+        uintptr_t client = tagged & ptr_mask;
+        ConsHeader_s* header = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)client);
+        if (header->isValidConsObject())
+          mw_cons_scan(client, tagged, markStack);
+        else {
+          corrupt.emplace(containingObject, field);
+        }
+      }
+    } break;
+    case vaslist0_tag:
+#if TAG_BITS == 4
+    case vaslist1_tag:
+#endif
+        break; // not checked presently - FIXME?
+    case fixnum00_tag:
+    case fixnum01_tag:
+#if TAG_BITS == 4
+    case fixnum10_tag:
+    case fixnum11_tag:
+#endif
+    case character_tag:
+    case single_float_tag:
+#ifdef CLASP_SHORT_FLOAT
+    case short_float_tag:
+#endif
+    case UNBOUND_TAG: // FIXME: put const definition in pointer_tagging.h somewhere?
+        break; // immediate, nothing to do
+    default: // unknown tag - object is corrupt
+        corrupt.emplace(containingObject, field); break;
+    }
+  }
+  return corrupt;
 }
 
 /* Return the size of the object */

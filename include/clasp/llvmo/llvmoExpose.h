@@ -311,7 +311,7 @@ class JITDylib_O : public core::ExternalObject_O {
   typedef llvm::orc::JITDylib* PointerToExternalType;
 
 private:
-  JITDylib_O(){};
+  JITDylib_O() = default;
 
 public:
   PointerToExternalType _ptr;
@@ -381,7 +381,6 @@ protected:
 
 public:
   llvm::AttributeSet getAttributeSet() { return this->val._value; };
-  AttributeSet_O(){};
   AttributeSet_O(llvm::AttributeSet v) : val(v){};
 }; // AttributeSet_O
 }; // namespace llvmo
@@ -690,10 +689,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-
-  TargetSubtargetInfo_O() : Base(){};
-  ~TargetSubtargetInfo_O() {}
-
 }; // TargetSubtargetInfo_O
 }; // namespace llvmo
 /* from_object translators */
@@ -934,10 +929,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-
-  LLVMTargetMachine_O() : Base(){};
-  ~LLVMTargetMachine_O() {}
-
 }; // LLVMTargetMachine_O
 }; // namespace llvmo
 /* from_object translators */
@@ -1132,9 +1123,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  User_O() : Base(){};
-  ~User_O() {}
-
 }; // User_O
 }; // namespace llvmo
 /* from_object translators */
@@ -1153,9 +1141,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  MetadataAsValue_O() : Base(){};
-  ~MetadataAsValue_O() {}
-
 }; // MetadataAsValue_O
 }; // namespace llvmo
 /* from_object translators */
@@ -1189,7 +1174,6 @@ public: // Simple default ctor/dtor
 
 public: // ctor/dtor for classes with shared virtual base
         //    explicit Attribute_O() : T_O(), T(mc) {};
-        //    virtual ~Attribute_O() {};
 public:
 private: // instance variables here
   dont_expose<llvm::Attribute> _Attribute;
@@ -1363,10 +1347,6 @@ public:
     this->_ptr = ptr;
   }
   static Constant_sp create(llvm::Constant* ptr);
-  ;
-  Constant_O() : Base(){};
-  ~Constant_O() {}
-
 }; // Constant_O
 }; // namespace llvmo
 /* from_object translators */
@@ -1426,9 +1406,6 @@ private:
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) { this->_ptr = ptr; }
-  ConstantArray_O() : Base(){};
-  virtual ~ConstantArray_O(){};
-
 public:
   static Constant_sp get(ArrayType_sp type, core::List_sp values);
 }; // ConstantArray_O
@@ -1447,8 +1424,6 @@ private:
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) { this->_ptr = ptr; }
-  BlockAddress_O() : Base(){};
-  virtual ~BlockAddress_O(){};
 
 public:
   static BlockAddress_sp get(Function_sp func, BasicBlock_sp bb);
@@ -1469,8 +1444,6 @@ private:
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) { this->_ptr = ptr; }
-  ConstantDataSequential_O() : Base(){};
-  virtual ~ConstantDataSequential_O(){};
 
 public:
 }; // ConstantDataSequential_O
@@ -1490,8 +1463,6 @@ private:
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) { this->_ptr = ptr; }
-  ConstantDataArray_O() : Base(){};
-  virtual ~ConstantDataArray_O(){};
 
 public:
   static Constant_sp getUInt32(LLVMContext_sp context, core::T_sp values);
@@ -1511,8 +1482,6 @@ private:
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) { this->_ptr = ptr; }
-  ConstantExpr_O() : Base(){};
-  virtual ~ConstantExpr_O(){};
 
 public:
   static Constant_sp getInBoundsGetElementPtr(llvm::Type* element_type, Constant_sp constant, core::List_sp idxList);
@@ -1571,8 +1540,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  GlobalVariable_O() : Base(){};
-  virtual ~GlobalVariable_O() {}
 
 }; // GlobalVariable_O
 }; // namespace llvmo
@@ -1873,8 +1840,6 @@ public:
 
 public:
   core::Integer_sp toInteger(bool issigned) const;
-  APInt_O() : Base(){};
-  ~APInt_O(){};
 
 public:
   string __repr__() const;
@@ -1990,8 +1955,6 @@ public:
     delete this->_ptr;
     this->_ptr = ptr;
   }
-  IRBuilder_O() : Base(){};
-  ~IRBuilder_O() {}
   static IRBuilder_sp make(LLVMContext_sp context);
 
 public:
@@ -2030,8 +1993,6 @@ public:
   core::T_sp getParent();   // basic block or nil
   CL_DEFMETHOD bool CallInstP() const { return llvm::isa<llvm::CallInst>(this->wrappedPtr()); };
   CL_DEFMETHOD bool InvokeInstP() const { return llvm::isa<llvm::InvokeInst>(this->wrappedPtr()); };
-  Instruction_O() : Base(){};
-  ~Instruction_O() {}
 
 public:
   void setMetadata(core::String_sp kind, MDNode_sp mdnode);
@@ -2081,8 +2042,6 @@ public:
     this->_ptr = ptr;
   }
   void setAlignment(core::T_sp align);
-  StoreInst_O() : Base(){};
-  ~StoreInst_O() {}
 
 }; // StoreInst_O
 }; // namespace llvmo
@@ -2118,8 +2077,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  FenceInst_O() : Base(){};
-  ~FenceInst_O() {}
 
 }; // FenceInst_O
 }; // namespace llvmo
@@ -2155,8 +2112,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  AtomicCmpXchgInst_O() : Base(){};
-  ~AtomicCmpXchgInst_O() {}
 
 }; // AtomicCmpXchgInst_O
 }; // namespace llvmo
@@ -2194,8 +2149,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  AtomicRMWInst_O() : Base(){};
-  ~AtomicRMWInst_O() {}
 
 }; // AtomicRMWInst_O
 }; // namespace llvmo
@@ -2233,8 +2186,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  PHINode_O() : Base(){};
-  ~PHINode_O() {}
 
 }; // PHINode_O
 }; // namespace llvmo
@@ -2286,8 +2237,6 @@ public:
   void addParamAttr(unsigned ArgNo, llvm::Attribute::AttrKind Attr);
   core::List_sp getArgumentList() const;
   llvm::Function* getCalledFunction();
-  CallBase_O() : Base(){};
-  ~CallBase_O() {}
 
 }; // CallBase_O
 }; // namespace llvmo
@@ -2308,8 +2257,6 @@ public:
     this->_ptr = ptr;
   }
   CL_DEFMETHOD bool CallInstP() const { return true; };
-  CallInst_O() : Base(){};
-  ~CallInst_O() {}
 
 }; // CallInst_O
 }; // namespace llvmo
@@ -2345,8 +2292,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  LandingPadInst_O() : Base(){};
-  ~LandingPadInst_O() {}
 
 }; // LandingPadInst_O
 }; // namespace llvmo
@@ -2384,8 +2329,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  UnaryInstruction_O() : Base(){};
-  ~UnaryInstruction_O() {}
 
 }; // UnaryInstruction_O
 }; // namespace llvmo
@@ -2407,8 +2350,6 @@ public:
   }
   void setAlignment(core::T_sp align);
 
-  AllocaInst_O() : Base(){};
-  ~AllocaInst_O() {}
 }; // AllocaInst_O
 }; // namespace llvmo
 /* from_object translators */
@@ -2445,9 +2386,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  VAArgInst_O() : Base(){};
-  ~VAArgInst_O() {}
-
 }; // VAArgInst_O
 }; // namespace llvmo
 /* from_object translators */
@@ -2483,9 +2421,6 @@ public:
     this->_ptr = ptr;
   }
   void setAlignment(core::T_sp align);
-  LoadInst_O() : Base(){};
-  ~LoadInst_O() {}
-
 }; // LoadInst_O
 }; // namespace llvmo
 /* from_object translators */
@@ -2520,9 +2455,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  BranchInst_O() : Base(){};
-  ~BranchInst_O() {}
-
 }; // BranchInst_O
 }; // namespace llvmo
 /* from_object translators */
@@ -2559,9 +2491,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  SwitchInst_O() : Base(){};
-  ~SwitchInst_O() {}
-
   void addCase(ConstantInt_sp onVal, BasicBlock_sp dest);
 
 }; // SwitchInst_O
@@ -2600,9 +2529,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  IndirectBrInst_O() : Base(){};
-  ~IndirectBrInst_O() {}
-
 }; // IndirectBrInst_O
 }; // namespace llvmo
 /* from_object translators */
@@ -2640,9 +2566,6 @@ public:
     this->_ptr = ptr;
   }
   CL_DEFMETHOD bool InvokeInstP() const { return true; };
-  InvokeInst_O() : Base(){};
-  ~InvokeInst_O() {}
-
 }; // InvokeInst_O
 }; // namespace llvmo
 /* from_object translators */
@@ -2679,9 +2602,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  ResumeInst_O() : Base(){};
-  ~ResumeInst_O() {}
-
 }; // ResumeInst_O
 }; // namespace llvmo
 /* from_object translators */
@@ -2718,9 +2638,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  UnreachableInst_O() : Base(){};
-  ~UnreachableInst_O() {}
-
 }; // UnreachableInst_O
 }; // namespace llvmo
 /* from_object translators */
@@ -2757,9 +2674,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  ReturnInst_O() : Base(){};
-  ~ReturnInst_O() {}
-
 }; // ReturnInst_O
 }; // namespace llvmo
 /* from_object translators */
@@ -2799,9 +2713,6 @@ public:
   }
   static ConstantFP_sp create(llvm::ConstantFP* ptr);
   ;
-  ConstantFP_O() : Base(){};
-  ~ConstantFP_O() {}
-
 public:
   string __repr__() const;
 
@@ -2833,9 +2744,6 @@ public:
   }
   static ConstantInt_sp create(llvm::ConstantInt* ptr);
   ;
-  ConstantInt_O() : Base(){};
-  ~ConstantInt_O() {}
-
 public:
   string __repr__() const;
 }; // ConstantInt_O
@@ -2866,9 +2774,6 @@ public:
   }
   static ConstantStruct_sp create(llvm::ConstantStruct* ptr);
   ;
-  ConstantStruct_O() : Base(){};
-  ~ConstantStruct_O() {}
-
 public:
 }; // ConstantStruct_O
 }; // namespace llvmo
@@ -2899,9 +2804,6 @@ public:
   }
   static UndefValue_sp create(llvm::UndefValue* ptr);
   ;
-  UndefValue_O() : Base(){};
-  ~UndefValue_O() {}
-
 public:
   string __repr__() const;
 }; // UndefValue_O
@@ -2932,9 +2834,6 @@ public:
   }
   static ConstantPointerNull_sp create(llvm::ConstantPointerNull* ptr);
   ;
-  ConstantPointerNull_O() : Base(){};
-  ~ConstantPointerNull_O() {}
-
 public:
   string __repr__() const;
 }; // ConstantPointerNull_O
@@ -2969,9 +2868,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  MDNode_O() : Base(){};
-  ~MDNode_O() {}
-
 public:
   static MDNode_sp get(LLVMContext_sp context, core::List_sp values);
 
@@ -3011,8 +2907,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  MDString_O() : Base(){};
-  ~MDString_O() {}
 
 public:
   static MDString_sp get(LLVMContext_sp context, core::String_sp str);
@@ -3051,8 +2945,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  ValueAsMetadata_O() : Base(){};
-  ~ValueAsMetadata_O() {}
 
 public:
   static ValueAsMetadata_sp get(Value_sp val);
@@ -3096,8 +2988,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  NamedMDNode_O() : Base(){};
-  ~NamedMDNode_O() {}
 
 public:
   llvm::MDNode* getOperand(uint i) { return this->_ptr->getOperand(i); };
@@ -3146,8 +3036,6 @@ public:
     this->_ptr = ptr;
   }
   string __repr__() const;
-  Function_O() : Base(){};
-  ~Function_O() {}
 
   bool Function_equal(core::T_sp obj) const;
 
@@ -3215,8 +3103,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  BasicBlock_O() : Base(){};
-  ~BasicBlock_O() {}
 
   bool empty();
   size_t size();
@@ -3261,8 +3147,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  Argument_O() : Base(){};
-  ~Argument_O() {}
 
   void addAttr(llvm::Attribute a);
 
@@ -3355,8 +3239,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  FunctionType_O() : Base(){};
-  ~FunctionType_O() {}
 
 public: // static methods
   static core::T_sp get(llvm::Type* result_type, core::T_sp params, core::T_sp is_var_arg);
@@ -3393,8 +3275,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  IntegerType_O() : Base(){};
-  ~IntegerType_O() {}
 
 public: // static methods
   static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
@@ -3429,8 +3309,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  StructType_O() : Base(){};
-  ~StructType_O() {}
 
 public: // static methods
   /*! Get a structure using llvm:StructType::create(LLVMContext& context, ArrayRef<Type*>Elements,StringRef name,bool isPacked) */
@@ -3473,8 +3351,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  PointerType_O() : Base(){};
-  ~PointerType_O() {}
 
 public: // static methods
         //	static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
@@ -3516,8 +3392,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  ArrayType_O() : Base(){};
-  ~ArrayType_O() {}
 
 public: // static methods
   static ArrayType_sp get(Type_sp elementType, uint64_t numElements);
@@ -3555,8 +3429,6 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  VectorType_O() : Base(){};
-  ~VectorType_O() {}
 
 public: // static methods
   static VectorType_sp get(Type_sp etype, unsigned nelems, bool scalablep);
@@ -3731,7 +3603,6 @@ class MDBuilder_O : public core::CxxObject_O {
   LISP_CLASS(llvmo, LlvmoPkg, MDBuilder_O, "MDBuilder", core::CxxObject_O);
 
 public:
-  CLASP_DEFAULT_CTOR MDBuilder_O(){};
   ~MDBuilder_O() { delete this->_Builder; };
 
 protected:
@@ -3778,7 +3649,6 @@ public:
     _value.SectionIndex = SectionIndex;
     _value.Address = Address;
   }
-  ~SectionedAddress_O(){};
   std::string __repr__() const;
 
 }; // SectionedAddress_O

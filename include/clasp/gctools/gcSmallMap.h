@@ -35,12 +35,12 @@ namespace gctools {
 
 struct SmallMapGetError : public std::exception {};
 
-template <class Key, class Value, typename Allocator> class GCSmallMap : public GCVector<pair<Key, Value>, Allocator> {
+template <class Key, class Value> class SmallMap : public GCVector<pair<Key, Value>> {
 public:
   typedef Key key_type;
   typedef Value mapped_type;
   typedef pair<Key, Value> value_type;
-  typedef GCVector<value_type, Allocator> Base;
+  typedef GCVector<value_type> Base;
   typedef typename Base::iterator iterator;
   typedef typename Base::const_iterator const_iterator;
 

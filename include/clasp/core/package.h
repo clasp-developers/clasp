@@ -243,7 +243,6 @@ public:
     }
   }
 
-  virtual ~Package_O(){};
 };
 
 T_mv cl__find_symbol(String_sp symbolName, T_sp packageDesig);

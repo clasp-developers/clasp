@@ -160,12 +160,12 @@ struct HashTableReadLock {
   const HashTable_O* _hashTable;
   HashTableReadLock(const HashTable_O* ht) : _hashTable(ht) {
     if (this->_hashTable->_Mutex) {
-      this->_hashTable->_Mutex->shared_lock();
+      this->_hashTable->_Mutex->lock_shared();
     }
   }
   ~HashTableReadLock() {
     if (this->_hashTable->_Mutex) {
-      this->_hashTable->_Mutex->shared_unlock();
+      this->_hashTable->_Mutex->unlock_shared();
     }
   }
 };
@@ -173,12 +173,12 @@ struct HashTableWriteLock {
   const HashTable_O* _hashTable;
   HashTableWriteLock(const HashTable_O* ht, bool upgrade = false) : _hashTable(ht) {
     if (this->_hashTable->_Mutex) {
-      this->_hashTable->_Mutex->write_lock(upgrade);
+      this->_hashTable->_Mutex->lock(upgrade);
     }
   }
   ~HashTableWriteLock() {
     if (this->_hashTable->_Mutex) {
-      this->_hashTable->_Mutex->write_unlock();
+      this->_hashTable->_Mutex->unlock();
     }
   }
 };
@@ -210,34 +210,10 @@ CL_DEFUN Vector_sp core__hash_table_pairs(HashTableBase_sp hash_table_base) {
     return keyvalues;
   } else if (gc::IsA<WeakKeyHashTable_sp>(hash_table_base)) {
     WeakKeyHashTable_sp hash_table = gc::As_unsafe<WeakKeyHashTable_sp>(hash_table_base);
-    gctools::WeakKeyHashTable& wkht = hash_table->_HashTable;
-    return gctools::weak_key_hash_table_pairs(wkht);
+    return hash_table->_HashTable.pairs();
   }
   TYPE_ERROR(hash_table_base, Cons_O::createList(cl::_sym_or, cl::_sym_HashTable_O, core::_sym_WeakKeyHashTable_O));
 }
-
-#if defined(USE_MPS)
-static int LockDepth = 0;
-struct HashTableLocker {
-  HashTableLocker() {
-    if (LockDepth == 0) {
-      //                printf("%s:%d clamping the arena\n", __FILE__, __LINE__ );
-      mps_arena_clamp(global_arena);
-    }
-    ++LockDepth;
-  };
-  ~HashTableLocker() {
-    if (LockDepth == 1) {
-      //                printf("%s:%d releasing the arena\n", __FILE__, __LINE__ );
-      mps_arena_release(global_arena);
-    }
-    --LockDepth;
-  }
-};
-#define HASH_TABLE_LOCK() HashTableLocker zzzzHashTableLocker;
-#elif defined(USE_BOEHM) || defined(USE_MMTK)
-#define HASH_TABLE_LOCK()
-#endif
 
 // ----------------------------------------------------------------------
 //
@@ -794,8 +770,8 @@ KeyValuePair* HashTable_O::searchTable_no_read_lock(T_sp key, cl_index index) {
         DEBUG_HASH_TABLE({
           core::clasp_write_string(
               fmt::format("{}:{} search-end found key index = {} entry._Key->{}\n .... {}\n  key->{}\n .... {}\n", __FILE__,
-                          __LINE__, cur, (void*)entry._Key.raw_(), dbg_safe_repr((uintptr_t)(void*)entry._Key.raw_()).c_str(),
-                          (void*)key.raw_(), dbg_safe_repr((uintptr_t)(void*)key.raw_()).c_str()));
+                          __LINE__, cur, (void*)entry._Key.raw_(), dbg_safe_repr((void*)entry._Key.raw_()).c_str(),
+                          (void*)key.raw_(), dbg_safe_repr((void*)key.raw_()).c_str()));
         });
         return &entry;
       }

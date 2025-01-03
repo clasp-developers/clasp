@@ -21,7 +21,6 @@ typedef template_SimpleVector<SimpleVector_SPECIALIZE_ME_O, SPECIALIZE_ME, Abstr
     specialized_SimpleVector_SPECIALIZE_ME;
 class SimpleVector_SPECIALIZE_ME_O : public specialized_SimpleVector_SPECIALIZE_ME {
   LISP_CLASS(core, CorePkg, SimpleVector_SPECIALIZE_ME_O, "SimpleVector_SPECIALIZE_ME", AbstractSimpleVector_O);
-  virtual ~SimpleVector_SPECIALIZE_ME_O(){};
 
 public:
   typedef specialized_SimpleVector_SPECIALIZE_ME TemplatedBase;
@@ -53,7 +52,6 @@ namespace core {
 class MDArray_SPECIALIZE_ME_O
     : public template_Array<MDArray_SPECIALIZE_ME_O, SimpleMDArray_SPECIALIZE_ME_O, SimpleVector_SPECIALIZE_ME_O, MDArray_O> {
   LISP_CLASS(core, CorePkg, MDArray_SPECIALIZE_ME_O, "MDArray_SPECIALIZE_ME", MDArray_O);
-  virtual ~MDArray_SPECIALIZE_ME_O(){};
 
 public:
   typedef template_Array<MDArray_SPECIALIZE_ME_O, SimpleMDArray_SPECIALIZE_ME_O, SimpleVector_SPECIALIZE_ME_O, MDArray_O>
@@ -78,7 +76,6 @@ namespace core {
 class SimpleMDArray_SPECIALIZE_ME_O
     : public template_SimpleArray<SimpleMDArray_SPECIALIZE_ME_O, SimpleVector_SPECIALIZE_ME_O, SimpleMDArray_O> {
   LISP_CLASS(core, CorePkg, SimpleMDArray_SPECIALIZE_ME_O, "SimpleMDArray_SPECIALIZE_ME", SimpleMDArray_O);
-  virtual ~SimpleMDArray_SPECIALIZE_ME_O(){};
 
 public:
   typedef template_SimpleArray<SimpleMDArray_SPECIALIZE_ME_O, SimpleVector_SPECIALIZE_ME_O, SimpleMDArray_O> TemplatedBase;

@@ -296,7 +296,7 @@ struct ClaspXepFunction {
 
 extern "C" {
 
-std::string dbg_safe_repr(uintptr_t raw);
+std::string dbg_safe_repr(void* raw);
 
 // Return true if the Vaslist is at the head of the list and false if it is used up
 inline bool dump_Vaslist_ptr(FILE* fout, Vaslist* args) {
@@ -309,7 +309,7 @@ inline bool dump_Vaslist_ptr(FILE* fout, Vaslist* args) {
   }
   for (int i = 0; i < iEnd; ++i) {
     T_O* arg = (*args)[i];
-    fprintf(fout, "     [%d] --> %p %s\n", i, arg, dbg_safe_repr((uintptr_t)arg).c_str());
+    fprintf(fout, "     [%d] --> %p %s\n", i, arg, dbg_safe_repr((void*)arg).c_str());
   }
   return true;
 };
@@ -322,7 +322,7 @@ inline void dump_lcc_args(FILE* fout, size_t lcc_nargs, T_O** lcc_args) {
   } else {
     for (size_t i = 0; i < lcc_nargs; ++i) {
       T_O* arg = lcc_args[i];
-      fprintf(fout, "     [%zu] --> %p %s\n", i, arg, dbg_safe_repr((uintptr_t)arg).c_str());
+      fprintf(fout, "     [%zu] --> %p %s\n", i, arg, dbg_safe_repr((void*)arg).c_str());
     }
   }
 }
