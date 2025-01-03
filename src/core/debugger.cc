@@ -490,20 +490,7 @@ std::string dbg_safe_repr_depth(int depth, void* raw) {
     ss << "#<EXCEEDED-DEPTH>";
     return ss.str();
   }
-  gctools::Header_s* header = (gctools::Header_s*)GC_base(raw);
-  if (header==NULL) {
-    ss << "#<NON-GC-POINTER=" << (void*)raw<<">";
-    return ss.str();
-  }
-  gctools::clasp_ptr_t client = NULL;
-  if (header->_badge_stamp_wtag_mtag.stampP()) {
-    client = (gctools::clasp_ptr_t)((uintptr_t)gctools::HeaderPtrToGeneralPtr<core::General_O>((gctools::clasp_ptr_t)header) | GENERAL_TAG);
-  } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
-    client = (gctools::clasp_ptr_t)((uintptr_t)gctools::HeaderPtrToConsPtr(header) | CONS_TAG);
-  } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
-    client = (gctools::clasp_ptr_t)((uintptr_t)gctools::HeaderPtrToWeakPtr(header) | GENERAL_TAG);
-  }
-  core::T_sp obj((gc::Tagged)client);
+  core::T_sp obj((gc::Tagged)raw);
   if (obj.generalp()) {
     if (gc::IsA<core::Symbol_sp>(obj)) {
       core::Symbol_sp sym = gc::As_unsafe<core::Symbol_sp>(obj);

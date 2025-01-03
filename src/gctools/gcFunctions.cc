@@ -400,13 +400,14 @@ bool memory_test() {
     result = false;
     core::lisp_write(fmt::format("{} corrupt objects in memory test\n", corrupt.size()));
     size_t idx = 0;
-    for (const auto& field : corrupt) {
-      auto cur = *field;
-      void* base = GC_base(field);
+    for (const auto& cur : corrupt) {
+      Tagged base = cur.first;
+      Tagged* field = cur.second;
+      Tagged corruptObj = *field;
       if (base) {
-        core::lisp_write(fmt::format("#{} -> {} @{} base: {} == {}\n", idx, (void*)cur, (void*)field, (void*)base, (std::string)dbg_safe_repr(base)));
+        core::lisp_write(fmt::format("#{} -> {} @{} base: {} == {}\n", idx, (void*)corruptObj, (void*)field, (void*)base, dbg_safe_repr((void*)base)));
       } else {
-        core::lisp_write(fmt::format("#{} -> {} @{} base: NULL\n", idx, (void*)cur, (void*)field ));
+        core::lisp_write(fmt::format("#{} -> {} @{} base: [root]", idx, (void*)corruptObj, (void*)field ));
       }
       idx++;
     }
