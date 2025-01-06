@@ -1313,37 +1313,6 @@ struct Snapshot {
 
 }; // namespace snapshotSaveLoad
 
-extern "C" {
-#if defined(USE_BOEHM)
-void boehm_walker_callback(void* ptr, size_t sz, void* client_data) {
-  snapshotSaveLoad::walker_callback_t* walker = (snapshotSaveLoad::walker_callback_t*)client_data;
-  int kind;
-  size_t psize;
-  kind = GC_get_kind_and_size((void*)ptr, &psize);
-  // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
-  if (kind == gctools::global_lisp_kind || kind == gctools::global_cons_kind || kind == gctools::global_class_kind ||
-      kind == gctools::global_container_kind || kind == gctools::global_code_kind || kind == gctools::global_atomic_kind ||
-      kind == gctools::global_strong_weak_kind) {
-    // Either there is a tag in the low 3 bits of the ptr or the second word is not zero
-    // Blocks can be passed to us that have a boehm free-list pointer in the first word and zero everywhere else
-    //   a free-list pointer will have zero in the low 3 bits
-    bool notFreeListPtr = ((*(uintptr_t*)ptr) & 0x7);
-    bool secondWordNotZero = *(((uintptr_t*)ptr) + 1);
-    if (notFreeListPtr || secondWordNotZero) {
-      // If there is a non-zero header then walk it
-      DBG_SL_WALK_GC(BF("Walking to GC managed header %p %s\n") % (void*)header % header->description());
-      walker->callback((gctools::Header_s*)ptr);
-    } else {
-      DBG_SL_DONTWALK(BF("NOT walking to GC managed header %p kind: %d value -> %p  notFreeListPtr %d  secondWordNotZero %d\n") %
-                      (void*)ptr % kind % *(void**)ptr % notFreeListPtr % secondWordNotZero);
-    }
-  } else {
-    DBG_SL_DONTWALK(BF("NOT walking to GC managed header %p kind: %d value -> %p\n") % (void*)ptr % kind % *(void**)ptr);
-  }
-}
-#endif
-};
-
 namespace snapshotSaveLoad {
 
 struct ISLHeader_s {
@@ -2201,13 +2170,6 @@ void* snapshot_save_impl(void* data) {
   //
   Snapshot snapshot;
 
-#if defined(USE_BOEHM)
-//  printf("%s:%d:%s Not using GC_stop_world_external();\n", __FILE__, __LINE__, __FUNCTION__ );
-//  GC_stop_world_external();
-#else
-  MISSING_GC_SUPPORT();
-#endif
-
   if (sizeof(ISLGeneralHeader_s) - offsetof(ISLGeneralHeader_s, _Header) != sizeof(gctools::Header_s)) {
     printf("%s:%d:%s Sanity check for headers in snapshot save/load failed.\n"
            "The _Header field must be the last field in ISLGeneralHeader so that it is IMMEDIATELY followed by a client\n",
@@ -2579,9 +2541,6 @@ void* snapshot_save_impl(void* data) {
 #ifdef DEBUG_BADGE_SSL
   printf("%s:%d:%s global_badge_count = %lu\n", __FILE__, __LINE__, __FUNCTION__, global_badge_count);
 #endif
-#ifdef USE_BOEHM
-//  printf("%s:%d:%s Not using GC_start_world_external();\n", __FILE__, __LINE__, __FUNCTION__ );
-#endif
   if (snapshot_data->_Exit)
     exit(0);
   return NULL;
@@ -2669,11 +2628,7 @@ void snapshot_save(core::SaveLispAndDie& data) {
 
   core::lisp_write(fmt::format("Finished invoking cmp:invoke-save-hooks\n"));
 
-#if defined(USE_BOEHM)
-  GC_call_with_alloc_lock(snapshot_save_impl, &data);
-#else
-  MISSING_GC_SUPPORT();
-#endif
+  gctools::call_with_stopped_world(snapshot_save_impl, &data);
 }
 
 struct temporary_root_holder_t {
