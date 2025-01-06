@@ -570,12 +570,6 @@ struct DebugSnapshotObjectFile {
     }
   }
 };
-bool globalFwdMustBeInGCMemory = false;
-#define DEBUG_SL_FFWD 1
-
-void check_dladdr(uintptr_t address) {
-  // do nothing for now
-}
 
 void decodeRelocation_(uintptr_t codedAddress, uint8_t& firstByte, uintptr_t& libindex, uintptr_t& offset) {
   //  uintptr_t codedAddress = *ptrptr;
@@ -844,24 +838,6 @@ void decodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, core::T_sp codebase) {
 
 namespace snapshotSaveLoad {
 
-struct MemoryRange {
-  gctools::clasp_ptr_t _Start;
-  gctools::clasp_ptr_t _End;
-
-  MemoryRange(gctools::clasp_ptr_t start = NULL, gctools::clasp_ptr_t end = NULL) : _Start(start), _End(end){};
-  void set(gctools::clasp_ptr_t start, gctools::clasp_ptr_t end) {
-    this->_Start = start;
-    this->_End = end;
-  }
-  bool contains(gctools::clasp_ptr_t ptr) { return (this->_Start <= ptr && ptr <= this->_End); }
-};
-
-//
-// This stores if the client object is in snapshot save/load memory (true) or
-// from garbage collected memory (false)
-//
-MemoryRange globalISLBufferRange;
-
 gctools::Header_s* generalPointerToHeaderPointer(gctools::clasp_ptr_t general) {
   return (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(general);
 }
@@ -886,12 +862,6 @@ struct ISLInfo {
   uintptr_t _islEnd;
   std::map<gctools::BaseHeader_s*, core::T_O*> _forwarding;
   ISLInfo(FixupOperation_ op, uintptr_t s = 0, uintptr_t e = 0) : _operation(op), _islStart(s), _islEnd(e){};
-};
-
-struct MemoryTest_t {
-  ISLInfo islInfo;
-  FILE* fout;
-  MemoryTest_t(FixupOperation_ fop, FILE* f) : islInfo(fop), fout(f){};
 };
 
 //
@@ -980,46 +950,6 @@ struct walker_callback_t {
   virtual void callback(gctools::BaseHeader_s* header) = 0;
   walker_callback_t(ISLInfo* info) : _debug(false), _info(info){};
 };
-
-struct test_objects_t : public walker_callback_t {
-  std::map<gctools::BaseHeader_s*, std::vector<uintptr_t>> _corruptObjects;
-
-public:
-  test_objects_t(ISLInfo* info) : walker_callback_t(info){};
-  void callback(gctools::BaseHeader_s* header);
-};
-
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
-gctools::clasp_ptr_t test_pointer(gctools::clasp_ptr_t* clientAddress, gctools::clasp_ptr_t client, uintptr_t tag,
-                                  void* user_data) {
-  DBG_SL_FFWD(("test_pointer clientAddress: %p client: %p\n"), (void*)clientAddress, (void*)client);
-  test_objects_t* test_objects = (test_objects_t*)user_data;
-  ISLInfo* islInfo = test_objects->_info;
-  gctools::Header_s* header;
-  if (tag == gctools::general_tag) {
-    header = GENERAL_PTR_TO_HEADER_PTR(client);
-  } else if (tag == gctools::cons_tag) {
-    header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(client);
-  } else {
-    header = WEAK_PTR_TO_HEADER_PTR(client);
-  }
-  auto found = islInfo->_forwarding.find(header);
-  if (found == islInfo->_forwarding.end()) {
-    gctools::Header_s* base = (gctools::Header_s*)GC_base(clientAddress);
-    printf("%s:%d:%s In Object base: %p at %p is a client %p that was not reached when we walked all of memory\n", __FILE__,
-           __LINE__, __FUNCTION__, (void*)base, (void*)clientAddress, (void*)client);
-    auto ii = test_objects->_corruptObjects.find(base);
-    if (ii == test_objects->_corruptObjects.end()) {
-      std::vector<uintptr_t> badPointers;
-      badPointers.push_back((uintptr_t)clientAddress);
-      test_objects->_corruptObjects[base] = badPointers;
-    } else {
-      std::vector<uintptr_t>& badPointers = ii->second;
-      badPointers.push_back((uintptr_t)clientAddress);
-    }
-  }
-  return gctools::clasp_ptr_t((uintptr_t)client | tag);
-}
 
 gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clientAddress, gctools::clasp_ptr_t client,
                                                      uintptr_t tag, void* user_data) {
@@ -1501,13 +1431,6 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
   prepare_for_snapshot_save_t(Fixup* fixup, ISLInfo* info) : walker_callback_t(info), _fixup(fixup){};
 };
 
-struct prepare_test_t : public walker_callback_t {
-  std::set<gctools::BaseHeader_s*> _seen;
-  void callback(gctools::BaseHeader_s* header) { this->_seen.insert(header); }
-
-  prepare_test_t(ISLInfo* info) : walker_callback_t(info){};
-};
-
 struct calculate_size_t : public walker_callback_t {
 
   size_t _TotalSize;
@@ -1578,12 +1501,6 @@ template <typename Walker> void walk_gathered_objects(Walker& walker, const std:
       walker.callback(header);
     } // else is impossible given how the set is constructed
   }
-}
-
-size_t PageAlignUp(size_t size) {
-  size_t pagesize = getpagesize();
-  size_t aligned = ((size + pagesize) / pagesize) * pagesize;
-  return aligned;
 }
 
 struct copy_progress {
@@ -2070,7 +1987,6 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
   class OrderByAddress {
   public:
     OrderByAddress() {}
-    bool operator()(const PointerBase& x, const PointerBase& y) { return x._address <= y._address; }
     void addLibraries(Fixup* fixup, SymbolLookup& symbolLookup) {
       for (size_t idx = 0; idx < fixup->_ISLLibraries.size(); idx++) {
         DBG_SLS("Adding library #%lu: %s\n", idx, fixup->_Libraries[idx]._Name.c_str());
@@ -2273,9 +2189,6 @@ void* snapshot_save_impl(void* data) {
   snapshot._ObjectFiles = new copy_buffer_t(calc_size._ObjectFileTotalSize);
   islInfo._islStart = (uintptr_t)snapshot._Memory->_BufferStart;
   islInfo._islEnd = (uintptr_t)snapshot._Memory->_BufferStart + snapshot._Memory->_Size;
-  //  printf("%s:%d:%s Setting globalISLBufferRange\n", __FILE__, __LINE__, __FUNCTION__ );
-  globalISLBufferRange._Start = (gctools::clasp_ptr_t)snapshot._Memory->_BufferStart;
-  globalISLBufferRange._End = (gctools::clasp_ptr_t)(snapshot._Memory->_BufferStart + snapshot._Memory->_Size);
 
   //
   // 3. Walk all objects in memory
@@ -2748,8 +2661,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         printf("%s:%d NOT using maybeStartOfSnapshot\n", __FILE__, __LINE__);
       }
     }
-    // When loading forwarding pointers must always forward into GC managed objects
-    globalFwdMustBeInGCMemory = true;
+
     core::FunctionDescription_O funcdes;
     DBG_SL("1 FunctionDescription_O vtable pointer is: %p\n", *(void**)&funcdes);
     DBG_SL("     snapshot_load entered\n");
@@ -2876,12 +2788,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         fclose(fout); // Close fout if it's defined. --arguments option was passed
     }
     //  printf("%s:%d:%s Number of fixup._libraries %lu\n", __FILE__, __LINE__, __FUNCTION__, fixup._libraries.size() );
-
-    //
-    // Define the buffer range
-    //
-    globalISLBufferRange._Start = (gctools::clasp_ptr_t)islbuffer;
-    globalISLBufferRange._End = (gctools::clasp_ptr_t)islbuffer + fileHeader->_MemorySize;
 
     //
     // Fixup the vtables
