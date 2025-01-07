@@ -109,6 +109,12 @@ const char* pointer_pool(void* pointer) {
   return "SL";
 }
 
+#define ISL_ERROR(_fmt_, ...)                                                                                                      \
+  {                                                                                                                                \
+    printf("%s:%d:%s  " _fmt_ "\n", __FILE__, __LINE__, __FUNCTION__ __VA_OPT__(, ) __VA_ARGS__);                                  \
+    abort();                                                                                                                       \
+  }
+
 /*! Build a LibraryLookup by running 'nm' on one of our loaded libraries or executable.
  *  For dynamic libraries on linux (contain .so in filename) use --dynamic because regular symbols are often stripped
  *  Look for the first 'T' symbol and dlsym it to find out where the library is loaded in memory.
@@ -234,8 +240,7 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
         ++cur;
         ++nameidx;
         if (nameidx >= BUFLEN) {
-          printf("%s:%d The buffer size needs to be increased beyond %d\n", __FILE__, __LINE__, BUFLEN);
-          abort();
+          ISL_ERROR("The buffer size needs to be increased beyond %d", BUFLEN);
         }
       }
       fullname[nameidx] = '\0';
@@ -254,8 +259,7 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
           const char* versionNumStr = version+7; // advance to the number of @@LLVM_number
           int versionNum = atoi(versionNumStr);
           if (versionNum != LLVM_VERSION_MAJOR) {
-            printf("%s:%d:%s We encountered a symbol that does not have the correct version \"@@LLVM_%d\" - it has \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, LLVM_VERSION_MAJOR, version );
-            abort();
+            ISL_ERROR("We encountered a symbol that does not have the correct version \"@@LLVM_%d\" - it has \"%s\"", LLVM_VERSION_MAJOR, version);
           }
         } // fall through because we don't worry about versions right now
       }
@@ -580,12 +584,10 @@ void decodeRelocation_(uintptr_t codedAddress, uint8_t& firstByte, uintptr_t& li
 
 uintptr_t encodeRelocation_(uint8_t firstByte, size_t libraryIndex, size_t relocationOrOffset) {
   if ((relocationOrOffset & (((uintptr_t)1 << 32) - 1)) != relocationOrOffset) {
-    printf("%s:%d:%s relocationOrOffset %lu is too large\n", __FILE__, __LINE__, __FUNCTION__, relocationOrOffset);
-    abort();
+    ISL_ERROR("relocationOrOffset %lu is too large", relocationOrOffset);
   }
   if (libraryIndex > 256) {
-    printf("%s:%d:%s libraryIndex %lu is too large\n", __FILE__, __LINE__, __FUNCTION__, libraryIndex);
-    abort();
+    ISL_ERROR("libraryIndex %lu is too large", libraryIndex);
   }
   uintptr_t result = ((uintptr_t)1 << 56 | (uintptr_t)firstByte << 48) | (libraryIndex << 32) | relocationOrOffset;
   return result;
@@ -609,9 +611,7 @@ void Fixup::registerVtablePointer(size_t libraryIndex, core::T_O* vtablePtrPtr) 
 
 void Fixup::registerFunctionPointer(size_t libraryIndex, uintptr_t* functionPtrPtr, const char* location) {
   if (libraryIndex > LIBRARY_ID_MAX) {
-    printf("%s:%d:%s The library id %lu is too large - change the pointer coding scheme to add more bits to the library id\n",
-           __FILE__, __LINE__, __FUNCTION__, libraryIndex);
-    abort();
+    ISL_ERROR("The library id %lu is too large - change the pointer coding scheme to add more bits to the library id", libraryIndex);
   }
   this->_ISLLibraries[libraryIndex]._InternalPointers.emplace_back(FunctionPointer, (uintptr_t*)functionPtrPtr, *functionPtrPtr);
 #ifdef DEBUG_ENTRY_POINTS
@@ -699,14 +699,10 @@ void decodeEntryPointValue(uintptr_t value, uint8_t& firstByte, uintptr_t& epTyp
 
 uintptr_t decodeEntryPointAddress(uintptr_t offset, uintptr_t codeStart, uintptr_t codeEnd, core::T_sp code) {
   if (!codeStart || !codeEnd || !(codeStart < codeEnd)) {
-    printf("%s:%d:%s The start codeStart %p and codeEnd %p are not ascending values for code: %p!!!\n", __FILE__, __LINE__,
-           __FUNCTION__, (void*)codeStart, (void*)codeEnd, (void*)code.raw_());
-    abort();
+    ISL_ERROR("The start codeStart %p and codeEnd %p are not ascending values for code: %p!!!", (void*)codeStart, (void*)codeEnd, (void*)code.raw_());
   }
   if (!(offset < (codeEnd - codeStart))) {
-    printf("%s:%d:%s The offset %lu does not fall between codeStart %p and codeEnd %p (diff is %lu) for code: %p!!!\n", __FILE__,
-           __LINE__, __FUNCTION__, offset, (void*)codeStart, (void*)codeEnd, (codeEnd - codeStart), (void*)code.raw_());
-    abort();
+    ISL_ERROR("The offset %lu does not fall between codeStart %p and codeEnd %p (diff is %lu) for code: %p!!!!", offset, (void*)codeStart, (void*)codeEnd, (codeEnd - codeStart), (void*)code.raw_());
   }
   uintptr_t result = offset + codeStart;
   return result;
@@ -714,9 +710,7 @@ uintptr_t decodeEntryPointAddress(uintptr_t offset, uintptr_t codeStart, uintptr
 
 uintptr_t encodeEntryPointOffset(uintptr_t address, uintptr_t codeStart, uintptr_t codeEnd, core::T_sp code) {
   if (!codeStart || !codeEnd || !(codeStart < codeEnd)) {
-    printf("%s:%d:%s The codeStart %p and codeEnd %p for code: %p do not have reasonable, ascending values\n", __FILE__, __LINE__,
-           __FUNCTION__, (void*)codeStart, (void*)codeEnd, (void*)code.raw_());
-    abort();
+    ISL_ERROR("The codeStart %p and codeEnd %p for code: %p do not have reasonable, ascending values", (void*)codeStart, (void*)codeEnd, (void*)code.raw_());
   }
   // Check if address falls outside of the code range
   //   if this is so then it must be falling within a library
@@ -728,9 +722,7 @@ uintptr_t encodeEntryPointOffset(uintptr_t address, uintptr_t codeStart, uintptr
            offset, (void*)codeStart, (void*)codeEnd, (codeEnd - codeStart));
   }
   if (offset < 0) {
-    printf("%s:%d:%s Generating a vaddress that is negative: %p address: %p codeStart: 0x%" PRIxPTR "\n", __FILE__, __LINE__,
-           __FUNCTION__, (void*)offset, (void*)address, codeStart);
-    abort();
+    ISL_ERROR("Generating a vaddress that is negative: %p address: %p codeStart: 0x%" PRIxPTR, (void*)offset, (void*)address, codeStart);
   }
   return offset;
 }
@@ -781,11 +773,10 @@ bool decodeEntryPointForCompiledCode(Fixup* fixup, uintptr_t* ptrptr, llvmo::Obj
   uintptr_t result = decodeEntryPointAddress(offset, codeStart, codeEnd, code);
   DBG_SL_ENTRY_POINT(BF("base: %p decoded %p -> %6p %s\n") % (void*)code->codeStart() % vaddress % result % code->filename());
   if (*(uint8_t*)result != firstByte) {
-    printf("%s:%d:%s during decode function pointer %p must be readable and point to 0x%x (first byte) - instead it points to 0x%x "
-           "vaddress = %p  codeStart = %p\n",
-           __FILE__, __LINE__, __FUNCTION__, (void*)result, (uint32_t)firstByte, (uint)(*(uint8_t*)result), (void*)vaddress,
-           (void*)codeStart);
-    abort();
+    ISL_ERROR("during decode function pointer %p must be readable and point to 0x%x (first byte) - instead it points to 0x%x "
+              "vaddress = %p  codeStart = %p\n",
+              (void*)result, (uint32_t)firstByte, (uint)(*(uint8_t*)result), (void*)vaddress,
+              (void*)codeStart);
   }
   *ptrptr = result;
   return true;
@@ -811,9 +802,7 @@ void encodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, core::T_sp codebase, core
   } else if (gc::IsA<core::BytecodeModule_sp>(codebase)) {
     encodeEntryPointInLibrary(fixup, ptrptr,"BytecodeModule");
   } else {
-    printf("%s:%d:%s The codebase must be a Code_sp or a Library_sp it is %s\n", __FILE__, __LINE__, __FUNCTION__,
-           _rep_(codebase).c_str());
-    abort();
+    ISL_ERROR("The codebase must be a Code_sp or a Library_sp it is %s", _rep_(codebase).c_str());
   }
 }
 
@@ -880,8 +869,7 @@ struct ISLInfo {
 core::ForwardingEnum global_forwardingKind = core::undef;
 
 [[noreturn]] void errorBadForwardingKind() {
-  printf("%s:%d:%s The global_forwardingKind wasn't set\n", __FILE__, __LINE__, __FUNCTION__);
-  abort();
+  ISL_ERROR("The global_forwardingKind wasn't set");
 }
 
 void set_forwarding_pointer(gctools::BaseHeader_s* header, char* new_client, ISLInfo* info) {
@@ -892,8 +880,7 @@ void set_forwarding_pointer(gctools::BaseHeader_s* header, char* new_client, ISL
     }
     header->_badge_stamp_wtag_mtag.setFwdPointer(new_client);
     if ((uintptr_t)header->_badge_stamp_wtag_mtag.fwdPointer() != (uintptr_t)new_client) {
-      printf("%s:%d:%s Forwarding pointer written and read don't match\n", __FILE__, __LINE__, __FUNCTION__);
-      abort();
+      ISL_ERROR("Forwarding pointer written and read don't match");
     }
   } else if (global_forwardingKind == core::noStomp) {
     info->_forwarding[header] = (core::T_O*)new_client;
@@ -910,8 +897,7 @@ bool is_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
     bool noStompResult = (result != info->_forwarding.end());
     bool stompResult = header->_badge_stamp_wtag_mtag.fwdP();
     if (noStompResult != stompResult) {
-      printf("%s:%d:%s results don't match\n", __FILE__, __LINE__, __FUNCTION__);
-      abort();
+      ISL_ERROR("results don't match");
     }
     return stompResult;
   } else if (global_forwardingKind == core::noStomp) {
@@ -931,8 +917,7 @@ uintptr_t get_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
     uintptr_t noStompResult = (uintptr_t)info->_forwarding[header];
     uintptr_t stompResult = (uintptr_t)header->_badge_stamp_wtag_mtag.fwdPointer();
     if (noStompResult != stompResult) {
-      printf("%s:%d:%s results don't match\n", __FILE__, __LINE__, __FUNCTION__);
-      abort();
+      ISL_ERROR("results don't match");
     }
     return stompResult;
   } else if (global_forwardingKind == core::noStomp) {
@@ -998,16 +983,13 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
                 ((void*)((uintptr_t)fwd_client | tag)), GC_base((void*)fwd_client));
     if (islInfo->_operation == SaveOp) {
       if (!(islInfo->_islStart <= fwd_client) && (fwd_client < islInfo->_islEnd)) {
-        printf("%s:%d:%s Forwarded pointer does NOT point into the islbuffer\n", __FILE__, __LINE__, __FUNCTION__);
-        abort();
+        ISL_ERROR("Forwarded pointer does NOT point into the islbuffer");
       }
     } else if (islInfo->_operation == LoadOp) {
       if (global_debugSnapshot) {
         void* maybe_base = GC_base((void*)fwd_client);
         if (!maybe_base) {
-          printf("%s:%d:%s We have a pointer %p that MUST be in GC memory - but it isn't\n", __FILE__, __LINE__, __FUNCTION__,
-                 (void*)fwd_client);
-          abort();
+          ISL_ERROR("We have a pointer %p that MUST be in GC memory - but it isn't", (void*)fwd_client);
         }
       }
     }
@@ -1203,15 +1185,11 @@ struct copy_buffer_t {
         (this->_BufferStart <= (addr + bytes) && ((addr + bytes) <= (this->_BufferStart + this->_Size)))) {
       memcpy((void*)addr, (const void*)source, bytes);
     } else {
-      printf("%s:%d:%s The memcpy of range %p - %p will fall out of the allowed destination range %p - %p\n", __FILE__, __LINE__,
-             __FUNCTION__, (void*)addr, (void*)(addr + bytes), (void*)this->_BufferStart,
+      ISL_ERROR("The memcpy of range %p - %p will fall out of the allowed destination range %p - %p", (void*)addr, (void*)(addr + bytes), (void*)this->_BufferStart,
              (void*)(this->_BufferStart + this->_Size));
-      abort();
     }
     if (((uintptr_t)this->_buffer & 7) != 0) {
-      printf("%s:%d:%s The write_buffer command must end on word aligned address - it ends at %p\n", __FILE__, __LINE__,
-             __FUNCTION__, (void*)this->_buffer);
-      abort();
+      ISL_ERROR("The write_buffer command must end on word aligned address - it ends at %p", (void*)this->_buffer);
     }
     return addr;
   }
@@ -1256,8 +1234,7 @@ struct ISLHeader_s {
 struct ISLEndHeader_s : public ISLHeader_s {
   ISLEndHeader_s() : ISLHeader_s(ISLKind::End, 0){};
   gctools::Header_s* header() const {
-    printf("%s:%d:%s subclass must implement\n", __FILE__, __LINE__, __FUNCTION__);
-    abort();
+    ISL_ERROR("subclass must implement");
   };
 };
 
@@ -1347,12 +1324,6 @@ gctools::BaseHeader_s::BadgeStampWtagMtag* ISLHeader_s::stamp_wtag_mtag_P(ISLKin
       SIMPLE_ERROR("Add support to get _badge_stamp_wtag_mtag of ISLKind {}", (int)k);
   }
 }
-
-#define ISL_ERROR(_fmt_)                                                                                                           \
-  {                                                                                                                                \
-    printf("%s:%d:%s  %s\n", __FILE__, __LINE__, __FUNCTION__, (_fmt_).c_str());                                                   \
-    abort();                                                                                                                       \
-  }
 
 struct ensure_forward_t : public walker_callback_t {
   void callback(gctools::BaseHeader_s* header) {
@@ -1552,7 +1523,7 @@ struct copy_objects_t : public walker_callback_t {
         size_t generalSize;
         [[maybe_unused]] gctools::clasp_ptr_t dummy = isl_obj_skip(clientStart, false, generalSize);
         if (generalSize == 0)
-          ISL_ERROR(fmt::format("A zero size general at {} was encountered", (void*)clientStart));
+          ISL_ERROR("A zero size general at %p was encountered", (void*)clientStart);
         llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)clientStart;
         ISLGeneralHeader_s islheader(code->frontSize() + code->literalsSize(), (gctools::Header_s*)header, false);
         char* islh = this->_objects->write_buffer((char*)&islheader, sizeof(ISLGeneralHeader_s));
@@ -1601,7 +1572,7 @@ struct copy_objects_t : public walker_callback_t {
         size_t generalSize;
         [[maybe_unused]] gctools::clasp_ptr_t dummy = isl_obj_skip(clientStart, false, generalSize);
         if (generalSize == 0)
-          ISL_ERROR(fmt::format("A zero size general at {} was encountered", (void*)clientStart));
+          ISL_ERROR("A zero size general at %p was encountered", (void*)clientStart);
         gctools::clasp_ptr_t clientEnd = clientStart + generalSize;
 #ifdef DEBUG_BADGE_SSL
         if (header->_badge_stamp_wtag_mtag._header_badge.load() > 1) {
@@ -1633,7 +1604,7 @@ struct copy_objects_t : public walker_callback_t {
       size_t consSize;
       isl_cons_skip(client, consSize);
       if (consSize == 0)
-        ISL_ERROR(fmt::format("A zero size cons at {} was encountered", (void*)client));
+        ISL_ERROR("A zero size cons at %p was encountered", (void*)client);
       ISLConsHeader_s islheader(sizeof(core::Cons_O), header->_badge_stamp_wtag_mtag,
                                 header->_badge_stamp_wtag_mtag._header_badge.load());
       char* islh = this->_objects->write_buffer((char*)&islheader, sizeof(ISLConsHeader_s));
@@ -1649,7 +1620,7 @@ struct copy_objects_t : public walker_callback_t {
       size_t weakSize;
       [[maybe_unused]] gctools::clasp_ptr_t dummyNextClient = isl_weak_skip(clientStart, false, weakSize);
       if (weakSize == 0)
-        ISL_ERROR(fmt::format("A zero size weak object at {} was encountered", (void*)clientStart));
+        ISL_ERROR("A zero size weak object at %p was encountered", (void*)clientStart);
       gctools::clasp_ptr_t clientEnd = clientStart + weakSize;
       ISLWeakHeader_s islheader(clientEnd - clientStart, (gctools::Header_s*)header);
       char* islh = this->_objects->write_buffer((char*)&islheader, sizeof(ISLWeakHeader_s));
@@ -1694,8 +1665,7 @@ template <typename Walker> void walk_snapshot_save_load_objects(ISLHeader_s* sta
       walker.callback(header);
     } break;
     default: {
-      printf("%s:%d:%s Hit header@%p  with unexpected kind: %d\n", __FILE__, __LINE__, __FUNCTION__, (void*)cur, cur->_Kind);
-      abort();
+      ISL_ERROR("Hit header@%p  with unexpected kind: %d", (void*)cur, cur->_Kind);
     }
     }
     cur = cur->next(cur->_Kind);
@@ -1788,8 +1758,8 @@ struct fixup_vtables_t : public walker_callback_t {
     } else {
       new_vtable = decodeVtable(this->_fixup, (uintptr_t*)client, (uintptr_t)this->_vtableRegionStart);
       if (new_vtable < this->_vtableRegionStart || this->_vtableRegionEnd <= new_vtable)
-        ISL_ERROR(fmt::format("new_vtable {} is outside of the allowed range {} - {}", (void*)new_vtable,
-                              (void*)this->_vtableRegionStart, (void*)this->_vtableRegionEnd));
+        ISL_ERROR("new_vtable %p is outside of the allowed range %p - %p", (void*)new_vtable,
+                  (void*)this->_vtableRegionStart, (void*)this->_vtableRegionEnd);
       *(uintptr_t*)client = new_vtable;
     }
   }
@@ -1866,8 +1836,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
     }
     core::lisp_write(fmt::format("All pointers passed through dladdr\n"));
     if (hitBadPointers) {
-      printf("There were %lu bad pointers - we need to figure out how to get this to zero\n", hitBadPointers);
-      abort();
+      ISL_ERROR("There were %lu bad pointers - we need to figure out how to get this to zero", hitBadPointers);
     }
   }
 };
@@ -1881,8 +1850,7 @@ struct LoadSymbolCallback : public core::SymbolCallback {
     this->_parameters.false_positive_probability = 0.0001; // 1 in 10000
     this->_parameters.random_seed = 0xA5A5A5A5;
     if (!this->_parameters) {
-      printf("%s:%d:%s Invalid bloom filter parameters!\n", __FILE__, __LINE__, __FUNCTION__);
-      std::exit(1);
+      ISL_ERROR("Invalid bloom filter parameters!");
     }
     this->_parameters.compute_optimal_parameters();
     this->_filter = new bloom_filter(this->_parameters);
@@ -2095,10 +2063,8 @@ void* snapshot_save_impl(void* data) {
   Snapshot snapshot;
 
   if (sizeof(ISLGeneralHeader_s) - offsetof(ISLGeneralHeader_s, _Header) != sizeof(gctools::Header_s)) {
-    printf("%s:%d:%s Sanity check for headers in snapshot save/load failed.\n"
-           "The _Header field must be the last field in ISLGeneralHeader so that it is IMMEDIATELY followed by a client\n",
-           __FILE__, __LINE__, __FUNCTION__);
-    abort();
+    ISL_ERROR("Sanity check for headers in snapshot save/load failed.\n"
+              "The _Header field must be the last field in ISLGeneralHeader so that it is IMMEDIATELY followed by a client");
   }
   DBG_SL_STEP(1, "Entered snapshot_save_impl\n");
   //
@@ -2606,8 +2572,7 @@ template <typename Walker> void walk_temporary_root_objects(const temporary_root
     } else if (tagged_client == NULL) {
       // Do nothing
     } else {
-      printf("%s:%d:%s Illegal temporary root pointer %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)tagged_client);
-      abort();
+      ISL_ERROR("Illegal temporary root pointer %p", (void*)tagged_client);
     }
   }
 }
@@ -2698,17 +2663,15 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       memory = malloc(size);
       memcpy(memory, maybeStartOfSnapshot, size);
     } else {
-      printf("There is no snapshot file or embedded\n");
-      abort();
+      ISL_ERROR("There is no snapshot file or embedded");
     }
     ISLFileHeader* fileHeader = reinterpret_cast<ISLFileHeader*>(memory);
     gctools::global_NextUnshiftedStamp.store(fileHeader->_NextUnshiftedStamp);
     gctools::global_NextUnshiftedClbindStamp.store(fileHeader->_NextUnshiftedClbindStamp);
     char* objectFilesStartAddress = (char*)memory + fileHeader->_ObjectFileStart;
     if (!fileHeader->good_magic()) {
-      printf("The file %s is not a snapshot file magic_value should be %p - read... %p\n", filename.c_str(), (void*)MAGIC_NUMBER,
-             (void*)fileHeader->_Magic);
-      abort();
+      ISL_ERROR("The file %s is not a snapshot file magic_value should be %p - read... %p", filename.c_str(), (void*)MAGIC_NUMBER,
+                (void*)fileHeader->_Magic);
     }
     gctools::clasp_ptr_t islbuffer = (gctools::clasp_ptr_t)((char*)memory + fileHeader->_MemoryStart);
     gctools::clasp_ptr_t islend = islbuffer + fileHeader->_MemorySize;
@@ -2744,9 +2707,8 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           libheader = (ISLLibraryHeader_s*)((const char*)(libheader /* + 1 */) + libheader->_Size);
         }
         if (libheader->_Kind != ISLKind::Library) {
-          printf("%s:%d:%s The libheader(offset %p) libheader->_Kind is %d and not Library (%d)\n",
-                 __FILE__, __LINE__, __FUNCTION__, (void*)((uintptr_t)libheader - (uintptr_t)libheaderStart), libheader->_Kind, ISLKind::Library);
-          abort();
+          ISL_ERROR("The libheader(offset %p) libheader->_Kind is %d and not Library (%d)\n",
+                    (void*)((uintptr_t)libheader - (uintptr_t)libheaderStart), libheader->_Kind, ISLKind::Library);
         }
         char* bufferStart = (char*)(libheader + 1);
         std::string execLibPath(bufferStart);
@@ -2898,8 +2860,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         snapshot_lisp_header = (gctools::Header_s*)GENERAL_PTR_TO_HEADER_PTR(theLoadedLisp);
         gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(theLoadedLisp);
         if (((uintptr_t)clientStart & 0x7) != 0) {
-          printf("%s:%d:%s The Lisp pointer %p must be word aligned\n", __FILE__, __LINE__, __FUNCTION__, clientStart);
-          abort();
+          ISL_ERROR("The Lisp pointer %p must be word aligned", clientStart);
         }
         gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Lisp);
         snapshot_save_load_init_s init(snapshot_lisp_header, clientStart, clientEnd);
@@ -2958,8 +2919,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         snapshot_claspJIT_header = (gctools::Header_s*)GENERAL_PTR_TO_HEADER_PTR(snapshot_claspJIT);
         gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(snapshot_claspJIT);
         if (((uintptr_t)clientStart & 0x7) != 0) {
-          printf("%s:%d:%s The claspJIT pointer %p must be word aligned\n", __FILE__, __LINE__, __FUNCTION__, clientStart);
-          abort();
+          ISL_ERROR("The claspJIT pointer %p must be word aligned", clientStart);
         }
         gctools::clasp_ptr_t clientEnd = clientStart + sizeof(llvmo::ClaspJIT_O);
         snapshot_save_load_init_s init(snapshot_claspJIT_header, clientStart, clientEnd);
@@ -2977,9 +2937,8 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       gc::As<llvmo::ClaspJIT_sp>(obj_claspJIT)->registerJITDylibAfterLoad(&*obj_mainJITDylib);
       // llvm_sys__create_lljit_thread_pool();
       if (mainJITDylib->_Id != 0) {
-        printf("%s:%d:%s The mainJITDylib _Id MUST be zero !!!  Instead it is: %lu\n", __FILE__, __LINE__, __FUNCTION__,
-               mainJITDylib->_Id);
-        abort();
+        ISL_ERROR("The mainJITDylib _Id MUST be zero !!!  Instead it is: %lu\n",
+                  mainJITDylib->_Id);
       }
       //
       // We need to handle the NIL object specially, we need to allocate it in GC memory first
@@ -3012,8 +2971,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       //
       DBG_SL("7.4 Handle JITDylibs\n");
       if (obj_claspJIT.nilp()) {
-        printf("%s:%d:%s Could not find the LLJIT!!!!\n", __FILE__, __LINE__, __FUNCTION__);
-        abort();
+        ISL_ERROR("Could not find the LLJIT!!!!");
       }
       core::T_sp cur = ::_lisp->_Roots._JITDylibs.load();
       while (cur.consp()) {
@@ -3126,8 +3084,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               llvm::ExitOnError ExitOnErr;
               llvm::orc::JITDylib* jd = jitdylib->wrappedPtr();
               if (!jd) {
-                printf("%s:%d:%s JITDylib* is NULL\n", __FILE__, __LINE__, __FUNCTION__);
-                abort();
+                ISL_ERROR("JITDylib* is NULL");
               }
               //              printf("%s:%d:%s Allocated ObjectFile @%p before _LLJIT->addObjectFile...  _MemoryBuffer = %p\n",
               //              __FILE__, __LINE__, __FUNCTION__, (void*)&*allocatedObjectFile,
@@ -3140,17 +3097,13 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               DBG_SL_ALLOCATE(BF("allocated general %p fwd: %p  for source_header: %p\n") % (void*)obj.raw_() % (void*)fwd %
                               (void*)source_header);
               if ((void*)fwd == NULL) {
-                printf("%s:%d:%s Bad fwd = NULL for allocatedObjectFile.raw_() %p  source_header %p\n", __FILE__, __LINE__,
-                       __FUNCTION__, allocatedObjectFile.raw_(), source_header);
-                abort();
+                ISL_ERROR("Bad fwd = NULL for allocatedObjectFile.raw_() %p  source_header %p", allocatedObjectFile.raw_(), source_header);
               }
               objectFileForwards[source_header] = (char*)fwd;
               root_holder.add((void*)allocatedObjectFile.raw_());
               objectFileCount++;
               if (loadedObjectFile->_ObjectId != allocatedObjectFile->_ObjectId) {
-                printf("%s:%d:%s The loadedObjectFile->_ObjectId %lu does not match the allocatedObjectFile->_ObjectId %lu\n",
-                       __FILE__, __LINE__, __FUNCTION__, loadedObjectFile->_ObjectId, allocatedObjectFile->_ObjectId);
-                abort();
+                ISL_ERROR("The loadedObjectFile->_ObjectId %lu does not match the allocatedObjectFile->_ObjectId %lu", loadedObjectFile->_ObjectId, allocatedObjectFile->_ObjectId);
               }
               [[maybe_unused]] core::T_mv startupName =
                   core::core__startup_linkage_shutdown_names(allocatedObjectFile->_ObjectId, nil<core::T_O>());
@@ -3222,8 +3175,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               char* fwd = objectFileForwards[source_header];
               set_forwarding_pointer(source_header, fwd, &islInfo);
               if (!fwd) {
-                printf("%s:%d:%s Got NULL fwd for source_header %p\n", __FILE__, __LINE__, __FUNCTION__, source_header);
-                abort();
+                ISL_ERROR("Got NULL fwd for source_header %p", source_header);
               }
             } else if (generalHeader->_Header._badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Null_O)) {
               // This may be redundant because of the test above (source_header == snapshot_nil_header)
@@ -3339,19 +3291,16 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                printf("%s:%d:%s   oldCodeClient->_CodeName -> %s\n", __FILE__, __LINE__, __FUNCTION__,
                       _rep_(oldCodeClient->_CodeName).c_str()););
         if (oldCodeClient->_State != llvmo::SaveState) {
-          printf("%s:%d:%s The oldCodeClient at %p must be in SaveState\n", __FILE__, __LINE__, __FUNCTION__, oldCodeClient);
-          abort();
+          ISL_ERROR("The oldCodeClient at %p must be in SaveState", oldCodeClient);
         }
         if (newCodeClient->_State != llvmo::RunState) {
-          printf("%s:%d:%s The newCodeClient at %p must be in RunState\n", __FILE__, __LINE__, __FUNCTION__, newCodeClient);
-          abort();
+          ISL_ERROR("The newCodeClient at %p must be in RunState", newCodeClient);
         }
         if (oldCodeClient->literalsSize() != newCodeClient->literalsSize()) {
-          printf("%s:%d:%s The oldCodeClient at %p has literalsSize() %lu and the newCodeClient at %p has literalsSize() %lu - the "
-                 "do not match and they must match\n",
-                 __FILE__, __LINE__, __FUNCTION__, oldCodeClient, oldCodeClient->literalsSize(), newCodeClient,
-                 newCodeClient->literalsSize());
-          abort();
+          ISL_ERROR("The oldCodeClient at %p has literalsSize() %lu and the newCodeClient at %p has literalsSize() %lu - the "
+                    "do not match and they must match",
+                    oldCodeClient, oldCodeClient->literalsSize(), newCodeClient,
+                    newCodeClient->literalsSize());
         }
         [[maybe_unused]] uintptr_t oldCodeLiteralsStart = (uintptr_t)oldCodeClient->literalsStart();
         uintptr_t newCodeLiteralsStart = (uintptr_t)newCodeClient->literalsStart();
@@ -3414,11 +3363,10 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       }
 
       if (countNullObjects != 1) {
-        printf("%s:%d:%s The number of Null_O objects in the loaded snapshot must be exactly 1(one) - it is: %lu\n"
-               "This means that more than one Null_O objects was saved at snapshot save time - that's wrong wrong wrong\n"
-               "Figure out why there are more than one Null_O objects\n",
-               __FILE__, __LINE__, __FUNCTION__, countNullObjects);
-        abort();
+        ISL_ERROR("The number of Null_O objects in the loaded snapshot must be exactly 1(one) - it is: %lu\n"
+                  "This means that more than one Null_O objects was saved at snapshot save time - that's wrong wrong wrong\n"
+                  "Figure out why there are more than one Null_O objects\n",
+                  countNullObjects);
       }
       DBG_SL("11 Done working with all objects cur_header@%p\n", (void*)cur_header);
     }
