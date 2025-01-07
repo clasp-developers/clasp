@@ -5,9 +5,6 @@
 
 #define DEBUG_LEVEL_FULL
 
-//#define DEBUG_ENTRY_POINTS 1
-
-// #include <llvm/Support/system_error.h>
 #include <dlfcn.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -185,7 +182,6 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
         break;
       }
       const char* cur = buf;
-      // printf("%s:%d:%s Read line: %s", __FILE__, __LINE__, __FUNCTION__, cur);
       // Read the address
       uintptr_t address = 0;
       uintptr_t digit;
@@ -208,7 +204,6 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
           digit = 0;
         }
         address = address * 16 + digit;
-        //        printf("cur: %p c: %c digit: %lu   address: %p\n", cur, c, digit, (void*)address);
         ++cur;
       }
       // skip spaces
@@ -339,7 +334,6 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
     libraryLookup._symbolToAddress["__TAIL_SYMBOL"] =
         lowest_other_address; // The last symbol is to define the size of the last code symbol
     libraryLookup._addressToSymbol[lowest_other_address] = "__TAIL_SYMBOL";
-    //    libraryLookup.addSymbol("TERMINAL_SYMBOL",~0,'d');  // one symbol to end them all
     if (buf)
       free(buf);
     pclose(fnm);
@@ -576,7 +570,6 @@ struct DebugSnapshotObjectFile {
 };
 
 void decodeRelocation_(uintptr_t codedAddress, uint8_t& firstByte, uintptr_t& libindex, uintptr_t& offset) {
-  //  uintptr_t codedAddress = *ptrptr;
   offset = (uintptr_t)codedAddress & (((uintptr_t)1 << 32) - 1);
   libindex = ((uintptr_t)codedAddress >> 32) & (uintptr_t)0xff;
   firstByte = (uint8_t)(((uintptr_t)codedAddress >> 48) & 0xff);
@@ -594,13 +587,7 @@ uintptr_t encodeRelocation_(uint8_t firstByte, size_t libraryIndex, size_t reloc
 }
 
 bool virtualMethodP(uintptr_t* ptrptr) {
-  uintptr_t val = *ptrptr;
-  if (val < 65536) {
-    //    printf("%s:%d:%s skipping function entry point at @%p is small %p\n", __FILE__, __LINE__, __FUNCTION__, ptrptr,
-    //    (void*)val);
-    return true;
-  }
-  return false;
+  return *ptrptr < 65536;
 }
 
 
@@ -633,12 +620,8 @@ uintptr_t Fixup::fixedAddress(bool functionP, uintptr_t* ptrptr, const char* add
     return *ptrptr;
   uintptr_t codedAddress = *ptrptr;
   decodeRelocation_(codedAddress, firstByte, libidx, pointerIndex);
-  //  printf("%s:%d:%s libidx = %lu pointerIndex = %lu\n", __FILE__, __LINE__, __FUNCTION__, libidx, pointerIndex );
   uintptr_t address = this->_ISLLibraries[libidx]._GroupedPointers[pointerIndex]._address;
-  //  printf("%s:%d:%s address = %p @ %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)address,
-  //  &this->_libraries[libidx]._GroupedPointers[pointerIndex]._address );
   uintptr_t addressOffset = this->_ISLLibraries[libidx]._SymbolInfo[pointerIndex]._AddressOffset;
-  //  printf("%s:%d:%s addressOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, addressOffset );
   uintptr_t ptr = address + addressOffset;
   if (functionP && *(uint8_t*)ptr != firstByte) {
     printf("%s:%d:%s during decode %s codedAddress: %p ptr-> %p must be readable and point to first byte: 0x%x - but it points to "
@@ -646,8 +629,6 @@ uintptr_t Fixup::fixedAddress(bool functionP, uintptr_t* ptrptr, const char* add
            __FILE__, __LINE__, __FUNCTION__, addressName, (void*)codedAddress, (void*)ptr, (uint32_t)firstByte,
            (uint32_t) * (uint8_t*)ptr, libidx);
   }
-  //  printf("%s:%d:%s Returning fixed %s address %p @ %p \n", __FILE__, __LINE__, __FUNCTION__, addressName, (void*)ptr,
-  //  (void*)ptrptr);
   return ptr;
 }
 
@@ -735,7 +716,6 @@ void encodeEntryPointInLibrary(Fixup* fixup, uintptr_t* ptrptr, const char* loca
 void decodeEntryPointInLibrary(Fixup* fixup, uintptr_t* ptrptr) {
   uintptr_t address = fixup->fixedAddress(true, ptrptr, "function-pointer");
   gctools::clasp_ptr_t ptr = (gctools::clasp_ptr_t)address;
-  //  printf("%s:%d:%s Fixing @%p -> %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)ptrptr, (void*)ptr );
   *ptrptr = (uintptr_t)ptr;
 }
 
@@ -1197,10 +1177,7 @@ struct copy_buffer_t {
   void write_to_stream(std::ofstream& stream) { stream.write(this->_BufferStart, this->_Size); }
 
   size_t write_to_filedes(int filedes) {
-    size_t wrote = write(filedes, this->_BufferStart, this->_Size);
-    //    printf("%s:%d:%s Wrote %lu bytes from %p to filedes %d\n", __FILE__, __LINE__, __FUNCTION__, wrote, this->_BufferStart,
-    //    filedes );
-    return wrote;
+    return write(filedes, this->_BufferStart, this->_Size);
   }
 };
 
@@ -1376,14 +1353,9 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
       //
       if (header->_badge_stamp_wtag_mtag._value ==
           DO_SHIFT_STAMP(gctools::STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_)) {
-        //        printf("%s:%d:%s save_snapshot saw STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_\n", __FILE__,
-        //        __LINE__, __FUNCTION__ );
         gctools::GCVector_moveable<clbind::detail::edge>* edges =
             (gctools::GCVector_moveable<clbind::detail::edge>*)HEADER_PTR_TO_GENERAL_PTR(header);
-        //        printf("%s:%d:%s save_snapshot          edges->size() = %lu\n", __FILE__, __LINE__, __FUNCTION__, edges->size() );
         for (size_t ii = 0; ii < edges->size(); ii++) {
-          //          printf("%s:%d:%s  [%lu] before   target: %lu   cast_function@%p: %p\n", __FILE__, __LINE__, __FUNCTION__, ii,
-          //          (*edges)[ii].target, &(*edges)[ii].cast, (*edges)[ii].cast);
           void** ptrptr = (void**)&(*edges)[ii].cast;
           encodeEntryPointInLibrary(this->_fixup, (uintptr_t*)ptrptr,"prepare_for_snapshot_save_t");
         }
@@ -1511,7 +1483,7 @@ struct copy_objects_t : public walker_callback_t {
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
     if (header->_badge_stamp_wtag_mtag.stampP()) {
       if (header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Lisp)) {
-        //        printf("%s:%d:%s About to save Lisp object\n", __FILE__, __LINE__, __FUNCTION__ );
+        // Nothing
       }
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
       if (header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
@@ -1615,7 +1587,6 @@ struct copy_objects_t : public walker_callback_t {
                    (void*)cons->_Cdr.load().raw_());
       DBG_SL_FWD("setFwdPointer cons header %p new_addr -> %p\n", (void*)header, (void*)new_addr);
     } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
-      //      printf("%s:%d:%s    weak_skip\n", __FILE__, __LINE__, __FUNCTION__ );
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
       size_t weakSize;
       [[maybe_unused]] gctools::clasp_ptr_t dummyNextClient = isl_weak_skip(clientStart, false, weakSize);
@@ -1711,14 +1682,9 @@ struct fixup_internals_t : public walker_callback_t {
     if (header->_badge_stamp_wtag_mtag.stampP()) {
       if (header->_badge_stamp_wtag_mtag._value ==
           DO_SHIFT_STAMP(gctools::STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_)) {
-        // printf("%s:%d:%s load_snapshot saw STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_\n", __FILE__, __LINE__,
-        // __FUNCTION__  );
         gctools::GCVector_moveable<clbind::detail::edge>* edges =
             (gctools::GCVector_moveable<clbind::detail::edge>*)HEADER_PTR_TO_GENERAL_PTR(header);
-        // printf("%s:%d:%s load_snapshot          edges->size() = %lu\n", __FILE__, __LINE__, __FUNCTION__, edges->size() );
         for (size_t ii = 0; ii < edges->size(); ii++) {
-          // printf("%s:%d:%s  [%lu] before   target: %lu   cast_function@%p: %p\n", __FILE__, __LINE__, __FUNCTION__, ii,
-          // (*edges)[ii].target, &(*edges)[ii].cast, (*edges)[ii].cast);
           decodeEntryPointInLibrary(this->_fixup, (uintptr_t*)&(*edges)[ii].cast);
         }
       }
@@ -1729,10 +1695,7 @@ struct fixup_internals_t : public walker_callback_t {
         core::T_O* client = (core::T_O*)HEADER_PTR_TO_GENERAL_PTR(header);
         if (cast::Cast<core::General_O*, core::T_O*>::isA(client)) {
           core::General_O* generalObject = (core::General_O*)client;
-          // printf("%s:%d:%s fixupInternals addr %p stamp = %X\n", __FILE__, __LINE__, __FUNCTION__, (void*)generalObject,
-          // header->_badge_0stamp_wtag_mtag.stamp_());
           generalObject->fixupInternalsForSnapshotSaveLoad(this->_fixup);
-          // printf("%s:%d:%s Done\n", __FILE__, __LINE__, __FUNCTION__ );
         }
       }
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
@@ -1814,8 +1777,6 @@ struct SaveSymbolCallback : public core::SymbolCallback {
   // This generates a symbol table for the _Library
   //
   void generateSymbolTable(Fixup* fixup, SymbolLookup& symbolLookup) {
-    //    printf("%s:%d:%s  generateSymbolTable for library: %s\n", __FILE__, __LINE__, __FUNCTION__, this->_Library._Name.c_str()
-    //    );
     size_t hitBadPointers = 0;
     for (ssize_t ii = this->_Library._GroupedPointers.size() - 1; ii >= 0; --ii) {
       if (ii % 1000 == 0 && ii > 0) {
@@ -1919,7 +1880,6 @@ struct LoadSymbolCallback : public core::SymbolCallback {
 
   void loadSymbols(SymbolLookup& lookup) {
     size_t num = this->_Library._SymbolInfo.size();
-    //    printf("%s:%d:%s About to resolve %lu symbols\n", __FILE__, __LINE__, __FUNCTION__, num );
     for (size_t ii = 0; ii < num; ++ii) {
       size_t symbolOffset = this->_Library._SymbolInfo[ii]._SymbolOffset;
       size_t gpindex = ii;
@@ -1978,9 +1938,6 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
       for (size_t idx = 0; idx < fixup->_ISLLibraries.size(); idx++) {
         int groupPointerIdx = -1;
         ISLLibrary& curLib = fixup->_ISLLibraries[idx];
-    // printf("%s:%d:%s  Dealing with library#%lu:  %s @%p\n", __FILE__, __LINE__, __FUNCTION__, idx, curLib._Name.c_str(), &curLib
-    // ); printf("%s:%d:%s  Number of pointers before extracting unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__,
-    // curLib._InternalPointers.size() );
         std::map<uintptr_t,int> uniques;
         for (size_t ii = 0; ii < curLib._InternalPointers.size(); ii++) {
           auto it = uniques.find(curLib._InternalPointers[ii]._address);
@@ -2000,12 +1957,8 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
       // Now encode the relocation
           void** addr = (void**)curLib._InternalPointers[ii]._ptrptr;
           uint8_t* uint8ptr = (uint8_t*)*addr;
-      //      printf("%s:%d:%s Relocation @%p group: %d  from %p\n", __FILE__, __LINE__, __FUNCTION__,
-      //      curLib._InternalPointers[ii]._ptrptr, groupPointerIdx, uint8ptr );
           uint8_t firstByte = *uint8ptr;
           *curLib._InternalPointers[ii]._ptrptr = encodeRelocation_(firstByte, idx, groupPointerIdx);
-      //      printf("%s:%d:%s                             to %p\n", __FILE__, __LINE__, __FUNCTION__,
-      //      (void*)*curLib._InternalPointers[ii]._ptrptr );
         }
         core::lisp_write(fmt::format("{} unique pointers need to be passed to dladdr\n", curLib._GroupedPointers.size()));
         SaveSymbolCallback thing(curLib);
@@ -2036,8 +1989,6 @@ void updateRelocationTableAfterLoad(ISLLibrary& curLib, SymbolLookup& symbolLook
   LoadSymbolCallback thing(curLib);
   curLib._GroupedPointers.resize(curLib._SymbolInfo.size(), GroupedPointer());
   thing.loadSymbols(symbolLookup);
-  //  printf("%s:%d:%s  Library %s contains %lu grouped pointers\n", __FILE__, __LINE__, __FUNCTION__,
-  //  curLib._Name.c_str(),curLib._GroupedPointers.size() );
   for (size_t ii = 0; ii < curLib._SymbolInfo.size(); ii++) {
     if (curLib._GroupedPointers[ii]._address == 0) {
       printf("%s:%d:%s The _GroupedPointers[%lu] does not have an address\n", __FILE__, __LINE__, __FUNCTION__, ii);
@@ -2227,8 +2178,6 @@ void* snapshot_save_impl(void* data) {
     DBG_SL_STEP(9, "Fixup root pointers\n");
     globalPointerFix = maybe_follow_forwarding_pointer;
     globalPointerFixStage = "fixupRoots";
-    //    printf("%s:%d:%s  Fixing roots snapshot._Memory->_BufferStart = %p - %p\n", __FILE__, __LINE__, __FUNCTION__,
-    //    (void*)snapshot._Memory->_BufferStart, (void*)((char*)snapshot._Memory->_BufferStart+snapshot._Memory->_Size ));
     gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*)((char*)snapshot._Memory->_BufferStart +
                                                              snapshot._FileHeader->_LispRootOffset + sizeof(ISLRootHeader_s));
     followForwardingPointersForRoots(lispRoot, snapshot._FileHeader->_LispRootCount, (void*)&islInfo);
@@ -2260,7 +2209,6 @@ void* snapshot_save_impl(void* data) {
   // Now generate libraries
   //
   // Calculate the size of the libraries section
-  //  printf("%s:%d:%s Setting up SymbolLookup\n", __FILE__, __LINE__, __FUNCTION__ );
   SymbolLookup lookup;
   DBG_SL_STEP(12, " prepareRelocationTableForSave\n");
   core::lisp_write(fmt::format("Prepare relocation table for save\n"));
@@ -2507,8 +2455,6 @@ void snapshot_save(core::SaveLispAndDie& data) {
   //
   // Call Common Lisp code to release things at snapshot-save time
   //
-  //  printf("%s:%d:%s About to invoke-snapshot-save-hooks boundp -> %d\n", __FILE__, __LINE__, __FUNCTION__,
-  //  comp::_sym_invoke_save_hooks->boundP());
   if (comp::_sym_invoke_save_hooks->fboundp()) {
     core::eval::funcall(comp::_sym_invoke_save_hooks);
   }
@@ -2597,8 +2543,6 @@ struct relocate_objects_t : public walker_callback_t {
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HeaderPtrToConsPtr(header);
       isl_cons_scan(client, (void*)this->_info);
-      // printf("%s:%d:%s The object @ %p %s isPolymorphic->%d\n", __FILE__, __LINE__, __FUNCTION__, (void*)header,
-      // header->description().c_str(), header->preciseIsPolymorphic());
     } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
       isl_weak_scan(clientStart, (void*)this->_info);
@@ -2616,7 +2560,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
   global_InSnapshotLoad = true;
   // Keep track of objects that we have already allocated
 
-  //  printf("%s:%d:%s  Starting snapshot_load\n", __FILE__, __LINE__, __FUNCTION__ );
   //
   // For loading we need speed - so use stomp forwarding
   //
@@ -2624,8 +2567,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
 
   {
     MaybeTimeStartup time1("Overall snapshot load time");
-    //    printf("%s:%d:%s entered maybeStartOfSnapshot = %p   filename = %s\n", __FILE__, __LINE__, __FUNCTION__,
-    //    maybeStartOfSnapshot, filename.c_str() );
     global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT") != NULL;
     if (global_debugSnapshot) {
       if (maybeStartOfSnapshot) {
@@ -2679,13 +2620,9 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     ISLInfo islInfo(LoadOp, (uintptr_t)islbuffer, (uintptr_t)islend);
     Fixup fixup(LoadOp);
 
-    //  printf("%s:%d:%s Loaded file %s\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str());
-    //  printf("%s:%d:%s islbuffer = %p\n",  __FILE__, __LINE__, __FUNCTION__,(void*)islbuffer);
     //
     // Setup the libraries
     //
-    //  printf("%s:%d:%s Registering %lu globalISLLibraries from snapshot\n", __FILE__, __LINE__, __FUNCTION__,
-    //  fileHeader->_NumberOfLibraries );
     ISLLibraryHeader_s* libheaderStart = (ISLLibraryHeader_s*)((char*)fileHeader + fileHeader->_LibrariesOffset);
     ISLLibraryHeader_s* libheader;
     {
@@ -2720,33 +2657,24 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         std::string libraryPath;
         core::library_with_name(execLibPath, isexec, libraryPath, start, end, vtableStart, vtableEnd);
         if (isexec) {
-          //          printf("%s:%d:%s for %s isexec = %d\n", __FILE__, __LINE__, __FUNCTION__, execLibPath.c_str(), isexec );
-          //          printf("%s:%d:%s libraryPath -> %s\n", __FILE__, __LINE__, __FUNCTION__, libraryPath.c_str() );
           execLibPath = libraryPath; // swap out the old executable path for the current one
         }
         ISLLibrary lib(libraryPath, isexec, (gctools::clasp_ptr_t)start, (gctools::clasp_ptr_t)end, vtableStart, vtableEnd);
         lookup.addLibrary(libraryPath, fout); // for debugging pass a stream
-//        printf("%s:%d:%s ------ Registered library: %s @ %p\n", __FILE__, __LINE__, __FUNCTION__, libraryPath.c_str(),
-//        (void*)start );
         size_t symbolBufferSize = libheader->_SymbolInfoOffset - libheader->_SymbolBufferOffset;
-        //        printf("%s:%d:%s symbolBufferSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, symbolBufferSize );
         lib._SymbolBuffer.resize(symbolBufferSize);
         const char* symbolBufferStart = (const char*)(libheader + 1) + libheader->_SymbolBufferOffset;
         memcpy((char*)lib._SymbolBuffer.data(), symbolBufferStart, symbolBufferSize);
         size_t symbolInfoSize = libheader->_SymbolInfoCount * sizeof(SymbolInfo);
-        //    printf("%s:%d:%s symbolBufferSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, symbolBufferSize );
-        //    printf("%s:%d:%s symbolInfoSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, symbolInfoSize );
         lib._SymbolInfo.resize(libheader->_SymbolInfoCount);
         const char* symbolInfoStart = (const char*)(libheader + 1) + libheader->_SymbolInfoOffset;
         memcpy((char*)lib._SymbolInfo.data(), symbolInfoStart, symbolInfoSize);
         //
         // Now lookup the pointers
         //
-        //        printf("%s:%d:%s About to updateRelocationTableAfterLoad\n", __FILE__, __LINE__, __FUNCTION__ );
         if (fout)
           fflush(fout); // flush fout if it's defined. --arguments option was passed
         updateRelocationTableAfterLoad(lib, lookup);
-        //printf("%s:%d:%s Done updateRelocationTableAfterLoad pushing library with name: %s\n", __FILE__, __LINE__, __FUNCTION__, lib._Name.c_str() );
 #ifdef DEBUG_ISLLIBRARIES
         printf("%s:%d:%s push_back lib: %s  start: %p end: %p  vtableStart: %p vtableEnd: %p\n",
                __FILE__, __LINE__, __FUNCTION__, lib._Name.c_str(), lib._TextStart, lib._TextEnd, (void*)lib._VtableStart, (void*)lib._VtableEnd);
@@ -2756,7 +2684,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       if (fout)
         fclose(fout); // Close fout if it's defined. --arguments option was passed
     }
-    //  printf("%s:%d:%s Number of fixup._libraries %lu\n", __FILE__, __LINE__, __FUNCTION__, fixup._libraries.size() );
 
     //
     // Fixup the vtables
@@ -2819,8 +2746,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           lib->_End = (gctools::clasp_ptr_t)end;
           lib->_VtableStart = vtableStart;
           lib->_VtableEnd = vtableEnd;
-          //        printf("%s:%d:%s Setting the .text start of %s to %p\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(),
-          //        (void*)start );
         }
       }
     };
@@ -2872,7 +2797,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         ::_lisp.thePointer = (core::Lisp*)obj.theObject;
         // Now the global _lisp is defined - don't change it below when we look at roots
       }
-      //    printf("%s:%d:%s the ::_lisp object is at %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)_lisp.rawRef_());
 
       //
       // Initialize the ClaspJIT_O object
@@ -2894,10 +2818,8 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           core::SimpleBaseString_sp name = snapshot_JITDylib_O_->_name;
           std::string sname = name->get_std_string();
           if (sname == "main") {
-            //            printf("%s:%d:%s !!!!!!!!!!!!!! main - save it\n", __FILE__, __LINE__, __FUNCTION__ );
             obj_mainJITDylib = obj_jd;
           }
-          // new (&*obj_jd) llvmo::JITDylib_O(name,llvm_jitdylib);
           DBG_SL("   Write forward ptr JITDylib_sp %p into snapshot_JITDylib_O_header %p val %p fwdP() %d\n", obj_jd.raw_(),
                  snapshot_JITDylib_O_header, *(void**)snapshot_JITDylib_O_header,
                  snapshot_JITDylib_O_header->_badge_stamp_wtag_mtag.fwdP());
@@ -2929,13 +2851,10 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         set_forwarding_pointer(snapshot_claspJIT_header, (char*)fwd, &islInfo);
         DBG_SL_ALLOCATE(BF("allocated claspJIT general %p fwd: %p\n") % (void*)obj_claspJIT.raw_() % (void*)fwd);
         root_holder.add((void*)obj_claspJIT.raw_());
-        //        printf("%s:%d:%s snapshot_claspJIT = %p   obj_claspJIT.raw_() = %p\n", __FILE__, __LINE__, __FUNCTION__,
-        //        snapshot_claspJIT, obj_claspJIT.raw_());
       }
       llvmo::ClaspJIT_O* claspJIT = (llvmo::ClaspJIT_O*)gctools::untag_general<core::T_O*>(obj_claspJIT.raw_());
       new (claspJIT) llvmo::ClaspJIT_O(true, mainJITDylib);
       gc::As<llvmo::ClaspJIT_sp>(obj_claspJIT)->registerJITDylibAfterLoad(&*obj_mainJITDylib);
-      // llvm_sys__create_lljit_thread_pool();
       if (mainJITDylib->_Id != 0) {
         ISL_ERROR("The mainJITDylib _Id MUST be zero !!!  Instead it is: %lu\n",
                   mainJITDylib->_Id);
@@ -2985,15 +2904,11 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         llvmo::JITDylib* llvm_jitdylib;
         if (name == "main") {
           llvm_jitdylib = &obj_claspJIT->_LLJIT->getMainJITDylib(); // Main JITDylib we get from the LLJIT
-          //          printf("%s:%d:%s Setting JITDylib %p into %s JITDylib_sp_ %p\n", __FILE__, __LINE__, __FUNCTION__,
-          //          llvm_jitdylib, name.c_str(), memory_JITDylib_sp_.raw_() );
           memory_JITDylib_sp_->_ptr = llvm_jitdylib;
           auto rt = llvm_jitdylib->getDefaultResourceTracker();
           // addGenerator was done in ClaspJIT_O
         } else {
           llvm_jitdylib = &*(obj_claspJIT->_LLJIT->createJITDylib(name)); // Every other one we need to create
-          //          printf("%s:%d:%s Setting JITDylib %p into JITDylib_sp_ %p = %s\n", __FILE__, __LINE__, __FUNCTION__,
-          //          llvm_jitdylib, memory_JITDylib_sp_.raw_(), name.c_str() );
           memory_JITDylib_sp_->_ptr = llvm_jitdylib;
           llvm_jitdylib->addGenerator(llvm::cantFail(
               llvmo::DynamicLibrarySearchGenerator::GetForCurrentProcess(obj_claspJIT->_LLJIT->getDataLayout().getGlobalPrefix())));
@@ -3011,7 +2926,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         MaybeTimeStartup time5("Object file linking");
         using TP = thread_pool<ThreadManager>;
         TP pool(TP::sane_number_of_threads());
-        //        printf("%s:%d:%s Started thread pool\n", __FILE__, __LINE__, __FUNCTION__ );
         for (cur_header = start_header; cur_header->_Kind != ISLKind::End;) {
           DBG_SL_ALLOCATE(BF("-----Allocating based on cur_header %p\n") % (void*)cur_header);
           if (cur_header->_Kind == ISLKind::General) {
@@ -3024,8 +2938,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                             generalHeader->_badge_stamp_wtag_mtag._value % generalHeader->_Size %
                             source_header->description().c_str());
             if (generalHeader->_Header._badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
-              // printf("%s:%d:%s  cur_header = %p  cur_header->_Kind -> %p\n", __FILE__, __LINE__, __FUNCTION__, cur_header,
-              // (void*)cur_header->_Kind );
               // Handle the ObjectFile_O objects - pass them to the LLJIT
               llvmo::ObjectFile_O* loadedObjectFile = (llvmo::ObjectFile_O*)clientStart;
               //
@@ -3049,7 +2961,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer, name, false));
               loadedObjectFile->_MemoryBuffer.reset();
               loadedObjectFile->_MemoryBuffer = std::move(memoryBuffer);
-//              printf("%s:%d:%s loadedObjectFile %p  _MemoryBuffer = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)loadedObjectFile, (void*)loadedObjectFile->_MemoryBuffer.get() );
               // Allocate a new ObjectFile_O
               //
               // I don't think I should be allocating an ObjectFile here.
@@ -3058,8 +2969,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               //
               core::T_sp tallocatedObjectFile = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
               llvmo::ObjectFile_sp allocatedObjectFile = gc::As<llvmo::ObjectFile_sp>(tallocatedObjectFile);
-              //              printf("%s:%d:%s Allocated ObjectFile %p\n", __FILE__, __LINE__, __FUNCTION__,
-              //              (void*)&*allocatedObjectFile );
               allocatedObjectFile->_State = llvmo::RunState;
               DBG_OF(printf("%s:%d:%s About to pass LLJIT ObjectFile_O @ %p name: %s\n      loadedObjectFile->_Name: %s\n        "
                             "startupID: %lu  _ObjectFileOffset %lu  _ObjectFileSize %lu  of_start %p\n",
@@ -3086,9 +2995,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               if (!jd) {
                 ISL_ERROR("JITDylib* is NULL");
               }
-              //              printf("%s:%d:%s Allocated ObjectFile @%p before _LLJIT->addObjectFile...  _MemoryBuffer = %p\n",
-              //              __FILE__, __LINE__, __FUNCTION__, (void*)&*allocatedObjectFile,
-              //              (void*)allocatedObjectFile->_MemoryBuffer.get() );
               ExitOnErr(obj_claspJIT->_LLJIT->addObjectFile(
                   *jd, llvm::MemoryBuffer::getMemBuffer(allocatedObjectFile->_MemoryBuffer->getMemBufferRef())));
 
@@ -3130,13 +3036,9 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                 DBG_OF(printf("%s:%d:%s Ran lookup of objectId: %lu name %s jitdylib %p in thread pool found = %d\n", __FILE__,
                               __LINE__, __FUNCTION__, objectId, start.c_str(), jitdylib.raw_(), found););
               });
-              //              printf("%s:%d:%s Allocated ObjectFile @%p AFTER _LLJIT->addObjectFile...  _MemoryBuffer = %p\n",
-              //              __FILE__, __LINE__, __FUNCTION__, (void*)&*allocatedObjectFile,
-              //              (void*)allocatedObjectFile->_MemoryBuffer.get() );
             }
           }
           next_header = cur_header->next(cur_header->_Kind);
-//          DBG_SL1(("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") , (void*)cur_header , (void*)next_header , size);
           cur_header = next_header;
         }
         pool.wait_for_tasks();
@@ -3251,7 +3153,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                    (uintptr_t)cur_header - (uintptr_t)fileHeader, *(uintptr_t*)cur_header);
           }
           next_header = cur_header->next(cur_header->_Kind);
-//          DBG_SL1(("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") , (void*)cur_header , (void*)next_header , size);
           cur_header = next_header;
         }
       }
@@ -3263,7 +3164,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           }
 
           next_header = cur_header->next(cur_header->_Kind);
-//          DBG_SL1(("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") , (void*)cur_header , (void*)next_header , size);
           cur_header = next_header;
         }
       }
@@ -3400,15 +3300,12 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     //
     DBG_SL("13 ======================= fixup roots\n");
     {
-      //    followForwardingPointersForRoots( lispRoot, fileHeader->_LispRootCount, (void*)&islInfo );
-      //    copyRoots((uintptr_t*)&_lisp, (uintptr_t*)lispRoot, fileHeader->_LispRootCount );
       gctools::clasp_ptr_t* symbolRoots =
           (gctools::clasp_ptr_t*)((char*)islbuffer + fileHeader->_SymbolRootsOffset + sizeof(ISLRootHeader_s));
       followForwardingPointersForRoots(symbolRoots, fileHeader->_SymbolRootsCount, (void*)&islInfo);
       copyRoots((uintptr_t*)&global_symbols[0], (uintptr_t*)symbolRoots, fileHeader->_SymbolRootsCount);
     }
 
-    //  printf("%s:%d:%s Number of fixup._libraries %lu\n", __FILE__, __LINE__, __FUNCTION__, fixup._libraries.size() );
     DBG_SL("14 ======================= fixup internals\n");
     fixup_internals_t internals(&fixup, &islInfo);
     walk_temporary_root_objects(root_holder, internals);
@@ -3423,7 +3320,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     // munmap the memory
     //
     DBG_SL("16 ======================= munmap snapshot memory\n");
-    //  printf("%s:%d:%s munmap'ing loaded snapshot - filling with 0xc0\n", __FILE__, __LINE__, __FUNCTION__ );
     if (maybeStartOfSnapshot == NULL) {
       int res = munmap(memory, fsize);
       if (res != 0)
@@ -3449,7 +3345,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     //
     // Setup the pathname info for wherever the executable was loaded
     //
-    //  printf("%s:%d:%s Calling setup_pathname_translations\n", __FILE__, __LINE__, __FUNCTION__);
     core::getcwd(true); // set *default-pathname-defaults*
     {
       char* pause_startup = getenv("CLASP_PAUSE_INIT");
