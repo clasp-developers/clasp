@@ -1210,9 +1210,6 @@ struct ISLHeader_s {
 
 struct ISLEndHeader_s : public ISLHeader_s {
   ISLEndHeader_s() : ISLHeader_s(ISLKind::End, 0){};
-  gctools::Header_s* header() const {
-    ISL_ERROR("subclass must implement");
-  };
 };
 
 struct ISLRootHeader_s : public ISLHeader_s {
@@ -2013,10 +2010,10 @@ void* snapshot_save_impl(void* data) {
   //
   Snapshot snapshot;
 
-  if (sizeof(ISLGeneralHeader_s) - offsetof(ISLGeneralHeader_s, _Header) != sizeof(gctools::Header_s)) {
-    ISL_ERROR("Sanity check for headers in snapshot save/load failed.\n"
-              "The _Header field must be the last field in ISLGeneralHeader so that it is IMMEDIATELY followed by a client");
-  }
+  static_assert(sizeof(ISLGeneralHeader_s) - offsetof(ISLGeneralHeader_s, _Header) == sizeof(gctools::Header_s),
+                "Sanity check for headers in snapshot save/load failed.\n"
+                "The _Header field must be the last field in ISLGeneralHeader so that it is IMMEDIATELY followed by a client");
+
   DBG_SL_STEP(1, "Entered snapshot_save_impl\n");
   //
   // For real save-lisp-and-die do the following (a simple 19 step plan)
