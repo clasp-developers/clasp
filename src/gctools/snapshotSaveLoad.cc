@@ -1121,14 +1121,14 @@ namespace snapshotSaveLoad {
 /*
  * These are strings that are visible in the snapshot save file
  */
-typedef enum {
+enum class ISLKind {
   General = 0xbedabb1e01010101, // !OBJECT!
   Cons = 0xbedabb1e02020202,
   Weak = 0xbedabb1e03030303,
   Library = 0xbedabb1e04040404,
   Roots = 0xbedabb1e05050505, // ROOTS
   End = 0xbedabb1e06060606
-} ISLKind; // END
+}; // END
 
 #define MAGIC_NUMBER 348235823
 struct ISLFileHeader {
@@ -1254,7 +1254,7 @@ struct ISLHeader_s {
 };
 
 struct ISLEndHeader_s : public ISLHeader_s {
-  ISLEndHeader_s(ISLKind k) : ISLHeader_s(k, 0){};
+  ISLEndHeader_s() : ISLHeader_s(ISLKind::End, 0){};
   gctools::Header_s* header() const {
     printf("%s:%d:%s subclass must implement\n", __FILE__, __LINE__, __FUNCTION__);
     abort();
@@ -1262,13 +1262,13 @@ struct ISLEndHeader_s : public ISLHeader_s {
 };
 
 struct ISLRootHeader_s : public ISLHeader_s {
-  ISLRootHeader_s(ISLKind k, size_t s) : ISLHeader_s(k, s){};
+  ISLRootHeader_s(size_t s) : ISLHeader_s(ISLKind::Roots, s){};
 };
 
 struct ISLConsHeader_s : public ISLHeader_s {
   gctools::Header_s::BadgeStampWtagMtag _badge_stamp_wtag_mtag;
-  ISLConsHeader_s(ISLKind k, size_t s, gctools::Header_s::StampWtagMtag swm, gctools::Header_s::badge_t badge)
-      : ISLHeader_s(k, s), _badge_stamp_wtag_mtag(swm, badge){};
+  ISLConsHeader_s(size_t s, gctools::Header_s::StampWtagMtag swm, gctools::Header_s::badge_t badge)
+    : ISLHeader_s(ISLKind::Cons, s), _badge_stamp_wtag_mtag(swm, badge){};
   gctools::ConsHeader_s* header() const {
     return (gctools::ConsHeader_s*)((char*)this + offsetof(ISLConsHeader_s, _badge_stamp_wtag_mtag));
   }
@@ -1276,13 +1276,13 @@ struct ISLConsHeader_s : public ISLHeader_s {
 
 struct ISLWeakHeader_s : public ISLHeader_s {
   gctools::Header_s _Header;
-  ISLWeakHeader_s(ISLKind k, uintptr_t sz, gctools::Header_s* head) : ISLHeader_s(k, sz), _Header(head){};
+  ISLWeakHeader_s(uintptr_t sz, gctools::Header_s* head) : ISLHeader_s(ISLKind::Weak, sz), _Header(head){};
   gctools::Header_s* header() const { return (gctools::Header_s*)((char*)this + offsetof(ISLWeakHeader_s, _Header)); }
 };
 
 struct ISLGeneralHeader_s : public ISLHeader_s {
   gctools::Header_s _Header;
-  ISLGeneralHeader_s(ISLKind k, uintptr_t sz, gctools::Header_s* head, bool verbose) : ISLHeader_s(k, sz), _Header(head, verbose) {
+  ISLGeneralHeader_s(uintptr_t sz, gctools::Header_s* head, bool verbose) : ISLHeader_s(ISLKind::General, sz), _Header(head, verbose) {
 #ifdef DEBUG_BADGE_SSL
     if (verbose) {
       printf("%s:%d:%s            &islheader = %p  head badge = %u    with badge: %u\n", __FILE__, __LINE__, __FUNCTION__,
@@ -1299,9 +1299,9 @@ struct ISLLibraryHeader_s : public ISLHeader_s {
   size_t _SymbolBufferOffset;
   size_t _SymbolInfoOffset;
   size_t _SymbolInfoCount;
-  ISLLibraryHeader_s(ISLKind k, bool isExecutable, size_t s, size_t symbolBufferOffset, size_t symbolInfoOffset,
+  ISLLibraryHeader_s(bool isExecutable, size_t s, size_t symbolBufferOffset, size_t symbolInfoOffset,
                      size_t symbolInfoCount)
-      : ISLHeader_s(k, s), _Executable(isExecutable), _SymbolBufferOffset(symbolBufferOffset), _SymbolInfoOffset(symbolInfoOffset),
+    : ISLHeader_s(ISLKind::Library, s), _Executable(isExecutable), _SymbolBufferOffset(symbolBufferOffset), _SymbolInfoOffset(symbolInfoOffset),
         _SymbolInfoCount(symbolInfoCount){};
 };
 
@@ -1311,16 +1311,14 @@ size_t ISLLibrary::writeSize() {
 
 ISLHeader_s* ISLHeader_s::next(ISLKind k) const {
   if (k != this->_Kind) {
-    printf("%s:%d:%s ISLKind k %lu does not match this->_Kind %lu\n", __FILE__, __LINE__, __FUNCTION__, k, this->_Kind);
+    printf("%s:%d:%s ISLKind k %d does not match this->_Kind %d\n", __FILE__, __LINE__, __FUNCTION__, k, this->_Kind);
   }
-  size_t headerSize = 0;
-  if (k == General) {
-    headerSize = sizeof(ISLGeneralHeader_s);
-  } else if (k == Cons) {
-    headerSize = sizeof(ISLConsHeader_s);
-  } else if (k == Weak) {
-    headerSize = sizeof(ISLWeakHeader_s);
-  } else {
+  size_t headerSize;
+  switch (k) {
+  case ISLKind::General: headerSize = sizeof(ISLGeneralHeader_s); break;
+  case ISLKind::Cons: headerSize = sizeof(ISLConsHeader_s); break;
+  case ISLKind::Weak: headerSize = sizeof(ISLWeakHeader_s); break;
+  default:
     SIMPLE_ERROR("Add support to calculate size of ISLKind {}", (int)k);
   }
   return (ISLHeader_s*)((char*)this + headerSize + this->_Size);
@@ -1328,21 +1326,26 @@ ISLHeader_s* ISLHeader_s::next(ISLKind k) const {
 
 gctools::BaseHeader_s::BadgeStampWtagMtag* ISLHeader_s::stamp_wtag_mtag_P(ISLKind k) const {
   if (k != this->_Kind) {
-    printf("%s:%d:%s ISLKind k %lu does not match this->_Kind %lu\n", __FILE__, __LINE__, __FUNCTION__, k, this->_Kind);
+    printf("%s:%d:%s ISLKind k %d does not match this->_Kind %d\n", __FILE__, __LINE__, __FUNCTION__, k, this->_Kind);
   }
-  if (k == General) {
+  switch (k) {
+  case ISLKind::General: {
     ISLGeneralHeader_s* generalCur = (ISLGeneralHeader_s*)this;
     gctools::Header_s* header = generalCur->header();
     return &header->_badge_stamp_wtag_mtag;
-  } else if (k == Cons) {
+  }
+  case ISLKind::Cons: {
     ISLConsHeader_s* consCur = (ISLConsHeader_s*)this;
     gctools::ConsHeader_s* header = consCur->header();
     return &header->_badge_stamp_wtag_mtag;
-  } else if (k == Weak) {
+  }
+  case ISLKind::Weak: {
     gctools::Header_s* header = (gctools::Header_s*)((char*)this + offsetof(ISLWeakHeader_s, _Header));
     return &header->_badge_stamp_wtag_mtag;
   }
-  SIMPLE_ERROR("Add support to get _badge_stamp_wtag_mtag of ISLKind {}", (int)k);
+  default:
+      SIMPLE_ERROR("Add support to get _badge_stamp_wtag_mtag of ISLKind {}", (int)k);
+  }
 }
 
 #define ISL_ERROR(_fmt_)                                                                                                           \
@@ -1551,7 +1554,7 @@ struct copy_objects_t : public walker_callback_t {
         if (generalSize == 0)
           ISL_ERROR(fmt::format("A zero size general at {} was encountered", (void*)clientStart));
         llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)clientStart;
-        ISLGeneralHeader_s islheader(General, code->frontSize() + code->literalsSize(), (gctools::Header_s*)header, false);
+        ISLGeneralHeader_s islheader(code->frontSize() + code->literalsSize(), (gctools::Header_s*)header, false);
         char* islh = this->_objects->write_buffer((char*)&islheader, sizeof(ISLGeneralHeader_s));
         char* new_client = this->_objects->write_buffer((char*)clientStart, code->frontSize());
         llvmo::ObjectFile_O* newObjectFile = (llvmo::ObjectFile_O*)new_client;
@@ -1607,7 +1610,7 @@ struct copy_objects_t : public walker_callback_t {
                  header->_badge_stamp_wtag_mtag._header_badge.load());
         }
 #endif
-        ISLGeneralHeader_s islheader(General, clientEnd - clientStart, (gctools::Header_s*)header,
+        ISLGeneralHeader_s islheader(clientEnd - clientStart, (gctools::Header_s*)header,
                                      header->_badge_stamp_wtag_mtag._header_badge.load() > 1);
         char* islh = this->_objects->write_buffer((char*)&islheader, sizeof(ISLGeneralHeader_s));
         char* new_client = this->_objects->write_buffer((char*)clientStart, clientEnd - clientStart);
@@ -1631,7 +1634,7 @@ struct copy_objects_t : public walker_callback_t {
       isl_cons_skip(client, consSize);
       if (consSize == 0)
         ISL_ERROR(fmt::format("A zero size cons at {} was encountered", (void*)client));
-      ISLConsHeader_s islheader(Cons, sizeof(core::Cons_O), header->_badge_stamp_wtag_mtag,
+      ISLConsHeader_s islheader(sizeof(core::Cons_O), header->_badge_stamp_wtag_mtag,
                                 header->_badge_stamp_wtag_mtag._header_badge.load());
       char* islh = this->_objects->write_buffer((char*)&islheader, sizeof(ISLConsHeader_s));
       char* new_addr = this->_objects->write_buffer((char*)client, consSize);
@@ -1648,7 +1651,7 @@ struct copy_objects_t : public walker_callback_t {
       if (weakSize == 0)
         ISL_ERROR(fmt::format("A zero size weak object at {} was encountered", (void*)clientStart));
       gctools::clasp_ptr_t clientEnd = clientStart + weakSize;
-      ISLWeakHeader_s islheader(Weak, clientEnd - clientStart, (gctools::Header_s*)header);
+      ISLWeakHeader_s islheader(clientEnd - clientStart, (gctools::Header_s*)header);
       char* islh = this->_objects->write_buffer((char*)&islheader, sizeof(ISLWeakHeader_s));
       char* new_addr = this->_objects->write_buffer((char*)clientStart, clientEnd - clientStart);
       set_forwarding_pointer(header, new_addr, this->_info);
@@ -1666,29 +1669,34 @@ struct copy_objects_t : public walker_callback_t {
 template <typename Walker> void walk_snapshot_save_load_objects(ISLHeader_s* start, Walker& walker) {
   DBG_SL_WALK_SL(BF("Starting walk cur = %p\n") % (void*)cur);
   ISLHeader_s* cur = start;
-  while (cur->_Kind != End) {
+  while (cur->_Kind != ISLKind::End) {
     DBG_SL_WALK_SL(BF("walk: %p 0x%lx\n") % (void*)cur % cur->_Kind);
     if (walker._debug)
-      printf("%s:%d:%s Walking %p 0x%lx\n", __FILE__, __LINE__, __FUNCTION__, (void*)cur, cur->_Kind);
-    if (cur->_Kind == General) {
+      printf("%s:%d:%s Walking %p 0x%x\n", __FILE__, __LINE__, __FUNCTION__, (void*)cur, cur->_Kind);
+    switch (cur->_Kind) {
+    case ISLKind::General: {
       ISLGeneralHeader_s* generalCur = (ISLGeneralHeader_s*)cur;
       gctools::Header_s* header = generalCur->header();
       DBG_SL_WALK_SL(BF("general header: %p %s  next: %p\n") % header % header->description() % (void*)generalCur->next());
       walker.callback(header);
-    } else if (cur->_Kind == Cons) {
+    } break;
+    case ISLKind::Cons: {
       ISLConsHeader_s* consCur = (ISLConsHeader_s*)cur;
       gctools::ConsHeader_s* header = consCur->header();
       DBG_SL_WALK_SL(BF("cons header: %p %s  next: %p\n") % header % header->description() %
                      (void*)consCur->next<ISLConsHeader_s>());
       walker.callback(header);
-    } else if (cur->_Kind == Weak) {
+    } break;
+    case ISLKind::Weak: {
       gctools::Header_s* header = (gctools::Header_s*)((char*)cur + offsetof(ISLWeakHeader_s, _Header));
       DBG_SL_WALK_SL(BF("weak header: %p %s  next: %p\n") % header % header->description() %
                      (void*)weakCur->next<ISLWeakHeader_s>());
       walker.callback(header);
-    } else {
-      printf("%s:%d:%s Hit header@%p  with unexpected kind: %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)cur, cur->_Kind);
+    } break;
+    default: {
+      printf("%s:%d:%s Hit header@%p  with unexpected kind: %d\n", __FILE__, __LINE__, __FUNCTION__, (void*)cur, cur->_Kind);
       abort();
+    }
     }
     cur = cur->next(cur->_Kind);
   }
@@ -2207,7 +2215,7 @@ void* snapshot_save_impl(void* data) {
   new (snapshot._FileHeader) ISLFileHeader(snapshot._Memory->_Size, copy_objects._NumberOfObjects, getpagesize());
   DBG_SL_STEP(5, ".2  Done new ISLFileHeader\n");
 
-  ISLEndHeader_s end_header(End);
+  ISLEndHeader_s end_header;
   DBG_SL_STEP(5, ".3  About to write_buffer\n");
   [[maybe_unused]] char* endend = snapshot._Memory->write_buffer((char*)&end_header, sizeof(end_header));
   DBG_SAVECOPY("   copying END into buffer @ %p\n", (void*)endend);
@@ -2216,12 +2224,12 @@ void* snapshot_save_impl(void* data) {
   // 4. Copy roots into intermediate-buffer
   //
   DBG_SL_STEP(6, "Copy roots into intermediate buffer\n");
-  ISLRootHeader_s roots1(Roots, sizeof(core::T_O*));
+  ISLRootHeader_s roots1(sizeof(core::T_O*));
   snapshot._FileHeader->_LispRootOffset =
       snapshot._Memory->write_buffer((char*)&roots1, sizeof(ISLRootHeader_s)) - snapshot._Memory->_BufferStart;
   snapshot._FileHeader->_LispRootCount = 1;
   snapshot._Memory->write_buffer((char*)&_lisp, sizeof(void*));
-  ISLRootHeader_s roots3(Roots, sizeof(core::T_O*) * global_symbol_count);
+  ISLRootHeader_s roots3(sizeof(core::T_O*) * global_symbol_count);
   snapshot._FileHeader->_SymbolRootsOffset =
       snapshot._Memory->write_buffer((char*)&roots3, sizeof(ISLRootHeader_s)) - snapshot._Memory->_BufferStart;
   snapshot._FileHeader->_SymbolRootsCount = global_symbol_count;
@@ -2307,7 +2315,7 @@ void* snapshot_save_impl(void* data) {
     ISLLibrary& lib = fixup._ISLLibraries[idx];
     memset(buffer, '\0', alignedLen);
     strcpy(buffer, lib._Name.c_str());
-    ISLLibraryHeader_s libhead(Library, lib._Executable, lib.writeSize(), alignedLen, alignedLen + lib.symbolBufferSize(),
+    ISLLibraryHeader_s libhead(lib._Executable, lib.writeSize(), alignedLen, alignedLen + lib.symbolBufferSize(),
                                fixup._ISLLibraries[idx]._SymbolInfo.size());
 #if 0
     printf("%s:%d:%s ------ &libhead = %p\n", __FILE__, __LINE__, __FUNCTION__, &libhead );
@@ -2735,10 +2743,9 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           // advance to the next ISLLibraryHeader_s
           libheader = (ISLLibraryHeader_s*)((const char*)(libheader /* + 1 */) + libheader->_Size);
         }
-        if (libheader->_Kind != Library) {
-          printf("%s:%d:%s The libheader(offset %p) libheader->_Kind is %p and it must be a Library but it is not - it is %p\n",
-                 __FILE__, __LINE__, __FUNCTION__, (void*)((uintptr_t)libheader - (uintptr_t)libheaderStart), (void*)Library,
-                 (void*)libheader->_Kind);
+        if (libheader->_Kind != ISLKind::Library) {
+          printf("%s:%d:%s The libheader(offset %p) libheader->_Kind is %d and not Library (%d)\n",
+                 __FILE__, __LINE__, __FUNCTION__, (void*)((uintptr_t)libheader - (uintptr_t)libheaderStart), libheader->_Kind, ISLKind::Library);
           abort();
         }
         char* bufferStart = (char*)(libheader + 1);
@@ -3047,9 +3054,9 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         using TP = thread_pool<ThreadManager>;
         TP pool(TP::sane_number_of_threads());
         //        printf("%s:%d:%s Started thread pool\n", __FILE__, __LINE__, __FUNCTION__ );
-        for (cur_header = start_header; cur_header->_Kind != End;) {
+        for (cur_header = start_header; cur_header->_Kind != ISLKind::End;) {
           DBG_SL_ALLOCATE(BF("-----Allocating based on cur_header %p\n") % (void*)cur_header);
-          if (cur_header->_Kind == General) {
+          if (cur_header->_Kind == ISLKind::General) {
             ISLGeneralHeader_s* generalHeader = (ISLGeneralHeader_s*)cur_header;
             gctools::Header_s* source_header = (gctools::Header_s*)&generalHeader->_Header;
             gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(generalHeader + 1);
@@ -3192,9 +3199,10 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       {
         // Allocate all other objects
         MaybeTimeStartup time6("Allocate objects");
-        for (cur_header = start_header; cur_header->_Kind != End;) {
+        for (cur_header = start_header; cur_header->_Kind != ISLKind::End;) {
           DBG_SL_ALLOCATE(BF("-----Allocating based on cur_header %p\n") % (void*)cur_header);
-          if (cur_header->_Kind == General) {
+          switch (cur_header->_Kind) {
+          case ISLKind::General: {
             ISLGeneralHeader_s* generalHeader = (ISLGeneralHeader_s*)cur_header;
             gctools::Header_s* source_header = (gctools::Header_s*)&generalHeader->_Header;
             gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(generalHeader + 1);
@@ -3238,7 +3246,8 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               DBG_SL_ALLOCATE(BF("allocated general %p fwd: %p\n") % (void*)obj.raw_() % (void*)fwd);
               root_holder.add((void*)obj.raw_());
             }
-          } else if (cur_header->_Kind == Cons) {
+          } break;
+          case ISLKind::Cons: {
             ISLConsHeader_s* consHeader = (ISLConsHeader_s*)cur_header;
             gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(consHeader + 1);
             gctools::ConsHeader_s* header = consHeader->header();
@@ -3251,7 +3260,8 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
             DBG_SL_ALLOCATE(BF("---- Allocated Cons %p copy from %p header: %p  set fwd to %p\n") % (void*)obj.raw_() %
                             (void*)header % (void*)clientStart % (void*)fwd);
             root_holder.add((void*)obj.raw_());
-          } else if (cur_header->_Kind == Weak) {
+          } break;
+          case ISLKind::Weak: {
             ISLWeakHeader_s* weakHeader = (ISLWeakHeader_s*)cur_header;
             gctools::Header_s* header = (gctools::Header_s*)&weakHeader->_Header;
             gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(weakHeader + 1);
@@ -3283,7 +3293,8 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               printf("%s:%d:%s  Handle allocate weak objects\n", __FILE__, __LINE__, __FUNCTION__);
               break;
             }
-          } else {
+          } break;
+          default:
             printf("%s:%d:%s Unknown header at offset 0x%lx qword: 0x%lx\n", __FILE__, __LINE__, __FUNCTION__,
                    (uintptr_t)cur_header - (uintptr_t)fileHeader, *(uintptr_t*)cur_header);
           }
@@ -3294,7 +3305,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       }
       {
         // Check if all snapshot objects have been allocated and have forwarding pointers
-        for (cur_header = start_header; cur_header->_Kind != End;) {
+        for (cur_header = start_header; cur_header->_Kind != ISLKind::End;) {
           if (!cur_header->stamp_wtag_mtag_P(cur_header->_Kind)->fwdP()) {
             printf("%s:%d:%s cur_header @%p is not forwarded\n", __FILE__, __LINE__, __FUNCTION__, cur_header);
           }
