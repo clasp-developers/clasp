@@ -456,10 +456,10 @@ The following &KEY arguments are defined:
      Test memory prior to saving snapshot.
      If NIL then snapshot saving is faster.)dx")
 DOCGROUP(clasp);
-CL_DEFUN void gctools__save_lisp_and_die(core::T_sp filename, core::T_sp executable, core::T_sp testMemory) {
+CL_DEFUN void gctools__save_lisp_and_die(core::String_sp filename, bool executable, bool testMemory) {
 #ifdef USE_PRECISE_GC
-  throw(core::SaveLispAndDie(gc::As<core::String_sp>(filename)->get_std_string(), executable.notnilp(),
-                             globals_->_Bundle->_Directories->_LibDir, true, core::noStomp, testMemory.notnilp() ));
+  throw(core::SaveLispAndDie(filename->get_std_string(), executable,
+                             globals_->_Bundle->_Directories->_LibDir, true, core::noStomp, testMemory ));
 #else
   SIMPLE_ERROR("save-lisp-and-die only works for precise GC");
 #endif
