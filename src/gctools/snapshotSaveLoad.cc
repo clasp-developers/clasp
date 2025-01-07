@@ -3330,12 +3330,9 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     // Initialize the main thread
     //  and some other vital objects
     //
-    SYMBOL_EXPORT_SC_(CompPkg, STARthread_local_builtins_moduleSTAR);
-
     DBG_SL("17 ======================= initialize the main thread\n");
     _lisp->initializeMainThread();
     comp::_sym_STARthread_safe_contextSTAR->defparameter(llvmo::ThreadSafeContext_O::create_thread_safe_context());
-    comp::_sym_STARthread_local_builtins_moduleSTAR->defparameter(nil<core::T_O>());
     FILE* null_out = fopen("/dev/null", "w");
     _lisp->_Roots._NullStream = core::CFileStream_O::make(core::str_create("/dev/null"), null_out, core::StreamDirection::io);
 
