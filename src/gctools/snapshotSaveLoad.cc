@@ -13,6 +13,7 @@
 #include <sys/mman.h>
 #include <filesystem>
 
+#include <optional>
 #include <iomanip>
 
 #include <clasp/external/bloom/bloom_filter.h>
@@ -864,7 +865,7 @@ void set_forwarding_pointer(gctools::BaseHeader_s* header, char* new_client, ISL
   }
 }
 
-bool is_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
+std::optional<uintptr_t> get_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
   if (global_forwardingKind == ForwardingEnum::testStomp) {
     auto result = info->_forwarding.find(header);
     bool noStompResult = (result != info->_forwarding.end());
@@ -872,31 +873,16 @@ bool is_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
     if (noStompResult != stompResult) {
       ISL_ERROR("results don't match");
     }
-    return stompResult;
+    if (stompResult) return (uintptr_t)result->second;
+    else return std::nullopt;
   } else if (global_forwardingKind == ForwardingEnum::noStomp) {
     auto result = info->_forwarding.find(header);
-    bool noStompResult = (result != info->_forwarding.end());
-    return noStompResult;
+    if (result != info->_forwarding.end()) return (uintptr_t)result->second;
+    else return std::nullopt;
   } else if (global_forwardingKind == ForwardingEnum::stomp) {
-    bool stompResult = header->_badge_stamp_wtag_mtag.fwdP();
-    return stompResult;
-  } else {
-    errorBadForwardingKind();
-  }
-}
-
-uintptr_t get_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
-  if (global_forwardingKind == ForwardingEnum::testStomp) {
-    uintptr_t noStompResult = (uintptr_t)info->_forwarding[header];
-    uintptr_t stompResult = (uintptr_t)header->_badge_stamp_wtag_mtag.fwdPointer();
-    if (noStompResult != stompResult) {
-      ISL_ERROR("results don't match");
-    }
-    return stompResult;
-  } else if (global_forwardingKind == ForwardingEnum::noStomp) {
-    return (uintptr_t)info->_forwarding[header];
-  } else if (global_forwardingKind == ForwardingEnum::stomp) {
-    return (uintptr_t)header->_badge_stamp_wtag_mtag.fwdPointer();
+    if (header->_badge_stamp_wtag_mtag.fwdP())
+      return (uintptr_t)header->_badge_stamp_wtag_mtag.fwdPointer();
+    else return std::nullopt;
   } else {
     errorBadForwardingKind();
   }
@@ -924,7 +910,7 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
     header = WEAK_PTR_TO_HEADER_PTR(client);
   }
   DBG_SL_FFWD(("    maybe_follow_forwarding_pointer client %p header: %p\n"), (void*)client, (void*)header);
-  if (islInfo->_operation == SaveOp && !is_forwarding_pointer(header, islInfo)) {
+  if (islInfo->_operation == SaveOp && !get_forwarding_pointer(header, islInfo)) {
     printf("%s:%d:%s       clientAddress: %p/%s client: %p/%s\n", __FILE__, __LINE__, __FUNCTION__, (void*)clientAddress,
            pointer_pool(clientAddress), (void*)client, pointer_pool(client));
     printf("%s:%d:%s       general header %p IS NOT A FORWARDING POINTER - but it must be\n", __FILE__, __LINE__, __FUNCTION__,
@@ -950,8 +936,9 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
            globalPointerFixStage, getpid());
     sleep(1000000);
   }
-  if (is_forwarding_pointer(header, islInfo)) {
-    fwd_client = (uintptr_t)get_forwarding_pointer(header, islInfo);
+  auto ofwd_client = get_forwarding_pointer(header, islInfo);
+  if (ofwd_client.has_value()) {
+    fwd_client = *ofwd_client;
     DBG_SL_FFWD(("fwdPointer from %p  to header@%p  %p  GC_base %p\n"), (void*)((uintptr_t)client | tag), (void*)header,
                 ((void*)((uintptr_t)fwd_client | tag)), GC_base((void*)fwd_client));
     if (islInfo->_operation == SaveOp) {
@@ -1295,7 +1282,7 @@ gctools::BaseHeader_s::BadgeStampWtagMtag* ISLHeader_s::stamp_wtag_mtag_P(ISLKin
 struct ensure_forward_t : public walker_callback_t {
   void callback(gctools::BaseHeader_s* header) {
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
-    if (!is_forwarding_pointer(header, this->_info)) {
+    if (!get_forwarding_pointer(header, this->_info)) {
       if (header->_badge_stamp_wtag_mtag.stampP()) {
         printf("%s:%d:%s The ISL general %p %s is not a forwarding pointer\n", __FILE__, __LINE__, __FUNCTION__, (void*)header,
                header->description().c_str());
@@ -1506,7 +1493,7 @@ struct copy_objects_t : public walker_callback_t {
         this->_progress.update((uintptr_t)islh);
         set_forwarding_pointer(header, new_client, this->_info); // This is a client pointer
         DBG_SL_FWD("setFwdPointer general header %p new_client -> %p  reread fwdPointer -> %p\n", (void*)header, (void*)new_client,
-                   (void*)get_forwarding_pointer(header, this->_info));
+                   (void*)*get_forwarding_pointer(header, this->_info));
         DBG_OF(printf("%s:%d:%s Wrote %lu bytes to _ObjectFileOffset %p\n", __FILE__, __LINE__, __FUNCTION__,
                       newObjectFile->_ObjectFileSize, (void*)newObjectFile->_ObjectFileOffset););
 
@@ -1526,7 +1513,7 @@ struct copy_objects_t : public walker_callback_t {
         this->_progress.update((uintptr_t)islh);
         DBG_SAVECOPY("   copied general header ObjectFile_O object %p to %p\n", header, (void*)islh);
         DBG_SL_FWD(("setFwdPointer general header %p new_client -> %p  reread fwdPointer -> %p\n"), (void*)header,
-                   (void*)new_client, (void*)get_forwarding_pointer(header, this->_info));
+                   (void*)new_client, (void*)*get_forwarding_pointer(header, this->_info));
       } else {
         //
         // Now write it into the buffer
@@ -1559,7 +1546,7 @@ struct copy_objects_t : public walker_callback_t {
         DBG_SAVECOPY("   copied general header %p to %p \n", header, (void*)islh);
         set_forwarding_pointer(header, new_client, this->_info); // This is a client pointer
         DBG_SL_FWD(("setFwdPointer general header %p new_client -> %p  reread fwdPointer -> %p\n"), (void*)header,
-                   (void*)new_client, (void*)get_forwarding_pointer(header, this->_info));
+                   (void*)new_client, (void*)*get_forwarding_pointer(header, this->_info));
       }
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HeaderPtrToConsPtr(header);
@@ -3249,7 +3236,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         gctools::Header_s* oldCode_source_header = GENERAL_PTR_TO_HEADER_PTR(oldCodeClient);
         set_forwarding_pointer(oldCode_source_header, ((char*)newCodeClient), &islInfo);
         DBG_SL_FWD(("setFwdPointer code header %p new_addr -> %p  reread fwdPointer -> %p\n"), (void*)oldCode_source_header,
-                   (void*)newCodeClient, (void*)get_forwarding_pointer(oldCode_source_header, &islInfo));
+                   (void*)newCodeClient, (void*)*get_forwarding_pointer(oldCode_source_header, &islInfo));
       }
 
       if (countNullObjects != 1) {
