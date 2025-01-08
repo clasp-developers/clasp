@@ -494,7 +494,7 @@ int run_clasp(gctools::ClaspInfo* claspInfo) {
   int exitCode;
   try {
     exitCode = _lisp->run();
-  } catch (core::SaveLispAndDie& ee) {
+  } catch (snapshotSaveLoad::SaveLispAndDie& ee) {
 #ifdef USE_PRECISE_GC
     snapshotSaveLoad::snapshot_save(ee);
 #endif

@@ -458,8 +458,8 @@ The following &KEY arguments are defined:
 DOCGROUP(clasp);
 CL_DEFUN void gctools__save_lisp_and_die(core::String_sp filename, bool executable, bool testMemory) {
 #ifdef USE_PRECISE_GC
-  throw(core::SaveLispAndDie(filename->get_std_string(), executable,
-                             globals_->_Bundle->_Directories->_LibDir, true, core::noStomp, testMemory ));
+  throw(snapshotSaveLoad::SaveLispAndDie(filename->get_std_string(), executable,
+                                         globals_->_Bundle->_Directories->_LibDir, true, snapshotSaveLoad::ForwardingEnum::noStomp, testMemory ));
 #else
   SIMPLE_ERROR("save-lisp-and-die only works for precise GC");
 #endif
@@ -478,10 +478,10 @@ The following &KEY arguments are defined:
      to create a standalone executable.  If false (the default), the
      snapshot will not be executable on its own.)dx")
 DOCGROUP(clasp);
-CL_DEFUN void gctools__save_lisp_and_continue(core::T_sp filename, core::T_sp executable) {
+CL_DEFUN void gctools__save_lisp_and_continue(core::String_sp filename, bool executable) {
 #ifdef USE_PRECISE_GC
-  core::SaveLispAndDie ee(gc::As<core::String_sp>(filename)->get_std_string(), executable.notnilp(),
-                          globals_->_Bundle->_Directories->_LibDir, false );
+  snapshotSaveLoad::SaveLispAndDie ee(filename->get_std_string(), executable,
+                                      globals_->_Bundle->_Directories->_LibDir, false );
   snapshotSaveLoad::snapshot_save(ee);
 #else
   SIMPLE_ERROR("save-lisp-and-continue only works for precise GC");

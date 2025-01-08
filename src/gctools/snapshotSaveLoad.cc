@@ -837,23 +837,16 @@ struct ISLInfo {
 // Control how pointer forwarding works.
 //
 // The global_forwardingKind controls how pointer forwarding works.
-//   noStomp - forwarding uses a separate map of pointer -> forwarded-pointer.
-//                This is slow and is meant for snapshot_save and to facilitate debugging.
-//   stomp   - The forwarding pointer is written into the pointer address.
-//                This is fast and is meant for snapshot_load
-//   testStomp - maintain a map of pointer -> forwarded-pointer AND write the forwarding
-//               pointer into the pointer address and compare the two on every operation.
-//               This is to test stomp.
-//   undef - this means global_forwardingKind wasn't set yet.
+// See definition of ForwardingEnum in snapshotSaveLoad.fwd.h.
 //
-core::ForwardingEnum global_forwardingKind = core::undef;
+ForwardingEnum global_forwardingKind = ForwardingEnum::undef;
 
 [[noreturn]] void errorBadForwardingKind() {
   ISL_ERROR("The global_forwardingKind wasn't set");
 }
 
 void set_forwarding_pointer(gctools::BaseHeader_s* header, char* new_client, ISLInfo* info) {
-  if (global_forwardingKind == core::testStomp) {
+  if (global_forwardingKind == ForwardingEnum::testStomp) {
     info->_forwarding[header] = (core::T_O*)new_client;
     if ((intptr_t)new_client < 0) {
       printf("%s:%d:%s Writing a bad forwarding pointer %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)new_client);
@@ -862,9 +855,9 @@ void set_forwarding_pointer(gctools::BaseHeader_s* header, char* new_client, ISL
     if ((uintptr_t)header->_badge_stamp_wtag_mtag.fwdPointer() != (uintptr_t)new_client) {
       ISL_ERROR("Forwarding pointer written and read don't match");
     }
-  } else if (global_forwardingKind == core::noStomp) {
+  } else if (global_forwardingKind == ForwardingEnum::noStomp) {
     info->_forwarding[header] = (core::T_O*)new_client;
-  } else if (global_forwardingKind == core::stomp) {
+  } else if (global_forwardingKind == ForwardingEnum::stomp) {
     header->_badge_stamp_wtag_mtag.setFwdPointer(new_client);
   } else {
     errorBadForwardingKind();
@@ -872,7 +865,7 @@ void set_forwarding_pointer(gctools::BaseHeader_s* header, char* new_client, ISL
 }
 
 bool is_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
-  if (global_forwardingKind == core::testStomp) {
+  if (global_forwardingKind == ForwardingEnum::testStomp) {
     auto result = info->_forwarding.find(header);
     bool noStompResult = (result != info->_forwarding.end());
     bool stompResult = header->_badge_stamp_wtag_mtag.fwdP();
@@ -880,11 +873,11 @@ bool is_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
       ISL_ERROR("results don't match");
     }
     return stompResult;
-  } else if (global_forwardingKind == core::noStomp) {
+  } else if (global_forwardingKind == ForwardingEnum::noStomp) {
     auto result = info->_forwarding.find(header);
     bool noStompResult = (result != info->_forwarding.end());
     return noStompResult;
-  } else if (global_forwardingKind == core::stomp) {
+  } else if (global_forwardingKind == ForwardingEnum::stomp) {
     bool stompResult = header->_badge_stamp_wtag_mtag.fwdP();
     return stompResult;
   } else {
@@ -893,16 +886,16 @@ bool is_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
 }
 
 uintptr_t get_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
-  if (global_forwardingKind == core::testStomp) {
+  if (global_forwardingKind == ForwardingEnum::testStomp) {
     uintptr_t noStompResult = (uintptr_t)info->_forwarding[header];
     uintptr_t stompResult = (uintptr_t)header->_badge_stamp_wtag_mtag.fwdPointer();
     if (noStompResult != stompResult) {
       ISL_ERROR("results don't match");
     }
     return stompResult;
-  } else if (global_forwardingKind == core::noStomp) {
+  } else if (global_forwardingKind == ForwardingEnum::noStomp) {
     return (uintptr_t)info->_forwarding[header];
-  } else if (global_forwardingKind == core::stomp) {
+  } else if (global_forwardingKind == ForwardingEnum::stomp) {
     return (uintptr_t)header->_badge_stamp_wtag_mtag.fwdPointer();
   } else {
     errorBadForwardingKind();
@@ -936,7 +929,7 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
            pointer_pool(clientAddress), (void*)client, pointer_pool(client));
     printf("%s:%d:%s       general header %p IS NOT A FORWARDING POINTER - but it must be\n", __FILE__, __LINE__, __FUNCTION__,
            (void*)header);
-    if (global_forwardingKind == core::noStomp) {
+    if (global_forwardingKind == ForwardingEnum::noStomp) {
       printf(" - for noStomp is not key in info->_forwarding[header]\n");
     } else {
       printf(" - *header should be fwd ptr but got %p\n", *(void**)header);
@@ -1996,7 +1989,7 @@ void updateRelocationTableAfterLoad(ISLLibrary& curLib, SymbolLookup& symbolLook
 /* This is not allowed to do any Lisp allocations. */
 void* snapshot_save_impl(void* data) {
   global_badge_count = 0;
-  core::SaveLispAndDie* snapshot_data = (core::SaveLispAndDie*)data;
+  SaveLispAndDie* snapshot_data = (SaveLispAndDie*)data;
   global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT") != NULL;
 
   //
@@ -2378,7 +2371,7 @@ void* snapshot_save_impl(void* data) {
   return NULL;
 }
 
-void snapshot_save(core::SaveLispAndDie& data) {
+void snapshot_save(SaveLispAndDie& data) {
 
 #ifdef DEBUG_BADGE_SSL
   printf("%s:%d:%s snapshot_save dumping class hash-table\n", __FILE__, __LINE__, __FUNCTION__);
@@ -2560,7 +2553,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
   //
   // For loading we need speed - so use stomp forwarding
   //
-  global_forwardingKind = core::stomp;
+  global_forwardingKind = ForwardingEnum::stomp;
 
   {
     MaybeTimeStartup time1("Overall snapshot load time");
