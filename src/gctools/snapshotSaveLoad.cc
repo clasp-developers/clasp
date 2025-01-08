@@ -964,15 +964,10 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
     gctools::clasp_ptr_t* taggedP = reinterpret_cast<gctools::clasp_ptr_t*>(_ptr_);                                                \
     if (gctools::tagged_objectp(*taggedP)) {                                                                                       \
       gctools::clasp_ptr_t tagged_obj = *taggedP;                                                                                  \
-      if (gctools::tagged_objectp(*taggedP)) {                                                                                     \
-        gctools::clasp_ptr_t obj = gctools::untag_object<gctools::clasp_ptr_t>(tagged_obj);                                        \
-        uintptr_t tag = (uintptr_t)gctools::ptag<gctools::clasp_ptr_t>(tagged_obj);                                                \
-        /*printf("%s:%d fixing taggedP@%p obj-> %p tag-> 0x%lx\n", __FILE__, __LINE__, (void*)taggedP, (void*)obj,                 \
-         * (uintptr_t)tag);*/                                                                                                      \
-        obj = (globalPointerFix)(taggedP, obj, tag, user_data);                                                                    \
-        /*printf("%s:%d     forwarded  obj = %p \n", __FILE__, __LINE__, (void*)obj );*/                                           \
-        *taggedP = obj;                                                                                                            \
-      };                                                                                                                           \
+      gctools::clasp_ptr_t obj = gctools::untag_object<gctools::clasp_ptr_t>(tagged_obj);                                          \
+      uintptr_t tag = (uintptr_t)gctools::ptag<gctools::clasp_ptr_t>(tagged_obj);                                                  \
+      obj = (globalPointerFix)(taggedP, obj, tag, user_data);                                                                      \
+      *taggedP = obj;                                                                                                              \
     };                                                                                                                             \
   }
 
