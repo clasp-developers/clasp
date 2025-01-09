@@ -2051,12 +2051,6 @@ void* snapshot_save_impl(void* data) {
   // First walk the objects in memory and sum their size.
   //
 
-#if 0
-  // I'm going to try this right before I fixup the vtables
-  DBG_SL_STEP(2,"Prepare objects for snapshot save\n" );
-  prepare_for_snapshot_save_t prepare(&islInfo);
-  walk_gathered_objects( prepare, allObjects );
-#endif
   DBG_SL_STEP(3, "Sum size of all objects\n");
   calculate_size_t calc_size(&islInfo);
   walk_gathered_objects(calc_size, allObjects);
@@ -2199,22 +2193,6 @@ void* snapshot_save_impl(void* data) {
     strcpy(buffer, lib._Name.c_str());
     ISLLibraryHeader_s libhead(lib._Executable, lib.writeSize(), alignedLen, alignedLen + lib.symbolBufferSize(),
                                fixup._ISLLibraries[idx]._SymbolInfo.size());
-#if 0
-    printf("%s:%d:%s ------ &libhead = %p\n", __FILE__, __LINE__, __FUNCTION__, &libhead );
-    printf("%s:%d:%s buffer_offset = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)snapshot._Libraries->buffer_offset() );
-    printf("%s:%d:%s libhead._Size = %lu\n", __FILE__, __LINE__, __FUNCTION__, libhead._Size );
-    printf("%s:%d:%s libhead._SymbolBufferOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libhead._SymbolBufferOffset );
-    printf("%s:%d:%s libhead._SymbolInfoOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libhead._SymbolInfoOffset );
-    printf("%s:%d:%s lib.symbolBufferSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, lib.symbolBufferSize() );
-    printf("%s:%d:%s lib.symbolInfoSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, lib.symbolInfoSize() );
-    printf("%s:%d:%s Library[%lu] name: %s SymbolBuffer size: %lu\n", __FILE__, __LINE__, __FUNCTION__, idx, lib._Name.c_str(), lib._SymbolBuffer.size());
-    printf("%s:%d:%s lib.writeSize() -> %lu\n", __FILE__, __LINE__, __FUNCTION__, lib.writeSize() );
-    printf("%s:%d:%s first _SymbolBuffer name: %s\n", __FILE__, __LINE__, __FUNCTION__, (const char*)lib._SymbolBuffer.data());
-    printf("%s:%d:%s size _SymbolBuffer %lu\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolBuffer.size());
-    printf("%s:%d:%s num _SymbolInfo %lu\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolInfo.size());
-    printf("%s:%d:%s first _SymbolInfo %u, %u\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolInfo[0]._SymbolLength, lib._SymbolInfo[0]._SymbolOffset );
-    printf("%s:%d:%s last _SymbolInfo %u, %u\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolInfo[lib._SymbolInfo.size()-1]._SymbolLength, lib._SymbolInfo[lib._SymbolInfo.size()-1]._SymbolOffset );
-#endif
     snapshot._Libraries->write_buffer((char*)&libhead, sizeof(ISLLibraryHeader_s));
     snapshot._Libraries->write_buffer(buffer, alignedLen);
     snapshot._Libraries->write_buffer(lib._SymbolBuffer.data(), lib.symbolBufferSize());
@@ -2722,11 +2700,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     DBG_SL("6 Allocate objects\n");
     {
       ISLHeader_s* start_header = reinterpret_cast<ISLHeader_s*>(islbuffer);
-#if 0
-      gctools::clasp_ptr_t startVtables;
-      gctools::clasp_ptr_t end;
-      core::exclusiveVtableSectionRange(startVtables, end);
-#endif
       ISLHeader_s* next_header;
       ISLHeader_s* cur_header;
 
