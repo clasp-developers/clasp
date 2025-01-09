@@ -21,8 +21,7 @@ FixupOperation_ operation(Fixup* fixup);
 //   testStomp - maintain a map of pointer -> forwarded-pointer AND write the forwarding
 //               pointer into the pointer address and compare the two on every operation.
 //               This is to test stomp.
-//   undef - this means global_forwardingKind wasn't set yet.
-enum class ForwardingEnum { undef, stomp, noStomp, testStomp };
+enum class ForwardingEnum { stomp, noStomp, testStomp };
 
 struct SaveLispAndDie {
   std::string _FileName;
