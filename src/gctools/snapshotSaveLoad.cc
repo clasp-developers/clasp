@@ -885,7 +885,6 @@ std::optional<uintptr_t> get_forwarding_pointer(gctools::BaseHeader_s* header, I
 struct walker_callback_t {
   bool _debug;
   ISLInfo* _info;
-  virtual void callback(gctools::BaseHeader_s* header) = 0;
   walker_callback_t(ISLInfo* info) : _debug(false), _info(info){};
 };
 
