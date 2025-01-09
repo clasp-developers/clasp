@@ -510,16 +510,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         currentCode->_TextSectionEnd = (void*)((char*)range.getStart().getValue() + range.getSize());
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s --- TextSectionStart - TextSectionEnd = %p - %p\n", __FILE__, __LINE__, __FUNCTION__,
                                   currentCode->_TextSectionStart, currentCode->_TextSectionEnd));
-#if 0
-        if (snapshotSaveLoad::global_debugSnapshot) {
-          printf("%s:%d:%s ---------- ObjectFile_sp %p Code_sp %p start %p  end %p\n",
-                 __FILE__, __LINE__, __FUNCTION__,
-                 my_thread->topObjectFile().raw_(),
-                 currentCode.raw_(),
-                 currentCode->_TextSectionStart,
-                 currentCode->_TextSectionEnd );
-        }
-#endif
         for (auto& sym : S.symbols()) {
           if (sym->isCallable() && sym->hasName()) {
             std::string name = sym->getName().str();
@@ -549,10 +539,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
           ("%s:%d:%s --- ObjectFile_sp %p badge: 0x%0x name: %s ---> final TextSectionStart - TextSectionEnd = %p - %p\n", __FILE__,
            __LINE__, __FUNCTION__, currentCode.raw_(), lisp_badge(currentCode), _rep_(currentCode).c_str(),
            currentCode->_TextSectionStart, currentCode->_TextSectionEnd));
-      if (snapshotSaveLoad::global_debugSnapshot) {
-        printf("%s:%d:%s ---------- ObjectFile_sp %p text section start %p  end %p\n", __FILE__, __LINE__, __FUNCTION__,
-               currentCode.raw_(), currentCode->_TextSectionStart, currentCode->_TextSectionEnd);
-      }
     } else {
       printf("%s:%d:%s No executable region was found for the Code_O object for graph %s\n", __FILE__, __LINE__, __FUNCTION__,
              G.getName().c_str());
