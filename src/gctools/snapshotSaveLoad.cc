@@ -1057,27 +1057,24 @@ struct ensure_forward_t : public walker_callback_t {
   ensure_forward_t(ISLInfo* info) : walker_callback_t(info){};
 };
 
-struct gather_info_for_snapshot_save_t : public walker_callback_t {
+void gather_info_for_snapshot_save(gctools::BaseHeader_s* header, Fixup* fixup) {
   // Run fixupInternalsForSnapshotSaveLoad with fixup._operation = InfoOp;
-  Fixup* _fixup;
-  void callback(gctools::BaseHeader_s* header) {
-    // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
-    if (header->_badge_stamp_wtag_mtag.stampP()) {
-      if (header->preciseIsPolymorphic()) {
-        core::T_O* client = (core::T_O*)HEADER_PTR_TO_GENERAL_PTR(header);
-        if (cast::Cast<core::General_O*, core::T_O*>::isA(client)) {
-          core::General_O* generalObject = (core::General_O*)client;
-          generalObject->fixupInternalsForSnapshotSaveLoad(this->_fixup);
-        }
+  // (set shortly before mapping with this function)
+  // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
+  if (header->_badge_stamp_wtag_mtag.stampP()) {
+    if (header->preciseIsPolymorphic()) {
+      core::T_O* client = (core::T_O*)HEADER_PTR_TO_GENERAL_PTR(header);
+      if (cast::Cast<core::General_O*, core::T_O*>::isA(client)) {
+        core::General_O* generalObject = (core::General_O*)client;
+        generalObject->fixupInternalsForSnapshotSaveLoad(fixup);
       }
-    } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
-      // Nothing
-    } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
-      // Nothing
     }
+  } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
+      // Nothing
+  } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
+      // Nothing
   }
-  gather_info_for_snapshot_save_t(Fixup* fixup, ISLInfo* info) : walker_callback_t(info), _fixup(fixup){};
-};
+}
 
 struct prepare_for_snapshot_save_t : public walker_callback_t {
   Fixup* _fixup;
@@ -1113,16 +1110,15 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
   prepare_for_snapshot_save_t(Fixup* fixup, ISLInfo* info) : walker_callback_t(info), _fixup(fixup){};
 };
 
-struct calculate_size_t : public walker_callback_t {
-
-  size_t _TotalSize;
-  size_t _ObjectFileTotalSize;
-  size_t _general_count;
-  size_t _cons_count;
-  size_t _weak_count;
-  size_t _ObjectFileCount;
-  size_t _CodeCount;
-  void callback(gctools::BaseHeader_s* header) {
+struct calculate_size_t {
+  size_t _TotalSize = 0;
+  size_t _ObjectFileTotalSize = 0;
+  size_t _general_count = 0;
+  size_t _cons_count = 0;
+  size_t _weak_count = 0;
+  size_t _ObjectFileCount = 0;
+  size_t _CodeCount = 0;
+  void operator()(gctools::BaseHeader_s* header) {
     std::string str;
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
     if (header->_badge_stamp_wtag_mtag.stampP()) {
@@ -1163,20 +1159,16 @@ struct calculate_size_t : public walker_callback_t {
       this->_TotalSize += sizeof(ISLWeakHeader_s) + objectSize;
     }
   }
-
-  calculate_size_t(ISLInfo* info)
-      : walker_callback_t(info), _TotalSize(0), _ObjectFileTotalSize(0), _general_count(0), _cons_count(0), _weak_count(0),
-        _ObjectFileCount(0), _CodeCount(0){};
 };
 
-template <typename Walker> void walk_gathered_objects(Walker& walker, const std::set<gctools::Tagged>& objects) {
+template <typename F> void walk_gathered_objects(F&& f, const std::set<gctools::Tagged>& objects) {
   for (const auto& obj : objects) {
     if (gctools::ptag(obj) == gctools::general_tag) {
       gctools::Header_s* header = (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr((void*)(obj & gctools::ptr_mask));
-      walker.callback(header);
+      f(header);
     } else if (gctools::ptag(obj) == gctools::cons_tag) {
       gctools::ConsHeader_s* header = (gctools::ConsHeader_s*)gctools::ConsPtrToHeaderPtr((void*)(obj & gctools::ptr_mask));
-      walker.callback(header);
+      f(header);
     } // else is impossible given how the set is constructed
   }
 }
@@ -1201,22 +1193,20 @@ struct copy_progress {
   }
 };
 
-struct copy_objects_t : public walker_callback_t {
+struct copy_objects_t {
   copy_buffer_t* _objects;
   size_t _NumberOfObjects;
   copy_buffer_t* _objectFiles;
+  ISLInfo* _info;
   copy_progress _progress;
   copy_objects_t(copy_buffer_t* objects, copy_buffer_t* objectFiles, ISLInfo* info)
-      : _objects(objects), _objectFiles(objectFiles), _NumberOfObjects(0), walker_callback_t(info),
+      : _objects(objects), _objectFiles(objectFiles), _NumberOfObjects(0), _info(info),
         _progress((uintptr_t)objects->_BufferStart, (uintptr_t)objects->_Size){};
 
-  void callback(gctools::BaseHeader_s* header) {
+  void operator()(gctools::BaseHeader_s* header) {
     std::string str;
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
     if (header->_badge_stamp_wtag_mtag.stampP()) {
-      if (header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Lisp)) {
-        // Nothing
-      }
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
       if (header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
         llvmo::ObjectFile_O* objectFile = (llvmo::ObjectFile_O*)clientStart;
@@ -1756,8 +1746,7 @@ void* snapshot_save_impl(void* data) {
   // Switch to InfoOp
   //
   fixup._operation = InfoOp;
-  gather_info_for_snapshot_save_t gather_info(&fixup, &islInfo);
-  walk_gathered_objects(gather_info, allObjects);
+  walk_gathered_objects([&](gctools::BaseHeader_s* header) { gather_info_for_snapshot_save(header, &fixup);}, allObjects);
   //
   // Switch to SaveOp
   //
@@ -1767,7 +1756,7 @@ void* snapshot_save_impl(void* data) {
   // First walk the objects in memory and sum their size.
   //
 
-  calculate_size_t calc_size(&islInfo);
+  calculate_size_t calc_size;
   walk_gathered_objects(calc_size, allObjects);
   fmt::print("   size = {}\n", calc_size._TotalSize);
   fmt::print("   general_count = {}\n", calc_size._general_count);
@@ -2031,48 +2020,6 @@ void snapshot_save(SaveLispAndDie& data) {
   printf("%s\n", classNames->hash_table_dump().c_str());
   printf("%s:%d:%s done dumping class hash-table\n", __FILE__, __LINE__, __FUNCTION__);
 #endif
-
-  //
-  // For real save-lisp-and-die do the following (a simple 19 step plan)
-  //
-  // 1. Walk all objects in memory and sum their size
-  // 2. Allocate that amount of memory + space for roots -> intermediate-buffer
-  // 3. Walk all objects in memory
-  //     (a) copy them to next position in intermediate-buffer
-  //     (b) Set a forwarding pointer in the original object
-  // 4. Walk all objects in intermediate-buffer and fixup tagged pointers using forwarding pointer
-  // 5. Copy roots into intermediate-buffer
-  // 6. Fixup pointers in roots
-  //
-  //   Steps 7-14 are an attempt to eliminate objects that made it into the save-image
-  //      but are garbage.  I'm not sure the GC is cleaning up enough garbage.
-  //      It's basically a mark-and-sweep garbage collection cycle.
-  //      Steps 8-13 are identical to 1-6, they just walk different objects.
-  //
-  // 7. Mark objects in intermediate-buffer accessible from roots
-  //
-  // 8. Walk all marked objects and sum their size
-  // 9. Allocate that amount of space + space-for roots -> save-buffer
-  // 10. Walk all marked objects from intermediate-buffer
-  //       (a) copy them to next position in save-buffer
-  //       (b) Set a forwarding pointer in the intermediate-buffer object
-  // 11. Fixup pointers in save-buffer
-  // 12. Copy roots into save-buffer
-  // 13. Fixup roots in save-buffer
-  //
-  //   C++-fixup bytecode fixes up things like std::string and std::vector that
-  //     have stuff stored in C++ malloc space.   It's better to eliminate these
-  //     as much as possible by redesigning the classes that contain them.
-  //     Change std::string to SimpleBaseString_sp and so on.
-  //     Every class that needs c++-fixup will provide a function that will generate
-  //     c++-fixup bytecode that when evaluated will create C++ objects in malloc memory
-  //     and write pointers to those objects into the loaded objects.
-  //     Every object except for Cons_O cells will need to have it's vtable pointer fixed up.
-  //
-  // 15. Generate c++-fixup bytecode for each object that needs it
-  // 17. Generate table of contents
-  // 18. Write table of contents and save-buffer
-  // 19. DIE or RETURN
 
   //
   // Clear out a few things
