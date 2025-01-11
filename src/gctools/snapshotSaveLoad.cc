@@ -2391,7 +2391,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         }
         gctools::clasp_ptr_t clientEnd = clientStart + sizeof(llvmo::ClaspJIT_O);
         snapshot_save_load_init_s init(snapshot_claspJIT_header, clientStart, clientEnd);
-        obj_claspJIT = gc::As<llvmo::ClaspJIT_sp>(gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init));
+        obj_claspJIT = gctools::GCObjectAllocator<llvmo::ClaspJIT_O>::snapshot_save_load_allocate(&init);
         gctools::Tagged fwd =
             (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj_claspJIT.raw_());
         set_forwarding_pointer(snapshot_claspJIT_header, (char*)fwd, &islInfo);
@@ -2399,7 +2399,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       }
       llvmo::ClaspJIT_O* claspJIT = (llvmo::ClaspJIT_O*)gctools::untag_general<core::T_O*>(obj_claspJIT.raw_());
       new (claspJIT) llvmo::ClaspJIT_O(true, mainJITDylib);
-      gc::As<llvmo::ClaspJIT_sp>(obj_claspJIT)->registerJITDylibAfterLoad(&*obj_mainJITDylib);
+      obj_claspJIT->registerJITDylibAfterLoad(&*obj_mainJITDylib);
       if (mainJITDylib->_Id != 0) {
         ISL_ERROR("The mainJITDylib _Id MUST be zero !!!  Instead it is: %lu\n",
                   mainJITDylib->_Id);
@@ -2499,8 +2499,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               // I should let the JIT do it and then fill in stuff from the original
               // I'll also have to set the forward from the old one to the new one
               //
-              core::T_sp tallocatedObjectFile = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
-              llvmo::ObjectFile_sp allocatedObjectFile = gc::As<llvmo::ObjectFile_sp>(tallocatedObjectFile);
+              llvmo::ObjectFile_sp allocatedObjectFile = gctools::GCObjectAllocator<llvmo::ObjectFile_O>::snapshot_save_load_allocate(&init);
               allocatedObjectFile->_State = llvmo::RunState;
 
               registerObjectFile<gctools::SnapshotLoadStage>(allocatedObjectFile);
