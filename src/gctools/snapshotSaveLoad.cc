@@ -347,7 +347,7 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
 
 bool SymbolLookup::addLibrary(const std::string& libraryPath, FILE* fout) {
   LibraryLookup* lib = new LibraryLookup(libraryPath);
-  this->_Libraries.emplace_back(lib);
+  this->_Libraries.push_back(lib);
   return loadLibrarySymbolLookup(libraryPath, *lib, fout);
 }
 
@@ -455,13 +455,12 @@ size_t Fixup::ensureLibraryRegistered(uintptr_t address) {
   std::string libraryPath;
   bool isExecutable;
   core::lookup_address_in_library((gctools::clasp_ptr_t)address, start, end, libraryPath, isExecutable, vtableStart, vtableEnd);
-  ISLLibrary lib(libraryPath, isExecutable, start, end, vtableStart, vtableEnd);
   size_t idx = this->_ISLLibraries.size();
 #ifdef DEBUG_ISLLIBRARIES
   printf("%s:%d:%s Registering library %s address: %p start: %p end: %p vtableStart: %p vtableEnd: %p \n", __FILE__, __LINE__,
          __FUNCTION__, libraryPath.c_str(), (void*)address, start, end, (void*)vtableStart, (void*)vtableEnd );
 #endif
-  this->_ISLLibraries.push_back(lib);
+  this->_ISLLibraries.emplace_back(libraryPath, isExecutable, start, end, vtableStart, vtableEnd);
   return idx;
 };
 
@@ -2227,6 +2226,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         size_t symbolBufferSize = libheader->_SymbolInfoOffset - libheader->_SymbolBufferOffset;
         lib._SymbolBuffer.resize(symbolBufferSize);
         const char* symbolBufferStart = (const char*)(libheader + 1) + libheader->_SymbolBufferOffset;
+        lib._SymbolBuffer.assign(symbolBufferStart, symbolBufferStart + symbolBufferSize);
         memcpy((char*)lib._SymbolBuffer.data(), symbolBufferStart, symbolBufferSize);
         size_t symbolInfoSize = libheader->_SymbolInfoCount * sizeof(SymbolInfo);
         lib._SymbolInfo.resize(libheader->_SymbolInfoCount);
@@ -2503,7 +2503,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               allocatedObjectFile->_State = llvmo::RunState;
 
               registerObjectFile<gctools::SnapshotLoadStage>(allocatedObjectFile);
-              codeFixups.emplace_back(CodeFixup_t(loadedObjectFile, &*allocatedObjectFile));
+              codeFixups.emplace_back(loadedObjectFile, &*allocatedObjectFile);
               llvmo::JITDylib_sp snapshot_JITDylib_sp_ = allocatedObjectFile->_TheJITDylib;
               llvmo::JITDylib_O* snapshot_JITDylib_O_ = &*snapshot_JITDylib_sp_;
               gctools::Header_s* snapshot_JITDylib_O_header = GENERAL_PTR_TO_HEADER_PTR(snapshot_JITDylib_O_);
