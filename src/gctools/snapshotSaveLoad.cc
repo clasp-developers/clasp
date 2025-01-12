@@ -2461,7 +2461,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       std::vector<CodeFixup_t> codeFixups;
       size_t countNullObjects = 0;
       size_t objectFileCount = 0;
-      std::map<gctools::BaseHeader_s*, char*> objectFileForwards;
       {
         // Link all the code objects
         MaybeTimeStartup time5("Object file linking");
@@ -2525,7 +2524,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               if ((void*)fwd == NULL) {
                 ISL_ERROR("Bad fwd = NULL for allocatedObjectFile.raw_() %p  source_header %p", allocatedObjectFile.raw_(), source_header);
               }
-              objectFileForwards[source_header] = (char*)fwd;
+              set_forwarding_pointer(source_header, (char*)fwd, &islInfo);
               root_holder.add((void*)allocatedObjectFile.raw_());
               objectFileCount++;
               if (loadedObjectFile->_ObjectId != allocatedObjectFile->_ObjectId) {
@@ -2581,13 +2580,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
             } else if (source_header->_badge_stamp_wtag_mtag.fwdP()) {
             } else if (generalHeader->_Header._badge_stamp_wtag_mtag._value ==
                        DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
-              // Set the forwarding pointer defined above.
-              gctools::Header_s* source_header = (gctools::Header_s*)&generalHeader->_Header;
-              char* fwd = objectFileForwards[source_header];
-              set_forwarding_pointer(source_header, fwd, &islInfo);
-              if (!fwd) {
-                ISL_ERROR("Got NULL fwd for source_header %p", source_header);
-              }
+              // already done above
             } else if (generalHeader->_Header._badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Null_O)) {
               // This may be redundant because of the test above (source_header == snapshot_nil_header)
               // Don't do anything with the only Null_O object - it was allocated above when we fished it out
