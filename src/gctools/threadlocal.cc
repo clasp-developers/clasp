@@ -182,7 +182,7 @@ VirtualMachine::~VirtualMachine() {
 // ThreadLocalState::finish_initialization_main_thread() after the Nil symbol is
 // in GC managed memory.
 ThreadLocalState::ThreadLocalState(bool dummy)
-  : _unwinds(0), _CleanupFunctions(NULL), _ObjectFiles(), _BufferStr8NsPool(), _BufferStrWNsPool(), _PendingSignalsP(false),
+  : _unwinds(0), _CleanupFunctions(NULL), _BufferStr8NsPool(), _BufferStrWNsPool(), _PendingSignalsP(false),
     // initialized with null pointers so that dequeue_interrupt
     // can see that the queue is not yet available.
     // Default-initializing an atomic default-initializes the underlying object
@@ -228,8 +228,6 @@ void ThreadLocalState::finish_initialization_main_thread(core::T_sp theNilObject
   //  printf("%s:%d:%s reinitialize symbols here once _Nil is defined\n", __FILE__, __LINE__, __FUNCTION__ );
   // Reinitialize all threadlocal lists once NIL is defined
   // We work with theObject here directly because it's very early in the bootstrapping
-  if (this->_ObjectFiles.theObject)
-    goto ERR;
   if (this->_BufferStr8NsPool.theObject)
     goto ERR;
   if (this->_BufferStrWNsPool.theObject)
@@ -238,7 +236,6 @@ void ThreadLocalState::finish_initialization_main_thread(core::T_sp theNilObject
     goto ERR;
   if (this->_UnwindDest.theObject)
     goto ERR;
-  this->_ObjectFiles.theObject = theNilObject.theObject;
   this->_BufferStr8NsPool.theObject = theNilObject.theObject;
   this->_BufferStrWNsPool.theObject = theNilObject.theObject;
   this->_DynEnvStackBottom.theObject = theNilObject.theObject;
@@ -251,7 +248,7 @@ ERR:
 
 // This is for constructing ThreadLocalState for threads
 ThreadLocalState::ThreadLocalState()
-  : _unwinds(0), _ObjectFiles(nil<core::T_O>()), _CleanupFunctions(NULL), _Breakstep(false), _PendingSignalsP(false),
+  : _unwinds(0), _CleanupFunctions(NULL), _Breakstep(false), _PendingSignalsP(false),
     _PendingInterruptsHead(), _PendingInterruptsTail(),
     _BreakstepFrame(NULL), _DynEnvStackBottom(nil<core::T_O>()), _UnwindDest(nil<core::T_O>()) {
 #ifdef _TARGET_OS_DARWIN
@@ -358,28 +355,6 @@ uint32_t ThreadLocalState::random() {
   uint32_t rnd = this->_xorshf_z & 0xFFFFFFFF;
   // printf("%s:%d:%s rnd = %u\n", __FILE__, __LINE__, __FUNCTION__, rnd );
   return rnd;
-}
-
-void ThreadLocalState::pushObjectFile(llvmo::ObjectFile_sp of) {
-  this->_ObjectFiles = core::Cons_O::create(of, this->_ObjectFiles);
-}
-
-llvmo::ObjectFile_sp ThreadLocalState::topObjectFile() {
-  core::T_sp of = this->_ObjectFiles;
-  if (of.nilp()) {
-    return unbound<llvmo::ObjectFile_O>();
-  }
-  // The following MUST be As_unsafe because we might be loading an image
-  // and we can't check headers in that situation
-  return gc::As_unsafe<llvmo::ObjectFile_sp>(CONS_CAR(of));
-}
-
-void ThreadLocalState::popObjectFile() {
-  if (this->_ObjectFiles.consp()) {
-    this->_ObjectFiles = CONS_CDR(this->_ObjectFiles);
-    return;
-  }
-  SIMPLE_ERROR("There were no more object files");
 }
 
 // INTERRUPT QUEUE
