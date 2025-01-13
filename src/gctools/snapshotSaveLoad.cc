@@ -1207,12 +1207,12 @@ struct copy_objects_t {
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
     if (header->_badge_stamp_wtag_mtag.stampP()) {
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
+      size_t generalSize;
+      isl_obj_skip(clientStart, false, generalSize);
+      if (generalSize == 0)
+        ISL_ERROR("A zero size general at %p was encountered", (void*)clientStart);
       if (header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
         llvmo::ObjectFile_O* objectFile = (llvmo::ObjectFile_O*)clientStart;
-        size_t generalSize;
-        isl_obj_skip(clientStart, false, generalSize);
-        if (generalSize == 0)
-          ISL_ERROR("A zero size general at %p was encountered", (void*)clientStart);
         llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)clientStart;
         ISLGeneralHeader_s islheader(code->frontSize() + code->literalsSize(), (gctools::Header_s*)header, false);
         char* islh = this->_objects->write_buffer((char*)&islheader, sizeof(ISLGeneralHeader_s));
@@ -1243,10 +1243,6 @@ struct copy_objects_t {
         //
         // Now write it into the buffer
         //
-        size_t generalSize;
-        isl_obj_skip(clientStart, false, generalSize);
-        if (generalSize == 0)
-          ISL_ERROR("A zero size general at %p was encountered", (void*)clientStart);
         gctools::clasp_ptr_t clientEnd = clientStart + generalSize;
 #ifdef DEBUG_BADGE_SSL
         if (header->_badge_stamp_wtag_mtag._header_badge.load() > 1) {
@@ -2571,9 +2567,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           case ISLKind::General: {
             ISLGeneralHeader_s* generalHeader = (ISLGeneralHeader_s*)cur_header;
             gctools::Header_s* source_header = (gctools::Header_s*)&generalHeader->_Header;
-            gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(generalHeader + 1);
-            gctools::clasp_ptr_t clientEnd = clientStart + generalHeader->_Size;
-            snapshot_save_load_init_s init(&generalHeader->_Header, clientStart, clientEnd);
             if (source_header == snapshot_nil_header) {
               // Skip the NIL object we handled above
               countNullObjects++; // It's a Null_O object but its header has been obliterated by a fwd
@@ -2588,6 +2581,9 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
 
               countNullObjects++;
             } else {
+              gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(generalHeader + 1);
+              gctools::clasp_ptr_t clientEnd = clientStart + generalHeader->_Size;
+              snapshot_save_load_init_s init(&generalHeader->_Header, clientStart, clientEnd);
 #ifdef DEBUG_BADGE_SSL
               if (init._headStart->_badge_stamp_wtag_mtag._header_badge.load() > 1) {
                 global_badge_count++;
