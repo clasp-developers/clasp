@@ -2398,8 +2398,9 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         root_holder.add((void*)obj_claspJIT.raw_());
       }
       llvmo::ClaspJIT_O* claspJIT = (llvmo::ClaspJIT_O*)gctools::untag_general<core::T_O*>(obj_claspJIT.raw_());
-      new (claspJIT) llvmo::ClaspJIT_O(true, mainJITDylib);
-      obj_claspJIT->registerJITDylibAfterLoad(&*obj_mainJITDylib);
+      new (claspJIT) llvmo::ClaspJIT_O;
+      obj_claspJIT->adjustMainJITDylib(obj_mainJITDylib);
+      obj_claspJIT->registerJITDylibAfterLoad(obj_mainJITDylib);
       if (mainJITDylib->_Id != 0) {
         ISL_ERROR("The mainJITDylib _Id MUST be zero !!!  Instead it is: %lu\n",
                   mainJITDylib->_Id);
@@ -2447,7 +2448,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         if (name == "main") {
           llvm_jitdylib = &obj_claspJIT->_LLJIT->getMainJITDylib(); // Main JITDylib we get from the LLJIT
           memory_JITDylib_sp_->_ptr = llvm_jitdylib;
-          auto rt = llvm_jitdylib->getDefaultResourceTracker();
           // addGenerator was done in ClaspJIT_O
         } else {
           llvm_jitdylib = &*(obj_claspJIT->_LLJIT->createJITDylib(name)); // Every other one we need to create
