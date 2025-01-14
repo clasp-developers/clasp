@@ -825,7 +825,6 @@ enum class ISLKind {
   General = 0xbedabb1e01010101, // !OBJECT!
   Cons = 0xbedabb1e02020202,
   Weak = 0xbedabb1e03030303,
-  Library = 0xbedabb1e04040404,
   Roots = 0xbedabb1e05050505, // ROOTS
   End = 0xbedabb1e06060606
 }; // END
@@ -983,21 +982,6 @@ struct ISLGeneralHeader_s : public ISLHeader_s {
   gctools::Header_s* header() const { return (gctools::Header_s*)((char*)this + offsetof(ISLGeneralHeader_s, _Header)); }
 };
 
-struct ISLLibraryHeader_s : public ISLHeader_s {
-  bool _Executable;
-  size_t _SymbolBufferOffset;
-  size_t _SymbolInfoOffset;
-  size_t _SymbolInfoCount;
-  ISLLibraryHeader_s(bool isExecutable, size_t s, size_t symbolBufferOffset, size_t symbolInfoOffset,
-                     size_t symbolInfoCount)
-    : ISLHeader_s(ISLKind::Library, s), _Executable(isExecutable), _SymbolBufferOffset(symbolBufferOffset), _SymbolInfoOffset(symbolInfoOffset),
-        _SymbolInfoCount(symbolInfoCount){};
-};
-
-size_t ISLLibrary::writeSize() {
-  return sizeof(ISLLibraryHeader_s) + this->nameSize() + this->symbolBufferSize() + this->symbolInfoSize();
-};
-
 ISLHeader_s* ISLHeader_s::next(ISLKind k) const {
   if (k != this->_Kind) {
     printf("%s:%d:%s ISLKind k %d does not match this->_Kind %d\n", __FILE__, __LINE__, __FUNCTION__, k, this->_Kind);
@@ -1036,6 +1020,25 @@ gctools::BaseHeader_s::BadgeStampWtagMtag* ISLHeader_s::stamp_wtag_mtag_P(ISLKin
       SIMPLE_ERROR("Add support to get _badge_stamp_wtag_mtag of ISLKind {}", (int)k);
   }
 }
+
+// These are similar to the ISLHeaders above, but are stored in a separate region
+// and do not represent Lisp objects, so they don't need a _Kind or participate
+// in the same hierarchy.
+struct ISLLibraryHeader_s {
+  size_t _Size;
+  bool _Executable;
+  size_t _SymbolBufferOffset;
+  size_t _SymbolInfoOffset;
+  size_t _SymbolInfoCount;
+  ISLLibraryHeader_s(bool isExecutable, size_t s, size_t symbolBufferOffset, size_t symbolInfoOffset,
+                     size_t symbolInfoCount)
+    : _Size(s), _Executable(isExecutable), _SymbolBufferOffset(symbolBufferOffset), _SymbolInfoOffset(symbolInfoOffset),
+        _SymbolInfoCount(symbolInfoCount){};
+};
+
+size_t ISLLibrary::writeSize() {
+  return sizeof(ISLLibraryHeader_s) + this->nameSize() + this->symbolBufferSize() + this->symbolInfoSize();
+};
 
 struct ensure_forward_t : public walker_callback_t {
   void callback(gctools::BaseHeader_s* header) {
@@ -2200,10 +2203,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         } else {
           // advance to the next ISLLibraryHeader_s
           libheader = (ISLLibraryHeader_s*)((const char*)(libheader /* + 1 */) + libheader->_Size);
-        }
-        if (libheader->_Kind != ISLKind::Library) {
-          ISL_ERROR("The libheader(offset %p) libheader->_Kind is %d and not Library (%d)\n",
-                    (void*)((uintptr_t)libheader - (uintptr_t)libheaderStart), libheader->_Kind, ISLKind::Library);
         }
         char* bufferStart = (char*)(libheader + 1);
         std::string execLibPath(bufferStart);
