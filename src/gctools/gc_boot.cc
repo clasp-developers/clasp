@@ -37,7 +37,6 @@ uintptr_t global_class_kind;
 uintptr_t global_container_kind;
 uintptr_t global_code_kind;
 uintptr_t global_atomic_kind;
-uintptr_t global_strong_weak_kind;
 // int              global_container_proc_index;
 size_t global_stamp_max;
 Stamp_info* global_stamp_info;
@@ -107,7 +106,6 @@ void dump_data_types(std::ostream& fout, const std::string& indent) {
   Init_global_ints("MTAG_MASK", (int)Header_s::mtag_mask);
   Init_global_ints("GENERAL_MTAG", (int)Header_s::general_mtag);
   Init_global_ints("CONS_MTAG", (int)Header_s::cons_mtag);
-  Init_global_ints("WEAK_MTAG", (int)Header_s::weak_mtag);
   Init_global_ints("REF_CLASS_CLASS_NAME", (int)core::Instance_O::REF_CLASS_CLASS_NAME);
 
   Init_global_size_t("VASLIST-ARGS-OFFSET", core::Vaslist::args_offset());
@@ -463,7 +461,6 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
         1); // */  GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(global_container_proc_index,0),0,1); // GC_DS_LENGTH, 1, 1);
     global_code_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
     global_atomic_kind = GC_I_PTRFREE; // GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 0, 1);
-    global_strong_weak_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
     for (cur_stamp = 0; cur_stamp <= local_stamp_max; ++cur_stamp) {
       if (local_stamp_layout[cur_stamp].layout_op != undefined_op) {
 #ifdef DUMP_PRECISE_CALC

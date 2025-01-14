@@ -43,10 +43,6 @@ THE SOFTWARE.
 #define STACK_ALIGN_UP(size) (((size) + STACK_ALIGNMENT - 1) & ~(STACK_ALIGNMENT - 1))
 
 namespace gctools {
-extern uintptr_t global_strong_weak_kind;
-};
-
-namespace gctools {
 template <class OT>
 static void initializeIfNeeded(smart_ptr<OT> sp) {
   if constexpr (GCInfo<OT>::NeedsInitialization

@@ -265,9 +265,9 @@ template <class T> inline size_t sizeof_with_header();
       #B001 == invalid0_mtag This is an illegal value for the two lsbs,
               it indictates that this is not a valid header.
               This pattern is used to indicate a CONS header
-      #B010 == (MPS specific) weak_mtag - A weak object
+      #B010 == invalid1_mtag
       #B011 == cons_mtag  This indicates that what follows is a cons cell.
-      #B100 == invalid1_mtag
+      #B100 == invalid2_mtag
       #B101 == fwd_mtag - This tag indicates that the remaining data bits in the header contains a forwarding
               pointer.  The uintptr_t in additional_data[0] contains the length of
               the block from the client pointer.
@@ -328,16 +328,11 @@ public:
   static const tagged_stamp_t general_mtag_mask = 0b11;
 #endif
   static const size_t general_mtag_shift = general_mtag_width; // MUST ALWAYS BE >=2 to match Fixnum shift
-  /*!
-   * It is important that weak_mtag is the same value as CHARACTER_TAG so that
-   * it looks like an immediate value in AWL pools and doesn't break the
-   * MPS invariant that only valid tagged pointers are allowed in AWL pools.
-   */
   static const tagged_stamp_t general_mtag = 0b000;
   static const tagged_stamp_t invalid0_mtag = 0b001;
-  static const tagged_stamp_t weak_mtag = 0b010;
+  static const tagged_stamp_t invalid1_mtag = 0b010;
   static const tagged_stamp_t cons_mtag = 0b011;
-  static const tagged_stamp_t invalid1_mtag = 0b100;
+  static const tagged_stamp_t invalid2_mtag = 0b100;
   static const tagged_stamp_t fwd_mtag = 0b101;
   static const tagged_stamp_t pad_mtag = 0b110;
   static const tagged_stamp_t pad1_mtag = 0b111;
@@ -469,11 +464,10 @@ public:
       if (!(this->_value & general_mtag_mask))
         return false;
       tagged_stamp_t val = (this->_value & general_mtag_mask);
-      return (val == invalid0_mtag) || (val == invalid1_mtag);
+      return (val == invalid0_mtag) || (val == invalid1_mtag) || (val == invalid2_mtag);
     };
     bool stampP() const { return (this->_value & general_mtag_mask) == general_mtag; };
     bool generalObjectP() const { return this->stampP(); };
-    bool weakObjectP() const { return (this->_value & mtag_mask) == weak_mtag; };
     bool consObjectP() const { return (this->_value & mtag_mask) == cons_mtag; };
     bool fwdP() const { return (this->_value & mtag_mask) == fwd_mtag; };
     bool fwdV() const { return (this->_value & mtag_mask); };
@@ -612,8 +606,6 @@ public:
       return ss.str();
     } else if (this->_badge_stamp_wtag_mtag.consObjectP()) {
       return "Header_CONS";
-    } else if (this->_badge_stamp_wtag_mtag.weakObjectP()) {
-      return "Header_WEAK";
     } else if (this->_badge_stamp_wtag_mtag.fwdP()) {
       std::stringstream ss;
       ss << "Fwd/ptr=" << this->_badge_stamp_wtag_mtag.fwdPointer() << "/sz=" << this->_badge_stamp_wtag_mtag.fwdSize();

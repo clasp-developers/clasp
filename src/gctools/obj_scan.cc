@@ -197,7 +197,8 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
     }
 #endif // USE_MPS
     case gctools::Header_s::invalid0_mtag:
-    case gctools::Header_s::invalid1_mtag: {
+    case gctools::Header_s::invalid1_mtag:
+    case gctools::Header_s::invalid2_mtag: {
       throw_hard_error_bad_client((void*)client);
     }
     }
@@ -358,7 +359,8 @@ ADDR_T OBJECT_SKIP(ADDR_T client, bool dbg, size_t& obj_size) {
       break;
     }
     case gctools::Header_s::invalid0_mtag:
-    case gctools::Header_s::invalid1_mtag: {
+    case gctools::Header_s::invalid1_mtag:
+    case gctools::Header_s::invalid2_mtag: {
       throw_hard_error_bad_client((void*)client);
       break;
     }

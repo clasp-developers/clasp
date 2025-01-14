@@ -83,7 +83,6 @@ extern uintptr_t global_class_kind;
 extern uintptr_t global_container_kind;
 extern uintptr_t global_code_kind;
 extern uintptr_t global_atomic_kind;
-extern uintptr_t global_strong_weak_kind;
 
 extern int global_container_proc_index;
 

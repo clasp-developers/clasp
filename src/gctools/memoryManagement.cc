@@ -384,7 +384,8 @@ void rawHeaderDescribe(const uintptr_t* headerP) {
   uintptr_t headerTag = (*headerP) & Header_s::mtag_mask;
   switch (headerTag) {
   case Header_s::invalid0_mtag:
-  case Header_s::invalid1_mtag: {
+  case Header_s::invalid1_mtag:
+  case Header_s::invalid2_mtag: {
     printf("  %p : %" PRIuPTR "(%p) %" PRIuPTR "(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
     printf(" Not an object header!\n");
     break;
@@ -603,8 +604,6 @@ bool Header_s::isValidGeneralObject() const {
         goto bad;
     }
 #endif
-  } else if (!this->_badge_stamp_wtag_mtag.weakObjectP()) {
-    goto bad;
   }
   return true;
 bad:
@@ -669,8 +668,6 @@ bool BaseHeader_s::preciseIsPolymorphic() const {
     uintptr_t stamp = this->_badge_stamp_wtag_mtag.stamp();
     return global_stamp_layout[stamp].flags & IS_POLYMORPHIC;
   } else if (this->_badge_stamp_wtag_mtag.consObjectP()) {
-    return false;
-  } else if (this->_badge_stamp_wtag_mtag.weakObjectP()) {
     return false;
   }
   return false;
@@ -873,8 +870,6 @@ void walkRoots(RootWalkCallback&& callback) {
 
 #define GENERAL_PTR_TO_HEADER_PTR(_general_) GeneralPtrToHeaderPtr((void*)_general_)
 // #define HEADER_PTR_TO_GENERAL_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
-#define WEAK_PTR_TO_HEADER_PTR(_general_) WeakPtrToHeaderPtr((void*)_general_)
-// #define HEADER_PTR_TO_WEAK_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
 
 #define ADDR_T uintptr_t
 #define EXTRA_ARGUMENTS , std::stack<Tagged*>& markStack
@@ -893,12 +888,6 @@ void walkRoots(RootWalkCallback&& callback) {
 #undef CONS_SKIP
 #undef CONS_SCAN
 
-#define WEAK_SCAN mw_weak_scan
-#define WEAK_SKIP mw_weak_skip
-#include "weak_scan.cc"
-#undef WEAK_SKIP
-#undef WEAK_SCAN
-
 #undef POINTER_FIX
 #undef ADDR_T
 #undef EXTRA_ARGUMENTS
@@ -915,16 +904,14 @@ static void mapAllObjectsInternal(std::set<Tagged>& markSet,
     Tagged tagged = *field;
 
     switch(ptag(tagged)) {
-    case general_tag: { // general object: check weakness
+    case general_tag: { // general object
       if (!markSet.contains(tagged)) { // only process each object once
         markSet.insert(tagged);
         uintptr_t client = untag_object(tagged);
         Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
         // the mw_foo_scan functions push all fields of the object
         // onto the markStack to keep the loop going.
-        if (header->_badge_stamp_wtag_mtag.weakObjectP())
-          mw_weak_scan(client, markStack);
-        else mw_obj_scan(client, markStack);
+        mw_obj_scan(client, markStack);
         // now's the time to callback. Could also go before the scan
         callback(tagged);
       }
@@ -978,28 +965,24 @@ std::set<Tagged> memtest(std::set<core::T_sp>& dladdrFailed) {
         uintptr_t client = tagged & ptr_mask;
         Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
         if (header->isValidGeneralObject()) {
-          if (header->_badge_stamp_wtag_mtag.weakObjectP())
-            mw_weak_scan(client, markStack);
-          else {
-            mw_obj_scan(client, markStack);
+          mw_obj_scan(client, markStack);
             // If this is a function, check its dladdrability.
-            core::T_sp tobj(tagged);
-            if (tobj.isA<core::SimpleFun_O>()) {
-              auto sfun = tobj.as_unsafe<core::SimpleFun_O>();
-              if (!sfun->dladdrablep(uniqueEntryPoints))
-                dladdrFailed.insert(sfun);
-            }
-            // This CoreFun check seems like it should work, but
-            // snapshots in a FASO build trip it.
-            // TODO figure that out?
-            // Snapshots seem to work without this test, anyway.
-            /*
-            else if (tobj.isA<core::CoreFun_O>()) {
-              auto sfun = tobj.as_unsafe<core::CoreFun_O>();
-              if (!sfun->dladdrablep(uniqueEntryPoints))
-                dladdrFailed.insert(sfun);
-            }*/
+          core::T_sp tobj(tagged);
+          if (tobj.isA<core::SimpleFun_O>()) {
+            auto sfun = tobj.as_unsafe<core::SimpleFun_O>();
+            if (!sfun->dladdrablep(uniqueEntryPoints))
+              dladdrFailed.insert(sfun);
           }
+          // This CoreFun check seems like it should work, but
+          // snapshots in a FASO build trip it.
+          // TODO figure that out?
+          // Snapshots seem to work without this test, anyway.
+          /*
+          else if (tobj.isA<core::CoreFun_O>()) {
+            auto sfun = tobj.as_unsafe<core::CoreFun_O>();
+            if (!sfun->dladdrablep(uniqueEntryPoints))
+              dladdrFailed.insert(sfun);
+          }*/
         } else corrupt.insert(tagged);
       }
     } break;
@@ -1046,12 +1029,6 @@ size_t objectSize(BaseHeader_s* header) {
     uintptr_t client = (uintptr_t)HeaderPtrToConsPtr(header);
     [[maybe_unused]] uintptr_t clientLimit = mw_cons_skip(client, consSize);
     return consSize;
-  } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
-    // It's a weak object
-    size_t objectSize;
-    uintptr_t client = (uintptr_t)HeaderPtrToWeakPtr(header);
-    [[maybe_unused]] uintptr_t clientLimit = mw_weak_skip(client, false, objectSize);
-    return objectSize;
   } else {
     // It's a general object - walk it
     size_t objectSize;

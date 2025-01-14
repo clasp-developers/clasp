@@ -872,8 +872,6 @@ gctools::clasp_ptr_t headerPointerToGeneralPointer(gctools::Header_s* header) {
 
 #define GENERAL_PTR_TO_HEADER_PTR(_general_) generalPointerToHeaderPointer((gctools::clasp_ptr_t)_general_)
 #define HEADER_PTR_TO_GENERAL_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
-#define WEAK_PTR_TO_HEADER_PTR(_general_) generalPointerToHeaderPointer((gctools::clasp_ptr_t)_general_)
-#define HEADER_PTR_TO_WEAK_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
 
 typedef gctools::clasp_ptr_t (*PointerFix)(gctools::clasp_ptr_t* clientAddress, gctools::clasp_ptr_t client, uintptr_t tag,
                                            void* user_data);
@@ -1000,8 +998,6 @@ gctools::clasp_ptr_t test_pointer(gctools::clasp_ptr_t* clientAddress, gctools::
     header = GENERAL_PTR_TO_HEADER_PTR(client);
   } else if (tag == gctools::cons_tag) {
     header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(client);
-  } else {
-    header = WEAK_PTR_TO_HEADER_PTR(client);
   }
   auto found = islInfo->_forwarding.find(header);
   if (found == islInfo->_forwarding.end()) {
@@ -1032,8 +1028,6 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
     header = GENERAL_PTR_TO_HEADER_PTR(client);
   } else if (tag == gctools::cons_tag) {
     header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(client);
-  } else {
-    header = WEAK_PTR_TO_HEADER_PTR(client);
   }
   DBG_SL_FFWD(("    maybe_follow_forwarding_pointer client %p header: %p\n"), (void*)client, (void*)header);
   if (islInfo->_operation == SaveOp && !is_forwarding_pointer(header, islInfo)) {
@@ -1129,15 +1123,6 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
 #undef CONS_SKIP
 #undef CONS_SCAN
 
-#define WEAK_SCAN isl_weak_scan
-#define WEAK_SKIP isl_weak_skip
-#define WEAK_FWD isl_weak_fwd
-#define WEAK_SKIP_IN_WEAK_FWD isl_weak_skip
-#include "weak_scan.cc"
-#undef WEAK_FWD
-#undef WEAK_SKIP
-#undef WEAK_SCAN
-
 #undef ADDR_T
 #undef EXTRA_ARGUMENTS
 
@@ -1194,7 +1179,6 @@ namespace snapshotSaveLoad {
 typedef enum {
   General = 0xbedabb1e01010101, // !OBJECT!
   Cons = 0xbedabb1e02020202,
-  Weak = 0xbedabb1e03030303,
   Library = 0xbedabb1e04040404,
   Roots = 0xbedabb1e05050505, // ROOTS
   End = 0xbedabb1e06060606
@@ -1322,8 +1306,7 @@ void boehm_walker_callback(void* ptr, size_t sz, void* client_data) {
   kind = GC_get_kind_and_size((void*)ptr, &psize);
   // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
   if (kind == gctools::global_lisp_kind || kind == gctools::global_cons_kind || kind == gctools::global_class_kind ||
-      kind == gctools::global_container_kind || kind == gctools::global_code_kind || kind == gctools::global_atomic_kind ||
-      kind == gctools::global_strong_weak_kind) {
+      kind == gctools::global_container_kind || kind == gctools::global_code_kind || kind == gctools::global_atomic_kind) {
     // Either there is a tag in the low 3 bits of the ptr or the second word is not zero
     // Blocks can be passed to us that have a boehm free-list pointer in the first word and zero everywhere else
     //   a free-list pointer will have zero in the low 3 bits
@@ -1375,12 +1358,6 @@ struct ISLConsHeader_s : public ISLHeader_s {
   }
 };
 
-struct ISLWeakHeader_s : public ISLHeader_s {
-  gctools::Header_s _Header;
-  ISLWeakHeader_s(ISLKind k, uintptr_t sz, gctools::Header_s* head) : ISLHeader_s(k, sz), _Header(head){};
-  gctools::Header_s* header() const { return (gctools::Header_s*)((char*)this + offsetof(ISLWeakHeader_s, _Header)); }
-};
-
 struct ISLGeneralHeader_s : public ISLHeader_s {
   gctools::Header_s _Header;
   ISLGeneralHeader_s(ISLKind k, uintptr_t sz, gctools::Header_s* head, bool verbose) : ISLHeader_s(k, sz), _Header(head, verbose) {
@@ -1419,8 +1396,6 @@ ISLHeader_s* ISLHeader_s::next(ISLKind k) const {
     headerSize = sizeof(ISLGeneralHeader_s);
   } else if (k == Cons) {
     headerSize = sizeof(ISLConsHeader_s);
-  } else if (k == Weak) {
-    headerSize = sizeof(ISLWeakHeader_s);
   } else {
     SIMPLE_ERROR("Add support to calculate size of ISLKind {}", (int)k);
   }
@@ -1438,9 +1413,6 @@ gctools::BaseHeader_s::BadgeStampWtagMtag* ISLHeader_s::stamp_wtag_mtag_P(ISLKin
   } else if (k == Cons) {
     ISLConsHeader_s* consCur = (ISLConsHeader_s*)this;
     gctools::ConsHeader_s* header = consCur->header();
-    return &header->_badge_stamp_wtag_mtag;
-  } else if (k == Weak) {
-    gctools::Header_s* header = (gctools::Header_s*)((char*)this + offsetof(ISLWeakHeader_s, _Header));
     return &header->_badge_stamp_wtag_mtag;
   }
   SIMPLE_ERROR("Add support to get _badge_stamp_wtag_mtag of ISLKind {}", (int)k);
@@ -1462,9 +1434,6 @@ struct ensure_forward_t : public walker_callback_t {
       } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
         printf("%s:%d:%s The ISL cons %p %s is not a forwarding pointer\n", __FILE__, __LINE__, __FUNCTION__, (void*)header,
                header->description().c_str());
-      } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
-        printf("%s:%d:%s The ISL weak %p %s is not a forwarding pointer\n", __FILE__, __LINE__, __FUNCTION__, (void*)header,
-               header->description().c_str());
       }
     }
   }
@@ -1485,8 +1454,6 @@ struct gather_info_for_snapshot_save_t : public walker_callback_t {
         }
       }
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
-      // Nothing
-    } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
       // Nothing
     }
   }
@@ -1525,8 +1492,6 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
       }
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       // Nothing
-    } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
-      // Nothing
     }
   }
   prepare_for_snapshot_save_t(Fixup* fixup, ISLInfo* info) : walker_callback_t(info), _fixup(fixup){};
@@ -1545,7 +1510,6 @@ struct calculate_size_t : public walker_callback_t {
   size_t _ObjectFileTotalSize;
   size_t _general_count;
   size_t _cons_count;
-  size_t _weak_count;
   size_t _ObjectFileCount;
   size_t _CodeCount;
   void callback(gctools::BaseHeader_s* header) {
@@ -1584,18 +1548,11 @@ struct calculate_size_t : public walker_callback_t {
       size_t consSize;
       isl_cons_skip(client, consSize);
       this->_TotalSize += sizeof(ISLConsHeader_s) + consSize;
-    } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
-      gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
-      this->_weak_count++;
-      DBG_SL1(("weak object header %p   client: %p\n") , (void*)header , (void*)client);
-      size_t objectSize;
-      [[maybe_unused]] gctools::clasp_ptr_t nextClient = isl_weak_skip(client, false, objectSize);
-      this->_TotalSize += sizeof(ISLWeakHeader_s) + objectSize;
     }
   }
 
   calculate_size_t(ISLInfo* info)
-      : walker_callback_t(info), _TotalSize(0), _ObjectFileTotalSize(0), _general_count(0), _cons_count(0), _weak_count(0),
+      : walker_callback_t(info), _TotalSize(0), _ObjectFileTotalSize(0), _general_count(0), _cons_count(0),
         _ObjectFileCount(0), _CodeCount(0){};
 };
 
@@ -1754,21 +1711,6 @@ struct copy_objects_t : public walker_callback_t {
       DBG_SAVECOPY("   copied cons header %p to %p  | CAR: %p CDR: %p\n", header, (void*)islh, (void*)cons->_Car.load().raw_(),
                    (void*)cons->_Cdr.load().raw_());
       DBG_SL_FWD("setFwdPointer cons header %p new_addr -> %p\n", (void*)header, (void*)new_addr);
-    } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
-      //      printf("%s:%d:%s    weak_skip\n", __FILE__, __LINE__, __FUNCTION__ );
-      gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
-      size_t weakSize;
-      [[maybe_unused]] gctools::clasp_ptr_t dummyNextClient = isl_weak_skip(clientStart, false, weakSize);
-      if (weakSize == 0)
-        ISL_ERROR(fmt::format("A zero size weak object at {} was encountered", (void*)clientStart));
-      gctools::clasp_ptr_t clientEnd = clientStart + weakSize;
-      ISLWeakHeader_s islheader(Weak, clientEnd - clientStart, (gctools::Header_s*)header);
-      char* islh = this->_objects->write_buffer((char*)&islheader, sizeof(ISLWeakHeader_s));
-      char* new_addr = this->_objects->write_buffer((char*)clientStart, clientEnd - clientStart);
-      set_forwarding_pointer(header, new_addr, this->_info);
-      this->_progress.update((uintptr_t)islh);
-      DBG_SAVECOPY("   copied weak header %p to %p\n", header, (void*)islh);
-      DBG_SL_FWD("setFwdPointer weak header %p new_addr -> %p\n", (void*)header, (void*)new_addr);
     }
     this->_NumberOfObjects++;
   }
@@ -1794,11 +1736,6 @@ template <typename Walker> void walk_snapshot_save_load_objects(ISLHeader_s* sta
       gctools::ConsHeader_s* header = consCur->header();
       DBG_SL_WALK_SL(BF("cons header: %p %s  next: %p\n") % header % header->description() %
                      (void*)consCur->next<ISLConsHeader_s>());
-      walker.callback(header);
-    } else if (cur->_Kind == Weak) {
-      gctools::Header_s* header = (gctools::Header_s*)((char*)cur + offsetof(ISLWeakHeader_s, _Header));
-      DBG_SL_WALK_SL(BF("weak header: %p %s  next: %p\n") % header % header->description() %
-                     (void*)weakCur->next<ISLWeakHeader_s>());
       walker.callback(header);
     } else {
       printf("%s:%d:%s Hit header@%p  with unexpected kind: %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)cur, cur->_Kind);
@@ -1832,9 +1769,6 @@ struct fixup_objects_t : public walker_callback_t {
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToConsPtr(header);
       isl_cons_scan(client, (void*)this->_info);
-    } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
-      gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
-      isl_weak_scan(clientStart, (void*)this->_info);
     }
   }
 };
@@ -1872,7 +1806,6 @@ struct fixup_internals_t : public walker_callback_t {
         }
       }
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
-    } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
     }
   }
 };
@@ -1912,15 +1845,6 @@ struct fixup_vtables_t : public walker_callback_t {
       }
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       // Do nothing
-    } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
-      if (header->preciseIsPolymorphic()) {
-        uintptr_t client = (uintptr_t)HEADER_PTR_TO_WEAK_PTR(header);
-        uintptr_t vtable;
-        uintptr_t new_vtable;
-        this->do_vtable((gctools::Header_s*)header, (core::T_O*)client, vtable, new_vtable);
-        DBG_SL_VTABLE(BF(" wrote weak base %p vtable in memory at %p value: %p to %p %s\n") % (void*)this->_vtableRegionStart %
-                      (void*)client % (void*)vtable % (void*)new_vtable % header->description());
-      }
     }
   }
 };
@@ -2292,7 +2216,6 @@ void* snapshot_save_impl(void* data) {
   fmt::print("   size = {}\n", calc_size._TotalSize);
   fmt::print("   general_count = {}\n", calc_size._general_count);
   fmt::print("   cons_count = {}\n", calc_size._cons_count);
-  fmt::print("   weak_count = {}\n", calc_size._weak_count);
   fmt::print("   ObjectFileCount = {}\n", calc_size._ObjectFileCount);
   fmt::print("   CodeCount = {}\n", calc_size._CodeCount);
 
@@ -2714,11 +2637,11 @@ template <typename Walker> void walk_temporary_root_objects(const temporary_root
   DBG_SL_WALK_TEMP(BF("Starting walk of %lu roots at %p\n") % roots._Number % (void*)roots._buffer);
   for (size_t idx = 0; idx < roots._Number; idx++) {
     core::T_O* tagged_client = (core::T_O*)roots._buffer[idx];
-    // This will handle general and weak objects
+    // This will handle general objects
     if (gctools::tagged_generalp(tagged_client)) {
       core::T_O* untagged_client = gctools::untag_general<core::T_O*>(tagged_client);
       gctools::Header_s* header = (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(untagged_client);
-      DBG_SL_WALK_TEMP(BF("Walking to GC[%lu/%lu] managed general or weak header %p %s\n") % idx % roots._Number % (void*)header %
+      DBG_SL_WALK_TEMP(BF("Walking to GC[%lu/%lu] managed general header %p %s\n") % idx % roots._Number % (void*)header %
                        header->description());
       walker.callback(header);
     } else if (gctools::tagged_consp(tagged_client)) {
@@ -2758,9 +2681,6 @@ struct relocate_objects_t : public walker_callback_t {
       isl_cons_scan(client, (void*)this->_info);
       // printf("%s:%d:%s The object @ %p %s isPolymorphic->%d\n", __FILE__, __LINE__, __FUNCTION__, (void*)header,
       // header->description().c_str(), header->preciseIsPolymorphic());
-    } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
-      gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
-      isl_weak_scan(clientStart, (void*)this->_info);
     }
   }
 };
@@ -3390,14 +3310,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
             DBG_SL_ALLOCATE(BF("---- Allocated Cons %p copy from %p header: %p  set fwd to %p\n") % (void*)obj.raw_() %
                             (void*)header % (void*)clientStart % (void*)fwd);
             root_holder.add((void*)obj.raw_());
-          } else if (cur_header->_Kind == Weak) {
-            ISLWeakHeader_s* weakHeader = (ISLWeakHeader_s*)cur_header;
-            gctools::Header_s* header = (gctools::Header_s*)&weakHeader->_Header;
-            gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(weakHeader + 1);
-            gctools::clasp_ptr_t clientEnd = clientStart + weakHeader->_Size;
-            snapshot_save_load_init_s init(header, clientStart, clientEnd);
-            printf("%s:%d:%s  Handle allocate weak objects\n", __FILE__, __LINE__, __FUNCTION__);
-            break;
           } else {
             printf("%s:%d:%s Unknown header at offset 0x%lx qword: 0x%lx\n", __FILE__, __LINE__, __FUNCTION__,
                    (uintptr_t)cur_header - (uintptr_t)fileHeader, *(uintptr_t*)cur_header);
