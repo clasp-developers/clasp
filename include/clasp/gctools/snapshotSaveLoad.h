@@ -108,7 +108,7 @@ private:
   Fixup(const Fixup& fixup, uintptr_t memoryStart) : _memoryStart(memoryStart), _trackAddressName(true){};
 };
 
-void snapshot_save(core::SaveLispAndDie& data);
+void snapshot_save(SaveLispAndDie& data);
 void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std::string& filename);
 
 void clearLibraries();

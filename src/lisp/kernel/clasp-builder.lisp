@@ -182,7 +182,6 @@
                      (when (ext:getenv "CLASP_PAUSE_FORKED_CHILD")
                        (gctools:wait-for-user-signal (core:fmt nil "Child with pid {} is waiting for SIGUSR1"
                                                                (core:getpid))))
-                     ;;;(llvm-sys:create-lljit-thread-pool) ;;; Done by fork
                      (ext:disable-debugger)
                      (let ((start-time (get-internal-run-time))
                            (start-bytes (gctools:bytes-allocated)))

@@ -36,9 +36,6 @@
 
 (export '*primitives*)
 
-;;; Bound thread-local when the builtins module is needed
-(defvar *thread-local-builtins-module* nil)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Thread-local special variables to support the LLVM compiler
@@ -51,7 +48,6 @@
   (mp:push-default-special-binding 'core::*handler-clusters* nil)
   (mp:push-default-special-binding 'core::*restart-clusters* nil)
   (mp:push-default-special-binding 'core::*condition-restarts* nil)
-  (mp:push-default-special-binding 'cmp::*thread-local-builtins-module* nil)
   ;;; more thread-local special variables may be added in the future
   )
 
