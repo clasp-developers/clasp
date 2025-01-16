@@ -34,6 +34,7 @@ enum Data_types {
   SMART_PTR_OFFSET,
   ATOMIC_SMART_PTR_OFFSET,
   TAGGED_POINTER_OFFSET,
+  WEAK_PTR_OFFSET,
   RAW_POINTER_OFFSET,
   ARRAY_OFFSET,
   POINTER_OFFSET,
@@ -75,7 +76,7 @@ enum Data_types {
 //
 // Use powers of two for the flags
 //
-enum ClassFlags { IS_POLYMORPHIC = 1 };
+enum ClassFlags { IS_POLYMORPHIC = 1, COMPLEX_SCAN = 2 };
 
 extern uintptr_t global_lisp_kind;
 extern uintptr_t global_cons_kind;

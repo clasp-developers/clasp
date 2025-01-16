@@ -840,12 +840,8 @@
 {class-kind :stamp-name "STAMPWTAG_core__WeakPointer_O" :stamp-key "core::WeakPointer_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
-             :offset-base-ctype "core::WeakPointer_O"
-             :layout-offset-field-names ("_Link" "._value")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "core::WeakPointer_O"
-             :layout-offset-field-names ("_Link" "._splattablep")}
+{fixed-field :offset-type-cxx-identifier "WEAK_PTR_OFFSET" :offset-ctype "gctools::WeakPointer"
+             :offset-base-ctype "core::WeakPointer_O" :layout-offset-field-names ("_Link")}
 {class-kind :stamp-name "STAMPWTAG_llvmo__DebugLoc_O" :stamp-key "llvmo::DebugLoc_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
