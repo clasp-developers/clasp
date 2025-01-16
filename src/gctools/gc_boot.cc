@@ -117,12 +117,8 @@ void dump_data_types(std::ostream& fout, const std::string& indent) {
 
 inline int bitmap_field_index(size_t start, size_t offset) {
   int bitindex = start - (offset / 8);
-  if (bitindex > 63 || bitindex < 2) {
-    printf("%s:%d The bit position %d for offset %lu will not fit in a 64-bit word - the class has pointers beyond the reach of a "
-           "62-bit bitmap\n",
-           __FILE__, __LINE__, bitindex, offset);
-  }
-  return bitindex;
+  if (bitindex > 63 || bitindex < 2) return -1;
+  else return bitindex;
 }
 
 inline uintptr_t bitmap_field_bitmap(size_t bitindex) { return (uintptr_t)1 << bitindex; }
@@ -253,21 +249,20 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
       if ((data_type == SMART_PTR_OFFSET || data_type == ATOMIC_SMART_PTR_OFFSET || data_type == TAGGED_POINTER_OFFSET ||
            data_type == POINTER_OFFSET)) {
         GCTOOLS_ASSERT(cur_field_layout < max_field_layout);
-        // Handle Lisp object specially
-        // There is a corresponding change to obj_scan.cc
 #ifdef USE_PRECISE_GC
         int bit_index;
         uintptr_t field_bitmap;
-        if (cur_stamp != STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__Lisp)) { // wasMTAG
-          bit_index = bitmap_field_index(63, field_offset);
-          field_bitmap = bitmap_field_bitmap(bit_index);
-          local_stamp_layout[cur_stamp].class_field_pointer_bitmap |= field_bitmap;
+        bit_index = bitmap_field_index(63, field_offset);
+        if (bit_index == -1) {
+          // We have a field we need to fix that is beyond the range of a bitmap.
+          // Flag this class to tell the scanner to use the field layouts instead.
+          local_stamp_layout[cur_stamp].flags |= COMPLEX_SCAN;
         } else {
-          // Do the same for STAMPWTAG_core__Lisp - but if it doesn't fit in a 64bit word then we will skip this.
-          bit_index = bitmap_field_index(63, field_offset);
+          // Otherwise (normal case) just put it in the bitmap.
           field_bitmap = bitmap_field_bitmap(bit_index);
           local_stamp_layout[cur_stamp].class_field_pointer_bitmap |= field_bitmap;
         }
+        
         if (local_stamp_layout[cur_stamp].field_layout_start == NULL)
           local_stamp_layout[cur_stamp].field_layout_start = cur_field_layout;
         DGC_PRINT("%s:%d   fixed_field %s : cur_stamp = %d  field_offset = %lu bit_index =%d bitmap = 0x%lX\n", __FILE__, __LINE__,

@@ -51,9 +51,10 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
       size = stamp_layout.size;
     }
     if (stamp_layout.field_layout_start) {
-      // Handle Lisp object specially because it's bitmask will be too large
 #ifdef USE_PRECISE_GC
-      if (stamp_index == STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__Lisp)) { // wasMTAG
+      if (stamp_layout.flags & gctools::COMPLEX_SCAN) {
+        // This object is too big for the bitmap, or has something weird in it
+        // like weak references. Scan by iterating over the fields.
         int num_fields = stamp_layout.number_of_fields;
         const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
         core::T_O** prevField = NULL;
