@@ -246,16 +246,20 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
       if (data_type == CXX_SHARED_MUTEX_OFFSET || data_type == CXX_FIXUP_OFFSET || data_type == ctype_opaque_ptr) {
         local_stamp_layout[cur_stamp].snapshot_save_load_poison++;
       }
-      if ((data_type == SMART_PTR_OFFSET || data_type == ATOMIC_SMART_PTR_OFFSET || data_type == TAGGED_POINTER_OFFSET ||
-           data_type == POINTER_OFFSET)) {
+      if ((data_type == SMART_PTR_OFFSET || data_type == ATOMIC_SMART_PTR_OFFSET
+           || data_type == TAGGED_POINTER_OFFSET
+           || data_type == POINTER_OFFSET
+           || data_type == WEAK_PTR_OFFSET)) {
         GCTOOLS_ASSERT(cur_field_layout < max_field_layout);
 #ifdef USE_PRECISE_GC
         int bit_index;
         uintptr_t field_bitmap;
         bit_index = bitmap_field_index(63, field_offset);
-        if (bit_index == -1) {
+        if (data_type == WEAK_PTR_OFFSET || bit_index == -1) {
           // We have a field we need to fix that is beyond the range of a bitmap.
           // Flag this class to tell the scanner to use the field layouts instead.
+          // Alternately we have a weak reference that needs to be
+          // scanned specially.
           local_stamp_layout[cur_stamp].flags |= COMPLEX_SCAN;
         } else {
           // Otherwise (normal case) just put it in the bitmap.

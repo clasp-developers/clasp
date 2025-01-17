@@ -56,6 +56,10 @@ public: // Functions here
 
   /*! Return true if the object referenced by this still exists, otherwise return false */
   bool valid() const;
+
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) override {
+    _Link.fixupInternalsForSnapshotSaveLoad(fixup);
+  }
 };
 
 // WARNING: Not a real ephemeron on some GCs (boehm). See notes in gcweak.h.

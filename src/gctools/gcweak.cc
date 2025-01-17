@@ -57,11 +57,40 @@ std::optional<core::T_sp> WeakPointer::value() const {
   GC_call_with_alloc_lock(value_helper, &vhs);
   return vhs.result;
 }
+std::optional<core::T_sp> WeakPointer::value_no_lock() const {
+  if (_value || !_splattablep)
+    return core::T_sp(_value);
+  else return std::nullopt;
+}
+void WeakPointer::store_no_lock(core::T_sp o) {
+  _value = o.tagged_();
+  _splattablep = o.objectp();
+  // links set up in fixupInternals below.
+}
+
+void WeakPointer::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+  if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
+    // We do this later rather than in store_no_lock because register/deregister
+    // unconditionally grab a lock. This is a bit of a KLUDGE.
+    core::T_sp o(_value);
+    if (o.objectp()) {
+      _splattablep = true;
+      // Implicitly removes any previous registration, per boehm docs.
+      GC_general_register_disappearing_link((void**)&_value, &*o);
+    } else {
+      _splattablep = false;
+      GC_unregister_disappearing_link((void**)&_value);
+    }
+  }
+}
 #else // not-actually-weak pointers - TODO for your other GC!
 WeakPointer::WeakPointer(core::T_sp o) : _value(o.tagged_()) {}
 
 // always valid
 std::optional<core::T_sp> WeakPointer::value() const { return core::T_sp(_value); }
+std::optional<core::T_sp> WeakPointer::value_no_lock() const { return value(); }
+void WeakPointer::store_no_lock(core::T_sp o) { _value = o.tagged_(); }
+void WeakPointer::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup*) {}
 #endif
 
 #ifdef USE_BOEHM

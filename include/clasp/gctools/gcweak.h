@@ -73,6 +73,9 @@ THE SOFTWARE.
 #include <functional>
 #include <optional>
 
+// Caution: This file is included by obj_scan.cc which is pretty low level.
+// Don't put complicated includes in here.
+
 namespace gctools {
 
 // This structure is meant to be included directly (not as a pointer) in
@@ -82,6 +85,9 @@ struct WeakPointer {
 public:
   WeakPointer(core::T_sp o);
   std::optional<core::T_sp> value() const;
+  std::optional<core::T_sp> value_no_lock() const; // used by scanner
+  void store_no_lock(core::T_sp); // ditto.
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup*);
 public: // has to be public for precise GC reasons even though it's not scanned?
   // This is a Tagged rather than a T_sp because something in gc_boot seems to
   // check for T_sps in atomic (pointerless) objects. Rather than lie harder we
