@@ -241,7 +241,7 @@ printer and we should rather use MAKE-LOAD-FORM."
     (write (eql-specializer-object es) :stream stream))
   es)
 
-(defmethod print-object ((obj structure-object) stream)
+(defun print-structure-object (obj stream)
   (let* ((class (si:instance-class obj))
 	 (slotds (class-slots class)))
     (when (and ;; to fix ansi-tests PRINT-LEVEL.8 & PRINT-LEVEL.9
@@ -252,7 +252,7 @@ printer and we should rather use MAKE-LOAD-FORM."
            *print-level*
            (zerop *print-level*))
       (write-string "#" stream)
-      (return-from print-object obj))
+      (return-from print-structure-object obj))
     (write-string "#S(" stream)
     (prin1 (class-name class) stream)
     (do ((scan slotds (cdr scan))
@@ -278,6 +278,9 @@ printer and we should rather use MAKE-LOAD-FORM."
             (prin1 sv stream))))
     (write-string ")" stream)
     obj))
+
+(defmethod print-object ((obj structure-object) stream)
+  (print-structure-object obj stream))
 
 (defmethod print-object ((object standard-object) stream)
   (print-unreadable-object (object stream :type t :identity t))

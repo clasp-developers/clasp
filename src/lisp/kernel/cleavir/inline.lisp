@@ -327,25 +327,6 @@
 )
 (declaim (ftype (function (t) function) core:coerce-to-function)))
 
-;;; ------------------------------------------------------------
-;;;
-;;;  Copied from clasp/src/lisp/kernel/lsp/pprint.lisp
-;;;    and put here so that the inline definition is available
-;;;
-(in-package "SI")
-
-#+(or)
-(progn (declaim (inline index-posn posn-index posn-column))
-(defun index-posn (index stream)
-  (declare (type index index) (type pretty-stream stream))
-  (+ index (pretty-stream-buffer-offset stream)))
-(defun posn-index (posn stream)
-  (declare (type posn posn) (type pretty-stream stream))
-  (- posn (pretty-stream-buffer-offset stream)))
-(defun posn-column (posn stream)
-  (declare (type posn posn) (type pretty-stream stream))
-  (index-column (posn-index posn stream) stream))
-
 #+(or)
 (eval-when (:execute)
   (format t "Setting core:*echo-repl-read* to NIL~%")
