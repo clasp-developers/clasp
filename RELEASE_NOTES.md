@@ -1,4 +1,4 @@
-# Version 2.7.0 (LLVM15-19) Pending
+# Version 2.7.0 (LLVM15-19) 2026-01-21
 
 ## Added
 * Package lock support, based on SBCL's. Currently ignores local
