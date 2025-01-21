@@ -78,6 +78,9 @@ public:
   T_sp key() const;
   T_sp value() const;
   bool valid() const;
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) override {
+    _ephemeron.fixupInternalsForSnapshotSaveLoad(fixup);
+  }
 };
 
 }; // namespace core

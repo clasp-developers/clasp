@@ -128,6 +128,9 @@ public:
   virtual void newEntry(size_t i, T_sp k, T_sp v) { ++_Count; _Mapping.newEntry(i, k, v); }
   virtual void remove(size_t i) { --_Count; _Mapping.remove(i); }
   virtual Symbol_sp weakness() { return kw::_sym_key; }
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) override {
+    _Mapping.fixupInternalsForSnapshotSaveLoad(fixup);
+  }
 };
 
 FORWARD(HashTable);

@@ -1098,6 +1098,7 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
     };                                                                                                                             \
   }
 #define WEAK_POINTER_FIX(_ptr_) POINTER_FIX(_ptr_)
+#define EPHEMERON_FIX(key, val) do { POINTER_FIX(key); POINTER_FIX(val); } while (false)
 
 #define ADDR_T gctools::clasp_ptr_t
 #define EXTRA_ARGUMENTS , void* user_data

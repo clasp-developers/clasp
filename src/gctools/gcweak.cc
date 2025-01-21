@@ -140,14 +140,37 @@ KVPair Ephemeron::get() const {
   GC_call_with_alloc_lock(get_helper, &rhs);
   return rhs.result;
 }
+
+KVPair Ephemeron::get_no_lock() const {
+  return KVPair(core::T_sp((Tagged)GC_REVEAL_POINTER(_key)), _value);
+}
+void Ephemeron::reinit_no_lock(core::T_sp k, core::T_sp v) {
+  _key = GC_HIDE_POINTER(k.tagged_());
+  _value = v;
+}
+void Ephemeron::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+  if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
+    core::T_sp k((Tagged)GC_REVEAL_POINTER(_key));
+    if (k.objectp()) {
+      GC_general_register_disappearing_link((void**)&_key, &*k);
+      GC_general_register_disappearing_link((void**)&_value, &*k);
+    } else {
+      GC_unregister_disappearing_link((void**)&_key);
+      GC_unregister_disappearing_link((void**)&_value);
+    }
+  }
+}
 #else // not-actually-weak ephemeron default - FIXME for your GC!
 Ephemeron::Ephemeron(core::T_sp key, core::T_sp value) : _key(key), _value(value) {}
 
 void Ephemeron::reinit(core::T_sp k, core::T_sp v) {
   _key = k; _value = v;
 }
+void Ephemeron::reinit_no_lock(core::T_sp k, core::T_sp v) { reinit(k, v); }
 
 KVPair Ephemeron::get() const { return KVPair(_key, _value); }
+KVPair Ephemeron::get_no_lock() const { return get(); }
+void Ephemeron::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup*) {}
 #endif
 
 // Clang says this definition has to be out-of-line. Sure whatever.

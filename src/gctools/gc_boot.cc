@@ -159,7 +159,8 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
       }
     } else if ((codes[idx].cmd == fixed_field || codes[idx].cmd == variable_field) &&
                (codes[idx].data0 == SMART_PTR_OFFSET || codes[idx].data0 == ATOMIC_SMART_PTR_OFFSET ||
-                codes[idx].data0 == TAGGED_POINTER_OFFSET || codes[idx].data0 == POINTER_OFFSET)) {
+                codes[idx].data0 == TAGGED_POINTER_OFFSET || codes[idx].data0 == POINTER_OFFSET
+                || codes[idx].data0 == WEAK_PTR_OFFSET || codes[idx].data0 == EPHEMERON_OFFSET)) {
       ++number_of_fixable_fields;
     } else if ((codes[idx].cmd == fixed_field) && (codes[idx].data0 == CONSTANT_ARRAY_OFFSET)) {
       // Ignore the Array_O size_t _Length[0] array
@@ -249,13 +250,14 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
       if ((data_type == SMART_PTR_OFFSET || data_type == ATOMIC_SMART_PTR_OFFSET
            || data_type == TAGGED_POINTER_OFFSET
            || data_type == POINTER_OFFSET
-           || data_type == WEAK_PTR_OFFSET)) {
+           || data_type == WEAK_PTR_OFFSET || data_type == EPHEMERON_OFFSET)) {
         GCTOOLS_ASSERT(cur_field_layout < max_field_layout);
 #ifdef USE_PRECISE_GC
         int bit_index;
         uintptr_t field_bitmap;
         bit_index = bitmap_field_index(63, field_offset);
-        if (data_type == WEAK_PTR_OFFSET || bit_index == -1) {
+        if (data_type == WEAK_PTR_OFFSET || data_type == EPHEMERON_OFFSET
+            || bit_index == -1) {
           // We have a field we need to fix that is beyond the range of a bitmap.
           // Flag this class to tell the scanner to use the field layouts instead.
           // Alternately we have a weak reference that needs to be
@@ -381,11 +383,18 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
         local_stamp_layout[cur_stamp].snapshot_save_load_poison++;
       }
       if (((data_type) == SMART_PTR_OFFSET || (data_type) == ATOMIC_SMART_PTR_OFFSET || (data_type) == TAGGED_POINTER_OFFSET ||
-           (data_type) == POINTER_OFFSET)) {
+           (data_type) == POINTER_OFFSET
+           || data_type == WEAK_PTR_OFFSET || data_type == EPHEMERON_OFFSET)) {
         int bit_index = bitmap_field_index(63, field_offset);
         uintptr_t field_bitmap = bitmap_field_bitmap(bit_index);
         GCTOOLS_ASSERT(cur_field_layout < max_field_layout);
-        local_stamp_layout[cur_stamp].container_layout->container_field_pointer_bitmap |= field_bitmap;
+        if (data_type == WEAK_PTR_OFFSET || data_type == EPHEMERON_OFFSET
+            || bit_index == -1) {
+          local_stamp_layout[cur_stamp].flags |= COMPLEX_SCAN;
+        } else {
+          uintptr_t field_bitmap = bitmap_field_bitmap(bit_index);
+          local_stamp_layout[cur_stamp].container_layout->container_field_pointer_bitmap |= field_bitmap;
+        }
         local_stamp_layout[cur_stamp].container_layout->container_field_pointer_count++;
         DGC_PRINT("%s:%d   variable_field  %s cur_stamp = %d field_offset = %lu field_bit_index = %d field_bitmap = 0x%lX\n",
                   __FILE__, __LINE__, field_name, cur_stamp, field_offset, bit_index, field_bitmap);

@@ -150,6 +150,10 @@ public:
   // or else the value could remain while the key dies (memory leak)
   void setValue(core::T_sp v) { _value = v; }
   void reinit(core::T_sp k, core::T_sp v);
+  // Used in obj_scan.cc
+  KVPair get_no_lock() const;
+  void reinit_no_lock(core::T_sp k, core::T_sp v);
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
 public:
 #ifdef USE_BOEHM
   GC_hidden_pointer _key;
@@ -213,6 +217,10 @@ public:
   void setValue(size_t i, core::T_sp v) { _Data[i].setValue(v); }
   void newEntry(size_t i, core::T_sp k, core::T_sp v) { _Data[i].reinit(k, v); }
   void remove(size_t i) { _Data[i].reinit(deleted<core::T_O>(), deleted<core::T_O>()); }
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+    for (size_t i = 0; i < _Data.length(); ++i)
+      _Data[i].fixupInternalsForSnapshotSaveLoad(fixup);
+  }
 };
 
 }; // namespace gctools

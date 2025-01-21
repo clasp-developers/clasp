@@ -8,9 +8,15 @@
 #define ADDR_T mps_addr_t          // Type of addresses
 #define OBJECT_SCAN fixup_objects  // Name of function
 #define POINTER_FIX(field)         // Macro to fix pointer at field
-#define WEAK_POINTER_FIX(field)    // Macro for a weak ptr - ok to leave undefined
 #define OBJECT_SCAN             // Macro to turn on #ifdef inclusion of code
 #define CLIENT_PTR_TO_HEADER_PTR(client) // Replace with function to get base pointer from client
+ * Macros for weak pointers and ephemerons.
+ * If left undefined, weak pointers are ignored and ephemerons have their
+ * values scanned. HOWEVER this is done using temporary, fake "field"
+ * pointers as the weak ptrs/ephemerons may not actually contain a T_O**.
+ * SO make sure you don't try to store those pointers for later!
+#define WEAK_POINTER_FIX(field)
+#define EPHEMERON_FIX(key, value)
  */
 
 // !!!!! DEBUG_OBJECT_SCAN can only be on when DEBUG_GUARD_VALIDATE is on!!!!!!
@@ -25,6 +31,10 @@
 #endif
 
 #ifdef OBJECT_SCAN
+
+#ifndef EPHEMERON_FIX
+#define EPHEMERON_FIX(key, value) POINTER_FIX(value)
+#endif
 
 ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
 
@@ -68,12 +78,24 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
               core::T_O* raw = v->raw_();
               WEAK_POINTER_FIX(&raw);
               // Store it back in the weak pointer - this is needed for when the
-              // object scanner is used in image save as it needs to alter
-              // pointers.
+              // object scanner is used in image save/load as it needs to
+              // alter pointers.
+              // Do not change the pointer outside of image save/load.
               weak->store_no_lock(core::T_sp((gctools::Tagged)raw));
             }
 #endif
-          } else {
+          } else if (field_info_cur->data_type == gctools::EPHEMERON_OFFSET) [[unlikely]] {
+            gctools::Ephemeron* eph = (gctools::Ephemeron*)((const char*)client + field_layout_cur->field_offset);
+            auto kv = eph->get_no_lock();
+            if (!kv.key.deletedp()) {
+              core::T_O* rkey = kv.key.raw_();
+              core::T_O* rval = kv.value.raw_();
+              EPHEMERON_FIX(&rkey, &rval);
+              // See comment on weak pointers above.
+              eph->reinit_no_lock(core::T_sp((gctools::Tagged)rkey),
+                                  core::T_sp((gctools::Tagged)rval));
+            }
+          } else [[likely]] {
             core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
             POINTER_FIX(field);
           }
@@ -140,7 +162,18 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
                 weak->store_no_lock(core::T_sp((gctools::Tagged)raw));
               }
 #endif
-            } else {
+            } else if (field_info->data_type == gctools::EPHEMERON_OFFSET) [[unlikely]] {
+              gctools::Ephemeron* eph = (gctools::Ephemeron*)field;
+              auto kv = eph->get_no_lock();
+              if (!kv.key.deletedp()) {
+                core::T_O* rkey = kv.key.raw_();
+                core::T_O* rval = kv.value.raw_();
+                EPHEMERON_FIX(&rkey, &rval);
+                // See comment on weak pointers above.
+                eph->reinit_no_lock(core::T_sp((gctools::Tagged)rkey),
+                                    core::T_sp((gctools::Tagged)rval));
+              }
+            } else [[likely]] {
               core::T_O** tfield = (core::T_O**)field;
               POINTER_FIX(tfield);
             }

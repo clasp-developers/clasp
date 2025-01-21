@@ -872,12 +872,13 @@ void walkRoots(RootWalkCallback&& callback) {
 // #define HEADER_PTR_TO_GENERAL_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
 
 #define ADDR_T uintptr_t
-#define EXTRA_ARGUMENTS , std::stack<Tagged*>& markStack
+#define EXTRA_ARGUMENTS , std::stack<Tagged>& markStack
 
-#define POINTER_FIX(_ptr_) markStack.push(reinterpret_cast<Tagged*>(_ptr_))
+#define POINTER_FIX(_ptr_) markStack.push(*reinterpret_cast<Tagged*>(_ptr_))
 
 #define OBJECT_SCAN mw_obj_scan
 #define OBJECT_SKIP mw_obj_skip
+#define EPHEMERON_FIX(a, b)
 #include "obj_scan.cc"
 #undef OBJECT_SKIP
 #undef OBJECT_SCAN
@@ -895,13 +896,12 @@ void walkRoots(RootWalkCallback&& callback) {
 template <class Callback>
 static void mapAllObjectsInternal(std::set<Tagged>& markSet,
                                   Callback callback) {
-  std::stack<Tagged*> markStack;
+  std::stack<Tagged> markStack;
 
-  walkRoots([&](Tagged* rootf) { markStack.push(rootf); }); // process all roots
+  walkRoots([&](Tagged* rootf) { markStack.push(*rootf); }); // process all roots
 
   while (!markStack.empty()) {
-    Tagged* field = markStack.top(); markStack.pop(); // pop a field
-    Tagged tagged = *field;
+    Tagged tagged = markStack.top(); markStack.pop(); // pop a pointer
 
     switch(ptag(tagged)) {
     case general_tag: { // general object
@@ -946,17 +946,16 @@ std::set<Tagged> setOfAllObjects() {
 // important for snapshot save.
 // Return the set of tagged pointers located in fields that are not valid.
 std::set<Tagged> memtest(std::set<core::T_sp>& dladdrFailed) {
-  std::stack<Tagged*> markStack;
+  std::stack<Tagged> markStack;
   std::set<Tagged> markSet;
   std::set<Tagged> corrupt;
 
   std::set<void*> uniqueEntryPoints;
 
-  walkRoots([&](Tagged* rootAddr) { markStack.push(rootAddr); });
+  walkRoots([&](Tagged* rootAddr) { markStack.push(*rootAddr); });
 
   while (!markStack.empty()) {
-    Tagged* field = markStack.top(); markStack.pop();
-    gctools::Tagged tagged = *field;
+    Tagged tagged = markStack.top(); markStack.pop();
 
     switch (tagged & ptag_mask) {
     case general_tag: {
