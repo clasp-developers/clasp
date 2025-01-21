@@ -215,21 +215,21 @@
  (:name :schubfach
   :repository "https://github.com/yitzchak/schubfach.git"
   :directory "src/schubfach/"
-  :branch "main")
+  :commit "8a4b09573d1c1d5f8f388c22bf4ff61519fb25d8")
  (:name :cando
   :repository "https://github.com/cando-developers/cando.git"
   :directory "extensions/cando/"
-  :branch "main"
+  :commit "e3ce830382cedc58e1dd5c9930516686f268095e"
   :extension :cando)
  (:name :seqan-clasp
   :repository "https://github.com/clasp-developers/seqan-clasp.git"
   :directory "extensions/seqan-clasp/"
-  :branch "main"
+  :commit "05cba876698d056e7f09a6a7a4260b166df36e69"
   :extension :seqan-clasp)
  (:name :seqan
   :repository "https://github.com/seqan/seqan.git"
   :directory "extensions/seqan-clasp/seqan/"
-  :branch "main"
+  :commit "339e44ea734359de8592d47cc7a7722bc7a040b4"
   :extension :seqan-clasp)
  (:name :pythonic-string-reader
   :repository "https://github.com/smithzvk/pythonic-string-reader.git"
