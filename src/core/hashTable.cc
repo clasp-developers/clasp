@@ -462,7 +462,8 @@ CL_DEFUN T_mv core__gethash3(T_sp key, T_sp hashTable, T_sp default_value) {
   return ht->gethash(key, default_value);
 };
 
-__attribute__((optnone)) std::optional<size_t> HashTable_O::searchTable_no_read_lock(T_sp key, cl_index index) {
+std::optional<std::pair<size_t, T_sp>>
+HashTable_O::searchTable_no_read_lock(T_sp key, cl_index index) {
   size_t tableSize = this->_Table->size();
   size_t cur = index;
   do {
@@ -470,7 +471,7 @@ __attribute__((optnone)) std::optional<size_t> HashTable_O::searchTable_no_read_
     if (pair.key.no_keyp()) break;
     if (!pair.key.deletedp()) {
       if (keyTest(pair.key, key))
-        return cur;
+        return std::pair(cur, pair.value);
     }
     cur = (cur + 1) % tableSize;
   } while (cur != index); // loop over the whole table if necessary
@@ -501,7 +502,7 @@ std::optional<T_sp> HashTable_O::find(T_sp key) {
   cl_index index = this->sxhashKey(key);
   auto found = this->searchTable_no_read_lock(key, index);
   if (!found) return std::nullopt;
-  else return this->_Table->get(*found).value;
+  else return found->second;
 }
 
 bool HashTable_O::contains(T_sp key) {
@@ -513,7 +514,7 @@ bool HashTable_O::remhash(T_sp key) {
   cl_index index = this->sxhashKey(key);
   auto found = this->searchTable_no_read_lock(key, index);
   if (found) {
-    _Table->remove(*found);
+    _Table->remove(found->first);
     return true;
   }
   return false;
@@ -532,7 +533,7 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value) {
   auto found = this->searchTable_no_read_lock(key, index);
   if (found) {
     // rewrite value
-    _Table->setValue(*found, value);
+    _Table->setValue(found->first, value);
     return value;
   }
   size_t write;

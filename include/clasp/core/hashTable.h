@@ -26,6 +26,8 @@ THE SOFTWARE.
 */
 /* -^- */
 
+#include <utility> // pair
+#include <optional>
 #include <clasp/core/object.h>
 #include <clasp/core/record.h>
 #include <clasp/core/array.h>
@@ -182,7 +184,11 @@ private:
   T_sp setf_gethash_no_write_lock(T_sp key, T_sp value);
   gc::Fixnum sxhashKey(T_sp key) const; // NOTE: Only call with (read) lock held
 
-  std::optional<size_t> searchTable_no_read_lock(T_sp key, cl_index index);
+  // Returns a pair of the index and the value at that index.
+  // This lets us gethash without a double lookup, and also lets us keep the
+  // value alive, which can be important for weak tables.
+  std::optional<std::pair<size_t, T_sp>>
+  searchTable_no_read_lock(T_sp key, cl_index index);
   inline size_t count_no_lock() const {
     return _Table->count();
   }
