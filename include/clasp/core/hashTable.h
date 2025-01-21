@@ -68,7 +68,9 @@ public:
   size_t countInexact() const { return _Count; }
   virtual Mapping_sp realloc(size_t) const = 0;
   virtual gctools::KVPair get(size_t) const = 0;
-  virtual void setValue(size_t, T_sp) = 0;
+  // This accepts both the key and value as arguments for the sake of making
+  // weak value mappings easier - see below.
+  virtual void setValue(size_t, T_sp, T_sp) = 0;
   virtual void newEntry(size_t, T_sp, T_sp) = 0;
   virtual void remove(size_t) = 0;
   virtual Symbol_sp weakness() = 0;
@@ -98,7 +100,7 @@ public:
   virtual size_t count() const { return _Count; }
   virtual Mapping_sp realloc(size_t sz) const { return make(sz); }
   virtual gctools::KVPair get(size_t i) const { return _Mapping.get(i); }
-  virtual void setValue(size_t i, T_sp v) { _Mapping.setValue(i, v); }
+  virtual void setValue(size_t i, T_sp, T_sp v) { _Mapping.setValue(i, v); }
   virtual void newEntry(size_t i, T_sp k, T_sp v) {
     _Mapping.newEntry(i, k, v);
     _Count++;
@@ -126,10 +128,53 @@ public:
   virtual size_t count() const { return computeCount(); }
   virtual Mapping_sp realloc(size_t sz) const { return make(sz); }
   virtual gctools::KVPair get(size_t i) const { return _Mapping.get(i); }
-  virtual void setValue(size_t i, T_sp v) { _Mapping.setValue(i, v); }
+  virtual void setValue(size_t i, T_sp, T_sp v) { _Mapping.setValue(i, v); }
   virtual void newEntry(size_t i, T_sp k, T_sp v) { ++_Count; _Mapping.newEntry(i, k, v); }
   virtual void remove(size_t i) { --_Count; _Mapping.remove(i); }
   virtual Symbol_sp weakness() { return kw::_sym_key; }
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) override {
+    _Mapping.fixupInternalsForSnapshotSaveLoad(fixup);
+  }
+};
+
+FORWARD(WeakValueMapping);
+class WeakValueMapping_O final : public Mapping_O {
+  LISP_CLASS(core, CorePkg, WeakValueMapping_O, "WeakValueMapping", Mapping_O);
+public:
+  // need typedefs for e.g. sizeof_container
+  typedef gctools::EphemeronMapping::value_type value_type;
+public:
+  WeakValueMapping_O(size_t size) : _Mapping(size) {}
+  static WeakValueMapping_sp make(size_t);
+public:
+  // We use the same mapping underneath, but its keys are the table's values
+  // and its values are the table's keys.
+  gctools::EphemeronMapping _Mapping;
+public:
+  virtual size_t size() const { return _Mapping.size(); }
+  virtual size_t count() const { return computeCount(); }
+  virtual Mapping_sp realloc(size_t sz) const { return make(sz); }
+  virtual gctools::KVPair get(size_t i) const {
+    auto p = _Mapping.get(i);
+    return gctools::KVPair(p.value, p.key);
+  }
+  virtual void setValue(size_t i, T_sp k, T_sp v) {
+    // GC note: I think we don't have to go out of our way to keep the old
+    // value alive here, because we're replacing the whole ephemeron anyway.
+    // There will be a problem from the following sequence of events:
+    // 1) thread A arrives here (just before the newEntry call)
+    // 2) the GC deletes the ephemeron
+    // 3) thread B does (setf gethash) on the same hash table
+    //    and decides to use the ephemeron space at this index
+    // 4) thread A resumes and newEntry's, erasing thread B's work
+    // However our hash tables are not thread safe anyway, so anybody working
+    // on the same table from multiple thrads will avoid this by using
+    // synchronized hash tables.
+    _Mapping.newEntry(i, v, k);
+  }
+  virtual void newEntry(size_t i, T_sp k, T_sp v) { ++_Count; _Mapping.newEntry(i, v, k); }
+  virtual void remove(size_t i) { --_Count; _Mapping.remove(i); }
+  virtual Symbol_sp weakness() { return kw::_sym_value; }
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) override {
     _Mapping.fixupInternalsForSnapshotSaveLoad(fixup);
   }

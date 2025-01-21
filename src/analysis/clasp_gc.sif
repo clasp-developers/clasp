@@ -2,18 +2,19 @@
                           "core::SimpleMDArray_fixnum_O" "core::ComplexVector_O"
                           "core::SimpleMDArray_int32_t_O" "core::Integer_O"
                           "clbind::ClassRegistry_O" "mp::Process_O" "core::Record_O"
-                          "core::LightUserData_O" "core::MDArrayT_O" "core::FunctionCell_O"
-                          "core::DirectoryEntry_O" "llvmo::Linker_O" "comp::FunInfo_O"
-                          "core::MDArray_float_O" "core::SourcePosInfo_O" "llvmo::BranchInst_O"
-                          "llvmo::AllocaInst_O" "core::StandardClassCreator_O"
-                          "core::ComplexVector_float_O" "core::HashTableCustom_O"
-                          "comp::LexicalVarInfo_O" "core::ComplexVector_byte8_t_O"
-                          "core::OptionalArgument" "comp::FunctionCellInfo_O" "core::HashTable_O"
-                          "core::SimpleCoreFun_O" "core::SimpleVector_size_t_O" "llvmo::DIScope_O"
-                          "core::FileStatus_O" "llvmo::IndirectBrInst_O" "llvmo::ConstantArray_O"
-                          "llvmo::PHINode_O" "core::Package_O" "core::SimpleMDArrayBaseChar_O"
-                          "llvmo::DILocation_O" "llvmo::DWARFUnit_O" "core::SimpleMDArray_O"
-                          "core::Stream_O" "core::VMFrameDynEnv_O" "core::SymbolClassHolderPair"
+                          "core::LightUserData_O" "core::MDArrayT_O" "core::WeakValueMapping_O"
+                          "core::FunctionCell_O" "core::DirectoryEntry_O" "llvmo::Linker_O"
+                          "comp::FunInfo_O" "core::MDArray_float_O" "core::SourcePosInfo_O"
+                          "llvmo::BranchInst_O" "llvmo::AllocaInst_O"
+                          "core::StandardClassCreator_O" "core::ComplexVector_float_O"
+                          "core::HashTableCustom_O" "comp::LexicalVarInfo_O"
+                          "core::ComplexVector_byte8_t_O" "core::OptionalArgument"
+                          "comp::FunctionCellInfo_O" "core::HashTable_O" "core::SimpleCoreFun_O"
+                          "core::SimpleVector_size_t_O" "llvmo::DIScope_O" "core::FileStatus_O"
+                          "llvmo::IndirectBrInst_O" "llvmo::ConstantArray_O" "llvmo::PHINode_O"
+                          "core::Package_O" "core::SimpleMDArrayBaseChar_O" "llvmo::DILocation_O"
+                          "llvmo::DWARFUnit_O" "core::SimpleMDArray_O" "core::Stream_O"
+                          "core::VMFrameDynEnv_O" "core::SymbolClassHolderPair"
                           "comp::EncageFixup_O" "llvmo::MDString_O" "core::ShortFloat_O"
                           "core::Number_O" "core::T_O" "llvmo::DICompileUnit_O"
                           "core::BindingDynEnv_O" "core::AbstractSimpleVector_O"
@@ -4791,6 +4792,18 @@
 {variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
                 :fixup-ctype-offset-type-key "gctools::smart_ptr<core::T_O>"
                 :fixup-ctype-key "gctools::KVPair" :layout-offset-field-names ("value")}
+{class-kind :stamp-name "STAMPWTAG_core__WeakValueMapping_O" :stamp-key "core::WeakValueMapping_O"
+            :parent-class "core::Mapping_O" :lisp-class-base "core::Mapping_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::WeakValueMapping_O" :layout-offset-field-names ("_Count")}
+{variable-array0 :offset-base-ctype "core::WeakValueMapping_O"
+                 :field-names ("_Mapping" "._Data" "._Data")}
+{variable-capacity :ctype "gctools::Ephemeron" :offset-base-ctype "core::WeakValueMapping_O"
+                   :length-field-names ("_Mapping" "._Data" "._MaybeSignedLength")
+                   :end-field-names ("_Mapping" "._Data" "._MaybeSignedLength")}
+{variable-field-only :offset-type-cxx-identifier "EPHEMERON_OFFSET"
+                     :fixup-type "gctools::Ephemeron"}
 {class-kind :stamp-name "STAMPWTAG_core__RandomState_O" :stamp-key "core::RandomState_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

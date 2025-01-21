@@ -96,6 +96,10 @@ WeakKeyMapping_sp WeakKeyMapping_O::make(size_t size) {
   return gctools::GC<WeakKeyMapping_O>::allocate_container<gctools::RuntimeStage>(false, size);
 }
 
+WeakValueMapping_sp WeakValueMapping_O::make(size_t size) {
+  return gctools::GC<WeakValueMapping_O>::allocate_container<gctools::RuntimeStage>(false, size);
+}
+
 std::atomic<size_t> global_next_hash_table_id;
 
 size_t next_hash_table_id() { return global_next_hash_table_id++; }
@@ -178,8 +182,10 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
     mapping = StrongMapping_O::make(isize);
   else if (weakness == kw::_sym_key)
     mapping = WeakKeyMapping_O::make(isize);
+  else if (weakness == kw::_sym_value)
+    mapping = WeakValueMapping_O::make(isize);
   else
-    SIMPLE_ERROR("Only :weakness :key (weak-key hash tables) are currently supported");
+    SIMPLE_ERROR("Only :weakness :key :value (weak-key or weak-value hash tables) are currently supported");
   
   // clamped by the constructor.
   double rehash_threshold = clasp_to_double(orehash_threshold);
@@ -533,7 +539,7 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value) {
   auto found = this->searchTable_no_read_lock(key, index);
   if (found) {
     // rewrite value
-    _Table->setValue(found->first, value);
+    _Table->setValue(found->first, key, value);
     return value;
   }
   size_t write;
