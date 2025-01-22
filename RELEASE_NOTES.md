@@ -1,3 +1,13 @@
+# Version 2.8.0 (LLVM15-19) Pending
+
+## Added
+* Weak-value and weak-key-and-value hash tables, as well as an interface
+  for weak-key-or-value tables, although at present they are actually
+  strong tables in practice.
+
+## Fixed
+* Weak pointers and weak hash tables survive snapshot save/load.
+
 # Version 2.7.0 (LLVM15-19) 2025-01-21
 
 ## Added
