@@ -94,11 +94,9 @@ public: // has to be public for precise GC reasons even though it's not scanned?
   // check for T_sps in atomic (pointerless) objects. Rather than lie harder we
   // can just do this and build a T_sp from it as required.
   Tagged _value;
-  // flag needed to disambiguate fixnum 0 from splatted pointer
-  // not sure if other GCs need this, but i'd like to keep the structure
-  // consistent regardless of build parameters if possible.
-  bool _splattablep = false;
 #ifdef USE_BOEHM
+  // flag needed to disambiguate fixnum 0 from splatted pointer
+  bool _splattablep = false;
 private:
   // private stuff needed to get everything done within a callback
   struct value_helper_s {
