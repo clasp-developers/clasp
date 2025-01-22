@@ -1539,7 +1539,7 @@
 ;;; (18) HASH TABLES
 
 (define-deriver hash-table-p (object)
-  (derive-type-predicate object 'core:hash-table-base *clasp-system*))
+  (derive-type-predicate object 'hash-table *clasp-system*))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

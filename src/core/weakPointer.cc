@@ -38,34 +38,43 @@ namespace core {
 CL_LISPIFY_NAME(make-weak-pointer);
 DOCGROUP(clasp);
 CL_DEFUN WeakPointer_sp WeakPointer_O::make(T_sp obj) {
-  if (obj.objectp()) {
-    auto me = gctools::GC<WeakPointer_O>::allocate(obj);
-    return me;
-  }
-  SIMPLE_ERROR("You cannot make a weak pointer to an immediate");
+  return gctools::GC<WeakPointer_O>::allocate(obj);
 };
 
 CL_LISPIFY_NAME("weakPointerValid");
 CL_DEFMETHOD bool WeakPointer_O::valid() const {
-#if defined(USE_BOEHM)
-  return this->_Link != NULL;
-#else
-  SIMPLE_ERROR("WeakPointer_O not supported in this GC");
-#endif
+  return _Link.value().has_value();
 }
 
-/*! Return (values value t) or (values nil nil) */
+/*! Return the value if it's live, or NIL if it's dead. */
 CL_LISPIFY_NAME("weakPointerValue");
 CL_DEFMETHOD T_sp WeakPointer_O::value() const {
-#if defined(USE_BOEHM)
-  if (this->_Link != NULL) {
-    T_sp obj((gctools::Tagged)this->_Object);
-    return obj;
-  }
-  return nil<core::T_O>();
-#else
-  SIMPLE_ERROR("WeakPointer_O not supported by this GC");
-#endif
+  auto r = _Link.value();
+  if (r) return *r;
+  else return nil<T_O>();
+}
+
+CL_LISPIFY_NAME(make-ephemeron);
+CL_DEFUN Ephemeron_sp Ephemeron_O::make(T_sp key, T_sp value) {
+  return gctools::GC<Ephemeron_O>::allocate(key, value);
+}
+
+CL_LISPIFY_NAME("ephemeron/key");
+CL_DEFMETHOD T_sp Ephemeron_O::key() const {
+  auto r = _ephemeron.key();
+  if (r) return *r;
+  else return nil<T_O>();
+}
+CL_LISPIFY_NAME("ephemeron/value");
+CL_DEFMETHOD T_sp Ephemeron_O::value() const {
+  auto r = _ephemeron.value();
+  if (r) return *r;
+  else return nil<T_O>();
+}
+
+CL_LISPIFY_NAME("ephemeron/validp");
+CL_DEFMETHOD bool Ephemeron_O::valid() const {
+  return _ephemeron.key().has_value();
 }
 
 }; // namespace core

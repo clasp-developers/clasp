@@ -170,7 +170,7 @@
 (deftransform core:data-vector-p
     (core::headerq core:abstract-simple-vector) t)
 
-(deftransform hash-table-p (core::headerq core:hash-table-base) t)
+(deftransform hash-table-p (core::headerq hash-table) t)
 
 (deftransform pathnamep (core::headerq pathname) t)
 

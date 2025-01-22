@@ -1,4 +1,4 @@
-
+//#include <clasp/gctools/gcweak.h>
 
 /*
  * Object scanner - include this and modify the following macros
@@ -10,6 +10,13 @@
 #define POINTER_FIX(field)         // Macro to fix pointer at field
 #define OBJECT_SCAN             // Macro to turn on #ifdef inclusion of code
 #define CLIENT_PTR_TO_HEADER_PTR(client) // Replace with function to get base pointer from client
+ * Macros for weak pointers and ephemerons.
+ * If left undefined, weak pointers are ignored and ephemerons have their
+ * values scanned. HOWEVER this is done using temporary, fake "field"
+ * pointers as the weak ptrs/ephemerons may not actually contain a T_O**.
+ * SO make sure you don't try to store those pointers for later!
+#define WEAK_POINTER_FIX(field)
+#define EPHEMERON_FIX(key, value)
  */
 
 // !!!!! DEBUG_OBJECT_SCAN can only be on when DEBUG_GUARD_VALIDATE is on!!!!!!
@@ -24,6 +31,10 @@
 #endif
 
 #ifdef OBJECT_SCAN
+
+#ifndef EPHEMERON_FIX
+#define EPHEMERON_FIX(key, value) POINTER_FIX(value)
+#endif
 
 ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
 
@@ -51,32 +62,47 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
       size = stamp_layout.size;
     }
     if (stamp_layout.field_layout_start) {
-      // Handle Lisp object specially because it's bitmask will be too large
 #ifdef USE_PRECISE_GC
-      if (stamp_index == STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__Lisp)) { // wasMTAG
+      if (stamp_layout.flags & gctools::COMPLEX_SCAN) {
+        // This object is too big for the bitmap, or has something weird in it
+        // like weak references. Scan by iterating over the fields.
         int num_fields = stamp_layout.number_of_fields;
         const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
-        core::T_O** prevField = NULL;
+        const gctools::Field_info* field_info_cur = gctools::global_stamp_info[stamp_index].field_info_ptr;
         for (int i = 0; i < num_fields; ++i) {
-          core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
-          if (field == prevField) {
-            printf("%s:%d:%s ---- scanning object %p stamp %lu field %p is about to be POINTER_FIXed for a second time\n",
-                   __FILE__, __LINE__, __FUNCTION__, (void*)client, stamp_index, field);
-            printf("%s:%d:%s field_layout_cur = %p  field_layout_cur->field_offset = %p field_layout_cur->field_offset = %lu\n",
-                   __FILE__, __LINE__, __FUNCTION__, field_layout_cur, &field_layout_cur->field_offset,
-                   field_layout_cur->field_offset);
-            printf("%s:%d:%s prev field_layout_cur = %p  prev &field_layout_cur->field_offset = %p prev "
-                   "field_layout_cur->field_offset = %lu\n",
-                   __FILE__, __LINE__, __FUNCTION__, (field_layout_cur - 1), &(field_layout_cur - 1)->field_offset,
-                   (field_layout_cur - 1)->field_offset);
-            abort();
+          if (field_info_cur->data_type == gctools::WEAK_PTR_OFFSET) [[unlikely]] {
+#ifdef WEAK_POINTER_FIX
+            gctools::WeakPointer* weak = (gctools::WeakPointer*)((const char*)client + field_layout_cur->field_offset);
+            std::optional<core::T_sp> v = weak->value_no_lock();
+            if (v) {
+              core::T_O* raw = v->raw_();
+              WEAK_POINTER_FIX(&raw);
+              // Store it back in the weak pointer - this is needed for when the
+              // object scanner is used in image save/load as it needs to
+              // alter pointers.
+              // Do not change the pointer outside of image save/load.
+              weak->store_no_lock(core::T_sp((gctools::Tagged)raw));
+            }
+#endif
+          } else if (field_info_cur->data_type == gctools::EPHEMERON_OFFSET) [[unlikely]] {
+            gctools::Ephemeron* eph = (gctools::Ephemeron*)((const char*)client + field_layout_cur->field_offset);
+            auto kv = eph->get_no_lock();
+            if (!kv.key.deletedp()) {
+              core::T_O* rkey = kv.key.raw_();
+              core::T_O* rval = kv.value.raw_();
+              EPHEMERON_FIX(&rkey, &rval);
+              // See comment on weak pointers above.
+              eph->reinit_no_lock(core::T_sp((gctools::Tagged)rkey),
+                                  core::T_sp((gctools::Tagged)rval));
+            }
+          } else [[likely]] {
+            core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
+            POINTER_FIX(field);
           }
-          POINTER_FIX(field);
-          prevField = field;
           ++field_layout_cur;
+          ++field_info_cur;
         }
       } else {
-#if 1
         // Use pointer bitmaps
         uintptr_t pointer_bitmap = stamp_layout.class_field_pointer_bitmap;
 #ifdef DEBUG_POINTER_BITMAPS
@@ -96,15 +122,6 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
             POINTER_FIX((core::T_O**)addr);
           }
         }
-#else
-        int num_fields = stamp_layout.number_of_fields;
-        const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
-        for (int i = 0; i < num_fields; ++i) {
-          core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
-          POINTER_FIX(field);
-          ++field_layout_cur;
-        }
-#endif
       }
 #endif
     }
@@ -120,23 +137,80 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
       // Use new way with pointer bitmaps
       uintptr_t start_pointer_bitmap = stamp_layout.container_layout->container_field_pointer_bitmap;
       if (header._badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
-        //            printf("%s:%d:%s obj_scan for Code_o object with header %p\n", __FILE__, __LINE__, __FUNCTION__, &header
-        //            );
         llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)client;
         core::T_O** addr = (core::T_O**)code->literalsStart();
         core::T_O** addrEnd = addr + (code->literalsSize() / sizeof(core::T_O*));
         for (; addr < addrEnd; addr++) {
           POINTER_FIX(addr);
         }
-      } else {
-        if (start_pointer_bitmap) {
-          if (!(start_pointer_bitmap << 1)) {
-            // Trivial case - there is a single pointer to fix in every element and its the only element
-            const char* element = ((const char*)client + stamp_layout.data_offset);
-            for (int i = 0; i < end; ++i, element += (stamp_layout.element_size)) {
-              uintptr_t* addr = (uintptr_t*)element;
+      } else if (stamp_layout.flags & gctools::COMPLEX_SCAN) {
+        const gctools::Stamp_info& stamp_info = gctools::global_stamp_info[stamp_index];
+        const char* element = ((const char*)client + stamp_layout.data_offset);
+        for (int i = 0; i < end; ++i, element += stamp_layout.element_size) {
+          size_t nfields = stamp_layout.container_layout->number_of_fields;
+          const gctools::Field_layout* field_layout = stamp_layout.container_layout->field_layout_start;
+          const gctools::Container_info* field_info = stamp_info.container_info_ptr;
+          for (size_t j = 0; j < nfields; ++j, ++field_layout, ++field_info) {
+            const char* field = element + field_layout->field_offset;
+            if (field_info->data_type == gctools::WEAK_PTR_OFFSET) [[unlikely]] {
+#ifdef WEAK_POINTER_FIX
+              gctools::WeakPointer* weak = (gctools::WeakPointer*)field;
+              std::optional<core::T_sp> v = weak->value_no_lock();
+              if (v) {
+                core::T_O* raw = v->raw_();
+                WEAK_POINTER_FIX(&raw);
+                weak->store_no_lock(core::T_sp((gctools::Tagged)raw));
+              }
+#endif
+            } else if (field_info->data_type == gctools::EPHEMERON_OFFSET) [[unlikely]] {
+              gctools::Ephemeron* eph = (gctools::Ephemeron*)field;
+              auto kv = eph->get_no_lock();
+              if (!kv.key.deletedp()) {
+                core::T_O* rkey = kv.key.raw_();
+                core::T_O* rval = kv.value.raw_();
+                EPHEMERON_FIX(&rkey, &rval);
+                // See comment on weak pointers above.
+                eph->reinit_no_lock(core::T_sp((gctools::Tagged)rkey),
+                                    core::T_sp((gctools::Tagged)rval));
+              }
+            } else [[likely]] {
+              core::T_O** tfield = (core::T_O**)field;
+              POINTER_FIX(tfield);
+            }
+          }
+        }
+      } else if (!start_pointer_bitmap) {
+        // nothing to scan
+      } else if (!(start_pointer_bitmap << 1)) {
+        // Trivial case - there is a single pointer to fix in every element and its the only element
+        const char* element = ((const char*)client + stamp_layout.data_offset);
+        for (int i = 0; i < end; ++i, element += (stamp_layout.element_size)) {
+          uintptr_t* addr = (uintptr_t*)element;
 #ifdef DEBUG_POINTER_BITMAPS
-              gctools::Field_layout* field_layout_cur = container_layout.field_layout_start;
+          gctools::Field_layout* field_layout_cur = container_layout.field_layout_start;
+          const char* element = ((const char*)client + stamp_layout.data_offset + stamp_layout.element_size * i);
+          core::T_O** field = (core::T_O**)((const char*)element + field_layout_cur->field_offset);
+          if (addr != (uintptr_t*)field) {
+            printf("%s:%d stamp: %lu element@%p i = %d start_pointer_bitmap=0x%lX bitmap[%p]/field[%p] address "
+                     "mismatch!!!! field_layout_cur->field_offset=%lu\n",
+                   __FILE__, __LINE__, stamp_index, element, i, start_pointer_bitmap, addr, field,
+                   field_layout_cur->field_offset);
+          }
+          ++field_layout_cur;
+#endif
+          POINTER_FIX((core::T_O**)addr);
+        }
+      } else {
+        // Multiple fields we can scan with a bitmap
+        const char* element = ((const char*)client + stamp_layout.data_offset);
+        for (int i = 0; i < end; ++i, element += (stamp_layout.element_size)) {
+#ifdef DEBUG_POINTER_BITMAPS
+          gctools::Field_layout* field_layout_cur = container_layout.field_layout_start;
+#endif
+          uintptr_t pointer_bitmap = start_pointer_bitmap;
+          for (uintptr_t* addr = (uintptr_t*)element; pointer_bitmap; addr++, pointer_bitmap <<= 1) {
+            if ((intptr_t)pointer_bitmap < 0) {
+#ifdef DEBUG_POINTER_BITMAPS
               const char* element = ((const char*)client + stamp_layout.data_offset + stamp_layout.element_size * i);
               core::T_O** field = (core::T_O**)((const char*)element + field_layout_cur->field_offset);
               if (addr != (uintptr_t*)field) {
@@ -148,31 +222,6 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
               ++field_layout_cur;
 #endif
               POINTER_FIX((core::T_O**)addr);
-            }
-          } else {
-            // The contents of the container are more complicated - so use the bitmap to scan pointers within them
-            const char* element = ((const char*)client + stamp_layout.data_offset);
-            for (int i = 0; i < end; ++i, element += (stamp_layout.element_size)) {
-#ifdef DEBUG_POINTER_BITMAPS
-              gctools::Field_layout* field_layout_cur = container_layout.field_layout_start;
-#endif
-              uintptr_t pointer_bitmap = start_pointer_bitmap;
-              for (uintptr_t* addr = (uintptr_t*)element; pointer_bitmap; addr++, pointer_bitmap <<= 1) {
-                if ((intptr_t)pointer_bitmap < 0) {
-#ifdef DEBUG_POINTER_BITMAPS
-                  const char* element = ((const char*)client + stamp_layout.data_offset + stamp_layout.element_size * i);
-                  core::T_O** field = (core::T_O**)((const char*)element + field_layout_cur->field_offset);
-                  if (addr != (uintptr_t*)field) {
-                    printf("%s:%d stamp: %lu element@%p i = %d start_pointer_bitmap=0x%lX bitmap[%p]/field[%p] address "
-                           "mismatch!!!! field_layout_cur->field_offset=%lu\n",
-                           __FILE__, __LINE__, stamp_index, element, i, start_pointer_bitmap, addr, field,
-                           field_layout_cur->field_offset);
-                  }
-                  ++field_layout_cur;
-#endif
-                  POINTER_FIX((core::T_O**)addr);
-                }
-              }
             }
           }
         }
@@ -197,7 +246,8 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
     }
 #endif // USE_MPS
     case gctools::Header_s::invalid0_mtag:
-    case gctools::Header_s::invalid1_mtag: {
+    case gctools::Header_s::invalid1_mtag:
+    case gctools::Header_s::invalid2_mtag: {
       throw_hard_error_bad_client((void*)client);
     }
     }
@@ -358,7 +408,8 @@ ADDR_T OBJECT_SKIP(ADDR_T client, bool dbg, size_t& obj_size) {
       break;
     }
     case gctools::Header_s::invalid0_mtag:
-    case gctools::Header_s::invalid1_mtag: {
+    case gctools::Header_s::invalid1_mtag:
+    case gctools::Header_s::invalid2_mtag: {
       throw_hard_error_bad_client((void*)client);
       break;
     }

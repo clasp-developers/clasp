@@ -286,7 +286,7 @@ public:
     T_sp _TerminalIO;
     List_sp _ActiveThreads;
     List_sp _DefaultSpecialBindings;
-    WeakKeyHashTable_sp _Finalizers;
+    HashTable_sp _Finalizers;
     HashTable_sp _Sysprop;
     HashTable_sp _ClassTable;
     CharacterInfo charInfo; // Contains GC managed pointers
@@ -318,16 +318,14 @@ public:
     //! Package names to packages
     gctools::Vec0<Package_sp> _Packages;
     //-----
-    DoubleFloat_sp _RehashSize;
-    DoubleFloat_sp _RehashThreshold;
     T_sp _NullStream;
-    HashTableEqualp_sp _ThePathnameTranslations;
+    HashTable_sp _ThePathnameTranslations;
     Complex_sp _ImaginaryUnit;
     Complex_sp _ImaginaryUnitNegative;
     Ratio_sp _PlusHalf;
     //    DynamicBindingStack _Bindings;
-    HashTableEqual_sp _SourceFileIndices;   // map<string,int>
-    HashTableEqual_sp _PackageNameIndexMap; // map<string,int>
+    HashTable_sp _SourceFileIndices;   // map<string,int>
+    HashTable_sp _PackageNameIndexMap; // map<string,int>
     bool _PrintSymbolsProperly;
     bool _TheSystemIsUp;
     bool _Started;
@@ -412,7 +410,7 @@ public:
   //	void catchUnwindTag(List_sp catchStore);
   //	List_sp catchFindTag(T_sp tag);
 public:
-  HashTableEqualp_sp pathnameTranslations_() const { return this->_Roots._ThePathnameTranslations; };
+  HashTable_sp pathnameTranslations_() const { return this->_Roots._ThePathnameTranslations; };
   // void setPathnameTranslations_(List_sp pnt) { this->_Roots._ThePathnameTranslations = pnt; };
   /*! Return the maximum path length for the system */
 public:
@@ -511,8 +509,6 @@ public:
   void dump_apropos(const char* part) const;
 
 public:
-  DoubleFloat_sp rehashSize() const { return this->_Roots._RehashSize; };
-  DoubleFloat_sp rehashThreshold() const { return this->_Roots._RehashThreshold; };
   T_sp nullStream() const { return this->_Roots._NullStream; };
 
 public:

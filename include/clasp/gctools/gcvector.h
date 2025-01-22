@@ -48,9 +48,9 @@ public:
   typedef T* iterator;
   typedef T const* const_iterator;
 
-private:
-  GCVector_moveable<T>(const GCVector_moveable<T>& that);       // disable copy ctor
-  GCVector_moveable<T>& operator=(const GCVector_moveable<T>&); // disable assignment
+public:
+  GCVector_moveable<T>(const GCVector_moveable<T>&) = delete;
+  GCVector_moveable<T>& operator=(const GCVector_moveable<T>&) = delete;
 
 public:
   value_type* data() { return &this->_Data[0]; };

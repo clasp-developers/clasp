@@ -515,9 +515,9 @@ Package_sp Package_O::create(SimpleString_sp name) {
 void Package_O::initialize() {
   WITH_PACKAGE_READ_WRITE_LOCK(this);
   this->Base::initialize();
-  this->_InternalSymbols = HashTableEqual_O::create_default();
-  this->_ExternalSymbols = HashTableEqual_O::create_default();
-  this->_Shadowing = HashTableEq_O::create_default();
+  this->_InternalSymbols = HashTable_O::createEqual();
+  this->_ExternalSymbols = HashTable_O::createEqual();
+  this->_Shadowing = HashTable_O::createEq();
 #if 0
   this->_InternalSymbols->setupThreadSafeHashTable();
   this->_ExternalSymbols->setupThreadSafeHashTable();

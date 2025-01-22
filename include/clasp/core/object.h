@@ -267,6 +267,7 @@ public:
   }
 
   void hashObject(T_sp obj);
+  void hashObjectEqualp(T_sp obj);
 };
 }; // namespace core
 
@@ -376,7 +377,6 @@ class General_O : public T_O {
   LISP_CLASS(core, CorePkg, General_O, "General", T_O);
 
 public:
-  virtual void sxhash_(HashGenerator& hg) const;
   virtual void sxhash_equal(HashGenerator& hg) const;
   virtual void sxhash_equalp(HashGenerator& hg) const { return this->sxhash_equal(hg); };
 
@@ -564,11 +564,11 @@ inline void clasp_sxhash(T_sp obj, HashGenerator& hg) {
     return;
   } else if (obj.consp()) {
     Cons_O* cons = obj.unsafe_cons();
-    cons->sxhash_(hg);
+    cons->sxhash_equal(hg);
     return;
   } else if (obj.generalp()) {
     General_O* general = obj.unsafe_general();
-    general->sxhash_(hg);
+    general->sxhash_equal(hg);
     return;
   }
   SIMPLE_ERROR("Handle sxhash_ for object");
@@ -593,6 +593,15 @@ inline void clasp_sxhash(T_sp obj, Hash1Generator& hg) {
   }
   SIMPLE_ERROR("Handle sxhash_ for object");
 };
+
+claspCharacter char_upcase(claspCharacter); // FIXME: bad location
+inline void clasp_sxhash_equalp(T_sp obj, HashGenerator& hg) {
+  if (obj.consp()) obj.as_unsafe<Cons_O>()->sxhash_equalp(hg);
+  else if (obj.generalp()) obj.as_unsafe<General_O>()->sxhash_equalp(hg);
+  else if (obj.characterp()) // fold case
+    hg.addValue(char_upcase(obj.unsafe_character()));
+  else clasp_sxhash(obj, hg);
+}
 }; // namespace core
 
 namespace core {

@@ -6,7 +6,6 @@
            #~"function.cc"
            #~"creator.cc"
            #~"sharpEqualWrapper.cc"
-           #~"weakHashTable.cc"
            #~"weakPointer.cc"
            #~"compiler.cc"
            #~"instance.cc"

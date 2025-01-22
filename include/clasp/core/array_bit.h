@@ -58,7 +58,7 @@ public:
   // for convenience if not speed
   virtual void __write__(T_sp strm) const override final;
   virtual bool equal(T_sp other) const final;
-  virtual void sxhash_(HashGenerator& hg) const final { this->ranged_sxhash(hg, 0, this->length()); }
+  virtual void sxhash_equal(HashGenerator& hg) const final { this->ranged_sxhash(hg, 0, this->length()); }
   virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const final {
     if (hg.isFilling()) {
       Fixnum hash = 5381;
@@ -100,7 +100,7 @@ public:
   virtual bool equal(T_sp other) const final;
 
 public:
-  virtual void sxhash_(HashGenerator& hg) const final {
+  virtual void sxhash_equal(HashGenerator& hg) const final {
     if (hg.isFilling()) {
       AbstractSimpleVector_sp svec;
       size_t start, end;

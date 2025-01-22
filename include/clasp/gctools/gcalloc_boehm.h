@@ -62,24 +62,6 @@ inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header,
   return header;
 };
 
-template <bool weakp>
-inline Header_s* do_weak_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
-  size_t true_size = size;
-  Header_s* header;
-  if constexpr(weakp)
-    header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC(true_size));
-  else
-    header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(true_size, GC_I_NORMAL));
-  my_thread_low_level->_Allocations.registerWeakAllocation(the_header._value, true_size);
-#ifdef DEBUG_GUARD
-  memset(header, 0x00, true_size);
-  new (header) Header_s(the_header, 0, 0, true_size);
-#else
-  new (header) Header_s(the_header);
-#endif
-  return header;
-};
-
 template <typename Stage = RuntimeStage>
 inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   RAIIAllocationStage<Stage> stage(my_thread_low_level);

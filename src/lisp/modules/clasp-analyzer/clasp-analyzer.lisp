@@ -412,6 +412,9 @@ This could change the value of stamps for specific classes - but that would brea
 (defstruct (tagged-pointer-ctype (:include ctype))
   specializer)
 
+(defstruct (weak-ptr-ctype (:include ctype)))
+(defstruct (ephemeron-ctype (:include ctype)))
+
 (defstruct (pointer-ctype (:include ctype))
   pointee)
 
@@ -510,6 +513,11 @@ This could change the value of stamps for specific classes - but that would brea
   ())
 
 (defclass tagged-pointer-offset (copyable-offset)
+  ())
+
+(defclass weak-ptr-offset (copyable-offset)
+  ())
+(defclass ephemeron-offset (copyable-offset)
   ())
 
 (defclass pointer-offset (copyable-offset)
@@ -944,6 +952,13 @@ to expose to C++.
   (declare (ignore analysis))
   (list (make-instance 'tagged-pointer-offset :base base :offset-type x)))
 
+(defmethod linearize-class-layout-impl ((x weak-ptr-ctype) base analysis)
+  (declare (ignore analysis))
+  (list (make-instance 'weak-ptr-offset :base base :offset-type x)))
+(defmethod linearize-class-layout-impl ((x ephemeron-ctype) base analysis)
+  (declare (ignore analysis))
+  (list (make-instance 'ephemeron-offset :base base :offset-type x)))
+
 (defun linearize-constant-array-contents (array element-type elements)
   "* Arguments
 - array :: A constant-array-ctype.
@@ -1198,6 +1213,10 @@ can be saved and reloaded within the project for later analysis"
           (make-mutex-ctype :key decl-key :name name))
          ((string= name "SharedMutex")
           (make-shared-mutex-ctype :key decl-key :name name))
+         ((string= name "WeakPointer")
+          (make-weak-ptr-ctype :key decl-key))
+         ((string= name "Ephemeron")
+          (make-ephemeron-ctype :key decl-key))
          (t (make-cxxrecord-ctype :key decl-key :name name))))
       (cast:record-decl
        (warn "classify-decl found ~a decl-key: ~a name: ~a - this means that the mostDerivedType code isn't working!!!!" (type-of decl) decl-key name)
@@ -1426,7 +1445,6 @@ can be saved and reloaded within the project for later analysis"
 
 (or *field-submatcher*
     (error "Problem encountered compiling *field-submatcher*"))
-
 
 (defun setup-cclass-search (mtool)
   (symbol-macrolet
@@ -1877,6 +1895,12 @@ so that they don't have to be constantly recalculated"
 (defmethod contains-fixptr-impl-p ((x tagged-pointer-ctype) project)
   (declare (ignore project))
   t)
+(defmethod contains-fixptr-impl-p ((x weak-ptr-ctype) project)
+  (declare (ignore project))
+  t)
+(defmethod contains-fixptr-impl-p ((x ephemeron-ctype) project)
+  (declare (ignore project))
+  t)
 (defmethod contains-fixptr-impl-p ((x pointer-ctype) project)
   (cond
     ((container-p (pointer-ctype-pointee x)) t)
@@ -1923,6 +1947,12 @@ so that they don't have to be constantly recalculated"
   nil)
 (defmethod expand-forwards-with-template-arguments
     ((forwards t) (alloc-ctype tagged-pointer-ctype))
+  nil)
+(defmethod expand-forwards-with-template-arguments
+    ((forwards t) (alloc-ctype weak-ptr-ctype))
+  nil)
+(defmethod expand-forwards-with-template-arguments
+    ((forwards t) (alloc-ctype ephemeron-ctype))
   nil)
 (defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype cxxrecord-ctype))
   (add-ctype forwards (ctype-key alloc-ctype) alloc-ctype))
@@ -2431,6 +2461,13 @@ Recursively analyze x and return T if x contains fixable pointers."
 (defmethod fixable-instance-variables-impl ((x tagged-pointer-ctype) analysis)
   (declare (ignore analysis))
   :tagged-pointer-fix)
+
+(defmethod fixable-instance-variables-impl ((x weak-ptr-ctype) analysis)
+  (declare (ignore analysis))
+  :weak-ptr-fix)
+(defmethod fixable-instance-variables-impl ((x ephemeron-ctype) analysis)
+  (declare (ignore analysis))
+  :ephemeron-fix)
 
 (defmethod fixable-instance-variables-impl ((x constant-array-ctype) analysis)
   (when (contains-fixptr-p x (analysis-project analysis))

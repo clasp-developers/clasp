@@ -1577,7 +1577,7 @@ class ExecutionEngine_O : public core::ExternalObject_O {
   void initialize();
 
   GCPROTECTED : PointerToExternalType _ptr;
-  core::HashTableEqual_sp _DependentModules;
+  core::HashTable_sp _DependentModules;
 
 public:
   virtual void* externalObject() const { return this->_ptr; };
@@ -1630,7 +1630,7 @@ class Module_O : public core::ExternalObject_O {
   GCPROTECTED : size_t _Id;
   std::string _UniqueName;
   PointerToExternalType _ptr;
-  core::HashTableEqual_sp _UniqueGlobalVariableStrings;
+  core::HashTable_sp _UniqueGlobalVariableStrings;
 
 public:
   virtual void* externalObject() const { return this->_ptr; };

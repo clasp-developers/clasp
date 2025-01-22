@@ -104,7 +104,7 @@ public:
   };
   virtual std::string get_path_string() const final { return get_std_string(); }
   virtual std::string __repr__() const override;
-  virtual void sxhash_(HashGenerator& hg) const final { this->ranged_sxhash(hg, 0, this->length()); }
+  virtual void sxhash_equal(HashGenerator& hg) const final { this->ranged_sxhash(hg, 0, this->length()); }
   virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const final {
     if (hg.isFilling()) {
       Fixnum hash = 5381;
@@ -112,6 +112,14 @@ public:
         const value_type& c = (*this)[i];
         hash = ((hash << 5) + hash) + c;
       }
+      hg.addValue(hash);
+    }
+  }
+  virtual void sxhash_equalp(HashGenerator& hg) const final {
+    if (hg.isFilling()) {
+      Fixnum hash = 5381;
+      for (const auto& c : *this)
+        hash = ((hash << 5) + hash) + char_upcase(c);
       hg.addValue(hash);
     }
   }
@@ -190,7 +198,7 @@ public:
   virtual std::string __repr__() const final;
 
 public:
-  virtual void sxhash_(HashGenerator& hg) const override { this->ranged_sxhash(hg, 0, this->length()); }
+  virtual void sxhash_equal(HashGenerator& hg) const override { this->ranged_sxhash(hg, 0, this->length()); }
   virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const override {
     if (hg.isFilling()) {
       Fixnum hash = 5381;
@@ -198,6 +206,13 @@ public:
         const value_type& c = (*this)[i];
         hash = ((hash << 5) + hash) + c;
       }
+      hg.addValue(hash);
+    }
+  }
+  virtual void sxhash_equalp(HashGenerator& hg) const final {
+    if (hg.isFilling()) {
+      Fixnum hash = 5381;
+      for (const auto& c : *this) hash = ((hash << 5) + hash) + char_upcase(c);
       hg.addValue(hash);
     }
   }
@@ -213,7 +228,7 @@ public:
       : Base(dimension, fillPointer, data, displacedToP, displacedIndexOffset){};
 
 public:
-  virtual void sxhash_(HashGenerator& hg) const final {
+  virtual void sxhash_equal(HashGenerator& hg) const final {
     AbstractSimpleVector_sp svec;
     size_t start, end;
     this->asAbstractSimpleVectorRange(svec, start, end);
@@ -298,6 +313,13 @@ public:
 
 public: // Str8Ns specific functions
   virtual SimpleString_sp asMinimalSimpleString() const final;
+  virtual void sxhash_equalp(HashGenerator& hg) const final {
+    if (hg.isFilling()) {
+      Fixnum hash = 5381;
+      for (const auto& c : *this) hash = ((hash << 5) + hash) + char_upcase(c);
+      hg.addValue(hash);
+    }
+  }
 };
 }; // namespace core
 
@@ -364,6 +386,13 @@ public: // StrWNs specific functions
   bool all_base_char_p() const;
   /*! Return the smallest character simple-string that can hold this */
   SimpleString_sp asMinimalSimpleString() const final;
+  virtual void sxhash_equalp(HashGenerator& hg) const final {
+    if (hg.isFilling()) {
+      Fixnum hash = 5381;
+      for (const auto& c : *this) hash = ((hash << 5) + hash) + char_upcase(c);
+      hg.addValue(hash);
+    }
+  }
 };
 }; // namespace core
 namespace core {

@@ -120,7 +120,7 @@ template <> struct to_object<std::vector<clang::tooling::CompileCommand>> {
 template <> struct to_object<std::map<std::string, clang::tooling::Replacements>&, translate::dont_adopt_pointer> {
   typedef std::map<std::string, clang::tooling::Replacements> GivenType;
   static core::T_sp convert(GivenType vals) {
-    core::HashTableEqual_sp result = core::HashTableEqual_O::create_default();
+    core::HashTable_sp result = core::HashTable_O::createEqual();
     for (auto pair : vals) {
       core::SimpleBaseString_sp str = core::SimpleBaseString_O::make(pair.first);
       core::T_sp obj = to_object<const clang::tooling::Replacements&>::convert(pair.second);

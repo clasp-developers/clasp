@@ -386,7 +386,8 @@ void rawHeaderDescribe(const uintptr_t* headerP) {
   uintptr_t headerTag = (*headerP) & Header_s::mtag_mask;
   switch (headerTag) {
   case Header_s::invalid0_mtag:
-  case Header_s::invalid1_mtag: {
+  case Header_s::invalid1_mtag:
+  case Header_s::invalid2_mtag: {
     printf("  %p : %" PRIuPTR "(%p) %" PRIuPTR "(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
     printf(" Not an object header!\n");
     break;
@@ -605,8 +606,6 @@ bool Header_s::isValidGeneralObject() const {
         goto bad;
     }
 #endif
-  } else if (!this->_badge_stamp_wtag_mtag.weakObjectP()) {
-    goto bad;
   }
   return true;
 bad:
@@ -672,12 +671,6 @@ bool BaseHeader_s::preciseIsPolymorphic() const {
     return global_stamp_layout[stamp].flags & IS_POLYMORPHIC;
   } else if (this->_badge_stamp_wtag_mtag.consObjectP()) {
     return false;
-  } else if (this->_badge_stamp_wtag_mtag.weakObjectP()) {
-    if (this->_badge_stamp_wtag_mtag._value == WeakBucketKind) {
-      return std::is_polymorphic<WeakBucketsObjectType>();
-    } else if (this->_badge_stamp_wtag_mtag._value == StrongBucketKind) {
-      return std::is_polymorphic<StrongBucketsObjectType>();
-    }
   }
   return false;
 }
@@ -879,16 +872,15 @@ void walkRoots(RootWalkCallback&& callback) {
 
 #define GENERAL_PTR_TO_HEADER_PTR(_general_) GeneralPtrToHeaderPtr((void*)_general_)
 // #define HEADER_PTR_TO_GENERAL_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
-#define WEAK_PTR_TO_HEADER_PTR(_general_) WeakPtrToHeaderPtr((void*)_general_)
-// #define HEADER_PTR_TO_WEAK_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
 
 #define ADDR_T uintptr_t
-#define EXTRA_ARGUMENTS , Tagged containingObject, std::stack<std::pair<Tagged, Tagged*>>& markStack
+#define EXTRA_ARGUMENTS , Tagged containingObject, std::stack<std::pair<Tagged, Tagged>>& markStack
 
-#define POINTER_FIX(_ptr_) markStack.emplace(containingObject, reinterpret_cast<Tagged*>(_ptr_))
+#define POINTER_FIX(_ptr_) markStack.emplace(containingObject, *reinterpret_cast<Tagged*>(_ptr_))
 
 #define OBJECT_SCAN mw_obj_scan
 #define OBJECT_SKIP mw_obj_skip
+#define EPHEMERON_FIX(a, b)
 #include "obj_scan.cc"
 #undef OBJECT_SKIP
 #undef OBJECT_SCAN
@@ -899,12 +891,6 @@ void walkRoots(RootWalkCallback&& callback) {
 #undef CONS_SKIP
 #undef CONS_SCAN
 
-#define WEAK_SCAN mw_weak_scan
-#define WEAK_SKIP mw_weak_skip
-#include "weak_scan.cc"
-#undef WEAK_SKIP
-#undef WEAK_SCAN
-
 #undef POINTER_FIX
 #undef ADDR_T
 #undef EXTRA_ARGUMENTS
@@ -912,27 +898,24 @@ void walkRoots(RootWalkCallback&& callback) {
 template <class Callback>
 static void mapAllObjectsInternal(std::set<Tagged>& markSet,
                                   Callback callback) {
-  std::stack<std::pair<Tagged, Tagged*>> markStack;
+  std::stack<std::pair<Tagged, Tagged>> markStack;
 
   // process all roots
-  walkRoots([&](Tagged* rootf) { markStack.emplace(0, rootf); });
+  walkRoots([&](Tagged* rootf) { markStack.emplace(0, *rootf); });
 
   while (!markStack.empty()) {
-    // pop a field. we don't need the containing object.
-    Tagged* field = markStack.top().second; markStack.pop();
-    Tagged tagged = *field;
+    // pop an object. we don't need the containing object.
+    Tagged tagged = markStack.top().second; markStack.pop();
 
     switch(ptag(tagged)) {
-    case general_tag: { // general object: check weakness
+    case general_tag: { // general object
       if (!markSet.contains(tagged)) { // only process each object once
         markSet.insert(tagged);
         uintptr_t client = untag_object(tagged);
         Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
         // the mw_foo_scan functions push all fields of the object
         // onto the markStack to keep the loop going.
-        if (header->_badge_stamp_wtag_mtag.weakObjectP())
-          mw_weak_scan(client, tagged, markStack);
-        else mw_obj_scan(client, tagged, markStack);
+        mw_obj_scan(client, tagged, markStack);
         // now's the time to callback. Could also go before the scan
         callback(tagged);
       }
@@ -970,20 +953,19 @@ std::set<Tagged> setOfAllObjects() {
 // in that field is corrupt.
 // If a corrupt object is accessible in multiple fields, only one field containing
 // it is returned.
-std::set<std::pair<Tagged, Tagged*>> memtest(std::set<core::T_sp>& dladdrFailed) {
-  std::stack<std::pair<Tagged, Tagged*>> markStack;
+std::set<std::pair<Tagged, Tagged>> memtest(std::set<core::T_sp>& dladdrFailed) {
+  std::stack<std::pair<Tagged, Tagged>> markStack;
   std::set<Tagged> markSet;
-  std::set<std::pair<Tagged, Tagged*>> corrupt;
+  std::set<std::pair<Tagged, Tagged>> corrupt;
 
   std::set<void*> uniqueEntryPoints;
 
-  walkRoots([&](Tagged* rootAddr) { markStack.emplace(0, rootAddr); });
+  walkRoots([&](Tagged* rootAddr) { markStack.emplace(0, *rootAddr); });
 
   while (!markStack.empty()) {
     auto p = markStack.top(); markStack.pop();
     Tagged containingObject = p.first;
-    Tagged* field = p.second;
-    Tagged tagged = *field;
+    Tagged tagged = p.second;
 
     switch (tagged & ptag_mask) {
     case general_tag: {
@@ -992,30 +974,16 @@ std::set<std::pair<Tagged, Tagged*>> memtest(std::set<core::T_sp>& dladdrFailed)
         uintptr_t client = tagged & ptr_mask;
         Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
         if (header->isValidGeneralObject()) {
-          if (header->_badge_stamp_wtag_mtag.weakObjectP())
-            mw_weak_scan(client, tagged, markStack);
-          else {
-            mw_obj_scan(client, tagged, markStack);
-            // If this is a function, check its dladdrability.
-            core::T_sp tobj(tagged);
-            if (tobj.isA<core::SimpleFun_O>()) {
-              auto sfun = tobj.as_unsafe<core::SimpleFun_O>();
-              if (!sfun->dladdrablep(uniqueEntryPoints))
-                dladdrFailed.insert(sfun);
-            }
-            // This CoreFun check seems like it should work, but
-            // snapshots in a FASO build trip it.
-            // TODO figure that out?
-            // Snapshots seem to work without this test, anyway.
-            /*
-            else if (tobj.isA<core::CoreFun_O>()) {
-              auto sfun = tobj.as_unsafe<core::CoreFun_O>();
-              if (!sfun->dladdrablep(uniqueEntryPoints))
-                dladdrFailed.insert(sfun);
-            }*/
+          mw_obj_scan(client, tagged, markStack);
+          // If this is a function, check its dladdrability.
+          core::T_sp tobj(tagged);
+          if (tobj.isA<core::SimpleFun_O>()) {
+            auto sfun = tobj.as_unsafe<core::SimpleFun_O>();
+            if (!sfun->dladdrablep(uniqueEntryPoints))
+              dladdrFailed.insert(sfun);
           }
         } else {
-          corrupt.emplace(containingObject, field);
+          corrupt.emplace(containingObject, tagged);
         }
       }
     } break;
@@ -1027,7 +995,7 @@ std::set<std::pair<Tagged, Tagged*>> memtest(std::set<core::T_sp>& dladdrFailed)
         if (header->isValidConsObject())
           mw_cons_scan(client, tagged, markStack);
         else {
-          corrupt.emplace(containingObject, field);
+          corrupt.emplace(containingObject, tagged);
         }
       }
     } break;
@@ -1050,7 +1018,7 @@ std::set<std::pair<Tagged, Tagged*>> memtest(std::set<core::T_sp>& dladdrFailed)
     case UNBOUND_TAG: // FIXME: put const definition in pointer_tagging.h somewhere?
         break; // immediate, nothing to do
     default: // unknown tag - object is corrupt
-        corrupt.emplace(containingObject, field); break;
+        corrupt.emplace(containingObject, tagged); break;
     }
   }
   return corrupt;
@@ -1064,12 +1032,6 @@ size_t objectSize(BaseHeader_s* header) {
     uintptr_t client = (uintptr_t)HeaderPtrToConsPtr(header);
     [[maybe_unused]] uintptr_t clientLimit = mw_cons_skip(client, consSize);
     return consSize;
-  } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
-    // It's a weak object
-    size_t objectSize;
-    uintptr_t client = (uintptr_t)HeaderPtrToWeakPtr(header);
-    [[maybe_unused]] uintptr_t clientLimit = mw_weak_skip(client, false, objectSize);
-    return objectSize;
   } else {
     // It's a general object - walk it
     size_t objectSize;

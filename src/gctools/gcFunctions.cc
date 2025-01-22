@@ -402,12 +402,11 @@ bool memory_test() {
     size_t idx = 0;
     for (const auto& cur : corrupt) {
       Tagged base = cur.first;
-      Tagged* field = cur.second;
-      Tagged corruptObj = *field;
+      Tagged corruptObj = cur.second;
       if (base) {
-        core::lisp_write(fmt::format("#{} -> {} @{} base: {} == {}\n", idx, (void*)corruptObj, (void*)field, (void*)base, dbg_safe_repr((void*)base)));
+        core::lisp_write(fmt::format("#{} -> {} base: {} == {}\n", idx, (void*)corruptObj, (void*)base, dbg_safe_repr((void*)base)));
       } else {
-        core::lisp_write(fmt::format("#{} -> {} @{} base: [root]", idx, (void*)corruptObj, (void*)field ));
+        core::lisp_write(fmt::format("#{} -> {} base: [root]", idx, (void*)corruptObj ));
       }
       idx++;
     }
@@ -494,7 +493,7 @@ namespace gctools {
 DOCGROUP(clasp);
 CL_DEFUN void gctools__finalize(core::T_sp object, core::Function_sp finalizer_callback) {
   WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
-  core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
+  core::HashTable_sp ht = _lisp->_Roots._Finalizers;
   core::List_sp orig_finalizers = ht->gethash(object, nil<core::T_O>());
   core::List_sp finalizers = core::Cons_O::create(finalizer_callback, orig_finalizers);
   ht->hash_table_setf_gethash(object, finalizers);
@@ -505,7 +504,7 @@ CL_DEFUN void gctools__finalize(core::T_sp object, core::Function_sp finalizer_c
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp gctools__finalizers(core::T_sp object) {
   WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
-  core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
+  core::HashTable_sp ht = _lisp->_Roots._Finalizers;
   return ht->gethash(object, nil<core::T_O>());
 }
 
@@ -517,7 +516,7 @@ CL_DEFUN void gctools__invoke_finalizers() {
 DOCGROUP(clasp);
 CL_DEFUN void gctools__definalize(core::T_sp object) {
   WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
-  core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
+  core::HashTable_sp ht = _lisp->_Roots._Finalizers;
   if (ht->gethash(object))
     ht->remhash(object);
   clear_finalizer_list(object);
@@ -774,19 +773,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport)
     ss << (fmt::format("DEBUG_FASTGF = {}\n", (debug_fastgf ? "**DEFINED**" : "undefined")));
-
-  bool debug_rehash_count = false;
-#ifdef DEBUG_REHASH_COUNT
-#ifndef DEBUG_MONITOR
-#error "DEBUG_MONITOR must also be enabled if DEBUG_REHASH_COUNT is turned on"
-#endif
-  debug_rehash_count = true;
-  debugging = true;
-  if (setFeatures)
-    features = core::Cons_O::create(_lisp->internKeyword("DEBUG-REHASH_COUNT"), features);
-#endif
-  if (buildReport)
-    ss << (fmt::format("DEBUG_REHASH_COUNT = {}\n", (debug_rehash_count ? "**DEFINED**" : "undefined")));
 
   bool debug_jit_log_symbols = false;
 #ifdef DEBUG_JIT_LOG_SYMBOLS

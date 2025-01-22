@@ -31,7 +31,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/pathname.fwd.h>
 #include <clasp/core/fileSystem.fwd.h>
-#include <clasp/core/weakHashTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/core/sourceFileInfo.fwd.h>
 
 namespace core {

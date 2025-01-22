@@ -36,8 +36,11 @@ namespace core {
 FORWARD(HashTableEqual);
 class HashTableEqual_O : public HashTable_O {
   LISP_CLASS(core, CorePkg, HashTableEqual_O, "HashTableEqual", HashTable_O);
+  HashTableEqual_O(Mapping_sp map, Number_sp rhsize, double rhthresh)
+    : HashTable_O(map, rhsize, rhthresh) {}
 
 public:
+  static HashTableEqual_sp create(Mapping_sp, Number_sp, double);
   static HashTableEqual_sp create(uint sz, Number_sp rehashSize, double rehashThreshold);
   static HashTableEqual_sp create_default();
 
@@ -48,7 +51,7 @@ public: // Functions here
 
   bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
-  gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, HashGenerator& hg) const;
+  void sxhashEffect(T_sp key, HashGenerator& hg) const;
 };
 
 }; // namespace core

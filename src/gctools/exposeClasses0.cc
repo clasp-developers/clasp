@@ -177,8 +177,8 @@ template <typename TRangeFirst, typename TRangeLast> void add_range_typeq_test_i
 }
 
 void initialize_typeq_map() {
-  core::HashTableEqual_sp classNameToLispName = core::HashTableEqual_O::create_default();
-  core::HashTableEq_sp theTypeqMap = core::HashTableEq_O::create_default();
+  core::HashTable_sp classNameToLispName = core::HashTable_O::createEqual();
+  core::HashTable_sp theTypeqMap = core::HashTable_O::createEq();
 #define ADD_SINGLE_TYPEQ_TEST(type, stamp)                                                                                         \
   {                                                                                                                                \
     classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type), type::static_classSymbol());                          \

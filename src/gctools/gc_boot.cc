@@ -37,7 +37,6 @@ uintptr_t global_class_kind;
 uintptr_t global_container_kind;
 uintptr_t global_code_kind;
 uintptr_t global_atomic_kind;
-uintptr_t global_strong_weak_kind;
 // int              global_container_proc_index;
 size_t global_stamp_max;
 Stamp_info* global_stamp_info;
@@ -107,7 +106,6 @@ void dump_data_types(std::ostream& fout, const std::string& indent) {
   Init_global_ints("MTAG_MASK", (int)Header_s::mtag_mask);
   Init_global_ints("GENERAL_MTAG", (int)Header_s::general_mtag);
   Init_global_ints("CONS_MTAG", (int)Header_s::cons_mtag);
-  Init_global_ints("WEAK_MTAG", (int)Header_s::weak_mtag);
   Init_global_ints("REF_CLASS_CLASS_NAME", (int)core::Instance_O::REF_CLASS_CLASS_NAME);
 
   Init_global_size_t("VASLIST-ARGS-OFFSET", core::Vaslist::args_offset());
@@ -119,12 +117,8 @@ void dump_data_types(std::ostream& fout, const std::string& indent) {
 
 inline int bitmap_field_index(size_t start, size_t offset) {
   int bitindex = start - (offset / 8);
-  if (bitindex > 63 || bitindex < 2) {
-    printf("%s:%d The bit position %d for offset %lu will not fit in a 64-bit word - the class has pointers beyond the reach of a "
-           "62-bit bitmap\n",
-           __FILE__, __LINE__, bitindex, offset);
-  }
-  return bitindex;
+  if (bitindex > 63 || bitindex < 2) return -1;
+  else return bitindex;
 }
 
 inline uintptr_t bitmap_field_bitmap(size_t bitindex) { return (uintptr_t)1 << bitindex; }
@@ -165,7 +159,8 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
       }
     } else if ((codes[idx].cmd == fixed_field || codes[idx].cmd == variable_field) &&
                (codes[idx].data0 == SMART_PTR_OFFSET || codes[idx].data0 == ATOMIC_SMART_PTR_OFFSET ||
-                codes[idx].data0 == TAGGED_POINTER_OFFSET || codes[idx].data0 == POINTER_OFFSET)) {
+                codes[idx].data0 == TAGGED_POINTER_OFFSET || codes[idx].data0 == POINTER_OFFSET
+                || codes[idx].data0 == WEAK_PTR_OFFSET || codes[idx].data0 == EPHEMERON_OFFSET)) {
       ++number_of_fixable_fields;
     } else if ((codes[idx].cmd == fixed_field) && (codes[idx].data0 == CONSTANT_ARRAY_OFFSET)) {
       // Ignore the Array_O size_t _Length[0] array
@@ -252,24 +247,28 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
       if (data_type == CXX_SHARED_MUTEX_OFFSET || data_type == CXX_FIXUP_OFFSET || data_type == ctype_opaque_ptr) {
         local_stamp_layout[cur_stamp].snapshot_save_load_poison++;
       }
-      if ((data_type == SMART_PTR_OFFSET || data_type == ATOMIC_SMART_PTR_OFFSET || data_type == TAGGED_POINTER_OFFSET ||
-           data_type == POINTER_OFFSET)) {
+      if ((data_type == SMART_PTR_OFFSET || data_type == ATOMIC_SMART_PTR_OFFSET
+           || data_type == TAGGED_POINTER_OFFSET
+           || data_type == POINTER_OFFSET
+           || data_type == WEAK_PTR_OFFSET || data_type == EPHEMERON_OFFSET)) {
         GCTOOLS_ASSERT(cur_field_layout < max_field_layout);
-        // Handle Lisp object specially
-        // There is a corresponding change to obj_scan.cc
 #ifdef USE_PRECISE_GC
         int bit_index;
         uintptr_t field_bitmap;
-        if (cur_stamp != STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__Lisp)) { // wasMTAG
-          bit_index = bitmap_field_index(63, field_offset);
-          field_bitmap = bitmap_field_bitmap(bit_index);
-          local_stamp_layout[cur_stamp].class_field_pointer_bitmap |= field_bitmap;
+        bit_index = bitmap_field_index(63, field_offset);
+        if (data_type == WEAK_PTR_OFFSET || data_type == EPHEMERON_OFFSET
+            || bit_index == -1) {
+          // We have a field we need to fix that is beyond the range of a bitmap.
+          // Flag this class to tell the scanner to use the field layouts instead.
+          // Alternately we have a weak reference that needs to be
+          // scanned specially.
+          local_stamp_layout[cur_stamp].flags |= COMPLEX_SCAN;
         } else {
-          // Do the same for STAMPWTAG_core__Lisp - but if it doesn't fit in a 64bit word then we will skip this.
-          bit_index = bitmap_field_index(63, field_offset);
+          // Otherwise (normal case) just put it in the bitmap.
           field_bitmap = bitmap_field_bitmap(bit_index);
           local_stamp_layout[cur_stamp].class_field_pointer_bitmap |= field_bitmap;
         }
+        
         if (local_stamp_layout[cur_stamp].field_layout_start == NULL)
           local_stamp_layout[cur_stamp].field_layout_start = cur_field_layout;
         DGC_PRINT("%s:%d   fixed_field %s : cur_stamp = %d  field_offset = %lu bit_index =%d bitmap = 0x%lX\n", __FILE__, __LINE__,
@@ -384,11 +383,18 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
         local_stamp_layout[cur_stamp].snapshot_save_load_poison++;
       }
       if (((data_type) == SMART_PTR_OFFSET || (data_type) == ATOMIC_SMART_PTR_OFFSET || (data_type) == TAGGED_POINTER_OFFSET ||
-           (data_type) == POINTER_OFFSET)) {
+           (data_type) == POINTER_OFFSET
+           || data_type == WEAK_PTR_OFFSET || data_type == EPHEMERON_OFFSET)) {
         int bit_index = bitmap_field_index(63, field_offset);
         uintptr_t field_bitmap = bitmap_field_bitmap(bit_index);
         GCTOOLS_ASSERT(cur_field_layout < max_field_layout);
-        local_stamp_layout[cur_stamp].container_layout->container_field_pointer_bitmap |= field_bitmap;
+        if (data_type == WEAK_PTR_OFFSET || data_type == EPHEMERON_OFFSET
+            || bit_index == -1) {
+          local_stamp_layout[cur_stamp].flags |= COMPLEX_SCAN;
+        } else {
+          uintptr_t field_bitmap = bitmap_field_bitmap(bit_index);
+          local_stamp_layout[cur_stamp].container_layout->container_field_pointer_bitmap |= field_bitmap;
+        }
         local_stamp_layout[cur_stamp].container_layout->container_field_pointer_count++;
         DGC_PRINT("%s:%d   variable_field  %s cur_stamp = %d field_offset = %lu field_bit_index = %d field_bitmap = 0x%lX\n",
                   __FILE__, __LINE__, field_name, cur_stamp, field_offset, bit_index, field_bitmap);
@@ -463,7 +469,6 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
         1); // */  GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(global_container_proc_index,0),0,1); // GC_DS_LENGTH, 1, 1);
     global_code_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
     global_atomic_kind = GC_I_PTRFREE; // GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 0, 1);
-    global_strong_weak_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
     for (cur_stamp = 0; cur_stamp <= local_stamp_max; ++cur_stamp) {
       if (local_stamp_layout[cur_stamp].layout_op != undefined_op) {
 #ifdef DUMP_PRECISE_CALC

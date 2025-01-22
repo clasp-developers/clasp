@@ -179,12 +179,6 @@ CL_DEFUN void gctools__register_loaded_objects() {
 extern "C" {
 
 int startup_clasp(void** stackMarker, gctools::ClaspInfo* claspInfo, int* exitCode) {
-
-  if (gctools::Header_s::weak_mtag != gctools::character_tag) {
-    printf("%s:%d:%s The Header_s::weak_mtag (%lu) MUST have the same value as gctools::character_tag(%lu)\n", __FILE__, __LINE__,
-           __FUNCTION__, (uintptr_t)gctools::Header_s::weak_mtag, (uintptr_t)gctools::character_tag);
-    abort();
-  }
   gctools::_global_stack_max_size = claspInfo->_stackMax;
   gctools::global_alignup_sizeof_header = gctools::AlignUp(sizeof(gctools::Header_s));
   gctools::global_sizeof_fwd = gctools::AlignUp(sizeof(gctools::Header_s));

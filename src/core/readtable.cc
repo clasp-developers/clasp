@@ -80,7 +80,7 @@ CL_DEFUN T_sp cl__set_syntax_from_char(Character_sp toChar, Character_sp fromCha
     }
     gc::Nilable<HashTable_sp> fromTable = fromReadTable->DispatchMacroCharacters_->gethash(fromChar);
     if (fromTable.notnilp()) {
-      HashTableEql_sp toTable = HashTableEql_O::create_default();
+      HashTable_sp toTable = HashTable_O::createEql();
       fromTable->maphash([&toTable](T_sp key, T_sp val) { toTable->setf_gethash(key, val); });
       toReadTable->DispatchMacroCharacters_->setf_gethash(toChar, toTable);
     } else {
@@ -832,7 +832,7 @@ DONE:
 
 SYMBOL_EXPORT_SC_(KeywordPkg, syntax);
 HashTable_sp Readtable_O::create_standard_syntax_table() {
-  HashTableEql_sp syntax = HashTableEql_O::create_default();
+  HashTable_sp syntax = HashTable_O::createEql();
   syntax->setf_gethash(clasp_character_create_from_name("TAB"), kw::_sym_whitespace);
   syntax->setf_gethash(clasp_character_create_from_name("NEWLINE"), kw::_sym_whitespace);
   syntax->setf_gethash(clasp_character_create_from_name("LINEFEED"), kw::_sym_whitespace);
@@ -895,9 +895,9 @@ void Readtable_O::initialize() {
   this->Base::initialize();
   //	printf("%s:%d Initializing readtable\n", __FILE__, __LINE__ );
   this->Case_ = kw::_sym_upcase;
-  this->SyntaxTypes_ = HashTableEql_O::create_default();
-  this->MacroCharacters_ = HashTableEql_O::create_default();
-  this->DispatchMacroCharacters_ = HashTableEql_O::create_default();
+  this->SyntaxTypes_ = HashTable_O::createEql();
+  this->MacroCharacters_ = HashTable_O::createEql();
+  this->DispatchMacroCharacters_ = HashTable_O::createEql();
 }
 
 clasp_readtable_case Readtable_O::getReadtableCaseAsEnum_() {
@@ -977,7 +977,7 @@ T_mv Readtable_O::get_macro_character_(Character_sp ch) {
 T_sp Readtable_O::make_dispatch_macro_character_(Character_sp ch, T_sp non_terminating_p) {
 
   this->set_macro_character_(ch, _sym_dispatch_macro_character, non_terminating_p);
-  this->DispatchMacroCharacters_->setf_gethash(ch, HashTableEql_O::create_default());
+  this->DispatchMacroCharacters_->setf_gethash(ch, HashTable_O::createEql());
   return _lisp->_true();
 }
 
@@ -1041,7 +1041,7 @@ Readtable_sp Readtable_O::copyReadtable_(gc::Nilable<Readtable_sp> tdest) {
   this->MacroCharacters_->maphash([&dest](T_sp key, T_sp val) { dest->MacroCharacters_->setf_gethash(key, val); });
   this->DispatchMacroCharacters_->maphash([&dest](T_sp key, T_sp val) {
     HashTable_sp entry = gc::As<HashTable_sp>(val);
-    HashTable_sp table = HashTableEql_O::create_default();
+    HashTable_sp table = HashTable_O::createEql();
     entry->maphash([&table](T_sp subkey, T_sp func) { table->setf_gethash(subkey, func); });
     dest->DispatchMacroCharacters_->setf_gethash(key, table);
   });
