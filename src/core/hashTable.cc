@@ -100,6 +100,10 @@ WeakValueMapping_sp WeakValueMapping_O::make(size_t size) {
   return gctools::GC<WeakValueMapping_O>::allocate_container<gctools::RuntimeStage>(false, size);
 }
 
+WeakKeyAndValueMapping_sp WeakKeyAndValueMapping_O::make(size_t size) {
+  return gctools::GC<WeakKeyAndValueMapping_O>::allocate_container<gctools::RuntimeStage>(false, size);
+}
+
 std::atomic<size_t> global_next_hash_table_id;
 
 size_t next_hash_table_id() { return global_next_hash_table_id++; }
@@ -184,6 +188,8 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
     mapping = WeakKeyMapping_O::make(isize);
   else if (weakness == kw::_sym_value)
     mapping = WeakValueMapping_O::make(isize);
+  else if (weakness == kw::_sym_key_and_value)
+    mapping = WeakKeyAndValueMapping_O::make(isize);
   else
     SIMPLE_ERROR("Only :weakness :key :value (weak-key or weak-value hash tables) are currently supported");
   

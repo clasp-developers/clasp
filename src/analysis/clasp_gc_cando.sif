@@ -145,7 +145,8 @@
                           "chem::Logical_O" "comp::ControlLabelFixup_O" "llvmo::StructLayout_O"
                           "core::SimpleMDArrayT_O" "chem::ConformationExplorer_O"
                           "core::StrongMapping_O" "chem::BondList_O" "llvmo::LoadInst_O"
-                          "core::Exposer_O" "llvmo::ConstantStruct_O" "chem::MacroModelFile_O"
+                          "core::Exposer_O" "llvmo::ConstantStruct_O"
+                          "core::WeakKeyAndValueMapping_O" "chem::MacroModelFile_O"
                           "core::MDArray_byte2_t_O" "core::DirectoryIterator_O" "chem::Angle_O"
                           "llvmo::DISubroutineType_O" "chem::EnergyComponents_O"
                           "comp::LabelFixup_O" "comp::Cfunction_O" "llvmo::MetadataAsValue_O"
@@ -175,14 +176,15 @@
                           "kinematics::Joint_O" "chem::AntechamberBondToAtomTest_O"
                           "core::MDArray_byte32_t_O" "llvmo::SectionedAddress_O"
                           "core::Character_dummy_O" "core::PosixFileStream_O" "comp::LexRefFixup_O"
-                          "llvmo::Constant_O" "chem::EnergyStretch_O" "llvmo::FunctionCallee_O"
-                          "chem::ResidueOut" "core::NativeVector_int_O" "llvmo::DIBasicType_O"
-                          "llvmo::DIBuilder_O" "llvmo::APInt_O" "llvmo::APFloat_O"
-                          "core::SimpleMDArrayCharacter_O" "core::SimpleCharacterString_O"
-                          "core::Symbol_O" "chem::AtomOrBondMatchNode_O" "core::Array_O"
-                          "core::MDArray_byte4_t_O" "llvmo::Argument_O" "chem::FFItorDb_O"
-                          "llvmo::IRBuilderBase_O" "units::Unit_O" "core::Null_O"
-                          "chem::RingFinder_O" "chem::IterateBonds_O" "core::RequiredArgument"
+                          "llvmo::Constant_O" "gctools::WeakAnd" "chem::EnergyStretch_O"
+                          "llvmo::FunctionCallee_O" "chem::ResidueOut" "core::NativeVector_int_O"
+                          "llvmo::DIBasicType_O" "llvmo::DIBuilder_O" "llvmo::APInt_O"
+                          "llvmo::APFloat_O" "core::SimpleMDArrayCharacter_O"
+                          "core::SimpleCharacterString_O" "core::Symbol_O"
+                          "chem::AtomOrBondMatchNode_O" "core::Array_O" "core::MDArray_byte4_t_O"
+                          "llvmo::Argument_O" "chem::FFItorDb_O" "llvmo::IRBuilderBase_O"
+                          "units::Unit_O" "core::Null_O" "chem::RingFinder_O"
+                          "chem::IterateBonds_O" "core::RequiredArgument"
                           "core::SingleDispatchMethod_O" "chem::CDFragment_O" "comp::VarInfo_O"
                           "core::CxxObject_O" "core::SimpleVector_long_float_O"
                           "llvmo::ReturnInst_O" "llvmo::FunctionType_O" "clbind::DummyCreator_O"
@@ -9861,6 +9863,24 @@
                    :end-field-names ("_Mapping" "._Data" "._MaybeSignedLength")}
 {variable-field-only :offset-type-cxx-identifier "EPHEMERON_OFFSET"
                      :fixup-type "gctools::Ephemeron"}
+{class-kind :stamp-name "STAMPWTAG_core__WeakKeyAndValueMapping_O"
+            :stamp-key "core::WeakKeyAndValueMapping_O" :parent-class "core::Mapping_O"
+            :lisp-class-base "core::Mapping_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::WeakKeyAndValueMapping_O"
+             :layout-offset-field-names ("_Count")}
+{variable-array0 :offset-base-ctype "core::WeakKeyAndValueMapping_O"
+                 :field-names ("_Mapping" "._Data" "._Data")}
+{variable-capacity :ctype "gctools::WeakAnd" :offset-base-ctype "core::WeakKeyAndValueMapping_O"
+                   :length-field-names ("_Mapping" "._Data" "._MaybeSignedLength")
+                   :end-field-names ("_Mapping" "._Data" "._MaybeSignedLength")}
+{variable-field :offset-type-cxx-identifier "WEAK_PTR_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::WeakPointer"
+                :fixup-ctype-key "gctools::WeakAnd" :layout-offset-field-names ("key")}
+{variable-field :offset-type-cxx-identifier "WEAK_PTR_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::WeakPointer"
+                :fixup-ctype-key "gctools::WeakAnd" :layout-offset-field-names ("value")}
 {class-kind :stamp-name "STAMPWTAG_core__WeakValueMapping_O" :stamp-key "core::WeakValueMapping_O"
             :parent-class "core::Mapping_O" :lisp-class-base "core::Mapping_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -10765,6 +10785,22 @@
                 :fixup-ctype-offset-type-key "gctools::smart_ptr<core::ClassHolder_O>"
                 :fixup-ctype-key "core::SymbolClassHolderPair"
                 :layout-offset-field-names ("theClassHolder")}
+{container-kind :stamp-name "STAMPWTAG_gctools__GCArray_moveable_gctools__WeakAnd_"
+                :stamp-key "gctools::GCArray_moveable<gctools::WeakAnd>"
+                :parent-class "gctools::GCContainer" :lisp-class-base nil
+                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
+{variable-array0 :offset-base-ctype "gctools::GCArray_moveable<gctools::WeakAnd>"
+                 :field-names ("_Data")}
+{variable-capacity :ctype "gctools::WeakAnd"
+                   :offset-base-ctype "gctools::GCArray_moveable<gctools::WeakAnd>"
+                   :length-field-names ("_MaybeSignedLength")
+                   :end-field-names ("_MaybeSignedLength")}
+{variable-field :offset-type-cxx-identifier "WEAK_PTR_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::WeakPointer"
+                :fixup-ctype-key "gctools::WeakAnd" :layout-offset-field-names ("key")}
+{variable-field :offset-type-cxx-identifier "WEAK_PTR_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::WeakPointer"
+                :fixup-ctype-key "gctools::WeakAnd" :layout-offset-field-names ("value")}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Symbol_O___"
                 :stamp-key "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil

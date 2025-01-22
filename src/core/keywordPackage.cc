@@ -102,6 +102,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, internal);
 SYMBOL_EXPORT_SC_(KeywordPkg, io);
 SYMBOL_EXPORT_SC_(KeywordPkg, iso_8859_1);
 SYMBOL_EXPORT_SC_(KeywordPkg, junkAllowed);
+SYMBOL_EXPORT_SC_(KeywordPkg, key_and_value); // hash table weakness
 SYMBOL_EXPORT_SC_(KeywordPkg, latin_1);
 SYMBOL_EXPORT_SC_(KeywordPkg, lf);
 SYMBOL_EXPORT_SC_(KeywordPkg, line);

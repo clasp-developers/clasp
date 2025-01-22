@@ -67,6 +67,17 @@ void WeakPointer::store_no_lock(core::T_sp o) {
   _splattablep = o.objectp();
   // links set up in fixupInternals below.
 }
+void WeakPointer::store(core::T_sp o) {
+  if (o.objectp()) { // pointer, so we're actually weak
+    _splattablep = true;
+    // note: deregistered automatically if the weak pointer itself is dealloc'd
+    GC_general_register_disappearing_link((void**)&_value, &*o);
+  } else {
+    _splattablep = false;
+    GC_unregister_disappearing_link((void**)&_value);
+  }
+  _value = o.tagged_();
+}  
 
 void WeakPointer::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
   if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
@@ -90,6 +101,7 @@ WeakPointer::WeakPointer(core::T_sp o) : _value(o.tagged_()) {}
 std::optional<core::T_sp> WeakPointer::value() const { return core::T_sp(_value); }
 std::optional<core::T_sp> WeakPointer::value_no_lock() const { return value(); }
 void WeakPointer::store_no_lock(core::T_sp o) { _value = o.tagged_(); }
+void WeakPointer::store(core::T_sp o) { store_no_lock(o); }
 void WeakPointer::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup*) {}
 #endif
 
@@ -181,5 +193,7 @@ const KVPair StrongMapping::initKV = {.key = core::T_sp(tag_no_key<Tagged>()),
 // interesting for non-objects, so we shouldn't need to worry about
 // static constructor ordering.
 const Ephemeron EphemeronMapping::initEph{no_key<core::T_O>(), no_key<core::T_O>()};
+
+const WeakAnd WeakAndMapping::initKV{no_key<core::T_O>(), no_key<core::T_O>()};
 
 } // namespace gctools

@@ -84,7 +84,8 @@
                           "comp::SpecialVarInfo_O" "core::SimpleMDArray_int16_t_O"
                           "comp::ControlLabelFixup_O" "llvmo::StructLayout_O"
                           "core::SimpleMDArrayT_O" "core::StrongMapping_O" "llvmo::LoadInst_O"
-                          "llvmo::ConstantStruct_O" "core::Exposer_O" "core::DirectoryIterator_O"
+                          "llvmo::ConstantStruct_O" "core::Exposer_O"
+                          "core::WeakKeyAndValueMapping_O" "core::DirectoryIterator_O"
                           "core::MDArray_byte2_t_O" "llvmo::DISubroutineType_O"
                           "comp::LabelFixup_O" "comp::Cfunction_O" "llvmo::MetadataAsValue_O"
                           "core::SimpleBitVector_O" "core::SimpleVector_int8_t_O"
@@ -101,7 +102,7 @@
                           "llvmo::DIFile_O" "llvmo::LineTable_O" "llvmo::DataLayout_O"
                           "llvmo::BasicBlock_O" "llvmo::CodeBase_O" "core::SimpleMDArray_int8_t_O"
                           "llvmo::EngineBuilder_O" "core::ComplexVector_byte64_t_O"
-                          "llvmo::SectionedAddress_O" "core::MDArray_byte32_t_O"
+                          "llvmo::SectionedAddress_O" "core::MDArray_byte32_t_O" "gctools::WeakAnd"
                           "core::Character_dummy_O" "core::PosixFileStream_O" "comp::LexRefFixup_O"
                           "llvmo::Constant_O" "llvmo::FunctionCallee_O" "llvmo::DIBasicType_O"
                           "llvmo::DIBuilder_O" "core::NativeVector_int_O" "llvmo::APInt_O"
@@ -4776,6 +4777,24 @@
                    :end-field-names ("_Mapping" "._Data" "._MaybeSignedLength")}
 {variable-field-only :offset-type-cxx-identifier "EPHEMERON_OFFSET"
                      :fixup-type "gctools::Ephemeron"}
+{class-kind :stamp-name "STAMPWTAG_core__WeakKeyAndValueMapping_O"
+            :stamp-key "core::WeakKeyAndValueMapping_O" :parent-class "core::Mapping_O"
+            :lisp-class-base "core::Mapping_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::WeakKeyAndValueMapping_O"
+             :layout-offset-field-names ("_Count")}
+{variable-array0 :offset-base-ctype "core::WeakKeyAndValueMapping_O"
+                 :field-names ("_Mapping" "._Data" "._Data")}
+{variable-capacity :ctype "gctools::WeakAnd" :offset-base-ctype "core::WeakKeyAndValueMapping_O"
+                   :length-field-names ("_Mapping" "._Data" "._MaybeSignedLength")
+                   :end-field-names ("_Mapping" "._Data" "._MaybeSignedLength")}
+{variable-field :offset-type-cxx-identifier "WEAK_PTR_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::WeakPointer"
+                :fixup-ctype-key "gctools::WeakAnd" :layout-offset-field-names ("key")}
+{variable-field :offset-type-cxx-identifier "WEAK_PTR_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::WeakPointer"
+                :fixup-ctype-key "gctools::WeakAnd" :layout-offset-field-names ("value")}
 {class-kind :stamp-name "STAMPWTAG_core__StrongMapping_O" :stamp-key "core::StrongMapping_O"
             :parent-class "core::Mapping_O" :lisp-class-base "core::Mapping_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -6075,6 +6094,22 @@
                 :fixup-ctype-offset-type-key "gctools::smart_ptr<core::ClassHolder_O>"
                 :fixup-ctype-key "core::SymbolClassHolderPair"
                 :layout-offset-field-names ("theClassHolder")}
+{container-kind :stamp-name "STAMPWTAG_gctools__GCArray_moveable_gctools__WeakAnd_"
+                :stamp-key "gctools::GCArray_moveable<gctools::WeakAnd>"
+                :parent-class "gctools::GCContainer" :lisp-class-base nil
+                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
+{variable-array0 :offset-base-ctype "gctools::GCArray_moveable<gctools::WeakAnd>"
+                 :field-names ("_Data")}
+{variable-capacity :ctype "gctools::WeakAnd"
+                   :offset-base-ctype "gctools::GCArray_moveable<gctools::WeakAnd>"
+                   :length-field-names ("_MaybeSignedLength")
+                   :end-field-names ("_MaybeSignedLength")}
+{variable-field :offset-type-cxx-identifier "WEAK_PTR_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::WeakPointer"
+                :fixup-ctype-key "gctools::WeakAnd" :layout-offset-field-names ("key")}
+{variable-field :offset-type-cxx-identifier "WEAK_PTR_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::WeakPointer"
+                :fixup-ctype-key "gctools::WeakAnd" :layout-offset-field-names ("value")}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCArray_moveable_signed_char_"
                 :stamp-key "gctools::GCArray_moveable<signed char>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil

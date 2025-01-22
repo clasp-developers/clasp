@@ -87,6 +87,7 @@ public:
   std::optional<core::T_sp> value() const;
   std::optional<core::T_sp> value_no_lock() const; // used by scanner
   void store_no_lock(core::T_sp); // ditto.
+  void store(core::T_sp);
   void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup*);
 public: // has to be public for precise GC reasons even though it's not scanned?
   // This is a Tagged rather than a T_sp because something in gc_boot seems to
@@ -209,6 +210,54 @@ private:
   static const Ephemeron initEph;
 public:
   EphemeronMapping(size_t size) : _Data(size, initEph) {}
+public:
+  vector_type _Data;
+public:
+  size_t size() const { return _Data.length(); }
+  KVPair get(size_t i) const { return _Data[i].get(); }
+  void setValue(size_t i, core::T_sp v) { _Data[i].setValue(v); }
+  void newEntry(size_t i, core::T_sp k, core::T_sp v) { _Data[i].reinit(k, v); }
+  void remove(size_t i) { _Data[i].reinit(deleted<core::T_O>(), deleted<core::T_O>()); }
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+    for (size_t i = 0; i < _Data.length(); ++i)
+      _Data[i].fixupInternalsForSnapshotSaveLoad(fixup);
+  }
+};
+
+// For weak key-and-value tables: an entry is only alive as long as
+// both the key AND the value are otherwise alive.
+// Boehm only allows any given memory address to be zeroed when one object
+// dies, so we can't directly zero the whole pair. But using weak pointers
+// is enough. Note that this means the WeakAndMapping needs to be allocated
+// with atomic policy, like WeakPointer_O.
+struct WeakAnd {
+  WeakPointer key;
+  WeakPointer value;
+  WeakAnd(core::T_sp k, core::T_sp v) : key(k), value(v) {}
+  KVPair get() const {
+    auto k = key.value();
+    auto v = value.value();
+    if (k && v) return KVPair(*k, *v);
+    else return KVPair(deleted<core::T_O>(), deleted<core::T_O>());
+  }
+  void setValue(core::T_sp v) { value.store(v); }
+  void reinit(core::T_sp k, core::T_sp v) {
+    key.store(k); value.store(v);
+  }
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+    key.fixupInternalsForSnapshotSaveLoad(fixup);
+    value.fixupInternalsForSnapshotSaveLoad(fixup);
+  }
+};
+
+struct WeakAndMapping {
+public:
+  typedef GCArray_moveable<WeakAnd> vector_type;
+  typedef typename vector_type::value_type value_type;
+private:
+  static const WeakAnd initKV;
+public:
+  WeakAndMapping(size_t size) : _Data(size, initKV) {}
 public:
   vector_type _Data;
 public:
