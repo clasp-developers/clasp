@@ -28,6 +28,8 @@ THE SOFTWARE.
 
 #define DEBUG_LEVEL_NONE
 
+#include <stack>
+#include <utility> // pair
 #include <unistd.h>
 #include <fcntl.h>
 #include <clasp/core/foundation.h>
@@ -872,9 +874,9 @@ void walkRoots(RootWalkCallback&& callback) {
 // #define HEADER_PTR_TO_GENERAL_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
 
 #define ADDR_T uintptr_t
-#define EXTRA_ARGUMENTS , std::stack<Tagged>& markStack
+#define EXTRA_ARGUMENTS , Tagged containingObject, std::stack<std::pair<Tagged, Tagged>>& markStack
 
-#define POINTER_FIX(_ptr_) markStack.push(*reinterpret_cast<Tagged*>(_ptr_))
+#define POINTER_FIX(_ptr_) markStack.emplace(containingObject, *reinterpret_cast<Tagged*>(_ptr_))
 
 #define OBJECT_SCAN mw_obj_scan
 #define OBJECT_SKIP mw_obj_skip
@@ -896,12 +898,14 @@ void walkRoots(RootWalkCallback&& callback) {
 template <class Callback>
 static void mapAllObjectsInternal(std::set<Tagged>& markSet,
                                   Callback callback) {
-  std::stack<Tagged> markStack;
+  std::stack<std::pair<Tagged, Tagged>> markStack;
 
-  walkRoots([&](Tagged* rootf) { markStack.push(*rootf); }); // process all roots
+  // process all roots
+  walkRoots([&](Tagged* rootf) { markStack.emplace(0, *rootf); });
 
   while (!markStack.empty()) {
-    Tagged tagged = markStack.top(); markStack.pop(); // pop a pointer
+    // pop an object. we don't need the containing object.
+    Tagged tagged = markStack.top().second; markStack.pop();
 
     switch(ptag(tagged)) {
     case general_tag: { // general object
@@ -911,7 +915,7 @@ static void mapAllObjectsInternal(std::set<Tagged>& markSet,
         Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
         // the mw_foo_scan functions push all fields of the object
         // onto the markStack to keep the loop going.
-        mw_obj_scan(client, markStack);
+        mw_obj_scan(client, tagged, markStack);
         // now's the time to callback. Could also go before the scan
         callback(tagged);
       }
@@ -920,7 +924,7 @@ static void mapAllObjectsInternal(std::set<Tagged>& markSet,
       if (!markSet.contains(tagged)) {
         markSet.insert(tagged);
         uintptr_t client = untag_object(tagged);
-        mw_cons_scan(client, markStack);
+        mw_cons_scan(client, tagged, markStack);
         callback(tagged);
       }
     } break;
@@ -944,18 +948,24 @@ std::set<Tagged> setOfAllObjects() {
 // Check that all fields in all objects point to valid objects.
 // Also check for functions that can't be resolved with dlsym, since that's
 // important for snapshot save.
-// Return the set of tagged pointers located in fields that are not valid.
-std::set<Tagged> memtest(std::set<core::T_sp>& dladdrFailed) {
-  std::stack<Tagged> markStack;
+// Return the set of corrupt fields, represented as pairs of a non-corrupt
+// object and the address of a field within that object; the object contained
+// in that field is corrupt.
+// If a corrupt object is accessible in multiple fields, only one field containing
+// it is returned.
+std::set<std::pair<Tagged, Tagged>> memtest(std::set<core::T_sp>& dladdrFailed) {
+  std::stack<std::pair<Tagged, Tagged>> markStack;
   std::set<Tagged> markSet;
-  std::set<Tagged> corrupt;
+  std::set<std::pair<Tagged, Tagged>> corrupt;
 
   std::set<void*> uniqueEntryPoints;
 
-  walkRoots([&](Tagged* rootAddr) { markStack.push(*rootAddr); });
+  walkRoots([&](Tagged* rootAddr) { markStack.emplace(0, *rootAddr); });
 
   while (!markStack.empty()) {
-    Tagged tagged = markStack.top(); markStack.pop();
+    auto p = markStack.top(); markStack.pop();
+    Tagged containingObject = p.first;
+    Tagged tagged = p.second;
 
     switch (tagged & ptag_mask) {
     case general_tag: {
@@ -964,25 +974,17 @@ std::set<Tagged> memtest(std::set<core::T_sp>& dladdrFailed) {
         uintptr_t client = tagged & ptr_mask;
         Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
         if (header->isValidGeneralObject()) {
-          mw_obj_scan(client, markStack);
-            // If this is a function, check its dladdrability.
+          mw_obj_scan(client, tagged, markStack);
+          // If this is a function, check its dladdrability.
           core::T_sp tobj(tagged);
           if (tobj.isA<core::SimpleFun_O>()) {
             auto sfun = tobj.as_unsafe<core::SimpleFun_O>();
             if (!sfun->dladdrablep(uniqueEntryPoints))
               dladdrFailed.insert(sfun);
           }
-          // This CoreFun check seems like it should work, but
-          // snapshots in a FASO build trip it.
-          // TODO figure that out?
-          // Snapshots seem to work without this test, anyway.
-          /*
-          else if (tobj.isA<core::CoreFun_O>()) {
-            auto sfun = tobj.as_unsafe<core::CoreFun_O>();
-            if (!sfun->dladdrablep(uniqueEntryPoints))
-              dladdrFailed.insert(sfun);
-          }*/
-        } else corrupt.insert(tagged);
+        } else {
+          corrupt.emplace(containingObject, tagged);
+        }
       }
     } break;
     case cons_tag: {
@@ -991,8 +993,10 @@ std::set<Tagged> memtest(std::set<core::T_sp>& dladdrFailed) {
         uintptr_t client = tagged & ptr_mask;
         ConsHeader_s* header = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)client);
         if (header->isValidConsObject())
-          mw_cons_scan(client, markStack);
-        else corrupt.insert(tagged);
+          mw_cons_scan(client, tagged, markStack);
+        else {
+          corrupt.emplace(containingObject, tagged);
+        }
       }
     } break;
     case vaslist0_tag:
@@ -1014,7 +1018,7 @@ std::set<Tagged> memtest(std::set<core::T_sp>& dladdrFailed) {
     case UNBOUND_TAG: // FIXME: put const definition in pointer_tagging.h somewhere?
         break; // immediate, nothing to do
     default: // unknown tag - object is corrupt
-        corrupt.insert(tagged); break;
+        corrupt.emplace(containingObject, tagged); break;
     }
   }
   return corrupt;

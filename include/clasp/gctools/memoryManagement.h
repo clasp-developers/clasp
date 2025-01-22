@@ -22,6 +22,8 @@
 // Define compile-time flags that effect structure sizes
 //
 #include <atomic>
+#include <set>
+#include <utility> // pair
 #include <clasp/gctools/configure_memory.h>
 #include <clasp/gctools/hardErrors.h>
 
@@ -1278,7 +1280,7 @@ typedef void (*PointerFix)(uintptr_t* clientAddress, uintptr_t client, uintptr_t
 
 void mapAllObjects(void (*)(Tagged, void*), void*);
 std::set<Tagged> setOfAllObjects();
-std::set<Tagged> memtest(std::set<core::T_sp>&);
+std::set<std::pair<Tagged, Tagged>> memtest(std::set<core::T_sp>&);
 size_t objectSize(BaseHeader_s* header);
 
 bool is_memory_readable(const void* address, size_t bytes = 8);

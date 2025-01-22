@@ -347,11 +347,6 @@ LtvcReturnVoid ltvc_make_function_description(gctools::GCRootsInModule* holder, 
   if (!gc::IsA<core::FunctionDescription_sp>(val)) {
     SIMPLE_ERROR("The object is not a FunctionDescription {}", core::_rep_(val));
   }
-#if 0
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s FunctionDescription_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, val.raw_()));
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ObjectFile_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()).c_str()));
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Code_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()->_Code).c_str()));
-#endif
   LTVCRETURN holder->setTaggedIndex(tag, index, val.tagged_());
   NO_UNWIND_END();
 }

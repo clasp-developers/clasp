@@ -251,7 +251,6 @@ struct VirtualMachine {
 #define IHS_BACKTRACE_SIZE 16
 struct ThreadLocalState {
 
-  core::T_sp _ObjectFiles;
   mp::Process_sp _Process;
   DynamicBindingStack _Bindings;
   std::atomic<core::Cons_sp> _PendingInterruptsHead;
@@ -328,9 +327,6 @@ public:
 
   uint32_t random();
 
-  llvmo::ObjectFile_sp topObjectFile();
-  void pushObjectFile(llvmo::ObjectFile_sp of);
-  void popObjectFile();
   inline DynamicBindingStack& bindings() { return this->_Bindings; };
 
   void startUpVM();

@@ -28,6 +28,7 @@
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/core/compiler.h>
+#include <clasp/core/debugger.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
 
@@ -400,7 +401,13 @@ bool memory_test() {
     core::lisp_write(fmt::format("{} corrupt objects in memory test\n", corrupt.size()));
     size_t idx = 0;
     for (const auto& cur : corrupt) {
-      core::lisp_write(fmt::format("#{} -> {}\n", idx, (void*)cur));
+      Tagged base = cur.first;
+      Tagged corruptObj = cur.second;
+      if (base) {
+        core::lisp_write(fmt::format("#{} -> {} base: {} == {}\n", idx, (void*)corruptObj, (void*)base, dbg_safe_repr((void*)base)));
+      } else {
+        core::lisp_write(fmt::format("#{} -> {} base: [root]", idx, (void*)corruptObj ));
+      }
       idx++;
     }
   }
@@ -448,10 +455,10 @@ The following &KEY arguments are defined:
      Test memory prior to saving snapshot.
      If NIL then snapshot saving is faster.)dx")
 DOCGROUP(clasp);
-CL_DEFUN void gctools__save_lisp_and_die(core::T_sp filename, core::T_sp executable, core::T_sp testMemory) {
+CL_DEFUN void gctools__save_lisp_and_die(core::String_sp filename, bool executable, bool testMemory) {
 #ifdef USE_PRECISE_GC
-  throw(core::SaveLispAndDie(gc::As<core::String_sp>(filename)->get_std_string(), executable.notnilp(),
-                             globals_->_Bundle->_Directories->_LibDir, true, core::noStomp, testMemory.notnilp() ));
+  throw(snapshotSaveLoad::SaveLispAndDie(filename->get_std_string(), executable,
+                                         globals_->_Bundle->_Directories->_LibDir, true, snapshotSaveLoad::ForwardingEnum::noStomp, testMemory ));
 #else
   SIMPLE_ERROR("save-lisp-and-die only works for precise GC");
 #endif
@@ -470,10 +477,10 @@ The following &KEY arguments are defined:
      to create a standalone executable.  If false (the default), the
      snapshot will not be executable on its own.)dx")
 DOCGROUP(clasp);
-CL_DEFUN void gctools__save_lisp_and_continue(core::T_sp filename, core::T_sp executable) {
+CL_DEFUN void gctools__save_lisp_and_continue(core::String_sp filename, bool executable) {
 #ifdef USE_PRECISE_GC
-  core::SaveLispAndDie ee(gc::As<core::String_sp>(filename)->get_std_string(), executable.notnilp(),
-                          globals_->_Bundle->_Directories->_LibDir, false );
+  snapshotSaveLoad::SaveLispAndDie ee(filename->get_std_string(), executable,
+                                      globals_->_Bundle->_Directories->_LibDir, false );
   snapshotSaveLoad::snapshot_save(ee);
 #else
   SIMPLE_ERROR("save-lisp-and-continue only works for precise GC");

@@ -246,7 +246,7 @@ const char* my_LLVMSymbolLookupCallback(void* DisInfo, uint64_t ReferenceValue, 
     }
     if (symbol[0] == LITERALS_NAME[0] && strlen(symbol) > strlen(LITERALS_NAME) &&
         strncmp(LITERALS_NAME, symbol + 1, strlen(LITERALS_NAME)) == 0) {
-      ss << "[" << dbg_safe_repr((uintptr_t)*(uintptr_t*)ReferenceValue) << "]";
+      ss << "[" << dbg_safe_repr(*(void**)ReferenceValue) << "]";
     }
     ss << "}";
     strcpy(global_LLVMSymbolLookupCallbackBuffer, ss.str().c_str());

@@ -153,6 +153,33 @@ template <class Stage, class Cons> struct ConsAllocator {
 }; // namespace gctools
 
 namespace gctools {
+template <class OT>
+static smart_ptr<OT> initialize_snapshot_object(Header_s* base, snapshotSaveLoad::snapshot_save_load_init_s* init) {
+  // transfer the badge
+  base->_badge_stamp_wtag_mtag._header_badge.store(init->_headStart->_badge_stamp_wtag_mtag._header_badge.load());
+#ifdef DEBUG_GUARD
+  // Copy the source from the image save/load memory.
+  base->_source = snapshot_save_load_init->_headStart->_source;
+#endif
+  OT* ptr = HeaderPtrToGeneralPtr<OT>(base);
+#ifdef DEBUG_GUARD
+  uintptr_t guardBefore0 = *(uintptr_t*)((uintptr_t*)ptr - 1);
+  uintptr_t guardAfter0 = *(uintptr_t*)((uintptr_t*)((char*)ptr + sizeWithHeader - sizeof(Header_s)) + 1);
+#endif
+  init->fill(ptr);
+#ifdef DEBUG_GUARD
+  uintptr_t guardBefore1 = *(uintptr_t*)((uintptr_t*)ptr - 1);
+  uintptr_t guardAfter1 = *(uintptr_t*)((uintptr_t*)((char*)ptr + sizeWithHeader - sizeof(Header_s)) + 1);
+  if (guardBefore0 != guardBefore1) {
+    printf("%s:%d:%s We stomped on the memory before the object\n", __FILE__, __LINE__, __FUNCTION__);
+  }
+  if (guardAfter0 != guardAfter1) {
+    printf("%s:%d:%s We stomped on the memory after the object\n", __FILE__, __LINE__, __FUNCTION__);
+  }
+#endif
+  return smart_ptr<OT>(ptr);
+}
+
 template <class OT, GCInfo_policy Policy = normal> struct GCObjectAppropriatePoolAllocator {
   typedef OT value_type;
   typedef OT* pointer_type;
@@ -172,31 +199,7 @@ template <class OT, GCInfo_policy Policy = normal> struct GCObjectAppropriatePoo
     size_t sizeWithHeader = sizeof(Header_s) + (snapshot_save_load_init->_clientEnd - snapshot_save_load_init->_clientStart);
     DO_DRAG_GENERAL_ALLOCATION();
     Header_s* base = do_general_allocation(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag, sizeWithHeader);
-    // transfer the badge
-    base->_badge_stamp_wtag_mtag._header_badge.store(
-        snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag._header_badge.load());
-#ifdef DEBUG_GUARD
-    // Copy the source from the image save/load memory.
-    base->_source = snapshot_save_load_init->_headStart->_source;
-#endif
-    pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
-#ifdef DEBUG_GUARD
-    uintptr_t guardBefore0 = *(uintptr_t*)((uintptr_t*)ptr - 1);
-    uintptr_t guardAfter0 = *(uintptr_t*)((uintptr_t*)((char*)ptr + sizeWithHeader - sizeof(Header_s)) + 1);
-#endif
-    snapshot_save_load_init->fill(ptr);
-#ifdef DEBUG_GUARD
-    uintptr_t guardBefore1 = *(uintptr_t*)((uintptr_t*)ptr - 1);
-    uintptr_t guardAfter1 = *(uintptr_t*)((uintptr_t*)((char*)ptr + sizeWithHeader - sizeof(Header_s)) + 1);
-    if (guardBefore0 != guardBefore1) {
-      printf("%s:%d:%s We stomped on the memory before the object\n", __FILE__, __LINE__, __FUNCTION__);
-    }
-    if (guardAfter0 != guardAfter1) {
-      printf("%s:%d:%s We stomped on the memory after the object\n", __FILE__, __LINE__, __FUNCTION__);
-    }
-#endif
-    smart_pointer_type sp = smart_ptr<value_type>(ptr);
-    return sp;
+    return initialize_snapshot_object<OT>(base, snapshot_save_load_init);
   };
 
   static void deallocate(OT* memory){
@@ -224,20 +227,11 @@ template <class OT> struct GCObjectAppropriatePoolAllocator<OT, /* Policy= */ at
       // so that the static analyzer has something to call
   };
 
-  static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init,
-                                                        size_t size) {
+  static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init) {
+    size_t sizeWithHeader = sizeof(Header_s) + (snapshot_save_load_init->_clientEnd - snapshot_save_load_init->_clientStart);
     Header_s* base =
-        do_atomic_allocation<SnapshotLoadStage>(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag, size);
-#ifdef DEBUG_GUARD
-    // Copy the source from the image save/load memory.
-    base->_source = snapshot_save_load_init->_headStart->_source;
-#endif
-    pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
-    new (ptr) OT(snapshot_save_load_init);
-    printf("%s:%d:%s This is where we should copy in the stuff from the snapshot_save_load_init object\n", __FILE__, __LINE__,
-           __FUNCTION__);
-    smart_pointer_type sp = smart_ptr<value_type>(ptr);
-    return sp;
+        do_atomic_allocation<SnapshotLoadStage>(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag, sizeWithHeader);
+    return initialize_snapshot_object<OT>(base, snapshot_save_load_init);
   };
 };
 
@@ -263,20 +257,11 @@ template <class OT> struct GCObjectAppropriatePoolAllocator<OT, /* Policy= */ co
       // so that the static analyzer has something to call
   };
 
-  static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init,
-                                                        size_t size) {
+  static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init) {
+    size_t sizeWithHeader = sizeof(Header_s) + (snapshot_save_load_init->_clientEnd - snapshot_save_load_init->_clientStart);
     DO_DRAG_GENERAL_ALLOCATION();
-    Header_s* base = do_general_allocation(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag, size);
-#ifdef DEBUG_GUARD
-    // Copy the source from the image save/load memory.
-    base->_source = snapshot_save_load_init->_headStart->_source;
-#endif
-    pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
-    new (ptr) OT(snapshot_save_load_init);
-    printf("%s:%d:%s This is where we should copy in the stuff from the snapshot_save_load_init object\n", __FILE__, __LINE__,
-           __FUNCTION__);
-    smart_pointer_type sp = smart_ptr<value_type>(ptr);
-    return sp;
+    Header_s* base = do_general_allocation(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag, sizeWithHeader);
+    return initialize_snapshot_object<OT>(base, snapshot_save_load_init);
   };
 };
 
@@ -296,19 +281,10 @@ template <class OT> struct GCObjectAppropriatePoolAllocator<OT, unmanaged> {
     return sp;
   }
 
-  static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init,
-                                                        size_t size) {
-    Header_s* base = do_uncollectable_allocation(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag, size);
-#ifdef DEBUG_GUARD
-    // Copy the source from the image save/load memory.
-    base->_source = snapshot_save_load_init->_headStart->_source;
-#endif
-    pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
-    new (ptr) OT(snapshot_save_load_init);
-    printf("%s:%d:%s This is where we should copy in the stuff from the snapshot_save_load_init object\n", __FILE__, __LINE__,
-           __FUNCTION__);
-    smart_pointer_type sp = smart_ptr<value_type>(ptr);
-    return sp;
+  static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init) {
+    size_t sizeWithHeader = sizeof(Header_s) + (snapshot_save_load_init->_clientEnd - snapshot_save_load_init->_clientStart);
+    Header_s* base = do_uncollectable_allocation(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag, sizeWithHeader);
+    return initialize_snapshot_object<OT>(base, snapshot_save_load_init);
   };
 
   static void deallocate(OT* memory) {

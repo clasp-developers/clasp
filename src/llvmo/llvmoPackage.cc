@@ -583,8 +583,8 @@ void initialize_llvm() {
 
 void initialize_ClaspJIT() {
   // printf("%s:%d:%s About to set _ClaspJIT\n", __FILE__, __LINE__, __FUNCTION__ );
-  auto jit_engine = gctools::GC<ClaspJIT_O>::allocate(false, (llvmo::JITDylib_O*)NULL);
-  // llvm_sys__create_lljit_thread_pool();
+  auto jit_engine = gctools::GC<ClaspJIT_O>::allocate();
+  jit_engine->installMainJITDylib();
   _lisp->_Roots._ClaspJIT = jit_engine;
 }
 

@@ -4943,7 +4943,6 @@ void CFileStream_O::set_buffering_mode(T_sp mode) {
 void CFileStream_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
   if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     std::string name = gc::As<String_sp>(_filename)->get_path_string();
-    T_sp stream = this->asSmartPtr();
     if (name == "*STDIN*") {
       _file = stdin;
     } else if (name == "*STDOUT*") {

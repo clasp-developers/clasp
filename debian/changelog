@@ -1,4 +1,4 @@
-clasp-cl (2.6.0) bookworm jammy; urgency=medium
+clasp-cl (2.7.0) bookworm jammy; urgency=medium
 
   * Initial release
 

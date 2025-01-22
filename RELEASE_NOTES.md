@@ -1,4 +1,4 @@
-# Version 2.7.0 (LLVM15-19) Pending
+# Version 2.7.0 (LLVM15-19) 2025-01-21
 
 ## Added
 * Package lock support, based on SBCL's. Currently ignores local
@@ -10,6 +10,9 @@
 * Interrupts have now been organized into a coherent interface.
   Clasp will signal conditions of type MP:INTERRUPT at opportune
   times, and these conditions can be handled like any others.
+* Extensions to Clasp and CANDO can now be built against an installed
+  Clasp implementation and dynamically loaded. For an example see
+  [clasp-hello-world](https://github.com/clasp-developers/clasp-hello-world).
 
 ## Changed
 * Floating point exceptions FE_INVALID, FE_OVERFLOW and FE_DIVBYZERO
