@@ -212,6 +212,31 @@ public:
   }
 };
 
+FORWARD(WeakKeyOrValueMapping);
+class WeakKeyOrValueMapping_O final : public Mapping_O {
+  LISP_CLASS(core, CorePkg, WeakKeyOrValueMapping_O, "WeakKeyOrValueMapping", Mapping_O);
+public:
+  // need typedefs for e.g. sizeof_container
+  typedef gctools::WeakAndMapping::value_type value_type;
+public:
+  WeakKeyOrValueMapping_O(size_t size) : _Mapping(size) {}
+  static WeakKeyOrValueMapping_sp make(size_t);
+public:
+  gctools::DoubleEphMapping _Mapping;
+public:
+  virtual size_t size() const { return _Mapping.size(); }
+  virtual size_t count() const { return computeCount(); }
+  virtual Mapping_sp realloc(size_t sz) const { return make(sz); }
+  virtual gctools::KVPair get(size_t i) const { return _Mapping.get(i); }
+  virtual void setValue(size_t i, T_sp, T_sp v) { _Mapping.setValue(i, v); }
+  virtual void newEntry(size_t i, T_sp k, T_sp v) { ++_Count; _Mapping.newEntry(i, k, v); }
+  virtual void remove(size_t i) { --_Count; _Mapping.remove(i); }
+  virtual Symbol_sp weakness() { return kw::_sym_key_or_value; }
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) override {
+    _Mapping.fixupInternalsForSnapshotSaveLoad(fixup);
+  }
+};
+
 FORWARD(HashTable);
 class HashTable_O : public General_O {
   LISP_CLASS(core, ClPkg, HashTable_O, "HashTable", General_O);

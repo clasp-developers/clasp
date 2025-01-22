@@ -8,9 +8,10 @@
                           "core::MDArrayT_O" "core::WeakValueMapping_O" "core::FunctionCell_O"
                           "core::DirectoryEntry_O" "chem::Atom_O" "llvmo::Linker_O"
                           "chem::Kmeans_O" "comp::FunInfo_O" "chem::ZMatrix_O"
-                          "core::MDArray_float_O" "chem::KmeansPlusPlus_O" "core::SourcePosInfo_O"
-                          "llvmo::BranchInst_O" "chem::IterateMatter_O" "llvmo::AllocaInst_O"
-                          "chem::AtomicInfo" "chem::FFTypesDb_O" "core::ComplexVector_float_O"
+                          "gctools::DoubleEphemeron" "core::MDArray_float_O"
+                          "chem::KmeansPlusPlus_O" "core::SourcePosInfo_O" "llvmo::BranchInst_O"
+                          "chem::IterateMatter_O" "llvmo::AllocaInst_O" "chem::AtomicInfo"
+                          "chem::FFTypesDb_O" "core::ComplexVector_float_O"
                           "core::StandardClassCreator_O" "chem::Alias_O" "comp::LexicalVarInfo_O"
                           "chem::MapOfMonomerNamesToAtomIndexers_O" "chem::ZMatrixInternal_O"
                           "core::HashTableCustom_O" "adapt::SymbolSet_O" "chem::Minimizer_O"
@@ -235,22 +236,22 @@
                           "asttooling::PresumedLoc_O" "core::ConcatenatedStream_O" "comp::Fixup_O"
                           "core::LexDynEnv_O" "chem::RestrainedExoCyclicAtom_O" "chem::EnergyAtom"
                           "kinematics::ComplexBondedJoint_O" "core::FuncallableInstance_O"
-                          "clbind::detail::edge" "chem::NumericalFunction_O"
-                          "core::SynonymStream_O" "core::Ratio_O" "core::BytecodeModule_O"
-                          "core::MDArray_int2_t_O" "core::ComplexVector_byte2_t_O"
-                          "chem::FixedNonbondRestraint" "llvmo::ExecutionEngine_O"
-                          "core::ClassRepCreator_O" "core::MDArray_long_float_O"
-                          "core::SimpleVector_int16_t_O" "llvmo::Attribute_O"
-                          "core::DerivableCxxObject_O" "core::WeakKeyMapping_O"
-                          "llvmo::SwitchInst_O" "core::SymbolToEnumConverter_O"
-                          "chem::RestrainedPiBond_O" "chem::ConformationCollection_O"
-                          "core::SingleDispatchGenericFunction_O" "core::ComplexVector_int32_t_O"
-                          "chem::StepReport_O" "geom::Color_O" "chem::FFVdw_O"
-                          "core::ComplexVector_byte4_t_O" "asttooling::SourceLocation_O"
-                          "core::LogicalPathname_O" "llvmo::TargetSubtargetInfo_O"
-                          "core::SimpleVector_double_O" "chem::Root_O" "core::CFileStream_O"
-                          "core::SimpleMDArray_byte32_t_O" "core::Bignum_O"
-                          "llvmo::LLVMTargetMachine_O" "core::ClassHolder_O"
+                          "clbind::detail::edge" "core::WeakKeyOrValueMapping_O"
+                          "chem::NumericalFunction_O" "core::SynonymStream_O" "core::Ratio_O"
+                          "core::BytecodeModule_O" "core::MDArray_int2_t_O"
+                          "core::ComplexVector_byte2_t_O" "chem::FixedNonbondRestraint"
+                          "llvmo::ExecutionEngine_O" "core::ClassRepCreator_O"
+                          "core::MDArray_long_float_O" "core::SimpleVector_int16_t_O"
+                          "llvmo::Attribute_O" "core::DerivableCxxObject_O"
+                          "core::WeakKeyMapping_O" "llvmo::SwitchInst_O"
+                          "core::SymbolToEnumConverter_O" "chem::RestrainedPiBond_O"
+                          "chem::ConformationCollection_O" "core::SingleDispatchGenericFunction_O"
+                          "core::ComplexVector_int32_t_O" "chem::StepReport_O" "geom::Color_O"
+                          "chem::FFVdw_O" "core::ComplexVector_byte4_t_O"
+                          "asttooling::SourceLocation_O" "core::LogicalPathname_O"
+                          "llvmo::TargetSubtargetInfo_O" "core::SimpleVector_double_O"
+                          "chem::Root_O" "core::CFileStream_O" "core::SimpleMDArray_byte32_t_O"
+                          "core::Bignum_O" "llvmo::LLVMTargetMachine_O" "core::ClassHolder_O"
                           "chem::SketchFunction_O" "core::ComplexVector_byte32_t_O"
                           "llvmo::UnaryInstruction_O" "llvmo::GlobalValue_O" "llvmo::PointerType_O"
                           "core::TwoWayStream_O")}
@@ -9863,6 +9864,25 @@
                    :end-field-names ("_Mapping" "._Data" "._MaybeSignedLength")}
 {variable-field-only :offset-type-cxx-identifier "EPHEMERON_OFFSET"
                      :fixup-type "gctools::Ephemeron"}
+{class-kind :stamp-name "STAMPWTAG_core__WeakKeyOrValueMapping_O"
+            :stamp-key "core::WeakKeyOrValueMapping_O" :parent-class "core::Mapping_O"
+            :lisp-class-base "core::Mapping_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::WeakKeyOrValueMapping_O"
+             :layout-offset-field-names ("_Count")}
+{variable-array0 :offset-base-ctype "core::WeakKeyOrValueMapping_O"
+                 :field-names ("_Mapping" "._Data" "._Data")}
+{variable-capacity :ctype "gctools::DoubleEphemeron"
+                   :offset-base-ctype "core::WeakKeyOrValueMapping_O"
+                   :length-field-names ("_Mapping" "._Data" "._MaybeSignedLength")
+                   :end-field-names ("_Mapping" "._Data" "._MaybeSignedLength")}
+{variable-field :offset-type-cxx-identifier "EPHEMERON_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::Ephemeron"
+                :fixup-ctype-key "gctools::DoubleEphemeron" :layout-offset-field-names ("kv")}
+{variable-field :offset-type-cxx-identifier "EPHEMERON_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::Ephemeron"
+                :fixup-ctype-key "gctools::DoubleEphemeron" :layout-offset-field-names ("vk")}
 {class-kind :stamp-name "STAMPWTAG_core__WeakKeyAndValueMapping_O"
             :stamp-key "core::WeakKeyAndValueMapping_O" :parent-class "core::Mapping_O"
             :lisp-class-base "core::Mapping_O" :root-class "core::T_O" :stamp-wtag 3
@@ -12340,6 +12360,22 @@
                    :length-field-names ("_Capacity") :end-field-names ("_End")}
 {variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
                      :fixup-type "gctools::smart_ptr<core::Package_O>"}
+{container-kind :stamp-name "STAMPWTAG_gctools__GCArray_moveable_gctools__DoubleEphemeron_"
+                :stamp-key "gctools::GCArray_moveable<gctools::DoubleEphemeron>"
+                :parent-class "gctools::GCContainer" :lisp-class-base nil
+                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
+{variable-array0 :offset-base-ctype "gctools::GCArray_moveable<gctools::DoubleEphemeron>"
+                 :field-names ("_Data")}
+{variable-capacity :ctype "gctools::DoubleEphemeron"
+                   :offset-base-ctype "gctools::GCArray_moveable<gctools::DoubleEphemeron>"
+                   :length-field-names ("_MaybeSignedLength")
+                   :end-field-names ("_MaybeSignedLength")}
+{variable-field :offset-type-cxx-identifier "EPHEMERON_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::Ephemeron"
+                :fixup-ctype-key "gctools::DoubleEphemeron" :layout-offset-field-names ("kv")}
+{variable-field :offset-type-cxx-identifier "EPHEMERON_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::Ephemeron"
+                :fixup-ctype-key "gctools::DoubleEphemeron" :layout-offset-field-names ("vk")}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_unsigned_int_"
                 :stamp-key "gctools::GCVector_moveable<unsigned int>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil

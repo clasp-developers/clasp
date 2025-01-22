@@ -4,8 +4,8 @@
                           "clbind::ClassRegistry_O" "mp::Process_O" "core::Record_O"
                           "core::LightUserData_O" "core::MDArrayT_O" "core::WeakValueMapping_O"
                           "core::FunctionCell_O" "core::DirectoryEntry_O" "llvmo::Linker_O"
-                          "comp::FunInfo_O" "core::MDArray_float_O" "core::SourcePosInfo_O"
-                          "llvmo::BranchInst_O" "llvmo::AllocaInst_O"
+                          "comp::FunInfo_O" "gctools::DoubleEphemeron" "core::MDArray_float_O"
+                          "core::SourcePosInfo_O" "llvmo::BranchInst_O" "llvmo::AllocaInst_O"
                           "core::StandardClassCreator_O" "core::ComplexVector_float_O"
                           "core::HashTableCustom_O" "comp::LexicalVarInfo_O"
                           "core::ComplexVector_byte8_t_O" "core::OptionalArgument"
@@ -144,17 +144,18 @@
                           "core::HashTableEqualp_O" "asttooling::PresumedLoc_O"
                           "core::ConcatenatedStream_O" "comp::Fixup_O" "core::LexDynEnv_O"
                           "core::FuncallableInstance_O" "clbind::detail::edge"
-                          "core::SynonymStream_O" "core::BytecodeModule_O" "core::Ratio_O"
-                          "core::MDArray_int2_t_O" "core::ComplexVector_byte2_t_O"
-                          "llvmo::ExecutionEngine_O" "core::ClassRepCreator_O"
-                          "core::MDArray_long_float_O" "core::SimpleVector_int16_t_O"
-                          "llvmo::Attribute_O" "core::WeakKeyMapping_O"
-                          "core::DerivableCxxObject_O" "core::SymbolToEnumConverter_O"
-                          "llvmo::SwitchInst_O" "core::SingleDispatchGenericFunction_O"
-                          "core::ComplexVector_int32_t_O" "core::ComplexVector_byte4_t_O"
-                          "asttooling::SourceLocation_O" "core::LogicalPathname_O"
-                          "llvmo::TargetSubtargetInfo_O" "core::SimpleVector_double_O"
-                          "core::CFileStream_O" "core::SimpleMDArray_byte32_t_O" "core::Bignum_O"
+                          "core::WeakKeyOrValueMapping_O" "core::SynonymStream_O"
+                          "core::BytecodeModule_O" "core::Ratio_O" "core::MDArray_int2_t_O"
+                          "core::ComplexVector_byte2_t_O" "llvmo::ExecutionEngine_O"
+                          "core::ClassRepCreator_O" "core::MDArray_long_float_O"
+                          "core::SimpleVector_int16_t_O" "llvmo::Attribute_O"
+                          "core::WeakKeyMapping_O" "core::DerivableCxxObject_O"
+                          "core::SymbolToEnumConverter_O" "llvmo::SwitchInst_O"
+                          "core::SingleDispatchGenericFunction_O" "core::ComplexVector_int32_t_O"
+                          "core::ComplexVector_byte4_t_O" "asttooling::SourceLocation_O"
+                          "core::LogicalPathname_O" "llvmo::TargetSubtargetInfo_O"
+                          "core::SimpleVector_double_O" "core::CFileStream_O"
+                          "core::SimpleMDArray_byte32_t_O" "core::Bignum_O"
                           "llvmo::LLVMTargetMachine_O" "core::ClassHolder_O"
                           "core::ComplexVector_byte32_t_O" "llvmo::UnaryInstruction_O"
                           "llvmo::GlobalValue_O" "llvmo::PointerType_O" "core::TwoWayStream_O")}
@@ -4777,6 +4778,25 @@
                    :end-field-names ("_Mapping" "._Data" "._MaybeSignedLength")}
 {variable-field-only :offset-type-cxx-identifier "EPHEMERON_OFFSET"
                      :fixup-type "gctools::Ephemeron"}
+{class-kind :stamp-name "STAMPWTAG_core__WeakKeyOrValueMapping_O"
+            :stamp-key "core::WeakKeyOrValueMapping_O" :parent-class "core::Mapping_O"
+            :lisp-class-base "core::Mapping_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::WeakKeyOrValueMapping_O"
+             :layout-offset-field-names ("_Count")}
+{variable-array0 :offset-base-ctype "core::WeakKeyOrValueMapping_O"
+                 :field-names ("_Mapping" "._Data" "._Data")}
+{variable-capacity :ctype "gctools::DoubleEphemeron"
+                   :offset-base-ctype "core::WeakKeyOrValueMapping_O"
+                   :length-field-names ("_Mapping" "._Data" "._MaybeSignedLength")
+                   :end-field-names ("_Mapping" "._Data" "._MaybeSignedLength")}
+{variable-field :offset-type-cxx-identifier "EPHEMERON_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::Ephemeron"
+                :fixup-ctype-key "gctools::DoubleEphemeron" :layout-offset-field-names ("kv")}
+{variable-field :offset-type-cxx-identifier "EPHEMERON_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::Ephemeron"
+                :fixup-ctype-key "gctools::DoubleEphemeron" :layout-offset-field-names ("vk")}
 {class-kind :stamp-name "STAMPWTAG_core__WeakKeyAndValueMapping_O"
             :stamp-key "core::WeakKeyAndValueMapping_O" :parent-class "core::Mapping_O"
             :lisp-class-base "core::Mapping_O" :root-class "core::T_O" :stamp-wtag 3
@@ -6523,6 +6543,22 @@
                 :fixup-ctype-key "clbind::detail::edge" :layout-offset-field-names ("target")}
 {variable-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :fixup-ctype-offset-type-key nil
                 :fixup-ctype-key "clbind::detail::edge" :layout-offset-field-names ("cast")}
+{container-kind :stamp-name "STAMPWTAG_gctools__GCArray_moveable_gctools__DoubleEphemeron_"
+                :stamp-key "gctools::GCArray_moveable<gctools::DoubleEphemeron>"
+                :parent-class "gctools::GCContainer" :lisp-class-base nil
+                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
+{variable-array0 :offset-base-ctype "gctools::GCArray_moveable<gctools::DoubleEphemeron>"
+                 :field-names ("_Data")}
+{variable-capacity :ctype "gctools::DoubleEphemeron"
+                   :offset-base-ctype "gctools::GCArray_moveable<gctools::DoubleEphemeron>"
+                   :length-field-names ("_MaybeSignedLength")
+                   :end-field-names ("_MaybeSignedLength")}
+{variable-field :offset-type-cxx-identifier "EPHEMERON_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::Ephemeron"
+                :fixup-ctype-key "gctools::DoubleEphemeron" :layout-offset-field-names ("kv")}
+{variable-field :offset-type-cxx-identifier "EPHEMERON_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::Ephemeron"
+                :fixup-ctype-key "gctools::DoubleEphemeron" :layout-offset-field-names ("vk")}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__"
                 :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil

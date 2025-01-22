@@ -270,4 +270,53 @@ public:
   }
 };
 
+/*
+ * For weak key-or-value tables: an entry is alive as long as either the key
+ * or the value is alive. This is easily represented as a pair of ephemerons
+ * such that the key and value of one is the value and key of the other.
+ * But that doesn't actually work in Boehm. Boehm can't really represent
+ * this. However we keep this arrangement so that the static analyzer knows
+ * about these structures.
+ * On Boehm this is effectively a StrongMapping with more steps (and space).
+ */
+struct DoubleEphemeron {
+  Ephemeron kv;
+  Ephemeron vk;
+  DoubleEphemeron(core::T_sp k, core::T_sp v) : kv(k, v), vk(v, k) {}
+  KVPair get() const { return kv.get(); }
+  void setValue(core::T_sp v) {
+    auto r = get();
+    kv.setValue(v); vk.reinit(v, r.key);
+  }
+  void reinit(core::T_sp k, core::T_sp v) {
+    kv.reinit(k, v); vk.reinit(v, k);
+  }
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+    kv.fixupInternalsForSnapshotSaveLoad(fixup);
+    vk.fixupInternalsForSnapshotSaveLoad(fixup);
+  }
+};
+
+struct DoubleEphMapping {
+public:
+  typedef GCArray_moveable<DoubleEphemeron> vector_type;
+  typedef typename vector_type::value_type value_type;
+private:
+  static const DoubleEphemeron initEph;
+public:
+  DoubleEphMapping(size_t size) : _Data(size, initEph) {}
+public:
+  vector_type _Data;
+public:
+  size_t size() const { return _Data.length(); }
+  KVPair get(size_t i) const { return _Data[i].get(); }
+  void setValue(size_t i, core::T_sp v) { _Data[i].setValue(v); }
+  void newEntry(size_t i, core::T_sp k, core::T_sp v) { _Data[i].reinit(k, v); }
+  void remove(size_t i) { _Data[i].reinit(deleted<core::T_O>(), deleted<core::T_O>()); }
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+    for (size_t i = 0; i < _Data.length(); ++i)
+      _Data[i].fixupInternalsForSnapshotSaveLoad(fixup);
+  }
+};
+
 }; // namespace gctools

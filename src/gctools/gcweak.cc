@@ -195,5 +195,6 @@ const KVPair StrongMapping::initKV = {.key = core::T_sp(tag_no_key<Tagged>()),
 const Ephemeron EphemeronMapping::initEph{no_key<core::T_O>(), no_key<core::T_O>()};
 
 const WeakAnd WeakAndMapping::initKV{no_key<core::T_O>(), no_key<core::T_O>()};
+const DoubleEphemeron DoubleEphMapping::initEph{no_key<core::T_O>(), no_key<core::T_O>()};
 
 } // namespace gctools
