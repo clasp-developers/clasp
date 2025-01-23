@@ -278,115 +278,31 @@ ADDR_T OBJECT_SKIP(ADDR_T client, bool dbg, size_t& obj_size) {
       printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__);
     }
     const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
-    unlikely_if(stamp_wtag == gctools::STAMPWTAG_core__SimpleBitVector_O) {
-#ifdef DEBUG_ON
-      if (dbg) {
-        LOG("SimpleBitVector\n");
-      }
-#endif
-      size_t capacity = std::abs(*(int64_t*)((const char*)client + stamp_layout.container_layout->capacity_offset));
-      obj_size =
-          gctools::AlignUp(core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.container_layout->data_offset);
-      goto STAMP_CONTINUE;
-      // Do other bitunit vectors here
-    }
-    unlikely_if(stamp_wtag == gctools::STAMPWTAG_core__SimpleVector_byte2_t_O) {
-#ifdef DEBUG_ON
-      if (dbg) {
-        LOG("STAMP_core__SimpleVector_byte2_t_O");
-      }
-#endif
-      size_t capacity = *(size_t*)((const char*)client + stamp_layout.container_layout->capacity_offset);
-      obj_size = gctools::AlignUp(core::SimpleVector_byte2_t_O::bitunit_array_type::sizeof_for_length(capacity) +
-                                  stamp_layout.container_layout->data_offset);
-      goto STAMP_CONTINUE;
-    }
-    unlikely_if(stamp_wtag == gctools::STAMPWTAG_core__SimpleVector_int2_t_O) {
-#ifdef DEBUG_ON
-      if (dbg) {
-        LOG("STAMPWTAG_core__SimpleVector_int2_t_O");
-      }
-#endif
-      size_t capacity = *(size_t*)((const char*)client + stamp_layout.container_layout->capacity_offset);
-      obj_size =
-          gctools::AlignUp(core::SimpleVector_int2_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.container_layout->data_offset);
-      goto STAMP_CONTINUE;
-    }
-    unlikely_if(stamp_wtag == gctools::STAMPWTAG_core__SimpleVector_byte4_t_O) {
-#ifdef DEBUG_ON
-      if (dbg) {
-        LOG("STAMP_core__SimpleVector_byte4_t_O");
-      }
-#endif
-      size_t capacity = *(size_t*)((const char*)client + stamp_layout.container_layout->capacity_offset);
-      obj_size = gctools::AlignUp(core::SimpleVector_byte4_t_O::bitunit_array_type::sizeof_for_length(capacity) +
-                                  stamp_layout.container_layout->data_offset);
-      goto STAMP_CONTINUE;
-    }
-    unlikely_if(stamp_wtag == gctools::STAMPWTAG_core__SimpleVector_int4_t_O) {
-#ifdef DEBUG_ON
-      if (dbg) {
-        LOG("STAMP_core__SimpleVector_int4_t_O");
-      }
-#endif
-      size_t capacity = *(size_t*)((const char*)client + stamp_layout.container_layout->capacity_offset);
-      obj_size =
-          gctools::AlignUp(core::SimpleVector_int4_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.container_layout->data_offset);
-      goto STAMP_CONTINUE;
-    }
-    unlikely_if(stamp_wtag == gctools::STAMPWTAG_core__SimpleBaseString_O) {
-#ifdef DEBUG_ON
-      if (dbg) {
-        LOG("SimpleBaseString\n");
-      }
-#endif
-      // Account for the SimpleBaseString additional byte for \0
-      size_t capacity = *(size_t*)((const char*)client + stamp_layout.container_layout->capacity_offset) + 1;
-      obj_size = gctools::AlignUp(stamp_layout.container_layout->element_size * capacity + stamp_layout.container_layout->data_offset);
-      goto STAMP_CONTINUE;
-    }
-    {
-      gctools::Container_layout* container_layoutP = stamp_layout.container_layout;
-      if (container_layoutP) {
-#ifdef DEBUG_ON
-        if (dbg) {
-          LOG("container_layout\n");
-        }
-#endif
-        // special cases
-        if (stamp_wtag == gctools::STAMPWTAG_llvmo__ObjectFile_O) {
-          llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)client;
-          obj_size = gctools::AlignUp(llvmo::ObjectFile_O::sizeofInState(code, code->_State));
-        } else {
-          // For bignums we allow the _MaybeSignedLength(capacity) to be a negative value to represent negative bignums
-          // because GMP only stores positive bignums.  So the value at stamp_layout.capacity_offset is a signed int64_t
-          // Because of this we need to take the absolute value to get the number of entries.
-          size_t capacity = (size_t)std::llabs(*(int64_t*)((const char*)client + container_layoutP->capacity_offset));
-          obj_size = gctools::AlignUp(stamp_layout.container_layout->element_size * capacity + container_layoutP->data_offset);
-        }
+    const gctools::Container_layout* container_layout = stamp_layout.container_layout;
+    if (container_layout) {
+      // abs is there because for bignums, we use a negative length to
+      // indicate that the bignum is negative.
+      size_t capacity = std::abs(*(int64_t*)((const char*)client + container_layout->capacity_offset));
+      if (container_layout->bits_per_bitunit) { // sub-byte array
+        obj_size =
+          gctools::AlignUp(gctools::bitunit_sizeof(container_layout->bits_per_bitunit, capacity) + container_layout->data_offset);
+      } else if (stamp_wtag == gctools::STAMPWTAG_core__SimpleBaseString_O) [[unlikely]] { // Account for the SimpleBaseString additional byte for \0
+        obj_size = gctools::AlignUp(container_layout->element_size * (capacity + 1) + container_layout->data_offset);
+      } else if (stamp_wtag == gctools::STAMPWTAG_llvmo__ObjectFile_O) [[unlikely]] {
+        llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)client;
+        obj_size = gctools::AlignUp(llvmo::ObjectFile_O::sizeofInState(code, code->_State));
       } else {
-        if (stamp_layout.layout_op == gctools::templated_op) {
-#ifdef DEBUG_ON
-          if (dbg) {
-            LOG("templatedSizeof\n");
-          }
-#endif
-          obj_size = gctools::AlignUp(((core::General_O*)client)->templatedSizeof());
-        } else {
-#ifdef DEBUG_ON
-          if (dbg) {
-            LOG("stamp_layout.size = %lu\n", stamp_layout.size);
-          }
-#endif
-          obj_size = gctools::AlignUp(stamp_layout.size);
-        }
+        obj_size = gctools::AlignUp(container_layout->element_size * capacity + container_layout->data_offset);
       }
+    } else if (stamp_layout.layout_op == gctools::templated_op) {
+      obj_size = gctools::AlignUp(((core::General_O*)client)->templatedSizeof());
+    } else { // normal object, not a container or template or anything
+      obj_size = gctools::AlignUp(stamp_layout.size);
     }
-  STAMP_CONTINUE:
     size_t align_up_size = obj_size + sizeof(gctools::Header_s);
 
     client = (ADDR_T)((char*)client + align_up_size + header.tail_size());
-  } else {
+  } else { // stampP is false, so this is something weird like a forwarding pointer
     gctools::tagged_stamp_t mtag = header_value.mtag();
     switch (mtag) {
     case gctools::Header_s::fwd_mtag: {
