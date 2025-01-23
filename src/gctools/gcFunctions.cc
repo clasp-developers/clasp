@@ -1057,6 +1057,14 @@ CL_DEFUN core::Integer_sp gctools__unwind_time_nanoseconds() {
   return is;
 }
 
+CL_DEFUN size_t gctools__object_size(core::T_sp obj) {
+  if (obj.generalp())
+    return objectSize((Header_s*)GeneralPtrToHeaderPtr(&*obj));
+  else if (obj.consp())
+    return objectSize((ConsHeader_s*)ConsPtrToHeaderPtr(&*obj));
+  else return 0; // other immediate
+}
+
 static const char* data_type_name(Data_types dt) {
   switch (dt) {
   case DONT_EXPOSE_OFFSET: return "dont_expose";
