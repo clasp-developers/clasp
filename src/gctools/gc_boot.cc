@@ -120,6 +120,12 @@ inline int bitmap_field_index(size_t start, size_t offset) {
 
 inline uintptr_t bitmap_field_bitmap(size_t bitindex) { return (uintptr_t)1 << bitindex; }
 
+static inline bool fixable_type_p(size_t type) {
+  return type == SMART_PTR_OFFSET || type == ATOMIC_SMART_PTR_OFFSET
+    || type == TAGGED_POINTER_OFFSET || type == POINTER_OFFSET
+    || type == WEAK_PTR_OFFSET || type == EPHEMERON_OFFSET;
+}
+
 void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
   std::string indent = "";
   if (walk == lldb_info) {
@@ -154,10 +160,8 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
         local_stamp_max = stamp_code + 1;
         DGC_PRINT("%s:%d:%s local_stamp_max set to %lu\n", __FILE__, __LINE__, __FUNCTION__, local_stamp_max);
       }
-    } else if ((codes[idx].cmd == fixed_field || codes[idx].cmd == variable_field) &&
-               (codes[idx].data0 == SMART_PTR_OFFSET || codes[idx].data0 == ATOMIC_SMART_PTR_OFFSET ||
-                codes[idx].data0 == TAGGED_POINTER_OFFSET || codes[idx].data0 == POINTER_OFFSET
-                || codes[idx].data0 == WEAK_PTR_OFFSET || codes[idx].data0 == EPHEMERON_OFFSET)) {
+    } else if ((codes[idx].cmd == fixed_field || codes[idx].cmd == variable_field)
+               && fixable_type_p(codes[idx].data0)) {
       ++number_of_fixable_fields;
     } else if ((codes[idx].cmd == fixed_field) && (codes[idx].data0 == CONSTANT_ARRAY_OFFSET)) {
       // Ignore the Array_O size_t _Length[0] array
@@ -221,10 +225,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
                    fixed_index++, // index,
                    data_type, field_name, field_offset);
       }
-      if ((data_type == SMART_PTR_OFFSET || data_type == ATOMIC_SMART_PTR_OFFSET
-           || data_type == TAGGED_POINTER_OFFSET
-           || data_type == POINTER_OFFSET
-           || data_type == WEAK_PTR_OFFSET || data_type == EPHEMERON_OFFSET)) {
+      if (fixable_type_p(data_type)) {
         GCTOOLS_ASSERT(cur_field_layout < max_field_layout);
 #ifdef USE_PRECISE_GC
         int bit_index;
@@ -333,9 +334,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
                    indent.c_str(), cur_stamp,
                    container_variable_index++, // index,
                    data_type, field_name, field_offset);
-      if (((data_type) == SMART_PTR_OFFSET || (data_type) == ATOMIC_SMART_PTR_OFFSET || (data_type) == TAGGED_POINTER_OFFSET ||
-           (data_type) == POINTER_OFFSET
-           || data_type == WEAK_PTR_OFFSET || data_type == EPHEMERON_OFFSET)) {
+      if (fixable_type_p(data_type)) {
         int bit_index = bitmap_field_index(63, field_offset);
         uintptr_t field_bitmap = bitmap_field_bitmap(bit_index);
         GCTOOLS_ASSERT(cur_field_layout < max_field_layout);
