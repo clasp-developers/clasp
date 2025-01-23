@@ -1109,15 +1109,14 @@ std::string dump_stamp_info(size_t stamp) {
   std::string outstr;
   auto out = std::back_inserter(outstr);
   const Stamp_layout& layout = global_stamp_layout[stamp];
-  const Stamp_info& info = global_stamp_info[stamp];
   // Layout op and name
-  switch (info.layout_op) {
+  switch (layout.layout_op) {
   case class_container_op: fmt::format_to(out, "Class: "); break;
   case bitunit_container_op: fmt::format_to(out, "Bitunit: "); break;
   case templated_op: fmt::format_to(out, "Templated: "); break;
   case undefined_op: fmt::format_to(out, "Undefined: "); break;
   }
-  fmt::format_to(out, "{}\n", info.name);
+  fmt::format_to(out, "{}\n", layout.name);
   fmt::format_to(out, "Flags: {:#x} ", layout.flags);
   // Flags
   if (layout.flags & IS_POLYMORPHIC)
@@ -1134,11 +1133,10 @@ std::string dump_stamp_info(size_t stamp) {
     fmt::format_to(out, "{} fields:\n", layout.number_of_fields);
   else fmt::format_to(out, "No fields.\n");
   const Field_layout* flayout = layout.field_layout_start;
-  const Field_info* finfo = info.field_info_ptr;
-  for (size_t i = 0; i < layout.number_of_fields; ++i, ++flayout, ++finfo) {
+  for (size_t i = 0; i < layout.number_of_fields; ++i, ++flayout) {
     fmt::format_to(out, " {} {} [offset = {}]\n",
-                   data_type_name((Data_types)finfo->data_type), finfo->field_name,
-                   flayout->field_offset);
+                   data_type_name((Data_types)flayout->type), flayout->name,
+                   flayout->offset);
   }
   if (layout.container_layout) {
     const Container_layout* clayout = layout.container_layout;
@@ -1153,11 +1151,10 @@ std::string dump_stamp_info(size_t stamp) {
     fmt::format_to(out, "Bitmap: {:0<#16x}\n",
                    clayout->container_field_pointer_bitmap);
     const Field_layout* cflayout = clayout->field_layout_start;
-    const Container_info* cfinfo = info.container_info_ptr;
-    for (size_t j = 0; j < clayout->number_of_fields; ++j, ++cflayout, ++cfinfo) {
+    for (size_t j = 0; j < clayout->number_of_fields; ++j, ++cflayout) {
       fmt::format_to(out, " {} {} [offset = {}]\n",
-                     data_type_name((Data_types)cfinfo->data_type),
-                     cfinfo->field_name, cflayout->field_offset);
+                     data_type_name((Data_types)cflayout->type),
+                     cflayout->name, cflayout->offset);
     }
   }
   return outstr;

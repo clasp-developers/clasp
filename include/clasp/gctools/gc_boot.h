@@ -133,17 +133,9 @@ struct Layout_code {
 };
 
 struct Field_layout {
-  size_t field_offset;
-};
-
-struct Field_info {
-  const char* field_name;
-  size_t data_type;
-};
-
-struct Container_info {
-  const char* field_name;
-  size_t data_type;
+  size_t offset;
+  const char* name;
+  size_t type;
 };
 
 struct Container_layout {
@@ -160,12 +152,6 @@ struct Container_layout {
 };
 
 enum Layout_operation { class_container_op, bitunit_container_op, templated_op, undefined_op };
-struct Stamp_info {
-  Layout_operation layout_op;
-  const char* name;
-  Field_info* field_info_ptr = nullptr;         // Only applies to classes
-  Container_info* container_info_ptr = nullptr; //
-};
 
 #define KIND_UNDEFINED 99999
 struct Boehm_info {
@@ -177,6 +163,7 @@ struct Boehm_info {
 struct Stamp_layout {
   // One of class_container_op, bitunit_container_op, templated_op
   Layout_operation layout_op = undefined_op;
+  const char* name;
   Boehm_info boehm;
   // A bitmap of pointer fields for mps fixing and (once shifted right to skip clasp header - boehm marking)
   // The most significant bit indicates the vtable - it must be zero
@@ -191,9 +178,7 @@ struct Stamp_layout {
 
 extern Layout_code* get_stamp_layout_codes();
 extern size_t global_stamp_max;
-extern Stamp_info* global_stamp_info;
 extern Stamp_layout* global_stamp_layout;
-extern Field_info* global_field_info;
 extern Field_layout* global_field_layout;
 
 typedef enum { precise_info, lldb_info } WalkKind;

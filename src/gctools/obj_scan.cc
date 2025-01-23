@@ -68,11 +68,10 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
         // like weak references. Scan by iterating over the fields.
         int num_fields = stamp_layout.number_of_fields;
         const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
-        const gctools::Field_info* field_info_cur = gctools::global_stamp_info[stamp_index].field_info_ptr;
         for (int i = 0; i < num_fields; ++i) {
-          if (field_info_cur->data_type == gctools::WEAK_PTR_OFFSET) [[unlikely]] {
+          if (field_layout_cur->type == gctools::WEAK_PTR_OFFSET) [[unlikely]] {
 #ifdef WEAK_POINTER_FIX
-            gctools::WeakPointer* weak = (gctools::WeakPointer*)((const char*)client + field_layout_cur->field_offset);
+            gctools::WeakPointer* weak = (gctools::WeakPointer*)((const char*)client + field_layout_cur->offset);
             std::optional<core::T_sp> v = weak->value_no_lock();
             if (v) {
               core::T_O* raw = v->raw_();
@@ -84,8 +83,8 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
               weak->store_no_lock(core::T_sp((gctools::Tagged)raw));
             }
 #endif
-          } else if (field_info_cur->data_type == gctools::EPHEMERON_OFFSET) [[unlikely]] {
-            gctools::Ephemeron* eph = (gctools::Ephemeron*)((const char*)client + field_layout_cur->field_offset);
+          } else if (field_layout_cur->type == gctools::EPHEMERON_OFFSET) [[unlikely]] {
+            gctools::Ephemeron* eph = (gctools::Ephemeron*)((const char*)client + field_layout_cur->offset);
             auto kv = eph->get_no_lock();
             if (!kv.key.deletedp()) {
               core::T_O* rkey = kv.key.raw_();
@@ -96,11 +95,10 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
                                   core::T_sp((gctools::Tagged)rval));
             }
           } else [[likely]] {
-            core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
+            core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->offset);
             POINTER_FIX(field);
           }
           ++field_layout_cur;
-          ++field_info_cur;
         }
       } else {
         // Use pointer bitmaps
@@ -112,10 +110,10 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
           if ((intptr_t)pointer_bitmap < 0) {
 #ifdef DEBUG_POINTER_BITMAPS
 
-            core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
+            core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->offset);
             if (addr != (uintptr_t*)field) {
-              printf("%s:%d stamp: %lu client@%p bitmap[%p]/field[%p] address mismatch!!!! field_offset=%lu\n", __FILE__,
-                     __LINE__, stamp_index, client, addr, field, field_layout_cur->field_offset);
+              printf("%s:%d stamp: %lu client@%p bitmap[%p]/field[%p] address mismatch!!!! offset=%lu\n", __FILE__,
+                     __LINE__, stamp_index, client, addr, field, field_layout_cur->offset);
             }
             ++field_layout_cur;
 #endif
@@ -142,15 +140,13 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
           POINTER_FIX(addr);
         }
       } else if (stamp_layout.flags & gctools::COMPLEX_SCAN) {
-        const gctools::Stamp_info& stamp_info = gctools::global_stamp_info[stamp_index];
         const char* element = ((const char*)client + container_layout.data_offset);
         for (int i = 0; i < end; ++i, element += container_layout.element_size) {
           size_t nfields = container_layout.number_of_fields;
           const gctools::Field_layout* field_layout = container_layout.field_layout_start;
-          const gctools::Container_info* field_info = stamp_info.container_info_ptr;
-          for (size_t j = 0; j < nfields; ++j, ++field_layout, ++field_info) {
-            const char* field = element + field_layout->field_offset;
-            if (field_info->data_type == gctools::WEAK_PTR_OFFSET) [[unlikely]] {
+          for (size_t j = 0; j < nfields; ++j, ++field_layout) {
+            const char* field = element + field_layout->offset;
+            if (field_layout->type == gctools::WEAK_PTR_OFFSET) [[unlikely]] {
 #ifdef WEAK_POINTER_FIX
               gctools::WeakPointer* weak = (gctools::WeakPointer*)field;
               std::optional<core::T_sp> v = weak->value_no_lock();
@@ -160,7 +156,7 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
                 weak->store_no_lock(core::T_sp((gctools::Tagged)raw));
               }
 #endif
-            } else if (field_info->data_type == gctools::EPHEMERON_OFFSET) [[unlikely]] {
+            } else if (field_layout->type == gctools::EPHEMERON_OFFSET) [[unlikely]] {
               gctools::Ephemeron* eph = (gctools::Ephemeron*)field;
               auto kv = eph->get_no_lock();
               if (!kv.key.deletedp()) {
@@ -187,12 +183,12 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
 #ifdef DEBUG_POINTER_BITMAPS
           gctools::Field_layout* field_layout_cur = container_layout.field_layout_start;
           const char* element = ((const char*)client + container_layout.data_offset + container_layout.element_size * i);
-          core::T_O** field = (core::T_O**)((const char*)element + field_layout_cur->field_offset);
+          core::T_O** field = (core::T_O**)((const char*)element + field_layout_cur->offset);
           if (addr != (uintptr_t*)field) {
             printf("%s:%d stamp: %lu element@%p i = %d start_pointer_bitmap=0x%lX bitmap[%p]/field[%p] address "
-                     "mismatch!!!! field_layout_cur->field_offset=%lu\n",
+                     "mismatch!!!! field_layout_cur->offset=%lu\n",
                    __FILE__, __LINE__, stamp_index, element, i, start_pointer_bitmap, addr, field,
-                   field_layout_cur->field_offset);
+                   field_layout_cur->offset);
           }
           ++field_layout_cur;
 #endif
@@ -210,12 +206,12 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
             if ((intptr_t)pointer_bitmap < 0) {
 #ifdef DEBUG_POINTER_BITMAPS
               const char* element = ((const char*)client + container_layout.data_offset + stamp_layout.element_size * i);
-              core::T_O** field = (core::T_O**)((const char*)element + field_layout_cur->field_offset);
+              core::T_O** field = (core::T_O**)((const char*)element + field_layout_cur->offset);
               if (addr != (uintptr_t*)field) {
                 printf("%s:%d stamp: %lu element@%p i = %d start_pointer_bitmap=0x%lX bitmap[%p]/field[%p] address "
-                       "mismatch!!!! field_layout_cur->field_offset=%lu\n",
+                       "mismatch!!!! field_layout_cur->offset=%lu\n",
                        __FILE__, __LINE__, stamp_index, element, i, start_pointer_bitmap, addr, field,
-                       field_layout_cur->field_offset);
+                       field_layout_cur->offset);
               }
               ++field_layout_cur;
 #endif
@@ -471,35 +467,28 @@ struct GC_ms_entry* Lisp_object_mark(GC_word addr, struct GC_ms_entry* msp, stru
   (void)ENSURE_VALID_HEADER((void*)addr);
   void* client = (char*)addr + sizeof(gctools::Header_s);
   size_t stamp_index = header._badge_stamp_wtag_mtag.stamp_();
-#ifdef DEBUG_GUARD_VALIDATE
-  const gctools::Stamp_info& stamp_info = gctools::global_stamp_info[stamp_index];
-#endif
+  const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
 #ifdef DEBUG_OBJECT_SCAN
   if (global_scan_stamp == -1 || global_scan_stamp == stamp_index) {
     printf("%s:%d:%s  addr = %p client = %p stamp = %lu %s\n", __FILE__, __LINE__, __FUNCTION__, (void*)addr, client, stamp_index,
-           stamp_info.name);
+           stamp_layout.name);
   }
 #endif
-#ifdef DEBUG_GUARD_VALIDATE
-  const gctools::Field_info* field_info_cur = stamp_info.field_info_ptr;
-#endif
-  const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
   int num_fields = stamp_layout.number_of_fields;
   const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
   if (field_layout_cur) {
     for (int i = 0; i < num_fields; ++i) {
-      gctools::Tagged* taggedP = (gctools::Tagged*)((const char*)client + field_layout_cur->field_offset);
+      gctools::Tagged* taggedP = (gctools::Tagged*)((const char*)client + field_layout_cur->offset);
 #ifdef DEBUG_OBJECT_SCAN
       if (global_scan_stamp == -1 || global_scan_stamp == stamp_index) {
-        printf("%s:%d [%d]   offset %zu %s  taggedP -> %p\n", __FILE__, __LINE__, i, field_layout_cur->field_offset,
-               field_info_cur->field_name, *(void**)taggedP);
+        printf("%s:%d [%d]   offset %zu %s  taggedP -> %p\n", __FILE__, __LINE__, i, field_layout_cur->offset,
+               field_layout_cur->name, *(void**)taggedP);
       }
 #endif
 #ifdef DEBUG_GUARD_VALIDATE
-      if (field_info_cur->data_type == gctools::SMART_PTR_OFFSET) {
+      if (field_layout_cur->type == gctools::SMART_PTR_OFFSET) {
         (void)ENSURE_VALID_OBJECT((core::T_O*)taggedP);
       }
-      ++field_info_cur;
 #endif
       MAYBE_MARK(taggedP);
       ++field_layout_cur;
@@ -520,15 +509,13 @@ struct GC_ms_entry* class_mark(GC_word addr, struct GC_ms_entry* msp, struct GC_
   (void)ENSURE_VALID_HEADER((void*)addr);
   void* client = (char*)addr + sizeof(gctools::Header_s);
   size_t stamp_index = header._badge_stamp_wtag_mtag.stamp_();
+  const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
 #ifdef DEBUG_OBJECT_SCAN
-  const gctools::Stamp_info& stamp_info = gctools::global_stamp_info[stamp_index];
   if (global_scan_stamp == -1 || global_scan_stamp == stamp_index) {
     printf("%s:%d:%s  addr = %p client = %p stamp = %lu %s\n", __FILE__, __LINE__, __FUNCTION__, (void*)addr, client, stamp_index,
-           stamp_info.name);
+           stamp_layout.name);
   }
-  const gctools::Field_info* field_info_cur = stamp_info.field_info_ptr;
 #endif
-  const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
   uintptr_t pointer_bitmap = stamp_layout.class_field_pointer_bitmap;
 #ifdef DEBUG_POINTER_BITMAPS
   const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
@@ -536,13 +523,12 @@ struct GC_ms_entry* class_mark(GC_word addr, struct GC_ms_entry* msp, struct GC_
   for (uintptr_t* field_addr = (uintptr_t*)client; pointer_bitmap; field_addr++, pointer_bitmap <<= 1) {
     if ((intptr_t)pointer_bitmap < 0) {
 #ifdef DEBUG_POINTER_BITMAPS
-      core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
-      printf("%s:%d stamp: %lu client@%p bitmap[%p]/field[%p] field_offset=%lu %s\n", __FILE__, __LINE__, stamp_index, client,
-             field_addr, field, field_layout_cur->field_offset, field_info_cur->name);
-      ++field_info;
+      core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->offset);
+      printf("%s:%d stamp: %lu client@%p bitmap[%p]/field[%p] offset=%lu %s\n", __FILE__, __LINE__, stamp_index, client,
+             field_addr, field, field_layout_cur->offset, field_layout_cur->name);
       if (field_addr != (uintptr_t*)field) {
-        printf("%s:%d stamp: %lu client@%p bitmap[%p]/field[%p] address mismatch!!!! field_offset=%lu\n", __FILE__, __LINE__,
-               stamp_index, client, field_addr, field, field_layout_cur->field_offset);
+        printf("%s:%d stamp: %lu client@%p bitmap[%p]/field[%p] address mismatch!!!! offset=%lu\n", __FILE__, __LINE__,
+               stamp_index, client, field_addr, field, field_layout_cur->offset);
         abort();
       }
       ++field_layout_cur;
@@ -610,17 +596,15 @@ struct GC_ms_entry* dumb_class_container_mark(GC_word addr,
     void* client = (char*)addr + sizeof(gctools::Header_s);
     const gctools::Header_s::BadgeStampWtagMtag& header_value = header._badge_stamp_wtag_mtag;
     size_t stamp_index = header.stamp_();
+    const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
     env = header._boehm_mark_work;
 #ifdef DEBUG_CONTAINER_SCAN
-    const gctools::Stamp_info& stamp_info = gctools::global_stamp_info[stamp_index];
     if (global_scan_stamp==-1 || global_scan_stamp == stamp_index) {
-      printf("%s:%d:%s  addr = %p env = %lu client = %p stamp = %lu %s\n", __FILE__, __LINE__,__FUNCTION__, (void*)addr, env, client, stamp_index, stamp_info.name );
+      printf("%s:%d:%s  addr = %p env = %lu client = %p stamp = %lu %s\n", __FILE__, __LINE__,__FUNCTION__, (void*)addr, env, client, stamp_index, stamp_layout.name );
     }
-    const gctools::Field_info* field_info_cur = stamp_info.field_info_ptr;
 #endif
     gctools::tagged_stamp_t mtag = header_value.mtag();
     gctools::GCStampEnum stamp_wtag = header.stamp_wtag();
-    const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
     int idx = 0;
     uintptr_t pointer_bitmap = stamp_layout.boehm._class_bitmap;
 #ifdef DEBUG_CONTAINER_POINTER_BITMAPS
@@ -631,11 +615,10 @@ struct GC_ms_entry* dumb_class_container_mark(GC_word addr,
       for (uintptr_t* field_bitmap_addr = (uintptr_t*)client; pointer_bitmap; field_bitmap_addr++, pointer_bitmap<<=1) {
         if ((intptr_t)pointer_bitmap < 0) {
 #ifdef DEBUG_CONTAINER_POINTER_BITMAPS
-          core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
-          printf("%s:%d stamp: %lu client@%p bitmap[%p]/field[%p] field_offset=%lu %s\n", __FILE__, __LINE__, stamp_index, client, field_bitmap_addr, field, field_layout_cur->field_offset, field_info_cur->field_name);
-          ++field_info_cur;
+          core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->offset);
+          printf("%s:%d stamp: %lu client@%p bitmap[%p]/field[%p] offset=%lu %s\n", __FILE__, __LINE__, stamp_index, client, field_bitmap_addr, field, field_layout_cur->offset, field_layut_cur->name);
           if (field_bitmap_addr != (uintptr_t*)field) {
-            printf("%s:%d stamp: %lu client@%p bitmap[%p]/field[%p] field_bitmap_addr mismatch!!!! field_offset=%lu\n", __FILE__, __LINE__, stamp_index, client, field_bitmap_addr, field, field_layout_cur->field_offset);
+            printf("%s:%d stamp: %lu client@%p bitmap[%p]/field[%p] field_bitmap_addr mismatch!!!! offset=%lu\n", __FILE__, __LINE__, stamp_index, client, field_bitmap_addr, field, field_layout_cur->offset);
             abort();
           }
           ++field_layout_cur;
@@ -646,9 +629,6 @@ struct GC_ms_entry* dumb_class_container_mark(GC_word addr,
     }
     // Now mark the container pointers
     const gctools::Container_layout& container_layout = *stamp_layout.container_layout;
-#ifdef DEBUG_CONTAINER_POINTER_BITMAPS
-    gctools::Container_info& container_info = *stamp_info.container_info_ptr;
-#endif
     size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
     size_t end = *(size_t*)((const char*)client + stamp_layout.end_offset);
 #ifdef DEBUG_CONTAINER_SCAN
@@ -681,7 +661,6 @@ struct GC_ms_entry* dumb_class_container_mark(GC_word addr,
 #ifdef DEBUG_CONTAINER_POINTER_BITMAPS
             printf("%s:%d:%s Marking element[%lu/%lu] addr=%p :  chunks work_to_do= %d env = %lu\n", __FILE__, __LINE__, __FUNCTION__, i, end, (void*)addr, work_to_do, env );
             gctools::Field_layout* field_layout_cur = container_layout.field_layout_start;
-            gctools::Container_info* container_info_cur = stamp_info.container_info_ptr;
 #endif
 #ifdef DEBUG_CONTAINER_POINTER_BITMAPS
             printf("%s:%d container pointer bitmap: 0x%lx marking from %p\n", __FILE__, __LINE__, pointer_bitmap, (void*)element_start);
@@ -693,13 +672,12 @@ struct GC_ms_entry* dumb_class_container_mark(GC_word addr,
 #endif
 #ifdef DEBUG_CONTAINER_POINTER_BITMAPS
                 const char* elementdbg = ((const char*)client + stamp_layout.data_offset + stamp_layout.element_size*i);
-                core::T_O** field = (core::T_O**)((const char*)elementdbg + field_layout_cur->field_offset);
+                core::T_O** field = (core::T_O**)((const char*)elementdbg + field_layout_cur->offset);
                 if (element_field_bitmap_addr != (uintptr_t*)field) {
-                  printf("%s:%d stamp: %lu elementdbg@%p i = %lu start_pointer_bitmap=0x%lX bitmap[%p]/field[%p] address mismatch!!!! field_layout_cur->field_offset=%lu %s\n",
-                         __FILE__, __LINE__, stamp_index, elementdbg, i, start_pointer_bitmap, element_field_bitmap_addr, field, field_layout_cur->field_offset, container_info_cur->field_name);
+                  printf("%s:%d stamp: %lu elementdbg@%p i = %lu start_pointer_bitmap=0x%lX bitmap[%p]/field[%p] address mismatch!!!! field_layout_cur->offset=%lu %s\n",
+                         __FILE__, __LINE__, stamp_index, elementdbg, i, start_pointer_bitmap, element_field_bitmap_addr, field, field_layout_cur->offset, field_layout_cur->name);
                 }
                 ++field_layout_cur;
-                ++container_info_cur;
 #endif
                 MAYBE_MARK(element_field_bitmap_addr);
               }
