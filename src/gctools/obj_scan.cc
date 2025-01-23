@@ -126,16 +126,14 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
 #endif
     }
     if (stamp_layout.container_layout) {
-#ifdef DEBUG_POINTER_BITMAPS
       const gctools::Container_layout& container_layout = *stamp_layout.container_layout;
-#endif
-      size_t capacity = std::abs(*(int64_t*)((const char*)client + stamp_layout.capacity_offset));
-      size = stamp_layout.element_size * capacity + stamp_layout.data_offset;
+      size_t capacity = std::abs(*(int64_t*)((const char*)client + container_layout.capacity_offset));
+      size = container_layout.element_size * capacity + container_layout.data_offset;
       if (stamp_wtag == gctools::STAMPWTAG_core__SimpleBaseString_O)
         size = size + 1; // Add \0 for SimpleBaseString
-      size_t end = *(size_t*)((const char*)client + stamp_layout.end_offset);
+      size_t end = *(size_t*)((const char*)client + container_layout.end_offset);
       // Use new way with pointer bitmaps
-      uintptr_t start_pointer_bitmap = stamp_layout.container_layout->container_field_pointer_bitmap;
+      uintptr_t start_pointer_bitmap = container_layout.container_field_pointer_bitmap;
       if (header._badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
         llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)client;
         core::T_O** addr = (core::T_O**)code->literalsStart();
@@ -145,10 +143,10 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
         }
       } else if (stamp_layout.flags & gctools::COMPLEX_SCAN) {
         const gctools::Stamp_info& stamp_info = gctools::global_stamp_info[stamp_index];
-        const char* element = ((const char*)client + stamp_layout.data_offset);
-        for (int i = 0; i < end; ++i, element += stamp_layout.element_size) {
-          size_t nfields = stamp_layout.container_layout->number_of_fields;
-          const gctools::Field_layout* field_layout = stamp_layout.container_layout->field_layout_start;
+        const char* element = ((const char*)client + container_layout.data_offset);
+        for (int i = 0; i < end; ++i, element += container_layout.element_size) {
+          size_t nfields = container_layout.number_of_fields;
+          const gctools::Field_layout* field_layout = container_layout.field_layout_start;
           const gctools::Container_info* field_info = stamp_info.container_info_ptr;
           for (size_t j = 0; j < nfields; ++j, ++field_layout, ++field_info) {
             const char* field = element + field_layout->field_offset;
@@ -183,12 +181,12 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
         // nothing to scan
       } else if (!(start_pointer_bitmap << 1)) {
         // Trivial case - there is a single pointer to fix in every element and its the only element
-        const char* element = ((const char*)client + stamp_layout.data_offset);
-        for (int i = 0; i < end; ++i, element += (stamp_layout.element_size)) {
+        const char* element = ((const char*)client + container_layout.data_offset);
+        for (int i = 0; i < end; ++i, element += container_layout.element_size) {
           uintptr_t* addr = (uintptr_t*)element;
 #ifdef DEBUG_POINTER_BITMAPS
           gctools::Field_layout* field_layout_cur = container_layout.field_layout_start;
-          const char* element = ((const char*)client + stamp_layout.data_offset + stamp_layout.element_size * i);
+          const char* element = ((const char*)client + container_layout.data_offset + container_layout.element_size * i);
           core::T_O** field = (core::T_O**)((const char*)element + field_layout_cur->field_offset);
           if (addr != (uintptr_t*)field) {
             printf("%s:%d stamp: %lu element@%p i = %d start_pointer_bitmap=0x%lX bitmap[%p]/field[%p] address "
@@ -202,8 +200,8 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
         }
       } else {
         // Multiple fields we can scan with a bitmap
-        const char* element = ((const char*)client + stamp_layout.data_offset);
-        for (int i = 0; i < end; ++i, element += (stamp_layout.element_size)) {
+        const char* element = ((const char*)client + container_layout.data_offset);
+        for (int i = 0; i < end; ++i, element += container_layout.element_size) {
 #ifdef DEBUG_POINTER_BITMAPS
           gctools::Field_layout* field_layout_cur = container_layout.field_layout_start;
 #endif
@@ -211,7 +209,7 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
           for (uintptr_t* addr = (uintptr_t*)element; pointer_bitmap; addr++, pointer_bitmap <<= 1) {
             if ((intptr_t)pointer_bitmap < 0) {
 #ifdef DEBUG_POINTER_BITMAPS
-              const char* element = ((const char*)client + stamp_layout.data_offset + stamp_layout.element_size * i);
+              const char* element = ((const char*)client + container_layout.data_offset + stamp_layout.element_size * i);
               core::T_O** field = (core::T_O**)((const char*)element + field_layout_cur->field_offset);
               if (addr != (uintptr_t*)field) {
                 printf("%s:%d stamp: %lu element@%p i = %d start_pointer_bitmap=0x%lX bitmap[%p]/field[%p] address "
@@ -290,9 +288,9 @@ ADDR_T OBJECT_SKIP(ADDR_T client, bool dbg, size_t& obj_size) {
         LOG("SimpleBitVector\n");
       }
 #endif
-      size_t capacity = std::abs(*(int64_t*)((const char*)client + stamp_layout.capacity_offset));
+      size_t capacity = std::abs(*(int64_t*)((const char*)client + stamp_layout.container_layout->capacity_offset));
       obj_size =
-          gctools::AlignUp(core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset);
+          gctools::AlignUp(core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.container_layout->data_offset);
       goto STAMP_CONTINUE;
       // Do other bitunit vectors here
     }
@@ -302,9 +300,9 @@ ADDR_T OBJECT_SKIP(ADDR_T client, bool dbg, size_t& obj_size) {
         LOG("STAMP_core__SimpleVector_byte2_t_O");
       }
 #endif
-      size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
+      size_t capacity = *(size_t*)((const char*)client + stamp_layout.container_layout->capacity_offset);
       obj_size = gctools::AlignUp(core::SimpleVector_byte2_t_O::bitunit_array_type::sizeof_for_length(capacity) +
-                                  stamp_layout.data_offset);
+                                  stamp_layout.container_layout->data_offset);
       goto STAMP_CONTINUE;
     }
     unlikely_if(stamp_wtag == gctools::STAMPWTAG_core__SimpleVector_int2_t_O) {
@@ -313,9 +311,9 @@ ADDR_T OBJECT_SKIP(ADDR_T client, bool dbg, size_t& obj_size) {
         LOG("STAMPWTAG_core__SimpleVector_int2_t_O");
       }
 #endif
-      size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
+      size_t capacity = *(size_t*)((const char*)client + stamp_layout.container_layout->capacity_offset);
       obj_size =
-          gctools::AlignUp(core::SimpleVector_int2_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset);
+          gctools::AlignUp(core::SimpleVector_int2_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.container_layout->data_offset);
       goto STAMP_CONTINUE;
     }
     unlikely_if(stamp_wtag == gctools::STAMPWTAG_core__SimpleVector_byte4_t_O) {
@@ -324,9 +322,9 @@ ADDR_T OBJECT_SKIP(ADDR_T client, bool dbg, size_t& obj_size) {
         LOG("STAMP_core__SimpleVector_byte4_t_O");
       }
 #endif
-      size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
+      size_t capacity = *(size_t*)((const char*)client + stamp_layout.container_layout->capacity_offset);
       obj_size = gctools::AlignUp(core::SimpleVector_byte4_t_O::bitunit_array_type::sizeof_for_length(capacity) +
-                                  stamp_layout.data_offset);
+                                  stamp_layout.container_layout->data_offset);
       goto STAMP_CONTINUE;
     }
     unlikely_if(stamp_wtag == gctools::STAMPWTAG_core__SimpleVector_int4_t_O) {
@@ -335,9 +333,9 @@ ADDR_T OBJECT_SKIP(ADDR_T client, bool dbg, size_t& obj_size) {
         LOG("STAMP_core__SimpleVector_int4_t_O");
       }
 #endif
-      size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
+      size_t capacity = *(size_t*)((const char*)client + stamp_layout.container_layout->capacity_offset);
       obj_size =
-          gctools::AlignUp(core::SimpleVector_int4_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset);
+          gctools::AlignUp(core::SimpleVector_int4_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.container_layout->data_offset);
       goto STAMP_CONTINUE;
     }
     unlikely_if(stamp_wtag == gctools::STAMPWTAG_core__SimpleBaseString_O) {
@@ -347,8 +345,8 @@ ADDR_T OBJECT_SKIP(ADDR_T client, bool dbg, size_t& obj_size) {
       }
 #endif
       // Account for the SimpleBaseString additional byte for \0
-      size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset) + 1;
-      obj_size = gctools::AlignUp(stamp_layout.element_size * capacity + stamp_layout.data_offset);
+      size_t capacity = *(size_t*)((const char*)client + stamp_layout.container_layout->capacity_offset) + 1;
+      obj_size = gctools::AlignUp(stamp_layout.container_layout->element_size * capacity + stamp_layout.container_layout->data_offset);
       goto STAMP_CONTINUE;
     }
     {
@@ -367,8 +365,8 @@ ADDR_T OBJECT_SKIP(ADDR_T client, bool dbg, size_t& obj_size) {
           // For bignums we allow the _MaybeSignedLength(capacity) to be a negative value to represent negative bignums
           // because GMP only stores positive bignums.  So the value at stamp_layout.capacity_offset is a signed int64_t
           // Because of this we need to take the absolute value to get the number of entries.
-          size_t capacity = (size_t)std::llabs(*(int64_t*)((const char*)client + stamp_layout.capacity_offset));
-          obj_size = gctools::AlignUp(stamp_layout.element_size * capacity + stamp_layout.data_offset);
+          size_t capacity = (size_t)std::llabs(*(int64_t*)((const char*)client + container_layoutP->capacity_offset));
+          obj_size = gctools::AlignUp(stamp_layout.container_layout->element_size * capacity + container_layoutP->data_offset);
         }
       } else {
         if (stamp_layout.layout_op == gctools::templated_op) {

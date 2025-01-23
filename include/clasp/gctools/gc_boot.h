@@ -152,10 +152,11 @@ struct Container_layout {
   int container_field_pointer_count;
   Field_layout* field_layout_start; // Points into global_field_layout_table
   uint number_of_fields;
-  //    uint              bits_per_bitunit;
-  //    size_t            data_offset;
-  //    size_t            end_offset;
-  //    size_t            capacity_offset;
+  uint element_size;
+  uint              bits_per_bitunit;
+  size_t            data_offset;
+  size_t            end_offset;
+  size_t            capacity_offset;
   Container_layout() : container_field_pointer_bitmap(0), container_field_pointer_count(0){};
 };
 
@@ -188,18 +189,13 @@ struct Stamp_layout {
   uintptr_t class_field_pointer_bitmap;
   uint flags;
   uint number_of_fields;
-  uint bits_per_bitunit;
   uint size;
-  uint element_size;
-  uint data_offset;
-  uint end_offset;
-  uint capacity_offset;
   uint snapshot_save_load_poison;
   Field_layout* field_layout_start; // Points into global_field_layout_table
   Container_layout* container_layout;
   Stamp_layout()
-      : layout_op(undefined_op), boehm(), class_field_pointer_bitmap(0), number_of_fields(0), bits_per_bitunit(0), size(0),
-        element_size(0), data_offset(0), end_offset(0), capacity_offset(0), snapshot_save_load_poison(0),
+      : layout_op(undefined_op), boehm(), class_field_pointer_bitmap(0), number_of_fields(0), size(0),
+        snapshot_save_load_poison(0),
         field_layout_start(NULL) // Points into global_field_layout_table
         {};
 };

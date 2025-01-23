@@ -1126,10 +1126,6 @@ std::string dump_stamp_info(size_t stamp) {
   // Misc
   fmt::format_to(out, "Size: {}\nSnapshot save/load poison: {}\n",
                  layout.size, layout.snapshot_save_load_poison);
-  fmt::format_to(out, "Element size: {}\nBits per bitunit: {}\n",
-                 layout.element_size, layout.bits_per_bitunit);
-  fmt::format_to(out, "Offsets of data, end, capacity resp.: {}, {}, {}\n",
-                 layout.data_offset, layout.end_offset, layout.capacity_offset);
   // Fields
   fmt::format_to(out, "Bitmap: {:0<#16x}\n", layout.class_field_pointer_bitmap);
   if (layout.number_of_fields)
@@ -1147,6 +1143,11 @@ std::string dump_stamp_info(size_t stamp) {
     fmt::format_to(out, "Variable length container with {} fields ({} pointers):\n",
                    clayout->number_of_fields,
                    clayout->container_field_pointer_count);
+    fmt::format_to(out, "Element size: {}\nBits per bitunit: {}\n",
+                   clayout->element_size, clayout->bits_per_bitunit);
+    fmt::format_to(out, "Offsets of data, end, capacity resp.: {}, {}, {}\n",
+                   clayout->data_offset, clayout->end_offset,
+                   clayout->capacity_offset);
     fmt::format_to(out, "Bitmap: {:0<#16x}\n",
                    clayout->container_field_pointer_bitmap);
     const Field_layout* cflayout = clayout->field_layout_start;

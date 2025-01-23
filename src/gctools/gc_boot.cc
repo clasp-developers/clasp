@@ -325,7 +325,6 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
       local_stamp_layout[cur_stamp].number_of_fields = 0;
       local_stamp_layout[cur_stamp].size = codes[idx].data1;
       local_stamp_layout[cur_stamp].flags = codes[idx].data3;
-      local_stamp_layout[cur_stamp].bits_per_bitunit = codes[idx].data2;
       local_stamp_layout[cur_stamp].field_layout_start = NULL;
       local_stamp_layout[cur_stamp].container_layout = NULL;
       local_stamp_info[cur_stamp].name = codes[idx].description;
@@ -335,37 +334,36 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
       container_variable_index = 0;
       if (walk == lldb_info)
         fmt::print(fout, "{}Init_bitunit_container_kind( stamp={}, name=\"{}\", size={}, bits_per_bitunit={} )\n", indent.c_str(),
-                   cur_stamp, local_stamp_info[cur_stamp].name, local_stamp_layout[cur_stamp].size,
-                   local_stamp_layout[cur_stamp].bits_per_bitunit);
+                   cur_stamp, local_stamp_info[cur_stamp].name, local_stamp_layout[cur_stamp].size, codes[idx].data2);
       break;
     case variable_array0:
       DGC_PRINT("%s:%d   variable_array0 cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
       local_stamp_layout[cur_stamp].container_layout = &local_container_layout[cur_container_layout_idx++];
       GCTOOLS_ASSERT(cur_container_layout_idx <= number_of_containers);
-      local_stamp_layout[cur_stamp].data_offset = codes[idx].data2;
+      local_stamp_layout[cur_stamp].container_layout->data_offset = codes[idx].data2;
       container_variable_index = 0;
       if (walk == lldb_info)
         fmt::print(fout, "{}Init__variable_array0( stamp={}, name=\"{}\", offset={} )\n", indent.c_str(), cur_stamp,
-                   codes[idx].description, local_stamp_layout[cur_stamp].data_offset);
+                   codes[idx].description, local_stamp_layout[cur_stamp].container_layout->data_offset);
       break;
     case variable_bit_array0:
       DGC_PRINT("%s:%d   variable_bit_array0 cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
       local_stamp_layout[cur_stamp].container_layout = &local_container_layout[cur_container_layout_idx++];
       GCTOOLS_ASSERT(cur_container_layout_idx <= number_of_containers);
-      local_stamp_layout[cur_stamp].data_offset = codes[idx].data2;
-      local_stamp_layout[cur_stamp].bits_per_bitunit = codes[idx].data0;
+      local_stamp_layout[cur_stamp].container_layout->data_offset = codes[idx].data2;
+      local_stamp_layout[cur_stamp].container_layout->bits_per_bitunit = codes[idx].data0;
       break;
     case variable_capacity:
       DGC_PRINT("%s:%d   variable_capacity cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
       local_stamp_layout[cur_stamp].container_layout->field_layout_start = cur_field_layout;
-      local_stamp_layout[cur_stamp].element_size = codes[idx].data0;
+      local_stamp_layout[cur_stamp].container_layout->element_size = codes[idx].data0;
       local_stamp_layout[cur_stamp].container_layout->number_of_fields = 0;
-      local_stamp_layout[cur_stamp].end_offset = codes[idx].data1;
-      local_stamp_layout[cur_stamp].capacity_offset = codes[idx].data2;
+      local_stamp_layout[cur_stamp].container_layout->end_offset = codes[idx].data1;
+      local_stamp_layout[cur_stamp].container_layout->capacity_offset = codes[idx].data2;
       if (walk == lldb_info)
         fmt::print(fout, "{}Init__variable_capacity( stamp={}, element_size={}, end_offset={}, capacity_offset={} )\n",
-                   indent.c_str(), cur_stamp, local_stamp_layout[cur_stamp].element_size, local_stamp_layout[cur_stamp].end_offset,
-                   local_stamp_layout[cur_stamp].capacity_offset);
+                   indent.c_str(), cur_stamp, local_stamp_layout[cur_stamp].container_layout->element_size, local_stamp_layout[cur_stamp].container_layout->end_offset,
+                   local_stamp_layout[cur_stamp].container_layout->capacity_offset);
       break;
     case variable_field: {
       size_t data_type = codes[idx].data0;
