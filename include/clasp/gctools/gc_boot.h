@@ -170,9 +170,6 @@ struct Stamp_info {
 #define KIND_UNDEFINED 99999
 struct Boehm_info {
   bool _kind_defined = false;
-  uintptr_t _class_bitmap = 0;
-  uintptr_t _container_bitmap = 0;
-  int _container_pointer_count = 0;
   int _container_element_work = 0;
   uintptr_t _kind = KIND_UNDEFINED;
 };
@@ -187,7 +184,6 @@ struct Stamp_layout {
   uint flags;
   uint number_of_fields = 0;
   uint size = 0;
-  uint snapshot_save_load_poison = 0;
   // Points into global_field_layout_table
   Field_layout* field_layout_start = nullptr;
   Container_layout* container_layout = nullptr;

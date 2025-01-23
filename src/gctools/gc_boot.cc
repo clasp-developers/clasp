@@ -236,12 +236,6 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
                    fixed_index++, // index,
                    data_type, field_name, field_offset);
       }
-      //
-      // Certain types can't be saved/loaded so we count them here
-      //
-      if (data_type == CXX_SHARED_MUTEX_OFFSET || data_type == CXX_FIXUP_OFFSET || data_type == ctype_opaque_ptr) {
-        local_stamp_layout[cur_stamp].snapshot_save_load_poison++;
-      }
       if ((data_type == SMART_PTR_OFFSET || data_type == ATOMIC_SMART_PTR_OFFSET
            || data_type == TAGGED_POINTER_OFFSET
            || data_type == POINTER_OFFSET
@@ -358,12 +352,6 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
                    indent.c_str(), cur_stamp,
                    container_variable_index++, // index,
                    data_type, field_name, field_offset);
-      //
-      // Certain types can't be saved/loaded so we count them here
-      //
-      if (data_type == CXX_SHARED_MUTEX_OFFSET || data_type == CXX_FIXUP_OFFSET || data_type == ctype_opaque_ptr) {
-        local_stamp_layout[cur_stamp].snapshot_save_load_poison++;
-      }
       if (((data_type) == SMART_PTR_OFFSET || (data_type) == ATOMIC_SMART_PTR_OFFSET || (data_type) == TAGGED_POINTER_OFFSET ||
            (data_type) == POINTER_OFFSET
            || data_type == WEAK_PTR_OFFSET || data_type == EPHEMERON_OFFSET)) {
@@ -468,7 +456,6 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
           local_stamp_layout[cur_stamp].boehm._kind_defined = true;
         } else {
           uintptr_t class_bitmap = (local_stamp_layout[cur_stamp].class_field_pointer_bitmap);
-          local_stamp_layout[cur_stamp].boehm._class_bitmap = class_bitmap;
 #ifdef DUMP_PRECISE_CALC
           printf("%s:%d stamp = %d  class_bitmap = 0x%lX\n", __FILE__, __LINE__, cur_stamp, class_bitmap);
           const gctools::Stamp_layout& stamp_layout = local_stamp_layout[cur_stamp];
@@ -494,16 +481,13 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
             local_stamp_layout[cur_stamp].boehm._kind_defined = true;
           } else {
             // Start from the client pointer
-            local_stamp_layout[cur_stamp].boehm._class_bitmap = (local_stamp_layout[cur_stamp].class_field_pointer_bitmap);
             uintptr_t container_bitmap = local_stamp_layout[cur_stamp].container_layout->container_field_pointer_bitmap;
-            local_stamp_layout[cur_stamp].boehm._container_bitmap = container_bitmap;
             int pointer_count = local_stamp_layout[cur_stamp].container_layout->container_field_pointer_count;
             if (pointer_count * 8 > GC_PROC_BYTES) {
               printf(
                   "%s:%d WARNING There are too many pointers (%d) in each element of a container to break up the work for boehm\n",
                   __FILE__, __LINE__, pointer_count);
             }
-            local_stamp_layout[cur_stamp].boehm._container_pointer_count = pointer_count;
             // Calculate the number of elements worth of pointers are processed with each
             // call to the marking procedure
             int container_element_work = pointer_count ? (GC_PROC_BYTES / 8 / 2) / pointer_count : 0;

@@ -529,7 +529,7 @@ struct GC_ms_entry* class_mark(GC_word addr, struct GC_ms_entry* msp, struct GC_
   const gctools::Field_info* field_info_cur = stamp_info.field_info_ptr;
 #endif
   const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
-  uintptr_t pointer_bitmap = stamp_layout.boehm._class_bitmap;
+  uintptr_t pointer_bitmap = stamp_layout.class_field_pointer_bitmap;
 #ifdef DEBUG_POINTER_BITMAPS
   const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
 #endif
@@ -655,7 +655,7 @@ struct GC_ms_entry* dumb_class_container_mark(GC_word addr,
     printf("%s:%d Container size = %lu\n", __FILE__, __LINE__, end );
 #endif
     // Use new way with pointer bitmaps
-    uintptr_t start_pointer_bitmap = stamp_layout.boehm._container_bitmap;
+    uintptr_t start_pointer_bitmap = container_layout.container_field_pointer_bitmap;
     if (start_pointer_bitmap) {
 #if 0 // OPTIMIZATION - TURN OFF FOR NOW
       if (!(start_pointer_bitmap<<1)) {

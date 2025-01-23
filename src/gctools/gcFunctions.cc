@@ -1127,8 +1127,7 @@ std::string dump_stamp_info(size_t stamp) {
   else if (layout.flags & COMPLEX_SCAN) fmt::format_to(out, "(COMPLEX_SCAN)\n");
   else fmt::format_to(out, "()\n");
   // Misc
-  fmt::format_to(out, "Size: {}\nSnapshot save/load poison: {}\n",
-                 layout.size, layout.snapshot_save_load_poison);
+  fmt::format_to(out, "Size: {}\n", layout.size);
   // Fields
   fmt::format_to(out, "Bitmap: {:0<#16x}\n", layout.class_field_pointer_bitmap);
   if (layout.number_of_fields)
