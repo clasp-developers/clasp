@@ -1103,6 +1103,9 @@ static const char* data_type_name(Data_types dt) {
 }
 
 std::string dump_stamp_info(size_t stamp) {
+  if (stamp > global_stamp_max) {
+    return "Stamp out of range";
+  }
   std::string outstr;
   auto out = std::back_inserter(outstr);
   const Stamp_layout& layout = global_stamp_layout[stamp];
