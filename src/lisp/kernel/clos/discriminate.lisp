@@ -163,6 +163,13 @@
         (eql-specializer-object eql-specializer))
       (eql-specializer-object eql-specializer)))
 
+(defun casify-specs (stampf default-tag specs)
+  `(case ,stampf
+     ,@(loop for (tag . keys)
+               in (partition specs :key #'cdr :getter #'car)
+             collect `((,@keys) (go ,tag)))
+     (otherwise (go ,default-tag))))
+
 ;;; This is kind of a shitheap, but then, so is the underlying operation.
 (defmacro %speccase (form default &rest clauses)
   (loop with bname = (gensym "SPECIALIZER-CASE")
@@ -170,8 +177,10 @@
         with default-tag = (gensym "DEFAULT")
         with eql-specs
         with tag-specs
-        with c++-specs
-        with other-specs
+        with header-specs
+        with derivable-specs
+        with wrapped-specs
+        with rack-specs
         for clause in clauses
         for (specs . body) = clause
         for tag = (gensym)
@@ -185,40 +194,25 @@
                                  eql-specs))
                           ((tag-spec-p spec)
                            (push (cons (tag-type-test spec) tag) tag-specs))
-                          ((< (core:class-stamp-for-instances spec)
-                              cmp:+c++-stamp-max+)
-                           (push (cons (core:class-stamp-for-instances spec)
-                                       tag)
-                                 c++-specs))
                           (t
-                           (push (cons (core:class-stamp-for-instances spec)
-                                       tag)
-                                 other-specs))))
+                           (let* ((stamp (core:class-stamp-for-instances spec))
+                                  (pair (cons stamp tag)))
+                             (core::header-stamp-case stamp
+                               (push pair derivable-specs)
+                               (push pair rack-specs)
+                               (push pair wrapped-specs)
+                               (push pair header-specs))))))
         finally
-           (let* ((c++-case
-                    `(case ,stamp
-                       ,@(loop for (tag . keys)
-                                 in (partition c++-specs
-                                               :key #'cdr
-                                               :getter #'car)
-                               collect `((,@keys) (go ,tag)))
-                       (otherwise (go ,default-tag))))
-                  (header-case
-                    (if (null other-specs)
-                        c++-case
-                        `(let ((,stamp
-                                 (core::header-stamp-case ,stamp
-                                   (core::derivable-stamp ,form)
-                                   (core::rack-stamp ,form)
-                                   (core::wrapped-stamp ,form)
-                                   ,c++-case)))
-                           (case ,stamp
-                             ,@(loop for (tag . keys)
-                                       in (partition other-specs
-                                                     :key #'cdr
-                                                     :getter #'car)
-                                     collect `((,@keys) (go ,tag)))
-                             (otherwise (go ,default-tag)))))))
+           (let* ((header-case (casify-specs stamp default-tag header-specs))
+                  (wrapped-case
+                    (casify-specs `(core::wrapped-stamp ,form)
+                                  default-tag wrapped-specs))
+                  (derivable-case
+                    (casify-specs `(core::derivable-stamp ,form)
+                                  default-tag derivable-specs))
+                  (rack-case
+                    (casify-specs `(core::rack-stamp ,form)
+                                  default-tag rack-specs)))
              (return
                `(block ,bname
                   (tagbody
@@ -231,7 +225,9 @@
                                      collect `((,test ,form) (go ,tag)))
                             ((core:generalp ,form)
                              (let ((,stamp (core::header-stamp ,form)))
-                               ,header-case))
+                               (core::header-stamp-case ,stamp
+                                 ,derivable-case ,rack-case
+                                 ,wrapped-case ,header-case)))
                             (t (go ,default-tag)))))
                    ;; back in the tagbody
                    ,@tbody
