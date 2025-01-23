@@ -218,14 +218,9 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
       DGC_PRINT("%s:%d  idx: %d class_kind  cur_stamp = %d name = %s\n", __FILE__, __LINE__, idx, cur_stamp,
                 codes[idx].description);
       local_stamp_layout[cur_stamp].layout_op = class_container_op;
-      local_stamp_layout[cur_stamp].field_layout_start = NULL;
-      local_stamp_layout[cur_stamp].container_layout = NULL;
-      local_stamp_layout[cur_stamp].number_of_fields = 0;
       local_stamp_layout[cur_stamp].size = codes[idx].data1;
       local_stamp_layout[cur_stamp].flags = codes[idx].data3;
       local_stamp_info[cur_stamp].name = codes[idx].description;
-      local_stamp_info[cur_stamp].field_info_ptr = NULL;
-      local_stamp_info[cur_stamp].container_info_ptr = NULL;
       fixed_index = 0;
       if (walk == lldb_info)
         fmt::print(fout, "{}Init_class_kind( stamp={}, name=\"{}\", size={} )\n", indent.c_str(), cur_stamp, codes[idx].description,
@@ -303,14 +298,9 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
       cur_stamp = STAMP(codes[idx].data0);
       DGC_PRINT("%s:%d   container_kind  cur_stamp = %d name = %s\n", __FILE__, __LINE__, cur_stamp, codes[idx].description);
       local_stamp_layout[cur_stamp].layout_op = class_container_op;
-      local_stamp_layout[cur_stamp].number_of_fields = 0;
       local_stamp_layout[cur_stamp].size = codes[idx].data1;
       local_stamp_layout[cur_stamp].flags = codes[idx].data3;
-      local_stamp_layout[cur_stamp].field_layout_start = NULL;
-      local_stamp_layout[cur_stamp].container_layout = NULL;
       local_stamp_info[cur_stamp].name = codes[idx].description;
-      local_stamp_info[cur_stamp].field_info_ptr = NULL;
-      local_stamp_info[cur_stamp].container_info_ptr = NULL;
       fixed_index = 0;
       container_variable_index = 0;
       if (walk == lldb_info)
@@ -322,14 +312,9 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
       cur_stamp = STAMP(codes[idx].data0);
       DGC_PRINT("%s:%d   bitunit_container_kind  cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
       local_stamp_layout[cur_stamp].layout_op = bitunit_container_op;
-      local_stamp_layout[cur_stamp].number_of_fields = 0;
       local_stamp_layout[cur_stamp].size = codes[idx].data1;
       local_stamp_layout[cur_stamp].flags = codes[idx].data3;
-      local_stamp_layout[cur_stamp].field_layout_start = NULL;
-      local_stamp_layout[cur_stamp].container_layout = NULL;
       local_stamp_info[cur_stamp].name = codes[idx].description;
-      local_stamp_info[cur_stamp].field_info_ptr = NULL;
-      local_stamp_info[cur_stamp].container_info_ptr = NULL;
       fixed_index = 0;
       container_variable_index = 0;
       if (walk == lldb_info)
@@ -357,7 +342,6 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
       DGC_PRINT("%s:%d   variable_capacity cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
       local_stamp_layout[cur_stamp].container_layout->field_layout_start = cur_field_layout;
       local_stamp_layout[cur_stamp].container_layout->element_size = codes[idx].data0;
-      local_stamp_layout[cur_stamp].container_layout->number_of_fields = 0;
       local_stamp_layout[cur_stamp].container_layout->end_offset = codes[idx].data1;
       local_stamp_layout[cur_stamp].container_layout->capacity_offset = codes[idx].data2;
       if (walk == lldb_info)
@@ -417,14 +401,9 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
         fmt::print(fout, "{}Init_templated_kind( stamp={}, name=\"{}\", size={} )\n", indent.c_str(), cur_stamp, name, size);
       DGC_PRINT("%s:%d   templated_kind cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
       local_stamp_layout[cur_stamp].layout_op = templated_op;
-      local_stamp_layout[cur_stamp].field_layout_start = NULL;
-      local_stamp_layout[cur_stamp].container_layout = NULL;
-      local_stamp_layout[cur_stamp].number_of_fields = 0;
       local_stamp_layout[cur_stamp].size = codes[idx].data1;
       local_stamp_layout[cur_stamp].flags = codes[idx].data3;
       local_stamp_info[cur_stamp].name = codes[idx].description;
-      local_stamp_info[cur_stamp].field_info_ptr = NULL;
-      local_stamp_info[cur_stamp].container_info_ptr = NULL;
       fixed_index = 0;
       container_variable_index = 0;
     } break;
