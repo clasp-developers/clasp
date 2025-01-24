@@ -155,30 +155,11 @@ size_t global_sizeof_fwd;
 
 // GCStack _ThreadLocalStack;
 size_t _global_stack_max_size;
-/*! Keeps track of the next available header KIND value */
-stamp_t global_next_header_stamp = (stamp_t)STAMPWTAG_max + 1;
 
 #if 0
     HeapRoot* 	rooted_HeapRoots = NULL;
     StackRoot* 	rooted_StackRoots = NULL;
 #endif
-
-stamp_t next_header_kind() {
-  stamp_t next = global_next_header_stamp;
-  ++global_next_header_stamp;
-  return next;
-}
-
-core::Fixnum ensure_fixnum(stamp_t val) { return (core::Fixnum)val; }
-
-CL_LAMBDA();
-CL_DOCSTRING(R"dx(Return the next available header KIND value and increment the global variable global_next_header_stamp)dx");
-DOCGROUP(clasp);
-CL_DEFUN core::Fixnum gctools__next_header_kind() {
-  stamp_t next = global_next_header_stamp;
-  ++global_next_header_stamp;
-  return ensure_fixnum(next);
-}
 
 void GCRootsInModule::setup_transients(core::SimpleVector_O** transient_alloca, size_t transient_entries) {
   if (!transient_alloca && transient_entries != 0) {
