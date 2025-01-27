@@ -170,7 +170,7 @@ CL_DEFUN core::Integer_sp core__shift_stamp_for_compiled_code(size_t stamp_wtagx
 CL_DOCSTRING(R"dx(Return the stamp for the object, the flags and the header stamp)dx");
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp core__instance_stamp(core::T_sp obj) {
-  core::T_sp stamp((gctools::Tagged)cx_read_stamp(obj.raw_(), 0));
+  core::T_sp stamp(cx_read_stamp(obj.raw_()));
   if (stamp.fixnump())
     return stamp;
   SIMPLE_ERROR("core:instance-stamp was about to return a non-fixnum {}", (void*)stamp.raw_());
@@ -1055,6 +1055,123 @@ DOCGROUP(clasp);
 CL_DEFUN core::Integer_sp gctools__unwind_time_nanoseconds() {
   core::Integer_sp is = core::Integer_O::create(my_thread_low_level->_unwind_time.count());
   return is;
+}
+
+CL_DEFUN size_t gctools__object_size(core::T_sp obj) {
+  if (obj.generalp())
+    return objectSize((Header_s*)GeneralPtrToHeaderPtr(&*obj));
+  else if (obj.consp())
+    return objectSize((ConsHeader_s*)ConsPtrToHeaderPtr(&*obj));
+  else return 0; // other immediate
+}
+
+static const char* data_type_name(Data_types dt) {
+  switch (dt) {
+  case DONT_EXPOSE_OFFSET: return "dont_expose";
+  case SMART_PTR_OFFSET: return "T_sp";
+  case ATOMIC_SMART_PTR_OFFSET: return "atomic<T_sp>";
+  case TAGGED_POINTER_OFFSET: return "tagged_pointer";
+  case WEAK_PTR_OFFSET: return "WeakPointer";
+  case EPHEMERON_OFFSET: return "Ephemeron";
+  case RAW_POINTER_OFFSET: return "void*";
+  case ARRAY_OFFSET: return "array";
+  case POINTER_OFFSET: return "pointer";
+  case CONSTANT_ARRAY_OFFSET: return "constant_array";
+  case ctype_double: return "double";
+  case ctype_float: return "float";
+  case ctype_long_double: return "long double";
+  case ctype_int: return "int";
+  case ctype_short: return "short";
+  case ctype_unsigned_char: return "unsigned char";
+  case ctype_signed_char: return "signed char";
+  case ctype_unsigned_short: return "unsigned short";
+  case ctype_signed_short: return "signed short";
+  case ctype_unsigned_long: return "unsigned long";
+  case ctype_unsigned_int: return "unsigned int";
+  case ctype_long: return "long";
+  case ctype_long_long: return "long long";
+  case ctype_char: return "char";
+  case ctype_char32_t: return "char32_t";
+  case ctype__Bool: return "bool";
+  case ctype_enum_core__StreamMode: return "core::StreamMode";
+  case ctype_const_char_ptr: return "const char*";
+  case ctype_size_t: return "size_t";
+  case ctype_opaque_ptr: return "opaque_ptr";
+  case CXX_FIXUP_OFFSET: return "CXX_FIXUP_OFFSET"; // ?? what is this?
+  case ATOMIC_POD_OFFSET_unsigned_short: return "atomic<unsigned short>";
+  case ATOMIC_POD_OFFSET_unsigned_long: return "atomic<unsigned long>";
+  case ATOMIC_POD_OFFSET_mp__ProcessPhase: return "atomic<mp::ProcessPhase>";
+  case ATOMIC_POD_OFFSET_unsigned_int: return "atomic<unsigned int>";
+  case ATOMIC_POD_OFFSET_long_long: return "atomic<long long>";
+  case ATOMIC_POD_OFFSET__Bool: return "atomic<bool>";
+  case ATOMIC_POD_OFFSET_long: return "atomic<long>";
+  case CXX_SHARED_MUTEX_OFFSET: return "mp::Mutex"; // ?? not SharedMutex?
+  default: return "[unknown type]";
+  }
+}
+
+std::string dump_stamp_info(size_t stamp) {
+  if (stamp > global_stamp_max) {
+    return "Stamp out of range";
+  }
+  std::string outstr;
+  auto out = std::back_inserter(outstr);
+  const Stamp_layout& layout = global_stamp_layout[stamp];
+  // Layout op and name
+  switch (layout.layout_op) {
+  case class_container_op: fmt::format_to(out, "Class: "); break;
+  case bitunit_container_op: fmt::format_to(out, "Bitunit: "); break;
+  case templated_op: fmt::format_to(out, "Templated: "); break;
+  case undefined_op: fmt::format_to(out, "Undefined: "); break;
+  }
+  fmt::format_to(out, "{}\n", layout.name);
+  fmt::format_to(out, "Flags: {:#x} ", layout.flags);
+  // Flags
+  if (layout.flags & IS_POLYMORPHIC)
+    if (layout.flags & COMPLEX_SCAN)
+      fmt::format_to(out, "(IS_POLYMORPHIC | COMPLEX_SCAN)\n");
+    else fmt::format_to(out, "(IS_POLYMORPHIC)\n");
+  else if (layout.flags & COMPLEX_SCAN) fmt::format_to(out, "(COMPLEX_SCAN)\n");
+  else fmt::format_to(out, "()\n");
+  // Misc
+  fmt::format_to(out, "Size: {}\n", layout.size);
+  // Fields
+  fmt::format_to(out, "Bitmap: {:0<#16x}\n", layout.class_field_pointer_bitmap);
+  if (layout.number_of_fields)
+    fmt::format_to(out, "{} fields:\n", layout.number_of_fields);
+  else fmt::format_to(out, "No fields.\n");
+  const Field_layout* flayout = layout.field_layout_start;
+  for (size_t i = 0; i < layout.number_of_fields; ++i, ++flayout) {
+    fmt::format_to(out, " {} {} [offset = {}]\n",
+                   data_type_name((Data_types)flayout->type), flayout->name,
+                   flayout->offset);
+  }
+  if (layout.container_layout) {
+    const Container_layout* clayout = layout.container_layout;
+    fmt::format_to(out, "Variable length container with {} fields ({} pointers):\n",
+                   clayout->number_of_fields,
+                   clayout->container_field_pointer_count);
+    fmt::format_to(out, "Element size: {}\nBits per bitunit: {}\n",
+                   clayout->element_size, clayout->bits_per_bitunit);
+    fmt::format_to(out, "Offsets of data, end, capacity resp.: {}, {}, {}\n",
+                   clayout->data_offset, clayout->end_offset,
+                   clayout->capacity_offset);
+    fmt::format_to(out, "Bitmap: {:0<#16x}\n",
+                   clayout->container_field_pointer_bitmap);
+    const Field_layout* cflayout = clayout->field_layout_start;
+    for (size_t j = 0; j < clayout->number_of_fields; ++j, ++cflayout) {
+      fmt::format_to(out, " {} {} [offset = {}]\n",
+                     data_type_name((Data_types)cflayout->type),
+                     cflayout->name, cflayout->offset);
+    }
+  }
+  return outstr;
+}
+
+CL_DEFUN void gctools__dump_stamp_info(size_t unshifted_stamp) {
+  // This shift makes this function work on the output of instance-stamp.
+  // I don't get it.
+  core::clasp_write_string(dump_stamp_info(STAMP_UNSHIFT_MTAG(unshifted_stamp)));
 }
 
 }; // namespace gctools

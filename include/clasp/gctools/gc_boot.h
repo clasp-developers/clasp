@@ -133,82 +133,52 @@ struct Layout_code {
 };
 
 struct Field_layout {
-  size_t field_offset;
-};
-
-struct Field_info {
-  const char* field_name;
-  size_t data_type;
-};
-
-struct Container_info {
-  const char* field_name;
-  size_t data_type;
+  size_t offset;
+  const char* name;
+  size_t type;
 };
 
 struct Container_layout {
   // A bitmap of pointer fields for mps fixing and boehm marking
-  uintptr_t container_field_pointer_bitmap;
-  int container_field_pointer_count;
+  uintptr_t container_field_pointer_bitmap = 0;
+  int container_field_pointer_count = 0;
   Field_layout* field_layout_start; // Points into global_field_layout_table
-  uint number_of_fields;
-  //    uint              bits_per_bitunit;
-  //    size_t            data_offset;
-  //    size_t            end_offset;
-  //    size_t            capacity_offset;
-  Container_layout() : container_field_pointer_bitmap(0), container_field_pointer_count(0){};
+  uint number_of_fields = 0;
+  uint element_size;
+  uint              bits_per_bitunit = 0;
+  size_t            data_offset;
+  size_t            end_offset;
+  size_t            capacity_offset;
 };
 
 enum Layout_operation { class_container_op, bitunit_container_op, templated_op, undefined_op };
-struct Stamp_info {
-  Layout_operation layout_op;
-  const char* name;
-  Field_info* field_info_ptr;         // Only applies to classes
-  Container_info* container_info_ptr; //
-};
 
 #define KIND_UNDEFINED 99999
 struct Boehm_info {
-  bool _kind_defined;
-  uintptr_t _class_bitmap;
-  uintptr_t _container_bitmap;
-  int _container_pointer_count;
-  int _container_element_work;
-  uintptr_t _kind;
-  Boehm_info()
-      : _kind_defined(false), _class_bitmap(0), _container_bitmap(0), _container_pointer_count(0), _container_element_work(0),
-        _kind(KIND_UNDEFINED){};
+  bool _kind_defined = false;
+  int _container_element_work = 0;
+  uintptr_t _kind = KIND_UNDEFINED;
 };
 
 struct Stamp_layout {
-  Layout_operation layout_op; // One of class_container_op, bitunit_container_op, templated_op
+  // One of class_container_op, bitunit_container_op, templated_op
+  Layout_operation layout_op = undefined_op;
+  const char* name;
   Boehm_info boehm;
   // A bitmap of pointer fields for mps fixing and (once shifted right to skip clasp header - boehm marking)
   // The most significant bit indicates the vtable - it must be zero
-  uintptr_t class_field_pointer_bitmap;
+  uintptr_t class_field_pointer_bitmap = 0;
   uint flags;
-  uint number_of_fields;
-  uint bits_per_bitunit;
-  uint size;
-  uint element_size;
-  uint data_offset;
-  uint end_offset;
-  uint capacity_offset;
-  uint snapshot_save_load_poison;
-  Field_layout* field_layout_start; // Points into global_field_layout_table
-  Container_layout* container_layout;
-  Stamp_layout()
-      : layout_op(undefined_op), boehm(), class_field_pointer_bitmap(0), number_of_fields(0), bits_per_bitunit(0), size(0),
-        element_size(0), data_offset(0), end_offset(0), capacity_offset(0), snapshot_save_load_poison(0),
-        field_layout_start(NULL) // Points into global_field_layout_table
-        {};
+  uint number_of_fields = 0;
+  uint size = 0;
+  // Points into global_field_layout_table
+  Field_layout* field_layout_start = nullptr;
+  Container_layout* container_layout = nullptr;
 };
 
 extern Layout_code* get_stamp_layout_codes();
 extern size_t global_stamp_max;
-extern Stamp_info* global_stamp_info;
 extern Stamp_layout* global_stamp_layout;
-extern Field_info* global_field_info;
 extern Field_layout* global_field_layout;
 
 typedef enum { precise_info, lldb_info } WalkKind;

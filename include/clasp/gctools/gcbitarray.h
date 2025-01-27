@@ -32,6 +32,16 @@ THE SOFTWARE.
 
 namespace gctools {
 
+// Used in the object scanner to determine size.
+// Just like sizeof_for_length below, but with variable bitunit size.
+// NOTE: The "inline" is necessary to prevent multiple clashing definitions.
+inline size_t bitunit_sizeof(size_t bit_unit_bit_width, size_t capacity) {
+  size_t number_of_bit_units_in_word = CHAR_BIT * sizeof(bit_array_word) / bit_unit_bit_width;
+  // Integer division but rounding up. Little awkward.
+  size_t numWords = (capacity + number_of_bit_units_in_word - 1) / number_of_bit_units_in_word;
+  return numWords * sizeof(bit_array_word);
+}
+
 /* Underlying type for arrays of sub-byte elements.
  * The array is represented as a C++ array of "words", a larger type chosen for efficiency.
  * (The bit_array_word type, defined in configure_clasp.h.)

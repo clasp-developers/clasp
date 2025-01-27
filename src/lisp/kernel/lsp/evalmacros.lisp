@@ -354,8 +354,10 @@ values of the last FORM.  If no FORM is given, returns NIL."
 	 (form nil)
 	 (key (gensym)))
     (dolist (clause (reverse clauses)
-	     `(LET ((,key ,keyform))
-		,form))
+	            `(LET ((,key ,keyform))
+                       ;; in (case foo (default bar)) the key is unused.
+                       (declare (ignorable ,key))
+		       ,form))
       (ext:with-current-source-form (clause)
         (let ((selector (car clause)))
           (cond ((or (eq selector T) (eq selector 'OTHERWISE))
