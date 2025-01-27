@@ -170,7 +170,7 @@ CL_DEFUN core::Integer_sp core__shift_stamp_for_compiled_code(size_t stamp_wtagx
 CL_DOCSTRING(R"dx(Return the stamp for the object, the flags and the header stamp)dx");
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp core__instance_stamp(core::T_sp obj) {
-  core::T_sp stamp((gctools::Tagged)cx_read_stamp(obj.raw_(), 0));
+  core::T_sp stamp(cx_read_stamp(obj.raw_()));
   if (stamp.fixnump())
     return stamp;
   SIMPLE_ERROR("core:instance-stamp was about to return a non-fixnum {}", (void*)stamp.raw_());
