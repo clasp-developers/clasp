@@ -45,7 +45,9 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
   const gctools::Header_s::BadgeStampWtagMtag& header_value = header._badge_stamp_wtag_mtag;
   stamp_index = header._badge_stamp_wtag_mtag.stamp_();
   LOG("obj_scan client={} stamp={}\n", (void*)client, stamp_index);
-  if (header._badge_stamp_wtag_mtag.stampP()) {
+  switch (header_value.mtag()) {
+    [[likely]] // dunno why this is indenting stupidly
+  case gctools::Header_s::general_mtag: {
 #ifdef DEBUG_VALIDATE_GUARD
     header->validate();
 #endif
@@ -222,25 +224,19 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
       }
     }
     client = (ADDR_T)((char*)client + gctools::AlignUp(size + sizeof(gctools::Header_s)) + header.tail_size());
-  } else {
-    gctools::tagged_stamp_t mtag = header_value.mtag();
-    switch (mtag) {
+  } break;
 #ifdef USE_MPS
-    case gctools::Header_s::pad_mtag: {
-      if (header_value.pad1P()) {
-        client = (ADDR_T)((char*)(client) + header._badge_stamp_wtag_mtag.pad1Size());
-      } else if (header._badge_stamp_wtag_mtag.padP()) {
-        client = (ADDR_T)((char*)(client) + header._badge_stamp_wtag_mtag.padSize());
-      }
-      break;
+  case gctools::Header_s::pad_mtag: {
+    if (header_value.pad1P()) {
+      client = (ADDR_T)((char*)(client) + header._badge_stamp_wtag_mtag.pad1Size());
+    } else if (header._badge_stamp_wtag_mtag.padP()) {
+      client = (ADDR_T)((char*)(client) + header._badge_stamp_wtag_mtag.padSize());
     }
+  } break;
 #endif // USE_MPS
-    case gctools::Header_s::invalid0_mtag:
-    case gctools::Header_s::invalid1_mtag:
-    case gctools::Header_s::invalid2_mtag: {
-      throw_hard_error_bad_client((void*)client);
-    }
-    }
+  default: {
+    throw_hard_error_bad_client((void*)client);
+  }
   }
   LOG("obj_scan ENDING client={}\n", (void*)client);
   return client;
@@ -252,7 +248,9 @@ ADDR_T OBJECT_SKIP(ADDR_T client, bool dbg, size_t& obj_size) {
   const gctools::Header_s* header_ptr = reinterpret_cast<const gctools::Header_s*>(GENERAL_PTR_TO_HEADER_PTR(client));
   const gctools::Header_s& header = *header_ptr;
   const gctools::Header_s::BadgeStampWtagMtag& header_value = header._badge_stamp_wtag_mtag;
-  if (header._badge_stamp_wtag_mtag.stampP()) {
+  switch (header_value.mtag()) {
+    [[likely]]
+  case gctools::Header_s::general_mtag: {
 #ifdef DEBUG_VALIDATE_GUARD
     header->validate();
 #endif
@@ -298,25 +296,16 @@ ADDR_T OBJECT_SKIP(ADDR_T client, bool dbg, size_t& obj_size) {
     size_t align_up_size = obj_size + sizeof(gctools::Header_s);
 
     client = (ADDR_T)((char*)client + align_up_size + header.tail_size());
-  } else { // stampP is false, so this is something weird like a forwarding pointer
-    gctools::tagged_stamp_t mtag = header_value.mtag();
-    switch (mtag) {
-    case gctools::Header_s::pad1_mtag: {
-      client = (ADDR_T)((char*)(client) + header._badge_stamp_wtag_mtag.pad1Size());
-      break;
-    }
-    case gctools::Header_s::pad_mtag: {
-      client = (ADDR_T)((char*)(client) + header._badge_stamp_wtag_mtag.padSize());
-      break;
-    }
-    case gctools::Header_s::fwd_mtag:
-    case gctools::Header_s::invalid0_mtag:
-    case gctools::Header_s::invalid1_mtag:
-    case gctools::Header_s::invalid2_mtag: {
-      throw_hard_error_bad_client((void*)client);
-      break;
-    }
-    }
+  } break; // stampP is false, so this is something weird like a forwarding pointer
+  case gctools::Header_s::pad1_mtag: {
+    client = (ADDR_T)((char*)(client) + header._badge_stamp_wtag_mtag.pad1Size());
+  } break;
+  case gctools::Header_s::pad_mtag: {
+    client = (ADDR_T)((char*)(client) + header._badge_stamp_wtag_mtag.padSize());
+  } break;
+  default: {
+    throw_hard_error_bad_client((void*)client);
+  } break;
   }
   return client;
 }
