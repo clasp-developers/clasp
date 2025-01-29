@@ -10,7 +10,6 @@
 #define POINTER_FIX(field)         // Macro to fix pointer at field
 #define CONS_SCAN                  // Macro to turn on #ifdef inclusion of code
 #define CONS_SKIP                  // Macro to turn on #ifdef inclusion of code
-#define CONS_FWD                   // Macro to turn on #ifdef inclusion of code
 #define EXTRA_ARGUMENTS            // Add extra arguments
  */
 
@@ -59,19 +58,3 @@ ADDR_T CONS_SKIP(ADDR_T client, size_t& objectSize) {
   return client;
 }
 #endif // CONS_SKIP
-
-#ifdef CONS_FWD
-#ifdef CONS_SKIP_IN_CONS_FWD
-ADDR_T CONS_SKIP_IN_CONS_FWD(ADDR_T client);
-#endif // CONS_SKIP_IN_CONS_FWD
-
-static void CONS_FWD(ADDR_T old_client, ADDR_T new_client) {
-  //  printf("%s:%d in %s\n", __FILE__, __LINE__, __FUNCTION__ );
-  // I'm assuming both old and new client pointers have valid headers at this point
-  CONS_SKIP_IN_CONS_FWD(old_client);
-  core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(old_client);
-  gctools::Header_s* header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(cons);
-  header->_badge_stamp_wtag_mtag.setFwdPointer((void*)new_client);
-  header->_badge_stamp_wtag_mtag.setFwdSize(sizeof(core::Cons_O));
-}
-#endif // CONS_FWD

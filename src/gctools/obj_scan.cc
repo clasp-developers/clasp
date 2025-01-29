@@ -226,10 +226,6 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
     gctools::tagged_stamp_t mtag = header_value.mtag();
     switch (mtag) {
 #ifdef USE_MPS
-    case gctools::Header_s::fwd_mtag: {
-      client = (ADDR_T)((char*)(client) + header._badge_stamp_wtag_mtag.fwdSize());
-      break;
-    }
     case gctools::Header_s::pad_mtag: {
       if (header_value.pad1P()) {
         client = (ADDR_T)((char*)(client) + header._badge_stamp_wtag_mtag.pad1Size());
@@ -305,10 +301,6 @@ ADDR_T OBJECT_SKIP(ADDR_T client, bool dbg, size_t& obj_size) {
   } else { // stampP is false, so this is something weird like a forwarding pointer
     gctools::tagged_stamp_t mtag = header_value.mtag();
     switch (mtag) {
-    case gctools::Header_s::fwd_mtag: {
-      client = (ADDR_T)((char*)(client) + header._badge_stamp_wtag_mtag.fwdSize());
-      break;
-    }
     case gctools::Header_s::pad1_mtag: {
       client = (ADDR_T)((char*)(client) + header._badge_stamp_wtag_mtag.pad1Size());
       break;
@@ -317,6 +309,7 @@ ADDR_T OBJECT_SKIP(ADDR_T client, bool dbg, size_t& obj_size) {
       client = (ADDR_T)((char*)(client) + header._badge_stamp_wtag_mtag.padSize());
       break;
     }
+    case gctools::Header_s::fwd_mtag:
     case gctools::Header_s::invalid0_mtag:
     case gctools::Header_s::invalid1_mtag:
     case gctools::Header_s::invalid2_mtag: {
@@ -328,24 +321,6 @@ ADDR_T OBJECT_SKIP(ADDR_T client, bool dbg, size_t& obj_size) {
   return client;
 }
 #endif // OBJECT_SKIP
-
-#ifdef OBJECT_FWD
-static void OBJECT_FWD(ADDR_T old_client, ADDR_T new_client) {
-  // I'm assuming both old and new client pointers have valid headers at this point
-  DEBUG_THROW_IF_INVALID_CLIENT(old_client);
-  DEBUG_THROW_IF_INVALID_CLIENT(new_client);
-  size_t obj_size;
-  ADDR_T limit = OBJECT_SKIP_IN_OBJECT_FWD(old_client, false, obj_size);
-  size_t size = (char*)limit - (char*)old_client;
-  if (size < gctools::global_sizeof_fwd) {
-    THROW_HARD_ERROR("obj_fwd needs size >= {}", gctools::global_sizeof_fwd);
-  }
-  gctools::Header_s* header = (gctools::Header_s*)(GENERAL_PTR_TO_HEADER_PTR(old_client));
-  header->_badge_stamp_wtag_mtag.setFwdSize(size);
-  header->_badge_stamp_wtag_mtag.setFwdPointer((void*)new_client);
-}
-
-#endif // OBJECT_FWD
 
 #ifdef GC_LISP_OBJECT_MARK
 

@@ -753,17 +753,9 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
 #include "obj_scan.cc"
 #undef OBJECT_SKIP
 
-#define OBJECT_SKIP_IN_OBJECT_FWD isl_obj_skip
-#define OBJECT_FWD isl_obj_fwd
-#include "obj_scan.cc"
-#undef OBJECT_FWD
-
 #define CONS_SCAN isl_cons_scan
 #define CONS_SKIP isl_cons_skip
-#define CONS_FWD isl_cons_fwd
-#define CONS_SKIP_IN_CONS_FWD isl_cons_skip
 #include "cons_scan.cc"
-#undef CONS_FWD
 #undef CONS_SKIP
 #undef CONS_SCAN
 
