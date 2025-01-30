@@ -1102,7 +1102,7 @@ struct calculate_size_t {
         this->_ObjectFileTotalSize += objectFileSize;
         this->_TotalSize += sizeof(ISLGeneralHeader_s) + sizeof(llvmo::ObjectFile_O);
       } else {
-        isl_obj_skip(client, false, objectSize);
+        isl_obj_skip(client, objectSize);
         this->_TotalSize += sizeof(ISLGeneralHeader_s) + objectSize;
       }
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
@@ -1163,7 +1163,7 @@ struct copy_objects_t {
     if (header->_badge_stamp_wtag_mtag.stampP()) {
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
       size_t generalSize;
-      isl_obj_skip(clientStart, false, generalSize);
+      isl_obj_skip(clientStart, generalSize);
       if (generalSize == 0)
         ISL_ERROR("A zero size general at %p was encountered", (void*)clientStart);
       if (header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {

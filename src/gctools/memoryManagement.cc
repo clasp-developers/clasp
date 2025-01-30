@@ -1015,7 +1015,7 @@ size_t objectSize(BaseHeader_s* header) {
     // It's a general object - walk it
     size_t objectSize;
     uintptr_t client = (uintptr_t)HeaderPtrToGeneralPtr<void*>(header);
-    mw_obj_skip(client, false, objectSize);
+    mw_obj_skip(client, objectSize);
     return objectSize;
   }
 }

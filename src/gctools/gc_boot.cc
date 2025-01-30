@@ -21,9 +21,6 @@
 #endif
 
 #if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
-extern "C" {
-void* obj_skip(void*);
-};
 #define GC_LISP_OBJECT_MARK
 #include "obj_scan.cc"
 #undef GC_LISP_OBJECT_MARK

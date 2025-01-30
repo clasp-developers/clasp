@@ -244,7 +244,7 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
 #endif // OBJECT_SCAN
 
 #ifdef OBJECT_SKIP
-ADDR_T OBJECT_SKIP(ADDR_T client, bool dbg, size_t& obj_size) {
+ADDR_T OBJECT_SKIP(ADDR_T client, size_t& obj_size) {
   const gctools::Header_s* header_ptr = reinterpret_cast<const gctools::Header_s*>(GENERAL_PTR_TO_HEADER_PTR(client));
   const gctools::Header_s& header = *header_ptr;
   const gctools::Header_s::BadgeStampWtagMtag& header_value = header._badge_stamp_wtag_mtag;
@@ -257,15 +257,11 @@ ADDR_T OBJECT_SKIP(ADDR_T client, bool dbg, size_t& obj_size) {
     gctools::GCStampEnum stamp_wtag = header._badge_stamp_wtag_mtag.stamp_wtag();
     size_t stamp_index = header._badge_stamp_wtag_mtag.stamp_();
 #ifdef DEBUG_ON
-    if (dbg) {
-      LOG("stamp_wtag = {} stamp_index={}\n", (size_t)stamp_wtag, stamp_index);
-    }
+    LOG("stamp_wtag = {} stamp_index={}\n", (size_t)stamp_wtag, stamp_index);
 #endif
     if (stamp_wtag == gctools::STAMPWTAG_core__DerivableCxxObject_O) {
 #ifdef DEBUG_ON
-      if (dbg) {
-        LOG("DerivableCxxObject\n");
-      }
+      LOG("DerivableCxxObject\n");
 #endif
       // If this is true then I think we need to call virtual functions on the client
       // to determine the Instance_O offset and the total size of the object.
