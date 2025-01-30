@@ -121,7 +121,9 @@
                     :command "$cxx $variant-ldflags $ldflags -o$out $in $variant-ldlibs $ldlibs"
                     :description "Linking $out")
   (ninja:write-rule output-stream :link-lib
-                    :command #+darwin "$cxx -dynamiclib $variant-ldflags $ldflags -install_name @rpath/$libname -o$out $in $variant-ldlibs $ldlibs"
+                    :command #+darwin (if (reproducible-build configuration)
+                                          "$cxx -dynamiclib $variant-ldflags $ldflags -o$out $in $variant-ldlibs $ldlibs"
+                                          "$cxx -dynamiclib $variant-ldflags $ldflags -install_name @rpath/$libname -o$out $in $variant-ldlibs $ldlibs")
                              #-darwin "$cxx -shared $variant-ldflags $ldflags -o$out $in $variant-ldlibs $ldlibs"
                     :description "Linking $out")
   (ninja:write-rule output-stream :load-cclasp
