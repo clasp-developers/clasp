@@ -156,7 +156,6 @@ enum Layout_operation { class_container_op, bitunit_container_op, templated_op, 
 #define KIND_UNDEFINED 99999
 struct Boehm_info {
   bool _kind_defined = false;
-  int _container_element_work = 0;
   uintptr_t _kind = KIND_UNDEFINED;
 };
 

@@ -20,12 +20,6 @@
 #define DGC_PRINT(...)
 #endif
 
-#if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
-#define GC_LISP_OBJECT_MARK
-#include "obj_scan.cc"
-#undef GC_LISP_OBJECT_MARK
-#endif
-
 namespace gctools {
 
 uintptr_t global_lisp_kind;
@@ -458,10 +452,6 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
                   "%s:%d WARNING There are too many pointers (%d) in each element of a container to break up the work for boehm\n",
                   __FILE__, __LINE__, pointer_count);
             }
-            // Calculate the number of elements worth of pointers are processed with each
-            // call to the marking procedure
-            int container_element_work = pointer_count ? (GC_PROC_BYTES / 8 / 2) / pointer_count : 0;
-            local_stamp_layout[cur_stamp].boehm._container_element_work = container_element_work;
             if (class_bitmap && !container_bitmap) {
               // There are no pointers in the container part
               // - so we can use the bitmap_skip_header
