@@ -153,18 +153,21 @@ struct Container_layout {
 
 enum Layout_operation { class_container_op, bitunit_container_op, templated_op, undefined_op };
 
+#ifdef USE_BOEHM
 #define KIND_UNDEFINED 99999
 struct Boehm_info {
   bool _kind_defined = false;
-  int _container_element_work = 0;
   uintptr_t _kind = KIND_UNDEFINED;
 };
+#endif // USE_BOEHM
 
 struct Stamp_layout {
   // One of class_container_op, bitunit_container_op, templated_op
   Layout_operation layout_op = undefined_op;
   const char* name;
+#ifdef USE_BOEHM
   Boehm_info boehm;
+#endif // USE_BOEHM
   // A bitmap of pointer fields for mps fixing and (once shifted right to skip clasp header - boehm marking)
   // The most significant bit indicates the vtable - it must be zero
   uintptr_t class_field_pointer_bitmap = 0;

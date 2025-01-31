@@ -400,8 +400,6 @@ void rawHeaderDescribe(const uintptr_t* headerP) {
     Header_s* hdr = (Header_s*)headerP;
     printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
     printf(" fwd_tag - fwd address: 0x%" PRIuPTR "\n", (*headerP) & Header_s::mtag_mask);
-    printf("     fwdSize = %" PRIuPTR "/0x%" PRIuPTR "\n", hdr->_badge_stamp_wtag_mtag.fwdSize(),
-           hdr->_badge_stamp_wtag_mtag.fwdSize());
   } break;
   case Header_s::pad1_mtag:
     printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
@@ -1017,7 +1015,7 @@ size_t objectSize(BaseHeader_s* header) {
     // It's a general object - walk it
     size_t objectSize;
     uintptr_t client = (uintptr_t)HeaderPtrToGeneralPtr<void*>(header);
-    mw_obj_skip(client, false, objectSize);
+    mw_obj_skip(client, objectSize);
     return objectSize;
   }
 }

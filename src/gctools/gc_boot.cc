@@ -20,15 +20,6 @@
 #define DGC_PRINT(...)
 #endif
 
-#if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
-extern "C" {
-void* obj_skip(void*);
-};
-#define GC_LISP_OBJECT_MARK
-#include "obj_scan.cc"
-#undef GC_LISP_OBJECT_MARK
-#endif
-
 namespace gctools {
 
 uintptr_t global_lisp_kind;
@@ -400,17 +391,12 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
     }
 
     // Use boehm in the precise GC mode
-    //  global_container_proc_index = GC_new_proc_inner((GC_mark_proc)class_container_mark);
-    global_lisp_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
-    global_cons_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
-    global_class_kind =
-        GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1,
-                    1); //  GC_MAKE_PROC(GC_new_proc((GC_mark_proc)Lisp_object_mark),0), 0, 1); // GC_DS_LENGTH, 1, 1);
-    global_container_kind = GC_new_kind(
-        GC_new_free_list(), GC_DS_LENGTH, 1,
-        1); // */  GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(global_container_proc_index,0),0,1); // GC_DS_LENGTH, 1, 1);
-    global_code_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
-    global_atomic_kind = GC_I_PTRFREE; // GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 0, 1);
+    global_lisp_kind = GC_I_NORMAL;
+    global_cons_kind = GC_I_NORMAL;
+    global_class_kind = GC_I_NORMAL;
+    global_container_kind = GC_I_NORMAL;
+    global_code_kind = GC_I_NORMAL;
+    global_atomic_kind = GC_I_PTRFREE;
     for (cur_stamp = 0; cur_stamp <= local_stamp_max; ++cur_stamp) {
       if (local_stamp_layout[cur_stamp].layout_op != undefined_op) {
 #ifdef DUMP_PRECISE_CALC
@@ -461,10 +447,6 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
                   "%s:%d WARNING There are too many pointers (%d) in each element of a container to break up the work for boehm\n",
                   __FILE__, __LINE__, pointer_count);
             }
-            // Calculate the number of elements worth of pointers are processed with each
-            // call to the marking procedure
-            int container_element_work = pointer_count ? (GC_PROC_BYTES / 8 / 2) / pointer_count : 0;
-            local_stamp_layout[cur_stamp].boehm._container_element_work = container_element_work;
             if (class_bitmap && !container_bitmap) {
               // There are no pointers in the container part
               // - so we can use the bitmap_skip_header
@@ -512,11 +494,13 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
   } else if (walk == precise_info) {
     // Check that everything is ok
     if (getenv("CLASP_DEBUG_STAMP_INFO")) {
+#if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
       for (size_t stamp = 0; stamp <= local_stamp_max; stamp++) {
         printf("%s:%d:%s stamp: %3lu  boehm._kind_defined %2d  boehm._kind %5lu  name: %s\n", __FILE__, __LINE__, __FUNCTION__,
                stamp, local_stamp_layout[stamp].boehm._kind_defined, local_stamp_layout[stamp].boehm._kind,
                local_stamp_layout[stamp].name);
       }
+#endif // defined(USE_BOEHM) && defined(USE_PRECISE_GC)
       printf("%s:%d:%s local_stamp_max: %lu\n", __FILE__, __LINE__, __FUNCTION__, local_stamp_max);
     }
     global_stamp_max = local_stamp_max;

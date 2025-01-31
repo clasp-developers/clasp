@@ -89,11 +89,8 @@ public:
   void store_no_lock(core::T_sp); // ditto.
   void store(core::T_sp);
   void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup*);
-public: // has to be public for precise GC reasons even though it's not scanned?
-  // This is a Tagged rather than a T_sp because something in gc_boot seems to
-  // check for T_sps in atomic (pointerless) objects. Rather than lie harder we
-  // can just do this and build a T_sp from it as required.
-  Tagged _value;
+private:
+  core::T_sp _value;
 #ifdef USE_BOEHM
   // flag needed to disambiguate fixnum 0 from splatted pointer
   bool _splattablep = false;

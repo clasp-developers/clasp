@@ -483,9 +483,6 @@ public:
     void* fwdPointer() const { return reinterpret_cast<void*>(this->_header_data[0] & (~(uintptr_t)mtag_mask)); };
     /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
     void setFwdPointer(void* ptr) { this->_header_data[0] = reinterpret_cast<uintptr_t>(ptr) | fwd_mtag; };
-    uintptr_t fwdSize() const { return this->_header_data[1]; };
-    /*! This writes into the first tagged_stamp_t sized word of the client data. */
-    void setFwdSize(size_t sz) { this->_header_data[1] = sz; };
     /*! Define the header as a pad, pass pad_tag or pad1_tag */
     void setPad(tagged_stamp_t p) { this->_header_data[0] = p; };
     /*! Return the pad1 size */
@@ -610,7 +607,7 @@ public:
       return "Header_CONS";
     } else if (this->_badge_stamp_wtag_mtag.fwdP()) {
       std::stringstream ss;
-      ss << "Fwd/ptr=" << this->_badge_stamp_wtag_mtag.fwdPointer() << "/sz=" << this->_badge_stamp_wtag_mtag.fwdSize();
+      ss << "Fwd/ptr=" << this->_badge_stamp_wtag_mtag.fwdPointer();
       return ss.str();
     } else if (this->_badge_stamp_wtag_mtag.pad1P()) {
       return "Pad1";
