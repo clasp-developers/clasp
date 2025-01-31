@@ -494,11 +494,13 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
   } else if (walk == precise_info) {
     // Check that everything is ok
     if (getenv("CLASP_DEBUG_STAMP_INFO")) {
+#if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
       for (size_t stamp = 0; stamp <= local_stamp_max; stamp++) {
         printf("%s:%d:%s stamp: %3lu  boehm._kind_defined %2d  boehm._kind %5lu  name: %s\n", __FILE__, __LINE__, __FUNCTION__,
                stamp, local_stamp_layout[stamp].boehm._kind_defined, local_stamp_layout[stamp].boehm._kind,
                local_stamp_layout[stamp].name);
       }
+#endif // defined(USE_BOEHM) && defined(USE_PRECISE_GC)
       printf("%s:%d:%s local_stamp_max: %lu\n", __FILE__, __LINE__, __FUNCTION__, local_stamp_max);
     }
     global_stamp_max = local_stamp_max;
