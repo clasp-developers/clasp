@@ -34,7 +34,7 @@ THE SOFTWARE.
 namespace gctools {
 
 #ifdef USE_BOEHM
-WeakPointer::WeakPointer(core::T_sp o) : _value(o.tagged_()) {
+WeakPointer::WeakPointer(core::T_sp o) : _value(o) {
   if (o.objectp()) { // pointer, so we're actually weak
     _splattablep = true;
     // note: deregistered automatically if the weak pointer itself is dealloc'd
@@ -45,8 +45,8 @@ WeakPointer::WeakPointer(core::T_sp o) : _value(o.tagged_()) {
 void* WeakPointer::value_helper(void* data) {
   value_helper_s* vhsp = (value_helper_s*)data;
   if (vhsp->wp->_value || !vhsp->wp->_splattablep) // not splatted
-    // construct a T_sp in the result
-    vhsp->result.emplace(vhsp->wp->_value);
+    // put a T_sp in the result
+    vhsp->result = vhsp->wp->_value;
   // otherwise, leave the result default constructed (no T_sp)
   return nullptr; // unused
 }
@@ -59,11 +59,11 @@ std::optional<core::T_sp> WeakPointer::value() const {
 }
 std::optional<core::T_sp> WeakPointer::value_no_lock() const {
   if (_value || !_splattablep)
-    return core::T_sp(_value);
+    return _value;
   else return std::nullopt;
 }
 void WeakPointer::store_no_lock(core::T_sp o) {
-  _value = o.tagged_();
+  _value = o;
   _splattablep = o.objectp();
   // links set up in fixupInternals below.
 }
@@ -76,18 +76,17 @@ void WeakPointer::store(core::T_sp o) {
     _splattablep = false;
     GC_unregister_disappearing_link((void**)&_value);
   }
-  _value = o.tagged_();
+  _value = o;
 }  
 
 void WeakPointer::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
   if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     // We do this later rather than in store_no_lock because register/deregister
     // unconditionally grab a lock. This is a bit of a KLUDGE.
-    core::T_sp o(_value);
-    if (o.objectp()) {
+    if (_value.objectp()) {
       _splattablep = true;
       // Implicitly removes any previous registration, per boehm docs.
-      GC_general_register_disappearing_link((void**)&_value, &*o);
+      GC_general_register_disappearing_link((void**)&_value, &*_value);
     } else {
       _splattablep = false;
       GC_unregister_disappearing_link((void**)&_value);
@@ -95,12 +94,12 @@ void WeakPointer::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fix
   }
 }
 #else // not-actually-weak pointers - TODO for your other GC!
-WeakPointer::WeakPointer(core::T_sp o) : _value(o.tagged_()) {}
+WeakPointer::WeakPointer(core::T_sp o) : _value(o) {}
 
 // always valid
-std::optional<core::T_sp> WeakPointer::value() const { return core::T_sp(_value); }
+std::optional<core::T_sp> WeakPointer::value() const { return _value; }
 std::optional<core::T_sp> WeakPointer::value_no_lock() const { return value(); }
-void WeakPointer::store_no_lock(core::T_sp o) { _value = o.tagged_(); }
+void WeakPointer::store_no_lock(core::T_sp o) { _value = o; }
 void WeakPointer::store(core::T_sp o) { store_no_lock(o); }
 void WeakPointer::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup*) {}
 #endif
