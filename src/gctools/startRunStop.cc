@@ -105,9 +105,6 @@ int handleFatalCondition() {
   int exitCode = 0;
   try {
     throw;
-  } catch (core::TerminateProgramIfBatch& ee) {
-    // Do nothing
-    printf("Caught TerminateProgramIfBatch in %s:%d\n", __FILE__, __LINE__);
   } catch (core::CatchThrow& ee) {
     core::clasp_write_string(fmt::format("{}:{} Uncaught THROW tag[{}] - this should NEVER happen - the stack should never be "
                                          "unwound unless there is a CATCH clause that matches the THROW",

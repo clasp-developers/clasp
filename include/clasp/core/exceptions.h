@@ -198,19 +198,6 @@ namespace core {
 
 class DebugStream;
 
-/*! To exit the program throw this exception
- */
-class TerminateProgramIfBatch {
-private:
-  int _ExitResult;
-  string _Message;
-
-public:
-  TerminateProgramIfBatch(int result, string const& message) : _ExitResult(result), _Message(message){};
-  string message() const { return this->_Message; };
-  int getExitResult() { return this->_ExitResult; };
-};
-
 #pragma GCC visibility push(default)
 class ATTR_WEAK CatchThrow {
   virtual void keyFunctionForVtable() ATTR_WEAK;
