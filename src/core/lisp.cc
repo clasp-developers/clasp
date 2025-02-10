@@ -2274,11 +2274,6 @@ int Lisp::run() {
   } catch (core::ExitProgramException& ee) {
     exitCode = ee.getExitResult();
   }
-  if (global_options->_ExportedSymbolsSave) {
-    T_sp stream = core::cl__open(core::SimpleBaseString_O::make(global_options->_ExportedSymbolsFilename), StreamDirection::output);
-    core::core__mangledSymbols(stream);
-    cl__close(stream);
-  }
 
   return exitCode;
 };
