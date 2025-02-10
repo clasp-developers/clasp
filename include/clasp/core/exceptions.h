@@ -198,32 +198,8 @@ namespace core {
 
 class DebugStream;
 
-/*! To exit the program throw this exception
- */
-class ExitProgramException : public std::exception {
-private:
-  int _ExitResult;
-
-public:
-  ExitProgramException(int result) : _ExitResult(result){};
-  int getExitResult() { return this->_ExitResult; };
-};
-
-/*! To exit the program throw this exception
- */
-class TerminateProgramIfBatch {
-private:
-  int _ExitResult;
-  string _Message;
-
-public:
-  TerminateProgramIfBatch(int result, string const& message) : _ExitResult(result), _Message(message){};
-  string message() const { return this->_Message; };
-  int getExitResult() { return this->_ExitResult; };
-};
-
 #pragma GCC visibility push(default)
-class ATTR_WEAK CatchThrow {
+class ATTR_WEAK CatchThrow : public std::exception {
   virtual void keyFunctionForVtable() ATTR_WEAK;
 
 private:
@@ -232,9 +208,10 @@ private:
 public:
   CatchThrow(T_sp tag) : _Tag(tag){};
   T_sp getTag() { return this->_Tag; };
+  const char* what() const noexcept override { return "Lisp Throw exception"; }
 };
 
-class ATTR_WEAK Unwind {
+class ATTR_WEAK Unwind : public std::exception {
   virtual void keyFunctionForVtable() ATTR_WEAK;
 
 private:
@@ -242,9 +219,11 @@ private:
   size_t _Index;
 
 public:
-  ATTR_WEAK Unwind(void* frame, size_t index) : _Frame(frame), _Index(index){};
+  ATTR_WEAK Unwind(void* frame, size_t index)
+    : _Frame(frame), _Index(index){};
   void* getFrame() const { return this->_Frame; };
   size_t index() const { return this->_Index; };
+  const char* what() const noexcept override { return "Lisp Unwind exception"; }
 };
 
 #pragma GCC visibility pop

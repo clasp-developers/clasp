@@ -7,6 +7,12 @@
 
 ## Fixed
 * Weak pointers and weak hash tables survive snapshot save/load.
+* `ext:quit` can be used from any thread, not just the initial thread.
+
+## Removed
+* `-z`/`--snapshot-symbols-save` command line option, occasionally used
+  for snapshot debugging. You can call `core:mangled-symbol-names` if the
+  effect is still needed.
 
 # Version 2.7.0 (LLVM15-19) 2025-01-21
 
