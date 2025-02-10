@@ -200,17 +200,6 @@ class DebugStream;
 
 /*! To exit the program throw this exception
  */
-class ExitProgramException : public std::exception {
-private:
-  int _ExitResult;
-
-public:
-  ExitProgramException(int result) : _ExitResult(result){};
-  int getExitResult() { return this->_ExitResult; };
-};
-
-/*! To exit the program throw this exception
- */
 class TerminateProgramIfBatch {
 private:
   int _ExitResult;

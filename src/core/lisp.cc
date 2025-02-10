@@ -1401,7 +1401,7 @@ CL_LAMBDA(&optional (exit-value 0));
 CL_DECLARE();
 CL_DOCSTRING(R"dx(exit)dx");
 DOCGROUP(clasp);
-CL_DEFUN void core__exit(int exitValue) {
+[[noreturn]] CL_DEFUN void core__exit(int exitValue) {
 #ifdef CLASP_APPLE_SILICON
   exit(exitValue);
 #else
@@ -1416,7 +1416,7 @@ CL_DEFUN void core__exit(int exitValue) {
   }
   VirtualMachine& vm = my_thread->_VM;
   vm.shutdown();
-  throw(ExitProgramException(exitValue));
+  exit(exitValue);
 #endif
 };
 
@@ -2211,24 +2211,23 @@ void Lisp::dump_apropos(const char* part) const {
 
 bool Lisp::load(int& exitCode) {
   MultipleValues& mvn = core::lisp_multipleValues();
-  try {
-    switch (global_options->_StartupType) {
-    case cloInitLisp: {
-      Pathname_sp initPathname = cl__pathname(SimpleBaseString_O::make(globals_->_InitFileName));
-      if (!global_options->_SilentStartup) {
-        printf("Loading image %s\n", _rep_(initPathname).c_str());
-      }
-      T_mv result = core__load_no_package_set(initPathname);
-      if (result.nilp()) {
-        T_sp err = mvn.second(result.number_of_values());
-        printf("Could not load %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
-        exitCode = 1;
-        return false;
-      }
-    } break;
-    case cloBaseImage:
-    case cloExtensionImage:
-    case cloImageFile:
+  switch (global_options->_StartupType) {
+  case cloInitLisp: {
+    Pathname_sp initPathname = cl__pathname(SimpleBaseString_O::make(globals_->_InitFileName));
+    if (!global_options->_SilentStartup) {
+      printf("Loading image %s\n", _rep_(initPathname).c_str());
+    }
+    T_mv result = core__load_no_package_set(initPathname);
+    if (result.nilp()) {
+      T_sp err = mvn.second(result.number_of_values());
+      printf("Could not load %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
+      exitCode = 1;
+      return false;
+    }
+  } break;
+  case cloBaseImage:
+  case cloExtensionImage:
+  case cloImageFile:
       if (startup_functions_are_waiting()) {
         startup_functions_invoke(NULL);
       } else {
@@ -2251,31 +2250,21 @@ bool Lisp::load(int& exitCode) {
         }
       }
       break;
-    default:
+  default:
       break;
-    }
-  } catch (core::ExitProgramException& ee) {
-    exitCode = ee.getExitResult();
-    return false;
   }
   return true;
 };
 
 int Lisp::run() {
-  int exitCode;
-  try {
-    if (ext::_sym_STARtoplevel_hookSTAR->symbolValue().notnilp()) {
-      core::T_sp fn = ext::_sym_STARtoplevel_hookSTAR->symbolValue();
-      core::eval::funcall(fn);
-    } else if (global_options->_Interactive) {
-      this->readEvalPrintInteractive();
-    }
-    exitCode = 0;
-  } catch (core::ExitProgramException& ee) {
-    exitCode = ee.getExitResult();
+  if (ext::_sym_STARtoplevel_hookSTAR->symbolValue().notnilp()) {
+    core::T_sp fn = ext::_sym_STARtoplevel_hookSTAR->symbolValue();
+    core::eval::funcall(fn);
+  } else if (global_options->_Interactive) {
+    this->readEvalPrintInteractive();
   }
 
-  return exitCode;
+  return 0;
 };
 
 FileScope_mv Lisp::getOrRegisterFileScope(const string& fileName) {
