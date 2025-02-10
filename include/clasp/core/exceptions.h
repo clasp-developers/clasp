@@ -199,7 +199,7 @@ namespace core {
 class DebugStream;
 
 #pragma GCC visibility push(default)
-class ATTR_WEAK CatchThrow {
+class ATTR_WEAK CatchThrow : public std::exception {
   virtual void keyFunctionForVtable() ATTR_WEAK;
 
 private:
@@ -208,9 +208,10 @@ private:
 public:
   CatchThrow(T_sp tag) : _Tag(tag){};
   T_sp getTag() { return this->_Tag; };
+  const char* what() const noexcept override { return "Lisp Throw exception"; }
 };
 
-class ATTR_WEAK Unwind {
+class ATTR_WEAK Unwind : public std::exception {
   virtual void keyFunctionForVtable() ATTR_WEAK;
 
 private:
@@ -218,9 +219,11 @@ private:
   size_t _Index;
 
 public:
-  ATTR_WEAK Unwind(void* frame, size_t index) : _Frame(frame), _Index(index){};
+  ATTR_WEAK Unwind(void* frame, size_t index)
+    : _Frame(frame), _Index(index){};
   void* getFrame() const { return this->_Frame; };
   size_t index() const { return this->_Index; };
+  const char* what() const noexcept override { return "Lisp Unwind exception"; }
 };
 
 #pragma GCC visibility pop
