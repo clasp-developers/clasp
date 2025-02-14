@@ -49,11 +49,13 @@ THE SOFTWARE.
 #include <clasp/core/primitives.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/array.h>
 
 SYMBOL_SC_(CorePkg, STARbq_listSTAR);
 SYMBOL_SC_(CorePkg, STARbq_appendSTAR);
 SYMBOL_SC_(CorePkg, STARbq_listSTARSTAR);
 SYMBOL_SC_(CorePkg, STARbq_nconcSTAR);
+SYMBOL_SC_(CorePkg, STARbq_vectorizeSTAR);
 SYMBOL_SC_(CorePkg, STARbq_clobberableSTAR);
 SYMBOL_SC_(CorePkg, STARbq_quoteSTAR);
 SYMBOL_SC_(CorePkg, STARbq_quote_nilSTAR);
@@ -158,8 +160,14 @@ CL_DEFUN T_sp core__backquote_remove_tokens(T_sp x) {
   if (head == _sym_STARbq_clobberableSTAR) {
     return core__backquote_remove_tokens(oCadr(cx));
   }
-  if ((head == _sym_STARbq_listSTARSTAR) && (oCddr(cx)).consp() && oCdddr(cx).nilp()) {
-    return Cons_O::create(cl::_sym_cons, core__backquote_maptree(_sym_backquote_remove_tokens->symbolFunction(), CONS_CDR(cx)));
+  if ((head == _sym_STARbq_listSTARSTAR) && cx->cdr().consp() && oCddr(cx).nilp()) {
+    // (list* x) => x
+    return core__backquote_maptree(_sym_backquote_remove_tokens->symbolFunction(), oCadr(cx));
+  } else if ((head == _sym_STARbq_vectorizeSTAR) && oCdr(cx).consp() && oCddr(cx).nilp()) {
+    // (*bq-vectorize* x) => (apply #'vector x)
+    T_sp inner = core__backquote_maptree(_sym_backquote_remove_tokens->symbolFunction(), oCadr(cx));
+    T_sp fvector = Cons_O::createList(cl::_sym_Function_O, cl::_sym_vector);
+    return Cons_O::createList(cl::_sym_apply, fvector, inner);
   }
   T_sp mapped = core__backquote_maptree(_sym_backquote_remove_tokens->symbolFunction(), x);
   return mapped;
@@ -349,28 +357,26 @@ CL_LAMBDA(ox);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(bq_process)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__backquote_process(T_sp x) {
-  if (x.consp()) {
-    T_sp ax = oCar(x);
+CL_DEFUN T_sp core__backquote_process(T_sp p) {
+  if (p.consp()) {
+    T_sp ax = oCar(p);
     if (ax == _sym_quasiquote) {
-      return core__backquote_process(core__backquote_completely_process(oCadr(x)));
+      return core__backquote_process(core__backquote_completely_process(oCadr(p)));
     } else if (ax == _sym_unquote) {
-      return oCadr(x);
+      return oCadr(p);
     } else if (ax == _sym_unquote_splice) {
-      SIMPLE_ERROR(",@{} after `", _rep_(oCadr(x)));
+      SIMPLE_ERROR(",@{} after `", _rep_(oCadr(p)));
     } else if (ax == _sym_unquote_nsplice) {
-      SIMPLE_ERROR(",.{} after `", _rep_(oCadr(x)));
+      SIMPLE_ERROR(",.{} after `", _rep_(oCadr(p)));
     }
-    T_sp p = x;
     T_sp q = nil<T_O>();
     int step = 0;
-    while (p.consp()) {
-      T_sp cp = p;
-      T_sp head = oCar(cp);
-      if (oCar(cp) == _sym_unquote) {
-        ASSERT(oCddr(cp).nilp());
+    do {
+      T_sp head = oCar(p);
+      if (oCar(p) == _sym_unquote) {
+        ASSERT(oCddr(p).nilp());
         return Cons_O::create(_sym_STARbq_appendSTAR,
-                              cl__nreconc(q, Cons_O::create(oCadr(cp), nil<T_O>())));
+                              cl__nreconc(q, Cons_O::create(oCadr(p), nil<T_O>())));
       } else if (head == _sym_unquote_splice) {
         SIMPLE_ERROR("Dotted ,@{}", _rep_(p));
       }
@@ -379,17 +385,24 @@ CL_DEFUN T_sp core__backquote_process(T_sp x) {
       }
 
       // Advance
-      T_sp next_p = oCdr(cp);
-      T_sp bracketed = core__backquote_bracket(oCar(cp));
+      T_sp next_p = oCdr(p);
+      T_sp bracketed = core__backquote_bracket(oCar(p));
       Cons_sp next_q = Cons_O::create(bracketed, q);
       p = next_p;
       q = next_q;
       step++;
-    }
+    } while (p.consp());
     return Cons_O::create(_sym_STARbq_appendSTAR,
                           cl__nreconc(q, Cons_O::create(Cons_O::createList(_sym_STARbq_quoteSTAR, p), nil<T_O>())));
-  } else { // not a cons
-    return Cons_O::createList(_sym_STARbq_quoteSTAR, x);
+  } else if (p.isA<SimpleVector_O>()) {
+    ql::list subs;
+    for (const auto& e : p.as_unsafe<SimpleVector_O>())
+      subs << core__backquote_bracket(e);
+    return Cons_O::createList(_sym_STARbq_vectorizeSTAR,
+                              Cons_O::create(_sym_STARbq_appendSTAR,
+                                             subs.cons()));
+  } else { // not a cons or vector
+    return Cons_O::createList(_sym_STARbq_quoteSTAR, p);
   }
 }
 
