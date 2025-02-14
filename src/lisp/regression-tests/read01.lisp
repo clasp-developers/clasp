@@ -79,6 +79,11 @@
                    (READTABLE-CASE nil)
                    :type type-error)
 
+;; issue 1666
+(test read-backquote-vector
+      (eval (read-from-string "`#(a ,(+ 1 2))"))
+      (#(a 3)))
+
 (test read-from-string-1a
       (let ((*read-default-float-format* 'single-float))
         (read-from-string "123.1212 (1 2 3)" nil :end :preserve-whitespace nil))

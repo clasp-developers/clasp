@@ -30,15 +30,5 @@ THE SOFTWARE.
 
 namespace core {
 
-extern T_mv core__backquote_completely_process(T_sp ox);
-extern T_sp core__backquote_process(T_sp ox);
-extern T_sp core__backquote_bracket(T_sp ox);
-extern T_sp core__backquote_simplify_args(T_sp x);
-extern T_sp core__backquote_attach_append(T_sp op, T_sp item, T_sp result);
-extern List_sp core__backquote_attach_conses(T_sp items, T_sp result);
-
-extern T_sp core__backquote_simplify(T_sp x);
-extern T_sp core__backquote_remove_tokens(T_sp x);
-
 void initialize_backquote();
 }; // namespace core
