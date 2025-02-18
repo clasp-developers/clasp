@@ -948,29 +948,28 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (buildReport)
     ss << (fmt::format("DISABLE_TYPE_INFERENCE = {}\n", (disable_type_inference ? "**DEFINED**" : "undefined")));
 
-#if USE_COMPILE_FILE_PARALLEL == 0
-  use_compile_file_parallel = false;
-  INTERN_(comp, STARuse_compile_file_parallelSTAR)->defparameter(nil<core::T_O>());
-  printf("%s:%d You have turned off compile-file-parallel\n   - you can enable it by setting USE_COMPILE_FILE_PARALLEL in the "
-         "wscript.config\n   - compile-file-parallel should be enabled by default\n",
-         __FILE__, __LINE__);
-#else
+  bool use_compile_file_parallel = false;  
+#ifdef USE_COMPILE_FILE_PARALLEL
   INTERN_(comp, STARuse_compile_file_parallelSTAR)->defparameter(_lisp->_true());
-#endif
-  if (buildReport)
-    ss << (fmt::format("USE_COMPILE_FILE_PARALLEL = {}\n", USE_COMPILE_FILE_PARALLEL));
-
-#if FORCE_STARTUP_EXTERNAL_LINKAGE == 0
-  force_startup_external_linkage = false;
-  INTERN_(comp, STARforce_startup_external_linkageSTAR)->defparameter(nil<core::T_O>());
+  use_compile_file_parallel = true;
 #else
-  INTERN_(comp, STARforce_startup_external_linkageSTAR)->defparameter(_lisp->_true());
+  INTERN_(comp, STARuse_compile_file_parallelSTAR)->defparameter(nil<core::T_O>());
 #endif
   if (buildReport)
-    ss << (fmt::format("FORCE_STARTUP_EXTERNAL_LINKAGE = {}\n", FORCE_STARTUP_EXTERNAL_LINKAGE));
+    ss << (fmt::format("USE_COMPILE_FILE_PARALLEL = {}\n", use_compile_file_parallel ? "**DEFINED**" : "undefined"));
+
+  bool force_startup_external_linkage = false;
+#ifdef FORCE_STARTUP_EXTERNAL_LINKAGE
+  force_startup_external_linkage = true;
+  INTERN_(comp, STARforce_startup_external_linkageSTAR)->defparameter(_lisp->_true());
+#else
+  INTERN_(comp, STARforce_startup_external_linkageSTAR)->defparameter(nil<core::T_O>());
+#endif
+  if (buildReport)
+    ss << (fmt::format("FORCE_STARTUP_EXTERNAL_LINKAGE = {}\n", force_startup_external_linkage ? "**DEFINED**" : "undefined"));
 
   bool use_human_readable_bitcode = false;
-#if USE_HUMAN_READABLE_BITCODE == 1
+#ifdef USE_HUMAN_READABLE_BITCODE
   use_human_readable_bitcode = true;
   debugging = true;
   if (setFeatures)
@@ -980,7 +979,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
     ss << (fmt::format("USE_HUMAN_READABLE_BITCODE = {}\n", (use_human_readable_bitcode ? "**DEFINED**" : "undefined")));
 
   bool debug_compile_file_output_info = false;
-#if DEBUG_COMPILE_FILE_OUTPUT_INFO == 1
+#ifdef DEBUG_COMPILE_FILE_OUTPUT_INFO
   debug_compile_file_output_info = true;
   debugging = true;
   if (setFeatures)
@@ -990,7 +989,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
     ss << (fmt::format("DEBUG_COMPILE_FILE_OUTPUT_INFO = {}\n", (debug_compile_file_output_info ? "**DEFINED**" : "undefined")));
 
   bool debug_dyn_env_stack = false;
-#if DEBUG_DYN_ENV_STACK == 1
+#ifdef DEBUG_DYN_ENV_STACK
   debug_dyn_env_stack = true;
   debugging = true;
   if (setFeatures)
