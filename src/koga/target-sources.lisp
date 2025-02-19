@@ -19,7 +19,8 @@
     (asdf:system-mailto :mailto)
     (asdf:system-long-name :long-name)
     (system-source-file :source-file)
-    (asdf:system-source-control :source-control)))
+    (asdf:system-source-control :source-control)
+    (asdf:system-defsystem-depends-on :defsystem-depends-on)))
 
 (defmethod add-target-source :after (configuration (target (eql :scraper)) (source h-source))
   (push source (scraper-headers configuration))
@@ -47,16 +48,19 @@
           else
             do (error "Found source path of ~a which is not relative to code root in system ~a."
                       file source))
-    (loop for name in systems
+    (loop with old-systems = (gethash target (target-systems configuration))
+          for name in systems
           for system = (asdf:find-system name)
-          do (pushnew (list* name
+          for entry = (list* name
                              (loop for (func key) in +asdf-system-initargs+
                                    for value = (funcall func system)
                                    when value
-                                     collect key and
-                                     collect value))
-                      (gethash target (target-systems configuration))
-                      :key #'car))))
+                                   collect key and
+                                   collect value))
+          finally (setf (gethash target (target-systems configuration))
+                        (nconc old-systems new-systems))
+          unless (find name old-systems :key #'car :test #'equal)
+            collect entry into new-systems)))
 
 (defmethod add-target-source (configuration target (source (eql :extension-systems))
                               &aux (systems (extension-systems configuration)))

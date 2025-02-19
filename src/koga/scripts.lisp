@@ -204,41 +204,37 @@ exec $(dirname \"$0\")/iclasp -f ignore-extensions --base \"$@\""))
   (ql-dist:install-dist \"http://quickclasp.thirdlaw.tech/quickclasp/quickclasp.txt\" :prompt nil))"))
 
 (defun pprint-immutable-systems (stream object &aux (*print-pretty* t))
-  (format stream "(in-package \"SYSTEM\")~%~%(defparameter *primary-systems*~%  '")
-  (let ((source-files (make-hash-table :test #'equalp)))
-    (loop for (name . properties) in object
-          for source-file = (getf properties :source-file)
-          when source-file
-            do (let ((p (gethash (file-namestring source-file) source-files)))
-                 (if p
-                     (incf (cdr p))
-                     (setf (gethash (file-namestring source-file) source-files)
-                           (cons name 1)))))
-    (asdf:map-systems (lambda (system)
-                        (let ((source-file (asdf:system-source-file system)))
-                          (when (and source-file
-                                     (gethash (file-namestring source-file) source-files))
-                            (decf (cdr (gethash (file-namestring source-file) source-files 0)))))))
-    (pprint-fill stream
-                 (loop for (name . count) being the hash-values of source-files
-                       when (minusp count)
-                         collect (asdf:primary-system-name name))))
-  (format stream ")~%~%(defparameter *immutable-systems*~%")
-  (pprint-logical-block (stream (sort (copy-seq object)
-                                      (lambda (x y)
-                                        (string-lessp (car x) (car y))))
-                         :prefix "  '(" :suffix ")")
-    (loop do (pprint-logical-block (stream (pprint-pop) :prefix "(" :suffix ")")
-               (write (asdf:coerce-name (pprint-pop)) :stream stream)
-               (loop do (pprint-exit-if-list-exhausted)
-                        (pprint-newline :mandatory stream)
-                        (write (pprint-pop) :case :downcase :stream stream)
-                        (pprint-exit-if-list-exhausted)
-                        (write-char #\Space stream)
-                        (write (pprint-pop) :stream stream)))
+  (let ((entries (loop with source-files = (make-hash-table :test #'equalp)
+                       for (name . properties) in object
+                       for entry = (list* name nil properties)
+                       for source-file = (getf properties :source-file)
+                       finally (asdf:map-systems (lambda (system)
+                                                   (let ((source-file (asdf:system-source-file system)))
+                                                     (when (and source-file
+                                                                (gethash (file-namestring source-file) source-files))
+                                                       (decf (cdr (gethash (file-namestring source-file) source-files)))))))
+                               (loop for (entry . count) being the hash-values of source-files
+                                     when (minusp count)
+                                       do (setf (cadr entry) t))
+                       collect entry
+                       when source-file
+                         do (setf (gethash (file-namestring source-file) source-files)
+                                  (cons entry 1)))))
+    (format stream "(in-package \"SYSTEM\")~%~%(defparameter *immutable-systems*~%")
+    (pprint-logical-block (stream entries :prefix "  '(" :suffix ")")
+      (loop do (pprint-logical-block (stream (pprint-pop) :prefix "(" :suffix ")")
+                 (write (asdf:coerce-name (pprint-pop)) :stream stream)
+                 (pprint-newline :mandatory stream)                    
+                 (write (pprint-pop)  :case :downcase :stream stream)
+                 (loop do (pprint-exit-if-list-exhausted)
+                          (pprint-newline :mandatory stream)
+                          (write (pprint-pop) :case :downcase :stream stream)
+                          (pprint-exit-if-list-exhausted)
+                          (write-char #\Space stream)
+                          (write (pprint-pop) :stream stream)))
               (pprint-exit-if-list-exhausted)
               (pprint-newline :mandatory stream)))
-  (write-line ")" stream))
+    (write-line ")" stream)))
 
 (defun print-translations (output-stream sources)
   (format output-stream "(in-package \"SYSTEM\")~%

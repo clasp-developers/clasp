@@ -73,6 +73,8 @@
   (declare (ignore component)))
 
 (defmethod grovel-component ((component asdf:system))
+  (loop for dependency in (asdf::system-defsystem-depends-on component)
+        do (grovel-component dependency))               
   (pushnew (intern (string-upcase (asdf:component-name component)) :keyword) *groveler-systems*)
   (call-next-method))
 
