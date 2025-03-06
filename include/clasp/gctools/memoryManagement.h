@@ -1275,9 +1275,15 @@ namespace gctools {
 
 typedef void (*PointerFix)(uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, void* user_data);
 
+struct T_sp_less {
+  bool operator()(const core::T_sp& lhs, const core::T_sp& rhs) const {
+    return lhs.tagged_() < rhs.tagged_();
+  }
+};
+
 void mapAllObjects(void (*)(Tagged, void*), void*);
 std::set<Tagged> setOfAllObjects();
-std::set<std::pair<Tagged, Tagged>> memtest(std::set<core::T_sp>&);
+std::set<std::pair<Tagged, Tagged>> memtest(std::set<core::T_sp, T_sp_less>&);
 size_t objectSize(BaseHeader_s* header);
 
 bool is_memory_readable(const void* address, size_t bytes = 8);

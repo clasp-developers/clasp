@@ -932,7 +932,7 @@ std::set<Tagged> setOfAllObjects() {
 // in that field is corrupt.
 // If a corrupt object is accessible in multiple fields, only one field containing
 // it is returned.
-std::set<std::pair<Tagged, Tagged>> memtest(std::set<core::T_sp>& dladdrFailed) {
+std::set<std::pair<Tagged, Tagged>> memtest(std::set<core::T_sp, T_sp_less>& dladdrFailed) {
   std::stack<std::pair<Tagged, Tagged>> markStack;
   std::set<Tagged> markSet;
   std::set<std::pair<Tagged, Tagged>> corrupt;
@@ -959,7 +959,7 @@ std::set<std::pair<Tagged, Tagged>> memtest(std::set<core::T_sp>& dladdrFailed) 
           if (tobj.isA<core::SimpleFun_O>()) {
             auto sfun = tobj.as_unsafe<core::SimpleFun_O>();
             if (!sfun->dladdrablep(uniqueEntryPoints))
-              dladdrFailed.insert(sfun);
+              dladdrFailed.insert(tobj);
           }
         } else {
           corrupt.emplace(containingObject, tagged);
