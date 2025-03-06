@@ -604,7 +604,7 @@ Str8Ns_sp Lisp::get_Str8Ns_buffer_string() {
   }
   Str8Ns_sp ret = gc::As<Str8Ns_sp>(oCar(my_thread->_BufferStr8NsPool));
   my_thread->_BufferStr8NsPool = oCdr(my_thread->_BufferStr8NsPool);
-  ret->fillPointerSet(clasp_make_fixnum(0));
+  ret->fillPointerSet(0);
   return ret;
 }
 
@@ -628,7 +628,7 @@ StrWNs_sp Lisp::get_StrWNs_buffer_string() {
   }
   StrWNs_sp ret = gc::As<StrWNs_sp>(oCar(my_thread->_BufferStrWNsPool));
   my_thread->_BufferStrWNsPool = oCdr(my_thread->_BufferStrWNsPool);
-  ret->fillPointerSet(clasp_make_fixnum(0));
+  ret->fillPointerSet(0);
   return ret;
 }
 
