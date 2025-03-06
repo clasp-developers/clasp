@@ -2,13 +2,13 @@ BootStrap: docker
 From: ghcr.io/yitzchak/archlinux-makepkg:latest
 
 %files
-    $HOME/Downloads/UDB-Corporate-8.0.0 /downloads/udb
+    $HOME/Downloads/UDB-x86-8.1.0 /downloads/udb
 
 %post
-    pacman -Syu --noconfirm binutils inetutils boost clang gmp fmt libunwind llvm ninja sbcl jupyterlab emacs openssh netcdf expat gocryptfs nodejs npm
+    pacman -Syu --noconfirm binutils inetutils boost clang gmp fmt libunwind llvm ninja sbcl jupyterlab emacs openssh netcdf expat gocryptfs nodejs npm strace
     (cd /downloads/udb; make install)
     cd /mnt
-    ./koga --extensions=cando --build-mode=bytecode-faso --llvm-config="/usr/bin/llvm-config" --build-path=build-apptainer/
+    ./koga --reproducible-build --extensions=cando --build-mode=bytecode-faso --llvm-config="/usr/bin/llvm-config" --build-path=build-apptainer/
     ninja -C build-apptainer
     ninja -C build-apptainer install
     wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
@@ -21,12 +21,15 @@ From: ghcr.io/yitzchak/archlinux-makepkg:latest
     conda install -y -c conda-forge jupyterlab sidecar ambertools
     jupyter-lab build
 #    mkdir /home/cando/.cache
-    cando -e "(ql:quickload :cando-jupyter)" -e "(core:exit)"
+    whoami
+    ls /home/
+#    cando -e "(load \"/home/meister/quicklisp/setup.lisp\")" -e "(ql:quickload :cando-jupyter)" -e "(core:exit)"
     chmod -R ugo+rw /home/cando/
 
 %environment
     export PATH="/home/cando/miniconda3/bin:${PATH}"
     export AMBERHOME=/home/cando/miniconda3
+    export LD_LIBRARY_PATH=/usr/local/lib
 #    export XDG_CACHE_HOME=/home/cando/.cache
 
 
