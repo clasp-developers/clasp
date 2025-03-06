@@ -141,7 +141,8 @@ void SimpleBitVector_inPlaceOr(SimpleBitVector_sp x, SimpleBitVector_sp y);
 void SimpleBitVector_inPlaceAnd(SimpleBitVector_sp x, SimpleBitVector_sp y);
 void SimpleBitVector_inPlaceXor(SimpleBitVector_sp x, SimpleBitVector_sp y);
 void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t>& res);
-size_t SimpleBitVector_lowestIndex(SimpleBitVector_sp x);
+T_sp SimpleBitVector_lowestIndex(SimpleBitVector_sp x);
+T_sp core__sbv_position_one(SimpleBitVector_sp v);
 bool SimpleBitVector_isZero(SimpleBitVector_sp x);
 SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv);
 } // namespace core

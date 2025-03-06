@@ -186,7 +186,11 @@ void SimpleBitVector_inPlaceXor(SimpleBitVector_sp x, SimpleBitVector_sp y) {
   core__sbv_bit_xor(x, y, x, len);
 }
 
-size_t SimpleBitVector_lowestIndex(SimpleBitVector_sp x) { return core__sbv_position_one(x); }
+/* Returns a fixnum or nil */
+T_sp SimpleBitVector_lowestIndex(SimpleBitVector_sp x)
+{
+  return core__sbv_position_one(x);
+}
 
 void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t>& res) {
   size_t i;
