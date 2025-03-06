@@ -2584,7 +2584,7 @@ T_sp StringStream_O::external_format() const {
 
 T_sp StringInputStream_O::make(const string& str) {
   String_sp s = str_create(str);
-  return cl__make_string_input_stream(s, make_fixnum(0), nil<T_O>());
+  return cl__make_string_input_stream(s, 0, nil<T_O>());
 }
 
 StringInputStream_sp StringInputStream_O::make(String_sp string, cl_index istart, cl_index iend) {

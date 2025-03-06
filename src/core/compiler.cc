@@ -743,7 +743,7 @@ DOCGROUP(clasp);
 CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default));
 CL_DEFUN core::T_sp core__load_fasoll(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
   //  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
-  llvmo::llvm_sys__load_ll(cl__pathname(pathDesig), verbose.notnilp(), print.notnilp(), external_format, nil<core::T_O>());
+  llvmo::llvm_sys__load_ll(cl__pathname(pathDesig), verbose.notnilp(), print.notnilp(), external_format);
   return _lisp->_true();
 }
 
@@ -751,7 +751,7 @@ DOCGROUP(clasp);
 CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default));
 CL_DEFUN core::T_sp core__load_fasobc(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
   //  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
-  llvmo::llvm_sys__load_bc(cl__pathname(pathDesig), verbose.notnilp(), print.notnilp(), external_format, nil<core::T_O>());
+  llvmo::llvm_sys__load_bc(cl__pathname(pathDesig), verbose.notnilp(), print.notnilp(), external_format);
   return _lisp->_true();
 }
 

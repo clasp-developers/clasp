@@ -294,8 +294,7 @@ CL_DOCSTRING(R"dx(reader_comma_form)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__reader_comma_form(T_sp sin, Character_sp ch) {
   Fixnum_sp backquote_level = gc::As<Fixnum_sp>(_sym_STARbackquote_levelSTAR->symbolValue());
-  // Note that backquote_level is a fixnum, i.e. shifted, so comparisons could be dangerous.
-  if (backquote_level == 0)
+  if (backquote_level.unsafe_fixnum() == 0)
     core__reader_error_backquote_context(sin);
   Fixnum_sp new_backquote_level = make_fixnum(unbox_fixnum(backquote_level) - 1);
   DynamicScopeManager scope(_sym_STARbackquote_levelSTAR, new_backquote_level);

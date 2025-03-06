@@ -314,7 +314,7 @@ static void create_descriptor(T_sp stream, T_sp direction, int* child, int* pare
       *child = dup(*child);
     } else {
       CEerror(SimpleBaseString_O::make("Create a new stream."), "~S argument to RUN-PROGRAM does not have a file handle:~%~S",
-              direction, stream);
+              2, direction, stream);
       create_descriptor(kw::_sym_stream, direction, child, parent);
       return;
     }

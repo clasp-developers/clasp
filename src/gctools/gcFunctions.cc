@@ -390,7 +390,7 @@ CL_DEFUN void cl__room(core::Symbol_sp x) {
 
 bool memory_test() {
   core::lisp_write("Testing coherence of objects in memory\n");
-  std::set<core::T_sp> undladdrableFuns;
+  std::set<core::T_sp, gctools::T_sp_less> undladdrableFuns;
   auto corrupt = gctools::memtest(undladdrableFuns);
   bool result = true;
 

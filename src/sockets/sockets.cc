@@ -580,36 +580,6 @@ CL_DOCSTRING(R"dx(ll_dup)dx");
 DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__ll_dup(int fd) { return dup(fd); }
 
-CL_LAMBDA(name fd stream-mode element-type external-format);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_makeStreamFromFd)dx");
-DOCGROUP(clasp);
-CL_DEFUN core::T_sp sockets_internal__ll_makeStreamFromFd(const string& name,        // #0
-                                                          int fd,                    // #1
-                                                          int streamMode,            // #2
-                                                          core::T_sp elementType,    // #3
-                                                          core::T_sp externalFormat) // #4
-{
-  core::StreamDirection direction;
-  switch (streamMode) {
-  case static_cast<int>(core::StreamDirection::input):
-    direction = core::StreamDirection::input;
-    break;
-  case static_cast<int>(core::StreamDirection::output):
-    direction = core::StreamDirection::output;
-    break;
-  case static_cast<int>(core::StreamDirection::io):
-    direction = core::StreamDirection::io;
-    break;
-  default: {
-    SIMPLE_ERROR("Illegal stream mode {}", streamMode);
-  }
-  }
-  core::Stream_sp stream =
-      gc::As_unsafe<core::Stream_sp>(core::CFileStream_O::make(core::str_create(name), fd, direction, elementType, externalFormat));
-  return stream;
-}
-
 CL_LAMBDA(stream);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(ll_autoCloseTwoWayStream)dx");

@@ -195,7 +195,9 @@ T_sp SimpleBitVector_lowestIndex(SimpleBitVector_sp x)
 void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t>& res) {
   size_t i;
   res.clear();
-  i = SimpleBitVector_lowestIndex(x);
+  T_sp tind = core__sbv_position_one(x);
+  if (tind.fixnump()) i = tind.unsafe_fixnum();
+  else i = x->length();
   for (; i != x->length(); i++) {
     if (x[i]) {
       res.push_back(i);

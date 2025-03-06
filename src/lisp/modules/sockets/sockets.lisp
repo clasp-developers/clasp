@@ -510,13 +510,10 @@ also known as unix-domain sockets."))
 (defun make-stream-from-fd (fd mode &key buffering element-type (external-format :default)
                             (name "FD-STREAM"))
   (assert (stringp name) (name) "name must be a string.")
-  (let* ((smm-mode (ecase mode
-                       (:input +clasp-stream-mode-input+)
-                       (:output +clasp-stream-mode-output+)
-                       (:input-output +clasp-stream-mode-io+)
-                       ))
-         (external-format (unless (subtypep element-type 'integer) external-format))
-         (stream (ll-make-stream-from-fd name fd smm-mode element-type external-format)))
+  (let* ((external-format (if (subtypep element-type 'integer)
+                              :default
+                              external-format))
+         (stream (ext:make-stream-from-fd fd mode :element-type element-type :external-format external-format :name name)))
     (when buffering
       (si::set-buffering-mode stream buffering))
     stream))
