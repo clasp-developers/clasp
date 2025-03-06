@@ -417,7 +417,7 @@ public:
   }
 
 public:
-  inline operator bool() const { return this->theObject != NULL; };
+  inline explicit operator bool() const { return this->theObject != NULL; };
   inline Type* untag_object() const { return ::gctools::untag_object(this->theObject); }
   /*! Dereferencing operator - remove the other tag */
   inline Type* operator->() const {
@@ -520,7 +520,7 @@ public:
   };
 
 public:
-  inline operator bool() const { return this->theObject != NULL; };
+  inline explicit operator bool() const { return this->theObject != NULL; };
   inline operator smart_ptr<core::T_O>() const { return smart_ptr<core::T_O>((Tagged)this->theObject); };
 
 public:
