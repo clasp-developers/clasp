@@ -167,19 +167,24 @@ Return the source-location for the name/kind pair"
           (let ((source-loc (core:get-sysprop name 'core:cxx-method-source-location)))
             (fix-paths-and-make-source-locations source-loc)))
       (:function
-       (when (fboundp name)
-         (if (symbolp name)
-             (cond ((special-operator-p name)
-                    (special-operator-source-locations name))
-                   ((macro-function name)
-                    (source-locations-set-info
-                     (get-source-info-for-function-object
-                      (macro-function name))
-                     'defmacro))
-                   ((fdefinition name)
-                    (get-source-info-for-function-object (fdefinition name))))
-             ;name is (setf sym)
-             (get-source-info-for-function-object (fdefinition name)))))
+       (flet ((fun (name)
+                (let ((old (sys::traced-old-definition name)))
+                  (get-source-info-for-function-object
+                   (or old
+                       (fdefinition name))))))
+         (when (fboundp name)
+           (if (symbolp name)
+               (cond ((special-operator-p name)
+                      (special-operator-source-locations name))
+                     ((macro-function name)
+                      (source-locations-set-info
+                       (get-source-info-for-function-object
+                        (macro-function name))
+                       'defmacro))
+                     ((fdefinition name)
+                      (fun name)))
+               ;; name is (setf sym)
+               (fun name)))))
       (:compiler-macro
        (when (fboundp name)
          (let ((cmf (compiler-macro-function name)))
