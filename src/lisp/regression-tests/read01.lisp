@@ -80,9 +80,14 @@
                    :type type-error)
 
 ;; issue 1666
-(test read-backquote-vector
+(test read-backquote-vector-1
       (eval (read-from-string "`#(a ,(+ 1 2))"))
       (#(a 3)))
+
+;; briefly caused an issue
+(test read-backquote-vector-2
+      (eval (read-from-string "`(#())"))
+      ((#())))
 
 (test read-from-string-1a
       (let ((*read-default-float-format* 'single-float))
