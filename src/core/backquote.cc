@@ -313,6 +313,11 @@ CL_DEFUN T_sp core__backquote_simplify(T_sp x) {
   if (cx->car() != _sym_STARbq_appendSTAR) {
     return x;
   }
+  if (cx->cdr().nilp()) {
+    // We are (*bq-append*), which is just nil.
+    // beware, backquote_simplify_args will not tolerate a nil cdr.
+    return nil<T_O>();
+  }
   T_sp s = core__backquote_simplify_args(cx);
   return s;
 };
