@@ -243,6 +243,7 @@ public:
 #ifdef CLASP_APPLE_SILICON
     CodeBlock_sp codeblock = gctools::GC<CodeBlock_O>::allocate<Stage>(0);
     void* mmappedBlock = mmap(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON | MAP_PRIVATE | MAP_JIT, -1, 0);
+    #error "This shouldn't work"
     if (mmappedBlock == MAP_FAILED || !mmappedBlock) {
       printf("%s:%d:%s mmap failed\n", __FILE__, __LINE__, __FUNCTION__);
       abort();

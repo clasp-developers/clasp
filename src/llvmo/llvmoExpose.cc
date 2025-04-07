@@ -85,7 +85,11 @@ Error enableObjCRegistration(const char* PathToLibObjC);
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/IntrinsicInst.h>
 #include <llvm/IR/Mangler.h>
+#if LLVM_VERSION_MAJOR < 20
 #include <llvm/Transforms/Instrumentation.h>
+#else
+#include <llvm/Transforms/Utils/Instrumentation.h>
+#endif
 #include <llvm/Transforms/Instrumentation/ThreadSanitizer.h>
 #include <llvm/Transforms/Utils/BasicBlockUtils.h>
 #include <llvm/Transforms/IPO.h>
