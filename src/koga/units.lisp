@@ -206,7 +206,7 @@
 -Wno-deprecated-register -Wno-expansion-to-defined -Wno-return-type-c-linkage ~
 -Wno-invalid-offsetof -Wno-#pragma-messages -Wno-inconsistent-missing-override ~
 -Wno-error=c++11-narrowing -Wno-c++11-narrowing -Wno-deprecated-enum-enum-conversion ~
--Wno-deprecated-anon-enum-enum-conversion"))
+-Wno-deprecated-anon-enum-enum-conversion -Wno-deprecated-literal-operator"))
   (loop for variant in (variants configuration)
         do (append-cflags variant (format nil "-I~a" (variant-bitcode-name variant)))
            (append-cflags variant (format nil "-I~a/generated" (variant-bitcode-name variant)))
