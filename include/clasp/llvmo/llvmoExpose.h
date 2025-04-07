@@ -916,6 +916,7 @@ template <typename T, typename U> T* llvm_cast(U* p) {
   return reinterpret_cast<T*>(p);
 }
 
+#if 0
 namespace llvmo {
 FORWARD(LLVMTargetMachine);
 class LLVMTargetMachine_O : public TargetMachine_O {
@@ -950,6 +951,10 @@ template <> struct to_object<llvm::LLVMTargetMachine*> {
   }
 };
 }; // namespace translate
+
+#endif
+
+
 
 namespace llvmo {
 FORWARD(Value);

@@ -89,7 +89,11 @@
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/IntrinsicInst.h>
 #include <llvm/IR/Mangler.h>
+#if LLVM_VERSION_MAJOR < 20
 #include <llvm/Transforms/Instrumentation.h>
+#else
+#include <llvm/Transforms/Utils/Instrumentation.h>
+#endif
 #include <llvm/Transforms/Instrumentation/ThreadSanitizer.h>
 #include <llvm/Transforms/Utils/BasicBlockUtils.h>
 #include <llvm/Transforms/IPO.h>
@@ -361,7 +365,8 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     if (!MR.getSymbols().count(PersonalitySymbol))
       Config.PrePrunePasses.insert(Config.PrePrunePasses.begin(), [this](jitlink::LinkGraph& G) -> Error {
         for (auto ssym : G.defined_symbols()) {
-          if (ssym->getName() == "DW.ref.__gxx_personality_v0") {
+          std::string sssym(ssym->getName());
+          if (strcmp(sssym.c_str(), "DW.ref.__gxx_personality_v0") == 0) {
             DEBUG_OBJECT_FILES_PRINT(
                 ("%s:%d:%s PrePrunePass found DW.ref.__gxx_personality_v0 setting Strong Linkage and Local scope\n", __FILE__,
                  __LINE__, __FUNCTION__));
