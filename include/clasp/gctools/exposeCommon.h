@@ -21,7 +21,11 @@ typedef bool _Bool;
 #include <llvm/IR/CallingConv.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Instructions.h>
+#if LLVM_VERSION_MAJOR < 20
 #include <llvm/Transforms/Instrumentation.h>
+#else
+#include <llvm/Transforms/Utils/Instrumentation.h>
+#endif
 #include <llvm/Transforms/IPO.h>
 #include <llvm/IR/InlineAsm.h>
 #include <llvm/CodeGen/TargetPassConfig.h>

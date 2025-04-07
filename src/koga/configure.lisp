@@ -983,6 +983,7 @@ the function to the overall configuration."
   "Configure a program by looking through a list of candidates and checking the version number
 if provided."
   (flet ((search-by-major (major-version)
+           (declare (optimize (debug 3)))
            (loop for candidate in (if (listp candidates) candidates (list candidates))
                  for path = (if (stringp candidate)
                                 (format nil candidate major-version)
@@ -992,8 +993,18 @@ if provided."
                            (or (null major-version)
                                (and match
                                     (search match version))
-                               (= major-version
-                                  (first (uiop:parse-version version)))))
+                               (let ((ver (let ((bad-pos (position-if-not (lambda (c)
+                                                                            (or (digit-char-p c)
+                                                                                (char= #\. c)))
+                                                                          version)))
+                                            (cond
+                                              ((null bad-pos)
+                                               version)
+                                              ((= bad-pos 0)
+                                               (error "Could not interpret result ~s from (~s ~s) as a version string containing (digits | period) followed by junk  match = ~s  major-version = ~s" ver path version-flag match major-version))
+                                              (t (subseq version 0 bad-pos))))))
+                                 (= major-version
+                                    (first (uiop:parse-version ver))))))
                    do (message :info "Found ~a program with path ~a ~:[~;and version ~a~]"
                                name path major-version version)
                       (return-from configure-program (values path version)))))

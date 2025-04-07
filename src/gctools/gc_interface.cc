@@ -599,7 +599,7 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init_class_kind(llvmo::UndefValue_O);
   Init_class_kind(llvmo::ConstantArray_O);
   Init_class_kind(llvmo::TargetMachine_O);
-  Init_class_kind(llvmo::LLVMTargetMachine_O);
+//  Init_class_kind(llvmo::LLVMTargetMachine_O);
   Init_class_kind(llvmo::ThreadSafeContext_O);
   Init_class_kind(llvmo::NamedMDNode_O);
   Init_class_kind(llvmo::Triple_O);
