@@ -35,10 +35,20 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
+HashTableEq_sp HashTableEq_O::create(Mapping_sp mapping, Number_sp rehashSize, double rehashThreshold) {
+  return gctools::GC<HashTableEq_O>::allocate(mapping, rehashSize, rehashThreshold);
+}
+
+HashTableEq_sp HashTableEq_O::create(Mapping_sp mapping) {
+  return create(mapping, SingleFloat_dummy_O::create(2.0), DEFAULT_REHASH_THRESHOLD);
+}
+
 HashTableEq_sp HashTableEq_O::create(uint sz, Number_sp rehashSize, double rehashThreshold) {
-  auto hashTable = gctools::GC<HashTableEq_O>::allocate_with_default_constructor();
-  hashTable->setup(sz, rehashSize, rehashThreshold);
-  return hashTable;
+  return create(StrongMapping_O::make(sz), rehashSize, rehashThreshold);
+}
+
+HashTableEq_sp HashTableEq_O::create(uint sz) {
+  return HashTableEq_O::create(sz, SingleFloat_dummy_O::create(2.0), DEFAULT_REHASH_THRESHOLD);
 }
 
 HashTableEq_sp HashTableEq_O::create_default() {
@@ -72,30 +82,12 @@ HashTableEq_sp HashTableEq_O::createFromPList(List_sp plist, Symbol_sp nilTermin
   return ht;
 }
 
-KeyValuePair* HashTableEq_O::searchTable_no_read_lock(T_sp key, cl_index index) {
-  for (size_t cur = index, curEnd(this->_Table.size()); cur < curEnd; ++cur) {
-    KeyValuePair& entry = this->_Table[cur];
-    if (entry._Key == key)
-      return &entry;
-    if (entry._Key.no_keyp())
-      goto NOT_FOUND;
-  }
-  for (size_t cur = 0, curEnd(index); cur < curEnd; ++cur) {
-    KeyValuePair& entry = this->_Table[cur];
-    if (entry._Key == key)
-      return &entry;
-    if (entry._Key.no_keyp())
-      goto NOT_FOUND;
-  }
-NOT_FOUND:
-  return nullptr;
-}
-
 bool HashTableEq_O::keyTest(T_sp entryKey, T_sp searchKey) const { return cl__eq(entryKey, searchKey); }
 
-gc::Fixnum HashTableEq_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator& hg) const {
-  HashTable_O::sxhash_eq(hg, obj);
-  return hg.hashBound(bound);
+void HashTableEq_O::sxhashEffect(T_sp obj, HashGenerator& hg) const {
+  if (obj.generalp()) hg.addGeneralAddress(obj.as_unsafe<General_O>());
+  else if (obj.consp()) hg.addConsAddress(obj.as_unsafe<Cons_O>());
+  else hg.addValue((uintptr_t)obj.raw_());
 }
 
 }; // namespace core

@@ -238,8 +238,7 @@ core::T_O* to_object_pointer(void* x);
 };
 
 extern "C" {
-extern uint64_t cx_read_stamp(core::T_O* tagged_pointer, uint64_t new_stamp);
-extern core::T_O* cc_match(core::T_O* old_value, core::T_O* new_value);
+extern gctools::Tagged cx_read_stamp(core::T_O* tagged_pointer);
 [[noreturn]] void invalid_index_error(void* fixnum_index, void* fixnum_max, void* fixnum_axis);
 core::T_O* makeCompiledFunction(core::T_O* tentrypoint, core::T_O* frameP);
 }

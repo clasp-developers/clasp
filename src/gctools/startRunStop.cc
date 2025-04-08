@@ -105,13 +105,6 @@ int handleFatalCondition() {
   int exitCode = 0;
   try {
     throw;
-  } catch (core::ExitProgramException& ee) {
-    // Do nothing
-    //            printf("Caught ExitProgram in %s:%d\n", __FILE__, __LINE__);
-    exitCode = ee.getExitResult();
-  } catch (core::TerminateProgramIfBatch& ee) {
-    // Do nothing
-    printf("Caught TerminateProgramIfBatch in %s:%d\n", __FILE__, __LINE__);
   } catch (core::CatchThrow& ee) {
     core::clasp_write_string(fmt::format("{}:{} Uncaught THROW tag[{}] - this should NEVER happen - the stack should never be "
                                          "unwound unless there is a CATCH clause that matches the THROW",
@@ -179,13 +172,6 @@ CL_DEFUN void gctools__register_loaded_objects() {
 extern "C" {
 
 int startup_clasp(void** stackMarker, gctools::ClaspInfo* claspInfo, int* exitCode) {
-
-  if (gctools::Header_s::weak_mtag != gctools::character_tag) {
-    printf("%s:%d:%s The Header_s::weak_mtag (%lu) MUST have the same value as gctools::character_tag(%lu)\n", __FILE__, __LINE__,
-           __FUNCTION__, (uintptr_t)gctools::Header_s::weak_mtag, (uintptr_t)gctools::character_tag);
-    abort();
-  }
-  gctools::_global_stack_marker = (const char*)stackMarker;
   gctools::_global_stack_max_size = claspInfo->_stackMax;
   gctools::global_alignup_sizeof_header = gctools::AlignUp(sizeof(gctools::Header_s));
   gctools::global_sizeof_fwd = gctools::AlignUp(sizeof(gctools::Header_s));
@@ -495,7 +481,7 @@ int run_clasp(gctools::ClaspInfo* claspInfo) {
   int exitCode;
   try {
     exitCode = _lisp->run();
-  } catch (core::SaveLispAndDie& ee) {
+  } catch (snapshotSaveLoad::SaveLispAndDie& ee) {
 #ifdef USE_PRECISE_GC
     snapshotSaveLoad::snapshot_save(ee);
 #endif

@@ -77,7 +77,8 @@ typedef bool _Bool;
 #include <clasp/core/mpPackage.h>
 #include <clasp/core/bytecode.h>
 #include <clasp/core/unixfsys.h>
-#include <clasp/core/weakHashTable.h>
+#include <clasp/core/object.h>
+#include <clasp/gctools/gcweak.h>
 #include <clasp/core/smallMultimap.h>
 // #include "core/symbolVector.h"
 #include <clasp/core/designators.h>
@@ -115,7 +116,6 @@ typedef bool _Bool;
 #include <clasp/core/smallMap.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/sharpEqualWrapper.h>
-#include <clasp/core/weakHashTable.h>
 #include <clasp/core/unwind.h>
 #include <clasp/core/fli.h>
 #include <clasp/gctools/gc_boot.h>

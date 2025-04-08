@@ -250,7 +250,7 @@ const char* my_LLVMSymbolLookupCallback(void* DisInfo, uint64_t ReferenceValue, 
     }
     if (symbol[0] == LITERALS_NAME[0] && strlen(symbol) > strlen(LITERALS_NAME) &&
         strncmp(LITERALS_NAME, symbol + 1, strlen(LITERALS_NAME)) == 0) {
-      ss << "[" << dbg_safe_repr((uintptr_t)*(uintptr_t*)ReferenceValue) << "]";
+      ss << "[" << dbg_safe_repr(*(void**)ReferenceValue) << "]";
     }
     ss << "}";
     strcpy(global_LLVMSymbolLookupCallbackBuffer, ss.str().c_str());
@@ -1490,7 +1490,7 @@ CL_DEFMETHOD void Module_O::dump_namedMDList() const {
 
 void Module_O::initialize() {
   this->Base::initialize();
-  this->_UniqueGlobalVariableStrings = core::HashTableEqual_O::create_default();
+  this->_UniqueGlobalVariableStrings = core::HashTable_O::createEqual();
 }
 
 CL_DEFMETHOD void Module_O::emit_version_ident_metadata() {
@@ -1547,7 +1547,7 @@ CL_DEFMETHOD core::List_sp Module_O::getGlobalList() const {
 
 namespace llvmo {
 
-void ExecutionEngine_O::initialize() { this->_DependentModules = core::HashTableEqual_O::create_default(); }
+void ExecutionEngine_O::initialize() { this->_DependentModules = core::HashTable_O::createEqual(); }
 
 string ExecutionEngine_O::__repr__() const {
   stringstream ss;
@@ -4157,7 +4157,7 @@ namespace llvmo {
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr) {
   printf("%s:%d:%s ptr = %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
-  core::HashTableEqual_sp ht = gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue());
+  core::HashTable_sp ht = gc::As<core::HashTable_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue());
   core::T_sp result = nil<core::T_O>();
   ht->map_while_true([ptr, &result](core::T_sp key, core::T_sp value) -> bool {
     if (value.consp()) {

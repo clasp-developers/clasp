@@ -55,8 +55,8 @@ void af_addAllSymbolsToExecutionEngine(llvmo::ExecutionEngine_sp engine, llvmo::
     */
 void redirect_llvm_interface_addSymbol();
 
-bool llvm_sys__load_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID);
-bool llvm_sys__load_bc(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID);
+bool llvm_sys__load_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID = 0);
+bool llvm_sys__load_bc(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID = 0);
 
 ClaspJIT_sp llvm_sys__clasp_jit();
 

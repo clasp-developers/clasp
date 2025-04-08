@@ -36,6 +36,12 @@ THE SOFTWARE.
 #include <clasp/core/iterator.h>
 #include <clasp/core/pathname.fwd.h>
 
+template <> struct gctools::GCInfo<core::Path_O> {
+  static bool constexpr NeedsInitialization = true;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
 namespace core {
 
 SMART(Path);
@@ -72,7 +78,7 @@ public:
   void setPath(const std::filesystem::path& p);
   void setPathFromString(const string& path);
 
-  void sxhash_(HashGenerator& hg) const;
+  void sxhash_equal(HashGenerator& hg) const;
   Path_sp parent_path();
 
   /*! Return just the fileName (*--end) as a string*/

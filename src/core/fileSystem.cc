@@ -142,7 +142,7 @@ Path_mv af_makePath(List_sp args) {
   return (Values(me));
 }
 
-void Path_O::sxhash_(HashGenerator& hg) const {
+void Path_O::sxhash_equal(HashGenerator& hg) const {
 
   string ts = this->_Path._value.string();
   for (char const& c : ts)

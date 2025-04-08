@@ -114,7 +114,6 @@ public: // ctor/dtor for classes with shared virtual base
   Instance_O() : _Class(nil<Instance_O>()), _Rack(unbound<Rack_O>()){};
   explicit Instance_O(Instance_sp metaClass) : _Class(metaClass), _Rack(unbound<Rack_O>()){};
   Instance_O(Instance_sp cl, Rack_sp rack) : _Class(cl), _Rack(rack){};
-  virtual ~Instance_O(){};
 
 public:
   // The order MUST be:
@@ -160,7 +159,7 @@ public:
     return this->isSubClassOf(lisp_classFromClassSymbol(oclass::static_classSymbol()));
   }
 
-  void accumulateSuperClasses(HashTableEq_sp supers, ComplexVector_T_sp arrayedSupers, Instance_sp mc);
+  void accumulateSuperClasses(HashTable_sp supers, ComplexVector_T_sp arrayedSupers, Instance_sp mc);
   void lowLevel_calculateClassPrecedenceList();
 
   virtual bool isSubClassOf(Instance_sp mc) const;

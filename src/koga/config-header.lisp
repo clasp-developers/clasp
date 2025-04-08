@@ -26,8 +26,8 @@
                          (if (eq (build-mode configuration) :bytecode-faso)
                              :bytecode
                              (build-mode configuration))) t
-                 "USE_COMPILE_FILE_PARALLEL" (if (compile-file-parallel configuration) 1 0)
-                 "FORCE_STARTUP_EXTERNAL_LINKAGE" (if (force-startup-external-linkage configuration) 1 0)
+                 "USE_COMPILE_FILE_PARALLEL" (compile-file-parallel configuration)
+                 "FORCE_STARTUP_EXTERNAL_LINKAGE" (force-startup-external-linkage configuration)
                  "USE_PRECISE_GC" *variant-precise*
                  "USE_BOEHM" (eq :boehm *variant-gc*)
                  "USE_MMTK" (eq :mmtk *variant-gc*)
@@ -78,7 +78,6 @@
                  "DEBUG_TRACK_UNWINDS" (debug-track-unwinds configuration)
                  "DEBUG_NO_UNWIND" (debug-no-unwind configuration)
                  "DEBUG_STARTUP" (debug-startup configuration)
-                 "DEBUG_REHASH_COUNT" (debug-rehash-count configuration)
                  "DEBUG_MONITOR" (debug-monitor configuration)
                  "DEBUG_MONITOR_SUPPORT" (debug-monitor-support configuration)
                  "DEBUG_MEMORY_PROFILE" (debug-memory-profile configuration)

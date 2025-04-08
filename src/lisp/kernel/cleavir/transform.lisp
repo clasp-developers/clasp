@@ -677,7 +677,7 @@ Optimizations are available for any of:
 ;;;
 ;;; (18) HASH TABLES
 
-(deftransform-type-predicate hash-table-p core:hash-table-base)
+(deftransform-type-predicate hash-table-p hash-table)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

@@ -29,7 +29,6 @@ namespace core {
 typedef template_SimpleBitUnitVector<SimpleBitVector_O, 1, false> specialized_SimpleBitVector;
 class SimpleBitVector_O : public specialized_SimpleBitVector {
   LISP_CLASS(core, ClPkg, SimpleBitVector_O, "simple-bit-vector", AbstractSimpleVector_O);
-  virtual ~SimpleBitVector_O(){};
 
 public:
   typedef specialized_SimpleBitVector TemplatedBase;
@@ -59,7 +58,7 @@ public:
   // for convenience if not speed
   virtual void __write__(T_sp strm) const override final;
   virtual bool equal(T_sp other) const final;
-  virtual void sxhash_(HashGenerator& hg) const final { this->ranged_sxhash(hg, 0, this->length()); }
+  virtual void sxhash_equal(HashGenerator& hg) const final { this->ranged_sxhash(hg, 0, this->length()); }
   virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const final {
     if (hg.isFilling()) {
       Fixnum hash = 5381;
@@ -76,7 +75,6 @@ public:
 namespace core {
 class BitVectorNs_O : public template_Vector<BitVectorNs_O, SimpleBitVector_O, ComplexVector_O> {
   LISP_CLASS(core, CorePkg, BitVectorNs_O, "BitVectorNs", ComplexVector_O);
-  virtual ~BitVectorNs_O(){};
 
 public:
   typedef template_Vector<BitVectorNs_O, SimpleBitVector_O, ComplexVector_O> TemplatedBase;
@@ -102,7 +100,7 @@ public:
   virtual bool equal(T_sp other) const final;
 
 public:
-  virtual void sxhash_(HashGenerator& hg) const final {
+  virtual void sxhash_equal(HashGenerator& hg) const final {
     if (hg.isFilling()) {
       AbstractSimpleVector_sp svec;
       size_t start, end;
@@ -116,7 +114,6 @@ public:
 namespace core {
 class MDArrayBit_O : public template_Array<MDArrayBit_O, SimpleMDArrayBit_O, SimpleBitVector_O, MDArray_O> {
   LISP_CLASS(core, CorePkg, MDArrayBit_O, "MDArrayBit", MDArray_O);
-  virtual ~MDArrayBit_O(){};
 
 public:
   typedef template_Array<MDArrayBit_O, SimpleMDArrayBit_O, SimpleBitVector_O, MDArray_O> TemplatedBase;
@@ -130,7 +127,6 @@ public: // make array
 namespace core {
 class SimpleMDArrayBit_O : public template_SimpleArray<SimpleMDArrayBit_O, SimpleBitVector_O, SimpleMDArray_O> {
   LISP_CLASS(core, CorePkg, SimpleMDArrayBit_O, "SimpleMDArrayBit", SimpleMDArray_O);
-  virtual ~SimpleMDArrayBit_O(){};
 
 public:
   typedef template_SimpleArray<SimpleMDArrayBit_O, SimpleBitVector_O, SimpleMDArray_O> TemplatedBase;
@@ -145,7 +141,8 @@ void SimpleBitVector_inPlaceOr(SimpleBitVector_sp x, SimpleBitVector_sp y);
 void SimpleBitVector_inPlaceAnd(SimpleBitVector_sp x, SimpleBitVector_sp y);
 void SimpleBitVector_inPlaceXor(SimpleBitVector_sp x, SimpleBitVector_sp y);
 void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t>& res);
-size_t SimpleBitVector_lowestIndex(SimpleBitVector_sp x);
+T_sp SimpleBitVector_lowestIndex(SimpleBitVector_sp x);
+T_sp core__sbv_position_one(SimpleBitVector_sp v);
 bool SimpleBitVector_isZero(SimpleBitVector_sp x);
 SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv);
 } // namespace core

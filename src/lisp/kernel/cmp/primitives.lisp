@@ -81,7 +81,6 @@
                cmpref:*startup-primitives-as-list*)
      ,@'((primitive         "ltvc_lookup_literal" :t* (list :gcroots-in-module* :size_t))
          (primitive         "ltvc_lookup_transient" :t* (list :gcroots-in-module* :i8 :size_t))
-         (primitive         "cc_match" :t* (list :t* :t*))    
          (primitive-unwinds "cc_register_startup_function" :void (list :size_t :fn-start-up*))
          (primitive         "cc_protect_alloca" :void (list :i8*))
 
@@ -396,7 +395,6 @@
          (primitive-unwinds "to_object_pointer" :t* (list :i64*))
          (primitive-unwinds "to_object_void" :t* (list))
          ;; === END OF TRANSLATORS ===
-         (primitive         "cx_read_stamp" :t* (list :t* :i64))
          (primitive         "cc_read_derivable_cxx_stamp_untagged_object" :i64 (list :i8*))
          #+(or)(primitive         "cc_read_slot" :t* (list :t* :size_t))
          #+(or)(primitive         "cc_write_slot" :t* (list :t* :size_t :t*))

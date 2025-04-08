@@ -37,9 +37,11 @@ FORWARD(HashTableEql);
 class HashTableEql_O : public HashTable_O {
   LISP_CLASS(core, CorePkg, HashTableEql_O, "HashTableEql", HashTable_O);
   DEFAULT_CTOR_DTOR(HashTableEql_O);
+  HashTableEql_O(Mapping_sp map, Number_sp rhsize, double rhthresh)
+    : HashTable_O(map, rhsize, rhthresh) {}
 
-private: // instance variables here
 public:
+  static HashTableEql_sp create(Mapping_sp mapping, Number_sp rehashSize, double rehashThreshold);
   static HashTableEql_sp create(uint sz, Number_sp rehashSize, double rehashThreshold);
   static HashTableEql_sp create_default();
 
@@ -50,7 +52,7 @@ public: // Functions here
 
   bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
-  gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, HashGenerator& hg) const;
+  void sxhashEffect(T_sp key, HashGenerator& hg) const;
 };
 
 }; // namespace core

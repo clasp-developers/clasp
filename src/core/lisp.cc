@@ -171,7 +171,7 @@ public:
   SimpleString_sp _substr;
   FindApropos(SimpleString_sp str) {
     this->_substr = str;
-    this->_symbols = HashTableEq_O::create_default();
+    this->_symbols = HashTable_O::createEq();
   };
   virtual bool mapKeyValue(T_sp key, T_sp value) {
     //    Bignum_sp skey = gc::As<Bignum_sp>(key);
@@ -206,8 +206,6 @@ Lisp::Lisp() : _Booted(false), _MpiEnabled(false), _MpiRank(0), _MpiSize(1), _Bo
   //  this->_Roots._Bindings.reserve(1024); // moved to Lisp::initialize()
 }
 
-Lisp::~Lisp(){};
-
 void Lisp::shutdownLispEnvironment() {
   this->_Booted = false;
   if (globals_->_DebugStream != NULL)
@@ -228,9 +226,9 @@ void Lisp::initialize() {
   //  printf("%s:%d Initializing _lisp\n", __FILE__, __LINE__ );
 
   this->_Roots.charInfo.initialize();
-  this->_Roots._SourceFileIndices = HashTableEqual_O::create_default();
-  this->_Roots._PackageNameIndexMap = HashTableEqual_O::create_default();
-  this->_Roots._ThePathnameTranslations = HashTableEqualp_O::create_default();
+  this->_Roots._SourceFileIndices = HashTable_O::createEqual();
+  this->_Roots._PackageNameIndexMap = HashTable_O::createEqual();
+  this->_Roots._ThePathnameTranslations = HashTable_O::createEqualp();
 }
 
 template <class oclass> void setup_static_classSymbol(BootStrapCoreSymbolMap const& sidMap) {
@@ -503,7 +501,7 @@ void Lisp::startupLispEnvironment() {
 #endif
   {
     initialize_Lisp();
-    core::HashTableEql_sp ht = core::HashTableEql_O::create_default();
+    core::HashTable_sp ht = core::HashTable_O::createEql();
     core::_sym_STARcxxDocumentationSTAR->defparameter(ht);
     Readtable_sp readtable = Readtable_O::create_standard_readtable();
     cl::_sym_STARreadtableSTAR->defparameter(readtable);
@@ -549,8 +547,6 @@ void Lisp::startupLispEnvironment() {
   {
     FILE* null_out = fopen("/dev/null", "w");
     this->_Roots._NullStream = CFileStream_O::make(str_create("/dev/null"), null_out, StreamDirection::io);
-    this->_Roots._RehashSize = DoubleFloat_O::create(2.0);
-    this->_Roots._RehashThreshold = DoubleFloat_O::create(maybeFixRehashThreshold(0.7));
     this->_Roots._ImaginaryUnit = Complex_O::create(0.0, 1.0);
     this->_Roots._ImaginaryUnitNegative = Complex_O::create(0.0, -1.0);
     this->_Roots._PlusHalf = Ratio_O::create_primitive(make_fixnum(1), make_fixnum(2));
@@ -608,7 +604,7 @@ Str8Ns_sp Lisp::get_Str8Ns_buffer_string() {
   }
   Str8Ns_sp ret = gc::As<Str8Ns_sp>(oCar(my_thread->_BufferStr8NsPool));
   my_thread->_BufferStr8NsPool = oCdr(my_thread->_BufferStr8NsPool);
-  ret->fillPointerSet(clasp_make_fixnum(0));
+  ret->fillPointerSet(0);
   return ret;
 }
 
@@ -632,7 +628,7 @@ StrWNs_sp Lisp::get_StrWNs_buffer_string() {
   }
   StrWNs_sp ret = gc::As<StrWNs_sp>(oCar(my_thread->_BufferStrWNsPool));
   my_thread->_BufferStrWNsPool = oCdr(my_thread->_BufferStrWNsPool);
-  ret->fillPointerSet(clasp_make_fixnum(0));
+  ret->fillPointerSet(0);
   return ret;
 }
 
@@ -1405,7 +1401,7 @@ CL_LAMBDA(&optional (exit-value 0));
 CL_DECLARE();
 CL_DOCSTRING(R"dx(exit)dx");
 DOCGROUP(clasp);
-CL_DEFUN void core__exit(int exitValue) {
+[[noreturn]] CL_DEFUN void core__exit(int exitValue) {
 #ifdef CLASP_APPLE_SILICON
   exit(exitValue);
 #else
@@ -1420,7 +1416,7 @@ CL_DEFUN void core__exit(int exitValue) {
   }
   VirtualMachine& vm = my_thread->_VM;
   vm.shutdown();
-  throw(ExitProgramException(exitValue));
+  exit(exitValue);
 #endif
 };
 
@@ -2215,24 +2211,23 @@ void Lisp::dump_apropos(const char* part) const {
 
 bool Lisp::load(int& exitCode) {
   MultipleValues& mvn = core::lisp_multipleValues();
-  try {
-    switch (global_options->_StartupType) {
-    case cloInitLisp: {
-      Pathname_sp initPathname = cl__pathname(SimpleBaseString_O::make(globals_->_InitFileName));
-      if (!global_options->_SilentStartup) {
-        printf("Loading image %s\n", _rep_(initPathname).c_str());
-      }
-      T_mv result = core__load_no_package_set(initPathname);
-      if (result.nilp()) {
-        T_sp err = mvn.second(result.number_of_values());
-        printf("Could not load %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
-        exitCode = 1;
-        return false;
-      }
-    } break;
-    case cloBaseImage:
-    case cloExtensionImage:
-    case cloImageFile:
+  switch (global_options->_StartupType) {
+  case cloInitLisp: {
+    Pathname_sp initPathname = cl__pathname(SimpleBaseString_O::make(globals_->_InitFileName));
+    if (!global_options->_SilentStartup) {
+      printf("Loading image %s\n", _rep_(initPathname).c_str());
+    }
+    T_mv result = core__load_no_package_set(initPathname);
+    if (result.nilp()) {
+      T_sp err = mvn.second(result.number_of_values());
+      printf("Could not load %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
+      exitCode = 1;
+      return false;
+    }
+  } break;
+  case cloBaseImage:
+  case cloExtensionImage:
+  case cloImageFile:
       if (startup_functions_are_waiting()) {
         startup_functions_invoke(NULL);
       } else {
@@ -2255,36 +2250,21 @@ bool Lisp::load(int& exitCode) {
         }
       }
       break;
-    default:
+  default:
       break;
-    }
-  } catch (core::ExitProgramException& ee) {
-    exitCode = ee.getExitResult();
-    return false;
   }
   return true;
 };
 
 int Lisp::run() {
-  int exitCode;
-  try {
-    if (ext::_sym_STARtoplevel_hookSTAR->symbolValue().notnilp()) {
-      core::T_sp fn = ext::_sym_STARtoplevel_hookSTAR->symbolValue();
-      core::eval::funcall(fn);
-    } else if (global_options->_Interactive) {
-      this->readEvalPrintInteractive();
-    }
-    exitCode = 0;
-  } catch (core::ExitProgramException& ee) {
-    exitCode = ee.getExitResult();
-  }
-  if (global_options->_ExportedSymbolsSave) {
-    T_sp stream = core::cl__open(core::SimpleBaseString_O::make(global_options->_ExportedSymbolsFilename), StreamDirection::output);
-    core::core__mangledSymbols(stream);
-    cl__close(stream);
+  if (ext::_sym_STARtoplevel_hookSTAR->symbolValue().notnilp()) {
+    core::T_sp fn = ext::_sym_STARtoplevel_hookSTAR->symbolValue();
+    core::eval::funcall(fn);
+  } else if (global_options->_Interactive) {
+    this->readEvalPrintInteractive();
   }
 
-  return exitCode;
+  return 0;
 };
 
 FileScope_mv Lisp::getOrRegisterFileScope(const string& fileName) {
@@ -2382,8 +2362,6 @@ Exposer_O::Exposer_O(LispPtr lisp, const string& packageName) {
     lisp->makePackage(packageName, lnnames, lpkgs);
   }
 }
-
-Exposer_O::~Exposer_O(){};
 
 ChangePackage::ChangePackage(Package_sp newPackage) : _SavedPackage(_lisp->getCurrentPackage()) {
   _lisp->selectPackage(newPackage);

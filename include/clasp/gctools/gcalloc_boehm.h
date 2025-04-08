@@ -4,12 +4,12 @@
 #define ALIGNED_GC_MALLOC(sz) MAYBE_MONITOR_ALLOC(GC_MALLOC(sz), sz)
 #define ALIGNED_GC_MALLOC_ATOMIC(sz) MAYBE_MONITOR_ALLOC(GC_MALLOC_ATOMIC(sz), sz)
 #define ALIGNED_GC_MALLOC_UNCOLLECTABLE(sz) MAYBE_MONITOR_ALLOC(GC_MALLOC_UNCOLLECTABLE(sz), sz)
-#define ALIGNED_GC_MALLOC_KIND(stmp, sz, knd, kndaddr) MAYBE_MONITOR_ALLOC(GC_malloc_kind_global(sz, knd), sz)
-#define ALIGNED_GC_MALLOC_STRONG_WEAK_KIND(sz, knd) MAYBE_MONITOR_ALLOC(GC_malloc_kind_global(sz, knd), sz)
+#define ALIGNED_GC_MALLOC_KIND(sz, knd) MAYBE_MONITOR_ALLOC(GC_malloc_kind(sz, knd), sz)
+#define ALIGNED_GC_MALLOC_STRONG_WEAK_KIND(sz, knd) MAYBE_MONITOR_ALLOC(GC_malloc_kind(sz, knd), sz)
 #define ALIGNED_GC_MALLOC_ATOMIC_KIND(stmp, sz, knd, kndaddr)                                                                      \
   MAYBE_MONITOR_ALLOC(                                                                                                             \
-      (knd == GC_I_PTRFREE) ? GC_malloc_kind_global(sz, knd) : malloc_kind_error(GC_I_PTRFREE, knd, sz, stmp, kndaddr), sz)
-#define ALIGNED_GC_MALLOC_UNCOLLECTABLE_KIND(stmp, sz, knd, kndaddr)                                                               \
+      (knd == GC_I_PTRFREE) ? GC_malloc_kind(sz, knd) : malloc_kind_error(GC_I_PTRFREE, knd, sz, stmp, kndaddr), sz)
+#define ALIGNED_GC_MALLOC_UNCOLLECTABLE_KIND(sz, knd)                                                                              \
   MAYBE_MONITOR_ALLOC(GC_generic_malloc_uncollectable(sz, knd), sz)
 #else
 #error "There is more work to do to support more than 3 tag bits"
@@ -20,21 +20,21 @@
 #endif
 
 namespace gctools {
-template <typename Stage, typename Cons, typename... ARGS> inline Cons* do_cons_allocation(size_t size, ARGS&&... args) {
+template <typename Stage, typename Cons> inline ConsHeader_s* do_cons_allocation(size_t size) {
   RAIIAllocationStage<Stage> stage(my_thread_low_level);
 #ifdef USE_PRECISE_GC
   ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(
-      ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_WTAG(STAMPWTAG_CONS), size, global_cons_kind, &global_cons_kind)); // wasMTAG
+      ALIGNED_GC_MALLOC_KIND(size, global_cons_kind)); // wasMTAG
 #ifdef DEBUG_BOEHMPRECISE_ALLOC
   printf("%s:%d:%s cons = %p\n", __FILE__, __LINE__, __FUNCTION__, cons);
 #endif
 #else
   ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(ALIGNED_GC_MALLOC(size));
 #endif
-  Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
-  new (header) ConsHeader_s(cons);
-  new (cons) Cons(std::forward<ARGS>(args)...);
-  return cons;
+  const ConsHeader_s::StampWtagMtag stamp(ConsHeader_s::cons_mtag);
+  new (header) ConsHeader_s(stamp);
+  stage.registerAllocation(STAMPWTAG_CONS, size);
+  return header;
 }
 
 template <typename Stage = RuntimeStage>
@@ -62,24 +62,6 @@ inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header,
   return header;
 };
 
-inline Header_s* do_weak_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
-  size_t true_size = size;
-#ifdef USE_PRECISE_GC
-  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC(true_size));
-//   Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_STRONG_WEAK_KIND_ATOMIC(true_size,global_strong_weak_kind));
-#else
-  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC(true_size));
-#endif
-  my_thread_low_level->_Allocations.registerWeakAllocation(the_header._value, true_size);
-#ifdef DEBUG_GUARD
-  memset(header, 0x00, true_size);
-  new (header) Header_s(the_header, 0, 0, true_size);
-#else
-  new (header) Header_s(the_header);
-#endif
-  return header;
-};
-
 template <typename Stage = RuntimeStage>
 inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   RAIIAllocationStage<Stage> stage(my_thread_low_level);
@@ -92,7 +74,7 @@ inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header
   auto stamp = the_header.stamp();
   auto& kind = global_stamp_layout[stamp].boehm._kind;
   GCTOOLS_ASSERT(kind != KIND_UNDEFINED);
-  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(stamp, true_size, kind, &kind));
+  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(true_size, kind));
 #ifdef DEBUG_BOEHMPRECISE_ALLOC
   printf("%s:%d:%s header = %p\n", __FILE__, __LINE__, __FUNCTION__, header);
 #endif
@@ -117,8 +99,7 @@ inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_
 #endif
 #ifdef USE_PRECISE_GC
   Header_s* header = reinterpret_cast<Header_s*>(
-      ALIGNED_GC_MALLOC_UNCOLLECTABLE_KIND(the_header.stamp(), true_size, global_stamp_layout[the_header.stamp()].boehm._kind,
-                                           &global_stamp_layout[the_header.stamp()].boehm._kind));
+      ALIGNED_GC_MALLOC_UNCOLLECTABLE_KIND(true_size, global_stamp_layout[the_header.stamp()].boehm._kind));
 #ifdef DEBUG_BOEHMPRECISE_ALLOC
   printf("%s:%d:%s header = %p\n", __FILE__, __LINE__, __FUNCTION__, header);
 #endif
@@ -134,4 +115,30 @@ inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_
 #endif
   return header;
 };
+
+// Allocate a blank T_O* vector. This is used for the bytecode VM.
+inline void* do_allocate_zero(size_t num) {
+  void* buffer = ALIGNED_GC_MALLOC_UNCOLLECTABLE(sizeof(void*) * num);
+  memset(buffer, 0, sizeof(void*) * num);
+  return buffer;
+}
+
+extern void boehm_general_finalizer_from_BoehmFinalizer(void* client, void* dummy);
+template <class OT> void BoehmFinalizer(void* base, void* data) {
+  //  printf("%s:%d:%s Finalizing base=%p\n", __FILE__, __LINE__, __FUNCTION__, base);
+  OT* client = HeaderPtrToGeneralPtr<OT>(base);
+  boehm_general_finalizer_from_BoehmFinalizer((void*)client, data);
+  client->~OT();
+  GC_FREE(base);
+}
+
+typedef void (*BoehmFinalizerFn)(void* obj, void* data);
+template <class OT>
+inline void do_register_destructor_finalizer(void* baseptr) {
+  void* dummyData;
+  BoehmFinalizerFn dummyFn;
+  GC_register_finalizer_no_order(baseptr, BoehmFinalizer<OT>, NULL, &dummyFn, &dummyData);
+}
+
+inline void do_free(void* ptr) { GC_FREE(ptr); }
 }; // namespace gctools

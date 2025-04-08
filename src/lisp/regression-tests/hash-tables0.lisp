@@ -77,41 +77,92 @@
 (test-expect-error hash-table-rehash-THRESHOLD-nil (HASH-TABLE-REHASH-THRESHOLD nil) :type type-error)
 (test-expect-error hash-table-test-nil (HASH-TABLE-TEST nil) :type type-error)
 
-;;weak tables: weakness :key
-(test hash-table-count-weak-key
-      (hash-table-count (make-hash-table :test #'eq :weakness :key))
-      (0))
+;; weak tables
+(defun hash-table-basics (table)
+  (values (hash-table-p table)
+          (hash-table-size table)
+          (hash-table-count table)
+          (typep (hash-table-rehash-size table) '(real 1))
+          (typep (hash-table-rehash-threshold table) '(real 0 1))
+          (hash-table-test table)
+          (ext:hash-table-weakness table)
+          (multiple-value-list (gethash :key table))))
+
+(test hash-table-weak-key.basic
+      (hash-table-basics (make-hash-table :size 128 :weakness :key))
+      (t 128 0 t t eql :key (nil nil)))
+(test hash-table-weak-value.basic
+      (hash-table-basics (make-hash-table :size 128 :weakness :value))
+      (t 128 0 t t eql :value (nil nil)))
+(test hash-table-weak-key-and-value.basic
+      (hash-table-basics (make-hash-table :size 128 :weakness :key-and-value))
+      (t 128 0 t t eql :key-and-value (nil nil)))
+(test hash-table-weak-key-or-value.basic
+      (hash-table-basics (make-hash-table :size 128 :weakness :key-or-value))
+      (t 128 0 t t eql :key-or-value (nil nil)))
+
 (test hash-table-count-2-weak-key
-      (let ((table (make-hash-table :test #'eq :weakness :key)))
+      (let ((table (make-hash-table :weakness :key)))
         (setf (gethash :key table) 23)
         (setf (gethash :key1 table) 22)
         (setf (gethash :key table) 25)
         (hash-table-count table))
       (2))
 
-(test hash-table-size-weak-key
-      (hash-table-size (make-hash-table :size 128 :test #'eq :weakness :key))
-      (128))
-(test-true hash-table-rehash-size-weak-key (HASH-TABLE-REHASH-SIZE (make-hash-table :test #'eq :weakness :key)))
-(test-true hash-table-rehash-THRESHOLD-weak-key (HASH-TABLE-REHASH-THRESHOLD (make-hash-table :test #'eq :weakness :key)))
-(test-true hash-table-test-weak-key (HASH-TABLE-TEST (make-hash-table :test #'eq :weakness :key)))
-(test-true gethash-weak-key (let ((table (make-hash-table :test #'eq :weakness :key)))
-                         (gethash :key table)
-                         t))
 (test setf-gethash-weak-key
-      (let ((table (make-hash-table :test #'eq :weakness :key)))
+      (let ((table (make-hash-table :weakness :key)))
         (setf (gethash :key table) 23)
         (values (gethash :key table)))
       (23))
-(test-true clrhash-weak-key (clrhash (make-hash-table :test #'eq :weakness :key)))
-(test-true maphash-weak-key (progn
-                              (maphash #'(lambda(a b)
-                                           (declare (ignore a b)))
-                                       (make-hash-table :test #'eq :weakness :key))
-                              t))
-(test-true remhash-weak-key (progn
-                              (remhash :key (make-hash-table :test #'eq  :weakness :key))
-                              t))
+
+(test clrhash-weak-key
+      (let ((table (make-hash-table :weakness :key)))
+        (values (hash-table-p (clrhash table))
+                (hash-table-count table)))
+      (t 0))
+(test-nil maphash-weak-key (maphash (lambda (a b)
+                                      (declare (ignore a b)))
+                                    (make-hash-table :weakness :key)))
+(test-nil remhash-weak-key (remhash :key (make-hash-table :weakness :key)))
+
+;;; These tests are pretty strict - they want the garbage to actually be
+;;; collected by that garbage-collect call, which may not be the case if we
+;;; ever get a more relaxed collector (generational or something)
+(test weak-key-weakness
+      (let ((table (make-hash-table :weakness :key)))
+        (setf (gethash (list 37) table) :value
+              (gethash :key table) (list nil)
+              (gethash :key2 table) (list nil))
+        (gctools:garbage-collect)
+        (hash-table-count table))
+      (2))
+(test weak-value-weakness
+      (let ((table (make-hash-table :weakness :value)))
+        (setf (gethash :key table) (list 37)
+              (gethash (list nil) table) :value
+              (gethash (list 18) table) :value)
+        (gctools:garbage-collect)
+        (hash-table-count table))
+      (2))
+(test weak-key-and-value-weakness
+      (let ((table (make-hash-table :weakness :key-and-value)))
+        (setf (gethash (list nil) table) :value
+              (gethash :key table) (list nil)
+              (gethash (list nil) table) (list nil)
+              (gethash :key table) :value)
+        (gctools:garbage-collect)
+        (hash-table-count table))
+      (1))
+#-use-boehm ; on boehm key-or-value tables are effectively strong.
+(test weak-key-or-value-weakness
+      (let ((table (make-hash-table :weakness :key-or)))
+        (setf (gethash (list nil) table) :value
+              (gethash :key table) (list nil)
+              (gethash (list nil) table) (list nil)
+              (gethash :key table) :value)
+        (gctools:garbage-collect)
+        (hash-table-count table))
+      (3))
 
 (test equalp-hash-table-1
       (let ((key-1 #\a)

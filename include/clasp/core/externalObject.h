@@ -52,7 +52,6 @@ public:
 
 public:
   explicit ExternalObject_O() : Base(), _Class(nil<Instance_O>()){};
-  virtual ~ExternalObject_O(){};
 };
 
 template <class Type, class WrapperType> gctools::smart_ptr<Type> RP_Create_wrapped(WrapperType ptr) {
@@ -70,7 +69,6 @@ template <class Type, class WrapperType> gctools::smart_ptr<Type> RP_Create_wrap
 #define LISP_EXTERNAL_CLASS(oNamespace, oPackage, wrappedClass, aClass, nameOfWrappedClass, aClassBase)                            \
 public:                                                                                                                            \
   typedef aClassBase Base;                                                                                                         \
-  typedef LispBases1<Base> Bases;                                                                                                  \
   COMMON_CLASS_PARTS(oNamespace, oPackage, aClass, nameOfWrappedClass)                                                             \
   static gctools::smart_ptr<aClass> create() { return gctools::GC<aClass>::allocate_with_default_constructor(); };                 \
   virtual core::Instance_sp __class() const { return core::lisp_getStaticClass(aClass::static_ValueStampWtagMtag); }               \
@@ -118,6 +116,5 @@ public:
   CL_DEFMETHOD void setHead(T_sp head) { this->_Head = head; };
   CL_DEFMETHOD void setTail(T_sp tail) { this->_Tail = tail; };
   explicit ImmobileObject_O(T_sp head, T_sp tail) : _Head(head), _Tail(tail){};
-  virtual ~ImmobileObject_O(){};
 };
 }; // namespace core

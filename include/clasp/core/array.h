@@ -156,7 +156,6 @@ size_t calculateArrayTotalSizeAndValidateDimensions(List_sp dim_desig, size_t& r
 namespace core {
 class Array_O : public General_O {
   LISP_ABSTRACT_CLASS(core, ClPkg, Array_O, "array", General_O);
-  virtual ~Array_O(){};
 
 public:
   /*! A hackish (clever?) way to get at the first element of all subclasses
@@ -164,9 +163,6 @@ public:
       - The first field of every subclass needs to be a size_t length/fillPointer.
  */
   size_t _Length[0];
-
-public:
-  Array_O(){};
 
 public:
   // Low level functions for access to contents
@@ -244,7 +240,6 @@ public: // Functions here
     return this->unsafe_setf_subseq(p.start, p.end, newVec);
   }
   void fillInitialContents(T_sp initialContents);
-  virtual void sxhash_(HashGenerator& hg) const override = 0;
   virtual void sxhash_equalp(HashGenerator& hg) const override;
   // --------------------------------------------------
   // Ranged operations with explicit limits
@@ -259,19 +254,15 @@ namespace core {
 struct Rank1 {};
 class MDArray_O : public Array_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, MDArray_O, "mdarray", Array_O);
-  virtual ~MDArray_O(){};
-
-public:
-  MDArray_O(){};
 
 public:
   typedef size_t value_type; // this is container - needs value_type
   typedef gctools::GCArray_moveable<value_type> vector_type;
   struct Flags {
-    Flags(){};
     size_t _Flags;
     static const size_t fillPointerFlag = 0x000001;
     static const size_t displacedToFlag = 0x000100;
+    Flags() = default;
     Flags(bool fillPointerP, bool displacedToP)
         : _Flags((fillPointerP ? fillPointerFlag : 0) | (displacedToP ? displacedToFlag : 0)){};
     bool fillPointerP() const { return this->_Flags & fillPointerFlag; };
@@ -332,7 +323,6 @@ public:
   virtual size_t displacedIndexOffset() const override { return this->_DisplacedIndexOffset; }
   virtual bool arrayHasFillPointerP() const override { return this->_Flags.fillPointerP(); };
   virtual T_sp replaceArray(T_sp other) override;
-  virtual void sxhash_(HashGenerator& hg) const override;
   void fillPointerSet(size_t idx) override {
     // This better not be bigger than the vector size (must be a vector)
     if (idx > this->_ArrayTotalSize)
@@ -367,7 +357,6 @@ class ComplexVector_O : public MDArray_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, ComplexVector_O, "ComplexVector", MDArray_O);
   // One dimension vector
 public:
-  CLASP_DEFAULT_CTOR ComplexVector_O(){};
   ComplexVector_O(size_t dimension, T_sp fillPointer, Array_sp data, bool displacedToP, Fixnum_sp displacedIndexOffset)
       : MDArray_O(Rank1(), dimension, fillPointer, data, displacedToP, displacedIndexOffset){};
 
@@ -379,10 +368,6 @@ public:
 namespace core {
 class SimpleMDArray_O : public MDArray_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, SimpleMDArray_O, "simple-mdarray", MDArray_O);
-
-public:
-  CLASP_DEFAULT_CTOR SimpleMDArray_O(){};
-  virtual ~SimpleMDArray_O(){};
 
 public:
   // multiple dimensions
@@ -405,10 +390,6 @@ namespace core {
 
 class AbstractSimpleVector_O : public Array_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, AbstractSimpleVector_O, "AbstractSimpleVector", Array_O);
-  virtual ~AbstractSimpleVector_O(){};
-
-public:
-  AbstractSimpleVector_O(){};
 
 public:
   virtual T_sp array_type() const override { return cl::_sym_simple_array; };
@@ -437,7 +418,6 @@ public:
   virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const {
     TYPE_ERROR(this->asSmartPtr(), Cons_O::createList(cl::_sym_string, cl::_sym_bit_vector));
   };
-  virtual void sxhash_(HashGenerator& hg) const override { this->General_O::sxhash_(hg); }
   virtual bool equal(T_sp other) const override { return this->eq(other); };
   virtual bool equalp(T_sp other) const override;
   void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const override {
@@ -455,9 +435,6 @@ public:
 
 namespace core {
 template <typename MyLeafType, typename ValueType, typename MyParentType> class template_SimpleVector : public MyParentType {
-public:
-  template_SimpleVector(){};
-
 public:
   // The types that define what this class does
   typedef MyParentType Base;
@@ -487,9 +464,6 @@ public:
   template <std::input_iterator I, std::sized_sentinel_for<I> S>
   template_SimpleVector(I first, S last)
     : Base(), _Data(first, last) {};
-
-public:
-  static void never_invoke_allocator() { gctools::GCAbstractAllocator<template_SimpleVector>::never_invoke_allocator(); };
 
 public:
   leaf_smart_ptr_type copy(size_t length, value_type initialElement, bool initialElementSupplied) {
@@ -549,8 +523,6 @@ public:
 namespace core {
 template <typename MyLeafType, int BitUnitBitWidth, int Signedp>
 class template_SimpleBitUnitVector : public AbstractSimpleVector_O {
-public:
-  CLASP_DEFAULT_CTOR template_SimpleBitUnitVector(){};
 
 public:
   typedef AbstractSimpleVector_O Base;
@@ -669,9 +641,6 @@ namespace core {
 template <typename MyArrayType, typename MySimpleArrayType, typename MySimpleType, typename MyParentType>
 class template_Array : public MyParentType {
 public:
-  CLASP_DEFAULT_CTOR template_Array(){};
-
-public:
   // The types that define what this class does
   typedef MyParentType Base; /* e.g. MDArray_O */
   typedef MyArrayType /*eg: MDArrayT_O */ my_array_type;
@@ -787,9 +756,6 @@ public:
 
 namespace core {
 template <typename MyArrayType, typename MySimpleType, typename MyParentType> class template_Vector : public MyParentType {
-public:
-  CLASP_DEFAULT_CTOR template_Vector(){};
-
 public:
   // The types that define what this class does
   typedef MyParentType Base;
@@ -920,9 +886,6 @@ public:
 
 namespace core {
 template <typename MyArrayType, typename MySimpleType, typename MyParentType> class template_SimpleArray : public MyParentType {
-public:
-  CLASP_DEFAULT_CTOR template_SimpleArray(){};
-
 public:
   // The types that define what this class does
   typedef MyParentType Base;

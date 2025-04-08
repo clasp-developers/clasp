@@ -41,12 +41,12 @@ CL_DECLARE();
 DOCGROUP(clasp);
 CL_DEFUN_SETF T_sp core__put_sysprop(T_sp value, T_sp key, T_sp area) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
-  HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
-  KeyValuePair* area_pair = sysprops->find(area);
+  HashTable_sp sysprops = gc::As_unsafe<HashTable_sp>(_lisp->_Roots._Sysprop);
+  auto area_pair = sysprops->find(area);
   if (area_pair)
-    return gc::As<HashTableEql_sp>(area_pair->_Value)->hash_table_setf_gethash(key, value);
+    return gc::As<HashTable_sp>(*area_pair)->hash_table_setf_gethash(key, value);
 
-  HashTableEql_sp new_hash_table = gc::As<HashTableEql_sp>(
+  HashTable_sp new_hash_table = gc::As<HashTable_sp>(
       HashTable_O::create_thread_safe(cl::_sym_eql, SimpleBaseString_O::make("SYSPRRD"), SimpleBaseString_O::make("SYSPRWR")));
   sysprops->hash_table_setf_gethash(area, new_hash_table);
   return new_hash_table->hash_table_setf_gethash(key, value);
@@ -58,10 +58,10 @@ CL_DOCSTRING(R"dx(get_sysprop - returns (values val foundp))dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__get_sysprop(T_sp key, T_sp area) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
-  HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
-  KeyValuePair* area_pair = sysprops->find(area);
+  HashTable_sp sysprops = gc::As_unsafe<HashTable_sp>(_lisp->_Roots._Sysprop);
+  auto area_pair = sysprops->find(area);
   if (area_pair)
-    return gc::As<HashTableEql_sp>(area_pair->_Value)->gethash(key);
+    return gc::As<HashTable_sp>(*area_pair)->gethash(key);
 
   return Values(nil<T_O>(), nil<T_O>());
 }
@@ -72,9 +72,9 @@ CL_DOCSTRING(R"dx(rem_sysprop)dx");
 DOCGROUP(clasp);
 CL_DEFUN bool core__rem_sysprop(T_sp key, T_sp area) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
-  HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
-  KeyValuePair* area_pair = sysprops->find(area);
-  return area_pair && gc::As<HashTableEql_sp>(area_pair->_Value)->remhash(key);
+  HashTable_sp sysprops = gc::As_unsafe<HashTable_sp>(_lisp->_Roots._Sysprop);
+  auto area_pair = sysprops->find(area);
+  return area_pair && gc::As<HashTable_sp>(*area_pair)->remhash(key);
 }
 
 SYMBOL_SC_(CorePkg, put_sysprop);

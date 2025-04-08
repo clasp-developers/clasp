@@ -411,21 +411,13 @@ void Symbol_O::fmakunbound_setf() {
 
 void Symbol_O::setf_symbolFunction(Function_sp fn) { ensureFunctionCell(fn)->real_function_set(fn); }
 
-void Symbol_O::sxhash_(HashGenerator& hg) const {
+void Symbol_O::sxhash_equal(HashGenerator& hg) const {
   // clhs 18.2.14 sxhash
   // Although similarity is defined for symbols in terms of both the symbol's name and the packages
   // in which the symbol is accessible, item 3 disallows using package information to compute the hash
   // code, since changes to the package status of a symbol are not visible to equal.
-  // if (hg.isFilling()) this->getPackage().unsafe_general()->sxhash_(hg);
-  if (hg.isFilling())
-    this->_Name->sxhash_(hg);
-}
-
-void Symbol_O::sxhash_equal(HashGenerator& hg) const {
-  if (hg.isFilling())
-    HashTable_O::sxhash_equal(hg, this->getPackage());
-  if (hg.isFilling())
-    HashTable_O::sxhash_equal(hg, this->_Name);
+  // if (hg.isFilling()) this->getPackage().unsafe_general()->sxhash_equal(hg);
+  if (hg.isFilling()) this->_Name->sxhash_equal(hg);
 }
 
 Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {

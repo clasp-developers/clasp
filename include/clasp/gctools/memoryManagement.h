@@ -22,6 +22,8 @@
 // Define compile-time flags that effect structure sizes
 //
 #include <atomic>
+#include <set>
+#include <utility> // pair
 #include <clasp/gctools/configure_memory.h>
 #include <clasp/gctools/hardErrors.h>
 
@@ -265,9 +267,9 @@ template <class T> inline size_t sizeof_with_header();
       #B001 == invalid0_mtag This is an illegal value for the two lsbs,
               it indictates that this is not a valid header.
               This pattern is used to indicate a CONS header
-      #B010 == (MPS specific) weak_mtag - A weak object
+      #B010 == invalid1_mtag
       #B011 == cons_mtag  This indicates that what follows is a cons cell.
-      #B100 == invalid1_mtag
+      #B100 == invalid2_mtag
       #B101 == fwd_mtag - This tag indicates that the remaining data bits in the header contains a forwarding
               pointer.  The uintptr_t in additional_data[0] contains the length of
               the block from the client pointer.
@@ -328,16 +330,11 @@ public:
   static const tagged_stamp_t general_mtag_mask = 0b11;
 #endif
   static const size_t general_mtag_shift = general_mtag_width; // MUST ALWAYS BE >=2 to match Fixnum shift
-  /*!
-   * It is important that weak_mtag is the same value as CHARACTER_TAG so that
-   * it looks like an immediate value in AWL pools and doesn't break the
-   * MPS invariant that only valid tagged pointers are allowed in AWL pools.
-   */
   static const tagged_stamp_t general_mtag = 0b000;
   static const tagged_stamp_t invalid0_mtag = 0b001;
-  static const tagged_stamp_t weak_mtag = 0b010;
+  static const tagged_stamp_t invalid1_mtag = 0b010;
   static const tagged_stamp_t cons_mtag = 0b011;
-  static const tagged_stamp_t invalid1_mtag = 0b100;
+  static const tagged_stamp_t invalid2_mtag = 0b100;
   static const tagged_stamp_t fwd_mtag = 0b101;
   static const tagged_stamp_t pad_mtag = 0b110;
   static const tagged_stamp_t pad1_mtag = 0b111;
@@ -375,14 +372,6 @@ public:
   //
   typedef uint32_t badge_t;
 
-  typedef enum {
-    WeakBucketKind = ((1 << mtag_shift) | weak_mtag),
-    StrongBucketKind = ((2 << mtag_shift) | weak_mtag),
-    WeakMappingKind = ((3 << mtag_shift) | weak_mtag),
-    StrongMappingKind = ((4 << mtag_shift) | weak_mtag),
-    MaxWeakKind = ((5 << mtag_shift) | weak_mtag)
-  } WeakKinds;
-
   //
   //
   struct Dummy_s {};
@@ -391,9 +380,7 @@ public:
     uintptr_t _header_data[0]; // The 0th element overlaps StampWtagMtag values
     tagged_stamp_t _value;
     StampWtagMtag() : _value(0){};
-    StampWtagMtag(core::Cons_O* cons) : _value(cons_mtag){};
     StampWtagMtag(Value all) : _value(all){};
-    StampWtagMtag(WeakKinds kind) : _value(kind){};
 
     // WHAT IS GOING ON
     //      StampWtagMtag(UnshiftedStamp stamp, badge_t badge) : _value(shift_unshifted_stamp(stamp)), _header_badge(badge) {};
@@ -473,26 +460,16 @@ public:
       return mak;
     }
 
-    static StampWtagMtag make_instance() {
-      StampWtagMtag v(STAMPWTAG_INSTANCE);
-      return v;
-    }
-    static StampWtagMtag make_funcallable_instance() {
-      StampWtagMtag v(STAMPWTAG_FUNCALLABLE_INSTANCE);
-      return v;
-    }
-
   public:
     inline size_t mtag() const { return (size_t)(this->_value & mtag_mask); };
     bool invalidP() const {
       if (!(this->_value & general_mtag_mask))
         return false;
       tagged_stamp_t val = (this->_value & general_mtag_mask);
-      return (val == invalid0_mtag) || (val == invalid1_mtag);
+      return (val == invalid0_mtag) || (val == invalid1_mtag) || (val == invalid2_mtag);
     };
     bool stampP() const { return (this->_value & general_mtag_mask) == general_mtag; };
     bool generalObjectP() const { return this->stampP(); };
-    bool weakObjectP() const { return (this->_value & mtag_mask) == weak_mtag; };
     bool consObjectP() const { return (this->_value & mtag_mask) == cons_mtag; };
     bool fwdP() const { return (this->_value & mtag_mask) == fwd_mtag; };
     bool fwdV() const { return (this->_value & mtag_mask); };
@@ -506,9 +483,6 @@ public:
     void* fwdPointer() const { return reinterpret_cast<void*>(this->_header_data[0] & (~(uintptr_t)mtag_mask)); };
     /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
     void setFwdPointer(void* ptr) { this->_header_data[0] = reinterpret_cast<uintptr_t>(ptr) | fwd_mtag; };
-    uintptr_t fwdSize() const { return this->_header_data[1]; };
-    /*! This writes into the first tagged_stamp_t sized word of the client data. */
-    void setFwdSize(size_t sz) { this->_header_data[1] = sz; };
     /*! Define the header as a pad, pass pad_tag or pad1_tag */
     void setPad(tagged_stamp_t p) { this->_header_data[0] = p; };
     /*! Return the pad1 size */
@@ -567,7 +541,6 @@ public:
       }
 #endif
     };
-    BadgeStampWtagMtag(WeakKinds kind) : StampWtagMtag(kind), _header_badge((uintptr_t)this & 0xFFFFFFFF){};
   };
 
   static inline int Stamp(StampWtagMtag stamp_wtag_mtag) {
@@ -632,11 +605,9 @@ public:
       return ss.str();
     } else if (this->_badge_stamp_wtag_mtag.consObjectP()) {
       return "Header_CONS";
-    } else if (this->_badge_stamp_wtag_mtag.weakObjectP()) {
-      return "Header_WEAK";
     } else if (this->_badge_stamp_wtag_mtag.fwdP()) {
       std::stringstream ss;
-      ss << "Fwd/ptr=" << this->_badge_stamp_wtag_mtag.fwdPointer() << "/sz=" << this->_badge_stamp_wtag_mtag.fwdSize();
+      ss << "Fwd/ptr=" << this->_badge_stamp_wtag_mtag.fwdPointer();
       return ss.str();
     } else if (this->_badge_stamp_wtag_mtag.pad1P()) {
       return "Pad1";
@@ -661,15 +632,13 @@ public:
 #endif
 };
 
-struct GatherObjects; // forward decl
-
 class ConsHeader_s : public BaseHeader_s {
 public:
   ConsHeader_s(const BadgeStampWtagMtag& k) : BaseHeader_s(k){};
 
 public:
   static constexpr size_t size() { return sizeof(ConsHeader_s); };
-  bool isValidConsObject(GatherObjects* gather) const;
+  bool isValidConsObject() const;
 };
 
 class Header_s : public BaseHeader_s {
@@ -692,7 +661,7 @@ public:
 #endif
 
 public:
-  bool isValidGeneralObject(GatherObjects* gather) const;
+  bool isValidGeneralObject() const;
   void validate() const;
   void quick_validate() const {
 #ifdef DEBUG_QUICK_VALIDATE
@@ -1266,20 +1235,6 @@ struct SafeGCPark {
 };
 }; // namespace gctools
 
-namespace gctools {
-
-typedef enum { LispRoot, CoreSymbolRoot, SymbolRoot } RootType;
-
-/* When walking root objects, this callback is called repeatedly
-   with the address of the root.
-*/
-typedef void (*RootWalkCallback)(Tagged* rootAddress, RootType rootType, size_t rootIndex, void* userData);
-
-/* walkRoots must be provided by any GC */
-void walkRoots(RootWalkCallback callback, void* userData);
-
-}; // namespace gctools
-
 ////////////////////////////////////////////////////////////
 /*!
  * dont_expose<xxx>
@@ -1312,56 +1267,54 @@ void walkRoots(RootWalkCallback callback, void* userData);
 
 template <typename Type> struct dont_expose {
   Type _value;
-  dont_expose(){};
+  dont_expose() = default;
   template <typename Arg> dont_expose(const Arg& val) : _value(val){};
 };
 
 namespace gctools {
 
 typedef void (*PointerFix)(uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, void* user_data);
-extern PointerFix globalMemoryWalkPointerFix;
 
-struct MarkNode {
-  gctools::Tagged* _ObjectAddr;
-  bool _ForceGeneralRoot;
-  MarkNode* _Next;
-  MarkNode(gctools::Tagged* tt, bool forceGeneralRoot = false)
-      : _ObjectAddr(tt), _ForceGeneralRoot(forceGeneralRoot), _Next(NULL){};
+struct T_sp_less {
+  bool operator()(const core::T_sp& lhs, const core::T_sp& rhs) const {
+    return lhs.tagged_() < rhs.tagged_();
+  }
 };
 
-struct GatherObjects {
-  RoomVerbosity _Verbosity;
-  std::set<BaseHeader_s*> _Marked;
-  MarkNode* _Stack;
-  std::map<BaseHeader_s*, std::vector<uintptr_t>> _corruptObjects;
-  size_t _SimpleFunCount;
-  size_t _SimpleFunFailedDladdrCount;
-  std::set<void*>  _uniqueEntryPoints;
-  std::set<void*>  _uniqueEntryPointsFailedDladdr;
-  GatherObjects(RoomVerbosity v) : _Verbosity(v), _Stack(NULL), _SimpleFunCount(0), _SimpleFunFailedDladdrCount(0) {};
-
-  MarkNode* popMarkStack() {
-    if (this->_Stack) {
-      MarkNode* top = this->_Stack;
-      this->_Stack = top->_Next;
-      return top;
-    }
-    return NULL;
-  }
-  void pushMarkStack(MarkNode* node) {
-    node->_Next = this->_Stack;
-    this->_Stack = node;
-  }
-
-  void mark(Header_s* header) { this->_Marked.insert(header); }
-
-  bool markedP(BaseHeader_s* header) { return this->_Marked.find(header) != this->_Marked.end(); }
-};
-
-void gatherAllObjects(GatherObjects& gather);
+void mapAllObjects(void (*)(Tagged, void*), void*);
+std::set<Tagged> setOfAllObjects();
+std::set<std::pair<Tagged, Tagged>> memtest(std::set<core::T_sp, T_sp_less>&);
 size_t objectSize(BaseHeader_s* header);
 
 bool is_memory_readable(const void* address, size_t bytes = 8);
+
+// Stuff for ROOM
+// This struct holds info about a given class for ROOM, specifically
+// how many instances of it there are, and how much memory those
+// instances take up (in bytes).
+struct ReachableClass {
+  void update(size_t sz) {
+    ++this->instances;
+    this->totalSize += sz;
+  };
+  size_t instances = 0;
+  size_t totalSize = 0;
+};
+
+typedef map<gctools::GCStampEnum, ReachableClass> ReachableClassMap;
+
+// These eight are GC-defined.
+void collect_garbage();
+
+void* call_with_stopped_world(void* (*)(void*), void*);
+
+void set_finalizer_list(core::T_sp, core::List_sp);
+void clear_finalizer_list(core::T_sp);
+void invoke_finalizers();
+
+size_t heap_size();
+size_t free_bytes();
+size_t bytes_since_gc();
 
 }; // namespace gctools
 

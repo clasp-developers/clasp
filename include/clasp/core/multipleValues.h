@@ -69,8 +69,6 @@ public: // Functions here
     this->_Size = vals;
   }
 
-  //        GC_RESULT scanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
-
   T_O** returnValues(size_t start = 0) { return &this->_Values[start]; }
 
   //        void setMaxSize() { this->_Size = MultipleValuesLimit;};

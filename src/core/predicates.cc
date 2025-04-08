@@ -196,10 +196,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(hashTableP)dx");
 DOCGROUP(clasp);
 CL_DEFUN bool cl__hash_table_p(T_sp obj) {
-  if (gc::IsA<HashTableBase_sp>(obj)) {
-    return true;
-  }
-  return false;
+  return obj.isA<HashTable_O>();
 };
 
 CL_LAMBDA(arg);

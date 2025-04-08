@@ -238,8 +238,6 @@ public:
           and you are sure that it will not be interpreted as a Fixnum!!!
 
           List actual uses here:
-          gcweak.h>>Mapping(const Type& val)
-          gcweak.h>>Buckets::set
           intrinsics.cc>>cc_loadTimeValueReference
         */
   Type*& rawRef_() { return this->theObject; };
@@ -419,7 +417,7 @@ public:
   }
 
 public:
-  inline operator bool() const { return this->theObject != NULL; };
+  inline explicit operator bool() const { return this->theObject != NULL; };
   inline Type* untag_object() const { return ::gctools::untag_object(this->theObject); }
   /*! Dereferencing operator - remove the other tag */
   inline Type* operator->() const {
@@ -433,8 +431,6 @@ public:
   /*! This should almost NEVER be used!!!!!!
 
           List all uses of rawRef_ here:
-          gcweak.h>>Mapping(const Type& val)
-          gcweak.h>>Buckets::set
           intrinsics.cc>>cc_loadTimeValueReference
           record.h>>field specialized on gc::smart_ptr<OT>&
           SMART_PTR_FIX and smart_ptr fixing in general when SMART_PTR_FIX is replaced
@@ -490,6 +486,11 @@ public:
 
   template <class U> inline bool operator!=(smart_ptr<U> const other) const { return this->theObject != other.theObject; }
 };
+/* Smart pointers should be trivial so they can be passed/returned
+ * in registers easily. But the default constructor is nontrivial,
+ * so we're merely trivially copyable.
+ */
+static_assert(std::is_trivially_copyable_v<core::T_sp>);
 }; // namespace gctools
 
 namespace gctools {
@@ -519,7 +520,7 @@ public:
   };
 
 public:
-  inline operator bool() const { return this->theObject != NULL; };
+  inline explicit operator bool() const { return this->theObject != NULL; };
   inline operator smart_ptr<core::T_O>() const { return smart_ptr<core::T_O>((Tagged)this->theObject); };
 
 public:

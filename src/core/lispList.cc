@@ -316,7 +316,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp cl__listSTAR(Vaslist_sp vargs) {
   size_t nargs = vargs->nargs();
   if (nargs == 0)
-    throwTooFewArgumentsError(nil<T_O>(), clasp_make_fixnum(0), clasp_make_fixnum(1));
+    throwTooFewArgumentsError(nil<T_O>(), 0, 1);
   ql::list result;
   while (nargs > 1) {
     T_O* tcsp = ENSURE_VALID_OBJECT(vargs->next_arg().raw_());

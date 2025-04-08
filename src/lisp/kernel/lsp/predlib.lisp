@@ -401,7 +401,7 @@ and is not adjustable."
 
 (defun upgraded-array-element-type (element-type &optional env)
   (declare (ignore env))
-  (let* ((hash (logand 127 (si:hash-eql element-type)))
+  (let* ((hash (logand 127 (sxhash element-type)))
 	 (record (aref *upgraded-array-element-type-cache* hash)))
     (declare (type (integer 0 127) hash))
     (if (and record (eq (car record) element-type))
@@ -1425,7 +1425,8 @@ if not possible."
     (return-from subtypep (values (subclassp t1 t2) t)))
   ;; Finally, cached results.
   (let* ((cache *subtypep-cache*)
-         (hash (the (integer 0 255) (logand (hash-eql t1 t2) 255)))
+         ;; FIXME: mixing could be improved
+         (hash (the (integer 0 255) (logand (core:hash-equal t1 t2) 255)))
          (elt (aref cache hash)))
     (when (and elt (eq (caar elt) t1) (eq (cdar elt) t2))
       (setq elt (cdr elt))

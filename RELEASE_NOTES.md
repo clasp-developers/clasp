@@ -1,4 +1,21 @@
-# Version 2.7.0 (LLVM15-19) Pending
+# Version 2.8.0 (LLVM15-19) Pending
+
+## Added
+* Weak-value and weak-key-and-value hash tables, as well as an interface
+  for weak-key-or-value tables, although at present they are actually
+  strong tables in practice.
+
+## Fixed
+* Weak pointers and weak hash tables survive snapshot save/load.
+* `ext:quit` can be used from any thread, not just the initial thread.
+* Quasiquoted vectors are read correctly (#1666).
+
+## Removed
+* `-z`/`--snapshot-symbols-save` command line option, occasionally used
+  for snapshot debugging. You can call `core:mangled-symbol-names` if the
+  effect is still needed.
+
+# Version 2.7.0 (LLVM15-19) 2025-01-21
 
 ## Added
 * Package lock support, based on SBCL's. Currently ignores local
@@ -10,6 +27,9 @@
 * Interrupts have now been organized into a coherent interface.
   Clasp will signal conditions of type MP:INTERRUPT at opportune
   times, and these conditions can be handled like any others.
+* Extensions to Clasp and CANDO can now be built against an installed
+  Clasp implementation and dynamically loaded. For an example see
+  [clasp-hello-world](https://github.com/clasp-developers/clasp-hello-world).
 
 ## Changed
 * Floating point exceptions FE_INVALID, FE_OVERFLOW and FE_DIVBYZERO

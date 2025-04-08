@@ -133,10 +133,8 @@ namespace core {
 void Array_O::sxhash_equalp(HashGenerator& hg) const {
   // TODO:  Write optimized versions for different array types
   for (size_t i = 0; i < this->length(); ++i) {
-    if (!hg.isFilling())
-      break;
-    T_sp obj = this->rowMajorAref(i);
-    HashTable_O::sxhash_equalp(hg, obj);
+    if (!hg.isFilling()) break;
+    clasp_sxhash_equalp(this->rowMajorAref(i), hg);
   }
 }
 
@@ -329,11 +327,6 @@ T_sp MDArray_O::replaceArray(T_sp other) {
 }
 
 void MDArray_O::set_data(Array_sp a) { this->_Data = a; }
-
-void MDArray_O::sxhash_(HashGenerator& hg) const {
-  // Just to get it working. FIXME
-  this->General_O::sxhash_(hg);
-}
 
 Array_sp MDArray_O::unsafe_subseq(size_t start, size_t iend) const {
   return this->_Data->unsafe_subseq(start + this->_DisplacedIndexOffset, iend + this->_DisplacedIndexOffset);

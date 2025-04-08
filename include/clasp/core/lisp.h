@@ -156,9 +156,6 @@ class Exposer_O : public General_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, Exposer_O, "Exposer", General_O);
 
 public:
-  CLASP_DEFAULT_CTOR Exposer_O(){};
-
-public:
   typedef enum { candoClasses, candoFunctions, candoGlobals, pythonClasses, pythonFunctions, pythonGlobals } WhatToExpose;
 
 private:
@@ -170,8 +167,6 @@ public:
   /*! CTor that looks up a Package with packageName and if it
           doesn't exist it makes it - no nicknames allowed */
   Exposer_O(LispPtr lisp, const string& packageName);
-
-  virtual ~Exposer_O();
 
   /*! Return the packageName */
   string packageName() const { return this->_PackageName; };
@@ -291,7 +286,7 @@ public:
     T_sp _TerminalIO;
     List_sp _ActiveThreads;
     List_sp _DefaultSpecialBindings;
-    WeakKeyHashTable_sp _Finalizers;
+    HashTable_sp _Finalizers;
     HashTable_sp _Sysprop;
     HashTable_sp _ClassTable;
     CharacterInfo charInfo; // Contains GC managed pointers
@@ -323,16 +318,14 @@ public:
     //! Package names to packages
     gctools::Vec0<Package_sp> _Packages;
     //-----
-    DoubleFloat_sp _RehashSize;
-    DoubleFloat_sp _RehashThreshold;
     T_sp _NullStream;
-    HashTableEqualp_sp _ThePathnameTranslations;
+    HashTable_sp _ThePathnameTranslations;
     Complex_sp _ImaginaryUnit;
     Complex_sp _ImaginaryUnitNegative;
     Ratio_sp _PlusHalf;
     //    DynamicBindingStack _Bindings;
-    HashTableEqual_sp _SourceFileIndices;   // map<string,int>
-    HashTableEqual_sp _PackageNameIndexMap; // map<string,int>
+    HashTable_sp _SourceFileIndices;   // map<string,int>
+    HashTable_sp _PackageNameIndexMap; // map<string,int>
     bool _PrintSymbolsProperly;
     bool _TheSystemIsUp;
     bool _Started;
@@ -417,7 +410,7 @@ public:
   //	void catchUnwindTag(List_sp catchStore);
   //	List_sp catchFindTag(T_sp tag);
 public:
-  HashTableEqualp_sp pathnameTranslations_() const { return this->_Roots._ThePathnameTranslations; };
+  HashTable_sp pathnameTranslations_() const { return this->_Roots._ThePathnameTranslations; };
   // void setPathnameTranslations_(List_sp pnt) { this->_Roots._ThePathnameTranslations = pnt; };
   /*! Return the maximum path length for the system */
 public:
@@ -516,8 +509,6 @@ public:
   void dump_apropos(const char* part) const;
 
 public:
-  DoubleFloat_sp rehashSize() const { return this->_Roots._RehashSize; };
-  DoubleFloat_sp rehashThreshold() const { return this->_Roots._RehashThreshold; };
   T_sp nullStream() const { return this->_Roots._NullStream; };
 
 public:
@@ -807,8 +798,7 @@ public:
           if the names string is empty then untrace all functions. */
   void gdb_untrace_by_name(const char* name);
 
-  explicit Lisp();
-  virtual ~Lisp();
+  Lisp();
 };
 
 /*! Use RAII to safely allocate a buffer */
@@ -883,5 +873,7 @@ extern bool global_Started;
 
 void dumpDebuggingLayouts();
 T_mv cl__intern(String_sp symbol_name, T_sp package_desig);
+
+[[noreturn]] void core__exit(int);
 
 }; // namespace core

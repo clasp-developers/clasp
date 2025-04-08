@@ -217,9 +217,7 @@ public:
   virtual Number_sp cosh_() const { SUBIMP(); };
   virtual Number_sp tanh_() const { SUBIMP(); };
 
-  virtual void sxhash_(HashGenerator& hg) const override { SUBIMP(); };
-  Number_O() {};
-  virtual ~Number_O() {};
+  virtual void sxhash_equal(HashGenerator& hg) const override { SUBIMP(); };
 
   inline static bool zerop(Number_sp x) {
     if (x.fixnump())
@@ -343,9 +341,6 @@ public:
   virtual bool plusp_() const { SUBIMP(); };
   virtual bool minusp_() const { SUBIMP(); };
 
-  Real_O() {};
-  virtual ~Real_O() {};
-
   inline static bool plusp(Real_sp x) {
     if (x.fixnump())
       return x.unsafe_fixnum() > 0;
@@ -405,9 +400,6 @@ public:
   virtual Number_sp cosh_() const override;
   virtual Number_sp tanh_() const override;
 
-  Rational_O() {};
-  virtual ~Rational_O() {};
-
   inline static Rational_sp coerce(const Real_sp x);
 };
 
@@ -463,8 +455,6 @@ public:
   virtual Integer_sp shift_right(gc::Fixnum nbits) const { SUBIMP(); };
 
   virtual void __write__(T_sp strm) const override;
-  Integer_O() {};
-  virtual ~Integer_O() {};
 
   inline static bool evenp(const Integer_sp x) {
     if (x.fixnump())
@@ -514,9 +504,6 @@ public:
   virtual bool isnan_() const { SUBIMP(); };
   virtual bool isinf_() const { SUBIMP(); };
   virtual int fpclassify_() const { SUBIMP(); };
-
-  Float_O() {};
-  virtual ~Float_O() {};
 
   inline static bool isnan(Float_sp x) {
 #ifdef CLASP_SHORT_FLOAT
@@ -605,7 +592,7 @@ public:
 
   static DoubleFloat_sp coerce(Number_sp x);
 
-  void sxhash_(HashGenerator& hg) const override;
+  void sxhash_equal(HashGenerator& hg) const override;
   //	virtual Number_sp copy() const;
   string __repr__() const override;
   void set(double val) { this->_Value = val; };
@@ -659,7 +646,6 @@ public:
   virtual Number_sp tanh_() const override;
   virtual Rational_sp as_rational_() const override;
   DoubleFloat_O() : _Value(0.0) {};
-  virtual ~DoubleFloat_O() {};
 };
 
 template <> inline Float_sp Number_O::make_float(double_float_t x) { return DoubleFloat_O::create(x); }
@@ -696,7 +682,7 @@ public:
 
   static LongFloat_sp coerce(Number_sp x);
 
-  void sxhash_(HashGenerator& hg) const override;
+  void sxhash_equal(HashGenerator& hg) const override;
   string __repr__() const override;
   void set(long_float_t val) { this->_Value = val; };
   long_float_t get() const { return this->_Value; };
@@ -748,7 +734,6 @@ public:
   virtual Number_sp tanh_() const override;
   virtual Rational_sp as_rational_() const override;
   LongFloat_O() : _Value(long_float_t{0.0}) {};
-  virtual ~LongFloat_O() {};
 #else
   inline static DoubleFloat_sp create(long_float_t nm) { return DoubleFloat_O::create(nm); }
 
@@ -786,7 +771,7 @@ public:
   Real_sp real() const { return this->_real; };
   Real_sp imaginary() const { return this->_imaginary; };
 
-  void sxhash_(HashGenerator& hg) const override;
+  void sxhash_equal(HashGenerator& hg) const override;
   //	virtual Number_sp copy() const;
   string __repr__() const override;
 
@@ -834,7 +819,6 @@ public:
 
   Complex_O(Real_sp r, Real_sp i) : _real(r), _imaginary(i) {};
   Complex_O() : _real(clasp_make_single_float(0.0)), _imaginary(clasp_make_single_float(0.0)) {};
-  virtual ~Complex_O() {};
 };
 
 template <std::floating_point Float> inline Complex_sp Number_O::make_complex(const std::complex<Float> x) {
@@ -878,7 +862,7 @@ public:
   Integer_sp numerator() const { return this->_numerator; };
   Integer_sp denominator() const { return this->_denominator; };
 
-  void sxhash_(HashGenerator& hg) const override;
+  void sxhash_equal(HashGenerator& hg) const override;
   //	virtual Number_sp copy() const;
   string __repr__() const override;
   Number_sp signum_() const override;
@@ -911,7 +895,6 @@ public:
   virtual void __write__(T_sp strm) const override;
 
   Ratio_O() : _numerator(clasp_make_fixnum(0)), _denominator(clasp_make_fixnum(1)) {};
-  virtual ~Ratio_O() {};
 };
 
 inline Number_sp float_sqrt(float f) {

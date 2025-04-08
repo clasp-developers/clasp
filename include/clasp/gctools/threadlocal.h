@@ -163,42 +163,6 @@ struct VirtualMachine {
     return vl;
   }
 
-  // Allocate a general object on the stack.
-  template <class LispClass> struct Alloc {
-    static inline size_t size() { return gc::sizeof_with_header<LispClass>(); }
-
-    template <typename... ARGS> static inline gctools::smart_ptr<LispClass> alloc(core::T_O**& stackPointer, ARGS&&... args) {
-      core::T_O** start = stackPointer + 1;
-      stackPointer += size();
-      LispClass* obj = gc::InitializeObject<LispClass>::go(start, std::forward<ARGS>(args)...);
-      LispClass* tobj = gc::tag_general<LispClass*>(obj);
-      gctools::smart_ptr<LispClass> robj((gctools::Tagged)tobj);
-      return robj;
-    }
-
-    static inline void dealloc(core::T_O**& stackPointer) { stackPointer -= size(); }
-  };
-
-  // Allocate a cons.
-  // FIXME: It would be nice to roll the smart pointer stuff under the
-  // InitializeObject struct, but in gctools/memoryManagement.h we don't
-  // have a complete definition of Cons_O or even DoRegister, making things
-  // rather more difficult.o
-  template <> struct Alloc<core::Cons_O> {
-    template <class ConsType> static inline size_t size() {
-      return gc::ConsSizeCalculator<gc::RuntimeStage, ConsType, gc::DoRegister>::value();
-    }
-
-    template <typename... ARGS> static inline core::Cons_sp alloc(core::T_O**& stackPointer, ARGS&&... args) {
-      core::T_O** start = stackPointer + 1;
-      stackPointer += size<core::Cons_O>();
-      core::Cons_O* obj = gc::InitializeObject<core::Cons_O>::go(start, std::forward<ARGS>(args)...);
-      core::Cons_O* tobj = gc::tag_cons<core::Cons_O*>(obj);
-      core::Cons_sp robj((gctools::Tagged)tobj);
-      return robj;
-    }
-  };
-
   // Drop NELEMS slots on the stack all in one go.
   inline void drop(core::T_O**& stackPointer, size_t nelems) {
     stackPointer -= nelems;
@@ -287,7 +251,6 @@ struct VirtualMachine {
 #define IHS_BACKTRACE_SIZE 16
 struct ThreadLocalState {
 
-  core::T_sp _ObjectFiles;
   mp::Process_sp _Process;
   DynamicBindingStack _Bindings;
   std::atomic<core::Cons_sp> _PendingInterruptsHead;
@@ -364,9 +327,6 @@ public:
 
   uint32_t random();
 
-  llvmo::ObjectFile_sp topObjectFile();
-  void pushObjectFile(llvmo::ObjectFile_sp of);
-  void popObjectFile();
   inline DynamicBindingStack& bindings() { return this->_Bindings; };
 
   void startUpVM();

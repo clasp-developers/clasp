@@ -53,9 +53,9 @@ public: // virtual functions inherited from Object
   void __write__(T_sp stream) const override; // in write_ugly.cc
 
 public: // instance variables
-  HashTableEqual_sp _InternalSymbols;
-  HashTableEqual_sp _ExternalSymbols;
-  HashTableEq_sp _Shadowing;
+  HashTable_sp _InternalSymbols;
+  HashTable_sp _ExternalSymbols;
+  HashTable_sp _Shadowing;
   SimpleString_sp _Name;
   gctools::Vec0<Package_sp> _UsingPackages;
   gctools::Vec0<Package_sp> _PackagesUsedBy;
@@ -243,7 +243,6 @@ public:
     }
   }
 
-  virtual ~Package_O(){};
 };
 
 T_mv cl__find_symbol(String_sp symbolName, T_sp packageDesig);

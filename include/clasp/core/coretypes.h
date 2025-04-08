@@ -27,8 +27,8 @@ typedef gctools::smart_ptr<Pointer_O> Pointer_sp;
 class SimpleVector_O;
 typedef gctools::smart_ptr<SimpleVector_O> SimpleVector_sp;
 
-class HashTableEqual_O;
-typedef gctools::smart_ptr<HashTableEqual_O> HashTableEqual_sp;
+class HashTable_O;
+typedef gctools::smart_ptr<HashTable_O> HashTable_sp;
 
 class Instance_O;
 typedef gctools::smart_ptr<Instance_O> Instance_sp;
@@ -62,8 +62,6 @@ class Null_O;
 class Stream_O;
 class SourcePosInfo_O;
 class FileScope_O;
-class WeakKeyHashTable_O;
-class StrongKeyHashTable_O;
 class DynamicScopeManager;
 
 class Function_O;

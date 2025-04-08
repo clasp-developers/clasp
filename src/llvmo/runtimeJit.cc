@@ -515,16 +515,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         currentCode->_TextSectionEnd = (void*)((char*)range.getStart().getValue() + range.getSize());
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s --- TextSectionStart - TextSectionEnd = %p - %p\n", __FILE__, __LINE__, __FUNCTION__,
                                   currentCode->_TextSectionStart, currentCode->_TextSectionEnd));
-#if 0
-        if (snapshotSaveLoad::global_debugSnapshot) {
-          printf("%s:%d:%s ---------- ObjectFile_sp %p Code_sp %p start %p  end %p\n",
-                 __FILE__, __LINE__, __FUNCTION__,
-                 my_thread->topObjectFile().raw_(),
-                 currentCode.raw_(),
-                 currentCode->_TextSectionStart,
-                 currentCode->_TextSectionEnd );
-        }
-#endif
         for (auto& sym : S.symbols()) {
           if (sym->isCallable() && sym->hasName()) {
             std::string name = sym->getName().str();
@@ -554,10 +544,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
           ("%s:%d:%s --- ObjectFile_sp %p badge: 0x%0x name: %s ---> final TextSectionStart - TextSectionEnd = %p - %p\n", __FILE__,
            __LINE__, __FUNCTION__, currentCode.raw_(), lisp_badge(currentCode), _rep_(currentCode).c_str(),
            currentCode->_TextSectionStart, currentCode->_TextSectionEnd));
-      if (snapshotSaveLoad::global_debugSnapshot) {
-        printf("%s:%d:%s ---------- ObjectFile_sp %p text section start %p  end %p\n", __FILE__, __LINE__, __FUNCTION__,
-               currentCode.raw_(), currentCode->_TextSectionStart, currentCode->_TextSectionEnd);
-      }
     } else {
       printf("%s:%d:%s No executable region was found for the Code_O object for graph %s\n", __FILE__, __LINE__, __FUNCTION__,
              G.getName().c_str());
@@ -697,28 +683,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 
 namespace llvmo {
 
-/*! Call this after fork() to create a thread-pool for lljit
- */
-CL_DEFUN void llvm_sys__create_lljit_thread_pool() {
-#if 0
-  gctools::global_thread_pool = new thread_pool<ThreadManager>(thread_pool<ThreadManager>::sane_number_of_threads());
-  ClaspJIT_O* jit = &*gctools::As<ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
-  jit->_LLJIT->getExecutionSession().setDispatchTask([jit](std::unique_ptr<Task> T) {
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s pushing an LLJIT task\n", __FILE__, __LINE__, __FUNCTION__ ));
-      // FIXME: We should be able to use move-capture here, but ThreadPool's
-      // AsyncTaskTys are std::functions rather than unique_functions
-      // (because MSVC's std::packaged_tasks don't support move-only types).
-      // Fix this when all the above gets sorted out.
-    global_thread_pool->push_task([UnownedT = T.release()]() mutable {
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s A task %p is running in the thread-pool\n", __FILE__, __LINE__, __FUNCTION__, UnownedT ));
-      std::unique_ptr<Task> T(UnownedT);
-      T->run();
-    });
-  } );
-#endif
-}
-
-ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
+ClaspJIT_O::ClaspJIT_O() {
   llvm::ExitOnError ExitOnErr;
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Initializing ClaspJIT_O\n", __FILE__, __LINE__, __FUNCTION__));
   auto JTMB = ExitOnErr(JITTargetMachineBuilder::detectHost());
@@ -753,46 +718,29 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
           })
           .create());
   this->_LLJIT = std::move(J);
-  if (loading) {
-    // Fixup the JITDylib_sp object in place
-    if (!mainJITDylib) {
-      printf("%s:%d:%s the jitdylib @%p is null!\n", __FILE__, __LINE__, __FUNCTION__, &this->_MainJITDylib);
-      abort();
-    }
-    JITDylib& dylib = this->_LLJIT->getMainJITDylib();
-    core::SimpleBaseString_sp sname = core::SimpleBaseString_O::make(dylib.getName());
-    new (mainJITDylib) JITDylib_O(sname, &dylib);
-    this->_MainJITDylib.rawRef_() = (llvmo::JITDylib_O*)gctools::tag_general<llvmo::JITDylib_O*>(mainJITDylib);
-  } else {
-    if (mainJITDylib) {
-      printf("%s:%d:%s the jitdylib @%p must null!\n", __FILE__, __LINE__, __FUNCTION__, &mainJITDylib);
-      abort();
-    }
-    // Create a new JITDylib_sp object
-    core::SimpleBaseString_sp sname = core::SimpleBaseString_O::make(this->_LLJIT->getMainJITDylib().getName());
-    this->_MainJITDylib = gc::GC<JITDylib_O>::allocate(sname, &this->_LLJIT->getMainJITDylib());
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Created MainJITDylib %p\n", __FILE__, __LINE__, __FUNCTION__, this->_MainJITDylib.raw_()));
-    core::Cons_sp pair = core::Cons_O::create(this->_MainJITDylib, nil<core::T_O>());
-    _lisp->_Roots._JITDylibs.store(pair);
-  }
+
   this->_LLJIT->getMainJITDylib().addGenerator(
       llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
-  llvm_sys__create_lljit_thread_pool();
 }
 
-ClaspJIT_O::~ClaspJIT_O() {
-  // Remove all the CodeBlocks
-#if 0
-  _lisp->_Roots._AllCodeBlocks.store(nil<core::T_O>());
-  _lisp->_Roots._AllObjectFiles.store(nil<core::T_O>());
-  gctools::gctools__garbage_collect();
-  gctools::gctools__garbage_collect();
-  gctools::gctools__garbage_collect();
-  gctools::gctools__garbage_collect();
-  gctools::gctools__garbage_collect();
-  delete global_thread_pool;
-#endif
-  // printf("%s:%d Shutdown the ClaspJIT\n", __FILE__, __LINE__);
+// Allocate a Lisp object for the _MainJITDylib for this JIT.
+// The actual underlying LLVM dylib has already been built by our constructor -
+// here we just wrap it up in a JITDylib_O object and add it to _JITDylibs.
+void ClaspJIT_O::installMainJITDylib() {
+  JITDylib& under = this->_LLJIT->getMainJITDylib();
+  auto sname = core::SimpleBaseString_O::make(under.getName());
+  _MainJITDylib = gc::GC<JITDylib_O>::allocate(sname, &under);
+  auto pair = core::Cons_O::create(_MainJITDylib, nil<core::T_O>());
+  _lisp->_Roots._JITDylibs.store(pair);
+}
+
+// Modifying an existing _MainJITDylib smart pointer to use our main jit dylib.
+// This is used in snapshot load.
+void ClaspJIT_O::adjustMainJITDylib(JITDylib_sp mainJITDylib) {
+  JITDylib& dylib = this->_LLJIT->getMainJITDylib();
+  auto sname = core::SimpleBaseString_O::make(dylib.getName());
+  new (&*mainJITDylib) JITDylib_O(sname, &dylib);
+  this->_MainJITDylib = mainJITDylib;
 }
 
 bool ClaspJIT_O::do_lookup(JITDylib_sp dylibsp, const std::string& Name, void*& ptr) {
@@ -985,7 +933,7 @@ void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s MemoryBuffer is %p\n", __FILE__, __LINE__, __FUNCTION__, code->_MemoryBuffer.get()));
 }
 
-void ClaspJIT_O::registerJITDylibAfterLoad(JITDylib_O* jitDylib) {
+void ClaspJIT_O::registerJITDylibAfterLoad(JITDylib_sp jitDylib) {
   if (jitDylib->_Id >= global_JITDylibCounter.load()) {
     global_JITDylibCounter.store(jitDylib->_Id + 1);
   }
@@ -996,12 +944,5 @@ void ClaspJIT_O::registerJITDylibAfterLoad(JITDylib_O* jitDylib) {
 //  printf("%s:%d:%s Received emitted object buffer obj@%p\n", __FILE__,__LINE__, __FUNCTION__, (void*)O->getBufferStart());
 }
 #endif
-
-DOCGROUP(clasp);
-CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit() {
-  printf("%s:%d:%s Creating JIT - we did this already at startup!!!!\n", __FILE__, __LINE__, __FUNCTION__);
-  auto cj = gctools::GC<ClaspJIT_O>::allocate(false, (llvmo::JITDylib_O*)NULL);
-  return cj;
-}
 
 }; // namespace llvmo

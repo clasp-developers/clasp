@@ -743,7 +743,7 @@ DOCGROUP(clasp);
 CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default));
 CL_DEFUN core::T_sp core__load_fasoll(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
   //  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
-  llvmo::llvm_sys__load_ll(cl__pathname(pathDesig), verbose.notnilp(), print.notnilp(), external_format, nil<core::T_O>());
+  llvmo::llvm_sys__load_ll(cl__pathname(pathDesig), verbose.notnilp(), print.notnilp(), external_format);
   return _lisp->_true();
 }
 
@@ -751,7 +751,7 @@ DOCGROUP(clasp);
 CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default));
 CL_DEFUN core::T_sp core__load_fasobc(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
   //  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
-  llvmo::llvm_sys__load_bc(cl__pathname(pathDesig), verbose.notnilp(), print.notnilp(), external_format, nil<core::T_O>());
+  llvmo::llvm_sys__load_bc(cl__pathname(pathDesig), verbose.notnilp(), print.notnilp(), external_format);
   return _lisp->_true();
 }
 
@@ -1223,12 +1223,12 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
 
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__declared_global_inline_p(T_sp name) {
-  return gc::As<HashTableEqual_sp>(_sym_STARfunctions_to_inlineSTAR->symbolValue())->gethash(name);
+  return gc::As<HashTable_sp>(_sym_STARfunctions_to_inlineSTAR->symbolValue())->gethash(name);
 }
 
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__declared_global_notinline_p(T_sp name) {
-  return gc::As<HashTableEqual_sp>(_sym_STARfunctions_to_notinlineSTAR->symbolValue())->gethash(name);
+  return gc::As<HashTable_sp>(_sym_STARfunctions_to_notinlineSTAR->symbolValue())->gethash(name);
 }
 
 DOCGROUP(clasp);
@@ -1723,17 +1723,9 @@ void start_code_interpreter(gctools::GCRootsInModule* roots, char* bytecode, siz
 #include <virtualMachine.h>
 #undef DEFINE_LTV_SWITCH
     default: {
-      std::string fasoFile = "NotFaso";
-      size_t fasoIndex = 0;
-      T_sp maybeObjectFile = my_thread->topObjectFile();
-      if (gc::IsA<llvmo::ObjectFile_sp>(maybeObjectFile)) {
-        llvmo::ObjectFile_sp objectFile = gc::As_unsafe<llvmo::ObjectFile_sp>(maybeObjectFile);
-        fasoFile = objectFile->_FasoName->get_std_string();
-        fasoIndex = objectFile->_FasoIndex;
-      }
-      SIMPLE_ERROR("While loading the faso file {} {} an illegal byte-code {} was detected. This usually happens when a faso file "
+      SIMPLE_ERROR("While loading a faso file an illegal byte-code {} was detected. This usually happens when a faso file "
                    "is out of date and the byte code has changed in the meantime.",
-                   fasoFile, fasoIndex, (int)c);
+                   (int)c);
     }
     }
   }

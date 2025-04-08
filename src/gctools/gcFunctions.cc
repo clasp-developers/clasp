@@ -1,19 +1,5 @@
 /* -^- */
-int gcFunctions_top;
 #include <clasp/core/foundation.h>
-
-#include <boost/mpl/list.hpp>
-#ifdef USE_BOEHM
-#include "src/bdwgc/include/gc_mark.h"
-#endif
-int gcFunctions_before;
-#ifdef USE_MPS
-extern "C" {
-#include <clasp/mps/code/mpscamc.h>
-};
-#endif
-
-int gcFunctions_after;
 
 #include <stdint.h>
 #include <unistd.h>
@@ -42,6 +28,7 @@ int gcFunctions_after;
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/core/compiler.h>
+#include <clasp/core/debugger.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
 
@@ -78,14 +65,6 @@ int iBootstrapKind(const string& name) {
     }
   }
   SIMPLE_ERROR("Illegal bootstrap-kind {}", name);
-}
-
-std::atomic<size_t> global_lexical_depth_counter;
-
-DOCGROUP(clasp);
-CL_DEFUN core::T_sp gctools__next_lexical_depth_counter() {
-  core::T_sp result = core::make_fixnum(++global_lexical_depth_counter);
-  return result;
 }
 
 DOCGROUP(clasp);
@@ -167,12 +146,6 @@ CL_DEFUN core::T_sp core__header_value(core::T_sp obj) {
   SIMPLE_ERROR("The object {} is not a general object and doesn't have a header-value", _rep_(obj));
 }
 
-DOCGROUP(clasp);
-CL_DEFUN core::T_mv gctools__tagged_pointer_mps_test() {
-  // Return the values used to identify tagged pointers (PTR&POINTER_TAG_MASK)==POINTER_TAG_EQ
-  return Values(core::make_fixnum(POINTER_TAG_MASK), core::make_fixnum(POINTER_TAG_EQ));
-}
-
 CL_DOCSTRING(R"dx(Return the index part of the stamp.  Stamp indices are adjacent to each other.)dx");
 DOCGROUP(clasp);
 CL_DEFUN size_t core__stamp_index(size_t stamp) {
@@ -197,7 +170,7 @@ CL_DEFUN core::Integer_sp core__shift_stamp_for_compiled_code(size_t stamp_wtagx
 CL_DOCSTRING(R"dx(Return the stamp for the object, the flags and the header stamp)dx");
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp core__instance_stamp(core::T_sp obj) {
-  core::T_sp stamp((gctools::Tagged)cx_read_stamp(obj.raw_(), 0));
+  core::T_sp stamp(cx_read_stamp(obj.raw_()));
   if (stamp.fixnump())
     return stamp;
   SIMPLE_ERROR("core:instance-stamp was about to return a non-fixnum {}", (void*)stamp.raw_());
@@ -273,33 +246,196 @@ namespace gctools {
 
 SYMBOL_EXPORT_SC_(KeywordPkg, test);
 
-CL_LAMBDA(&optional (x :default));
-CL_DECLARE();
-CL_DOCSTRING(
-    R"dx(room - Return info about the reachable objects in memory. x can be T, nil, :default and they control the amount of output produced.)dx");
-DOCGROUP(clasp);
-CL_DEFUN core::T_mv cl__room(core::Symbol_sp x) {
-  std::ostringstream OutputStream;
-  RoomVerbosity verb;
-  if (x == cl::_sym_T) {
-    verb = room_max;
-  } else if (x == kw::_sym_default) {
-    verb = room_default;
-  } else if (x == kw::_sym_test) {
-    verb = room_test;
-  } else if (x.nilp()) {
-    verb = room_min;
-  } else {
+inline RoomVerbosity roomVerbosity(core::Symbol_sp x) {
+  if (x == cl::_sym_T) return room_max;
+  else if (x == kw::_sym_default) return room_default;
+  else if (x == kw::_sym_test) return room_test;
+  else if (x.nilp()) return room_min;
+  else
     TYPE_ERROR(x, core::Cons_O::createList(cl::_sym_member, cl::_sym_T, cl::_sym_nil, kw::_sym_default));
+}
+
+size_t dumpReachableClassMap(const gctools::ReachableClassMap& data, std::ostream& OutputStream) {
+  // note: can't use RCMap::value_type as that has const key,
+  // rendering the vector unsortable.
+  vector<std::pair<gctools::GCStampEnum, gctools::ReachableClass>> values;
+  for (auto it : data) {
+    values.push_back(it); // copy for sorting
   }
-#if defined(USE_BOEHM) || defined(USE_MPS)
-  clasp_gc_room(OutputStream, verb);
-#else
-  MISSING_GC_SUPPORT();
-#endif
-  clasp_write_string(OutputStream.str(), cl::_sym_STARstandard_outputSTAR->symbolValue());
-  return Values0<core::T_O>();
+  size_t totalSize = 0;
+  sort(values.begin(), values.end(),
+       [](auto& x, auto& y) {
+         return (x.second.totalSize > y.second.totalSize);
+       });
+  for (auto it : values) {
+    Fixnum k = it.first;
+    const gctools::ReachableClass& rc = it.second;
+    string className;
+    if (k > 0 && k <= gctools::STAMPWTAG_max) {
+      const char* nm = obj_name(k);
+      if (nm) {
+        className = nm;
+        if (className.size() > 10) className = className.substr(10);
+      } else className = "NULL-NAME";
+    } else className = "UNKNOWN";
+    totalSize += rc.totalSize;
+    OutputStream << fmt::format("total_size: {:10d} count: {:8d} avg.sz: {:8d} {}/{}\n", rc.totalSize, rc.instances,
+                                (rc.totalSize / rc.instances), className, k);
+  }
+  return totalSize;
+}
+
+void displayClassKinds(const ReachableClassMap& rcmap, std::ostream& OutputStream) {
+  OutputStream << "-------------------- Reachable ClassKinds -------------------\n";
+  dumpReachableClassMap(rcmap, OutputStream);
+  OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(rcmap.size()) << " ClassKinds\n";
+}
+
+struct RoomSummary {
+  size_t consTotalSize = 0;
+  size_t consCount = 0;
+  size_t otherTotalSize = 0;
+  size_t otherCount = 0;
 };
+
+RoomSummary summarizeResults(const gctools::ReachableClassMap& data) {
+  RoomSummary summary;
+  for (auto it : data) {
+    Fixnum k = it.first;
+    gctools::ReachableClass rc = it.second;
+    size_t sz = rc.totalSize;
+
+    if (k == STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__Cons_O)) {
+      summary.consCount += rc.instances;
+      summary.consTotalSize += sz;
+    } else {
+      summary.otherCount += rc.instances;
+      summary.otherTotalSize += sz;
+    }
+  }
+  return summary;
+}
+
+void displayClassKindsSummary(const ReachableClassMap& rcmap, std::ostream& OutputStream) {
+  RoomSummary summary = summarizeResults(rcmap);
+  size_t totalSize = summary.consTotalSize + summary.otherTotalSize;
+  OutputStream << fmt::format("Walk of memory found {} different classes.\n",
+                              static_cast<uintptr_t>(rcmap.size()));
+  OutputStream << fmt::format("There are {} cons objects occupying {} bytes {:4.1f}% of memory.\n", summary.consCount,
+                              summary.consTotalSize, (float)summary.consTotalSize / totalSize * 100.0);
+  OutputStream << fmt::format("There are {} other objects occupying {} bytes {:4.1f}% of memory.\n", summary.otherCount,
+                              summary.otherTotalSize, (float)summary.otherTotalSize / totalSize * 100.0);
+}
+
+void roomMapper(Tagged tagged, void* data) {
+  ReachableClassMap* rcmap = (ReachableClassMap*)data;
+  uintptr_t tag = tagged & ptag_mask;
+  BaseHeader_s* header;
+  GCStampEnum stamp;
+
+  if (tag == general_tag) {
+    uintptr_t obj = tagged & ptr_mask;
+    header = (Header_s*)GeneralPtrToHeaderPtr((void*)obj);
+    stamp = header->_badge_stamp_wtag_mtag.stamp_();
+  } else if (tag == cons_tag) {
+    uintptr_t obj = tagged & ptr_mask;
+    header = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)obj);
+    stamp = (gctools::GCStampEnum)STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_CONS);
+  } else return; // immediate or vaslist
+
+  size_t sz = objectSize(header);
+
+  (*rcmap)[stamp].update(sz);
+}
+
+void* map_gc_objects_w_alloc_lock(void* data) {
+  mapAllObjects(roomMapper, data);
+  return nullptr;
+}
+
+void fill_reachable_class_map(ReachableClassMap* rcmap) {
+  call_with_stopped_world(map_gc_objects_w_alloc_lock,
+                          (void*)rcmap);
+}
+
+CL_LAMBDA(&optional (x :default));
+CL_DEFUN void cl__room(core::Symbol_sp x) {
+  std::ostringstream OutputStream;
+  RoomVerbosity verb = roomVerbosity(x);
+  // With precise GC, we can get per-class counts.
+#ifdef USE_PRECISE_GC
+  switch (verb) {
+  case room_max: {
+    ReachableClassMap rcmap;
+    fill_reachable_class_map(&rcmap);
+    displayClassKinds(rcmap, OutputStream);
+  } break;
+  case room_default: {
+    ReachableClassMap rcmap;
+    fill_reachable_class_map(&rcmap);
+    displayClassKindsSummary(rcmap, OutputStream);
+  } break;
+  default: break; // save some effort by not even computing the map
+  }
+#endif
+
+  // Summary statistics
+  OutputStream << "Total heap bytes:                              " << std::setw(12) << heap_size() << '\n';
+  OutputStream << "Free bytes:                                    " << std::setw(12) << free_bytes() << '\n';
+  OutputStream << "Bytes allocated since last GC:                 " << std::setw(12) << bytes_since_gc() << '\n';
+
+  // Write it all out.  
+  clasp_write_string(OutputStream.str(), cl::_sym_STARstandard_outputSTAR->symbolValue());
+}
+
+bool memory_test() {
+  core::lisp_write("Testing coherence of objects in memory\n");
+  std::set<core::T_sp, gctools::T_sp_less> undladdrableFuns;
+  auto corrupt = gctools::memtest(undladdrableFuns);
+  bool result = true;
+
+  if (corrupt.empty()) {
+    core::lisp_write("Gathered base pointers with zero corrupt objects detected\n");
+  } else {
+    result = false;
+    core::lisp_write(fmt::format("{} corrupt objects in memory test\n", corrupt.size()));
+    size_t idx = 0;
+    for (const auto& cur : corrupt) {
+      Tagged base = cur.first;
+      Tagged corruptObj = cur.second;
+      if (base) {
+        core::lisp_write(fmt::format("#{} -> {} base: {} == {}\n", idx, (void*)corruptObj, (void*)base, dbg_safe_repr((void*)base)));
+      } else {
+        core::lisp_write(fmt::format("#{} -> {} base: [root]", idx, (void*)corruptObj ));
+      }
+      idx++;
+    }
+  }
+  if (undladdrableFuns.empty()) {
+    core::lisp_write("All function entry points are accessible via dlsym\n");
+  } else {
+    result = false;
+    core::lisp_write(fmt::format("{} functions had entry points inaccessible via dlsym\n", undladdrableFuns.size()));
+    for (const auto& cur : undladdrableFuns)
+      core::lisp_write(fmt::format("{}\n", _rep_(cur)));
+  }
+  
+  return result;
+}
+
+CL_LAMBDA();
+CL_DOCSTRING("Walk all objects in memory and determine how many contain pointers that are not to valid objects. Return true iff all pointers are valid. Writes a report to standard output.");
+CL_DEFUN bool gctools__memory_test() {
+  // Collect twice to try and get the mark bits set properly
+  GC_gcollect();
+  GC_gcollect();
+  return memory_test();
+}
+
+// Check that all function entry points are symbolically attainable through dlsym.
+// This is needed for snapshots to work.
+// The first set passed is 
+
 }; // namespace gctools
 
 namespace gctools {
@@ -319,10 +455,10 @@ The following &KEY arguments are defined:
      Test memory prior to saving snapshot.
      If NIL then snapshot saving is faster.)dx")
 DOCGROUP(clasp);
-CL_DEFUN void gctools__save_lisp_and_die(core::T_sp filename, core::T_sp executable, core::T_sp testMemory) {
+CL_DEFUN void gctools__save_lisp_and_die(core::String_sp filename, bool executable, bool testMemory) {
 #ifdef USE_PRECISE_GC
-  throw(core::SaveLispAndDie(gc::As<core::String_sp>(filename)->get_std_string(), executable.notnilp(),
-                             globals_->_Bundle->_Directories->_LibDir, true, core::noStomp, testMemory.notnilp() ));
+  throw(snapshotSaveLoad::SaveLispAndDie(filename->get_std_string(), executable,
+                                         globals_->_Bundle->_Directories->_LibDir, true, snapshotSaveLoad::ForwardingEnum::noStomp, testMemory ));
 #else
   SIMPLE_ERROR("save-lisp-and-die only works for precise GC");
 #endif
@@ -341,125 +477,52 @@ The following &KEY arguments are defined:
      to create a standalone executable.  If false (the default), the
      snapshot will not be executable on its own.)dx")
 DOCGROUP(clasp);
-CL_DEFUN void gctools__save_lisp_and_continue(core::T_sp filename, core::T_sp executable) {
+CL_DEFUN void gctools__save_lisp_and_continue(core::String_sp filename, bool executable) {
 #ifdef USE_PRECISE_GC
-  core::SaveLispAndDie ee(gc::As<core::String_sp>(filename)->get_std_string(), executable.notnilp(),
-                          globals_->_Bundle->_Directories->_LibDir, false );
+  snapshotSaveLoad::SaveLispAndDie ee(filename->get_std_string(), executable,
+                                      globals_->_Bundle->_Directories->_LibDir, false );
   snapshotSaveLoad::snapshot_save(ee);
 #else
   SIMPLE_ERROR("save-lisp-and-continue only works for precise GC");
 #endif
 }
-
-
-CL_LAMBDA(stamp);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(Return a list of addresses of objects with the given stamp)dx");
-DOCGROUP(clasp);
-CL_DEFUN core::T_sp gctools__objects_with_stamp(core::T_sp stamp) {
-#if defined(USE_BOEHM)
-  if (stamp.fixnump()) {
-    gctools::FindStamp findStamp((gctools::GCStampEnum)stamp.unsafe_fixnum());
-#if GC_VERSION_MAJOR >= 7 && GC_VERSION_MINOR >= 6
-    GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object_find_stamps, (void*)&findStamp);
-#else
-    SIMPLE_ERROR("The boehm function GC_enumerate_reachable_objects_inner is not available");
-#endif
-    core::List_sp result = nil<core::T_O>();
-    for (size_t ii = 0; ii < findStamp._addresses.size(); ii++) {
-      core::Pointer_sp ptr = core::Pointer_O::create((void*)findStamp._addresses[ii]);
-      result = core::Cons_O::create(ptr, result);
-    }
-    return result;
-  }
-#else
-  MISSING_GC_SUPPORT();
-#endif // USE_BOEHM
-  SIMPLE_ERROR("You must pass a stamp value");
-}
-
-CL_LAMBDA(address);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(Return a list of addresses of objects with the given stamp)dx");
-DOCGROUP(clasp);
-CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
-#if defined(USE_BOEHM)
-  if (obj.fixnump()) {
-    void* base = GC_base((void*)obj.unsafe_fixnum());
-    gctools::FindOwner findOwner(base);
-#if GC_VERSION_MAJOR >= 7 && GC_VERSION_MINOR >= 6
-    GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object_find_owners, (void*)&findOwner);
-#else
-    SIMPLE_ERROR("The boehm function GC_enumerate_reachable_objects_inner is not available");
-#endif
-    core::List_sp result = nil<core::T_O>();
-    for (size_t ii = 0; ii < findOwner._addresses.size(); ii++) {
-      result = core::Cons_O::create(core::Pointer_O::create(findOwner._addresses[ii]), result);
-    }
-    return result;
-  }
-#else
-  MISSING_GC_SUPPORT();
-#endif // USE_BOEHM
-  SIMPLE_ERROR("You must pass a pointer");
-}
-
 }; // namespace gctools
 
 namespace gctools {
 /*! Call finalizer_callback with no arguments when object is finalized.*/
 DOCGROUP(clasp);
-CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback) {
-  // printf("%s:%d making a finalizer for %p calling %p\n", __FILE__, __LINE__, (void*)object.tagged_(),
-  // (void*)finalizer_callback.tagged_());
+CL_DEFUN void gctools__finalize(core::T_sp object, core::Function_sp finalizer_callback) {
   WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
-  core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
+  core::HashTable_sp ht = _lisp->_Roots._Finalizers;
   core::List_sp orig_finalizers = ht->gethash(object, nil<core::T_O>());
   core::List_sp finalizers = core::Cons_O::create(finalizer_callback, orig_finalizers);
-  //  printf("%s:%d      Adding finalizer to list new length --> %lu   list head %p\n", __FILE__, __LINE__,
-  //  core::cl__length(finalizers), (void*)finalizers.tagged_());
   ht->hash_table_setf_gethash(object, finalizers);
   // Register the finalizer with the GC
-#if defined(USE_BOEHM)
-  boehm_set_finalizer_list(object.tagged_(), finalizers.tagged_());
-#elif defined(USE_MMTK)
-  MISSING_GC_SUPPORT();
-#endif
+  set_finalizer_list(object, finalizers);
 };
 
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp gctools__finalizers(core::T_sp object) {
   WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
-  core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
+  core::HashTable_sp ht = _lisp->_Roots._Finalizers;
   return ht->gethash(object, nil<core::T_O>());
 }
 
 DOCGROUP(clasp);
-CL_DEFUN int gctools__invoke_finalizers() {
-#if defined(USE_BOEHM)
-  return GC_invoke_finalizers();
-#else
-  MISSING_GC_SUPPORT();
-#endif
+CL_DEFUN void gctools__invoke_finalizers() {
+  invoke_finalizers();
 }
 
 DOCGROUP(clasp);
 CL_DEFUN void gctools__definalize(core::T_sp object) {
-  //  printf("%s:%d erasing finalizers for %p\n", __FILE__, __LINE__, (void*)object.tagged_());
   WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
-  core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
+  core::HashTable_sp ht = _lisp->_Roots._Finalizers;
   if (ht->gethash(object))
     ht->remhash(object);
-#if defined(USE_BOEHM)
-  boehm_clear_finalizer_list(object.tagged_());
-#else
-  MISSING_GC_SUPPORT();
-#endif
+  clear_finalizer_list(object);
 }
 
 }; // namespace gctools
-
-namespace gctools {};
 
 namespace gctools {
 
@@ -486,22 +549,9 @@ CL_DEFUN core::T_sp gctools__vtable_address(core::General_sp generalObject) {
 }
 
 DOCGROUP(clasp);
-CL_DEFUN core::T_sp gctools__stack_depth() {
-  int z = 0;
-  void* zp = &z;
-  size_t stackDepth = (char*)_global_stack_marker - (char*)zp;
-  return core::make_fixnum((uint)stackDepth);
-};
-
-DOCGROUP(clasp);
 CL_DEFUN void gctools__garbage_collect() {
-#if defined(USE_BOEHM)
-  GC_gcollect();
-  GC_invoke_finalizers();
-#else
-  MISSING_GC_SUPPORT();
-#endif
-  //        printf("Garbage collection done\n");
+  collect_garbage();
+  invoke_finalizers();
 };
 
 DOCGROUP(clasp);
@@ -724,19 +774,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (buildReport)
     ss << (fmt::format("DEBUG_FASTGF = {}\n", (debug_fastgf ? "**DEFINED**" : "undefined")));
 
-  bool debug_rehash_count = false;
-#ifdef DEBUG_REHASH_COUNT
-#ifndef DEBUG_MONITOR
-#error "DEBUG_MONITOR must also be enabled if DEBUG_REHASH_COUNT is turned on"
-#endif
-  debug_rehash_count = true;
-  debugging = true;
-  if (setFeatures)
-    features = core::Cons_O::create(_lisp->internKeyword("DEBUG-REHASH_COUNT"), features);
-#endif
-  if (buildReport)
-    ss << (fmt::format("DEBUG_REHASH_COUNT = {}\n", (debug_rehash_count ? "**DEFINED**" : "undefined")));
-
   bool debug_jit_log_symbols = false;
 #ifdef DEBUG_JIT_LOG_SYMBOLS
   if (!core::global_options->_SilentStartup) {
@@ -911,29 +948,28 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (buildReport)
     ss << (fmt::format("DISABLE_TYPE_INFERENCE = {}\n", (disable_type_inference ? "**DEFINED**" : "undefined")));
 
-#if USE_COMPILE_FILE_PARALLEL == 0
-  use_compile_file_parallel = false;
-  INTERN_(comp, STARuse_compile_file_parallelSTAR)->defparameter(nil<core::T_O>());
-  printf("%s:%d You have turned off compile-file-parallel\n   - you can enable it by setting USE_COMPILE_FILE_PARALLEL in the "
-         "wscript.config\n   - compile-file-parallel should be enabled by default\n",
-         __FILE__, __LINE__);
-#else
+  bool use_compile_file_parallel = false;  
+#ifdef USE_COMPILE_FILE_PARALLEL
   INTERN_(comp, STARuse_compile_file_parallelSTAR)->defparameter(_lisp->_true());
-#endif
-  if (buildReport)
-    ss << (fmt::format("USE_COMPILE_FILE_PARALLEL = {}\n", USE_COMPILE_FILE_PARALLEL));
-
-#if FORCE_STARTUP_EXTERNAL_LINKAGE == 0
-  force_startup_external_linkage = false;
-  INTERN_(comp, STARforce_startup_external_linkageSTAR)->defparameter(nil<core::T_O>());
+  use_compile_file_parallel = true;
 #else
-  INTERN_(comp, STARforce_startup_external_linkageSTAR)->defparameter(_lisp->_true());
+  INTERN_(comp, STARuse_compile_file_parallelSTAR)->defparameter(nil<core::T_O>());
 #endif
   if (buildReport)
-    ss << (fmt::format("FORCE_STARTUP_EXTERNAL_LINKAGE = {}\n", FORCE_STARTUP_EXTERNAL_LINKAGE));
+    ss << (fmt::format("USE_COMPILE_FILE_PARALLEL = {}\n", use_compile_file_parallel ? "**DEFINED**" : "undefined"));
+
+  bool force_startup_external_linkage = false;
+#ifdef FORCE_STARTUP_EXTERNAL_LINKAGE
+  force_startup_external_linkage = true;
+  INTERN_(comp, STARforce_startup_external_linkageSTAR)->defparameter(_lisp->_true());
+#else
+  INTERN_(comp, STARforce_startup_external_linkageSTAR)->defparameter(nil<core::T_O>());
+#endif
+  if (buildReport)
+    ss << (fmt::format("FORCE_STARTUP_EXTERNAL_LINKAGE = {}\n", force_startup_external_linkage ? "**DEFINED**" : "undefined"));
 
   bool use_human_readable_bitcode = false;
-#if USE_HUMAN_READABLE_BITCODE == 1
+#ifdef USE_HUMAN_READABLE_BITCODE
   use_human_readable_bitcode = true;
   debugging = true;
   if (setFeatures)
@@ -943,7 +979,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
     ss << (fmt::format("USE_HUMAN_READABLE_BITCODE = {}\n", (use_human_readable_bitcode ? "**DEFINED**" : "undefined")));
 
   bool debug_compile_file_output_info = false;
-#if DEBUG_COMPILE_FILE_OUTPUT_INFO == 1
+#ifdef DEBUG_COMPILE_FILE_OUTPUT_INFO
   debug_compile_file_output_info = true;
   debugging = true;
   if (setFeatures)
@@ -953,7 +989,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
     ss << (fmt::format("DEBUG_COMPILE_FILE_OUTPUT_INFO = {}\n", (debug_compile_file_output_info ? "**DEFINED**" : "undefined")));
 
   bool debug_dyn_env_stack = false;
-#if DEBUG_DYN_ENV_STACK == 1
+#ifdef DEBUG_DYN_ENV_STACK
   debug_dyn_env_stack = true;
   debugging = true;
   if (setFeatures)
@@ -1020,31 +1056,121 @@ CL_DEFUN core::Integer_sp gctools__unwind_time_nanoseconds() {
   return is;
 }
 
-CL_DOCSTRING(R"doc(This is an attempt at a SAFE function that walks the frame-pointers on the stack.
-             It tests if memory is readable before it reads it and returns with a message if it isn't readable.)doc");
-CL_DEFUN void gctools__walk_frame_pointers_on_stack() {
-  // Get the current frame pointer
-  void **frame_pointer = (void**)__builtin_frame_address(0);
-  printf("Stack trace:\n");
-  size_t idx = 0;
-  while (frame_pointer) {
-    if (!is_memory_readable(frame_pointer+1,8) ) goto UNREADABLE_RETURN_ADDRESS;
-    void* return_address = *(frame_pointer+1);
-    printf("%5zu frame-pointer: %p   return-address: %p\n", idx, frame_pointer, return_address );
-    if (return_address==0) goto DONE;
-        // Move to the previous frame
-    if (!is_memory_readable(frame_pointer,8)) goto UNREADABLE_FRAME_POINTER;
-    frame_pointer = (void**)*frame_pointer;
-    ++idx;
+CL_DEFUN size_t gctools__object_size(core::T_sp obj) {
+  if (obj.generalp())
+    return objectSize((Header_s*)GeneralPtrToHeaderPtr(&*obj));
+  else if (obj.consp())
+    return objectSize((ConsHeader_s*)ConsPtrToHeaderPtr(&*obj));
+  else return 0; // other immediate
+}
+
+static const char* data_type_name(Data_types dt) {
+  switch (dt) {
+  case DONT_EXPOSE_OFFSET: return "dont_expose";
+  case SMART_PTR_OFFSET: return "T_sp";
+  case ATOMIC_SMART_PTR_OFFSET: return "atomic<T_sp>";
+  case TAGGED_POINTER_OFFSET: return "tagged_pointer";
+  case WEAK_PTR_OFFSET: return "WeakPointer";
+  case EPHEMERON_OFFSET: return "Ephemeron";
+  case RAW_POINTER_OFFSET: return "void*";
+  case ARRAY_OFFSET: return "array";
+  case POINTER_OFFSET: return "pointer";
+  case CONSTANT_ARRAY_OFFSET: return "constant_array";
+  case ctype_double: return "double";
+  case ctype_float: return "float";
+  case ctype_long_double: return "long double";
+  case ctype_int: return "int";
+  case ctype_short: return "short";
+  case ctype_unsigned_char: return "unsigned char";
+  case ctype_signed_char: return "signed char";
+  case ctype_unsigned_short: return "unsigned short";
+  case ctype_signed_short: return "signed short";
+  case ctype_unsigned_long: return "unsigned long";
+  case ctype_unsigned_int: return "unsigned int";
+  case ctype_long: return "long";
+  case ctype_long_long: return "long long";
+  case ctype_char: return "char";
+  case ctype_char32_t: return "char32_t";
+  case ctype__Bool: return "bool";
+  case ctype_enum_core__StreamMode: return "core::StreamMode";
+  case ctype_const_char_ptr: return "const char*";
+  case ctype_size_t: return "size_t";
+  case ctype_opaque_ptr: return "opaque_ptr";
+  case CXX_FIXUP_OFFSET: return "CXX_FIXUP_OFFSET"; // ?? what is this?
+  case ATOMIC_POD_OFFSET_unsigned_short: return "atomic<unsigned short>";
+  case ATOMIC_POD_OFFSET_unsigned_long: return "atomic<unsigned long>";
+  case ATOMIC_POD_OFFSET_mp__ProcessPhase: return "atomic<mp::ProcessPhase>";
+  case ATOMIC_POD_OFFSET_unsigned_int: return "atomic<unsigned int>";
+  case ATOMIC_POD_OFFSET_long_long: return "atomic<long long>";
+  case ATOMIC_POD_OFFSET__Bool: return "atomic<bool>";
+  case ATOMIC_POD_OFFSET_long: return "atomic<long>";
+  case CXX_SHARED_MUTEX_OFFSET: return "mp::Mutex"; // ?? not SharedMutex?
+  default: return "[unknown type]";
   }
- UNREADABLE_RETURN_ADDRESS:
-  printf("Could not read return_address at *(frame_pointer+1) %p - stopping\n", frame_pointer+1 );
-  return;
- UNREADABLE_FRAME_POINTER:
-  printf("Could not read frame_pointer at *frame_pointer %p - stopping\n", frame_pointer );
-  return;
- DONE:
-  return;
+}
+
+std::string dump_stamp_info(size_t stamp) {
+  if (stamp > global_stamp_max) {
+    return "Stamp out of range";
+  }
+  std::string outstr;
+  auto out = std::back_inserter(outstr);
+  const Stamp_layout& layout = global_stamp_layout[stamp];
+  // Layout op and name
+  switch (layout.layout_op) {
+  case class_container_op: fmt::format_to(out, "Class: "); break;
+  case bitunit_container_op: fmt::format_to(out, "Bitunit: "); break;
+  case templated_op: fmt::format_to(out, "Templated: "); break;
+  case undefined_op: fmt::format_to(out, "Undefined: "); break;
+  }
+  fmt::format_to(out, "{}\n", layout.name);
+  fmt::format_to(out, "Flags: {:#x} ", layout.flags);
+  // Flags
+  if (layout.flags & IS_POLYMORPHIC)
+    if (layout.flags & COMPLEX_SCAN)
+      fmt::format_to(out, "(IS_POLYMORPHIC | COMPLEX_SCAN)\n");
+    else fmt::format_to(out, "(IS_POLYMORPHIC)\n");
+  else if (layout.flags & COMPLEX_SCAN) fmt::format_to(out, "(COMPLEX_SCAN)\n");
+  else fmt::format_to(out, "()\n");
+  // Misc
+  fmt::format_to(out, "Size: {}\n", layout.size);
+  // Fields
+  fmt::format_to(out, "Bitmap: {:0<#16x}\n", layout.class_field_pointer_bitmap);
+  if (layout.number_of_fields)
+    fmt::format_to(out, "{} fields:\n", layout.number_of_fields);
+  else fmt::format_to(out, "No fields.\n");
+  const Field_layout* flayout = layout.field_layout_start;
+  for (size_t i = 0; i < layout.number_of_fields; ++i, ++flayout) {
+    fmt::format_to(out, " {} {} [offset = {}]\n",
+                   data_type_name((Data_types)flayout->type), flayout->name,
+                   flayout->offset);
+  }
+  if (layout.container_layout) {
+    const Container_layout* clayout = layout.container_layout;
+    fmt::format_to(out, "Variable length container with {} fields ({} pointers):\n",
+                   clayout->number_of_fields,
+                   clayout->container_field_pointer_count);
+    fmt::format_to(out, "Element size: {}\nBits per bitunit: {}\n",
+                   clayout->element_size, clayout->bits_per_bitunit);
+    fmt::format_to(out, "Offsets of data, end, capacity resp.: {}, {}, {}\n",
+                   clayout->data_offset, clayout->end_offset,
+                   clayout->capacity_offset);
+    fmt::format_to(out, "Bitmap: {:0<#16x}\n",
+                   clayout->container_field_pointer_bitmap);
+    const Field_layout* cflayout = clayout->field_layout_start;
+    for (size_t j = 0; j < clayout->number_of_fields; ++j, ++cflayout) {
+      fmt::format_to(out, " {} {} [offset = {}]\n",
+                     data_type_name((Data_types)cflayout->type),
+                     cflayout->name, cflayout->offset);
+    }
+  }
+  return outstr;
+}
+
+CL_DEFUN void gctools__dump_stamp_info(size_t unshifted_stamp) {
+  // This shift makes this function work on the output of instance-stamp.
+  // I don't get it.
+  core::clasp_write_string(dump_stamp_info(STAMP_UNSHIFT_MTAG(unshifted_stamp)));
 }
 
 }; // namespace gctools

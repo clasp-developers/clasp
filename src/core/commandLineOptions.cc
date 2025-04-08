@@ -88,11 +88,6 @@ Options:
       Check symbols while starting up and verify that snapshot save will
       work. The symbols can be recovered at runtime calling by
       (core:mangled-symbol-names <stream>).
-  -z, --snapshot-symbols-save <file>
-      Accumulate symbols while starting up and verify that snapshot save will
-      work. The symbols can be recovered at runtime calling by
-      (core:mangled-symbol-names <stream>). They are written out to the <file>
-      on exit.
   -f, --feature <feature>
       Add the feature to *features*
   -e, --eval <form>
@@ -180,8 +175,6 @@ Environment variables:
       Dump info during bundle setup
   CLASP_DEBUG_START_CODE
       Dump info during startup for every start-code
-  CLASP_DEBUG_SNAPSHOT
-      Dump info during snapshot loading
   CLASP_EXIT_ON_WAIT_FOR_USER_SIGNAL
       Exit if wait-for-user-signal is encountered. Used for debugging under live-record.
   CLASP_DEBUG_OBJECT_FILES=save
@@ -336,10 +329,6 @@ void process_clasp_arguments(CommandLineOptions* options) {
       options->_PauseForDebugger = true;
     } else if (*arg == "-y" || *arg == "--snapshot-symbols") {
       options->_ExportedSymbolsCheck = true;
-    } else if (*arg == "-z" || *arg == "--snapshot-symbols-save") {
-      options->_ExportedSymbolsCheck = true;
-      options->_ExportedSymbolsSave = true;
-      options->_ExportedSymbolsFilename = *++arg;
     } else if (*arg == "-m" || *arg == "--disable-mpi") {
       options->_DisableMpi = true;
     } else if (*arg == "-v" || *arg == "--version") {
@@ -442,7 +431,7 @@ void process_clasp_arguments(CommandLineOptions* options) {
 CommandLineOptions::CommandLineOptions(int argc, const char* argv[])
     : _ProcessArguments(process_clasp_arguments), _DisableMpi(false), _AddressesP(false), _StartupType(DEFAULT_STARTUP_TYPE),
       _FreezeStartupType(false), _HasDescribeFile(false), _StartupFile(""), _ExportedSymbolsCheck(false),
-      _ExportedSymbolsSave(false), _RandomNumberSeed(0), _NoInform(false), _NoPrint(false), _DebuggerDisabled(false),
+      _RandomNumberSeed(0), _NoInform(false), _NoPrint(false), _DebuggerDisabled(false),
       _Interactive(true), _Version(false), _SilentStartup(true), _GenerateTrampolines(false),
       _RCFileName(std::string(getenv("HOME")) + "/.clasprc"), _NoRc(false), _PauseForDebugger(false) {
   if (argc == 0) {

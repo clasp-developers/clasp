@@ -169,11 +169,11 @@ public:
 #endif
   static Cons_sp
   create(T_sp car, T_sp cdr) {
-    gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<gctools::RuntimeStage, Cons_O, gctools::DoRegister>::allocate(car, cdr);
+    gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<gctools::RuntimeStage, Cons_O>::allocate(car, cdr);
     return ll;
   };
   template <typename Stage> static Cons_sp createAtStage(T_sp car, T_sp cdr) {
-    gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<Stage, Cons_O, gctools::DoRegister>::allocate(car, cdr);
+    gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<Stage, Cons_O>::allocate(car, cdr);
     return ll;
   };
 
@@ -249,11 +249,13 @@ public:
 
 public:
   /*! Recursively hash the car and cdr parts - until the HashGenerator fills up */
-  inline void sxhash_(HashGenerator& hg) const {
-    if (hg.isFilling())
-      hg.hashObject(this->car());
-    if (hg.isFilling())
-      hg.hashObject(this->cdr());
+  inline void sxhash_equal(HashGenerator& hg) const {
+    if (hg.isFilling()) hg.hashObject(this->car());
+    if (hg.isFilling()) hg.hashObject(this->cdr());
+  }
+  inline void sxhash_equalp(HashGenerator& hg) const {
+    if (hg.isFilling()) hg.hashObjectEqualp(this->car());
+    if (hg.isFilling()) hg.hashObjectEqualp(this->cdr());
   }
 
   bool equal(T_sp obj) const;

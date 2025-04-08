@@ -31,16 +31,13 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/pathname.fwd.h>
 #include <clasp/core/fileSystem.fwd.h>
-#include <clasp/core/weakHashTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/core/sourceFileInfo.fwd.h>
 
 namespace core {
 
 class Scope_O : public General_O {
   LISP_CLASS(core, CorePkg, Scope_O, "Scope", General_O);
-
-public:
-  CLASP_DEFAULT_CTOR Scope_O(){};
 };
 
 class FileScope_O : public Scope_O {
@@ -56,7 +53,6 @@ public:
 
 public: // ctor/dtor for classes with shared virtual base
   explicit FileScope_O();
-  virtual ~FileScope_O(){};
   void initialize() override;
   GCPRIVATE : // instance variables here
               Pathname_sp _pathname;

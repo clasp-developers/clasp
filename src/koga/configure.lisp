@@ -347,11 +347,6 @@
                   :initform nil
                   :type boolean
                   :documentation "Generate per-thread logs in /tmp/dispatch-history/**  of the slow path of fastgf")
-   (debug-rehash-count :accessor debug-rehash-count
-                       :initarg :debug-rehash-count
-                       :initform nil
-                       :type boolean
-                       :documentation "Keep track of the number of times each hash table has been rehashed")
    (debug-monitor :accessor debug-monitor
                   :initarg :debug-monitor
                   :initform nil
@@ -781,9 +776,9 @@ is not compatible with snapshots.")
           (list (make-source (make-pathname :name "clasp" :type :unspecific) :variant))))
   (loop for system in '(:asdf :asdf-package-system :uiop :sockets :sb-bsd-sockets)
         for version = (ignore-errors (asdf:component-version (asdf:find-system system)))
-        for expr = (if version (list system :version version) (list system))
-        do (pushnew expr (gethash :cclasp (target-systems instance)))
-           (pushnew expr (gethash :eclasp (target-systems instance))))
+        finally (setf (gethash :cclasp (target-systems instance)) (copy-seq systems)
+                      (gethash :eclasp (target-systems instance)) (copy-seq systems))
+        collect (if version (list system :version version) (list system)) into systems)
   (setf (features instance)
         (append (features instance)
                 (remove-if (lambda (feature)

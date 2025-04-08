@@ -5,6 +5,7 @@
 #include <clasp/core/designators.h>       // calledFunctionDesignator
 #include <clasp/core/primitives.h>        // gensym, function_block_name
 #include <clasp/core/sourceFileInfo.h>    // source info stuff
+#include <clasp/core/hashTable.h>         // also for source info
 #include <clasp/llvmo/llvmoPackage.h>
 #include <clasp/core/bytecode.h>
 #include <algorithm> // max
@@ -1455,8 +1456,8 @@ static void warn_ignorance(List_sp bindings) {
 static T_sp source_location_for(T_sp form, T_sp fallback) {
   if (_sym_STARsourceLocationsSTAR->boundP()) {
     T_sp table = _sym_STARsourceLocationsSTAR->symbolValue();
-    if (gc::IsA<HashTableBase_sp>(table))
-      return gc::As_unsafe<HashTableBase_sp>(table)->gethash(form, fallback);
+    if (gc::IsA<HashTable_sp>(table))
+      return gc::As_unsafe<HashTable_sp>(table)->gethash(form, fallback);
   }
   return fallback;
 }

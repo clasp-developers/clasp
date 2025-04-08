@@ -63,11 +63,6 @@ FORWARD(ClassRegistry);
 class ClassRegistry_O : public core::General_O {
   LISP_CLASS(clbind, ClbindPkg, ClassRegistry_O, "ClassRegistry", core::General_O);
   void initialize() override;
-
-public:
-  ClassRegistry_O(){};
-  virtual ~ClassRegistry_O(){};
-
 public:
   static ClassRegistry_sp get_registry();
 
@@ -86,7 +81,7 @@ public:
   GCPRIVATE :
 
       /*! Index on the type_id.id converted to a core::Pointer and use EQL equality */
-      core::HashTableEql_sp m_classes;
+      core::HashTable_sp m_classes;
   //        std::map<type_id, ClassRep_sp> m_classes;
 
 #if 0

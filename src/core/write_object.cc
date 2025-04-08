@@ -36,7 +36,7 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/lispStream.h>
-#include <clasp/core/hashTable.h>
+#include <clasp/core/hashTableEq.h>
 #include <clasp/core/arguments.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/write_ugly.h>
@@ -163,8 +163,7 @@ T_sp write_object(T_sp x, T_sp stream) {
     T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
 
     if (circle_counter.nilp()) {
-      HashTable_sp hash = gc::As_unsafe<HashTable_sp>(
-          cl__make_hash_table(cl::_sym_eq, make_fixnum(1024), _lisp->rehashSize(), _lisp->rehashThreshold()));
+      HashTable_sp hash = HashTable_O::createEq(1024);
       DynamicScopeManager scope(_sym_STARcircle_counterSTAR, _lisp->_true());
       DynamicScopeManager scope2(_sym_STARcircle_stackSTAR, hash);
       do_write_object_circle(x, _lisp->nullStream());

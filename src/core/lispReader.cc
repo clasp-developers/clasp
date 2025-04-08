@@ -301,7 +301,7 @@ UnEscapedCase check_case(List_sp cur_char, UnEscapedCase curCase) {
 
 Character_sp lexeme_character(T_sp lexeme) {
   if (lexeme.fixnump()) {
-    return core::clasp_make_character(CHR(lexeme));
+    return core::clasp_make_character(CHR(lexeme.unsafe_fixnum()));
   }
   SIMPLE_ERROR("Unknown lexeme {}", _rep_(lexeme));
 }

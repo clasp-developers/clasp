@@ -207,7 +207,7 @@
  (:name :bdwgc
   :repository "https://github.com/ivmai/bdwgc.git"
   :directory "src/bdwgc/"
-  :commit "v8.2.0")
+  :commit "v8.2.8")
  (:name :libatomic_ops
   :repository "https://github.com/ivmai/libatomic_ops.git"
   :directory "src/libatomic_ops/"

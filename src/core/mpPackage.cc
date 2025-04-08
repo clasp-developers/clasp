@@ -173,9 +173,9 @@ __attribute__((noinline))
 void Process_O::run(void* cold_end_of_stack) {
   gctools::ThreadLocalStateLowLevel thread_local_state_low_level(cold_end_of_stack);
   core::ThreadLocalState thread_local_state;
-  thread_local_state.startUpVM();
   my_thread_low_level = &thread_local_state_low_level;
   my_thread = &thread_local_state;
+  my_thread->startUpVM();
   my_thread->initialize_thread(this->asSmartPtr(), true);
   //  my_thread->create_sigaltstack();
   _ThreadInfo = my_thread;
@@ -224,29 +224,29 @@ CL_LAMBDA(mutex &optional (upgrade nil));
 CL_DOCSTRING(
     R"dx(Obtain the write lock for this mutex. upgradep should be true if and only if this thread currently holds the shared lock for the same mutex.)dx");
 DOCGROUP(clasp);
-CL_DEFUN void mp__write_lock(SharedMutex_sp m, bool upgrade) { m->write_lock(upgrade); }
+CL_DEFUN void mp__write_lock(SharedMutex_sp m, bool upgrade) { m->lock(upgrade); }
 
 CL_LAMBDA(mutex &optional (upgrade nil));
 CL_DOCSTRING(
     R"dx(Try to obtain the write lock for this mutex. If it cannot be obtained immediately, return false. Otherwise, return true.)dx");
 DOCGROUP(clasp);
-CL_DEFUN bool mp__write_try_lock(SharedMutex_sp m, bool upgrade) { return m->write_try_lock(upgrade); }
+CL_DEFUN bool mp__write_try_lock(SharedMutex_sp m, bool upgrade) { return m->try_lock(upgrade); }
 
 CL_LAMBDA(mutex &optional (release_read_lock nil));
 CL_DOCSTRING(
     R"dx(Release the write lock. If releasep is true and the current thread holds the shared lock, it is released as well.)dx");
 DOCGROUP(clasp);
-CL_DEFUN void mp__write_unlock(SharedMutex_sp m, bool release_read_lock) { m->write_unlock(release_read_lock); }
+CL_DEFUN void mp__write_unlock(SharedMutex_sp m, bool release_read_lock) { m->unlock(release_read_lock); }
 
 CL_LAMBDA(mutex);
 CL_DOCSTRING(R"dx(Obtain the shared lock for this mutex.)dx");
 DOCGROUP(clasp);
-CL_DEFUN void mp__shared_lock(SharedMutex_sp m) { m->read_lock(); }
+CL_DEFUN void mp__shared_lock(SharedMutex_sp m) { m->lock_shared(); }
 
 CL_LAMBDA(mutex);
 CL_DOCSTRING(R"dx(Release the shared lock for this mutex.)dx");
 DOCGROUP(clasp);
-CL_DEFUN void mp__shared_unlock(SharedMutex_sp m) { m->read_unlock(); }
+CL_DEFUN void mp__shared_unlock(SharedMutex_sp m) { m->unlock_shared(); }
 
 void SharedMutex_O::setLockNames(core::SimpleBaseString_sp readLockName, core::SimpleBaseString_sp writeLockName) {
   this->_SharedMutex.mReadMutex._value._NameWord = lisp_nameword(readLockName);

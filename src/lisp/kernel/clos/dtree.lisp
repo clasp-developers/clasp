@@ -208,12 +208,13 @@
         do (cond ((safe-eql-specializer-p spec) (push pair eqls))
                  ((tag-spec-p spec)
                   (setf (svref tags-vector (class-tag spec)) (cdr pair)))
-                 ((< (core:class-stamp-for-instances spec) cmp:+c++-stamp-max+)
-                  (setf c++-classes
-                        (insert-sorted pair c++-classes #'< #'path-pair-key)))
                  (t
-                  (setf other-classes
-                        (insert-sorted pair other-classes #'< #'path-pair-key))))
+                  (if (core::header-stamp-case (core:class-stamp-for-instances spec)
+                                               t t t nil)
+                      (setf other-classes
+                            (insert-sorted pair other-classes #'< #'path-pair-key))
+                      (setf c++-classes
+                            (insert-sorted pair c++-classes #'< #'path-pair-key)))))
         finally (return (values eqls tags-vector c++-classes other-classes))))
 
 (defun path-pair-key (pair) (core:class-stamp-for-instances (car pair)))

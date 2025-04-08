@@ -49,6 +49,10 @@ namespace clbind {
 class ConstructorCreator_O;
 class ClassRep_O;
 }; // namespace clbind
+namespace gctools {
+class WeakPointer;
+class Ephemeron;
+}; // namespace gctools
 
 //////////////////////////////////////////////////////////////////////
 //

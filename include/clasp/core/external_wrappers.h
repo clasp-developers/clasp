@@ -235,11 +235,6 @@ public:
     if (theClass.nilp()) {
       LOG(("Adding class(%s) to environment"), OT::static_className());
       DEPRECATED();
-#if 0
-      lisp_addClassSymbol(OT::static_classSymbol(),
-                          OT::staticCreator(),
-                          OT::Bases::baseClass1Id() );
-#endif
     }
   }
 

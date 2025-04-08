@@ -155,7 +155,7 @@ T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
     line = myReadLine(sprompt.str(), end_of_transmission);
     if (end_of_transmission) {
       printf("%s:%d Exiting debugger\n", __FILE__, __LINE__);
-      throw ExitProgramException(0);
+      core__exit(0);
     }
     char cmd;
     string eline;

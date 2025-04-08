@@ -30,7 +30,7 @@ namespace core {
 bool clasp_charEqual2(T_sp x, T_sp y);
 
 struct CharacterInfo {
-  HashTableEqual_sp _NamesToCharacterIndex;
+  HashTable_sp _NamesToCharacterIndex;
   gctools::Vec0<T_sp> gIndexedCharacters;
   gctools::Vec0<T_sp> gCharacterNames;
   const char* repr() const { return "CharacterInfo"; };
@@ -41,5 +41,7 @@ struct CharacterInfo {
 inline Character_sp clasp_make_character(claspCharacter c) { return gc::make_tagged_character(c); }
 
 inline claspCharacter clasp_as_claspCharacter(Character_sp c) { return c.unsafe_character(); }
+
+claspCharacter char_upcase(claspCharacter);
 
 } // namespace core

@@ -565,9 +565,8 @@ ALWAYS_INLINE core::T_O* to_object_pointer(void* x) { return clasp_ffi::ForeignD
 #undef TEMPLATE_READ_STAMP
 
 extern "C" {
-uint64_t cx_read_stamp(core::T_O* obj, uint64_t stamp) {
-  uint64_t old_stamp = (uint64_t)llvmo::template_read_stamp<core::T_O>(obj);
-  cc_match((core::T_O*)old_stamp, (core::T_O*)stamp);
+gctools::Tagged cx_read_stamp(core::T_O* obj) {
+  gctools::Tagged old_stamp = (gctools::Tagged)llvmo::template_read_stamp<core::T_O>(obj);
   return old_stamp;
 }
 };
@@ -581,13 +580,6 @@ gctools::ShiftedStamp cc_read_derivable_cxx_stamp_untagged_object(core::T_O* unt
   //  printf("%s:%d:%s returning stamp %lu - check if it is correct\n", __FILE__, __LINE__, __FUNCTION__, stamp);
   return stamp;
 }
-
-T_O* cc_match(T_O* old_value, T_O* new_value) {
-  if (new_value != NULL && old_value != new_value) {
-    printf("%s:%d There was a mismatch old value %p  new value %p\n", __FILE__, __LINE__, old_value, new_value);
-  }
-  return old_value;
-};
 
 #if 0
 void cc_rewind_vaslist(vaslist va_args, void** register_save_areaP)

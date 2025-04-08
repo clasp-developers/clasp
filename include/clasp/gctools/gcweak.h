@@ -69,508 +69,251 @@ THE SOFTWARE.
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-// #define DEBUG_GCWEAK
-#ifdef DEBUG_GCWEAK
-#define GCWEAK_LOG(x) printf("%s:%d %s\n", __FILE__, __LINE__, (x).str().c_str())
-#else
-#define GCWEAK_LOG(x)
-#endif
 
 #include <functional>
+#include <optional>
 
-namespace core {
-string lisp_rep(T_sp obj);
-};
-
-namespace gctools {
-
-#if defined(USE_BOEHM) && !defined(CLASP_THREADS)
-#define call_with_alloc_lock GC_call_with_alloc_lock
-#else
-typedef void* (*fn_type)(void* client_data);
-inline void call_with_alloc_lock(fn_type fn, void* client_data) { fn(client_data); }
-
-#endif
-
-template <class Proto> void* wrapRun(void* wrappedFn) {
-  std::function<Proto>* fn = reinterpret_cast<std::function<Proto>*>(wrappedFn);
-  (*fn)();
-  return NULL;
-}
-
-template <class Proto> void safeRun(std::function<Proto> f) {
-#ifdef DEBUG_GCWEAK
-  printf("Entered safeRun\n");
-#endif
-  call_with_alloc_lock(wrapRun<Proto>, reinterpret_cast<void*>(&f));
-#ifdef DEBUG_GCWEAK
-  printf("Leaving safeRun\n");
-#endif
-};
-}; // namespace gctools
+// Caution: This file is included by obj_scan.cc which is pretty low level.
+// Don't put complicated includes in here.
 
 namespace gctools {
 
-struct WeakObject {
-  WeakObject(){};
-
-  virtual void* dependentPtr() const { return NULL; };
-};
-
-struct weak_fwd_s : public WeakObject {
-  WeakObject* fwd;                         /* forwarded object */
-  gctools::smart_ptr<core::Fixnum_I> size; /* total size of this object */
-};
-
-struct weak_fwd2_s : public WeakObject {
-  WeakObject* fwd; /* forwarded object */
-};
-
-struct weak_pad_s : public WeakObject {
-  //  WeakObject *fwd;                         /* forwarded object */  /*WHY!!*//
-  gctools::smart_ptr<core::Fixnum_I> size; /* total size of this object */
-};
-
-struct weak_pad1_s : public WeakObject {};
-
-template <class T, class U> struct BucketsBase : public WeakObject {
-  BucketsBase(int l)
-      : _length(gctools::make_tagged_fixnum<core::Fixnum_I>(l)), _used(gctools::make_tagged_fixnum<core::Fixnum_I>(0)),
-        _deleted(gctools::make_tagged_fixnum<core::Fixnum_I>(0)) {
-    GCWEAK_LOG(fmt::format("Created BucketsBase with length: {}", this->length()));
-    for (size_t i(0); i < l; ++i) {
-      this->bucket[i] = T((gctools::Tagged)gctools::tag_unbound<typename T::Type*>());
-    }
-  }
-
-  BucketsBase(){};
-  virtual ~BucketsBase(){};
-
-  T& operator[](size_t idx) { return this->bucket[idx]; };
-  typedef T value_type;
-  typedef gctools::tagged_pointer<BucketsBase<U, T>> dependent_type;
-  dependent_type dependent;                    /* the dependent object */
-  gctools::smart_ptr<core::Fixnum_I> _length;  /* number of buckets (tagged) */
-  gctools::smart_ptr<core::Fixnum_I> _used;    /* number of buckets in use (tagged) */
-  gctools::smart_ptr<core::Fixnum_I> _deleted; /* number of deleted buckets (tagged) */
-  T bucket[0];                                 /* hash buckets */
-
-  void* dependentPtr() const {
-    if (this->dependent)
-      return reinterpret_cast<void*>(&*this->dependent);
-    return NULL;
-  };
-
-  int length() const {
-    GCTOOLS_ASSERT(this->_length.fixnump());
-    return this->_length.unsafe_fixnum();
-  };
-  void setLength(int l) { this->_length = gctools::make_tagged_fixnum<core::Fixnum_I>(l); };
-  int used() const {
-    GCTOOLS_ASSERT(this->_used.fixnump());
-    return this->_used.unsafe_fixnum();
-  };
-  void setUsed(int val) { this->_used = gctools::make_tagged_fixnum<core::Fixnum_I>(val); };
-  int deleted() const {
-    GCTOOLS_ASSERT(this->_deleted.fixnump());
-    return this->_deleted.unsafe_fixnum();
-  };
-  void setDeleted(int val) { this->_deleted = gctools::make_tagged_fixnum<core::Fixnum_I>(val); };
-};
-
-template <class T, class U, class Link> struct Buckets;
-
+// This structure is meant to be included directly (not as a pointer) in
+// a weak pointer object, e.g. WeakPointer_O. In order to ensure the pointer
+// is not scanned, this should be allocated with the "atomic" GC policy.
+struct WeakPointer {
+public:
+  WeakPointer(core::T_sp o);
+  std::optional<core::T_sp> value() const;
+  std::optional<core::T_sp> value_no_lock() const; // used by scanner
+  void store_no_lock(core::T_sp); // ditto.
+  void store(core::T_sp);
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup*);
+private:
+  core::T_sp _value;
 #ifdef USE_BOEHM
-inline bool unboundOrDeletedOrSplatted(core::T_sp bucket) {
-  return (bucket.unboundp()    // unbound
-          || bucket.deletedp() // deleted
-          || !bucket           // splatted by Boehm
-  );
-}
-#endif
+  // flag needed to disambiguate fixnum 0 from splatted pointer
+  bool _splattablep = false;
+private:
+  // private stuff needed to get everything done within a callback
+  struct value_helper_s {
+    value_helper_s(const WeakPointer* w) : wp(w), result() {}
+    const WeakPointer* wp;
+    std::optional<core::T_sp> result;
+  };
+  static void* value_helper(void*);
+#endif // lacking real support, we have not-actually-weak pointers.
+};
 
-template <class T, class U> struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
-  typedef typename BucketsBase<T, U>::value_type value_type;
-  Buckets(int l) : BucketsBase<T, U>(l){};
-  Buckets(snapshotSaveLoad::snapshot_save_load_init_s* isl) { isl->fill((void*)this); }
-  virtual ~Buckets() {
+// Used below in hash maps and ephemerons.
+struct KVPair {
+  core::T_sp key;
+  core::T_sp value;
+};
+
+// On Boehm this is not a real ephemeron - it's a weak pointer to the key,
+// and a strong pointer to the value that happens to get wiped with the key.
+// To see the difference, imagine having two inverse ephemerons {V1, V2} and
+// {V2, V1}, where V1 and V2 are some otherwise inaccessible objects. With real
+// ephemerons, the ephemeron values (V2 and V1) will not be scanned unless the
+// keys (V1 and V2) are otherwise inaccessible, which they are not, and so both
+// ephemerons can be wiped by the GC. With these boehm "ephemerons" V1 and V2
+// will be kept alive by the strong pointers and so both will be alive forever.
+// Another issue comes up when an ephemeron's value contains the only strong
+// references to the ephemeron's key; in a real ephemeron this will not keep the
+// ephemeron alive, but it will in these.
+
+// TL;DR: The Boehm interface does not seem to allow real ephemerons.
+// These pseudo ephemerons can at least handle some basic cases of weak hash
+// tables without entailing too bad of a memory leak.
+struct Ephemeron {
+public:
+  Ephemeron(core::T_sp key, core::T_sp value);
+  // If the ephemeron is valid, return its key and value.
+  // Otherwise return (deleted, deleted).
+  KVPair get() const;
+  std::optional<core::T_sp> key() const {
+    auto p = get();
+    if (p.key.deletedp()) return std::nullopt;
+    else return p.key;
+  }
+  std::optional<core::T_sp> value() const {
+    auto p = get();
+    if (p.key.deletedp()) return std::nullopt;
+    else return p.value;
+  }
+  // Caller must ensure that the key is otherwise live,
+  // or else the value could remain while the key dies (memory leak)
+  void setValue(core::T_sp v) { _value = v; }
+  void reinit(core::T_sp k, core::T_sp v);
+  // Used in obj_scan.cc
+  KVPair get_no_lock() const;
+  void reinit_no_lock(core::T_sp k, core::T_sp v);
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
+public:
 #ifdef USE_BOEHM
-    for (size_t i(0), iEnd(this->length()); i < iEnd; ++i) {
-      if (!unboundOrDeletedOrSplatted(this->bucket[i])) {
-        //		    printf("%s:%d Buckets dtor idx: %zu unregister disappearing link @%p\n", __FILE__, __LINE__, i,
-        //&this->bucket[i].rawRef_());
-        int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket[i].rawRef_()));
-        if (!result) {
-          printf("%s:%d The link was not registered as a disappearing link!", __FILE__, __LINE__);
-          abort();
-        }
-      }
-    }
-#else
-    THROW_HARD_ERROR("Add support for other GCs");
+  GC_hidden_pointer _key;
+#else // FIXME for other GCs!
+  core::T_sp _key;
 #endif
-  }
-
-  void set(size_t idx, const value_type& val) {
-    if (!(val.objectp() || val.deletedp() || val.unboundp())) {
-      printf("%s:%d Only  objectp() objects can be added to Mapping - tried to add %p\n", __FILE__, __LINE__, val.raw_());
-      abort();
-    }
-#if defined(USE_BOEHM)
-    //	    printf("%s:%d ---- Buckets set idx: %zu   this->bucket[idx] = %p\n", __FILE__, __LINE__, idx, this->bucket[idx].raw_()
-    //);
-    if (!unboundOrDeletedOrSplatted(this->bucket[idx])) {
-      auto& rawRef = this->bucket[idx].rawRef_();
-      void** linkAddress = reinterpret_cast<void**>(&rawRef);
-      int result = GC_unregister_disappearing_link(linkAddress); // reinterpret_cast<void**>(&this->bucket[idx].rawRef_()));
-      if (!result)
-        throw_hard_error("The link was not registered as a disappearing link!");
-    }
-    this->bucket[idx] = val;
-    GCTOOLS_ASSERT(val.objectp());
-    // We need the base of the object that we want a weak pointer to...
-    // general, cons and later weak objects have different header sizes
-    void* base = NULL;
-    if (val.generalp()) {
-      base = gctools::GeneralPtrToHeaderPtr(&*(val));
-    } else if (val.consp()) {
-      base = gctools::ConsPtrToHeaderPtr(&*(val));
-    }
-    if (base)
-      GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket[idx].rawRef_()), base);
-#elif defined(USE_MPS)
-    GCWEAK_LOG(fmt::format("Setting Buckets<T,U,WeakLinks> idx={}  address={}", idx, ((void*)(val.raw_()))));
-    this->bucket[idx] = val;
-#elif defined(USE_MMTK)
-    THROW_HARD_ERROR("Add support for mmtk");
-#endif
-  }
-};
-
-template <class T, class U> struct Buckets<T, U, StrongLinks> : public BucketsBase<T, U> {
-  typedef typename BucketsBase<T, U>::value_type value_type;
-  Buckets(int l) : BucketsBase<T, U>(l){};
-  Buckets(snapshotSaveLoad::snapshot_save_load_init_s* isl) { isl->fill((void*)this); }
-  virtual ~Buckets() {}
-  void set(size_t idx, const value_type& val) {
-    GCWEAK_LOG(fmt::format("Setting Buckets<T,U,StrongLinks> idx={}  address={}", idx, ((void*)(val.raw_()))));
-    this->bucket[idx] = val;
-  }
-};
-
-#ifdef USE_BACKCASTABLE_POINTERS
-typedef gctools::tagged_backcastable_base_ptr<core::T_O> BucketValueType;
-#else
-typedef gctools::smart_ptr<core::T_O> BucketValueType;
-#endif
-typedef gctools::Buckets<BucketValueType, BucketValueType, gctools::WeakLinks> WeakBucketsObjectType;
-typedef gctools::Buckets<BucketValueType, BucketValueType, gctools::StrongLinks> StrongBucketsObjectType;
-
-class WeakKeyHashTable {
-  friend class core::WeakKeyHashTable_O;
-
-public:
-  WeakKeyHashTable(){};
-
-public:
-  typedef BucketValueType value_type;
-  typedef WeakBucketsObjectType KeyBucketsType;
-  typedef StrongBucketsObjectType ValueBucketsType;
-
-public:
-  typedef WeakKeyHashTable MyType;
-
-public:
-  typedef gctools::GCBucketAllocator<KeyBucketsType> KeyBucketsAllocatorType;
-  typedef gctools::GCBucketAllocator<ValueBucketsType> ValueBucketsAllocatorType;
-
-public:
-  size_t _Length;
-  core::Number_sp _RehashSize;
-  double _RehashThreshold;
-  gctools::tagged_pointer<KeyBucketsType> _Keys;     // hash buckets for keys
-  gctools::tagged_pointer<ValueBucketsType> _Values; // hash buckets for values
-#ifdef CLASP_THREADS
-  mutable mp::SharedMutex_sp _Mutex;
-#endif
-public:
-  WeakKeyHashTable(size_t length, core::Number_sp rehashSize, double rehashThreshold)
-      : _Length(length), _RehashSize(rehashSize), _RehashThreshold(rehashThreshold){};
-  void initialize();
-
-public:
-  static uint sxhashKey(const value_type& key);
-
-  /*! Return 0 if there is no more room in the sequence of entries for the key
-          Return 1 if the element is found or an unbound or deleted entry is found.
-          Return the entry index in (b)
-        */
-  static size_t find_no_lock(gctools::tagged_pointer<KeyBucketsType> keys, const value_type& key, size_t& b
-#ifdef DEBUG_FIND
-                             ,
-                             bool debugFind = false, stringstream* reportP = NULL
-#endif
-  );
-
-public:
-  void setupThreadSafeHashTable();
-  size_t length() const {
-    if (!this->_Keys) {
-      throw_hard_error("Keys should never be null");
-    }
-    return this->_Keys->length();
-  }
-
-  void swap(MyType& other) {
-    gctools::tagged_pointer<KeyBucketsType> tempKeys = this->_Keys;
-    gctools::tagged_pointer<ValueBucketsType> tempValues = this->_Values;
-    core::Number_sp rehashSize = this->_RehashSize;
-    double rehashThreshold = this->_RehashThreshold;
-    this->_Keys = other._Keys;
-    this->_Values = other._Values;
-    this->_RehashSize = other._RehashSize;
-    this->_RehashThreshold = other._RehashThreshold;
-    other._Keys = tempKeys;
-    other._Values = tempValues;
-    other._RehashSize = rehashSize;
-    other._RehashThreshold = rehashThreshold;
-  }
-
-  bool fullp_not_safe() const {
-    bool fp;
-    fp = (*this->_Keys).used() >= (this->_RehashThreshold * (*this->_Keys).length());
-    return fp;
-  }
-
-  bool fullp() const {
-    bool fp;
-    safeRun<void()>([&fp, this]() -> void { fp = (*this->_Keys).used() >= (*this->_Keys).length() / 2; });
-    return fp;
-  }
-
-  int tableSize() const {
-    int result;
-    safeRun<void()>([&result, this]() -> void {
-      size_t used, deleted;
-      used = this->_Keys->used();
-      deleted = this->_Keys->deleted();
-      GCTOOLS_ASSERT(used >= deleted);
-      result = used - deleted;
-    });
-    return result;
-  }
-
-  int rehash_not_safe(const value_type& key, size_t& key_bucket);
-  int rehash(const value_type& key, size_t& key_bucket);
-  int trySet(core::T_sp tkey, core::T_sp value);
-
-  string dump(const string& prefix);
-
-  core::T_mv gethash(core::T_sp tkey, core::T_sp defaultValue);
-  void set(core::T_sp key, core::T_sp value);
-  void maphash(std::function<void(core::T_sp, core::T_sp)> const& fn);
-  void maphashFn(core::T_sp fn);
-  bool remhash(core::T_sp tkey);
-  void clrhash();
-};
-
-core::Vector_sp weak_key_hash_table_pairs(const gctools::WeakKeyHashTable& ht);
-
-class StrongKeyHashTable {
-  friend class core::StrongKeyHashTable_O;
-
-public:
-  typedef BucketValueType value_type;
-  typedef StrongBucketsObjectType KeyBucketsType;
-  typedef StrongBucketsObjectType ValueBucketsType;
-
-public:
-  typedef StrongKeyHashTable MyType;
-
-public:
-  typedef gctools::GCBucketAllocator<KeyBucketsType> KeyBucketsAllocatorType;
-  typedef gctools::GCBucketAllocator<ValueBucketsType> ValueBucketsAllocatorType;
-
-public:
-  size_t _Rehashes;
-  size_t _Length;
-  gctools::tagged_pointer<KeyBucketsType> _Keys;     // hash buckets for keys
-  gctools::tagged_pointer<ValueBucketsType> _Values; // hash buckets for values
-public:
-  StrongKeyHashTable(size_t length) : _Rehashes(0), _Length(length){};
-  void initialize();
-
-public:
-  static uint sxhashKey(const value_type& key);
-  /*! Return 0 if there is no more room in the sequence of entries for the key
-          Return 1 if the element is found or an unbound or deleted entry is found.
-          Return the entry index in (b)
-        */
-  static size_t find_no_lock(gctools::tagged_pointer<KeyBucketsType> keys, const value_type& key, size_t& b
-#ifdef DEBUG_FIND
-                             ,
-                             bool debugFind = false, stringstream* reportP = NULL
-#endif
-  );
-
-public:
-  size_t length() const {
-    if (!this->_Keys) {
-      throw_hard_error("Keys should never be null");
-    }
-    return this->_Keys->length();
-  }
-
-  void swap(MyType& other) {
-    gctools::tagged_pointer<KeyBucketsType> tempKeys = this->_Keys;
-    gctools::tagged_pointer<ValueBucketsType> tempValues = this->_Values;
-    this->_Keys = other._Keys;
-    this->_Values = other._Values;
-    other._Keys = tempKeys;
-    other._Values = tempValues;
-  }
-
-  bool fullp_not_safe() const {
-    bool fp;
-    fp = (*this->_Keys).used() >= (*this->_Keys).length() / 2;
-    return fp;
-  }
-
-  bool fullp() const {
-    bool fp;
-    safeRun<void()>([&fp, this]() -> void { fp = (*this->_Keys).used() >= (*this->_Keys).length() / 2; });
-    return fp;
-  }
-
-  size_t tableSize() const {
-    size_t result;
-    safeRun<void()>([&result, this]() -> void {
-      size_t used, deleted;
-      used = this->_Keys->used();
-      deleted = this->_Keys->deleted();
-      GCTOOLS_ASSERT(used >= deleted);
-      result = used - deleted;
-    });
-    return result;
-  }
-
-  size_t rehash_not_safe(size_t newLength, const value_type& key, size_t& key_bucket);
-  size_t rehash(size_t newLength, const value_type& key, size_t& key_bucket);
-  int trySet(core::T_sp tkey, core::T_sp value);
-
-  string dump(const string& prefix);
-
-  core::T_mv gethash(core::T_sp tkey, core::T_sp defaultValue);
-  void set(core::T_sp key, core::T_sp value);
-  void maphash(std::function<void(core::T_sp, core::T_sp)> const& fn);
-  core::T_mv maphashFn(core::T_sp fn);
-  bool remhash(core::T_sp tkey);
-  void clrhash();
-};
-
-// ======================================================================
-// ----------------------------------------------------------------------
-
-template <class T, class U> struct MappingBase : public WeakObject {
-  MappingBase(const T& val) : bucket(val){};
-  virtual ~MappingBase(){};
-  typedef T value_type;
-  void* dependentPtr() const {
-    if (this->dependent)
-      return reinterpret_cast<void*>(&*this->dependent);
-    return NULL;
+  core::T_sp _value;
+#ifdef USE_BOEHM
+private:
+  struct result_helper_s {
+    result_helper_s(const Ephemeron* e) : eph(e) {}
+    const Ephemeron* eph;
+    KVPair result;
   };
-  typedef gctools::tagged_pointer<MappingBase<U, T>> dependent_type;
-  dependent_type dependent; /* the dependent object */
-  T bucket;                 /* single buckets */
+  static void* get_helper(void*);
+#endif
 };
 
-template <class T, class U, class Link> struct Mapping;
+// These Mapping objects are used in hash tables.
 
-template <class T, class U> struct Mapping<T, U, WeakLinks> : public MappingBase<T, U> {
-  typedef typename MappingBase<T, U>::value_type value_type;
-  typedef typename MappingBase<T, U>::dependent_type dependent_type;
-  Mapping(const T& val) : MappingBase<T, U>(val) {
-    if (!val.objectp()) {
-      printf("%s:%d Only  objectp() objects can be added to Mapping\n", __FILE__, __LINE__);
-      abort();
-    }
-#if defined(USE_BOEHM)
-    GCTOOLS_ASSERT(this->bucket.objectp());
-    if (!unboundOrDeletedOrSplatted(this->bucket)) {
-      // printf("%s:%d Mapping register disappearing link\n", __FILE__, __LINE__);
-      GCTOOLS_ASSERT(val.objectp());
-      GC_general_register_disappearing_link(reinterpret_cast<void**>(&this->bucket.rawRef_()),
-                                            reinterpret_cast<void*>(this->bucket.rawRef_()));
-    }
-#else
-    THROW_HARD_ERROR("Add support for new GC");
-#endif
-  };
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wexceptions"
-  virtual ~Mapping() {
-#if defined(USE_BOEHM)
-    GCTOOLS_ASSERT(this->bucket.objectp());
-    if (!unboundOrDeletedOrSplatted(this->bucket)) {
-      // printf("%s:%d Mapping unregister disappearing link\n", __FILE__, __LINE__);
-      int result = GC_unregister_disappearing_link(reinterpret_cast<void**>(&this->bucket.rawRef_()));
-      if (!result) {
-        printf("%s:%d The link was not registered as a disappearing link!", __FILE__, __LINE__);
-        abort();
-      }
-    }
-#else
-    MISSING_GC_SUPPORT();
-#endif
+// A strong mapping isn't weak at all, obviously, but
+// this is the degenerate case.
+struct StrongMapping {
+public:
+  typedef GCArray_moveable<KVPair> vector_type;
+  // for e.g. sizeof_container
+  typedef typename vector_type::value_type value_type;
+private:
+  static const KVPair initKV;
+public:
+  StrongMapping(size_t size) : _Data(size, initKV) {}
+public:
+  vector_type _Data;
+public:
+  size_t size() const { return _Data.length(); }
+  KVPair get(size_t i) const { return _Data[i]; }
+  void setValue(size_t i, core::T_sp v) { _Data[i].value = v; }
+  void newEntry(size_t i, core::T_sp k, core::T_sp v) {
+    _Data[i].key = k;
+    _Data[i].value = v;
   }
-#pragma clang diagnostic pop
-};
-
-template <class T, class U> struct Mapping<T, U, StrongLinks> : public MappingBase<T, U> {
-  typedef typename MappingBase<T, U>::value_type value_type;
-  Mapping(const T& val) : MappingBase<T, U>(val){};
-  virtual ~Mapping() {}
-};
-
-#ifdef USE_BACKCASTABLE_POINTERS
-typedef gctools::tagged_backcastable_base_ptr<core::T_O> MappingValueType;
-#else
-typedef gctools::smart_ptr<core::T_O> MappingValueType;
-#endif
-typedef gctools::Mapping<BucketValueType, BucketValueType, gctools::WeakLinks> WeakMappingObjectType;
-typedef gctools::Mapping<BucketValueType, BucketValueType, gctools::StrongLinks> StrongMappingObjectType;
-
-template <typename FROM>
-struct TaggedCast<gctools::BucketsBase<gctools::smart_ptr<core::T_O>, gctools::smart_ptr<core::T_O>>*, FROM> {
-  typedef gctools::BucketsBase<gctools::smart_ptr<core::T_O>, gctools::smart_ptr<core::T_O>>* ToType;
-  typedef FROM FromType;
-  inline static bool isA(FromType tagged_client) {
-    if (tagged_generalp(tagged_client)) {
-      // Should I have more here?
-      return dynamic_cast<ToType>(untag_general(tagged_client)) != NULL;
-    }
-    return false;
+  void remove(size_t i) {
+    _Data[i].key = core::T_sp(tag_deleted<Tagged>());
+    _Data[i].value = core::T_sp(tag_deleted<Tagged>());
   }
-  inline static ToType castOrNULL(FromType client) {
-    if (TaggedCast<ToType, FromType>::isA(client))
-      return reinterpret_cast<ToType>(client);
-    return NULL;
+};
+
+struct EphemeronMapping {
+public:
+  typedef GCArray_moveable<Ephemeron> vector_type;
+  typedef typename vector_type::value_type value_type;
+private:
+  static const Ephemeron initEph;
+public:
+  EphemeronMapping(size_t size) : _Data(size, initEph) {}
+public:
+  vector_type _Data;
+public:
+  size_t size() const { return _Data.length(); }
+  KVPair get(size_t i) const { return _Data[i].get(); }
+  void setValue(size_t i, core::T_sp v) { _Data[i].setValue(v); }
+  void newEntry(size_t i, core::T_sp k, core::T_sp v) { _Data[i].reinit(k, v); }
+  void remove(size_t i) { _Data[i].reinit(deleted<core::T_O>(), deleted<core::T_O>()); }
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+    for (size_t i = 0; i < _Data.length(); ++i)
+      _Data[i].fixupInternalsForSnapshotSaveLoad(fixup);
+  }
+};
+
+// For weak key-and-value tables: an entry is only alive as long as
+// both the key AND the value are otherwise alive.
+// Boehm only allows any given memory address to be zeroed when one object
+// dies, so we can't directly zero the whole pair. But using weak pointers
+// is enough. Note that this means the WeakAndMapping needs to be allocated
+// with atomic policy, like WeakPointer_O.
+struct WeakAnd {
+  WeakPointer key;
+  WeakPointer value;
+  WeakAnd(core::T_sp k, core::T_sp v) : key(k), value(v) {}
+  KVPair get() const {
+    auto k = key.value();
+    auto v = value.value();
+    if (k && v) return KVPair(*k, *v);
+    else return KVPair(deleted<core::T_O>(), deleted<core::T_O>());
+  }
+  void setValue(core::T_sp v) { value.store(v); }
+  void reinit(core::T_sp k, core::T_sp v) {
+    key.store(k); value.store(v);
+  }
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+    key.fixupInternalsForSnapshotSaveLoad(fixup);
+    value.fixupInternalsForSnapshotSaveLoad(fixup);
+  }
+};
+
+struct WeakAndMapping {
+public:
+  typedef GCArray_moveable<WeakAnd> vector_type;
+  typedef typename vector_type::value_type value_type;
+private:
+  static const WeakAnd initKV;
+public:
+  WeakAndMapping(size_t size) : _Data(size, initKV) {}
+public:
+  vector_type _Data;
+public:
+  size_t size() const { return _Data.length(); }
+  KVPair get(size_t i) const { return _Data[i].get(); }
+  void setValue(size_t i, core::T_sp v) { _Data[i].setValue(v); }
+  void newEntry(size_t i, core::T_sp k, core::T_sp v) { _Data[i].reinit(k, v); }
+  void remove(size_t i) { _Data[i].reinit(deleted<core::T_O>(), deleted<core::T_O>()); }
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+    for (size_t i = 0; i < _Data.length(); ++i)
+      _Data[i].fixupInternalsForSnapshotSaveLoad(fixup);
+  }
+};
+
+/*
+ * For weak key-or-value tables: an entry is alive as long as either the key
+ * or the value is alive. This is easily represented as a pair of ephemerons
+ * such that the key and value of one is the value and key of the other.
+ * But that doesn't actually work in Boehm. Boehm can't really represent
+ * this. However we keep this arrangement so that the static analyzer knows
+ * about these structures.
+ * On Boehm this is effectively a StrongMapping with more steps (and space).
+ */
+struct DoubleEphemeron {
+  Ephemeron kv;
+  Ephemeron vk;
+  DoubleEphemeron(core::T_sp k, core::T_sp v) : kv(k, v), vk(v, k) {}
+  KVPair get() const { return kv.get(); }
+  void setValue(core::T_sp v) {
+    auto r = get();
+    kv.setValue(v); vk.reinit(v, r.key);
+  }
+  void reinit(core::T_sp k, core::T_sp v) {
+    kv.reinit(k, v); vk.reinit(v, k);
+  }
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+    kv.fixupInternalsForSnapshotSaveLoad(fixup);
+    vk.fixupInternalsForSnapshotSaveLoad(fixup);
+  }
+};
+
+struct DoubleEphMapping {
+public:
+  typedef GCArray_moveable<DoubleEphemeron> vector_type;
+  typedef typename vector_type::value_type value_type;
+private:
+  static const DoubleEphemeron initEph;
+public:
+  DoubleEphMapping(size_t size) : _Data(size, initEph) {}
+public:
+  vector_type _Data;
+public:
+  size_t size() const { return _Data.length(); }
+  KVPair get(size_t i) const { return _Data[i].get(); }
+  void setValue(size_t i, core::T_sp v) { _Data[i].setValue(v); }
+  void newEntry(size_t i, core::T_sp k, core::T_sp v) { _Data[i].reinit(k, v); }
+  void remove(size_t i) { _Data[i].reinit(deleted<core::T_O>(), deleted<core::T_O>()); }
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+    for (size_t i = 0; i < _Data.length(); ++i)
+      _Data[i].fixupInternalsForSnapshotSaveLoad(fixup);
   }
 };
 
 }; // namespace gctools
-
-#ifdef USE_MPS
-extern "C" {
-
-mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
-mps_addr_t weak_obj_skip(mps_addr_t base);
-mps_addr_t weak_obj_skip(mps_addr_t base);
-mps_addr_t weak_obj_skip_debug_wrong_size(mps_addr_t client, size_t allocate_size, size_t skip_size);
-void weak_obj_fwd(mps_addr_t old, mps_addr_t newv);
-mps_addr_t weak_obj_isfwd(mps_addr_t addr);
-void weak_obj_pad(mps_addr_t addr, size_t size);
-};
-#endif

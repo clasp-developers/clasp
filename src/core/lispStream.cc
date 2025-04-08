@@ -2584,7 +2584,7 @@ T_sp StringStream_O::external_format() const {
 
 T_sp StringInputStream_O::make(const string& str) {
   String_sp s = str_create(str);
-  return cl__make_string_input_stream(s, make_fixnum(0), nil<T_O>());
+  return cl__make_string_input_stream(s, 0, nil<T_O>());
 }
 
 StringInputStream_sp StringInputStream_O::make(String_sp string, cl_index istart, cl_index iend) {
@@ -4943,7 +4943,6 @@ void CFileStream_O::set_buffering_mode(T_sp mode) {
 void CFileStream_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
   if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     std::string name = gc::As<String_sp>(_filename)->get_path_string();
-    T_sp stream = this->asSmartPtr();
     if (name == "*STDIN*") {
       _file = stdin;
     } else if (name == "*STDOUT*") {
@@ -4975,9 +4974,12 @@ cl_index CFileStream_O::read_byte8(unsigned char* c, cl_index n) {
       out = fread(c, sizeof(char), n, _file);
     } while (out < 0 && ferror(_file) && errno == EINTR);
   } END_PARK;
-  // note: EOF we leave to the caller to figure out
-  if (out < n && ferror(_file)) io_error("fread");
-
+  // note: EOF we leave to the caller to figure out,
+  // though we do clear it in case there's more reading to do later.
+  if (out < n) {
+    if (ferror(_file)) io_error("fread");
+    else clearerr(_file);
+  }
   return out;
 }
 

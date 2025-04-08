@@ -33,7 +33,7 @@ namespace gctools {
 
 template <class T> class GCVector_moveable : public GCContainer {
 public:
-  template <class U, typename Allocator> friend class GCVector;
+  template <class U> friend class GCVector;
   typedef GCVector_moveable<T> container_type;
   typedef T value_type;
   typedef value_type container_value_type;
@@ -48,9 +48,9 @@ public:
   typedef T* iterator;
   typedef T const* const_iterator;
 
-private:
-  GCVector_moveable<T>(const GCVector_moveable<T>& that);       // disable copy ctor
-  GCVector_moveable<T>& operator=(const GCVector_moveable<T>&); // disable assignment
+public:
+  GCVector_moveable<T>(const GCVector_moveable<T>&) = delete;
+  GCVector_moveable<T>& operator=(const GCVector_moveable<T>&) = delete;
 
 public:
   value_type* data() { return &this->_Data[0]; };
@@ -68,12 +68,12 @@ public:
 
 namespace gctools {
 
-template <class T, typename Allocator> class GCVector {
+template <class T> class GCVector {
 public:
+  typedef GCContainerAllocator<GCVector_moveable<T>> Allocator;
   typedef Allocator allocator_type;
   typedef T value_type;
   typedef T& reference;
-  typedef GCVector<T, Allocator> my_type;
   typedef GCVector_moveable<T> impl_type; // implementation type
   typedef GCVector_moveable<T>* pointer_to_moveable;
   typedef gctools::tagged_pointer<GCVector_moveable<T>> tagged_pointer_to_moveable;
@@ -97,7 +97,7 @@ public:
 
 public:
   // Copy Ctor
-  GCVector<T, Allocator>(const GCVector<T, Allocator>& that) {
+  GCVector<T>(const GCVector<T>& that) {
     if (that._Contents) {
       allocator_type alloc;
       tagged_pointer_to_moveable implAddress = alloc.allocate(that._Contents->_Capacity);
@@ -115,14 +115,8 @@ public:
 
 public:
   // Assignment operator must destroy the existing contents
-  GCVector<T, Allocator>& operator=(const GCVector<T, Allocator>& that) {
+  GCVector<T>& operator=(const GCVector<T>& that) {
     if (this != &that) {
-      if (this->_Contents) {
-        Allocator alloc;
-        gctools::tagged_pointer<GCVector_moveable<T>> ptr = this->_Contents;
-        this->_Contents.reset_();
-        alloc.deallocate(ptr, ptr->_End);
-      }
       if (that._Contents) {
         allocator_type alloc;
         tagged_pointer_to_moveable implAddress = alloc.allocate(that._Contents->_Capacity);
@@ -139,7 +133,7 @@ public:
   }
 
 public:
-  void swap(my_type& that) {
+  void swap(GCVector<T>& that) {
     tagged_pointer_to_moveable op = that._Contents;
     that._Contents = this->_Contents;
     this->_Contents = op;
@@ -159,14 +153,6 @@ public:
   GCVector() : _Contents() {
     this->reserve(8); // GC allocate 8 entries
   };
-  ~GCVector() {
-    if (this->_Contents) {
-      Allocator alloc;
-      gctools::tagged_pointer<GCVector_moveable<T>> ptr = this->_Contents;
-      this->_Contents.reset_();
-      alloc.deallocate(ptr, ptr->_End);
-    }
-  }
 
   size_t size() const { return this->_Contents ? this->_Contents->_End : 0; };
   size_t capacity() const { return this->_Contents ? this->_Contents->_Capacity : 0; };
@@ -205,7 +191,7 @@ public:
         printf("%s:%d gcvector capacity is larger than 65536\n", __FILE__, __LINE__);
       }
 #endif
-      vec = alloc.allocate_kind(Header_s::BadgeStampWtagMtag::make<impl_type>(), new_capacity);
+      vec = alloc.allocate(new_capacity);
       new (&*vec) GCVector_moveable<T>(new_capacity);
       for (size_t zi(0); zi < contents_end; ++zi) {
         // the array at newAddress is undefined - placement new to copy
@@ -224,7 +210,6 @@ public:
       // Deallocate the old one
       size_t num = oldVec->_End;
       oldVec->_End = 0;
-      alloc.deallocate(oldVec, num);
     }
   }
 
@@ -233,7 +218,7 @@ public:
     if (!this->_Contents) {
       tagged_pointer_to_moveable vec;
       size_t newCapacity = (n == 0 ? GCVectorPad : n);
-      vec = alloc.allocate_kind(Header_s::StampWtagMtag::make<impl_type>(), newCapacity);
+      vec = alloc.allocate(newCapacity);
       new (&*vec) GCVector_moveable<T>(newCapacity);
       // the array at newAddress is undefined - placement new to copy
       vec->_End = 0;
@@ -243,7 +228,7 @@ public:
     if (n > this->_Contents->_Capacity) {
       tagged_pointer_to_moveable vec(this->_Contents);
       size_t newCapacity = n;
-      vec = alloc.allocate_kind(Header_s::StampWtagMtag::make<impl_type>(), newCapacity);
+      vec = alloc.allocate(newCapacity);
       new (&*vec) GCVector_moveable<T>(newCapacity);
       // the array at newAddress is undefined - placement new to copy
       for (size_t zi(0); zi < this->_Contents->_End; ++zi)
@@ -253,7 +238,6 @@ public:
       this->_Contents = vec;
       size_t num = oldVec->_End;
       oldVec->_End = 0;
-      alloc.deallocate(oldVec, num);
     }
   }
 
@@ -263,17 +247,7 @@ public:
     if (!this->_Contents) {
       tagged_pointer_to_moveable vec;
       size_t newCapacity = (n == 0 ? GCVectorPad : n * GCVectorGrow);
-      auto header = Header_s::BadgeStampWtagMtag::make<impl_type>();
-#ifdef DEBUG_SLOW
-      if (header == 0) {
-        std::string demangled;
-        core::maybe_demangle(typeid(impl_type).name(), demangled);
-        printf("%s:%d:%s You are trying to allocate a specialized container %s and it doesn't have a stamp yet - you need to add "
-               "GC_MANAGED_TYPE(%s) macro to memoryManagement.cc and for precise GC run the static analyzer\n",
-               __FILE__, __LINE__, __FUNCTION__, demangled.c_str(), demangled.c_str());
-      }
-#endif
-      vec = alloc.allocate_kind(header, newCapacity);
+      vec = alloc.allocate(newCapacity);
       new (&*vec) GCVector_moveable<T>(newCapacity);
       // the array at newAddress is undefined - placement new to copy
       for (size_t i(0); i < n; ++i)
@@ -288,7 +262,7 @@ public:
       tagged_pointer_to_moveable vec(this->_Contents);
       if (n > this->_Contents->_Capacity) {
         size_t newCapacity = n * GCVectorGrow;
-        vec = alloc.allocate_kind(Header_s::BadgeStampWtagMtag::make<impl_type>(), newCapacity);
+        vec = alloc.allocate(newCapacity);
         new (&*vec) GCVector_moveable<T>(newCapacity);
         // the array at newAddress is undefined - placement new to copy
         for (size_t zi(0); zi < this->_Contents->_End; ++zi)
@@ -303,7 +277,6 @@ public:
         this->_Contents = vec;
         size_t num = oldVec->_End;
         oldVec->_End = 0;
-        alloc.deallocate(oldVec, num);
       }
     }
     // We are moving _End down
@@ -351,7 +324,7 @@ public:
       size_t iposition = position - this->begin();
       size_t newCapacity = (this->_Contents->_End + 1) * GCVectorGrow;
       // Allocate a new vector_moveable
-      tagged_pointer_to_moveable vec = alloc.allocate_kind(Header_s::BadgeStampWtagMtag::make<impl_type>(), newCapacity);
+      tagged_pointer_to_moveable vec = alloc.allocate(newCapacity);
       new (&*vec) GCVector_moveable<T>(newCapacity);
       // copy elements up to but not including iposition
       for (size_t zi(0); zi < iposition; ++zi)
@@ -366,7 +339,6 @@ public:
       this->_Contents = vec;
       size_t num = oldVec->_End;
       oldVec->_End = 0;
-      alloc.deallocate(oldVec, num);
       return &(*this->_Contents)[iposition];
     }
     // slide the elements from position up to the end one element up

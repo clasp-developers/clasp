@@ -26,18 +26,15 @@ It is used by PROVIDE and REQUIRE.")
 (defparameter ext:*module-provider-functions* nil
   "See function documentation for REQUIRE")
 
-(defvar *immutable-systems* (list (list :asdf) (list :uiop)
-                                  (list :asdf-package-system))
+(defvar *immutable-systems* (list (list :asdf nil)
+                                  (list :uiop nil)
+                                  (list :asdf-package-system nil))
   "The immutable systems that should immediately be registered when ASDF
 has been initially provided. Each element in this list should be a list
 in which the first element is the name of the system and following
 elements are key/values passed to ASDF:REGISTER-IMMUTABLE-SYSTEM. For
 example, (:ASDF :VERSION \"3.0.0\") will register ASDF as immutable with
 version number of 3.0.0")
-
-(defvar *primary-systems* nil
-    "The primary systems that should immediately be registered when ASDF
-has been initially provided.")
 
 ;;;; PROVIDE and REQUIRE
 
@@ -59,14 +56,10 @@ Module-name is a string designator"
                                                           "REGISTER-PRELOADED-SYSTEM"
                                                           "REGISTER-IMMUTABLE-SYSTEM")
                                                       :asdf)))
-          (apply register-immutable-system
-                 (or (find "asdf" *immutable-systems*
-                           :test #'string-equal :key #'car)
-                     (list "asdf")))
-          (dolist (name *primary-systems*)
-            (funcall find-system name nil))
           (dolist (args *immutable-systems*)
-            (apply register-immutable-system args))))))
+            (when (second args)
+              (funcall find-system (car args) nil))
+            (apply register-immutable-system (car args) (cddr args)))))))
   t)
 
 (defparameter *requiring* nil)

@@ -373,17 +373,9 @@ string General_O::className() const {
   return this->__class()->_classNameAsString();
 }
 
-void General_O::sxhash_(HashGenerator& hg) const {
-  if (hg.isFilling()) {
-    hg.addGeneralAddress(this->asSmartPtr());
-  }
-}
-
 void General_O::sxhash_equal(HashGenerator& hg) const {
-  if (!hg.isFilling())
-    return;
-  hg.addGeneralAddress(this->asSmartPtr());
-  return;
+  if (hg.isFilling())
+    hg.addGeneralAddress(this->asSmartPtr());
 }
 
 bool General_O::eql_(T_sp obj) const { return this->eq(obj); }
@@ -458,6 +450,12 @@ void HashGenerator::hashObject(T_sp obj) {
   int depth = this->_Depth;
   ++this->_Depth;
   LIKELY_if(this->_Depth < MaxDepth) clasp_sxhash(obj, *this);
+  this->_Depth = depth;
+}
+void HashGenerator::hashObjectEqualp(T_sp obj) {
+  int depth = this->_Depth;
+  ++this->_Depth;
+  LIKELY_if(this->_Depth < MaxDepth) clasp_sxhash_equalp(obj, *this);
   this->_Depth = depth;
 }
 

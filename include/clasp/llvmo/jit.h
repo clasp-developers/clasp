@@ -127,7 +127,7 @@ public:
   core::T_sp lookup_all_dylibs(const std::string& Name);
   JITDylib_sp getMainJITDylib();
   JITDylib_sp createAndRegisterJITDylib(const std::string& name);
-  void registerJITDylibAfterLoad(JITDylib_O* jitDylib);
+  void registerJITDylibAfterLoad(JITDylib_sp jitDylib);
 
   ObjectFile_sp addIRModule(JITDylib_sp dylib, Module_sp cM, ThreadSafeContext_sp context, size_t startupID);
   ObjectFile_sp addObjectFile(JITDylib_sp dylib, std::unique_ptr<llvm::MemoryBuffer> objectFile, bool print, size_t startupId);
@@ -135,8 +135,9 @@ public:
         llvm_sys__jitFinalizeReplFunction needs to build a closure over it
    */
   void* runStartupCode(JITDylib_sp dylib, const std::string& startupName, core::T_sp initialDataOrUnbound);
-  ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib);
-  ~ClaspJIT_O();
+  void installMainJITDylib();
+  void adjustMainJITDylib(JITDylib_sp dylib);
+  ClaspJIT_O();
 
 public:
   JITDylib_sp _MainJITDylib;
