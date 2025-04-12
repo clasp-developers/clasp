@@ -14,7 +14,7 @@
            #~"clasp/sockets/"
            #~"clasp/clasp.h")
 
-(k:sources :etags
+(k:sources :gtags
            #~"clasp/asttooling/"
            #~"clasp/cffi-old/"
            #~"clasp/clbind/"
