@@ -124,6 +124,38 @@ extern void dump_values_pos(core::T_sp v, const char* name, int n);
 #define DUMP_VALUES_POS(v, n)
 #endif
 
+template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T9, class T10>
+inline static gctools::return_type Values(const gctools::smart_ptr<T0>& v0, const gctools::smart_ptr<T1>& v1,
+                                          const gctools::smart_ptr<T2>& v2, const gctools::smart_ptr<T3>& v3,
+                                          const gctools::smart_ptr<T4>& v4, const gctools::smart_ptr<T5>& v5,
+                                          const gctools::smart_ptr<T6>& v6, const gctools::smart_ptr<T7>& v7,
+                                          const gctools::smart_ptr<T8>& v8, const gctools::smart_ptr<T9>& v9,
+                                          const gctools::smart_ptr<T10>& v10 ) {
+  DUMP_VALUES_POS(v0,  11);
+  DUMP_VALUES_POS(v1,  11);
+  DUMP_VALUES_POS(v2,  11);
+  DUMP_VALUES_POS(v3,  11);
+  DUMP_VALUES_POS(v4,  11);
+  DUMP_VALUES_POS(v5,  11);
+  DUMP_VALUES_POS(v6,  11);
+  DUMP_VALUES_POS(v7,  11);
+  DUMP_VALUES_POS(v8,  11);
+  DUMP_VALUES_POS(v9,  11);
+  DUMP_VALUES_POS(v10, 11);
+  core::MultipleValues& me = (core::lisp_multipleValues());
+  me.valueSet(0,   v0);
+  me.valueSet(1,   v1);
+  me.valueSet(2,   v2);
+  me.valueSet(3,   v3);
+  me.valueSet(4,   v4);
+  me.valueSet(5,   v5);
+  me.valueSet(6,   v6);
+  me.valueSet(7,   v7);
+  me.valueSet(8,   v8);
+  me.valueSet(9,   v9);
+  me.valueSet(10, v10);
+  return gctools::return_type(v0.raw_(), 11);
+}
 template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T9>
 inline static gctools::return_type Values(const gctools::smart_ptr<T0>& v0, const gctools::smart_ptr<T1>& v1,
                                           const gctools::smart_ptr<T2>& v2, const gctools::smart_ptr<T3>& v3,
