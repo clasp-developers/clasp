@@ -164,6 +164,15 @@
       (setf etags (configure-program "etags"
                                      (or etags (list #P"etags")))))))
 
+(defmethod configure-unit (configuration (unit (eql :gtags)))
+  "Find the gtags binary."
+  (unless (reproducible-build configuration)
+    (with-accessors ((gtags gtags))
+        configuration
+      (message :emph "Configuring gtags")
+      (setf gtags (configure-program "gtags"
+                                     (or gtags (list #P"gtags")))))))
+
 (defmethod configure-unit (configuration (unit (eql :ctags)))
   "Find the ctags binary."
   (unless (reproducible-build configuration)
