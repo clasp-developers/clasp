@@ -547,6 +547,11 @@ is not compatible with snapshots.")
           :initarg :etags
           :type (or null pathname)
           :documentation "The etags binary to use.")
+   (gtags :accessor gtags
+          :initform nil
+          :initarg :gtags
+          :type (or null pathname)
+          :documentation "The gtags binary to use.")
    (ctags :accessor ctags
           :initform nil
           :initarg :ctags
@@ -625,7 +630,7 @@ is not compatible with snapshots.")
                    :documentation "Static link Clasp library.")
    (units :accessor units
           :initform '(:git :describe :cpu-count #+darwin :xcode :base :default-target :pkg-config
-                           :clang :llvm :ar :cc :cxx :dis :mpi :nm :etags :ctags :objcopy :jupyter
+                           :clang :llvm :ar :cc :cxx :dis :mpi :nm :etags :ctags :gtags :objcopy :jupyter
                            :reproducible :asdf)
           :type list
           :documentation "The configuration units")

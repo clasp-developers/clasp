@@ -44,9 +44,14 @@
                                           "-flat_namespace -undefined dynamic_lookup -bundle"
                                           "-shared")
                         :objcopy (objcopy configuration)
+                        :gtags (gtags configuration)
                         :tags (or (ctags configuration)
                                   (etags configuration)))
   (terpri output-stream)
+  (ninja:write-rule output-stream :gtags
+                    :command "$gtags -C ../"
+                    :restat 1
+                    :description "Creating gtags")
   (ninja:write-rule output-stream :tags
                     :command (if (ctags configuration)
                                  "$tags -e -I $identifiers -o $out $in"
@@ -232,29 +237,53 @@
     (configuration (name (eql :ninja)) output-stream (target (eql :tags)) sources
      &key &allow-other-keys
      &aux (identifiers (make-source ".identifiers" :code))
-          (outputs (list (make-source "TAGS" :code))))
+       (tag-output (make-source "TAGS" :code))
+       (gtag-output (make-source "GTAGS" :code))
+       (outputs nil))
   (when (and *variant-default*
              (not (reproducible-build configuration))
              (or (etags configuration)
-                 (ctags configuration)))
-    (ninja:write-build output-stream :tags
-                       :inputs (append (remove-if (lambda (source)
-                                                    (not (or (typep source 'lisp-source)
-                                                             (typep source 'h-source)
-                                                             (typep source 'c-source)
-                                                             (typep source 'cc-source))))
-                                                  sources)
-                                       (if *variant-precise*
-                                           (scraper-precise-headers configuration)
-                                           (scraper-headers configuration))
-                                       (list (make-source "config.h" :variant)
-                                             (make-source "version.h" :variant)))
-                       :implicit-inputs (list identifiers)
-                       :identifiers (resolve-source identifiers)
-                       :outputs outputs)
+                 (ctags configuration)
+                 (gtags configuration)))
+    (when (or (etags configuration)
+              (ctags configuration))
+      (push tag-output outputs)
+      (ninja:write-build output-stream :tags
+                         :inputs (append (remove-if (lambda (source)
+                                                      (not (or (typep source 'lisp-source)
+                                                               (typep source 'h-source)
+                                                               (typep source 'c-source)
+                                                               (typep source 'cc-source))))
+                                                    sources)
+                                         (if *variant-precise*
+                                             (scraper-precise-headers configuration)
+                                             (scraper-headers configuration))
+                                         (list (make-source "config.h" :variant)
+                                               (make-source "version.h" :variant)))
+                         :implicit-inputs (list identifiers)
+                         :identifiers (resolve-source identifiers)
+                         :outputs (list tag-output)))
+    (when (gtags configuration)
+      (push gtag-output outputs)
+      (ninja:write-build output-stream :gtags
+                         :order-only-inputs (append (remove-if (lambda (source)
+                                                                 (not (or (typep source 'lisp-source)
+                                                                          (typep source 'h-source)
+                                                                          (typep source 'c-source)
+                                                                          (typep source 'cc-source))))
+                                                               sources)
+                                                    (if *variant-precise*
+                                                        (scraper-precise-headers configuration)
+                                                        (scraper-headers configuration))
+                                                    (list (make-source "config.h" :variant)
+                                                          (make-source "version.h" :variant)))
+                         :implicit-inputs (list identifiers)
+                         :identifiers (resolve-source identifiers)
+                         :outputs (list gtag-output)))
     (ninja:write-build output-stream :phony
                        :inputs outputs
                        :outputs '("tags"))))
+
 
 (defmethod print-target-source
     (configuration (name (eql :ninja)) output-stream (target (eql :install-code)) source
