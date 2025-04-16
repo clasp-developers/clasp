@@ -411,13 +411,11 @@
 (defun compute-pka-args (args literals)
   (let ((more-args (cdr (first args)))
         (key-count-info (cdr (second args)))
-        (key-literals-start (cdr (third args)))
-        (key-frame-start (cdr (fourth args))))
+        (key-literals-start (cdr (third args))))
     (list more-args key-count-info
           (loop for i from key-literals-start
                 repeat (car key-count-info)
-                collect (car (aref literals i)))
-          key-frame-start)))
+                collect (car (aref literals i))))))
 
 (defun make-bir-function (bytecode-function inserter
                           &optional (module (bir:module inserter)))
@@ -811,14 +809,13 @@
 (defmethod compile-instruction ((mnemonic (eql :bind-optional-args))
                                 inserter context &rest args)
   (destructuring-bind (start nopt) args
+    (declare (ignore start))
     (let* ((ifun (bir:function inserter))
            (ll (bir:lambda-list ifun)))
-      (loop with locals = (locals context)
-            repeat nopt
-            for i from start
+      (loop repeat nopt
             for arg = (make-instance 'bir:argument :function ifun)
             for -p = (make-instance 'bir:argument :function ifun)
-            do (setf (aref locals i) (cons arg nil))
+            do (stack-push arg context)
             collect (list arg -p) into ll-app
             finally (setf (bir:lambda-list ifun)
                           (append ll '(&optional) ll-app))))))
@@ -826,11 +823,12 @@
 (defmethod compile-instruction ((mnemonic (eql :listify-rest-args))
                                 inserter context &rest args)
   (destructuring-bind (start) args
+    (declare (ignore start))
     (let* ((ifun (bir:function inserter))
            (ll (bir:lambda-list ifun))
            (rarg (make-instance 'bir:argument :function ifun)))
-      (setf (bir:lambda-list ifun) (append ll `(&rest ,rarg))
-            (aref (locals context) start) (cons rarg nil)))))
+      (setf (bir:lambda-list ifun) (append ll `(&rest ,rarg)))
+      (stack-push rarg context))))
 (defmethod compile-instruction ((mnemonic (eql :vaslistify-rest-args))
                                 inserter context &rest args)
   (destructuring-bind (start) args
@@ -842,20 +840,21 @@
 
 (defmethod compile-instruction ((mnemonic (eql :parse-key-args))
                                 inserter context &rest args)
-  (destructuring-bind (start (key-count . aokp) keys frame-start) args
+  (destructuring-bind (start (key-count . aokp) keys) args
     (declare (ignore start key-count))
     (let* ((ifun (bir:function inserter))
            (ll (bir:lambda-list ifun)))
-      (loop with locals = (locals context)
-            for i from frame-start
-            for key in keys
+      ;; The keys are put on the stack such that
+      ;; the leftmost key is the _last_ pushed, etc.
+      (loop for key in keys
             for arg = (make-instance 'bir:argument :function ifun)
             for -p = (make-instance 'bir:argument :function ifun)
-            do (setf (aref locals i) (cons arg nil))
             collect (list key arg -p) into ll-app
             finally (setf (bir:lambda-list ifun)
                           (append ll '(&key) ll-app
-                                  (if aokp '(&allow-other-keys) ())))))))
+                                  (if aokp '(&allow-other-keys) ())))
+                    (loop for (_1 arg _2) in (nreverse ll-app)
+                          do (stack-push arg context))))))
 
 (defun compile-jump (inserter context destination)
   ;; The destination must have already been put in.
@@ -911,10 +910,8 @@
                                 inserter context &rest args)
   (apply #'compile-jump-if inserter context args))
 
-(defun compile-jump-if-supplied (inserter context index true-dest)
-  (destructuring-bind (arg . cellp)
-      (aref (locals context) index)
-    (assert (null cellp))
+(defun compile-jump-if-supplied (inserter context true-dest)
+  (let ((arg (stack-pop context)))
     (check-type arg bir:argument) ; from bind-optional-args
     ;; Now find the corresponding -p argument and branch on it.
     (let* ((ifun (bir:function inserter))
@@ -925,12 +922,20 @@
                                  (return (second e))))
                             (3 (when (eq (second e) arg)
                                  (return (third e)))))))
-           (thenb (delay-block inserter context true-dest
-                               :name '#:if-supplied))
-           (elseb (build:make-iblock inserter :name '#:if-unsupplied)))
+           (thenb (build:make-iblock inserter :name '#:if-supplied))
+           (elseb (build:make-iblock inserter :name '#:if-unsupplied))
+           (endb (delay-block inserter context true-dest
+                              :name '#:if-supplied
+                              :receiving 1)))
       (build:terminate inserter 'bir:ifi
                        :inputs (list -p)
                        :next (list thenb elseb))
+      (build:begin inserter thenb)
+      ;; This block does nothing but jump immediately to the end,
+      ;; sending the arg.
+      (build:terminate inserter 'bir:jump
+                       :inputs (list arg) :outputs (bir:inputs endb)
+                       :next (list endb))
       (build:begin inserter elseb))))
 
 (defmethod compile-instruction ((mnemonic (eql :jump-if-supplied-8))
