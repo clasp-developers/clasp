@@ -26,6 +26,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
+#include <ranges> // required on mac for range algorithms, maybe?
 #include <algorithm> // range algorithms
 #include <clasp/core/array.fwd.h>
 #include <clasp/core/clasp_gmpxx.h>
