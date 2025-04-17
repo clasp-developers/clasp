@@ -232,8 +232,8 @@ struct WeakAnd {
   KVPair get() const {
     auto k = key.value();
     auto v = value.value();
-    if (k && v) return KVPair(*k, *v);
-    else return KVPair(deleted<core::T_O>(), deleted<core::T_O>());
+    if (k && v) return KVPair{*k, *v};
+    else return KVPair{deleted<core::T_O>(), deleted<core::T_O>()};
   }
   void setValue(core::T_sp v) { value.store(v); }
   void reinit(core::T_sp k, core::T_sp v) {

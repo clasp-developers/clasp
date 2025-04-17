@@ -27,6 +27,8 @@ THE SOFTWARE.
 */
 /* -^- */
 #include <atomic>
+#include <ranges>
+#include <algorithm>
 
 namespace gctools {
 
