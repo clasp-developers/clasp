@@ -891,7 +891,7 @@
 (defun write-magic (stream) (write-b32 +magic+ stream))
 
 (defparameter *major-version* 0)
-(defparameter *minor-version* 15)
+(defparameter *minor-version* 16)
 
 (defun write-version (stream)
   (write-b16 *major-version* stream)
