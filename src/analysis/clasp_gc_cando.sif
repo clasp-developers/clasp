@@ -454,8 +454,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<comp::Label_O>"
              :offset-base-ctype "comp::JumpIfSuppliedFixup_O" :layout-offset-field-names ("_label")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_short" :offset-ctype "unsigned short"
-             :offset-base-ctype "comp::JumpIfSuppliedFixup_O" :layout-offset-field-names ("_index")}
 {class-kind :stamp-name "STAMPWTAG_comp__LexFixup_O" :stamp-key "comp::LexFixup_O"
             :parent-class "comp::Fixup_O" :lisp-class-base "comp::Fixup_O" :root-class "core::T_O"
             :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

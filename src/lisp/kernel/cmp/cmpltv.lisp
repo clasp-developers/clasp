@@ -74,25 +74,10 @@
 ;;; coalescence is still really possible.
 (defclass cons-creator (vcreator) ())
 
-(defclass rplaca-init (effect)
+(defclass initialize-cons (effect)
   ((%cons :initarg :cons :reader rplac-cons :type cons-creator)
-   (%value :initarg :value :reader rplac-value :type creator)))
-
-(defmethod print-object ((object rplaca-init) stream)
-  (print-unreadable-object (object stream :type t)
-    (format stream "~d ~d"
-            (pindex (rplac-cons object)) (pindex (rplac-value object))))
-  object)
-
-(defclass rplacd-init (effect)
-  ((%cons :initarg :cons :reader rplac-cons :type cons-creator)
-   (%value :initarg :value :reader rplac-value :type creator)))
-
-(defmethod print-object ((object rplacd-init) stream)
-  (print-unreadable-object (object stream :type t)
-    (format stream "~d ~d"
-            (pindex (rplac-cons object)) (pindex (rplac-value object))))
-  object)
+   (%car :initarg :car :reader rplac-car :type creator)
+   (%cdr :initarg :cdr :reader rplac-cdr :type creator)))
 
 ;;; dimensions and element-type are encoded with the array since
 ;;; they shouldn't really need to be coalesced.
@@ -101,22 +86,34 @@
    (%packing-info :initarg :packing-info :reader packing-info)
    (%uaet-code :initarg :uaet-code :reader uaet-code)))
 
-;; row-major.
-(defclass setf-aref (effect)
-  ((%array :initarg :array :reader setf-aref-array :type array-creator)
-   (%index :initarg :index :reader setf-aref-index :type (integer 0))
-   (%value :initarg :value :reader setf-aref-value :type creator)))
+;;; Initialize contents of a general (T) array. This is a separate instruction
+;;; because such arrays may contain themselves.
+(defclass initialize-array (effect)
+  ((%array :initarg :array :reader initialized-array :type array-creator)
+   ;; A list of creators as long as the array's total size.
+   (%values :initarg :values :reader array-values :type list)))
+
+;;; Special cases of array-creator, since they're very very common
+;;; for e.g. symbol names.
+(defclass base-string-creator (vcreator) ())
+(defclass utf8-string-creator (vcreator)
+  ((%nbytes :initarg :nbytes :reader nbytes :type (unsigned-byte 16))))
 
 (defclass hash-table-creator (vcreator)
   ((%test :initarg :test :reader hash-table-creator-test :type symbol)
    (%count :initarg :count :reader hash-table-creator-count
            :type (integer 0))))
 
-(defclass setf-gethash (effect)
-  ((%hash-table :initarg :hash-table :reader setf-gethash-hash-table
-                :type hash-table-creator)
-   (%key :initarg :key :reader setf-gethash-key :type creator)
-   (%value :initarg :value :reader setf-gethash-value :type creator)))
+;;; Initialize contents of a hash table. Separate instruction because
+;;; circular references are possible.
+(defclass initialize-hash-table (effect)
+  ((%table :initarg :table :reader initialized-table :type hash-table-creator)
+   ;; We have to store the count ourselves, since the hash table size may
+   ;; not be identical to the number of elements.
+   (%count :initarg :count :reader initialized-table-count
+           :type (unsigned-byte 32))
+   ;; An alist of creators for all the keys and values in the table.
+   (%alist :initarg :alist :reader alist :type list)))
 
 (defclass symbol-creator (vcreator)
   (;; Is there actually a point to trying to coalesce symbol names?
@@ -508,21 +505,19 @@
           (lambda (c)
             (let ((const (find-constant c)))
               (assert const)
-              (add-instruction (make-instance 'rplaca-init
+              (add-instruction (make-instance 'initialize-cons
                                  :cons const
-                                 :value (ensure-constant (car c))))
-              (add-instruction (make-instance 'rplacd-init
-                                 :cons const
-                                 :value (ensure-constant (cdr c))))))
+                                 :car (ensure-constant (car c))
+                                 :cdr (ensure-constant (cdr c))))))
           value)
          (find-constant value))
         (t
          (let ((cons (add-creator
                       value (make-instance 'cons-creator :prototype value))))
-           (add-instruction (make-instance 'rplaca-init
-                              :cons cons :value (ensure-constant (car value))))
-           (add-instruction (make-instance 'rplacd-init
-                              :cons cons :value (ensure-constant (cdr value))))
+           (add-instruction (make-instance 'initialize-cons
+                              :cons cons
+                              :car (ensure-constant (car value))
+                              :cdr (ensure-constant (cdr value))))
            cons))))
 
 (defmethod add-constant ((value array))
@@ -535,28 +530,60 @@
                (make-instance 'array-creator
                  :prototype value :dimensions (array-dimensions value)
                  :packing-info info :uaet-code uaet-code))))
-    (when (eq info-type t) ; general - dump setf-arefs for elements.
+    (when (eq info-type t) ; general - dump an initialize-array for elements.
       ;; (we have to separate initialization here in case the array
       ;;  contains itself. packed arrays can't contain themselves)
-      (loop for i below (array-total-size value)
-            do (add-instruction
-                (make-instance 'setf-aref
-                  :array arr :index i
-                  :value (ensure-constant (row-major-aref value i))))))
+      (add-instruction
+       (make-instance 'initialize-array
+         :array arr
+         :values (loop for i below (array-total-size value)
+                       for e = (row-major-aref value i)
+                       collect (ensure-constant e)))))
     arr))
+
+(defun utf8-length (string)
+  (loop for c across string
+        for cpoint = (char-code c)
+        sum (cond ((< cpoint #x80) 1)
+                  ((< cpoint #x800) 2)
+                  ((< cpoint #x10000) 3)
+                  ((< cpoint #x110000) 4)
+                  (t (error "Codepoint #x~x for ~:c too big" cpoint c)))))
+
+(defmethod add-constant ((value string))
+  (case (array-element-type value)
+    ((base-char) (let ((L (length value)))
+                   (if (< L #.(ash 1 16))
+                       (add-creator
+                        value
+                        (make-instance 'base-string-creator
+                          :prototype value))
+                       (call-next-method))))
+    ((character) (let ((L (utf8-length value)))
+                   (if (< L #.(ash 1 16))
+                       (add-creator
+                        value
+                        (make-instance 'utf8-string-creator
+                          :prototype value :nbytes L))
+                       (call-next-method))))
+    (otherwise (call-next-method))))
 
 (defmethod add-constant ((value hash-table))
   (let ((ht (add-creator
              value
              (make-instance 'hash-table-creator :prototype value
                             :test (hash-table-test value)
-                            :count (hash-table-count value)))))
-    (maphash (lambda (k v)
-               (add-instruction
-                (make-instance 'setf-gethash
-                  :hash-table ht
-                  :key (ensure-constant k) :value (ensure-constant v))))
-             value)
+                            :count (hash-table-count value))))
+        (count (hash-table-count value))
+        (alist nil))
+    (unless (zerop count) ; empty table; nothing to initialize
+      (maphash (lambda (k v)
+                 (let ((ck (ensure-constant k)) (cv (ensure-constant v)))
+                   (push (cons ck cv) alist)))
+               value)
+      (add-instruction
+       (make-instance 'initialize-hash-table
+         :table ht :count count :alist alist)))
     ht))
 
 (defmethod add-constant ((value symbol))
@@ -918,15 +945,11 @@
 (defmethod encode ((inst cons-creator) stream)
   (write-mnemonic :cons stream))
 
-(defmethod encode ((inst rplaca-init) stream)
-  (write-mnemonic :rplaca stream)
+(defmethod encode ((inst initialize-cons) stream)
+  (write-mnemonic :init-cons stream)
   (write-index (rplac-cons inst) stream)
-  (write-index (rplac-value inst) stream))
-
-(defmethod encode ((inst rplacd-init) stream)
-  (write-mnemonic :rplacd stream)
-  (write-index (rplac-cons inst) stream)
-  (write-index (rplac-value inst) stream))
+  (write-index (rplac-car inst) stream)
+  (write-index (rplac-cdr inst) stream))
 
 (defun write-dimensions (dimensions stream)
   (let ((rank (length dimensions)))
@@ -1048,14 +1071,30 @@
             ((equal packing-type '(signed-byte 64))
              (dump (write-b64 elem stream)))
             ;; TODO: Signed bytes
-            ((equal packing-type 't)) ; handled by setf-aref instructions
+            ((equal packing-type 't)) ; handled by initialize-array
             (t (error "BUG: Unknown packing-type ~s" packing-type))))))
 
-(defmethod encode ((inst setf-aref) stream)
-  (write-mnemonic :setf-row-major-aref stream)
-  (write-index (setf-aref-array inst) stream)
-  (write-b16 (setf-aref-index inst) stream)
-  (write-index (setf-aref-value inst) stream))
+(defmethod encode ((inst initialize-array) stream)
+  (write-mnemonic :init-array stream)
+  (write-index (initialized-array inst) stream)
+  ;; length is implicit from the array being initialized
+  (loop for c in (array-values inst)
+        do (write-index c stream)))
+
+(defmethod encode ((inst base-string-creator) stream)
+  (write-mnemonic :base-string stream)
+  (write-b16 (length (prototype inst)) stream)
+  (loop for c across (prototype inst)
+        for code = (char-code c)
+        do (write-byte code stream)))
+
+;;; Here we encode the number of bytes rather than the number of chars.
+;;; This is smarter, since it means the I/O can be batched.
+(defmethod encode ((inst utf8-string-creator) stream)
+  (write-mnemonic :utf8-string stream)
+  (write-b16 (nbytes inst) stream)
+  (loop for c across (prototype inst)
+        do (write-utf8-codepoint (char-code c) stream)))
 
 ;;; Arrays are encoded with two codes: One for the packing, and one
 ;;; for the element type. The latter is in place so that, hopefully,
@@ -1144,11 +1183,13 @@
     (write-byte testcode stream)
     (write-b16 count stream)))
 
-(defmethod encode ((inst setf-gethash) stream)
-  (write-mnemonic :setf-gethash stream)
-  (write-index (setf-gethash-hash-table inst) stream)
-  (write-index (setf-gethash-key inst) stream)
-  (write-index (setf-gethash-value inst) stream))
+(defmethod encode ((inst initialize-hash-table) stream)
+  (write-mnemonic :init-hash-table stream)
+  (write-index (initialized-table inst) stream)
+  (write-b32 (initialized-table-count inst) stream)
+  (loop for (k . v) in (alist inst)
+        do (write-index k stream)
+           (write-index v stream)))
 
 (defmethod encode ((inst singleton-creator) stream)
   (ecase (prototype inst)

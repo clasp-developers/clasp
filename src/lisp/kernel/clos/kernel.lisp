@@ -193,20 +193,18 @@
         (setf args-specializers
               (funcall f (subseq args-specializers 0
                                  (length (generic-function-argument-precedence-order gf))))))
-      ;; then order the list
-      (do* ((scan applicable-list)
-            (most-specific (first scan) (first scan))
-            (ordered-list))
-           ((null (cdr scan))
-            (when most-specific
-              ;; at least one method
-              (nreverse
-               (push most-specific ordered-list))))
-        (dolist (meth (cdr scan))
-          (when (eql (compare-methods most-specific meth args-specializers f) 2)
-            (setq most-specific meth)))
-        (setq scan (delete most-specific scan))
-        (push most-specific ordered-list)))))
+      ;; then order the list. Simple selection sort. FIXME?
+      ;; note that this mutates the list, so be sure applicable-list
+      ;; is fresh.
+      (loop for to-sort on applicable-list
+            do (loop for comparees on (rest to-sort)
+                     for comparee = (first comparees)
+                     for most-specific = (first to-sort)
+                     when (eql (compare-methods most-specific comparee
+                                                args-specializers f)
+                               2)
+                       do (rotatef (first comparees) (first to-sort))))
+      applicable-list)))
 
 (defun compare-methods (method-1 method-2 args-specializers f)
   (let* ((specializers-list-1 (safe-method-specializers method-1))
@@ -216,23 +214,17 @@
                                 args-specializers)))
 
 (defun compare-specializers-lists (spec-list-1 spec-list-2 args-specializers)
-  (when (or spec-list-1 spec-list-2)
-    (ecase (compare-specializers (first spec-list-1)
-				 (first spec-list-2)
-				 (first args-specializers))
-      (1 '1)
-      (2 '2)
-      (= 
-       (compare-specializers-lists (cdr spec-list-1)
-				   (cdr spec-list-2)
-				   (cdr args-specializers)))
-      ((nil)
-       (error "The type specifiers ~S and ~S can not be disambiguated~
+  (loop for spec1 in spec-list-1 for spec2 in spec-list-2
+        for arg-specializer in args-specializers
+        for c = (compare-specializers spec1 spec2 arg-specializer)
+        do (case c
+             ;; if =, just keep going
+             ((1) (return 1))
+             ((2) (return 2))
+             ((nil)
+              (error "The type specifiers ~S and ~S can not be disambiguated~
                   with respect to the argument specializer: ~S"
-	      (or (car spec-list-1) t)
-	      (or (car spec-list-2) t)
-	      (car args-specializers)))))
-  )
+	             (or spec1 t) (or spec2 t) arg-specializer)))))
 
 (defun fast-subtypep (spec1 spec2)
   ;; Specialized version of subtypep which uses the fact that spec1
@@ -259,10 +251,14 @@
       (cond ((eq spec-1 spec-2) '=)
             ((fast-subtypep spec-1 spec-2) '1)
             ((fast-subtypep spec-2 spec-1) '2)
-            ((eql-specializer-p spec-1) '1) ; is this engough?
-            ((eql-specializer-p spec-2) '2) ; Beppe
-            ((member spec-1 (member spec-2 cpl)) '2)
-            ((member spec-2 (member spec-1 cpl)) '1)
+            ;; Per CLHS 7.6.6.1.2, an eql specializer is considered
+            ;; more specific than a class. Also, for an eql specializer
+            ;; to be compared to a class here, they must both be
+            ;; applicable, and as such the eql is a "sub specializer".
+            ((eql-specializer-p spec-1) '1)
+            ((eql-specializer-p spec-2) '2)
+            ((member spec-1 (rest (member spec-2 cpl))) '2)
+            ((member spec-2 (rest (member spec-1 cpl))) '1)
 	    ;; This will force an error in the caller
 	    (t nil)))))
 

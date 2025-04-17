@@ -142,15 +142,11 @@
     (setf (creator index)
           (make-instance 'cons-creator))))
 
-(defmethod %load-instruction ((mnemonic (eql :rplaca)) stream)
-  (let ((cons (read-creator stream)) (value (read-creator stream)))
-    (dbgprint " (rplaca ~s ~s)" cons value)
-    (make-instance 'rplaca-init :cons cons :value value)))
-
-(defmethod %load-instruction ((mnemonic (eql :rplacd)) stream)
-  (let ((cons (read-creator stream)) (value (read-creator stream)))
-    (dbgprint " (rplacd ~s ~s)" cons value)
-    (make-instance 'rplacd-init :cons cons :value value)))
+(defmethod %load-instruction ((mnemonic (eql 'initialize-cons)) stream)
+  (let ((cons (read-creator stream))
+        (car (read-creator stream)) (cdr (read-creator stream)))
+    (dbgprint " (initialize-cons ~s ~s ~s)" cons car cdr)
+    (make-instance 'initialize-cons :cons cons :car car :cdr cdr)))
 
 (defmacro read-sub-byte (array stream nbits)
   (let ((perbyte (floor 8 nbits))
@@ -276,12 +272,6 @@
                 :uaet-code uaet-code
                 :prototype array)))))
 
-(defmethod %load-instruction ((mnemonic (eql :setf-row-major-aref)) stream)
-  (let ((array (read-creator stream)) (index (read-ub16 stream))
-        (value (read-creator stream)))
-    (dbgprint " (setf (row-major-aref ~s ~d) ~s)" array index value)
-    (make-instance 'setf-aref :array array :index index :value value)))
-
 (defmethod %load-instruction ((mnemonic (eql :make-hash-table)) stream)
   (let* ((index (next-index)) (testcode (read-byte stream))
          (test (ecase testcode
@@ -293,12 +283,6 @@
     (dbgprint " (make-hash-table ~d ~s ~d)" index test count)
     (setf (creator index)
           (make-instance 'hash-table-creator :test test :count count))))
-
-(defmethod %load-instruction ((mnemonic (eql :setf-gethash)) stream)
-  (let ((ht (read-creator stream))
-        (key (read-creator stream)) (value (read-creator stream)))
-    (dbgprint " (setf (gethash ~s ~s) ~s)" key ht value)
-    (make-instance 'setf-gethash :hash-table ht :key key :value value)))
 
 (defmethod %load-instruction ((mnemonic (eql :make-sb64)) stream)
   (let ((index (next-index)) (fix (read-sb64 stream)))
@@ -709,10 +693,9 @@
   `(<- (% ,(index inst)) ',(prototype inst)))
 (defmethod disassemble-instruction ((inst cons-creator))
   `(<- (% ,(index inst)) '(cons nil nil)))
-(defmethod disassemble-instruction ((inst rplaca-init))
-  `(setf (car (% ,(index (rplac-cons inst)))) (% ,(index (rplac-value inst)))))
-(defmethod disassemble-instruction ((inst rplacd-init))
-  `(setf (cdr (% ,(index (rplac-cons inst)))) (% ,(index (rplac-value inst)))))
+(defmethod disassemble-instruction ((inst initialize-cons))
+  `(setf (car (% ,(index (rplac-cons inst)))) (% ,(index (rplac-car inst)))
+         (cdr (% ,(index (rplac-cons inst)))) (% ,(index (rplac-cdr inst)))))
 (defmethod disassemble-instruction ((inst array-creator))
   `(<- (% ,(index inst))
        ,(case (first (packing-info inst))
@@ -727,6 +710,7 @@
                  `(make-array ',dims
                               :element-type ',(decode-uaet (uaet-code inst))
                               :initial-contents ,(prototype inst))))))))
+#+(or)
 (defmethod disassemble-instruction ((inst setf-aref))
   `(setf (row-major-aref (% ,(index (setf-aref-array inst)))
                          ,(setf-aref-index inst))
@@ -735,6 +719,7 @@
   `(<- (% ,(index inst)) (make-hash-table
                           :test ',(hash-table-creator-test inst)
                           :count ,(hash-table-creator-count inst))))
+#+(or)
 (defmethod disassemble-instruction ((inst setf-gethash))
   `(setf (gethash (% ,(index (setf-gethash-key inst)))
                   (% ,(index (setf-gethash-hash-table inst))))
