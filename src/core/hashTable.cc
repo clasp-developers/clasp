@@ -88,6 +88,9 @@ THE SOFTWARE.
 #endif
 namespace core {
 
+void Mapping_O::fields(Record_sp node) {
+  // Do nothing
+}
 StrongMapping_sp StrongMapping_O::make(size_t size) {
   return gctools::GC<StrongMapping_O>::allocate_container<gctools::RuntimeStage>(false, size);
 }
@@ -381,10 +384,12 @@ List_sp HashTable_O::keysAsCons() {
   return res;
 }
 
+
 void HashTable_O::fields(Record_sp node) {
   // this->Base::fields(node);
   node->field(INTERN_(core, rehash_size), this->_RehashSize);
   node->/*pod_*/ field(INTERN_(core, rehash_threshold), this->_RehashThreshold);
+  node->field(INTERN_(core,mp), this->_Table );
   switch (node->stage()) {
   case Record_O::initializing:
   case Record_O::loading: {
