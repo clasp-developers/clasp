@@ -69,7 +69,11 @@ public:
   // done, and the count is reset to the exact count on rehash so error
   // can't accumulate indefinitely.
   size_t _Count = 0;
+
 public:
+  bool fieldsp() const override { return true; };
+  void fields(Record_sp node) override;
+
   virtual size_t size() const = 0;
   virtual size_t count() const = 0; // exact
   size_t countInexact() const { return _Count; }
@@ -99,6 +103,7 @@ public:
   typedef gctools::StrongMapping::value_type value_type;
 public:
   StrongMapping_O(size_t size) : _Mapping(size) {}
+  StrongMapping_O() : StrongMapping_O(0) {}
   static StrongMapping_sp make(size_t);
 public:
   gctools::StrongMapping _Mapping;
@@ -127,6 +132,7 @@ public:
   typedef gctools::EphemeronMapping::value_type value_type;
 public:
   WeakKeyMapping_O(size_t size) : _Mapping(size) {}
+  WeakKeyMapping_O() : WeakKeyMapping_O(0) {}
   static WeakKeyMapping_sp make(size_t);
 public:
   gctools::EphemeronMapping _Mapping;
@@ -152,6 +158,7 @@ public:
   typedef gctools::EphemeronMapping::value_type value_type;
 public:
   WeakValueMapping_O(size_t size) : _Mapping(size) {}
+  WeakValueMapping_O() : WeakValueMapping_O(0) {}
   static WeakValueMapping_sp make(size_t);
 public:
   // We use the same mapping underneath, but its keys are the table's values
@@ -195,6 +202,7 @@ public:
   typedef gctools::WeakAndMapping::value_type value_type;
 public:
   WeakKeyAndValueMapping_O(size_t size) : _Mapping(size) {}
+  WeakKeyAndValueMapping_O() : WeakKeyAndValueMapping_O(0) {}
   static WeakKeyAndValueMapping_sp make(size_t);
 public:
   gctools::WeakAndMapping _Mapping;
@@ -220,6 +228,7 @@ public:
   typedef gctools::WeakAndMapping::value_type value_type;
 public:
   WeakKeyOrValueMapping_O(size_t size) : _Mapping(size) {}
+  WeakKeyOrValueMapping_O() : WeakKeyOrValueMapping_O(0) {}
   static WeakKeyOrValueMapping_sp make(size_t);
 public:
   gctools::DoubleEphMapping _Mapping;
