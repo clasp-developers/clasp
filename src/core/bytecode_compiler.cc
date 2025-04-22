@@ -1413,7 +1413,7 @@ CL_DEFUN void cmp__warn_set_unused_variable(T_sp name, T_sp sourceloc) {
 [[noreturn]] CL_DEFUN void cmp__malformed_binding(T_sp op, T_sp binding,
                                                   T_sp source) {
   (void)source;
-  SIMPLE_PROGRAM_ERROR_2_ARGS("Malformed ~s binding: ~s", op, binding);
+  SIMPLE_PROGRAM_ERROR("Malformed ~s binding: ~s", op, binding);
 }
 
 // Emit warnings for unused variables etc.
