@@ -1401,6 +1401,7 @@ LexicalInfo_O::IgnoreStatus binding_ignore(T_sp name, List_sp decls) {
 // once the condition system is really up.
 SYMBOL_EXPORT_SC_(CompPkg, warn_unused_variable);
 SYMBOL_EXPORT_SC_(CompPkg, warn_set_unused_variable);
+SYMBOL_EXPORT_SC_(CompPkg, malformed_binding);
 CL_DEFUN void cmp__warn_unused_variable(T_sp name, T_sp sourceloc) {
   (void)name;
   (void)sourceloc;
@@ -1408,6 +1409,11 @@ CL_DEFUN void cmp__warn_unused_variable(T_sp name, T_sp sourceloc) {
 CL_DEFUN void cmp__warn_set_unused_variable(T_sp name, T_sp sourceloc) {
   (void)name;
   (void)sourceloc;
+}
+[[noreturn]] CL_DEFUN void cmp__malformed_binding(T_sp op, T_sp binding,
+                                                  T_sp source) {
+  (void)source;
+  SIMPLE_PROGRAM_ERROR_2_ARGS("Malformed ~s binding: ~s", op, binding);
 }
 
 // Emit warnings for unused variables etc.
@@ -1496,7 +1502,8 @@ static List_sp decls_for_fun(T_sp funname, List_sp decls) {
   return result.cons();
 }
 
-void destructure_let_binding(T_sp binding, Symbol_sp& var, T_sp& valf) {
+void destructure_let_binding(T_sp binding, Symbol_sp& var, T_sp& valf,
+                             T_sp op, T_sp source) {
   // TODO: Source info
   if (binding.consp()) {
     if (oCdr(binding).consp() && oCddr(binding).nilp()) {
@@ -1506,7 +1513,7 @@ void destructure_let_binding(T_sp binding, Symbol_sp& var, T_sp& valf) {
       var = gc::As<Symbol_sp>(oCar(binding));
       valf = nil<T_O>();
     } else
-      SIMPLE_PROGRAM_ERROR("Malformed LET/LET* binding: ~s", binding);
+      eval::funcall(_sym_malformed_binding, op, binding, source);
   } else {
     var = gc::As<Symbol_sp>(binding);
     valf = nil<T_O>();
@@ -1530,9 +1537,10 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
   // now get processing
   for (auto cur : bindings) {
     T_sp binding = oCar(cur);
+    T_sp source = source_location_for(binding, ctxt.source_info());
     Symbol_sp var;
     T_sp valf;
-    destructure_let_binding(binding, var, valf);
+    destructure_let_binding(binding, var, valf, cl::_sym_let, source);
     compile_form(valf, env, ctxt.sub_receiving(1));
     if (special_binding_p(var, specials, env)) {
       ++special_binding_count;
@@ -1543,7 +1551,7 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
       ++lexical_binding_count;
       LexicalVarInfo_sp lvinfo = gc::As_assert<LexicalVarInfo_sp>(post_binding_env->variableInfo(var));
       debug_bindings << Cons_O::create(var, lvinfo->lex());
-      ibindings << Cons_O::createList(var, lvinfo->lex(), source_location_for(binding, ctxt.source_info()));
+      ibindings << Cons_O::createList(var, lvinfo->lex(), source);
       lvinfo->lex()->setIgnore(binding_ignore(var, declares));
       lvinfo->lex()->setDecls(decls_for_var(var, declares));
       ctxt.maybe_emit_make_cell(lvinfo);
@@ -1623,17 +1631,17 @@ void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Contex
   ql::list ibindings;
   for (auto cur : bindings) {
     T_sp binding = oCar(cur);
+    T_sp source = source_location_for(binding, ctxt.source_info());
     Symbol_sp var;
     T_sp valf;
-    destructure_let_binding(binding, var, valf);
+    destructure_let_binding(binding, var, valf, cl::_sym_letSTAR, source);
     compile_form(valf, new_env, ctxt.sub_receiving(1));
     if (special_binding_p(var, specials, env)) {
       ++special_binding_count;
       ctxt = gen1bind(var, true, declares, end_label, new_env, ctxt);
     } else {
       ctxt = gen1bind(var, false, declares, end_label, new_env, ctxt);
-      ibindings << Cons_O::createList(var, new_env->variableInfo(var).as_assert<LexicalVarInfo_O>()->lex(),
-                                      source_location_for(binding, ctxt.source_info()));
+      ibindings << Cons_O::createList(var, new_env->variableInfo(var).as_assert<LexicalVarInfo_O>()->lex(), source);
     }
   }
   new_env = new_env->add_decls(declares);
@@ -1979,13 +1987,13 @@ void compile_fdesignator(T_sp fform, Lexenv_sp env, const Context ctxt) {
 }
 
 void destructure_flet_binding(T_sp binding, T_sp& name, T_sp& lambda_list,
-                              T_sp& body) {
+                              T_sp& body, T_sp op, T_sp source) {
   if (binding.consp() && oCdr(binding).consp()) {
     name = oCar(binding);
     lambda_list = oCadr(binding);
     body = oCddr(binding);
   } else
-    SIMPLE_PROGRAM_ERROR("Malformed FLET/LABELS binding: ~s", binding);
+    eval::funcall(_sym_malformed_binding, op, binding, source);
 }
 
 void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Context ctxt) {
@@ -1995,8 +2003,11 @@ void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Contex
   ql::list fun_vars;
   size_t fun_count = 0;
   for (auto cur : definitions) {
+    T_sp definition = oCar(cur);
+    T_sp source = source_location_for(definition, ctxt.source_info());
     T_sp name, lambda_list, body;
-    destructure_flet_binding(oCar(cur), name, lambda_list, body);
+    destructure_flet_binding(oCar(cur), name, lambda_list, body,
+                             cl::_sym_flet, source);
     List_sp declares = nil<T_O>();
     gc::Nilable<String_sp> docstring;
     List_sp code;
@@ -2059,7 +2070,8 @@ void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Cont
     T_sp definition = oCar(cur);
     T_sp source = source_location_for(definition, ctxt.source_info());
     T_sp name, lambda_list, body;
-    destructure_flet_binding(oCar(cur), name, lambda_list, body);
+    destructure_flet_binding(oCar(cur), name, lambda_list, body,
+                             cl::_sym_labels, source);
     List_sp declares = nil<T_O>();
     gc::Nilable<String_sp> docstring;
     List_sp code;

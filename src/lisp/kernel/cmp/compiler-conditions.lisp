@@ -156,6 +156,14 @@
                (if (symbolp name) name (second name))
                'ignore)))))
 
+(define-condition cmp:malformed-binding (program-error compiler-condition)
+  ((%operator :initarg :operator :reader operator)
+   (%binding :initarg :binding :reader binding))
+  (:report
+   (lambda (condition stream)
+     (format stream "The ~s binding ~s is malformed."
+             (operator condition) (binding condition)))))
+
 ;;; redefined from bytecode_compiler.cc.
 (defun cmp:warn-unused-variable (name &optional (origin (ext:current-source-location)))
   (warn 'cmp:unused-variable :origin origin :name name :setp nil))
@@ -163,6 +171,9 @@
   (warn 'cmp:used-variable :origin origin :name name))
 (defun cmp:warn-set-unused-variable (name &optional (origin (ext:current-source-location)))
   (warn 'cmp:unused-variable :origin origin :name name :setp t))
+(defun cmp:malformed-binding (operator binding &optional (origin (ext:current-source-location)))
+  (error 'cmp:malformed-binding :origin origin
+                                :operator operator :binding binding))
 
 ;; This condition is signaled when an attempt at constant folding fails
 ;; due to the function being called signaling an error.
