@@ -153,7 +153,7 @@ KVPair Ephemeron::get() const {
 }
 
 KVPair Ephemeron::get_no_lock() const {
-  return KVPair(core::T_sp((Tagged)GC_REVEAL_POINTER(_key)), _value);
+  return KVPair{core::T_sp((Tagged)GC_REVEAL_POINTER(_key)), _value};
 }
 void Ephemeron::reinit_no_lock(core::T_sp k, core::T_sp v) {
   _key = GC_HIDE_POINTER(k.tagged_());
@@ -179,7 +179,7 @@ void Ephemeron::reinit(core::T_sp k, core::T_sp v) {
 }
 void Ephemeron::reinit_no_lock(core::T_sp k, core::T_sp v) { reinit(k, v); }
 
-KVPair Ephemeron::get() const { return KVPair(_key, _value); }
+KVPair Ephemeron::get() const { return KVPair{_key, _value}; }
 KVPair Ephemeron::get_no_lock() const { return get(); }
 void Ephemeron::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup*) {}
 #endif
