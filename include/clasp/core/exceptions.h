@@ -108,12 +108,9 @@ namespace core {
 #define TYPE_ERROR(_datum_, _expectedType_)                                                                                        \
   ERROR(::cl::_sym_type_error, core::lisp_createList(kw::_sym_datum, _datum_, kw::_sym_expected_type, _expectedType_))
 #define PROGRAM_ERROR() ERROR(cl::_sym_programError, (nil<T_O>()))
-#define SIMPLE_PROGRAM_ERROR(message, datum)                                                                                       \
+#define SIMPLE_PROGRAM_ERROR(message, ...)                                                                                         \
   ERROR(core::_sym_simpleProgramError, core::lisp_createList(kw::_sym_format_control, core::lisp_createStr(message),               \
-                                                             kw::_sym_format_arguments, core::lisp_createList(datum)))
-#define SIMPLE_PROGRAM_ERROR_2_ARGS(message, datum1, datum2)                                                                       \
-  ERROR(core::_sym_simpleProgramError, core::lisp_createList(kw::_sym_format_control, core::lisp_createStr(message),               \
-                                                             kw::_sym_format_arguments, core::lisp_createList(datum1, datum2)))
+                                                             kw::_sym_format_arguments, core::lisp_createList(__VA_ARGS__)))
 
 #define FILE_ERROR(_file_) ERROR(cl::_sym_fileError, core::lisp_createList(kw::_sym_pathname, _file_))
 #define CANNOT_OPEN_FILE_ERROR(_file_) FILE_ERROR(_file_)
