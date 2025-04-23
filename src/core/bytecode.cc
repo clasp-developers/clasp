@@ -6,6 +6,7 @@
 #include <dlfcn.h>
 #include <iomanip>
 #include <cstdint>
+#include <algorithm> // min
 #include <clasp/core/foundation.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/bytecode.h>
@@ -414,14 +415,12 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       uint8_t nreq = *(++pc);
       uint8_t nopt = *(++pc);
       DBG_VM("bind-optional-args %" PRIu8 " %" PRIu8 "\n", nreq, nopt);
-      if (lcc_nargs >= nreq + nopt) { // enough args- easy mode
-        DBG_VM("  enough args\n");
-        vm.copytoreg(fp, lcc_args + nreq, nopt, nreq);
-      } else { // put in some unbounds
-        DBG_VM("  not enough args\n");
-        vm.copytoreg(fp, lcc_args + nreq, lcc_nargs - nreq, nreq);
-        vm.fillreg(fp, unbound<T_O>().raw_(), nreq + nopt - lcc_nargs, lcc_nargs);
-      }
+      for (size_t i = nreq + nopt; i > lcc_nargs; --i)
+        vm.push(sp, unbound<T_O>().raw_());
+      // Push provided args, last arg first.
+      for (size_t j = std::min((size_t)nreq+(size_t)nopt, lcc_nargs);
+           j > nreq; --j)
+        vm.push(sp, lcc_args[j - 1]);
       pc++;
       break;
     }
@@ -433,7 +432,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         T_sp tobj((gctools::Tagged)lcc_args[i]);
         rest << tobj;
       }
-      vm.setreg(fp, start, rest.cons().raw_());
+      vm.push(sp, rest.cons().raw_());
       pc++;
       break;
     }
@@ -445,7 +444,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       uint8_t start = *(++pc);
       DBG_VM("vaslistify-rest-args %" PRIu8 "\n", start);
       auto theVaslist = vm.alloca_vaslist2(sp, lcc_args + start, lcc_nargs - start);
-      vm.setreg(fp, start, theVaslist);
+      vm.push(sp, theVaslist);
       pc++;
       break;
     }
@@ -453,15 +452,12 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       uint8_t more_start = *(++pc);
       uint8_t key_count_info = *(++pc);
       uint8_t key_literal_start = *(++pc);
-      uint8_t key_frame_start = *(++pc);
-      DBG_VM("parse-key-args %" PRIu8 " %" PRIu8 " %" PRIu8 " %" PRIu8 "\n", more_start, key_count_info, key_literal_start,
-             key_frame_start);
-      uint8_t key_count = key_count_info & 0x7f;
-      bool ll_aokp = key_count_info & 0x80;
+      DBG_VM("parse-key-args %" PRIu8 " %" PRIu8 " %" PRIu8 "\n", more_start, key_count_info, key_literal_start);
+      uint8_t key_count = key_count_info >> 1;
+      bool ll_aokp = key_count_info & 0x1;
       bool aokp = false;
       T_sp unknown_keys = nil<T_O>();
-      // Set keyword arguments to unbound.
-      vm.fillreg(fp, unbound<T_O>().raw_(), key_count, key_frame_start);
+      SimpleVector_sp argstemp = SimpleVector_O::make(key_count, unbound<T_O>());
       if (lcc_nargs > more_start) {
         if (((lcc_nargs - more_start) % 2) != 0) {
           T_sp tclosure((gctools::Tagged)gctools::tag_general(closure));
@@ -485,7 +481,8 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
             T_O* ckey = literals[key_id + key_literal_start];
             if (key == ckey) {
               valid_key_p = true;
-              *vm.reg(fp, key_frame_start + key_id) = lcc_args[arg_index];
+              T_sp value((gctools::Tagged)(lcc_args[arg_index]));
+              (*argstemp)[key_id] = value;
               break;
             }
           }
@@ -498,6 +495,13 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       if (unknown_keys.notnilp() && !aokp) {
         T_sp tclosure((gctools::Tagged)gctools::tag_general(closure));
         throwUnrecognizedKeywordArgumentError(tclosure, unknown_keys);
+      }
+      // Finally, push keys to the stack.
+      for (size_t i = 0; i < key_count; ++i) {
+        size_t key_id = key_count - i - 1;
+        T_sp key((gctools::Tagged)literals[key_id + key_literal_start]);
+        T_sp value = (*argstemp)[key_id];
+        vm.push(sp, value.raw_());
       }
       pc++;
       break;
@@ -552,25 +556,27 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       break;
     }
     case vm_code::jump_if_supplied_8: {
-      uint8_t slot = *(pc + 1);
-      int32_t rel = *(pc + 2);
-      DBG_VM("jump-if-supplied %" PRIu8 " %" PRId8 "\n", slot, rel);
-      T_sp tval((gctools::Tagged)(*(vm.reg(fp, slot))));
-      if (tval.unboundp())
-        pc += 3;
-      else
+      int32_t rel = *(pc + 1);
+      DBG_VM("jump-if-supplied %" PRId8 "\n", rel);
+      T_sp tval((gctools::Tagged)(vm.pop(sp)));
+      if (tval.unboundp()) {
+        pc += 2;
+      } else {
+        vm.push(sp, tval.raw_());
         pc += rel;
+      }
       break;
     }
-    case vm_code::jump_if_supplied_16: {
-      uint8_t slot = *(pc + 1);
-      int16_t rel = read_s16(pc + 2);
-      DBG_VM("jump-if-supplied %" PRIu8 " %" PRId16 "\n", slot, rel);
-      T_sp tval((gctools::Tagged)(*(vm.reg(fp, slot))));
-      if (tval.unboundp())
-        pc += 4;
-      else
+      case vm_code::jump_if_supplied_16: {
+      int32_t rel = read_s16(pc + 1);
+      DBG_VM("jump-if-supplied %" PRId16 "\n", rel);
+      T_sp tval((gctools::Tagged)(vm.pop(sp)));
+      if (tval.unboundp()) {
+        pc += 3;
+      } else {
+        vm.push(sp, tval.raw_());
         pc += rel;
+      }
       break;
     }
     case vm_code::check_arg_count_LE: {
@@ -1181,14 +1187,10 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     uint8_t nopt_low = *(pc + 3);
     uint16_t nopt = nopt_low + (*(pc + 4) << 8);
     DBG_VM("long bind-optional-args %" PRIu16 " %" PRIu16 "\n", nreq, nopt);
-    if (lcc_nargs >= nreq + nopt) {
-      DBG_VM("  enough args\n");
-      vm.copytoreg(fp, lcc_args + nreq, nopt, nreq);
-    } else {
-      DBG_VM("  not enough args\n");
-      vm.copytoreg(fp, lcc_args + nreq, lcc_nargs - nreq, nreq);
-      vm.fillreg(fp, unbound<T_O>().raw_(), nreq + nopt - lcc_nargs, lcc_nargs);
-    }
+    for (size_t i = nreq + nopt; i > lcc_nargs; --i)
+      vm.push(sp, unbound<T_O>().raw_());
+    for (size_t j = std::min((size_t)nreq+(size_t)nopt, lcc_nargs); j > nreq; --j)
+      vm.push(sp, lcc_args[j - 1]);
     pc += 5;
     break;
   }
@@ -1201,7 +1203,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
       T_sp tobj((gctools::Tagged)lcc_args[i]);
       rest << tobj;
     }
-    vm.setreg(fp, start, rest.cons().raw_());
+    vm.push(sp, rest.cons().raw_());
     pc += 3;
     break;
   }
@@ -1212,16 +1214,12 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     uint16_t key_count_info = key_count_info_low + (*(pc + 4) << 8);
     uint8_t key_literal_start_low = *(pc + 5);
     uint16_t key_literal_start = key_literal_start_low + (*(pc + 6) << 8);
-    uint8_t key_frame_start_low = *(pc + 7);
-    uint16_t key_frame_start = key_frame_start_low + (*(pc + 8) << 8);
-    DBG_VM("long parse-key-args %" PRIu16 " %" PRIu16 " %" PRIu16 " %" PRIu16 "\n", more_start, key_count_info, key_literal_start,
-           key_frame_start);
-    uint16_t key_count = key_count_info & 0x7fff;
-    bool ll_aokp = key_count_info & 0x8000;
+    DBG_VM("long parse-key-args %" PRIu16 " %" PRIu16 " %" PRIu16 "\n", more_start, key_count_info, key_literal_start);
+    uint16_t key_count = key_count_info >> 1;
+    bool ll_aokp = key_count_info & 0x1;
     bool aokp = false;
     T_sp unknown_keys = nil<T_O>();
-    // Set keyword arguments to unbound.
-    vm.fillreg(fp, unbound<T_O>().raw_(), key_count, key_frame_start);
+    SimpleVector_sp argstemp = SimpleVector_O::make(key_count, unbound<T_O>());
     if (lcc_nargs > more_start) {
       if (((lcc_nargs - more_start) % 2) != 0) {
         T_sp tclosure((gctools::Tagged)gctools::tag_general(closure));
@@ -1242,7 +1240,8 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
           T_O* ckey = literals[key_id + key_literal_start];
           if (key == ckey) {
             valid_key_p = true;
-            *vm.reg(fp, key_frame_start + key_id) = lcc_args[arg_index];
+            T_sp value((gctools::Tagged)(lcc_args[arg_index]));
+            (*argstemp)[key_id] = value;
             break;
           }
         }
@@ -1256,31 +1255,9 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
       T_sp tclosure((gctools::Tagged)gctools::tag_general(closure));
       throwUnrecognizedKeywordArgumentError(tclosure, unknown_keys);
     }
-    pc += 9;
-    break;
-  }
-  case vm_code::jump_if_supplied_8: {
-    uint8_t low = *(pc + 1);
-    uint16_t slot = low + (*(pc + 2) << 8);
-    int32_t rel = *(pc + 3);
-    DBG_VM("long jump-if-supplied %" PRIu16 " %" PRId8 "\n", slot, rel);
-    T_sp tval((gctools::Tagged)(*(vm.reg(fp, slot))));
-    if (tval.unboundp())
-      pc += 4;
-    else
-      pc += rel - 1; // -1 for the long opcode at pc-1
-    break;
-  }
-  case vm_code::jump_if_supplied_16: {
-    uint8_t low = *(pc + 1);
-    uint16_t slot = low + (*(pc + 2) << 8);
-    int32_t rel = read_s16(pc + 3);
-    DBG_VM("long jump-if-supplied %" PRIu16 " %" PRId8 "\n", slot, rel);
-    T_sp tval((gctools::Tagged)(*(vm.reg(fp, slot))));
-    if (tval.unboundp())
-      pc += 5;
-    else
-      pc += rel - 1; // -1 for the long opcode at pc-1
+    for (size_t i = 0; i < key_count; ++i)
+      vm.push(sp, (*argstemp)[key_count - i - 1].raw_());
+    pc += 7;
     break;
   }
   case vm_code::check_arg_count_LE: {

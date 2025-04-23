@@ -9,6 +9,7 @@
 * Weak pointers and weak hash tables survive snapshot save/load.
 * `ext:quit` can be used from any thread, not just the initial thread.
 * Quasiquoted vectors are read correctly (#1666).
+* The bytecode compiler detects malformed bindings.
 
 ## Removed
 * `-z`/`--snapshot-symbols-save` command line option, occasionally used

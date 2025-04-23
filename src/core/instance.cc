@@ -339,8 +339,10 @@ string Instance_O::__repr__() const {
   ss << "#<";
   if (Instance_sp mc = this->_Class.asOrNull<Instance_O>()) {
     ss << mc->_classNameAsString();
-    ss << " ";
-    ss << this->_classNameAsString();
+    if (clos__classp(this->asSmartPtr())) {
+      ss << " ";
+      ss << this->_classNameAsString();
+    }
   } else {
     ss << "<ADD SUPPORT FOR INSTANCE _CLASS=" << _rep_(this->_Class);
   }

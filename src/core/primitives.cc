@@ -1497,7 +1497,7 @@ CL_DEFUN T_mv core__sequence_start_end(T_sp sequence, Fixnum_sp start, T_sp end)
     TYPE_ERROR_INDEX_VARIABLE("end[~a] must be <= length of sequence[~a]", sequence, end, len);
   }
   if (unbox_fixnum(fnend) < unbox_fixnum(start)) {
-    SIMPLE_PROGRAM_ERROR_2_ARGS("end[~d] is less than start[~d]", end, start);
+    SIMPLE_PROGRAM_ERROR("end[~d] is less than start[~d]", end, start);
   }
   return (Values(start, fnend, make_fixnum(len)));
 };

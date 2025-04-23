@@ -34,7 +34,7 @@ namespace core {
 #define BC_HEADER_SIZE 16
 
 #define BC_VERSION_MAJOR 0
-#define BC_VERSION_MINOR 15
+#define BC_VERSION_MINOR 16
 
 // versions are std::arrays so that we can compare them.
 typedef std::array<uint16_t, 2> BCVersion;
@@ -213,8 +213,7 @@ struct loadltv {
   }
 
   // Read a UTF-8 continuation byte or signal an error if invalid.
-  inline uint8_t read_continuation_byte() {
-    uint8_t byte = read_u8();
+  inline uint8_t continuation_byte(uint8_t byte) {
     if (byte >> 6 == 0b10)
       return byte & 0b111111;
     else
@@ -227,14 +226,18 @@ struct loadltv {
     if (head >> 7 == 0)
       return head;
     else if (head >> 5 == 0b110)
-      return (claspCharacter)(head & 0b11111) << 6 | read_continuation_byte();
+      return (claspCharacter)(head & 0b11111) << 6
+        | continuation_byte(read_u8());
     else if (head >> 4 == 0b1110)
-      return (claspCharacter)(head & 0b1111) << 12 | (claspCharacter)read_continuation_byte() << 6 | read_continuation_byte();
+      return (claspCharacter)(head & 0b1111) << 12
+        | (claspCharacter)continuation_byte(read_u8()) << 6
+        | continuation_byte(read_u8());
     else if (head >> 3 == 0b11110)
-      return (claspCharacter)(head & 0b111) << 18 | (claspCharacter)read_continuation_byte() << 12 |
-             (claspCharacter)read_continuation_byte() << 6 | read_continuation_byte();
-    else
-      SIMPLE_ERROR("Invalid UTF-8 in FASL: invalid header byte {:02x}", head);
+      return (claspCharacter)(head & 0b111) << 18
+        | (claspCharacter)continuation_byte(read_u8()) << 12
+        | (claspCharacter)continuation_byte(read_u8()) << 6
+        | continuation_byte(read_u8());
+    else SIMPLE_ERROR("Invalid UTF-8 in FASL: invalid header byte {:02x}", head);
   }
 
   inline uint8_t read_opcode() { return read_u8(); }
@@ -286,14 +289,69 @@ struct loadltv {
 
   void op_cons() { set_ltv(Cons_O::create(nil<T_O>(), nil<T_O>()), next_index()); }
 
-  void op_rplaca() {
+  void op_init_cons() {
     Cons_sp c = gc::As<Cons_sp>(get_ltv(read_index()));
     c->rplaca(get_ltv(read_index()));
+    c->rplacd(get_ltv(read_index()));
   }
 
-  void op_rplacd() {
-    Cons_sp c = gc::As<Cons_sp>(get_ltv(read_index()));
-    c->rplacd(get_ltv(read_index()));
+  void op_base_string() {
+    uint16_t len = read_u16();
+    SimpleBaseString_sp str = SimpleBaseString_O::makeSize(len);
+    // careful, we're directly writing into the array data here
+    unsigned char* data = (unsigned char*)(str->rowMajorAddressOfElement_(0));
+    stream_read_byte8(_stream, data, len);
+    set_ltv(str, next_index());
+  }
+
+  // Read a continuation byte from a buffer.
+  inline uint8_t buf_u8(unsigned char* bytes, size_t& index, size_t blen) {
+    if (index >= blen)
+      // FIXME: better error?
+      SIMPLE_ERROR("Invalid UTF-8 in FASL: Expected continuation byte, got EOF");
+    return bytes[index++];
+  }
+
+  // Read a UTF-8 encoded character from a buffer.
+  // duplicate code with read_utf8(). too bad, so sad
+  inline claspCharacter buf_u8_char(unsigned char* bytes,
+                                    size_t& index, size_t blen) {
+    uint8_t head = bytes[index++];
+    if (head >> 7 == 0) return head;
+    else if (head >> 5 == 0b110)
+      return (claspCharacter)(head & 0b11111) << 6
+        | continuation_byte(buf_u8(bytes, index, blen));
+    else if (head >> 4 == 0b1110)
+      return (claspCharacter)(head & 0b1111) << 12
+        | (claspCharacter)continuation_byte(buf_u8(bytes, index, blen)) << 6
+        | continuation_byte(buf_u8(bytes, index, blen));
+    else if (head >> 3 == 0b11110)
+      return (claspCharacter)(head & 0b111) << 18
+        | (claspCharacter)continuation_byte(buf_u8(bytes, index, blen)) << 12
+        | (claspCharacter)continuation_byte(buf_u8(bytes, index, blen)) << 6
+        | continuation_byte(buf_u8(bytes, index, blen));
+    else SIMPLE_ERROR("Invalid UTF-8 in FASL: invalid header byte {:02x}", head);
+  }
+
+  // Decode a utf8 byte array into a character string.
+  // Return the number of characters.
+  size_t fill_utf8_string(SimpleCharacterString_sp str,
+                          unsigned char* bytes, size_t blen) {
+    size_t len = 0;
+    size_t bindex = 0;
+    while (bindex < blen)
+      (*str)[len++] = buf_u8_char(bytes, bindex, blen);
+    return len;
+  }
+
+  void op_utf8_string() {
+    uint16_t blen = read_u16();
+    unsigned char* bytes = (unsigned char*)malloc(blen);
+    stream_read_byte8(_stream, bytes, blen);
+    SimpleCharacterString_sp buf = SimpleCharacterString_O::make(blen); // max
+    size_t len = fill_utf8_string(buf, bytes, blen);
+    free(bytes);
+    set_ltv(buf->unsafe_subseq(0, len), next_index());
   }
 
   T_sp decode_uaet(uint8_t code) {
@@ -523,11 +581,11 @@ struct loadltv {
     fill_array(arr, total, packing_code);
   }
 
-  void op_srma() {
+  void op_init_array() {
     Array_sp arr = gc::As<Array_sp>(get_ltv(read_index()));
-    size_t aindex = read_u16();
-    T_sp value = get_ltv(read_index());
-    arr->rowMajorAset(aindex, value);
+    size_t ats = arr->arrayTotalSize();
+    for (size_t i = 0; i < ats; ++i)
+      arr->rowMajorAset(i, get_ltv(read_index()));
   }
 
   void op_hasht() {
@@ -557,11 +615,12 @@ struct loadltv {
             index);
   }
 
-  void op_shash() {
+  void op_init_hasht() {
     HashTable_sp ht = gc::As<HashTable_sp>(get_ltv(read_index()));
-    T_sp key = get_ltv(read_index());
-    T_sp val = get_ltv(read_index());
-    ht->hash_table_setf_gethash(key, val);
+    uint32_t count = read_u32();
+    for (size_t i = 0; i < count; ++i)
+      ht->hash_table_setf_gethash(get_ltv(read_index()),
+                                  get_ltv(read_index()));
   }
 
   void op_sb64() {
@@ -1036,24 +1095,27 @@ struct loadltv {
     case bytecode_ltv::cons:
       op_cons();
       break;
-    case bytecode_ltv::rplaca:
-      op_rplaca();
+    case bytecode_ltv::init_cons:
+      op_init_cons();
       break;
-    case bytecode_ltv::rplacd:
-      op_rplacd();
+    case bytecode_ltv::base_string:
+      op_base_string();
+      break;
+    case bytecode_ltv::utf8_string:
+      op_utf8_string();
       break;
     case bytecode_ltv::make_array:
       op_array();
       break;
-    case bytecode_ltv::setf_row_major_aref:
-      op_srma();
-      break; // (setf row-major-aref)
+    case bytecode_ltv::init_array:
+      op_init_array();
+      break;
     case bytecode_ltv::make_hash_table:
       op_hasht();
       break; // make-hash-table
-    case bytecode_ltv::setf_gethash:
-      op_shash();
-      break; // (setf gethash)
+    case bytecode_ltv::init_hash_table:
+      op_init_hasht();
+      break;
     case bytecode_ltv::make_sb64:
       op_sb64();
       break;

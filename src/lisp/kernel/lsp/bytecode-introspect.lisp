@@ -22,16 +22,14 @@
          (key-count-info
            (prog1 (cmpref::bc-unsigned bytecode ip nbytes)
              (incf ip nbytes)))
-         (key-count (ldb (byte (1- (* 8 nbytes)) 0) key-count-info))
-         (aokp (logbitp (1- (* 8 nbytes)) key-count-info))
+         (key-count (ash key-count-info -1))
+         (aokp (logbitp 0 key-count-info))
          (key-literal-start
            (prog1 (cmpref::bc-unsigned bytecode ip nbytes)
-             (incf ip nbytes)))
-         (key-frame-start (cmpref::bc-unsigned bytecode ip nbytes)))
+             (incf ip nbytes))))
     (list (cons :operand more-start)
           (cons :key-count-info (cons key-count aokp))
-          (cons :keys key-literal-start)
-          (cons :operand key-frame-start))))
+          (cons :keys key-literal-start))))
 
 ;;; Compute a list of annotations that start at the given IP.
 ;;; Return the list, and the index of the next annotation.
@@ -73,7 +71,7 @@
                           (if (eq ,mnemonic :parse-key-args)
                               (let ((nbytes (if ,longp 2 1)))
                                 (prog1 (collect-pka-args ,bsym ,ip nbytes)
-                                  (incf ,ip (* 4 nbytes))))
+                                  (incf ,ip (* 3 nbytes))))
                               (loop for argspec
                                       in (if ,longp (fourth ,op) (third ,op))
                                     for nbytes = (logandc2 argspec

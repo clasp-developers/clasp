@@ -472,13 +472,13 @@ public:
   void emit_exit_or_jump(LexicalInfo_sp info, Label_sp label) const;
   void maybe_emit_entry_close(LexicalInfo_sp info) const;
   void emit_catch(Label_sp label) const;
-  void emit_jump_if_supplied(Label_sp label, size_t indx) const;
+  void emit_jump_if_supplied(Label_sp label) const;
   void reference_lexical_info(LexicalInfo_sp info) const;
   void maybe_emit_make_cell(LexicalVarInfo_sp info) const;
   void maybe_emit_cell_ref(LexicalVarInfo_sp info) const;
   void maybe_emit_encage(LexicalVarInfo_sp info) const;
   void emit_lexical_set(LexicalVarInfo_sp info) const;
-  void emit_parse_key_args(size_t max_count, size_t key_count, size_t key_start, size_t indx, bool aokp) const;
+  void emit_parse_key_args(size_t max_count, size_t key_count, size_t key_start, bool aokp) const;
   void emit_bind(size_t count, size_t offset) const;
   void emit_call(size_t argcount) const;
   void emit_mv_call() const;
@@ -629,18 +629,14 @@ class JumpIfSuppliedFixup_O : public LabelFixup_O {
   LISP_CLASS(comp, CompPkg, JumpIfSuppliedFixup_O, "JumpIfSuppliedFixup", LabelFixup_O);
 
 public:
-  uint16_t _index;
-
-public:
-  JumpIfSuppliedFixup_O(Label_sp label, uint16_t index) : LabelFixup_O(label, 3), _index(index) {}
+  JumpIfSuppliedFixup_O(Label_sp label) : LabelFixup_O(label, 3) {}
   CL_LISPIFY_NAME(JumpIfSuppliedFixup/make)
   CL_DEF_CLASS_METHOD
-  static JumpIfSuppliedFixup_sp make(Label_sp label, uint16_t nindex) {
-    return gctools::GC<JumpIfSuppliedFixup_O>::allocate<gctools::RuntimeStage>(label, nindex);
+  static JumpIfSuppliedFixup_sp make(Label_sp label) {
+    return gctools::GC<JumpIfSuppliedFixup_O>::allocate<gctools::RuntimeStage>(label);
   }
 
 public:
-  uint16_t iindex() { return this->_index; }
   virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
   virtual size_t resize();
 };

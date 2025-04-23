@@ -170,7 +170,7 @@ public:
   virtual Mapping_sp realloc(size_t sz) const { return make(sz); }
   virtual gctools::KVPair get(size_t i) const {
     auto p = _Mapping.get(i);
-    return gctools::KVPair(p.value, p.key);
+    return gctools::KVPair{p.value, p.key};
   }
   virtual void setValue(size_t i, T_sp k, T_sp v) {
     // GC note: I think we don't have to go out of our way to keep the old

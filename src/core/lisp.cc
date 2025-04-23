@@ -1585,11 +1585,6 @@ CL_DEFUN T_sp core__setf_find_class(T_sp newValue, Symbol_sp name) {
   name->setf_find_class(newValue);
   return newValue;
 #else
-  if (!newValue.nilp() && !clos__classp(newValue)) {
-    SIMPLE_ERROR("Classes in cando have to be subclasses of Class or NIL unlike ECL which uses Instances to represent classes - "
-                 "while trying to (setf find-class) of {} you gave: {}",
-                 _rep_(name), _rep_(newValue));
-  }
   if (_lisp->bootClassTableIsValid()) {
     if (newValue.nilp()) {
       printf("%s:%d Trying to (setf-find-class nil %s) when bootClassTableIsValid (while boostrapping)\n", __FILE__, __LINE__,
