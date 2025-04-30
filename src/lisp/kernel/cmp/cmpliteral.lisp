@@ -351,16 +351,20 @@ rewrite the slot in the literal table to store a closure."
 
 (defun ltv/array (array index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp))
-  (let ((val (add-creator "ltvc_make_array" index array
+  ;; We strip all non-simplicity out of arrays. As we do so it's important that we treat
+  ;; arrays with fill pointers as ending at that fill pointer - we don't want to restore
+  ;; the junk past the fill pointer into a simple array.
+  (multiple-value-bind (dims total-size)
+      (if (array-has-fill-pointer-p array)
+          (let ((L (length array))) (values (list L) L))
+          (values (array-dimensions array) (array-total-size array)))
+    (let ((val (add-creator "ltvc_make_array" index array
                           (load-time-reference-literal (array-element-type array) read-only-p :toplevelp nil)
-                          (load-time-reference-literal (array-dimensions array) read-only-p :toplevelp nil))))
-    (let* ((total-size (if (array-has-fill-pointer-p array)
-                           (length array)
-                           (array-total-size array))))
+                          (load-time-reference-literal dims read-only-p :toplevelp nil))))
       (dotimes (i total-size)
         (add-side-effect-call "ltvc_setf_row_major_aref" val i
-                              (load-time-reference-literal (row-major-aref array i) read-only-p :toplevelp nil))))
-    val))
+                              (load-time-reference-literal (row-major-aref array i) read-only-p :toplevelp nil)))
+      val)))
 
 (defun ltv/hash-table (hash-table index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp))
