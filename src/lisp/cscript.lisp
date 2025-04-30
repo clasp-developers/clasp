@@ -44,7 +44,6 @@
              #~"kernel/cmp/codegen-special-form.lisp"
              #~"kernel/cmp/compile.lisp"
              #~"kernel/cmp/external-clang.lisp"
-             #~"kernel/cmp/cmpname.lisp"
              #~"kernel/cmp/bytecode-machines.lisp"
              #~"kernel/cmp/bytecode-reference.lisp"
              #@"base-translations.lisp"
