@@ -35,8 +35,7 @@
 
 (defun emf-maybe-compile (form)
   (if (or *avoid-compiling* (not cmp:*cleavir-compile-hook*))
-      (let ((core:*use-interpreter-for-eval* t))
-        (coerce form 'function))
+      (coerce form 'function)
       (let ((*avoid-compiling* t))
         (compile nil form))))
 

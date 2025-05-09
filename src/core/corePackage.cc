@@ -185,7 +185,6 @@ SYMBOL_EXPORT_SC_(CorePkg, STARserializerArchiveSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARterminate_hooksSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARtopLevelCommandHookSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARuseBuildForkRedirectSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, STARuseInterpreterForEvalSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARuseParallelBuildSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _BANG_unbound_BANG_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_WNOHANG_PLUS_);
@@ -589,7 +588,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARdebugEvalSTAR->defparameter(nil<T_O>());
   _sym_STARdebugStartupSTAR->defparameter(nil<T_O>());
   _sym_STARdebugInterpretedFunctionsSTAR->defparameter(nil<T_O>());
-  _sym_STARuseInterpreterForEvalSTAR->defparameter(nil<T_O>()); // _lisp->_true());
   _sym_STARcxxDocumentationSTAR->defparameter(nil<T_O>());
   _sym__PLUS_class_name_to_lisp_name_PLUS_->defparameter(nil<T_O>());
   _sym__PLUS_type_header_value_map_PLUS_->defparameter(nil<T_O>());

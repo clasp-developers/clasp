@@ -15,8 +15,7 @@
        (clos:finalize-inheritance class))
      ;; bclasp-compile because cclasp is full of make-instance
      ;;#+(or)
-     (let ((core:*use-interpreter-for-eval* t)
-           (cmp:*cleavir-compile-hook* nil))
+     (let ((cmp:*cleavir-compile-hook* nil))
        (coerce (constructor-form class class-form keys) 'function))
      #+(or)
      (cmp:bclasp-compile nil (constructor-form class class-form keys)))))

@@ -29,22 +29,21 @@
 (defun sys::standard-toplevel ()
   (ext:lock-package "CORE")
   
-  (let ((core:*use-interpreter-for-eval* nil))
-    #-staging (when (ext:getenv "CLASP_AUTOCOMPILATION")
-                (funcall 'ext:start-autocompilation))
-    (case (core:startup-type)
-      ((:snapshot-file :embedded-snapshot)
-       (sys::load-foreign-libraries))
-      (otherwise
-       (core:maybe-load-clasprc)
-       (sys::load-extensions)))
-    (sys::call-initialize-hooks)
-    (unwind-protect
-        (progn
-          (core:process-command-line-load-eval-sequence)
-          (if (core:is-interactive-lisp)
-              (core:top-level)
-              (core:exit 0)))
-      (sys::call-terminate-hooks))))
+  #-staging (when (ext:getenv "CLASP_AUTOCOMPILATION")
+              (funcall 'ext:start-autocompilation))
+  (case (core:startup-type)
+    ((:snapshot-file :embedded-snapshot)
+     (sys::load-foreign-libraries))
+    (otherwise
+     (core:maybe-load-clasprc)
+     (sys::load-extensions)))
+  (sys::call-initialize-hooks)
+  (unwind-protect
+       (progn
+         (core:process-command-line-load-eval-sequence)
+         (if (core:is-interactive-lisp)
+             (core:top-level)
+             (core:exit 0)))
+    (sys::call-terminate-hooks)))
 
 (setf ext:*toplevel-hook* 'sys::standard-toplevel)
