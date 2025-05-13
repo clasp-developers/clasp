@@ -100,7 +100,6 @@ bool core__executableP(T_sp obj);
 bool core__external_object_p(T_sp obj);
 bool core__fixnump(T_sp obj);
 bool core__interpreted_function_p(T_sp obj);
-bool core__lambda_list_handler_p(T_sp obj);
 bool core__logical_pathname_p(T_sp obj);
 bool core__long_float_p(T_sp obj);
 bool core__pointerp(T_sp obj);
