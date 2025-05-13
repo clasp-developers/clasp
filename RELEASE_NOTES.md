@@ -4,6 +4,7 @@
 * Weak-value and weak-key-and-value hash tables, as well as an interface
   for weak-key-or-value tables, although at present they are actually
   strong tables in practice.
+* `ext:macroexpand-all` macroexpands a form and its subforms.
 
 ## Fixed
 * Weak pointers and weak hash tables survive snapshot save/load.
