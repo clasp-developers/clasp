@@ -92,7 +92,7 @@ Clasp reports IGNORE declarations on local functions analogously to variables."
         ;; Make sure we're not doing an illegal shadow.
         for info = (env:variable-info clasp-cleavir:*clasp-system*
                                       env name)
-        do (etypecase info
+        do (typecase info
              (env:constant-variable-info
               (cerror "Bind it anyway."
                       'cleavir-cst-to-ast::symbol-macro-names-constant

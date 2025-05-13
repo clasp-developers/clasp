@@ -152,6 +152,7 @@
              #~"kernel/lsp/process.lisp"
              #~"kernel/lsp/encodings.lisp"
              #~"kernel/lsp/cltl2.lisp"
+             #~"kernel/lsp/macroexpand-all.lisp"
              #~"kernel/lsp/xref.lisp"
              #@"base-immutable.lisp"
              #~"kernel/stage/base/2-end.lisp"
