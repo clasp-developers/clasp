@@ -1,12 +1,12 @@
 BootStrap: docker
 From: ghcr.io/yitzchak/archlinux-makepkg:latest
 
-%files
-    $HOME/Downloads/UDB-x86-8.1.0 /downloads/udb
+#%files
+#    $HOME/Downloads/UDB-x86-8.1.0 /downloads/udb
 
 %post
     pacman -Syu --noconfirm binutils inetutils boost clang gmp fmt libunwind llvm ninja sbcl jupyterlab emacs openssh netcdf expat gocryptfs nodejs npm strace
-    (cd /downloads/udb; make install)
+#    (cd /downloads/udb; make install)
     cd /mnt
     ./koga --reproducible-build --extensions=cando --build-mode=bytecode-faso --llvm-config="/usr/bin/llvm-config" --build-path=build-apptainer/
     ninja -C build-apptainer
