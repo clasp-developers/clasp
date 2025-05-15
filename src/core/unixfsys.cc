@@ -1651,6 +1651,45 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
   return filename;
 }
 
+CL_LAMBDA(dir mode);
+CL_DECLARE();
+CL_DOCSTRING(R"dx(ensure-directory is like si:mkdir but it doesn't signal an error if the directory exists.
+Return NIL if the directory could not be created.)dx");
+DOCGROUP(clasp);
+CL_DEFUN T_sp core__ensure_directory(T_sp directory, T_sp mode) {
+  int modeint = 0;
+  int ok;
+  String_sp filename = coerce::stringDesignator(directory);
+  if (mode.fixnump()) {
+    Fixnum_sp fnMode(gc::As<Fixnum_sp>(mode));
+    modeint = unbox_fixnum(fnMode);
+    if (modeint < 0 || modeint > 0777) {
+      ERROR_WRONG_TYPE_NTH_ARG(core::_sym_mkdir, 2, mode, Integer_O::makeIntegerType(0, 0777));
+    }
+  }
+  {
+    /* Ensure a clean string, without trailing slashes,
+     * and null terminated. */
+    int last = cl__length(filename);
+    if (last > 1) {
+      claspCharacter c = clasp_as_claspCharacter(cl__char(filename, last - 1));
+      if (IS_DIR_SEPARATOR(c))
+        last--;
+    }
+    filename = gc::As_unsafe<String_sp>(filename->subseq(0, make_fixnum(last)));
+  }
+#if defined(CLASP_MS_WINDOWS_HOST)
+  ok = mkdir((char*)filename->c_str());
+#else
+  ok = mkdir((char*)filename->get_path_string().c_str(), modeint);
+#endif
+
+  if (UNLIKELY(ok < 0)) {
+    return nil<T_O>();
+  }
+  return filename;
+}
+
 CL_LAMBDA(name value &optional (overwrite t));
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Set environment variable NAME to VALUE)dx");
