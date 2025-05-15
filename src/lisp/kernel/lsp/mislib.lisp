@@ -49,21 +49,21 @@ successfully, T is returned, else error."
 
 (defun do-time (closure)
   (let* ((real-start (get-internal-real-time))
-	 (run-start (get-internal-run-time))
+         (run-start (get-internal-run-time))
          (start-unwinds (gctools:thread-local-unwind-counter))
          end-unwinds
          clasp-bytes-start clasp-bytes-end
-	 real-end
-	 run-end)
+         real-end
+         run-end)
     ;; Garbage collection forces counters to be updated
     (multiple-value-setq (clasp-bytes-start)
       (gctools:bytes-allocated))
     (multiple-value-prog1
-	(funcall closure)
+        (funcall closure)
       (multiple-value-setq (clasp-bytes-end)
         (gctools:bytes-allocated))
       (setq run-end (get-internal-run-time)
-	    real-end (get-internal-real-time)
+            real-end (get-internal-real-time)
             )
       (setf end-unwinds (gctools:thread-local-unwind-counter))
       (core:fmt *trace-output* "Time real({:.3f} secs) run({:.3f} secs) consed({} bytes) unwinds({})%N"
@@ -98,9 +98,9 @@ Evaluates FORM, outputs the realtime and runtime used for the evaluation to
 
 (defun recode-universal-time (sec min hour day month year tz dst)
   (let ((days (+ (if (and (leap-year-p year) (> month 2)) 1 0)
-		 (1- day)
-		 (svref month-startdays (1- month))
-		 (number-of-days-from-1900 year))))
+                 (1- day)
+                 (svref month-startdays (1- month))
+                 (number-of-days-from-1900 year))))
     (+ sec (* 60 (+ min (* 60 (+ tz dst hour (* 24 days))))))))
 
 #-clasp-min
@@ -144,13 +144,13 @@ DECODED-TIME."
         (incf year))
       (when (leap-year-p year)
         (cond ((= day 60) (setf month 2 day 29))
-	      ((> day 60) (decf day))))
+              ((> day 60) (decf day))))
       (unless month
         (setq month (position day month-startdays :test #'<=)
-	      day (- day (svref month-startdays (1- month)))))
+              day (- day (svref month-startdays (1- month)))))
       (if (and (not tz-p) (daylight-saving-time-p orig-ut year))
-	  (setf tz-p t dstp t)
-	  (return (values sec min hour day month year dow dstp tz))))))
+          (setf tz-p t dstp t)
+          (return (values sec min hour day month year dow dstp tz))))))
 
 (defun encode-universal-time (sec min hour day month year
                               &optional (tz (get-local-time-zone) tz-p))
@@ -162,18 +162,18 @@ GET-DECODED-TIME."
   (when (<= 0 year 99)
     ;; adjust to year in the century within 50 years of this year
     (multiple-value-bind (sec min hour day month this-year dow dstp tz)
-	(get-decoded-time)
+        (get-decoded-time)
       (declare (ignore sec min hour day month dow dstp tz))
       (incf year (* 100 (ceiling (- this-year year 50) 100)))))
   (let ((dst 0))
     (unless tz-p
       (when (daylight-saving-time-p (recode-universal-time sec min hour day month year tz -1) year)
-	;; assume DST applies, and check if at corresponging UT it applies.
-	;; There is an ambiguity between midnight and 1 o'clock on the day
-	;; when time reverts from DST to solar:
-	;; 12:01 on that day could be either 11:01 UT (before the switch) or
-	;; 12:01 UT (after the switch). We opt for the former.
-	(setf dst -1)))
+        ;; assume DST applies, and check if at corresponging UT it applies.
+        ;; There is an ambiguity between midnight and 1 o'clock on the day
+        ;; when time reverts from DST to solar:
+        ;; 12:01 on that day could be either 11:01 UT (before the switch) or
+        ;; 12:01 UT (after the switch). We opt for the former.
+        (setf dst -1)))
     (recode-universal-time sec min hour day month year tz dst)))
 
 (defun daylight-saving-time-p (universal-time year)
