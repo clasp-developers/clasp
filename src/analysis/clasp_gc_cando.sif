@@ -682,18 +682,6 @@
              :offset-base-ctype "chem::EnergyComponent_O" :layout-offset-field-names ("_Enabled")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyComponent_O" :layout-offset-field-names ("_Scale")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyComponent_O"
-             :layout-offset-field-names ("_ErrorThreshold")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyComponent_O"
-             :layout-offset-field-names ("_DebugEnergy")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::EnergyComponent_O"
-             :layout-offset-field-names ("_Debug_NumberOfTermsToCalculate")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::StringOutputStream_O>"
-             :offset-base-ctype "chem::EnergyComponent_O" :layout-offset-field-names ("_DebugLog")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergyComponent_O"
              :layout-offset-field-names ("_Evaluations")}
@@ -704,17 +692,6 @@
              :offset-base-ctype "chem::EnergyStretch_O" :layout-offset-field-names ("_Enabled")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyStretch_O" :layout-offset-field-names ("_Scale")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyStretch_O"
-             :layout-offset-field-names ("_ErrorThreshold")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyStretch_O" :layout-offset-field-names ("_DebugEnergy")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::EnergyStretch_O"
-             :layout-offset-field-names ("_Debug_NumberOfTermsToCalculate")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::StringOutputStream_O>"
-             :offset-base-ctype "chem::EnergyStretch_O" :layout-offset-field-names ("_DebugLog")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergyStretch_O" :layout-offset-field-names ("_Evaluations")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
@@ -735,19 +712,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyRigidBodyComponent_O"
              :layout-offset-field-names ("_Scale")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyRigidBodyComponent_O"
-             :layout-offset-field-names ("_ErrorThreshold")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyRigidBodyComponent_O"
-             :layout-offset-field-names ("_DebugEnergy")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::EnergyRigidBodyComponent_O"
-             :layout-offset-field-names ("_Debug_NumberOfTermsToCalculate")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::StringOutputStream_O>"
-             :offset-base-ctype "chem::EnergyRigidBodyComponent_O"
-             :layout-offset-field-names ("_DebugLog")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergyRigidBodyComponent_O"
              :layout-offset-field-names ("_Evaluations")}
@@ -762,19 +726,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyRigidBodyStaple_O"
              :layout-offset-field-names ("_Scale")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyRigidBodyStaple_O"
-             :layout-offset-field-names ("_ErrorThreshold")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyRigidBodyStaple_O"
-             :layout-offset-field-names ("_DebugEnergy")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::EnergyRigidBodyStaple_O"
-             :layout-offset-field-names ("_Debug_NumberOfTermsToCalculate")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::StringOutputStream_O>"
-             :offset-base-ctype "chem::EnergyRigidBodyStaple_O"
-             :layout-offset-field-names ("_DebugLog")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergyRigidBodyStaple_O"
              :layout-offset-field-names ("_Evaluations")}
@@ -793,19 +744,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyRigidBodyNonbond_O"
              :layout-offset-field-names ("_Scale")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyRigidBodyNonbond_O"
-             :layout-offset-field-names ("_ErrorThreshold")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyRigidBodyNonbond_O"
-             :layout-offset-field-names ("_DebugEnergy")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::EnergyRigidBodyNonbond_O"
-             :layout-offset-field-names ("_Debug_NumberOfTermsToCalculate")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::StringOutputStream_O>"
-             :offset-base-ctype "chem::EnergyRigidBodyNonbond_O"
-             :layout-offset-field-names ("_DebugLog")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergyRigidBodyNonbond_O"
              :layout-offset-field-names ("_Evaluations")}
@@ -847,19 +785,6 @@
              :offset-base-ctype "chem::EnergyOutOfZPlane_O" :layout-offset-field-names ("_Enabled")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyOutOfZPlane_O" :layout-offset-field-names ("_Scale")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyOutOfZPlane_O"
-             :layout-offset-field-names ("_ErrorThreshold")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyOutOfZPlane_O"
-             :layout-offset-field-names ("_DebugEnergy")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::EnergyOutOfZPlane_O"
-             :layout-offset-field-names ("_Debug_NumberOfTermsToCalculate")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::StringOutputStream_O>"
-             :offset-base-ctype "chem::EnergyOutOfZPlane_O"
-             :layout-offset-field-names ("_DebugLog")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergyOutOfZPlane_O"
              :layout-offset-field-names ("_Evaluations")}
@@ -880,19 +805,6 @@
              :layout-offset-field-names ("_Enabled")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergySketchNonbond_O" :layout-offset-field-names ("_Scale")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergySketchNonbond_O"
-             :layout-offset-field-names ("_ErrorThreshold")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergySketchNonbond_O"
-             :layout-offset-field-names ("_DebugEnergy")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::EnergySketchNonbond_O"
-             :layout-offset-field-names ("_Debug_NumberOfTermsToCalculate")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::StringOutputStream_O>"
-             :offset-base-ctype "chem::EnergySketchNonbond_O"
-             :layout-offset-field-names ("_DebugLog")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergySketchNonbond_O"
              :layout-offset-field-names ("_Evaluations")}
@@ -922,19 +834,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyDihedralRestraint_O"
              :layout-offset-field-names ("_Scale")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyDihedralRestraint_O"
-             :layout-offset-field-names ("_ErrorThreshold")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyDihedralRestraint_O"
-             :layout-offset-field-names ("_DebugEnergy")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::EnergyDihedralRestraint_O"
-             :layout-offset-field-names ("_Debug_NumberOfTermsToCalculate")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::StringOutputStream_O>"
-             :offset-base-ctype "chem::EnergyDihedralRestraint_O"
-             :layout-offset-field-names ("_DebugLog")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergyDihedralRestraint_O"
              :layout-offset-field-names ("_Evaluations")}
@@ -956,19 +855,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyChiralRestraint_O"
              :layout-offset-field-names ("_Scale")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyChiralRestraint_O"
-             :layout-offset-field-names ("_ErrorThreshold")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyChiralRestraint_O"
-             :layout-offset-field-names ("_DebugEnergy")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::EnergyChiralRestraint_O"
-             :layout-offset-field-names ("_Debug_NumberOfTermsToCalculate")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::StringOutputStream_O>"
-             :offset-base-ctype "chem::EnergyChiralRestraint_O"
-             :layout-offset-field-names ("_DebugLog")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergyChiralRestraint_O"
              :layout-offset-field-names ("_Evaluations")}
@@ -990,19 +876,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyPointToLineRestraint_O"
              :layout-offset-field-names ("_Scale")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyPointToLineRestraint_O"
-             :layout-offset-field-names ("_ErrorThreshold")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyPointToLineRestraint_O"
-             :layout-offset-field-names ("_DebugEnergy")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::EnergyPointToLineRestraint_O"
-             :layout-offset-field-names ("_Debug_NumberOfTermsToCalculate")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::StringOutputStream_O>"
-             :offset-base-ctype "chem::EnergyPointToLineRestraint_O"
-             :layout-offset-field-names ("_DebugLog")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergyPointToLineRestraint_O"
              :layout-offset-field-names ("_Evaluations")}
@@ -1023,18 +896,6 @@
              :offset-base-ctype "chem::EnergyDihedral_O" :layout-offset-field-names ("_Enabled")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyDihedral_O" :layout-offset-field-names ("_Scale")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyDihedral_O"
-             :layout-offset-field-names ("_ErrorThreshold")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyDihedral_O"
-             :layout-offset-field-names ("_DebugEnergy")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::EnergyDihedral_O"
-             :layout-offset-field-names ("_Debug_NumberOfTermsToCalculate")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::StringOutputStream_O>"
-             :offset-base-ctype "chem::EnergyDihedral_O" :layout-offset-field-names ("_DebugLog")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergyDihedral_O"
              :layout-offset-field-names ("_Evaluations")}
@@ -1053,17 +914,6 @@
              :offset-base-ctype "chem::EnergyNonbond_O" :layout-offset-field-names ("_Enabled")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyNonbond_O" :layout-offset-field-names ("_Scale")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyNonbond_O"
-             :layout-offset-field-names ("_ErrorThreshold")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyNonbond_O" :layout-offset-field-names ("_DebugEnergy")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::EnergyNonbond_O"
-             :layout-offset-field-names ("_Debug_NumberOfTermsToCalculate")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::StringOutputStream_O>"
-             :offset-base-ctype "chem::EnergyNonbond_O" :layout-offset-field-names ("_DebugLog")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergyNonbond_O" :layout-offset-field-names ("_Evaluations")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
@@ -1153,19 +1003,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_Scale")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
-             :layout-offset-field-names ("_ErrorThreshold")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
-             :layout-offset-field-names ("_DebugEnergy")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
-             :layout-offset-field-names ("_Debug_NumberOfTermsToCalculate")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::StringOutputStream_O>"
-             :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
-             :layout-offset-field-names ("_DebugLog")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_Evaluations")}
@@ -1264,19 +1101,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyAnchorRestraint_O"
              :layout-offset-field-names ("_Scale")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyAnchorRestraint_O"
-             :layout-offset-field-names ("_ErrorThreshold")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyAnchorRestraint_O"
-             :layout-offset-field-names ("_DebugEnergy")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::EnergyAnchorRestraint_O"
-             :layout-offset-field-names ("_Debug_NumberOfTermsToCalculate")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::StringOutputStream_O>"
-             :offset-base-ctype "chem::EnergyAnchorRestraint_O"
-             :layout-offset-field-names ("_DebugLog")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergyAnchorRestraint_O"
              :layout-offset-field-names ("_Evaluations")}
@@ -1298,19 +1122,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyFixedNonbondRestraint_O"
              :layout-offset-field-names ("_Scale")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyFixedNonbondRestraint_O"
-             :layout-offset-field-names ("_ErrorThreshold")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyFixedNonbondRestraint_O"
-             :layout-offset-field-names ("_DebugEnergy")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::EnergyFixedNonbondRestraint_O"
-             :layout-offset-field-names ("_Debug_NumberOfTermsToCalculate")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::StringOutputStream_O>"
-             :offset-base-ctype "chem::EnergyFixedNonbondRestraint_O"
-             :layout-offset-field-names ("_DebugLog")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergyFixedNonbondRestraint_O"
              :layout-offset-field-names ("_Evaluations")}
@@ -1354,19 +1165,6 @@
              :layout-offset-field-names ("_Enabled")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergySketchStretch_O" :layout-offset-field-names ("_Scale")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergySketchStretch_O"
-             :layout-offset-field-names ("_ErrorThreshold")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergySketchStretch_O"
-             :layout-offset-field-names ("_DebugEnergy")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::EnergySketchStretch_O"
-             :layout-offset-field-names ("_Debug_NumberOfTermsToCalculate")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::StringOutputStream_O>"
-             :offset-base-ctype "chem::EnergySketchStretch_O"
-             :layout-offset-field-names ("_DebugLog")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergySketchStretch_O"
              :layout-offset-field-names ("_Evaluations")}
@@ -1385,17 +1183,6 @@
              :offset-base-ctype "chem::EnergyAngle_O" :layout-offset-field-names ("_Enabled")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyAngle_O" :layout-offset-field-names ("_Scale")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::EnergyAngle_O"
-             :layout-offset-field-names ("_ErrorThreshold")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyAngle_O" :layout-offset-field-names ("_DebugEnergy")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::EnergyAngle_O"
-             :layout-offset-field-names ("_Debug_NumberOfTermsToCalculate")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::StringOutputStream_O>"
-             :offset-base-ctype "chem::EnergyAngle_O" :layout-offset-field-names ("_DebugLog")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergyAngle_O" :layout-offset-field-names ("_Evaluations")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
