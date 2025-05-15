@@ -184,75 +184,76 @@ Universal Time UT, which defaults to the current time."
   ;; therefore restrict the time to the interval that can handled by
   ;; the timezone database.
   (let* ((utc-1-1-1970 2208988800)
-	 (unix-time (- universal-time utc-1-1-1970)))
+         (unix-time (- universal-time utc-1-1-1970)))
     (cond ((minusp unix-time)
-	   ;; For dates before 1970 we shift to 1980/81 to guess the daylight
-	   ;; saving times.
-	   (setf unix-time
-		 (+ (if (leap-year-p year)
-			#.(encode-universal-time 0 0 0 1 1 1980 0)
-			#.(encode-universal-time 0 0 0 1 1 1981 0))
-		    (- universal-time (encode-universal-time 0 0 0 1 1 year 0) utc-1-1-1970))))
-	  ((not (fixnump unix-time))
-	   ;; Same if date is too big: we shift to year 2035/36, like SBCL does.
-	   (setf unix-time
-		 (+ (if (leap-year-p year)
-			#.(encode-universal-time 0 0 0 1 1 2032 0)
-			#.(encode-universal-time 0 0 0 1 1 2033 0))
-		    (- universal-time (encode-universal-time 0 0 0 1 1 year 0) utc-1-1-1970)))))
+           ;; For dates before 1970 we shift to 1980/81 to guess the daylight
+           ;; saving times.
+           (setf unix-time
+                 (+ (if (leap-year-p year)
+                        #.(encode-universal-time 0 0 0 1 1 1980 0)
+                        #.(encode-universal-time 0 0 0 1 1 1981 0))
+                    (- universal-time (encode-universal-time 0 0 0 1 1 year 0) utc-1-1-1970))))
+          ((not (fixnump unix-time))
+           ;; Same if date is too big: we shift to year 2035/36, like SBCL does.
+           (setf unix-time
+                 (+ (if (leap-year-p year)
+                        #.(encode-universal-time 0 0 0 1 1 2032 0)
+                        #.(encode-universal-time 0 0 0 1 1 2033 0))
+                    (- universal-time (encode-universal-time 0 0 0 1 1 year 0) utc-1-1-1970)))))
     #-clasp-min
     (core:unix-daylight-saving-time unix-time)))
 
 (defun get-decoded-time ()
   "Args: ()
 Returns the current day-and-time as nine values:
-	second (0 - 59)
-	minute (0 - 59)
-	hour (0 - 23)
-	date (1 - 31)
-	month (1 - 12)
-	year (A.D.)
-	day of week (0 for Mon, .. 6 for Sun)
-	daylight saving time or not (T or NIL)
-	time zone (Offset from GMT in hours)"
+        second (0 - 59)
+        minute (0 - 59)
+        hour (0 - 23)
+        date (1 - 31)
+        month (1 - 12)
+        year (A.D.)
+        day of week (0 for Mon, .. 6 for Sun)
+        daylight saving time or not (T or NIL)
+        time zone (Offset from GMT in hours)"
   (decode-universal-time (get-universal-time)))
 
 (defun ensure-directories-exist (pathname &key verbose (mode #o777))
-"Args: (ensure-directories pathname &key :verbose)
+  "Args: (ensure-directories pathname &key :verbose)
 Creates tree of directories specified by the given pathname. Outputs
-	(VALUES pathname created)
+        (VALUES pathname created)
 where CREATED is true only if we succeeded on creating all directories."
   (let* ((created nil)
-	 (full-pathname (merge-pathnames pathname))
-	 d)
+         (full-pathname (merge-pathnames pathname))
+         d)
     (when (typep full-pathname 'logical-pathname)
       (setf full-pathname (translate-logical-pathname full-pathname)))
     (when (or (wild-pathname-p full-pathname :directory)
-	      (wild-pathname-p full-pathname :host)
-	      (wild-pathname-p full-pathname :device))
+              (wild-pathname-p full-pathname :host)
+              (wild-pathname-p full-pathname :device))
       (error 'file-error :pathname pathname))
     ;; Here we have already a full pathname. We set our own
     ;; *default-pathname-defaults* to avoid that the user's value,
     ;; which may contain names or types, clobbers our computations.
     (let ((*default-pathname-defaults*
-	   (make-pathname :name nil :type nil :directory nil
-			  :defaults full-pathname)))
+            (make-pathname :name nil :type nil :directory nil
+                           :defaults full-pathname)))
       (dolist (item (pathname-directory full-pathname))
-	(setf d (nconc d (list item)))
-	(let* ((p (make-pathname :directory d :defaults *default-pathname-defaults*)))
-	  (unless (or (symbolp item) (si::file-kind p nil))
-	    (setf created t)
-	    (let ((ps (namestring p)))
-	      (when verbose
-		(format t "~%;;; Making directory ~A" ps))
-	      (si::mkdir ps mode)))))
+        (setf d (nconc d (list item)))
+        (let* ((p (make-pathname :directory d :defaults *default-pathname-defaults*)))
+          (unless (or (symbolp item) (si::file-kind p nil))
+            (setf created t)
+            (let ((ps (namestring p)))
+              (when verbose
+                (format t "~%;;; Making directory ~A" ps))
+              (unless (si:ensure-directory ps mode)
+                (setf created nil))))))
       (values pathname created))))
 
 (defmacro with-hash-table-iterator ((iterator package) &body body)
 "Syntax: (with-hash-table-iterator (iterator package) &body body)
 Loop over the elements of a hash table. ITERATOR is a lexically bound function
 that outputs three values
-	(VALUES entry-p key value)
+        (VALUES entry-p key value)
 ENTRY-P is true only if KEY and VALUE denote a pair of key and value of the
 hash table; otherwise it signals that we have reached the end of the hash table."
   `(let ((,iterator (hash-table-iterator ,package)))
