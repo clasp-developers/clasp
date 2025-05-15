@@ -350,7 +350,9 @@ namespace core {
 
 // Offsets on the VM stack. These are pushed throughout bytecode.cc,
 // e.g. the PC is pushed by call instructions, and the FP by bytecode_call.
-const size_t BYTECODE_FRAME_PC_OFFSET = 1;
+const size_t BYTECODE_FRAME_PC_OFFSET = 3;
+const size_t BYTECODE_FRAME_NARGS_OFFSET = 2;
+const size_t BYTECODE_FRAME_ARGS_OFFSET = 1;
 const size_t BYTECODE_FRAME_FP_OFFSET = 0;
 
 bool bytecode_module_contains_address_p(BytecodeModule_sp, void*);

@@ -473,7 +473,18 @@ static DebuggerFrame_sp make_bytecode_frame_from_function(BytecodeSimpleFun_sp f
   T_sp closure = (fun->environmentSize() == 0) ? (T_sp)fun : nil<T_O>();
   List_sp bindings = bytecode_bindings_for_pc(fun->code(), bpc, bfp);
   T_sp spi = bytecode_spi_for_pc(fun->code(), bpc);
-  return DebuggerFrame_O::make(fun->functionName(), Pointer_O::create(bpc), spi, fun->fdesc(), closure, nil<T_O>(), false, bindings,
+  // Grab arguments.
+  T_sp tnargs((gctools::Tagged)(*(bfp - BYTECODE_FRAME_NARGS_OFFSET)));
+  size_t nargs = tnargs.unsafe_fixnum();
+  T_O** argptr = (T_O**)*(bfp - BYTECODE_FRAME_ARGS_OFFSET);
+  ql::list largs;
+  for (size_t i = 0; i < nargs; ++i) {
+    T_O* rarg = argptr[i];
+    T_sp temp((gctools::Tagged)rarg);
+    largs << temp;
+  }
+  // Finally make the frame.
+  return DebuggerFrame_O::make(fun->functionName(), Pointer_O::create(bpc), spi, fun->fdesc(), closure, largs.cons(), true, bindings,
                                INTERN_(kw, bytecode), false);
 }
 

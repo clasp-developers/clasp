@@ -1515,6 +1515,12 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   // being unwound to.
   core::T_O** old_fp = vm._framePointer;
   core::T_O** old_sp = vm._stackPointer;
+  // Push the args and FP for debugging (see backtrace.cc)
+  // This is mildly wasteful of stack space, but when calling bytecode from
+  // non-bytecode the arguments won't be on the VM stack, so this is the
+  // best I got.
+  vm.push(vm._stackPointer, core::make_fixnum(lcc_nargs).raw_());
+  vm.push(vm._stackPointer, (core::T_O*)lcc_args);
   vm.push(vm._stackPointer, (core::T_O*)old_fp);
   core::T_O** fp = vm._framePointer = vm._stackPointer;
   core::T_O** sp = vm.push_frame(fp, nlocals);
