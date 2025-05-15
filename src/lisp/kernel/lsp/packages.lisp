@@ -185,6 +185,7 @@
             who-specializes-directly
             list-callers
             list-callees
+            macroexpand-all
             list-all-logical-hosts
             logical-host-p
             array-index

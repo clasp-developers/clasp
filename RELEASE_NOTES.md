@@ -4,12 +4,15 @@
 * Weak-value and weak-key-and-value hash tables, as well as an interface
   for weak-key-or-value tables, although at present they are actually
   strong tables in practice.
+* `ext:macroexpand-all` macroexpands a form and its subforms.
+* Arguments to bytecode functions are made available to debuggers.
 
 ## Fixed
 * Weak pointers and weak hash tables survive snapshot save/load.
 * `ext:quit` can be used from any thread, not just the initial thread.
 * Quasiquoted vectors are read correctly (#1666).
 * The bytecode compiler detects malformed bindings.
+* Literal arrays with fill pointers are not dumped with excess elements.
 
 ## Removed
 * `-z`/`--snapshot-symbols-save` command line option, occasionally used

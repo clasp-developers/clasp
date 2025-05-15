@@ -186,10 +186,8 @@ public:
   virtual bool compiledP() const;
   virtual bool builtinP() const { return false; };
   virtual T_sp sourcePosInfo() const { return nil<T_O>(); };
-  CL_DEFMETHOD T_sp functionLambdaListHandler() const { return this->lambdaListHandler(); }
   T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
   virtual T_mv functionSourcePos() const;
-  virtual T_sp lambdaListHandler() const { SUBIMP(); };
   virtual T_sp lambdaList() const { return this->fdesc()->lambdaList(); }
   virtual string __repr__() const;
 };
@@ -476,8 +474,6 @@ public:
 public:
   Closure_O(size_t capacity, SimpleFun_sp ep) : Base(ep), _Slots(capacity, unbound<T_O>(), true){};
   virtual string __repr__() const override;
-  // FIXME: DELETE ME
-  core::T_sp lambdaListHandler() const override { return nil<T_O>(); }
   bool compiledP() const override { return true; }
   bool openP();
   inline T_sp& operator[](size_t idx) {

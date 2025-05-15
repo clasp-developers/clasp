@@ -137,8 +137,7 @@
   (clos:set-funcallable-instance-function
    changer
    #+(or)
-   (let ((core:*use-interpreter-for-eval* t)
-         (cmp:*cleavir-compile-hook* nil))
+   (let ((cmp:*cleavir-compile-hook* nil))
      (coerce (generate-class-changer-function changer) 'function))
    ;;#+(or)
    (error "BUG: No suitable compiler yet")))

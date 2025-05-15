@@ -98,8 +98,7 @@
   (clos:set-funcallable-instance-function
    reinitializer
    #+(or)
-   (let ((core:*use-interpreter-for-eval* t)
-         (cmp:*cleavir-compile-hook* nil))
+   (let ((cmp:*cleavir-compile-hook* nil))
      (coerce (generate-reinitializer-function reinitializer) 'function))
    ;;#+(or)
    (error "BUG: No suitable compiler yet")))

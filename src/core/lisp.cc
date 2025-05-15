@@ -2227,7 +2227,6 @@ bool Lisp::load(int& exitCode) {
         startup_functions_invoke(NULL);
       } else {
         Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
-        DynamicScopeManager scope(_sym_STARuseInterpreterForEvalSTAR, _lisp->_true());
         if (!global_options->_SilentStartup) {
           printf("Loading image %s\n", _rep_(initPathname).c_str());
         }

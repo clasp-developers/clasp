@@ -521,25 +521,31 @@
            cons))))
 
 (defmethod add-constant ((value array))
-  (let* ((uaet (array-element-type value))
-         (info (array-packing-info value))
-         (info-type (first info))
-         (uaet-code (find-uaet-code uaet))
-         (arr (add-creator
-               value
-               (make-instance 'array-creator
-                 :prototype value :dimensions (array-dimensions value)
-                 :packing-info info :uaet-code uaet-code))))
-    (when (eq info-type t) ; general - dump an initialize-array for elements.
-      ;; (we have to separate initialization here in case the array
-      ;;  contains itself. packed arrays can't contain themselves)
-      (add-instruction
-       (make-instance 'initialize-array
-         :array arr
-         :values (loop for i below (array-total-size value)
-                       for e = (row-major-aref value i)
-                       collect (ensure-constant e)))))
-    arr))
+  (multiple-value-bind (dims total-size)
+      ;; We dump all arrays as simple, which means we need to ignore anything
+      ;; past the fill pointer.
+      (if (array-has-fill-pointer-p value)
+          (let ((L (length value))) (values (list L) L))
+          (values (array-dimensions value) (array-total-size value)))
+    (let* ((uaet (array-element-type value))
+           (info (array-packing-info value))
+           (info-type (first info))
+           (uaet-code (find-uaet-code uaet))
+           (arr (add-creator
+                 value
+                 (make-instance 'array-creator
+                   :prototype value :dimensions dims
+                   :packing-info info :uaet-code uaet-code))))
+      (when (eq info-type t) ; general - dump an initialize-array for elements.
+        ;; (we have to separate initialization here in case the array
+        ;;  contains itself. packed arrays can't contain themselves)
+        (add-instruction
+         (make-instance 'initialize-array
+           :array arr
+           :values (loop for i below total-size
+                         for e = (row-major-aref value i)
+                         collect (ensure-constant e)))))
+      arr)))
 
 (defun utf8-length (string)
   (loop for c across string
@@ -963,11 +969,11 @@
   (dolist (dim dimensions)
     (write-b16 dim stream)))
 
-(defmacro write-sub-byte (array stream nbits)
+(defmacro write-sub-byte (array total-size stream nbits)
   (let ((perbyte (floor 8 nbits))
-        (a (gensym "ARRAY")) (s (gensym "STREAM")))
-    `(let* ((,a ,array) (,s ,stream) (total-size (array-total-size ,a)))
-       (multiple-value-bind (full-bytes remainder) (floor total-size ,perbyte)
+        (a (gensym "ARRAY")) (s (gensym "STREAM")) (ts (gensym "TOTAL-SIZE")))
+    `(let* ((,a ,array) (,s ,stream) (,ts ,total-size))
+       (multiple-value-bind (full-bytes remainder) (floor ,ts ,perbyte)
          (loop for byteindex below full-bytes
                for index = (* ,perbyte byteindex)
                for byte = (logior
@@ -1009,13 +1015,14 @@
   (write-byte (uaet-code inst) stream)
   (let* ((packing-info (packing-info inst))
          (dims (dimensions inst))
+         (total-size (reduce #'* dims))
          (packing-type (first packing-info))
          (packing-code (getf cmpref:+uaet-codes+ (second packing-info))))
     (write-byte packing-code stream)
     (write-dimensions dims stream)
     (macrolet ((dump (&rest forms)
                  `(loop with arr = (prototype inst)
-                        for i below (array-total-size arr)
+                        for i below total-size
                         for elem = (row-major-aref arr i)
                         do ,@forms)))
       (cond ((equal packing-type 'nil)) ; just need dims
@@ -1047,11 +1054,11 @@
                    (write-b64 (ext:double-float-to-bits (imagpart elem))
                               stream)))
             ((equal packing-type 'bit)
-             (write-sub-byte (prototype inst) stream 1))
+             (write-sub-byte (prototype inst) total-size stream 1))
             ((equal packing-type '(unsigned-byte 2))
-             (write-sub-byte (prototype inst) stream 2))
+             (write-sub-byte (prototype inst) total-size stream 2))
             ((equal packing-type '(unsigned-byte 4))
-             (write-sub-byte (prototype inst) stream 4))
+             (write-sub-byte (prototype inst) total-size stream 4))
             ((equal packing-type '(unsigned-byte 8))
              ;; can't use write-sequence in general since
              ;; the array may be multidimensional.

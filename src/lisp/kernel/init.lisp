@@ -188,10 +188,6 @@
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :core))
 
-(if (find-package "C")
-    nil
-    (make-package "C" :use '(:cl :core)))
-
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (if (find-package "SEQUENCE")
       nil
