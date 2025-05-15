@@ -259,6 +259,11 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
       Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
+      // We push the PC for the debugger (see make_bytecode_frame in backtrace.cc)
+      // We do this here rather than bytecode_call because e.g. we may call a
+      // non-bytecode function, that in turn calls a bunch of different bytecode
+      // functions, which may trash vm._pc making it unsuitable.
+      // We have to do this for all call instructions, not just this one.
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
@@ -1510,6 +1515,12 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   // being unwound to.
   core::T_O** old_fp = vm._framePointer;
   core::T_O** old_sp = vm._stackPointer;
+  // Push the args and FP for debugging (see backtrace.cc)
+  // This is mildly wasteful of stack space, but when calling bytecode from
+  // non-bytecode the arguments won't be on the VM stack, so this is the
+  // best I got.
+  vm.push(vm._stackPointer, core::make_fixnum(lcc_nargs).raw_());
+  vm.push(vm._stackPointer, (core::T_O*)lcc_args);
   vm.push(vm._stackPointer, (core::T_O*)old_fp);
   core::T_O** fp = vm._framePointer = vm._stackPointer;
   core::T_O** sp = vm.push_frame(fp, nlocals);

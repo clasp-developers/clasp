@@ -5,6 +5,7 @@
   for weak-key-or-value tables, although at present they are actually
   strong tables in practice.
 * `ext:macroexpand-all` macroexpands a form and its subforms.
+* Arguments to bytecode functions are made available to debuggers.
 
 ## Fixed
 * Weak pointers and weak hash tables survive snapshot save/load.

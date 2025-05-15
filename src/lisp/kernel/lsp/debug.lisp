@@ -143,8 +143,43 @@ If the arguments are not available, returns NIL NIL."
         (bind-var (first auxs) (second auxs)))
       (nreverse bindings))))
 
-(defun frame-locals (frame &key eval
-                           &aux (fname (frame-function-name frame)))
+(defun locals-from-arguments (frame eval &aux (fname (frame-function-name frame)))
+  (multiple-value-bind (args args-available) (frame-arguments frame)
+    (multiple-value-bind (lambda-list lambda-list-available)
+        (frame-function-lambda-list frame)
+      (cond
+        ((not args-available) nil)
+        (lambda-list-available
+         (lambda-list-alist lambda-list args eval))
+        ;; The frame is missing a lambda list so fallback to just naming the arguments sequentially.
+        ((and (consp fname)
+           (eq (first fname) 'cl:method)
+           (= (length args) 2)
+           (core:vaslistp (first args)))
+         ;; This is non-fast method. The real arguments are a vaslist in
+         ;; the first element and the method list is in the second element.
+         (let ((method-args (core:list-from-vaslist (first args)))
+               (next-methods (second args)))
+           (append
+            (let ((result ()))
+              (do ((args method-args (cdr method-args))
+                   (i 0 (1+ i)))
+                  ((null args) (nreverse result))
+                (push (cons (intern (format nil "ARG~d" i) :cl-user)
+                            (first args))
+                      result)))
+            (list (cons 'cl-user::next-methods next-methods)))))
+        (t
+         ;; This is a fast method. Just treat it normally.
+         (let ((result ()))
+           (do ((args args (cdr args))
+                (i 0 (1+ i)))
+               ((null args) (nreverse result))
+             (push (cons (intern (format nil "ARG~d" i) :cl-user)
+                         (first args))
+                   result))))))))
+
+(defun frame-locals (frame &key eval)
   "Return an alist of local lexical/special variables and their values at the continuation the frame
   represents. The CARs are variable names and CDRs their values. Multiple bindings with the same
   name may be returned, as there is no notion of lexical scope in this interface. By default
@@ -154,40 +189,10 @@ If the arguments are not available, returns NIL NIL."
   (append
    ;; This only gives anything for bytecode functions right now.
    (core:debugger-frame-locals frame)
-   (multiple-value-bind (args args-available) (frame-arguments frame)
-     (multiple-value-bind (lambda-list lambda-list-available)
-         (frame-function-lambda-list frame)
-       (cond
-         ((not args-available) nil)
-         (lambda-list-available
-          (lambda-list-alist lambda-list args eval))
-         ;; The frame is missing a lambda list so fallback to just naming the arguments sequentially.
-         ((and (consp fname)
-               (eq (first fname) 'cl:method)
-               (= (length args) 2)
-               (core:vaslistp (first args)))
-          ;; This is non-fast method. The real arguments are a vaslist in
-          ;; the first element and the method list is in the second element.
-          (let ((method-args (core:list-from-vaslist (first args)))
-                (next-methods (second args)))
-            (append
-             (let ((result ()))
-               (do ((args method-args (cdr method-args))
-                    (i 0 (1+ i)))
-                   ((null args) (nreverse result))
-                 (push (cons (intern (format nil "ARG~d" i) :cl-user)
-                             (first args))
-                       result)))
-             (list (cons 'cl-user::next-methods next-methods)))))
-         (t
-          ;; This is a fast method. Just treat it normally.
-          (let ((result ()))
-            (do ((args args (cdr args))
-                 (i 0 (1+ i)))
-                ((null args) (nreverse result))
-              (push (cons (intern (format nil "ARG~d" i) :cl-user)
-                          (first args))
-                    result)))))))))
+   (if (eq (core:debugger-frame-lang frame) :bytecode)
+       ;; bytecode frames already have good locals, so don't bother w/arguments
+       nil
+       (locals-from-arguments frame eval))))
 
 (defun frame-function-lambda-list (frame)
   "Return the lambda list of the function being called in this frame, and a second value indicating success. This function may fail, in which case the first value is undefined and the second is NIL. In success the first value is the lambda list and the second value is true."
