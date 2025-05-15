@@ -958,7 +958,7 @@ struct ISLGeneralHeader_s : public ISLHeader_s {
 
 ISLHeader_s* ISLHeader_s::next(ISLKind k) const {
   if (k != this->_Kind) {
-    printf("%s:%d:%s ISLKind k %d does not match this->_Kind %d\n", __FILE__, __LINE__, __FUNCTION__, k, this->_Kind);
+    printf("%s:%d:%s ISLKind k %lu does not match this->_Kind %lu\n", __FILE__, __LINE__, __FUNCTION__, (uint64_t)k, (uint64_t)this->_Kind);
   }
   size_t headerSize;
   switch (k) {
@@ -972,7 +972,7 @@ ISLHeader_s* ISLHeader_s::next(ISLKind k) const {
 
 gctools::BaseHeader_s::BadgeStampWtagMtag* ISLHeader_s::stamp_wtag_mtag_P(ISLKind k) const {
   if (k != this->_Kind) {
-    printf("%s:%d:%s ISLKind k %d does not match this->_Kind %d\n", __FILE__, __LINE__, __FUNCTION__, k, this->_Kind);
+    printf("%s:%d:%s ISLKind k %lu does not match this->_Kind %lu\n", __FILE__, __LINE__, __FUNCTION__, (uint64_t)k, (uint64_t)this->_Kind);
   }
   switch (k) {
   case ISLKind::General: {
@@ -1245,7 +1245,7 @@ template <typename Walker> void walk_snapshot_save_load_objects(ISLHeader_s* sta
   ISLHeader_s* cur = start;
   while (cur->_Kind != ISLKind::End) {
     if (walker._debug)
-      printf("%s:%d:%s Walking %p 0x%x\n", __FILE__, __LINE__, __FUNCTION__, (void*)cur, cur->_Kind);
+      printf("%s:%d:%s Walking %p 0x%lx\n", __FILE__, __LINE__, __FUNCTION__, (void*)cur, (uint64_t)cur->_Kind);
     switch (cur->_Kind) {
     case ISLKind::General: {
       ISLGeneralHeader_s* generalCur = (ISLGeneralHeader_s*)cur;
@@ -1258,7 +1258,7 @@ template <typename Walker> void walk_snapshot_save_load_objects(ISLHeader_s* sta
       walker.callback(header);
     } break;
     default: {
-      ISL_ERROR("Hit header@%p  with unexpected kind: %d", (void*)cur, cur->_Kind);
+      ISL_ERROR("Hit header@%p  with unexpected kind: %lu", (void*)cur, (uint64_t)cur->_Kind);
     }
     }
     cur = cur->next(cur->_Kind);
