@@ -259,6 +259,11 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
       Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
+      // We push the PC for the debugger (see make_bytecode_frame in backtrace.cc)
+      // We do this here rather than bytecode_call because e.g. we may call a
+      // non-bytecode function, that in turn calls a bunch of different bytecode
+      // functions, which may trash vm._pc making it unsuitable.
+      // We have to do this for all call instructions, not just this one.
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;

@@ -482,9 +482,8 @@ static DebuggerFrame_sp make_bytecode_frame(size_t frameIndex, unsigned char*& p
   void* bpc = pc;
   T_O** bfp = fp;
   if (fp) { // null fp means we've hit the end.
-    // PC was pushed just before the frame pointer.
-    pc = (unsigned char*)(*(fp - 1));
-    fp = (T_O**)(*fp);
+    pc = (unsigned char*)(*(fp - BYTECODE_FRAME_PC_OFFSET));
+    fp = (T_O**)(*(fp - BYTECODE_FRAME_FP_OFFSET));
   }
   // Find the bytecode module containing the current pc.
   List_sp modules = _lisp->_Roots._AllBytecodeModules.load(std::memory_order_relaxed);
