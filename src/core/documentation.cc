@@ -128,14 +128,6 @@ CL_DEFUN void ext__remove_annotation(T_sp object, T_sp key, T_sp sub_key) {
   }
 }
 
-CL_LAMBDA(sub-key symbol value);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(ensure_documentation)dx");
-DOCGROUP(clasp);
-CL_DEFUN void core__ensure_documentation(T_sp sub_key, Symbol_sp symbol, String_sp value) {
-  ext__annotate(symbol, cl::_sym_documentation, sub_key, value);
-};
-
 CL_LAMBDA(object doc-type string);
 CL_DOCSTRING(R"dx(Set the documentation of an object)dx");
 DOCGROUP(clasp);
@@ -162,10 +154,8 @@ void initialize_documentation_primitives(LispPtr lisp) {
   SYMBOL_SC_(CorePkg, set_record_field);
   SYMBOL_SC_(CorePkg, rem_record_field);
   SYMBOL_EXPORT_SC_(ExtPkg, annotate);
-  SYMBOL_SC_(CorePkg, ensure_documentation);
   // TODO move help_file.dat definition somewhere better
   //  _sym_STARdocumentation_poolSTAR->defparameter(Cons_O::createList(HashTable_O::createEql(),
-  //  Str_O::create("help_file.dat"))); _sym_STARdocumentation_poolSTAR->exportYourself();
 }
 
 }; // namespace core
