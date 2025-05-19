@@ -117,12 +117,6 @@
         (remove-annotation object key doc-type)))
   string)
 
-(defun expand-set-documentation (symbol doc-type string)
-  (when string
-    (when (not (stringp string))
-      (error "~S is not a valid documentation string" string))
-    `((set-documentation ',symbol ',doc-type ,string))))
-
 #-clos
 (defun documentation (object type)
   "Args: (symbol doc-type)

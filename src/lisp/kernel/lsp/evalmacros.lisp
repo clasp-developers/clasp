@@ -66,7 +66,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
               (fboundp 'make-load-form))
         `((setf (gethash ',var core:*variable-source-infos*)
                 ',core:*current-source-pos-info*)))
-    ,@(si::expand-set-documentation var 'variable doc-string)
+    ,@(when doc-string
+        `((ext:annotate ',var 'documentation 'variable ',doc-string)))
     ',var))
 
 (defmacro defparameter (var form &optional doc-string)
@@ -82,7 +83,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
               (fboundp 'make-load-form))
         `((setf (gethash ',var core:*variable-source-infos*)
                 ',core:*current-source-pos-info*)))
-    ,@(si::expand-set-documentation var 'variable doc-string)
+    ,@(when doc-string
+        `((ext:annotate ',var 'documentation 'variable ',doc-string)))
     ',var))
 
 ;; export as extension?
@@ -105,7 +107,8 @@ existing value."
                  (fboundp 'make-load-form))
            `((setf (gethash ',var core:*variable-source-infos*)
                    ',core:*current-source-pos-info*)))
-       ,@(si::expand-set-documentation var 'variable doc-string)
+       ,@(when doc-string
+           `((ext:annotate ',var 'documentation 'variable ',doc-string)))
        ',var)))
 
 (defmacro defconstant (var form &optional doc-string)
