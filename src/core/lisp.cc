@@ -228,7 +228,10 @@ void Lisp::initialize() {
   this->_Roots.charInfo.initialize();
   this->_Roots._SourceFileIndices = HashTable_O::createEqual();
   this->_Roots._PackageNameIndexMap = HashTable_O::createEqual();
-  this->_Roots._ThePathnameTranslations = HashTable_O::createEqualp();
+  { HashTable_sp pt = HashTable_O::createEqualp();
+    pt->setupThreadSafeHashTable();
+    this->_Roots._ThePathnameTranslations = pt;
+  }
 }
 
 template <class oclass> void setup_static_classSymbol(BootStrapCoreSymbolMap const& sidMap) {
