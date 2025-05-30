@@ -2012,7 +2012,7 @@ void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Contex
     gc::Nilable<String_sp> docstring;
     List_sp code;
     List_sp specials;
-    eval::extract_declares_docstring_code_specials(body, declares, false, docstring, code, specials);
+    eval::extract_declares_docstring_code_specials(body, declares, true, docstring, code, specials);
     // If the function does not have a declared name, name it (flet whatever).
     if (extract_lambda_name_from_declares(declares).nilp())
       declares = Cons_O::create(Cons_O::createList(core::_sym_lambdaName, Cons_O::createList(cl::_sym_flet, name)), declares);
@@ -2076,7 +2076,7 @@ void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Cont
     gc::Nilable<String_sp> docstring;
     List_sp code;
     List_sp specials;
-    eval::extract_declares_docstring_code_specials(body, declares, false, docstring, code, specials);
+    eval::extract_declares_docstring_code_specials(body, declares, true, docstring, code, specials);
     if (extract_lambda_name_from_declares(declares).nilp())
       declares = Cons_O::create(Cons_O::createList(core::_sym_lambdaName, Cons_O::createList(cl::_sym_labels, name)), declares);
     T_sp block = Cons_O::create(cl::_sym_block, Cons_O::create(core__function_block_name(name), code));
