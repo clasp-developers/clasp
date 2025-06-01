@@ -998,9 +998,5 @@ T_mv clasp_vectorStartEnd(Symbol_sp fn, T_sp thing, Fixnum_sp start, Fixnum_sp e
 
 namespace core {
 
-CL_DOCSTRING(R"dx(copy_subarray)dx")
-DOCGROUP(clasp)
-CL_LAMBDA(dest destStart orig origStart len)
-CL_DEFUN
 void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixnum_sp origStart, Fixnum_sp len);
 }; // namespace core
