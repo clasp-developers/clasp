@@ -135,6 +135,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARcircle_stackSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineLoadSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcore_startup_functionSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcurrentSourcePosInfoSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARvariableSourceInfosSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcurrent_dlopen_handleSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcxxDocumentationSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugByteCodeSTAR);
@@ -504,6 +505,12 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   T_sp stderr_stream = CFileStream_O::make(str_create("*STDERR*"), stderr, StreamDirection::output);
   TwoWayStream_sp terminal_stream = TwoWayStream_O::make(stdin_stream, stdout_stream);
   terminal_stream->echo_p() = true;
+
+  {
+    HashTable_sp vsis = HashTable_O::createEqWeakKey();
+    vsis->setupThreadSafeHashTable();
+    _sym_STARvariableSourceInfosSTAR->defparameter(vsis);
+  }
 
   ext::_sym__PLUS_processStandardInput_PLUS_->defparameter(stdin_stream);
   ext::_sym__PLUS_processStandardOutput_PLUS_->defparameter(stdout_stream);

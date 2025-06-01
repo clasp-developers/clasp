@@ -117,12 +117,6 @@
         (remove-annotation object key doc-type)))
   string)
 
-(defun expand-set-documentation (symbol doc-type string)
-  (when string
-    (when (not (stringp string))
-      (error "~S is not a valid documentation string" string))
-    `((set-documentation ',symbol ',doc-type ,string))))
-
 #-clos
 (defun documentation (object type)
   "Args: (symbol doc-type)
@@ -141,38 +135,3 @@ strings."
 	 (si::get-documentation object type))
 	(t
 	 (error "~S is an unknown documentation type" type))))
-
-(defun make-dspec (definition)
-  (when (consp definition)
-    (let* ((kind (first definition))
-           (name (second definition))
-           (extra '()))
-      (when (eq kind 'defmethod)
-        (let ((list (third definition)))
-          (setq extra (if (symbolp list)
-                          (cons list (fourth definition))
-                          list))))
-      (list* kind name extra))))
-
-;; (EXT:OPTIONAL-ANNOTATION arguments for EXT:ANNOTATE)
-(export (list (intern "OPTIONAL-ANNOTATION" "EXT")
-              (intern "ANNOTATE" "EXT"))
-              "EXT")
-(si::fset 'ext:optional-annotation
-          (function 
-           (lambda (whole env)
-	    (declare (ignore env #-clasp-min whole)
-		     (core:lambda-name ext:optional-annotation))
-            #+clasp-min `(ext:annotate ,@(rest whole))))
-	  t)
-
-(defun default-annotation-logic (source-loc definition output-form
-                                 &optional (dspec (make-dspec definition)))
-  (let* ((kind (first definition))
-         (name (second definition)))
-    `(progn
-       (ext:optional-annotation ',name 'location ',dspec ',source-loc)
-       ,(when (member kind '(defun defmacro defgeneric))
-          `(ext:optional-annotation ',name :lambda-list nil ',(third definition)))
-       ,output-form)))
-

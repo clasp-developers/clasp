@@ -203,7 +203,6 @@ struct globals_t {
   mutable mp::SharedMutex _MonitorMutex;
   std::ofstream _MonitorStream;
 #endif
-  mutable mp::SharedMutex _ThePathnameTranslationsMutex; // Protect _ThePathnameTranslations
   mutable mp::SharedMutex _JITLogMutex;                  // Protect _jit logging
   mutable mp::SharedMutex _CodeBlocksMutex;
   uint _StackWarnSize;
@@ -246,7 +245,7 @@ public:
 #ifdef DEBUG_MONITOR_SUPPORT
         _MonitorMutex(LOGMUTEX_NAMEWORD),
 #endif
-        _ThePathnameTranslationsMutex(PNTRANSL_NAMEWORD), _JITLogMutex(JITLOG___NAMEWORD),
+        _JITLogMutex(JITLOG___NAMEWORD),
         _CodeBlocksMutex(CODEBLOK_NAMEWORD),
         _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
         _StackSampleCount(0), _StackSampleSize(0), _StackSampleMax(0), _ReplCounter(1), _Bundle(NULL), _DebugStream(NULL),
@@ -411,7 +410,6 @@ public:
   //	List_sp catchFindTag(T_sp tag);
 public:
   HashTable_sp pathnameTranslations_() const { return this->_Roots._ThePathnameTranslations; };
-  // void setPathnameTranslations_(List_sp pnt) { this->_Roots._ThePathnameTranslations = pnt; };
   /*! Return the maximum path length for the system */
 public:
   bool bootClassTableIsValid() const { return this->_BootClassTableIsValid; };

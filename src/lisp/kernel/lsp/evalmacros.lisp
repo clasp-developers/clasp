@@ -61,12 +61,13 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	      (SETQ ,var ,form))))
     ,@(when (and core:*current-source-pos-info*
                  ;; KLUDGE so that we can bootstrap this.
-                 ;; The function is defined in clos/print.lisp.
                  ;; FIXME: Special case source pos infos in the literal
                  ;; compiler, maybe?
-                 (fboundp 'variable-source-info-saver))
-        (variable-source-info-saver var core:*current-source-pos-info*))
-    ,@(si::expand-set-documentation var 'variable doc-string)
+              (fboundp 'make-load-form))
+        `((setf (gethash ',var core:*variable-source-infos*)
+                ',core:*current-source-pos-info*)))
+    ,@(when doc-string
+        `((ext:annotate ',var 'documentation 'variable ',doc-string)))
     ',var))
 
 (defmacro defparameter (var form &optional doc-string)
@@ -79,10 +80,12 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
        (SYS:*MAKE-SPECIAL ',var))
      (SETQ ,var ,form)
     ,@(when (and core:*current-source-pos-info*
-                 (fboundp 'variable-source-info-saver))
-        (variable-source-info-saver var core:*current-source-pos-info*))
-     ,@(si::expand-set-documentation var 'variable doc-string)
-     ',var))
+              (fboundp 'make-load-form))
+        `((setf (gethash ',var core:*variable-source-infos*)
+                ',core:*current-source-pos-info*)))
+    ,@(when doc-string
+        `((ext:annotate ',var 'documentation 'variable ',doc-string)))
+    ',var))
 
 ;; export as extension?
 (defmacro defconstant-eqx (var form test &optional doc-string)
@@ -101,9 +104,11 @@ existing value."
                  (t (set ',var ,value)
                     (funcall #'(setf core:symbol-constantp) t ',var)))))
        ,@(when (and core:*current-source-pos-info*
-                    (fboundp 'variable-source-info-saver))
-           (variable-source-info-saver var core:*current-source-pos-info*))
-       ,@(si::expand-set-documentation var 'variable doc-string)
+                 (fboundp 'make-load-form))
+           `((setf (gethash ',var core:*variable-source-infos*)
+                   ',core:*current-source-pos-info*)))
+       ,@(when doc-string
+           `((ext:annotate ',var 'documentation 'variable ',doc-string)))
        ',var)))
 
 (defmacro defconstant (var form &optional doc-string)
@@ -414,8 +419,9 @@ values of the last FORM.  If no FORM is given, returns NIL."
                            ',expansion)
                        ',symbol))
             ,@(when (and core:*current-source-pos-info*
-                         (fboundp 'variable-source-info-saver))
-                (variable-source-info-saver symbol core:*current-source-pos-info*))
+                      (fboundp 'make-load-form))
+                `((setf (gethash ',symbol core:*variable-source-infos*)
+                        ',core:*current-source-pos-info*)))
             ',symbol))))
 
 (defmacro nth-value (n expr)

@@ -32,5 +32,4 @@ namespace core {
 
 T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, T_sp value);
 
-void initialize_documentation_primitives(LispPtr lisp);
 }; // namespace core

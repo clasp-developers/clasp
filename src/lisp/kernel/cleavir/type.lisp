@@ -208,6 +208,15 @@
            (t (ctype:member sys t nil))))
    sys))
 
+;;; If TYPE is an EQL type, return its value and T, otherwise NIL and NIL.
+(defun type-constant-value (type sys)
+  (if (ctype:member-p sys type)
+      (let ((members (ctype:member-members sys type)))
+        (if (= (length members) 1)
+            (values (first members) t)
+            (values nil nil)))
+      (values nil nil)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; (4) TYPES AND CLASSES
@@ -215,21 +224,17 @@
 (define-deriver typep (obj type &optional env)
   (declare (ignore env))
   (let ((sys *clasp-system*))
-    (if (ctype:member-p sys type)
-        (let ((members (ctype:member-members sys type)))
-          (if (= (length members) 1)
-              (derive-type-predicate obj (first members) sys)
-              (ctype:single-value (ctype:member sys t nil) sys)))
-        (ctype:single-value (ctype:member sys t nil) sys))))
+    (multiple-value-bind (typec validp) (type-constant-value type sys)
+      (if validp
+          (derive-type-predicate obj typec sys)
+          (ctype:single-value (ctype:member sys t nil) sys)))))
 
 (define-deriver core::headerp (obj type)
   (let ((sys *clasp-system*))
-    (if (ctype:member-p sys type)
-        (let ((members (ctype:member-members sys type)))
-          (if (= (length members) 1)
-              (derive-type-predicate obj (first members) sys)
-              (ctype:single-value (ctype:member sys t nil) sys)))
-        (ctype:single-value (ctype:member sys t nil) sys))))
+    (multiple-value-bind (typec validp) (type-constant-value type sys)
+      (if validp
+          (derive-type-predicate obj typec sys)
+          (ctype:single-value (ctype:member sys t nil) sys)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -489,15 +494,18 @@
                      '* '* sys)
         (env:parse-type-specifier 'number nil *clasp-system*))))
 
+;;; 12.1.3.3 Rule of Float Substitutability
+(defun irrat-kind (kind)
+  (case kind
+    ((integer ratio rational) 'single-float)
+    (t kind)))
+
 (defun ty-irrat-monotonic1 (ty function &key (inf '*) (sup '*))
   (let ((sys *clasp-system*))
     (ctype:single-value
      (if (ctype:rangep ty sys)
          (let* ((kind (ctype:range-kind ty sys))
-                (mkind
-                  (case kind
-                    ((integer ratio rational) 'single-float)
-                    (t kind))))
+                (mkind (irrat-kind kind)))
            (multiple-value-bind (low lxp) (ctype:range-low ty sys)
              (multiple-value-bind (high hxp) (ctype:range-high ty sys)
                (let ((olow (cond ((not low)
@@ -900,11 +908,25 @@
 
 (define-deriver log (arg &optional (base nil basep))
   (declare (ignore base))
-  (if basep
-      ;; FIXME
-      (let ((sys *clasp-system*))
-        (ctype:single-value (env:parse-type-specifier 'number nil sys) sys))
-      (ty-boundbelow-irrat-monotonic1 arg #'log 0)))
+  (let ((sys *clasp-system*))
+    (ctype:single-value
+     (if (and (ctype:rangep arg sys) #|FIXME|# (not basep))
+         ;; This recapitulates some of ty-boundbelow-irrat-monotonic1 because
+         ;; we want to be sure not to call (log 0). FIXME reorganize
+         (multiple-value-bind (low lxp) (ctype:range-low arg sys)
+           (multiple-value-bind (high hxp) (ctype:range-high arg sys)
+             (if (or (not low) (< low 0)) ; can be complex
+                 (env:parse-type-specifier 'number nil sys)
+                 (let ((hb (cond ((not high) '*)
+                                 (hxp (list (log high)))
+                                 (t (log high))))
+                       (lb (cond ((= low 0) '*) ; asymptote
+                                 (lxp (list (log low)))
+                                 (t (log low)))))
+                   (ctype:range (irrat-kind (ctype:range-kind arg sys))
+                                lb hb sys)))))
+         (env:parse-type-specifier 'number nil sys))
+     sys)))
 
 ;;; If the argument is a real, return [-1,1]. otherwise just NUMBER
 ;;; Technically the range could be reduced sometimes, but figuring out the
