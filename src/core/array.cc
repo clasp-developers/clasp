@@ -524,12 +524,15 @@ CL_LISPIFY_NAME("core:%displaced-index-offset");
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__PERCENTdisplaced_index_offset(MDArray_sp array) { return clasp_make_fixnum(array->displacedIndexOffset()); }
 
+CL_DOCSTRING(R"dx(copy_subarray)dx")
+DOCGROUP(clasp)
+CL_LAMBDA(dest destStart orig origStart len)
+CL_DEFUN
 void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixnum_sp origStart, Fixnum_sp len) {
   // TODO: THIS NEEDS TO BE OPTIMIZED FOR DIFFERENT TYPES OF ARRAYS!!!!!!!
   //       Currently this is very inefficient
   size_t iLen = unbox_fixnum(len);
-  if (iLen == 0)
-    return;
+  if (iLen == 0) return;
   size_t iDestStart = unbox_fixnum(destStart);
   size_t iOrigStart = unbox_fixnum(origStart);
   if ((iLen + iDestStart) >= dest->arrayTotalSize())
