@@ -597,6 +597,7 @@
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :cclasp)) sources
      &key &allow-other-keys)
+  (setf sources (remove-if (lambda (source) (not (typep source 'lisp-source))) sources))
   (let* ((vimage (image-source configuration nil))
          (vimage-installed (image-source configuration nil :package-lib))
          (iclasp (make-source "iclasp" :variant))
@@ -719,6 +720,7 @@
     (configuration (name (eql :ninja)) output-stream (target (eql :eclasp)) sources
      &key &allow-other-keys)
   (when (extensions configuration)
+    (setf sources (remove-if (lambda (source) (not (typep source 'lisp-source))) sources))
     (let* ((cimage (image-source configuration nil))
           (eimage (image-source configuration t))
           (eimage-installed (image-source configuration t :package-lib))

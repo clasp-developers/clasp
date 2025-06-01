@@ -17,6 +17,7 @@
 (defvar *groveler-modules* nil)
 (defvar *groveler-systems* nil)
 (defvar *groveler-files* nil)
+(defvar *groveler-additional-files* nil)
 (defvar *groveler-features* nil)
 (defvar *groveler-file-type* t)
 
@@ -63,6 +64,8 @@
             do (grovel-component (if (typep dependency 'asdf:component)
                                      component
                                      (asdf:find-component (asdf:component-parent component) dependency))))
+    (loop for (nil path) in (asdf/component::%additional-input-files component)
+          do (pushnew path *groveler-additional-files*))
     (call-next-method)))
 
 (defmethod grovel-component ((component asdf:parent-component))
@@ -79,8 +82,9 @@
   (call-next-method))
 
 (defmethod grovel-component ((component asdf:file-component))
-  (when (typep component *groveler-file-type*)
-    (pushnew (asdf:component-pathname component) *groveler-files*)))
+  (if (typep component *groveler-file-type*)
+    (pushnew (asdf:component-pathname component) *groveler-files*)
+    (pushnew (asdf:component-pathname component) *groveler-additional-files*)))
 
 (defun grovel (systems &key (features *features*) (file-type t))
   (loop with *groveler-features* = features
@@ -92,4 +96,5 @@
         do (grovel-component system)
         finally (return (values (nreverse *groveler-modules*)
                                 (nreverse *groveler-systems*)
-                                (nreverse *groveler-files*)))))
+                                (nreverse *groveler-files*)
+                                (nreverse *groveler-additional-files*)))))

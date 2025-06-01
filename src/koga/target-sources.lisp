@@ -33,15 +33,14 @@
   (push source (scraper-lisp-sources configuration)))
 
 (defmethod add-target-source (configuration target (source symbol))
-  (multiple-value-bind (modules systems files)
+  (multiple-value-bind (modules systems files additional-files)
       (asdf-groveler:grovel (list source)
-                            :file-type 'asdf:cl-source-file
                             :features (features configuration))
     (when modules
       (error "Found module dependencies of ~{~#[~;~a~;~a and ~a~:;~@{~a~#[~;, and ~:;, ~]~}~]~} for system ~a."
              modules source))
     (loop with root = (truename (root :code))
-          for file in files
+          for file in (append files additional-files)
           for relative-path = (uiop:subpathp file root)
           if relative-path
             do (add-target-source configuration target (make-source relative-path :code))
@@ -86,6 +85,12 @@
 
 ;; Sources that are added to cclasp also need to be installed and scanned for tags.
 (defmethod add-target-source :after (configuration (target (eql :cclasp)) (source source))
+  (when (eq :code (source-root source))
+    (add-target-source configuration :install-code source)
+    (add-target-source configuration :tags source)))
+
+;; Sources that are added to eclasp also need to be installed and scanned for tags.
+(defmethod add-target-source :after (configuration (target (eql :eclasp)) (source source))
   (when (eq :code (source-root source))
     (add-target-source configuration :install-code source)
     (add-target-source configuration :tags source)))
