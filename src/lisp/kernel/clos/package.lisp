@@ -40,7 +40,6 @@
 (export '(metaobject
           specializer
           UPDATE-DEPENDENT 
-          LOAD-DEFCLASS 
           SLOT-DEFINITION-LOCATION 
           CLASS-PRECEDENCE-LIST 
           +THE-FUNCALLABLE-STANDARD-CLASS+ 

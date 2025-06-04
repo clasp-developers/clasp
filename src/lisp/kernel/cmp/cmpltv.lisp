@@ -699,7 +699,7 @@
 ;;; function with all constant, #', or dumpable arguments (and not too many).
 ;;; Note that allowing these recursively dumpable forms may result in slightly
 ;;; subpar outcomes - for example we're not smart enough to turn the (LIST)
-;;; arguments that appear in LOAD-DEFCLASS calls into constant NILs.
+;;; arguments that appear in ENSURE-CLASS calls into constant NILs.
 ;;; But I (Bike) believe that's offset by the value of not making the loader
 ;;; make and run a one-time-use bytecode function.
 (defun directly-creatable-form-p (form &optional env)
