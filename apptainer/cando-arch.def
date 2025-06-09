@@ -5,10 +5,10 @@ From: ghcr.io/yitzchak/archlinux-makepkg:latest
 #    $HOME/Downloads/UDB-x86-8.1.0 /downloads/udb
 
 %post
-    pacman -Syu --noconfirm binutils inetutils boost clang gmp fmt libunwind llvm ninja sbcl jupyterlab emacs openssh netcdf expat gocryptfs nodejs npm strace
+    pacman -Syu --noconfirm binutils inetutils boost clang18 gmp fmt libunwind llvm18 ninja sbcl jupyterlab emacs openssh netcdf expat gocryptfs nodejs npm strace
 #    (cd /downloads/udb; make install)
     cd /mnt
-    ./koga --reproducible-build --extensions=cando --build-mode=bytecode-faso --llvm-config="/usr/bin/llvm-config" --build-path=build-apptainer/
+    ./koga --reproducible-build --extensions=cando --build-mode=bytecode-faso --llvm-config="/usr/bin/llvm-config-18" --build-path=build-apptainer/
     ninja -C build-apptainer
     ninja -C build-apptainer install
     wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
