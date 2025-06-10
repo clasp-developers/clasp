@@ -278,7 +278,7 @@
                                     outputs)
                      :outputs (list "install_code")))
 
-(defmethod print-target-source
+#+(or)(defmethod print-target-source
     (configuration (name (eql :ninja)) output-stream (target (eql :install-extension-code)) source
      &aux (output (make-source (source-path source) :package-share)))
   (when (member :cando (extensions configuration))
@@ -289,7 +289,7 @@
                        :outputs (list output))
     (list :outputs output)))
 
-(defmethod print-target-sources
+#+(or)(defmethod print-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :install-extension-code)) sources
      &key outputs &allow-other-keys)
   (ninja:write-build output-stream :phony
@@ -531,7 +531,7 @@
                                        :outputs (list clasp-sh-installed)))
     (ninja:write-build output-stream :phony
                                      :inputs (append (list "install_code"
-                                                           "install_extension_code"
+                                                           #+(or)"install_extension_code"
                                                            "install_bin"
                                                            "install_lib"
                                                            libiclasp-installed

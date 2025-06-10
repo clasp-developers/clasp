@@ -678,7 +678,7 @@ is not compatible with snapshots.")
                                                                :libclasp :iclasp :cclasp :modules :eclasp
                                                                :eclasp-link :sclasp :install-bin :install-code
                                                                :clasp :regression-tests :analyzer :analyze
-                                                               :tags :install-extension-code :vm-header
+                                                               :tags #+(or):install-extension-code :vm-header
                                                                :trampoline)
                                                          :config-h
                                                          (list (make-source #P"config.h" :variant)

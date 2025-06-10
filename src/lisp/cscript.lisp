@@ -190,33 +190,6 @@
            #~"kernel/contrib/Concrete-Syntax-Tree/"
            #~"kernel/contrib/Eclector/")
 
-(k:sources :install-extension-code
-           #~"kernel/contrib/anaphora/"
-           #~"kernel/contrib/architecture.builder-protocol/"
-           #~"kernel/contrib/array-utils/"
-           #~"kernel/contrib/babel/"
-           #~"kernel/contrib/bordeaux-threads/"
-           #~"kernel/contrib/cffi/"
-           #~"kernel/contrib/cl-markup/"
-           #~"kernel/contrib/cl-ppcre/"
-           #~"kernel/contrib/cl-svg/"
-           #~"kernel/contrib/documentation-utils/"
-           #~"kernel/contrib/esrap/"
-           #~"kernel/contrib/global-vars/"
-           #~"kernel/contrib/let-plus/"
-           #~"kernel/contrib/cl-netcdf/"
-           #~"kernel/contrib/lparallel/"
-           #~"kernel/contrib/parser.common-rules/"
-           #~"kernel/contrib/plump/"
-           #~"kernel/contrib/split-sequence/"
-           #~"kernel/contrib/static-vectors/"
-           #~"kernel/contrib/trivial-features/"
-           #~"kernel/contrib/trivial-garbage/"
-           #~"kernel/contrib/trivial-http/"
-           #~"kernel/contrib/trivial-indent/"
-           #~"kernel/contrib/trivial-with-current-source-form/"
-           #~"kernel/contrib/usocket/")
-
 (k:sources :analyzer
            :clasp-analyzer)
 
