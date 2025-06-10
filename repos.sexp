@@ -116,7 +116,7 @@
  (:name :concrete-syntax-tree
   :repository "https://github.com/s-expressionists/Concrete-Syntax-Tree.git"
   :directory "src/lisp/kernel/contrib/Concrete-Syntax-Tree/"
-  :commit "37291727196a3bc88a7be67c1427c52078d4b82c")
+  :commit "868b372e6317e8bae08f3695b5d7e564ba1a0c02")
  (:name :documentation-utils
   :repository "https://github.com/Shinmera/documentation-utils.git"
   :directory "src/lisp/kernel/contrib/documentation-utils/"
