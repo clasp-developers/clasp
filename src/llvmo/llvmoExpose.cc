@@ -615,7 +615,11 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::emitModule(core::T_sp stream, core::T_s
 
   llvm::legacy::PassManager PM;
 
+#if LLVM_VERSION_MAJOR > 19
+  llvm::TargetMachine* LTM = TM;
+#else
   llvm::LLVMTargetMachine* LTM = dynamic_cast<llvm::LLVMTargetMachine*>(TM);
+#endif
   if (LTM) {
     llvm::TargetPassConfig* TPC = LTM->createPassConfig(PM);
     // Disable tail merges to improve debug info accuracy
@@ -737,12 +741,16 @@ CL_DEFUN Triple_sp Triple_O::make(const string& triple) {
 };
 
 CL_PKG_NAME(LlvmoPkg,"triple-normalize");
-CL_EXTERN_DEFUN((std::string(*)(llvm::StringRef str))&llvm::Triple::normalize);
+#if LLVM_VERSION_MAJOR < 20
+CL_EXTERN_DEFUN((std::string (*)(llvm::StringRef str))&llvm::Triple::normalize);
+#else
+CL_DEFUN std::string triple_normalize(llvm::StringRef str) { return llvm::Triple::normalize(str); }
+#endif
 
 CL_LISPIFY_NAME(getTriple);
 CL_EXTERN_DEFMETHOD(Triple_O, &llvm::Triple::getTriple);
 CL_LISPIFY_NAME(getArchName);
-CL_EXTERN_DEFMETHOD(Triple_O, (llvm::StringRef(llvm::Triple::*)() const)&llvm::Triple::getArchName);
+CL_EXTERN_DEFMETHOD(Triple_O, (llvm::StringRef (llvm::Triple::*)() const) & llvm::Triple::getArchName);
 CL_LISPIFY_NAME(getVendorName);
 CL_EXTERN_DEFMETHOD(Triple_O, &llvm::Triple::getVendorName);
 CL_LISPIFY_NAME(getOSName);
@@ -753,7 +761,11 @@ CL_LISPIFY_NAME(getOSAndEnvironmentName);
 CL_EXTERN_DEFMETHOD(Triple_O, &llvm::Triple::getOSAndEnvironmentName);
 
 CL_PKG_NAME(LlvmoPkg, "lookup-intrinsic-id");
-CL_EXTERN_DEFUN((llvm::Intrinsic::ID(*)(llvm::StringRef Name))&llvm::Function::lookupIntrinsicID);
+#if LLVM_VERSION_MAJOR < 20
+CL_EXTERN_DEFUN((llvm::Intrinsic::ID (*)(llvm::StringRef Name))&llvm::Function::lookupIntrinsicID);
+#else
+CL_EXTERN_DEFUN((llvm::Intrinsic::ID (*)(llvm::StringRef Name))&llvm::Intrinsic::lookupIntrinsicID);
+#endif
 
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType);
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType_UnknownArch);
@@ -818,8 +830,6 @@ CL_VALUE_ENUM(_sym_ArchType_x86_64, llvm::Triple::x86_64);     // X86-64: amd64,
 CL_VALUE_ENUM(_sym_ArchType_xcore, llvm::Triple::xcore);       // XCore: xcore
 CL_VALUE_ENUM(_sym_ArchType_nvptx, llvm::Triple::nvptx);       // NVPTX: 32-bit
 CL_VALUE_ENUM(_sym_ArchType_nvptx64, llvm::Triple::nvptx64);   // NVPTX: 64-bit
-CL_VALUE_ENUM(_sym_ArchType_le32, llvm::Triple::le32);         // le32: generic little-endian 32-bit CPU (PNaCl / Emscripten)
-CL_VALUE_ENUM(_sym_ArchType_le64, llvm::Triple::le64);         // le64: generic little-endian 64-bit CPU (PNaCl / Emscripten)
 CL_VALUE_ENUM(_sym_ArchType_amdil, llvm::Triple::amdil);       // AMDIL
 CL_VALUE_ENUM(_sym_ArchType_amdil64, llvm::Triple::amdil64);   // AMDIL with 64-bit pointers
 CL_VALUE_ENUM(_sym_ArchType_hsail, llvm::Triple::hsail);       // AMD HSAIL
@@ -1405,7 +1415,7 @@ CL_DEFUN core::List_sp llvm_sys__module_get_function_list(Module_sp module) {
 
 namespace llvmo {
 CL_LISPIFY_NAME(addModuleFlag);
-CL_EXTERN_DEFMETHOD(Module_O, (void(llvm::Module::*)(llvm::MDNode*)) & llvm::Module::addModuleFlag);
+CL_EXTERN_DEFMETHOD(Module_O, (void (llvm::Module::*)(llvm::MDNode*))&llvm::Module::addModuleFlag);
 CL_LISPIFY_NAME(getModuleIdentifier);
 CL_EXTERN_DEFMETHOD(Module_O, &llvm::Module::getModuleIdentifier);
 CL_LISPIFY_NAME(getGlobalVariable);
@@ -1413,8 +1423,8 @@ CL_EXTERN_DEFMETHOD(Module_O, (llvm::GlobalVariable * (llvm::Module::*)(llvm::St
 CL_LISPIFY_NAME(getNamedGlobal);
 CL_EXTERN_DEFMETHOD(Module_O, (llvm::GlobalVariable * (llvm::Module::*)(llvm::StringRef)) & llvm::Module::getNamedGlobal);
 CL_LISPIFY_NAME(getOrInsertFunction);
-CL_EXTERN_DEFMETHOD(Module_O, (llvm::FunctionCallee(llvm::Module::*)(llvm::StringRef,
-                                                                     llvm::FunctionType*))&llvm::Module::getOrInsertFunction);
+CL_EXTERN_DEFMETHOD(Module_O, (llvm::FunctionCallee (llvm::Module::*)(llvm::StringRef,
+                                                                      llvm::FunctionType*))&llvm::Module::getOrInsertFunction);
 CL_LISPIFY_NAME(getOrInsertGlobal);
 CL_EXTERN_DEFMETHOD(Module_O, (llvm::Constant * (llvm::Module::*)(llvm::StringRef, llvm::Type*)) & llvm::Module::getOrInsertGlobal);
 CL_LISPIFY_NAME(getDataLayoutStr);
@@ -1422,10 +1432,10 @@ CL_EXTERN_DEFMETHOD(Module_O, &llvm::Module::getDataLayoutStr);
 CL_LISPIFY_NAME(getTargetTriple);
 CL_EXTERN_DEFMETHOD(Module_O, &llvm::Module::getTargetTriple);
 CL_LISPIFY_NAME(setDataLayout);
-CL_EXTERN_DEFMETHOD(Module_O, (void(llvm::Module::*)(const llvm::DataLayout&)) & llvm::Module::setDataLayout);
+CL_EXTERN_DEFMETHOD(Module_O, (void (llvm::Module::*)(const llvm::DataLayout&))&llvm::Module::setDataLayout);
 ;
 CL_LISPIFY_NAME(setDataLayout.string);
-CL_EXTERN_DEFMETHOD(Module_O, (void(llvm::Module::*)(llvm::StringRef)) & llvm::Module::setDataLayout);
+CL_EXTERN_DEFMETHOD(Module_O, (void (llvm::Module::*)(llvm::StringRef))&llvm::Module::setDataLayout);
 ;
 // CL_EXTERN_DEFMETHOD(Module_O,&llvm::Module::setTargetTriple);
 DOCGROUP(clasp);
@@ -1631,7 +1641,7 @@ CL_EXTERN_DEFMETHOD(ExecutionEngine_O, (void* (llvm::ExecutionEngine::*)(const l
                                            llvm::ExecutionEngine::getPointerToGlobalIfAvailable);
 CL_LISPIFY_NAME(getPointerToGlobalIfAvailable_StringRef);
 CL_EXTERN_DEFMETHOD(ExecutionEngine_O,
-                    (void* (llvm::ExecutionEngine::*)(llvm::StringRef)) & llvm::ExecutionEngine::getPointerToGlobalIfAvailable);
+                    (void* (llvm::ExecutionEngine::*)(llvm::StringRef))&llvm::ExecutionEngine::getPointerToGlobalIfAvailable);
 CL_LISPIFY_NAME(getGlobalValueAddress);
 CL_EXTERN_DEFMETHOD(ExecutionEngine_O, &llvm::ExecutionEngine::getGlobalValueAddress);
 CL_EXTERN_DEFMETHOD(ExecutionEngine_O, &llvm::ExecutionEngine::getDataLayout);
@@ -1910,7 +1920,7 @@ CL_DEFUN core::T_sp llvm_sys__instruction_getNextNonDebugInstruction(Instruction
 };
 
 CL_LISPIFY_NAME("insertAfter");
-CL_EXTERN_DEFMETHOD(Instruction_O, &llvm::Instruction::insertAfter);
+CL_EXTERN_DEFMETHOD(Instruction_O, (void (llvm::Instruction::*)(llvm::Instruction*))&llvm::Instruction::insertAfter);
 #if LLVM_VERSION_MAJOR < 18
 CL_LISPIFY_NAME("insertBefore");
 CL_EXTERN_DEFMETHOD(Instruction_O, &llvm::Instruction::insertBefore);
@@ -1979,9 +1989,9 @@ CL_DEFUN llvm::Instruction* llvm_sys__replace_call(llvm::Function* func, llvm::I
 
 // FIXME: Should be made into a generic function or something.
 CL_LISPIFY_NAME(getCallingConv);
-CL_EXTERN_DEFMETHOD(CallBase_O, (llvmo::ClaspCallingConv(llvm::CallBase::*)())&CallBase_O::ExternalType::getCallingConv);
+CL_EXTERN_DEFMETHOD(CallBase_O, (llvmo::ClaspCallingConv (llvm::CallBase::*)())&CallBase_O::ExternalType::getCallingConv);
 CL_LISPIFY_NAME(setCallingConv);
-CL_EXTERN_DEFMETHOD(CallBase_O, (void(llvm::CallBase::*)(llvmo::ClaspCallingConv)) & CallBase_O::ExternalType::setCallingConv);
+CL_EXTERN_DEFMETHOD(CallBase_O, (void (llvm::CallBase::*)(llvmo::ClaspCallingConv))&CallBase_O::ExternalType::setCallingConv);
 
 core::List_sp CallBase_O::getArgumentList() const {
   ql::list l;
@@ -2283,7 +2293,7 @@ CL_DEFUN APInt_sp APInt_O::makeAPIntWidth(core::Integer_sp value, uint width, bo
       for (size_t i = 0; i < size; ++i)
         words[i] = limbs[i];
     // Note that APInt has its own storage, so it's fine that words expires.
-#if LLVM_VERSION_MAJOR < 19    
+#if LLVM_VERSION_MAJOR < 19
     apint = llvm::APInt(width, llvm::makeArrayRef(words, size));
 #else
     apint = llvm::APInt(width, llvm::ArrayRef(words, size));
@@ -2341,7 +2351,7 @@ namespace llvmo {
 CL_LISPIFY_NAME(CreateGlobalString);
 CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateGlobalString);
 CL_PKG_NAME(LlvmoPkg,"SetInsertPointBasicBlock");
-CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (void(llvm::IRBuilderBase::*)(llvm::BasicBlock*)) & llvm::IRBuilderBase::SetInsertPoint);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (void (llvm::IRBuilderBase::*)(llvm::BasicBlock*))&llvm::IRBuilderBase::SetInsertPoint);
 CL_LISPIFY_NAME(GetInsertBlock);
 CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::GetInsertBlock);
 
@@ -3254,21 +3264,21 @@ CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::setDoesNotThrow);
 CL_LISPIFY_NAME("isVarArg");
 CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::isVarArg);
 CL_LISPIFY_NAME("addFnAttr");
-CL_EXTERN_DEFMETHOD(Function_O, (void(llvm::Function::*)(Attribute::AttrKind Kind)) & llvm::Function::addFnAttr);
+CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(Attribute::AttrKind Kind))&llvm::Function::addFnAttr);
 CL_LISPIFY_NAME("removeFnAttr");
-CL_EXTERN_DEFMETHOD(Function_O, (void(llvm::Function::*)(Attribute::AttrKind Kind)) & llvm::Function::removeFnAttr);
+CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(Attribute::AttrKind Kind))&llvm::Function::removeFnAttr);
 CL_LISPIFY_NAME("hasFnAttribute");
-CL_EXTERN_DEFMETHOD(Function_O, (bool(llvm::Function::*)(Attribute::AttrKind Kind) const) & llvm::Function::hasFnAttribute);
+CL_EXTERN_DEFMETHOD(Function_O, (bool (llvm::Function::*)(Attribute::AttrKind Kind) const) & llvm::Function::hasFnAttribute);
 #if 0
 CL_LISPIFY_NAME("addAttribute");
 CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(unsigned i, typename llvm::Attribute::AttrKind Attr))&llvm::Function::addAttribute);
 #endif
 CL_LISPIFY_NAME("addParamAttr");
 CL_EXTERN_DEFMETHOD(Function_O,
-                    (void(llvm::Function::*)(unsigned i, typename llvm::Attribute::AttrKind Attr)) & llvm::Function::addParamAttr);
+                    (void (llvm::Function::*)(unsigned i, typename llvm::Attribute::AttrKind Attr))&llvm::Function::addParamAttr);
 
 CL_LISPIFY_NAME("setSubprogram");
-CL_EXTERN_DEFMETHOD(Function_O, (void(llvm::Function::*)(llvm::DISubprogram*)) & llvm::Function::setSubprogram);
+CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(llvm::DISubprogram*))&llvm::Function::setSubprogram);
 
 CL_LISPIFY_NAME("addReturnAttr");
 CL_DEFMETHOD void Function_O::addReturnAttr(typename llvm::Attribute::AttrKind Attr) {}
@@ -3336,9 +3346,9 @@ CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::empty);
 CL_LISPIFY_NAME(arg_size);
 CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::arg_size);
 CL_LISPIFY_NAME(getCallingConv);
-CL_EXTERN_DEFMETHOD(Function_O, (llvmo::ClaspCallingConv(llvm::Function::*)())&Function_O::ExternalType::getCallingConv);
+CL_EXTERN_DEFMETHOD(Function_O, (llvmo::ClaspCallingConv (llvm::Function::*)())&Function_O::ExternalType::getCallingConv);
 CL_LISPIFY_NAME(setCallingConv);
-CL_EXTERN_DEFMETHOD(Function_O, (void(llvm::Function::*)(llvmo::ClaspCallingConv)) & Function_O::ExternalType::setCallingConv);
+CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(llvmo::ClaspCallingConv))&Function_O::ExternalType::setCallingConv);
 CL_LISPIFY_NAME(setDoesNotThrow);
 CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::setDoesNotThrow);
 CL_LISPIFY_NAME(doesNotThrow);
@@ -3350,12 +3360,12 @@ CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::doesNotReturn);
 CL_LISPIFY_NAME(setPersonalityFn);
 CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::setPersonalityFn);
 CL_LISPIFY_NAME(addFnAttr);
-CL_EXTERN_DEFMETHOD(Function_O, (void(llvm::Function::*)(llvm::Attribute::AttrKind)) & llvm::Function::addFnAttr);
+CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(llvm::Attribute::AttrKind))&llvm::Function::addFnAttr);
 ;
 // CL_LISPIFY_NAME(addFnAttr1String);
 // CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(llvm::StringRef)) & llvm::Function::addFnAttr);;
 CL_LISPIFY_NAME(addFnAttr2String);
-CL_EXTERN_DEFMETHOD(Function_O, (void(llvm::Function::*)(llvm::StringRef, llvm::StringRef)) & llvm::Function::addFnAttr);
+CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(llvm::StringRef, llvm::StringRef))&llvm::Function::addFnAttr);
 ;
 ;
 
