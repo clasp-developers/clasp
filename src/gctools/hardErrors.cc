@@ -17,11 +17,6 @@
   abort();
 }
 
-[[noreturn]] void throw_hard_error_failed_assertion(const char* assertion) {
-  printf("%s:%d:%s %s\n", __FILE__, __LINE__, __FUNCTION__, assertion);
-  abort();
-}
-
 [[noreturn]] void throw_hard_error_not_applicable_method(const char* method) {
   printf("%s:%d:%s %s\n", __FILE__, __LINE__, __FUNCTION__, method);
   abort();
