@@ -27,6 +27,8 @@ THE SOFTWARE.
 */
 /* -^- */
 
+#include <fmt/format.h>
+
 void dbg_hook(const char* errorString);
 
 namespace core {

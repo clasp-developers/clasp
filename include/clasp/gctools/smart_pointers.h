@@ -133,7 +133,7 @@ public:
 
   template <class o_class> inline base_ptr<o_class> as_assert() const {
 #ifdef DEBUG_ASSERT
-    GCTOOLS_ASSERT(TaggedCast<o_class*, Type*>::isA(this->theObject))
+    GCTOOLS_ASSERT((TaggedCast<o_class*, Type*>::isA(this->theObject)))
 #endif
     base_ptr<o_class> ret((Tagged)this->theObject);
     return ret;
@@ -401,7 +401,7 @@ public:
 
   template <class o_class> inline smart_ptr<o_class> as_assert() const {
 #ifdef DEBUG_ASSERT
-    GCTOOLS_ASSERT(TaggedCast<o_class*, Type*>::isA(this->theObject))
+    GCTOOLS_ASSERT((TaggedCast<o_class*, Type*>::isA(this->theObject)))
 #endif
     smart_ptr<o_class> ret((Tagged)this->theObject);
     return ret;
@@ -686,7 +686,7 @@ public:
   }
   template <class o_class> inline smart_ptr<o_class> as_assert() const {
 #ifdef DEBUG_ASSERT
-    GCTOOLS_ASSERT(TaggedCast<o_class*, Type*>::isA(this->theObject))
+    GCTOOLS_ASSERT((TaggedCast<o_class*, Type*>::isA(this->theObject)))
 #endif
     smart_ptr<o_class> ret((Tagged)this->theObject);
     return ret;
@@ -817,7 +817,7 @@ public:
   }
   template <class o_class> inline smart_ptr<o_class> as_assert() const {
 #ifdef DEBUG_ASSERT
-    GCTOOLS_ASSERT(TaggedCast<o_class*, Type*>::isA(this->theObject))
+    GCTOOLS_ASSERT((TaggedCast<o_class*, Type*>::isA(this->theObject)))
 #endif
     smart_ptr<o_class> ret((Tagged)this->theObject);
     return ret;
