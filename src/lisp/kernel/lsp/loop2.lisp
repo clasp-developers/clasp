@@ -884,9 +884,16 @@ collected result will be returned as the value of the LOOP."
 (defun loop-construct-return (form)
   `(return-from ,(car *loop-names*) ,form))
 
+(defun loop-pseudo-body (form)
+  (cond ((or *loop-emitted-body* *loop-inside-conditional*)
+         (push form *loop-body*))
+        (t
+         (push form *loop-before-loop*)
+         (push form *loop-after-body*))))
+
 (defun loop-emit-body (form)
   (setq *loop-emitted-body* t)
-  (push form *loop-body*))
+  (loop-pseudo-body form))
 
 (defun loop-emit-final-value (&optional (form nil form-supplied-p))
   (when form-supplied-p
@@ -1122,7 +1129,7 @@ collected result will be returned as the value of the LOOP."
 	(when (loop-tequal (car *loop-source-code*) :end)
 	  (loop-pop-source))
 	(when it-p (setq form `(setq ,it-p ,form)))
-	(loop-emit-body
+	(loop-pseudo-body
 	  `(if ,(if negatep `(not ,form) form)
 	       ,then
 	       ,@else))))))
@@ -1296,7 +1303,9 @@ collected result will be returned as the value of the LOOP."
 
 (defun loop-do-while (negate kwd &aux (form (loop-get-form)))
   (loop-disallow-conditional kwd)
-  (loop-emit-body `(,(if negate 'when 'unless) ,form (go end-loop))))
+  (loop-pseudo-body `(,(if negate 'when 'unless)
+                      ,form
+                      (go end-loop))))
 
 
 (defun loop-do-with ()
