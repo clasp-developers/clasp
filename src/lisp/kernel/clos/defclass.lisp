@@ -64,12 +64,14 @@
            ,@(gen-note-accessors slots)
            (setf (core::class-info ',name) t))
          (eval-when (:load-toplevel :execute)
-           (load-defclass ',name ',superclasses ,parsed-slots ,processed-class-options))))))
+           (ensure-class ',name :direct-superclasses ',superclasses
+                                :direct-slots ,parsed-slots
+                                ,@processed-class-options))))))
 
 (defun process-class-options (class-args)
   (let ((options '())
 	(processed-options '()))
-    (dolist (option class-args)
+    (dolist (option class-args options)
       (unless (consp option)
         (si:simple-program-error
          "Option ~s for DEFCLASS has invalid syntax: not a cons" option))
@@ -94,13 +96,7 @@
 		(otherwise
 		 (ext:maybe-quote (rest option))))
 	      options (list* (ext:maybe-quote option-name)
-			     option-value options))))
-    (when options `(list ,@options))))
-
-(defun load-defclass (name superclasses slot-definitions options)
-  (clos::gf-log "In load-defclass name -> %s%N" name)
-  (apply #'ensure-class name :direct-superclasses superclasses
-                             :direct-slots slot-definitions options))
+			     option-value options))))))
 
 ;;; ----------------------------------------------------------------------
 ;;; ENSURE-CLASS

@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <clasp/core/numbers.h>
 #include <clasp/core/bignum.fwd.h>
 #include <concepts> // integral
+#include <cmath> // isfinite
 
 namespace core {
 
@@ -256,6 +257,8 @@ template <std::integral integral> integral clasp_to_integral(T_sp obj) {
 };
 
 template <std::floating_point Float> Integer_sp Integer_O::create(Float v) {
+  if (!std::isfinite(v))
+    SIMPLE_ERROR("Cannot convert NaN or infinity to integer: {}", v);
   if (v >= static_cast<Float>(gc::most_negative_fixnum) && v < static_cast<Float>(gc::most_positive_fixnum))
     return clasp_make_fixnum(v);
   else
