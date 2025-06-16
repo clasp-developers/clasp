@@ -116,7 +116,7 @@
  (:name :concrete-syntax-tree
   :repository "https://github.com/s-expressionists/Concrete-Syntax-Tree.git"
   :directory "src/lisp/kernel/contrib/Concrete-Syntax-Tree/"
-  :commit "37291727196a3bc88a7be67c1427c52078d4b82c")
+  :commit "0.3.0")
  (:name :documentation-utils
   :repository "https://github.com/Shinmera/documentation-utils.git"
   :directory "src/lisp/kernel/contrib/documentation-utils/"
@@ -125,7 +125,7 @@
  (:name :eclector
   :repository "https://github.com/s-expressionists/Eclector.git"
   :directory "src/lisp/kernel/contrib/Eclector/"
-  :commit "0.10.0")
+  :commit "0.11.0")
  (:name :esrap ; Needed both by the host and eclasp
   :repository "https://github.com/scymtym/esrap.git"
   :directory "src/lisp/kernel/contrib/esrap/"

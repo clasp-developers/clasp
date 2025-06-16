@@ -1,7 +1,7 @@
 (in-package #:koga)
 
 (defparameter +llvm-major-version+
-  '(15 . 20)
+  '(15 . 19)
   "The required LLVM version.")
 
 (defparameter +llvm-config-candidates+
