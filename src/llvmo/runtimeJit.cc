@@ -93,6 +93,7 @@
 #include <llvm/Transforms/Instrumentation.h>
 #else
 #include <llvm/Transforms/Utils/Instrumentation.h>
+#include <llvm/ExecutionEngine/Orc/EHFrameRegistrationPlugin.h>
 #endif
 #include <llvm/Transforms/Instrumentation/ThreadSanitizer.h>
 #include <llvm/Transforms/Utils/BasicBlockUtils.h>
@@ -365,8 +366,12 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     if (!MR.getSymbols().count(PersonalitySymbol))
       Config.PrePrunePasses.insert(Config.PrePrunePasses.begin(), [this](jitlink::LinkGraph& G) -> Error {
         for (auto ssym : G.defined_symbols()) {
-          std::string sssym(ssym->getName());
-          if (strcmp(sssym.c_str(), "DW.ref.__gxx_personality_v0") == 0) {
+#if LLVM_VERSION_MAJOR < 20
+          std::string sname = ssym->getName().str();
+#else
+        std::string sname = (*ssym->getName()).str();
+#endif
+          if (sname == "DW.ref.__gxx_personality_v0") {
             DEBUG_OBJECT_FILES_PRINT(
                 ("%s:%d:%s PrePrunePass found DW.ref.__gxx_personality_v0 setting Strong Linkage and Local scope\n", __FILE__,
                  __LINE__, __FUNCTION__));
@@ -387,7 +392,11 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
           }
       }
       for (auto ssym : G.defined_symbols()) {
+#if LLVM_VERSION_MAJOR < 20
         std::string sname = ssym->getName().str();
+#else
+        std::string sname = (*ssym->getName()).str();
+#endif
 #ifdef DEBUG_OBJECT_FILES
         if (ssym->getName().str() != "") {
           DEBUG_OBJECT_FILES_PRINT(
@@ -489,7 +498,11 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       if ((sectionName.find(BSS_NAME) != string::npos) || (sectionName.find(DATA_NAME) != string::npos)) {
         llvm::jitlink::SectionRange range(S);
         for (auto& sym : S.symbols()) {
-          std::string name = sym->getName().str();
+#if LLVM_VERSION_MAJOR < 20
+          std::string sname = sym->getName().str();
+#else
+          std::string sname = (*sym->getName()).str();
+#endif
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     section: %s symbol:  %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__,
                                     S.getName().str().c_str(), name.c_str(), address, size));
         }
@@ -517,7 +530,11 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                                   currentCode->_TextSectionStart, currentCode->_TextSectionEnd));
         for (auto& sym : S.symbols()) {
           if (sym->isCallable() && sym->hasName()) {
+#if LLVM_VERSION_MAJOR < 20
             std::string name = sym->getName().str();
+#else
+            std::string name = (*sym->getName()).str();
+#endif
             void* address = (void*)sym->getAddress().getValue();
             size_t size = sym->getSize();
             core::core__jit_register_symbol(name, size, (void*)address);
@@ -548,7 +565,11 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       printf("%s:%d:%s No executable region was found for the Code_O object for graph %s\n", __FILE__, __LINE__, __FUNCTION__,
              G.getName().c_str());
       for (auto* Sym : G.external_symbols()) {
+#if LLVM_VERSION_MAJOR < 20
         printf("       Symbol: %s\n", Sym->getName().str().c_str());
+#else
+        printf("       Symbol: %s\n", (*Sym->getName()).str().c_str());
+#endif
       }
     }
     //
@@ -556,7 +577,12 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     gctools::GCRootsInModule* roots;
     bool found_literals = false;
     for (auto ssym : G.defined_symbols()) {
-      if (ssym->getName() == "DW.ref.__gxx_personality_v0") {
+#if LLVM_VERSION_MAJOR < 20
+      std::string sname = ssym->getName().str();
+#else
+      std::string sname = (*ssym->getName()).str();
+#endif
+      if (sname == "DW.ref.__gxx_personality_v0") {
         DEBUG_OBJECT_FILES_PRINT(
             ("%s:%d:%s PrePrunePass found DW.ref.__gxx_personality_v0 setting Strong Linkage and Local scope\n", __FILE__, __LINE__,
              __FUNCTION__));
@@ -574,7 +600,11 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       }
 #endif
       if (ssym->hasName()) {
+#if LLVM_VERSION_MAJOR < 20
         std::string sname = ssym->getName().str();
+#else
+        std::string sname = (*ssym->getName()).str();
+#endif
         size_t pos;
         pos = sname.find(gcroots_in_module_name);
         if (pos != std::string::npos) {
@@ -636,11 +666,16 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     gctools::clasp_gc_registerRoots(literalStart, literalCount);
 #ifdef DEBUG_OBJECT_FILES
     for (auto* Sym : G.external_symbols())
-      if (Sym->getName() == "DW.ref.__gxx_personality_v0") {
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Graph %s has external DW.ref.__gxx_personality_v0 reference.\n", __FILE__, __LINE__,
-                                  __FUNCTION__, G.getName().c_str()));
-        break;
-      }
+#if LLVM_VERSION_MAJOR < 20
+      std::string sname = Sym->getName().str();
+#else
+      std::string sname = (*Sym->getName()).str();
+#endif
+    if (sname == "DW.ref.__gxx_personality_v0") {
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Graph %s has external DW.ref.__gxx_personality_v0 reference.\n", __FILE__, __LINE__,
+                                __FUNCTION__, G.getName().c_str()));
+      break;
+    }
 #endif
   }
 

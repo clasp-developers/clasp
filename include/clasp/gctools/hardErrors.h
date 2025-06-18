@@ -27,6 +27,8 @@ THE SOFTWARE.
 */
 /* -^- */
 
+#include <fmt/format.h>
+
 void dbg_hook(const char* errorString);
 
 namespace core {
@@ -45,12 +47,15 @@ public:
 };
 
 [[noreturn]] void throw_hard_error(const std::string& msg);
+
+#define HARD_ERROR(msg) \
+  throw_hard_error(fmt::format("{}:{}:{} {}\n", __FILE__, __LINE__, __FUNCTION__, msg))
+
 [[noreturn]] void throw_hard_error_not_applicable_method(const char* msg);
 [[noreturn]] void throw_hard_error_bad_client(void* ptr);
 [[noreturn]] void throw_hard_error_bad_layout_command(int cmd);
 [[noreturn]] void throw_hard_error_side_stack_damaged(size_t totalSize, size_t calcSize);
 [[noreturn]] void throw_hard_error_mps_bad_result(int result);
-[[noreturn]] void throw_hard_error_failed_assertion(const char* assertion);
 [[noreturn]] void throw_hard_error_cast_failed(const char* type, const char* from);
 [[noreturn]] void throw_hard_error_cannot_cast_tagged_pointer(const char* name, size_t kind);
 [[noreturn]] void throw_hard_error_implement_me(const char* funcname, const char* filename, size_t lineno) noexcept(false);
@@ -87,12 +92,12 @@ public:
 #define GCTOOLS_ASSERT(x)                                                                                                          \
   {                                                                                                                                \
     if (!(x))                                                                                                                      \
-      throw_hard_error_failed_assertion(#x);                                                                                       \
+      HARD_ERROR("Failed assertion: " #x);                                                                                       \
   };
 #define GCTOOLS_ASSERTF(x, msg)                                                                                                    \
   {                                                                                                                                \
     if (!(x))                                                                                                                      \
-      throw_hard_error_failed_assertion(#x " " msg);                                                                               \
+      HARD_ERROR("Failed assertion: " #x " " msg);                                                                               \
   };
 #else
 #define GCTOOLS_ASSERT(x)
