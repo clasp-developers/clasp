@@ -375,6 +375,9 @@
         when (member name '(declaim defclass defgeneric defmethod defstruct))
           do (setf (clostrum:macro-function client rte name) expander)))
 
+(defun %install-delayed-macros ()
+  (install-delayed-macros m:*client* *build-rte*))
+
 (defun install-mop (client rte)
   ;; In order to avoid any shenanigans, we do not import closer-mop symbols
   ;; into our CLOS package. We probably could arrange something to ensure that
@@ -459,6 +462,8 @@
         do (setf (clostrum:fdefinition client rte fname) f))
   (loop for (fname . src) in '((cl:proclaim . proclaim)
                                (cl:make-package . %make-package)
+                               (core::install-delayed-macros
+                                . %install-delayed-macros)
                                (cross-clasp.clasp.alexandria::make-gensym-list
                                 . alexandria:make-gensym-list)
                                (cross-clasp.clasp.alexandria::format-symbol

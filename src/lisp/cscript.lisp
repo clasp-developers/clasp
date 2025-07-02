@@ -262,14 +262,13 @@
            ;; toplevel
            #~"kernel2/lsp/top.lisp"
            #~"kernel2/lsp/top-hook.lisp"
-           #|
-           install-delayed-macros
+           #~"kernel2/install-delayed-macros.lisp"
            :eclector-concrete-syntax-tree
            #~"kernel2/cmp/variables.lisp"
            #~"kernel2/clos/make-load-form.lisp"
            #~"kernel2/cmp/eclector.lisp"
            #~"kernel2/cmp/cmpltv.lisp"
-           #~"kernel2/cmp/compile-file.lisp"|#)
+           #~"kernel2/cmp/compile-file.lisp")
 
 (k:sources :extension-translations
            :extension-systems)
