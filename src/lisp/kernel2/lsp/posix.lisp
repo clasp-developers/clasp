@@ -1,0 +1,31 @@
+(in-package #:core)
+
+(defpackage "CLASP-POSIX"
+  (:use)
+  (:import-from "CORE"
+                "ARGC" "ARGV" "RMDIR" "MKSTEMP" "CHMOD" "GETPID"
+                "FORK" "FORK-REDIRECT" "SIGCHLD-COUNT"
+                "WAIT" "WIFEXITED" "WIFSIGNALED" "WTERMSIG"
+                "LSEEK" "READ-FD" "CLOSE-FD" "MKSTEMP-FD"
+                "SIGSTOP" "SIGUSR1" "SIGTTIN"
+                "SIGILL" "SIGXCPU" "SIGQUIT"
+                "SIGSEGV" "SIGSYS" "SIGXFSZ"
+                "SIGTRAP" "SIGPIPE" "SIGURG"
+                "SIGUSR2" "SIGPROF" "SIGHUP"
+                "SIGTERM" "SIGBUS" "SIGABRT"
+                "SIGTSTP" "SIGCONT" "SIGCHLD"
+                "SIGKILL" "SIGINT" "SIGFPE"
+                "SIGVTALRM" "SIGTTOU" "SIGALRM")
+  (:export "ARGC" "ARGV" "RMDIR" "MKSTEMP" "CHMOD" "GETPID"
+           "FORK" "FORK-REDIRECT" "SIGCHLD-COUNT"
+           "WAIT" "WIFEXITED" "WIFSIGNALED" "WTERMSIG"
+           "LSEEK" "READ-FD" "CLOSE-FD" "MKSTEMP-FD"
+           "SIGSTOP" "SIGUSR1" "SIGTTIN"
+           "SIGILL" "SIGXCPU" "SIGQUIT"
+           "SIGSEGV" "SIGSYS" "SIGXFSZ"
+           "SIGTRAP" "SIGPIPE" "SIGURG"
+           "SIGUSR2" "SIGPROF" "SIGHUP"
+           "SIGTERM" "SIGBUS" "SIGABRT"
+           "SIGTSTP" "SIGCONT" "SIGCHLD"
+           "SIGKILL" "SIGINT" "SIGFPE"
+           "SIGVTALRM" "SIGTTOU" "SIGALRM"))

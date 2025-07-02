@@ -644,6 +644,8 @@ is not compatible with snapshots.")
                                                                :scraper)
                                                          :generate-vm-header
                                                          (list (make-source #P"generate-vm-header.lisp" :build))
+                                                         :compile-bytecode-image
+                                                         (list (make-source #P"compile-bytecode-image.lisp" :build))
                                                          :compile-systems
                                                          (list (make-source #P"compile-systems.lisp" :build))
                                                          :update-unicode
@@ -684,7 +686,7 @@ is not compatible with snapshots.")
                                                                :eclasp-link :sclasp :install-bin :install-code
                                                                :clasp :regression-tests :analyzer :analyze
                                                                :tags :install-extension-code :vm-header
-                                                               :trampoline)
+                                                               :trampoline :nclasp)
                                                          :config-h
                                                          (list (make-source #P"config.h" :variant)
                                                                :scraper)

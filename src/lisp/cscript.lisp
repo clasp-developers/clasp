@@ -174,6 +174,103 @@
 
 (add-eclasp-sources :eclasp)
 
+(k:sources :nclasp
+           ;; Enough CLOS to call generic functions
+           #~"kernel2/clos/method-combination-environment.lisp"
+           #~"kernel2/clos/standard-method-combinations.lisp"
+           #~"kernel2/clos/hierarchy.lisp"
+           #~"kernel2/clos/method-function.lisp"
+           #~"kernel2/clos/eql-specializer.lisp"
+           #~"kernel2/clos/applicable-methods.lisp"
+           #~"kernel2/clos/effective-method.lisp"
+           #~"kernel2/clos/outcome.lisp"
+           #~"kernel2/clos/slot-value.lisp"
+           #~"kernel2/clos/effective-accessor.lisp"
+           #~"kernel2/clos/interpreted-discriminator.lisp"
+           #~"kernel2/clos/miss.lisp"
+           #~"kernel2/clos/check-initargs.lisp"
+           #~"kernel2/clos/make.lisp"
+           #~"kernel2/clos/print.lisp"
+           #~"kernel2/clos/misc.lisp"
+           #~"kernel2/clos/satiate.lisp"
+           ;; Library
+           #~"kernel2/lsp/debug.lisp"
+           #~"kernel2/clos/conditions.lisp"
+           #~"kernel2/lsp/assert.lisp"
+           #~"kernel2/clos/package.lisp"
+           #~"kernel2/lsp/arraylib.lisp"
+           #~"kernel2/lsp/numlib.lisp"
+           #~"kernel2/lsp/predlib.lisp"
+           #~"kernel2/lsp/cdr-5.lisp"
+           #~"kernel2/lsp/module.lisp"
+           #~"kernel2/clos/streams.lisp"
+           #~"kernel2/lsp/pprint.lisp"
+           #~"kernel2/lsp/listlib.lisp"
+           #~"kernel2/lsp/mislib.lisp"
+           #~"kernel2/lsp/seqmacros.lisp"
+           #~"kernel2/lsp/seq.lisp"
+           #~"kernel2/lsp/seqlib.lisp"
+           #~"kernel2/lsp/iolib.lisp"
+           #~"kernel2/lsp/trace.lisp"
+           #~"kernel2/lsp/assorted.lisp"
+           #~"kernel2/lsp/packlib.lisp"
+           #~"kernel2/clos/sequences.lisp"
+           #~"kernel2/lsp/helpfile.lisp"
+           #~"kernel2/lsp/describe.lisp"
+           #~"kernel2/lsp/source-location.lisp"
+           #~"kernel2/clos/inspect.lisp"
+           ;; CLOS part two: defining new generics, classes, etc
+           #~"kernel2/clos/change.lisp"
+           #~"kernel2/clos/dependent.lisp"
+           #~"kernel2/clos/class.lisp"
+           #~"kernel2/clos/cpl.lisp"
+           #~"kernel2/clos/generic.lisp"
+           #~"kernel2/clos/method.lisp"
+           ;; compiler
+           #~"kernel2/cmp/cmputil.lisp"
+           #~"kernel2/cmp/compiler-conditions.lisp"
+           #~"kernel2/cmp/compile.lisp"
+           #~"kernel2/cmp/walk.lisp"
+           #~"kernel2/cmp/bytecode-machines.lisp"
+           #~"kernel2/cmp/bytecode-introspect.lisp"
+           #~"kernel2/cmp/disassemble.lisp"
+           #~"kernel2/cmp/bundle.lisp"
+           #~"kernel2/cmp/exports.lisp"
+           ;; macros
+           #~"kernel2/lsp/source-transformations.lisp"
+           #~"kernel2/lsp/cmuutil.lisp"
+           #~"kernel2/lsp/shiftf-rotatef.lisp"
+           #~"kernel2/lsp/setf.lisp"
+           #~"kernel2/lsp/do.lisp"
+           #~"kernel2/lsp/defpackage.lisp"
+           #~"kernel2/lsp/format.lisp"
+           #~"kernel2/lsp/format-pprint.lisp"
+           #~"kernel2/lsp/defmacro.lisp"
+           #~"kernel2/lsp/evalmacros.lisp"
+           #~"kernel2/lsp/defstruct.lisp"
+           #~"kernel2/lsp/loop2.lisp"
+           #~"kernel2/lsp/sharpmacros.lisp"
+           #~"kernel2/lsp/mp.lisp"
+           #~"kernel2/lsp/atomics.lisp"
+           #~"kernel2/lsp/mp-package.lisp"
+           #~"kernel2/clos/define-method-combination.lisp"
+           #~"kernel2/lsp/special-operators.lisp"
+           ;; some extensions
+           #~"kernel2/lsp/encodings.lisp"
+           #~"kernel2/lsp/posix.lisp"
+           #~"kernel2/lsp/ext-package.lisp"
+           ;; toplevel
+           #~"kernel2/lsp/top.lisp"
+           #~"kernel2/lsp/top-hook.lisp"
+           #|
+           install-delayed-macros
+           :eclector-concrete-syntax-tree
+           #~"kernel2/cmp/variables.lisp"
+           #~"kernel2/clos/make-load-form.lisp"
+           #~"kernel2/cmp/eclector.lisp"
+           #~"kernel2/cmp/cmpltv.lisp"
+           #~"kernel2/cmp/compile-file.lisp"|#)
+
 (k:sources :extension-translations
            :extension-systems)
 

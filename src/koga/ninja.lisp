@@ -144,6 +144,9 @@
                     :description "Compiling clasp $name"
                     :restat 1
                     :pool "console")
+  (ninja:write-rule output-stream :compile-bytecode-image
+                    :command (lisp-command "compile-bytecode-image.lisp" "$out $in")
+                    :restat 1)
   (when (extensions configuration)
     (ninja:write-rule output-stream :load-eclasp
                       :command "$clasp --norc --disable-mpi --base --feature ignore-extension-systems --feature cclasp --load load-clasp.lisp -- extension $position $source"
@@ -732,6 +735,34 @@
                                           vimage-installed
                                           kernels)
                            :outputs (list "install_cclasp"))))))
+
+(defmethod print-variant-target-sources
+    (configuration (name (eql :ninja)) output-stream (target (eql :nclasp)) sources
+     &key &allow-other-keys)
+  (let* ((vimage (make-source (format nil "images/nbase.~a"
+                                      (fasl-extension configuration))
+                              :variant-lib))
+         (vimage-installed (make-source (format nil "images/nbase.~a"
+                                                (fasl-extension configuration))
+                                        :package-lib))
+         (iclasp (make-source "iclasp" :variant)))
+    (ninja:write-build output-stream :compile-bytecode-image
+                       :inputs sources
+                       :outputs (list vimage))
+    (ninja:write-build output-stream :phony
+                       :inputs (list (build-name "iclasp")
+                                     vimage
+                                     (build-name "modules"))
+                       :outputs (list (build-name "nclasp")))
+    (when *variant-default*
+      (ninja:write-build output-stream :install-file
+                         :inputs (list vimage)
+                         :outputs (list vimage-installed))
+      (ninja:write-build output-stream :phony
+                         :inputs (list "install_iclasp"
+                                       "install_modules"
+                                       vimage-installed)
+                         :outputs (list "install_nclasp")))))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :modules)) sources

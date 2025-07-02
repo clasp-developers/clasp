@@ -60,6 +60,22 @@
   :directory "src/lisp/kernel/contrib/babel/"
   :commit "f892d0587c7f3a1e6c0899425921b48008c29ee3"
   :extension :cando)
+ (:name :clostrum
+  :repository "https://github.com/s-expressionists/Clostrum.git"
+  :directory "src/lisp/kernel/contrib/Clostrum/"
+  :branch "master")
+ (:name :common-macros
+  :repository "https://github.com/robert-strandh/Common-macros/"
+  :directory "src/lisp/kernel/contrib/Common-macros/"
+  :branch "master")
+ (:name :ecclesia
+  :repository "https://github.com/s-expressionists/Ecclesia.git"
+  :directory "src/lisp/kernel/contrib/Ecclesia/"
+  :branch "main")
+ (:name :extrinsicl
+  :repository "https://github.com/s-expressionists/Extrinsicl.git"
+  :directory "src/lisp/kernel/contrib/Extrinsicl/"
+  :branch "main")
  (:name :fast-io
   :repository "https://github.com/rpav/fast-io.git"
   :directory "src/lisp/kernel/contrib/fast-io/"
@@ -75,6 +91,34 @@
   :directory "src/lisp/kernel/contrib/ieee-floats/"
   :commit "9566ce8adfb299faef803d95736c780413a1373c"
   :extension :cando)
+ (:name :anatomicl
+  :repository "https://github.com/s-expressionists/Anatomicl.git"
+  :directory "src/lisp/kernel/contrib/Anatomicl/"
+  :branch "main")
+ (:name :khazern
+  :repository "https://github.com/s-expressionists/Khazern.git"
+  :directory "src/lisp/kernel/contrib/Khazern/"
+  :branch "master")
+ (:name :incless
+  :repository "https://github.com/s-expressionists/Incless.git"
+  :directory "src/lisp/kernel/contrib/Incless/"
+  :branch "main")
+ (:name :inravina
+  :repository "https://github.com/s-expressionists/Inravina.git"
+  :directory "src/lisp/kernel/contrib/Inravina/"
+  :branch "main")
+ (:name :invistra
+  :repository "https://github.com/s-expressionists/Invistra.git"
+  :directory "src/lisp/kernel/contrib/Invistra/"
+  :branch "main")
+ (:name :nontrivial-gray-streams
+  :repository "https://github.com/yitzchak/nontrivial-gray-streams.git"
+  :directory "src/lisp/kernel/contrib/nontrivial-gray-streams/"
+  :branch "main")
+ (:name :quaviver
+  :repository "https://github.com/s-expressionists/quaviver.git"
+  :directory "src/lisp/kernel/contrib/quaviver/"
+  :branch "main")
  (:name :cl-conspack
   :repository "https://github.com/conspack/cl-conspack.git"
   :directory "src/lisp/kernel/contrib/cl-conspack/"
@@ -150,6 +194,10 @@
   :directory "src/lisp/kernel/contrib/lparallel/"
   :branch "fix-asdf-feature"
   :extension :cando)
+ (:name :maclina
+  :repository "https://github.com/s-expressionists/Maclina.git"
+  :directory "src/lisp/kernel/contrib/Maclina/"
+  :branch "cross")
  (:name :named-readtables
   :repository "https://github.com/melisgl/named-readtables.git"
   :directory "src/lisp/kernel/contrib/named-readtables/"
@@ -196,6 +244,10 @@
   :repository "https://github.com/scymtym/trivial-with-current-source-form.git"
   :directory "src/lisp/kernel/contrib/trivial-with-current-source-form/"
   :commit "3898e09f8047ef89113df265574ae8de8afa31ac")
+ (:name :trucler
+  :repository "https://github.com/s-expressionists/Trucler.git"
+  :directory "src/lisp/kernel/contrib/Trucler/"
+  :branch "master")
  (:name :usocket ; Needed both by the host and eclasp
   :repository "https://github.com/usocket/usocket.git"
   :directory "src/lisp/kernel/contrib/usocket/"

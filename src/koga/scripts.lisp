@@ -37,6 +37,11 @@
   (print-asdf-stub output-stream t :clasp-scraper)
   (pprint '(apply #'uiop:symbol-call "CSCRAPE" "GENERATE-SIF" (uiop:command-line-arguments)) output-stream))
 
+(defmethod print-prologue (configuration (name (eql :compile-bytecode-image)) output-stream)
+  (declare (ignore configuration))
+  (print-asdf-stub output-stream t :cross-clasp)
+  (pprint '(apply #'uiop:symbol-call "CROSS-CLASP" "BUILD" (uiop:command-line-arguments)) output-stream))
+
 (defmethod print-prologue (configuration (name (eql :compile-systems)) output-stream)
   (declare (ignore configuration))
   (format output-stream "#-asdf (require :asdf)~%
