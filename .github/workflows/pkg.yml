@@ -212,6 +212,7 @@ jobs:
           sudo chown -R build: .
           sudo chown -R build: /github/home
           sudo chown -R build: /__w
+          mkdir -p /home/runner/
           sudo chown -R build: /home/runner/
           sudo pacman -Syu --noconfirm
       - name: Build Arch packages
@@ -242,6 +243,7 @@ jobs:
           sudo chown -R build: .
           sudo chown -R build: /github/home
           sudo chown -R build: /__w
+          mkdir -p /home/runner/
           sudo chown -R build: /home/runner/
           sudo pacman -Syu --noconfirm
       - name: Build Arch packages
