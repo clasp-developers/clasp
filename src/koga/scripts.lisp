@@ -40,7 +40,11 @@
 (defmethod print-prologue (configuration (name (eql :compile-bytecode-image)) output-stream)
   (declare (ignore configuration))
   (print-asdf-stub output-stream t :cross-clasp)
-  (pprint '(apply #'uiop:symbol-call "CROSS-CLASP" "BUILD" (uiop:command-line-arguments)) output-stream))
+  (format output-stream "
+(destructuring-bind (out character-names &rest sources)
+    (uiop:command-line-arguments)
+  (uiop:symbol-call \"CROSS-CLASP\" \"INITIALIZE\" character-names)
+  (apply #'uiop:symbol-call \"CROSS-CLASP\" \"BUILD\" out sources))"))
 
 (defmethod print-prologue (configuration (name (eql :compile-systems)) output-stream)
   (declare (ignore configuration))

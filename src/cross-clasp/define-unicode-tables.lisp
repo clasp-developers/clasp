@@ -137,8 +137,6 @@
   (alexandria:alist-hash-table *additional-clasp-character-mappings-alist*
                                :test 'equalp))
 
-(defparameter *unicode-file-read* nil)
-
 (defparameter cmp::*mapping-char-code-to-char-names*
   (make-hash-table :size (* 1024 32)))
 
@@ -151,9 +149,8 @@
   (setf (gethash name cmp::*additional-clasp-character-names*) char)
   (setf (gethash char cmp::*mapping-char-code-to-char-names*) name))
 
-(defun process-unicode-file ()
-  (with-open-file (stream (asdf:system-relative-pathname
-                           :cross-clasp "character-names.sexp")
+(defun process-unicode-file (path)
+  (with-open-file (stream path
                    :element-type 'character :direction :input :external-format :utf-8)
     (loop for (code . name) in (read stream nil)
           when (>= code #xA0)
@@ -176,10 +173,6 @@
     (setf (gethash (car pair) cmp::*additional-clasp-character-names*)
           (cdr pair))))
 
-(defun ensure-unicode-table-loaded ()
-  (unless *unicode-file-read*
-    (process-unicode-file)
-    (process-low-mappings)
-    (setf *unicode-file-read* t)))
-
-(ensure-unicode-table-loaded)
+(defun load-unicode-file (path)
+  (process-unicode-file path)
+  (process-low-mappings))

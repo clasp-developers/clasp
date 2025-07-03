@@ -3,7 +3,6 @@
                         :alexandria :ecclesia :clostrum-basic
                         :eclector-concrete-syntax-tree)
   :components ((:file "packages")
-               (:static-file "character-names.sexp")
                (:file "environment" :depends-on ("packages"))
                (:file "macrology" :depends-on ("packages"))
                (:file "condition-system-macros" :depends-on ("packages"))
@@ -21,8 +20,7 @@
                              (:file "define-method-combination")))
                (:file "defstruct" :depends-on ("clos"))
                (:file "with-package-iterator" :depends-on ("environment" "packages"))
-               (:file "define-unicode-tables" :depends-on ("character-names.sexp"
-                                                           "packages"))
+               (:file "define-unicode-tables" :depends-on ("packages"))
                (:file "base" :depends-on ("environment" "clos" "defstruct"
                                                         "condition-system-macros"
                                                         "mp-macros" "mp-atomics"

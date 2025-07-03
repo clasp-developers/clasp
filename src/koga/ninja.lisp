@@ -747,7 +747,9 @@
                                         :package-lib))
          (iclasp (make-source "iclasp" :variant)))
     (ninja:write-build output-stream :compile-bytecode-image
-                       :inputs sources
+                       :inputs (list* (make-source "tools-for-build/character-names.sexp"
+                                                   :code)
+                                      sources)
                        :outputs (list vimage))
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "iclasp")

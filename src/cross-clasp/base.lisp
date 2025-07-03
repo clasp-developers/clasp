@@ -547,7 +547,8 @@
         do (setf (clostrum:find-class client rte s) nil))
   (values))
 
-(defun initialize ()
+(defun initialize (character-names-path)
+  (load-unicode-file character-names-path)
   (setf m:*client* (make-instance 'client)
         *build-rte* (make-instance 'clostrum-basic:run-time-environment)
         *build-ce* (make-instance 'clostrum-basic:compilation-environment
@@ -559,7 +560,6 @@
   (values))
 
 (defun build (output-file &rest input-files)
-  (initialize)
   (maclina.compile-file:compile-files input-files output-file
                                       :environment *build-rte*
                                       :reader-client *reader-client*))
