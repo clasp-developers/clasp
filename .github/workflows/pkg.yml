@@ -215,7 +215,7 @@ jobs:
           sudo pacman -Syu --noconfirm
       - name: Build Arch packages
         run: |
-          echo -e "${{ secrets.PKG_GPG_PRIVATE_KEY }}" | gpg --import --yes --batch
+          echo -e "${{ secrets.PKG_GPG_PRIVATE_KEY }}" | sudo -u build gpg --import --yes --batch
           echo "allow-preset-passphrase" >~/.gnupg/gpg-agent.conf
           gpg-connect-agent reloadagent /bye
           echo -e "${{ secrets.PKG_GPG_PASSPHRASE }}" | /usr/lib/gnupg/gpg-preset-passphrase --preset "${{ secrets.PKG_GPG_KEYGRIP }}"
@@ -244,7 +244,7 @@ jobs:
           sudo pacman -Syu --noconfirm
       - name: Build Arch packages
         run: |
-          echo -e "${{ secrets.PKG_GPG_PRIVATE_KEY }}" | gpg --import --yes --batch
+          echo -e "${{ secrets.PKG_GPG_PRIVATE_KEY }}" | sudo -u build gpg --import --yes --batch
           echo "allow-preset-passphrase" >~/.gnupg/gpg-agent.conf
           gpg-connect-agent reloadagent /bye
           echo -e "${{ secrets.PKG_GPG_PASSPHRASE }}" | /usr/lib/gnupg/gpg-preset-passphrase --preset "${{ secrets.PKG_GPG_KEYGRIP }}"
