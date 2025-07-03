@@ -27,6 +27,13 @@
 (ninja:with-timestamp-preserving-stream (stream (first (uiop:command-line-arguments)))
   (cmpref:generate-virtual-machine-header stream))"))
 
+(defmethod print-prologue (configuration (name (eql :generate-lisp-info)) output-stream)
+  (declare (ignore configuration))
+  (format output-stream "~
+(print *features* (open (core:argv 3) :if-exists :overwrite :if-does-not-exist :create :direction :output))
+(print core:*all-cxx-classes* (open (core:argv 4) :if-exists :overwrite :if-does-not-exist :create :direction :output))
+(core:quit)"))
+
 (defmethod print-prologue (configuration (name (eql :update-unicode)) output-stream)
   (declare (ignore configuration))
   (print-asdf-stub output-stream t :unicode-data)
@@ -41,9 +48,9 @@
   (declare (ignore configuration))
   (print-asdf-stub output-stream t :cross-clasp)
   (format output-stream "
-(destructuring-bind (out character-names &rest sources)
+(destructuring-bind (out character-names features cxx-classes &rest sources)
     (uiop:command-line-arguments)
-  (uiop:symbol-call \"CROSS-CLASP\" \"INITIALIZE\" character-names)
+  (uiop:symbol-call \"CROSS-CLASP\" \"INITIALIZE\" character-names features cxx-classes)
   (apply #'uiop:symbol-call \"CROSS-CLASP\" \"BUILD\" out sources))"))
 
 (defmethod print-prologue (configuration (name (eql :compile-systems)) output-stream)

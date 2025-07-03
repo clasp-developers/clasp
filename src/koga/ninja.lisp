@@ -88,6 +88,9 @@
                     :command (lisp-command "generate-vm-header.lisp" "$out $in")
                     :restat 1
                     :description "Generating VM header from $in")
+  (ninja:write-rule output-stream :generate-lisp-info
+                    :command "$clasp -n -- $out <generate-lisp-info.lisp >/dev/null"
+                    :restat 1)
   (ninja:write-rule output-stream :compile-systems
                     :command "$clasp --norc --non-interactive --base --feature ignore-extensions --load compile-systems.lisp -- $out $systems"
                     :description "Compiling systems: $systems"
@@ -739,22 +742,30 @@
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :nclasp)) sources
      &key &allow-other-keys)
-  (let* ((vimage (make-source (format nil "images/nbase.~a"
+  (let* ((features.sexp (make-source "features.sexp" :variant-generated))
+         (cxx-classes.sexp (make-source "cxx-classes.sexp" :variant-generated))
+         (vimage (make-source (format nil "images/nbase.~a"
                                       (fasl-extension configuration))
                               :variant-lib))
          (vimage-installed (make-source (format nil "images/nbase.~a"
                                                 (fasl-extension configuration))
                                         :package-lib))
-         (iclasp (make-source "iclasp" :variant)))
+         (iclasp (make-source "iclasp" :variant))
+         (clasp-with-env (wrap-with-env configuration iclasp)))
+    (ninja:write-build output-stream :generate-lisp-info
+                       :outputs (list features.sexp cxx-classes.sexp)
+                       :clasp clasp-with-env
+                       :implicit-inputs (list iclasp))
     (ninja:write-build output-stream :compile-bytecode-image
                        :inputs (list* (make-source "tools-for-build/character-names.sexp"
                                                    :code)
+                                      features.sexp cxx-classes.sexp
                                       sources)
                        :outputs (list vimage))
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "iclasp")
                                      vimage
-                                     (build-name "modules"))
+                                     #+(or)(build-name "modules"))
                        :outputs (list (build-name "nclasp")))
     (when *variant-default*
       (ninja:write-build output-stream :install-file

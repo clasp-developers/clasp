@@ -644,6 +644,8 @@ is not compatible with snapshots.")
                                                                :scraper)
                                                          :generate-vm-header
                                                          (list (make-source #P"generate-vm-header.lisp" :build))
+                                                         :generate-lisp-info
+                                                         (list (make-source #p"generate-lisp-info.lisp" :build))
                                                          :compile-bytecode-image
                                                          (list (make-source #P"compile-bytecode-image.lisp" :build))
                                                          :compile-systems

@@ -172,11 +172,11 @@
       (make-array dimension :initial-element initial-element)
       (make-array dimension)))
 
-(defun initial-features ()
-  '(:clasp :threads :unicode :clos :ansi-cl :common-lisp :bytecode
-    :unicode
-    :long-float :long-float/binary80
-    :building-clasp))
+(defun initial-features (features)
+  ;; FEATURES are those gathered from the executable. We just tack on
+  ;; an indication that we're building from the host Lisp, as well as :CLOS.
+  ;; We could add :CLOS from the sources instead?
+  (list* :building-clasp :clos features))
 
 ;; This gets the currently present *features*. Used in build.
 (defun features ()
@@ -404,13 +404,13 @@
   (let ((*package* (m:symbol-value m:*client* *build-rte* '*package*)))
     (apply #'alexandria:symbolicate things)))
 
-(defun install-environment (&optional (client m:*client*)
-                              (rte *build-rte*)
-                              (ce *build-ce*))
+(defun install-environment (features &optional (client m:*client*)
+                                       (rte *build-rte*)
+                                       (ce *build-ce*))
   (declare (ignore ce))
   (extrinsicl:install-cl client rte)
   (extrinsicl.maclina:install-eval client rte)
-  (clostrum:make-parameter client rte '*features* (initial-features))
+  (clostrum:make-parameter client rte '*features* (initial-features features))
   (clostrum:make-parameter client rte 'core::*current-source-pos-info* nil)
   (loop for vname in '(core::*condition-restarts* core::*restart-clusters*
                        core::*interrupts-enabled* core::*allow-with-interrupts*
@@ -547,14 +547,17 @@
         do (setf (clostrum:find-class client rte s) nil))
   (values))
 
-(defun initialize (character-names-path)
+(defun initialize (character-names-path features-path cxx-classes-path)
+  (declare (ignore cxx-classes-path)) ; TODO
   (load-unicode-file character-names-path)
   (setf m:*client* (make-instance 'client)
         *build-rte* (make-instance 'clostrum-basic:run-time-environment)
         *build-ce* (make-instance 'clostrum-basic:compilation-environment
                      :parent *build-rte*))
   (core::reset-delayed-macros)
-  (install-environment)
+  (let ((features (with-open-file (s features-path)
+                    (read s))))
+    (install-environment features))
   (install-packages)
   (maclina.vm-cross:initialize-vm 20000)
   (values))
