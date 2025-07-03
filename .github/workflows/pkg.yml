@@ -216,7 +216,8 @@ jobs:
       - name: Build Arch packages
         run: |
           echo -e "${{ secrets.PKG_GPG_PRIVATE_KEY }}" | sudo -u build gpg --import --yes --batch
-          sudo -u build echo "allow-preset-passphrase" >~/.gnupg/gpg-agent.conf
+          mkdir -p ~/.gnupg/
+          echo "allow-preset-passphrase" >~/.gnupg/gpg-agent.conf
           gpg-connect-agent reloadagent /bye
           echo -e "${{ secrets.PKG_GPG_PASSPHRASE }}" | /usr/lib/gnupg/gpg-preset-passphrase --preset "${{ secrets.PKG_GPG_KEYGRIP }}"
           wget -O PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=clasp-cl-git
@@ -245,7 +246,8 @@ jobs:
       - name: Build Arch packages
         run: |
           echo -e "${{ secrets.PKG_GPG_PRIVATE_KEY }}" | sudo -u build gpg --import --yes --batch
-          sudo -u build echo "allow-preset-passphrase" >~/.gnupg/gpg-agent.conf
+          mkdir -p ~/.gnupg/
+          echo "allow-preset-passphrase" >~/.gnupg/gpg-agent.conf
           gpg-connect-agent reloadagent /bye
           echo -e "${{ secrets.PKG_GPG_PASSPHRASE }}" | /usr/lib/gnupg/gpg-preset-passphrase --preset "${{ secrets.PKG_GPG_KEYGRIP }}"
           wget -O PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=cando-git
