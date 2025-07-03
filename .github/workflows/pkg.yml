@@ -206,6 +206,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/yitzchak/archlinux-makepkg:latest
+      options: --user root
     steps:
       - name: Set permissions and update packages
         run: |
@@ -234,6 +235,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/yitzchak/archlinux-makepkg:latest
+      options: --user root
     steps:
       - name: Set permissions and update packages
         run: |
