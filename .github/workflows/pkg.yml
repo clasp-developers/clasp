@@ -206,12 +206,12 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/yitzchak/archlinux-makepkg:latest
+      options: --user root
     steps:
       - name: Set permissions and update packages
         run: |
           sudo chown -R build: .
           sudo chown -R build: /github/home
-          sudo chown -R build: /__w
           sudo pacman -Syu --noconfirm
       - name: Build Arch packages
         run: |
@@ -222,7 +222,8 @@ jobs:
           wget -O PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=clasp-cl-git
           wget -O pkgver.lisp https://aur.archlinux.org/cgit/aur.git/plain/pkgver.lisp?h=clasp-cl-git
           sed -i "s/clasp\.git/clasp\.git#commit=${{ github.sha }}/g" PKGBUILD
-          makepkg --noconfirm --syncdeps --sign
+          su build -c 'makepkg --noconfirm --syncdeps'
+          gpg --detach-sign --no-armor *.zst
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -235,12 +236,12 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/yitzchak/archlinux-makepkg:latest
+      options: --user root
     steps:
       - name: Set permissions and update packages
         run: |
           sudo chown -R build: .
           sudo chown -R build: /github/home
-          sudo chown -R build: /__w
           sudo pacman -Syu --noconfirm
       - name: Build Arch packages
         run: |
@@ -251,7 +252,8 @@ jobs:
           wget -O PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=cando-git
           wget -O pkgver.lisp https://aur.archlinux.org/cgit/aur.git/plain/pkgver.lisp?h=cando-git
           sed -i "s/clasp\.git/clasp\.git#commit=${{ github.sha }}/g" PKGBUILD
-          makepkg --noconfirm --syncdeps --sign
+          su build -c 'makepkg --noconfirm --syncdeps'
+          gpg --detach-sign --no-armor *.zst
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
