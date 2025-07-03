@@ -209,11 +209,6 @@ jobs:
     steps:
       - name: Set permissions and update packages
         run: |
-          sudo chown -R build: .
-          sudo chown -R build: /github/home
-          sudo chown -R build: /__w
-          sudo mkdir -p /home/runner/
-          sudo chown -R build: /home/runner/
           sudo pacman -Syu --noconfirm
       - name: Build Arch packages
         run: |
@@ -240,11 +235,6 @@ jobs:
     steps:
       - name: Set permissions and update packages
         run: |
-          sudo chown -R build: .
-          sudo chown -R build: /github/home
-          sudo chown -R build: /__w
-          sudo mkdir -p /home/runner/
-          sudo chown -R build: /home/runner/
           sudo pacman -Syu --noconfirm
       - name: Build Arch packages
         run: |
