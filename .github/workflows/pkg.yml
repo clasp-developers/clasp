@@ -223,7 +223,7 @@ jobs:
           wget -O pkgver.lisp https://aur.archlinux.org/cgit/aur.git/plain/pkgver.lisp?h=clasp-cl-git
           sed -i "s/clasp\.git/clasp\.git#commit=${{ github.sha }}/g" PKGBUILD
           su build -c 'makepkg --noconfirm --syncdeps'
-          gpg --detach-sign --no-armor *.xz
+          gpg --detach-sign --no-armor *.zst
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -253,7 +253,7 @@ jobs:
           wget -O pkgver.lisp https://aur.archlinux.org/cgit/aur.git/plain/pkgver.lisp?h=cando-git
           sed -i "s/clasp\.git/clasp\.git#commit=${{ github.sha }}/g" PKGBUILD
           su build -c 'makepkg --noconfirm --syncdeps'
-          gpg --detach-sign --no-armor *.xz
+          gpg --detach-sign --no-armor *.zst
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
