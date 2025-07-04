@@ -175,6 +175,7 @@
 (add-eclasp-sources :eclasp)
 
 (k:sources :nclasp
+           #@"runtime-packages.lisp"
            ;; Enough CLOS to call generic functions
            #~"kernel2/clos/method-combination-environment.lisp"
            #~"kernel2/clos/standard-method-combinations.lisp"

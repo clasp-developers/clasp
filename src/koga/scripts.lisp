@@ -31,6 +31,19 @@
   (declare (ignore configuration))
   (format output-stream "~
 (print *features* (open (core:argv 3) :if-exists :overwrite :if-does-not-exist :create :direction :output))
+(let ((o (open (core:argv 4) :if-exists :overwrite :if-does-not-exist :create :direction :output)))
+  (write-line \"(eval-when (:compile-toplevel)\" o)
+  (mapc #'(lambda (p)
+            (if (if (string= (package-name p) \"CL\") nil (if (string= (package-name p) \"KEYWORD\") nil t))
+            (print `(defpackage ,(package-name p)
+                      (:use ,@(mapcar #'package-name (package-use-list p)))
+                      (:export ,@(let ((ss '()))
+                                   (maphash #'(lambda (k v) (setq ss (cons k ss)))
+                                            (core:package-hash-tables p))
+                                   ss)))
+                   o)))
+        (list-all-packages))
+  (write-line \")\" o))
 (print `(progn
          ,@(mapcar #'(lambda (cn)
                        `(defclass ,cn (,@(mapcar #'core:name-of-class
@@ -38,7 +51,7 @@
                           ()
                           (:metaclass ,(core:name-of-class (class-of (find-class cn))))))
                    (reverse core:*all-cxx-classes*)))
-       (open (core:argv 4) :if-exists :overwrite :if-does-not-exist :create :direction :output))
+       (open (core:argv 5) :if-exists :overwrite :if-does-not-exist :create :direction :output))
 (core:quit)"))
 
 (defmethod print-prologue (configuration (name (eql :update-unicode)) output-stream)
