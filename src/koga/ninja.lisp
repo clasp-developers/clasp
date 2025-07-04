@@ -746,6 +746,8 @@
          (runtime-packages.lisp (make-source "runtime-packages.lisp"
                                              :variant-generated))
          (cxx-classes.lisp (make-source "cxx-classes.lisp" :variant-generated))
+         (runtime-functions.lisp (make-source "runtime-functions.lisp"
+                                              :variant-generated))
          (vimage (make-source (format nil "images/nbase.~a"
                                       (fasl-extension configuration))
                               :variant-lib))
@@ -756,7 +758,7 @@
          (clasp-with-env (wrap-with-env configuration iclasp)))
     (ninja:write-build output-stream :generate-lisp-info
                        :outputs (list features.sexp runtime-packages.lisp
-                                      cxx-classes.lisp)
+                                      cxx-classes.lisp runtime-functions.lisp)
                        :clasp clasp-with-env
                        :implicit-inputs (list iclasp))
     (ninja:write-build output-stream :compile-bytecode-image
