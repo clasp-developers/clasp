@@ -705,7 +705,10 @@
          ',name))))
 
 (defmacro early-defclass (name (&rest supers) (&rest slotds) &rest options)
-  (expand-early-defclass (make-compiler-class name supers slotds options)))
+  ;; ignore redefinitions - some pop up from the generated cxx-classes.lisp
+  (if (cross-clasp:find-compiler-class name nil)
+      'nil
+      (expand-early-defclass (make-compiler-class name supers slotds options))))
 
 ;;; Welcome to the deep magic.
 ;;; This macro allows defmacro forms as its toplevel to refer to each

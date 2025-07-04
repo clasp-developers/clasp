@@ -90,8 +90,8 @@
          ((quote) (second form))))
       (t form))))
 
-(defun find-compiler-class (name)
-  (clostrum:find-class m:*client* *build-rte* name t))
+(defun find-compiler-class (name &optional (errorp t))
+  (clostrum:find-class m:*client* *build-rte* name errorp))
 
 (defun gf-info (name)
   ;; stuffed into inline data for now

@@ -192,6 +192,7 @@
            #~"kernel2/clos/make.lisp"
            #~"kernel2/clos/print.lisp"
            #~"kernel2/clos/misc.lisp"
+           #@"cxx-classes.lisp"
            #~"kernel2/clos/satiate.lisp"
            ;; Library
            #~"kernel2/lsp/debug.lisp"

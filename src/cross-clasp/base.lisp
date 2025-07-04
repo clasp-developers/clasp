@@ -130,12 +130,19 @@
     (defpack "CORE" #:cross-clasp.clasp.core "SYS" "SYSTEM" "SI")
     (defpack "GCTOOLS" #:cross-clasp.clasp.gctools)
     (defpack "MP" #:cross-clasp.clasp.mp)
+    (defpack "LLVM" #:cross-clasp.clasp.llvm)
     (defpack "LLVM-SYS" #:cross-clasp.clasp.llvm-sys)
     (defpack "CLOS" #:cross-clasp.clasp.clos)
-    (defpack "CMP" #:cross-clasp.clasp.cmp)
+    (defpack "COMPILER" #:cross-clasp.clasp.cmp "CMP")
     (defpack "SEQUENCE" #:cross-clasp.clasp.sequence)
     (defpack "GRAY" #:cross-clasp.clasp.gray)
+    (defpack "MPI" #:cross-clasp.clasp.mpi)
+    (defpack "CLASP-FFI" #:cross-clasp.clasp.clasp-ffi)
+    (defpack "CLBIND" #:cross-clasp.clasp.clbind)
     (defpack "CLASP-DEBUG" #:cross-clasp.clasp.debug)
+    (defpack "CLANG-COMMENTS" #:cross-clasp.clasp.clang-comments)
+    (defpack "CLANG-AST" #:cross-clasp.clasp.clang-ast)
+    (defpack "AST-TOOLING" #:cross-clasp.clasp.ast-tooling)
     (defpack "EXT" #:cross-clasp.clasp.ext)
     (defpack "KEYWORD" #:keyword)))
 
@@ -404,13 +411,12 @@
   (let ((*package* (m:symbol-value m:*client* *build-rte* '*package*)))
     (apply #'alexandria:symbolicate things)))
 
-(defun install-environment (features &optional (client m:*client*)
-                                       (rte *build-rte*)
-                                       (ce *build-ce*))
+(defun install-environment (&optional (client m:*client*)
+                              (rte *build-rte*)
+                              (ce *build-ce*))
   (declare (ignore ce))
   (extrinsicl:install-cl client rte)
   (extrinsicl.maclina:install-eval client rte)
-  (clostrum:make-parameter client rte '*features* (initial-features features))
   (clostrum:make-parameter client rte 'core::*current-source-pos-info* nil)
   (loop for vname in '(core::*condition-restarts* core::*restart-clusters*
                        core::*interrupts-enabled* core::*allow-with-interrupts*
@@ -547,7 +553,7 @@
         do (setf (clostrum:find-class client rte s) nil))
   (values))
 
-(defun initialize (character-names-path features-path cxx-classes-path)
+(defun initialize (character-names-path features-path)
   (declare (ignore cxx-classes-path)) ; TODO
   (load-unicode-file character-names-path)
   (setf m:*client* (make-instance 'client)
@@ -555,11 +561,13 @@
         *build-ce* (make-instance 'clostrum-basic:compilation-environment
                      :parent *build-rte*))
   (core::reset-delayed-macros)
-  (let ((features (with-open-file (s features-path)
-                    (read s))))
-    (install-environment features))
+  (install-environment)
   (install-packages)
   (maclina.vm-cross:initialize-vm 20000)
+  (let ((features (with-open-file (s features-path)
+                    (read s))))
+    (clostrum:make-parameter m:*client* *build-rte* '*features*
+                             (initial-features features)))
   (values))
 
 (defun build (output-file &rest input-files)

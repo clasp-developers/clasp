@@ -31,7 +31,14 @@
   (declare (ignore configuration))
   (format output-stream "~
 (print *features* (open (core:argv 3) :if-exists :overwrite :if-does-not-exist :create :direction :output))
-(print core:*all-cxx-classes* (open (core:argv 4) :if-exists :overwrite :if-does-not-exist :create :direction :output))
+(print `(progn
+         ,@(mapcar #'(lambda (cn)
+                       `(defclass ,cn (,@(mapcar #'core:name-of-class
+                                                 (clos:direct-superclasses (find-class cn))))
+                          ()
+                          (:metaclass ,(core:name-of-class (class-of (find-class cn))))))
+                   (reverse core:*all-cxx-classes*)))
+       (open (core:argv 4) :if-exists :overwrite :if-does-not-exist :create :direction :output))
 (core:quit)"))
 
 (defmethod print-prologue (configuration (name (eql :update-unicode)) output-stream)
@@ -48,9 +55,9 @@
   (declare (ignore configuration))
   (print-asdf-stub output-stream t :cross-clasp)
   (format output-stream "
-(destructuring-bind (out character-names features cxx-classes &rest sources)
+(destructuring-bind (out character-names features &rest sources)
     (uiop:command-line-arguments)
-  (uiop:symbol-call \"CROSS-CLASP\" \"INITIALIZE\" character-names features cxx-classes)
+  (uiop:symbol-call \"CROSS-CLASP\" \"INITIALIZE\" character-names features)
   (apply #'uiop:symbol-call \"CROSS-CLASP\" \"BUILD\" out sources))"))
 
 (defmethod print-prologue (configuration (name (eql :compile-systems)) output-stream)

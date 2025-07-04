@@ -743,7 +743,7 @@
     (configuration (name (eql :ninja)) output-stream (target (eql :nclasp)) sources
      &key &allow-other-keys)
   (let* ((features.sexp (make-source "features.sexp" :variant-generated))
-         (cxx-classes.sexp (make-source "cxx-classes.sexp" :variant-generated))
+         (cxx-classes.lisp (make-source "cxx-classes.lisp" :variant-generated))
          (vimage (make-source (format nil "images/nbase.~a"
                                       (fasl-extension configuration))
                               :variant-lib))
@@ -753,13 +753,13 @@
          (iclasp (make-source "iclasp" :variant))
          (clasp-with-env (wrap-with-env configuration iclasp)))
     (ninja:write-build output-stream :generate-lisp-info
-                       :outputs (list features.sexp cxx-classes.sexp)
+                       :outputs (list features.sexp cxx-classes.lisp)
                        :clasp clasp-with-env
                        :implicit-inputs (list iclasp))
     (ninja:write-build output-stream :compile-bytecode-image
                        :inputs (list* (make-source "tools-for-build/character-names.sexp"
                                                    :code)
-                                      features.sexp cxx-classes.sexp
+                                      features.sexp
                                       sources)
                        :outputs (list vimage))
     (ninja:write-build output-stream :phony
