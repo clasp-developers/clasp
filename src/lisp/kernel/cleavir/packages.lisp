@@ -80,6 +80,7 @@
   (:export #:reduce-module-instructions))
 
 (defpackage #:clasp-cleavir-bmir
+  (:use #:cl)
   (:nicknames #:cc-bmir)
   (:shadow #:characterp #:consp #:load #:variable #:load-time-value)
   (:local-nicknames (#:bir #:cleavir-bir))
@@ -92,6 +93,7 @@
   (:export #:cast-one))
 
 (defpackage #:clasp-cleavir-blir
+  (:use #:cl)
   (:nicknames #:cc-blir)
   (:local-nicknames (#:bir #:cleavir-bir))
   ;; Shadowing cl:load isn't strictly necessary, but will keep it from
@@ -100,6 +102,7 @@
   (:export #:memref2 #:offset #:load #:store #:cas))
 
 (defpackage #:clasp-cleavir-vaslist
+  (:use #:cl)
   (:nicknames #:cc-vaslist)
   (:local-nicknames (#:bir #:cleavir-bir)
                     (#:ctype #:cleavir-ctype)
