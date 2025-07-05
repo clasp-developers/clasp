@@ -1,7 +1,7 @@
 (asdf:defsystem #:cross-clasp
   :depends-on (:maclina :closer-mop :extrinsicl :extrinsicl/maclina :anatomicl
                         :alexandria :ecclesia :clostrum-basic
-                        :eclector-concrete-syntax-tree)
+               :trivial-package-local-nicknames :eclector-concrete-syntax-tree)
   :components ((:file "packages")
                (:file "environment" :depends-on ("packages"))
                (:file "macrology" :depends-on ("packages"))

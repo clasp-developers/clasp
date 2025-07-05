@@ -240,6 +240,10 @@
   :directory "src/lisp/kernel/contrib/trivial-indent/"
   :commit "8d92e94756475d67fa1db2a9b5be77bc9c64d96c"
   :extension :cando)
+ (:name :trivial-package-local-nicknames
+  :repository "https://github.com/phoe/trivial-package-local-nicknames.git"
+  :directory "src/lisp/kernel/contrib/trivial-package-local-nicknames"
+  :branch "master")
  (:name :trivial-with-current-source-form ; Needed both by the host and eclasp
   :repository "https://github.com/scymtym/trivial-with-current-source-form.git"
   :directory "src/lisp/kernel/contrib/trivial-with-current-source-form/"

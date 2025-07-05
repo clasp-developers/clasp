@@ -16,7 +16,12 @@
                      (substituting-package condition)))))
 
 (defmethod maclina.compile-file::find-package ((client reader-client) package-name)
-  (or (clostrum:find-package m:*client* *build-rte* package-name)
+  (or
+    (let* ((package (m:symbol-value m:*client* *build-rte* '*package*))
+           (local-nicknames
+             (trivial-package-local-nicknames:package-local-nicknames package)))
+      (cdr (assoc package-name local-nicknames :test #'string=)))
+    (clostrum:find-package m:*client* *build-rte* package-name)
     (warn 'substituting-package :substituting package-name)
     (cl:find-package "CROSS-CLASP.CLASP.CORE")))
 

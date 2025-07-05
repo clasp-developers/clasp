@@ -309,6 +309,8 @@
         do (setf (clostrum:fdefinition client rte fname) f))
   (loop for (fname . src) in '((cl:proclaim . proclaim)
                                (cl:make-package . %make-package)
+                               (ext:add-package-local-nickname
+                                . trivial-package-local-nicknames:add-package-local-nickname)
                                (core::install-delayed-macros
                                 . %install-delayed-macros)
                                (cross-clasp.clasp.alexandria::make-gensym-list
