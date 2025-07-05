@@ -405,15 +405,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     (*proclaim-hook*
      (funcall *proclaim-hook* decl))))
 
-(defun global-inline-status (name)
-  "Return 'cl:inline 'cl:notinline or nil"
-  (cond
-    ((declared-global-inline-p name) 'cl:inline)
-    ((declared-global-notinline-p name) 'cl:notinline)
-    (t nil)))
-
-(export '(global-inline-status
-          declared-global-notinline-p
+(export '(declared-global-notinline-p
           declared-global-inline-p))
 
 ;; This is used extensively in the ecl compiler and once in predlib.lisp

@@ -22,6 +22,7 @@
         &VA-REST
         &WHOLE)))
 
+(defvar *proclaim-hook* nil)
 (defun proclaim (decl)
   "Args: (decl-spec)
 Gives a global declaration.  See DECLARE for possible DECL-SPECs."
@@ -41,7 +42,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
      (dolist (name (cdr decl))
        (setf (gethash name *functions-to-notinline*) t)
        (remhash name *functions-to-inline*)))
-    #+(or)
     (*proclaim-hook*
      (funcall *proclaim-hook* decl))))
 

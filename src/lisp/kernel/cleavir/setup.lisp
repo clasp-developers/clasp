@@ -227,6 +227,13 @@
                           nil))
         (cleavir-attributes:default-attributes))))
 
+(defun global-inline-status (name)
+  "Return 'cl:inline 'cl:notinline or nil"
+  (cond
+    ((core:declared-global-inline-p name) 'cl:inline)
+    ((core:declared-global-notinline-p name) 'cl:notinline)
+    (t nil)))
+
 (defmethod env:function-info ((sys clasp)
                               (environment clasp-global-environment)
                               function-name)
@@ -239,12 +246,12 @@
     ((and (symbolp function-name) (not (null (macro-function function-name))))
      (make-instance 'env:global-macro-info ; we're global, so the macro must be global.
        :name function-name
-       :inline (core:global-inline-status function-name)
+       :inline (global-inline-status function-name)
        :expander (macro-function function-name)
        :compiler-macro (compiler-macro-function function-name)))
     ((fboundp function-name)
      (let* ((cleavir-ast (inline-ast function-name))
-            (inline-status (core:global-inline-status function-name))
+            (inline-status (global-inline-status function-name))
             (attributes (function-attributes function-name)))
        (make-instance 'env:global-function-info
          :name function-name
@@ -261,7 +268,7 @@
        :name function-name
        :type (global-ftype function-name)
        :compiler-macro (compiler-macro-function function-name)
-       :inline (core:global-inline-status function-name)
+       :inline (global-inline-status function-name)
        :ast (inline-ast function-name)))
     ( ;; If it is neither of the cases above, then this name does
      ;; not have any function-info associated with it.
