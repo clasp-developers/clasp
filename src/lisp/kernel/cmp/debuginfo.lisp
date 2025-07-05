@@ -30,7 +30,7 @@
 ;;; into the file. For example, and as a note to later developers, I just got bit
 ;;; by the fact that a source position info's filename is often irrelevant - the
 ;;; dbg-current-scope and dbg-current-file are used.
-;;; (defvar *dbg-generate-dwarf* t) <<--- defined in init.lisp
+(defvar *dbg-generate-dwarf* (not (member :disable-dbg-generate-dwarf *features*)))
 (defvar *dbg-compile-unit*)
 (defvar *dbg-current-file*)
 (defvar *dbg-current-function-metadata*)
