@@ -70,6 +70,9 @@
                                 (list-all-packages)))
                         ss))))
        (open (core:argv 6) :if-exists :overwrite :if-does-not-exist :create :direction :output))
+(let ((s (open (core:argv 7) :if-exists :overwrite :if-does-not-exist :create :direction :output)))
+  (print `(in-package #:cmp) s)
+  (print `(defvar +cxx-data-structures-info+ ',(llvm-sys:cxx-data-structures-info)) s))
 (core:quit)"))
 
 (defmethod print-prologue (configuration (name (eql :update-unicode)) output-stream)
