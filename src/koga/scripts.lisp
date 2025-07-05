@@ -37,6 +37,7 @@
             (if (if (string= (package-name p) \"CL\") nil (if (string= (package-name p) \"KEYWORD\") nil t))
             (print `(defpackage ,(package-name p)
                       (:use ,@(mapcar #'package-name (package-use-list p)))
+                      (:nicknames ,@(package-nicknames p))
                       (:export ,@(let ((ss '()))
                                    (maphash #'(lambda (k v) (setq ss (cons k ss)))
                                             (core:package-hash-tables p))
