@@ -167,41 +167,42 @@ Optimizations are available for any of:
                       :origin (origin-source (bir:origin call)))))))))
 
 (defmacro %deftransformation (name)
-  `(eval-when (:compile-toplevel :load-toplevel :execute)
+  `(progn
      (setf (gethash ',name *bir-transformers*) nil)
      (setf (gethash ',name *fn-transforms*) '(,name))
      ',name))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun vtype= (vtype1 vtype2)
-    (and (ctype:values-subtypep vtype1 vtype2 *clasp-system*)
-         (ctype:values-subtypep vtype2 vtype1 *clasp-system*)))
-  (defun vtype< (vtype1 vtype2)
-    (and (ctype:values-subtypep vtype1 vtype2 *clasp-system*)
-         ;; This also includes NIL NIL, but that probably won't happen
-         ;; if the first subtypep returns true
-         (not (ctype:values-subtypep vtype2 vtype1 *clasp-system*))))
-  (defun %def-bir-transformer (name function argstype)
-    ;; We just use a reverse alist (function . argstype).
-    (let* ((transformers (gethash name *bir-transformers*))
-           (existing (rassoc argstype transformers :test #'vtype=)))
-      (if existing
-          ;; replace
-          (setf (car existing) function)
-          ;; Merge in, respecting subtypep
-          (setf (gethash name *bir-transformers*)
-                (merge 'list (list (cons function argstype))
-                       (gethash name *bir-transformers*)
-                        #'vtype< :key #'cdr))))))
+(defun vtype= (vtype1 vtype2)
+  (and (ctype:values-subtypep vtype1 vtype2 *clasp-system*)
+    (ctype:values-subtypep vtype2 vtype1 *clasp-system*)))
+(defun vtype< (vtype1 vtype2)
+  (and (ctype:values-subtypep vtype1 vtype2 *clasp-system*)
+    ;; This also includes NIL NIL, but that probably won't happen
+    ;; if the first subtypep returns true
+    (not (ctype:values-subtypep vtype2 vtype1 *clasp-system*))))
+(defun %def-bir-transformer (name function argstype)
+  ;; We just use a reverse alist (function . argstype).
+  (let* ((transformers (gethash name *bir-transformers*))
+         (existing (rassoc argstype transformers :test #'vtype=)))
+    (if existing
+        ;; replace
+        (setf (car existing) function)
+        ;; Merge in, respecting subtypep
+        (setf (gethash name *bir-transformers*)
+              (merge 'list (list (cons function argstype))
+                     (gethash name *bir-transformers*)
+                     #'vtype< :key #'cdr)))))
 
 (defmacro %deftransform (name lambda-list argstype
                          &body body)
-  (let ((argstype (env:parse-values-type-specifier argstype nil *clasp-system*)))
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (unless (nth-value 1 (gethash ',name *bir-transformers*))
-         (%deftransformation ,name))
-       (%def-bir-transformer ',name (lambda ,lambda-list ,@body) ',argstype)
-       ',name)))
+  `(progn
+     (unless (nth-value 1 (gethash ',name *bir-transformers*))
+       (%deftransformation ,name))
+     (%def-bir-transformer ',name (lambda ,lambda-list ,@body)
+                           (load-time-value (env:parse-values-type-specifier
+                                             ',argstype nil *clasp-system*)
+                                            t))
+     ',name))
 
 ;;; Given an expression, make a CST for it.
 ;;; FIXME: This should be more sophisticated. I'm thinking the source info
@@ -238,9 +239,9 @@ Optimizations are available for any of:
 ;;; rest parts of the lambda list, and three for the corresponding types.
 ;;; This function returns two values: An ordinary lambda list and an
 ;;; unparsed values type representing the arguments.
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun process-deftransform-lambda-list (lambda-list)
   (loop with state = :required
-        with sys = *clasp-system*
         with reqparams = nil
         with optparams = nil
         with restparam = nil
@@ -276,6 +277,7 @@ Optimizations are available for any of:
                                 restparam
                                 (nreverse reqtypes) (nreverse opttypes)
                                 resttype))))
+)
 
 (defmacro deftransform (name (typed-lambda-list
                               &key (argstype (gensym "ARGSTYPE") argstypep)
@@ -720,17 +722,16 @@ Optimizations are available for any of:
               collect (ctype:primary (bir:ctype arg) sys))
         nil (ctype:bottom sys) sys)))))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun parse-flusher-type (type)
-    (let ((opt (member '&optional type))
-          (rest (member '&rest type))
-          (sys *clasp-system*))
-      (flet ((parse1 (ty) (env:parse-type-specifier ty nil sys)))
-        (ctype:values
-         (mapcar #'parse1 (ldiff type (or opt rest)))
-         (mapcar #'parse1 (rest (ldiff opt rest)))
-         (if rest (parse1 (second rest)) (ctype:bottom sys))
-         sys)))))
+(defun parse-flusher-type (type)
+  (let ((opt (member '&optional type))
+        (rest (member '&rest type))
+        (sys *clasp-system*))
+    (flet ((parse1 (ty) (env:parse-type-specifier ty nil sys)))
+      (ctype:values
+       (mapcar #'parse1 (ldiff type (or opt rest)))
+       (mapcar #'parse1 (rest (ldiff opt rest)))
+       (if rest (parse1 (second rest)) (ctype:bottom sys))
+       sys))))
 
 ;;; Flush unless we're in safe code.
 (defmacro defflusher-unsafe (name) `(defflusher ,name (call) nil))
@@ -750,7 +751,7 @@ Optimizations are available for any of:
   `(defflusher ,name (call)
      (values (ctype:values-subtypep
               (call-argstype call)
-              ',(parse-flusher-type type)
+              (load-time-value (parse-flusher-type ',type) t)
               *clasp-system*))))
 
 (defflusher-type special-operator-p symbol)

@@ -93,8 +93,7 @@
                ;; load-time-value correctly.
                (compute-inline-ast ,function-form t))))))
 
-(eval-when (:compile-toplevel :execute :load-toplevel)
-  (setq core:*proclaim-hook* 'proclaim-hook))
+(setq core::*proclaim-hook* 'proclaim-hook)
 
 ;;; The following code sets up the chain of inlined-at info in AST origins.
 

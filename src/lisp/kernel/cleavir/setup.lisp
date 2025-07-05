@@ -307,11 +307,8 @@
 
 (defmethod env:declarations ((env cmp:lexenv)) (env:declarations *clasp-env*))
 
-(eval-when (:compile-toplevel)
-  (format t "about to compute-policy~%"))
-
 (setf cmp:*policy*
-  '#.(policy:compute-policy cmp:*optimize* *clasp-env*))
+     (policy:compute-policy cmp:*optimize* *clasp-env*))
 
 (defmethod env:optimize-info ((environment clasp-global-environment))
   ;; The default values are all 3.
