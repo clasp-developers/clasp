@@ -98,6 +98,24 @@ Example:
     (symbol fname)
     ((cons (eql setf) (cons symbol null)) (second fname))))
 
+(defun process-lambda-list (lambda-list context)
+  (ecase context
+    ((function)
+     (multiple-value-bind (required optional rest keys aokp aux keyp)
+         (alexandria:parse-ordinary-lambda-list lambda-list)
+       (values (list* (length required) required)
+               (list* (length optional)
+                      (loop for (var def -p) in optional
+                            collect var collect def collect -p))
+               rest keyp
+               (list* (length keys)
+                      (loop for ((var key) def -p) in keys
+                            collect var collect key collect def collect -p))
+               aokp
+               (loop for (var def) in aux collect var collect def)
+               ;; varest-p
+               nil)))))
+
 ;;; So that parsed macros/whatever can be used in the host w/o complaint.
 (declaim (declaration lambda-name lambda-list))
 

@@ -291,6 +291,7 @@
                        core::function-block-name
                        ext:constant-form-value
                        core:put-f core::packages-iterator
+                       core::process-lambda-list
                        ;; Used by compiler, not expected to exist in target
                        core::delay-macro
                        ;; used in CLOS, not expected to actually exist
