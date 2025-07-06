@@ -266,12 +266,25 @@
            #~"kernel2/lsp/top.lisp"
            #~"kernel2/lsp/top-hook.lisp"
            #~"kernel2/install-delayed-macros.lisp"
+           ;; file compiler
            :eclector-concrete-syntax-tree
            #~"kernel2/cmp/variables.lisp"
            #~"kernel2/clos/make-load-form.lisp"
            #~"kernel2/cmp/eclector.lisp"
            #~"kernel2/cmp/cmpltv.lisp"
-           #~"kernel2/cmp/compile-file.lisp")
+           #~"kernel2/cmp/compile-file.lisp"
+           ;; native compiler
+           #~"kernel2/cleavir/literal-package.lisp"
+           #@"runtime-info.lisp"
+           #~"kernel2/cleavir/runtime-info.lisp"
+           #~"kernel2/cleavir/jit-setup.lisp"
+           #~"kernel/cmp/cmpsetup.lisp"
+           #~"kernel2/cleavir/cmpintrinsics.lisp"
+           #~"kernel/cmp/startup-primitives.lisp"
+           #~"kernel2/cleavir/cmpir.lisp"
+           #~"kernel/cmp/debuginfo.lisp"
+           #~"kernel2/cleavir/cmpliteral.lisp"
+           :clasp-cleavir)
 
 (k:sources :extension-translations
            :extension-systems)

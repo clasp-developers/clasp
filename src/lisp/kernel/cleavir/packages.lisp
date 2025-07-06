@@ -40,7 +40,13 @@
    )
   (:export #:primop-rtype-info)
   ;; for ext:describe-compiler-policy, CL compiler macros
+  #-building-clasp
   (:implement #:ext #:cl))
+
+#+building-clasp
+(progn
+  (ext:add-implementation-package '("CLASP-CLEAVIR") "EXT")
+  (ext:add-implementation-package '("CLASP-CLEAVIR") "CL"))
 
 (defpackage #:clasp-cleavir-ast
   (:nicknames #:cc-ast)

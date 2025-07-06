@@ -113,7 +113,8 @@
            (sort (copy-list opannots) #'<
                  :key #'core:bytecode-debug-info/end)))
     ;; Compile.
-    (core:do-instructions (mnemonic args opip ip next-annots)
+    (#+building-clasp cmp::do-instructions
+     #-building-clasp core:do-instructions (mnemonic args opip ip next-annots)
         (bytecode :annotations annotations)
       (let ((bir:*policy* (policy context))
             (bir:*origin* (first (origin-stack context))))

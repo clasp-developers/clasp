@@ -354,6 +354,8 @@
 
 (defpackage #:cross-clasp.clasp.alexandria
   (:use #:cl))
+(defpackage #:cross-clasp.clasp.concrete-syntax-tree
+  (:use #:cl))
 
 (defpackage #:cross-clasp
   (:use #:cl)
