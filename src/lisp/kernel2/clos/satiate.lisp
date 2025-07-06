@@ -40,6 +40,7 @@
 ;;; truly minimum set sounds like a terrible time.
 (satiate generic-function-methods (standard-generic-function))
 (satiate generic-function-a-p-o-function (standard-generic-function))
+(satiate generic-function-argument-precedence-order (standard-generic-function))
 (satiate generic-function-lambda-list (standard-generic-function))
 (satiate generic-function-method-combination (standard-generic-function))
 (satiate generic-function-call-history (standard-generic-function))

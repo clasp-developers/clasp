@@ -78,7 +78,9 @@
   ;; Reorder args-specializers to match APO.
   (let ((f (generic-function-a-p-o-function gf)))
     (when f
-      (setf args-specializers (funcall f args-specializers)))
+      (setf args-specializers
+            (funcall f (subseq args-specializers 0
+                               (length (generic-function-argument-precedence-order gf))))))
     ;; then order the list. Simple selection sort. FIXME?
     ;; note that this mutates the list, so be sure methods
     ;; is fresh.
