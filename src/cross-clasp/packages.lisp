@@ -210,7 +210,7 @@
   (:export #:tag-tests))
 
 (defpackage #:cross-clasp.clasp.cmp
-  (:use #:cl)
+  (:use #:cl #:cross-clasp.clasp.core)
   (:export #:code-walk)
   (:export #:module
            #:module/make #:module/link #:module/create-bytecode #:module/literals
