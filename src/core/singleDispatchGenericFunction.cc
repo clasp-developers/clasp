@@ -65,6 +65,9 @@ CL_DEFUN List_sp core__callHistory(SingleDispatchGenericFunction_sp func) { retu
 CL_LISPIFY_NAME(SingleDispatchGenericFunction/specializerIndices);
 CL_DEFUN List_sp core__specializerIndices(SingleDispatchGenericFunction_sp func) { return Cons_O::createList(Integer_O::create(func->argumentIndex)); }
 
+CL_LISPIFY_NAME(SingleDispatchGenericFunction/methods);
+CL_DEFUN T_sp core__sdgf_methods(SingleDispatchGenericFunction_sp func) { return func->methods.load(std::memory_order_relaxed); }
+
 CL_DECLARE();
 CL_DOCSTRING(R"dx(ensureSingleDispatchGenericFunction)dx");
 DOCGROUP(clasp);
