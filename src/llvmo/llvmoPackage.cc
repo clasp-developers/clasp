@@ -87,6 +87,11 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, STARrunTimeExecutionEngineSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, load_bc);
 SYMBOL_EXPORT_SC_(LlvmoPkg, load_ll);
 SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, function);
+SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, type);
+SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, min);
+SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, max);
+SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, and);
+SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, or);
 
 void redirect_llvm_interface_addSymbol() {
   //	llvm_interface::addSymbol = &addSymbolAsGlobal;
