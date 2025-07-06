@@ -38,6 +38,7 @@
             (print `(defpackage ,(package-name p)
                       (:use ,@(mapcar #'package-name (package-use-list p)))
                       (:nicknames ,@(package-nicknames p))
+                      (:shadow ,@(mapcar #'symbol-name (package-shadowing-symbols p)))
                       (:export ,@(let ((ss '()))
                                    (maphash #'(lambda (k v) (setq ss (cons k ss)))
                                             (core:package-hash-tables p))
