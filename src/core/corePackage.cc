@@ -232,6 +232,7 @@ SYMBOL_EXPORT_SC_(CorePkg, fileExists);
 SYMBOL_EXPORT_SC_(CorePkg, fillArrayWithElt);
 SYMBOL_EXPORT_SC_(CorePkg, fillPointerSet);
 SYMBOL_EXPORT_SC_(CorePkg, fixnump);
+SYMBOL_EXPORT_SC_(CorePkg, float_infinity_string);
 SYMBOL_EXPORT_SC_(CorePkg, foreign_call);
 SYMBOL_EXPORT_SC_(CorePkg, foreign_call_pointer);
 SYMBOL_EXPORT_SC_(CorePkg, index);

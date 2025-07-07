@@ -292,7 +292,7 @@ printer and we should rather use MAKE-LOAD-FORM."
                 (long-float . "#<long-float quiet NaN>")
                 (short-float . "#<short-float quiet NaN>")))))
 
-(defun ext::float-infinity-string (x)
+(defun core::float-infinity-string (x)
   (when (and *print-readably* (null *read-eval*))
     (error 'print-not-readable :object x))
   (let* ((negative-infinities '((single-float .
