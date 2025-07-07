@@ -282,6 +282,7 @@
            #~"kernel/cmp/cmpsetup.lisp"
            #~"kernel2/cleavir/cmpintrinsics.lisp"
            #~"kernel/cmp/startup-primitives.lisp"
+           #~"kernel2/cleavir/primitives.lisp"
            #~"kernel2/cleavir/cmpir.lisp"
            #~"kernel/cmp/debuginfo.lisp"
            #~"kernel/cmp/cmprunall.lisp"
