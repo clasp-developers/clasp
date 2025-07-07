@@ -1,5 +1,5 @@
 (defpackage #:literal
-  (:use #:cl)
+  (:use #:cl #:core)
   (:export
    #:*byte-codes*
    #:add-creator
