@@ -284,8 +284,10 @@
            #~"kernel/cmp/startup-primitives.lisp"
            #~"kernel2/cleavir/cmpir.lisp"
            #~"kernel/cmp/debuginfo.lisp"
+           #~"kernel/cmp/cmprunall.lisp"
            #~"kernel2/cleavir/cmpliteral.lisp"
-           :clasp-cleavir)
+           :clasp-cleavir
+           #~"kernel/cmp/arguments.lisp")
 
 (k:sources :extension-translations
            :extension-systems)

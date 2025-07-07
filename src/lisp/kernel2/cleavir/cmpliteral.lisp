@@ -596,6 +596,8 @@ rewrite the slot in the literal table to store a closure."
     (setf byte-index (write-argument-byte-code arg stream byte-index)))
   byte-index)
 
+(defvar *byte-codes*)
+
 (defun lookup-byte-code (name)
   (let ((code (gethash name *byte-codes*)))
     (unless code
