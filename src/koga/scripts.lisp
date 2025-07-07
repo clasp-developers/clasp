@@ -61,7 +61,9 @@
                                  (if (fboundp v)
                                      (if (not (macro-function v))
                                          (if (not (special-operator-p v))
-                                             (setq ss (cons v ss)))))))
+                                             (setq ss (cons v ss)))))
+                                 (if (fboundp `(setf ,v))
+                                     (setq ss (cons `(setf ,v) ss)))))
                           (mapc #'(lambda (p)
                                     (multiple-value-call
                                      #'(lambda (ext int &rest _)
