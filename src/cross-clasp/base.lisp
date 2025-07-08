@@ -325,17 +325,7 @@
                                (cross-clasp.clasp.alexandria::symbolicate
                                 . %symbolicate)
                                (cross-clasp.clasp.alexandria::generate-switch-body
-                                . alexandria::generate-switch-body)
-                               (cross-clasp.clasp.concrete-syntax-tree::destructure-variables
-                                . cst::destructure-variables)
-                               (cross-clasp.clasp.concrete-syntax-tree::transform-qq-argument
-                                . cst::transform-qq-argument)
-                               (cross-clasp.clasp.concrete-syntax-tree::appender
-                                . cst::appender)
-                               (cross-clasp.clasp.concrete-syntax-tree::transform-compound
-                                . cst::transform-compound)
-                               (cross-clasp.clasp.concrete-syntax-tree::transform
-                                . cst::transform))
+                                . alexandria::generate-switch-body))
         for f = (fdefinition src)
         do (setf (clostrum:fdefinition client rte fname) f))
   (loop for mname in '(eclector.reader:quasiquote
@@ -364,7 +354,8 @@
                        clos::early-make-instance
                        clos::with-mutual-defclass
                        clos::with-effective-method-parameters
-                       clos::satiate)
+                       clos::satiate
+                       cst::quasiquote cst::db)
         for m = (macro-function mname)
         do (setf (clostrum:macro-function client rte mname) m))
   (loop for (mname . src) in '((defun . core::%defun)

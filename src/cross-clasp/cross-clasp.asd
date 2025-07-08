@@ -1,7 +1,6 @@
 (asdf:defsystem #:cross-clasp
   :depends-on (:maclina :closer-mop :extrinsicl :extrinsicl/maclina :anatomicl
                         :alexandria :ecclesia :clostrum-basic
-               :concrete-syntax-tree-destructuring
                :trivial-package-local-nicknames :eclector-concrete-syntax-tree)
   :components ((:file "packages")
                (:file "environment" :depends-on ("packages"))
@@ -22,8 +21,9 @@
                (:file "defstruct" :depends-on ("clos"))
                (:file "with-package-iterator" :depends-on ("environment" "packages"))
                (:file "define-unicode-tables" :depends-on ("packages"))
+               (:file "cst" :depends-on ("packages"))
                (:file "base" :depends-on ("environment" "clos" "defstruct"
                                                         "condition-system-macros"
                                                         "mp-macros" "mp-atomics"
                                                         "define-unicode-tables"
-                                                        "packages"))))
+                                                        "cst" "packages"))))
