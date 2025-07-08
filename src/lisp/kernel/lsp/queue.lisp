@@ -61,28 +61,27 @@
             (:predicate queuep))
   name (head nil) (tail nil) lock not-empty)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (setf (documentation 'make-queue 'function) "
+(setf (documentation 'make-queue 'function) "
 RETURN:     A new queue named NAME
 "
-        (documentation 'queue-name 'function) "
+      (documentation 'queue-name 'function) "
 RETURN:     The name of the QUEUE.
 "
-        (documentation 'queue-head 'function) "
+      (documentation 'queue-head 'function) "
 RETURN:     the head CONS cell of the QUEUE.
 "
-        (documentation 'queue-tail 'function) "
+      (documentation 'queue-tail 'function) "
 RETURN:     the tail CONS cell of the QUEUE.
 "
-        (documentation 'queuep 'function) "
+      (documentation 'queuep 'function) "
 RETURN:     Predicate for the QUEUE type.
 "
-        (documentation 'queue-lock 'function) "
+      (documentation 'queue-lock 'function) "
 RETURN:     The lock of the QUEUE.
 "
-        (documentation 'queue-not-empty 'function) "
+      (documentation 'queue-not-empty 'function) "
 RETURN:     The NOT-EMPTY condition variable of the QUEUE.
-"))
+")
 
 (defun atomic-enqueue (queue message)
   "

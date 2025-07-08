@@ -1100,6 +1100,17 @@ function-description - for debugging."
   `(let ((*irbuilder* ,irbuilder))
      ,@code))
 
+(defmacro with-module (( &key module
+                           (optimize nil)
+                           (optimize-level '*optimization-level*)
+                           dry-run) &rest body)
+  `(let* ((*the-module* ,module))
+     (or *the-module* (error "with-module *the-module* is NIL"))
+     (multiple-value-prog1
+         (with-irbuilder ((llvm-sys:make-irbuilder (thread-local-llvm-context)))
+           ,@body)
+       (when (and ,optimize ,optimize-level (null ,dry-run)) (funcall ,optimize ,module ,optimize-level )))))
+
 ;;; ALLOCA functions
 
 (defun alloca (type size &optional (label "") (alignment 8))

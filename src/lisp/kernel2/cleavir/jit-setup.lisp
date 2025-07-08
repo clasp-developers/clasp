@@ -423,13 +423,5 @@ No DIBuilder is defined for the default module")
       (let ((llvm-time (/ (- (get-internal-run-time) start-llvm-time) (float internal-time-units-per-second))))
         (llvm-sys:accumulate-llvm-usage-seconds llvm-time)))))
 
-(si::fset 'with-track-llvm-time
-	   #'(lambda (args env)
-               (declare (core:lambda-name with-track-llvm-time)
-                        (ignore env))
-               (let ((code (cdr args)))
-                 `(do-track-llvm-time
-                      (function
-                       (lambda ()
-                        ,@code)))))
-	  t)
+(defmacro with-track-llvm-time (&body code)
+  `(do-track-llvm-time (lambda () (progn ,@code))))

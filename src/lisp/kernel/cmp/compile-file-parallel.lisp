@@ -132,7 +132,7 @@
       (with-debug-info-generator (:module module
                                   :pathname *compile-file-source-debug-pathname*)
         (with-make-new-run-all (run-all-function (format nil "module~a" (ast-job-form-index job)))
-          (with-literal-table (:id (ast-job-form-index job))
+          (literal:with-literal-table (:id (ast-job-form-index job))
               (core:with-memory-ramp (:pattern 'gctools:ramp)
                 (literal:arrange-thunk-as-top-level
                  (clasp-cleavir-translate-bir::translate-ast

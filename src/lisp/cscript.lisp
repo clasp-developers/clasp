@@ -290,7 +290,10 @@
            #~"kernel/cmp/typeq.lisp"
            #~"kernel/cmp/codegen-special-form.lisp"
            :clasp-cleavir
-           #~"kernel/cmp/arguments.lisp")
+           #~"kernel/cmp/arguments.lisp"
+           #~"kernel2/cleavir/compile-file.lisp"
+           #~"kernel/lsp/queue.lisp"
+           #~"kernel/cmp/compile-file-parallel.lisp")
 
 (k:sources :extension-translations
            :extension-systems)
