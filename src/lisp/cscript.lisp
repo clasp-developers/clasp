@@ -293,7 +293,9 @@
            #~"kernel/cmp/arguments.lisp"
            #~"kernel2/cleavir/compile-file.lisp"
            #~"kernel/lsp/queue.lisp"
-           #~"kernel/cmp/compile-file-parallel.lisp")
+           #~"kernel/cmp/compile-file-parallel.lisp"
+           #~"kernel/lsp/cltl2.lisp"
+           #~"kernel/lsp/macroexpand-all.lisp")
 
 (k:sources :extension-translations
            :extension-systems)
