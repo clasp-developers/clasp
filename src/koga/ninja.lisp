@@ -90,6 +90,7 @@
                     :description "Generating VM header from $in")
   (ninja:write-rule output-stream :generate-lisp-info
                     :command "$clasp -n -- $out <generate-lisp-info.lisp >/dev/null"
+                    :description "Generating info from Clasp runtime"
                     :restat 1)
   (ninja:write-rule output-stream :compile-systems
                     :command "$clasp --norc --non-interactive --base --feature ignore-extensions --load compile-systems.lisp -- $out $systems"
@@ -149,6 +150,7 @@
                     :pool "console")
   (ninja:write-rule output-stream :compile-bytecode-image
                     :command (lisp-command "compile-bytecode-image.lisp" "$out $in")
+                    :description "Building Clasp bytecode image"
                     :restat 1)
   (when (extensions configuration)
     (ninja:write-rule output-stream :load-eclasp
