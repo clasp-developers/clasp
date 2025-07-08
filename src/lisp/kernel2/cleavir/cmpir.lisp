@@ -1482,3 +1482,239 @@ function-description - for debugging."
           (setf func (declare-function-in-module module dispatch-name info)))
         #++(core:fmt t "     FUNCTION -> {}%N" func)
         (values func info)))))
+
+(defun codegen-startup (module startup-function-name
+                        THE-REPL-XEP-GROUP gcroots-in-module
+                        array-type roots-array-or-nil number-of-roots
+                        ordered-literals)
+  (declare (ignore ordered-literals))
+  (let ((startup-fn (irc-simple-function-create startup-function-name
+                                                %fn-start-up%
+                                                'llvm-sys:external-linkage ; this should be internal and invoked by a ctor but that doesn't seem to be happening yet
+                                                module
+                                                :argument-names (list "values" ))))
+    (llvm-sys:set-unnamed-addr startup-fn 'llvm-sys:none)
+    (let* ((irbuilder-alloca
+             (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+           (irbuilder-body
+             (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+           (*irbuilder-function-alloca* irbuilder-alloca)
+           (*irbuilder-function-body* irbuilder-body)
+           (*current-function* startup-fn)
+           (entry-bb (irc-basic-block-create "entry" startup-fn))
+           (arguments (llvm-sys:get-argument-list startup-fn))
+           (arg-values (first arguments)))
+      (cmp:irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
+      (with-irbuilder (irbuilder-alloca)
+        (let ((start (if roots-array-or-nil
+                         (irc-typed-gep array-type roots-array-or-nil (list 0 0))
+                         (llvm-sys:constant-pointer-null-get %t**%))))
+          (multiple-value-bind (function-vector-length function-vector function-vector-type)
+              (literal:setup-literal-machine-function-vectors cmp:*the-module*)
+            (when gcroots-in-module
+              (irc-intrinsic "cc_initialize_gcroots_in_module"
+                             gcroots-in-module ; holder
+                             start ; root_address
+                             (jit-constant-size_t number-of-roots) ; num_roots
+                             arg-values ; initial_data
+                             (llvm-sys:constant-pointer-null-get %i8**%) ; transient_alloca
+                             (jit-constant-size_t 0) ; transient_entries
+                             (jit-constant-size_t function-vector-length) ; function_pointer_count
+                             (irc-bit-cast
+                              (cmp:irc-typed-gep function-vector-type
+                                                 function-vector
+                                                 (list 0 0))
+                              %i8**%) ; fptrs
+                             ))))
+        (when gcroots-in-module
+          (irc-intrinsic "cc_finish_gcroots_in_module" gcroots-in-module))
+        (let ((global-entry-point (literal:constants-table-value (cmp:entry-point-reference-index (xep-group-entry-point-reference THE-REPL-XEP-GROUP)))))
+          (irc-ret (irc-bit-cast global-entry-point %t*%))))
+        (values))))
+
+(defun codegen-shutdown (module shutdown-function-name gcroots-in-module)
+  (let* ((shutdown-fn (irc-simple-function-create shutdown-function-name
+                                                  %fn-shut-down%
+                                                  'llvm-sys::internal-linkage
+                                                  module
+                                                  :argument-names nil))
+         (irbuilder-alloca
+           (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+         (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+         (*irbuilder-function-alloca* irbuilder-alloca)
+         (*irbuilder-function-body* irbuilder-body)
+         (*current-function* shutdown-fn)
+         (entry-bb (irc-basic-block-create "entry" shutdown-fn)))
+    (irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
+    (with-irbuilder (irbuilder-alloca)
+      (if gcroots-in-module
+          (irc-intrinsic "cc_remove_gcroots_in_module"
+                         gcroots-in-module))
+      (irc-ret-void)))
+  (values))
+
+(defun codegen-startup-shutdown (module startup-shutdown-id THE-REPL-XEP-GROUP &optional gcroots-in-module array-type roots-array-or-nil (number-of-roots 0) ordered-literals)
+  (multiple-value-bind (startup-function-name shutdown-function-name)
+      (jit-startup-shutdown-function-names startup-shutdown-id)
+    (codegen-startup module startup-function-name
+                     THE-REPL-XEP-GROUP gcroots-in-module
+                     array-type roots-array-or-nil number-of-roots
+                     ordered-literals)
+    (codegen-shutdown module shutdown-function-name gcroots-in-module)
+    (make-boot-function-global-variable
+     module startup-shutdown-id :position startup-shutdown-id)
+    (values)))
+
+
+(defun add-llvm.used (module used-function)
+  (or used-function (error "used-function must not be NIL"))
+  (llvm-sys:make-global-variable
+   module
+   %i8*[1]%
+   nil
+   'llvm-sys:appending-linkage
+   (llvm-sys:constant-array-get
+    %i8*[1]%
+    (list
+     (irc-bit-cast used-function %i8*%)))
+   "llvm.used"))
+
+
+(defun add-global-ctor-function (module main-function &key position register-library)
+  (declare (ignore register-library)) 
+  "Create a function with the name core:+clasp-ctor-function-name+ and
+have it call the main-function"
+  #+(or)(unless (eql module (llvm-sys:get-parent main-function))
+          (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent main-function) module))
+;;;  (core::fmt t "add-global-ctor-function position: {}%N" position)
+  (multiple-value-bind (startup-function-name startup-function-linkage)
+      (core:startup-linkage-shutdown-names position)
+    (let* ((*the-module* module)
+           (ctor-fn (irc-simple-function-create
+                     startup-function-name
+                     %fn-ctor%
+                     startup-function-linkage
+                     *the-module*
+                     :argument-names +fn-ctor-argument-names+)))
+      (let* ((irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+             (*current-function* ctor-fn)
+             (entry-bb (irc-basic-block-create "entry" ctor-fn)))
+        (irc-set-insert-point-basic-block entry-bb irbuilder-body)
+        (with-landing-pad nil
+          (with-irbuilder (irbuilder-body)
+            (let ((bc-main-function
+                    (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer")))
+              (irc-intrinsic "cc_register_startup_function"
+                             (jit-constant-size_t position) bc-main-function)
+              (irc-ret-void))))
+        ;;(llvm-sys:dump fn)
+        #+(or)(let* ((function-name "_claspObjectFileStartUp") ; (core:fmt nil "ObjectFileStartUp-{}" (core:next-number)))
+                     #+(or)(_ (core:fmt t "add-global-ctor-function name: {}%N" function-name))
+                     (outer-fn (irc-simple-function-create
+                                function-name
+                                %fn-ctor%
+                                'llvm-sys:internal-linkage
+                                *the-module*
+                                :argument-names +fn-ctor-argument-names+))
+                     (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+                     (*current-function* outer-fn)
+                     (entry-bb (irc-basic-block-create "entry" outer-fn)))
+                (irc-set-insert-point-basic-block entry-bb irbuilder-body)
+                (with-landing-pad nil
+                  (with-irbuilder (irbuilder-body)
+                    (let* ((bc-main-function (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
+                           (_                (irc-create-call-wft %fn-ctor% ctor-fn nil))
+                           (_                (irc-ret-void))))))
+                (add-llvm.used *the-module* outer-fn))
+        (add-llvm.used *the-module* ctor-fn) ;; Try this instead of the thing above
+        )
+      ctor-fn)))
+
+(defun add-main-function (module run-all-function)
+  "Create an external function with the name main have it call the run-all-function"
+  (let* ((*the-module* module)
+         (fn (irc-simple-function-create
+              "MAIN"
+              %fn-start-up%
+              cmp:*default-linkage*
+              *the-module*
+              :argument-names +fn-start-up-argument-names+)))
+    (let* ((irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+           (*current-function* fn)
+           (entry-bb (irc-basic-block-create "entry" fn)))
+      (irc-set-insert-point-basic-block entry-bb irbuilder-body)
+      (with-irbuilder (irbuilder-body)
+        (let ((bc-bf
+                (irc-bit-cast run-all-function %fn-start-up*% "run-all-pointer")))
+          (irc-intrinsic "cc_invoke_sub_run_all_function" bc-bf)
+          (irc-ret-null-t*))
+        ;;(llvm-sys:dump fn)
+        fn))))
+
+  (defun find-global-ctor-function (module)
+    (let ((ctor (llvm-sys:get-function module core:+clasp-ctor-function-name+)))
+      (or ctor (error "Couldn't find the ctor-function: ~a" core:+clasp-ctor-function-name+))
+      ctor))
+
+  (defun remove-llvm.global_ctors-if-exists (module)
+    (let ((global (llvm-sys:get-named-global module "llvm.global_ctors")))
+      (if global
+          (llvm-sys:erase-from-parent global))))
+
+  (defun remove-llvm.used-if-exists (module)
+    (let ((global (llvm-sys:get-named-global module "llvm.used")))
+      (if global
+          (llvm-sys:erase-from-parent global))))
+
+(defun add-llvm.global_ctors (module priority global-ctor-function)
+  (or global-ctor-function (error "global-ctor-function must not be NIL"))
+  (llvm-sys:make-global-variable
+   module
+   %global-ctors-struct[1]%
+   nil
+   'llvm-sys:appending-linkage
+   (llvm-sys:constant-array-get
+    %global-ctors-struct[1]%
+    (list
+     (llvm-sys:constant-struct-get %global-ctors-struct%
+                                   (list
+                                    (jit-constant-i32 priority)
+                                    global-ctor-function
+                                    (llvm-sys:constant-pointer-null-get %i8*%)))))
+   "llvm.global_ctors"))
+
+(defun make-boot-function-global-variable (module func-designator &key position register-library)
+  "* Arguments
+- module :: An llvm module
+- func-designator :: An llvm function designator
+* Description
+Add the global variable llvm.global_ctors to the Module (linkage appending)
+and initialize it with an array consisting of one function pointer."
+  (let ((startup-fn (cond
+                      ;; repl functions use an integer ID and we generate the startup-name and
+                      ;;  then lookup the function
+                      ((fixnump func-designator)
+                       (multiple-value-bind (startup-name shutdown-name)
+                           (jit-startup-shutdown-function-names func-designator)
+                         (declare (ignore shutdown-name))
+                         (llvm-sys:get-function module startup-name)))
+                      ((stringp func-designator)
+                       (llvm-sys:get-function module func-designator))
+                      ((typep func-designator 'llvm-sys:function)
+                       func-designator)
+                      (t (error "~a must be a function name or llvm-sys:function" func-designator)))))
+    (unless startup-fn
+      (error "Could not find ~a in module" func-designator))
+    #+(or)(unless (eql module (llvm-sys:get-parent func-ptr))
+            (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent func-ptr) module))
+    (let* ((global-ctor (add-global-ctor-function module startup-fn
+                                                  :position position
+                                                  :register-library register-library)))
+      (incf *compilation-module-index*)
+      (multiple-value-bind (startup-name linkage)
+          (core:startup-linkage-shutdown-names 0) ; we only want to know linkage
+        (declare (ignore startup-name))
+        (when (eq linkage 'llvm-sys:internal-linkage)
+          ;; Internal linkage means we can't look up a symbol to get the startup so we need to depend on
+          ;; static constructors to initialize things.
+          (add-llvm.global_ctors module *compilation-module-index* global-ctor))))))

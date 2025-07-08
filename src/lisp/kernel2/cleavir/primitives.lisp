@@ -42,9 +42,11 @@
                          :returns-twice returns-twice
                          :ltvc ltvc)))))
 
+(defvar *primitives* (make-hash-table :test 'equal :thread-safe t))
+
 (defun define-primitive (name return-ty-attr args-ty-attr &key varargs does-not-throw does-not-return returns-twice ltvc)
   (let ((info (define-primitive-info name return-ty-attr args-ty-attr varargs does-not-throw does-not-return returns-twice ltvc)))
-    (funcall #'(setf gethash) info name *primitives*)))
+    (setf (gethash name *primitives*) info)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -62,8 +64,6 @@
 (defun primitive         (name return-ty args-ty &key varargs does-not-return returns-twice ltvc)
   "Define primitives that do NOT unwind the stack directly or through transitive calls"
   (define-primitive name return-ty args-ty :varargs varargs :does-not-throw t :does-not-return does-not-return :returns-twice returns-twice :ltvc ltvc))
-
-(defvar *primitives* (make-hash-table :test 'equal :thread-safe t))
 
 (defun general-entry-point-redirect-name (arity)
   "Return the name of the wrong-number-of-arguments function for the arity"
