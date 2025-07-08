@@ -287,6 +287,8 @@
            #~"kernel/cmp/debuginfo.lisp"
            #~"kernel/cmp/cmprunall.lisp"
            #~"kernel2/cleavir/cmpliteral.lisp"
+           #~"kernel/cmp/typeq.lisp"
+           #~"kernel/cmp/codegen-special-form.lisp"
            :clasp-cleavir
            #~"kernel/cmp/arguments.lisp")
 
