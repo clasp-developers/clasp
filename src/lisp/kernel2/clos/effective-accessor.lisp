@@ -8,6 +8,10 @@
 (defmethod accessor-method-slot-definition ((method effective-accessor-method))
   (with-early-accessors (effective-accessor-method)
     (accessor-method-slot-definition (effective-accessor-method-original method))))
+;;; expand-apply-method
+(defmethod method-specializers ((method effective-accessor-method))
+  (with-early-accessors (effective-accessor-method)
+     (method-specializers (effective-accessor-method-original method))))
 
 (defun make-effective-reader-method (method location function)
   (early-make-instance effective-reader-method
