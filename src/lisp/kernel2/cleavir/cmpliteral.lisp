@@ -796,6 +796,8 @@ Return the index of the load-time-value"
 (defmacro with-literal-table ((&key id)&body body)
   `(do-literal-table ,id (lambda () ,@body)))
 
+(defvar *run-time-coalesce*)
+
 (defun do-rtv (body-fn)
   (let* ((cmp:*generate-compile-file-load-time-values* nil)
          (module-id (core:next-jit-compile-counter))
@@ -892,8 +894,6 @@ and  return the sorted values and the constant-table or (values nil nil)."
 ;;;
 ;;; run time values (i.e., cl:compile)
 ;;;
-
-(defvar *run-time-coalesce*)
 
 (declaim (ftype (function (t boolean) (values (or immediate-datum literal-node) boolean)) run-time-reference-literal))
 (defun run-time-reference-literal (object read-only-p)

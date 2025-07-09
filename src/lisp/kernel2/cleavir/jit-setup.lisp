@@ -220,6 +220,12 @@ Return the module and the global variable that represents the load-time-value-ho
   "Keeps track of the current DIBuilder for generating DWARF debugging information for *the-module*.
 No DIBuilder is defined for the default module")
 
+(defun potentially-save-module ()
+  (when *save-module-for-disassemble*
+    (setq *saved-module-from-clasp-jit*
+          (with-output-to-string (*standard-output*)
+            (llvm-sys:dump-module *the-module* *standard-output*)))))
+
 (defun jit-constant-pointer-null-get (type)
   (llvm-sys:constant-pointer-null-get type))
 
