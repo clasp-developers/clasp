@@ -47,11 +47,10 @@
 (defvar *avoid-compiling* nil)
 
 (defun emf-maybe-compile (form)
-  (compile nil form)
-  #+(or)
-  (if (or *avoid-compiling* (not cmp:*cleavir-compile-hook*))
-      (let ((core:*use-interpreter-for-eval* t))
-        (coerce form 'function))
+  (if *avoid-compiling*
+      (let ((cmp:*cleavir-compile-hook* nil))
+        (declare (special cmp:*cleavir-compile-hook*))
+        (compile nil form))
       (let ((*avoid-compiling* t))
         (compile nil form))))
 
