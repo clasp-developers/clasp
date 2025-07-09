@@ -173,5 +173,6 @@
   (let ((*compile-file-parallel* nil))
     (if (eq output-type :bytecode)
         (apply #'cmpltv:bytecode-compile-stream input-stream output-path args)
-        (error "Not implemented")))
+        ;; Defined later in cleavir/compile-file.lisp
+        (apply #'native-compile-stream input-stream output-path args)))
   (truename output-path))

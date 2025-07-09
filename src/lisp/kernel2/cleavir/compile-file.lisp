@@ -76,6 +76,28 @@
                                 nil ; dwo-stream for dwarf objects
                                 file-type module)))))
 
+;;; Called from compile-stream/serial
+(defun native-compile-stream (input-stream output-path
+                              &key (optimize t)
+                                (optimize-level *optimization-level*)
+                                (output-type *default-output-type*)
+                                (type :user)
+                                (image-startup-position
+                                 (core:next-startup-position))
+                                environment
+                              &allow-other-keys)
+  (with-compiler-timer (:message "Compile-file"
+                        :report-link-time t
+                        :verbose *compile-verbose*)
+    (let ((module (compile-stream-to-module input-stream
+                                            :environment environment
+                                            :image-startup-position image-startup-position
+                                            :optimize optimize
+                                            :optimize-level optimize-level)))
+      (compile-file-output-module module output-path output-type
+                                  type
+                                  :position image-startup-position))))
+
 (defun compile-stream-to-module (source-sin
                                  &key
                                    environment
@@ -111,3 +133,43 @@ Compile a Lisp source stream and return a corresponding LLVM module."
     ;; ---- MOVE OPTIMIZATION in with-module to HERE ----
     (quick-module-dump module "postoptimize")
     module))
+
+(defun build-extension (type)
+  (cond ((or (eq type :bytecode)
+             (member :bytecode *features*))
+         "fasl")
+        ((eq type :faso)
+         "faso")
+        ((eq type :fasoll)
+         "fasoll")
+        ((eq type :fasobc)
+         "fasobc")
+        (t
+         (error "Unsupported build-extension type ~a" type))))
+
+(defun compile-file-output-module (module output-file output-type type
+                                   &key position)
+  (declare (ignore type))
+  (setq output-file (make-pathname :defaults output-file :version nil
+                                   :type (build-extension output-type)))
+  (ensure-directories-exist output-file)
+  (when *compile-verbose*
+    (format t "~&; Writing ~a file to: ~a~%" output-type output-file))
+  (ecase output-type
+    (:faso
+     (core:write-faso output-file
+                      (list (generate-obj-asm-stream
+                             module :simple-vector-byte8
+                             'llvm-sys:code-gen-file-type-object-file
+                             *default-reloc-model*))
+                      :start-object-id position))
+    (:fasoll
+     (with-atomic-file-rename (temp-pathname output-file)
+       (with-open-file (fout temp-pathname :direction :output
+                                           :if-exists :supersede)
+         (llvm-sys:dump-module module fout))))
+    (:fasobc
+     (with-atomic-file-rename (temp-pathname output-file)
+       (llvm-sys:write-bitcode-to-file module
+                                       (namestring temp-pathname)))))
+  (with-track-llvm-time (llvm-sys:module-delete module)))
