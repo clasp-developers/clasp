@@ -96,6 +96,22 @@
 (let ((s (open (core:argv 8) :if-exists :overwrite :if-does-not-exist :create :direction :output)))
   (print `(in-package #:cmp) s)
   (print `(defvar +cxx-data-structures-info+ ',(llvm-sys:cxx-data-structures-info)) s))
+;; This is probably the worst, in terms of pidginness.
+;; In primitive Clasp we have no operator for mapping over a vector.
+(let ((s (open (core:argv 9) :if-exists :overwrite :if-does-not-exist :create :direction :output)))
+  (print `(in-package #:clasp-ffi) s)
+  (print `(eval-when (:compile-toplevel)
+            (defparameter *foreign-type-specs*
+              '(,@(let ((len (length clasp-ffi:*foreign-type-spec-table*)))
+                    (labels ((frob (index accum)
+                               (if (>= index len) (return-from frob accum))
+                               (let ((spec (aref clasp-ffi:*foreign-type-spec-table* index)))
+                                 (frob (+ index 1)
+                                       (if spec
+                                           (cons (cons (clasp-ffi:%lisp-symbol spec) index) accum)
+                                           accum)))))
+                      (frob 0 nil))))))
+         s))
 (core:quit)"))
 
 (defmethod print-prologue (configuration (name (eql :update-unicode)) output-stream)

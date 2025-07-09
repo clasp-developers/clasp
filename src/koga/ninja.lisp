@@ -753,6 +753,7 @@
          (runtime-variables.lisp (make-source "runtime-variables.lisp"
                                               :variant-generated))
          (runtime-info.lisp (make-source "runtime-info.lisp" :variant-generated))
+         (fli-specs.lisp (make-source "fli-specs.lisp" :variant-generated))
          (vimage (make-source (format nil "images/nbase.~a"
                                       (fasl-extension configuration))
                               :variant-lib))
@@ -764,7 +765,8 @@
     (ninja:write-build output-stream :generate-lisp-info
                        :outputs (list features.sexp runtime-packages.lisp
                                       cxx-classes.lisp runtime-functions.lisp
-                                      runtime-variables.lisp runtime-info.lisp)
+                                      runtime-variables.lisp runtime-info.lisp
+                                      fli-specs.lisp)
                        :clasp clasp-with-env
                        :implicit-inputs (list iclasp))
     (ninja:write-build output-stream :compile-bytecode-image

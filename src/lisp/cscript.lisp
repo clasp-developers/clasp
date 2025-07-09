@@ -294,6 +294,8 @@
            #~"kernel2/cleavir/compile-file.lisp"
            #~"kernel/lsp/queue.lisp"
            #~"kernel/cmp/compile-file-parallel.lisp"
+           #@"fli-specs.lisp"
+           #~"kernel2/lsp/fli.lisp"
            #~"kernel/lsp/cltl2.lisp"
            #~"kernel/lsp/macroexpand-all.lisp")
 
