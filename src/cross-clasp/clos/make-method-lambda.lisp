@@ -3,13 +3,34 @@
 (defgeneric %make-method-lambda
     (generic-function method lambda-expression environment))
 
+;;; A sham environment that definitely doesn't have call-next-method or
+;;; next-method-p bound, since we apparently can't rely on that. Not sure why.
+(defclass cnmless ()
+  ((%underlying :initarg :underlying :reader underlying)))
+
+(defmethod trucler:describe-block (client (env cnmless) name)
+  (trucler:describe-block client (underlying env) name))
+(defmethod trucler:describe-declarations (client (env cnmless))
+  (trucler:describe-declarations client (underlying env)))
+(defmethod trucler:describe-function (client (env cnmless) name)
+  (case name
+    ((call-next-method next-method-p) nil)
+    (t (trucler:describe-function client (underlying env) name))))
+(defmethod trucler:describe-optimize (client (env cnmless))
+  (trucler:describe-optimize client (underlying env)))
+(defmethod trucler:describe-tag (client (env cnmless) name)
+  (trucler:describe-tag client (underlying env) name))
+(defmethod trucler:describe-variable (client (env cnmless) name)
+  (trucler:describe-variable client (underlying env) name))
+(defmethod trucler:global-environment (client (env cnmless))
+  (trucler:global-environment client env))
+
 ;;; Return two values indicating the use of CALL-NEXT-METHOD and NEXT-METHOD-P
 ;;; in the lambda. Each value can be either T, meaning used in a call, or
 ;;; FUNCTION, meaning used generally (e.g. by #'call-next-method), or NIL meaning
 ;;; not referenced at all.
 ;;; To do this, we compile the body in the environment, and note
 ;;; if there are unresolved references to call-next-method or next-method-p.
-;;; (We assume that these functions are not present in the environment.)
 ;;; We run silent by suppressing all warnings and errors. If compilation fails
 ;;; we assume the worst (that it does refer to next methods, somehow).
 ;;; T is never returned for either value because we cannot distinguish the ways
@@ -17,7 +38,8 @@
 (defun walk-method-lambda (method-lambda environment)
   (let ((cnm-p nil) (nmp-p nil)
         ;; Block compilation unit output on abort
-        (*error-output* (make-broadcast-stream)))
+        (*error-output* (make-broadcast-stream))
+        (environment (make-instance 'cnmless :underlying environment)))
     (multiple-value-bind (fn warning failure)
         (handler-bind ((maclina.compile:unknown-function
                          (lambda (c)

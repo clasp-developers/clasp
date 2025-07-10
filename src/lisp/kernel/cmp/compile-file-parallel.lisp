@@ -205,8 +205,8 @@
     (*compile-file-source-debug-lineno*
      . ',*compile-file-source-debug-lineno*)
     (*compile-file-file-scope* . ',*compile-file-file-scope*)
-    #+(or cclasp eclasp)(cleavir-cst-to-ast:*compiler*
-                         . ',cleavir-cst-to-ast:*compiler*)
+    (cleavir-cst-to-ast:*compiler*
+     . ',cleavir-cst-to-ast:*compiler*)
     (*global-function-refs* . ',*global-function-refs*)))
 
 (defun cclasp-loop2 (source-sin
@@ -240,9 +240,8 @@ multithreaded performance that we should explore."
               nil)
              (t
               (error "Handle intermediate-output-type ~a" intermediate-output-type))))
-         #+(or cclasp eclasp) (cleavir-cst-to-ast:*compiler*
-                                'cl:compile-file)
-         #+(or cclasp eclasp)(eclector.reader:*client* cmp:*cst-client*)
+         (cleavir-cst-to-ast:*compiler* 'cl:compile-file)
+         (eclector.reader:*client* cmp:*cst-client*)
          ast-jobs
          (job-args `(:optimize ,optimize :optimize-level ,optimize-level
                      :intermediate-output-type ,intermediate-output-type))
