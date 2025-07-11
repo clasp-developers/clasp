@@ -23,7 +23,7 @@
 (defmethod trucler:describe-variable (client (env cnmless) name)
   (trucler:describe-variable client (underlying env) name))
 (defmethod trucler:global-environment (client (env cnmless))
-  (trucler:global-environment client env))
+  (trucler:global-environment client (underlying env)))
 
 ;;; Return two values indicating the use of CALL-NEXT-METHOD and NEXT-METHOD-P
 ;;; in the lambda. Each value can be either T, meaning used in a call, or
