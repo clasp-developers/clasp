@@ -120,6 +120,9 @@
 (defmacro %restart-case (expression &body clauses &environment env)
   (let* ((block-tag (gensym))
          (temp-var  (gensym))
+         ;; This is a gensym in order to avoid leaving cross-clasp symbols
+         ;; in macroexpansions.
+         (temp-arg  (gensym))
          ;; A list of (name lambda-list body restart-bind-plist)
          (data
            (loop for clause in clauses
@@ -139,8 +142,8 @@
               ;; but right now clasp and maclina ignore locks
               ;; for local bindings.
               (flet (,@(loop for gname in gnames
-                             collect `(,gname (&rest temp)
-                                        (setq ,temp-var temp)
+                             collect `(,gname (&rest ,temp-arg)
+                                        (setq ,temp-var ,temp-arg)
                                         (go ,gname))))
                 (declare (dynamic-extent
                           ,@(loop for gname in gnames

@@ -223,3 +223,57 @@ Example:
      ,@(when doc
          `((cross-clasp.clasp.ext:annotate ',name 'documentation 'variable ,doc)))
      ',name))
+
+;;; These are in common-macros, but they use their own condition classes &c.
+
+;;; Process a t/otherwise clause into an unambiguous normal clause.
+(defun remove-otherwise-from-clauses (clauses)
+  (mapcar #'(lambda (clause)
+	      (let ((options (first clause)))
+		(if (member options '(t otherwise))
+		    (cons (list options) (rest clause))
+		    clause)))
+	  clauses))
+
+(defun accumulate-cases (clauses)
+  (loop for (mems) in clauses
+        when (listp mems) append mems
+          else collect mems))
+
+(defmacro %ccase (keyplace &rest clauses)
+  (let* ((key (gensym))
+	 (repeat (gensym))
+	 (block (gensym))
+         (clauses (remove-otherwise-from-clauses clauses)))
+    `(block ,block
+       (tagbody ,repeat
+	  (let ((,key ,keyplace))
+	    (return-from ,block
+	      (case ,key ,@clauses
+	            (t (setf ,keyplace
+			     (ccase-error ',keyplace ,key
+					  ',(accumulate-cases clauses)))
+		     (go ,repeat)))))))))
+(defmacro %ecase (keyform &rest clauses)
+  (let ((key (gensym))
+        (clauses (remove-otherwise-from-clauses clauses)))
+    `(let ((,key ,keyform))
+       (case ,key ,@clauses
+	     (t (ecase-error ,key ',(accumulate-cases clauses)))))))
+
+(defmacro %etypecase (keyform &rest clauses)
+  (let ((key (gensym)))
+    `(let ((,key ,keyform))
+       (cond ,@(loop for (type . body) in clauses
+                     collect `((typep ,key ',type) ,@body))
+             (t (etypecase-error ,key ',(mapcar #'car clauses)))))))
+
+(defmacro %ctypecase (keyplace &rest clauses)
+  (let ((key (gensym)))
+    `(loop with ,key = ,keyplace
+           do (cond ,@(loop for (type . body) in clauses
+                            collect `((typep ,key ',type)
+                                      (return (progn ,@body)))))
+              (setf ,keyplace
+                    (ctypecase-error ',keyplace ,key
+                                     ',(mapcar #'car clauses))))))

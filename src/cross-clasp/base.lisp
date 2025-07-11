@@ -115,6 +115,16 @@
     (extrinsicl:get-setf-expansion
      client env (macroexpand-hook) place)))
 
+(defmacro %remf (&environment env place indicator)
+  (multiple-value-bind (vars vals stores store-form access-form)
+      (common-macro-definitions:get-setf-expansion m:*client* place env)
+    (let ((s (gensym "s")))
+      `(let* (,@(mapcar #'list vars vals) (,s ,indicator))
+         (multiple-value-bind (,(car stores) flag)
+             (core:rem-f ,access-form ,s)
+           ,store-form
+           flag)))))
+
 (defun install-packages (&optional (client m:*client*)
                            (environment *build-rte*))
   (macrolet ((defpack (name hostname &rest nicknames)
@@ -377,7 +387,12 @@
                                (restart-case . %restart-case)
                                (restart-bind . %restart-bind)
                                (with-condition-restarts . %with-condition-restarts)
-                               (with-package-iterator . %with-package-iterator))
+                               (with-package-iterator . %with-package-iterator)
+                               (ccase . core::%ccase)
+                               (ecase . core::%ecase)
+                               (ctypecase . core::%ctypecase)
+                               (etypecase . core::%etypecase)
+                               (remf . %remf))
         for m = (macro-function src)
         do (setf (clostrum:macro-function client rte mname) m))
   (loop for (fname . set) in '((mp::atomic . mp::expand-atomic))
@@ -414,6 +429,7 @@
   (values))
 
 (defun build (output-file &rest input-files)
-  (maclina.compile-file:compile-files input-files output-file
-                                      :environment *build-rte*
-                                      :reader-client *reader-client*))
+  (let ((*compile-verbose* t) (*compile-print* t))
+    (maclina.compile-file:compile-files input-files output-file
+                                        :environment *build-rte*
+                                        :reader-client *reader-client*)))
