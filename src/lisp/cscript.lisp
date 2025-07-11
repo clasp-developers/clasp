@@ -297,7 +297,8 @@
            #@"fli-specs.lisp"
            #~"kernel2/lsp/fli.lisp"
            #~"kernel/lsp/cltl2.lisp"
-           #~"kernel/lsp/macroexpand-all.lisp")
+           #~"kernel/lsp/macroexpand-all.lisp"
+           #~"kernel/cleavir/auto-compile.lisp")
 
 (k:sources :extension-translations
            :extension-systems)
