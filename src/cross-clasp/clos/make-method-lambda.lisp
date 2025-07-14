@@ -40,22 +40,20 @@
         ;; Block compilation unit output on abort
         (*error-output* (make-broadcast-stream))
         (environment (make-instance 'cnmless :underlying environment)))
-    (multiple-value-bind (fn warning failure)
-        (handler-bind ((maclina.compile:unknown-function
-                         (lambda (c)
-                           (case (maclina.compile:name c)
-                             (call-next-method (setf cnm-p 'function))
-                             (next-method-p (setf nmp-p 'function)))))
-                       (warning #'muffle-warning)
-                       (error (lambda (c)
-                                (declare (ignore c))
-                                (return-from walk-method-lambda
-                                  (values 'function 'function)))))
-          (maclina.compile:compile method-lambda environment))
-      (declare (ignore fn warning))
-      (if failure
-          (values 'function 'function) ; assume worst
-          (values cnm-p nmp-p)))))
+    (handler-bind ((maclina.compile:unknown-function
+                     (lambda (c)
+                       (case (maclina.compile:name c)
+                         (call-next-method (setf cnm-p 'function))
+                         (next-method-p (setf nmp-p 'function)))))
+                   (warning #'muffle-warning)
+                   (error (lambda (c)
+                            (return-from walk-method-lambda
+                              (values 'function 'function)))))
+      ;; Compile without linking. This is important so that for example
+      ;; it doesn't bother trying to resolve load-time-value forms.
+      (maclina.compile:compile-into (maclina.compile:make-cmodule)
+                                    method-lambda environment))
+    (values cnm-p nmp-p)))
 
 ;;; Given a parsed lambda list, reconstruct it.
 ;;; This is used after getting the specializers out.
