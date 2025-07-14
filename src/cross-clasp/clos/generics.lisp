@@ -295,7 +295,14 @@
     (let ((rlambda-list (reconstruct-lambda-list required optional
                                                  rest keys aokp aux keysp)))
       (multiple-value-bind (method-lambda leafp)
-          (early-method-lambda `(lambda ,rlambda-list ,@body) environment)
+          (let ((args (gensym "ARGS")))
+            (early-method-lambda
+             `(lambda (&rest ,args)
+                ;; not using the lambda list directly so we don't have to
+                ;; process declarations.
+                (block ,(block-name name)
+                  (destructuring-bind ,rlambda-list ,args ,@body)))
+             environment))
         ;; Because we assume all methods are standard, we use our own method
         ;; bodies. The code is written this way in case at some far off time
         ;; we do want to allow nonstandard methods.
