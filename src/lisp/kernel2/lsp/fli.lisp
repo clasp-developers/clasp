@@ -112,17 +112,12 @@
                           collecting `(set1 ,key ,ll)))))
     (setall :short cmp::%i16%
             :unsigned-short cmp::%i16%
-            :ushort cmp::%i16%
             :int cmp::%i32%
             :unsigned-int cmp::%i32%
-            :uint cmp::%i32%
             :long cmp::%i64%
             :unsigned-long cmp::%i64%
-            :ulong cmp::%i64%
             :long-long cmp::%i64%
-            :llong cmp::%i64%
             :unsigned-long-long cmp::%i64%
-            :ullong cmp::%i64%
             :int8 cmp::%i8%
             :uint8 cmp::%i8%
             :int16 cmp::%i16%
@@ -136,7 +131,6 @@
             :size cmp::%size_t%
             :ssize cmp::%size_t%
             ;#+short-float :short-float #+short-float cmp::%short-float%
-            :single-float cmp::%float%
             :float cmp::%float%
             :double cmp::%double%
             ;#+long-float :long-float #+long-float cmp::%long-float%
@@ -144,7 +138,6 @@
             :void cmp::%void%
             :char cmp::%i8%
             :unsigned-char cmp::%i8%
-            :uchar cmp::%i8%
             ;; TODO: CHECK & IMPLEMEMT !
             ;; :time cmp::+time_t+
             ;; :ptrdiff cmp::+ptrdiff_t+
