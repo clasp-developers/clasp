@@ -435,7 +435,7 @@
 
 (defun make-bir-function (bytecode-function inserter
                           &optional (module (bir:module inserter)))
-  (let* ((lambda-list (core:function-lambda-list bytecode-function))
+  (let* ((lambda-list (ext:function-lambda-list bytecode-function))
          (function (make-instance 'bir:function
                      :returni nil ; set by :return compilation
                      :name (bcfun/fname bytecode-function)
@@ -828,9 +828,9 @@
     (declare (ignore start))
     (let* ((ifun (bir:function inserter))
            (ll (bir:lambda-list ifun)))
-      (loop repeat nopt
-            for arg = (make-instance 'bir:argument :function ifun)
+      (loop for arg = (make-instance 'bir:argument :function ifun)
             for -p = (make-instance 'bir:argument :function ifun)
+            repeat nopt
             do (stack-push arg context)
             collect (list arg -p) into ll-app
             finally (setf (bir:lambda-list ifun)
