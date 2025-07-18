@@ -272,6 +272,7 @@
            #~"kernel2/cmp/variables.lisp"
            #~"kernel2/clos/make-load-form.lisp"
            #~"kernel2/cmp/eclector.lisp"
+           #~"kernel/cmp/startup-primitives.lisp"
            #~"kernel2/cmp/cmpltv.lisp"
            #~"kernel2/cmp/compile-file.lisp"
            ;; native compiler
@@ -281,7 +282,6 @@
            #~"kernel2/cleavir/jit-setup.lisp"
            #~"kernel/cmp/cmpsetup.lisp"
            #~"kernel2/cleavir/cmpintrinsics.lisp"
-           #~"kernel/cmp/startup-primitives.lisp"
            #~"kernel2/cleavir/primitives.lisp"
            #~"kernel2/cleavir/cmpir.lisp"
            #~"kernel/cmp/debuginfo.lisp"
