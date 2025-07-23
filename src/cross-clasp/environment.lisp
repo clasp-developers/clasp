@@ -67,6 +67,32 @@
   (extrinsicl:macroexpand m:*client* (or env *build-rte*)
                           (macroexpand-hook) form))
 
+(defun ext:type-expander (specifier &optional env)
+  (let ((env (trucler:global-environment
+              m:*client* (or env *build-rte*))))
+    (clostrum:type-expander m:*client* env specifier)))
+(defun (setf ext:type-expander) (expander specifier &optional env)
+  (declare (ignore env))
+  (setf (clostrum:type-expander m:*client* *build-rte* specifier)
+        expander))
+
+(defun typexpand-1 (type-specifier &optional env)
+  (let ((expander
+          (etypecase type-specifier
+            (symbol (ext:type-expander type-specifier env))
+            (cons (ext:type-expander (first type-specifier) env))
+            (class nil))))
+    (if expander
+        (values (funcall expander type-specifier env) t)
+        (values type-specifier nil))))
+
+(defun typexpand (type-specifier &optional env)
+  (multiple-value-bind (expansion expandedp)
+      (typexpand-1 type-specifier env)
+    (if expandedp
+        (values (typexpand expansion env) t)
+        (values type-specifier nil))))
+
 (defun describe-variable (symbol &optional env)
   (trucler:describe-variable m:*client* (or env *build-rte*) symbol))
 
