@@ -50,6 +50,7 @@
 ;;; MEMBER
 ;;;
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 ;;; (member foo '(...)) is a common idiom. Notably, our *CASE expand into it.
 ;;; So we put something in so it won't actually iterate.
 (defun expand-constant-member (valuef list key-function test-function init)
@@ -90,6 +91,7 @@
            (when ,(funcall test-function %value
                            (funcall key-function %elt))
              (return ,%sublist)))))))
+) ; eval-when
 
 (define-compiler-macro member (&whole whole value list &rest sequence-args &environment env)
   ;; FIXME: pay attention to policy, e.g. don't inline for high SPACE.
@@ -100,6 +102,7 @@
 ;;; ASSOC
 ;;;
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun expand-assoc (env value list &rest sequence-args)
   (multiple-value-bind (key-function test-function init ignores
                         key-flag test-flag)
@@ -119,6 +122,7 @@
                      (return ,%elt)))
                  (when ,%elt
                    (error 'type-error :datum ,%elt :expected-type 'list)))))))))
+) ; eval-when
 
 (define-compiler-macro assoc (&whole whole value list &rest sequence-args &environment env)
   (or (apply #'expand-assoc env value list sequence-args)
@@ -128,6 +132,7 @@
 ;;; ADJOIN
 ;;;
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun expand-adjoin (env value list &rest sequence-args)
   (multiple-value-bind (key-function test-function init ignores
                         key-flag test-flag)
@@ -145,6 +150,7 @@
 	       (when ,(funcall test-function %value-after-key-function- 
 			       (funcall key-function %elt))
 		 (return ,%list)))))))))
+) ; eval-when
 
 (define-compiler-macro adjoin (&whole whole value list &rest sequence-args &environment env)
   (declare (ignore value list sequence-args))

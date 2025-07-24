@@ -343,6 +343,7 @@ and is not adjustable."
 	             (array-has-fill-pointer-p x)
 	             (array-displacement x))))))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun simple-type-predicate (name)
   ;; For some built in types, returns the name of an indicator function.
   ;; That is, (typep object name) = (funcall (simple-type-predicate name) object)
@@ -389,6 +390,7 @@ and is not adjustable."
     ((T) 'CONSTANTLY-T)
     (VECTOR 'VECTORP)
     (t nil)))
+) ; eval-when
 
 (defconstant-equal +upgraded-array-element-types+
   '#.(append '(NIL BASE-CHAR #+unicode CHARACTER BIT)

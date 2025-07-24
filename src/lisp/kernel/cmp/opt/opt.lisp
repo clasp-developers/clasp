@@ -1,6 +1,7 @@
 ;;; Stuff used by all the opt- files
 (in-package #:cmp)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun gensym-list (list &optional x)
   (loop
     :for _ :in list
@@ -164,3 +165,4 @@
                            test-flag
                            start
                            end))))
+) ; eval-when

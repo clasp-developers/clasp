@@ -303,6 +303,7 @@
                        core:put-f core::packages-iterator
                        core::process-lambda-list
                        ext:type-expander (setf ext:type-expander)
+                       core::normalize-type core::class-info
                        ;; Used by compiler, not expected to exist in target
                        core::delay-macro
                        ;; used in CLOS, not expected to actually exist
@@ -316,7 +317,27 @@
                        ext:parse-compiler-macro ext:parse-deftype
                        ext:parse-define-setf-expander
                        ext:add-implementation-package
-                       core::make-simple-vector-t)
+                       core::make-simple-vector-t
+                       ;; used in compiler macro expansions
+                       core::make-vector
+                       core::make-simple-vector-character
+                       core::concatenate-into-sequence
+                       core::coerce-to-list
+                       core::apply0 core::apply1
+                       core::apply2 core::apply3 core::apply4
+                       clos::classp core::subclassp
+                       core::fixnump
+                       core::two-arg-+ core::two-arg-*
+                       core::two-arg-- core::negate
+                       core::two-arg-/ core::reciprocal
+                       core::two-arg-< core::two-arg-<=
+                       core::two-arg-> core::two-arg->=
+                       core::two-arg-=
+                       core::logand-2op core::logior-2op
+                       core::find-class-holder
+                       ext::class-unboundp ext::class-get
+                       cmp::warn-undefined-type
+                       cmp::warn-cannot-coerce)
         for f = (fdefinition fname)
         do (setf (clostrum:fdefinition client rte fname) f))
   (loop for (fname . src) in '((cl:proclaim . proclaim)

@@ -93,6 +93,12 @@
         (values (typexpand expansion env) t)
         (values type-specifier nil))))
 
+(defun core::normalize-type (type &optional env)
+  (let ((type (typexpand type env)))
+    (if (consp type)
+        (values (first type) (rest type))
+        (values type nil))))
+
 (defun describe-variable (symbol &optional env)
   (trucler:describe-variable m:*client* (or env *build-rte*) symbol))
 
@@ -123,6 +129,11 @@
 
 (defun find-compiler-class (name &optional (errorp t))
   (clostrum:find-class m:*client* *build-rte* name errorp))
+
+(defun core::class-info (name &optional env)
+  (let ((env (trucler:global-environment
+              m:*client* (or env *build-rte*))))
+    (not (not (clostrum:find-class m:*client* env name nil)))))
 
 (defun gf-info (name)
   ;; stuffed into inline data for now

@@ -11,6 +11,7 @@
 ;;; We should DEFINITELY NOT cause compile time errors
 ;;; We COULD signal warnings on types like (standard-char foo)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 ;;; Array type map.
 ;;; The array hierarchy is defined in array.h. Basically here's how it goes:
 ;;; Arrays are divided by element type, and then in two other ways:
@@ -416,6 +417,7 @@
               (when (fboundp 'cmp:warn-undefined-type)
                 (cmp:warn-undefined-type nil type))
               (default)))))))))
+) ; eval-when
 
 (define-compiler-macro typep (&whole whole object type &optional environment
                                      &environment macro-env)
@@ -434,6 +436,7 @@
 ;;; COERCE
 ;;;
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun maybe-sequence-coercion-form (type env)
   (multiple-value-bind (kind length exactp success)
       (si::sequence-type-maker-info type env)
@@ -511,8 +514,9 @@
                     ;; "no coercion behavior", though.
                     ;; And maybe "can't figure it out at compile time but
                     ;; will at runtime".
-                    (cmp:warn-cannot-coerce nil type)
+                    (cmp:warn-cannot-coerce nil type) ; FIXME
                     whole)))))))))
+) ; eval-when
 
 (define-compiler-macro coerce (&whole form object type &environment env)
   (if (constantp type env)

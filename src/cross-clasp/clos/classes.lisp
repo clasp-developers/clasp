@@ -25,6 +25,12 @@
    (%default-initargs :accessor default-initargs)
    (%metaclass :initarg :metaclass :reader metaclass)))
 
+;;; Used in build environment
+(defun core::subclassp (class1 class2)
+  (assert (and (typep class1 'compiler-class)
+            (typep class2 'compiler-class)))
+  (member class2 (class-precedence-list class1)))
+
 ;;; Needed for Anatomicl
 (defmethod closer-mop:class-finalized-p ((class compiler-class)) t)
 
