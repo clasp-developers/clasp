@@ -313,10 +313,10 @@ Pathname_sp Pathname_O::makePathname(T_sp host, T_sp device, T_sp directory, T_s
       } else {
         p = Pathname_O::create();
       }
-    } else if (host.nilp()) {
+    } else if (host.nilp() || host == kw::_sym_unspecific) {
       p = Pathname_O::create();
     } else {
-      x = directory;
+      x = host;
       component = kw::_sym_host;
       goto ERROR;
     }
