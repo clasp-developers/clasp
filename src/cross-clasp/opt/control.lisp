@@ -1,7 +1,7 @@
-(in-package #:cmp)
+(in-package #:cross-clasp)
 
-(define-compiler-macro apply (&whole form function &rest arguments
-                                     &environment env)
+(define-cross-compiler-macro apply
+    (&whole form function &rest arguments &environment env)
   (if (null arguments)
       form ; error, leave it to runtime
       (let* ((fixed (butlast arguments))
@@ -25,21 +25,31 @@
                    ,@(mapcar #'list syms fixed))
                (,op ,fsym ,last ,@syms))))))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
+(defun core:coerce-called-fdesignator (fdesignator)
+  (etypecase fdesignator
+    (function fdesignator)
+    (symbol
+     (clostrum:fdefinition m:*client* *build-rte* fdesignator))))
+(defun core:apply0 (f last) (apply f last))
+(defun core:apply1 (f last a0) (apply f a0 last))
+(defun core:apply2 (f last a0 a1) (apply f a0 a1 last))
+(defun core:apply3 (f last a0 a1 a2) (apply f a0 a1 a2 last))
+(defun core:apply4 (f last &rest r)
+  (multiple-value-call f (values-list r) (values-list last)))
+
 (defun function-form-p (form)
   (and (consp form)
        (eq (car form) 'function)
        (consp (cdr form))
        (null (cddr form))))
-)
 
 ;;; Collapse (coerce-fdesignator #'foo) to #'foo,
 ;;; (coerce-fdesignator 'foo) to (fdefinition 'foo),
 ;;; and (coerce-fdesignator (lambda ...)) to (lambda ...).
 ;;; Note that cclasp should have more sophisticated IR-level analyses
 ;;; expanding on this.
-(define-compiler-macro core:coerce-fdesignator (&whole form designator
-                                                       &environment env)
+(define-cross-compiler-macro core:coerce-fdesignator
+    (&whole form designator &environment env)
   ;; In order to cover (lambda ...), among other possibilities, macroexpand.
   (let ((designator (macroexpand designator env)))
     (cond ((function-form-p designator) designator)

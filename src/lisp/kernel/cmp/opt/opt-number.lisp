@@ -97,6 +97,7 @@
 
 (in-package #:core)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun parse-bytespec (bytespec)
   (when (and (consp bytespec)
              (eql (car bytespec) 'byte)
@@ -104,6 +105,7 @@
              (consp (cddr bytespec))
              (null (cdddr bytespec)))
     (values (cadr bytespec) (caddr bytespec))))
+)
 
 (define-compiler-macro ldb (&whole whole bytespec integer)
   (multiple-value-bind (size position) (parse-bytespec bytespec)

@@ -22,6 +22,7 @@
                (:file "with-package-iterator" :depends-on ("environment" "packages"))
                (:file "define-unicode-tables" :depends-on ("packages"))
                (:file "cst" :depends-on ("packages"))
+               (:file "opt" :depends-on ("packages"))
                (:file "base" :depends-on ("environment" "clos" "defstruct"
                                                         "condition-system-macros"
                                                         "mp-macros" "mp-atomics"

@@ -241,8 +241,20 @@
            #~"kernel2/cmp/disassemble.lisp"
            #~"kernel2/cmp/bundle.lisp"
            #~"kernel2/cmp/exports.lisp"
-           ;; macros
+           ;; compiler macros
            #~"kernel2/lsp/source-transformations.lisp"
+           #~"kernel2/cmp/compiler-macro.lisp"
+           #~"kernel/cmp/opt/opt.lisp"
+           #~"kernel/cmp/opt/opt-character.lisp"
+           #~"kernel/cmp/opt/opt-number.lisp"
+           #~"kernel/cmp/opt/opt-type.lisp"
+           #~"kernel/cmp/opt/opt-control.lisp"
+           #~"kernel/cmp/opt/opt-sequence.lisp"
+           #~"kernel/cmp/opt/opt-cons.lisp"
+           #~"kernel/cmp/opt/opt-array.lisp"
+           #~"kernel/cmp/opt/opt-object.lisp"
+           #~"kernel/cmp/opt/opt-print.lisp"
+           ;; macros
            #~"kernel2/lsp/cmuutil.lisp"
            #~"kernel2/lsp/shiftf-rotatef.lisp"
            #~"kernel2/lsp/setf.lisp"

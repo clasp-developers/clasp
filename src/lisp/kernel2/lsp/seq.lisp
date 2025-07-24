@@ -48,6 +48,8 @@
 ;;; a list (VECTOR symbol) where symbol is an upgraded array element type,
 ;;; or a class (a user-defined sequence class).
 ;;; The length is a minimum, and if the third value is true, also a maximum.
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  ;; used at compile time in compiler macros
 (defun sequence-type-maker-info (type &optional env)
   (let (name args)
     (cond ((consp type)
@@ -135,6 +137,7 @@
                  (values class nil nil t)))))
          ;; Dunno.
          (values nil nil nil nil))))))
+) ; eval-when
 
 (defun make-sequence (type size	&key (initial-element nil iesp))
   "Args: (type length &key initial-element)
