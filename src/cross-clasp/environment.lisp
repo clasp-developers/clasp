@@ -130,10 +130,21 @@
 (defun find-compiler-class (name &optional (errorp t))
   (clostrum:find-class m:*client* *build-rte* name errorp))
 
+(defvar *class-infos* (make-hash-table :test #'eq))
+
+(defun reset-class-infos ()
+  (clrhash *class-infos*))
+
 (defun core::class-info (name &optional env)
-  (let ((env (trucler:global-environment
-              m:*client* (or env *build-rte*))))
-    (not (not (clostrum:find-class m:*client* env name nil)))))
+  (multiple-value-bind (info presentp) (gethash name *class-infos*)
+    (if presentp
+        info
+        (let ((env (trucler:global-environment
+                    m:*client* (or env *build-rte*))))
+          (not (not (clostrum:find-class m:*client* env name nil)))))))
+(defun (setf core::class-info) (value name &optional env)
+  (declare (ignore env))
+  (setf (gethash name *class-infos*) value))
 
 (defun gf-info (name)
   ;; stuffed into inline data for now

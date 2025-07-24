@@ -743,7 +743,7 @@ because it contains a reference to the undefined class~%  ~A"
       `(progn
          (eval-when (:compile-toplevel)
            ,@(gen-note-accessors slots)
-           (setf (class-info ',name) t))
+           (setf (core::class-info ',name) t))
          (eval-when (:load-toplevel :execute)
            (ensure-class ',name :direct-superclasses ',superclasses
                          :direct-slots ,parsed-slots
@@ -808,20 +808,14 @@ So we just ignore the CLHS requirement here and use a CLASS-INFO mechanism. This
 Right now the only such information is that it exists. In the future I'd like to include real information (e.g. unparsed class options or slot definitions) for use in optimization or to the user.
 |#
 
-(eval-when (:compile-toplevel)
-  (defvar *class-infos* (make-hash-table :test #'eq)))
+(defvar *class-infos* (make-hash-table :test #'eq :thread-safe t))
 
-(eval-when (:load-toplevel :execute)
-  (defvar *class-infos* (make-hash-table :test #'eq :thread-safe t)))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-(defun class-info (name &optional env)
+(defun core::class-info (name &optional env)
   (or (find-class name nil env)
       (values (gethash name *class-infos*))))
 
-(defun (setf class-info) (value name &optional env)
+(defun (setf core::class-info) (value name &optional env)
   (declare (ignore env))
   (if (null value)
       (progn (remhash name *class-infos*) value)
       (setf (gethash name *class-infos*) value)))
-)

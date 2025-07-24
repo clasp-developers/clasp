@@ -303,7 +303,8 @@
                        core:put-f core::packages-iterator
                        core::process-lambda-list
                        ext:type-expander (setf ext:type-expander)
-                       core::normalize-type core::class-info
+                       core::normalize-type
+                       core::class-info (setf core::class-info)
                        ;; Used by compiler, not expected to exist in target
                        core::delay-macro
                        ;; used in CLOS, not expected to actually exist
@@ -441,6 +442,7 @@
         *build-ce* (make-instance 'clostrum-basic:compilation-environment
                      :parent *build-rte*))
   (core::reset-delayed-macros)
+  (reset-class-infos)
   (install-environment)
   (install-packages)
   (maclina.vm-cross:initialize-vm 20000)
