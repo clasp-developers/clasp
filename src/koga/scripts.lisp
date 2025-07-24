@@ -96,9 +96,24 @@
 (let ((s (open (core:argv 8) :if-exists :overwrite :if-does-not-exist :create :direction :output)))
   (print `(in-package #:cmp) s)
   (print `(defvar +cxx-data-structures-info+ ',(llvm-sys:cxx-data-structures-info)) s))
+(let ((s (open (core:argv 9) :if-exists :overwrite :if-does-not-exist :create :direction :output)))
+  (print `(in-package #:core) s)
+  (print `(eval-when (:compile-toplevel)
+            (defparameter +type-header-value-map+
+              (loop with table = (make-hash-table :test #'eq)
+                    for (type . header) in
+                        '(,@(let ((s ()))
+                              (maphash
+                                #'(lambda (k v)
+                                    (setq s (cons (cons k v) s)))
+                                core:+type-header-value-map+)
+                              s))
+                    do (setf (gethash type table) header)
+                    finally (return table))))
+         s))
 ;; This is probably the worst, in terms of pidginness.
 ;; In primitive Clasp we have no operator for mapping over a vector.
-(let ((s (open (core:argv 9) :if-exists :overwrite :if-does-not-exist :create :direction :output)))
+(let ((s (open (core:argv 10) :if-exists :overwrite :if-does-not-exist :create :direction :output)))
   (print `(in-package #:clasp-ffi) s)
   (print `(eval-when (:compile-toplevel)
             (defparameter *foreign-type-specs*

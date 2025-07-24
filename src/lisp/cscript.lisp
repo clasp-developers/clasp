@@ -178,6 +178,7 @@
            #@"runtime-packages.lisp"
            #@"runtime-functions.lisp"
            #@"runtime-variables.lisp"
+           #@"type-map.lisp"
            ;; Enough CLOS to call generic functions
            #~"kernel2/clos/method-combination-environment.lisp"
            #~"kernel2/clos/standard-method-combinations.lisp"
