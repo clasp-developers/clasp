@@ -205,7 +205,7 @@
   :directory "src/lisp/modules/asdf/"
   :branch "add-clasp-bytecode-support")
  (:name :bdwgc
-  :repository "https://github.com/ivmai/bdwgc.git"
+  :repository "https://github.com/bdwgc/bdwgc.git"
   :directory "src/bdwgc/"
   :commit "v8.2.8")
  (:name :libatomic_ops
