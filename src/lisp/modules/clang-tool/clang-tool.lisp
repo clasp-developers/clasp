@@ -161,7 +161,7 @@ Apply the compilation-tool-database's arguments-adjusters to the clang tool."
          (abs #+(or)(uiop/filesystem:native-namestring merged) (namestring merged)))
     (or abs (error "Could not find absolute path for ~a + ~a" root rel))))
 
-(defun ensure-directory (relpath)
+(defun ensure-directory-name (relpath)
   (if (eq (elt relpath (1- (length relpath))) #\/)
       relpath
       (concatenate 'string relpath "/")))
@@ -175,7 +175,7 @@ It converts relative -I../... arguments to absolute paths"
       (let ((arg (elt new-args i)))
         (cond
           ((string= arg "-I.." :start1 0 :end1 4)
-           (let* ((fixed-path (fix-path root-directory (ensure-directory (subseq arg 2))))
+           (let* ((fixed-path (fix-path root-directory (ensure-directory-name (subseq arg 2))))
                   (new-arg (concatenate 'string "-I" fixed-path)))
              (setf (elt new-args i) new-arg)))
           ((string= arg "../" :start1 0 :end1 3)
