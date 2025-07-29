@@ -179,6 +179,7 @@
            #@"runtime-functions.lisp"
            #@"runtime-variables.lisp"
            #@"type-map.lisp"
+           #~"kernel2/contrib-packages.lisp"
            ;; Enough CLOS to call generic functions
            #~"kernel2/clos/method-combination-environment.lisp"
            #~"kernel2/clos/standard-method-combinations.lisp"
@@ -280,6 +281,7 @@
            #~"kernel2/lsp/top.lisp"
            #~"kernel2/lsp/top-hook.lisp"
            #~"kernel2/install-delayed-macros.lisp"
+           :ecclesia
            ;; file compiler
            :eclector-concrete-syntax-tree
            #~"kernel2/cmp/variables.lisp"

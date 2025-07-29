@@ -154,7 +154,11 @@
     (defpack "CLANG-AST" #:cross-clasp.clasp.clang-ast)
     (defpack "AST-TOOLING" #:cross-clasp.clasp.ast-tooling)
     (defpack "EXT" #:cross-clasp.clasp.ext)
-    (defpack "KEYWORD" #:keyword)))
+    (defpack "KEYWORD" #:keyword)
+    (defpack "ECCLESIA" #:cross-clasp.clasp.ecclesia))
+  (setf (clostrum:package-name client environment
+                               (find-package "ECCLESIA"))
+        "ECCLESIA"))
 
 ;;; FIXME: defconstant should really be in common macros.
 (defun core::symbol-constantp (name)
