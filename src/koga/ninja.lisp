@@ -760,8 +760,8 @@
          (runtime-info.lisp (make-source "runtime-info.lisp" :variant-generated))
          (type-map.lisp (make-source "type-map.lisp" :variant-generated))
          (fli-specs.lisp (make-source "fli-specs.lisp" :variant-generated))
-         (vimage (make-source "images/nbase.fasl" :variant-lib))
-         (nimage (make-source "images/nbase.faso" :variant-lib))
+         (vimage (make-source "images/base.fasl" :variant-lib))
+         (nimage (make-source "images/base.faso" :variant-lib))
          (image (ecase (build-mode configuration)
                   ((:bytecode) vimage)
                   ((:bytecode-faso :faso) nimage)))
@@ -812,7 +812,7 @@
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "iclasp")
                                      image
-                                     #+(or)(build-name "modules"))
+                                     (build-name "modules"))
                        :outputs (list (build-name "nclasp")))
     #+(or)
     (when *variant-default*

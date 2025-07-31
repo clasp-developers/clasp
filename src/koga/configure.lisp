@@ -698,7 +698,7 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"version.h" :variant))
                                                          :base-translations
                                                          (list (make-source #P"generated/base-translations.lisp" :variant)
-                                                               :cclasp)
+                                                               :nclasp)
                                                          :extension-translations
                                                          (list (make-source #P"generated/extension-translations.lisp" :variant)
                                                                :extension-translations)

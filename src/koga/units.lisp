@@ -244,7 +244,7 @@
     (unless default-target
       (setf default-target (if (extensions configuration)
                                "eclasp-boehmprecise"
-                               "cclasp-boehmprecise")))
+                               "nclasp-boehmprecise")))
     (loop with bitcode-name = (subseq default-target (1+ (position #\- default-target)))
           for variant in (variants configuration)
           when (equal bitcode-name (variant-bitcode-name variant))

@@ -408,6 +408,12 @@ exec $(dirname \"$0\")/iclasp -f ignore-extensions --base \"$@\""))
   (print-translations output-stream sources))
 
 (defmethod print-variant-target-sources
+    (configuration (name (eql :base-translations)) output-stream
+     (target (eql :nclasp)) sources
+     &key &allow-other-keys)
+  (print-translations output-stream sources))
+
+(defmethod print-variant-target-sources
     (configuration (name (eql :extension-translations)) output-stream
      (target (eql :extension-translations)) sources
      &key &allow-other-keys)
