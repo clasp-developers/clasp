@@ -235,6 +235,23 @@
           (jobs configuration) (reproducible-build configuration)
           (and (> (jobs configuration) 1) (parallel-build configuration))))
 
+(defmethod print-prologue (configuration (name (eql :compile-native-image)) output-stream)
+  (format output-stream "(setq cmp:*default-output-type* ~s)
+(load #P\"sys:src;lisp;kernel2;clasp-builder.lisp\")
+(setq core::*number-of-jobs*
+      (if (ext:getenv \"CLASP_BUILD_JOBS\")
+          (parse-integer (ext:getenv \"CLASP_BUILD_JOBS\"))
+          ~a))
+(core:compile-clasp :reproducible ~s :system-sort ~s
+                    :name (elt core:*command-line-arguments* 0)
+                    :position (parse-integer (elt core:*command-line-arguments* 1))
+                    :system (core:command-line-paths 2))"
+          (if (eq (build-mode configuration) :bytecode-faso)
+              :faso
+              (build-mode configuration))
+          (jobs configuration) (reproducible-build configuration)
+          (and (> (jobs configuration) 1) (parallel-build configuration))))
+
 (defmethod print-prologue (configuration (name (eql :link-fasl)) output-stream)
   (format output-stream "(setq *features* (cons :aclasp *features*)
       cmp:*default-output-type* ~s)

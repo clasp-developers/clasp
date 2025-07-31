@@ -152,6 +152,11 @@
                     :command (lisp-command "compile-bytecode-image.lisp" "$out $in")
                     :description "Building Clasp bytecode image"
                     :restat 1)
+  (ninja:write-rule output-stream :compile-native-image
+                    :command "$clasp --norc --disable-mpi --image $image --load compile-native-image.lisp --quit -- base 0 $source"
+                    :description "Compiling clasp $name"
+                    :restat 1
+                    :pool "console")
   (when (extensions configuration)
     (ninja:write-rule output-stream :load-eclasp
                       :command "$clasp --norc --disable-mpi --base --feature ignore-extension-systems --feature cclasp --load load-clasp.lisp -- extension $position $source"
@@ -630,7 +635,7 @@
                          :outputs (list install-output)))
     (list :outputs output
           :install-outputs install-output)))
-
+#+(or)
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :cclasp)) sources
      &key &allow-other-keys)
@@ -755,12 +760,11 @@
          (runtime-info.lisp (make-source "runtime-info.lisp" :variant-generated))
          (type-map.lisp (make-source "type-map.lisp" :variant-generated))
          (fli-specs.lisp (make-source "fli-specs.lisp" :variant-generated))
-         (vimage (make-source (format nil "images/nbase.~a"
-                                      (fasl-extension configuration))
-                              :variant-lib))
-         (vimage-installed (make-source (format nil "images/nbase.~a"
-                                                (fasl-extension configuration))
-                                        :package-lib))
+         (vimage (make-source "images/nbase.fasl" :variant-lib))
+         (nimage (make-source "images/nbase.faso" :variant-lib))
+         (image (ecase (build-mode configuration)
+                  ((:bytecode) vimage)
+                  ((:bytecode-faso :faso) nimage)))
          (iclasp (make-source "iclasp" :variant))
          (clasp-with-env (wrap-with-env configuration iclasp)))
     (ninja:write-build output-stream :generate-lisp-info
@@ -776,11 +780,41 @@
                                       features.sexp
                                       sources)
                        :outputs (list vimage))
+    (ninja:write-build output-stream :compile-native-image
+                       :clasp clasp-with-env
+                       :source (make-kernel-source-list configuration sources)
+                       :inputs sources
+                       :implicit-inputs (list iclasp vimage)
+                       :image vimage
+                       :outputs (mapcar (lambda (x)
+                                          (make-source-output x
+                                                              :type (fasl-extension configuration)
+                                                              :root (if (eq (source-root x) :variant-generated)
+                                                                        :variant-lib-generated
+                                                                        :variant-lib)))
+                                        sources))
+    (ninja:write-build output-stream (case (build-mode configuration)
+                                       ((:bytecode :bytecode-faso :faso :fasoll :fasobc) :link-fasl)
+                                       (otherwise "link-fasl-abc"))
+                       :variant-ldflags *variant-ldflags*
+                       :variant-ldlibs *variant-ldlibs*
+                       :clasp clasp-with-env
+                       :target "nclasp"
+                       :inputs (mapcar (lambda (x)
+                                         (make-source-output x
+                                                             :type (fasl-extension configuration)
+                                                             :root (if (eq (source-root x) :variant-generated)
+                                                                       :variant-lib-generated
+                                                                       :variant-lib)))
+                                       sources)
+                       :implicit-inputs (list iclasp)
+                       :outputs (list nimage))
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "iclasp")
-                                     vimage
+                                     image
                                      #+(or)(build-name "modules"))
                        :outputs (list (build-name "nclasp")))
+    #+(or)
     (when *variant-default*
       (ninja:write-build output-stream :install-file
                          :inputs (list vimage)
