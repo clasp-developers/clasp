@@ -1798,6 +1798,16 @@ CL_DEFUN T_sp core__function_source_pos_info(T_sp functionDesignator) {
   return closure->sourcePosInfo();
 }
 
+CL_DEFUN T_sp core__variable_source_info(T_sp var) {
+  return core::_sym_STARvariableSourceInfosSTAR->symbolValue().as_assert<HashTable_O>()->gethash(var);
+}
+
+CL_LISPIFY_NAME("core:variableSourceInfo");
+CL_DEFUN_SETF T_sp core__set_variable_source_info(T_sp info, T_sp var) {
+  core::_sym_STARvariableSourceInfosSTAR->symbolValue().as_assert<HashTable_O>()->hash_table_setf_gethash(var, info);
+  return info;
+}
+
 }; // namespace core
 
 namespace core {

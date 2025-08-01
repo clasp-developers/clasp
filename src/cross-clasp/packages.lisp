@@ -313,6 +313,7 @@
   (:export #:annotate #:*module-provider-functions*)
   (:export #:getenv)
   (:export #:*toplevel-hook*)
+  (:export #:current-source-location)
   (:export #:compiler-note #:start-autocompilation)
   (:import-from #:cross-clasp.clasp.core #:quit)
   (:export #:quit))

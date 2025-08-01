@@ -81,8 +81,8 @@
                                                      option-name))))
                  (setf arg-list `(',option-name ',option-value ,@arg-list)))))))
     (values `(:lambda-list ',lambda-list ,@arg-list
-              ,@(when core:*current-source-pos-info*
-                  (list ''source-position core:*current-source-pos-info*))
+              ,@(when (ext:current-source-location)
+                  (list ''source-position (ext:current-source-location)))
 	      ,@(when declarations `(:declarations ',declarations)))
 	    method-list)))
 )

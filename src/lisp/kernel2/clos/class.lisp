@@ -731,8 +731,8 @@ because it contains a reference to the undefined class~%  ~A"
 
 (defmacro defclass (name superclasses slots &rest options)
   (let (;; Throw in source info if there is any.
-        (options (if core:*current-source-pos-info*
-                     (list* (cons :source-position core:*current-source-pos-info*) options)
+        (options (if (ext:current-source-location)
+                     (list* (cons :source-position (ext:current-source-location)) options)
                      options)))
     (unless (and (listp superclasses) (listp slots))
       (si::simple-program-error "Illegal defclass form: superclasses and slots should be lists"))

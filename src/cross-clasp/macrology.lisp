@@ -206,12 +206,22 @@ Example:
          (setf (cross-clasp.clasp.ext:setf-expander ',name) #',lexpr))
        ',name)))
 
+;;; Dummy functions, since we don't need to record source locations
+;;; during build.
+(defun variable-source-info (var) nil)
+(defun (setf variable-source-info) (info var)
+  (declare (ignore var))
+  info)
+
 (defmacro %defvar (name &optional (value nil valuep) doc)
   `(progn
      (declaim (special ,name))
      ,@(when valuep
          `((unless (boundp ',name)
              (setf (symbol-value ',name) ,value))))
+     ,@(when (cross-clasp.clasp.ext:current-source-location)
+         `((setf (variable-source-info ',name)
+                 ',(cross-clasp.clasp.ext:current-source-location))))
      ,@(when doc
          `((cross-clasp.clasp.ext:annotate ',name 'documentation 'variable ,doc)))
      ',name))
@@ -220,6 +230,9 @@ Example:
   `(progn
      (declaim (special ,name))
      (setf (symbol-value ',name) ,value)
+     ,@(when (cross-clasp.clasp.ext:current-source-location)
+         `((setf (variable-source-info ',name)
+                 ',(cross-clasp.clasp.ext:current-source-location))))
      ,@(when doc
          `((cross-clasp.clasp.ext:annotate ',name 'documentation 'variable ,doc)))
      ',name))

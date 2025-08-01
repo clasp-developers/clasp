@@ -181,11 +181,15 @@
 
 (defmacro %defconstant (name value &optional doc)
   (declare (ignore doc))
-  `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (set ',name ,value)
-     (funcall #'(setf core::symbol-constantp) t ',name)
-     #+(or)
-     (core::make-constant ',name ,value)
+  `(progn
+     (eval-when (:compile-toplevel :load-toplevel :execute)
+       (set ',name ,value)
+       (funcall #'(setf core::symbol-constantp) t ',name)
+       #+(or)
+       (core::make-constant ',name ,value))
+     ,@(when (ext:current-source-location)
+         `((setf (core::variable-source-info ',name)
+                 ',(ext:current-source-location))))
      ',name))
 
 (defun core::make-simple-vector-t (dimension initial-element iep)
@@ -272,7 +276,6 @@
   (declare (ignore ce))
   (extrinsicl:install-cl client rte)
   (extrinsicl.maclina:install-eval client rte)
-  (clostrum:make-parameter client rte 'core::*current-source-pos-info* nil)
   (loop for vname in '(core::*condition-restarts* core::*restart-clusters*
                        core::*interrupts-enabled* core::*allow-with-interrupts*
                        core:*quasiquote* core::*sharp-equal-final-table*
@@ -309,6 +312,9 @@
                        ext:type-expander (setf ext:type-expander)
                        core::normalize-type
                        core::class-info (setf core::class-info)
+                       ext:current-source-location
+                       core::variable-source-info
+                       (setf core::variable-source-info)
                        ;; Used by compiler, not expected to exist in target
                        core::delay-macro
                        ;; used in CLOS, not expected to actually exist

@@ -221,7 +221,7 @@ Return the source-location for the name/kind pair"
                                       'deftype))))
       (:variable
        (when (symbolp name)
-         (let ((spi (gethash name core:*variable-source-infos*))
+         (let ((spi (core:variable-source-info name))
                (definer (cond ((ext:specialp name) 'defvar)
                               ((constantp name) 'defconstant)
                               (t 'define-symbol-macro))))
