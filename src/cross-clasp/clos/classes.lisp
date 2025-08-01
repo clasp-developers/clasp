@@ -23,6 +23,8 @@
    (%direct-default-initargs :initarg :direct-default-initargs
                              :reader direct-default-initargs)
    (%default-initargs :accessor default-initargs)
+   (%source-position :initform nil :initarg :source-position
+                     :reader source-position)
    (%metaclass :initarg :metaclass :reader metaclass)))
 
 ;;; Used in build environment
@@ -244,6 +246,7 @@
 (defun parse-class-options (options)
   (loop with metaclass with documentation
         with default-initargs with default-initargs-p
+        with source-position
         for (key . value) in options
         do (ecase key
              ((:metaclass)
@@ -262,7 +265,8 @@
                   (setf default-initargs value
                         default-initargs-p t))))
         finally (return (values metaclass
-                                documentation default-initargs))))
+                                documentation default-initargs
+                                source-position))))
 
 (defun compute-effective-slot (slotds location)
   (flet ((app (reader)
@@ -359,7 +363,8 @@
           (default-initargs class) default-initargs))
   (values))
 
-(defun initialize-compiler-class (class name supers slotds options
+(defun initialize-compiler-class (class name supers slotds source
+                                  options
                                   &key (find-class
                                         #'cross-clasp:find-compiler-class))
   (multiple-value-bind (metaclass documentation default-initargs)
@@ -382,16 +387,17 @@
        class
        :supers supers :direct-slots slotds
        :direct-default-initargs default-initargs
+       :source-position source
        :metaclass rmetaclass)
       (finalize-inheritance class)
       (loop for super in supers
             do (push class (direct-subclasses super)))
       class)))
 
-(defun make-compiler-class (name supers slotds options)
+(defun make-compiler-class (name supers slotds source options)
   (initialize-compiler-class (make-instance 'compiler-class
                                :name name)
-                             name supers slotds options))
+                             name supers slotds source options))
 
 (defun primitive-accessor (class)
   (ecase (name (metaclass class))
@@ -555,7 +561,8 @@
       ;; since default-initargs is set separately there can be
       ;; duplicate initfunctions, but I do not care.
       :direct-default-initargs ,(canonicalized-default-initargs-form
-                                 (direct-default-initargs class)))
+                                 (direct-default-initargs class))
+      :source-position ',(source-position class))
      (with-early-accessors (std-class)
        (setf (%class-slots ,var)
              (list ,@(loop for slot in (mop:class-slots class)
@@ -710,11 +717,12 @@
          ,@(build-install-accessors accessors)
          ',name))))
 
-(defmacro early-defclass (name (&rest supers) (&rest slotds) &rest options)
+(defmacro early-defclass (&whole whole name (&rest supers) (&rest slotds) &rest options)
   ;; ignore redefinitions - some pop up from the generated cxx-classes.lisp
   (if (cross-clasp:find-compiler-class name nil)
       'nil
-      (expand-early-defclass (make-compiler-class name supers slotds options))))
+      (let* ((source (maclina.compile:form-source-location whole)))
+        (expand-early-defclass (make-compiler-class name supers slotds source options)))))
 
 ;;; Welcome to the deep magic.
 ;;; This macro allows defmacro forms as its toplevel to refer to each
@@ -749,10 +757,12 @@
                          (error "No class: ~s" name))))
          accessors)
     ;; initialize the classes
-    (loop for (_1 _2 supers slotds . options) in body
+    (loop for form in body
+          for (_1 _2 supers slotds . options) = form
+          for source = (maclina.compile:form-source-location form)
           for (name . cclass) in compiler-classes
           do (initialize-compiler-class
-              cclass name supers slotds options
+              cclass name supers slotds source options
               :find-class find-class))
     ;; and finalize their inheritance.
     (loop for (_ . cclass) in compiler-classes
