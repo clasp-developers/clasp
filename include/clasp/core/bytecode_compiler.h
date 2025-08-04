@@ -629,7 +629,7 @@ class JumpIfSuppliedFixup_O : public LabelFixup_O {
   LISP_CLASS(comp, CompPkg, JumpIfSuppliedFixup_O, "JumpIfSuppliedFixup", LabelFixup_O);
 
 public:
-  JumpIfSuppliedFixup_O(Label_sp label) : LabelFixup_O(label, 3) {}
+  JumpIfSuppliedFixup_O(Label_sp label) : LabelFixup_O(label, 2) {}
   CL_LISPIFY_NAME(JumpIfSuppliedFixup/make)
   CL_DEF_CLASS_METHOD
   static JumpIfSuppliedFixup_sp make(Label_sp label) {
