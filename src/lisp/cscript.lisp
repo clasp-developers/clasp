@@ -277,11 +277,15 @@
            #~"kernel2/lsp/encodings.lisp"
            #~"kernel2/lsp/posix.lisp"
            #~"kernel2/lsp/ext-package.lisp"
+           #~"kernel2/lsp/process.lisp"
            ;; toplevel
            #~"kernel2/lsp/top.lisp"
            #~"kernel2/lsp/top-hook.lisp"
            #~"kernel2/install-delayed-macros.lisp"
            :ecclesia
+           ;; logical pathname translation
+           #@"base-translations.lisp"
+           #@"extension-translations.lisp"
            ;; file compiler
            :eclector-concrete-syntax-tree
            #~"kernel2/cmp/variables.lisp"

@@ -19,7 +19,7 @@
 
 (defmacro with-process-lock ((process &optional (wait t)) &body body)
   #+threads
-  (with-unique-names (lock wait-p)
+  (core::with-unique-names (lock wait-p)
     `(let ((,lock (external-process-%lock ,process))
            (,wait-p ,wait))
        (mp:without-interrupts
