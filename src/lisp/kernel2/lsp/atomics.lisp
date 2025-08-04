@@ -10,6 +10,19 @@
 (defun (setf atomic-expander) (expander symbol)
   (setf (core:get-sysprop symbol 'atomic-expander) expander))
 
+(defgeneric %get-atomic-expansion (place environment keys))
+(defmethod %get-atomic-expansion ((place cons) environment keys)
+  (let* ((name (car place))
+         (expander (atomic-expander name)))
+    (if expander
+        (apply expander place keys)
+        (multiple-value-bind (expansion expanded)
+            (macroexpand-1 place environment)
+          (if expanded
+              (apply #'get-atomic-expansion expansion keys)
+              (error 'not-atomic :place place))))))
+;;; symbol method defined later in kernel2/cleavir/atomics.lisp
+
 (defun get-atomic-expansion (place &rest keys
                              &key environment (order nil orderp)
                              &allow-other-keys)
@@ -26,39 +39,7 @@ defaulting of ORDER is applied."
   (declare (ignore order))
   ;; Default the order parameter. KLUDGEy.
   (unless orderp (setf keys (list* :order :sequentially-consistent keys)))
-  (etypecase place
-    (symbol
-     ;; KLUDGE: This will not work in bclasp at all, and the cleavir interface
-     ;; may not be great for this.
-     #-(or cclasp eclasp)
-     (multiple-value-bind (expansion expanded)
-         (macroexpand-1 place environment)
-       (if expanded
-           (apply #'get-atomic-expansion expansion keys)
-           (error "Atomic operations on lexical variables not supported yet")))
-     #+(or cclasp eclasp)
-     (let ((info (cleavir-env:variable-info
-                  clasp-cleavir:*clasp-system* environment place)))
-       (etypecase info
-         (cleavir-env:symbol-macro-info
-          (apply #'get-atomic-expansion (macroexpand-1 place environment) keys))
-         (cleavir-env:special-variable-info
-          (apply #'get-atomic-expansion `(symbol-value ',place) keys))
-         (cleavir-env:lexical-variable-info
-          ;; TODO
-          (error 'not-atomic :place place))
-         (null
-          (error "Unknown variable ~a" place)))))
-    (cons
-     (let* ((name (car place))
-            (expander (atomic-expander name)))
-       (if expander
-           (apply expander place keys)
-           (multiple-value-bind (expansion expanded)
-               (macroexpand-1 place environment)
-             (if expanded
-                 (apply #'get-atomic-expansion expansion keys)
-                 (error 'not-atomic :place place))))))))
+  (%get-atomic-expansion place environment keys))
 
 (defun expand-atomic-expander (name place-ll expander-ll body)
   (let ((place (gensym "PLACE")))

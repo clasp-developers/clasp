@@ -311,6 +311,7 @@
            :clasp-cleavir
            #~"kernel/cmp/arguments.lisp"
            #~"kernel2/cleavir/compile-file.lisp"
+           #~"kernel2/cleavir/atomics.lisp"
            #~"kernel/lsp/queue.lisp"
            #~"kernel/cmp/compile-file-parallel.lisp"
            #@"fli-specs.lisp"
