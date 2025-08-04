@@ -293,7 +293,10 @@
   (multiple-value-bind (required specializers optional rest keys aokp aux keysp)
       (parse-method-lambda-list lambda-list)
     (let ((rlambda-list (reconstruct-lambda-list required optional
-                                                 rest keys aokp aux keysp)))
+                                                 rest keys aokp aux keysp))
+          ;; Same as above but with no &aux, for method-lambda-list et al.
+          (elambda-list (reconstruct-lambda-list required optional
+                                                 rest keys aokp () keysp)))
       (multiple-value-bind (method-lambda leafp)
           (let ((args (gensym "ARGS")))
             (early-method-lambda
@@ -315,7 +318,7 @@
                      generic-function
                      (make-instance 'compiler-generic
                        :name name
-                       :lambda-list lambda-list ; FIXME: adjust &key?
+                       :lambda-list elambda-list ; FIXME: adjust &key?
                        :reqargs required :restp restp
                        :apo required
                        :method-combination (ensure-method-combination
@@ -349,7 +352,7 @@
                                           #',mfname)))
                (method (make-instance 'compiler-method
                          :gf generic-function
-                         :lambda-list lambda-list
+                         :lambda-list elambda-list
                          :keywords (mapcar #'caar keys)
                          :aok-p aokp
                          :specializers (mapcar #'parse-specializer specializers)
