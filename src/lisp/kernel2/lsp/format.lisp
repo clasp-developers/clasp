@@ -2259,13 +2259,13 @@
                                 ,@param-names))))))
 
 (def-format-interpreter #\/ (string start end colonp atsignp params)
-  (let ((symbol (extract-user-function-name string start end)))
-    (apply (fdefinition symbol) stream (next-arg) colonp atsignp
-           (loop for (_ . param) in params
-                 collect (case param
-                           (:arg (next-arg))
-                           (:remaining (length args))
-                           (t param))))))
+  (let ((symbol (extract-user-function-name string start end))
+        (fargs (loop for (_ . param) in params
+                     collect (case param
+                               (:arg (next-arg))
+                               (:remaining (length args))
+                               (t param)))))
+    (apply (fdefinition symbol) stream (next-arg) colonp atsignp fargs)))
 
 (defun extract-user-function-name (string start end)
   (let ((slash (position #\/ string :start start :end (1- end)
