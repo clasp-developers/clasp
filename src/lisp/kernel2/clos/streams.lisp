@@ -930,3 +930,13 @@ truename."))
     t))
 
 (pushnew 'gray-streams-module-provider ext:*module-provider-functions*)
+
+(export '(fundamental-stream
+          fundamental-input-stream
+          fundamental-output-stream
+          fundamental-character-stream
+          fundamental-binary-stream
+          fundamental-character-input-stream
+          fundamental-character-output-stream
+          fundamental-binary-input-stream
+          fundamental-binary-output-stream))
