@@ -233,7 +233,10 @@
                      ,@(if default-p (list def) nil) ; prevent unused variable warning
                      ,store-form
                      ,store)
-                  `(getf ,access-form ,itemp ,@(if default-p (list def) nil))))))))
+                  `(getf ,access-form ,itemp ,@(if default-p (list def) nil))))))
+    (def sbit (&environment env array &rest subscripts)
+      (common-macro-definitions:get-setf-expansion
+       m:*client* `(aref ,array ,@subscripts) env))))
 
 (defun install-delayed-macros (client rte)
   (loop for name being each hash-key of core::*delayed-macros*
