@@ -1048,7 +1048,8 @@ struct loadltv {
       attr_lambda_list(attrbytes);
     } else if (name == "clasp:function-native") {
       attr_clasp_function_native(attrbytes);
-    } else if (name == "clasp:source-pos-info") {
+    } else if (name == "clasp:source-pos-info"
+               || name == "source-pos-info") {
       attr_clasp_source_pos_info(attrbytes);
     } else if (name == "clasp:module-debug-info"
                || name == "module-debug-info") {
