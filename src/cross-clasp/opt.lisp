@@ -4,11 +4,17 @@
 ;;; Clasp's compiler macro expansions.
 
 (defun clos::classp (object) (typep object 'class))
-(defun core::fixnump (object) (typep object 'fixnum))
 (defun core::short-float-p (object) (typep object 'short-float))
 (defun core::single-float-p (object) (typep object 'single-float))
 (defun core::double-float-p (object) (typep object 'double-float))
 (defun core::long-float-p (object) (typep object 'long-float))
+
+(defun core::fixnump (object)
+  ;; Make sure we use Clasp's idea of a fixnum.
+  ;; the constants are defined by runtime-variables.lisp.
+  (and (integerp object)
+    (>= object (constant-form-value 'most-negative-fixnum))
+    (<= object (constant-form-value 'most-positive-fixnum))))
 
 (defun core::apply0 (function args) (apply function args))
 (defun core::apply1 (function args a0) (apply function a0 args))
