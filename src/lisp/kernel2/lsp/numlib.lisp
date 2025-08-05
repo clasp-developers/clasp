@@ -15,6 +15,24 @@
 
 (in-package "SYSTEM")
 
+(defmacro ext::with-float-traps-masked (traps &body body)
+  (let ((previous (gensym "PREVIOUS"))
+        (mask (reduce (lambda (bits trap)
+                        (logior bits
+                                (ecase trap
+                                  (:underflow core:+fe-underflow+)
+                                  (:overflow core:+fe-overflow+)
+                                  (:invalid core:+fe-invalid+)
+                                  (:inexact core:+fe-inexact+)
+                                  (:divide-by-zero core:+fe-divbyzero+)
+                                  (:denormalized-operand 0))))
+                      traps
+                      :initial-value 0)))
+    `(let ((,previous (core:fe-disable-except ,mask)))
+       (unwind-protect
+            (progn ,@body)
+         (core:fe-restore-except ,previous)))))
+
 (defun 1- (num) (- num 1))
 (defun 1+ (num) (+ num 1))
 
