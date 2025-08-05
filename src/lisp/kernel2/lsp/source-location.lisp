@@ -162,11 +162,9 @@ Return the source-location for the name/kind pair"
              (cond ((core:single-dispatch-generic-function-p func)
                       (source-location name :method))
                    ((typep func 'generic-function)
-                    #+(or)
-                    (generic-function-source-locations func)
-                    nil)
-                     (t ; normal function
-                      (function-source-locations func)))))
+                    (generic-function-source-locations func))
+                   (t ; normal function
+                    (function-source-locations func)))))
     (case kind
       (:class
        (when (symbolp name)

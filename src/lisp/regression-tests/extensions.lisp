@@ -25,7 +25,7 @@
            (ext::source-location-p (first (ext:source-location 'fixnum :type))))
 
 (test-true source-location-variable
-           (ext::source-location-p (first (ext:source-location '*print-pretty* :variable))))
+           (ext::source-location-p (first (ext:source-location 'ext:*source-location-kinds* :variable))))
 
 (test-true
  run-program-hello-world
