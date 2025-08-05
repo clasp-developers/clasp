@@ -485,7 +485,6 @@ q (or Q):             quits the inspection.~%~
                ;; Note that this needs to get generic functions,
                ;; so keep it before the instancep test.
                ((functionp object) (inspect-function object))
-	       #+clos
 	       ((sys:instancep object) (inspect-instance object))
                ((sys:cxx-object-p object) (describe-object object *standard-output*))
                (t (format t "~S - ~S" object (type-of object)))))))
@@ -550,7 +549,7 @@ Prints information about OBJECT to STREAM."
            (describe-symbol (category-string)
              (doc-separation category-string)
              (doc-value (or (documentation symbol 'FUNCTION) "") "Documentation:" t)
-             #+(or cclasp eclasp) (doc-value (or (core:function-lambda-list symbol) "") "Arguments:")
+             (doc-value (or (ext:function-lambda-list symbol) "") "Arguments:")
              (mapcar #'(lambda(location)
                          (doc-value (ext:source-location-pathname location) "Source:"))
                      (EXT:SOURCE-LOCATION symbol :function)))
