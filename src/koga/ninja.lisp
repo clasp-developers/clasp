@@ -905,29 +905,29 @@
      &aux (clasp (wrap-with-env configuration (make-source "iclasp" :variant))))
   (ninja:write-build output-stream :regression-tests
                      :clasp clasp
-                     :inputs (list (build-name "cclasp"))
+                     :inputs (list (build-name "nclasp"))
                      :outputs (list (build-name "test")))
   (ninja:write-build output-stream :bench
                      :clasp clasp
-                     :inputs (list (build-name "cclasp"))
+                     :inputs (list (build-name "nclasp"))
                      :outputs (list (build-name "bench")))
   (ninja:write-build output-stream :ansi-test
                      :clasp clasp
-                     :inputs (list (build-name "cclasp"))
+                     :inputs (list (build-name "nclasp"))
                      :outputs (list (build-name "ansi-test")))
   (ninja:write-build output-stream :asdf-test
                      :clasp clasp
                      :target "t"
-                     :inputs (list (build-name "cclasp"))
+                     :inputs (list (build-name "nclasp"))
                      :outputs (list (build-name "asdf-test")))
   (ninja:write-build output-stream :asdf-test
                      :clasp clasp
                      :target "u"
-                     :inputs (list (build-name "cclasp"))
+                     :inputs (list (build-name "nclasp"))
                      :outputs (list (build-name "asdf-test-upgrade")))
   (ninja:write-build output-stream :test-random-integer
                      :clasp clasp
-                     :inputs (list (build-name "cclasp"))
+                     :inputs (list (build-name "nclasp"))
                      :outputs (list (build-name "test-random-integer")))
   (when (member :cando (extensions configuration))
     (ninja:write-build output-stream :cando-regression-tests
