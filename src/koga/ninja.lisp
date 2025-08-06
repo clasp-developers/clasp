@@ -92,6 +92,10 @@
                     :command "$clasp -n -- $out <generate-lisp-info.lisp >/dev/null"
                     :description "Generating info from Clasp runtime"
                     :restat 1)
+  (ninja:write-rule output-stream :generate-encodings
+                    :command (lisp-command "generate-encodings.lisp" "$out $in")
+                    :description "Generating character encoding tables"
+                    :restat 1)
   (ninja:write-rule output-stream :compile-systems
                     :command "$clasp --norc --non-interactive --base --feature ignore-extensions --load compile-systems.lisp -- $out $systems"
                     :description "Compiling systems: $systems"
@@ -760,6 +764,8 @@
          (runtime-info.lisp (make-source "runtime-info.lisp" :variant-generated))
          (type-map.lisp (make-source "type-map.lisp" :variant-generated))
          (fli-specs.lisp (make-source "fli-specs.lisp" :variant-generated))
+         (generated-encodings.lisp
+           (make-source "generated-encodings.lisp" :variant-generated))
          (vimage (make-source "images/base.fasl" :variant-lib))
          (nimage (make-source "images/base.faso" :variant-lib))
          (image (ecase (build-mode configuration)
@@ -774,6 +780,9 @@
                                       type-map.lisp fli-specs.lisp)
                        :clasp clasp-with-env
                        :implicit-inputs (list iclasp))
+    (ninja:write-build output-stream :generate-encodings
+                       :inputs (list (make-source "tools-for-build/encodingdata.txt" :code))
+                       :outputs (list generated-encodings.lisp))
     (ninja:write-build output-stream :compile-bytecode-image
                        :inputs (list* (make-source "tools-for-build/character-names.sexp"
                                                    :code)

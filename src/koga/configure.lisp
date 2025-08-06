@@ -654,6 +654,8 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"compile-systems.lisp" :build))
                                                          :update-unicode
                                                          (list (make-source #P"update-unicode.lisp" :build))
+                                                         :generate-encodings
+                                                         (list (make-source #p"generate-encodings.lisp" :build))
                                                          :load-clasp
                                                          (list (make-source #P"load-clasp.lisp" :build))
                                                          :snapshot-clasp

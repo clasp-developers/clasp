@@ -134,6 +134,35 @@
   (print-asdf-stub output-stream t :unicode-data)
   (pprint '(apply #'uiop:symbol-call "UNICODE-DATA" "GENERATE" (uiop:command-line-arguments)) output-stream))
 
+(defmethod print-prologue (configuration (name (eql :generate-encodings)) output-stream)
+  (declare (ignore configuration))
+  (print-asdf-stub output-stream t :encoding-generator)
+  (let ((*package* (find-package "KOGA"))) ; don't print package prefixes
+    (pprint '(defvar *encoding-data*) output-stream)
+    (pprint '(defvar *generated-encodings.lisp*) output-stream)
+    (pprint '(destructuring-bind (generated-encodings.lisp encodingdata.txt)
+              (uiop:command-line-arguments)
+              (setf *encoding-data* (uiop:symbol-call "ENCODING-GENERATOR" "PROCESS-ENCODINGS-FILE" encodingdata.txt)
+               *generated-encodings.lisp* generated-encodings.lisp))
+            output-stream)
+    (pprint '(with-open-file (gen *generated-encodings.lisp*
+                              :direction :output
+                              :if-does-not-exist :create
+                              :if-exists :supersede
+                              :external-format :utf-8)
+              (pprint '(in-package #:ext) gen) (terpri gen)
+              (format gen "(defvar *encoding-data*~%  #.~s)"
+               `(loop with data = (make-hash-table)
+                      for (encoding . table) in ',*encoding-data*
+                      for ht = (make-hash-table)
+                      do (setf (gethash encoding data) ht)
+                         (loop for (code . unicode) in table
+                               for char = (code-char unicode)
+                               do (setf (gethash code ht) char
+                                        (gethash char ht) code))
+                      finally (return data))))
+            output-stream)))
+
 (defmethod print-prologue (configuration (name (eql :generate-sif)) output-stream)
   (declare (ignore configuration))
   (print-asdf-stub output-stream t :clasp-scraper)
