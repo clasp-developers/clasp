@@ -185,8 +185,8 @@
     (eclector.reader:read-delimited-list char input-stream recursive-p)))
 
 (defun core::set-eclector-reader-readmacros (readtable)
-  (eclector.reader::set-standard-macro-characters readtable)
-  (eclector.reader::set-standard-dispatch-macro-characters readtable)
+  (eclector.reader:set-standard-macro-characters readtable)
+  (eclector.reader:set-standard-dispatch-macro-characters readtable)
   (cl:set-dispatch-macro-character #\# #\A 'core:sharp-a-reader readtable)
   (cl:set-dispatch-macro-character #\# #\D 'core::do-read-dense-specialized-array readtable)
   (cl:set-dispatch-macro-character #\# #\I 'core::read-cxx-object readtable))

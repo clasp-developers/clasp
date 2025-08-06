@@ -133,7 +133,7 @@
 
 (defun sharpmacros-lisp-redefine (readtable)
   (cond ((boundp '*read-hook*)
-         #+(or cclasp eclasp) (set-eclector-reader-readmacros readtable))
+         (set-eclector-reader-readmacros readtable))
         (t
          (set-dispatch-macro-character #\# #\= #'sharp-equal readtable)
          (set-dispatch-macro-character #\# #\# #'sharp-sharp readtable)
