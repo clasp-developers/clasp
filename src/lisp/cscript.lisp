@@ -274,6 +274,7 @@
            #~"kernel2/clos/define-method-combination.lisp"
            #~"kernel2/lsp/special-operators.lisp"
            ;; some extensions
+           #~"kernel2/clos/telemetry.lisp"
            #@"generated-encodings.lisp"
            #~"kernel2/lsp/encodings.lisp"
            #~"kernel2/lsp/posix.lisp"

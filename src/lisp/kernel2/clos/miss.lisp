@@ -6,10 +6,58 @@
   (when (maybe-update-instances arguments)
     (return-from miss (apply generic-function arguments)))
   ;; OK, real miss. Do it.
-  (multiple-value-bind (outcome updatedp)
-      (update-call-history generic-function arguments)
-    (when updatedp (force-discriminator generic-function))
-    (perform-outcome outcome arguments)))
+  (let* ((tracy (generic-function-tracy generic-function))
+         (start-time (when tracy (get-internal-real-time))))
+    (when tracy
+      (trace-miss-start generic-function tracy start-time arguments))
+    (multiple-value-bind (outcome updatedp)
+        (update-call-history generic-function arguments)
+      (when updatedp (force-discriminator generic-function))
+      (when tracy
+        (trace-miss-end generic-function tracy start-time arguments))
+      (perform-outcome outcome arguments))))
+
+(defun generic-function-tracy (gf)
+  (let ((gfclass (class-of gf)))
+    (if (eq gfclass
+            (load-time-value (find-class 'standard-generic-function)))
+        ;; see comment in %update-call-history
+        (with-early-accessors (standard-generic-function)
+          (mp:atomic (%generic-function-tracy gf)))
+        (let* ((slotd (find 'tracy (class-slots gfclass)
+                            :key #'slot-definition-name))
+               (location (slot-definition-location slotd)))
+          (mp:atomic (funcallable-standard-instance-access gf location))))))
+;;; used in telemetry
+(defun (setf generic-function-tracy) (new gf)
+  (let ((gfclass (class-of gf)))
+    (if (eq gfclass
+            (load-time-value (find-class 'standard-generic-function)))
+        ;; see comment in %update-call-history
+        (with-early-accessors (standard-generic-function)
+          (setf (mp:atomic (%generic-function-tracy gf)) new))
+        (let* ((slotd (find 'tracy (class-slots gfclass)
+                            :key #'slot-definition-name))
+               (location (slot-definition-location slotd)))
+          (setf (mp:atomic
+                 (funcallable-standard-instance-access gf location))
+                new)))))
+
+(defun trace-miss-start (gf tracy start-time arguments)
+  (declare (ignore start-time))
+  (when (eq (car tracy) :profile-ongoing) ; report
+    (format *trace-output* "~&; Dispatch miss: (~a~{ ~s~})~%"
+            (core:low-level-standard-generic-function-name gf) arguments)))
+
+(defun trace-miss-end (gf tracy start-time arguments)
+  (let ((time-s (/ (float (- (get-internal-real-time) start-time))
+                   internal-time-units-per-second)))
+    (when (eq (car tracy) :profile-ongoing) ; report
+      (format *trace-output* "~&;  ~fs overhead~%" time-s))
+    (let (;; dumb hack - atomics don't know about cadr etc
+          (info (cdr tracy)))
+      (mp:atomic-incf (car info) time-s)
+      (mp:atomic-push arguments (cdr info)))))
 
 ;;; stupid aliases used by funcallableInstance.cc
 (defun dispatch-miss-va (gf vaslist) (apply #'miss gf vaslist))
