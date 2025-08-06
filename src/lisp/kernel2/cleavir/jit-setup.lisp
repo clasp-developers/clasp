@@ -43,9 +43,6 @@
 (eval-when (:load-toplevel :execute)
   (mp:push-default-special-binding 'cmp:*thread-safe-context* '(llvm-sys:create-thread-safe-context))
   (mp:push-default-special-binding '*debugger-hook* nil)
-  (mp:push-default-special-binding 'core::*handler-clusters* nil)
-  (mp:push-default-special-binding 'core::*restart-clusters* nil)
-  (mp:push-default-special-binding 'core::*condition-restarts* nil)
   ;;; more thread-local special variables may be added in the future
   )
 
