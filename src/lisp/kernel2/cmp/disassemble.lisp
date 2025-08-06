@@ -50,11 +50,17 @@ If type is :IR then dump the LLVM-IR for all of the associated functions.
      ;; Defined later in clos/dtree.lisp.
      (clos::disassemble-discriminator desig))
     ((or compiled-function core:simple-fun)
-     (error "TODO"))
+     (ecase type
+       ((:ir)
+        (error "Dissassembly to LLVM-IR is not supported for already-compiled function: ~a"
+               desig))
+       ((:asm) (disassemble-function-to-asm desig))))
     ((or symbol (cons (eql setf) (cons symbol null))) ; function name
      (format t "Disassembling function: ~a~%" desig)
      ;; This will (correctly) signal an error if the name is unbound.
      (disassemble (fdefinition desig) :type type))
     ((cons (eql lambda)) ; lambda expression (roughly)
-     (disassemble (compile nil desig))))
+     (ecase type
+       ((:ir) (disassemble-to-ir desig))
+       ((:asm) (disassemble (compile nil desig) :type type)))))
   nil)
