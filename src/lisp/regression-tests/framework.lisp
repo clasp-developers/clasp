@@ -71,7 +71,7 @@ Successes: ~d"
       (push name *expected-failed-tests*)
       (push name *unexpected-failed-tests*))
   (message :err "Failed ~s" name)
-  (message :warn "Unexpected error~%~t~a~%while evaluating~%~t~a"
+  (message :warn "Unexpected error~%~t~a~%while evaluating~%~t~s"
            error form)
   (when description (message :info "~s" description)))
 
@@ -82,7 +82,7 @@ Successes: ~d"
   (message :err "Failed ~s" name)
   (message :warn "Wanted values ~s to~%~{~t~a~%~}but got~%~{~t~a~%~}"
            test expected actual)
-  (message :warn "while evaluating~%~t~a~%" form)
+  (message :warn "while evaluating~%~t~s~%" form)
   (when description (message :info "~s" description)))
 
 (defun %succeed-test (name)
