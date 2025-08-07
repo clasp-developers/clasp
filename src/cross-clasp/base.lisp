@@ -446,8 +446,9 @@
   (loop for s being the external-symbols of "CL"
         do (setf (clostrum:find-class client rte s) nil))
   ;; also copies over some constants we don't want.
-  ;; They will be defined in runtime-variables.lisp.
-  (loop for s in '(most-positive-fixnum most-negative-fixnum)
+  ;; They will be defined in runtime-variables.lisp or the library.
+  (loop for s in '(most-positive-fixnum most-negative-fixnum
+                   lambda-list-keywords)
         do (clostrum:makunbound client rte s))
   (values))
 
