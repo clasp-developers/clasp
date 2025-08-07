@@ -160,28 +160,6 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 
 (defmacro lambda (&rest body) `(function (lambda ,@body)))
 
-; assignment
-
-(defmacro psetq (&rest args)
-  "Syntax: (psetq {var form}*)
-Similar to SETQ, but evaluates all FORMs first, and then assigns each value to
-the corresponding VAR.  Returns NIL."
-  (BLOCK NIL
-    (LET ((L ARGS) (FORMS NIL) (BINDINGS NIL))
-      (TAGBODY
-	 (GO bot)
-       top
-	 (TAGBODY
-	    (LET ((SYM (GENSYM)))
-	      (PUSH (LIST SYM (CADR L)) BINDINGS)
-	      (PUSH (LIST 'SETQ (CAR L) SYM) FORMS)))
-	 (SETQ L (CDDR L))
-       bot
-	 (UNLESS (ENDP L) (GO top))
-	 (RETURN-FROM NIL
-	   (PROGN
-	     (LIST* 'LET* (NREVERSE BINDINGS) (NREVERSE (CONS NIL FORMS)))))))))
-
 ;; Augmented by a compiler macro once cleavir is loaded.
 (defmacro ext:with-current-source-form ((&rest forms) &body body)
   "Within BODY, the \"current source form\" will be the first element of FORMS
