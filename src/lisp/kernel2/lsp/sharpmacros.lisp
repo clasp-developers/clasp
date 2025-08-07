@@ -124,26 +124,11 @@
   (declare (ignore char))
   (read-dense-specialized-array stream n))
 
-(defun sharpmacros-enhance ()
-  (set-dispatch-macro-character #\# #\= #'sharp-equal)
-  (set-dispatch-macro-character #\# #\# #'sharp-sharp)
-  (set-dispatch-macro-character #\# #\I #'read-cxx-object)
-  (set-dispatch-macro-character #\# #\D #'read-dense-specialized-array))
+(defun sharpmacros-enhance (readtable)
+  (set-dispatch-macro-character #\# #\= #'sharp-equal readtable)
+  (set-dispatch-macro-character #\# #\# #'sharp-sharp readtable)
+  (set-dispatch-macro-character #\# #\I #'read-cxx-object readtable)
+  (set-dispatch-macro-character #\# #\D #'read-dense-specialized-array readtable))
 
-
-(defun sharpmacros-lisp-redefine (readtable)
-  (cond ((boundp '*read-hook*)
-         (set-eclector-reader-readmacros readtable))
-        (t
-         (set-dispatch-macro-character #\# #\= #'sharp-equal readtable)
-         (set-dispatch-macro-character #\# #\# #'sharp-sharp readtable)
-         (set-dispatch-macro-character #\# #\I #'read-cxx-object readtable)
-         (set-dispatch-macro-character #\# #\a 'sharp-a-reader readtable)
-         (set-dispatch-macro-character #\# #\A 'sharp-a-reader readtable)
-         (set-dispatch-macro-character #\# #\D 'do-read-dense-specialized-array readtable)
-         (set-dispatch-macro-character #\# #\s 'sharp-s-reader readtable)
-         (set-dispatch-macro-character #\# #\S 'sharp-s-reader readtable)))
-  (values))
-
-
-(sharpmacros-enhance)
+(sharpmacros-enhance *readtable*)
+(sharpmacros-enhance core:+standard-readtable+)

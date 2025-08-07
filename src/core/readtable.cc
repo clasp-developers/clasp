@@ -110,8 +110,10 @@ DOCGROUP(clasp);
 CL_DEFUN T_mv cl__get_macro_character(Character_sp chr, T_sp readtable) {
   if (gc::IsA<Readtable_sp>(readtable)) {
     return gc::As_unsafe<Readtable_sp>(readtable)->get_macro_character_(chr);
-  }
-  return eval::funcall(eclector_readtable::_sym_get_macro_character, readtable, chr);
+  } else if (readtable.nilp()) {
+    return core::_sym__PLUS_standardReadtable_PLUS_->symbolValue().as_unsafe<Readtable_O>()->get_macro_character_(chr);
+  } else
+    return eval::funcall(eclector_readtable::_sym_get_macro_character, readtable, chr);
 };
 
 CL_LAMBDA(&optional (from-readtable cl:*readtable*) to-readtable);
@@ -120,7 +122,7 @@ CL_DOCSTRING(R"dx(clhs: copy-readtable)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__copy_readtable(T_sp fromReadTable, T_sp toReadTable) {
   if (fromReadTable.nilp()) {
-    return Readtable_O::create_standard_readtable();
+    fromReadTable = core::_sym__PLUS_standardReadtable_PLUS_->symbolValue();
   }
   if (gc::IsA<Readtable_sp>(fromReadTable)) {
     if (toReadTable.notnilp() && !gc::IsA<Readtable_sp>(toReadTable)) {
@@ -174,7 +176,9 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp cl__get_dispatch_macro_character(Character_sp dispChar, Character_sp subChar, T_sp readtable) {
   if (gc::IsA<Readtable_sp>(readtable))
     return gc::As_unsafe<Readtable_sp>(readtable)->get_dispatch_macro_character_(dispChar, subChar);
-  return eval::funcall(eclector_readtable::_sym_get_dispatch_macro_character, readtable, dispChar, subChar);
+  else if (readtable.nilp())
+    return core::_sym__PLUS_standardReadtable_PLUS_->symbolValue().as_unsafe<Readtable_O>()->get_dispatch_macro_character_(dispChar, subChar);
+  else return eval::funcall(eclector_readtable::_sym_get_dispatch_macro_character, readtable, dispChar, subChar);
 };
 
 CL_LAMBDA(ch func-desig &optional non-terminating-p (readtable *readtable*));
@@ -222,7 +226,6 @@ SYMBOL_SC_(CorePkg, STARconsing_dotSTAR);
 SYMBOL_SC_(CorePkg, STARpreserve_whitespace_pSTAR);
 SYMBOL_SC_(CorePkg, STARinput_streamSTAR);
 SYMBOL_SC_(CorePkg, STARbackquote_levelSTAR);
-SYMBOL_SC_(CorePkg, STARstandard_readtableSTAR);
 
 CL_LAMBDA(stream chr);
 CL_DECLARE();
@@ -879,9 +882,6 @@ Readtable_sp Readtable_O::create_standard_readtable() {
     Symbol_sp sym = gc::As<Symbol_sp>(oCadr(cur));
     rt->set_dispatch_macro_character_(sharp, ch, sym);
   }
-  // reinstall the things defined in lisp
-  if (core::_sym_sharpmacros_lisp_redefine->fboundp())
-    eval::funcall(core::_sym_sharpmacros_lisp_redefine, rt);
   return rt;
 }
 
