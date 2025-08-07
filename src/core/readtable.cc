@@ -147,6 +147,13 @@ CL_DEFUN T_sp cl__readtable_case(T_sp readtable) {
   return eval::funcall(eclector_readtable::_sym_readtable_case, readtable);
 }
 
+static void check_readtable_case(Symbol_sp newCase) {
+  if ((newCase != kw::_sym_upcase) && (newCase != kw::_sym_downcase)
+      && (newCase != kw::_sym_preserve) && (newCase != kw::_sym_invert))
+    TYPE_ERROR(newCase,
+               Cons_O::createList(cl::_sym_member, kw::_sym_upcase, kw::_sym_downcase, kw::_sym_preserve, kw::_sym_invert));
+}
+
 CL_LISPIFY_NAME("cl:readtable-case");
 CL_LAMBDA(mode readtable);
 CL_DECLARE();
@@ -155,7 +162,8 @@ DOCGROUP(clasp);
 CL_DEFUN_SETF T_sp core__readtable_case_set(T_sp mode, T_sp readTable) {
   if (gc::IsA<Readtable_sp>(readTable))
     return gc::As_unsafe<Readtable_sp>(readTable)->setf_readtable_case_(gc::As<Symbol_sp>(mode));
-  return eval::funcall(eclector_readtable::_sym_setf_readtable_case, mode, readTable);
+  check_readtable_case(mode.as<Symbol_O>());
+  return eval::funcall(eclector_readtable::_sym_readtable_case->getSetfFdefinition(), mode, readTable);
 }
 
 CL_LAMBDA(dispChar subChar newFunction &optional (readtable *readtable*));
@@ -914,15 +922,9 @@ clasp_readtable_case Readtable_O::getReadtableCaseAsEnum_() {
 }
 
 Symbol_sp Readtable_O::setf_readtable_case_(Symbol_sp newCase) {
-
-  if ((newCase == kw::_sym_upcase) || (newCase == kw::_sym_downcase) || (newCase == kw::_sym_preserve) ||
-      (newCase == kw::_sym_invert)) {
-    this->Case_ = newCase;
-    return newCase;
-  } else {
-    TYPE_ERROR(newCase,
-               Cons_O::createList(cl::_sym_member, kw::_sym_upcase, kw::_sym_downcase, kw::_sym_preserve, kw::_sym_invert));
-  }
+  check_readtable_case(newCase);
+  this->Case_ = newCase;
+  return newCase;
 }
 
 T_sp Readtable_O::set_syntax_type_(Character_sp ch, T_sp syntaxType) {

@@ -45,7 +45,6 @@ SYMBOL_EXPORT_SC_(EclectorReadtablePkg, copy_readtable);
 SYMBOL_EXPORT_SC_(EclectorReadtablePkg, copy_readtable_into);
 SYMBOL_EXPORT_SC_(EclectorReadtablePkg, make_dispatch_macro_character);
 SYMBOL_EXPORT_SC_(EclectorReadtablePkg, readtable_case);
-SYMBOL_EXPORT_SC_(EclectorReadtablePkg, setf_readtable_case);
 SYMBOL_EXPORT_SC_(EclectorReadtablePkg, set_syntax_from_char);
 SYMBOL_EXPORT_SC_(EclectorReadtablePkg, readtablep);
 }; // namespace eclector_readtable
