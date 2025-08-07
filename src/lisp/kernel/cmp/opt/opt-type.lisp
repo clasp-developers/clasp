@@ -399,7 +399,7 @@
              ;; for anything that could be subclassed. The most likely candidate
              ;; for this problem is STREAM, but it's caught by the previous case.
              ((and (null args) (gethash head core:+type-header-value-map+))
-              `(if (headerp object ',type) t nil))
+              `(if (headerp object ',head) t nil))
              ;; Maybe it's a class name? (See also, comment in clos/defclass.lisp.)
              ((and (null args) (symbolp head) (class-info head env))
               ;; By semantic constraints, classes that are defined at compile time
