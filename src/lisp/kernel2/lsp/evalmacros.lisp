@@ -324,3 +324,14 @@ values of the last FORM.  If no FORM is given, returns NIL."
 
 (defmacro nth-value (n expr)
   `(nth ,n (multiple-value-list ,expr)))
+
+;;; These are not needed by the bytecode compiler, and it in fact ignores them,
+;;; but they are needed by clasp-cleavir.
+
+(defmacro cl:catch (tag &rest forms)
+  `(core:catch-function
+    ,tag (lambda () (declare (core:lambda-name catch-lambda)) (progn ,@forms))))
+
+(defmacro cl:throw (tag result-form)
+  `(core:throw-function
+    ,tag (lambda () (declare (core:lambda-name throw-lambda)) (progn ,result-form))))
