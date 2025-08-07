@@ -853,7 +853,7 @@ Boehm and MPS use a single pointer"
   "Map exception names to exception class extern 'C' names")
 
 (mapcar #'(lambda (x &aux (name (car x)) (cname (cadr x)))
-            (funcall #'(setf gethash) cname name *exception-types-hash-table*))
+            (setf (gethash name *exception-types-hash-table*) cname))
 	*exceptions*)
 
 (defun exception-typeid*-from-name (name)
