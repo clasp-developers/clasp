@@ -27,6 +27,7 @@
 (defgeneric ensure-class-using-class (class name &key &allow-other-keys))
 (defgeneric reader-method-class (class direct-slot &rest initargs))
 (defgeneric writer-method-class (class direct-slot &rest initargs))
+(defgeneric (setf class-name) (new-name class))
 
 (defun compute-instance-size (slots)
   ;; could just use cl:count, but type inference is bad atm
@@ -192,6 +193,10 @@ argument was supplied for metaclass ~S." (class-of class))))))))
 (defmethod map-dependents ((c class) function)
   (dolist (d (class-dependents c))
     (funcall function d)))
+
+(defmethod (setf class-name) (new-name (class class))
+  (reinitialize-instance class :name new-name)
+  new-name)
 
 ;;; ----------------------------------------------------------------------
 ;;; GENERIC FUNCTION INVALIDATION
