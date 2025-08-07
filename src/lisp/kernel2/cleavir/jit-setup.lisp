@@ -32,8 +32,6 @@
 
 (defconstant +debug-dwarf-version+ 5)
 
-(export '*primitives*)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Thread-local special variables to support the LLVM compiler
@@ -49,9 +47,6 @@
 (defun thread-local-llvm-context ()
   ;; (core:fmt t "*thread-safe-context* -> {}%N" *thread-safe-context*)
   (llvm-sys:thread-local-llvm-context))
-
-(export 'thread-local-llvm-context)
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -77,11 +72,6 @@
                (go top)))))
   (format t "Finished cmp:invoke-save-hooks~%"))
 
-(defun snapshot-load-restore ()
-  )
-
-(export '(snapshot-load-restore register-save-hook))
-
 (defun parse-bitcode (filename context &key print output-type)
   ;; Load a module from a bitcode or .ll file
   (cond
@@ -92,8 +82,6 @@
      (if print (core:fmt t "Loading {}%N" filename))
      (llvm-sys:parse-irfile filename context))
     (t (error "Add support for output-type ~a" output-type))))
-
-(export '(write-bitcode parse-bitcode load-ir-run-c-function))
 
 (defun get-builtin-target-triple-and-data-layout ()
   "Query llvm for the target triple and the data-layout"
@@ -171,7 +159,6 @@
            (go top)
          done))
       link-module)))
-(export 'link-bitcode-modules-together)
 
 (defvar *run-time-module-counter* 1)
 (defun next-run-time-module-name ()
@@ -187,17 +174,9 @@
     (declare (ignore triple data-layout-str))
     data-layout))
 
-(export 'system-data-layout)
-
 #+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (register-save-hook (function (lambda () (makunbound '*the-system-data-layout*)))))
-
-(defun load-object-files (&optional (object-files core:*command-line-arguments*))
-  (format t "load-object-files trying to load ~a~%" object-files)
-  (format t "output-type = ~a~%" cmp:*default-output-type*))
-
-(export 'load-object-files)
 
 (defun create-run-time-module-for-compile ()
   "Run time modules are used by COMPILE - a new one needs to be created for every COMPILE.
@@ -386,8 +365,6 @@ No DIBuilder is defined for the default module")
        (format nil "(SETF ~a)" symbol))
       (t raw-name))))
 
-(export 'print-name-from-unescaped-split-name)
-
 (defun jit-repl-function-name ()
   (sys:fmt nil "JITREPL-{}" (sys:next-number)))
   
@@ -400,11 +377,6 @@ No DIBuilder is defined for the default module")
                 (sys:fmt nil "{}-{}" sys:*module-startup-function-name* module-id)
                 (sys:fmt nil "{}-{}" sys:*module-shutdown-function-name* module-id)))
 
-(export '(jit-startup-shutdown-function-names jit-repl-function-name))
-
-
-(export '(unescape-and-split-jit-name))
-
 ;;; ------------------------------------------------------------
 ;;;
 ;;;  JIT facility
@@ -415,8 +387,6 @@ No DIBuilder is defined for the default module")
   (declare (ignore jit output-type))
   "Return the code-model for the compilation mode"
   'llvm-sys:code-model-small)
-
-(export 'code-model)
 
 (defun do-track-llvm-time (closure)
   "Run the closure in and keep track of the time, adding it to this threads accumulated llvm time"

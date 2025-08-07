@@ -50,11 +50,9 @@ Builds a new function which accepts any number of arguments but always outputs N
   #+(or)
   (when (member name *alien-declarations*)
     (error "Symbol ~s is a declaration specifier and cannot be used to name a new type" name)))
-(export 'create-type-name)
 
 (defvar *type-expanders* (make-hash-table :test #'eq :thread-safe t))
 
-(export 'ext::type-expander "EXT")
 (defun ext:type-expander (name)
   (values (gethash name *type-expanders*)))
 
@@ -66,7 +64,7 @@ Builds a new function which accepts any number of arguments but always outputs N
   (subtypep-clear-cache)
   function)
 
-(export 'ext::typexpand-1 "EXT")
+
 (defun ext:typexpand-1 (type-specifier &optional env)
   (let ((expander (ext:type-expander (if (consp type-specifier)
                                          (first type-specifier)
@@ -75,7 +73,6 @@ Builds a new function which accepts any number of arguments but always outputs N
         (values (funcall expander type-specifier env) t)
         (values type-specifier nil))))
 
-(export 'ext::typexpand "EXT")
 (defun ext:typexpand (type-specifier &optional env)
   (multiple-value-bind (expansion expandedp)
       (ext:typexpand-1 type-specifier env)

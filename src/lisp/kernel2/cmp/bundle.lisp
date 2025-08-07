@@ -31,8 +31,6 @@
   (declare (ignore kind))
   (apply 'build-fasl destination keywords))
 
-(export '(builder))
-
 (defun build-fasl (out-file &key lisp-files init-name)
   (declare (ignore init-name))
   (let ((output-name (case *default-output-type*
@@ -42,5 +40,3 @@
                        (otherwise
                         (error "Handle *default-output-type* ~a" *default-output-type*)))))
     output-name))
-
-(export 'build-fasl)

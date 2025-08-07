@@ -204,6 +204,7 @@
            #~"kernel2/clos/conditions.lisp"
            #~"kernel2/lsp/assert.lisp"
            #~"kernel2/clos/package.lisp"
+           #~"kernel2/lsp/ext-package.lisp"
            #~"kernel2/lsp/arraylib.lisp"
            #~"kernel2/lsp/numlib.lisp"
            #~"kernel2/lsp/predlib.lisp"
@@ -278,7 +279,6 @@
            #@"generated-encodings.lisp"
            #~"kernel2/lsp/encodings.lisp"
            #~"kernel2/lsp/posix.lisp"
-           #~"kernel2/lsp/ext-package.lisp"
            #~"kernel2/lsp/process.lisp"
            ;; toplevel
            #~"kernel2/lsp/top.lisp"

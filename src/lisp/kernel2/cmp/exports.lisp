@@ -5,7 +5,8 @@
           module-report
           transform-lambda-parts
           codegen-startup-shutdown
-          jit-startup-shutdown-function-names
+          jit-startup-shutdown-function-names jit-repl-function-name
+          unescape-and-split-jit-name
           irc-simple-function-create
           find-intrinsic-name
           +intrinsic/llvm.eh.typeid.for.p0+
@@ -23,7 +24,10 @@
           *compile-file-parallel-write-bitcode*
           *default-compile-linkage*
           quick-module-dump
+          code-model
           write-bitcode
+          parse-bitcode
+          link-bitcode-modules-together
           *irbuilder*
           *compile-file-unique-symbol-prefix*
           *optimize* *policy*
@@ -55,7 +59,6 @@
           *debug-compile-file-counter*
           *generate-compile-file-load-time-values*
           *gv-current-function-name*
-          *irbuilder*
           *thread-safe-context*
           thread-local-llvm-context
           *load-time-value-holder-global-var-type*
@@ -66,6 +69,7 @@
           +header-size+
           +header-stamp-size+
           +header-stamp-offset+
+          +ptag-mask+ +immediate-mask+
           +cons-tag+
           +fixnum-mask+
           +fixnum-shift+
@@ -89,8 +93,10 @@
           +header-where-tag+
           +literal-tag-char-code+
           +cons-size+
+          +vaslist-size+ +vaslist-alignment+
           +unwind-protect-dynenv-size+
           +binding-dynenv-size+
+          +void*-size+
           *startup-primitives-as-list*
           %void%
           %i1%
@@ -164,6 +170,7 @@
           register-global-function-def
           register-global-function-ref
           safe-system
+          system-data-layout
           jit-constant-uintptr_t
           irc-const-gep2-64
           irc-sext
@@ -386,6 +393,12 @@
           compiler-macro-expansion-error-warning
           unused-variable used-variable
           fold-failure))
+
+;;; save hooks
+(export '(register-save-hook))
+
+;;; bundle
+(export '(builder build-fasl))
 
 ;;; Eclector
 (export '(*cst-client*

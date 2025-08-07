@@ -118,5 +118,7 @@
           with-current-source-form
           start-autocompilation
           stop-autocompilation
+          ;; Macro parsing & acccess
+          parse-deftype type-expander typexpand-1 typexpand
           ;; Misc
           printing-char-p))
