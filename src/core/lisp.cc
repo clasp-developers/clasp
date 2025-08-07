@@ -469,6 +469,7 @@ void Lisp::startupLispEnvironment() {
 
     _lisp->findPackage(ExtPkg).as<Package_O>()->addImplementationPackage(_lisp->_Roots._CorePackage);
     _lisp->findPackage(ExtPkg).as<Package_O>()->addImplementationPackage(_lisp->findPackage(ClosPkg).as<Package_O>());
+    _lisp->findPackage(ExtPkg).as<Package_O>()->addImplementationPackage(_lisp->findPackage(CompPkg).as<Package_O>());
 
     _lisp->_Roots._CommonLispPackage->setLockedP(true);
     //_lisp->_Roots._CorePackage->setLockedP(true);

@@ -276,6 +276,7 @@
            #~"kernel2/lsp/special-operators.lisp"
            ;; some extensions
            #~"kernel2/clos/telemetry.lisp"
+           #~"kernel2/cmp/xref.lisp"
            #@"generated-encodings.lisp"
            #~"kernel2/lsp/encodings.lisp"
            #~"kernel2/lsp/posix.lisp"
