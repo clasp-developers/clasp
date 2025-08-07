@@ -649,10 +649,12 @@ if not possible."
       ((t) object)
       ((character base-char) (character object))
       ((float) (float object))
-      ((short-float) (float object 0.0s0))
-      ((single-float) (float object 0.0f0))
-      ((double-float) (float object 0.0d0))
-      ((long-float) (float object 0.0l0))
+      #+short-float
+      ((short-float) (core:to-short-float object))
+      ((single-float) (core:to-single-float object))
+      ((double-float) (core:to-double-float object))
+      #+long-float
+      ((long-float) (core:to-long-float object))
       ((function) (coerce-to-function object))
       ((complex)
        (destructuring-bind (&optional (realt t) (imagt t))
