@@ -211,6 +211,14 @@ SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedSingleFloat);
 SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedShortFloat);
 SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedDoubleFloat);
 SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedLongFloat);
+SYMBOL_EXPORT_SC_(ClPkg, singleFloatEpsilon);
+SYMBOL_EXPORT_SC_(ClPkg, singleFloatNegativeEpsilon);
+SYMBOL_EXPORT_SC_(ClPkg, shortFloatEpsilon);
+SYMBOL_EXPORT_SC_(ClPkg, shortFloatNegativeEpsilon);
+SYMBOL_EXPORT_SC_(ClPkg, doubleFloatEpsilon);
+SYMBOL_EXPORT_SC_(ClPkg, doubleFloatNegativeEpsilon);
+SYMBOL_EXPORT_SC_(ClPkg, longFloatEpsilon);
+SYMBOL_EXPORT_SC_(ClPkg, longFloatNegativeEpsilon);
 SYMBOL_EXPORT_SC_(ExtPkg, singleFloatPositiveInfinity);
 SYMBOL_EXPORT_SC_(ExtPkg, singleFloatNegativeInfinity);
 SYMBOL_EXPORT_SC_(ExtPkg, shortFloatPositiveInfinity);
@@ -221,6 +229,27 @@ SYMBOL_EXPORT_SC_(ExtPkg, longFloatPositiveInfinity);
 SYMBOL_EXPORT_SC_(ExtPkg, longFloatNegativeInfinity);
 SYMBOL_EXPORT_SC_(ClPkg, pi);
 
+/*
+ * The epsilons are weird constants. They are _not_ equivalent to C++'s epsilons:
+ * C++'s epsilons are the difference between 1 and the next representable float,
+ * whereas CL's is the smallest positive float that you can add to 1 to get the
+ * next representable float. (Or subtract, for the negative epsilons.)
+ * Due to rounding, this defines the epsilons to be a little more than one half
+ * of the difference between 1 and the next representable float.
+ * We can compute this half-difference as 2^-float_digits,
+ * and then take the next representable float for the "little more than".
+ * Hopefully this makes some sense to you, but it's hella confusing.
+ * Somewhat cribbed from SBCL which uses this same formulation, but implemented
+ * with direct manipulation of the float bits, which I'd rather avoid.
+ * Sidenote/TODO?: When C++23 is available this can be constexpr/consteval.
+ */
+template <typename F>
+static inline F compute_epsilon(int addexp) {
+  F one = (F)1;
+  F h = std::ldexp(one, -(addexp + std::numeric_limits<F>::digits));
+  return std::nextafter(h, one);
+}
+
 void exposeCando_Numerics() {
   cl::_sym_mostPositiveShortFloat->defconstant(clasp_make_single_float(std::numeric_limits<short_float_t>::max()));
   cl::_sym_mostNegativeShortFloat->defconstant(clasp_make_single_float(-std::numeric_limits<short_float_t>::max()));
@@ -228,6 +257,8 @@ void exposeCando_Numerics() {
   cl::_sym_leastNegativeShortFloat->defconstant(clasp_make_single_float(-std::numeric_limits<short_float_t>::denorm_min()));
   cl::_sym_leastNegativeNormalizedShortFloat->defconstant(clasp_make_single_float(-std::numeric_limits<short_float_t>::min()));
   cl::_sym_leastPositiveNormalizedShortFloat->defconstant(clasp_make_single_float(std::numeric_limits<short_float_t>::min()));
+  cl::_sym_shortFloatEpsilon->defconstant(clasp_make_single_float(compute_epsilon<short_float_t>(0)));
+  cl::_sym_shortFloatNegativeEpsilon->defconstant(clasp_make_single_float(compute_epsilon<short_float_t>(1)));
   ext::_sym_shortFloatPositiveInfinity->defconstant(clasp_make_single_float(std::numeric_limits<short_float_t>::infinity()));
   ext::_sym_shortFloatNegativeInfinity->defconstant(clasp_make_single_float(-std::numeric_limits<short_float_t>::infinity()));
 
@@ -237,6 +268,8 @@ void exposeCando_Numerics() {
   cl::_sym_leastNegativeSingleFloat->defconstant(clasp_make_single_float(-std::numeric_limits<single_float_t>::denorm_min()));
   cl::_sym_leastNegativeNormalizedSingleFloat->defconstant(clasp_make_single_float(-std::numeric_limits<single_float_t>::min()));
   cl::_sym_leastPositiveNormalizedSingleFloat->defconstant(clasp_make_single_float(std::numeric_limits<single_float_t>::min()));
+  cl::_sym_singleFloatEpsilon->defconstant(clasp_make_single_float(compute_epsilon<single_float_t>(0)));
+  cl::_sym_singleFloatNegativeEpsilon->defconstant(clasp_make_single_float(compute_epsilon<single_float_t>(1)));
   ext::_sym_singleFloatPositiveInfinity->defconstant(clasp_make_single_float(std::numeric_limits<single_float_t>::infinity()));
   ext::_sym_singleFloatNegativeInfinity->defconstant(clasp_make_single_float(-std::numeric_limits<single_float_t>::infinity()));
 
@@ -246,6 +279,8 @@ void exposeCando_Numerics() {
   cl::_sym_leastNegativeDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double_float_t>::denorm_min()));
   cl::_sym_leastNegativeNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double_float_t>::min()));
   cl::_sym_leastPositiveNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(std::numeric_limits<double_float_t>::min()));
+  cl::_sym_doubleFloatEpsilon->defconstant(DoubleFloat_O::create(compute_epsilon<double_float_t>(0)));
+  cl::_sym_doubleFloatNegativeEpsilon->defconstant(DoubleFloat_O::create(compute_epsilon<double_float_t>(1)));
   ext::_sym_doubleFloatPositiveInfinity->defconstant(DoubleFloat_O::create(std::numeric_limits<double_float_t>::infinity()));
   ext::_sym_doubleFloatNegativeInfinity->defconstant(DoubleFloat_O::create(-std::numeric_limits<double_float_t>::infinity()));
 
@@ -255,6 +290,8 @@ void exposeCando_Numerics() {
   cl::_sym_leastNegativeLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<long_float_t>::denorm_min()));
   cl::_sym_leastNegativeNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<long_float_t>::min()));
   cl::_sym_leastPositiveNormalizedLongFloat->defconstant(LongFloat_O::create(std::numeric_limits<long_float_t>::min()));
+  cl::_sym_longFloatEpsilon->defconstant(LongFloat_O::create(compute_epsilon<long_float_t>(0)));
+  cl::_sym_longFloatNegativeEpsilon->defconstant(LongFloat_O::create(compute_epsilon<long_float_t>(1)));
   ext::_sym_longFloatPositiveInfinity->defconstant(LongFloat_O::create(std::numeric_limits<long_float_t>::infinity()));
   ext::_sym_longFloatNegativeInfinity->defconstant(LongFloat_O::create(-std::numeric_limits<long_float_t>::infinity()));
 
