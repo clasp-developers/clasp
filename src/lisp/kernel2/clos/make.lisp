@@ -1,10 +1,11 @@
 (in-package #:clos)
 
-(defgeneric allocate-instance (class &rest initargs))
-(defgeneric make-instance (class &rest initargs))
-(defgeneric initialize-instance (object &rest initargs))
-(defgeneric reinitialize-instance (object &rest initargs))
-(defgeneric shared-initialize (object slot-names &rest initargs))
+(defgeneric allocate-instance (class &rest initargs &key &allow-other-keys))
+(defgeneric make-instance (class &rest initargs &key &allow-other-keys))
+(defgeneric initialize-instance (object &rest initargs &key &allow-other-keys))
+(defgeneric reinitialize-instance (object &rest initargs &key &allow-other-keys))
+(defgeneric shared-initialize (object slot-names &rest initargs
+                               &key &allow-other-keys))
 
 (defun make-rack-for-class (class)
   (let (;; FIXME: Read this information from the class in one go, atomically.
@@ -105,6 +106,13 @@
           (slot-name (slot-definition-name slotd)))
       ;; Initialize the slot from an initarg, if one was provided.
       (loop for (key val) on initargs by #'cddr
+            ;; FIXME: This is both inefficient and insufficiently correct.
+            ;; Inefficient because the same key can be checked multiple times
+            ;; as we loop over slots. Incorrect in that all slots may be resolved
+            ;; before a bad keyword appears.
+            ;; The generic function should probably check instead.
+            unless (symbolp key)
+              do (core:simple-program-error "Not a valid initarg: ~A" key)
             when (member key slot-initargs)
               do (setf (slot-value instance slot-name) val)
                  (go initialized))
