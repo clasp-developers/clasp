@@ -711,6 +711,15 @@
            (core:setf-find-class class ',name)
            ;; Initialize rack slots.
            ,(initialize-class-form 'class class)
+           ;; Install as subclass.
+           (with-early-accessors (std-class)
+             ,@(loop for super in (mop:class-direct-superclasses class)
+                     ;; ADJOIN not available yet, so no pushnew
+                     ;; find-class is _not_ done in load-time-value, since
+                     ;; the classes will not exist at load-time-value time
+                     collect `(let ((super (find-class ',(name super))))
+                                (unless (member class (class-direct-subclasses super))
+                                  (push class (class-direct-subclasses super))))))
            ;; Install stamp.
            (unless old-class
              (core:class-new-stamp class)))
