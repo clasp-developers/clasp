@@ -15,10 +15,6 @@
 
 (in-package "SYSTEM")
 
-#+ecl-min
-(eval-when (:execute)
-  (load (merge-pathnames "seqmacros.lisp" *load-truename*)))
-
 (defun sequence-count (count)
   (cond ((null count)
          most-positive-fixnum)
@@ -862,7 +858,6 @@ subsequence is found.  Returns NIL otherwise."
                                  (key (funcall elt2 sequence2 it2)))
                   (return))))))))))
 
-#-clasp-min
 (defun sort (sequence predicate &key key)
   "Args: (sequence test &key key)
 Destructively sorts SEQUENCE and returns the result.  TEST should return non-
@@ -931,7 +926,6 @@ evaluates to NIL.  See STABLE-SORT."
      (setq key-right (funcall key (car right)))
      (go loop)))
 
-#-clasp-min
 (defun quick-sort (seq start end pred key)
   (declare (fixnum start end)
            (function pred key)

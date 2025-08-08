@@ -24,10 +24,6 @@
 ;;; proof that the condition system can be implemented.
 ;;;
 
-#+(or)
-(eval-when (:execute)
-  (setq core:*echo-repl-read* t))
-
 (in-package "SYSTEM")
 
 ;;; ----------------------------------------------------------------------

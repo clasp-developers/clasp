@@ -17,7 +17,6 @@
   (format *query-io* "~&Type a form to be evaluated:~%")
   (list (eval (read *query-io*))))
 
-#-clasp-min
 (defun wrong-type-argument (object type &optional place function)
   (tagbody again
      (restart-case
@@ -54,7 +53,6 @@ value is used to indicate the expected type in the error message."
 	 (setf ,place (do-check-type ,aux ',type ',type-string ',place)))
        nil)))
 
-#-clasp-min
 (defun do-check-type (value type type-string place)
   (tagbody again
      (unless (typep value type)
@@ -115,7 +113,6 @@ signals an error."
        (case ,key ,@clauses
 	 (t (si::ecase-error ,key ',(accumulate-cases clauses nil)))))))
 
-#-clasp-min
 (defun ccase-error (keyform key values)
   (restart-case (error 'CASE-FAILURE
 		       :name 'CCASE
@@ -198,7 +195,6 @@ the last FORM.  If not, signals an error."
                          (progn ,@(cdr clause))
                          ,form))))))
 
-#-clasp-min
 (defun ctypecase-error (keyplace value types)
   (restart-case (error 'CASE-FAILURE
 		       :name 'CTYPECASE

@@ -2297,7 +2297,7 @@
               package))))
 
 ;;; Originally contributed by stassats May 24, 2016
-#+(or cclasp eclasp)
+(let () ; FIXME: Use during build
 (define-compiler-macro format (&whole whole destination control-string &rest args
                                       &environment env)
   ;; Be especially nice about the common programmer error of
@@ -2355,7 +2355,7 @@
                         (if (null ,dest-sym)
                             (get-output-stream-string ,stream-sym)
                             nil)))))))
-        whole)))
+        whole))))
 
 ;;; Given a formatter form that doesn't do anything fancy with arguments,
 ;;; expand into some code to execute it with the given args.

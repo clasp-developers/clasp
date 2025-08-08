@@ -123,7 +123,6 @@ Evaluates FORM, outputs the realtime and runtime used for the evaluation to
 (defconstant-eqx month-startdays #(0 31 59 90 120 151 181 212 243 273 304 334 365) equalp)
 
 
-#-clasp-min
 (defun get-local-time-zone ()
   "Returns the number of hours West of Greenwich for the local time zone."
   (core:unix-get-local-time-zone))
@@ -135,7 +134,6 @@ Evaluates FORM, outputs the realtime and runtime used for the evaluation to
 		 (number-of-days-from-1900 year))))
     (+ sec (* 60 (+ min (* 60 (+ tz dst hour (* 24 days))))))))
 
-#-clasp-min
 (defun check-tz (tz)
   ;; According to the CLHS glossary, a time zone is "a rational multiple of
   ;; 1/3600 between -24 (inclusive) and 24 (inclusive)". The multiple of 1/3600
@@ -152,9 +150,6 @@ Evaluates FORM, outputs the realtime and runtime used for the evaluation to
     (error "~a is not a valid time zone: Must be a rational multiple of 1/3600"
            tz)))
 
-#+clasp-min (defun check-tz (tz) tz) ; typep not available yet
-
-#-clasp-min
 (defun decode-universal-time (orig-ut &optional (tz (get-local-time-zone) tz-p)
                               &aux (dstp nil))
   "Args: (integer &optional (timezone (si::get-local-time-zone)))
@@ -232,7 +227,6 @@ Universal Time UT, which defaults to the current time."
 			#.(encode-universal-time 0 0 0 1 1 2032 0)
 			#.(encode-universal-time 0 0 0 1 1 2033 0))
 		    (- universal-time (encode-universal-time 0 0 0 1 1 year 0) utc-1-1-1970)))))
-    #-clasp-min
     (core:unix-daylight-saving-time unix-time)))
 
 (defun get-decoded-time ()

@@ -14,9 +14,6 @@
 
 (in-package "SYSTEM")
 
-#+(or)(eval-when (:load-toplevel :compile-toplevel :execute)
-  (setq *echo-repl-read* t)
-)
 (defun structure-type-error (value slot-type struct-name slot-name)
   (error 'simple-type-error
 	 :format-control "Slot ~A in structure ~A only admits values of type ~A."
@@ -621,9 +618,7 @@
                (case type-base
                  (structure-object (values #'defstruct-class-reader-body
                                            #'defstruct-class-writer-body
-                                           #-clasp-min
                                            #'defstruct-class-cas-body
-                                           #+clasp-min nil
                                            name))
                  (vector (values #'defstruct-vector-reader-body
                                  #'defstruct-vector-writer-body

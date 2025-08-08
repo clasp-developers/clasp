@@ -162,7 +162,6 @@ INDEXes must be equal to the rank of ARRAY."
   "Args: (bit-array &rest indexes)
 Returns the bit of BIT-ARRAY specified by INDEXes."
   (declare (type (array bit) bit-array))
-  #+(not clasp-min)
   (check-type bit-array (array bit))
   (row-major-aref bit-array (row-major-index-inner bit-array indices)))
 
@@ -170,7 +169,6 @@ Returns the bit of BIT-ARRAY specified by INDEXes."
   "Args: (simple-bit-array &rest subscripts)
 Returns the specified bit in SIMPLE-BIT-ARRAY."
   (declare (type (simple-array bit) bit-array))
-  #+(not clasp-min)
   (check-type bit-array (simple-array bit))
   (row-major-aref bit-array (row-major-index-inner bit-array indices)))
 
