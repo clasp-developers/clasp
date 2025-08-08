@@ -71,6 +71,9 @@
   (static-gfs:invalidate-changers* class)
   class)
 
+(defmethod make-instances-obsolete ((class symbol))
+  (make-instances-obsolete (find-class class)))
+
 (defmethod initialize-instance :after
     ((class class) &rest initargs &key direct-slots)
   (declare (dynamic-extent initargs) ; see NOTE in reinitialize-instance/T
