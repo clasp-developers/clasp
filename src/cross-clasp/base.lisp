@@ -470,7 +470,7 @@
                              (initial-features features)))
   (values))
 
-(defun build (input-files output-files)
+(defun build (input-files output-files source-pathnames)
   (let ((*compile-verbose* t) (*compile-print* t))
     (handler-bind
         (;; SBCL's script processor muffles style warnings, which is
@@ -482,6 +482,8 @@
       (maclina.compile:with-compilation-unit ()
         (loop for input in input-files
               for output in output-files
+              for source in source-pathnames
               do (maclina.compile-file:compile-file input :output-file output
                                                           :environment *build-rte*
-                                                          :reader-client *reader-client*))))))
+                                                          :reader-client *reader-client*
+                                                          :source-pathname source))))))

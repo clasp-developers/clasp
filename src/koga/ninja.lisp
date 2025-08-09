@@ -153,7 +153,7 @@
                     :restat 1
                     :pool "console")
   (ninja:write-rule output-stream :compile-bytecode-image
-                    :command (lisp-command "compile-bytecode-image.lisp" "$in --output $out")
+                    :command (lisp-command "compile-bytecode-image.lisp" "$in --output $out --sources $sources")
                     :description "Building Clasp bytecode image"
                     :restat 1)
   (ninja:write-rule output-stream :compile-native-image
@@ -800,6 +800,8 @@
                                                      :code)
                                         features.sexp
                                         sources)
+                         :sources (make-kernel-source-list
+                                   configuration sources)
                          :outputs fasls)
       (ninja:write-build output-stream :link-bytecode-image
                          :inputs fasls
