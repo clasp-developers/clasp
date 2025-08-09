@@ -194,6 +194,8 @@
            #~"kernel2/clos/interpreted-discriminator.lisp"
            #~"kernel2/clos/miss.lisp"
            #~"kernel2/clos/check-initargs.lisp"
+           #~"kernel/clos/static-gfs/package.lisp"
+           #~"kernel/clos/static-gfs/flag.lisp"
            #~"kernel2/clos/make.lisp"
            #~"kernel2/clos/print.lisp"
            #~"kernel2/clos/misc.lisp"
@@ -289,6 +291,20 @@
            ;; logical pathname translation
            #@"base-translations.lisp"
            #@"extension-translations.lisp"
+           ;; CLOS part three: static GFs
+           #~"kernel/clos/static-gfs/package.lisp"
+           #~"kernel/clos/static-gfs/flag.lisp"
+           #~"kernel/clos/static-gfs/constructor.lisp"
+           #~"kernel/clos/static-gfs/cell.lisp"
+           #~"kernel/clos/static-gfs/effective-method.lisp"
+           #~"kernel/clos/static-gfs/svuc.lisp"
+           #~"kernel/clos/static-gfs/shared-initialize.lisp"
+           #~"kernel/clos/static-gfs/initialize-instance.lisp"
+           #~"kernel/clos/static-gfs/allocate-instance.lisp"
+           #~"kernel/clos/static-gfs/make-instance.lisp"
+           #~"kernel/clos/static-gfs/compute-constructor.lisp"
+           #~"kernel/clos/static-gfs/dependents.lisp"
+           #~"kernel/clos/static-gfs/compiler-macros.lisp"
            ;; file compiler
            :eclector-concrete-syntax-tree
            #~"kernel2/cmp/variables.lisp"

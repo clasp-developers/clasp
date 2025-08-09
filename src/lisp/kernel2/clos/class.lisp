@@ -312,7 +312,12 @@ because it contains a reference to the undefined class~%  ~A"
 	  (dolist (slotd all-slots)
 	    (setf (gethash (slot-definition-name slotd) locations)
 		  (slot-definition-location slotd))))
-	(setf location-table locations))))
+      (setf location-table locations))))
+
+;;; KLUDGE: Dummy definition, redefined in static-gfs
+#+static-gfs
+(defun static-gfs:invalidate-class-constructors (class)
+  (declare (ignore class)))
 
 (defmethod finalize-inheritance :after ((class std-class))
   #+static-gfs
@@ -775,6 +780,11 @@ because it contains a reference to the undefined class~%  ~A"
 ;;; ----------------------------------------------------------------------
 ;;; (SETF FIND-CLASS)
 ;;;
+
+;;; KLUDGE: Dummy definition, redefined in static-gfs
+#+static-gfs
+(defun static-gfs:invalidate-designated-constructors (name)
+  (declare (ignore name)))
 
 (defun (setf find-class) (new-value name &optional errorp env)
   (declare (ignore errorp env))

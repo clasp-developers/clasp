@@ -7,4 +7,9 @@
   (:export #:invalidate-changers* #:invalidate-class-changers
            #:invalidate-designated-changers)
   ;; make-instance compiler macro
+  #-building-clasp
   (:implement #:cl))
+
+#+building-clasp
+(progn
+  (ext:add-implementation-package '("STATIC-GFS") "CL"))
