@@ -153,7 +153,7 @@
                     :restat 1
                     :pool "console")
   (ninja:write-rule output-stream :compile-bytecode-image
-                    :command (lisp-command "compile-bytecode-image.lisp" "$out $in")
+                    :command (lisp-command "compile-bytecode-image.lisp" "$in --output $out")
                     :description "Building Clasp bytecode image"
                     :restat 1)
   (ninja:write-rule output-stream :compile-native-image
@@ -204,6 +204,10 @@
                     :pool "console")
   (ninja:write-rule output-stream :link-fasl
                     :command "$clasp --norc --disable-mpi --ignore-image --feature clasp-min --load link-fasl.lisp -- $out $in"
+                    :restat 1
+                    :description "Linking $target")
+  (ninja:write-rule output-stream :link-bytecode-image
+                    :command (lisp-command "link-bytecode-image.lisp" "$out $in")
                     :restat 1
                     :description "Linking $target")
   (ninja:write-rule output-stream "link-fasl-abc"
@@ -783,12 +787,24 @@
     (ninja:write-build output-stream :generate-encodings
                        :inputs (list (make-source "tools-for-build/encodingdata.txt" :code))
                        :outputs (list generated-encodings.lisp))
-    (ninja:write-build output-stream :compile-bytecode-image
-                       :inputs (list* (make-source "tools-for-build/character-names.sexp"
-                                                   :code)
-                                      features.sexp
-                                      sources)
-                       :outputs (list vimage))
+    (let ((fasls
+            (mapcar (lambda (x)
+                      (make-source-output x
+                                          :type "fasl"
+                                          :root (if (eq (source-root x) :variant-generated)
+                                                    :variant-lib-generated
+                                                    :variant-lib)))
+                    sources)))
+      (ninja:write-build output-stream :compile-bytecode-image
+                         :inputs (list* (make-source "tools-for-build/character-names.sexp"
+                                                     :code)
+                                        features.sexp
+                                        sources)
+                         :outputs fasls)
+      (ninja:write-build output-stream :link-bytecode-image
+                         :inputs fasls
+                         :outputs (list vimage)))
+    #+(or)
     (ninja:write-build output-stream :compile-native-image
                        :clasp clasp-with-env
                        :source (make-kernel-source-list configuration sources)

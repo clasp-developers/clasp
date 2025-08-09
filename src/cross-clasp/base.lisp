@@ -470,7 +470,7 @@
                              (initial-features features)))
   (values))
 
-(defun build (output-file &rest input-files)
+(defun build (input-files output-files)
   (let ((*compile-verbose* t) (*compile-print* t))
     (handler-bind
         (;; SBCL's script processor muffles style warnings, which is
@@ -479,6 +479,9 @@
          (style-warning (lambda (w)
                           (format *error-output* "~&WARNING: ~a~%" w)
                           (muffle-warning w))))
-      (maclina.compile-file:compile-files input-files output-file
-                                          :environment *build-rte*
-                                          :reader-client *reader-client*))))
+      (maclina.compile:with-compilation-unit ()
+        (loop for input in input-files
+              for output in output-files
+              do (maclina.compile-file:compile-file input :output-file output
+                                                          :environment *build-rte*
+                                                          :reader-client *reader-client*))))))

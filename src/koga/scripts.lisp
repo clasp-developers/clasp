@@ -172,10 +172,13 @@
   (declare (ignore configuration))
   (print-asdf-stub output-stream t :cross-clasp)
   (format output-stream "
-(destructuring-bind (out character-names features &rest sources)
+(destructuring-bind (character-names features &rest sources)
     (uiop:command-line-arguments)
   (uiop:symbol-call \"CROSS-CLASP\" \"INITIALIZE\" character-names features)
-  (apply #'uiop:symbol-call \"CROSS-CLASP\" \"BUILD\" out sources))"))
+  (let* ((breaker (position \"--output\" sources :test #'string=))
+         (_ (unless breaker (error \"Need --output to compile-bytecode-image\")))
+         (input (subseq sources 0 breaker)) (output (subseq sources (1+ breaker))))
+    (uiop:symbol-call \"CROSS-CLASP\" \"BUILD\" input output)))"))
 
 (defmethod print-prologue (configuration (name (eql :compile-systems)) output-stream)
   (declare (ignore configuration))
@@ -292,6 +295,12 @@
           (if (eq (build-mode configuration) :bytecode-faso)
               :faso
               (build-mode configuration))))
+
+(defmethod print-prologue (configuration (name (eql :link-bytecode-image)) output-stream)
+  (declare (ignore configuration))
+  (print-asdf-stub output-stream t :maclina/compile-file)
+  (format output-stream "(apply #'uiop:symbol-call \"MACLINA.COMPILE-FILE\" \"LINK-FASLS\"
+       (uiop:command-line-arguments))"))
 
 (defmethod print-prologue (configuration (name (eql :analyze-generate)) output-stream)
   (declare (ignore configuration))

@@ -648,6 +648,8 @@ is not compatible with snapshots.")
                                                          (list (make-source #p"generate-lisp-info.lisp" :build))
                                                          :compile-bytecode-image
                                                          (list (make-source #P"compile-bytecode-image.lisp" :build))
+                                                         :link-bytecode-image
+                                                         (list (make-source #P"link-bytecode-image.lisp" :build))
                                                          :compile-native-image
                                                          (list (make-source #p"compile-native-image.lisp" :build))
                                                          :compile-systems
