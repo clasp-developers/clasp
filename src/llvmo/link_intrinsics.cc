@@ -394,7 +394,7 @@ LtvcReturnVoid ltvc_ensure_vcell(gctools::GCRootsInModule* holder, char tag, siz
 LtvcReturnVoid ltvc_make_package(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* package_name_t) {
   NO_UNWIND_BEGIN();
   core::SimpleString_sp package_name((gctools::Tagged)package_name_t);
-  core::T_sp tpkg = _lisp->findPackage(package_name, false);
+  core::T_sp tpkg = _lisp->findPackageGlobal(package_name, false);
   if (tpkg.nilp()) {
     // If we don't find the package - just make it
     // a more comprehensive defpackage should be coming

@@ -631,7 +631,10 @@ struct loadltv {
   void op_package() {
     size_t index = next_index();
     String_sp name = gc::As<String_sp>(get_ltv(read_index()));
-    set_ltv(_lisp->findPackage(name, true), index);
+    // The file compiler only uses global names, so ignore local nicknames.
+    // This means we can't use this op for user code, e.g. we can't reduce
+    // (load-time-value (find-package "WHATEVER")) to this op. Careful!
+    set_ltv(_lisp->findPackageGlobal(name, true), index);
   }
 
   void op_bignum() {

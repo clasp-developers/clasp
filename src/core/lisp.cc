@@ -987,14 +987,7 @@ T_sp Lisp::findPackage(const string& name, bool errorp) const {
   return this->findPackage(SimpleBaseString_O::make(name), errorp);
 }
 
-T_sp Lisp::findPackage_no_lock(String_sp name) const {
-  // Check local nicknames first.
-  if (_lisp->_Roots._TheSystemIsUp) {
-    T_sp local = this->getCurrentPackage()->findPackageByLocalNickname(name);
-    if (local.notnilp())
-      return local;
-  }
-  // OK, now global names.
+T_sp Lisp::findPackageGlobal_no_lock(String_sp name) const {
   T_sp fi = this->_Roots._PackageNameIndexMap->gethash(name);
   if (fi.nilp()) {
     return nil<Package_O>(); // return nil if no package found
@@ -1004,10 +997,32 @@ T_sp Lisp::findPackage_no_lock(String_sp name) const {
   return getPackage;
 }
 
+T_sp Lisp::findPackage_no_lock(String_sp name) const {
+  // Check local nicknames first.
+  if (_lisp->_Roots._TheSystemIsUp) {
+    T_sp local = this->getCurrentPackage()->findPackageByLocalNickname(name);
+    if (local.notnilp())
+      return local;
+  }
+  // OK, now global names.
+  return this->findPackageGlobal_no_lock(name);
+}
+
 T_sp Lisp::findPackage(String_sp name, bool errorp) const {
   {
     WITH_READ_LOCK(globals_->_PackagesMutex);
     T_sp res = this->findPackage_no_lock(name);
+    if (!errorp || res.isA<Package_O>())
+      return res;
+  }
+  // Signal the error only after releasing the lock.
+  PACKAGE_ERROR(name);
+}
+
+T_sp Lisp::findPackageGlobal(String_sp name, bool errorp) const {
+  {
+    WITH_READ_LOCK(globals_->_PackagesMutex);
+    T_sp res = this->findPackageGlobal_no_lock(name);
     if (!errorp || res.isA<Package_O>())
       return res;
   }
@@ -1640,6 +1655,18 @@ CL_DEFUN T_sp cl__find_package(T_sp name_desig) {
   String_sp name = coerce::stringDesignator(name_desig);
   // TODO: Support wide string package names
   return _lisp->findPackage(name);
+}
+
+CL_DEFUN T_sp core__find_package_global(T_sp name_desig) {
+  // Look up a package, ignoring local nicknames.
+  // Could also be done as e.g.
+  // (let ((*package* (find-package "CL"))) (find-package ...))
+  // but doing more work in order to do less work is silly.
+  if (Package_sp pkg = name_desig.asOrNull<Package_O>())
+    return pkg;
+  String_sp name = coerce::stringDesignator(name_desig);
+  // TODO: Support wide string package names
+  return _lisp->findPackageGlobal(name);
 }
 
 CL_LAMBDA(package-designator);
