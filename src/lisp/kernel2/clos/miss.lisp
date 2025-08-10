@@ -69,19 +69,7 @@
                                       generic-function)))
 
 (defun calculate-std-discriminating-function (generic-function)
-  (if (let ((gfclass (class-of generic-function)))
-        (if (eq gfclass
-                (load-time-value (find-class 'standard-generic-function)))
-            ;; see comment in %update-call-history
-            (with-early-accessors (standard-generic-function)
-              (mp:atomic (generic-function-call-history generic-function)))
-            (let* ((slotd (find 'call-history (class-slots gfclass)
-                                :key #'slot-definition-name))
-                   (location (slot-definition-location slotd)))
-              (mp:atomic (funcallable-standard-instance-access
-                          generic-function location)))))
-      (bytecode-interpreted-discriminator generic-function)
-      (invalidated-discriminator-closure generic-function)))
+  (bytecode-interpreted-discriminator generic-function))
 
 (defun invalidate-discriminating-function (generic-function)
   (set-funcallable-instance-function
@@ -91,7 +79,32 @@
 (defun invalidated-discriminator-closure (generic-function)
   (lambda (&rest args)
     (declare (core:lambda-name invalidated-discriminator))
-    (apply #'miss generic-function args)))
+    ;; A GF being invalidated is orthogonal from the call history being valid.
+    ;; For example, when methods are added or removed, the call history is
+    ;; altered accordingly and the GF is invalidated, but the remaining call
+    ;; history entries are still valid. All GF invalidation does is force the
+    ;; GF to recompute its discriminator (which it does need to do, since e.g.
+    ;; its discriminating function predates the method changes).
+    ;; So what this closure conceptually needs to do is recompute the
+    ;; discriminator and then call it. It's just a mechanism for laziness.
+    (if (let ((gfclass (class-of generic-function)))
+          (if (eq gfclass
+                  (load-time-value (find-class 'standard-generic-function)))
+              ;; see comment in %update-call-history
+              (with-early-accessors (standard-generic-function)
+                (mp:atomic (generic-function-call-history generic-function)))
+              (let* ((slotd (find 'call-history (class-slots gfclass)
+                                  :key #'slot-definition-name))
+                     (location (slot-definition-location slotd)))
+                (mp:atomic (funcallable-standard-instance-access
+                            generic-function location)))))
+        (progn (force-discriminator generic-function)
+               (apply generic-function args))
+        ;; If we know the call history is empty, the discriminator will do
+        ;; nothing but miss immediately, and MISS will add to the call history
+        ;; if possible and implement the GF regardless. So we skip
+        ;; computing the discriminator and just call MISS directly.
+        (apply #'miss generic-function args))))
 
 (defgeneric compute-discriminating-function (generic-function))
 
