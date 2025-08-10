@@ -291,6 +291,9 @@
            ;; logical pathname translation
            #@"base-translations.lisp"
            #@"extension-translations.lisp"
+           #~"modules/sockets/sockets.lisp"
+           #@"base-immutable.lisp"
+           #@"extension-immutable.lisp"
            ;; CLOS part three: static GFs
            #~"kernel/clos/static-gfs/package.lisp"
            #~"kernel/clos/static-gfs/flag.lisp"

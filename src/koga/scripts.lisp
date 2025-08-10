@@ -462,7 +462,7 @@ exec $(dirname \"$0\")/iclasp -f ignore-extensions --base \"$@\""))
   (print-translations output-stream sources))
 
 (defmethod print-prologue (configuration (name (eql :base-immutable)) output-stream)
-  (pprint-immutable-systems output-stream (gethash :cclasp (target-systems configuration))))
+  (pprint-immutable-systems output-stream (gethash :nclasp (target-systems configuration))))
 
 (defmethod print-prologue (configuration (name (eql :extension-immutable)) output-stream)
   (pprint-immutable-systems output-stream (gethash :eclasp (target-systems configuration))))
