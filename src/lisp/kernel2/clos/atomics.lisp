@@ -78,3 +78,17 @@ If SLOT-MISSING returns, its primary value is returned."
               `(if ,gslotd ,read (slot-missing ,gclass ,gobject ,gsname 'slot-value))
               `(if ,gslotd ,write (slot-missing ,gclass ,gobject ,gsname 'setf ,newv))
               `(if ,gslotd ,cas (slot-missing ,gclass ,gobject ,gsname 'mp:cas (list ,cmpv ,newv)))))))
+
+;;; Internal use only, but useful.
+(mp:define-atomic-expander clos::generic-function-call-history (generic-function)
+    (&rest keys &key order environment)
+  (let ((gf (gensym "GENERIC-FUNCTION")) (index (gensym "INDEX")))
+    (multiple-value-bind (vars vals cmp new read write cas)
+        (apply #'mp:get-atomic-expansion
+               `(clos:funcallable-standard-instance-access ,gf ,index)
+               keys)
+      (values (list* gf index vars)
+              (list* generic-function
+                     `(clos::%gfclass-call-history-loc (class-of ,gf))
+                     vals)
+              cmp new read write cas))))

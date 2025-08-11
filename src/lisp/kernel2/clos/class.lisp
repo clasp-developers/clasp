@@ -208,8 +208,7 @@ argument was supplied for metaclass ~S." (class-of class))))))))
   (find specializer key :test #'eq))
 
 (defun generic-function-call-history-separate-entries-with-specializer
-    (call-history gf specializer)
-  (declare (ignorable gf))
+    (call-history specializer)
   (loop for entry in call-history
         for key = (car entry)
         if (call-history-entry-key-contains-specializers-p key specializer)
@@ -222,8 +221,8 @@ argument was supplied for metaclass ~S." (class-of class))))))))
 ;; force their discriminating functions.
 (defun invalidate-generic-functions-with-class-selector (class)
   (loop for gf in (specializer-call-history-generic-functions class)
-        do (%update-call-history
-            gf #'generic-function-call-history-separate-entries-with-specializer
+        do (mp:atomic-update (generic-function-call-history gf)
+            #'generic-function-call-history-separate-entries-with-specializer
             class)
            ;; We don't force the dispatcher, because when a class with
            ;; subclasses is redefined, we may end up here repeatedly.

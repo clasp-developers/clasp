@@ -428,3 +428,19 @@ consequences are not defined."
                    ,cas
                    (slot-missing ,gclass ,gobject ,gsname
                                  'cas (list ,cmpv ,newv)))))))
+
+;;; Duplicate defined in clasp's clos/atomics.lisp, but defined here to make
+;;; the code nicer. Various functions defined in clos/miss.lisp.
+;;; FIXME: Rearrange things so it only needs to be defined within Clasp.
+(define-atomic-expander clos::generic-function-call-history (generic-function)
+    (&rest keys)
+  (let ((gf (gensym "GENERIC-FUNCTION")) (index (gensym "INDEX")))
+    (multiple-value-bind (vars vals cmp new read write cas)
+        (apply #'get-atomic-expansion
+               `(clos:funcallable-standard-instance-access ,gf ,index)
+               keys)
+      (values (list* gf index vars)
+              (list* generic-function
+                     `(clos::%gfclass-call-history-loc (class-of ,gf))
+                     vals)
+              cmp new read write cas))))

@@ -358,6 +358,9 @@
                                (cl:make-package . %make-package)
                                (ext:add-package-local-nickname
                                 . trivial-package-local-nicknames:add-package-local-nickname)
+                               (clos::class-slots . closer-mop:class-slots)
+                               (clos::slot-definition-name
+                                . closer-mop:slot-definition-name)
                                (core::install-delayed-macros
                                 . %install-delayed-macros)
                                (cross-clasp.clasp.alexandria::make-gensym-list

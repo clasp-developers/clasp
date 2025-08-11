@@ -43,7 +43,6 @@
 (satiate generic-function-argument-precedence-order (standard-generic-function))
 (satiate generic-function-lambda-list (standard-generic-function))
 (satiate generic-function-method-combination (standard-generic-function))
-(satiate generic-function-call-history (standard-generic-function))
 (satiate generic-function-specializer-profile (standard-generic-function))
 
 (satiate method-specializers (standard-method)

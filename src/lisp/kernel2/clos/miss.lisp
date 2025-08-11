@@ -17,11 +17,35 @@
         (trace-miss-end generic-function tracy start-time arguments))
       (perform-outcome outcome arguments))))
 
+;;; FIXME: breaking a few abstractions in this one
+;;; Called from atomic expansion defined in cross-clasp.
+(defun %gfclass-call-history-loc (gfclass)
+  (if (eq gfclass
+          (load-time-value (find-class 'standard-generic-function)))
+      #.(let ((slots (class-slots (find-class 'standard-generic-function))))
+          (or (position 'call-history slots :key #'slot-definition-name)
+              (error "BUG: standard-generic-function lacks CALL-HISTORY slot?")))
+      (or (position 'call-history (class-slots gfclass) :key #'slot-definition-name)
+          (error "BUG?: generic-function lacks CALL-HISTORY slot?"))))
+(defun %generic-function-call-history (order generic-function)
+  (core:atomic-rack-read order (core:instance-rack generic-function)
+                         (%gfclass-call-history-loc (class-of generic-function))))
+(defun generic-function-call-history (generic-function)
+  (%generic-function-call-history :relaxed generic-function))
+(defun (setf %generic-function-call-history) (new order generic-function)
+  (core:atomic-rack-write order new
+                          (core:instance-rack generic-function)
+                          (%gfclass-call-history-loc (class-of generic-function))))
+(defun (setf generic-function-call-history) (new generic-function)
+  (setf (%generic-function-call-history :relaxed generic-function) new))
+(defun cas-generic-function-call-history (order old new generic-function)
+  (core:cas-rack order old new (core:instance-rack generic-function)
+                 (%gfclass-call-history-loc (class-of generic-function))))
+
 (defun generic-function-tracy (gf)
   (let ((gfclass (class-of gf)))
     (if (eq gfclass
             (load-time-value (find-class 'standard-generic-function)))
-        ;; see comment in %update-call-history
         (with-early-accessors (standard-generic-function)
           (mp:atomic (%generic-function-tracy gf)))
         (let* ((slotd (find 'tracy (class-slots gfclass)
@@ -33,7 +57,6 @@
   (let ((gfclass (class-of gf)))
     (if (eq gfclass
             (load-time-value (find-class 'standard-generic-function)))
-        ;; see comment in %update-call-history
         (with-early-accessors (standard-generic-function)
           (setf (mp:atomic (%generic-function-tracy gf)) new))
         (let* ((slotd (find 'tracy (class-slots gfclass)
@@ -87,17 +110,7 @@
     ;; its discriminating function predates the method changes).
     ;; So what this closure conceptually needs to do is recompute the
     ;; discriminator and then call it. It's just a mechanism for laziness.
-    (if (let ((gfclass (class-of generic-function)))
-          (if (eq gfclass
-                  (load-time-value (find-class 'standard-generic-function)))
-              ;; see comment in %update-call-history
-              (with-early-accessors (standard-generic-function)
-                (mp:atomic (generic-function-call-history generic-function)))
-              (let* ((slotd (find 'call-history (class-slots gfclass)
-                                  :key #'slot-definition-name))
-                     (location (slot-definition-location slotd)))
-                (mp:atomic (funcallable-standard-instance-access
-                            generic-function location)))))
+    (if (generic-function-call-history generic-function)
         (progn (force-discriminator generic-function)
                (apply generic-function args))
         ;; If we know the call history is empty, the discriminator will do
@@ -111,31 +124,9 @@
 (defmethod compute-discriminating-function ((gf standard-generic-function))
   (invalidated-discriminator-closure gf))
 
-;; FIXME? Limiting to one extra arg is adequate for our purposes right now
-;; but pretty dumb. We could be more flexible by wrapping the updater in a
-;; lambda that APPLYs it to the argument, but that's also sorta dumb.
-;; Maybe we should have atomic-update-apply or something?
-(defun %update-call-history (generic-function updater updater-arg)
-  (let ((gfclass (class-of generic-function)))
-    (if (eq gfclass #.(find-class 'standard-generic-function))
-        (with-early-accessors (standard-generic-function)
-          (mp:atomic-update (generic-function-call-history generic-function)
-                            updater generic-function updater-arg))
-        ;; Don't wanna go through all the rigamarole of slot-value
-        ;; for an internal slot that won't have weird accessors.
-        ;; But we do want to proof against a subclass shuffling slots around.
-        ;; FIXME: It would be nicer to make g-f-c-h an atomic place, but we'd
-        ;; need to grab the location of the standard slot at compile time.
-        (let* ((slotd (find 'call-history (class-slots gfclass)
-                            :key #'slot-definition-name))
-               (location (slot-definition-location slotd)))
-          (mp:atomic-update (funcallable-standard-instance-access
-                             generic-function location)
-                            updater generic-function updater-arg)))))
-
 (defun update-call-history (generic-function arguments)
   (let (outcome updatedp)
-    (flet ((updater (call-history generic-function arguments)
+    (flet ((updater (call-history arguments)
              (multiple-value-bind (noutcome new-entries)
                  (miss-info generic-function call-history arguments)
                (setf outcome noutcome)
@@ -144,7 +135,8 @@
                       call-history)
                      (t (setf updatedp t)
                         (union-entries call-history new-entries))))))
-      (%update-call-history generic-function #'updater arguments))
+      (mp:atomic-update (generic-function-call-history generic-function)
+                        #'updater arguments))
     (values outcome updatedp)))
 
 (defun union-entries (old-call-history new-entries)

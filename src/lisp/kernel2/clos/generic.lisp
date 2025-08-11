@@ -321,18 +321,7 @@ Not a valid documentation object ~A"
     (invalidate-discriminating-function gfun)))
 
 (defun erase-generic-function-call-history (gf)
-  ;; FIXME: Duplicates %update-call-history a bit. Figure out something smarter
-  ;; here forreal
-  (let ((gfclass (class-of gf)))
-    (if (eq gfclass #.(find-class 'standard-generic-function))
-        (with-early-accessors (standard-generic-function)
-          (setf (mp:atomic (generic-function-call-history gf)) nil))
-        (let* ((slotd (find 'call-history (class-slots gfclass)
-                            :key #'slot-definition-name))
-               (location (slot-definition-location slotd)))
-          (setf (mp:atomic (funcallable-standard-instance-access
-                            gf location))
-                nil)))))
+  (setf (mp:atomic (generic-function-call-history gf)) nil))
 
 (defun associate-methods-to-gfun (name &rest methods)
   (let ((gfun (fdefinition name)))
@@ -566,8 +555,7 @@ and cannot be added to ~A." method other-gf gf)))
                                  spec))
                      (t (si:subclassp argspec spec)))))
 
-(defun update-call-history-for-add-method (call-history gf method)
-  (declare (ignore gf))
+(defun update-call-history-for-add-method (call-history method)
   "When a method is added then we update the effective-method-functions for
    those call-history entries with specializers that the method would apply to."
   (loop for entry in call-history
@@ -579,8 +567,8 @@ and cannot be added to ~A." method other-gf gf)))
   "When a method is added then we update the effective-method-functions for
    those call-history entries with specializers that the method would apply to.
 FIXME!!!! This code will have problems with multithreading if a generic function is in flight. "
-  (%update-call-history generic-function
-                        #'update-call-history-for-add-method method))
+  (mp:atomic-update (generic-function-call-history generic-function)
+                    #'update-call-history-for-add-method method))
 
 (defmethod remove-method ((gf standard-generic-function) (method standard-method))
   (setf (%generic-function-methods gf)
@@ -595,8 +583,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   (update-dependents gf (list 'remove-method method))
   gf)
 
-(defun update-call-history-for-remove-method (call-history gf method)
-  (declare (ignore gf))
+(defun update-call-history-for-remove-method (call-history method)
   (let (new-call-history)
     (loop for entry in call-history
           for specializers = (coerce (car entry) 'list)
@@ -610,8 +597,8 @@ FIXME!!!! This code will have problems with multithreading if a generic function
     AND if that means there are no methods left that apply to the specializers
      then remove the entry from the list.
 FIXME!!!! This code will have problems with multithreading if a generic function is in flight. "
-  (%update-call-history generic-function
-                        #'update-call-history-for-remove-method method))
+  (mp:atomic-update (generic-function-call-history generic-function)
+                    #'update-call-history-for-remove-method method))
 
 (defmethod find-method ((gf standard-generic-function) qualifiers specializers
                         &optional (errorp t))
