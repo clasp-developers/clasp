@@ -528,13 +528,11 @@
   (let* ((gfun (cross-clasp:gf-info name))
          (call-history (call-history-from-speclists gfun speclists))
          (gfv (gensym (string (if (consp name) (second name) name))))
-         (chv (gensym "CALL-HISTORY"))
          (ch-form (call-history-form call-history)))
     `(with-early-accessors (standard-generic-function)
        (let* ((,gfv (fdefinition ',name))
-              (,chv ,ch-form))
-         (setf (generic-function-call-history ,gfv) ,chv)
-         (set-funcallable-instance-function
-          ,gfv
-          ,(generate-discriminator gfun gfv call-history))
+              (discriminator ,(generate-discriminator gfun gfv call-history)))
+         (setf (generic-function-call-history ,gfv) ,ch-form
+               (%fallback-discriminator ,gfv) discriminator)
+         (set-funcallable-instance-function ,gfv discriminator)
          (values)))))

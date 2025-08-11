@@ -97,7 +97,12 @@
 (defun invalidate-discriminating-function (generic-function)
   (set-funcallable-instance-function
    generic-function
-   (invalidated-discriminator-closure generic-function)))
+   (fallback-discriminator generic-function)))
+
+(defun fallback-discriminator (generic-function)
+  (or (%fallback-discriminator generic-function)
+      (setf (%fallback-discriminator generic-function)
+            (invalidated-discriminator-closure generic-function))))
 
 (defun invalidated-discriminator-closure (generic-function)
   (lambda (&rest args)
@@ -122,7 +127,7 @@
 (defgeneric compute-discriminating-function (generic-function))
 
 (defmethod compute-discriminating-function ((gf standard-generic-function))
-  (invalidated-discriminator-closure gf))
+  (fallback-discriminator gf))
 
 (defun update-call-history (generic-function arguments)
   (let (outcome updatedp)

@@ -188,7 +188,18 @@
    ;; cddr is a list of argument lists that have caused misses.
    ;; More to come. See telemetry.lisp for interface.
    (tracy :initform nil :accessor %generic-function-tracy
-          :type list))
+          :type list)
+   ;; The discriminating function that INVALIDATE-GENERIC-FUNCTION installs.
+   ;; For most functions this is just the invalidated-discriminator-closure,
+   ;; so this slot is merely a cache. However it is important for correctness:
+   ;; The build SATIATE stores the computed discriminators here, so that if a
+   ;; core function is invalidated, it falls back to a minimal version rather
+   ;; than being completely erased. Without that, it's possible to invalidate
+   ;; e.g. CLASS-SLOTS, which then crashes the system, as CLASS-SLOTS is needed
+   ;; in order for its own discriminator to be recomputed.
+   ;; FIXME?: It's somewhat wasteful for _every_ GF to have this slot when it's
+   ;; only really needed for a few core functions.
+   (fallback-discriminator :initform nil :accessor %fallback-discriminator))
   (:metaclass funcallable-standard-class))
 
 (defclass method (metaobject) ())
