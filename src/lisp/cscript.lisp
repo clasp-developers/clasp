@@ -274,6 +274,7 @@
            #~"kernel2/lsp/mp.lisp"
            #~"kernel2/lsp/atomics.lisp"
            #~"kernel2/lsp/mp-package.lisp"
+           #~"kernel2/clos/atomics.lisp"
            #~"kernel2/clos/define-method-combination.lisp"
            #~"kernel2/lsp/special-operators.lisp"
            ;; some extensions
