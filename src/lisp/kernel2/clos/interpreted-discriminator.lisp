@@ -822,11 +822,14 @@
 ;;; Bytecode approach
 
 (defun dtree-compile (generic-function)
-  (multiple-value-bind (basic specialized-length)
-      (bc-basic-tree
-       (generic-function-call-history generic-function)
-       (generic-function-specializer-profile generic-function))
-    (values (compile-tree-top basic) specialized-length)))
+  (let ((call-history (generic-function-call-history generic-function)))
+    (if (null call-history)
+        (values (make-miss) 0)
+        (multiple-value-bind (basic specialized-length)
+            (bc-basic-tree
+             (generic-function-call-history generic-function)
+             (generic-function-specializer-profile generic-function))
+          (values (compile-tree-top basic) specialized-length)))))
 
 ;;; Called by GFBytecodeSimpleFun/make
 (defun bytecode-dtree-compile (generic-function)

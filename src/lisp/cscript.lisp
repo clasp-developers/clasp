@@ -295,7 +295,8 @@
            #~"modules/sockets/sockets.lisp"
            #@"base-immutable.lisp"
            #@"extension-immutable.lisp"
-           ;; CLOS part three: static GFs
+           ;; CLOS part three: compiled discriminators and static GFs
+           #~"kernel2/clos/compiled-discriminator.lisp"
            #~"kernel/clos/static-gfs/package.lisp"
            #~"kernel/clos/static-gfs/flag.lisp"
            #~"kernel/clos/static-gfs/constructor.lisp"

@@ -123,7 +123,9 @@
 
 (export '(no-applicable-method-error))
 
-(export '(disassemble-discriminator))
+(export '(disassemble-discriminator
+          compilediscriminating-function ; also exported by runtime
+          compile-all-generic-functions))
 
 (export '(start-profiling stop-profiling
           report-profiling profiling-data

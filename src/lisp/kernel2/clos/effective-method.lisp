@@ -42,7 +42,7 @@
           ;; isn't bound, we return a banal response.
           ;; FIXME?: Might want to signal an error instead.
           ;; .method-args. isn't as universal any more.
-          (values nil '.method-args.)))))
+          '.method-args.))))
 
 (defvar *avoid-compiling* nil)
 
