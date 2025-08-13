@@ -34,10 +34,18 @@
 
 ;;; Return (function-name . spi) for an IP, or NIL if not available.
 (defun xref-at-ip (ip module)
-  (let ((fun (function-at-ip ip module))
-        (spi (spi-at-ip ip module)))
+  (let ((fun (function-at-ip ip module)))
     (if fun
-        (cons (core:function-name fun) spi)
+        (cons (core:function-name fun)
+              (or (spi-at-ip ip module)
+                  ;; get one from the function
+                  (multiple-value-bind (file pos line col)
+                      (core:function-source-pos fun)
+                    (if file
+                        (core:make-source-pos-info :filename (namestring file)
+                                                   :filepos pos
+                                                   :lineno line :column col)
+                        nil))))
         nil)))
 
 ;;; Iterate through a module's instructions and return xrefs for all
