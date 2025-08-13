@@ -524,7 +524,7 @@
             for classvec = `(vector ,@classforms)
             collect `(cons ,classvec ,outcome))))
 
-(defmacro satiate (name &rest speclists)
+(defmacro base-satiate (name &rest speclists)
   (let* ((gfun (cross-clasp:gf-info name))
          (call-history (call-history-from-speclists gfun speclists))
          (gfv (gensym (string (if (consp name) (second name) name))))

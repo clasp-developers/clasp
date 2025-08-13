@@ -403,7 +403,7 @@
                        clos::early-make-instance
                        clos::with-mutual-defclass
                        clos::with-effective-method-parameters
-                       clos::satiate
+                       clos::base-satiate
                        cst::quasiquote cst::db)
         for m = (macro-function mname)
         do (setf (clostrum:macro-function client rte mname) m))

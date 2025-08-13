@@ -256,7 +256,7 @@
                                       (subseq argument-classes 0 key-length))
                          ;; broken because deftype breaks on atomic specs
                          #+(or)(coerce (subseq argument-classes 0 key-length) 'vector)))
-                  (if (find key call-history :key #'car :test #'specializer-key-match)
+                  (if (call-history-find-key call-history key)
                       ;; another thread has already added this entry
                       nil
                       (list (cons key outcome)))))
@@ -275,6 +275,9 @@
   ;; Specializers can be compared by EQ, and so
   (and (= (length key1) (length key2))
        (every #'eq key1 key2)))
+
+(defun call-history-find-key (call-history key)
+  (find key call-history :key #'car :test #'specializer-key-match))
 
 (defun memoize-eql-specialized (generic-function method-combination call-history
                                 argument-classes)
@@ -313,8 +316,7 @@
                                        method-combination methods
                                        argument-classes)
                         for new-entry = (cons key outcome)
-                        unless (find key call-history :key #'car
-                                                      :test #'specializer-key-match)
+                        unless (call-history-find-key call-history key)
                           collect new-entry into new-entries
                         ;; This is necessary so that OUTCOME uses the cached
                         ;; outcomes we are generating as we go.

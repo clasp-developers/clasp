@@ -200,7 +200,7 @@
            #~"kernel2/clos/print.lisp"
            #~"kernel2/clos/misc.lisp"
            #@"cxx-classes.lisp"
-           #~"kernel2/clos/satiate.lisp"
+           #~"kernel2/clos/base-satiation.lisp"
            ;; Library
            #~"kernel2/lsp/debug.lisp"
            #~"kernel2/clos/conditions.lisp"
@@ -295,8 +295,9 @@
            #~"modules/sockets/sockets.lisp"
            #@"base-immutable.lisp"
            #@"extension-immutable.lisp"
-           ;; CLOS part three: compiled discriminators and static GFs
+           ;; CLOS part three: compiled discriminators, user satiation, static GFs
            #~"kernel2/clos/compiled-discriminator.lisp"
+           #~"kernel2/clos/satiation.lisp"
            #~"kernel/clos/static-gfs/package.lisp"
            #~"kernel/clos/static-gfs/flag.lisp"
            #~"kernel/clos/static-gfs/constructor.lisp"
