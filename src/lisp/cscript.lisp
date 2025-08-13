@@ -278,6 +278,7 @@
            #~"kernel2/clos/define-method-combination.lisp"
            #~"kernel2/lsp/special-operators.lisp"
            ;; some extensions
+           #~"kernel/lsp/defvirtual.lisp"
            #~"kernel2/clos/telemetry.lisp"
            #~"kernel2/cmp/xref.lisp"
            #@"generated-encodings.lisp"
@@ -344,6 +345,7 @@
            #~"kernel2/lsp/fli.lisp"
            #~"kernel/lsp/cltl2.lisp"
            #~"kernel/lsp/macroexpand-all.lisp"
+           #~"kernel2/cmp/external-clang.lisp"
            #~"kernel/cleavir/auto-compile.lisp")
 
 (k:sources :extension-translations
