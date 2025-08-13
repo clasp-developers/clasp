@@ -131,4 +131,4 @@
   (set-dispatch-macro-character #\# #\D #'read-dense-specialized-array readtable))
 
 (sharpmacros-enhance *readtable*)
-(sharpmacros-enhance core:+standard-readtable+)
+(sharpmacros-enhance (symbol-value 'core:+standard-readtable+))
