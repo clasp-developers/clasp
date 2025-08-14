@@ -150,7 +150,6 @@ CL_DEFUN T_sp core__interpreter_symbols() {
 #define SocketsPkg_SYMBOLS
 #define ServeEventPkg_SYMBOLS
 #define CompPkg_SYMBOLS
-#define CleavirEnvPkg_SYMBOLS
 #define CleavirPrimopPkg_SYMBOLS
 #define ClosPkg_SYMBOLS
 #define GrayPkg_SYMBOLS
