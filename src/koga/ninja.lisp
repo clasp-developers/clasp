@@ -157,8 +157,8 @@
                     :description "Building Clasp bytecode image"
                     :restat 1)
   (ninja:write-rule output-stream :compile-native-image
-                    :command "$clasp --norc --disable-mpi --image $image --load compile-native-image.lisp --quit -- base 0 $source"
-                    :description "Compiling clasp $name"
+                    :command "$clasp --norc --disable-mpi --image $image --load \"SYS:SRC;LISP;MODULES;ASDF;BUILD;ASDF.LISP\" --eval \"(provide :asdf)\" --load compile-native-image.lisp --quit -- $in --output $out --sources $sources"
+                    :description "Compiling Clasp native image"
                     :restat 1
                     :pool "console")
   (when (extensions configuration)
@@ -202,8 +202,8 @@
                     :command "$clasp --norc --base --feature ignore-extensions --load \"../dependencies/ansi-test/run-random-type-tests.lisp\""
                     :description "Running pfdietz test-random-integer-forms"
                     :pool "console")
-  (ninja:write-rule output-stream :link-fasl
-                    :command "$clasp --norc --disable-mpi --ignore-image --feature clasp-min --load link-fasl.lisp -- $out $in"
+  (ninja:write-rule output-stream :link-native-image
+                    :command "$clasp -n --disable-mpi --load link-fasl.lisp -- $out $in"
                     :restat 1
                     :description "Linking $target")
   (ninja:write-rule output-stream :link-bytecode-image
@@ -806,36 +806,29 @@
       (ninja:write-build output-stream :link-bytecode-image
                          :inputs fasls
                          :outputs (list vimage)))
-    #+(or)
-    (ninja:write-build output-stream :compile-native-image
-                       :clasp clasp-with-env
-                       :source (make-kernel-source-list configuration sources)
-                       :inputs sources
-                       :implicit-inputs (list iclasp vimage)
-                       :image vimage
-                       :outputs (mapcar (lambda (x)
-                                          (make-source-output x
-                                                              :type (fasl-extension configuration)
-                                                              :root (if (eq (source-root x) :variant-generated)
-                                                                        :variant-lib-generated
-                                                                        :variant-lib)))
-                                        sources))
-    (ninja:write-build output-stream (case (build-mode configuration)
-                                       ((:bytecode :bytecode-faso :faso :fasoll :fasobc) :link-fasl)
-                                       (otherwise "link-fasl-abc"))
-                       :variant-ldflags *variant-ldflags*
-                       :variant-ldlibs *variant-ldlibs*
-                       :clasp clasp-with-env
-                       :target "nclasp"
-                       :inputs (mapcar (lambda (x)
-                                         (make-source-output x
-                                                             :type (fasl-extension configuration)
-                                                             :root (if (eq (source-root x) :variant-generated)
-                                                                       :variant-lib-generated
-                                                                       :variant-lib)))
-                                       sources)
-                       :implicit-inputs (list iclasp)
-                       :outputs (list nimage))
+    (let ((fasos
+            (mapcar (lambda (x)
+                      (make-source-output x
+                                          :type "faso"
+                                          :root (if (eq (source-root x) :variant-generated)
+                                                    :variant-lib-generated
+                                                    :variant-lib)))
+                    sources)))
+      (ninja:write-build output-stream :compile-native-image
+                         :clasp clasp-with-env
+                         :source (make-kernel-source-list configuration sources)
+                         :inputs (list* (make-source "tools-for-build/character-names.sexp"
+                                                     :code)
+                                        features.sexp
+                                        sources)
+                         :sources (make-kernel-source-list configuration sources)
+                         :implicit-inputs (list iclasp vimage)
+                         :image vimage
+                         :outputs fasos)
+      (ninja:write-build output-stream :link-native-image
+                         :clasp clasp-with-env
+                         :outputs (list nimage)
+                         :inputs fasos))
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "iclasp")
                                      image

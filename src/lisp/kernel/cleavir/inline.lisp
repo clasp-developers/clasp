@@ -1,22 +1,13 @@
 (in-package :clasp-cleavir)
 
-#-bytecode
-(progn
-
 #+(or)
-(eval-when (:execute)
-  (format t "Setting core:*echo-repl-read* to T~%")
-  (setq core:*echo-repl-read* t))
+(progn
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf cmp::*debug-create-call* nil))
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (setq core:*defun-inline-hook* 'defun-inline-hook))
-
-#+(or)
-(eval-when (:execute)
-  (setq core:*echo-repl-read* t))
 
 #+(or)
 (defmacro debug-inline (msg &rest msg-args)

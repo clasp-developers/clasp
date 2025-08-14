@@ -652,6 +652,8 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"link-bytecode-image.lisp" :build))
                                                          :compile-native-image
                                                          (list (make-source #p"compile-native-image.lisp" :build))
+                                                         :link-native-image
+                                                         (list (make-source #p"link-native-image.lisp"))
                                                          :compile-systems
                                                          (list (make-source #P"compile-systems.lisp" :build))
                                                          :update-unicode
@@ -666,8 +668,6 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"compile-clasp.lisp" :build))
                                                          :compile-module
                                                          (list (make-source #P"compile-module.lisp" :build))
-                                                         :link-fasl
-                                                         (list (make-source #P"link-fasl.lisp" :build))
                                                          :analyze-file
                                                          (list (make-source #P"analyze-file.lisp" :build))
                                                          :analyze-generate

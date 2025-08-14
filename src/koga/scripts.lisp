@@ -272,33 +272,25 @@
           (and (> (jobs configuration) 1) (parallel-build configuration))))
 
 (defmethod print-prologue (configuration (name (eql :compile-native-image)) output-stream)
-  (format output-stream "(setq cmp:*default-output-type* ~s)
-(load #P\"sys:src;lisp;kernel2;clasp-builder.lisp\")
-(setq core::*number-of-jobs*
-      (if (ext:getenv \"CLASP_BUILD_JOBS\")
-          (parse-integer (ext:getenv \"CLASP_BUILD_JOBS\"))
-          ~a))
-(core:compile-clasp :reproducible ~s :system-sort ~s
-                    :name (elt core:*command-line-arguments* 0)
-                    :position (parse-integer (elt core:*command-line-arguments* 1))
-                    :system (core:command-line-paths 2))"
-          (if (eq (build-mode configuration) :bytecode-faso)
-              :faso
-              (build-mode configuration))
-          (jobs configuration) (reproducible-build configuration)
-          (and (> (jobs configuration) 1) (parallel-build configuration))))
+  (declare (ignore configuration))
+  (print-asdf-stub output-stream t :cross-clasp)
+  (format output-stream "
+(destructuring-bind (character-names features &rest sources)
+    (uiop:command-line-arguments)
+  (uiop:symbol-call \"CROSS-CLASP\" \"INITIALIZE\" character-names features)
+  (let* ((breaker (position \"--output\" sources :test #'string=))
+         (_ (unless breaker (error \"Need --output to compile-bytecode-image\")))
+         (b2 (position \"--sources\" sources :test #'string=))
+         (_2 (unless b2 (error \"Need --sources to compile-bytecode-image\")))
+         (input (subseq sources 0 breaker))
+         (output (subseq sources (1+ breaker) b2))
+         (sourcepaths (subseq sources (1+ b2))))
+    (uiop:symbol-call \"CROSS-CLASP.CLEAVIR\" \"BUILD\" input output sourcepaths)))"))
 
-(defmethod print-prologue (configuration (name (eql :link-fasl)) output-stream)
-  (format output-stream "(setq *features* (cons :aclasp *features*)
-      cmp:*default-output-type* ~s)
-(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
-(load #P\"sys:src;lisp;kernel;cmp;jit-setup.lisp\")
-(core:link-fasl :output-file (pathname (elt core:*command-line-arguments* 0))
-                :system (core:command-line-paths 1))
-(core:quit)"
-          (if (eq (build-mode configuration) :bytecode-faso)
-              :faso
-              (build-mode configuration))))
+(defmethod print-prologue (configuration (name (eql :link-native-image)) output-stream)
+  (format output-stream "(core:link-faso-files (pathname (elt core:*command-line-arguments* 0))
+                      (cdr core:*command-line-arguments*))
+(core:quit)"))
 
 (defmethod print-prologue (configuration (name (eql :link-bytecode-image)) output-stream)
   (declare (ignore configuration))

@@ -85,12 +85,14 @@
                                 (image-startup-position
                                  (core:next-startup-position))
                                 environment
+                                (reader-client *cst-client*)
                               &allow-other-keys)
   (with-compiler-timer (:message "Compile-file"
                         :report-link-time t
                         :verbose *compile-verbose*)
     (let ((module (compile-stream-to-module input-stream
                                             :environment environment
+                                            :reader-client reader-client
                                             :image-startup-position image-startup-position
                                             :optimize optimize
                                             :optimize-level optimize-level)))
@@ -101,6 +103,7 @@
 (defun compile-stream-to-module (source-sin
                                  &key
                                    environment
+                                   (reader-client *cst-client*)
                                    image-startup-position
                                    (optimize t)
                                    (optimize-level *optimization-level*))
@@ -120,7 +123,8 @@ Compile a Lisp source stream and return a corresponding LLVM module."
                                   :pathname *compile-file-source-debug-pathname*)
         (with-make-new-run-all (run-all-function name)
           (literal:with-literal-table (:id 0)
-            (loop-read-and-compile-file-forms source-sin environment))
+            (clasp-cleavir::bir-loop-read-and-compile-file-forms
+             source-sin environment reader-client))
           (setf run-all-name (llvm-sys:get-name run-all-function))))
       (irc-verify-module-safe *the-module*)
       (quick-module-dump *the-module* "preoptimize")

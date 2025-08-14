@@ -76,13 +76,6 @@
    stream *compile-file-file-scope*
    *compile-file-source-debug-lineno* *compile-file-source-debug-offset*))
 
-(defun loop-read-and-compile-file-forms (source-sin environment)
-  ;; If the Cleavir compiler hook is set up then use that
-  ;; to generate code
-  (if *cleavir-compile-file-hook*
-      (funcall *cleavir-compile-file-hook* source-sin environment)
-      (error "BUG: No compiler in loop-read-and-compile-forms")))
-
 (defun enable-bytecode-file-compiler ()
   (setf *default-output-type* :bytecode))
 

@@ -2301,9 +2301,10 @@ COMPILE-FILE will use the default *clasp-env*."
     (literal:arrange-thunk-as-top-level
      (translate-ast ast :linkage cmp:*default-linkage*))))
 
-(defun bir-loop-read-and-compile-file-forms (source-sin environment)
+(defun bir-loop-read-and-compile-file-forms (source-sin environment
+                                             &optional (reader-client cmp:*cst-client*))
   (let ((eof-value (gensym))
-        (eclector.reader:*client* cmp:*cst-client*)
+        (eclector.reader:*client* reader-client)
         (cst-to-ast:*compiler* 'cl:compile-file))
     (loop
       ;; Required to update the source pos info. FIXME!?
