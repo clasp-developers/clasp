@@ -680,8 +680,9 @@ CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
   } else if (gc::IsA<comp::Lexenv_sp>(env)) {
     return gc::As_unsafe<comp::Lexenv_sp>(env)->lookupMacro(symbol);
   } else {
-    if (cleavirEnv::_sym_macroFunction->fboundp()) {
-      return eval::funcall(cleavirEnv::_sym_macroFunction, symbol, env);
+    SYMBOL_EXPORT_SC_(CorePkg, cleavir_macro_function);
+    if (core::_sym_cleavir_macro_function->fboundp()) {
+      return eval::funcall(core::_sym_cleavir_macro_function, symbol, env);
     } else {
       printf("%s:%d Unexpected environment for MACRO-FUNCTION before Cleavir is available - using toplevel environment\n", __FILE__,
              __LINE__);

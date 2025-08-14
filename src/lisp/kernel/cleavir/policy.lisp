@@ -123,7 +123,7 @@ Note that calls to functions that may box internally do not result in notes - FI
 
 (defun environment-has-policy-p (environment quality)
   (policy:policy-value
-   (cleavir-env:policy (cleavir-env:optimize-info environment)) quality))
+   (cleavir-env:policy (cleavir-env:optimize-info *clasp-system* environment)) quality))
 
 (defmethod policy:policy-qualities append ((env clasp-global-environment))
   *policy-qualities*)

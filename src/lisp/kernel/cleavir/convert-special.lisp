@@ -203,7 +203,7 @@
         ;; The type is too boring to note under any policy.
         ast
         ;; Do something.
-        (let* ((policy (env:policy (env:optimize-info env)))
+        (let* ((policy (env:policy (env:optimize-info system env)))
                (insert-type-checks
                  (insert-type-checks-level policy context))
                (vctype (ecase context

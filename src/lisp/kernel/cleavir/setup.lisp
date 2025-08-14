@@ -303,56 +303,32 @@
            (make-instance 'env:local-macro-info
              :name symbol :expander (cmp:local-macro-info/expander info)))))))
 
-(defmethod env:declarations ((environment null))
-  (env:declarations *clasp-env*))
+(defmethod env:declarations ((sys clasp) (environment null))
+  (env:declarations sys *clasp-env*))
 
 ;;; TODO: Handle (declaim (declaration ...))
-(defmethod env:declarations
-    ((environment clasp-global-environment))
+(defmethod env:declarations ((sys clasp) (environment clasp-global-environment))
   '(;; behavior as in convert-form.lisp
     core:lambda-name core:lambda-list))
 
-(defmethod env:declarations ((env cmp:lexenv)) (env:declarations *clasp-env*))
+(defmethod env:declarations ((sys clasp) (env cmp:lexenv))
+  (env:declarations sys *clasp-env*))
 
 (setf cmp:*policy*
      (policy:compute-policy cmp:*optimize* *clasp-env*))
 
-(defmethod env:optimize-info ((environment clasp-global-environment))
+(defmethod env:optimize-info ((sys clasp) (environment clasp-global-environment))
   ;; The default values are all 3.
   (make-instance 'env:optimize-info
     :optimize cmp:*optimize*
     :policy cmp:*policy*))
 
-(defmethod env:optimize-info ((environment NULL))
-  (env:optimize-info *clasp-env*))
+(defmethod env:optimize-info ((sys clasp) (environment NULL))
+  (env:optimize-info sys *clasp-env*))
 
-(defmethod env:optimize-info ((env cmp:lexenv))
+(defmethod env:optimize-info ((sys clasp) (env cmp:lexenv))
   ;; FIXME: We will probably need lexenvs to track this eventually
-  (env:optimize-info *clasp-env*))
-
-
-(defmethod cleavir-environment:macro-function (symbol (environment clasp-global-environment))
-  (cl:macro-function symbol))
-
-(defmethod cleavir-environment:macro-function (symbol (environment null))
-  (cl:macro-function symbol))
-
-#+(or)(defmethod cleavir-environment:macro-function (symbol (environment core:environment))
-	(cl:macro-function symbol environment))
-
-#+(or)(defun cl:macro-function (symbol &optional (environment nil environment-p))
-	(cond
-	  ((typep environment 'core:environment)
-	   (cl:macro-function symbol environment))
-	  (environment
-	   (cleavir-environment:macro-function symbol environment))
-	  (t (cleavir-environment:macro-function symbol *clasp-env*))))
-
-(defmethod cleavir-environment:symbol-macro-expansion (symbol (environment clasp-global-environment))
-  (macroexpand symbol nil))
-
-(defmethod cleavir-environment:symbol-macro-expansion (symbol (environment NULL))
-  (macroexpand symbol nil))
+  (env:optimize-info sys *clasp-env*))
 
 ;;; Used by ext:symbol-macro
 (defun core:cleavir-symbol-macro (symbol environment)
@@ -363,6 +339,13 @@
             (declare (ignore form env)
                      (core:lambda-name cleavir-symbol-macro-function))
             expansion))
+        nil)))
+
+;;; Used by cl:macro-function
+(defun core:cleavir-macro-function (symbol environment)
+  (let ((info (env:function-info *clasp-system* environment symbol)))
+    (if (typep info '(or env:global-macro-info env:local-macro-info))
+        (env:expander info)
         nil)))
 
 ;;; Used by core:operator-shadowed-p
@@ -382,7 +365,8 @@
           (values (funcall def type-specifier env) t)
           (values type-specifier nil)))))
 
-(defmethod env:type-expand ((environment clasp-global-environment) type-specifier)
+(defmethod env:type-expand ((sys clasp) (environment clasp-global-environment)
+                            type-specifier)
   ;; BEWARE: bclasp is really bad at unwinding, and mvb creates a
   ;; lambda, so we write this loop in a way that avoids RETURN. cclasp
   ;; will contify this and produce more efficient code anyway.
@@ -394,8 +378,8 @@
                    (values type-specifier ever-expanded)))))
     (expand type-specifier nil)))
 
-(defmethod env:type-expand ((environment null) type-specifier)
-  (env:type-expand clasp-cleavir:*clasp-env* type-specifier))
+(defmethod env:type-expand ((sys clasp) (environment null) type-specifier)
+  (env:type-expand sys clasp-cleavir:*clasp-env* type-specifier))
 
 ;;; Needed because the default method ends up with classes,
 ;;; and that causes bootstrapping issues.
@@ -438,24 +422,16 @@
            next)))
     (env::entry (cleavir-env->bytecode (env::next env)))))
 
-(defmethod cleavir-environment:eval (form env (dispatch-env NULL))
-  "Evaluate the form in Clasp's top level environment"
-  (cleavir-environment:eval form env *clasp-env*))
-
-(defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
+(defmethod cleavir-environment:eval (form env (sys clasp))
   (core:interpret form (cleavir-env->bytecode env)))
 
 (defun wrap-cst (cst)
   (cst:quasiquote (cst:source cst)
                   (lambda () (cst:unquote cst))))
 
-(defmethod cleavir-environment:cst-eval (cst env (dispatch-env clasp-global-environment)
-                                         system)
+(defmethod cleavir-environment:cst-eval (cst env (system clasp))
   (declare (ignore system))
   (core:interpret (cst:raw cst) (cleavir-env->bytecode env)))
-
-(defmethod cleavir-environment:cst-eval (cst env (dispatch-env null) system)
-  (cleavir-environment:cst-eval cst env *clasp-env* system))
 
 (defmethod cmp:compiler-condition-origin
     ((condition cleavir-conditions:program-condition))
