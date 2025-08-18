@@ -181,15 +181,16 @@
         (setf updatedp t)))))
 
 (defun maybe-update-instance (instance)
-  (let ((instance-stamp (core:instance-stamp instance))
-        ;; circularity note: stamp-for-instances is a generic function,
-        ;; but we're calling it on the instance's class rather than the instance.
-        ;; Therefore the recursion is ok unless the class _is_ the instance.
-        ;; This is only the case for STANDARD-CLASS, which is never obsolete.
-        (class-stamp (stamp-for-instances (core:instance-class instance))))
-    (unless (= instance-stamp class-stamp)
-      (update-instance instance)
-      t)))
+  (when (core:instancep instance)
+    (let ((instance-stamp (core:instance-stamp instance))
+          ;; circularity note: stamp-for-instances is a generic function,
+          ;; but we're calling it on the instance's class rather than the instance.
+          ;; Therefore the recursion is ok unless the class _is_ the instance.
+          ;; This is only the case for STANDARD-CLASS, which is never obsolete.
+          (class-stamp (stamp-for-instances (core:instance-class instance))))
+      (unless (= instance-stamp class-stamp)
+        (update-instance instance)
+        t))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
