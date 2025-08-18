@@ -273,6 +273,10 @@
   ()
   (:metaclass structure-class))
 
+(defclass core:derivable-cxx-object (standard-object)
+  ()
+  (:metaclass core:derivable-cxx-class))
+
 ;;; needed for gray streams
 (defclass stream (t)
   ()
