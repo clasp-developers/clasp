@@ -120,5 +120,7 @@
           stop-autocompilation
           ;; Macro parsing & acccess
           parse-deftype type-expander typexpand-1 typexpand
+          ;; C++ iterators
+          do-c++-iterator map-c++-iterator
           ;; Misc
           printing-char-p))
