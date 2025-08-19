@@ -71,10 +71,8 @@ Find directories that look like them and replace the ones defined in the constan
 (defparameter *current-multitool* nil
   "Keep track of the current multitool")
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-           (defparameter *externals-clasp-pathname* (make-pathname :directory (pathname-directory (pathname ext:*clasp-clang-path*))))
-           #+(or linux freebsd) (defparameter *externals-clasp-include-dir* (namestring (car (directory (pathname (format nil "~a../lib/clang/*/" *externals-clasp-pathname*))))))
-           )
+(defparameter *externals-clasp-pathname* (make-pathname :directory (pathname-directory (pathname ext:*clasp-clang-path*))))
+#+(or linux freebsd) (defparameter *externals-clasp-include-dir* (namestring (car (directory (pathname (format nil "~a../lib/clang/*/" *externals-clasp-pathname*))))))
 
 (defvar +resource-dir+ 
   #+darwin (namestring (car (directory "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/*/")))

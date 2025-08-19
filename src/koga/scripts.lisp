@@ -303,7 +303,7 @@
   (print-asdf-stub output-stream nil :clasp-analyzer)
   (format output-stream "
 (clasp-analyzer:merge-and-generate-code (pathname (elt core:*command-line-arguments* 0))
-                                        (core::command-line-paths 1))"))
+                                        (map 'list #'pathname (subseq core:*command-line-arguments* 1)))"))
 
 (defmethod print-prologue (configuration (name (eql :analyze-file)) output-stream)
   (declare (ignore configuration))

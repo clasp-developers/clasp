@@ -1333,9 +1333,10 @@ can be saved and reloaded within the project for later analysis"
     (read fin)))
 
 (defun save-project (project)
-  (core::with-print-readably
+  (with-standard-io-syntax
+    (let ((*print-circle* t))
       (with-open-file (fout (project-pathname "project" "dat") :direction :output)
-        (prin1 project fout))))
+        (prin1 project fout)))))
 
 (defvar *project*)
 
