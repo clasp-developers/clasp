@@ -117,10 +117,8 @@
              :ecclesia
              ;; logical pathname translation
              #@"base-translations.lisp"
-             #@"extension-translations.lisp"
              #~"modules/sockets/sockets.lisp"
              #@"base-immutable.lisp"
-             #@"extension-immutable.lisp"
              ;; CLOS part three: compiled discriminators, user satiation, static GFs
              #~"kernel2/clos/compiled-discriminator.lisp"
              #~"kernel2/clos/satiation.lisp"
