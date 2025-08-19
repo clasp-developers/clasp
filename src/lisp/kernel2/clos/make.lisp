@@ -49,6 +49,10 @@
      instance (uninitialized-funcallable-instance-closure instance))
     instance))
 
+(defmethod allocate-instance ((class core:derivable-cxx-class) &rest initargs)
+  (declare (ignore initargs))
+  (core:allocate-raw-general-instance class (make-rack-for-class class)))
+
 (defmethod make-instance ((class std-class) &rest initargs)
   (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
   ;; Without finalization we can not find initargs.

@@ -381,12 +381,15 @@
 (defun tag-spec-p (class) ; is CLASS one that's manifested as a tag test?
   (member (stamp-for-instances class) *tag-tests* :key #'second))
 
-;;; FIXME: derivables, wrapped
+;;; FIXME: wrapped
 (defgeneric c++-class-p (class))
 (defmethod c++-class-p ((class built-in-class)) t)
 (defmethod c++-class-p ((class standard-class)) nil)
 (defmethod c++-class-p ((class funcallable-standard-class)) nil)
 (defmethod c++-class-p ((class structure-class)) nil)
+;; These are not "C++ classes" in the sense of having low, unchanging stamps.
+(defmethod c++-class-p ((class core:derivable-cxx-class)) nil)
+(defmethod c++-class-p ((class core:clbind-cxx-class)) nil)
 
 (defun differentiate-specializers (paths)
   (loop with eqls = nil
