@@ -331,6 +331,9 @@
                         `(defmethod %foreign-type-size ((type (eql ',type)))
                            (%size ,specform))
                         collect
+                        `(defmethod %foreign-type-alignment ((type (eql ',type)))
+                           (%alignment ,specform))
+                        collect
                         `(defmethod %lisp-type->llvm-type-symbol-fn ((type (eql ',type)))
                            (%llvm-type-symbol-fn ,specform))
                         unless (eq type :void)
