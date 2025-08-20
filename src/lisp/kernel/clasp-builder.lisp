@@ -30,44 +30,14 @@
   (let ((buffer (make-array 1024 :element-type 'base-char :adjustable nil)))
     (ansi-control level)
     (core:lseek fd 0 :seek-set)
-    (tagbody
-     top
-      (multiple-value-bind (num-read errno)
-          (core:read-fd fd buffer)
-        (when (> num-read 0)
-          (write-sequence buffer t :start 0 :end num-read)
-          (go top))))
-    (core:close-fd fd)
+    (loop (multiple-value-bind (num-read errno)
+              (core:read-fd fd buffer)
+            (declare (ignore errno))
+            (if (> num-read 0)
+                (write-sequence buffer t :start 0 :end num-read)
+                (return))))
+    (core:close-fd fd) ; FIXME: unwind protect?
     (ansi-control)))
-
-#+(or)
-(progn
-  (defparameter *log* (open "/tmp/clasp-builder-log.txt" :direction :output :if-exists :supersede))
-  (si:fset 'core::mmsg #'(lambda (whole env)
-                           (let ((fmt (cadr whole))
-                                 (args (cddr whole)))
-                             `(progn
-                                (core:fmt *log* ,fmt ,@args)
-                                (finish-output *log*))))
-           t))
-
-;;;#+(or)
-(Si:fset 'core::mmsg #'(lambda (whole env)
-                         nil)
-         t)
-
-(eval-when (:compile-toplevel :execute :load-toplevel)
-  (mmsg "Starting up%N"))
-
-#+clasp-min
-(core:fset 'cmp::with-compiler-timer
-           (let ((body (gensym)))
-             #+(or)(core:fmt t "body = {}%N" body)
-             #'(lambda (whole env)
-                 (let ((body (cddr whole)))
-                   `(progn
-                      ,@body))))
-           t)
 
 (defun load-kernel-file (path &key (type cmp:*default-output-type*) silent)
   (let ((filename (make-pathname :type (if (eq type :faso) "faso" "fasl")
@@ -111,14 +81,6 @@
     (when reload
       (load-kernel-file (make-pathname :type "fasl" :defaults output-path) :silent silent))
     output-path))
-
-(eval-when (:compile-toplevel :execute)
-  (core:fset 'compile-execute-time-value
-             #'(lambda (whole env)
-                 (let* ((expression (second whole))
-                        (result (eval expression)))
-                   `',result))
-             t))
 
 (defun compile-system-serial (system &key reload (output-type cmp:*default-output-type*) &allow-other-keys
                                      &aux (count (length system)))
@@ -241,6 +203,31 @@ been initialized with install path versus the build path of the source code file
          (cmp::link-fasobc-modules output-file all-modules))
         (t
          (error "Unsupported value for cmp:*default-output-type* -> ~a" cmp:*default-output-type*))))
+
+(defun command-line-paths (&optional (start 0))
+  (map 'list #'pathname (subseq core:*command-line-arguments* start)))
+
+(defun build-extension (type)
+  (cond ((or (eq type :bytecode)
+             (member :bytecode *features*))
+         "fasl")
+        ((eq type :faso)
+         "faso")
+        ((eq type :fasoll)
+         "fasoll")
+        ((eq type :fasobc)
+         "fasobc")
+        (t
+         (error "Unsupported build-extension type ~a" type))))
+
+(defun bitcode-pathname (pathname &optional (type cmp:*default-output-type*) stage)
+  (declare (ignore stage))
+  (make-pathname :host "sys"
+                 :directory (list* :absolute
+                                   "LIB"
+                                   (cdr (pathname-directory pathname)))
+                 :name (pathname-name pathname)
+                 :type (build-extension type)))
 
 (defun link-fasl (&key (output-file (build-common-lisp-bitcode-pathname))
                        (system (command-line-paths)))
@@ -405,11 +392,7 @@ been initialized with install path versus the build path of the source code file
         system)))
 
 (defun compile-clasp (system &aux (index 0))
-  ;; Inline ASTs refer to various classes etc that are not available while earlier files are loaded.
-  ;; Therefore we can't have the compiler save inline definitions for files earlier than we're able
-  ;; to load inline definitions. We wait for the source code to turn it back on.
-  (setq core:*defun-inline-hook* nil
-        system (mapcan #'(lambda (entry)
+  (setq system (mapcan #'(lambda (entry)
                            (when (getf entry :out-of-date)
                              (incf index)
                              (list (list* :index index entry))))

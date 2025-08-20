@@ -693,7 +693,8 @@
                          :outputs fasls)
       (ninja:write-build output-stream :link-bytecode-image
                          :inputs fasls
-                         :outputs (list vimage)))
+                         :outputs (list vimage)
+                         :target target))
     (let ((fasos
             (mapcar (lambda (x)
                       (make-source-output x
@@ -771,7 +772,8 @@
       (ninja:write-build output-stream :link-bytecode-image
                          :inputs (list* cimage fasls)
                          :implicit-inputs (list iclasp)
-                         :outputs (list eimage))
+                         :outputs (list eimage)
+                         :target target)
       (ninja:write-build output-stream :phony
                          :inputs (list eimage (build-name "nclasp"))
                          :outputs (list (build-name "eclasp")))
