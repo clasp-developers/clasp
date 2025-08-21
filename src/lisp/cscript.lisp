@@ -5,6 +5,7 @@
              #@"runtime-variables.lisp"
              #@"type-map.lisp"
              #~"kernel/contrib-packages.lisp"
+             #~"kernel/cmp/cmpref-package.lisp"
              ;; Enough CLOS to call generic functions
              #~"kernel/clos/method-combination-environment.lisp"
              #~"kernel/clos/standard-method-combinations.lisp"
@@ -16,6 +17,7 @@
              #~"kernel/clos/outcome.lisp"
              #~"kernel/clos/slot-value.lisp"
              #~"kernel/clos/effective-accessor.lisp"
+             #~"kernel/clos/dtree-ops.lisp"
              #~"kernel/clos/interpreted-discriminator.lisp"
              #~"kernel/clos/miss.lisp"
              #~"kernel/clos/check-initargs.lisp"
@@ -140,7 +142,6 @@
              #~"kernel/cmp/variables.lisp"
              #~"kernel/clos/make-load-form.lisp"
              #~"kernel/cmp/eclector.lisp"
-             #~"kernel/cmp/cmpref-package.lisp"
              #~"kernel/cmp/startup-primitives.lisp"
              #~"kernel/cmp/cmpltv.lisp"
              #~"kernel/cmp/compile-file.lisp"
@@ -237,4 +238,5 @@
 (k:sources :vm-header
            #~"kernel/cmp/cmpref-package.lisp"
            #~"kernel/cmp/startup-primitives.lisp"
+           #~"kernel/clos/dtree-ops.lisp"
            #~"kernel/cmp/bytecode-machines.lisp")
