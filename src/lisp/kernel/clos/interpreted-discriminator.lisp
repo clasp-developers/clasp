@@ -6,7 +6,6 @@
 (defclass dtree-op ()
   ;; FIXME ho-ly crap do we really need all these fields
   ((%sym :initarg :sym :reader dtree-op-sym)
-   (%name :initarg :name :reader dtree-op-name)
    (%code :initarg :code :reader dtree-op-code)
    (%macro-name :initarg :macro-name :reader dtree-op-macro-name)
    (%macros :initarg :macros :reader dtree-op-macros)
@@ -73,7 +72,7 @@
                      (setf (elt new-dtree-ops code)
                            `(early-make-instance
                              dtree-op
-                             :sym ',sym :name ',name :code ',code
+                             :sym ',sym :code ',code
                              :macro-name ',macro-name
                              :macros ',(nreverse rev-macros)
                              :arguments ',(nreverse rev-arguments)
@@ -515,24 +514,22 @@
   (early-make-instance bc-register-arg :index index))
 
 (defclass bc-instruction ()
-  ((%name :initarg :name :reader bc-instruction-name)
-   (%lip :initarg :lip :reader bc-lip)
+  ((%lip :initarg :lip :reader bc-lip)
    (%index :initarg :index :reader dtree-index)
    (%code :initarg :code :reader bc-instruction-code)))
-(defun make-bc-instruction (&key name lip index code)
-  (early-make-instance bc-instruction :name name :lip lip :index index :code code))
+(defun make-bc-instruction (&key lip index code)
+  (early-make-instance bc-instruction :lip lip :index index :code code))
 
 (defun longify-instruction (short-instruction instr)
   (declare (ignorable instr))
-  (make-bc-instruction :name (bc-instruction-name short-instruction)
-                       :code (bc-instruction-code short-instruction)
+  (make-bc-instruction :code (bc-instruction-code short-instruction)
                        :lip (bc-lip short-instruction)
                        :index (dtree-index short-instruction)))
 
 (defun annotated-opcode (inst)
   (let* ((code-cell (assoc inst *isa*))
          (code (second code-cell)))
-    (make-bc-instruction :name inst :code code)))
+    (make-bc-instruction :code code)))
 
 (defconstant +longify-trigger+ 255)
 
@@ -802,7 +799,7 @@
                                       ((eq (car arg) 'register-arg)
                                        (make-bc-register-arg :index (elt linear ip++)))
                                       (t (error "Illegal arg type ~a" arg))))))
-      (list* (make-bc-instruction :name (dtree-op-name dtree-op) :lip start-ip :code op :index index) arguments))))
+      (list* (make-bc-instruction :lip start-ip :code op :index index) arguments))))
 
 (defun group-instructions (linear)
   (let ((ip-place (list 0)))

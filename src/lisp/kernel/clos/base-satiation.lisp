@@ -105,7 +105,6 @@
 (base-satiate c++-class-p (built-in-class)
               (standard-class) (funcallable-standard-class))
 
-(base-satiate dtree-op-name (dtree-op))
 (base-satiate dtree-op-arguments (dtree-op))
 (base-satiate dtree-op-long-arguments (dtree-op))
 (base-satiate dtree-op-label-argument-indices (dtree-op))
@@ -114,7 +113,6 @@
 (base-satiate (setf dtree-index) (t bc-label-arg))
 (base-satiate dtree-next (dtree-skip))
 
-(base-satiate bc-instruction-name (bc-instruction))
 (base-satiate bc-instruction-code (bc-instruction))
 (base-satiate bc-lip (bc-instruction) (bc-label-arg))
 (base-satiate bc-constant-arg-value (bc-constant-arg))
