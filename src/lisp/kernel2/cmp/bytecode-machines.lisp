@@ -1,4 +1,4 @@
-(in-package #:cmp)
+(in-package #:cmpref)
 
 (defconstant +mask-arg+     #b011000)
 (defconstant +constant-arg+ #b001000)
@@ -14,6 +14,21 @@
 
   (defun keys-arg (val)
     (logior +keys-arg+ val)))
+
+(defun constant-arg-p (val)
+  (= (logand +mask-arg+ val) +constant-arg+))
+
+(defun label-arg-p (val)
+  (= (logand +mask-arg+ val) +label-arg+))
+
+(defun keys-arg-p (val)
+  (= (logand +mask-arg+ val) +keys-arg+))
+
+(defun unmask-arg (val) (logandc2 val +mask-arg+))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '(constant-arg-p label-arg-p keys-arg-p unmask-arg
+            decode-instr)))
 
 (macrolet ((defops (&rest ops)
              (let (rev-fullcodes
@@ -99,6 +114,19 @@
     ("cleanup" 62)
     ("encell" 63 (1) (2))
     ("long" 255)))
+
+;;; *full-codes* contains descriptions of the instructions in the following format:
+;;; (name opcode (args...) (long-args...))
+;;; the name is a string.
+;;; the args and long args are encoded as a number of bytes from 1 to 3, LOGIOR'd
+;;; with the constant, label, and keys code that is appropriate, if any.
+;;; One of these "instruction description" lists is what DECODE-INSTR returns.
+
+(defun decode-instr (opcode)
+  (let ((res (member opcode cmpref:*full-codes* :key #'second)))
+    (if res
+        (first res)
+        nil)))
 
 ;;; load time values machine
 

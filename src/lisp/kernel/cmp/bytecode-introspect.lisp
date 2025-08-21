@@ -26,28 +26,6 @@
   (dis-signed (bc-unsigned bytecode ip nbytes)
               (* 8 nbytes)))
 
-(defun constant-arg-p (val)
-  (= (logand +mask-arg+ val) +constant-arg+))
-
-(defun label-arg-p (val)
-  (= (logand +mask-arg+ val) +label-arg+))
-
-(defun keys-arg-p (val)
-  (= (logand +mask-arg+ val) +keys-arg+))
-
-;;; *full-codes* contains descriptions of the instructions in the following format:
-;;; (name opcode (args...) (long-args...))
-;;; the name is a string.
-;;; the args and long args are encoded as a number of bytes from 1 to 3, LOGIOR'd
-;;; with the constant, label, and keys code that is appropriate, if any.
-;;; One of these "instruction description" lists is what DECODE-INSTR returns.
-
-(defun decode-instr (opcode)
-  (let ((res (member opcode *full-codes* :key #'second)))
-    (if res
-        (first res)
-        'illegal)))
-
 ;;; Return a list of all IPs that are jumped to.
 (defun gather-labels (bytecode)
   (let ((ip 0)
@@ -55,16 +33,16 @@
         (result nil)
         (longp nil)
         op)
-    (loop (setq op (decode-instr (aref bytecode ip)))
+    (loop (setq op (cmpref:decode-instr (aref bytecode ip)))
           ;; If the opcode is illegal, stop.
-          (when (eq op 'illegal)
+          (when (null op)
             (return (sort result #'<)))
           ;; Go through the arguments, identifying any labels.
           (let ((opip (if longp (1- ip) ip))) ; IP of instruction start
             (incf ip)
             (dolist (argi (if longp (fourth op) (third op)))
-              (let ((nbytes (logandc2 argi +mask-arg+)))
-                (if (label-arg-p argi)
+              (let ((nbytes (cmpref:unmask-arg argi)))
+                (if (cmpref:label-arg-p argi)
                     (push (+ opip (bc-signed bytecode ip nbytes)) result))
                 (incf ip nbytes))))
           ;; If this is a LONG, set that for the next instruction.
@@ -79,13 +57,13 @@
          (result nil)
          (longp nil)
          op)
-    (loop (setq op (decode-instr (aref bytecode ip)))
+    (loop (setq op (cmpref:decode-instr (aref bytecode ip)))
           ;; If this is a label position, mark that.
           (let ((labelpos (position ip labels)))
             (if labelpos (push (write-to-string labelpos) result)))
           ;; If we have an illegal opcode, record it and then give up
           ;; (as we have lost the instruction stream)
-          (when (eq op 'illegal)
+          (when (null op)
             (push (list (format nil "! ILLEGAL OPCODE #x~x" (aref bytecode ip)) nil nil) result)
             (return (nreverse result)))
           ;; Decode the instruction. If it's LONG, leave it to the next. KLUDGE
@@ -98,17 +76,17 @@
                            (let ((args nil))
                              (dolist (argi (if longp (fourth op) (third op))
                                            (nreverse args))
-                               (let ((nbytes (logandc2 argi +mask-arg+)))
+                               (let ((nbytes (cmpref:unmask-arg argi)))
                                  (push
-                                  (cond ((constant-arg-p argi)
+                                  (cond ((cmpref:constant-arg-p argi)
                                          (list :constant
                                                (bc-unsigned bytecode ip nbytes)))
-                                        ((label-arg-p argi)
+                                        ((cmpref:label-arg-p argi)
                                          (let* ((lip (+ opip (bc-signed bytecode ip nbytes)))
                                                 (lpos (position lip labels)))
                                            (assert lpos)
                                            (list :label lpos)))
-                                        ((keys-arg-p argi)
+                                        ((cmpref:keys-arg-p argi)
                                          (list :keys
                                                (bc-unsigned bytecode ip nbytes)))
                                         (t
@@ -213,11 +191,11 @@
 
 (defun bytecode-next-arg (argspec bytecode opip ip nbytes)
   (cond
-    ((constant-arg-p argspec)
+    ((cmpref:constant-arg-p argspec)
      (cons :constant (bc-unsigned bytecode ip nbytes)))
-    ((label-arg-p argspec)
+    ((cmpref:label-arg-p argspec)
      (cons :label (+ opip (bc-signed bytecode ip nbytes))))
-    ((keys-arg-p argspec)
+    ((cmpref:keys-arg-p argspec)
      (cons :keys (bc-unsigned bytecode ip nbytes)))
     (t (cons :operand (bc-unsigned bytecode ip nbytes)))))
 
@@ -271,7 +249,7 @@
            with ,gannotations = ,annotations
            with ,next-annotation-index = 0
            with ,annots = nil
-           for ,op = (decode-instr (aref ,bsym ,ip))
+           for ,op = (cmpref:decode-instr (aref ,bsym ,ip))
            for ,mnemonic = (intern (string-upcase (first ,op)) "KEYWORD")
            if (eql ,mnemonic :long)
              do (setf ,longp t ,ip (1+ ,ip))
@@ -285,8 +263,7 @@
                                   (incf ,ip (* 3 nbytes))))
                               (loop for argspec
                                       in (if ,longp (fourth ,op) (third ,op))
-                                    for nbytes = (logandc2 argspec
-                                                           +mask-arg+)
+                                    for nbytes = (cmpref:unmask-arg argspec)
                                     collect (bytecode-next-arg argspec ,bsym ,opip ,ip
                                                                nbytes)
                                     do (incf ,ip nbytes)))))
