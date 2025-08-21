@@ -140,6 +140,7 @@
              #~"kernel/cmp/variables.lisp"
              #~"kernel/clos/make-load-form.lisp"
              #~"kernel/cmp/eclector.lisp"
+             #~"kernel/cmp/cmpref-package.lisp"
              #~"kernel/cmp/startup-primitives.lisp"
              #~"kernel/cmp/cmpltv.lisp"
              #~"kernel/cmp/compile-file.lisp"
@@ -234,5 +235,6 @@
            :clasp-analyzer)
 
 (k:sources :vm-header
+           #~"kernel/cmp/cmpref-package.lisp"
            #~"kernel/cmp/startup-primitives.lisp"
            #~"kernel/cmp/bytecode-machines.lisp")

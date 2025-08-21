@@ -1,14 +1,3 @@
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (unless (find-package "CMPREF")
-    (make-package "CMPREF" :use '("CL")))
-  (in-package #:cmpref))
-
-(export '(*startup-primitives-as-list*
-          +bytecode-ltv-ops+
-          +uaet-codes+
-          +debug-info-ops+
-          generate-virtual-machine-header))
-
 (in-package #:cmpref)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
