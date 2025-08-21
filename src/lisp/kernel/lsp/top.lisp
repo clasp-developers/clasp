@@ -25,6 +25,17 @@
 (export '(*break-readtable* *tpl-prompt-hook*
           *allow-recursive-debug*))
 
+(defparameter * nil)
+(defparameter ** nil)
+(defparameter *** nil)
+(defparameter + nil)
+(defparameter ++ nil)
+(defparameter +++ nil)
+(defparameter - nil)
+(defparameter / nil)
+(defparameter // nil)
+(defparameter /// nil)
+
 (defvar sys:*echo-repl-tpl-read* nil "Set to t if you want to echo what was typed at the REPL top-level")
 (defparameter *quit-tag* (cons nil nil))
 (defparameter *quit-tags* nil)

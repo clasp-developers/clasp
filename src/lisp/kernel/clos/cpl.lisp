@@ -12,10 +12,10 @@
 
 (in-package "CLOS")
 
-;;; Used below, so it needs to be defined at least before compute-clos-cpl is called.
-(defun forward-referenced-class-p (x)
-  (let ((y (find-class 'FORWARD-REFERENCED-CLASS nil)))
-    (and y (si::subclassp (class-of x) y))))
+(defgeneric compute-class-precedence-list (class))
+
+(defmethod compute-class-precedence-list ((class class))
+  (compute-clos-class-precedence-list class (class-direct-superclasses class)))
 
 ;;; ----------------------------------------------------------------------
 ;;; ORDERING OF CLASSES
@@ -81,7 +81,7 @@
 	       (loop (unless superclasses
 		       (return (values class-list precedence-lists)))
                      (let ((next-class (pop superclasses)))
-                       (when (forward-referenced-class-p next-class)
+                       (when (typep next-class 'forward-referenced-class)
                          (error "Cannot compute class precedence list for forward-referenced class ~A."
                                 (class-name next-class)))
                        (unless (member next-class class-list :test 'eql)
@@ -123,7 +123,7 @@
     (cond ((null superclasses)
 	   (list new-class))
 	  ((and (endp (rest superclasses))
-                (not (forward-referenced-class-p (first superclasses))))
+                (not (typep (first superclasses) 'forward-referenced-class)))
            (list* new-class (slot-value (first superclasses) 'precedence-list)))
 	  (t
 	   (multiple-value-bind (class-list precedence-lists)

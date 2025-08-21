@@ -13,6 +13,38 @@
 
 (in-package "SYSTEM")
 
+(defconstant lambda-list-keywords
+  (if (boundp 'lambda-list-keywords)
+      (symbol-value 'lambda-list-keywords)
+      '(&ALLOW-OTHER-KEYS
+        &AUX &BODY &ENVIRONMENT &KEY
+        &OPTIONAL &REST
+        &VA-REST
+        &WHOLE)))
+
+(defvar *proclaim-hook* nil)
+(defun proclaim (decl)
+  "Args: (decl-spec)
+Gives a global declaration.  See DECLARE for possible DECL-SPECs."
+  ;;decl must be a proper list
+  (unless (core:proper-list-p decl)
+    (error 'type-error
+           :datum decl
+           :expected-type '(and list (satisfies core:proper-list-p))))
+  (cond
+    ((eq (car decl) 'SPECIAL)
+     (mapc #'sys::*make-special (cdr decl)))
+    ((eq (car decl) 'cl:inline)
+     (dolist (name (cdr decl))
+       (setf (gethash name *functions-to-inline*) t)
+       (remhash name *functions-to-notinline*)))
+    ((eq (car decl) 'cl:notinline)
+     (dolist (name (cdr decl))
+       (setf (gethash name *functions-to-notinline*) t)
+       (remhash name *functions-to-inline*)))
+    (*proclaim-hook*
+     (funcall *proclaim-hook* decl))))
+
 ;;; This could be improved, e.g. getting the lambda expression of
 ;;; interpreted functions, but there are better introspection designs.
 ;;; For the second value we unconditionally return T, as the standard
@@ -49,21 +81,21 @@ successfully, T is returned, else error."
 
 (defun do-time (closure)
   (let* ((real-start (get-internal-real-time))
-         (run-start (get-internal-run-time))
+	 (run-start (get-internal-run-time))
          (start-unwinds (gctools:thread-local-unwind-counter))
          end-unwinds
          clasp-bytes-start clasp-bytes-end
-         real-end
-         run-end)
+	 real-end
+	 run-end)
     ;; Garbage collection forces counters to be updated
     (multiple-value-setq (clasp-bytes-start)
       (gctools:bytes-allocated))
     (multiple-value-prog1
-        (funcall closure)
+	(funcall closure)
       (multiple-value-setq (clasp-bytes-end)
         (gctools:bytes-allocated))
       (setq run-end (get-internal-run-time)
-            real-end (get-internal-real-time)
+	    real-end (get-internal-real-time)
             )
       (setf end-unwinds (gctools:thread-local-unwind-counter))
       (core:fmt *trace-output* "Time real({:.3f} secs) run({:.3f} secs) consed({} bytes) unwinds({})%N"
@@ -91,19 +123,17 @@ Evaluates FORM, outputs the realtime and runtime used for the evaluation to
 (defconstant-eqx month-startdays #(0 31 59 90 120 151 181 212 243 273 304 334 365) equalp)
 
 
-#-clasp-min
 (defun get-local-time-zone ()
   "Returns the number of hours West of Greenwich for the local time zone."
   (core:unix-get-local-time-zone))
 
 (defun recode-universal-time (sec min hour day month year tz dst)
   (let ((days (+ (if (and (leap-year-p year) (> month 2)) 1 0)
-                 (1- day)
-                 (svref month-startdays (1- month))
-                 (number-of-days-from-1900 year))))
+		 (1- day)
+		 (svref month-startdays (1- month))
+		 (number-of-days-from-1900 year))))
     (+ sec (* 60 (+ min (* 60 (+ tz dst hour (* 24 days))))))))
 
-#-clasp-min
 (defun check-tz (tz)
   ;; According to the CLHS glossary, a time zone is "a rational multiple of
   ;; 1/3600 between -24 (inclusive) and 24 (inclusive)". The multiple of 1/3600
@@ -120,9 +150,6 @@ Evaluates FORM, outputs the realtime and runtime used for the evaluation to
     (error "~a is not a valid time zone: Must be a rational multiple of 1/3600"
            tz)))
 
-#+clasp-min (defun check-tz (tz) tz) ; typep not available yet
-
-#-clasp-min
 (defun decode-universal-time (orig-ut &optional (tz (get-local-time-zone) tz-p)
                               &aux (dstp nil))
   "Args: (integer &optional (timezone (si::get-local-time-zone)))
@@ -144,13 +171,13 @@ DECODED-TIME."
         (incf year))
       (when (leap-year-p year)
         (cond ((= day 60) (setf month 2 day 29))
-              ((> day 60) (decf day))))
+	      ((> day 60) (decf day))))
       (unless month
         (setq month (position day month-startdays :test #'<=)
-              day (- day (svref month-startdays (1- month)))))
+	      day (- day (svref month-startdays (1- month)))))
       (if (and (not tz-p) (daylight-saving-time-p orig-ut year))
-          (setf tz-p t dstp t)
-          (return (values sec min hour day month year dow dstp tz))))))
+	  (setf tz-p t dstp t)
+	  (return (values sec min hour day month year dow dstp tz))))))
 
 (defun encode-universal-time (sec min hour day month year
                               &optional (tz (get-local-time-zone) tz-p))
@@ -162,18 +189,18 @@ GET-DECODED-TIME."
   (when (<= 0 year 99)
     ;; adjust to year in the century within 50 years of this year
     (multiple-value-bind (sec min hour day month this-year dow dstp tz)
-        (get-decoded-time)
+	(get-decoded-time)
       (declare (ignore sec min hour day month dow dstp tz))
       (incf year (* 100 (ceiling (- this-year year 50) 100)))))
   (let ((dst 0))
     (unless tz-p
       (when (daylight-saving-time-p (recode-universal-time sec min hour day month year tz -1) year)
-        ;; assume DST applies, and check if at corresponging UT it applies.
-        ;; There is an ambiguity between midnight and 1 o'clock on the day
-        ;; when time reverts from DST to solar:
-        ;; 12:01 on that day could be either 11:01 UT (before the switch) or
-        ;; 12:01 UT (after the switch). We opt for the former.
-        (setf dst -1)))
+	;; assume DST applies, and check if at corresponging UT it applies.
+	;; There is an ambiguity between midnight and 1 o'clock on the day
+	;; when time reverts from DST to solar:
+	;; 12:01 on that day could be either 11:01 UT (before the switch) or
+	;; 12:01 UT (after the switch). We opt for the former.
+	(setf dst -1)))
     (recode-universal-time sec min hour day month year tz dst)))
 
 (defun daylight-saving-time-p (universal-time year)
@@ -184,76 +211,85 @@ Universal Time UT, which defaults to the current time."
   ;; therefore restrict the time to the interval that can handled by
   ;; the timezone database.
   (let* ((utc-1-1-1970 2208988800)
-         (unix-time (- universal-time utc-1-1-1970)))
+	 (unix-time (- universal-time utc-1-1-1970)))
     (cond ((minusp unix-time)
-           ;; For dates before 1970 we shift to 1980/81 to guess the daylight
-           ;; saving times.
-           (setf unix-time
-                 (+ (if (leap-year-p year)
-                        #.(encode-universal-time 0 0 0 1 1 1980 0)
-                        #.(encode-universal-time 0 0 0 1 1 1981 0))
-                    (- universal-time (encode-universal-time 0 0 0 1 1 year 0) utc-1-1-1970))))
-          ((not (fixnump unix-time))
-           ;; Same if date is too big: we shift to year 2035/36, like SBCL does.
-           (setf unix-time
-                 (+ (if (leap-year-p year)
-                        #.(encode-universal-time 0 0 0 1 1 2032 0)
-                        #.(encode-universal-time 0 0 0 1 1 2033 0))
-                    (- universal-time (encode-universal-time 0 0 0 1 1 year 0) utc-1-1-1970)))))
-    #-clasp-min
+	   ;; For dates before 1970 we shift to 1980/81 to guess the daylight
+	   ;; saving times.
+	   (setf unix-time
+		 (+ (if (leap-year-p year)
+			#.(encode-universal-time 0 0 0 1 1 1980 0)
+			#.(encode-universal-time 0 0 0 1 1 1981 0))
+		    (- universal-time (encode-universal-time 0 0 0 1 1 year 0) utc-1-1-1970))))
+	  ((not (fixnump unix-time))
+	   ;; Same if date is too big: we shift to year 2035/36, like SBCL does.
+	   (setf unix-time
+		 (+ (if (leap-year-p year)
+			#.(encode-universal-time 0 0 0 1 1 2032 0)
+			#.(encode-universal-time 0 0 0 1 1 2033 0))
+		    (- universal-time (encode-universal-time 0 0 0 1 1 year 0) utc-1-1-1970)))))
     (core:unix-daylight-saving-time unix-time)))
 
 (defun get-decoded-time ()
   "Args: ()
 Returns the current day-and-time as nine values:
-        second (0 - 59)
-        minute (0 - 59)
-        hour (0 - 23)
-        date (1 - 31)
-        month (1 - 12)
-        year (A.D.)
-        day of week (0 for Mon, .. 6 for Sun)
-        daylight saving time or not (T or NIL)
-        time zone (Offset from GMT in hours)"
+	second (0 - 59)
+	minute (0 - 59)
+	hour (0 - 23)
+	date (1 - 31)
+	month (1 - 12)
+	year (A.D.)
+	day of week (0 for Mon, .. 6 for Sun)
+	daylight saving time or not (T or NIL)
+	time zone (Offset from GMT in hours)"
   (decode-universal-time (get-universal-time)))
 
 (defun ensure-directories-exist (pathname &key verbose (mode #o777))
-  "Args: (ensure-directories pathname &key :verbose)
+"Args: (ensure-directories pathname &key :verbose)
 Creates tree of directories specified by the given pathname. Outputs
-        (VALUES pathname created)
+	(VALUES pathname created)
 where CREATED is true only if we succeeded on creating all directories."
   (let* ((created nil)
-         (full-pathname (merge-pathnames pathname))
-         d)
+	 (full-pathname (merge-pathnames pathname))
+	 d)
     (when (typep full-pathname 'logical-pathname)
       (setf full-pathname (translate-logical-pathname full-pathname)))
     (when (or (wild-pathname-p full-pathname :directory)
-              (wild-pathname-p full-pathname :host)
-              (wild-pathname-p full-pathname :device))
+	      (wild-pathname-p full-pathname :host)
+	      (wild-pathname-p full-pathname :device))
       (error 'file-error :pathname pathname))
     ;; Here we have already a full pathname. We set our own
     ;; *default-pathname-defaults* to avoid that the user's value,
     ;; which may contain names or types, clobbers our computations.
     (let ((*default-pathname-defaults*
-            (make-pathname :name nil :type nil :directory nil
-                           :defaults full-pathname)))
+	   (make-pathname :name nil :type nil :directory nil
+			  :defaults full-pathname)))
       (dolist (item (pathname-directory full-pathname))
-        (setf d (nconc d (list item)))
-        (let* ((p (make-pathname :directory d :defaults *default-pathname-defaults*)))
-          (unless (or (symbolp item) (si::file-kind p nil))
-            (setf created t)
-            (let ((ps (namestring p)))
-              (when verbose
-                (format t "~%;;; Making directory ~A" ps))
-              (unless (si:ensure-directory ps mode)
-                (setf created nil))))))
+	(setf d (nconc d (list item)))
+	(let* ((p (make-pathname :directory d :defaults *default-pathname-defaults*)))
+	  (unless (or (symbolp item) (si::file-kind p nil))
+	    (setf created t)
+	    (let ((ps (namestring p)))
+	      (when verbose
+		(format t "~%;;; Making directory ~A" ps))
+	      (si::mkdir ps mode)))))
       (values pathname created))))
+
+(defun hash-table-iterator (hash-table)
+  (let ((pairs (core:hash-table-pairs hash-table))
+        (hash-index 0))
+    (function (lambda ()
+      (if (>= hash-index (length pairs))
+          nil
+          (let* ((key (elt pairs hash-index))
+                 (val (elt pairs (incf hash-index))))
+            (incf hash-index)
+            (values t key val)))))))
 
 (defmacro with-hash-table-iterator ((iterator package) &body body)
 "Syntax: (with-hash-table-iterator (iterator package) &body body)
 Loop over the elements of a hash table. ITERATOR is a lexically bound function
 that outputs three values
-        (VALUES entry-p key value)
+	(VALUES entry-p key value)
 ENTRY-P is true only if KEY and VALUE denote a pair of key and value of the
 hash table; otherwise it signals that we have reached the end of the hash table."
   `(let ((,iterator (hash-table-iterator ,package)))
@@ -318,3 +354,17 @@ Evaluates FORM, outputs the allocations that took place for the evaluation to
 
 #+debug-count-allocations
 (export '(allocations collect-backtraces-for-allocations-by-stamp))
+
+(defun do-memory-ramp (closure pattern)
+  (unwind-protect
+       (progn
+         (gctools:alloc-pattern-begin pattern)
+         (funcall closure))
+    (gctools:alloc-pattern-end)))
+
+(defmacro with-memory-ramp ((&key (pattern 'gctools:ramp)) &body body)
+  `(if (member :disable-memory-ramp *features*)
+       (progn
+         (core:fmt t "Compiling with memory-ramp DISABLED%N")
+         (funcall (lambda () (progn ,@body))))
+       (do-memory-ramp (lambda () (progn ,@body)) ,pattern)))

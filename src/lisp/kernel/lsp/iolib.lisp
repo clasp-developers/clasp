@@ -291,6 +291,59 @@ is not given, ends the recording."
 
 ;(provide 'iolib)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+(defvar +io-syntax-progv-list+
+  (list
+   '(
+     *print-pprint-dispatch* #|  See end of pprint.lisp  |#
+     *print-array*
+     *print-base*
+     *print-case*
+     *print-circle*
+     *print-escape*
+     *print-gensym*
+     *print-length*
+     *print-level*
+     *print-lines*
+     *print-miser-width*
+     *print-pretty*
+     *print-radix*
+     *print-readably*
+     *print-right-margin*
+     *read-base*
+     *read-default-float-format*
+     *read-eval*
+     *read-suppress*
+     *readtable*
+     *package*
+     si::*sharp-eq-context*
+     si::*circle-counter*)               ;
+   nil                                   ;;  *pprint-dispatch-table*
+   t                                     ;;  *print-array*
+   10                                    ;;  *print-base*
+   :upcase                               ;;  *print-case*
+   nil                                   ;;  *print-circle*
+   t                                     ;;  *print-escape*
+   t                                     ;;  *print-gensym*
+   nil                                   ;;  *print-length*
+   nil                                   ;;  *print-level*
+   nil                                   ;;  *print-lines*
+   nil                                   ;;  *print-miser-width*
+   nil                                   ;;  *print-pretty*
+   nil                                   ;;  *print-radix*
+   t                                     ;;  *print-readably*
+   nil                                   ;;  *print-right-margin*
+   10                                    ;;  *read-base*
+   'single-float ;;  *read-default-float-format*
+   t             ;;  *read-eval*
+   nil           ;;  *read-suppress*
+   *readtable*   ;;  *readtable*
+   (find-package :CL-USER)               ;;  *package*
+   nil                                   ;;  si::*sharp-eq-context*
+   nil                                   ;;  si::*circle-counter*
+   ))
+) ; eval-when
+
 (defmacro with-standard-io-syntax (&body body)
   "Syntax: ({forms}*)
 The forms of the body are executed in a print environment that corresponds to
@@ -298,8 +351,8 @@ the one defined in the ANSI standard. *print-base* is 10, *print-array* is t,
 *package* is \"CL-USER\", etc."
   (with-clean-symbols (%progv-list)
     `(let ((%progv-list +io-syntax-progv-list+))
-       (progv (si:cons-car %progv-list)
-	   (si:cons-cdr %progv-list)
+       (progv (car %progv-list)
+	   (cdr %progv-list)
 	 ,@body))))
 
 (defun print-unreadable-object-contents (object stream type identity body)
@@ -333,8 +386,3 @@ the one defined in the ANSI standard. *print-base* is 10, *print-array* is t,
            (print-unreadable-object-contents object stream type identity body)
            (write-char #\> stream))))
   nil)
-
-(defmacro print-unreadable-object ((object stream &key type identity) &body body)
-  `(%print-unreadable-object ,object ,stream ,type ,identity
-                             ,(when body
-                                `(lambda () ,@body))))

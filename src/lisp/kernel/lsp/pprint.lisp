@@ -12,6 +12,11 @@
   
 (in-package "SI")
 
+(defconstant +ecl-safe-declarations+
+  (if (boundp '+ecl-safe-declarations+)
+      (symbol-value '+ecl-safe-declarations+)
+      '(optimize (safety 2) (speed 1) (debug 1) (space 1))))
+
 ;;; FIXME: Move?
 ;;; FIXME: Better error (though these are internal structures, so it being signaled is a bug)
 (defun required-argument ()
@@ -1147,16 +1152,18 @@
 
 
 (defun copy-pprint-dispatch (&optional (table *print-pprint-dispatch*))
-  (declare (type (or pprint-dispatch-table null) table)
-	   #.+ecl-safe-declarations+)
-  (let* ((orig (or table *initial-pprint-dispatch*)))
-    (let* ((new (make-pprint-dispatch-table
-		 :entries (copy-list (pprint-dispatch-table-entries orig))))
-	   (new-cons-entries (pprint-dispatch-table-cons-entries new)))
-      (maphash #'(lambda (key value)
-		   (setf (gethash key new-cons-entries) value))
-	       (pprint-dispatch-table-cons-entries orig))
-      new)))
+  (declare #.+ecl-safe-declarations+)
+  (unless (typep table '(or null pprint-dispatch-table))
+    (error 'type-error :datum table
+                       :expected-type '(or null pprint-dispatch-table)))
+  (let* ((orig (or table *initial-pprint-dispatch*))
+         (new (make-pprint-dispatch-table
+	       :entries (copy-list (pprint-dispatch-table-entries orig))))
+	 (new-cons-entries (pprint-dispatch-table-cons-entries new)))
+    (maphash #'(lambda (key value)
+		 (setf (gethash key new-cons-entries) value))
+	     (pprint-dispatch-table-cons-entries orig))
+    new))
 
 (defun default-pprint-dispatch (stream object)
   (write-ugly-object object stream))

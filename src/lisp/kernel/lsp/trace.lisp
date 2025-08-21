@@ -17,10 +17,6 @@
 (defparameter *trace-list* nil)
 (defparameter *trace-max-indent* 20)
 
-#+clasp-min
-(eval-when (:load-toplevel :execute)
-  (setq core::*trace-output* *standard-output*))
-
 (defun currently-traced ()
   (mapcar #'first *trace-list*))
 
@@ -175,9 +171,7 @@ all functions."
 ;;; just broke the compiler and want to do some tracing to find the problem.
 (defun simple-trace (fname safe)
   (let ((oldf (fdefinition fname)))
-    (funcall #'(setf fdefinition)
-             (make-trace-closure fname oldf safe)
-             fname)
+    (setf (fdefinition fname) (make-trace-closure fname oldf safe))
     (add-to-trace-list fname oldf))
   (list fname))
 
@@ -192,7 +186,7 @@ all functions."
                 (trace-safe-print 'enter fname args)
                 (let ((results
                         (let ((*inside-trace* nil))
-                          (multiple-value-list (core:trace-apply0 oldf args)))))
+                          (multiple-value-list (apply oldf args)))))
                   (trace-safe-print 'exit fname results)
                   (values-list results))))))
       (lambda (&rest args)
@@ -204,7 +198,7 @@ all functions."
                 (trace-print 'enter fname args)
                 (let ((results
                         (let ((*inside-trace* nil))
-                          (multiple-value-list (core:trace-apply0 oldf args)))))
+                          (multiple-value-list (apply oldf args)))))
                   (trace-print 'exit fname results)
                   (values-list results))))))))
 
@@ -253,39 +247,22 @@ all functions."
           (multiple-value-bind (bars rem)
               (floor indent 4)
             (dotimes (i bars) (princ (if (< i 10) "|   " "|    ") *trace-output*))
-            (when (plusp rem) (progn
-                                #-clasp-min (format *trace-output* "~V,,,' A" rem "|")
-                                #+clasp-min (format *trace-output* " | "))))
-          #-clasp-min
+            (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
           (format *trace-output*
-                  "~D> (~S~{ ~S~})~%" *trace-level* fname vals)
-          #+clasp-min
-          (format *trace-output*
-                  "~D> (~S ~S)~%" *trace-level* fname vals))
+                  "~D> (~S~{ ~S~})~%" *trace-level* fname vals))
          (EXIT
           (multiple-value-bind (bars rem)
               (floor indent 4)
             (dotimes (i bars) (princ "|   " *trace-output*))
-            (when (plusp rem) (progn
-                                #-clasp-min (format *trace-output* "~V,,,' A" rem "|")
-                                #+clasp-min (format *trace-output* " | "))))
-          #-clasp-min
+            (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
           (format *trace-output*
-                  "<~D (~S~{ ~S~})~%" *trace-level* fname vals)
-          #+clasp-min
-          (format *trace-output*
-                  "<~D (~S ~S)~%" *trace-level* fname vals)))
+                  "<~D (~S~{ ~S~})~%" *trace-level* fname vals)))
        (when extras
          (multiple-value-bind (bars rem)
              (floor indent 4)
            (dotimes (i bars) (princ "|   " *trace-output*))
-           (when (plusp rem) (progn
-                               #-clasp-min (format *trace-output* "~V,,,' A" rem "|")
-                               #+clasp-min (format *trace-output* " | "))))
-         #-clasp-min(format *trace-output*
-                            "~0,4@T\\\\ ~{ ~S~}~%" extras)
-         #+clasp-min(format *trace-output*
-                            " ~s " extras))
+           (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
+         (format *trace-output* "~0,4@T\\\\ ~{ ~S~}~%" extras))
        *trace-output*)
      *trace-output*)))
 
@@ -294,7 +271,6 @@ all functions."
         (*print-circle* t))
     (core:fmt *trace-output* "{}"
      (with-output-to-string (*trace-output*)
-       #+(or)(core:fmt *trace-output* "%N")
        (case direction
          (ENTER
           (multiple-value-bind (bars rem)
@@ -357,7 +333,7 @@ all functions."
           ((traced-and-redefined-p record)
            (warn "The function ~S was traced, but redefined." fname))
           (t
-           (funcall #'(setf fdefinition) (trace-record-old-definition record) fname)))
+           (setf (fdefinition fname) (trace-record-old-definition record))))
     (delete-from-trace-list fname)
     (values)))
 
@@ -368,6 +344,6 @@ Evaluates FORM in the Stepper mode and returns all its values."
         (progn
           (core:set-breakstep)
           (locally
-              #+(or cclasp eclasp) (declare (optimize clasp-cleavir::insert-step-conditions))
-              ,form))
+              (declare (optimize clasp-cleavir::insert-step-conditions))
+            ,form))
      (core:unset-breakstep)))

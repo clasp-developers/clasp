@@ -1,51 +1,49 @@
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (unless (find-package "CLASP-DEBUG")
-    (make-package "CLASP-DEBUG" :use '("CL")))
-  (in-package #:clasp-debug)
-  ;; we intern several symbols below
-  (ext:add-implementation-package "CLASP-DEBUG" "CLOS")
-  (flet ((%export (names)
-           (export (mapcar (lambda (s) (intern (symbol-name s))) names))))
-    (%export '(#:code-source-line-pathname
-               #:code-source-line-line-number
-               #:code-source-line-column))
-    ;; TODO: Rename core:debugger-frame to frame, reexport that
-    (%export '(#:frame))
-    (%export '(#:frame-up #:frame-down))
-    (%export '(#:frame-function #:frame-arguments
-               #:frame-locals #:frame-source-position
-               #:frame-language))
-    (%export '(#:frame-function-name
-               #:frame-function-lambda-list
-               #:frame-function-source-position
-               #:frame-function-form
-               #:frame-function-documentation))
-    (%export '(#:disassemble-frame))
-    ;; frame selection
-    (%export '(#:with-truncated-stack #:truncation-frame-p
-               #:with-capped-stack #:cap-frame-p))
-    (%export '(#:*frame-filters*))
-    ;; mid level
-    (%export '(#:call-with-stack #:with-stack))
-    (%export '(#:up #:down #:visible))
-    (%export '(#:map-stack #:list-stack))
-    ;; defined later in conditions.lisp
-    (%export '(#:safe-prin1 #:prin1-frame-call
-               #:princ-code-source-line
-               #:print-stack))
-    ;; high level
-    (%export '(#:map-indexed-stack #:goto))
-    (%export '(#:print-backtrace ; in conditions.lisp
-               #:map-backtrace
-               #:map-indexed-backtrace))
-    (%export '(#:hide-package #:unhide-package
-               #:hide #:unhide #:unhide-all))
-    ;; misc
-    (%export '(#:function-name-package))
-    ;; stepper
-    (%export '(#:step-form #:step-into #:step-over))
-    (import '(core:set-breakstep core:unset-breakstep core:breakstepping-p))
-    (export '(core:set-breakstep core:unset-breakstep core:breakstepping-p))))
+(in-package "CORE")
+
+(defpackage #:clasp-debug
+  (:use #:cl)
+  (:export #:code-source-line-pathname
+           #:code-source-line-line-number
+           #:code-source-line-column)
+  ;; TODO: Rename core:debugger-frame to frame, reexport that
+  (:export #:frame)
+  (:export #:frame-up #:frame-down)
+  (:export #:frame-function #:frame-arguments
+           #:frame-locals #:frame-source-position
+           #:frame-language)
+  (:export #:frame-function-name
+           #:frame-function-lambda-list
+           #:frame-function-source-position
+           #:frame-function-form
+           #:frame-function-documentation)
+  (:export #:disassemble-frame)
+  ;; frame selection
+  (:export #:with-truncated-stack #:truncation-frame-p
+           #:with-capped-stack #:cap-frame-p)
+  (:export #:*frame-filters*)
+  ;; mid level
+  (:export #:call-with-stack #:with-stack)
+  (:export #:up #:down #:visible)
+  (:export #:map-stack #:list-stack)
+  ;; defined later in conditions.lisp
+  (:export #:safe-prin1 #:prin1-frame-call
+           #:princ-code-source-line
+           #:print-stack)
+  ;; high level
+  (:export #:map-indexed-stack #:goto)
+  (:export #:print-backtrace ; in conditions.lisp
+           #:map-backtrace
+           #:map-indexed-backtrace)
+  (:export #:hide-package #:unhide-package
+           #:hide #:unhide #:unhide-all)
+  ;; misc
+  (:export #:function-name-package)
+  ;; stepper
+  (:export #:step-form #:step-into #:step-over)
+  (:import-from #:core #:set-breakstep #:unset-breakstep #:breakstepping-p)
+  (:export #:set-breakstep #:unset-breakstep #:breakstepping-p))
+
+(in-package #:clasp-debug)
 
 ;;; Low level interface
 
@@ -179,7 +177,8 @@ If the arguments are not available, returns NIL NIL."
                          (first args))
                    result))))))))
 
-(defun frame-locals (frame &key eval)
+(defun frame-locals (frame &key eval
+                           &aux (fname (frame-function-name frame)))
   "Return an alist of local lexical/special variables and their values at the continuation the frame
   represents. The CARs are variable names and CDRs their values. Multiple bindings with the same
   name may be returned, as there is no notion of lexical scope in this interface. By default
@@ -452,17 +451,13 @@ Note that as such, the frame returned may not be visible."
 
 (defparameter *hidden-fnames*
   '(apply funcall invoke-debugger
-    core:universal-error-handler
-    core:apply0 core:apply1 core:apply2 core:apply3 core:apply4
+    core::universal-error-handler
+    core::apply0 core::apply1 core::apply2 core::apply3 core::apply4
     core::catch-lambda core::throw-lambda
     core::unwind-protected-lambda core::unwind-cleanup-lambda
     core::mvc-argument-lambda core::progv-lambda
-    clos::dispatch-miss-va
-    clos::perform-outcome
-    clos::dispatch-miss clos::invalidated-dispatch-function
-    clos::invalidated-discriminating-function
-    clos::combine-method-functions.lambda
-    clos::interpreted-discriminating-function))
+    clos::dispatch-miss clos::dispatch-miss-va
+    clos::perform-outcome clos::invalidated-discriminator))
 
 (defun hide (function-name)
   "Mark frames whose functions have the given name as invisible."

@@ -14,15 +14,6 @@
 ;;;;    See file '../Copyright' for full details.
 
 #+threads
-(defpackage "MP"
-  (:use "CL")
-  (:import-from :CORE "WITH-UNIQUE-NAMES")
-  (:export "WITH-LOCK" "WITH-RWLOCK" "WITHOUT-INTERRUPTS" "WITH-INTERRUPTS"
-           "WITH-LOCAL-INTERRUPTS" "WITH-RESTORED-INTERRUPTS" "ALLOW-WITH-INTERRUPTS"
-           "INTERRUPTIBLEP"
-           "ABORT-PROCESS"))
-
-#+threads
 (in-package "MP")
 
 #+threads
@@ -66,20 +57,27 @@ WITHOUT-INTERRUPTS in:
     ;; regardless of the interrupt policy in effect when it is called.
     (lambda () (with-local-interrupts ...)))
 "
-  (with-unique-names (outer-allow-with-interrupts outer-interrupts-enabled)
+  (core::with-unique-names (outer-allow-with-interrupts outer-interrupts-enabled)
     `(multiple-value-prog1
          (macrolet ((allow-with-interrupts (&body allow-forms)
-                      `(let ((si:*allow-with-interrupts* ,',outer-allow-with-interrupts))
-                         ,@allow-forms))
+                      (list* 'let
+                             (list (list 'core::*allow-with-interrupts*
+                                         ',outer-allow-with-interrupts))
+                             allow-forms))
                     (with-restored-interrupts (&body with-forms)
-                      `(let ((si:*interrupts-enabled* ,',outer-interrupts-enabled))
-                         ,@with-forms))
+                      (list* 'let
+                             (list (list 'core::*interrupts-enabled*
+                                         ',outer-interrupts-enabled))
+                             with-forms))
                     (with-local-interrupts (&body with-forms)
-                      `(let* ((si:*allow-with-interrupts* ,',outer-allow-with-interrupts)
-                              (si:*interrupts-enabled* ,',outer-allow-with-interrupts))
-                         (when ,',outer-allow-with-interrupts
-                           (si::check-pending-interrupts))
-                         (locally ,@with-forms))))
+                      (list 'let*
+                            (list (list 'core::*allow-with-interrupts*
+                                        ',outer-allow-with-interrupts)
+                                  (list 'core::*interrupts-enabled*
+                                        ',outer-allow-with-interrupts))
+                            (list 'when ',outer-allow-with-interrupts
+                                  '(core::check-pending-interrupts))
+                            (list* 'locally with-forms))))
            (let* ((,outer-interrupts-enabled si:*interrupts-enabled*)
                   (si:*interrupts-enabled* nil)
                   (,outer-allow-with-interrupts si:*allow-with-interrupts*)
@@ -90,7 +88,7 @@ WITHOUT-INTERRUPTS in:
        (when si:*interrupts-enabled*
          (si::check-pending-interrupts)))))
 
-(defun mp:interruptiblep ()
+(defun interruptiblep ()
   "Returns true iff the current process is interruptible (i.e. not in a WITHOUT-INTERRUPTS block)."
   si:*interrupts-enabled*)
 
@@ -103,7 +101,7 @@ As interrupts are normally allowed WITH-INTERRUPTS only makes sense if there
 is an outer WITHOUT-INTERRUPTS with a corresponding ALLOW-WITH-INTERRUPTS:
 interrupts are not enabled if any outer WITHOUT-INTERRUPTS is not accompanied
 by ALLOW-WITH-INTERRUPTS."
-  (with-unique-names (allowp enablep)
+  (core::with-unique-names (allowp enablep)
     ;; We could manage without ENABLEP here, but that would require
     ;; taking extra care not to ever have *ALLOW-WITH-INTERRUPTS* NIL
     ;; and *INTERRUPTS-ENABLED* T -- instead of risking future breakage
@@ -120,13 +118,13 @@ by ALLOW-WITH-INTERRUPTS."
   #-threads
   `(progn ,@body)
   #+threads
-  (with-unique-names (lock)
+  (core::with-unique-names (lock)
     `(let ((,lock ,lock-form))
        (unwind-protect
             (progn
-              (mp:get-lock ,lock)
+              (get-lock ,lock)
               (locally ,@body))
-         (mp:giveup-lock ,lock)))))
+         (giveup-lock ,lock)))))
 
 #+threads
 (defmacro with-rwlock ((lock op) &body body)
@@ -140,15 +138,15 @@ Valid values of argument OP are :READ or :WRITE
     (let ((s-lock (gensym)))
       `(let ((,s-lock ,lock))
          (,(if (eq :read op)
-               'mp:shared-lock
-               'mp:write-lock)
+               'shared-lock
+               'write-lock)
           ,s-lock)
          (unwind-protect
              (progn
                ,@body)
            (,(if (eq :read op)
-                 'mp:shared-unlock
-                 'mp:write-unlock)
+                 'shared-unlock
+                 'write-unlock)
             ,s-lock)))))
 
 #+threads
@@ -156,7 +154,6 @@ Valid values of argument OP are :READ or :WRITE
   "Immediately end the current process abnormally.
 If PROCESS-JOIN is called on this process thereafter, it will signal an error of type PROCESS-JOIN-ERROR.
 If DATUM is provided, it and ARGUMENTS designate a condition of default type SIMPLE-ERROR. This condition will be attached to the PROCESS-JOIN-ERROR."
-  ;; Bootstrap note: coerce-to-condition won't be defined until CLOS is up.
   (%abort-process
    (if datum
        (core::coerce-to-condition datum arguments 'simple-error 'abort-process)

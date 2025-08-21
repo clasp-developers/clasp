@@ -417,9 +417,45 @@ q (or Q):             quits the inspection.~%~
       (format t "~&Documentation:~%  ~a" docstring)))
   (when (core:instancep function) ; funcallable instance
     (terpri) (terpri)
-    (clos::describe-slots function *standard-output*)))
+    (describe-slots function *standard-output*)))
 
-#+CLOS
+(defgeneric describe-object (object stream))
+
+(defun describe-slots (object stream)
+  (let* ((class (class-of object))
+         (slotds (clos:class-slots class))
+         (max-slot-name-length 24)
+         (plist nil))
+    ;; Go through the slots getting a max slot name length,
+    ;; and also sorting the slots by :allocation.
+    ;; (This code is based off of SBCL's SB-IMPL::DESCRIBE-INSTANCE.)
+    (dolist (slotd slotds)
+      (setf max-slot-name-length
+            (max max-slot-name-length
+                 (length (symbol-name
+                          (clos:slot-definition-name slotd)))))
+      (push slotd (getf plist (clos:slot-definition-allocation slotd))))
+    ;; Now dump the info.
+    (loop for (allocation slotds) on plist by #'cddr
+          do (format stream "~&Slots with ~s allocation:" allocation)
+             (dolist (slotd (nreverse slotds)) ; keep original order
+               (let ((slot-name (clos:slot-definition-name slotd)))
+                 (format stream "~&  ~va: ~a"
+                         max-slot-name-length slot-name
+                         (if (slot-boundp object slot-name)
+                             (slot-value object slot-name)
+                             "Unbound"))))))
+  object)
+
+(defmethod describe-object ((object standard-object) stream)
+  (format stream "~&~S - ~S" object (class-name (class-of object)))
+  (describe-slots object stream))
+
+(defmethod describe-object ((obj t) (stream t))
+  (format stream "~%~S is an instance of class ~S"
+          obj (class-name (class-of obj)))
+  obj)
+
 (defun inspect-instance (instance)
   (if *inspect-mode*
       (clos::inspect-obj instance)
@@ -449,7 +485,6 @@ q (or Q):             quits the inspection.~%~
                ;; Note that this needs to get generic functions,
                ;; so keep it before the instancep test.
                ((functionp object) (inspect-function object))
-	       #+clos
 	       ((sys:instancep object) (inspect-instance object))
                ((sys:cxx-object-p object) (describe-object object *standard-output*))
                (t (format t "~S - ~S" object (type-of object)))))))
@@ -514,7 +549,7 @@ Prints information about OBJECT to STREAM."
            (describe-symbol (category-string)
              (doc-separation category-string)
              (doc-value (or (documentation symbol 'FUNCTION) "") "Documentation:" t)
-             #+(or cclasp eclasp) (doc-value (or (core:function-lambda-list symbol) "") "Arguments:")
+             (doc-value (or (ext:function-lambda-list symbol) "") "Arguments:")
              (mapcar #'(lambda(location)
                          (doc-value (ext:source-location-pathname location) "Source:"))
                      (EXT:SOURCE-LOCATION symbol :function)))

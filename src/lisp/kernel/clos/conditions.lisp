@@ -24,10 +24,6 @@
 ;;; proof that the condition system can be implemented.
 ;;;
 
-#+(or)
-(eval-when (:execute)
-  (setq core:*echo-repl-read* t))
-
 (in-package "SYSTEM")
 
 ;;; ----------------------------------------------------------------------
@@ -85,13 +81,13 @@
 
 ;;; This is necessary for bootstrapping reasons: assert.lisp, at least,
 ;;; uses restart-bind before CLOS and static-gfs are up.
+;;; FIXME: Probably not true in the cross build
 (defun make-restart (&key name function
                        (report-function
                         (lambda (stream) (prin1 name stream)))
                        (interactive-function (constantly ()))
                        (test-function (constantly t)))
-  (declare (notinline make-instance))
-  (make-instance 'restart
+  (clos::early-make-instance restart
     :name name :function function
     :report-function report-function
     :interactive-function interactive-function
@@ -194,6 +190,7 @@
             (ext:restart-interactive-function real-restart)))))
 
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun munge-with-condition-restarts-form (original-form env)
   (ext:with-current-source-form (original-form)
     (let ((form (macroexpand original-form env)))
@@ -227,6 +224,7 @@
                             `(,name ,condition-var)))))
                 original-form))
           original-form))))
+) ; eval-when
 
 (defmacro restart-case (expression &body clauses &environment env)
   (flet ((transform-keywords (&key report interactive test)
@@ -694,6 +692,10 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
 
 (define-condition core:simple-program-error (simple-condition program-error) ())
 
+(defun core:simple-program-error (format-control &rest format-arguments)
+  (error 'core:simple-program-error
+         :format-control format-control :format-arguments format-arguments))
+
 (define-condition control-error (error) ())
 
 (define-condition core:simple-control-error (simple-condition control-error) ())
@@ -1135,53 +1137,12 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
 
 (define-condition core:simple-reader-error (simple-condition reader-error) ())
 
-(define-condition format-error (simple-error)
-  ((format-control :initarg :complaint)
-   (format-arguments :initarg :arguments)
-   (control-string :reader format-error-control-string
-		   :initarg :control-string
-		   :initform *default-format-error-control-string*) 
-   (offset :reader format-error-offset :initarg :offset
-	   :initform *default-format-error-offset*)
-   (print-banner :reader format-error-print-banner :initarg :print-banner
-		 :initform t))
-  (:report (lambda (condition stream)
-	     (format
-              stream
-              "~:[~;Error in format: ~]~
-			 ~?~@[~%  ~A~%  ~V@T^~]"
-              (format-error-print-banner condition)
-              (simple-condition-format-control condition)
-              (simple-condition-format-arguments condition)
-              (format-error-control-string condition)
-              (format-error-offset condition)))))
+(defun core:simple-reader-error (stream format-control &rest format-arguments)
+  (error 'core:simple-reader-error
+         :stream stream :format-control format-control
+         :format-arguments format-arguments))
 
-;;; Conditions the FORMAT compiler macro signals if there's an argument count mismatch.
-;;; CLHS 22.3.10.2 says that having too few arguments is undefined, so that's a warning,
-;;; but having too many just means they're ignored, so that's a style-warning.
-;;; (Alternately we could not complain at all.)
-(define-condition format-warning-too-few-arguments (warning)
-  ((control-string :initarg :control :reader format-warning-control-string)
-   (expected :initarg :expected :reader format-warning-expected)
-   (observed :initarg :observed :reader format-warning-observed))
-  (:report (lambda (condition stream)
-             (format stream
-                     "Format string ~s expects at least ~d arguments,~@
-                      but is only provided ~d."
-                     (format-warning-control-string condition)
-                     (format-warning-expected condition)
-                     (format-warning-observed condition)))))
-(define-condition format-warning-too-many-arguments (style-warning)
-  ((control-string :initarg :control :reader format-warning-control-string)
-   (expected :initarg :expected :reader format-warning-expected)
-   (observed :initarg :observed :reader format-warning-observed))
-  (:report (lambda (condition stream)
-             (format stream
-                     "Format string ~s expects at most ~d arguments,~@
-                      but is provided ~d."
-                     (format-warning-control-string condition)
-                     (format-warning-expected condition)
-                     (format-warning-observed condition)))))
+
 
 
 (defun signal-simple-error (condition-type continue-message format-control format-args

@@ -2,23 +2,24 @@
 
 ;;;; Top-level interface: CL:COMPILE
 
-(defparameter *lambda-args-num* 0)
-
-(defmacro with-module (( &key module
-                           (optimize nil)
-                           (optimize-level '*optimization-level*)
-                           dry-run) &rest body)
-  `(let* ((*the-module* ,module))
-     (or *the-module* (error "with-module *the-module* is NIL"))
-     (multiple-value-prog1
-         (with-irbuilder ((llvm-sys:make-irbuilder (thread-local-llvm-context)))
-           ,@body)
-       (when (and ,optimize ,optimize-level (null ,dry-run)) (funcall ,optimize ,module ,optimize-level )))))
+;; When Cleavir is installed set the value of *cleavir-compile-hook* to use it to compile forms
+;; It expects a function of one argument (lambda (form) ...) that will generate code in the
+;; current *module* for the form.  The lambda returns T if cleavir succeeded in compiling the form
+;; and nil otherwise
+(defvar *cleavir-compile-hook* nil)
+(defvar *cleavir-compile-file-hook* nil)
 
 (defun compile-with-hook (compile-hook definition env)
   (with-compilation-unit ()
     (with-compilation-results ()
       (funcall compile-hook definition env))))
+
+(defun coerce-to-lexenv (thing)
+  (typecase thing
+    (null (make-null-lexical-environment))
+    (lexenv thing)
+    (t ; assume cleavir. FIXME
+     (funcall (find-symbol "CLEAVIR-ENV->BYTECODE" "CLASP-CLEAVIR") thing))))
 
 ;;; This implements the pure functional part of CL:COMPILE, i.e.
 ;;; it computes and returns a compiled definition. It also accepts
@@ -58,7 +59,9 @@
                (funcall *btb-compile-hook* bc nil)
                bc))
          #-(or)
-         (funcall cmp:*cleavir-compile-hook* definition environment))))
+         (if *cleavir-compile-hook*
+             (funcall *cleavir-compile-hook* definition environment)
+             (bytecompile definition (coerce-to-lexenv environment))))))
     (t (error "COMPILE doesn't know how to handle ~a" definition))))
 
 (defun compile (name &optional definition)
@@ -78,10 +81,3 @@
            (setf (fdefinition name) function)
            (values name warnp failp))
           (t (values function warnp failp)))))
-
-(defun compiler-stats ()
-  (core:fmt t "Accumulated finalization time {}%N" llvm-sys:*accumulated-llvm-finalization-time*)
-  (core:fmt t "Most recent finalization time {}%N" llvm-sys:*most-recent-llvm-finalization-time*)
-  (core:fmt t "Number of compilations {}%N" llvm-sys:*number-of-llvm-finalizations*))
-
-(export 'compiler-stats)

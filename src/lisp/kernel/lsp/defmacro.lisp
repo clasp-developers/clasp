@@ -14,27 +14,7 @@
 
 (in-package "SYSTEM")
 
-#+clasp-min
-(si::fset 'push
-	   #'(lambda (args env)
-               (declare (core:lambda-name push))
-               (let* ((what (second args))
-                      (where (caddr args)))
-                 `(setq ,where (cons ,what ,where))))
-	  t)
-
-#+clasp-min
-(si::fset 'pop
-	   #'(lambda (args env)
-               (declare (core:lambda-name pop))
-               (let ((where (cadr args)))
-                 `(let* ((l ,where)
-                         (v (car l)))
-                    (setq ,where (cdr l))
-                    v)))
-	  t)
-
-(defun sys::search-keyword (list key)
+(defun search-keyword (list key)
   (cond ((atom list) 'missing-keyword)
 	((atom (cdr list)) 'missing-keyword)
 	((eq (car list) key) (cadr list))
@@ -103,10 +83,10 @@
          :macro-name macro-name :lambda-list vl :arguments current-form
          :problem :too-few))
 
-(defun sys::destructure (vldestructure context
-                         &optional display-name cm-name
-                         &aux dl arg-check (basis-form (gensym))
-                           (destructure-symbols (list basis-form)))
+(defun destructure (vldestructure context
+                    &optional display-name cm-name
+                    &aux dl arg-check (basis-form (gensym))
+                      (destructure-symbols (list basis-form)))
   (labels ((tempsym ()
 	     (let ((x (gensym)))
 	       (push x destructure-symbols)
@@ -265,7 +245,6 @@
       (process-declarations body t)
     (when decls (push `(declare ,@decls) body))
     (values body doc)))
-#+clasp(export 'remove-documentation)
 
 (defun find-declarations (body &optional (docp t))
   (multiple-value-bind (decls body doc)
@@ -314,24 +293,6 @@
                 ,@arg-check
                 ,@body))
            doc))))))
-
-#+clasp-min
-(si::fset 'defmacro
-          #'(lambda (def env)
-              (declare (ignore env) (core:lambda-name defmacro))
-	      (let* ((name (second def))
-		     (vldm (third def))
-		     (body (cdddr def))
-		     (function))
-		(multiple-value-bind (function doc)
-		    (sys::expand-defmacro name vldm body)
-		  (declare (ignore doc))
-		  (setq function `(function ,function))
-		  `(si::fset ',name ,function
-                             t ; macro
-                             ',vldm ; lambda-list
-                             ))))
-	  t)
 
 ;;; Like EXPAND-DEFMACRO, but is slightly nicer about invalid arguments.
 (defun expand-define-compiler-macro (name vldm body
@@ -383,7 +344,3 @@
 (defun parse-define-setf-expander (name lambda-list body &optional env)
   (declare (ignore env))
   (sys::expand-defmacro name lambda-list body 'setf-expander))
-
-;; FIXME: move
-(export '(parse-macro parse-compiler-macro parse-deftype
-          parse-define-setf-expander))

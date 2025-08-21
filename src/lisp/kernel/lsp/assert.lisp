@@ -17,7 +17,6 @@
   (format *query-io* "~&Type a form to be evaluated:~%")
   (list (eval (read *query-io*))))
 
-#-clasp-min
 (defun wrong-type-argument (object type &optional place function)
   (tagbody again
      (restart-case
@@ -54,7 +53,6 @@ value is used to indicate the expected type in the error message."
 	 (setf ,place (do-check-type ,aux ',type ',type-string ',place)))
        nil)))
 
-#-clasp-min
 (defun do-check-type (value type type-string place)
   (tagbody again
      (unless (typep value type)
@@ -81,20 +79,21 @@ until FORM returns a non-NIL value.  Returns NIL. DATUM and ARGs designate the
  error to signal."
   `(while (not ,test-form)
      (setf (values ,@places)
-           ;; Defined later in clos/conditions.lisp
+           ;; Defined in clos/conditions.lisp
            (assert-failure ',test-form ',places (list ,@places)
                            ;; If DATUM is provided, it must be for a
                            ;; condition; NIL is not acceptable.
                            ,(if datump datum nil) ,@arguments))))
 
-(defun accumulate-cases (cases list-is-atom-p)
-  (do ((c cases (cdr c))
-       (l '()))
-      ((null c) (nreverse l))
-    (let ((keys (caar c)))
-      (cond ((atom keys) (unless (null keys) (push keys l)))
-	    (list-is-atom-p (push keys l))
-	    (t (setq l (append keys l)))))))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun accumulate-cases (cases list-is-atom-p)
+    (do ((c cases (cdr c))
+         (l '()))
+        ((null c) (nreverse l))
+      (let ((keys (caar c)))
+        (cond ((atom keys) (unless (null keys) (push keys l)))
+	      (list-is-atom-p (push keys l))
+	      (t (setq l (append keys l))))))))
 
 (defun ecase-error (value values)
   (error 'CASE-FAILURE :name 'ECASE
@@ -114,7 +113,6 @@ signals an error."
        (case ,key ,@clauses
 	 (t (si::ecase-error ,key ',(accumulate-cases clauses nil)))))))
 
-#-clasp-min
 (defun ccase-error (keyform key values)
   (restart-case (error 'CASE-FAILURE
 		       :name 'CCASE
@@ -127,13 +125,14 @@ signals an error."
       :INTERACTIVE read-evaluated-form
       (return-from ccase-error value))))
 
-(defun remove-otherwise-from-clauses (clauses)
-  (mapcar #'(lambda (clause)
-	      (let ((options (first clause)))
-		(if (member options '(t otherwise))
-		    (cons (list options) (rest clause))
-		    clause)))
-	  clauses))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun remove-otherwise-from-clauses (clauses)
+    (mapcar #'(lambda (clause)
+	        (let ((options (first clause)))
+		  (if (member options '(t otherwise))
+		      (cons (list options) (rest clause))
+		      clause)))
+	    clauses)))
 
 (defmacro ccase (keyplace &rest clauses)
   "Syntax: (ccase place {({key | ({key}*)} {form}*)}*)
@@ -196,7 +195,6 @@ the last FORM.  If not, signals an error."
                          (progn ,@(cdr clause))
                          ,form))))))
 
-#-clasp-min
 (defun ctypecase-error (keyplace value types)
   (restart-case (error 'CASE-FAILURE
 		       :name 'CTYPECASE

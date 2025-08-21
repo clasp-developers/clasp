@@ -12,8 +12,6 @@
 
 (in-package "GRAY")
 
-(import 'ext:ansi-stream)
-
 (unexport '(%close
             %input-stream-p
             %open-stream-p
@@ -303,11 +301,10 @@ truename."))
 ;;; generic functions.
 ;;;
 
-(let ((clos::*clos-booted* 'clos:map-dependents))
-  (defclass fundamental-stream (standard-object stream)
-    ((open-p :accessor open-stream-p
-             :initform t ))
-    (:documentation "the base class for all CLOS streams")))
+(defclass fundamental-stream (standard-object stream)
+  ((open-p :accessor open-stream-p
+           :initform t ))
+  (:documentation "the base class for all CLOS streams"))
 
 (defclass fundamental-input-stream (fundamental-stream)
   ())
@@ -934,4 +931,12 @@ truename."))
 
 (pushnew 'gray-streams-module-provider ext:*module-provider-functions*)
 
-#+(or cclasp eclasp) (eval-when (:load-toplevel) (setf clos:*clos-booted* t))
+(export '(fundamental-stream
+          fundamental-input-stream
+          fundamental-output-stream
+          fundamental-character-stream
+          fundamental-binary-stream
+          fundamental-character-input-stream
+          fundamental-character-output-stream
+          fundamental-binary-input-stream
+          fundamental-binary-output-stream))

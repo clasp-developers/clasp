@@ -1,7 +1,6 @@
 (in-package "CMP")
 
-;;;; The final compiler condition system, replacing (and largely redefining)
-;;;; the one in cmputil.lisp.
+;;;; The final compiler condition system.
 ;;;; Much or most of this was originally cribbed from SBCL,
 ;;;; especially ir1report.lisp and main.lisp.
 
@@ -62,15 +61,15 @@
 
 (define-condition undefined-variable-warning
     (warning undefined-warning)
-  ((%kind :initform 'variable)))
+  ((%kind :initform 'variable :allocation :class)))
 
 (define-condition undefined-function-warning
     (style-warning undefined-warning)
-  ((%kind :initform 'function)))
+  ((%kind :initform 'function :allocation :class)))
 
 (define-condition undefined-type-warning
     (style-warning undefined-warning)
-  ((%kind :initform 'type)))
+  ((%kind :initform 'type :allocation :class)))
 
 (define-condition redefined-function-warning
     (warning compiler-condition)
@@ -85,10 +84,10 @@
                (redefinition-new-type condition)
                (compiler-warning-name condition)
                (redefinition-old-type condition)
-               (file-scope-pathname
-                (file-scope origin))
-               (source-pos-info-lineno origin)
-               (source-pos-info-column origin))))))
+               (core:file-scope-pathname
+                (core:file-scope origin))
+               (core:source-pos-info-lineno origin)
+               (core:source-pos-info-column origin))))))
 
 (define-condition wrong-argcount-warning
     (warning compiler-condition)
@@ -122,8 +121,8 @@
 ;; to survive compiler macros signaling errors.
 ;; This is kind of a KLUDGE, and doesn't do all the nice encapsulation
 ;;  that we do in Cleavir. Plus we have no source location.
-(defun cmp:expand-compiler-macro-safely (expander form env
-                                         &optional (origin (ext:current-source-location)))
+(defun expand-compiler-macro-safely (expander form env
+                                     &optional (origin (ext:current-source-location)))
   (handler-case
       (funcall *macroexpand-hook* expander form env)
     (error (c)
@@ -134,8 +133,7 @@
 ;; These conditions are signaled by the bytecode compiler.
 ;; They are NOT signaled by Cleavir which uses its own conditions,
 ;; so that's kind of ugly. FIXME.
-(define-condition cmp:unused-variable (style-warning
-                                       compiler-condition)
+(define-condition unused-variable (style-warning compiler-condition)
   ((%name :initarg :name :reader name)
    (%setp :initarg :setp :reader setp))
   (:report
@@ -145,8 +143,7 @@
                (symbolp name)
                (if (symbolp name) name (second name))
                (setp condition))))))
-(define-condition cmp:used-variable (style-warning
-                                     compiler-condition)
+(define-condition used-variable (style-warning compiler-condition)
   ((%name :initarg :name :reader name))
   (:report
    (lambda (condition stream)
@@ -156,7 +153,7 @@
                (if (symbolp name) name (second name))
                'ignore)))))
 
-(define-condition cmp:malformed-binding (program-error compiler-condition)
+(define-condition malformed-binding (program-error compiler-condition)
   ((%operator :initarg :operator :reader operator)
    (%binding :initarg :binding :reader binding))
   (:report
@@ -165,14 +162,14 @@
              (operator condition) (binding condition)))))
 
 ;;; redefined from bytecode_compiler.cc.
-(defun cmp:warn-unused-variable (name &optional (origin (ext:current-source-location)))
-  (warn 'cmp:unused-variable :origin origin :name name :setp nil))
-(defun cmp:warn-used-ignored-variable (name &optional (origin (ext:current-source-location)))
-  (warn 'cmp:used-variable :origin origin :name name))
-(defun cmp:warn-set-unused-variable (name &optional (origin (ext:current-source-location)))
-  (warn 'cmp:unused-variable :origin origin :name name :setp t))
-(defun cmp:malformed-binding (operator binding &optional (origin (ext:current-source-location)))
-  (error 'cmp:malformed-binding :origin origin
+(defun warn-unused-variable (name &optional (origin (ext:current-source-location)))
+  (warn 'unused-variable :origin origin :name name :setp nil))
+(defun warn-used-ignored-variable (name &optional (origin (ext:current-source-location)))
+  (warn 'used-variable :origin origin :name name))
+(defun warn-set-unused-variable (name &optional (origin (ext:current-source-location)))
+  (warn 'unused-variable :origin origin :name name :setp t))
+(defun malformed-binding (operator binding &optional (origin (ext:current-source-location)))
+  (error 'malformed-binding :origin origin
                                 :operator operator :binding binding))
 
 ;; This condition is signaled when an attempt at constant folding fails
@@ -200,13 +197,17 @@ Operation was (~s~{ ~s~})."
     (core::simple-style-warning compiler-condition)
   ())
 
+(in-package #:ext) ; KLUDGE: Survive package lock
+
 ;;; These conditions are signaled when the compiler wants to tell the
 ;;; programmer something, but that something doesn't warrant even a style
 ;;; warning. For example, a note that the compiler cannot optimize something
 ;;; could be a note, since this inability is not a problem per se with the
 ;;; code, and it may just be that the compiler is inadequate.
-(define-condition ext:compiler-note (compiler-condition)
+(define-condition ext:compiler-note (cmp::compiler-condition)
   ())
+
+(in-package #:cmp)
 
 (defun note (datum &rest arguments)
   ;; We don't use coerce-to-condition because there is no simple-note type
@@ -290,10 +291,10 @@ Operation was (~s~{ ~s~})."
               (origin (if (consp origin) (car origin) origin)))
           (handler-case
               (format *error-output* "~&    at ~a ~d:~d~%"
-                      (file-scope-pathname
-                       (file-scope origin))
-                      (source-pos-info-lineno origin)
-                      (source-pos-info-column origin))
+                      (core:file-scope-pathname
+                       (core:file-scope origin))
+                      (core:source-pos-info-lineno origin)
+                      (core:source-pos-info-column origin))
             (error (e)
               ;; Recursive errors are annoying. Therefore,
               (format *error-output* "~&    at #<error printing origin ~a: ~a>~%"
@@ -320,6 +321,9 @@ Operation was (~s~{ ~s~})."
 (defvar *compiler-warning-count* 0)
 (defvar *compiler-style-warning-count* 0)
 (defvar *compiler-note-count* 0)
+
+(defvar *warnings-p*)
+(defvar *failure-p*)
 
 ;;; Let errors through - lower level code should handle them if able, and otherwise
 ;;; it's a compiler bug and we ought to enter the debugger.
@@ -352,7 +356,6 @@ Operation was (~s~{ ~s~})."
   (print-compiler-condition condition)
   (muffle-note condition))
 
-;;; Redefinition. Used in e.g. compile-file.
 (defun call-with-compilation-results (thunk &rest options)
   (declare (ignore options))
   (let ((*warnings-p* nil) (*failure-p* nil))

@@ -9,10 +9,6 @@
 (in-package "SI")
 
 (eval-when (:compile-toplevel  :execute   :load-toplevel)
-  
-  #+clasp-min
-  (defmacro handler-bind (bindings &body body)
-    `(progn ,@body))
 
 
 ;;;; The Collect macro:
@@ -159,9 +155,6 @@ Example:
                       `(,symbol (gensym ,stem))))
                   symbols)
      ,@body))
-
-(import 'with-unique-names :ext)
-(export 'ext::with-unique-names :ext)
 
 (defmacro with-clean-symbols (symbols &body body)
   "Rewrites the given forms replacing the given symbols with uninterned

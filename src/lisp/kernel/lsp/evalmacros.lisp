@@ -13,27 +13,41 @@
 
 (in-package :sys)
 
-(defun check-package-lock (name operation) ;; testing
-  (let ((package (symbol-package name)))
-    (when (and package (ext:package-locked-p package)
-               (not (member
-                     *package*
-                     (ext:package-implemented-by-list package))))
-      (core:package-lock-violation package
-                                   "trying to ~s ~s"
-                                   operation name))))
+(defun (setf ext:symbol-macro) (expander name &optional env)
+  (when env
+    (error "Non-NIL environment passed to (setf ext:symbol-macro)"))
+  (setf (get-sysprop name 'ext:symbol-macro) expander))
 
+(defvar *defun-inline-hook* nil)
+
+(defmacro when (condition &body forms)
+  "Syntax: (when test {form}*)
+If TEST evaluates to true, then evaluates FORMs and returns all values of the
+last FORM.  If not (i.e. the TEST evaluates to NIL), simply returns NIL."
+  `(if ,condition (progn ,@forms) nil))
 (defmacro unless (pred &rest body)
   "Syntax: (unless test {form}*)
 If TEST evaluates to NIL, then evaluates FORMs and returns all values of the
 last FORM.  If not, simply returns NIL."
   `(IF (NOT ,pred) (PROGN ,@body)))
 
+(defmacro and (&rest forms)
+  (cond ((null forms) 't)
+        ((null (cdr forms)) (car forms))
+        (t `(if ,(car forms) (and ,@(cdr forms)) nil))))
+
+(defmacro or (&rest forms)
+  (cond ((null forms) 'nil)
+        ((null (cdr forms)) (car forms))
+        (t (let ((tmp (gensym)))
+             `(let ((,tmp ,(car forms)))
+                (if ,tmp
+                    ,tmp
+                    (or ,@(cdr forms))))))))
+
 (defmacro defmacro (name lambda-list &body body &environment env)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (funcall #'(setf macro-function)
-              #',(ext:parse-macro name lambda-list body env)
-              ',name)
+     (setf (macro-function ',name) #',(ext:parse-macro name lambda-list body env))
      ',name))
 
 (defmacro destructuring-bind (vl list &body body)
@@ -59,15 +73,11 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     ,@(when form-sp
 	  `((UNLESS (BOUNDP ',var)
 	      (SETQ ,var ,form))))
-    ,@(when (and core:*current-source-pos-info*
-                 ;; KLUDGE so that we can bootstrap this.
-                 ;; FIXME: Special case source pos infos in the literal
-                 ;; compiler, maybe?
-              (fboundp 'make-load-form))
-        `((setf (gethash ',var core:*variable-source-infos*)
-                ',core:*current-source-pos-info*)))
+    ,@(when (ext:current-source-location)
+        `((setf (core:variable-source-info ',var)
+                ',(ext:current-source-location))))
     ,@(when doc-string
-        `((ext:annotate ',var 'documentation 'variable ',doc-string)))
+        `((ext:annotate ',var 'documentation 'variable ,doc-string)))
     ',var))
 
 (defmacro defparameter (var form &optional doc-string)
@@ -79,15 +89,15 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
      (eval-when (:compile-toplevel :load-toplevel :execute)
        (SYS:*MAKE-SPECIAL ',var))
      (SETQ ,var ,form)
-    ,@(when (and core:*current-source-pos-info*
-              (fboundp 'make-load-form))
-        `((setf (gethash ',var core:*variable-source-infos*)
-                ',core:*current-source-pos-info*)))
+     ,@(when (ext:current-source-location)
+         `((setf (core:variable-source-info ',var)
+                 ',(ext:current-source-location))))
     ,@(when doc-string
-        `((ext:annotate ',var 'documentation 'variable ',doc-string)))
-    ',var))
+        `((ext:annotate ',var 'documentation 'variable ,doc-string)))
+     ',var))
 
 ;; export as extension?
+
 (defmacro defconstant-eqx (var form test &optional doc-string)
   "Like DEFCONSTANT, but doesn't fire if the form is equal under TEST to an
 existing value."
@@ -95,18 +105,17 @@ existing value."
     `(PROGN
        (eval-when (:compile-toplevel :load-toplevel :execute)
          (let ((,value ,form))
-           (cond ((core:symbol-constantp ',var)
+           (cond ((symbol-constantp ',var)
                   (unless (,test ,value (symbol-value ',var))
                     ;; This will just trigger the error in SET.
                     (set ',var ,value)))
                  ((ext:specialp ',var)
                   (error "Cannot redefine special variable ~a as constant" ',var))
                  (t (set ',var ,value)
-                    (funcall #'(setf core:symbol-constantp) t ',var)))))
-       ,@(when (and core:*current-source-pos-info*
-                 (fboundp 'make-load-form))
-           `((setf (gethash ',var core:*variable-source-infos*)
-                   ',core:*current-source-pos-info*)))
+                    (setf (symbol-constantp ',var) t)))))
+       ,@(when (ext:current-source-location)
+           `((setf (core:variable-source-info ',var)
+                   ',(ext:current-source-location))))
        ,@(when doc-string
            `((ext:annotate ',var 'documentation 'variable ',doc-string)))
        ',var)))
@@ -121,8 +130,6 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 (defmacro defconstant-equal (var form &optional doc-string)
   `(defconstant-eqx ,var ,form equal ,doc-string))
 
-(export '(defconstant-equal))
-
 (defmacro defun (name lambda-list &body body &environment env)
    ;; Documentation in help.lisp
    (multiple-value-bind (decls body doc-string) 
@@ -131,7 +138,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
             (sname (si::function-block-name name))
             (global-function
               `#'(lambda ,lambda-list
-                   (declare (core:lambda-name ,name) ,@decls) 
+                   (declare (lambda-name ,name) ,@decls) 
                    ,@doclist
                    (block ,sname ,@body))))
        `(progn 
@@ -139,100 +146,19 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
             ;; this function won't be ready for a while, but it's okay as there's no
             ;; compiler to run :compile-toplevel forms anyway.
             (cmp::register-global-function-def 'defun ',name))
-          (funcall #'(setf fdefinition) ,global-function ',name)
+          (setf (fdefinition ',name) ,global-function)
           ,@(and *defun-inline-hook*
                  (list (funcall *defun-inline-hook* name global-function env)))
           ',name))))
 
-(defvar *compiler-macros* (make-hash-table :test #'equal :thread-safe t))
-
-(defun compiler-macro-function (name &optional environment)
-  (declare (ignore environment))
-  (values (gethash name *compiler-macros*)))
-
-(defun (setf compiler-macro-function) (cmf name &optional environment)
-  (declare (ignore environment))
-  (check-package-lock (core::function-block-name name)
-                      'define-compiler-macro)
-  ;; Basically ETYPECASE.
-  (if (functionp cmf)
-      (funcall #'(setf gethash) cmf name *compiler-macros*)
-      (if (null cmf)
-          (progn (remhash name *compiler-macros*) nil)
-          (error 'type-error :datum cmf :expected-type '(or function null)))))
-
 (defmacro define-compiler-macro (name vl &rest body &environment env)
   ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro  
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (funcall #'(setf compiler-macro-function)
-              (function ,(ext:parse-compiler-macro name vl body env))
-              ',name)
+     (setf (compiler-macro-function ',name)
+           (function ,(ext:parse-compiler-macro name vl body env)))
      ',name))
 
-(defun compiler-macroexpand-1 (form &optional env)
-  (if (atom form)
-      form
-      (or
-       (and (eq (car form) 'cl:funcall)
-            (listp (cadr form))
-            (eq (car (cadr form)) 'cl:function)
-            (let ((expander (compiler-macro-function (cadr (cadr form)) env)))
-              (if expander
-                  (funcall *macroexpand-hook* expander form env)
-                  form)))
-       (let ((expander (compiler-macro-function (car form) env)))
-         (if expander
-             (funcall *macroexpand-hook* expander form env)
-             form)))))
-
-(defun compiler-macroexpand (form &optional env)
-  (let ((expansion (compiler-macroexpand-1 form env)))
-    (if (eq expansion form)
-        (return-from compiler-macroexpand form)
-        (compiler-macroexpand expansion env))))
-
-(export '(compiler-macroexpand-1 compiler-macroexpand))
-
-;;; Each of the following macros is also defined as a special form,
-;;; as required by CLtL. Some of them are used by the compiler (e.g.
-;;; dolist), some not at all (e.g. defun).
-;;; Thus their names need not be exported.
-
-(let ()
-  ;; We enclose the macro in a LET form so that it is no longer
-  ;; a toplevel form. This solves the problem of this simple LOOP
-  ;; replacing the more complex form in loop2.lisp when evalmacros.lisp
-  ;; gets compiled.
-(defmacro loop (&rest body &aux (tag (gensym)))
-  "Syntax: (loop {form}*)
-Establishes a NIL block and executes FORMs repeatedly.  The loop is normally
-terminated by a non-local exit."
-  `(BLOCK NIL (TAGBODY ,tag (PROGN ,@body) (GO ,tag)))))
-
 (defmacro lambda (&rest body) `(function (lambda ,@body)))
-
-; assignment
-
-#-clasp-min
-(defmacro psetq (&rest args)
-  "Syntax: (psetq {var form}*)
-Similar to SETQ, but evaluates all FORMs first, and then assigns each value to
-the corresponding VAR.  Returns NIL."
-  (BLOCK NIL
-    (LET ((L ARGS) (FORMS NIL) (BINDINGS NIL))
-      (TAGBODY
-	 (GO bot)
-       top
-	 (TAGBODY
-	    (LET ((SYM (GENSYM)))
-	      (PUSH (LIST SYM (CADR L)) BINDINGS)
-	      (PUSH (LIST 'SETQ (CAR L) SYM) FORMS)))
-	 (SETQ L (CDDR L))
-       bot
-	 (UNLESS (ENDP L) (GO top))
-	 (RETURN-FROM NIL
-	   (PROGN
-	     (LIST* 'LET* (NREVERSE BINDINGS) (NREVERSE (CONS NIL FORMS)))))))))
 
 ;; Augmented by a compiler macro once cleavir is loaded.
 (defmacro ext:with-current-source-form ((&rest forms) &body body)
@@ -333,27 +259,6 @@ values of the last FORM.  If no FORM is given, returns NIL."
                                   ,@body)
            ,form))))
 
-(defun while-until (test body jmp-op)
-  (let ((label (gensym))
-	(exit (gensym)))
-    `(TAGBODY
-        (GO ,exit)
-      ,label
-        ,@body
-      ,exit
-	(,jmp-op ,test (GO ,label)))))
-
-(defmacro sys::while (test &body body)
-  (while-until test body 'when))
-
-(defmacro sys::until (test &body body)
-  (while-until test body 'unless))
-
-(export 'sys::until)
-
-(defun si::simple-program-error (datum &rest arguments)
-  (signal-simple-error 'simple-program-error nil datum arguments))
-
 (defmacro case (keyform &rest clauses)
   (let* ((last t)
 	 (form nil)
@@ -398,11 +303,6 @@ values of the last FORM.  If no FORM is given, returns NIL."
      (si::select-package ,(string name))
      *package*))
 
-(defun (setf ext:symbol-macro) (expander name &optional env)
-  (when env
-    (error "Non-NIL environment passed to (setf ext:symbol-macro)"))
-  (funcall #'(setf get-sysprop) expander name 'ext:symbol-macro))
-
 (defmacro define-symbol-macro (symbol expansion)
   (cond ((not (symbolp symbol))
 	 (simple-program-error "DEFINE-SYMBOL-MACRO: ~A is not a symbol"
@@ -413,51 +313,25 @@ values of the last FORM.  If no FORM is given, returns NIL."
 	(t
 	 `(progn
             (eval-when (:compile-toplevel :load-toplevel :execute)
-              (funcall #'(setf ext:symbol-macro)
-                       #'(lambda (form env)
-                           (declare (ignore form env))
-                           ',expansion)
-                       ',symbol))
-            ,@(when (and core:*current-source-pos-info*
-                      (fboundp 'make-load-form))
-                `((setf (gethash ',symbol core:*variable-source-infos*)
-                        ',core:*current-source-pos-info*)))
+              (setf (ext:symbol-macro ',symbol)
+                    #'(lambda (form env)
+                        (declare (ignore form env))
+                        ',expansion)))
+            ,@(when (ext:current-source-location)
+                `((setf (core:variable-source-info ',symbol)
+                        ',(ext:current-source-location))))
             ',symbol))))
 
 (defmacro nth-value (n expr)
   `(nth ,n (multiple-value-list ,expr)))
 
-(defun maybe-unquote (form)
-  (if (and (consp form) (eq (car form) 'quote))
-      (second form)
-      form))
+;;; These are not needed by the bytecode compiler, and it in fact ignores them,
+;;; but they are needed by clasp-cleavir.
 
-#|
-CLHS specifies that
+(defmacro cl:catch (tag &rest forms)
+  `(core:catch-function
+    ,tag (lambda () (declare (core:lambda-name catch-lambda)) (progn ,@forms))))
 
-"If a defclass form appears as a top level form, the compiler must make the class name be recognized as a valid type name in subsequent declarations (as for deftype) and be recognized as a valid class name for defmethod parameter specializers and for use as the :metaclass option of a subsequent defclass. The compiler must make the class definition available to be returned by find-class when its environment argument is a value received as the environment parameter of a macro."
-
-Our DEFMETHOD and :metaclass do not need any compile time info. We do want to know what classes are classes for the TYPEP compiler macro.
-
-The CLHS's last requirement about find-class is a problem. We can't fully make classes at compile time. There might be methods on validate-superclass, ensure-class-using-class, *-slot-definition-class, etc., without which a class definition will be invalid, and which won't necessarily be defined at compile time. I am writing this comment because of such a problem with validate-superclass in a real library (bug #736).
-
-Partway making a class probably isn't valid either. We definitely can't make an actual instance of any specified metaclass, or actual slot definitions, for the above reasons, etc, etc.
-
-So we just ignore the CLHS requirement here and use a CLASS-INFO mechanism. This is a function that returns compile-time information about a class. A toplevel DEFCLASS form will, at compile time, register the class in the class-info table.
-
-Right now the only such information is that it exists. In the future I'd like to include real information (e.g. unparsed class options or slot definitions) for use in optimization or to the user.
-
-(This is early on here because bootstrapping sucks)
-|#
-
-(defvar *class-infos* (make-hash-table :test #'eq :thread-safe t))
-
-(defun class-info (name &optional env)
-  (or (find-class name nil env)
-      (values (gethash name *class-infos*))))
-
-(defun (setf class-info) (value name &optional env)
-  (declare (ignore env))
-  (if (null value)
-      (progn (remhash name *class-infos*) value)
-      (funcall #'(setf gethash) value name *class-infos*)))
+(defmacro cl:throw (tag result-form)
+  `(core:throw-function
+    ,tag (lambda () (declare (core:lambda-name throw-lambda)) (progn ,result-form))))

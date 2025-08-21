@@ -15,55 +15,26 @@
 
 (in-package "SYSTEM")
 
-(eval-when (:compile-toplevel :execute)
-  (defun binary-search (f min max)
-    (do ((new (/ (+ min max) 2) (/ (+ min max) 2)))
-        ((>= min max)
-         max)
-      (if (funcall f new)
-          (if (= new max)
-              (return max)
-              (setq max new))
-          (if (= new min)
-              (return max)
-              (setq min new)))))
-  (defun epsilon+ (x)
-    (/= (float 1 x) (+ (float 1 x) x)))
-  (defun epsilon- (x)
-    (/= (float 1 x) (- (float 1 x) x))))
+(defmacro ext::with-float-traps-masked (traps &body body)
+  (let ((previous (gensym "PREVIOUS"))
+        (mask (reduce (lambda (bits trap)
+                        (logior bits
+                                (ecase trap
+                                  (:underflow core:+fe-underflow+)
+                                  (:overflow core:+fe-overflow+)
+                                  (:invalid core:+fe-invalid+)
+                                  (:inexact core:+fe-inexact+)
+                                  (:divide-by-zero core:+fe-divbyzero+)
+                                  (:denormalized-operand 0))))
+                      traps
+                      :initial-value 0)))
+    `(let ((,previous (core:fe-disable-except ,mask)))
+       (unwind-protect
+            (progn ,@body)
+         (core:fe-restore-except ,previous)))))
 
-(defconstant short-float-epsilon
-  #.(binary-search #'epsilon+ (coerce 0 'short-float) (coerce 1 'short-float))
-  "The smallest postive short-float E that satisfies
-	(not (= (float 1 E) (+ (float 1 E) E)))")
-(defconstant single-float-epsilon
-  #.(binary-search #'epsilon+ (coerce 0 'single-float) (coerce 1 'single-float))
-  "The smallest postive single-float E that satisfies
-	(not (= (float 1 E) (+ (float 1 E) E)))")
-(defconstant double-float-epsilon
-  #.(binary-search #'epsilon+ (coerce 0 'double-float) (coerce 1 'double-float))
-  "The smallest postive double-float E that satisfies
-	(not (= (float 1 E) (+ (float 1 E) E)))")
-(defconstant long-float-epsilon
-  #.(binary-search #'epsilon+ (coerce 0 'long-float) (coerce 1 'long-float))
-  "The smallest postive long-float E that satisfies
-	(not (= (float 1 E) (+ (float 1 E) E)))")
-(defconstant short-float-negative-epsilon
-  #.(binary-search #'epsilon- (coerce 0 'short-float) (coerce 1 'short-float))
-  "The smallest positive short-float E that satisfies
-	(not (= (float 1 E) (- (float 1 E) E)))")
-(defconstant single-float-negative-epsilon
-  #.(binary-search #'epsilon- (coerce 0 'single-float) (coerce 1 'single-float))
-  "The smallest positive single-float E that satisfies
-	(not (= (float 1 E) (- (float 1 E) E)))")
-(defconstant double-float-negative-epsilon
-  #.(binary-search #'epsilon- (coerce 0 'double-float) (coerce 1 'double-float))
-  "The smallest positive double-float E that satisfies
-	(not (= (float 1 E) (- (float 1 E) E)))")
-(defconstant long-float-negative-epsilon
-  #.(binary-search #'epsilon- (coerce 0 'long-float) (coerce 1 'long-float))
-  "The smallest positive long-float E that satisfies
-	(not (= (float 1 E) (- (float 1 E) E)))")
+(defun 1- (num) (- num 1))
+(defun 1+ (num) (+ num 1))
 
 (defun isqrt (i)
   "Args: (integer)
@@ -102,43 +73,37 @@ Returns a complex number whose realpart and imagpart are the values of (COS
 THETA) and (SIN THETA) respectively."
   (complex (cos theta) (sin theta)))
 
-;;; this is defined in numbers.h
-#+(or)
 (defun asin (x)
   "Args: (number)
 Returns the arc sine of NUMBER."
-  (if #+clasp-min t #-clasp-min (complexp x)
+  (if (complexp x)
       (complex-asin x)
-      #-clasp-min
-      (let* ((x (float x))
-	     (xr (float x 1l0)))
-	      (declare (long-float xr))
-	      (if (and (<= -1.0 xr) (<= xr 1.0))
-	          (float (core:num-op-asin xr) x)
-	          (complex-asin x)))))
+      (let* ((x (float x)) ; used to coerce to float below
+             (xr (float x 1l0)))
+	(declare (long-float xr))
+	(if (and (<= -1l0 xr) (<= xr 1l0))
+	    (float (core:num-op-asin xr) x)
+	    (complex-asin x)))))
 
 ;; Ported from CMUCL
 (defun complex-asin (z)
   (declare (number z))
   (let ((sqrt-1-z (sqrt (- 1 z)))
-	      (sqrt-1+z (sqrt (+ 1 z))))
+	(sqrt-1+z (sqrt (+ 1 z))))
     (complex (atan (realpart z) (realpart (* sqrt-1-z sqrt-1+z)))
-	           (asinh (imagpart (* (conjugate sqrt-1-z)
-				                         sqrt-1+z))))))
+	     (asinh (imagpart (* (conjugate sqrt-1-z)
+				 sqrt-1+z))))))
 
-;;; this is defined in numbers.h
-#+(or)
 (defun acos (x)
   "Args: (number)
 Returns the arc cosine of NUMBER."
-  (if #+clasp-min t #-clasp-min (complexp x)
+  (if (complexp x)
       (complex-acos x)
-      #-clasp-min
       (let* ((x (float x))
-	     (xr (float x 1l0)))
+             (xr (float x 1l0)))
 	(declare (long-float xr))
-	(if (and (<= -1.0 xr) (<= xr 1.0))
-	    (float (core:num-op-acos xr) (float x))
+	(if (and (<= -1l0 xr) (<= xr 1l0))
+	    (float (core:num-op-acos xr) x)
 	    (complex-acos x)))))
 
 ;; Ported from CMUCL
@@ -155,27 +120,25 @@ Returns the arc cosine of NUMBER."
   "Args: (number)
 Returns the hyperbolic arc sine of NUMBER."
   ;(log (+ x (sqrt (+ 1.0 (* x x)))))
-  (if #+clasp-min t #-clasp-min (complexp x)
+  (if (complexp x)
       (let* ((iz (complex (- (imagpart x)) (realpart x)))
 	     (result (complex-asin iz)))
 	(complex (imagpart result)
 		 (- (realpart result))))
-      #-clasp-min
-      (float (core:num-op-asinh x) (float x))))
+      (float (core:num-op-asinh (float x 1l0)) (float x))))
 
 ;; Ported from CMUCL
 (defun acosh (x)
   "Args: (number)
 Returns the hyperbolic arc cosine of NUMBER."
   ;(log (+ x (sqrt (* (1- x) (1+ x)))))
-  (if #+clasp-min t #-clasp-min (complexp x)
+  (if (complexp x)
       (complex-acosh x)
-      #-clasp-min
       (let* ((x (float x))
 	     (xr (float x 1d0)))
 	(declare (double-float xr))
-	(if (<= 1.0 xr)
-	    (float (core:num-op-acosh xr) (float x))
+	(if (<= 1l0 xr)
+	    (float (core:num-op-acosh xr) x)
 	    (complex-acosh x)))))
 
 (defun complex-acosh (z)
@@ -190,14 +153,13 @@ Returns the hyperbolic arc cosine of NUMBER."
   "Args: (number)
 Returns the hyperbolic arc tangent of NUMBER."
   ;(/ (- (log (1+ x)) (log (- 1 x))) 2)
-  (if #+clasp-min t #-clasp-min (complexp x)
+  (if (complexp x)
       (complex-atanh x)
-      #-clasp-min
       (let* ((x (float x))
-	     (xr (float x 1d0)))
-	(declare (double-float xr))
-	(if (and (<= -1.0 xr) (<= xr 1.0))
-	    (float (core:num-op-atanh xr) (float x))
+	     (xr (float x 1l0)))
+	(declare (long-float xr))
+	(if (and (<= -1l0 xr) (<= xr 1l0))
+	    (float (core:num-op-atanh xr) x)
 	    (complex-atanh x)))))
 
 (defun complex-atanh (z)

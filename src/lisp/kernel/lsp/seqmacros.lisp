@@ -269,3 +269,25 @@
              ((not (seq-iterator-list-pop ,elt-list ,%sequences ,%iterators))
               ,@(and output (list output)))
            ,@body)))))
+
+;;; C++ iterators.
+;;; These are not true sequences even though we have the sequences extension. FIXME
+(in-package :ext)
+
+(defmacro do-c++-iterator ((i iterator &optional result) &rest body)
+  (let ((cur (gensym)) (begin (gensym)) (end (gensym)))
+    `(multiple-value-bind (,begin ,end)
+         ,iterator
+       (do* ((,cur ,begin (core:iterator-step ,cur))
+             (,i (core:iterator-unsafe-element ,cur) (core:iterator-unsafe-element ,cur)))
+            ((core:iterator= ,cur ,end)
+             (let ((,i nil))
+               (declare (ignorable ,i))
+               ,result))
+         ,@body))))
+
+(defmacro map-c++-iterator (code iterator)
+  (let ((val (gensym)))
+    `(progn
+       (do-c++-iterator (,val ,iterator) (funcall ,code ,val))
+       nil)))

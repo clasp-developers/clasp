@@ -10,20 +10,8 @@
 ;;;;
 ;;;;    See file '../Copyright' for full details.
 
-;;;; clasp - changes approved May1 2013
+(in-package "CLOS")
 
-
-#-clasp
-(defpackage "CLOS"
-  (:use "CL" "EXT")
-  (:import-from "SI" "UNBOUND" "GET-SYSPROP" "PUT-SYSPROP" "REM-SYSPROP"
-		"SIMPLE-PROGRAM-ERROR"))
-
-
-#+clasp (in-package "CLOS")
-;;;#+clasp (use-package '(:CORE) :clos)
-
-#+clasp
 (export '(WITH-SLOTS WITH-ACCESSORS UPDATE-INSTANCE-FOR-REDEFINED-CLASS
 	  UPDATE-INSTANCE-FOR-DIFFERENT-CLASS STANDARD-METHOD
 	  STANDARD SLOT-UNBOUND SLOT-MISSING SLOT-MAKUNBOUND
@@ -36,13 +24,11 @@
 	  CHANGE-CLASS CALL-METHOD ALLOCATE-INSTANCE
 	  ADD-METHOD ))
 
-#+clasp
 (export '(metaobject
           specializer
           UPDATE-DEPENDENT 
           SLOT-DEFINITION-LOCATION 
           CLASS-PRECEDENCE-LIST 
-          +THE-FUNCALLABLE-STANDARD-CLASS+ 
           CLASS-SLOTS 
           SPECIALIZER 
           MAKE-METHOD-LAMBDA 
@@ -53,7 +39,6 @@
           MAP-DEPENDENTS 
           STANDARD-READER-METHOD 
           SLOT-DEFINITION-TYPE 
-          STD-COMPUTE-EFFECTIVE-METHOD 
           GENERIC-FUNCTION-ARGUMENT-PRECEDENCE-ORDER 
           EQL-SPECIALIZER 
           COMPUTE-EFFECTIVE-SLOT-DEFINITION 
@@ -63,13 +48,10 @@
           ENSURE-GENERIC-FUNCTION-USING-CLASS 
           SLOT-DEFINITION-INITARGS 
           METAOBJECT 
-          NEED-TO-MAKE-LOAD-FORM-P 
           COMPUTE-SLOTS 
-          STD-COMPUTE-APPLICABLE-METHODS-USING-CLASSES 
           GENERIC-FUNCTION-METHOD-COMBINATION 
           CLASS-PROTOTYPE 
           FUNCALLABLE-STANDARD-CLASS 
-          STD-COMPUTE-APPLICABLE-METHODS 
           SLOT-DEFINITION 
           SET-FUNCALLABLE-INSTANCE-FUNCTION 
           ACCESSOR-METHOD-SLOT-DEFINITION 
@@ -86,7 +68,6 @@
           COMPUTE-DEFAULT-INITARGS 
           FUNCALLABLE-STANDARD-INSTANCE-ACCESS 
           READER-METHOD-CLASS 
-          +THE-STD-CLASS+ 
           SPECIALIZER-DIRECT-METHODS 
           REMOVE-DEPENDENT 
           DIRECT-SLOT-DEFINITION 
@@ -111,7 +92,6 @@
           SLOT-DEFINITION-READERS 
           ADD-DEPENDENT 
           EXTRACT-LAMBDA-LIST 
-          +THE-CLASS+ 
           COMPUTE-CLASS-PRECEDENCE-LIST 
           DIRECT-SLOT-DEFINITION-CLASS 
           EFFECTIVE-SLOT-DEFINITION 
@@ -122,7 +102,6 @@
           STANDARD-INSTANCE-ACCESS 
           COMPUTE-APPLICABLE-METHODS-USING-CLASSES 
           GENERIC-FUNCTION-METHOD-CLASS 
-          +THE-STANDARD-CLASS+ 
           FORWARD-REFERENCED-CLASS 
           SLOT-BOUNDP-USING-CLASS 
           INTERN-EQL-SPECIALIZER 
@@ -131,25 +110,23 @@
           DOCSTRING 
           STANDARD-SLOT-DEFINITION 
           REMOVE-DIRECT-METHOD 
-          +THE-T-CLASS+ 
           CLASS-DIRECT-DEFAULT-INITARGS 
           SLOT-DEFINITION-INITFUNCTION 
           SLOT-DEFINITION-INITFORM
           class-source-position)
         )
-#+clasp
+
 (export '(satiate
           satiate-initialization
           apply-method
           ))
 
-#+clasp
 (export '(no-applicable-method-error))
 
-#+clasp
-(export '(disassemble-discriminator))
+(export '(disassemble-discriminator
+          compilediscriminating-function ; also exported by runtime
+          compile-all-generic-functions))
 
-#+clasp
 (export '(start-profiling stop-profiling
           report-profiling profiling-data
           with-profiling))

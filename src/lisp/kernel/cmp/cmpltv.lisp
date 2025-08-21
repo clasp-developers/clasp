@@ -605,9 +605,9 @@
            :prototype value
            :name (ensure-constant (symbol-name value)))))))
 
-(defmethod add-constant ((value (eql nil)))
+(defmethod add-constant ((value (eql 'nil)))
   (add-creator value (make-instance 'singleton-creator :prototype value)))
-(defmethod add-constant ((value (eql t)))
+(defmethod add-constant ((value (eql 't)))
   (add-creator value (make-instance 'singleton-creator :prototype value)))
 
 (defmethod add-constant ((value package))
@@ -699,7 +699,7 @@
 ;;; function with all constant, #', or dumpable arguments (and not too many).
 ;;; Note that allowing these recursively dumpable forms may result in slightly
 ;;; subpar outcomes - for example we're not smart enough to turn the (LIST)
-;;; arguments that appear in ENSURE-CLASS calls into constant NILs.
+;;; arguments that appear in LOAD-DEFCLASS calls into constant NILs.
 ;;; But I (Bike) believe that's offset by the value of not making the loader
 ;;; make and run a one-time-use bytecode function.
 (defun directly-creatable-form-p (form &optional env)
@@ -1968,7 +1968,7 @@
     ;; Read and compile the forms.
     (loop with eof = (gensym "EOF")
           with *compile-time-too* = nil
-          with eclector.reader:*client* = (make-instance 'cmp::clasp-tracking-elector-client)
+          with eclector.reader:*client* = (make-instance 'cmp::clasp-tracking-eclector-client)
           with cfsdp = (core:file-scope cmp::*compile-file-source-debug-pathname*)
           with cfsdl = cmp::*compile-file-source-debug-lineno*
           with cfsdo = cmp::*compile-file-source-debug-offset*

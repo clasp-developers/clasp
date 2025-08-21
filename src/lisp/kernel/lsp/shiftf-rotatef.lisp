@@ -1,4 +1,4 @@
-(in-package :cl)
+(in-package #:core)
 
 
 ;;; Macro SHIFTF.

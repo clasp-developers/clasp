@@ -11,9 +11,6 @@
 ;;;;
 ;;;;   https://common-lisp.net/project/cdr/document/5/index.html
 
-;;;(setq *echo-repl-read* t)
-
-
 (pushnew :cdr-5 *features*)
 
 (in-package "EXT")

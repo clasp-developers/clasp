@@ -25,11 +25,6 @@
 
 (in-package "EXT")
 
-#+(or) ;;#+(or cclasp eclasp)
-(eval-when (:compile-toplevel :execute)
-  (format t "~%~%~%~% Turning on cmp::*compile-debug-dump-module* ~%~%~%")
-  (setq cmp::*compile-debug-dump-module* t))
-
 (defvar *setf-expanders* (make-hash-table :test #'eq :thread-safe t))
 
 (defun setf-expander (symbol &optional environment)
@@ -39,16 +34,27 @@
 (defun (setf setf-expander) (expander symbol &optional environment)
   (unless (null environment)
     (error "(setf setf-expander) was passed a non-null environment"))
-  (funcall #'(setf gethash) expander symbol *setf-expanders*))
-(export 'setf-expander)
+  (setf (gethash symbol *setf-expanders*) expander))
 
 (in-package "SYSTEM")
+
+;; used in setf expansions below
+(defun parse-bytespec (bytespec)
+  (when (and (consp bytespec)
+             (eql (car bytespec) 'byte)
+             (consp (cdr bytespec))
+             (consp (cddr bytespec))
+             (null (cdddr bytespec)))
+    (values (cadr bytespec) (caddr bytespec))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; DEFSETF
 ;;;
 ;;; Actually kind of complicated to implement.
+;;; We do create this macro in the builder environment, because the definition
+;;; in common-macro-definitions has an environmental contamination problem
+;;; due to the nested backquote.
 
 ;;; As I understand CLHS 3.4.7, a defsetf lambda list is an ordinary lambda list,
 ;;; except it can have &environment [name] on the end and no &aux.
@@ -56,6 +62,7 @@
 ;;; the environment variable if there was one.
 ;;; FIXME: This is not very error-tolerant. In particular we don't check for &aux.
 ;;; But fixing it will require a more robust lambda list system.
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun extract-defsetf-lambda-list (lambda-list)
   (ext:with-current-source-form (lambda-list)
     (if (or (null lambda-list) (null (rest lambda-list))) ; trivial case
@@ -64,6 +71,7 @@
           (if (eq (first last-two) '&environment)
               (values (ldiff lambda-list last-two) (second last-two))
               (values lambda-list nil))))))
+) ; eval-when
 
 (defmacro defsetf (access-fn &rest rest)
   "Syntax: (defsetf symbol update-fun [doc])
@@ -115,17 +123,16 @@ SETF doc and can be retrieved by (documentation 'SYMBOL 'setf)."
       (let ((real-env-var (or env-var (gensym "ENV")))
             (wholesym (gensym "WHOLE")))
         `(eval-when (:compile-toplevel :load-toplevel :execute)
-           (funcall #'(setf ext:setf-expander)
-                    (lambda (,wholesym ,real-env-var)
-                      ,@(when doc (list doc))
-                      (declare (core:lambda-name ,access-fn)
-                               ,@(unless env-var `((ignore ,real-env-var))))
-                      (let ((,tempsvar (mapcar (lambda (f) (declare (ignore f)) (gensym))
-                                               (rest ,wholesym)))
-                            (,storesvar (list ,@(make-list nstores :initial-element '(gensym "STORE")))))
-                        (values ,tempsvar (rest ,wholesym) ,storesvar ,store-form-maker
-                                (list* ',access-fn ,tempsvar))))
-                    ',access-fn)
+           (setf (ext:setf-expander ',access-fn)
+                 (lambda (,wholesym ,real-env-var)
+                   ,@(when doc (list doc))
+                   (declare (core:lambda-name (ext:setf-expander ,access-fn))
+                            ,@(unless env-var `((ignore ,real-env-var))))
+                   (let ((,tempsvar (mapcar (lambda (f) (declare (ignore f)) (gensym))
+                                            (rest ,wholesym)))
+                         (,storesvar (list ,@(make-list nstores :initial-element '(gensym "STORE")))))
+                     (values ,tempsvar (rest ,wholesym) ,storesvar ,store-form-maker
+                             (list* ',access-fn ,tempsvar)))))
            ',access-fn)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -155,9 +162,8 @@ expanded into
 The doc-string DOC, if supplied, is saved as a SETF doc and can be retrieved
 by (DOCUMENTATION 'SYMBOL 'SETF)."
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (funcall #'(setf ext:setf-expander)
-              ,(ext:parse-define-setf-expander access-fn lambda-list body env)
-              ',access-fn)
+     (setf (ext:setf-expander ',access-fn)
+           ,(ext:parse-define-setf-expander access-fn lambda-list body env))
      ',access-fn))
 
 (defun get-setf-expansion (place &optional env)
@@ -380,12 +386,13 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
       (get-setf-expansion place env)
     (let* ((itemp (gensym "itemp")) (store (gensym "store")) (def (gensym "def")))
       (values `(,@vars ,itemp ,@(if default-p (list def) nil))
-              `(,@vals ,indicator ,@(and default-p (list default)))
+              `(,@vals ,indicator ,@(if default-p (list default) nil))
               `(,store)
               `(let ((,(car stores) (sys:put-f ,access-form ,store ,itemp)))
+                 ,@(if default-p (list def) nil) ; prevent unused variable warning
                  ,store-form
                  ,store)
-              `(getf ,access-form ,itemp ,default)))))
+              `(getf ,access-form ,itemp ,@(if default-p (list def) nil))))))
 
 (defsetf subseq (sequence1 start1 &optional end1)
 		(sequence2)
@@ -649,6 +656,7 @@ Similar to SETQ, but evaluates all FORMs first, and then assigns each value to
 the corresponding VAR.  Returns NIL."
     (expand args env 'psetq 'setq)))
 
+;;; Defined in build because common-macro-definitions lacks it.
 ;;; DEFINE-MODIFY-MACRO macro, by Bruno Haible.
 (defmacro define-modify-macro (name lambdalist function &optional docstring)
   "Syntax: (define-modify-macro symbol lambda-list function-name [doc])
@@ -751,12 +759,6 @@ makes it the new value of PLACE.  Returns the new value of PLACE."
 		    (append vars stores)
 		    (append vals (list (list 'cons item access-form))))
        ,store-form)))
-
-#+(or)
-(eval-when (:compile-toplevel :execute)
-  (gctools:wait-for-user-signal "Waiting")
-  (setq *echo-repl-read* t))
-
 
 (defmacro pushnew (&environment env item place
                    &rest rest &key test test-not key)

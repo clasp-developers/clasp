@@ -67,7 +67,7 @@
       (let ((record (rem-record-field (gethash object dict)
                                       key sub-key)))
 	(if record
-            (funcall #'(setf gethash) record object dict)
+            (setf (gethash object dict) record)
             (remhash object dict))))))
 
 (defun get-annotation (object key &optional (sub-key :all))
@@ -84,7 +84,6 @@
                     (push (cons (cdr key-sub-key) (cdr i)) output))))
               (if (setq output (record-field record key sub-key))
                   (return output))))))))
-(export 'get-annotation)
 
 ;;  "Args: (filespec &optional (merge nil))
 ;;Saves the current hash table for documentation strings to the specificed file.
@@ -100,7 +99,7 @@
 
 (defun get-documentation (object doc-type)
   (when (functionp object)
-    (when (null (setq object (ext:compiled-function-name object)))
+    (when (null (setq object (core:function-name object)))
       (return-from get-documentation nil)))
   (if (and object (listp object) (si::valid-function-name-p object))
       (get-annotation (second object) 'setf-documentation doc-type)

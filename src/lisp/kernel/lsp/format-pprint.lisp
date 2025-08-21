@@ -69,7 +69,7 @@
     (write-string spaces stream :end n)))
 
 (defun format-relative-tab (stream colrel colinc)
-  (if (#-(or ecl clasp) pp:pretty-stream-p #+(or ecl clasp) sys::pretty-stream-p stream)
+  (if (sys::pretty-stream-p stream)
       (pprint-tab :line-relative colrel colinc stream)
       (let* ((cur (stream-output-column stream))
              (spaces (if (and cur (plusp colinc))
@@ -78,7 +78,7 @@
         (output-spaces stream spaces))))
 
 (defun format-absolute-tab (stream colnum colinc)
-  (if (#-(or ecl clasp) pp:pretty-stream-p #+(or ecl clasp) sys::pretty-stream-p stream)
+  (if (sys::pretty-stream-p stream)
       (pprint-tab :line colnum colinc stream)
       (let ((cur (stream-output-column stream)))
         (cond ((null cur)
@@ -210,25 +210,22 @@
     remaining))
 
 (defun parse-format-justification (directives)
-  (let ((first-semi nil)
-        (close nil)
-        (remaining directives))
-    (collect ((segments))
-      (loop
-        (let ((close-or-semi (find-directive remaining #\> t)))
-          (unless close-or-semi
-            (error 'format-error
-                   :complaint "No corresponding close bracket."))
-          (let ((posn (position close-or-semi remaining)))
-            (segments (subseq remaining 0 posn))
-            (setf remaining (nthcdr (1+ posn) remaining)))
-          (when (char= (format-directive-character close-or-semi)
-                       #\>)
-            (setf close close-or-semi)
-            (return))
-          (unless first-semi
-            (setf first-semi close-or-semi))))
-      (values (segments) first-semi close remaining))))
+  (loop with first-semi = nil
+        with close = nil
+        with remaining = directives
+        for close-or-semi = (find-directive remaining #\> t)
+        unless close-or-semi
+          do (error 'format-error
+                    :complaint "No corresponding close bracket.")
+        collect (let ((posn (position close-or-semi remaining)))
+                  (prog1 (subseq remaining 0 posn)
+                    (setf remaining (nthcdr (1+ posn) remaining))))
+          into segments
+        when (char= (format-directive-character close-or-semi) #\>)
+          do (setf close close-or-semi) (loop-finish)
+        unless first-semi
+          do (setf first-semi close-or-semi)
+        finally (return (values segments first-semi close remaining))))
 
 (defun expand-format-justification (segments colonp atsignp first-semi params)
   (let ((newline-segment-p
@@ -426,26 +423,23 @@
     (t nil)))
 
 (defun add-fill-style-newlines-aux (literal string offset)
-  (let ((end (length literal))
-        (posn 0))
-    (collect ((results))
-      (loop
-        (let ((blank (position #\space literal :start posn)))
-          (when (null blank)
-            (results (subseq literal posn))
-            (return))
-          (let ((non-blank (or (position #\space literal :start blank
-                                         :test #'char/=)
-                               end)))
-            (results (subseq literal posn non-blank))
-            (results (make-format-directive
-                      :string string :character #\_
-                      :start (+ offset non-blank) :end (+ offset non-blank)
-                      :colonp t :atsignp nil :params nil))
-            (setf posn non-blank))
-          (when (= posn end)
-            (return))))
-      (results))))
+  (loop with end = (length literal)
+        for posn = 0 then non-blank
+        for blank = (position #\space literal :start posn)
+        for non-blank = (if blank
+                            (or (position #\space literal :start blank
+                                                          :test #'char/=)
+                              end)
+                            nil)
+        when (null blank)
+          collect (subseq literal posn)
+          and do (loop-finish)
+        until (= posn end)
+        collect (subseq literal posn non-blank)
+        collect (make-format-directive
+                 :string string :character #\_
+                 :start (+ offset non-blank) :end (+ offset non-blank)
+                 :colonp t :atsignp nil :params nil)))
 
 (defun expand-format-logical-block (prefix per-line-p insides suffix atsignp)
   `(let ((arg ,(if atsignp 'args (expand-next-arg))))
@@ -543,7 +537,7 @@
   (write-object-with-circle
    array stream
    #'(lambda (array stream)
-  (funcall (formatter "#~DA") stream (array-rank array))
+  (format stream "#~DA" (array-rank array))
   (pprint-array-contents stream array))))
 
 (defun pprint-raw-array (stream array)
@@ -616,23 +610,20 @@
 
 (defun pprint-lambda (stream list &rest noise)
   (declare (ignore noise))
-  (funcall (formatter
-	    "~:<~^~W~^~3I ~:_~/SI:PPRINT-LAMBDA-LIST/~1I~@{ ~_~W~}~:>")
-	   stream list))
+  (format stream "~:<~^~W~^~3I ~:_~/SI:PPRINT-LAMBDA-LIST/~1I~@{ ~_~W~}~:>" list))
 
 (defun pprint-block (stream list &rest noise)
   (declare (ignore noise))
-  (funcall (formatter "~:<~^~W~^~3I ~:_~W~1I~@{ ~_~W~}~:>") stream list))
+  (format stream "~:<~^~W~^~3I ~:_~W~1I~@{ ~_~W~}~:>" list))
 
 (defun pprint-flet (stream list &rest noise)
   (declare (ignore noise))
   (if (and (consp list)
            (consp (cdr list))
            (not (null (cddr list))))
-      (funcall (formatter
-	        "~:<~^~W~^ ~@_~:<~@{~:<~^~W~^~3I ~:_~/SI:PPRINT-LAMBDA-LIST/~1I~:@_~@{~W~^ ~_~}~:>~^ ~_~}~:>~1I~@:_~@{~W~^ ~_~}~:>")
-	       stream
-	       list)
+      (format stream
+	      "~:<~^~W~^ ~@_~:<~@{~:<~^~W~^~3I ~:_~/SI:PPRINT-LAMBDA-LIST/~1I~:@_~@{~W~^ ~_~}~:>~^ ~_~}~:>~1I~@:_~@{~W~^ ~_~}~:>"
+              list)
       ;; Things like (labels foo) function names.
       (pprint-logical-block (stream list :prefix "(" :suffix ")")
         (pprint-exit-if-list-exhausted)
@@ -643,18 +634,18 @@
 
 (defun pprint-let (stream list &rest noise)
   (declare (ignore noise))
-  (funcall (formatter "~:<~^~W~^ ~@_~:<~@{~:<~^~W~@{ ~_~W~}~:>~^ ~_~}~:>~1I~:@_~@{~W~^ ~_~}~:>")
-	   stream
-	   list))
+  (format stream
+          "~:<~^~W~^ ~@_~:<~@{~:<~^~W~@{ ~_~W~}~:>~^ ~_~}~:>~1I~:@_~@{~W~^ ~_~}~:>"
+          list))
 
 (defun pprint-progn (stream list &rest noise)
   (declare (ignore noise))
-  (funcall (formatter "~:<~^~W~@{ ~_~W~}~:>") stream list))
+  (format stream "~:<~^~W~@{ ~_~W~}~:>" list))
 
 (defun pprint-progv (stream list &rest noise)
   (declare (ignore noise))
-  (funcall (formatter "~:<~^~W~^~3I ~_~W~^ ~_~W~^~1I~@{ ~_~W~}~:>")
-	   stream list))
+  (format stream "~:<~^~W~^~3I ~_~W~^ ~_~W~^~1I~@{ ~_~W~}~:>"
+	  list))
 
 (defun pprint-quote (stream list &rest noise)
   (declare (ignore noise))
@@ -721,7 +712,6 @@
 	  (pprint-newline :linear stream)
 	  (write-object (pprint-pop) stream)))))
 
-;;#+clasp-min
 (defmacro pprint-tagbody-guts (stream)
   `(loop
      (pprint-exit-if-list-exhausted)
@@ -742,23 +732,21 @@
 
 (defun pprint-case (stream list &rest noise)
   (declare (ignore noise))
-  (funcall (formatter
-	    "~:<~^~W~^ ~3I~:_~W~1I~@{ ~_~:<~^~:/SI:PPRINT-FILL/~^~@{ ~_~W~}~:>~}~:>")
-	   stream
-	   list))
+  (format stream
+	  "~:<~^~W~^ ~3I~:_~W~1I~@{ ~_~:<~^~:/SI:PPRINT-FILL/~^~@{ ~_~W~}~:>~}~:>"
+	  list))
 
 (defun pprint-defun (stream list &rest noise)
   (declare (ignore noise))
-  (funcall (formatter
-	    "~:<~^~W~^ ~@_~:I~W~^ ~:_~/SI:PPRINT-LAMBDA-LIST/~1I~@{ ~_~W~}~:>")
-	   stream
-	   list))
+  (format stream
+	  "~:<~^~W~^ ~@_~:I~W~^ ~:_~/SI:PPRINT-LAMBDA-LIST/~1I~@{ ~_~W~}~:>"
+          list))
 
 (defun pprint-destructuring-bind (stream list &rest noise)
   (declare (ignore noise))
-  (funcall (formatter
-	    "~:<~^~W~^~3I ~_~:/SI:PPRINT-LAMBDA-LIST/~^ ~_~W~^~1I~@{ ~_~W~}~:>")
-	   stream list))
+  (format stream
+	  "~:<~^~W~^~3I ~_~:/SI:PPRINT-LAMBDA-LIST/~^ ~_~W~^~1I~@{ ~_~W~}~:>"
+          list))
 
 (defun pprint-do (stream list &rest noise)
   (declare (ignore noise))
@@ -768,9 +756,8 @@
     (pprint-exit-if-list-exhausted)
     (write-char #\space stream)
     (pprint-indent :current 0 stream)
-    (funcall (formatter "~:<~@{~:<~^~W~^ ~@_~:I~W~@{ ~_~W~}~:>~^~:@_~}~:>")
-	     stream
-	     (pprint-pop))
+    (format stream "~:<~@{~:<~^~W~^ ~@_~:I~W~@{ ~_~W~}~:>~^~:@_~}~:>"
+	    (pprint-pop))
     (pprint-exit-if-list-exhausted)
     (write-char #\space stream)
     (pprint-newline :linear stream)
@@ -786,17 +773,15 @@
     (pprint-indent :block 3 stream)
     (write-char #\space stream)
     (pprint-newline :fill stream)
-    (funcall (formatter "~:<~^~W~^ ~:_~:I~W~@{ ~_~W~}~:>")
-	     stream
-	     (pprint-pop))
+    (format stream "~:<~^~W~^ ~:_~:I~W~@{ ~_~W~}~:>"
+	    (pprint-pop))
     (pprint-tagbody-guts stream)))
 
 (defun pprint-typecase (stream list &rest noise)
   (declare (ignore noise))
-  (funcall (formatter
-	    "~:<~^~W~^ ~3I~:_~W~1I~@{ ~_~:<~^~W~^~@{ ~_~W~}~:>~}~:>")
-	   stream
-	   list))
+  (format stream
+	  "~:<~^~W~^ ~3I~:_~W~1I~@{ ~_~:<~^~W~^~@{ ~_~W~}~:>~}~:>"
+	  list))
 
 (defun pprint-prog (stream list &rest noise)
   (declare (ignore noise))
@@ -811,99 +796,10 @@
 
 (defun pprint-function-call (stream list &rest noise)
   (declare (ignore noise))
-  (funcall (formatter "~:<~^~W~^ ~:_~:I~@{~W~^ ~_~}~:>")
-	   stream
-	   list))
+  (format stream "~:<~^~W~^ ~:_~:I~@{~W~^ ~_~}~:>" list))
 
 
 ;;;; Interface seen by regular (ugly) printer and initialization routines.
-
-(eval-when (:compile-toplevel :execute)
-(defparameter +magic-forms+
-  '((lambda pprint-lambda)
-    ;; Special forms.
-    (block pprint-block)
-    (catch pprint-block)
-    (compiler-let pprint-let)
-    (eval-when pprint-block)
-    (flet pprint-flet)
-    (function pprint-quote)
-    (labels pprint-flet)
-    (let pprint-let)
-    (let* pprint-let)
-    (locally pprint-progn)
-    (macrolet pprint-flet)
-    (multiple-value-call pprint-block)
-    (multiple-value-prog1 pprint-block)
-    (progn pprint-progn)
-    (progv pprint-progv)
-    (quote pprint-quote)
-    (return-from pprint-block)
-    (setq pprint-setq)
-    (symbol-macrolet pprint-let)
-    (tagbody pprint-tagbody)
-    (throw pprint-block)
-    (unwind-protect pprint-block)
-    (core:quasiquote pprint-quote)
-    (core:unquote pprint-quote)
-    (core:unquote-splice pprint-quote)
-    (core:unquote-nsplice pprint-quote)
-    
-    ;; Macros.
-    (case pprint-case)
-    (ccase pprint-case)
-    (ctypecase pprint-typecase)
-    (defconstant pprint-block)
-    (define-modify-macro pprint-defun)
-    (define-setf-expander pprint-defun)
-    (defmacro pprint-defun)
-    (defparameter pprint-block)
-    (defsetf pprint-defun)
-    (defstruct pprint-block)
-    (deftype pprint-defun)
-    (defun pprint-defun)
-    (defvar pprint-block)
-    (destructuring-bind pprint-destructuring-bind)
-    (do pprint-do)
-    (do* pprint-do)
-    (do-all-symbols pprint-dolist)
-    (do-external-symbols pprint-dolist)
-    (do-symbols pprint-dolist)
-    (dolist pprint-dolist)
-    (dotimes pprint-dolist)
-    (ecase pprint-case)
-    (etypecase pprint-typecase)
-    #+nil (handler-bind ...)
-    #+nil (handler-case ...)
-    #+nil (loop ...)
-    (multiple-value-bind pprint-progv)
-    (multiple-value-setq pprint-block)
-    (pprint-logical-block pprint-block)
-    (print-unreadable-object pprint-block)
-    (prog pprint-prog)
-    (prog* pprint-prog)
-    (prog1 pprint-block)
-    (prog2 pprint-progv)
-    (psetf pprint-setq)
-    (psetq pprint-setq)
-    #+nil (restart-bind ...)
-    #+nil (restart-case ...)
-    (setf pprint-setq)
-    (step pprint-progn)
-    (time pprint-progn)
-    (typecase pprint-typecase)
-    (unless pprint-block)
-    (when pprint-block)
-    (with-compilation-unit pprint-block)
-    #+nil (with-condition-restarts ...)
-    (with-hash-table-iterator pprint-block)
-    (with-input-from-string pprint-block)
-    (with-open-file pprint-block)
-    (with-open-stream pprint-block)
-    (with-output-to-string pprint-block)
-    (with-package-iterator pprint-block)
-    (with-simple-restart pprint-block)
-    (with-standard-io-syntax pprint-progn))))
 
 (progn
   (let ((*print-pprint-dispatch* (make-pprint-dispatch-table)))
@@ -913,14 +809,97 @@
 			 #'pprint-function-call -1)
     (set-pprint-dispatch 'cons #'pprint-fill -2)
     ;; Cons cells with interesting things for the car.
-    (dolist (magic-form '#.+magic-forms+)
-      (set-pprint-dispatch `(cons (eql ,(first magic-form)))
-			   (symbol-function (second magic-form))))
+    (loop for (operator f)
+            in '((lambda pprint-lambda)
+                 ;; Special forms.
+                 (block pprint-block)
+                 (catch pprint-block)
+                 (compiler-let pprint-let)
+                 (eval-when pprint-block)
+                 (flet pprint-flet)
+                 (function pprint-quote)
+                 (labels pprint-flet)
+                 (let pprint-let)
+                 (let* pprint-let)
+                 (locally pprint-progn)
+                 (macrolet pprint-flet)
+                 (multiple-value-call pprint-block)
+                 (multiple-value-prog1 pprint-block)
+                 (progn pprint-progn)
+                 (progv pprint-progv)
+                 (quote pprint-quote)
+                 (return-from pprint-block)
+                 (setq pprint-setq)
+                 (symbol-macrolet pprint-let)
+                 (tagbody pprint-tagbody)
+                 (throw pprint-block)
+                 (unwind-protect pprint-block)
+                 (core:quasiquote pprint-quote)
+                 (core:unquote pprint-quote)
+                 (core:unquote-splice pprint-quote)
+                 (core:unquote-nsplice pprint-quote)
+                 
+                 ;; Macros.
+                 (case pprint-case)
+                 (ccase pprint-case)
+                 (ctypecase pprint-typecase)
+                 (defconstant pprint-block)
+                 (define-modify-macro pprint-defun)
+                 (define-setf-expander pprint-defun)
+                 (defmacro pprint-defun)
+                 (defparameter pprint-block)
+                 (defsetf pprint-defun)
+                 (defstruct pprint-block)
+                 (deftype pprint-defun)
+                 (defun pprint-defun)
+                 (defvar pprint-block)
+                 (destructuring-bind pprint-destructuring-bind)
+                 (do pprint-do)
+                 (do* pprint-do)
+                 (do-all-symbols pprint-dolist)
+                 (do-external-symbols pprint-dolist)
+                 (do-symbols pprint-dolist)
+                 (dolist pprint-dolist)
+                 (dotimes pprint-dolist)
+                 (ecase pprint-case)
+                 (etypecase pprint-typecase)
+                 #+nil (handler-bind ...)
+                 #+nil (handler-case ...)
+                 #+nil (loop ...)
+                 (multiple-value-bind pprint-progv)
+                 (multiple-value-setq pprint-block)
+                 (pprint-logical-block pprint-block)
+                 (print-unreadable-object pprint-block)
+                 (prog pprint-prog)
+                 (prog* pprint-prog)
+                 (prog1 pprint-block)
+                 (prog2 pprint-progv)
+                 (psetf pprint-setq)
+                 (psetq pprint-setq)
+                 #+nil (restart-bind ...)
+                 #+nil (restart-case ...)
+                 (setf pprint-setq)
+                 (step pprint-progn)
+                 (time pprint-progn)
+                 (typecase pprint-typecase)
+                 (unless pprint-block)
+                 (when pprint-block)
+                 (with-compilation-unit pprint-block)
+                 #+nil (with-condition-restarts ...)
+                 (with-hash-table-iterator pprint-block)
+                 (with-input-from-string pprint-block)
+                 (with-open-file pprint-block)
+                 (with-open-stream pprint-block)
+                 (with-output-to-string pprint-block)
+                 (with-package-iterator pprint-block)
+                 (with-simple-restart pprint-block)
+                 (with-standard-io-syntax pprint-progn))
+          do (set-pprint-dispatch `(cons (eql ,operator))
+			          (symbol-function f)))
     (setf *initial-pprint-dispatch* *print-pprint-dispatch*)
     )
   (setf *print-pprint-dispatch* (copy-pprint-dispatch nil)
         *standard-pprint-dispatch* *initial-pprint-dispatch*)
   (setf (pprint-dispatch-table-read-only-p *standard-pprint-dispatch*) t)
   (setf (first (cdr si::+io-syntax-progv-list+)) *standard-pprint-dispatch*)
-  #-clasp-min
   (setf *print-pretty* t))

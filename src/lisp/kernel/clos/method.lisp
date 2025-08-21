@@ -12,131 +12,14 @@
 
 (in-package "CLOS")
 
-;;; ----------------------------------------------------------------------
-
-(defparameter *method-size* 32)		; Size of methods hash tables
-
-;;; This holds fake methods created during bootstrap.
-;;; It is  an alist of:
-;;;	(method-name {method}+)
-(defparameter *early-methods* nil)
-
-;;;
-;;; This is used by combined methods to communicate the next methods to
-;;; the methods they call.
-;;;
-(defparameter *next-methods* nil)
+(defgeneric make-method-lambda (generic-function method lambda-expression environment))
+(defgeneric function-keywords (method))
 
 ;;; Add type declarations for the arguments of a METHOD. This implies
 ;;; copying the method arguments because the arguments may be modified.
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (defparameter *add-method-argument-declarations* nil)
 )
-
-;;; ----------------------------------------------------------------------
-;;; %METHOD-FUNCTIONs
-;;;
-;;; These are funcallable instances used as method functions.
-;;; The idea is we hang extra info, such as how to call the method with
-;;; our own faster convention, on the method function itself. This ensures
-;;; things don't get out of sync.
-;;; See pseudo class definition in hierarchy.lisp. Idea from SBCL. 
-
-;;; First, fast method functions: for leaf methods (i.e. methods that don't
-;;; use call-next-method or next-method-p). They are therefore just
-;;; functions, accepting the generic function's arguments. This means they
-;;; also double as effective method functions.
-
-(defun make-%method-function-fast (fmf)
-  (with-early-make-funcallable-instance +%method-function-slots+
-    (%mf (find-class '%method-function)
-         :fmf fmf)
-    (core:setf-function-name %mf 'slow-method-function)
-    (set-funcallable-instance-function
-     %mf
-     (lambda (arguments next-methods)
-       (declare (core:lambda-name slow-method-function.fmf)
-                (ignore next-methods))
-       ;; FIXME: Avoid coerce-fdesignator in apply here
-       (apply fmf arguments)))
-    %mf))
-
-(defun fast-method-function (method)
-  (let ((mf (method-function method)))
-    ;; Internal class that is never subclassed, so just
-    (and (eq (class-of mf) (find-class '%method-function))
-         (with-early-accessors (+%method-function-slots+)
-           (%mf-fast-method-function mf)))))
-
-(defun early-fast-method-function (method)
-  (with-early-accessors (+std-method-slots+
-                         +%method-function-slots+)
-    (let ((mf (method-function method)))
-      (and (eq (class-of mf) (find-class '%method-function))
-           (%mf-fast-method-function mf)))))
-
-;;; Continuation method functions (contfs) can be put in place for
-;;; anything, unless there's a user make-method-lambda method.
-;;; A contf takes one argument, the continuation, and then the arguments
-;;; of the generic function as the rest. The continuation is the effective
-;;; method function executed by call-next-method.
-;;; So it's either a closure with another contf or method-function, or a
-;;; fast method function, or a special %no-next-method-continuation.
-;;; The %no-next-method-continuation is a somewhat magical funcallable
-;;; instance with an instance function that just calls no-next-method.
-;;; But it's its own class so that next-method-p can distinguish it.
-
-(defun make-%no-next-method-continuation (method)
-  (with-early-make-funcallable-instance nil ; class has no slots.
-      (%nnmc (find-class '%no-next-method-continuation))
-    (set-funcallable-instance-function
-     %nnmc
-     (if (null method)
-         (lambda (core:&va-rest args)
-           (declare (core:lambda-name %no-next-method-continuation.slow.bad)
-                    (ignore args))
-           (error "No next method"))
-         (lambda (core:&va-rest args)
-           (declare (core:lambda-name %no-next-method-continuation.lambda))
-           (apply #'no-next-method (method-generic-function method) method args))))
-    %nnmc))
-
-(defun make-%method-function-contf (contf)
-  (with-early-make-funcallable-instance +%method-function-slots+
-    (%mf (find-class '%method-function)
-         :contf contf)
-    (core:setf-function-name %mf 'slow-method-function)
-    (set-funcallable-instance-function
-     %mf
-     (let (;; FIXME: Method not available yet :(
-           (nnmc (make-%no-next-method-continuation nil)))
-       (lambda (.method-args. next-methods)
-         (declare (core:lambda-name slow-method-function.contf))
-         ;; FIXME: Avoid coerce-fdesignator in apply here
-         (apply contf
-                (if (null next-methods)
-                    nnmc
-                    (lambda (&rest .method-args.)
-                      (declare (core:lambda-name slot-method-function.contf.lambda))
-                      (funcall (method-function (first next-methods))
-                               .method-args.
-                               (rest next-methods))))
-                .method-args.))))
-    %mf))
-
-(defun contf-method-function (method)
-  (let ((mf (method-function method)))
-    ;; Internal class that is never subclassed, so just
-    (and (eq (class-of mf) (find-class '%method-function))
-         (with-early-accessors (+%method-function-slots+)
-           (%mf-contf mf)))))
-
-(defun early-contf-method-function (method)
-  (with-early-accessors (+std-method-slots+
-                         +%method-function-slots+)
-    (let ((mf (method-function method)))
-      (and (eq (class-of mf) (find-class '%method-function))
-           (%mf-contf mf)))))
 
 (defun wrap-contf-lexical-function-binds (form contsym cnm-p nnmp-p
                                           default-cnm-form)
@@ -165,7 +48,7 @@
         (core:process-lambda-list lambda-list 'function)
       (declare (ignore keys aok-p))
       (if (or (not (zerop (car opt))) rest keyf)
-          `(lambda (,contsym core:&va-rest .method-args.)
+          `(lambda (,contsym &rest .method-args.)
              (declare (core:lambda-name ,lambda-name))
              ,@(when doc (list doc))
              ,(wrap-contf-lexical-function-binds
@@ -196,11 +79,6 @@
 ;;; ----------------------------------------------------------------------
 ;;; DEFMETHOD
 ;;;
-
-(defun generic-function-method-class (generic-function)
-  (if *clos-booted*
-      (slot-value generic-function 'method-class)
-      (find-class 'standard-method)))
 
 (defun maybe-augment-generic-function-lambda-list (gf method-lambda-list)
   "Add any &key parameters from method-lambda-list that are missing
@@ -234,19 +112,17 @@ in the generic function lambda-list to the generic function lambda-list"
                       (core:setf-lambda-list gf new-ll)))))))))))
 
 (defun prototypes-for-make-method-lambda (name)
-  (if (not *clos-booted*)
-      (values nil nil)
-      (let ((gf? (and (fboundp name) (fdefinition name))))
-        (if (or (null gf?) (not (si:instancep gf?)))
-            (values (class-prototype (find-class 'standard-generic-function))
-                    (class-prototype (find-class 'standard-method)))
-            (values gf?
-                    (class-prototype (or (generic-function-method-class gf?)
-                                         (find-class 'standard-method))))))))
+  (let ((gf? (and (fboundp name) (fdefinition name))))
+    (if (or (null gf?) (not (si:instancep gf?)))
+        (values (class-prototype #.(find-class 'standard-generic-function))
+                (class-prototype #.(find-class 'standard-method)))
+        (values gf?
+                (class-prototype (or (generic-function-method-class gf?)
+                                   #.(find-class 'standard-method)))))))
 
 ;;; Is this lambda form one returned by our make-method-lambda method (below)?
 ;;; If it is, we know what it does so we can kind of ignore it.
-;;; See %method-function above.
+;;; See method-function.lisp
 (defun our-method-lambda-p (method-lambda)
   ;; This is pretty KLUDGEy. But make-method-lambda pretty specifically has
   ;; to return a lambda expression, so there's only so much we can do as far
@@ -256,14 +132,6 @@ in the generic function lambda-list to the generic function lambda-list"
        (consp (cdr method-lambda))
        (equal (second method-lambda) '(.method-args. .next-methods.))))
 
-;;; These are used to pass information obtained from walking the method body
-;;; up to method-lambda. This is kind of ugly, but I think the walking really
-;;; has to be done in make-method-lambda to work properly with user methods,
-;;; and we don't want to pass it back as an option because they're not actual
-;;; options.
-(defvar *call-next-method-p*)
-(defvar *next-method-p-p*)
-
 ;;; Does the work of calling make-method-lambda, and returns the same values.
 ;;; In the event the method lambda is the one returned by the standard method,
 ;;; instead of a lambda expression, this will return a form to create a
@@ -272,17 +140,28 @@ in the generic function lambda-list to the generic function lambda-list"
                       lambda-name lambda-list body declarations documentation)
   (multiple-value-bind (generic-function method)
       (prototypes-for-make-method-lambda name)
-    (let ((*call-next-method-p* 'function)
-          (*next-method-p-p* 'function))
-      (multiple-value-bind (fn-form options)
-          (make-method-lambda generic-function method lambda-expression env)
+    (multiple-value-bind (fn-form options)
+        (make-method-lambda generic-function method lambda-expression env)
+      (let* ((cnm-p* (or (second (member ''call-next-method-p options
+                                         :test #'equal))
+                       'function))
+             (nmp-p* (or (second (member ''next-method-p-p options
+                                         :test #'equal))
+                       'function))
+             ;; account for extra quoting for evaluation
+             (cnm-p (cond ((equal cnm-p* ''nil) nil)
+                          ((equal cnm-p* ''t) t)
+                          (t 'function)))
+             (nmp-p (cond ((equal nmp-p* ''nil) nil)
+                          ((equal nmp-p* ''t) t)
+                          (t 'function))))
         (values
          (if (our-method-lambda-p fn-form)
-             (if (not (or *call-next-method-p* *next-method-p-p*))
-                 `(make-%method-function-fast ,lambda-expression)
-                 `(make-%method-function-contf
+             (if (not (or cnm-p nmp-p))
+                 `(make-%leaf-method-function ,lambda-expression)
+                 `(make-%contf-method-function
                    ,(contf-lambda lambda-list lambda-name declarations documentation body
-                                  *call-next-method-p* *next-method-p-p*)))
+                                  cnm-p nmp-p)))
              fn-form)
          options)))))
 
@@ -322,6 +201,7 @@ in the generic function lambda-list to the generic function lambda-list"
                                  `(:documentation ',documentation))
                              ,@options)))))))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun specializers-expression (specializers)
   `(list
     ,@(loop for spec in specializers
@@ -350,6 +230,7 @@ in the generic function lambda-list to the generic function lambda-list"
                       `(eql ,(make-symbol (prin1-to-string form)))))
                 spec))
           specializers))
+)
 
 (defun fixup-method-lambda-list (lambda-list)
   ;; According to CLHS 7.6.4.,
@@ -383,6 +264,7 @@ in the generic function lambda-list to the generic function lambda-list"
           ,@(loop for (var default) on aux by #'cddr
                   collect `(,var ,default))))))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun make-raw-lambda (name lambda-list
                         required-parameters specializers specializedps
                         body qualifiers)
@@ -431,34 +313,34 @@ in the generic function lambda-list to the generic function lambda-list"
                      block))))
       (values method-lambda lambda-name lambda-list (list block)
               total-declarations documentation))))
+)
 
-(defun make-method-lambda (gf method method-lambda env)
+(defmethod make-method-lambda ((gf standard-generic-function)
+                               (method standard-method) method-lambda env)
   (declare (ignore gf method))
   (multiple-value-bind (call-next-method-p next-method-p-p)
       (walk-method-lambda method-lambda env)
-    (setf *call-next-method-p* call-next-method-p
-          *next-method-p-p* next-method-p-p)
-    (let ((leaf-method-p (null (or call-next-method-p next-method-p-p))))
-      (multiple-value-bind (declarations body doc)
-          (si:process-declarations (cddr method-lambda) t) ; We expect docstring
-        ;; source location here?
-        (let ((lambda-list (second method-lambda))
-              (lambda-name-declaration (or (find 'core::lambda-name declarations :key #'car)
-                                           '(core:lambda-name make-method-lambda.lambda))))
-          ;; Note that this specific (.method-args. .next-methods.) lambda list is used
-          ;; above to identify our method lambdas, so be conscientious if you change it.
-          (values `(lambda (.method-args. .next-methods.)
-                     (declare ,lambda-name-declaration)
-                     ,@(when doc (list doc))
-                     ,(gen-lexical-method-function-binds
-                       call-next-method-p next-method-p-p
-                       ;; FIXME: This might not work if the user is perverse enough to
-                       ;; name a variable &whole, or something like that?
-                       `(destructuring-bind ,lambda-list .method-args.
-                          (declare ,@declarations)
-                          ,@body)))
-                  ;; double quotes as per evaluation, explained above in defmethod.
-                  (list ''leaf-method-p (not (not leaf-method-p)))))))))
+    (multiple-value-bind (declarations body doc)
+        (si:process-declarations (cddr method-lambda) t) ; We expect docstring
+      ;; source location here?
+      (let ((lambda-list (second method-lambda))
+            (lambda-name-declaration (or (find 'core::lambda-name declarations :key #'car)
+                                       '(core:lambda-name make-method-lambda.lambda))))
+        ;; Note that this specific (.method-args. .next-methods.) lambda list is used
+        ;; above to identify our method lambdas, so be conscientious if you change it.
+        (values `(lambda (.method-args. .next-methods.)
+                   (declare ,lambda-name-declaration)
+                   ,@(when doc (list doc))
+                   ,(gen-lexical-method-function-binds
+                     call-next-method-p next-method-p-p
+                     ;; FIXME: This might not work if the user is perverse enough to
+                     ;; name a variable &whole, or something like that?
+                     `(destructuring-bind ,lambda-list .method-args.
+                        (declare ,@declarations)
+                        ,@body)))
+                ;; double quotes as per evaluation, explained above in defmethod.
+                (list ''call-next-method-p `',call-next-method-p
+                      ''next-method-p-p `',next-method-p-p))))))
 
 ;;; We want to avoid consing closures for call-next-method and next-method-p when possible,
 ;;; which is most of the time. We don't need a closure for just (call-next-method).
@@ -524,72 +406,66 @@ in the generic function lambda-list to the generic function lambda-list"
 ;;; ----------------------------------------------------------------------
 ;;;                                                                parsing
 
-(defun legal-generic-function-name-p (name)
-  (si::valid-function-name-p name))
-
 (defun extract-lambda-list (specialized-lambda-list)
   (values (parse-specialized-lambda-list specialized-lambda-list)))
 
 (defun extract-specializer-names (specialized-lambda-list)
   (nth-value 2 (parse-specialized-lambda-list specialized-lambda-list)))
 
-
-;; For some reason clasp needs this at compile time but ecl does not
-(eval-when (:execute :compile-toplevel :load-toplevel)
-  (defun parse-specialized-lambda-list (specialized-lambda-list)
-    "This function takes a method lambda list and outputs a new lambda list
+(defun parse-specialized-lambda-list (specialized-lambda-list)
+  "This function takes a method lambda list and outputs a new lambda list
 where the specializers have disappeared, the list of required arguments, the
 list of specializers, and a list where each element is true iff that
 argument was specialized.
 (The last is useful for implementing IGNORE behavior.)"
-    ;; That is, clhs defmethod says that a specialized parameter is
-    ;; ignorable, essentially.
-    (ext:with-current-source-form (specialized-lambda-list)
-      ;; SI:PROCESS-LAMBDA-LIST will ensure that the lambda list is
-      ;; syntactically correct and will output as a second value
-      ;; list of required arguments. We use this list to extract the
-      ;; specializers and build a lambda list without specializers.
-      (do* ((arglist (rest (si::process-lambda-list specialized-lambda-list 'METHOD))
-                     (rest arglist))
-            (lambda-list (copy-list specialized-lambda-list))
-            (ll lambda-list (rest ll))
-            (required-parameters '())
-            (specializers '())
-            (specializedps '())
-            arg variable specializer specializedp)
-           ((null arglist)
-            (values lambda-list
-                    (nreverse required-parameters)
-                    (nreverse specializers)
-                    (nreverse specializedps)))
-        (setf arg (first arglist))
-        (ext:with-current-source-form (arg)
-          (cond
-            ;; Just a variable
-            ((atom arg)
-             (setf variable arg specializer T specializedp nil))
-            ;; List contains more elements than variable and specializer
-            ((not (endp (cddr arg)))
-             (si::simple-program-error "Syntax error in method specializer ~A" arg))
-            ;; Specializer is NIL
-            ((null (setf variable (first arg)
-                         specializedp t
-                         specializer (second arg)))
-             (si::simple-program-error
-              "NIL is not a valid specializer in a method lambda list"))
-            ;; Specializer looks like a class name
-            ((atom specializer))
-            ;; Specializer is (EQL value)
-            ((and (eql (first specializer) 'EQL)
-                  (cdr specializer)
-                  (endp (cddr specializer))))
-            ;; Otherwise, syntax error
-            (t
-             (si::simple-program-error "Syntax error in method specializer ~A" arg)))
-          (setf (first ll) variable)
-          (push variable required-parameters)
-          (push specializer specializers)
-          (push specializedp specializedps))))))
+  ;; That is, clhs defmethod says that a specialized parameter is
+  ;; ignorable, essentially.
+  (ext:with-current-source-form (specialized-lambda-list)
+    ;; SI:PROCESS-LAMBDA-LIST will ensure that the lambda list is
+    ;; syntactically correct and will output as a second value
+    ;; list of required arguments. We use this list to extract the
+    ;; specializers and build a lambda list without specializers.
+    (do* ((arglist (rest (si::process-lambda-list specialized-lambda-list 'METHOD))
+                   (rest arglist))
+          (lambda-list (copy-list specialized-lambda-list))
+          (ll lambda-list (rest ll))
+          (required-parameters '())
+          (specializers '())
+          (specializedps '())
+          arg variable specializer specializedp)
+         ((null arglist)
+          (values lambda-list
+                  (nreverse required-parameters)
+                  (nreverse specializers)
+                  (nreverse specializedps)))
+      (setf arg (first arglist))
+      (ext:with-current-source-form (arg)
+        (cond
+          ;; Just a variable
+          ((atom arg)
+           (setf variable arg specializer T specializedp nil))
+          ;; List contains more elements than variable and specializer
+          ((not (endp (cddr arg)))
+           (si::simple-program-error "Syntax error in method specializer ~A" arg))
+          ;; Specializer is NIL
+          ((null (setf variable (first arg)
+                       specializedp t
+                       specializer (second arg)))
+           (si::simple-program-error
+            "NIL is not a valid specializer in a method lambda list"))
+          ;; Specializer looks like a class name
+          ((atom specializer))
+          ;; Specializer is (EQL value)
+          ((and (eql (first specializer) 'EQL)
+             (cdr specializer)
+             (endp (cddr specializer))))
+          ;; Otherwise, syntax error
+          (t
+           (si::simple-program-error "Syntax error in method specializer ~A" arg)))
+        (setf (first ll) variable)
+        (push variable required-parameters)
+        (push specializer specializers)
+        (push specializedp specializedps)))))
 
 (defun declaration-specializers (arglist declarations)
   (do ((argscan arglist (cdr argscan))
@@ -600,6 +476,41 @@ argument was specialized.
        `(DECLARE ,@declist))
       (when (listp (first argscan))
 	    (push `(TYPE ,(cadar argscan) ,(caar argscan)) declist))))
+
+;;; ----------------------------------------------------------------------
+;;;                                                         initialization
+
+(defmethod shared-initialize :before
+    ((method standard-method) slot-names &rest initargs
+     &key (specializers nil spec-supplied-p)
+       (lambda-list nil lambda-supplied-p)
+     ;; these options are only here to legitimize them being passed back from
+     ;; make-method-lambda; they are not actually used.
+     ;; (We can't simply remove them in method-lambda, as a user may bypass that
+     ;;  function with their own method definitions.)
+     ;; our custom initargs are internal symbols, as per MOP "The defmethod macros"
+       ((call-next-method-p call-next-method-p))
+       ((next-method-p-p next-method-p-p)))
+  (declare (ignore initargs call-next-method-p next-method-p-p))
+  (when slot-names
+    (unless spec-supplied-p
+      (error "Specializer list not supplied in method initialization"))
+    (unless lambda-supplied-p
+      (error "Lambda list not supplied in method initialization"))
+    (unless (= (first (si::process-lambda-list lambda-list 'method))
+	       (length specializers))
+      (error "The list of specializers does not match the number of required arguments in the lambda list ~A"
+	     lambda-list)))
+  (when spec-supplied-p
+    (loop for s in specializers
+       unless (typep s 'specializer)
+         do (error "Object ~A is not a valid specializer" s))))
+
+(defmethod shared-initialize :after
+    ((method standard-method) slot-names &rest initargs)
+  (declare (ignore slot-names initargs))
+  (setf (values (method-keywords method) (method-allows-other-keys-p method))
+        (compute-method-keywords (method-lambda-list method))))
 
 
 ;;; ----------------------------------------------------------------------
@@ -614,126 +525,46 @@ argument was specialized.
 	   collect k)
      allow-other-keys)))
 
+(defmethod function-keywords ((method standard-method))
+  (values (method-keywords method) (method-allows-other-keys-p method)))
+
+(defun install-method (name qualifiers specializers lambda-list fun &rest options)
+  (let* ((gf (ensure-generic-function name))
+	 (method (make-method (generic-function-method-class gf)
+			      qualifiers specializers lambda-list
+			      fun options)))
+    (add-method gf method)
+    method))
+
 (defun make-method (method-class qualifiers specializers lambda-list fun options)
   (multiple-value-bind (keys aok-p)
       (compute-method-keywords lambda-list)
-    (with-early-make-instance
-      ;; We choose the largest list of slots
-      +standard-accessor-method-slots+
-      (method (if (classp method-class)
-                  method-class
-                  (find-class method-class))
-              :generic-function nil
-              :lambda-list lambda-list
-              :function fun
-              :specializers specializers
-              :qualifiers qualifiers
-              :keywords keys
-              :aok-p aok-p
-              leaf-method-p (getf options 'leaf-method-p nil)
-              fast-method-function (getf options 'fast-method-function nil))
-      method)))
-
-;;; early version used during bootstrap
-(defun method-p (x)
-  (si::instancep x))
-
-;;; early version used during bootstrap
-(defun add-method (gf method)
-  (with-early-accessors (+standard-method-slots+ +standard-generic-function-slots+ +standard-class-slots+)
-    (let* ((name (core:function-name gf))
-	   (method-entry (assoc name *early-methods*)))
-      (unless method-entry
-	(setq method-entry (list name))
-	(push method-entry *early-methods*))
-      (push method (cdr method-entry))
-      (push method (generic-function-methods gf))
-      (setf (method-generic-function method) gf)
-      (unless (si::sl-boundp (generic-function-lambda-list gf))
-	(setf (generic-function-lambda-list gf) (method-lambda-list method))
-	(setf (generic-function-argument-precedence-order gf)
-	      (rest (si::process-lambda-list (method-lambda-list method) t))))
-      (maybe-augment-generic-function-lambda-list gf (method-lambda-list method))
-      (compute-gf-specializer-profile gf)
-      (compute-a-p-o-function gf)
-      (invalidate-discriminating-function gf)
-      gf)))
-
-;; Upgraded into method in fixup.
-(defun find-method (gf qualifiers specializers &optional (errorp t))
-  (declare (notinline method-qualifiers))
-  (flet ((filter-specializer (name)
-	   (cond ((typep name 'specializer)
-		  name)
-		 ((atom name)
-		  (let ((class (find-class name nil)))
-		    (unless class
-		      (error "~A is not a valid specializer name" name))
-		    class))
-		 ((and (eq (first name) 'EQL)
-		       (null (cddr name)))
-                  (intern-eql-specializer (second name)))
-		 (t
-		  (error "~A is not a valid specializer name" name))))
-	 (specializer= (cons-or-class specializer)
-           (eq cons-or-class specializer)))
-    (when (/= (length specializers)
-	      (length (generic-function-argument-precedence-order gf)))
-      (error
-       "The specializers list~%~A~%does not match the number of required arguments (~a) in ~A"
-       specializers
-       (length (generic-function-argument-precedence-order gf))
-       (generic-function-name gf)))
-    (loop with specializers = (mapcar #'filter-specializer specializers)
-       for method in (generic-function-methods gf)
-       when (and (equal qualifiers (method-qualifiers method))
-		 (every #'specializer= specializers (method-specializers method)))
-       do (return-from find-method method))
-    ;; If we did not find any matching method, then the list of
-    ;; specializers might have the wrong size and we must signal
-    ;; an error.
-    (when errorp
-      (error "There is no method on the generic function ~S that agrees on qualifiers ~S and specializers ~S"
-	     (generic-function-name gf)
-	     qualifiers specializers)))
-  nil)
+    (apply #'make-instance
+           (if (classp method-class)
+               method-class
+               (find-class method-class))
+           :generic-function nil
+           :lambda-list lambda-list
+           :function fun
+           :specializers specializers
+           :qualifiers qualifiers
+           :keywords keys
+           :aok-p aok-p
+           options)))
 
 (defun compile-method (method)
   (let ((mf (method-function method)))
-    (if (typep mf '%method-function)
-        (let ((fmf (%mf-fast-method-function mf))
-              (contf (%mf-contf mf)))
-          ;; I don't see how a %method-function can have neither an
-          ;; fmf or contf, but if it doesn't, just fail without erroring.
-          ;; Since this compilation may have been initiated automatically.
-          ;; TODO: Maybe also compile the slow method function?
-          (cond (fmf
-                 (multiple-value-bind (new-fmf warningsp failurep)
-                     (compile nil fmf)
-                   (unless failurep
-                     (setf (%mf-fast-method-function mf) new-fmf))
-                   (values mf warningsp failurep)))
-                (contf
-                 (multiple-value-bind (new-contf warningsp failurep)
-                     (compile nil contf)
-                   (unless failurep
-                     (setf (%mf-contf mf) new-contf))
-                   (values mf warningsp failurep)))))
-        (values mf nil nil))))
-
-;;; ----------------------------------------------------------------------
-;;;                                                         with-accessors
-
-(defmacro with-accessors (slot-accessor-pairs instance-form &body body)
-  (let* ((temp (gensym))
-	 (accessors (do ((scan slot-accessor-pairs (cdr scan))
-                         (res))
-                        ((null scan) (nreverse res))
-                      (let ((entry (car scan)))
-                        (ext:with-current-source-form (entry)
-                          (unless (and (listp entry)
-                                       (= (length entry) 2))
-                            (error "Malformed WITH-ACCESSORS syntax."))
-                          (push `(,(car entry) (,(cadr entry) ,temp)) res))))))
-    `(let ((,temp ,instance-form))
-       (symbol-macrolet ,accessors ,@body))))
+    ;; TODO: Maybe also compile the slow method function?
+    (typecase mf
+      (%leaf-method-function
+       (multiple-value-bind (new-fmf warningsp failurep)
+           (compile nil (fmf mf))
+         (unless failurep
+           (setf (fmf mf) new-fmf))
+         (values mf warningsp failurep)))
+      (%contf-method-function
+       (multiple-value-bind (new-contf warningsp failurep)
+           (compile nil (contf mf))
+         (unless failurep
+           (setf (contf mf) new-contf))
+         (values mf warningsp failurep))))))
