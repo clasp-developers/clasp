@@ -5,14 +5,26 @@
 (defconstant +keys-arg+     #b011000)
 (defconstant +label-arg+    #b010000)
 
-(defun constant-arg (val)
-  (logior +constant-arg+ val))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun constant-arg (val)
+    (logior +constant-arg+ val))
+  
+  (defun label-arg (val)
+    (logior +label-arg+ val))
+  
+  (defun keys-arg (val)
+    (logior +keys-arg+ val)))
 
-(defun label-arg (val)
-  (logior +label-arg+ val))
+(defun constant-arg-p (val)
+  (= (logand +mask-arg+ val) +constant-arg+))
 
-(defun keys-arg (val)
-  (logior +keys-arg+ val))
+(defun label-arg-p (val)
+  (= (logand +mask-arg+ val) +label-arg+))
+
+(defun keys-arg-p (val)
+  (= (logand +mask-arg+ val) +keys-arg+))
+
+(defun unmask-arg (val) (logandc2 val +mask-arg+))
 
 (macrolet ((defops (&rest ops)
              (let (rev-fullcodes
@@ -98,6 +110,19 @@
     ("cleanup" 62)
     ("encell" 63 (1) (2))
     ("long" 255)))
+
+;;; *full-codes* contains descriptions of the instructions in the following format:
+;;; (name opcode (args...) (long-args...))
+;;; the name is a string.
+;;; the args and long args are encoded as a number of bytes from 1 to 3, LOGIOR'd
+;;; with the constant, label, and keys code that is appropriate, if any.
+;;; One of these "instruction description" lists is what DECODE-INSTR returns.
+
+(defun decode-instr (opcode)
+  (let ((res (member opcode *full-codes* :key #'second)))
+    (if res
+        (first res)
+        nil)))
 
 (defun pythonify-arguments (args)
   (declare (optimize (debug 3)))
@@ -290,7 +315,7 @@
 
 ;;; load time values machine
 
-(defstruct (ltv-info (:type vector) :named) type c++-type suffix gcroots)
+(defstruct ltv-info type c++-type suffix gcroots)
 
 (defparameter *ltv-info* (make-hash-table :test #'equal))
 

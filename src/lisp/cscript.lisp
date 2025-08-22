@@ -67,7 +67,7 @@
              #~"kernel/cmp/compiler-conditions.lisp"
              #~"kernel/cmp/compile.lisp"
              #~"kernel/cmp/walk.lisp"
-             #~"kernel2/cmp/bytecode-machines.lisp"
+             #~"kernel/cmp/bytecode-machines.lisp"
              #~"kernel/cmp/bytecode-introspect.lisp"
              #~"kernel/cmp/disassemble.lisp"
              #~"kernel/cmp/bundle.lisp"
