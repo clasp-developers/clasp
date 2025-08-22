@@ -1,9 +1,5 @@
 (in-package #:clasp-cleavir)
 
-#+(or)
-(eval-when (:execute)
-  (setq core:*echo-repl-read* t))
-
 ;;; Backend information associated with a BIR function.
 (defclass llvm-function-info ()
   (;; In BIR, function environments are sets but we'd like to have it
@@ -2230,16 +2226,22 @@ COMPILE-FILE will use the default *clasp-env*."
                  (core:file-scope-pathname
                   (core:file-scope
                    (core:source-pos-info-file-handle origin))))
-                "repl-code"))))
+                "repl-code")))
+        entry-point-index)
     ;; Link the C++ intrinsics into the module
     (cmp::with-module (:module module)
       (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
           (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
             (literal:with-rtv
-                (translate bir :linkage linkage :abi abi)))
+              (setf entry-point-index
+                    (cmp:entry-point-reference-index
+                     (cmp:xep-group-entry-point-reference
+                      (translate bir :linkage linkage :abi abi))))))
         (declare (ignore constants-table))
-        (jit-add-module-return-function
-         cmp:*the-module* startup-shutdown-id ordered-raw-constants-list)))))
+        (llvm-sys:code-literal
+         (jit-add-module
+          cmp:*the-module* startup-shutdown-id ordered-raw-constants-list)
+         entry-point-index)))))
 
 ;;; Used from fli.lisp.
 ;;; Create a function like

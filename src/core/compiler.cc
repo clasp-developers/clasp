@@ -297,7 +297,7 @@ size_t startup_functions_are_waiting() {
 };
 
 /*! Invoke the startup functions and clear the array of startup functions */
-core::T_O* startup_functions_invoke(T_O* literals) {
+void startup_functions_invoke(T_O* literals) {
   size_t startup_count = 0;
   StartUp* startup_functions = NULL;
   {
@@ -332,16 +332,11 @@ core::T_O* startup_functions_invoke(T_O* literals) {
       previous = startup;
       switch (startup._Type) {
       case StartUp::T_O_function:
-        result = ((T_OStartUp)startup._Function)(literals); // invoke the startup function
-        if (result) {
-          printf("%s:%d:%s Returning a function pointer %p from startup_functions_invoke - we need to support this\n", __FILE__,
-                 __LINE__, __FUNCTION__, result);
-        }
+        ((T_OStartUp)startup._Function)(literals); // invoke the startup function
         break;
       case StartUp::void_function:
         ((voidStartUp)startup._Function)();
         printf("%s:%d:%s Returning NULL startup_functions_invoke\n", __FILE__, __LINE__, __FUNCTION__);
-        result = NULL;
       }
     }
 #ifdef DEBUG_STARTUP
@@ -349,7 +344,6 @@ core::T_O* startup_functions_invoke(T_O* literals) {
 #endif
     free(startup_functions);
   }
-  return result;
 }
 
 } // namespace core

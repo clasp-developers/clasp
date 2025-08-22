@@ -203,8 +203,9 @@
 ;;; an NMODULE. The NMODULE contains everything COMPILE-FILE needs to dump
 ;;; native code such that the loader can use it:
 ;;; 1) The actual native code as bytes (an encoded ELF object)
-;;; 2) A mapping from cfunctions to native symbol names, so they can be
-;;;    reconstructed by the loader.
+;;; 2) A mapping from cfunctions to llvm-function-infos. These provide
+;;;    information that can be communicated to the loader to let it
+;;;    reconstruct functions.
 ;;; 3) A vector of literals. Each entry is either:
 ;;;    - an integer, indicating the constant at that position of the
 ;;;      cmp:module's literals. This may include cfunctions.

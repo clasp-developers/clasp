@@ -1495,7 +1495,7 @@ function-description - for debugging."
         (values func info)))))
 
 (defun codegen-startup (module startup-function-name
-                        THE-REPL-XEP-GROUP gcroots-in-module
+                        gcroots-in-module
                         array-type roots-array-or-nil number-of-roots
                         ordered-literals)
   (declare (ignore ordered-literals))
@@ -1539,9 +1539,8 @@ function-description - for debugging."
                              ))))
         (when gcroots-in-module
           (irc-intrinsic "cc_finish_gcroots_in_module" gcroots-in-module))
-        (let ((global-entry-point (literal:constants-table-value (cmp:entry-point-reference-index (xep-group-entry-point-reference THE-REPL-XEP-GROUP)))))
-          (irc-ret (irc-bit-cast global-entry-point %t*%))))
-        (values))))
+        (irc-ret-void)
+        (values)))))
 
 (defun codegen-shutdown (module shutdown-function-name gcroots-in-module)
   (let* ((shutdown-fn (irc-simple-function-create shutdown-function-name
@@ -1564,11 +1563,11 @@ function-description - for debugging."
       (irc-ret-void)))
   (values))
 
-(defun codegen-startup-shutdown (module startup-shutdown-id THE-REPL-XEP-GROUP &optional gcroots-in-module array-type roots-array-or-nil (number-of-roots 0) ordered-literals)
+(defun codegen-startup-shutdown (module startup-shutdown-id &optional gcroots-in-module array-type roots-array-or-nil (number-of-roots 0) ordered-literals)
   (multiple-value-bind (startup-function-name shutdown-function-name)
       (jit-startup-shutdown-function-names startup-shutdown-id)
     (codegen-startup module startup-function-name
-                     THE-REPL-XEP-GROUP gcroots-in-module
+                     gcroots-in-module
                      array-type roots-array-or-nil number-of-roots
                      ordered-literals)
     (codegen-shutdown module shutdown-function-name gcroots-in-module)

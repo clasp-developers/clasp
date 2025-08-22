@@ -64,7 +64,7 @@ struct Initializer {
 };
 
 size_t startup_functions_are_waiting();
-core::T_O* startup_functions_invoke(T_O* literals_or_null);
+void startup_functions_invoke(T_O* literals_or_null);
 
 std::tuple<void*, string> do_dlopen(const string& str_path, const int n_mode);
 std::tuple<int, string> do_dlclose(void* p_handle);

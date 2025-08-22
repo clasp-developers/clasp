@@ -5,7 +5,7 @@
 #include <algorithm> // copy
 #include <clasp/gctools/threadlocal.fwd.h>
 
-typedef core::T_O* (*T_OStartUp)(core::T_O*);
+typedef void (*T_OStartUp)(core::T_O*);
 typedef void (*voidStartUp)(void);
 
 namespace core {

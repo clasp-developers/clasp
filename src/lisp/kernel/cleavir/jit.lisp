@@ -126,28 +126,22 @@
 
 (defparameter *jit-lock* (mp:make-recursive-mutex 'jit-lock))
 
-(defun jit-add-module-return-function (original-module startup-shutdown-id literals-list
-                                       &key output-path)
-  (declare (ignore output-path))
-  (cmp:quick-module-dump original-module "module-before-optimize")
+(defun jit-add-module (module startup-shutdown-id literals-list)
+  (cmp:irc-verify-module-safe module)
   (unwind-protect
-       (let ((module original-module))
-         (cmp:irc-verify-module-safe module)
-         (let ((jit-engine (llvm-sys:clasp-jit)))
-           (multiple-value-bind (startup-name shutdown-name)
-               (cmp:jit-startup-shutdown-function-names startup-shutdown-id)
-             (let ((function (llvm-sys:get-function module startup-name)))
-               (if (null function)
-                   (error "Could not obtain the startup function ~s by name" startup-name)))
-             (cmp:with-track-llvm-time
-                 (when *dump-compile-module*
-                   (format t "About to dump module~%")
-                   (llvm-sys:dump-module module)
-                   (format t "startup-name |{}|~%" startup-name)
-                   (format t "Done dump module~%"))
-               (mp:with-lock (*jit-lock*)
-                 (when (member :dump-compile *features*)
-                   (llvm-sys:dump-module module))
-                 (llvm-sys:add-irmodule jit-engine (llvm-sys:get-main-jitdylib jit-engine) module cmp:*thread-safe-context* startup-shutdown-id)
-                 (llvm-sys:jit-finalize-repl-function jit-engine startup-name shutdown-name literals-list))))))
+       (let ((jit-engine (llvm-sys:clasp-jit)))
+         (multiple-value-bind (startup-name shutdown-name)
+             (cmp:jit-startup-shutdown-function-names startup-shutdown-id)
+           (unless (llvm-sys:get-function module startup-name)
+             (error "Startup function ~s not present in module" startup-name))
+           (cmp:with-track-llvm-time
+             (when *dump-compile-module*
+               (format t "About to dump module~%")
+               (llvm-sys:dump-module module)
+               (format t "startup-name |{}|~%" startup-name)
+               (format t "Done dump module~%"))
+             (mp:with-lock (*jit-lock*)
+               (prog1
+                   (llvm-sys:add-irmodule jit-engine (llvm-sys:get-main-jitdylib jit-engine) module cmp:*thread-safe-context* startup-shutdown-id)
+                 (llvm-sys:jit-finalize jit-engine startup-name shutdown-name literals-list))))))
     (gctools:thread-local-cleanup)))

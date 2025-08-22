@@ -204,7 +204,7 @@ names to offsets."
 
 ;;;  "A run-all void ()* function prototype")
 (define-symbol-macro %fn-shut-down% (llvm-sys:function-type-get %void% nil))
-(define-symbol-macro %fn-start-up% (llvm-sys:function-type-get %t*% (list %t*%)))
+(define-symbol-macro %fn-start-up% (llvm-sys:function-type-get %void% (list %t*%)))
 (defvar +fn-start-up-argument-names+ nil)
 ;;;  "A pointer to the run-all function prototype")
 (define-symbol-macro %fn-start-up*% (llvm-sys:type-get-pointer-to %fn-start-up%))

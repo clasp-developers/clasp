@@ -787,8 +787,8 @@ Return the index of the load-time-value"
                                           (core:fmt nil "{}{}" core:+gcroots-in-module-name+ module-id)))
          (*run-time-coalesce* (make-similarity-table #'eq))
          (*literal-machine* (make-literal-machine)))
-    (let* ((THE-REPL-FUNCTION (funcall body-fn))
-           (run-time-values (coerce (literal-machine-run-all-objects *literal-machine*) 'list))
+    (funcall body-fn)
+    (let* ((run-time-values (coerce (literal-machine-run-all-objects *literal-machine*) 'list))
            (num-elements (length run-time-values))
            (constant-table nil))
       ;; Put the constants in order they will appear in the table.
@@ -818,7 +818,7 @@ Return the index of the load-time-value"
             (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)
             (let ((cmp:*load-time-value-holder-global-var-type* cmp:%t*[0]%)
                   (cmp:*load-time-value-holder-global-var* bitcast-constant-table))
-              (cmp:codegen-startup-shutdown cmp:*the-module* module-id THE-REPL-FUNCTION *gcroots-in-module* array-type constant-table num-elements ordered-literals-list)
+              (cmp:codegen-startup-shutdown cmp:*the-module* module-id *gcroots-in-module* array-type constant-table num-elements ordered-literals-list)
               (values ordered-raw-constants-list constant-table module-id))))))))
 
 (defmacro with-rtv (&body body)
