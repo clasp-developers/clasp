@@ -4,12 +4,8 @@
 #+threads(defvar *value-table-id-lock* (mp:make-lock :name '*value-table-id-lock*))
 (defvar *value-table-id* 0)
 (defun incf-value-table-id-value ()
-  #+threads(unwind-protect
-                (progn
-                  (mp:get-lock *value-table-id-lock*)
-                  (incf *value-table-id*))
-             (mp:giveup-lock *value-table-id-lock*))
-  #-threads (incf *value-table-id*))
+  #+threads(mp:with-lock (*value-table-id-lock*) (incf *value-table-id*))
+  #-threads(incf *value-table-id*))
 
 (defun next-value-table-holder-name (module-id &optional suffix)
   (if suffix
@@ -84,18 +80,6 @@
   (vector-push-extend node (literal-machine-run-all-objects *literal-machine*))
   node)
 
-(defun calculate-table-size (nodes)
-  "Find the highest index and return 1+ that"
-  (let ((highest-index -1))
-    (dolist (node nodes)
-      #+(or)(core:fmt t "generate-run-all-code  generating node: {}%N" node)
-      (when (literal-node-creator-p node)
-        (let* ((datum (literal-dnode-datum node))
-               (raw-index (datum-index datum)))
-          (when (literal-datum-p datum)
-            (setf highest-index (max highest-index raw-index))))))
-    (1+ highest-index)))
-
 ;;; ------------------------------------------------------------
 ;;;
 ;;; Immediate objects don't need to be put into tables
@@ -145,7 +129,6 @@
   (long-float-coalesce (make-similarity-table #'eql))
   (fcell-coalesce (make-similarity-table #'equal))
   (vcell-coalesce (make-similarity-table #'eq))
-  (llvm-values (make-hash-table))
 )
 
 
@@ -179,7 +162,6 @@ the value is put into *default-load-time-value-vector* and its index is returned
 (defun new-datum (toplevelp)
   (if toplevelp
       (make-literal-datum :index (new-table-index))
-      #+(or)(make-literal-datum :index (new-table-index))
       (make-transient-datum)))
 
 (defun lookup-literal-index (object)
@@ -231,11 +213,6 @@ rewrite the slot in the literal table to store a closure."
   cleavir-lambda-list-analysis
   )
 
-(defun ensure-not-placeholder (obj)
-  (when (general-entry-placeholder-p obj)
-    (error "The obj ~a must not be a general-entry-placeholder" obj))
-  obj)
-
 (defun entry-point-datum-for-xep-group (xep-group)
   (unless (cmp:xep-group-p xep-group)
     (error "The argument ~a must be a xep-group" xep-group))
@@ -266,20 +243,16 @@ rewrite the slot in the literal table to store a closure."
 
 
 (defun register-xep-function->function-datums (f-or-p-list)
-  "Add a function to the (literal-machine-function-vector *literal-machine*)"
-  (let ((rev-datums nil))
-    (dolist (xep-function-or-placeholder f-or-p-list)
-      (push (register-function->function-datum-impl xep-function-or-placeholder) rev-datums))
-    ;; Make sure that all function indices are consecutive
-    (let ((datums (nreverse rev-datums))
-          (prev-function-index nil))
-      (dolist (datum datums)
-        (let ((cur-function-index (function-datum-index datum)))
-          (when prev-function-index
-            (unless (= (1+ prev-function-index) cur-function-index)
-              (error "The function indices for a xep-function are not consecutive")))
-          (setf prev-function-index cur-function-index)))
-      datums)))
+  ;; Make sure that all function indices are consecutive
+  (let ((datums (mapcar #'register-function->function-datum-impl f-or-p-list))
+        (prev-function-index nil))
+    (dolist (datum datums)
+      (let ((cur-function-index (function-datum-index datum)))
+        (when prev-function-index
+          (unless (= (1+ prev-function-index) cur-function-index)
+            (error "The function indices for a xep-function are not consecutive")))
+        (setf prev-function-index cur-function-index)))
+    datums))
 
 (defun register-xep-function-indices (xep-arity-list)
   "Add all functions in xep-function to the (literal-machine-function-vector *literal-machine*)"
@@ -370,11 +343,11 @@ rewrite the slot in the literal table to store a closure."
   (declare (ignore toplevelp))
   (let ((ht (add-creator "ltvc_make_hash_table" index hash-table
                          (load-time-reference-literal (hash-table-test hash-table) read-only-p :toplevelp nil))))
-    (maphash (lambda (key val)
-               (add-side-effect-call "ltvc_setf_gethash" ht
-                                     (load-time-reference-literal key read-only-p :toplevelp nil)
-                                     (load-time-reference-literal val read-only-p :toplevelp nil)))
-             hash-table)
+    (loop for key being the hash-keys of hash-table
+            using (hash-value val)
+          for lkey = (load-time-reference-literal key read-only-p :toplevelp nil)
+          for lval = (load-time-reference-literal val read-only-p :toplevelp nil)
+          do (add-side-effect-call "ltvc_setf_gethash" ht lkey lval))
     ht))
 
 (defun ltv/fixnum (fixnum index read-only-p &key (toplevelp t))
@@ -680,8 +653,6 @@ rewrite the slot in the literal table to store a closure."
          (index (literal-node-index data)))
     (values index t)))
 
-(defparameter *ltv-trap* nil)
-
 (defun load-time-value-from-thunk (thunk)
   "Arrange to evaluate the thunk into a load-time-value.
 Return the index of the load-time-value"
@@ -739,8 +710,6 @@ Return the index of the load-time-value"
     (let ((transient-entries (finalize-transient-datum-indices *literal-machine*)))
       (cmp:with-run-all-body-codegen
           (let ((ordered-run-all-nodes (coerce (literal-machine-run-all-objects *literal-machine*) 'list)))
-            (when *ltv-trap*
-              (break "Look at *literal-machine* ~a" *literal-machine*))
             (let* ((byte-code-string (write-literal-nodes-byte-code ordered-run-all-nodes))
                    (byte-code-length (length byte-code-string))
                    (byte-code-global (llvm-sys:make-string-global cmp:*the-module* byte-code-string

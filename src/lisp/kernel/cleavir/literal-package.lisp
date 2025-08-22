@@ -5,7 +5,6 @@
    #:add-creator
    #:next-value-table-holder-name
    #:general-entry-placeholder-p
-   #:ensure-not-placeholder
    #:make-general-entry-placeholder
    #:make-literal-node-call
    #:make-literal-node-creator
