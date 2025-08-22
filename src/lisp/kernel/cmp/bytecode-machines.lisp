@@ -124,6 +124,7 @@
         (first res)
         nil)))
 
+#-building-clasp
 (defun pythonify-arguments (args)
   (declare (optimize (debug 3)))
   (let (rev-args)
@@ -138,6 +139,7 @@
               rev-args)))
     (nreverse rev-args)))
 
+#-building-clasp
 (defun generate-python-bytecode-table (fout)
   (format fout "#ifdef PYTHON_OPCODES~%")
   (format fout "R\"opcodes(~%")
@@ -154,6 +156,7 @@
   (format fout ")opcodes\"~%")
   (format fout "#endif~%"))
 
+#-building-clasp
 (defun dump-gf-bytecode-virtual-machine (stream)
   (format stream "#ifdef GF_BYTECODE_VM~%")
   (loop for (_ opcode name . args) in *dtree-ops-as-list*
@@ -165,15 +168,18 @@
   (format stream "#define DTREE_OP_COUNT ~a~%" (length *dtree-ops-as-list*))
   (format stream "#endif // GF_BYTECODE_VM~%"))
 
+#-building-clasp
 (defun dump-gf-bytecode-virtual-machine-macro-names (stream)
   (format stream "#ifdef GF_BYTECODE_VM_NAMES~%")
   (loop for (_ opcode name) in *dtree-ops-as-list*
         do (format stream "  case ~a: return ~s;~%" name (string name)))
   (format stream "#endif // GF_BYTECODE_VM_NAMES~%"))
 
+#-building-clasp
 (defun dump-python-gf-bytecode-virtual-machine (stream)
   (format stream "// This is where I dump the python GF bytecode VM~%"))
 
+#-building-clasp
 (defvar +reserved-c++-keywords+
   '("alignas"
     "alignof"
@@ -273,6 +279,7 @@
     "xor"
     "xor_eq"))
 
+#-building-clasp
 (defun c++ify (name)
   (when (member name +reserved-c++-keywords+ :test #'equalp)
     (setf name (concatenate 'string "_" name)))
@@ -299,6 +306,7 @@
             ((char= chr #\-) (format sout "_"))
             (t (format sout "~a" chr))))))))
 
+#-building-clasp
 (defun generate-vm-codes (fout)
   (write-line "#ifdef VM_CODES" fout)
   (terpri fout)
@@ -337,6 +345,7 @@
   (set-ltv-info :unknown "UNKNOWN" "UNKNOWN")
   )
 
+#-building-clasp
 (defun build-one-ltv-function (op &optional (stream *standard-output*))
   (destructuring-bind (code unwindsp name arg-types &key varargs)
       op
@@ -380,12 +389,14 @@
       (format stream ");~%")
       (format stream "};~%"))))
 
+#-building-clasp
 (defun build-ltv-functions (primitives &optional (stream *standard-output*))
   (format stream "#ifdef DEFINE_LTV_PARSERS~%")
   (dolist (prim primitives)
     (build-one-ltv-function prim stream))
   (format stream "#endif // DEFINE_LTV_PARSERS~%"))
 
+#-building-clasp
 (defun build-ltv-switch (primitives &optional (stream *standard-output*))
   (format stream "#ifdef DEFINE_LTV_SWITCH~%")
   (dolist (prim primitives)
@@ -393,10 +404,12 @@
             (first prim) (third prim)))
   (format stream "#endif // DEFINE_LTV_SWITCH~%"))
 
+#-building-clasp
 (defun build-ltv-machine (&optional (stream *standard-output*))
   (build-ltv-functions *startup-primitives-as-list* stream)
   (build-ltv-switch *startup-primitives-as-list* stream))
 
+#-building-clasp
 (defun build-bytecode-ltv-ops (&optional (stream *standard-output*))
   (format stream "~%#ifdef DEFINE_BYTECODE_LTV_OPS~%enum class bytecode_ltv : uint8_t {~%")
   (dolist (op +bytecode-ltv-ops+)
@@ -413,7 +426,7 @@
   (format stream "};~%#endif~%"))
 
 ;;; entry point
-
+#-building-clasp
 (defun generate-virtual-machine-header (fout)
   (generate-vm-codes fout)
   (generate-python-bytecode-table fout)
