@@ -2216,32 +2216,52 @@ COMPILE-FILE will use the default *clasp-env*."
   (let ((cmp:*cleavir-compile-hook* #'bir-compile))
     (compile name definition)))
 
+;;; Given a BIR module, compile an LLVM module and return four values
+;;; needed to JIT or otherwise use it:
+;;; 1) the module
+;;; 2) the hash table of BIR functions to llvm-function-infos
+;;; 3) A list of constants the module needs, in the correct order
+;;; 4) the startup-shutdown-id
+(defun translate-bir (bir-module &key (abi *abi-x86-64*)
+                                   (linkage 'llvm-sys:internal-linkage)
+                                   ;; actually a namestring
+                                   (pathname "repl-code"))
+  (let ((module (cmp::llvm-create-module "compile"))
+        (function-info (make-hash-table :test #'eq)))
+    (cmp::with-module (:module module)
+      (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
+          (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
+            (literal:with-rtv
+              (let* ((*unwind-ids* (make-hash-table :test #'eq))
+                     (*function-info* function-info)
+                     (*constant-values* (make-hash-table :test #'eq)))
+                (layout-module bir-module abi :linkage linkage)
+                (cmp::potentially-save-module))))
+        (values module function-info ordered-raw-constants-list
+                startup-shutdown-id)))))
+
 (defun bir->function (bir &key (abi *abi-x86-64*)
                             (linkage 'llvm-sys:internal-linkage))
-  (let ((module (cmp::create-run-time-module-for-compile))
-        (pathname
+  (let ((pathname
           (let ((origin (origin-source (bir:origin bir))))
             (if origin
                 (namestring
                  (core:file-scope-pathname
                   (core:file-scope
                    (core:source-pos-info-file-handle origin))))
-                "repl-code")))
-        entry-point-index)
-    ;; Link the C++ intrinsics into the module
-    (cmp::with-module (:module module)
-      (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
-          (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-            (literal:with-rtv
-              (setf entry-point-index
-                    (cmp:entry-point-reference-index
-                     (cmp:xep-group-entry-point-reference
-                      (translate bir :linkage linkage :abi abi))))))
-        (declare (ignore constants-table))
-        (llvm-sys:code-literal
-         (jit-add-module
-          cmp:*the-module* startup-shutdown-id ordered-raw-constants-list)
-         entry-point-index)))))
+                "repl-code"))))
+    (multiple-value-bind (module function-infos constants startup-shutdown-id)
+        (translate-bir (bir:module bir) :abi abi :linkage linkage
+                                        :pathname pathname)
+      (let* ((info (or (gethash bir function-infos)
+                       (error "Missing LLVM function info for BIR function ~a."
+                              bir)))
+             (entry-point-index
+               (cmp:entry-point-reference-index
+                (cmp:xep-group-entry-point-reference
+                 (xep-function info))))
+             (objfile (jit-add-module module startup-shutdown-id constants)))
+        (llvm-sys:code-literal objfile entry-point-index)))))
 
 ;;; Used from fli.lisp.
 ;;; Create a function like
