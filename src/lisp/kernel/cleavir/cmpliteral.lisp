@@ -749,8 +749,9 @@ Return the index of the load-time-value"
                                        *gcroots-in-module*
                                        (cmp:irc-pointer-cast correct-size-holder cmp:%t**% "")
                                        (cmp:jit-constant-size_t literal-entries)
-                                       (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0)
-                                                           cmp:%t*%)
+                                       (llvm-sys:constant-expr/get-int-to-ptr
+                                        (cmp:jit-constant-uintptr_t 0)
+                                        cmp:%t*% nil)
                                        transient-vector
                                        (cmp:jit-constant-size_t transient-entries)
                                        (cmp:jit-constant-size_t function-vector-length)

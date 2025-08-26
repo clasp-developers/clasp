@@ -2021,7 +2021,7 @@
 (defun %allocate-constant (value read-only-p)
   (let ((immediate (core:create-tagged-immediate-value-or-nil value)))
     (if immediate
-        (cmp:irc-int-to-ptr (%i64 immediate) cmp:%t*%)
+        (llvm-sys:constant-expr/get-int-to-ptr (%i64 immediate) cmp:%t*% nil)
         (literal:reference-literal value read-only-p))))
 
 (defmethod allocate-constant ((ir bir:constant))

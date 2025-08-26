@@ -1107,8 +1107,7 @@ function-description - for debugging."
   `(let* ((*the-module* ,module))
      (or *the-module* (error "with-module *the-module* is NIL"))
      (multiple-value-prog1
-         (with-irbuilder ((llvm-sys:make-irbuilder (thread-local-llvm-context)))
-           ,@body)
+         (progn ,@body)
        (when (and ,optimize ,optimize-level (null ,dry-run)) (funcall ,optimize ,module ,optimize-level )))))
 
 ;;; ALLOCA functions
@@ -1585,8 +1584,7 @@ function-description - for debugging."
    'llvm-sys:appending-linkage
    (llvm-sys:constant-array-get
     %i8*[1]%
-    (list
-     (irc-bit-cast used-function %i8*%)))
+    (list used-function))
    "llvm.used"))
 
 

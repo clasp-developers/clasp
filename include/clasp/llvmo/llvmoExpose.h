@@ -1490,6 +1490,8 @@ public:
 
 public:
   static Constant_sp getInBoundsGetElementPtr(llvm::Type* element_type, Constant_sp constant, core::List_sp idxList);
+  static Constant_sp getIntToPtr(llvm::Constant* c, llvm::Type* ty,
+                                 bool only_if_reduced_p);
 
 }; // ConstantExpr_O
 }; // namespace llvmo
