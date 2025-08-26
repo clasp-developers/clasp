@@ -789,8 +789,7 @@ Return the index of the load-time-value"
          (*literal-machine* (make-literal-machine)))
     (funcall body-fn)
     (let* ((run-time-values (coerce (literal-machine-run-all-objects *literal-machine*) 'list))
-           (num-elements (length run-time-values))
-           (constant-table nil))
+           (num-elements (length run-time-values)))
       ;; Put the constants in order they will appear in the table.
       ;; Return the orderered-raw-constants-list and the constants-table GlobalVariable
       (when (> num-elements 0)
@@ -806,20 +805,20 @@ Return the index of the load-time-value"
                                    nil)
                                   (t (error "Illegal object in ordered-literals-list it is: ~s" x))))
                          ordered-literals-list))
-               (array-type (llvm-sys:array-type-get cmp:%t*% (length ordered-literals-list))))
-          (setf constant-table (llvm-sys:make-global-variable cmp:*the-module*
-                                                              array-type
-                                                              nil ; isConstant
-                                                              'llvm-sys:internal-linkage
-                                                              (llvm-sys:undef-value-get array-type)
-                                                              (next-value-table-holder-name module-id)))
-          (let ((bitcast-constant-table (cmp:irc-bit-cast constant-table cmp:%t*[0]*% "bitcast-table")))
-            (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-constant-table)
-            (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)
-            (let ((cmp:*load-time-value-holder-global-var-type* cmp:%t*[0]%)
-                  (cmp:*load-time-value-holder-global-var* bitcast-constant-table))
-              (cmp:codegen-startup-shutdown cmp:*the-module* module-id *gcroots-in-module* array-type constant-table num-elements ordered-literals-list)
-              (values ordered-raw-constants-list constant-table module-id))))))))
+               (array-type (llvm-sys:array-type-get cmp:%t*% (length ordered-literals-list)))
+               (constant-table
+                 (llvm-sys:make-global-variable cmp:*the-module*
+                                                array-type
+                                                nil ; isConstant
+                                                'llvm-sys:internal-linkage
+                                                (llvm-sys:undef-value-get array-type)
+                                                (next-value-table-holder-name module-id))))
+          (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* constant-table)
+          (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)
+          (let ((cmp:*load-time-value-holder-global-var-type* array-type)
+                (cmp:*load-time-value-holder-global-var* constant-table))
+            (cmp:codegen-startup-shutdown cmp:*the-module* module-id *gcroots-in-module* array-type constant-table num-elements ordered-literals-list)
+            (values ordered-raw-constants-list constant-table module-id)))))))
 
 (defmacro with-rtv (&body body)
   "Evaluate the code in the body in an environment where run-time values are assigned integer indices
