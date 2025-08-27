@@ -615,7 +615,7 @@
 
 (defun maybe-insert-step-before (inst)
   (when (policy:policy-value (bir:policy inst)
-                             'insert-step-conditions)
+                             'core::insert-step-conditions)
     (let ((origin (bir:origin inst)))
       (when (typep origin 'cst:cst)
         (let* ((frame (%intrinsic-call "llvm.frameaddress.p0"
@@ -624,11 +624,12 @@
                ;; See #1376: Sometimes the source form will be an immediate.
                ;; This may be due to inadequacies in constant folding.
                (lit
-                 (handler-case
-                     (literal:compile-reference-to-literal raw)
-                   (serious-condition ()
-                     (literal:compile-reference-to-literal
-                      "<error dumping form>")))))
+                 (literal:constants-table-value
+                  (handler-case
+                      (literal:reference-literal raw)
+                    (serious-condition ()
+                      (literal:reference-literal
+                       "<error dumping form>"))))))
           (%intrinsic-invoke-if-landing-pad-or-call
            "cc_breakstep" (list lit frame)))))))
 
@@ -642,7 +643,7 @@
 
 (defun maybe-insert-step-after (inst)
   (when (and (policy:policy-value (bir:policy inst)
-                                          'insert-step-conditions)
+                                  'core::insert-step-conditions)
              (typep (bir:origin inst) 'cst:cst))
     ;; OK, we inserted a cc_breakstep call in the above method,
     ;; so now we need to put in the cc_breakstep_after to support

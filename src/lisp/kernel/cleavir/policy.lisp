@@ -62,7 +62,7 @@ See TYPE-CHECK-THE for an explanation of the values.")
   "Should calls to pure functions with unused results be flushed, even if this will not preserve some error that the call might signal?
 If this policy is not in place, such calls may be flushed.")
 
-(define-policy insert-step-conditions
+(define-policy core::insert-step-conditions
     (>= debug 3)
   ((nil "no") (t "yes"))
   "Should the compiler insert code to signal step conditions? This adds a bit of overhead to every call.")
