@@ -543,18 +543,6 @@
    "cc_throw" (list (in (first (bir:inputs instruction)))))
   (cmp:irc-unreachable))
 
-(defun gen-call-cleanup (uwprotect-inst)
-  (multiple-value-bind (ind old old-destack)
-      (bind-special (literal:constants-table-value
-                     (literal:reference-variable-cell
-                      'core:*interrupts-enabled*)
-                     :literal-name "*INTERRUPTS-ENABLED*")
-                    (%nil))
-    (cmp:with-landing-pad (maybe-entry-landing-pad
-                           (bir:parent uwprotect-inst) *tags*)
-      (closure-call-or-invoke (in (first (bir:inputs uwprotect-inst))) nil))
-    (unbind-special ind old old-destack)))
-
 (defmethod translate-terminator ((instruction bir:unwind-protect) abi next)
   (declare (ignore abi))
   (let* ((cleanup (cmp:irc-basic-block-create "unwind-protect-cleanup"))

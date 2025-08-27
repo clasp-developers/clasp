@@ -87,3 +87,28 @@
         (ignore-errors (mp:process-join proc))
         cell)
       (t))
+
+;;; Check unwind-protect semantics: Interrupts are disabled while unwinding,
+;;; but restored afterwards.
+(defun call-with-uwp (function cleanup)
+  ;; separate to try to avoid compiler optimizations.
+  (unwind-protect (funcall function) (funcall cleanup)))
+
+(test unwind-protect.interrupt.1
+      (mp:with-interrupts
+        (let ((outer-interruptiblep (mp:interruptiblep))
+              unwinding-interruptiblep)
+          (call-with-uwp (lambda ()) (lambda () (setf unwind-interruptiblep
+                                                      (mp:interruptiblep))))
+          (values unwinding-interruptiblep (eq outer-interruptiblep
+                                               (mp:interruptiblep)))))
+      (nil t))
+
+(test unwind-protect.interrupt.2
+      (mp:with-interrupts
+        (let ((outer-interruptiblep (mp:interruptiblep)))
+          (values (block nil
+                    (call-with-uwp (lambda ())
+                                   (lambda () (return (mp:interruptiblep)))))
+                  (eq outer-interruptiblep (mp:interruptiblep)))))
+      (nil t))
