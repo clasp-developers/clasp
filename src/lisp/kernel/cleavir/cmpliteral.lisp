@@ -776,13 +776,6 @@ Return the index of the load-time-value"
                                           'llvm-sys:internal-linkage
                                           nil
                                           (next-value-table-holder-name module-id "dummy")))
-         (*gcroots-in-module*
-           (llvm-sys:make-global-variable cmp:*the-module*
-                                          cmp:%gcroots-in-module% ; type
-                                          nil ; isConstant
-                                          'llvm-sys:internal-linkage
-                                          (cmp:gcroots-in-module-initial-value)
-                                          (core:fmt nil "{}{}" core:+gcroots-in-module-name+ module-id)))
          (*run-time-coalesce* (make-similarity-table #'eq))
          (*literal-machine* (make-literal-machine)))
     (funcall body-fn)
@@ -808,7 +801,7 @@ Return the index of the load-time-value"
                  (llvm-sys:make-global-variable cmp:*the-module*
                                                 array-type
                                                 nil ; isConstant
-                                                'llvm-sys:internal-linkage
+                                                'llvm-sys:external-linkage
                                                 (llvm-sys:undef-value-get array-type)
                                                 (next-value-table-holder-name module-id))))
           (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* constant-table)
@@ -819,8 +812,11 @@ Return the index of the load-time-value"
                 (setup-literal-machine-function-vectors cmp:*the-module*
                                                         :id module-id
                                                         :linkage 'llvm-sys:external-linkage)
-              (cmp:codegen-startup-shutdown cmp:*the-module* module-id *gcroots-in-module* fvector-len fvector fvector-type array-type constant-table num-elements ordered-literals-list)
-              (values ordered-raw-constants-list module-id (llvm-sys:get-name fvector)))))))))
+              (declare (ignore fvector-len fvector-type))
+              (values ordered-raw-constants-list
+                      module-id
+                      (llvm-sys:get-name constant-table)
+                      (llvm-sys:get-name fvector)))))))))
 
 (defmacro with-rtv (&body body)
   "Evaluate the code in the body in an environment where run-time values are assigned integer indices

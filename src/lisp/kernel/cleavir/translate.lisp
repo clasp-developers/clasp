@@ -2219,7 +2219,7 @@ COMPILE-FILE will use the default *clasp-env*."
         (function-info (make-hash-table :test #'eq)))
     (cmp::with-module (:module module)
       (multiple-value-bind (ordered-raw-constants-list startup-shutdown-id
-                            fvector-name)
+                            ctable-name fvector-name)
           (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
             (literal:with-rtv
               (let* ((*unwind-ids* (make-hash-table :test #'eq))
@@ -2227,8 +2227,8 @@ COMPILE-FILE will use the default *clasp-env*."
                      (*constant-values* (make-hash-table :test #'eq)))
                 (layout-module bir-module abi :linkage linkage)
                 (cmp::potentially-save-module))))
-        (values module function-info ordered-raw-constants-list
-                startup-shutdown-id fvector-name)))))
+        (values module function-info ordered-raw-constants-list startup-shutdown-id
+                ctable-name fvector-name)))))
 
 (defun bir->function (bir &key (abi *abi-x86-64*)
                             (linkage 'llvm-sys:internal-linkage))
@@ -2240,8 +2240,8 @@ COMPILE-FILE will use the default *clasp-env*."
                   (core:file-scope
                    (core:source-pos-info-file-handle origin))))
                 "repl-code"))))
-    (multiple-value-bind (module function-infos constants startup-shutdown-id
-                          fvector-name)
+    (multiple-value-bind (module function-infos constants
+                          startup-shutdown-id ctable-name fvector-name)
         (translate-bir (bir:module bir) :abi abi :linkage linkage
                                         :pathname pathname)
       (let* ((info (or (gethash bir function-infos)
@@ -2251,7 +2251,7 @@ COMPILE-FILE will use the default *clasp-env*."
                (cmp:entry-point-reference-index
                 (cmp:xep-group-entry-point-reference
                  (xep-function info))))
-             (objfile (jit-add-module module startup-shutdown-id
+             (objfile (jit-add-module module startup-shutdown-id ctable-name
                                       fvector-name constants)))
         (llvm-sys:code-literal objfile entry-point-index)))))
 

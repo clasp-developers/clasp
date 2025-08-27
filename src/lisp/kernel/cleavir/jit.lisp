@@ -146,27 +146,23 @@
           into new-lits
         finally (return new-lits)))
 
-(defun jit-add-module (module startup-shutdown-id fvector-name literals-list)
+(defun jit-add-module (module startup-shutdown-id ctable-name fvector-name literals-list)
   (cmp:irc-verify-module-safe module)
   (unwind-protect
        (let ((jit-engine (llvm-sys:clasp-jit)))
-         (multiple-value-bind (startup-name shutdown-name)
-             (cmp:jit-startup-shutdown-function-names startup-shutdown-id)
-           (unless (llvm-sys:get-function module startup-name)
-             (error "Startup function ~s not present in module" startup-name))
-           (cmp:with-track-llvm-time
-             (when *dump-compile-module*
-               (format t "About to dump module~%")
-               (llvm-sys:dump-module module)
-               (format t "startup-name ~a~%" startup-name)
-               (format t "Done dump module~%"))
-             (mp:with-lock (*jit-lock*)
-               (let ((dylib (llvm-sys:get-main-jitdylib jit-engine)))
-                 (prog1
-                     (llvm-sys:add-irmodule jit-engine dylib module cmp:*thread-safe-context* startup-shutdown-id)
-                   ;; Install the literals and run the startup function.
-                   (let* ((fvector (llvm-sys:lookup jit-engine dylib fvector-name))
-                          (literals (jit-resolve-literals literals-list fvector)))
-                     (llvm-sys:jit-finalize jit-engine startup-name shutdown-name
-                                            literals))))))))
+         (cmp:with-track-llvm-time
+           (when *dump-compile-module*
+             (format t "About to dump module~%")
+             (llvm-sys:dump-module module)
+             (format t "Done dump module~%"))
+           (mp:with-lock (*jit-lock*)
+             (let ((dylib (llvm-sys:get-main-jitdylib jit-engine)))
+               (prog1
+                   (llvm-sys:add-irmodule jit-engine dylib module cmp:*thread-safe-context* startup-shutdown-id)
+                 ;; Install the literals.
+                 (loop with fvector = (llvm-sys:lookup jit-engine dylib fvector-name)
+                       with litarr = (llvm-sys:lookup jit-engine dylib ctable-name)
+                       for lit in (jit-resolve-literals literals-list fvector)
+                       for i from 0
+                       do (setf (core:literals-vref litarr i) lit)))))))
     (gctools:thread-local-cleanup)))
