@@ -400,13 +400,15 @@ BytecodeSimpleFun_sp core__makeBytecodeSimpleFun(FunctionDescription_sp fdesc, B
   return entryPoint;
 }
 
-CoreFun_sp makeCoreFunFromGenerator(CoreFunGenerator_sp original, void** entry_points) {
-  if (!original->_entry_point_indices.consp()) {
-    SIMPLE_ERROR("The CoreFun {} does not have entry-points", _rep_(original));
+CL_LISPIFY_NAME("core-fun-generator/generate");
+CL_DEFMETHOD
+CoreFun_sp CoreFunGenerator_O::generate(void** entry_points) const {
+  if (!_entry_point_indices.consp()) {
+    SIMPLE_ERROR("The CoreFunGenerator {} does not have entry-points", _rep_(this->asSmartPtr()));
   }
-  T_sp firstEntryPoint = CONS_CAR(original->_entry_point_indices);
+  T_sp firstEntryPoint = CONS_CAR(_entry_point_indices);
   if (!firstEntryPoint.fixnump()) {
-    SIMPLE_ERROR("The FunctionDescriptionGenerator {} does not have entry-points indices", _rep_(original));
+    SIMPLE_ERROR("The CoreFunGenerator {} does not have entry-points indices", _rep_(this->asSmartPtr()));
   }
   size_t entryPointIndex = firstEntryPoint.unsafe_fixnum();
   ClaspCoreFunction entry_point = (ClaspCoreFunction)(entry_points[entryPointIndex]);
@@ -414,16 +416,18 @@ CoreFun_sp makeCoreFunFromGenerator(CoreFunGenerator_sp original, void** entry_p
   if (entry_point) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
   }
-  auto entryPoint = gctools::GC<CoreFun_O>::allocate(original->_FunctionDescription, code, entry_point);
+  auto entryPoint = gctools::GC<CoreFun_O>::allocate(_FunctionDescription, code, entry_point);
   return entryPoint;
 }
 
-SimpleCoreFun_sp makeSimpleCoreFunFromGenerator(SimpleCoreFunGenerator_sp original, gctools::GCRootsInModule* roots,
-                                                    void** entry_points) {
-  if (!original->_entry_point_indices.consp()) {
-    SIMPLE_ERROR("The SimpleCoreFun {} does not have entry-points", _rep_(original));
+CL_LISPIFY_NAME("simple-core-fun-generator/generate");
+CL_DEFMETHOD
+SimpleCoreFun_sp SimpleCoreFunGenerator_O::generate(CoreFun_sp core,
+                                                    void** entry_points) const {
+  if (!_entry_point_indices.consp()) {
+    SIMPLE_ERROR("The SimpleCoreFunGenerator {} does not have entry-points", _rep_(this->asSmartPtr()));
   }
-  List_sp epIndices = gc::As<List_sp>(original->_entry_point_indices);
+  List_sp epIndices = gc::As<List_sp>(_entry_point_indices);
   size_t num = cl__length(epIndices);
   if (num != ClaspXepFunction::Entries) {
     printf("%s:%d:%s %lu is not enough entry_points for a ClaspXepFunction expected %d\n", __FILE__, __LINE__, __FUNCTION__, num,
@@ -435,17 +439,16 @@ SimpleCoreFun_sp makeSimpleCoreFunFromGenerator(SimpleCoreFunGenerator_sp origin
   for (auto entry : epIndices) {
     T_sp oneEntryPointIndex = CONS_CAR(entry);
     if (!oneEntryPointIndex.fixnump()) {
-      SIMPLE_ERROR("The FunctionDescriptionGenerator {} does not have entry-points indices", _rep_(original));
+      SIMPLE_ERROR("The SimpleCoreFunGenerator {} does not have entry-points indices", _rep_(this->asSmartPtr()));
     }
     size_t entryPointIndex = oneEntryPointIndex.unsafe_fixnum();
     ClaspXepAnonymousFunction entry_point = (ClaspXepAnonymousFunction)(entry_points[entryPointIndex]);
     xepFunction._EntryPoints[cur] = entry_point;
     cur++;
   }
-  CoreFun_sp localFun((gctools::Tagged)roots->getLiteral(original->_localFunIndex));
   T_sp code = unbound<T_O>();
   code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(xepFunction._EntryPoints[0]));
-  return gctools::GC<SimpleCoreFun_O>::allocate(original->_FunctionDescription, xepFunction, code, localFun);
+  return gctools::GC<SimpleCoreFun_O>::allocate(_FunctionDescription, xepFunction, code, core);
 }
 
 DOCGROUP(clasp);

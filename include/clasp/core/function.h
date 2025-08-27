@@ -312,6 +312,7 @@ public:
   CL_DEFMETHOD FunctionDescription_sp functionDescription() const {
     return this->_FunctionDescription;
   }
+  CoreFun_sp generate(void**) const;
 };
 
 // A SimpleCoreFun is a SimpleFun with an associated CoreFun.
@@ -406,6 +407,7 @@ public:
   std::string __repr__() const;
   size_t coreFunIndex() const;
   CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
+  SimpleCoreFun_sp generate(CoreFun_sp, void**) const;
 };
 
 FunctionDescription_sp makeFunctionDescription(T_sp functionName, T_sp lambda_list = unbound<T_O>(), T_sp docstring = nil<T_O>(),
@@ -441,9 +443,6 @@ SimpleCoreFun_sp makeSimpleCoreFunAndFunctionDescription(T_sp functionName, T_sp
 BytecodeSimpleFun_sp core__makeBytecodeSimpleFun(FunctionDescription_sp fdesc, BytecodeModule_sp module,
                                                              size_t localsFrameSize, size_t environmentSize, size_t pcIndex,
                                                              size_t bytecodeSize, Pointer_sp trampoline);
-
-SimpleCoreFun_sp makeSimpleCoreFunFromGenerator(SimpleCoreFunGenerator_sp ep, gctools::GCRootsInModule* roots, void** fptrs);
-CoreFun_sp makeCoreFunFromGenerator(CoreFunGenerator_sp ep, void** fptrs);
 
 }; // namespace core
 
