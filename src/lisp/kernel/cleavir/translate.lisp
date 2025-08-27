@@ -2218,7 +2218,7 @@ COMPILE-FILE will use the default *clasp-env*."
   (let ((module (cmp::llvm-create-module "compile"))
         (function-info (make-hash-table :test #'eq)))
     (cmp::with-module (:module module)
-      (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
+      (multiple-value-bind (ordered-raw-constants-list startup-shutdown-id)
           (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
             (literal:with-rtv
               (let* ((*unwind-ids* (make-hash-table :test #'eq))

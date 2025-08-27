@@ -819,7 +819,7 @@ Return the index of the load-time-value"
           (let ((cmp:*load-time-value-holder-global-var-type* array-type)
                 (cmp:*load-time-value-holder-global-var* constant-table))
             (cmp:codegen-startup-shutdown cmp:*the-module* module-id *gcroots-in-module* array-type constant-table num-elements ordered-literals-list)
-            (values ordered-raw-constants-list constant-table module-id)))))))
+            (values ordered-raw-constants-list module-id)))))))
 
 (defmacro with-rtv (&body body)
   "Evaluate the code in the body in an environment where run-time values are assigned integer indices
