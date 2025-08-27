@@ -39,7 +39,6 @@ THE SOFTWARE.
 #include <clasp/core/numbers.h>
 #include <clasp/core/array.h>
 #include <clasp/core/hashTable.h>
-#include <clasp/core/function.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/gctools/gc_boot.h>
@@ -215,21 +214,6 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_addre
     core::List_sp args((gctools::Tagged)initial_data);
     for (auto c : args) {
       core::T_sp arg = CONS_CAR(c);
-
-      //
-      // This is where we translate some literals
-      // This is like load-time
-      //
-      if (gc::IsA<core::SimpleCoreFunGenerator_sp>(arg)) {
-        core::SimpleCoreFunGenerator_sp fdgen = gc::As_unsafe<core::SimpleCoreFunGenerator_sp>(arg);
-        size_t coreFunIdx = fdgen->coreFunIndex();
-        core::CoreFun_sp core((Tagged)roots->getLiteral(coreFunIdx));
-        arg = fdgen->generate(core, fptrs);
-      } else if (gc::IsA<core::CoreFunGenerator_sp>(arg)) {
-        core::CoreFunGenerator_sp fdgen = gc::As_unsafe<core::CoreFunGenerator_sp>(arg);
-        arg = fdgen->generate(fptrs);
-      }
-
       roots->setLiteral(idx, arg.tagged_());
       ++idx;
     }

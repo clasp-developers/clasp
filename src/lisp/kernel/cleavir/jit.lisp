@@ -126,7 +126,27 @@
 
 (defparameter *jit-lock* (mp:make-recursive-mutex 'jit-lock))
 
-(defun jit-add-module (module startup-shutdown-id literals-list)
+(defun jit-resolve-literals (literals fvector)
+  (loop for lit in literals
+        ;; "generators" are markers for what will eventually be actual functions.
+        ;; In order to create the functions, they need the actual function pointers.
+        ;; These function pointers are in the fvector (function pointer vector).
+        ;; We do the generation of actual functions here.
+        collect (typecase lit
+                  (core:core-fun-generator
+                   (core:core-fun-generator/generate lit fvector))
+                  (core:simple-core-fun-generator
+                   (core:simple-core-fun-generator/generate
+                    lit
+                    (nth (core:simple-core-fun-generator-local-fun-index lit)
+                         new-lits)
+                    fvector))
+                  ;; Anything that's not a generator just means itself.
+                  (t lit))
+          into new-lits
+        finally (return new-lits)))
+
+(defun jit-add-module (module startup-shutdown-id fvector-name literals-list)
   (cmp:irc-verify-module-safe module)
   (unwind-protect
        (let ((jit-engine (llvm-sys:clasp-jit)))
@@ -138,10 +158,15 @@
              (when *dump-compile-module*
                (format t "About to dump module~%")
                (llvm-sys:dump-module module)
-               (format t "startup-name |{}|~%" startup-name)
+               (format t "startup-name ~a~%" startup-name)
                (format t "Done dump module~%"))
              (mp:with-lock (*jit-lock*)
-               (prog1
-                   (llvm-sys:add-irmodule jit-engine (llvm-sys:get-main-jitdylib jit-engine) module cmp:*thread-safe-context* startup-shutdown-id)
-                 (llvm-sys:jit-finalize jit-engine startup-name shutdown-name literals-list))))))
+               (let ((dylib (llvm-sys:get-main-jitdylib jit-engine)))
+                 (prog1
+                     (llvm-sys:add-irmodule jit-engine dylib module cmp:*thread-safe-context* startup-shutdown-id)
+                   ;; Install the literals and run the startup function.
+                   (let* ((fvector (llvm-sys:lookup jit-engine dylib fvector-name))
+                          (literals (jit-resolve-literals literals-list fvector)))
+                     (llvm-sys:jit-finalize jit-engine startup-name shutdown-name
+                                            literals))))))))
     (gctools:thread-local-cleanup)))

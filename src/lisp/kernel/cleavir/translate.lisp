@@ -2218,7 +2218,8 @@ COMPILE-FILE will use the default *clasp-env*."
   (let ((module (cmp::llvm-create-module "compile"))
         (function-info (make-hash-table :test #'eq)))
     (cmp::with-module (:module module)
-      (multiple-value-bind (ordered-raw-constants-list startup-shutdown-id)
+      (multiple-value-bind (ordered-raw-constants-list startup-shutdown-id
+                            fvector-name)
           (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
             (literal:with-rtv
               (let* ((*unwind-ids* (make-hash-table :test #'eq))
@@ -2227,7 +2228,7 @@ COMPILE-FILE will use the default *clasp-env*."
                 (layout-module bir-module abi :linkage linkage)
                 (cmp::potentially-save-module))))
         (values module function-info ordered-raw-constants-list
-                startup-shutdown-id)))))
+                startup-shutdown-id fvector-name)))))
 
 (defun bir->function (bir &key (abi *abi-x86-64*)
                             (linkage 'llvm-sys:internal-linkage))
@@ -2239,7 +2240,8 @@ COMPILE-FILE will use the default *clasp-env*."
                   (core:file-scope
                    (core:source-pos-info-file-handle origin))))
                 "repl-code"))))
-    (multiple-value-bind (module function-infos constants startup-shutdown-id)
+    (multiple-value-bind (module function-infos constants startup-shutdown-id
+                          fvector-name)
         (translate-bir (bir:module bir) :abi abi :linkage linkage
                                         :pathname pathname)
       (let* ((info (or (gethash bir function-infos)
@@ -2249,7 +2251,8 @@ COMPILE-FILE will use the default *clasp-env*."
                (cmp:entry-point-reference-index
                 (cmp:xep-group-entry-point-reference
                  (xep-function info))))
-             (objfile (jit-add-module module startup-shutdown-id constants)))
+             (objfile (jit-add-module module startup-shutdown-id
+                                      fvector-name constants)))
         (llvm-sys:code-literal objfile entry-point-index)))))
 
 ;;; Used from fli.lisp.

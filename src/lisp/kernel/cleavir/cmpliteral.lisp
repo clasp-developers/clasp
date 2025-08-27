@@ -819,8 +819,8 @@ Return the index of the load-time-value"
                 (setup-literal-machine-function-vectors cmp:*the-module*
                                                         :id module-id
                                                         :linkage 'llvm-sys:external-linkage)
-              (cmp:codegen-startup-shutdown cmp:*the-module* module-id *gcroots-in-module* fvector-len fvector fvector-type array-type constant-table num-elements ordered-literals-list))
-            (values ordered-raw-constants-list module-id)))))))
+              (cmp:codegen-startup-shutdown cmp:*the-module* module-id *gcroots-in-module* fvector-len fvector fvector-type array-type constant-table num-elements ordered-literals-list)
+              (values ordered-raw-constants-list module-id (llvm-sys:get-name fvector)))))))))
 
 (defmacro with-rtv (&body body)
   "Evaluate the code in the body in an environment where run-time values are assigned integer indices
