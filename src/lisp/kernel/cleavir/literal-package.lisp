@@ -8,7 +8,6 @@
    #:make-general-entry-placeholder
    #:make-literal-node-call
    #:make-literal-node-creator
-   #:setup-literal-machine-function-vectors
    #:run-all-add-node
    #:entry-point-datum-for-xep-group
    #:register-local-function-index

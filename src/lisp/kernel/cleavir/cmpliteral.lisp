@@ -669,19 +669,16 @@ Return the index of the load-time-value"
                                       (entry-point-datum-for-xep-group thunk)
                                       (cmp:xep-group-name thunk)))))
 
-(defun setup-literal-machine-function-vectors (the-module &key (id 0))
+(defun setup-literal-machine-function-vectors (the-module &key (id 0) (linkage 'llvm-sys:internal-linkage))
   (let* ((function-vector-length (length (literal-machine-function-vector *literal-machine*)))
          (function-vector-type (llvm-sys:array-type-get cmp:%opaque-fn-prototype*% function-vector-length))
          (function-vector-global (llvm-sys:make-global-variable
                                   the-module
                                   function-vector-type
                                   nil
-                                  'llvm-sys:internal-linkage
+                                  linkage
                                   (llvm-sys:constant-array-get function-vector-type
-                                                               (map 'list
-                                                                    (lambda (fn)
-                                                                      (cmp:irc-bit-cast fn cmp:%opaque-fn-prototype*%))
-                                                                    (literal-machine-function-vector *literal-machine*)))
+                                                               (coerce (literal-machine-function-vector *literal-machine*) 'list))
                                   (core:fmt nil "function-vector-{}" id))))
     (values function-vector-length function-vector-global function-vector-type)))
 
@@ -818,7 +815,11 @@ Return the index of the load-time-value"
           (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)
           (let ((cmp:*load-time-value-holder-global-var-type* array-type)
                 (cmp:*load-time-value-holder-global-var* constant-table))
-            (cmp:codegen-startup-shutdown cmp:*the-module* module-id *gcroots-in-module* array-type constant-table num-elements ordered-literals-list)
+            (multiple-value-bind (fvector-len fvector fvector-type)
+                (setup-literal-machine-function-vectors cmp:*the-module*
+                                                        :id module-id
+                                                        :linkage 'llvm-sys:external-linkage)
+              (cmp:codegen-startup-shutdown cmp:*the-module* module-id *gcroots-in-module* fvector-len fvector fvector-type array-type constant-table num-elements ordered-literals-list))
             (values ordered-raw-constants-list module-id)))))))
 
 (defmacro with-rtv (&body body)

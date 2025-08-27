@@ -1495,7 +1495,8 @@ function-description - for debugging."
 
 (defun codegen-startup (module startup-function-name
                         gcroots-in-module
-                        array-type roots-array-or-nil number-of-roots
+                        function-vector-length function-vector function-vector-type
+                        array-type roots-array number-of-roots
                         ordered-literals)
   (declare (ignore ordered-literals))
   (let ((startup-fn (irc-simple-function-create startup-function-name
@@ -1516,26 +1517,22 @@ function-description - for debugging."
            (arg-values (first arguments)))
       (cmp:irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
       (with-irbuilder (irbuilder-alloca)
-        (let ((start (if roots-array-or-nil
-                         (irc-typed-gep array-type roots-array-or-nil (list 0 0))
-                         (llvm-sys:constant-pointer-null-get %t**%))))
-          (multiple-value-bind (function-vector-length function-vector function-vector-type)
-              (literal:setup-literal-machine-function-vectors cmp:*the-module*)
-            (when gcroots-in-module
-              (irc-intrinsic "cc_initialize_gcroots_in_module"
-                             gcroots-in-module ; holder
-                             start ; root_address
-                             (jit-constant-size_t number-of-roots) ; num_roots
-                             arg-values ; initial_data
-                             (llvm-sys:constant-pointer-null-get %i8**%) ; transient_alloca
-                             (jit-constant-size_t 0) ; transient_entries
-                             (jit-constant-size_t function-vector-length) ; function_pointer_count
-                             (irc-bit-cast
-                              (cmp:irc-typed-gep function-vector-type
-                                                 function-vector
-                                                 (list 0 0))
-                              %i8**%) ; fptrs
-                             ))))
+        (let ((start (irc-typed-gep array-type roots-array (list 0 0))))
+          (when gcroots-in-module
+            (irc-intrinsic "cc_initialize_gcroots_in_module"
+                           gcroots-in-module ; holder
+                           start ; root_address
+                           (jit-constant-size_t number-of-roots) ; num_roots
+                           arg-values ; initial_data
+                           (llvm-sys:constant-pointer-null-get %i8**%) ; transient_alloca
+                           (jit-constant-size_t 0) ; transient_entries
+                           (jit-constant-size_t function-vector-length) ; function_pointer_count
+                           (irc-bit-cast
+                            (cmp:irc-typed-gep function-vector-type
+                                               function-vector
+                                               (list 0 0))
+                            %i8**%) ; fptrs
+                           )))
         (when gcroots-in-module
           (irc-intrinsic "cc_finish_gcroots_in_module" gcroots-in-module))
         (irc-ret-void)
@@ -1562,12 +1559,14 @@ function-description - for debugging."
       (irc-ret-void)))
   (values))
 
-(defun codegen-startup-shutdown (module startup-shutdown-id &optional gcroots-in-module array-type roots-array-or-nil (number-of-roots 0) ordered-literals)
+(defun codegen-startup-shutdown (module startup-shutdown-id &optional gcroots-in-module function-vector-length function-vector function-vector-type array-type roots-array (number-of-roots 0) ordered-literals)
+  (assert roots-array)
   (multiple-value-bind (startup-function-name shutdown-function-name)
       (jit-startup-shutdown-function-names startup-shutdown-id)
     (codegen-startup module startup-function-name
                      gcroots-in-module
-                     array-type roots-array-or-nil number-of-roots
+                     function-vector-length function-vector function-vector-type
+                     array-type roots-array number-of-roots
                      ordered-literals)
     (codegen-shutdown module shutdown-function-name gcroots-in-module)
     (values)))
