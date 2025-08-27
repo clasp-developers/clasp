@@ -1570,8 +1570,6 @@ function-description - for debugging."
                      array-type roots-array-or-nil number-of-roots
                      ordered-literals)
     (codegen-shutdown module shutdown-function-name gcroots-in-module)
-    (make-boot-function-global-variable
-     module startup-shutdown-id :position startup-shutdown-id)
     (values)))
 
 
