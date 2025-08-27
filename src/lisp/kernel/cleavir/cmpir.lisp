@@ -209,7 +209,7 @@ local-function - the lcl function that all of the xep functions call."
   "Return the (values register-save-words entry-index) for the arity"
   (cond
     ((eq arity :general-entry) (values 3 0))
-    ((fixnump arity) (values (+ 1 arity) (+ 1 arity)))
+    ((core:fixnump arity) (values (+ 1 arity) (+ 1 arity)))
     (t (error "irc-arity-info Illegal arity ~a" arity))))
 
 (defun irc-personality-function ()
@@ -234,7 +234,7 @@ local-function - the lcl function that all of the xep functions call."
 (defun irc-fix-gep-indices (indices)
   (let ((fixed-indices (mapcar (lambda (val)
                                  (cond
-                                   ((fixnump val) (jit-constant-i32 val))
+                                   ((core:fixnump val) (jit-constant-i32 val))
                                    ((llvm-sys:type-equal %i32% val) val)
                                    ((llvm-sys:type-equal %i64% val) val)
                                    ((typep val 'llvm-sys:constant-int) val)
@@ -289,7 +289,7 @@ local-function - the lcl function that all of the xep functions call."
 (defun irc-size_t-*current-source-pos-info*-lineno ()
   (jit-constant-size_t (core:source-pos-info-lineno core:*current-source-pos-info*)))
 (defun irc-size_t-*current-source-pos-info*-column ()
-  (jit-constant-size_t (core:source-pos-info-column *current-source-pos-info*)))
+  (jit-constant-size_t (core:source-pos-info-column core:*current-source-pos-info*)))
 
 (defun irc-basic-block-create (name &optional (function *current-function*))
   "Create a llvm::BasicBlock with (name) in the (function)"
@@ -1241,7 +1241,7 @@ function-description - for debugging."
   (cond
     ((eq arity :general-entry)
      0)
-    ((fixnump arity)
+    ((core:fixnump arity)
      (+ 1 arity))
     (t (error "irc-arity-index Illegal arity ~a" arity))))
 
@@ -1699,7 +1699,7 @@ and initialize it with an array consisting of one function pointer."
   (let ((startup-fn (cond
                       ;; repl functions use an integer ID and we generate the startup-name and
                       ;;  then lookup the function
-                      ((fixnump func-designator)
+                      ((core:fixnump func-designator)
                        (multiple-value-bind (startup-name shutdown-name)
                            (jit-startup-shutdown-function-names func-designator)
                          (declare (ignore shutdown-name))
