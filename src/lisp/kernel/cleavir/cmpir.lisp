@@ -971,16 +971,6 @@ But no irbuilders or basic-blocks. Return the fn."
 
 (defconstant +maxi32+ 4294967295)
 
-(defstruct entry-point-reference
-  "Store an index into the literal vector for an entry-point. 
-index - the index into the literal vector
-kind - :global or :local - for debugging.
-function-description - for debugging."
-  index
-  kind ; for debugging (:global or :local)
-  function-description ; for debugging 
-  )
-
 (defstruct function-description-placeholder
   function function-name source-pathname lambda-list docstring declares lineno column filepos
   )
@@ -1016,23 +1006,20 @@ function-description - for debugging."
 
 (defun irc-create-global-entry-point-reference (xep-arity-list module function-description local-entry-point-reference)
   (declare (ignore module))
-  (let* ((simple-fun-generator (let ((entry-point-indices (literal:register-xep-function-indices xep-arity-list)))
-                                  (sys:make-simple-core-fun-generator
-                                   :entry-point-functions entry-point-indices
-                                   :function-description function-description
-                                   :local-entry-point-index (entry-point-reference-index local-entry-point-reference))))
-         (index (literal:reference-literal simple-fun-generator)))
-    (make-entry-point-reference :index index :kind :global :function-description function-description)))
+  (let* ((entry-point-indices (literal:register-xep-function-indices xep-arity-list))
+         (simple-fun-generator (sys:make-simple-core-fun-generator
+                                :entry-point-functions entry-point-indices
+                                :function-description function-description
+                                :local-entry-point-index local-entry-point-reference)))
+    (literal:reference-literal simple-fun-generator)))
 
 (defun irc-create-local-entry-point-reference (local-fn module function-description)
   (declare (ignore module))
-  (let* ((simple-fun-generator (let ((entry-point-index (literal:register-local-function-index local-fn)))
-                                 (sys:make-core-fun-generator
-                                  :entry-point-functions (list entry-point-index)
-                                  :function-description function-description)))
-         (index (literal:reference-literal simple-fun-generator)))
-    (make-entry-point-reference :index index :kind :local :function-description function-description)))
-
+  (let* ((entry-point-index (literal:register-local-function-index local-fn))
+         (simple-fun-generator (sys:make-core-fun-generator
+                                :entry-point-functions (list entry-point-index)
+                                :function-description function-description)))
+    (literal:reference-literal simple-fun-generator)))
 
 (defun irc-local-function-create (llvm-function-type linkage function-name module function-description)
   "Create a local function and no function description is needed"
@@ -1041,7 +1028,6 @@ function-description - for debugging."
          (local-entry-point-reference (irc-create-local-entry-point-reference fn module function-description)))         
     (values fn local-entry-point-reference)))
 
-(defparameter *multiple-entry-points* nil)
 (defun irc-xep-functions-create (cleavir-lambda-list-analysis linkage function-name module function-description local-function local-entry-point-reference)
   "Create a function and a function description for a cclasp function"
   ;; MULTIPLE-ENTRY-POINT first return value is list of entry points

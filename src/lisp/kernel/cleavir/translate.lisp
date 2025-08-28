@@ -750,7 +750,7 @@
          (entry-point-reference (cmp:xep-group-entry-point-reference enclosed-xep-group)))
     (when (eq enclosed-xep-group :xep-unallocated)
       (error "BUG: Tried to ENCLOSE a function with no XEP"))
-    (literal:constants-table-value (cmp:entry-point-reference-index entry-point-reference))))
+    (literal:constants-table-value entry-point-reference)))
 
 (defun enclose (function extent &optional (delay t))
   (let* ((code-info (find-llvm-function-info function))
@@ -2248,9 +2248,8 @@ COMPILE-FILE will use the default *clasp-env*."
                        (error "Missing LLVM function info for BIR function ~a."
                               bir)))
              (entry-point-index
-               (cmp:entry-point-reference-index
-                (cmp:xep-group-entry-point-reference
-                 (xep-function info))))
+               (cmp:xep-group-entry-point-reference
+                (xep-function info)))
              (objfile (jit-add-module module startup-shutdown-id ctable-name
                                       fvector-name constants)))
         (llvm-sys:code-literal objfile entry-point-index)))))
