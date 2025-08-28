@@ -148,7 +148,6 @@ public:
   void* literalsStart() const;
   core::T_O** TOLiteralsStart() const { return (core::T_O**)literalsStart(); }
   size_t TOLiteralsSize() const { return literalsSize() / sizeof(core::T_O*); }
-  virtual std::string filename() const;
   core::T_sp codeLineTable() const;
   virtual void validateEntryPoint(const core::ClaspXepFunction& entry_point);
 

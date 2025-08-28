@@ -143,12 +143,6 @@ size_t ObjectFile_O::sizeofInState(ObjectFile_O* code, CodeState_t state) {
   return gctools::sizeof_container<ObjectFile_O>(code->_DataCode.size());
 }
 
-std::string ObjectFile_O::filename() const {
-  stringstream ss;
-  ss << this->_FasoName->get_std_string() << ":" << this->_ObjectId;
-  return ss.str();
-}
-
 void ObjectFile_O::writeToFile(const std::string& fileName, const char* start, size_t size) {
   std::ofstream outfile;
   outfile.open(fileName, std::ios::binary | std::ios::out);
