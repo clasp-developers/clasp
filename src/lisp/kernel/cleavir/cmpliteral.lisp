@@ -765,9 +765,8 @@ Return the index of the load-time-value"
 
 (defvar *run-time-coalesce*)
 
-(defun do-rtv (body-fn)
+(defun do-rtv (body-fn module-id)
   (let* ((cmp:*generate-compile-file-load-time-values* nil)
-         (module-id (core:next-jit-compile-counter))
          (cmp:*load-time-value-holder-global-var-type* cmp:%t*[0]%)
          (cmp:*load-time-value-holder-global-var*
            (llvm-sys:make-global-variable cmp:*the-module*
@@ -818,7 +817,8 @@ Return the index of the load-time-value"
                       (llvm-sys:get-name constant-table)
                       (llvm-sys:get-name fvector)))))))))
 
-(defmacro with-rtv (&body body)
+(defmacro with-rtv ((&key (id '(core:next-jit-compile-counter)))
+                    &body body)
   "Evaluate the code in the body in an environment where run-time values are assigned integer indices
 starting from (literal-machine-table-index *literal-machine*) into a constants table and the run-time values are accumulated in *literal-machine*.
 References to the run-time values are relative to the *load-time-value-holder-global-var*.
@@ -826,7 +826,7 @@ Once the body has evaluated, if there were run-time values accumulated then sort
 global variable that can hold them all and replace every use of *load-time-value-holder-global-var* with this new constants-table.
 Then erase the global variable in *load-time-value-holder-global-var* whether or not run time values were found
 and  return the sorted values and the constant-table or (values nil nil)."
-  `(do-rtv (lambda () (progn ,@body))))
+  `(do-rtv (lambda () (progn ,@body)) ,id))
 
 (defun load-time-reference-literal (object read-only-p &key (toplevelp t))
   "If the object is an immediate object return (values immediate nil).

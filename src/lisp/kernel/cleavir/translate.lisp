@@ -2221,7 +2221,7 @@ COMPILE-FILE will use the default *clasp-env*."
       (multiple-value-bind (ordered-raw-constants-list startup-shutdown-id
                             ctable-name fvector-name)
           (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-            (literal:with-rtv
+            (literal:with-rtv ()
               (let* ((*unwind-ids* (make-hash-table :test #'eq))
                      (*function-info* function-info)
                      (*constant-values* (make-hash-table :test #'eq)))
