@@ -32,23 +32,6 @@
 
 (in-package :compiler)
 
-
-(defstruct xep-arity
-  "This describes one arity/entry-point for a 'xep-group'.  
-arity: - the arity of the function (:general-entry|0|1|2|3...|5) 
-function-or-placeholder - the llvm function or a placeholder for 
-                          the literal compiler to generate a pointer 
-                          to a fixed arity trampoline. "
-  arity ; arity of this entry point (:general-entry or an integer 0...n)
-  function-or-placeholder ; The function object for this entry point
-  )
-
-(defun arity-code (arity)
-  (cond
-    ((eq arity :general-entry)
-     0)
-    (t (1+ arity))))
-
 (defstruct cleavir-lambda-list-analysis
   "An analysis of the cleavir lambda list.  It breaks down the cleavir lambda-list
 into parts with a layout that comes from ECL's 'parse_lambda_list' function.
@@ -120,11 +103,6 @@ Maybe in the future we will want to actually put a test here."
   lambda-list ;; (error "ensure-cleavir-lambda-list doesn't know what to do with ~s" lambda-list))
   )
 
-(defun ensure-cleavir-lambda-list-analysis (arg)
-  (unless (cleavir-lambda-list-analysis-p arg)
-    (error "This ~a is not a cleavir-lambda-list-analysis - it must be" arg))
-  arg)
-
 (defun process-bir-lambda-list (lambda-list)
   "Temporary until bir:lambda-list can return a cleavir-lambda-list-analysis"
   (let* ((cleavir-lambda-list (ensure-cleavir-lambda-list lambda-list))
@@ -155,18 +133,6 @@ local-function - the lcl function that all of the xep functions call."
   arities
   entry-point-reference
   local-function)
-
-(defun ensure-xep-function-not-placeholder (fn)
-  (when (literal:general-entry-placeholder-p fn)
-    (error "~a must be a xep-function" fn))
-  fn)
-
-(defun xep-group-lookup (xep-group arity)
-  (dolist (entry (xep-group-arities xep-group))
-    (let ((entry-arity (xep-arity-arity entry)))
-      (when (eql entry-arity arity)
-        (return-from xep-group-lookup entry))))
-  (error "Could not find arity ~a in xep-group" arity))
 
 (defstruct (function-info (:constructor %make-function-info
                               (function-name
@@ -1003,61 +969,6 @@ But no irbuilders or basic-blocks. Return the fn."
                                      :lineno lineno
                                      :column column
                                      :filepos filepos))))
-
-(defun irc-create-global-entry-point-reference (xep-arity-list module function-description local-entry-point-reference)
-  (declare (ignore module))
-  (let* ((entry-point-indices (literal:register-xep-function-indices xep-arity-list))
-         (simple-fun-generator (sys:make-simple-core-fun-generator
-                                :entry-point-functions entry-point-indices
-                                :function-description function-description
-                                :local-entry-point-index local-entry-point-reference)))
-    (literal:reference-literal simple-fun-generator)))
-
-(defun irc-create-local-entry-point-reference (local-fn module function-description)
-  (declare (ignore module))
-  (let* ((entry-point-index (literal:register-local-function-index local-fn))
-         (simple-fun-generator (sys:make-core-fun-generator
-                                :entry-point-functions (list entry-point-index)
-                                :function-description function-description)))
-    (literal:reference-literal simple-fun-generator)))
-
-(defun irc-local-function-create (llvm-function-type linkage function-name module function-description)
-  "Create a local function and no function description is needed"
-  (let* ((local-function-name (concatenate 'string function-name "-lcl"))
-         (fn (irc-function-create llvm-function-type linkage local-function-name module))
-         (local-entry-point-reference (irc-create-local-entry-point-reference fn module function-description)))         
-    (values fn local-entry-point-reference)))
-
-(defun irc-xep-functions-create (cleavir-lambda-list-analysis linkage function-name module function-description local-function local-entry-point-reference)
-  "Create a function and a function description for a cclasp function"
-  ;; MULTIPLE-ENTRY-POINT first return value is list of entry points
-  (let ((rev-xep-aritys '()))
-    (dolist (arity (list* :general-entry (subseq (list 0 1 2 3 4 5 6 7 8) +entry-point-arity-begin+ +entry-point-arity-end+)))
-      (let* ((xep-function-name (concatenate 'string function-name (format nil "-xep~a" (if (eq arity :general-entry) "" arity))))
-             (fn (if (generate-function-for-arity-p arity cleavir-lambda-list-analysis)
-                     (let* ((function-type (fn-prototype arity))
-                            (function (irc-function-create function-type linkage xep-function-name module)))
-                       #+(or)(when (eq arity :general-entry)
-                         (format t "About to add-param-attr for function: ~a~%" function)
-                         (llvm-sys:add-param-attr function 2 'llvm-sys:attribute-in-alloca))
-                       function)
-                     (literal:make-general-entry-placeholder :arity arity
-                                                             :name xep-function-name
-                                                             :cleavir-lambda-list-analysis cleavir-lambda-list-analysis)
-                     ))
-             (xep-arity (make-xep-arity :arity arity :function-or-placeholder fn)))
-        (push xep-arity rev-xep-aritys)))
-    (let* ((xep-aritys (nreverse rev-xep-aritys))
-           (entry-point-reference (irc-create-global-entry-point-reference xep-aritys
-                                                                           module
-                                                                           function-description
-                                                                           local-entry-point-reference))
-           (entry-point-info (make-xep-group :name function-name
-                                             :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
-                                             :arities xep-aritys
-                                             :entry-point-reference entry-point-reference
-                                             :local-function local-function)))
-      entry-point-info)))
 
 (defun irc-pointer-cast (from totype &optional (label ""))
   (llvm-sys:create-pointer-cast *irbuilder* from totype label))

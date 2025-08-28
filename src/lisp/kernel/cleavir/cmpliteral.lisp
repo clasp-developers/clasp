@@ -209,8 +209,6 @@ rewrite the slot in the literal table to store a closure."
 
 (defstruct general-entry-placeholder
   arity
-  name
-  cleavir-lambda-list-analysis
   )
 
 (defun entry-point-datum-for-xep-group (xep-group)
@@ -254,18 +252,15 @@ rewrite the slot in the literal table to store a closure."
         (setf prev-function-index cur-function-index)))
     datums))
 
-(defun register-xep-function-indices (xep-arity-list)
+(defun register-xep-function-indices (f-or-p-list)
   "Add all functions in xep-function to the (literal-machine-function-vector *literal-machine*)"
-  (unless (listp xep-arity-list)
-    (error "Argument to register-xep-function-indices ~s must be a list" xep-arity-list))
-  (let ((f-or-p-list (mapcar 'cmp:xep-arity-function-or-placeholder xep-arity-list)))
-    (unless (every (lambda (f-or-p)
-                     (or (typep f-or-p 'llvm-sys:function)
-                         (general-entry-placeholder-p f-or-p)))
-                   f-or-p-list)
-      (error "The argument must be a list of functions or placeholders - it's a ~a" xep-arity-list))
-    (let ((function-datums (register-xep-function->function-datums f-or-p-list)))
-      (mapcar 'function-datum-index function-datums))))
+  (unless (every (lambda (f-or-p)
+                   (or (typep f-or-p 'llvm-sys:function)
+                       (general-entry-placeholder-p f-or-p)))
+                 f-or-p-list)
+    (error "The argument must be a list of functions or placeholders - it's a ~a" f-or-p-list))
+  (let ((function-datums (register-xep-function->function-datums f-or-p-list)))
+    (mapcar 'function-datum-index function-datums)))
 
 (defun register-local-function-index (local-function)
   "Add a local function to the literal-machine-function-vector"

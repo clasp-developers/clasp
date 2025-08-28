@@ -37,9 +37,7 @@
           irc-make-function-description
           irc-local-function-create
           irc-xep-functions-create
-          xep-arity-arity
-          xep-arity-function-or-placeholder
-          xep-group-lookup
+          make-xep-group
           xep-group-p
           xep-group-arities
           xep-group-name
@@ -319,7 +317,6 @@
           make-boot-function-global-variable
           setup-calling-convention
           initialize-calling-convention
-          ensure-cleavir-lambda-list
           ensure-cleavir-lambda-list-analysis
           process-cleavir-lambda-list-analysis
           cleavir-lambda-list-analysis-cleavir-lambda-list
@@ -365,7 +362,6 @@
           header-check-cond
           compile-tag-check
           compile-header-check
-          ensure-xep-function-not-placeholder
           general-entry-point-redirect-name
           get-or-declare-function-or-error
           ))

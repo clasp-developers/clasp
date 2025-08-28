@@ -181,7 +181,6 @@
 ;;; Used for CL:COMPILE.
 (defun compile-function (function
                          &key (abi clasp-cleavir:*abi-x86-64*)
-                           (linkage 'llvm-sys:internal-linkage)
                            (system clasp-cleavir:*clasp-system*)
                            (disassemble nil))
   (multiple-value-bind (module funmap)
@@ -197,7 +196,7 @@
           (clasp-cleavir::*fixed-closures*
             (fixed-closures-map (fmap funmap)))
           (bir (finfo-irfun (find-bcfun function funmap))))
-      (clasp-cleavir::bir->function bir :abi abi :linkage linkage))))
+      (clasp-cleavir::bir->function bir :abi abi))))
 
 ;;; COMPILE-FILE interface: take the components of a CMP:MODULE and return
 ;;; an NMODULE. The NMODULE contains everything COMPILE-FILE needs to dump
