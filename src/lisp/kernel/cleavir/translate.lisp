@@ -2025,10 +2025,10 @@
       (%allocate-constant (eval (bir:form ir)) (bir:read-only-p ir))))
 
 (defmethod allocate-constant ((ir bir:function-cell))
-  (literal:reference-function-cell (bir:function-name ir)))
+  (reference-function-cell (bir:function-name ir)))
 
 (defmethod allocate-constant ((ir bir:variable-cell))
-  (literal:reference-variable-cell (bir:variable-name ir)))
+  (reference-variable-cell (bir:variable-name ir)))
 
 ;;; Given a BIR module, allocate its constants and load time
 ;;; values. We translate immediates directly, and use an index into

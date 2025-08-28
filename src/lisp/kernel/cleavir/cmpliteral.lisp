@@ -627,10 +627,7 @@ rewrite the slot in the literal table to store a closure."
                                                     :toplevelp nil))))))
 
 (defun reference-function-cell (fname)
-  (let* ((data (if (cmp:generate-load-time-values)
-                   (%reference-function-cell fname)
-                   (run-time-reference-literal
-                    (core:ensure-function-cell fname) nil)))
+  (let* ((data (%reference-function-cell fname))
          (index (literal-node-index data)))
     (values index t)))
 
@@ -646,10 +643,7 @@ rewrite the slot in the literal table to store a closure."
                                                     :toplevelp nil))))))
 
 (defun reference-variable-cell (vname)
-  (let* ((data (if (cmp:generate-load-time-values)
-                   (%reference-variable-cell vname)
-                   (run-time-reference-literal
-                    (core:ensure-variable-cell vname) nil)))
+  (let* ((data (%reference-variable-cell vname))
          (index (literal-node-index data)))
     (values index t)))
 
