@@ -167,10 +167,6 @@ local-function - the lcl function that all of the xep functions call."
     (%make-function-info function-name lambda-list cleavir-lambda-list-analysis docstring declares
                          source-pathname lineno column filepos)))
 
-
-(defun irc-single-step-callback ()
-  (irc-intrinsic "singleStepCallback" ))
-
 (defun irc-arity-info (arity)
   "Return the (values register-save-words entry-index) for the arity"
   (cond
@@ -180,10 +176,6 @@ local-function - the lcl function that all of the xep functions call."
 
 (defun irc-personality-function ()
   (get-or-declare-function-or-error *the-module* "__gxx_personality_v0"))
-
-(defun irc-set-cleanup (landpad val)
-  (llvm-sys:set-cleanup landpad val))
-
 
 (defun irc-create-landing-pad (num-clauses &optional (name ""))
     (llvm-sys:create-landing-pad *irbuilder* %exception-struct% num-clauses name))
@@ -283,25 +275,6 @@ local-function - the lcl function that all of the xep functions call."
         (unless (llvm-sys:function-equal irbuilder-cur-function theblock-function)
           (error "The IRBuilder ~a that is currently in function ~a is being told to jump functions when its insert point is being set to ~a in ~a" irbuilder irbuilder-cur-function theblock theblock-function)))))
   (llvm-sys:set-insert-point-basic-block irbuilder theblock))
-
-
-
-;;  "Control if low-level block tracing is on or off"
-;;
-;;
-;;  You can do things like:
-;; Put (push :flow *features*) / (pop *features*)
-;;   around a function and it will get low-level-trace commands inserted before
-;;   every function call and within every landing pad.
-
-(defparameter *next-low-level-trace-index* 1000000001)
-(defun irc-low-level-trace (&optional where)
-  (if (member where *features*)
-      (progn
-        (let ((llt (get-or-declare-function-or-error *the-module* "lowLevelTrace")))
-          (llvm-sys:create-call-function-pointer *irbuilder* llt (list (jit-constant-i32 *next-low-level-trace-index*)) ""))
-        (setq *next-low-level-trace-index* (+ 1 *next-low-level-trace-index*)))
-      nil))
 
 
 (defun irc-begin-landing-pad-block (theblock)
@@ -976,22 +949,6 @@ But no irbuilders or basic-blocks. Return the fn."
 (defun irc-bit-cast (from totype &optional (label "bit-cast"))
   (llvm-sys:create-bit-cast *irbuilder* from totype label))
 
-(defun irc-irbuilder-status (&optional (irbuilder *irbuilder*) (label "current *irbuilder*"))
-    (core:fmt t "{} -> {}%N" label irbuilder))
-
-#+(or)
-(defun irc-constant-string-ptr (global-string-var)
-  (let* ((type (llvm-sys:get-pointer-element-type
-                                      (llvm-sys:get-scalar-type
-                                       (llvm-sys:get-type
-                                        global-string-var))))
-         (ptr (llvm-sys:create-geparray *irbuilder* global-string-var (list (cmp:jit-constant-i32 0) (cmp:jit-constant-i32 0)) "ptr")))
-    ptr))
-
-(defun irc-dtor (name obj)
-  (declare (special *compiler-suppress-dtors*))
-  (unless *compiler-suppress-dtors* (irc-intrinsic name obj)))
-
 (defmacro with-irbuilder ((irbuilder) &rest code)
   "Set *irbuilder* to the given IRBuilder"
   `(let ((*irbuilder* ,irbuilder))
@@ -1284,11 +1241,8 @@ But no irbuilders or basic-blocks. Return the fn."
       (unless code (error "irc-create-invoke returning nil"))
       code)))
 
-(defparameter *debug-create-call* nil)
-
 (defun irc-create-call-wft (function-type entry-point args &optional (label ""))
   #+debug-compiler(check-call-types function-type args)
-  (if *debug-create-call* (core:fmt t "irc-create-call-wft function-type: {} entry-point: {} args: {}%N" function-type entry-point args ))
   (llvm-sys:create-call-function-pointer *irbuilder* function-type entry-point args label nil))
 
 (defun irc-call-or-invoke (function-type function args &optional (landing-pad *current-unwind-landing-pad-dest*) (label ""))

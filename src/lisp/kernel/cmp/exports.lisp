@@ -240,7 +240,6 @@
           irc-t*-load
           irc-typed-load-atomic
           irc-t*-load-atomic
-          irc-low-level-trace
           irc-phi
           irc-personality-function
           irc-phi-add-incoming
