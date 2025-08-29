@@ -157,12 +157,17 @@
              (format t "Done dump module~%"))
            (mp:with-lock (*jit-lock*)
              (let ((dylib (llvm-sys:get-main-jitdylib jit-engine)))
-               (prog1
-                   (llvm-sys:add-irmodule jit-engine dylib module cmp:*thread-safe-context* startup-shutdown-id)
-                 ;; Install the literals.
-                 (loop with fvector = (llvm-sys:lookup jit-engine dylib fvector-name)
-                       with litarr = (llvm-sys:lookup jit-engine dylib ctable-name)
-                       for lit in (jit-resolve-literals literals-list fvector)
+               ;; Install the literals, and as a bonus, collect the constants table
+               ;; and function vector so the caller can make or retrieve objects.
+               (let ((object-file
+                       (llvm-sys:add-irmodule
+                        jit-engine dylib module
+                        cmp:*thread-safe-context* startup-shutdown-id))
+                     (litarr (llvm-sys:lookup jit-engine dylib ctable-name))
+                     (fvector
+                       (llvm-sys:lookup jit-engine dylib fvector-name)))
+                 (loop for lit in (jit-resolve-literals literals-list fvector)
                        for i from 0
-                       do (setf (core:literals-vref litarr i) lit)))))))
+                       do (setf (core:literals-vref litarr i) lit))
+                 (values object-file litarr fvector))))))
     (gctools:thread-local-cleanup)))

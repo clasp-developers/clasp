@@ -41,7 +41,7 @@
           xep-group-p
           xep-group-arities
           xep-group-name
-          xep-group-entry-point-reference
+          xep-group-generator
           xep-group-cleavir-lambda-list-analysis
           +c++-stamp-max+
           %opaque-fn-prototype*%

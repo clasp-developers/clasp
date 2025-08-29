@@ -132,16 +132,15 @@ function-or-placeholder - the llvm function or a placeholder for
                                         cmp:*the-module*))
          (xep-indices (literal:register-xep-function-indices
                        (mapcar #'xep-arity-function-or-placeholder xep-arities)))
-         (entry-point-reference
-           (literal:reference-literal
-            (core:make-simple-core-fun-generator
-             :entry-point-functions xep-indices
-             :function-description function-description
-             :local-entry-point-index local-entry-point-index))))
+         (generator
+           (core:make-simple-core-fun-generator
+            :entry-point-functions xep-indices
+            :function-description function-description
+            :local-entry-point-index local-entry-point-index)))
     (cmp:make-xep-group :name function-name
                         :cleavir-lambda-list-analysis lambda-list-analysis
                         :arities xep-arities
-                        :entry-point-reference entry-point-reference
+                        :generator generator
                         :local-function the-function)))
 
 ;;; Given a BIR function, create the actual LLVM functions for the local
@@ -793,21 +792,17 @@ function-or-placeholder - the llvm function or a placeholder for
                  (t (list (gen-rest-list (nthcdr nopt more)))))))
     (append reqargs optargs rest)))
 
-;;; Get a reference to the literal for a function's simple fun.
-;;; This is generic because it's also used by the BTB translator.
-(defgeneric reference-xep (function function-info))
-(defmethod reference-xep (function (function-info llvm-function-info))
-  (declare (ignore function))
-  (let* ((enclosed-xep-group (xep-function function-info))
-         (entry-point-reference (cmp:xep-group-entry-point-reference enclosed-xep-group)))
+;;; Get a reference to a literal for a function's simple fun.
+(defun reference-xep (function-info)
+  (let ((enclosed-xep-group (xep-function function-info)))
     (when (eq enclosed-xep-group :xep-unallocated)
       (error "BUG: Tried to ENCLOSE a function with no XEP"))
-    (literal:constants-table-value entry-point-reference)))
+    (literal (cmp:xep-group-generator enclosed-xep-group))))
 
 (defun enclose (function extent &optional (delay t))
   (let* ((code-info (find-llvm-function-info function))
          (environment (environment code-info))
-         (xepc (reference-xep function code-info)))
+         (xepc (reference-xep code-info)))
     (if environment
         (let* ((ninputs (length environment))
                (sninputs (%size_t ninputs))
@@ -2289,15 +2284,24 @@ COMPILE-FILE will use the default *clasp-env*."
                           startup-shutdown-id ctable-name fvector-name)
         (translate-bir (bir:module bir) :abi abi
                                         :pathname pathname)
-      (let* ((info (or (gethash bir function-infos)
-                       (error "Missing LLVM function info for BIR function ~a."
-                              bir)))
-             (entry-point-index
-               (cmp:xep-group-entry-point-reference
-                (xep-function info)))
-             (objfile (jit-add-module module startup-shutdown-id ctable-name
-                                      fvector-name constants)))
-        (llvm-sys:code-literal objfile entry-point-index)))))
+      ;; FIXME: A better design might be to store the functions vector
+      ;; in the ObjectFile and retrieve it that way, as we can already do
+      ;; with the literals. That would remove the necessity for llvm-sys:lookup
+      ;; calls in jit-add-module.
+      (multiple-value-bind (object-file ctable fvector)
+          (jit-add-module module startup-shutdown-id ctable-name
+                          fvector-name constants)
+        (declare (ignore object-file))
+        (let* ((info (or (gethash bir function-infos)
+                         (error "Missing LLVM function info for BIR function ~a."
+                                bir)))
+               (generator (cmp:xep-group-generator (xep-function info))))
+          (core:simple-core-fun-generator/generate
+           generator
+           (core:literals-vref ctable
+                               (core:simple-core-fun-generator-local-fun-index
+                                generator))
+           fvector))))))
 
 ;;; Used from fli.lisp.
 ;;; Create a function like

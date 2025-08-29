@@ -214,7 +214,8 @@ rewrite the slot in the literal table to store a closure."
 (defun entry-point-datum-for-xep-group (xep-group)
   (unless (cmp:xep-group-p xep-group)
     (error "The argument ~a must be a xep-group" xep-group))
-  (make-function-datum :index (cmp:xep-group-entry-point-reference xep-group)))
+  (make-function-datum
+   :index (reference-literal (cmp:xep-group-generator xep-group))))
 
 (defun register-function->function-datum-impl (function)
   "Add a function to the (literal-machine-function-vector *literal-machine*)"
