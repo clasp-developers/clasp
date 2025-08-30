@@ -1608,8 +1608,7 @@ T_O* ltvc_read_object(gctools::GCRootsInModule* roots, char*& bytecode, char* by
   else if (tag == 'i')
     ttag = 2; // immediate
   else {
-    printf("%s:%d The object tag must be 'l', 't' or 'i'\n", __FILE__, __LINE__);
-    abort();
+    SIMPLE_ERROR("{}:{} Malformed FASO: The object tag must be 'l', 't' or 'i'\n", __FILE__, __LINE__);
   }
   if (log)
     printf("%s:%d:%s    tag = %c\n", __FILE__, __LINE__, __FUNCTION__, tag);
@@ -1699,10 +1698,9 @@ void start_code_interpreter(gctools::GCRootsInModule* roots, char* bytecode, siz
   if ((*((uint8_t*)(&i))) == 0x67) {
     // Little endian - the code is set up for this
   } else {
-    printf("%s:%d This is a big-endian architecture and the byte-code interpreter is set up for little-endian - fix this before "
+    SIMPLE_ERROR("%s:%d This is a big-endian architecture and the byte-code interpreter is set up for little-endian - fix this before "
            "proceeding\n",
-           __FILE__, __LINE__);
-    abort();
+                 __FILE__, __LINE__);
   }
   char* byteend = bytecode + nbytes;
   while (1) {
