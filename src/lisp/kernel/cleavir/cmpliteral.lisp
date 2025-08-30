@@ -212,10 +212,9 @@ rewrite the slot in the literal table to store a closure."
   )
 
 (defun entry-point-datum-for-xep-group (xep-group)
-  (unless (cmp:xep-group-p xep-group)
-    (error "The argument ~a must be a xep-group" xep-group))
+  (assert (cmp:xep-group-p xep-group))
   (make-function-datum
-   :index (reference-literal (cmp:xep-group-generator xep-group))))
+   :index (reference-simple-core-fun (cmp:xep-group-generator xep-group))))
 
 (defun register-function->function-datum-impl (function)
   "Add a function to the (literal-machine-function-vector *literal-machine*)"
@@ -393,34 +392,6 @@ rewrite the slot in the literal table to store a closure."
                (load-time-reference-literal (pathname-type pathname) read-only-p :toplevelp nil)
                (load-time-reference-literal (pathname-version pathname) read-only-p :toplevelp nil)))
 
-(defun ltv/function-description (fdesc-ph index read-only-p &key (toplevelp t))
-  (declare (ignore toplevelp))
-  (add-creator "ltvc_make_function_description" index fdesc-ph
-               (load-time-reference-literal (sys:function-description-source-pathname fdesc-ph) read-only-p :toplevelp nil)
-               (load-time-reference-literal (sys:function-description-function-name fdesc-ph) read-only-p :toplevelp nil)
-               (load-time-reference-literal (sys:function-description-lambda-list fdesc-ph) read-only-p :toplevelp nil)
-               (load-time-reference-literal (sys:function-description-docstring fdesc-ph) read-only-p :toplevelp nil)
-               (load-time-reference-literal (sys:function-description-declares fdesc-ph) read-only-p :toplevelp nil)
-               (sys:function-description-lineno fdesc-ph)
-               (sys:function-description-column fdesc-ph)
-               (sys:function-description-filepos fdesc-ph)))
-
-(defun ltv/local-entry-point (entry-point index read-only-p &key (toplevelp t))
-  (declare (ignore toplevelp))
-  (let ((function-index (first (sys:core-fun-generator-entry-point-indices entry-point))))
-    (add-creator "ltvc_make_local_entry_point" index entry-point
-                 function-index
-                 (load-time-reference-literal (sys:core-fun-generator/function-description entry-point) read-only-p :toplevelp nil))))
-
-(defun ltv/global-entry-point (entry-point index read-only-p &key (toplevelp t))
-  (declare (ignore toplevelp))
-  (let ((function-index (first (sys:simple-core-fun-generator-entry-point-indices entry-point)))
-        (local-entry-point-index (sys:simple-core-fun-generator-local-fun-index entry-point)))
-    (add-creator "ltvc_make_global_entry_point" index entry-point
-                 function-index
-                 (load-time-reference-literal (sys:simple-core-fun-generator/function-description entry-point) read-only-p :toplevelp nil)
-                 local-entry-point-index #+(or)(load-time-reference-literal (sys:global-entry-point-local-entry-point entry-point) read-only-p :toplevelp nil))))
-
 (defun ltv/package (package index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp))
   (add-creator "ltvc_make_package" index package
@@ -518,9 +489,6 @@ rewrite the slot in the literal table to store a closure."
     #+long-float
     ((long-float-p object) (values (literal-machine-long-float-coalesce literal-machine) #'ltv/long-float))
     ((core:ratiop object) (values (literal-machine-ratio-coalesce literal-machine) #'ltv/ratio))
-    ((sys:function-description-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/function-description))
-    ((sys:core-fun-generator-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/local-entry-point))
-    ((sys:simple-core-fun-generator-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/global-entry-point))
     ((bit-vector-p object) (values nil #'ltv/bitvector))
     ((core:base-string-p object)
      (values (if read-only-p (literal-machine-identity-coalesce literal-machine) (literal-machine-base-string-coalesce literal-machine)) #'ltv/base-string))
@@ -640,6 +608,63 @@ rewrite the slot in the literal table to store a closure."
 
 (defun reference-variable-cell (vname)
   (let* ((data (%reference-variable-cell vname))
+         (index (literal-node-index data)))
+    (values index t)))
+
+(defun %reference-function-description (fdesc-ph)
+  (let* ((similarity (literal-machine-function-description-coalesce *literal-machine*))
+         (existing (find-similar fdesc-ph similarity)))
+    (if existing
+        (datum-literal-node-creator existing)
+        (let ((datum (new-datum t)))
+          (add-similar fdesc-ph datum similarity)
+          (add-creator "ltvc_make_function_description" datum fdesc-ph
+                       (load-time-reference-literal (sys:function-description-source-pathname fdesc-ph) t :toplevelp nil)
+                       (load-time-reference-literal (sys:function-description-function-name fdesc-ph) t :toplevelp nil)
+                       (load-time-reference-literal (sys:function-description-lambda-list fdesc-ph) t :toplevelp nil)
+                       (load-time-reference-literal (sys:function-description-docstring fdesc-ph) t :toplevelp nil)
+                       (load-time-reference-literal (sys:function-description-declares fdesc-ph) t :toplevelp nil)
+                       (sys:function-description-lineno fdesc-ph)
+                       (sys:function-description-column fdesc-ph)
+                       (sys:function-description-filepos fdesc-ph))))))
+
+(defun reference-function-description (function-description)
+  (let* ((data (%reference-function-description function-description))
+         (index (literal-node-index data)))
+    (values index t)))
+
+(defun %reference-core-fun (generator)
+  (let* ((similarity (literal-machine-function-description-coalesce *literal-machine*))
+         (existing (find-similar generator similarity)))
+    (if existing
+        (datum-literal-node-creator existing)
+        (let ((datum (new-datum t)))
+          (add-similar generator datum similarity)
+          (add-creator "ltvc_make_local_entry_point" datum generator
+                       (car (core:core-fun-generator-entry-point-indices generator))
+                       (%reference-function-description
+                        (sys:core-fun-generator/function-description generator)))))))
+
+(defun reference-core-fun (generator)
+  (let* ((data (%reference-core-fun generator))
+         (index (literal-node-index data)))
+    (values index t)))
+
+(defun %reference-simple-core-fun (generator)
+  (let* ((similarity (literal-machine-function-description-coalesce *literal-machine*))
+         (existing (find-similar generator similarity)))
+    (if existing
+        (datum-literal-node-creator existing)
+        (let ((datum (new-datum t)))
+          (add-similar generator datum similarity)
+          (add-creator "ltvc_make_global_entry_point" datum generator
+                       (first (core:simple-core-fun-generator-entry-point-indices generator))
+                       (%reference-function-description
+                        (core:simple-core-fun-generator/function-description generator))
+                       (core:simple-core-fun-generator-local-fun-index generator))))))
+
+(defun reference-simple-core-fun (generator)
+  (let* ((data (%reference-simple-core-fun generator))
          (index (literal-node-index data)))
     (values index t)))
 

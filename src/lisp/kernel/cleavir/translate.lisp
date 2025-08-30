@@ -158,11 +158,12 @@ function-or-placeholder - the llvm function or a placeholder for
             (concatenate 'string jit-function-name "-lcl")
             cmp:*the-module*))
          (local-fun-index (literal:register-local-function-index the-function))
-         (local-fun
-           (literal:reference-literal
-            (core:make-core-fun-generator
-             :entry-point-functions (list local-fun-index)
-             :function-description function-description)))
+         (core-generator (core:make-core-fun-generator
+                          :entry-point-functions (list local-fun-index)
+                          :function-description function-description))
+         (local-fun (if (eq cst-to-ast:*compiler* 'cl:compile-file)
+                        (literal:reference-core-fun core-generator)
+                        (literal:reference-literal core-generator)))
          (xep-group (if (xep-needed-p function)
                         (make-xep-group the-function jit-function-name
                                         (cmp:function-info-cleavir-lambda-list-analysis function-info)
@@ -797,7 +798,11 @@ function-or-placeholder - the llvm function or a placeholder for
   (let ((enclosed-xep-group (xep-function function-info)))
     (when (eq enclosed-xep-group :xep-unallocated)
       (error "BUG: Tried to ENCLOSE a function with no XEP"))
-    (literal (cmp:xep-group-generator enclosed-xep-group))))
+    (let ((generator (cmp:xep-group-generator enclosed-xep-group)))
+      (literal:constants-table-value
+       (if (eq cst-to-ast:*compiler* 'cl:compile-file)
+           (literal:reference-simple-core-fun generator)
+           (literal:reference-literal generator))))))
 
 (defun enclose (function extent &optional (delay t))
   (let* ((code-info (find-llvm-function-info function))
@@ -2340,7 +2345,9 @@ COMPILE-FILE will use the default *clasp-env*."
     caller))
 
 (defun make-foreign-caller (signature)
-  (let ((bir (make-foreign-caller-ir signature)))
+  (let (;; KLUDGE: We use this variable to decide how to dump literals.
+        (cst-to-ast:*compiler* 'cl:compile)
+        (bir (make-foreign-caller-ir signature)))
     (bir-transformations (bir:module bir) *clasp-system*)
     (bir->function bir)))
 

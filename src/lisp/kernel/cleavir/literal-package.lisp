@@ -36,6 +36,8 @@
    #:constants-table-value
    #:reference-function-cell
    #:reference-variable-cell
+   #:reference-core-fun
+   #:reference-simple-core-fun
    #:load-time-value-from-thunk
    #:with-rtv
    #:arrange-thunk-as-top-level
