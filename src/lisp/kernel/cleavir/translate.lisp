@@ -127,7 +127,8 @@ function-or-placeholder - the llvm function or a placeholder for
                                          cleavir-lambda-list-analysis module))))
 
 (defun make-xep-group (the-function function-name lambda-list-analysis
-                       function-description local-entry-point-index)
+                       function-description
+                       local-fun-generator local-entry-point-index)
   (let* ((xep-arities (make-xep-arities function-name lambda-list-analysis
                                         cmp:*the-module*))
          (xep-indices (literal:register-xep-function-indices
@@ -141,6 +142,7 @@ function-or-placeholder - the llvm function or a placeholder for
                         :cleavir-lambda-list-analysis lambda-list-analysis
                         :arities xep-arities
                         :generator generator
+                        :core-generator local-fun-generator
                         :local-function the-function)))
 
 ;;; Given a BIR function, create the actual LLVM functions for the local
@@ -161,13 +163,16 @@ function-or-placeholder - the llvm function or a placeholder for
          (core-generator (core:make-core-fun-generator
                           :entry-point-functions (list local-fun-index)
                           :function-description function-description))
-         (local-fun (if (eq cst-to-ast:*compiler* 'cl:compile-file)
-                        (literal:reference-core-fun core-generator)
-                        (literal:reference-literal core-generator)))
+         (local-fun-index (if (eq cst-to-ast:*compiler* 'cl:compile-file)
+                              (literal:reference-core-fun core-generator)
+                              ;; FIXME: Not actually used, but fixing up literals
+                              ;; is too awkward right this second otherwise.
+                              (literal:reference-literal core-generator)))
          (xep-group (if (xep-needed-p function)
                         (make-xep-group the-function jit-function-name
                                         (cmp:function-info-cleavir-lambda-list-analysis function-info)
-                                        function-description local-fun)
+                                        function-description
+                                        core-generator local-fun-index)
                         :xep-unallocated))
          ;; Check for a forced closure layout first.
          ;; if there isn't one, make one up.
@@ -2296,16 +2301,15 @@ COMPILE-FILE will use the default *clasp-env*."
       (multiple-value-bind (object-file ctable fvector)
           (jit-add-module module startup-shutdown-id ctable-name
                           fvector-name constants)
-        (declare (ignore object-file))
+        (declare (ignore object-file ctable))
         (let* ((info (or (gethash bir function-infos)
                          (error "Missing LLVM function info for BIR function ~a."
                                 bir)))
-               (generator (cmp:xep-group-generator (xep-function info))))
+               (generator (cmp:xep-group-generator (xep-function info)))
+               (core-generator (cmp:xep-group-core-generator (xep-function info))))
           (core:simple-core-fun-generator/generate
            generator
-           (core:literals-vref ctable
-                               (core:simple-core-fun-generator-local-fun-index
-                                generator))
+           (core:core-fun-generator/generate core-generator fvector)
            fvector))))))
 
 ;;; Used from fli.lisp.
