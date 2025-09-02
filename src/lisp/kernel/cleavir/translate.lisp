@@ -2281,6 +2281,29 @@ COMPILE-FILE will use the default *clasp-env*."
         (values module function-info ordered-raw-constants-list startup-shutdown-id
                 ctable-name fvector-name)))))
 
+;;; Given the literals returned from with-rtv, return a list of resolved literals
+;;; that can be installed into the object file to actually be used by the code.
+;;; This just means fixing up generators.
+(defun jit-resolve-literals (literals fvector)
+  (loop for lit in literals
+        ;; "generators" are markers for what will eventually be actual functions.
+        ;; In order to create the functions, they need the actual function pointers.
+        ;; These function pointers are in the fvector (function pointer vector).
+        ;; We do the generation of actual functions here.
+        collect (typecase lit
+                  (core:core-fun-generator
+                   (core:core-fun-generator/generate lit fvector))
+                  (core:simple-core-fun-generator
+                   (core:simple-core-fun-generator/generate
+                    lit
+                    (nth (core:simple-core-fun-generator-local-fun-index lit)
+                         new-lits)
+                    fvector))
+                  ;; Anything that's not a generator just means itself.
+                  (t lit))
+          into new-lits
+        finally (return new-lits)))
+
 (defun bir->function (bir &key (abi *abi-x86-64*))
   (let ((pathname
           (let ((origin (origin-source (bir:origin bir))))
@@ -2300,8 +2323,12 @@ COMPILE-FILE will use the default *clasp-env*."
       ;; calls in jit-add-module.
       (multiple-value-bind (object-file ctable fvector)
           (jit-add-module module startup-shutdown-id ctable-name
-                          fvector-name constants)
-        (declare (ignore object-file ctable))
+                          fvector-name)
+        (declare (ignore object-file))
+        ;; Install literals.
+        (loop for lit in (jit-resolve-literals constants fvector)
+              for i from 0
+              do (setf (core:literals-vref ctable i) lit))
         (let* ((info (or (gethash bir function-infos)
                          (error "Missing LLVM function info for BIR function ~a."
                                 bir)))

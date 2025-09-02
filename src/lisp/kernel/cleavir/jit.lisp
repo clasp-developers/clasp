@@ -126,27 +126,7 @@
 
 (defparameter *jit-lock* (mp:make-recursive-mutex 'jit-lock))
 
-(defun jit-resolve-literals (literals fvector)
-  (loop for lit in literals
-        ;; "generators" are markers for what will eventually be actual functions.
-        ;; In order to create the functions, they need the actual function pointers.
-        ;; These function pointers are in the fvector (function pointer vector).
-        ;; We do the generation of actual functions here.
-        collect (typecase lit
-                  (core:core-fun-generator
-                   (core:core-fun-generator/generate lit fvector))
-                  (core:simple-core-fun-generator
-                   (core:simple-core-fun-generator/generate
-                    lit
-                    (nth (core:simple-core-fun-generator-local-fun-index lit)
-                         new-lits)
-                    fvector))
-                  ;; Anything that's not a generator just means itself.
-                  (t lit))
-          into new-lits
-        finally (return new-lits)))
-
-(defun jit-add-module (module startup-shutdown-id ctable-name fvector-name literals-list)
+(defun jit-add-module (module startup-shutdown-id ctable-name fvector-name)
   (cmp:irc-verify-module-safe module)
   (unwind-protect
        (let ((jit-engine (llvm-sys:clasp-jit)))
@@ -166,8 +146,5 @@
                      (litarr (llvm-sys:lookup jit-engine dylib ctable-name))
                      (fvector
                        (llvm-sys:lookup jit-engine dylib fvector-name)))
-                 (loop for lit in (jit-resolve-literals literals-list fvector)
-                       for i from 0
-                       do (setf (core:literals-vref litarr i) lit))
                  (values object-file litarr fvector))))))
     (gctools:thread-local-cleanup)))
