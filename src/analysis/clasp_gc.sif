@@ -3749,9 +3749,10 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::SimpleCoreFunGenerator_O"
              :layout-offset-field-names ("_entry_point_indices")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::CoreFunGenerator_O>"
              :offset-base-ctype "core::SimpleCoreFunGenerator_O"
-             :layout-offset-field-names ("_localFunIndex")}
+             :layout-offset-field-names ("_CoreFunGenerator")}
 {class-kind :stamp-name "STAMPWTAG_clasp_ffi__ForeignTypeSpec_O"
             :stamp-key "clasp_ffi::ForeignTypeSpec_O" :parent-class "core::General_O"
             :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3

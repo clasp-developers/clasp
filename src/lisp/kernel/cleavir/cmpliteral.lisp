@@ -661,7 +661,8 @@ rewrite the slot in the literal table to store a closure."
                        (first (core:simple-core-fun-generator-entry-point-indices generator))
                        (%reference-function-description
                         (core:simple-core-fun-generator/function-description generator))
-                       (core:simple-core-fun-generator-local-fun-index generator))))))
+                       (%reference-core-fun
+                        (core:simple-core-fun-generator/core-fun-generator generator)))))))
 
 (defun reference-simple-core-fun (generator)
   (let* ((data (%reference-simple-core-fun generator))

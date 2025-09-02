@@ -398,14 +398,15 @@ class SimpleCoreFunGenerator_O : public General_O {
 public:
   FunctionDescription_sp _FunctionDescription;
   T_sp _entry_point_indices;
-  size_t _localFunIndex;
+  CoreFunGenerator_sp _CoreFunGenerator;
 
 public:
   // Accessors
-  SimpleCoreFunGenerator_O(FunctionDescription_sp fdesc, T_sp entry_point_indices, size_t lepIndex)
-      : _FunctionDescription(fdesc), _entry_point_indices(entry_point_indices), _localFunIndex(lepIndex){};
+  SimpleCoreFunGenerator_O(FunctionDescription_sp fdesc, T_sp entry_point_indices, CoreFunGenerator_sp cfg)
+      : _FunctionDescription(fdesc), _entry_point_indices(entry_point_indices), _CoreFunGenerator(cfg){};
   std::string __repr__() const;
-  size_t coreFunIndex() const;
+  CL_LISPIFY_NAME(SimpleCoreFunGenerator/CoreFunGenerator);
+  CL_DEFMETHOD CoreFunGenerator_sp coreFunGenerator() const { return this->_CoreFunGenerator; }
   CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
   SimpleCoreFun_sp generate(CoreFun_sp, void**) const;
 };

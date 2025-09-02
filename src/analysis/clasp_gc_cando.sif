@@ -188,14 +188,14 @@
                           "chem::IterateBonds_O" "core::RequiredArgument"
                           "core::SingleDispatchMethod_O" "chem::CDFragment_O" "comp::VarInfo_O"
                           "core::CxxObject_O" "core::SimpleVector_long_float_O"
-                          "llvmo::ReturnInst_O" "llvmo::FunctionType_O" "clbind::DummyCreator_O"
-                          "chem::EnergyDihedralRestraint" "core::MDArray_byte16_t_O"
-                          "llvmo::DIContext_O" "chem::FFNonbondCrossTermTable_O"
-                          "llvmo::JITDylib_O" "llvmo::Type_O" "chem::Command_O" "core::Pointer_O"
-                          "llvmo::UnreachableInst_O" "core::ComplexVector_int64_t_O"
-                          "core::SimpleMDArray_short_float_O" "chem::FFParameterBaseDb_O"
-                          "core::SimpleMDArray_long_float_O" "core::FileScope_O"
-                          "core::SimpleMDArray_byte4_t_O" "core::Float_O"
+                          "llvmo::ReturnInst_O" "chem::MmcifWriter_O" "llvmo::FunctionType_O"
+                          "clbind::DummyCreator_O" "chem::EnergyDihedralRestraint"
+                          "core::MDArray_byte16_t_O" "llvmo::DIContext_O"
+                          "chem::FFNonbondCrossTermTable_O" "llvmo::JITDylib_O" "llvmo::Type_O"
+                          "chem::Command_O" "core::Pointer_O" "llvmo::UnreachableInst_O"
+                          "core::ComplexVector_int64_t_O" "core::SimpleMDArray_short_float_O"
+                          "chem::FFParameterBaseDb_O" "core::SimpleMDArray_long_float_O"
+                          "core::FileScope_O" "core::SimpleMDArray_byte4_t_O" "core::Float_O"
                           "chem::EnergySketchStretch" "chem::ResidueTest_O"
                           "chem::RestraintDistance_O" "llvmo::DIDerivedType_O" "chem::SmartsRoot_O"
                           "chem::TwisterDriver_O" "comp::EntryCloseFixup_O"
@@ -1522,6 +1522,12 @@
              :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>>"
              :offset-base-ctype "chem::TwisterDriver_O"
              :layout-offset-field-names ("_Twisters" "._Vector" "._Contents")}
+{class-kind :stamp-name "STAMPWTAG_chem__MmcifWriter_O" :stamp-key "chem::MmcifWriter_O"
+            :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "chem::MmcifWriter_O"
+             :layout-offset-field-names ("_Out")}
 {class-kind :stamp-name "STAMPWTAG_chem__RingFinder_O" :stamp-key "chem::RingFinder_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -2131,8 +2137,7 @@
              :offset-ctype "gctools::smart_ptr<chem::Atom_O>"
              :offset-base-ctype "chem::RestraintDihedral_O" :layout-offset-field-names ("_D")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::RestraintDihedral_O"
-             :layout-offset-field-names ("_Degrees")}
+             :offset-base-ctype "chem::RestraintDihedral_O" :layout-offset-field-names ("_Degrees")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::RestraintDihedral_O" :layout-offset-field-names ("_Weight")}
 {class-kind :stamp-name "STAMPWTAG_chem__AtomIndexer_O" :stamp-key "chem::AtomIndexer_O"
@@ -8710,9 +8715,10 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::SimpleCoreFunGenerator_O"
              :layout-offset-field-names ("_entry_point_indices")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::CoreFunGenerator_O>"
              :offset-base-ctype "core::SimpleCoreFunGenerator_O"
-             :layout-offset-field-names ("_localFunIndex")}
+             :layout-offset-field-names ("_CoreFunGenerator")}
 {class-kind :stamp-name "STAMPWTAG_core__CoreFunGenerator_O" :stamp-key "core::CoreFunGenerator_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -11385,6 +11391,9 @@
 {variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
                 :fixup-ctype-offset-type-key "gctools::smart_ptr<core::Symbol_O>"
                 :fixup-ctype-key "chem::AtomPdbRec" :layout-offset-field-names ("_resName")}
+{variable-field :offset-type-cxx-identifier "CXX_FIXUP_OFFSET"
+                :fixup-ctype-offset-type-key "std::basic_string<char,std::char_traits<char>,std::allocator<char>>"
+                :fixup-ctype-key "chem::AtomPdbRec" :layout-offset-field-names ("_pdbResName")}
 {variable-field :offset-type-cxx-identifier "CXX_FIXUP_OFFSET"
                 :fixup-ctype-offset-type-key "std::basic_string<char,std::char_traits<char>,std::allocator<char>>"
                 :fixup-ctype-key "chem::AtomPdbRec" :layout-offset-field-names ("_chainId")}

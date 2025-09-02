@@ -127,13 +127,11 @@ name - the common, unadorned name of the xep function
 cleavir-lambda-list-analysis - the cleavir-lambda-list-analysis that applies to the entire xep-group
 arities - a list of xep-arity
 generator - a SimpleCoreFunGenerator for this xep group.
-core-generator - a CoreFunGenerator for this xep group.
 local-function - the lcl function that all of the xep functions call."
   name
   cleavir-lambda-list-analysis
   arities
   generator
-  core-generator
   local-function)
 
 (defstruct (function-info (:constructor %make-function-info

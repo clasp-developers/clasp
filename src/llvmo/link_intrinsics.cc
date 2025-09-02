@@ -362,9 +362,9 @@ LtvcReturnVoid ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, cha
 }
 
 LtvcReturnVoid ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex0,
-                                            core::T_O* functionDescription_t, size_t localEntryPointIndex) {
+                                            core::T_O* functionDescription_t, core::T_O* core_t) {
   NO_UNWIND_BEGIN();
-  core::CoreFun_sp localEntryPoint((gctools::Tagged)holder->getLiteral(localEntryPointIndex));
+  core::CoreFun_sp localEntryPoint((gctools::Tagged)core_t);
   core::FunctionDescription_sp fdesc((gctools::Tagged)functionDescription_t);
   core::ClaspXepTemplate xep;
   for (size_t ii = 0; ii < core::ClaspXepFunction::Entries; ++ii) {

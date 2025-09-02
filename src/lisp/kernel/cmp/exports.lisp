@@ -42,7 +42,6 @@
           xep-group-arities
           xep-group-name
           xep-group-generator
-          xep-group-core-generator
           xep-group-cleavir-lambda-list-analysis
           +c++-stamp-max+
           %opaque-fn-prototype*%

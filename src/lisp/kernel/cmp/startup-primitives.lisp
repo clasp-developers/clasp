@@ -41,7 +41,7 @@
     ( 85 nil "ltvc_make_pathname"             (:i8 :size_t :t* :t* :t* :t* :t* :t*))
     ( 86 nil "ltvc_make_function_description" (:i8 :size_t :t* :t* :t* :t* :t* :size_t
                                                :size_t :size_t))
-    ( 87 nil "ltvc_make_global_entry_point"   (:i8 :size_t :size_t :t* :size_t))
+    ( 87 nil "ltvc_make_global_entry_point"   (:i8 :size_t :size_t :t* :t*))
     ( 88 nil "ltvc_make_local_entry_point"    (:i8 :size_t :size_t :t*))
     ( 89 nil "ltvc_ensure_fcell"              (:i8 :size_t :t*))
     ( 90 nil "ltvc_ensure_vcell"              (:i8 :size_t :t*))

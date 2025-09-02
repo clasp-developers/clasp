@@ -221,21 +221,17 @@ bool CoreFun_O::dladdrablep(std::set<void*>& uniques) {
   return true;
 }
 
-CL_LAMBDA(&key function-description entry-point-functions local-entry-point-index);
+CL_LAMBDA(&key function-description entry-point-functions core-fun-generator);
 DOCGROUP(clasp);
 CL_DEFUN SimpleCoreFunGenerator_sp core__makeSimpleCoreFunGenerator(FunctionDescription_sp fdesc, T_sp entryPointIndices,
-                                                                        size_t localEntryPointIndex) {
-  auto entryPoint = gctools::GC<SimpleCoreFunGenerator_O>::allocate(fdesc, entryPointIndices, localEntryPointIndex);
-  //  printf("%s:%d:%s  entryPoint-> %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)entryPoint.raw_());
-  return entryPoint;
+                                                                    CoreFunGenerator_sp cfg) {
+  return gctools::GC<SimpleCoreFunGenerator_O>::allocate(fdesc, entryPointIndices, cfg);
 }
 
 CL_LAMBDA(&key function-description entry-point-functions);
 DOCGROUP(clasp);
 CL_DEFUN CoreFunGenerator_sp core__makeCoreFunGenerator(FunctionDescription_sp fdesc, T_sp entryPointIndices) {
-  auto entryPoint = gctools::GC<CoreFunGenerator_O>::allocate(fdesc, entryPointIndices);
-  //  printf("%s:%d:%s  entryPoint-> %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)entryPoint.raw_());
-  return entryPoint;
+  return gctools::GC<CoreFunGenerator_O>::allocate(fdesc, entryPointIndices);
 }
 
 std::string CoreFunGenerator_O::__repr__() const {
@@ -267,10 +263,6 @@ std::string SimpleCoreFun_O::__repr__() const {
   ss << " @" << (void*)this << ">";
   return ss.str();
 }
-
-CL_LISPIFY_NAME("simple-core-fun-generator-local-fun-index");
-CL_DEFMETHOD
-size_t SimpleCoreFunGenerator_O::coreFunIndex() const { return this->_localFunIndex; }
 
 std::string SimpleCoreFunGenerator_O::__repr__() const {
   stringstream ss;
