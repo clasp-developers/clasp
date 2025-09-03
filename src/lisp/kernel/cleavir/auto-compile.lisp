@@ -52,20 +52,7 @@
 ;;; We don't queue anything until start-autocompilation is run.
 ;;; Afterwards we queue even if the worker is not going - more work for later.
 (defun queue-autocompilation (definition environment)
-  (when (global-definition-p definition)
-    (autocompilation-enqueue  (cons definition environment)))
-  definition)
-
-;;; The BTB compiler currently is only safe for non-closures. FIXME.
-;;; I think all we have to do is make sure we replace outer functions
-;;; before inner functions, so that outer bytecode functions never have
-;;; inner native functions.
-(defun global-definition-p (definition)
-  (let ((name (core:function-name definition)))
-    (and (or (symbolp name)
-             (typep name '(cons (eql setf) (cons symbol null))))
-         (fboundp name)
-         (eq definition (fdefinition name)))))
+  (autocompilation-enqueue  (cons definition environment)))
 
 (defun autocompile-worker ()
   (macrolet ((log (thing)
@@ -83,12 +70,12 @@
                  (declare (ignore env))
                  ;; Make sure it hasn't been compiled already.
                  (if (eq (core:entry-point def) def)
-                     (handler-case (clasp-bytecode-to-bir:compile-function def)
+                     (handler-case (clasp-bytecode-to-bir:compile-module
+                                    (core:simple-fun-code def))
                        (serious-condition (e)
                          (log `(:error ,def ,e)))
                        (:no-error (f)
-                         (log `(:success ,def ,f))
-                         (core:set-simple-fun def f)))
+                         (log `(:success ,def ,f))))
                      (log `(:redundant ,def))))
           else do (log `(:bad-queue ,item)))))
 

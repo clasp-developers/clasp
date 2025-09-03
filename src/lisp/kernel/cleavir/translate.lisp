@@ -2275,6 +2275,27 @@ COMPILE-FILE will use the default *clasp-env*."
         (values module function-info ordered-raw-constants-list startup-shutdown-id
                 ctable-name fvector-name)))))
 
+(defun jit-bir (bir-module &key (abi *abi-x86-64*) (pathname "repl-code"))
+  (multiple-value-bind (module function-infos constants
+                        startup-shutdown-id ctable-name fvector-name)
+      (translate-bir bir-module :abi abi :pathname pathname)
+    ;; FIXME: A better design might be to store the functions vector
+    ;; in the ObjectFile and retrieve it that way, as we can already do
+    ;; with the literals. That would remove the necessity for llvm-sys:lookup
+    ;; calls in jit-add-module.
+    (multiple-value-bind (object-file ctable fvector)
+        (jit-add-module module startup-shutdown-id ctable-name
+                        fvector-name)
+      (values function-infos constants ctable fvector))))
+
+(defun jit-generator (generator fvector)
+  (core:simple-core-fun-generator/generate
+   generator
+   (core:core-fun-generator/generate
+    (core:simple-core-fun-generator/core-fun-generator generator)
+    fvector)
+   fvector))
+
 ;;; Given the literals returned from with-rtv, return a list of resolved literals
 ;;; that can be installed into the object file to actually be used by the code.
 ;;; This just means fixing up generators.
@@ -2287,13 +2308,7 @@ COMPILE-FILE will use the default *clasp-env*."
         collect (typecase lit
                   (core:core-fun-generator
                    (error "BUG: core fun generator still in literals vector"))
-                  (core:simple-core-fun-generator
-                   (core:simple-core-fun-generator/generate
-                    lit
-                    (core:core-fun-generator/generate
-                     (core:simple-core-fun-generator/core-fun-generator lit)
-                     fvector)
-                    fvector))
+                  (core:simple-core-fun-generator (jit-generator lit fvector))
                   ;; Anything that's not a generator just means itself.
                   (t lit))
           into new-lits
@@ -2308,32 +2323,22 @@ COMPILE-FILE will use the default *clasp-env*."
                   (core:file-scope
                    (core:source-pos-info-file-handle origin))))
                 "repl-code"))))
-    (multiple-value-bind (module function-infos constants
-                          startup-shutdown-id ctable-name fvector-name)
-        (translate-bir (bir:module bir) :abi abi
-                                        :pathname pathname)
-      ;; FIXME: A better design might be to store the functions vector
-      ;; in the ObjectFile and retrieve it that way, as we can already do
-      ;; with the literals. That would remove the necessity for llvm-sys:lookup
-      ;; calls in jit-add-module.
-      (multiple-value-bind (object-file ctable fvector)
-          (jit-add-module module startup-shutdown-id ctable-name
-                          fvector-name)
-        (declare (ignore object-file))
-        ;; Install literals.
-        (loop for lit in (jit-resolve-literals constants fvector)
-              for i from 0
-              do (setf (core:literals-vref ctable i) lit))
-        (let* ((info (or (gethash bir function-infos)
-                         (error "Missing LLVM function info for BIR function ~a."
-                                bir)))
-               (generator (cmp:xep-group-generator (xep-function info)))
-               (core-generator
-                 (cmp:simple-core-fun-generator/core-fun-generator generator)))
-          (core:simple-core-fun-generator/generate
-           generator
-           (core:core-fun-generator/generate core-generator fvector)
-           fvector))))))
+    (multiple-value-bind (function-infos constants ctable fvector)
+        (jit-bir (bir:module bir) :abi abi :pathname pathname)
+      ;; Install literals.
+      (loop for lit in (jit-resolve-literals constants fvector)
+            for i from 0
+            do (setf (core:literals-vref ctable i) lit))
+      (let* ((info (or (gethash bir function-infos)
+                       (error "Missing LLVM function info for BIR function ~a."
+                              bir)))
+             (generator (cmp:xep-group-generator (xep-function info)))
+             (core-generator
+               (cmp:simple-core-fun-generator/core-fun-generator generator)))
+        (core:simple-core-fun-generator/generate
+         generator
+         (core:core-fun-generator/generate core-generator fvector)
+         fvector)))))
 
 ;;; Used from fli.lisp.
 ;;; Create a function like

@@ -6,7 +6,7 @@
                     (#:env #:cleavir-env)
                     (#:policy #:cleavir-compilation-policy)
                     (#:build #:cleavir-bir-builder))
-  (:export #:compile-function #:compile-hook))
+  (:export #:compile-module #:compile-function #:compile-hook))
 
 (in-package #:clasp-bytecode-to-bir)
 
@@ -81,25 +81,6 @@
                            (core:bytecode-module/debug-info bcmodule)
                            (compute-runtime-literals literals mutables)
                            irmodule)))
-
-;;; Now, for compile file
-(defgeneric compute-compile-literal (info))
-(defmethod compute-compile-literal ((info cmp:constant-info))
-  (cons (cmp:constant-info/value info) nil))
-(defmethod compute-compile-literal ((info cmp:cfunction))
-  (cons info nil))
-(defmethod compute-compile-literal ((info cmp:variable-cell-info))
-  (cons info nil))
-(defmethod compute-compile-literal ((info cmp:function-cell-info))
-  (cons info nil))
-(defmethod compute-compile-literal ((info cmp:load-time-value-info))
-  (cons (cmp:load-time-value-info/form info)
-        (if (cmp:load-time-value-info/read-only-p info)
-            :ltv-readonly
-            :ltv-mutable)))
-
-(defun compute-compile-literals (literals)
-  (map 'vector #'compute-compile-literal literals))
 
 ;;; Shared entry point for both runtime and compile-file-time.
 (defun compile-bytecode-into (bytecode annotations literals irmodule)
@@ -197,6 +178,46 @@
             (fixed-closures-map (fmap funmap)))
           (bir (finfo-irfun (find-bcfun function funmap))))
       (clasp-cleavir::bir->function bir :abi abi))))
+
+;;; Given a bytecode module, compute native functions for all bytecode functions
+;;; in it, and install them as new simple funs. Return value irrelevant.
+;;; Used by autocompilation.
+(defun compile-module (module
+                       &key (abi clasp-cleavir:*abi-x86-64*)
+                         (system clasp-cleavir:*clasp-system*))
+  (multiple-value-bind (irmodule funmap) (compile-bcmodule module)
+    (clasp-cleavir::bir-transformations irmodule system)
+    (multiple-value-bind (function-infos constants ctable fvector)
+        (let ((cleavir-cst-to-ast:*compiler* 'cl:compile)
+              (clasp-cleavir::*fixed-closures*
+                (fixed-closures-map (fmap funmap))))                
+          (clasp-cleavir::jit-bir irmodule :abi abi :pathname "repl-code"))
+      ;; Build up a mapping from generators to their original bytecode functions.
+      (let ((generator->bytecode
+              (loop with g->b = (make-hash-table)
+                    for (bc ir) in (fmap funmap)
+                    for info = (gethash ir function-infos)
+                    for xep = (clasp-cleavir::xep-function info)
+                    unless (eq xep :xep-unallocated)
+                      do (setf (gethash (cmp:xep-group-generator xep) g->b) bc)
+                    finally (return g->b))))
+        ;; Replace any generators in the constants with the corresponding
+        ;; bytecode function, or a newly generated native function if there is
+        ;; no corresponding bytecode function (e.g. it's a new type check function).
+        ;; Store everything in the compiled code.
+        (loop for c in constants for i from 0
+              for real-c = (if (typep c 'core:simple-core-fun-generator)
+                               (or (gethash c generator->bytecode)
+                                   (clasp-cleavir::jit-generator c fvector))
+                               c)
+              do (setf (core:literals-vref ctable i) real-c))
+        ;; Generate XEPs for all the bytecode functions, and store them as
+        ;; the bytecode functions' simple funs.
+        (loop for generator being the hash-keys of generator->bytecode
+                using (hash-value bcfun)
+              for fun = (clasp-cleavir::jit-generator generator fvector)
+              do (core:set-simple-fun bcfun fun)))))
+  (values))
 
 ;;; COMPILE-FILE interface: take the components of a CMP:MODULE and return
 ;;; an NMODULE. The NMODULE contains everything COMPILE-FILE needs to dump

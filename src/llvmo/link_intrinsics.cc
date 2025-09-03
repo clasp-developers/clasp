@@ -1098,7 +1098,7 @@ NEVER_OPTIMIZE void cc_etypecase_error(T_O* datum, T_O* possibilities) {
 
 core::T_O* cc_enclose(core::T_O* simpleFunInfo, std::size_t numCells) {
   core::T_sp tsimpleFun((gctools::Tagged)simpleFunInfo);
-  core::SimpleCoreFun_sp simpleFun = gc::As<SimpleCoreFun_sp>(tsimpleFun);
+  core::SimpleFun_sp simpleFun = gc::As<SimpleFun_sp>(tsimpleFun);
   gctools::smart_ptr<core::Closure_O> functoid =
       gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, numCells, simpleFun);
   return functoid.raw_();
