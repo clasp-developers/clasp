@@ -1560,6 +1560,11 @@
 
 #+clasp
 (defvar *native-compile-file-all* nil)
+;; The ID number used for native code modules, if generated.
+;; Different modules within the same init-object-array block must have
+;; distinct numbers to name symbols distinctly.
+#+clasp
+(defvar *native-module-id*)
 
 (defun add-module (value)
   ;; Add the module first to prevent recursion.
@@ -1967,6 +1972,7 @@
   (with-constants ()
     ;; Read and compile the forms.
     (loop with eof = (gensym "EOF")
+          with *native-module-id* = 0
           with *compile-time-too* = nil
           with eclector.reader:*client* = (make-instance 'cmp::clasp-tracking-eclector-client)
           with cfsdp = (core:file-scope cmp::*compile-file-source-debug-pathname*)

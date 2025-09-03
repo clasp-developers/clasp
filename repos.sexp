@@ -98,7 +98,7 @@
  (:name :khazern
   :repository "https://github.com/s-expressionists/Khazern.git"
   :directory "src/lisp/kernel/contrib/Khazern/"
-  :branch "master")
+  :commit "6821e5c1690df422f1b2868f26b396eff3d7b6fe")
  (:name :incless
   :repository "https://github.com/s-expressionists/Incless.git"
   :directory "src/lisp/kernel/contrib/Incless/"
