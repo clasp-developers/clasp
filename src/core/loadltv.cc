@@ -1057,6 +1057,8 @@ struct loadltv {
     } else if (name == "clasp:module-debug-info"
                || name == "module-debug-info") {
       attr_clasp_module_debug_info(attrbytes);
+    } else if (name == "clasp:module-mutable-ltv") {
+      attr_clasp_module_mutable_ltv(attrbytes);
     } else if (name == "clasp:module-native") {
       attr_clasp_module_native(attrbytes);
     } else {
