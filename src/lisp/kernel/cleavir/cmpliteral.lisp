@@ -829,12 +829,10 @@ Return the index of the load-time-value"
                                                         :linkage 'llvm-sys:external-linkage)
               (declare (ignore fvector-len fvector-type))
               (values ordered-raw-constants-list
-                      module-id
                       (llvm-sys:get-name constant-table)
                       (llvm-sys:get-name fvector)))))))))
 
-(defmacro with-rtv ((&key (id '(core:next-jit-compile-counter)))
-                    &body body)
+(defmacro with-rtv ((id) &body body)
   "Evaluate the code in the body in an environment where run-time values are assigned integer indices
 starting from (literal-machine-table-index *literal-machine*) into a constants table and the run-time values are accumulated in *literal-machine*.
 References to the run-time values are relative to the *load-time-value-holder-global-var*.

@@ -2258,35 +2258,34 @@ COMPILE-FILE will use the default *clasp-env*."
 ;;; 3) A list of constants the module needs, in the correct order
 ;;; 4) the startup-shutdown-id
 (defun translate-bir (bir-module &key (abi *abi-x86-64*)
+                                   (module-id (core:next-jit-compile-counter))
                                    ;; actually a namestring
                                    (pathname "repl-code"))
   (let ((module (cmp::llvm-create-module "compile"))
         (function-info (make-hash-table :test #'eq)))
     (cmp::with-module (:module module)
-      (multiple-value-bind (ordered-raw-constants-list startup-shutdown-id
-                            ctable-name fvector-name)
+      (multiple-value-bind (ordered-raw-constants-list ctable-name fvector-name)
           (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-            (literal:with-rtv ()
+            (literal:with-rtv (module-id)
               (let* ((*unwind-ids* (make-hash-table :test #'eq))
                      (*function-info* function-info)
                      (*constant-values* (make-hash-table :test #'eq)))
                 (layout-module bir-module abi)
                 (cmp::potentially-save-module))))
-        (values module function-info ordered-raw-constants-list startup-shutdown-id
+        (values module function-info ordered-raw-constants-list
                 ctable-name fvector-name)))))
 
 (defun jit-bir (bir-module &key (abi *abi-x86-64*) (pathname "repl-code"))
-  (multiple-value-bind (module function-infos constants
-                        startup-shutdown-id ctable-name fvector-name)
-      (translate-bir bir-module :abi abi :pathname pathname)
-    ;; FIXME: A better design might be to store the functions vector
-    ;; in the ObjectFile and retrieve it that way, as we can already do
-    ;; with the literals. That would remove the necessity for llvm-sys:lookup
-    ;; calls in jit-add-module.
-    (multiple-value-bind (object-file ctable fvector)
-        (jit-add-module module startup-shutdown-id ctable-name
-                        fvector-name)
-      (values function-infos constants ctable fvector))))
+  (let ((id (core:next-jit-compile-counter)))
+    (multiple-value-bind (module function-infos constants ctable-name fvector-name)
+        (translate-bir bir-module :abi abi :pathname pathname :module-id id)
+      ;; FIXME: A better design might be to store the functions vector
+      ;; in the ObjectFile and retrieve it that way, as we can already do
+      ;; with the literals. That would remove the necessity for llvm-sys:lookup
+      ;; calls in jit-add-module.
+      (multiple-value-bind (object-file ctable fvector)
+          (jit-add-module module id ctable-name fvector-name)
+        (values function-infos constants ctable fvector)))))
 
 (defun jit-generator (generator fvector)
   (core:simple-core-fun-generator/generate
