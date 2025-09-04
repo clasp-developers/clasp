@@ -881,6 +881,7 @@ Function_sp lisp_symbolFunction(Symbol_sp sym);
 string lisp_symbolNameAsString(Symbol_sp sym);
 T_sp lisp_createStr(const string& str);
 T_sp lisp_createFixnum(int num);
+T_sp lisp_createList();
 T_sp lisp_createList(T_sp a1);
 T_sp lisp_createList(T_sp a1, T_sp a2);
 T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3);

@@ -2173,6 +2173,8 @@ void compile_setq(List_sp pairs, Lexenv_sp env, const Context ctxt) {
     }
   } else {
     do {
+      if (oCdr(pairs).nilp())
+        SIMPLE_PROGRAM_ERROR("Odd number of arguments to SETQ");
       Symbol_sp var = gc::As<Symbol_sp>(oCar(pairs));
       T_sp valf = oCadr(pairs);
       pairs = gc::As<List_sp>(oCddr(pairs));
@@ -2314,7 +2316,8 @@ void compile_go(T_sp tag, Lexenv_sp env, const Context ctxt) {
     SIMPLE_ERROR("The GO tag {} does not exist.", _rep_(tag));
 }
 
-void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ctxt) {
+void compile_block(T_sp tname, List_sp body, Lexenv_sp env, const Context ctxt) {
+  Symbol_sp name = tname.as<Symbol_O>();
   Label_sp label = Label_O::make();
   Label_sp normal_label = Label_O::make();
   Label_sp start = Label_O::make();
@@ -2575,61 +2578,121 @@ void compile_primop_funcall(T_sp callee, List_sp args, Lexenv_sp env, const Cont
   compile_call(args, env, context);
 }
 
+[[noreturn]] static void special_form_wrong_args(T_sp head, T_sp rest, size_t min) {
+  SIMPLE_PROGRAM_ERROR("Special operator ~a requires at least ~d args, not~%~t~s",
+                       head, clasp_make_fixnum(min), rest);
+}
+[[noreturn]] static void special_form_wrong_args(T_sp head, T_sp rest,
+                                                 size_t min, size_t max) {
+  if (min == max)
+    SIMPLE_PROGRAM_ERROR("Special operator ~a requires exactly ~d args, not~%~t~s",
+                         head, clasp_make_fixnum(min), rest);
+  else
+    SIMPLE_PROGRAM_ERROR("Special operator ~a requires between ~d and ~d args, not~%~t~s",
+                         head, clasp_make_fixnum(min), clasp_make_fixnum(max), rest);
+}
+
 void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context context) {
   if (head == cl::_sym_progn)
     compile_progn(rest, env, context);
-  else if (head == cl::_sym_let)
-    compile_let(oCar(rest), oCdr(rest), env, context);
-  else if (head == cl::_sym_letSTAR)
-    compile_letSTAR(oCar(rest), oCdr(rest), env, context);
-  else if (head == cl::_sym_flet)
-    compile_flet(oCar(rest), oCdr(rest), env, context);
-  else if (head == cl::_sym_labels)
-    compile_labels(oCar(rest), oCdr(rest), env, context);
-  else if (head == cl::_sym_setq)
+  else if (head == cl::_sym_let) {
+    if (rest.consp())
+      compile_let(oCar(rest), oCdr(rest), env, context);
+    else special_form_wrong_args(head, rest, 1);
+  } else if (head == cl::_sym_letSTAR) {
+    if (rest.consp())
+      compile_letSTAR(oCar(rest), oCdr(rest), env, context);
+    else special_form_wrong_args(head, rest, 1);
+  } else if (head == cl::_sym_flet) {
+    if (rest.consp())
+      compile_flet(oCar(rest), oCdr(rest), env, context);
+    else special_form_wrong_args(head, rest, 1);
+  } else if (head == cl::_sym_labels) {
+    if (rest.consp())
+      compile_labels(oCar(rest), oCdr(rest), env, context);
+    else special_form_wrong_args(head, rest, 1);
+  } else if (head == cl::_sym_setq)
     compile_setq(rest, env, context);
-  else if (head == cl::_sym_if)
-    compile_if(oCar(rest), oCadr(rest), oCaddr(rest), env, context);
-  else if (head == cl::_sym_Function_O)
-    compile_function(oCar(rest), env, context);
-  else if (head == cl::_sym_tagbody)
+  else if (head == cl::_sym_if) {
+    if (rest.consp() && oCdr(rest).consp()
+        && ((oCddr(rest).consp() && oCdddr(rest).nilp())
+            || oCddr(rest).nilp()))
+      compile_if(oCar(rest), oCadr(rest), oCaddr(rest), env, context);
+    else special_form_wrong_args(head, rest, 2, 3);
+  } else if (head == cl::_sym_Function_O) {
+    if (rest.consp() && oCdr(rest).nilp())
+      compile_function(oCar(rest), env, context);
+    else special_form_wrong_args(head, rest, 1, 1);
+  } else if (head == cl::_sym_tagbody)
     compile_tagbody(rest, env, context);
-  else if (head == cl::_sym_go)
-    compile_go(oCar(rest), env, context);
-  else if (head == cl::_sym_block)
-    compile_block(oCar(rest), oCdr(rest), env, context);
-  else if (head == cl::_sym_return_from)
-    compile_return_from(oCar(rest), oCadr(rest), env, context);
-  else if (head == cl::_sym_quote)
-    compile_literal(oCar(rest), env, context);
-  else if (head == cl::_sym_load_time_value)
-    compile_load_time_value(oCar(rest), oCadr(rest), env, context);
-  else if (head == cl::_sym_macrolet)
-    compile_macrolet(oCar(rest), oCdr(rest), env, context);
-  else if (head == cl::_sym_symbol_macrolet)
-    compile_symbol_macrolet(oCar(rest), oCdr(rest), env, context);
-  else if (head == cl::_sym_multiple_value_call)
-    compile_multiple_value_call(oCar(rest), oCdr(rest), env, context);
-  else if (head == cl::_sym_multiple_value_prog1)
-    compile_multiple_value_prog1(oCar(rest), oCdr(rest), env, context);
-  else if (head == cl::_sym_locally)
+  else if (head == cl::_sym_go) {
+    if (rest.consp() && oCdr(rest).nilp())
+      compile_go(oCar(rest), env, context);
+    else special_form_wrong_args(head, rest, 1, 1);
+  } else if (head == cl::_sym_block) {
+    if (rest.consp())
+      compile_block(oCar(rest), oCdr(rest), env, context);
+    else special_form_wrong_args(head, rest, 1);
+  } else if (head == cl::_sym_return_from) {
+    if (rest.consp() && (oCdr(rest).nilp()
+                         || (oCdr(rest).consp() && oCddr(rest).nilp())))
+      compile_return_from(oCar(rest), oCadr(rest), env, context);
+    else special_form_wrong_args(head, rest, 1, 2);
+  } else if (head == cl::_sym_quote) {
+    if (rest.consp() && oCdr(rest).nilp())
+      compile_literal(oCar(rest), env, context);
+    else special_form_wrong_args(head, rest, 1, 1);
+  } else if (head == cl::_sym_load_time_value) {
+    if (rest.consp() && (oCdr(rest).nilp()
+                       || (oCdr(rest).consp() && oCddr(rest).nilp())))
+      compile_load_time_value(oCar(rest), oCadr(rest), env, context);
+    else special_form_wrong_args(head, rest, 1, 2);
+  } else if (head == cl::_sym_macrolet) {
+    if (rest.consp())
+      compile_macrolet(oCar(rest), oCdr(rest), env, context);
+    else special_form_wrong_args(head, rest, 1);
+  } else if (head == cl::_sym_symbol_macrolet) {
+    if (rest.consp())
+      compile_symbol_macrolet(oCar(rest), oCdr(rest), env, context);
+    else special_form_wrong_args(head, rest, 1);
+  } else if (head == cl::_sym_multiple_value_call) {
+    if (rest.consp())
+      compile_multiple_value_call(oCar(rest), oCdr(rest), env, context);
+    else special_form_wrong_args(head, rest, 1);
+  } else if (head == cl::_sym_multiple_value_prog1) {
+    if (rest.consp())
+      compile_multiple_value_prog1(oCar(rest), oCdr(rest), env, context);
+    else special_form_wrong_args(head, rest, 1);
+  } else if (head == cl::_sym_locally)
     compile_locally(rest, env, context);
-  else if (head == cl::_sym_eval_when)
-    compile_eval_when(oCar(rest), oCdr(rest), env, context);
-  else if (head == cl::_sym_the)
-    compile_the(oCar(rest), oCadr(rest), env, context);
-  else if (head == cl::_sym_catch)
-    compile_catch(oCar(rest), oCdr(rest), env, context);
-  else if (head == cl::_sym_throw)
-    compile_throw(oCar(rest), oCadr(rest), env, context);
-  else if (head == cl::_sym_unwind_protect)
-    compile_unwind_protect(oCar(rest), oCdr(rest), env, context);
-  else if (head == cl::_sym_progv)
-    compile_progv(oCar(rest), oCadr(rest), oCddr(rest), env, context);
+  else if (head == cl::_sym_eval_when) {
+    if (rest.consp())
+      compile_eval_when(oCar(rest), oCdr(rest), env, context);
+    else special_form_wrong_args(head, rest, 1);
+  } else if (head == cl::_sym_the) {
+    if (rest.consp() && oCdr(rest).consp() && oCddr(rest).nilp())
+      compile_the(oCar(rest), oCadr(rest), env, context);
+    else special_form_wrong_args(head, rest, 2, 2);
+  } else if (head == cl::_sym_catch) {
+    if (rest.consp())
+      compile_catch(oCar(rest), oCdr(rest), env, context);
+    else special_form_wrong_args(head, rest, 1);
+  } else if (head == cl::_sym_throw) {
+    if (rest.consp() && oCdr(rest).consp() && oCddr(rest).nilp())
+      compile_throw(oCar(rest), oCadr(rest), env, context);
+    else special_form_wrong_args(head, rest, 2, 2);
+  } else if (head == cl::_sym_unwind_protect) {
+    if (rest.consp())
+      compile_unwind_protect(oCar(rest), oCdr(rest), env, context);
+    else special_form_wrong_args(head, rest, 1);
+  } else if (head == cl::_sym_progv) {
+    if (rest.consp() && oCdr(rest).consp())
+      compile_progv(oCar(rest), oCadr(rest), oCddr(rest), env, context);
+    else special_form_wrong_args(head, rest, 2);
   // basic optimization
-  else if (head == cl::_sym_funcall
-           // Do a basic syntax check so that (funcall) fails properly.
-           && rest.consp())
+  } else if (head == cl::_sym_funcall
+             // Do a basic syntax check so that (funcall) fails properly.
+             && rest.consp())
     compile_funcall(oCar(rest), oCdr(rest), env, context);
   // extension
   else if (head == cleavirPrimop::_sym_funcall)

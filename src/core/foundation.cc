@@ -1267,6 +1267,7 @@ SourcePosInfo_sp core__createSourcePosInfo(const string& filename, size_t filePo
   return lisp_createSourcePosInfo(filename, filePos, lineno);
 }
 
+T_sp lisp_createList() { return nil<T_O>(); }
 T_sp lisp_createList(T_sp a1) { return Cons_O::create(a1, nil<T_O>()); }
 T_sp lisp_createList(T_sp a1, T_sp a2) { return Cons_O::createList(a1, a2); };
 T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3) { return Cons_O::createList(a1, a2, a3); };
