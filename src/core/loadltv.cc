@@ -79,6 +79,9 @@ struct loadltv {
   gctools::Vec0<T_sp> _literals;
   uint8_t _index_bytes = 1;
   size_t _next_index = 0;
+  // native modules
+  T_sp _JITDylib = nil<T_O>();
+  uint16_t _next_native_module = 0;
 
   loadltv(Stream_sp stream) : _stream(stream) {}
 
@@ -830,21 +833,32 @@ struct loadltv {
   }
 
   void attr_clasp_function_native(uint32_t bytes) {
-    void *mainptr, *xepptr;
-    BytecodeSimpleFun_sp fun = gc::As<BytecodeSimpleFun_sp>(get_ltv(read_index()));
-    FunctionDescription_sp fdesc = fun->fdesc();
-    std::string mainn = gc::As<SimpleString_sp>(get_ltv(read_index()))->get_std_string();
-    std::string xepn = gc::As<SimpleString_sp>(get_ltv(read_index()))->get_std_string();
-    BytecodeModule_sp mod = fun->code();
-    llvmo::JITDylib_sp dylib = gc::As<llvmo::JITDylib_sp>(mod->nativeModule());
-    // FIXME: Do we need to grab a lock to use the JIT?
-    llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
-    if (!jit->do_lookup(dylib, mainn, mainptr))
-      // Failed lookup: Maybe a warning? Error right now to debug
-      SIMPLE_ERROR("Could not find pointer for name |{}|", mainn);
-    if (!jit->do_lookup(dylib, xepn, xepptr))
-      SIMPLE_ERROR("Could not find pointer for name |{}|", xepn);
-    fun->setSimpleFun(SimpleCoreFun_O::make(fun->fdesc(), (ClaspCoreFunction)mainptr, (ClaspXepAnonymousFunction*)xepptr));
+    T_sp tfunction = get_ltv(read_index());
+    Function_sp function = tfunction.as<Function_O>();
+    uint16_t module_id = read_u16();
+    uint16_t corei = read_u16();
+    uint16_t xepi = read_u16();
+
+    llvmo::ClaspJIT_sp jit = _lisp->_Roots._ClaspJIT.as_assert<llvmo::ClaspJIT_O>();
+    llvmo::JITDylib_sp dylib = _JITDylib.as<llvmo::JITDylib_O>();
+    int fvector_name_len = snprintf(NULL, 0, "function-vector-%d", module_id);
+    char fvector_name[fvector_name_len+1]; // +1 for null terminator
+    sprintf(fvector_name, "function-vector-%d", module_id);
+    void* vfvector;
+    if (!jit->do_lookup(dylib, fvector_name, vfvector))
+      SIMPLE_ERROR("Could not find function vector {}", &fvector_name[0]);
+    void** fvector = (void**)vfvector;
+
+    CoreFun_sp core = makeCoreFun(function->fdesc(),
+                                  (ClaspCoreFunction)fvector[corei]);
+
+    ClaspXepTemplate xep;
+    for (size_t ii = 0; ii < ClaspXepFunction::Entries; ++ii)
+      xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)fvector[xepi + ii];
+    SimpleCoreFun_sp scf = makeSimpleCoreFun(function->fdesc(), xep, core);
+
+    // Install in the function and we're done.
+    function->setSimpleFun(scf);
   }
 
   void attr_clasp_source_pos_info(uint32_t bytes) {
@@ -996,10 +1010,21 @@ struct loadltv {
   }
 
   void attr_clasp_module_native(uint32_t bytes) {
+    size_t module_id = _next_native_module++;
     // FIXME: Do we need to grab a lock to use the JIT?
     llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
     BytecodeModule_sp mod = gc::As<BytecodeModule_sp>(get_ltv(read_index()));
     uint32_t nmc = read_u32(); // machine code length
+
+    // FIXME: Use a better name, I guess? Not sure how much it matters.
+    std::string uniqueName = llvmo::ensureUniqueMemoryBufferName("bytecode-fasl");
+    // Lazily initialize a dylib for this FASL.
+    if (_JITDylib.nilp()) {
+      _JITDylib = jit->createAndRegisterJITDylib(uniqueName);
+      //mod->setf_nativeModule(_JITDylib);
+    }
+    llvmo::JITDylib_sp dylib = _JITDylib.as_assert<llvmo::JITDylib_O>();
+    // Read in the machine code.
     // At the moment all machine code we give to JIT is unmanaged - e.g.
     // load-faso just mmaps a file and leaves the mmap around forever.
     // This is the unlinked object code, not the code that actually runs,
@@ -1010,24 +1035,31 @@ struct loadltv {
     stream_read_byte8(_stream, mc, nmc); // read in machine code
     // Now feed the machine code to the JIT.
     llvm::StringRef sbuffer((const char*)mc, nmc);
-    // FIXME: Use a better name, I guess? Not sure how much it matters.
-    std::string uniqueName = llvmo::ensureUniqueMemoryBufferName("bytecode-fasl");
     llvm::StringRef name(uniqueName);
-    llvmo::JITDylib_sp dylib = jit->createAndRegisterJITDylib(uniqueName);
-    mod->setf_nativeModule(dylib);
     std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer, name, false));
     llvmo::ObjectFile_sp obj = jit->addObjectFile(dylib, std::move(memoryBuffer), false, 0);
+    
     // Loaded the object, so now we just need to stick the literals in.
     uint16_t nlits = read_u16();
     // We can't use the object's TOLiteralsStart because it won't exist before
     // we actually query the symbol, due to the JIT's laziness.
+    int namelen = snprintf(NULL, 0, "__clasp_literals_%zu", module_id);
+    char literals_name[namelen+1]; // +1 for null terminator
+    sprintf(literals_name, "__clasp_literals_%zu", module_id);
     void* vlits;
-    if (!jit->do_lookup(dylib, "__clasp_literals_", vlits))
+    if (!jit->do_lookup(dylib, literals_name, vlits))
       SIMPLE_ERROR("Could not find literals");
     T_O** lits = (T_O**)vlits;
     for (size_t i = 0; i < nlits; ++i) {
       lits[i] = get_ltv(read_index()).raw_();
     }
+    /*
+    uint16_t nfuns = read_u16();
+    for (size_t j = 0; j < nfuns; ++j) {
+      uint16_t corei = read_u16();
+      uint16_t xepi = read_u16();
+    }
+*/
   }
 
   void attr_clasp_module_mutable_ltv(uint32_t bytes) {
@@ -1081,6 +1113,9 @@ struct loadltv {
     }
     _next_index = 0;
     _literals.assign(nobjs, unbound<T_O>());
+    // Also reset the dylib.
+    _JITDylib = nil<T_O>();
+    _next_native_module = 0;
   }
 
   void load_instruction() {
