@@ -19,7 +19,6 @@
 (defstruct (literal-node-creator (:include literal-dnode))
   name literal-name object arguments)
 (defstruct (literal-node-runtime (:include literal-dnode)) object)
-(defstruct (literal-node-closure (:include literal-dnode)) function-index function entry-point-ref)
 
 (defstruct function-datum index)
 #+short-float
@@ -560,11 +559,6 @@ rewrite the slot in the literal table to store a closure."
      (let ((arguments (cdr (literal-node-toplevel-funcall-arguments node))))
        ;;           (format t "About to write arguments for literal-node-toplevel-funcall: ~s~%" arguments)
        (setf byte-index (write-arguments-byte-code arguments fout byte-index))))
-    ((literal-node-closure-p node)
-     (setf byte-index (core:ltvc-write-char (lookup-byte-code "ltvc_enclose") fout byte-index))
-     (error "What do I do with the arguments for ~s" node)
-     (core:exit 1)
-     )
     (t (warn "Add support for node ~s" node)))
   byte-index)
 
@@ -805,10 +799,6 @@ Return the index of the load-time-value"
                                 (cond
                                   ((literal-node-runtime-p x)
                                    (literal-node-runtime-object x))
-                                  ((and (literal-node-creator-p x)
-                                        (literal-node-closure-p
-                                         (literal-node-creator-object x)))
-                                   nil)
                                   (t (error "Illegal object in ordered-literals-list it is: ~s" x))))
                          ordered-literals-list))
                (array-type (llvm-sys:array-type-get cmp:%t*% (length ordered-literals-list)))

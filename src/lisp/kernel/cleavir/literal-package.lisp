@@ -14,7 +14,6 @@
    #:register-xep-function-indices
    #:literal-node-runtime-p
    #:literal-node-runtime-object
-   #:literal-node-closure-p
    #:literal-node-creator-p
    #:literal-node-creator-object
    #:literal-node-creator-name
