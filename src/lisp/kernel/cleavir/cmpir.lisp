@@ -233,9 +233,6 @@ local-function - the lcl function that all of the xep functions call."
 (defun irc-size_t (num)
   (jit-constant-size_t num))
 
-(defun irc-literal (lit &optional (label "literal"))
-  (irc-t*-load (literal:compile-reference-to-literal lit) label))
-
 (defvar *current-unwind-landing-pad-dest* nil)
 
 (defmacro with-landing-pad (unwind-landing-pad-dest &rest body)
@@ -811,7 +808,7 @@ Otherwise do a variable shift."
 ;;; This requires branching. We could alternately use the llvm select
 ;;; instruction, but I'm not as sure how it works (especially the "MDFrom"
 ;;; argument to CreateSelect).
-(defun irc-vaslist-nth (n vaslist &optional (label "primary"))
+(defun irc-vaslist-nth (n vaslist nilval &optional (label "primary"))
   (let ((novalues (irc-basic-block-create "vaslist-primary-no-values"))
         (values (irc-basic-block-create "vaslist-primary-values"))
         (merge (irc-basic-block-create "vaslist-primary-merge")))
@@ -819,16 +816,15 @@ Otherwise do a variable shift."
      (irc-icmp-ult n (irc-vaslist-nvals vaslist))
      values novalues)
     (irc-begin-block novalues)
-    (let ((null (irc-literal nil "NIL")))
+    (irc-br merge)
+    (irc-begin-block values)
+    (let ((primary (irc-t*-load (cmp:irc-typed-gep %t*% (irc-vaslist-values vaslist) (list n)) "primary")))
       (irc-br merge)
-      (irc-begin-block values)
-      (let ((primary (irc-t*-load (cmp:irc-typed-gep %t*% (irc-vaslist-values vaslist) (list n)) "primary")))
-        (irc-br merge)
-        (irc-begin-block merge)
-        (let ((phi (irc-phi %t*% 2 label)))
-          (irc-phi-add-incoming phi null novalues)
-          (irc-phi-add-incoming phi primary values)
-          phi)))))
+      (irc-begin-block merge)
+      (let ((phi (irc-phi %t*% 2 label)))
+        (irc-phi-add-incoming phi nilval novalues)
+        (irc-phi-add-incoming phi primary values)
+        phi))))
 
 ;;; Given a vaslist, return a new vaslist with all values but the primary.
 ;;; If the vaslist is already empty, it is returned.
