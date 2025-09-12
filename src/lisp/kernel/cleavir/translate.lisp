@@ -2096,7 +2096,6 @@ function-or-placeholder - the llvm function or a placeholder for
         (incf i)))
     (setf (gethash function *function-info*)
           (allocate-llvm-function-info function)))
-  (allocate-module-constants module)
   (bir:do-functions (function module)
     (layout-procedure function (get-or-create-lambda-name function)
                       abi)))
@@ -2105,6 +2104,7 @@ function-or-placeholder - the llvm function or a placeholder for
   (let* ((*unwind-ids* (make-hash-table :test #'eq))
          (*function-info* (make-hash-table :test #'eq))
          (*constant-values* (make-hash-table :test #'eq)))
+    (allocate-module-constants (bir:module bir))
     (layout-module (bir:module bir) abi)
     (cmp::potentially-save-module)
     (xep-function (find-llvm-function-info bir))))
@@ -2270,6 +2270,7 @@ COMPILE-FILE will use the default *clasp-env*."
               (let* ((*unwind-ids* (make-hash-table :test #'eq))
                      (*function-info* function-info)
                      (*constant-values* (make-hash-table :test #'eq)))
+                (allocate-module-constants bir-module)
                 (layout-module bir-module abi)
                 (cmp::potentially-save-module))))
         (values module function-info ordered-raw-constants-list
