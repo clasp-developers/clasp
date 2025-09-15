@@ -59,7 +59,7 @@
                                      (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero))
                                      0)))
 
-(defmacro with-dibuilder ((module) &rest body)
+(defmacro with-dibuilder ((module) &body body)
   `(let ((*the-module-dibuilder* (llvm-sys:make-dibuilder ,module)))
      (unwind-protect
          (progn ,@body)
@@ -78,7 +78,7 @@
                                                        (llvm-sys:mdstring-get (thread-local-llvm-context) "Debug Info Version")
                                                        (llvm-sys:value-as-metadata-get (jit-constant-i32 llvm-sys:+debug-metadata-version+))))))))
     
-(defmacro with-dbg-compile-unit ((source-pathname) &rest body)
+(defmacro with-dbg-compile-unit ((source-pathname) &body body)
   (let ((path (gensym))
         (file (gensym)))
     `(let* ((,path (pathname ,source-pathname))
@@ -140,11 +140,11 @@
       (apply #'llvm-sys:create-file *the-module-dibuilder*
              (if foundp args (make-create-file-args pathname namestring))))))
 
-(defmacro with-dbg-file-descriptor ((source-pathname) &rest body)
+(defmacro with-dbg-file-descriptor ((source-pathname) &body body)
   `(let ((*dbg-current-file* (make-file-metadata (pathname ,source-pathname))))
      ,@body))
 
-(defmacro with-debug-info-generator ((&key module pathname) &rest body)
+(defmacro with-debug-info-generator ((&key module pathname) &body body)
   "One macro that uses three other macros"
   (let ((body-func (gensym)))
     `(flet ((,body-func () ,@body))
@@ -190,7 +190,7 @@
 
 (defun do-dbg-function (closure lineno function-type function)
   (declare (ignore function-type))
-  (unless *current-source-pos-info*
+  (unless core:*current-source-pos-info*
     (warn "*current-source-pos-info* is undefined - this may cause problems - wrap with-dbg-function in with-guaranteed-*current-source-pos-info* to fix this"))
   (let ((linkage-name (llvm-sys:get-name function)))
     (multiple-value-bind (file-scope file-handle)
@@ -205,14 +205,14 @@
             (funcall closure))
           (funcall closure)))))
 
-(defmacro with-guaranteed-*current-source-pos-info* (() &rest body)
+(defmacro with-guaranteed-*current-source-pos-info* (() &body body)
   `(let ((core:*current-source-pos-info* (if core:*current-source-pos-info*
                                              core:*current-source-pos-info*
                                              (core:make-source-pos-info :filename "dummy-filename"))))
      (progn
        ,@body)))
                                              
-(defmacro with-dbg-function ((&key lineno function-type function) &rest body)
+(defmacro with-dbg-function ((&key lineno function-type function) &body body)
   `(do-dbg-function
        (lambda () (progn ,@body))
      ,lineno ,function-type ,function))
@@ -243,7 +243,7 @@
 
 (defun cached-file-metadata (file-handle)
   ;; n.b. despite the name we don't cache, as llvm seems to handle it
-  (make-file-metadata (file-scope-pathname (file-scope file-handle))))
+  (make-file-metadata (core:file-scope-pathname (core:file-scope file-handle))))
 
 (defun cached-function-scope (function-scope-info &optional function-type)
   ;; See production in cleavir/inline-prep.lisp

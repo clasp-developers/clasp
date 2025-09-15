@@ -945,7 +945,7 @@ But no irbuilders or basic-blocks. Return the fn."
 (defun irc-bit-cast (from totype &optional (label "bit-cast"))
   (llvm-sys:create-bit-cast *irbuilder* from totype label))
 
-(defmacro with-irbuilder ((irbuilder) &rest code)
+(defmacro with-irbuilder ((irbuilder) &body code)
   "Set *irbuilder* to the given IRBuilder"
   `(let ((*irbuilder* ,irbuilder))
      ,@code))
@@ -953,7 +953,8 @@ But no irbuilders or basic-blocks. Return the fn."
 (defmacro with-module (( &key module
                            (optimize nil)
                            (optimize-level '*optimization-level*)
-                           dry-run) &rest body)
+                           dry-run)
+                       &body body)
   `(let* ((*the-module* ,module))
      (or *the-module* (error "with-module *the-module* is NIL"))
      (multiple-value-prog1
