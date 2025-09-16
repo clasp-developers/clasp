@@ -105,6 +105,8 @@ function-or-placeholder - the llvm function or a placeholder for
   function-or-placeholder
   )
 
+(defstruct general-entry-placeholder arity)
+
 (defun make-1-xep-arity (arity function-name cleavir-lambda-list-analysis module)
   (let* ((xep-function-name (format nil "~a-xep~a" function-name
                                     (if (eq arity :general-entry)
@@ -115,7 +117,7 @@ function-or-placeholder - the llvm function or a placeholder for
                  (cmp:irc-function-create (cmp:fn-prototype arity)
                                           'llvm-sys:internal-linkage
                                           xep-function-name module)
-                 (literal:make-general-entry-placeholder :arity arity))))
+                 (make-general-entry-placeholder :arity arity))))
     (make-xep-arity :arity arity :function-or-placeholder fn)))
 
 (defun make-xep-arities (function-name cleavir-lambda-list-analysis module)
@@ -126,13 +128,32 @@ function-or-placeholder - the llvm function or a placeholder for
                collect (make-1-xep-arity arity function-name
                                          cleavir-lambda-list-analysis module))))
 
+(defun wna-for (arity)
+  ;; Look up a wrong-number-of-arguments function for a given arity.
+  ;; What it actually does is call the general-arity XEP, which is
+  ;; always generated and always able to signal the right error
+  ;; when given the wrong arguments.
+  (cmp:get-or-declare-function-or-error
+   cmp:*the-module*
+   (cmp:general-entry-point-redirect-name arity)))
+
+(defun register-local-function-index (function fvector)
+  (vector-push-extend function fvector))
+(defun register-xep-function-indices (funs-placeholders fvector)
+  (loop for raw in funs-placeholders
+        for fun = (if (general-entry-placeholder-p raw)
+                      (wna-for (general-entry-placeholder-arity raw))
+                      raw)
+        collect (vector-push-extend fun fvector)))
+
 (defun make-xep-group (the-function function-name lambda-list-analysis
                        function-description
-                       local-fun-generator)
+                       local-fun-generator fvector)
   (let* ((xep-arities (make-xep-arities function-name lambda-list-analysis
                                         cmp:*the-module*))
-         (xep-indices (literal:register-xep-function-indices
-                       (mapcar #'xep-arity-function-or-placeholder xep-arities)))
+         (xep-indices (register-xep-function-indices
+                       (mapcar #'xep-arity-function-or-placeholder xep-arities)
+                       fvector))
          (generator
            (core:make-simple-core-fun-generator
             :entry-point-functions xep-indices
@@ -146,7 +167,7 @@ function-or-placeholder - the llvm function or a placeholder for
 
 ;;; Given a BIR function, create the actual LLVM functions for the local
 ;;; and XEP functions, along with the function description and so on.
-(defun allocate-llvm-function-info (function)
+(defun allocate-llvm-function-info (function fvector)
   (let* ((lambda-name (get-or-create-lambda-name function))
          (jit-function-name (jit-function-name lambda-name))
          (function-info (calculate-function-info function lambda-name))
@@ -158,7 +179,7 @@ function-or-placeholder - the llvm function or a placeholder for
             'llvm-sys:internal-linkage ;; was llvm-sys:private-linkage
             (concatenate 'string jit-function-name "-lcl")
             cmp:*the-module*))
-         (local-fun-index (literal:register-local-function-index the-function))
+         (local-fun-index (register-local-function-index the-function fvector))
          (core-generator (core:make-core-fun-generator
                           :entry-point-functions (list local-fun-index)
                           :function-description function-description))
@@ -166,7 +187,7 @@ function-or-placeholder - the llvm function or a placeholder for
                         (make-xep-group the-function jit-function-name
                                         (cmp:function-info-cleavir-lambda-list-analysis function-info)
                                         function-description
-                                        core-generator)
+                                        core-generator fvector)
                         :xep-unallocated))
          ;; Check for a forced closure layout first.
          ;; if there isn't one, make one up.
@@ -645,7 +666,7 @@ function-or-placeholder - the llvm function or a placeholder for
 (defmethod translate-terminator ((instruction bir:constant-bind) abi next)
   (declare (ignore abi))
   (let* ((inputs (bir:inputs instruction))
-         (cellv (translate-constant-value (first inputs)))
+         (cellv (info-literal (first inputs)))
          (val (in (second inputs))))
     (setf (dynenv-storage instruction)
           (multiple-value-list (bind-special cellv val))))
@@ -672,15 +693,7 @@ function-or-placeholder - the llvm function or a placeholder for
         (let* ((frame (%intrinsic-call "llvm.frameaddress.p0"
                                        (list (%i32 0)) "stepper-frame"))
                (raw (cst:raw origin))
-               ;; See #1376: Sometimes the source form will be an immediate.
-               ;; This may be due to inadequacies in constant folding.
-               (lit
-                 (literal:constants-table-value
-                  (handler-case
-                      (literal:reference-literal raw)
-                    (serious-condition ()
-                      (literal:reference-literal
-                       "<error dumping form>"))))))
+               (lit (literal raw)))
           (%intrinsic-invoke-if-landing-pad-or-call
            "cc_breakstep" (list lit frame)))))))
 
@@ -797,11 +810,7 @@ function-or-placeholder - the llvm function or a placeholder for
   (let ((enclosed-xep-group (xep-function function-info)))
     (when (eq enclosed-xep-group :xep-unallocated)
       (error "BUG: Tried to ENCLOSE a function with no XEP"))
-    (let ((generator (cmp:xep-group-generator enclosed-xep-group)))
-      (literal:constants-table-value
-       (if (eq cst-to-ast:*compiler* 'cl:compile-file)
-           (literal:reference-simple-core-fun generator)
-           (literal:reference-literal generator))))))
+    (info-literal (cmp:xep-group-generator enclosed-xep-group))))
 
 (defun enclose (function extent &optional (delay t))
   (let* ((code-info (find-llvm-function-info function))
@@ -1686,45 +1695,21 @@ function-or-placeholder - the llvm function or a placeholder for
 (defmethod translate-simple-instruction
     ((inst bir:load-time-value-reference) abi)
   (declare (ignore abi))
-  (out (let* ((ltv (first (bir:inputs inst)))
-              (imm-or-index (gethash ltv *constant-values*))
-              (label (datum-name-as-string (bir:output inst))))
-         (assert imm-or-index () "Load-time-value not found!")
-         (if (integerp imm-or-index)
-             (literal:constants-table-value imm-or-index :literal-name label)
-             imm-or-index))
-       (bir:output inst)))
-
-(defun translate-constant-value (constant)
-  (let* (;; NOTE: Printing out the constant for a label is problematic,
-         ;; because LLVM will reject (assert failure) if a label has
-         ;; any null bytes in it. Null bytes can arise in non-obvious
-         ;; ways, e.g. from non-ASCII Unicode characters.
-         (label "")
-         (immediate-or-index (gethash constant *constant-values*)))
-    (assert immediate-or-index () "Constant not found!")
-    (if (integerp immediate-or-index)
-        (literal:constants-table-value immediate-or-index :literal-name label)
-        immediate-or-index)))
+  (out (info-literal (first (bir:inputs inst))) (bir:output inst)))
 
 (defmethod translate-simple-instruction ((inst bir:constant-reference)
                                          abi)
   (declare (ignore abi))
-  (out (translate-constant-value (bir:input inst)) (bir:output inst)))
+  (out (info-literal (bir:input inst)) (bir:output inst)))
 
 (defmethod translate-simple-instruction ((inst bir:constant-fdefinition) abi)
   (declare (ignore abi))
-  (let* ((output (bir:output inst))
-         (cell (bir:input inst))
-         (index (gethash cell *constant-values*)))
-    (assert index () "Function cell not found!")
-    (out (cmp:irc-fdefinition
-          (literal:constants-table-value index :literal-name ""))
-         output)))
+  (out (cmp:irc-fdefinition (info-literal (bir:input inst)))
+       (bir:output inst)))
 
 (defmethod translate-simple-instruction ((inst bir:constant-symbol-value) abi)
   (declare (ignore abi))
-  (let ((cell (translate-constant-value (bir:input inst)))
+  (let ((cell (info-literal (bir:input inst)))
         (output (bir:output inst)))
     (out (%intrinsic-invoke-if-landing-pad-or-call
           "cc_variableCellValue" (list cell)
@@ -1733,7 +1718,7 @@ function-or-placeholder - the llvm function or a placeholder for
 
 (defmethod translate-simple-instruction ((inst bir:set-constant-symbol-value) abi)
   (declare (ignore abi))
-  (let ((cell (translate-constant-value (first (bir:inputs inst))))
+  (let ((cell (info-literal (first (bir:inputs inst))))
         (val (in (second (bir:inputs inst)))))
     (%intrinsic-call "cc_set_variableCellValue" (list cell val))))
 
@@ -1975,50 +1960,47 @@ function-or-placeholder - the llvm function or a placeholder for
            (cmp:module-make-global-string jit-function-name "fn-name")))
     (let* ((arity (xep-arity-arity xep-arity))
            (xep-arity-function (xep-arity-function-or-placeholder xep-arity)))
-      (if (literal:general-entry-placeholder-p xep-arity-function)
-          (progn
-            )
-          (progn
-            (let* ((llvm-function-type (cmp:fn-prototype arity))
-                   (cmp:*current-function* xep-arity-function)
-                   (entry-block (cmp:irc-basic-block-create "entry" xep-arity-function))
-                   (*function-current-multiple-value-array-address* nil)
-                   (cmp:*irbuilder-function-alloca*
-                     (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
-                   (source-pos-info (function-source-pos-info function))
-                   (lineno (core:source-pos-info-lineno source-pos-info)))
-              (cmp:with-guaranteed-*current-source-pos-info* ()
-                (cmp:with-dbg-function (:lineno lineno
-                                        :function-type llvm-function-type
-                                        :function xep-arity-function)
-                  (llvm-sys:set-personality-fn xep-arity-function
-                                               (cmp:irc-personality-function))
-                  (llvm-sys:add-fn-attr2string xep-arity-function
-                                               "uwtable" "async")
-                  (when (null (bir:returni function))
-                    (llvm-sys:add-fn-attr xep-arity-function
-                                          'llvm-sys:attribute-no-return))
-                  (unless (policy:policy-value (bir:policy function)
-                                                       'perform-optimization)
-                    (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-no-inline)
-                    (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-optimize-none))
-                  (cmp:irc-set-insert-point-basic-block entry-block
-                                                        cmp:*irbuilder-function-alloca*)
-                  (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-                    (cmp:with-debug-info-source-position (source-pos-info)
-                      (if sys:*drag-native-calls*
-                          (cmp::irc-intrinsic "drag_native_calls"))
-                      (let* ((cleavir-lambda-list-analysis (cmp:xep-group-cleavir-lambda-list-analysis xep-group))
-                             (calling-convention
-                               (cmp:setup-calling-convention xep-arity-function
-                                                             arity
-                                                             :debug-on
-                                                             (policy:policy-value
-                                                              (bir:policy function)
-                                                              'save-register-args)
-                                                             :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
-                                                             :rest-alloc (compute-rest-alloc cleavir-lambda-list-analysis))))
-                        (layout-xep-function* xep-group arity xep-arity-function function calling-convention abi))))))))))))
+      (unless (general-entry-placeholder-p xep-arity-function)
+        (let* ((llvm-function-type (cmp:fn-prototype arity))
+               (cmp:*current-function* xep-arity-function)
+               (entry-block (cmp:irc-basic-block-create "entry" xep-arity-function))
+               (*function-current-multiple-value-array-address* nil)
+               (cmp:*irbuilder-function-alloca*
+                 (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+               (source-pos-info (function-source-pos-info function))
+               (lineno (core:source-pos-info-lineno source-pos-info)))
+          (cmp:with-guaranteed-*current-source-pos-info* ()
+            (cmp:with-dbg-function (:lineno lineno
+                                    :function-type llvm-function-type
+                                    :function xep-arity-function)
+              (llvm-sys:set-personality-fn xep-arity-function
+                                           (cmp:irc-personality-function))
+              (llvm-sys:add-fn-attr2string xep-arity-function
+                                           "uwtable" "async")
+              (when (null (bir:returni function))
+                (llvm-sys:add-fn-attr xep-arity-function
+                                      'llvm-sys:attribute-no-return))
+              (unless (policy:policy-value (bir:policy function)
+                                           'perform-optimization)
+                (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-no-inline)
+                (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-optimize-none))
+              (cmp:irc-set-insert-point-basic-block entry-block
+                                                    cmp:*irbuilder-function-alloca*)
+              (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
+                (cmp:with-debug-info-source-position (source-pos-info)
+                  (if sys:*drag-native-calls*
+                      (cmp::irc-intrinsic "drag_native_calls"))
+                  (let* ((cleavir-lambda-list-analysis (cmp:xep-group-cleavir-lambda-list-analysis xep-group))
+                         (calling-convention
+                           (cmp:setup-calling-convention xep-arity-function
+                                                         arity
+                                                         :debug-on
+                                                         (policy:policy-value
+                                                          (bir:policy function)
+                                                          'save-register-args)
+                                                         :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
+                                                         :rest-alloc (compute-rest-alloc cleavir-lambda-list-analysis))))
+                    (layout-xep-function* xep-group arity xep-arity-function function calling-convention abi)))))))))))
 
 
 
@@ -2052,40 +2034,7 @@ function-or-placeholder - the llvm function or a placeholder for
 (defun get-or-create-lambda-name (bir)
   (or (bir:name bir) 'top-level))
 
-(defgeneric allocate-constant (ir))
-
-(defun %allocate-constant (value read-only-p)
-  (let ((immediate (core:create-tagged-immediate-value-or-nil value)))
-    (if immediate
-        (llvm-sys:constant-expr/get-int-to-ptr (%i64 immediate) cmp:%t*% nil)
-        (literal:reference-literal value read-only-p))))
-
-(defmethod allocate-constant ((ir bir:constant))
-  (%allocate-constant (bir:constant-value ir) t))
-
-(defmethod allocate-constant ((ir bir:load-time-value))
-  (if (eq cst-to-ast:*compiler* 'cl:compile-file)
-      ;; Allocate an index in the literal table
-      ;; for this load-time-value.
-      (literal:load-time-value-from-thunk
-       (compile-form (bir:form ir) *clasp-env*))
-      (%allocate-constant (eval (bir:form ir)) (bir:read-only-p ir))))
-
-(defmethod allocate-constant ((ir bir:function-cell))
-  (reference-function-cell (bir:function-name ir)))
-
-(defmethod allocate-constant ((ir bir:variable-cell))
-  (reference-variable-cell (bir:variable-name ir)))
-
-;;; Given a BIR module, allocate its constants and load time
-;;; values. We translate immediates directly, and use an index into
-;;; the literal table for non-immediate constants.
-(defun allocate-module-constants (module)
-  (cleavir-set:doset (constant (bir:constants module))
-    (setf (gethash constant *constant-values*)
-          (allocate-constant constant))))
-
-(defun layout-module (module abi)
+(defun layout-module (module abi fvector)
   ;; Create llvm IR functions for each BIR function.
   (bir:do-functions (function module)
     ;; Assign IDs to unwind destinations. We start from 1 to allow
@@ -2095,16 +2044,14 @@ function-or-placeholder - the llvm function or a placeholder for
         (setf (gethash entrance *unwind-ids*) i)
         (incf i)))
     (setf (gethash function *function-info*)
-          (allocate-llvm-function-info function)))
+          (allocate-llvm-function-info function fvector)))
   (bir:do-functions (function module)
     (layout-procedure function (get-or-create-lambda-name function)
                       abi)))
 
 (defun translate (bir &key abi)
   (let* ((*unwind-ids* (make-hash-table :test #'eq))
-         (*function-info* (make-hash-table :test #'eq))
-         (*constant-values* (make-hash-table :test #'eq)))
-    (allocate-module-constants (bir:module bir))
+         (*function-info* (make-hash-table :test #'eq)))
     (layout-module (bir:module bir) abi)
     (cmp::potentially-save-module)
     (xep-function (find-llvm-function-info bir))))
@@ -2262,19 +2209,21 @@ COMPILE-FILE will use the default *clasp-env*."
                                    ;; actually a namestring
                                    (pathname "repl-code"))
   (let ((module (cmp::llvm-create-module "compile"))
-        (function-info (make-hash-table :test #'eq)))
+        (function-info (make-hash-table :test #'eq))
+        (ctable-name (literal:next-value-table-holder-name module-id))
+        (ctable (make-array 16 :fill-pointer 0 :adjustable t))
+        (fvector-name (format nil "function-vector-~d" module-id))
+        (fvector (make-array 16 :fill-pointer 0 :adjustable t)))
     (cmp::with-module (:module module)
-      (multiple-value-bind (ordered-raw-constants-list ctable-name fvector-name)
-          (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-            (literal:with-rtv (module-id)
-              (let* ((*unwind-ids* (make-hash-table :test #'eq))
-                     (*function-info* function-info)
-                     (*constant-values* (make-hash-table :test #'eq)))
-                (allocate-module-constants bir-module)
-                (layout-module bir-module abi)
-                (cmp::potentially-save-module))))
-        (values module function-info ordered-raw-constants-list
-                ctable-name fvector-name)))))
+      (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
+        (let* ((*unwind-ids* (make-hash-table :test #'eq))
+               (*function-info* function-info))
+          (with-constants (ctable ctable-name)
+            (layout-module bir-module abi fvector)
+            (cmp::potentially-save-module))
+          (gen-function-vector fvector fvector-name)
+          (values module function-info ctable
+                  ctable-name fvector-name))))))
 
 (defun jit-bir (bir-module &key (abi *abi-x86-64*) (pathname "repl-code"))
   (let ((id (core:next-jit-compile-counter)))
@@ -2286,6 +2235,7 @@ COMPILE-FILE will use the default *clasp-env*."
       ;; calls in jit-add-module.
       (multiple-value-bind (object-file ctable fvector)
           (jit-add-module module id ctable-name fvector-name)
+        (declare (ignore object-file))
         (values function-infos constants ctable fvector)))))
 
 (defun jit-generator (generator fvector)
@@ -2300,19 +2250,21 @@ COMPILE-FILE will use the default *clasp-env*."
 ;;; that can be installed into the object file to actually be used by the code.
 ;;; This just means fixing up generators.
 (defun jit-resolve-literals (literals fvector)
-  (loop for lit in literals
+  (loop for lit across literals
         ;; "generators" are markers for what will eventually be actual functions.
         ;; In order to create the functions, they need the actual function pointers.
         ;; These function pointers are in the fvector (function pointer vector).
         ;; We do the generation of actual functions here.
-        collect (typecase lit
-                  (core:core-fun-generator
-                   (error "BUG: core fun generator still in literals vector"))
+        collect (etypecase lit
                   (core:simple-core-fun-generator (jit-generator lit fvector))
-                  ;; Anything that's not a generator just means itself.
-                  (t lit))
-          into new-lits
-        finally (return new-lits)))
+                  (cmp:constant-info (cmp:constant-info/value lit))
+                  (cmp:load-time-value-info
+                   (eval (cmp:load-time-value-info/form lit)))
+                  (cmp:variable-cell-info
+                   (core:ensure-variable-cell (cmp:variable-cell-info/vname lit)))
+                  (cmp:function-cell-info
+                   (core:ensure-function-cell (cmp:function-cell-info/fname lit)))
+                  (t lit))))
 
 (defun bir->function (bir &key (abi *abi-x86-64*))
   (let ((pathname
@@ -2334,7 +2286,7 @@ COMPILE-FILE will use the default *clasp-env*."
                               bir)))
              (generator (cmp:xep-group-generator (xep-function info)))
              (core-generator
-               (cmp:simple-core-fun-generator/core-fun-generator generator)))
+               (core:simple-core-fun-generator/core-fun-generator generator)))
         (core:simple-core-fun-generator/generate
          generator
          (core:core-fun-generator/generate core-generator fvector)
@@ -2418,8 +2370,7 @@ COMPILE-FILE will use the default *clasp-env*."
             (return nil)
             (progn
               (when *compile-print* (cmp::describe-form (cst:raw cst)))
-              (core:with-memory-ramp (:pattern 'gctools:ramp)
-                (compile-file-cst cst environment))))))))
+              (compile-file-cst cst environment)))))))
 
 (defun cleavir-compile-file (input-file &rest kwargs)
   (let ((cmp:*cleavir-compile-file-hook*

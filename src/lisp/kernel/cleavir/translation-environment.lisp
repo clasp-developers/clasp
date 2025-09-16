@@ -6,7 +6,6 @@
 
 (defvar *tags*)
 (defvar *datum-values*)
-(defvar *constant-values*)
 (defvar *dynenv-storage*)
 (defvar *unwind-ids*)
 (defvar *function-info*)
@@ -268,15 +267,6 @@
   (%intrinsic-call "cc_specialUnbind" (list index old-value))
   (%intrinsic-call "cc_set_dynenv_stack" (list old-de-stack)))
 
-(defun reference-variable-cell (vname)
-  (if (eq cst-to-ast:*compiler* 'cl:compile-file)
-      (literal:reference-variable-cell vname)
-      (literal:reference-literal (core:ensure-variable-cell vname))))
-(defun reference-function-cell (fname)
-  (if (eq cst-to-ast:*compiler* 'cl:compile-file)
-      (literal:reference-function-cell fname)
-      (literal:reference-literal (core:ensure-function-cell fname))))
-
 (defun gen-call-cleanup (uwprotect-inst)
   (let (;; KLUDGE: In order to reenable interrupts when throwing
         ;; an exception out, we use a fake constant bind to generate
@@ -287,9 +277,9 @@
         (bind (make-instance 'bir:constant-bind
                 :iblock (bir:iblock uwprotect-inst))))
     (multiple-value-bind (ind old old-destack)
-        (bind-special (literal:constants-table-value
-                       (reference-variable-cell 'core:*interrupts-enabled*)
-                       :literal-name "*INTERRUPTS-ENABLED*")
+        (bind-special (info-literal
+                       (cmp:variable-cell-info/make 'core:*interrupts-enabled*)
+                       "*INTERRUPTS-ENABLED*")
                       (%nil))
       (setf (dynenv-storage bind) (list ind old old-destack))
       (cmp:with-landing-pad (maybe-entry-landing-pad bind *tags*)
