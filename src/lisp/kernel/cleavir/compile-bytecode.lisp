@@ -60,6 +60,7 @@
 ;;; Process a bytecode module's literals into something easy to turn into
 ;;; BIR. Note that we avoid making constants/LTVs ahead of time, since
 ;;; BTB or Cleavir may optimize them away (e.g. in unreachable code).
+;;; FIXME: That's stupid, Cleavir can optimize away constants regardless.
 ;;; TODO?: If the bytecode recorded immutable LTVs as well, and the forms (or
 ;;; bytecode functions) that produced the values, we could dump an actual
 ;;; bytecode function into a FASL with zero information loss.
@@ -218,59 +219,6 @@
               for fun = (clasp-cleavir::jit-generator generator fvector)
               do (core:set-simple-fun bcfun fun)))))
   (values))
-
-;;; COMPILE-FILE interface: take the components of a CMP:MODULE and return
-;;; an NMODULE. The NMODULE contains everything COMPILE-FILE needs to dump
-;;; native code such that the loader can use it:
-;;; 1) The actual native code as bytes (an encoded ELF object)
-;;; 2) A mapping from cfunctions to llvm-function-infos. These provide
-;;;    information that can be communicated to the loader to let it
-;;;    reconstruct functions.
-;;; 3) A vector of literals. Each entry is either:
-;;;    - an integer, indicating the constant at that position of the
-;;;      cmp:module's literals. This may include cfunctions.
-;;;    - a cmp:constant-info or etc., indicating a constant not in the
-;;;      cmp:module's literals.
-;;;    - a LATE-FUNCTION, meaning a function introduced by BTB/translate,
-;;;      e.g. by transforms. Maybe. Not sure this happens, TODO
-(defclass nmodule ()
-  ((%code :initarg :code :reader nmodule-code)
-   (%fmap :initarg :fmap :reader nmodule-fmap)
-   (%literals :initarg :literals :reader nmodule-literals)))
-
-(defgeneric bir-constant->cmp (bir))
-(defmethod bir-constant->cmp ((constant bir:constant))
-  (cmp:constant-info/make (bir:constant-value constant)))
-(defmethod bir-constant->cmp ((ltv bir:load-time-value))
-  (cmp:load-time-value-info/make (bir:form ltv) (bir:read-only-p ltv)))
-(defmethod bir-constant->cmp ((fcell bir:function-cell))
-  (cmp:function-cell-info/make (bir:function-name fcell)))
-(defmethod bir-constant->cmp ((vcell bir:variable-cell))
-  (cmp:variable-cell-info/make (bir:variable-name vcell)))
-
-(defun compute-nliterals (cliterals constants)
-  ;; CONSTANTS is the hash table produced by translation.
-  ;; Keys are BIR things, and values are indices into the eventual
-  ;; literals vector.
-  ;; CLITERALS is the vector produced by BTB, below.
-  ;; This consists of conses where the CDR is a placeholder or BIR thing.
-  ;; CONSTANTS may include constants not in CLITERALS and vice versa.
-  ;; This function produces a vector explaining to the file compiler how
-  ;; to produce the machine literals. There is one element for every index
-  ;; in the machine literals. Each element is of the format described in
-  ;; the comment above NMODULE, above.
-  (let* ((num (loop for value being the hash-values of constants
-                    maximizing (if (integerp value) (1+ value) 0)))
-         (nliterals (make-array num)))
-    (loop for key being the hash-keys of constants
-            using (hash-value indexoid)
-          when (integerp indexoid) ; not an immediate
-            do (setf (aref nliterals indexoid)
-                     ;; Check if the bytecode already had this constant.
-                     (or (position key cliterals :key #'cdr)
-                         ;; No, so translate back into CMP terms.
-                         (bir-constant->cmp key))))
-    nliterals))
 
 (defun fixed-closures-map (fmap)
   (loop for entry in fmap
@@ -1577,3 +1525,113 @@
 (defmethod end-annotation ((annot core:bytecode-debug-info)
                            inserter context)
   (declare (ignore inserter context)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; COMPILE-FILE interface: take the components of a CMP:MODULE and return
+;;; an NMODULE. The NMODULE contains everything COMPILE-FILE needs to dump
+;;; native code such that the loader can use it:
+;;; 1) The actual native code as bytes (an encoded ELF object)
+;;; 2) A mapping from cfunctions to llvm-function-infos. These provide
+;;;    information that can be communicated to the loader to let it
+;;;    reconstruct functions.
+;;; 3) A vector of literals. Each entry is a cons:
+;;;    - (value . :CONSTANT) - ordinary constant
+;;;    - (cfunction . :CFUNCTION) - a cfunction (eventual bytecode function)
+;;;    - (ltv-info . :LOAD-TIME-VALUE)
+;;;    TODO
+;;;    - a LATE-FUNCTION, meaning a function introduced by BTB/translate,
+;;;      e.g. by transforms. Maybe. Not sure this happens
+(defclass nmodule ()
+  ((%code :initarg :code :reader nmodule-code)
+   (%id :initarg :id :reader nmodule-id)
+   (%fmap :initarg :fmap :reader nmodule-fmap)
+   (%literals :initarg :literals :reader nmodule-literals)))
+
+;;; Process a bytecode cmp:module's literal infos into something easy to turn into
+;;; BIR. BIR is computed eagerly, unlike compute-runtime-literals, because it makes
+;;; translation easier. And optimization can still remove constants.
+(defgeneric compute-compiled-literal (info module))
+(defmethod compute-compiled-literal ((info cmp:constant-info) module)
+  (cons info (bir:constant-in-module (cmp:constant-info/value info) module)))
+(defmethod compute-compiled-literal ((info cmp:cfunction) module)
+  ;; This will eventually be the bytecode function, which does not yet exist.
+  ;; So we put in a bit of a sham LTV to prevent the compiler from optimizing
+  ;; on the basis that it's a cfunction (as opposed to an actual function).
+  ;; FIXME: The compiler should optimize to treat it as a function, though,
+  ;; even if it's not a constant.
+  (cons info (bir:load-time-value-in-module info nil module)))
+(defmethod compute-compiled-literal ((info cmp:load-time-value-info) module)
+  (cons info (bir:load-time-value-in-module
+              (cmp:load-time-value-info/form info)
+              (cmp:load-time-value-info/read-only-p info)
+              module)))
+(defmethod compute-compiled-literal ((info cmp:function-cell-info) module)
+  (cons info (bir:function-cell-in-module (cmp:function-cell-info/fname info)
+                                          module)))
+(defmethod compute-compiled-literal ((info cmp:variable-cell-info) module)
+  (cons info (bir:variable-cell-in-module (cmp:variable-cell-info/vname info)
+                                          module)))
+(defmethod compute-compiled-literal ((info cmp:env-info) module)
+  ;; FIXME? There's a bit of a mismatch here. Native-compiled code probably
+  ;; never refers to the environment, for now.
+  (cons info (bir:constant-in-module nil module)))
+
+(defun compute-compiled-literals (literals irmodule)
+  (map 'vector (lambda (lit) (compute-compiled-literal lit irmodule)) literals))
+
+(defun cmodule->irmodule (bytecode literals-info debug-info)
+  (let* ((irmodule (make-instance 'bir:module))
+         (literals (compute-compiled-literals literals-info irmodule))
+         (fmap (compile-bytecode-into bytecode debug-info literals irmodule)))
+    ;;(cleavir-bir-disassembler:display irmodule) (terpri)
+    (clasp-cleavir::bir-transformations irmodule clasp-cleavir:*clasp-system*)
+    (values irmodule fmap literals)))
+
+;;; Compute an alist from bytecode cfunctions to pairs of indices into
+;;; the function vector: (main . xep)
+(defun compute-native-fmap (cmap mmap)
+  (loop for (cfun irfun) in cmap
+        for info = (gethash irfun mmap)
+        unless info
+          do (error "BUG: Missing cfunction ~a" cfun)
+        collect (let* ((xep-group (clasp-cleavir::xep-function info))
+                       (generator (cmp:xep-group-generator xep-group))
+                       (xepi (first (core:simple-core-fun-generator-entry-point-indices generator)))
+                       (coregen (core:simple-core-fun-generator/core-fun-generator generator))
+                       (corei (first (core:core-fun-generator-entry-point-indices coregen))))
+                  (list* cfun corei xepi))))
+
+(defun allocate-module-constants (constants)
+  ;; Generate translator constants for any infos that are actually used.
+  (loop for (cmp . ir) across constants
+        unless (cleavir-set:empty-set-p (bir:readers ir)) ; used?
+          ;; Pre-populate the translation constants
+          do (clasp-cleavir::ensure-literal-info ir cmp)))
+
+(defun compile-cmodule (bytecode literals-info debug-info module-id pathname)
+  (multiple-value-bind (ir funmap cmap)
+      (cmodule->irmodule bytecode literals-info debug-info)
+    (let ((module (cmp::llvm-create-module "compile"))
+          (function-info (make-hash-table :test #'eq))
+          (ctable-name (literal:next-value-table-holder-name module-id))
+          (ctable (make-array 16 :fill-pointer 0 :adjustable t))
+          (fvector-name (format nil "function-vector-~d" module-id))
+          (fvector (make-array 16 :fill-pointer 0 :adjustable t))
+          (abi clasp-cleavir::*abi-x86-64*)) ; FIXME
+      (cmp::with-module (:module module)
+        (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
+          (let* ((clasp-cleavir::*unwind-ids* (make-hash-table :test #'eq))
+                 (clasp-cleavir::*function-info* function-info))
+            (clasp-cleavir::with-constants (ctable ctable-name)
+              (allocate-module-constants cmap)
+              (clasp-cleavir::layout-module ir abi fvector)
+              (cmp::potentially-save-module)))
+          (clasp-cleavir::gen-function-vector fvector fvector-name)
+          (make-instance 'nmodule
+            :code (cmp::generate-obj-asm-stream module :simple-vector-byte8
+                                                'llvm-sys:code-gen-file-type-object-file
+                                                cmp::*default-reloc-model*)
+            :id module-id
+            :fmap (compute-native-fmap (fmap funmap) function-info)
+            :literals ctable))))))

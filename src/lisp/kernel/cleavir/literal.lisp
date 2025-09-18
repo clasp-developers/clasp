@@ -18,7 +18,7 @@
   (base-string (make-hash-table :test #'equal))
   (pathname (make-hash-table :test #'equal))
   (hash-table (make-hash-table :test #'eq))
-  (fungen (make-hash-table :test #'eq))
+  (fungen (make-hash-table :test #'eq)) ; also holds cfunctions
   ;; The below tables are only used for file compilation, because they refer
   ;; to objects that don't necessarily exist yet at compile time.
   ;; For runtime compilation (COMPILE) all constants necessarily exist already.
@@ -62,75 +62,87 @@
                     (vector-push-extend info *constant-indices*))
                   simtable))
 
-(defgeneric ensure-literal-info (info))
+(defgeneric ensure-literal-info (info &optional cinfo))
 
-(defmethod ensure-literal-info ((constant-info cmp:constant-info))
+(defmethod ensure-literal-info ((constant-info cmp:constant-info)
+                                &optional (cinfo constant-info))
   (ensure-similar (cmp:constant-info/value constant-info) t
-                  (vector-push-extend constant-info *constant-indices*)
+                  (vector-push-extend cinfo *constant-indices*)
                   *similarity*))
 ;; We adapt BIR info objects into our compiler's.
 ;; FIXME: Stupid
-(defmethod ensure-literal-info ((constant-info bir:constant))
+(defmethod ensure-literal-info ((constant-info bir:constant) &optional cinfo)
   (let ((value (bir:constant-value constant-info)))
     (ensure-similar value t
                     (vector-push-extend
-                     (cmp:constant-info/make value)
+                     (or cinfo (cmp:constant-info/make value))
                      *constant-indices*)
                     *similarity*)))
 
-(defmethod ensure-literal-info ((ltv-info cmp:load-time-value-info))
+(defmethod ensure-literal-info ((ltv-info cmp:load-time-value-info)
+                                &optional (cinfo ltv-info))
   (let ((table (similarity-table-ltv *similarity*)))
     (or (gethash ltv-info table)
         (setf (gethash ltv-info table)
-              (vector-push-extend ltv-info *constant-indices*)))))
-(defmethod ensure-literal-info ((ltv-info bir:load-time-value))
+              (vector-push-extend cinfo *constant-indices*)))))
+(defmethod ensure-literal-info ((ltv-info bir:load-time-value) &optional cinfo)
   (let ((table (similarity-table-ltv *similarity*)))
     (or (gethash ltv-info table)
         (setf (gethash ltv-info table)
               (vector-push-extend
-               (cmp:load-time-value-info/make
-                (bir:form ltv-info) (bir:read-only-p ltv-info))
+               (or cinfo (cmp:load-time-value-info/make
+                          (bir:form ltv-info) (bir:read-only-p ltv-info)))
                *constant-indices*)))))
 
-(defmethod ensure-literal-info ((vinfo cmp:variable-cell-info))
+(defmethod ensure-literal-info ((vinfo cmp:variable-cell-info)
+                                &optional (cinfo vinfo))
   (let ((table (similarity-table-vcell *similarity*))
         (vname (cmp:variable-cell-info/vname vinfo)))
     (or (gethash vname table)
         (setf (gethash vname table)
-              (vector-push-extend vinfo *constant-indices*)))))
-(defmethod ensure-literal-info ((vinfo bir:variable-cell))
+              (vector-push-extend cinfo *constant-indices*)))))
+(defmethod ensure-literal-info ((vinfo bir:variable-cell) &optional cinfo)
   (let ((table (similarity-table-vcell *similarity*))
         (vname (bir:variable-name vinfo)))
     (or (gethash vname table)
         (setf (gethash vname table)
               (vector-push-extend
-               (cmp:variable-cell-info/make vname)
+               (or cinfo (cmp:variable-cell-info/make vname))
                *constant-indices*)))))
 
-(defmethod ensure-literal-info ((finfo cmp:function-cell-info))
+(defmethod ensure-literal-info ((finfo cmp:function-cell-info)
+                                &optional (cinfo finfo))
   (let ((table (similarity-table-fcell *similarity*))
         (fname (cmp:function-cell-info/fname finfo)))
     (or (gethash fname table)
         (setf (gethash fname table)
-              (vector-push-extend finfo *constant-indices*)))))
-(defmethod ensure-literal-info ((finfo bir:function-cell))
+              (vector-push-extend cinfo *constant-indices*)))))
+(defmethod ensure-literal-info ((finfo bir:function-cell) &optional cinfo)
   (let ((table (similarity-table-fcell *similarity*))
         (fname (bir:function-name finfo)))
     (or (gethash fname table)
         (setf (gethash fname table)
               (vector-push-extend
-               (cmp:function-cell-info/make fname)
+               (or cinfo (cmp:function-cell-info/make fname))
                *constant-indices*)))))
 
-(defmethod ensure-literal-info ((info cmp:env-info))
+(defmethod ensure-literal-info ((info cmp:env-info) &optional cinfo)
+  (declare (ignore cinfo))
   ;; FIXME: Make Cleavir aware of an explicit runtime environment?
   (ensure-constant nil))
 
-(defmethod ensure-literal-info ((info core:simple-core-fun-generator))
+(defmethod ensure-literal-info ((info core:simple-core-fun-generator)
+                                &optional (cinfo info))
   (let ((table (similarity-table-fungen *similarity*)))
     (or (gethash info table)
         (setf (gethash info table)
-              (vector-push-extend info *constant-indices*)))))
+              (vector-push-extend cinfo *constant-indices*)))))
+(defmethod ensure-literal-info ((info cmp:cfunction)
+                                &optional (cinfo info))
+  (let ((table (similarity-table-fungen *similarity*)))
+    (or (gethash info table)
+        (setf (gethash info table)
+              (vector-push-extend cinfo *constant-indices*)))))
 
 ;;; codegen
 

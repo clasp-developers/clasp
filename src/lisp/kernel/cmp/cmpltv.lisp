@@ -227,9 +227,7 @@
    (%read-only-p :initarg :read-only-p :type boolean
                  :reader load-time-value-creator-read-only-p)
    ;; The original form, for debugging/display
-   (%form :initarg :form :reader load-time-value-creator-form)
-   ;; The info object, for similarity checking
-   (%info :initarg :info :reader load-time-value-creator-info)))
+   (%form :initarg :form :reader load-time-value-creator-form)))
 
 (defclass init-object-array (instruction)
   ((%count :initarg :count :reader init-object-array-count)))
@@ -274,10 +272,12 @@
 (defclass function-native-attr (attribute)
   ((%name :initform (ensure-constant "clasp:function-native"))
    (%function :initarg :function :reader ll-function :type creator)
-   ;; Name of the main function (string)
-   (%main :initarg :main :reader main :type creator)
-   ;; Name of the XEP array (string)
-   (%xep :initarg :xep :reader xep :type creator)))
+   ;; ID number of the native module
+   (%module-id :initarg :id :reader module-id :type (unsigned-byte 16))
+   ;; Index of the core function in the function vector
+   (%main :initarg :main :reader main :type (unsigned-byte 16))
+   ;; Index of the first XEP function in the function vector
+   (%xep :initarg :xep :reader xep :type (unsigned-byte 16))))
 
 #+clasp
 (defclass spi-attr (attribute)
@@ -303,6 +303,7 @@
 #+clasp
 (defclass module-native-attr (attribute)
   ((%name :initform (ensure-constant "clasp:module-native"))
+   (%id :initarg :id :reader id :type (unsigned-byte 16))
    (%module :initarg :module :reader module :type creator)
    (%code :initarg :code :reader code
           :type (simple-array (unsigned-byte 8) (*)))
@@ -381,14 +382,11 @@
 (defmethod similarp ((creator vcreator) value)
   (eql (prototype creator) value))
 
-(defmethod similarp ((creator load-time-value-creator) ltvi)
-  (eql (load-time-value-creator-info creator) ltvi))
-
 ;;; EQL hash table from objects to creators.
 (defvar *coalesce*)
 
 ;;; Another EQL hash table for out-of-band objects that are also "coalesced".
-;;; So far this means cfunctions and modules.
+;;; So far this means cfunctions, modules, and ltv infos.
 ;;; This a separate variable because perverse code could use an out-of-band
 ;;; object in band (e.g. compiling a literal module) and we don't want to
 ;;; confuse those things.
@@ -1435,13 +1433,17 @@
 (defmethod ensure-module-literal ((info cmp:cfunction))
   (ensure-function info))
 
+(defun ensure-ltv (info)
+  (or (find-oob info)
+      (add-oob
+       info
+       (make-instance 'load-time-value-creator
+         :function (add-form (cmp:load-time-value-info/form info))
+         :read-only-p (cmp:load-time-value-info/read-only-p info)
+         :form (cmp:load-time-value-info/form info)))))
+
 (defmethod ensure-module-literal ((info cmp:load-time-value-info))
-  (add-instruction
-   (make-instance 'load-time-value-creator
-     :function (add-form (cmp:load-time-value-info/form info))
-     :read-only-p (cmp:load-time-value-info/read-only-p info)
-     :form (cmp:load-time-value-info/form info)
-     :info info)))
+  (ensure-ltv info))
 
 (defun ensure-fcell (name)
   (or (find-fcell name)
@@ -1560,6 +1562,11 @@
 
 #+clasp
 (defvar *native-compile-file-all* nil)
+;; The ID number used for native code modules, if generated.
+;; Different modules within the same init-object-array block must have
+;; distinct numbers to name symbols distinctly.
+#+clasp
+(defvar *native-module-id*)
 
 (defun add-module (value)
   ;; Add the module first to prevent recursion.
@@ -1594,21 +1601,24 @@
     ;; Native compilation.
     #+clasp
     (when *native-compile-file-all*
-      (let* ((native (funcall (find-symbol "COMPILE-CMODULE"
+      (let* ((id *native-module-id*)
+             (native (funcall (find-symbol "COMPILE-CMODULE"
                                            "CLASP-BYTECODE-TO-BIR")
-                              bytecode info literals
-                              :debug-namestring (namestring cmp::*compile-file-source-debug-pathname*)))
+                              bytecode literals info id
+                              (namestring cmp::*compile-file-source-debug-pathname*)))
              (code (funcall (find-symbol "NMODULE-CODE"
                                          "CLASP-BYTECODE-TO-BIR")
                             native))
              (nlits (funcall (find-symbol "NMODULE-LITERALS"
                                           "CLASP-BYTECODE-TO-BIR")
                              native)))
+        (incf *native-module-id*)
         (add-instruction
          (make-instance 'module-native-attr
            :module mod
+           :id id
            :code code
-           :literals (native-literals cliterals nlits)))
+           :literals (native-literals nlits)))
         ;; Add attributes for the functions as well.
         ;; We do this here instead of in the CFUNCTION methods because
         ;; of the recursive nature of functions referring to modules
@@ -1618,20 +1628,15 @@
               when (typep i 'cmp:cfunction)
                 do (let ((m (assoc i fmap)))
                      (assert m)
-                     (destructuring-bind (main xep) (rest m)
+                     (destructuring-bind (main . xep) (rest m)
                        (add-instruction
                         (make-instance 'function-native-attr
                           :function (ensure-function i)
-                          :main (ensure-constant main)
-                          :xep (ensure-constant xep))))))))
+                          :id id :main main :xep xep)))))))
     mod))
 
-(defun native-literals (cliterals nlits)
-  (map 'vector (lambda (lit)
-                 (if (integerp lit)
-                     (aref cliterals lit)
-                     (ensure-module-literal lit)))
-       nlits))
+(defun native-literals (native-literals)
+  (map 'vector #'ensure-module-literal native-literals))
 
 (defun ensure-module (module)
   (or (find-oob module) (add-module module)))
@@ -1682,8 +1687,9 @@
 (defmethod encode ((attr function-native-attr) stream)
   (write-b32 (* 3 *index-bytes*) stream)
   (write-index (ll-function attr) stream)
-  (write-index (main attr) stream)
-  (write-index (xep attr) stream))
+  (write-b16 (module-id attr) stream)
+  (write-b16 (main attr) stream)
+  (write-b16 (xep attr) stream))
 
 #+clasp
 (defmethod encode ((attr spi-attr) stream)
@@ -1967,6 +1973,7 @@
   (with-constants ()
     ;; Read and compile the forms.
     (loop with eof = (gensym "EOF")
+          with *native-module-id* = 0
           with *compile-time-too* = nil
           with eclector.reader:*client* = (make-instance 'cmp::clasp-tracking-eclector-client)
           with cfsdp = (core:file-scope cmp::*compile-file-source-debug-pathname*)
