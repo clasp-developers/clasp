@@ -98,7 +98,7 @@
       (mp:with-interrupts
         (let ((outer-interruptiblep (mp:interruptiblep))
               unwinding-interruptiblep)
-          (call-with-uwp (lambda ()) (lambda () (setf unwind-interruptiblep
+          (call-with-uwp (lambda ()) (lambda () (setf unwinding-interruptiblep
                                                       (mp:interruptiblep))))
           (values unwinding-interruptiblep (eq outer-interruptiblep
                                                (mp:interruptiblep)))))
