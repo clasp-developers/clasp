@@ -108,7 +108,7 @@
  (:name :cleavir
   :repository "https://github.com/s-expressionists/Cleavir.git"
   :directory "src/lisp/kernel/contrib/Cleavir/"
-  :commit "325e7abf9b3caa6a0aa809e165e8877dab7a0846")
+  :commit "170e65172da8c9231a59ffc6064d4f21124f1e88")
  (:name :closer-mop
   :repository "https://github.com/pcostanza/closer-mop.git"
   :directory "src/lisp/kernel/contrib/closer-mop/"
