@@ -230,3 +230,20 @@
   nil)
 
 (export '(with-monitor-message-scope monitor-message))
+
+(defmacro ext:defun/typed (name ( &rest llargs ) arrow return-types &body body)
+  ;; args are of the form (var type)
+  (unless (and (symbolp arrow) (string= (symbol-name arrow) "->"))
+    (error "For defun/typed ~s - make sure there is an -> between the arguments and return-types" name))
+  (let* ((args (loop for arg in llargs
+                     until (member arg '(&optional &rest &key))
+                     collect arg))
+         (vars  (mapcar #'car args))
+         (types (mapcar #'cadr args))
+         (rtypes (if (listp return-types)
+                     `(values ,@return-types)
+                     return-types)))
+    `(progn
+       (declaim (ftype (function ,types ,rtypes) ,name))
+       (defun ,name ,vars
+                  ,@body))))
