@@ -11,7 +11,10 @@
    ;; cells from the closure vector and parsing the number of arguments.
    (%xep-function :initarg :xep-function :reader xep-function)
    (%xep-function-description :initarg :xep-function-description :reader xep-function-description)
-   (%main-function :initarg :main-function :reader main-function)))
+   (%main-function :initarg :main-function :reader main-function)
+   ;; The constant (info) to use if we need to enclose at runtime.
+   ;; NIL if there's no XEP.
+   (%prototype :initarg :prototype :reader prototype)))
 
 (defun lambda-list-too-hairy-p (lambda-list)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs aok aux varest-p)
@@ -167,7 +170,11 @@ function-or-placeholder - the llvm function or a placeholder for
 
 ;;; Given a BIR function, create the actual LLVM functions for the local
 ;;; and XEP functions, along with the function description and so on.
-(defun allocate-llvm-function-info (function fvector)
+;;; if PROTOTYPE is provided, it will be used as the constant if this
+;;; function is enclosed; otherwise a simple core fun generator
+;;; will be used.
+(defun allocate-llvm-function-info (function fvector
+                                    &optional prototype)
   (let* ((lambda-name (get-or-create-lambda-name function))
          (jit-function-name (jit-function-name lambda-name))
          (function-info (calculate-function-info function lambda-name))
@@ -201,7 +208,15 @@ function-or-placeholder - the llvm function or a placeholder for
       :xep-function-description (if (eq xep-group :xep-unallocated)
                                     xep-group
                                     function-description)
+      :prototype (cond ((eq :xep-unallocated xep-group) nil)
+                       (prototype)
+                       ((cmp:xep-group-generator xep-group)))
       :arguments arguments)))
+
+(defun allocate-llvm-function-infos (module fvector)
+  (bir:do-functions (function module)
+    (setf (gethash function *function-info*)
+          (allocate-llvm-function-info function fvector))))
 
 (defun fixed-closure (function)
   (let ((fixed (cdr (assoc function *fixed-closures*))))
@@ -807,10 +822,10 @@ function-or-placeholder - the llvm function or a placeholder for
 
 ;;; Get a reference to a literal for a function's simple fun.
 (defun reference-xep (function-info)
-  (let ((enclosed-xep-group (xep-function function-info)))
-    (when (eq enclosed-xep-group :xep-unallocated)
+  (let ((info (prototype function-info)))
+    (unless info
       (error "BUG: Tried to ENCLOSE a function with no XEP"))
-    (info-literal (cmp:xep-group-generator enclosed-xep-group))))
+    (info-literal info)))
 
 (defun enclose (function extent &optional (delay t))
   (let* ((code-info (find-llvm-function-info function))
@@ -2034,7 +2049,7 @@ function-or-placeholder - the llvm function or a placeholder for
 (defun get-or-create-lambda-name (bir)
   (or (bir:name bir) 'top-level))
 
-(defun layout-module (module abi fvector)
+(defun layout-module (module abi)
   ;; Create llvm IR functions for each BIR function.
   (bir:do-functions (function module)
     ;; Assign IDs to unwind destinations. We start from 1 to allow
@@ -2042,9 +2057,7 @@ function-or-placeholder - the llvm function or a placeholder for
     (let ((i 1))
       (cleavir-set:doset (entrance (bir:entrances function))
         (setf (gethash entrance *unwind-ids*) i)
-        (incf i)))
-    (setf (gethash function *function-info*)
-          (allocate-llvm-function-info function fvector)))
+        (incf i))))
   (bir:do-functions (function module)
     (layout-procedure function (get-or-create-lambda-name function)
                       abi)))
@@ -2218,8 +2231,9 @@ COMPILE-FILE will use the default *clasp-env*."
       (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
         (let* ((*unwind-ids* (make-hash-table :test #'eq))
                (*function-info* function-info))
+          (allocate-llvm-function-infos bir-module fvector)
           (with-constants (ctable ctable-name)
-            (layout-module bir-module abi fvector)
+            (layout-module bir-module abi)
             (cmp::potentially-save-module))
           (gen-function-vector fvector fvector-name)
           (values module function-info ctable

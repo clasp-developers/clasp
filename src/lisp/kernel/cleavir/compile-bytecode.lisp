@@ -95,8 +95,7 @@
            (sort (copy-list opannots) #'<
                  :key #'core:bytecode-debug-info/end)))
     ;; Compile.
-    (#+building-clasp cmp::do-instructions
-     #-building-clasp core:do-instructions (mnemonic args opip ip next-annots)
+    (cmp::do-instructions (mnemonic args opip ip next-annots)
         (bytecode :annotations annotations)
       (let ((bir:*policy* (policy context))
             (bir:*origin* (first (origin-stack context))))
@@ -518,12 +517,33 @@
            (setf (cdr c) ltv)
            (build:insert inserter 'bir:load-time-value-reference
                          :inputs (list ltv) :outputs (list output))))
+        ((eql :cfunction)
+         ;; A cfunction. This will be a non-closure function at runtime,
+         ;; but no function exists yet, so we have to make an ENCLOSE
+         ;; instruction. (The translator will not put in any consing,
+         ;; since again, this isn't a closure.)
+         ;; Bytecode functions don't need to go through this, although
+         ;; doing so might help inlining and such? TODO
+         (setf (cdr c) value)
+         (let ((irfun (make-bir-function value inserter)))
+           (add-function context value irfun nil)
+           (build:insert inserter 'bir:enclose
+                         :code irfun
+                         :outputs (list output))))
         (bir:constant
          (build:insert inserter 'bir:constant-reference
                        :inputs (list existing) :outputs (list output)))
         (bir:load-time-value
          (build:insert inserter 'bir:load-time-value-reference
-                       :inputs (list existing) :outputs (list output))))
+                       :inputs (list existing) :outputs (list output)))
+        (cmp:cfunction
+         ;; should be impossible as cfunctions only appear once,
+         ;; but just in case
+         (let* ((finfo (find-bcfun existing (funmap context)))
+                (irfun (finfo-irfun finfo)))
+           (assert irfun)
+           (build:insert inserter 'bir:enclose :code irfun
+                         :outputs (list output)))))
       (stack-push output context))))
 
 (defun compile-constant (value inserter)
@@ -1555,12 +1575,8 @@
 (defmethod compute-compiled-literal ((info cmp:constant-info) module)
   (cons info (bir:constant-in-module (cmp:constant-info/value info) module)))
 (defmethod compute-compiled-literal ((info cmp:cfunction) module)
-  ;; This will eventually be the bytecode function, which does not yet exist.
-  ;; So we put in a bit of a sham LTV to prevent the compiler from optimizing
-  ;; on the basis that it's a cfunction (as opposed to an actual function).
-  ;; FIXME: The compiler should optimize to treat it as a function, though,
-  ;; even if it's not a constant.
-  (cons info (bir:load-time-value-in-module info nil module)))
+  (declare (ignore module))
+  (cons info :cfunction))
 (defmethod compute-compiled-literal ((info cmp:load-time-value-info) module)
   (cons info (bir:load-time-value-in-module
               (cmp:load-time-value-info/form info)
@@ -1605,9 +1621,18 @@
 (defun allocate-module-constants (constants)
   ;; Generate translator constants for any infos that are actually used.
   (loop for (cmp . ir) across constants
-        unless (cleavir-set:empty-set-p (bir:readers ir)) ; used?
+        unless (and (not (typep ir 'cmp:cfunction))
+                    (cleavir-set:empty-set-p (bir:readers ir))) ; used?
           ;; Pre-populate the translation constants
           do (clasp-cleavir::ensure-literal-info ir cmp)))
+
+(defun allocate-llvm-function-infos (module fvector funmap)
+  (bir:do-functions (function module)
+    (let ((info (find-irfun function funmap)))
+      (unless info (error "BUG: Missing function ~s" function))
+      (setf (gethash function clasp-cleavir::*function-info*)
+            (clasp-cleavir::allocate-llvm-function-info
+             function fvector (finfo-bcfun info))))))
 
 (defun compile-cmodule (bytecode literals-info debug-info module-id pathname)
   (multiple-value-bind (ir funmap cmap)
@@ -1623,9 +1648,10 @@
         (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
           (let* ((clasp-cleavir::*unwind-ids* (make-hash-table :test #'eq))
                  (clasp-cleavir::*function-info* function-info))
+            (allocate-llvm-function-infos ir fvector funmap)
             (clasp-cleavir::with-constants (ctable ctable-name)
               (allocate-module-constants cmap)
-              (clasp-cleavir::layout-module ir abi fvector)
+              (clasp-cleavir::layout-module ir abi)
               (cmp::potentially-save-module)))
           (clasp-cleavir::gen-function-vector fvector fvector-name)
           (make-instance 'nmodule
