@@ -1629,10 +1629,14 @@
 (defun allocate-llvm-function-infos (module fvector funmap)
   (bir:do-functions (function module)
     (let ((info (find-irfun function funmap)))
-      (unless info (error "BUG: Missing function ~s" function))
       (setf (gethash function clasp-cleavir::*function-info*)
-            (clasp-cleavir::allocate-llvm-function-info
-             function fvector (finfo-bcfun info))))))
+            (if info
+                (clasp-cleavir::allocate-llvm-function-info
+                 function fvector (finfo-bcfun info))
+                ;; no corresponding bytecode function: this is a new function
+                ;; the we have inserted (e.g. a type checker)
+                (clasp-cleavir::allocate-llvm-function-info
+                 function fvector))))))
 
 (defun compile-cmodule (bytecode literals-info debug-info module-id pathname)
   (multiple-value-bind (ir funmap cmap)

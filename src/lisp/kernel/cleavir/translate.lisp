@@ -9,6 +9,7 @@
    (%arguments :initarg :arguments :type list :reader arguments)
    ;; The eXternal Entry Point is in charge of loading values and
    ;; cells from the closure vector and parsing the number of arguments.
+   ;; This is :xep-unallocated if it was determined that no XEP is needed.
    (%xep-function :initarg :xep-function :reader xep-function)
    (%xep-function-description :initarg :xep-function-description :reader xep-function-description)
    (%main-function :initarg :main-function :reader main-function)
@@ -172,7 +173,7 @@ function-or-placeholder - the llvm function or a placeholder for
 ;;; and XEP functions, along with the function description and so on.
 ;;; if PROTOTYPE is provided, it will be used as the constant if this
 ;;; function is enclosed; otherwise a simple core fun generator
-;;; will be used.
+;;; will be used. Providing a prototype also forces a XEP to be generated.
 (defun allocate-llvm-function-info (function fvector
                                     &optional prototype)
   (let* ((lambda-name (get-or-create-lambda-name function))
@@ -190,7 +191,7 @@ function-or-placeholder - the llvm function or a placeholder for
          (core-generator (core:make-core-fun-generator
                           :entry-point-functions (list local-fun-index)
                           :function-description function-description))
-         (xep-group (if (xep-needed-p function)
+         (xep-group (if (or prototype (xep-needed-p function))
                         (make-xep-group the-function jit-function-name
                                         (cmp:function-info-cleavir-lambda-list-analysis function-info)
                                         function-description
@@ -2042,7 +2043,8 @@ function-or-placeholder - the llvm function or a placeholder for
       (layout-xep-function xep-arity xep-group function lambda-name abi))))
 
 (defun layout-procedure (function lambda-name abi)
-  (when (xep-needed-p function)
+  (unless (eq :xep-unallocated
+              (xep-function (find-llvm-function-info function)))
     (layout-xep-group function lambda-name abi))
   (layout-main-function function lambda-name abi))
 
