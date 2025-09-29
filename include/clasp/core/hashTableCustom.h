@@ -56,6 +56,8 @@ public: // Functions here
   bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
   void sxhashEffect(T_sp key, HashGenerator& hg) const;
+
+  void fields(Record_sp) override;
 };
 
 }; // namespace core
