@@ -1266,9 +1266,6 @@
              :layout-offset-field-names ("_Bonds" "._Vector" "._Contents")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::Atom_O" :layout-offset-field-names ("_Charge")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<chem::Atom_O>" :offset-base-ctype "chem::Atom_O"
-             :layout-offset-field-names ("_CopyAtom")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "chem::Atom_O" :layout-offset-field-names ("_BackCount")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
@@ -1317,9 +1314,6 @@
              :layout-offset-field-names ("_Bonds" "._Vector" "._Contents")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::VirtualAtom_O" :layout-offset-field-names ("_Charge")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<chem::Atom_O>"
-             :offset-base-ctype "chem::VirtualAtom_O" :layout-offset-field-names ("_CopyAtom")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "chem::VirtualAtom_O" :layout-offset-field-names ("_BackCount")}
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
