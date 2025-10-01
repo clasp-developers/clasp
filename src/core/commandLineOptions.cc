@@ -215,25 +215,25 @@ bool CommandLineOptions::validStartupTypeOption(const std::string& arg) {
     fmt::print(std::cerr, "Ignoring {} option because startup type has already been set to ", arg);
     switch (this->_StartupType) {
     case cloNone:
-      fmt::print("ignore init.\n");
+      fmt::print(std::cerr, "ignore init.\n");
       break;
     case cloInitLisp:
-      fmt::print("init.lisp.\n");
+      fmt::print(std::cerr, "init.lisp.\n");
       break;
     case cloBaseImage:
-      fmt::print("base image.\n");
+      fmt::print(std::cerr, "base image.\n");
       break;
     case cloExtensionImage:
-      fmt::print("extension image.\n");
+      fmt::print(std::cerr, "extension image.\n");
       break;
     case cloImageFile:
-      fmt::print("image file.\n");
+      fmt::print(std::cerr, "image file.\n");
       break;
     case cloSnapshotFile:
-      fmt::print("snapshot file.\n");
+      fmt::print(std::cerr, "snapshot file.\n");
       break;
     case cloEmbeddedSnapshot:
-      fmt::print("embedded snapshot.\n");
+      fmt::print(std::cerr, "embedded snapshot.\n");
       break;
     }
     return false;
