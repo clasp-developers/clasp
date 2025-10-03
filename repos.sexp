@@ -98,19 +98,19 @@
  (:name :khazern
   :repository "https://github.com/s-expressionists/Khazern.git"
   :directory "src/lisp/kernel/contrib/Khazern/"
-  :branch "master")
+  :commit "6821e5c1690df422f1b2868f26b396eff3d7b6fe")
  (:name :incless
   :repository "https://github.com/s-expressionists/Incless.git"
   :directory "src/lisp/kernel/contrib/Incless/"
-  :branch "main")
+  :commit "201baeebb85fdd93e5f6ef514e7e5b47aa5d2d52")
  (:name :inravina
   :repository "https://github.com/s-expressionists/Inravina.git"
   :directory "src/lisp/kernel/contrib/Inravina/"
-  :branch "main")
+  :commit "ddcb0d2e85958cda83173b054ed6338246aa7bbf")
  (:name :invistra
   :repository "https://github.com/s-expressionists/Invistra.git"
   :directory "src/lisp/kernel/contrib/Invistra/"
-  :branch "main")
+  :commit "f55493f93475b1c2a4fca81b55db04ada3c285fc")
  (:name :nontrivial-gray-streams
   :repository "https://github.com/yitzchak/nontrivial-gray-streams.git"
   :directory "src/lisp/kernel/contrib/nontrivial-gray-streams/"
