@@ -8,7 +8,7 @@
 (defmacro define-policy (name compute (&rest levels) &optional documentation)
   `(progn
      (defmethod policy:compute-policy-quality
-         ((quality (eql ',name)) optimize (env clasp-global-environment))
+         ((client clasp) (quality (eql ',name)) optimize)
        (declare (ignorable optimize))
        (symbol-macrolet
            (,@(loop for qual in +optimize-qualities+
@@ -19,10 +19,6 @@
      (push '(,name (member ,@(mapcar #'car levels)) ,(caar (last levels)))
            *policy-qualities*)
      ',name))
-
-(defmethod policy:compute-policy-quality
-    (quality optimize (environment null))
-  (policy:compute-policy-quality quality optimize *clasp-env*))
 
 (defmethod documentation ((name symbol) (dt (eql 'cmp:policy)))
   (second (assoc name *policy-descriptions*)))
@@ -125,10 +121,7 @@ Note that calls to functions that may box internally do not result in notes - FI
   (policy:policy-value
    (cleavir-env:policy (cleavir-env:optimize-info *clasp-system* environment)) quality))
 
-(defmethod policy:policy-qualities append ((env clasp-global-environment))
-  *policy-qualities*)
-;;; FIXME: Can't just punt like normal since it's an APPEND method combo.
-(defmethod policy:policy-qualities append ((env null))
+(defmethod policy:policy-qualities append ((client clasp))
   *policy-qualities*)
 
 (defun ext:describe-compiler-policy (&optional optimize)
@@ -136,9 +129,9 @@ Note that calls to functions that may box internally do not result in notes - FI
 
 OPTIMIZE should be the arguments of a CL:OPTIMIZE declaration specifier, e.g. ((SPEED 3) (SAFETY 1)). The policy printed is that that would be in place with current global policy augmented by the specifier. If OPTIMIZE is not provided, the unaugmented current global policy is printed."
   (let* ((optimize
-           (policy:normalize-optimize (append optimize cmp:*optimize*)
-                                      *clasp-env*))
-         (policy (policy:compute-policy optimize *clasp-env*)))
+           (policy:normalize-optimize *clasp-system*
+                                      (append optimize cmp:*optimize*)))
+         (policy (policy:compute-policy *clasp-system* optimize)))
     (fresh-line)
     (format t "  Optimize qualities:~%")
     (dolist (quality +optimize-qualities+)

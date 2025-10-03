@@ -1479,19 +1479,19 @@
         do (case spec
              ((cl:optimize)
               (setf opt
-                    (policy:normalize-optimize
-                     (append (copy-list rest) opt) clasp-cleavir:*clasp-env*))))
+                    (policy:normalize-optimize clasp-cleavir:*clasp-system*
+                                               (append (copy-list rest) opt)))))
         finally (push opt (optimize-stack context))
                 (setf (policy context)
-                      (policy:compute-policy opt clasp-cleavir:*clasp-env*))))
+                      (policy:compute-policy clasp-cleavir:*clasp-system* opt))))
 (defmethod end-annotation ((annot core:bytecode-ast-decls)
                            inserter context)
   (declare (ignore inserter))
   (when (degenerate-annotation-p annot)
     (return-from end-annotation))
   (pop (optimize-stack context))
-  (setf (policy context) (policy:compute-policy (first (optimize-stack context))
-                                                clasp-cleavir:*clasp-env*)))
+  (setf (policy context) (policy:compute-policy clasp-cleavir:*clasp-system*
+                                                (first (optimize-stack context)))))
 
 (defmethod start-annotation ((annot core:bytecode-debug-location)
                              inserter context)

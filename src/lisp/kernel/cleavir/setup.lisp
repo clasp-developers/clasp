@@ -315,7 +315,7 @@
   (env:declarations sys *clasp-env*))
 
 (setf cmp:*policy*
-     (policy:compute-policy cmp:*optimize* *clasp-env*))
+     (policy:compute-policy *clasp-system* cmp:*optimize*))
 
 (defmethod env:optimize-info ((sys clasp) (environment clasp-global-environment))
   ;; The default values are all 3.

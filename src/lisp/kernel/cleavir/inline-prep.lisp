@@ -20,9 +20,9 @@
       ((eq head 'cl:optimize)
        (setf cmp:*optimize*
              (policy:normalize-optimize
-              (append (rest decl) cmp:*optimize*) *clasp-env*)
+              *clasp-system* (append (rest decl) cmp:*optimize*))
              cmp:*policy*
-             (policy:compute-policy cmp:*optimize* *clasp-env*)))
+             (policy:compute-policy *clasp-system* cmp:*optimize*)))
       ;; Add other clauses here
       (t #+(or)(warn "Add support for proclaim ~s~%" decl)))))
 
