@@ -13,6 +13,7 @@
 * Quasiquoted vectors are read correctly (#1666).
 * The bytecode compiler detects malformed bindings.
 * Literal arrays with fill pointers are not dumped with excess elements.
+* `setf` of `apply` no longer has multiple evaluation problems.
 
 ## Removed
 * `-z`/`--snapshot-symbols-save` command line option, occasionally used
