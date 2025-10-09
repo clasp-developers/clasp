@@ -3,6 +3,7 @@ GRTAGS
 GTAGS
 .waf*/
 .svn/
+*.git*
 *~
 .#*
 *.log
@@ -13,14 +14,8 @@ GTAGS
 \#*\#
 *.bundle
 *.out
-boost_build_v2/b2
-boost_build_v2/bjam
-wscript.config
-boost_build_v2/engine/bin.linuxx86_64
-boost_build_v2/engine/bootstrap
-build/*
-# ensure the clasp-build run artifact can be ADDed to clasp
-!build/clasp.tgz
-projects/
-build2/
-/.lock-waf_linux*_build
+config.sexp
+apptainer/
+build/
+docs/
+tools/
