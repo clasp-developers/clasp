@@ -205,7 +205,9 @@ struct cast_entry {
 } // namespace
 
 struct class_registration : registration {
-  class_registration(const string& name);
+  class_registration(const string& name, type_id const& type_id_, class_id id,
+                     type_id const& wrapper_type, class_id wrapper_id,
+                     bool derivable);
 
   void register_() const;
 
@@ -234,14 +236,13 @@ struct class_registration : registration {
 
 struct CLBIND_API class_base : scope_ {
 public:
-  class_base(const string& name);
+  class_base(const string& name, type_id const& type_id_, class_id id,
+             type_id const& wrapper_type, class_id wrapper_id, bool derivable);
 
   struct base_desc {
     type_id type;
     int ptr_offset;
   };
-
-  void init(type_id const& type, class_id id, type_id const& wrapped_type, class_id wrapper_id, bool derivable);
 
   void add_base(type_id const& base, cast_function cast);
 
@@ -569,7 +570,10 @@ public:
 
   template <typename NameType>
   class_(scope_& outer_scope, const NameType& name, const std::string& docstring = "")
-      : class_base(PrepareName(name)), _outer_scope(&outer_scope), scope(*this) {
+    : class_base(PrepareName(name), typeid(T), reg::registered_class<T>::id,
+                 typeid(WrappedType), reg::registered_class<WrappedType>::id,
+                 isDerivableCxxClass<T>(0)),
+      _outer_scope(&outer_scope), scope(*this) {
 #ifndef NDEBUG
     detail::check_link_compatibility();
 #endif
@@ -713,9 +717,6 @@ private:
 
   void init() {
     typedef std::conditional_t<detail::is_bases<Base>::value, Base, bases<Base>> bases_t;
-
-    class_base::init(typeid(T), reg::registered_class<T>::id, typeid(WrappedType), reg::registered_class<WrappedType>::id,
-                     isDerivableCxxClass<T>(0));
 
     add_wrapper_cast<WrappedType>();
     generate_baseclass_list(bases_t());

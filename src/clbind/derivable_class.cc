@@ -88,7 +88,10 @@ void validateRackOffset(size_t wrapped_type_offset) {
 namespace clbind {
 namespace detail {
 
-derivable_class_registration::derivable_class_registration(char const* name) : m_default_constructor(NULL) { m_name = name; }
+derivable_class_registration::derivable_class_registration(char const* name, type_id const& type_id_, class_id id, type_id const& wrapper_type, class_id wrapper_id, bool derivable)
+    : m_name(name), m_type(type_id_), m_id(id), m_wrapper_id(wrapper_id),
+      m_wrapper_type(wrapper_type), m_default_constructor(NULL),
+      m_derivable(derivable) {}
 
 void derivable_class_registration::register_() const {
   LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
@@ -167,17 +170,10 @@ void derivable_class_registration::register_() const {
 
 // -- interface ---------------------------------------------------------
 
-derivable_class_base::derivable_class_base(char const* name)
-    : scope_(std::unique_ptr<registration>(m_registration = new derivable_class_registration(name))), m_init_counter(0) {}
-
-void derivable_class_base::init(type_id const& type_id_, class_id id, type_id const& wrapper_type, class_id wrapper_id,
-                                bool derivable) {
-  m_registration->m_type = type_id_;
-  m_registration->m_id = id;
-  m_registration->m_wrapper_type = wrapper_type;
-  m_registration->m_wrapper_id = wrapper_id;
-  m_registration->m_derivable = derivable;
-}
+derivable_class_base::derivable_class_base(char const* name, type_id const& type_id_, class_id id,
+                                           type_id const& wrapper_type, class_id wrapper_id,
+                                           bool derivable)
+  : scope_(std::unique_ptr<registration>(m_registration = new derivable_class_registration(name, type_id_, id, wrapper_type, wrapper_id, derivable))), m_init_counter(0) {}
 
 void derivable_class_base::add_base(type_id const& base, cast_function cast) {
   m_registration->m_bases.push_back(std::make_pair(base, cast));

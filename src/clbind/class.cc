@@ -82,7 +82,10 @@ void trapGetterMethoid() {
 namespace clbind {
 namespace detail {
 
-class_registration::class_registration(const std::string& name) : m_default_constructor(NULL) { m_name = name; }
+class_registration::class_registration(const std::string& name, type_id const& type_id_, class_id id, type_id const& wrapper_type, class_id wrapper_id, bool derivable)
+  : m_name(name), m_type(type_id_), m_id(id), m_wrapper_id(wrapper_id),
+    m_wrapper_type(wrapper_type), m_default_constructor(NULL),
+    m_derivable(derivable) {}
 
 void class_registration::register_() const {
   LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
@@ -171,17 +174,13 @@ void class_registration::register_() const {
 
 // -- interface ---------------------------------------------------------
 
-class_base::class_base(const string& name)
-    : scope_(std::unique_ptr<registration>(m_registration = new class_registration(name))), m_init_counter(0) {}
-
-void class_base::init(type_id const& type_id_, class_id id, type_id const& wrapper_type, class_id wrapper_id, bool derivable) {
-  //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
-  m_registration->m_type = type_id_;
-  m_registration->m_id = id;
-  m_registration->m_wrapper_type = wrapper_type;
-  m_registration->m_wrapper_id = wrapper_id;
-  m_registration->m_derivable = derivable;
-}
+class_base::class_base(const string& name, type_id const& type_id_, class_id id,
+                       type_id const& wrapper_type, class_id wrapper_id,
+                       bool derivable)
+  // note: we can't just initialize m_registration in the initializer list
+  // as the base class initializer runs before member initializers, even if
+  // we write the m_registration initializer first.
+  : scope_(std::unique_ptr<registration>(m_registration = new class_registration(name, type_id_, id, wrapper_type, wrapper_id, derivable))), m_init_counter(0) {}
 
 void class_base::add_base(type_id const& base, cast_function cast) {
   m_registration->m_bases.push_back(std::make_pair(base, cast));
