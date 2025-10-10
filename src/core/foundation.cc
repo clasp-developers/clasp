@@ -1462,24 +1462,6 @@ bool wildcmp(string const& sWild, string const& sRegular) {
   return !*wild;
 }
 
-void StringStack::pop() {
-  HARD_ASSERT(this->parts.size() > 0);
-  this->parts.pop_back();
-};
-
-string StringStack::all(const string& separator) {
-  stringstream ss;
-  ss.str("");
-  if (this->parts.size() > 0) {
-    ss << this->parts[0];
-  }
-  for (uint i = 1; i < this->parts.size(); i++) {
-    ss << separator;
-    ss << this->parts[i];
-  }
-  return ss.str();
-};
-
 const char* trimSourceFilePathName(const char* longName) {
   if (longName == NULL)
     return NULL;
