@@ -100,10 +100,10 @@ void class_registration::register_() const {
   std::string classNameString(this->m_name);
   core::Symbol_sp className = core::lisp_intern(classNameString, _lisp->getCurrentPackage()->packageName());
   if (!this->m_derivable) {
-    crep = clbind::ClassRep_O::create(core::lisp_clbind_cxx_class(), this->m_type, className, this->m_derivable);
+    crep = clbind::ClassRep_O::create(core::lisp_clbind_cxx_class(), className, this->m_derivable);
     where = gctools::Header_s::wrapped_wtag;
   } else {
-    crep = clbind::ClassRep_O::create(core::lisp_derivable_cxx_class(), this->m_type, className, this->m_derivable);
+    crep = clbind::ClassRep_O::create(core::lisp_derivable_cxx_class(), className, this->m_derivable);
     where = gctools::Header_s::derivable_wtag;
   }
   LOG_SCOPE(("%s:%d   Registering clbind class: %s\n", __FILE__, __LINE__, this->m_name.c_str()));

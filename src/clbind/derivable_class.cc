@@ -99,7 +99,7 @@ void derivable_class_registration::register_() const {
   std::string classNameString(this->m_name);
   core::Symbol_sp className = core::lispify_intern(classNameString, _lisp->getCurrentPackage()->packageName());
   clbind::ClassRep_sp crep =
-      clbind::ClassRep_O::create(core::lisp_derivable_cxx_class(), this->m_type, className, this->m_derivable);
+      clbind::ClassRep_O::create(core::lisp_derivable_cxx_class(), className, this->m_derivable);
 #ifdef DEBUG_CLASS_INSTANCE
   printf("%s:%d:%s   Registering clbind class\n", __FILE__, __LINE__, __FUNCTION__);
 #endif
