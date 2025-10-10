@@ -508,14 +508,6 @@ MultipleValues& lisp_multipleValues() {
   return my_thread->_MultipleValues;
 }
 
-#if 0
-[[noreturn]]void errorFormatted(boost::format fmt) {
-  TRY_BOOST_FORMAT_STRING(fmt, fmt_str);
-  dbg_hook(fmt_str.c_str());
-  core__invoke_internal_debugger(nil<core::T_O>());
-}
-#endif
-
 [[noreturn]] void errorFormatted(const string& msg) {
   dbg_hook(msg.c_str());
   core__invoke_internal_debugger(nil<core::T_O>());
