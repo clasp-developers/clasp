@@ -37,7 +37,6 @@ THE SOFTWARE.
 #include <vector>
 #include <clasp/clbind/typeid.h>
 #include <clasp/clbind/class_rep.h>
-#include <boost/scoped_ptr.hpp>
 #include <clasp/clbind/inheritance.fwd.h>
 
 namespace clbind {
@@ -59,8 +58,9 @@ public:
   void dump(FILE* fout);
 
 private:
+  // Indirection to hide the details of impl. Pointless otherwise. FIXME?
   class impl;
-  boost::scoped_ptr<impl> m_impl;
+  std::unique_ptr<impl> m_impl;
 };
 
 // Maps a type_id to a class_id. Note that this actually partitions the
