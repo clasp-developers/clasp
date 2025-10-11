@@ -32,6 +32,7 @@ THE SOFTWARE.
 
 #include <csignal>
 #include <cstdarg>
+#include <typeindex> // allocate_class_id
 #include <dlfcn.h>
 
 #include <clasp/core/foundation.h>
@@ -87,7 +88,7 @@ THE SOFTWARE.
 
 namespace reg {
 
-typedef std::map<type_id, class_id> map_type;
+typedef std::map<std::type_index, class_id> map_type;
 map_type* global_registered_ids_ptr = NULL;
 class_id global_next_id = 0;
 
@@ -112,12 +113,12 @@ void dump_class_ids() {
   }
 }
 
-class_id allocate_class_id(type_id const& cls) {
+class_id allocate_class_id(const std::type_info& cls) {
   //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
   if (global_registered_ids_ptr == NULL) {
     global_registered_ids_ptr = new map_type();
   }
-  std::pair<map_type::iterator, bool> inserted = global_registered_ids_ptr->insert(std::make_pair(cls, global_next_id));
+  std::pair<map_type::iterator, bool> inserted = global_registered_ids_ptr->insert(std::make_pair(std::type_index(cls), global_next_id));
 
   if (inserted.second) {
     //            printf("%s:%d allocate_class_id for %40s %ld\n", __FILE__, __LINE__, cls.name(), id );

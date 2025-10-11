@@ -138,8 +138,8 @@ template <class S, class T> struct dynamic_cast_ {
   static void* execute(void* p) { return dynamic_cast<T*>(static_cast<S*>(p)); }
 };
 
-// Thread safe class_id allocation.
-class_id allocate_class_id(type_id const& cls);
+// Thread safe class_id allocation (in core/foundation.cc).
+class_id allocate_class_id(const std::type_info& cls);
 
 template <class T> struct registered_class {
   static class_id const id;
