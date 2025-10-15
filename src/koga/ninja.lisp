@@ -157,7 +157,7 @@
                     :description "Building Clasp bytecode image"
                     :restat 1)
   (ninja:write-rule output-stream :compile-native-image
-                    :command "$clasp --norc --disable-mpi --image $image --load \"SYS:SRC;LISP;MODULES;ASDF;BUILD;ASDF.LISP\" --eval \"(provide :asdf)\" --load compile-native-image.lisp --quit -- $in --output $out --sources $sources"
+                    :command "$clasp --norc --disable-mpi --image $image --load \"SYS:SRC;LISP;MODULES;ASDF;BUILD;ASDF.LISP\" --eval \"(provide :asdf)\" --load compile-bytecode-image.lisp --quit -- $in --output $out --sources $sources"
                     :description "Compiling Clasp native image"
                     :restat 1
                     :pool "console")
@@ -198,10 +198,6 @@
                     :command "$clasp --norc --base --feature ignore-extensions --load \"../dependencies/ansi-test/run-random-type-tests.lisp\""
                     :description "Running pfdietz test-random-integer-forms"
                     :pool "console")
-  (ninja:write-rule output-stream :link-native-image
-                    :command "$clasp -n --disable-mpi --load link-fasl.lisp -- $out $in"
-                    :restat 1
-                    :description "Linking $target")
   (ninja:write-rule output-stream :link-bytecode-image
                     :command (lisp-command "link-bytecode-image.lisp" "$out $in")
                     :restat 1
@@ -658,8 +654,8 @@
            (make-source "generated-encodings.lisp" :variant-generated))
          (vimage (make-source "images/base.fasl" :variant-lib))
          (vimage-installed (make-source "images/base.fasl" :package-lib))
-         (nimage (make-source "images/base.faso" :variant-lib))
-         (nimage-installed (make-source "images/base.faso" :package-lib))
+         (nimage (make-source "images/base.nfasl" :variant-lib))
+         (nimage-installed (make-source "images/base.nfasl" :package-lib))
          (image (ecase (build-mode configuration)
                   ((:bytecode) vimage)
                   ((:bytecode-faso :faso) nimage)))
@@ -695,10 +691,10 @@
                          :inputs fasls
                          :outputs (list vimage)
                          :target target))
-    (let ((fasos
+    (let ((native-fasls
             (mapcar (lambda (x)
                       (make-source-output x
-                                          :type "faso"
+                                          :type "nfasl"
                                           :root (if (eq (source-root x) :variant-generated)
                                                     :variant-lib-generated
                                                     :variant-lib)))
@@ -713,11 +709,11 @@
                          :sources (make-kernel-source-list configuration sources)
                          :implicit-inputs (list iclasp vimage)
                          :image vimage
-                         :outputs fasos)
-      (ninja:write-build output-stream :link-native-image
+                         :outputs native-fasls)
+      (ninja:write-build output-stream :link-bytecode-image
                          :clasp clasp-with-env
                          :outputs (list nimage)
-                         :inputs fasos))
+                         :inputs native-fasls))
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "iclasp")
                                      image

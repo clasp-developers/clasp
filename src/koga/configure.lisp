@@ -830,7 +830,7 @@ then they will overide the current variant's corresponding property."
 (defun fasl-extension (configuration)
   "Return the fasl extension based on the build mode."
   (case (build-mode configuration)
-    (:faso "faso")
+    (:faso "nfasl" #+(or)"faso")
     (:fasobc "fasobc")
     (:fasoll "fasoll")
     (otherwise "fasl")))

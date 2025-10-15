@@ -1671,7 +1671,6 @@
             (allocate-module-constants cmap)
             (clasp-cleavir::layout-module ir abi)
             (cmp::potentially-save-module)))
-        (format t "~&ctable ~s~%" ctable)
         (clasp-cleavir::gen-function-vector fvector fvector-name)
         (make-instance 'nmodule
           :code (cmp::generate-obj-asm-stream module :simple-vector-byte8
