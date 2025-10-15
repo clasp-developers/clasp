@@ -725,7 +725,7 @@
 (defun make-closure (template inserter context)
   (let* ((irfun (make-bir-function template inserter))
          (enclose-out (make-instance 'bir:output
-                        :name (core:function-name template)))
+                        :name (bcfun/fname template)))
          (nclosed (bcfun/nvars template))
          (closed (nreverse (subseq (stack context) 0 nclosed)))
          (real-closed (mapcar #'resolve-closed closed)))
@@ -736,25 +736,33 @@
                   :code irfun :outputs (list enclose-out))
     (add-function context template irfun real-closed)
     (setf (stack context) (nthcdr nclosed (stack context)))
-    enclose-out))
+    (values enclose-out irfun)))
 
 (defmethod compile-instruction ((mnemonic (eql :make-closure))
                                 inserter context &rest args)
-  (destructuring-bind ((template)) args
-    (stack-push (make-closure template inserter context) context)))
+  (destructuring-bind (const) args
+    (destructuring-bind (template . existing) const
+      ;; any given function is only closed over in one place.
+      (assert (member existing '(nil :cfunction)))
+      (multiple-value-bind (closure irfun) (make-closure template inserter context)
+        (setf (cdr const) irfun)
+        (stack-push closure context)))))
 
 (defmethod compile-instruction ((mnemonic (eql :make-uninitialized-closure))
                                 inserter context &rest args)
   ;; Set up an ir function for the funmap and generate an enclose,
   ;; but leave the closure for initialize-closure.
-  (destructuring-bind ((template)) args
-    (let ((irfun (make-bir-function template inserter))
-          (enclose-out (make-instance 'bir:output
-                         :name (core:function-name template))))
-      (build:insert inserter 'bir:enclose
-                    :code irfun :outputs (list enclose-out))
-      (add-function context template irfun nil)
-      (stack-push enclose-out context))))
+  (destructuring-bind (const) args
+    (destructuring-bind (template . existing) const
+      (assert (member existing '(nil :cfunction)))
+      (let ((irfun (make-bir-function template inserter))
+            (enclose-out (make-instance 'bir:output
+                           :name (bcfun/fname template))))
+        (setf (cdr const) irfun)
+        (build:insert inserter 'bir:enclose
+                      :code irfun :outputs (list enclose-out))
+        (add-function context template irfun nil)
+        (stack-push enclose-out context)))))
 
 (defmethod compile-instruction ((mnemonic (eql :initialize-closure))
                                 inserter context &rest args)
@@ -1247,12 +1255,15 @@
 
 (defmethod compile-instruction ((mnemonic (eql :protect))
                                 inserter context &rest args)
-  (destructuring-bind ((template)) args
-    (let ((cleanup (make-closure template inserter context))
-          (body (build:make-iblock inserter :name '#:protect)))
-      (build:terminate inserter 'bir:unwind-protect
-                       :inputs (list cleanup) :next (list body))
-      (build:begin inserter body))))
+  (destructuring-bind (const) args
+    (destructuring-bind (template . existing) const
+      (assert (member existing '(nil :cfunction)))
+      (multiple-value-bind (cleanup irfun) (make-closure template inserter context)
+        (let ((body (build:make-iblock inserter :name '#:protect)))
+          (setf (cdr const) irfun)
+          (build:terminate inserter 'bir:unwind-protect
+                           :inputs (list cleanup) :next (list body))
+          (build:begin inserter body))))))
 
 (defmethod compile-instruction ((mnemonic (eql :cleanup))
                                 inserter context &rest args)
