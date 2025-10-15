@@ -1685,7 +1685,7 @@
   (write-index (lambda-list attr) stream))
 
 (defmethod encode ((attr function-native-attr) stream)
-  (write-b32 (* 3 *index-bytes*) stream)
+  (write-b32 (+ *index-bytes* 6) stream)
   (write-index (ll-function attr) stream)
   (write-b16 (module-id attr) stream)
   (write-b16 (main attr) stream)
