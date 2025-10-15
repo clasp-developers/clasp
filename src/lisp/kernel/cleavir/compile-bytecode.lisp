@@ -1650,30 +1650,34 @@
                 (clasp-cleavir::allocate-llvm-function-info
                  function fvector))))))
 
+(defun translate-cmodule (ir fmap cmap module-id pathname)
+  (let ((module (cmp::llvm-create-module "compile"))
+        (function-info (make-hash-table :test #'eq))
+        (ctable-name (literal:next-value-table-holder-name module-id))
+        (ctable (make-array 16 :fill-pointer 0 :adjustable t))
+        (fvector-name (format nil "function-vector-~d" module-id))
+        (fvector (make-array 16 :fill-pointer 0 :adjustable t))
+        (abi clasp-cleavir::*abi-x86-64*)) ; FIXME
+    (cmp::with-module (:module module)
+      (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
+        (let* ((clasp-cleavir::*unwind-ids* (make-hash-table :test #'eq))
+               (clasp-cleavir::*function-info* function-info))
+          (allocate-llvm-function-infos ir fvector fmap)
+          (clasp-cleavir::with-constants (ctable ctable-name)
+            (allocate-module-constants cmap)
+            (clasp-cleavir::layout-module ir abi)
+            (cmp::potentially-save-module)))
+        (format t "~&ctable ~s~%" ctable)
+        (clasp-cleavir::gen-function-vector fvector fvector-name)
+        (make-instance 'nmodule
+          :code (cmp::generate-obj-asm-stream module :simple-vector-byte8
+                                              'llvm-sys:code-gen-file-type-object-file
+                                              cmp::*default-reloc-model*)
+          :id module-id
+          :fmap (compute-native-fmap fmap function-info)
+          :literals ctable)))))
+
 (defun compile-cmodule (bytecode literals-info debug-info module-id pathname)
   (multiple-value-bind (ir funmap cmap)
       (cmodule->irmodule bytecode literals-info debug-info)
-    (let ((module (cmp::llvm-create-module "compile"))
-          (function-info (make-hash-table :test #'eq))
-          (ctable-name (literal:next-value-table-holder-name module-id))
-          (ctable (make-array 16 :fill-pointer 0 :adjustable t))
-          (fvector-name (format nil "function-vector-~d" module-id))
-          (fvector (make-array 16 :fill-pointer 0 :adjustable t))
-          (abi clasp-cleavir::*abi-x86-64*)) ; FIXME
-      (cmp::with-module (:module module)
-        (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-          (let* ((clasp-cleavir::*unwind-ids* (make-hash-table :test #'eq))
-                 (clasp-cleavir::*function-info* function-info))
-            (allocate-llvm-function-infos ir fvector funmap)
-            (clasp-cleavir::with-constants (ctable ctable-name)
-              (allocate-module-constants cmap)
-              (clasp-cleavir::layout-module ir abi)
-              (cmp::potentially-save-module)))
-          (clasp-cleavir::gen-function-vector fvector fvector-name)
-          (make-instance 'nmodule
-            :code (cmp::generate-obj-asm-stream module :simple-vector-byte8
-                                                'llvm-sys:code-gen-file-type-object-file
-                                                cmp::*default-reloc-model*)
-            :id module-id
-            :fmap (compute-native-fmap (fmap funmap) function-info)
-            :literals ctable))))))
+    (translate-cmodule ir (fmap funmap) cmap module-id pathname)))
