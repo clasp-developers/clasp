@@ -56,9 +56,11 @@
        (or (gethash ,o ,table)
            (setf (gethash ,o ,table) ,new-form)))))
 
+(defvar *make-constant-info* #'cmp:constant-info/make)
+
 (defun ensure-constant (constant &optional (simtable *similarity*))
   (ensure-similar constant t
-                  (let ((info (cmp:constant-info/make constant)))
+                  (let ((info (funcall *make-constant-info* constant)))
                     (vector-push-extend info *constant-indices*))
                   simtable))
 
@@ -75,7 +77,7 @@
   (let ((value (bir:constant-value constant-info)))
     (ensure-similar value t
                     (vector-push-extend
-                     (or cinfo (cmp:constant-info/make value))
+                     (or cinfo (funcall *make-constant-info* value))
                      *constant-indices*)
                     *similarity*)))
 
@@ -139,6 +141,11 @@
               (vector-push-extend cinfo *constant-indices*)))))
 (defmethod ensure-literal-info ((info cmp:cfunction)
                                 &optional (cinfo info))
+  (let ((table (similarity-table-fungen *similarity*)))
+    (or (gethash info table)
+        (setf (gethash info table)
+              (vector-push-extend cinfo *constant-indices*)))))
+(defmethod ensure-literal-info ((info bir:function) &optional (cinfo info))
   (let ((table (similarity-table-fungen *similarity*)))
     (or (gethash info table)
         (setf (gethash info table)

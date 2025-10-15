@@ -1628,7 +1628,7 @@
               when (typep i 'cmp:cfunction)
                 do (let ((m (assoc i fmap)))
                      (assert m)
-                     (destructuring-bind (main . xep) (rest m)
+                     (destructuring-bind (main xep) (rest m)
                        (add-instruction
                         (make-instance 'function-native-attr
                           :function (ensure-function i)

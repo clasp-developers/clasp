@@ -1617,30 +1617,34 @@
     (values irmodule fmap literals)))
 
 ;;; Compute an alist from bytecode cfunctions to pairs of indices into
-;;; the function vector: (main . xep)
+;;; the function vector: (main xep)
 (defun compute-native-fmap (cmap mmap)
-  (loop for (cfun irfun) in cmap
+  (loop for cinfo in cmap
+        for cfun = (finfo-bcfun cinfo)
+        for irfun = (finfo-irfun cinfo)
         for info = (gethash irfun mmap)
-        unless info
-          do (error "BUG: Missing cfunction ~a" cfun)
-        collect (let* ((xep-group (clasp-cleavir::xep-function info))
-                       (generator (cmp:xep-group-generator xep-group))
-                       (xepi (first (core:simple-core-fun-generator-entry-point-indices generator)))
-                       (coregen (core:simple-core-fun-generator/core-fun-generator generator))
-                       (corei (first (core:core-fun-generator-entry-point-indices coregen))))
-                  (list* cfun corei xepi))))
+        ;; functions may have been removed from the IR module, e.g. because they've been
+        ;; inlined. We could try to preserve some native code to keep in the bytecode
+        ;; function, but it's not necessary.
+        when info
+          collect (let* ((xep-group (clasp-cleavir::xep-function info))
+                         (generator (cmp:xep-group-generator xep-group))
+                         (xepi (first (core:simple-core-fun-generator-entry-point-indices generator)))
+                         (coregen (core:simple-core-fun-generator/core-fun-generator generator))
+                         (corei (first (core:core-fun-generator-entry-point-indices coregen))))
+                    (list cfun corei xepi))))
 
 (defun allocate-module-constants (constants)
   ;; Generate translator constants for any infos that are actually used.
   (loop for (cmp . ir) across constants
-        unless (and (not (typep ir 'cmp:cfunction))
+        unless (and (not (typep ir 'bir:function))
                     (cleavir-set:empty-set-p (bir:readers ir))) ; used?
           ;; Pre-populate the translation constants
           do (clasp-cleavir::ensure-literal-info ir cmp)))
 
-(defun allocate-llvm-function-infos (module fvector funmap)
+(defun allocate-llvm-function-infos (module fvector fmap)
   (bir:do-functions (function module)
-    (let ((info (find-irfun function funmap)))
+    (let ((info (find function fmap :key #'finfo-irfun)))
       (setf (gethash function clasp-cleavir::*function-info*)
             (if info
                 (clasp-cleavir::allocate-llvm-function-info
