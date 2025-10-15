@@ -28,10 +28,4 @@
                                                         "condition-system-macros"
                                                         "mp-macros" "mp-atomics"
                                                         "define-unicode-tables"
-                                                        "cst" "packages"))
-               (:module "cleavir" :depends-on ("base" "packages")
-                :if-feature :clasp
-                :components ((:file "package")
-                             (:file "environment" :depends-on ("package"))
-                             (:file "read" :depends-on ("package"))
-                             (:file "build" :depends-on ("read" "package"))))))
+                                                        "cst" "packages"))))
