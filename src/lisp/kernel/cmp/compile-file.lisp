@@ -54,7 +54,9 @@
                                    (output-type *default-output-type* output-type-p)
                                    target-backend
                               &allow-other-keys)
-  (let ((pn (if output-file-p
+  (declare (ignore output-type))
+  (let* ((output-type :bytecode)
+         (pn (if output-file-p
 		 (merge-pathnames output-file (translate-logical-pathname (cfp-output-file-default input-file output-type :target-backend target-backend)))
 		 (cfp-output-file-default input-file output-type :target-backend target-backend)))
          (ext (build-extension output-type)))
@@ -144,8 +146,9 @@
             (format t "~&; Compiling file: ~a~%"
                     (namestring input-file)))
           (ecase execution
-            (:serial
+            ((:serial :parallel)
              (apply #'compile-stream/serial source-sin output-path args))
+            #+(or)
             (:parallel
              ;; defined later in compile-file-parallel.lisp.
              (apply #'compile-stream/parallel source-sin output-path
@@ -164,7 +167,7 @@
                               &allow-other-keys)
   (declare (ignore environment image-startup-position type optimize-level optimize))
   (let ((*compile-file-parallel* nil))
-    (if (eq output-type :bytecode)
+    (if t;; (eq output-type :bytecode)
         (apply #'cmpltv:bytecode-compile-stream input-stream output-path args)
         ;; Defined later in cleavir/compile-file.lisp
         (apply #'native-compile-stream input-stream output-path args)))
