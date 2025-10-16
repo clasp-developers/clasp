@@ -524,8 +524,8 @@
          ;; since again, this isn't a closure.)
          ;; Bytecode functions don't need to go through this, although
          ;; doing so might help inlining and such? TODO
-         (setf (cdr c) value)
          (let ((irfun (make-bir-function value inserter)))
+           (setf (cdr c) irfun)
            (add-function context value irfun nil)
            (build:insert inserter 'bir:enclose
                          :code irfun
@@ -852,6 +852,12 @@
       (setf (bir:lambda-list ifun) (append ll `(core:&va-rest ,rarg))
             (aref (locals context) start) (cons rarg nil)))))
 
+(defgeneric constant-value (constant)
+  (:method ((c symbol)) c))
+
+(defmethod constant-value ((constant cmp:constant-info))
+  (cmp:constant-info/value constant))
+
 (defmethod compile-instruction ((mnemonic (eql :parse-key-args))
                                 inserter context &rest args)
   (destructuring-bind (start (key-count . aokp) keys) args
@@ -860,7 +866,8 @@
            (ll (bir:lambda-list ifun)))
       ;; The keys are put on the stack such that
       ;; the leftmost key is the _last_ pushed, etc.
-      (loop for key in keys
+      (loop for ckey in keys
+            for key = (constant-value ckey)
             for arg = (make-instance 'bir:argument :function ifun)
             for -p = (make-instance 'bir:argument :function ifun)
             collect (list key arg -p) into ll-app
