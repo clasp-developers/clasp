@@ -28,7 +28,7 @@ In case things go wrong, the quickest way to get help is to either
 
 Building takes a lot of resources.  In parallel mode
 (`:parallel-build t` in config.sexp) you need more than 8 GB of RAM 
-and it will be 1-2 hours build time. If you have 8 GB of RAM you can turn off 
+and it will be 1-2 hours build time. If you do not have 8 GB of RAM you can turn off 
 the parallel build which will then run for a day or so.  Make sure to have some 
 paging space ("swapfile") configured.
 
