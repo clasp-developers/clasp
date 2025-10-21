@@ -1939,7 +1939,7 @@
            (cmp:lexenv/funs env) (cmp:lexenv/decls env)
            (cmp:lexenv/frame-end env)))))
 
-(defun bytecode-compile-toplevel (form &optional (env (cmp:make-null-lexical-environment)))
+(defun bytecode-compile-toplevel (form &optional env)
   (let ((core:*current-source-pos-info*
           (or (gethash form cmp:*source-locations*)
               core:*current-source-pos-info*))
@@ -1965,9 +1965,7 @@
 
 ;; input is a character stream.
 (defun bytecode-compile-stream (input output-path
-                                &key (environment
-                                      (cmp:make-null-lexical-environment))
-                                &allow-other-keys)
+                                &key environment &allow-other-keys)
   ;; *COMPILE-PRINT* is defined later in compile-file.lisp.
   (declare (special *compile-print*))
   (with-constants ()
@@ -1979,6 +1977,9 @@
           with cfsdp = (core:file-scope cmp::*compile-file-source-debug-pathname*)
           with cfsdl = cmp::*compile-file-source-debug-lineno*
           with cfsdo = cmp::*compile-file-source-debug-offset*
+          ;; Force this into a lexenv so macroexpand etc. work correctly
+          ;; with arbitrary global environments.
+          with env = (cmp:make-null-lexical-environment environment)
           for core:*current-source-pos-info*
             = (core:input-stream-source-pos-info input cfsdp cfsdl cfsdo)
           for cmp:*source-locations* = (make-hash-table :test #'eq)
@@ -1986,7 +1987,7 @@
           until (eq form eof)
           do (when *compile-print*
                (cmp::describe-form form))
-             (bytecode-compile-toplevel form environment))
+             (bytecode-compile-toplevel form env))
     ;; Write out the FASL bytecode.
     (cmp:with-atomic-file-rename (temp-output-path output-path)
       (with-open-file (output temp-output-path

@@ -42,6 +42,7 @@
       (call-next-method)))
 
 (defmethod clostrum-sys:variable-status :around (client (environment run-time-environment) symbol)
+  (declare (ignore client))
   (if (keywordp symbol)
       :constant
       (call-next-method)))
