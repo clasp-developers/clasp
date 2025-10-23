@@ -75,7 +75,7 @@
  (:name :extrinsicl
   :repository "https://github.com/s-expressionists/Extrinsicl.git"
   :directory "src/lisp/kernel/contrib/Extrinsicl/"
-  :branch "main")
+  :branch "cross")
  (:name :fast-io
   :repository "https://github.com/rpav/fast-io.git"
   :directory "src/lisp/kernel/contrib/fast-io/"
