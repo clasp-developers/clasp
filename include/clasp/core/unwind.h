@@ -5,6 +5,7 @@
 #include <clasp/core/object.h>
 #include <clasp/core/symbol.h>
 #include <clasp/core/arguments.h> // DynamicScopeManager
+#include <clasp/core/evaluator.h> // eval::funcall
 
 namespace core {
 
@@ -337,7 +338,7 @@ template <typename Catchf> T_mv call_with_catch(T_sp tag, Catchf&& cf) {
     }
 }
 
-template <typename Boundf> __attribute__((optnone)) T_mv fprogv(List_sp symbols, List_sp values, Boundf&& bound) {
+template <typename Boundf> T_mv fprogv(List_sp symbols, List_sp values, Boundf&& bound) {
   if (symbols.consp()) {
     Symbol_sp sym = CONS_CAR(symbols).as<Symbol_O>();
     List_sp nsymbols = CONS_CDR(symbols);
@@ -347,6 +348,25 @@ template <typename Boundf> __attribute__((optnone)) T_mv fprogv(List_sp symbols,
     } else { // out of values - make unbound
       return call_with_variable_bound(sym, unbound<T_O>(),
                                       [&]() { return fprogv(nsymbols, nil<T_O>(), bound); });
+    }
+  } else { // no symbols
+    return bound();
+  }
+}
+
+template <typename Boundf> T_mv fprogv_env(List_sp symbols, List_sp values,
+                                           T_sp env, Boundf&& bound) {
+  if (symbols.consp()) {
+    Symbol_sp sym = CONS_CAR(symbols).as<Symbol_O>();
+    T_sp rcell = eval::funcall(_sym_fcge_ensure_vcell, env, sym);
+    VariableCell_sp cell = rcell.as<VariableCell_O>();
+    List_sp nsymbols = CONS_CDR(symbols);
+    if (values.consp()) {
+      return call_with_cell_bound(cell, CONS_CAR(values),
+                                  [&]() { return fprogv_env(nsymbols, CONS_CDR(values), env, bound); });
+    } else { // out of values - make unbound
+      return call_with_cell_bound(cell, unbound<T_O>(),
+                                  [&]() { return fprogv_env(nsymbols, nil<T_O>(), env, bound); });
     }
   } else { // no symbols
     return bound();

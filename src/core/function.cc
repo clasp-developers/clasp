@@ -764,6 +764,24 @@ FunctionCell_sp FunctionCell_O::make(T_sp name) {
   return FunctionCell_O::make(name, cf);
 }
 
+CL_LISPIFY_NAME(FunctionCell/make);
+CL_LAMBDA(name &optional (initial nil initialp));
+CL_DEFUN FunctionCell_sp core__make_function_cell(T_sp name,
+                                                  T_sp initial, T_sp initialp) {
+  if (initialp.nilp())
+    return FunctionCell_O::make(name);
+  else
+    return FunctionCell_O::make(name, initial.as<Function_O>());
+}
+
+// KLUDGE: We have no CL_DEFMETHOD_SETF, so we do this
+CL_LISPIFY_NAME(FunctionCell/function);
+CL_DEFUN_SETF Function_sp core__function_cell_set_function(Function_sp nfun,
+                                                           FunctionCell_sp cell) {
+  cell->real_function_set(nfun);
+  return nfun;
+}
+
 void FunctionCell_O::fmakunbound(T_sp name) {
   Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1, cachedUnboundSimpleFun(name));
   cf[0] = name;

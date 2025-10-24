@@ -237,6 +237,13 @@ uint32_t VariableCell_O::ensureBindingIndex() const {
 
 void VariableCell_O::unboundError() const { UNBOUND_VARIABLE_ERROR(name()); }
 
+// KLUDGE: No CL_DEFMETHOD_SETF, therefore
+CL_LISPIFY_NAME(VariableCell/Value);
+CL_DEFUN_SETF T_sp core__variable_cell_set_value(T_sp val, VariableCell_sp cell) {
+  cell->set_value(val);
+  return val;
+}
+
 VariableCell_sp Symbol_O::ensureVariableCell() {
   VariableCell_sp vcell = variableCell();
   if (vcell.unboundp()) {

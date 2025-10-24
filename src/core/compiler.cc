@@ -1215,6 +1215,11 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
   return fprogv(symbols, values, [&]() { return eval::funcall(func); });
 }
 
+CL_DEFUN T_mv core__progv_env_function(List_sp symbols, List_sp values,
+                                       T_sp env, Function_sp thunk) {
+  return fprogv_env(symbols, values, env, [&]() { return eval::funcall(thunk); });
+}
+
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__declared_global_inline_p(T_sp name) {
   return gc::As<HashTable_sp>(_sym_STARfunctions_to_inlineSTAR->symbolValue())->gethash(name);

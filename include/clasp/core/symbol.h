@@ -91,6 +91,8 @@ public:
   mutable std::atomic<uint32_t> _BindingIdx;
   T_sp _Name; // used for error messages and printing only
 public:
+  CL_LISPIFY_NAME(VariableCell/make)
+  CL_DEF_CLASS_METHOD
   static VariableCell_sp make(T_sp name);
 
 private:
@@ -115,6 +117,8 @@ public:
   uint32_t ensureBindingIndex() const;
 
   // Return the value, or UNBOUND if unbound.
+  CL_LISPIFY_NAME(VariableCell/ValueUnsafe)
+  CL_DEFMETHOD
   T_sp valueUnsafe() const {
 #ifdef CLASP_THREADS
     uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
@@ -135,10 +139,14 @@ public:
 #endif
       return globalValueUnsafeSeqCst();
   }
-  inline bool boundP() const { return !(valueUnsafe().unboundp()); }
+  CL_LISPIFY_NAME(VariableCell/boundp)
+  CL_DEFMETHOD
+  bool boundP() const { return !(valueUnsafe().unboundp()); }
 
   // Return the value or signal an error if unbound.
-  inline T_sp value() const {
+  CL_LISPIFY_NAME(VariableCell/value)
+  CL_DEFMETHOD
+  T_sp value() const {
     T_sp val = valueUnsafe();
     if (val.unboundp())
       unboundError();
@@ -162,7 +170,9 @@ public:
     else
       return val;
   }
-  inline void makunbound() { set_value(unbound<T_O>()); }
+  CL_LISPIFY_NAME(VariableCell/makunbound)
+  CL_DEFMETHOD
+  void makunbound() { set_value(unbound<T_O>()); }
   inline T_sp valueSeqCst() const {
     T_sp val = valueUnsafeSeqCst();
     if (val.unboundp())

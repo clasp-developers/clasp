@@ -183,6 +183,21 @@ void vm_record_playback(void* value, const char* name) {
 #define VM_RECORD_PLAYBACK(value, name)
 #endif
 
+// Defined later in Lisp. Lambda list (environment name) and they return cells.
+// ensure_vcell is actually used in progv_env in unwind.h.
+SYMBOL_EXPORT_SC_(CorePkg, fcge_ensure_fcell);
+SYMBOL_EXPORT_SC_(CorePkg, fcge_ensure_vcell);
+
+// Resolve a function designator in a given environment.
+static Function_sp fdesignator_in_env(T_sp desig, T_sp env) {
+  if (desig.isA<Function_O>())
+    return desig.as_unsafe<Function_O>();
+  else {
+    T_sp cell = eval::funcall(_sym_fcge_ensure_fcell, env, desig);
+    return cell.as<Function_O>();
+  }
+}
+
 static unsigned char* long_dispatch(VirtualMachine&, unsigned char*, MultipleValues& multipleValues, T_O**, T_O**, Closure_O*,
                                     core::T_O**, core::T_O**, size_t, core::T_O**, uint8_t);
 
@@ -872,12 +887,16 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       return gctools::return_type(nil<T_O>().raw_(), 0);
     }
     case vm_code::progv: {
-      uint8_t c = *(++pc); // environment
+      uint8_t c = *(++pc);
       DBG_VM1("progv %" PRIu8 "\n", c);
+      T_sp env((gctools::Tagged)literals[c]);
       T_sp vals((gctools::Tagged)(vm.pop(sp)));
       T_sp vars((gctools::Tagged)(vm.pop(sp)));
       vm._pc = ++pc;
-      fprogv(vars, vals, [&]() { return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args); });
+      if (env.nilp())
+        fprogv(vars, vals, [&]() { return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args); });
+      else
+        fprogv_env(vars, vals, env, [&]() { return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args); });
       sp = vm._stackPointer;
       pc = vm._pc;
       break;
@@ -885,7 +904,8 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
     case vm_code::fdefinition: {
       // We have function cells in the literals vector. While these are
       // themselves callable, we have to resolve the cell because we
-      // use vm_code::fdefinition for lookup of #'foo.
+      // use vm_code::fdefinition for lookup of #'foo, which may e.g.
+      // have its type or identity tested.
       uint8_t c = *(++pc);
       DBG_VM1("fdefinition %" PRIu8 "\n", c);
       T_sp cell((gctools::Tagged)literals[c]);
@@ -922,10 +942,11 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       break;
     }
     case vm_code::fdesignator: {
-      uint8_t c = *(++pc); // ignored environment parameter
+      uint8_t c = *(++pc);
       DBG_VM1("fdesignator %" PRIu8 "\n", c);
+      T_sp env((gctools::Tagged)literals[c]);
       T_sp desig((gctools::Tagged)vm.pop(sp));
-      Function_sp fun = coerce::calledFunctionDesignator(desig);
+      Function_sp fun = env.nilp() ? coerce::calledFunctionDesignator(desig) : fdesignator_in_env(desig, env);
       vm.push(sp, fun.raw_());
       VM_RECORD_PLAYBACK(run.raw_(), "fdesignator");
       pc++;
@@ -1403,10 +1424,14 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     uint8_t low = *(++pc);
     uint16_t c = low + (*(++pc) << 8);
     DBG_VM1("long progv %" PRIu16 "\n", c);
+    T_sp env((gctools::Tagged)literals[c]);
     T_sp vals((gctools::Tagged)(vm.pop(sp)));
     T_sp vars((gctools::Tagged)(vm.pop(sp)));
     vm._pc = ++pc;
-    fprogv(vars, vals, [&]() { return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args); });
+    if (env.nilp())
+      fprogv(vars, vals, [&]() { return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args); });
+    else
+      fprogv_env(vars, vals, env, [&]() { return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args); });
     sp = vm._stackPointer;
     pc = vm._pc;
     break;
@@ -1415,8 +1440,9 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     uint8_t low = *(++pc);
     uint16_t n = low + (*(++pc) << 8);
     DBG_VM1("long fdesignator %" PRIu16 "\n", n);
+    T_sp env((gctools::Tagged)literals[n]);
     T_sp desig((gctools::Tagged)vm.pop(sp));
-    Function_sp fun = coerce::calledFunctionDesignator(desig);
+    Function_sp fun = env.nilp() ? coerce::calledFunctionDesignator(desig) : fdesignator_in_env(desig, env);
     vm.push(sp, fun.raw_());
     pc++;
     break;

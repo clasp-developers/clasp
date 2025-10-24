@@ -504,15 +504,18 @@ public:
   static FunctionCell_sp make(T_sp name, Function_sp initial);
   static FunctionCell_sp make(T_sp name); // unbound
 public:
-  Function_sp real_function() const {
+  CL_LISPIFY_NAME(FunctionCell/function)
+  CL_DEFMETHOD Function_sp real_function() const {
     // relaxed because nobody should be synchronizing on this,
     // but in practice it's probably irrelevant what we do?
     return this->_Function.load(std::memory_order_relaxed);
   }
   void real_function_set(Function_sp fun) { this->_Function.store(fun, std::memory_order_relaxed); }
   static SimpleFun_sp cachedUnboundSimpleFun(T_sp name);
-  void fmakunbound(T_sp name);
-  bool fboundp() const;
+  CL_LISPIFY_NAME(FunctionCell/makunbound)
+  CL_DEFMETHOD void fmakunbound(T_sp name);
+  CL_LISPIFY_NAME(FunctionCell/boundp)
+  CL_DEFMETHOD bool fboundp() const;
   // like real_function() but signals an error if we are un-fbound.
   Function_sp fdefinition() const;
 
