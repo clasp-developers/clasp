@@ -3,11 +3,15 @@
 (defvar *build-rte*)
 (defvar *build-ce*)
 
-(defclass client (maclina.vm-cross:client) ())
+(defclass client (#-clasp maclina.vm-cross:client
+                  #+clasp vm-clasp:client)
+  ())
 
 (defclass reader-client (maclina.compile-file::reader-client) ())
 
 (defvar *reader-client* (make-instance 'reader-client))
+
+(defclass run-time-environment (clostrum-basic:run-time-environment) ())
 
 (define-condition substituting-package (warning)
   ((%package-name :reader substituting-package :initarg :substituting))
@@ -36,16 +40,14 @@
          :reader-client *reader-client*
          keys))
 
-(defmethod clostrum-sys:variable-cell :around ((client client)
-                                               environment symbol)
+(defmethod clostrum-sys:variable-cell :around (client (environment run-time-environment) symbol)
   (if (keywordp symbol)
       (let ((cell (clostrum-sys:ensure-variable-cell client environment symbol)))
         (setf (clostrum-sys:variable-cell-value client cell) symbol)
         cell)
       (call-next-method)))
 
-(defmethod clostrum-sys:variable-status :around ((client client)
-                                                 environment symbol)
+(defmethod clostrum-sys:variable-status :around (client (environment run-time-environment) symbol)
   (if (keywordp symbol)
       :constant
       (call-next-method)))
@@ -153,3 +155,11 @@
     (etypecase dat
       ((or null clos::compiler-generic) dat)
       (t (error "Not a generic: ~s" name)))))
+
+;;; necessary as extrinsicl/maclina's methods are specialized on vm-cross:client
+#+clasp
+(defmethod extrinsicl:symbol-value ((client client) env symbol)
+  (m:symbol-value client env symbol))
+#+clasp
+(defmethod (setf extrinsicl:symbol-value) (new (client client) env symbol)
+  (setf (m:symbol-value client env symbol) new))

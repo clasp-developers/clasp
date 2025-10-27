@@ -462,7 +462,7 @@
   (declare (ignore cxx-classes-path)) ; TODO
   (load-unicode-file character-names-path)
   (setf m:*client* (make-instance 'client)
-        *build-rte* (make-instance 'clostrum-basic:run-time-environment)
+        *build-rte* (make-instance 'run-time-environment)
         *build-ce* (make-instance 'clostrum-basic:compilation-environment
                      :parent *build-rte*))
   (core::reset-delayed-macros)
