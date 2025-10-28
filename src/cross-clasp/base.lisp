@@ -477,7 +477,14 @@
   (values))
 
 (defun build (input-files output-files source-pathnames)
-  (let ((*compile-verbose* t) (*compile-print* t))
+  (let ((*compile-verbose* t) (*compile-print* t)
+        ;; COMPILER instead of CMP so that we get Clasp's package,
+        ;; not the local package nickname.
+        ;; We disable Cleavir because it's too slow:
+        ;; The build compiles a _lot_ of macroexpanders, mostly for CLOS,
+        ;; and constructing CSTs for their bodies takes positively
+        ;; stupid amounts of time. FIXME?
+        #+clasp(compiler:*cleavir-compile-hook* nil))
     (handler-bind
         (;; SBCL's script processor muffles style warnings, which is
          ;; pretty unfortunate for us, so print them ourselves here.

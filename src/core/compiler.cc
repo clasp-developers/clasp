@@ -474,7 +474,7 @@ CL_DEFUN T_sp core__startup_image_pathname(bool extension) {
   ss << "sys:lib;images;" << (extension ? "extension" : "base");
   T_sp mode = comp::_sym_STARdefault_output_typeSTAR->symbolValue();
   if (mode == kw::_sym_faso) {
-    ss << ".faso";
+    ss << ".nfasl"; // ss << ".faso";
   } else if (mode == kw::_sym_fasoll) {
     ss << ".fasoll";
   } else if (mode == kw::_sym_fasobc) {
