@@ -158,7 +158,7 @@
   (values))
 
 (defun %disassemble-bytecode-function (bcfunction labels)
-  (let* ((simple (core:function/entry-point bcfunction))
+  (let* ((simple bcfunction)
          (module (core:bytecode-simple-fun/code simple))
          (start (core:bytecode-simple-fun/entry-pc-n simple))
          (length (core:bytecode-simple-fun/bytecode-size simple)))
@@ -169,7 +169,7 @@
 
 (defun disassemble-bytecode-function (bcfunction)
   (let* ((disassembled-functions nil) ; prevent recursion
-         (simple (core:function/entry-point bcfunction))
+         (simple bcfunction)
          (module (core:bytecode-simple-fun/code simple))
          (bytecode (core:bytecode-module/bytecode module))
          ;; We grab labels for the entire module, so that nonlocal exit points
