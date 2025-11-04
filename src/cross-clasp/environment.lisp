@@ -19,7 +19,17 @@
              (format stream "Unknown package ~s; substituting CORE"
                      (substituting-package condition)))))
 
-(defmethod maclina.compile-file::find-package ((client reader-client) package-name)
+(defmethod maclina.compile-file::find-package ((client reader-client)
+                                               (desig package))
+  desig)
+(defmethod maclina.compile-file::find-package ((client reader-client)
+                                               (desig symbol))
+  (maclina.compile-file::find-package client (symbol-name desig)))
+(defmethod maclina.compile-file::find-package ((client reader-client)
+                                               (desig character))
+  (maclina.compile-file::find-package client (string desig)))
+
+(defmethod maclina.compile-file::find-package ((client reader-client) (package-name string))
   (or
     (let* ((package (m:symbol-value m:*client* *build-rte* '*package*))
            (local-nicknames
