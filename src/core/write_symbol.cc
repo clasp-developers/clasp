@@ -190,8 +190,8 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
     package = cl::_sym_nil->homePackage();
     name = cl::_sym_nil->symbolName();
   } else {
-    package = gc::As<Symbol_sp>(x)->homePackage();
-    name = gc::As<Symbol_sp>(x)->symbolName();
+    package = x->homePackage();
+    name = x->symbolName();
   }
 
   if (!print_readably && !clasp_print_escape()) {
