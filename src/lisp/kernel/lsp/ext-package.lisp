@@ -118,6 +118,7 @@
           with-current-source-form
           start-autocompilation
           stop-autocompilation
+          deoptimize reoptimize
           ;; Macro parsing & acccess
           parse-deftype type-expander typexpand-1 typexpand
           ;; C++ iterators

@@ -120,3 +120,108 @@
   (setf (mp:atomic (symbol-value '*autocompilation-logging*) :order :relaxed) t))
 (defun end-autocompilation-logging ()
   (setf (mp:atomic (symbol-value '*autocompilation-logging*) :order :relaxed) nil))
+
+;;; map from simple funs to optimized versions,
+;;; for reoptimization later
+(defvar *deoptimized-funs* (make-hash-table :test #'eq))
+;;; list of functions that have been deoptimized; used for presentation
+;;; to the user etc
+(defvar *deoptimized* nil)
+
+(defun deoptimized () *deoptimized*)
+
+(defun %deoptimize-function (function)
+  (declare (type core:simple-fun function))
+  (let ((opt (core:function/entry-point function)))
+    (cond ((eq function opt) nil) ; no optimized version
+          (t (setf (gethash function *deoptimized-funs*) opt)
+             (core:set-simple-fun function function)
+             t))))
+
+(defun %map-module-functions (f module)
+  (loop with any = nil
+        for thing across (core:bytecode-module/debug-info module)
+        ;; call on all functions - no quitting early so not THEREIS
+        when (typep thing 'core:bytecode-simple-fun)
+          do (setf any (or (funcall f thing) any))
+        finally (return any)))
+
+;;; When we deoptimize, we try to deoptimize everything in a
+;;; function's module, such as inner functions. That's probably
+;;; what the user wants, practically speaking, unlike with TRACE.
+(defun %deoptimize (function)
+  (if (typep function 'core:bytecode-simple-fun)
+      (%map-module-functions #'%deoptimize-function
+                             (core:simple-fun-code function))
+      nil))
+
+(defgeneric %map-simple-funs (f function)
+  (:argument-precedence-order function f))
+
+(defmethod %map-simple-funs (f (func core:simple-fun))
+  (funcall f func))
+(defmethod %map-simple-funs (f (function core:closure))
+  (%map-simple-funs f (core:function/entry-point function)))
+(defmethod %map-simple-funs (f (function clos:funcallable-standard-object))
+  (%map-simple-funs f (clos:get-funcallable-instance-function function)))
+(defmethod %map-simple-funs :after (f (function generic-function))
+  (loop for method in (clos:generic-function-methods function)
+        for mf = (clos:method-function method)
+        do (%map-simple-funs f mf)))
+;;; KLUDGE: placement?
+(defmethod %map-simple-funs :after (f (function clos::%leaf-method-function))
+  (%map-simple-funs f (clos::fmf function)))
+(defmethod %map-simple-funs :after (f (function clos::%contf-method-function))
+  (%map-simple-funs f (clos::contf function)))
+
+(defun maybe-deoptimize (function)
+  (let ((deoptimized-any nil))
+    (flet ((deopt (sf)
+             (when (%deoptimize sf) (setf deoptimized-any t))))
+      (%map-simple-funs #'deopt function))
+    (if deoptimized-any
+        (push function *deoptimized*)
+        (warn "~a has no optimized versions; skipping" function))))
+
+(defmacro ext:deoptimize (&rest functions)
+  `(progn ,@(loop for fdesig in functions
+                  collect `(maybe-deoptimize #',fdesig))
+          (deoptimized)))
+
+(defun %reoptimize-function (function)
+  (declare (type core:simple-fun function))
+  (let ((opt (gethash function *deoptimized-funs*)))
+    (cond (opt (remhash function *deoptimized-funs*)
+               (core:set-simple-fun function opt)
+               t)
+          (t nil))))
+
+(defun %reoptimize (function)
+  (if (typep function 'core:bytecode-simple-fun)
+      (%map-module-functions #'%reoptimize-function
+                             (core:simple-fun-code function))
+      nil))
+
+(defun %reoptimize-all ()
+  ;; Just reoptimize everything directly
+  (maphash (lambda (fun opt) (core:set-simple-fun fun opt))
+           *deoptimized-funs*)
+  (clrhash *deoptimized-funs*)
+  (setf *deoptimized* nil))
+
+(defun maybe-reoptimize (function)
+  (let ((reoptimized-any nil))
+    (when (member function *deoptimized*)
+      (flet ((reopt (sf)
+               (when (%reoptimize sf) (setf reoptimized-any t))))
+        (%map-simple-funs #'reopt function))
+      (setf *deoptimized* (delete function *deoptimized*)))
+    (unless reoptimized-any
+      (warn "~a was not deoptimized; skipping" function))))
+
+(defmacro ext:reoptimize (&rest functions)
+  (if functions
+      `(progn ,@(loop for fdesig in functions
+                      collect `(maybe-reoptimize #',fdesig))
+              (deoptimized))
+      `(%reoptimize-all)))
