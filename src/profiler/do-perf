@@ -5,6 +5,7 @@ TIME=${2:-10}
 RATE=${3:-97}
 FRAMES=${4:-6000}
 DIR="/tmp"
+kill -SIGUSR1 $PID
 echo perf record -p $PID -F $RATE --call-graph fp,60000 -o $DIR/out-$PID.data -- sleep $TIME
 echo The system stack depth is in /proc/sys/kernel/perf_event_max_stack = `cat /proc/sys/kernel/perf_event_max_stack`
 sudo perf record -p $PID -F $RATE --call-graph fp,60000 -o $DIR/out-$PID.data -- sleep $TIME
