@@ -1550,10 +1550,15 @@ CL_DEFUN T_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults) {
     fname = path->_Name;
   /* Create a path with all elements that do not match the default */
   newpath = Pathname_O::makePathname(EN_MATCH(path, defaults, _Host), EN_MATCH(path, defaults, _Device), pathdir, fname,
-                                     EN_MATCH(path, defaults, _Type), EN_MATCH(path, defaults, _Version), kw::_sym_local);
+                                     EN_MATCH(path, defaults, _Type), EN_MATCH(path, defaults, _Version), kw::_sym_local,
+                                     core__logical_pathname_p(path));
   ASSERTF(core__logical_pathname_p(newpath) == core__logical_pathname_p(path),
-          "Mismatch between the newpath and path - they must be the same kind and it is the responsibility of makePathname to "
-          "ensure that they are the same kind");
+          "Mismatch between the newpath ({} / logical-pathname-p -> {}) and path ({} / logical-pathname-p -> {}) "
+          "- they must be the same kind and it is the responsibility of makePathname to "
+          "ensure that they are the same kind (enough-namestring args: {} {})",
+          _rep_(newpath), core__logical_pathname_p(newpath),
+          _rep_(path), core__logical_pathname_p(path),
+          _rep_(tpath), _rep_(tdefaults));
   if (newpath.nilp())
     SIMPLE_ERROR("{} is about to pass NIL to clasp_namestring", __FUNCTION__);
   return clasp_namestring(newpath, CLASP_NAMESTRING_TRUNCATE_IF_ERROR);
