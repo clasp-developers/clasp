@@ -88,7 +88,7 @@
  (:name :cffi ; TODO remove once cando-user no longer needs
   :repository "https://github.com/cffi/cffi.git"
   :directory "src/lisp/kernel/contrib/cffi/"
-  :commit "9c912e7b89eb09dd347d3ebae16e4dc5f53e5717"
+  :commit "dad3520cd3b4d14fd494ce617c8394b48e027bb1" ; "9c912e7b89eb09dd347d3ebae16e4dc5f53e5717"
   :extension :cando)
  (:name :cl-markup
   :repository "https://github.com/arielnetworks/cl-markup.git"
