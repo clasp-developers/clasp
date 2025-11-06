@@ -212,7 +212,14 @@ private:
       for (int i = 0; i < indent; ++i) {
         outStream << "  ";
       }
-      outStream << node->name << ": " << node->totalTime << " microseconds\n";
+
+      if ( node->totalTime < 1000) {
+        outStream << node->name << ": " << node->totalTime << " microseconds\n";
+      } else if ( node->totalTime < 1000000 ) {
+        outStream << node->name << ": " << node->totalTime/1000 << " milliseconds\n";
+      } else {
+        outStream << node->name << ": " << node->totalTime/1000000 << " seconds\n";
+      }
       for (const auto& child : node->children) {
         printRegion(outStream, child.second.get(), indent + 1);
       }
