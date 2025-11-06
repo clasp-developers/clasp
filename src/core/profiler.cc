@@ -214,16 +214,22 @@ private:
 
     // Helper function to print the region tree recursively to the provided output stream
     static void printRegion(std::ostream& outStream, RegionNode* node, int indent) {
-        // Indent the output based on the depth
-        for (int i = 0; i < indent; ++i) {
-            outStream << "  ";
-        }
-        // Print the region name and total time
+      // Indent the output based on the depth
+      for (int i = 0; i < indent; ++i) {
+        outStream << "  ";
+      }
+      // Print the region name and total time
+      if ( node->totalTime < 1000) {
         outStream << node->name << ": " << node->totalTime << " microseconds\n";
-        // Recursively print child regions
-        for (const auto& child : node->children) {
-            printRegion(outStream, child.second.get(), indent + 1);
-        }
+      } else if ( node->totalTime < 1000000 ) {
+        outStream << node->name << ": " << node->totalTime/1000 << " milliseconds\n";
+      } else {
+        outStream << node->name << ": " << node->totalTime/1000000 << " seconds\n";
+      }
+      // Recursively print child regions
+      for (const auto& child : node->children) {
+        printRegion(outStream, child.second.get(), indent + 1);
+      }
     }
 
     // Helper function to generate a color string from a node name using HSV
