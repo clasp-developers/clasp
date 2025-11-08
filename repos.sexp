@@ -135,6 +135,10 @@
   :directory "src/lisp/kernel/contrib/global-vars/"
   :commit "c749f32c9b606a1457daa47d59630708ac0c266e"
   :extension :cando)
+ (:name :khazern
+  :repository "https://github.com/s-expressionists/Khazern.git"
+  :directory "src/lisp/kernel/contrib/Khazern/"
+  :branch "master")
  (:name :let-plus
   :repository "https://github.com/sharplispers/let-plus.git"
   :directory "src/lisp/kernel/contrib/let-plus/"
@@ -174,6 +178,10 @@
   :directory "src/lisp/kernel/contrib/static-vectors/"
   :commit "87a447a8eaef9cf4fd1c16d407a49f9adaf8adad"
   :extension :cando)
+ (:name :trinsic
+  :repository "https://github.com/s-expressionists/trinsic.git"
+  :directory "src/lisp/kernel/contrib/trinsic/"
+  :branch "main")
  (:name :trivial-features ; Needed both by the host and eclasp
   :repository "https://github.com/trivial-features/trivial-features.git"
   :directory "src/lisp/kernel/contrib/trivial-features/"
@@ -192,10 +200,14 @@
   :directory "src/lisp/kernel/contrib/trivial-indent/"
   :commit "8d92e94756475d67fa1db2a9b5be77bc9c64d96c"
   :extension :cando)
- (:name :trivial-with-current-source-form ; Needed both by the host and eclasp
+ (:name :trivial-package-locks
+  :repository "https://github.com/yitzchak/trivial-package-locks.git"
+  :directory "src/lisp/kernel/contrib/trivial-package-locks/"
+  :branch "main")
+ (:name :trivial-with-current-source-form
   :repository "https://github.com/scymtym/trivial-with-current-source-form.git"
   :directory "src/lisp/kernel/contrib/trivial-with-current-source-form/"
-  :commit "3898e09f8047ef89113df265574ae8de8afa31ac")
+  :branch "master")
  (:name :usocket ; Needed both by the host and eclasp
   :repository "https://github.com/usocket/usocket.git"
   :directory "src/lisp/kernel/contrib/usocket/"

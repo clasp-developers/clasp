@@ -7,6 +7,9 @@
 * `ext:macroexpand-all` macroexpands a form and its subforms.
 * Arguments to bytecode functions are made available to debuggers.
 
+## Changed
+* Use Khazern extended for CL:LOOP
+
 ## Fixed
 * Weak pointers and weak hash tables survive snapshot save/load.
 * `ext:quit` can be used from any thread, not just the initial thread.

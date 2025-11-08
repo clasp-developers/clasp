@@ -49,6 +49,8 @@
 
 ;; $aclHeader: loop.cl,v 1.5 91/12/04 01:13:48 cox acl4_1 $
 
+#+staging
+(progn
 
 ;;;; LOOP Iteration Macro
 
@@ -2054,3 +2056,5 @@ collected result will be returned as the value of the LOOP."
 ;;;INTERFACE: ANSI
 (defmacro loop (&environment env &rest keywords-and-forms)
   (loop-standard-expansion keywords-and-forms env *loop-ansi-universe*))
+
+)
