@@ -128,7 +128,8 @@
              #~"kernel/lsp/packlib2.lisp"
              #~"kernel/clos/inspect.lisp"
              #~"kernel/clos/telemetry.lisp"
-             #~"kernel/lsp/loadltv.lisp"
+             #~"kernel/lsp/loadltv.lisp" ; need loop
+             :khazern-extension-intrinsic
              :eclector-concrete-syntax-tree
              #~"kernel/cmp/eclector-client.lisp"
              #~"kernel/cmp/fixup-eclector-readtables.lisp"
@@ -215,7 +216,6 @@
            #~"kernel/contrib/trivial-garbage/"
            #~"kernel/contrib/trivial-http/"
            #~"kernel/contrib/trivial-indent/"
-           #~"kernel/contrib/trivial-with-current-source-form/"
            #~"kernel/contrib/usocket/")
 
 (k:sources :analyzer
