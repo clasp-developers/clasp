@@ -1047,19 +1047,22 @@ struct loadltv {
     char literals_name[namelen+1]; // +1 for null terminator
     sprintf(literals_name, "__clasp_literals_%zu", module_id);
     void* vlits;
-    if (!jit->do_lookup(dylib, literals_name, vlits))
-      SIMPLE_ERROR("Could not find literals");
-    T_O** lits = (T_O**)vlits;
-    for (size_t i = 0; i < nlits; ++i) {
-      lits[i] = get_ltv(read_index()).raw_();
-    }
-    /*
-    uint16_t nfuns = read_u16();
-    for (size_t j = 0; j < nfuns; ++j) {
-      uint16_t corei = read_u16();
-      uint16_t xepi = read_u16();
-    }
+    if (!jit->do_lookup(dylib, literals_name, vlits)) {
+      SIMPLE_ERROR("While loading native module: Could not find literals {}",
+                   &literals_name[0]);
+    } else {
+      T_O** lits = (T_O**)vlits;
+      for (size_t i = 0; i < nlits; ++i) {
+        lits[i] = get_ltv(read_index()).raw_();
+      }
+      /*
+      uint16_t nfuns = read_u16();
+      for (size_t j = 0; j < nfuns; ++j) {
+        uint16_t corei = read_u16();
+        uint16_t xepi = read_u16();
+      }
 */
+    }
   }
 
   void attr_clasp_module_mutable_ltv(uint32_t bytes) {
