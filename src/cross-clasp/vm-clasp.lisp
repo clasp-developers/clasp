@@ -94,10 +94,10 @@
                   (m:declarations var)))))
 
 (defmethod clostrum-basic:make-variable-cell ((client client) env name)
-  (declare (ignore client))
+  (declare (ignore client env))
   (core:variable-cell/make name))
 (defmethod clostrum-basic:make-operator-cell ((client client) env name)
-  (declare (ignore client))
+  (declare (ignore client env))
   (core:function-cell/make name))
 
 (defmethod clostrum-sys:variable-cell-value (client (cell core:variable-cell))
