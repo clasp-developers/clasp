@@ -205,7 +205,7 @@
         ;; bytecode function, or a newly generated native function if there is
         ;; no corresponding bytecode function (e.g. it's a new type check function).
         ;; Store everything in the compiled code.
-        (loop for c in constants for i from 0
+        (loop for c across constants for i from 0
               for real-c = (if (typep c 'core:simple-core-fun-generator)
                                (or (gethash c generator->bytecode)
                                    (clasp-cleavir::jit-generator c fvector))
@@ -1668,6 +1668,7 @@
         (ctable (make-array 16 :fill-pointer 0 :adjustable t))
         (fvector-name (format nil "function-vector-~d" module-id))
         (fvector (make-array 16 :fill-pointer 0 :adjustable t))
+        (clasp-cleavir::*fixed-closures* (fixed-closures-map fmap))
         (abi clasp-cleavir::*abi-x86-64*)) ; FIXME
     (cmp::with-module (:module module)
       (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
@@ -1679,6 +1680,7 @@
             (clasp-cleavir::layout-module ir abi)
             (cmp::potentially-save-module)))
         (clasp-cleavir::gen-function-vector fvector fvector-name)
+        ;;(llvm-sys:dump-module module)
         (make-instance 'nmodule
           :code (cmp::generate-obj-asm-stream module :simple-vector-byte8
                                               'llvm-sys:code-gen-file-type-object-file

@@ -115,11 +115,9 @@
                    cl:macro-function cl:compiler-macro-function
                    ext::type-expander ext::setf-expander))
      (jit-function-name (second lname)))
-    #+(or) ;; uncomment this to be more forgiving
-    (cons
-     (core:fmt t "jit-function-name handling UNKNOWN: {}%N" lname)
-     ;; What is this????
-     (core:fmt nil "{}_CONS-LNAME?" lname))
+    ;;#+(or) ;; uncomment this to be more forgiving
+    ((cons t (cons t null))
+     (jit-function-name (second lname)))
     (t (error "Illegal lisp function name[~a]" lname))))
 
 (defparameter *dump-compile-module* nil)
