@@ -830,17 +830,15 @@
                (range->intervals-for-reciprocal n sys)
              (let ((rbelow
                      (if below
-                         (interval->range
-                          (interval-negate
-                           (interval-reciprocal-+ (interval-negate below)))
-                          rkind sys)
+                         (interval-negate
+                          (interval-reciprocal-+ (interval-negate below)))
                          nil))
                    (rabove
                      (if above
                          (interval-reciprocal-+ above)
                          nil)))
-               (cond (rabove 
-                     (interval->range
+               (cond (rabove
+                      (interval->range
                        (if rbelow
                            (interval-merge rbelow rabove)
                            rabove)
