@@ -69,19 +69,15 @@ names to offsets."
                                      (thread-local-llvm-context)
                                      (list ,@(mapcar #'first fields))
                                      nil))))
-      (let ((field-offsets `(let ((,layout (llvm-sys:data-layout-get-struct-layout (system-data-layout) ,name))
-                                  (,field-index 0))
-                              (mapcar (lambda (,gs-field)
-                                        (prog1
-                                            (cons (second ,gs-field) (- (llvm-sys:struct-layout-get-element-offset ,layout ,field-index) ,tag))
-                                          (incf ,field-index)))
-                                      ',fields)))
-            (field-indices `(let ((,field-index 0))       ;
-                              (mapcar (lambda (,gs-field) ;
-                                        (prog1            ;
-                                            (cons (second ,gs-field) ,field-index) ;
-                                          (incf ,field-index))) ;
-                                      ',fields)))
+      (let ((field-offsets `(let ((,layout (llvm-sys:data-layout-get-struct-layout (system-data-layout) ,name)))
+                              (list
+                               ,@(loop for (_ name) in fields
+                                       for field-index from 0
+                                       collect `(cons ',name (- (llvm-sys:struct-layout-get-element-offset ,layout ,field-index) ,tag))))))
+            (field-indices `(list
+                             ,@(loop for (_ name) in fields
+                                     for field-index from 0
+                                     collect `(cons ',name ,field-index))))
             (field-type-getters-list (mapcar (lambda (type-name) ;
                                                #+(or)(format t "type-name -> ~s cadr -> ~s  ,car -> ~s~%" type-name (cadr type-name) (car type-name)) ;
                                                `(cons ',(cadr type-name) (lambda () (llvm-sys:type-get-pointer-to ,(macroexpand (car type-name))))))
