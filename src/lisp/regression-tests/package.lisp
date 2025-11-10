@@ -609,9 +609,12 @@
   (delete-package chil)
   (delete-package par0) (delete-package par1) (delete-package par2))
 
-;; everything should error when locked
+;; everything should error when locked unless it's a no-op
 (with-packages (foo bar)
-  (let ((sym (intern "BAZ" foo)))
+  (let ((sym (intern "BAZ" foo))
+        (ext (intern "QWOP" foo)))
+    (ext:package-add-nickname foo "FOONICK")
+    (export ext foo)
     (setf (fdefinition sym) (lambda ())) ; for fmakunbound test
     (ext:lock-package foo)
     (test locked_is_locked (ext:package-locked-p foo) (T))
@@ -619,9 +622,11 @@
                  `(test-expect-error ,name ,form
                                      :type core:package-lock-violation)))
       (test-violation locked-shadow (shadow sym foo))
-      (test-violation locked-import (import sym foo))
+      (test-violation locked-import (import (gensym) foo))
+      (test-finishes  locked-import-nop (import sym foo))
       (test-violation locked-unintern (unintern sym foo))
       (test-violation locked-export (export sym foo))
+      (test-finishes  locked-export-nop (export ext foo))
       (test-violation locked-unexport (unexport sym foo))
       (test-violation locked-use (use-package bar foo))
       (test-violation locked-unuse (unuse-package bar foo))
@@ -630,6 +635,8 @@
       (test-violation locked-add-nickname
                       (ext:package-add-nickname foo "FO"))
       (test-violation locked-remove-nickname
+                      (ext:package-remove-nickname foo "FOONICK"))
+      (test-finishes  locked-remove-nickname-nop
                       (ext:package-remove-nickname foo "F"))
       (test-violation locked-intern (intern "BAZZZ" foo))
       (test-violation locked-special (proclaim `(special ,sym)))
