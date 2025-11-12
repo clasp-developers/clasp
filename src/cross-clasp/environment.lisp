@@ -19,23 +19,13 @@
              (format stream "Unknown package ~s; substituting CORE"
                      (substituting-package condition)))))
 
-(defmethod maclina.compile-file::find-package ((client reader-client)
-                                               (desig package))
-  desig)
-(defmethod maclina.compile-file::find-package ((client reader-client)
-                                               (desig symbol))
-  (maclina.compile-file::find-package client (symbol-name desig)))
-(defmethod maclina.compile-file::find-package ((client reader-client)
-                                               (desig character))
-  (maclina.compile-file::find-package client (string desig)))
-
-(defmethod maclina.compile-file::find-package ((client reader-client) (package-name string))
+(defmethod maclina.machine:find-package ((client client) env (package-name string))
   (or
-    (let* ((package (m:symbol-value m:*client* *build-rte* '*package*))
+    (let* ((package (m:symbol-value m:*client* env '*package*))
            (local-nicknames
              (trivial-package-local-nicknames:package-local-nicknames package)))
       (cdr (assoc package-name local-nicknames :test #'string=)))
-    (clostrum:find-package m:*client* *build-rte* package-name)
+    (clostrum:find-package m:*client* env package-name)
     (warn 'substituting-package :substituting package-name)
     (cl:find-package "CROSS-CLASP.CLASP.CORE")))
 
