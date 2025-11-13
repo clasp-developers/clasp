@@ -1974,18 +1974,14 @@ CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
   else
     nestedErrorDepth = 0;
   if (nestedErrorDepth > 10) {
-    printf("%s:%d -- *nested-error-depth* --> %d  datum: %s\n", __FILE__, __LINE__, nestedErrorDepth, _rep_(datum).c_str());
+    fprintf(stderr, "%s:%d -- *nested-error-depth* --> %d  datum: %s\n", __FILE__, __LINE__, nestedErrorDepth, _rep_(datum).c_str());
     if (initializers.notnilp()) {
-      printf("               initializers: %s\n", _rep_(initializers).c_str());
+      fprintf(stderr, "               initializers: %s\n", _rep_(initializers).c_str());
     }
-    printf("Dumping backtrace\n");
+    fprintf(stderr, "Dumping backtrace\n");
     dbg_safe_backtrace();
-#if defined(__i386__) || defined(__x86_64__)
-    asm("int $03");
-#else
-    printf("%s:%d:%s Figure out how to generate a break/int $03\n", __FILE__, __LINE__, __FUNCTION__);
-#endif
-    gctools::wait_for_user_signal("nested errors are too deep");
+    fflush(stderr);
+    gctools::truly_abort();
   }
   call_with_variable_bound(_sym_STARnestedErrorDepthSTAR, make_fixnum(nestedErrorDepth + 1), [&]() {
     if (_sym_universalErrorHandler->fboundp()) {
