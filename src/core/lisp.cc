@@ -252,10 +252,6 @@ void Lisp::setupSpecialSymbols() {
   RAII_DISABLE_INTERRUPTS();
   SimpleBaseString_sp name_nil = SimpleBaseString_O::make("NIL");
   Null_sp symbol_nil = gctools::GC<Null_O>::allocate(name_nil); // ::create_at_boot("NIL");
-  if (!gc::IsA<Null_sp>(symbol_nil)) {
-    printf("%s:%d:%s The NIL symbol failed gc::IsA<Null_sp>(symbol_nil)\n", __FILE__, __LINE__, __FUNCTION__);
-    abort();
-  }
   SimpleBaseString_sp name_unbound = SimpleBaseString_O::make("UNBOUND");
   Symbol_sp symbol_unbound = gctools::GC<Symbol_O>::allocate(name_unbound);
   SimpleBaseString_sp name_no_thread_local_binding = SimpleBaseString_O::make("NO-THREAD-LOCAL-BINDING");
@@ -1360,22 +1356,6 @@ void Lisp::readEvalPrintInteractive() {
   stream_terpri(cl::_sym_STARterminal_ioSTAR->symbolValue());
 }
 
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING(R"dx(stackUsed)dx");
-DOCGROUP(clasp);
-CL_DEFUN size_t core__stack_used() {
-  int x;
-  char* xaddr = (char*)(&x);
-  if (xaddr > my_thread_low_level->_StackTop) {
-    printf("%s:%d There is a problem with the stack _lisp->_StackTop@%p is below the current stack pointer@%p\n", __FILE__,
-           __LINE__, my_thread_low_level->_StackTop, xaddr);
-    abort();
-  }
-  size_t stack = (size_t)((const char*)my_thread_low_level->_StackTop - xaddr);
-  return stack;
-};
-
 static bool global_invokedInternalDebugger = false;
 
 struct ExceptionSafeResetInvokedInternalDebugger {
@@ -1532,14 +1512,18 @@ CL_LAMBDA(symbol &optional env);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return the class holder that contains the class.)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__find_class_holder(Symbol_sp symbol, T_sp env) {
+CL_DEFUN ClassHolder_sp core__find_class_holder(Symbol_sp symbol, T_sp env) {
 #ifdef SYMBOL_CLASS
   return symbol->find_class_holder();
 #else
   //  ASSERTF(env.nilp(), "Handle non nil environment");
   // Should only be single threaded here
   if (_lisp->bootClassTableIsValid()) {
-    return _lisp->boot_findClassHolder(symbol, false);
+    T_sp holder = _lisp->boot_findClassHolder(symbol, false);
+    if (holder.isA<ClassHolder_O>())
+      return holder.as_unsafe<ClassHolder_O>();
+    else
+      SIMPLE_ERROR("No boot class holder for {}", _rep_(symbol));
   }
   // Use the same global variable that ECL uses
   bool foundp;
@@ -1563,13 +1547,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(find-class)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
-  // ASSERTF(env.nilp(), "Handle non nil environment");
-  T_sp ch = core__find_class_holder(symbol, env);
-  if (ch.nilp()) {
-    printf("%s:%d core__find_class_holder returned NIL for symbol %s\n", __FILE__, __LINE__, symbol->formattedName(true).c_str());
-    abort();
-  }
-  ClassHolder_sp cell = gc::As<ClassHolder_sp>(ch);
+  ClassHolder_sp cell = core__find_class_holder(symbol, env);
   if (cell->class_unboundp()) {
     if (errorp) {
       ERROR(ext::_sym_undefinedClass, Cons_O::createList(kw::_sym_name, symbol));
@@ -1974,18 +1952,14 @@ CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
   else
     nestedErrorDepth = 0;
   if (nestedErrorDepth > 10) {
-    printf("%s:%d -- *nested-error-depth* --> %d  datum: %s\n", __FILE__, __LINE__, nestedErrorDepth, _rep_(datum).c_str());
+    fprintf(stderr, "%s:%d -- *nested-error-depth* --> %d  datum: %s\n", __FILE__, __LINE__, nestedErrorDepth, _rep_(datum).c_str());
     if (initializers.notnilp()) {
-      printf("               initializers: %s\n", _rep_(initializers).c_str());
+      fprintf(stderr, "               initializers: %s\n", _rep_(initializers).c_str());
     }
-    printf("Dumping backtrace\n");
+    fprintf(stderr, "Dumping backtrace\n");
     dbg_safe_backtrace();
-#if defined(__i386__) || defined(__x86_64__)
-    asm("int $03");
-#else
-    printf("%s:%d:%s Figure out how to generate a break/int $03\n", __FILE__, __LINE__, __FUNCTION__);
-#endif
-    gctools::wait_for_user_signal("nested errors are too deep");
+    fflush(stderr);
+    gctools::truly_abort();
   }
   call_with_variable_bound(_sym_STARnestedErrorDepthSTAR, make_fixnum(nestedErrorDepth + 1), [&]() {
     if (_sym_universalErrorHandler->fboundp()) {

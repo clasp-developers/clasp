@@ -341,6 +341,20 @@ void fatal_error_handler(void* user_data, const char* reason, bool gen_crash_dia
   abort();
 }
 
+// Kill the Lisp process with no possibility of parole.
+// DO NOT USE THIS FUNCTION UNLESS THE SITUATION IS TRULY IRRECOVERABLE.
+// As of this writing we use the standard abort() in dozens of places that
+// could just be errors and it's a problem. Also as of this writing, the only
+// place that uses this function is cl__error when hitting too many recursive
+// errors, because that is a pretty good indication that signaling another
+// error won't get us anywhere.
+[[noreturn]] void truly_abort() {
+  // Restore default signal disposition. Without this we'll go through the
+  // normal handler, which signals an interrupt.
+  signal(SIGABRT, SIG_DFL);
+  abort();
+}
+
 // SIGNALS INITIALIZATION
 
 void initialize_signals() {

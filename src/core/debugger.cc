@@ -635,9 +635,9 @@ SYMBOL_EXPORT_SC_(CorePkg, primitive_print_backtrace);
 void dbg_primitive_print_backtrace() { core::eval::funcall(core::_sym_primitive_print_backtrace); }
 
 void dbg_safe_backtrace() {
-  printf("%s:%d:%s This is where we would have clasp dump a backtrace that doesn't use the printer or allocate memory\n", __FILE__,
-         __LINE__, __FUNCTION__);
-  printf(
+  fprintf(stderr, "%s:%d:%s This is where we would have clasp dump a backtrace that doesn't use the printer or allocate memory\n", __FILE__,
+          __LINE__, __FUNCTION__);
+  fprintf(stderr,
       "          We don't currently have that functionality - but if we did it would use backtrace(), backtrace_symbols()\n"
       "          and scrape the DWARF accessible through _lisp->_Roots._AllObjectFiles to build a backtrace with JIT function "
       "names\n"
@@ -651,7 +651,6 @@ void dbg_safe_backtrace() {
       "out\n"
       "          where they point relative to what we have in _lisp->_Roots._AllObjectFiles.\n"
       "          As of May 2, 2021 only ELF files work with the gdb JIT API - so this wouldn't work on macOS\n");
-  abort();
 };
 };
 namespace core {

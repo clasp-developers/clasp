@@ -214,20 +214,12 @@ CL_DEFUN void core__dump_class_ids() { reg::dump_class_ids(); }
 
 SYMBOL_EXPORT_SC_(ClPkg,floating_point_invalid_operation);
 
-void lisp_errorExpectedList(core::T_O* v) {
+[[noreturn]] void lisp_errorExpectedList(core::T_O* v) {
   T_sp tv((gctools::Tagged)v);
   TYPE_ERROR(tv, cl::_sym_list);
 }
 
-void lisp_errorIllegalDereference(void* v) { SIMPLE_ERROR("Tried to dereference px={}", v); }
-
-void lisp_errorDereferencedNonPointer(core::T_O* v) { SIMPLE_ERROR("Tried to dereference immediate value: {}", (void*)v); }
-
-void lisp_errorDereferencedNil() { SIMPLE_ERROR("Tried to dereference nil"); }
-
-void lisp_errorDereferencedUnbound() { SIMPLE_ERROR("Tried to dereference unbound"); }
-
-DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedTypeStampWtag(size_t to, core::T_O* objP) {
+[[noreturn]] DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedTypeStampWtag(size_t to, core::T_O* objP) {
   size_t expectedStamp = STAMP_UNSHIFT_WTAG(to);
 #ifdef DEBUG_RUNTIME
   // This is a really low level debug code appropriate when debugging the runtime
@@ -248,7 +240,7 @@ DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedTypeStampWtag(size_t to, core::T_O
   TYPE_ERROR(obj, expectedClassSymbol);
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expected_class_id, class_id given_class_id, core::T_O* objP) {
+[[noreturn]] DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expected_class_id, class_id given_class_id, core::T_O* objP) {
   if (expected_class_id >= _lisp->classSymbolsHolder().size()) {
     core::lisp_error_simple(
         __FUNCTION__, __FILE__, __LINE__,
@@ -277,37 +269,36 @@ DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expected_class_id, c
   TYPE_ERROR(obj, expectedSym);
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastToFixnum(class_id from_typ, core::T_O* objP) {
+[[noreturn]] DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastToFixnum(class_id from_typ, core::T_O* objP) {
   class_id to_typ = reg::registered_class<core::Fixnum_I>::id;
   core::lisp_errorUnexpectedType(to_typ, from_typ, objP);
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O* objP) {
+[[noreturn]] DONT_OPTIMIZE_ALWAYS void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O* objP) {
   lisp_errorUnexpectedType(toType, fromType, objP);
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastStampWtag(size_t to, core::T_O* objP) {
+[[noreturn]] DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastStampWtag(size_t to, core::T_O* objP) {
   lisp_errorUnexpectedTypeStampWtag((size_t)to, objP);
-  abort();
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromT_O(class_id toType, core::T_O* objP) {
+[[noreturn]] DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromT_O(class_id toType, core::T_O* objP) {
   class_id from_typ = reg::registered_class<core::T_O>::id;
   lisp_errorUnexpectedType(toType, from_typ, objP);
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromT_OToCons_O(core::T_O* objP) {
+[[noreturn]] DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromT_OToCons_O(core::T_O* objP) {
   class_id to_typ = reg::registered_class<core::Cons_O>::id;
   class_id from_typ = reg::registered_class<core::T_O>::id;
   lisp_errorUnexpectedType(to_typ, from_typ, objP);
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromSymbol_O(class_id toType, core::Symbol_O* objP) {
+[[noreturn]] DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromSymbol_O(class_id toType, core::Symbol_O* objP) {
   class_id from_typ = reg::registered_class<core::Symbol_O>::id;
   lisp_errorUnexpectedType(toType, from_typ, reinterpret_cast<core::T_O*>(objP));
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedNil(class_id expectedTyp) {
+[[noreturn]] DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedNil(class_id expectedTyp) {
   if (expectedTyp >= _lisp->classSymbolsHolder().size()) {
     core::lisp_error_simple(
         __FUNCTION__, __FILE__, __LINE__,
