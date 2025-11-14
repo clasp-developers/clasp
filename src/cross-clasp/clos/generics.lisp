@@ -131,8 +131,9 @@
 (defun specializer-form (specializer)
   (etypecase specializer
     (compiler-class `(find-class ',(name specializer)))
-    (eql-specializer `(intern-eql-specializer
-                       ',(mop:eql-specializer-object specializer)))))
+    (compiler-eql-specializer
+     `(intern-eql-specializer
+       ',(mop:eql-specializer-object specializer)))))
 
 (defgeneric build-method-initargs (compiler-method)
   (:method-combination append))
@@ -396,7 +397,7 @@
                  ,@(loop with tc = (cross-clasp:find-compiler-class 't)
                          for spec in (specializers method)
                          for i from 0
-                         if (typep spec 'eql-specializer)
+                         if (typep spec 'compiler-eql-specializer)
                            collect `(aref sp ,i) into body
                            and collect `(let ((e (aref sp ,i))
                                               (o ',(mop:eql-specializer-object spec)))

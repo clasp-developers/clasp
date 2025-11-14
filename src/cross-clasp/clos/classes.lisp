@@ -1,6 +1,8 @@
 (in-package #:cross-clasp.clasp.clos)
 
-(defclass specializer () ())
+(defclass compiler-metaobject () ())
+
+(defclass specializer (compiler-metaobject) ())
 
 ;; These aren't actual host classes. That's because working around MOP's requirements
 ;; for class initialization is more trouble than it's worth.
@@ -51,7 +53,7 @@
     (write (name o) :stream stream))
   o)
 
-(defclass eql-specializer (specializer)
+(defclass compiler-eql-specializer (specializer)
   ((%object :initarg :object :reader mop:eql-specializer-object)))
 
 (defvar *eql-specializers* (make-hash-table))
@@ -62,10 +64,10 @@
   (multiple-value-bind (spec presentp) (gethash object *eql-specializers*)
     (if presentp
         spec
-        (setf (gethash object *eql-specializers*) (make-instance 'eql-specializer
+        (setf (gethash object *eql-specializers*) (make-instance 'compiler-eql-specializer
                                                     :object object)))))
 
-(defclass compiler-slotd ()
+(defclass compiler-slotd (compiler-metaobject)
   ((%name :initarg :name :reader name :reader closer-mop:slot-definition-name)
    (%initform :initarg :initform :reader initform)
    (%initformp :initarg :initformp :reader initformp :type boolean)
@@ -87,7 +89,7 @@
     (write (name o) :stream stream))
   o)
 
-(defclass compiler-method-combination ()
+(defclass compiler-method-combination (compiler-metaobject)
   ((%name :initarg :name :reader name)
    (%options :initarg :options :reader options)))
 
@@ -96,7 +98,7 @@
   (make-instance 'compiler-method-combination
     :name (first spec) :options (rest spec)))
 
-(defclass compiler-generic ()
+(defclass compiler-generic (compiler-metaobject)
   ((%name :initarg :name :reader name)
    (%lambda-list :initarg :lambda-list :reader lambda-list)
    (%required-parameters :initarg :reqargs :reader required-parameters)
@@ -135,7 +137,7 @@
     (write (name o) :stream stream))
   o)
 
-(defclass compiler-method ()
+(defclass compiler-method (compiler-metaobject)
   ((%gf :initarg :gf :reader gf)
    (%lambda-list :initarg :lambda-list :reader lambda-list)
    (%specializers :initarg :specializers :reader specializers)
