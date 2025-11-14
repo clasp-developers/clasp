@@ -426,9 +426,8 @@ SimpleCoreFun_sp makeSimpleCoreFunFromGenerator(SimpleCoreFunGenerator_sp origin
   List_sp epIndices = gc::As<List_sp>(original->_entry_point_indices);
   size_t num = cl__length(epIndices);
   if (num != ClaspXepFunction::Entries) {
-    printf("%s:%d:%s %lu is not enough entry_points for a ClaspXepFunction expected %d\n", __FILE__, __LINE__, __FUNCTION__, num,
-           ClaspXepFunction::Entries);
-    abort();
+    SIMPLE_ERROR("{} is not enough entry_points for a ClaspXepFunction expected {}\n", num,
+                 ClaspXepFunction::Entries);
   }
   ClaspXepTemplate xepFunction;
   size_t cur = 0;

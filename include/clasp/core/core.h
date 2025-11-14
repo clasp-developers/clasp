@@ -485,7 +485,6 @@ class SimpleVector_O;
 class SimpleVector_byte8_t_O;
 
 [[noreturn]] void lisp_error_sprintf(const char* file, int lineno, const char* function, const char* fmt, ...);
-[[noreturn]] void lisp_errorDereferencedNonPointer(core::T_O* objP);
 [[noreturn]] void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O* objP);
 [[noreturn]] void lisp_errorBadCastStampWtag(size_t toStampWtag, core::T_O* objP);
 [[noreturn]] void lisp_errorBadCastFromT_O(class_id toType, core::T_O* objP);
@@ -494,10 +493,7 @@ class SimpleVector_byte8_t_O;
 [[noreturn]] void lisp_errorBadCastFromSymbol_O(class_id toType, core::Symbol_O* objP);
 [[noreturn]] void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O* objP);
 [[noreturn]] void lisp_errorUnexpectedNil(class_id expectedTyp);
-[[noreturn]] void lisp_errorDereferencedNil();
 [[noreturn]] void lisp_error_no_stamp(void* obj);
-[[noreturn]] void lisp_errorDereferencedUnbound();
-[[noreturn]] void lisp_errorIllegalDereference(void* v);
 [[noreturn]] void lisp_errorExpectedList(core::T_O* objP);
 
 template <typename To, typename From, typename ObjPtrType> [[noreturn]] void lisp_errorCast(ObjPtrType objP) {
