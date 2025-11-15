@@ -64,6 +64,7 @@
   (list :extensions #'split-keywords
         :skip-sync #'split-keywords
         :jobs #'parse-integer
+        :pin #'parse-integer
         :build-mode #'parse-keyword
         :build-path #'parse-namestring))
 
@@ -139,5 +140,6 @@
   (apply #'uiop:symbol-call "KOGA"
                             (cond (help "HELP")
                                   ((getf initargs :archive) "ARCHIVE")
+                                  ((getf initargs :pin) "PIN")
                                   (t "SETUP"))
                             initargs))
