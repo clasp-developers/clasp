@@ -13,3 +13,10 @@
                   ,(namestring (maclina.compile-file:source-location-pathname object)))
             :fp ',(car (maclina.compile-file:source-location-position object))
             :l 0 :c 0))) ; FIXME
+
+;;; KLUDGE
+(defmethod maclina.compile-file:make-load-form
+    ((client ct-client) (object maclina.compile-file:source-location)
+     &optional environment)
+  (declare (ignore environment))
+  'nil)

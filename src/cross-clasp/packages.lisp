@@ -373,7 +373,7 @@
                     (#:ext #:cross-clasp.clasp.ext)
                     (#:cst #:cross-clasp.clasp.concrete-syntax-tree))
   (:shadow #:proclaim #:constantp)
-  (:export #:client)
+  (:export #:client #:ct-client)
   (:export #:fill-environment)
   (:export #:find-compiler-class #:gf-info)
   (:import-from #:cross-clasp.clasp.ext #:constant-form-value)

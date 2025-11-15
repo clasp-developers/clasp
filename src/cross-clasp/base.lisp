@@ -326,6 +326,9 @@
                        ;; used in CLOS, replaced in target
                        clos::parse-specialized-lambda-list
                        clos::fixup-method-lambda-list clos::method-lambda
+                       ;; used specifically to reconstruct compiler metaobjects
+                       ;; in CFASL loading
+                       (setf slot-value)
                        ;; FIXME: Used in common-macros defmacro expansions
                        ecclesia:list-structure
                        ext:parse-compiler-macro ext:parse-deftype
@@ -448,6 +451,16 @@
   ;; to use our own instead.
   (loop for s being the external-symbols of "CL"
         do (setf (clostrum:find-class client rte s) nil))
+  ;; These exist in the compiler (but not at load time!) so that we can load the
+  ;; CFASLs of clos/hierarchy.lisp and so on.
+  (loop for cs in '(clos::compiler-class clos::compiler-eql-specializer
+                    clos::compiler-slotd clos::direct-slotd clos::effective-slotd
+                    clos::compiler-method-combination clos::compiler-generic
+                    clos::compiler-method clos::compiler-reader
+                    clos::compiler-writer clos::effective-reader
+                    clos::effective-writer)
+        for c = (find-class cs)
+        do (setf (clostrum:find-class client rte cs) c))
   ;; also copies over many constants we don't want.
   ;; They will be defined in runtime-variables.lisp or the library.
   ;; The only ones we want to keep are
@@ -475,30 +488,3 @@
     (clostrum:make-parameter m:*client* *build-rte* '*features*
                              (initial-features features)))
   (values))
-
-(defun build (input-files output-files source-pathnames)
-  (let ((*compile-verbose* t) (*compile-print* t)
-        ;; COMPILER instead of CMP so that we get Clasp's package,
-        ;; not the local package nickname.
-        ;; We disable Cleavir because it's too slow:
-        ;; The build compiles a _lot_ of macroexpanders, mostly for CLOS,
-        ;; and constructing CSTs for their bodies takes positively
-        ;; stupid amounts of time. FIXME?
-        #+clasp(compiler:*cleavir-compile-hook* nil)
-        #+clasp(maclina.compile-file::*module-native-compiler*
-                 #'module-native-compiler))
-    (handler-bind
-        (;; SBCL's script processor muffles style warnings, which is
-         ;; pretty unfortunate for us, so print them ourselves here.
-         #+sbcl
-         (style-warning (lambda (w)
-                          (format *error-output* "~&WARNING: ~a~%" w)
-                          (muffle-warning w))))
-      (maclina.compile:with-compilation-unit ()
-        (loop for input in input-files
-              for output in output-files
-              for source in source-pathnames
-              do (maclina.compile-file:compile-file input :output-file output
-                                                          :environment *build-rte*
-                                                          :reader-client *reader-client*
-                                                          :source-pathname source))))))

@@ -33,4 +33,5 @@
                                                         "condition-system-macros"
                                                         "mp-macros" "mp-atomics"
                                                         "define-unicode-tables"
-                                                        "cst" "packages"))))
+                                                        "cst" "packages"))
+               (:file "build" :depends-on ("base" "packages"))))

@@ -596,6 +596,13 @@
       (format nil "~{\"~/ninja:escape/\"~^ ~}"
               (mapcar #'source-logical-namestring sources))))
 
+(defun source-fasl (source &key (type "fasl"))
+  (make-source-output source
+                      :type type
+                      :root (if (eq (source-root source) :variant-generated)
+                                :variant-lib-generated
+                                :variant-lib)))
+
 (defun jupyter-kernel-path (configuration name &key system)
   (declare (ignore configuration))
   (merge-pathnames (make-pathname :directory (list :relative
@@ -671,14 +678,11 @@
     (ninja:write-build output-stream :generate-encodings
                        :inputs (list (make-source "tools-for-build/encodingdata.txt" :code))
                        :outputs (list generated-encodings.lisp))
-    (let ((fasls
-            (mapcar (lambda (x)
-                      (make-source-output x
-                                          :type "fasl"
-                                          :root (if (eq (source-root x) :variant-generated)
-                                                    :variant-lib-generated
-                                                    :variant-lib)))
-                    sources)))
+    (let ((fasls (mapcar #'source-fasl sources))
+          (outputs ; interleaved fasls and cfasls
+            (loop for source in sources
+                  collect (source-fasl source)
+                  collect (source-fasl source :type "cfasl"))))
       (ninja:write-build output-stream :compile-bytecode-image
                          :inputs (list* (make-source "tools-for-build/character-names.sexp"
                                                      :code)
@@ -686,19 +690,13 @@
                                         sources)
                          :sources (make-kernel-source-list
                                    configuration sources)
-                         :outputs fasls)
+                         :outputs outputs)
       (ninja:write-build output-stream :link-bytecode-image
                          :inputs fasls
                          :outputs (list vimage)
                          :target target))
     (let ((native-fasls
-            (mapcar (lambda (x)
-                      (make-source-output x
-                                          :type "nfasl"
-                                          :root (if (eq (source-root x) :variant-generated)
-                                                    :variant-lib-generated
-                                                    :variant-lib)))
-                    sources)))
+            (mapcar (lambda (x) (source-fasl x :type "nfasl")) sources)))
       (ninja:write-build output-stream :compile-native-image
                          :clasp clasp-with-env
                          :source (make-kernel-source-list configuration sources)
@@ -751,11 +749,7 @@
            (clasp-with-env (wrap-with-env configuration iclasp))
            (eclasp-sources (member #P"src/lisp/kernel/stage/extension/0-begin.lisp" sources :key #'source-path :test #'equal))
            (fasls (mapcar (lambda (x)
-                            (make-source-output x
-                                                :type (fasl-extension configuration)
-                                                :root (if (eq (source-root x) :variant-generated)
-                                                          :variant-lib-generated
-                                                          :variant-lib)))
+                            (source-fasl x :type (fasl-extension configuration)))
                           eclasp-sources)))
       (ninja:write-build output-stream :compile-eclasp
                          :clasp clasp-with-env

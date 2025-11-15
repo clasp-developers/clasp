@@ -7,6 +7,10 @@
                   #+clasp vm-clasp:client)
   ())
 
+;;; A client used for compile-time evaluation. At the moment this just means
+;;; defining some MAKE-LOAD-FORMs differently; see clos/dump.lisp.
+(defclass ct-client (client) ())
+
 (defclass reader-client (maclina.compile-file::reader-client) ())
 
 (defvar *reader-client* (make-instance 'reader-client))

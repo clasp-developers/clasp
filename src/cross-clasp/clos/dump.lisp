@@ -95,3 +95,34 @@
                    (push (cons ',(location object) ,object)
                          (,cache (elt (class-direct-slots ,class)
                                       ,dslotpos)))))))))
+
+;;; The following method is for objects that end up in cfasls but not fasls,
+;;; so we don't have to be nearly as scrupulous - they execute in the compiler's
+;;; environment, not the target primitive clasp, and use the ct-client.
+(defun %make-load-form-saving-slots (object &key (slot-names nil snp)
+                                              environment)
+  (declare (ignore environment))
+  (let* ((class (class-of object))
+         (all-slots (mop:class-slots class))
+         (slot-names
+           (if snp slot-names (mapcar #'mop:slot-definition-name all-slots))))
+    ;; sanity check that slots exist
+    (when snp
+      (loop for sn in slot-names
+            unless (find sn all-slots :key #'mop:slot-definition-name)
+              collect sn into broken
+            finally (when broken
+                      (error "BUG: Missing slots: ~s" broken))))
+    ;; dump
+    (values `(allocate-instance (find-class ',(class-name class)))
+            `(progn ,@(loop for slot-name in slot-names
+                            if (slot-boundp object slot-name)
+                              collect `(setf (slot-value ,object ',slot-name)
+                                             ',(slot-value object slot-name))
+                            else collect `(slot-makunbound ,object ',slot-name))))))
+
+(defmethod maclina.compile-file:make-load-form ((client cross-clasp:ct-client)
+                                                (object compiler-metaobject)
+                                                &optional env)
+  (declare (ignore env))
+  (%make-load-form-saving-slots object))
