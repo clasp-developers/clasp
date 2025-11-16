@@ -220,6 +220,7 @@ jobs:
           gpg-connect-agent reloadagent /bye
           echo -e "${{ secrets.PKG_GPG_PASSPHRASE }}" | /usr/lib/gnupg/gpg-preset-passphrase --preset "${{ secrets.PKG_GPG_KEYGRIP }}"
           wget -O PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=clasp-cl-git
+          chmod a+w PKGBUILD
           wget -O pkgver.lisp https://aur.archlinux.org/cgit/aur.git/plain/pkgver.lisp?h=clasp-cl-git
           sed -i "s/clasp\.git/clasp\.git#commit=${{ github.sha }}/g" PKGBUILD
           su build -c 'makepkg --noconfirm --syncdeps'
@@ -250,6 +251,7 @@ jobs:
           gpg-connect-agent reloadagent /bye
           echo -e "${{ secrets.PKG_GPG_PASSPHRASE }}" | /usr/lib/gnupg/gpg-preset-passphrase --preset "${{ secrets.PKG_GPG_KEYGRIP }}"
           wget -O PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=cando-git
+          chmod a+w PKGBUILD
           wget -O pkgver.lisp https://aur.archlinux.org/cgit/aur.git/plain/pkgver.lisp?h=cando-git
           sed -i "s/clasp\.git/clasp\.git#commit=${{ github.sha }}/g" PKGBUILD
           su build -c 'makepkg --noconfirm --syncdeps'
