@@ -62,7 +62,7 @@ jobs:
         brew upgrade
         brew install boost fmt gmp llvm@19 lld ninja pkg-config sbcl netcdf
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - uses: conda-incubator/setup-miniconda@v3.2.0
       if: matrix.build == 'cando'
