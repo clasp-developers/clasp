@@ -44,7 +44,9 @@
   (setf *readtable* (copy-readtable nil)))
 
 (in-package :core)
-(export '(make-queue queuep atomic-enqueue dequeue dequeue-timed queue-count queue-emptyp))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '(make-queue queuep atomic-enqueue dequeue dequeue-timed queue-count queue-emptyp))
+  ) ; eval-when
 
 #+(or)
 (eval-when (:compile-toplevel :execute)

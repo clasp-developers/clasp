@@ -161,7 +161,7 @@
 ;;; Given a bytecode function, return a compiled native function.
 ;;; Used for CL:COMPILE.
 (defun compile-function (function
-                         &key (abi clasp-cleavir:*abi-x86-64*)
+                         &key (abi clasp-cleavir::*abi-x86-64*)
                            (system clasp-cleavir:*clasp-system*)
                            (disassemble nil))
   (multiple-value-bind (module funmap)
@@ -183,7 +183,7 @@
 ;;; in it, and install them as new simple funs. Return value irrelevant.
 ;;; Used by autocompilation.
 (defun compile-module (module
-                       &key (abi clasp-cleavir:*abi-x86-64*)
+                       &key (abi clasp-cleavir::*abi-x86-64*)
                          (system clasp-cleavir:*clasp-system*))
   (multiple-value-bind (irmodule funmap) (compile-bcmodule module)
     (clasp-cleavir::bir-transformations irmodule system)

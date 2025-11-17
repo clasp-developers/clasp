@@ -368,3 +368,6 @@ Evaluates FORM, outputs the allocations that took place for the evaluation to
          (core:fmt t "Compiling with memory-ramp DISABLED%N")
          (funcall (lambda () (progn ,@body))))
        (do-memory-ramp (lambda () (progn ,@body)) ,pattern)))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '(with-memory-ramp)))

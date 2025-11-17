@@ -167,14 +167,14 @@
                       (when (eq type :input)
                         (close output))
                       (push pipe to-remove)))))
-    (si:until (or (null pipes)
+    (loop until (or (null pipes)
                   (member (external-process-wait process nil)
                           '(:exited :signaled :abort :error)))
-      (thunk)
-      ;; remove from the list exhausted streams
-      (when to-remove
-        (setf pipes (set-difference pipes to-remove)))
-      (sleep 0.001))
+          do (thunk)
+             ;; remove from the list exhausted streams
+             (when to-remove
+               (setf pipes (set-difference pipes to-remove)))
+             (sleep 0.001))
     ;; something may still be in pipes after child termination
     (thunk)))
 
@@ -315,7 +315,7 @@
               (warn "EXT:RUN-PROGRAM: Ignoring virtual stream I/O argument.")))
 
         (if wait
-            (ext:external-process-wait process t)
+            (external-process-wait process t)
             (gctools:finalize process #'finalize-external-process))
 
         (values (if (and stream-read stream-write)

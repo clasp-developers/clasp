@@ -51,6 +51,9 @@ Builds a new function which accepts any number of arguments but always outputs N
   (when (member name *alien-declarations*)
     (error "Symbol ~s is a declaration specifier and cannot be used to name a new type" name)))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '(create-type-name)))
+
 (defvar *type-expanders* (make-hash-table :test #'eq :thread-safe t))
 
 (defun ext:type-expander (name)

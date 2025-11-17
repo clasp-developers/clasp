@@ -1,5 +1,6 @@
 (in-package #:mp)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (export '(;; locks
           with-lock with-rwlock
           ;; processes
@@ -21,3 +22,4 @@
           without-interrupts with-interrupts with-local-interrupts
           with-restored-interrupts allow-with-interrupts interruptiblep
           ))
+) ; eval-when

@@ -1,5 +1,6 @@
 (in-package #:ext)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (import '(cmp::muffle-note
           core:argc
           core:argv
@@ -23,7 +24,11 @@
           gctools:finalize
           gctools:garbage-collect
           gctools:save-lisp-and-die))
+)
 
+;;; must be a separate top level form so that the symbols
+;;; are imported before they are read.
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (export '(*module-provider-functions*
           *source-location-kinds*
           current-source-location
@@ -125,3 +130,4 @@
           do-c++-iterator map-c++-iterator
           ;; Misc
           printing-char-p))
+) ; eval-when

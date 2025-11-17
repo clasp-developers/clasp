@@ -16,6 +16,7 @@
            #:do-not-funcall-special-operator #:wrong-number-of-arguments
            #:odd-keywords #:unrecognized-keyword-argument-error
            #:simple-parse-error #:simple-reader-error)
+  (:export #:defconstant-equal)
   (:export #:check-pending-interrupts #:terminal-interrupt
            #:signal-code-alist)
   ;; Clasp usually only defines these if the underlying OS has the given signal.
@@ -175,7 +176,9 @@
   (:export #:slot-value-using-class)
   (:export #:standard-instance-access
            #:funcallable-standard-instance-access)
-  (:export #:set-funcallable-instance-function #:get-funcallable-instance-function))
+  (:export #:set-funcallable-instance-function #:get-funcallable-instance-function)
+  (:export #:no-applicable-method-error)
+  (:export #:generic-function-name))
 
 (defpackage #:cross-clasp.clasp.mp
   (:use #:cl)
@@ -202,7 +205,9 @@
            #:interactive-interrupt #:simple-interrupt #:simple-interactive-interrupt
            #:cancellation-interrupt #:call-interrupt #:call-interrupt-function
            #:suspension-interrupt #:posix-interrupt)
-  (:export #:get-atomic-expansion #:define-atomic-expander
+  (:export #:atomic #:cas #:atomic-incf #:atomic-push #:atomic-pop
+           #:atomic-update
+           #:get-atomic-expansion #:define-atomic-expander
            #:not-atomic #:not-atomic-place))
 
 (defpackage #:cross-clasp.clasp.llvm-sys
@@ -242,6 +247,7 @@
            #:local-macro-info/make
            #:bytecompile #:bytecompile-into)
   (:export #:with-atomic-file-rename)
+  (:export #:register-global-function-def)
   (:export #:*source-locations*)
   (:export #:*btb-compile-hook* #:*cleavir-compile-hook*))
 

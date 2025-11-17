@@ -1,4 +1,6 @@
 (in-package :cmp)
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (export '(with-debug-info-source-position
           code-walk
           calculate-cleavir-lambda-list-analysis
@@ -166,6 +168,7 @@
           warn-icsp-iesp-both-specified
           register-global-function-def
           register-global-function-ref
+          known-function-p
           safe-system
           system-data-layout
           jit-constant-uintptr_t
@@ -398,3 +401,4 @@
 (export '(*cst-client*
           clasp-eclector-client-mixin
           clasp-cst-client))
+) ; eval-when

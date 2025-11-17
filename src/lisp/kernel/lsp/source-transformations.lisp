@@ -113,5 +113,5 @@
           ((2) `(not (,fun ,(first args) ,(second args))))
           (otherwise form))
         form))
-  (export '(expand-uncompare) "CORE")
+  (export '(expand-associative expand-compare expand-uncompare) "CORE")
   )

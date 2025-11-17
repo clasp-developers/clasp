@@ -369,9 +369,9 @@
 
 (defun codegen-callback (signature var &key (c-name "callback"))
   (let* ((rett-kw (signature-return-type signature))
-         (rett (clasp-ffi:safe-translator-type rett-kw))
+         (rett (safe-translator-type rett-kw))
          (args-kws (signature-argument-types signature))
-         (argsts (mapcar #'clasp-ffi:safe-translator-type args-kws))
+         (argsts (mapcar #'safe-translator-type args-kws))
          (type (llvm-sys:function-type-get rett argsts))
          (llfun (cmp:irc-function-create type 'llvm-sys:external-linkage
                                          c-name cmp:*the-module*))

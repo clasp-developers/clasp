@@ -12,6 +12,7 @@
 
 (in-package "CLOS")
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (export '(WITH-SLOTS WITH-ACCESSORS UPDATE-INSTANCE-FOR-REDEFINED-CLASS
 	  UPDATE-INSTANCE-FOR-DIFFERENT-CLASS STANDARD-METHOD
 	  STANDARD SLOT-UNBOUND SLOT-MISSING SLOT-MAKUNBOUND
@@ -130,3 +131,4 @@
 (export '(start-profiling stop-profiling
           report-profiling profiling-data
           with-profiling))
+) ; eval-when
