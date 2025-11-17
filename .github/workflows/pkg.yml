@@ -50,7 +50,7 @@ jobs:
           docker-image: ubuntu:noble
           extra-build-deps: ca-certificates netbase
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: noble_clasp
           path: debian/artifacts/*.deb
@@ -75,7 +75,7 @@ jobs:
           docker-image: ubuntu:noble
           extra-build-deps: ca-certificates netbase
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: noble_cando
           path: debian/artifacts/*.deb
@@ -136,7 +136,7 @@ jobs:
           docker-image: debian:bookworm
           extra-build-deps: ca-certificates netbase g++-12
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: bookworm_clasp
           path: debian/artifacts/*.deb
@@ -161,7 +161,7 @@ jobs:
           docker-image: debian:bookworm
           extra-build-deps: ca-certificates netbase g++-12
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: bookworm_cando
           path: debian/artifacts/*.deb
@@ -226,7 +226,7 @@ jobs:
           su build -c 'makepkg --noconfirm --syncdeps'
           gpg --detach-sign --no-armor *.zst
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: arch_clasp
           path: |
@@ -257,7 +257,7 @@ jobs:
           su build -c 'makepkg --noconfirm --syncdeps'
           gpg --detach-sign --no-armor *.zst
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: arch_cando
           path: |
@@ -291,7 +291,7 @@ jobs:
           cd arch
           repo-add --key ${{ steps.import_gpg.outputs.keyid }} --sign thirdlaw.db.tar.gz *.pkg.tar.zst
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: arch_repo
           path: arch
