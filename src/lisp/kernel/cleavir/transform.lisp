@@ -390,7 +390,7 @@ Optimizations are available for any of:
 (deftransform-type-predicate core:single-float-p single-float)
 (deftransform-type-predicate core:double-float-p double-float)
 (deftransform-type-predicate integerp integer)
-(deftransform-type-predicate core:fixnum fixnum)
+(deftransform-type-predicate core:fixnump fixnum)
 
 (deftransform-type-predicate random-state-p random-state)
 
