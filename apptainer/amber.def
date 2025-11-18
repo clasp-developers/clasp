@@ -1,0 +1,57 @@
+BootStrap: docker
+From: debian:latest
+
+%files
+    $HOME/Downloads/AmberTools23.tar.bz2 /downloads/AmberTools23.tar.bz2
+
+%post
+    apt upgrade
+    apt update
+    apt -y install tcsh make \
+               gcc gfortran g++ \
+               flex bison patch bc \
+               libbz2-dev libzip-dev \
+               xorg-dev wget cmake \
+               mpich openssh-client linux-perf
+    apt install --yes bzip2
+    cd /opt
+    bunzip2 -c /downloads/AmberTools23.tar.bz2 | tar xvf - 
+    cd /opt/amber22_src/build
+    mkdir /opt/amber22
+    cmake /opt/amber22_src \
+	  -DCMAKE_INSTALL_PREFIX=/opt/amber22 \
+	  -DCOMPILER=GNU \
+	  -DBUILD_GUI=FALSE \
+	  -DMPI=FALSE -DCUDA=FALSE -DINSTALL_TESTS=FALSE \
+	  -DDOWNLOAD_MINICONDA=FALSE \
+	  -DBUILD_PYTHON=FALSE \
+	  2>&1 | tee cmake.log
+    make -j20 install
+    ln -s /opt/amber22 /opt/amber
+    apt install --yes binutils libboost-all-dev clang-18 libclang-cpp18-dev libclang-18-dev libgmp-dev libfmt-dev libunwind-dev llvm-18 llvm-18-dev ninja-build sbcl jupyterlab emacs openssh-client openssh-server libnetcdf-dev expat gocryptfs nodejs npm strace emacs libelf-dev wget
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh
+    bash Miniconda3-latest-Linux-aarch64.sh -b -p /home/cando/miniconda3
+    rm -rf Miniconda3-latest-Linux-aarch64.sh
+    export PATH="/home/cando/miniconda3/bin:${PATH}"
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+    conda install -y -c conda-forge jupyterlab sidecar # ambertools not available
+    jupyter-lab build
+#    cd /mnt
+#    ./koga --reproducible-build --extensions=cando --build-mode=bytecode-faso --llvm-config="/usr/bin/llvm-config-18" --build-path=build-apptainer/
+#    ninja -C build-apptainer
+#    ninja -C build-apptainer install
+#    mkdir -p /home/cando/
+#    chmod ugo+rwx /home/cando/
+#    tar -xvf /mnt/systems.tar -C /home/cando
+#    whoami
+#    ls /home/
+#    chmod -R ugo+rw /home/cando/
+
+%environment
+    export AMBERHOME=/opt/amber
+#    export LD_LIBRARY_PATH=/usr/local/lib
+#    export XDG_CACHE_HOME=/home/cando/.cache
+
+
+
