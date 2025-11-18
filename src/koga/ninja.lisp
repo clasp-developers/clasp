@@ -157,7 +157,7 @@
                     :description "Building Clasp bytecode image"
                     :restat 1)
   (ninja:write-rule output-stream :compile-native-image
-                    :command "$clasp --norc --disable-mpi --image $image --load \"SYS:SRC;LISP;MODULES;ASDF;BUILD;ASDF.LISP\" --eval \"(provide :asdf)\" --load compile-bytecode-image.lisp --quit -- $in --output $out --sources $sources"
+                    :command "$clasp --norc --disable-mpi --image $image --load \"SYS:SRC;LISP;MODULES;ASDF;BUILD;ASDF.LISP\" --eval \"(provide :asdf)\" --load compile-native-image.lisp --quit -- $in --output $out --sources $sources --cfasls $cfasls"
                     :description "Compiling Clasp native image"
                     :restat 1
                     :pool "console")
@@ -695,8 +695,13 @@
                          :inputs fasls
                          :outputs (list vimage)
                          :target target))
-    (let ((native-fasls
-            (mapcar (lambda (x) (source-fasl x :type "nfasl")) sources)))
+    (let ((nfasls (loop for source in sources
+                        collect (source-fasl source :type "nfasl")))
+          (cfasls
+            (format nil "~{\"~/ninja:escape/\"~^ ~}"
+                    (loop for source in sources
+                          collect (source-fasl source
+                                               :type "cfasl")))))
       (ninja:write-build output-stream :compile-native-image
                          :clasp clasp-with-env
                          :source (make-kernel-source-list configuration sources)
@@ -705,13 +710,14 @@
                                         features.sexp
                                         sources)
                          :sources (make-kernel-source-list configuration sources)
+                         :cfasls cfasls
                          :implicit-inputs (list iclasp vimage)
                          :image vimage
-                         :outputs native-fasls)
+                         :outputs nfasls)
       (ninja:write-build output-stream :link-bytecode-image
                          :clasp clasp-with-env
                          :outputs (list nimage)
-                         :inputs native-fasls))
+                         :inputs nfasls))
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "iclasp")
                                      image

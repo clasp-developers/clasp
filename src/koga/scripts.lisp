@@ -184,6 +184,25 @@
          (sourcepaths (subseq sources (1+ b2))))
     (uiop:symbol-call \"CROSS-CLASP\" \"BUILD\" input output sourcepaths)))"))
 
+(defmethod print-prologue (configuration (name (eql :compile-native-image)) output-stream)
+  (declare (ignore configuration))
+  (print-asdf-stub output-stream t :cross-clasp)
+  (format output-stream "
+(destructuring-bind (character-names features &rest sources)
+    (uiop:command-line-arguments)
+  (uiop:symbol-call \"CROSS-CLASP\" \"INITIALIZE\" character-names features)
+  (let* ((breaker (position \"--output\" sources :test #'string=))
+         (_ (unless breaker (error \"Need --output to compile-bytecode-image\")))
+         (b2 (position \"--sources\" sources :test #'string=))
+         (_2 (unless b2 (error \"Need --sources to compile-bytecode-image\")))
+         (b3 (position \"--cfasls\" sources :test #'string=))
+         (_3 (unless b3 (error \"Need --crasls to compile-bytecode-image\")))
+         (input (subseq sources 0 breaker))
+         (output (subseq sources (1+ breaker) b2))
+         (sourcepaths (subseq sources (1+ b2) b3))
+         (cfasls (subseq sources (1+ b3))))
+    (uiop:symbol-call \"CROSS-CLASP\" \"BUILD-NATIVE\" input output sourcepaths cfasls)))"))
+
 (defmethod print-prologue (configuration (name (eql :compile-systems)) output-stream)
   (declare (ignore configuration))
   (format output-stream "#-asdf (require :asdf)~%
