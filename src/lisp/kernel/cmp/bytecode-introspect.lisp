@@ -254,7 +254,7 @@
            if (eql ,mnemonic :long)
              do (setf ,longp t ,ip (1+ ,ip))
            else
-             do (let ((,opip ,ip))
+             do (let ((,opip (if ,longp (1- ,ip) ,ip)))
                   (incf ,ip)
                   (let ((,args
                           (if (eq ,mnemonic :parse-key-args)
