@@ -1679,15 +1679,16 @@
             (allocate-module-constants cmap)
             (clasp-cleavir::layout-module ir abi)
             (cmp::potentially-save-module)))
-        (clasp-cleavir::gen-function-vector fvector fvector-name)
-        ;;(llvm-sys:dump-module module)
-        (make-instance 'nmodule
-          :code (cmp::generate-obj-asm-stream module :simple-vector-byte8
-                                              'llvm-sys:code-gen-file-type-object-file
-                                              cmp::*default-reloc-model*)
-          :id module-id
-          :fmap (compute-native-fmap fmap function-info)
-          :literals ctable)))))
+        (clasp-cleavir::gen-function-vector fvector fvector-name))
+      ;;(llvm-sys:dump-module module)
+      (cmp:irc-verify-module-safe module))
+    (make-instance 'nmodule
+      :code (cmp::generate-obj-asm-stream module :simple-vector-byte8
+                                          'llvm-sys:code-gen-file-type-object-file
+                                          cmp::*default-reloc-model*)
+      :id module-id
+      :fmap (compute-native-fmap fmap function-info)
+      :literals ctable)))
 
 (defun compile-cmodule (bytecode literals-info debug-info module-id pathname)
   (multiple-value-bind (ir funmap cmap)
