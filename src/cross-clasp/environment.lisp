@@ -11,10 +11,6 @@
 ;;; defining some MAKE-LOAD-FORMs differently; see clos/dump.lisp.
 (defclass ct-client (client) ())
 
-(defclass reader-client (maclina.compile-file::reader-client) ())
-
-(defvar *reader-client* (make-instance 'reader-client))
-
 (defclass run-time-environment (clostrum-basic:run-time-environment) ())
 
 (define-condition substituting-package (warning)
@@ -36,7 +32,6 @@
 (defun cross-compile-file (input-file &rest keys)
   (apply #'maclina.compile-file:compile-file input-file
          :environment *build-rte*
-         :reader-client *reader-client*
          keys))
 
 (defmethod clostrum-sys:variable-cell :around (client (environment run-time-environment) symbol)

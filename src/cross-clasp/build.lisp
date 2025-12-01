@@ -69,7 +69,6 @@
   (maclina.compile-file:compile-file
    input :output-file output
          :environment *build-rte*
-         :reader-client *reader-client*
          :evaluation-client ct-client
          :output-cfasl cfasl
          :source-pathname source))
@@ -80,7 +79,6 @@
   (maclina.compile-file:compile-file
    input :output-file output
          :environment *build-rte*
-         :reader-client *reader-client*
          :evaluation-client ct-client
          :source-pathname source))
 
