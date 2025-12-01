@@ -37,7 +37,6 @@ THE SOFTWARE.
 #include <vector>
 #include <clasp/clbind/typeid.h>
 #include <clasp/clbind/class_rep.h>
-#include <boost/scoped_ptr.hpp>
 #include <clasp/clbind/inheritance.fwd.h>
 
 namespace clbind {
@@ -59,8 +58,9 @@ public:
   void dump(FILE* fout);
 
 private:
+  // Indirection to hide the details of impl. Pointless otherwise. FIXME?
   class impl;
-  boost::scoped_ptr<impl> m_impl;
+  std::unique_ptr<impl> m_impl;
 };
 
 // Maps a type_id to a class_id. Note that this actually partitions the
@@ -138,8 +138,8 @@ template <class S, class T> struct dynamic_cast_ {
   static void* execute(void* p) { return dynamic_cast<T*>(static_cast<S*>(p)); }
 };
 
-// Thread safe class_id allocation.
-class_id allocate_class_id(type_id const& cls);
+// Thread safe class_id allocation (in core/foundation.cc).
+class_id allocate_class_id(const std::type_info& cls);
 
 template <class T> struct registered_class {
   static class_id const id;

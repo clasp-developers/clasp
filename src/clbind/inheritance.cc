@@ -238,10 +238,6 @@ void cast_graph::impl::dump_impl(FILE* fout) {
 }
 
 std::pair<void*, int> cast_graph::cast(void* p, class_id src, class_id target, class_id dynamic_id, void const* dynamic_ptr) const {
-#if 0
-  printf("%s:%d:%s p=%p src=%lu target=%lu dynamic_id=%lu dynamic_ptr = %p\n",
-         __FILE__, __LINE__, __FUNCTION__, p, src, target, dynamic_id, dynamic_ptr);
-#endif
   return m_impl->cast(p, src, target, dynamic_id, dynamic_ptr);
 }
 

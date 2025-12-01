@@ -828,7 +828,7 @@ struct LispHolder //: public gctools::StackRoot
   virtual ~LispHolder();
 };
 
-class ChangePackage : public gctools::StackBoundClass {
+class ChangePackage {
 private:
   Package_sp _SavedPackage;
 

@@ -41,10 +41,9 @@ THE SOFTWARE.
 #pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
 // #pragma GCC diagnostic ignored "-Wunused-local-typedef"
 #include <filesystem>
-#include <boost/algorithm/string.hpp>
-#include <boost/program_options.hpp>
+#include <algorithm> //transform
+#include <cctype> //toupper
 #pragma GCC diagnostic pop
-// #i n c l u d e	"boost/fstream.hpp"
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/gctools/gc_interface.h>
@@ -1568,7 +1567,7 @@ CL_DEFUN T_sp core__setf_find_class(T_sp newValue, Symbol_sp name) {
 #else
   if (_lisp->bootClassTableIsValid()) {
     if (newValue.nilp()) {
-      printf("%s:%d Trying to (setf-find-class nil %s) when bootClassTableIsValid (while boostrapping)\n", __FILE__, __LINE__,
+      printf("%s:%d Trying to (setf-find-class nil %s) when bootClassTableIsValid (while bootsrapping)\n", __FILE__, __LINE__,
              _rep_(name).c_str());
     }
     return _lisp->boot_setf_findClass(name, gc::As<Instance_sp>(newValue));
@@ -2170,7 +2169,7 @@ Symbol_sp Lisp::internWithDefaultPackageName(string const& defaultPackageName, s
 
 Symbol_sp Lisp::internKeyword(const string& name) {
   string realName = name;
-  boost::to_upper(realName);
+  std::transform(realName.begin(), realName.end(), realName.begin(), ::toupper);
   SimpleBaseString_sp str_real_name = SimpleBaseString_O::make(realName);
   return gc::As<Symbol_sp>(this->_Roots._KeywordPackage->intern(str_real_name));
 }

@@ -116,7 +116,7 @@ public:
 
 // Don't derive from gc::GCObject so that these classes won't be treated as Lisp classes by GC system - thi
 // this will be a problem because some of the have smart_ptr's in them
-class DynamicScopeManager : gctools::StackBoundClass {
+class DynamicScopeManager {
 private:
   VariableCell_sp _Cell;
   T_sp _OldBinding;

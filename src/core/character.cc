@@ -26,10 +26,8 @@ THE SOFTWARE.
 /* -^- */
 // #define DEBUG_LEVEL_FULL
 
-#pragma clang diagnostic push
-// #pragma clang diagnostic ignored "-Wunused-local-typedef"
-#include <boost/algorithm/string.hpp>
-#pragma clang diagnostic pop
+#include <algorithm> //transform
+#include <cctype> //toupper
 #include <clasp/core/foundation.h>
 #include <clasp/core/primitives.h> // core__list_from_vaslist
 #include <clasp/core/common.h>
@@ -443,7 +441,8 @@ CL_DEFUN T_sp cl__char_equal(Vaslist_sp chars) {
 
 Character_sp clasp_character_create_from_name(string const& name) {
   Character_sp ch;
-  string ssup = boost::to_upper_copy(name);
+  string ssup = name;
+  std::transform(ssup.begin(), ssup.end(), ssup.begin(), ::toupper);
   if ((ssup == "TAB") || (ssup == "Tab"))
     ch = clasp_make_standard_character(TAB_CHAR);
   else if ((ssup == "NEWLINE") || (ssup == "Newline"))

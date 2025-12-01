@@ -32,6 +32,7 @@ THE SOFTWARE.
 
 #include <csignal>
 #include <cstdarg>
+#include <typeindex> // allocate_class_id
 #include <dlfcn.h>
 
 #include <clasp/core/foundation.h>
@@ -87,7 +88,7 @@ THE SOFTWARE.
 
 namespace reg {
 
-typedef std::map<type_id, class_id> map_type;
+typedef std::map<std::type_index, class_id> map_type;
 map_type* global_registered_ids_ptr = NULL;
 class_id global_next_id = 0;
 
@@ -112,12 +113,12 @@ void dump_class_ids() {
   }
 }
 
-class_id allocate_class_id(type_id const& cls) {
+class_id allocate_class_id(const std::type_info& cls) {
   //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
   if (global_registered_ids_ptr == NULL) {
     global_registered_ids_ptr = new map_type();
   }
-  std::pair<map_type::iterator, bool> inserted = global_registered_ids_ptr->insert(std::make_pair(cls, global_next_id));
+  std::pair<map_type::iterator, bool> inserted = global_registered_ids_ptr->insert(std::make_pair(std::type_index(cls), global_next_id));
 
   if (inserted.second) {
     //            printf("%s:%d allocate_class_id for %40s %ld\n", __FILE__, __LINE__, cls.name(), id );
@@ -498,14 +499,6 @@ MultipleValues& lisp_multipleValues() {
   //	return &(_lisp->multipleValues());
   return my_thread->_MultipleValues;
 }
-
-#if 0
-[[noreturn]]void errorFormatted(boost::format fmt) {
-  TRY_BOOST_FORMAT_STRING(fmt, fmt_str);
-  dbg_hook(fmt_str.c_str());
-  core__invoke_internal_debugger(nil<core::T_O>());
-}
-#endif
 
 [[noreturn]] void errorFormatted(const string& msg) {
   dbg_hook(msg.c_str());
@@ -1460,24 +1453,6 @@ bool wildcmp(string const& sWild, string const& sRegular) {
   }
   return !*wild;
 }
-
-void StringStack::pop() {
-  HARD_ASSERT(this->parts.size() > 0);
-  this->parts.pop_back();
-};
-
-string StringStack::all(const string& separator) {
-  stringstream ss;
-  ss.str("");
-  if (this->parts.size() > 0) {
-    ss << this->parts[0];
-  }
-  for (uint i = 1; i < this->parts.size(); i++) {
-    ss << separator;
-    ss << this->parts[i];
-  }
-  return ss.str();
-};
 
 const char* trimSourceFilePathName(const char* longName) {
   if (longName == NULL)

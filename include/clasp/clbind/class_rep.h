@@ -48,8 +48,6 @@ THE SOFTWARE.
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include <boost/limits.hpp>
-
 #include <string>
 #include <utility>
 #include <vector>
@@ -96,31 +94,18 @@ public:
   bool cxxClassP() const override { return true; };
   bool cxxDerivableClassP() const override { return this->m_derivable; };
 
-#if 0
- ClassRep_O() : Instance_O(core::lisp_class_rep_class()/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS*/) {
-    printf("%s:%d:%s  create class\n", __FILE__, __LINE__, __FUNCTION__ );
-  };
-#endif
-
   ClassRep_O(core::Instance_sp c) : Instance_O(c) { printf("%s:%d:%s  create class\n", __FILE__, __LINE__, __FUNCTION__); };
 
-  ClassRep_O(core::Instance_sp class_, type_id const& type, core::Symbol_sp name, bool derivable);
-
-#if 0
-  ClassRep_O(const std::string &name, bool derivable);
-#endif
+  ClassRep_O(core::Instance_sp class_, core::Symbol_sp name, bool derivable);
 
 public:
-  static ClassRep_sp create(core::Instance_sp class_, type_id const& mtype, core::Symbol_sp name, bool derivable) {
-    auto val = gctools::GC<ClassRep_O>::allocate(class_, mtype, name, derivable);
+  static ClassRep_sp create(core::Instance_sp class_, core::Symbol_sp name, bool derivable) {
+    auto val = gctools::GC<ClassRep_O>::allocate(class_, name, derivable);
     return val;
   }
   void add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base);
 
   const gctools::Vec0<core::Cons_sp>& bases() const throw() { return m_bases; }
-
-  void set_type(type_id const& t) { m_type = t; }
-  type_id const& type() const throw() { return m_type._value; }
 
   std::string name_() const throw() { return m_name->symbolNameAsString(); }
 
@@ -129,12 +114,6 @@ public:
   detail::class_id_map const& classes() const { return *m_classes._value; }
 
 public:
-  // this is a pointer to the type_info structure for
-  // this type
-  // warning: this may be a problem when using dll:s, since
-  // typeid() may actually return different pointers for the same
-  // type.
-  dont_expose<type_id> m_type;
 
   // a list of info for every class this class derives from
   // the information stored here is sufficient to do

@@ -135,7 +135,9 @@ namespace detail {
 struct derivable_class_registration;
 
 struct derivable_class_registration : registration {
-  derivable_class_registration(char const* name);
+  derivable_class_registration(char const* name, type_id const& type_id_,
+                               class_id id, type_id const& wrapper_type,
+                               class_id wrapper_id, bool derivable);
 
   void register_() const;
 
@@ -164,14 +166,14 @@ struct derivable_class_registration : registration {
 
 struct CLBIND_API derivable_class_base : scope_ {
 public:
-  derivable_class_base(char const* name);
+  derivable_class_base(char const* name, type_id const& type_id_, class_id id,
+                       type_id const& wrapper_type, class_id wrapper_id,
+                       bool derivable);
 
   struct base_desc {
     type_id type;
     int ptr_offset;
   };
-
-  void init(type_id const& type, class_id id, type_id const& wrapped_type, class_id wrapper_id, bool derivable);
 
   void add_base(type_id const& base, cast_function cast);
 
@@ -256,7 +258,10 @@ public:
   }
 
   derivable_class_(scope_& outer_scope, const char* name, default_constructor_type, const char* docstring = "")
-      : derivable_class_base(name), _outer_scope(&outer_scope), scope(*this) {
+    : derivable_class_base(name, typeid(T), reg::registered_class<T>::id,
+                           typeid(WrappedType), reg::registered_class<WrappedType>::id,
+                           isDerivableCxxClass<T>(0)),
+      _outer_scope(&outer_scope), scope(*this) {
 #ifndef NDEBUG
 //            detail::check_link_compatibility();
 #endif
@@ -268,7 +273,12 @@ public:
     this->_outer_scope->operator,(*this);
   }
 
-  derivable_class_(scope_& outer_scope, const char* name, const char* docstring = "") : derivable_class_base(name), scope(*this) {
+  derivable_class_(scope_& outer_scope, const char* name, const char* docstring = "")
+    : derivable_class_base(name, typeid(T), reg::registered_class<T>::id,
+                           typeid(WrappedType), reg::registered_class<WrappedType>::id,
+                           isDerivableCxxClass<T>(0)),
+      scope(*this)
+  {
 #ifndef NDEBUG
 //            detail::check_link_compatibility();
 #endif
@@ -353,8 +363,6 @@ private:
                        " - otherwise how can you create instances of their derived classes?\n",
                        this->name());
     }
-    derivable_class_base::init(typeid(T), reg::registered_class<T>::id, typeid(WrappedType), reg::registered_class<WrappedType>::id,
-                               isDerivableCxxClass<T>(0));
 
     //            printf("%s:%d Should I be adding a wrapper cast???\n", __FILE__, __LINE__ );
     add_wrapper_cast<WrappedType>();
