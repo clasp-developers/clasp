@@ -683,17 +683,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 
 namespace llvmo {
 
-static void report_JIT_errors(llvm::Error err) {
-  if (!err) return;
-  string msg_str;
-  llvm::raw_string_ostream msg(msg_str);
-  llvm::handleAllErrors(std::move(err), [&](const ErrorInfoBase &EI) {
-    EI.log(msg);
-    msg << "\n";
-  });
-  SIMPLE_ERROR("JIT session error: {}", msg.str());
-}
-
 ClaspJIT_O::ClaspJIT_O() {
   llvm::ExitOnError ExitOnErr;
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Initializing ClaspJIT_O\n", __FILE__, __LINE__, __FUNCTION__));
@@ -704,11 +693,9 @@ ClaspJIT_O::ClaspJIT_O() {
   JTMB.setCodeModel(CodeModel::Small);
   JTMB.setRelocationModel(Reloc::Model::PIC_);
   auto TPC = ExitOnErr(orc::SelfExecutorProcessControl::Create(std::make_shared<orc::SymbolStringPool>()));
-  auto ES = std::make_unique<ExecutionSession>(std::move(TPC));
-  ES->setErrorReporter(report_JIT_errors);
   auto J = ExitOnErr(
       LLJITBuilder()
-          .setExecutionSession(std::move(ES))
+          .setExecutionSession(std::make_unique<ExecutionSession>(std::move(TPC)))
           .setNumCompileThreads(0) // <<<<<<< In May 2021 a path will open to use multicores for LLJIT.
           .setJITTargetMachineBuilder(std::move(JTMB))
           .setObjectLinkingLayerCreator([this, &ExitOnErr](ExecutionSession& ES, const Triple& TT) {
