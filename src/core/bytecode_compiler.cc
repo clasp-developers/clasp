@@ -216,7 +216,7 @@ Lexenv_sp Lexenv_O::macroexpansion_environment() {
 }
 
 CL_DEFUN Lexenv_sp make_null_lexical_environment() {
-  return Lexenv_O::make(nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), 0);
+  return Lexenv_O::make_top_level();
 }
 
 void assemble(const Context context, uint8_t opcode, List_sp operands) {
