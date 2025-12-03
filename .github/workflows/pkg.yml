@@ -219,9 +219,9 @@ jobs:
           echo "allow-preset-passphrase" >~/.gnupg/gpg-agent.conf
           gpg-connect-agent reloadagent /bye
           echo -e "${{ secrets.PKG_GPG_PASSPHRASE }}" | /usr/lib/gnupg/gpg-preset-passphrase --preset "${{ secrets.PKG_GPG_KEYGRIP }}"
-          wget -O PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=clasp-cl-git
+          wget -O PKGBUILD https://raw.githubusercontent.com/clasp-developers/aur-clasp-cl-git/refs/heads/master/PKGBUILD
           chmod a+w PKGBUILD
-          wget -O pkgver.lisp https://aur.archlinux.org/cgit/aur.git/plain/pkgver.lisp?h=clasp-cl-git
+          wget -O pkgver.lisp https://raw.githubusercontent.com/clasp-developers/aur-clasp-cl-git/refs/heads/master/pkgver.lisp
           sed -i "s/clasp\.git/clasp\.git#commit=${{ github.sha }}/g" PKGBUILD
           su build -c 'makepkg --noconfirm --syncdeps'
           gpg --detach-sign --no-armor *.zst
@@ -250,9 +250,9 @@ jobs:
           echo "allow-preset-passphrase" >~/.gnupg/gpg-agent.conf
           gpg-connect-agent reloadagent /bye
           echo -e "${{ secrets.PKG_GPG_PASSPHRASE }}" | /usr/lib/gnupg/gpg-preset-passphrase --preset "${{ secrets.PKG_GPG_KEYGRIP }}"
-          wget -O PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=cando-git
+          wget -O PKGBUILD https://raw.githubusercontent.com/clasp-developers/aur-cando-git/refs/heads/master/PKGBUILD
           chmod a+w PKGBUILD
-          wget -O pkgver.lisp https://aur.archlinux.org/cgit/aur.git/plain/pkgver.lisp?h=cando-git
+          wget -O pkgver.lisp https://raw.githubusercontent.com/clasp-developers/aur-cando-git/refs/heads/master/pkgver.lisp
           sed -i "s/clasp\.git/clasp\.git#commit=${{ github.sha }}/g" PKGBUILD
           su build -c 'makepkg --noconfirm --syncdeps'
           gpg --detach-sign --no-armor *.zst
