@@ -84,6 +84,12 @@
 (defun disable-bytecode-file-compiler ()
   (setf *default-output-type* :faso))
 
+(defmacro progv-env (environment symbols values &body forms)
+  `(core:progv-env-function ,environment ,symbols ,values
+                            (lambda ()
+                              (declare (core:lambda-name core::progv-env-lambda))
+                              (progn ,@forms))))
+
 (defun compile-file (input-file
                      &rest args
                      &key
@@ -118,19 +124,18 @@
                        (optimize-level *optimization-level*)
                      &allow-other-keys)
   ;; These are all just passed along to other functions.
-  (declare (ignore output-file environment type
+  (declare (ignore output-file type
                    image-startup-position optimize optimize-level))
   "See CLHS compile-file."
   (with-compilation-unit ()
     (let* ((output-path (apply #'compile-file-pathname input-file args))
-           (*readtable* *readtable*) (*package* *package*)
            (*optimize* *optimize*) (*policy* *policy*)
-           (*compile-file-pathname*
+           (compile-file-pathname
              (pathname (merge-pathnames input-file)))
-           (*compile-file-truename*
-             (translate-logical-pathname *compile-file-pathname*))
+           (compile-file-truename
+             (translate-logical-pathname compile-file-pathname))
            (*compile-file-source-debug-pathname*
-             (if cfsdpp source-debug-pathname *compile-file-truename*))
+             (if cfsdpp source-debug-pathname compile-file-truename))
            (*compile-file-file-scope*
              (core:file-scope *compile-file-source-debug-pathname*))
            ;; bytecode compilation can't be done in parallel at the moment.
@@ -139,20 +144,27 @@
            (execution (if (eq output-type :bytecode)
                           :serial
                           execution)))
-      (with-open-file (source-sin input-file
-                                  :external-format external-format)
-        (with-compilation-results ()
-          (when *compile-verbose*
-            (format t "~&; Compiling file: ~a~%"
-                    (namestring input-file)))
-          (ecase execution
-            ((:serial :parallel)
-             (apply #'compile-stream/serial source-sin output-path args))
-            #+(or)
-            (:parallel
-             ;; defined later in compile-file-parallel.lisp.
-             (apply #'compile-stream/parallel source-sin output-path
-                    args))))))))
+      ;; Many of the special variables (e.g. *optimize*) are not expected to be
+      ;; used by macroexpanders or other user code, so they can just always be
+      ;; bound in the usual environment. But a few are user-accessible.
+      (progv-env environment
+          '(*readtable* *package* *compile-file-pathname* *compile-file-truename*)
+          ;; FIXME: probably should read *readtable* and *package* from the env
+          (list *readtable* *package* compile-file-pathname compile-file-truename)
+        (with-open-file (source-sin input-file
+                                    :external-format external-format)
+          (with-compilation-results ()
+            (when *compile-verbose*
+              (format t "~&; Compiling file: ~a~%"
+                      (namestring input-file)))
+            (ecase execution
+              ((:serial :parallel)
+               (apply #'compile-stream/serial source-sin output-path args))
+              #+(or)
+              (:parallel
+               ;; defined later in compile-file-parallel.lisp.
+               (apply #'compile-stream/parallel source-sin output-path
+                      args)))))))))
 
 (defun compile-stream/serial (input-stream output-path &rest args
                               &key
