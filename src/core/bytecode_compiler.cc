@@ -212,11 +212,12 @@ Lexenv_sp Lexenv_O::macroexpansion_environment() {
     if (gc::IsA<GlobalMacroInfo_sp>(info) || gc::IsA<LocalMacroInfo_sp>(info))
       new_funs << pair;
   }
-  return Lexenv_O::make(new_vars.cons(), nil<T_O>(), nil<T_O>(), new_funs.cons(), this->decls(), 0);
+  return Lexenv_O::make(new_vars.cons(), nil<T_O>(), nil<T_O>(), new_funs.cons(), this->decls(), 0, global());
 }
 
-CL_DEFUN Lexenv_sp make_null_lexical_environment() {
-  return Lexenv_O::make_top_level();
+CL_LAMBDA(&optional global)
+CL_DEFUN Lexenv_sp make_null_lexical_environment(T_sp global) {
+  return Lexenv_O::make_top_level(global);
 }
 
 void assemble(const Context context, uint8_t opcode, List_sp operands) {
@@ -227,9 +228,6 @@ void assemble(const Context context, uint8_t opcode, List_sp operands) {
     bytecode->vectorPushExtend(clasp_to_integral<uint8_t>(oCar(cur)));
   }
 }
-
-template <typename T>
-[[deprecated]] inline constexpr void print_type(T&& t, const char* msg=nullptr) {}
 
 CL_LAMBDA(code position &rest values);
 CL_DEFUN void assemble_into(SimpleVector_byte8_t_sp code, size_t position, List_sp values) {
@@ -263,11 +261,7 @@ void assemble_maybe_long(const Context context, uint8_t opcode, List_sp operands
   }
 }
 
-CL_DEFUN T_sp var_info(Symbol_sp sym, Lexenv_sp env) {
-  // Local?
-  T_sp info = env->variableInfo(sym);
-  if (info.notnilp())
-    return info;
+static inline T_sp main_env_var_info(Symbol_sp sym) {
   // Constant?
   // (Constants are also specialP, so we have to check constancy first.)
   if (cl__keywordp(sym) || sym->getReadOnly())
@@ -287,17 +281,23 @@ CL_DEFUN T_sp var_info(Symbol_sp sym, Lexenv_sp env) {
   return nil<T_O>();
 }
 
-// Like the above, but returns a std::variant. Good when you don't need
-// to cons up info objects.
-VarInfoV var_info_v(Symbol_sp sym, Lexenv_sp env) {
+// Defined later in Lisp. Lambda list (environment name)
+// returns a variable info or NIL.
+SYMBOL_EXPORT_SC_(CorePkg, fcge_lookup_var);
+
+CL_DEFUN T_sp var_info(Symbol_sp sym, Lexenv_sp env) {
+  // Local?
   T_sp info = env->variableInfo(sym);
-  if (gc::IsA<LexicalVarInfo_sp>(info)) // in_place_type_t?
-    return VarInfoV(LexicalVarInfoV(gc::As_unsafe<LexicalVarInfo_sp>(info)));
-  else if (gc::IsA<SpecialVarInfo_sp>(info))
-    return VarInfoV(SpecialVarInfoV(gc::As_unsafe<SpecialVarInfo_sp>(info)));
-  else if (gc::IsA<SymbolMacroVarInfo_sp>(info))
-    return VarInfoV(SymbolMacroVarInfoV(gc::As_unsafe<SymbolMacroVarInfo_sp>(info)));
-  ASSERT(info.nilp());
+  if (info.notnilp())
+    return info;
+  T_sp global = env->global();
+  if (global.nilp())
+    return main_env_var_info(sym);
+  else
+    return eval::funcall(core::_sym_fcge_lookup_var, global, sym);
+}
+
+static inline VarInfoV main_env_var_info_v(Symbol_sp sym) {
   // Constant?
   if (cl__keywordp(sym) || sym->getReadOnly())
     return VarInfoV(ConstantVarInfoV(sym->symbolValue()));
@@ -316,11 +316,40 @@ VarInfoV var_info_v(Symbol_sp sym, Lexenv_sp env) {
   return VarInfoV(NoVarInfoV());
 }
 
-CL_DEFUN T_sp fun_info(T_sp name, Lexenv_sp env) {
-  // Local?
-  T_sp info = env->functionInfo(name);
-  if (info.notnilp())
-    return info;
+// Like var_info, but returns a std::variant. Good when you don't need
+// to cons up info objects. (But it does anyway for alternate global envs.)
+VarInfoV var_info_v(Symbol_sp sym, Lexenv_sp env) {
+  T_sp info = env->variableInfo(sym);
+  if (info.isA<LexicalVarInfo_O>())
+    return VarInfoV(LexicalVarInfoV(info.as_unsafe<LexicalVarInfo_O>()));
+  else if (info.isA<SpecialVarInfo_O>())
+    return VarInfoV(SpecialVarInfoV(info.as_unsafe<SpecialVarInfo_O>()));
+  else if (info.isA<SymbolMacroVarInfo_O>())
+    return VarInfoV(SymbolMacroVarInfoV(info.as_unsafe<SymbolMacroVarInfo_O>()));
+  ASSERT(info.nilp());
+
+  // Nothing local so try a global lookup.
+  T_sp global = env->global();
+  if (global.nilp())
+    return main_env_var_info_v(sym);
+  else {
+    info = eval::funcall(core::_sym_fcge_lookup_var, global, sym);
+    if (info.isA<LexicalVarInfo_O>())
+      return VarInfoV(LexicalVarInfoV(info.as_unsafe<LexicalVarInfo_O>()));
+    else if (info.isA<SpecialVarInfo_O>())
+      return VarInfoV(SpecialVarInfoV(info.as_unsafe<SpecialVarInfo_O>()));
+    else if (info.isA<SymbolMacroVarInfo_O>())
+      return VarInfoV(SymbolMacroVarInfoV(info.as_unsafe<SymbolMacroVarInfo_O>()));
+    else if (info.isA<ConstantVarInfo_O>())
+      return VarInfoV(ConstantVarInfoV(info.as_unsafe<ConstantVarInfo_O>()));
+    else {
+      ASSERT(info.nilp());
+      return VarInfoV(NoVarInfoV());
+    }
+  }
+}
+
+static inline T_sp main_env_fun_info(T_sp name) {
   // Split into setf and not versions.
   if (name.consp()) {
     List_sp cname = name;
@@ -365,14 +394,21 @@ CL_DEFUN T_sp fun_info(T_sp name, Lexenv_sp env) {
   }
 }
 
-FunInfoV fun_info_v(T_sp name, Lexenv_sp env) {
+SYMBOL_EXPORT_SC_(CorePkg, fcge_lookup_fun);
+
+CL_DEFUN T_sp fun_info(T_sp name, Lexenv_sp env) {
   // Local?
   T_sp info = env->functionInfo(name);
-  if (gc::IsA<LocalFunInfo_sp>(info))
-    return FunInfoV(LocalFunInfoV(gc::As_unsafe<LocalFunInfo_sp>(info)));
-  else if (gc::IsA<LocalMacroInfo_sp>(info))
-    return FunInfoV(LocalMacroInfoV(gc::As_unsafe<LocalMacroInfo_sp>(info)));
-  ASSERT(info.nilp());
+  if (info.notnilp())
+    return info;
+  T_sp global = env->global();
+  if (global.nilp())
+    return main_env_fun_info(name);
+  else
+    return eval::funcall(core::_sym_fcge_lookup_fun, global, name);
+}
+
+static inline FunInfoV main_env_fun_info_v(T_sp name) {
   // Split into setf and not versions.
   if (name.consp()) {
     List_sp cname = name;
@@ -401,6 +437,31 @@ FunInfoV fun_info_v(T_sp name, Lexenv_sp env) {
       return FunInfoV(GlobalFunInfoV(cmexpander));
     } else
       return FunInfoV(GlobalFunInfoV(nil<T_O>()));
+  }
+}
+
+FunInfoV fun_info_v(T_sp name, Lexenv_sp env) {
+  // Local?
+  T_sp info = env->functionInfo(name);
+  if (gc::IsA<LocalFunInfo_sp>(info))
+    return FunInfoV(LocalFunInfoV(gc::As_unsafe<LocalFunInfo_sp>(info)));
+  else if (gc::IsA<LocalMacroInfo_sp>(info))
+    return FunInfoV(LocalMacroInfoV(gc::As_unsafe<LocalMacroInfo_sp>(info)));
+  ASSERT(info.nilp());
+
+  T_sp global = env->global();
+  if (global.nilp())
+    return main_env_fun_info_v(name);
+  else {
+    info = eval::funcall(core::_sym_fcge_lookup_fun, global, name);
+    if (info.isA<GlobalFunInfo_O>())
+      return FunInfoV(GlobalFunInfoV(info.as_unsafe<GlobalFunInfo_O>()));
+    else if (info.isA<GlobalMacroInfo_O>())
+      return FunInfoV(GlobalMacroInfoV(info.as_unsafe<GlobalMacroInfo_O>()));
+    else {
+      ASSERT(info.nilp());
+      return FunInfoV(NoFunInfoV());
+    }
   }
 }
 
@@ -1078,8 +1139,8 @@ SimpleVector_byte8_t_sp Module_O::create_bytecode() {
 
 CL_DEFUN T_sp lambda_list_for_name(T_sp raw_lambda_list) { return core::lambda_list_for_name(raw_lambda_list); }
 
-Function_sp Cfunction_O::link_function() {
-  this->module()->link_load();
+Function_sp Cfunction_O::link_function(T_sp env) {
+  this->module()->link_load(env);
   // Linking installed the GBEP in this cfunction's info. Return that.
   return this->info();
 }
@@ -1129,7 +1190,8 @@ void Module_O::link() {
   cmodule->resolve_fixup_sizes();
 }
 
-void Module_O::link_load() {
+void Module_O::link_load(T_sp env) {
+  // env is global, used to look up cells.
   Module_sp cmodule = this->asSmartPtr();
   cmodule->link();
   SimpleVector_byte8_t_sp bytecode = cmodule->create_bytecode();
@@ -1176,17 +1238,27 @@ void Module_O::link_load() {
       literals[i] = gc::As_unsafe<Cfunction_sp>(lit)->info();
     else if (gc::IsA<LoadTimeValueInfo_sp>(lit)) {
       LoadTimeValueInfo_sp ltvinfo = gc::As_unsafe<LoadTimeValueInfo_sp>(lit);
-      literals[i] = ltvinfo->eval();
+      literals[i] = ltvinfo->eval(env);
       if (!ltvinfo->read_only_p())
         mutableLTVs << Integer_O::create(i);
     } else if (gc::IsA<ConstantInfo_sp>(lit))
       literals[i] = gc::As_unsafe<ConstantInfo_sp>(lit)->value();
-    else if (gc::IsA<FunctionCellInfo_sp>(lit))
-      literals[i] = core__ensure_function_cell(gc::As_unsafe<FunctionCellInfo_sp>(lit)->fname());
-    else if (gc::IsA<VariableCellInfo_sp>(lit))
-      literals[i] = gc::As_unsafe<VariableCellInfo_sp>(lit)->vname()->ensureVariableCell();
+    else if (gc::IsA<FunctionCellInfo_sp>(lit)) {
+      if (env.nilp())
+        literals[i] = core__ensure_function_cell(gc::As_unsafe<FunctionCellInfo_sp>(lit)->fname());
+      else
+        literals[i] = eval::funcall(core::_sym_fcge_ensure_fcell, env, 
+                                    lit.as_unsafe<FunctionCellInfo_O>()->fname());
+    }
+    else if (gc::IsA<VariableCellInfo_sp>(lit)) {
+      if (env.nilp())
+        literals[i] = gc::As_unsafe<VariableCellInfo_sp>(lit)->vname()->ensureVariableCell();
+      else
+        literals[i] = eval::funcall(core::_sym_fcge_ensure_vcell, env,
+                                    lit.as_unsafe<VariableCellInfo_O>()->vname());
+    }
     else if (gc::IsA<EnvInfo_sp>(lit))
-      literals[i] = nil<T_O>(); // the only environment we have
+      literals[i] = env;
     else
       SIMPLE_ERROR("BUG: Weird thing in compiler literals vector: {}", _rep_(lit));
   }
@@ -1210,7 +1282,7 @@ void Module_O::link_load() {
       Cfunction_sp cfun = gc::As_assert<Cfunction_sp>(tfun);
       BytecodeSimpleFun_sp fun = cfun->info();
       if (btb_bcfun_p(fun, debug_info)) {
-        T_sp nat = eval::funcall(_sym_STARautocompile_hookSTAR->symbolValue(), fun, nil<T_O>());
+        T_sp nat = eval::funcall(_sym_STARautocompile_hookSTAR->symbolValue(), fun, env);
         fun->setSimpleFun(gc::As_assert<SimpleFun_sp>(nat));
       }
     }
@@ -1858,7 +1930,7 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
     name = Cons_O::createList(cl::_sym_lambda, comp::lambda_list_for_name(oll));
   Cfunction_sp function = Cfunction_O::make(module, name, docstring, oll, source_info);
   Context context(-1, nil<T_O>(), function, source_info);
-  Lexenv_sp lenv = Lexenv_O::make(env->vars(), env->tags(), env->blocks(), env->funs(), env->decls(), 0);
+  Lexenv_sp lenv = Lexenv_O::make(env->vars(), env->tags(), env->blocks(), env->funs(), env->decls(), 0, env->global());
   Fixnum_sp ind = module->cfunctions()->vectorPushExtend(function);
   function->setIndex(ind.unsafe_fixnum());
   if (all_declares.notnilp() || source_info.notnilp()) {
@@ -2720,9 +2792,17 @@ void compile_form(T_sp form, Lexenv_sp env, const Context context) {
   }
 }
 
-CL_LAMBDA(module lambda-expression &optional (env (cmp::make-null-lexical-environment)));
+static Lexenv_sp coerce_lexenv_desig(T_sp env) {
+  if (env.isA<Lexenv_O>())
+    return env.as_unsafe<Lexenv_O>();
+  else
+    return Lexenv_O::make_top_level(env);
+}
+
+CL_LAMBDA(module lambda-expression &optional env);
 CL_DOCSTRING(R"dx(Compile the given lambda-expression into an existing module. Return a handle to it.)dx");
-CL_DEFUN Cfunction_sp bytecompile_into(Module_sp module, T_sp lambda_expression, Lexenv_sp env) {
+CL_DEFUN Cfunction_sp bytecompile_into(Module_sp module, T_sp lambda_expression, T_sp tenv) {
+  Lexenv_sp env = coerce_lexenv_desig(tenv);
   if (!gc::IsA<Cons_sp>(lambda_expression) || (oCar(lambda_expression) != cl::_sym_lambda))
     SIMPLE_ERROR("bytecompiler passed a non-lambda-expression: {}", _rep_(lambda_expression));
   T_sp lambda_list = oCadr(lambda_expression);
@@ -2731,18 +2811,12 @@ CL_DEFUN Cfunction_sp bytecompile_into(Module_sp module, T_sp lambda_expression,
                         source_location_for(lambda_expression, core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue()));
 }
 
-CL_LAMBDA(lambda-expression &optional (env (cmp::make-null-lexical-environment)));
-CL_DEFUN Function_sp bytecompile(T_sp lambda_expression, Lexenv_sp env) {
+CL_LAMBDA(lambda-expression &optional env)
+CL_DEFUN Function_sp bytecompile(T_sp lambda_expression, T_sp env) {
   Module_sp module = Module_O::make();
   Cfunction_sp cf = bytecompile_into(module, lambda_expression, env);
-  return cf->link_function();
-}
-
-static Lexenv_sp coerce_lexenv_desig(T_sp env) {
-  if (env.nilp())
-    return make_null_lexical_environment();
-  else
-    return gc::As<Lexenv_sp>(env);
+  T_sp global = env.isA<Lexenv_O>() ? env.as_unsafe<Lexenv_O>()->global() : env;
+  return cf->link_function(global);
 }
 
 SYMBOL_EXPORT_SC_(CompPkg, bytecode_implicit_compile_form);
@@ -2752,11 +2826,14 @@ CL_DEFUN T_mv cmp__bytecode_implicit_compile_form(T_sp form, T_sp env) {
   T_sp lexpr = Cons_O::createList(cl::_sym_lambda, nil<T_O>(), Cons_O::createList(cl::_sym_declare),
                                   Cons_O::createList(cl::_sym_progn, form));
   //  printf("%s:%d:%s lexpr = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(lexpr).c_str());
-  Function_sp thunk = bytecompile(lexpr, coerce_lexenv_desig(env));
+  Function_sp thunk = bytecompile(lexpr, env);
   return eval::funcall(thunk);
 }
 
-T_sp LoadTimeValueInfo_O::eval() { return cmp__bytecode_implicit_compile_form(this->form(), make_null_lexical_environment()); }
+T_sp LoadTimeValueInfo_O::eval(T_sp env) {
+  return cmp__bytecode_implicit_compile_form(this->form(),
+                                             Lexenv_O::make_top_level(env));
+}
 
 T_mv bytecode_toplevel_eval(T_sp, T_sp);
 

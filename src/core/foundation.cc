@@ -947,7 +947,7 @@ static Function_sp bytecompile_wrapper(Function_sp entry, List_sp vars, Symbol_s
   List_sp funcall_form = Cons_O::create(cleavirPrimop::_sym_funcall, Cons_O::create(entry, vars));
   List_sp declare_form = Cons_O::createList(cl::_sym_declare, Cons_O::createList(core::_sym_lambdaName, name));
   List_sp form = Cons_O::createList(cl::_sym_lambda, lambda_list, declare_form, funcall_form);
-  return comp::bytecompile(form, comp::Lexenv_O::make_top_level());
+  return comp::bytecompile(form, nil<T_O>());
 }
 
 void lisp_defineSingleDispatchMethod(T_sp name, Symbol_sp classSymbol,

@@ -394,6 +394,8 @@ Operation was (~s~{ ~s~})."
   (handler-bind ((style-warning #'compiler-style-warning-handler)
                  (warning #'compiler-warning-handler))
     (maphash (lambda (name references)
+               ;; FIXME: FBOUNDP is not appropriate if we are compiling
+               ;; in some other environment.
                (unless (or (fboundp name)
                            (gethash name *global-function-defs*))
                  (dolist (ref references)

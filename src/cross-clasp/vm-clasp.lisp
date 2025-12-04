@@ -8,6 +8,36 @@
 (defmethod fcge-ensure-vcell (env name)
   (clostrum:ensure-variable-cell maclina.machine:*client* env name))
 
+(defgeneric fcge-lookup-fun (env name))
+(defgeneric fcge-lookup-var (env name))
+
+(defmethod fcge-lookup-fun (env name)
+  (ecase (clostrum:operator-status maclina.machine:*client*
+                                   env name)
+    ((nil) nil)
+    ((:function) (cmp:global-fun-info/make
+                  (clostrum:compiler-macro-function
+                   maclina.machine:*client* env name)))
+    ((:macro) (cmp:global-macro-info/make
+               (clostrum:macro-function
+                maclina.machine:*client* env name)))
+    ;; should have been picked off by bytecompile's normal processing
+    ((:special-operator)
+     (error "Unknown special operator ~s" name))))
+
+(defmethod fcge-lookup-var (env name)
+  (ecase (clostrum:variable-status maclina.machine:*client*
+                                   env name)
+    ((nil) nil)
+    ((:special) (cmp:special-var-info/make t))
+    ((:constant)
+     (cmp:constant-var-info/make
+      (clostrum:symbol-value maclina.machine:*client* env name)))
+    ((:symbol-macro)
+     (cmp:symbol-macro-var-info/make
+      (clostrum:variable-macro-expander maclina.machine:*client*
+                                        env name)))))
+
 ;;; These methods are not actually necessary since the runtime treats NIL
 ;;; environments specially, but they're here for completeness.
 (defmethod fcge-ensure-fcell ((env null) name)

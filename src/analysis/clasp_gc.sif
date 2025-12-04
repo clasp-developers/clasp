@@ -4895,6 +4895,9 @@
              :layout-offset-field-names ("_decls")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "comp::Lexenv_O" :layout-offset-field-names ("frame_end")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "comp::Lexenv_O"
+             :layout-offset-field-names ("_global")}
 {class-kind :stamp-name "STAMPWTAG_comp__BlockInfo_O" :stamp-key "comp::BlockInfo_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
