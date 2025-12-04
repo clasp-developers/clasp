@@ -1215,9 +1215,9 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
   return fprogv(symbols, values, [&]() { return eval::funcall(func); });
 }
 
-CL_DEFUN T_mv core__progv_env_function(List_sp symbols, List_sp values,
-                                       T_sp env, Function_sp thunk) {
-  return fprogv_env(symbols, values, env, [&]() { return eval::funcall(thunk); });
+CL_DEFUN T_mv core__progv_env_function(T_sp env, List_sp symbols, List_sp values,
+                                       Function_sp thunk) {
+  return fprogv_env(env, symbols, values, [&]() { return eval::funcall(thunk); });
 }
 
 DOCGROUP(clasp);

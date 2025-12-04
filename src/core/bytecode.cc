@@ -893,10 +893,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_sp vals((gctools::Tagged)(vm.pop(sp)));
       T_sp vars((gctools::Tagged)(vm.pop(sp)));
       vm._pc = ++pc;
-      if (env.nilp())
-        fprogv(vars, vals, [&]() { return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args); });
-      else
-        fprogv_env(vars, vals, env, [&]() { return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args); });
+      fprogv_env(env, vars, vals, [&]() { return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args); });
       sp = vm._stackPointer;
       pc = vm._pc;
       break;
@@ -1428,10 +1425,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     T_sp vals((gctools::Tagged)(vm.pop(sp)));
     T_sp vars((gctools::Tagged)(vm.pop(sp)));
     vm._pc = ++pc;
-    if (env.nilp())
-      fprogv(vars, vals, [&]() { return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args); });
-    else
-      fprogv_env(vars, vals, env, [&]() { return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args); });
+    fprogv_env(env, vars, vals, [&]() { return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args); });
     sp = vm._stackPointer;
     pc = vm._pc;
     break;

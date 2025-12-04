@@ -11,6 +11,11 @@
                         (lambda ()
                           (declare (core:lambda-name core::progv-lambda))
                           (progn ,@forms))))
+(defmacro progv-env (environment symbols values &body forms)
+  `(core:progv-env-function ,environment ,symbols ,values
+                            (lambda ()
+                              (declare (core:lambda-name core::progv-env-lambda))
+                              (progn ,@forms))))
 
 ;;; CORE::VECTOR-LENGTH
 
