@@ -1963,6 +1963,8 @@
             (funcall (cmp:bytecompile `(lambda () (progn ,form)) env)))
           (bytecode-compile-file-form form env)))))
 
+(defvar *reader-client* (make-instance 'cmp::clasp-tracking-eclector-client))
+
 ;; input is a character stream.
 (defun bytecode-compile-stream (input output-path
                                 &key environment &allow-other-keys)
@@ -1973,7 +1975,7 @@
     (loop with eof = (gensym "EOF")
           with *native-module-id* = 0
           with *compile-time-too* = nil
-          with eclector.reader:*client* = (make-instance 'cmp::clasp-tracking-eclector-client)
+          with eclector.reader:*client* = *reader-client*
           with cfsdp = (core:file-scope cmp::*compile-file-source-debug-pathname*)
           with cfsdl = cmp::*compile-file-source-debug-lineno*
           with cfsdo = cmp::*compile-file-source-debug-offset*
