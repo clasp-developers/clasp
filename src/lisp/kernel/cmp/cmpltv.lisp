@@ -1601,38 +1601,44 @@
     ;; Native compilation.
     #+clasp
     (when *native-compile-file-all*
-      (let* ((id *native-module-id*)
-             (native (funcall (find-symbol "COMPILE-CMODULE"
-                                           "CLASP-BYTECODE-TO-BIR")
-                              bytecode literals info id
-                              (namestring cmp::*compile-file-source-debug-pathname*)))
-             (code (funcall (find-symbol "NMODULE-CODE"
-                                         "CLASP-BYTECODE-TO-BIR")
-                            native))
-             (nlits (funcall (find-symbol "NMODULE-LITERALS"
-                                          "CLASP-BYTECODE-TO-BIR")
-                             native)))
-        (incf *native-module-id*)
-        (add-instruction
-         (make-instance 'module-native-attr
-           :module mod
-           :id id
-           :code code
-           :literals (native-literals nlits)))
-        ;; Add attributes for the functions as well.
-        ;; We do this here instead of in the CFUNCTION methods because
-        ;; of the recursive nature of functions referring to modules
-        ;; referring to functions yada yada bla bla.
-        (loop with fmap = (funcall (find-symbol "NMODULE-FMAP" "CLASP-BYTECODE-TO-BIR") native)
-              for i across info
-              when (typep i 'cmp:cfunction)
-                do (let ((m (assoc i fmap)))
-                     (assert m)
-                     (destructuring-bind (main xep) (rest m)
-                       (add-instruction
-                        (make-instance 'function-native-attr
-                          :function (ensure-function i)
-                          :id id :main main :xep xep)))))))
+      (handler-case
+          (let* ((id *native-module-id*)
+                 (native (funcall (find-symbol "COMPILE-CMODULE"
+                                               "CLASP-BYTECODE-TO-BIR")
+                                  bytecode literals info id
+                                  (namestring cmp::*compile-file-source-debug-pathname*)))
+                 (code (funcall (find-symbol "NMODULE-CODE"
+                                             "CLASP-BYTECODE-TO-BIR")
+                                native))
+                 (nlits (funcall (find-symbol "NMODULE-LITERALS"
+                                              "CLASP-BYTECODE-TO-BIR")
+                                 native))
+                 (fmap (funcall (find-symbol "NMODULE-FMAP"
+                                             "CLASP-BYTECODE-TO-BIR")
+                                native)))
+            (incf *native-module-id*)
+            (add-instruction
+             (make-instance 'module-native-attr
+               :module mod
+               :id id
+               :code code
+               :literals (native-literals nlits)))
+            ;; Add attributes for the functions as well.
+            ;; We do this here instead of in the CFUNCTION methods because
+            ;; of the recursive nature of functions referring to modules
+            ;; referring to functions yada yada bla bla.
+            ;; It's possible that a bytecode function does not appear
+            ;; in the fmap. This can occur because e.g. it was inlined
+            ;; away. That's ok, it just means we don't dump an attr for it.
+            (loop for (f main xep) in fmap
+                  do (add-instruction
+                      (make-instance 'function-native-attr
+                        :function (ensure-function f)
+                        :id id :main main :xep xep))))
+        (serious-condition (e)
+          ;; error? who cares, native code is optional, move on
+          (warn "Unhandled serious condition while compiling native module:~%~a
+Abandoning further work on it and moving on."))))
     mod))
 
 (defun native-literals (native-literals)
