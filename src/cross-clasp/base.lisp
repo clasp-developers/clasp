@@ -335,6 +335,8 @@
                        ext:parse-define-setf-expander
                        ext:add-implementation-package
                        core::make-simple-vector-t
+                       ;; Used in clasp local macroexpanders (native build)
+                       #+clasp si::search-keyword #+clasp si::check-keywords
                        ;; used in compiler macro expansions
                        core::make-vector
                        core::make-simple-vector-character
@@ -354,7 +356,8 @@
                        core::find-class-holder
                        ext::class-unboundp ext::class-get
                        cmp::warn-undefined-type
-                       cmp::warn-cannot-coerce)
+                       cmp::warn-cannot-coerce
+                       #+clasp si:backquote-append)
         for f = (fdefinition fname)
         do (setf (clostrum:fdefinition client rte fname) f))
   (loop for (fname . src) in '((cl:proclaim . proclaim)
@@ -381,6 +384,7 @@
         for f = (fdefinition src)
         do (setf (clostrum:fdefinition client rte fname) f))
   (loop for mname in '(eclector.reader:quasiquote
+                       #+clasp si:quasiquote
                        ext:with-current-source-form
                        core::with-clean-symbols core::with-unique-names
                        core::once-only
