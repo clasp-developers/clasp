@@ -5,8 +5,12 @@
                (:feature :clasp :cleavir-maclina-to-bir/module))
   :components ((:file "packages")
                (:file "vm-clasp" :depends-on ("packages") :if-feature :clasp)
+               (:file "trucler-clasp" :depends-on ("packages")
+                      :if-feature :clasp)
                (:file "environment"
-                :depends-on ((:feature :clasp "vm-clasp") "packages"))
+                :depends-on ((:feature :clasp "vm-clasp")
+                             (:feature :clasp "trucler-clasp")
+                             "packages"))
                (:file "macrology" :depends-on ("packages"))
                (:file "condition-system-macros" :depends-on ("packages"))
                (:file "mp-macros" :depends-on ("macrology" "packages"))

@@ -4,7 +4,8 @@
 (defvar *build-ce*)
 
 (defclass client (#-clasp maclina.vm-cross:client
-                  #+clasp vm-clasp:client)
+                  #+clasp vm-clasp:client
+                  #+clasp trucler-native-clasp:client)
   ())
 
 ;;; A client used for compile-time evaluation. At the moment this just means

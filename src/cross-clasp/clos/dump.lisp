@@ -39,11 +39,19 @@
                                         ,(form object))))
                       :form ',form))))))
 
+#+clasp
+(defmethod make-load-form ((object outcome) &optional env)
+  (maclina.compile-file:make-load-form maclina.machine:*client* object env))
+
 (defmethod maclina.compile-file:make-load-form ((client cross-clasp:client)
                                                 (object compiler-class)
                                                 &optional env)
   (declare (ignore env))
   `(find-class ',(name object)))
+
+#+clasp
+(defmethod make-load-form ((object compiler-class) &optional env)
+  (maclina.compile-file:make-load-form maclina.machine:*client* object env))
 
 ;;; method dumping is based on the premises that
 ;;; a) by the time they appear literally, they will already be loaded into the
@@ -64,6 +72,10 @@
             (name gf) (qualifiers object) (mapcar #'name (specializers object)))
     `(with-early-accessors (standard-generic-function)
        (elt (generic-function-methods (fdefinition ',(name gf))) ,pos))))
+
+#+clasp
+(defmethod make-load-form ((object compiler-method) &optional env)
+  (maclina.compile-file:make-load-form maclina.machine:*client* object env))
 
 (defmethod maclina.compile-file:make-load-form ((client cross-clasp:client)
                                                 (object effective-accessor)
@@ -95,6 +107,10 @@
                    (push (cons ',(location object) ,object)
                          (,cache (elt (class-direct-slots ,class)
                                       ,dslotpos)))))))))
+
+#+clasp
+(defmethod make-load-form ((object effective-accessor) &optional env)
+  (maclina.compile-file:make-load-form maclina.machine:*client* object env))
 
 ;;; The following method is for objects that end up in cfasls but not fasls,
 ;;; so we don't have to be nearly as scrupulous - they execute in the compiler's

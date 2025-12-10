@@ -39,9 +39,7 @@
         ;; The build compiles a _lot_ of macroexpanders, mostly for CLOS,
         ;; and constructing CSTs for their bodies takes positively
         ;; stupid amounts of time. FIXME?
-        #+clasp(compiler:*cleavir-compile-hook* nil)
-        #+clasp(maclina.compile-file::*module-native-compiler*
-                 (if native #'module-native-compiler nil)))
+        #+clasp(compiler:*cleavir-compile-hook* nil))
     (handler-bind
         (;; SBCL's script processor muffles style warnings, which is
          ;; pretty unfortunate for us, so print them ourselves here.
@@ -49,7 +47,8 @@
          (style-warning (lambda (w)
                           (format *error-output* "~&WARNING: ~a~%" w)
                           (muffle-warning w))))
-      (maclina.compile:with-compilation-unit ()
+      (#-clasp maclina.compile:with-compilation-unit
+       #+clasp with-compilation-unit ()
         (loop with ct-client = (make-instance 'ct-client)
               with compiler = (if native
                                   #'build-native-file
@@ -75,12 +74,16 @@
 
 (defun build-native-file (input output source cfasl ct-client)
   ;; We don't want native CFASLs so don't do that part.
-  (declare (ignore client))
-  (maclina.compile-file:compile-file
-   input :output-file output
-         :environment *build-rte*
-         :evaluation-client ct-client
-         :source-pathname source))
+  ;; That also means we don't need an evaluation-client,
+  ;; which clasp's compile-file doesn't support in any case.
+  (declare (ignore ct-client)
+           #-clasp(ignore input output source cfasl))
+  #+clasp
+  (let ((cmpltv::*native-compile-file-all* t))
+    (compile-file
+     input :output-file output
+           :environment *build-rte*
+           :source-pathname source)))
 
 (defun build (input-files output-files source-pathnames)
   (multiple-value-bind (fasls cfasls)

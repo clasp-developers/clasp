@@ -22,8 +22,10 @@
                (clostrum:macro-function
                 maclina.machine:*client* env name)))
     ;; should have been picked off by bytecompile's normal processing
-    ((:special-operator)
-     (error "Unknown special operator ~s" name))))
+    ;; but we use this elsewere, e.g. cl:macro-function
+    ;; We probably ought to have some kind of special-operator-info,
+    ;; but failing that, here's a KLUDGE.
+    ((:special-operator) nil)))
 
 (defmethod fcge-lookup-var (env name)
   (ecase (clostrum:variable-status maclina.machine:*client*
@@ -44,6 +46,13 @@
   (ensure-function-cell name))
 (defmethod fcge-ensure-vcell ((env null) name)
   (ensure-variable-cell name))
+
+(defgeneric fcge-find-package (env name))
+
+(defmethod fcge-find-package (env name)
+  (clostrum:find-package maclina.machine:*client* env name))
+
+(defmethod fcge-find-package ((env null) name) (find-package name))
 
 (defpackage #:vm-clasp
   (:use #:cl)
