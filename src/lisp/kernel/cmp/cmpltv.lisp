@@ -382,6 +382,9 @@
 (defmethod similarp ((creator vcreator) value)
   (eql (prototype creator) value))
 
+;;; The global environment we're compiling in. Needed for load-time-value &c.
+(defvar *environment*)
+
 ;;; EQL hash table from objects to creators.
 (defvar *coalesce*)
 
@@ -478,7 +481,7 @@
 
 ;;; Given a form, get a constant handle to a function that at load time will
 ;;; have the effect of evaluating the form in a null lexical environment.
-(defun add-form (form &optional env)
+(defun add-form (form &optional (env *environment*))
   ;; PROGN so that (declare ...) expressions for example correctly cause errors.
   (add-function
    (bytecode-cf-compile-lexpr `(lambda () (progn ,form)) env)))
@@ -700,7 +703,7 @@
 ;;; arguments that appear in LOAD-DEFCLASS calls into constant NILs.
 ;;; But I (Bike) believe that's offset by the value of not making the loader
 ;;; make and run a one-time-use bytecode function.
-(defun directly-creatable-form-p (form &optional env)
+(defun directly-creatable-form-p (form &optional (env *environment*))
   (or (constantp form env)
       ;; constantp includes non-symbols-or-lists, so this typecase is exhaustive
       (typecase form
@@ -758,7 +761,7 @@
                                (rest form)))))))
 
 ;;; Make a possibly-special creator based on an MLF creation form.
-(defun add-creation-form-creator (value form &optional env)
+(defun add-creation-form-creator (value form &optional (env *environment*))
   (let ((*creating* (cons value *creating*)))
     (if (directly-creatable-form-p form env)
         (let ((inst (add-direct-creator-form form env)))
@@ -771,7 +774,7 @@
            :function (add-form form env) :arguments ())))))
 
 ;;; Make a possibly-special initializer.
-(defun add-initializer-form (form &optional env)
+(defun add-initializer-form (form &optional (env *environment*))
   (cond ((constantp form env) nil) ; do nothing (good for e.g. defun's return)
         ((and (symbolp form) (not (nth-value 1 (macroexpand-1 form env))))
          ;; also do nothing. this comes up for e.g. the *PACKAGE* returned from
@@ -1927,7 +1930,8 @@ Abandoning further work on it and moving on."))))
            (cmp:lexenv/vars env)
            (cmp:lexenv/tags env) (cmp:lexenv/blocks env)
            (append macros (cmp:lexenv/funs env))
-           (cmp:lexenv/decls env) (cmp:lexenv/frame-end env)))))
+           (cmp:lexenv/decls env) (cmp:lexenv/frame-end env)
+           (cmp:lexenv/global env)))))
 
 (defun bytecode-compile-toplevel-symbol-macrolet (bindings body env)
   (let ((smacros nil) (env (or env (cmp:make-null-lexical-environment))))
@@ -1943,9 +1947,9 @@ Abandoning further work on it and moving on."))))
            (append (nreverse smacros) (cmp:lexenv/vars env))
            (cmp:lexenv/tags env) (cmp:lexenv/blocks env)
            (cmp:lexenv/funs env) (cmp:lexenv/decls env)
-           (cmp:lexenv/frame-end env)))))
+           (cmp:lexenv/frame-end env) (cmp:lexenv/global env)))))
 
-(defun bytecode-compile-toplevel (form &optional env)
+(defun bytecode-compile-toplevel (form &optional (env *environment*))
   (let ((core:*current-source-pos-info*
           (or (gethash form cmp:*source-locations*)
               core:*current-source-pos-info*))
@@ -1973,7 +1977,8 @@ Abandoning further work on it and moving on."))))
 
 ;; input is a character stream.
 (defun bytecode-compile-stream (input output-path
-                                &key environment &allow-other-keys)
+                                &key ((:environment *environment*))
+                                &allow-other-keys)
   ;; *COMPILE-PRINT* is defined later in compile-file.lisp.
   (declare (special *compile-print*))
   (with-constants ()
@@ -1981,13 +1986,17 @@ Abandoning further work on it and moving on."))))
     (loop with eof = (gensym "EOF")
           with *native-module-id* = 0
           with *compile-time-too* = nil
-          with eclector.reader:*client* = *reader-client*
+          with eclector.reader:*client*
+            = (if *environment*
+                  (make-instance 'cmp::clasp-alternate-env-client
+                    :environment *environment*)
+                  *reader-client*)
           with cfsdp = (core:file-scope cmp::*compile-file-source-debug-pathname*)
           with cfsdl = cmp::*compile-file-source-debug-lineno*
           with cfsdo = cmp::*compile-file-source-debug-offset*
           ;; Force this into a lexenv so macroexpand etc. work correctly
           ;; with arbitrary global environments.
-          with env = (cmp:make-null-lexical-environment environment)
+          with env = (cmp:make-null-lexical-environment *environment*)
           for core:*current-source-pos-info*
             = (core:input-stream-source-pos-info input cfsdp cfsdl cfsdo)
           for cmp:*source-locations* = (make-hash-table :test #'eq)
