@@ -692,16 +692,18 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARnumber_of_entry_pointsSTAR->defparameter(make_fixnum(NUMBER_OF_ENTRY_POINTS));
   _sym_STARcore_startup_functionSTAR->defparameter(nil<core::T_O>());
   comp::_sym_STARcompile_file_parallelSTAR->defparameter(nil<core::T_O>());
+  /*
 #ifdef DEFAULT_OUTPUT_TYPE_FASO
   comp::_sym_STARdefault_output_typeSTAR->defparameter(kw::_sym_faso);
 #endif
+*/
 #ifdef DEFAULT_OUTPUT_TYPE_FASOLL
   comp::_sym_STARdefault_output_typeSTAR->defparameter(kw::_sym_fasoll);
 #endif
 #ifdef DEFAULT_OUTPUT_TYPE_FASOBC
   comp::_sym_STARdefault_output_typeSTAR->defparameter(kw::_sym_fasobc);
 #endif
-#ifdef DEFAULT_OUTPUT_TYPE_BYTECODE
+#if defined(DEFAULT_OUTPUT_TYPE_BYTECODE) || defined(DEFAULT_OUTPUT_TYPE_FASO)
   comp::_sym_STARdefault_output_typeSTAR->defparameter(kw::_sym_bytecode);
 #endif
   comp::_sym_STARforce_startup_external_linkageSTAR->defparameter(nil<core::T_O>());
