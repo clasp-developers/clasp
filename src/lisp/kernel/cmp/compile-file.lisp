@@ -94,12 +94,6 @@
 (defun disable-bytecode-file-compiler ()
   (setf *default-output-type* :faso))
 
-(defmacro progv-env (environment symbols values &body forms)
-  `(core:progv-env-function ,environment ,symbols ,values
-                            (lambda ()
-                              (declare (core:lambda-name core::progv-env-lambda))
-                              (progn ,@forms))))
-
 (defun compile-file (input-file
                      &rest args
                      &key

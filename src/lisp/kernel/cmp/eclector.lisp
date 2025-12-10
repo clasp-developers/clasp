@@ -134,6 +134,10 @@
 
 (defclass clasp-tracking-eclector-client (clasp-eclector-client-mixin eclector.parse-result:parse-result-client) ())
 
+;;; Used when compiling in a provided first-class global environment.
+(defclass clasp-alternate-env-client (clasp-tracking-eclector-client)
+  ((%environment :initarg :environment :reader client-environment)))
+
 (defmethod eclector.base:source-position
     ((client clasp-tracking-eclector-client) stream)
   (compile-file-source-pos-info stream))
@@ -153,6 +157,81 @@
     ((client clasp-eclector-client-mixin) thunk (aspect (eql 'cl:*readtable*)) value)
   (let ((cl:*readtable* value))
     (funcall thunk)))
+
+(defmethod eclector.reader:state-value
+    ((client clasp-alternate-env-client) aspect)
+  (core:variable-cell/value
+   (core:fcge-ensure-vcell (client-environment client) aspect)))
+
+(defmacro progv-env (environment symbols values &body forms)
+  `(core:progv-env-function ,environment ,symbols ,values
+                            (lambda ()
+                              (declare (core:lambda-name core::progv-env-lambda))
+                              (progn ,@forms))))
+
+;;; Check local packages then defer to fcge-find-package.
+;;; Also do the string coercion.
+(defun env-find-package (environment name)
+  (let ((name (string name))
+        (package (core:variable-cell/value
+                  (core:fcge-ensure-vcell environment '*package*))))
+    (or (cdr (assoc name (ext:package-local-nicknames package) :test #'string=))
+        (core::fcge-find-package environment name))))
+
+(defmethod eclector.reader:call-with-state-value
+    ((client clasp-alternate-env-client) thunk aspect value)
+  (progv-env (client-environment client)
+      (list aspect) (list value)
+    (funcall thunk)))
+;; *package* has to have its designator coerced
+(defmethod eclector.reader:call-with-state-value
+    ((client clasp-alternate-env-client) thunk (aspect (eql 'cl:*package*))
+     value)
+  (let ((package (env-find-package (client-environment client) value)))
+    (assert (packagep package))
+    (progv-env (client-environment client)
+        (list aspect) (list package)
+      (funcall thunk))))
+
+(defmethod eclector.reader:evaluate-expression
+    ((client clasp-alternate-env-client) expression)
+  (core:interpret expression (client-environment client)))
+
+(defun find-package-or-err (environment name)
+  (or (env-find-package environment name)
+      (error 'package-error :package name)))
+
+(defmethod eclector.reader:interpret-symbol ((client clasp-alternate-env-client)
+                                             input-stream package-indicator
+                                             symbol-name internp)
+  (declare (ignore input-stream))
+  (if (null package-indicator)
+      (make-symbol symbol-name)
+      (let ((package (case package-indicator
+                       (:current
+                        (let ((cur (eclector.reader:state-value
+                                    client '*package*)))
+                          ;; We disallow this through Eclector above, but
+                          ;; there are other ways we can't control in which
+                          ;; *package* could be set to something illegal.
+                          (assert (packagep cur) ()
+                                  "~s is not bound to a package" '*package*)
+                          cur))
+                       (:keyword (find-package-or-err (client-environment client)
+                                                      "KEYWORD"))
+                       (t (find-package-or-err (client-environment client)
+                                               package-indicator)))))
+        (if internp
+            (intern symbol-name package)
+            (multiple-value-bind (symbol status)
+                (find-symbol symbol-name package)
+              (ecase status
+                ((:external) symbol)
+                ((:internal :inherited)
+                 (error "~a is not external in ~a"
+                        symbol-name package-indicator))
+                ((nil)
+                 (error "No symbol ~a:~a" package-indicator symbol-name))))))))
 
 (defun read-with-eclector (&optional (input-stream *standard-input*)
                                      (eof-error-p t)
