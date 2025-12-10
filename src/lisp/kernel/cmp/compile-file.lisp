@@ -33,14 +33,6 @@
         (t
          (error "Unsupported build-extension type ~a" type))))
 
-(defun cfp-output-file-default (input-file output-type &key target-backend)
-  (let* ((defaults (merge-pathnames input-file *default-pathname-defaults*)))
-    (when target-backend
-      (setq defaults (make-pathname :host target-backend :defaults defaults)))
-    (make-pathname :type (build-extension output-type)
-                   :defaults defaults)))
-
-
 ;;; Copied from sbcl sb!xc:compile-file-pathname
 ;;;   If INPUT-FILE is a logical pathname and OUTPUT-FILE is unsupplied,
 ;;;   the result is a logical pathname. If INPUT-FILE is a logical
@@ -54,15 +46,33 @@
                                    (output-type *default-output-type* output-type-p)
                                    target-backend
                               &allow-other-keys)
-  (declare (ignore output-type))
-  (let* ((output-type :bytecode)
-         (pn (if output-file-p
-		 (merge-pathnames output-file (translate-logical-pathname (cfp-output-file-default input-file output-type :target-backend target-backend)))
-		 (cfp-output-file-default input-file output-type :target-backend target-backend)))
-         (ext (build-extension output-type)))
-    (if (or output-type-p (not output-file-p))
-        (make-pathname :type ext :defaults pn :version nil)
-        pn)))
+  (let* ((input (pathname input-file))
+         (output (if output-file-p (pathname output-file) nil))
+         (host/dev/dir
+           (if (or (not output)
+                   (member (pathname-directory output) '(nil :unspecific)))
+               input
+               output)))
+     (merge-pathnames
+      (flet ((pick (slot default &aux (specified (if output (funcall slot output))))
+               ;; :unspecific is left alone, "as if the field were 'filled'"
+               ;; (http://www.lispworks.com/documentation/HyperSpec/Body/19_bbbca.htm)
+               ;; which makes little to zero sense at all for the PATHNAME-NAME
+               ;; of a fasl file, but is allowable for its PATHNAME-TYPE.
+               (cond ((or (not specified)
+                          (and (eq specified :unspecific) (eq slot 'pathname-name)))
+                      default)
+                     (t
+                      specified))))
+        (make-pathname :host (pathname-host host/dev/dir)
+                       :device (pathname-device host/dev/dir)
+                       :directory (pathname-directory host/dev/dir)
+                       ;; if the output exists and has a name, use it, otherwise
+                       ;; use the input name
+                       :name (pick 'pathname-name (pathname-name input))
+                       ;; if the output has a type that isn't :unspecific use it,
+                       ;; otherwise use the default fasl type
+                       :type (pick 'pathname-type (build-extension output-type)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
