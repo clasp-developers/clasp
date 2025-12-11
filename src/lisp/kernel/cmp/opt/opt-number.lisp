@@ -8,8 +8,7 @@
       (let ((arg0 (first args)) (args (rest args)))
         (if (null args)
             ;; preserve nontoplevelness and eliminate extra values
-            #+bytecode `(core::the-single real ,arg0)
-            #-bytecode `(the (values real &rest nil) (values ,arg0))
+            `(core::the-single real ,arg0)
             (let ((s (gensym)))
               `(let ((,s ,arg0)
                      (minrest (min ,@args)))
@@ -19,8 +18,7 @@
       form
       (let ((arg0 (first args)) (args (rest args)))
         (if (null args)
-            #+bytecode `(core::the-single real ,arg0)
-            #-bytecode `(the (values real &rest nil) (values ,arg0)) ; preserve nontoplevelness
+            `(core::the-single real ,arg0) ; preserve nontoplevelness
             (let ((s (gensym)))
               `(let ((,s ,arg0)
                      (maxrest (max ,@args)))

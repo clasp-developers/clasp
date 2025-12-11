@@ -36,12 +36,35 @@
                    (setq slow (cdr slow))
                    (go again))))))
 
-  #+bytecode
+  ;;; Some operators "should signal a type error", meaning that in safe code
+  ;;; they _must_ signal a type error, and otherwise the behavior is undefined.
+  ;;; The bytecode compiler is not smart enough to do this in a nuanced way,
+  ;;; in that it just ignores THE rather than type checking (which is allowed),
+  ;;; but Cleavir's is. So to implement this behavior we use
+  ;;; this THE-SINGLE macro.
+  ;;; The bytecode will have an actual call to a %the-single function,
+  ;;; defined below, which just does a type test. So in safe and unsafe code
+  ;;; there is a test.
+  ;;; When compiling with Cleavir, this call will be transformed into a THE,
+  ;;; so there's no actual call and the compiler can do its usual processing
+  ;;; on THE forms based to the safety level.
+  ;;; This setup also means we extract only the primary value, so e.g.
+  ;;; (+ (values 1 2)) => 1 and not 1 2 as we want. Additionally it properly
+  ;;; removes toplevelness.
   (defmacro the-single (type form &optional (return nil returnp))
-    (let ((var (gensym)))
-      `(let ((,var ,form))
-         (check-type ,var ,type)
-         ,(if returnp return var))))
+    (if returnp
+        `(%the-single-return ',type ,form ,return)
+        `(%the-single ',type ,form)))
+
+  (defun %the-single (type value)
+    (unless (typep value type)
+      (error 'type-error :datum value :expected-type type))
+    value)
+
+  (defun %the-single-return (type value return)
+    (unless (typep value type)
+      (error 'type-error :datum value :expected-type type))
+    return)
 
   (defun simple-associate-args (fun first-arg more-args)
     (or more-args (error "more-args cannot be nil"))
@@ -56,18 +79,10 @@
     (declare (ignore fun))
     (case (length args)
       (0 identity)
-      ;; We use these values &rest nil types here and below because they are
-      ;; easier to check in cclasp (where THEs usually become checks).
-      ;; See cleavir/convert-special.lisp.
-      ;; Also note that we only use the type information in the one argument
+      ;; Note that we only use the type information in the one argument
       ;; case because we need that check. With more arguments, the two-arg-fun
       ;; will do checks. This also applies to EXPAND-COMPARE below.
-      ;; Also also note that we have to use VALUES or else we'll get
-      ;; (+ (values 1 nil)) => 1 NIL
-      ;; which is unlikely in practice, but a bug.
-      (1
-       #+bytecode `(the-single ,one-arg-result-type ,(first args))
-       #-bytecode `(the (values ,one-arg-result-type &rest nil) (values ,(first args))))
+      (1 `(the-single ,one-arg-result-type ,(first args)))
       (2 (values `(,two-arg-fun ,@args) t))
       (t (simple-associate-args two-arg-fun (first args) (rest args)))))
 
@@ -88,8 +103,7 @@
            form)
           ((1)
            ;; preserve nontoplevelness and side effects
-           #+bytecode `(the-single ,arg-type ,(first args) t)
-           #-bytecode `(progn (the (values ,arg-type &rest nil) (values ,(first args))) t))
+           `(the-single ,arg-type ,(first args) t))
           ((2)
            `(,fun ,(first args) ,(second args)))
           (otherwise
@@ -108,8 +122,7 @@
         (case (length args)
           ((1)
            ;; preserve nontoplevelness and side effects.
-           #+bytecode `(the-single ,arg-type ,(first args) t)
-           #-bytecode `(progn (the (values ,arg-type &rest nil) (values ,(first args))) t))
+           `(the-single ,arg-type ,(first args) t))
           ((2) `(not (,fun ,(first args) ,(second args))))
           (otherwise form))
         form))

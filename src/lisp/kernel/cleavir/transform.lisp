@@ -347,6 +347,28 @@ Optimizations are available for any of:
                    (maybe-expand-typep type 'object))))
           (decline-transform "non-constant type specifier")))))
 
+(deftransform core::%the-single (((tspec t) (value t)) :argstype args)
+  (with-transformer-types (tspec value) args
+    (declare (ignore value))
+    (let ((sys *clasp-system*))
+      (if (and (ctype:member-p sys tspec)
+               (= (length (ctype:member-members sys tspec)) 1))
+          (let ((tspec (first (ctype:member-members sys tspec))))
+            `(the (values ,tspec &rest nil) value))
+          ;; the-single is only used internally, so a failure here is weird
+          (decline-transform "BUG: non-constant type specifier")))))
+(deftransform core::%the-single-return
+    (((tspec t) (value t) (return t)) :argstype args)
+  (with-transformer-types (tspec value return) args
+    (declare (ignore value return))
+    (let ((sys *clasp-system*))
+      (if (and (ctype:member-p sys tspec)
+               (= (length (ctype:member-members sys tspec)) 1))
+          (let ((tspec (first (ctype:member-members sys tspec))))
+            `(progn (the (values ,tspec &rest nil) value) return))
+          ;; the-single is only used internally, so a failure here is weird
+          (decline-transform "BUG: non-constant type specifier")))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; (5) DATA AND CONTROL FLOW
