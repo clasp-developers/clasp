@@ -1641,7 +1641,7 @@
         (serious-condition (e)
           ;; error? who cares, native code is optional, move on
           (warn "Unhandled serious condition while compiling native module:~%~a
-Abandoning further work on it and moving on."))))
+Abandoning further work on it and moving on." e))))
     mod))
 
 (defun native-literals (native-literals)
