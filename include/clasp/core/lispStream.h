@@ -320,6 +320,7 @@ clasp_off_t clasp_integer_to_off_t(T_sp i);
 
 void clasp_write_characters(const char* buf, int sz, T_sp strm);
 void clasp_write_string(const string& str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
+void print(const string& str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
 void clasp_write_string(const char* str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
 void clasp_writeln_string(const string& str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
 void clasp_writeln_string(const char* str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());

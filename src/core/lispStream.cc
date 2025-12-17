@@ -1699,6 +1699,11 @@ void clasp_write_string(const string& str, T_sp strm) {
     stream_write_char(strm, ch);
 }
 
+void print(const string& str, T_sp strm) {
+  for (auto ch : str)
+    stream_write_char(strm, ch);
+}
+
 void clasp_write_string(const char* s, T_sp strm) {
   while (*s != '\0')
     stream_write_char(strm, *s++);
