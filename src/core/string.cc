@@ -951,7 +951,7 @@ DOCGROUP(clasp);
 CL_DEFUN Character_sp cl__schar(AbstractSimpleVector_sp str, size_t idx) {
   if (str.isA<SimpleBaseString_O>()
       || str.isA<SimpleCharacterString_O>())
-    return cl__rowMajorAref(str, idx);
+    return cl__rowMajorAref(str, idx).as_unsafe<Character_O>();
   else
     TYPE_ERROR(str, cl::_sym_simple_string);
 }
@@ -962,7 +962,7 @@ DOCGROUP(clasp);
 CL_DEFUN Character_sp cl__char(String_sp str, size_t idx) {
   if (str.isA<SimpleBaseString_O>() || str.isA<Str8Ns_O>()
       || str.isA<SimpleCharacterString_O>() || str.isA<StrWNs_O>())
-    return cl__rowMajorAref(str, idx);
+    return cl__rowMajorAref(str, idx).as_unsafe<Character_O>();
   else
     TYPE_ERROR(str, cl::_sym_string);
 };
