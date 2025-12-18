@@ -17,6 +17,7 @@
 * The bytecode compiler detects malformed bindings.
 * Literal arrays with fill pointers are not dumped with excess elements.
 * `setf` of `apply` no longer has multiple evaluation problems.
+* Improve error messages for package name conflicts. Fixes #1722.
 
 ## Removed
 * `-z`/`--snapshot-symbols-save` command line option, occasionally used

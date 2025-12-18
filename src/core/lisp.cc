@@ -814,6 +814,14 @@ void Lisp::finishPackageSetup(const string& pkgname, list<string> const& nicknam
   }
 };
 
+void package_name_conflict(Package_sp existing_package, SimpleString_sp name, T_sp nickp) {
+  CEpackage_error("Cannot create a package with a ~:[name~;nickname~] of ~a since ~:[the package named ~a already uses that "
+                  "nickname~;there already exists a package with that name~].",
+                  "Delete existing package", existing_package, 4, nickp, name,
+                  _lisp->_boolean(name->equal(existing_package->name())), existing_package->name());
+  cl__delete_package(existing_package);
+}
+
 Package_sp Lisp::makePackage(const string& name, list<string> const& nicknames, list<string> const& usePackages,
                              list<std::string> const& shadow) {
   /* This function is written somewhat bizarrely for lock safety reasons.
@@ -825,33 +833,37 @@ Package_sp Lisp::makePackage(const string& name, list<string> const& nicknames, 
    * Instead we do this: Grab the lock. Try the operation. If the operation succeeds, just return.
    * If it fails, goto (yes, really) outside the lock scope so that we ungrab it, and signal an cerror there.
    * */
- start:
+start:
   string usedNickName;
   Package_sp packageUsingNickName;
   Package_sp existing_package;
   SimpleString_sp nonexistentUsedPackage;
+  SimpleString_sp query_name;
+  T_sp nickp = nil<T_O>();
   {
     WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
     SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
-    T_sp it = this->_Roots._PackageNameIndexMap->gethash(sname);
+    query_name = sname;
+    T_sp it = this->_Roots._PackageNameIndexMap->gethash(query_name);
     if (it.notnilp()) {
       ASSERT(it.fixnump());
       int existing_package_id = it.unsafe_fixnum();
       existing_package = this->_Roots._Packages[existing_package_id];
-      goto name_exists;
+      goto name_conflict;
     }
     // first check the nicknames, before we create the package, so that we
     // don't leave packages partly created
+    nickp = _lisp->_true();
     for (list<string>::const_iterator it = nicknames.begin(); it != nicknames.end(); it++) {
       string nickName = *it;
-      SimpleBaseString_sp snickName = SimpleBaseString_O::make(nickName);
-      T_sp nit = this->_Roots._PackageNameIndexMap->gethash(snickName);
+      query_name = SimpleBaseString_O::make(nickName);
+      T_sp nit = this->_Roots._PackageNameIndexMap->gethash(query_name);
       if (nit.notnilp() && nickName != name) {
         ASSERT(nit.fixnump());
         int existingIndex = nit.unsafe_fixnum();
         usedNickName = nickName;
         packageUsingNickName = this->_Roots._Packages[existingIndex];
-        goto nickname_exists;
+        goto name_conflict;
       }
     }
     // Now we know that there is no conflict about the package name or
@@ -875,7 +887,7 @@ Package_sp Lisp::makePackage(const string& name, list<string> const& nicknames, 
           int existingIndex = nit2.unsafe_fixnum();
           usedNickName = nickName;
           packageUsingNickName = this->_Roots._Packages[existingIndex];
-          goto nickname_exists;
+          goto name_conflict;
         }
         this->_Roots._PackageNameIndexMap->setf_gethash(snickName, make_fixnum(packageIndex));
         cnicknames = Cons_O::create(snickName, cnicknames);
@@ -905,20 +917,13 @@ Package_sp Lisp::makePackage(const string& name, list<string> const& nicknames, 
     }
     return newPackage;
   }
-// A correctable error is signaled if the package-name or any of the nicknames
-// is already the name or nickname of an existing package.
-// The correction is to delete the existing package.
- name_exists:
-  CEpackage_error("There already exists a package with name: ~a", "Delete existing package", existing_package, 1,
-                  SimpleBaseString_O::make(name));
-  cl__delete_package(existing_package);
+  // A correctable error is signaled if the package-name or any of the nicknames
+  // is already the name or nickname of an existing package.
+  // The correction is to delete the existing package.
+name_conflict:
+  package_name_conflict(existing_package, query_name, nickp);
   goto start;
- nickname_exists:
-  CEpackage_error("There already exists a package with nickname: ~a", "Delete existing package", existing_package, 1,
-                  SimpleBaseString_O::make(name));
-  cl__delete_package(existing_package);
-  goto start;
- nonexistent_used_package:
+nonexistent_used_package:
   // FIXME: It might be nicer to let the error be correctable,
   // e.g. by not trying to USE the nonexistent package.
   // (The standard actually leaves this situation undefined.)
@@ -926,12 +931,15 @@ Package_sp Lisp::makePackage(const string& name, list<string> const& nicknames, 
 }
 
 Package_sp Lisp::makePackage(SimpleString_sp name, List_sp nicknames, List_sp use) {
- start:
+start:
   T_sp existingPackage;
   SimpleString_sp nonexistentUsedPackage;
+  SimpleString_sp query_name = name;
+  T_sp nickp = nil<T_O>();
   // We need to coerce the nicknames for setNicknames so do that first.
   ql::list qnicknames;
-  for (auto nc : nicknames) qnicknames << coerce::simple_string(oCar(nc));
+  for (auto nc : nicknames)
+    qnicknames << coerce::simple_string(oCar(nc));
   List_sp cnicknames = qnicknames.cons();
   {
     WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
@@ -939,10 +947,14 @@ Package_sp Lisp::makePackage(SimpleString_sp name, List_sp nicknames, List_sp us
     // conflict with existing packages. This prevents us from half-making
     // packages.
     existingPackage = this->findPackage_no_lock(name);
-    if (existingPackage.notnilp()) goto name_exists;
+    if (existingPackage.notnilp())
+      goto name_conflict;
+    nickp = _lisp->_true();
     for (auto nc : cnicknames) {
-      existingPackage = this->findPackage_no_lock(oCar(nc).as_unsafe<SimpleString_O>());
-      if (existingPackage.notnilp()) goto name_exists;
+      query_name = oCar(nc).as_unsafe<SimpleString_O>();
+      existingPackage = this->findPackage_no_lock(query_name);
+      if (existingPackage.notnilp())
+        goto name_conflict;
     }
     // We're good, make the package.
     Package_sp newPackage = Package_O::create(name);
@@ -965,11 +977,10 @@ Package_sp Lisp::makePackage(SimpleString_sp name, List_sp nicknames, List_sp us
     // Done!
     return newPackage;
   }
- name_exists:
-  CEpackage_error("There already exists a package with name: ~a", "Delete existing package", existingPackage.as_unsafe<Package_O>(), 1, name);
-  cl__delete_package(existingPackage);
+name_conflict:
+  package_name_conflict(existingPackage.as_unsafe<Package_O>(), query_name, nickp);
   goto start;
- nonexistent_used_package:
+nonexistent_used_package:
   PACKAGE_ERROR(nonexistentUsedPackage);
 }
 
