@@ -21,7 +21,7 @@
   :directory "dependencies/ansi-test/"
   :repository "https://github.com/clasp-developers/ansi-test.git"
   :branch "master"
-  :commit "7986b6c4ce13f527ac23694fcb6747fd28e0264a"
+  :commit "a1107c9564833680c72946f1cd87c9c3bbe0de5a"
   :pin 1)
  (:name :architecture.builder-protocol
   :extension :cando
@@ -80,7 +80,7 @@
   :directory "dependencies/cl-bench/"
   :repository "https://github.com/clasp-developers/cl-bench.git"
   :branch "master"
-  :commit "7d184b4ef2a6272f0e3de88f6c243edb20f7071a"
+  :commit "553fbcdf88d2ca4e340a0cdf02679055f3279c8f"
   :pin 1)
  (:name :cl-conspack
   :extension :cando
@@ -132,7 +132,7 @@
   :directory "src/lisp/kernel/contrib/closer-mop/"
   :repository "https://github.com/pcostanza/closer-mop.git"
   :branch "master"
-  :commit "6c5b85701a2cccb0e11d1257c7a92db970a96d77"
+  :commit "4809f692ecf7b7c8c01ebea55ee10489e0992920"
   :pin 1)
  (:name :concrete-syntax-tree
   :directory "src/lisp/kernel/contrib/Concrete-Syntax-Tree/"
@@ -184,7 +184,7 @@
   :directory "src/lisp/kernel/contrib/Khazern/"
   :repository "https://github.com/s-expressionists/Khazern.git"
   :branch "master"
-  :commit "5fa6d4d44aa1ef7e3100e85ae6cfcb58dae140c3"
+  :commit "5fcdea59072fb020ebe335bcd092f9eed78a9a91"
   :pin 1)
  (:name :let-plus
   :extension :cando
@@ -197,7 +197,7 @@
   :directory "src/libatomic_ops/"
   :repository "https://github.com/ivmai/libatomic_ops.git"
   :branch "master"
-  :commit "508d227476dfc35060279ab8469053e4bb3318df"
+  :commit "fdccf2b3cdcad5584af0554fceff83d3342d5ebc"
   :pin 1)
  (:name :lparallel
   :extension :cando
@@ -287,7 +287,7 @@
   :directory "src/lisp/kernel/contrib/trinsic/"
   :repository "https://github.com/s-expressionists/trinsic.git"
   :branch "main"
-  :commit "c61fcafaad4dda4c7c7254a599c53b3264f03308"
+  :commit "6303b29c0b28c53ceb5fe5c41de1098020a2ec67"
   :pin 1)
  (:name :trivial-do
   :directory "dependencies/trivial-do/"
@@ -331,7 +331,7 @@
   :directory "src/lisp/kernel/contrib/trivial-package-locks/"
   :repository "https://github.com/yitzchak/trivial-package-locks.git"
   :branch "main"
-  :commit "ca2e2b17124c7898942894383002313cea59486d"
+  :commit "4eae62c0330fd37105642f6db18d0ea28449638e"
   :pin 1)
  (:name :trivial-utf-8
   :extension :cando
