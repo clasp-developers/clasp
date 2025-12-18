@@ -815,13 +815,10 @@ void Lisp::finishPackageSetup(const string& pkgname, list<string> const& nicknam
 };
 
 void package_name_conflict(Package_sp existing_package, SimpleString_sp name, T_sp nickp) {
-  if (name->equal(existing_package->name()))
-    CEpackage_error("Cannot create a package with a ~:[name~;nickname~] of ~a since there already exists a package with that name.",
-                    "Delete existing package", existing_package, 2, nickp, name);
-  else
-    CEpackage_error(
-        "Cannot create a package with a ~:[name~;nickname~] of ~a since the package named ~a already uses that nickname.",
-        "Delete existing package", existing_package, 3, nickp, name, existing_package->name());
+  CEpackage_error("Cannot create a package with a ~:[name~;nickname~] of ~a since ~:[the package named ~a already uses that "
+                  "nickname~;there already exists a package with that name~].",
+                  "Delete existing package", existing_package, 4, nickp, name,
+                  _lisp->_boolean(name->equal(existing_package->name())), existing_package->name());
   cl__delete_package(existing_package);
 }
 
