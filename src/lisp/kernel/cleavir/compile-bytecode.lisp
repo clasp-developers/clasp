@@ -6,7 +6,9 @@
                     (#:env #:cleavir-env)
                     (#:policy #:cleavir-compilation-policy)
                     (#:build #:cleavir-bir-builder))
-  (:export #:compile-module #:compile-function #:compile-hook))
+  (:export #:compile-module #:compile-function #:compile-hook)
+  (:export #:compile-cmodule
+           #:nmodule-code #:nmodule-literals #:nmodule-fmap))
 
 (in-package #:clasp-bytecode-to-bir)
 

@@ -141,13 +141,7 @@
            (*compile-file-source-debug-pathname*
              (if cfsdpp source-debug-pathname compile-file-truename))
            (*compile-file-file-scope*
-             (core:file-scope *compile-file-source-debug-pathname*))
-           ;; bytecode compilation can't be done in parallel at the moment.
-           ;; we could possibly warn about it if execution was specified,
-           ;; but practically speaking it would mostly be noise.
-           (execution (if (eq output-type :bytecode)
-                          :serial
-                          execution)))
+             (core:file-scope *compile-file-source-debug-pathname*)))
       ;; Many of the special variables (e.g. *optimize*) are not expected to be
       ;; used by macroexpanders or other user code, so they can just always be
       ;; bound in the usual environment. But a few are user-accessible.
@@ -182,9 +176,8 @@
                                 environment
                               &allow-other-keys)
   (declare (ignore environment image-startup-position type optimize-level optimize))
-  (let ((*compile-file-parallel* nil))
-    (if t;; (eq output-type :bytecode)
-        (apply #'cmpltv:bytecode-compile-stream input-stream output-path args)
-        ;; Defined later in cleavir/compile-file.lisp
-        (apply #'native-compile-stream input-stream output-path args)))
+  (if t;; (eq output-type :bytecode)
+      (apply #'cmpltv:bytecode-compile-stream input-stream output-path args)
+      ;; Defined later in cleavir/compile-file.lisp
+      (apply #'native-compile-stream input-stream output-path args))
   (truename output-path))

@@ -225,3 +225,123 @@
                       collect `(maybe-reoptimize #',fdesig))
               (deoptimized))
       `(%reoptimize-all)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Also in here for reasons: the compile-file thread pool
+;;; Native compilation is slow, but thread safe, so when we compile-file
+;;; we do it in parallel. See cmpltv::*native-compile-file-all*
+
+(in-package #:cmp)
+
+;;; note: jobs are intended to be an implementation detail. the user of
+;;; the thread pool only gets results; see THREAD-POOL-FINISH
+(defclass native-compile-job ()
+  ((%function :initarg :function :reader ncjob-function)
+   (%arguments :initarg :arguments :reader ncjob-arguments)
+   (%result :initform nil :accessor ncjob-result)
+   (%serious-condition :initform nil :accessor ncjob-serious-condition)
+   (%warnings :initform nil :accessor ncjob-warnings)
+   (%notes :initform nil :accessor ncjob-notes)
+   (%other-conditions :initform nil :accessor ncjob-other-conditions)
+   ;; arbitrary data passed to thread-pool-enqueue
+   ;; and returned by thread-pool-finish
+   (%extra :initarg :extra :reader ncjob-extra)))
+
+(defun native-compile-worker (queue)
+  (lambda ()
+    (declare (core:lambda-name native-compile-worker))
+    (loop for job = (core:dequeue queue)
+          until (eq job :quit)
+          do (block nil
+               (setf (ncjob-result job)
+                     (handler-bind
+                         ((serious-condition
+                            (lambda (e)
+                              (setf (ncjob-serious-condition job) e)
+                              ;; can't continue, so go wait for more jobs
+                              (return)))
+                          (warning
+                            (lambda (w)
+                              (push w (ncjob-warnings job))
+                              (muffle-warning w)))
+                          (ext:compiler-note
+                            (lambda (n)
+                              (push n (ncjob-notes job))
+                              (cmp::muffle-note n)))
+                          ((not (or ext:compiler-note warning serious-condition))
+                            (lambda (c)
+                              (push c (ncjob-other-conditions job)))))
+                       (apply (ncjob-function job)
+                              (ncjob-arguments job))))))))
+
+(defgeneric report-job-conditions (job))
+(defmethod report-job-conditions ((job native-compile-job))
+  (mapc #'signal (ncjob-other-conditions job))
+  ;; The WARN calls here never actually print warnings - the
+  ;; with-compilation-results handlers do, and then muffle the warnings
+  ;; (which is why we use WARN and not SIGNAL). Kind of ugly.
+  (mapc #'warn (ncjob-warnings job))
+  (mapc #'cmp:note (ncjob-notes job))
+  (when (ncjob-serious-condition job)
+    ;; We use SIGNAL rather than ERROR although the condition is serious.
+    ;; This is because the job has already exited and therefore there
+    ;; is no way to debug the problem. with-compilation-results will
+    ;; still understand that it's an error and report compilation failure.
+    ;; It's possible we could save the original backtrace and so on, but
+    ;; if you want to debug problems, it would probably be easier to
+    ;; use the serial compiler and debug them as they appear.
+    (signal (ncjob-serious-condition job))))
+
+(defclass nc-thread-pool ()
+  ((%threads :initarg :threads :reader nc-threads)
+   (%queue :initarg :queue :reader nc-queue)
+   (%jobs :initform nil :accessor nc-jobs)))
+
+(defun make-nc-thread-pool (&key (name 'native-compile-thread-pool)
+                              (nthreads (core:num-logical-processors))
+                              special-bindings)
+  (loop with queue = (core:make-queue name)
+        with conc-name = (format nil "~(~a~)-" (symbol-name name))
+        for thread-num below nthreads
+        collect (mp:process-run-function
+                 (format nil "~a-~d" conc-name thread-num)
+                 (native-compile-worker queue)
+                 special-bindings)
+          into threads
+        finally (return (make-instance 'nc-thread-pool
+                          :queue queue :threads threads))))
+
+(defun thread-pool-enqueue (pool function arguments &optional extra)
+  (let ((job (make-instance 'native-compile-job
+               :function function :arguments arguments :extra extra)))
+    (push job (nc-jobs pool))
+    (core:atomic-enqueue (nc-queue pool) job)))
+
+(defun enqueue-native-compilation (pool module bytecode literals debug-info id
+                                   debug-namestring)
+  (thread-pool-enqueue pool #'clasp-bytecode-to-bir:compile-cmodule
+                       (list bytecode literals debug-info id
+                             debug-namestring)
+                       module))
+
+(defun thread-pool-quit (pool)
+  (loop with queue = (nc-queue pool)
+        for thread in (nc-threads pool)
+        ;; only one is needed, but we do two out of an abundance of caution
+        ;; and because it's harmless
+        do (core:atomic-enqueue queue :quit)
+           (core:atomic-enqueue queue :quit)))
+
+(defun thread-pool-join (pool)
+  (mapc #'mp:process-join (nc-threads pool)))
+
+(defun thread-pool-finish (pool)
+  (thread-pool-quit pool)
+  (thread-pool-join pool)
+  ;; ok, now everything is done: signal conditions and return results
+  (loop for job in (nc-jobs pool)
+        do (report-job-conditions job)
+           ;; note that these are returned in the order they were enqueued.
+           ;; probably not important? but it's nice
+        collect (list (ncjob-extra job) (ncjob-result job))))

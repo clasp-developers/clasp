@@ -1571,6 +1571,9 @@
 #+clasp
 (defvar *native-module-id*)
 
+#+clasp
+(defvar *native-compile-thread-pool*)
+
 (defun add-module (value)
   ;; Add the module first to prevent recursion.
   (cmp:module/link value)
@@ -1604,45 +1607,59 @@
     ;; Native compilation.
     #+clasp
     (when *native-compile-file-all*
-      (handler-case
-          (let* ((id *native-module-id*)
-                 (native (funcall (find-symbol "COMPILE-CMODULE"
-                                               "CLASP-BYTECODE-TO-BIR")
-                                  bytecode literals info id
-                                  (namestring cmp::*compile-file-source-debug-pathname*)))
-                 (code (funcall (find-symbol "NMODULE-CODE"
-                                             "CLASP-BYTECODE-TO-BIR")
-                                native))
-                 (nlits (funcall (find-symbol "NMODULE-LITERALS"
-                                              "CLASP-BYTECODE-TO-BIR")
-                                 native))
-                 (fmap (funcall (find-symbol "NMODULE-FMAP"
-                                             "CLASP-BYTECODE-TO-BIR")
-                                native)))
-            (incf *native-module-id*)
-            (add-instruction
-             (make-instance 'module-native-attr
-               :module mod
-               :id id
-               :code code
-               :literals (native-literals nlits)))
-            ;; Add attributes for the functions as well.
-            ;; We do this here instead of in the CFUNCTION methods because
-            ;; of the recursive nature of functions referring to modules
-            ;; referring to functions yada yada bla bla.
-            ;; It's possible that a bytecode function does not appear
-            ;; in the fmap. This can occur because e.g. it was inlined
-            ;; away. That's ok, it just means we don't dump an attr for it.
-            (loop for (f main xep) in fmap
-                  do (add-instruction
-                      (make-instance 'function-native-attr
-                        :function (ensure-function f)
-                        :id id :main main :xep xep))))
-        (serious-condition (e)
-          ;; error? who cares, native code is optional, move on
-          (warn "Unhandled serious condition while compiling native module:~%~a
-Abandoning further work on it and moving on." e))))
+      (if cmp::*compile-file-parallel*
+          (progn
+            (cmp::enqueue-native-compilation
+             *native-compile-thread-pool*
+             mod bytecode literals info *native-module-id*
+             (namestring cmp::*compile-file-source-debug-pathname*))
+            (incf *native-module-id*))
+          ;; serial - do it immediately
+          (handler-case
+              (let* ((id *native-module-id*)
+                     (native (funcall (find-symbol "COMPILE-CMODULE"
+                                                   "CLASP-BYTECODE-TO-BIR")
+                                      bytecode literals info id
+                                      (namestring cmp::*compile-file-source-debug-pathname*))))
+                (incf *native-module-id*)
+                (add-native-module-instructions mod native))
+            (serious-condition (e)
+              ;; error? who cares, native code is optional, move on
+              (warn "Unhandled serious condition while compiling native module:~%~a
+Abandoning further work on it and moving on." e)))))
     mod))
+
+(defun add-native-module-instructions (module native-module)
+  (let* ((code (funcall (find-symbol "NMODULE-CODE"
+                                     "CLASP-BYTECODE-TO-BIR")
+                        native-module))
+         (nlits (funcall (find-symbol "NMODULE-LITERALS"
+                                      "CLASP-BYTECODE-TO-BIR")
+                         native-module))
+         (fmap (funcall (find-symbol "NMODULE-FMAP"
+                                     "CLASP-BYTECODE-TO-BIR")
+                        native-module))
+         (id (funcall (find-symbol "NMODULE-ID"
+                                   "CLASP-BYTECODE-TO-BIR")
+                      native-module)))
+    (add-instruction
+     (make-instance 'module-native-attr
+       :module module
+       :id id
+       :code code
+       :literals (native-literals nlits)))
+    ;; Add attributes for the functions as well.
+    ;; We do this here instead of in the CFUNCTION methods because
+    ;; of the recursive nature of functions referring to modules
+    ;; referring to functions yada yada bla bla.
+    ;; It's possible that a bytecode function does not appear
+    ;; in the fmap. This can occur because e.g. it was inlined
+    ;; away. That's ok, it just means we don't dump an attr for it.
+    (loop for (f main xep) in fmap
+          do (add-instruction
+              (make-instance 'function-native-attr
+                :function (ensure-function f)
+                :id id :main main :xep xep)))))
 
 (defun native-literals (native-literals)
   (map 'vector #'ensure-module-literal native-literals))
@@ -1982,29 +1999,39 @@ Abandoning further work on it and moving on." e))))
   ;; *COMPILE-PRINT* is defined later in compile-file.lisp.
   (declare (special *compile-print*))
   (with-constants ()
-    ;; Read and compile the forms.
-    (loop with eof = (gensym "EOF")
-          with *native-module-id* = 0
-          with *compile-time-too* = nil
-          with eclector.reader:*client*
-            = (if *environment*
-                  (make-instance 'cmp::clasp-alternate-env-client
-                    :environment *environment*)
-                  *reader-client*)
-          with cfsdp = (core:file-scope cmp::*compile-file-source-debug-pathname*)
-          with cfsdl = cmp::*compile-file-source-debug-lineno*
-          with cfsdo = cmp::*compile-file-source-debug-offset*
-          ;; Force this into a lexenv so macroexpand etc. work correctly
-          ;; with arbitrary global environments.
-          with env = (cmp:make-null-lexical-environment *environment*)
-          for core:*current-source-pos-info*
-            = (core:input-stream-source-pos-info input cfsdp cfsdl cfsdo)
-          for cmp:*source-locations* = (make-hash-table :test #'eq)
-          for form = (eclector.parse-result:read eclector.reader:*client* input nil eof)
-          until (eq form eof)
-          do (when *compile-print*
-               (cmp::describe-form form))
-             (bytecode-compile-toplevel form env))
+    (progv '(*native-compile-thread-pool*)
+        (if (and *native-compile-file-all* cmp::*compile-file-parallel*)
+            (list (cmp::make-nc-thread-pool))
+            nil) ; don't bind
+      ;; Read and compile the forms.
+      (loop with eof = (gensym "EOF")
+            with *native-module-id* = 0
+            with *compile-time-too* = nil
+            with eclector.reader:*client*
+              = (if *environment*
+                    (make-instance 'cmp::clasp-alternate-env-client
+                      :environment *environment*)
+                    *reader-client*)
+            with cfsdp = (core:file-scope cmp::*compile-file-source-debug-pathname*)
+            with cfsdl = cmp::*compile-file-source-debug-lineno*
+            with cfsdo = cmp::*compile-file-source-debug-offset*
+            ;; Force this into a lexenv so macroexpand etc. work correctly
+            ;; with arbitrary global environments.
+            with env = (cmp:make-null-lexical-environment *environment*)
+            for core:*current-source-pos-info*
+              = (core:input-stream-source-pos-info input cfsdp cfsdl cfsdo)
+            for cmp:*source-locations* = (make-hash-table :test #'eq)
+            for form = (eclector.parse-result:read eclector.reader:*client* input nil eof)
+            until (eq form eof)
+            do (when *compile-print*
+                 (cmp::describe-form form))
+               (bytecode-compile-toplevel form env))
+      ;; If we're native compile filing in parallel, write out those insts
+      (when (and *native-compile-file-all* cmp::*compile-file-parallel*)
+        (loop for (module nmodule)
+                in (cmp::thread-pool-finish *native-compile-thread-pool*)
+              unless (null nmodule)
+                do (add-native-module-instructions module nmodule))))
     ;; Write out the FASL bytecode.
     (cmp:with-atomic-file-rename (temp-output-path output-path)
       (with-open-file (output temp-output-path
