@@ -43,7 +43,8 @@
     ;; misc
     (%export '(#:function-name-package))
     ;; stepper
-    (%export '(#:step-form #:step-into #:step-over))
+    (%export '(#:step-condition #:step-form #:step-call
+               #:step-into #:step-over))
     (import '(core:set-breakstep core:unset-breakstep core:breakstepping-p))
     (export '(core:set-breakstep core:unset-breakstep core:breakstepping-p))))
 
