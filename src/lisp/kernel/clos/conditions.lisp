@@ -493,14 +493,13 @@ format string."
                          :FORMAT-ARGUMENTS format-arguments)))))
   nil)
 
-(defun breakstep (source)
+(defun %breakstep (condition)
   "Pause due to stepping or a breakpoint."
   (clasp-debug:with-truncated-stack ()
     (restart-case
         (let ((*debugger-hook* nil))
-          (invoke-debugger
-           (make-condition 'clasp-debug:step-form :source source)))
-      ;; cc_breakstep interprets our return value as follows:
+          (invoke-debugger condition))
+      ;; the C++ breakstep interprets our return value as follows:
       ;; 0: continue without stepping
       ;; 1: step-into
       ;; 2: step-over
@@ -509,11 +508,20 @@ format string."
         :report "Resume normal, unstepped execution."
         0)
       (clasp-debug:step-into ()
-        :report "Step into call."
+        :report "Step into form."
         1)
       (clasp-debug:step-over ()
-        :report "Step over call."
+        :report "Step over form."
         2))))
+
+;;; called from C++ - see step.cc
+(defun breakstep (source)
+  (%breakstep (make-condition 'clasp-debug:step-form :source source)))
+(defun breakstep-arguments (function arguments &optional source)
+  (%breakstep (make-condition 'clasp-debug:step-call
+                              :source source
+                              :function function :arguments arguments
+                              :arguments-available-p t)))
 
 (defun warn (datum &rest arguments)
   "Args: (format-string &rest args)
@@ -1255,12 +1263,32 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
 			   for value in values
 			   collect (assert-prompt place-name value)))))))
 
-(define-condition step-condition () ())
+(define-condition clasp-debug:step-condition () ())
 
-(define-condition clasp-debug:step-form (step-condition)
+(define-condition clasp-debug:step-form (clasp-debug:step-condition)
   ((%source :initarg :source :reader source))
   (:report (lambda (condition stream)
-             (format stream "Evaluating form: ~s" (source condition)))))
+             (format stream "Evaluating form:~%~t~s" (source condition)))))
+
+(define-condition clasp-debug:step-call (clasp-debug:step-condition)
+  ((%source :initarg :source :reader source)
+   (%called-function :initarg :function :reader called-function)
+   (%arguments :initarg :arguments :reader arguments)
+   (%arguments-available-p :initarg :arguments-available-p
+                           :reader arguments-available-p))
+  (:report (lambda (condition stream)
+             (let ((form (source condition)))
+               (if form ; NIL is never really a call
+                   (format stream "Evaluating form:~%~t~s" form)
+                   (let* ((function (called-function condition))
+                          (name (and function (core:function-name function)))
+                          (dname (if (eq name 'cl:lambda)
+                                     "anonymous function"
+                                     name)))
+                     (format stream "Calling ~a" name))))
+             (when (arguments-available-p condition)
+               (format stream "~%With arguments:~%~t~s"
+                       (arguments condition))))))
 
 ;;; ----------------------------------------------------------------------
 ;;; Unicode, initially forgotten in clasp

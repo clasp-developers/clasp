@@ -17,6 +17,7 @@
            #~"stackmap.cc"
            #~"debugger.cc"
            #~"debugger2.cc"
+           #~"step.cc"
            #~"backtrace.cc"
            #~"bytecode.cc"
            #~"bytecode_compiler.cc"
