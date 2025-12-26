@@ -202,11 +202,11 @@
                           "core::SimpleVector_int64_t_O" "llvmo::ConstantDataSequential_O"
                           "chem::SuperposeEngine_O" "comp::EntryFixup_O"
                           "core::MDArray_short_float_O"
-                          "chem::BeyondThresholdFixedNonbondRestraint" "units::NamedUnit_O"
-                          "core::MDArray_double_O" "llvmo::StoreInst_O" "llvmo::DebugLoc_O"
-                          "chem::ResidueList_O" "core::WeakPointer_O" "core::DestDynEnv_O"
-                          "chem::EnergyNonbond" "comp::Annotation_O" "core::DynEnv_O"
-                          "core::BytecodeAstBlock_O" "comp::LexSetFixup_O"
+                          "chem::BeyondThresholdFixedNonbondRestraint" "chem::AtomGrid_O"
+                          "units::NamedUnit_O" "core::MDArray_double_O" "llvmo::StoreInst_O"
+                          "llvmo::DebugLoc_O" "chem::ResidueList_O" "core::WeakPointer_O"
+                          "core::DestDynEnv_O" "chem::EnergyNonbond" "comp::Annotation_O"
+                          "core::DynEnv_O" "core::BytecodeAstBlock_O" "comp::LexSetFixup_O"
                           "core::SimpleMDArray_byte8_t_O" "core::UnwindProtectDynEnv_O"
                           "comp::SymbolMacroVarInfo_O" "chem::VirtualSphere_O"
                           "chem::ProperTorsion_O" "chem::IterateResidues_O" "comp::LexicalInfo_O"
@@ -930,6 +930,9 @@
              :layout-offset-field-names ("_Nonbond_r_cut")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyNonbond_O"
+             :layout-offset-field-names ("_Nonbond_r_pairlist")}
+{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
+             :offset-base-ctype "chem::EnergyNonbond_O"
              :layout-offset-field-names ("_Nonbond_invdd")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::EnergyNonbond_O"
@@ -1042,6 +1045,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_Nonbond_r_cut")}
+{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
+             :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
+             :layout-offset-field-names ("_Nonbond_r_pairlist")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_Nonbond_invdd")}
@@ -1555,6 +1561,49 @@
              :offset-base-ctype "chem::VirtualSphere_O" :layout-offset-field-names ("_Recalculate")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::VirtualSphere_O" :layout-offset-field-names ("_Scale")}
+{class-kind :stamp-name "STAMPWTAG_chem__AtomGrid_O" :stamp-key "chem::AtomGrid_O"
+            :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
+             :offset-base-ctype "chem::AtomGrid_O" :layout-offset-field-names ("_OriginX")}
+{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
+             :offset-base-ctype "chem::AtomGrid_O" :layout-offset-field-names ("_OriginY")}
+{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
+             :offset-base-ctype "chem::AtomGrid_O" :layout-offset-field-names ("_OriginZ")}
+{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
+             :offset-base-ctype "chem::AtomGrid_O" :layout-offset-field-names ("_CellSize")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "chem::AtomGrid_O" :layout-offset-field-names ("_Nx")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "chem::AtomGrid_O" :layout-offset-field-names ("_Ny")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "chem::AtomGrid_O" :layout-offset-field-names ("_Nz")}
+{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
+             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>"
+             :offset-base-ctype "chem::AtomGrid_O"
+             :layout-offset-field-names ("_Cells" "._Vector" "._Contents")}
+{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
+             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<double>>"
+             :offset-base-ctype "chem::AtomGrid_O"
+             :layout-offset-field-names ("_CellMaxRadius" "._Vector" "._Contents")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-base-ctype "chem::AtomGrid_O" :layout-offset-field-names ("_Positions")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-base-ctype "chem::AtomGrid_O" :layout-offset-field-names ("_EffRadii")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::ComplexVector_double_O>"
+             :offset-base-ctype "chem::AtomGrid_O" :layout-offset-field-names ("_HeapBounds")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::ComplexVector_size_t_O>"
+             :offset-base-ctype "chem::AtomGrid_O" :layout-offset-field-names ("_HeapCells")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_char" :offset-ctype "unsigned char"
+             :offset-base-ctype "chem::AtomGrid_O" :layout-offset-field-names ("_VisitedFlag")}
+{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
+             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<unsigned char>>"
+             :offset-base-ctype "chem::AtomGrid_O"
+             :layout-offset-field-names ("_Visited" "._Vector" "._Contents")}
 {class-kind :stamp-name "STAMPWTAG_chem__TwisterDriver_O" :stamp-key "chem::TwisterDriver_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -11542,6 +11591,16 @@
 {variable-field :offset-type-cxx-identifier "ctype_float" :fixup-ctype-offset-type-key "float"
                 :fixup-ctype-key "chem::EnergyOutOfZPlane"
                 :layout-offset-field-names ("term" ".za")}
+{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_unsigned_char_"
+                :stamp-key "gctools::GCVector_moveable<unsigned char>"
+                :parent-class "gctools::GCContainer" :lisp-class-base nil
+                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
+{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<unsigned char>"
+                 :field-names ("_Data")}
+{variable-capacity :ctype "unsigned char"
+                   :offset-base-ctype "gctools::GCVector_moveable<unsigned char>"
+                   :length-field-names ("_Capacity") :end-field-names ("_End")}
+{variable-field-only :offset-type-cxx-identifier "ctype_unsigned_char" :fixup-type "unsigned char"}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__"
                 :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
