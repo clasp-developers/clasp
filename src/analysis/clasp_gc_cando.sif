@@ -958,6 +958,16 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "chem::EnergyNonbond_O"
              :layout-offset-field-names ("_KeepInteractionFactory")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "chem::EnergyNonbond_O"
+             :layout-offset-field-names ("_DisplacementBuffer")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "chem::EnergyNonbond_O" :layout-offset-field-names ("_Matter1")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "chem::EnergyNonbond_O" :layout-offset-field-names ("_Matter2")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
              :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<chem::EnergyNonbond>>"
              :offset-base-ctype "chem::EnergyNonbond_O"
@@ -1077,6 +1087,18 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_KeepInteractionFactory")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
+             :layout-offset-field-names ("_DisplacementBuffer")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
+             :layout-offset-field-names ("_Matter1")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
+             :layout-offset-field-names ("_Matter2")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
              :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<chem::EnergyNonbond>>"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
