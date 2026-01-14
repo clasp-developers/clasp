@@ -415,6 +415,9 @@
                                (clos::class-slots . closer-mop:class-slots)
                                (clos::slot-definition-name
                                 . closer-mop:slot-definition-name)
+                               (clos::gf-info . gf-info)
+                               (clos::find-compiler-class
+                                . find-compiler-class)
                                (core::install-delayed-macros
                                 . %install-delayed-macros)
                                (cross-clasp.clasp.alexandria::make-gensym-list

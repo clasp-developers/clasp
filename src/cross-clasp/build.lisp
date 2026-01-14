@@ -30,7 +30,7 @@
                                                 ,output ,cfasl))))))
 
 ;;; Execute the system's build instruction.
-(defun build-system (system &key native)
+(defun build-system (system &key native (parallel-jobs 1))
   (let ((*compile-verbose* t) (*compile-print* t)
         (*load-verbose* t) (*load-print* t)
         ;; COMPILER instead of CMP so that we get Clasp's package,
@@ -53,12 +53,20 @@
               with compiler = (if native
                                   #'build-native-file
                                   #'build-bytecode-file)
+              with compile-count = (count :compile-file system
+                                          :key #'first)
               for (command . rest) in system
               do (ecase command
                    ((:compile-file)
                     (destructuring-bind (input source output cfasl) rest
-                      (funcall compiler input output source
-                               cfasl ct-client)))
+                      (cond ((> parallel-jobs 1)
+                             (fork-worker compiler input output source
+                                          cfasl ct-client)
+                             (maclina.load:load-bytecode
+                              cfasl :environment *build-rte*))
+                            (t
+                             (funcall compiler input output source
+                                      cfasl ct-client)))))
                    ((:load)
                     (destructuring-bind (cfasl) rest
                       (maclina.load:load-bytecode
@@ -76,10 +84,12 @@
   ;; We don't want native CFASLs so don't do that part.
   ;; That also means we don't need an evaluation-client,
   ;; which clasp's compile-file doesn't support in any case.
-  (declare (ignore ct-client)
-           #-clasp(ignore input output source cfasl))
+  (declare (ignore ct-client cfasl)
+           #-clasp(ignore input output source))
   #+clasp
-  (let ((cmpltv::*native-compile-file-all* t))
+  (let ((cmpltv::*native-compile-file-all* t)
+        ;; already doing fork build so don't do extra parallelism
+        (compiler:*compile-file-parallel* nil))
     (compile-file
      input :output-file output
            :environment *build-rte*
@@ -95,7 +105,11 @@
                                   source-pathnames cfasls)))
       (build-system system))))
 
-(defun build-native (input-files output-files source-pathnames cfasls)
+(defun build-native (input-files output-files source-pathnames cfasls
+                     &key (parallel-jobs 1))
   (let ((system (compute-system input-files output-files
                                 source-pathnames cfasls)))
-    (build-system system :native t)))
+    (with-forking (:parallel-jobs parallel-jobs
+                   :total-jobs (count :compile-file system
+                                      :key #'first))
+      (build-system system :native t :parallel-jobs parallel-jobs))))

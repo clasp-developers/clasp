@@ -38,4 +38,8 @@
                                                         "mp-macros" "mp-atomics"
                                                         "define-unicode-tables"
                                                         "cst" "packages"))
-               (:file "build" :depends-on ("base" "packages"))))
+               (:file "fork" :depends-on ("packages")
+                :if-feature :clasp)
+               (:file "build"
+                :depends-on ("base" "packages"
+                                    (:feature :clasp "fork")))))

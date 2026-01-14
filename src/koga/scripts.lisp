@@ -191,7 +191,11 @@
 (destructuring-bind (character-names features &rest sources)
     (uiop:command-line-arguments)
   (uiop:symbol-call \"CROSS-CLASP\" \"INITIALIZE\" character-names features)
-  (let* ((breaker (position \"--output\" sources :test #'string=))
+  (let* ((number-of-jobs
+           (if (ext:getenv \"CLASP_BUILD_JOBS\")
+               (parse-integer (ext:getenv \"CLASP_BUILD_JOBS\"))
+               ~d))
+         (breaker (position \"--output\" sources :test #'string=))
          (_ (unless breaker (error \"Need --output to compile-bytecode-image\")))
          (b2 (position \"--sources\" sources :test #'string=))
          (_2 (unless b2 (error \"Need --sources to compile-bytecode-image\")))
@@ -201,7 +205,8 @@
          (output (subseq sources (1+ breaker) b2))
          (sourcepaths (subseq sources (1+ b2) b3))
          (cfasls (subseq sources (1+ b3))))
-    (uiop:symbol-call \"CROSS-CLASP\" \"BUILD-NATIVE\" input output sourcepaths cfasls)))"))
+    (uiop:symbol-call \"CROSS-CLASP\" \"BUILD-NATIVE\" input output sourcepaths cfasls :parallel-jobs number-of-jobs)))"
+          (jobs configuration)))
 
 (defmethod print-prologue (configuration (name (eql :compile-systems)) output-stream)
   (declare (ignore configuration))
