@@ -17,14 +17,24 @@
     ;; FIXME: Durr
     (first (child-arguments job))))
 
+(defun ansi-control (&optional level)
+  (si:fmt t "%e[{:d}m"
+          (cond ((eq level :err)  31)
+                ((eq level :warn) 33)
+                ((eq level :emph) 32)
+                ((eq level :debug) 36)
+                ((eq level :info) 37)
+                (t 0))))
+
 (defun message (level control-string &rest args)
+  (ansi-control level)
   (apply #'format t control-string args)
-  (terpri)
-  (when (eq level :err) (si:exit 1)))
+  (ansi-control)
+  (terpri))
 
 (defun message-fd (level fd)
   (let ((buffer (make-array 1024 :element-type 'base-char :adjustable nil)))
-    #+(or)(ansi-control level)
+    (ansi-control level)
     (si:lseek fd 0 :seek-set)
     (loop (multiple-value-bind (num-read errno)
               (si:read-fd fd buffer)
@@ -33,7 +43,6 @@
                 (write-sequence buffer t :start 0 :end num-read)
                 (return))))
     (si:close-fd fd) ; FIXME: unwind protect?
-    #+(or)
     (ansi-control)))
 
 ;;; Given JOBS, which is a hash table from PIDs to FORK-WORKERs,
@@ -43,7 +52,8 @@
   (loop (multiple-value-bind (wpid status)
             (si:wait)
           (when (= -1 wpid)
-            (message :err "No children left to wait on."))
+            (message :err "No children left to wait on.")
+            (si:exit 1))
           (let ((entry (gethash wpid jobs)))
             (cond ((si:wifsignaled status)
                    (setf (child-signal entry) (si:wtermsig status))
@@ -56,16 +66,19 @@
 
 ;;; Display information about a completed job.
 (defun display-job (job)
-  (message nil "~:[Compiled~;Failed~] [~d~@[ of ~d~]] ~a~%"
-           (or (child-signal job) (not (zerop (child-status job))))
-           (index job) *total-jobs* (job-description job))
+  (let ((failedp
+          (or (child-signal job) (not (zerop (child-status job))))))
+    (message (if failedp :err :emph)
+             "~:[Compiled~;Failed~] [~d~@[ of ~d~]] ~a~%"
+             failedp
+             (index job) *total-jobs* (job-description job)))
   (message-fd :info (child-stdout job))
   (message-fd :warn (child-stderr job))
   (cond ((child-signal job)
-         (message :warn "~&~tProcess exited with signal ~a"
+         (message :err "~&~tProcess exited with signal ~a"
                   (child-signal job)))
         ((not (zerop (child-status job)))
-         (message :warn "~&~tProcess exited with status ~a"
+         (message :err "~&~tProcess exited with status ~a"
                   (child-status job)))))
 
 ;;; Fork off a process to apply FUNCTION to ARGUMENTS.
