@@ -85,8 +85,8 @@
 
 (test-true compile-file-with-lambda
       (let ()
-        (compile-file #P"sys:src;lisp;regression-tests;latin2-check.lisp" :external-format :iso-8859-1 :execution :serial)
-        (compile-file #P"sys:src;lisp;regression-tests;latin2-check.lisp" :external-format :iso-8859-1 :execution :parallel)))
+        (compile-file #P"sys:src;lisp;regression-tests;latin2-check.lisp" :external-format :iso-8859-1 :parallel nil)
+        (compile-file #P"sys:src;lisp;regression-tests;latin2-check.lisp" :external-format :iso-8859-1 :parallel t)))
 
 (test-expect-error compile-file-with-lambda-default-encoding
                    (compile-file #P"sys:src;lisp;regression-tests;latin2-check.lisp" :external-format :us-ascii)

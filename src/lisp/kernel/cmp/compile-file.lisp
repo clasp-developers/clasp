@@ -103,9 +103,8 @@
                        ((:print *compile-print*) *compile-print*)
                        (external-format :default)
                        ;; Extensions
-                       (execution (if *compile-file-parallel*
-                                      :parallel
-                                      :serial))
+                       ((:parallel *compile-file-parallel*)
+                        *compile-file-parallel*)
                        environment ; compilation environment
                        ;; output-type can be (or :faso :fasobc :fasoll :bytecode)
                        (output-type *default-output-type*)
@@ -155,26 +154,19 @@
             (when *compile-verbose*
               (format t "~&; Compiling file: ~a~%"
                       (namestring input-file)))
-            (ecase execution
-              ((:serial :parallel)
-               (apply #'compile-stream/serial source-sin output-path args))
-              #+(or)
-              (:parallel
-               ;; defined later in compile-file-parallel.lisp.
-               (apply #'compile-stream/parallel source-sin output-path
-                      args)))))))))
+            (apply #'compile-stream source-sin output-path args)))))))
 
-(defun compile-stream/serial (input-stream output-path &rest args
-                              &key
-                                (optimize t)
-                                (optimize-level *optimization-level*)
-                                (output-type *default-output-type*)
-                                ;; type can be either :kernel or :user
-                                (type :user)
-                                ;; Control the order of startup functions
-                                (image-startup-position (core:next-startup-position)) 
-                                environment
-                              &allow-other-keys)
+(defun compile-stream (input-stream output-path &rest args
+                       &key
+                         (optimize t)
+                         (optimize-level *optimization-level*)
+                         (output-type *default-output-type*)
+                         ;; type can be either :kernel or :user
+                         (type :user)
+                         ;; Control the order of startup functions
+                         (image-startup-position (core:next-startup-position)) 
+                         environment
+                       &allow-other-keys)
   (declare (ignore environment image-startup-position type optimize-level optimize))
   (if t;; (eq output-type :bytecode)
       (apply #'cmpltv:bytecode-compile-stream input-stream output-path args)
