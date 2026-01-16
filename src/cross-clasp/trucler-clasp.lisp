@@ -46,7 +46,9 @@
       (cmp:constant-var-info
        (make-instance 'trucler:constant-variable-description
          :name symbol
-         :value (ext:constant-form-value symbol env))))))
+         ;; FIXME: better interface
+         :value (core:variable-cell/value
+                 (core::fcge-ensure-vcell (cmp:lexenv/global env) symbol)))))))
 
 (defmethod trucler:describe-function
     ((client client)
