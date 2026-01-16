@@ -30,7 +30,7 @@
       (null
        ;; Not locally bound: Check the global environment.
        (trucler:describe-variable
-        system (cmp:lexenv/global env) symbol))
+        client (cmp:lexenv/global env) symbol))
       (cmp:lexical-var-info
        ;; This will probably not go well - cleavir expects an identity, etc.
        (make-instance 'trucler:lexical-variable-description
