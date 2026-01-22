@@ -531,7 +531,9 @@ Returns T if X belongs to TYPE; NIL otherwise."
     ;; Note that if you decide to change this, you'll need to alter the
     ;; compiler macro (in cmp/opt-type.lisp) as well.
     (COMPLEX (complexp object))
-    (SEQUENCE (or (listp object) (vectorp object)))
+    (SEQUENCE (or (listp object) (vectorp object)
+                  (si:subclassp (class-of object)
+                                (find-class 'sequence))))
     (CONS (and (consp object)
 	       (or (endp i)
 		   (let ((car-type (first i)))
@@ -1246,8 +1248,6 @@ if not possible."
       (SIMPLE-BASE-STRING (SIMPLE-ARRAY BASE-CHAR (*)))
       (core:simple-character-string (SIMPLE-ARRAY CHARACTER (*)))
       (BIT-VECTOR (ARRAY BIT (*)))
-
-      (SEQUENCE (OR CONS (MEMBER NIL) (ARRAY * (*))))
 
       (HASH-TABLE)
       (PATHNAME)

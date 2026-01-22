@@ -364,7 +364,9 @@
                   et
                   (upgraded-array-element-type et env)))))
           ((sequence)
-           `(or (listp object) (vectorp object)))
+           `(or (listp object) (vectorp object)
+                (subclassp (class-of object)
+                           (load-time-value (find-class 'sequence)))))
           ((standard-char)
            `(and (characterp object) (standard-char-p object)))
           ;; NOTE: Probably won't actually occur, due to normalization.
