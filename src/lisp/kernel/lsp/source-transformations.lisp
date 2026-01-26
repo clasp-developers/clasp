@@ -53,8 +53,8 @@
   ;;; removes toplevelness.
   (defmacro the-single (type form &optional (return nil returnp))
     (if returnp
-        `(%the-single-return ',type ,form ,return)
-        `(%the-single ',type ,form)))
+        `(%the-single-return ',type (values ,form) ,return)
+        `(%the-single ',type (values ,form))))
 
   (defun %the-single (type value)
     (unless (typep value type)
