@@ -64,7 +64,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v6
 
-    - uses: conda-incubator/setup-miniconda@v3.2.0
+    - uses: conda-incubator/setup-miniconda@v3.3.0
       if: matrix.build == 'cando'
 
     - name: Install AmberTools
