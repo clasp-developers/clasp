@@ -42,7 +42,7 @@ namespace clbind {
 
 template <class OT, class WT> gctools::smart_ptr<OT> RP_Create_wrapper() {
   _G();
-  auto wrapper = gctools::GC<OT>::allocate_with_default_constructor();
+  auto wrapper = gctools::GC<OT>::allocate();
   return wrapper;
 }
 

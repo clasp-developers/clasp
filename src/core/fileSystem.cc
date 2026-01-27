@@ -111,13 +111,13 @@ Path_O::Path_O(Path_O const& other) : Base(other) { this->_Path = other._Path; }
 void Path_O::initialize() { this->Base::initialize(); }
 
 Path_sp Path_O::create(const string& path) {
-  auto op = gctools::GC<Path_O>::allocate_with_default_constructor();
+  auto op = gctools::GC<Path_O>::allocate();
   op->setPathFromString(path);
   return op;
 }
 
 Path_sp Path_O::create(std::filesystem::path p) {
-  auto op = gctools::GC<Path_O>::allocate_with_default_constructor();
+  auto op = gctools::GC<Path_O>::allocate();
   op->setPath(p);
   return op;
 }
@@ -175,7 +175,7 @@ CL_LISPIFY_NAME("path-absolute");
 CL_DEFMETHOD Path_sp Path_O::absolute() const {
   if (this->_Path._value.is_absolute())
     return this->copyPath();
-  auto abs = gctools::GC<Path_O>::allocate_with_default_constructor();
+  auto abs = gctools::GC<Path_O>::allocate();
   abs->_Path = std::filesystem::absolute(this->_Path._value);
   return abs;
 }
@@ -247,7 +247,7 @@ CL_LISPIFY_NAME("exists");
 CL_DEFMETHOD bool Path_O::exists() { return std::filesystem::exists(this->_Path._value); }
 
 DirectoryIterator_sp DirectoryIterator_O::create(Path_sp path) {
-  auto di = gctools::GC<DirectoryIterator_O>::allocate_with_default_constructor();
+  auto di = gctools::GC<DirectoryIterator_O>::allocate();
   di->setPath(path);
   return di;
 }
@@ -315,7 +315,7 @@ T_sp DirectoryIterator_O::currentObject() {
 DirectoryIterator_O::~DirectoryIterator_O() { delete this->_CurrentIterator._value; }
 
 RecursiveDirectoryIterator_sp RecursiveDirectoryIterator_O::create(Path_sp path) {
-  auto di = gctools::GC<RecursiveDirectoryIterator_O>::allocate_with_default_constructor();
+  auto di = gctools::GC<RecursiveDirectoryIterator_O>::allocate();
   di->setPath(path);
   return di;
 }

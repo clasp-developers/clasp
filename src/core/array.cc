@@ -1163,7 +1163,7 @@ CL_DEFUN clasp_ffi::ForeignData_sp core__coerce_memory_to_foreign_data(Array_sp 
     source->asAbstractSimpleVectorRange(asv, start, end);
     const unsigned char* memory_start = reinterpret_cast<const unsigned char*>(asv->rowMajorAddressOfElement_(start));
     const unsigned char* memory_end = reinterpret_cast<const unsigned char*>(asv->rowMajorAddressOfElement_(end));
-    auto data = gctools::GC<clasp_ffi::ForeignData_O>::allocate_with_default_constructor();
+    auto data = gctools::GC<clasp_ffi::ForeignData_O>::allocate();
     data->allocate(ext::_sym_byte8, DeleteOnDtor, memory_end - memory_start);
     memcpy(const_cast<void*>(data->orig_data_ptr()), (void*)memory_start, memory_end - memory_start);
     return data;

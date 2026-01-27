@@ -154,7 +154,7 @@ CL_DEFUN DILocation_sp DILocation_O::make(llvm::LLVMContext& context, unsigned i
     DILocation_sp temp = gc::As<DILocation_sp>(inlinedAt);
     realInlinedAt = temp->operator llvm::Metadata*();
   }
-  auto ret = gctools::GC<DILocation_O>::allocate_with_default_constructor();
+  auto ret = gctools::GC<DILocation_O>::allocate();
   ret->set_wrapped(llvm::DILocation::get(context, line, col, realScope, realInlinedAt));
   return ret;
 }
@@ -164,7 +164,7 @@ CL_LISPIFY_NAME(make-dibuilder);
 DOCGROUP(clasp);
 CL_DEFUN DIBuilder_sp DIBuilder_O::make(Module_sp module) {
   _G();
-  auto me = gctools::GC<DIBuilder_O>::allocate_with_default_constructor();
+  auto me = gctools::GC<DIBuilder_O>::allocate();
   me->set_wrapped(new llvm::DIBuilder(*(module->wrappedPtr())));
   return me;
 };

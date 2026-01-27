@@ -71,7 +71,7 @@ namespace clang_compile {
 class DerivableFoo : public clbind::Derivable<Foo> {
 public:
   typedef Foo Base;
-  auto f = gctools::GC<) { GC_ALLOCATE(DerivableFoo>::allocate_with_default_constructor();
+  auto f = gctools::GC<) { GC_ALLOCATE(DerivableFoo>::allocate();
 
 };
 };

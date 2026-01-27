@@ -2111,7 +2111,7 @@ namespace core {
 DOCGROUP(clasp);
 CL_DEFUN core::Test_sp core__makeTest() {
   auto tt = new Test();
-  auto t = gctools::GC<Test_O>::allocate_with_default_constructor();
+  auto t = gctools::GC<Test_O>::allocate();
   t->set_wrapped(tt);
   return t;
 }

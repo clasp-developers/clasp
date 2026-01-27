@@ -445,7 +445,7 @@ ForeignData_sp PERCENTallocate_foreign_object(core::T_sp kind) {
     n_size = unbox_fixnum(gc::As<core::Fixnum_sp>(oCaddr(ckind)));
   }
 
-  auto self = gctools::GC<ForeignData_O>::allocate_with_default_constructor();
+  auto self = gctools::GC<ForeignData_O>::allocate();
   self->allocate(kind, core::DeleteOnDtor, n_size);
 
   return self;
@@ -459,7 +459,7 @@ void ForeignData_O::PERCENTfree_foreign_object(void) { this->free_(); }
 // ---------------------------------------------------------------------------
 ForeignData_sp PERCENTallocate_foreign_data(core::Integer_sp size) {
   size_t _size = unbox_fixnum(size);
-  auto self = gctools::GC<ForeignData_O>::allocate_with_default_constructor();
+  auto self = gctools::GC<ForeignData_O>::allocate();
   self->allocate(kw::_sym_clasp_foreign_data_kind_data, core::DeleteOnDtor, _size);
   return self;
 }
@@ -467,7 +467,7 @@ ForeignData_sp PERCENTallocate_foreign_data(core::Integer_sp size) {
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 ForeignData_sp allocate_foreign_data(uint64_t size) {
-  auto self = gctools::GC<ForeignData_O>::allocate_with_default_constructor();
+  auto self = gctools::GC<ForeignData_O>::allocate();
   self->allocate(kw::_sym_clasp_foreign_data_kind_data, core::DeleteOnDtor, size);
   return self;
 }
@@ -479,7 +479,7 @@ void ForeignData_O::PERCENTfree_foreign_data(void) { this->free_(); }
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 ForeignData_sp ForeignData_O::create(uintptr_t address) {
-  auto self = gctools::GC<ForeignData_O>::allocate_with_default_constructor();
+  auto self = gctools::GC<ForeignData_O>::allocate();
   self->m_raw_data = reinterpret_cast<void*>(address);
   self->set_kind(kw::_sym_clasp_foreign_data_kind_pointer);
   return self;
@@ -488,7 +488,7 @@ ForeignData_sp ForeignData_O::create(uintptr_t address) {
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 ForeignData_sp ForeignData_O::create(void* p_address, size_t size) {
-  auto self = gctools::GC<ForeignData_O>::allocate_with_default_constructor();
+  auto self = gctools::GC<ForeignData_O>::allocate();
   self->m_raw_data = p_address;
   self->m_size = size;
   self->set_kind(kw::_sym_clasp_foreign_data_kind_pointer);

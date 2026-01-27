@@ -47,7 +47,7 @@ CL_DEFUN SimpleBaseString_sp core__pointer_as_string(Pointer_sp p) {
 }
 
 Pointer_sp Pointer_O::create(void* p) {
-  auto ptr = gctools::GC<Pointer_O>::allocate_with_default_constructor();
+  auto ptr = gctools::GC<Pointer_O>::allocate();
   ptr->m_raw_data = p;
   return ptr;
 }

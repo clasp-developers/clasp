@@ -1162,7 +1162,7 @@ template <> struct from_object<llvm::MetadataAsValue*> {
 namespace translate {
 template <> struct to_object<llvm::MetadataAsValue*> {
   static core::T_sp convert(llvm::MetadataAsValue* mav) {
-    auto oattr = gctools::GC<llvmo::MetadataAsValue_O>::allocate_with_default_constructor();
+    auto oattr = gctools::GC<llvmo::MetadataAsValue_O>::allocate();
     oattr->set_wrapped(mav);
     return oattr;
   }
@@ -1217,7 +1217,7 @@ template <> struct from_object<llvm::Attribute> {
 namespace translate {
 template <> struct to_object<llvm::Attribute> {
   static core::T_sp convert(llvm::Attribute attr) {
-    auto oattr = gctools::GC<llvmo::Attribute_O>::allocate_with_default_constructor();
+    auto oattr = gctools::GC<llvmo::Attribute_O>::allocate();
     oattr->setAttribute(attr);
     return ((oattr));
   }

@@ -251,7 +251,7 @@ private:
   Symbol_sp _ClassSymbol;
 
 public:
-  void setup_class(const string& makerName = "") {
+  void setup_class() {
     _G();
     if (IS_SYMBOL_UNDEFINED(OT::static_classSymbol())) {
       SIMPLE_ERROR("Attempting to add methods for class that isn't defined yet");
@@ -264,7 +264,10 @@ public:
     /*! Accumulate all of the classes in reverse order of how they were initialized
               in the core::*all-cxx-classes* variable */
     lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(OT::static_classSymbol());
-
+  }
+  void setup_class(const string& makerName)
+    requires std::is_default_constructible_v<OT> {
+    setup_class();
     //
     // If the class isn't in the class table then add it
     //
@@ -286,10 +289,11 @@ public:
 
   class_() {
     _G();
-    this->setup_class("");
+    this->setup_class();
   }
 
-  class_(const string& makerName) {
+  class_(const string& makerName)
+    requires std::is_default_constructible_v<OT> {
     _G();
     this->setup_class(makerName);
   }

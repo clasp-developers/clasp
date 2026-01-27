@@ -124,7 +124,7 @@ public:
   /*! If this is the allocator for the original Adapter class return true - otherwise false */
   virtual int duplicationLevel() const { return this->_duplicationLevel; };
   core::T_sp creator_allocate() {
-    auto obj = gctools::GC<T>::allocate_with_default_constructor();
+    auto obj = gctools::GC<T>::allocate();
     return obj;
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {

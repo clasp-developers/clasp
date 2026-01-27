@@ -585,7 +585,7 @@ private:
 
 public:
   static DoubleFloat_sp create(double nm) {
-    auto v = gctools::GC<DoubleFloat_O>::allocate_with_default_constructor();
+    auto v = gctools::GC<DoubleFloat_O>::allocate();
     v->set(nm);
     return v;
   };
@@ -675,7 +675,7 @@ private:
 public:
 #ifdef CLASP_LONG_FLOAT
   static LongFloat_sp create(long_float_t nm) {
-    auto v = gctools::GC<LongFloat_O>::allocate_with_default_constructor();
+    auto v = gctools::GC<LongFloat_O>::allocate();
     v->set(nm);
     return v;
   };
@@ -835,7 +835,7 @@ public:
 
 public:
   static Ratio_sp create(Integer_sp num, Integer_sp denom) {
-    auto v = gctools::GC<Ratio_O>::allocate_with_default_constructor();
+    auto v = gctools::GC<Ratio_O>::allocate();
     v->setf_numerator_denominator(num, denom);
     return v;
   };
@@ -844,7 +844,7 @@ public:
   }
   // For when it is known that the ratio is reduced already.
   static Ratio_sp create_primitive(Integer_sp num, Integer_sp denom) {
-    auto v = gctools::GC<Ratio_O>::allocate_with_default_constructor();
+    auto v = gctools::GC<Ratio_O>::allocate();
     v->_numerator = num;
     v->_denominator = denom;
     return v;

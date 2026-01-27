@@ -46,7 +46,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(makeSmallMap)dx");
 DOCGROUP(clasp);
 CL_DEFUN SmallMap_sp core__make_small_map() {
-  auto sm = gctools::GC<SmallMap_O>::allocate_with_default_constructor();
+  auto sm = gctools::GC<SmallMap_O>::allocate();
   return sm;
 };
 

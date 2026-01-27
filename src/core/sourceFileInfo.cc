@@ -197,7 +197,7 @@ FileScope_O::FileScope_O() : Base(), _PermanentPathName(NULL), _PermanentFileNam
 void FileScope_O::initialize() { this->Base::initialize(); }
 
 FileScope_sp FileScope_O::create(Pathname_sp path, int handle) {
-  auto sfi = gctools::GC<FileScope_O>::allocate_with_default_constructor();
+  auto sfi = gctools::GC<FileScope_O>::allocate();
   sfi->_pathname = path;
   sfi->_FileHandle = handle;
   return sfi;

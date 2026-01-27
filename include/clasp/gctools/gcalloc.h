@@ -411,14 +411,6 @@ public:
     return GCObjectAllocator<OT>::template allocate_kind<Stage>(kind, size, std::forward<ARGS>(args)...);
   }
 
-  static smart_pointer_type allocate_with_default_constructor() {
-    if constexpr(std::is_default_constructible_v<OT>) {
-      auto kind = Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag);
-      return GCObjectAllocator<OT>::template allocate_kind<gctools::RuntimeStage>(kind, sizeof_with_header<OT>());
-    } else
-      lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(OT::static_classSymbol());
-  }
-
   /*! Allocate enough space for capacity elements, but set the length to length */
 
   // Allocates an object with proper header and everything.

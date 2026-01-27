@@ -67,8 +67,10 @@ public:
 public:
   size_t templatedSizeof() const { return sizeof(WRAPPER_BuiltInObjectCreator<_W_>); };
   virtual core::T_sp creator_allocate() {
-    auto obj = gctools::GC<_W_>::allocate_with_default_constructor();
-    return obj;
+    if constexpr(std::is_default_constructible_v<_W_>)
+      return gctools::GC<_W_>::allocate();
+    else
+      lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(_W_::static_classSymbol());
   }
   virtual void searcher(){};
   WRAPPER_BuiltInObjectCreator(core::SimpleFun_sp ep) : core::Creator_O(ep){};
