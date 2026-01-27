@@ -194,7 +194,7 @@ default value of INITIAL-ELEMENT depends on TYPE."
   (declare (ignore from-end))
   (if (eq it seq)
       *exhausted*
-      (do ((cdr seq (cdr seq)))
+      (do ((cdr seq (cdr cdr)))
           ((eq (cdr cdr) it) cdr))))
 (defun list-iterator-endp (seq it limit from-end)
   (declare (ignore seq from-end))

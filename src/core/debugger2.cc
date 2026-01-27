@@ -13,6 +13,7 @@
 #include <clasp/core/lispStream.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/backtrace.h>
+#include <clasp/gctools/threadlocal.h> // ThreadLocalState access
 
 namespace core {
 

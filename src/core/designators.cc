@@ -170,13 +170,13 @@ List_sp listOfPackageDesignators(T_sp obj) {
 List_sp listOfSymbols(T_sp syms) {
   if (syms.nilp())
     return nil<List_V>();
-  List_sp symbols;
-  if (cl__symbolp(syms)) {
-    symbols = Cons_O::create(syms, nil<T_O>());
-  } else {
-    symbols = syms;
-  }
-  return symbols;
+  else if (syms.consp())
+    return syms;
+  else if (cl__symbolp(syms)) {
+    return Cons_O::create(syms, nil<T_O>());
+  } else
+    TYPE_ERROR(syms, Cons_O::createList(cl::_sym_or, cl::_sym_Symbol_O,
+                                        cl::_sym_list));
 }
 
 SimpleString_sp simple_string(T_sp obj) {

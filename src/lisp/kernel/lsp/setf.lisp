@@ -419,8 +419,8 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
     ;; manually. FIXME: Probably just define those functions.
     (when (or (eq name 'bit) (eq name 'sbit)) (setf name 'aref))
     (values temps rest (list store)
-            `(apply #'(setf ,name) ,store ,@rest)
-            `(apply ,fn ,@rest))))
+            `(apply #'(setf ,name) ,store ,@temps)
+            `(apply ,fn ,@temps))))
 
 (define-setf-expander ldb (&environment env bytespec int)
   (multiple-value-bind (temps vals stores store-form access-form)

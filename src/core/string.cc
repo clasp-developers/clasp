@@ -949,29 +949,22 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(CLHS schar)dx");
 DOCGROUP(clasp);
 CL_DEFUN Character_sp cl__schar(AbstractSimpleVector_sp str, size_t idx) {
-  if (SimpleBaseString_sp sb = str.asOrNull<SimpleBaseString_O>()) {
-    return clasp_make_character(sb[idx]);
-  } else if (SimpleCharacterString_sp sc = str.asOrNull<SimpleCharacterString_O>()) {
-    return clasp_make_character(sc[idx]);
-  }
-  TYPE_ERROR(str, cl::_sym_simple_string);
+  if (str.isA<SimpleBaseString_O>()
+      || str.isA<SimpleCharacterString_O>())
+    return cl__rowMajorAref(str, idx).as_unsafe<Character_O>();
+  else
+    TYPE_ERROR(str, cl::_sym_simple_string);
 }
 
 CL_LAMBDA(str idx);
 CL_DOCSTRING(R"dx(Common lisp char)dx");
 DOCGROUP(clasp);
 CL_DEFUN Character_sp cl__char(String_sp str, size_t idx) {
-  /* Return the character at idx - ignore fill pointers */
-  if (SimpleBaseString_sp sb = str.asOrNull<SimpleBaseString_O>()) {
-    return clasp_make_character(sb[idx]);
-  } else if (Str8Ns_sp s8 = str.asOrNull<Str8Ns_O>()) {
-    return clasp_make_character(s8[idx]);
-  } else if (SimpleCharacterString_sp sc = str.asOrNull<SimpleCharacterString_O>()) {
-    return clasp_make_character(sc[idx]);
-  } else if (StrWNs_sp sw = str.asOrNull<StrWNs_O>()) {
-    return clasp_make_character(sw[idx]);
-  }
-  TYPE_ERROR(str, cl::_sym_string);
+  if (str.isA<SimpleBaseString_O>() || str.isA<Str8Ns_O>()
+      || str.isA<SimpleCharacterString_O>() || str.isA<StrWNs_O>())
+    return cl__rowMajorAref(str, idx).as_unsafe<Character_O>();
+  else
+    TYPE_ERROR(str, cl::_sym_string);
 };
 
 CL_LISPIFY_NAME("cl:char");
@@ -980,18 +973,12 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(CLHS (setf char))dx");
 DOCGROUP(clasp);
 CL_DEFUN_SETF Character_sp core__char_set(Character_sp c, String_sp str, size_t idx) {
-  if (SimpleBaseString_sp sb = str.asOrNull<SimpleBaseString_O>()) {
-    sb[idx] = c.unsafe_character();
-  } else if (Str8Ns_sp s8 = str.asOrNull<Str8Ns_O>()) {
-    s8[idx] = c.unsafe_character();
-  } else if (SimpleCharacterString_sp sc = str.asOrNull<SimpleCharacterString_O>()) {
-    sc[idx] = c.unsafe_character();
-  } else if (StrWNs_sp sw = str.asOrNull<StrWNs_O>()) {
-    sw[idx] = c.unsafe_character();
-  } else {
+  if (str.isA<SimpleBaseString_O>() || str.isA<Str8Ns_O>()
+      || str.isA<SimpleCharacterString_O>() || str.isA<StrWNs_O>()) {
+    core__rowMajorAset(c, str, idx);
+    return c;
+  } else
     TYPE_ERROR(str, cl::_sym_string);
-  }
-  return c;
 };
 
 CL_LISPIFY_NAME("cl:schar");
@@ -1000,8 +987,12 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(CLHS (setf schar))dx");
 DOCGROUP(clasp);
 CL_DEFUN_SETF Character_sp core__schar_set(Character_sp c, String_sp str, size_t idx) {
-  str->rowMajorAset(idx, c);
-  return c;
+  if (str.isA<SimpleBaseString_O>()
+      || str.isA<SimpleCharacterString_O>()) {
+    core__rowMajorAset(c, str, idx);
+    return c;
+  } else
+    TYPE_ERROR(str, cl::_sym_simple_string);
 };
 
 typedef enum { iinit, iwhite, inum, itrailspace, ijunk, idone } IntegerFSMState;

@@ -25,11 +25,6 @@ THE SOFTWARE.
 */
 /* -^- */
 // #define DEBUG_LEVEL_FULL
-#include <clasp/core/foundation.h>
-#pragma clang diagnostic push
-// #pragma clang diagnostic ignored "-Wunused-local-typedef"
-#include <boost/algorithm/string.hpp>
-#pragma clang diagnostic pop
 #include <string>
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
@@ -49,7 +44,6 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/core/array.h>
 #include <clasp/core/cons.h>
-// #include "lisp_ParserExtern.h"
 #include <clasp/core/lispReader.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/wrappers.h>

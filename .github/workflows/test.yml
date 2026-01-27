@@ -21,8 +21,7 @@ jobs:
         - clasp
         - cando
         os:
-        - macos-13
-        - macos-14
+        - macos-latest
         - ubuntu-latest
         mode:
         - faso
@@ -42,17 +41,10 @@ jobs:
             auto: yes
           - mode: bytecode-faso
             auto: yes
-          - os: macos-13
+          - os: macos-latest
             mode: faso
-          - os: macos-13
-            mode: bytecode
-            auto: no
-          - os: macos-14
-            mode: faso
-          - os: macos-14
+          - os: macos-latest
             mode: bytecode-faso
-          - os: macos-14
-            auto: yes
 
     runs-on: ${{ matrix.os }}
 
@@ -64,15 +56,15 @@ jobs:
         sudo apt install -y binutils-gold clang-18 libclang-18-dev libclang-cpp18-dev llvm-18 llvm-18-dev libelf-dev libgmp-dev libunwind-dev ninja-build sbcl libnetcdf-dev libexpat1-dev libfmt-dev libboost-all-dev
  
     - name: Install MacOS dependencies
-      if: matrix.os == 'macos-13' || matrix.os == 'macos-14'
+      if: matrix.os == 'macos-latest'
       run: |
         brew update
         brew upgrade
-        brew install boost fmt gmp llvm lld ninja pkg-config sbcl netcdf
+        brew install boost fmt gmp llvm@19 lld ninja pkg-config sbcl netcdf
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
-    - uses: conda-incubator/setup-miniconda@v3.1.1
+    - uses: conda-incubator/setup-miniconda@v3.2.0
       if: matrix.build == 'cando'
 
     - name: Install AmberTools
@@ -88,20 +80,12 @@ jobs:
       if: ${{ matrix.os == 'ubuntu-latest' && matrix.build == 'cando' }}
       run: |
         ./koga --build-mode=${{ matrix.mode }} --extensions=cando
-    - name: Clasp koga @ MacOS=13
-      if: ${{ matrix.os == 'macos-13' && matrix.build == 'clasp' }}
-      run: |
-        ./koga --build-mode=${{ matrix.mode }}
-    - name: Clasp koga @ MacOS-14
-      if: ${{ matrix.os == 'macos-14' && matrix.build == 'clasp' }}
+    - name: Clasp koga @ MacOS
+      if: ${{ matrix.os == 'macos-latest' && matrix.build == 'clasp' }}
       run: |
         ./koga --build-mode=${{ matrix.mode }} --cflags=-I/opt/homebrew/include --cppflags=-I/opt/homebrew/include --cxxflags=-I/opt/homebrew/include
-    - name: Cando koga @ MacOS-13
-      if: ${{ matrix.os == 'macos-13' && matrix.build == 'cando' }}
-      run: |
-        ./koga --build-mode=${{ matrix.mode }} --extensions=cando
-    - name: Cando koga @ MacOS-14
-      if: ${{ matrix.os == 'macos-14' && matrix.build == 'cando' }}
+    - name: Cando koga @ MacOS
+      if: ${{ matrix.os == 'macos-latest' && matrix.build == 'cando' }}
       run: |
         ./koga --build-mode=${{ matrix.mode }} --extensions=cando --cflags=-I/opt/homebrew/include --cppflags=-I/opt/homebrew/include --cxxflags=-I/opt/homebrew/include
     - name: Build

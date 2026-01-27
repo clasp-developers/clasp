@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Import GPG key
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@v6
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Update version
@@ -50,7 +50,7 @@ jobs:
           docker-image: ubuntu:noble
           extra-build-deps: ca-certificates netbase
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: noble_clasp
           path: debian/artifacts/*.deb
@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Update version
@@ -75,7 +75,7 @@ jobs:
           docker-image: ubuntu:noble
           extra-build-deps: ca-certificates netbase
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: noble_cando
           path: debian/artifacts/*.deb
@@ -96,11 +96,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.WWW_SSH_KEY }}
           ssh-host: www.thirdlaw.tech
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: noble_clasp
           path: noble
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: noble_cando
           path: noble
@@ -120,7 +120,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Update version
@@ -136,7 +136,7 @@ jobs:
           docker-image: debian:bookworm
           extra-build-deps: ca-certificates netbase g++-12
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: bookworm_clasp
           path: debian/artifacts/*.deb
@@ -145,7 +145,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Update version
@@ -161,7 +161,7 @@ jobs:
           docker-image: debian:bookworm
           extra-build-deps: ca-certificates netbase g++-12
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: bookworm_cando
           path: debian/artifacts/*.deb
@@ -182,11 +182,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.WWW_SSH_KEY }}
           ssh-host: www.thirdlaw.tech
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: bookworm_clasp
           path: bookworm
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: bookworm_cando
           path: bookworm
@@ -206,6 +206,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/yitzchak/archlinux-makepkg:latest
+      options: --user root
     steps:
       - name: Set permissions and update packages
         run: |
@@ -218,12 +219,14 @@ jobs:
           echo "allow-preset-passphrase" >~/.gnupg/gpg-agent.conf
           gpg-connect-agent reloadagent /bye
           echo -e "${{ secrets.PKG_GPG_PASSPHRASE }}" | /usr/lib/gnupg/gpg-preset-passphrase --preset "${{ secrets.PKG_GPG_KEYGRIP }}"
-          wget -O PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=clasp-cl-git
-          wget -O pkgver.lisp https://aur.archlinux.org/cgit/aur.git/plain/pkgver.lisp?h=clasp-cl-git
+          wget -O PKGBUILD https://raw.githubusercontent.com/clasp-developers/aur-clasp-cl-git/refs/heads/master/PKGBUILD
+          chmod a+w PKGBUILD
+          wget -O pkgver.lisp https://raw.githubusercontent.com/clasp-developers/aur-clasp-cl-git/refs/heads/master/pkgver.lisp
           sed -i "s/clasp\.git/clasp\.git#commit=${{ github.sha }}/g" PKGBUILD
-          makepkg --noconfirm --syncdeps --sign
+          su build -c 'makepkg --noconfirm --syncdeps'
+          gpg --detach-sign --no-armor *.zst
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: arch_clasp
           path: |
@@ -234,6 +237,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/yitzchak/archlinux-makepkg:latest
+      options: --user root
     steps:
       - name: Set permissions and update packages
         run: |
@@ -246,12 +250,14 @@ jobs:
           echo "allow-preset-passphrase" >~/.gnupg/gpg-agent.conf
           gpg-connect-agent reloadagent /bye
           echo -e "${{ secrets.PKG_GPG_PASSPHRASE }}" | /usr/lib/gnupg/gpg-preset-passphrase --preset "${{ secrets.PKG_GPG_KEYGRIP }}"
-          wget -O PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=cando-git
-          wget -O pkgver.lisp https://aur.archlinux.org/cgit/aur.git/plain/pkgver.lisp?h=cando-git
+          wget -O PKGBUILD https://raw.githubusercontent.com/clasp-developers/aur-cando-git/refs/heads/master/PKGBUILD
+          chmod a+w PKGBUILD
+          wget -O pkgver.lisp https://raw.githubusercontent.com/clasp-developers/aur-cando-git/refs/heads/master/pkgver.lisp
           sed -i "s/clasp\.git/clasp\.git#commit=${{ github.sha }}/g" PKGBUILD
-          makepkg --noconfirm --syncdeps --sign
+          su build -c 'makepkg --noconfirm --syncdeps'
+          gpg --detach-sign --no-armor *.zst
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: arch_cando
           path: |
@@ -272,11 +278,11 @@ jobs:
         with:
           gpg_private_key: ${{ secrets.PKG_GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PKG_GPG_PASSPHRASE }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: arch_clasp
           path: arch
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: arch_cando
           path: arch
@@ -285,7 +291,7 @@ jobs:
           cd arch
           repo-add --key ${{ steps.import_gpg.outputs.keyid }} --sign thirdlaw.db.tar.gz *.pkg.tar.zst
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: arch_repo
           path: arch
@@ -299,7 +305,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.WWW_SSH_KEY }}
           ssh-host: www.thirdlaw.tech
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: arch_repo
           path: arch

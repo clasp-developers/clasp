@@ -264,15 +264,19 @@
              (let ((ext:*invoke-debugger-hook*
                      (lambda (condition old-hook)
                        (declare (ignore old-hook))
-                       (return (typep condition 'clasp-debug:step-form)))))
+                       (return (typep condition 'clasp-debug:step-condition)))))
                (step (print 4)))))
 
 (test breakstepping-p
-      (values (progn (clasp-debug:set-breakstep)
-                     (clasp-debug:breakstepping-p))
-              (progn (clasp-debug:unset-breakstep)
-                     (clasp-debug:breakstepping-p)))
-      (t nil))
+  (let ((ext:*invoke-debugger-hook* ; don't step during the test!
+          (lambda (condition old-hook)
+            (declare (ignore condition old-hook))
+            (invoke-restart 'clasp-debug:step-over))))
+    (values (progn (clasp-debug:set-breakstep)
+                   (clasp-debug:breakstepping-p))
+            (progn (clasp-debug:unset-breakstep)
+                   (clasp-debug:breakstepping-p))))
+  (t nil))
 
 ;;; breakstep can also be used to enable the stepper, without STEP itself.
 (test-true breakstep
@@ -280,7 +284,7 @@
              (let ((ext:*invoke-debugger-hook*
                      (lambda (condition old-hook)
                        (declare (ignore old-hook))
-                       (return (typep condition 'clasp-debug:step-form)))))
+                       (return (typep condition 'clasp-debug:step-condition)))))
                (clasp-debug:set-breakstep)
                (unwind-protect
                     (locally

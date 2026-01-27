@@ -32,6 +32,7 @@ THE SOFTWARE.
 
 #include <csignal>
 #include <cstdarg>
+#include <typeindex> // allocate_class_id
 #include <dlfcn.h>
 
 #include <clasp/core/foundation.h>
@@ -87,7 +88,7 @@ THE SOFTWARE.
 
 namespace reg {
 
-typedef std::map<type_id, class_id> map_type;
+typedef std::map<std::type_index, class_id> map_type;
 map_type* global_registered_ids_ptr = NULL;
 class_id global_next_id = 0;
 
@@ -112,12 +113,12 @@ void dump_class_ids() {
   }
 }
 
-class_id allocate_class_id(type_id const& cls) {
+class_id allocate_class_id(const std::type_info& cls) {
   //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
   if (global_registered_ids_ptr == NULL) {
     global_registered_ids_ptr = new map_type();
   }
-  std::pair<map_type::iterator, bool> inserted = global_registered_ids_ptr->insert(std::make_pair(cls, global_next_id));
+  std::pair<map_type::iterator, bool> inserted = global_registered_ids_ptr->insert(std::make_pair(std::type_index(cls), global_next_id));
 
   if (inserted.second) {
     //            printf("%s:%d allocate_class_id for %40s %ld\n", __FILE__, __LINE__, cls.name(), id );
@@ -214,20 +215,12 @@ CL_DEFUN void core__dump_class_ids() { reg::dump_class_ids(); }
 
 SYMBOL_EXPORT_SC_(ClPkg,floating_point_invalid_operation);
 
-void lisp_errorExpectedList(core::T_O* v) {
+[[noreturn]] void lisp_errorExpectedList(core::T_O* v) {
   T_sp tv((gctools::Tagged)v);
   TYPE_ERROR(tv, cl::_sym_list);
 }
 
-void lisp_errorIllegalDereference(void* v) { SIMPLE_ERROR("Tried to dereference px={}", v); }
-
-void lisp_errorDereferencedNonPointer(core::T_O* v) { SIMPLE_ERROR("Tried to dereference immediate value: {}", (void*)v); }
-
-void lisp_errorDereferencedNil() { SIMPLE_ERROR("Tried to dereference nil"); }
-
-void lisp_errorDereferencedUnbound() { SIMPLE_ERROR("Tried to dereference unbound"); }
-
-DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedTypeStampWtag(size_t to, core::T_O* objP) {
+[[noreturn]] DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedTypeStampWtag(size_t to, core::T_O* objP) {
   size_t expectedStamp = STAMP_UNSHIFT_WTAG(to);
 #ifdef DEBUG_RUNTIME
   // This is a really low level debug code appropriate when debugging the runtime
@@ -248,7 +241,7 @@ DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedTypeStampWtag(size_t to, core::T_O
   TYPE_ERROR(obj, expectedClassSymbol);
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expected_class_id, class_id given_class_id, core::T_O* objP) {
+[[noreturn]] DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expected_class_id, class_id given_class_id, core::T_O* objP) {
   if (expected_class_id >= _lisp->classSymbolsHolder().size()) {
     core::lisp_error_simple(
         __FUNCTION__, __FILE__, __LINE__,
@@ -277,37 +270,36 @@ DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expected_class_id, c
   TYPE_ERROR(obj, expectedSym);
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastToFixnum(class_id from_typ, core::T_O* objP) {
+[[noreturn]] DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastToFixnum(class_id from_typ, core::T_O* objP) {
   class_id to_typ = reg::registered_class<core::Fixnum_I>::id;
   core::lisp_errorUnexpectedType(to_typ, from_typ, objP);
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O* objP) {
+[[noreturn]] DONT_OPTIMIZE_ALWAYS void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O* objP) {
   lisp_errorUnexpectedType(toType, fromType, objP);
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastStampWtag(size_t to, core::T_O* objP) {
+[[noreturn]] DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastStampWtag(size_t to, core::T_O* objP) {
   lisp_errorUnexpectedTypeStampWtag((size_t)to, objP);
-  abort();
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromT_O(class_id toType, core::T_O* objP) {
+[[noreturn]] DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromT_O(class_id toType, core::T_O* objP) {
   class_id from_typ = reg::registered_class<core::T_O>::id;
   lisp_errorUnexpectedType(toType, from_typ, objP);
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromT_OToCons_O(core::T_O* objP) {
+[[noreturn]] DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromT_OToCons_O(core::T_O* objP) {
   class_id to_typ = reg::registered_class<core::Cons_O>::id;
   class_id from_typ = reg::registered_class<core::T_O>::id;
   lisp_errorUnexpectedType(to_typ, from_typ, objP);
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromSymbol_O(class_id toType, core::Symbol_O* objP) {
+[[noreturn]] DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromSymbol_O(class_id toType, core::Symbol_O* objP) {
   class_id from_typ = reg::registered_class<core::Symbol_O>::id;
   lisp_errorUnexpectedType(toType, from_typ, reinterpret_cast<core::T_O*>(objP));
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedNil(class_id expectedTyp) {
+[[noreturn]] DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedNil(class_id expectedTyp) {
   if (expectedTyp >= _lisp->classSymbolsHolder().size()) {
     core::lisp_error_simple(
         __FUNCTION__, __FILE__, __LINE__,
@@ -507,14 +499,6 @@ MultipleValues& lisp_multipleValues() {
   //	return &(_lisp->multipleValues());
   return my_thread->_MultipleValues;
 }
-
-#if 0
-[[noreturn]]void errorFormatted(boost::format fmt) {
-  TRY_BOOST_FORMAT_STRING(fmt, fmt_str);
-  dbg_hook(fmt_str.c_str());
-  core__invoke_internal_debugger(nil<core::T_O>());
-}
-#endif
 
 [[noreturn]] void errorFormatted(const string& msg) {
   dbg_hook(msg.c_str());
@@ -1267,6 +1251,7 @@ SourcePosInfo_sp core__createSourcePosInfo(const string& filename, size_t filePo
   return lisp_createSourcePosInfo(filename, filePos, lineno);
 }
 
+T_sp lisp_createList() { return nil<T_O>(); }
 T_sp lisp_createList(T_sp a1) { return Cons_O::create(a1, nil<T_O>()); }
 T_sp lisp_createList(T_sp a1, T_sp a2) { return Cons_O::createList(a1, a2); };
 T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3) { return Cons_O::createList(a1, a2, a3); };
@@ -1468,24 +1453,6 @@ bool wildcmp(string const& sWild, string const& sRegular) {
   }
   return !*wild;
 }
-
-void StringStack::pop() {
-  HARD_ASSERT(this->parts.size() > 0);
-  this->parts.pop_back();
-};
-
-string StringStack::all(const string& separator) {
-  stringstream ss;
-  ss.str("");
-  if (this->parts.size() > 0) {
-    ss << this->parts[0];
-  }
-  for (uint i = 1; i < this->parts.size(); i++) {
-    ss << separator;
-    ss << this->parts[i];
-  }
-  return ss.str();
-};
 
 const char* trimSourceFilePathName(const char* longName) {
   if (longName == NULL)

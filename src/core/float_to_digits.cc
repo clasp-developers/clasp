@@ -50,14 +50,13 @@ template <typename Float> T_mv float_to_digits(T_sp tdigits, Float number, T_sp 
     pos = relativep.nilp() ? (position - pos) : (pos + 1);
 
     if (pos < 0) {
-      position -= pos;
-      pos = 0;
-    }
-
-    if (pos < digit_count) {
+      decimal.significand = 0;
+      digit_count = 1;
+    } else if (pos < digit_count) {
       decltype(decimal.significand) divisor = std::pow(10, digit_count - pos);
       decimal.significand = (decimal.significand + (divisor / 2)) / divisor;
       digit_count = decimal.math.count_digits(decimal.significand);
+      position += digit_count - pos;
     }
   }
 

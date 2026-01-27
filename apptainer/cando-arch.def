@@ -5,7 +5,7 @@ From: ghcr.io/yitzchak/archlinux-makepkg:latest
 #    $HOME/Downloads/UDB-x86-8.1.0 /downloads/udb
 
 %post
-    pacman -Syu --noconfirm binutils inetutils boost clang18 gmp fmt libunwind llvm18 ninja sbcl jupyterlab emacs openssh netcdf expat gocryptfs nodejs npm strace
+    pacman -Syu --noconfirm binutils inetutils boost clang18 gmp fmt libunwind llvm18 ninja sbcl jupyterlab emacs openssh netcdf expat gocryptfs nodejs npm strace emacs
 #    (cd /downloads/udb; make install)
     cd /mnt
     ./koga --reproducible-build --extensions=cando --build-mode=bytecode-faso --llvm-config="/usr/bin/llvm-config-18" --build-path=build-apptainer/
@@ -18,6 +18,8 @@ From: ghcr.io/yitzchak/archlinux-makepkg:latest
     bash Miniconda3-latest-Linux-x86_64.sh -b -p /home/cando/miniconda3
     rm -rf Miniconda3-latest-Linux-x86_64.sh
     export PATH="/home/cando/miniconda3/bin:${PATH}"
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
     conda install -y -c conda-forge jupyterlab sidecar ambertools
     jupyter-lab build
 #    mkdir /home/cando/.cache

@@ -460,11 +460,6 @@ void Instance_O::lowLevel_calculateClassPrecedenceList() {
   using namespace boost;
   HashTable_sp supers = HashTable_O::createEq();
   ComplexVector_T_sp arrayedSupers(ComplexVector_T_O::make(16, nil<T_O>(), clasp_make_fixnum(0)));
-  if (!gc::IsA<ComplexVector_T_sp>(arrayedSupers)) {
-    printf("%s:%d:%s The object must be a ComplexVector_T_sp but failed gc::IsA<ComplexVector_T_sp>()\n", __FILE__, __LINE__,
-           __FUNCTION__);
-    abort();
-  }
   this->accumulateSuperClasses(supers, arrayedSupers, this->sharedThis<Instance_O>());
   vector<list<int>> graph(cl__length(arrayedSupers));
 

@@ -423,51 +423,12 @@ namespace core {
 
 /*! Class registration code - each registered class gets a unique number associated with it */
 
-namespace gctools {
-/*! Inheriting from this class indicates that the derived class
-      includes smart_ptr's but is only ever instantiated on the stack.
-      This means the conservative garbage collector will see the smart_ptr's
-      when it scans the stack.
-    */
-class StackBoundClass {};
-
-/*! Inheriting from this class indicates that the derived class
-      contains absolutely no smart_ptrs or weak_ptrs either directly
-      or indirectly - DON'T PUT ANY POINTERS IN THE DERIVED CLASS */
-class GCIgnoreClass {};
-}; // namespace gctools
-
 namespace reg {
 
-struct null_type : public gctools::GCIgnoreClass {};
+struct null_type {};
 class_id const unknown_class = (std::numeric_limits<class_id>::max)();
-class type_id {
-public:
-  type_id() : id(&typeid(null_type)) {}
 
-  type_id(std::type_info const& id) : id(&id) {}
-
-  bool operator!=(type_id const& other) const { return *id != *other.id; }
-
-  bool operator==(type_id const& other) const { return *id == *other.id; }
-
-  bool operator<(type_id const& other) const { return id->before(*other.id); }
-
-  bool operator<=(type_id const& other) const { return id->before(*other.id) || (*id == *other.id); }
-
-  bool operator>=(type_id const& other) const { return !id->before(*other.id); }
-
-  bool operator>(type_id const& other) const { return (*id != *other.id) && !id->before(*other.id); }
-
-  char const* name() const { return id->name(); }
-
-  std::type_info const* get_type_info() const { return this->id; };
-
-private:
-  std::type_info const* id;
-};
-
-class_id allocate_class_id(type_id const& cls);
+class_id allocate_class_id(const std::type_info& cls);
 template <class T> struct registered_class {
   static class_id const id;
 };
@@ -485,7 +446,6 @@ class SimpleVector_O;
 class SimpleVector_byte8_t_O;
 
 [[noreturn]] void lisp_error_sprintf(const char* file, int lineno, const char* function, const char* fmt, ...);
-[[noreturn]] void lisp_errorDereferencedNonPointer(core::T_O* objP);
 [[noreturn]] void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O* objP);
 [[noreturn]] void lisp_errorBadCastStampWtag(size_t toStampWtag, core::T_O* objP);
 [[noreturn]] void lisp_errorBadCastFromT_O(class_id toType, core::T_O* objP);
@@ -494,10 +454,7 @@ class SimpleVector_byte8_t_O;
 [[noreturn]] void lisp_errorBadCastFromSymbol_O(class_id toType, core::Symbol_O* objP);
 [[noreturn]] void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O* objP);
 [[noreturn]] void lisp_errorUnexpectedNil(class_id expectedTyp);
-[[noreturn]] void lisp_errorDereferencedNil();
 [[noreturn]] void lisp_error_no_stamp(void* obj);
-[[noreturn]] void lisp_errorDereferencedUnbound();
-[[noreturn]] void lisp_errorIllegalDereference(void* v);
 [[noreturn]] void lisp_errorExpectedList(core::T_O* objP);
 
 template <typename To, typename From, typename ObjPtrType> [[noreturn]] void lisp_errorCast(ObjPtrType objP) {
@@ -622,17 +579,6 @@ typedef vector<double> VectorDoubles;
 //
 //
 // prototypes for functions defined in foundation.cc
-
-class StringStack : public gctools::GCIgnoreClass {
-private:
-  vector<string> parts;
-
-public:
-  void clear() { this->parts.clear(); };
-  void push(const string& s) { this->parts.push_back(s); };
-  void pop();
-  string all(const string& separator);
-};
 
 /*! Escape all white space (spaces, cr, tab) */
 string escapeWhiteSpace(const string& inp);
@@ -881,6 +827,7 @@ Function_sp lisp_symbolFunction(Symbol_sp sym);
 string lisp_symbolNameAsString(Symbol_sp sym);
 T_sp lisp_createStr(const string& str);
 T_sp lisp_createFixnum(int num);
+T_sp lisp_createList();
 T_sp lisp_createList(T_sp a1);
 T_sp lisp_createList(T_sp a1, T_sp a2);
 T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3);

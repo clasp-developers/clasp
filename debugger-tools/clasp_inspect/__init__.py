@@ -410,25 +410,34 @@ class Cons_O(T_O):
         self._address = address
     def consp(self):
         return True
+    def nilp(self):
+        return False
     def car(self):
         return self._debugger.read_memory(self._address,8)
     def cdr(self):
         return self._debugger.read_memory(self._address+8,8)
     def inspectString(self):
-        return "( 0x%x . 0x%x )" % (self.car(), self.cdr())
+        return "(0x%x . 0x%x)" % (self.car(), self.cdr())
     def shallowString(self):
         return self.inspectString()
+    def tailStr(self):
+        carObj = translate_tagged_ptr(self._debugger, self.car())
+        carStr = str(carObj)
+        cdrObj = translate_tagged_ptr(self._debugger, self.cdr())
+        if (cdrObj.nilp()):
+            return carStr + ")"
+        elif (cdrObj.consp()):
+            return carStr + " " + cdrObj.tailStr()
+        else: # dotted list
+            return carStr + " . " + str(cdrObj) + ")"
     def __repr__(self):
         carObj = translate_tagged_ptr(self._debugger,self.car())
         carStr = carObj.__repr__()
         cdrObj = translate_tagged_ptr(self._debugger,self.cdr())
         cdrStr = cdrObj.__repr__()
-        return "( %s . %s )" % ( carStr, cdrStr )
+        return "(%s . %s)" % ( carStr, cdrStr )
     def __str__(self):
-        # FIXME: Print proper lists nicely.
-        scar = str(translate_tagged_ptr(self._debugger, self.car()))
-        scdr = str(translate_tagged_ptr(self._debugger, self.cdr()))
-        return "(" + scar + " . " + scdr + ")"
+        return "(" + self.tailStr()
         
 class General_O(T_O):
     def __init__(self,debugger,tclient):
@@ -538,8 +547,17 @@ class SimpleVector_O(Array_O):
         self._data_offset = self._class._variable_array0._offset
         self._debugger = debugger
         self._end = debugger.read_memory(self._address+self._end_offset,8)
-    def str(self):
-        return "#<SimpleVector %d>"%self._end
+    def aref(self, index):
+        val = self._debugger.read_memory(self._data_offset+self._address+(index*self._element_size),self._element_size);
+        return translate_tagged_ptr(self._debugger, val)
+    def __str__(self):
+        if (self._end == 0): # empty vector #()
+            return "#()"
+        else:
+            result = "#(" + str(self.aref(0))
+            for x in range(1, self._end):
+                result = result + " " + str(self.aref(x))
+            return result + ")"
     def dump(self,start=0,end=None):
         out = StringIO();
         if (end==None):
@@ -551,7 +569,7 @@ class SimpleVector_O(Array_O):
            out.write("[%d] = %s\n" % (x,inspect_tagged_ptr(val).str()))
         return out.getvalue();
     def __repr__(self):
-        return self.str()
+        return str(self)
 
     
 class SimpleCharacterString_O(Array_O):
@@ -605,6 +623,8 @@ class Function_O(General_O):
         return self._Name
     def __repr__(self):
         return "Function[:name %s]" % self.name()
+    def __str__(self):
+        return "#<FUNCTION %s>" % self.name()
 
 class SimpleFun_O(General_O):
     def __init__(self,debugger,tptr):
@@ -615,6 +635,8 @@ class SimpleFun_O(General_O):
         return self._Name
     def __repr__(self):
         return "Function[:name %s]" % self.name()
+    def __str__(self):
+        return "#<SIMPLE-FUN %s>" % self.name()
 
 
 class Symbol_O(General_O):
@@ -666,9 +688,9 @@ class Instance_O(General_O):
         class_name_addr = class_rack.array_element_field_addr(class_name_slot_index,"only")
         class_name_tptr = self._debugger.read_memory(class_name_addr,len=8)
         class_name_obj = translate_tagged_ptr(self._debugger,class_name_tptr)
-        return "Instance of class named %s" % class_name_obj.__repr__()
+        return str(class_name_obj)
     def str(self):
-        return "#<a %s>" % self.className()
+        return "#<%s>" % self.className()
     def dump(self,start=0,end=None):
         return self.str()
     def __repr__(self):
@@ -952,12 +974,11 @@ def do_lisp_disassemble(debugger,arg):
     print_disassembly(vm,instructions,labels)
 
 def do_lisp_print(debugger_mod,arg):
-    #print "In inspect args: %s" % args
     tptr = arg_to_tptr(debugger_mod,arg)
     obj = translate_tagged_ptr(debugger_mod,tptr)
-    print( obj.__repr__())
+    print(str(obj))
     dbg_print( "in do_lisp_print: %s" % obj.__repr__())
-    return obj.__repr__()
+    return str(obj)
 
 def isLexDynEnv(car_obj):
     if (car_obj._className == "core::LexDynEnv_O" or

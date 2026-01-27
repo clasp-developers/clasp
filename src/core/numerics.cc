@@ -101,6 +101,13 @@ List_sp core__positive_integer_to_mixed_base_digits(core::Integer_sp number, Lis
   if (!(Number_O::zerop(number) || Real_O::plusp(number))) {
     SIMPLE_ERROR("The number {} must be zero or positive", _rep_(number));
   }
+  size_t basesSize = core::cl__length(bases);
+  if (basesSize==0) {
+    if (Number_O::zerop(number)) {
+      return nil<core::T_O>();
+    }
+    SIMPLE_ERROR("The size of bases is {} and it must be >= 1 since the number is {}", basesSize, _rep_(number) );
+  }
   vector<int> ibases;
   for (auto cur : bases) {
     T_sp val = CONS_CAR(cur);

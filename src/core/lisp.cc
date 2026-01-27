@@ -41,10 +41,9 @@ THE SOFTWARE.
 #pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
 // #pragma GCC diagnostic ignored "-Wunused-local-typedef"
 #include <filesystem>
-#include <boost/algorithm/string.hpp>
-#include <boost/program_options.hpp>
+#include <algorithm> //transform
+#include <cctype> //toupper
 #pragma GCC diagnostic pop
-// #i n c l u d e	"boost/fstream.hpp"
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/gctools/gc_interface.h>
@@ -252,10 +251,6 @@ void Lisp::setupSpecialSymbols() {
   RAII_DISABLE_INTERRUPTS();
   SimpleBaseString_sp name_nil = SimpleBaseString_O::make("NIL");
   Null_sp symbol_nil = gctools::GC<Null_O>::allocate(name_nil); // ::create_at_boot("NIL");
-  if (!gc::IsA<Null_sp>(symbol_nil)) {
-    printf("%s:%d:%s The NIL symbol failed gc::IsA<Null_sp>(symbol_nil)\n", __FILE__, __LINE__, __FUNCTION__);
-    abort();
-  }
   SimpleBaseString_sp name_unbound = SimpleBaseString_O::make("UNBOUND");
   Symbol_sp symbol_unbound = gctools::GC<Symbol_O>::allocate(name_unbound);
   SimpleBaseString_sp name_no_thread_local_binding = SimpleBaseString_O::make("NO-THREAD-LOCAL-BINDING");
@@ -820,6 +815,14 @@ void Lisp::finishPackageSetup(const string& pkgname, list<string> const& nicknam
   }
 };
 
+void package_name_conflict(Package_sp existing_package, SimpleString_sp name, T_sp nickp) {
+  CEpackage_error("Cannot create a package with a ~:[name~;nickname~] of ~a since ~:[the package named ~a already uses that "
+                  "nickname~;there already exists a package with that name~].",
+                  "Delete existing package", existing_package, 4, nickp, name,
+                  _lisp->_boolean(name->equal(existing_package->name())), existing_package->name());
+  cl__delete_package(existing_package);
+}
+
 Package_sp Lisp::makePackage(const string& name, list<string> const& nicknames, list<string> const& usePackages,
                              list<std::string> const& shadow) {
   /* This function is written somewhat bizarrely for lock safety reasons.
@@ -831,33 +834,37 @@ Package_sp Lisp::makePackage(const string& name, list<string> const& nicknames, 
    * Instead we do this: Grab the lock. Try the operation. If the operation succeeds, just return.
    * If it fails, goto (yes, really) outside the lock scope so that we ungrab it, and signal an cerror there.
    * */
- start:
+start:
   string usedNickName;
   Package_sp packageUsingNickName;
   Package_sp existing_package;
   SimpleString_sp nonexistentUsedPackage;
+  SimpleString_sp query_name;
+  T_sp nickp = nil<T_O>();
   {
     WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
     SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
-    T_sp it = this->_Roots._PackageNameIndexMap->gethash(sname);
+    query_name = sname;
+    T_sp it = this->_Roots._PackageNameIndexMap->gethash(query_name);
     if (it.notnilp()) {
       ASSERT(it.fixnump());
       int existing_package_id = it.unsafe_fixnum();
       existing_package = this->_Roots._Packages[existing_package_id];
-      goto name_exists;
+      goto name_conflict;
     }
     // first check the nicknames, before we create the package, so that we
     // don't leave packages partly created
+    nickp = _lisp->_true();
     for (list<string>::const_iterator it = nicknames.begin(); it != nicknames.end(); it++) {
       string nickName = *it;
-      SimpleBaseString_sp snickName = SimpleBaseString_O::make(nickName);
-      T_sp nit = this->_Roots._PackageNameIndexMap->gethash(snickName);
+      query_name = SimpleBaseString_O::make(nickName);
+      T_sp nit = this->_Roots._PackageNameIndexMap->gethash(query_name);
       if (nit.notnilp() && nickName != name) {
         ASSERT(nit.fixnump());
         int existingIndex = nit.unsafe_fixnum();
         usedNickName = nickName;
         packageUsingNickName = this->_Roots._Packages[existingIndex];
-        goto nickname_exists;
+        goto name_conflict;
       }
     }
     // Now we know that there is no conflict about the package name or
@@ -881,7 +888,7 @@ Package_sp Lisp::makePackage(const string& name, list<string> const& nicknames, 
           int existingIndex = nit2.unsafe_fixnum();
           usedNickName = nickName;
           packageUsingNickName = this->_Roots._Packages[existingIndex];
-          goto nickname_exists;
+          goto name_conflict;
         }
         this->_Roots._PackageNameIndexMap->setf_gethash(snickName, make_fixnum(packageIndex));
         cnicknames = Cons_O::create(snickName, cnicknames);
@@ -911,20 +918,13 @@ Package_sp Lisp::makePackage(const string& name, list<string> const& nicknames, 
     }
     return newPackage;
   }
-// A correctable error is signaled if the package-name or any of the nicknames
-// is already the name or nickname of an existing package.
-// The correction is to delete the existing package.
- name_exists:
-  CEpackage_error("There already exists a package with name: ~a", "Delete existing package", existing_package, 1,
-                  SimpleBaseString_O::make(name));
-  cl__delete_package(existing_package);
+  // A correctable error is signaled if the package-name or any of the nicknames
+  // is already the name or nickname of an existing package.
+  // The correction is to delete the existing package.
+name_conflict:
+  package_name_conflict(existing_package, query_name, nickp);
   goto start;
- nickname_exists:
-  CEpackage_error("There already exists a package with nickname: ~a", "Delete existing package", existing_package, 1,
-                  SimpleBaseString_O::make(name));
-  cl__delete_package(existing_package);
-  goto start;
- nonexistent_used_package:
+nonexistent_used_package:
   // FIXME: It might be nicer to let the error be correctable,
   // e.g. by not trying to USE the nonexistent package.
   // (The standard actually leaves this situation undefined.)
@@ -932,12 +932,15 @@ Package_sp Lisp::makePackage(const string& name, list<string> const& nicknames, 
 }
 
 Package_sp Lisp::makePackage(SimpleString_sp name, List_sp nicknames, List_sp use) {
- start:
+start:
   T_sp existingPackage;
   SimpleString_sp nonexistentUsedPackage;
+  SimpleString_sp query_name = name;
+  T_sp nickp = nil<T_O>();
   // We need to coerce the nicknames for setNicknames so do that first.
   ql::list qnicknames;
-  for (auto nc : nicknames) qnicknames << coerce::simple_string(oCar(nc));
+  for (auto nc : nicknames)
+    qnicknames << coerce::simple_string(oCar(nc));
   List_sp cnicknames = qnicknames.cons();
   {
     WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
@@ -945,10 +948,14 @@ Package_sp Lisp::makePackage(SimpleString_sp name, List_sp nicknames, List_sp us
     // conflict with existing packages. This prevents us from half-making
     // packages.
     existingPackage = this->findPackage_no_lock(name);
-    if (existingPackage.notnilp()) goto name_exists;
+    if (existingPackage.notnilp())
+      goto name_conflict;
+    nickp = _lisp->_true();
     for (auto nc : cnicknames) {
-      existingPackage = this->findPackage_no_lock(oCar(nc).as_unsafe<SimpleString_O>());
-      if (existingPackage.notnilp()) goto name_exists;
+      query_name = oCar(nc).as_unsafe<SimpleString_O>();
+      existingPackage = this->findPackage_no_lock(query_name);
+      if (existingPackage.notnilp())
+        goto name_conflict;
     }
     // We're good, make the package.
     Package_sp newPackage = Package_O::create(name);
@@ -971,11 +978,10 @@ Package_sp Lisp::makePackage(SimpleString_sp name, List_sp nicknames, List_sp us
     // Done!
     return newPackage;
   }
- name_exists:
-  CEpackage_error("There already exists a package with name: ~a", "Delete existing package", existingPackage.as_unsafe<Package_O>(), 1, name);
-  cl__delete_package(existingPackage);
+name_conflict:
+  package_name_conflict(existingPackage.as_unsafe<Package_O>(), query_name, nickp);
   goto start;
- nonexistent_used_package:
+nonexistent_used_package:
   PACKAGE_ERROR(nonexistentUsedPackage);
 }
 
@@ -1376,22 +1382,6 @@ void Lisp::readEvalPrintInteractive() {
   stream_terpri(cl::_sym_STARterminal_ioSTAR->symbolValue());
 }
 
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING(R"dx(stackUsed)dx");
-DOCGROUP(clasp);
-CL_DEFUN size_t core__stack_used() {
-  int x;
-  char* xaddr = (char*)(&x);
-  if (xaddr > my_thread_low_level->_StackTop) {
-    printf("%s:%d There is a problem with the stack _lisp->_StackTop@%p is below the current stack pointer@%p\n", __FILE__,
-           __LINE__, my_thread_low_level->_StackTop, xaddr);
-    abort();
-  }
-  size_t stack = (size_t)((const char*)my_thread_low_level->_StackTop - xaddr);
-  return stack;
-};
-
 static bool global_invokedInternalDebugger = false;
 
 struct ExceptionSafeResetInvokedInternalDebugger {
@@ -1548,14 +1538,18 @@ CL_LAMBDA(symbol &optional env);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return the class holder that contains the class.)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__find_class_holder(Symbol_sp symbol, T_sp env) {
+CL_DEFUN ClassHolder_sp core__find_class_holder(Symbol_sp symbol, T_sp env) {
 #ifdef SYMBOL_CLASS
   return symbol->find_class_holder();
 #else
   //  ASSERTF(env.nilp(), "Handle non nil environment");
   // Should only be single threaded here
   if (_lisp->bootClassTableIsValid()) {
-    return _lisp->boot_findClassHolder(symbol, false);
+    T_sp holder = _lisp->boot_findClassHolder(symbol, false);
+    if (holder.isA<ClassHolder_O>())
+      return holder.as_unsafe<ClassHolder_O>();
+    else
+      SIMPLE_ERROR("No boot class holder for {}", _rep_(symbol));
   }
   // Use the same global variable that ECL uses
   bool foundp;
@@ -1579,13 +1573,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(find-class)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
-  // ASSERTF(env.nilp(), "Handle non nil environment");
-  T_sp ch = core__find_class_holder(symbol, env);
-  if (ch.nilp()) {
-    printf("%s:%d core__find_class_holder returned NIL for symbol %s\n", __FILE__, __LINE__, symbol->formattedName(true).c_str());
-    abort();
-  }
-  ClassHolder_sp cell = gc::As<ClassHolder_sp>(ch);
+  ClassHolder_sp cell = core__find_class_holder(symbol, env);
   if (cell->class_unboundp()) {
     if (errorp) {
       ERROR(ext::_sym_undefinedClass, Cons_O::createList(kw::_sym_name, symbol));
@@ -1606,7 +1594,7 @@ CL_DEFUN T_sp core__setf_find_class(T_sp newValue, Symbol_sp name) {
 #else
   if (_lisp->bootClassTableIsValid()) {
     if (newValue.nilp()) {
-      printf("%s:%d Trying to (setf-find-class nil %s) when bootClassTableIsValid (while boostrapping)\n", __FILE__, __LINE__,
+      printf("%s:%d Trying to (setf-find-class nil %s) when bootClassTableIsValid (while bootsrapping)\n", __FILE__, __LINE__,
              _rep_(name).c_str());
     }
     return _lisp->boot_setf_findClass(name, gc::As<Instance_sp>(newValue));
@@ -2002,18 +1990,14 @@ CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
   else
     nestedErrorDepth = 0;
   if (nestedErrorDepth > 10) {
-    printf("%s:%d -- *nested-error-depth* --> %d  datum: %s\n", __FILE__, __LINE__, nestedErrorDepth, _rep_(datum).c_str());
+    fprintf(stderr, "%s:%d -- *nested-error-depth* --> %d  datum: %s\n", __FILE__, __LINE__, nestedErrorDepth, _rep_(datum).c_str());
     if (initializers.notnilp()) {
-      printf("               initializers: %s\n", _rep_(initializers).c_str());
+      fprintf(stderr, "               initializers: %s\n", _rep_(initializers).c_str());
     }
-    printf("Dumping backtrace\n");
+    fprintf(stderr, "Dumping backtrace\n");
     dbg_safe_backtrace();
-#if defined(__i386__) || defined(__x86_64__)
-    asm("int $03");
-#else
-    printf("%s:%d:%s Figure out how to generate a break/int $03\n", __FILE__, __LINE__, __FUNCTION__);
-#endif
-    gctools::wait_for_user_signal("nested errors are too deep");
+    fflush(stderr);
+    gctools::truly_abort();
   }
   call_with_variable_bound(_sym_STARnestedErrorDepthSTAR, make_fixnum(nestedErrorDepth + 1), [&]() {
     if (_sym_universalErrorHandler->fboundp()) {
@@ -2224,7 +2208,7 @@ Symbol_sp Lisp::internWithDefaultPackageName(string const& defaultPackageName, s
 
 Symbol_sp Lisp::internKeyword(const string& name) {
   string realName = name;
-  boost::to_upper(realName);
+  std::transform(realName.begin(), realName.end(), realName.begin(), ::toupper);
   SimpleBaseString_sp str_real_name = SimpleBaseString_O::make(realName);
   return gc::As<Symbol_sp>(this->_Roots._KeywordPackage->intern(str_real_name));
 }

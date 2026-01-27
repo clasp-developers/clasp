@@ -73,6 +73,7 @@
           generate-encoding-hashtable
           quit
           with-float-traps-masked
+          defun/typed
           enable-interrupt default-interrupt ignore-interrupt
           get-signal-handler set-signal-handler
           *ed-functions*

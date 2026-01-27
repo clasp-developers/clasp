@@ -16,6 +16,7 @@
                (:file "configure")
                (:file "setup")
                (:file "help")
+               (:file "pin")
                (:file "target-sources")
                (:file "units")
                (:file "scripts")

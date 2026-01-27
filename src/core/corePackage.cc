@@ -210,6 +210,7 @@ SYMBOL_EXPORT_SC_(CorePkg, _PLUS_fe_overflow_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, arguments);
 SYMBOL_EXPORT_SC_(CorePkg, array_out_of_bounds);
 SYMBOL_EXPORT_SC_(CorePkg, breakstep);
+SYMBOL_EXPORT_SC_(CorePkg, breakstep_arguments);
 SYMBOL_EXPORT_SC_(CorePkg, c_local);
 SYMBOL_EXPORT_SC_(CorePkg, circle_subst);
 SYMBOL_EXPORT_SC_(CorePkg, class_source_location)

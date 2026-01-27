@@ -1016,7 +1016,7 @@ if provided."
                                               ((null bad-pos)
                                                version)
                                               ((= bad-pos 0)
-                                               (error "Could not interpret result ~s from (~s ~s) as a version string containing (digits | period) followed by junk  match = ~s  major-version = ~s" ver path version-flag match major-version))
+                                               (error "Could not interpret result ~s from (~s ~s) as a version string containing (digits | period) followed by junk  match = ~s  major-version = ~s" version path version-flag match major-version))
                                               (t (subseq version 0 bad-pos))))))
                                  (= major-version
                                     (first (uiop:parse-version ver))))))

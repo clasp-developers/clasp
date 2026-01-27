@@ -151,14 +151,14 @@ A package error is signalled, if package does not exist)dx")
 DOCGROUP(clasp);
 CL_DEFUN T_sp ext__package_remove_nickname(T_sp pkg, T_sp nick) {
   Package_sp package = coerce::packageDesignator(pkg);
-  if (package->lockedP()) {
-    CEpackage_lock_violation(package, "removing nickname ~s", 1,
-                             coerce::stringDesignator(nick));
-  }
   unlikely_if(package->getNicknames().nilp()) return nil<T_O>();
   String_sp nickname = coerce::stringDesignator(nick);
-  // verify if nickname is really nicknames of this package
+  // verify if nickname is really a nickname of this package
   if (_lisp->findPackage(nickname) == package) {
+    // it is; check the package lock and then do it
+    if (package->lockedP())
+      CEpackage_lock_violation(package, "removing nickname ~s", 1,
+                               coerce::stringDesignator(nick));
     _lisp->unmapNameToPackage(nickname);
     package->setNicknames(remove_equal(nickname, package->getNicknames()));
     return package->getNicknames();
@@ -294,12 +294,13 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj) {
     return nil<T_O>();
   }
   Package_sp pkg = gc::As<Package_sp>(potentialPkg);
-  if (pkg->lockedP()) {
-    CEpackage_lock_violation(pkg, "deleting package", 0);
-  }
 
   if (pkg->getZombieP()) { // already deleted
     return nil<T_O>();
+  }
+
+  if (pkg->lockedP()) {
+    CEpackage_lock_violation(pkg, "deleting package", 0);
   }
 
   // If package is used by other packages, a correctable error of type package-error is signaled.
@@ -733,12 +734,12 @@ bool Package_O::usePackage(Package_sp usePackage) {
     FindConflicts findConflicts(this->asSmartPtr());
     {
       WITH_PACKAGE_READ_LOCK(this);
-      if (!ignore_lock && this->lockedP())
-        goto package_lock_violation;
       if (this->usingPackageP_no_lock(usePackage)) {
         LOG("You are already using that package");
         return true;
       }
+      if (!ignore_lock && this->lockedP())
+        goto package_lock_violation;
       usePackage->_ExternalSymbols->lowLevelMapHash(&findConflicts);
       if (cl__length(findConflicts._conflicts) > 0)
         goto name_conflict;
@@ -842,8 +843,6 @@ void Package_O::_export2(Symbol_sp sym) {
   bool ignore_lock = false;
  start: {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
-    if (!ignore_lock && this->lockedP())
-      goto package_lock_violation;
     T_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
     Symbol_sp foundSym = gc::As<Symbol_sp>(values);
     Symbol_sp status = gc::As<Symbol_sp>(mvn.second(values.number_of_values()));
@@ -859,7 +858,13 @@ void Package_O::_export2(Symbol_sp sym) {
       if (conflicts.notnilp())
         goto name_conflict;
       else {
-      // All problems resolved. Actually do the export.
+        // All problems resolved. Actually do the export,
+        // after checking the package lock.
+        // (We check the package lock as late as possible so that more
+        //  specific problems are detected first, and so that export
+        //  of a symbol that's already exported works regardless.)
+        if (!ignore_lock && this->lockedP())
+          goto package_lock_violation;
         if (status == kw::_sym_internal) {
           this->_InternalSymbols->remhash(nameKey);
         }
@@ -1121,9 +1126,6 @@ void Package_O::import1(Symbol_sp symbolToImport) {
   bool ignore_lock = false;
  start: {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
-    if (!ignore_lock && this->lockedP()) {
-      goto package_lock_violation;
-    }
     SimpleString_sp nameKey = symbolToImport->_Name;
     Symbol_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
     foundSymbol = values;
@@ -1131,6 +1133,9 @@ void Package_O::import1(Symbol_sp symbolToImport) {
     Symbol_sp status = gc::As<Symbol_sp>(mvn.valueGet(1, values.number_of_values()));
     if (status.nilp()) {
       // No conflict: add the symbol.
+      if (!ignore_lock && this->lockedP()) {
+        goto package_lock_violation;
+      }
       this->add_symbol_to_package_no_lock(nameKey, symbolToImport, false);
       return;
     } else if (foundSymbol == symbolToImport) {

@@ -27,6 +27,8 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-this-capture"
 #include <clang/AST/Comment.h>
 #include <clang/AST/ASTDumper.h>
 #include <clang/AST/DeclTemplate.h>
@@ -43,6 +45,7 @@ THE SOFTWARE.
 #include <clang/Tooling/Refactoring.h>
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/Frontend/FrontendActions.h>
+#pragma clang diagnostic pop
 
 #include <clasp/core/object.h>
 #include <clasp/core/array.h>

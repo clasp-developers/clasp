@@ -375,13 +375,6 @@ NOINLINE CL_DEFUN T_sp core__trigger_dtrace_stop() {
   return nil<T_O>();
 }
 
-DOCGROUP(clasp);
-CL_DEFUN void core__startup_functions_invoke(List_sp literals) {
-  startup_functions_invoke((T_O*)literals.raw_());
-  printf("%s:%d startup_functions_invoke returned -   this should never happen\n", __FILE__, __LINE__);
-  abort();
-};
-
 }; // namespace core
 
 extern "C" {
@@ -428,8 +421,7 @@ CL_DEFUN Fixnum core__rdtsc() {
   __asm__ __volatile__("rdtsc" : "=a"(lo), "=d"(hi));
   return ((uint64_t)hi << 32) | lo;
 #else
-  printf("%s:%d:%s Add support for rdtsc performance timer for this architecture\n", __FILE__, __LINE__, __FUNCTION__);
-  abort();
+  SIMPLE_ERROR("No support for RDTSC on this architecture");
 #endif
 }
 

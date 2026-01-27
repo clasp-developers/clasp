@@ -1,0 +1,9 @@
+#! /bin/bash
+#
+# In the clasp toplevel directory use...
+#   make -f apptainer/makefile
+#
+
+rm -rf build-apptainer/*
+tar --exclude-vcs -cvf systems.tar -C $HOME ./common-lisp 
+apptainer build -F --bind $PWD:/mnt cando.sif apptainer/cando-debian.def

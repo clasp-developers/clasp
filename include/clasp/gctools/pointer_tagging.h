@@ -45,7 +45,6 @@ extern void lisp_errorBadCastFromT_O(type_info const& toType, core::T_O* objP);
 extern void lisp_errorBadCastToFixnum_O(type_info const& fromType, core::T_O* objP);
 extern void lisp_errorBadCastFromT_OToCons_O(core::T_O* objP);
 extern void lisp_errorBadCastFromSymbol_O(type_info const& toType, core::Symbol_O* objP);
-extern void lisp_errorDereferencedNonPointer(core::T_O* objP);
 
 typedef uint8_t byte8_t;
 typedef uint16_t byte16_t;

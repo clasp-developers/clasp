@@ -17,10 +17,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Log in to the Container registry
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -28,14 +28,14 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051
         with:
           images: ghcr.io/clasp-developers/clasp
           tags: |
             type=raw,value=latest
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@14487ce63c7a62a4a324b0bfb37086795e31c6c1
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
         with:
           context: docker/clasp/
           push: true

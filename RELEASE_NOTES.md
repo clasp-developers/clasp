@@ -7,12 +7,17 @@
 * `ext:macroexpand-all` macroexpands a form and its subforms.
 * Arguments to bytecode functions are made available to debuggers.
 
+## Changed
+* Use Khazern extended for CL:LOOP
+
 ## Fixed
 * Weak pointers and weak hash tables survive snapshot save/load.
 * `ext:quit` can be used from any thread, not just the initial thread.
 * Quasiquoted vectors are read correctly (#1666).
 * The bytecode compiler detects malformed bindings.
 * Literal arrays with fill pointers are not dumped with excess elements.
+* `setf` of `apply` no longer has multiple evaluation problems.
+* Improve error messages for package name conflicts. Fixes #1722.
 
 ## Removed
 * `-z`/`--snapshot-symbols-save` command line option, occasionally used

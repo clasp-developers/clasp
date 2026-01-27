@@ -431,7 +431,9 @@
                                (cross-clasp.clasp.alexandria::symbolicate
                                 . %symbolicate)
                                (cross-clasp.clasp.alexandria::generate-switch-body
-                                . alexandria::generate-switch-body))
+                                . alexandria::generate-switch-body)
+                               (cross-clasp.clasp.khazern::unique-name
+                                . khazern:unique-name))
         for f = (fdefinition src)
         do (setf (clostrum:fdefinition client rte fname) f))
   (loop for mname in '(eclector.reader:quasiquote
@@ -490,7 +492,9 @@
                                (ctypecase . core::%ctypecase)
                                (etypecase . core::%etypecase)
                                (setf . %setf)
-                               (remf . %remf))
+                               (remf . %remf)
+                               (cross-clasp.clasp.trivial-with-current-source-form::with-current-source-form
+                                   . ext:with-current-source-form))
         for m = (macro-function src)
         do (setf (clostrum:macro-function client rte mname) m))
   (loop for (fname . set) in '((mp::atomic . mp::expand-atomic))

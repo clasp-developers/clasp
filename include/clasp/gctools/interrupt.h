@@ -16,5 +16,6 @@ void initialize_signals();
 extern bool global_user_signal;
 void wait_for_user_signal(const char* message);
 void setup_user_signal();
+[[noreturn]] void truly_abort();
 
 }; // namespace gctools

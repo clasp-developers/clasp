@@ -16,6 +16,7 @@
 #include <clasp/core/designators.h> // calledFunctionDesignator
 #include <clasp/core/evaluator.h>   // eval::funcall
 #include <clasp/gctools/interrupt.h> // handle_all_queued_interrupts
+#include <clasp/core/step.h> // breakstep_arguments
 
 #define VM_CODES
 #include <virtualMachine.h>
@@ -58,6 +59,19 @@ void BytecodeModule_O::register_for_debug() {
   Cons_sp newc = Cons_O::create(this->asSmartPtr(), old);
   while (!_lisp->_Roots._AllBytecodeModules.compare_exchange_weak(old, newc, std::memory_order_relaxed))
     newc->setCdr(old);
+}
+
+// Note that we check stepping in the callER not the callEE.
+// This is so that we could provide the actual source forms, as we already do
+// in native code. TODO
+static void maybe_step_call(void* frame,
+                            Function_sp func, size_t nargs, T_O** rargs) {
+  if (my_thread->_Breakstep) [[unlikely]] {
+    ql::list args;
+    for (size_t iarg = 0; iarg < nargs; ++iarg)
+      args << T_sp((gctools::Tagged)rargs[iarg]);
+    breakstep_args(frame, func, args.cons());
+  }
 }
 
 static inline int16_t read_s16(unsigned char* pc) {
@@ -274,6 +288,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
       Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
+      maybe_step_call(__builtin_frame_address(0), func, nargs, args);
       // We push the PC for the debugger (see make_bytecode_frame in backtrace.cc)
       // We do this here rather than bytecode_call because e.g. we may call a
       // non-bytecode function, that in turn calls a bunch of different bytecode
@@ -296,6 +311,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       VM_RECORD_PLAYBACK(func, "vm_call_receive_one_func");
       VM_RECORD_PLAYBACK((void*)(uintptr_t)nargs, "vm_call_receive_one_nargs");
       T_O** args = vm.stackref(sp, nargs - 1);
+      maybe_step_call(__builtin_frame_address(0), func, nargs, args);
 #if DEBUG_VM_RECORD_PLAYBACK == 1
       for (size_t ii = 0; ii < nargs; ii++) {
         stringstream name_args;
@@ -320,6 +336,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
       Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
+      maybe_step_call(__builtin_frame_address(0), func, nargs, args);
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
@@ -673,6 +690,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
       Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
+      maybe_step_call(__builtin_frame_address(0), func, nargs, args);
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
@@ -690,6 +708,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
       Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
+      maybe_step_call(__builtin_frame_address(0), func, nargs, args);
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
@@ -708,6 +727,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
       Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
+      maybe_step_call(__builtin_frame_address(0), func, nargs, args);
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
@@ -1063,6 +1083,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
     Function_sp func = gc::As_assert<Function_sp>(tfunc);
     T_O** args = vm.stackref(sp, nargs - 1);
+    maybe_step_call(__builtin_frame_address(0), func, nargs, args);
     vm.push(sp, (T_O*)pc);
     vm._pc = pc;
     vm._stackPointer = sp;
@@ -1078,9 +1099,10 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     DBG_VM1("long call-receive-one %" PRIu16 "\n", nargs);
     T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
     Function_sp func = gc::As_assert<Function_sp>(tfunc);
+    T_O** args = vm.stackref(sp, nargs - 1);
+    maybe_step_call(__builtin_frame_address(0), func, nargs, args);
     VM_RECORD_PLAYBACK(func, "vm_call_receive_one_func");
     VM_RECORD_PLAYBACK((void*)(uintptr_t)nargs, "vm_call_receive_one_nargs");
-    T_O** args = vm.stackref(sp, nargs - 1);
 #if DEBUG_VM_RECORD_PLAYBACK == 1
     for (size_t ii = 0; ii < nargs; ii++) {
       stringstream name_args;
@@ -1107,6 +1129,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
     Function_sp func = gc::As_assert<Function_sp>(tfunc);
     T_O** args = vm.stackref(sp, nargs - 1);
+    maybe_step_call(__builtin_frame_address(0), func, nargs, args);
     vm.push(sp, (T_O*)pc);
     vm._pc = pc;
     vm._stackPointer = sp;
@@ -1325,6 +1348,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
     Function_sp func = gc::As_assert<Function_sp>(tfunc);
     T_O** args = vm.stackref(sp, nargs - 1);
+    maybe_step_call(__builtin_frame_address(0), func, nargs, args);
     vm.push(sp, (T_O*)pc);
     vm._pc = pc;
     vm._stackPointer = sp;

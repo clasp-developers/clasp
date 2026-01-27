@@ -39,7 +39,8 @@
   ;; misc
   (:export #:function-name-package)
   ;; stepper
-  (:export #:step-form #:step-into #:step-over)
+  (:export #:step-condition #:step-form #:step-call
+           #:step-into #:step-over)
   (:import-from #:core #:set-breakstep #:unset-breakstep #:breakstepping-p)
   (:export #:set-breakstep #:unset-breakstep #:breakstepping-p))
 

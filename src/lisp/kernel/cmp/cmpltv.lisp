@@ -1896,7 +1896,19 @@ Abandoning further work on it and moving on." e)))))
   (dolist (form forms)
     (bytecode-compile-toplevel form env)))
 
+(defun check-eval-when-situations (situations)
+  (loop for sitch in situations
+        unless (member sitch '(:compile-toplevel cl:compile
+                               :load-toplevel cl:load
+                               :execute cl:eval))
+          collect sitch into invalid
+        finally (when invalid
+                  (error 'core:simple-program-error
+                         :format-control "Invalid eval-when situations: ~s"
+                         :format-arguments (list invalid)))))
+
 (defun bytecode-compile-toplevel-eval-when (situations forms env)
+  (check-eval-when-situations situations)
   (let ((ct (or (member :compile-toplevel situations)
                 (member 'cl:compile situations)))
         (lt (or (member :load-toplevel situations)

@@ -365,6 +365,10 @@
   (:use #:cl))
 (defpackage #:cross-clasp.clasp.ecclesia
   (:use #:cl))
+(defpackage #:cross-clasp.clasp.trivial-with-current-source-form
+  (:use #:cl))
+(defpackage #:cross-clasp.clasp.khazern
+  (:use #:cl))
 
 (defpackage #:cross-clasp
   (:use #:cl)

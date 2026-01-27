@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <clasp/core/hashTableCustom.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/designators.h>
 namespace core {
 
 // ----------------------------------------------------------------------
@@ -62,5 +63,44 @@ void HashTableCustom_O::sxhashEffect(T_sp obj, HashGenerator& hg) const {
   }
   TYPE_ERROR(hash, Cons_O::createList(cl::_sym_and, cl::_sym_fixnum, Cons_O::createList(cl::_sym_Integer_O, Integer_O::create(0))));
 }
+
+// Get the name of a function if it's global, or else signal an error.
+// KLUDGE
+static T_sp global_fname(Function_sp f) {
+  T_sp name = f->functionName();
+  // setf functions don't make sense here anyway, so don't bother handling
+  if (name.isA<Symbol_O>()) {
+    Symbol_sp sname = name.as_unsafe<Symbol_O>();
+    if (sname->symbolFunction() == f) return name;
+  }
+  SIMPLE_ERROR("Can't serialize custom hash table with non-global function {}",
+               _rep_(f));
+}
+
+void HashTableCustom_O::fields(Record_sp node) {
+  switch (node->stage()) {
+  case Record_O::initializing:
+  case Record_O::loading: {
+    T_sp testname, hashname;
+    node->field(INTERN_(core, comparator), testname);
+    node->field(INTERN_(core, hasher), hashname);
+    comparator = coerce::functionDesignator(testname);
+    hasher = coerce::functionDesignator(hashname);
+  } break;
+  case Record_O::saving: {
+    T_sp testname = global_fname(comparator);
+    T_sp hashname = global_fname(hasher);
+    node->field(INTERN_(core, hasher), hashname);
+    node->field(INTERN_(core, comparator), testname);
+  } break;
+  case Record_O::patching: {
+    IMPLEMENT_MEF("Add support to patch hash tables");
+  } break;
+  }
+  // We call the parent fields _afterward_ so that any setf gethash it does
+  // uses the correct comparator and hasher.
+  HashTable_O::fields(node);
+}
+
 
 }; // namespace core

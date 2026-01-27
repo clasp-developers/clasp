@@ -96,7 +96,6 @@
              #~"kernel/lsp/defmacro.lisp"
              #~"kernel/lsp/evalmacros.lisp"
              #~"kernel/lsp/defstruct.lisp"
-             #~"kernel/lsp/loop2.lisp"
              #~"kernel/lsp/sharpmacros.lisp"
              #~"kernel/lsp/mp.lisp"
              #~"kernel/lsp/atomics.lisp"
@@ -117,6 +116,7 @@
              #~"kernel/lsp/top-hook.lisp"
              #~"kernel/install-delayed-macros.lisp"
              :ecclesia
+             :khazern-extension-intrinsic
              ;; logical pathname translation
              #@"base-translations.lisp"
              #~"modules/sockets/sockets.lisp"
@@ -229,7 +229,6 @@
            #~"kernel/contrib/trivial-garbage/"
            #~"kernel/contrib/trivial-http/"
            #~"kernel/contrib/trivial-indent/"
-           #~"kernel/contrib/trivial-with-current-source-form/"
            #~"kernel/contrib/usocket/")
 
 (k:sources :analyzer
