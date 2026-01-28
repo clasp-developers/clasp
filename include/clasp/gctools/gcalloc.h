@@ -112,14 +112,6 @@ template <class T> struct RootClassAllocator {
   static void deallocate(gctools::tagged_pointer<T> memory) {
     do_free(&*memory);
   };
-
-  static void* allocateRootsAndZero(size_t num) {
-    return do_allocate_zero(num);
-  }
-
-  static void freeRoots(void* roots) {
-    do_free(roots);
-  };
 };
 
 template <class Stage, class Cons> struct ConsAllocator {
@@ -472,6 +464,16 @@ public:
   }
 
   static void deallocate_unmanaged_instance(OT* obj) { GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::deallocate(obj); }
+
+  // These two are used for allocating VM stacks in threads.
+  // Also used when loading snapshots and for the Lisp object.
+  static void* allocateRootsAndZero(size_t num) {
+    return do_allocate_zero(num);
+  }
+  static void freeRoots(void* roots) {
+    do_free(roots);
+  };
+
 };
 }; // namespace gctools
 
