@@ -30,15 +30,10 @@ class Creator_O : public Function_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, Creator_O, "Creator", Function_O);
 
 public:
-  // Some Creators don't actually allocate anything -
-  // classes that don't have default allocators
-  virtual bool allocates() const { return true; };
-  /*! If this is the allocator for a primary CxxAdapter class then return true, */
   T_sp functionName() const override { return nil<T_O>(); };
   T_sp lambda_list() const { return nil<T_O>(); };
   T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) { return nil<T_O>(); };
   virtual int duplicationLevel() const { return 0; };
-  virtual bool creates_classes() const { return false; };
   CL_NAME("CORE:CREATOR-TEMPLATED-SIZE");
   virtual CL_DEFMETHOD size_t templatedSizeof() const override = 0;
   virtual Creator_sp duplicateForClassName(core::Symbol_sp className) {
@@ -72,7 +67,6 @@ public:
     else
       lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(_W_::static_classSymbol());
   }
-  virtual void searcher(){};
   WRAPPER_BuiltInObjectCreator(core::SimpleFun_sp ep) : core::Creator_O(ep){};
 };
 

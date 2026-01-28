@@ -61,7 +61,6 @@ public:
 public:
 public:
   size_t templatedSizeof() const { return sizeof(WRAPPER_BuiltInObjectCreator<Instance_O>); };
-  bool creates_classes() const { return true; };
   virtual core::T_sp creator_allocate() {
     // WRAPPER_BuiltInObjectCreator<Instance_O> uses a different allocation method
     // that assigns the next Clos Stamp to the new Class
@@ -69,7 +68,6 @@ public:
     //      printf("%s:%d  creating class\n", __FILE__, __LINE__ );
     return obj;
   }
-  virtual void searcher(){};
   WRAPPER_BuiltInObjectCreator<Instance_O>(SimpleFun_sp ep) : Creator_O(ep){};
 };
 }; // namespace core
