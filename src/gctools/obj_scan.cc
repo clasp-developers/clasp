@@ -225,15 +225,6 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
     }
     client = (ADDR_T)((char*)client + gctools::AlignUp(size + sizeof(gctools::Header_s)) + header.tail_size());
   } break;
-#ifdef USE_MPS
-  case gctools::Header_s::pad_mtag: {
-    if (header_value.pad1P()) {
-      client = (ADDR_T)((char*)(client) + header._badge_stamp_wtag_mtag.pad1Size());
-    } else if (header._badge_stamp_wtag_mtag.padP()) {
-      client = (ADDR_T)((char*)(client) + header._badge_stamp_wtag_mtag.padSize());
-    }
-  } break;
-#endif // USE_MPS
   default: {
     throw_hard_error_bad_client((void*)client);
   }

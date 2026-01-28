@@ -221,9 +221,7 @@ CL_DEFUN T_sp cl__lisp_implementation_version() {
   }
   ss << gctools::program_name();
   ss << "-";
-#if defined(USE_MPS)
-  ss << "mps-";
-#elif defined(USE_BOEHM)
+#if defined(USE_BOEHM)
 #ifdef USE_PRECISE_GC
   ss << "boehmprecise-";
 #else

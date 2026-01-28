@@ -38,11 +38,6 @@ extern "C" {
 };
 #elif defined(USE_MMTK)
 #include <mmtk/api/mmtk.h>
-#elif defined(USE_MPS)
-extern "C" {
-#include <clasp/mps/code/mps.h>
-#include <clasp/mps/code/mpsavm.h>
-};
 #endif
 
 namespace core {
@@ -1027,8 +1022,6 @@ public:
 #include <clasp/gctools/boehmGarbageCollection.h>
 #elif defined(USE_MMTK)
 #include <clasp/gctools/mmtkGarbageCollection.h>
-#elif defined(USE_MPS)
-#include <clasp/gctools/mpsGarbageCollection.h>
 #endif
 
 extern "C" {

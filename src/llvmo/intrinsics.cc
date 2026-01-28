@@ -26,12 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-// #define DEBUG_LEVEL_FULL
-#ifdef USE_MPS
-extern "C" {
-#include <clasp/mps/code/mps.h>
-};
-#endif
 
 #include <cctype>
 #include <cstdint>

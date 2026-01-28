@@ -152,7 +152,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, ucs_4le);
 SYMBOL_EXPORT_SC_(KeywordPkg, us_ascii);
 SYMBOL_EXPORT_SC_(KeywordPkg, use_boehm);
 SYMBOL_EXPORT_SC_(KeywordPkg, use_boehmdc);
-SYMBOL_EXPORT_SC_(KeywordPkg, use_mps);
 SYMBOL_EXPORT_SC_(KeywordPkg, utf_8);
 SYMBOL_EXPORT_SC_(KeywordPkg, verbose);
 

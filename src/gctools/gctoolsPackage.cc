@@ -28,11 +28,6 @@ THE SOFTWARE.
 #ifdef USE_BOEHM
 #include "src/bdwgc/include/gc_mark.h"
 #endif
-#ifdef USE_MPS
-extern "C" {
-#include <clasp/mps/code/mpscamc.h>
-};
-#endif
 
 #include <stdint.h>
 

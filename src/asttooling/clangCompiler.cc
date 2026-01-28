@@ -48,12 +48,6 @@ THE SOFTWARE.
 #include <clasp/asttooling/clangCompilePkg.h>
 #include <clasp/core/translators.h>
 
-#ifdef USE_MPS
-#define NAMESPACE_clbind_clang
-#include <clasp/gctools/gc_interface.h>
-#undef NAMESPACE_clbind_clang
-#endif
-
 namespace clang_compile {
 using namespace clbind;
 

@@ -32,7 +32,6 @@
                  "USE_PRECISE_GC" *variant-precise*
                  "USE_BOEHM" (eq :boehm *variant-gc*)
                  "USE_MMTK" (eq :mmtk *variant-gc*)
-                 "USE_MPS" (eq :mps *variant-gc*)
                  "USE_MPI" (mpi configuration)
                  "RUNNING_PRECISEPREP" *variant-prep*
                  "PROGRAM_CLASP" t

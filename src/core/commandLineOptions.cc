@@ -243,9 +243,6 @@ bool CommandLineOptions::validStartupTypeOption(const std::string& arg) {
 
 void CommandLineOptions::printVersion() {
   std::cout << gctools::program_name();
-#ifdef USE_MPS
-  std::cout << "-mps-";
-#endif
 #if defined(USE_BOEHM)
 #ifdef USE_PRECISE_GC
   std::cout << "-boehmprecise-";

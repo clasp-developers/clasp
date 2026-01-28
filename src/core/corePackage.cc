@@ -751,8 +751,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
 #endif
 #if defined(USE_BOEHM)
   features = Cons_O::create(_lisp->internKeyword("USE-BOEHM"), features);
-#elif defined(USE_MPS)
-  features = Cons_O::create(_lisp->internKeyword("USE-MPS"), features);
 #elif defined(USE_MMTK)
   features = Cons_O::create(_lisp->internKeyword("USE-MMTK"), features);
 #endif

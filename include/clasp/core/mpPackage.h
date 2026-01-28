@@ -114,9 +114,6 @@ public:
 #if defined(USE_BOEHM) || defined(USE_MMTK)
   dont_expose<void*> thr_o;
   dont_expose<void*> root;
-#elif defined(USE_MPS)
-  dont_expose<mps_thr_t> thr_o;
-  dont_expose<mps_root_t> root;
 #endif
 public:
   Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments, core::List_sp initialSpecialBindings = nil<core::T_O>(),

@@ -73,12 +73,6 @@ THE SOFTWARE.
 #include <clasp/asttooling/clangTooling.h>
 #include <clasp/core/translators.h>
 
-#ifdef USE_MPS
-#define NAMESPACE_clbind_clang
-#include <clasp/gctools/gc_interface.h>
-#undef NAMESPACE_clbind_clang
-#endif
-
 namespace translate {
 
 template <> struct from_object<clang::tooling::CommandLineArguments> {

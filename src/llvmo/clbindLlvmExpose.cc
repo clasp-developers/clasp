@@ -32,13 +32,6 @@ THE SOFTWARE.
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/clbind/clbind.h>
 
-#ifdef USE_MPS
-// What the hell is this?   Which name means something???
-#define NAMESPACE_clbind_llvm
-#include <clasp/gctools/gc_interface.h>
-#undef NAMESPACE_clbind_clang
-#endif
-
 #if 0
 typedef clbind::Wrapper<llvm::APInt, std::unique_ptr<llvm::APInt>> APInt_wrapper;
 typedef clbind::Wrapper<llvm::APSInt, std::unique_ptr<llvm::APSInt>> APSInt_wrapper;

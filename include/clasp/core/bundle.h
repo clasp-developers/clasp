@@ -50,10 +50,6 @@ struct BundleDirectories {
 /*! Maintains the file paths to the different directories of the Cando bundle
  */
 class Bundle {
-#if defined(USE_MPS)
-  friend mps_res_t globals_scan(mps_ss_t ss, void* p, size_t s);
-#endif
-
 public:
   bool _Initialized;
   BundleDirectories* _Directories;

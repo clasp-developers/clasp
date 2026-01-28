@@ -1,6 +1,3 @@
-#+use-mps
-(progn (princ "Skipping test CXX-DERIVABILITY - CXX objects don't work in MPS yet (fix!)") (terpri))
-#-use-mps
 (test-true cxx-derivability (core:inherits-from-instance (core:make-cxx-object 'ast-tooling:match-callback))
       :description "A derivable class is a CLOS class that derives from a C++ class.
 They are defined in the clbind library using Derivable<Foo>.

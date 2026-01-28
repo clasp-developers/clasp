@@ -84,8 +84,6 @@ uint32_t my_thread_random();
 
 #if defined(USE_BOEHM)
 #include <clasp/gctools/gcalloc_boehm.h>
-#elif defined(USE_MPS)
-#include <clasp/gctools/gcalloc_mps.h>
 #elif defined(USE_MMTK)
 #include <clasp/gctools/gcalloc_mmtk.h>
 #else
@@ -284,10 +282,6 @@ template <class OT> struct GCObjectAppropriatePoolAllocator<OT, unmanaged> {
   };
 };
 } // namespace gctools
-
-extern "C" {
-void my_mps_finalize(core::T_O* tagged);
-};
 
 namespace gctools {
 template <class OT>

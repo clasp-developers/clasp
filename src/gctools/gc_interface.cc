@@ -123,14 +123,14 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj) {
   ASSERTF(header->_badge_stamp_wtag_mtag.stampP(), "obj_deallocate_unmanaged_instance called without a valid object");
   gctools::GCStampEnum stamp = (GCStampEnum)(header->_badge_stamp_wtag_mtag.stamp_());
 #ifndef RUNNING_PRECISEPREP
-#if defined(USE_MPS) || defined(USE_PRECISE_GC)
+#if defined(USE_PRECISE_GC)
   size_t jump_table_index = (size_t)stamp; // - stamp_first_general;
   printf("%s:%d Calculated jump_table_index %lu\n", __FILE__, __LINE__, jump_table_index);
   goto*(OBJ_DEALLOCATOR_table[jump_table_index]);
 #define GC_OBJ_DEALLOCATOR
 #include CLASP_GC_CC
 #undef GC_OBJ_DEALLOCATOR
-#endif // USE_MPS
+#endif // USE_PRECISE_GC
 #endif
 };
 #undef GC_DEALLOCATOR_METHOD

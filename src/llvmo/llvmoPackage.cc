@@ -685,7 +685,7 @@ CL_DEFUN_SETF core::T_sp setf_jit_lookup_t(core::T_sp value, JITDylib_sp dylib, 
 
 }; // namespace llvmo
 
-#if defined(USE_MPS) || defined(USE_PRECISE_GC)
+#ifdef USE_PRECISE_GC
 //
 // Include the Kinds
 //

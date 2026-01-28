@@ -92,7 +92,7 @@
 (defclass variant (flags)
   ((gc :reader variant-gc
        :initarg :gc
-       :type (member :boehm :mmtk :mps)
+       :type (member :boehm :mmtk)
        :documentation "The garbage collector of the variant.")
    (precise :reader variant-precise
             :initarg :precise

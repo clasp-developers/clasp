@@ -49,7 +49,6 @@ public:
 [[noreturn]] void throw_hard_error_bad_client(void* ptr);
 [[noreturn]] void throw_hard_error_bad_layout_command(int cmd);
 [[noreturn]] void throw_hard_error_side_stack_damaged(size_t totalSize, size_t calcSize);
-[[noreturn]] void throw_hard_error_mps_bad_result(int result);
 [[noreturn]] void throw_hard_error_failed_assertion(const char* assertion);
 [[noreturn]] void throw_hard_error_cast_failed(const char* type, const char* from);
 [[noreturn]] void throw_hard_error_cannot_cast_tagged_pointer(const char* name, size_t kind);

@@ -262,9 +262,7 @@ int startup_clasp(void** stackMarker, gctools::ClaspInfo* claspInfo, int* exitCo
 #undef ALL_PREGCSTARTUPS_CALLS
 #endif
     
-#if defined(USE_MPS)
-  gctools::startupMemoryPoolSystem(claspInfo);
-#elif defined(USE_BOEHM)
+#if defined(USE_BOEHM)
   gctools::startupBoehm(claspInfo); // Correct
 #elif defined(USE_MMTK)
   int exitCode = gctools::initializeMmtk(startupFn, claspInfo->_argc, claspInfo->_argv, claspInfo->_mpiEnabled, claspInfo->_mpiRank,
