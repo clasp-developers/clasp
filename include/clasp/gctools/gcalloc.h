@@ -300,20 +300,6 @@ public:
   typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
 
 public:
-  template <typename... ARGS> static smart_pointer_type root_allocate(ARGS&&... args) {
-    return root_allocate_kind(GCStamp<OT>::Stamp, sizeof_with_header<OT>(), std::forward<ARGS>(args)...);
-  }
-  template <typename... ARGS>
-  static smart_pointer_type root_allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS&&... args) {
-    Header_s* base = do_uncollectable_allocation(the_header, size);
-    pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
-    new (ptr) OT(std::forward<ARGS>(args)...);
-    smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
-    initializeIfNeeded(sp);
-    finalizeIfNeeded(sp);
-    return sp;
-  };
-
   template <typename Stage, typename... ARGS>
   static smart_pointer_type allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS&&... args) {
     smart_pointer_type sp =
@@ -381,11 +367,6 @@ public:
   typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
 
 public:
-  template <typename... ARGS> static smart_pointer_type root_allocate(ARGS&&... args) {
-    return GCObjectAllocator<OT>::root_allocate_kind(Header_s::StampWtagMtag::make<OT>(), sizeof_with_header<OT>(),
-                                                     std::forward<ARGS>(args)...);
-  }
-
   template <typename... ARGS> static smart_pointer_type allocate_kind(const Header_s::BadgeStampWtagMtag& kind, ARGS&&... args) {
     size_t size = sizeof_with_header<OT>();
     return GCObjectAllocator<OT>::allocate_kind(kind, size, std::forward<ARGS>(args)...);
