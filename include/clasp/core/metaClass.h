@@ -68,7 +68,6 @@ public:
     //      printf("%s:%d  creating class\n", __FILE__, __LINE__ );
     return obj;
   }
-  WRAPPER_BuiltInObjectCreator<Instance_O>(SimpleFun_sp ep) : Creator_O(ep){};
 };
 }; // namespace core
 

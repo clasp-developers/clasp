@@ -132,7 +132,7 @@ class DummyCreator_O : public core::Creator_O {
   core::T_sp _name;
 
 public:
-  DummyCreator_O(core::SimpleFun_sp ep, core::T_sp name) : core::Creator_O(ep), _name(name){};
+  DummyCreator_O(core::T_sp name) : core::Creator_O(), _name(name){};
 
 public:
   virtual size_t templatedSizeof() const override { return sizeof(*this); };
@@ -140,9 +140,7 @@ public:
     SIMPLE_ERROR("This class named: {} cannot allocate instances", core::_rep_(this->_name));
   } // return _Nil<core::T_O>(); };
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) override {
-    core::SimpleFun_sp entryPoint =
-        core::makeSimpleFunAndFunctionDescription<DummyCreator_O>(nil<T_O>());
-    return gc::GC<DummyCreator_O>::allocate(entryPoint, className);
+    return gc::GC<DummyCreator_O>::allocate(className);
   }
 };
 
@@ -409,9 +407,7 @@ struct constructor_registration<Class, HoldType, default_constructor, Policies, 
       : constructor_registration_base<Class, HoldType, default_constructor, Policies>(policies, name, arguments, declares,
                                                                                       docstring){};
   core::Creator_sp registerDefaultConstructor_() const {
-    core::SimpleFun_sp ep = core::makeSimpleFunAndFunctionDescription<DefaultConstructorCreator_O<Class, HoldType>>(
-        nil<core::T_O>());
-    core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<Class, HoldType>>::allocate(ep));
+    core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<Class, HoldType>>::allocate());
     return allocator;
   }
 };

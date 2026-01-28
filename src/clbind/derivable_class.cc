@@ -108,9 +108,7 @@ void derivable_class_registration::register_() const {
   if (m_default_constructor != NULL) {
     creator = m_default_constructor->registerDefaultConstructor_();
   } else {
-    core::SimpleFun_sp entryPoint =
-        core::makeSimpleFunAndFunctionDescription<DummyCreator_O>(::nil<core::T_O>());
-    creator = gctools::GC<DummyCreator_O>::allocate(entryPoint, className);
+    creator = gctools::GC<DummyCreator_O>::allocate(className);
   }
   crep->initializeClassSlots(creator, gctools::NextClbindStampWtag(gctools::Header_s::derivable_wtag));
   className->exportYourself();
