@@ -9,7 +9,6 @@
 #define OBJECT_SCAN fixup_objects  // Name of function
 #define POINTER_FIX(field)         // Macro to fix pointer at field
 #define OBJECT_SCAN             // Macro to turn on #ifdef inclusion of code
-#define CLIENT_PTR_TO_HEADER_PTR(client) // Replace with function to get base pointer from client
  * Macros for weak pointers and ephemerons.
  * If left undefined, weak pointers are ignored and ephemerons have their
  * values scanned. HOWEVER this is done using temporary, fake "field"
@@ -36,12 +35,13 @@
 #define EPHEMERON_FIX(key, value) POINTER_FIX(value)
 #endif
 
-ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
+void OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
 
   size_t stamp_index;
   size_t size;
   // The client must have a valid header
-  const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s*>(GENERAL_PTR_TO_HEADER_PTR(client));
+  core::General_O* general = reinterpret_cast<core::General_O*>(client);
+  const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s*>(gctools::GeneralPtrToHeaderPtr(general));
   const gctools::Header_s::BadgeStampWtagMtag& header_value = header._badge_stamp_wtag_mtag;
   stamp_index = header._badge_stamp_wtag_mtag.stamp_();
   LOG("obj_scan client={} stamp={}\n", (void*)client, stamp_index);
@@ -59,7 +59,7 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
       printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__);
     }
     if (stamp_layout.layout_op == gctools::templated_op) {
-      size = ((core::General_O*)client)->templatedSizeof();
+      size = general->templatedSizeof();
     } else {
       size = stamp_layout.size;
     }
@@ -223,20 +223,19 @@ ADDR_T OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
         }
       }
     }
-    client = (ADDR_T)((char*)client + gctools::AlignUp(size + sizeof(gctools::Header_s)) + header.tail_size());
   } break;
   default: {
     throw_hard_error_bad_client((void*)client);
   }
   }
   LOG("obj_scan ENDING client={}\n", (void*)client);
-  return client;
 }
 #endif // OBJECT_SCAN
 
 #ifdef OBJECT_SKIP
 ADDR_T OBJECT_SKIP(ADDR_T client, size_t& obj_size) {
-  const gctools::Header_s* header_ptr = reinterpret_cast<const gctools::Header_s*>(GENERAL_PTR_TO_HEADER_PTR(client));
+  core::General_O* general = reinterpret_cast<core::General_O*>(client);
+  const gctools::Header_s* header_ptr = reinterpret_cast<const gctools::Header_s*>(gctools::GeneralPtrToHeaderPtr(general));
   const gctools::Header_s& header = *header_ptr;
   const gctools::Header_s::BadgeStampWtagMtag& header_value = header._badge_stamp_wtag_mtag;
   switch (header_value.mtag()) {
@@ -276,7 +275,7 @@ ADDR_T OBJECT_SKIP(ADDR_T client, size_t& obj_size) {
         obj_size = gctools::AlignUp(container_layout->element_size * capacity + container_layout->data_offset);
       }
     } else if (stamp_layout.layout_op == gctools::templated_op) {
-      obj_size = gctools::AlignUp(((core::General_O*)client)->templatedSizeof());
+      obj_size = gctools::AlignUp(general->templatedSizeof());
     } else { // normal object, not a container or template or anything
       obj_size = gctools::AlignUp(stamp_layout.size);
     }

@@ -14,7 +14,7 @@
  */
 
 #ifdef CONS_SCAN
-ADDR_T CONS_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
+void CONS_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
   //  printf("%s:%d in cons_scan client=%p limit=%p ptag_mask=0x%lx\n", __FILE__, __LINE__, client, limit, gctools::ptag_mask );
   core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
   gctools::Header_s* header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(cons);
@@ -25,20 +25,14 @@ ADDR_T CONS_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
 #endif
     POINTER_FIX(&cons->_Car);
     POINTER_FIX(&cons->_Cdr);
-    client = reinterpret_cast<ADDR_T>((char*)client + sizeof(core::Cons_O));
-  } else if (header->_badge_stamp_wtag_mtag.fwdP()) {
-    client = reinterpret_cast<ADDR_T>((char*)(client) + sizeof(core::Cons_O));
-  } else if (header->_badge_stamp_wtag_mtag.pad1P()) {
-    client = reinterpret_cast<ADDR_T>((char*)(client) + gctools::Alignment());
-  } else if (header->_badge_stamp_wtag_mtag.padP()) {
-    client = reinterpret_cast<ADDR_T>((char*)(client) + header->_badge_stamp_wtag_mtag.padSize());
-  } else {
+  } else if (!header->_badge_stamp_wtag_mtag.fwdP()
+             && !header->_badge_stamp_wtag_mtag.pad1P()
+             && !header->_badge_stamp_wtag_mtag.padP()) {
     printf("%s:%d CONS in cons_scan client=%p\n(it's not a CONS or any of MPS fwd/pad1/pad2 car=%p "
            "cdr=%p\n",
            __FILE__, __LINE__, (void*)client, cons->car().raw_(), cons->cdr().raw_());
     abort();
   }
-  return client;
 };
 #endif // CONS_SCAN
 

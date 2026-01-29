@@ -623,9 +623,6 @@ void walkRoots(RootWalkCallback&& callback) {
   }
 };
 
-#define GENERAL_PTR_TO_HEADER_PTR(_general_) GeneralPtrToHeaderPtr((void*)_general_)
-// #define HEADER_PTR_TO_GENERAL_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
-
 #define ADDR_T uintptr_t
 #define EXTRA_ARGUMENTS , Tagged containingObject, std::stack<std::pair<Tagged, Tagged>>& markStack
 
@@ -665,7 +662,6 @@ static void mapAllObjectsInternal(std::set<Tagged>& markSet,
       if (!markSet.contains(tagged)) { // only process each object once
         markSet.insert(tagged);
         uintptr_t client = untag_object(tagged);
-        Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
         // the mw_foo_scan functions push all fields of the object
         // onto the markStack to keep the loop going.
         mw_obj_scan(client, tagged, markStack);
