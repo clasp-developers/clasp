@@ -18,17 +18,6 @@
 #define EPHEMERON_FIX(key, value)
  */
 
-// !!!!! DEBUG_OBJECT_SCAN can only be on when DEBUG_GUARD_VALIDATE is on!!!!!!
-// #define DEBUG_OBJECT_SCAN 1
-// #define DEBUG_POINTER_BITMAPS 1
-
-// #define DEBUG_CONTAINER_SCAN 1
-// #define DEBUG_CONTAINER_POINTER_BITMAPS 1
-
-#if (defined(DEBUG_OBJECT_SCAN) || defined(DEBUG_CONTAINER_SCAN)) && !defined(DEBUG_GUARD_VALIDATE)
-#error "DEBUG_OBJECT_SCAN || DEBUG_CONTAINER_SCAN needs DEBUG_GUARD_VALIDATE to be turned on"
-#endif
-
 #ifdef OBJECT_SCAN
 
 #ifndef EPHEMERON_FIX
@@ -38,30 +27,20 @@
 void OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
 
   size_t stamp_index;
-  size_t size;
   // The client must have a valid header
   core::General_O* general = reinterpret_cast<core::General_O*>(client);
   const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s*>(gctools::GeneralPtrToHeaderPtr(general));
   const gctools::Header_s::BadgeStampWtagMtag& header_value = header._badge_stamp_wtag_mtag;
   stamp_index = header._badge_stamp_wtag_mtag.stamp_();
-  LOG("obj_scan client={} stamp={}\n", (void*)client, stamp_index);
   switch (header_value.mtag()) {
     [[likely]] // dunno why this is indenting stupidly
   case gctools::Header_s::general_mtag: {
-#ifdef DEBUG_VALIDATE_GUARD
-    header->validate();
-#endif
     gctools::GCStampEnum stamp_wtag = header._badge_stamp_wtag_mtag.stamp_wtag();
     const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
     if (stamp_index == STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__DerivableCxxObject_O)) { // wasMTAG
       // If this is true then I think we need to call virtual functions on the client
       // to determine the Instance_O offset and the total size of the object.
       printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__);
-    }
-    if (stamp_layout.layout_op == gctools::templated_op) {
-      size = general->templatedSizeof();
-    } else {
-      size = stamp_layout.size;
     }
     if (stamp_layout.field_layout_start) {
 #ifdef USE_PRECISE_GC
@@ -105,20 +84,8 @@ void OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
       } else {
         // Use pointer bitmaps
         uintptr_t pointer_bitmap = stamp_layout.class_field_pointer_bitmap;
-#ifdef DEBUG_POINTER_BITMAPS
-        const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
-#endif
         for (uintptr_t* addr = (uintptr_t*)client; pointer_bitmap; addr++, pointer_bitmap <<= 1) {
           if ((intptr_t)pointer_bitmap < 0) {
-#ifdef DEBUG_POINTER_BITMAPS
-
-            core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->offset);
-            if (addr != (uintptr_t*)field) {
-              printf("%s:%d stamp: %lu client@%p bitmap[%p]/field[%p] address mismatch!!!! offset=%lu\n", __FILE__,
-                     __LINE__, stamp_index, client, addr, field, field_layout_cur->offset);
-            }
-            ++field_layout_cur;
-#endif
             POINTER_FIX((core::T_O**)addr);
           }
         }
@@ -127,10 +94,6 @@ void OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
     }
     if (stamp_layout.container_layout) {
       const gctools::Container_layout& container_layout = *stamp_layout.container_layout;
-      size_t capacity = std::abs(*(int64_t*)((const char*)client + container_layout.capacity_offset));
-      size = container_layout.element_size * capacity + container_layout.data_offset;
-      if (stamp_wtag == gctools::STAMPWTAG_core__SimpleBaseString_O)
-        size = size + 1; // Add \0 for SimpleBaseString
       size_t end = *(size_t*)((const char*)client + container_layout.end_offset);
       // Use new way with pointer bitmaps
       uintptr_t start_pointer_bitmap = container_layout.container_field_pointer_bitmap;
@@ -182,41 +145,15 @@ void OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
         const char* element = ((const char*)client + container_layout.data_offset);
         for (int i = 0; i < end; ++i, element += container_layout.element_size) {
           uintptr_t* addr = (uintptr_t*)element;
-#ifdef DEBUG_POINTER_BITMAPS
-          gctools::Field_layout* field_layout_cur = container_layout.field_layout_start;
-          const char* element = ((const char*)client + container_layout.data_offset + container_layout.element_size * i);
-          core::T_O** field = (core::T_O**)((const char*)element + field_layout_cur->offset);
-          if (addr != (uintptr_t*)field) {
-            printf("%s:%d stamp: %lu element@%p i = %d start_pointer_bitmap=0x%lX bitmap[%p]/field[%p] address "
-                     "mismatch!!!! field_layout_cur->offset=%lu\n",
-                   __FILE__, __LINE__, stamp_index, element, i, start_pointer_bitmap, addr, field,
-                   field_layout_cur->offset);
-          }
-          ++field_layout_cur;
-#endif
           POINTER_FIX((core::T_O**)addr);
         }
       } else {
         // Multiple fields we can scan with a bitmap
         const char* element = ((const char*)client + container_layout.data_offset);
         for (int i = 0; i < end; ++i, element += container_layout.element_size) {
-#ifdef DEBUG_POINTER_BITMAPS
-          gctools::Field_layout* field_layout_cur = container_layout.field_layout_start;
-#endif
           uintptr_t pointer_bitmap = start_pointer_bitmap;
           for (uintptr_t* addr = (uintptr_t*)element; pointer_bitmap; addr++, pointer_bitmap <<= 1) {
             if ((intptr_t)pointer_bitmap < 0) {
-#ifdef DEBUG_POINTER_BITMAPS
-              const char* element = ((const char*)client + container_layout.data_offset + stamp_layout.element_size * i);
-              core::T_O** field = (core::T_O**)((const char*)element + field_layout_cur->offset);
-              if (addr != (uintptr_t*)field) {
-                printf("%s:%d stamp: %lu element@%p i = %d start_pointer_bitmap=0x%lX bitmap[%p]/field[%p] address "
-                       "mismatch!!!! field_layout_cur->offset=%lu\n",
-                       __FILE__, __LINE__, stamp_index, element, i, start_pointer_bitmap, addr, field,
-                       field_layout_cur->offset);
-              }
-              ++field_layout_cur;
-#endif
               POINTER_FIX((core::T_O**)addr);
             }
           }
@@ -228,7 +165,6 @@ void OBJECT_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
     throw_hard_error_bad_client((void*)client);
   }
   }
-  LOG("obj_scan ENDING client={}\n", (void*)client);
 }
 #endif // OBJECT_SCAN
 
@@ -241,18 +177,9 @@ ADDR_T OBJECT_SKIP(ADDR_T client, size_t& obj_size) {
   switch (header_value.mtag()) {
     [[likely]]
   case gctools::Header_s::general_mtag: {
-#ifdef DEBUG_VALIDATE_GUARD
-    header->validate();
-#endif
     gctools::GCStampEnum stamp_wtag = header._badge_stamp_wtag_mtag.stamp_wtag();
     size_t stamp_index = header._badge_stamp_wtag_mtag.stamp_();
-#ifdef DEBUG_ON
-    LOG("stamp_wtag = {} stamp_index={}\n", (size_t)stamp_wtag, stamp_index);
-#endif
     if (stamp_wtag == gctools::STAMPWTAG_core__DerivableCxxObject_O) {
-#ifdef DEBUG_ON
-      LOG("DerivableCxxObject\n");
-#endif
       // If this is true then I think we need to call virtual functions on the client
       // to determine the Instance_O offset and the total size of the object.
       printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__);
