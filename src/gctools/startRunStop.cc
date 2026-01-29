@@ -89,8 +89,6 @@ static std::terminate_handler g_prev_terminate_handler;
 
 namespace gctools {
 
-size_t global_alignup_sizeof_header;
-
 void monitorAllocation(stamp_t k, size_t sz) {
 #ifdef DEBUG_MONITOR_ALLOCATIONS
   if (global_monitorAllocations.counter >= global_monitorAllocations.start &&
@@ -99,23 +97,6 @@ void monitorAllocation(stamp_t k, size_t sz) {
   }
   global_monitorAllocations.counter++;
 #endif
-}
-
-int handleFatalCondition() {
-  int exitCode = 0;
-  try {
-    throw;
-  } catch (core::CatchThrow& ee) {
-    core::clasp_write_string(fmt::format("{}:{} Uncaught THROW tag[{}] - this should NEVER happen - the stack should never be "
-                                         "unwound unless there is a CATCH clause that matches the THROW",
-                                         __FILE__, __LINE__, ee.getTag()));
-  } catch (core::Unwind& ee) {
-    core::clasp_write_string(
-        fmt::format("At {}:{} - Unwind caught frame: {} index: {}", __FILE__, __LINE__, (void*)ee.getFrame(), ee.index()));
-  } catch (HardError& ee) {
-    core::clasp_write_string(fmt::format("At {}:{} - HardError caught: {}", __FILE__, __LINE__, ee.message()));
-  }
-  return exitCode;
 }
 
 void set_abort_flag(bool abort_flag = false) { g_abort_flag = abort_flag; }
@@ -173,7 +154,6 @@ extern "C" {
 
 int startup_clasp(void** stackMarker, gctools::ClaspInfo* claspInfo, int* exitCode) {
   gctools::_global_stack_max_size = claspInfo->_stackMax;
-  gctools::global_alignup_sizeof_header = gctools::AlignUp(sizeof(gctools::Header_s));
   gctools::global_sizeof_fwd = gctools::AlignUp(sizeof(gctools::Header_s));
 
   const char* trigger = getenv("CLASP_DISCRIMINATING_FUNCTION_TRIGGER");

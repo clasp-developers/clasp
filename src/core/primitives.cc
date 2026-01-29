@@ -494,7 +494,6 @@ DOCGROUP(clasp);
 CL_DEFUN T_mv cl__values(Vaslist_sp vargs) {
   // returns multiple values
   size_t nargs = vargs->nargs();
-  SUPPRESS_GC();
 #ifdef DEBUG_VALUES
   if (nargs >= core::MultipleValues::MultipleValuesLimit) {
     SIMPLE_ERROR("Too many arguments to values - only {} are supported and you tried to return {} values",
@@ -520,7 +519,6 @@ CL_DEFUN T_mv cl__values(Vaslist_sp vargs) {
     }
     me.setSize(nargs);
   }
-  ENABLE_GC();
   core::T_mv mv = gctools::multiple_values<core::T_O>(first, nargs);
   return mv;
 }

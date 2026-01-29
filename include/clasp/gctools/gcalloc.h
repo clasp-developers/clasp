@@ -122,7 +122,7 @@ template <class Stage, class Cons> struct ConsAllocator {
   static smart_ptr<Cons>
   allocate(ARGS&&... args) {
     DO_DRAG_CONS_ALLOCATION();
-    size_t cons_size = AlignUp(sizeof(Cons) + SizeofConsHeader());
+    size_t cons_size = AlignUp(sizeof(Cons) + sizeof(ConsHeader_s));
     ConsHeader_s* header = do_cons_allocation<Stage, Cons>(cons_size);
     Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
     new (cons) Cons(std::forward<ARGS>(args)...);
@@ -131,7 +131,7 @@ template <class Stage, class Cons> struct ConsAllocator {
 
 #ifdef USE_PRECISE_GC
   static smart_ptr<Cons> snapshot_save_load_allocate(Header_s::BadgeStampWtagMtag& the_header, core::T_sp car, core::T_sp cdr) {
-    ConsHeader_s* header = do_cons_allocation<SnapshotLoadStage, Cons>(AlignUp(SizeofConsHeader() + sizeof(Cons)));
+    ConsHeader_s* header = do_cons_allocation<SnapshotLoadStage, Cons>(AlignUp(sizeof(ConsHeader_s) + sizeof(Cons)));
     header->_badge_stamp_wtag_mtag._header_badge.store(the_header._header_badge.load());
     header->_badge_stamp_wtag_mtag._value = the_header._value;
     Cons* cons = (Cons*)HeaderPtrToConsPtr(header);

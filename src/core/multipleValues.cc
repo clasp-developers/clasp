@@ -63,7 +63,6 @@ core::T_mv ValuesFromCons(core::List_sp vals) {
   }
   core::MultipleValues& me = (core::lisp_multipleValues());
   int i = 1;
-  SUPPRESS_GC();
   me.setSize(0);
   for (auto cur : (core::List_sp)oCdr(vals)) {
     if (i >= core::MultipleValues::MultipleValuesLimit) {
@@ -75,7 +74,6 @@ core::T_mv ValuesFromCons(core::List_sp vals) {
     ++i;
   }
   me.setSize(i);
-  ENABLE_GC();
   core::T_mv mv = gctools::multiple_values<core::T_O>(oCar(vals), i);
   return mv;
 }

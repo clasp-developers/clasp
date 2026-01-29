@@ -1,8 +1,5 @@
 #pragma once
 
-// Disable this once we have List_sp working
-#define USE_BAD_CAST_ERROR 1
-
 /*
   File: smart_pointers.h
 */
@@ -935,7 +932,6 @@ namespace core {
 using gctools::Fixnum;
 };
 
-#ifdef TAGGED_POINTER
 namespace gctools {
 /*! Maintain tagged pointers to stretchable arrays */
 template <typename T> class tagged_pointer {
@@ -1021,7 +1017,6 @@ public:
   }
 };
 };     // namespace gctools
-#endif // end TAGGED_POINTER
 
 namespace gctools {
 

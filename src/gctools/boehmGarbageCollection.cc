@@ -110,7 +110,6 @@ void boehm_general_finalizer(void* base, void* data) {
 }
 
 void boehm_cons_finalizer(void* base, void* data) {
-  ASSERT(CONS_HEADER_SIZE == 0);
   if (data != NULL) {
     void* client = gctools::HeaderPtrToConsPtr(base);
     core::Cons_sp obj((core::Cons_O*)client);

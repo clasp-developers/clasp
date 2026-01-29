@@ -1,8 +1,5 @@
 #pragma once
 
-// #ifndef _clasp_memoryManagement_H
-// #define _clasp_memoryManagement_H
-
 /* Roots
  *
  * The following are garbage collector roots
@@ -60,7 +57,6 @@ struct ClaspInfo {
 };
 }; // namespace gctools
 
-#define GC_LOG(x)
 #define GCPRIVATE public
 #define GCPROTECTED public
 
@@ -93,8 +89,6 @@ typedef unsigned char* clasp_ptr_t;
 namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
 template <class OT> struct GCStamp;
-extern size_t global_alignup_sizeof_header;
-extern const char* _global_stack_marker;
 extern size_t _global_stack_max_size;
 }; // namespace gctools
 
@@ -121,7 +115,6 @@ template <typename T> struct GCHeader {
   typedef Header_s HeaderType;
 };
 
-template <typename T> struct GCAllocationPoint;
 }; // namespace gctools
 
 /*!
@@ -219,9 +212,6 @@ class ThreadLocalState;
 extern THREAD_LOCAL core::ThreadLocalState* my_thread;
 
 namespace gctools {
-
-#define NO_BADGE 1
-#define ILLEGAL_BADGE 0
 
 /*! Stamp - integer value that is written into the header in normal general objects
             and into the Rack for Instance_O objects.
@@ -514,8 +504,8 @@ public:
   };
 
   struct BadgeStampWtagMtag : public StampWtagMtag {
-    static constexpr badge_t IllegalBadge = ILLEGAL_BADGE;
-    static constexpr badge_t NoBadge = NO_BADGE;
+    static constexpr badge_t IllegalBadge = 0;
+    static constexpr badge_t NoBadge = 1;
 
     /* _header_badge starts out being NoBadge but when the object is hashed - then it is assigned a badge
         that is not IllegalBadge or NoBadge.   This defers random number generation for hashing until it is
@@ -632,7 +622,6 @@ public:
   ConsHeader_s(const BadgeStampWtagMtag& k) : BaseHeader_s(k){};
 
 public:
-  static constexpr size_t size() { return sizeof(ConsHeader_s); };
   bool isValidConsObject() const;
 };
 
@@ -714,9 +703,11 @@ public:
 #endif
   };
 #else
-#define GUARD1 0xFEEAFEEBDEADBEE0
-#define GUARD2 0xC0FFEEE0
+private:
+  static const uintptr_t GUARD1 = 0xFEEAFEEBDEADBEE0;
+  static const uintptr_t GUARD2 = 0xC0FFEEE0;
 
+public:
   Header_s(const BadgeStampWtagMtag& k, size_t tstart = 0, size_t tsize = 0, size_t total_size = sizeof(Header_s))
       : BaseHeader_s(k), _guard(GUARD1), _tail_start(tstart), _tail_size(tsize), _source((uintptr_t)this), _guard2(GUARD2),
         _dup_badge_stamp_wtag_mtag(k) {
@@ -863,10 +854,8 @@ inline const void* GeneralPtrToHeaderPtr(const void* mostDerived) {
   return ptr;
 }
 
-inline constexpr size_t SizeofGeneralHeader() { return sizeof(Header_s); };
-
 inline void* GeneralPtrToHeaderPtr(void* mostDerived) {
-  void* ptr = reinterpret_cast<char*>(mostDerived) - SizeofGeneralHeader();
+  void* ptr = reinterpret_cast<char*>(mostDerived) - sizeof(Header_s);
   return ptr;
 }
 
@@ -875,52 +864,38 @@ inline const Header_s* header_pointer(const void* client_pointer) {
   return header;
 }
 
-inline void throwIfInvalidClient(core::T_O* client) {
-  Header_s* header = (Header_s*)GeneralPtrToHeaderPtr(client);
-  if (header->_badge_stamp_wtag_mtag.invalidP()) {
-    throw_hard_error_bad_client((void*)client);
-  }
-}
-
 template <typename T> inline T* HeaderPtrToGeneralPtr(void* base) {
-  T* ptr = reinterpret_cast<T*>(reinterpret_cast<char*>(base) + SizeofGeneralHeader());
+  T* ptr = reinterpret_cast<T*>(reinterpret_cast<char*>(base) + sizeof(Header_s));
   return ptr;
 }
 
-/*
- * This must ALWAYS be the same as SizeofGeneralHeader
- */
-inline constexpr size_t SizeofWeakHeader() { return SizeofGeneralHeader(); };
-
 inline const void* WeakPtrToHeaderPtr(const void* client) {
-  const void* ptr = reinterpret_cast<const char*>(client) - SizeofWeakHeader();
+  const void* ptr = reinterpret_cast<const char*>(client) - sizeof(Header_s);
   return ptr;
 }
 
 inline void* WeakPtrToHeaderPtr(void* client) {
-  void* ptr = reinterpret_cast<char*>(client) - SizeofWeakHeader();
+  void* ptr = reinterpret_cast<char*>(client) - sizeof(Header_s);
   return ptr;
 }
 
 inline void* HeaderPtrToWeakPtr(void* header) {
-  void* ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(header) + SizeofWeakHeader());
+  void* ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(header) + sizeof(Header_s));
   return ptr;
 }
 
-inline constexpr size_t SizeofConsHeader() { return ConsHeader_s::size(); };
-
 inline const void* ConsPtrToHeaderPtr(const void* client) {
-  const void* ptr = reinterpret_cast<const char*>(client) - SizeofConsHeader();
+  const void* ptr = reinterpret_cast<const char*>(client) - sizeof(ConsHeader_s);
   return ptr;
 }
 
 inline void* ConsPtrToHeaderPtr(void* client) {
-  void* ptr = reinterpret_cast<char*>(client) - SizeofConsHeader();
+  void* ptr = reinterpret_cast<char*>(client) - sizeof(ConsHeader_s);
   return ptr;
 }
 
 inline void* HeaderPtrToConsPtr(void* header) {
-  void* ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(header) + SizeofConsHeader());
+  void* ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(header) + sizeof(ConsHeader_s));
   return ptr;
 }
 
@@ -1076,7 +1051,6 @@ uint32_t lisp_badge(core::T_sp object);
 }; // namespace gctools
 
 namespace gctools {
-extern int global_pollTicksPerCleanup;
 
 template <typename T> void* SmartPtrToBasePtr(smart_ptr<T> obj) {
   void* ptr;
@@ -1092,18 +1066,7 @@ template <typename T> void* SmartPtrToBasePtr(smart_ptr<T> obj) {
 #include <clasp/gctools/gcStack.h>
 // #include <clasp/gctools/gcalloc.h>
 
-/*! These don't do anything at the moment
-  but may be used in the future to create unsafe-gc points
-*/
-
-#define SUPPRESS_GC()                                                                                                              \
-  {}
-#define ENABLE_GC()                                                                                                                \
-  {}
-
 namespace gctools {
-
-int handleFatalCondition();
 
 void rawHeaderDescribe(const uintptr_t* headerP);
 }; // namespace gctools
@@ -1171,18 +1134,10 @@ void gc_release();
 
 #ifdef DEBUG_GUARD_VALIDATE
 #define ENSURE_VALID_OBJECT(x) (gctools::ensure_valid_object(x))
-#define EVO(x) (gctools::ensure_valid_object(x))
 #define ENSURE_VALID_HEADER(x) (gctools::ensure_valid_header(x))
 #else
 #define ENSURE_VALID_OBJECT(x) x
-#define EVO(x)
 #define ENSURE_VALID_HEADER(x) x
-#endif
-
-#ifdef DEBUG_THROW_IF_INVALID_CLIENT_ON
-#define DEBUG_THROW_IF_INVALID_CLIENT(c) throwIfInvalidClient(reinterpret_cast<core::T_O*>(c))
-#else
-#define DEBUG_THROW_IF_INVALID_CLIENT(c)
 #endif
 
 namespace gctools {
@@ -1293,8 +1248,6 @@ std::string program_name();
 std::string exe_name();
 bool abort_flag(void);
 }; // namespace gctools
-
-// #endif // _clasp_memoryManagement_H
 
 /*
     File: memoryManagement.h

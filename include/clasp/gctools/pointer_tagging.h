@@ -1,8 +1,5 @@
 #pragma once
 
-// Disable this once we have List_sp working
-#define USE_BAD_CAST_ERROR 1
-
 /*
   File: smart_pointers.h
 */
@@ -65,8 +62,6 @@ namespace gctools {
 
 template <class T> class smart_ptr;
 
-void initialize_smart_pointers();
-
 #ifdef _ADDRESS_MODEL_64
 
 static const uintptr_t alignment = 8;    // 16 byte alignment for all pointers
@@ -100,63 +95,7 @@ static const size_t thread_local_cl_stack_min_size = THREAD_LOCAL_CL_STACK_MIN_S
 #define MOST_NEGATIVE_FIXNUM gctools::most_negative_fixnum
 #define FIXNUM_BITS gctools::fixnum_bits
 
-// --- SHORT ---
-static const short most_negative_short = std::numeric_limits<short>::min();
-static const short most_positive_short = std::numeric_limits<short>::max();
-static const unsigned short most_positive_ushort = std::numeric_limits<short>::max();
-
-// --- INT ---
-static const int most_negative_int = std::numeric_limits<int>::min();
-static const int most_positive_int = std::numeric_limits<int>::max();
-static const unsigned int most_positive_uint = std::numeric_limits<unsigned int>::max();
-
-// --- LONG ---
-static const long most_negative_long = std::numeric_limits<long>::min();
-static const long most_positive_long = std::numeric_limits<long>::max();
-static const unsigned long most_positive_ulong = std::numeric_limits<unsigned long>::max();
-
-// --- LONG LONG ---
-static const long long most_negative_longlong = std::numeric_limits<long long>::min();
-static const long long most_positive_longlong = std::numeric_limits<long long>::max();
-static const unsigned long long most_positive_ulonglong = std::numeric_limits<unsigned long long>::max();
-
-// --- INT8 ---
-static const int8_t most_negative_int8 = std::numeric_limits<int8_t>::min();
-static const int8_t most_positive_int8 = std::numeric_limits<int8_t>::max();
-static const uint8_t most_positive_uint8 = std::numeric_limits<uint8_t>::max();
-
-// --- INT16 ---
-static const int16_t most_negative_int16 = std::numeric_limits<int16_t>::min();
-static const int16_t most_positive_int16 = std::numeric_limits<int16_t>::max();
-static const uint16_t most_positive_uint16 = std::numeric_limits<uint16_t>::max();
-
-// --- INT32 ---
-static const int32_t most_negative_int32 = std::numeric_limits<int32_t>::min();
-static const int32_t most_positive_int32 = std::numeric_limits<int32_t>::max();
-static const uint32_t most_positive_uint32 = std::numeric_limits<uint32_t>::max();
-
-// --- INT64 ---
-static const int64_t most_negative_int64 = std::numeric_limits<int64_t>::min();
-static const int64_t most_positive_int64 = std::numeric_limits<int64_t>::max();
-static const uint64_t most_positive_uint64 = std::numeric_limits<uint64_t>::max();
-
-// -- SIZE ---
-static const size_t most_negative_size = std::numeric_limits<size_t>::min();
-static const size_t most_positive_size = std::numeric_limits<size_t>::max();
-
-// --SSIZE ---
-static const ssize_t most_negative_ssize = std::numeric_limits<ssize_t>::min();
-static const ssize_t most_positive_ssize = std::numeric_limits<ssize_t>::max();
-
-// --- UINTPTR_T ---
-static const uintptr_t most_negative_uintptr = std::numeric_limits<uintptr_t>::min();
-static const uintptr_t most_positive_uintptr = std::numeric_limits<uintptr_t>::max();
-
-// --- PTRDIFF_T ---
-static const ptrdiff_t most_negative_ptrdiff = std::numeric_limits<ptrdiff_t>::min();
-static const ptrdiff_t most_positive_ptrdiff = std::numeric_limits<ptrdiff_t>::max();
-
-#endif
+#endif // _ADDRESS_MODEL_64
 
 #ifdef _ADDRESS_MODEL_32
 #error "Add support for 32 bits - squeeze, Squeeze, SQUEEZE!"
@@ -210,26 +149,6 @@ static const uintptr_t short_float_tag = SHORT_FLOAT_TAG;
 static const uintptr_t short_float_shift = SHORT_FLOAT_SHIFT;
 static const uintptr_t short_float_mask = 0x1FFFFFFFFF; // single-floats are in these 32+5bits
 #endif
-
-/* These values define the Stamp ranges for different kinds of
-   objects.  There are the following kinds of objects:
-     Special objects that don't have headers (fixnum, single_float, character, cons)
-     General objects that are stored on the heap and have a header
-     Alien objects that are wrapped C++ classes and stored on the heap.
-     Instance objects that are CLOS instances.
-     The ranges below define the kind/stamp values allowed for each
-     and they allow the GC to quickly determine what kind of an object
-     it is dealing with for fixing pointers.
-     If the ranges aren't sufficiently large (general or alien)
-     then move the numbers around.
-     We need at least 62 bits to represent general CLOS objects.  */
-static const uintptr_t stamp_unused = 1;
-static const uintptr_t unshifted_stamp_first_general = 17; // skip 16
-static const uintptr_t unshifted_stamp_last_general = 4095;
-static const uintptr_t unshifted_stamp_first_alien = 4096;
-static const uintptr_t unshifted_stamp_last_alien = 65535;
-static const uintptr_t unshifted_stamp_first_instance = 65536;
-// static const uintptr_t unshifted_stamp_last_instance  = ((uintptr_t)most_positive_fixnum)<<1;
 
 template <class T> T ptag(T ptr) { return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(ptr) & ptag_mask); };
 

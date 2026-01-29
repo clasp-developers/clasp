@@ -738,9 +738,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
 #ifdef VARARGS
   features = Cons_O::create(_lisp->internKeyword("VARARGS"), features);
 #endif
-#ifdef POLYMORPHIC_SMART_PTR
-  features = Cons_O::create(_lisp->internKeyword("POLYMORPHIC-SMART-PTR"), features);
-#endif
 #ifdef _DEBUG_BUILD
   features = Cons_O::create(_lisp->internKeyword("DEBUG-BUILD"), features);
 #else // _RELEASE_BUILD
