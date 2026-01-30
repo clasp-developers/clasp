@@ -109,8 +109,6 @@ public:
 
   std::string name_() const throw() { return m_name->symbolNameAsString(); }
 
-  detail::cast_graph const& casts() const { return *m_casts._value; }
-
   detail::class_id_map const& classes() const { return *m_classes._value; }
 
 public:
@@ -123,7 +121,6 @@ public:
   // the class' name (as given when registered to lua with class_)
   core::Symbol_sp m_name;
 
-  dont_expose<detail::cast_graph*> m_casts;
   /* What does this store???? */
   dont_expose<detail::class_id_map*> m_classes;
   bool m_derivable;

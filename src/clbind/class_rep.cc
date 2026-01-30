@@ -70,8 +70,6 @@ ClassRep_O::ClassRep_O(core::Instance_sp class_, core::Symbol_sp name, bool deri
       //	, m_class_type(cpp_class)
       //	, m_operator_cache(0)
       ,
-      m_casts(globalCastGraph) // Meister - luabind did this
-      ,
       m_classes(globalClassIdMap) // Meister - luabind did this
       ,
       m_derivable(derivable) {
