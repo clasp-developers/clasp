@@ -114,11 +114,6 @@ template <class T> struct RootClassAllocator {
 
 template <class Stage, class Cons> struct ConsAllocator {
   template <class... ARGS>
-#ifdef ALWAYS_INLINE_MPS_ALLOCATIONS
-  __attribute__((always_inline))
-#else
-  inline
-#endif
   static smart_ptr<Cons>
   allocate(ARGS&&... args) {
     DO_DRAG_CONS_ALLOCATION();
