@@ -45,42 +45,6 @@ template <class OT, class WT> gctools::smart_ptr<OT> RP_Create_wrapper() {
   auto wrapper = gctools::GC<OT>::allocate();
   return wrapper;
 }
-
-template <typename T> struct no_deleter {
-  static void deleter(T* p){};
-};
-
-template <typename T> struct new_deleter {
-  static void deleter(T* p) { delete p; };
-};
-
-template <typename T, typename = void> struct maybe_release {
-  static void call(T& obj) {
-    //            printf("%s:%d - no release to call\n", __FILE__, __LINE__);
-  }
-};
-
-template <typename T> struct maybe_release<T, decltype(std::declval<T>().release(), void(0))> {
-  static void call(T& obj) {
-    //            printf("%s:%d - calling release\n", __FILE__, __LINE__);
-    obj.release();
-  }
-};
-
-struct is_deletable_impl {
-  template <class T, class U = decltype(delete std::declval<T>())> static std::true_type test(int);
-  template <class> static std::false_type test(...);
-};
-
-template <class T> struct is_deletable : decltype(is_deletable_impl::test<T>(0)) {};
-
-template <typename OT, bool Deletable> struct maybe_delete {
-  static void doit(OT* ptr) { delete ptr; };
-};
-
-template <typename OT> struct maybe_delete<OT, false> {
-  static void doit(OT* ptr){};
-};
 }; // namespace clbind
 
 namespace clbind {
@@ -134,14 +98,6 @@ public:
 
   virtual class_id classId() const { return this->dynamic_id; };
 
-  /*! Release the pointer - invalidate the wrapper and return the pointer */
-  virtual void pointerDelete() {
-    if (RawGetter<HolderType>::get_pointer(this->p_gc_ignore) != NULL) {
-      maybe_delete<OT, is_deletable<OT>::value>::doit(RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
-      maybe_release<HolderType>::call(this->p_gc_ignore);
-    }
-  }
-
   static gctools::smart_ptr<WrapperType> make_wrapper(OT* naked, class_id dynamic_id) {
     //    printf("%s:%d:%s DEBUG_WRAPPER with OT*\n", __FILE__, __LINE__, __FUNCTION__ );
     void* dynamic_ptr = (void*)naked;
@@ -187,16 +143,6 @@ public:
       SIMPLE_ERROR("The wrapper is invalid");
     }
   };
-
-  /*! Release the pointer - invalidate the wrapper and return the pointer */
-  virtual void* pointerRelease() {
-    if (RawGetter<HolderType>::get_pointer(this->p_gc_ignore) != NULL) {
-      void* ptr = const_cast<typename std::remove_const<OT>::type*>(RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
-      maybe_release<HolderType>::call(this->p_gc_ignore);
-      return ptr;
-    }
-    return NULL;
-  }
 
   void initializeSlots(int numberOfSlots) {
     this->throwIfInvalid();

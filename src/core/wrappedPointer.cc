@@ -31,35 +31,6 @@ THE SOFTWARE.
 
 namespace core {
 
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(pointerRelease)dx");
-DOCGROUP(clasp);
-CL_DEFUN Pointer_sp core__pointer_release(T_sp ptr) {
-  if (ptr.nilp()) {
-    return nil<Pointer_O>();
-  };
-  if (WrappedPointer_sp wp = ptr.asOrNull<WrappedPointer_O>()) {
-    return Pointer_O::create(wp->pointerRelease());
-  }
-  SIMPLE_ERROR("Could not release pointer for {}", _rep_(ptr));
-}
-
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(pointerDelete)dx");
-DOCGROUP(clasp);
-CL_DEFUN void core__pointer_delete(T_sp ptr) {
-  if (ptr.nilp()) {
-    return;
-  };
-  if (WrappedPointer_sp wp = ptr.asOrNull<WrappedPointer_O>()) {
-    wp->pointerDelete();
-    return;
-  }
-  SIMPLE_ERROR("Could not release pointer for {}", _rep_(ptr));
-}
-
 T_sp WrappedPointer_O::_instanceClassSet(Instance_sp cl) {
   this->Class_ = cl;
   this->ShiftedStamp_ = cl->CLASS_stamp_for_instances();
