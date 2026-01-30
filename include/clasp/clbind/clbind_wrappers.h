@@ -40,15 +40,6 @@ namespace core {
 
 namespace clbind {
 
-template <class OT, class WT> gctools::smart_ptr<OT> RP_Create_wrapper() {
-  _G();
-  auto wrapper = gctools::GC<OT>::allocate();
-  return wrapper;
-}
-}; // namespace clbind
-
-namespace clbind {
-
 /*! Wrappers wrap external pointers -
       The wrapper does not own the pointer unless the HolderType
       is a std::unique_ptr or std::shared_ptr some other holder that takes care of ownership
@@ -63,7 +54,6 @@ private:
 private: // Do NOT declare any smart_ptr's or weak_smart_ptr's here!!!!
   HolderType p_gc_ignore;
   class_id dynamic_id;
-  void* dynamic_ptr;
 
 private:
   OT* get() const {
@@ -75,12 +65,12 @@ private:
   void* mostDerivedPointer() const { return (void*)get(); };
 
 public:
-  Wrapper(OT* naked, class_id dynamic_id, void* dynamic_ptr)
-    : p_gc_ignore(naked), dynamic_id(dynamic_id), dynamic_ptr(dynamic_ptr) {};
+  Wrapper(OT* naked, class_id dynamic_id)
+    : p_gc_ignore(naked), dynamic_id(dynamic_id) {};
 
   // ctor that takes a unique_ptr
-  Wrapper(std::unique_ptr<OT> naked, class_id dynamic_id, void* dynamic_ptr)
-    : p_gc_ignore(std::move(naked)), dynamic_id(dynamic_id), dynamic_ptr(dynamic_ptr) {};
+  Wrapper(std::unique_ptr<OT> naked, class_id dynamic_id)
+    : p_gc_ignore(std::move(naked)), dynamic_id(dynamic_id) {};
 
   size_t templatedSizeof() const { return sizeof(*this); };
 
@@ -88,8 +78,7 @@ public:
 
   static gctools::smart_ptr<WrapperType> make_wrapper(OT* naked, class_id dynamic_id) {
     //    printf("%s:%d:%s DEBUG_WRAPPER with OT*\n", __FILE__, __LINE__, __FUNCTION__ );
-    void* dynamic_ptr = (void*)naked;
-    auto obj = gctools::GC<WrapperType>::allocate(naked, dynamic_id, dynamic_ptr);
+    auto obj = gctools::GC<WrapperType>::allocate(naked, dynamic_id);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
     if (!classSymbol.unboundp()) {
       obj->_setInstanceClassUsingSymbol(classSymbol);
@@ -108,8 +97,7 @@ public:
   static gctools::smart_ptr<WrapperType> make_wrapper(const OT& val, class_id dynamic_id) {
     printf("%s:%d:%s with OT&\n", __FILE__, __LINE__, __FUNCTION__);
     OT* naked = new OT(val);
-    void* dynamic_ptr = (void*)naked;
-    auto obj = gctools::GC<WrapperType>::allocate(naked, dynamic_id, dynamic_ptr);
+    auto obj = gctools::GC<WrapperType>::allocate(naked, dynamic_id);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
     obj->_setInstanceClassUsingSymbol(classSymbol);
     return obj;
@@ -117,8 +105,7 @@ public:
 
   static gctools::smart_ptr<WrapperType> make_wrapper(std::unique_ptr<OT> val, class_id dynamic_id) {
     //    printf("%s:%d:%s with unique_ptr\n", __FILE__, __LINE__, __FUNCTION__ );
-    void* dynamic_ptr = (void*)val.get();
-    auto obj = gctools::GC<WrapperType>::allocate(std::move(val), dynamic_id, dynamic_ptr);
+    auto obj = gctools::GC<WrapperType>::allocate(std::move(val), dynamic_id);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
     obj->_setInstanceClassUsingSymbol(classSymbol);
     return obj;
@@ -165,7 +152,7 @@ public:
         ,
         cid // target
         ,
-        this->dynamic_id, this->dynamic_ptr);
+        this->dynamic_id, get());
     return res.first;
   }
 
