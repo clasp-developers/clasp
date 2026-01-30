@@ -27,7 +27,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
-// #include <llvm/ADT/Optional.h>
+#include <type_traits>
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/instance.h>
 #include <clasp/clbind/adapter.fwd.h>
@@ -54,36 +54,25 @@ namespace clbind {
       is a std::unique_ptr or std::shared_ptr some other holder that takes care of ownership
  */
 template <class OT, class HolderType = OT*> class Wrapper : public core::WrappedPointer_O {
-public:
+private:
   typedef core::WrappedPointer_O TemplatedBase;
 
-public:
+private:
   typedef Wrapper<OT, HolderType> WrapperType;
-  typedef OT ExternalType;
 
-public: // Do NOT declare any smart_ptr's or weak_smart_ptr's here!!!!
+private: // Do NOT declare any smart_ptr's or weak_smart_ptr's here!!!!
   HolderType p_gc_ignore;
   class_id dynamic_id;
   void* dynamic_ptr;
 
-public:
-  //
-  // Get a raw pointer from whatever HolderType we have
-  //
-  template <typename HType> struct RawGetter {
-    static HType get_pointer(HType& ptr) { return ptr; };
-    static const HType get_pointer(const HType& ptr) { return ptr; };
-  };
-
-  template <typename PtrType> struct RawGetter<std::unique_ptr<PtrType>> {
-    static PtrType* get_pointer(std::unique_ptr<PtrType>& ptr) { return ptr.get(); };
-    static const PtrType* get_pointer(const std::unique_ptr<PtrType>& ptr) { return ptr.get(); };
-  };
-
-  template <typename PtrType> struct RawGetter<std::shared_ptr<PtrType>> {
-    static PtrType* get_pointer(std::shared_ptr<PtrType>& ptr) { return ptr.get(); };
-    static const PtrType* get_pointer(const std::shared_ptr<PtrType>& ptr) { return ptr.get(); };
-  };
+private:
+  OT* get() const {
+    if constexpr(std::is_same_v<OT*, HolderType>)
+      return p_gc_ignore;
+    else
+      return p_gc_ignore.get();
+  }
+  void* mostDerivedPointer() const { return (void*)get(); };
 
 public:
   Wrapper(OT* naked, class_id dynamic_id, void* dynamic_ptr)
@@ -94,7 +83,6 @@ public:
     : p_gc_ignore(std::move(naked)), dynamic_id(dynamic_id), dynamic_ptr(dynamic_ptr) {};
 
   size_t templatedSizeof() const { return sizeof(*this); };
-  void* mostDerivedPointer() const { return (void*)RawGetter<HolderType>::get_pointer(this->p_gc_ignore); };
 
   virtual class_id classId() const { return this->dynamic_id; };
 
@@ -137,7 +125,7 @@ public:
   }
 
 public:
-  bool validp() const { return RawGetter<HolderType>::get_pointer(this->p_gc_ignore) != NULL; };
+  bool validp() const { return get() != NULL; };
   void throwIfInvalid() const {
     if (!this->validp()) {
       SIMPLE_ERROR("The wrapper is invalid");
@@ -146,33 +134,32 @@ public:
 
   void initializeSlots(int numberOfSlots) {
     this->throwIfInvalid();
-    clbind::support_initializeSlots<ExternalType>(numberOfSlots, RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
+    clbind::support_initializeSlots<OT>(numberOfSlots, get());
   }
 
   core::T_sp instanceSigSet() {
     this->throwIfInvalid();
-    return clbind::support_instanceSigSet<ExternalType>(RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
+    return clbind::support_instanceSigSet<OT>(get());
   }
 
   core::T_sp instanceSig() const {
     this->throwIfInvalid();
-    return clbind::support_instanceSig<ExternalType>(RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
+    return clbind::support_instanceSig<OT>(get());
   }
 
   core::T_sp instanceRef(size_t idx) const {
     this->throwIfInvalid();
-    return clbind::support_instanceRef<ExternalType>(idx, RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
+    return clbind::support_instanceRef<OT>(idx, get());
   }
 
   core::T_sp instanceSet(size_t idx, core::T_sp val) {
     this->throwIfInvalid();
-    return clbind::support_instanceSet<ExternalType>(idx, val, RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
+    return clbind::support_instanceSet<OT>(idx, val, get());
   }
 
   virtual void* castTo(class_id cid) const {
     this->throwIfInvalid();
-    std::pair<void*, int> res = globalCastGraph->cast(
-        const_cast<typename std::remove_const<OT>::type*>(RawGetter<HolderType>::get_pointer(this->p_gc_ignore)) // ptr
+    std::pair<void*, int> res = globalCastGraph->cast(const_cast<typename std::remove_const<OT>::type*>(get()) // ptr
         ,
         reg::registered_class<OT>::id // src
         ,
@@ -190,7 +177,7 @@ public:
            this,
            typeid(HolderType).name(),
            RawGetter<HolderType>::get_pointer(this->p_gc_ignore),
-           clbind::support_adapterAddress<ExternalType>(RawGetter<HolderType>::get_pointer(this->p_gc_ignore)),
+           clbind::support_adapterAddress<OT>(get()),
            this->classId(),
            _rep_(reg::lisp_classSymbolFromClassId(this->classId())).c_str() );
 #endif

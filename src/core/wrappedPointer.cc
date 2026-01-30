@@ -69,20 +69,6 @@ Pointer_sp WrappedPointer_O::address() const {
   return Pointer_O::create(addr);
 }
 
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(pointerAddress)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__pointer_address(T_sp ptr) {
-  if (ptr.nilp()) {
-    return nil<Pointer_O>();
-  };
-  if (WrappedPointer_sp wp = ptr.asOrNull<WrappedPointer_O>()) {
-    return wp->address();
-  }
-  SIMPLE_ERROR("Could not get address of pointer for {}", _rep_(ptr));
-};
-
 DOCGROUP(clasp);
 CL_DEFUN void core__verify_wrapped_pointer_layout(size_t stamp_offset) {
   size_t cxx_stamp_offset = offsetof(WrappedPointer_O, ShiftedStamp_);
