@@ -35,20 +35,3 @@ void CONS_SCAN(ADDR_T client EXTRA_ARGUMENTS) {
   }
 };
 #endif // CONS_SCAN
-
-#ifdef CONS_SKIP
-ADDR_T CONS_SKIP(ADDR_T client, size_t& objectSize) {
-  //  printf("%s:%d in %s\n", __FILE__, __LINE__, __FUNCTION__ );
-  core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
-  gctools::Header_s* header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(cons);
-  if (header->_badge_stamp_wtag_mtag.pad1P()) {
-    client = reinterpret_cast<ADDR_T>((char*)client + gctools::Alignment());
-  } else if (header->_badge_stamp_wtag_mtag.padP()) {
-    client = reinterpret_cast<ADDR_T>((char*)client + header->_badge_stamp_wtag_mtag.padSize());
-  } else {
-    objectSize = sizeof(core::Cons_O);
-    client = reinterpret_cast<ADDR_T>((char*)client + sizeof(core::Cons_O));
-  }
-  return client;
-}
-#endif // CONS_SKIP

@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include <fcntl.h>
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/gcalloc.h>
+#include <clasp/gctools/skip.h>
 #include <clasp/core/object.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/numbers.h>
@@ -629,16 +630,12 @@ void walkRoots(RootWalkCallback&& callback) {
 #define POINTER_FIX(_ptr_) markStack.emplace(containingObject, *reinterpret_cast<Tagged*>(_ptr_))
 
 #define OBJECT_SCAN mw_obj_scan
-#define OBJECT_SKIP mw_obj_skip
 #define EPHEMERON_FIX(a, b)
 #include "obj_scan.cc"
-#undef OBJECT_SKIP
 #undef OBJECT_SCAN
 
 #define CONS_SCAN mw_cons_scan
-#define CONS_SKIP mw_cons_skip
 #include "cons_scan.cc"
-#undef CONS_SKIP
 #undef CONS_SCAN
 
 #undef POINTER_FIX
@@ -777,16 +774,10 @@ std::set<std::pair<Tagged, Tagged>> memtest(std::set<core::T_sp, T_sp_less>& dla
 size_t objectSize(BaseHeader_s* header) {
   if (header->_badge_stamp_wtag_mtag.consObjectP()) {
     // It's a cons object
-    size_t consSize;
-    uintptr_t client = (uintptr_t)HeaderPtrToConsPtr(header);
-    [[maybe_unused]] uintptr_t clientLimit = mw_cons_skip(client, consSize);
-    return consSize;
+    return cons_skip((core::Cons_O*)HeaderPtrToConsPtr(header));
   } else {
     // It's a general object - walk it
-    size_t objectSize;
-    uintptr_t client = (uintptr_t)HeaderPtrToGeneralPtr<void*>(header);
-    mw_obj_skip(client, objectSize);
-    return objectSize;
+    return general_skip(HeaderPtrToGeneralPtr<core::General_O>(header));
   }
 }
 

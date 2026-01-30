@@ -34,6 +34,7 @@
 #include <clasp/core/sort.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/gctools/gc_boot.h>
+#include <clasp/gctools/skip.h>
 #include <clasp/llvmo/jit.h>
 #include <clasp/gctools/interrupt.h> // wait_for_user_signal
 #include <clasp/gctools/gcFunctions.h>
@@ -743,14 +744,8 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
 #include "obj_scan.cc"
 #undef OBJECT_SCAN
 
-#define OBJECT_SKIP isl_obj_skip
-#include "obj_scan.cc"
-#undef OBJECT_SKIP
-
 #define CONS_SCAN isl_cons_scan
-#define CONS_SKIP isl_cons_skip
 #include "cons_scan.cc"
-#undef CONS_SKIP
 #undef CONS_SCAN
 
 #undef ADDR_T
@@ -1096,14 +1091,13 @@ struct calculate_size_t {
         this->_ObjectFileTotalSize += objectFileSize;
         this->_TotalSize += sizeof(ISLGeneralHeader_s) + sizeof(llvmo::ObjectFile_O);
       } else {
-        isl_obj_skip(client, objectSize);
+        objectSize = gctools::general_skip((core::General_O*)client);
         this->_TotalSize += sizeof(ISLGeneralHeader_s) + objectSize;
       }
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToConsPtr(header);
       this->_cons_count++;
-      size_t consSize;
-      isl_cons_skip(client, consSize);
+      size_t consSize = gctools::cons_skip((core::Cons_O*)client);
       this->_TotalSize += sizeof(ISLConsHeader_s) + consSize;
     }
   }
@@ -1156,8 +1150,7 @@ struct copy_objects_t {
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
     if (header->_badge_stamp_wtag_mtag.stampP()) {
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
-      size_t generalSize;
-      isl_obj_skip(clientStart, generalSize);
+      size_t generalSize = gctools::general_skip((core::General_O*)clientStart);
       if (generalSize == 0)
         ISL_ERROR("A zero size general at %p was encountered", (void*)clientStart);
       if (header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
@@ -1217,8 +1210,7 @@ struct copy_objects_t {
       }
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HeaderPtrToConsPtr(header);
-      size_t consSize;
-      isl_cons_skip(client, consSize);
+      size_t consSize = gctools::cons_skip((core::Cons_O*)client);
       if (consSize == 0)
         ISL_ERROR("A zero size cons at %p was encountered", (void*)client);
       ISLConsHeader_s islheader(sizeof(core::Cons_O), header->_badge_stamp_wtag_mtag,
