@@ -7,14 +7,8 @@
 namespace gctools {
 
 size_t cons_skip(core::Cons_O* client) {
-  Header_s* header = (Header_s*)ConsPtrToHeaderPtr(client);
-  if (header->_badge_stamp_wtag_mtag.pad1P()) {
-    return Alignment();
-  } else if (header->_badge_stamp_wtag_mtag.padP()) {
-    return header->_badge_stamp_wtag_mtag.padSize();
-  } else {
-    return sizeof(core::Cons_O);
-  }
+  (void)client;
+  return sizeof(core::Cons_O);
 }
 
 size_t general_skip(core::General_O* client) {
@@ -52,12 +46,6 @@ size_t general_skip(core::General_O* client) {
       return AlignUp(stamp_layout.size);
     }
   } break; // stampP is false, so this is something weird like a forwarding pointer
-  case Header_s::pad1_mtag: {
-    return header_value.pad1Size();
-  } break;
-  case Header_s::pad_mtag: {
-    return header_value.padSize();
-  } break;
   default: {
     throw_hard_error_bad_client((void*)client);
   } break;

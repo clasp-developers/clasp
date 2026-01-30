@@ -34,10 +34,8 @@ public:
     if (header._badge_stamp_wtag_mtag.consObjectP()) {
       fix((core::T_O**)&client->_Car);
       fix((core::T_O**)&client->_Cdr);
-    } else if (!header._badge_stamp_wtag_mtag.fwdP()
-             && !header._badge_stamp_wtag_mtag.pad1P()
-             && !header._badge_stamp_wtag_mtag.padP()) {
-      printf("%s:%d CONS in cons_scan client=%p\n(it's not a CONS or any of MPS fwd/pad1/pad2 car=%p "
+    } else if (!header._badge_stamp_wtag_mtag.fwdP()) {
+      printf("%s:%d CONS in cons_scan client=%p\n(it's not a CONS or any of fwd car=%p "
            "cdr=%p\n",
              __FILE__, __LINE__, (void*)client, client->car().raw_(), client->cdr().raw_());
       abort();

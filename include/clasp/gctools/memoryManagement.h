@@ -258,10 +258,8 @@ template <class T> inline size_t sizeof_with_header();
       #B101 == fwd_mtag - This tag indicates that the remaining data bits in the header contains a forwarding
               pointer.  The uintptr_t in additional_data[0] contains the length of
               the block from the client pointer.
-      #B110   contains a pad; check the
-              bit at #B100 to see if the pad is a pad1 (==0) or a pad (==1)
-      #B111 == (MPS specific) This indicates that the header contains a pad; check the
-              bit at #B100 to see if the pad is a pad1 (==0) or a pad (==1)
+      #B110 == invalid3_mtag
+      #B111 == invalid4_mtag
 
       IMPORTANT!!!!!:
           The header values are designed to look like FIXNUMs - so we can read them
@@ -297,7 +295,7 @@ template <class T> inline size_t sizeof_with_header();
       is later written into the Instance_O rack.
 
       The header ends with a uintptr_t additional_data[0], an array of uintptr_t which intrudes
-      into the client data and is used when some header tags (fwd, pad) need it.
+      into the client data and is used when some header tags (fwd) need it.
       NOTE!!!   Writing anything into header.additional_data[0] wipes out the objects vtable and completely
                 invalidates it - this is only used by the MPS GC when it's ok to invalidate the object.
     */
@@ -321,8 +319,8 @@ public:
   static const tagged_stamp_t cons_mtag = 0b011;
   static const tagged_stamp_t invalid2_mtag = 0b100;
   static const tagged_stamp_t fwd_mtag = 0b101;
-  static const tagged_stamp_t pad_mtag = 0b110;
-  static const tagged_stamp_t pad1_mtag = 0b111;
+  static const tagged_stamp_t invalid3_mtag = 0b110;
+  static const tagged_stamp_t invalid4_mtag = 0b111;
   static const tagged_stamp_t stamp_mtag = general_mtag;
   static const tagged_stamp_t stamp_mask = ~(tagged_stamp_t)general_mtag_mask; // 0b11...111111111111000;
   static const tagged_stamp_t where_mask = 0b11 << general_mtag_shift;
@@ -458,9 +456,6 @@ public:
     bool consObjectP() const { return (this->_value & mtag_mask) == cons_mtag; };
     bool fwdP() const { return (this->_value & mtag_mask) == fwd_mtag; };
     bool fwdV() const { return (this->_value & mtag_mask); };
-    bool padP() const { return (this->_value & mtag_mask) == pad_mtag; };
-    bool pad1P() const { return (this->_value & mtag_mask) == pad1_mtag; };
-    bool anyPadP() const { return this->padP() || this->pad1P(); };
     /*! No sanity checking done - this function assumes kindP == true */
     GCStampEnum stamp_wtag() const { return (GCStampEnum)(this->_value >> general_mtag_shift); };
     GCStampEnum stamp_() const { return (GCStampEnum)(this->_value >> (wtag_width + general_mtag_shift)); };
@@ -468,14 +463,6 @@ public:
     void* fwdPointer() const { return reinterpret_cast<void*>(this->_header_data[0] & (~(uintptr_t)mtag_mask)); };
     /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
     void setFwdPointer(void* ptr) { this->_header_data[0] = reinterpret_cast<uintptr_t>(ptr) | fwd_mtag; };
-    /*! Define the header as a pad, pass pad_tag or pad1_tag */
-    void setPad(tagged_stamp_t p) { this->_header_data[0] = p; };
-    /*! Return the pad1 size */
-    tagged_stamp_t pad1Size() const { return Alignment(); };
-    /*! Return the size of the pad block - without the header */
-    tagged_stamp_t padSize() const { return (this->_header_data[1]); };
-    /*! This writes into the first tagged_stamp_t sized word of the client data. */
-    void setPadSize(size_t sz) { this->_header_data[1] = sz; };
 
   public:
     // GenerateHeaderValue must be passed to make_fixnum and the result exactly matches a header value
@@ -593,12 +580,6 @@ public:
     } else if (this->_badge_stamp_wtag_mtag.fwdP()) {
       std::stringstream ss;
       ss << "Fwd/ptr=" << this->_badge_stamp_wtag_mtag.fwdPointer();
-      return ss.str();
-    } else if (this->_badge_stamp_wtag_mtag.pad1P()) {
-      return "Pad1";
-    } else if (this->_badge_stamp_wtag_mtag.padP()) {
-      stringstream ss;
-      ss << "Pad/sz=" << this->_badge_stamp_wtag_mtag.padSize();
       return ss.str();
     }
     stringstream ss;

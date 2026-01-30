@@ -294,16 +294,6 @@ void rawHeaderDescribe(const uintptr_t* headerP) {
     printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
     printf(" fwd_tag - fwd address: 0x%" PRIuPTR "\n", (*headerP) & Header_s::mtag_mask);
   } break;
-  case Header_s::pad1_mtag:
-    printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
-    printf("   pad1_tag\n");
-    printf("  0x%p : 0x%" PRIuPTR "\n", headerP, *headerP);
-    break;
-  case Header_s::pad_mtag:
-    printf("   pad_tag\n");
-    printf("  0x%p : 0x%" PRIuPTR "\n", headerP, *headerP);
-    printf("  0x%p : 0x%" PRIuPTR "\n", (headerP + 1), *(headerP + 1));
-    break;
   }
 #ifdef DEBUG_GUARD
   Header_s* header = (Header_s*)headerP;
