@@ -35,6 +35,7 @@
 #include <clasp/llvmo/code.h>
 #include <clasp/gctools/gc_boot.h>
 #include <clasp/gctools/skip.h>
+#include <clasp/gctools/scan.h>
 #include <clasp/llvmo/jit.h>
 #include <clasp/gctools/interrupt.h> // wait_for_user_signal
 #include <clasp/gctools/gcFunctions.h>
@@ -723,33 +724,26 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
   return (gctools::clasp_ptr_t)((uintptr_t)client | tag);
 }
 
-#define POINTER_FIX(_ptr_)                                                                                                         \
-  {                                                                                                                                \
-    gctools::clasp_ptr_t* taggedP = reinterpret_cast<gctools::clasp_ptr_t*>(_ptr_);                                                \
-    if (gctools::tagged_objectp(*taggedP)) {                                                                                       \
-      gctools::clasp_ptr_t tagged_obj = *taggedP;                                                                                  \
-      gctools::clasp_ptr_t obj = gctools::untag_object<gctools::clasp_ptr_t>(tagged_obj);                                          \
-      uintptr_t tag = (uintptr_t)gctools::ptag<gctools::clasp_ptr_t>(tagged_obj);                                                  \
-      obj = (globalPointerFix)(taggedP, obj, tag, user_data);                                                                      \
-      *taggedP = obj;                                                                                                              \
-    };                                                                                                                             \
+
+#define POINTER_FIX(field) \
+  gctools::clasp_ptr_t* taggedP = reinterpret_cast<gctools::clasp_ptr_t*>(field);\
+  if (gctools::tagged_objectp(*taggedP)) { \
+    gctools::clasp_ptr_t tagged_obj = *taggedP;\
+    gctools::clasp_ptr_t obj = gctools::untag_object<gctools::clasp_ptr_t>(tagged_obj);\
+    uintptr_t tag = (uintptr_t)gctools::ptag<gctools::clasp_ptr_t>(tagged_obj);\
+    obj = (globalPointerFix)(taggedP, obj, tag, user_data);\
+    *taggedP = obj;\
   }
-#define WEAK_POINTER_FIX(_ptr_) POINTER_FIX(_ptr_)
-#define EPHEMERON_FIX(key, val) do { POINTER_FIX(key); POINTER_FIX(val); } while (false)
 
-#define ADDR_T gctools::clasp_ptr_t
-#define EXTRA_ARGUMENTS , void* user_data
+static void isl_obj_scan(core::General_O* client, void* user_data) {
+  auto fix = [&](core::T_O** field) { POINTER_FIX(field); };
+  gctools::scan::general_pointers(client, fix);
+}
 
-#define OBJECT_SCAN isl_obj_scan
-#include "obj_scan.cc"
-#undef OBJECT_SCAN
-
-#define CONS_SCAN isl_cons_scan
-#include "cons_scan.cc"
-#undef CONS_SCAN
-
-#undef ADDR_T
-#undef EXTRA_ARGUMENTS
+static void isl_cons_scan(core::Cons_O* client, void* user_data) {
+  auto fix = [&](core::T_O** field) { POINTER_FIX(field); };
+  gctools::scan::cons(client, fix);
+}
 
 //
 // Fix root pointers by following the forwarding pointer
@@ -1266,10 +1260,10 @@ struct fixup_objects_t : public walker_callback_t {
       // 1. entry points to library code -> offset
       // 2. entry points to ObjectFile_O objects -> offset
 
-      isl_obj_scan(client, (void*)this->_info);
+      isl_obj_scan((core::General_O*)client, (void*)this->_info);
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToConsPtr(header);
-      isl_cons_scan(client, (void*)this->_info);
+      isl_cons_scan((core::Cons_O*)client, (void*)this->_info);
     }
   }
 };
@@ -2023,10 +2017,10 @@ struct relocate_objects_t : public walker_callback_t {
   void callback(gctools::BaseHeader_s* header) {
     if (header->_badge_stamp_wtag_mtag.stampP()) {
       gctools::clasp_ptr_t client = HEADER_PTR_TO_GENERAL_PTR(header);
-      isl_obj_scan(client, (void*)this->_info);
+      isl_obj_scan((core::General_O*)client, (void*)this->_info);
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HeaderPtrToConsPtr(header);
-      isl_cons_scan(client, (void*)this->_info);
+      isl_cons_scan((core::Cons_O*)client, (void*)this->_info);
     }
   }
 };

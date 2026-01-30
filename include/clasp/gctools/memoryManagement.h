@@ -964,7 +964,7 @@ template <class T> inline size_t sizeof_bitunit_container_with_header(size_t num
 
 /* Align size upwards and ensure that it's big enough to store a
  * forwarding pointer.
- * This is used by the obj_scan and obj_skip methods
+ * This is used by the scanner and skip (sizer).
  */
 /*   Replaces this macro...
      #define ALIGN(size)                                                \

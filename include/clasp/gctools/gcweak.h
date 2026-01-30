@@ -73,9 +73,6 @@ THE SOFTWARE.
 #include <functional>
 #include <optional>
 
-// Caution: This file is included by obj_scan.cc which is pretty low level.
-// Don't put complicated includes in here.
-
 namespace gctools {
 
 // This structure is meant to be included directly (not as a pointer) in
@@ -146,7 +143,7 @@ public:
   // or else the value could remain while the key dies (memory leak)
   void setValue(core::T_sp v) { _value = v; }
   void reinit(core::T_sp k, core::T_sp v);
-  // Used in obj_scan.cc
+  // Used in scanner
   KVPair get_no_lock() const;
   void reinit_no_lock(core::T_sp k, core::T_sp v);
   void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
