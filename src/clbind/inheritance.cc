@@ -219,7 +219,7 @@ CL_DEFUN void clbind__dump_class_id_map() {
   printf("m_local_id = %lu\n", globalClassIdMap->m_local_id);
   printf("Dump of m_classes\n");
   for (auto entry : globalClassIdMap->m_type_id_to_class_id) {
-    printf(" type_id @%p (%s) -> class_id(%lu)\n", (void*)entry.first.get_type_info(), entry.first.name(), entry.second);
+    printf(" type_id hash %zu (%s) -> class_id(%lu)\n", entry.first.hash_code(), entry.first.name(), entry.second);
   }
   printf("------\n");
 };

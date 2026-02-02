@@ -59,7 +59,6 @@ THE SOFTWARE.
 #include <clasp/core/symbol.h>
 #include <clasp/clbind/class_registry.h>
 #include <clasp/clbind/primitives.h>
-#include <clasp/clbind/typeid.h>
 
 namespace clbind {
 namespace detail {

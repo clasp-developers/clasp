@@ -80,7 +80,7 @@ void trapGetterMethoid() {
 namespace clbind {
 namespace detail {
 
-class_registration::class_registration(const std::string& name, type_id const& type_id_, class_id id, type_id const& wrapper_type, class_id wrapper_id, bool derivable)
+class_registration::class_registration(const std::string& name, std::type_index const& type_id_, class_id id, std::type_index const& wrapper_type, class_id wrapper_id, bool derivable)
   : m_name(name), m_type(type_id_), m_id(id), m_wrapper_id(wrapper_id),
     m_wrapper_type(wrapper_type), m_default_constructor(NULL),
     m_derivable(derivable) {}
@@ -170,15 +170,15 @@ void class_registration::register_() const {
 
 // -- interface ---------------------------------------------------------
 
-class_base::class_base(const string& name, type_id const& type_id_, class_id id,
-                       type_id const& wrapper_type, class_id wrapper_id,
+class_base::class_base(const string& name, std::type_index const& type_id_, class_id id,
+                       std::type_index const& wrapper_type, class_id wrapper_id,
                        bool derivable)
   // note: we can't just initialize m_registration in the initializer list
   // as the base class initializer runs before member initializers, even if
   // we write the m_registration initializer first.
   : scope_(std::unique_ptr<registration>(m_registration = new class_registration(name, type_id_, id, wrapper_type, wrapper_id, derivable))), m_init_counter(0) {}
 
-void class_base::add_base(type_id const& base, cast_function cast) {
+void class_base::add_base(std::type_index const& base, cast_function cast) {
   m_registration->m_bases.push_back(std::make_pair(base, cast));
 }
 
@@ -208,13 +208,13 @@ void class_base::add_cast(class_id src, class_id target, cast_function cast) {
   m_registration->m_casts.push_back(cast_entry(src, target, cast));
 }
 
-void add_custom_name(type_id const& i, std::string& s) {
+void add_custom_name(std::type_index const& i, std::string& s) {
   s += " [";
   s += i.name();
   s += "]";
 }
 
-std::string get_class_name(core::LispPtr L, type_id const& i) {
+std::string get_class_name(core::LispPtr L, std::type_index const& i) {
   IMPLEMENT_MEF("get_class_name");
 #if 0  // start_meister_disabled
             std::string ret;

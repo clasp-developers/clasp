@@ -49,11 +49,11 @@ THE SOFTWARE.
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <map>
+#include <typeindex>
 
 #include <clasp/clbind/config.h>
 #include <clasp/clbind/clbindPackage.h>
 #include <clasp/clbind/open.h>
-#include <clasp/clbind/typeid.h>
 
 namespace clbind {
 
@@ -74,15 +74,15 @@ public:
         int cl_class() const { return m_cl_class_metatable; }
         int cl_function() const { return m_cl_function_metatable; }
 #endif
-  void add_class(type_id const& info, ClassRep_sp crep);
+  void add_class(std::type_index const& info, ClassRep_sp crep);
 
-  ClassRep_sp find_class(type_id const& info) const;
+  ClassRep_sp find_class(std::type_index const& info) const;
 
   GCPRIVATE :
 
-      /*! Index on the type_id.id converted to a core::Pointer and use EQL equality */
+      /*! Index on the type_index.hash_code() converted to an Integer_sp and use EQL equality */
       core::HashTable_sp m_classes;
-  //        std::map<type_id, ClassRep_sp> m_classes;
+  //        std::map<std::type_index, ClassRep_sp> m_classes;
 
 #if 0
         // this is a cl reference that points to the cl table
