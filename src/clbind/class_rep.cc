@@ -63,14 +63,11 @@ namespace clbind {
 
 ClassRep_O::ClassRep_O(core::Instance_sp class_, core::Symbol_sp name, bool derivable)
     : Instance_O(class_ /*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS*/), m_name(name)
-      //	, m_class_type(cpp_class)
-      //	, m_operator_cache(0)
       ,
       m_derivable(derivable) {
 }
 
 void ClassRep_O::add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base)
-// const ClassRep_O::base_info& binfo)
 {
   // If you hit this assert you are deriving from a type that is not registered
   // in cl. That is, in the class_<> you are giving a baseclass that isn't registered.
