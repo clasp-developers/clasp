@@ -37,9 +37,6 @@ THE SOFTWARE.
 #pragma clang diagnostic push
 // #pragma clang diagnostic ignored "-Wunused-local-typedef"
 #include <boost/dynamic_bitset.hpp>
-#include <boost/foreach.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
 #pragma clang diagnostic pop
 #include <clasp/core/foundation.h>
 #include <clasp/clbind/inheritance.h>
@@ -66,7 +63,7 @@ public:
   void invalidate();
 
 private:
-  typedef boost::tuple<class_id, class_id, class_id, std::ptrdiff_t> key_type;
+  typedef std::tuple<class_id, class_id, class_id, std::ptrdiff_t> key_type;
   typedef std::map<key_type, cache_entry> map_type;
   map_type m_cache;
 };

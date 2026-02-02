@@ -122,12 +122,6 @@ THE SOFTWARE.
 #pragma warning(disable : 4355)
 #endif
 
-namespace boost {
-
-template <class T> class shared_ptr;
-
-} // namespace boost
-
 namespace clbind {
 
 namespace detail {
