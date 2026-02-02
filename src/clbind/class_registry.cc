@@ -52,7 +52,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/hashTableEql.h>
 
-#include <clasp/clbind/cl_include.h>
+#include <clasp/core/lisp.h>
 
 #include <clasp/clbind/clbind.h>
 #include <clasp/core/symbolTable.h>

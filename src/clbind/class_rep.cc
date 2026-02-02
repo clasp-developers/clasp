@@ -50,14 +50,10 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/package.h>
-#include <clasp/clbind/cl_include.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
 
-// #include <clasp/clbind/detail/stack_utils.hpp>
-// #include <clasp/clbind/detail/conversion_storage.hpp>
 #include <clasp/clbind/clbind.h>
-// #include <clasp/clbind/exception_handler.hpp>
-// #include <clasp/clbind/get_main_thread.hpp>
-// #include <utility>
 #include <clasp/clbind/class_rep.h>
 #include <clasp/core/wrappers.h>
 

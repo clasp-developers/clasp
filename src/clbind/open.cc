@@ -50,7 +50,7 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/clbind/cl_include.h>
+#include <clasp/core/lisp.h>
 
 #include <clasp/clbind/clbind.h>
 #include <clasp/clbind/class_registry.h>

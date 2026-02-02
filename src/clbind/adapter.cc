@@ -26,7 +26,8 @@ THE SOFTWARE.
 /* -^- */
 #include <clasp/core/foundation.h>
 #include <clasp/core/package.h>
-#include <clasp/clbind/cl_include.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
 #include <clasp/clbind/adapter.h>
 #include <clasp/core/wrappers.h>
 
