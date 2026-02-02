@@ -45,7 +45,6 @@ namespace detail {
 class cast_graph {
 public:
   cast_graph();
-  ~cast_graph();
 
   /*!
      src and p here describe the *most derived* object. This means that
