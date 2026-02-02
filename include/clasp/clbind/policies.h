@@ -27,11 +27,6 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#include <boost/mpl/if.hpp>
-#include <boost/mpl/and.hpp>
-#include <boost/mpl/not.hpp>
-#include <boost/mpl/bool.hpp>
-
 //----------------------------------------------------------------------
 //
 // Policies
