@@ -63,7 +63,6 @@ THE SOFTWARE.
 namespace clbind {
 namespace detail {
 class cast_graph;
-class class_id_map;
 }; // namespace detail
 }; // namespace clbind
 
@@ -108,8 +107,6 @@ public:
 
   std::string name_() const throw() { return m_name->symbolNameAsString(); }
 
-  detail::class_id_map const& classes() const { return *m_classes._value; }
-
 public:
 
   // a list of info for every class this class derives from
@@ -120,8 +117,6 @@ public:
   // the class' name (as given when registered to lua with class_)
   core::Symbol_sp m_name;
 
-  /* What does this store???? */
-  dont_expose<detail::class_id_map*> m_classes;
   bool m_derivable;
 };
 

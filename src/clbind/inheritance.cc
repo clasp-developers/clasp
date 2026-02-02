@@ -44,8 +44,6 @@ THE SOFTWARE.
 namespace clbind {
 namespace detail {
 
-class_id const class_id_map::local_id_base = std::numeric_limits<class_id>::max() / 2;
-
 namespace {
 
 typedef std::pair<std::ptrdiff_t, int> cache_entry;
@@ -211,18 +209,6 @@ cast_graph::cast_graph() : m_impl(new impl) {}
 } // namespace clbind
 
 namespace clbind {
-
-DOCGROUP(clasp);
-CL_DEFUN void clbind__dump_class_id_map() {
-  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
-  printf("local_id_base = %lu\n", globalClassIdMap->local_id_base);
-  printf("m_local_id = %lu\n", globalClassIdMap->m_local_id);
-  printf("Dump of m_classes\n");
-  for (auto entry : globalClassIdMap->m_type_id_to_class_id) {
-    printf(" type_id hash %zu (%s) -> class_id(%lu)\n", entry.first.hash_code(), entry.first.name(), entry.second);
-  }
-  printf("------\n");
-};
 
 CL_LAMBDA(&optional filename);
 DOCGROUP(clasp);

@@ -62,59 +62,6 @@ private:
   std::unique_ptr<impl> m_impl;
 };
 
-// Maps a type_index to a class_id. Note that this actually partitions the
-// id-space into two, using one half for "local" ids; ids that are used only as
-// keys into the conversion cache. This is needed because we need a shared key
-// even for types that hasn't been registered explicitly.
-class class_id_map {
-public:
-  class_id_map();
-
-  class_id get_type_id(std::type_index type) const;
-  class_id get_local_type_id(std::type_index type);
-  void put(class_id id, std::type_index type);
-
-public:
-  typedef std::map<std::type_index, class_id> map_type;
-  map_type m_type_id_to_class_id;
-  class_id m_local_id;
-
-  static class_id const local_id_base;
-};
-
-inline class_id_map::class_id_map() : m_local_id(local_id_base) {}
-
-inline class_id class_id_map::get_type_id(std::type_index type) const {
-  //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
-  map_type::const_iterator i = m_type_id_to_class_id.find(type);
-  if (i == m_type_id_to_class_id.end() || i->second >= local_id_base)
-    return reg::unknown_class;
-  return i->second;
-}
-
-inline class_id class_id_map::get_local_type_id(std::type_index type) {
-  //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
-  std::pair<map_type::iterator, bool> result = m_type_id_to_class_id.insert(std::make_pair(type, 0));
-
-  if (result.second)
-    result.first->second = m_local_id++;
-
-  assert(m_local_id >= local_id_base);
-
-  return result.first->second;
-}
-
-inline void class_id_map::put(class_id id, std::type_index type) {
-  //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
-  assert(id < local_id_base);
-
-  std::pair<map_type::iterator, bool> result = m_type_id_to_class_id.insert(std::make_pair(type, 0));
-
-  assert(result.second || result.first->second == id || result.first->second >= local_id_base);
-
-  result.first->second = id;
-}
-
 inline ClassRep_sp class_map_get(class_id id) {
   //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
   if (id >= _lisp->_Roots._ClassMap.size())

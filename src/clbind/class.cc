@@ -138,11 +138,6 @@ void class_registration::register_() const {
   m_members.register_();
 
   cast_graph* const casts = globalCastGraph;
-  class_id_map* const class_ids = globalClassIdMap;
-
-  class_ids->put(m_id, m_type);
-  if (has_wrapper)
-    class_ids->put(m_wrapper_id, m_wrapper_type);
 
   for (cast_entry const& e : m_casts) {
     casts->insert(e.src, e.target, e.cast);
