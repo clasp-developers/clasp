@@ -27,7 +27,6 @@ THE SOFTWARE.
 */
 /* -^- */
 #include <clasp/clbind/policies.h>
-#include <clasp/clbind/external_policies.h>
 #include <type_traits>
 
 namespace clbind {
@@ -39,10 +38,6 @@ struct null_type {};
 template <typename POL, typename T> struct IndexOf;
 
 template <typename T> struct IndexOf<policies<>, T> {
-  enum { value = -1 };
-};
-
-template <typename T> struct IndexOf<core::policy::clasp_policy, T> {
   enum { value = -1 };
 };
 
