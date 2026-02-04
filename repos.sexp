@@ -6,9 +6,8 @@
   :pin 1)
  (:name :alexandria
   :directory "src/lisp/kernel/contrib/alexandria/"
-  :repository "https://github.com/clasp-developers/alexandria.git"
-  :branch "master"
-  :commit "8514d8e68ed0c733abf7f96f9e91b24912686dc4"
+  :repository "https://github.com/Bike/alexandria.git"
+  :branch "lambda-list-fix"
   :pin 1)
  (:name :anaphora
   :extension :cando
