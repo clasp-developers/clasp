@@ -59,31 +59,11 @@ Returns zero for non-complex numbers."
     (if (eq x 0) 0.0 (float 0 (realpart x)))
     (atan (imagpart x) (realpart x))))
 
-;;; this is defined in numbers.h
-#+(or)  
-(defun signum (x)
-  "Args: (number)
-Returns a number that represents the sign of NUMBER.  Returns NUMBER If it is
-zero.  Otherwise, returns the value of (/ NUMBER (ABS NUMBER))"
-  (if (zerop x) x (/ x (abs x))))
-
 (defun cis (theta)
   "Args: (theta)
 Returns a complex number whose realpart and imagpart are the values of (COS
 THETA) and (SIN THETA) respectively."
   (complex (cos theta) (sin theta)))
-
-(defun asin (x)
-  "Args: (number)
-Returns the arc sine of NUMBER."
-  (if (complexp x)
-      (complex-asin x)
-      (let* ((x (float x)) ; used to coerce to float below
-             (xr (float x 1l0)))
-	(declare (long-float xr))
-	(if (and (<= -1l0 xr) (<= xr 1l0))
-	    (float (core:num-op-asin xr) x)
-	    (complex-asin x)))))
 
 ;; Ported from CMUCL
 (defun complex-asin (z)
@@ -93,18 +73,6 @@ Returns the arc sine of NUMBER."
     (complex (atan (realpart z) (realpart (* sqrt-1-z sqrt-1+z)))
 	     (asinh (imagpart (* (conjugate sqrt-1-z)
 				 sqrt-1+z))))))
-
-(defun acos (x)
-  "Args: (number)
-Returns the arc cosine of NUMBER."
-  (if (complexp x)
-      (complex-acos x)
-      (let* ((x (float x))
-             (xr (float x 1l0)))
-	(declare (long-float xr))
-	(if (and (<= -1l0 xr) (<= xr 1l0))
-	    (float (core:num-op-acos xr) x)
-	    (complex-acos x)))))
 
 ;; Ported from CMUCL
 (defun complex-acos (z)
