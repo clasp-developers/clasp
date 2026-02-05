@@ -250,51 +250,6 @@
               :faso
               (build-mode configuration))))
 
-(defmethod print-prologue (configuration (name (eql :load-clasp)) output-stream)
-  (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
-(setq core::*number-of-jobs*
-      (if (ext:getenv \"CLASP_BUILD_JOBS\")
-          (parse-integer (ext:getenv \"CLASP_BUILD_JOBS\"))
-          ~a))
-(defvar *system* (core:load-clasp :reproducible ~s
-                                  :name (elt core:*command-line-arguments* 0)
-                                  :position (parse-integer (elt core:*command-line-arguments* 1))
-                                  :system (core:command-line-paths 2)))
-(if (fboundp 'core:top-level)
-    (core:top-level)
-    (core:low-level-repl))" (jobs configuration) (reproducible-build configuration)))
-
-(defmethod print-prologue (configuration (name (eql :snapshot-clasp)) output-stream)
-  (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
-(setq core::*number-of-jobs*
-      (if (ext:getenv \"CLASP_BUILD_JOBS\")
-          (parse-integer (ext:getenv \"CLASP_BUILD_JOBS\"))
-          ~a))
-(defvar *system* (core:load-clasp :reproducible ~s
-                                  :name (elt core:*command-line-arguments* 1)
-                                  :position (parse-integer (elt core:*command-line-arguments* 2))
-                                  :system (core:command-line-paths 3)))
-(gctools:save-lisp-and-die (elt core:*command-line-arguments* 0) :executable t)
-(core:quit)" (jobs configuration) (reproducible-build configuration)))
-
-(defmethod print-prologue (configuration (name (eql :compile-clasp)) output-stream)
-  (format output-stream "(setq cmp:*default-output-type* ~s)
-(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
-(setq core::*number-of-jobs*
-      (if (ext:getenv \"CLASP_BUILD_JOBS\")
-          (parse-integer (ext:getenv \"CLASP_BUILD_JOBS\"))
-          ~a))
-(core:load-and-compile-clasp :reproducible ~s :system-sort ~s
-                             :name (elt core:*command-line-arguments* 0)
-                             :position (parse-integer (elt core:*command-line-arguments* 1))
-                             :system (core:command-line-paths 2))
-(core:quit)"
-          (if (eq (build-mode configuration) :bytecode-faso)
-              :faso
-              (build-mode configuration))
-          (jobs configuration) (reproducible-build configuration)
-          (and (> (jobs configuration) 1) (parallel-build configuration))))
-
 (defmethod print-prologue (configuration (name (eql :link-bytecode-image)) output-stream)
   (declare (ignore configuration))
   (print-asdf-stub output-stream t :maclina/compile-file)

@@ -59,8 +59,6 @@ Options:
       Describe the clasp data structures for lldb Python API to /tmp/clasp.py
   -d, --describe <file>
       Describe the clasp data structures for lldb Python API to <file>
-  -U, --unpack-faso <file>
-      Unpack the faso <file> into separate object files
   --noinform
       Don't print startup banner text
   --noprint
@@ -294,9 +292,6 @@ void process_clasp_arguments(CommandLineOptions* options) {
     }
     if (*arg == "-h" || *arg == "--help") {
       std::cout << help << std::endl;
-      exit(0);
-    } else if (*arg == "-U" || *arg == "--unpack-faso") {
-      clasp_unpack_faso(*++arg);
       exit(0);
     } else if (*arg == "-v" || *arg == "--version") {
       options->printVersion();

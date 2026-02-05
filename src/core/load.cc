@@ -162,11 +162,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
   filename = core__coerce_to_file_pathname(pathname);
   T_sp kind = core__file_kind(gc::As<Pathname_sp>(filename), true);
   if (kind == kw::_sym_directory) {
-    ok = core__load_binary_directory(filename, verbose, print, external_format);
-    if (ok.nilp()) {
-      SIMPLE_ERROR("LOAD: Could not load file {}", _rep_(filename));
-    }
-    return _lisp->_true();
+    SIMPLE_ERROR("LOAD: Could not load file {}", _rep_(filename));
   }
   if (!pntype.nilp() && (pntype != kw::_sym_wild)) {
     /* If filename already has an extension, make sure

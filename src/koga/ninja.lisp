@@ -139,19 +139,6 @@
                                           "$cxx -dynamiclib $variant-ldflags $ldflags -install_name @rpath/$libname -o$out $in $variant-ldlibs $ldlibs")
                              #-darwin "$cxx -shared $variant-ldflags $ldflags -o$out $in $variant-ldlibs $ldlibs"
                     :description "Linking $out")
-  (ninja:write-rule output-stream :load-cclasp
-                    :command "$clasp --norc --disable-mpi --ignore-image --feature clasp-min --load load-clasp.lisp -- base 0 $source"
-                    :description "Loading clasp $name"
-                    :pool "console")
-  (ninja:write-rule output-stream :snapshot-cclasp
-                    :command "$clasp --norc --disable-mpi --ignore-image --feature clasp-min --load snapshot-clasp.lisp -- $out base 0 $source"
-                    :description "Snapshot clasp $name"
-                    :pool "console")
-  (ninja:write-rule output-stream :compile-cclasp
-                    :command "$clasp --norc --disable-mpi --ignore-image --feature clasp-min --load compile-clasp.lisp -- base 0 $source"
-                    :description "Compiling clasp $name"
-                    :restat 1
-                    :pool "console")
   (ninja:write-rule output-stream :compile-bytecode-image
                     :command (lisp-command "compile-bytecode-image.lisp" "$in --output $out --sources $sources")
                     :description "Building Clasp bytecode image"
