@@ -136,7 +136,6 @@ using namespace llvm::jitlink;
 std::atomic<size_t> global_object_file_number;
 std::atomic<size_t> global_JITDylibCounter;
 
-std::string gcroots_in_module_name = OS_GCROOTS_IN_MODULE_NAME;
 std::string literals_name = OS_LITERALS_NAME;
 
 core::SimpleBaseString_sp createSimpleBaseStringForStage(const std::string& sname) {
@@ -401,9 +400,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 //                                        if (ssym->getName().str() != "") {printf("%s:%d:%s Symbol: %s\n", __FILE__, __LINE__,
 //                                        __FUNCTION__, ssym->getName().str().c_str() ); };
 #endif
-        if (sname.find(gcroots_in_module_name) != std::string::npos) {
-          keptAlive = true;
-        } else if (sname.find(literals_name) != std::string::npos) {
+        if (sname.find(literals_name) != std::string::npos) {
           keptAlive = true;
 #if 0
                                           // I'd like to do this on linux because jit symbols need to be exposed
@@ -552,8 +549,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       }
     }
     //
-    bool found_gcroots_in_module = false;
-    gctools::GCRootsInModule* roots;
     bool found_literals = false;
     for (auto ssym : G.defined_symbols()) {
       if (ssym->getName() == "DW.ref.__gxx_personality_v0") {
@@ -576,12 +571,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       if (ssym->hasName()) {
         std::string sname = ssym->getName().str();
         size_t pos;
-        pos = sname.find(gcroots_in_module_name);
-        if (pos != std::string::npos) {
-          found_gcroots_in_module = true;
-          roots = (gctools::GCRootsInModule*)ssym->getAddress().getValue();
-          continue;
-        }
         pos = sname.find(literals_name);
         if (pos != std::string::npos) {
           found_literals = true;
@@ -627,12 +616,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     //
     void* literalStart = (void*)currentCode->getLiteralVectorStart();
     size_t literalCount = currentCode->_LiteralVectorSizeBytes / sizeof(void*);
-    if (found_gcroots_in_module) {
-      // if we have a GCRoots object, set it up properly.
-      // Note that BTB compilation will _not_ have a GCRoots. This is OK.
-      roots->_module_memory = literalStart;
-      roots->_num_entries = literalCount;
-    }
     gctools::clasp_gc_registerRoots(literalStart, literalCount);
 #ifdef DEBUG_OBJECT_FILES
     for (auto* Sym : G.external_symbols())

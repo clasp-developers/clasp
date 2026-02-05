@@ -176,7 +176,7 @@ void Process_O::run(void* cold_end_of_stack) {
   my_thread_low_level = &thread_local_state_low_level;
   my_thread = &thread_local_state;
   my_thread->startUpVM();
-  my_thread->initialize_thread(this->asSmartPtr(), true);
+  my_thread->initialize_thread(this->asSmartPtr());
   //  my_thread->create_sigaltstack();
   _ThreadInfo = my_thread;
 

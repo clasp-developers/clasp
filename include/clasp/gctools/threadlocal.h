@@ -269,7 +269,6 @@ struct ThreadLocalState {
   std::string _initializer_symbol;
   void* _object_file_start;
   size_t _object_file_size;
-  gctools::GCRootsInModule* _GCRootsInModule;
   StartupInfo _Startup;
   bool _Breakstep; // Should we check for breaks?
   // What frame are we stepping over? NULL means step-into mode.
@@ -305,7 +304,7 @@ public:
   ThreadLocalState(bool dummy);
   void finish_initialization_main_thread(core::T_sp theNilObject);
   ThreadLocalState();
-  void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
+  void initialize_thread(mp::Process_sp process);
 
   pid_t safe_fork();
 

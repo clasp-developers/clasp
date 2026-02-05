@@ -72,17 +72,7 @@
 (defmacro primitives-macro ()
   "ltvc functions are used to construct the byte-code interpreter"
   `(progn
-     (mapcar (lambda (op)
-               (apply (if (second op) 'primitive-unwinds 'primitive)
-                      (third op)
-                      :ltvc-return
-                      (list* :gcroots-in-module* (fourth op))
-                      :ltvc t (cddddr op)))
-               cmpref:*startup-primitives-as-list*)
-     ,@'((primitive         "ltvc_lookup_literal" :t* (list :gcroots-in-module* :size_t))
-         (primitive         "ltvc_lookup_transient" :t* (list :gcroots-in-module* :i8 :size_t))
-         (primitive-unwinds "cc_register_startup_function" :void (list :size_t :fn-start-up*))
-         (primitive         "cc_protect_alloca" :void (list :i8*))
+     ,@'((primitive         "cc_protect_alloca" :void (list :i8*))
 
          (primitive-unwinds "cc_error_type_error" :void (list :t* :t*) :does-not-return t)
          (primitive-unwinds "cc_error_array_out_of_bounds" :void (list :t* :t* :t*) :does-not-return t)
@@ -211,19 +201,6 @@
          (primitive-unwinds "cc_checkBound" :size_t (list :t* :size_t :t*))
          (primitive         "cc_simpleBitVectorAref" :i8 (list :t* :size_t))
          (primitive         "cc_simpleBitVectorAset" :void (list :t* :size_t :i8))
-         (primitive         "cc_initialize_gcroots_in_module" :void (list :gcroots-in-module* ; holder
-                                                                      :t** ; root_address
-                                                                      :size_t ; num_roots
-                                                                      :t* ; initial_data
-                                                                      :i8** ; transient_alloca
-                                                                      :size_t ; transient_entries
-                                                                      :size_t ; function_pointer_count
-                                                                      :i8** ; fptrs
-                                                                      ))
-         (primitive         "cc_finish_gcroots_in_module" :void (list :gcroots-in-module*))
-         (primitive         "cc_remove_gcroots_in_module" :void (list :gcroots-in-module* ))
-         (primitive-unwinds "cc_invoke_sub_run_all_function" :void (list :fn-start-up*))
-         (primitive-unwinds "cc_invoke_start_code_interpreter" :void (list :gcroots-in-module* :i8* :size_t :i8*))
 
          (primitive "cc_verify_tag" :void (list :size_t :t* :size_t))
 
@@ -429,7 +406,6 @@
     #+long-float (:binary80 %long-float%)
     #+long-float (:binary128 %long-float%)
     (:fn-start-up* %fn-start-up*%)
-    (:gcroots-in-module* %gcroots-in-module*%)
     (:i1 %i1%)
     (:i16 %i16%)
     (:i32 %i32%)

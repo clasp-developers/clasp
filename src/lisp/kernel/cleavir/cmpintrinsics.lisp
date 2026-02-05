@@ -437,35 +437,6 @@ Boehm and MPS use a single pointer"
        (cons-cdr-offset (llvm-sys:struct-layout-get-element-offset cons-layout +cons.cdr-index+)))
   (core:verify-cons-layout cons-size cons-car-offset cons-cdr-offset))
 
-
-;; This structure must match the gctools::GCRootsInModule structure
-(define-c++-struct %gcroots-in-module% +general-tag+
-  ((%size_t%  :index-offset)
-   (%i8*%     :module-memory)
-   (%size_t%  :num-entries)
-   (%size_t%  :capacity)
-   (%i8**%    :function-pointers)
-   (%size_t%  :number-of-functions)))
-
-(defun gcroots-in-module-initial-value (&optional literals size)
-  (declare (ignore literals))
-  (llvm-sys:constant-struct-get %gcroots-in-module%
-                                (list
-                                 (jit-constant-size_t 0)
-                                 #+(or)(if literals
-                                           (irc-bit-cast literals %i8*%)
-                                           (llvm-sys:constant-pointer-null-get %i8*%))
-                                 (llvm-sys:constant-pointer-null-get %i8*%)
-                                 (if size
-                                     (jit-constant-size_t size)
-                                     (jit-constant-size_t 0))
-                                 (jit-constant-size_t 0)
-                                 (llvm-sys:constant-pointer-null-get %i8**%)
-                                 (jit-constant-size_t 0)
-                                 )))
-
-(define-symbol-macro %gcroots-in-module*% (llvm-sys:type-get-pointer-to %gcroots-in-module%))
-
 ;; The definition of %tmv% doesn't quite match T_mv because T_mv inherits from T_sp
 (define-symbol-macro %tmv% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %t*% %size_t%) nil))  ;; "T_mv"
 (define-symbol-macro %return-type% %tmv%)
@@ -786,7 +757,6 @@ Boehm and MPS use a single pointer"
          (global-entry-point-layout (llvm-sys:data-layout-get-struct-layout data-layout %global-entry-point%))
          (function-description-offset (c++-field-offset :function-description info.%global-entry-point%))
          (vaslist-size (llvm-sys:data-layout-get-type-alloc-size data-layout %vaslist%))
-         (gcroots-in-module-size (llvm-sys:data-layout-get-type-alloc-size data-layout %gcroots-in-module%))
          (global-entry-point-size (llvm-sys:data-layout-get-type-alloc-size data-layout %global-entry-point%))
          (function-description-size (llvm-sys:data-layout-get-type-alloc-size data-layout %function-description%)))
     (declare (ignore global-entry-point-layout global-entry-point-size))
@@ -797,7 +767,6 @@ Boehm and MPS use a single pointer"
                                                   :symbol-setf-function-offset symbol-setf-function-offset
                                                   :function function-size
                                                   :function-description-offset (+ function-description-offset +general-tag+)
-                                                  :gcroots-in-module gcroots-in-module-size
                                                   :vaslist vaslist-size
                                                   :function-description function-description-size)
 

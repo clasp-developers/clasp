@@ -48,7 +48,6 @@
           +c++-stamp-max+
           %opaque-fn-prototype*%
           fn-prototype
-          *cleavir-compile-file-hook*
           *cleavir-compile-hook*
           *btb-compile-hook*
           *compile-print*
@@ -97,7 +96,6 @@
           +unwind-protect-dynenv-size+
           +binding-dynenv-size+
           +void*-size+
-          *startup-primitives-as-list*
           %void%
           %i1%
           %exception-struct%
@@ -127,9 +125,6 @@
           %symbol%
           %float%
           %double%
-          %gcroots-in-module%
-          %gcroots-in-module*%
-          gcroots-in-module-initial-value
           %function-description%
           %function-description*%
           irc-funcall-results-in-registers
@@ -366,14 +361,6 @@
           compile-header-check
           general-entry-point-redirect-name
           get-or-declare-function-or-error
-          ))
-
-;;; exports for runall
-(export '(
-          with-make-new-run-all
-          with-run-all-entry-codegen
-          with-run-all-body-codegen
-          generate-load-time-values
           ))
 
 ;;; exports for conditions

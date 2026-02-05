@@ -389,7 +389,7 @@ CL_DEFUN void core__set_debug_start_code(T_sp on) { global_debug_start_code = on
 void Lisp::initializeMainThread() {
   mp::Process_sp main_process =
       mp::Process_O::make_process(INTERN_(core, top_level), nil<T_O>(), _lisp->copy_default_special_bindings(), nil<T_O>(), 0);
-  my_thread->initialize_thread(main_process, false);
+  my_thread->initialize_thread(main_process);
 }
 
 void Lisp::startupLispEnvironment() {

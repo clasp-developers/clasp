@@ -7,7 +7,6 @@
 ;; current *module* for the form.  The lambda returns T if cleavir succeeded in compiling the form
 ;; and nil otherwise
 (defvar *cleavir-compile-hook* nil)
-(defvar *cleavir-compile-file-hook* nil)
 
 (defun compile-with-hook (compile-hook definition env)
   (with-compilation-unit ()

@@ -168,8 +168,5 @@
                          environment
                        &allow-other-keys)
   (declare (ignore environment image-startup-position type optimize-level optimize))
-  (if t;; (eq output-type :bytecode)
-      (apply #'cmpltv:bytecode-compile-stream input-stream output-path args)
-      ;; Defined later in cleavir/compile-file.lisp
-      (apply #'native-compile-stream input-stream output-path args))
+  (apply #'cmpltv:bytecode-compile-stream input-stream output-path args)
   (truename output-path))

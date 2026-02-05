@@ -423,7 +423,7 @@ void thread_local_invoke_and_clear_cleanup() {
 // Need to use LTO to inline this.
 inline void registerTypesAllocated(size_t bytes) { my_thread->_BytesAllocated += bytes; }
 
-void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize_GCRoots = true) {
+void ThreadLocalState::initialize_thread(mp::Process_sp process) {
   //  printf("%s:%d Initialize all ThreadLocalState things this->%p\n",__FILE__, __LINE__, (void*)this);
   this->_Process = process;
   process->_ThreadInfo = this;

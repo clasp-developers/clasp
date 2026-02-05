@@ -190,15 +190,12 @@ SYMBOL_EXPORT_SC_(CorePkg, _BANG_unbound_BANG_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_WNOHANG_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_application_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_bitcode_name_PLUS_);
-SYMBOL_EXPORT_SC_(CorePkg, _PLUS_clasp_ctor_function_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_class_name_to_lisp_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_executable_name_PLUS_);
-SYMBOL_EXPORT_SC_(CorePkg, _PLUS_gcroots_in_module_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_io_syntax_progv_list_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_known_typep_predicates_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_literals_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_numberOfFixedArguments_PLUS_);
-SYMBOL_EXPORT_SC_(CorePkg, _PLUS_run_all_function_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_standardReadtable_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_type_header_value_map_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_variant_name_PLUS_);
@@ -547,8 +544,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARbuild_stlibSTAR->defconstant(SimpleBaseString_O::make(BUILD_STLIB));
   _sym_STARbuild_linkflagsSTAR->defconstant(SimpleBaseString_O::make(BUILD_LINKFLAGS));
   _sym_STARbuild_cppflagsSTAR->defconstant(SimpleBaseString_O::make(BUILD_CPPFLAGS));
-  _sym__PLUS_run_all_function_name_PLUS_->defconstant(SimpleBaseString_O::make(RUN_ALL_FUNCTION_NAME));
-  _sym__PLUS_clasp_ctor_function_name_PLUS_->defconstant(SimpleBaseString_O::make(CLASP_CTOR_FUNCTION_NAME));
   SYMBOL_SC_(CorePkg, cArgumentsLimit);
   _sym_cArgumentsLimit->defconstant(make_fixnum(Lisp::MaxFunctionArguments));
   _sym_STARdebugMacroexpandSTAR->defparameter(nil<T_O>());
@@ -674,7 +669,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARallow_with_interruptsSTAR->defparameter(_lisp->_true());
   _sym_STARexit_backtraceSTAR->defparameter(nil<core::T_O>());
   clos::_sym__PLUS_the_standard_class_PLUS_->defparameter(_lisp->_Roots._TheStandardClass);
-  core::_sym__PLUS_gcroots_in_module_name_PLUS_->defparameter(SimpleBaseString_O::make(GCROOTS_IN_MODULE_NAME));
   core::_sym__PLUS_literals_name_PLUS_->defparameter(SimpleBaseString_O::make(LITERALS_NAME));
   _sym_STARdebug_threadsSTAR->defparameter(nil<core::T_O>());
   _sym_STARdebug_fastgfSTAR->defparameter(nil<core::T_O>());
@@ -708,7 +702,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   comp::_sym_STARdefault_output_typeSTAR->defparameter(kw::_sym_bytecode);
 #endif
   comp::_sym_STARforce_startup_external_linkageSTAR->defparameter(nil<core::T_O>());
-  gctools::_sym_STARdebug_gcrootsSTAR->defparameter(nil<core::T_O>());
 #ifdef DEBUG_LLVM_OPTIMIZATION_LEVEL_0
   int optimization_level = 0;
 #else

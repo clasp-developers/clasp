@@ -1,43 +1,14 @@
 (defpackage #:literal
   (:use #:cl #:core)
   (:export
-   #:*byte-codes*
-   #:add-creator
    #:next-value-table-holder-name
-   #:general-entry-placeholder-p
    #:make-general-entry-placeholder
    #:make-literal-node-call
    #:make-literal-node-creator
-   #:run-all-add-node
-   #:entry-point-datum-for-xep-group
-   #:register-local-function-index
-   #:register-xep-function-indices
    #:literal-node-runtime-p
    #:literal-node-runtime-object
-   #:literal-node-creator-p
-   #:literal-node-creator-object
-   #:literal-node-creator-name
-   #:literal-node-creator-arguments
-   #:literal-node-side-effect-p
-   #:literal-node-side-effect-name
-   #:literal-node-side-effect-arguments
-   #:literal-node-call-p
-   #:literal-node-call-function
-   #:literal-node-call-source-pos-info
-   #:literal-node-call-holder
    #:lookup-literal-index
    #:reference-literal
-   #:load-time-reference-literal
    #:compile-reference-to-literal
-   #:compile-load-time-value-thunk
-   #:new-table-index
    #:constants-table-reference
-   #:constants-table-value
-   #:reference-function-cell
-   #:reference-variable-cell
-   #:reference-core-fun
-   #:reference-simple-core-fun
-   #:load-time-value-from-thunk
-   #:with-rtv
-   #:arrange-thunk-as-top-level
-   #:with-literal-table))
+   #:constants-table-value))

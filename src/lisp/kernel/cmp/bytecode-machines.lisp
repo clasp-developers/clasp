@@ -321,94 +321,6 @@
   (terpri fout)
   (write-line "#endif // VM_CODES" fout))
 
-;;; load time values machine
-
-(defstruct ltv-info type c++-type suffix gcroots)
-
-(defparameter *ltv-info* (make-hash-table :test #'equal))
-
-(defun set-ltv-info (symbol c++-type suffix &optional gcroots)
-  (setf (gethash symbol *ltv-info*) (make-ltv-info :type symbol :c++-type c++-type :suffix suffix :gcroots gcroots)))
-
-(eval-when (:load-toplevel :execute)
-  (set-ltv-info :i8 "char" "char")
-  (set-ltv-info :size_t "size_t" "size_t")
-  (set-ltv-info :t* "T_O*" "object" t)
-  (set-ltv-info :i8* "string" "string")
-  (set-ltv-info :short-float "short_float_t" "binary16")
-  (set-ltv-info :single-float "float" "float")
-  (set-ltv-info :double-float "double" "double")
-  (set-ltv-info :binary80 "long_float_t" "binary80")
-  (set-ltv-info :binary128 "long_float_t" "binary128")
-  (set-ltv-info :uintptr_t "uintptr_t" "size_t")
-  (set-ltv-info :bignum "T_O*" "bignum")
-  (set-ltv-info :unknown "UNKNOWN" "UNKNOWN")
-  )
-
-#-building-clasp
-(defun build-one-ltv-function (op &optional (stream *standard-output*))
-  (destructuring-bind (code unwindsp name arg-types &key varargs)
-      op
-    (declare (ignore code unwindsp))
-    (format stream "void parse_~a(gctools::GCRootsInModule* roots, char*& bytecode, char* byteend, bool log) {~%" name)
-    (format stream "  if (log) printf(\"%s:%d:%s parse_~a\\n\", __FILE__, __LINE__, __FUNCTION__);~%" name)
-    (let* ((arg-index 0)
-           (vars (let (names)
-                   (dolist (arg-type arg-types)
-                     (let* ((ltv-info (let ((info (gethash arg-type *ltv-info*)))
-                                        (if info
-                                            info
-                                            (make-ltv-info :type (format nil "UNKNOWN_~a" arg-type)
-                                                           :c++-type (format nil "UNKNOWN_~a" arg-type)
-                                                           :suffix (format nil "UNKNOWN_~a" arg-type)))))
-                            (c++-arg-type (ltv-info-c++-type ltv-info))
-                            (suffix (ltv-info-suffix ltv-info))
-                            (gcroots (ltv-info-gcroots ltv-info))
-                            (variable-name (cond
-                                             ((and (= arg-index 0) (string= c++-arg-type "char"))  "tag")
-                                             ((and (= arg-index 1) (string= c++-arg-type "size_t")) "index")
-                                             (t (format nil "arg~a" arg-index))))
-                            (read-variable-name (if (string= c++-arg-type "string")
-                                                    (format nil "~a.c_str()" variable-name)
-                                                    variable-name)))
-                       (format stream "  ~a ~a = ltvc_read_~a(~a bytecode, byteend, log );~%" c++-arg-type variable-name
-                               suffix
-                               (if gcroots
-                                   "roots, "
-                                   ""))
-                       (incf arg-index)
-                       (push read-variable-name names)))
-                   (nreverse names))))
-      (when varargs
-        (setf name (format nil "~a_varargs" name))
-        (format stream "  Cons_O* varargs = ltvc_read_list( roots, ~a, bytecode, byteend, log );~%" (car (last vars )))
-        (setf vars (append vars (list "varargs"))))
-      (format stream "  ~a( roots" name)
-      (dolist (var vars)
-        (format stream ", ~a" var))
-      (format stream ");~%")
-      (format stream "};~%"))))
-
-#-building-clasp
-(defun build-ltv-functions (primitives &optional (stream *standard-output*))
-  (format stream "#ifdef DEFINE_LTV_PARSERS~%")
-  (dolist (prim primitives)
-    (build-one-ltv-function prim stream))
-  (format stream "#endif // DEFINE_LTV_PARSERS~%"))
-
-#-building-clasp
-(defun build-ltv-switch (primitives &optional (stream *standard-output*))
-  (format stream "#ifdef DEFINE_LTV_SWITCH~%")
-  (dolist (prim primitives)
-    (format stream "  case ~a:~%    parse_~a(roots, bytecode, byteend, log);~%    break;~%"
-            (first prim) (third prim)))
-  (format stream "#endif // DEFINE_LTV_SWITCH~%"))
-
-#-building-clasp
-(defun build-ltv-machine (&optional (stream *standard-output*))
-  (build-ltv-functions *startup-primitives-as-list* stream)
-  (build-ltv-switch *startup-primitives-as-list* stream))
-
 #-building-clasp
 (defun build-bytecode-ltv-ops (&optional (stream *standard-output*))
   (format stream "~%#ifdef DEFINE_BYTECODE_LTV_OPS~%enum class bytecode_ltv : uint8_t {~%")
@@ -433,5 +345,4 @@
   (dump-gf-bytecode-virtual-machine fout)
   (dump-gf-bytecode-virtual-machine-macro-names fout)
   (dump-python-gf-bytecode-virtual-machine fout)
-  (build-ltv-machine fout)
   (build-bytecode-ltv-ops fout))
