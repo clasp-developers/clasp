@@ -112,11 +112,6 @@
                         *compile-file-native*)
                        ;; output-type can be (or :faso :fasobc :fasoll :bytecode)
                        (output-type *default-output-type*)
-                       ;; type can be either :kernel or :user
-                       ;; FIXME: What does this do.
-                       (type :user)
-                       ;; Control the order of startup functions (FIXME: ditto above)
-                       (image-startup-position (core:next-startup-position))
                        (source-debug-pathname nil cfsdpp)
                        ((:source-debug-lineno
                          *compile-file-source-debug-lineno*)
@@ -131,8 +126,7 @@
                        (optimize-level *optimization-level*)
                      &allow-other-keys)
   ;; These are all just passed along to other functions.
-  (declare (ignore output-file type
-                   image-startup-position optimize optimize-level))
+  (declare (ignore output-file optimize optimize-level))
   "See CLHS compile-file."
   (with-compilation-unit ()
     (let* ((output-path (apply #'compile-file-pathname input-file args))
@@ -164,13 +158,9 @@
                        &key
                          (optimize t)
                          (optimize-level *optimization-level*)
-                         (output-type *default-output-type*)
-                         ;; type can be either :kernel or :user
-                         (type :user)
-                         ;; Control the order of startup functions
-                         (image-startup-position (core:next-startup-position)) 
+                         (output-type *default-output-type*) 
                          environment
                        &allow-other-keys)
-  (declare (ignore environment image-startup-position type optimize-level optimize))
+  (declare (ignore environment optimize-level optimize))
   (apply #'cmpltv:bytecode-compile-stream input-stream output-path args)
   (truename output-path))
