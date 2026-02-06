@@ -39,9 +39,9 @@ If type is :IR then dump the LLVM-IR for all of the associated functions.
      ;; disassembled correctly.
      (disassemble (core:function/entry-point desig) :type type))
     (core:bytecode-simple-fun
-     (unless (eq type :asm)
-       (error "Only disassembly to bytecode is supported for bytecode function: ~a" desig))
-     (disassemble-bytecode-function desig))
+     (ecase type
+       ((:asm) (disassemble-bytecode-function desig))
+       ((:ir) (disassemble-to-ir desig))))
     (clos:funcallable-standard-object
      (disassemble (clos:get-funcallable-instance-function desig) :type type))
     (core:gfbytecode-simple-fun
