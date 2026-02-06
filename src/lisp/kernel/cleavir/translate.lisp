@@ -627,6 +627,7 @@ function-or-placeholder - the llvm function or a placeholder for
 
 (defmethod translate-terminator ((instruction bir:throwi) abi next)
   (declare (ignore abi next))
+  (save-multiple-value-0 (in (second (bir:inputs instruction))))
   (%intrinsic-invoke-if-landing-pad-or-call
    "cc_throw" (list (in (first (bir:inputs instruction)))))
   (cmp:irc-unreachable))

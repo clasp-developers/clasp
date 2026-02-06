@@ -1141,6 +1141,13 @@
                        :inputs () :outputs () :next (list ib))
       (build:begin inserter ib))))
 
+(defmethod compile-instruction ((mnemonic (eql :throw))
+                                inserter context &rest args)
+  (destructuring-bind () args
+    (build:terminate inserter 'bir:throwi
+                     :inputs (list (stack-pop context) (mvals context))
+                     :outputs () :next ())))
+
 (defgeneric vcell/name (vcell))
 (defmethod vcell/name ((vcell core:variable-cell))
   (core:variable-cell/name vcell))
