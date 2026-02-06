@@ -61,9 +61,7 @@ Set this to other IRBuilders to make code go where you want")
 (defmacro define-c++-struct (name tag fields)
   "Defines the llvm struct and the dynamic variable OFFSETS.name that contains an alist of field
 names to offsets."
-  (let ((layout (gensym))
-        (gs-field (gensym))
-        (field-index (gensym)))
+  (let ((layout (gensym)))
     (let ((define-symbol-macro `(define-symbol-macro ,name
                                     (llvm-sys:struct-type-get
                                      (thread-local-llvm-context)

@@ -21,6 +21,7 @@ consequences are not defined."
          keys))
 
 (defun atomic-svuc (order class object slotd)
+  (declare (ignore class)) ; FIXME: Method dispatch...?
   (let* ((loc (slot-definition-location slotd))
          (v (ecase (slot-definition-allocation slotd)
               ((:instance)
@@ -30,12 +31,14 @@ consequences are not defined."
         v
         (values (slot-unbound class object (slot-definition-name slotd))))))
 (defun (setf atomic-svuc) (new order class object slotd)
+  (declare (ignore class))
   (let ((loc (slot-definition-location slotd)))
     (ecase (slot-definition-allocation slotd)
       ((:instance)
        (core:atomic-rack-write order new (core:instance-rack object) loc))
       ((:class) (core:rplaca-atomic order new loc)))))
 (defun cas-svuc (order cmp new class obj slotd)
+  (declare (ignore class))
   (let ((loc (slot-definition-location slotd)))
     (ecase (slot-definition-allocation slotd)
       ((:instance)
@@ -82,6 +85,7 @@ If SLOT-MISSING returns, its primary value is returned."
 ;;; Internal use only, but useful.
 (mp:define-atomic-expander clos::generic-function-call-history (generic-function)
     (&rest keys &key order environment)
+  (declare (ignore order environment))
   (let ((gf (gensym "GENERIC-FUNCTION")) (index (gensym "INDEX")))
     (multiple-value-bind (vars vals cmp new read write cas)
         (apply #'mp:get-atomic-expansion

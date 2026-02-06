@@ -73,6 +73,7 @@
             (core:low-level-standard-generic-function-name gf) arguments)))
 
 (defun trace-miss-end (gf tracy start-time arguments)
+  (declare (ignore gf))
   (let ((time-s (/ (float (- (get-internal-real-time) start-time))
                    internal-time-units-per-second)))
     (when (eq (car tracy) :profile-ongoing) ; report

@@ -1246,7 +1246,7 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
                           (dname (if (eq name 'cl:lambda)
                                      "anonymous function"
                                      name)))
-                     (format stream "Calling ~a" name))))
+                     (format stream "Calling ~a" dname))))
              (when (arguments-available-p condition)
                (format stream "~%With arguments:~%~t~s"
                        (arguments condition))))))

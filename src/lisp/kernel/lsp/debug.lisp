@@ -178,8 +178,7 @@ If the arguments are not available, returns NIL NIL."
                          (first args))
                    result))))))))
 
-(defun frame-locals (frame &key eval
-                           &aux (fname (frame-function-name frame)))
+(defun frame-locals (frame &key eval)
   "Return an alist of local lexical/special variables and their values at the continuation the frame
   represents. The CARs are variable names and CDRs their values. Multiple bindings with the same
   name may be returned, as there is no notion of lexical scope in this interface. By default
