@@ -340,8 +340,9 @@
   (thread-pool-quit pool)
   (thread-pool-join pool)
   ;; ok, now everything is done: signal conditions and return results
-  (loop for job in (nc-jobs pool)
+  (loop for job in (nreverse (nc-jobs pool))
         do (report-job-conditions job)
            ;; note that these are returned in the order they were enqueued.
-           ;; probably not important? but it's nice
+           ;; module IDs need to be sequential for the FASL loader, so this
+           ;; is important.
         collect (list (ncjob-extra job) (ncjob-result job))))
