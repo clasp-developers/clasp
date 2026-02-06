@@ -98,10 +98,10 @@
     ((cmp:known-function-p function-name)
      (make-instance 'trucler:global-function-description
        :name function-name
-       :type (global-ftype function-name)
+       :type (clasp-cleavir::global-ftype function-name)
        :compiler-macro (compiler-macro-function function-name)
        :inline (clasp-cleavir::global-inline-status function-name)
-       :inline-data (inline-ast function-name)))
+       :inline-data (clasp-cleavir:inline-ast function-name)))
     (t nil)))
 
 (defmethod trucler:describe-function ((client client) (env null) symbol)

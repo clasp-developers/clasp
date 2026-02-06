@@ -230,7 +230,7 @@
 ;;;
 ;;; Also in here for reasons: the compile-file thread pool
 ;;; Native compilation is slow, but thread safe, so when we compile-file
-;;; we do it in parallel. See cmpltv::*native-compile-file-all*
+;;; we do it in parallel. See cmp:*compile-file-native*
 
 (in-package #:cmp)
 

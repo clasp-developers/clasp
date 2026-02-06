@@ -87,13 +87,13 @@
   (declare (ignore ct-client cfasl)
            #-clasp(ignore input output source))
   #+clasp
-  (let ((cmpltv::*native-compile-file-all* t)
-        ;; already doing fork build so don't do extra parallelism
-        (compiler:*compile-file-parallel* nil))
-    (compile-file
-     input :output-file output
-           :environment *build-rte*
-           :source-pathname source)))
+  (compile-file
+   input :output-file output
+         :environment *build-rte*
+         :source-pathname source
+         ;; already doing fork build so don't do extra parallelism
+         :parallel nil
+         :native t))
 
 (defun build (input-files output-files source-pathnames)
   (multiple-value-bind (fasls cfasls)

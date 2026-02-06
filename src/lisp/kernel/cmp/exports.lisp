@@ -388,4 +388,7 @@
 (export '(*cst-client*
           clasp-eclector-client-mixin
           clasp-cst-client))
+
+;;; bytecode
+(export '(*compile-file-native*))
 ) ; eval-when

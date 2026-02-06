@@ -106,6 +106,10 @@
                        ((:parallel *compile-file-parallel*)
                         *compile-file-parallel*)
                        environment ; compilation environment
+                       ;; Compile native versions of functions
+                       ;; into bytecode fasls?
+                       ((:native *compile-file-native*)
+                        *compile-file-native*)
                        ;; output-type can be (or :faso :fasobc :fasoll :bytecode)
                        (output-type *default-output-type*)
                        ;; type can be either :kernel or :user

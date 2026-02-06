@@ -1564,7 +1564,7 @@
           collect i))
 
 #+clasp
-(defvar *native-compile-file-all* nil)
+(defvar cmp:*compile-file-native* nil)
 ;; The ID number used for native code modules, if generated.
 ;; Different modules within the same init-object-array block must have
 ;; distinct numbers to name symbols distinctly.
@@ -1606,7 +1606,7 @@
            :indices mutables))))
     ;; Native compilation.
     #+clasp
-    (when *native-compile-file-all*
+    (when cmp:*compile-file-native*
       (if cmp::*compile-file-parallel*
           (progn
             (cmp::enqueue-native-compilation
@@ -2012,7 +2012,7 @@ Abandoning further work on it and moving on." e)))))
   (declare (special *compile-print*))
   (with-constants ()
     (progv '(*native-compile-thread-pool*)
-        (if (and *native-compile-file-all* cmp::*compile-file-parallel*)
+        (if (and cmp:*compile-file-native* cmp::*compile-file-parallel*)
             (list (cmp::make-nc-thread-pool))
             nil) ; don't bind
       ;; Read and compile the forms.
@@ -2039,7 +2039,7 @@ Abandoning further work on it and moving on." e)))))
                  (cmp::describe-form form))
                (bytecode-compile-toplevel form env))
       ;; If we're native compile filing in parallel, write out those insts
-      (when (and *native-compile-file-all* cmp::*compile-file-parallel*)
+      (when (and cmp:*compile-file-native* cmp::*compile-file-parallel*)
         (loop for (module nmodule)
                 in (cmp::thread-pool-finish *native-compile-thread-pool*)
               unless (null nmodule)
