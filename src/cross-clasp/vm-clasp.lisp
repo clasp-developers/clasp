@@ -1,15 +1,9 @@
 (in-package #:core)
 
-(defgeneric fcge-ensure-fcell (environment name))
-(defgeneric fcge-ensure-vcell (environment name))
-
 (defmethod fcge-ensure-fcell (env name)
   (clostrum:ensure-operator-cell maclina.machine:*client* env name))
 (defmethod fcge-ensure-vcell (env name)
   (clostrum:ensure-variable-cell maclina.machine:*client* env name))
-
-(defgeneric fcge-lookup-fun (env name))
-(defgeneric fcge-lookup-var (env name))
 
 (defmethod fcge-lookup-fun (env name)
   (ecase (clostrum:operator-status maclina.machine:*client*
@@ -40,19 +34,8 @@
       (clostrum:variable-macro-expander maclina.machine:*client*
                                         env name)))))
 
-;;; These methods are not actually necessary since the runtime treats NIL
-;;; environments specially, but they're here for completeness.
-(defmethod fcge-ensure-fcell ((env null) name)
-  (ensure-function-cell name))
-(defmethod fcge-ensure-vcell ((env null) name)
-  (ensure-variable-cell name))
-
-(defgeneric fcge-find-package (env name))
-
 (defmethod fcge-find-package (env name)
   (clostrum:find-package maclina.machine:*client* env name))
-
-(defmethod fcge-find-package ((env null) name) (find-package name))
 
 (defpackage #:vm-clasp
   (:use #:cl)

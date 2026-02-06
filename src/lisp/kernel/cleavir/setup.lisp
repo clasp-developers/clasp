@@ -438,3 +438,22 @@
   ;; FIXME: ignore-errors is a bit paranoid
   (let ((source (origin-source (cleavir-conditions:origin condition))))
     (ignore-errors (if (consp source) (car source) source))))
+
+(in-package #:core)
+
+;;; FCGE support functions, used by e.g. bytecode interpreter
+(defgeneric fcge-ensure-fcell (environment name))
+(defgeneric fcge-ensure-vcell (environment name))
+
+(defgeneric fcge-find-package (environment name))
+
+;; Done through clostrum methods, but only in cross-clasp at the moment.
+;; FIXME
+(defgeneric fcge-lookup-fun (environment name))
+(defgeneric fcge-lookup-var (environment name))
+
+;;; These methods are not actually necessary since the runtime treats NIL
+;;; environments specially, but they're here for completeness.
+(defmethod fcge-ensure-fcell ((env null) name) (ensure-function-cell name))
+(defmethod fcge-ensure-vcell ((env null) name) (ensure-variable-cell name))
+(defmethod fcge-find-package ((env null) name) (find-package name))
