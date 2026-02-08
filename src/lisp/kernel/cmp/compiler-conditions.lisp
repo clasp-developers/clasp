@@ -227,6 +227,19 @@ Operation was (~s~{ ~s~})."
   ;; somehow the restart is not active (this would be a bug)
   (invoke-restart (si::coerce-restart-designator 'muffle-note condition)))
 
+;;; The native compiler has bugged out on some bytecode.
+;;; This is not fatal, since we can just continue on without
+;;; a native version. It indicates a compiler bug rather than
+;;; anything wrong with the user code, so it shouldn't be a warning.
+;;; (It's debatable if we should even signal it normally, but a note
+;;;  is at least harmless.)
+(define-condition native-compilation-failure (ext:compiler-note)
+  ((%original-condition :reader original-condition :initarg :condition))
+  (:report (lambda (condition stream)
+             (format stream "Unhandled serious condition while compiling native module:~%~a
+Abandoning further work on it and moving on."
+                     (original-condition condition)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Redefining some earlier error-noting calls, so that they

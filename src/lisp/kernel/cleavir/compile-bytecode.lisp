@@ -17,7 +17,8 @@
   (declare (ignore environment))
   (handler-case (compile-function definition)
     (error (e)
-      (warn "BUG: Error during BTB compilation: ~a" e)
+      (cmp:note 'cmp:native-compilation-failure
+                :condition e)
       definition)))
 
 ;;; During file compilation we will have a cmp:cfunction rather than an

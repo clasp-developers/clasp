@@ -1625,8 +1625,8 @@
                 (add-native-module-instructions mod native))
             (serious-condition (e)
               ;; error? who cares, native code is optional, move on
-              (warn "Unhandled serious condition while compiling native module:~%~a
-Abandoning further work on it and moving on." e)))))
+              (cmp:note 'cmp:native-compilation-failure
+                        :condition e)))))
     mod))
 
 (defun add-native-module-instructions (module native-module)

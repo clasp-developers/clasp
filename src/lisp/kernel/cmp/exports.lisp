@@ -376,7 +376,8 @@
           wrong-argcount-warning
           compiler-macro-expansion-error-warning
           unused-variable used-variable
-          fold-failure))
+          fold-failure
+          native-compilation-failure))
 
 ;;; save hooks
 (export '(register-save-hook))
