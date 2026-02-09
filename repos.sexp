@@ -155,11 +155,10 @@
   :commit "f79dab6b6d14000259449c169b501cc6398b3f54"
   :pin 1)
  (:name :documentation-utils
-  :extension :cando
   :directory "src/lisp/kernel/contrib/documentation-utils/"
-  :repository "https://github.com/Shinmera/documentation-utils.git"
+  :repository "https://codeberg.org/shinmera/documentation-utils"
   :branch "master"
-  :commit "fcbd927dee7f311915a27ee557e3db1d4510403c"
+  :commit "501ef877cfad8a78b878fc380d3f8b387fcbba3a"
   :pin 1)
  (:name :ecclesia
   :directory "src/lisp/kernel/contrib/Ecclesia/"
@@ -379,11 +378,10 @@
   :commit "ca45656587f36378305de1a4499c308acc7a03af"
   :pin 1)
  (:name :trivial-indent
-  :extension :cando
   :directory "src/lisp/kernel/contrib/trivial-indent/"
-  :repository "https://github.com/Shinmera/trivial-indent.git"
+  :repository "https://codeberg.org/shinmera/trivial-indent"
   :branch "master"
-  :commit "87b35ff9202b107230e35790e93c471cc7880900"
+  :commit "02ff66c646e6931b4ec51e235d3497ed2d54db5d"
   :pin 1)
  (:name :trivial-package-local-nicknames
   :directory "src/lisp/kernel/contrib/trivial-package-local-nicknames"
