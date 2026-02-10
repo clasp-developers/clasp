@@ -630,20 +630,18 @@ string escapeNameForLlvm(const string& inp) {
 }
 
 CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
-#if !defined(DEFAULT_OUTPUT_TYPE_BYTECODE)
-  return Values(Pointer_O::create((void*)bytecode_call), SimpleBaseString_O::make("bytecode_call"));
-#endif
+  if (!global_options->_GenerateTrampolines
+      && !getenv("CLASP_ENABLE_TRAMPOLINES")) {
+      // If trampolines aren't enabled, don't compile one.
+    return Values(Pointer_O::create((void*)bytecode_call), SimpleBaseString_O::make("bytecode_call"));
+  }
+
+  // FIXME: race
   if (global_trampoline_mutex == NULL) {
     global_trampoline_mutex = new mp::Mutex(DISSASSM_NAMEWORD);
   }
   WITH_READ_WRITE_LOCK(*global_trampoline_mutex);
   ClaspJIT_sp jit = llvm_sys__clasp_jit();
-  if (!global_options->_GenerateTrampolines) {
-    if (!getenv("CLASP_ENABLE_TRAMPOLINES")) {
-      // If the JIT isn't ready then use the default trampoline
-      return Values(Pointer_O::create((void*)bytecode_call), SimpleBaseString_O::make("bytecode_call"));
-    }
-  }
   if (jit.nilp()) {
     // If the JIT isn't ready then use the default trampoline
     return Values(Pointer_O::create((void*)default_bytecode_trampoline), SimpleBaseString_O::make("default_bytecode_trampoline"));
