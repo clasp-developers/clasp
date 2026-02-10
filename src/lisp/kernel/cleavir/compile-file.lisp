@@ -22,16 +22,3 @@
                                 output-stream
                                 nil ; dwo-stream for dwarf objects
                                 file-type module)))))
-
-(defun build-extension (type)
-  (cond ((or (eq type :bytecode)
-             (member :bytecode *features*))
-         "fasl")
-        ((eq type :faso)
-         "faso")
-        ((eq type :fasoll)
-         "fasoll")
-        ((eq type :fasobc)
-         "fasobc")
-        (t
-         (error "Unsupported build-extension type ~a" type))))

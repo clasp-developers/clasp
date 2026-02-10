@@ -467,10 +467,6 @@ CL_DEFUN T_sp core__startup_image_pathname(bool extension) {
   T_sp mode = comp::_sym_STARdefault_output_typeSTAR->symbolValue();
   if (mode == kw::_sym_faso) {
     ss << ".nfasl"; // ss << ".faso";
-  } else if (mode == kw::_sym_fasoll) {
-    ss << ".fasoll";
-  } else if (mode == kw::_sym_fasobc) {
-    ss << ".fasobc";
   } else if (mode == kw::_sym_bytecode) {
     ss << ".fasl";
   } else {
@@ -480,22 +476,6 @@ CL_DEFUN T_sp core__startup_image_pathname(bool extension) {
   Pathname_sp pn = cl__pathname(spath);
   return pn;
 };
-
-DOCGROUP(clasp);
-CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default));
-CL_DEFUN core::T_sp core__load_fasoll(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
-  //  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
-  llvmo::llvm_sys__load_ll(cl__pathname(pathDesig), verbose.notnilp(), print.notnilp(), external_format);
-  return _lisp->_true();
-}
-
-DOCGROUP(clasp);
-CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default));
-CL_DEFUN core::T_sp core__load_fasobc(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
-  //  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
-  llvmo::llvm_sys__load_bc(cl__pathname(pathDesig), verbose.notnilp(), print.notnilp(), external_format);
-  return _lisp->_true();
-}
 
 int global_jit_pid = -1;
 FILE* global_jit_log_stream = NULL;

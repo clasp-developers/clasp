@@ -20,19 +20,6 @@
 ;;;
 ;;; Compile-file pathnames
 
-(defun build-extension (type)
-  (cond ((or (eq type :bytecode)
-             (member :bytecode *features*))
-         "fasl")
-        ((eq type :faso)
-         "faso")
-        ((eq type :fasoll)
-         "fasoll")
-        ((eq type :fasobc)
-         "fasobc")
-        (t
-         (error "Unsupported build-extension type ~a" type))))
-
 ;;; Copied from sbcl sb!xc:compile-file-pathname
 ;;;   If INPUT-FILE is a logical pathname and OUTPUT-FILE is unsupplied,
 ;;;   the result is a logical pathname. If INPUT-FILE is a logical
@@ -43,7 +30,6 @@
 ;;; physical pathname. Patches to make it more correct are welcome.
 (defun compile-file-pathname (input-file
                               &key (output-file nil output-file-p)
-                                   (output-type *default-output-type* output-type-p)
                                    target-backend
                               &allow-other-keys)
   (let* ((input (pathname input-file))
@@ -72,7 +58,7 @@
                        :name (pick 'pathname-name (pathname-name input))
                        ;; if the output has a type that isn't :unspecific use it,
                        ;; otherwise use the default fasl type
-                       :type (pick 'pathname-type (build-extension output-type)))))))
+                       :type (pick 'pathname-type "fasl"))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -110,8 +96,6 @@
                        ;; into bytecode fasls?
                        ((:native *compile-file-native*)
                         *compile-file-native*)
-                       ;; output-type can be (or :faso :fasobc :fasoll :bytecode)
-                       (output-type *default-output-type*)
                        (source-debug-pathname nil cfsdpp)
                        ((:source-debug-lineno
                          *compile-file-source-debug-lineno*)
@@ -157,8 +141,7 @@
 (defun compile-stream (input-stream output-path &rest args
                        &key
                          (optimize t)
-                         (optimize-level *optimization-level*)
-                         (output-type *default-output-type*) 
+                         (optimize-level *optimization-level*) 
                          environment
                        &allow-other-keys)
   (declare (ignore environment optimize-level optimize))

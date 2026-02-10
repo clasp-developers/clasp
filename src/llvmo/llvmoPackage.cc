@@ -84,8 +84,6 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, STARdebugObjectFilesSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARdefault_code_modelSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARdumpObjectFilesSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARrunTimeExecutionEngineSTAR);
-SYMBOL_EXPORT_SC_(LlvmoPkg, load_bc);
-SYMBOL_EXPORT_SC_(LlvmoPkg, load_ll);
 SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, function);
 SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, type);
 SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, min);
@@ -95,30 +93,6 @@ SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, or);
 
 void redirect_llvm_interface_addSymbol() {
   //	llvm_interface::addSymbol = &addSymbolAsGlobal;
-}
-
-CL_DOCSTRING(R"dx(Load an llvm-ir file with either a bc extension or ll extension.)dx");
-CL_LAMBDA(pathname &optional verbose print external_format (startup-id 0));
-DOCGROUP(clasp);
-CL_DEFUN bool llvm_sys__load_ir(core::T_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startup_name) {
-  core::Pathname_sp pfilename = core::cl__pathname(filename);
-  core::Pathname_sp ll_file = core::Pathname_O::makePathname(nil<core::T_O>(), nil<core::T_O>(), nil<core::T_O>(), nil<core::T_O>(),
-                                                             core::SimpleBaseString_O::make("ll"));
-  ll_file = cl__merge_pathnames(ll_file, pfilename);
-  T_sp found = cl__probe_file(ll_file);
-  if (found.notnilp()) {
-    core::clasp_write_string(fmt::format("Loading ll file {}\n", _rep_(ll_file)));
-    return llvm_sys__load_ll(ll_file, verbose, print, externalFormat, startup_name);
-  }
-  core::Pathname_sp bc_file = core::Pathname_O::makePathname(nil<core::T_O>(), nil<core::T_O>(), nil<core::T_O>(), nil<core::T_O>(),
-                                                             core::SimpleBaseString_O::make("bc"));
-  bc_file = cl__merge_pathnames(bc_file, pfilename);
-  found = cl__probe_file(bc_file);
-  if (found.notnilp()) {
-    core::clasp_write_string(fmt::format("Loading bc file {}\n", _rep_(bc_file)));
-    return llvm_sys__load_bc(bc_file, verbose, print, externalFormat, startup_name);
-  }
-  SIMPLE_ERROR("Could not find llvm-ir file {} with .bc or .ll extension", _rep_(filename));
 }
 
 JITDylib_sp loadModule(llvmo::Module_sp module, size_t startupID, const std::string& libname) {
@@ -152,46 +126,6 @@ JITDylib_sp loadModule(llvmo::Module_sp module, size_t startupID, const std::str
   //  printf("%s:%d Invoked startup functions - continuing\n", __FILE__, __LINE__ );
   return jitDylib;
 }
-
-CL_LAMBDA(filename &optional verbose print external_format (startup-id 0));
-DOCGROUP(clasp);
-CL_DEFUN bool llvm_sys__load_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID) {
-  core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
-  T_sp tn = cl__truename(filename);
-  if (tn.nilp()) {
-    SIMPLE_ERROR("Could not get truename for {}", _rep_(filename));
-  }
-  core::T_sp tnamestring = cl__namestring(filename);
-  if (tnamestring.nilp()) {
-    SIMPLE_ERROR("Could not create namestring for {}", _rep_(filename));
-  }
-  core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
-  LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
-  Module_sp m = llvm_sys__parseIRFile(namestring, context);
-  loadModule(m, startupID, namestring->get_std_string());
-  return true;
-}
-
-CL_LAMBDA(filename &optional verbose print external_format (startup-id 0));
-DOCGROUP(clasp);
-CL_DEFUN bool llvm_sys__load_bc(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID) {
-  core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
-  T_sp tn = cl__truename(filename);
-  if (tn.nilp()) {
-    SIMPLE_ERROR("Could not get truename for {}", _rep_(filename));
-  }
-  core::T_sp tnamestring = cl__namestring(filename);
-  if (tnamestring.nilp()) {
-    SIMPLE_ERROR("Could not create namestring for {}", _rep_(filename));
-  }
-  core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
-  LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
-  Module_sp m = llvm_sys__parseBitcodeFile(namestring, context);
-  loadModule(m, startupID, namestring->get_std_string());
-  return true;
-}
-
-CL_DOCSTRING(R"dx(Load a module into the Common Lisp environment as if it were loaded from a bitcode file)dx");
 
 DOCGROUP(clasp);
 CL_DEFUN core::SimpleBaseString_sp llvm_sys__mangleSymbolName(core::String_sp name) {

@@ -119,7 +119,7 @@
   ((build-mode :accessor build-mode
                :initarg :build-mode
                :initform :faso
-               :type (member :faso :bytecode :bytecode-faso :fasoll :fasobc :fasl)
+               :type (member :faso :bytecode :bytecode-faso :fasl)
                :documentation "Define how clasp is built.")
    (build-path :accessor build-path
                :initarg :build-path
@@ -831,8 +831,6 @@ then they will overide the current variant's corresponding property."
   "Return the fasl extension based on the build mode."
   (case (build-mode configuration)
     (:faso "nfasl" #+(or)"faso")
-    (:fasobc "fasobc")
-    (:fasoll "fasoll")
     (otherwise "fasl")))
 
 (defun image-source (configuration extension &optional (root :variant-lib))

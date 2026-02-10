@@ -83,8 +83,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, expected_type);
 SYMBOL_EXPORT_SC_(KeywordPkg, external);
 SYMBOL_EXPORT_SC_(KeywordPkg, fasl);
 SYMBOL_EXPORT_SC_(KeywordPkg, faso);
-SYMBOL_EXPORT_SC_(KeywordPkg, fasobc);
-SYMBOL_EXPORT_SC_(KeywordPkg, fasoll);
 SYMBOL_EXPORT_SC_(KeywordPkg, fill_pointer);
 SYMBOL_EXPORT_SC_(KeywordPkg, format_arguments);
 SYMBOL_EXPORT_SC_(KeywordPkg, format_control);
