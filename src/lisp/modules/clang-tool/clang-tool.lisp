@@ -1293,7 +1293,7 @@ Return a string representation of C++ code for the ASTMatcher."
   (cond
     ((typep sexp 'integer)
      (format nil "~a" sexp))
-    ((typep sexp 'simple-string)
+    ((typep sexp 'string)
      (format nil "~s" sexp))
     ((typep sexp 'symbol)
      (format nil "\"~a\"" (symbol-name sexp)))
