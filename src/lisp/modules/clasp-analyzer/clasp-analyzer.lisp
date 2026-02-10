@@ -638,10 +638,10 @@ Generate a list of strings that represent nested field names for the offset."
 * Description
 Return T if the name-list contains special-case variable names that we don't want
 to expose."
-  (cond
-    ((find "NO-NAME" name-list :test #'string=) t)
-    ((find "_LocationDependency" name-list :test #'string=) t)
-    (t nil)))
+  (flet ((badp (ss)
+           (or (search "NO-NAME" ss)
+               (search "_LocationDependency" ss))))
+    (some #'badp name-list)))
 
 (defun find-gcbitunit-array-moveable-ctype (offset)
   (loop for field in (fields offset)
