@@ -464,14 +464,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp core__startup_image_pathname(bool extension) {
   stringstream ss;
   ss << "sys:lib;images;" << (extension ? "extension" : "base");
-  T_sp mode = comp::_sym_STARdefault_output_typeSTAR->symbolValue();
-  if (mode == kw::_sym_faso) {
-    ss << ".nfasl"; // ss << ".faso";
-  } else if (mode == kw::_sym_bytecode) {
-    ss << ".fasl";
-  } else {
-    SIMPLE_ERROR("Add support for *default-output-type* = {}", _rep_(mode));
-  }
+  ss << "." STARTUP_IMAGE_EXTENSION;
   String_sp spath = SimpleBaseString_O::make(ss.str());
   Pathname_sp pn = cl__pathname(spath);
   return pn;

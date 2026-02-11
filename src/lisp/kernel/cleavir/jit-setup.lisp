@@ -383,8 +383,8 @@ No DIBuilder is defined for the default module")
 ;;;
 
 
-(defun code-model (&key jit (output-type *default-output-type*))
-  (declare (ignore jit output-type))
+(defun code-model (&key jit)
+  (declare (ignore jit))
   "Return the code-model for the compilation mode"
   'llvm-sys:code-model-small)
 

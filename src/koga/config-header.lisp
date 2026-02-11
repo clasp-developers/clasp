@@ -22,10 +22,10 @@
                  "CLASP_CONFIG_H" t
                  "CST" (cst configuration)
                  "USE_PARALLEL_BUILD" (parallel-build configuration)
-                 (format nil "DEFAULT_OUTPUT_TYPE_~a"
-                         (if (eq (build-mode configuration) :bytecode-faso)
-                             :bytecode
-                             (build-mode configuration))) t
+                 "STARTUP_IMAGE_EXTENSION"
+                 (if (eq (build-mode configuration) :bytecode)
+                     "fasl"
+                     "nfasl")
                  "USE_COMPILE_FILE_PARALLEL" (compile-file-parallel configuration)
                  "FORCE_STARTUP_EXTERNAL_LINKAGE" (force-startup-external-linkage configuration)
                  "USE_PRECISE_GC" *variant-precise*

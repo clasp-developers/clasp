@@ -74,12 +74,6 @@
    stream *compile-file-file-scope*
    *compile-file-source-debug-lineno* *compile-file-source-debug-offset*))
 
-(defun enable-bytecode-file-compiler ()
-  (setf *default-output-type* :bytecode))
-
-(defun disable-bytecode-file-compiler ()
-  (setf *default-output-type* :faso))
-
 (defun compile-file (input-file
                      &rest args
                      &key

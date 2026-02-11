@@ -214,7 +214,5 @@ a list (EQL object) - just like DEFMETHOD."
           gf
           ,(call-history-producer call-history (gf-arg-info generic-function)))
          (set-funcallable-instance-function
-          gf ,(if (eq cmp:*default-output-type* :bytecode)
-                  `(calculate-fastgf-dispatch-function gf)
-                  (compile-time-discriminator generic-function call-history)))))))
+          gf ,(compile-time-discriminator generic-function call-history))))))
 |#

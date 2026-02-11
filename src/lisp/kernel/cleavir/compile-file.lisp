@@ -1,6 +1,6 @@
 (in-package #:cmp)
 
-(defun generate-obj-asm-stream (module output-stream file-type reloc-model &key (output-type *default-output-type*))
+(defun generate-obj-asm-stream (module output-stream file-type reloc-model &key)
   (with-track-llvm-time
       (let* ((triple-string (llvm-sys:get-target-triple module))
              (normalized-triple-string (llvm-sys:triple-normalize triple-string))
@@ -16,7 +16,7 @@
                                                                 ""
                                                                 target-options
                                                                 reloc-model
-                                                                (code-model :jit nil :output-type output-type)
+                                                                (code-model :jit nil)
                                                                 'llvm-sys:code-gen-opt-default
                                                                 nil)
                                 output-stream

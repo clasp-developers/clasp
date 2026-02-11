@@ -21,7 +21,7 @@
 ;;; crosscompiling sbcl
 (test-true compile-file-serial-no-faso
  (let ((cmp::*compile-file-parallel* nil)
-       (cmp:*default-output-type* :faso)
+       (cmp:*compile-file-native* t)
        (file "sys:src;lisp;regression-tests;framework.lisp"))
    (let ((fasl (compile-file file :output-file (make-pathname :type "newfasl" :defaults file) :verbose nil :print nil)))
      (and (probe-file fasl) (string-equal (pathname-type fasl) "newfasl")))))

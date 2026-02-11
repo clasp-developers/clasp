@@ -680,9 +680,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARnumber_of_entry_pointsSTAR->defparameter(make_fixnum(NUMBER_OF_ENTRY_POINTS));
   _sym_STARcore_startup_functionSTAR->defparameter(nil<core::T_O>());
   comp::_sym_STARcompile_file_parallelSTAR->defparameter(nil<core::T_O>());
-#if defined(DEFAULT_OUTPUT_TYPE_BYTECODE) || defined(DEFAULT_OUTPUT_TYPE_FASO)
-  comp::_sym_STARdefault_output_typeSTAR->defparameter(kw::_sym_bytecode);
-#endif
   comp::_sym_STARforce_startup_external_linkageSTAR->defparameter(nil<core::T_O>());
 #ifdef DEBUG_LLVM_OPTIMIZATION_LEVEL_0
   int optimization_level = 0;
@@ -775,9 +772,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
 #endif
 #ifdef CLASP_EXTENSIONS
   features = Cons_O::create(_lisp->internKeyword("EXTENSIONS"), features);
-#endif
-#ifdef DEFAULT_OUTPUT_TYPE_BYTECODE
-  features = Cons_O::create(_lisp->internKeyword("BYTECODE"), features);
 #endif
 #ifdef CLASP_SHORT_FLOAT
   features = Cons_O::create(_lisp->internKeyword("SHORT-FLOAT"), features);

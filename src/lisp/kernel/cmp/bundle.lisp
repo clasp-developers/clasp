@@ -33,10 +33,5 @@
 
 (defun build-fasl (out-file &key lisp-files init-name)
   (declare (ignore init-name))
-  (let ((output-name (case *default-output-type*
-                       (:bytecode
-                        (core:link-fasl-files out-file lisp-files)
-                        (truename out-file))
-                       (otherwise
-                        (error "Handle *default-output-type* ~a" *default-output-type*)))))
-    output-name))
+  (core:link-fasl-files out-file lisp-files)
+  (truename out-file))
