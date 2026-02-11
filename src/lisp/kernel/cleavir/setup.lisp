@@ -446,6 +446,7 @@
 (defgeneric fcge-ensure-vcell (environment name))
 
 (defgeneric fcge-find-package (environment name))
+(defgeneric fcge-package-name (environment name))
 
 ;; Done through clostrum methods, but only in cross-clasp at the moment.
 ;; FIXME
@@ -457,3 +458,4 @@
 (defmethod fcge-ensure-fcell ((env null) name) (ensure-function-cell name))
 (defmethod fcge-ensure-vcell ((env null) name) (ensure-variable-cell name))
 (defmethod fcge-find-package ((env null) name) (find-package name))
+(defmethod fcge-package-name ((env null) package) (package-name package))

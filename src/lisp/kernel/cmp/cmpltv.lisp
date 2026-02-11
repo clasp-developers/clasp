@@ -615,7 +615,8 @@
   (add-creator value
                (make-instance 'package-creator
                  :prototype value
-                 :name (ensure-constant (package-name value)))))
+                 :name (ensure-constant
+                        (core::fcge-package-name *environment* value)))))
 
 (defmethod add-constant ((value integer))
   (add-creator

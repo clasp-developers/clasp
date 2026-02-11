@@ -37,6 +37,11 @@
 (defmethod fcge-find-package (env name)
   (clostrum:find-package maclina.machine:*client* env name))
 
+(defmethod fcge-package-name (env package)
+  (or (clostrum:package-name maclina.machine:*client* env package)
+    (warn 'cross-clasp::substituting-package :substituting package)
+    "CORE"))
+
 (defpackage #:vm-clasp
   (:use #:cl)
   (:local-nicknames (#:m #:maclina.machine)
