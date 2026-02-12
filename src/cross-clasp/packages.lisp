@@ -27,6 +27,13 @@
            #:sigprof #:sigpwr #:sigquit #:sigsegv #:sigstop #:sigtstp #:sigsys
            #:sigterm #:sigtrap #:sigttin #:sigttou #:sigurg #:sigusr1 #:sigusr2
            #:sigvtalrm #:sigxcpu #:sigxfsz #:sigwinch)
+  ;; When building natively, use Clasp's actual symbols here,
+  ;; so that declarations using them are parsed correctly by
+  ;; Clasp's compiler.
+  ;; FIXME?: It might be better to define an aliasing mechanism
+  ;; for declarations in Clasp.
+  #+clasp
+  (:import-from #:core #:lambda-name #:lambda-list)
   (:export #:lambda-name #:lambda-list)
   (:export #:general #:generalp)
   (:export #:parse-bytespec)
