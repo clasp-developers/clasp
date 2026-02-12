@@ -1622,8 +1622,8 @@
                                                    "CLASP-BYTECODE-TO-BIR")
                                       bytecode literals info id
                                       (namestring cmp::*compile-file-source-debug-pathname*))))
-                (incf *native-module-id*)
-                (add-native-module-instructions mod native))
+                (add-native-module-instructions mod native)
+                (incf *native-module-id*))
             (serious-condition (e)
               ;; error? who cares, native code is optional, move on
               (cmp:note 'cmp:native-compilation-failure
