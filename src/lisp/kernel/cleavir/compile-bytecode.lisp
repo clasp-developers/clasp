@@ -1147,7 +1147,8 @@
   (destructuring-bind () args
     (build:terminate inserter 'bir:throwi
                      :inputs (list (stack-pop context) (mvals context))
-                     :outputs () :next ())))
+                     :outputs () :next ()))
+  (setf (reachablep context) nil))
 
 (defgeneric vcell/name (vcell))
 (defmethod vcell/name ((vcell core:variable-cell))
