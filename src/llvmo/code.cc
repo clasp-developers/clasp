@@ -120,12 +120,11 @@ ObjectFile_sp ObjectFile_O::createForModule(const std::string& scodename, JITDyl
 }
 
 ObjectFile_sp ObjectFile_O::create(const std::string& scodename, std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID,
-                                   JITDylib_sp jitdylib, const std::string& sFasoName, size_t fasoIndex) {
+                                   JITDylib_sp jitdylib) {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Creating ObjectFile_O start=%p size= %lu\n", __FILE__, __LINE__, __FUNCTION__,
                             buffer ? buffer->getBufferStart() : NULL, buffer ? buffer->getBufferSize() : 0));
   core::SimpleBaseString_sp codename = core::SimpleBaseString_O::make(scodename);
-  core::SimpleBaseString_sp fasoName = core::SimpleBaseString_O::make(sFasoName);
-  ObjectFile_sp of = gc::GC<ObjectFile_O>::allocate(codename, std::move(buffer), startupID, jitdylib, fasoName, fasoIndex);
+  ObjectFile_sp of = gc::GC<ObjectFile_O>::allocate(codename, std::move(buffer), startupID, jitdylib);
   return of;
 }
 
@@ -170,8 +169,6 @@ void* ObjectFile_O::getLiteralVectorStart() {
 std::string ObjectFile_O::__repr__() const {
   stringstream ss;
   ss << "#<OBJECT-FILE " << core::_rep_(this->_CodeName);
-  ss << " :faso-name " << core::_rep_(this->_FasoName);
-  ss << " :faso-index " << this->_FasoIndex << " ";
   ss << " :state ";
   if (this->_State==RunState) {
     ss << "Run";
@@ -399,9 +396,8 @@ CL_DEFUN SectionedAddress_sp object_file_sectioned_address(void* instruction_poi
   SectionedAddress_sp sectioned_address = SectionedAddress_O::create(sectionID, offset);
   // now the object file
   if (verbose) {
-    core::clasp_write_string(fmt::format("faso-file: {}  object-file-position: {}  objectID: {}\n", _rep_(ofi->_FasoName),
-                                         ofi->_FasoIndex, ofi->_ObjectId));
-    core::clasp_write_string(fmt::format("SectionID: {}    memory offset: {}\n", ofi->_FasoIndex, offset));
+    core::clasp_write_string(fmt::format("objectID: {}\n", ofi->_ObjectId));
+    core::clasp_write_string(fmt::format("memory offset: {}\n", offset));
   }
   return sectioned_address;
 }

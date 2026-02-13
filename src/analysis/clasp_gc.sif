@@ -972,11 +972,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<llvmo::JITDylib_O>"
              :offset-base-ctype "llvmo::ObjectFile_O" :layout-offset-field-names ("_TheJITDylib")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleBaseString_O>"
-             :offset-base-ctype "llvmo::ObjectFile_O" :layout-offset-field-names ("_FasoName")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
-             :offset-base-ctype "llvmo::ObjectFile_O" :layout-offset-field-names ("_FasoIndex")}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "llvmo::ObjectFile_O"
              :layout-offset-field-names ("_TextSectionStart")}

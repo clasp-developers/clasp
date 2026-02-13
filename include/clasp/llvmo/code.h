@@ -84,8 +84,6 @@ public:
   size_t _Size;
   size_t _ObjectId;
   JITDylib_sp _TheJITDylib;
-  core::SimpleBaseString_sp _FasoName;
-  size_t _FasoIndex;
   //
   // Code data
   void* _TextSectionStart;
@@ -102,9 +100,9 @@ public:
 
 public:
   ObjectFile_O(core::SimpleBaseString_sp codename, std::unique_ptr<llvm::MemoryBuffer> buffer, size_t objectId,
-               JITDylib_sp jitdylib, core::SimpleBaseString_sp fasoName, size_t fasoIndex)
+               JITDylib_sp jitdylib)
       : _State(RunState), _CodeName(codename), _MemoryBuffer(std::move(buffer)), _ObjectId(objectId), _TheJITDylib(jitdylib),
-        _FasoName(fasoName), _FasoIndex(fasoIndex), _LiteralVectorStart(0), _CodeBlock(unbound<CodeBlock_O>()) {
+        _LiteralVectorStart(0), _CodeBlock(unbound<CodeBlock_O>()) {
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   objectId = %lu\n", __FILE__, __LINE__, __FUNCTION__, objectId));
   };
   ObjectFile_O(core::SimpleBaseString_sp codename, JITDylib_sp jitdylib, size_t objectId)
@@ -121,7 +119,7 @@ public:
   static ObjectFile_sp createForModule(const std::string& codename, JITDylib_sp jitdylib, size_t objectId);
   static ObjectFile_sp createForObjectFile(const std::string& codename, JITDylib_sp jitdylib, size_t objectId);
   static ObjectFile_sp create(const std::string& name, std::unique_ptr<llvm::MemoryBuffer> buffer, size_t objectId,
-                              JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex);
+                              JITDylib_sp jitdylib);
   static size_t sizeofInState(ObjectFile_O* code, CodeState_t state);
 
 public:
