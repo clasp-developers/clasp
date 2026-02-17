@@ -307,7 +307,8 @@
     :stack (copy-list (stack context))
     :mvals (mvals context) :module (module context)
     :blockmap (blockmap context) :funmap (funmap context)
-    :reachablep (reachablep context)))
+    :reachablep (reachablep context)
+    :optimize-stack (optimize-stack context) :policy (policy context)))
 
 (defun compute-args (args literals)
   (loop for (type . value) in args
@@ -414,7 +415,7 @@
                      :docstring (bcfun/docstring bytecode-function)
                      :original-lambda-list lambda-list
                      :origin (bcfun/spi bytecode-function)
-                     :policy nil
+                     :policy cmp:*policy* ; FIXME
                      :attributes nil
                      :module module))
          (start (make-start-block inserter function bytecode-function)))
