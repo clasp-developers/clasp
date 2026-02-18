@@ -793,7 +793,7 @@
                      (maybe-longify-instructions instructions labels longs))
                    (when (null long-changes) (return-from longify labels))))
         (let ((labels (generate-label-map instructions longs))
-              (bytecode (make-array 16 :element-type 'ext:byte8
+              (bytecode (make-array 16 :element-type '(unsigned-byte 8)
                                        :adjustable t
                                        :fill-pointer 0))
               (entry-points (make-array 16 :adjustable t :fill-pointer 0)))

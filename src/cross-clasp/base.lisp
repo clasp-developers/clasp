@@ -209,6 +209,15 @@
   #+clasp
   (setf (clostrum:package-name client environment (find-package "SYS"))
         "CORE")
+  ;; Also on clasp, in interpreted-discriminator.lisp we dump an ext:byte8
+  ;; during native build, presumably as part of a type declaration or test
+  ;; or something?
+  #+clasp
+  (setf (clostrum:package-name client environment
+                               (let ((*package* (find-package "CL")))
+                                 ;; global ext, i.e. clasp's, not ours
+                                 (find-package "EXT")))
+        "EXT")
   (setf (clostrum:package-name client environment
                                (find-package "ECCLESIA"))
         "ECCLESIA"))
