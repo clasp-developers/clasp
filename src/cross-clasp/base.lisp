@@ -204,6 +204,11 @@
     (defpack "EXT" #:cross-clasp.clasp.ext)
     (defpack "KEYWORD" #:keyword)
     (defpack "ECCLESIA" #:cross-clasp.clasp.ecclesia))
+  ;; on clasp we have a few symbols from its actual core, like lambda-name.
+  ;; So we need to be able to dump those correctly.
+  #+clasp
+  (setf (clostrum:package-name client environment (find-package "SYS"))
+        "CORE")
   (setf (clostrum:package-name client environment
                                (find-package "ECCLESIA"))
         "ECCLESIA"))
