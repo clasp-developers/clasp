@@ -173,8 +173,8 @@ Environment variables:
       Dump info during bundle setup
   CLASP_DEBUG_START_CODE
       Dump info during startup for every start-code
-  CLASP_EXIT_ON_WAIT_FOR_USER_SIGNAL
-      Exit if wait-for-user-signal is encountered. Used for debugging under live-record.
+  CLASP_WAIT_FOR_USER_SIGNAL
+      Wait when wait-for-user-signal is encountered. (Otherwise Clasp just exits with the message.) Used for debugging the runtime.
   CLASP_DEBUG_OBJECT_FILES=save
       Saves all object files, anything else prints info about object file
       generation

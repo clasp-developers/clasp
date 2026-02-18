@@ -48,11 +48,6 @@
   (export '(make-queue queuep atomic-enqueue dequeue dequeue-timed queue-count queue-emptyp))
   ) ; eval-when
 
-#+(or)
-(eval-when (:compile-toplevel :execute)
-  (gctools:wait-for-user-signal "About to crash"))
-
-
 (defstruct (queue
             (:constructor make-queue
                 (name
