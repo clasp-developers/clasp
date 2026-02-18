@@ -107,7 +107,7 @@ const char* pointer_pool(void* pointer) {
 #define ISL_ERROR(_fmt_, ...)                                                                                                      \
   {                                                                                                                                \
     printf("%s:%d:%s  " _fmt_ "\n", __FILE__, __LINE__, __FUNCTION__ __VA_OPT__(, ) __VA_ARGS__);                                  \
-    abort();                                                                                                                       \
+    gctools::truly_abort();                                                                                                        \
   }
 
 /*! Build a LibraryLookup by running 'nm' on one of our loaded libraries or executable.
@@ -1504,7 +1504,7 @@ struct LoadSymbolCallback : public core::SymbolCallback {
           uintptr_t tdlsymStart = (uintptr_t)dlsym(RTLD_DEFAULT, myName);
           printf("    %s mysymStart: %p  dlsymStart: %p\n", tmyName, (void*)tmysymStart, (void*)tdlsymStart);
         }
-        abort();
+        gctools::truly_abort();
       }
       this->_Library._GroupedPointers[gpindex]._address = mysymStart;
 #ifdef DEBUG_ENTRY_POINTS
