@@ -179,7 +179,7 @@
       (core:variable-cell/makunbound cell))))
 
 (defmethod m:call-with-progv ((client client) env symbols values thunk)
-  (core:progv-env-function symbols values env thunk))
+  (core:progv-env-function env symbols values thunk))
 
 (defmethod m:fboundp ((client client) env name)
   (clostrum:fboundp client env name))
