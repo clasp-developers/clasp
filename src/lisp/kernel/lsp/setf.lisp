@@ -768,22 +768,17 @@ does nothing.  Else, conses the value onto the list and makes the result the
 new value of PLACE.  Returns NIL.  KEYWORD-FORMs and VALUE-FORMs are used to
 check if the value of FORM is already in PLACE as if their values are passed
 to MEMBER."
-  (declare (notinline mapcar))
   (declare (ignore test test-not key))
   (multiple-value-bind (vars vals stores store-form access-form)
       (get-setf-expansion place env)
     (when (trivial-setf-form place vars stores store-form access-form)
       (return-from pushnew `(setq ,place (adjoin ,item ,place ,@rest))))
     ;; The item to be pushed has to be evaluated before the destination
-    (unless (constantp item env)
-      (setq vals (cons item vals)
-	    item (gensym "pushnew")
-	    vars (cons item vars)))
-    `(let* ,(mapcar #'list
-		    (append vars stores)
-		    (append vals
-			    (list (list* 'adjoin item access-form rest))))
-       ,store-form)))
+    (let ((gitem (gensym "PUSHNEW")))
+      `(let* ((,gitem ,item)
+              ,@(mapcar #'list vars vals)
+              (,(first stores) (adjoin ,gitem ,access-form ,@rest)))
+         ,store-form))))
 
 
 (defmacro pop (&environment env place)

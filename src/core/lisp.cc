@@ -1484,7 +1484,21 @@ CL_DEFUN List_sp cl__member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp tes
   if (tlist.nilp())
     return nil<T_O>();
   ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_member, 2, tlist, cl::_sym_list);
-  UNREACHABLE();
+}
+
+CL_LAMBDA(item list &key key test test-not);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(Add ITEM to LIST unless it is already a member.)dx");
+DOCGROUP(clasp);
+CL_DEFUN List_sp cl__adjoin(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp test_not) {
+  T_sp kitem = item;
+  if (key.notnilp())
+    kitem = eval::funcall(key, item);
+  if (cl__member(kitem, tlist, key, test, test_not).notnilp())
+    return tlist;
+  else
+    return Cons_O::create(item, tlist);
 }
 
 CL_LAMBDA(item list test test-not key);

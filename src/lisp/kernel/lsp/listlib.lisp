@@ -72,14 +72,6 @@
                     subtree)))))
     (sub tree)))
 
-;;   "Add ITEM to LIST unless it is already a member."
-(defun adjoin (item list &key key (test #'eql) test-not)
-  (when test-not
-    (setq test (complement test-not)))
-  (if (member (apply-key key item) list :key key :test test)
-      list
-    (cons item list)))
-
 (defun union (list1 list2 &key test test-not key)
   "Args: (list1 list2 &key (key #'identity) (test #'eql) test-not)
 Returns, as a list, the union of elements in LIST1 and in LIST2."
@@ -110,17 +102,6 @@ Destructive UNION.  Both LIST1 and LIST2 may be destroyed."
 	  (rplacd last x)
 	  (setq first x))
       (setq last x))))
-
-(defun adjoin (item list &key key (test #'eql) test-not)
-  "Add ITEM to LIST unless it is already a member."
-  (declare (optimize safety))
-  (let ((test (if test-not
-                  (complement (coerce-fdesignator test-not))
-                  (coerce-fdesignator test))))
-    (if (member (apply-key key item) list :key key :test test)
-        list
-        (cons item list))))
-
 
 (defun intersection (list1 list2 &key test test-not key)
   "Args: (list1 list2 &key (key #'identity) (test #'eql) test-not)
