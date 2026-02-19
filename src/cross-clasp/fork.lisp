@@ -1,5 +1,11 @@
 (in-package #:cross-clasp)
 
+(defvar *jobs*)
+(defvar *running-job-count*)
+(defvar *max-running*)
+(defvar *next-job-index*)
+(defvar *total-jobs*)
+
 (defclass fork-worker ()
   ((%pid :initarg :pid :reader pid)
    (%index :initarg :index :reader index)
@@ -87,6 +93,7 @@
         (child-stderr (si:mkstemp-fd "clasp-build-stderr")))
     (multiple-value-bind (maybe-error pid)
         (si:fork-redirect child-stdout child-stderr)
+      (declare (ignore maybe-error))
       (let ((job (make-instance 'fork-worker
                    :child-stdout child-stdout
                    :child-stderr child-stderr
@@ -104,12 +111,6 @@
               (t
                ;; Parent
                (setf (gethash pid jobs) job)))))))
-
-(defvar *jobs*)
-(defvar *running-job-count*)
-(defvar *max-running*)
-(defvar *next-job-index*)
-(defvar *total-jobs*)
 
 (defun call-with-forking (parallel-jobs total-jobs thunk)
   (let ((*jobs* (make-hash-table))
@@ -154,7 +155,7 @@
                    do (display-job (wait-on-children jobs) count)
                       (decf running))
              ;; now fork off the work
-             (apply #'fork-worker jobs index work arglist)
+             (apply #'fork-worker jobs i work arglist)
              (incf running)
              ;; and do the sequential action
              (funcall seqwork arglist))

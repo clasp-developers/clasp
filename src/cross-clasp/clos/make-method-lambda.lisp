@@ -47,6 +47,7 @@
                          (next-method-p (setf nmp-p 'function)))))
                    (warning #'muffle-warning)
                    (error (lambda (c)
+                            (declare (ignore c))
                             (return-from walk-method-lambda
                               (values 'function 'function)))))
       ;; Compile without linking. This is important so that for example

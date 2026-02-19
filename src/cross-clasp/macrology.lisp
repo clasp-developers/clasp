@@ -208,7 +208,9 @@ Example:
 
 ;;; Dummy functions, since we don't need to record source locations
 ;;; during build.
-(defun variable-source-info (var) nil)
+(defun variable-source-info (var)
+  (declare (ignore var))
+  nil)
 (defun (setf variable-source-info) (info var)
   (declare (ignore var))
   info)

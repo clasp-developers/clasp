@@ -21,7 +21,6 @@ consequences are not defined."
          keys))
 
 (defun atomic-svuc (order class object slotd)
-  (declare (ignore class)) ; FIXME: Method dispatch...?
   (let* ((loc (slot-definition-location slotd))
          (v (ecase (slot-definition-allocation slotd)
               ((:instance)
@@ -31,7 +30,7 @@ consequences are not defined."
         v
         (values (slot-unbound class object (slot-definition-name slotd))))))
 (defun (setf atomic-svuc) (new order class object slotd)
-  (declare (ignore class))
+  (declare (ignore class)) ; FIXME: method dispatch...?
   (let ((loc (slot-definition-location slotd)))
     (ecase (slot-definition-allocation slotd)
       ((:instance)

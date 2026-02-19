@@ -30,7 +30,6 @@
 ;;; physical pathname. Patches to make it more correct are welcome.
 (defun compile-file-pathname (input-file
                               &key (output-file nil output-file-p)
-                                   target-backend
                               &allow-other-keys)
   (let* ((input (pathname input-file))
          (output (if output-file-p (pathname output-file) nil))

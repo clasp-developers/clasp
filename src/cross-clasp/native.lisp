@@ -48,8 +48,8 @@
 
 (defmethod ensure-literal-info ((info maclina.compile:ltv-info) &optional (cinfo info))
   (let ((table (similarity-table-ltv *similarity*)))
-    (or (gethash ltv-info table)
-        (setf (gethash ltv-info table)
+    (or (gethash info table)
+        (setf (gethash info table)
               (vector-push-extend cinfo *constant-indices*)))))
 
 (defmethod ensure-literal-info ((vinfo maclina.compile:value-cell-info)

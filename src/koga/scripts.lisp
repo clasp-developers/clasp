@@ -205,6 +205,7 @@
          (output (subseq sources (1+ breaker) b2))
          (sourcepaths (subseq sources (1+ b2) b3))
          (cfasls (subseq sources (1+ b3))))
+    (declare (ignore _ _2 _3))
     (uiop:symbol-call \"CROSS-CLASP\" \"BUILD-NATIVE\" input output sourcepaths cfasls :parallel-jobs number-of-jobs)))"
           (jobs configuration)))
 
