@@ -1,7 +1,10 @@
 (in-package #:cross-clasp)
 
 (defun ext:current-source-location ()
-  (maclina.compile:default-source-location))
+  #-clasp(maclina.compile:default-source-location)
+  ;; variable instead of EXT:CURRENT-SOURCE-LOCATION due to
+  ;; shadowing problems.
+  #+clasp sys:*current-source-pos-info*)
 
 (defmethod maclina.compile-file:make-load-form
     ((client client) (object maclina.compile-file:source-location)
