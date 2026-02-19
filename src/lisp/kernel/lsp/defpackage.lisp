@@ -166,7 +166,7 @@
 	       (case num
 		 (1 ':EXPORT)
 		 (2 ':INTERN)))))
-      `(eval-when (eval compile load)
+      `(eval-when (:compile-toplevel :load-toplevel :execute)
         (dodefpackage
 	,name
 	',nicknames
@@ -181,7 +181,7 @@
         ',local-nicknames-list
         ',lock ',implement)))))
 
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun dodefpackage (name
                      nicknames
                      documentation
@@ -203,7 +203,7 @@
       (make-package name :use nil :nicknames nicknames))
   (let ((*package* (find-package name)))
     (when documentation
-      (setf (package-documentation *package*) documentation))
+      (setf (documentation *package* t) documentation))
     (shadow shadowed-symbol-names)
     (dolist (item shadowing-imported-from-symbol-names-list)
       (let ((package (find-package (first item))))
@@ -272,6 +272,7 @@
 			  (setq entry (car (push (list elt i j)
 						 results))))))))
     results))
+) ; eval-when
 
 ;;;; ------------------------------------------------------------
 ;;;;	End of File

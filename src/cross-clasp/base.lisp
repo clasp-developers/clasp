@@ -57,6 +57,25 @@
 (defmethod common-macro-definitions:add-local-nickname ((client client))
   'ext:add-package-local-nickname)
 
+;; use trivial-package-local-nicknames, but resolve names in the
+;; cross-clasp environment.
+(defun ext:add-package-local-nickname (local-nickname actual-package
+                                       &optional (package (m:symbol-value m:*client* *build-rte* '*package*)))
+  (let ((actual-package
+          (if (packagep actual-package)
+              actual-package
+              (or (clostrum:find-package m:*client* *build-rte*
+                                         (string actual-package))
+                (error "Missing package: ~s" actual-package))))
+        (package
+          (if (packagep package)
+              package
+              (or (clostrum:find-package m:*client* *build-rte*
+                                         (string package))
+                (error "Missing package: ~s" package)))))
+    (trivial-package-local-nicknames:add-package-local-nickname
+     local-nickname actual-package package)))
+
 (defun clos::note-generic (name compiler-generic)
   (clostrum:note-function m:*client* *build-rte* name)
   (signal 'maclina.compile:resolve-function :name name)
@@ -303,7 +322,8 @@
 (defun install-delayed-macros (client rte)
   (loop for name being each hash-key of core::*delayed-macros*
           using (hash-value expander)
-        when (member name '(declaim defclass defgeneric defmethod defstruct))
+        when (member name '(declaim defclass defgeneric defmethod defstruct
+                            defpackage))
           do (setf (clostrum:macro-function client rte name) expander)))
 
 (defun %install-delayed-macros ()
@@ -380,6 +400,8 @@
                        ext:current-source-location
                        core::variable-source-info
                        (setf core::variable-source-info)
+                       (setf documentation) ; used by e.g. defpackage
+                       ext:add-package-local-nickname
                        ;; Used by compiler, not expected to exist in target
                        core::delay-macro
                        ;; used in CLOS, not expected to actually exist
@@ -424,8 +446,6 @@
         do (setf (clostrum:fdefinition client rte fname) f))
   (loop for (fname . src) in '((cl:proclaim . proclaim)
                                (cl:make-package . %make-package)
-                               (ext:add-package-local-nickname
-                                . trivial-package-local-nicknames:add-package-local-nickname)
                                (clos::class-slots . closer-mop:class-slots)
                                (clos::slot-definition-name
                                 . closer-mop:slot-definition-name)
