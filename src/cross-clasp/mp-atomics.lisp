@@ -415,7 +415,8 @@ consequences are not defined."
       (values (list* gobject gsname gclass gslotd vars)
               (list* object slot-name `(class-of ,gobject)
                      `(find ,gsname (class-slots ,gclass)
-                            :key #'slot-definition-name))
+                            :key #'slot-definition-name)
+                     vals)
               cmpv newv
               `(if ,gslotd
                    ,read
