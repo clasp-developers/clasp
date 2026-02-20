@@ -1286,15 +1286,27 @@
 
 (defmethod compile-instruction ((mnemonic (eql :cleanup))
                                 inserter context &rest args)
-  (declare (ignore context))
   (destructuring-bind () args
     (let* ((protect (bir:dynamic-environment inserter))
            (ib (build:make-iblock
                 inserter :name '#:post-protection
                          :dynamic-environment (bir:parent protect))))
-      (build:terminate inserter 'bir:jump
-                       :inputs () :outputs ()
-                       :next (list ib))
+      (if (mvals context)
+          ;; Have to preserve the mvals through the cleanup,
+          ;; which we do by making it an input/output of the jump.
+          ;; See UNDO-DYNENV method for BIR:UNWIND-PROTECT.
+          (let* ((input (mvals context))
+                 (output (make-instance 'bir:phi
+                           :name (bir:name input)
+                           :iblock ib)))
+            (build:terminate inserter 'bir:jump
+                             :inputs (list input) :outputs (list output)
+                             :next (list ib))
+            (setf (bir:inputs ib) (list output)
+                  (mvals context) output))
+          (build:terminate inserter 'bir:jump
+                           :inputs () :output ()
+                           :next (list ib)))
       (build:begin inserter ib))))
 
 (defmethod compile-instruction ((mnemonic (eql :nil))
