@@ -31,8 +31,6 @@
                (:file "cst" :depends-on ("packages"))
                (:file "opt" :depends-on ("packages"))
                (:file "source-pos-info" :depends-on ("packages"))
-               (:file "native" :depends-on ("packages")
-                :if-feature :clasp)
                (:file "base" :depends-on ("environment" "clos" "defstruct"
                                                         "condition-system-macros"
                                                         "mp-macros" "mp-atomics"
