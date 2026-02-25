@@ -388,9 +388,6 @@ public:
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
     // Do nothing by default
   };
-  virtual void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** address) {
-    printf("%s:%d:%s Should never be called - subclass must implement\n", __FILE__, __LINE__, __FUNCTION__);
-  };
   //! Initialize member variables and those that depend on sharedThis
   virtual void initialize();
   /*! Objects can catch signals from Models
