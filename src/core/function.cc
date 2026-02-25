@@ -73,6 +73,14 @@ void SimpleFun_O::fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr
 #endif
 }
 
+// Useful for debugging inscrutable problems
+CL_DEFUN List_sp core__simple_fun_ptrs(SimpleFun_sp simp) {
+  ql::list r;
+  for (size_t ii = 0; ii < ClaspXepFunction::Entries; ++ii)
+    r << Pointer_O::create(*(void**)&simp->_EntryPoints._EntryPoints[ii]);
+  return r.cons();
+}
+
 bool SimpleFun_O::dladdrablep(std::set<void*>& uniques) {
   if (this->_Code.isA<llvmo::Library_O>()) {
     for (size_t ii = 0; ii < ClaspXepFunction::Entries; ++ii) {

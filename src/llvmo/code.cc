@@ -306,7 +306,8 @@ namespace llvmo {
  * 4. If it's not one of the above then we have an entry point that
  *       I didn't think about or a serious error.
  */
-core::T_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
+CL_LISPIFY_NAME(identify_code_or_library);
+CL_DEFUN core::T_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
 
   //
   // 1. Search the _lisp->_AllLibraries list
@@ -821,13 +822,26 @@ void validateEntryPoint(core::T_sp code, uintptr_t entry_point) {
   // Nothing for now
 }
 
-uintptr_t codeStart(core::T_sp codeOrLibrary) {
+CL_LISPIFY_NAME(code_start);
+CL_DEFUN uintptr_t codeStart(core::T_sp codeOrLibrary) {
   if (gc::IsA<Library_sp>(codeOrLibrary)) {
     Library_sp library = gc::As_unsafe<Library_sp>(codeOrLibrary);
     return library->codeStart();
   } else if (gc::IsA<ObjectFile_sp>(codeOrLibrary)) {
     ObjectFile_sp of = gc::As_unsafe<ObjectFile_sp>(codeOrLibrary);
     return of->codeStart();
+  }
+  SIMPLE_ERROR("{} must be a Library or ObjectFile", _rep_(codeOrLibrary));
+}
+
+CL_LISPIFY_NAME(code_end);
+CL_DEFUN uintptr_t codeEnd(core::T_sp codeOrLibrary) {
+  if (gc::IsA<Library_sp>(codeOrLibrary)) {
+    Library_sp library = gc::As_unsafe<Library_sp>(codeOrLibrary);
+    return library->codeEnd();
+  } else if (gc::IsA<ObjectFile_sp>(codeOrLibrary)) {
+    ObjectFile_sp of = gc::As_unsafe<ObjectFile_sp>(codeOrLibrary);
+    return of->codeEnd();
   }
   SIMPLE_ERROR("{} must be a Library or ObjectFile", _rep_(codeOrLibrary));
 }
