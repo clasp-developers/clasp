@@ -39,10 +39,6 @@
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 
-// Turn on debugging vtable pointer updates with libraries
-//#define DEBUG_ISLLIBRARIES 1
-
-
 #ifdef _TARGET_OS_LINUX
 #include <elf.h>
 #endif
@@ -454,12 +450,10 @@ size_t Fixup::ensureLibraryRegistered(uintptr_t address) {
   uintptr_t vtableEnd;
   std::string libraryPath;
   bool isExecutable;
-  core::lookup_address_in_library((gctools::clasp_ptr_t)address, start, end, libraryPath, isExecutable, vtableStart, vtableEnd);
+  if (!core::lookup_address_in_library((gctools::clasp_ptr_t)address, start, end, libraryPath, isExecutable, vtableStart, vtableEnd))
+    ISL_ERROR("Tried to look up address %p in library, but it isn't in any library",
+              (void*)address);
   size_t idx = this->_ISLLibraries.size();
-#ifdef DEBUG_ISLLIBRARIES
-  printf("%s:%d:%s Registering library %s address: %p start: %p end: %p vtableStart: %p vtableEnd: %p \n", __FILE__, __LINE__,
-         __FUNCTION__, libraryPath.c_str(), (void*)address, start, end, (void*)vtableStart, (void*)vtableEnd );
-#endif
   this->_ISLLibraries.emplace_back(libraryPath, isExecutable, start, end, vtableStart, vtableEnd);
   return idx;
 };
@@ -2154,10 +2148,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         if (fout)
           fflush(fout); // flush fout if it's defined. --arguments option was passed
         updateRelocationTableAfterLoad(lib, lookup);
-#ifdef DEBUG_ISLLIBRARIES
-        printf("%s:%d:%s push_back lib: %s  start: %p end: %p  vtableStart: %p vtableEnd: %p\n",
-               __FILE__, __LINE__, __FUNCTION__, lib._Name.c_str(), lib._TextStart, lib._TextEnd, (void*)lib._VtableStart, (void*)lib._VtableEnd);
-#endif
         fixup._ISLLibraries.push_back(lib);
       }
       if (fout)
