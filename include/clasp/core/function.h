@@ -226,7 +226,12 @@ public:
   bool dladdrablep(std::set<void*>& uniqueEntries);
 
 protected:
-  void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr);
+  void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr, T_sp code);
+  // Default where code = _Code. This can't be an actual default
+  // parameter because of stupid C++ rules.
+  void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr) {
+    fixupOneCodePointer(fixup, ptr, this->_Code);
+  }
 };
 
 // Now that SimpleFun exists we can define these.

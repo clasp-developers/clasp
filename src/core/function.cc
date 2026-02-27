@@ -54,7 +54,7 @@ namespace core {
 
 bytecode_trampoline_function bytecode_trampoline = bytecode_call; // default
 
-void SimpleFun_O::fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr) {
+void SimpleFun_O::fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr, T_sp code) {
 #ifdef USE_PRECISE_GC
   if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::InfoOp) {
     uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
@@ -63,10 +63,10 @@ void SimpleFun_O::fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr
     }
   } else if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp) {
     uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
-    snapshotSaveLoad::encodeEntryPoint(fixup, ptrptr, this->_Code, this->_FunctionDescription );
+    snapshotSaveLoad::encodeEntryPoint(fixup, ptrptr, code, this->_FunctionDescription );
   } else if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
-    snapshotSaveLoad::decodeEntryPoint(fixup, ptrptr, this->_Code);
+    snapshotSaveLoad::decodeEntryPoint(fixup, ptrptr, code);
   } else {
     SIMPLE_ERROR("Illegal image save/load operation");
   }
@@ -129,8 +129,15 @@ BytecodeSimpleFun_O::BytecodeSimpleFun_O(FunctionDescription_sp fdesc, const Cla
     _EntryPcN(entryPcN), _BytecodeSize(bytecodeSize), _Trampoline(trampoline) {};
 
 void BytecodeSimpleFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
-  this->fixupOneCodePointer(fixup, (void**)&this->_Trampoline);
-  this->Base::fixupInternalsForSnapshotSaveLoad(fixup);
+  // Because bytecode funs can have native compiled entry points
+  // (see e.g. entry_point_fixed), we use the native ObjectFile
+  // if it exists. This ensures the snapshot can have the correct
+  // function pointers installed, and that they're properly relative
+  // to the native ObjectFile.
+  T_sp code = entryPoint()->_Code;
+  this->fixupOneCodePointer(fixup, (void**)&this->_Trampoline, code);
+  for (size_t ii = 0; ii < ClaspXepFunction::Entries; ++ii)
+    this->fixupOneCodePointer(fixup, (void**)&this->_EntryPoints._EntryPoints[ii], code);
 }
 
 CL_DEFMETHOD size_t BytecodeSimpleFun_O::entryPcN() const { return this->_EntryPcN; }
