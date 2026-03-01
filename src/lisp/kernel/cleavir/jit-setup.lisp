@@ -367,15 +367,6 @@ No DIBuilder is defined for the default module")
 
 (defun jit-repl-function-name ()
   (sys:fmt nil "JITREPL-{}" (sys:next-number)))
-  
-(defun jit-startup-shutdown-function-names (module-id)
-  (multiple-value-bind (startup-name linkage shutdown-name)
-      (core:startup-linkage-shutdown-names module-id)
-    (declare (ignore linkage))
-    (values startup-name shutdown-name))
-  #+(or)(values module-id
-                (sys:fmt nil "{}-{}" sys:*module-startup-function-name* module-id)
-                (sys:fmt nil "{}-{}" sys:*module-shutdown-function-name* module-id)))
 
 ;;; ------------------------------------------------------------
 ;;;

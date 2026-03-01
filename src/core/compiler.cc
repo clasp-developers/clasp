@@ -528,34 +528,6 @@ void startup_shutdown_names(size_t id, const std::string& prefix, std::string& s
   shutdown = sshutdown.str();
 }
 
-CL_DOCSTRING(R"dx(Return the startup function name and the linkage based on the current dynamic environment)dx");
-CL_DOCSTRING_LONG(R"dx(The name contains the id as part of itself. Return (values startup-name linkage shutdown-name).)dx");
-DOCGROUP(clasp);
-CL_LAMBDA(&optional (id 0) prefix);
-CL_DEFUN T_mv core__startup_linkage_shutdown_names(size_t id, core::T_sp tprefix) {
-  std::string prefix;
-  if (gc::IsA<String_sp>(tprefix)) {
-    prefix = gc::As<String_sp>(tprefix)->get_std_string();
-  } else if (tprefix.notnilp()) {
-    SIMPLE_ERROR("Illegal prefix for startup function name: {}", _rep_(tprefix));
-  }
-  std::string start;
-  std::string shutdown;
-  startup_shutdown_names(id, prefix, start, shutdown);
-  Symbol_sp linkage_type = llvmo::_sym_ExternalLinkage;
-  return Values(core::SimpleBaseString_O::make(start), linkage_type, core::SimpleBaseString_O::make(shutdown));
-};
-
-DOCGROUP(clasp);
-CL_LAMBDA(&optional (id 0) prefix);
-CL_DEFUN T_mv core__startup_linkage(size_t id, core::T_sp prefix) {
-  T_mv result = core__startup_linkage_shutdown_names(id, prefix);
-  T_sp result1 = result;
-  MultipleValues& mvn = core::lisp_multipleValues();
-  T_sp result2 = mvn.second(result.number_of_values());
-  return Values(result1, result2);
-}
-
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 std::tuple<void*, string> do_dlopen(const string& str_path, const int n_mode) {

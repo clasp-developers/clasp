@@ -7,7 +7,7 @@
           module-report
           transform-lambda-parts
           codegen-startup-shutdown
-          jit-startup-shutdown-function-names jit-repl-function-name
+          jit-repl-function-name
           unescape-and-split-jit-name
           irc-simple-function-create
           find-intrinsic-name
