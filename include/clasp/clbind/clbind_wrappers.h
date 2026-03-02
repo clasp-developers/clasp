@@ -35,7 +35,7 @@ THE SOFTWARE.
 #include <clasp/clbind/inheritance.h>
 
 namespace core {
-bool maybe_demangle(const std::string& fnName, std::string& output);
+[[nodiscard]] bool maybe_demangle(const std::string& fnName, std::string& output);
 };
 
 namespace clbind {

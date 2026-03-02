@@ -249,7 +249,7 @@ void executableTextSectionRange(gctools::clasp_ptr_t& start, gctools::clasp_ptr_
   SIMPLE_ERROR("Could not find the executableTextSectionRange");
 }
 
-bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end,
+[[nodiscard]] bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end,
                                std::string& libraryName, bool& executable, uintptr_t& vtableStart, uintptr_t& vtableEnd) {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
   vtableStart = 0;

@@ -2127,7 +2127,8 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         uintptr_t vtableEnd;
         bool isexec = libheader->_Executable;
         std::string libraryPath;
-        core::library_with_name(execLibPath, isexec, libraryPath, start, end, vtableStart, vtableEnd);
+        if (!core::library_with_name(execLibPath, isexec, libraryPath, start, end, vtableStart, vtableEnd))
+          ISL_ERROR("Unable to find library: %s", execLibPath.c_str());
         if (isexec) {
           execLibPath = libraryPath; // swap out the old executable path for the current one
         }
@@ -2206,7 +2207,8 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           uintptr_t end;
           uintptr_t vtableStart, vtableEnd;
           bool isExecutable = lib->_Executable;
-          core::library_with_name(libraryFilename, isExecutable, libraryName, start, end, vtableStart, vtableEnd);
+          if (!core::library_with_name(libraryFilename, isExecutable, libraryName, start, end, vtableStart, vtableEnd))
+            ISL_ERROR("Unable to find library: %s", libraryFilename.c_str());
           lib->_Start = (gctools::clasp_ptr_t)start;
           lib->_End = (gctools::clasp_ptr_t)end;
           lib->_VtableStart = vtableStart;
@@ -2452,8 +2454,8 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                 std::string shutdown;
                 core::startup_shutdown_names(objectId, "", start, shutdown);
                 void* ptr;
-                obj_claspJIT->do_lookup(jitdylib, start, ptr);
-
+                if (!obj_claspJIT->do_lookup(jitdylib, start, ptr))
+                  ISL_ERROR("Failed to materialize JITDylib");
               });
             }
           }

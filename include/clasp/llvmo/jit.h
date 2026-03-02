@@ -122,7 +122,7 @@ class ClaspJIT_O : public core::General_O {
   LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
 
 public:
-  bool do_lookup(JITDylib_sp dylib, const std::string& Name, void*& pointer);
+  [[nodiscard]] bool do_lookup(JITDylib_sp dylib, const std::string& Name, void*& pointer);
   core::Pointer_sp lookup(JITDylib_sp dylib, const std::string& Name);
   core::T_sp lookup_all_dylibs(const std::string& Name);
   JITDylib_sp getMainJITDylib();

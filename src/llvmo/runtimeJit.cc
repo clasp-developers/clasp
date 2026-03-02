@@ -726,7 +726,7 @@ void ClaspJIT_O::adjustMainJITDylib(JITDylib_sp mainJITDylib) {
   this->_MainJITDylib = mainJITDylib;
 }
 
-bool ClaspJIT_O::do_lookup(JITDylib_sp dylibsp, const std::string& Name, void*& ptr) {
+[[nodiscard]] bool ClaspJIT_O::do_lookup(JITDylib_sp dylibsp, const std::string& Name, void*& ptr) {
   llvm::ExitOnError ExitOnErr;
   JITDylib& dylib = *dylibsp->wrappedPtr();
   std::string mangledName = Name;

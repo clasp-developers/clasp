@@ -800,7 +800,7 @@ ObjectFile_sp lookupObjectFile(const std::string& name) {
   SIMPLE_ERROR("Could not find object file {} - {} available object file names: {}", name, num, ss.str());
 };
 
-bool lookupObjectFileFromEntryPoint(uintptr_t entry_point, ObjectFile_sp& objectFile) {
+[[nodiscard]] bool lookupObjectFileFromEntryPoint(uintptr_t entry_point, ObjectFile_sp& objectFile) {
   core::List_sp ofs = _lisp->_Roots._AllObjectFiles.load();
   for (auto cur : ofs) {
     ObjectFile_sp of = gc::As<ObjectFile_sp>(CONS_CAR(cur));

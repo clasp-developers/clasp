@@ -429,7 +429,7 @@ bool verifyIRModuleObjectFileStartupSymbol(const std::string& name);
 
 ObjectFile_sp lookupObjectFile(const std::string& name);
 
-bool lookupObjectFileFromEntryPoint(uintptr_t entry_point, ObjectFile_sp& objectFile);
+[[nodiscard]] bool lookupObjectFileFromEntryPoint(uintptr_t entry_point, ObjectFile_sp& objectFile);
 
 void validateEntryPoint(core::T_sp code, uintptr_t entry_point);
 void validateEntryPoint(core::T_sp code, const core::ClaspXepFunction& entry_point);
