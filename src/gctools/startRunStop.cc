@@ -271,7 +271,6 @@ int startup_clasp(void** stackMarker, gctools::ClaspInfo* claspInfo, int* exitCo
                                          claspInfo->_mpiSize);
 #endif
 
-  core::transfer_StartupInfo_to_my_thread();
   my_thread->startUpVM();
 
   // Register builtin function names

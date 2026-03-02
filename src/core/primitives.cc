@@ -89,9 +89,6 @@ THE SOFTWARE.
 
 namespace core {
 
-std::string global_startupSourceName = "";
-StartupEnum global_startupEnum = undefined;
-
 int clasp_musleep(double dsec, bool alertable) {
   double seconds = floor(dsec);
   double frac_seconds = dsec - seconds;

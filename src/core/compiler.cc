@@ -200,7 +200,6 @@ void initializer_functions_invoke() {
     global_initializer_capacity = 0;
     free(global_initializer_functions);
     global_initializer_functions = NULL;
-    //    printf("%s:%d Done with startup_functions_invoke()\n", __FILE__, __LINE__ );
   }
 }
 
@@ -236,117 +235,6 @@ CL_DEFUN Pointer_sp core__xep_redirect_address(size_t arity) {
 }
 
 }; // namespace core
-
-namespace core {
-
-StartupInfo global_startup;
-
-std::atomic<size_t> global_next_startup_position;
-
-DOCGROUP(clasp);
-CL_DEFUN size_t core__next_startup_position() { return global_next_startup_position++; }
-
-/*! Static initializers will run and try to register startup functions.
-They will do this into the global_startup structure.
-Once the main code starts up - this startup info needs to be transfered
-to the my_thread thread-local storage.
-So right after the my_thread variable is initialized, this must be called for
-the main thread. */
-
-void transfer_StartupInfo_to_my_thread() {
-  if (!my_thread) {
-    printf("%s:%d my_thread is NULL - you cannot transfer StartupInfo\n", __FILE__, __LINE__);
-  }
-  my_thread->_Startup = global_startup;
-}
-
-void register_startup_function(const StartUp& one_startup) {
-#ifdef DEBUG_STARTUP
-  printf("%s:%d In register_startup_function type: %d at %p\n", __FILE__, __LINE__, one_startup._Type, one_startup._Function);
-#endif
-  StartupInfo* startup = NULL;
-  // if my_thread is defined - then use its startup info
-  // otherwise use the global_startup info.
-  // This will only happen in cclasp when startup functions
-  // are registered from static constructors.
-  if (my_thread) {
-    startup = &my_thread->_Startup;
-  } else {
-    startup = &global_startup;
-  }
-  if (startup->_functions == NULL) {
-    startup->_capacity = STARTUP_FUNCTION_CAPACITY_INIT;
-    startup->_count = 0;
-    startup->_functions = (StartUp*)malloc(startup->_capacity * sizeof(StartUp));
-  } else {
-    if (startup->_count == startup->_capacity) {
-      startup->_capacity = startup->_capacity * STARTUP_FUNCTION_CAPACITY_MULTIPLIER;
-      startup->_functions = (StartUp*)realloc(startup->_functions, startup->_capacity * sizeof(StartUp));
-    }
-  }
-  startup->_functions[startup->_count] = one_startup;
-  startup->_count++;
-};
-
-/*! Return the number of startup_functions that are waiting to be run*/
-size_t startup_functions_are_waiting() {
-#ifdef DEBUG_STARTUP
-  fmt::print("{}:{} startup_functions_are_waiting returning {}\n", __FILE__, __LINE__, my_thread->_Startup._count);
-#endif
-  return my_thread->_Startup._count;
-};
-
-/*! Invoke the startup functions and clear the array of startup functions */
-void startup_functions_invoke(T_O* literals) {
-  size_t startup_count = 0;
-  StartUp* startup_functions = NULL;
-  {
-    // Save the current list
-    startup_count = my_thread->_Startup._count;
-    startup_functions = my_thread->_Startup._functions;
-    // Prepare to accumulate a new list
-    my_thread->_Startup._count = 0;
-    my_thread->_Startup._capacity = 0;
-    my_thread->_Startup._functions = NULL;
-  }
-  // Invoke the current list
-  core::T_O* result = NULL;
-  if (startup_count > 0) {
-    sort::quickSortMemory(startup_functions, 0, startup_count);
-#ifdef DEBUG_STARTUP
-    printf("%s:%d In startup_functions_invoke - there are %" PRsize_t " startup functions\n", __FILE__, __LINE__, startup_count);
-    for (size_t i = 0; i < startup_count; ++i) {
-      StartUp& startup = startup_functions[i];
-      printf("%s:%d     Startup fn[%" PRsize_t "] -> %p\n", __FILE__, __LINE__, startup._Position, startup._Function);
-    }
-    printf("%s:%d Starting to call the startup functions\n", __FILE__, __LINE__);
-#endif
-    StartUp previous;
-    for (size_t i = 0; i < startup_count; ++i) {
-      StartUp& startup = startup_functions[i];
-      if (startup._Position == previous._Position) {
-        printf("%s:%d At startup there were two adjacent startup functions with the same position value %lu - this could mean a "
-               "startup order catastrophe\n",
-               __FILE__, __LINE__, startup._Position);
-      }
-      previous = startup;
-      switch (startup._Type) {
-      case StartUp::T_O_function:
-        ((T_OStartUp)startup._Function)(literals); // invoke the startup function
-        break;
-      case StartUp::void_function:
-        ((voidStartUp)startup._Function)();
-        printf("%s:%d:%s Returning NULL startup_functions_invoke\n", __FILE__, __LINE__, __FUNCTION__);
-      }
-    }
-#ifdef DEBUG_STARTUP
-    printf("%s:%d Done with startup_functions_invoke()\n", __FILE__, __LINE__);
-#endif
-    free(startup_functions);
-  }
-}
-
-} // namespace core
 
 extern "C" {
 

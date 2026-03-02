@@ -17,20 +17,6 @@
 //
 typedef void (*voidStartUp)(void);
 
-struct clasp_register_startup {
-  clasp_register_startup(voidStartUp startup_function) {
-    core::StartUp su(core::StartUp::void_function, 0, (void*)startup_function);
-    core::register_startup_function(su);
-  }
-};
-
-#define CLASP_REGISTER_STARTUP(fn)                                                                                                 \
-  static clasp_register_startup dummy(fn);                                                                                         \
-  ;
-
-#define CLASP_REGISTER_NAMED_STARTUP(named_fn, fn)                                                                                 \
-  extern "C" void named_fn() { fn(); }
-
 //
 // Make more compatible with pybind11
 //

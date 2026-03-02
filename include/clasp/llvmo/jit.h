@@ -134,7 +134,6 @@ public:
 
   ObjectFile_sp addIRModule(JITDylib_sp dylib, Module_sp cM, ThreadSafeContext_sp context, size_t startupID);
   ObjectFile_sp addObjectFile(JITDylib_sp dylib, std::unique_ptr<llvm::MemoryBuffer> objectFile, bool print, size_t startupId);
-  void runStartupCode(JITDylib_sp dylib, const std::string& startupName, core::T_sp initialDataOrUnbound);
   void installMainJITDylib();
   void adjustMainJITDylib(JITDylib_sp dylib);
   ClaspJIT_O();

@@ -2251,28 +2251,24 @@ bool Lisp::load(int& exitCode) {
   } break;
   case cloBaseImage:
   case cloExtensionImage:
-  case cloImageFile:
-      if (startup_functions_are_waiting()) {
-        startup_functions_invoke(NULL);
-      } else {
-        Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
-        if (!global_options->_SilentStartup) {
-          printf("Loading image %s\n", _rep_(initPathname).c_str());
-        }
-        T_mv result = eval::funcall(cl::_sym_load, initPathname); // core__load_bundle(initPathname);
-        if (result.nilp()) {
-          T_sp err = mvn.second(result.number_of_values());
-          printf("Could not load bundle %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
-          exitCode = 1;
-          return false;
-        }
-        char* pause_startup = getenv("CLASP_PAUSE_OBJECTS_ADDED");
-        if (pause_startup) {
-          gctools::setup_user_signal();
-          gctools::wait_for_user_signal("Paused at startup after object files added");
-        }
-      }
-      break;
+  case cloImageFile: {
+    Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
+    if (!global_options->_SilentStartup) {
+      printf("Loading image %s\n", _rep_(initPathname).c_str());
+    }
+    T_mv result = eval::funcall(cl::_sym_load, initPathname); // core__load_bundle(initPathname);
+    if (result.nilp()) {
+      T_sp err = mvn.second(result.number_of_values());
+      printf("Could not load bundle %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
+      exitCode = 1;
+      return false;
+    }
+    char* pause_startup = getenv("CLASP_PAUSE_OBJECTS_ADDED");
+    if (pause_startup) {
+      gctools::setup_user_signal();
+      gctools::wait_for_user_signal("Paused at startup after object files added");
+    }
+  } break;
   default:
       break;
   }

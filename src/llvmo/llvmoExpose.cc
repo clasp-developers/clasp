@@ -3719,38 +3719,6 @@ void finalizeEngineAndTime(llvm::ExecutionEngine* engine) {
   llvm_sys__accumulate_llvm_usage_seconds(thisTime);
 }
 
-DOCGROUP(clasp);
-CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine, core::T_sp startup_name) {
-  // Stuff to support MCJIT
-  llvm::ExecutionEngine* engine = oengine->wrappedPtr();
-#ifdef DEBUG_STARTUP
-  printf("%s:%d Entered %s\n", __FILE__, __LINE__, __FUNCTION__);
-#endif
-  finalizeEngineAndTime(engine);
-  if (gc::IsA<core::String_sp>(startup_name)) {
-    core::String_sp str = gc::As_unsafe<core::String_sp>(startup_name);
-    std::string sstr = str->get_std_string();
-    llvm::StringRef strref = sstr;
-    void* fn = engine->getPointerToNamedFunction(strref);
-    typedef void (*fptr)();
-    fptr ffn = (fptr)fn;
-    printf("%s:%d About to run function %s at %p\n", __FILE__, __LINE__, sstr.c_str(), fn);
-    ffn();
-  } else if (startup_name.nilp()) {
-    engine->runStaticConstructorsDestructors(false);
-  } else {
-    SIMPLE_ERROR("Only NIL or a function name are allowed as the startup_name - you provided {}", _rep_(startup_name));
-  }
-  if (core::startup_functions_are_waiting()) {
-    core::startup_functions_invoke(NULL);
-  } else {
-    SIMPLE_ERROR("There were no startup functions to invoke\n");
-  }
-#ifdef DEBUG_STARTUP
-  printf("%s:%d Leaving %s\n", __FILE__, __LINE__, __FUNCTION__);
-#endif
-}
-
 /*! Return (values target nil) if successful or (values nil error-message) if not */
 DOCGROUP(clasp);
 CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string& ArchName, Triple_sp triple) {
@@ -4276,12 +4244,6 @@ CL_DEFUN void llvm_sys__optimizeModule(llvm::Module* module, int level) {
   PB.buildPerModuleDefaultPipeline(opt_level);
 
   MPM.run(*module, MAM);
-}
-
-CL_DEFUN void llvm_sys__jitFinalize(ClaspJIT_sp jit,
-                                    const string& startup, const string& shutdown,
-                                    core::T_sp initialData) {
-  jit->runStartupCode(jit->getMainJITDylib(), startup, initialData);
 }
 
 }; // namespace llvmo

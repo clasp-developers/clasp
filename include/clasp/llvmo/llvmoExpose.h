@@ -3572,7 +3572,6 @@ template <> struct from_object<llvm::CmpInst::Predicate> {
 }; // namespace translate
 
 namespace llvmo {
-void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine, core::T_sp startup_name);
 
 Module_sp llvm_sys__parseBitcodeFile(core::T_sp filename, LLVMContext_sp context);
 Module_sp llvm_sys__parseIRFile(core::T_sp filename, LLVMContext_sp context);

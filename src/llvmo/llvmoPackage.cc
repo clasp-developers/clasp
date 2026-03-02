@@ -100,30 +100,7 @@ JITDylib_sp loadModule(llvmo::Module_sp module, size_t startupID, const std::str
   JITDylib_sp jitDylib = jit->createAndRegisterJITDylib(libname);
   //  printf("%s:%d:%s jit = %p  jitDylib = %p\n", __FILE__, __LINE__, __FUNCTION__, jit.raw_(), jitDylib.raw_() );
   ThreadSafeContext_sp tsc = gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue());
-  std::vector<std::string> startup_functions;
-  for (auto& F : *module->wrappedPtr()) {
-    std::string function_name = F.getName().str();
-    // printf("%s:%d Function: %s looking for %s\n", __FILE__, __LINE__, function_name.c_str(), clasp_startup_FUNCTION_NAME);
-    if (function_name.find(clasp_startup_FUNCTION_NAME) != std::string::npos) {
-      // printf("%s:%d !!!!!        Function: %s found %s\n", __FILE__, __LINE__, function_name.c_str(),
-      // clasp_startup_FUNCTION_NAME);
-      startup_functions.push_back(function_name);
-    }
-  }
   jit->addIRModule(jitDylib, module, tsc, startupID);
-  //
-  //
-  for (auto name : startup_functions) {
-    //    printf("%s:%d Startup function: %s\n", __FILE__, __LINE__, name.c_str());
-    core::Pointer_sp ptr = jit->lookup(jitDylib, name);
-    voidStartUp startup = (voidStartUp)ptr->ptr();
-    //    printf("%s:%d      ptr->%p\n", __FILE__, __LINE__, startup);
-    (startup)();
-  }
-  [[maybe_unused]] size_t num = core::startup_functions_are_waiting();
-  //  printf("%s:%d There are %lu startup functions waiting to be evaluated\n", __FILE__, __LINE__, num);
-  core::startup_functions_invoke(NULL);
-  //  printf("%s:%d Invoked startup functions - continuing\n", __FILE__, __LINE__ );
   return jitDylib;
 }
 

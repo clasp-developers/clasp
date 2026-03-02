@@ -63,9 +63,6 @@ struct Initializer {
   inline Initializer(InitializerFunction fn) { register_initializer_function(fn); }
 };
 
-size_t startup_functions_are_waiting();
-void startup_functions_invoke(T_O* literals_or_null);
-
 std::tuple<void*, string> do_dlopen(const string& str_path, const int n_mode);
 std::tuple<int, string> do_dlclose(void* p_handle);
 std::tuple<void*, string> do_dlsym(void* p_handle, const char* pc_symbol);
@@ -96,7 +93,5 @@ void expect_offset(T_sp key, T_sp alist, size_t expected);
 
 namespace core {
 void core__throw_function(T_sp tag, T_sp result_form);
-void register_startup_function(const StartUp& startup);
-void transfer_StartupInfo_to_my_thread();
 extern bool global_jit_log_symbols;
 } // namespace core
