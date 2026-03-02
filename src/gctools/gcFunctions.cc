@@ -958,6 +958,16 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (buildReport)
     ss << (fmt::format("USE_COMPILE_FILE_PARALLEL = {}\n", use_compile_file_parallel ? "**DEFINED**" : "undefined"));
 
+  bool default_native = false;
+#ifdef USE_DEFAULT_NATIVE
+  INTERN_(comp, STARcompile_file_nativeSTAR)->defparameter(_lisp->_true());
+  default_native = true;
+#else
+  INTERN_(comp, STARcompile_file_nativeSTAR)->defparameter(nil<core::T_O>());
+#endif
+  if (buildReport)
+    ss << (fmt::format("USE_DEFAULT_NATIVE = {}\n", default_native ? "**DEFINED**" : "undefined"));
+
   bool force_startup_external_linkage = false;
 #ifdef FORCE_STARTUP_EXTERNAL_LINKAGE
   force_startup_external_linkage = true;

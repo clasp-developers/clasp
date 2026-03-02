@@ -27,6 +27,7 @@
                      "fasl"
                      "nfasl")
                  "USE_COMPILE_FILE_PARALLEL" (compile-file-parallel configuration)
+                 "USE_DEFAULT_NATIVE" (default-native configuration)
                  "FORCE_STARTUP_EXTERNAL_LINKAGE" (force-startup-external-linkage configuration)
                  "USE_PRECISE_GC" *variant-precise*
                  "USE_BOEHM" (eq :boehm *variant-gc*)

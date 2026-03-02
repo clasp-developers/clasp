@@ -1564,8 +1564,6 @@
                   (not (cmp:load-time-value-info/read-only-p lit)))
           collect i))
 
-#+clasp
-(defvar cmp:*compile-file-native* nil)
 ;; The ID number used for native code modules, if generated.
 ;; Different modules within the same init-object-array block must have
 ;; distinct numbers to name symbols distinctly.
