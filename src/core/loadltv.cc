@@ -1022,8 +1022,7 @@ struct loadltv {
     }
     llvmo::JITDylib_sp dylib = _JITDylib.as_assert<llvmo::JITDylib_O>();
     // Read in the machine code.
-    // At the moment all machine code we give to JIT is unmanaged - e.g.
-    // load-faso just mmaps a file and leaves the mmap around forever.
+    // At the moment all machine code we give to JIT is unmanaged.
     // This is the unlinked object code, not the code that actually runs,
     // so the JIT doesn't allocate it through our custom allocator either.
     // We need to keep this unlinked object code around so that it can be

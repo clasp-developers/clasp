@@ -75,8 +75,6 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 #include <clasp/core/unwind.h> // funwind_protect
 
-#define FASO_VERSION 1
-
 namespace core {
 
 std::atomic<size_t> global_jit_compile_counter;

@@ -620,10 +620,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   comp::_sym_STARload_time_value_holder_nameSTAR->defparameter(core::SimpleBaseString_O::make("[VALUES-TABLE]"));
   List_sp hooks = nil<T_O>();
   hooks = Cons_O::create(Cons_O::create(clasp_make_fixnum(FASL_MAGIC_NUMBER), _sym_load_bytecode), hooks);
-  // This not ideal, but ANSI tests uses FASL as a generic pathname type so dispatching in LOAD via
-  // *LOAD-HOOKS* will end up sending a FASO with an extension of FASL to the FASL loader. We
-  // could sniff the magic number before we dispatch on pathname type, but this is inefficient since
-  // it results in two file opens. If we had only one FASL format this wouldn't be an issue.
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasl"), _sym_load_bytecode), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("l"), _sym_loadSource), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("L"), _sym_loadSource), hooks);
