@@ -841,12 +841,9 @@ struct loadltv {
 
     llvmo::ClaspJIT_sp jit = _lisp->_Roots._ClaspJIT.as_assert<llvmo::ClaspJIT_O>();
     llvmo::JITDylib_sp dylib = _JITDylib.as<llvmo::JITDylib_O>();
-    int fvector_name_len = snprintf(NULL, 0, "function-vector-%d", module_id);
-    char fvector_name[fvector_name_len+1]; // +1 for null terminator
-    sprintf(fvector_name, "function-vector-%d", module_id);
-    void* vfvector;
-    if (!jit->do_lookup(dylib, fvector_name, vfvector))
-      SIMPLE_ERROR("Could not find function vector {}", &fvector_name[0]);
+    void* vfvector = jit->lookup_fvector(dylib, module_id);
+    if (!vfvector)
+      SIMPLE_ERROR("Could not find function vector {}", module_id);
     void** fvector = (void**)vfvector;
 
     CoreFun_sp core = makeCoreFun(function->fdesc(),
@@ -1037,19 +1034,16 @@ struct loadltv {
     llvm::StringRef sbuffer((const char*)mc, nmc);
     llvm::StringRef name(uniqueName);
     std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer, name, false));
-    llvmo::ObjectFile_sp obj = jit->addObjectFile(dylib, std::move(memoryBuffer), false, 0);
+    llvmo::ObjectFile_sp obj = jit->addObjectFile(dylib, std::move(memoryBuffer), false, module_id);
     
     // Loaded the object, so now we just need to stick the literals in.
     uint16_t nlits = read_u16();
     // We can't use the object's TOLiteralsStart because it won't exist before
     // we actually query the symbol, due to the JIT's laziness.
-    int namelen = snprintf(NULL, 0, "__clasp_literals_%zu", module_id);
-    char literals_name[namelen+1]; // +1 for null terminator
-    sprintf(literals_name, "__clasp_literals_%zu", module_id);
-    void* vlits;
-    if (!jit->do_lookup(dylib, literals_name, vlits)) {
+    void* vlits = jit->lookup_literals(dylib, module_id);
+    if (!vlits) {
       SIMPLE_ERROR("While loading native module: Could not find literals {}",
-                   &literals_name[0]);
+                   module_id);
     } else {
       T_O** lits = (T_O**)vlits;
       for (size_t i = 0; i < nlits; ++i) {

@@ -98,7 +98,5 @@ namespace core {
 void core__throw_function(T_sp tag, T_sp result_form);
 void register_startup_function(const StartUp& startup);
 void transfer_StartupInfo_to_my_thread();
-T_mv core__startup_linkage_shutdown_names(size_t id = 0, core::T_sp prefix = nil<core::T_O>());
-void startup_shutdown_names(size_t id, const std::string& prefix, std::string& start, std::string& shutdown);
 extern bool global_jit_log_symbols;
 } // namespace core

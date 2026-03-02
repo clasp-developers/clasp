@@ -123,6 +123,9 @@ class ClaspJIT_O : public core::General_O {
 
 public:
   [[nodiscard]] bool do_lookup(JITDylib_sp dylib, const std::string& Name, void*& pointer);
+  void* lookup_literals(JITDylib_sp, size_t id);
+  void* lookup_fvector(JITDylib_sp, size_t id);
+  [[nodiscard]] bool force_materialize(JITDylib_sp, size_t id);
   core::Pointer_sp lookup(JITDylib_sp dylib, const std::string& Name);
   core::T_sp lookup_all_dylibs(const std::string& Name);
   JITDylib_sp getMainJITDylib();

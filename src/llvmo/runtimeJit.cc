@@ -730,13 +730,6 @@ void ClaspJIT_O::adjustMainJITDylib(JITDylib_sp mainJITDylib) {
   llvm::ExitOnError ExitOnErr;
   JITDylib& dylib = *dylibsp->wrappedPtr();
   std::string mangledName = Name;
-#if defined(_TARGET_OS_DARWIN)
-  // gotta put a _ in front of the name on DARWIN but not Unixes? Why? Dunno.
-//  mangledName = "_" + Name;
-#endif
-#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD) && !defined(_TARGET_OS_DARWIN)
-#error You need to decide here
-#endif
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s do_lookup %s in JITDylib_sp %p JITDylib* %p JITLINKDylib* %p\n", __FILE__, __LINE__,
                             __FUNCTION__, mangledName.c_str(), dylibsp.raw_(), &dylib, llvm::cast<JITLinkDylib>(&dylib)));
   auto symbol = this->_LLJIT->lookup(dylib, mangledName);
@@ -749,6 +742,30 @@ void ClaspJIT_O::adjustMainJITDylib(JITDylib_sp mainJITDylib) {
   //  (void*)symbol->getAddress());
   ptr = (void*)symbol->getValue();
   return true;
+}
+
+void* ClaspJIT_O::lookup_literals(JITDylib_sp dylibsp, size_t id) {
+  void* literals = NULL;
+  int namelen = snprintf(NULL, 0, "__clasp_literals_%zu", id);
+  char literals_name[namelen+1]; // +1 for null terminator
+  sprintf(literals_name, "__clasp_literals_%zu", id);
+  // ok to discard because literals is NULL iff lookup failed
+  (void)do_lookup(dylibsp, literals_name, literals);
+  return literals;
+}
+
+void* ClaspJIT_O::lookup_fvector(JITDylib_sp dylibsp, size_t id) {
+  void* fvector = NULL;
+  int namelen = snprintf(NULL, 0, "function-vector-%zu", id);
+  char fvector_name[namelen+1];
+  sprintf(fvector_name, "function-vector-%zu", id);
+  (void)do_lookup(dylibsp, fvector_name, fvector);
+  return fvector;
+}
+
+[[nodiscard]] bool ClaspJIT_O::force_materialize(JITDylib_sp dylibsp, size_t id) {
+  return lookup_literals(dylibsp, id) != NULL
+    && lookup_fvector(dylibsp, id) != NULL;
 }
 
 CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::lookup(JITDylib_sp dylibsp, const std::string& Name) {

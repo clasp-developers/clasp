@@ -515,19 +515,6 @@ CL_DEFUN void core__jit_register_symbol(const std::string& name, size_t size, vo
   }
 }
 
-void startup_shutdown_names(size_t id, const std::string& prefix, std::string& start, std::string& shutdown) {
-  stringstream sstart;
-  stringstream sshutdown;
-  if (prefix != "") {
-    sstart << prefix << "-";
-    sshutdown << prefix << "-";
-  }
-  sstart << clasp_startup_FUNCTION_NAME << "_" << id;
-  sshutdown << clasp_shutdown_FUNCTION_NAME << "_" << id;
-  start = sstart.str();
-  shutdown = sshutdown.str();
-}
-
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 std::tuple<void*, string> do_dlopen(const string& str_path, const int n_mode) {
