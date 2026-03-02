@@ -246,10 +246,10 @@
           "(compile-file (elt core:*command-line-arguments* 1)
               :source-debug-pathname (elt core:*command-line-arguments* 1)
               :output-file (elt core:*command-line-arguments* 0)
-              :output-type ~s)"
-          (if (eq (build-mode configuration) :bytecode-faso)
-              :faso
-              (build-mode configuration))))
+              :native '~s)"
+          (case (build-mode configuration)
+            (:native t)
+            (:bytecode nil))))
 
 (defmethod print-prologue (configuration (name (eql :link-bytecode-image)) output-stream)
   (declare (ignore configuration))

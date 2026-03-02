@@ -24,27 +24,20 @@ jobs:
         - macos-latest
         - ubuntu-latest
         mode:
-        - faso
-        - bytecode-faso
+        - native
         - bytecode
         auto:
         - no
         - yes
         exclude:
-          - mode: faso
+          - mode: native
             auto: yes
           - build: cando
-            mode: faso
+            mode: native
           - build: cando
-            mode: bytecode
-          - build: cando
-            auto: yes
-          - mode: bytecode-faso
             auto: yes
           - os: macos-latest
-            mode: faso
-          - os: macos-latest
-            mode: bytecode-faso
+            mode: native
 
     runs-on: ${{ matrix.os }}
 

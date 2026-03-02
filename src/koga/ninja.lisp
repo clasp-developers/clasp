@@ -652,7 +652,7 @@
          (nimage-installed (make-source "images/base.nfasl" :package-lib))
          (image (ecase (build-mode configuration)
                   ((:bytecode) vimage)
-                  ((:bytecode-faso :faso) nimage)))
+                  ((:native) nimage)))
          (iclasp (make-source "iclasp" :variant))
          (clasp-with-env (wrap-with-env configuration iclasp)))
     (ninja:write-build output-stream :generate-lisp-info

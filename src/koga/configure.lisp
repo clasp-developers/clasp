@@ -118,8 +118,8 @@
 (defclass configuration (flags)
   ((build-mode :accessor build-mode
                :initarg :build-mode
-               :initform :faso
-               :type (member :faso :bytecode :bytecode-faso :fasl)
+               :initform :native
+               :type (member :native :bytecode)
                :documentation "Define how clasp is built.")
    (build-path :accessor build-path
                :initarg :build-path
@@ -830,8 +830,8 @@ then they will overide the current variant's corresponding property."
 (defun fasl-extension (configuration)
   "Return the fasl extension based on the build mode."
   (case (build-mode configuration)
-    (:faso "nfasl" #+(or)"faso")
-    (otherwise "fasl")))
+    (:native "nfasl")
+    (:bytecode "fasl")))
 
 (defun image-source (configuration extension &optional (root :variant-lib))
   "Return the name of an image based on a target name, the bitcode name
