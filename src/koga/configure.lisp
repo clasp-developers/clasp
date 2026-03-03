@@ -156,11 +156,6 @@
                    :initarg :pkgconfig-path
                    :type pathname
                    :documentation "The directory under which to install the pkgconfig files.")
-   (jupyter-path :accessor jupyter-path
-                 :initform nil
-                 :initarg :jupyter-path
-                 :type (or null pathname)
-                 :documentation "The directory under which to install Jupyter files.")
    (package-path :accessor package-path
                  :initform nil
                  :initarg :package-path
@@ -563,11 +558,6 @@ is not compatible with snapshots.")
           :initarg :ctags
           :type (or null pathname)
           :documentation "The ctags binary to use.")
-   (jupyter :accessor jupyter
-            :initform nil
-            :initarg :jupyter
-            :type boolean
-            :documentation "Enable Jupyter and create Jupyter kernels.")
    (xcode-sdk :accessor xcode-sdk
               :initform nil
               :initarg :xcode-sdk
@@ -636,7 +626,7 @@ is not compatible with snapshots.")
                    :documentation "Static link Clasp library.")
    (units :accessor units
           :initform '(:git :describe :cpu-count #+darwin :xcode :base :default-target :pkg-config
-                           :clang :llvm :ar :cc :cxx :dis :mpi :nm :etags :ctags :gtags :objcopy :jupyter
+                           :clang :llvm :ar :cc :cxx :dis :mpi :nm :etags :ctags :gtags :objcopy
                            :reproducible :asdf)
           :type list
           :documentation "The configuration units")
@@ -680,8 +670,6 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"snapshot.lisp" :variant))
                                                          :clasprc
                                                          (list (make-source #P"clasprc.lisp" :variant))
-                                                         :jupyter-kernel
-                                                         (list (make-source #P"jupyter-kernel.lisp" :variant))
                                                          :ansi-test
                                                          (list (make-source #P"ansi-test.lisp" :build))
                                                          :asdf-test
@@ -784,9 +772,6 @@ is not compatible with snapshots.")
         (uiop:ensure-directory-pathname (lib-path instance))
         (share-path instance)
         (uiop:ensure-directory-pathname (share-path instance)))
-  (when (jupyter-path instance)
-    (setf (jupyter-path instance)
-          (uiop:ensure-directory-pathname (jupyter-path instance))))
   (when (xcode-sdk instance)
     (setf (xcode-sdk instance)
           (uiop:ensure-directory-pathname (xcode-sdk instance))))

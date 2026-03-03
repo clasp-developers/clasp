@@ -213,16 +213,13 @@ accumulated plists from each PRINT-VARIANT-TARGET-SOURCE is passed as keys."))
         while script
         do (message :info "Loading script ~a" script)
            (load script))
-  (let ((*root-paths* (list* :install-jupyter (jupyter-path *configuration*)
-                             :package-jupyter (resolve-package-path (jupyter-path *configuration*))
-                             *root-paths*)))
-    (message :emph "~%Writing build files")
-    (loop for name being the hash-keys in (outputs *configuration*)
-          do (write-build-output *configuration* name))
-    (map-variants *configuration*
-                  (lambda ()
-                    (loop for name being the hash-keys in (outputs *configuration*)
-                          do (write-variant-output *configuration* name))))))
+  (message :emph "~%Writing build files")
+  (loop for name being the hash-keys in (outputs *configuration*)
+        do (write-build-output *configuration* name))
+  (map-variants *configuration*
+                (lambda ()
+                  (loop for name being the hash-keys in (outputs *configuration*)
+                        do (write-variant-output *configuration* name)))))
 
 (defun setup (&rest initargs)
   "Setup the build by configuring the units, looking for and loading scripts and

@@ -278,11 +278,6 @@
     (sys:exit 1)))"))
 
 (defmethod print-prologue (configuration (name (eql :snapshot)) output-stream)
-  (when (jupyter configuration)
-    (format output-stream "#+quicklisp (ql:quickload ~:[~; #-ignore-extensions :cando-jupyter #+ignore-extensions~] :common-lisp-jupyter)
-#-quicklisp (asdf:load-system ~:[~; #-ignore-extensions :cando-jupyter #+ignore-extensions~] :common-lisp-jupyter)"
-            (member :cando (extensions configuration))
-            (member :cando (extensions configuration))))
   (format output-stream "(clos:compile-all-generic-functions)
 (gctools:save-lisp-and-die (elt core:*command-line-arguments* 0) :executable t)
 (core:quit)"
@@ -292,29 +287,6 @@
   (declare (ignore configuration))
   (format output-stream "#!/usr/bin/env bash
 exec $(dirname \"$0\")/iclasp -f ignore-extensions --base \"$@\""))
-
-(defmethod print-prologue (configuration (name (eql :jupyter-kernel)) output-stream)
-  (let ((candop (member :cando (extensions configuration))))
-    (format output-stream "(let ((name (first (uiop:command-line-arguments)))
-      (bin-path (second (uiop:command-line-arguments)))
-      (load-system (equal \"1\" (third (uiop:command-line-arguments))))
-      (system (equal \"1\" (fourth (uiop:command-line-arguments)))))
-  (when load-system
-    #+quicklisp (ql:quickload ~:[~; #-ignore-extensions :cando-jupyter #+ignore-extensions~] :common-lisp-jupyter)
-    #-quicklisp (asdf:load-system ~:[~; #-ignore-extensions :cando-jupyter #+ignore-extensions~] :common-lisp-jupyter))
-  (uiop/package:symbol-call ~:[~;#-ignore-extensions \"CANDO-JUPYTER\" #+ignore-extensions ~]\"CL-JUPYTER\" \"INSTALL\"
-    :system system :local ~s :implementation name
-    :bin-path (if system
-                  bin-path
-                  (merge-pathnames bin-path (uiop:getcwd)))
-    :prefix (when system ~s) :jupyter (when system ~s) :load-system load-system))
-(sys:quit)"
-            candop
-            candop
-            candop
-            (equal (bin-path configuration) #P"/usr/local/bin/")
-            (package-path configuration)
-            (jupyter-path configuration))))
 
 (defmethod print-prologue (configuration (name (eql :clasprc)) output-stream)
   (declare (ignore configuration))

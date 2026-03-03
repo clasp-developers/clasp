@@ -192,14 +192,6 @@
   (ninja:write-rule output-stream "link-fasl-abc"
                     :command "$cxx $variant-ldflags $ldflags $ldflags-fasl -o$out $in $variant-ldlibs $ldlibs"
                     :description "Linking $out")
-  (ninja:write-rule output-stream :jupyter-system-kernel
-                    :command (format nil
-                                     "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client ~;~]$clasp --rc ${variant-path}clasprc.lisp --non-interactive --load ${variant-path}jupyter-kernel.lisp -- $name $bin-path $load-system 1"
-                                     clasp-quicklisp-directory)
-                    :description "Installing jupyter kernel for $name")
-  (ninja:write-rule output-stream :jupyter-user-kernel
-                    :command "$clasp --non-interactive --load ${variant-path}jupyter-kernel.lisp -- $name $bin-path $load-system 0"
-                    :description "Installing jupyter kernel for $name")
   (ninja:write-rule output-stream :make-snapshot
                     :command (format nil
                                      "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client ~;~]$clasp --rc ${variant-path}clasprc.lisp --non-interactive $arguments --load ${variant-path}snapshot.lisp -- $out"
@@ -590,20 +582,6 @@
                                 :variant-lib-generated
                                 :variant-lib)))
 
-(defun jupyter-kernel-path (configuration name &key system)
-  (declare (ignore configuration))
-  (merge-pathnames (make-pathname :directory (list :relative
-                                                   "kernels"
-                                                   name)
-                                  :name "kernel"
-                                  :type "json")
-                   (if system
-                       (root :package-jupyter)
-                       #+darwin (merge-pathnames (make-pathname :directory '(:relative "Library" "Jupyter"))
-                                                 (uiop:getenv-pathname "HOME" :ensure-directory t))
-                       #-darwin (merge-pathnames (make-pathname :directory '(:relative "jupyter"))
-                                                 (uiop:xdg-data-home)))))
-
 (defmethod print-variant-target-source
     (configuration (name (eql :ninja)) output-stream (target (eql :modules)) (source lisp-source))
   (let* ((image (image-source configuration :mode :bytecode))
@@ -911,18 +889,7 @@
                   (build-outputs (list executable symlink))
                   (install-outputs (list installed symlink-installed))
                   (system (not (uiop:subpathp (share-path configuration)
-                                              (uiop:getenv-absolute-directory "HOME"))))
-                  (kernel (jupyter-kernel-path configuration
-                                               (if (equal name "sclasp")
-                                                   "common-lisp_sclasp"
-                                                   "cando_scando")
-                                               :system system))
-                  (user-kernel (jupyter-kernel-path configuration
-                                                    (format nil "~a_~a"
-                                                            (if (equal name "sclasp")
-                                                                "common-lisp"
-                                                                "cando")
-                                                            (build-name name)))))
+                                              (uiop:getenv-absolute-directory "HOME")))))
              (ninja:write-build output-stream :make-snapshot
                                 :clasp clasp-with-env
                                 :arguments (when ignore-extensions
@@ -940,15 +907,6 @@
                                   :target (file-namestring (source-path executable))
                                   :outputs (list scleap-symlink))
                (push scleap-symlink build-outputs))
-             (when (jupyter configuration)
-               (ninja:write-build output-stream :jupyter-user-kernel
-                                                :outputs (list user-kernel)
-                                                :inputs (list executable)
-                                                :name (build-name name)
-                                                :variant-path *variant-path*
-                                                :bin-path symlink
-                                                :load-system 0
-                                                :clasp executable))
              (when *variant-default*
                (ninja:write-build output-stream :install-binary
                                   :inputs (list executable)
@@ -962,20 +920,8 @@
                                     :inputs (list installed)
                                     :target (file-namestring (source-path executable))
                                     :outputs (list scleap-symlink-installed))
-                 (push scleap-symlink-installed install-outputs))
-               (when (jupyter configuration)
-                 (ninja:write-build output-stream (if system
-                                                      :jupyter-system-kernel
-                                                      :jupyter-user-kernel)
-                                    :outputs (list kernel)
-                                    :implicit-inputs (list executable)
-                                    :name name
-                                    :bin-path name
-                                    :variant-path *variant-path*
-                                    :load-system 0
-                                    :clasp executable)
-                 (push kernel install-outputs)))
-             (list build-outputs install-outputs user-kernel))))
+                 (push scleap-symlink-installed install-outputs)))
+             (list build-outputs install-outputs))))
     (let ((outputs (if (member :cando (extensions configuration))
                        (list (snapshot "scando")
                              (snapshot "sclasp" :ignore-extensions t))
@@ -984,15 +930,6 @@
                          :inputs (list* (build-name :cclasp)
                                         (mapcan #'first outputs))
                          :outputs (list (build-name :sclasp)))
-      (when (jupyter configuration)
-        (ninja:write-build output-stream :phony
-                           :inputs (mapcar #'third outputs)
-                           :outputs (list (build-name "jupyter_sclasp")))
-        (when (eq :sclasp (default-stage configuration))
-          (ninja:write-build output-stream :phony
-                             :inputs (list (build-name "jupyter_cclasp")
-                                           (build-name "jupyter_sclasp"))
-                             :outputs (list (build-name "jupyter")))))
       (when *variant-default*
         (ninja:write-build output-stream :phony
                            :inputs (list* (if (extensions configuration)
