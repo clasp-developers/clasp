@@ -1873,10 +1873,9 @@
 (defmethod encode ((attr module-native-attr) stream)
   (let ((code (code attr))
         (lits (module-native-attr-literals attr)))
-    (write-b32 (+ *index-bytes*
-                  4 (length code) 2 (* *index-bytes* (length lits)))
+    (write-b32 (+ 2 4 (length code) 2 (* *index-bytes* (length lits)))
                stream)
-    (write-index (module attr) stream)
+    (write-b16 (id attr) stream)
     (write-b32 (length code) stream)
     (write-sequence code stream)
     (write-b16 (length lits) stream)

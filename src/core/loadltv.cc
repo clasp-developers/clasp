@@ -81,7 +81,6 @@ struct loadltv {
   size_t _next_index = 0;
   // native modules
   T_sp _JITDylib = nil<T_O>();
-  uint16_t _next_native_module = 0;
 
   loadltv(Stream_sp stream) : _stream(stream) {}
 
@@ -1007,10 +1006,9 @@ struct loadltv {
   }
 
   void attr_clasp_module_native(uint32_t bytes) {
-    size_t module_id = _next_native_module++;
     // FIXME: Do we need to grab a lock to use the JIT?
     llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
-    BytecodeModule_sp mod = gc::As<BytecodeModule_sp>(get_ltv(read_index()));
+    uint16_t module_id = read_u16();
     uint32_t nmc = read_u32(); // machine code length
 
     // FIXME: Use a better name, I guess? Not sure how much it matters.
@@ -1018,7 +1016,6 @@ struct loadltv {
     // Lazily initialize a dylib for this FASL.
     if (_JITDylib.nilp()) {
       _JITDylib = jit->createAndRegisterJITDylib(uniqueName);
-      //mod->setf_nativeModule(_JITDylib);
     }
     llvmo::JITDylib_sp dylib = _JITDylib.as_assert<llvmo::JITDylib_O>();
     // Read in the machine code.
@@ -1111,7 +1108,6 @@ struct loadltv {
     _literals.assign(nobjs, unbound<T_O>());
     // Also reset the dylib.
     _JITDylib = nil<T_O>();
-    _next_native_module = 0;
   }
 
   void load_instruction() {
