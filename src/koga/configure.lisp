@@ -174,7 +174,7 @@
    (default-native
     :accessor default-native
     :initarg :default-native
-    :initform t
+    :initform nil
     :type boolean
     :documentation "If T, Clasp compiles files natively by default (*compile-file-native*)")
    (cst :accessor cst

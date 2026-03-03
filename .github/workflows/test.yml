@@ -65,19 +65,19 @@ jobs:
     - name: Clasp koga @ Ubuntu
       if: ${{ matrix.os == 'ubuntu-latest' && matrix.build == 'clasp' }}
       run: |
-        ./koga --build-mode=${{ matrix.mode }} ${{ case(matrix.defaultnative == 'no', '', '--default-native') }}
+        ./koga --build-mode=${{ matrix.mode }} ${{ case(matrix.defaultnative == 'yes', '', '--default-native') }}
     - name: Cando koga @ Ubuntu
       if: ${{ matrix.os == 'ubuntu-latest' && matrix.build == 'cando' }}
       run: |
-        ./koga --build-mode=${{ matrix.mode }} ${{ case(matrix.defaultnative == 'no', '', '--default-native')}} --extensions=cando
+        ./koga --build-mode=${{ matrix.mode }} ${{ case(matrix.defaultnative == 'yes', '', '--default-native')}} --extensions=cando
     - name: Clasp koga @ MacOS
       if: ${{ matrix.os == 'macos-latest' && matrix.build == 'clasp' }}
       run: |
-        ./koga --build-mode=${{ matrix.mode }} ${{ case(matrix.defaultnative == 'no', '', '--default-native')}} --cflags=-I/opt/homebrew/include --cppflags=-I/opt/homebrew/include --cxxflags=-I/opt/homebrew/include
+        ./koga --build-mode=${{ matrix.mode }} ${{ case(matrix.defaultnative == 'yes', '', '--default-native')}} --cflags=-I/opt/homebrew/include --cppflags=-I/opt/homebrew/include --cxxflags=-I/opt/homebrew/include
     - name: Cando koga @ MacOS
       if: ${{ matrix.os == 'macos-latest' && matrix.build == 'cando' }}
       run: |
-        ./koga --build-mode=${{ matrix.mode }} ${{ case(matrix.defaultnative == 'no', '', '--default-native') }} --extensions=cando --cflags=-I/opt/homebrew/include --cppflags=-I/opt/homebrew/include --cxxflags=-I/opt/homebrew/include
+        ./koga --build-mode=${{ matrix.mode }} ${{ case(matrix.defaultnative == 'yes', '', '--default-native') }} --extensions=cando --cflags=-I/opt/homebrew/include --cppflags=-I/opt/homebrew/include --cxxflags=-I/opt/homebrew/include
     - name: Build
       run: |
         ninja -C build

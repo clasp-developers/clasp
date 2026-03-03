@@ -225,7 +225,7 @@
   :directory "src/lisp/kernel/contrib/Invistra/"
   :repository "https://github.com/s-expressionists/Invistra.git"
   :branch "main"
-  :commit "0744ec2452359499b95764d43bbd5bdc48f5c76a"
+  :commit "82c40ee8ed6aa68c6de145961c9eee9d9c8ed157"
   :pin 1)
  (:name :khazern
   :directory "src/lisp/kernel/contrib/Khazern/"
