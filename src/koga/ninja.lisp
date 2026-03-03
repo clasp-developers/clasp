@@ -686,7 +686,8 @@
                          :inputs nfasls))
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "iclasp")
-                                     image)
+                                     image
+                                     (build-name "modules"))
                        :outputs (list (build-name "nclasp")))
     (when *variant-default*
       (ninja:write-build output-stream :install-file
