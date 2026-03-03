@@ -672,12 +672,12 @@
                          :source (make-kernel-source-list configuration sources)
                          :inputs (list* (make-source "tools-for-build/character-names.sexp"
                                                      :code)
-                                        (build-name "modules")
                                         features.sexp
                                         sources)
                          :sources (make-kernel-source-list configuration sources)
                          :cfasls cfasls
-                         :implicit-inputs (list iclasp vimage)
+                         :implicit-inputs (list iclasp vimage
+                                                (build-name "modules"))
                          :image vimage
                          :outputs nfasls)
       (ninja:write-build output-stream :link-image
