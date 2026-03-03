@@ -654,14 +654,12 @@ is not compatible with snapshots.")
                                                          (list (make-source #p"generate-lisp-info.lisp" :build))
                                                          :compile-bytecode-image
                                                          (list (make-source #P"compile-bytecode-image.lisp" :build))
-                                                         :link-bytecode-image
-                                                         (list (make-source #P"link-bytecode-image.lisp" :build))
                                                          :compile-native-image
                                                          (list (make-source #p"compile-native-image.lisp" :build))
-                                                         :link-native-image
-                                                         (list (make-source #p"link-native-image.lisp"))
                                                          :compile-systems
                                                          (list (make-source #P"compile-systems.lisp" :build))
+                                                         :link-image
+                                                         (list (make-source #P"link-image.lisp" :build))
                                                          :update-unicode
                                                          (list (make-source #P"update-unicode.lisp" :build))
                                                          :generate-encodings
@@ -833,17 +831,20 @@ then they will overide the current variant's corresponding property."
                 (t
                  *variant-bitcode-name*))))
 
-(defun fasl-extension (configuration)
+(defun fasl-extension (mode)
   "Return the fasl extension based on the build mode."
-  (case (build-mode configuration)
+  (case mode
     (:native "nfasl")
     (:bytecode "fasl")))
 
-(defun image-source (configuration extension &optional (root :variant-lib))
+(defun image-source (configuration &key extension (root :variant-lib) (mode nil modep))
   "Return the name of an image based on a target name, the bitcode name
 and the build mode."
   (make-source (format nil "images/~:[base~;extension~].~a"
-                       extension (fasl-extension configuration))
+                       extension
+                       (fasl-extension (if modep
+                                           mode
+                                           (build-mode configuration))))
                root))
 
 (defun funcall-variant (configuration func

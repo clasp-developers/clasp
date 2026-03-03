@@ -144,7 +144,7 @@
                     :description "Building Clasp bytecode image"
                     :restat 1)
   (ninja:write-rule output-stream :compile-native-image
-                    :command "$clasp --norc --disable-mpi --image $image --load \"SYS:SRC;LISP;MODULES;ASDF;BUILD;ASDF.LISP\" --eval \"(provide :asdf)\" --load compile-native-image.lisp --quit -- $in --output $out --sources $sources --cfasls $cfasls"
+                    :command "$clasp --norc --disable-mpi --image $image --load compile-native-image.lisp --quit -- $in --output $out --sources $sources --cfasls $cfasls"
                     :description "Compiling Clasp native image"
                     :restat 1
                     :pool "console")
@@ -159,7 +159,7 @@
                       :restat 1
                       :pool "console"))
   (ninja:write-rule output-stream :compile-module
-                    :command "$clasp --non-interactive --norc --disable-mpi --base --feature ignore-extensions --load compile-module.lisp -- $fasl $source"
+                    :command "$clasp --non-interactive --norc --disable-mpi --image $image --feature ignore-extensions --load compile-module.lisp -- $fasl $source"
                     :description "Compiling module $in")
   (ninja:write-rule output-stream :regression-tests
                     :command "$clasp --norc --non-interactive --base --feature ignore-extensions --load \"sys:src;lisp;regression-tests;run-all.lisp\""
@@ -185,8 +185,8 @@
                     :command "$clasp --norc --base --feature ignore-extensions --load \"../dependencies/ansi-test/run-random-type-tests.lisp\""
                     :description "Running pfdietz test-random-integer-forms"
                     :pool "console")
-  (ninja:write-rule output-stream :link-bytecode-image
-                    :command (lisp-command "link-bytecode-image.lisp" "$out $in")
+  (ninja:write-rule output-stream :link-image
+                    :command (lisp-command "link-image.lisp" "$out $in")
                     :restat 1
                     :description "Linking $target")
   (ninja:write-rule output-stream "link-fasl-abc"
@@ -606,16 +606,17 @@
 
 (defmethod print-variant-target-source
     (configuration (name (eql :ninja)) output-stream (target (eql :modules)) (source lisp-source))
-  (let* ((image (image-source configuration nil))
+  (let* ((image (image-source configuration :mode :bytecode))
          (name (pathname-name (source-path source)))
          (module-name (format nil "modules/~a.~a"
-                              name (fasl-extension configuration)))
+                              name (fasl-extension (build-mode configuration))))
          (output (make-source module-name :variant-lib))
          (install-output (make-source module-name :package-lib))
          (iclasp (make-source "iclasp" :variant))
          (clasp-with-env (wrap-with-env configuration iclasp)))
     (ninja:write-build output-stream :compile-module
                        :clasp clasp-with-env
+                       :image (image-source configuration :mode :bytecode)
                        :inputs (list source)
                        :implicit-inputs (list iclasp image)
                        :source (format nil "\"~/ninja:escape/\""
@@ -646,13 +647,12 @@
          (fli-specs.lisp (make-source "fli-specs.lisp" :variant-generated))
          (generated-encodings.lisp
            (make-source "generated-encodings.lisp" :variant-generated))
-         (vimage (make-source "images/base.fasl" :variant-lib))
-         (vimage-installed (make-source "images/base.fasl" :package-lib))
-         (nimage (make-source "images/base.nfasl" :variant-lib))
-         (nimage-installed (make-source "images/base.nfasl" :package-lib))
+         (vimage (image-source configuration :mode :bytecode))
+         (nimage (image-source configuration :mode :native))
          (image (ecase (build-mode configuration)
                   ((:bytecode) vimage)
                   ((:native) nimage)))
+         (image-installed (image-source configuration :root :package-lib))
          (iclasp (make-source "iclasp" :variant))
          (clasp-with-env (wrap-with-env configuration iclasp)))
     (ninja:write-build output-stream :generate-lisp-info
@@ -678,7 +678,7 @@
                          :sources (make-kernel-source-list
                                    configuration sources)
                          :outputs outputs)
-      (ninja:write-build output-stream :link-bytecode-image
+      (ninja:write-build output-stream :link-image
                          :inputs fasls
                          :outputs (list vimage)
                          :target target))
@@ -694,6 +694,7 @@
                          :source (make-kernel-source-list configuration sources)
                          :inputs (list* (make-source "tools-for-build/character-names.sexp"
                                                      :code)
+                                        (build-name "modules")
                                         features.sexp
                                         sources)
                          :sources (make-kernel-source-list configuration sources)
@@ -701,23 +702,22 @@
                          :implicit-inputs (list iclasp vimage)
                          :image vimage
                          :outputs nfasls)
-      (ninja:write-build output-stream :link-bytecode-image
+      (ninja:write-build output-stream :link-image
                          :clasp clasp-with-env
                          :outputs (list nimage)
                          :inputs nfasls))
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "iclasp")
-                                     image
-                                     (build-name "modules"))
+                                     image)
                        :outputs (list (build-name "nclasp")))
     (when *variant-default*
       (ninja:write-build output-stream :install-file
-                         :inputs (list vimage)
-                         :outputs (list vimage-installed))
+                         :inputs (list image)
+                         :outputs (list image-installed))
       (ninja:write-build output-stream :phony
                          :inputs (list "install_iclasp"
                                        "install_modules"
-                                       vimage-installed)
+                                       image-installed)
                          :outputs (list "install_nclasp")))))
 
 (defmethod print-variant-target-sources
@@ -735,14 +735,14 @@
     (configuration (name (eql :ninja)) output-stream (target (eql :eclasp)) sources
      &key &allow-other-keys)
   (when (extensions configuration)
-    (let* ((cimage (make-source "images/base.fasl" :variant-lib))
-           (eimage (image-source configuration t))
-           (eimage-installed (image-source configuration t :package-lib))
+    (let* ((cimage (image-source configuration :mode :bytecode))
+           (eimage (image-source configuration :extension t))
+           (eimage-installed (image-source configuration :extension t :root :package-lib))
            (iclasp (make-source "iclasp" :variant))
            (clasp-with-env (wrap-with-env configuration iclasp))
            (eclasp-sources (member #P"src/lisp/kernel/stage/extension/0-begin.lisp" sources :key #'source-path :test #'equal))
            (fasls (mapcar (lambda (x)
-                            (source-fasl x :type (fasl-extension configuration)))
+                            (source-fasl x :type (fasl-extension (build-mode configuration))))
                           eclasp-sources)))
       (ninja:write-build output-stream :compile-eclasp
                          :clasp clasp-with-env
@@ -752,7 +752,7 @@
                          :inputs eclasp-sources
                          :implicit-inputs (list iclasp (build-name "nclasp"))
                          :outputs fasls)
-      (ninja:write-build output-stream :link-bytecode-image
+      (ninja:write-build output-stream :link-image
                          :inputs (list* cimage fasls)
                          :implicit-inputs (list iclasp)
                          :outputs (list eimage)

@@ -251,7 +251,7 @@
             (:native t)
             (:bytecode nil))))
 
-(defmethod print-prologue (configuration (name (eql :link-bytecode-image)) output-stream)
+(defmethod print-prologue (configuration (name (eql :link-image)) output-stream)
   (declare (ignore configuration))
   (print-asdf-stub output-stream t :maclina/compile-file)
   (format output-stream "(apply #'uiop:symbol-call \"MACLINA.COMPILE-FILE\" \"LINK-FASLS\"
