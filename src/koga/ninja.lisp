@@ -142,7 +142,8 @@
   (ninja:write-rule output-stream :compile-bytecode-image
                     :command (lisp-command "compile-bytecode-image.lisp" "$in --output $out --sources $sources")
                     :description "Building Clasp bytecode image"
-                    :restat 1)
+                    :restat 1
+                    :pool "console")
   (ninja:write-rule output-stream :compile-native-image
                     :command "$clasp --norc --disable-mpi --image $image --load compile-native-image.lisp --quit -- $in --output $out --sources $sources --cfasls $cfasls"
                     :description "Compiling Clasp native image"
