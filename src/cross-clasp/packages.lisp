@@ -397,4 +397,5 @@
   (:export #:build-macroexpand #:build-macroexpand-1
            #:describe-variable
            #:constantp #:constant-form-value)
-  (:export #:initialize #:cross-compile-file #:install-delayed-macros #:build))
+  (:export #:initialize #:cross-compile-file #:install-delayed-macros
+           #:build #:build-native))
