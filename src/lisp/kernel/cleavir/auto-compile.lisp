@@ -240,7 +240,6 @@
   ((%function :initarg :function :reader ncjob-function)
    (%arguments :initarg :arguments :reader ncjob-arguments)
    (%result :initform nil :accessor ncjob-result)
-   (%serious-condition :initform nil :accessor ncjob-serious-condition)
    (%warnings :initform nil :accessor ncjob-warnings)
    (%notes :initform nil :accessor ncjob-notes)
    (%other-conditions :initform nil :accessor ncjob-other-conditions)
@@ -258,7 +257,14 @@
                      (handler-bind
                          ((serious-condition
                             (lambda (e)
-                              (setf (ncjob-serious-condition job) e)
+                              ;; we have to give up, but we don't want
+                              ;; compilation to fail since native compilation
+                              ;; is fundamentally optional,
+                              ;; so just make a note.
+                              (push (make-condition
+                                     'cmp:native-compilation-failure
+                                     :condition e)
+                                    (ncjob-notes job))
                               ;; can't continue, so go wait for more jobs
                               (return)))
                           (warning
@@ -282,16 +288,7 @@
   ;; with-compilation-results handlers do, and then muffle the warnings
   ;; (which is why we use WARN and not SIGNAL). Kind of ugly.
   (mapc #'warn (ncjob-warnings job))
-  (mapc #'cmp:note (ncjob-notes job))
-  (when (ncjob-serious-condition job)
-    ;; We use SIGNAL rather than ERROR although the condition is serious.
-    ;; This is because the job has already exited and therefore there
-    ;; is no way to debug the problem. with-compilation-results will
-    ;; still understand that it's an error and report compilation failure.
-    ;; It's possible we could save the original backtrace and so on, but
-    ;; if you want to debug problems, it would probably be easier to
-    ;; use the serial compiler and debug them as they appear.
-    (signal (ncjob-serious-condition job))))
+  (mapc #'cmp:note (ncjob-notes job)))
 
 (defclass nc-thread-pool ()
   ((%threads :initarg :threads :reader nc-threads)
