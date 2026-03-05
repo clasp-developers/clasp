@@ -232,15 +232,6 @@
                            collect thing)
         collect (cons ir clos)))
 
-;;; Given a bytecode function, compile it into the given IR module.
-;;; that is, this does NOT finish the compilation process.
-;;; the BIR:FUNCTION is returned.
-;;; Used in compile-type-decl.
-(defun compile-bcfun-into (function irmodule)
-  (let ((fmap (compile-bcmodule-into (core:simple-fun-code function)
-                                     irmodule)))
-    (finfo-irfun (find-bcfun function fmap))))
-
 ;;; Return a list of all annotations that start at IP 0.
 (defun initial-annotations (annotations)
   (loop for annot across annotations
@@ -1503,11 +1494,32 @@
                         :type-check-function type-check-function)
           out))))
 
+;;; We compile a type check function into a bytecode cmodule, and then
+;;; compile that into our existing irmodule.
+;;; We used to just cmp:bytecompile, i.e. make an actual runtime function,
+;;; but that has slight problems when the type check is made by the file
+;;; compiler. For example, we had (find-class 'foo) compiler macroexpand
+;;; into (... (load-time-value (core:find-class-holder 'foo)) ...). This
+;;; load time value would then be evaluated at compile time, and the file
+;;; compiler would have to dump a literal class holder, which it did not know
+;;; how to do!
+;;; Happily, everything works out with a cmodule even if we actually are doing
+;;; runtime compilation (COMPILE or autocompilation) so we don't need to have
+;;; a flag keeping track of that or any such crap.
 ;;; TODO? Probably could cache this, at least for standard types.
-(defun bytecompile-type-check (which ctype sys module)
-  (compile-bcfun-into
-   (cmp:bytecompile (clasp-cleavir::make-type-check-fun which ctype sys))
-   module))
+(defun bytecompile-type-check (which ctype sys irmod)
+  (let* ((bcmod (cmp:module/make))
+         (cfunction
+           (cmp:bytecompile-into bcmod
+                                 (clasp-cleavir::make-type-check-fun
+                                  which ctype sys))))
+    (cmp:module/link bcmod)
+    (let* ((bytecode (cmp:module/create-bytecode bcmod))
+           (literals (cmp:module/literals bcmod))
+           (info (cmp:module/create-debug-info bcmod))
+           (cliterals (compute-compiled-literals literals irmod))
+           (funmap (compile-bytecode-into bytecode info cliterals irmod)))
+      (finfo-irfun (find-bcfun cfunction funmap)))))
 
 ;;; FIXME: To get declaration scope right w/ bytecode-debug-vars we'll probably
 ;;; need to ensure that decls appear before vars in the annotations.

@@ -1661,7 +1661,9 @@
                 :id id :main main :xep xep)))))
 
 (defun native-literals (native-literals)
-  (map 'vector #'ensure-module-literal native-literals))
+  (let (;; don't bother native compiling LTV forms.
+        (cmp:*compile-file-native* nil))
+    (map 'vector #'ensure-module-literal native-literals)))
 
 (defun ensure-module (module)
   (or (find-oob module) (add-module module)))
