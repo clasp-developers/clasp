@@ -145,7 +145,7 @@
                     :restat 1
                     :pool "console")
   (ninja:write-rule output-stream :compile-native-image
-                    :command "$clasp --norc --disable-mpi --image $image --load compile-native-image.lisp --quit -- $in --output $out --sources $sources --cfasls $cfasls"
+                    :command "$clasp --norc --disable-mpi --feature ignore-extensions --image $image --load compile-native-image.lisp --quit -- $in --output $out --sources $sources --cfasls $cfasls"
                     :description "Compiling Clasp native image"
                     :restat 1
                     :pool "console")
