@@ -174,6 +174,11 @@
              #~"kernel/cleavir/auto-compile.lisp"))
 
 (defun add-eclasp-sources (target)
+  ;; We throw in base sources for dependency management purposes.
+  ;; For example, if the base image depends on trivial-with-current-source-form
+  ;; (through Khazern) but the extension systems _also_ depend on it (through
+  ;; Esrap) we want to make sure the extension dependencies don't include
+  ;; t-w-c-s-f. This is also why we do the member on 0-begin.lisp in koga.
   (add-nclasp-sources target)
   (k:sources target
              #~"kernel/stage/extension/0-begin.lisp"

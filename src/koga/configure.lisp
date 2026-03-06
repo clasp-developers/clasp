@@ -648,6 +648,8 @@ is not compatible with snapshots.")
                                                          (list (make-source #p"compile-native-image.lisp" :build))
                                                          :compile-systems
                                                          (list (make-source #P"compile-systems.lisp" :build))
+                                                         :compile-lisp
+                                                         (list (make-source #p"compile-lisp.lisp" :build))
                                                          :link-image
                                                          (list (make-source #P"link-image.lisp" :build))
                                                          :update-unicode

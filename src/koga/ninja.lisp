@@ -145,10 +145,12 @@
                     :restat 1
                     :pool "console")
   (ninja:write-rule output-stream :compile-native-image
-                    :command "$clasp --norc --disable-mpi --feature ignore-extensions --image $image --load compile-native-image.lisp --quit -- $in --output $out --sources $sources --cfasls $cfasls"
+                    :command "$clasp --norc  --non-interactive --disable-mpi --feature ignore-extensions --image $image --load compile-native-image.lisp --quit -- $in --output $out --sources $sources --cfasls $cfasls"
                     :description "Compiling Clasp native image"
                     :restat 1
                     :pool "console")
+  (ninja:write-rule output-stream :compile-lisp
+                    :command "$clasp --norc --non-interactive --disable-mpi --feature ignore-extension-systems --image $image --load compile-lisp.lisp --quit -- $in --output $out --sources $sources")
   (when (extensions configuration)
     (ninja:write-rule output-stream :snapshot-eclasp
                       :command "$clasp --norc --disable-mpi --base --feature ignore-extension-systems --feature cclasp --load snapshot-clasp.lisp -- $out extension $position $source"
@@ -716,24 +718,25 @@
      &key &allow-other-keys)
   (when (extensions configuration)
     (let* ((cimage (image-source configuration :mode :bytecode))
+           (nimage (image-source configuration))
            (eimage (image-source configuration :extension t))
            (eimage-installed (image-source configuration :extension t :root :package-lib))
            (iclasp (make-source "iclasp" :variant))
            (clasp-with-env (wrap-with-env configuration iclasp))
-           (eclasp-sources (member #P"src/lisp/kernel/stage/extension/0-begin.lisp" sources :key #'source-path :test #'equal))
+           (eclasp-sources (member #P"src/lisp/kernel/stage/extension/0-begin.lisp"
+                                   sources :key #'source-path :test #'equal))
            (fasls (mapcar (lambda (x)
                             (source-fasl x :type (fasl-extension (build-mode configuration))))
                           eclasp-sources)))
-      (ninja:write-build output-stream :compile-eclasp
+      (ninja:write-build output-stream :compile-lisp
                          :clasp clasp-with-env
                          :image cimage
-                         :position (- (length sources) (length eclasp-sources))
-                         :source (make-kernel-source-list configuration eclasp-sources)
                          :inputs eclasp-sources
-                         :implicit-inputs (list iclasp (build-name "nclasp"))
+                         :sources (make-kernel-source-list configuration eclasp-sources)
+                         :implicit-inputs (list iclasp cimage)
                          :outputs fasls)
       (ninja:write-build output-stream :link-image
-                         :inputs (list* cimage fasls)
+                         :inputs (list* nimage fasls)
                          :implicit-inputs (list iclasp)
                          :outputs (list eimage)
                          :target target)

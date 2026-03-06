@@ -219,6 +219,22 @@
                  :direction :output :if-exists :supersede :if-does-not-exist :create)
   (pprint core:*command-line-arguments* stream))"))
 
+(defmethod print-prologue (configuration (name (eql :compile-lisp)) output-stream)
+  (declare (ignore configuration))
+  (format output-stream "
+(let* ((sources core:*command-line-arguments*)
+       (breaker (or (position \"--output\" sources :test #'string=)
+                    (error \"Need --output to compile-lisp\")))
+       (b2 (or (position \"--sources\" sources :test #'string=)
+               (error \"Need --sources to compile-bytecode-image\")))
+       (input (subseq sources 0 breaker))
+       (output (subseq sources (1+ breaker) b2))
+       (sourcepaths (subseq sources (1+ b2))))
+  (loop for inp across input
+        for out across output
+        for source across sourcepaths
+        do (load (compile-file inp :output-file out :source-debug-pathname source))))"))
+
 (defmethod print-variant-target-sources
     (configuration (name (eql :generate-headers)) output-stream
      (target (eql :scraper)) sources
