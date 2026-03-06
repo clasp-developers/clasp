@@ -195,31 +195,21 @@
               (clasp-cleavir::*fixed-closures*
                 (fixed-closures-map (fmap funmap))))                
           (clasp-cleavir::jit-bir irmodule :abi abi :pathname "repl-code"))
-      ;; Build up a mapping from generators to their original bytecode functions.
-      (let ((generator->bytecode
-              (loop with g->b = (make-hash-table)
-                    for (bc ir) in (fmap funmap)
-                    for info = (gethash ir function-infos)
-                    for xep = (clasp-cleavir::xep-function info)
-                    unless (eq xep :xep-unallocated)
-                      do (setf (gethash (cmp:xep-group-generator xep) g->b) bc)
-                    finally (return g->b))))
-        ;; Replace any generators in the constants with the corresponding
-        ;; bytecode function, or a newly generated native function if there is
-        ;; no corresponding bytecode function (e.g. it's a new type check function).
-        ;; Store everything in the compiled code.
-        (loop for c across constants for i from 0
-              for real-c = (if (typep c 'core:simple-core-fun-generator)
-                               (or (gethash c generator->bytecode)
-                                   (clasp-cleavir::jit-generator c fvector))
-                               c)
-              do (setf (core:literals-vref ctable i) real-c))
-        ;; Generate XEPs for all the bytecode functions, and store them as
-        ;; the bytecode functions' simple funs.
-        (loop for generator being the hash-keys of generator->bytecode
-                using (hash-value bcfun)
-              for fun = (clasp-cleavir::jit-generator generator fvector)
-              do (core:set-simple-fun bcfun fun)))))
+      ;; Install literals.
+      (loop for lit in (clasp-cleavir::jit-resolve-literals constants fvector)
+            for i from 0
+            do (setf (core:literals-vref ctable i) lit))
+      ;; Generate XEPs for all the bytecode functions, and store them as
+      ;; the bytecode functions' simple funs.
+      (loop for (bcfun ir) in (fmap funmap)
+            for info = (gethash ir function-infos)
+            unless (null info)
+              do (let ((xep (clasp-cleavir::xep-function info)))
+                   (unless (eq xep :xep-unallocated)
+                     (let* ((generator (cmp:xep-group-generator xep))
+                            (native
+                              (clasp-cleavir::jit-generator generator fvector)))
+                       (core:set-simple-fun bcfun native)))))))
   (values))
 
 (defun fixed-closures-map (fmap)

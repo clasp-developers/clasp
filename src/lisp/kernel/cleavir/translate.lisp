@@ -2301,13 +2301,8 @@ COMPILE-FILE will use the default *clasp-env*."
       (let* ((info (or (gethash bir function-infos)
                        (error "Missing LLVM function info for BIR function ~a."
                               bir)))
-             (generator (cmp:xep-group-generator (xep-function info)))
-             (core-generator
-               (core:simple-core-fun-generator/core-fun-generator generator)))
-        (core:simple-core-fun-generator/generate
-         generator
-         (core:core-fun-generator/generate core-generator fvector)
-         fvector)))))
+             (generator (cmp:xep-group-generator (xep-function info))))
+        (jit-generator generator fvector)))))
 
 ;;; Used from fli.lisp.
 ;;; Create a function like
