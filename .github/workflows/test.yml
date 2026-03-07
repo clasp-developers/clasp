@@ -23,18 +23,13 @@ jobs:
         defaultnative: [no, yes]
         auto: [no, yes]
         exclude:
-          - mode: native
-            auto: yes
+          - auto: yes
           - mode: native
             defaultnative: no
           - mode: bytecode
             defaultnative: yes
           - build: cando
-            mode: native
-          - build: cando
-            auto: yes
-          - os: macos-latest
-            mode: native
+            mode: bytecode
 
     runs-on: ${{ matrix.os }}
 
