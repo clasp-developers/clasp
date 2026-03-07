@@ -831,11 +831,12 @@
 (defmethod compile-instruction ((mnemonic (eql :vaslistify-rest-args))
                                 inserter context &rest args)
   (destructuring-bind (start) args
+    (declare (ignore start))
     (let* ((ifun (bir:function inserter))
            (ll (bir:lambda-list ifun))
            (rarg (make-instance 'bir:argument :function ifun)))
-      (setf (bir:lambda-list ifun) (append ll `(core:&va-rest ,rarg))
-            (aref (locals context) start) (cons rarg nil)))))
+      (setf (bir:lambda-list ifun) (append ll `(core:&va-rest ,rarg)))
+      (stack-push rarg context))))
 
 (defgeneric constant-value (constant)
   (:method ((c symbol)) c))
