@@ -286,6 +286,7 @@ public:
   void* calculateTail(uintptr_t size, uint32_t align, uintptr_t& tailOffset);
   uintptr_t calculateHeadOffset(uintptr_t size, uint32_t align, uintptr_t& headOffset);
   uintptr_t calculateTailOffset(uintptr_t size, uint32_t align, uintptr_t& tailOffset);
+  void registerDataAsGCRoot() const;
   void describe() const;
 
   std::string __repr__() const;
@@ -409,6 +410,9 @@ template <typename Stage> inline void allocateInCodeBlock(BasicLayout& BL, CodeB
       SIMPLE_ERROR("Could not allocate enough space for code {}", size);
     }
   }
+  // Register the data segment as GC roots, if it's allocated outside of
+  // GC space (as it is on Apple silicon - see CLASP_APPLE_SILICON).
+  codeBlock->registerDataAsGCRoot();
   //
   // Temporarily set memory permissions to RW- (current thread) or RWX (all threads), depending on OS
   //

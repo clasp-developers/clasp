@@ -704,6 +704,22 @@ uintptr_t CodeBlock_O::calculateTailOffset(uintptr_t size, uint32_t align, uintp
   return tail;
 }
 
+void CodeBlock_O::registerDataAsGCRoot() const {
+#ifdef CLASP_APPLE_SILICON
+  // On Apple silicon we are allocated outside of GC memory, so we have to
+  // mark the data segments as roots for GC scanning.
+  // We're relying implicitly on how Boehm does root registration.
+  // Firstly, Boehm is obviously imprecise, so the fact data segments contain
+  // arbitrary non-Lisp data isn't a big deal.
+  // Secondly, if we GC_add_roots a region that has already had its beginning
+  // registered as starting a root region, Boehm will expand the existing region
+  // rather than create a new one.
+  // Boehm has a hard limit of 8192 root regions added this way, so we want
+  // to have as few registrations as we can manage.
+  gctools::clasp_gc_registerRoots(dataStart(), (void**)(dataEnd()) - (void**)(dataStart()));
+#endif
+}
+
 std::string CodeBlock_O::__repr__() const {
   stringstream ss;
   ss << "#<CODE-BLOCK";

@@ -614,9 +614,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       abort();
     }
     //
-    void* literalStart = (void*)currentCode->getLiteralVectorStart();
-    size_t literalCount = currentCode->_LiteralVectorSizeBytes / sizeof(void*);
-    gctools::clasp_gc_registerRoots(literalStart, literalCount);
 #ifdef DEBUG_OBJECT_FILES
     for (auto* Sym : G.external_symbols())
       if (Sym->getName() == "DW.ref.__gxx_personality_v0") {
