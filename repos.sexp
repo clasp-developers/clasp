@@ -257,7 +257,7 @@
   :directory "src/lisp/kernel/contrib/Maclina/"
   :repository "https://github.com/s-expressionists/Maclina.git"
   :branch "cross"
-  :commit "391ddb5409207c7cfa636fdaead33c9d9ac11a31"
+  :commit "ab0d0370fce6227b38259e442a9e2269b3ce257a"
   :pin 1)
  (:name :mgl-pax
   :extension :cando
