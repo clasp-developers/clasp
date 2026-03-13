@@ -27,7 +27,7 @@
   :directory "dependencies/ansi-test/"
   :repository "https://github.com/clasp-developers/ansi-test.git"
   :branch "master"
-  :commit "510a2e39c69127f52a529baada59a9b765774b55"
+  :commit "ca06bd919661af162c67407c9d994e881870bdb3"
   :pin 1)
  (:name :architecture.builder-protocol
   :extension :cando
@@ -80,7 +80,7 @@
   :directory "src/lisp/kernel/contrib/cffi/"
   :repository "https://github.com/cffi/cffi.git"
   :branch "master"
-  :commit "dad3520cd3b4d14fd494ce617c8394b48e027bb1"
+  :commit "71fdf5d4864dd07a74534c953350041ceaa93f0e"
   :pin 1)
  (:name :cl-bench
   :directory "dependencies/cl-bench/"
@@ -186,7 +186,7 @@
   :directory "src/lisp/kernel/contrib/Extrinsicl/"
   :repository "https://github.com/s-expressionists/Extrinsicl.git"
   :branch "cross"
-  :commit "97dc6e97eb442549f658ad484cb68a7dbc3bd36c"
+  :commit "19d4610e8074463fad22dc5e0357ce4b4027a2e2"
   :pin 1)
  (:name :fast-io
   :extension :cando
@@ -213,19 +213,19 @@
   :directory "src/lisp/kernel/contrib/Incless/"
   :repository "https://github.com/s-expressionists/Incless.git"
   :branch "main"
-  :commit "1a86fd17c8e7816d1c2c1288a521c8814de9e8a1"
+  :commit "ed66503f90f997c92f0bc74899684d7ae88163b4"
   :pin 1)
  (:name :inravina
   :directory "src/lisp/kernel/contrib/Inravina/"
   :repository "https://github.com/s-expressionists/Inravina.git"
   :branch "main"
-  :commit "d672b6f56f0391ce6ad586e1b16b8d8462b3928c"
+  :commit "70169019cb7a7b8109e9db01abbe18f4532c8e30"
   :pin 1)
  (:name :invistra
   :directory "src/lisp/kernel/contrib/Invistra/"
   :repository "https://github.com/s-expressionists/Invistra.git"
   :branch "main"
-  :commit "82c40ee8ed6aa68c6de145961c9eee9d9c8ed157"
+  :commit "680d505fad4be9769faae63fb1a5b897eaa8d3c9"
   :pin 1)
  (:name :khazern
   :directory "src/lisp/kernel/contrib/Khazern/"
@@ -264,14 +264,14 @@
   :directory "src/lisp/kernel/contrib/mgl-pax/"
   :repository "https://github.com/melisgl/mgl-pax.git"
   :branch "master"
-  :commit "c1c1edb32d0e596ce18af582e2a33aa9b09c98ef"
+  :commit "f7f9414012c56c95b6f55a50a85199b8d3a25408"
   :pin 1)
  (:name :named-readtables
   :extension :cando
   :directory "src/lisp/kernel/contrib/named-readtables/"
   :repository "https://github.com/melisgl/named-readtables.git"
   :branch "master"
-  :commit "6eea56674442b884a4fee6ede4c8aad63541aa5b"
+  :commit "08c605ef2ec29238c708556b272bf6dc18d5b070"
   :pin 1)
  (:name :nontrivial-gray-streams
   :directory "src/lisp/kernel/contrib/nontrivial-gray-streams/"
@@ -323,6 +323,7 @@
   :directory "extensions/seqan-clasp/seqan/"
   :repository "https://github.com/seqan/seqan.git"
   :branch "main"
+  :commit "25b31d538ae731d7ec03acdbe6be715fa8186983"
   :pin 1)
  (:name :seqan-clasp
   :extension :seqan-clasp
@@ -408,7 +409,7 @@
   :directory "src/lisp/kernel/contrib/trivial-utf-8/"
   :repository "https://github.com/clasp-developers/trivial-utf-8.git"
   :branch "master"
-  :commit "718e74506ca02ec1d46c1f424a7881fed6373349"
+  :commit "3c51f5b8916e158ff1ba2128b8ec784db46f38a8"
   :pin 1)
  (:name :trivial-with-current-source-form
   :directory "src/lisp/kernel/contrib/trivial-with-current-source-form/"
