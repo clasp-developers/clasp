@@ -240,6 +240,14 @@ Operation was (~s~{ ~s~})."
 Abandoning further work on it and moving on."
                      (original-condition condition)))))
 
+;;; Native compilation failure means a bug or limitation in Clasp
+;;; so don't alert the user unless they're debugging that.
+(defvar *note-native-compilation-failure* nil)
+
+(defun note-native-compilation-failure (condition)
+  (when *note-native-compilation-failure*
+    (note 'native-compilation-failure :condition condition)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Redefining some earlier error-noting calls, so that they

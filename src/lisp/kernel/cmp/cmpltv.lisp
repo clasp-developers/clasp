@@ -1624,8 +1624,7 @@
                 (incf *native-module-id*))
             (serious-condition (e)
               ;; error? who cares, native code is optional, move on
-              (cmp:note 'cmp:native-compilation-failure
-                        :condition e)))))
+              (cmp::note-native-compilation-failure e)))))
     mod))
 
 (defun add-native-module-instructions (module native-module)

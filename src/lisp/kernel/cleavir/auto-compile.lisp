@@ -261,10 +261,11 @@
                               ;; compilation to fail since native compilation
                               ;; is fundamentally optional,
                               ;; so just make a note.
-                              (push (make-condition
-                                     'cmp:native-compilation-failure
-                                     :condition e)
-                                    (ncjob-notes job))
+                              (when cmp::*note-native-compilation-failure*
+                                (push (make-condition
+                                       'cmp:native-compilation-failure
+                                       :condition e)
+                                      (ncjob-notes job)))
                               ;; can't continue, so go wait for more jobs
                               (return)))
                           (warning

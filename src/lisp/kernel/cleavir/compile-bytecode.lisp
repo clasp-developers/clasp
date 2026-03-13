@@ -17,8 +17,7 @@
   (declare (ignore environment))
   (handler-case (compile-function definition)
     (error (e)
-      (cmp:note 'cmp:native-compilation-failure
-                :condition e)
+      (cmp::note-native-compilation-failure e)
       definition)))
 
 ;;; During file compilation we will have a cmp:cfunction rather than an
