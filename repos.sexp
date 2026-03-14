@@ -132,7 +132,7 @@
  (:name :cleavir
   :directory "src/lisp/kernel/contrib/Cleavir/"
   :repository "https://github.com/s-expressionists/Cleavir.git"
-  :branch "cross"
+  :branch "main"
   :pin 0)
  (:name :closer-mop
   :directory "src/lisp/kernel/contrib/closer-mop/"
@@ -185,7 +185,7 @@
  (:name :extrinsicl
   :directory "src/lisp/kernel/contrib/Extrinsicl/"
   :repository "https://github.com/s-expressionists/Extrinsicl.git"
-  :branch "cross"
+  :branch "main"
   :commit "19d4610e8074463fad22dc5e0357ce4b4027a2e2"
   :pin 1)
  (:name :fast-io
@@ -256,8 +256,8 @@
  (:name :maclina
   :directory "src/lisp/kernel/contrib/Maclina/"
   :repository "https://github.com/s-expressionists/Maclina.git"
-  :branch "cross"
-  :commit "ab0d0370fce6227b38259e442a9e2269b3ce257a"
+  :branch "main"
+  :commit "bc46f828963b7c0c6a14fec433edc07cdd0c784f"
   :pin 1)
  (:name :mgl-pax
   :extension :cando
