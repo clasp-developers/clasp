@@ -721,10 +721,6 @@
            (extension-image-installed (image-source configuration :extension t :root :package-lib))
            (iclasp (make-source "iclasp" :variant))
            (clasp-with-env (wrap-with-env configuration iclasp))
-           (fasls (loop for source in sources
-                        when (typep source 'lisp-source)
-                          collect (source-fasl source
-                                               :type (fasl-extension (build-mode configuration)))))
            (extension-sources (loop with extension = nil
                                     for source in sources
                                     when (and extension (typep source 'lisp-source))
@@ -742,7 +738,7 @@
                          :implicit-inputs (list iclasp bytecode-base-image)
                          :outputs extension-fasls)
       (ninja:write-build output-stream :link-image
-                         :inputs (list* base-image fasls)
+                         :inputs (list* base-image extension-fasls)
                          :implicit-inputs (list iclasp)
                          :outputs (list extension-image))
       (ninja:write-build output-stream :phony
