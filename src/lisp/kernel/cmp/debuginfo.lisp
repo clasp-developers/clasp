@@ -247,7 +247,6 @@
 
 (defun cached-function-scope (function-scope-info &optional function-type)
   ;; See production in cleavir/inline-prep.lisp
-  #+(or cclasp eclasp)
   (when core:*debug-source-pos-info*
     (let ((name (car function-scope-info)))
       (when (char= #\^ (elt name (1- (length name))))

@@ -494,7 +494,6 @@ Returns T if X belongs to TYPE; NIL otherwise."
 		 (t (setq tp type i nil)))))
 	((consp type)
 	 (setq tp (car type) i (cdr type)))
-	#+clos
 	((clos::classp type)
 	 (return-from typep (si:subclassp (class-of object) type)))
 	(t

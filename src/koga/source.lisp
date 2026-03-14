@@ -29,6 +29,9 @@
 (defclass directory-source (source)
   ())
 
+(defclass mark-source (source)
+  ())
+
 (defclass c-source (source)
   ())
 
@@ -55,6 +58,7 @@
     (#P"*.hpp" . h-source)
     (#P"*.lsp" . lisp-source)
     (#P"*.lisp" . lisp-source)
+    (#P"*.mark" . mark-source)
     (#P"*.ninja" . ninja-source)
     (#P"*.sif" . sif-source)
     (#P"*.*" . source)))

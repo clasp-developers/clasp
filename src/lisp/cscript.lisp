@@ -1,4 +1,4 @@
-(defun add-nclasp-sources (target)
+(defun add-base-sources (target)
   (k:sources target
              #@"runtime-packages.lisp"
              #@"runtime-functions.lisp"
@@ -173,24 +173,23 @@
              #~"kernel/cmp/external-clang.lisp"
              #~"kernel/cleavir/auto-compile.lisp"))
 
-(defun add-eclasp-sources (target)
+(defun add-extension-sources (target)
   ;; We throw in base sources for dependency management purposes.
   ;; For example, if the base image depends on trivial-with-current-source-form
   ;; (through Khazern) but the extension systems _also_ depend on it (through
   ;; Esrap) we want to make sure the extension dependencies don't include
   ;; t-w-c-s-f. This is also why we do the member on 0-begin.lisp in koga.
-  (add-nclasp-sources target)
+  (add-base-sources target)
   (k:sources target
-             #~"kernel/stage/extension/0-begin.lisp"
+             #~"kernel/marker/extension.mark"
              #@"extension-immutable.lisp"
              #@"extension-translations.lisp"
              #~"modules/asdf/build/asdf.lisp"
-             :extension-systems
-             #~"kernel/stage/extension/0-end.lisp"))
+             :extension-systems))
 
-(add-nclasp-sources :nclasp)
+(add-base-sources :base)
 
-(add-eclasp-sources :eclasp)
+(add-extension-sources :extension)
 
 
 (k:sources :extension-translations

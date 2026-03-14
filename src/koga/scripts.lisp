@@ -383,13 +383,13 @@ exec $(dirname \"$0\")/iclasp -f ignore-extensions --base \"$@\""))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :base-translations)) output-stream
-     (target (eql :cclasp)) sources
+     (target (eql :base)) sources
      &key &allow-other-keys)
   (print-translations output-stream sources))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :base-translations)) output-stream
-     (target (eql :nclasp)) sources
+     (target (eql :base)) sources
      &key &allow-other-keys)
   (print-translations output-stream sources))
 
@@ -400,10 +400,10 @@ exec $(dirname \"$0\")/iclasp -f ignore-extensions --base \"$@\""))
   (print-translations output-stream sources))
 
 (defmethod print-prologue (configuration (name (eql :base-immutable)) output-stream)
-  (pprint-immutable-systems output-stream (gethash :nclasp (target-systems configuration))))
+  (pprint-immutable-systems output-stream (gethash :base (target-systems configuration))))
 
 (defmethod print-prologue (configuration (name (eql :extension-immutable)) output-stream)
-  (pprint-immutable-systems output-stream (gethash :eclasp (target-systems configuration))))
+  (pprint-immutable-systems output-stream (gethash :extension (target-systems configuration))))
 
 (defmethod print-prologue (configuration (name (eql :bench)) output-stream)
   (format output-stream "(require :asdf)
