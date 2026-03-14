@@ -14,9 +14,6 @@
 
 (in-package "SYSTEM")
 
-#+(or)(eval-when (:load-toplevel :compile-toplevel :execute)
-  (setq *echo-repl-read* t)
-)
 (defun structure-type-error (value slot-type struct-name slot-name)
   (error 'simple-type-error
 	 :format-control "Slot ~A in structure ~A only admits values of type ~A."
@@ -35,34 +32,42 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Environment access and structure descriptions
-;;; A structure description is a list
-;;; (TYPE CONSTRUCTOR SLOT*)
-;;; TYPE is STRUCTURE-OBJECT, VECTOR, or LIST.
-;;; CONSTRUCTOR is a function name or NIL for no constructor.
-;;; Slot descriptions are as described down this file.
+;;; Environment access
 ;;;
 
-(defun make-structure-description (type constructor slotds)
-  (list* type constructor slotds))
-(defun structure-description-type (description) (first description))
-(defun structure-description-constructor (description) (second description))
-(defun structure-description-slot-descriptions (description)
-  (cddr description))
-
 ;;; FIXME: these should take environments
-(defun structure-description (name)
-  (get-sysprop name 'structure-description))
-(defun (setf structure-description) (description name)
-  (setf (get-sysprop name 'structure-description) description))
 (defun structure-type (name)
-  (structure-description-type (structure-description name)))
+  (get-sysprop name 'structure-type))
+(defun (setf structure-type) (type name)
+  (setf (get-sysprop name 'structure-type) type))
 (defun structure-slot-descriptions (name)
-  (structure-description-slot-descriptions (structure-description name)))
+  (get-sysprop name 'structure-slot-descriptions))
+(defun (setf structure-slot-descriptions) (descriptions name)
+  (setf (get-sysprop name 'structure-slot-descriptions) descriptions))
 (defun structure-constructor (name)
-  (structure-description-constructor (structure-description name)))
-(defun names-structure-p (name)
-  (not (not (structure-description name))))
+  (get-sysprop name 'structure-constructor))
+(defun (setf structure-constructor) (constructor name)
+  (setf (get-sysprop name 'structure-constructor) constructor))
+
+(eval-when (:compile-toplevel)
+  (defparameter *structure-types* (make-hash-table))
+  (defparameter *structure-slot-descriptions* (make-hash-table))
+  (defparameter *structure-constructors* (make-hash-table)))
+(eval-when (:compile-toplevel)
+  (defun structure-type (name) (gethash name *structure-types*))
+  (defun (setf structure-type) (type name)
+    (setf (gethash name *structure-types*) type))
+  (defun structure-slot-descriptions (name)
+    (gethash name *structure-slot-descriptions*))
+  (defun (setf structure-slot-descriptions) (descs name)
+    (setf (gethash name *structure-slot-descriptions*) descs))
+  (defun structure-constructor (name) (gethash name *structure-constructors*))
+  (defun (setf structure-constructor) (cons name)
+    (setf (gethash name *structure-constructors*) cons)))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun names-structure-p (name)
+    (structure-type name)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -70,8 +75,7 @@
 
 ;;; Used by #S reader
 (defun make-structure (name initargs)
-  (unless (names-structure-p name)
-    (error "~s is not a structure class." name))
+  (unless (names-structure-p name) (error "~s is not a structure class." name))
   (let ((constructor (structure-constructor name)))
     (if constructor
         (apply constructor initargs)
@@ -115,6 +119,7 @@
 ;;; Part of the idea here is we make things independent of conc-name
 ;;; (and thereby, interning) before we do much susbstantial processing.
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun error-defstruct-slot-syntax (slot-description)
   (simple-program-error
    "~a is not a valid DEFSTRUCT slot specification." slot-description))
@@ -123,7 +128,7 @@
   ;; NOTE: No conc-name is not the same as a conc-name of "",
   ;; because in the first case the symbol could be in a different package.
   (if conc-name
-      (intern (base-string-concatenate conc-name slot-name))
+      (intern (concatenate 'base-string (string conc-name) (string slot-name)))
       slot-name))
 
 (defun parse-slot-description (slot-description conc-name)
@@ -173,6 +178,7 @@
 (defun slot-description-parser (conc-name)
   (lambda (slot-description)
     (parse-slot-description slot-description conc-name)))
+) ; eval-when
 
 ;;; UNPARSE-SLOT-DESCRIPTION does the opposite, turning one of the above into
 ;;;  something that would work in DEFSTRUCT.
@@ -188,6 +194,7 @@
           slot-name
           `(,slot-name ,initform :read-only ,read-only :type ,type)))))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 ;;; Apply an :INCLUDE slot override.
 (defun override-slotd (slot-name over-plist old-plist)
   (destructuring-bind (&key (initform nil initformp)
@@ -295,7 +302,7 @@
 (defun defstruct-class-reader-body (structure-name element-type location)
   (declare (ignore element-type))
   `(if (typep object ',structure-name)
-       (si:instance-ref object ,location)
+       (clos:standard-instance-access object ,location)
        (error 'type-error
               :datum object
               :expected-type ',structure-name)))
@@ -303,7 +310,7 @@
 (defun defstruct-class-writer-body (structure-name element-type location)
   (declare (ignore element-type))
   `(if (typep object ',structure-name)
-       (setf (si:instance-ref object ,location) new)
+       (setf (clos:standard-instance-access object ,location) new)
        (error 'type-error
               :datum object
               :expected-type ',structure-name)))
@@ -497,7 +504,7 @@
              (or (car class)
                  (car (rplaca class (find-class ',structure-name))))))
          (lambda (obj var loc)
-           `(setf (si:instance-ref ,obj ,loc) ,var))))
+           `(setf (clos:standard-instance-access ,obj ,loc) ,var))))
       ((:print-function :print-object)
        (let ((obj (gensym "OBJ")) (stream (gensym "STREAM")))
          `(defmethod print-object ((,obj ,structure-name) ,stream)
@@ -577,6 +584,7 @@
                 name element-type included-size slot-descriptions))
     (list (defstruct-list-option-expander
               name included-size slot-descriptions))))
+) ; eval-when
 
 (defmacro %%defstruct (name type (include included-size)
                        (&rest slot-descriptions)
@@ -597,11 +605,8 @@
                 type name)))
     `(progn
        (eval-when (:compile-toplevel :load-toplevel :execute)
-         (setf (structure-description ',name)
-               ',(make-structure-description
-                  type-base
-                  (second (assoc :kw-constructor options))
-                  slot-descriptions)))
+         (setf (structure-type ',name) ',type-base
+               (structure-slot-descriptions ',name) ',slot-descriptions))
        ,@(when (eq type-base 'structure-object)
            `((defclass ,name ,(if include (list include) nil)
                (,@(mapcar #'defstruct-slotd->defclass-slotd slot-descriptions))
@@ -613,9 +618,7 @@
                (case type-base
                  (structure-object (values #'defstruct-class-reader-body
                                            #'defstruct-class-writer-body
-                                           #-clasp-min
                                            #'defstruct-class-cas-body
-                                           #+clasp-min nil
                                            name))
                  (vector (values #'defstruct-vector-reader-body
                                  #'defstruct-vector-writer-body
@@ -639,6 +642,9 @@
        ,@(mapcar (defstruct-option-expander name type-base element-type
                    included-size slot-descriptions)
                  options)
+       ,@(let ((kwcon (second (assoc :kw-constructor options))))
+           (when kwcon
+             `((setf (structure-constructor ',name) ',kwcon))))
        ',name)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -677,6 +683,7 @@
 ;;; The DEFSTRUCT macro.
 ;;;
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun check-defstruct-option-too-many-args (name extra)
   (unless (null extra)
     (simple-program-error "Too many options to ~a" name)))
@@ -692,13 +699,13 @@
   (simple-program-error "~a is not a valid option to defstruct" name))
 
 (defun default-constructor-name (name)
-  (intern (base-string-concatenate "MAKE-" name)))
+  (intern (concatenate 'base-string "MAKE-" (string name))))
 
 (defun default-copier-name (name)
-  (intern (base-string-concatenate "COPY-" name)))
+  (intern (concatenate 'base-string "COPY-" (string name))))
 
 (defun default-predicate-name (name)
-  (intern (base-string-concatenate name "-P")))
+  (intern (concatenate 'base-string (string name) "-P")))
 
 ;;; Given the second of a defstruct, returns values:
 ;;; name, type, include or NIL, overriding slot specs,
@@ -865,7 +872,7 @@
             (setq predicate (default-predicate-name name))))
       ;; default conc-name
       (unless seen-conc-name
-        (setq conc-name (base-string-concatenate name "-")))
+        (setq conc-name (concatenate 'base-string (string name) "-")))
       ;; check initial-offset and type consistency.
       (when initial-offset
         (unless type
@@ -895,6 +902,7 @@
               copier predicate named
               print-function print-object
               initial-offset))))
+) ; eval-when
 
 (defmacro defstruct (name&opts &rest slots &environment env)
   "Syntax: (defstruct
@@ -963,3 +971,15 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
          ,@(when copier `((:copier ,copier)))
          ,@(when documentation
              `((:documentation ,documentation)))))))
+
+(defun copy-structure (structure)
+  ;; This could be done slightly faster by making copy-structure generic,
+  ;; and having defstruct define a copy-structure method that works without a loop
+  ;; or checking the size.
+  (let* ((class (class-of structure))
+         (copy (allocate-instance class))
+         (size (clos::class-size class)))
+    (loop for i below size
+          do (setf (clos:standard-instance-access copy i)
+                   (clos:standard-instance-access structure i)))
+    copy))

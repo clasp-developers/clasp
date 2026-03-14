@@ -136,7 +136,6 @@ using namespace llvm::jitlink;
 std::atomic<size_t> global_object_file_number;
 std::atomic<size_t> global_JITDylibCounter;
 
-std::string gcroots_in_module_name = OS_GCROOTS_IN_MODULE_NAME;
 std::string literals_name = OS_LITERALS_NAME;
 
 core::SimpleBaseString_sp createSimpleBaseStringForStage(const std::string& sname) {
@@ -401,9 +400,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 //                                        if (ssym->getName().str() != "") {printf("%s:%d:%s Symbol: %s\n", __FILE__, __LINE__,
 //                                        __FUNCTION__, ssym->getName().str().c_str() ); };
 #endif
-        if (sname.find(gcroots_in_module_name) != std::string::npos) {
-          keptAlive = true;
-        } else if (sname.find(literals_name) != std::string::npos) {
+        if (sname.find(literals_name) != std::string::npos) {
           keptAlive = true;
 #if 0
                                           // I'd like to do this on linux because jit symbols need to be exposed
@@ -552,8 +549,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       }
     }
     //
-    bool found_gcroots_in_module = false;
-    gctools::GCRootsInModule* roots;
     bool found_literals = false;
     for (auto ssym : G.defined_symbols()) {
       if (ssym->getName() == "DW.ref.__gxx_personality_v0") {
@@ -576,12 +571,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       if (ssym->hasName()) {
         std::string sname = ssym->getName().str();
         size_t pos;
-        pos = sname.find(gcroots_in_module_name);
-        if (pos != std::string::npos) {
-          found_gcroots_in_module = true;
-          roots = (gctools::GCRootsInModule*)ssym->getAddress().getValue();
-          continue;
-        }
         pos = sname.find(literals_name);
         if (pos != std::string::npos) {
           found_literals = true;
@@ -625,15 +614,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       abort();
     }
     //
-    void* literalStart = (void*)currentCode->getLiteralVectorStart();
-    size_t literalCount = currentCode->_LiteralVectorSizeBytes / sizeof(void*);
-    if (found_gcroots_in_module) {
-      // if we have a GCRoots object, set it up properly.
-      // Note that BTB compilation will _not_ have a GCRoots. This is OK.
-      roots->_module_memory = literalStart;
-      roots->_num_entries = literalCount;
-    }
-    gctools::clasp_gc_registerRoots(literalStart, literalCount);
 #ifdef DEBUG_OBJECT_FILES
     for (auto* Sym : G.external_symbols())
       if (Sym->getName() == "DW.ref.__gxx_personality_v0") {
@@ -743,17 +723,10 @@ void ClaspJIT_O::adjustMainJITDylib(JITDylib_sp mainJITDylib) {
   this->_MainJITDylib = mainJITDylib;
 }
 
-bool ClaspJIT_O::do_lookup(JITDylib_sp dylibsp, const std::string& Name, void*& ptr) {
+[[nodiscard]] bool ClaspJIT_O::do_lookup(JITDylib_sp dylibsp, const std::string& Name, void*& ptr) {
   llvm::ExitOnError ExitOnErr;
   JITDylib& dylib = *dylibsp->wrappedPtr();
   std::string mangledName = Name;
-#if defined(_TARGET_OS_DARWIN)
-  // gotta put a _ in front of the name on DARWIN but not Unixes? Why? Dunno.
-//  mangledName = "_" + Name;
-#endif
-#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD) && !defined(_TARGET_OS_DARWIN)
-#error You need to decide here
-#endif
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s do_lookup %s in JITDylib_sp %p JITDylib* %p JITLINKDylib* %p\n", __FILE__, __LINE__,
                             __FUNCTION__, mangledName.c_str(), dylibsp.raw_(), &dylib, llvm::cast<JITLinkDylib>(&dylib)));
   auto symbol = this->_LLJIT->lookup(dylib, mangledName);
@@ -766,6 +739,30 @@ bool ClaspJIT_O::do_lookup(JITDylib_sp dylibsp, const std::string& Name, void*& 
   //  (void*)symbol->getAddress());
   ptr = (void*)symbol->getValue();
   return true;
+}
+
+void* ClaspJIT_O::lookup_literals(JITDylib_sp dylibsp, size_t id) {
+  void* literals = NULL;
+  int namelen = snprintf(NULL, 0, "__clasp_literals_%zu", id);
+  char literals_name[namelen+1]; // +1 for null terminator
+  sprintf(literals_name, "__clasp_literals_%zu", id);
+  // ok to discard because literals is NULL iff lookup failed
+  (void)do_lookup(dylibsp, literals_name, literals);
+  return literals;
+}
+
+void* ClaspJIT_O::lookup_fvector(JITDylib_sp dylibsp, size_t id) {
+  void* fvector = NULL;
+  int namelen = snprintf(NULL, 0, "function-vector-%zu", id);
+  char fvector_name[namelen+1];
+  sprintf(fvector_name, "function-vector-%zu", id);
+  (void)do_lookup(dylibsp, fvector_name, fvector);
+  return fvector;
+}
+
+[[nodiscard]] bool ClaspJIT_O::force_materialize(JITDylib_sp dylibsp, size_t id) {
+  return lookup_literals(dylibsp, id) != NULL
+    && lookup_fvector(dylibsp, id) != NULL;
 }
 
 CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::lookup(JITDylib_sp dylibsp, const std::string& Name) {
@@ -829,45 +826,6 @@ ObjectFile_sp ClaspJIT_O::addObjectFile(JITDylib_sp dylib, std::unique_ptr<llvm:
   ObjectFile_sp codeObject = prepareObjectFileForMaterialization(dylib, objectFile->getBufferIdentifier().str(), startupId);
   ExitOnErr(this->_LLJIT->addObjectFile(*dylib->wrappedPtr(), std::move(objectFile)));
   return codeObject;
-}
-
-/*
- * runLoadtimeCode
- */
-void* ClaspJIT_O::runStartupCode(JITDylib_sp dylibsp, const std::string& startupName, core::T_sp initialDataOrUnbound) {
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to evaluate the LoadtimeCode - with startupName: %s\n", __FILE__, __LINE__,
-                            __FUNCTION__, startupName.c_str()));
-  void* ptr;
-  bool found = this->do_lookup(dylibsp, startupName, ptr);
-  if (!found) {
-    SIMPLE_ERROR("Could not find function {} - exit program and look at llvm::errs() stream", startupName);
-  }
-  T_OStartUp startup = reinterpret_cast<T_OStartUp>(ptr);
-  //    printf("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup);
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to invoke startup @p=%p initialDataOrUnbound = %s\n", __FILE__, __LINE__, __FUNCTION__,
-                            (void*)startup, (initialDataOrUnbound.unboundp() ? "unbound" : _rep_(initialDataOrUnbound).c_str())));
-  core::T_O* arg0 = initialDataOrUnbound.unboundp() ? (core::T_O*)NULL : initialDataOrUnbound.raw_();
-  core::T_O* replPtrRaw = startup(arg0);
-  // If we load a bitcode file generated by clasp - then startup_functions will be waiting - so run them
-  if (!initialDataOrUnbound.unboundp()) {
-    //    printf("%s:%d:%s There is initialData -> %s\n", __FILE__, __LINE__, __FUNCTION__,
-    //    core::_rep_(initialDataOrUnbound).c_str());
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Returned from startup function with %p\n", __FILE__, __LINE__, __FUNCTION__, replPtrRaw));
-    // Clear out the current ObjectFile and Code
-    // printf("%s:%d:%s I need the name of the object file and then look it up\n", __FILE__, __LINE__, __FUNCTION__ );
-    return (void*)replPtrRaw;
-  }
-  // Running the ObjectFileStartUp function registers the startup functions - now we can invoke them
-  if (core::startup_functions_are_waiting()) {
-    // This is where we can take the my_thread->_ObjectFile and my_thread->_Code and write it into the FunctionDescription_O objects
-    // that are bound to functions.
-    void* result = core::startup_functions_invoke(NULL);
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s The startup functions were INVOKED\n", __FILE__, __LINE__, __FUNCTION__));
-    // Clear out the current ObjectFile and Code
-    // printf("%s:%d:%s I need the name of the object file and then look it up\n", __FILE__, __LINE__, __FUNCTION__ );
-    return result;
-  }
-  SIMPLE_ERROR("No startup functions are waiting after runInitializers\n");
 }
 
 CL_DEFMETHOD JITDylib_sp ClaspJIT_O::getMainJITDylib() {

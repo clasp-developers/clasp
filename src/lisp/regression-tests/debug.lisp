@@ -291,7 +291,6 @@
                         ;; FIXME: Export declaration? DEBUG 3 instead?
                         ;; We are of course assuming cclasp is being used
                         ;; to compile the tests.
-                        (declare (optimize
-                                  clasp-cleavir::insert-step-conditions))
+                        (declare (optimize core::insert-step-conditions))
                       (print 4))
                  (clasp-debug:unset-breakstep)))))

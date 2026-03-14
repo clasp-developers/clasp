@@ -120,12 +120,11 @@ ObjectFile_sp ObjectFile_O::createForModule(const std::string& scodename, JITDyl
 }
 
 ObjectFile_sp ObjectFile_O::create(const std::string& scodename, std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID,
-                                   JITDylib_sp jitdylib, const std::string& sFasoName, size_t fasoIndex) {
+                                   JITDylib_sp jitdylib) {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Creating ObjectFile_O start=%p size= %lu\n", __FILE__, __LINE__, __FUNCTION__,
                             buffer ? buffer->getBufferStart() : NULL, buffer ? buffer->getBufferSize() : 0));
   core::SimpleBaseString_sp codename = core::SimpleBaseString_O::make(scodename);
-  core::SimpleBaseString_sp fasoName = core::SimpleBaseString_O::make(sFasoName);
-  ObjectFile_sp of = gc::GC<ObjectFile_O>::allocate(codename, std::move(buffer), startupID, jitdylib, fasoName, fasoIndex);
+  ObjectFile_sp of = gc::GC<ObjectFile_O>::allocate(codename, std::move(buffer), startupID, jitdylib);
   return of;
 }
 
@@ -141,12 +140,6 @@ size_t ObjectFile_O::sizeofInState(ObjectFile_O* code, CodeState_t state) {
     return sizeof(ObjectFile_O) + code->_LiteralVectorSizeBytes;
   }
   return gctools::sizeof_container<ObjectFile_O>(code->_DataCode.size());
-}
-
-std::string ObjectFile_O::filename() const {
-  stringstream ss;
-  ss << this->_FasoName->get_std_string() << ":" << this->_ObjectId;
-  return ss.str();
 }
 
 void ObjectFile_O::writeToFile(const std::string& fileName, const char* start, size_t size) {
@@ -176,8 +169,6 @@ void* ObjectFile_O::getLiteralVectorStart() {
 std::string ObjectFile_O::__repr__() const {
   stringstream ss;
   ss << "#<OBJECT-FILE " << core::_rep_(this->_CodeName);
-  ss << " :faso-name " << core::_rep_(this->_FasoName);
-  ss << " :faso-index " << this->_FasoIndex << " ";
   ss << " :state ";
   if (this->_State==RunState) {
     ss << "Run";
@@ -315,7 +306,8 @@ namespace llvmo {
  * 4. If it's not one of the above then we have an entry point that
  *       I didn't think about or a serious error.
  */
-core::T_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
+CL_LISPIFY_NAME(identify_code_or_library);
+CL_DEFUN core::T_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
 
   //
   // 1. Search the _lisp->_AllLibraries list
@@ -405,9 +397,8 @@ CL_DEFUN SectionedAddress_sp object_file_sectioned_address(void* instruction_poi
   SectionedAddress_sp sectioned_address = SectionedAddress_O::create(sectionID, offset);
   // now the object file
   if (verbose) {
-    core::clasp_write_string(fmt::format("faso-file: {}  object-file-position: {}  objectID: {}\n", _rep_(ofi->_FasoName),
-                                         ofi->_FasoIndex, ofi->_ObjectId));
-    core::clasp_write_string(fmt::format("SectionID: {}    memory offset: {}\n", ofi->_FasoIndex, offset));
+    core::clasp_write_string(fmt::format("objectID: {}\n", ofi->_ObjectId));
+    core::clasp_write_string(fmt::format("memory offset: {}\n", offset));
   }
   return sectioned_address;
 }
@@ -713,6 +704,22 @@ uintptr_t CodeBlock_O::calculateTailOffset(uintptr_t size, uint32_t align, uintp
   return tail;
 }
 
+void CodeBlock_O::registerDataAsGCRoot() const {
+#ifdef CLASP_APPLE_SILICON
+  // On Apple silicon we are allocated outside of GC memory, so we have to
+  // mark the data segments as roots for GC scanning.
+  // We're relying implicitly on how Boehm does root registration.
+  // Firstly, Boehm is obviously imprecise, so the fact data segments contain
+  // arbitrary non-Lisp data isn't a big deal.
+  // Secondly, if we GC_add_roots a region that has already had its beginning
+  // registered as starting a root region, Boehm will expand the existing region
+  // rather than create a new one.
+  // Boehm has a hard limit of 8192 root regions added this way, so we want
+  // to have as few registrations as we can manage.
+  gctools::clasp_gc_registerRoots(dataStart(), (void**)(dataEnd()) - (void**)(dataStart()));
+#endif
+}
+
 std::string CodeBlock_O::__repr__() const {
   stringstream ss;
   ss << "#<CODE-BLOCK";
@@ -809,7 +816,7 @@ ObjectFile_sp lookupObjectFile(const std::string& name) {
   SIMPLE_ERROR("Could not find object file {} - {} available object file names: {}", name, num, ss.str());
 };
 
-bool lookupObjectFileFromEntryPoint(uintptr_t entry_point, ObjectFile_sp& objectFile) {
+[[nodiscard]] bool lookupObjectFileFromEntryPoint(uintptr_t entry_point, ObjectFile_sp& objectFile) {
   core::List_sp ofs = _lisp->_Roots._AllObjectFiles.load();
   for (auto cur : ofs) {
     ObjectFile_sp of = gc::As<ObjectFile_sp>(CONS_CAR(cur));
@@ -831,13 +838,26 @@ void validateEntryPoint(core::T_sp code, uintptr_t entry_point) {
   // Nothing for now
 }
 
-uintptr_t codeStart(core::T_sp codeOrLibrary) {
+CL_LISPIFY_NAME(code_start);
+CL_DEFUN uintptr_t codeStart(core::T_sp codeOrLibrary) {
   if (gc::IsA<Library_sp>(codeOrLibrary)) {
     Library_sp library = gc::As_unsafe<Library_sp>(codeOrLibrary);
     return library->codeStart();
   } else if (gc::IsA<ObjectFile_sp>(codeOrLibrary)) {
     ObjectFile_sp of = gc::As_unsafe<ObjectFile_sp>(codeOrLibrary);
     return of->codeStart();
+  }
+  SIMPLE_ERROR("{} must be a Library or ObjectFile", _rep_(codeOrLibrary));
+}
+
+CL_LISPIFY_NAME(code_end);
+CL_DEFUN uintptr_t codeEnd(core::T_sp codeOrLibrary) {
+  if (gc::IsA<Library_sp>(codeOrLibrary)) {
+    Library_sp library = gc::As_unsafe<Library_sp>(codeOrLibrary);
+    return library->codeEnd();
+  } else if (gc::IsA<ObjectFile_sp>(codeOrLibrary)) {
+    ObjectFile_sp of = gc::As_unsafe<ObjectFile_sp>(codeOrLibrary);
+    return of->codeEnd();
   }
   SIMPLE_ERROR("{} must be a Library or ObjectFile", _rep_(codeOrLibrary));
 }

@@ -84,8 +84,6 @@ public:
   size_t _Size;
   size_t _ObjectId;
   JITDylib_sp _TheJITDylib;
-  core::SimpleBaseString_sp _FasoName;
-  size_t _FasoIndex;
   //
   // Code data
   void* _TextSectionStart;
@@ -102,9 +100,9 @@ public:
 
 public:
   ObjectFile_O(core::SimpleBaseString_sp codename, std::unique_ptr<llvm::MemoryBuffer> buffer, size_t objectId,
-               JITDylib_sp jitdylib, core::SimpleBaseString_sp fasoName, size_t fasoIndex)
+               JITDylib_sp jitdylib)
       : _State(RunState), _CodeName(codename), _MemoryBuffer(std::move(buffer)), _ObjectId(objectId), _TheJITDylib(jitdylib),
-        _FasoName(fasoName), _FasoIndex(fasoIndex), _LiteralVectorStart(0), _CodeBlock(unbound<CodeBlock_O>()) {
+        _LiteralVectorStart(0), _CodeBlock(unbound<CodeBlock_O>()) {
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   objectId = %lu\n", __FILE__, __LINE__, __FUNCTION__, objectId));
   };
   ObjectFile_O(core::SimpleBaseString_sp codename, JITDylib_sp jitdylib, size_t objectId)
@@ -121,7 +119,7 @@ public:
   static ObjectFile_sp createForModule(const std::string& codename, JITDylib_sp jitdylib, size_t objectId);
   static ObjectFile_sp createForObjectFile(const std::string& codename, JITDylib_sp jitdylib, size_t objectId);
   static ObjectFile_sp create(const std::string& name, std::unique_ptr<llvm::MemoryBuffer> buffer, size_t objectId,
-                              JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex);
+                              JITDylib_sp jitdylib);
   static size_t sizeofInState(ObjectFile_O* code, CodeState_t state);
 
 public:
@@ -148,7 +146,6 @@ public:
   void* literalsStart() const;
   core::T_O** TOLiteralsStart() const { return (core::T_O**)literalsStart(); }
   size_t TOLiteralsSize() const { return literalsSize() / sizeof(core::T_O*); }
-  virtual std::string filename() const;
   core::T_sp codeLineTable() const;
   virtual void validateEntryPoint(const core::ClaspXepFunction& entry_point);
 
@@ -289,6 +286,7 @@ public:
   void* calculateTail(uintptr_t size, uint32_t align, uintptr_t& tailOffset);
   uintptr_t calculateHeadOffset(uintptr_t size, uint32_t align, uintptr_t& headOffset);
   uintptr_t calculateTailOffset(uintptr_t size, uint32_t align, uintptr_t& tailOffset);
+  void registerDataAsGCRoot() const;
   void describe() const;
 
   std::string __repr__() const;
@@ -412,6 +410,9 @@ template <typename Stage> inline void allocateInCodeBlock(BasicLayout& BL, CodeB
       SIMPLE_ERROR("Could not allocate enough space for code {}", size);
     }
   }
+  // Register the data segment as GC roots, if it's allocated outside of
+  // GC space (as it is on Apple silicon - see CLASP_APPLE_SILICON).
+  codeBlock->registerDataAsGCRoot();
   //
   // Temporarily set memory permissions to RW- (current thread) or RWX (all threads), depending on OS
   //
@@ -432,7 +433,7 @@ bool verifyIRModuleObjectFileStartupSymbol(const std::string& name);
 
 ObjectFile_sp lookupObjectFile(const std::string& name);
 
-bool lookupObjectFileFromEntryPoint(uintptr_t entry_point, ObjectFile_sp& objectFile);
+[[nodiscard]] bool lookupObjectFileFromEntryPoint(uintptr_t entry_point, ObjectFile_sp& objectFile);
 
 void validateEntryPoint(core::T_sp code, uintptr_t entry_point);
 void validateEntryPoint(core::T_sp code, const core::ClaspXepFunction& entry_point);

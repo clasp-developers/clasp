@@ -10,6 +10,7 @@
         (multiple-value-bind (stream dump-code)
             (ext:run-program binary
                              (list "--norc" "--base" "--feature" "ignore-extensions"
+                                   "--non-interactive"
                                    "--eval" "(defparameter *foo* 89)"
                                    "--eval"
                                    (format nil "(ext:save-lisp-and-die \"~a\")" snap-fname))
@@ -41,6 +42,7 @@
         (multiple-value-bind (stream dump-code)
             (ext:run-program binary
                              (list "--norc" "--base" "--feature" "ignore-extensions"
+                                   "--non-interactive"
                                    "--eval" "(defparameter *foo* 90)"
                                    "--eval"
                                    (format nil "(ext:save-lisp-and-die \"~a\" :executable t)"

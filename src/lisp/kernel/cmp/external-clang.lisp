@@ -46,7 +46,7 @@
             (let ((file (probe-file cp)))
               (when file (return-from discover-clang file))))))))
 
-(defvar core:*clang-bin* (discover-clang))
+(defvar *clang-bin* (discover-clang))
 
  ;; This would only work after kernel/clos/conditions
 #+(or)
@@ -55,7 +55,7 @@
   (:report (lambda (c s) (format s "Could not find clang~@[ on path ~s~]."
                                  (tried-path c)))))
 
-(defun run-clang (args &key (clang core:*clang-bin*) output-file-name)
+(defun run-clang (args &key (clang *clang-bin*) output-file-name)
   "Run the discovered clang compiler on the arguments. This replaces a simpler version of run-clang."
   (unless clang
     (error "There is no clang compiler path defined!!!!"))
@@ -99,11 +99,11 @@
 
 
 #+darwin
-(defun run-dsymutil (args &key (clang core:*clang-bin*) output-file-name)
+(defun run-dsymutil (args &key (clang *clang-bin*) output-file-name)
   "Run the discovered clang compiler on the arguments. This replaces a simpler version of run-clang."
   (unless clang
     (error "There is no clang compiler path defined!!!!"))
-  (let ((dsymutil (make-pathname :name "dsymutil" :type nil :defaults core:*clang-bin*)))
+  (let ((dsymutil (make-pathname :name "dsymutil" :type nil :defaults *clang-bin*)))
     (unless (probe-file dsymutil)
       (error "Could not find dsymutil at ~a" dsymutil))
     (when (member :debug-run-clang *features*)
@@ -119,3 +119,42 @@
 
 #+darwin
 (export '(run-clang run-dsymutil))
+
+(in-package #:cmp)
+
+(defun as-shell-command (list-of-args)
+  (with-output-to-string (sout)
+    (princ (car list-of-args) sout)
+    (dolist (c (cdr list-of-args))
+      (core:fmt sout " {}" c))))
+
+(defvar *safe-system-echo* nil)
+(defvar *safe-system-max-retries* 4)
+(defvar *safe-system-retry-wait-time* 0.1d0) ;; 100 milliseconds
+;; The wait time will be doubled at each retry!
+
+(defun safe-system (cmd-list &key output-file-name)
+  (if *safe-system-echo*
+      (core:fmt t "safe-system: {}%N" cmd-list))
+
+  (multiple-value-bind (retval error-message)
+      (ext:vfork-execvp cmd-list)
+
+    (unless (eql retval 0)
+      (error "Could not execute command with ext:vfork-execvp with ~s~%  return-value: ~d  error-message: ~s~%" cmd-list retval error-message)))
+
+  (when output-file-name
+    (let ((sleep-time *safe-system-retry-wait-time*))
+      (dotimes (nm1 (- *safe-system-max-retries* 1))
+        (let ((n (+ nm1 1)))
+          (unless (probe-file output-file-name)
+            (if (>= n *safe-system-max-retries*)
+                (error "The file ~a was not created by shell command: ~a" output-file-name (as-shell-command cmd-list))
+                (progn
+                  (if *safe-system-echo*
+                      (core:fmt t "safe-system: Retry count = {} of {}%N" n *safe-system-max-retries*))
+                  (core::sleep sleep-time)
+                  (setq sleep-time (* 2 sleep-time)))))))))
+
+  ;; Return T if all went well
+  t)

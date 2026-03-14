@@ -6,6 +6,7 @@
 ;;;  buuuuut I'm not sure. That would involve folding upgraded-array-element-type.
 
 ;; returns names of a simple vector constructor and a simple mdarray constructor.
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun uaet-info (uaet)
   (case uaet
     ((t) (values 'core:make-simple-vector-t 'core:make-simple-mdarray-t))
@@ -33,6 +34,7 @@
     ((fixnum) (values 'core:make-simple-vector-fixnum 'core:make-simple-mdarray-fixnum))
     ;; size_t?
     (t (values nil nil))))
+) ; eval-when
 
 (define-compiler-macro make-array (&whole form dimensions
                                           &key (element-type t)

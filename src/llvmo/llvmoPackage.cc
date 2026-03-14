@@ -84,36 +84,15 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, STARdebugObjectFilesSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARdefault_code_modelSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARdumpObjectFilesSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARrunTimeExecutionEngineSTAR);
-SYMBOL_EXPORT_SC_(LlvmoPkg, load_bc);
-SYMBOL_EXPORT_SC_(LlvmoPkg, load_ll);
 SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, function);
+SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, type);
+SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, min);
+SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, max);
+SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, and);
+SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, or);
 
 void redirect_llvm_interface_addSymbol() {
   //	llvm_interface::addSymbol = &addSymbolAsGlobal;
-}
-
-CL_DOCSTRING(R"dx(Load an llvm-ir file with either a bc extension or ll extension.)dx");
-CL_LAMBDA(pathname &optional verbose print external_format (startup-id 0));
-DOCGROUP(clasp);
-CL_DEFUN bool llvm_sys__load_ir(core::T_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startup_name) {
-  core::Pathname_sp pfilename = core::cl__pathname(filename);
-  core::Pathname_sp ll_file = core::Pathname_O::makePathname(nil<core::T_O>(), nil<core::T_O>(), nil<core::T_O>(), nil<core::T_O>(),
-                                                             core::SimpleBaseString_O::make("ll"));
-  ll_file = cl__merge_pathnames(ll_file, pfilename);
-  T_sp found = cl__probe_file(ll_file);
-  if (found.notnilp()) {
-    core::clasp_write_string(fmt::format("Loading ll file {}\n", _rep_(ll_file)));
-    return llvm_sys__load_ll(ll_file, verbose, print, externalFormat, startup_name);
-  }
-  core::Pathname_sp bc_file = core::Pathname_O::makePathname(nil<core::T_O>(), nil<core::T_O>(), nil<core::T_O>(), nil<core::T_O>(),
-                                                             core::SimpleBaseString_O::make("bc"));
-  bc_file = cl__merge_pathnames(bc_file, pfilename);
-  found = cl__probe_file(bc_file);
-  if (found.notnilp()) {
-    core::clasp_write_string(fmt::format("Loading bc file {}\n", _rep_(bc_file)));
-    return llvm_sys__load_bc(bc_file, verbose, print, externalFormat, startup_name);
-  }
-  SIMPLE_ERROR("Could not find llvm-ir file {} with .bc or .ll extension", _rep_(filename));
 }
 
 JITDylib_sp loadModule(llvmo::Module_sp module, size_t startupID, const std::string& libname) {
@@ -121,72 +100,9 @@ JITDylib_sp loadModule(llvmo::Module_sp module, size_t startupID, const std::str
   JITDylib_sp jitDylib = jit->createAndRegisterJITDylib(libname);
   //  printf("%s:%d:%s jit = %p  jitDylib = %p\n", __FILE__, __LINE__, __FUNCTION__, jit.raw_(), jitDylib.raw_() );
   ThreadSafeContext_sp tsc = gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue());
-  std::vector<std::string> startup_functions;
-  for (auto& F : *module->wrappedPtr()) {
-    std::string function_name = F.getName().str();
-    // printf("%s:%d Function: %s looking for %s\n", __FILE__, __LINE__, function_name.c_str(), clasp_startup_FUNCTION_NAME);
-    if (function_name.find(clasp_startup_FUNCTION_NAME) != std::string::npos) {
-      // printf("%s:%d !!!!!        Function: %s found %s\n", __FILE__, __LINE__, function_name.c_str(),
-      // clasp_startup_FUNCTION_NAME);
-      startup_functions.push_back(function_name);
-    }
-  }
   jit->addIRModule(jitDylib, module, tsc, startupID);
-  //
-  //
-  for (auto name : startup_functions) {
-    //    printf("%s:%d Startup function: %s\n", __FILE__, __LINE__, name.c_str());
-    core::Pointer_sp ptr = jit->lookup(jitDylib, name);
-    voidStartUp startup = (voidStartUp)ptr->ptr();
-    //    printf("%s:%d      ptr->%p\n", __FILE__, __LINE__, startup);
-    (startup)();
-  }
-  [[maybe_unused]] size_t num = core::startup_functions_are_waiting();
-  //  printf("%s:%d There are %lu startup functions waiting to be evaluated\n", __FILE__, __LINE__, num);
-  core::startup_functions_invoke(NULL);
-  //  printf("%s:%d Invoked startup functions - continuing\n", __FILE__, __LINE__ );
   return jitDylib;
 }
-
-CL_LAMBDA(filename &optional verbose print external_format (startup-id 0));
-DOCGROUP(clasp);
-CL_DEFUN bool llvm_sys__load_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID) {
-  core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
-  T_sp tn = cl__truename(filename);
-  if (tn.nilp()) {
-    SIMPLE_ERROR("Could not get truename for {}", _rep_(filename));
-  }
-  core::T_sp tnamestring = cl__namestring(filename);
-  if (tnamestring.nilp()) {
-    SIMPLE_ERROR("Could not create namestring for {}", _rep_(filename));
-  }
-  core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
-  LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
-  Module_sp m = llvm_sys__parseIRFile(namestring, context);
-  loadModule(m, startupID, namestring->get_std_string());
-  return true;
-}
-
-CL_LAMBDA(filename &optional verbose print external_format (startup-id 0));
-DOCGROUP(clasp);
-CL_DEFUN bool llvm_sys__load_bc(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID) {
-  core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
-  T_sp tn = cl__truename(filename);
-  if (tn.nilp()) {
-    SIMPLE_ERROR("Could not get truename for {}", _rep_(filename));
-  }
-  core::T_sp tnamestring = cl__namestring(filename);
-  if (tnamestring.nilp()) {
-    SIMPLE_ERROR("Could not create namestring for {}", _rep_(filename));
-  }
-  core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
-  LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
-  Module_sp m = llvm_sys__parseBitcodeFile(namestring, context);
-  loadModule(m, startupID, namestring->get_std_string());
-  return true;
-}
-
-CL_DOCSTRING(R"dx(Load a module into the Common Lisp environment as if it were loaded from a bitcode file)dx");
 
 DOCGROUP(clasp);
 CL_DEFUN core::SimpleBaseString_sp llvm_sys__mangleSymbolName(core::String_sp name) {
@@ -385,12 +301,12 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   return list;
 }
 
-CL_LAMBDA(&key tsp tmv symbol symbol-function-offset symbol-setf-function-offset function function-description-offset gcroots-in-module vaslist function-description);
+CL_LAMBDA(&key tsp tmv symbol symbol-function-offset symbol-setf-function-offset function function-description-offset vaslist function-description);
 DOCGROUP(clasp);
 CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize,
                                                         core::Fixnum_sp symbolSize, core::Fixnum_sp symbol_function_offset,
                                                         core::Fixnum_sp symbol_setf_function_offset, core::Fixnum_sp functionSize,
-                                                        core::Fixnum_sp function_description_offset, core::T_sp gcRootsInModuleSize,
+                                                        core::Fixnum_sp function_description_offset,
                                                         core::T_sp tvaslistsize, core::T_sp tFunctionDescriptionSize) {
   int T_sp_size = sizeof(core::T_sp);
   if (unbox_fixnum(tspSize) != T_sp_size) {
@@ -420,17 +336,6 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
   if (function_description_offset.unsafe_fixnum() != offsetof(core::SimpleFun_O, _FunctionDescription)) {
     SIMPLE_ERROR("Mismatch between function description offset[{}] and core::SimpleFun_O._FunctionDescription offset[{}]",
                  function_description_offset.unsafe_fixnum(), offsetof(core::SimpleFun_O, _FunctionDescription));
-  }
-  if (gcRootsInModuleSize.notnilp()) {
-    int gcRootsInModule_size = sizeof(gctools::GCRootsInModule);
-    if (gcRootsInModuleSize.fixnump()) {
-      if (gcRootsInModule_size != gcRootsInModuleSize.unsafe_fixnum()) {
-        SIMPLE_ERROR("GCRootsInModule size {} mismatch with Common Lisp code {}", gcRootsInModule_size,
-                     gcRootsInModuleSize.unsafe_fixnum());
-      }
-    } else {
-      SIMPLE_ERROR("gcRootsInModule keyword argument expects a fixnum");
-    }
   }
   if (tvaslistsize.fixnump()) {
     size_t vaslistsize = tvaslistsize.unsafe_fixnum();
@@ -702,20 +607,18 @@ string escapeNameForLlvm(const string& inp) {
 }
 
 CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
-#if !defined(DEFAULT_OUTPUT_TYPE_BYTECODE)
-  return Values(Pointer_O::create((void*)bytecode_call), SimpleBaseString_O::make("bytecode_call"));
-#endif
+  if (!global_options->_GenerateTrampolines
+      && !getenv("CLASP_ENABLE_TRAMPOLINES")) {
+      // If trampolines aren't enabled, don't compile one.
+    return Values(Pointer_O::create((void*)bytecode_call), SimpleBaseString_O::make("bytecode_call"));
+  }
+
+  // FIXME: race
   if (global_trampoline_mutex == NULL) {
     global_trampoline_mutex = new mp::Mutex(DISSASSM_NAMEWORD);
   }
   WITH_READ_WRITE_LOCK(*global_trampoline_mutex);
   ClaspJIT_sp jit = llvm_sys__clasp_jit();
-  if (!global_options->_GenerateTrampolines) {
-    if (!getenv("CLASP_ENABLE_TRAMPOLINES")) {
-      // If the JIT isn't ready then use the default trampoline
-      return Values(Pointer_O::create((void*)bytecode_call), SimpleBaseString_O::make("bytecode_call"));
-    }
-  }
   if (jit.nilp()) {
     // If the JIT isn't ready then use the default trampoline
     return Values(Pointer_O::create((void*)default_bytecode_trampoline), SimpleBaseString_O::make("default_bytecode_trampoline"));

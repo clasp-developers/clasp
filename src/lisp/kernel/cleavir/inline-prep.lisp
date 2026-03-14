@@ -20,9 +20,9 @@
       ((eq head 'cl:optimize)
        (setf cmp:*optimize*
              (policy:normalize-optimize
-              (append (rest decl) cmp:*optimize*) *clasp-env*)
+              *clasp-system* (append (rest decl) cmp:*optimize*))
              cmp:*policy*
-             (policy:compute-policy cmp:*optimize* *clasp-env*)))
+             (policy:compute-policy *clasp-system* cmp:*optimize*)))
       ;; Add other clauses here
       (t #+(or)(warn "Add support for proclaim ~s~%" decl)))))
 
@@ -93,8 +93,7 @@
                ;; load-time-value correctly.
                (compute-inline-ast ,function-form t))))))
 
-(eval-when (:compile-toplevel :execute :load-toplevel)
-  (setq core:*proclaim-hook* 'proclaim-hook))
+(setq core::*proclaim-hook* 'proclaim-hook)
 
 ;;; The following code sets up the chain of inlined-at info in AST origins.
 

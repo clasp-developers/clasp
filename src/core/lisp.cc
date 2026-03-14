@@ -389,7 +389,7 @@ CL_DEFUN void core__set_debug_start_code(T_sp on) { global_debug_start_code = on
 void Lisp::initializeMainThread() {
   mp::Process_sp main_process =
       mp::Process_O::make_process(INTERN_(core, top_level), nil<T_O>(), _lisp->copy_default_special_bindings(), nil<T_O>(), 0);
-  my_thread->initialize_thread(main_process, false);
+  my_thread->initialize_thread(main_process);
 }
 
 void Lisp::startupLispEnvironment() {
@@ -464,6 +464,7 @@ void Lisp::startupLispEnvironment() {
 
     _lisp->findPackage(ExtPkg).as<Package_O>()->addImplementationPackage(_lisp->_Roots._CorePackage);
     _lisp->findPackage(ExtPkg).as<Package_O>()->addImplementationPackage(_lisp->findPackage(ClosPkg).as<Package_O>());
+    _lisp->findPackage(ExtPkg).as<Package_O>()->addImplementationPackage(_lisp->findPackage(CompPkg).as<Package_O>());
 
     _lisp->_Roots._CommonLispPackage->setLockedP(true);
     //_lisp->_Roots._CorePackage->setLockedP(true);
@@ -992,14 +993,7 @@ T_sp Lisp::findPackage(const string& name, bool errorp) const {
   return this->findPackage(SimpleBaseString_O::make(name), errorp);
 }
 
-T_sp Lisp::findPackage_no_lock(String_sp name) const {
-  // Check local nicknames first.
-  if (_lisp->_Roots._TheSystemIsUp) {
-    T_sp local = this->getCurrentPackage()->findPackageByLocalNickname(name);
-    if (local.notnilp())
-      return local;
-  }
-  // OK, now global names.
+T_sp Lisp::findPackageGlobal_no_lock(String_sp name) const {
   T_sp fi = this->_Roots._PackageNameIndexMap->gethash(name);
   if (fi.nilp()) {
     return nil<Package_O>(); // return nil if no package found
@@ -1009,10 +1003,32 @@ T_sp Lisp::findPackage_no_lock(String_sp name) const {
   return getPackage;
 }
 
+T_sp Lisp::findPackage_no_lock(String_sp name) const {
+  // Check local nicknames first.
+  if (_lisp->_Roots._TheSystemIsUp) {
+    T_sp local = this->getCurrentPackage()->findPackageByLocalNickname(name);
+    if (local.notnilp())
+      return local;
+  }
+  // OK, now global names.
+  return this->findPackageGlobal_no_lock(name);
+}
+
 T_sp Lisp::findPackage(String_sp name, bool errorp) const {
   {
     WITH_READ_LOCK(globals_->_PackagesMutex);
     T_sp res = this->findPackage_no_lock(name);
+    if (!errorp || res.isA<Package_O>())
+      return res;
+  }
+  // Signal the error only after releasing the lock.
+  PACKAGE_ERROR(name);
+}
+
+T_sp Lisp::findPackageGlobal(String_sp name, bool errorp) const {
+  {
+    WITH_READ_LOCK(globals_->_PackagesMutex);
+    T_sp res = this->findPackageGlobal_no_lock(name);
     if (!errorp || res.isA<Package_O>())
       return res;
   }
@@ -1468,7 +1484,21 @@ CL_DEFUN List_sp cl__member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp tes
   if (tlist.nilp())
     return nil<T_O>();
   ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_member, 2, tlist, cl::_sym_list);
-  UNREACHABLE();
+}
+
+CL_LAMBDA(item list &key key test test-not);
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx(Add ITEM to LIST unless it is already a member.)dx");
+DOCGROUP(clasp);
+CL_DEFUN List_sp cl__adjoin(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp test_not) {
+  T_sp kitem = item;
+  if (key.notnilp())
+    kitem = eval::funcall(key, item);
+  if (cl__member(kitem, tlist, key, test, test_not).notnilp())
+    return tlist;
+  else
+    return Cons_O::create(item, tlist);
 }
 
 CL_LAMBDA(item list test test-not key);
@@ -1627,6 +1657,18 @@ CL_DEFUN T_sp cl__find_package(T_sp name_desig) {
   String_sp name = coerce::stringDesignator(name_desig);
   // TODO: Support wide string package names
   return _lisp->findPackage(name);
+}
+
+CL_DEFUN T_sp core__find_package_global(T_sp name_desig) {
+  // Look up a package, ignoring local nicknames.
+  // Could also be done as e.g.
+  // (let ((*package* (find-package "CL"))) (find-package ...))
+  // but doing more work in order to do less work is silly.
+  if (Package_sp pkg = name_desig.asOrNull<Package_O>())
+    return pkg;
+  String_sp name = coerce::stringDesignator(name_desig);
+  // TODO: Support wide string package names
+  return _lisp->findPackageGlobal(name);
 }
 
 CL_LAMBDA(package-designator);
@@ -2209,28 +2251,24 @@ bool Lisp::load(int& exitCode) {
   } break;
   case cloBaseImage:
   case cloExtensionImage:
-  case cloImageFile:
-      if (startup_functions_are_waiting()) {
-        startup_functions_invoke(NULL);
-      } else {
-        Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
-        if (!global_options->_SilentStartup) {
-          printf("Loading image %s\n", _rep_(initPathname).c_str());
-        }
-        T_mv result = eval::funcall(cl::_sym_load, initPathname); // core__load_bundle(initPathname);
-        if (result.nilp()) {
-          T_sp err = mvn.second(result.number_of_values());
-          printf("Could not load bundle %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
-          exitCode = 1;
-          return false;
-        }
-        char* pause_startup = getenv("CLASP_PAUSE_OBJECTS_ADDED");
-        if (pause_startup) {
-          gctools::setup_user_signal();
-          gctools::wait_for_user_signal("Paused at startup after object files added");
-        }
-      }
-      break;
+  case cloImageFile: {
+    Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
+    if (!global_options->_SilentStartup) {
+      printf("Loading image %s\n", _rep_(initPathname).c_str());
+    }
+    T_mv result = eval::funcall(cl::_sym_load, initPathname); // core__load_bundle(initPathname);
+    if (result.nilp()) {
+      T_sp err = mvn.second(result.number_of_values());
+      printf("Could not load bundle %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
+      exitCode = 1;
+      return false;
+    }
+    char* pause_startup = getenv("CLASP_PAUSE_OBJECTS_ADDED");
+    if (pause_startup) {
+      gctools::setup_user_signal();
+      gctools::wait_for_user_signal("Paused at startup after object files added");
+    }
+  } break;
   default:
       break;
   }

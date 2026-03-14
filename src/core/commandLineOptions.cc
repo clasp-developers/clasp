@@ -59,8 +59,6 @@ Options:
       Describe the clasp data structures for lldb Python API to /tmp/clasp.py
   -d, --describe <file>
       Describe the clasp data structures for lldb Python API to <file>
-  -U, --unpack-faso <file>
-      Unpack the faso <file> into separate object files
   --noinform
       Don't print startup banner text
   --noprint
@@ -175,8 +173,8 @@ Environment variables:
       Dump info during bundle setup
   CLASP_DEBUG_START_CODE
       Dump info during startup for every start-code
-  CLASP_EXIT_ON_WAIT_FOR_USER_SIGNAL
-      Exit if wait-for-user-signal is encountered. Used for debugging under live-record.
+  CLASP_WAIT_FOR_USER_SIGNAL
+      Wait when wait-for-user-signal is encountered. (Otherwise Clasp just exits with the message.) Used for debugging the runtime.
   CLASP_DEBUG_OBJECT_FILES=save
       Saves all object files, anything else prints info about object file
       generation
@@ -294,9 +292,6 @@ void process_clasp_arguments(CommandLineOptions* options) {
     }
     if (*arg == "-h" || *arg == "--help") {
       std::cout << help << std::endl;
-      exit(0);
-    } else if (*arg == "-U" || *arg == "--unpack-faso") {
-      clasp_unpack_faso(*++arg);
       exit(0);
     } else if (*arg == "-v" || *arg == "--version") {
       options->printVersion();

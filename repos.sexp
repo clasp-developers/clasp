@@ -6,9 +6,9 @@
   :pin 1)
  (:name :alexandria
   :directory "src/lisp/kernel/contrib/alexandria/"
-  :repository "https://github.com/clasp-developers/alexandria.git"
-  :branch "master"
-  :commit "8514d8e68ed0c733abf7f96f9e91b24912686dc4"
+  :repository "https://github.com/Bike/alexandria.git"
+  :branch "lambda-list-fix"
+  :commit "eb2a170a07899bfcb51b023d05687b5c4aacaae6"
   :pin 1)
  (:name :anaphora
   :extension :cando
@@ -17,11 +17,17 @@
   :branch "master"
   :commit "bcf0f7485eec39415be1b2ec6ca31cf04a8ab5c5"
   :pin 1)
+ (:name :anatomicl
+  :directory "src/lisp/kernel/contrib/Anatomicl/"
+  :repository "https://github.com/s-expressionists/Anatomicl.git"
+  :branch "main"
+  :commit "aeaef63a895c79419f69320799abfdb2eb2ac1d8"
+  :pin 1)
  (:name :ansi-test
   :directory "dependencies/ansi-test/"
   :repository "https://github.com/clasp-developers/ansi-test.git"
   :branch "master"
-  :commit "a1107c9564833680c72946f1cd87c9c3bbe0de5a"
+  :commit "ca06bd919661af162c67407c9d994e881870bdb3"
   :pin 1)
  (:name :architecture.builder-protocol
   :extension :cando
@@ -74,7 +80,7 @@
   :directory "src/lisp/kernel/contrib/cffi/"
   :repository "https://github.com/cffi/cffi.git"
   :branch "master"
-  :commit "dad3520cd3b4d14fd494ce617c8394b48e027bb1"
+  :commit "71fdf5d4864dd07a74534c953350041ceaa93f0e"
   :pin 1)
  (:name :cl-bench
   :directory "dependencies/cl-bench/"
@@ -126,13 +132,25 @@
  (:name :cleavir
   :directory "src/lisp/kernel/contrib/Cleavir/"
   :repository "https://github.com/s-expressionists/Cleavir.git"
-  :branch "main"
+  :branch "cross"
   :pin 0)
  (:name :closer-mop
   :directory "src/lisp/kernel/contrib/closer-mop/"
   :repository "https://github.com/pcostanza/closer-mop.git"
   :branch "master"
-  :commit "4809f692ecf7b7c8c01ebea55ee10489e0992920"
+  :commit "c6b1f2db0d77aea961e871f268b6fdcdc90c7510"
+  :pin 1)
+ (:name :clostrum
+  :directory "src/lisp/kernel/contrib/Clostrum/"
+  :repository "https://github.com/s-expressionists/Clostrum.git"
+  :branch "master"
+  :commit "5d0cfea2a73e073e6503655d3f68b87f0affd785"
+  :pin 1)
+ (:name :common-macros
+  :directory "src/lisp/kernel/contrib/Common-macros/"
+  :repository "https://github.com/robert-strandh/Common-macros/"
+  :branch "master"
+  :commit "4596ddf32357fa793ece25cecb6e8661259b51ac"
   :pin 1)
  (:name :concrete-syntax-tree
   :directory "src/lisp/kernel/contrib/Concrete-Syntax-Tree/"
@@ -141,17 +159,22 @@
   :commit "f79dab6b6d14000259449c169b501cc6398b3f54"
   :pin 1)
  (:name :documentation-utils
-  :extension :cando
   :directory "src/lisp/kernel/contrib/documentation-utils/"
-  :repository "https://github.com/Shinmera/documentation-utils.git"
+  :repository "https://codeberg.org/shinmera/documentation-utils"
   :branch "master"
-  :commit "fcbd927dee7f311915a27ee557e3db1d4510403c"
+  :commit "cd5b506c7aa555dea0cc0785f36256348c9e839d"
+  :pin 1)
+ (:name :ecclesia
+  :directory "src/lisp/kernel/contrib/Ecclesia/"
+  :repository "https://github.com/s-expressionists/Ecclesia.git"
+  :branch "main"
+  :commit "c66d4d57843396b35bac257128a401c1ddb954a1"
   :pin 1)
  (:name :eclector
   :directory "src/lisp/kernel/contrib/Eclector/"
   :repository "https://github.com/s-expressionists/Eclector.git"
   :branch "master"
-  :commit "587241c83fbde3c857a60c6f07e2981bd71d98fb"
+  :commit "b2b22cdf7f011a805959d761c571029e1223380f"
   :pin 1)
  (:name :esrap
   :directory "src/lisp/kernel/contrib/esrap/"
@@ -159,6 +182,12 @@
   :branch "master"
   :commit "7588b430ad7c52f91a119b4b1c9a549d584b7064"
   :pin 2)
+ (:name :extrinsicl
+  :directory "src/lisp/kernel/contrib/Extrinsicl/"
+  :repository "https://github.com/s-expressionists/Extrinsicl.git"
+  :branch "cross"
+  :commit "19d4610e8074463fad22dc5e0357ce4b4027a2e2"
+  :pin 1)
  (:name :fast-io
   :extension :cando
   :directory "src/lisp/kernel/contrib/fast-io/"
@@ -180,11 +209,29 @@
   :branch "master"
   :commit "9566ce8adfb299faef803d95736c780413a1373c"
   :pin 1)
+ (:name :incless
+  :directory "src/lisp/kernel/contrib/Incless/"
+  :repository "https://github.com/s-expressionists/Incless.git"
+  :branch "main"
+  :commit "ed66503f90f997c92f0bc74899684d7ae88163b4"
+  :pin 1)
+ (:name :inravina
+  :directory "src/lisp/kernel/contrib/Inravina/"
+  :repository "https://github.com/s-expressionists/Inravina.git"
+  :branch "main"
+  :commit "70169019cb7a7b8109e9db01abbe18f4532c8e30"
+  :pin 1)
+ (:name :invistra
+  :directory "src/lisp/kernel/contrib/Invistra/"
+  :repository "https://github.com/s-expressionists/Invistra.git"
+  :branch "main"
+  :commit "680d505fad4be9769faae63fb1a5b897eaa8d3c9"
+  :pin 1)
  (:name :khazern
   :directory "src/lisp/kernel/contrib/Khazern/"
   :repository "https://github.com/s-expressionists/Khazern.git"
   :branch "master"
-  :commit "5fcdea59072fb020ebe335bcd092f9eed78a9a91"
+  :commit "7ac578303af2a965fbe7ccce663ecfe751090742"
   :pin 1)
  (:name :let-plus
   :extension :cando
@@ -197,7 +244,7 @@
   :directory "src/libatomic_ops/"
   :repository "https://github.com/ivmai/libatomic_ops.git"
   :branch "master"
-  :commit "fdccf2b3cdcad5584af0554fceff83d3342d5ebc"
+  :commit "d007246aa70fef4f9bfcb84bcc5e6a97653b3d86"
   :pin 1)
  (:name :lparallel
   :extension :cando
@@ -206,19 +253,31 @@
   :branch "fix-asdf-feature"
   :commit "9c98bf629328b27a5a3fbb7a637afd1db439c00f"
   :pin 1)
+ (:name :maclina
+  :directory "src/lisp/kernel/contrib/Maclina/"
+  :repository "https://github.com/s-expressionists/Maclina.git"
+  :branch "cross"
+  :commit "ab0d0370fce6227b38259e442a9e2269b3ce257a"
+  :pin 1)
  (:name :mgl-pax
   :extension :cando
   :directory "src/lisp/kernel/contrib/mgl-pax/"
   :repository "https://github.com/melisgl/mgl-pax.git"
   :branch "master"
-  :commit "c1c1edb32d0e596ce18af582e2a33aa9b09c98ef"
+  :commit "f7f9414012c56c95b6f55a50a85199b8d3a25408"
   :pin 1)
  (:name :named-readtables
   :extension :cando
   :directory "src/lisp/kernel/contrib/named-readtables/"
   :repository "https://github.com/melisgl/named-readtables.git"
   :branch "master"
-  :commit "6eea56674442b884a4fee6ede4c8aad63541aa5b"
+  :commit "08c605ef2ec29238c708556b272bf6dc18d5b070"
+  :pin 1)
+ (:name :nontrivial-gray-streams
+  :directory "src/lisp/kernel/contrib/nontrivial-gray-streams/"
+  :repository "https://github.com/yitzchak/nontrivial-gray-streams.git"
+  :branch "main"
+  :commit "0f7ba9e3018eafe03c521961183a126a2a9c0c4f"
   :pin 1)
  (:name :parser.common-rules
   :extension :cando
@@ -241,6 +300,12 @@
   :branch "master"
   :commit "47a70ba1e32362e03dad6ef8e6f36180b560f86a"
   :pin 1)
+ (:name :quaviver
+  :directory "src/lisp/kernel/contrib/quaviver/"
+  :repository "https://github.com/s-expressionists/quaviver.git"
+  :branch "main"
+  :commit "6d0ee719fef9dca72b4da8dd48d99c66feb317f3"
+  :pin 1)
  (:name :quicklisp-client
   :directory "dependencies/quicklisp-client/"
   :repository "https://github.com/quicklisp/quicklisp-client.git"
@@ -258,6 +323,7 @@
   :directory "extensions/seqan-clasp/seqan/"
   :repository "https://github.com/seqan/seqan.git"
   :branch "main"
+  :commit "25b31d538ae731d7ec03acdbe6be715fa8186983"
   :pin 1)
  (:name :seqan-clasp
   :extension :seqan-clasp
@@ -287,7 +353,7 @@
   :directory "src/lisp/kernel/contrib/trinsic/"
   :repository "https://github.com/s-expressionists/trinsic.git"
   :branch "main"
-  :commit "6303b29c0b28c53ceb5fe5c41de1098020a2ec67"
+  :commit "3a370f91982fba03987ae71d5b75e8527508b3c4"
   :pin 1)
  (:name :trivial-do
   :directory "dependencies/trivial-do/"
@@ -321,11 +387,16 @@
   :commit "ca45656587f36378305de1a4499c308acc7a03af"
   :pin 1)
  (:name :trivial-indent
-  :extension :cando
   :directory "src/lisp/kernel/contrib/trivial-indent/"
-  :repository "https://github.com/Shinmera/trivial-indent.git"
+  :repository "https://codeberg.org/shinmera/trivial-indent"
   :branch "master"
-  :commit "87b35ff9202b107230e35790e93c471cc7880900"
+  :commit "df07d50bbc71c32a6ca62ce062f66e11011945e9"
+  :pin 1)
+ (:name :trivial-package-local-nicknames
+  :directory "src/lisp/kernel/contrib/trivial-package-local-nicknames"
+  :repository "https://github.com/phoe/trivial-package-local-nicknames.git"
+  :branch "master"
+  :commit "8a4d09c1c5cb2b5349aecbd796164433df7a6cc5"
   :pin 1)
  (:name :trivial-package-locks
   :directory "src/lisp/kernel/contrib/trivial-package-locks/"
@@ -338,7 +409,7 @@
   :directory "src/lisp/kernel/contrib/trivial-utf-8/"
   :repository "https://github.com/clasp-developers/trivial-utf-8.git"
   :branch "master"
-  :commit "718e74506ca02ec1d46c1f424a7881fed6373349"
+  :commit "3c51f5b8916e158ff1ba2128b8ec784db46f38a8"
   :pin 1)
  (:name :trivial-with-current-source-form
   :directory "src/lisp/kernel/contrib/trivial-with-current-source-form/"
@@ -346,9 +417,15 @@
   :branch "master"
   :commit "d00f7abcbb127969884ea639a334827c3b5a0ad2"
   :pin 1)
+ (:name :trucler
+  :directory "src/lisp/kernel/contrib/Trucler/"
+  :repository "https://github.com/s-expressionists/Trucler.git"
+  :branch "master"
+  :commit "39d4ba1a44f6998a961ed19b9cd8d19ea48d43ba"
+  :pin 1)
  (:name :usocket
   :directory "src/lisp/kernel/contrib/usocket/"
   :repository "https://github.com/usocket/usocket.git"
   :branch "master"
-  :commit "1be9ed3cbe812c50a16492342c32d982081f8b01"
+  :commit "32f4841b4313d37c36963d0d1865135ee4e29a01"
   :pin 1))

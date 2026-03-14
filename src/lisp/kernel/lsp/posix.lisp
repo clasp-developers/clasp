@@ -1,4 +1,4 @@
-(in-package :core)
+(in-package #:core)
 
 (defpackage "CLASP-POSIX"
   (:use)

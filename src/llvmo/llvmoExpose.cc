@@ -1821,6 +1821,14 @@ CL_DEFUN Constant_sp ConstantExpr_O::getInBoundsGetElementPtr(llvm::Type* elemen
   res->set_wrapped(llvm_res);
   return res;
 }
+
+CL_LISPIFY_NAME(constant-expr/get-int-to-ptr);
+CL_DEFUN Constant_sp ConstantExpr_O::getIntToPtr(llvm::Constant* c, llvm::Type* ty,
+                                                 bool only_if_reduced_p) {
+  auto res = gctools::GC<Constant_O>::allocate_with_default_constructor();
+  res->set_wrapped(llvm::ConstantExpr::getIntToPtr(c, ty, only_if_reduced_p));
+  return res;
+}
 }; // namespace llvmo
 
 namespace llvmo {
@@ -3711,38 +3719,6 @@ void finalizeEngineAndTime(llvm::ExecutionEngine* engine) {
   llvm_sys__accumulate_llvm_usage_seconds(thisTime);
 }
 
-DOCGROUP(clasp);
-CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine, core::T_sp startup_name) {
-  // Stuff to support MCJIT
-  llvm::ExecutionEngine* engine = oengine->wrappedPtr();
-#ifdef DEBUG_STARTUP
-  printf("%s:%d Entered %s\n", __FILE__, __LINE__, __FUNCTION__);
-#endif
-  finalizeEngineAndTime(engine);
-  if (gc::IsA<core::String_sp>(startup_name)) {
-    core::String_sp str = gc::As_unsafe<core::String_sp>(startup_name);
-    std::string sstr = str->get_std_string();
-    llvm::StringRef strref = sstr;
-    void* fn = engine->getPointerToNamedFunction(strref);
-    typedef void (*fptr)();
-    fptr ffn = (fptr)fn;
-    printf("%s:%d About to run function %s at %p\n", __FILE__, __LINE__, sstr.c_str(), fn);
-    ffn();
-  } else if (startup_name.nilp()) {
-    engine->runStaticConstructorsDestructors(false);
-  } else {
-    SIMPLE_ERROR("Only NIL or a function name are allowed as the startup_name - you provided {}", _rep_(startup_name));
-  }
-  if (core::startup_functions_are_waiting()) {
-    core::startup_functions_invoke(NULL);
-  } else {
-    SIMPLE_ERROR("There were no startup functions to invoke\n");
-  }
-#ifdef DEBUG_STARTUP
-  printf("%s:%d Leaving %s\n", __FILE__, __LINE__, __FUNCTION__);
-#endif
-}
-
 /*! Return (values target nil) if successful or (values nil error-message) if not */
 DOCGROUP(clasp);
 CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string& ArchName, Triple_sp triple) {
@@ -4270,74 +4246,6 @@ CL_DEFUN void llvm_sys__optimizeModule(llvm::Module* module, int level) {
   MPM.run(*module, MAM);
 }
 
-SYMBOL_EXPORT_SC_(CorePkg, repl);
-SYMBOL_EXPORT_SC_(KeywordPkg, dump_repl_object_files);
-DOCGROUP(clasp);
-CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, const string& startupName, const string& shutdownName,
-                                                             core::T_sp initialData) {
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__));
-#ifdef DEBUG_MONITOR
-  if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
-    MONITOR(BF("startup llvm_sys__jitFinalizeReplFunction startupName-> %s\n"), startupName);
-  }
-#endif
-  void* replPtrRaw;
-  // Run the startup code by looking up a symbol
-  DEBUG_OBJECT_FILES_PRINT(
-      ("%s:%d:%s    About to runStartupCode name = %s\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str()));
-  ObjectFile_sp codeObject;
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Lookup %s in JITDylib_sp %p JITDylib* %p JITLINKDylib* %p\n", __FILE__, __LINE__,
-                            __FUNCTION__, startupName.c_str(), jit->getMainJITDylib().raw_(), jit->getMainJITDylib()->wrappedPtr(),
-                            llvm::cast<JITLinkDylib>(jit->getMainJITDylib()->wrappedPtr())));
-  replPtrRaw = jit->runStartupCode(jit->getMainJITDylib(), startupName, initialData);
-  core::Function_sp functoid((gctools::Tagged)replPtrRaw);
-  DEBUG_OBJECT_FILES_PRINT(
-      ("%s:%d:%s   We should have captured the ObjectFile_O and Code_O object\n", __FILE__, __LINE__, __FUNCTION__));
-  return functoid;
-}
-
-DOCGROUP(clasp);
-CL_DEFUN void llvm_sys__jitFinalizeRunCxxFunction(ClaspJIT_sp jit, JITDylib_sp dylib, const string& cxxName) {
-  DEPRECATED();
-#if 0
-  // Run the static constructors
-  // The static constructor should call the startup function
-  //  but ORC doesn't seem to do this as of llvm9
-  //    So use the code below
-  llvm::ExitOnError ExitOnErr;
-  ExitOnErr(jit->_Jit->runConstructors());
-  gctools::smart_ptr<core::Closure_O> functoid;
-  if (core::startup_functions_are_waiting()) {
-    core::T_O* replPtrRaw = core::startup_functions_invoke(initialData.raw_());
-    core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(replPtrRaw);
-    functoid = core::Closure_O::make_bclasp_closure( core::_sym_repl,
-                                                              lisp_funcPtr,
-                                                              kw::_sym_function,
-                                                              nil<core::T_O>(),
-                                                              nil<core::T_O>() );
-  } else {
-    printf("%s:%d No startup functions were available!!!\n", __FILE__, __LINE__);
-    abort();
-  }
-#else
-  // So the cxxName is of an external linkage function that is
-  // always unique
-  core::Pointer_sp startupPtr;
-  void* ptr;
-  bool found = jit->do_lookup(dylib, cxxName, ptr);
-  if (!found) {
-    SIMPLE_ERROR("Could not find function {}", cxxName);
-  }
-  voidStartUp startup = reinterpret_cast<voidStartUp>(ptr);
-  //    printf("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup);
-  startup();
-  // If we load a bitcode file generated by clasp - then startup_functions will be waiting - so run them
-  if (core::startup_functions_are_waiting()) {
-    core::startup_functions_invoke(NULL);
-  }
-#endif
-}
-
 }; // namespace llvmo
 
 namespace llvmo {
@@ -4423,8 +4331,6 @@ void dump_objects_for_debugger(std::ostream& fout, std::string indent) {
   fmt::print(fout, "] )\n");
 #if 0
   fprintf(fout,"%sInit_struct(\"llvmo::ObjectFileInfo\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(llvmo::ObjectFileInfo));
-  python_dump_field(fout,"_faso_filename",false,gctools::ctype_const_char_ptr,offsetof(ObjectFileInfo,_faso_filename));
-  python_dump_field(fout,"_faso_index",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_faso_index));
   python_dump_field(fout,"_objectID",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_objectID));
   python_dump_field(fout,"_object_file_start",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_object_file_start));
   python_dump_field(fout,"_object_file_size",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_object_file_size));

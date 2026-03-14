@@ -26,9 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-namespace core {
-bool maybe_demangle(const std::string& fnName, std::string& output);
-};
 namespace gctools {
 
 template <class T> class GCVector_moveable : public GCContainer {

@@ -352,17 +352,19 @@ public:
   T_sp _funs;
   List_sp _decls;
   size_t frame_end;
+  T_sp _global;
 
 public:
-  Lexenv_O(T_sp nvars, T_sp ntags, T_sp nblocks, T_sp nfuns, List_sp ndecls, size_t nframe_end)
-      : _vars(nvars), _tags(ntags), _blocks(nblocks), _funs(nfuns), _decls(ndecls), frame_end(nframe_end){};
+  Lexenv_O(T_sp nvars, T_sp ntags, T_sp nblocks, T_sp nfuns, List_sp ndecls, size_t nframe_end, T_sp global = nil<T_O>())
+    : _vars(nvars), _tags(ntags), _blocks(nblocks), _funs(nfuns), _decls(ndecls), frame_end(nframe_end), _global(global) {};
   CL_LISPIFY_NAME(lexenv/make)
+  CL_LAMBDA(vars tags blocks funs decls frame_end &optional global)
   CL_DEF_CLASS_METHOD
-  static Lexenv_sp make(T_sp vars, T_sp tags, T_sp blocks, T_sp funs, List_sp decls, size_t frame_end) {
-    return gctools::GC<Lexenv_O>::allocate<gctools::RuntimeStage>(vars, tags, blocks, funs, decls, frame_end);
+  static Lexenv_sp make(T_sp vars, T_sp tags, T_sp blocks, T_sp funs, List_sp decls, size_t frame_end, T_sp global) {
+    return gctools::GC<Lexenv_O>::allocate<gctools::RuntimeStage>(vars, tags, blocks, funs, decls, frame_end, global);
   }
-  static Lexenv_sp make_top_level() {
-    return make(nil<core::T_O>(), nil<core::T_O>(), nil<core::T_O>(), nil<core::T_O>(), nil<core::T_O>(), 0);
+  static Lexenv_sp make_top_level(T_sp global = nil<T_O>()) {
+    return make(nil<core::T_O>(), nil<core::T_O>(), nil<core::T_O>(), nil<core::T_O>(), nil<core::T_O>(), 0, global);
   }
   CL_DEFMETHOD List_sp vars() const { return this->_vars; }
   CL_DEFMETHOD List_sp tags() const { return this->_tags; }
@@ -370,18 +372,27 @@ public:
   CL_DEFMETHOD List_sp funs() const { return this->_funs; }
   CL_DEFMETHOD List_sp decls() const { return this->_decls; }
   CL_DEFMETHOD size_t frameEnd() const { return this->frame_end; }
+  CL_DEFMETHOD T_sp global() const { return this->_global; }
 
 public:
   inline Lexenv_sp sub_vars(List_sp vars, size_t frame_end) const {
-    return make(vars, tags(), blocks(), funs(), decls(), frame_end);
+    return make(vars, tags(), blocks(), funs(), decls(), frame_end, global());
   }
-  inline Lexenv_sp sub_funs(List_sp funs) const { return make(vars(), tags(), blocks(), funs, decls(), frameEnd()); }
+  inline Lexenv_sp sub_funs(List_sp funs) const {
+    return make(vars(), tags(), blocks(), funs, decls(), frameEnd(), global());
+  }
   inline Lexenv_sp sub_funs(List_sp funs, size_t frame_end) const {
-    return make(vars(), tags(), blocks(), funs, decls(), frame_end);
+    return make(vars(), tags(), blocks(), funs, decls(), frame_end, global());
   }
-  inline Lexenv_sp sub_tags(List_sp tags) const { return make(vars(), tags, blocks(), funs(), decls(), frameEnd() + 1); }
-  inline Lexenv_sp sub_block(List_sp blocks) const { return make(vars(), tags(), blocks, funs(), decls(), frameEnd() + 1); }
-  inline Lexenv_sp sub_decls(List_sp decls) const { return make(vars(), tags(), blocks(), funs(), decls, frameEnd()); }
+  inline Lexenv_sp sub_tags(List_sp tags) const {
+    return make(vars(), tags, blocks(), funs(), decls(), frameEnd() + 1, global());
+  }
+  inline Lexenv_sp sub_block(List_sp blocks) const {
+    return make(vars(), tags(), blocks, funs(), decls(), frameEnd() + 1, global());
+  }
+  inline Lexenv_sp sub_decls(List_sp decls) const {
+    return make(vars(), tags(), blocks(), funs(), decls, frameEnd(), global());
+  }
 
 public:
   /* Bind each variable to a stack location, returning a new lexical
@@ -809,9 +820,9 @@ public:
   CL_DEFMETHOD T_sp form() { return this->_form; }
   CL_LISPIFY_NAME(LoadTimeValueInfo/ReadOnlyP)
   CL_DEFMETHOD bool read_only_p() { return this->_read_only_p; }
-  // Evaluate the load time value form.
+  // Evaluate the load time value form in the given global environment.
   CL_LISPIFY_NAME(LoadTimeValueInfo/eval)
-  CL_DEFMETHOD T_sp eval();
+  CL_DEFMETHOD T_sp eval(T_sp env);
 };
 
 // Wrapper for compiler constant literals. Having this is necessary to
@@ -940,7 +951,7 @@ public:
   CL_DEFMETHOD SimpleVector_sp create_debug_info();
   // Link, then create actual run-time function objects and a bytecode module.
   // Suitable for cl:compile.
-  CL_DEFMETHOD void link_load();
+  CL_DEFMETHOD void link_load(T_sp env);
 };
 
 class Cfunction_O : public General_O {
@@ -1043,7 +1054,7 @@ public:
 public:
   // Convenience method to link the module and return the new bytecode function
   // corresponding to this cfunction. Good for cl:compile.
-  CL_DEFMETHOD Function_sp link_function();
+  CL_DEFMETHOD Function_sp link_function(T_sp env);
 public:
   // For use as a BytecodeDebugInfo.
   T_sp start() const;
@@ -1051,7 +1062,7 @@ public:
 };
 
 // Main entry point
-Function_sp bytecompile(T_sp, Lexenv_sp);
+Function_sp bytecompile(T_sp, T_sp);
 // main entry point for using the evaluator
 T_mv cmp__bytecode_implicit_compile_form(T_sp, T_sp);
 T_mv bytecode_toplevel_eval(T_sp, T_sp);

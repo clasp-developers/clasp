@@ -193,9 +193,7 @@
       (1+ (floor (log (abs x) 10)))))
 
 (defstruct (format-directive
-            #-(or ecl clasp)(:print-function %print-format-directive)
-            #+(or ecl clasp) :named
-            #+(or ecl clasp) (:type vector))
+            (:print-function %print-format-directive))
   (string t :type simple-string)
   (start 0 :type (and unsigned-byte fixnum))
   (end 0 :type (and unsigned-byte fixnum))
@@ -204,9 +202,6 @@
   (atsignp nil :type (member t nil))
   (params nil :type list))
 
-(deftype format-directive () 'vector)
-
-#-(or ecl clasp)
 (defun %print-format-directive (struct stream depth)
   (declare (ignore depth))
   (print-unreadable-object (struct stream)
@@ -229,7 +224,26 @@
 ;; NIL otherwise.
 (defparameter *output-layout-mode* nil)
 
-;; The condition FORMAT-ERROR is found later in conditions.lisp
+(define-condition format-error (simple-error)
+  ((format-control :initarg :complaint)
+   (format-arguments :initarg :arguments)
+   (control-string :reader format-error-control-string
+		   :initarg :control-string
+		   :initform *default-format-error-control-string*) 
+   (offset :reader format-error-offset :initarg :offset
+	   :initform *default-format-error-offset*)
+   (print-banner :reader format-error-print-banner :initarg :print-banner
+		 :initform t))
+  (:report (lambda (condition stream)
+	     (format
+              stream
+              "~:[~;Error in format: ~]~
+			 ~?~@[~%  ~A~%  ~V@T^~]"
+              (format-error-print-banner condition)
+              (simple-condition-format-control condition)
+              (simple-condition-format-arguments condition)
+              (format-error-control-string condition)
+              (format-error-offset condition)))))
 
 
 ;;;; TOKENIZE-CONTROL-STRING
@@ -452,7 +466,7 @@
           (simple-string
            (write-string directive stream)
            (interpret-directive-list stream (cdr directives) orig-args args))
-          (#-(or ecl clasp) format-directive #+(or ecl clasp) vector
+          (format-directive
              (multiple-value-bind
                    (new-directives new-args)
                  (let* ((code (char-code (format-directive-character directive)))
@@ -650,34 +664,32 @@
 (defmacro expand-bind-defaults (specs params &body body)
   (once-only ((params params))
     (if specs
-        (collect ((expander-bindings) (runtime-bindings))
-                 (dolist (spec specs)
-                   (destructuring-bind (var default) spec
-                     (let ((symbol (gensym)))
-                       (expander-bindings
-                        `(,var ',symbol))
-                       (runtime-bindings
-                        `(list ',symbol
-                               (let* ((param-and-offset (pop ,params))
-                                      (offset (car param-and-offset))
-                                      (param (cdr param-and-offset)))
-                                 (case param
-                                   (:arg `(or ,(expand-next-arg offset)
-                                              ,,default))
-                                   (:remaining
-                                    (setf *only-simple-args* nil)
-                                    '(length args))
-                                   ((nil) ,default)
-                                   (t param))))))))
-                 `(let ,(expander-bindings)
-                    `(let ,(list ,@(runtime-bindings))
-                       ,@(if ,params
-                             (error 'format-error
-                                    :complaint
-                            "Too many parameters, expected no more than ~D"
-                                    :arguments (list ,(length specs))
-                                    :offset (caar ,params)))
-                       ,,@body)))
+        (loop for (var default) in specs
+              for symbol = (gensym)
+              collect `(,var ',symbol) into expander-bindings
+              collect `(list ',symbol
+                             (let* ((param-and-offset (pop ,params))
+                                    (offset (car param-and-offset))
+                                    (param (cdr param-and-offset)))
+                               (case param
+                                 (:arg `(or ,(expand-next-arg offset)
+                                          ,,default))
+                                 (:remaining
+                                  (setf *only-simple-args* nil)
+                                  '(length args))
+                                 ((nil) ,default)
+                                 (t param))))
+                into runtime-bindings
+              finally (return
+                        `(let ,expander-bindings
+                           `(let ,(list ,@runtime-bindings)
+                              ,@(if ,params
+                                    (error 'format-error
+                                           :complaint
+                                           "Too many parameters, expected no more than ~D"
+                                           :arguments (list ,(length specs))
+                                           :offset (caar ,params)))
+                              ,,@body))))
         `(progn
            (when ,params
              (error 'format-error
@@ -715,25 +727,22 @@
 
 (defmacro interpret-bind-defaults (specs params &body body)
   (once-only ((params params))
-    (collect ((bindings))
-      (dolist (spec specs)
-        (destructuring-bind (var default) spec
-          (bindings `(,var (let* ((param-and-offset (pop ,params))
-                                  (offset (car param-and-offset))
-                                  (param (cdr param-and-offset)))
-                             (case param
-                               (:arg (or (next-arg offset) ,default))
-                               (:remaining (length args))
-                               ((nil) ,default)
-                               (t param)))))))
-      `(let* ,(bindings)
-         (when ,params
-           (error 'format-error
-                  :complaint
-                  "Too many parameters, expected no more than ~D"
-                  :arguments (list ,(length specs))
-                  :offset (caar ,params)))
-         ,@body))))
+    `(let* ,(loop for (var default) in specs
+                  collect `(,var (let* ((param-and-offset (pop ,params))
+                                        (offset (car param-and-offset))
+                                        (param (cdr param-and-offset)))
+                                   (case param
+                                     (:arg (or (next-arg offset) ,default))
+                                     (:remaining (length args))
+                                     ((nil) ,default)
+                                     (t param)))))
+       (when ,params
+         (error 'format-error
+                :complaint
+                "Too many parameters, expected no more than ~D"
+                :arguments (list ,(length specs))
+                :offset (caar ,params)))
+       ,@body)))
 
 (defun %set-format-directive-expander (char fn)
   (setf (aref *format-directive-expanders* (char-code (char-upcase char))) fn)
@@ -2235,30 +2244,28 @@
 
 (def-format-directive #\/ (string start end colonp atsignp params)
   (let ((symbol (extract-user-function-name string start end)))
-    (collect ((param-names) (bindings))
-      (dolist (param-and-offset params)
-        (let ((param (cdr param-and-offset)))
-          (let ((param-name (gensym)))
-            (param-names param-name)
-            (bindings `(,param-name
-                        ,(case param
-                           (:arg (expand-next-arg))
-                           (:remaining '(length args))
-                           (t param)))))))
-      `(let ,(bindings)
-         (,symbol stream ,(expand-next-arg) ,colonp ,atsignp
-                  ,@(param-names))))))
+    (loop for (_ . param) in params
+          for param-name = (gensym)
+          collect param-name into param-names
+          collect `(,param-name
+                    ,(case param
+                       (:arg (expand-next-arg))
+                       (:remaining '(length args))
+                       (t param)))
+            into bindings
+          finally (return
+                    `(let ,bindings
+                       (,symbol stream ,(expand-next-arg) ,colonp ,atsignp
+                                ,@param-names))))))
 
 (def-format-interpreter #\/ (string start end colonp atsignp params)
-  (let ((symbol (extract-user-function-name string start end)))
-    (collect ((args))
-      (dolist (param-and-offset params)
-        (let ((param (cdr param-and-offset)))
-          (case param
-            (:arg (args (next-arg)))
-            (:remaining (args (length args)))
-            (t (args param)))))
-      (apply (fdefinition symbol) stream (next-arg) colonp atsignp (args)))))
+  (let ((symbol (extract-user-function-name string start end))
+        (fargs (loop for (_ . param) in params
+                     collect (case param
+                               (:arg (next-arg))
+                               (:remaining (length args))
+                               (t param)))))
+    (apply (fdefinition symbol) stream (next-arg) colonp atsignp fargs)))
 
 (defun extract-user-function-name (string start end)
   (let ((slash (position #\/ string :start start :end (1- end)
@@ -2290,7 +2297,7 @@
               package))))
 
 ;;; Originally contributed by stassats May 24, 2016
-#+(or cclasp eclasp)
+(let () ; FIXME: Use during build
 (define-compiler-macro format (&whole whole destination control-string &rest args
                                       &environment env)
   ;; Be especially nice about the common programmer error of
@@ -2348,7 +2355,7 @@
                         (if (null ,dest-sym)
                             (get-output-stream-string ,stream-sym)
                             nil)))))))
-        whole)))
+        whole))))
 
 ;;; Given a formatter form that doesn't do anything fancy with arguments,
 ;;; expand into some code to execute it with the given args.
@@ -2382,6 +2389,33 @@
            ,guts))))
 
 ;;;; Compile-time checking of format arguments and control string
+
+;;; Conditions the FORMAT compiler macro signals if there's an argument count mismatch.
+;;; CLHS 22.3.10.2 says that having too few arguments is undefined, so that's a warning,
+;;; but having too many just means they're ignored, so that's a style-warning.
+;;; (Alternately we could not complain at all.)
+(define-condition format-warning-too-few-arguments (warning)
+  ((control-string :initarg :control :reader format-warning-control-string)
+   (expected :initarg :expected :reader format-warning-expected)
+   (observed :initarg :observed :reader format-warning-observed))
+  (:report (lambda (condition stream)
+             (format stream
+                     "Format string ~s expects at least ~d arguments,~@
+                      but is only provided ~d."
+                     (format-warning-control-string condition)
+                     (format-warning-expected condition)
+                     (format-warning-observed condition)))))
+(define-condition format-warning-too-many-arguments (style-warning)
+  ((control-string :initarg :control :reader format-warning-control-string)
+   (expected :initarg :expected :reader format-warning-expected)
+   (observed :initarg :observed :reader format-warning-observed))
+  (:report (lambda (condition stream)
+             (format stream
+                     "Format string ~s expects at most ~d arguments,~@
+                      but is provided ~d."
+                     (format-warning-control-string condition)
+                     (format-warning-expected condition)
+                     (format-warning-observed condition)))))
 
 ;;;
 ;;; Signal a warning if the given control string will not work with

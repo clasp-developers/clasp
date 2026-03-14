@@ -227,6 +227,13 @@
                           nil))
         (cleavir-attributes:default-attributes))))
 
+(defun global-inline-status (name)
+  "Return 'cl:inline 'cl:notinline or nil"
+  (cond
+    ((core:declared-global-inline-p name) 'cl:inline)
+    ((core:declared-global-notinline-p name) 'cl:notinline)
+    (t nil)))
+
 (defmethod env:function-info ((sys clasp)
                               (environment clasp-global-environment)
                               function-name)
@@ -239,12 +246,12 @@
     ((and (symbolp function-name) (not (null (macro-function function-name))))
      (make-instance 'env:global-macro-info ; we're global, so the macro must be global.
        :name function-name
-       :inline (core:global-inline-status function-name)
+       :inline (global-inline-status function-name)
        :expander (macro-function function-name)
        :compiler-macro (compiler-macro-function function-name)))
     ((fboundp function-name)
      (let* ((cleavir-ast (inline-ast function-name))
-            (inline-status (core:global-inline-status function-name))
+            (inline-status (global-inline-status function-name))
             (attributes (function-attributes function-name)))
        (make-instance 'env:global-function-info
          :name function-name
@@ -261,7 +268,7 @@
        :name function-name
        :type (global-ftype function-name)
        :compiler-macro (compiler-macro-function function-name)
-       :inline (core:global-inline-status function-name)
+       :inline (global-inline-status function-name)
        :ast (inline-ast function-name)))
     ( ;; If it is neither of the cases above, then this name does
      ;; not have any function-info associated with it.
@@ -296,59 +303,32 @@
            (make-instance 'env:local-macro-info
              :name symbol :expander (cmp:local-macro-info/expander info)))))))
 
-(defmethod env:declarations ((environment null))
-  (env:declarations *clasp-env*))
+(defmethod env:declarations ((sys clasp) (environment null))
+  (env:declarations sys *clasp-env*))
 
 ;;; TODO: Handle (declaim (declaration ...))
-(defmethod env:declarations
-    ((environment clasp-global-environment))
+(defmethod env:declarations ((sys clasp) (environment clasp-global-environment))
   '(;; behavior as in convert-form.lisp
     core:lambda-name core:lambda-list))
 
-(defmethod env:declarations ((env cmp:lexenv)) (env:declarations *clasp-env*))
-
-(eval-when (:compile-toplevel)
-  (format t "about to compute-policy~%"))
+(defmethod env:declarations ((sys clasp) (env cmp:lexenv))
+  (env:declarations sys *clasp-env*))
 
 (setf cmp:*policy*
-  '#.(policy:compute-policy cmp:*optimize* *clasp-env*))
+     (policy:compute-policy *clasp-system* cmp:*optimize*))
 
-(defmethod env:optimize-info ((environment clasp-global-environment))
+(defmethod env:optimize-info ((sys clasp) (environment clasp-global-environment))
   ;; The default values are all 3.
   (make-instance 'env:optimize-info
     :optimize cmp:*optimize*
     :policy cmp:*policy*))
 
-(defmethod env:optimize-info ((environment NULL))
-  (env:optimize-info *clasp-env*))
+(defmethod env:optimize-info ((sys clasp) (environment NULL))
+  (env:optimize-info sys *clasp-env*))
 
-(defmethod env:optimize-info ((env cmp:lexenv))
+(defmethod env:optimize-info ((sys clasp) (env cmp:lexenv))
   ;; FIXME: We will probably need lexenvs to track this eventually
-  (env:optimize-info *clasp-env*))
-
-
-(defmethod cleavir-environment:macro-function (symbol (environment clasp-global-environment))
-  (cl:macro-function symbol))
-
-(defmethod cleavir-environment:macro-function (symbol (environment null))
-  (cl:macro-function symbol))
-
-#+(or)(defmethod cleavir-environment:macro-function (symbol (environment core:environment))
-	(cl:macro-function symbol environment))
-
-#+(or)(defun cl:macro-function (symbol &optional (environment nil environment-p))
-	(cond
-	  ((typep environment 'core:environment)
-	   (cl:macro-function symbol environment))
-	  (environment
-	   (cleavir-environment:macro-function symbol environment))
-	  (t (cleavir-environment:macro-function symbol *clasp-env*))))
-
-(defmethod cleavir-environment:symbol-macro-expansion (symbol (environment clasp-global-environment))
-  (macroexpand symbol nil))
-
-(defmethod cleavir-environment:symbol-macro-expansion (symbol (environment NULL))
-  (macroexpand symbol nil))
+  (env:optimize-info sys *clasp-env*))
 
 ;;; Used by ext:symbol-macro
 (defun core:cleavir-symbol-macro (symbol environment)
@@ -359,6 +339,13 @@
             (declare (ignore form env)
                      (core:lambda-name cleavir-symbol-macro-function))
             expansion))
+        nil)))
+
+;;; Used by cl:macro-function
+(defun core:cleavir-macro-function (symbol environment)
+  (let ((info (env:function-info *clasp-system* environment symbol)))
+    (if (typep info '(or env:global-macro-info env:local-macro-info))
+        (env:expander info)
         nil)))
 
 ;;; Used by core:operator-shadowed-p
@@ -378,7 +365,8 @@
           (values (funcall def type-specifier env) t)
           (values type-specifier nil)))))
 
-(defmethod env:type-expand ((environment clasp-global-environment) type-specifier)
+(defmethod env:type-expand ((sys clasp) (environment clasp-global-environment)
+                            type-specifier)
   ;; BEWARE: bclasp is really bad at unwinding, and mvb creates a
   ;; lambda, so we write this loop in a way that avoids RETURN. cclasp
   ;; will contify this and produce more efficient code anyway.
@@ -390,8 +378,8 @@
                    (values type-specifier ever-expanded)))))
     (expand type-specifier nil)))
 
-(defmethod env:type-expand ((environment null) type-specifier)
-  (env:type-expand clasp-cleavir:*clasp-env* type-specifier))
+(defmethod env:type-expand ((sys clasp) (environment null) type-specifier)
+  (env:type-expand sys clasp-cleavir:*clasp-env* type-specifier))
 
 ;;; Needed because the default method ends up with classes,
 ;;; and that causes bootstrapping issues.
@@ -434,27 +422,40 @@
            next)))
     (env::entry (cleavir-env->bytecode (env::next env)))))
 
-(defmethod cleavir-environment:eval (form env (dispatch-env NULL))
-  "Evaluate the form in Clasp's top level environment"
-  (cleavir-environment:eval form env *clasp-env*))
-
-(defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
+(defmethod cleavir-environment:eval (form env (sys clasp))
   (core:interpret form (cleavir-env->bytecode env)))
 
 (defun wrap-cst (cst)
   (cst:quasiquote (cst:source cst)
                   (lambda () (cst:unquote cst))))
 
-(defmethod cleavir-environment:cst-eval (cst env (dispatch-env clasp-global-environment)
-                                         system)
+(defmethod cleavir-environment:cst-eval (cst env (system clasp))
   (declare (ignore system))
   (core:interpret (cst:raw cst) (cleavir-env->bytecode env)))
-
-(defmethod cleavir-environment:cst-eval (cst env (dispatch-env null) system)
-  (cleavir-environment:cst-eval cst env *clasp-env* system))
 
 (defmethod cmp:compiler-condition-origin
     ((condition cleavir-conditions:program-condition))
   ;; FIXME: ignore-errors is a bit paranoid
   (let ((source (origin-source (cleavir-conditions:origin condition))))
     (ignore-errors (if (consp source) (car source) source))))
+
+(in-package #:core)
+
+;;; FCGE support functions, used by e.g. bytecode interpreter
+(defgeneric fcge-ensure-fcell (environment name))
+(defgeneric fcge-ensure-vcell (environment name))
+
+(defgeneric fcge-find-package (environment name))
+(defgeneric fcge-package-name (environment name))
+
+;; Done through clostrum methods, but only in cross-clasp at the moment.
+;; FIXME
+(defgeneric fcge-lookup-fun (environment name))
+(defgeneric fcge-lookup-var (environment name))
+
+;;; These methods are not actually necessary since the runtime treats NIL
+;;; environments specially, but they're here for completeness.
+(defmethod fcge-ensure-fcell ((env null) name) (ensure-function-cell name))
+(defmethod fcge-ensure-vcell ((env null) name) (ensure-variable-cell name))
+(defmethod fcge-find-package ((env null) name) (find-package name))
+(defmethod fcge-package-name ((env null) package) (package-name package))

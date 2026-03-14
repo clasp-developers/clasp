@@ -63,9 +63,6 @@ struct Initializer {
   inline Initializer(InitializerFunction fn) { register_initializer_function(fn); }
 };
 
-size_t startup_functions_are_waiting();
-core::T_O* startup_functions_invoke(T_O* literals_or_null);
-
 std::tuple<void*, string> do_dlopen(const string& str_path, const int n_mode);
 std::tuple<int, string> do_dlclose(void* p_handle);
 std::tuple<void*, string> do_dlsym(void* p_handle, const char* pc_symbol);
@@ -95,12 +92,6 @@ void expect_offset(T_sp key, T_sp alist, size_t expected);
 };
 
 namespace core {
-void start_code_interpreter(gctools::GCRootsInModule* roots, char* bytecode, size_t nbytes, bool log);
 void core__throw_function(T_sp tag, T_sp result_form);
-void register_startup_function(const StartUp& startup);
-void transfer_StartupInfo_to_my_thread();
-T_mv core__startup_linkage_shutdown_names(size_t id = 0, core::T_sp prefix = nil<core::T_O>());
-void clasp_unpack_faso(const std::string& path_designator);
-void startup_shutdown_names(size_t id, const std::string& prefix, std::string& start, std::string& shutdown);
 extern bool global_jit_log_symbols;
 } // namespace core

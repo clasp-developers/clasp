@@ -52,14 +52,8 @@ namespace core {
 extern char* global_dump_functions;
 
 /* The following MUST MATCH %function-description% in cmpintrinsics.lisp
-Each thread maintains a current GCRootsInModule structure that stores roots
-used by the FunctionDescription objects.  Every time a Function_O object is created
-a FunctionDescription is allocated using 'new' and if the GCRootsInModule can still fit
-all of the slots (two currently) indicated by the fields that end in 'Index' then that
-GCRootsInModule* is written into the FunctionDescription and the indices into the
-GCRootsInModule are written into the FunctionDescription.  Then the function description
-objects that need to be managed by the GC are written into the GCRootsInModule object.
-A pointer to the new FunctionDescription object is then written into the instance
+Every time a Function_O object is created
+a FunctionDescription is allocated using 'new'. A pointer to the new FunctionDescription object is then written into the instance
 of the Function_O subclass.  A virtual function in the Function_O is used to
 recover the pointer to the FunctionDescription object for the Function_O.
 I used a virtual function because different subclasses store the FunctionDescription*
@@ -227,10 +221,17 @@ public:
 
 public:
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
-  void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr);
   CL_DEFMETHOD T_sp SimpleFun_code() const { return this->_Code; };
   // Check if the entry points can be dladdr'd, for snapshot save purposes.
   bool dladdrablep(std::set<void*>& uniqueEntries);
+
+protected:
+  void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr, T_sp code);
+  // Default where code = _Code. This can't be an actual default
+  // parameter because of stupid C++ rules.
+  void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr) {
+    fixupOneCodePointer(fixup, ptr, this->_Code);
+  }
 };
 
 // Now that SimpleFun exists we can define these.
@@ -312,6 +313,7 @@ public:
   CL_DEFMETHOD FunctionDescription_sp functionDescription() const {
     return this->_FunctionDescription;
   }
+  CoreFun_sp generate(void**) const;
 };
 
 // A SimpleCoreFun is a SimpleFun with an associated CoreFun.
@@ -397,15 +399,17 @@ class SimpleCoreFunGenerator_O : public General_O {
 public:
   FunctionDescription_sp _FunctionDescription;
   T_sp _entry_point_indices;
-  size_t _localFunIndex;
+  CoreFunGenerator_sp _CoreFunGenerator;
 
 public:
   // Accessors
-  SimpleCoreFunGenerator_O(FunctionDescription_sp fdesc, T_sp entry_point_indices, size_t lepIndex)
-      : _FunctionDescription(fdesc), _entry_point_indices(entry_point_indices), _localFunIndex(lepIndex){};
+  SimpleCoreFunGenerator_O(FunctionDescription_sp fdesc, T_sp entry_point_indices, CoreFunGenerator_sp cfg)
+      : _FunctionDescription(fdesc), _entry_point_indices(entry_point_indices), _CoreFunGenerator(cfg){};
   std::string __repr__() const;
-  size_t coreFunIndex() const;
+  CL_LISPIFY_NAME(SimpleCoreFunGenerator/CoreFunGenerator);
+  CL_DEFMETHOD CoreFunGenerator_sp coreFunGenerator() const { return this->_CoreFunGenerator; }
   CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
+  SimpleCoreFun_sp generate(CoreFun_sp, void**) const;
 };
 
 FunctionDescription_sp makeFunctionDescription(T_sp functionName, T_sp lambda_list = unbound<T_O>(), T_sp docstring = nil<T_O>(),
@@ -441,9 +445,6 @@ SimpleCoreFun_sp makeSimpleCoreFunAndFunctionDescription(T_sp functionName, T_sp
 BytecodeSimpleFun_sp core__makeBytecodeSimpleFun(FunctionDescription_sp fdesc, BytecodeModule_sp module,
                                                              size_t localsFrameSize, size_t environmentSize, size_t pcIndex,
                                                              size_t bytecodeSize, Pointer_sp trampoline);
-
-SimpleCoreFun_sp makeSimpleCoreFunFromGenerator(SimpleCoreFunGenerator_sp ep, gctools::GCRootsInModule* roots, void** fptrs);
-CoreFun_sp makeCoreFunFromGenerator(CoreFunGenerator_sp ep, void** fptrs);
 
 }; // namespace core
 
@@ -504,15 +505,18 @@ public:
   static FunctionCell_sp make(T_sp name, Function_sp initial);
   static FunctionCell_sp make(T_sp name); // unbound
 public:
-  Function_sp real_function() const {
+  CL_LISPIFY_NAME(FunctionCell/function)
+  CL_DEFMETHOD Function_sp real_function() const {
     // relaxed because nobody should be synchronizing on this,
     // but in practice it's probably irrelevant what we do?
     return this->_Function.load(std::memory_order_relaxed);
   }
   void real_function_set(Function_sp fun) { this->_Function.store(fun, std::memory_order_relaxed); }
   static SimpleFun_sp cachedUnboundSimpleFun(T_sp name);
-  void fmakunbound(T_sp name);
-  bool fboundp() const;
+  CL_LISPIFY_NAME(FunctionCell/makunbound)
+  CL_DEFMETHOD void fmakunbound(T_sp name);
+  CL_LISPIFY_NAME(FunctionCell/boundp)
+  CL_DEFMETHOD bool fboundp() const;
   // like real_function() but signals an error if we are un-fbound.
   Function_sp fdefinition() const;
 

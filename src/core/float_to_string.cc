@@ -1,4 +1,3 @@
-/* -*- mode: c; c-basic-offset: 8 -*- */
 /*
     Copyright (c) 2010, Juan Jose Garcia Ripoll.
 
@@ -11,6 +10,7 @@
 */
 
 #define ECL_INCLUDE_MATH_H
+#include <cmath>
 #include <float.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -80,7 +80,7 @@ static void print_float_exponent(T_sp buffer, Float_sp number, gc::Fixnum exp) {
   if (e != 'e' || exp != 0) {
     StrNs_sp sbuffer = gc::As<StrNs_sp>(buffer);
     sbuffer->vectorPushExtend(clasp_make_character(e));
-    core__integer_to_string(sbuffer, clasp_make_fixnum(exp), clasp_make_fixnum(10), false, false);
+    core__integer_to_string(sbuffer, clasp_make_fixnum(exp), clasp_make_fixnum(10),false, false);
   }
 }
 
@@ -89,7 +89,7 @@ T_sp core_float_to_string_free(Float_sp number, Number_sp e_min, Number_sp e_max
   if (Float_O::isnan(number)) {
     return eval::funcall(ext::_sym_float_nan_string, number);
   } else if (Float_O::isinf(number)) {
-    return eval::funcall(ext::_sym_float_infinity_string, number);
+    return eval::funcall(core::_sym_float_infinity_string, number);
   }
   T_mv mv_exp = core__float_to_digits(nil<T_O>(), number, nil<T_O>(), nil<T_O>());
   Fixnum_sp exp = gc::As_unsafe<Fixnum_sp>(mv_exp);
@@ -122,4 +122,39 @@ T_sp core_float_to_string_free(Float_sp number, Number_sp e_min, Number_sp e_max
   }
   return buffer;
 }
+
+// Redefined in print.lisp to respect *print-readably* and *print-eval*
+// (Also to not cons a new string every time)
+CL_DEFUN T_sp core__float_infinity_string(Float_sp number) {
+#ifdef CLASP_SHORT_FLOAT
+  if (number.short_floatp()) {
+    if (std::signbit(number.unsafe_short_float()))
+      return SimpleBaseString_O::make("#.ext:short-float-negative-infinity");
+    else
+      return SimpleBaseString_O::make("#.ext:short-float-positive-infinity");
+  } else
+#endif
+    if (number.single_floatp()) {
+      if (std::signbit(number.unsafe_single_float()))
+        return SimpleBaseString_O::make("#.ext:single-float-negative-infinity");
+      else
+        return SimpleBaseString_O::make("#.ext:single-float-positive-infinity");
+    } else
+      if (number.isA<DoubleFloat_O>()) {
+        if (std::signbit(number.as_unsafe<DoubleFloat_O>()->get()))
+          return SimpleBaseString_O::make("#.ext:double-float-negative-infinity");
+        else
+          return SimpleBaseString_O::make("#.ext:double-float-positive-infinity");
+      }
+#ifdef CLASP_LONG_FLOAT
+      else if (number.isA<LongFloat_O>()) {
+        if (std::signbit(number.as_unsafe<LongFloat_O>()->get()))
+          return SimpleBaseString_O::make("#.ext:long-float-negative-infinity");
+        else
+          return SimpleBaseString_O::make("#.ext:long-float-positive-infinity");
+      }
+#endif
+      else SIMPLE_ERROR("Illegal type");
+}
+
 }; // namespace core

@@ -42,8 +42,6 @@
      (format nil "MAIN-~a" (string-upcase (pathname-name lname))))
     (string
      (cond
-       ((string= lname core:+run-all-function-name+) lname) ; this one is ok
-       ((string= lname core:+clasp-ctor-function-name+) lname) ; this one is ok
        ((string= lname "IMPLICIT-REPL") lname)  ; this one is ok
        ((string= lname "TOP-LEVEL")
         (function-name-from-source-info lname))
@@ -115,39 +113,34 @@
                    cl:macro-function cl:compiler-macro-function
                    ext::type-expander ext::setf-expander))
      (jit-function-name (second lname)))
-    #+(or) ;; uncomment this to be more forgiving
-    (cons
-     (core:fmt t "jit-function-name handling UNKNOWN: {}%N" lname)
-     ;; What is this????
-     (core:fmt nil "{}_CONS-LNAME?" lname))
+    ;;#+(or) ;; uncomment this to be more forgiving
+    ((cons t (cons t null))
+     (jit-function-name (second lname)))
     (t (error "Illegal lisp function name[~a]" lname))))
 
 (defparameter *dump-compile-module* nil)
 
 (defparameter *jit-lock* (mp:make-recursive-mutex 'jit-lock))
 
-(defun jit-add-module-return-function (original-module startup-shutdown-id literals-list
-                                       &key output-path)
-  (declare (ignore output-path))
-  (cmp:quick-module-dump original-module "module-before-optimize")
+(defun jit-add-module (module startup-shutdown-id ctable-name fvector-name)
+  (cmp:irc-verify-module-safe module)
   (unwind-protect
-       (let ((module original-module))
-         (cmp:irc-verify-module-safe module)
-         (let ((jit-engine (llvm-sys:clasp-jit)))
-           (multiple-value-bind (startup-name shutdown-name)
-               (cmp:jit-startup-shutdown-function-names startup-shutdown-id)
-             (let ((function (llvm-sys:get-function module startup-name)))
-               (if (null function)
-                   (error "Could not obtain the startup function ~s by name" startup-name)))
-             (cmp:with-track-llvm-time
-                 (when *dump-compile-module*
-                   (format t "About to dump module~%")
-                   (llvm-sys:dump-module module)
-                   (format t "startup-name |{}|~%" startup-name)
-                   (format t "Done dump module~%"))
-               (mp:with-lock (*jit-lock*)
-                 (when (member :dump-compile *features*)
-                   (llvm-sys:dump-module module))
-                 (llvm-sys:add-irmodule jit-engine (llvm-sys:get-main-jitdylib jit-engine) module cmp:*thread-safe-context* startup-shutdown-id)
-                 (llvm-sys:jit-finalize-repl-function jit-engine startup-name shutdown-name literals-list))))))
+       (let ((jit-engine (llvm-sys:clasp-jit)))
+         (cmp:with-track-llvm-time
+           (when *dump-compile-module*
+             (format t "About to dump module~%")
+             (llvm-sys:dump-module module)
+             (format t "Done dump module~%"))
+           (mp:with-lock (*jit-lock*)
+             (let ((dylib (llvm-sys:get-main-jitdylib jit-engine)))
+               ;; Install the literals, and as a bonus, collect the constants table
+               ;; and function vector so the caller can make or retrieve objects.
+               (let ((object-file
+                       (llvm-sys:add-irmodule
+                        jit-engine dylib module
+                        cmp:*thread-safe-context* startup-shutdown-id))
+                     (litarr (llvm-sys:lookup jit-engine dylib ctable-name))
+                     (fvector
+                       (llvm-sys:lookup jit-engine dylib fvector-name)))
+                 (values object-file litarr fvector))))))
     (gctools:thread-local-cleanup)))

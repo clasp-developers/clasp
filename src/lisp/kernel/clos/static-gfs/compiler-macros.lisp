@@ -4,12 +4,6 @@
 ;;; and it's nice to not compile a bunch of constructors then.
 ;;; So we track what constructors we need and dump them all way later.
 (defvar *constructors-during-build*)
-;;; This is based on the build procedure. We load everything and then compile.
-;;; The load is serial, so that's when we should be saving everything.
-;;; but only for cclasp, which means while bclasp is loading cclasp.
-#+bclasp
-(eval-when (:load-toplevel)
-  (setf *constructors-during-build* nil))
 
 (defmacro precompile-build-constructors ()
   (let ((specs *constructors-during-build*))
@@ -55,6 +49,7 @@
       ;; circular or dotted list
       (values nil nil nil nil)))
 
+(let () ; FIXME: allow in build, maybe? somehow?
 (define-compiler-macro make-instance
     (&whole form class-designatorf &rest initargs &environment env)
   (let ((class-designator
@@ -86,4 +81,4 @@
                `(let ((,cellg
                         (ensure-constructor-cell ,class-designatorf ',keys))
                       ,@bindings)
-                (funcall ,cellg ,@syms))))))))
+                (funcall ,cellg ,@syms)))))))))

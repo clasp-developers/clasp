@@ -96,9 +96,6 @@ typedef double long_float_t;
 #define NOINLINE __attribute__((noinline))
 #define MAYBE_INLINE __attribute__((noinline))
 
-#define RUN_ALL_FUNCTION_NAME "RUN-ALL"
-#define CLASP_CTOR_FUNCTION_NAME "CLASP-CTOR"
-
 #ifdef CLASP_THREADS
 #include <atomic>
 #endif
@@ -966,12 +963,6 @@ void core__mangledSymbols(T_sp stream_designator);
 };
 
 extern void* _ZTVN4core6LispE;
-
-#define FASO_MAGIC_NUMBER_0 0xbe
-#define FASO_MAGIC_NUMBER_1 0xbe
-#define FASO_MAGIC_NUMBER_2 0xde
-#define FASO_MAGIC_NUMBER_3 0xde
-#define FASO_MAGIC_NUMBER 0xbebedede
 
 #define FASL_MAGIC_NUMBER_0 0x8d
 #define FASL_MAGIC_NUMBER_1 0x74

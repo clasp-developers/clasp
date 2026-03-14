@@ -64,12 +64,6 @@ So don't make this external-linkage until you understand where this is coming fr
 (defvar *track-inlined-functions* nil
   "Keep track of cleavir inlined functions")
 
-;; Generate C++ destructors for reference-counting otherwise don't
-;;
-
-(defvar *compiler-suppress-dtors* #+use-refcount nil #-use-refcount t)
-(export '*compiler-suppress-dtors*)
-
 ;;
 ;;
 ;; Insert low-level tracing calls within the generated code at specific points
@@ -116,5 +110,3 @@ Options are :tagbody :go :all :eh-landing-pads
 ;; current *module* for the form.  The lambda returns T if cleavir succeeded in compiling the form
 ;; and nil otherwise
 (defvar *cleavir-compile-hook* nil)
-(defvar *cleavir-compile-file-hook* nil)
-

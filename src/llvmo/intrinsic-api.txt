@@ -36,7 +36,6 @@ _valueFrameReference
 _makeFunctionFrame
 _functionFrameReference
 _invokeTopLevelFunction
-_cc_register_startup_function
 _copyArgs
 _throwTooManyArgumentsException
 _throwNotEnoughArgumentsException

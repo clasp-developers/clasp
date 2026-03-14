@@ -1,15 +1,14 @@
 ;;;; reading circular data: the #= and ## readmacros
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (core:select-package :core))
+(in-package #:core)
 
 ;;; Based on the SBCL version
 (defconstant +sharp-marker+ '+sharp-marker+)
 
 (defun circle-subst (circle-table tree)
-  (cond ((and (core:sharp-equal-wrapper-p tree)
-              (not (eq (core:sharp-equal-wrapper-value tree) +sharp-marker+)))
-         (core:sharp-equal-wrapper-value tree))
+  (cond ((and (sharp-equal-wrapper-p tree)
+              (not (eq (sharp-equal-wrapper-value tree) +sharp-marker+)))
+         (sharp-equal-wrapper-value tree))
         ((null (gethash tree circle-table))
          (setf (gethash tree circle-table) t)
          (cond ((consp tree)
@@ -47,21 +46,16 @@
                   (dolist (pair to-add)
                     (setf (gethash (car pair) tree) (cdr pair)))))
                ;; Do something for builtin objects
-               ((core:cxx-object-p tree)
-                #+(or)(error "Handle cxx-object in circle-subst tree: ~s" tree)
+               ((cxx-object-p tree)
                 (let ((record (make-record-patcher (lambda (object)
                                                      (circle-subst circle-table object)))))
                   (patch-object tree record)))
-               ;; These next two are #+(or cclasp eclasp) since they need the classes to be defined, etc.
-               ;; For structure objects use raw slots.
-               #+(or cclasp eclasp)
                ((typep tree 'structure-object)
                 (dotimes (i (clos::class-size (class-of tree)))
-                  (setf (si:instance-ref tree i)
+                  (setf (clos:standard-instance-access tree i)
                         (circle-subst circle-table
-                                      (si:instance-ref tree i)))))
+                                      (clos:standard-instance-access tree i)))))
                ;; For general objects go full MOP
-               #+(or cclasp eclasp)
                ((typep tree 'standard-object)
                 (let ((class (class-of tree)))
                   (dolist (slotd (clos:class-slots class))
@@ -78,25 +72,18 @@
   (unless label
     (simple-reader-error stream "missing label for #=" label))
   (cond ((not *sharp-equal-final-table*)
-         #+(or)(format t "About to set *sharp-equal-final-table*~%")
          (setf *sharp-equal-final-table* (make-hash-table)))
         ((gethash label *sharp-equal-final-table*)
          (simple-reader-error stream "multiply defined label: #~D=" label)))
-  (let ((tag (progn
-               #+(or)(format t "{{{ Handling sharp-equal label: ~a~%" label)
-               (setf (gethash label *sharp-equal-final-table*)
-                     (core:make-sharp-equal-wrapper label))))
+  (let ((tag (setf (gethash label *sharp-equal-final-table*)
+                   (make-sharp-equal-wrapper label)))
         (obj (read stream t nil t)))
     (when (eq obj tag)
       (simple-reader-error stream
                            "must tag something more than just #~D#"
                            label))
-    #+(or)(format t "{{{ About to circle-subst for sharp-equal label: ~a~%" label)
-    (setf (core:sharp-equal-wrapper-value tag) obj)
-    (prog1
-        (circle-subst (make-hash-table :test 'eq) obj)
-      #+(or)(format t "Done circle-subst with sharp-equal label: ~a}}}~%" label)
-      #+(or)(format t "}}}Done handling sharp-equal label: ~a~%" label))))
+    (setf (sharp-equal-wrapper-value tag) obj)
+    (circle-subst (make-hash-table :test 'eq) obj)))
 
 (defun sharp-sharp (stream ignore label)
   (declare (ignore ignore))
@@ -115,10 +102,10 @@
            (simple-reader-error stream
                                 "reference to undefined label #~D#"
                                 label))
-          ((eq (core:sharp-equal-wrapper-value entry) +sharp-marker+)
+          ((eq (sharp-equal-wrapper-value entry) +sharp-marker+)
            entry)
           (t
-           (core:sharp-equal-wrapper-value entry)))))
+           (sharp-equal-wrapper-value entry)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -127,7 +114,7 @@
 (defun read-cxx-object (stream char n)
   (declare (ignore char n))
   (let ((description (read stream t nil t)))
-    (apply #'core:load-cxx-object (car description) (cdr description))))
+    (apply #'load-cxx-object (car description) (cdr description))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -135,28 +122,13 @@
 ;;
 (defun do-read-dense-specialized-array (stream char n)
   (declare (ignore char))
-  (core:read-dense-specialized-array stream n))
+  (read-dense-specialized-array stream n))
 
-(defun sharpmacros-enhance ()
-  (set-dispatch-macro-character #\# #\= #'sharp-equal)
-  (set-dispatch-macro-character #\# #\# #'sharp-sharp)
-  (set-dispatch-macro-character #\# #\I #'read-cxx-object)
-  (set-dispatch-macro-character #\# #\D #'read-dense-specialized-array))
+(defun sharpmacros-enhance (readtable)
+  (set-dispatch-macro-character #\# #\= #'sharp-equal readtable)
+  (set-dispatch-macro-character #\# #\# #'sharp-sharp readtable)
+  (set-dispatch-macro-character #\# #\I #'read-cxx-object readtable)
+  (set-dispatch-macro-character #\# #\D #'read-dense-specialized-array readtable))
 
-
-(defun sharpmacros-lisp-redefine (readtable)
-  (cond ((boundp '*read-hook*)
-         #+(or cclasp eclasp) (set-eclector-reader-readmacros readtable))
-        (t
-         (set-dispatch-macro-character #\# #\= #'sharp-equal readtable)
-         (set-dispatch-macro-character #\# #\# #'sharp-sharp readtable)
-         (set-dispatch-macro-character #\# #\I #'read-cxx-object readtable)
-         (set-dispatch-macro-character #\# #\a 'sharp-a-reader readtable)
-         (set-dispatch-macro-character #\# #\A 'sharp-a-reader readtable)
-         (set-dispatch-macro-character #\# #\D 'do-read-dense-specialized-array readtable)
-         (set-dispatch-macro-character #\# #\s 'sharp-s-reader readtable)
-         (set-dispatch-macro-character #\# #\S 'sharp-s-reader readtable)))
-  (values))
-
-
-(sharpmacros-enhance)
+(sharpmacros-enhance *readtable*)
+(sharpmacros-enhance (symbol-value 'core:+standard-readtable+))

@@ -6,9 +6,13 @@
   strong tables in practice.
 * `ext:macroexpand-all` macroexpands a form and its subforms.
 * Arguments to bytecode functions are made available to debuggers.
+* `ext:deoptimize` can temporarily replace almost all native-compiled functions with a simpler bytecode version with better debuggability. `ext:reoptimize` restores the native version.
 
 ## Changed
 * Use Khazern extended for CL:LOOP
+* :output-type parameter to compile-file is replaced by :native. :native t will build a fasl with both bytecode and native versions of code. If :native is not provided, it defaults to `cmp:*compile-file-native*`.
+* Build modes are changed: :faso, :bytecode-faso, :fasoll, :fasobc, :fasl build modes are removed. Only :bytecode and the new :native can be used. :default-native is a new build flag that can be used to control whether the built Clasp will native-compile files by default.
+* The build procedure is completely rewritten, building Clasp's Lisp code using another Lisp implementation instead of boostrapping from the C++ Clasp.
 
 ## Fixed
 * Weak pointers and weak hash tables survive snapshot save/load.
@@ -23,6 +27,7 @@
 * `-z`/`--snapshot-symbols-save` command line option, occasionally used
   for snapshot debugging. You can call `core:mangled-symbol-names` if the
   effect is still needed.
+* FASO and other compile-file output types, other than FASL. `compile-file` now always produces a FASL.
 
 # Version 2.7.0 (LLVM15-19) 2025-01-21
 

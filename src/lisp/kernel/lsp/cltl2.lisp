@@ -70,8 +70,8 @@ Clasp reports IGNORE declarations on local functions analogously to variables."
 (defun declaration-information (decl-name &optional env)
   "Retrieve information about a declaration in an environment. See CLTL2 8.5 for more information. Only the OPTIMIZE and DECLARATION declarations are supported."
   (ecase decl-name
-    ((optimize) (env:optimize (env:optimize-info env)))
-    ((declaration) (env:declarations env))))
+    ((optimize) (env:optimize (env:optimize-info clasp-cleavir:*clasp-system* env)))
+    ((declaration) (env:declarations clasp-cleavir:*clasp-system* env))))
 
 (defun augment-environment-with-blocks (env blocknames)
   (loop for blockname in blocknames
@@ -239,14 +239,14 @@ Clasp reports IGNORE declarations on local functions analogously to variables."
                   (setf env (env:add-special-variable env name)))))
       ((optimize)
        (setf env (cleavir-cst-to-ast::augment-environment-with-optimize
-                  data env))))))
+                  data env clasp-cleavir:*clasp-system*))))))
 
 (defun augment-environment-with-variables-and-decls
     (env variables declarations)
   (multiple-value-bind (var-dspecs other-dspecs)
       (itemize-declaration-specifiers variables
                                       (canonicalize-declarations
-                                       (env:declarations env)
+                                       (env:declarations clasp-cleavir:*clasp-system* env)
                                        declarations))
     (loop for var in variables for idspecs in var-dspecs
           do (setf env

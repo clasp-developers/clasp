@@ -218,16 +218,21 @@ void handle_SIGCONT(int sig) {
 void setup_user_signal() { signal(SIGUSR1, handle_SIGUSR1); }
 
 void wait_for_user_signal(const char* message) {
-  printf("%s:%d:%s\n"
-         "Paused for SIGUSR1 pid is %d\n"
-         "%s\n",
-         __FILE__, __LINE__, __FUNCTION__, getpid(), message);
-  if (std::getenv("CLASP_EXIT_ON_WAIT_FOR_USER_SIGNAL")) {
+  if (std::getenv("CLASP_WAIT_FOR_USER_SIGNAL")) {
+    printf("%s:%d:%s\n"
+           "Paused for SIGUSR1 pid is %d\n"
+           "Cause: %s\n",
+           __FILE__, __LINE__, __FUNCTION__, getpid(), message);
+    while (!global_user_signal) pause();
+    printf("%s:%d:%s Received SIGUSR1\n", __FILE__, __LINE__, __FUNCTION__);
+    global_user_signal = false;
+  } else {
+    printf("%s:%d:%s\n"
+           "Hit wait_for_user_signal without CLASP_WAIT_FOR_USER_SIGNAL: Exiting with error. This is probably a bug in Clasp.\n"
+           "Cause: %s\n",
+           __FILE__, __LINE__, __FUNCTION__, message);
     exit(1);
   }
-  while (!global_user_signal) pause();
-  printf("%s:%d:%s Received SIGUSR1\n", __FILE__, __LINE__, __FUNCTION__);
-  global_user_signal = false;
 }
 
 CL_DEFUN void gctools__wait_for_user_signal(const std::string& msg) { wait_for_user_signal(msg.c_str()); }
@@ -344,10 +349,10 @@ void fatal_error_handler(void* user_data, const char* reason, bool gen_crash_dia
 // Kill the Lisp process with no possibility of parole.
 // DO NOT USE THIS FUNCTION UNLESS THE SITUATION IS TRULY IRRECOVERABLE.
 // As of this writing we use the standard abort() in dozens of places that
-// could just be errors and it's a problem. Also as of this writing, the only
-// place that uses this function is cl__error when hitting too many recursive
-// errors, because that is a pretty good indication that signaling another
-// error won't get us anywhere.
+// could just be errors and it's a problem.
+// Some examples of where it's actually appropriate:
+// * cl__error when hitting recursive error limit - erroring again won't help
+// * memory corruption in save_lisp - Lisp image is too broken for cl:error
 [[noreturn]] void truly_abort() {
   // Restore default signal disposition. Without this we'll go through the
   // normal handler, which signals an interrupt.

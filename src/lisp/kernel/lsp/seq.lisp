@@ -17,7 +17,7 @@
 
 
 (defun error-not-a-sequence (value)
-  (signal-type-error value 'sequence))
+  (error 'type-error :datum value :expected-type 'sequence))
 
 (defun error-sequence-index (sequence index)
   (error 'simple-type-error
@@ -48,6 +48,8 @@
 ;;; a list (VECTOR symbol) where symbol is an upgraded array element type,
 ;;; or a class (a user-defined sequence class).
 ;;; The length is a minimum, and if the third value is true, also a maximum.
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  ;; used at compile time in compiler macros
 (defun sequence-type-maker-info (type &optional env)
   (let (name args)
     (cond ((consp type)
@@ -135,6 +137,7 @@
                  (values class nil nil t)))))
          ;; Dunno.
          (values nil nil nil nil))))))
+) ; eval-when
 
 (defun make-sequence (type size	&key (initial-element nil iesp))
   "Args: (type length &key initial-element)
@@ -286,9 +289,8 @@ default value of INITIAL-ELEMENT depends on TYPE."
         ((vectorp sequence)
          (make-vector-iterator sequence from-end start end))
         (t
-         #-clasp-min(sequence:make-sequence-iterator
-                     sequence :from-end from-end :start start :end end)
-         #+clasp-min(error "The arg passed as a sequence to %make-sequence-iterator is ~a - in aclasp make-sequence-iterator is not available to use this" sequence))))
+         (sequence:make-sequence-iterator
+          sequence :from-end from-end :start start :end end))))
 
 ;;; Given a list of sequences, return two lists of the same length:
 ;;; one with irrelevant elements, and one with "iterators" for the sequences.
@@ -330,8 +332,8 @@ default value of INITIAL-ELEMENT depends on TYPE."
        (s-list seq-list (cdr s-list))
        (i-list iterator-list (cdr i-list)))
       ((null v-list) t)
-    (let ((sequence (cons-car s-list))
-          (iterator (cons-car i-list)))
+    (let ((sequence (car (the cons s-list)))
+          (iterator (car (the cons i-list))))
       (destructuring-bind (it limit from-end step endp elt)
           iterator
         (declare (type function step endp elt))
@@ -435,19 +437,12 @@ SEQUENCEs, where K is the minimum length of the given SEQUENCEs."
                       (error-sequence-length result result-type l))))
                 result)
               ;; ditto note in CONCATENATE above
-              (let ((result
-                      (apply #'map-into
-                             (make-sequence result-type
-                                            (reduce #'min more-sequences
-                                                    :initial-value (length sequence)
-                                                    :key #'length))
-                             function sequence more-sequences)))
-                (if (or (not (consp result-type))
-                        (typep result result-type))
-                    result
-                    (error 'type-error
-                           :datum result
-                           :expected-type result-type)))))
+              (let ((length
+                      (reduce #'min more-sequences
+                              :initial-value (length sequence)
+                              :key #'length)))
+                (apply #'map-into (make-sequence result-type length)
+                       function sequence more-sequences))))
         (apply #'map-for-effect function sequence more-sequences))))
 
 (defun map-to-list (function &rest sequences)

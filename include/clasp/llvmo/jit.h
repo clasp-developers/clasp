@@ -122,7 +122,10 @@ class ClaspJIT_O : public core::General_O {
   LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
 
 public:
-  bool do_lookup(JITDylib_sp dylib, const std::string& Name, void*& pointer);
+  [[nodiscard]] bool do_lookup(JITDylib_sp dylib, const std::string& Name, void*& pointer);
+  void* lookup_literals(JITDylib_sp, size_t id);
+  void* lookup_fvector(JITDylib_sp, size_t id);
+  [[nodiscard]] bool force_materialize(JITDylib_sp, size_t id);
   core::Pointer_sp lookup(JITDylib_sp dylib, const std::string& Name);
   core::T_sp lookup_all_dylibs(const std::string& Name);
   JITDylib_sp getMainJITDylib();
@@ -131,10 +134,6 @@ public:
 
   ObjectFile_sp addIRModule(JITDylib_sp dylib, Module_sp cM, ThreadSafeContext_sp context, size_t startupID);
   ObjectFile_sp addObjectFile(JITDylib_sp dylib, std::unique_ptr<llvm::MemoryBuffer> objectFile, bool print, size_t startupId);
-  /*! Return a pointer to a function WHAT FUNCTION???????
-        llvm_sys__jitFinalizeReplFunction needs to build a closure over it
-   */
-  void* runStartupCode(JITDylib_sp dylib, const std::string& startupName, core::T_sp initialDataOrUnbound);
   void installMainJITDylib();
   void adjustMainJITDylib(JITDylib_sp dylib);
   ClaspJIT_O();
@@ -152,7 +151,6 @@ public:
 #define EH_FRAME_NAME "__TEXT,__eh_frame"
 #define BSS_NAME "__DATA,__bss"
 #define STACKMAPS_NAME "__LLVM_STACKMAPS,__llvm_stackmaps"
-#define OS_GCROOTS_IN_MODULE_NAME ("_" GCROOTS_IN_MODULE_NAME)
 #define OS_LITERALS_NAME ("_" LITERALS_NAME)
 #elif defined(_TARGET_OS_LINUX)
 #define TEXT_NAME ".text"
@@ -160,7 +158,6 @@ public:
 #define DATA_NAME ".data"
 #define BSS_NAME ".bss"
 #define STACKMAPS_NAME ".llvm_stackmaps"
-#define OS_GCROOTS_IN_MODULE_NAME (GCROOTS_IN_MODULE_NAME)
 #define OS_LITERALS_NAME (LITERALS_NAME)
 #elif defined(_TARGET_OS_FREEBSD)
 #define TEXT_NAME ".text"
@@ -168,14 +165,12 @@ public:
 #define DATA_NAME ".data"
 #define BSS_NAME ".bss"
 #define STACKMAPS_NAME ".llvm_stackmaps"
-#define OS_GCROOTS_IN_MODULE_NAME (GCROOTS_IN_MODULE_NAME)
 #define OS_LITERALS_NAME (LITERALS_NAME)
 #else
 #error "What is the name of stackmaps section on this OS??? __llvm_stackmaps or .llvm_stackmaps"
 #endif
 
 namespace llvmo {
-extern std::string gcroots_in_module_name;
 extern std::string literals_name;
 extern std::atomic<size_t> global_JITDylibCounter;
 

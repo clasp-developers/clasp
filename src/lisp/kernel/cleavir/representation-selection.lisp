@@ -279,6 +279,10 @@
   (use-rtype (nth (position datum (bir:inputs inst)) (bir:outputs inst))))
 (defmethod %use-rtype ((inst bir:jump) (datum bir:datum))
   (use-rtype (nth (position datum (bir:inputs inst)) (bir:outputs inst))))
+(defmethod %use-rtype ((inst bir:throwi) (datum bir:datum))
+  (ecase (position datum (bir:inputs inst))
+    ((0) '(:object)) ; tag
+    ((1) :multiple-values))) ; returned values
 (defmethod %use-rtype ((inst bir:thei) (datum bir:datum))
   ;; actual type tests, which need multiple values, should have been turned
   ;; into mv calls by this point. but out of an abundance of caution,
@@ -615,6 +619,11 @@
   (insert-jump-coercion instruction))
 (defmethod insert-casts ((instruction bir:unwind))
   (insert-jump-coercion instruction))
+
+(defmethod insert-casts ((instruction bir:throwi))
+  (maybe-cast-before instruction (first (bir:inputs instruction)) '(:object))
+  (maybe-cast-before instruction (second (bir:inputs instruction))
+                     :multiple-values))
 
 (defmethod insert-casts ((instruction bir:call))
   (object-inputs instruction)

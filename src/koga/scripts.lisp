@@ -27,15 +27,186 @@
 (ninja:with-timestamp-preserving-stream (stream (first (uiop:command-line-arguments)))
   (cmpref:generate-virtual-machine-header stream))"))
 
+(defmethod print-prologue (configuration (name (eql :generate-lisp-info)) output-stream)
+  (declare (ignore configuration))
+  (format output-stream "~
+(print *features* (open (core:argv 3) :if-exists :overwrite :if-does-not-exist :create :direction :output))
+(let ((o (open (core:argv 4) :if-exists :overwrite :if-does-not-exist :create :direction :output)))
+  (write-line \"(eval-when (:compile-toplevel)\" o)
+  (mapc #'(lambda (p)
+            (if (if (string= (package-name p) \"COMMON-LISP\") nil (if (string= (package-name p) \"KEYWORD\") nil t))
+            (print `(defpackage ,(package-name p)
+                      (:use ,@(mapcar #'package-name (package-use-list p)))
+                      (:nicknames ,@(package-nicknames p))
+                      (:shadow ,@(mapcar #'symbol-name (package-shadowing-symbols p)))
+                      (:export ,@(let ((ss '()))
+                                   (maphash #'(lambda (k v) (setq ss (cons k ss)))
+                                            (core:package-hash-tables p))
+                                   ss)))
+                   o)))
+        (list-all-packages))
+  (write-line \")\" o))
+(print `(progn
+         ,@(mapcar #'(lambda (cn)
+                       `(defclass ,cn (,@(mapcar #'core:name-of-class
+                                                 (clos:direct-superclasses (find-class cn))))
+                          ()
+                          (:metaclass ,(core:name-of-class (class-of (find-class cn))))))
+                   (reverse core:*all-cxx-classes*)))
+       (open (core:argv 5) :if-exists :overwrite :if-does-not-exist :create :direction :output))
+(print `(eval-when (:compile-toplevel)
+          (mapcar (lambda (fname) (cmp::register-global-function-def 'defun fname))
+                  '(,@(let ((ss '()))
+                        (flet ((frob (k v)
+                                 (if (fboundp v)
+                                     (if (not (macro-function v))
+                                         (if (not (special-operator-p v))
+                                             (setq ss (cons v ss)))))
+                                 (if (fboundp `(setf ,v))
+                                     (setq ss (cons `(setf ,v) ss)))))
+                          (mapc #'(lambda (p)
+                                    (multiple-value-call
+                                     #'(lambda (ext int &rest _)
+                                         (maphash #'frob ext)
+                                         (maphash #'frob int))
+                                     (core:package-hash-tables p)))
+                                (list-all-packages)))
+                        ss))))
+       (open (core:argv 6) :if-exists :overwrite :if-does-not-exist :create :direction :output))
+(print `(eval-when (:compile-toplevel)
+          ,@(let ((ss '()))
+              (flet ((frob (k v)
+                       (if (constantp v)
+                           (let ((value (symbol-value v)))
+                             ;; only dump definitely-serializable constants
+                             (if (if (integerp value) t (if (stringp value) t nil))
+                                 (setq ss (cons `(defconstant ,v (if (boundp ',v) (symbol-value ',v) ',value)) ss))))
+                           (if (ext:specialp v)
+                               (setq ss (cons `(defvar ,v) ss))))))
+                (mapc #'(lambda (p)
+                          (if (not (string= (package-name p) \"KEYWORD\"))
+                              (multiple-value-call
+                                #'(lambda (ext int &rest _)
+                                    (maphash #'frob ext)
+                                    (maphash #'frob int))
+                                (core:package-hash-tables p))))
+                        (list-all-packages)))
+              ss))
+        (open (core:argv 7) :if-exists :overwrite :if-does-not-exist :create :direction :output))
+(let ((s (open (core:argv 8) :if-exists :overwrite :if-does-not-exist :create :direction :output)))
+  (print `(in-package #:cmp) s)
+  (print `(defvar +cxx-data-structures-info+ ',(llvm-sys:cxx-data-structures-info)) s))
+(let ((s (open (core:argv 9) :if-exists :overwrite :if-does-not-exist :create :direction :output)))
+  (print `(in-package #:core) s)
+  (print `(eval-when (:compile-toplevel)
+            (defparameter +type-header-value-map+
+              (loop with table = (make-hash-table :test #'eq)
+                    for (type . header) in
+                        '(,@(let ((s ()))
+                              (maphash
+                                #'(lambda (k v)
+                                    (setq s (cons (cons k v) s)))
+                                core:+type-header-value-map+)
+                              s))
+                    do (setf (gethash type table) header)
+                    finally (return table))))
+         s))
+;; This is probably the worst, in terms of pidginness.
+;; In primitive Clasp we have no operator for mapping over a vector.
+(let ((s (open (core:argv 10) :if-exists :overwrite :if-does-not-exist :create :direction :output)))
+  (print `(in-package #:clasp-ffi) s)
+  (print `(eval-when (:compile-toplevel)
+            (defparameter *foreign-type-specs*
+              '(,@(let ((len (length clasp-ffi:*foreign-type-spec-table*)))
+                    (labels ((frob (index accum)
+                               (if (>= index len) (return-from frob accum))
+                               (let ((spec (aref clasp-ffi:*foreign-type-spec-table* index)))
+                                 (frob (+ index 1)
+                                       (if spec
+                                           (cons (cons (clasp-ffi:%lisp-symbol spec) index) accum)
+                                           accum)))))
+                      (frob 0 nil))))))
+         s))
+(core:quit)"))
+
 (defmethod print-prologue (configuration (name (eql :update-unicode)) output-stream)
   (declare (ignore configuration))
   (print-asdf-stub output-stream t :unicode-data)
   (pprint '(apply #'uiop:symbol-call "UNICODE-DATA" "GENERATE" (uiop:command-line-arguments)) output-stream))
 
+(defmethod print-prologue (configuration (name (eql :generate-encodings)) output-stream)
+  (declare (ignore configuration))
+  (print-asdf-stub output-stream t :encoding-generator)
+  (let ((*package* (find-package "KOGA"))) ; don't print package prefixes
+    (pprint '(defvar *encoding-data*) output-stream)
+    (pprint '(defvar *generated-encodings.lisp*) output-stream)
+    (pprint '(destructuring-bind (generated-encodings.lisp encodingdata.txt)
+              (uiop:command-line-arguments)
+              (setf *encoding-data* (uiop:symbol-call "ENCODING-GENERATOR" "PROCESS-ENCODINGS-FILE" encodingdata.txt)
+               *generated-encodings.lisp* generated-encodings.lisp))
+            output-stream)
+    (pprint '(with-open-file (gen *generated-encodings.lisp*
+                              :direction :output
+                              :if-does-not-exist :create
+                              :if-exists :supersede
+                              :external-format :utf-8)
+              (pprint '(in-package #:ext) gen) (terpri gen)
+              (format gen "(defvar *encoding-data*~%  #.~s)"
+               `(loop with data = (make-hash-table)
+                      for (encoding . table) in ',*encoding-data*
+                      for ht = (make-hash-table)
+                      do (setf (gethash encoding data) ht)
+                         (loop for (code . unicode) in table
+                               for char = (code-char unicode)
+                               do (setf (gethash code ht) char
+                                        (gethash char ht) code))
+                      finally (return data))))
+            output-stream)))
+
 (defmethod print-prologue (configuration (name (eql :generate-sif)) output-stream)
   (declare (ignore configuration))
   (print-asdf-stub output-stream t :clasp-scraper)
   (pprint '(apply #'uiop:symbol-call "CSCRAPE" "GENERATE-SIF" (uiop:command-line-arguments)) output-stream))
+
+(defmethod print-prologue (configuration (name (eql :compile-bytecode-image)) output-stream)
+  (declare (ignore configuration))
+  (print-asdf-stub output-stream t :cross-clasp)
+  (format output-stream "
+(destructuring-bind (character-names features &rest sources)
+    (uiop:command-line-arguments)
+  (cross-clasp:initialize character-names features)
+  (let* ((breaker (or (position \"--output\" sources :test #'string=)
+                      (error \"Need --output to compile-bytecode-image\")))
+         (b2 (or (position \"--sources\" sources :test #'string=)
+                 (error \"Need --sources to compile-bytecode-image\")))
+         (input (subseq sources 0 breaker))
+         (output (subseq sources (1+ breaker) b2))
+         (sourcepaths (subseq sources (1+ b2))))
+    (cross-clasp:build input output sourcepaths)))"))
+
+(defmethod print-prologue (configuration (name (eql :compile-native-image)) output-stream)
+  (declare (ignore configuration))
+  (print-asdf-stub output-stream t :cross-clasp)
+  (format output-stream "
+(destructuring-bind (character-names features &rest sources)
+    (uiop:command-line-arguments)
+  (cross-clasp:initialize character-names features)
+  (let* ((number-of-jobs
+           (if (ext:getenv \"CLASP_BUILD_JOBS\")
+               (parse-integer (ext:getenv \"CLASP_BUILD_JOBS\"))
+               ~d))
+         (breaker (or (position \"--output\" sources :test #'string=)
+                      (error \"Need --output to compile-bytecode-image\")))
+         (b2 (or (position \"--sources\" sources :test #'string=)
+                 (error \"Need --sources to compile-bytecode-image\")))
+         (b3 (or (position \"--cfasls\" sources :test #'string=)
+                 (error \"Need --crasls to compile-bytecode-image\")))
+         (input (subseq sources 0 breaker))
+         (output (subseq sources (1+ breaker) b2))
+         (sourcepaths (subseq sources (1+ b2) b3))
+         (cfasls (subseq sources (1+ b3))))
+    (cross-clasp:build-native input output sourcepaths cfasls :parallel-jobs number-of-jobs)))"
+          (jobs configuration)))
 
 (defmethod print-prologue (configuration (name (eql :compile-systems)) output-stream)
   (declare (ignore configuration))
@@ -47,6 +218,22 @@
 (with-open-file (stream (elt core:*command-line-arguments* 0)
                  :direction :output :if-exists :supersede :if-does-not-exist :create)
   (pprint core:*command-line-arguments* stream))"))
+
+(defmethod print-prologue (configuration (name (eql :compile-lisp)) output-stream)
+  (declare (ignore configuration))
+  (format output-stream "
+(let* ((sources core:*command-line-arguments*)
+       (breaker (or (position \"--output\" sources :test #'string=)
+                    (error \"Need --output to compile-lisp\")))
+       (b2 (or (position \"--sources\" sources :test #'string=)
+               (error \"Need --sources to compile-bytecode-image\")))
+       (input (subseq sources 0 breaker))
+       (output (subseq sources (1+ breaker) b2))
+       (sourcepaths (subseq sources (1+ b2))))
+  (loop for inp across input
+        for out across output
+        for source across sourcepaths
+        do (load (compile-file inp :output-file out :source-debug-pathname source))))"))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :generate-headers)) output-stream
@@ -74,74 +261,23 @@
           "(compile-file (elt core:*command-line-arguments* 1)
               :source-debug-pathname (elt core:*command-line-arguments* 1)
               :output-file (elt core:*command-line-arguments* 0)
-              :output-type ~s)"
-          (if (eq (build-mode configuration) :bytecode-faso)
-              :faso
-              (build-mode configuration))))
+              :native '~s)"
+          (case (build-mode configuration)
+            (:native t)
+            (:bytecode nil))))
 
-(defmethod print-prologue (configuration (name (eql :load-clasp)) output-stream)
-  (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
-(setq core::*number-of-jobs*
-      (if (ext:getenv \"CLASP_BUILD_JOBS\")
-          (parse-integer (ext:getenv \"CLASP_BUILD_JOBS\"))
-          ~a))
-(defvar *system* (core:load-clasp :reproducible ~s
-                                  :name (elt core:*command-line-arguments* 0)
-                                  :position (parse-integer (elt core:*command-line-arguments* 1))
-                                  :system (core:command-line-paths 2)))
-(if (fboundp 'core:top-level)
-    (core:top-level)
-    (core:low-level-repl))" (jobs configuration) (reproducible-build configuration)))
-
-(defmethod print-prologue (configuration (name (eql :snapshot-clasp)) output-stream)
-  (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
-(setq core::*number-of-jobs*
-      (if (ext:getenv \"CLASP_BUILD_JOBS\")
-          (parse-integer (ext:getenv \"CLASP_BUILD_JOBS\"))
-          ~a))
-(defvar *system* (core:load-clasp :reproducible ~s
-                                  :name (elt core:*command-line-arguments* 1)
-                                  :position (parse-integer (elt core:*command-line-arguments* 2))
-                                  :system (core:command-line-paths 3)))
-(gctools:save-lisp-and-die (elt core:*command-line-arguments* 0) :executable t)
-(core:quit)" (jobs configuration) (reproducible-build configuration)))
-
-(defmethod print-prologue (configuration (name (eql :compile-clasp)) output-stream)
-  (format output-stream "(setq cmp:*default-output-type* ~s)
-(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
-(setq core::*number-of-jobs*
-      (if (ext:getenv \"CLASP_BUILD_JOBS\")
-          (parse-integer (ext:getenv \"CLASP_BUILD_JOBS\"))
-          ~a))
-(core:load-and-compile-clasp :reproducible ~s :system-sort ~s
-                             :name (elt core:*command-line-arguments* 0)
-                             :position (parse-integer (elt core:*command-line-arguments* 1))
-                             :system (core:command-line-paths 2))
-(core:quit)"
-          (if (eq (build-mode configuration) :bytecode-faso)
-              :faso
-              (build-mode configuration))
-          (jobs configuration) (reproducible-build configuration)
-          (and (> (jobs configuration) 1) (parallel-build configuration))))
-
-(defmethod print-prologue (configuration (name (eql :link-fasl)) output-stream)
-  (format output-stream "(setq *features* (cons :aclasp *features*)
-      cmp:*default-output-type* ~s)
-(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
-(load #P\"sys:src;lisp;kernel;cmp;jit-setup.lisp\")
-(core:link-fasl :output-file (pathname (elt core:*command-line-arguments* 0))
-                :system (core:command-line-paths 1))
-(core:quit)"
-          (if (eq (build-mode configuration) :bytecode-faso)
-              :faso
-              (build-mode configuration))))
+(defmethod print-prologue (configuration (name (eql :link-image)) output-stream)
+  (declare (ignore configuration))
+  (print-asdf-stub output-stream t :maclina/compile-file)
+  (format output-stream "(apply #'uiop:symbol-call \"MACLINA.COMPILE-FILE\" \"LINK-FASLS\"
+       (uiop:command-line-arguments))"))
 
 (defmethod print-prologue (configuration (name (eql :analyze-generate)) output-stream)
   (declare (ignore configuration))
   (print-asdf-stub output-stream nil :clasp-analyzer)
   (format output-stream "
 (clasp-analyzer:merge-and-generate-code (pathname (elt core:*command-line-arguments* 0))
-                                        (core::command-line-paths 1))"))
+                                        (map 'list #'pathname (subseq core:*command-line-arguments* 1)))"))
 
 (defmethod print-prologue (configuration (name (eql :analyze-file)) output-stream)
   (declare (ignore configuration))
@@ -157,11 +293,6 @@
     (sys:exit 1)))"))
 
 (defmethod print-prologue (configuration (name (eql :snapshot)) output-stream)
-  (when (jupyter configuration)
-    (format output-stream "#+quicklisp (ql:quickload ~:[~; #-ignore-extensions :cando-jupyter #+ignore-extensions~] :common-lisp-jupyter)
-#-quicklisp (asdf:load-system ~:[~; #-ignore-extensions :cando-jupyter #+ignore-extensions~] :common-lisp-jupyter)"
-            (member :cando (extensions configuration))
-            (member :cando (extensions configuration))))
   (format output-stream "(clos:compile-all-generic-functions)
 (gctools:save-lisp-and-die (elt core:*command-line-arguments* 0) :executable t)
 (core:quit)"
@@ -171,29 +302,6 @@
   (declare (ignore configuration))
   (format output-stream "#!/usr/bin/env bash
 exec $(dirname \"$0\")/iclasp -f ignore-extensions --base \"$@\""))
-
-(defmethod print-prologue (configuration (name (eql :jupyter-kernel)) output-stream)
-  (let ((candop (member :cando (extensions configuration))))
-    (format output-stream "(let ((name (first (uiop:command-line-arguments)))
-      (bin-path (second (uiop:command-line-arguments)))
-      (load-system (equal \"1\" (third (uiop:command-line-arguments))))
-      (system (equal \"1\" (fourth (uiop:command-line-arguments)))))
-  (when load-system
-    #+quicklisp (ql:quickload ~:[~; #-ignore-extensions :cando-jupyter #+ignore-extensions~] :common-lisp-jupyter)
-    #-quicklisp (asdf:load-system ~:[~; #-ignore-extensions :cando-jupyter #+ignore-extensions~] :common-lisp-jupyter))
-  (uiop/package:symbol-call ~:[~;#-ignore-extensions \"CANDO-JUPYTER\" #+ignore-extensions ~]\"CL-JUPYTER\" \"INSTALL\"
-    :system system :local ~s :implementation name
-    :bin-path (if system
-                  bin-path
-                  (merge-pathnames bin-path (uiop:getcwd)))
-    :prefix (when system ~s) :jupyter (when system ~s) :load-system load-system))
-(sys:quit)"
-            candop
-            candop
-            candop
-            (equal (bin-path configuration) #P"/usr/local/bin/")
-            (package-path configuration)
-            (jupyter-path configuration))))
 
 (defmethod print-prologue (configuration (name (eql :clasprc)) output-stream)
   (declare (ignore configuration))
@@ -280,13 +388,19 @@ exec $(dirname \"$0\")/iclasp -f ignore-extensions --base \"$@\""))
   (print-translations output-stream sources))
 
 (defmethod print-variant-target-sources
+    (configuration (name (eql :base-translations)) output-stream
+     (target (eql :nclasp)) sources
+     &key &allow-other-keys)
+  (print-translations output-stream sources))
+
+(defmethod print-variant-target-sources
     (configuration (name (eql :extension-translations)) output-stream
      (target (eql :extension-translations)) sources
      &key &allow-other-keys)
   (print-translations output-stream sources))
 
 (defmethod print-prologue (configuration (name (eql :base-immutable)) output-stream)
-  (pprint-immutable-systems output-stream (gethash :cclasp (target-systems configuration))))
+  (pprint-immutable-systems output-stream (gethash :nclasp (target-systems configuration))))
 
 (defmethod print-prologue (configuration (name (eql :extension-immutable)) output-stream)
   (pprint-immutable-systems output-stream (gethash :eclasp (target-systems configuration))))

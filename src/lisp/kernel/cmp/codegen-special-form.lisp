@@ -11,6 +11,7 @@
                         (lambda ()
                           (declare (core:lambda-name core::progv-lambda))
                           (progn ,@forms))))
+;;; progv-env defined in compile-file, since that's where we use it
 
 ;;; CORE::VECTOR-LENGTH
 

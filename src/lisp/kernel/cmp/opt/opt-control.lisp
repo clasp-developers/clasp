@@ -25,11 +25,13 @@
                    ,@(mapcar #'list syms fixed))
                (,op ,fsym ,last ,@syms))))))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun function-form-p (form)
   (and (consp form)
        (eq (car form) 'function)
        (consp (cdr form))
        (null (cddr form))))
+)
 
 ;;; Collapse (coerce-fdesignator #'foo) to #'foo,
 ;;; (coerce-fdesignator 'foo) to (fdefinition 'foo),

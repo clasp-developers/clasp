@@ -89,9 +89,6 @@ THE SOFTWARE.
 
 namespace core {
 
-std::string global_startupSourceName = "";
-StartupEnum global_startupEnum = undefined;
-
 int clasp_musleep(double dsec, bool alertable) {
   double seconds = floor(dsec);
   double frac_seconds = dsec - seconds;
@@ -150,7 +147,6 @@ CL_DEFUN T_sp core__interpreter_symbols() {
 #define SocketsPkg_SYMBOLS
 #define ServeEventPkg_SYMBOLS
 #define CompPkg_SYMBOLS
-#define CleavirEnvPkg_SYMBOLS
 #define CleavirPrimopPkg_SYMBOLS
 #define ClosPkg_SYMBOLS
 #define GrayPkg_SYMBOLS
@@ -680,8 +676,9 @@ CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
   } else if (gc::IsA<comp::Lexenv_sp>(env)) {
     return gc::As_unsafe<comp::Lexenv_sp>(env)->lookupMacro(symbol);
   } else {
-    if (cleavirEnv::_sym_macroFunction->fboundp()) {
-      return eval::funcall(cleavirEnv::_sym_macroFunction, symbol, env);
+    SYMBOL_EXPORT_SC_(CorePkg, cleavir_macro_function);
+    if (core::_sym_cleavir_macro_function->fboundp()) {
+      return eval::funcall(core::_sym_cleavir_macro_function, symbol, env);
     } else {
       printf("%s:%d Unexpected environment for MACRO-FUNCTION before Cleavir is available - using toplevel environment\n", __FILE__,
              __LINE__);
@@ -1796,6 +1793,16 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp core__function_source_pos_info(T_sp functionDesignator) {
   Function_sp closure = coerce::closureDesignator(functionDesignator);
   return closure->sourcePosInfo();
+}
+
+CL_DEFUN T_sp core__variable_source_info(T_sp var) {
+  return core::_sym_STARvariableSourceInfosSTAR->symbolValue().as_assert<HashTable_O>()->gethash(var);
+}
+
+CL_LISPIFY_NAME("core:variableSourceInfo");
+CL_DEFUN_SETF T_sp core__set_variable_source_info(T_sp info, T_sp var) {
+  core::_sym_STARvariableSourceInfosSTAR->symbolValue().as_assert<HashTable_O>()->hash_table_setf_gethash(var, info);
+  return info;
 }
 
 }; // namespace core

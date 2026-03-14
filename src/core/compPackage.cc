@@ -40,7 +40,6 @@ SYMBOL_EXPORT_SC_(CompPkg, STARbtb_compile_hookSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARcodeWalkerSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARcompile_file_parallelSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARdebug_jitSTAR);
-SYMBOL_EXPORT_SC_(CompPkg, STARdefault_output_typeSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARforce_startup_external_linkageSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARjit_saved_symbol_infoSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARload_time_value_holder_nameSTAR);

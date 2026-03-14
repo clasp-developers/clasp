@@ -4,15 +4,6 @@
 
 #define MAGIC 3735879680
 
-struct Gcroots {
-  uint64_t val1;
-  void *val2;
-  uint64_t val3;
-  uint64_t val4;
-  void **val5;
-  uint64_t val6;
-};
-
 struct return_type {
   void *_ptr;
   uint64_t _nvals;
@@ -25,7 +16,6 @@ typedef return_type(bytecode_trampoline_type)(uint64_t pc, void *closure, uint64
 
 extern "C" {
 
-Gcroots CLASP_GCROOTS_IN_MODULE(trampoline)[0];
 void *CLASP_LITERALS(trampoline)[0];
 
 // Use asm and nodebug to add declaration for the LLVM intrinsic.

@@ -9,6 +9,8 @@
 
 (in-package :ext)
 
+(defun current-source-location () core:*current-source-pos-info*)
+
 (defun compiled-function-name (x)
   (core:function-name x))
 
@@ -104,9 +106,14 @@
                                                                  'defmethod))
                          nil))
          (sls (or method-sls
-                  (source-location (clos::fast-method-function method) t)
-                  (source-location (clos::contf-method-function method) t)
-                  (source-location (clos:method-function method) t)))
+                (let ((mf (clos:method-function method)))
+                  ;; FIXME: Move into CLOS somehow
+                  (typecase mf
+                    (clos::%leaf-method-function
+                     (source-location (clos::fmf mf) t))
+                    (clos::%contf-method-function
+                     (source-location (clos::contf mf) t))
+                    (t (source-location mf t))))))
          (description
            (ignore-errors
             (append (method-qualifiers method)
@@ -140,7 +147,9 @@
 - kind : A symbol (:function :method :class)
 Return the source-location for the name/kind pair"
   (labels ((fix-paths-and-make-source-locations (rels)
-             (let ((sys-dir (translate-logical-pathname #P"sys:")))
+             (let ((sys-dir (translate-logical-pathname
+                             ;; FIXME? #P hosts can't be dumped from arbitrary Lisps.
+                             (load-time-value (pathname "sys:") t))))
                (mapcar (lambda (dir-pos)
                          (let ((dir (first dir-pos))
                                (pos (second dir-pos)))
@@ -152,10 +161,10 @@ Return the source-location for the name/kind pair"
            (get-source-info-for-function-object (func)
              (cond ((core:single-dispatch-generic-function-p func)
                       (source-location name :method))
-                     ((typep func 'generic-function)
-                      (generic-function-source-locations func))
-                     (t ; normal function
-                      (function-source-locations func)))))
+                   ((typep func 'generic-function)
+                    (generic-function-source-locations func))
+                   (t ; normal function
+                    (function-source-locations func)))))
     (case kind
       (:class
        (when (symbolp name)
@@ -210,7 +219,7 @@ Return the source-location for the name/kind pair"
                                       'deftype))))
       (:variable
        (when (symbolp name)
-         (let ((spi (gethash name core:*variable-source-infos*))
+         (let ((spi (core:variable-source-info name))
                (definer (cond ((ext:specialp name) 'defvar)
                               ((constantp name) 'defconstant)
                               (t 'define-symbol-macro))))

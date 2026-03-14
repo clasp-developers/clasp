@@ -1,7 +1,5 @@
 (in-package #:static-gfs)
 
-;;;; NOTE: This file is compiled/loaded before CLOS is up.
-
 #|
 We use a lazy strategy for constructor cells. That is, things like finalize-inheritance
 that render constructors invalid only mark them, and the actual computation of a new
@@ -15,7 +13,7 @@ a constructor ought to be computed, before make-instance.
 
 ;;; MAPPING
 
-;;; FIXME: Should be weak-key
+;;; FIXME: :weakness :key
 (defvar *constructor-cells* (make-hash-table :test #'eq))
 
 (defun make-invalid-cell (class-designator keys)

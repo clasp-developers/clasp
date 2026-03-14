@@ -88,6 +88,14 @@
                     :command (lisp-command "generate-vm-header.lisp" "$out $in")
                     :restat 1
                     :description "Generating VM header from $in")
+  (ninja:write-rule output-stream :generate-lisp-info
+                    :command "$clasp -n -- $out <generate-lisp-info.lisp >/dev/null"
+                    :description "Generating info from Clasp runtime"
+                    :restat 1)
+  (ninja:write-rule output-stream :generate-encodings
+                    :command (lisp-command "generate-encodings.lisp" "$out $in")
+                    :description "Generating character encoding tables"
+                    :restat 1)
   (ninja:write-rule output-stream :compile-systems
                     :command "$clasp --norc --non-interactive --base --feature ignore-extensions --load compile-systems.lisp -- $out $systems"
                     :description "Compiling systems: $systems"
@@ -131,24 +139,19 @@
                                           "$cxx -dynamiclib $variant-ldflags $ldflags -install_name @rpath/$libname -o$out $in $variant-ldlibs $ldlibs")
                              #-darwin "$cxx -shared $variant-ldflags $ldflags -o$out $in $variant-ldlibs $ldlibs"
                     :description "Linking $out")
-  (ninja:write-rule output-stream :load-cclasp
-                    :command "$clasp --norc --disable-mpi --ignore-image --feature clasp-min --load load-clasp.lisp -- base 0 $source"
-                    :description "Loading clasp $name"
-                    :pool "console")
-  (ninja:write-rule output-stream :snapshot-cclasp
-                    :command "$clasp --norc --disable-mpi --ignore-image --feature clasp-min --load snapshot-clasp.lisp -- $out base 0 $source"
-                    :description "Snapshot clasp $name"
-                    :pool "console")
-  (ninja:write-rule output-stream :compile-cclasp
-                    :command "$clasp --norc --disable-mpi --ignore-image --feature clasp-min --load compile-clasp.lisp -- base 0 $source"
-                    :description "Compiling clasp $name"
+  (ninja:write-rule output-stream :compile-bytecode-image
+                    :command (lisp-command "compile-bytecode-image.lisp" "$in --output $out --sources $sources")
+                    :description "Building Clasp bytecode image"
                     :restat 1
                     :pool "console")
+  (ninja:write-rule output-stream :compile-native-image
+                    :command "$clasp --norc  --non-interactive --disable-mpi --feature ignore-extensions --image $image --load compile-native-image.lisp --quit -- $in --output $out --sources $sources --cfasls $cfasls"
+                    :description "Compiling Clasp native image"
+                    :restat 1
+                    :pool "console")
+  (ninja:write-rule output-stream :compile-lisp
+                    :command "$clasp --norc --non-interactive --disable-mpi --feature ignore-extension-systems --image $image --load compile-lisp.lisp --quit -- $in --output $out --sources $sources")
   (when (extensions configuration)
-    (ninja:write-rule output-stream :load-eclasp
-                      :command "$clasp --norc --disable-mpi --base --feature ignore-extension-systems --feature cclasp --load load-clasp.lisp -- extension $position $source"
-                      :description "Loading eclasp"
-                      :pool "console")
     (ninja:write-rule output-stream :snapshot-eclasp
                       :command "$clasp --norc --disable-mpi --base --feature ignore-extension-systems --feature cclasp --load snapshot-clasp.lisp -- $out extension $position $source"
                       :description "Snapshot eclasp"
@@ -159,7 +162,7 @@
                       :restat 1
                       :pool "console"))
   (ninja:write-rule output-stream :compile-module
-                    :command "$clasp --non-interactive --norc --disable-mpi --base --feature ignore-extensions --load compile-module.lisp -- $fasl $source"
+                    :command "$clasp --non-interactive --norc --disable-mpi --image $image --feature ignore-extensions --load compile-module.lisp -- $fasl $source"
                     :description "Compiling module $in")
   (ninja:write-rule output-stream :regression-tests
                     :command "$clasp --norc --non-interactive --base --feature ignore-extensions --load \"sys:src;lisp;regression-tests;run-all.lisp\""
@@ -185,21 +188,13 @@
                     :command "$clasp --norc --base --feature ignore-extensions --load \"../dependencies/ansi-test/run-random-type-tests.lisp\""
                     :description "Running pfdietz test-random-integer-forms"
                     :pool "console")
-  (ninja:write-rule output-stream :link-fasl
-                    :command "$clasp --norc --disable-mpi --ignore-image --feature clasp-min --load link-fasl.lisp -- $out $in"
+  (ninja:write-rule output-stream :link-image
+                    :command (lisp-command "link-image.lisp" "$out $in")
                     :restat 1
                     :description "Linking $target")
   (ninja:write-rule output-stream "link-fasl-abc"
                     :command "$cxx $variant-ldflags $ldflags $ldflags-fasl -o$out $in $variant-ldlibs $ldlibs"
                     :description "Linking $out")
-  (ninja:write-rule output-stream :jupyter-system-kernel
-                    :command (format nil
-                                     "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client ~;~]$clasp --rc ${variant-path}clasprc.lisp --non-interactive --load ${variant-path}jupyter-kernel.lisp -- $name $bin-path $load-system 1"
-                                     clasp-quicklisp-directory)
-                    :description "Installing jupyter kernel for $name")
-  (ninja:write-rule output-stream :jupyter-user-kernel
-                    :command "$clasp --non-interactive --load ${variant-path}jupyter-kernel.lisp -- $name $bin-path $load-system 0"
-                    :description "Installing jupyter kernel for $name")
   (ninja:write-rule output-stream :make-snapshot
                     :command (format nil
                                      "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client ~;~]$clasp --rc ${variant-path}clasprc.lisp --non-interactive $arguments --load ${variant-path}snapshot.lisp -- $out"
@@ -583,32 +578,26 @@
       (format nil "~{\"~/ninja:escape/\"~^ ~}"
               (mapcar #'source-logical-namestring sources))))
 
-(defun jupyter-kernel-path (configuration name &key system)
-  (declare (ignore configuration))
-  (merge-pathnames (make-pathname :directory (list :relative
-                                                   "kernels"
-                                                   name)
-                                  :name "kernel"
-                                  :type "json")
-                   (if system
-                       (root :package-jupyter)
-                       #+darwin (merge-pathnames (make-pathname :directory '(:relative "Library" "Jupyter"))
-                                                 (uiop:getenv-pathname "HOME" :ensure-directory t))
-                       #-darwin (merge-pathnames (make-pathname :directory '(:relative "jupyter"))
-                                                 (uiop:xdg-data-home)))))
+(defun source-fasl (source &key (type "fasl"))
+  (make-source-output source
+                      :type type
+                      :root (if (eq (source-root source) :variant-generated)
+                                :variant-lib-generated
+                                :variant-lib)))
 
 (defmethod print-variant-target-source
     (configuration (name (eql :ninja)) output-stream (target (eql :modules)) (source lisp-source))
-  (let* ((image (image-source configuration nil))
+  (let* ((image (image-source configuration :mode :bytecode))
          (name (pathname-name (source-path source)))
          (module-name (format nil "modules/~a.~a"
-                              name (fasl-extension configuration)))
+                              name (fasl-extension (build-mode configuration))))
          (output (make-source module-name :variant-lib))
          (install-output (make-source module-name :package-lib))
          (iclasp (make-source "iclasp" :variant))
          (clasp-with-env (wrap-with-env configuration iclasp)))
     (ninja:write-build output-stream :compile-module
                        :clasp clasp-with-env
+                       :image (image-source configuration :mode :bytecode)
                        :inputs (list source)
                        :implicit-inputs (list iclasp image)
                        :source (format nil "\"~/ninja:escape/\""
@@ -624,114 +613,94 @@
           :install-outputs install-output)))
 
 (defmethod print-variant-target-sources
-    (configuration (name (eql :ninja)) output-stream (target (eql :cclasp)) sources
+    (configuration (name (eql :ninja)) output-stream (target (eql :nclasp)) sources
      &key &allow-other-keys)
-  (let* ((vimage (image-source configuration nil))
-         (vimage-installed (image-source configuration nil :package-lib))
+  (let* ((features.sexp (make-source "features.sexp" :variant-generated))
+         (runtime-packages.lisp (make-source "runtime-packages.lisp"
+                                             :variant-generated))
+         (cxx-classes.lisp (make-source "cxx-classes.lisp" :variant-generated))
+         (runtime-functions.lisp (make-source "runtime-functions.lisp"
+                                              :variant-generated))
+         (runtime-variables.lisp (make-source "runtime-variables.lisp"
+                                              :variant-generated))
+         (runtime-info.lisp (make-source "runtime-info.lisp" :variant-generated))
+         (type-map.lisp (make-source "type-map.lisp" :variant-generated))
+         (fli-specs.lisp (make-source "fli-specs.lisp" :variant-generated))
+         (generated-encodings.lisp
+           (make-source "generated-encodings.lisp" :variant-generated))
+         (vimage (image-source configuration :mode :bytecode))
+         (nimage (image-source configuration :mode :native))
+         (image (ecase (build-mode configuration)
+                  ((:bytecode) vimage)
+                  ((:native) nimage)))
+         (image-installed (image-source configuration :root :package-lib))
          (iclasp (make-source "iclasp" :variant))
          (clasp-with-env (wrap-with-env configuration iclasp)))
-    (ninja:write-build output-stream :load-cclasp
+    (ninja:write-build output-stream :generate-lisp-info
+                       :outputs (list features.sexp runtime-packages.lisp
+                                      cxx-classes.lisp runtime-functions.lisp
+                                      runtime-variables.lisp runtime-info.lisp
+                                      type-map.lisp fli-specs.lisp)
                        :clasp clasp-with-env
-                       :source (make-kernel-source-list configuration sources)
-                       :inputs sources
-                       :implicit-inputs (list iclasp
-                                              (make-source "tools-for-build/character-names.sexp" :code))
-                       :outputs (list (build-name "load_cclasp")))
-    (ninja:write-build output-stream :compile-cclasp
-                       :clasp clasp-with-env
-                       :source (make-kernel-source-list configuration sources)
-                       :inputs sources
-                       :implicit-inputs (list iclasp
-                                              (make-source "tools-for-build/character-names.sexp" :code))
-                       :outputs (mapcar (lambda (x)
-                                         (make-source-output x
-                                                             :type (fasl-extension configuration)
-                                                             :root (if (eq (source-root x) :variant-generated)
-                                                                       :variant-lib-generated
-                                                                       :variant-lib)))
-                                       sources))
-    (ninja:write-build output-stream (case (build-mode configuration)
-                                       ((:bytecode :bytecode-faso :faso :fasoll :fasobc) :link-fasl)
-                                       (otherwise "link-fasl-abc"))
-                       :variant-ldflags *variant-ldflags*
-                       :variant-ldlibs *variant-ldlibs*
-                       :clasp clasp-with-env
-                       :target "cclasp"
-                       :inputs (mapcar (lambda (x)
-                                         (make-source-output x
-                                                             :type (fasl-extension configuration)
-                                                             :root (if (eq (source-root x) :variant-generated)
-                                                                       :variant-lib-generated
-                                                                       :variant-lib)))
-                                       sources)
-                       :implicit-inputs (list iclasp)
-                       :outputs (list vimage))
+                       :implicit-inputs (list iclasp))
+    (ninja:write-build output-stream :generate-encodings
+                       :inputs (list (make-source "tools-for-build/encodingdata.txt" :code))
+                       :outputs (list generated-encodings.lisp))
+    (let ((fasls (mapcar #'source-fasl sources))
+          (outputs ; interleaved fasls and cfasls
+            (loop for source in sources
+                  collect (source-fasl source)
+                  collect (source-fasl source :type "cfasl"))))
+      (ninja:write-build output-stream :compile-bytecode-image
+                         :inputs (list* (make-source "tools-for-build/character-names.sexp"
+                                                     :code)
+                                        features.sexp
+                                        sources)
+                         :sources (make-kernel-source-list
+                                   configuration sources)
+                         :outputs outputs)
+      (ninja:write-build output-stream :link-image
+                         :inputs fasls
+                         :outputs (list vimage)
+                         :target target))
+    (let ((nfasls (loop for source in sources
+                        collect (source-fasl source :type "nfasl")))
+          (cfasls
+            (format nil "~{\"~/ninja:escape/\"~^ ~}"
+                    (loop for source in sources
+                          collect (source-fasl source
+                                               :type "cfasl")))))
+      (ninja:write-build output-stream :compile-native-image
+                         :clasp clasp-with-env
+                         :source (make-kernel-source-list configuration sources)
+                         :inputs (list* (make-source "tools-for-build/character-names.sexp"
+                                                     :code)
+                                        features.sexp
+                                        sources)
+                         :sources (make-kernel-source-list configuration sources)
+                         :cfasls cfasls
+                         :implicit-inputs (list iclasp vimage
+                                                (build-name "modules"))
+                         :image vimage
+                         :outputs nfasls)
+      (ninja:write-build output-stream :link-image
+                         :clasp clasp-with-env
+                         :outputs (list nimage)
+                         :inputs nfasls))
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "iclasp")
-                                     vimage
+                                     image
                                      (build-name "modules"))
-                       :outputs (list (build-name "cclasp")))
-    (when (jupyter configuration)
-      (let ((kernels (loop for name in (if (member :cando (extensions configuration))
-                                           (list "clasp" "cando")
-                                           (list "clasp"))
-                           for clasp = (make-source name :variant)
-                           for build-name = (build-name name)
-                           for output = (jupyter-kernel-path configuration
-                                                             (format nil "~a_~a"
-                                                                     (if (equal name "clasp")
-                                                                         "common-lisp"
-                                                                         "cando")
-                                                                     build-name))
-                           do (ninja:write-build output-stream :jupyter-user-kernel
-                                                 :outputs (list output)
-                                                 :inputs (list (build-name "cclasp"))
-                                                 :variant-path *variant-path*
-                                                 :name build-name
-                                                 :bin-path clasp
-                                                 :load-system 1
-                                                 :clasp clasp-with-env)
-                           collect output)))
-        (ninja:write-build output-stream :phony
-                           :inputs kernels
-                           :outputs (list (build-name "jupyter_cclasp")))
-        (unless (eq :sclasp (default-stage configuration))
-          (ninja:write-build output-stream :phony
-                             :inputs (list (build-name "jupyter_cclasp"))
-                             :outputs (list (build-name "jupyter"))))))
+                       :outputs (list (build-name "nclasp")))
     (when *variant-default*
-      (let ((kernels (when (jupyter configuration)
-                       (loop with system = (not (uiop:subpathp (share-path configuration)
-                                                               (uiop:getenv-absolute-directory "HOME")))
-                             for name in (if (member :cando (extensions configuration))
-                                             (list "clasp" "cando")
-                                             (list "clasp"))
-                             for clasp = (make-source name :variant)
-                             for output = (jupyter-kernel-path configuration
-                                                               (if (equal name "clasp")
-                                                                   "common-lisp_clasp"
-                                                                   "cando_cando")
-                                                               :system system)
-                             do (ninja:write-build output-stream (if system
-                                                                     :jupyter-system-kernel
-                                                                     :jupyter-user-kernel)
-                                                   :outputs (list output)
-                                                   :inputs (list (build-name "cclasp"))
-                                                   :name name
-                                                   :variant-path *variant-path*
-                                                   :bin-path name
-                                                   :load-system 1
-                                                   :clasp clasp-with-env)
-                             collect output))))
-        (ninja:write-build output-stream :install-file
-                           :inputs (list vimage)
-                           :outputs (list vimage-installed))
-        (ninja:write-build output-stream :phony
-                           :inputs (list* "install_iclasp"
-                                          "install_modules"
-                                          vimage-installed
-                                          kernels)
-                           :outputs (list "install_cclasp"))))))
+      (ninja:write-build output-stream :install-file
+                         :inputs (list image)
+                         :outputs (list image-installed))
+      (ninja:write-build output-stream :phony
+                         :inputs (list "install_iclasp"
+                                       "install_modules"
+                                       image-installed)
+                         :outputs (list "install_nclasp")))))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :modules)) sources
@@ -748,62 +717,38 @@
     (configuration (name (eql :ninja)) output-stream (target (eql :eclasp)) sources
      &key &allow-other-keys)
   (when (extensions configuration)
-    (let* ((cimage (image-source configuration nil))
-          (eimage (image-source configuration t))
-          (eimage-installed (image-source configuration t :package-lib))
-          (iclasp (make-source "iclasp" :variant))
+    (let* ((cimage (image-source configuration :mode :bytecode))
+           (nimage (image-source configuration))
+           (eimage (image-source configuration :extension t))
+           (eimage-installed (image-source configuration :extension t :root :package-lib))
+           (iclasp (make-source "iclasp" :variant))
            (clasp-with-env (wrap-with-env configuration iclasp))
-          (eclasp-sources (member #P"src/lisp/kernel/stage/extension/0-begin.lisp" sources :key #'source-path :test #'equal)))
-      (ninja:write-build output-stream :load-eclasp
-                         :clasp clasp-with-env
-                         :source (make-kernel-source-list configuration sources)
-                         :inputs sources
-                         :position (- (length sources) (length eclasp-sources))
-                         :source (make-kernel-source-list configuration eclasp-sources)
-                         :inputs eclasp-sources
-                         :implicit-inputs (list iclasp cimage (build-name "cclasp")
-                                                (make-source "tools-for-build/character-names.sexp" :code))
-                         :outputs (list (build-name "load_eclasp")))
-      (ninja:write-build output-stream :compile-eclasp
+           (eclasp-sources (member #P"src/lisp/kernel/stage/extension/0-begin.lisp"
+                                   sources :key #'source-path :test #'equal))
+           (fasls (mapcar (lambda (x)
+                            (source-fasl x :type (fasl-extension (build-mode configuration))))
+                          eclasp-sources)))
+      (ninja:write-build output-stream :compile-lisp
                          :clasp clasp-with-env
                          :image cimage
-                         :position (- (length sources) (length eclasp-sources))
-                         :source (make-kernel-source-list configuration eclasp-sources)
                          :inputs eclasp-sources
-                         :implicit-inputs (list iclasp cimage (build-name "cclasp")
-                                                (make-source "tools-for-build/character-names.sexp" :code))
-                         :outputs (mapcar (lambda (x)
-                                            (make-source-output x
-                                                                :type (fasl-extension configuration)
-                                                                :root (if (eq (source-root x) :variant-generated)
-                                                                          :variant-lib-generated
-                                                                          :variant-lib)))
-                                          eclasp-sources))
-      (ninja:write-build output-stream (case (build-mode configuration)
-                                         ((:bytecode :bytecode-faso :faso :fasoll :fasobc) :link-fasl)
-                                         (otherwise "link-fasl-abc"))
-                         :variant-ldflags *variant-ldflags*
-                         :variant-ldlibs *variant-ldlibs*
-                         :clasp clasp-with-env
-                         :target "eclasp"
-                         :inputs (mapcar (lambda (x)
-                                           (make-source-output x
-                                                               :type (fasl-extension configuration)
-                                                               :root (if (eq (source-root x) :variant-generated)
-                                                                         :variant-lib-generated
-                                                                         :variant-lib)))
-                                         sources)
+                         :sources (make-kernel-source-list configuration eclasp-sources)
+                         :implicit-inputs (list iclasp cimage)
+                         :outputs fasls)
+      (ninja:write-build output-stream :link-image
+                         :inputs (list* nimage fasls)
                          :implicit-inputs (list iclasp)
-                         :outputs (list eimage))
+                         :outputs (list eimage)
+                         :target target)
       (ninja:write-build output-stream :phony
-                         :inputs (list eimage (build-name "cclasp"))
+                         :inputs (list eimage (build-name "nclasp"))
                          :outputs (list (build-name "eclasp")))
       (when *variant-default*
         (ninja:write-build output-stream :install-file
                            :inputs (list eimage)
                            :outputs (list eimage-installed))
         (ninja:write-build output-stream :phony
-                           :inputs (list "install_cclasp"
+                           :inputs (list "install_nclasp"
                                           eimage-installed)
                            :outputs (list "install_eclasp"))))))
 
@@ -813,29 +758,29 @@
      &aux (clasp (wrap-with-env configuration (make-source "iclasp" :variant))))
   (ninja:write-build output-stream :regression-tests
                      :clasp clasp
-                     :inputs (list (build-name "cclasp"))
+                     :inputs (list (build-name "nclasp"))
                      :outputs (list (build-name "test")))
   (ninja:write-build output-stream :bench
                      :clasp clasp
-                     :inputs (list (build-name "cclasp"))
+                     :inputs (list (build-name "nclasp"))
                      :outputs (list (build-name "bench")))
   (ninja:write-build output-stream :ansi-test
                      :clasp clasp
-                     :inputs (list (build-name "cclasp"))
+                     :inputs (list (build-name "nclasp"))
                      :outputs (list (build-name "ansi-test")))
   (ninja:write-build output-stream :asdf-test
                      :clasp clasp
                      :target "t"
-                     :inputs (list (build-name "cclasp"))
+                     :inputs (list (build-name "nclasp"))
                      :outputs (list (build-name "asdf-test")))
   (ninja:write-build output-stream :asdf-test
                      :clasp clasp
                      :target "u"
-                     :inputs (list (build-name "cclasp"))
+                     :inputs (list (build-name "nclasp"))
                      :outputs (list (build-name "asdf-test-upgrade")))
   (ninja:write-build output-stream :test-random-integer
                      :clasp clasp
-                     :inputs (list (build-name "cclasp"))
+                     :inputs (list (build-name "nclasp"))
                      :outputs (list (build-name "test-random-integer")))
   (when (member :cando (extensions configuration))
     (ninja:write-build output-stream :cando-regression-tests
@@ -875,7 +820,7 @@
   (ninja:write-build output-stream :compile-systems
                      :clasp (wrap-with-env configuration (make-source "iclasp" :variant))
                      :inputs sources
-                     :implicit-inputs (list (build-name "cclasp"))
+                     :implicit-inputs (list (build-name "nclasp"))
                      :systems "clasp-analyzer"
                      :outputs (list (make-source "analyzer.stub" :variant-lib))))                                     
 
@@ -891,7 +836,7 @@
     (ninja:write-build output-stream :analyze-file
                        :clasp (wrap-with-env configuration (make-source "iclasp" :variant))
                        :inputs (list source)
-                       :implicit-inputs (list (build-name "cclasp")
+                       :implicit-inputs (list (build-name "nclasp")
                                               (build-name "generated" :gc :boehm)
                                               database
                                               (make-source "analyzer.stub" :variant-lib))                                    
@@ -911,7 +856,7 @@
     (ninja:write-build output-stream :analyze-generate
                        :clasp (wrap-with-env configuration (make-source "iclasp" :variant))
                        :inputs outputs
-                       :implicit-inputs (list (build-name "cclasp")
+                       :implicit-inputs (list (build-name "nclasp")
                                               (build-name "generated" :gc :boehm)
                                               (make-source "analyzer.stub" :variant-lib))                                    
                        :sif sif
@@ -949,18 +894,7 @@
                   (build-outputs (list executable symlink))
                   (install-outputs (list installed symlink-installed))
                   (system (not (uiop:subpathp (share-path configuration)
-                                              (uiop:getenv-absolute-directory "HOME"))))
-                  (kernel (jupyter-kernel-path configuration
-                                               (if (equal name "sclasp")
-                                                   "common-lisp_sclasp"
-                                                   "cando_scando")
-                                               :system system))
-                  (user-kernel (jupyter-kernel-path configuration
-                                                    (format nil "~a_~a"
-                                                            (if (equal name "sclasp")
-                                                                "common-lisp"
-                                                                "cando")
-                                                            (build-name name)))))
+                                              (uiop:getenv-absolute-directory "HOME")))))
              (ninja:write-build output-stream :make-snapshot
                                 :clasp clasp-with-env
                                 :arguments (when ignore-extensions
@@ -978,15 +912,6 @@
                                   :target (file-namestring (source-path executable))
                                   :outputs (list scleap-symlink))
                (push scleap-symlink build-outputs))
-             (when (jupyter configuration)
-               (ninja:write-build output-stream :jupyter-user-kernel
-                                                :outputs (list user-kernel)
-                                                :inputs (list executable)
-                                                :name (build-name name)
-                                                :variant-path *variant-path*
-                                                :bin-path symlink
-                                                :load-system 0
-                                                :clasp executable))
              (when *variant-default*
                (ninja:write-build output-stream :install-binary
                                   :inputs (list executable)
@@ -1000,20 +925,8 @@
                                     :inputs (list installed)
                                     :target (file-namestring (source-path executable))
                                     :outputs (list scleap-symlink-installed))
-                 (push scleap-symlink-installed install-outputs))
-               (when (jupyter configuration)
-                 (ninja:write-build output-stream (if system
-                                                      :jupyter-system-kernel
-                                                      :jupyter-user-kernel)
-                                    :outputs (list kernel)
-                                    :implicit-inputs (list executable)
-                                    :name name
-                                    :bin-path name
-                                    :variant-path *variant-path*
-                                    :load-system 0
-                                    :clasp executable)
-                 (push kernel install-outputs)))
-             (list build-outputs install-outputs user-kernel))))
+                 (push scleap-symlink-installed install-outputs)))
+             (list build-outputs install-outputs))))
     (let ((outputs (if (member :cando (extensions configuration))
                        (list (snapshot "scando")
                              (snapshot "sclasp" :ignore-extensions t))
@@ -1022,15 +935,6 @@
                          :inputs (list* (build-name :cclasp)
                                         (mapcan #'first outputs))
                          :outputs (list (build-name :sclasp)))
-      (when (jupyter configuration)
-        (ninja:write-build output-stream :phony
-                           :inputs (mapcar #'third outputs)
-                           :outputs (list (build-name "jupyter_sclasp")))
-        (when (eq :sclasp (default-stage configuration))
-          (ninja:write-build output-stream :phony
-                             :inputs (list (build-name "jupyter_cclasp")
-                                           (build-name "jupyter_sclasp"))
-                             :outputs (list (build-name "jupyter")))))
       (when *variant-default*
         (ninja:write-build output-stream :phony
                            :inputs (list* (if (extensions configuration)

@@ -227,9 +227,7 @@
    (%read-only-p :initarg :read-only-p :type boolean
                  :reader load-time-value-creator-read-only-p)
    ;; The original form, for debugging/display
-   (%form :initarg :form :reader load-time-value-creator-form)
-   ;; The info object, for similarity checking
-   (%info :initarg :info :reader load-time-value-creator-info)))
+   (%form :initarg :form :reader load-time-value-creator-form)))
 
 (defclass init-object-array (instruction)
   ((%count :initarg :count :reader init-object-array-count)))
@@ -274,10 +272,12 @@
 (defclass function-native-attr (attribute)
   ((%name :initform (ensure-constant "clasp:function-native"))
    (%function :initarg :function :reader ll-function :type creator)
-   ;; Name of the main function (string)
-   (%main :initarg :main :reader main :type creator)
-   ;; Name of the XEP array (string)
-   (%xep :initarg :xep :reader xep :type creator)))
+   ;; ID number of the native module
+   (%module-id :initarg :id :reader module-id :type (unsigned-byte 16))
+   ;; Index of the core function in the function vector
+   (%main :initarg :main :reader main :type (unsigned-byte 16))
+   ;; Index of the first XEP function in the function vector
+   (%xep :initarg :xep :reader xep :type (unsigned-byte 16))))
 
 #+clasp
 (defclass spi-attr (attribute)
@@ -303,6 +303,7 @@
 #+clasp
 (defclass module-native-attr (attribute)
   ((%name :initform (ensure-constant "clasp:module-native"))
+   (%id :initarg :id :reader id :type (unsigned-byte 16))
    (%module :initarg :module :reader module :type creator)
    (%code :initarg :code :reader code
           :type (simple-array (unsigned-byte 8) (*)))
@@ -381,14 +382,14 @@
 (defmethod similarp ((creator vcreator) value)
   (eql (prototype creator) value))
 
-(defmethod similarp ((creator load-time-value-creator) ltvi)
-  (eql (load-time-value-creator-info creator) ltvi))
+;;; The global environment we're compiling in. Needed for load-time-value &c.
+(defvar *environment*)
 
 ;;; EQL hash table from objects to creators.
 (defvar *coalesce*)
 
 ;;; Another EQL hash table for out-of-band objects that are also "coalesced".
-;;; So far this means cfunctions and modules.
+;;; So far this means cfunctions, modules, and ltv infos.
 ;;; This a separate variable because perverse code could use an out-of-band
 ;;; object in band (e.g. compiling a literal module) and we don't want to
 ;;; confuse those things.
@@ -480,7 +481,7 @@
 
 ;;; Given a form, get a constant handle to a function that at load time will
 ;;; have the effect of evaluating the form in a null lexical environment.
-(defun add-form (form &optional env)
+(defun add-form (form &optional (env *environment*))
   ;; PROGN so that (declare ...) expressions for example correctly cause errors.
   (add-function
    (bytecode-cf-compile-lexpr `(lambda () (progn ,form)) env)))
@@ -605,16 +606,17 @@
            :prototype value
            :name (ensure-constant (symbol-name value)))))))
 
-(defmethod add-constant ((value (eql nil)))
+(defmethod add-constant ((value (eql 'nil)))
   (add-creator value (make-instance 'singleton-creator :prototype value)))
-(defmethod add-constant ((value (eql t)))
+(defmethod add-constant ((value (eql 't)))
   (add-creator value (make-instance 'singleton-creator :prototype value)))
 
 (defmethod add-constant ((value package))
   (add-creator value
                (make-instance 'package-creator
                  :prototype value
-                 :name (ensure-constant (package-name value)))))
+                 :name (ensure-constant
+                        (core::fcge-package-name *environment* value)))))
 
 (defmethod add-constant ((value integer))
   (add-creator
@@ -699,10 +701,10 @@
 ;;; function with all constant, #', or dumpable arguments (and not too many).
 ;;; Note that allowing these recursively dumpable forms may result in slightly
 ;;; subpar outcomes - for example we're not smart enough to turn the (LIST)
-;;; arguments that appear in ENSURE-CLASS calls into constant NILs.
+;;; arguments that appear in LOAD-DEFCLASS calls into constant NILs.
 ;;; But I (Bike) believe that's offset by the value of not making the loader
 ;;; make and run a one-time-use bytecode function.
-(defun directly-creatable-form-p (form &optional env)
+(defun directly-creatable-form-p (form &optional (env *environment*))
   (or (constantp form env)
       ;; constantp includes non-symbols-or-lists, so this typecase is exhaustive
       (typecase form
@@ -760,7 +762,7 @@
                                (rest form)))))))
 
 ;;; Make a possibly-special creator based on an MLF creation form.
-(defun add-creation-form-creator (value form &optional env)
+(defun add-creation-form-creator (value form &optional (env *environment*))
   (let ((*creating* (cons value *creating*)))
     (if (directly-creatable-form-p form env)
         (let ((inst (add-direct-creator-form form env)))
@@ -773,7 +775,7 @@
            :function (add-form form env) :arguments ())))))
 
 ;;; Make a possibly-special initializer.
-(defun add-initializer-form (form &optional env)
+(defun add-initializer-form (form &optional (env *environment*))
   (cond ((constantp form env) nil) ; do nothing (good for e.g. defun's return)
         ((and (symbolp form) (not (nth-value 1 (macroexpand-1 form env))))
          ;; also do nothing. this comes up for e.g. the *PACKAGE* returned from
@@ -1435,13 +1437,17 @@
 (defmethod ensure-module-literal ((info cmp:cfunction))
   (ensure-function info))
 
+(defun ensure-ltv (info)
+  (or (find-oob info)
+      (add-oob
+       info
+       (make-instance 'load-time-value-creator
+         :function (add-form (cmp:load-time-value-info/form info))
+         :read-only-p (cmp:load-time-value-info/read-only-p info)
+         :form (cmp:load-time-value-info/form info)))))
+
 (defmethod ensure-module-literal ((info cmp:load-time-value-info))
-  (add-instruction
-   (make-instance 'load-time-value-creator
-     :function (add-form (cmp:load-time-value-info/form info))
-     :read-only-p (cmp:load-time-value-info/read-only-p info)
-     :form (cmp:load-time-value-info/form info)
-     :info info)))
+  (ensure-ltv info))
 
 (defun ensure-fcell (name)
   (or (find-fcell name)
@@ -1558,8 +1564,14 @@
                   (not (cmp:load-time-value-info/read-only-p lit)))
           collect i))
 
+;; The ID number used for native code modules, if generated.
+;; Different modules within the same init-object-array block must have
+;; distinct numbers to name symbols distinctly.
 #+clasp
-(defvar *native-compile-file-all* nil)
+(defvar *native-module-id*)
+
+#+clasp
+(defvar *native-compile-thread-pool*)
 
 (defun add-module (value)
   ;; Add the module first to prevent recursion.
@@ -1593,45 +1605,64 @@
            :indices mutables))))
     ;; Native compilation.
     #+clasp
-    (when *native-compile-file-all*
-      (let* ((native (funcall (find-symbol "COMPILE-CMODULE"
-                                           "CLASP-BYTECODE-TO-BIR")
-                              bytecode info literals
-                              :debug-namestring (namestring cmp::*compile-file-source-debug-pathname*)))
-             (code (funcall (find-symbol "NMODULE-CODE"
-                                         "CLASP-BYTECODE-TO-BIR")
-                            native))
-             (nlits (funcall (find-symbol "NMODULE-LITERALS"
-                                          "CLASP-BYTECODE-TO-BIR")
-                             native)))
-        (add-instruction
-         (make-instance 'module-native-attr
-           :module mod
-           :code code
-           :literals (native-literals cliterals nlits)))
-        ;; Add attributes for the functions as well.
-        ;; We do this here instead of in the CFUNCTION methods because
-        ;; of the recursive nature of functions referring to modules
-        ;; referring to functions yada yada bla bla.
-        (loop with fmap = (funcall (find-symbol "NMODULE-FMAP" "CLASP-BYTECODE-TO-BIR") native)
-              for i across info
-              when (typep i 'cmp:cfunction)
-                do (let ((m (assoc i fmap)))
-                     (assert m)
-                     (destructuring-bind (main xep) (rest m)
-                       (add-instruction
-                        (make-instance 'function-native-attr
-                          :function (ensure-function i)
-                          :main (ensure-constant main)
-                          :xep (ensure-constant xep))))))))
+    (when cmp:*compile-file-native*
+      (if cmp::*compile-file-parallel*
+          (progn
+            (cmp::enqueue-native-compilation
+             *native-compile-thread-pool*
+             mod bytecode literals info *native-module-id*
+             (namestring cmp::*compile-file-source-debug-pathname*))
+            (incf *native-module-id*))
+          ;; serial - do it immediately
+          (handler-case
+              (let* ((id *native-module-id*)
+                     (native (funcall (find-symbol "COMPILE-CMODULE"
+                                                   "CLASP-BYTECODE-TO-BIR")
+                                      bytecode literals info id
+                                      (namestring cmp::*compile-file-source-debug-pathname*))))
+                (add-native-module-instructions mod native)
+                (incf *native-module-id*))
+            (serious-condition (e)
+              ;; error? who cares, native code is optional, move on
+              (cmp::note-native-compilation-failure e)))))
     mod))
 
-(defun native-literals (cliterals nlits)
-  (map 'vector (lambda (lit)
-                 (if (integerp lit)
-                     (aref cliterals lit)
-                     (ensure-module-literal lit)))
-       nlits))
+(defun add-native-module-instructions (module native-module)
+  (let* ((code (funcall (find-symbol "NMODULE-CODE"
+                                     "CLASP-BYTECODE-TO-BIR")
+                        native-module))
+         (nlits (funcall (find-symbol "NMODULE-LITERALS"
+                                      "CLASP-BYTECODE-TO-BIR")
+                         native-module))
+         (fmap (funcall (find-symbol "NMODULE-FMAP"
+                                     "CLASP-BYTECODE-TO-BIR")
+                        native-module))
+         (id (funcall (find-symbol "NMODULE-ID"
+                                   "CLASP-BYTECODE-TO-BIR")
+                      native-module)))
+    (add-instruction
+     (make-instance 'module-native-attr
+       :module module
+       :id id
+       :code code
+       :literals (native-literals nlits)))
+    ;; Add attributes for the functions as well.
+    ;; We do this here instead of in the CFUNCTION methods because
+    ;; of the recursive nature of functions referring to modules
+    ;; referring to functions yada yada bla bla.
+    ;; It's possible that a bytecode function does not appear
+    ;; in the fmap. This can occur because e.g. it was inlined
+    ;; away. That's ok, it just means we don't dump an attr for it.
+    (loop for (f main xep) in fmap
+          do (add-instruction
+              (make-instance 'function-native-attr
+                :function (ensure-function f)
+                :id id :main main :xep xep)))))
+
+(defun native-literals (native-literals)
+  (let (;; don't bother native compiling LTV forms.
+        (cmp:*compile-file-native* nil))
+    (map 'vector #'ensure-module-literal native-literals)))
 
 (defun ensure-module (module)
   (or (find-oob module) (add-module module)))
@@ -1680,10 +1711,11 @@
   (write-index (lambda-list attr) stream))
 
 (defmethod encode ((attr function-native-attr) stream)
-  (write-b32 (* 3 *index-bytes*) stream)
+  (write-b32 (+ *index-bytes* 6) stream)
   (write-index (ll-function attr) stream)
-  (write-index (main attr) stream)
-  (write-index (xep attr) stream))
+  (write-b16 (module-id attr) stream)
+  (write-b16 (main attr) stream)
+  (write-b16 (xep attr) stream))
 
 #+clasp
 (defmethod encode ((attr spi-attr) stream)
@@ -1842,10 +1874,9 @@
 (defmethod encode ((attr module-native-attr) stream)
   (let ((code (code attr))
         (lits (module-native-attr-literals attr)))
-    (write-b32 (+ *index-bytes*
-                  4 (length code) 2 (* *index-bytes* (length lits)))
+    (write-b32 (+ 2 4 (length code) 2 (* *index-bytes* (length lits)))
                stream)
-    (write-index (module attr) stream)
+    (write-b16 (id attr) stream)
     (write-b32 (length code) stream)
     (write-sequence code stream)
     (write-b16 (length lits) stream)
@@ -1927,7 +1958,8 @@
            (cmp:lexenv/vars env)
            (cmp:lexenv/tags env) (cmp:lexenv/blocks env)
            (append macros (cmp:lexenv/funs env))
-           (cmp:lexenv/decls env) (cmp:lexenv/frame-end env)))))
+           (cmp:lexenv/decls env) (cmp:lexenv/frame-end env)
+           (cmp:lexenv/global env)))))
 
 (defun bytecode-compile-toplevel-symbol-macrolet (bindings body env)
   (let ((smacros nil) (env (or env (cmp:make-null-lexical-environment))))
@@ -1943,9 +1975,9 @@
            (append (nreverse smacros) (cmp:lexenv/vars env))
            (cmp:lexenv/tags env) (cmp:lexenv/blocks env)
            (cmp:lexenv/funs env) (cmp:lexenv/decls env)
-           (cmp:lexenv/frame-end env)))))
+           (cmp:lexenv/frame-end env) (cmp:lexenv/global env)))))
 
-(defun bytecode-compile-toplevel (form &optional (env (cmp:make-null-lexical-environment)))
+(defun bytecode-compile-toplevel (form &optional (env *environment*))
   (let ((core:*current-source-pos-info*
           (or (gethash form cmp:*source-locations*)
               core:*current-source-pos-info*))
@@ -1969,29 +2001,48 @@
             (funcall (cmp:bytecompile `(lambda () (progn ,form)) env)))
           (bytecode-compile-file-form form env)))))
 
+(defvar *reader-client* (make-instance 'cmp::clasp-tracking-eclector-client))
+
 ;; input is a character stream.
 (defun bytecode-compile-stream (input output-path
-                                &key (environment
-                                      (cmp:make-null-lexical-environment))
+                                &key ((:environment *environment*))
                                 &allow-other-keys)
   ;; *COMPILE-PRINT* is defined later in compile-file.lisp.
   (declare (special *compile-print*))
   (with-constants ()
-    ;; Read and compile the forms.
-    (loop with eof = (gensym "EOF")
-          with *compile-time-too* = nil
-          with eclector.reader:*client* = (make-instance 'cmp::clasp-tracking-elector-client)
-          with cfsdp = (core:file-scope cmp::*compile-file-source-debug-pathname*)
-          with cfsdl = cmp::*compile-file-source-debug-lineno*
-          with cfsdo = cmp::*compile-file-source-debug-offset*
-          for core:*current-source-pos-info*
-            = (core:input-stream-source-pos-info input cfsdp cfsdl cfsdo)
-          for cmp:*source-locations* = (make-hash-table :test #'eq)
-          for form = (eclector.parse-result:read eclector.reader:*client* input nil eof)
-          until (eq form eof)
-          do (when *compile-print*
-               (cmp::describe-form form))
-             (bytecode-compile-toplevel form environment))
+    (progv '(*native-compile-thread-pool*)
+        (if (and cmp:*compile-file-native* cmp::*compile-file-parallel*)
+            (list (cmp::make-nc-thread-pool))
+            nil) ; don't bind
+      ;; Read and compile the forms.
+      (loop with eof = (gensym "EOF")
+            with *native-module-id* = 0
+            with *compile-time-too* = nil
+            with eclector.reader:*client*
+              = (if *environment*
+                    (make-instance 'cmp::clasp-alternate-env-client
+                      :environment *environment*)
+                    *reader-client*)
+            with cfsdp = (core:file-scope cmp::*compile-file-source-debug-pathname*)
+            with cfsdl = cmp::*compile-file-source-debug-lineno*
+            with cfsdo = cmp::*compile-file-source-debug-offset*
+            ;; Force this into a lexenv so macroexpand etc. work correctly
+            ;; with arbitrary global environments.
+            with env = (cmp:make-null-lexical-environment *environment*)
+            for core:*current-source-pos-info*
+              = (core:input-stream-source-pos-info input cfsdp cfsdl cfsdo)
+            for cmp:*source-locations* = (make-hash-table :test #'eq)
+            for form = (eclector.parse-result:read eclector.reader:*client* input nil eof)
+            until (eq form eof)
+            do (when *compile-print*
+                 (cmp::describe-form form))
+               (bytecode-compile-toplevel form env))
+      ;; If we're native compile filing in parallel, write out those insts
+      (when (and cmp:*compile-file-native* cmp::*compile-file-parallel*)
+        (loop for (module nmodule)
+                in (cmp::thread-pool-finish *native-compile-thread-pool*)
+              unless (null nmodule)
+                do (add-native-module-instructions module nmodule))))
     ;; Write out the FASL bytecode.
     (cmp:with-atomic-file-rename (temp-output-path output-path)
       (with-open-file (output temp-output-path

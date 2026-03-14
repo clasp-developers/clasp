@@ -1,15 +1,12 @@
 (in-package #:clos)
 
-(defmacro %tracy (gf)
-  `(mp:atomic (slot-value ,gf 'tracy)))
-
 (defun %start-profiling/record (gf)
   (check-type gf standard-generic-function)
-  (setf (%tracy gf) (list :profile-record 0.0)))
+  (setf (generic-function-tracy gf) (list :profile-record 0.0)))
 
 (defun %start-profiling/ongoing (gf)
   (check-type gf standard-generic-function)
-  (setf (%tracy gf) (list :profile-ongoing 0.0)))
+  (setf (generic-function-tracy gf) (list :profile-ongoing 0.0)))
 
 (defun start-profiling (generic-function &key (report :ongoing))
   "Start profiling GENERIC-FUNCTION.
@@ -28,13 +25,13 @@ See REPORT-PROFILING
 See PROFILING-DATA
 
 Experimental."
-  (setf (%tracy generic-function) nil))
+  (setf (generic-function-tracy generic-function) nil))
 
 (defun report-profiling (generic-function)
   "Print a representation of the current profile of GENERIC-FUNCTION to *TRACE-OUTPUT*.
 
 Experimental."
-  (let ((tracy (%tracy generic-function)))
+  (let ((tracy (generic-function-tracy generic-function)))
     (when (null tracy)
       (warn "~a is not being profiled" generic-function)
       (return-from report-profiling))
@@ -48,7 +45,7 @@ Experimental."
   "Return current profiling information for GENERIC-FUNCTION. Currently this consists of two values: the number of dispatch misses that have occured, and approximately how much overhead was incurred by these misses in seconds.
 
 Experimental."
-  (let ((tracy (%tracy generic-function)))
+  (let ((tracy (generic-function-tracy generic-function)))
     (when (null tracy)
       (warn "~a is not being profiled" generic-function)
       (return-from profiling-data (values 0 0.0)))

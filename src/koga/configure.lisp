@@ -118,8 +118,8 @@
 (defclass configuration (flags)
   ((build-mode :accessor build-mode
                :initarg :build-mode
-               :initform :faso
-               :type (member :faso :bytecode :bytecode-faso :fasoll :fasobc :fasl)
+               :initform :native
+               :type (member :native :bytecode)
                :documentation "Define how clasp is built.")
    (build-path :accessor build-path
                :initarg :build-path
@@ -156,11 +156,6 @@
                    :initarg :pkgconfig-path
                    :type pathname
                    :documentation "The directory under which to install the pkgconfig files.")
-   (jupyter-path :accessor jupyter-path
-                 :initform nil
-                 :initarg :jupyter-path
-                 :type (or null pathname)
-                 :documentation "The directory under which to install Jupyter files.")
    (package-path :accessor package-path
                  :initform nil
                  :initarg :package-path
@@ -176,6 +171,12 @@
                   :initform nil
                   :type boolean
                   :documentation "If T if the C++ stdlib is broken for C++20.")
+   (default-native
+    :accessor default-native
+    :initarg :default-native
+    :initform nil
+    :type boolean
+    :documentation "If T, Clasp compiles files natively by default (*compile-file-native*)")
    (cst :accessor cst
         :initarg :cst
         :initform t
@@ -557,11 +558,6 @@ is not compatible with snapshots.")
           :initarg :ctags
           :type (or null pathname)
           :documentation "The ctags binary to use.")
-   (jupyter :accessor jupyter
-            :initform nil
-            :initarg :jupyter
-            :type boolean
-            :documentation "Enable Jupyter and create Jupyter kernels.")
    (xcode-sdk :accessor xcode-sdk
               :initform nil
               :initarg :xcode-sdk
@@ -630,7 +626,7 @@ is not compatible with snapshots.")
                    :documentation "Static link Clasp library.")
    (units :accessor units
           :initform '(:git :describe :cpu-count #+darwin :xcode :base :default-target :pkg-config
-                           :clang :llvm :ar :cc :cxx :dis :mpi :nm :etags :ctags :gtags :objcopy :jupyter
+                           :clang :llvm :ar :cc :cxx :dis :mpi :nm :etags :ctags :gtags :objcopy
                            :reproducible :asdf)
           :type list
           :documentation "The configuration units")
@@ -644,10 +640,22 @@ is not compatible with snapshots.")
                                                                :scraper)
                                                          :generate-vm-header
                                                          (list (make-source #P"generate-vm-header.lisp" :build))
+                                                         :generate-lisp-info
+                                                         (list (make-source #p"generate-lisp-info.lisp" :build))
+                                                         :compile-bytecode-image
+                                                         (list (make-source #P"compile-bytecode-image.lisp" :build))
+                                                         :compile-native-image
+                                                         (list (make-source #p"compile-native-image.lisp" :build))
                                                          :compile-systems
                                                          (list (make-source #P"compile-systems.lisp" :build))
+                                                         :compile-lisp
+                                                         (list (make-source #p"compile-lisp.lisp" :build))
+                                                         :link-image
+                                                         (list (make-source #P"link-image.lisp" :build))
                                                          :update-unicode
                                                          (list (make-source #P"update-unicode.lisp" :build))
+                                                         :generate-encodings
+                                                         (list (make-source #p"generate-encodings.lisp" :build))
                                                          :load-clasp
                                                          (list (make-source #P"load-clasp.lisp" :build))
                                                          :snapshot-clasp
@@ -656,8 +664,6 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"compile-clasp.lisp" :build))
                                                          :compile-module
                                                          (list (make-source #P"compile-module.lisp" :build))
-                                                         :link-fasl
-                                                         (list (make-source #P"link-fasl.lisp" :build))
                                                          :analyze-file
                                                          (list (make-source #P"analyze-file.lisp" :build))
                                                          :analyze-generate
@@ -666,8 +672,6 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"snapshot.lisp" :variant))
                                                          :clasprc
                                                          (list (make-source #P"clasprc.lisp" :variant))
-                                                         :jupyter-kernel
-                                                         (list (make-source #P"jupyter-kernel.lisp" :variant))
                                                          :ansi-test
                                                          (list (make-source #P"ansi-test.lisp" :build))
                                                          :asdf-test
@@ -684,7 +688,7 @@ is not compatible with snapshots.")
                                                                :eclasp-link :sclasp :install-bin :install-code
                                                                :clasp :regression-tests :analyzer :analyze
                                                                :tags :install-extension-code :vm-header
-                                                               :trampoline)
+                                                               :trampoline :nclasp)
                                                          :config-h
                                                          (list (make-source #P"config.h" :variant)
                                                                :scraper)
@@ -692,7 +696,7 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"version.h" :variant))
                                                          :base-translations
                                                          (list (make-source #P"generated/base-translations.lisp" :variant)
-                                                               :cclasp)
+                                                               :nclasp)
                                                          :extension-translations
                                                          (list (make-source #P"generated/extension-translations.lisp" :variant)
                                                                :extension-translations)
@@ -770,9 +774,6 @@ is not compatible with snapshots.")
         (uiop:ensure-directory-pathname (lib-path instance))
         (share-path instance)
         (uiop:ensure-directory-pathname (share-path instance)))
-  (when (jupyter-path instance)
-    (setf (jupyter-path instance)
-          (uiop:ensure-directory-pathname (jupyter-path instance))))
   (when (xcode-sdk instance)
     (setf (xcode-sdk instance)
           (uiop:ensure-directory-pathname (xcode-sdk instance))))
@@ -817,19 +818,20 @@ then they will overide the current variant's corresponding property."
                 (t
                  *variant-bitcode-name*))))
 
-(defun fasl-extension (configuration)
+(defun fasl-extension (mode)
   "Return the fasl extension based on the build mode."
-  (case (build-mode configuration)
-    (:faso "faso")
-    (:fasobc "fasobc")
-    (:fasoll "fasoll")
-    (otherwise "fasl")))
+  (case mode
+    (:native "nfasl")
+    (:bytecode "fasl")))
 
-(defun image-source (configuration extension &optional (root :variant-lib))
+(defun image-source (configuration &key extension (root :variant-lib) (mode nil modep))
   "Return the name of an image based on a target name, the bitcode name
 and the build mode."
   (make-source (format nil "images/~:[base~;extension~].~a"
-                       extension (fasl-extension configuration))
+                       extension
+                       (fasl-extension (if modep
+                                           mode
+                                           (build-mode configuration))))
                root))
 
 (defun funcall-variant (configuration func

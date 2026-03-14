@@ -6,7 +6,6 @@
 
 (defvar *tags*)
 (defvar *datum-values*)
-(defvar *constant-values*)
 (defvar *dynenv-storage*)
 (defvar *unwind-ids*)
 (defvar *function-info*)
@@ -278,10 +277,9 @@
         (bind (make-instance 'bir:constant-bind
                 :iblock (bir:iblock uwprotect-inst))))
     (multiple-value-bind (ind old old-destack)
-        (bind-special (literal:constants-table-value
-                       (literal:reference-variable-cell
-                        'core:*interrupts-enabled*)
-                       :literal-name "*INTERRUPTS-ENABLED*")
+        (bind-special (info-literal
+                       (cmp:variable-cell-info/make 'core:*interrupts-enabled*)
+                       "*INTERRUPTS-ENABLED*")
                       (%nil))
       (setf (dynenv-storage bind) (list ind old old-destack))
       (cmp:with-landing-pad (maybe-entry-landing-pad bind *tags*)

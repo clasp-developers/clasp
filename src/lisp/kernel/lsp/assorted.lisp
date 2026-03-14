@@ -144,7 +144,6 @@ the file system."
     (code-char (+ weight (if (< weight 10) 48 55)))))
 
 ;; Donated by Shinmera in #clasp on April 2015 "free of charge"
-(in-package :cl)
 
 (defun nstring-capitalize (string &key (start 0) end)
   (loop with capitalize = t

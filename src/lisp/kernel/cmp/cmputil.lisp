@@ -29,13 +29,10 @@
 ;;;; in compiler-conditions.lisp.
 
 
-(in-package :cmp)
+(in-package #:cmp)
 
 (defvar *global-function-defs*)
 (defvar *global-function-refs*)
-
-(defvar *warnings-p*)
-(defvar *failure-p*)
 
 ;;; The policy is computed later in cleavir/setup.lisp.
 (defvar *policy* ())
@@ -51,20 +48,18 @@
 
 (defvar *active-protection* nil)
 
-(defstruct (global-function-def (:type vector) :named)
+(defstruct global-function-def
   type
   name
   source-pos-info)
 
-(defstruct (global-function-ref (:type vector) :named)
+(defstruct global-function-ref
   name
   source-pos-info)
 
 (defun known-function-p (name)
   (and (boundp '*global-function-defs*)
        (gethash name *global-function-defs*)))
-
-(export '(known-function-p)) ; FIXME MOVE
 
 (defun register-global-function-def (type name)
   (when (boundp '*global-function-defs*)
@@ -104,30 +99,9 @@
 (defmacro with-compilation-results ((&rest options) &body body)
   `(call-with-compilation-results (lambda () ,@body) ,@options))
 
-(export 'with-atomic-file-rename)
 (defmacro with-atomic-file-rename ((temp-pathname final-pathname) &body body)
   `(let ((,temp-pathname (core:mkstemp (namestring ,final-pathname))))
      (unwind-protect
-          (progn
-            ,@body)
+          (progn ,@body)
        (when (core:file-kind ,temp-pathname t)
          (rename-file ,temp-pathname ,final-pathname :if-exists t)))))
-
-(defun write-bitcode (module output-path &key output-type)
-  ;; Write bitcode as either .bc files or .ll files
-  (ecase output-type
-    (:fasoll
-     (with-atomic-file-rename (temp-pathname output-path)
-       (with-open-file (fout temp-pathname :direction :output
-                             :if-does-not-exist :create)
-         (llvm-sys:dump-module module fout))))
-    (:fasobc
-     (with-atomic-file-rename (temp-pathname output-path)
-       (llvm-sys:write-bitcode-to-file module (namestring temp-pathname)))))
-  (let ((file-length 0))
-    (with-open-file (fin output-path :direction :input)
-      (setf file-length (file-length fin)))
-    (if (= file-length 0)
-        (error "A zero length ~a file was written" output-type))))
-
-;;;(setq core::*echo-repl-read* t)

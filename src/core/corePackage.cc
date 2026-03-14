@@ -47,7 +47,6 @@ THE SOFTWARE.
 #include <clasp/core/grayPackage.h>
 #include <clasp/core/closPackage.h>
 #include <clasp/core/cleavirPrimopsPackage.h>
-#include <clasp/core/cleavirEnvPackage.fwd.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/random.h>
 #include <clasp/core/ql.h>
@@ -191,15 +190,12 @@ SYMBOL_EXPORT_SC_(CorePkg, _BANG_unbound_BANG_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_WNOHANG_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_application_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_bitcode_name_PLUS_);
-SYMBOL_EXPORT_SC_(CorePkg, _PLUS_clasp_ctor_function_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_class_name_to_lisp_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_executable_name_PLUS_);
-SYMBOL_EXPORT_SC_(CorePkg, _PLUS_gcroots_in_module_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_io_syntax_progv_list_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_known_typep_predicates_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_literals_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_numberOfFixedArguments_PLUS_);
-SYMBOL_EXPORT_SC_(CorePkg, _PLUS_run_all_function_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_standardReadtable_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_type_header_value_map_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_variant_name_PLUS_);
@@ -233,6 +229,7 @@ SYMBOL_EXPORT_SC_(CorePkg, fileExists);
 SYMBOL_EXPORT_SC_(CorePkg, fillArrayWithElt);
 SYMBOL_EXPORT_SC_(CorePkg, fillPointerSet);
 SYMBOL_EXPORT_SC_(CorePkg, fixnump);
+SYMBOL_EXPORT_SC_(CorePkg, float_infinity_string);
 SYMBOL_EXPORT_SC_(CorePkg, foreign_call);
 SYMBOL_EXPORT_SC_(CorePkg, foreign_call_pointer);
 SYMBOL_EXPORT_SC_(CorePkg, index);
@@ -242,9 +239,6 @@ SYMBOL_EXPORT_SC_(CorePkg, lambdaName);
 SYMBOL_EXPORT_SC_(CorePkg, loadSource);
 SYMBOL_EXPORT_SC_(CorePkg, load_binary);
 SYMBOL_EXPORT_SC_(CorePkg, load_bytecode);
-SYMBOL_EXPORT_SC_(CorePkg, load_faso);
-SYMBOL_EXPORT_SC_(CorePkg, load_fasobc);
-SYMBOL_EXPORT_SC_(CorePkg, load_fasoll);
 SYMBOL_EXPORT_SC_(CorePkg, localGo);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(CorePkg, multiple_value_foreign_call);
@@ -547,8 +541,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARbuild_stlibSTAR->defconstant(SimpleBaseString_O::make(BUILD_STLIB));
   _sym_STARbuild_linkflagsSTAR->defconstant(SimpleBaseString_O::make(BUILD_LINKFLAGS));
   _sym_STARbuild_cppflagsSTAR->defconstant(SimpleBaseString_O::make(BUILD_CPPFLAGS));
-  _sym__PLUS_run_all_function_name_PLUS_->defconstant(SimpleBaseString_O::make(RUN_ALL_FUNCTION_NAME));
-  _sym__PLUS_clasp_ctor_function_name_PLUS_->defconstant(SimpleBaseString_O::make(CLASP_CTOR_FUNCTION_NAME));
   SYMBOL_SC_(CorePkg, cArgumentsLimit);
   _sym_cArgumentsLimit->defconstant(make_fixnum(Lisp::MaxFunctionArguments));
   _sym_STARdebugMacroexpandSTAR->defparameter(nil<T_O>());
@@ -628,15 +620,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   comp::_sym_STARload_time_value_holder_nameSTAR->defparameter(core::SimpleBaseString_O::make("[VALUES-TABLE]"));
   List_sp hooks = nil<T_O>();
   hooks = Cons_O::create(Cons_O::create(clasp_make_fixnum(FASL_MAGIC_NUMBER), _sym_load_bytecode), hooks);
-  // This not ideal, but ANSI tests uses FASL as a generic pathname type so dispatching in LOAD via
-  // *LOAD-HOOKS* will end up sending a FASO with an extension of FASL to the FASL loader. We
-  // could sniff the magic number before we dispatch on pathname type, but this is inefficient since
-  // it results in two file opens. If we had only one FASL format this wouldn't be an issue.
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasl"), _sym_load_bytecode), hooks);
-  hooks = Cons_O::create(Cons_O::create(clasp_make_fixnum(FASO_MAGIC_NUMBER), _sym_load_faso), hooks);
-  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("faso"), _sym_load_faso), hooks);
-  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasoll"), _sym_load_fasoll), hooks);
-  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasobc"), _sym_load_fasobc), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("l"), _sym_loadSource), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("L"), _sym_loadSource), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("lsp"), _sym_loadSource), hooks);
@@ -674,7 +658,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARallow_with_interruptsSTAR->defparameter(_lisp->_true());
   _sym_STARexit_backtraceSTAR->defparameter(nil<core::T_O>());
   clos::_sym__PLUS_the_standard_class_PLUS_->defparameter(_lisp->_Roots._TheStandardClass);
-  core::_sym__PLUS_gcroots_in_module_name_PLUS_->defparameter(SimpleBaseString_O::make(GCROOTS_IN_MODULE_NAME));
   core::_sym__PLUS_literals_name_PLUS_->defparameter(SimpleBaseString_O::make(LITERALS_NAME));
   _sym_STARdebug_threadsSTAR->defparameter(nil<core::T_O>());
   _sym_STARdebug_fastgfSTAR->defparameter(nil<core::T_O>());
@@ -693,20 +676,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARnumber_of_entry_pointsSTAR->defparameter(make_fixnum(NUMBER_OF_ENTRY_POINTS));
   _sym_STARcore_startup_functionSTAR->defparameter(nil<core::T_O>());
   comp::_sym_STARcompile_file_parallelSTAR->defparameter(nil<core::T_O>());
-#ifdef DEFAULT_OUTPUT_TYPE_FASO
-  comp::_sym_STARdefault_output_typeSTAR->defparameter(kw::_sym_faso);
-#endif
-#ifdef DEFAULT_OUTPUT_TYPE_FASOLL
-  comp::_sym_STARdefault_output_typeSTAR->defparameter(kw::_sym_fasoll);
-#endif
-#ifdef DEFAULT_OUTPUT_TYPE_FASOBC
-  comp::_sym_STARdefault_output_typeSTAR->defparameter(kw::_sym_fasobc);
-#endif
-#ifdef DEFAULT_OUTPUT_TYPE_BYTECODE
-  comp::_sym_STARdefault_output_typeSTAR->defparameter(kw::_sym_bytecode);
-#endif
   comp::_sym_STARforce_startup_external_linkageSTAR->defparameter(nil<core::T_O>());
-  gctools::_sym_STARdebug_gcrootsSTAR->defparameter(nil<core::T_O>());
 #ifdef DEBUG_LLVM_OPTIMIZATION_LEVEL_0
   int optimization_level = 0;
 #else
@@ -798,9 +768,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
 #endif
 #ifdef CLASP_EXTENSIONS
   features = Cons_O::create(_lisp->internKeyword("EXTENSIONS"), features);
-#endif
-#ifdef DEFAULT_OUTPUT_TYPE_BYTECODE
-  features = Cons_O::create(_lisp->internKeyword("BYTECODE"), features);
 #endif
 #ifdef CLASP_SHORT_FLOAT
   features = Cons_O::create(_lisp->internKeyword("SHORT-FLOAT"), features);

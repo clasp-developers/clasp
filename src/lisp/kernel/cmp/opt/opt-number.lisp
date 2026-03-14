@@ -8,8 +8,7 @@
       (let ((arg0 (first args)) (args (rest args)))
         (if (null args)
             ;; preserve nontoplevelness and eliminate extra values
-            #+bytecode `(core::the-single real ,arg0)
-            #-bytecode `(the (values real &rest nil) (values ,arg0))
+            `(core::the-single real ,arg0)
             (let ((s (gensym)))
               `(let ((,s ,arg0)
                      (minrest (min ,@args)))
@@ -19,8 +18,7 @@
       form
       (let ((arg0 (first args)) (args (rest args)))
         (if (null args)
-            #+bytecode `(core::the-single real ,arg0)
-            #-bytecode `(the (values real &rest nil) (values ,arg0)) ; preserve nontoplevelness
+            `(core::the-single real ,arg0) ; preserve nontoplevelness
             (let ((s (gensym)))
               `(let ((,s ,arg0)
                      (maxrest (max ,@args)))
@@ -97,6 +95,7 @@
 
 (in-package #:core)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun parse-bytespec (bytespec)
   (when (and (consp bytespec)
              (eql (car bytespec) 'byte)
@@ -104,6 +103,7 @@
              (consp (cddr bytespec))
              (null (cdddr bytespec)))
     (values (cadr bytespec) (caddr bytespec))))
+)
 
 (define-compiler-macro ldb (&whole whole bytespec integer)
   (multiple-value-bind (size position) (parse-bytespec bytespec)

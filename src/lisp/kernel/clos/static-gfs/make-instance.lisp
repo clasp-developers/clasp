@@ -3,7 +3,8 @@
 (defun make-instance-form (class class-form keys params)
   (let ((patch-list
           (list
-           (cons (find-method #'make-instance nil (list (find-class 'class)))
+           (cons (find-method #'make-instance nil
+                              (list (find-class 'clos::std-class)))
                  #'standard-make-instance-form)))
         (methods (compute-applicable-methods #'make-instance (list class))))
     (if (can-static-effective-method-p methods patch-list)

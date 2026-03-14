@@ -116,13 +116,13 @@ INDEXes must be equal to the rank of ARRAY."
   (declare (type array array)
            (optimize (safety 0))
            #+(or)(ext:check-arguments-type))
-  (do* ((indices indices (cons-cdr indices))
+  (do* ((indices indices (cdr indices))
         (r (array-rank array))
         (i 0 (1+ i)))
        ((>= i r) t)
     (declare (type index r i))
     (if indices
-	(let* ((index (cons-car indices)))
+	(let* ((index (car indices)))
 	  (when (or (not (si::fixnump index))
 		    (minusp (the fixnum index))
 		    (>= (the fixnum index) (array-dimension array i)))
@@ -140,7 +140,7 @@ INDEXes must be equal to the rank of ARRAY."
     (do* ((r (array-rank array))
           (i 0 (1+ i))
           (j 0)
-          (s indices (cons-cdr s)))
+          (s indices (cdr (the cons s))))
          ((null s)
           (when (< i r)
             (indexing-error array indices))
@@ -148,7 +148,7 @@ INDEXes must be equal to the rank of ARRAY."
       (declare (ext:array-index j)
                (fixnum i r))
       (let* ((d (array-dimension array i))
-             (o (cons-car s))
+             (o (car (the cons s)))
              (ndx 0))
         (declare (ext:array-index ndx))
         (unless (and (typep o 'fixnum)
@@ -162,7 +162,6 @@ INDEXes must be equal to the rank of ARRAY."
   "Args: (bit-array &rest indexes)
 Returns the bit of BIT-ARRAY specified by INDEXes."
   (declare (type (array bit) bit-array))
-  #+(not clasp-min)
   (check-type bit-array (array bit))
   (row-major-aref bit-array (row-major-index-inner bit-array indices)))
 
@@ -170,7 +169,6 @@ Returns the bit of BIT-ARRAY specified by INDEXes."
   "Args: (simple-bit-array &rest subscripts)
 Returns the specified bit in SIMPLE-BIT-ARRAY."
   (declare (type (simple-array bit) bit-array))
-  #+(not clasp-min)
   (check-type bit-array (simple-array bit))
   (row-major-aref bit-array (row-major-index-inner bit-array indices)))
 
@@ -178,13 +176,17 @@ Returns the specified bit in SIMPLE-BIT-ARRAY."
   `(let ((,vectorname ,vector) (,indexname 0))
      (cond ((core:data-vector-p ,vectorname))
            ((arrayp ,vectorname)
+            #+(or)
+            (loop until (core:data-vector-p ,vectorname)
+                  do (incf ,indexname (%displaced-index-offset ,vectorname))
+                     (setf ,vectorname (%displacement ,vectorname)))
             (tagbody loop
                (setq ,indexname
                      (+ ,indexname (%displaced-index-offset ,vectorname))
                      ,vectorname (%displacement ,vectorname))
                (if (core:data-vector-p ,vectorname) (go done) (go loop))
              done))
-           (t (signal-type-error ,vectorname 'array)))
+           (t (error 'type-error :datum ,vectorname :expected-type 'array)))
      ,@body))
 
 ;;; (equal (array-dimensions a1) (array-dimensions a2)), but without consing
@@ -303,7 +305,7 @@ pointer is 0 already."
              (optimize (safety 0)))
     (when (zerop fp)
       (error "The fill pointer of the vector ~S zero." vector))
-    (funcall #'(setf fill-pointer) (decf fp) vector)
+    (setf (fill-pointer vector) (decf fp))
     (aref vector fp)))
 
 (defun copy-array-contents (dest orig)

@@ -89,8 +89,11 @@
                         (slot-value-using-class old-class old-instance old-slotd)))))))))
   (values))
 
+(defmethod change-class (instance (new-class symbol) &rest initargs)
+  (apply #'change-class instance (find-class new-class) initargs))
+
 (defmethod change-class ((instance standard-object) (new-class standard-class)
-                         core:&va-rest initargs)
+                         &rest initargs)
   (let* ((old-rack (core:instance-rack instance))
          (old-class (class-of instance))
          (copy (core:allocate-raw-instance old-class old-rack))
@@ -114,7 +117,7 @@
 
 (defmethod change-class ((instance funcallable-standard-object)
                          (new-class funcallable-standard-class)
-                         core:&va-rest initargs)
+                         &rest initargs)
   (let* ((old-rack (core:instance-rack instance))
          (old-class (class-of instance))
          (copy (core:allocate-raw-funcallable-instance old-class old-rack))
@@ -350,7 +353,7 @@
 
 (defmethod change-class ((instance class) new-class &rest initargs)
   (declare (ignore new-class initargs))
-  (if (forward-referenced-class-p instance)
+  (if (typep instance 'forward-referenced-class)
       (call-next-method)
       (error "The metaclass of a class metaobject ~a cannot be changed per AMOP Ch. 6"
              instance)))

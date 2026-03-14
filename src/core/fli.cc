@@ -297,12 +297,6 @@ inline void register_foreign_types(void) {
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, unsigned_long_long, unsigned long long, kw::_sym_unsigned_long_long,
                                        "unsigned long long");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, unsigned_char, unsigned char, kw::_sym_unsigned_char, "unsigned char");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, uchar, unsigned char, kw::_sym_uchar, "uchar");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, ushort, unsigned short, kw::_sym_ushort, "ushort");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, uint, unsigned int, kw::_sym_uint, "uint");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, ulong, unsigned long, kw::_sym_ulong, "ulong");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, llong, long long, kw::_sym_llong, "llong");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, ullong, unsigned long long, kw::_sym_ullong, "ullong");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, int8, int8_t, kw::_sym_int8, "int8");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, uint8, uint8_t, kw::_sym_uint8, "uint8");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, int16, int16_t, kw::_sym_int16, "int16");
@@ -313,7 +307,6 @@ inline void register_foreign_types(void) {
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, uint64, uint64_t, kw::_sym_uint64, "uint64");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, double, double, kw::_sym_double, "double");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, float, float, kw::_sym_float, "float");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, single_float, float, kw::_sym_single_float, "float");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, long_double, long double, kw::_sym_long_double, "long double");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, time, time_t, kw::_sym_time, "time");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, pointer, void*, kw::_sym_pointer, "pointer");

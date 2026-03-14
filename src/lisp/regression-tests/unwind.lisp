@@ -5,7 +5,7 @@
       (let ((unwinds (gctools:thread-local-unwinds)))
         (ext:with-unlocked-packages ("CL" "CORE")
           (compile-file "sys:src;lisp;kernel;lsp;predlib.lisp"
-                        :execution :serial
+                        :parallel nil
                         :output-file (make-pathname
                                       :type (pathname-type (compile-file-pathname "foo.lisp"))
                                       :defaults (core:mkstemp "/tmp/predlib")))

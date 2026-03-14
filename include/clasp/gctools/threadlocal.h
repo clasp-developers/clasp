@@ -5,34 +5,12 @@
 #include <algorithm> // copy
 #include <clasp/gctools/threadlocal.fwd.h>
 
-typedef core::T_O* (*T_OStartUp)(core::T_O*);
-typedef void (*voidStartUp)(void);
-
 namespace core {
 
 #ifdef DEBUG_DYN_ENV_STACK
 extern bool global_debug_dyn_env_stack;
 #endif
 
-#define STARTUP_FUNCTION_CAPACITY_INIT 128
-#define STARTUP_FUNCTION_CAPACITY_MULTIPLIER 2
-struct StartUp {
-  typedef enum { T_O_function, void_function } FunctionEnum;
-  FunctionEnum _Type;
-  size_t _Position;
-  void* _Function;
-  StartUp(){};
-  StartUp(FunctionEnum type, size_t p, void* f) : _Type(type), _Position(p), _Function(f){};
-  bool operator<(const StartUp& other) { return this->_Position < other._Position; }
-};
-
-struct StartupInfo {
-  size_t _capacity;
-  size_t _count;
-  StartUp* _functions;
-
-  StartupInfo() : _capacity(0), _count(0), _functions(NULL){};
-};
 }; // namespace core
 
 namespace core {
@@ -269,8 +247,6 @@ struct ThreadLocalState {
   std::string _initializer_symbol;
   void* _object_file_start;
   size_t _object_file_size;
-  gctools::GCRootsInModule* _GCRootsInModule;
-  StartupInfo _Startup;
   bool _Breakstep; // Should we check for breaks?
   // What frame are we stepping over? NULL means step-into mode.
   void* _BreakstepFrame;
@@ -305,7 +281,7 @@ public:
   ThreadLocalState(bool dummy);
   void finish_initialization_main_thread(core::T_sp theNilObject);
   ThreadLocalState();
-  void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
+  void initialize_thread(mp::Process_sp process);
 
   pid_t safe_fork();
 

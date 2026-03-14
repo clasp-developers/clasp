@@ -39,10 +39,6 @@
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 
-// Turn on debugging vtable pointer updates with libraries
-//#define DEBUG_ISLLIBRARIES 1
-
-
 #ifdef _TARGET_OS_LINUX
 #include <elf.h>
 #endif
@@ -107,7 +103,7 @@ const char* pointer_pool(void* pointer) {
 #define ISL_ERROR(_fmt_, ...)                                                                                                      \
   {                                                                                                                                \
     printf("%s:%d:%s  " _fmt_ "\n", __FILE__, __LINE__, __FUNCTION__ __VA_OPT__(, ) __VA_ARGS__);                                  \
-    abort();                                                                                                                       \
+    gctools::truly_abort();                                                                                                        \
   }
 
 /*! Build a LibraryLookup by running 'nm' on one of our loaded libraries or executable.
@@ -454,12 +450,10 @@ size_t Fixup::ensureLibraryRegistered(uintptr_t address) {
   uintptr_t vtableEnd;
   std::string libraryPath;
   bool isExecutable;
-  core::lookup_address_in_library((gctools::clasp_ptr_t)address, start, end, libraryPath, isExecutable, vtableStart, vtableEnd);
+  if (!core::lookup_address_in_library((gctools::clasp_ptr_t)address, start, end, libraryPath, isExecutable, vtableStart, vtableEnd))
+    ISL_ERROR("Tried to look up address %p in library, but it isn't in any library",
+              (void*)address);
   size_t idx = this->_ISLLibraries.size();
-#ifdef DEBUG_ISLLIBRARIES
-  printf("%s:%d:%s Registering library %s address: %p start: %p end: %p vtableStart: %p vtableEnd: %p \n", __FILE__, __LINE__,
-         __FUNCTION__, libraryPath.c_str(), (void*)address, start, end, (void*)vtableStart, (void*)vtableEnd );
-#endif
   this->_ISLLibraries.emplace_back(libraryPath, isExecutable, start, end, vtableStart, vtableEnd);
   return idx;
 };
@@ -958,7 +952,7 @@ struct ISLGeneralHeader_s : public ISLHeader_s {
 
 ISLHeader_s* ISLHeader_s::next(ISLKind k) const {
   if (k != this->_Kind) {
-    printf("%s:%d:%s ISLKind k %lu does not match this->_Kind %lu\n", __FILE__, __LINE__, __FUNCTION__, (uint64_t)k, (uint64_t)this->_Kind);
+    printf("%s:%d:%s ISLKind k %" PRIu64 " does not match this->_Kind %" PRIu64 "\n", __FILE__, __LINE__, __FUNCTION__, (uint64_t)k, (uint64_t)this->_Kind);
   }
   size_t headerSize;
   switch (k) {
@@ -972,7 +966,7 @@ ISLHeader_s* ISLHeader_s::next(ISLKind k) const {
 
 gctools::BaseHeader_s::BadgeStampWtagMtag* ISLHeader_s::stamp_wtag_mtag_P(ISLKind k) const {
   if (k != this->_Kind) {
-    printf("%s:%d:%s ISLKind k %lu does not match this->_Kind %lu\n", __FILE__, __LINE__, __FUNCTION__, (uint64_t)k, (uint64_t)this->_Kind);
+    printf("%s:%d:%s ISLKind k %" PRIu64 " does not match this->_Kind %" PRIu64 "\n", __FILE__, __LINE__, __FUNCTION__, (uint64_t)k, (uint64_t)this->_Kind);
   }
   switch (k) {
   case ISLKind::General: {
@@ -1245,7 +1239,7 @@ template <typename Walker> void walk_snapshot_save_load_objects(ISLHeader_s* sta
   ISLHeader_s* cur = start;
   while (cur->_Kind != ISLKind::End) {
     if (walker._debug)
-      printf("%s:%d:%s Walking %p 0x%lx\n", __FILE__, __LINE__, __FUNCTION__, (void*)cur, (uint64_t)cur->_Kind);
+      printf("%s:%d:%s Walking %p 0x%" PRIx64 "\n", __FILE__, __LINE__, __FUNCTION__, (void*)cur, (uint64_t)cur->_Kind);
     switch (cur->_Kind) {
     case ISLKind::General: {
       ISLGeneralHeader_s* generalCur = (ISLGeneralHeader_s*)cur;
@@ -1258,7 +1252,7 @@ template <typename Walker> void walk_snapshot_save_load_objects(ISLHeader_s* sta
       walker.callback(header);
     } break;
     default: {
-      ISL_ERROR("Hit header@%p  with unexpected kind: %lu", (void*)cur, (uint64_t)cur->_Kind);
+      ISL_ERROR("Hit header@%p  with unexpected kind: %" PRIu64, (void*)cur, (uint64_t)cur->_Kind);
     }
     }
     cur = cur->next(cur->_Kind);
@@ -1504,7 +1498,7 @@ struct LoadSymbolCallback : public core::SymbolCallback {
           uintptr_t tdlsymStart = (uintptr_t)dlsym(RTLD_DEFAULT, myName);
           printf("    %s mysymStart: %p  dlsymStart: %p\n", tmyName, (void*)tmysymStart, (void*)tdlsymStart);
         }
-        abort();
+        gctools::truly_abort();
       }
       this->_Library._GroupedPointers[gpindex]._address = mysymStart;
 #ifdef DEBUG_ENTRY_POINTS
@@ -2133,7 +2127,8 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         uintptr_t vtableEnd;
         bool isexec = libheader->_Executable;
         std::string libraryPath;
-        core::library_with_name(execLibPath, isexec, libraryPath, start, end, vtableStart, vtableEnd);
+        if (!core::library_with_name(execLibPath, isexec, libraryPath, start, end, vtableStart, vtableEnd))
+          ISL_ERROR("Unable to find library: %s", execLibPath.c_str());
         if (isexec) {
           execLibPath = libraryPath; // swap out the old executable path for the current one
         }
@@ -2154,10 +2149,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         if (fout)
           fflush(fout); // flush fout if it's defined. --arguments option was passed
         updateRelocationTableAfterLoad(lib, lookup);
-#ifdef DEBUG_ISLLIBRARIES
-        printf("%s:%d:%s push_back lib: %s  start: %p end: %p  vtableStart: %p vtableEnd: %p\n",
-               __FILE__, __LINE__, __FUNCTION__, lib._Name.c_str(), lib._TextStart, lib._TextEnd, (void*)lib._VtableStart, (void*)lib._VtableEnd);
-#endif
         fixup._ISLLibraries.push_back(lib);
       }
       if (fout)
@@ -2216,7 +2207,8 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           uintptr_t end;
           uintptr_t vtableStart, vtableEnd;
           bool isExecutable = lib->_Executable;
-          core::library_with_name(libraryFilename, isExecutable, libraryName, start, end, vtableStart, vtableEnd);
+          if (!core::library_with_name(libraryFilename, isExecutable, libraryName, start, end, vtableStart, vtableEnd))
+            ISL_ERROR("Unable to find library: %s", libraryFilename.c_str());
           lib->_Start = (gctools::clasp_ptr_t)start;
           lib->_End = (gctools::clasp_ptr_t)end;
           lib->_VtableStart = vtableStart;
@@ -2452,18 +2444,14 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               // lookup will cause multicore linking and with multicore linking we have to do things after this in a thread safe way
               size_t objectId = allocatedObjectFile->_ObjectId;
               pool.push_task([&obj_claspJIT, jitdylib, objectId]() {
-                // do_lookup can allocate, so set up a bit of a Lisp thread.
+                // force_materialize can allocate, so set up a bit of a Lisp thread.
                 void* stacktop = &stacktop;
                 gctools::ThreadLocalStateLowLevel tlsll(stacktop);
                 core::ThreadLocalState tls;
                 my_thread_low_level = &tlsll;
                 my_thread = &tls;
-                std::string start;
-                std::string shutdown;
-                core::startup_shutdown_names(objectId, "", start, shutdown);
-                void* ptr;
-                obj_claspJIT->do_lookup(jitdylib, start, ptr);
-
+                if (!obj_claspJIT->force_materialize(jitdylib, objectId))
+                  ISL_ERROR("Failed to materialize JITDylib");
               });
             }
           }

@@ -8,10 +8,10 @@ for i in "$@"; do
   fi
 done
 
-./koga --build-path=build-analysis --clean --no-extensions --no-jupyter "$@"
+./koga --build-mode=bytecode --build-path=build-analysis --clean --no-extensions "$@"
 ninja -C build-analysis $NINJA_OPTIONS analyze
 
-./koga --build-path=build-analysis --clean --extensions=cando --no-jupyter "$@"
+./koga --build-mode=bytecode --build-path=build-analysis --clean --extensions=cando "$@"
 ninja -C build-analysis $NINJA_OPTIONS analyze
 
 rm -rf build-analysis

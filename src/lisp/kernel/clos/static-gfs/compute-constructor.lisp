@@ -1,6 +1,5 @@
 (in-package #:static-gfs)
 
-
 (defvar *compute-constructor-calls* 0)
 
 (defun compute-constructor-for-class (class class-form keys)
@@ -13,12 +12,8 @@
        ;; but again, we call this when make-instance is in progress-
        ;; it SHOULD signal an error.
        (clos:finalize-inheritance class))
-     ;; bclasp-compile because cclasp is full of make-instance
-     ;;#+(or)
-     (let ((cmp:*cleavir-compile-hook* nil))
-       (coerce (constructor-form class class-form keys) 'function))
-     #+(or)
-     (cmp:bclasp-compile nil (constructor-form class class-form keys)))))
+     ;; bytecompile because cclasp is full of make-instance
+     (cmp:bytecompile (constructor-form class class-form keys)))))
 
 ;;; This function is called when an actual make-instance call is happening.
 ;;; So it should return something immediately valid or error.

@@ -101,30 +101,29 @@
       ;; pop the dynenv.
       (let ((de-stack (dynenv-storage u-p-instruction)))
         (%intrinsic-call "cc_set_dynenv_stack" (list de-stack)))
-      (let ((thunk (in (first (cleavir-bir:inputs u-p-instruction)))))
-        ;; There is a subtle point here with regard to unwinding out of a cleanup
-        ;; form. CLHS 5.2 specifies that when unwinding begins, exit points between
-        ;; the unwind point and the destination are "abandoned" and can no longer be
-        ;; exited to - doing so is undefined behavior. For example, the code
-        ;; (block nil (unwind-protect (throw something) (return)))
-        ;; has undefined consequences - the (return) effectively quits the throw
-        ;; before it can finish.
-        ;; An alternate X3J13 proposal, EXIT-EXTENT:MEDIUM, would have allowed this
-        ;; behavior. And we do too - no reason not to really. We do not abandon
-        ;; intervening exit points. And we indicate that by using for the call
-        ;; to the protected thunk the same dynamic-environment that was in place
-        ;; upon entry to the unwind-protect.
-        (let* ((nvals (%intrinsic-call "cc_nvalues" nil "nvals"))
-               ;; NOTE that this is kind of really dumb. We save the values, i.e. alloca
-               ;; a VLA, for every unwind protect executed. We could at least merge unwind
-               ;; protects in the same frame - but what would be really smart would be
-               ;; just having the exception object carry the values, so we can fuck with the
-               ;; global (thread-local) values with impunity while unwinding.
-               ;; Probably challenging to arrange in C++, though.
-               (mv-temp (cmp:alloca-temp-values nvals)))
-          (%intrinsic-call "cc_save_all_values" (list nvals mv-temp))
-          (gen-call-cleanup u-p-instruction)
-          (%intrinsic-call "cc_load_all_values" (list nvals mv-temp))))
+      ;; There is a subtle point here with regard to unwinding out of a cleanup
+      ;; form. CLHS 5.2 specifies that when unwinding begins, exit points between
+      ;; the unwind point and the destination are "abandoned" and can no longer be
+      ;; exited to - doing so is undefined behavior. For example, the code
+      ;; (block nil (unwind-protect (throw something) (return)))
+      ;; has undefined consequences - the (return) effectively quits the throw
+      ;; before it can finish.
+      ;; An alternate X3J13 proposal, EXIT-EXTENT:MEDIUM, would have allowed this
+      ;; behavior. And we do too - no reason not to really. We do not abandon
+      ;; intervening exit points. And we indicate that by using for the call
+      ;; to the protected thunk the same dynamic-environment that was in place
+      ;; upon entry to the unwind-protect.
+      (let* ((nvals (%intrinsic-call "cc_nvalues" nil "nvals"))
+             ;; NOTE that this is kind of really dumb. We save the values, i.e. alloca
+             ;; a VLA, for every unwind protect executed. We could at least merge unwind
+             ;; protects in the same frame - but what would be really smart would be
+             ;; just having the exception object carry the values, so we can fuck with the
+             ;; global (thread-local) values with impunity while unwinding.
+             ;; Probably challenging to arrange in C++, though.
+             (mv-temp (cmp:alloca-temp-values nvals)))
+        (%intrinsic-call "cc_save_all_values" (list nvals mv-temp))
+        (gen-call-cleanup u-p-instruction)
+        (%intrinsic-call "cc_load_all_values" (list nvals mv-temp)))
       (cmp:irc-br next)
       bb)))
 

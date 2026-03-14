@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: ${{ matrix.build }}/${{ matrix.os }}/${{ matrix.mode }}/${{ matrix.auto }}
+    name: ${{ matrix.build }}/${{ matrix.os }}/${{ matrix.mode }}/${{ matrix.defaultnative }}/${{ matrix.auto }}
 
     defaults:
       run:
@@ -17,34 +17,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build:
-        - clasp
-        - cando
-        os:
-        - macos-latest
-        - ubuntu-latest
-        mode:
-        - faso
-        - bytecode-faso
-        - bytecode
-        auto:
-        - no
-        - yes
+        build: [clasp, cando]
+        os: [macos-latest, ubuntu-latest]
+        mode: [native, bytecode]
+        defaultnative: [no, yes]
+        auto: [no, yes]
         exclude:
-          - mode: faso
-            auto: yes
-          - build: cando
-            mode: faso
+          - auto: yes
+          - mode: native
+            defaultnative: no
+          - mode: bytecode
+            defaultnative: yes
           - build: cando
             mode: bytecode
-          - build: cando
-            auto: yes
-          - mode: bytecode-faso
-            auto: yes
-          - os: macos-latest
-            mode: faso
-          - os: macos-latest
-            mode: bytecode-faso
 
     runs-on: ${{ matrix.os }}
 
@@ -75,19 +60,19 @@ jobs:
     - name: Clasp koga @ Ubuntu
       if: ${{ matrix.os == 'ubuntu-latest' && matrix.build == 'clasp' }}
       run: |
-        ./koga --build-mode=${{ matrix.mode }}
+        ./koga --build-mode=${{ matrix.mode }} ${{ case(matrix.defaultnative == 'yes', '--default-native', '--no-default-native') }}
     - name: Cando koga @ Ubuntu
       if: ${{ matrix.os == 'ubuntu-latest' && matrix.build == 'cando' }}
       run: |
-        ./koga --build-mode=${{ matrix.mode }} --extensions=cando
+        ./koga --build-mode=${{ matrix.mode }} ${{ case(matrix.defaultnative == 'yes', '--default-native', '--no-default-native')}} --extensions=cando
     - name: Clasp koga @ MacOS
       if: ${{ matrix.os == 'macos-latest' && matrix.build == 'clasp' }}
       run: |
-        ./koga --build-mode=${{ matrix.mode }} --cflags=-I/opt/homebrew/include --cppflags=-I/opt/homebrew/include --cxxflags=-I/opt/homebrew/include
+        ./koga --build-mode=${{ matrix.mode }} ${{ case(matrix.defaultnative == 'yes', '--default-native', '--no-default-native')}} --cflags=-I/opt/homebrew/include --cppflags=-I/opt/homebrew/include --cxxflags=-I/opt/homebrew/include
     - name: Cando koga @ MacOS
       if: ${{ matrix.os == 'macos-latest' && matrix.build == 'cando' }}
       run: |
-        ./koga --build-mode=${{ matrix.mode }} --extensions=cando --cflags=-I/opt/homebrew/include --cppflags=-I/opt/homebrew/include --cxxflags=-I/opt/homebrew/include
+        ./koga --build-mode=${{ matrix.mode }} ${{ case(matrix.defaultnative == 'yes', '--default-native', '--no-default-native') }} --extensions=cando --cflags=-I/opt/homebrew/include --cppflags=-I/opt/homebrew/include --cxxflags=-I/opt/homebrew/include
     - name: Build
       run: |
         ninja -C build
