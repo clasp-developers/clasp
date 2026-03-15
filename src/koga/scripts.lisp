@@ -268,9 +268,8 @@
 
 (defmethod print-prologue (configuration (name (eql :link-image)) output-stream)
   (declare (ignore configuration))
-  (print-asdf-stub output-stream t :maclina/compile-file)
-  (format output-stream "(apply #'uiop:symbol-call \"MACLINA.COMPILE-FILE\" \"LINK-FASLS\"
-       (uiop:command-line-arguments))"))
+  (format output-stream "(core:link-fasl-files (elt core:*command-line-arguments* 0) (subseq core:*command-line-arguments* 1))")
+  (format output-stream "(core:quit)"))
 
 (defmethod print-prologue (configuration (name (eql :analyze-generate)) output-stream)
   (declare (ignore configuration))

@@ -1262,26 +1262,7 @@ struct ltv_MmapInfo {
   ltv_MmapInfo(uint8_t* mem, size_t len) : _Memory(mem), _Len(len) {};
 };
 
-CL_LAMBDA(output-designator files &optional (verbose nil));
-CL_DEFUN void core__link_fasl_files(T_sp output, List_sp files, bool verbose) {
-  size_t instruction_count = 0;
-  std::vector<ltv_MmapInfo> mmaps;
-
-  for (size_t ii = 0; files.notnilp(); ++ii) {
-    String_sp filename = gc::As<String_sp>(cl__namestring(oCar(files)));
-    files = oCdr(files);
-    int fd = open(filename->get_std_string().c_str(), O_RDONLY);
-    off_t fsize = lseek(fd, 0, SEEK_END);
-    lseek(fd, 0, SEEK_SET);
-    uint8_t* memory = (uint8_t*)mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
-    close(fd);
-    if (memory == MAP_FAILED) {
-      SIMPLE_ERROR("Could not mmap {} because of {}", _rep_(filename), strerror(errno));
-    }
-    mmaps.emplace_back(ltv_MmapInfo(memory, fsize));
-    instruction_count += ltv_header_decode(memory);
-  }
-
+void link_fasl_files(T_sp output, std::vector<ltv_MmapInfo>& mmaps, size_t instruction_count, bool verbose) {
   String_sp filename = gc::As<String_sp>(cl__namestring(output));
   std::string sfilename = filename->get_std_string();
   char bfilename[sfilename.size() + 7];
@@ -1320,6 +1301,46 @@ CL_DEFUN void core__link_fasl_files(T_sp output, List_sp files, bool verbose) {
   }
   if (verbose)
     clasp_write_string(fmt::format("Returning {}\n", _rep_(filename)));
+}
+
+CL_LAMBDA(output-designator files &optional (verbose nil));
+CL_DEFUN void core__link_fasl_files(T_sp output, T_sp files, bool verbose) {
+  size_t instruction_count = 0;
+  std::vector<ltv_MmapInfo> mmaps;
+
+  if (files.isA<SimpleVector_O>()) {
+    SimpleVector_sp vfiles = files.as_unsafe<SimpleVector_O>();
+    for (auto const& tfile : vfiles) {
+      String_sp filename = cl__namestring(tfile).as<String_O>();
+      int fd = open(filename->get_std_string().c_str(), O_RDONLY);
+      off_t fsize = lseek(fd, 0, SEEK_END);
+      lseek(fd, 0, SEEK_SET);
+      uint8_t* memory = (uint8_t*)mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
+      close(fd);
+      if (memory == MAP_FAILED) {
+        SIMPLE_ERROR("Could not mmap {} because of {}", _rep_(filename), strerror(errno));
+      }
+      mmaps.emplace_back(ltv_MmapInfo(memory, fsize));
+      instruction_count += ltv_header_decode(memory);
+    }
+  } else if (files.isA<Cons_O>()) {
+    for (size_t ii = 0; files.notnilp(); ++ii) {
+      String_sp filename = gc::As<String_sp>(cl__namestring(oCar(files)));
+      files = oCdr(files);
+      int fd = open(filename->get_std_string().c_str(), O_RDONLY);
+      off_t fsize = lseek(fd, 0, SEEK_END);
+      lseek(fd, 0, SEEK_SET);
+      uint8_t* memory = (uint8_t*)mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
+      close(fd);
+      if (memory == MAP_FAILED) {
+        SIMPLE_ERROR("Could not mmap {} because of {}", _rep_(filename), strerror(errno));
+      }
+      mmaps.emplace_back(ltv_MmapInfo(memory, fsize));
+      instruction_count += ltv_header_decode(memory);
+    }
+  } else TYPE_ERROR(files, cl::_sym_sequence);
+
+  link_fasl_files(output, mmaps, instruction_count, verbose);
 }
 
 }; // namespace core

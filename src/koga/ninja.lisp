@@ -189,7 +189,7 @@
                     :description "Running pfdietz test-random-integer-forms"
                     :pool "console")
   (ninja:write-rule output-stream :link-image
-                    :command (lisp-command "link-image.lisp" "$out $in")
+                    :command "$clasp -n -- $out $in <link-image.lisp >/dev/null"
                     :restat 1
                     :description "Linking $out")
   (ninja:write-rule output-stream "link-fasl-abc"
@@ -659,7 +659,9 @@
                        :outputs outputs)
     (ninja:write-build output-stream :link-image
                        :inputs fasls
-                       :outputs (list bytecode-image))
+                       :outputs (list bytecode-image)
+                       :clasp clasp-with-env
+                       :implicit-inputs (list iclasp))
     (when (eq (build-mode configuration) :native)
       (let ((nfasls (loop for source in sources
                           collect (source-fasl source :type "nfasl")))
@@ -684,7 +686,8 @@
         (ninja:write-build output-stream :link-image
                            :clasp clasp-with-env
                            :outputs (list native-image)
-                           :inputs nfasls)))
+                           :inputs nfasls
+                           :implicit-inputs (list iclasp))))
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "iclasp")
                                      image
@@ -739,6 +742,7 @@
                          :outputs extension-fasls)
       (ninja:write-build output-stream :link-image
                          :inputs (list* base-image extension-fasls)
+                         :clasp clasp-with-env
                          :implicit-inputs (list iclasp)
                          :outputs (list extension-image))
       (ninja:write-build output-stream :phony
