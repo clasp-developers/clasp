@@ -52,7 +52,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/hashTableEql.h>
 
-#include <clasp/clbind/cl_include.h>
+#include <clasp/core/lisp.h>
 
 #include <clasp/clbind/clbind.h>
 #include <clasp/core/symbolTable.h>
@@ -61,91 +61,6 @@ THE SOFTWARE.
 // #include <clasp/clbind/detail/operator_id.h>
 #include <clasp/core/wrappers.h>
 namespace clbind {
-
-CLBIND_API void push_instance_metatable();
-
-#if 0
-    namespace {
-
-
-        int create_cpp_class_metatable()
-        {
-            IMPLEMENT_MEF("create_cpp_class_metatable");
-#if 0
-            cl_newtable(L);
-
-            // mark the table with our (hopefully) shared tag
-            // that says that the user data that has this
-            // metatable is a class_rep
-            cl_pushstring(L, "__clbind_classrep");
-            cl_pushboolean(L, 1);
-            cl_rawset(L, -3);
-
-            cl_pushstring(L, "__gc");
-            cl_pushcclosure(
-                L
-                , &garbage_collector_s<
-                detail::class_rep
-                >::apply
-                , 0);
-
-            cl_rawset(L, -3);
-
-            cl_pushstring(L, "__call");
-            cl_pushcclosure(L, &class_rep::constructor_dispatcher, 0);
-            cl_rawset(L, -3);
-
-            cl_pushstring(L, "__index");
-            cl_pushcclosure(L, &class_rep::static_class_gettable, 0);
-            cl_rawset(L, -3);
-
-            cl_pushstring(L, "__newindex");
-            cl_pushcclosure(L, &class_rep::cl__settable_dispatcher, 0);
-            cl_rawset(L, -3);
-
-            return clL_ref(L, CL_REGISTRYINDEX);
-#endif
-        }
-
-        int create_cl_class_metatable()
-        {
-            IMPLEMENT_MEF("create_cl_class_metatable");
-#if 0
-            cl_newtable(L);
-
-            cl_pushstring(L, "__clbind_classrep");
-            cl_pushboolean(L, 1);
-            cl_rawset(L, -3);
-
-            cl_pushstring(L, "__gc");
-            cl_pushcclosure(
-                L
-                , &detail::garbage_collector_s<
-                detail::class_rep
-                >::apply
-                , 0);
-
-            cl_rawset(L, -3);
-
-            cl_pushstring(L, "__newindex");
-            cl_pushcclosure(L, &class_rep::cl__settable_dispatcher, 0);
-            cl_rawset(L, -3);
-
-            cl_pushstring(L, "__call");
-            cl_pushcclosure(L, &class_rep::constructor_dispatcher, 0);
-            cl_rawset(L, -3);
-
-            cl_pushstring(L, "__index");
-            cl_pushcclosure(L, &class_rep::static_class_gettable, 0);
-            cl_rawset(L, -3);
-
-            return clL_ref(L, CL_REGISTRYINDEX);
-#endif
-        }
-
-    } // namespace unnamed
-
-#endif
 
 void ClassRegistry_O::initialize() {
   this->Base::initialize();
@@ -157,19 +72,18 @@ ClassRegistry_sp ClassRegistry_O::get_registry() {
   return gc::As<ClassRegistry_sp>(clbind::_sym_STARtheClassRegistrySTAR->symbolValue());
 }
 
-core::Integer_sp type_id_toClassRegistryKey(type_id const& info) {
-  mpz_class zz(GMP_ULONG((uintptr_t)(const_cast<void*>(static_cast<const void*>(info.get_type_info())))));
-  core::Integer_sp p = core::Integer_O::create(zz);
+core::Integer_sp type_id_toClassRegistryKey(std::type_index const& info) {
+  core::Integer_sp p = core::Integer_O::create(info.hash_code());
   return p;
 }
 
-void ClassRegistry_O::add_class(type_id const& info, ClassRep_sp crep) {
+void ClassRegistry_O::add_class(std::type_index const& info, ClassRep_sp crep) {
   core::Integer_sp key = type_id_toClassRegistryKey(info);
   // ASSERTF(!this->m_classes->contains(key), "You are trying to register the class {} twice", info.name());
   this->m_classes->setf_gethash(key, crep);
 }
 
-ClassRep_sp ClassRegistry_O::find_class(type_id const& info) const {
+ClassRep_sp ClassRegistry_O::find_class(std::type_index const& info) const {
   core::Integer_sp key = type_id_toClassRegistryKey(info);
   core::T_sp value = this->m_classes->gethash(key, nil<core::T_O>());
   if (value.nilp()) {

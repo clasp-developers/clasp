@@ -45,7 +45,7 @@ class ConstructorCreator_O : public core::Creator_O {
   LISP_ABSTRACT_CLASS(clbind, ClbindPkg, ConstructorCreator_O, "ConstructorCreator", core::Creator_O);
 
 public:
-  ConstructorCreator_O(core::SimpleFun_sp ep, core::Symbol_sp c) : Creator_O(ep), _mostDerivedClassSymbol(c){};
+  ConstructorCreator_O(core::Symbol_sp c) : Creator_O(), _mostDerivedClassSymbol(c){};
   core::Symbol_sp _mostDerivedClassSymbol;
 };
 }; // namespace clbind
@@ -65,12 +65,12 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
-  DefaultConstructorCreator_O(core::SimpleFun_sp ep)
-      : ConstructorCreator_O(ep, reg::lisp_classSymbol<T>()),
+  DefaultConstructorCreator_O()
+      : ConstructorCreator_O(reg::lisp_classSymbol<T>()),
         _duplicationLevel(0){};
-  DefaultConstructorCreator_O(core::SimpleFun_sp ep, core::Symbol_sp cn,
+  DefaultConstructorCreator_O(core::Symbol_sp cn,
                               const gctools::Header_s::StampWtagMtag headerValue, int dupnum)
-      : ConstructorCreator_O(ep, cn), _HeaderValue(headerValue),
+      : ConstructorCreator_O(cn), _HeaderValue(headerValue),
         _duplicationLevel(dupnum){};
 
   /*! If this is the allocator for the original Adapter class return true - otherwise false */
@@ -85,10 +85,8 @@ public:
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
     printf("%s:%d  duplicateForClassName %s  this->_HeaderValue = %lu\n", __FILE__, __LINE__, _rep_(className).c_str(),
            (uintptr_t)this->_HeaderValue._value);
-    core::SimpleFun_sp fdesc = core::makeSimpleFunAndFunctionDescription<DefaultConstructorCreator_O<T, Pointer>>(
-        nil<core::T_O>());
     core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<T, Pointer>>::allocate(
-        fdesc, className, this->_HeaderValue, this->_duplicationLevel + 1));
+        className, this->_HeaderValue, this->_duplicationLevel + 1));
     return allocator;
   }
 };
@@ -115,25 +113,23 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
-  DerivableDefaultConstructorCreator_O(core::SimpleFun_sp ep)
-      : ConstructorCreator_O(ep, reg::lisp_classSymbol<T>()), _duplicationLevel(0){};
-  DerivableDefaultConstructorCreator_O(core::SimpleFun_sp ep, core::Symbol_sp cn,
+  DerivableDefaultConstructorCreator_O()
+      : ConstructorCreator_O(reg::lisp_classSymbol<T>()), _duplicationLevel(0){};
+  DerivableDefaultConstructorCreator_O(core::Symbol_sp cn,
                                        const gctools::Header_s::StampWtagMtag& header, int dupnum)
-    : ConstructorCreator_O(ep, cn), _Header(header), _duplicationLevel(dupnum){};
+    : ConstructorCreator_O(cn), _Header(header), _duplicationLevel(dupnum){};
 
   /*! If this is the allocator for the original Adapter class return true - otherwise false */
   virtual int duplicationLevel() const { return this->_duplicationLevel; };
   core::T_sp creator_allocate() {
-    auto obj = gctools::GC<T>::allocate_with_default_constructor();
+    auto obj = gctools::GC<T>::allocate();
     return obj;
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
     //    printf("%s:%d DerivableDefaultConstructorCreator_O  duplicateForClassName %s  this->_Kind = %u\n", __FILE__, __LINE__,
     //    _rep_(className).c_str(), this->_Kind);
-    core::SimpleFun_sp entryPoint = core::makeSimpleFunAndFunctionDescription<DerivableDefaultConstructorCreator_O<T>>(
-        nil<core::T_O>());
     return gc::As_unsafe<core::Creator_sp>(gc::GC<DerivableDefaultConstructorCreator_O<T>>::allocate(
-        entryPoint, className, this->_Header, this->_duplicationLevel + 1));
+        className, this->_Header, this->_duplicationLevel + 1));
   }
 };
 }; // namespace clbind

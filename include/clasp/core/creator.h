@@ -26,19 +26,11 @@ template <> struct gctools::GCInfo<core::FuncallableInstanceCreator_O> {
 
 namespace core {
 
-class Creator_O : public Function_O {
-  LISP_ABSTRACT_CLASS(core, CorePkg, Creator_O, "Creator", Function_O);
+class Creator_O : public General_O {
+  LISP_ABSTRACT_CLASS(core, CorePkg, Creator_O, "Creator", General_O);
 
 public:
-  // Some Creators don't actually allocate anything -
-  // classes that don't have default allocators
-  virtual bool allocates() const { return true; };
-  /*! If this is the allocator for a primary CxxAdapter class then return true, */
-  T_sp functionName() const override { return nil<T_O>(); };
-  T_sp lambda_list() const { return nil<T_O>(); };
-  T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) { return nil<T_O>(); };
   virtual int duplicationLevel() const { return 0; };
-  virtual bool creates_classes() const { return false; };
   CL_NAME("CORE:CREATOR-TEMPLATED-SIZE");
   virtual CL_DEFMETHOD size_t templatedSizeof() const override = 0;
   virtual Creator_sp duplicateForClassName(core::Symbol_sp className) {
@@ -46,18 +38,6 @@ public:
     abort();
   };
   virtual core::T_sp creator_allocate() = 0;
-  // use this when we inherit from Function_O
-  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    LCC_RETURN v;
-    return v;
-  }
-  template <typename... Ts>
-  static inline LCC_RETURN entry_point_fixed(T_O* lcc_closure, Ts... args) {
-    LCC_RETURN v;
-    return v;
-  }
-
-  Creator_O(SimpleFun_sp ep) : Base(ep){};
 };
 
 template <class _W_> class WRAPPER_BuiltInObjectCreator : public core::Creator_O {
@@ -67,11 +47,11 @@ public:
 public:
   size_t templatedSizeof() const { return sizeof(WRAPPER_BuiltInObjectCreator<_W_>); };
   virtual core::T_sp creator_allocate() {
-    auto obj = gctools::GC<_W_>::allocate_with_default_constructor();
-    return obj;
+    if constexpr(std::is_default_constructible_v<_W_>)
+      return gctools::GC<_W_>::allocate();
+    else
+      lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(_W_::static_classSymbol());
   }
-  virtual void searcher(){};
-  WRAPPER_BuiltInObjectCreator(core::SimpleFun_sp ep) : core::Creator_O(ep){};
 };
 
 }; // namespace core
@@ -95,7 +75,7 @@ public:
   Instance_sp _class;
 
 public:
-  InstanceCreator_O(SimpleFun_sp ep, Instance_sp class_) : Base(ep), _class(class_){};
+  InstanceCreator_O(Instance_sp class_) : Base(), _class(class_){};
   T_sp creator_allocate() override;
   virtual size_t templatedSizeof() const override { return sizeof(InstanceCreator_O); };
 };
@@ -109,7 +89,7 @@ public:
   Instance_sp _class;
 
 public:
-  FuncallableInstanceCreator_O(SimpleFun_sp ep, Instance_sp class_) : Base(ep), _class(class_){};
+  FuncallableInstanceCreator_O(Instance_sp class_) : Base(), _class(class_){};
   T_sp creator_allocate() override;
   virtual size_t templatedSizeof() const override { return sizeof(FuncallableInstanceCreator_O); };
 };
@@ -120,7 +100,6 @@ class StandardClassCreator_O : public Creator_O {
   LISP_CLASS(core, CorePkg, StandardClassCreator_O, "StandardClassCreator", Creator_O);
 
 public:
-  StandardClassCreator_O(SimpleFun_sp ep) : Base(ep){};
   T_sp creator_allocate() override;
   virtual size_t templatedSizeof() const override { return sizeof(StandardClassCreator_O); };
 };
@@ -131,7 +110,6 @@ class DerivableCxxClassCreator_O : public Creator_O {
   LISP_CLASS(core, CorePkg, DerivableCxxClassCreator_O, "DerivableCxxClassCreator", Creator_O);
 
 public:
-  DerivableCxxClassCreator_O(SimpleFun_sp ep) : Base(ep){};
   T_sp creator_allocate() override;
   virtual size_t templatedSizeof() const override { return sizeof(DerivableCxxClassCreator_O); };
 };
@@ -142,7 +120,6 @@ class ClassRepCreator_O : public Creator_O {
   LISP_CLASS(core, CorePkg, ClassRepCreator_O, "ClassRepCreator", Creator_O);
 
 public:
-  ClassRepCreator_O(SimpleFun_sp ep) : Base(ep){};
   T_sp creator_allocate() override;
   virtual size_t templatedSizeof() const override { return sizeof(ClassRepCreator_O); };
 };

@@ -34,6 +34,8 @@
 #include <clasp/core/sort.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/gctools/gc_boot.h>
+#include <clasp/gctools/skip.h>
+#include <clasp/gctools/scan.h>
 #include <clasp/llvmo/jit.h>
 #include <clasp/gctools/interrupt.h> // wait_for_user_signal
 #include <clasp/gctools/gcFunctions.h>
@@ -722,39 +724,26 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
   return (gctools::clasp_ptr_t)((uintptr_t)client | tag);
 }
 
-#define POINTER_FIX(_ptr_)                                                                                                         \
-  {                                                                                                                                \
-    gctools::clasp_ptr_t* taggedP = reinterpret_cast<gctools::clasp_ptr_t*>(_ptr_);                                                \
-    if (gctools::tagged_objectp(*taggedP)) {                                                                                       \
-      gctools::clasp_ptr_t tagged_obj = *taggedP;                                                                                  \
-      gctools::clasp_ptr_t obj = gctools::untag_object<gctools::clasp_ptr_t>(tagged_obj);                                          \
-      uintptr_t tag = (uintptr_t)gctools::ptag<gctools::clasp_ptr_t>(tagged_obj);                                                  \
-      obj = (globalPointerFix)(taggedP, obj, tag, user_data);                                                                      \
-      *taggedP = obj;                                                                                                              \
-    };                                                                                                                             \
+
+#define POINTER_FIX(field) \
+  gctools::clasp_ptr_t* taggedP = reinterpret_cast<gctools::clasp_ptr_t*>(field);\
+  if (gctools::tagged_objectp(*taggedP)) { \
+    gctools::clasp_ptr_t tagged_obj = *taggedP;\
+    gctools::clasp_ptr_t obj = gctools::untag_object<gctools::clasp_ptr_t>(tagged_obj);\
+    uintptr_t tag = (uintptr_t)gctools::ptag<gctools::clasp_ptr_t>(tagged_obj);\
+    obj = (globalPointerFix)(taggedP, obj, tag, user_data);\
+    *taggedP = obj;\
   }
-#define WEAK_POINTER_FIX(_ptr_) POINTER_FIX(_ptr_)
-#define EPHEMERON_FIX(key, val) do { POINTER_FIX(key); POINTER_FIX(val); } while (false)
 
-#define ADDR_T gctools::clasp_ptr_t
-#define EXTRA_ARGUMENTS , void* user_data
+static void isl_obj_scan(core::General_O* client, void* user_data) {
+  auto fix = [&](core::T_O** field) { POINTER_FIX(field); };
+  gctools::scan::general_pointers(client, fix);
+}
 
-#define OBJECT_SCAN isl_obj_scan
-#include "obj_scan.cc"
-#undef OBJECT_SCAN
-
-#define OBJECT_SKIP isl_obj_skip
-#include "obj_scan.cc"
-#undef OBJECT_SKIP
-
-#define CONS_SCAN isl_cons_scan
-#define CONS_SKIP isl_cons_skip
-#include "cons_scan.cc"
-#undef CONS_SKIP
-#undef CONS_SCAN
-
-#undef ADDR_T
-#undef EXTRA_ARGUMENTS
+static void isl_cons_scan(core::Cons_O* client, void* user_data) {
+  auto fix = [&](core::T_O** field) { POINTER_FIX(field); };
+  gctools::scan::cons(client, fix);
+}
 
 //
 // Fix root pointers by following the forwarding pointer
@@ -1096,14 +1085,13 @@ struct calculate_size_t {
         this->_ObjectFileTotalSize += objectFileSize;
         this->_TotalSize += sizeof(ISLGeneralHeader_s) + sizeof(llvmo::ObjectFile_O);
       } else {
-        isl_obj_skip(client, objectSize);
+        objectSize = gctools::general_skip((core::General_O*)client);
         this->_TotalSize += sizeof(ISLGeneralHeader_s) + objectSize;
       }
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToConsPtr(header);
       this->_cons_count++;
-      size_t consSize;
-      isl_cons_skip(client, consSize);
+      size_t consSize = gctools::cons_skip((core::Cons_O*)client);
       this->_TotalSize += sizeof(ISLConsHeader_s) + consSize;
     }
   }
@@ -1156,8 +1144,7 @@ struct copy_objects_t {
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
     if (header->_badge_stamp_wtag_mtag.stampP()) {
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
-      size_t generalSize;
-      isl_obj_skip(clientStart, generalSize);
+      size_t generalSize = gctools::general_skip((core::General_O*)clientStart);
       if (generalSize == 0)
         ISL_ERROR("A zero size general at %p was encountered", (void*)clientStart);
       if (header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
@@ -1217,8 +1204,7 @@ struct copy_objects_t {
       }
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HeaderPtrToConsPtr(header);
-      size_t consSize;
-      isl_cons_skip(client, consSize);
+      size_t consSize = gctools::cons_skip((core::Cons_O*)client);
       if (consSize == 0)
         ISL_ERROR("A zero size cons at %p was encountered", (void*)client);
       ISLConsHeader_s islheader(sizeof(core::Cons_O), header->_badge_stamp_wtag_mtag,
@@ -1274,10 +1260,10 @@ struct fixup_objects_t : public walker_callback_t {
       // 1. entry points to library code -> offset
       // 2. entry points to ObjectFile_O objects -> offset
 
-      isl_obj_scan(client, (void*)this->_info);
+      isl_obj_scan((core::General_O*)client, (void*)this->_info);
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToConsPtr(header);
-      isl_cons_scan(client, (void*)this->_info);
+      isl_cons_scan((core::Cons_O*)client, (void*)this->_info);
     }
   }
 };
@@ -1972,12 +1958,12 @@ struct temporary_root_holder_t {
       printf("The number of objects being loaded is zero!!! That cannot be!!!\n");
       exit(1);
     }
-    this->_buffer = (void**)gctools::RootClassAllocator<void>::allocateRootsAndZero(num + Overflow);
+    this->_buffer = (void**)gctools::GC<core::T_O>::allocateRootsAndZero(num + Overflow);
     memset(this->_buffer, '\0', (num + Overflow) * sizeof(void*));
     this->_Cur = this->_buffer;
   }
 
-  void release() { gctools::RootClassAllocator<void>::freeRoots(this->_buffer); }
+  void release() { gctools::GC<core::T_O>::freeRoots(this->_buffer); }
 
   //
   // Write a pointer into the temporary roots
@@ -2031,10 +2017,10 @@ struct relocate_objects_t : public walker_callback_t {
   void callback(gctools::BaseHeader_s* header) {
     if (header->_badge_stamp_wtag_mtag.stampP()) {
       gctools::clasp_ptr_t client = HEADER_PTR_TO_GENERAL_PTR(header);
-      isl_obj_scan(client, (void*)this->_info);
+      isl_obj_scan((core::General_O*)client, (void*)this->_info);
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HeaderPtrToConsPtr(header);
-      isl_cons_scan(client, (void*)this->_info);
+      isl_cons_scan((core::Cons_O*)client, (void*)this->_info);
     }
   }
 };

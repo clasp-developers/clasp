@@ -221,9 +221,7 @@ CL_DEFUN T_sp cl__lisp_implementation_version() {
   }
   ss << gctools::program_name();
   ss << "-";
-#if defined(USE_MPS)
-  ss << "mps-";
-#elif defined(USE_BOEHM)
+#if defined(USE_BOEHM)
 #ifdef USE_PRECISE_GC
   ss << "boehmprecise-";
 #else
@@ -496,7 +494,6 @@ DOCGROUP(clasp);
 CL_DEFUN T_mv cl__values(Vaslist_sp vargs) {
   // returns multiple values
   size_t nargs = vargs->nargs();
-  SUPPRESS_GC();
 #ifdef DEBUG_VALUES
   if (nargs >= core::MultipleValues::MultipleValuesLimit) {
     SIMPLE_ERROR("Too many arguments to values - only {} are supported and you tried to return {} values",
@@ -522,7 +519,6 @@ CL_DEFUN T_mv cl__values(Vaslist_sp vargs) {
     }
     me.setSize(nargs);
   }
-  ENABLE_GC();
   core::T_mv mv = gctools::multiple_values<core::T_O>(first, nargs);
   return mv;
 }
@@ -2111,7 +2107,7 @@ namespace core {
 DOCGROUP(clasp);
 CL_DEFUN core::Test_sp core__makeTest() {
   auto tt = new Test();
-  auto t = gctools::GC<Test_O>::allocate_with_default_constructor();
+  auto t = gctools::GC<Test_O>::allocate();
   t->set_wrapped(tt);
   return t;
 }

@@ -295,7 +295,6 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "ENTRY-POINT-ARITY-BEGIN", make_fixnum(ENTRY_POINT_ARITY_BEGIN));
   ENTRY(list, "ENTRY-POINT-ARITY-END", make_fixnum(ENTRY_POINT_ARITY_END));
   ENTRY(list, "NUMBER-OF-ENTRY-POINTS", make_fixnum(NUMBER_OF_ENTRY_POINTS));
-  ENTRY(list, "ENDIAN-LSB-OFFSET", make_fixnum(ENDIAN_LSB_OFFSET));
   ENTRY(list, "UNBOUND-MASK", make_fixnum(UNBOUND_MASK));
   ENTRY(list, "UNBOUND-BYTE", make_fixnum(UNBOUND_BYTE));
   return list;
@@ -685,7 +684,7 @@ CL_DEFUN_SETF core::T_sp setf_jit_lookup_t(core::T_sp value, JITDylib_sp dylib, 
 
 }; // namespace llvmo
 
-#if defined(USE_MPS) || defined(USE_PRECISE_GC)
+#ifdef USE_PRECISE_GC
 //
 // Include the Kinds
 //

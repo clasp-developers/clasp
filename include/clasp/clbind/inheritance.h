@@ -35,7 +35,7 @@ THE SOFTWARE.
 #include <map>
 #include <memory>
 #include <vector>
-#include <clasp/clbind/typeid.h>
+#include <typeindex>
 #include <clasp/clbind/class_rep.h>
 #include <clasp/clbind/inheritance.fwd.h>
 
@@ -45,7 +45,6 @@ namespace detail {
 class cast_graph {
 public:
   cast_graph();
-  ~cast_graph();
 
   /*!
      src and p here describe the *most derived* object. This means that
@@ -62,59 +61,6 @@ private:
   class impl;
   std::unique_ptr<impl> m_impl;
 };
-
-// Maps a type_id to a class_id. Note that this actually partitions the
-// id-space into two, using one half for "local" ids; ids that are used only as
-// keys into the conversion cache. This is needed because we need a shared key
-// even for types that hasn't been registered explicitly.
-class class_id_map {
-public:
-  class_id_map();
-
-  class_id get_type_id(type_id type) const;
-  class_id get_local_type_id(type_id type);
-  void put(class_id id, type_id type);
-
-public:
-  typedef std::map<type_id, class_id> map_type;
-  map_type m_type_id_to_class_id;
-  class_id m_local_id;
-
-  static class_id const local_id_base;
-};
-
-inline class_id_map::class_id_map() : m_local_id(local_id_base) {}
-
-inline class_id class_id_map::get_type_id(type_id type) const {
-  //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
-  map_type::const_iterator i = m_type_id_to_class_id.find(type);
-  if (i == m_type_id_to_class_id.end() || i->second >= local_id_base)
-    return reg::unknown_class;
-  return i->second;
-}
-
-inline class_id class_id_map::get_local_type_id(type_id type) {
-  //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
-  std::pair<map_type::iterator, bool> result = m_type_id_to_class_id.insert(std::make_pair(type, 0));
-
-  if (result.second)
-    result.first->second = m_local_id++;
-
-  assert(m_local_id >= local_id_base);
-
-  return result.first->second;
-}
-
-inline void class_id_map::put(class_id id, type_id type) {
-  //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
-  assert(id < local_id_base);
-
-  std::pair<map_type::iterator, bool> result = m_type_id_to_class_id.insert(std::make_pair(type, 0));
-
-  assert(result.second || result.first->second == id || result.first->second >= local_id_base);
-
-  result.first->second = id;
-}
 
 inline ClassRep_sp class_map_get(class_id id) {
   //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);

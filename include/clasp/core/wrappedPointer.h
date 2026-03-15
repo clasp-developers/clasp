@@ -70,8 +70,6 @@ public:
     }
     return result;
   }
-  virtual void* pointerRelease() { SUBIMP(); };
-  virtual void pointerDelete() { SUBIMP(); };
 
 public:
   explicit WrappedPointer_O() : Base(), Class_(nil<core::Instance_O>()){};

@@ -40,7 +40,7 @@ namespace llvmo {
 CL_LISPIFY_NAME(DebugLoc_get);
 DOCGROUP(clasp);
 CL_DEFUN DebugLoc_sp DebugLoc_O::get(int lineno, int column, MDNode_sp scope) {
-  auto  oip = gctools::GC<DebugLoc_O>::allocate_with_default_constructor();
+  auto  oip = gctools::GC<DebugLoc_O>::allocate();
   llvm::DebugLoc dl = llvm::DebugLoc::get(lineno, column, scope->wrappedPtr()); //debugInfo->operator llvm::MDNode *());
   oip->_DebugLoc = dl;
   return oip;
@@ -50,7 +50,7 @@ CL_DEFUN DebugLoc_sp DebugLoc_O::get(int lineno, int column, MDNode_sp scope) {
 CL_LISPIFY_NAME(DebugLoc_make);
 DOCGROUP(clasp);
 CL_DEFUN DebugLoc_sp DebugLoc_O::make(const llvm::DebugLoc& dl) {
-  auto oip = gctools::GC<DebugLoc_O>::allocate_with_default_constructor();
+  auto oip = gctools::GC<DebugLoc_O>::allocate();
   oip->_DebugLoc = dl;
   return oip;
 }

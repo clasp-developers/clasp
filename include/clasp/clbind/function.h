@@ -40,7 +40,8 @@ THE SOFTWARE.
 #include <clasp/core/lambdaListHandler.fwd.h>
 // #include "clbind/prefix.h"
 #include <clasp/clbind/config.h>
-#include <clasp/clbind/cl_include.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <memory>
 

@@ -266,6 +266,48 @@
 {class-kind :stamp-name "STAMPWTAG_core__General_O" :stamp-key "core::General_O"
             :parent-class "core::T_O" :lisp-class-base "core::T_O" :root-class "core::T_O"
             :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{templated-kind :stamp-name "STAMPWTAG_core__Creator_O" :stamp-key "core::Creator_O"
+                :parent-class "core::General_O" :lisp-class-base "core::General_O"
+                :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{class-kind :stamp-name "STAMPWTAG_core__FuncallableInstanceCreator_O"
+            :stamp-key "core::FuncallableInstanceCreator_O" :parent-class "core::Creator_O"
+            :lisp-class-base "core::Creator_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Instance_O>"
+             :offset-base-ctype "core::FuncallableInstanceCreator_O"
+             :layout-offset-field-names ("_class")}
+{templated-kind :stamp-name "STAMPWTAG_clbind__ConstructorCreator_O"
+                :stamp-key "clbind::ConstructorCreator_O" :parent-class "core::Creator_O"
+                :lisp-class-base "core::Creator_O" :root-class "core::T_O" :stamp-wtag 3
+                :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
+             :offset-base-ctype "clbind::ConstructorCreator_O"
+             :layout-offset-field-names ("_mostDerivedClassSymbol")}
+{class-kind :stamp-name "STAMPWTAG_clbind__DummyCreator_O" :stamp-key "clbind::DummyCreator_O"
+            :parent-class "core::Creator_O" :lisp-class-base "core::Creator_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "clbind::DummyCreator_O" :layout-offset-field-names ("_name")}
+{class-kind :stamp-name "STAMPWTAG_core__InstanceCreator_O" :stamp-key "core::InstanceCreator_O"
+            :parent-class "core::Creator_O" :lisp-class-base "core::Creator_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Instance_O>"
+             :offset-base-ctype "core::InstanceCreator_O" :layout-offset-field-names ("_class")}
+{class-kind :stamp-name "STAMPWTAG_core__ClassRepCreator_O" :stamp-key "core::ClassRepCreator_O"
+            :parent-class "core::Creator_O" :lisp-class-base "core::Creator_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{class-kind :stamp-name "STAMPWTAG_core__DerivableCxxClassCreator_O"
+            :stamp-key "core::DerivableCxxClassCreator_O" :parent-class "core::Creator_O"
+            :lisp-class-base "core::Creator_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{class-kind :stamp-name "STAMPWTAG_core__StandardClassCreator_O"
+            :stamp-key "core::StandardClassCreator_O" :parent-class "core::Creator_O"
+            :lisp-class-base "core::Creator_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
 {class-kind :stamp-name "STAMPWTAG_llvmo__AttributeSet_O" :stamp-key "llvmo::AttributeSet_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -5989,6 +6031,9 @@
              :layout-offset-field-names ("_decls")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "comp::Lexenv_O" :layout-offset-field-names ("frame_end")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "comp::Lexenv_O"
+             :layout-offset-field-names ("_global")}
 {class-kind :stamp-name "STAMPWTAG_core__FunctionDescription_O"
             :stamp-key "core::FunctionDescription_O" :parent-class "core::General_O"
             :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3
@@ -6337,79 +6382,6 @@
              :offset-ctype "gctools::smart_ptr<core::Function_O>"
              :offset-base-ctype "core::FuncallableInstance_O"
              :layout-offset-field-names ("_RealFunction")}
-{templated-kind :stamp-name "STAMPWTAG_core__Creator_O" :stamp-key "core::Creator_O"
-                :parent-class "core::Function_O" :lisp-class-base "core::Function_O"
-                :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleFun_O>"
-             :offset-base-ctype "core::Creator_O" :layout-offset-field-names ("_TheSimpleFun")}
-{class-kind :stamp-name "STAMPWTAG_core__FuncallableInstanceCreator_O"
-            :stamp-key "core::FuncallableInstanceCreator_O" :parent-class "core::Creator_O"
-            :lisp-class-base "core::Creator_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleFun_O>"
-             :offset-base-ctype "core::FuncallableInstanceCreator_O"
-             :layout-offset-field-names ("_TheSimpleFun")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Instance_O>"
-             :offset-base-ctype "core::FuncallableInstanceCreator_O"
-             :layout-offset-field-names ("_class")}
-{templated-kind :stamp-name "STAMPWTAG_clbind__ConstructorCreator_O"
-                :stamp-key "clbind::ConstructorCreator_O" :parent-class "core::Creator_O"
-                :lisp-class-base "core::Creator_O" :root-class "core::T_O" :stamp-wtag 3
-                :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleFun_O>"
-             :offset-base-ctype "clbind::ConstructorCreator_O"
-             :layout-offset-field-names ("_TheSimpleFun")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "clbind::ConstructorCreator_O"
-             :layout-offset-field-names ("_mostDerivedClassSymbol")}
-{class-kind :stamp-name "STAMPWTAG_clbind__DummyCreator_O" :stamp-key "clbind::DummyCreator_O"
-            :parent-class "core::Creator_O" :lisp-class-base "core::Creator_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleFun_O>"
-             :offset-base-ctype "clbind::DummyCreator_O"
-             :layout-offset-field-names ("_TheSimpleFun")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "clbind::DummyCreator_O" :layout-offset-field-names ("_name")}
-{class-kind :stamp-name "STAMPWTAG_core__InstanceCreator_O" :stamp-key "core::InstanceCreator_O"
-            :parent-class "core::Creator_O" :lisp-class-base "core::Creator_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleFun_O>"
-             :offset-base-ctype "core::InstanceCreator_O"
-             :layout-offset-field-names ("_TheSimpleFun")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Instance_O>"
-             :offset-base-ctype "core::InstanceCreator_O" :layout-offset-field-names ("_class")}
-{class-kind :stamp-name "STAMPWTAG_core__ClassRepCreator_O" :stamp-key "core::ClassRepCreator_O"
-            :parent-class "core::Creator_O" :lisp-class-base "core::Creator_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleFun_O>"
-             :offset-base-ctype "core::ClassRepCreator_O"
-             :layout-offset-field-names ("_TheSimpleFun")}
-{class-kind :stamp-name "STAMPWTAG_core__DerivableCxxClassCreator_O"
-            :stamp-key "core::DerivableCxxClassCreator_O" :parent-class "core::Creator_O"
-            :lisp-class-base "core::Creator_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleFun_O>"
-             :offset-base-ctype "core::DerivableCxxClassCreator_O"
-             :layout-offset-field-names ("_TheSimpleFun")}
-{class-kind :stamp-name "STAMPWTAG_core__StandardClassCreator_O"
-            :stamp-key "core::StandardClassCreator_O" :parent-class "core::Creator_O"
-            :lisp-class-base "core::Creator_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleFun_O>"
-             :offset-base-ctype "core::StandardClassCreator_O"
-             :layout-offset-field-names ("_TheSimpleFun")}
 {class-kind :stamp-name "STAMPWTAG_core__Closure_O" :stamp-key "core::Closure_O"
             :parent-class "core::Function_O" :lisp-class-base "core::Function_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

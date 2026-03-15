@@ -54,7 +54,8 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/clbind/function.h>
 #include <clasp/clbind/scope.h>
-#include <clasp/clbind/cl_include.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
 #include <clasp/core/arguments.h>
 #include <clasp/core/package.h>
 #include <clasp/core/ql.h>

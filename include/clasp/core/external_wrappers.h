@@ -260,7 +260,7 @@ public:
     for (auto& name : names._Names) {
       maybe_register_symbol_using_dladdr(*(void**)&mp, sizeof(mp), name);
       Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-      using VariadicType = clbind::WRAPPER_VariadicMethod<RT (OT::*)(ARGS...), core::policy::clasp_policy>;
+      using VariadicType = clbind::WRAPPER_VariadicMethod<RT (OT::*)(ARGS...), clbind::policies<>>;
       FunctionDescription_sp fdesc = makeFunctionDescription(symbol, nil<T_O>());
       auto entry = gctools::GC<VariadicType>::allocate(mp, fdesc, nil<T_O>());
       lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares,
@@ -276,7 +276,7 @@ public:
       maybe_register_symbol_using_dladdr(*(void**)&mp, sizeof(mp), name);
       Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
       using VariadicType =
-          clbind::WRAPPER_VariadicMethod<RT (OT::*)(ARGS...) const, core::policy::clasp_policy>;
+          clbind::WRAPPER_VariadicMethod<RT (OT::*)(ARGS...) const, clbind::policies<>>;
       FunctionDescription_sp fdesc = makeFunctionDescription(symbol, nil<T_O>());
       auto entry = gctools::GC<VariadicType>::allocate(mp, fdesc, nil<T_O>());
       lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares,

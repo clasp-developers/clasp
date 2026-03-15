@@ -26,12 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-// #define DEBUG_LEVEL_FULL
-#ifdef USE_MPS
-extern "C" {
-#include <clasp/mps/code/mps.h>
-};
-#endif
 
 #include <cctype>
 #include <cstdint>
@@ -215,7 +209,7 @@ ALWAYS_INLINE core::T_sp mk_long_double(long double v) { return core::LongFloat_
 
 ALWAYS_INLINE core::T_sp mk_time(time_t v) {
   size_t size = sizeof(time_t);
-  auto self = gctools::GC<clasp_ffi::ForeignData_O>::allocate_with_default_constructor();
+  auto self = gctools::GC<clasp_ffi::ForeignData_O>::allocate();
   self->allocate(kw::_sym_clasp_foreign_data_kind_time, core::DeleteOnDtor, size);
   memmove(self->raw_data(), &v, size);
   return self;

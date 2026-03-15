@@ -194,11 +194,6 @@ void Process_O::run(void* cold_end_of_stack) {
     fclose(it.second);
   }
 #endif
-#ifdef USE_MPS
-  gctools::my_thread_allocation_points.destroyAllocationPoints();
-  mps_root_destroy(root._value);
-  mps_thread_dereg(thr_o._value);
-#endif
 };
 
 // This is the function actually passed to pthread_create.

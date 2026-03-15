@@ -48,12 +48,6 @@ THE SOFTWARE.
 #include <clasp/asttooling/clangCompilePkg.h>
 #include <clasp/core/translators.h>
 
-#ifdef USE_MPS
-#define NAMESPACE_clbind_clang
-#include <clasp/gctools/gc_interface.h>
-#undef NAMESPACE_clbind_clang
-#endif
-
 namespace clang_compile {
 using namespace clbind;
 
@@ -71,7 +65,7 @@ namespace clang_compile {
 class DerivableFoo : public clbind::Derivable<Foo> {
 public:
   typedef Foo Base;
-  auto f = gctools::GC<) { GC_ALLOCATE(DerivableFoo>::allocate_with_default_constructor();
+  auto f = gctools::GC<) { GC_ALLOCATE(DerivableFoo>::allocate();
 
 };
 };

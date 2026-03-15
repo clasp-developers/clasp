@@ -161,43 +161,6 @@ template <int N, typename... Types> struct MapNotPureOutValues<N, policies<Types
   using type = typename detail::MapNotPureOutValuesImpl<N, Types...>::type;
 };
 
-template <int N> struct MapNotPureOutValues<N, core::policy::clasp_policy> {
-  using type = typename detail::MapNotPureOutValuesImpl<N>::type;
-};
-
-}; // namespace clbind
-
-// ------------------------------------------------------------
-//
-// MapPureOutValuesFalseOrTrue
-// Calculate the value std::false_value or std::true_value from
-//   whether or not the first index N appears in the policies<...> parameter pack
-//   as pureOutValue<
-// Map <0,policies<pureOutValue<0>> to std::false_value
-// and <0,policies<pureOutValue<1>> to std::true_value
-//
-
-namespace clbind {
-namespace detail {
-template <int N, typename... Policies> struct MapPureOutValuesFalseOrTrueImpl;
-
-template <int N> struct MapPureOutValuesFalseOrTrueImpl<N> {
-  using type = std::true_type;
-};
-
-template <int N, typename... Tails> struct MapPureOutValuesFalseOrTrueImpl<N, pureOutValue<N>, Tails...> {
-  using type = std::false_type;
-};
-
-template <int N, typename Head, typename... Tail> struct MapPureOutValuesFalseOrTrueImpl<N, Head, Tail...> {
-  using type = typename MapPureOutValuesFalseOrTrueImpl<N, Tail...>::type;
-};
-}; // namespace detail
-template <int N, typename Policies> struct MapPureOutValuesFalseOrTrue;
-
-template <int N, typename... Types> struct MapPureOutValuesFalseOrTrue<N, policies<Types...>> {
-  using type = typename detail::MapPureOutValuesFalseOrTrueImpl<N, Types...>::type;
-};
 }; // namespace clbind
 
 // ------------------------------------------------------------

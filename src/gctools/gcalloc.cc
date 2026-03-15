@@ -28,11 +28,6 @@ THE SOFTWARE.
 #include <clasp/gctools/memoryManagement.h>
 #include <clasp/gctools/gcalloc.h>
 
-#ifdef USE_MPS
-// header for SNC pool
-#include <clasp/mps/code/mpscsnc.h>
-#endif
-
 namespace gctools {
 
 /*! Used to signal recursive allocations */

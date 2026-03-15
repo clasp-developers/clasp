@@ -43,14 +43,6 @@ THE SOFTWARE.
 #pragma clang diagnostic ignored "-Wmacro-redefined"
 #include <config.h>
 #pragma clang diagnostic pop
-// Checkif we are running the static analyzer
-// Modify the preprocessor settings for the static analyzer
-// Turn on USE_MPS and turn off USE_BOEHM
-//#ifdef RUNNING_PRECISEPREP
-//#undef USE_BOEHM
-//#undef USE_MMTK
-//#define USE_MPS
-//#endif
 
 #include <float.h>
 
@@ -103,17 +95,6 @@ typedef double long_float_t;
 namespace std {
 class type_info;
 };
-
-//
-// USE_TAGGED_PTR_P0  determines whether a p0 pointer,  the most-derived-pointer is stored
-//         in the tagged_ptr.   If you turn it on then tagged_ptr uses twice as much
-//         memory
-//
-//
-// Don't use P0 ptr with BOEHM
-#ifdef USE_MPS
-// #define USE_TAGGED_PTR_P0 1
-#endif
 
 #define DLL_PUBLIC __attribute__((visibility("default")))
 #include <limits>
@@ -507,12 +488,6 @@ void drag_general_allocation();
 #else
 #define DO_DRAG_GENERAL_ALLOCATION()
 #endif
-
-extern void clasp_mps_debug_allocation(const char* poolName, void* base, void* objAddr, int size, int kind);
-extern void clasp_mps_debug_fix1_before(void* base, void* smartAddr);
-extern void clasp_mps_debug_fix_before(void* pbase, void* px, int offset);
-extern void clasp_mps_debug_fix_after(void* pbase, void* px);
-extern void clasp_mps_debug_container(const char* ctype, const char* name, int size);
 
 #define LCC_MACROS
 #include <clasp/core/lispCallingConvention.h>

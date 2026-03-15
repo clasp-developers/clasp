@@ -1,8 +1,5 @@
 #pragma once
 
-// #ifndef _clasp_memoryManagement_H
-// #define _clasp_memoryManagement_H
-
 /* Roots
  *
  * The following are garbage collector roots
@@ -38,11 +35,6 @@ extern "C" {
 };
 #elif defined(USE_MMTK)
 #include <mmtk/api/mmtk.h>
-#elif defined(USE_MPS)
-extern "C" {
-#include <clasp/mps/code/mps.h>
-#include <clasp/mps/code/mpsavm.h>
-};
 #endif
 
 namespace core {
@@ -65,7 +57,6 @@ struct ClaspInfo {
 };
 }; // namespace gctools
 
-#define GC_LOG(x)
 #define GCPRIVATE public
 #define GCPROTECTED public
 
@@ -98,8 +89,6 @@ typedef unsigned char* clasp_ptr_t;
 namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
 template <class OT> struct GCStamp;
-extern size_t global_alignup_sizeof_header;
-extern const char* _global_stack_marker;
 extern size_t _global_stack_max_size;
 }; // namespace gctools
 
@@ -126,7 +115,6 @@ template <typename T> struct GCHeader {
   typedef Header_s HeaderType;
 };
 
-template <typename T> struct GCAllocationPoint;
 }; // namespace gctools
 
 /*!
@@ -225,9 +213,6 @@ extern THREAD_LOCAL core::ThreadLocalState* my_thread;
 
 namespace gctools {
 
-#define NO_BADGE 1
-#define ILLEGAL_BADGE 0
-
 /*! Stamp - integer value that is written into the header in normal general objects
             and into the Rack for Instance_O objects.
   See Header_s below for a description of the GC Header tag scheme.
@@ -273,10 +258,8 @@ template <class T> inline size_t sizeof_with_header();
       #B101 == fwd_mtag - This tag indicates that the remaining data bits in the header contains a forwarding
               pointer.  The uintptr_t in additional_data[0] contains the length of
               the block from the client pointer.
-      #B110   contains a pad; check the
-              bit at #B100 to see if the pad is a pad1 (==0) or a pad (==1)
-      #B111 == (MPS specific) This indicates that the header contains a pad; check the
-              bit at #B100 to see if the pad is a pad1 (==0) or a pad (==1)
+      #B110 == invalid3_mtag
+      #B111 == invalid4_mtag
 
       IMPORTANT!!!!!:
           The header values are designed to look like FIXNUMs - so we can read them
@@ -312,7 +295,7 @@ template <class T> inline size_t sizeof_with_header();
       is later written into the Instance_O rack.
 
       The header ends with a uintptr_t additional_data[0], an array of uintptr_t which intrudes
-      into the client data and is used when some header tags (fwd, pad) need it.
+      into the client data and is used when some header tags (fwd) need it.
       NOTE!!!   Writing anything into header.additional_data[0] wipes out the objects vtable and completely
                 invalidates it - this is only used by the MPS GC when it's ok to invalidate the object.
     */
@@ -336,8 +319,8 @@ public:
   static const tagged_stamp_t cons_mtag = 0b011;
   static const tagged_stamp_t invalid2_mtag = 0b100;
   static const tagged_stamp_t fwd_mtag = 0b101;
-  static const tagged_stamp_t pad_mtag = 0b110;
-  static const tagged_stamp_t pad1_mtag = 0b111;
+  static const tagged_stamp_t invalid3_mtag = 0b110;
+  static const tagged_stamp_t invalid4_mtag = 0b111;
   static const tagged_stamp_t stamp_mtag = general_mtag;
   static const tagged_stamp_t stamp_mask = ~(tagged_stamp_t)general_mtag_mask; // 0b11...111111111111000;
   static const tagged_stamp_t where_mask = 0b11 << general_mtag_shift;
@@ -473,9 +456,6 @@ public:
     bool consObjectP() const { return (this->_value & mtag_mask) == cons_mtag; };
     bool fwdP() const { return (this->_value & mtag_mask) == fwd_mtag; };
     bool fwdV() const { return (this->_value & mtag_mask); };
-    bool padP() const { return (this->_value & mtag_mask) == pad_mtag; };
-    bool pad1P() const { return (this->_value & mtag_mask) == pad1_mtag; };
-    bool anyPadP() const { return this->padP() || this->pad1P(); };
     /*! No sanity checking done - this function assumes kindP == true */
     GCStampEnum stamp_wtag() const { return (GCStampEnum)(this->_value >> general_mtag_shift); };
     GCStampEnum stamp_() const { return (GCStampEnum)(this->_value >> (wtag_width + general_mtag_shift)); };
@@ -483,14 +463,6 @@ public:
     void* fwdPointer() const { return reinterpret_cast<void*>(this->_header_data[0] & (~(uintptr_t)mtag_mask)); };
     /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
     void setFwdPointer(void* ptr) { this->_header_data[0] = reinterpret_cast<uintptr_t>(ptr) | fwd_mtag; };
-    /*! Define the header as a pad, pass pad_tag or pad1_tag */
-    void setPad(tagged_stamp_t p) { this->_header_data[0] = p; };
-    /*! Return the pad1 size */
-    tagged_stamp_t pad1Size() const { return Alignment(); };
-    /*! Return the size of the pad block - without the header */
-    tagged_stamp_t padSize() const { return (this->_header_data[1]); };
-    /*! This writes into the first tagged_stamp_t sized word of the client data. */
-    void setPadSize(size_t sz) { this->_header_data[1] = sz; };
 
   public:
     // GenerateHeaderValue must be passed to make_fixnum and the result exactly matches a header value
@@ -519,8 +491,8 @@ public:
   };
 
   struct BadgeStampWtagMtag : public StampWtagMtag {
-    static constexpr badge_t IllegalBadge = ILLEGAL_BADGE;
-    static constexpr badge_t NoBadge = NO_BADGE;
+    static constexpr badge_t IllegalBadge = 0;
+    static constexpr badge_t NoBadge = 1;
 
     /* _header_badge starts out being NoBadge but when the object is hashed - then it is assigned a badge
         that is not IllegalBadge or NoBadge.   This defers random number generation for hashing until it is
@@ -609,12 +581,6 @@ public:
       std::stringstream ss;
       ss << "Fwd/ptr=" << this->_badge_stamp_wtag_mtag.fwdPointer();
       return ss.str();
-    } else if (this->_badge_stamp_wtag_mtag.pad1P()) {
-      return "Pad1";
-    } else if (this->_badge_stamp_wtag_mtag.padP()) {
-      stringstream ss;
-      ss << "Pad/sz=" << this->_badge_stamp_wtag_mtag.padSize();
-      return ss.str();
     }
     stringstream ss;
     ss << "IllegalHeader=";
@@ -637,7 +603,6 @@ public:
   ConsHeader_s(const BadgeStampWtagMtag& k) : BaseHeader_s(k){};
 
 public:
-  static constexpr size_t size() { return sizeof(ConsHeader_s); };
   bool isValidConsObject() const;
 };
 
@@ -719,9 +684,11 @@ public:
 #endif
   };
 #else
-#define GUARD1 0xFEEAFEEBDEADBEE0
-#define GUARD2 0xC0FFEEE0
+private:
+  static const uintptr_t GUARD1 = 0xFEEAFEEBDEADBEE0;
+  static const uintptr_t GUARD2 = 0xC0FFEEE0;
 
+public:
   Header_s(const BadgeStampWtagMtag& k, size_t tstart = 0, size_t tsize = 0, size_t total_size = sizeof(Header_s))
       : BaseHeader_s(k), _guard(GUARD1), _tail_start(tstart), _tail_size(tsize), _source((uintptr_t)this), _guard2(GUARD2),
         _dup_badge_stamp_wtag_mtag(k) {
@@ -868,10 +835,8 @@ inline const void* GeneralPtrToHeaderPtr(const void* mostDerived) {
   return ptr;
 }
 
-inline constexpr size_t SizeofGeneralHeader() { return sizeof(Header_s); };
-
 inline void* GeneralPtrToHeaderPtr(void* mostDerived) {
-  void* ptr = reinterpret_cast<char*>(mostDerived) - SizeofGeneralHeader();
+  void* ptr = reinterpret_cast<char*>(mostDerived) - sizeof(Header_s);
   return ptr;
 }
 
@@ -880,52 +845,38 @@ inline const Header_s* header_pointer(const void* client_pointer) {
   return header;
 }
 
-inline void throwIfInvalidClient(core::T_O* client) {
-  Header_s* header = (Header_s*)GeneralPtrToHeaderPtr(client);
-  if (header->_badge_stamp_wtag_mtag.invalidP()) {
-    throw_hard_error_bad_client((void*)client);
-  }
-}
-
 template <typename T> inline T* HeaderPtrToGeneralPtr(void* base) {
-  T* ptr = reinterpret_cast<T*>(reinterpret_cast<char*>(base) + SizeofGeneralHeader());
+  T* ptr = reinterpret_cast<T*>(reinterpret_cast<char*>(base) + sizeof(Header_s));
   return ptr;
 }
 
-/*
- * This must ALWAYS be the same as SizeofGeneralHeader
- */
-inline constexpr size_t SizeofWeakHeader() { return SizeofGeneralHeader(); };
-
 inline const void* WeakPtrToHeaderPtr(const void* client) {
-  const void* ptr = reinterpret_cast<const char*>(client) - SizeofWeakHeader();
+  const void* ptr = reinterpret_cast<const char*>(client) - sizeof(Header_s);
   return ptr;
 }
 
 inline void* WeakPtrToHeaderPtr(void* client) {
-  void* ptr = reinterpret_cast<char*>(client) - SizeofWeakHeader();
+  void* ptr = reinterpret_cast<char*>(client) - sizeof(Header_s);
   return ptr;
 }
 
 inline void* HeaderPtrToWeakPtr(void* header) {
-  void* ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(header) + SizeofWeakHeader());
+  void* ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(header) + sizeof(Header_s));
   return ptr;
 }
 
-inline constexpr size_t SizeofConsHeader() { return ConsHeader_s::size(); };
-
 inline const void* ConsPtrToHeaderPtr(const void* client) {
-  const void* ptr = reinterpret_cast<const char*>(client) - SizeofConsHeader();
+  const void* ptr = reinterpret_cast<const char*>(client) - sizeof(ConsHeader_s);
   return ptr;
 }
 
 inline void* ConsPtrToHeaderPtr(void* client) {
-  void* ptr = reinterpret_cast<char*>(client) - SizeofConsHeader();
+  void* ptr = reinterpret_cast<char*>(client) - sizeof(ConsHeader_s);
   return ptr;
 }
 
 inline void* HeaderPtrToConsPtr(void* header) {
-  void* ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(header) + SizeofConsHeader());
+  void* ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(header) + sizeof(ConsHeader_s));
   return ptr;
 }
 
@@ -994,7 +945,7 @@ template <class T> inline size_t sizeof_bitunit_container_with_header(size_t num
 
 /* Align size upwards and ensure that it's big enough to store a
  * forwarding pointer.
- * This is used by the obj_scan and obj_skip methods
+ * This is used by the scanner and skip (sizer).
  */
 /*   Replaces this macro...
      #define ALIGN(size)                                                \
@@ -1027,8 +978,6 @@ public:
 #include <clasp/gctools/boehmGarbageCollection.h>
 #elif defined(USE_MMTK)
 #include <clasp/gctools/mmtkGarbageCollection.h>
-#elif defined(USE_MPS)
-#include <clasp/gctools/mpsGarbageCollection.h>
 #endif
 
 extern "C" {
@@ -1083,7 +1032,6 @@ uint32_t lisp_badge(core::T_sp object);
 }; // namespace gctools
 
 namespace gctools {
-extern int global_pollTicksPerCleanup;
 
 template <typename T> void* SmartPtrToBasePtr(smart_ptr<T> obj) {
   void* ptr;
@@ -1099,18 +1047,7 @@ template <typename T> void* SmartPtrToBasePtr(smart_ptr<T> obj) {
 #include <clasp/gctools/gcStack.h>
 // #include <clasp/gctools/gcalloc.h>
 
-/*! These don't do anything at the moment
-  but may be used in the future to create unsafe-gc points
-*/
-
-#define SUPPRESS_GC()                                                                                                              \
-  {}
-#define ENABLE_GC()                                                                                                                \
-  {}
-
 namespace gctools {
-
-int handleFatalCondition();
 
 void rawHeaderDescribe(const uintptr_t* headerP);
 }; // namespace gctools
@@ -1178,18 +1115,10 @@ void gc_release();
 
 #ifdef DEBUG_GUARD_VALIDATE
 #define ENSURE_VALID_OBJECT(x) (gctools::ensure_valid_object(x))
-#define EVO(x) (gctools::ensure_valid_object(x))
 #define ENSURE_VALID_HEADER(x) (gctools::ensure_valid_header(x))
 #else
 #define ENSURE_VALID_OBJECT(x) x
-#define EVO(x)
 #define ENSURE_VALID_HEADER(x) x
-#endif
-
-#ifdef DEBUG_THROW_IF_INVALID_CLIENT_ON
-#define DEBUG_THROW_IF_INVALID_CLIENT(c) throwIfInvalidClient(reinterpret_cast<core::T_O*>(c))
-#else
-#define DEBUG_THROW_IF_INVALID_CLIENT(c)
 #endif
 
 namespace gctools {
@@ -1300,8 +1229,6 @@ std::string program_name();
 std::string exe_name();
 bool abort_flag(void);
 }; // namespace gctools
-
-// #endif // _clasp_memoryManagement_H
 
 /*
     File: memoryManagement.h

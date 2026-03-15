@@ -326,7 +326,11 @@ public:                                                                         
 public:                                                                                                                            \
   typedef aBaseClass Base;                                                                                                         \
   COMMON_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName);                                                                    \
-  static gctools::smart_ptr<aClass> create() { return gctools::GC<aClass>::allocate_with_default_constructor(); };                 \
+  static gctools::smart_ptr<aClass> create() { \
+    if constexpr(std::is_default_constructible_v<aClass>) \
+      return gctools::GC<aClass>::allocate();                 \
+    else lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(aClass::static_classSymbol());\
+  }\
   virtual core::Instance_sp __class() const OVERRIDE { return core::lisp_getStaticClass(aClass::static_ValueStampWtagMtag); }      \
   /* end LISP_CLASS */
 
@@ -464,9 +468,10 @@ public: // Instance protocol
 #include <clasp/gctools/gcweak.h>
 
 namespace core {
-template <class oclass> inline T_sp new_LispObject() {
+template <class oclass> inline T_sp new_LispObject()
+  requires std::is_default_constructible_v<oclass> {
   //    T_sp obj = oclass::staticCreator()->creator_allocate();
-  auto obj = gctools::GC<oclass>::allocate_with_default_constructor();
+  auto obj = gctools::GC<oclass>::allocate();
   return obj;
 };
 }; // namespace core

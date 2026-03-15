@@ -99,6 +99,7 @@ THE SOFTWARE.
 #include <map>
 #include <vector>
 #include <cassert>
+#include <typeindex>
 
 #include <clasp/clbind/config.h>
 #include <clasp/clbind/names.h>
@@ -108,7 +109,6 @@ THE SOFTWARE.
 #include <clasp/clbind/link_compatibility.h>
 #include <clasp/clbind/inheritance.h>
 #include <clasp/clbind/iteratorMemberFunction.h>
-#include <clasp/clbind/typeid.h>
 #include <clasp/clbind/constructor.h>
 #include <clasp/clbind/memberFunction.h>
 #include <clasp/clbind/property.h>
@@ -119,12 +119,6 @@ THE SOFTWARE.
 #pragma warning(disable : 4355)
 #endif
 
-namespace boost {
-
-template <class T> class shared_ptr;
-
-} // namespace boost
-
 namespace clbind {
 
 class DummyCreator_O : public core::Creator_O {
@@ -132,18 +126,15 @@ class DummyCreator_O : public core::Creator_O {
   core::T_sp _name;
 
 public:
-  DummyCreator_O(core::SimpleFun_sp ep, core::T_sp name) : core::Creator_O(ep), _name(name){};
+  DummyCreator_O(core::T_sp name) : core::Creator_O(), _name(name){};
 
 public:
   virtual size_t templatedSizeof() const override { return sizeof(*this); };
-  virtual bool allocates() const override { return false; };
   virtual core::T_sp creator_allocate() override {
     SIMPLE_ERROR("This class named: {} cannot allocate instances", core::_rep_(this->_name));
   } // return _Nil<core::T_O>(); };
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) override {
-    core::SimpleFun_sp entryPoint =
-        core::makeSimpleFunAndFunctionDescription<DummyCreator_O>(nil<T_O>());
-    return gc::GC<DummyCreator_O>::allocate(entryPoint, className);
+    return gc::GC<DummyCreator_O>::allocate(className);
   }
 };
 
@@ -205,8 +196,8 @@ struct cast_entry {
 } // namespace
 
 struct class_registration : registration {
-  class_registration(const string& name, type_id const& type_id_, class_id id,
-                     type_id const& wrapper_type, class_id wrapper_id,
+  class_registration(const string& name, std::type_index const& type_id_, class_id id,
+                     std::type_index const& wrapper_type, class_id wrapper_id,
                      bool derivable);
 
   void register_() const;
@@ -218,13 +209,13 @@ struct class_registration : registration {
 
   mutable std::map<const char*, int, detail::ltstr> m_static_constants;
 
-  typedef std::pair<type_id, cast_function> base_desc;
+  typedef std::pair<std::type_index, cast_function> base_desc;
   mutable std::vector<base_desc> m_bases;
 
-  type_id m_type;
+  std::type_index m_type;
   class_id m_id;
   class_id m_wrapper_id;
-  type_id m_wrapper_type;
+  std::type_index m_wrapper_type;
   std::vector<cast_entry> m_casts;
 
   scope_ m_scope;
@@ -236,15 +227,15 @@ struct class_registration : registration {
 
 struct CLBIND_API class_base : scope_ {
 public:
-  class_base(const string& name, type_id const& type_id_, class_id id,
-             type_id const& wrapper_type, class_id wrapper_id, bool derivable);
+  class_base(const string& name, std::type_index const& type_id_, class_id id,
+             std::type_index const& wrapper_type, class_id wrapper_id, bool derivable);
 
   struct base_desc {
-    type_id type;
+    std::type_index type;
     int ptr_offset;
   };
 
-  void add_base(type_id const& base, cast_function cast);
+  void add_base(std::type_index const& base, cast_function cast);
 
   void set_default_constructor(registration* member);
   void add_member(registration* member);
@@ -410,9 +401,7 @@ struct constructor_registration<Class, HoldType, default_constructor, Policies, 
       : constructor_registration_base<Class, HoldType, default_constructor, Policies>(policies, name, arguments, declares,
                                                                                       docstring){};
   core::Creator_sp registerDefaultConstructor_() const {
-    core::SimpleFun_sp ep = core::makeSimpleFunAndFunctionDescription<DefaultConstructorCreator_O<Class, HoldType>>(
-        nil<core::T_O>());
-    core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<Class, HoldType>>::allocate(ep));
+    core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<Class, HoldType>>::allocate());
     return allocator;
   }
 };

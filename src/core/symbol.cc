@@ -203,7 +203,7 @@ Symbol_sp Symbol_O::create_from_string(const string& nm) {
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
   only_at_startup dummy;
-  Symbol_sp n = gctools::GC<Symbol_O>::allocate(dummy); // root_allocate(true)
+  Symbol_sp n = gctools::GC<Symbol_O>::allocate(dummy);
   SimpleString_sp snm = SimpleBaseString_O::make(nm);
   n->setf_name(snm);
   // The following are done in finish_setup

@@ -182,7 +182,6 @@ public:
     if (contents_end == contents_capacity) {
       // This is where we grow the Vector
       size_t new_capacity = contents_capacity * GCVectorGrow;
-      GC_LOG(("Increasing capacity to %zu\n", newCapacity));
 #ifdef DEBUG_ASSERT
       if (new_capacity > 65536) {
         printf("%s:%d gcvector capacity is larger than 65536\n", __FILE__, __LINE__);
@@ -278,11 +277,11 @@ public:
     }
     // We are moving _End down
     if (n < this->_Contents->_Capacity * GCVectorShrink) { // Handle shrinking by actually shrinking and return shrunk vector
-      GC_LOG(("Add support for shrinking by actually shrinking\n"));
+      // Add support for shrinking by actually shrinking
     }
     // Placement destructor calls to release stuff past _End
     for (size_t i(n); i < this->_Contents->_End; ++i) {
-      GC_LOG(("Placement dtor called on element[%zu]\n", i));
+      // "Placement dtor called on element[%zu]
       alloc.destroy(&(*this->_Contents)[i]);
     }
     // Everything after _End is now abandoned

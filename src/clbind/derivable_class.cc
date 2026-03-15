@@ -48,8 +48,6 @@ THE SOFTWARE.
 
 #define CLBIND_BUILDING
 
-#include <boost/foreach.hpp>
-
 #include <clasp/core/foundation.h>
 #include <clasp/core/package.h>
 #include <clasp/core/symbolTable.h>
@@ -88,7 +86,7 @@ void validateRackOffset(size_t wrapped_type_offset) {
 namespace clbind {
 namespace detail {
 
-derivable_class_registration::derivable_class_registration(char const* name, type_id const& type_id_, class_id id, type_id const& wrapper_type, class_id wrapper_id, bool derivable)
+derivable_class_registration::derivable_class_registration(char const* name, std::type_index const& type_id_, class_id id, std::type_index const& wrapper_type, class_id wrapper_id, bool derivable)
     : m_name(name), m_type(type_id_), m_id(id), m_wrapper_id(wrapper_id),
       m_wrapper_type(wrapper_type), m_default_constructor(NULL),
       m_derivable(derivable) {}
@@ -108,9 +106,7 @@ void derivable_class_registration::register_() const {
   if (m_default_constructor != NULL) {
     creator = m_default_constructor->registerDefaultConstructor_();
   } else {
-    core::SimpleFun_sp entryPoint =
-        core::makeSimpleFunAndFunctionDescription<DummyCreator_O>(::nil<core::T_O>());
-    creator = gctools::GC<DummyCreator_O>::allocate(entryPoint, className);
+    creator = gctools::GC<DummyCreator_O>::allocate(className);
   }
   crep->initializeClassSlots(creator, gctools::NextClbindStampWtag(gctools::Header_s::derivable_wtag));
   className->exportYourself();
@@ -135,13 +131,8 @@ void derivable_class_registration::register_() const {
   m_members.register_();
 
   cast_graph* const casts = globalCastGraph;
-  class_id_map* const class_ids = globalClassIdMap;
 
-  class_ids->put(m_id, m_type);
-  if (has_wrapper)
-    class_ids->put(m_wrapper_id, m_wrapper_type);
-
-  BOOST_FOREACH (cast_entry const& e, m_casts) {
+  for (cast_entry const& e : m_casts) {
     casts->insert(e.src, e.target, e.cast);
   }
 
@@ -170,12 +161,12 @@ void derivable_class_registration::register_() const {
 
 // -- interface ---------------------------------------------------------
 
-derivable_class_base::derivable_class_base(char const* name, type_id const& type_id_, class_id id,
-                                           type_id const& wrapper_type, class_id wrapper_id,
+derivable_class_base::derivable_class_base(char const* name, std::type_index const& type_id_, class_id id,
+                                           std::type_index const& wrapper_type, class_id wrapper_id,
                                            bool derivable)
   : scope_(std::unique_ptr<registration>(m_registration = new derivable_class_registration(name, type_id_, id, wrapper_type, wrapper_id, derivable))), m_init_counter(0) {}
 
-void derivable_class_base::add_base(type_id const& base, cast_function cast) {
+void derivable_class_base::add_base(std::type_index const& base, cast_function cast) {
   m_registration->m_bases.push_back(std::make_pair(base, cast));
 }
 

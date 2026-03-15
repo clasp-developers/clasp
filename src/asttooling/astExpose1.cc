@@ -63,15 +63,6 @@ THE SOFTWARE.
 using namespace clang;
 using namespace clbind;
 
-//
-// This needs to be before clbind is included
-//
-#ifdef USE_MPS
-#define NAMESPACE_clbind_clang
-#include <clasp/gctools/gc_interface.h>
-#undef NAMESPACE_clbind_clang
-#endif
-
 #include <clasp/clbind/clbind.h>
 
 namespace asttooling {

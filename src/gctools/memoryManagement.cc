@@ -34,6 +34,8 @@ THE SOFTWARE.
 #include <fcntl.h>
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/gcalloc.h>
+#include <clasp/gctools/skip.h>
+#include <clasp/gctools/scan.h>
 #include <clasp/core/object.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/numbers.h>
@@ -292,16 +294,6 @@ void rawHeaderDescribe(const uintptr_t* headerP) {
     printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
     printf(" fwd_tag - fwd address: 0x%" PRIuPTR "\n", (*headerP) & Header_s::mtag_mask);
   } break;
-  case Header_s::pad1_mtag:
-    printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
-    printf("   pad1_tag\n");
-    printf("  0x%p : 0x%" PRIuPTR "\n", headerP, *headerP);
-    break;
-  case Header_s::pad_mtag:
-    printf("   pad_tag\n");
-    printf("  0x%p : 0x%" PRIuPTR "\n", headerP, *headerP);
-    printf("  0x%p : 0x%" PRIuPTR "\n", (headerP + 1), *(headerP + 1));
-    break;
   }
 #ifdef DEBUG_GUARD
   Header_s* header = (Header_s*)headerP;
@@ -623,30 +615,21 @@ void walkRoots(RootWalkCallback&& callback) {
   }
 };
 
-#define GENERAL_PTR_TO_HEADER_PTR(_general_) GeneralPtrToHeaderPtr((void*)_general_)
-// #define HEADER_PTR_TO_GENERAL_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
+static void mw_obj_scan(core::General_O* client,
+                        std::stack<std::pair<Tagged, Tagged>>& markStack) {
+  auto fix = [&](core::T_O** field) {
+    markStack.emplace((Tagged)client, (Tagged)*field);
+  };
+  scan::general(client, fix, [](WeakPointer*){}, [](Ephemeron*){});
+}
 
-#define ADDR_T uintptr_t
-#define EXTRA_ARGUMENTS , Tagged containingObject, std::stack<std::pair<Tagged, Tagged>>& markStack
-
-#define POINTER_FIX(_ptr_) markStack.emplace(containingObject, *reinterpret_cast<Tagged*>(_ptr_))
-
-#define OBJECT_SCAN mw_obj_scan
-#define OBJECT_SKIP mw_obj_skip
-#define EPHEMERON_FIX(a, b)
-#include "obj_scan.cc"
-#undef OBJECT_SKIP
-#undef OBJECT_SCAN
-
-#define CONS_SCAN mw_cons_scan
-#define CONS_SKIP mw_cons_skip
-#include "cons_scan.cc"
-#undef CONS_SKIP
-#undef CONS_SCAN
-
-#undef POINTER_FIX
-#undef ADDR_T
-#undef EXTRA_ARGUMENTS
+static void mw_cons_scan(core::Cons_O* client,
+                         std::stack<std::pair<Tagged, Tagged>>& markStack) {
+  auto fix = [&](core::T_O** field) {
+    markStack.emplace((Tagged)client, (Tagged)*field);
+  };
+  scan::cons(client, fix);
+}
 
 template <class Callback>
 static void mapAllObjectsInternal(std::set<Tagged>& markSet,
@@ -665,10 +648,9 @@ static void mapAllObjectsInternal(std::set<Tagged>& markSet,
       if (!markSet.contains(tagged)) { // only process each object once
         markSet.insert(tagged);
         uintptr_t client = untag_object(tagged);
-        Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
         // the mw_foo_scan functions push all fields of the object
         // onto the markStack to keep the loop going.
-        mw_obj_scan(client, tagged, markStack);
+        mw_obj_scan((core::General_O*)client, markStack);
         // now's the time to callback. Could also go before the scan
         callback(tagged);
       }
@@ -677,7 +659,7 @@ static void mapAllObjectsInternal(std::set<Tagged>& markSet,
       if (!markSet.contains(tagged)) {
         markSet.insert(tagged);
         uintptr_t client = untag_object(tagged);
-        mw_cons_scan(client, tagged, markStack);
+        mw_cons_scan((core::Cons_O*)client, markStack);
         callback(tagged);
       }
     } break;
@@ -727,7 +709,7 @@ std::set<std::pair<Tagged, Tagged>> memtest(std::set<core::T_sp, T_sp_less>& dla
         uintptr_t client = tagged & ptr_mask;
         Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
         if (header->isValidGeneralObject()) {
-          mw_obj_scan(client, tagged, markStack);
+          mw_obj_scan((core::General_O*)client, markStack);
           // If this is a function, check its dladdrability.
           core::T_sp tobj(tagged);
           if (tobj.isA<core::SimpleFun_O>()) {
@@ -746,7 +728,7 @@ std::set<std::pair<Tagged, Tagged>> memtest(std::set<core::T_sp, T_sp_less>& dla
         uintptr_t client = tagged & ptr_mask;
         ConsHeader_s* header = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)client);
         if (header->isValidConsObject())
-          mw_cons_scan(client, tagged, markStack);
+          mw_cons_scan((core::Cons_O*)client, markStack);
         else {
           corrupt.emplace(containingObject, tagged);
         }
@@ -781,16 +763,10 @@ std::set<std::pair<Tagged, Tagged>> memtest(std::set<core::T_sp, T_sp_less>& dla
 size_t objectSize(BaseHeader_s* header) {
   if (header->_badge_stamp_wtag_mtag.consObjectP()) {
     // It's a cons object
-    size_t consSize;
-    uintptr_t client = (uintptr_t)HeaderPtrToConsPtr(header);
-    [[maybe_unused]] uintptr_t clientLimit = mw_cons_skip(client, consSize);
-    return consSize;
+    return cons_skip((core::Cons_O*)HeaderPtrToConsPtr(header));
   } else {
     // It's a general object - walk it
-    size_t objectSize;
-    uintptr_t client = (uintptr_t)HeaderPtrToGeneralPtr<void*>(header);
-    mw_obj_skip(client, objectSize);
-    return objectSize;
+    return general_skip(HeaderPtrToGeneralPtr<core::General_O>(header));
   }
 }
 

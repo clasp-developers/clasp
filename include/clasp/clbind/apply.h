@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include <clasp/core/lispDefinitions.h>
 #include <clasp/core/symbolToEnumConverter.h>
 #include <clasp/clbind/details.h>
-#include <clasp/clbind/external_policies.h>
 #include <clasp/core/translators.h>
 #include <clasp/core/glue.h>
 
@@ -73,10 +72,7 @@ struct apply_and_return<policies<Policies...>, void, Func, std::tuple<Args...>> 
     size_t num_returns =
         clbind::return_multiple_values<0, policies<Policies...>, decltype(tuple), std::index_sequence_for<Args...>, Args...>::go(
             std::forward<tuple_type>(tuple), returnValues.returnValues(0));
-    //    printf("%s:%d  void apply_and_return  returning %lu multiple values\n", __FILE__, __LINE__, num_returns );
     core::T_mv result = returnValues.readFromMultipleValue0(num_returns);
-    // checkme result.readFromMultipleValue0();
-    // result.set_number_of_values(num_returns);
     return result.as_return_type();
   }
 };
@@ -85,16 +81,11 @@ struct apply_and_return<policies<Policies...>, void, Func, std::tuple<Args...>> 
 //
 // General apply_and_return
 //
-template <typename... Policies, typename Func, typename Tuple> struct apply_and_return<policies<Policies...>, void, Func, Tuple> {
-  static LCC_RETURN go(Func&& fn, Tuple&& tuple) {
-    clbind::apply(std::forward<Func>(fn), std::forward<Tuple>(tuple));
-    return gctools::return_type(nil<core::T_O>().raw_(), 0);
-  }
-};
 
 // clbind apply_and_return - this needs to handle multiple-values
-template <typename... Policies, typename RT, typename Func, typename Tuple>
-struct apply_and_return<policies<Policies...>, std::unique_ptr<RT>, Func, Tuple> {
+template <typename... Policies, typename RT, typename Func, typename... Args>
+struct apply_and_return<policies<Policies...>, std::unique_ptr<RT>, Func, std::tuple<Args...>> {
+  using Tuple = std::tuple<Args...>;
   static gc::return_type go(Func&& fn, Tuple&& tuple) {
     std::unique_ptr<RT> retval = clbind::apply(std::move(fn), std::move(tuple));
     core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -107,36 +98,21 @@ struct apply_and_return<policies<Policies...>, std::unique_ptr<RT>, Func, Tuple>
   }
 };
 
-template <typename RT, typename Func, typename Tuple> struct apply_and_return<core::policy::clasp_policy, RT, Func, Tuple> {
-  static gc::return_type go(Func&& fn, Tuple&& tuple) {
-    RT retval = clbind::apply(std::forward<Func>(fn), std::forward<Tuple>(tuple)); // why forward?
-    core::T_sp tretval = translate::to_object<RT>::convert(retval);
-    return gctools::return_type(tretval.raw_(), 1);
-  }
-};
-
-template <typename RT, typename Func, typename Tuple>
-struct apply_and_return<core::policy::clasp_policy, gctools::smart_ptr<RT>, Func, Tuple> {
+template <typename... Policies, typename RT, typename Func, typename... Args>
+struct apply_and_return<policies<Policies...>, gctools::smart_ptr<RT>, Func, std::tuple<Args...>> {
+  using Tuple = std::tuple<Args...>;
   static gc::return_type go(Func&& fn, Tuple&& tuple) {
     gctools::smart_ptr<RT> retval = clbind::apply(std::forward<Func>(fn), std::forward<Tuple>(tuple)); // why forward?
     return gctools::return_type(retval.raw_(), 1);
   }
 };
 
-template <typename RT, typename Func, typename Tuple>
-struct apply_and_return<core::policy::clasp_policy, gctools::multiple_values<RT>, Func, Tuple> {
+template <typename... Policies, typename RT, typename Func, typename... Args>
+struct apply_and_return<policies<Policies...>, gctools::multiple_values<RT>, Func, std::tuple<Args...>> {
+  using Tuple = std::tuple<Args...>;
   static gc::return_type go(Func&& fn, Tuple&& tuple) {
     gctools::multiple_values<RT> retval = clbind::apply(std::forward<Func>(fn), std::forward<Tuple>(tuple));
-    //    printf("%s:%d Returning from apply_and_return gctools::multiple_values<RT> - first value -> %s\n", __FILE__, __LINE__,
-    //    _rep_(retval).c_str() );
     return retval.as_return_type();
-  }
-};
-
-template <typename Func, typename Tuple> struct apply_and_return<core::policy::clasp_policy, void, Func, Tuple> {
-  static LCC_RETURN go(Func&& fn, Tuple&& tuple) {
-    clbind::apply(std::forward<Func>(fn), std::forward<Tuple>(tuple));
-    return Values0<core::T_O>();
   }
 };
 
@@ -179,16 +155,16 @@ template <typename RT, typename Policies, typename MethodType, typename OT, type
   }
 };
 
-template <typename MethodType, typename OT, typename Tuple>
-struct method_apply_and_return<void, core::policy::clasp_policy, MethodType, OT, Tuple> {
+template <typename... Policies, typename MethodType, typename OT, typename Tuple>
+struct method_apply_and_return<void, policies<Policies...>, MethodType, OT, Tuple> {
   static gc::return_type go(MethodType&& mptr, OT&& object, Tuple&& tuple) {
     clbind::method_apply(std::forward<MethodType>(mptr), std::forward<OT>(object), std::forward<Tuple>(tuple));
     return Values0<core::T_O>();
   }
 };
 
-template <typename RT, typename MethodType, typename OT, typename Tuple>
-struct method_apply_and_return<RT, core::policy::clasp_policy, MethodType, OT, Tuple> {
+template <typename... Policies, typename RT, typename MethodType, typename OT, typename Tuple>
+struct method_apply_and_return<RT, policies<Policies...>, MethodType, OT, Tuple> {
   static gc::return_type go(MethodType&& mptr, OT&& object, Tuple&& tuple) {
     RT retval = clbind::method_apply(std::forward<MethodType>(mptr), std::forward<OT>(object), std::forward<Tuple>(tuple));
     core::T_sp rv = translate::to_object<RT>::convert(retval);
@@ -196,8 +172,8 @@ struct method_apply_and_return<RT, core::policy::clasp_policy, MethodType, OT, T
   }
 };
 
-template <typename RT, typename MethodType, typename OT, typename Tuple>
-struct method_apply_and_return<gctools::multiple_values<RT>, core::policy::clasp_policy, MethodType, OT, Tuple> {
+template <typename... Policies, typename RT, typename MethodType, typename OT, typename Tuple>
+struct method_apply_and_return<gctools::multiple_values<RT>, policies<Policies...>, MethodType, OT, Tuple> {
   static gc::return_type go(MethodType&& mptr, OT&& object, Tuple&& tuple) {
     gctools::multiple_values<RT> retval =
         clbind::method_apply(std::forward<MethodType>(mptr), std::forward<OT>(object), std::forward<Tuple>(tuple));

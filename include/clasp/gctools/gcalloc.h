@@ -84,8 +84,6 @@ uint32_t my_thread_random();
 
 #if defined(USE_BOEHM)
 #include <clasp/gctools/gcalloc_boehm.h>
-#elif defined(USE_MPS)
-#include <clasp/gctools/gcalloc_mps.h>
 #elif defined(USE_MMTK)
 #include <clasp/gctools/gcalloc_mmtk.h>
 #else
@@ -112,27 +110,14 @@ template <class T> struct RootClassAllocator {
   static void deallocate(gctools::tagged_pointer<T> memory) {
     do_free(&*memory);
   };
-
-  static void* allocateRootsAndZero(size_t num) {
-    return do_allocate_zero(num);
-  }
-
-  static void freeRoots(void* roots) {
-    do_free(roots);
-  };
 };
 
 template <class Stage, class Cons> struct ConsAllocator {
   template <class... ARGS>
-#ifdef ALWAYS_INLINE_MPS_ALLOCATIONS
-  __attribute__((always_inline))
-#else
-  inline
-#endif
   static smart_ptr<Cons>
   allocate(ARGS&&... args) {
     DO_DRAG_CONS_ALLOCATION();
-    size_t cons_size = AlignUp(sizeof(Cons) + SizeofConsHeader());
+    size_t cons_size = AlignUp(sizeof(Cons) + sizeof(ConsHeader_s));
     ConsHeader_s* header = do_cons_allocation<Stage, Cons>(cons_size);
     Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
     new (cons) Cons(std::forward<ARGS>(args)...);
@@ -141,7 +126,7 @@ template <class Stage, class Cons> struct ConsAllocator {
 
 #ifdef USE_PRECISE_GC
   static smart_ptr<Cons> snapshot_save_load_allocate(Header_s::BadgeStampWtagMtag& the_header, core::T_sp car, core::T_sp cdr) {
-    ConsHeader_s* header = do_cons_allocation<SnapshotLoadStage, Cons>(AlignUp(SizeofConsHeader() + sizeof(Cons)));
+    ConsHeader_s* header = do_cons_allocation<SnapshotLoadStage, Cons>(AlignUp(sizeof(ConsHeader_s) + sizeof(Cons)));
     header->_badge_stamp_wtag_mtag._header_badge.store(the_header._header_badge.load());
     header->_badge_stamp_wtag_mtag._value = the_header._value;
     Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
@@ -179,123 +164,7 @@ static smart_ptr<OT> initialize_snapshot_object(Header_s* base, snapshotSaveLoad
 #endif
   return smart_ptr<OT>(ptr);
 }
-
-template <class OT, GCInfo_policy Policy = normal> struct GCObjectAppropriatePoolAllocator {
-  typedef OT value_type;
-  typedef OT* pointer_type;
-  typedef smart_ptr<OT> smart_pointer_type;
-  template <typename Stage, typename... ARGS>
-  static smart_pointer_type allocate_in_appropriate_pool_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size,
-                                                              ARGS&&... args) {
-    DO_DRAG_GENERAL_ALLOCATION();
-    Header_s* base = do_general_allocation<Stage>(the_header, size);
-    pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
-    new (ptr) OT(std::forward<ARGS>(args)...);
-    smart_pointer_type sp = smart_ptr<value_type>(ptr);
-    return sp;
-  };
-
-  static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init) {
-    size_t sizeWithHeader = sizeof(Header_s) + (snapshot_save_load_init->_clientEnd - snapshot_save_load_init->_clientStart);
-    DO_DRAG_GENERAL_ALLOCATION();
-    Header_s* base = do_general_allocation(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag, sizeWithHeader);
-    return initialize_snapshot_object<OT>(base, snapshot_save_load_init);
-  };
-
-  static void deallocate(OT* memory){
-      // Nothing needs to be done but this function needs to be here
-      // so that the static analyzer has something to call
-  };
-};
-
-template <class OT> struct GCObjectAppropriatePoolAllocator<OT, /* Policy= */ atomic> {
-  typedef OT value_type;
-  typedef OT* pointer_type;
-  typedef smart_ptr<OT> smart_pointer_type;
-  template <typename Stage, typename... ARGS>
-  static smart_pointer_type allocate_in_appropriate_pool_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size,
-                                                              ARGS&&... args) {
-    // Atomic objects (do not contain pointers) are allocated in separate pool
-    Header_s* base = do_atomic_allocation<Stage>(the_header, size);
-    pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
-    new (ptr) OT(std::forward<ARGS>(args)...);
-    smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
-    return sp;
-  };
-  static void deallocate(OT* memory){
-      // Nothing needs to be done but this function needs to be here
-      // so that the static analyzer has something to call
-  };
-
-  static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init) {
-    size_t sizeWithHeader = sizeof(Header_s) + (snapshot_save_load_init->_clientEnd - snapshot_save_load_init->_clientStart);
-    Header_s* base =
-        do_atomic_allocation<SnapshotLoadStage>(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag, sizeWithHeader);
-    return initialize_snapshot_object<OT>(base, snapshot_save_load_init);
-  };
-};
-
-/*! This Policy of collectible_immobile may not be a useful policy.
-When would I ever want the GC to automatically collect objects but not move them?
-*/
-template <class OT> struct GCObjectAppropriatePoolAllocator<OT, /* Policy= */ collectable_immobile> {
-  typedef OT value_type;
-  typedef OT* pointer_type;
-  typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
-  template <typename Stage, typename... ARGS>
-  static smart_pointer_type allocate_in_appropriate_pool_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size,
-                                                              ARGS&&... args) {
-    DO_DRAG_GENERAL_ALLOCATION();
-    Header_s* base = do_general_allocation<Stage>(the_header, size);
-    pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
-    new (ptr) OT(std::forward<ARGS>(args)...);
-    smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
-    return sp;
-  };
-  static void deallocate(OT* memory){
-      // Nothing needs to be done but this function needs to be here
-      // so that the static analyzer has something to call
-  };
-
-  static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init) {
-    size_t sizeWithHeader = sizeof(Header_s) + (snapshot_save_load_init->_clientEnd - snapshot_save_load_init->_clientStart);
-    DO_DRAG_GENERAL_ALLOCATION();
-    Header_s* base = do_general_allocation(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag, sizeWithHeader);
-    return initialize_snapshot_object<OT>(base, snapshot_save_load_init);
-  };
-};
-
-/*! This is for CL classes that derive from C++ classes and other CL classes that
-should not be managed by the GC */
-template <class OT> struct GCObjectAppropriatePoolAllocator<OT, unmanaged> {
-  typedef OT value_type;
-  typedef OT* pointer_type;
-  typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
-  template <typename Stage, typename... ARGS>
-  static smart_pointer_type allocate_in_appropriate_pool_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size,
-                                                              ARGS&&... args) {
-    Header_s* base = do_uncollectable_allocation(the_header, size);
-    OT* obj = HeaderPtrToGeneralPtr<OT>(base);
-    new (obj) OT(std::forward<ARGS>(args)...);
-    gctools::smart_ptr<OT> sp(obj);
-    return sp;
-  }
-
-  static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init) {
-    size_t sizeWithHeader = sizeof(Header_s) + (snapshot_save_load_init->_clientEnd - snapshot_save_load_init->_clientStart);
-    Header_s* base = do_uncollectable_allocation(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag, sizeWithHeader);
-    return initialize_snapshot_object<OT>(base, snapshot_save_load_init);
-  };
-
-  static void deallocate(OT* memory) {
-    do_free(memory);
-  };
-};
 } // namespace gctools
-
-extern "C" {
-void my_mps_finalize(core::T_O* tagged);
-};
 
 namespace gctools {
 template <class OT>
@@ -308,40 +177,46 @@ static void finalizeIfNeeded(smart_ptr<OT> sp) {
 namespace gctools {
 
 template <class OT> class GCObjectAllocator {
-public:
-  typedef OT value_type;
-  typedef OT* pointer_type;
-  typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
+private:
+  typedef smart_ptr<OT> OT_sp;
 
-public:
-  template <typename... ARGS> static smart_pointer_type root_allocate(ARGS&&... args) {
-    return root_allocate_kind(GCStamp<OT>::Stamp, sizeof_with_header<OT>(), std::forward<ARGS>(args)...);
+  template <typename Stage = RuntimeStage, GCInfo_policy Policy = normal>
+  static Header_s* raw_allocate(const Header_s::BadgeStampWtagMtag& the_header, size_t size) {
+    if constexpr(Policy == normal || Policy == collectable_immobile) {
+      DO_DRAG_GENERAL_ALLOCATION();
+      return do_general_allocation<Stage>(the_header, size);
+    } else if constexpr(Policy == atomic) {
+      return do_atomic_allocation<Stage>(the_header, size);
+    } else { // unmanaged
+      return do_uncollectable_allocation(the_header, size);
+    }
   }
-  template <typename... ARGS>
-  static smart_pointer_type root_allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS&&... args) {
-    Header_s* base = do_uncollectable_allocation(the_header, size);
-    pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
-    new (ptr) OT(std::forward<ARGS>(args)...);
-    smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
-    initializeIfNeeded(sp);
-    finalizeIfNeeded(sp);
-    return sp;
-  };
 
+  template <typename Stage, GCInfo_policy Policy = normal,
+            typename... ARGS>
+  static OT_sp allocate_in_appropriate_pool_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size,
+                                                 ARGS&&... args) {
+    Header_s* base = raw_allocate<Stage, Policy>(the_header, size);
+    OT* ptr = HeaderPtrToGeneralPtr<OT>(base);
+    new (ptr) OT(std::forward<ARGS>(args)...);
+    return OT_sp(ptr);
+  }
+
+public:
   template <typename Stage, typename... ARGS>
-  static smart_pointer_type allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS&&... args) {
-    smart_pointer_type sp =
-        GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::template allocate_in_appropriate_pool_kind<Stage>(
-            the_header, size, std::forward<ARGS>(args)...);
+  static OT_sp allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS&&... args) {
+    OT_sp sp =
+      allocate_in_appropriate_pool_kind<Stage, GCInfo<OT>::Policy>(the_header, size, std::forward<ARGS>(args)...);
     initializeIfNeeded(sp);
     finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
     return sp;
   };
 
-  static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init) {
-    smart_pointer_type sp =
-        GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::snapshot_save_load_allocate(snapshot_save_load_init);
+  static OT_sp snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init) {
+    size_t sizeWithHeader = sizeof(Header_s) + (snapshot_save_load_init->_clientEnd - snapshot_save_load_init->_clientStart);
+    Header_s* base = raw_allocate(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag, sizeWithHeader);
+    OT_sp sp = initialize_snapshot_object<OT>(base, snapshot_save_load_init);
     // No initializer
     finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
@@ -349,24 +224,26 @@ public:
   };
 
   template <typename... ARGS>
-  static smart_pointer_type static_allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS&&... args) {
-    smart_pointer_type sp =
-        GCObjectAppropriatePoolAllocator<OT, unmanaged>::template allocate_in_appropriate_pool_kind<gctools::RuntimeStage>(
-            the_header, size, std::forward<ARGS>(args)...);
+  static OT_sp static_allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS&&... args) {
+    OT_sp sp = allocate_in_appropriate_pool_kind<RuntimeStage, unmanaged>(the_header, size, std::forward<ARGS>(args)...);
     initializeIfNeeded(sp);
     finalizeIfNeeded(sp);
     return sp;
   };
 
-  static smart_pointer_type copy_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, const OT& that) {
+  static OT_sp copy_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, const OT& that) {
     // Copied objects must be allocated in the appropriate pool
-    smart_pointer_type sp =
-        GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::template allocate_in_appropriate_pool_kind<gctools::RuntimeStage>(
-            the_header, size, that);
+    OT_sp sp =
+      allocate_in_appropriate_pool_kind<RuntimeStage, GCInfo<OT>::Policy>(the_header, size, that);
     // Copied objects are not initialized.
     // Copied objects are finalized if necessary
     finalizeIfNeeded(sp);
     return sp;
+  }
+
+  // This is only called on unmanged instances.
+  static void deallocate(OT* memory) {
+    do_free(memory);
   }
 
   /*
@@ -395,11 +272,6 @@ public:
   typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
 
 public:
-  template <typename... ARGS> static smart_pointer_type root_allocate(ARGS&&... args) {
-    return GCObjectAllocator<OT>::root_allocate_kind(Header_s::StampWtagMtag::make<OT>(), sizeof_with_header<OT>(),
-                                                     std::forward<ARGS>(args)...);
-  }
-
   template <typename... ARGS> static smart_pointer_type allocate_kind(const Header_s::BadgeStampWtagMtag& kind, ARGS&&... args) {
     size_t size = sizeof_with_header<OT>();
     return GCObjectAllocator<OT>::allocate_kind(kind, size, std::forward<ARGS>(args)...);
@@ -409,14 +281,6 @@ public:
     auto kind = Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag);
     size_t size = sizeof_with_header<OT>();
     return GCObjectAllocator<OT>::template allocate_kind<Stage>(kind, size, std::forward<ARGS>(args)...);
-  }
-
-  static smart_pointer_type allocate_with_default_constructor() {
-    if constexpr(std::is_default_constructible_v<OT>) {
-      auto kind = Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag);
-      return GCObjectAllocator<OT>::template allocate_kind<gctools::RuntimeStage>(kind, sizeof_with_header<OT>());
-    } else
-      lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(OT::static_classSymbol());
   }
 
   /*! Allocate enough space for capacity elements, but set the length to length */
@@ -479,7 +343,17 @@ public:
     return GCObjectAllocator<OT>::copy_kind(Header_s::BadgeStampWtagMtag::make<OT>(), sizeof_with_header<OT>(), that);
   }
 
-  static void deallocate_unmanaged_instance(OT* obj) { GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::deallocate(obj); }
+  static void deallocate_unmanaged_instance(OT* obj) { GCObjectAllocator<OT>::deallocate(obj); }
+
+  // These two are used for allocating VM stacks in threads.
+  // Also used when loading snapshots and for the Lisp object.
+  static void* allocateRootsAndZero(size_t num) {
+    return do_allocate_zero(num);
+  }
+  static void freeRoots(void* roots) {
+    do_free(roots);
+  };
+
 };
 }; // namespace gctools
 

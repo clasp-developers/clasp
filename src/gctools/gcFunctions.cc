@@ -576,30 +576,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   core::List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
   bool debugging = false;
 
-  bool use_symbols_in_global_array = false;
-#ifdef USE_SYMBOLS_IN_GLOBAL_ARRAY
-  use_symbols_in_global_array = true;
-#endif
-  if (buildReport)
-    ss << (fmt::format("USE_SYMBOLS_IN_GLOBAL_ARRAY = {}\n", (use_symbols_in_global_array ? "**DEFINED**" : "undefined")));
-
-  bool use_static_analyzer_global_symbols = false;
-#ifdef USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
-  use_static_analyzer_global_symbols = true;
-#endif
-  if (buildReport)
-    ss << (fmt::format("USE_STATIC_ANALYZER_GLOBAL_SYMBOLS = {}\n",
-                       (use_static_analyzer_global_symbols ? "**DEFINED**" : "undefined")));
-
-  bool debug_throw_if_invalid_client_on = false;
-#ifdef DEBUG_THROW_IF_INVALID_CLIENT_ON
-  debug_throw_if_invalid_client_on = true;
-  debugging = true;
-#endif
-  if (buildReport)
-    ss << (fmt::format("DEBUG_THROW_IF_INVALID_CLIENT_ON = {}\n",
-                       (debug_throw_if_invalid_client_on ? "**DEFINED**" : "undefined")));
-
   bool debug_telemetry = false;
 #ifdef DEBUG_TELEMETRY
   debug_telemetry = true;

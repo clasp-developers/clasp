@@ -2688,7 +2688,7 @@ Recursively analyze x and return T if x contains fixable pointers."
 (defun is-alloc-p (ctype project)
   "Returns true if the ctype is an object allocated using a template function in gcalloc.
 These are objects that are directly managed by the garbage collector.
-Pointers to these objects are fixed in obj_scan or they must be roots."
+Pointers to these objects are fixed in the scanner or they must be roots."
   (or (gethash (ctype-key ctype) (project-rootclassallocs project))
       (gethash (ctype-key ctype) (project-classallocs project))
       (gethash (ctype-key ctype) (project-lispallocs project))

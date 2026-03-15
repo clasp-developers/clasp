@@ -50,7 +50,7 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/clbind/cl_include.h>
+#include <clasp/core/lisp.h>
 
 #include <clasp/clbind/clbind.h>
 #include <clasp/clbind/class_registry.h>
@@ -62,8 +62,6 @@ namespace clbind {
 
 //! Take the place of __clbind_cast_graph
 detail::cast_graph* globalCastGraph;
-//! Take the place of __clbind_class_id_map
-detail::class_id_map* globalClassIdMap;
 
 class Test {
 public:
@@ -130,7 +128,6 @@ public:
 };
 
 void initializeCastGraph() {
-  globalClassIdMap = new detail::class_id_map();
   globalCastGraph = new detail::cast_graph();
 };
 

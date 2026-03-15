@@ -99,6 +99,7 @@ THE SOFTWARE.
 #include <map>
 #include <vector>
 #include <cassert>
+#include <typeindex>
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/instance.h>
@@ -111,7 +112,6 @@ THE SOFTWARE.
 #include <clasp/clbind/link_compatibility.h>
 #include <clasp/clbind/inheritance.h>
 #include <clasp/clbind/iteratorMemberFunction.h>
-#include <clasp/clbind/typeid.h>
 #include <clasp/clbind/constructor.h>
 #include <clasp/clbind/memberFunction.h>
 #include <clasp/clbind/property.h>
@@ -122,12 +122,6 @@ THE SOFTWARE.
 #pragma warning(disable : 4355)
 #endif
 
-namespace boost {
-
-template <class T> class shared_ptr;
-
-} // namespace boost
-
 namespace clbind {
 
 namespace detail {
@@ -135,8 +129,8 @@ namespace detail {
 struct derivable_class_registration;
 
 struct derivable_class_registration : registration {
-  derivable_class_registration(char const* name, type_id const& type_id_,
-                               class_id id, type_id const& wrapper_type,
+  derivable_class_registration(char const* name, std::type_index const& type_id_,
+                               class_id id, std::type_index const& wrapper_type,
                                class_id wrapper_id, bool derivable);
 
   void register_() const;
@@ -148,13 +142,13 @@ struct derivable_class_registration : registration {
 
   mutable std::map<const char*, int, detail::ltstr> m_static_constants;
 
-  typedef std::pair<type_id, cast_function> base_desc;
+  typedef std::pair<std::type_index, cast_function> base_desc;
   mutable std::vector<base_desc> m_bases;
 
-  type_id m_type;
+  std::type_index m_type;
   class_id m_id;
   class_id m_wrapper_id;
-  type_id m_wrapper_type;
+  std::type_index m_wrapper_type;
   std::vector<cast_entry> m_casts;
 
   scope_ m_scope;
@@ -166,16 +160,16 @@ struct derivable_class_registration : registration {
 
 struct CLBIND_API derivable_class_base : scope_ {
 public:
-  derivable_class_base(char const* name, type_id const& type_id_, class_id id,
-                       type_id const& wrapper_type, class_id wrapper_id,
+  derivable_class_base(char const* name, std::type_index const& type_id_, class_id id,
+                       std::type_index const& wrapper_type, class_id wrapper_id,
                        bool derivable);
 
   struct base_desc {
-    type_id type;
+    std::type_index type;
     int ptr_offset;
   };
 
-  void add_base(type_id const& base, cast_function cast);
+  void add_base(std::type_index const& base, cast_function cast);
 
   void set_default_constructor(registration* member);
   void add_member(registration* member);
@@ -209,9 +203,7 @@ struct constructor_registration<Class, reg::null_type, default_constructor, Poli
   core::Creator_sp registerDefaultConstructor_() const {
     //                printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> -----
     //                Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
-    core::SimpleFun_sp entryPoint =
-        core::makeSimpleFunAndFunctionDescription<DerivableDefaultConstructorCreator_O<Class>>(nil<core::T_O>());
-    return gc::As_unsafe<core::Creator_sp>(gctools::GC<DerivableDefaultConstructorCreator_O<Class>>::allocate(entryPoint));
+    return gc::As_unsafe<core::Creator_sp>(gctools::GC<DerivableDefaultConstructorCreator_O<Class>>::allocate());
   }
   virtual std::string name() const { return this->mm_name; }
   virtual std::string kind() const { return "derivable constructor_registration"; };

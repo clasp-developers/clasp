@@ -45,42 +45,12 @@ public:
 
   template <class Y> multiple_values(const multiple_values<Y>& yy) : smart_ptr<T>(yy), _number_of_values(yy.number_of_values()){};
 
-#if 0
-  static multiple_values<T> createFromValues() {
-    core::MultipleValues &mv = core::lisp_multipleValues();
-    multiple_values<T> result(mv.getSize() == 0 ? nil<core::T_O>() : mv.valueGet(0, mv.getSize()), mv.getSize());
-    return result;
-  }
-
-  // Save this T_mv's primary value to the multiple value vector,
-  // probably so we can restore it later.
-  // With our multiple value protocol, the primary value is not
-  // written into the vector by default; this function does so
-  // explicitly.
-  void saveToMultipleValue0() const {
-    core::MultipleValues &mv = core::lisp_multipleValues();
-    mv.valueSet(0, *this);
-    mv.setSize(this->number_of_values());
-  };
-
-  // Read this T_mv from the multiple value vector.
-  void readFromMultipleValue0() {
-    core::MultipleValues &mv = core::lisp_multipleValues();
-    this->setRaw_(reinterpret_cast<gc::Tagged>(mv[0]));
-    this->_number_of_values = mv.getSize();
-  };
-#endif
-
   void set_number_of_values(size_t num) { this->_number_of_values = num; };
   return_type as_return_type() const { return return_type(this->raw_(), this->_number_of_values); }
 
   operator bool() const { return this->theObject != NULL; }
 
-#ifdef POLYMORPHIC_SMART_PTR
-  virtual
-#endif
-      size_t
-      number_of_values() const {
+  size_t number_of_values() const {
     return this->_number_of_values;
   };
 

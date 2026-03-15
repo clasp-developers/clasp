@@ -59,14 +59,6 @@ THE SOFTWARE.
 #include <clasp/core/symbol.h>
 #include <clasp/clbind/class_registry.h>
 #include <clasp/clbind/primitives.h>
-#include <clasp/clbind/typeid.h>
-
-namespace clbind {
-namespace detail {
-class cast_graph;
-class class_id_map;
-}; // namespace detail
-}; // namespace clbind
 
 namespace clbind {
 class ClassRep_O;
@@ -79,11 +71,7 @@ template <> struct gctools::GCInfo<clbind::ClassRep_O> {
 };
 namespace clbind {
 
-CLBIND_API std::string stack_content_by_name(core::LispPtr L, int start_index);
-
 struct class_registration;
-
-struct conversion_storage;
 
 class ClassRep_O : public core::Instance_O {
   LISP_CLASS(clbind, ClbindPkg, ClassRep_O, "ClassRep", core::Instance_O);
@@ -95,7 +83,6 @@ public:
   bool cxxDerivableClassP() const override { return this->m_derivable; };
 
   ClassRep_O(core::Instance_sp c) : Instance_O(c) { printf("%s:%d:%s  create class\n", __FILE__, __LINE__, __FUNCTION__); };
-
   ClassRep_O(core::Instance_sp class_, core::Symbol_sp name, bool derivable);
 
 public:
@@ -105,13 +92,9 @@ public:
   }
   void add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base);
 
-  const gctools::Vec0<core::Cons_sp>& bases() const throw() { return m_bases; }
+  const gctools::Vec0<core::Cons_sp>& bases() const { return m_bases; }
 
   std::string name_() const throw() { return m_name->symbolNameAsString(); }
-
-  detail::cast_graph const& casts() const { return *m_casts._value; }
-
-  detail::class_id_map const& classes() const { return *m_classes._value; }
 
 public:
 
@@ -123,13 +106,6 @@ public:
   // the class' name (as given when registered to lua with class_)
   core::Symbol_sp m_name;
 
-  dont_expose<detail::cast_graph*> m_casts;
-  /* What does this store???? */
-  dont_expose<detail::class_id_map*> m_classes;
   bool m_derivable;
 };
-
-bool is_class_rep(core::LispPtr L, int index);
 } // namespace clbind
-
-// #include <clasp/clbind/detail/overload_rep_impl.hpp>

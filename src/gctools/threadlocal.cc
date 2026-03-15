@@ -130,7 +130,7 @@ VirtualMachine::VirtualMachine()
 
 void VirtualMachine::startup() {
   size_t stackSpace = VirtualMachine::MaxStackWords * sizeof(T_O*);
-  this->_stackBottom = (T_O**)gctools::RootClassAllocator<T_O>::allocateRootsAndZero(VirtualMachine::MaxStackWords);
+  this->_stackBottom = (T_O**)gctools::GC<T_O>::allocateRootsAndZero(VirtualMachine::MaxStackWords);
   this->_stackTop = this->_stackBottom + VirtualMachine::MaxStackWords - 1;
   //  printf("%s:%d:%s vm._stackTop = %p\n", __FILE__, __LINE__, __FUNCTION__, this->_stackTop );
   size_t pageSize = getpagesize();
@@ -174,7 +174,7 @@ VirtualMachine::~VirtualMachine() {
   // In snapshot load we make threads with no VM.
   // We have nothing to free and _stackBottom is just its initial NULL.
   if (this->_stackBottom)
-    gctools::RootClassAllocator<T_O>::freeRoots(this->_stackBottom);
+    gctools::GC<T_O>::freeRoots(this->_stackBottom);
 }
 
 // For main thread initialization - it happens too early and _Nil is undefined

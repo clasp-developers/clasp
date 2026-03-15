@@ -23,6 +23,7 @@
            #~"gcStack.cc"
            #~"gcalloc.cc"
            #~"gcweak.cc"
+           #~"skip.cc"
            #~"memoryManagement.cc"
            #~"startRunStop.cc"
            #~"mygc.c")

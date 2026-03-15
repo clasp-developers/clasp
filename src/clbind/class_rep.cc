@@ -50,14 +50,10 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/package.h>
-#include <clasp/clbind/cl_include.h>
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
 
-// #include <clasp/clbind/detail/stack_utils.hpp>
-// #include <clasp/clbind/detail/conversion_storage.hpp>
 #include <clasp/clbind/clbind.h>
-// #include <clasp/clbind/exception_handler.hpp>
-// #include <clasp/clbind/get_main_thread.hpp>
-// #include <utility>
 #include <clasp/clbind/class_rep.h>
 #include <clasp/core/wrappers.h>
 
@@ -67,18 +63,11 @@ namespace clbind {
 
 ClassRep_O::ClassRep_O(core::Instance_sp class_, core::Symbol_sp name, bool derivable)
     : Instance_O(class_ /*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS*/), m_name(name)
-      //	, m_class_type(cpp_class)
-      //	, m_operator_cache(0)
-      ,
-      m_casts(globalCastGraph) // Meister - luabind did this
-      ,
-      m_classes(globalClassIdMap) // Meister - luabind did this
       ,
       m_derivable(derivable) {
 }
 
 void ClassRep_O::add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base)
-// const ClassRep_O::base_info& binfo)
 {
   // If you hit this assert you are deriving from a type that is not registered
   // in cl. That is, in the class_<> you are giving a baseclass that isn't registered.

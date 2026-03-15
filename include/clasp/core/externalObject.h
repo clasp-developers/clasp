@@ -55,7 +55,7 @@ public:
 };
 
 template <class Type, class WrapperType> gctools::smart_ptr<Type> RP_Create_wrapped(WrapperType ptr) {
-  auto wrapper = gctools::GC<Type>::allocate_with_default_constructor();
+  auto wrapper = gctools::GC<Type>::allocate();
   wrapper->set_wrapped(ptr);
   return wrapper;
 };
@@ -70,7 +70,11 @@ template <class Type, class WrapperType> gctools::smart_ptr<Type> RP_Create_wrap
 public:                                                                                                                            \
   typedef aClassBase Base;                                                                                                         \
   COMMON_CLASS_PARTS(oNamespace, oPackage, aClass, nameOfWrappedClass)                                                             \
-  static gctools::smart_ptr<aClass> create() { return gctools::GC<aClass>::allocate_with_default_constructor(); };                 \
+  static gctools::smart_ptr<aClass> create() { \
+    if constexpr(std::is_default_constructible_v<aClass>)\
+      return gctools::GC<aClass>::allocate(); \
+    else lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(aClass::static_classSymbol());\
+  }\
   virtual core::Instance_sp __class() const { return core::lisp_getStaticClass(aClass::static_ValueStampWtagMtag); }               \
   typedef wrappedClass WrappedClass;                                                                                               \
                                                                                                                                    \

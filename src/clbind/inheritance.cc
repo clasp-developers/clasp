@@ -37,17 +37,12 @@ THE SOFTWARE.
 #pragma clang diagnostic push
 // #pragma clang diagnostic ignored "-Wunused-local-typedef"
 #include <boost/dynamic_bitset.hpp>
-#include <boost/foreach.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
 #pragma clang diagnostic pop
 #include <clasp/core/foundation.h>
 #include <clasp/clbind/inheritance.h>
 
 namespace clbind {
 namespace detail {
-
-class_id const class_id_map::local_id_base = std::numeric_limits<class_id>::max() / 2;
 
 namespace {
 
@@ -66,7 +61,7 @@ public:
   void invalidate();
 
 private:
-  typedef boost::tuple<class_id, class_id, class_id, std::ptrdiff_t> key_type;
+  typedef std::tuple<class_id, class_id, class_id, std::ptrdiff_t> key_type;
   typedef std::map<key_type, cache_entry> map_type;
   map_type m_cache;
 };
@@ -77,22 +72,14 @@ std::ptrdiff_t const cache::invalid = cache::unknown - 1;
 cache_entry cache::get(class_id src, class_id target, class_id dynamic_id, std::ptrdiff_t object_offset) const {
   map_type::const_iterator i = m_cache.find(key_type(src, target, dynamic_id, object_offset));
   if (i != m_cache.end()) {
-    //    printf("%s:%d:%s Returning cache key_type(%lu,%lu,%lu,%ld) -> cache_entry(%ld,%d)\n",
-    //           __FILE__, __LINE__, __FUNCTION__, src, target, dynamic_id, object_offset, i->second.first, i->second.second );
     return i->second;
   } else {
-    //    printf("%s:%d:%s Returning cache key_type(%lu,%lu,%lu,%ld) -> cache_entry(unknown,-1)\n",
-    //           __FILE__, __LINE__, __FUNCTION__, src, target, dynamic_id, object_offset );
     return cache_entry(unknown, -1);
   }
 }
 
 void cache::put_entry(class_id src, class_id target, class_id dynamic_id, std::ptrdiff_t object_offset, std::ptrdiff_t offset,
                       int distance) {
-#if 0
-  printf("%s:%d:%s Adding to cache key_type(%lu,%lu,%lu,%ld) -> cache_entry(%ld,%d)\n",
-         __FILE__, __LINE__, __FUNCTION__, src, target, dynamic_id, object_offset, offset, distance );
-#endif
   m_cache.insert(std::make_pair(key_type(src, target, dynamic_id, object_offset), cache_entry(offset, distance)));
 }
 
@@ -107,7 +94,6 @@ public:
   void dump_impl(FILE* fout);
 
 private:
-  //  std::vector<vertex> m_vertices;
   mutable cache m_cache;
 };
 
@@ -123,25 +109,14 @@ struct queue_entry {
 
 } // namespace
 
-// #define DEBUG_CAST_GRAPH 1
 
 std::pair<void*, int> cast_graph::impl::cast(void* const p, class_id src, class_id target, class_id dynamic_id,
                                              void const* dynamic_ptr) const {
-#ifdef DEBUG_CAST_GRAPH
-  if (src != target) {
-    // only print when non-trivial cases
-    //    printf("%s:%d:%s p=%p src=%lu target=%lu dynamic_id=%lu dynamic_ptr = %p\n",
-    //           __FILE__, __LINE__, __FUNCTION__, p, src, target, dynamic_id, dynamic_ptr);
-  }
-#endif
   if (src == target) {
     return std::make_pair(p, 0);
   }
 
   if (src >= _lisp->_Roots._CastGraph.size() || target >= _lisp->_Roots._CastGraph.size()) {
-#ifdef DEBUG_CAST_GRAPH
-    printf("%s:%d:%s returning B pair(%p, %d)\n", __FILE__, __LINE__, __FUNCTION__, (void*)0, -1);
-#endif
     return std::pair<void*, int>((void*)0, -1);
   }
   std::ptrdiff_t const object_offset = (char const*)dynamic_ptr - (char const*)p;
@@ -150,20 +125,8 @@ std::pair<void*, int> cast_graph::impl::cast(void* const p, class_id src, class_
 
   if (cached.first != cache::unknown) {
     if (cached.first == cache::invalid) {
-#ifdef DEBUG_CAST_GRAPH
-      printf("%s:%d:%s returning C pair(%p, %d)\n", __FILE__, __LINE__, __FUNCTION__, (void*)0, -1);
-#endif
       return std::pair<void*, int>((void*)0, -1);
     }
-#ifdef DEBUG_CAST_GRAPH
-    char* ptr = (char*)p + cached.first;
-    printf("%s:%d:%s returning cached D pair(%p, %d)\n", __FILE__, __LINE__, __FUNCTION__, ptr, cached.second);
-    if (((uintptr_t)ptr) & 0x7) {
-      printf("%s:%d:%s THERE IS A PROBLEM - RETURNED PTR %p IS NOT QWORD ALIGNED p -> %p  cached.first -> %lu cache::unknown -> "
-             "%lu class_id_map::local_id_base -> %lu\n",
-             __FILE__, __LINE__, __FUNCTION__, ptr, (char*)p, cached.first, cache::unknown, class_id_map::local_id_base);
-    }
-#endif
     return std::make_pair((char*)p + cached.first, cached.second);
   }
 
@@ -181,9 +144,6 @@ std::pair<void*, int> cast_graph::impl::cast(void* const p, class_id src, class_
 
     if (v.id == target) {
       m_cache.put_entry(src, target, dynamic_id, object_offset, (char*)qe.p - (char*)p, qe.distance);
-#ifdef DEBUG_CAST_GRAPH
-      printf("%s:%d:%s returning E pair(%p, %d)\n", __FILE__, __LINE__, __FUNCTION__, qe.p, qe.distance);
-#endif
       return std::make_pair(qe.p, qe.distance);
     }
 
@@ -195,14 +155,10 @@ std::pair<void*, int> cast_graph::impl::cast(void* const p, class_id src, class_
     }
   }
   m_cache.put_entry(src, target, dynamic_id, object_offset, cache::invalid, -1);
-#ifdef DEBUG_CAST_GRAPH
-  printf("%s:%d:%s returning F pair(%p, %d)\n", __FILE__, __LINE__, __FUNCTION__, (void*)0, -1);
-#endif
   return std::pair<void*, int>((void*)0, -1);
 }
 
 void cast_graph::impl::insert_impl(class_id src, class_id target, cast_function cast) {
-  //  printf("%s:%d:%s src=%lu target=%lu cast=%p\n", __FILE__, __LINE__, __FUNCTION__, src, target, (void*)cast);
   class_id const max_id = std::max(src, target);
 
   if (max_id >= _lisp->_Roots._CastGraph.size()) {
@@ -242,35 +198,17 @@ std::pair<void*, int> cast_graph::cast(void* p, class_id src, class_id target, c
 }
 
 void cast_graph::insert(class_id src, class_id target, cast_function cast) {
-  //  printf("%s:%d:%s src=%lu target=%lu cast=%p\n", __FILE__, __LINE__, __FUNCTION__, src, target, (void*)cast);
   m_impl->insert_impl(src, target, cast);
 }
 
 void cast_graph::dump(FILE* fout) { m_impl->dump_impl(fout); }
 
-cast_graph::cast_graph() : m_impl(new impl) {
-  //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
-}
+cast_graph::cast_graph() : m_impl(new impl) {}
 
-cast_graph::~cast_graph() {
-  //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
-}
 } // namespace detail
 } // namespace clbind
 
 namespace clbind {
-
-DOCGROUP(clasp);
-CL_DEFUN void clbind__dump_class_id_map() {
-  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
-  printf("local_id_base = %lu\n", globalClassIdMap->local_id_base);
-  printf("m_local_id = %lu\n", globalClassIdMap->m_local_id);
-  printf("Dump of m_classes\n");
-  for (auto entry : globalClassIdMap->m_type_id_to_class_id) {
-    printf(" type_id @%p (%s) -> class_id(%lu)\n", (void*)entry.first.get_type_info(), entry.first.name(), entry.second);
-  }
-  printf("------\n");
-};
 
 CL_LAMBDA(&optional filename);
 DOCGROUP(clasp);

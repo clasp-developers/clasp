@@ -27,7 +27,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
-// #include <llvm/ADT/Optional.h>
+#include <type_traits>
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/instance.h>
 #include <clasp/clbind/adapter.fwd.h>
@@ -40,112 +40,45 @@ namespace core {
 
 namespace clbind {
 
-template <class OT, class WT> gctools::smart_ptr<OT> RP_Create_wrapper() {
-  _G();
-  auto wrapper = gctools::GC<OT>::allocate_with_default_constructor();
-  return wrapper;
-}
-
-template <typename T> struct no_deleter {
-  static void deleter(T* p){};
-};
-
-template <typename T> struct new_deleter {
-  static void deleter(T* p) { delete p; };
-};
-
-template <typename T, typename = void> struct maybe_release {
-  static void call(T& obj) {
-    //            printf("%s:%d - no release to call\n", __FILE__, __LINE__);
-  }
-};
-
-template <typename T> struct maybe_release<T, decltype(std::declval<T>().release(), void(0))> {
-  static void call(T& obj) {
-    //            printf("%s:%d - calling release\n", __FILE__, __LINE__);
-    obj.release();
-  }
-};
-
-struct is_deletable_impl {
-  template <class T, class U = decltype(delete std::declval<T>())> static std::true_type test(int);
-  template <class> static std::false_type test(...);
-};
-
-template <class T> struct is_deletable : decltype(is_deletable_impl::test<T>(0)) {};
-
-template <typename OT, bool Deletable> struct maybe_delete {
-  static void doit(OT* ptr) { delete ptr; };
-};
-
-template <typename OT> struct maybe_delete<OT, false> {
-  static void doit(OT* ptr){};
-};
-}; // namespace clbind
-
-namespace clbind {
-
 /*! Wrappers wrap external pointers -
       The wrapper does not own the pointer unless the HolderType
       is a std::unique_ptr or std::shared_ptr some other holder that takes care of ownership
  */
 template <class OT, class HolderType = OT*> class Wrapper : public core::WrappedPointer_O {
-public:
+private:
   typedef core::WrappedPointer_O TemplatedBase;
 
-public:
+private:
   typedef Wrapper<OT, HolderType> WrapperType;
-  typedef OT ExternalType;
 
-public: // Do NOT declare any smart_ptr's or weak_smart_ptr's here!!!!
+private: // Do NOT declare any smart_ptr's or weak_smart_ptr's here!!!!
   HolderType p_gc_ignore;
   class_id dynamic_id;
-  void* dynamic_ptr;
+
+private:
+  OT* get() const {
+    if constexpr(std::is_same_v<OT*, HolderType>)
+      return p_gc_ignore;
+    else
+      return p_gc_ignore.get();
+  }
+  void* mostDerivedPointer() const { return (void*)get(); };
 
 public:
-  //
-  // Get a raw pointer from whatever HolderType we have
-  //
-  template <typename HType> struct RawGetter {
-    static HType get_pointer(HType& ptr) { return ptr; };
-    static const HType get_pointer(const HType& ptr) { return ptr; };
-  };
-
-  template <typename PtrType> struct RawGetter<std::unique_ptr<PtrType>> {
-    static PtrType* get_pointer(std::unique_ptr<PtrType>& ptr) { return ptr.get(); };
-    static const PtrType* get_pointer(const std::unique_ptr<PtrType>& ptr) { return ptr.get(); };
-  };
-
-  template <typename PtrType> struct RawGetter<std::shared_ptr<PtrType>> {
-    static PtrType* get_pointer(std::shared_ptr<PtrType>& ptr) { return ptr.get(); };
-    static const PtrType* get_pointer(const std::shared_ptr<PtrType>& ptr) { return ptr.get(); };
-  };
-
-public:
-  Wrapper(OT* naked, class_id dynamic_id, void* dynamic_ptr)
-    : p_gc_ignore(naked), dynamic_id(dynamic_id), dynamic_ptr(dynamic_ptr) {};
+  Wrapper(OT* naked, class_id dynamic_id)
+    : p_gc_ignore(naked), dynamic_id(dynamic_id) {};
 
   // ctor that takes a unique_ptr
-  Wrapper(std::unique_ptr<OT> naked, class_id dynamic_id, void* dynamic_ptr)
-    : p_gc_ignore(std::move(naked)), dynamic_id(dynamic_id), dynamic_ptr(dynamic_ptr) {};
+  Wrapper(std::unique_ptr<OT> naked, class_id dynamic_id)
+    : p_gc_ignore(std::move(naked)), dynamic_id(dynamic_id) {};
 
   size_t templatedSizeof() const { return sizeof(*this); };
-  void* mostDerivedPointer() const { return (void*)RawGetter<HolderType>::get_pointer(this->p_gc_ignore); };
 
   virtual class_id classId() const { return this->dynamic_id; };
 
-  /*! Release the pointer - invalidate the wrapper and return the pointer */
-  virtual void pointerDelete() {
-    if (RawGetter<HolderType>::get_pointer(this->p_gc_ignore) != NULL) {
-      maybe_delete<OT, is_deletable<OT>::value>::doit(RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
-      maybe_release<HolderType>::call(this->p_gc_ignore);
-    }
-  }
-
   static gctools::smart_ptr<WrapperType> make_wrapper(OT* naked, class_id dynamic_id) {
     //    printf("%s:%d:%s DEBUG_WRAPPER with OT*\n", __FILE__, __LINE__, __FUNCTION__ );
-    void* dynamic_ptr = (void*)naked;
-    auto obj = gctools::GC<WrapperType>::allocate(naked, dynamic_id, dynamic_ptr);
+    auto obj = gctools::GC<WrapperType>::allocate(naked, dynamic_id);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
     if (!classSymbol.unboundp()) {
       obj->_setInstanceClassUsingSymbol(classSymbol);
@@ -164,8 +97,7 @@ public:
   static gctools::smart_ptr<WrapperType> make_wrapper(const OT& val, class_id dynamic_id) {
     printf("%s:%d:%s with OT&\n", __FILE__, __LINE__, __FUNCTION__);
     OT* naked = new OT(val);
-    void* dynamic_ptr = (void*)naked;
-    auto obj = gctools::GC<WrapperType>::allocate(naked, dynamic_id, dynamic_ptr);
+    auto obj = gctools::GC<WrapperType>::allocate(naked, dynamic_id);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
     obj->_setInstanceClassUsingSymbol(classSymbol);
     return obj;
@@ -173,66 +105,54 @@ public:
 
   static gctools::smart_ptr<WrapperType> make_wrapper(std::unique_ptr<OT> val, class_id dynamic_id) {
     //    printf("%s:%d:%s with unique_ptr\n", __FILE__, __LINE__, __FUNCTION__ );
-    void* dynamic_ptr = (void*)val.get();
-    auto obj = gctools::GC<WrapperType>::allocate(std::move(val), dynamic_id, dynamic_ptr);
+    auto obj = gctools::GC<WrapperType>::allocate(std::move(val), dynamic_id);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
     obj->_setInstanceClassUsingSymbol(classSymbol);
     return obj;
   }
 
 public:
-  bool validp() const { return RawGetter<HolderType>::get_pointer(this->p_gc_ignore) != NULL; };
+  bool validp() const { return get() != NULL; };
   void throwIfInvalid() const {
     if (!this->validp()) {
       SIMPLE_ERROR("The wrapper is invalid");
     }
   };
 
-  /*! Release the pointer - invalidate the wrapper and return the pointer */
-  virtual void* pointerRelease() {
-    if (RawGetter<HolderType>::get_pointer(this->p_gc_ignore) != NULL) {
-      void* ptr = const_cast<typename std::remove_const<OT>::type*>(RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
-      maybe_release<HolderType>::call(this->p_gc_ignore);
-      return ptr;
-    }
-    return NULL;
-  }
-
   void initializeSlots(int numberOfSlots) {
     this->throwIfInvalid();
-    clbind::support_initializeSlots<ExternalType>(numberOfSlots, RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
+    clbind::support_initializeSlots<OT>(numberOfSlots, get());
   }
 
   core::T_sp instanceSigSet() {
     this->throwIfInvalid();
-    return clbind::support_instanceSigSet<ExternalType>(RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
+    return clbind::support_instanceSigSet<OT>(get());
   }
 
   core::T_sp instanceSig() const {
     this->throwIfInvalid();
-    return clbind::support_instanceSig<ExternalType>(RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
+    return clbind::support_instanceSig<OT>(get());
   }
 
   core::T_sp instanceRef(size_t idx) const {
     this->throwIfInvalid();
-    return clbind::support_instanceRef<ExternalType>(idx, RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
+    return clbind::support_instanceRef<OT>(idx, get());
   }
 
   core::T_sp instanceSet(size_t idx, core::T_sp val) {
     this->throwIfInvalid();
-    return clbind::support_instanceSet<ExternalType>(idx, val, RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
+    return clbind::support_instanceSet<OT>(idx, val, get());
   }
 
   virtual void* castTo(class_id cid) const {
     this->throwIfInvalid();
-    std::pair<void*, int> res = globalCastGraph->cast(
-        const_cast<typename std::remove_const<OT>::type*>(RawGetter<HolderType>::get_pointer(this->p_gc_ignore)) // ptr
+    std::pair<void*, int> res = globalCastGraph->cast(const_cast<typename std::remove_const<OT>::type*>(get()) // ptr
         ,
         reg::registered_class<OT>::id // src
         ,
         cid // target
         ,
-        this->dynamic_id, this->dynamic_ptr);
+        this->dynamic_id, get());
     return res.first;
   }
 
@@ -244,7 +164,7 @@ public:
            this,
            typeid(HolderType).name(),
            RawGetter<HolderType>::get_pointer(this->p_gc_ignore),
-           clbind::support_adapterAddress<ExternalType>(RawGetter<HolderType>::get_pointer(this->p_gc_ignore)),
+           clbind::support_adapterAddress<OT>(get()),
            this->classId(),
            _rep_(reg::lisp_classSymbolFromClassId(this->classId())).c_str() );
 #endif
