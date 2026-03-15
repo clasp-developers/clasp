@@ -1825,7 +1825,7 @@ CL_DEFUN Constant_sp ConstantExpr_O::getInBoundsGetElementPtr(llvm::Type* elemen
 CL_LISPIFY_NAME(constant-expr/get-int-to-ptr);
 CL_DEFUN Constant_sp ConstantExpr_O::getIntToPtr(llvm::Constant* c, llvm::Type* ty,
                                                  bool only_if_reduced_p) {
-  auto res = gctools::GC<Constant_O>::allocate_with_default_constructor();
+  auto res = gctools::GC<Constant_O>::allocate();
   res->set_wrapped(llvm::ConstantExpr::getIntToPtr(c, ty, only_if_reduced_p));
   return res;
 }
