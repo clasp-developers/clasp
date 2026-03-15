@@ -766,6 +766,12 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "chem::EnergyRosettaElec_O"
              :layout-offset-field-names ("_DisplacementBuffer")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "chem::EnergyRosettaElec_O" :layout-offset-field-names ("_Matter1")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "chem::EnergyRosettaElec_O" :layout-offset-field-names ("_Matter2")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyRosettaElec_O"
              :layout-offset-field-names ("_Parameters" ".elec_weight")}
@@ -992,6 +998,14 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "chem::EnergyRosettaNonbond_O"
              :layout-offset-field-names ("_DisplacementBuffer")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "chem::EnergyRosettaNonbond_O"
+             :layout-offset-field-names ("_Matter1")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "chem::EnergyRosettaNonbond_O"
+             :layout-offset-field-names ("_Matter2")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyRosettaNonbond_O"
              :layout-offset-field-names ("_Parameters" ".rep_weight")}
@@ -1028,7 +1042,7 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "chem::EnergyRosettaLKSolvation_O"
-             :layout-offset-field-names ("_NonbondForceField")}
+             :layout-offset-field-names ("_LKSolvationForceField")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "chem::EnergyRosettaLKSolvation_O"
@@ -1041,6 +1055,14 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "chem::EnergyRosettaLKSolvation_O"
              :layout-offset-field-names ("_DisplacementBuffer")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "chem::EnergyRosettaLKSolvation_O"
+             :layout-offset-field-names ("_Matter1")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "chem::EnergyRosettaLKSolvation_O"
+             :layout-offset-field-names ("_Matter2")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyRosettaLKSolvation_O"
              :layout-offset-field-names ("_Parameters" ".c0")}
@@ -1777,6 +1799,9 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "chem::AtomTable_O"
              :layout-offset-field-names ("_NonbondForceFieldForAggregate")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "chem::AtomTable_O"
+             :layout-offset-field-names ("_LKSolvationForceFieldForAggregate")}
 {class-kind :stamp-name "STAMPWTAG_chem__CipPrioritizer_O" :stamp-key "chem::CipPrioritizer_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -3092,6 +3117,10 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "chem::EnergyFunction_O" :layout-offset-field-names ("_Message")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
+             :offset-base-ctype "chem::EnergyFunction_O"
+             :layout-offset-field-names ("_ForceFieldName")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "chem::EnergyFunction_O"
