@@ -1275,7 +1275,7 @@ T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp 
 void lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(T_sp aclass_symbol) {
   ASSERT(aclass_symbol);
   Symbol_sp cclassSymbol = aclass_symbol.as<Symbol_O>();
-  SIMPLE_ERROR("You cannot allocate a {} with no arguments because it is missing a default constructor", _rep_(cclassSymbol));
+  SIMPLE_ERROR("You cannot allocate a {} with no arguments because it is missing a default constructor - or it is an abstract class because it fails to implement a virtual method.  Check for missing methods.", _rep_(cclassSymbol));
 }
 void lisp_errorExpectedTypeSymbol(Symbol_sp typeSym, T_sp datum) { TYPE_ERROR(datum, typeSym); }
 
