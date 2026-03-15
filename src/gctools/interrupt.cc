@@ -13,6 +13,7 @@
 #include <clasp/core/evaluator.h>
 #include <clasp/core/mpPackage.h>
 #include <clasp/core/lispList.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/gctools/interrupt.h>
 #include <clasp/core/numbers.h>
 
