@@ -216,7 +216,7 @@
          :initarg :jobs
          :initform nil
          :type (or null integer)
-         :documentation "The number of concurrent jobs during aclasp, bclasp and clasp compilation.")
+         :documentation "The number of concurrent jobs during image compilation.")
    (always-inline-mps-allocations :accessor always-inline-mps-allocations
                                   :initform t
                                   :initarg :always-inline-mps-allocations
@@ -602,8 +602,8 @@ is not compatible with snapshots.")
                    :type hash-table
                    :documentation "")
    (default-stage :accessor default-stage
-                  :initform :cclasp
-                  :type (member :iclasp :aclasp :bclasp :cclasp :eclasp :sclasp)
+                  :initform :base
+                  :type (member :iclasp :base :extension :snapshot)
                   :documentation "Default stage for installation")
    (dependency-file :accessor dependency-file
                     :initarg :dependency-file
@@ -684,11 +684,11 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"libclasp.pc" :variant))
                                                          :ninja
                                                          (list (make-source #P"build.ninja" :build)
-                                                               :libclasp :iclasp :cclasp :modules :eclasp
-                                                               :eclasp-link :sclasp :install-bin :install-code
+                                                               :libclasp :iclasp :base :modules :extension
+                                                               :extension-link :snapshot :install-bin :install-code
                                                                :clasp :regression-tests :analyzer :analyze
                                                                :tags :install-extension-code :vm-header
-                                                               :trampoline :nclasp)
+                                                               :trampoline)
                                                          :config-h
                                                          (list (make-source #P"config.h" :variant)
                                                                :scraper)
@@ -696,7 +696,7 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"version.h" :variant))
                                                          :base-translations
                                                          (list (make-source #P"generated/base-translations.lisp" :variant)
-                                                               :nclasp)
+                                                               :base)
                                                          :extension-translations
                                                          (list (make-source #P"generated/extension-translations.lisp" :variant)
                                                                :extension-translations)
@@ -782,8 +782,8 @@ is not compatible with snapshots.")
           (list (make-source (make-pathname :name "clasp" :type :unspecific) :variant))))
   (loop for system in '(:asdf :asdf-package-system :uiop :sockets :sb-bsd-sockets)
         for version = (ignore-errors (asdf:component-version (asdf:find-system system)))
-        finally (setf (gethash :cclasp (target-systems instance)) (copy-seq systems)
-                      (gethash :eclasp (target-systems instance)) (copy-seq systems))
+        finally (setf (gethash :base (target-systems instance)) (copy-seq systems)
+                      (gethash :extension (target-systems instance)) (copy-seq systems))
         collect (if version (list system :version version) (list system)) into systems)
   (setf (features instance)
         (append (features instance)

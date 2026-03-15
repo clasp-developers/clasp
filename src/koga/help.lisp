@@ -19,7 +19,7 @@ OPTIONS:")
                      initarg doc))
   (write-line "
 TARGETS:
-If no target is given to ninja then the default is cclasp-boehmprecise.
+If no target is given to ninja then the default is base-boehmprecise.
 
   analyze: Run the static analyzer on the boehm variant.
 
