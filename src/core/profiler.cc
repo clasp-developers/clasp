@@ -38,12 +38,15 @@ public:
         auto it = current->children.find(name);
         if (it != current->children.end()) {
             // Child exists; reuse it
+            it->second->callCount++;
             regionStack.push(it->second.get());
         } else {
             // Create a new child region
             auto newRegion = std::make_shared<RegionNode>(name, current);
             newRegion->startTime = now; // Record the start time of the new region
+            newRegion->callCount = 1;
             current->children[name] = newRegion;
+            current->childOrder.push_back(name);
             regionStack.push(newRegion.get());
         }
 
@@ -198,7 +201,9 @@ private:
     struct RegionNode {
         std::string name; // Name of the region
         long long totalTime = 0; // Total time spent in the region (microseconds)
-        std::unordered_map<std::string, std::shared_ptr<RegionNode>> children; // Child regions
+        long long callCount = 0; // Number of times this region was entered
+        std::unordered_map<std::string, std::shared_ptr<RegionNode>> children; // Child regions by name
+        std::vector<std::string> childOrder; // Insertion order of children
         RegionNode* parent = nullptr; // Parent region
         TimePoint startTime; // Start time of the region
 
@@ -212,6 +217,17 @@ private:
         return timingStack;
     }
 
+    // Helper to format a time value in appropriate units
+    static void formatTime(std::ostream& outStream, long long microseconds) {
+      if (microseconds < 1000) {
+        outStream << microseconds << " us";
+      } else if (microseconds < 1000000) {
+        outStream << std::fixed << std::setprecision(1) << microseconds / 1000.0 << " ms";
+      } else {
+        outStream << std::fixed << std::setprecision(1) << microseconds / 1000000.0 << " s";
+      }
+    }
+
     // Helper function to print the region tree recursively to the provided output stream
     static void printRegion(std::ostream& outStream, RegionNode* node, int indent) {
       // Indent the output based on the depth
@@ -219,16 +235,17 @@ private:
         outStream << "  ";
       }
       // Print the region name and total time
-      if ( node->totalTime < 1000) {
-        outStream << node->name << ": " << node->totalTime << " microseconds\n";
-      } else if ( node->totalTime < 1000000 ) {
-        outStream << node->name << ": " << node->totalTime/1000 << " milliseconds\n";
-      } else {
-        outStream << node->name << ": " << node->totalTime/1000000 << " seconds\n";
+      outStream << node->name << ": ";
+      formatTime(outStream, node->totalTime);
+      if (node->callCount > 1) {
+        outStream << "  (count: " << node->callCount << ", avg: ";
+        formatTime(outStream, node->totalTime / node->callCount);
+        outStream << ")";
       }
-      // Recursively print child regions
-      for (const auto& child : node->children) {
-        printRegion(outStream, child.second.get(), indent + 1);
+      outStream << "\n";
+      // Recursively print child regions in insertion order
+      for (const auto& childName : node->childOrder) {
+        printRegion(outStream, node->children[childName].get(), indent + 1);
       }
     }
 
@@ -335,6 +352,10 @@ private:
         if (parentTotalTime > 0) {
             tooltipStream << "Parent Time: " << percentStream.str();
         }
+        if (node->callCount > 1) {
+            tooltipStream << "\nCalls: " << node->callCount
+                          << "\nAvg: " << (node->totalTime / node->callCount) << " &#956;s";
+        }
 
         // Generate a unique ID for the clipping path
         int currentClipPathId = clipPathIdCounter++;
@@ -392,12 +413,13 @@ private:
             return;
         }
 
-        // Process child regions recursively
+        // Process child regions recursively in insertion order
         double childX = rectX;
-        for (const auto& child : node->children) {
+        for (const auto& childName : node->childOrder) {
+            auto& child = node->children[childName];
             // Process the child region
             processRegion(
-                child.second.get(),
+                child.get(),
                 childX,
                 unitWidth,
                 depth + 1,
@@ -407,7 +429,7 @@ private:
                 clipPathIdCounter,
                 node->totalTime); // Pass the current node's total time as the parent's total time
             // Update the X position for the next sibling
-            double childWidth = child.second->totalTime * unitWidth;
+            double childWidth = child->totalTime * unitWidth;
             childX += childWidth;
         }
     }
@@ -416,8 +438,8 @@ private:
     static int getDepth(RegionNode* node) {
         int maxChildDepth = 0;
         // Recursively determine the depth of child regions
-        for (const auto& child : node->children) {
-            int childDepth = getDepth(child.second.get());
+        for (const auto& childName : node->childOrder) {
+            int childDepth = getDepth(node->children[childName].get());
             if (childDepth > maxChildDepth) {
                 maxChildDepth = childDepth;
             }
