@@ -95,15 +95,10 @@
          :parallel nil
          :native t))
 
-(defun build (input-files output-files source-pathnames)
-  (multiple-value-bind (fasls cfasls)
-      (loop for (output cfasl) on output-files by #'cddr
-            collect output into fasls
-            collect cfasl into cfasls
-            finally (return (values fasls cfasls)))
-    (let ((system (compute-system input-files fasls
-                                  source-pathnames cfasls)))
-      (build-system system))))
+(defun build (input-files output-files source-pathnames cfasls)
+  (let ((system (compute-system input-files output-files
+                                source-pathnames cfasls)))
+    (build-system system)))
 
 (defun build-native (input-files output-files source-pathnames cfasls
                      &key (parallel-jobs 1))

@@ -140,12 +140,12 @@
                              #-darwin "$cxx -shared $variant-ldflags $ldflags -o$out $in $variant-ldlibs $ldlibs"
                     :description "Linking $out")
   (ninja:write-rule output-stream :compile-bytecode-image
-                    :command (lisp-command "compile-bytecode-image.lisp" "$in --output $out --sources $sources")
+                    :command (lisp-command "compile-bytecode-image.lisp" "$in -- $out -- $sources")
                     :description "Building Clasp bytecode image"
                     :restat 1
                     :pool "console")
   (ninja:write-rule output-stream :compile-native-image
-                    :command "$clasp --norc  --non-interactive --disable-mpi --feature ignore-extensions --image $image --load compile-native-image.lisp --quit -- $in --output $out --sources $sources --cfasls $cfasls"
+                    :command "$clasp --norc  --non-interactive --disable-mpi --feature ignore-extensions --image $image --load compile-native-image.lisp --quit -- $in -- $out -- $sources"
                     :description "Compiling Clasp native image"
                     :restat 1
                     :pool "console")
@@ -635,10 +635,12 @@
          (iclasp (make-source "iclasp" :variant))
          (clasp-with-env (wrap-with-env configuration iclasp))
          (fasls (mapcar #'source-fasl sources))
-         (outputs ; interleaved fasls and cfasls
-           (loop for source in sources
-                 collect (source-fasl source)
-                 collect (source-fasl source :type "cfasl"))))
+         (cfasls (mapcar (lambda (source)
+                           (source-fasl source :type "cfasl"))
+                         sources))
+         (nfasls (mapcar (lambda (source)
+                           (source-fasl source :type "nfasl"))
+                         sources)))
     (ninja:write-build output-stream :generate-lisp-info
                        :outputs (list features.sexp runtime-packages.lisp
                                       cxx-classes.lisp runtime-functions.lisp
@@ -656,38 +658,33 @@
                                       sources)
                        :sources (make-kernel-source-list
                                    configuration sources)
-                       :outputs outputs)
+                       :outputs fasls
+                       :implicit-outputs cfasls)
     (ninja:write-build output-stream :link-image
                        :inputs fasls
                        :outputs (list bytecode-image)
                        :clasp clasp-with-env
                        :implicit-inputs (list iclasp))
     (when (eq (build-mode configuration) :native)
-      (let ((nfasls (loop for source in sources
-                          collect (source-fasl source :type "nfasl")))
-            (cfasls
-              (format nil "~{\"~/ninja:escape/\"~^ ~}"
-                      (loop for source in sources
-                            collect (source-fasl source
-                                                 :type "cfasl")))))
-        (ninja:write-build output-stream :compile-native-image
-                           :clasp clasp-with-env
-                           :source (make-kernel-source-list configuration sources)
-                           :inputs (list* (make-source "tools-for-build/character-names.sexp"
-                                                       :code)
-                                          features.sexp
-                                          sources)
-                           :sources (make-kernel-source-list configuration sources)
-                           :cfasls cfasls
-                           :implicit-inputs (list iclasp bytecode-image
-                                                  (build-name "modules"))
-                           :image bytecode-image
-                           :outputs nfasls)
-        (ninja:write-build output-stream :link-image
-                           :clasp clasp-with-env
-                           :outputs (list native-image)
-                           :inputs nfasls
-                           :implicit-inputs (list iclasp))))
+      (ninja:write-build output-stream :compile-native-image
+                         :clasp clasp-with-env
+                         :source (make-kernel-source-list configuration sources)
+                         :inputs (list* (make-source "tools-for-build/character-names.sexp"
+                                                     :code)
+                                        features.sexp
+                                        sources)
+                         :sources (make-kernel-source-list configuration sources)
+                         :implicit-inputs (list* iclasp
+                                                 bytecode-image
+                                                 (build-name "modules")
+                                                 cfasls)
+                         :image bytecode-image
+                         :outputs nfasls)
+      (ninja:write-build output-stream :link-image
+                         :clasp clasp-with-env
+                         :outputs (list native-image)
+                         :inputs nfasls
+                         :implicit-inputs (list iclasp)))
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "iclasp")
                                      image
