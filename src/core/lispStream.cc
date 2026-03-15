@@ -1702,6 +1702,7 @@ void clasp_write_string(const string& str, T_sp strm) {
 void print(const string& str, T_sp strm) {
   for (auto ch : str)
     stream_write_char(strm, ch);
+  stream_finish_output(strm);
 }
 
 void clasp_write_string(const char* s, T_sp strm) {
