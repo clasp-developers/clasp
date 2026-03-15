@@ -820,7 +820,7 @@ then they will overide the current variant's corresponding property."
 
 (defun fasl-extension (mode)
   "Return the fasl extension based on the build mode."
-  (case mode
+  (ecase mode
     (:native "nfasl")
     (:bytecode "fasl")))
 
