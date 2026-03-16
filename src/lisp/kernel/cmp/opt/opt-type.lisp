@@ -118,6 +118,13 @@
     core:mdarray-t))
 
 (defun array-typep-form (simplicity dims uaet)
+  ;; KLUDGE: We don't actually support NIL arrays since they're dumb,
+  ;; but do have NIL as an UAET. So if someone does a typep with
+  ;; (VECTOR NIL) or whatever, just make it false.
+  ;; Maybe on some level we ought to actually have NIL array objects
+  ;; and then this will need fixing.
+  (when (null uaet)
+    (return-from array-typep-form 'nil))
   (let ((rank (if (eq dims '*) '* (length dims)))
         (simple-vector-type (simple-vector-type uaet))
         (complex-vector-type (complex-vector-type uaet))
