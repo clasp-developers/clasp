@@ -12,6 +12,16 @@
 
 (in-package #:clasp-bytecode-to-bir)
 
+;;; KLUDGE:
+;;; Ideally, bytecode ought to be environment-independent.
+;;; Sadly it's not yet, because of things like types
+;;; and function attributes. So we still need this.
+;;; Since functions themselves don't save their environments
+;;; (and shouldn't need to, because they ought to be independent)
+;;; this is only used for compile-file.
+;;; It's a hole for real first-class environment support.
+(defvar *environment* nil)
+
 ;;; To be bound to cmp:*btb-compile-hook*
 (defun compile-hook (definition environment)
   (declare (ignore environment))
@@ -1502,7 +1512,8 @@
          (cfunction
            (cmp:bytecompile-into bcmod
                                  (clasp-cleavir::make-type-check-fun
-                                  which ctype sys))))
+                                  which ctype sys)
+                                 *environment*)))
     (cmp:module/link bcmod)
     (let* ((bytecode (cmp:module/create-bytecode bcmod))
            (literals (cmp:module/literals bcmod))
@@ -1716,7 +1727,7 @@
       :fmap (compute-native-fmap fmap function-info)
       :literals ctable)))
 
-(defun compile-cmodule (bytecode literals-info debug-info module-id pathname)
+(defun compile-cmodule (bytecode literals-info debug-info module-id pathname &optional *environment*)
   (multiple-value-bind (ir funmap cmap)
       (cmodule->irmodule bytecode literals-info debug-info)
     (translate-cmodule ir (fmap funmap) cmap module-id pathname)))
