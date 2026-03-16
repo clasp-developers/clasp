@@ -89,6 +89,19 @@
                (core:source-pos-info-lineno origin)
                (core:source-pos-info-column origin))))))
 
+(define-condition macro-assumed-function
+    (style-warning compiler-condition)
+  ((%name :reader compiler-warning-name :initarg :name)
+   (%old-origin :reader old-origin :initarg :old-origin))
+  (:report
+   (lambda (condition stream)
+     (let ((origin (old-origin condition)))
+       (format stream "~s is now a macro but was previously assumed at ~a ~d:~d to be a function"
+               (compiler-warning-name condition)
+               (core:file-scope-pathname (core:file-scope origin))
+               (core:source-pos-info-lineno origin)
+               (core:source-pos-info-column origin))))))
+
 (define-condition wrong-argcount-warning
     (warning compiler-condition)
   ;; Slots match wrong-number-of-arguments in clos/conditions.lisp.
@@ -261,6 +274,12 @@ Abandoning further work on it and moving on."
         :old-origin old-origin
         :new-type new-type
         :origin new-origin))
+
+(defun warn-macro-assumed-function (name ref-origin def-origin)
+  (warn 'macro-assumed-function
+        :name name
+        :origin def-origin
+        :old-origin ref-origin))
 
 (defun warn-undefined-global-variable (origin name)
   (warn 'undefined-variable-warning

@@ -46,9 +46,12 @@ last FORM.  If not, simply returns NIL."
                     (or ,@(cdr forms))))))))
 
 (defmacro defmacro (name lambda-list &body body &environment env)
-  `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (setf (macro-function ',name) #',(ext:parse-macro name lambda-list body env))
-     ',name))
+  `(progn
+     (eval-when (:compile-toplevel)
+       (cmp::check-macro-assumed-function ',name))
+     (eval-when (:compile-toplevel :load-toplevel :execute)
+       (setf (macro-function ',name) #',(ext:parse-macro name lambda-list body env))
+       ',name)))
 
 (defmacro destructuring-bind (vl list &body body)
   (multiple-value-bind (decls body)
