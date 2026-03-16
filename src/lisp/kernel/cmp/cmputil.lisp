@@ -83,13 +83,20 @@
 
 (defun register-global-function-ref (name &optional (origin (ext:current-source-location)))
   (when (boundp '*global-function-refs*)
-    ;; Can't do (push ... (gethash ...)) because we're too early.
-    (let ((existing-refs (gethash name *global-function-refs*))
-          (new-ref
-            (make-global-function-ref :name name
-                                      :source-pos-info origin)))
-      (setf (gethash name *global-function-refs*)
-            (cons new-ref existing-refs)))))
+    (push (make-global-function-ref :name name :source-pos-info origin)
+          (gethash name *global-function-refs* nil))))
+
+;;; Issue a warning if we hit a DEFMACRO for a name that was
+;;; previously assumed to be a function. This can be done immediately
+;;; since it's dangerous regardless of how the compilation unit
+;;; shakes out.
+(defun check-macro-assumed-function (name &optional (origin (ext:current-source-location)))
+  (when (boundp '*global-function-refs*)
+    (let ((refs (gethash name *global-function-refs*)))
+      (loop for ref in refs
+            for spi = (global-function-ref-source-pos-info ref)
+            do (warn-macro-assumed-function name spi origin))
+      (remhash name *global-function-refs*))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
