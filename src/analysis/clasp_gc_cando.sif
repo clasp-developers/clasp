@@ -76,7 +76,8 @@
                           "llvmo::ValueAsMetadata_O" "geom::OMatrix_O" "chem::EnergyDihedral"
                           "llvmo::ConstantExpr_O" "core::VariableCell_O"
                           "llvmo::ConstantPointerNull_O" "llvmo::VectorType_O" "chem::FFStretch_O"
-                          "chem::IterateRestraints_O" "chem::FFNonbondDb_O" "llvmo::StructType_O"
+                          "chem::IterateRestraints_O" "chem::FFNonbondDb_O"
+                          "chem::EnergyFlatBottomAnchorRestraint" "llvmo::StructType_O"
                           "chem::EnergyNonbond_O" "core::ComplexVector_int16_t_O"
                           "chem::EnergySketchNonbond_O" "core::GFBytecodeSimpleFun_O"
                           "core::SimpleMDArray_float_O" "chem::Residue_O"
@@ -175,15 +176,15 @@
                           "llvmo::LineTable_O" "llvmo::DataLayout_O" "llvmo::BasicBlock_O"
                           "llvmo::CodeBase_O" "chem::AntechamberFocusAtomMatch_O"
                           "chem::PdbMonomerDatabase_O" "chem::Aggregate_O"
-                          "core::SimpleMDArray_int8_t_O" "chem::SearchStatistics_O"
-                          "llvmo::EngineBuilder_O" "Vector3" "core::ComplexVector_byte64_t_O"
-                          "kinematics::Joint_O" "chem::AntechamberBondToAtomTest_O"
-                          "core::MDArray_byte32_t_O" "llvmo::SectionedAddress_O"
+                          "core::SimpleMDArray_int8_t_O" "chem::EnergyFlatBottomAnchorRestraint_O"
+                          "chem::SearchStatistics_O" "Vector3" "core::ComplexVector_byte64_t_O"
+                          "llvmo::EngineBuilder_O" "chem::AntechamberBondToAtomTest_O"
+                          "core::MDArray_byte32_t_O" "kinematics::Joint_O"
                           "core::Character_dummy_O" "core::PosixFileStream_O" "comp::LexRefFixup_O"
-                          "llvmo::Constant_O" "gctools::WeakAnd" "chem::EnergyStretch_O"
-                          "llvmo::FunctionCallee_O" "chem::ResidueOut" "core::NativeVector_int_O"
-                          "llvmo::DIBasicType_O" "llvmo::DIBuilder_O" "llvmo::APInt_O"
-                          "llvmo::APFloat_O" "core::SimpleMDArrayCharacter_O"
+                          "llvmo::Constant_O" "llvmo::SectionedAddress_O" "gctools::WeakAnd"
+                          "chem::EnergyStretch_O" "llvmo::FunctionCallee_O" "chem::ResidueOut"
+                          "core::NativeVector_int_O" "llvmo::DIBasicType_O" "llvmo::DIBuilder_O"
+                          "llvmo::APInt_O" "llvmo::APFloat_O" "core::SimpleMDArrayCharacter_O"
                           "core::SimpleCharacterString_O" "core::Symbol_O"
                           "chem::AtomOrBondMatchNode_O" "core::Array_O" "core::MDArray_byte4_t_O"
                           "llvmo::Argument_O" "chem::FFItorDb_O" "llvmo::IRBuilderBase_O"
@@ -808,6 +809,23 @@
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
              :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<chem::EnergyStretch>>"
              :offset-base-ctype "chem::EnergyStretch_O"
+             :layout-offset-field-names ("_Terms" "._Vector" "._Contents")}
+{class-kind :stamp-name "STAMPWTAG_chem__EnergyFlatBottomAnchorRestraint_O"
+            :stamp-key "chem::EnergyFlatBottomAnchorRestraint_O"
+            :parent-class "chem::EnergyComponent_O" :lisp-class-base "chem::EnergyComponent_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "chem::EnergyFlatBottomAnchorRestraint_O"
+             :layout-offset-field-names ("_Enabled")}
+{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
+             :offset-base-ctype "chem::EnergyFlatBottomAnchorRestraint_O"
+             :layout-offset-field-names ("_Scale")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "chem::EnergyFlatBottomAnchorRestraint_O"
+             :layout-offset-field-names ("_Evaluations")}
+{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
+             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<chem::EnergyFlatBottomAnchorRestraint>>"
+             :offset-base-ctype "chem::EnergyFlatBottomAnchorRestraint_O"
              :layout-offset-field-names ("_Terms" "._Vector" "._Contents")}
 {class-kind :stamp-name "STAMPWTAG_chem__EnergyRigidBodyComponent_O"
             :stamp-key "chem::EnergyRigidBodyComponent_O" :parent-class "chem::EnergyComponent_O"
@@ -11785,6 +11803,40 @@
                    :length-field-names ("_Capacity") :end-field-names ("_End")}
 {variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
                      :fixup-type "gctools::smart_ptr<chem::ConformationExplorerEntry_O>"}
+{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_chem__EnergyFlatBottomAnchorRestraint_"
+                :stamp-key "gctools::GCVector_moveable<chem::EnergyFlatBottomAnchorRestraint>"
+                :parent-class "gctools::GCContainer" :lisp-class-base nil
+                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
+{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<chem::EnergyFlatBottomAnchorRestraint>"
+                 :field-names ("_Data")}
+{variable-capacity :ctype "chem::EnergyFlatBottomAnchorRestraint"
+                   :offset-base-ctype "gctools::GCVector_moveable<chem::EnergyFlatBottomAnchorRestraint>"
+                   :length-field-names ("_Capacity") :end-field-names ("_End")}
+{variable-field :offset-type-cxx-identifier "ctype_double" :fixup-ctype-offset-type-key "double"
+                :fixup-ctype-key "chem::EnergyFlatBottomAnchorRestraint"
+                :layout-offset-field-names ("term" ".ka")}
+{variable-field :offset-type-cxx-identifier "ctype_double" :fixup-ctype-offset-type-key "double"
+                :fixup-ctype-key "chem::EnergyFlatBottomAnchorRestraint"
+                :layout-offset-field-names ("term" ".r0")}
+{variable-field :offset-type-cxx-identifier "ctype_double" :fixup-ctype-offset-type-key "double"
+                :fixup-ctype-key "chem::EnergyFlatBottomAnchorRestraint"
+                :layout-offset-field-names ("term" ".r02")}
+{variable-field :offset-type-cxx-identifier "ctype_double" :fixup-ctype-offset-type-key "double"
+                :fixup-ctype-key "chem::EnergyFlatBottomAnchorRestraint"
+                :layout-offset-field-names ("term" ".xa")}
+{variable-field :offset-type-cxx-identifier "ctype_double" :fixup-ctype-offset-type-key "double"
+                :fixup-ctype-key "chem::EnergyFlatBottomAnchorRestraint"
+                :layout-offset-field-names ("term" ".ya")}
+{variable-field :offset-type-cxx-identifier "ctype_double" :fixup-ctype-offset-type-key "double"
+                :fixup-ctype-key "chem::EnergyFlatBottomAnchorRestraint"
+                :layout-offset-field-names ("term" ".za")}
+{variable-field :offset-type-cxx-identifier "ctype_int" :fixup-ctype-offset-type-key "int"
+                :fixup-ctype-key "chem::EnergyFlatBottomAnchorRestraint"
+                :layout-offset-field-names ("term" ".i3x1")}
+{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+                :fixup-ctype-offset-type-key "gctools::smart_ptr<chem::Atom_O>"
+                :fixup-ctype-key "chem::EnergyFlatBottomAnchorRestraint"
+                :layout-offset-field-names ("_Atom1")}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_chem__RotamerAtom_"
                 :stamp-key "gctools::GCVector_moveable<chem::RotamerAtom>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
