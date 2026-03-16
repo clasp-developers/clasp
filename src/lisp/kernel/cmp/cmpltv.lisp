@@ -1619,7 +1619,8 @@
                      (native (funcall (find-symbol "COMPILE-CMODULE"
                                                    "CLASP-BYTECODE-TO-BIR")
                                       bytecode literals info id
-                                      (namestring cmp::*compile-file-source-debug-pathname*))))
+                                      (namestring cmp::*compile-file-source-debug-pathname*)
+                                      *environment*)))
                 (add-native-module-instructions mod native)
                 (incf *native-module-id*))
             (serious-condition (e)
