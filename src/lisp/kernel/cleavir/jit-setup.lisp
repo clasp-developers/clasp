@@ -254,15 +254,15 @@ No DIBuilder is defined for the default module")
 
 (defun jit-constant-i32-vector-ptr (vals)
   (let* ((constant-data-array (cmp:with-thread-safe-context (context)
-                                (llvm-sys:constant-data-array-get-uint32 context vals))))
-	 (constant-data-array-type (llvm-sys:get-type constant-data-array))
-	 (global-var-for-constant-array (llvm-sys:make-global-variable *the-module*
-								       constant-data-array-type
-								       t
-								       'llvm-sys:internal-linkage
-								       constant-data-array
-								       "constant-array"))
-	 (gep (llvm-sys:constant-expr-get-in-bounds-get-element-ptr
+                                (llvm-sys:constant-data-array-get-uint32 context vals)))
+	       (constant-data-array-type (llvm-sys:get-type constant-data-array))
+	       (global-var-for-constant-array (llvm-sys:make-global-variable *the-module*
+								                                                       constant-data-array-type
+								                                                       t
+								                                                       'llvm-sys:internal-linkage
+								                                                       constant-data-array
+								                                                       "constant-array"))
+	       (gep (llvm-sys:constant-expr-get-in-bounds-get-element-ptr
                nil
                global-var-for-constant-array
                (list (jit-constant-i32 0) (jit-constant-i32 0)))))
