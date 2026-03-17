@@ -157,8 +157,7 @@
                      "DEBUG_BOUNDS_ASSERT" (debug-bounds-assert configuration)
                      "CONFIG_VAR_COOL" (config-var-cool configuration))
       (write-defines output-stream
-                     "_RELEASE_BUILD" t
-                     "ALWAYS_INLINE_MPS_ALLOCATIONS" (always-inline-mps-allocations configuration))))
+                     "_RELEASE_BUILD" t)))
 
 (defmethod print-epilogue (configuration (name (eql :config-h)) output-stream)
   (write-endif output-stream))

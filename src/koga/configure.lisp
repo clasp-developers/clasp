@@ -217,10 +217,6 @@
          :initform nil
          :type (or null integer)
          :documentation "The number of concurrent jobs during image compilation.")
-   (always-inline-mps-allocations :accessor always-inline-mps-allocations
-                                  :initform t
-                                  :initarg :always-inline-mps-allocations
-                                  :type boolean)
    (address-sanitizer :accessor address-sanitizer
                       :initarg :address-sanitizer
                       :initform nil
