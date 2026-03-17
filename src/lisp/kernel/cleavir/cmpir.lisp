@@ -248,7 +248,8 @@ local-function - the lcl function that all of the xep functions call."
 
 (defun irc-basic-block-create (name &optional (function *current-function*))
   "Create a llvm::BasicBlock with (name) in the (function)"
-  (llvm-sys:basic-block-create (thread-local-llvm-context) name function))
+  (cmp:with-thread-safe-context (context)
+    (llvm-sys:basic-block-create context name function)))
 
 (defun irc-get-insert-block ()
   (llvm-sys:get-insert-block *irbuilder*))
@@ -938,9 +939,13 @@ But no irbuilders or basic-blocks. Return the fn."
 (defun irc-bit-cast (from totype &optional (label "bit-cast"))
   (llvm-sys:create-bit-cast *irbuilder* from totype label))
 
-(defmacro with-irbuilder ((irbuilder) &body code)
+(defmacro with-irbuilder ((&optional irbuilder) &body code)
   "Set *irbuilder* to the given IRBuilder"
-  `(let ((*irbuilder* ,irbuilder))
+  `(let ((*irbuilder* ,(or irbuilder
+                           #+(or llvm15 llvm16 llvm17 llvm18 llvm19)
+                           '(llvm-sys:make-irbuilder (llvm-sys:thread-local-llvm-context))
+                           #-(or llvm15 llvm16 llvm17 llvm18 llvm19)
+                           '(llvm-sys:call-with-thread-safe-context (function llvm-sys:make-irbuilder)))))
      ,@code))
 
 (defmacro with-module ((&key module) &body body)

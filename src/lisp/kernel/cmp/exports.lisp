@@ -57,7 +57,7 @@
           *generate-compile-file-load-time-values*
           *gv-current-function-name*
           *thread-safe-context*
-          thread-local-llvm-context
+          with-thread-safe-context
           *load-time-value-holder-global-var-type*
           *load-time-value-holder-global-var*
           *low-level-trace*

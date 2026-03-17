@@ -63,10 +63,8 @@
         ((not (listp rtype)) (error "Bad rtype ~a" rtype))
         ((null rtype) cmp:%void%)
         ((null (rest rtype)) (vrtype->llvm (first rtype)))
-        (t (llvm-sys:struct-type-get
-            (cmp:thread-local-llvm-context)
-            (mapcar #'vrtype->llvm rtype)
-            nil))))
+        (t (cmp:with-thread-safe-context (context)
+             (llvm-sys:struct-type-get context (mapcar #'vrtype->llvm rtype) nil)))))
 
 ;;; Given an IR function, determine the llvm type for the local function's
 ;;; return value.
@@ -1977,9 +1975,11 @@ function-or-placeholder - the llvm function or a placeholder for
          (*function-current-multiple-value-array-address*
            nil)
          (cmp:*irbuilder-function-alloca*
-           (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
-         (body-irbuilder (llvm-sys:make-irbuilder
-                          (cmp:thread-local-llvm-context)))
+           (cmp:with-thread-safe-context (context)
+             (llvm-sys:make-irbuilder context)))
+         (body-irbuilder
+           (cmp:with-thread-safe-context (context)
+             (llvm-sys:make-irbuilder context)))
          (body-block (cmp:irc-basic-block-create "body"))
          (source-pos-info (function-source-pos-info function))
          (lineno (core:source-pos-info-lineno source-pos-info)))
@@ -2042,7 +2042,8 @@ function-or-placeholder - the llvm function or a placeholder for
                (entry-block (cmp:irc-basic-block-create "entry" xep-arity-function))
                (*function-current-multiple-value-array-address* nil)
                (cmp:*irbuilder-function-alloca*
-                 (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+                 (cmp:with-thread-safe-context (context)
+                   (llvm-sys:make-irbuilder context)))
                (source-pos-info (function-source-pos-info function))
                (lineno (core:source-pos-info-lineno source-pos-info)))
           (cmp:with-guaranteed-*current-source-pos-info* ()
