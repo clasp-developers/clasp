@@ -122,11 +122,11 @@ public: // Garbage collector functions
   uintptr_t rawRefCdr() const { return (uintptr_t)this->cdr().raw_(); }
   void rawRefSetCar(uintptr_t val) {
     T_sp tval((gctools::Tagged)val);
-    this->setCarNoValidate(tval);
+    this->setCar(tval);
   }
   void rawRefSetCdr(uintptr_t val) {
     T_sp tval((gctools::Tagged)val);
-    this->setCdrNoValidate(tval);
+    this->setCdr(tval);
   }
 #endif
 public:
@@ -179,20 +179,8 @@ public:
 public: // basic access
   inline T_sp car() const { return _Car.load(std::memory_order_relaxed); }
   inline T_sp cdr() const { return _Cdr.load(std::memory_order_relaxed); }
-  inline void setCarNoValidate(T_sp o) { _Car.store(o, std::memory_order_relaxed); }
-  inline void setCdrNoValidate(T_sp o) { _Cdr.store(o, std::memory_order_relaxed); }
-  inline void setCar(T_sp o) {
-#ifdef DEBUG_STORES
-    cc_validate_tagged_pointer(o.raw_());
-#endif
-    this->setCarNoValidate(o);
-  }
-  inline void setCdr(T_sp o) {
-#ifdef DEBUG_STORES
-    cc_validate_tagged_pointer(o.raw_());
-#endif
-    this->setCdrNoValidate(o);
-  }
+  inline void setCar(T_sp o) { _Car.store(o, std::memory_order_relaxed); }
+  inline void setCdr(T_sp o) { _Cdr.store(o, std::memory_order_relaxed); }
 
 public: // atomic access
   inline T_sp carAtomic(std::memory_order order) const { return _Car.load(order); }

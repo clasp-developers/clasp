@@ -812,16 +812,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (buildReport)
     ss << (fmt::format("DEBUG_DTRACE_LOCK_PROBE = {}\n", (debug_dtrace_lock_probe ? "**DEFINED**" : "undefined")));
 
-  bool debug_stores = false;
-#ifdef DEBUG_STORES
-  debug_stores = true;
-  debugging = true;
-  if (setFeatures)
-    features = core::Cons_O::create(_lisp->internKeyword("DEBUG-STORES"), features);
-#endif
-  if (buildReport)
-    ss << (fmt::format("DEBUG_STORES = {}\n", (debug_stores ? "**DEFINED**" : "undefined")));
-
   bool disable_type_inference = false;
 #ifdef DISABLE_TYPE_INFERENCE
   disable_type_inference = true;

@@ -359,11 +359,6 @@
                   :initform nil
                   :type boolean
                   :documentation "")
-   (debug-stores :accessor debug-stores
-                 :initarg :debug-stores
-                 :initform nil
-                 :type boolean
-                 :documentation "insert a call to cc_validate_tagged_pointer everytime something is written to memory")
    (debug-ensure-valid-object :accessor debug-ensure-valid-object
                               :initarg :debug-ensure-valid-object
                               :initform nil

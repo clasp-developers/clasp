@@ -79,7 +79,6 @@
                  "DEBUG_LONG_CALL_HISTORY" (debug-long-call-history configuration)
                  "DEBUG_FASTGF" (debug-fastgf configuration)
                  "DEBUG_THREADS" (debug-threads configuration)
-                 "DEBUG_STORES" (debug-stores configuration)
                  "DEBUG_ENSURE_VALID_OBJECT" (debug-ensure-valid-object configuration)
                  "DEBUG_QUICK_VALIDATE" (debug-quick-validate configuration)
                  "DEBUG_RECURSIVE_ALLOCATIONS" (debug-recursive-allocations configuration)
