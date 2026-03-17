@@ -23,7 +23,10 @@
 #include <clasp/llvmo/code.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/llvmo/jit.h>
-
+#if LLVM_VERSION_MAJOR > 20
+#include <llvm/ExecutionEngine/Orc/EHFrameRegistrationPlugin.h>
+#include <llvm/ExecutionEngine/Orc/SelfExecutorProcessControl.h>
+#endif
 //
 // The include for Debug.h must be first so we can force NDEBUG undefined
 // otherwise setCurrentDebugTypes will be an empty macro
@@ -114,7 +117,11 @@
 #include <llvm/IR/AssemblyAnnotationWriter.h> // will be llvm/IR
 #include <llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h>
 #include <llvm/ExecutionEngine/Orc/ExecutorProcessControl.h>
+#if LLVM_VERSION_MAJOR < 22
 #include <llvm/ExecutionEngine/Orc/DebugObjectManagerPlugin.h>
+#else
+#include <llvm/ExecutionEngine/Orc/Debugging/ELFDebugObjectPlugin.h>
+#endif
 #include <llvm/ExecutionEngine/Orc/TargetProcess/RegisterEHFrames.h>
 #include <llvm/ExecutionEngine/Orc/TargetProcess/JITLoaderGDB.h>
 #include <llvm-c/Disassembler.h>
@@ -364,7 +371,11 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     if (!MR.getSymbols().count(PersonalitySymbol))
       Config.PrePrunePasses.insert(Config.PrePrunePasses.begin(), [this](jitlink::LinkGraph& G) -> Error {
         for (auto ssym : G.defined_symbols()) {
+#if LLVM_VERSION_MAJOR < 22
           std::string sssym(ssym->getName());
+#else
+          std::string sssym(*ssym->getName());
+#endif
           if (strcmp(sssym.c_str(), "DW.ref.__gxx_personality_v0") == 0) {
             DEBUG_OBJECT_FILES_PRINT(
                 ("%s:%d:%s PrePrunePass found DW.ref.__gxx_personality_v0 setting Strong Linkage and Local scope\n", __FILE__,
@@ -386,7 +397,11 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
           }
       }
       for (auto ssym : G.defined_symbols()) {
+#if LLVM_VERSION_MAJOR < 22
         std::string sname = ssym->getName().str();
+#else
+        std::string sname(*ssym->getName());
+#endif
 #ifdef DEBUG_OBJECT_FILES
         if (ssym->getName().str() != "") {
           DEBUG_OBJECT_FILES_PRINT(
@@ -486,7 +501,11 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       if ((sectionName.find(BSS_NAME) != string::npos) || (sectionName.find(DATA_NAME) != string::npos)) {
         llvm::jitlink::SectionRange range(S);
         for (auto& sym : S.symbols()) {
+#if LLVM_VERSION_MAJOR < 22
           std::string name = sym->getName().str();
+#else
+          std::string name(*sym->getName());
+#endif
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     section: %s symbol:  %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__,
                                     S.getName().str().c_str(), name.c_str(), address, size));
         }
@@ -514,7 +533,11 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                                   currentCode->_TextSectionStart, currentCode->_TextSectionEnd));
         for (auto& sym : S.symbols()) {
           if (sym->isCallable() && sym->hasName()) {
+#if LLVM_VERSION_MAJOR < 22
             std::string name = sym->getName().str();
+#else
+            std::string name(*sym->getName());
+#endif
             void* address = (void*)sym->getAddress().getValue();
             size_t size = sym->getSize();
             core::core__jit_register_symbol(name, size, (void*)address);
@@ -545,13 +568,17 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       printf("%s:%d:%s No executable region was found for the Code_O object for graph %s\n", __FILE__, __LINE__, __FUNCTION__,
              G.getName().c_str());
       for (auto* Sym : G.external_symbols()) {
-        printf("       Symbol: %s\n", Sym->getName().str().c_str());
+        fmt::print("       Symbol: {}\n", *Sym->getName());
       }
     }
     //
     bool found_literals = false;
     for (auto ssym : G.defined_symbols()) {
+#if LLVM_VERSION_MAJOR < 22
       if (ssym->getName() == "DW.ref.__gxx_personality_v0") {
+#else
+      if ((*ssym->getName()).compare("DW.ref.__gxx_personality_v0") == 0) {
+#endif
         DEBUG_OBJECT_FILES_PRINT(
             ("%s:%d:%s PrePrunePass found DW.ref.__gxx_personality_v0 setting Strong Linkage and Local scope\n", __FILE__, __LINE__,
              __FUNCTION__));
@@ -569,7 +596,11 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       }
 #endif
       if (ssym->hasName()) {
+#if LLVM_VERSION_MAJOR < 22
         std::string sname = ssym->getName().str();
+#else
+        std::string sname(*ssym->getName());
+#endif
         size_t pos;
         pos = sname.find(literals_name);
         if (pos != std::string::npos) {
@@ -678,6 +709,7 @@ ClaspJIT_O::ClaspJIT_O() {
           .setExecutionSession(std::make_unique<ExecutionSession>(std::move(TPC)))
           .setNumCompileThreads(0) // <<<<<<< In May 2021 a path will open to use multicores for LLJIT.
           .setJITTargetMachineBuilder(std::move(JTMB))
+#if LLVM_VERSION_MAJOR < 22
           .setObjectLinkingLayerCreator([this, &ExitOnErr](ExecutionSession& ES, const Triple& TT) {
             auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
             ObjLinkingLayer->addPlugin(
@@ -696,6 +728,26 @@ ClaspJIT_O::ClaspJIT_O() {
             ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
             return ObjLinkingLayer;
           })
+#else
+          .setObjectLinkingLayerCreator([this, &ExitOnErr](ExecutionSession& ES) {
+            auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
+            ObjLinkingLayer->addPlugin(ExitOnErr(orc::EHFrameRegistrationPlugin::Create(ES)));
+            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to addPlugin for ClaspPlugin\n", __FILE__, __LINE__, __FUNCTION__));
+            ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
+            if (!getenv("CLASP_NO_JIT_GDB")) {
+              Error TargetSymErr = Error::success();
+              auto Plugin = std::make_unique<ELFDebugObjectPlugin>(ES, true, true, TargetSymErr);
+              ExitOnErr(std::move(TargetSymErr));
+              ObjLinkingLayer->addPlugin(std::move(Plugin));
+              if (ES.getTargetTriple().isOSBinFormatMachO()) {
+                ObjLinkingLayer->addPlugin(std::make_unique<GDBJITDebugInfoRegistrationPlugin>(
+                    llvm::orc::ExecutorAddr::fromPtr(&llvm_orc_registerJITLoaderGDBAllocAction)));
+              }
+            }
+            ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
+            return ObjLinkingLayer;
+          })
+#endif
           .create());
   this->_LLJIT = std::move(J);
 
