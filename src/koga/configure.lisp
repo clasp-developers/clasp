@@ -299,11 +299,6 @@
                                 :initform nil
                                 :type boolean
                                 :documentation "dynamic variable binding debugging")
-   (debug-values :accessor debug-values
-                 :initarg :debug-values
-                 :initform nil
-                 :type boolean
-                 :documentation "turn on printing (values x y z) values when core:*debug-values* is not nil")
    (debug-track-unwinds :accessor debug-track-unwinds
                         :initarg :debug-track-unwinds
                         :initform nil

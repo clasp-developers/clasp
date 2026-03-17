@@ -672,14 +672,6 @@ LCC_RETURN cc_call_multipleValueOneFormCallWithRet0(core::Function_O* tfunc, gct
   MAKE_STACK_FRAME(callargs, ret0.nvals);
   size_t idx(0);
   gctools::fill_frame_multiple_value_return(callargs, idx, ret0);
-#ifdef DEBUG_VALUES
-  if (_sym_STARdebug_valuesSTAR && _sym_STARdebug_valuesSTAR->boundP() && _sym_STARdebug_valuesSTAR->symbolValue().notnilp()) {
-    for (size_t i(0); i < ret0.nvals; ++i) {
-      core::T_sp mvobj((gctools::Tagged)(*callargs)[i]);
-      printf("%s:%d  ....  cc_call_multipleValueOneFormCall[%lu] -> %s\n", __FILE__, __LINE__, i, _rep_(mvobj).c_str());
-    }
-  }
-#endif
   core::Function_sp func((gctools::Tagged)tfunc);
   return func->apply_raw(ret0.nvals, callargs->arguments(0));
 }
@@ -747,15 +739,6 @@ gctools::return_type cc_restoreMultipleValue0() {
 void cc_save_values(size_t nvals, T_O* primary, T_O** vector) {
   NO_UNWIND_BEGIN();
   returnTypeSaveToTemp(nvals, primary, vector);
-#ifdef DEBUG_VALUES
-  if (_sym_STARdebug_valuesSTAR && _sym_STARdebug_valuesSTAR->boundP() && _sym_STARdebug_valuesSTAR->symbolValue().notnilp()) {
-    printf("%s:%d:%s nvals = %lu\n", __FILE__, __LINE__, __FUNCTION__, nvals);
-    for (size_t i(0); i < nvals; ++i) {
-      core::T_sp mvobj((gctools::Tagged)(vector[i]));
-      printf("%s:%d  ....  vector[%lu] -> %s\n", __FILE__, __LINE__, i, _rep_(mvobj).c_str());
-    }
-  }
-#endif
   NO_UNWIND_END();
 }
 

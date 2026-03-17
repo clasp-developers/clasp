@@ -485,19 +485,6 @@ DOCGROUP(clasp);
 CL_DEFUN T_mv cl__values(Vaslist_sp vargs) {
   // returns multiple values
   size_t nargs = vargs->nargs();
-#ifdef DEBUG_VALUES
-  if (nargs >= core::MultipleValues::MultipleValuesLimit) {
-    SIMPLE_ERROR("Too many arguments to values - only {} are supported and you tried to return {} values",
-                 core::MultipleValues::MultipleValuesLimit, nargs);
-  }
-  if (_sym_STARdebug_valuesSTAR && _sym_STARdebug_valuesSTAR->boundP() && _sym_STARdebug_valuesSTAR->symbolValue().notnilp()) {
-    for (size_t di(0); di < nargs; ++di) {
-      T_sp dsp((gctools::Tagged)va_arg(debugl, T_O*));
-      printf("%s:%d   VALUES[%lu] -> %s\n", __FILE__, __LINE__, di, _rep_(dsp).c_str());
-    }
-    va_end(debugl);
-  }
-#endif
   core::MultipleValues& me = (core::lisp_multipleValues());
   me.setSize(0);
   core::T_sp first(nil<core::T_O>());

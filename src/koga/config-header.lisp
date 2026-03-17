@@ -70,7 +70,6 @@
                  "DEBUG_RELEASE" (debug-release configuration)
                  "DEBUG_BITUNIT_CONTAINER" (debug-bitunit-container configuration)
                  "DEBUG_DYNAMIC_BINDING_STACK" (debug-dynamic-binding-stack configuration)
-                 "DEBUG_VALUES" (debug-values configuration)
                  "DEBUG_TRACK_UNWINDS" (debug-track-unwinds configuration)
                  "DEBUG_NO_UNWIND" (debug-no-unwind configuration)
                  "DEBUG_STARTUP" (debug-startup configuration)
