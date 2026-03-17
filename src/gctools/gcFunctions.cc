@@ -576,14 +576,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   core::List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
   bool debugging = false;
 
-  bool debug_telemetry = false;
-#ifdef DEBUG_TELEMETRY
-  debug_telemetry = true;
-  debugging = true;
-#endif
-  if (buildReport)
-    ss << (fmt::format("DEBUG_TELEMETRY = {}\n", (debug_telemetry ? "**DEFINED**" : "undefined")));
-
   bool debug_alloc_alignment = false;
 #ifdef DEBUG_ALLOC_ALIGNMENT
   debug_alloc_alignment = true;
@@ -599,14 +591,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport)
     ss << (fmt::format("DEBUG_STACKMAPS = {}\n", (debug_stackmaps ? "**DEFINED**" : "undefined")));
-
-  bool debug_stack_telemetry = false;
-#ifdef DEBUG_STACK_TELEMETRY
-  debug_stack_telemetry = true;
-  debugging = true;
-#endif
-  if (buildReport)
-    ss << (fmt::format("DEBUG_STACK_TELEMETRY = {}\n", (debug_stack_telemetry ? "**DEFINED**" : "undefined")));
 
   bool debug_recursive_allocations = false;
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
@@ -661,16 +645,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport)
     ss << (fmt::format("DEBUG_THREADS = {}\n", (debug_threads ? "**DEFINED**" : "undefined")));
-
-  bool debug_enable_profiling = false;
-#ifdef ENABLE_PROFILING
-  debug_enable_profiling = true;
-  debugging = true;
-  if (setFeatures)
-    features = core::Cons_O::create(_lisp->internKeyword("ENABLE-PROFILING"), features);
-#endif
-  if (buildReport)
-    ss << (fmt::format("ENABLE_PROFILING = {}\n", (debug_enable_profiling ? "**DEFINED**" : "undefined")));
 
   bool debug_release = false;
 #ifdef DEBUG_RELEASE
@@ -811,16 +785,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport)
     ss << (fmt::format("DEBUG_DTRACE_LOCK_PROBE = {}\n", (debug_dtrace_lock_probe ? "**DEFINED**" : "undefined")));
-
-  bool disable_type_inference = false;
-#ifdef DISABLE_TYPE_INFERENCE
-  disable_type_inference = true;
-  debugging = true;
-  if (setFeatures)
-    features = core::Cons_O::create(_lisp->internKeyword("DISABLE-TYPE-INFERENCE"), features);
-#endif
-  if (buildReport)
-    ss << (fmt::format("DISABLE_TYPE_INFERENCE = {}\n", (disable_type_inference ? "**DEFINED**" : "undefined")));
 
   bool use_compile_file_parallel = false;  
 #ifdef USE_COMPILE_FILE_PARALLEL

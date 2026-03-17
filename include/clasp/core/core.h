@@ -182,7 +182,6 @@ typedef std::size_t class_id;
 //
 
 // #undef SOURCE_DEBUG
-// #define ENABLE_PROFILING 1
 //
 //  Turn on INIT_DEBUG if you want LISP initialization log messages
 //  - there are lots and startup will be very slow
