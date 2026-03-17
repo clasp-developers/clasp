@@ -115,10 +115,9 @@ Options:
   sanitizer=address
       Setup codegen for address sanitizer
   debug-startup
-      Print a message for every top level form at startup (requires DEBUG_SLOW)
+      Print a message for every top level form at startup
   debug-startup-verbose
       Print a message for every top level form and literal read at startup
-      (requires DEBUG_SLOW)
   debug-run-clang
       Print every clang invocation
   exit-backtrace

@@ -649,28 +649,6 @@ CL_DEFUN T_mv core__declared_global_notinline_p(T_sp name) {
 }
 
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__run_function(T_sp object) {
-  std::string name = gc::As<String_sp>(object)->get_std_string();
-  T_sp thandle = _sym_STARcurrent_dlopen_handleSTAR->symbolValue();
-  uintptr_t handle = 0;
-  if (thandle.notnilp() && gc::IsA<Pointer_sp>(thandle)) {
-    handle = (uintptr_t)gc::As_unsafe<Pointer_sp>(thandle)->ptr();
-  }
-  ClaspXepGeneralFunction func = (ClaspXepGeneralFunction)dlsym((void*)handle, name.c_str());
-//  printf("%s:%d:%s running function %s  at %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)func);
-#ifdef DEBUG_SLOW
-  MaybeDebugStartup startup((void*)func);
-#endif
-  if (func != nullptr) {
-    LCC_RETURN ret = func(nil<T_O>().raw_(), 0, NULL);
-    core::T_sp res((gctools::Tagged)ret.ret0[0]);
-    core::T_sp val = res;
-    return val;
-  }
-  return nil<T_O>();
-}
-
-DOCGROUP(clasp);
 CL_DEFUN T_sp core__make_builtin_class(T_sp object) {
   printf("%s:%d:%s  with %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(object).c_str());
   SIMPLE_ERROR("Add support for core__make_builtin_class");

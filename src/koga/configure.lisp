@@ -458,11 +458,6 @@
                                     :initform nil
                                     :type boolean
                                     :documentation "")
-   (debug-slow :accessor debug-slow
-               :initarg :debug-slow
-               :initform nil
-               :type boolean
-               :documentation "Code runs slower due to checks - undefine to remove checks")
    (human-readable-bitcode :accessor human-readable-bitcode
                            :initarg :human-readable-bitcode
                            :initform nil
