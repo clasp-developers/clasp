@@ -324,11 +324,6 @@
                             :initform nil
                             :type boolean
                             :documentation "count per-thread allocations of instances of classes")
-   (debug-compiler :accessor debug-compiler
-                   :initarg :debug-compiler
-                   :initform nil
-                   :type boolean
-                   :documentation "Turn on compiler debugging")
    (debug-verify-modules :accessor debug-verify-modules
                          :initarg :debug-verify-modules
                          :initform nil
