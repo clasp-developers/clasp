@@ -171,7 +171,9 @@ public:
     this->_ptr = ptr;
   }
   static ThreadSafeContext_sp create_thread_safe_context();
+#if LLVM_VERSION_MAJOR < 21
   llvm::LLVMContext* getContext();
+#endif
   ThreadSafeContext_O() : Base(), _ptr(NULL){};
   ~ThreadSafeContext_O() {
     delete _ptr;

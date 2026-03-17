@@ -9,7 +9,7 @@
 
 (defun compile-wrong-number-arguments-block (closure nargs min max)
   ;; make a new irbuilder, so as to not disturb anything
-  (with-irbuilder ((llvm-sys:make-irbuilder (thread-local-llvm-context)))
+  (with-irbuilder ()
     (let ((errorb (irc-basic-block-create "wrong-num-args")))
       (irc-begin-block errorb)
       (irc-intrinsic "cc_wrong_number_of_arguments"

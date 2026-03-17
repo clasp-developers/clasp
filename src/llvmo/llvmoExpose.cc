@@ -370,7 +370,7 @@ CL_DEFUN LLVMContext_sp llvm_sys__thread_local_llvm_context() {
 }
 #else
 DOCGROUP(clasp);
-CL_DEFUN core::T_mv llvm_sys__call_with_thread_local_llvm_context(core::T_sp func) {
+CL_DEFUN core::T_mv llvm_sys__call_with_thread_safe_context(core::T_sp func) {
   llvm::orc::ThreadSafeContext* tsc = ((llvm::orc::ThreadSafeContext*)gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue())->externalObject());
   return tsc->withContextDo([&func](llvm::LLVMContext *lc) {
     auto context = gctools::GC<LLVMContext_O>::allocate();
@@ -631,7 +631,11 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::emitModule(core::T_sp stream, core::T_s
 
   llvm::legacy::PassManager PM;
 
+#if LLVM_VERSION_MAJOR < 21
   llvm::LLVMTargetMachine* LTM = dynamic_cast<llvm::LLVMTargetMachine*>(TM);
+#else
+  llvm::TargetMachine* LTM = TM;
+#endif
   if (LTM) {
     llvm::TargetPassConfig* TPC = LTM->createPassConfig(PM);
     // Disable tail merges to improve debug info accuracy
@@ -757,7 +761,6 @@ CL_PKG_NAME(LlvmoPkg,"triple-normalize");
 CL_EXTERN_DEFUN((std::string(*)(llvm::StringRef str))&llvm::Triple::normalize);
 #else
 CL_EXTERN_DEFUN((std::string(*)(llvm::StringRef str,llvm::Triple::CanonicalForm Form))&llvm::Triple::normalize);
-ID);
 #endif
 
 CL_LISPIFY_NAME(getTriple);
@@ -1452,8 +1455,10 @@ CL_EXTERN_DEFMETHOD(Module_O, (llvm::GlobalVariable * (llvm::Module::*)(llvm::St
 CL_LISPIFY_NAME(getOrInsertFunction);
 CL_EXTERN_DEFMETHOD(Module_O, (llvm::FunctionCallee(llvm::Module::*)(llvm::StringRef,
                                                                      llvm::FunctionType*))&llvm::Module::getOrInsertFunction);
+#if LLVM_VERSION_MAJOR < 22
 CL_LISPIFY_NAME(getOrInsertGlobal);
 CL_EXTERN_DEFMETHOD(Module_O, (llvm::Constant * (llvm::Module::*)(llvm::StringRef, llvm::Type*)) & llvm::Module::getOrInsertGlobal);
+#endif
 CL_LISPIFY_NAME(getDataLayoutStr);
 CL_EXTERN_DEFMETHOD(Module_O, &llvm::Module::getDataLayoutStr);
 CL_LISPIFY_NAME(getTargetTriple);
@@ -1466,7 +1471,7 @@ CL_EXTERN_DEFMETHOD(Module_O, (void(llvm::Module::*)(llvm::StringRef)) & llvm::M
 ;
 // CL_EXTERN_DEFMETHOD(Module_O,&llvm::Module::setTargetTriple);
 DOCGROUP(clasp);
-CL_DEFUN void llvm_sys__setTargetTriple(llvm::Module* module, llvm::StringRef triple) { module->setTargetTriple(triple); }
+CL_DEFUN void llvm_sys__setTargetTriple(llvm::Module* module, llvm::StringRef triple) { module->setTargetTriple(llvm::Triple(triple)); }
 
 SYMBOL_EXPORT_SC_(LlvmoPkg, verifyModule);
 //  Defun(verifyModule);
@@ -1947,7 +1952,11 @@ CL_DEFUN void llvm_sys__instruction_eraseFromParent(Instruction_sp instr) {
 CL_DOCSTRING(R"dx(Return the next non-debug instruction or NIL if there is none)dx");
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp llvm_sys__instruction_getNextNonDebugInstruction(Instruction_sp instr) {
+#if LLVM_VERSION_MAJOR < 22
   const llvm::Instruction* next = instr->wrappedPtr()->getNextNonDebugInstruction();
+#else
+  const llvm::Instruction* next = instr->wrappedPtr()->getNextNode();
+#endif
   if (next != NULL) {
     return translate::to_object<llvm::Instruction*>::convert(const_cast<llvm::Instruction*>(next));
   }
@@ -1955,7 +1964,7 @@ CL_DEFUN core::T_sp llvm_sys__instruction_getNextNonDebugInstruction(Instruction
 };
 
 CL_LISPIFY_NAME("insertAfter");
-CL_EXTERN_DEFMETHOD(Instruction_O, &llvm::Instruction::insertAfter);
+CL_EXTERN_DEFMETHOD(Instruction_O, (void (llvm::Instruction::*)(llvm::Instruction*))&llvm::Instruction::insertAfter);
 #if LLVM_VERSION_MAJOR < 18
 CL_LISPIFY_NAME("insertBefore");
 CL_EXTERN_DEFMETHOD(Instruction_O, &llvm::Instruction::insertBefore);
@@ -4133,10 +4142,12 @@ void register_object_file_with_gdb(void* object_file, size_t size)
 
 }; // namespace llvmo
 
+#if 0
 LLVM_ATTRIBUTE_USED void linkComponents() {
   llvm::errs() << (void*)&llvm_orc_registerEHFrameSectionWrapper << (void*)&llvm_orc_deregisterEHFrameSectionWrapper
                << (void*)&llvm_orc_registerJITLoaderGDBWrapper;
 }
+#endif
 
 SYMBOL_EXPORT_SC_(LlvmoPkg, make_StkSizeRecord);
 SYMBOL_EXPORT_SC_(LlvmoPkg, make_StkMapRecord_Location);

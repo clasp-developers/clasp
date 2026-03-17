@@ -66,7 +66,8 @@
        "go-index"))))
 
 (defun generate-resume-block (exn.slot ehselector.slot)
-  (let* ((ehbuilder       (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+  (let* ((ehbuilder       (cmp:with-thread-safe-context (context)
+                            (llvm-sys:make-irbuilder context)))
          (ehresume        (cmp:irc-basic-block-create "ehresume"))
          (_               (cmp:irc-set-insert-point-basic-block ehresume ehbuilder))
          (exn7            (llvm-sys:create-load-type-value-twine ehbuilder cmp:%exn% exn.slot "exn7"))
@@ -86,7 +87,7 @@
   (cmp:alloca-size_t "go-index.slot"))
 
 (defun generate-unbind (index old-value de-stack next)
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+  (cmp:with-irbuilder ()
     (let ((bb (cmp:irc-basic-block-create "unbind-special-variable")))
       (cmp:irc-begin-block bb)
       ;; These calls cannot throw, so no landing pad needed
@@ -95,7 +96,7 @@
       bb)))
 
 (defun lp-generate-protect (u-p-instruction next)
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+  (cmp:with-irbuilder ()
     (let ((bb (cmp:irc-basic-block-create "execute-protection")))
       (cmp:irc-begin-block bb)
       ;; pop the dynenv.
@@ -144,7 +145,7 @@
 ;;; maybe-entry landing pads, for when we may be nonlocally entering this function.
 
 (defun generate-maybe-entry-landing-pad (next cleanup-block cleanup-p dynenv)
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+  (cmp:with-irbuilder ()
     (let ((lp-block (cmp:irc-basic-block-create "maybe-entry-landing-pad"))
           (is-unwind-block (cmp:irc-basic-block-create "is-unwind")))
       (cmp:irc-begin-block lp-block)
@@ -173,7 +174,7 @@
       lp-block)))
 
 (defun generate-end-catch-landing-pad (cleanup-block)
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+  (cmp:with-irbuilder ()
     (let ((lp-block (cmp:irc-basic-block-create "end-catch-landing-pad")))
       (cmp:irc-begin-block lp-block)
       (let* ((lpad (cmp:irc-create-landing-pad 0 "lp"))
@@ -207,8 +208,7 @@
       ;; Jump into this function based on the go index.
       ;; If the index doesn't match anything in this come-from
       ;; go onto the next block.
-      (cmp:with-irbuilder ((llvm-sys:make-irbuilder
-                            (cmp:thread-local-llvm-context)))
+      (cmp:with-irbuilder ()
         (let* ((destinations (rest (cleavir-bir:next dynenv)))
                (ndestinations (count-if #'has-entrances-p destinations))
                (next (maybe-entry-processor (cleavir-bir:parent dynenv) tags))
@@ -280,8 +280,7 @@
 
 (defmethod compute-maybe-entry-processor ((instruction cleavir-bir:values-save)
                                           tags)
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder
-                        (cmp:thread-local-llvm-context)))
+  (cmp:with-irbuilder ()
     (let ((stackpos (dynenv-storage instruction))
           (bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
       (cmp:irc-begin-block bb)
@@ -295,8 +294,7 @@
 (defmethod compute-maybe-entry-processor ((inst bir:values-collect) tags)
   (let ((stackpos (dynenv-storage inst)))
     (if stackpos
-        (cmp:with-irbuilder ((llvm-sys:make-irbuilder
-                              (cmp:thread-local-llvm-context)))
+        (cmp:with-irbuilder ()
           (let ((bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
             (cmp:irc-begin-block bb)
             ;; Lose the saved values alloca.
@@ -314,7 +312,7 @@
   ;; We found in the landing pad that we were supposed to jump into this frame.
   ;; However, no relevant come-from has transferred control.
   ;; This is a bug in the compiler.
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+  (cmp:with-irbuilder ()
     (let ((err (cmp:irc-basic-block-create "bug-in-come-from")))
       (cmp:irc-begin-block err)
       (cmp:with-landing-pad nil
@@ -373,7 +371,7 @@
 ;;; never-entry landing pads, for when we always end with a resume.
 
 (defun generate-never-entry-landing-pad (next)
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+  (cmp:with-irbuilder ()
     (let ((lp-block (cmp:irc-basic-block-create "never-entry-landing-pad")))
       (cmp:irc-begin-block lp-block)
       (let* ((lpad (cmp:irc-create-landing-pad 0 "lp"))
