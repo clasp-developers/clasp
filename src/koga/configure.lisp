@@ -177,11 +177,6 @@
     :initform nil
     :type boolean
     :documentation "If T, Clasp compiles files natively by default (*compile-file-native*)")
-   (cst :accessor cst
-        :initarg :cst
-        :initform t
-        :type boolean
-        :documentation "If T use the CST build, otherwise use the AST build.")
    (mpi :accessor mpi
         :initarg :mpi
         :initform nil
@@ -217,10 +212,6 @@
          :initform nil
          :type (or null integer)
          :documentation "The number of concurrent jobs during image compilation.")
-   (always-inline-mps-allocations :accessor always-inline-mps-allocations
-                                  :initform t
-                                  :initarg :always-inline-mps-allocations
-                                  :type boolean)
    (address-sanitizer :accessor address-sanitizer
                       :initarg :address-sanitizer
                       :initform nil
@@ -288,51 +279,16 @@
                                     :initform nil
                                     :type boolean
                                     :documentation "Add exhaustive, slow, checks of guards")
-   (debug-trace-interpreted-closures :accessor debug-trace-interpreted-closures
-                                     :initarg :debug-trace-interpreted-closures
-                                     :initform nil
-                                     :type boolean
-                                     :documentation "")
-   (debug-environments :accessor debug-environments
-                       :initarg :debug-environments
-                       :initform nil
-                       :type boolean
-                       :documentation "")
    (debug-release :accessor debug-release
                   :initarg :debug-release
                   :initform nil
                   :type boolean
                   :documentation "Turn off optimization for a few C++ functions; undef this to optimize everything")
-   (debug-cache :accessor debug-cache
-                :initarg :debug-cache
-                :initform nil
-                :type boolean
-                :documentation "Debug the dispatch caches - see cache.cc")
    (debug-bitunit-container :accessor debug-bitunit-container
                             :initarg :debug-bitunit-container
                             :initform nil
                             :type boolean
                             :documentation "Prints debug info for bitunit containers")
-   (debug-lexical-depth :accessor debug-lexical-depth
-                        :initarg :debug-lexical-depth
-                        :initform nil
-                        :type boolean
-                        :documentation "Generate tests for lexical closure depths")
-   (debug-dynamic-binding-stack :accessor debug-dynamic-binding-stack
-                                :initarg :debug-dynamic-binding-stack
-                                :initform nil
-                                :type boolean
-                                :documentation "dynamic variable binding debugging")
-   (debug-values :accessor debug-values
-                 :initarg :debug-values
-                 :initform nil
-                 :type boolean
-                 :documentation "turn on printing (values x y z) values when core:*debug-values* is not nil")
-   (debug-ihs :accessor debug-ihs
-              :initarg :debug-ihs
-              :initform nil
-              :type boolean
-              :documentation "")
    (debug-track-unwinds :accessor debug-track-unwinds
                         :initarg :debug-track-unwinds
                         :initform nil
@@ -363,26 +319,11 @@
                          :initform nil
                          :type boolean
                          :documentation "Profile memory allocations total size and counter")
-   (debug-bclasp-lisp :accessor debug-bclasp-lisp
-                      :initarg :debug-bclasp-lisp
-                      :initform nil
-                      :type boolean
-                      :documentation "Generate debugging frames for all bclasp code - like declaim")
-   (debug-cclasp-lisp :accessor debug-cclasp-lisp
-                      :initarg :debug-cclasp-lisp
-                      :initform t
-                      :type boolean
-                      :documentation "Generate debugging frames for all cclasp code - like declaim (default on)")
    (debug-count-allocations :accessor debug-count-allocations
                             :initarg :debug-count-allocations
                             :initform nil
                             :type boolean
                             :documentation "count per-thread allocations of instances of classes")
-   (debug-compiler :accessor debug-compiler
-                   :initarg :debug-compiler
-                   :initform nil
-                   :type boolean
-                   :documentation "Turn on compiler debugging")
    (debug-verify-modules :accessor debug-verify-modules
                          :initarg :debug-verify-modules
                          :initform nil
@@ -403,31 +344,16 @@
                         :initform t
                         :type boolean
                         :documentation "check bounds")
-   (debug-gfdispatch :accessor debug-gfdispatch
-                     :initarg :debug-gfdispatch
-                     :initform nil
-                     :type boolean
-                     :documentation "debug call history manipulation")
    (debug-fastgf :accessor debug-fastgf
                  :initarg :debug-fastgf
                  :initform nil
                  :type boolean
                  :documentation "generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**")
-   (debug-slot-accessors :accessor debug-slot-accessors
-                         :initarg :debug-slot-accessors
-                         :initform nil
-                         :type boolean
-                         :documentation "GF accessors have extra debugging added to them")
    (debug-threads :accessor debug-threads
                   :initarg :debug-threads
                   :initform nil
                   :type boolean
                   :documentation "")
-   (debug-stores :accessor debug-stores
-                 :initarg :debug-stores
-                 :initform nil
-                 :type boolean
-                 :documentation "insert a call to cc_validate_tagged_pointer everytime something is written to memory")
    (debug-ensure-valid-object :accessor debug-ensure-valid-object
                               :initarg :debug-ensure-valid-object
                               :initform nil
@@ -438,11 +364,6 @@
                          :initform nil
                          :type boolean
                          :documentation "quick/cheap validate if on and comprehensive validate if not")
-   (debug-dont-optimize-bclasp :accessor debug-dont-optimize-bclasp
-                               :initarg :debug-dont-optimize-bclasp
-                               :initform nil
-                               :type boolean
-                               :documentation "Optimize bclasp by editing llvm-ir")
    (debug-recursive-allocations :accessor debug-recursive-allocations
                                 :initarg :debug-recursive-allocations
                                 :initform nil
@@ -458,31 +379,11 @@
                                     :initform nil
                                     :type boolean
                                     :documentation "")
-   (debug-slow :accessor debug-slow
-               :initarg :debug-slow
-               :initform nil
-               :type boolean
-               :documentation "Code runs slower due to checks - undefine to remove checks")
-   (human-readable-bitcode :accessor human-readable-bitcode
-                           :initarg :human-readable-bitcode
-                           :initform nil
-                           :type boolean
-                           :documentation "")
-   (debug-compile-file-output-info :accessor debug-compile-file-output-info
-                                   :initarg :debug-compile-file-output-info
-                                   :initform nil
-                                   :type boolean
-                                   :documentation "")
    (debug-virtual-machine :accessor debug-virtual-machine
                           :initarg :debug-virtual-machine
                           :initform nil
                           :type boolean
                           :documentation "")
-   (config-var-cool :accessor config-var-cool
-                    :initarg :config-var-cool
-                    :initform t
-                    :type boolean
-                    :documentation "mps setting")
    (ld :accessor ld ; TODO Add ld detection logic
        :initarg :ld
        :initform #+darwin :lld #-darwin :gold

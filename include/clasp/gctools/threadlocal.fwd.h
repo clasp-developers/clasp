@@ -57,7 +57,7 @@ struct GlobalAllocationProfiler {
       this->_AllocationNumberCounter = 0;
     }
 #endif
-#if defined(GC_MONITOR_ALLOCATIONS) && defined(DEBUG_SLOW)
+#if defined(GC_MONITOR_ALLOCATIONS)
     if (this->_Monitor.on) {
       monitorAllocation(stamp, sz);
     }
@@ -77,7 +77,7 @@ struct GlobalAllocationProfiler {
       this->_AllocationNumberCounter = 0;
     }
 #endif
-#if defined(GC_MONITOR_ALLOCATIONS) && defined(DEBUG_SLOW)
+#if defined(GC_MONITOR_ALLOCATIONS)
     if (this->_Monitor.on) {
       monitorWeakAllocation(stamp, sz);
     }

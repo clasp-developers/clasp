@@ -122,11 +122,11 @@ public: // Garbage collector functions
   uintptr_t rawRefCdr() const { return (uintptr_t)this->cdr().raw_(); }
   void rawRefSetCar(uintptr_t val) {
     T_sp tval((gctools::Tagged)val);
-    this->setCarNoValidate(tval);
+    this->setCar(tval);
   }
   void rawRefSetCdr(uintptr_t val) {
     T_sp tval((gctools::Tagged)val);
-    this->setCdrNoValidate(tval);
+    this->setCdr(tval);
   }
 #endif
 public:
@@ -162,12 +162,7 @@ public:
   static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7, T_sp o8);
   static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7, T_sp o8, T_sp o9);
   static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7, T_sp o8, T_sp o9, T_sp o10);
-#ifdef ALWAYS_INLINE_MPS_ALLOCATIONS
-  __attribute__((always_inline))
-#else
-  inline
-#endif
-  static Cons_sp
+  inline static Cons_sp
   create(T_sp car, T_sp cdr) {
     gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<gctools::RuntimeStage, Cons_O>::allocate(car, cdr);
     return ll;
@@ -184,20 +179,8 @@ public:
 public: // basic access
   inline T_sp car() const { return _Car.load(std::memory_order_relaxed); }
   inline T_sp cdr() const { return _Cdr.load(std::memory_order_relaxed); }
-  inline void setCarNoValidate(T_sp o) { _Car.store(o, std::memory_order_relaxed); }
-  inline void setCdrNoValidate(T_sp o) { _Cdr.store(o, std::memory_order_relaxed); }
-  inline void setCar(T_sp o) {
-#ifdef DEBUG_STORES
-    cc_validate_tagged_pointer(o.raw_());
-#endif
-    this->setCarNoValidate(o);
-  }
-  inline void setCdr(T_sp o) {
-#ifdef DEBUG_STORES
-    cc_validate_tagged_pointer(o.raw_());
-#endif
-    this->setCdrNoValidate(o);
-  }
+  inline void setCar(T_sp o) { _Car.store(o, std::memory_order_relaxed); }
+  inline void setCdr(T_sp o) { _Cdr.store(o, std::memory_order_relaxed); }
 
 public: // atomic access
   inline T_sp carAtomic(std::memory_order order) const { return _Car.load(order); }

@@ -19,7 +19,6 @@
           primitive-varargs
           *track-inlined-functions*
           *track-inlinee-name*
-          *debug-link-options* ;; A list of strings to inject into link commands
           *compile-file-debug-dump-module* ;; Dump intermediate modules
           *compile-debug-dump-module* ;; Dump intermediate modules
           *default-linkage*

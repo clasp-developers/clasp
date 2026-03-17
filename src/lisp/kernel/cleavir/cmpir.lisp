@@ -264,13 +264,6 @@ local-function - the lcl function that all of the xep functions call."
 
 (defun irc-set-insert-point-basic-block (theblock &optional (irbuilder *irbuilder*))
   "Set the current insert point.  Signal an error if *irbuilder* jumps to a different function."
-  #+debug-compiler
-  (let ((irbuilder-cur-basic-block (llvm-sys:get-insert-block irbuilder)))
-    (when irbuilder-cur-basic-block
-      (let* ((irbuilder-cur-function    (llvm-sys:get-parent irbuilder-cur-basic-block))
-             (theblock-function         (llvm-sys:get-parent theblock)))
-        (unless (llvm-sys:function-equal irbuilder-cur-function theblock-function)
-          (error "The IRBuilder ~a that is currently in function ~a is being told to jump functions when its insert point is being set to ~a in ~a" irbuilder irbuilder-cur-function theblock theblock-function)))))
   (llvm-sys:set-insert-point-basic-block irbuilder theblock))
 
 
@@ -1220,7 +1213,6 @@ But no irbuilders or basic-blocks. Return the fn."
                                args fn-name)))
 
 (defun irc-create-invoke-wft (function-type entry-point args unwind-dest &optional (label ""))
-  #+debug-compiler(check-call-types function-type args)
   ;;(core:fmt t "irc-create-invoke-wft entry-point: {}%N" entry-point)
   (unless unwind-dest (error "unwind-dest should not be nil"))
   (unless (null (stringp entry-point)) (error "entry-point for irc-create-invoke cannot be a string - it is ~a" entry-point))
@@ -1239,7 +1231,6 @@ But no irbuilders or basic-blocks. Return the fn."
       code)))
 
 (defun irc-create-call-wft (function-type entry-point args &optional (label ""))
-  #+debug-compiler(check-call-types function-type args)
   (llvm-sys:create-call-function-pointer *irbuilder* function-type entry-point args label nil))
 
 (defun irc-call-or-invoke (function-type function args &optional (landing-pad *current-unwind-landing-pad-dest*) (label ""))
@@ -1249,7 +1240,6 @@ But no irbuilders or basic-blocks. Return the fn."
 
 (defun irc-intrinsic-call-or-invoke (function-name args &optional (label "") (landing-pad *current-unwind-landing-pad-dest*))
   "landing-pad is either a landing pad or NIL (depends on function)"
-  #+debug-compiler(throw-if-mismatched-arguments function-name args)
   (multiple-value-bind (the-function primitive-info)
       (get-or-declare-function-or-error *the-module* function-name)
     (let* ((function-throws (not (llvm-sys:does-not-throw the-function)))
