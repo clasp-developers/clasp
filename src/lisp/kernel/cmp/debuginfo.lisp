@@ -65,18 +65,21 @@
          (progn ,@body)
        (llvm-sys:finalize *the-module-dibuilder*)
        ;; add the flag that defines the Dwarf Version
-       (llvm-sys:add-module-flag *the-module*
-                                 (llvm-sys:mdnode-get (thread-local-llvm-context)
-                                                      (list
-                                                       (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
-                                                       (llvm-sys:mdstring-get (thread-local-llvm-context) "Dwarf Version")
-                                                       (llvm-sys:value-as-metadata-get (jit-constant-i32 +debug-dwarf-version+)))))
-       (llvm-sys:add-module-flag *the-module*
-                                 (llvm-sys:mdnode-get (thread-local-llvm-context)
-                                                      (list
-                                                       (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
-                                                       (llvm-sys:mdstring-get (thread-local-llvm-context) "Debug Info Version")
-                                                       (llvm-sys:value-as-metadata-get (jit-constant-i32 llvm-sys:+debug-metadata-version+))))))))
+       (cmp:with-thread-safe-context (context)
+         (llvm-sys:add-module-flag
+          *the-module*
+          (llvm-sys:mdnode-get
+           context
+           (list (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
+                 (llvm-sys:mdstring-get context "Dwarf Version")
+                 (llvm-sys:value-as-metadata-get (jit-constant-i32 +debug-dwarf-version+)))))
+         (llvm-sys:add-module-flag
+          *the-module*
+          (llvm-sys:mdnode-get
+           context
+           (list (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
+                 (llvm-sys:mdstring-get context "Debug Info Version")
+                 (llvm-sys:value-as-metadata-get (jit-constant-i32 llvm-sys:+debug-metadata-version+)))))))))
     
 (defmacro with-dbg-compile-unit ((source-pathname) &body body)
   (declare (ignore source-pathname)) ; maybe should be used instead of *dbg-current-file*?
@@ -278,12 +281,13 @@
     (when (and *trap-zero-lineno* (zerop lineno))
       (format *error-output* "In get-dilocation lineno was zero! Setting to ~d~%"
               (setf lineno 666666)))
-    (if inlined-at
-        (llvm-sys:get-dilocation (thread-local-llvm-context)
-                                 lineno col scope
-                                 (get-dilocation inlined-at dbg-current-scope))
-        (llvm-sys:get-dilocation (thread-local-llvm-context)
-                                 lineno col scope))))
+    (cmp:with-thread-safe-context (context)
+      (if inlined-at
+          (llvm-sys:get-dilocation context
+                                   lineno col scope
+                                   (get-dilocation inlined-at dbg-current-scope))
+          (llvm-sys:get-dilocation context
+                                   lineno col scope)))))
 
 (defun dbg-set-irbuilder-source-location (irbuilder spi)
   (when *dbg-generate-dwarf*
@@ -328,16 +332,17 @@
                                  :always-preserve t))
 
 (defun %dbg-variable-addr (addr var)
-  (let* ((addrmd (llvm-sys:metadata-as-value-get
-                  (thread-local-llvm-context)
-                  (llvm-sys:value-as-metadata-get addr)))
-         (varmd (llvm-sys:metadata-as-value-get
-                 (thread-local-llvm-context)
-                 var))
-         (diexpr (llvm-sys:metadata-as-value-get
-                  (thread-local-llvm-context)
-                  (llvm-sys:create-expression-none *the-module-dibuilder*))))
-    (irc-intrinsic "llvm.dbg.addr" addrmd varmd diexpr)))
+  (cmp:with-thread-safe-context (context)
+    (let* ((addrmd (llvm-sys:metadata-as-value-get
+                    context
+                    (llvm-sys:value-as-metadata-get addr)))
+           (varmd (llvm-sys:metadata-as-value-get
+                   context
+                   var))
+           (diexpr (llvm-sys:metadata-as-value-get
+                    context
+                    (llvm-sys:create-expression-none *the-module-dibuilder*))))
+      (irc-intrinsic "llvm.dbg.addr" addrmd varmd diexpr))))
 
 ;;; Put in debug information for a variable corresponding to an alloca.
 (defun dbg-variable-alloca (alloca name spi
@@ -358,16 +363,17 @@
       (%dbg-variable-addr alloca auto-variable))))
 
 (defun %dbg-variable-value (value var)
+  (cmp:with-thread-safe-context (context)
     (let* ((valuemd (llvm-sys:metadata-as-value-get
-                     (thread-local-llvm-context)
+                     context
                      (llvm-sys:value-as-metadata-get value)))
            (varmd (llvm-sys:metadata-as-value-get
-                   (thread-local-llvm-context)
+                   context
                    var))
            (diexpr (llvm-sys:metadata-as-value-get
-                    (thread-local-llvm-context)
+                    context
                     (llvm-sys:create-expression-none *the-module-dibuilder*))))
-      (irc-intrinsic "llvm.dbg.value" valuemd varmd diexpr)))
+      (irc-intrinsic "llvm.dbg.value" valuemd varmd diexpr))))
 
 ;;; Put in debug information for a variable corresponding to an llvm Value.
 (defun dbg-variable-value (value name spi

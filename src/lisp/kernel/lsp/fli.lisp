@@ -379,7 +379,7 @@
          ;; FIXME
          (c-argument-names (mapcar #'symbol-name args-kws)))
     ;; Generate code.
-    (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+    (cmp:with-irbuilder ()
       (let ((bb (cmp:irc-basic-block-create "entry")))
         (cmp:irc-set-insert-point-basic-block bb)
         (let* ((c-args (llvm-sys:get-argument-list llfun))

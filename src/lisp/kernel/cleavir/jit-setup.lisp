@@ -44,9 +44,12 @@
   ;;; more thread-local special variables may be added in the future
   )
 
-(defun thread-local-llvm-context ()
-  ;; (core:fmt t "*thread-safe-context* -> {}%N" *thread-safe-context*)
-  (llvm-sys:thread-local-llvm-context))
+(defmacro with-thread-safe-context ((name) &body body)
+  #+(or llvm15 llvm16 llvm17 llvm18 llvm19)
+  `(let ((,name (llvm-sys:thread-local-llvm-context)))
+     ,@body)
+  #-(or llvm15 llvm16 llvm17 llvm18 llvm19)
+  `(llvm-sys:call-with-thread-safe-context (lambda (,name) ,@body)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -101,7 +104,8 @@
     (values triple-str data-layout-str data-layout)))
 
 (defun llvm-create-module (name)
-  (let ((m (llvm-sys:make-module (string name) (thread-local-llvm-context))))
+  (let ((m (cmp:with-thread-safe-context (context)
+             (llvm-sys:make-module (string name) context))))
     (multiple-value-call (function (lambda (target-triple data-layout-str &rest dummy)
                            (declare (ignore dummy))
                            (llvm-sys:set-target-triple m target-triple)
@@ -132,8 +136,9 @@
                      (prog1
                          (file-length fin)
                        (close fin))))
-           (let* ((part-module (parse-bitcode (namestring (truename part-pn)) (thread-local-llvm-context)
-                                              :output-type output-type)))
+           (let* ((part-module (cmp:with-thread-safe-context (context)
+                                 (parse-bitcode (namestring (truename part-pn)) context
+                                              :output-type output-type))))
              (setq part-index (+ 1 part-index))
              (multiple-value-call (function (lambda (failure error-msg)
                                     (if failure
@@ -150,7 +155,8 @@
            (setq part-pn (car additional-bitcode-pathnames))
            (setq additional-bitcode-pathnames (cdr additional-bitcode-pathnames))
            (let* ((bc-file part-pn)
-                  (part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) (thread-local-llvm-context))))
+                  (part-module (cmp:with-thread-safe-context (context)
+                                 (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) context))))
              (multiple-value-call (function (lambda (failure error-msg)
                                     (if failure
                                         (progn
@@ -206,41 +212,49 @@ No DIBuilder is defined for the default module")
   (llvm-sys:constant-pointer-null-get type))
 
 (defun jit-constant-true ()
-  (llvm-sys:get-true (thread-local-llvm-context)))
+  (cmp:with-thread-safe-context (context)
+    (llvm-sys:get-true context)))
 
 (defun jit-constant-false ()
-  (llvm-sys:get-false (thread-local-llvm-context)))
+  (cmp:with-thread-safe-context (context)
+    (llvm-sys:get-false context)))
 
 (defun jit-constant-i<bit-width> (val &key bit-width)
   "Create an i<numbits> constant in the current context"
   (unless bit-width (error "You must provide a bit-width"))
   (let ((ap-arg (llvm-sys:make-apint-width val bit-width nil)))
-    (llvm-sys:constant-int-get (thread-local-llvm-context) ap-arg)))
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:constant-int-get context ap-arg))))
 
 (defun jit-constant-i1 (val)
   "Create an i1 constant in the current context"
   (let ((ap-arg (llvm-sys:make-apint1 val)))
-    (llvm-sys:constant-int-get (thread-local-llvm-context) ap-arg)))
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:constant-int-get context ap-arg))))
 
 
 (defun jit-constant-i3 (val)
   "Create an i3 constant in the current context"
-    (let ((ap-arg (llvm-sys:make-apint-width val 3 nil)))
-      (llvm-sys:constant-int-get (thread-local-llvm-context) ap-arg)))
- 
+  (let ((ap-arg (llvm-sys:make-apint-width val 3 nil)))
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:constant-int-get context ap-arg))))
+
 (defun jit-constant-i8 (val)
   "Create an i1 constant in the current context"
   (let ((ap-arg (llvm-sys:make-apint-width val 8 nil)))
-    (llvm-sys:constant-int-get (thread-local-llvm-context) ap-arg)))
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:constant-int-get context ap-arg))))
 
 (defun jit-constant-i32 (val)
   "Create a signed i32 constant in the current context"
   (let ((ap-arg (llvm-sys:make-apint-width val 32 t)))
-    (llvm-sys:constant-int-get (thread-local-llvm-context) ap-arg)))
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:constant-int-get context ap-arg))))
 
 
 (defun jit-constant-i32-vector-ptr (vals)
-  (let* ((constant-data-array (llvm-sys:constant-data-array-get-uint32 (thread-local-llvm-context) vals))
+  (let* ((constant-data-array (cmp:with-thread-safe-context (context)
+                                (llvm-sys:constant-data-array-get-uint32 context vals))))
 	 (constant-data-array-type (llvm-sys:get-type constant-data-array))
 	 (global-var-for-constant-array (llvm-sys:make-global-variable *the-module*
 								       constant-data-array-type
@@ -258,24 +272,28 @@ No DIBuilder is defined for the default module")
 (defun jit-constant-i64 (val)
   "Create an i64 constant in the current context"
   (let ((ap-arg (llvm-sys:make-apint-width val 64 t)))
-    (llvm-sys:constant-int-get (thread-local-llvm-context) ap-arg)))
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:constant-int-get context ap-arg))))
 
 (defun ensure-jit-constant-i64 (val)
   "Create an i64 constant in the current context if the val is a fixnum - otherwise it should already be a value"
   (if (fixnump val)
       (let ((ap-arg (llvm-sys:make-apint-width val 64 t)))
-        (llvm-sys:constant-int-get (thread-local-llvm-context) ap-arg))
+        (cmp:with-thread-safe-context (context)
+          (llvm-sys:constant-int-get context ap-arg)))
       val))
 
 (defun jit-constant-ui32 (val)
   "Create an unsigned i32 constant in the current context"
   (let ((ap-arg (llvm-sys:make-apint-width val 32 nil)))
-    (llvm-sys:constant-int-get (thread-local-llvm-context) ap-arg)))
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:constant-int-get context ap-arg))))
 
 (defun jit-constant-ui64 (val)
   "Create an unsigned i64 constant in the current context"
   (let ((ap-arg (llvm-sys:make-apint-width val 64 nil)))
-    (llvm-sys:constant-int-get (thread-local-llvm-context) ap-arg)))
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:constant-int-get context ap-arg))))
 
 
 (defun jit-constant-size_t (val)

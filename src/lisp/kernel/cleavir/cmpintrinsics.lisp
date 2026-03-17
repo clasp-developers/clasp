@@ -61,12 +61,13 @@ Set this to other IRBuilders to make code go where you want")
 (defmacro define-c++-struct (name tag fields)
   "Defines the llvm struct and the dynamic variable OFFSETS.name that contains an alist of field
 names to offsets."
-  (let ((layout (gensym)))
+  (let ((layout (gensym))
+        (context (gensym)))
     (let ((define-symbol-macro `(define-symbol-macro ,name
-                                    (llvm-sys:struct-type-get
-                                     (thread-local-llvm-context)
-                                     (list ,@(mapcar #'first fields))
-                                     nil))))
+                                    (cmp:with-thread-safe-context (,context)
+                                      (llvm-sys:struct-type-get ,context
+                                                                (list ,@(mapcar #'first fields))
+                                                                nil)))))
       (let ((field-offsets `(let ((,layout (llvm-sys:data-layout-get-struct-layout (system-data-layout) ,name)))
                               (list
                                ,@(loop for (_ name) in fields
@@ -126,10 +127,16 @@ names to offsets."
   (let ((field-pointee-type-getter (cdr (assoc field-name (c++-struct-field-pointee-type-getters struct-info)))))
     (funcall field-pointee-type-getter)))
                                     
-(define-symbol-macro %i1% (llvm-sys:type-get-int1-ty (thread-local-llvm-context)))
-(define-symbol-macro %i3% (llvm-sys:type-get-int-nty (thread-local-llvm-context) 3))
+(define-symbol-macro %i1%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:type-get-int1-ty context)))
+(define-symbol-macro %i3%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:type-get-int-nty context 3)))
 
-(define-symbol-macro %i8% (llvm-sys:type-get-int8-ty (thread-local-llvm-context))) ;; -> CHAR / BYTE
+(define-symbol-macro %i8%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:type-get-int8-ty context))) ;; -> CHAR / BYTE
 (define-symbol-macro %i8*% (llvm-sys:type-get-pointer-to %i8%))
 (define-symbol-macro %i8**% (llvm-sys:type-get-pointer-to %i8*%))
 (define-symbol-macro %i8***% (llvm-sys:type-get-pointer-to %i8**%))
@@ -138,19 +145,27 @@ names to offsets."
 
 
 
-(define-symbol-macro %i16% (llvm-sys:type-get-int16-ty (thread-local-llvm-context))) ;; -> SHORT
+(define-symbol-macro %i16%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:type-get-int16-ty context))) ;; -> SHORT
 (define-symbol-macro %i16*% (llvm-sys:type-get-pointer-to %i16%))
 (define-symbol-macro %i16**% (llvm-sys:type-get-pointer-to %i16*%))
 
-(define-symbol-macro %i32% (llvm-sys:type-get-int32-ty (thread-local-llvm-context))) ;; -> INT
+(define-symbol-macro %i32%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:type-get-int32-ty context))) ;; -> INT
 (define-symbol-macro %i32*% (llvm-sys:type-get-pointer-to %i32%))
 (define-symbol-macro %i32**% (llvm-sys:type-get-pointer-to %i32*%))
 
-(define-symbol-macro %i64% (llvm-sys:type-get-int64-ty (thread-local-llvm-context))) ;; -> LONG, LONG LONG
+(define-symbol-macro %i64%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:type-get-int64-ty context))) ;; -> LONG, LONG LONG
 (define-symbol-macro %i64*% (llvm-sys:type-get-pointer-to %i64%))
 (define-symbol-macro %i64**% (llvm-sys:type-get-pointer-to %i64*%))
 
-(define-symbol-macro %i128% (llvm-sys:type-get-int128-ty (thread-local-llvm-context))) ;; -> NOT USED !!!
+(define-symbol-macro %i128%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:type-get-int128-ty context))) ;; -> NOT USED !!!
 
 (define-symbol-macro %fixnum% #+64-bit %i64%
                               #+32-bit %i32%)
@@ -158,13 +173,23 @@ names to offsets."
 (define-symbol-macro %uint% %i32%) ; FIXME: export from C++ probably
 
 #+short-float/binary16
-(define-symbol-macro %long-float% (llvm-sys:type-get-half-ty (thread-local-llvm-context)))
-(define-symbol-macro %float% (llvm-sys:type-get-float-ty (thread-local-llvm-context)))
-(define-symbol-macro %double% (llvm-sys:type-get-double-ty (thread-local-llvm-context)))
+(define-symbol-macro %long-float%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:type-get-half-ty context)))
+(define-symbol-macro %float%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:type-get-float-ty context)))
+(define-symbol-macro %double%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:type-get-double-ty context)))
 #+long-float/binary80
-(define-symbol-macro %long-float% (llvm-sys:type-get-x86-fp80-ty (thread-local-llvm-context)))
+(define-symbol-macro %long-float%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:type-get-x86-fp80-ty context)))
 #+long-float/binary128
-(define-symbol-macro %long-float% (llvm-sys:type-get-fp128-ty (thread-local-llvm-context)))
+(define-symbol-macro %long-float%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:type-get-fp128-ty context)))
 
 (define-symbol-macro %size_t% #+64-bit %i64%
                               #+32-bit %i32%)
@@ -174,19 +199,27 @@ names to offsets."
 (define-symbol-macro %size_t**% (llvm-sys:type-get-pointer-to %size_t*%))
 (define-symbol-macro %size_t[0]% (llvm-sys:array-type-get %size_t% 0))
 
-(define-symbol-macro %void% (llvm-sys:type-get-void-ty (thread-local-llvm-context)))
+(define-symbol-macro %void%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:type-get-void-ty context)))
 (define-symbol-macro %void*% (llvm-sys:type-get-pointer-to %void%))
 (define-symbol-macro %void**% (llvm-sys:type-get-pointer-to %void*%))
 
 (define-symbol-macro %vtable*% %i8*%)
 
-;;(define-symbol-macro %exception-struct% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i8*% %i32%) "exception-struct" nil)
+;;(define-symbol-macro %exception-struct% (cmp:with-thread-safe-context (context) (llvm-sys:struct-type-get context (list %i8*% %i32%)) "exception-struct" nil)
 (define-symbol-macro %exn% %i8*%)
 (define-symbol-macro %ehselector% %i32%)
 (define-symbol-macro %go-index% %size_t%)
-(define-symbol-macro %exception-struct% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i8*% %i32%) nil))
-(define-symbol-macro %{i32.i1}% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i32% %i1%) nil))
-(define-symbol-macro %{i64.i1}% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i64% %i1%) nil))
+(define-symbol-macro %exception-struct%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:struct-type-get context (list %i8*% %i32%) nil)))
+(define-symbol-macro %{i32.i1}%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:struct-type-get context (list %i32% %i1%) nil)))
+(define-symbol-macro %{i64.i1}%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:struct-type-get context (list %i64% %i1%) nil)))
 
 
 ;;  "A ctor void ()* function prototype"
@@ -203,7 +236,9 @@ names to offsets."
 ;;;  "A pointer to the run-all function prototype")
 (define-symbol-macro %fn-start-up*% (llvm-sys:type-get-pointer-to %fn-start-up%))
 
-(define-symbol-macro %global-ctors-struct% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i32% %fn-ctor*% %i8*%) nil))
+(define-symbol-macro %global-ctors-struct%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:struct-type-get context (list %i32% %fn-ctor*% %i8*%) nil)))
 
 ;;;  "An array of pointers to the global-ctors-struct")
 (define-symbol-macro %global-ctors-struct[1]% (llvm-sys:array-type-get %global-ctors-struct% 1))
@@ -247,9 +282,13 @@ names to offsets."
              type size +void*-size+))
     (make-list num-pointers :initial-element %i8*%)))
 
-(define-symbol-macro %sp-counted-base% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i32% %i32%) nil)) ;; "sp-counted-base-ty"
+(define-symbol-macro %sp-counted-base%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:struct-type-get context (list %i32% %i32%) nil))) ;; "sp-counted-base-ty"
 (define-symbol-macro %sp-counted-base-ptr% (llvm-sys:type-get-pointer-to %sp-counted-base%))
-(define-symbol-macro %shared-count% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %sp-counted-base-ptr%) nil)) ;; "shared_count"
+(define-symbol-macro %shared-count%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:struct-type-get context (list %sp-counted-base-ptr%) nil))) ;; "shared_count"
 
 ;;
 ;; Setup setjmp_buf type
@@ -262,7 +301,9 @@ names to offsets."
 ;; For TAGBODY/GO Word2 will contain an i32 and the rest is padding
 ;; For BLOCK/RETURN-FROM Word2..4 will contain a T_mv pointer - it should fit
 
-(define-symbol-macro %setjmp.buf% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i8*% %i8*% %i8*% %i8*% %i8*%) nil))
+(define-symbol-macro %setjmp.buf%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:struct-type-get context (list %i8*% %i8*% %i8*% %i8*% %i8*%) nil)))
 (define-symbol-macro %setjmp.buf*% (llvm-sys:type-get-pointer-to %setjmp.buf%))
 
 ;;
@@ -275,7 +316,7 @@ Boehm and MPS use a single pointer"
   (list* data-ptr-type additional-fields))
 
 ;; Define the T_O struct - right now just put in a dummy i32 - later put real fields here
-(define-symbol-macro %t% %i8%) ; (llvm-sys:struct-type-get (thread-local-llvm-context) nil  nil)) ;; "T_O"
+(define-symbol-macro %t% %i8%) ; (cmp:with-thread-safe-context (context) (llvm-sys:struct-type-get context nil  nil))) ;; "T_O"
 (define-symbol-macro %t*% (llvm-sys:type-get-pointer-to %t%))
 ;; alias for bignum dumping
 (define-symbol-macro %bignum% %t*%)
@@ -285,13 +326,17 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %t*[0]*% (llvm-sys:type-get-pointer-to %t*[0]%))
 (define-symbol-macro %t*[DUMMY]% (llvm-sys:array-type-get %t*% 64))
 (define-symbol-macro %t*[DUMMY]*% (llvm-sys:type-get-pointer-to %t*[DUMMY]%))
-(define-symbol-macro %tsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %t*%) nil))  ;; "T_sp"
+(define-symbol-macro %tsp%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:struct-type-get context (smart-pointer-fields %t*%) nil)))  ;; "T_sp"
 (define-symbol-macro %atomic<tsp>% %tsp%)
 (define-symbol-macro %tsp*% (llvm-sys:type-get-pointer-to %tsp%))
 (define-symbol-macro %tsp**% (llvm-sys:type-get-pointer-to %tsp*%))
 (define-symbol-macro %tsp[0]% (llvm-sys:array-type-get %tsp% 0))
 
-(define-symbol-macro %metadata% (llvm-sys:type-get-metadata-ty (thread-local-llvm-context)))
+(define-symbol-macro %metadata%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:type-get-metadata-ty context)))
 
 (define-symbol-macro %fn-xep-anonymous-function% (llvm-sys:function-type-get %t*% nil))
 
@@ -418,7 +463,7 @@ Boehm and MPS use a single pointer"
 (defparameter +symbol.setf-function-index+ (c++-field-index :setf-function info.%symbol%))
 
 (define-symbol-macro %symbol*% (llvm-sys:type-get-pointer-to %symbol%))
-(define-symbol-macro %symsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %symbol*%) nil)) ;; "Sym_sp"
+(define-symbol-macro %symsp% (cmp:with-thread-safe-context (context) (llvm-sys:struct-type-get context (smart-pointer-fields %symbol*%)) nil)) ;; "Sym_sp"
 (define-symbol-macro %symsp*% (llvm-sys:type-get-pointer-to %symsp%))
 
 (define-c++-struct %cons% +cons-tag+
@@ -436,37 +481,59 @@ Boehm and MPS use a single pointer"
   (core:verify-cons-layout cons-size cons-car-offset cons-cdr-offset))
 
 ;; The definition of %tmv% doesn't quite match T_mv because T_mv inherits from T_sp
-(define-symbol-macro %tmv% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %t*% %size_t%) nil))  ;; "T_mv"
+(define-symbol-macro %tmv%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:struct-type-get context (smart-pointer-fields %t*% %size_t%) nil)))  ;; "T_mv"
 (define-symbol-macro %return-type% %tmv%)
 (define-symbol-macro %tmv*% (llvm-sys:type-get-pointer-to %tmv%))
 (define-symbol-macro %tmv**% (llvm-sys:type-get-pointer-to %tmv*%))
 
-(define-symbol-macro %gcvector-tsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %size_t% %size_t% %tsp%) nil))
-(define-symbol-macro %gcvector-symsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %size_t% %size_t% %symsp%) nil))
-(define-symbol-macro %vec0-tsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %gcvector-tsp%) nil))
-(define-symbol-macro %vec0-symsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %gcvector-symsp%) nil))
+(define-symbol-macro %gcvector-tsp%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:struct-type-get context (list %size_t% %size_t% %tsp%) nil)))
+(define-symbol-macro %gcvector-symsp%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:struct-type-get context (list %size_t% %size_t% %symsp%) nil)))
+(define-symbol-macro %vec0-tsp%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:struct-type-get context (list %gcvector-tsp%) nil)))
+(define-symbol-macro %vec0-symsp%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:struct-type-get context (list %gcvector-symsp%) nil)))
 
 ;; Define the LoadTimeValue_O struct - right now just put in a dummy i32 - later put real fields here
-(define-symbol-macro %ltv% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %vtable*% #+(or) %vec0-tsp%)  nil)) ;; "LoadTimeValue_O"
+(define-symbol-macro %ltv%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:struct-type-get context (list %vtable*% #+(or)%vec0-tsp%) nil))) ;; "LoadTimeValue_O"
 (define-symbol-macro %ltv*% (llvm-sys:type-get-pointer-to %ltv%))
 (define-symbol-macro %ltv**% (llvm-sys:type-get-pointer-to %ltv*%))
-(define-symbol-macro %ltvsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %ltv*%) nil))  ;; "LoadTimeValue_sp"
+(define-symbol-macro %ltvsp%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:struct-type-get context (smart-pointer-fields %ltv*%) nil)))  ;; "LoadTimeValue_sp"
 #+(or)(defvar +ltvsp*+ (llvm-sys:type-get-pointer-to %ltvsp%))
 #+(or)(defvar +ltvsp**+ (llvm-sys:type-get-pointer-to +ltvsp*+))
 
 
 (define-symbol-macro %mv-limit% +multiple-values-limit+)
 (define-symbol-macro %mv-values-array% (llvm-sys:array-type-get %t*% %mv-limit%))
-(define-symbol-macro %mv-struct% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %size_t% %mv-values-array%) nil #|| is-packed ||#))
+(define-symbol-macro %mv-struct%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:struct-type-get context (list %size_t% %mv-values-array%) nil #|| is-packed ||#)))
 (define-symbol-macro %mv-struct*% (llvm-sys:type-get-pointer-to %mv-struct%))
-(define-symbol-macro %thread-info-struct% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %mv-struct%) nil))
+(define-symbol-macro %thread-info-struct%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:struct-type-get context (list %mv-struct%) nil)))
 
 
 
 #+(or)(progn
-        (defvar +af+ (llvm-sys:struct-type-get (thread-local-llvm-context) nil  nil)) ;; "ActivationFrame_O"
+        (defvar +af+
+          (cmp:with-thread-safe-context (context)
+            (llvm-sys:struct-type-get context nil nil))) ;; "ActivationFrame_O"
         (defvar +af*+ (llvm-sys:type-get-pointer-to +af+))
-        (define-symbol-macro %afsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields +af*+)  nil)) ;; "ActivationFrame_sp"
+        (define-symbol-macro %afsp%
+            (cmp:with-thread-safe-context (context)
+              (llvm-sys:struct-type-get context (smart-pointer-fields +af*+)  nil))) ;; "ActivationFrame_sp"
         (define-symbol-macro %afsp*% (llvm-sys:type-get-pointer-to %afsp%))
         )
 
@@ -501,17 +568,18 @@ Boehm and MPS use a single pointer"
      (error "BUG: Unknown element type ~a" element-type))))
 
 (defun simple-vector-llvm-type (element-type)
-  (llvm-sys:struct-type-get
-   (thread-local-llvm-context)
-   (list
-    ;; Spacer to get to the stuff that matters
-    (llvm-sys:array-type-get %i8% (- +simple-vector._length-offset+ +general-tag+))
-    ;; The length, an untagged integer
-    %size_t%
-    ;; The data, a flexible member
-    (llvm-sys:array-type-get (element-type->llvm-type element-type) 0))
-   ;; Not totally sure it should be packed.
-   t))
+  (cmp:with-thread-safe-context (context)
+    (llvm-sys:struct-type-get
+     context
+     (list
+      ;; Spacer to get to the stuff that matters
+      (llvm-sys:array-type-get %i8% (- +simple-vector._length-offset+ +general-tag+))
+      ;; The length, an untagged integer
+      %size_t%
+      ;; The data, a flexible member
+      (llvm-sys:array-type-get (element-type->llvm-type element-type) 0))
+     ;; Not totally sure it should be packed.
+     t)))
 
 (defvar +simple-vector-length-slot+ 1)
 (defvar +simple-vector-data-slot+ 2)
@@ -688,7 +756,7 @@ Boehm and MPS use a single pointer"
    (%global-entry-point*% :global-entry-point)))
 
 (define-symbol-macro %Function*% (llvm-sys:type-get-pointer-to %Function%))
-(define-symbol-macro %Function_sp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %Function*%) nil)) ;; "Cfn_sp"
+(define-symbol-macro %Function_sp% (cmp:with-thread-safe-context (context) (llvm-sys:struct-type-get context (smart-pointer-fields %Function*%)) nil)) ;; "Cfn_sp"
 (define-symbol-macro %Function_sp*% (llvm-sys:type-get-pointer-to %Function_sp%))
 
 ;;; ------------------------------------------------------------
@@ -699,17 +767,18 @@ Boehm and MPS use a single pointer"
 ;;; lambda-list/docstring are stored in a CONS cell CAR/CDR
 (define-symbol-macro %entry-points-vector% (llvm-sys:array-type-get %i8*% core:*number-of-entry-points*))
 (define-symbol-macro %function-description%
-    (llvm-sys:struct-type-get (thread-local-llvm-context)
-                              (list %i8*%                  ;  1 vtable
-                                    %t*%                   ;  2 function-name
-                                    %t*%                   ;  3 source-info
-                                    %t*%                   ;  4 lambda-list
-                                    %t*%                   ;  5 docstring
-                                    %t*%                   ;  6 declares
-                                    %i32%                  ;  7 lineno
-                                    %i32%                  ;  8 column
-                                    %i32%                  ;  9 filepos
-                                    ) nil ))
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:struct-type-get context
+                                (list %i8*%                  ;  1 vtable
+                                      %t*%                   ;  2 function-name
+                                      %t*%                   ;  3 source-info
+                                      %t*%                   ;  4 lambda-list
+                                      %t*%                   ;  5 docstring
+                                      %t*%                   ;  6 declares
+                                      %i32%                  ;  7 lineno
+                                      %i32%                  ;  8 column
+                                      %i32%)                 ;  9 filepos
+                                nil)))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
 
 (define-c++-struct %closure% +general-tag+

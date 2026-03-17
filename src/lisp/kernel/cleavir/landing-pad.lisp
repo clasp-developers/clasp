@@ -72,7 +72,8 @@
 ;;; Returns a bool indicating this.
 
 (defun generate-resume-block (exn.slot ehselector.slot)
-  (let* ((ehbuilder       (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+  (let* ((ehbuilder       (cmp:with-thread-safe-context (context)
+                            (llvm-sys:make-irbuilder context)))
          (ehresume        (cmp:irc-basic-block-create "ehresume"))
          (_               (cmp:irc-set-insert-point-basic-block ehresume ehbuilder))
          (exn7            (llvm-sys:create-load-type-value-twine ehbuilder cmp:%exn% exn.slot "exn7"))
@@ -92,7 +93,7 @@
   (cmp:alloca-size_t "go-index.slot"))
 
 (defun generate-unbind (index old-value de-stack next)
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+  (cmp:with-irbuilder ()
     (let ((bb (cmp:irc-basic-block-create "unbind-special-variable")))
       (cmp:irc-begin-block bb)
       ;; These calls cannot throw, so no landing pad needed
@@ -110,7 +111,7 @@
       bb)))
 
 (defun lp-generate-protect (u-p-instruction next)
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+  (cmp:with-irbuilder ()
     (let ((bb (cmp:irc-basic-block-create "execute-protection")))
       (cmp:irc-begin-block bb)
       ;; pop the dynenv.
@@ -229,7 +230,7 @@
       init-block)))
 
 (defun generate-end-catch-landing-pad (cleanup-block)
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+  (cmp:with-irbuilder ()
     (let ((lp-block (cmp:irc-basic-block-create "end-catch-landing-pad")))
       (cmp:irc-begin-block lp-block)
       (let* ((lpad (cmp:irc-create-landing-pad 0 "lp"))
@@ -273,8 +274,7 @@
       ;; Jump into this function based on the go index.
       ;; If the index doesn't match anything in this come-from
       ;; go onto the next block.
-      (cmp:with-irbuilder ((llvm-sys:make-irbuilder
-                            (cmp:thread-local-llvm-context)))
+      (cmp:with-irbuilder ()
         (let* ((destinations (rest (cleavir-bir:next dynenv)))
                (ndestinations (count-if #'has-entrances-p destinations))
                (next (maybe-entry-processor (cleavir-bir:parent dynenv) tags))
@@ -360,9 +360,9 @@
                                           tags)
   (compute-shared-processor
    instruction (maybe-entry-processor (bir:parent instruction) tags)))
+
 (defmethod compute-shared-processor ((instruction bir:values-save) next)
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder
-                        (cmp:thread-local-llvm-context)))
+  (cmp:with-irbuilder ()
     (let ((stackpos (dynenv-storage instruction))
           (bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
       (cmp:irc-begin-block bb)
@@ -378,8 +378,7 @@
 (defmethod compute-shared-processor ((inst bir:values-collect) next)
   (let ((stackpos (dynenv-storage inst)))
     (if stackpos
-        (cmp:with-irbuilder ((llvm-sys:make-irbuilder
-                              (cmp:thread-local-llvm-context)))
+        (cmp:with-irbuilder ()
           (let ((bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
             (cmp:irc-begin-block bb)
             ;; Lose the saved values alloca.
@@ -396,7 +395,7 @@
   ;; We found in the landing pad that we were supposed to jump into this frame.
   ;; However, no relevant come-from has transferred control.
   ;; This is a bug in the compiler.
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+  (cmp:with-irbuilder ()
     (let ((err (cmp:irc-basic-block-create "bug-in-come-from")))
       (cmp:irc-begin-block err)
       (cmp:with-landing-pad nil
