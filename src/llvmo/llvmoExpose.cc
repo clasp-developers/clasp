@@ -1469,7 +1469,13 @@ CL_EXTERN_DEFMETHOD(Module_O, (void(llvm::Module::*)(llvm::StringRef)) & llvm::M
 ;
 // CL_EXTERN_DEFMETHOD(Module_O,&llvm::Module::setTargetTriple);
 DOCGROUP(clasp);
-CL_DEFUN void llvm_sys__setTargetTriple(llvm::Module* module, llvm::StringRef triple) { module->setTargetTriple(llvm::Triple(triple)); }
+CL_DEFUN void llvm_sys__setTargetTriple(llvm::Module* module, llvm::StringRef triple) {
+#if LLVM_VERSION_MAJOR < 22
+  module->setTargetTriple(triple);
+#else
+  module->setTargetTriple(llvm::Triple(triple));
+#endif
+}
 
 SYMBOL_EXPORT_SC_(LlvmoPkg, verifyModule);
 //  Defun(verifyModule);
