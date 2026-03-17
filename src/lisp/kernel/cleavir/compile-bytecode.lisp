@@ -182,6 +182,7 @@
     (when disassemble
       (cleavir-bir-disassembler:display module))
     (clasp-cleavir::bir-transformations module system)
+    (remove-inappropriate-closures funmap)
     (let ((cleavir-cst-to-ast:*compiler* 'cl:compile)
           ;; Ensure any closures have the same layout as original
           ;; bytecode closures, so the simple fun can be swapped
@@ -199,6 +200,7 @@
                          (system clasp-cleavir:*clasp-system*))
   (multiple-value-bind (irmodule funmap) (compile-bcmodule module)
     (clasp-cleavir::bir-transformations irmodule system)
+    (remove-inappropriate-closures funmap)
     (multiple-value-bind (function-infos constants ctable fvector)
         (let ((cleavir-cst-to-ast:*compiler* 'cl:compile)
               (clasp-cleavir::*fixed-closures*
@@ -220,6 +222,29 @@
                               (clasp-cleavir::jit-generator generator fvector)))
                        (core:set-simple-fun bcfun native)))))))
   (values))
+
+;;; Some bytecode will compile into closures over different variables,
+;;; rather than a subset. This means that installing the native
+;;; function into the bytecode function doesn't make sense, but the
+;;; outer function can still have a native version, which will just
+;;; make a closure over the native function.
+;;; Here we detect this situation and remove any inapposite functions
+;;; from the funmap.
+;;; This has to be called after bir-transformations, or more
+;;; specifically, after determine-function-environments.
+(defun remove-inappropriate-closures (funmap)
+  (loop for entry in (fmap funmap)
+        for ir = (finfo-irfun entry)
+        for clos = (loop for thing in (finfo-closure entry)
+                         when (consp thing)
+                           collect (car thing)
+                         else collect thing)
+        ;; when every member of the BIR function's environment
+        ;; is also a member of the bytecode closure.
+        when (cleavir-set:doset (lex (bir:environment ir) t)
+               (unless (member lex clos) (return nil)))
+          collect entry into fmap
+        finally (setf (fmap funmap) fmap)))
 
 (defun fixed-closures-map (fmap)
   (loop for entry in fmap
@@ -1655,10 +1680,11 @@
 (defun cmodule->irmodule (bytecode literals-info debug-info)
   (let* ((irmodule (make-instance 'bir:module))
          (literals (compute-compiled-literals literals-info irmodule))
-         (fmap (compile-bytecode-into bytecode debug-info literals irmodule)))
+         (funmap (compile-bytecode-into bytecode debug-info literals irmodule)))
     ;;(cleavir-bir-disassembler:display irmodule) (terpri)
     (clasp-cleavir::bir-transformations irmodule clasp-cleavir:*clasp-system*)
-    (values irmodule fmap literals)))
+    (remove-inappropriate-closures funmap)
+    (values irmodule funmap literals)))
 
 ;;; Compute an alist from bytecode cfunctions to pairs of indices into
 ;;; the function vector: (main xep)
