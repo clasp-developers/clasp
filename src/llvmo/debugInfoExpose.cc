@@ -402,7 +402,18 @@ core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::
     core::clasp_write_string(
         fmt::format("  DIContext* {}  SectionedAddress: {} {}\n", (void*)dicontext, (void*)addr.SectionIndex, (void*)addr.Address));
   }
+#if LLVM_VERSION_MAJOR < 21
   llvm::DILineInfo info = dicontext->getLineInfoForAddress(addr, lispec);
+#else
+  std::optional<llvm::DILineInfo> opt_info = dicontext->getLineInfoForAddress(addr, lispec);
+
+  if (!opt_info.has_value()) {
+    return nil<core::T_O>();
+  }
+
+  llvm::DILineInfo info = *opt_info;
+#endif
+
   if (info.FileName == info.BadString) {
     if (verbose) {
       core::clasp_write_string(fmt::format("info.Filename is info.BadString:  {}\n", info.FileName));
