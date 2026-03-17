@@ -806,16 +806,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (buildReport)
     ss << (fmt::format("USE_DEFAULT_NATIVE = {}\n", default_native ? "**DEFINED**" : "undefined"));
 
-  bool force_startup_external_linkage = false;
-#ifdef FORCE_STARTUP_EXTERNAL_LINKAGE
-  force_startup_external_linkage = true;
-  INTERN_(comp, STARforce_startup_external_linkageSTAR)->defparameter(_lisp->_true());
-#else
-  INTERN_(comp, STARforce_startup_external_linkageSTAR)->defparameter(nil<core::T_O>());
-#endif
-  if (buildReport)
-    ss << (fmt::format("FORCE_STARTUP_EXTERNAL_LINKAGE = {}\n", force_startup_external_linkage ? "**DEFINED**" : "undefined"));
-
   bool use_human_readable_bitcode = false;
 #ifdef USE_HUMAN_READABLE_BITCODE
   use_human_readable_bitcode = true;

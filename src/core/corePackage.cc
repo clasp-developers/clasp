@@ -676,7 +676,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARnumber_of_entry_pointsSTAR->defparameter(make_fixnum(NUMBER_OF_ENTRY_POINTS));
   _sym_STARcore_startup_functionSTAR->defparameter(nil<core::T_O>());
   comp::_sym_STARcompile_file_parallelSTAR->defparameter(nil<core::T_O>());
-  comp::_sym_STARforce_startup_external_linkageSTAR->defparameter(nil<core::T_O>());
 #ifdef DEBUG_LLVM_OPTIMIZATION_LEVEL_0
   int optimization_level = 0;
 #else
