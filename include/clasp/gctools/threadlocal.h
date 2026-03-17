@@ -7,10 +7,6 @@
 
 namespace core {
 
-#ifdef DEBUG_DYN_ENV_STACK
-extern bool global_debug_dyn_env_stack;
-#endif
-
 }; // namespace core
 
 namespace core {
@@ -282,17 +278,9 @@ public:
 
   void dynEnvStackTest(core::T_sp val) const;
   void dynEnvStackSet(core::T_sp val) {
-#ifdef DEBUG_DYN_ENV_STACK
-    if (core::global_debug_dyn_env_stack)
-      this->dynEnvStackTest(val);
-#endif
     this->_DynEnvStackBottom = val;
   }
   core::T_sp dynEnvStackGet() const {
-#ifdef DEBUG_DYN_ENV_STACK
-    if (core::global_debug_dyn_env_stack)
-      this->dynEnvStackTest(this->_DynEnvStackBottom);
-#endif
     return this->_DynEnvStackBottom;
   }
 

@@ -9,10 +9,6 @@
 
 namespace core {
 
-#ifdef DEBUG_DYN_ENV_STACK
-extern bool global_debug_dyn_env_stack;
-#endif
-
 FORWARD(DynEnv);
 FORWARD(DestDynEnv);
 

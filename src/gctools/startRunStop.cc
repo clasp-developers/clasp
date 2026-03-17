@@ -174,12 +174,6 @@ int startup_clasp(void** stackMarker, gctools::ClaspInfo* claspInfo, int* exitCo
     }
   }
 
-#ifdef DEBUG_DYN_ENV_STACK
-  const char* ddes = getenv("CLASP_DEBUG_DYN_ENV_STACK");
-  if (ddes)
-    core::global_debug_dyn_env_stack = true;
-#endif
-
   // DO BASIC EXE SETUP
 
   gctools::set_abort_flag(); // Set abort flag to default value

@@ -806,16 +806,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (buildReport)
     ss << (fmt::format("USE_DEFAULT_NATIVE = {}\n", default_native ? "**DEFINED**" : "undefined"));
 
-  bool debug_dyn_env_stack = false;
-#ifdef DEBUG_DYN_ENV_STACK
-  debug_dyn_env_stack = true;
-  debugging = true;
-  if (setFeatures)
-    features = core::Cons_O::create(_lisp->internKeyword("DEBUG-DYN-ENV-STACK"), features);
-#endif
-  if (buildReport)
-    ss << (fmt::format("DEBUG_DYN_ENV_STACK = {}\n", (debug_dyn_env_stack ? "**DEFINED**" : "undefined")));
-
   //
   // DEBUG_MONITOR must be last - other options turn this on
   //

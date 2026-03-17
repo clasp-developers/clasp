@@ -74,9 +74,6 @@ THE SOFTWARE.
 #include <clasp/core/cons.h>
 #include <clasp/core/commandLineOptions.h>
 #include <clasp/core/instance.h>
-#ifdef DEBUG_DYN_ENV_STACK
-#include <clasp/core/unwind.h> // global_debug_dyn_env_stack
-#endif
 #include <clasp/llvmo/llvmoPackage.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/posixTime.h>
