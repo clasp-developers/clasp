@@ -20,7 +20,6 @@
   (write-ifndef output-stream "CLASP_CONFIG_H")
   (write-defines output-stream
                  "CLASP_CONFIG_H" t
-                 "CST" (cst configuration)
                  "USE_PARALLEL_BUILD" (parallel-build configuration)
                  "STARTUP_IMAGE_EXTENSION"
                  (if (eq (build-mode configuration) :bytecode)
@@ -69,32 +68,24 @@
                  "DEBUG_GUARD_EXHAUSTIVE_VALIDATE" (debug-guard-exhaustive-validate configuration)
                  "DEBUG_RELEASE" (debug-release configuration)
                  "DEBUG_BITUNIT_CONTAINER" (debug-bitunit-container configuration)
-                 "DEBUG_DYNAMIC_BINDING_STACK" (debug-dynamic-binding-stack configuration)
                  "DEBUG_TRACK_UNWINDS" (debug-track-unwinds configuration)
                  "DEBUG_NO_UNWIND" (debug-no-unwind configuration)
                  "DEBUG_STARTUP" (debug-startup configuration)
                  "DEBUG_MONITOR" (debug-monitor configuration)
                  "DEBUG_MONITOR_SUPPORT" (debug-monitor-support configuration)
                  "DEBUG_MEMORY_PROFILE" (debug-memory-profile configuration)
-                 "DEBUG_BCLASP_LISP" (debug-bclasp-lisp configuration)
-                 "DEBUG_CCLASP_LISP" (debug-cclasp-lisp configuration)
                  "DEBUG_COUNT_ALLOCATIONS" (debug-count-allocations configuration)
-                 "DEBUG_COMPILER" (debug-compiler configuration)
                  "DEBUG_VERIFY_MODULES" (debug-verify-modules configuration)
                  "DEBUG_LONG_CALL_HISTORY" (debug-long-call-history configuration)
-                 "DEBUG_GFDISPATCH" (debug-gfdispatch configuration)
                  "DEBUG_FASTGF" (debug-fastgf configuration)
-                 "DEBUG_SLOT_ACCESSORS" (debug-slot-accessors configuration)
                  "DEBUG_THREADS" (debug-threads configuration)
                  "DEBUG_STORES" (debug-stores configuration)
                  "DEBUG_ENSURE_VALID_OBJECT" (debug-ensure-valid-object configuration)
                  "DEBUG_QUICK_VALIDATE" (debug-quick-validate configuration)
-                 "DEBUG_DONT_OPTIMIZE_BCLASP" (debug-dont-optimize-bclasp configuration)
                  "DEBUG_RECURSIVE_ALLOCATIONS" (debug-recursive-allocations configuration)
                  "DEBUG_ALLOC_ALIGNMENT" (debug-alloc-alignment configuration)
                  "DEBUG_LLVM_OPTIMIZATION_LEVEL_0" (debug-llvm-optimization-level-0 configuration)
                  "USE_HUMAN_READABLE_BITCODE" (human-readable-bitcode configuration)
-                 "DEBUG_COMPILE_FILE_OUTPUT_INFO" (debug-compile-file-output-info configuration)
                  "DEBUG_VIRTUAL_MACHINE" (debug-virtual-machine configuration)
                  "SNAPSHOT_START" :|_binary_snapshot_start|
                  "SNAPSHOT_END" :|_binary_snapshot_end|
@@ -149,8 +140,7 @@
       (write-defines output-stream
                      "_DEBUG_BUILD" t
                      "DEBUG_ASSERT" (debug-assert configuration)
-                     "DEBUG_BOUNDS_ASSERT" (debug-bounds-assert configuration)
-                     "CONFIG_VAR_COOL" (config-var-cool configuration))
+                     "DEBUG_BOUNDS_ASSERT" (debug-bounds-assert configuration))
       (write-defines output-stream
                      "_RELEASE_BUILD" t)))
 
