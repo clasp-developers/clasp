@@ -1273,7 +1273,7 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeStackProtectReq);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeAlignment);
 
 #if LLVM_VERSION_MAJOR < 21
-SYMBOL_EXPORT_SC_(LlvmoPkg, AttributNoCapture);
+SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeNoCapture);
 #endif
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeNoRedZone);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeNoImplicitFloat);
