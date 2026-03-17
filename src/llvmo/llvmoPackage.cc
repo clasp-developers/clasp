@@ -641,12 +641,25 @@ CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
     name = name.substr(1, name.size() - 2); // Strip double quotes
   }
   name = escapeNameForLlvm(name) + "_bct" + std::to_string(global_trampoline_counter++);
+#if LLVM_VERSION_MAJOR < 21
   LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
   std::string trampoline = core::searchAndReplaceString(global_trampoline, "wrapper:name", name);
   Module_sp module = llvm_sys__parseIRString(trampoline, context, "backtrace_trampoline");
   JITDylib_sp jitDylib = loadModule(module, 0, "trampoline");
   core::Pointer_sp bytecode_ptr = jit->lookup(jitDylib, name);
   return Values(bytecode_ptr, SimpleBaseString_O::make(name));
+#else
+  llvm::orc::ThreadSafeContext* tsc = ((llvm::orc::ThreadSafeContext*)gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue())->externalObject());
+  return tsc->withContextDo([&](llvm::LLVMContext *lc) {
+    auto context = gctools::GC<LLVMContext_O>::allocate();
+    context->_ptr = lc;
+    std::string trampoline = core::searchAndReplaceString(global_trampoline, "wrapper:name", name);
+    Module_sp module = llvm_sys__parseIRString(trampoline, context, "backtrace_trampoline");
+    JITDylib_sp jitDylib = loadModule(module, 0, "trampoline");
+    core::Pointer_sp bytecode_ptr = jit->lookup(jitDylib, name);
+    return Values(bytecode_ptr, SimpleBaseString_O::make(name));
+  });
+#endif
 }
 }; // namespace llvmo
 

@@ -452,8 +452,10 @@ void initialize_astExpose() {
   scope_Type_Record.def("getDecl", &clang::RecordType::getDecl);
   scope_Type_Record.def("desugar", &clang::RecordType::desugar);
   scope_Type_Enum.def("desugar", &clang::EnumType::desugar);
+#if LLVM_VERSION_MAJOR < 22
   scope_Type_Elaborated.def("desugar", &clang::ElaboratedType::desugar);
   scope_Type_Elaborated.def("getNamedType", &clang::ElaboratedType::getNamedType);
+#endif
   scope_Type_TemplateTypeParm.def("desugar", &clang::TemplateTypeParmType::desugar);
   scope_Type_SubstTemplateTypeParm.def("desugar", &clang::SubstTemplateTypeParmType::desugar);
   scope_Type_TemplateSpecialization.def("getTemplateName", &clang::TemplateSpecializationType::getTemplateName);
@@ -468,7 +470,9 @@ void initialize_astExpose() {
   scope_Type_InjectedClassName.def("getDecl", &clang::InjectedClassNameType::getDecl);
   scope_Type_DependentName.def("desugar", &clang::DependentNameType::desugar);
   scope_Type_DependentName.def("isSugared", &clang::DependentNameType::isSugared);
+#if LLVM_VERSION_MAJOR < 22
   scope_Type_DependentTemplateSpecialization.def("desugar", &clang::DependentTemplateSpecializationType::desugar);
+#endif
   class_<clang::TypeLoc>(m, "TypeLoc")
       .def("getSourceRange", &clang::TypeLoc::getSourceRange)
       .def("getLocalSourceRange", &clang::TypeLoc::getLocalSourceRange)

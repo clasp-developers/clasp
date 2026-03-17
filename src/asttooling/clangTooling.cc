@@ -683,7 +683,11 @@ namespace asttooling {
 
 /*Return the field offset in bits */
 size_t getFieldOffset(clang::ASTContext* context, clang::RecordDecl* record, size_t fieldIndex) {
+#if LLVM_VERSION_MAJOR < 22
   const clang::Type* type = record->getTypeForDecl();
+#else
+  const clang::Type* type = context->getCanonicalTagType(record).getTypePtr();
+#endif
   if (type->isDependentType())
     return 0;
   const clang::ASTRecordLayout& layout = context->getASTRecordLayout(record);
@@ -695,7 +699,11 @@ size_t getFieldOffset(clang::ASTContext* context, clang::RecordDecl* record, siz
 }
 
 size_t getRecordSize(clang::ASTContext* context, clang::RecordDecl* record) {
+#if LLVM_VERSION_MAJOR < 22
   const clang::Type* type = record->getTypeForDecl();
+#else
+  const clang::Type* type = context->getCanonicalTagType(record).getTypePtr();
+#endif
   if (type->isDependentType())
     return 0;
   //  printf("getRecordSize context = %p record = %p(%s)\n", context, record, record->getNameAsString().c_str() );
