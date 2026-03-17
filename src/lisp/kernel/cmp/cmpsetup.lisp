@@ -26,10 +26,6 @@
 
 (in-package :cmp)
 
-
-;; Use the DebugIRPass to add self referencing debugging informato to IR
-(defvar *debug-ir* nil)
-
 (defvar *code-walking* nil)
 
 ;;; Turn these on to verify llvm modules and functions
