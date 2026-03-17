@@ -384,11 +384,6 @@
                                     :initform nil
                                     :type boolean
                                     :documentation "")
-   (human-readable-bitcode :accessor human-readable-bitcode
-                           :initarg :human-readable-bitcode
-                           :initform nil
-                           :type boolean
-                           :documentation "")
    (debug-virtual-machine :accessor debug-virtual-machine
                           :initarg :debug-virtual-machine
                           :initform nil

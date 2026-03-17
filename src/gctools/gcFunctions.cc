@@ -806,16 +806,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (buildReport)
     ss << (fmt::format("USE_DEFAULT_NATIVE = {}\n", default_native ? "**DEFINED**" : "undefined"));
 
-  bool use_human_readable_bitcode = false;
-#ifdef USE_HUMAN_READABLE_BITCODE
-  use_human_readable_bitcode = true;
-  debugging = true;
-  if (setFeatures)
-    features = core::Cons_O::create(_lisp->internKeyword("USE-HUMAN-READABLE-BITCODE"), features);
-#endif
-  if (buildReport)
-    ss << (fmt::format("USE_HUMAN_READABLE_BITCODE = {}\n", (use_human_readable_bitcode ? "**DEFINED**" : "undefined")));
-
   bool debug_dyn_env_stack = false;
 #ifdef DEBUG_DYN_ENV_STACK
   debug_dyn_env_stack = true;

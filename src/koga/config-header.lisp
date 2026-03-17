@@ -84,7 +84,6 @@
                  "DEBUG_RECURSIVE_ALLOCATIONS" (debug-recursive-allocations configuration)
                  "DEBUG_ALLOC_ALIGNMENT" (debug-alloc-alignment configuration)
                  "DEBUG_LLVM_OPTIMIZATION_LEVEL_0" (debug-llvm-optimization-level-0 configuration)
-                 "USE_HUMAN_READABLE_BITCODE" (human-readable-bitcode configuration)
                  "DEBUG_VIRTUAL_MACHINE" (debug-virtual-machine configuration)
                  "SNAPSHOT_START" :|_binary_snapshot_start|
                  "SNAPSHOT_END" :|_binary_snapshot_end|
