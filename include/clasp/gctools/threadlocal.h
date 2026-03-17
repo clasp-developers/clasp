@@ -226,7 +226,6 @@ struct VirtualMachine {
   ~VirtualMachine();
 };
 
-#define IHS_BACKTRACE_SIZE 16
 struct ThreadLocalState {
 
   mp::Process_sp _Process;
@@ -254,10 +253,6 @@ struct ThreadLocalState {
   List_sp _DynEnvStackBottom;
   T_sp _UnwindDest;
   size_t _UnwindDestIndex;
-#ifdef DEBUG_IHS
-  // Save the last return address before IHS screws up
-  void* _IHSBacktrace[IHS_BACKTRACE_SIZE];
-#endif
   size_t _xorshf_x; // Marsaglia's xorshf generator
   size_t _xorshf_y;
   size_t _xorshf_z;

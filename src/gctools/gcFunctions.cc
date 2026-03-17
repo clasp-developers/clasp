@@ -662,14 +662,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (buildReport)
     ss << (fmt::format("DEBUG_ENSURE_VALID_OBJECT = {}\n", (debug_ensure_valid_object ? "**DEFINED**" : "undefined")));
 
-  bool debug_cache = false;
-#ifdef DEBUG_CACHE
-  debug_cache = true;
-  debugging = true;
-#endif
-  if (buildReport)
-    ss << (fmt::format("DEBUG_CACHE = {}\n", (debug_cache ? "**DEFINED**" : "undefined")));
-
   bool debug_threads = false;
 #ifdef DEBUG_THREADS
   debug_threads = true;
@@ -695,14 +687,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport)
     ss << (fmt::format("CST = {}\n", (debug_gfdispatch ? "**DEFINED**" : "undefined")));
-
-  bool debug_ihs = false;
-#ifdef DEBUG_IHS
-  debug_ihs = true;
-  debugging = true;
-#endif
-  if (buildReport)
-    ss << (fmt::format("DEBUG_IHS = {}\n", (debug_ihs ? "**DEFINED**" : "undefined")));
 
   bool debug_enable_profiling = false;
 #ifdef ENABLE_PROFILING

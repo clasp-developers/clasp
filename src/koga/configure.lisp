@@ -284,36 +284,16 @@
                                     :initform nil
                                     :type boolean
                                     :documentation "Add exhaustive, slow, checks of guards")
-   (debug-trace-interpreted-closures :accessor debug-trace-interpreted-closures
-                                     :initarg :debug-trace-interpreted-closures
-                                     :initform nil
-                                     :type boolean
-                                     :documentation "")
-   (debug-environments :accessor debug-environments
-                       :initarg :debug-environments
-                       :initform nil
-                       :type boolean
-                       :documentation "")
    (debug-release :accessor debug-release
                   :initarg :debug-release
                   :initform nil
                   :type boolean
                   :documentation "Turn off optimization for a few C++ functions; undef this to optimize everything")
-   (debug-cache :accessor debug-cache
-                :initarg :debug-cache
-                :initform nil
-                :type boolean
-                :documentation "Debug the dispatch caches - see cache.cc")
    (debug-bitunit-container :accessor debug-bitunit-container
                             :initarg :debug-bitunit-container
                             :initform nil
                             :type boolean
                             :documentation "Prints debug info for bitunit containers")
-   (debug-lexical-depth :accessor debug-lexical-depth
-                        :initarg :debug-lexical-depth
-                        :initform nil
-                        :type boolean
-                        :documentation "Generate tests for lexical closure depths")
    (debug-dynamic-binding-stack :accessor debug-dynamic-binding-stack
                                 :initarg :debug-dynamic-binding-stack
                                 :initform nil
@@ -324,11 +304,6 @@
                  :initform nil
                  :type boolean
                  :documentation "turn on printing (values x y z) values when core:*debug-values* is not nil")
-   (debug-ihs :accessor debug-ihs
-              :initarg :debug-ihs
-              :initform nil
-              :type boolean
-              :documentation "")
    (debug-track-unwinds :accessor debug-track-unwinds
                         :initarg :debug-track-unwinds
                         :initform nil
