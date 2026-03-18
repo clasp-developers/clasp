@@ -166,97 +166,54 @@ T_sp dwarf_ep(size_t frameIndex, llvmo::ObjectFile_sp ofi, llvmo::DWARFContext_s
   MaybeTrace trace(__FUNCTION__);
   functionStartAddress = NULL;
   D(printf("%s:%d:%s frameIndex = %lu\n", __FILE__, __LINE__, __FUNCTION__, frameIndex););
-  //
-  // If the object file contains the interpreter_trampoline - then we are in the interpreter
-  //
-  if (ofi->codeStart() <= (uintptr_t)bytecode_trampoline && (uintptr_t)bytecode_trampoline < ofi->codeEnd()) {
+
+  // Grab the code start from the object file, since we return that
+  // later and need it now.
+  codeStart = (void*)ofi->codeStart();
+
+  // If the object file contains the interpreter_trampoline - then we are in the bytecode interpreter
+  if (codeStart <= (void*)bytecode_trampoline && (uintptr_t)bytecode_trampoline < ofi->codeEnd()) {
     functionStartAddress = (void*)bytecode_trampoline;
     D(printf("%s:%d:%s bytecode trampoline functionStartAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, functionStartAddress););
     return nil<T_O>();
   }
+
   auto expected_ranges = llvmo::getAddressRangesForAddressInner(dcontext, sa);
-  if (expected_ranges) {
-    auto ranges = expected_ranges.get();
-    if (ranges.size() == 0) {
-      D(printf("%s:%d:%s No ranges were found for %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(sa).c_str()););
-    } else {
-      if (ranges.size() > 1) {
-        printf("%s:%d:%s There is more than one range - there are %lu\n", __FILE__, __LINE__, __FUNCTION__, ranges.size());
-      } else {
-        llvmo::ObjectFile_sp code = ofi;
-        codeStart = (void*)code->codeStart();
-        uintptr_t absolute_LowPC = ranges.begin()->LowPC + (uintptr_t)codeStart;
-        functionStartAddress = (void*)(absolute_LowPC);
-        D(printf("%s:%d:%s Calculated functionStartAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, functionStartAddress););
-        T_O** rliterals = code->TOLiteralsStart();
-        size_t nliterals = code->TOLiteralsSize();
-        D(printf("%s%s:%d:%s sectioned address %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__,
-                 _rep_(sa).c_str()););
-        D(printf("%s%s:%d:%s codeStart = %p - %p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, (void*)codeStart,
-                 (void*)codeEnd););
-        D(printf("%s%s:%d:%s objectFile = %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(ofi).c_str()););
-        D(for (auto range
-               : ranges) {
-          uintptr_t absolute_LowPC = range.LowPC + (uintptr_t)codeStart;
-          uintptr_t absolute_HighPC = range.HighPC + (uintptr_t)codeStart;
-          printf("%s%s:%d:%s found range %p - %p  Absolute %p - %p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__,
-                 (void*)range.LowPC, (void*)range.HighPC, (void*)absolute_LowPC, (void*)absolute_HighPC);
-        } printf("%s%s:%d:%s rliterals = %p nliterals = %lu\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, rliterals,
-                 nliterals););
-        for (size_t i = 0; i < nliterals; ++i) {
-          T_sp literal((gc::Tagged)(rliterals[i]));
-          if (gc::IsA<CoreFun_sp>(literal)) {
-            CoreFun_sp ep = gc::As_unsafe<CoreFun_sp>(literal);
-            uintptr_t absolute_entry = (uintptr_t)(ep->_Entry);
-            D(printf("%s%s:%d:%s CoreFun_sp %s  absolute_entry = %p   FunctionDescription name %s\n", trace.spaces().c_str(),
-                     __FILE__, __LINE__, __FUNCTION__, _rep_(ep).c_str(), (void*)absolute_entry,
-                     _rep_(ep->functionDescription()).c_str()););
-            for (auto range : ranges) {
-              uintptr_t absolute_LowPC = range.LowPC + (uintptr_t)codeStart;
-              uintptr_t absolute_HighPC = range.HighPC + (uintptr_t)codeStart;
-              if ((absolute_LowPC <= absolute_entry) && (absolute_entry < absolute_HighPC)) {
-                D(printf("%s%s:%d:%s Matched absolute_LowPC/absolute_HighPC %p/%p\n", trace.spaces().c_str(), __FILE__, __LINE__,
-                         __FUNCTION__, (void*)absolute_LowPC, (void*)absolute_HighPC););
-                XEPp = false;
-                // This will be identical to the entry point address in CoreFun_sp ep
-                return ep;
-              } else {
-                D(printf("%s%s:%d:%s DID NOT match absolute_LowPC/absolute_HighPC %p/%p\n", trace.spaces().c_str(), __FILE__,
-                         __LINE__, __FUNCTION__, (void*)absolute_LowPC, (void*)absolute_HighPC););
-              }
-            }
-          } else if (gc::IsA<SimpleFun_sp>(literal)) {
-            SimpleFun_sp ep = gc::As_unsafe<SimpleFun_sp>(literal);
-            D(printf("%s%s:%d:%s SimpleCoreFun_sp %s  FunctionDescription name %s\n", trace.spaces().c_str(), __FILE__, __LINE__,
-                     __FUNCTION__, _rep_(ep).c_str(), _rep_(ep->functionDescription()).c_str()););
-            for (size_t j = 0; j < NUMBER_OF_ENTRY_POINTS; ++j) {
-              uintptr_t absolute_entry = (uintptr_t)(ep->_EntryPoints[j]);
-              for (auto range : ranges) {
-                uintptr_t absolute_LowPC = range.LowPC + (uintptr_t)codeStart;
-                uintptr_t absolute_HighPC = range.HighPC + (uintptr_t)codeStart;
-                if ((absolute_LowPC <= absolute_entry) && (absolute_entry < absolute_HighPC)) {
-                  D(printf("%s%s:%d:%s Matched arityCode: %lu absolute_LowPC/absolute_HighPC %p/%p\n", trace.spaces().c_str(),
-                           __FILE__, __LINE__, __FUNCTION__, j, (void*)absolute_LowPC, (void*)absolute_HighPC););
-                  XEPp = true;
-                  // This will be identical to ONE of the the entry point address in SimpleFun_sp ep
-                  // arityCode is the index into the SimpleFun_sp vector corresponding to functionStartAddress
-                  arityCode = j;
-                  return ep;
-                } else {
-                  // D(printf("%s%s:%d:%s absolute_entry -> %p DID NOT match absolute_LowPC/absolute_HighPC %p/%p\n",
-                  // trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, (void*)absolute_entry, (void*)absolute_LowPC,
-                  // (void*)absolute_HighPC ););
-                }
-              }
-            }
-          }
+  if (!expected_ranges) return nil<T_O>();
+  auto ranges = expected_ranges.get();
+
+  // We have address ranges. Look through the object file to find a
+  // function including at least one of those ranges.
+  // Almost all of the time, we only have one range. Multiple ranges
+  // would only arise from weird optimizations, I think. They should
+  // all still pretty much be in one function regardless, though.
+  T_O** rliterals = ofi->TOLiteralsStart();
+  size_t nliterals = ofi->TOLiteralsSize();
+
+  for (auto range : ranges) {
+    uintptr_t absolute_LowPC = range.LowPC + (uintptr_t)codeStart;
+    uintptr_t absolute_HighPC = range.HighPC + (uintptr_t)codeStart;
+    for (size_t i = 0; i < nliterals; ++i) {
+      T_sp literal((gc::Tagged)(rliterals[i]));
+      if (literal.isA<CoreFun_O>()) {
+        CoreFun_sp ep = literal.as<CoreFun_O>();
+        if (ep->entry_in_range_p(absolute_LowPC, absolute_HighPC)) {
+          functionStartAddress = (void*)absolute_LowPC;
+          XEPp = false;
+          return ep; // hit!
         }
-        // no hits
-        return nil<T_O>();
+      } else if (literal.isA<SimpleFun_O>()) {
+        SimpleFun_sp ep = literal.as<SimpleFun_O>();
+        T_sp maybe_ep = ep->entry_in_range(absolute_LowPC, absolute_HighPC, XEPp, arityCode);
+        if (maybe_ep.notnilp()) {
+          functionStartAddress = (void*)absolute_LowPC;
+          return maybe_ep;
+        }
       }
+      // other literals we ignore
     }
   }
-  D(printf("%s:%d:%s No eranges\n", __FILE__, __LINE__, __FUNCTION__););
+  // No hits from any range (or we had no ranges)
   return nil<T_O>();
 }
 

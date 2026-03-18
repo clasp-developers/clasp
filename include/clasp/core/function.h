@@ -224,6 +224,15 @@ public:
   CL_DEFMETHOD T_sp SimpleFun_code() const { return this->_Code; };
   // Check if the entry points can be dladdr'd, for snapshot save purposes.
   bool dladdrablep(std::set<void*>& uniqueEntries);
+  // Get an entry point for backtrace construction.
+  // Returns a SimpleFun (which may not be this SimpleFun!) or a
+  // CoreFun, or NIL if we're not in the given range.
+  // XEPp is set to true if the result is a SimpleFun, to false if it's
+  // a CoreFun, and otherwise not set.
+  // arityCode is set to the entry point arity (i.e. position in the
+  //  _EntryPoints) if the result is a SimpleFun.
+  virtual T_sp entry_in_range(uintptr_t low, uintptr_t high,
+                              bool& XEPp, int& arityCode) const;
 
 protected:
   void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr, T_sp code);
@@ -289,6 +298,10 @@ public:
   virtual Pointer_sp defaultEntryAddress() const;
   bool dladdrablep(std::set<void*>& uniques);
   string __repr__() const;
+  // used in backtraces
+  bool entry_in_range_p(uintptr_t low, uintptr_t high) const {
+    return low <= (uintptr_t)_Entry && (uintptr_t)_Entry < high;
+  }
 };
 
 // This and SimpleCoreFunGenerator are used in FASLs to indicate functions.
@@ -336,6 +349,7 @@ public:
   llvmo::ObjectFile_sp code() const;
   CoreFun_sp localFun() const;
   string __repr__() const;
+  T_sp entry_in_range(uintptr_t, uintptr_t, bool&, int&) const override;
 };
 
 // Fulfill the role of bytecode_function
