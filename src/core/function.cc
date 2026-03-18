@@ -119,6 +119,24 @@ void SimpleFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fix
   }
 }
 
+T_sp SimpleFun_O::entry_in_range(uintptr_t low, uintptr_t high,
+                                 bool& XEPp, int& arityCode) const {
+  for (size_t i = 0; i < ClaspXepFunction::Entries; ++i) {
+    uintptr_t entry = (uintptr_t)(_EntryPoints._EntryPoints[i].load(std::memory_order_relaxed));
+    if (low <= entry && entry < high) {
+      XEPp = true;
+      arityCode = i;
+      return this->asSmartPtr();
+    }
+  }
+  // If we're not our own entry point (e.g. an optimized bytecode fun)
+  // try our entry point.
+  SimpleFun_sp entry = entryPoint();
+  if (entry != this->asSmartPtr())
+    return entry->entry_in_range(low, high, XEPp, arityCode);
+  else return nil<T_O>(); // otherwise we got nothing
+}
+
 SimpleCoreFun_O::SimpleCoreFun_O(FunctionDescription_sp fdesc, const ClaspXepTemplate& entry_point, T_sp code, CoreFun_sp lep)
   : SimpleFun_O(fdesc, code, entry_point), _localFun(lep) {};
 
@@ -172,6 +190,15 @@ llvmo::ObjectFile_sp SimpleCoreFun_O::code() const {
 CL_LISPIFY_NAME("simple-core-fun-local-fun");
 CL_DEFMETHOD
 CoreFun_sp SimpleCoreFun_O::localFun() const { return this->_localFun; }
+
+T_sp SimpleCoreFun_O::entry_in_range(uintptr_t low, uintptr_t high,
+                                     bool& XEPp, int& arityCode) const {
+  if (_localFun->entry_in_range_p(low, high)) {
+    XEPp = false;
+    return _localFun;
+  } // ok, not in core fun, go back to the usual
+  return SimpleFun_O::entry_in_range(low, high, XEPp, arityCode);
+}
 
 Pointer_sp CoreFun_O::defaultEntryAddress() const { return Pointer_O::create((void*)this->_Entry); };
 

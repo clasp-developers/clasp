@@ -269,15 +269,19 @@
    (%function :initarg :function :reader ll-function :type creator)
    (%lambda-list :initarg :lambda-list :reader lambda-list :type creator)))
 
-(defclass function-native-attr (attribute)
-  ((%name :initform (ensure-constant "clasp:function-native"))
-   (%function :initarg :function :reader ll-function :type creator)
+(defclass function-native-abstract-attr (attribute)
+  ((%function :initarg :function :reader ll-function :type creator)
    ;; ID number of the native module
    (%module-id :initarg :id :reader module-id :type (unsigned-byte 16))
    ;; Index of the core function in the function vector
    (%main :initarg :main :reader main :type (unsigned-byte 16))
    ;; Index of the first XEP function in the function vector
    (%xep :initarg :xep :reader xep :type (unsigned-byte 16))))
+
+(defclass function-native-attr (function-native-abstract-attr)
+  ((%name :initform (ensure-constant "clasp:function-native"))))
+(defclass function-native-estranged-attr (function-native-abstract-attr)
+  ((%name :initform (ensure-constant "clasp:function-native-estranged"))))
 
 #+clasp
 (defclass spi-attr (attribute)
@@ -1640,13 +1644,14 @@
                         native-module))
          (id (funcall (find-symbol "NMODULE-ID"
                                    "CLASP-BYTECODE-TO-BIR")
-                      native-module)))
+                      native-module))
+         (native-literals (native-literals nlits)))
     (add-instruction
      (make-instance 'module-native-attr
        :module module
        :id id
        :code code
-       :literals (native-literals nlits)))
+       :literals native-literals))
     ;; Add attributes for the functions as well.
     ;; We do this here instead of in the CFUNCTION methods because
     ;; of the recursive nature of functions referring to modules
@@ -1654,11 +1659,15 @@
     ;; It's possible that a bytecode function does not appear
     ;; in the fmap. This can occur because e.g. it was inlined
     ;; away. That's ok, it just means we don't dump an attr for it.
-    (loop for (f main xep) in fmap
+    (loop for (f associatep main xep) in fmap
           do (add-instruction
-              (make-instance 'function-native-attr
-                :function (ensure-function f)
-                :id id :main main :xep xep)))))
+              (if associatep
+                  (make-instance 'function-native-attr
+                    :function (ensure-function f)
+                    :id id :main main :xep xep)
+                  (make-instance 'function-native-estranged-attr
+                    :function (ensure-function f)
+                    :id id :main main :xep xep))))))
 
 (defun native-literals (native-literals)
   (let (;; don't bother native compiling LTV forms.
@@ -1711,7 +1720,7 @@
   (write-index (ll-function attr) stream)
   (write-index (lambda-list attr) stream))
 
-(defmethod encode ((attr function-native-attr) stream)
+(defmethod encode ((attr function-native-abstract-attr) stream)
   (write-b32 (+ *index-bytes* 6) stream)
   (write-index (ll-function attr) stream)
   (write-b16 (module-id attr) stream)
