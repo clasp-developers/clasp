@@ -154,7 +154,7 @@
                         (let ((new
                                 (make-bir-function bcfun inserter
                                                    (module context))))
-                          (push (list bcfun new nil) (fmap (funmap context)))
+                          (push (list bcfun new nil t) (fmap (funmap context)))
                           new))))
         (build:begin inserter (bir:start irfun))
         (context-new-function context bcfun))))
@@ -182,7 +182,7 @@
     (when disassemble
       (cleavir-bir-disassembler:display module))
     (clasp-cleavir::bir-transformations module system)
-    (remove-inappropriate-closures funmap)
+    (dissociate-inappropriate-closures (fmap funmap))
     (let ((cleavir-cst-to-ast:*compiler* 'cl:compile)
           ;; Ensure any closures have the same layout as original
           ;; bytecode closures, so the simple fun can be swapped
@@ -200,7 +200,7 @@
                          (system clasp-cleavir:*clasp-system*))
   (multiple-value-bind (irmodule funmap) (compile-bcmodule module)
     (clasp-cleavir::bir-transformations irmodule system)
-    (remove-inappropriate-closures funmap)
+    (dissociate-inappropriate-closures (fmap funmap))
     (multiple-value-bind (function-infos constants ctable fvector)
         (let ((cleavir-cst-to-ast:*compiler* 'cl:compile)
               (clasp-cleavir::*fixed-closures*
@@ -212,9 +212,9 @@
             do (setf (core:literals-vref ctable i) lit))
       ;; Generate XEPs for all the bytecode functions, and store them as
       ;; the bytecode functions' simple funs.
-      (loop for (bcfun ir) in (fmap funmap)
+      (loop for (bcfun ir _ associatep) in (fmap funmap)
             for info = (gethash ir function-infos)
-            unless (null info)
+            unless (or (null info) (not associatep))
               do (let ((xep (clasp-cleavir::xep-function info)))
                    (unless (eq xep :xep-unallocated)
                      (let* ((generator (cmp:xep-group-generator xep))
@@ -228,23 +228,25 @@
 ;;; function into the bytecode function doesn't make sense, but the
 ;;; outer function can still have a native version, which will just
 ;;; make a closure over the native function.
-;;; Here we detect this situation and remove any inapposite functions
+;;; This situation is rare but does occur.
+;;; Here we detect this situation and flag any inapposite functions
 ;;; from the funmap.
 ;;; This has to be called after bir-transformations, or more
 ;;; specifically, after determine-function-environments.
-(defun remove-inappropriate-closures (funmap)
-  (loop for entry in (fmap funmap)
+;;; (simple example: (lambda (x) (flet ((foo () x)) (lambda () foo)))
+;;;  the inner lambda is optimized to close over x not #'foo.)
+(defun dissociate-inappropriate-closures (fmap)
+  (loop for entry in fmap
         for ir = (finfo-irfun entry)
         for clos = (loop for thing in (finfo-closure entry)
                          when (consp thing)
                            collect (car thing)
                          else collect thing)
-        ;; when every member of the BIR function's environment
+        ;; unless every member of the BIR function's environment
         ;; is also a member of the bytecode closure.
-        when (cleavir-set:doset (lex (bir:environment ir) t)
-               (unless (member lex clos) (return nil)))
-          collect entry into fmap
-        finally (setf (fmap funmap) fmap)))
+        unless (cleavir-set:doset (lex (bir:environment ir) t)
+                 (unless (member lex clos) (return nil)))
+          do (setf (finfo-associatep entry) nil)))
 
 (defun fixed-closures-map (fmap)
   (loop for entry in fmap
@@ -254,7 +256,10 @@
                            collect (car thing)
                          else
                            collect thing)
-        collect (cons ir clos)))
+        ;; if we've dissociated the native version it can and must
+        ;; be laid out freely.
+        when (finfo-associatep entry)
+          collect (cons ir clos)))
 
 ;;; Return a list of all annotations that start at IP 0.
 (defun initial-annotations (annotations)
@@ -341,7 +346,8 @@
 
 ;;; Mapping from bytecode functions to IR functions.
 (defclass funmap ()
-  (;; List of (bcfun irfun closure); see finfo- accessors below.
+  (;; List of (bcfun irfun closure associatep);
+   ;; see finfo- accessors below.
    (%map :initform nil :accessor fmap)))
 
 (defun make-funmap () (make-instance 'funmap))
@@ -355,9 +361,11 @@
 (defun finfo-irfun (finfo) (second finfo))
 (defun finfo-closure (finfo) (third finfo))
 (defun (setf finfo-closure) (new finfo) (setf (third finfo) new))
+(defun finfo-associatep (finfo) (fourth finfo))
+(defun (setf finfo-associatep) (new finfo) (setf (fourth finfo) new))
 
-(defun add-function (context bcfun irfun closure)
-  (push (list bcfun irfun closure) (fmap (funmap context))))
+(defun add-function (context bcfun irfun closure &optional (assp t))
+  (push (list bcfun irfun closure assp) (fmap (funmap context))))
 
 ;;; Mapping from IPs to IR blocks. Used throughout compilation of
 ;;; a bytecode module due to nonlocal exits.
@@ -1683,15 +1691,16 @@
          (funmap (compile-bytecode-into bytecode debug-info literals irmodule)))
     ;;(cleavir-bir-disassembler:display irmodule) (terpri)
     (clasp-cleavir::bir-transformations irmodule clasp-cleavir:*clasp-system*)
-    (remove-inappropriate-closures funmap)
+    (dissociate-inappropriate-closures (fmap funmap))
     (values irmodule funmap literals)))
 
-;;; Compute an alist from bytecode cfunctions to pairs of indices into
-;;; the function vector: (main xep)
+;;; Compute an alist from bytecode cfunctions to associatep plus
+;;; pairs of indices into the function vector: (associatep main xep)
 (defun compute-native-fmap (cmap mmap)
   (loop for cinfo in cmap
         for cfun = (finfo-bcfun cinfo)
         for irfun = (finfo-irfun cinfo)
+        for associatep = (finfo-associatep cinfo)
         for info = (gethash irfun mmap)
         ;; functions may have been removed from the IR module, e.g. because they've been
         ;; inlined. We could try to preserve some native code to keep in the bytecode
@@ -1702,7 +1711,7 @@
                          (xepi (first (core:simple-core-fun-generator-entry-point-indices generator)))
                          (coregen (core:simple-core-fun-generator/core-fun-generator generator))
                          (corei (first (core:core-fun-generator-entry-point-indices coregen))))
-                    (list cfun corei xepi))))
+                    (list cfun associatep corei xepi))))
 
 (defun allocate-module-constants (constants)
   ;; Generate translator constants for any infos that are actually used.

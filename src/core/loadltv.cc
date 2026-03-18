@@ -831,6 +831,18 @@ struct loadltv {
       gc::As_unsafe<Function_sp>(function)->setf_lambdaList(lambda_list);
   }
 
+  SimpleCoreFun_sp make_native_fun(void** fvector,
+                                   uint16_t corei, uint16_t xepi,
+                                   FunctionDescription_sp fdesc) {
+    CoreFun_sp core = makeCoreFun(fdesc,
+                                  (ClaspCoreFunction)fvector[corei]);
+
+    ClaspXepTemplate xep;
+    for (size_t ii = 0; ii < ClaspXepFunction::Entries; ++ii)
+      xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)fvector[xepi + ii];
+    return makeSimpleCoreFun(fdesc, xep, core);
+  }
+
   void attr_clasp_function_native(uint32_t bytes) {
     T_sp tfunction = get_ltv(read_index());
     Function_sp function = tfunction.as<Function_O>();
@@ -845,16 +857,54 @@ struct loadltv {
       SIMPLE_ERROR("Could not find function vector {}", module_id);
     void** fvector = (void**)vfvector;
 
-    CoreFun_sp core = makeCoreFun(function->fdesc(),
-                                  (ClaspCoreFunction)fvector[corei]);
-
-    ClaspXepTemplate xep;
-    for (size_t ii = 0; ii < ClaspXepFunction::Entries; ++ii)
-      xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)fvector[xepi + ii];
-    SimpleCoreFun_sp scf = makeSimpleCoreFun(function->fdesc(), xep, core);
-
+    SimpleCoreFun_sp scf = make_native_fun((void**)vfvector,
+                                           corei, xepi,
+                                           function->fdesc());
     // Install in the function and we're done.
     function->setSimpleFun(scf);
+  }
+
+  void attr_clasp_function_native_estranged(uint32_t bytes) {
+    T_sp tfunction = get_ltv(read_index());
+    Function_sp function = tfunction.as<Function_O>();
+    uint16_t module_id = read_u16();
+    uint16_t corei = read_u16();
+    uint16_t xepi = read_u16();
+
+    llvmo::ClaspJIT_sp jit = _lisp->_Roots._ClaspJIT.as_assert<llvmo::ClaspJIT_O>();
+    llvmo::JITDylib_sp dylib = _JITDylib.as<llvmo::JITDylib_O>();
+    void* vfvector = jit->lookup_fvector(dylib, module_id);
+    if (!vfvector)
+      SIMPLE_ERROR("Could not find function vector {}", module_id);
+    void** fvector = (void**)vfvector;
+
+    SimpleCoreFun_sp scf = make_native_fun((void**)vfvector,
+                                           corei, xepi,
+                                           function->fdesc());
+    // Install in the native module's constants, overriding the
+    // bytecode function placed there by the native module attribute.
+    // We do this kind of awkwardly to avoid imposing another condition
+    // for FASL correctness: Get the ObjectFile_O from the function,
+    // and iterate over its constants to find the bytecode function.
+    // We do this instead of grabbing the literals from the dylib so
+    // that we have a bound for the number of literals.
+    // If the bytecode function can't be found, closures may be
+    // constructed that break, so signal an error.
+    llvmo::ObjectFile_sp obj = scf->SimpleFun_code().as<llvmo::ObjectFile_O>();
+    size_t nlits = obj->TOLiteralsSize();
+    core::T_O** lits = obj->TOLiteralsStart();
+    // FIXME: the function can appear multiple times (?????)
+    // so use a flag.
+    // Seriously though that's bad. Real wasteful.
+    bool seen = false;
+    for (size_t i = 0; i < nlits; ++i) {
+      if (lits[i] == function.raw_()) {
+        lits[i] = scf.raw_();
+        seen = true;
+      }
+    }
+    if (!seen)
+      SIMPLE_ERROR("While loading native module: Could not find bytecode function {} in modules constants", _rep_(function));
   }
 
   void attr_clasp_source_pos_info(uint32_t bytes) {
@@ -1076,6 +1126,8 @@ struct loadltv {
       attr_lambda_list(attrbytes);
     } else if (name == "clasp:function-native") {
       attr_clasp_function_native(attrbytes);
+    } else if (name == "clasp:function-native-estranged") {
+      attr_clasp_function_native_estranged(attrbytes);
     } else if (name == "clasp:source-pos-info"
                || name == "source-pos-info") {
       attr_clasp_source_pos_info(attrbytes);
