@@ -1721,6 +1721,18 @@
           ;; Pre-populate the translation constants
           do (clasp-cleavir::ensure-literal-info ir cmp)))
 
+;;; In order for the debugger to work, it has to be able to get functions from
+;;; ObjectFile_O literal tables. So we create all functions in said table, even
+;;; if they're never actually closed over. If we had some other way to get the
+;;; functions this would not be necessary.
+;;; These will be bytecode functions and necessarily already exist in the FASL,
+;;; so this shouldn't result in any duplication.
+(defun force-function-literals (fmap)
+  (loop for entry in fmap
+        for ir = (finfo-irfun entry)
+        for cmp = (finfo-bcfun entry)
+        do (clasp-cleavir::ensure-literal-info ir cmp)))
+
 (defun allocate-llvm-function-infos (module fvector fmap)
   (bir:do-functions (function module)
     (let ((info (find function fmap :key #'finfo-irfun)))
@@ -1749,6 +1761,7 @@
           (allocate-llvm-function-infos ir fvector fmap)
           (clasp-cleavir::with-constants (ctable ctable-name)
             (allocate-module-constants cmap)
+            (force-function-literals fmap)
             (clasp-cleavir::layout-module ir abi)
             (cmp::potentially-save-module)))
         (clasp-cleavir::gen-function-vector fvector fvector-name))
