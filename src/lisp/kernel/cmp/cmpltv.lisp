@@ -1609,7 +1609,7 @@
            :indices mutables))))
     ;; Native compilation.
     #+clasp
-    (when cmp:*compile-file-native*
+    (when (and cmp:*compile-file-native* (native-compile-p value info))
       (if cmp::*compile-file-parallel*
           (progn
             (cmp::enqueue-native-compilation
@@ -1631,6 +1631,20 @@
               ;; error? who cares, native code is optional, move on
               (cmp::note-native-compilation-failure e)))))
     mod))
+
+(defun native-compile-p (module info)
+  (declare (ignore module))
+  ;; Don't compile a module if there are any (debug 3) declarations.
+  (loop for i across info
+        never (and (typep i 'core:bytecode-ast-decls)
+                (loop for decl in (core:bytecode-ast-decls/decls i)
+                        thereis (and (consp decl)
+                                  (eq (first decl) 'cl:optimize)
+                                  (ignore-errors ; (optimize . foo) or something
+                                   (member-if (lambda (d)
+                                                (or (eq d 'cl:debug)
+                                                  (equal d '(cl:debug 3))))
+                                              (rest decl))))))))
 
 (defun add-native-module-instructions (module native-module)
   (let* ((code (funcall (find-symbol "NMODULE-CODE"
