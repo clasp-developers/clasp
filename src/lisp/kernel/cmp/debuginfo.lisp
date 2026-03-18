@@ -79,10 +79,9 @@
                                                        (llvm-sys:value-as-metadata-get (jit-constant-i32 llvm-sys:+debug-metadata-version+))))))))
     
 (defmacro with-dbg-compile-unit ((source-pathname) &body body)
-  (let ((path (gensym))
-        (file (gensym)))
-    `(let* ((,path (pathname ,source-pathname))
-            (,file *dbg-current-file*)
+  (declare (ignore source-pathname)) ; maybe should be used instead of *dbg-current-file*?
+  (let ((file (gensym)))
+    `(let* ((,file *dbg-current-file*)
             (*dbg-function-metadata-cache* (make-hash-table :test #'equal))
             (*dbg-compile-unit* (llvm-sys:create-compile-unit
                                  *the-module-dibuilder* ; dibuilder
