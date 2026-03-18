@@ -893,9 +893,10 @@ struct loadltv {
     llvmo::ObjectFile_sp obj = scf->SimpleFun_code().as<llvmo::ObjectFile_O>();
     size_t nlits = obj->TOLiteralsSize();
     core::T_O** lits = obj->TOLiteralsStart();
-    // FIXME: the function can appear multiple times (?????)
-    // so use a flag.
-    // Seriously though that's bad. Real wasteful.
+    // In case the function appears multiple times, use a flag.
+    // This used to happen and should no longer happen, so this is a
+    // bit paranoid, but beats the alternative (closure with
+    // incompatible function that segfaults or worse when called).
     bool seen = false;
     for (size_t i = 0; i < nlits; ++i) {
       if (lits[i] == function.raw_()) {

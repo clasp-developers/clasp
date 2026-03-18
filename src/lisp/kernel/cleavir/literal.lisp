@@ -147,9 +147,14 @@
               (vector-push-extend cinfo *constant-indices*)))))
 (defmethod ensure-literal-info ((info bir:function) &optional (cinfo info))
   (let ((table (similarity-table-fungen *similarity*)))
+    ;; register both the info and cinfo in the table.
+    ;; During compilation we sometimes register the cfunction and then
+    ;; later the bir:function, and if so we do not want a duplicate
+    ;; in the constants table.
     (or (gethash info table)
-        (setf (gethash info table)
-              (vector-push-extend cinfo *constant-indices*)))))
+      (setf (gethash info table)
+            (setf (gethash cinfo table)
+                  (vector-push-extend cinfo *constant-indices*))))))
 
 ;;; codegen
 
