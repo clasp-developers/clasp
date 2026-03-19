@@ -1,7 +1,7 @@
-(asdf:defsystem #:cross-clasp
-  :depends-on (:maclina :closer-mop :extrinsicl :extrinsicl/maclina :anatomicl
-                        :alexandria :ecclesia :clostrum-basic
-               :trivial-package-local-nicknames :eclector)
+(asdf:defsystem "cross-clasp"
+  :depends-on ("maclina" "closer-mop" "extrinsicl" "extrinsicl/maclina" "anatomicl"
+               "alexandria" "ecclesia" "clostrum-basic" "invistra-extrinsic"
+               "trivial-package-local-nicknames" "eclector")
   :components ((:file "packages")
                (:file "vm-clasp" :depends-on ("packages") :if-feature :clasp)
                (:file "trucler-clasp" :depends-on ("packages")
@@ -29,6 +29,7 @@
                (:file "define-unicode-tables" :depends-on ("packages"))
                (:file "opt" :depends-on ("packages"))
                (:file "source-pos-info" :depends-on ("packages"))
+               ;(:file "printer" :depends-on ("packages"))
                (:file "base" :depends-on ("environment" "clos" "defstruct"
                                                         "condition-system-macros"
                                                         "mp-macros" "mp-atomics"

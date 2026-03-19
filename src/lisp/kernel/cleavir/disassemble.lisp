@@ -16,9 +16,8 @@
               (core:lookup-address address)
             (if symbol
                 (progn
-                  (format t "Entry point ~a~%" (if (fixnump entry-point-name)
-                                                   (format nil "xep~a" entry-point-name)
-                                                   (string entry-point-name)))
+                  (format t "Entry point ~:[~;xep~]~a~%"
+                          (fixnump entry-point-name) entry-point-name)
                   (disassemble-assembly start end))
                 (format t "; could not locate code object (bug?)~%"))))))))
 
