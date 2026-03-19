@@ -303,9 +303,8 @@
  (:name :quaviver
   :directory "src/lisp/kernel/contrib/quaviver/"
   :repository "https://github.com/s-expressionists/quaviver.git"
-  :branch "main"
-  :commit "6d0ee719fef9dca72b4da8dd48d99c66feb317f3"
-  :pin 1)
+  :branch "host"
+  :pin 0)
  (:name :quicklisp-client
   :directory "dependencies/quicklisp-client/"
   :repository "https://github.com/quicklisp/quicklisp-client.git"

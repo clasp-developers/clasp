@@ -110,4 +110,56 @@ CL_DEFUN T_mv core__float_to_digits(T_sp tdigits, Float_sp number, T_sp position
 
 SYMBOL_EXPORT_SC_(CorePkg, float_to_digits);
 
+CL_DEFUN List_sp core__float_traits() {
+  return Cons_O::createList(
+#ifdef CLASP_SHORT_FLOAT
+      Cons_O::create(
+          cl::_sym_short_float,
+          Cons_O::createList(
+              Cons_O::create(kw::_sym_exponent_size, clasp_make_fixnum(schubfach::float_traits<short_float_t>::exponent_width)),
+              Cons_O::create(kw::_sym_significand_size,
+                             clasp_make_fixnum(schubfach::float_traits<short_float_t>::significand_width)),
+              Cons_O::create(kw::_sym_implementation_type, cl::_sym_short_float))),
+#else
+      Cons_O::create(
+          cl::_sym_short_float,
+          Cons_O::createList(
+              Cons_O::create(kw::_sym_exponent_size, clasp_make_fixnum(schubfach::float_traits<single_float_t>::exponent_width)),
+              Cons_O::create(kw::_sym_significand_size,
+                             clasp_make_fixnum(schubfach::float_traits<single_float_t>::significand_width)),
+              Cons_O::create(kw::_sym_implementation_type, cl::_sym_single_float))),
+#endif
+      Cons_O::create(
+          cl::_sym_single_float,
+          Cons_O::createList(
+              Cons_O::create(kw::_sym_exponent_size, clasp_make_fixnum(schubfach::float_traits<single_float_t>::exponent_width)),
+              Cons_O::create(kw::_sym_significand_size,
+                             clasp_make_fixnum(schubfach::float_traits<single_float_t>::significand_width)),
+              Cons_O::create(kw::_sym_implementation_type, cl::_sym_single_float))),
+      Cons_O::create(
+          cl::_sym_double_float,
+          Cons_O::createList(
+              Cons_O::create(kw::_sym_exponent_size, clasp_make_fixnum(schubfach::float_traits<double_float_t>::exponent_width)),
+              Cons_O::create(kw::_sym_significand_size,
+                             clasp_make_fixnum(schubfach::float_traits<double_float_t>::significand_width)),
+              Cons_O::create(kw::_sym_implementation_type, cl::_sym_double_float))),
+#ifdef CLASP_LONG_FLOAT
+      Cons_O::create(cl::_sym_long_float,
+                     Cons_O::createList(Cons_O::create(kw::_sym_exponent_size,
+                                                       clasp_make_fixnum(schubfach::float_traits<long_float_t>::exponent_width)),
+                                        Cons_O::create(kw::_sym_significand_size,
+                                                       clasp_make_fixnum(schubfach::float_traits<long_float_t>::significand_width)),
+                                        Cons_O::create(kw::_sym_implementation_type, cl::_sym_long_float)))
+#else
+      Cons_O::create(
+          cl::_sym_long_float,
+          Cons_O::createList(
+              Cons_O::create(kw::_sym_exponent_size, clasp_make_fixnum(schubfach::float_traits<double_float_t>::exponent_width)),
+              Cons_O::create(kw::_sym_significand_size,
+                             clasp_make_fixnum(schubfach::float_traits<double_float_t>::significand_width)),
+              Cons_O::create(kw::_sym_implementation_type, cl::_sym_double_float)));
+#endif
+  );
+}
+
 }; // namespace core

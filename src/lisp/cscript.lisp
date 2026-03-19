@@ -40,7 +40,6 @@
              #~"kernel/lsp/cdr-5.lisp"
              #~"kernel/lsp/module.lisp"
              #~"kernel/clos/streams.lisp"
-             #~"kernel/lsp/pprint.lisp"
              #~"kernel/lsp/listlib.lisp"
              #~"kernel/lsp/mislib.lisp"
              #~"kernel/lsp/seqmacros.lisp"
@@ -91,8 +90,6 @@
              #~"kernel/lsp/setf.lisp"
              #~"kernel/lsp/do.lisp"
              #~"kernel/lsp/defpackage.lisp"
-             #~"kernel/lsp/format.lisp"
-             #~"kernel/lsp/format-pprint.lisp"
              #~"kernel/lsp/defmacro.lisp"
              #~"kernel/lsp/evalmacros.lisp"
              #~"kernel/lsp/defstruct.lisp"
@@ -116,6 +113,7 @@
              #~"kernel/lsp/top-hook.lisp"
              #~"kernel/install-delayed-macros.lisp"
              :ecclesia
+             :clasp-printer
              :khazern-extension-intrinsic
              ;; logical pathname translation
              #@"base-translations.lisp"

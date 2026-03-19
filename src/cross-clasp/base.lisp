@@ -467,9 +467,129 @@
                                (cross-clasp.clasp.alexandria::generate-switch-body
                                 . alexandria::generate-switch-body)
                                (cross-clasp.clasp.khazern::unique-name
-                                . khazern:unique-name))
+                                . khazern:unique-name)
+                               (cross-clasp.clasp.quaviver.math::compute-expt
+                                . quaviver.math::compute-expt)
+                               (cross-clasp.clasp.quaviver.math::ceiling-log-expt
+                                . quaviver.math::ceiling-log-expt)
+                               (cross-clasp.clasp.quaviver::primitive-triple-bits-form
+                                . quaviver::primitive-triple-bits-form)
+                               (cross-clasp.clasp.quaviver::bits-primitive-triple-form
+                                . quaviver::bits-primitive-triple-form)
+                               (cross-clasp.clasp.quaviver::primitive-triple-float-form
+                                . quaviver::primitive-triple-float-form)
+                               (cross-clasp.clasp.quaviver::float-primitive-triple-form
+                                . quaviver::float-primitive-triple-form)
+                               (cross-clasp.clasp.quaviver::traits-from-sizes
+                                . quaviver::traits-from-sizes))
         for f = (fdefinition src)
         do (setf (clostrum:fdefinition client rte fname) f))
+  (flet ((traits (type &aux (plist (case type
+                                     (:bfloat16
+                                      '(:exponent-size 8 :significand-size 8))
+                                     (:binary16
+                                      '(:exponent-size 5 :significand-size 11))
+                                     (:binary32
+                                      '(:exponent-size 8 :significand-size 24))
+                                     (:binary64
+                                      '(:exponent-size 11 :significand-size 53))
+                                     (:binary80
+                                      '(:exponent-size 15 :significand-size 64))
+                                     (:binary128
+                                      '(:exponent-size 15 :significand-size 113))
+                                     (:binary256
+                                      '(:exponent-size 19 :significand-size 237))
+                                     (otherwise
+                                      (clostrum:symbol-plist client rte type)))))
+           (print type)
+           (print (quaviver::traits-from-sizes type
+                                        (getf plist :exponent-size)
+                                        (getf plist :significand-size)))
+           (quaviver::traits-from-sizes type
+                                        (getf plist :exponent-size)
+                                        (getf plist :significand-size)))
+         (bytespec (form)
+           (cons (second form) (third form))))
+    (setf (clostrum:fdefinition client rte 'cross-clasp.clasp.gray::redefine-cl-functions)
+          (lambda ())
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::bits-float-form)
+          (lambda (type value)
+            (print type)
+            (ecase (getf (clostrum:symbol-plist client rte type) :implementation-type)
+              (short-float
+               `(ext::bits-to-short-float ,value))
+              (single-float
+               `(ext::bits-to-single-float ,value))
+              (double-float
+               `(ext::bits-to-double-float ,value))
+              (long-float
+               `(ext::bits-to-long-float ,value))))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::float-bits-form)
+          (lambda (type value)
+            (print type)
+            (ecase (getf (clostrum:symbol-plist client rte type) :implementation-type)
+              (short-float
+               `(ext::short-float-to-bits ,value))
+              (single-float
+               `(ext::single-float-to-bits ,value))
+              (double-float
+               `(ext::double-float-to-bits ,value))
+              (long-float
+               `(ext::long-float-float-to-bits ,value))))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::implementation-type)
+          (lambda (type)
+            (or (getf (clostrum:symbol-plist client rte type) :implementation-type)
+                (getf (traits type) :implementation-type)))
+          (clostrum:fdefinition client rte
+                                'cross-clasp.clasp.quaviver::exact-implementation-type-p)
+          (lambda (type)
+            (getf (traits type) :exact-implementation-type-p))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::exponent-size)
+          (lambda (type)
+            (getf (traits type) :exponent-size))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::significand-size)
+          (lambda (type)
+            (getf (traits type) :significand-size))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::arithmetic-size)
+          (lambda (type)
+            (getf (traits type) :arithmetic-size))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::max-exponent)
+          (lambda (type)
+            (getf (traits type) :max-exponent))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::min-exponent)
+          (lambda (type)
+            (getf (traits type) :min-exponent))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::exponent-bias)
+          (lambda (type)
+            (getf (traits type) :exponent-bias))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::storage-size)
+          (lambda (type)
+            (getf (traits type) :storage-size))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::sign-byte-form)
+          (lambda (type)
+            (getf (traits type) :sign-byte-form))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::exponent-byte-form)
+          (lambda (type)
+            (getf (traits type) :exponent-byte-form))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::exponent-bytespec)
+          (lambda (type)
+            (bytespec (getf (traits type) :exponent-byte-form)))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::significand-byte-form)
+          (lambda (type)
+            (getf (traits type) :significand-byte-form))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::significand-bytespec)
+          (lambda (type)
+            (bytespec (getf (traits type) :significand-byte-form)))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::nan-type-byte-form)
+          (lambda (type)
+            (getf (traits type) :nan-type-byte-form))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::nan-payload-byte-form)
+          (lambda (type)
+            (getf (traits type) :nan-payload-byte-form))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::hidden-bit-p)
+          (lambda (type)
+            (getf (traits type) :hidden-bit-p))))
+
   (loop for mname in '(eclector.reader:quasiquote
                        #+clasp si:quasiquote
                        ext:with-current-source-form

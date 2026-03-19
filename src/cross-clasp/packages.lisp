@@ -376,6 +376,10 @@
   (:use #:cl))
 (defpackage #:cross-clasp.clasp.khazern
   (:use #:cl))
+(defpackage #:cross-clasp.clasp.quaviver
+  (:use #:cl))
+(defpackage #:cross-clasp.clasp.quaviver.math
+  (:use #:cl))
 
 (defpackage #:cross-clasp
   (:use #:cl)
