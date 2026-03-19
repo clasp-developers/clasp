@@ -133,7 +133,17 @@ static T_sp getSourcePosInfoForAddress(llvmo::DWARFContext_sp dcontext, llvmo::S
   llvm::DILineInfoSpecifier lispec;
   lispec.FNKind = llvm::DILineInfoSpecifier::FunctionNameKind::None;
   lispec.FLIKind = llvm::DILineInfoSpecifier::FileLineInfoKind::AbsoluteFilePath;
+#if LLVM_VERSION_MAJOR < 21
   llvm::DILineInfo info = dcontext->wrappedPtr()->getLineInfoForAddress(sa->_value, lispec);
+#else
+  std::optional<llvm::DILineInfo> opt_info = dcontext->wrappedPtr()->getLineInfoForAddress(sa->_value, lispec);
+
+  if (!opt_info.has_value()) {
+    return nil<T_O>();
+  }
+
+  llvm::DILineInfo info = *opt_info;
+#endif
 
   if (info.FileName == info.BadString) {
     return nil<T_O>();

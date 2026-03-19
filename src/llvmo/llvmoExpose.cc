@@ -110,7 +110,11 @@ Error enableObjCRegistration(const char* PathToLibObjC);
 #include <llvm/IR/AssemblyAnnotationWriter.h> // will be llvm/IR
 #include <llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h>
 #include <llvm/ExecutionEngine/Orc/ExecutorProcessControl.h>
+#if LLVM_VERSION_MAJOR < 22
 #include <llvm/ExecutionEngine/Orc/DebugObjectManagerPlugin.h>
+#else
+#include <llvm/ExecutionEngine/Orc/Debugging/ELFDebugObjectPlugin.h>
+#endif
 #include <llvm/ExecutionEngine/Orc/TargetProcess/RegisterEHFrames.h>
 #include <llvm/ExecutionEngine/Orc/TargetProcess/JITLoaderGDB.h>
 #include <llvm-c/Disassembler.h>
@@ -353,6 +357,7 @@ CL_DEFUN ThreadSafeContext_sp ThreadSafeContext_O::create_thread_safe_context() 
   return context;
 };
 
+#if LLVM_VERSION_MAJOR < 21
 CL_DEFMETHOD LLVMContext* ThreadSafeContext_O::getContext() { return this->wrappedPtr()->getContext(); };
 
 DOCGROUP(clasp);
@@ -363,6 +368,17 @@ CL_DEFUN LLVMContext_sp llvm_sys__thread_local_llvm_context() {
   context->_ptr = lc;
   return context;
 }
+#else
+DOCGROUP(clasp);
+CL_DEFUN core::T_mv llvm_sys__call_with_thread_safe_context(core::T_sp func) {
+  llvm::orc::ThreadSafeContext* tsc = ((llvm::orc::ThreadSafeContext*)gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue())->externalObject());
+  return tsc->withContextDo([&func](llvm::LLVMContext *lc) {
+    auto context = gctools::GC<LLVMContext_O>::allocate();
+    context->_ptr = lc;
+    return core::eval::funcall(func, context);
+  });
+}
+#endif
 
 }; // namespace llvmo
 
@@ -615,7 +631,11 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::emitModule(core::T_sp stream, core::T_s
 
   llvm::legacy::PassManager PM;
 
+#if LLVM_VERSION_MAJOR < 21
   llvm::LLVMTargetMachine* LTM = dynamic_cast<llvm::LLVMTargetMachine*>(TM);
+#else
+  llvm::TargetMachine* LTM = TM;
+#endif
   if (LTM) {
     llvm::TargetPassConfig* TPC = LTM->createPassConfig(PM);
     // Disable tail merges to improve debug info accuracy
@@ -737,7 +757,11 @@ CL_DEFUN Triple_sp Triple_O::make(const string& triple) {
 };
 
 CL_PKG_NAME(LlvmoPkg,"triple-normalize");
+#if LLVM_VERSION_MAJOR < 21
 CL_EXTERN_DEFUN((std::string(*)(llvm::StringRef str))&llvm::Triple::normalize);
+#else
+CL_EXTERN_DEFUN((std::string(*)(llvm::StringRef str,llvm::Triple::CanonicalForm Form))&llvm::Triple::normalize);
+#endif
 
 CL_LISPIFY_NAME(getTriple);
 CL_EXTERN_DEFMETHOD(Triple_O, &llvm::Triple::getTriple);
@@ -753,7 +777,11 @@ CL_LISPIFY_NAME(getOSAndEnvironmentName);
 CL_EXTERN_DEFMETHOD(Triple_O, &llvm::Triple::getOSAndEnvironmentName);
 
 CL_PKG_NAME(LlvmoPkg, "lookup-intrinsic-id");
+#if LLVM_VERSION_MAJOR < 21
 CL_EXTERN_DEFUN((llvm::Intrinsic::ID(*)(llvm::StringRef Name))&llvm::Function::lookupIntrinsicID);
+#else
+CL_EXTERN_DEFUN((llvm::Intrinsic::ID(*)(llvm::StringRef Name))&llvm::Intrinsic::lookupIntrinsicID);
+#endif
 
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType);
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType_UnknownArch);
@@ -782,8 +810,10 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType_x86_64);
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType_xcore);
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType_nvptx);
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType_nvptx64);
+#if LLVM_VERSION_MAJOR < 21
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType_le32);
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType_le64);
+#endif
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType_amdil);
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType_amdil64);
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType_hsail);
@@ -818,8 +848,10 @@ CL_VALUE_ENUM(_sym_ArchType_x86_64, llvm::Triple::x86_64);     // X86-64: amd64,
 CL_VALUE_ENUM(_sym_ArchType_xcore, llvm::Triple::xcore);       // XCore: xcore
 CL_VALUE_ENUM(_sym_ArchType_nvptx, llvm::Triple::nvptx);       // NVPTX: 32-bit
 CL_VALUE_ENUM(_sym_ArchType_nvptx64, llvm::Triple::nvptx64);   // NVPTX: 64-bit
+#if LLVM_VERSION_MAJOR < 21
 CL_VALUE_ENUM(_sym_ArchType_le32, llvm::Triple::le32);         // le32: generic little-endian 32-bit CPU (PNaCl / Emscripten)
 CL_VALUE_ENUM(_sym_ArchType_le64, llvm::Triple::le64);         // le64: generic little-endian 64-bit CPU (PNaCl / Emscripten)
+#endif
 CL_VALUE_ENUM(_sym_ArchType_amdil, llvm::Triple::amdil);       // AMDIL
 CL_VALUE_ENUM(_sym_ArchType_amdil64, llvm::Triple::amdil64);   // AMDIL with 64-bit pointers
 CL_VALUE_ENUM(_sym_ArchType_hsail, llvm::Triple::hsail);       // AMD HSAIL
@@ -909,7 +941,9 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_Solaris);
 SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_Win32);
 SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_Haiku);
 SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_RTEMS);
+#if LLVM_VERSION_MAJOR < 22
 SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_NaCl);
+#endif
 // SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_CNK);
 //   SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_Bitrig);
 SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_AIX);
@@ -933,7 +967,9 @@ CL_VALUE_ENUM(_sym_OSType_Solaris, llvm::Triple::Solaris);
 CL_VALUE_ENUM(_sym_OSType_Win32, llvm::Triple::Win32);
 CL_VALUE_ENUM(_sym_OSType_Haiku, llvm::Triple::Haiku);
 CL_VALUE_ENUM(_sym_OSType_RTEMS, llvm::Triple::RTEMS);
+#if LLVM_VERSION_MAJOR < 22
 CL_VALUE_ENUM(_sym_OSType_NaCl, llvm::Triple::NaCl);
+#endif
 // CL_VALUE_ENUM(_sym_OSType_CNK, llvm::Triple::CNK);
 //   CL_VALUE_ENUM(_sym_OSType_Bitrig, llvm::Triple::Bitrig);
 CL_VALUE_ENUM(_sym_OSType_AIX, llvm::Triple::AIX);
@@ -1236,7 +1272,9 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeStackProtect);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeStackProtectReq);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeAlignment);
 
+#if LLVM_VERSION_MAJOR < 21
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeNoCapture);
+#endif
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeNoRedZone);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeNoImplicitFloat);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeNaked);
@@ -1268,7 +1306,9 @@ CL_VALUE_ENUM(_sym_AttributeOptimizeNone, llvm::Attribute::OptimizeNone);
 CL_VALUE_ENUM(_sym_AttributeStackProtect, llvm::Attribute::StackProtect);
 CL_VALUE_ENUM(_sym_AttributeStackProtectReq, llvm::Attribute::StackProtectReq);
 CL_VALUE_ENUM(_sym_AttributeAlignment, llvm::Attribute::Alignment);
+#if LLVM_VERSION_MAJOR < 21
 CL_VALUE_ENUM(_sym_AttributeNoCapture, llvm::Attribute::NoCapture);
+#endif
 CL_VALUE_ENUM(_sym_AttributeNoRedZone, llvm::Attribute::NoRedZone);
 CL_VALUE_ENUM(_sym_AttributeNoImplicitFloat, llvm::Attribute::NoImplicitFloat);
 CL_VALUE_ENUM(_sym_AttributeNaked, llvm::Attribute::Naked);
@@ -1415,8 +1455,10 @@ CL_EXTERN_DEFMETHOD(Module_O, (llvm::GlobalVariable * (llvm::Module::*)(llvm::St
 CL_LISPIFY_NAME(getOrInsertFunction);
 CL_EXTERN_DEFMETHOD(Module_O, (llvm::FunctionCallee(llvm::Module::*)(llvm::StringRef,
                                                                      llvm::FunctionType*))&llvm::Module::getOrInsertFunction);
+#if LLVM_VERSION_MAJOR < 22
 CL_LISPIFY_NAME(getOrInsertGlobal);
 CL_EXTERN_DEFMETHOD(Module_O, (llvm::Constant * (llvm::Module::*)(llvm::StringRef, llvm::Type*)) & llvm::Module::getOrInsertGlobal);
+#endif
 CL_LISPIFY_NAME(getDataLayoutStr);
 CL_EXTERN_DEFMETHOD(Module_O, &llvm::Module::getDataLayoutStr);
 CL_LISPIFY_NAME(getTargetTriple);
@@ -1429,7 +1471,13 @@ CL_EXTERN_DEFMETHOD(Module_O, (void(llvm::Module::*)(llvm::StringRef)) & llvm::M
 ;
 // CL_EXTERN_DEFMETHOD(Module_O,&llvm::Module::setTargetTriple);
 DOCGROUP(clasp);
-CL_DEFUN void llvm_sys__setTargetTriple(llvm::Module* module, llvm::StringRef triple) { module->setTargetTriple(triple); }
+CL_DEFUN void llvm_sys__setTargetTriple(llvm::Module* module, llvm::StringRef triple) {
+#if LLVM_VERSION_MAJOR < 22
+  module->setTargetTriple(triple);
+#else
+  module->setTargetTriple(llvm::Triple(triple));
+#endif
+}
 
 SYMBOL_EXPORT_SC_(LlvmoPkg, verifyModule);
 //  Defun(verifyModule);
@@ -1910,7 +1958,11 @@ CL_DEFUN void llvm_sys__instruction_eraseFromParent(Instruction_sp instr) {
 CL_DOCSTRING(R"dx(Return the next non-debug instruction or NIL if there is none)dx");
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp llvm_sys__instruction_getNextNonDebugInstruction(Instruction_sp instr) {
+#if LLVM_VERSION_MAJOR < 22
   const llvm::Instruction* next = instr->wrappedPtr()->getNextNonDebugInstruction();
+#else
+  const llvm::Instruction* next = instr->wrappedPtr()->getNextNode();
+#endif
   if (next != NULL) {
     return translate::to_object<llvm::Instruction*>::convert(const_cast<llvm::Instruction*>(next));
   }
@@ -1918,7 +1970,7 @@ CL_DEFUN core::T_sp llvm_sys__instruction_getNextNonDebugInstruction(Instruction
 };
 
 CL_LISPIFY_NAME("insertAfter");
-CL_EXTERN_DEFMETHOD(Instruction_O, &llvm::Instruction::insertAfter);
+CL_EXTERN_DEFMETHOD(Instruction_O, (void (llvm::Instruction::*)(llvm::Instruction*))&llvm::Instruction::insertAfter);
 #if LLVM_VERSION_MAJOR < 18
 CL_LISPIFY_NAME("insertBefore");
 CL_EXTERN_DEFMETHOD(Instruction_O, &llvm::Instruction::insertBefore);
@@ -4096,10 +4148,12 @@ void register_object_file_with_gdb(void* object_file, size_t size)
 
 }; // namespace llvmo
 
+#if 0
 LLVM_ATTRIBUTE_USED void linkComponents() {
   llvm::errs() << (void*)&llvm_orc_registerEHFrameSectionWrapper << (void*)&llvm_orc_deregisterEHFrameSectionWrapper
                << (void*)&llvm_orc_registerJITLoaderGDBWrapper;
 }
+#endif
 
 SYMBOL_EXPORT_SC_(LlvmoPkg, make_StkSizeRecord);
 SYMBOL_EXPORT_SC_(LlvmoPkg, make_StkMapRecord_Location);
