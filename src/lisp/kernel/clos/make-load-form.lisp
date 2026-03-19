@@ -210,3 +210,7 @@ printer and we should rather use MAKE-LOAD-FORM."
      ',object
      ',(core:source-pos-info-inlined-at object)
      ',(core:source-pos-info-function-scope object))))
+
+(defmethod make-load-form ((object invistra-intrinsic::client-impl) &optional environment)
+  (make-load-form-saving-slots object :environment environment))
+

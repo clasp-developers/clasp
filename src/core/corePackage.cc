@@ -274,6 +274,8 @@ SYMBOL_EXPORT_SC_(CorePkg, unquote_nsplice);
 SYMBOL_EXPORT_SC_(CorePkg, unquote_splice);
 SYMBOL_EXPORT_SC_(CorePkg, valist);
 SYMBOL_EXPORT_SC_(CorePkg, wrongNumberOfArguments);
+SYMBOL_SC_(CorePkg, PERCENTwrite_object);
+SYMBOL_SC_(CorePkg, PERCENTcircle_check);
 SYMBOL_SC_(CorePkg, DOT);
 SYMBOL_SC_(CorePkg, STARPATHSTAR);
 SYMBOL_SC_(CorePkg, STARargsSTAR);

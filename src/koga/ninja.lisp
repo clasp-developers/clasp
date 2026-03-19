@@ -660,6 +660,10 @@
                        :sources (make-kernel-source-list
                                    configuration sources)
                        :outputs fasls
+                       :implicit-inputs (list runtime-packages.lisp
+                                              cxx-classes.lisp runtime-functions.lisp
+                                              runtime-variables.lisp runtime-info.lisp
+                                              type-map.lisp fli-specs.lisp)
                        :implicit-outputs cfasls)
     (ninja:write-build output-stream :link-image
                        :inputs fasls

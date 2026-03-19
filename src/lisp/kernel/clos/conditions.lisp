@@ -1508,7 +1508,7 @@ Interrupts are implicitly blocked while signaling an interrupt, and while unwind
 ;;; ECL's interface to the toplevel and debugger
 
 ;;; This is a redefinition, clobbering core__universal_error_handler in lisp.cc.
-(defun sys::universal-error-handler (continue-string datum args)
+(defun sys::universal-error-handler (continue-control datum args)
   "Args: (error-name continuable-p function-name
        continue-format-string error-format-string
        &rest args)
@@ -1524,25 +1524,26 @@ bstrings."
   (clasp-debug:with-truncated-stack ()
     (let ((condition (coerce-to-condition datum args 'simple-error 'error)))
       (cond
-        ((eq t continue-string)
+        ((eq t continue-control)
                                         ; from CEerror; mostly allocation errors
          (with-simple-restart (ignore "Ignore the error, and try the operation again")
            (%signal condition)
            (invoke-debugger condition)))
-        ((stringp continue-string)
-         (with-simple-restart (continue "~?" continue-string args)
+        ((or (stringp continue-control)
+             (functionp continue-control))
+         (with-simple-restart (continue continue-control args)
            (%signal condition)
            (invoke-debugger condition)))
-        ((and continue-string (symbolp continue-string))
+        ((and continue-control (symbolp continue-control))
                                         ; from CEerror
          (with-simple-restart (accept "Accept the error, returning NIL")
            (multiple-value-bind (rv used-restart)
                (with-simple-restart (ignore "Ignore the error, and try the operation again")
                  (multiple-value-bind (rv used-restart)
-                     (with-simple-restart (continue "Continue, using ~S" continue-string)
+                     (with-simple-restart (continue "Continue, using ~S" continue-control)
                        (%signal condition)
                        (invoke-debugger condition))
-                   (if used-restart continue-string rv)))
+                   (if used-restart continue-control rv)))
              (if used-restart t rv))))
         (t
          (%signal condition)

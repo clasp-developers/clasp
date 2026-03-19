@@ -234,8 +234,11 @@ struct DebuggerLevelRAII {
 };
 
 T_mv early_debug(T_sp condition, bool can_continue) {
+  if (condition.notnilp()) {
+    clasp_write_string(fmt::format("Debugger entered with condition: {}\n", _rep_(condition)));
+  }
   if (!isatty(0)) {
-    printf("The low-level debugger was entered but there is no terminal on fd0 - aboring\n");
+    printf("The low-level debugger was entered but there is no terminal on fd0 - aborting\n");
     abort();
   }
   if (global_options->_DebuggerDisabled) {
@@ -246,14 +249,14 @@ T_mv early_debug(T_sp condition, bool can_continue) {
   if (globals_->_DebuggerLevel > 10) {
     printf("The low-level debugger was recursively entered too many times - exiting\n");
   }
-  if (condition.notnilp()) {
-    clasp_write_string(fmt::format("Debugger entered with condition: {}\n", _rep_(condition)));
-  }
   DynamicScopeManager scope(core::_sym_STARdebugConditionSTAR, condition);
   return call_with_frame([=](auto frame) { return early_debug_inner(frame, can_continue); });
 }
 
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__early_debug(T_sp condition) { return early_debug(condition, true); }
+
+DOCGROUP(clasp);
+CL_DEFUN T_mv cl__invoke_debugger(T_sp condition) { return early_debug(condition, true); }
 
 }; // namespace core
