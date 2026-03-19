@@ -362,6 +362,61 @@
            #:stream-line-length #:stream-line-column
            #:stream-file-position #:stream-advance-to-column))
 
+;; Used by some external packages and such, for some reason
+(defpackage #:cross-clasp.clasp.cl-user
+  (:use #:cl))
+
+(defpackage #:cross-clasp.clasp.alexandria
+  (:use #:cl))
+(defpackage #:cross-clasp.clasp.ecclesia
+  (:use #:cl))
+(defpackage #:cross-clasp.clasp.trivial-with-current-source-form
+  (:use #:cl))
+(defpackage #:cross-clasp.clasp.khazern
+  (:use #:cl))
+(defpackage #:cross-clasp.clasp.incless
+  (:use #:cl)
+  (:shadow #:print-object))
+(defpackage #:cross-clasp.clasp.incless-intrinsic
+  (:use #:cl)
+  (:export #:*client*
+           #:client))
+
+(defpackage #:cross-clasp.clasp.inravina
+  (:use #:cl)
+  (:shadow #:copy-pprint-dispatch
+           #:pprint-dispatch
+           #:pprint-exit-if-list-exhausted
+           #:pprint-fill
+           #:pprint-indent
+           #:pprint-linear
+           #:pprint-logical-block
+           #:pprint-newline
+           #:pprint-pop
+           #:pprint-tab
+           #:pprint-tabular
+           #:set-pprint-dispatch))
+(defpackage #:cross-clasp.clasp.inravina-intrinsic
+  (:use #:cl)
+  (:export #:client))
+(defpackage #:cross-clasp.clasp.invistra
+  (:use #:cl))
+(defpackage #:cross-clasp.clasp.invistra-intrinsic
+  (:use #:cl)
+  (:export #:client))
+(defpackage #:cross-clasp.clasp.quaviver
+  (:use #:cl))
+(defpackage #:cross-clasp.clasp.quaviver.condition
+  (:use #:cl))
+(defpackage #:cross-clasp.clasp.quaviver.math
+  (:use #:cl))
+(defpackage #:cross-clasp.clasp.quaviver/schubfach
+  (:use #:cl)
+  (:export #:client))
+(defpackage #:cross-clasp.clasp.eclector.base
+  (:use #:cl))
+(defpackage #:cross-clasp.clasp.eclector.reader
+  (:use #:cl))
 (defpackage #:cross-clasp
   (:use #:cl)
   (:local-nicknames (#:m #:maclina.machine)

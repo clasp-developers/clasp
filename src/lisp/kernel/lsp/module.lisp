@@ -64,9 +64,6 @@ Module-name is a string designator"
 
 (defparameter *requiring* nil)
 
-(defun require-error (control &rest arguments)
-  (error "Module error: ~?" control arguments))
-
 (defun require (module-name &optional pathnames)
   "Loads a module, unless it already has been loaded. PATHNAMES, if supplied,
 is a designator for a list of pathnames to be loaded if the module
@@ -77,8 +74,8 @@ responsible for calling PROVIDE to indicate a successful load of the
 module."
   (let ((name (normalize-module-name module-name)))
     (when (member name *requiring* :test #'string=)
-      (require-error "~@<Could not ~S ~A: circularity detected. Please check ~
-           your configuration.~:@>" 'require module-name))
+      (error "Module error: ~@<Could not ~S ~A: circularity detected. Please check ~
+              your configuration.~:@>" 'require module-name))
     (let ((saved-modules (copy-list *modules*))
           (*requiring* (cons name *requiring*)))
       (unless (member name *modules* :test #'string=)
@@ -91,8 +88,8 @@ module."
               (t
                (unless (some (lambda (p) (funcall p module-name))
                              ext:*module-provider-functions*)
-                 (require-error "Don't know how to ~S ~A."
-                                'require module-name)))))
+                 (error "Module error: Don't know how to ~S ~A."
+                        'require module-name)))))
       (set-difference *modules* saved-modules))))
 
 (defparameter *fasl-extensions* (list "NFASL" "FASL"))

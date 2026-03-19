@@ -212,6 +212,7 @@
                `(let ((package (find-package ',hostname)))
                   (setf (clostrum:package-name client environment package) ,name
                         (clostrum:find-package client environment ,name) package
+                        (clostrum:find-package client environment ,(string hostname)) package
                         ,@(loop for nick in nicknames
                                 collect `(clostrum:find-package client environment
                                                                 ,nick)
@@ -236,7 +237,20 @@
     (defpack "AST-TOOLING" #:cross-clasp.clasp.ast-tooling)
     (defpack "EXT" #:cross-clasp.clasp.ext)
     (defpack "KEYWORD" #:keyword)
-    (defpack "ECCLESIA" #:ecclesia))
+    (defpack "ECCLESIA" #:ecclesia)
+    (defpack "QUAVIVER" #:cross-clasp.clasp.quaviver)
+    (defpack "QUAVIVER.CONDITION" #:cross-clasp.clasp.quaviver.condition)
+    (defpack "QUAVIVER.MATH" #:cross-clasp.clasp.quaviver.math)
+    (defpack "QUAVIVER/SCHUBFACH" #:cross-clasp.clasp.quaviver/schubfach)
+    (defpack "INCLESS" #:cross-clasp.clasp.incless)
+    (defpack "INRAVINA" #:cross-clasp.clasp.inravina)
+    (defpack "INVISTRA" #:cross-clasp.clasp.invistra)
+    (defpack "INCLESS-INTRINSIC" #:cross-clasp.clasp.incless-intrinsic)
+    (defpack "INRAVINA-INTRINSIC" #:cross-clasp.clasp.inravina-intrinsic)
+    (defpack "INVISTRA-INTRINSIC" #:cross-clasp.clasp.invistra-intrinsic)
+    (defpack "ECLECTOR.BASE" #:cross-clasp.clasp.eclector.base)
+    (defpack "ECLECTOR.READER" #:cross-clasp.clasp.eclector.reader))
+
   ;; on clasp we have a few symbols from its actual core, like lambda-name.
   ;; So we need to be able to dump those correctly.
   #+clasp
@@ -250,7 +264,20 @@
                                (let ((*package* (find-package "CL")))
                                  ;; global ext, i.e. clasp's, not ours
                                  (find-package "EXT")))
-        "EXT"))
+        "EXT")
+  (loop for (host-name . target-name) in '(("ECCLESIA" . "ECCLESIA") ("QUAVIVER" . "QUAVIVER")
+                                           ("QUAVIVER.CONDITION" . "QUAVIVER.CONDITION")
+                                           ("QUAVIVER.MATH" . "QUAVIVER.MATH")
+                                           ("QUAVIVER/SCHUBFACH" . "QUAVIVER/SCHUBFACH")
+                                           ("INCLESS" . "INCLESS") ("INRAVINA" . "INRAVINA")
+                                           ("INVISTRA" . "INVISTRA")
+                                           ("INCLESS-EXTRINSIC" . "INCLESS-INTRINSIC")
+                                           ("INRAVINA-EXTRINSIC" . "INRAVINA-INTRINSIC")
+                                           ("INVISTRA-EXTRINSIC" . "INVISTRA-INTRINSIC")
+                                           ("ECLECTOR.BASE" . "ECLECTOR.BASE")
+                                           ("ECLECTOR.READER" . "ECLECTOR.READER"))
+        do (setf (clostrum:package-name client environment (find-package host-name))
+                 target-name)))
 
 ;;; FIXME: defconstant should really be in common macros.
 (defun core::symbol-constantp (name)
@@ -293,7 +320,19 @@
   ;; FEATURES are those gathered from the executable. We just tack on
   ;; an indication that we're building from the host Lisp, as well as :CLOS.
   ;; We could add :CLOS from the sources instead?
-  (list* :building-clasp :clos features))
+  (let ((features (list* :gray-streams-line-length :gray-streams-interactive
+                         :gray-streams-external-format/setf :gray-streams-external-format
+                         :gray-streams-file-string-length :gray-streams-file-length/get
+                         :gray-streams-file-length :gray-streams-file-position/optional
+                         :gray-streams-file-position :gray-streams-sequence/optional
+                         :gray-streams-sequence :gray-streams-truename :gray-streams-pathname
+                         :gray-streams-directionp :gray-streams-streamp
+                         :gray-streams-element-type/setf :building-clasp :clos features)))
+    (when (member :long-float features)
+      (pushnew :quaviver/long-float features))
+    (when (member :short-float features)
+      (pushnew :quaviver/short-float features))
+    features))
 
 ;; This gets the currently present *features*. Used in build.
 (defun features ()
@@ -304,6 +343,8 @@
     eclector.reader::*quasiquotation-state*
     eclector.reader::*quasiquotation-depth*
     eclector.reader::*consing-dot-allowed-p*
+    incless-extrinsic::*client*
+    invistra::*format-output*
     ;; We need these to be available for dumping
     cmp::*additional-clasp-character-names*
     cmp::*mapping-char-code-to-char-names*))
@@ -372,6 +413,9 @@
   (declare (ignore ce))
   (extrinsicl:install-cl client rte)
   (extrinsicl.maclina:install-eval client rte)
+  (clostrum:make-variable client rte 'CROSS-CLASP.CLASP.INCLESS-INTRINSIC:*CLIENT* incless-extrinsic:*client*)
+  (loop for vname in *copied-variables*
+        do (clostrum:make-variable client rte vname (symbol-value vname)))
   (loop for vname in '(core::*condition-restarts* core::*restart-clusters*
                        core::*interrupts-enabled* core::*allow-with-interrupts*
                        core:*quasiquote* core::*sharp-equal-final-table*
@@ -388,10 +432,22 @@
                        ext:+process-error-output+ ext:+process-terminal-io+
                        cmp::*default-output-type* cmp:*source-locations*
                        cmp::*optimize* cmp::*optimization-level*
-                       cmp:*btb-compile-hook* cmp::*code-walker*)
+                       cmp:*btb-compile-hook* cmp::*code-walker*
+                       invistra::*format-output* invistra::*extra-space*
+                       invistra::*line-length* invistra::*newline-kind*
+                       invistra::*more-arguments-p* invistra::*argument-index*
+                       invistra::*remaining-argument-count* invistra::*pop-argument*
+                       invistra::*go-to-argument* invistra::*pop-remaining-arguments*
+                       invistra::*inner-exit-if-exhausted* invistra::*outer-exit-if-exhausted*
+                       invistra::*inner-exit* invistra::*outer-exit*
+                       cross-clasp.clasp.invistra::*format-output* cross-clasp.clasp.invistra::*extra-space*
+                       cross-clasp.clasp.invistra::*line-length* cross-clasp.clasp.invistra::*newline-kind*
+                       cross-clasp.clasp.invistra::*more-arguments-p* cross-clasp.clasp.invistra::*argument-index*
+                       cross-clasp.clasp.invistra::*remaining-argument-count* cross-clasp.clasp.invistra::*pop-argument*
+                       cross-clasp.clasp.invistra::*go-to-argument* cross-clasp.clasp.invistra::*pop-remaining-arguments*
+                       cross-clasp.clasp.invistra::*inner-exit-if-exhausted* cross-clasp.clasp.invistra::*outer-exit-if-exhausted*
+                       cross-clasp.clasp.invistra::*inner-exit* cross-clasp.clasp.invistra::*outer-exit*)
         do (clostrum:make-variable client rte vname))
-  (loop for vname in *copied-variables*
-        do (clostrum:make-variable client rte vname (symbol-value vname)))
   (loop for fname in '(core::symbol-constantp (setf core::symbol-constantp)
                        (setf ext:symbol-macro)
                        core::*make-special ext:specialp
@@ -460,6 +516,71 @@
                        khazern:unique-name)
         for f = (fdefinition fname)
         do (setf (clostrum:fdefinition client rte fname) f))
+  (mapc #'proclaim
+        '((ftype (function (t t t &rest t) t)
+                 quaviver.condition:floating-point-underflow
+                 quaviver.condition:floating-point-overflow)
+          (ftype (function (t) (values t t t))
+                 quaviver::float-primitive-triple/short-float
+                 quaviver::float-primitive-triple/single-float
+                 quaviver::float-primitive-triple/double-float
+                 quaviver::float-primitive-triple/long-float)
+          (ftype (function (t t t t) t)
+                 quaviver::primitive-triple-float/short-float
+                 quaviver::primitive-triple-float/single-float
+                 quaviver::primitive-triple-float/double-float
+                 quaviver::primitive-triple-float/long-float)
+          (ftype (function (t t t t) t)
+                 incless:handle-circle)
+          (ftype (function (t t t t) t)
+                 inravina:pprint-pop-p)
+          (ftype (function (t) t)
+                 inravina:coerce-output-stream-designator)
+          (ftype (function (t t) t)
+                 inravina:make-pretty-stream)
+          (ftype (function (t t t &key (:prefix t) (:per-line-prefix-p t) (:suffix t)) t)
+                 inravina:execute-logical-block)
+          (ftype (function (t t t t) t)
+                 inravina:pprint-indent)
+          (ftype (function (t t t) t)
+                 inravina:pprint-newline)
+          (ftype (function (t t t t t) t)
+                 inravina:pprint-tab)
+          (ftype (function (t t t t) t)
+                 inravina:pprint-start-logical-block)
+          (ftype (function (t t t) t)
+                 inravina:pprint-end-logical-block)
+          (ftype (function (t t t) t)
+                 inravina:pprint-valid-list-p)
+          (ftype (function (t t) t)
+                 invistra:coerce-function-designator
+                 incless:printing-char-p)
+          (ftype (function () t)
+                 invistra:make-upcase-stream)
+          (ftype (function (t) t)
+                 invistra:format-ordinal-numeral)
+          (ftype (function (t t) t)
+                 invistra:make-argument-cursor)
+          (ftype (function (t) t)
+                 invistra::dotted-list-length)
+          (ftype (function (t t t t t t t t) t)
+                 invistra:format-aesthetic
+                 invistra:format-standard)
+          (ftype (function (t t t) t)
+                 invistra:format-single-recursive)
+          (ftype (function (t t) t)
+                 invistra:format-remaining-recursive)
+          (ftype (function (t t t t t) t)
+                 invistra:format-tab)
+          (ftype (function (t t t t t t t t t) t)
+                 invistra:format-radix-numeral)
+          (ftype (function (t t t t t t t t t) t)
+                 invistra:format-fixed-format-float)
+          (ftype (function (t t t t t t t t t t t) t)
+                 invistra:format-exponential-float
+                 invistra:format-general-float)
+          (ftype (function (t t t t t t t t) t)
+                 invistra:format-monetary-float)))
   (loop for (fname . src) in '((cl:proclaim . proclaim)
                                (cl:make-package . %make-package)
                                (clos::class-slots . closer-mop:class-slots)
@@ -473,10 +594,198 @@
                                (alexandria:format-symbol
                                 . %format-symbol)
                                (alexandria:symbolicate
-                                . %symbolicate))
+                                . %symbolicate)
+                               (cross-clasp.clasp.alexandria::ensure-car
+                                . alexandria:ensure-car)
+                               (cross-clasp.clasp.alexandria::ensure-list
+                                . alexandria:ensure-list)
+                               (cross-clasp.clasp.alexandria::symbolicate
+                                . %symbolicate)
+                               (cross-clasp.clasp.alexandria::generate-switch-body
+                                . alexandria::generate-switch-body)
+                               (cross-clasp.clasp.khazern::unique-name
+                                . khazern:unique-name)
+                               (cross-clasp.clasp.inravina::expand-logical-block
+                                . inravina:expand-logical-block)
+                               (cross-clasp.clasp.invistra::unique-name
+                                . invistra::unique-name)
+                               (invistra::format-with-client
+                                . invistra::format-with-client)
+                               (invistra::make-downcase-stream
+                                . invistra::make-downcase-stream)
+                               (incless::write-object
+                                . incless::write-object)
+                               #+(or)(cross-clasp.clasp.invistra::format-with-client
+                                . invistra::format-with-client)
+                               (cross-clasp.clasp.quaviver::unique-name
+                                . quaviver::unique-name)
+                               (cross-clasp.clasp.quaviver.math::compute-expt
+                                . quaviver.math::compute-expt)
+                               (cross-clasp.clasp.quaviver.math::ceiling-log-expt
+                                . quaviver.math::ceiling-log-expt)
+                               (cross-clasp.clasp.quaviver::primitive-triple-bits-form
+                                . quaviver::primitive-triple-bits-form)
+                               (cross-clasp.clasp.quaviver::bits-primitive-triple-form
+                                . quaviver::bits-primitive-triple-form)
+                               (cross-clasp.clasp.quaviver::primitive-triple-float-form
+                                . quaviver::primitive-triple-float-form)
+                               (cross-clasp.clasp.quaviver::float-primitive-triple-form
+                                . quaviver::float-primitive-triple-form)
+                               (cross-clasp.clasp.quaviver::traits-from-sizes
+                                . quaviver::traits-from-sizes))
         for f = (fdefinition src)
         do (setf (clostrum:fdefinition client rte fname) f))
+  (flet ((traits (type &aux (plist (case type
+                                     (:bfloat16
+                                      '(:exponent-size 8 :significand-size 8))
+                                     (:binary16
+                                      '(:exponent-size 5 :significand-size 11))
+                                     (:binary32
+                                      '(:exponent-size 8 :significand-size 24))
+                                     (:binary64
+                                      '(:exponent-size 11 :significand-size 53))
+                                     (:binary80
+                                      '(:exponent-size 15 :significand-size 64))
+                                     (:binary128
+                                      '(:exponent-size 15 :significand-size 113))
+                                     (:binary256
+                                      '(:exponent-size 19 :significand-size 237))
+                                     (otherwise
+                                      (clostrum:symbol-plist client rte type)))))
+           (quaviver::traits-from-sizes type
+                                        (getf plist :exponent-size)
+                                        (getf plist :significand-size)))
+         (bytespec (form)
+           (cons (second form) (third form))))
+    (setf (clostrum:fdefinition client rte 'cross-clasp.clasp.incless::write-object)
+          (fdefinition 'incless:write-object)
+          (clostrum:fdefinition client rte 'cl:format)
+          (fdefinition 'invistra-extrinsic:format)
+          (clostrum:compiler-macro-function client rte 'cl:format)
+          (compiler-macro-function 'invistra-extrinsic:format)
+          (clostrum:compiler-macro-function client rte 'cl:break)
+          (compiler-macro-function 'invistra-extrinsic:break)
+          (clostrum:compiler-macro-function client rte 'cl:error)
+          (compiler-macro-function 'invistra-extrinsic:error)
+          (clostrum:compiler-macro-function client rte 'cl:cerror)
+          (compiler-macro-function 'invistra-extrinsic:cerror)
+          (clostrum:compiler-macro-function client rte 'cl:invalid-method-error)
+          (compiler-macro-function 'invistra-extrinsic:invalid-method-error)
+          (clostrum:compiler-macro-function client rte 'cl:method-combination-error)
+          (compiler-macro-function 'invistra-extrinsic:method-combination-error)
+          (clostrum:compiler-macro-function client rte 'cl:signal)
+          (compiler-macro-function 'invistra-extrinsic:signal)
+          (clostrum:compiler-macro-function client rte 'cl:warn)
+          (compiler-macro-function 'invistra-extrinsic:warn)
+          (clostrum:compiler-macro-function client rte 'cl:y-or-n-p)
+          (compiler-macro-function 'invistra-extrinsic:y-or-n-p)
+          (clostrum:compiler-macro-function client rte 'cl:yes-or-no-p)
+          (compiler-macro-function 'invistra-extrinsic:yes-or-no-p)
+          (clostrum:compiler-macro-function client rte 'core::simple-program-error)
+          (lambda (form env)
+            (declare (ignore env))
+            (invistra:expand-function incless-extrinsic:*client* form 1))
+          (clostrum:compiler-macro-function client rte 'core::simple-reader-error)
+          (lambda (form env)
+            (declare (ignore env))
+            (invistra:expand-function incless-extrinsic:*client* form 2))
+          (clostrum:compiler-macro-function client rte 'core::signal-simple-error)
+          (lambda (form env)
+            (declare (ignore env))
+            (invistra:expand-function incless-extrinsic:*client* form 2 3))
+          (clostrum:compiler-macro-function client rte 'mp::interrupt)
+          (lambda (form env)
+            (declare (ignore env))
+            (invistra:expand-function incless-extrinsic:*client* form 3))
+          (clostrum:compiler-macro-function client rte 'mp::raise)
+          (lambda (form env)
+            (declare (ignore env))
+            (invistra:expand-function incless-extrinsic:*client* form 2))
+          (clostrum:macro-function client rte 'cl:formatter)
+          (macro-function 'invistra-extrinsic:formatter)
+          (clostrum:macro-function client rte 'cl:print-unreadable-object)
+          (macro-function 'incless-extrinsic:print-unreadable-object)
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.gray::redefine-cl-functions)
+          (lambda ())
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::bits-float-form)
+          (lambda (type value)
+            (ecase (getf (clostrum:symbol-plist client rte type) :implementation-type)
+              (short-float
+               `(ext::bits-to-short-float ,value))
+              (single-float
+               `(ext::bits-to-single-float ,value))
+              (double-float
+               `(ext::bits-to-double-float ,value))
+              (long-float
+               `(ext::bits-to-long-float ,value))))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::float-bits-form)
+          (lambda (type value)
+            (ecase (getf (clostrum:symbol-plist client rte type) :implementation-type)
+              (short-float
+               `(ext::short-float-to-bits ,value))
+              (single-float
+               `(ext::single-float-to-bits ,value))
+              (double-float
+               `(ext::double-float-to-bits ,value))
+              (long-float
+               `(ext::long-float-to-bits ,value))))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::implementation-type)
+          (lambda (type)
+            (or (getf (clostrum:symbol-plist client rte type) :implementation-type)
+                (getf (traits type) :implementation-type)))
+          (clostrum:fdefinition client rte
+                                'cross-clasp.clasp.quaviver::exact-implementation-type-p)
+          (lambda (type)
+            (getf (traits type) :exact-implementation-type-p))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::exponent-size)
+          (lambda (type)
+            (getf (traits type) :exponent-size))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::significand-size)
+          (lambda (type)
+            (getf (traits type) :significand-size))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::arithmetic-size)
+          (lambda (type)
+            (getf (traits type) :arithmetic-size))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::max-exponent)
+          (lambda (type)
+            (getf (traits type) :max-exponent))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::min-exponent)
+          (lambda (type)
+            (getf (traits type) :min-exponent))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::exponent-bias)
+          (lambda (type)
+            (getf (traits type) :exponent-bias))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::storage-size)
+          (lambda (type)
+            (getf (traits type) :storage-size))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::sign-byte-form)
+          (lambda (type)
+            (getf (traits type) :sign-byte-form))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::exponent-byte-form)
+          (lambda (type)
+            (getf (traits type) :exponent-byte-form))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::exponent-bytespec)
+          (lambda (type)
+            (bytespec (getf (traits type) :exponent-byte-form)))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::significand-byte-form)
+          (lambda (type)
+            (getf (traits type) :significand-byte-form))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::significand-bytespec)
+          (lambda (type)
+            (bytespec (getf (traits type) :significand-byte-form)))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::nan-type-byte-form)
+          (lambda (type)
+            (getf (traits type) :nan-type-byte-form))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::nan-payload-byte-form)
+          (lambda (type)
+            (getf (traits type) :nan-payload-byte-form))
+          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::hidden-bit-p)
+          (lambda (type)
+            (getf (traits type) :hidden-bit-p))))
+
   (loop for mname in '(eclector.reader:quasiquote
+                       invistra::with-arguments
+                       invistra::with-remaining-arguments
                        #+clasp si:quasiquote
                        ext:with-current-source-form
                        core::with-clean-symbols core::with-unique-names
@@ -532,6 +841,8 @@
                                (etypecase . core::%etypecase)
                                (setf . %setf)
                                (remf . %remf)
+                               (pprint-logical-block
+                                . inravina-extrinsic:pprint-logical-block)
                                (trivial-with-current-source-form:with-current-source-form
                                    . ext:with-current-source-form))
         for m = (macro-function src)

@@ -39,13 +39,12 @@
              #~"kernel/lsp/predlib.lisp"
              #~"kernel/lsp/cdr-5.lisp"
              #~"kernel/lsp/module.lisp"
-             #~"kernel/clos/streams.lisp"
-             #~"kernel/lsp/pprint.lisp"
              #~"kernel/lsp/listlib.lisp"
              #~"kernel/lsp/mislib.lisp"
              #~"kernel/lsp/seqmacros.lisp"
              #~"kernel/lsp/seq.lisp"
              #~"kernel/lsp/seqlib.lisp"
+             #~"kernel/clos/streams.lisp"
              #~"kernel/lsp/iolib.lisp"
              #~"kernel/lsp/trace.lisp"
              #~"kernel/lsp/assorted.lisp"
@@ -62,6 +61,7 @@
              #~"kernel/clos/cpl.lisp"
              #~"kernel/clos/generic.lisp"
              #~"kernel/clos/method.lisp"
+             #~"kernel/lsp/early-printer.lisp"
              ;; compiler
              #~"kernel/cmp/cmputil.lisp"
              #~"kernel/cmp/compiler-conditions.lisp"
@@ -84,15 +84,12 @@
              #~"kernel/cmp/opt/opt-cons.lisp"
              #~"kernel/cmp/opt/opt-array.lisp"
              #~"kernel/cmp/opt/opt-object.lisp"
-             #~"kernel/cmp/opt/opt-print.lisp"
              ;; macros
              #~"kernel/lsp/cmuutil.lisp"
              #~"kernel/lsp/shiftf-rotatef.lisp"
              #~"kernel/lsp/setf.lisp"
              #~"kernel/lsp/do.lisp"
              #~"kernel/lsp/defpackage.lisp"
-             #~"kernel/lsp/format.lisp"
-             #~"kernel/lsp/format-pprint.lisp"
              #~"kernel/lsp/defmacro.lisp"
              #~"kernel/lsp/evalmacros.lisp"
              #~"kernel/lsp/defstruct.lisp"
@@ -117,6 +114,8 @@
              #~"kernel/install-delayed-macros.lisp"
              :ecclesia
              :khazern-extension-intrinsic
+             :invistra-intrinsic
+             #~"kernel/lsp/late-printer.lisp"
              ;; logical pathname translation
              #@"base-translations.lisp"
              #~"modules/sockets/sockets.lisp"
@@ -203,11 +202,21 @@
 (k:sources :install-code
            #~"modules/"
            #~"kernel/contrib/Acclimation/"
-           #~"kernel/contrib/alexandria/"
            #~"kernel/contrib/Cleavir/"
-           #~"kernel/contrib/closer-mop/"
            #~"kernel/contrib/Concrete-Syntax-Tree/"
-           #~"kernel/contrib/Eclector/")
+           #~"kernel/contrib/Ecclesia/"
+           #~"kernel/contrib/Eclector/"
+           #~"kernel/contrib/Incless/"
+           #~"kernel/contrib/Inravina/"
+           #~"kernel/contrib/Invistra/"
+           #~"kernel/contrib/Khazern/"
+           #~"kernel/contrib/Quaviver/"
+           #~"kernel/contrib/alexandria/"
+           #~"kernel/contrib/closer-mop/"
+           #~"kernel/contrib/nontrivial-gray-streams/"
+           #~"kernel/contrib/trivial-features/"
+           #~"kernel/contrib/trivial-package-locks/"
+           #~"kernel/contrib/trivial-with-current-source-form/")
 
 (k:sources :install-extension-code
            #~"kernel/contrib/anaphora/"
@@ -230,7 +239,6 @@
            #~"kernel/contrib/plump/"
            #~"kernel/contrib/split-sequence/"
            #~"kernel/contrib/static-vectors/"
-           #~"kernel/contrib/trivial-features/"
            #~"kernel/contrib/trivial-garbage/"
            #~"kernel/contrib/trivial-http/"
            #~"kernel/contrib/trivial-indent/"
