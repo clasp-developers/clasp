@@ -468,14 +468,6 @@ void cc_set_dynenv_stack(T_O* dynenv_stack) {
   NO_UNWIND_END();
 }
 
-void* cc_dynenv_frame(T_O* dynenv) {
-  NO_UNWIND_BEGIN();
-  T_sp tde((gctools::Tagged)dynenv);
-  LexDynEnv_sp dde = gc::As_unsafe<LexDynEnv_sp>(tde);
-  return dde->frame;
-  NO_UNWIND_END();
-}
-
 [[noreturn]] void cc_sjlj_unwind(T_O* dde, size_t index) {
   T_sp tde((gctools::Tagged)dde);
   sjlj_unwind(gc::As<LexDynEnv_sp>(tde), index);

@@ -238,7 +238,6 @@
          (primitive         "cc_initializeAndPushBindingDynenv" :t* (list :i8* :i8* :t* :t*))
          (primitive         "cc_get_dynenv_stack" :t* (list))
          (primitive         "cc_set_dynenv_stack" :void (list :t*))
-         (primitive         "cc_dynenv_frame" :i8* (list :t*))
          (primitive-unwinds "cc_sjlj_unwind" :void (list :t* :size_t) :does-not-return t)
          (primitive         "cc_get_unwind_dest" :t* (list))
          (primitive         "cc_set_unwind_dest" :void (list :t*))
