@@ -71,7 +71,7 @@ A Lisp BLOCK can "handle" an Unwind "exception" by transferring control back int
 
 The landing pad needs to test the type of the exception because I don't know. Something about LLVMM merging them during inlining. This means that both the personality function (below) and the code test exception types.
 
-To get the type info we have to do some really unfortunate bullshit. You see, while C++ has a typeid operator to get a std::type_info object for a class, the exception machinery actually wants a pointer to a std::type_info, and I don't think there's any way to get those standardly. So instead, we make sure the exception class has a vtable so that a type_info* is accessible, and then access the mangled symbol directly. The name is hardcoded in the `*exceptions*` variable defined in cmpintrinsics.lisp. This is very bad but I don't know any workaround.
+To get the type info we have to do some really unfortunate bullshit. You see, while C++ has a typeid operator to get a `std::type_info` object for a class, the exception machinery actually wants a pointer to a `std::type_info`, and I don't think there's any way to get those standardly. So instead, we make sure the exception class has a vtable so that a type_info* is accessible, and then access the mangled symbol directly. The name is hardcoded in the `*exceptions*` variable defined in cmpintrinsics.lisp. This is very bad but I don't know any workaround.
 
 For BLOCK, TAGBODY, UNWIND-PROTECT, and special variable binding forms, we generate landing pads for any calls in their dynamic extents. We use two kinds of landing pads, called "maybe entry" and "never entry". The former is used when there is any possibility that the call could be returning to the frame in question: so, a call to a function that could hypothetically have a nonlocal RETURN-FROM, from a frame that has a BLOCK or TAGBODY that could be returned from. We don't presently have the capability to determine very well when no entry is possible - for example, even a C++ function may eventually call something that calls `cl:error` - so we mostly use the first when there are any nonlocal BLOCK/TAGBODY.
 
@@ -89,13 +89,13 @@ Briefly, this is accomplished by keeping a table of information pertinent to the
 
 The unwinder runtime is accessible through calls to a few functions. To briefly summarize points relevant to us:
 
-* When you throw an exception, memory is allocated on the heap by __cxa_allocate_exception, the exception object is copy-constructed into it, and then the unwinder is started with __cxa_throw. If there is no handler, __cxa_throw calls std::terminate, which kills the program. We don't call these functions directly, in favor of just using C++'s throw operator, but it's good to know these things.
-* __cxa_begin_catch is called when you enter a catch block. It increments the reference count (yes) of the exception being handled, and pushes it to the front of a global (thread-local) stack of exceptions, so that if a `throw;` is executed the runtime knows what exception to rethrow.
-* __cxa_end_catch must be called when you exit a catch block - either normally or abnormally. It pops this exception stack and reduces the reference count of the exception. If the count is zero, the exception is deallocated.
+* When you throw an exception, memory is allocated on the heap by `__cxa_allocate_exception`, the exception object is copy-constructed into it, and then the unwinder is started with `__cxa_throw`. If there is no handler, `__cxa_throw` calls std::terminate, which kills the program. We don't call these functions directly, in favor of just using C++'s throw operator, but it's good to know these things.
+* `__cxa_begin_catch` is called when you enter a catch block. It increments the reference count (yes) of the exception being handled, and pushes it to the front of a global (thread-local) stack of exceptions, so that if a `throw;` is executed the runtime knows what exception to rethrow.
+* `__cxa_end_catch` must be called when you exit a catch block - either normally or abnormally. It pops this exception stack and reduces the reference count of the exception. If the count is zero, the exception is deallocated.
 
 The exception must be heap-allocated, or at least allocated outside the control stack, because we are unwinding the control stack; and additionally because, again, more than one unwinding can be occurring simultaneously. The exception stack is only necessary for C++'s `throw;` operator. We don't really need it, but do need to keep things arranged so that the exception is eventually deallocated, and at the right time.
 
-When we have a BLOCK or TAGBODY, our landing pad checks the type, then calls __cxa_begin_catch, then matches the frame pointer. If it matches, we get the go index, call __cxa_end_catch, then jump into the function and we're done unwinding. If it doesn't, we rethrow to a landing pad that calls __cxa_end_catch.
+When we have a BLOCK or TAGBODY, our landing pad checks the type, then calls `__cxa_begin_catch`, then matches the frame pointer. If it matches, we get the go index, call `__cxa_end_catch`, then jump into the function and we're done unwinding. If it doesn't, we rethrow to a landing pad that calls `__cxa_end_catch`.
 
 # Out of extent returns
 
