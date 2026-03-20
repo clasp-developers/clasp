@@ -222,7 +222,13 @@
     (defpack "AST-TOOLING" #:cross-clasp.clasp.ast-tooling)
     (defpack "EXT" #:cross-clasp.clasp.ext)
     (defpack "KEYWORD" #:keyword)
-    (defpack "ECCLESIA" #:cross-clasp.clasp.ecclesia))
+    (defpack "ECCLESIA" #:cross-clasp.clasp.ecclesia)
+    (defpack "QUAVIVER" #:cross-clasp.clasp.quaviver)
+    (defpack "QUAVIVER.CONDITION" #:cross-clasp.clasp.quaviver.condition)
+    (defpack "QUAVIVER.MATH" #:cross-clasp.clasp.quaviver.math)
+    (defpack "INCLESS" #:cross-clasp.clasp.incless)
+    (defpack "INRAVINA" #:cross-clasp.clasp.inravina)
+    (defpack "INVISTRA" #:cross-clasp.clasp.invistra))
   ;; on clasp we have a few symbols from its actual core, like lambda-name.
   ;; So we need to be able to dump those correctly.
   #+clasp
@@ -237,9 +243,9 @@
                                  ;; global ext, i.e. clasp's, not ours
                                  (find-package "EXT")))
         "EXT")
-  (setf (clostrum:package-name client environment
-                               (find-package "ECCLESIA"))
-        "ECCLESIA"))
+  (loop for name in '("ECCLESIA" "QUAVIVER" "QUAVIVER.CONDITION" "QUAVIVER.MATH" "INCLESS"
+                      "INRAVINA" "INVISTRA")
+        do (setf (clostrum:package-name client environment (find-package name)) name)))
 
 ;;; FIXME: defconstant should really be in common macros.
 (defun core::symbol-constantp (name)
@@ -282,7 +288,12 @@
   ;; FEATURES are those gathered from the executable. We just tack on
   ;; an indication that we're building from the host Lisp, as well as :CLOS.
   ;; We could add :CLOS from the sources instead?
-  (list* :building-clasp :clos features))
+  (let ((features (list* :building-clasp :clos features)))
+    (when (member :long-float features)
+      (pushnew :quaviver/long-float features))
+    (when (member :short-float features)
+      (pushnew :quaviver/short-float features))
+    features))
 
 ;; This gets the currently present *features*. Used in build.
 (defun features ()
@@ -468,6 +479,10 @@
                                 . alexandria::generate-switch-body)
                                (cross-clasp.clasp.khazern::unique-name
                                 . khazern:unique-name)
+                               (cross-clasp.clasp.inravina::expand-logical-block
+                                . inravina:expand-logical-block)
+                               (cross-clasp.clasp.invistra::unique-name
+                                . invistra::unique-name)
                                (cross-clasp.clasp.quaviver.math::compute-expt
                                 . quaviver.math::compute-expt)
                                (cross-clasp.clasp.quaviver.math::ceiling-log-expt
@@ -501,10 +516,6 @@
                                       '(:exponent-size 19 :significand-size 237))
                                      (otherwise
                                       (clostrum:symbol-plist client rte type)))))
-           (print type)
-           (print (quaviver::traits-from-sizes type
-                                        (getf plist :exponent-size)
-                                        (getf plist :significand-size)))
            (quaviver::traits-from-sizes type
                                         (getf plist :exponent-size)
                                         (getf plist :significand-size)))
@@ -514,7 +525,6 @@
           (lambda ())
           (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::bits-float-form)
           (lambda (type value)
-            (print type)
             (ecase (getf (clostrum:symbol-plist client rte type) :implementation-type)
               (short-float
                `(ext::bits-to-short-float ,value))
@@ -526,7 +536,6 @@
                `(ext::bits-to-long-float ,value))))
           (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::float-bits-form)
           (lambda (type value)
-            (print type)
             (ecase (getf (clostrum:symbol-plist client rte type) :implementation-type)
               (short-float
                `(ext::short-float-to-bits ,value))
@@ -535,7 +544,7 @@
               (double-float
                `(ext::double-float-to-bits ,value))
               (long-float
-               `(ext::long-float-float-to-bits ,value))))
+               `(ext::long-float-to-bits ,value))))
           (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::implementation-type)
           (lambda (type)
             (or (getf (clostrum:symbol-plist client rte type) :implementation-type)

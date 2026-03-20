@@ -376,7 +376,15 @@
   (:use #:cl))
 (defpackage #:cross-clasp.clasp.khazern
   (:use #:cl))
+(defpackage #:cross-clasp.clasp.incless
+  (:use #:cl))
+(defpackage #:cross-clasp.clasp.inravina
+  (:use #:cl))
+(defpackage #:cross-clasp.clasp.invistra
+  (:use #:cl))
 (defpackage #:cross-clasp.clasp.quaviver
+  (:use #:cl))
+(defpackage #:cross-clasp.clasp.quaviver.condition
   (:use #:cl))
 (defpackage #:cross-clasp.clasp.quaviver.math
   (:use #:cl))
