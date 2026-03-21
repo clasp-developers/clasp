@@ -2431,8 +2431,6 @@ void compile_return_from(T_sp name, T_sp valuef, Lexenv_sp env, const Context ct
     SIMPLE_ERROR("The block {} does not exist.", _rep_(name));
 }
 
-// catch, throw, and progv are actually handled by macros right now,
-// so these aren't used, but maybe will be in the fture.
 void compile_catch(T_sp tag, List_sp body, Lexenv_sp env, const Context ctxt) {
   compile_form(tag, env, ctxt.sub_receiving(1));
   Label_sp target = Label_O::make();
