@@ -243,6 +243,7 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
                         list);
   list = Cons_O::create(
       Cons_O::create(lisp_internKeyword("BINDING-DYNENV-SIZE"), make_fixnum(gctools::sizeof_with_header<BindingDynEnv_O>())), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CATCH-DYNENV-SIZE"), make_fixnum(gctools::sizeof_with_header<CatchDynEnv_O>())), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-SIZE"), make_fixnum(gctools::sizeof_with_header<Cons_O>())), list);
   list = Cons_O::create(
       Cons_O::create(lisp_internKeyword("CLOSURE-ENTRY-POINT-OFFSET"), make_fixnum(offsetof(core::Function_O, _TheSimpleFun))),

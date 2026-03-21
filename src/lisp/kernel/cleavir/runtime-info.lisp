@@ -77,6 +77,7 @@
 (defvar +jmp-buf-size+ (get-cxx-data-structure-info :jmp-buf-size))
 (defvar +unwind-protect-dynenv-size+ (get-cxx-data-structure-info :unwind-protect-dynenv-size))
 (defvar +binding-dynenv-size+ (get-cxx-data-structure-info :binding-dynenv-size))
+(defvar +catch-dynenv-size+ (get-cxx-data-structure-info :catch-dynenv-size))
 (defvar +alignment+ (get-cxx-data-structure-info :alignment))
 (defvar +args-in-registers+ (get-cxx-data-structure-info :lcc-args-in-registers))
 (defvar +cons-car-offset+ (get-cxx-data-structure-info :cons-car-offset))

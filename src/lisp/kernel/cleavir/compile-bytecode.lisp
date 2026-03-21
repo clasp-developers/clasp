@@ -1167,6 +1167,26 @@
                        :inputs () :outputs () :next (list ib))
       (build:begin inserter ib))))
 
+(defmethod compile-instruction ((mnemonic (eql :catch-8))
+                                inserter context &rest args)
+  (destructuring-bind (target) args
+    (compile-catch inserter context target)))
+
+(defmethod compile-instruction ((mnemonic (eql :catch-16))
+                                inserter context &rest args)
+  (destructuring-bind (target) args
+    (compile-catch inserter context target)))
+
+(defun compile-catch (inserter context target)
+  (let* ((during (build:make-iblock inserter :name '#:catch))
+         (dest (delay-block inserter context target
+                            :name '#:catch-after
+                            :receiving -1)))
+    (build:terminate inserter 'bir:catchi
+                     :inputs (list (stack-pop context))
+                     :next (list during dest))
+    (build:begin inserter during)))
+
 (defmethod compile-instruction ((mnemonic (eql :throw))
                                 inserter context &rest args)
   (destructuring-bind () args
@@ -1174,6 +1194,18 @@
                      :inputs (list (stack-pop context) (mvals context))
                      :outputs () :next ()))
   (setf (reachablep context) nil))
+
+;; See FIXME on ENTRY-CLOSE
+(defmethod compile-instruction ((mnemonic (eql :catch-close))
+                                inserter context &rest args)
+  (declare (ignore context))
+  (destructuring-bind () args
+    (let* ((de (bir:parent (bir:dynamic-environment inserter)))
+           (ib (build:make-iblock
+                inserter :name '#:catch-close :dynamic-environment de)))
+      (build:terminate inserter 'bir:jump
+                       :inputs () :outputs () :next (list ib))
+      (build:begin inserter ib))))
 
 (defgeneric vcell/name (vcell))
 (defmethod vcell/name ((vcell core:variable-cell))
@@ -1757,6 +1789,7 @@
     (cmp::with-module (:module module)
       (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
         (let* ((clasp-cleavir::*unwind-ids* (make-hash-table :test #'eq))
+               (clasp-cleavir::*catch-ids* (make-hash-table :test #'eq))
                (clasp-cleavir::*function-info* function-info))
           (allocate-llvm-function-infos ir fvector fmap)
           (clasp-cleavir::with-constants (ctable ctable-name)
