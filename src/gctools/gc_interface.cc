@@ -648,8 +648,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init_class_kind(core::FileStatus_O);
   Init_class_kind(core::SourcePosInfo_O);
   Init_class_kind(core::DirectoryEntry_O);
-  Init_class_kind(core::LightUserData_O);
-  Init_class_kind(core::UserData_O);
   Init_class_kind(core::Record_O);
   Init_class_kind(clbind::ClassRegistry_O);
   Init_class_kind(core::Cons_O);
