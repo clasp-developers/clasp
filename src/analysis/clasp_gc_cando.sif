@@ -155,14 +155,14 @@
                           "kinematics::JumpJoint_O" "core::SimpleBitVector_O"
                           "core::SimpleVector_int8_t_O" "chem::CDNode_O" "llvmo::ResumeInst_O"
                           "llvmo::Function_O" "llvmo::DIType_O" "chem::AddIonOctree_O"
-                          "chem::EnergyNonbond14" "kinematics::StubJoint_O" "chem::ZMatrixEntry_O"
-                          "comp::TagInfo_O" "geom::BoundingCuboid_O" "core::Readtable_O"
-                          "chem::CalculatePositionRelativeToOrigin_O" "chem::AtomIndexer_O"
-                          "chem::ChemInfoMatch_O" "chem::Restraint_O" "units::Quantity_O"
-                          "chem::EnergyRosettaLKSolvation_O" "llvmo::IRBuilder_O"
-                          "chem::AtomPdbRec" "llvmo::ClaspJIT_O" "chem::FFParameter_O"
-                          "core::SimpleVector_byte8_t_O" "llvmo::DILexicalBlockBase_O"
-                          "chem::RigidBodyAtomInfo" "llvmo::MDNode_O"
+                          "core::ProgvDynEnv_O" "chem::EnergyNonbond14" "kinematics::StubJoint_O"
+                          "chem::ZMatrixEntry_O" "comp::TagInfo_O" "geom::BoundingCuboid_O"
+                          "core::Readtable_O" "chem::CalculatePositionRelativeToOrigin_O"
+                          "chem::AtomIndexer_O" "chem::ChemInfoMatch_O" "chem::Restraint_O"
+                          "units::Quantity_O" "chem::EnergyRosettaLKSolvation_O"
+                          "llvmo::IRBuilder_O" "chem::AtomPdbRec" "llvmo::ClaspJIT_O"
+                          "chem::FFParameter_O" "core::SimpleVector_byte8_t_O"
+                          "llvmo::DILexicalBlockBase_O" "chem::RigidBodyAtomInfo" "llvmo::MDNode_O"
                           "core::ComplexVector_fixnum_O" "chem::GenericOctree_O"
                           "mp::RecursiveMutex_O" "core::BytecodeAstIf_O" "core::Vaslist_dummy_O"
                           "chem::MinimizerLog_O" "core::CoreFun_O" "chem::EnergyFunction_O"
@@ -319,6 +319,15 @@
 {class-kind :stamp-name "STAMPWTAG_core__DynEnv_O" :stamp-key "core::DynEnv_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{class-kind :stamp-name "STAMPWTAG_core__ProgvDynEnv_O" :stamp-key "core::ProgvDynEnv_O"
+            :parent-class "core::DynEnv_O" :lisp-class-base "core::DynEnv_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_O>"
+             :offset-base-ctype "core::ProgvDynEnv_O" :layout-offset-field-names ("cells")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_O>"
+             :offset-base-ctype "core::ProgvDynEnv_O" :layout-offset-field-names ("old_values")}
 {class-kind :stamp-name "STAMPWTAG_core__VMFrameDynEnv_O" :stamp-key "core::VMFrameDynEnv_O"
             :parent-class "core::DynEnv_O" :lisp-class-base "core::DynEnv_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

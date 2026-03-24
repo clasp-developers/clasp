@@ -144,6 +144,20 @@ public:
   virtual void proceed();
 };
 
+// Dynenv for multiple special variable bindings.
+FORWARD(ProgvDynEnv);
+class ProgvDynEnv_O : public DynEnv_O {
+  LISP_CLASS(core, CorePkg, ProgvDynEnv_O, "ProgvDynEnv", DynEnv_O);
+
+public:
+  ProgvDynEnv_O(SimpleVector_sp a_cells, SimpleVector_sp a_old_values)
+    : cells(a_cells), old_values(a_old_values) {};
+  SimpleVector_sp cells;
+  SimpleVector_sp old_values;
+  virtual SearchStatus search() const { return Continue; };
+  virtual void proceed();
+};
+
 // RAII helper for augmenting the dynamic environment.
 struct DynEnvPusher {
   ThreadLocalState* mthread;

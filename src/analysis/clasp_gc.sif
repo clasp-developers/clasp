@@ -90,8 +90,8 @@
                           "comp::LabelFixup_O" "comp::Cfunction_O" "llvmo::MetadataAsValue_O"
                           "core::SimpleBitVector_O" "core::SimpleVector_int8_t_O"
                           "llvmo::ResumeInst_O" "llvmo::Function_O" "llvmo::DIType_O"
-                          "comp::TagInfo_O" "core::Readtable_O" "llvmo::IRBuilder_O"
-                          "llvmo::ClaspJIT_O" "core::SimpleVector_byte8_t_O"
+                          "core::ProgvDynEnv_O" "comp::TagInfo_O" "core::Readtable_O"
+                          "llvmo::IRBuilder_O" "llvmo::ClaspJIT_O" "core::SimpleVector_byte8_t_O"
                           "llvmo::DILexicalBlockBase_O" "llvmo::MDNode_O"
                           "core::ComplexVector_fixnum_O" "mp::RecursiveMutex_O"
                           "core::BytecodeAstIf_O" "core::Vaslist_dummy_O" "core::CoreFun_O"
@@ -505,6 +505,15 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::CatchDynEnv_O"
              :layout-offset-field-names ("tag")}
+{class-kind :stamp-name "STAMPWTAG_core__ProgvDynEnv_O" :stamp-key "core::ProgvDynEnv_O"
+            :parent-class "core::DynEnv_O" :lisp-class-base "core::DynEnv_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_O>"
+             :offset-base-ctype "core::ProgvDynEnv_O" :layout-offset-field-names ("cells")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_O>"
+             :offset-base-ctype "core::ProgvDynEnv_O" :layout-offset-field-names ("old_values")}
 {class-kind :stamp-name "STAMPWTAG_core__UnknownDynEnv_O" :stamp-key "core::UnknownDynEnv_O"
             :parent-class "core::DynEnv_O" :lisp-class-base "core::DynEnv_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
