@@ -26,9 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-extern "C" {
-extern void registerLoadTimeValuesRoot(core::LoadTimeValues_O** ptr);
-};
 
 void dumpBoehmLayoutTables(std::ostream& fout);
 

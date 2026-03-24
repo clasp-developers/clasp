@@ -61,7 +61,6 @@ THE SOFTWARE.
 #include <clasp/core/pathname.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/core/loadTimeValues.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/lispStream.h>
@@ -253,8 +252,6 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
                         list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("SIZE_T-BITS"), make_fixnum(sizeof(size_t) * 8)), list);
 #define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(name), code), list)
-  LoadTimeValues_O tempLtv;
-  ENTRY(list, "LOAD-TIME-VALUES-OBJECTS-OFFSET", make_fixnum((char*)&tempLtv._Objects - (char*)&tempLtv));
   gc::Vec0<T_sp> tempVec0Tsp;
   ENTRY(list, "VEC0-VECTOR-OFFSET", make_fixnum((char*)&tempVec0Tsp._Vector - (char*)&tempVec0Tsp));
   gc::GCVector_moveable<T_O*> tempGCVector(1, 0);

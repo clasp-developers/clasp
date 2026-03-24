@@ -88,7 +88,6 @@ THE SOFTWARE.
 #include <clasp/llvmo/llvmoExpose.fwd.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/llvmo/debugInfoExpose.fwd.h>
-#include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/llvmo/translators.h>
 #include <clasp/llvmo/insertPoint.fwd.h>
 #include <clasp/llvmo/debugLoc.fwd.h>
@@ -3032,8 +3031,6 @@ class Function_O : public GlobalValue_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::Function, Function_O, "FUNCTION", GlobalValue_O);
   typedef llvm::Function ExternalType;
   typedef llvm::Function* PointerToExternalType;
-
-  GCPRIVATE : core::LoadTimeValues_sp _RunTimeValues;
 
 public:
   PointerToExternalType wrappedPtr() { return static_cast<PointerToExternalType>(this->_ptr); };

@@ -129,7 +129,6 @@ Error enableObjCRegistration(const char* PathToLibObjC);
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/sourceFileInfo.h>
-#include <clasp/core/loadTimeValues.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/compiler.h>
@@ -3364,20 +3363,6 @@ CL_EXTERN_DEFMETHOD(Function_O, (void(llvm::Function::*)(llvm::Attribute::AttrKi
 // CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(llvm::StringRef)) & llvm::Function::addFnAttr);;
 CL_LISPIFY_NAME(addFnAttr2String);
 CL_EXTERN_DEFMETHOD(Function_O, (void(llvm::Function::*)(llvm::StringRef, llvm::StringRef)) & llvm::Function::addFnAttr);
-;
-;
-
-#if 0
-CL_LISPIFY_NAME("setLiterals");
-CL_DEFMETHOD void Function_O::setLiterals(core::LoadTimeValues_sp ltv) {
-  this->_RunTimeValues = ltv;
-}
-
-CL_LISPIFY_NAME("literals");
-CL_DEFMETHOD core::LoadTimeValues_sp Function_O::literals() const {
-  return this->_RunTimeValues;
-}
-#endif
 
 }; // namespace llvmo
 

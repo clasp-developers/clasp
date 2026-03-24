@@ -44,7 +44,6 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.fwd.h>
 #include <clasp/core/translators.h>
 #include <clasp/core/commandLineOptions.h>
-#include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/core/readtable.fwd.h>
 #include <clasp/clbind/inheritance.fwd.h>
 #include <clasp/core/singleDispatchGenericFunction.fwd.h>
@@ -422,16 +421,6 @@ public:
 
 public:
   FileScope_mv getOrRegisterFileScope(const string& fileName);
-
-public:
-  /*! Get the LoadTimeValues_sp that corresponds to the name.
-          If it doesn't exist then make one and return it. */
-  // NEW_LTV  LoadTimeValues_sp getOrCreateLoadTimeValues(const string &name, size_t numberOfLoadTimeValues = 0);
-  // NEW_LTV  List_sp loadTimeValuesIds() const;
-  // NEW_LTV  T_sp loadTimeValue(const string &name, int idx);
-  // NEW_LTV  Symbol_sp loadTimeSymbol(const string &name, int idx);
-  // NEW_LTV  LoadTimeValues_sp findLoadTimeValues(const string &name);
-  // NEW_LTV LoadTimeValues_sp findLoadTimeValuesWithNameContaining(const string &name, int &count);
 
 public:
   /*! Keep track of every source file that is read by the system */

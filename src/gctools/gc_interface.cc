@@ -505,7 +505,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init_class_kind(core::Null_O);
   Init_class_kind(core::Character_dummy_O);
   Init_class_kind(llvmo::DataLayout_O);
-  Init_class_kind(core::LoadTimeValues_O);
   Init_class_kind(core::SharpEqualWrapper_O);
   Init_class_kind(llvmo::ClaspJIT_O);
   Init_class_kind(core::Readtable_O);
