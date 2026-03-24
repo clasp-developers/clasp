@@ -88,7 +88,6 @@ SMART(Reader);
 SMART(FunctionValueEnvironment);
 SMART(Package);
 SMART(Path);
-SMART(Binder);
 SMART(Hierarchy);
 SMART(Environment);
 
@@ -526,11 +525,6 @@ public:
   };
 
 public:
-  //	void createHiddenBinder();
-  /*! Return the hidden binder
-   */
-  //	Binder_sp hiddenBinder();
-public:
   /*! Return true if running a graphical environment
    */
   bool graphical();
@@ -688,11 +682,6 @@ public:
   //	T_sp valueGlobal(Symbol_sp sym);
   //	bool isGlobalDefined(Symbol_sp sym);
 
-  /*! Push a new variable stack frame
-   */
-  //	Binder_sp _pushFrame();
-  //	void _pushFrame(Binder_sp);
-  //	void _popFrame();
   /*! Return the value currently bound to the symbol
    */
   //	T_sp value(Symbol_sp sym);
