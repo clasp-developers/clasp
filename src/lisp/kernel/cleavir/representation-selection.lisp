@@ -87,6 +87,8 @@
     (if returni
         (return-definition-rtype returni)
         '())))
+(defmethod %definition-rtype ((inst bir:catchi) (datum bir:datum))
+  :multiple-values)
 (defmethod %definition-rtype ((inst bir:values-save) (datum bir:datum))
   (let ((def (definition-rtype (bir:input inst))))
     (if (listp def)
@@ -193,7 +195,8 @@
                  ((= (length rt) (length inrt))
                   (setf rt (mapcar #'max-vrtype rt inrt)))
                  ;; different value counts
-                 (t (return :multiple-values)))))))))
+                 (t (return :multiple-values)))))
+        (bir:catchi :multiple-values)))))
 
 (defmethod definition-rtype ((var bir:variable))
   ;; The rtype of a variable can only be exactly zero or one values.
@@ -624,6 +627,27 @@
   (maybe-cast-before instruction (first (bir:inputs instruction)) '(:object))
   (maybe-cast-before instruction (second (bir:inputs instruction))
                      :multiple-values))
+
+(defmethod insert-casts ((instruction bir:catchi))
+  ;; This is a weird one. In the runtime we always have multiple values. But, CATCHI
+  ;; is a terminator, and its phi is only defined in its second NEXT.
+  ;; So we have to goofily recreate maybe-cast-after.
+  ;; Actually replacing a PHI is rather fraught, so instead we force its rtype to be
+  ;; :multiple-values, and just create a new output casting it.
+  (let* ((phi (bir:output instruction))
+         (rtype (if phi (cc-bmir:rtype phi) ()))
+         (ib (second (bir:next instruction))))
+    (unless (or (equal rtype :multiple-values) (null rtype))
+      (setf (cc-bmir:rtype phi) :multiple-values)
+      (let* ((output (make-instance 'bir:output
+                       :rtype rtype :derived-type (bir:ctype phi)))
+             (cast (make-instance 'cc-bmir:cast
+                     :origin (bir:origin instruction) :policy (bir:policy instruction)
+                     :outputs (list output))))
+        (bir:insert-instruction-before cast (bir:start ib))
+        (bir:replace-uses output phi)
+        (setf (bir:inputs cast) (list phi)))))
+  (values))
 
 (defmethod insert-casts ((instruction bir:call))
   (object-inputs instruction)

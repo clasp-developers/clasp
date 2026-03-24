@@ -113,7 +113,7 @@
          (primitive         "__gxx_personality_v0" :i32 nil :varargs t)
          (primitive         "__cxa_begin_catch" :i8* (list :i8*) )
          (primitive-unwinds "__cxa_end_catch" :void nil)
-         (primitive-unwinds "__cxa_rethrow" :void nil)
+         (primitive-unwinds "__cxa_rethrow" :void nil :does-not-return t)
          (primitive         +intrinsic/llvm.eh.typeid.for.p0+ :i32 (list :i8*))
          (primitive-unwinds "cc_overflowed_signed_bignum" :t* (list :i64))
          (primitive         "llvm.sadd.with.overflow.i32" :{i32.i1} (list :i32 :i32))

@@ -404,17 +404,19 @@
            (ourid (%size_t our-index))
            (go-index (cmp:irc-typed-load cmp:%go-index% *go-index.slot*))
            (cmp (cmp:irc-icmp-eq go-index ourid))
-           (restore-block (cmp:irc-basic-block-create "catch-landing-restore-values"))
-           (dest-block (gethash (second (bir:next dynenv)) tags)))
+           (phi (bir:output dynenv))
+           (dest-block (gethash (second (bir:next dynenv)) tags))
+           (restore-block
+             (if (or (null phi) (null (cc-bmir:rtype phi)))
+                 dest-block
+                 (cmp:irc-basic-block-create "catch-landing-restore-values"))))
       (declare (ignore _))
       (cmp:irc-cond-br cmp restore-block
                        (maybe-catch-processor (bir:parent dynenv) tags))
-      (cmp:irc-begin-block restore-block)
-      (let* ((mv (restore-multiple-value-0))
-             (ib (second (bir:next dynenv)))
-             (phi (first (bir:inputs ib))))
-        (phi-out mv phi restore-block))
-      (cmp:irc-br dest-block)
+      (unless (or (null phi) (null (cc-bmir:rtype phi)))
+        (cmp:irc-begin-block restore-block)
+        (phi-out-for-come-from phi restore-block)
+        (cmp:irc-br dest-block))
       bb)))
 
 (defmethod compute-maybe-catch-processor ((instruction bir:constant-bind) tags)

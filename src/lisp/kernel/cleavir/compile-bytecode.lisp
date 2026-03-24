@@ -1178,13 +1178,15 @@
     (compile-catch inserter context target)))
 
 (defun compile-catch (inserter context target)
-  (let* ((during (build:make-iblock inserter :name '#:catch))
-         (dest (delay-block inserter context target
-                            :name '#:catch-after
-                            :receiving -1)))
+  (let ((during (build:make-iblock inserter :name '#:catch))
+        ;; grab before delay-block so that block doesn't see this on the stack.
+        (tag (stack-pop context))
+        (alt (delay-block inserter context target
+                          :name '#:caught :receiving -1)))
     (build:terminate inserter 'bir:catchi
-                     :inputs (list (stack-pop context))
-                     :next (list during dest))
+                     :inputs (list tag)
+                     :outputs (list (first (bir:inputs alt)))
+                     :next (list during alt))
     (build:begin inserter during)))
 
 (defmethod compile-instruction ((mnemonic (eql :throw))
@@ -1498,11 +1500,15 @@
                              inserter context)
   (when (reachablep context)
     (let* ((receiving (core:bytecode-ast-block/receiving annot))
-           (freceiving (if (= receiving 1) -1 receiving))
            (name (core:bytecode-ast-block/name annot))
-           (end (core:bytecode-debug-info/end annot)))
+           (end (core:bytecode-debug-info/end annot))
+           (dynenv (bir:dynamic-environment inserter))
+           (catchp (and (eq name 'cl:catch) (typep dynenv 'bir:catchi)))
+           (freceiving (if (or (= receiving 1) catchp) -1 receiving))
+           (block-de (if catchp (bir:parent dynenv) dynenv)))
       (delay-block inserter context end
                    :name (symbolicate name '#:-after)
+                   :dynamic-environment block-de
                    :receiving freceiving)
       ;; this and FRECEIVING are to take care of the ugly code we generate
       ;; when a block is in a one-value context. See bytecode_compiler.cc.
@@ -1511,7 +1517,8 @@
       ;; values can always be put in the MV vector, but it sure looks ugly.
       (when (= receiving 1)
         (delay-block inserter context (1+ end) ; 1+ for the push.
-                     :name (symbolicate name '#:after-push)
+                     :name (symbolicate name '#:-after-push)
+                     :dynamic-environment block-de
                      :receiving receiving)))))
 
 (defmethod start-annotation ((the core:bytecode-ast-the) inserter context)
