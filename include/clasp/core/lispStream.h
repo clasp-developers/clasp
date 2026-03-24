@@ -41,7 +41,6 @@ THE SOFTWARE.
 #include <clasp/core/array.fwd.h>
 #include <clasp/core/pathname.fwd.h>
 #include <clasp/core/sourceFileInfo.fwd.h>
-#include <clasp/core/intStackQueue.h>
 
 #define OPEN_R "rb"
 #define OPEN_W "wb"
