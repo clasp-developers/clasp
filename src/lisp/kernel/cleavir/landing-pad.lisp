@@ -27,6 +27,8 @@
 (defvar *maybe-entry-landing-pads*)
 ;; HT from instructions to maybe-entry processing code blocks
 (defvar *maybe-entry-processors*)
+;; HT from instructions to maybe-catch processing code blocks
+(defvar *maybe-catch-processors*)
 ;; HT from dynenv locations to never-entry landing pad blocks (or NIL for no cleanup)
 (defvar *never-entry-landing-pads*)
 ;; HT from instructions to never-entry processing code blocks
@@ -35,11 +37,12 @@
 (defvar *exn.slot*)
 ;; i32* Value to store the exception selector in
 (defvar *ehselector.slot*)
-;; size_t* Value to store the go index in
+;; size_t* Value to store the go or catch index in
 (defvar *go-index.slot*)
 
 ;;; shared between both
 
+;;; note: catch as in C++ catch, not CL
 (defmacro with-begin-end-catch ((exn exception-ptr rethrow-bb) &rest body)
   (let ((exn-gs (gensym)))
     `(let ((,exn-gs ,exn))
@@ -64,6 +67,9 @@
        "cc_landingpadUnwindMatchFrameElseRethrow" 
        (list exception-ptr frame)
        "go-index"))))
+
+;;; Generates code that checks whether a throw is to this catch.
+;;; Returns a bool indicating this.
 
 (defun generate-resume-block (exn.slot ehselector.slot)
   (let* ((ehbuilder       (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
@@ -127,50 +133,91 @@
       (cmp:irc-br next)
       bb)))
 
-;;; Get the frame pointer for dynenv matching.
-;;; This is called late (i.e. while generating code) because it
-;;; may entail code generation itself.
-(defgeneric dynenv-frame (dynenv))
-
-(defmethod dynenv-frame ((dynenv bir:dynamic-environment))
-  ;; default: just grab the frame pointer
-  (%intrinsic-call "llvm.frameaddress.p0" (list (%i32 0))
-                   "frame"))
-
-(defmethod dynenv-frame ((dynenv bir:come-from))
-  ;; come-from: get it from the instruction
-  (%intrinsic-call "cc_dynenv_frame" (list (in dynenv))))
-
 ;;; maybe-entry landing pads, for when we may be nonlocally entering this function.
 
-(defun generate-maybe-entry-landing-pad (next cleanup-block cleanup-p dynenv)
+(defun generate-landing-pad (come-from-block catch-block cleanup-p cleanup-block)
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
-    (let ((lp-block (cmp:irc-basic-block-create "maybe-entry-landing-pad"))
-          (is-unwind-block (cmp:irc-basic-block-create "is-unwind")))
+    (let ((lp-block (cmp:irc-basic-block-create "maybe-entry-landing-pad")))
       (cmp:irc-begin-block lp-block)
       (let* ((lpad (cmp:irc-create-landing-pad 1 "lp"))
              (exception-structure (cmp:irc-extract-value lpad (list 0) "exception-structure"))
              (exception-selector (cmp:irc-extract-value lpad (list 1) "exception-selector")))
-        (cmp:irc-add-clause lpad (cmp:irc-exception-typeid* 'cmp:typeid-core-unwind))
+        (when come-from-block
+          (cmp:irc-add-clause lpad (cmp:irc-exception-typeid* 'cmp:typeid-core-unwind)))
+        (when catch-block
+          (cmp:irc-add-clause lpad (cmp:irc-exception-typeid* 'cmp:typeid-core-catch-throw)))
         (when cleanup-p (llvm-sys:set-cleanup lpad t))
         (cmp:irc-store exception-structure *exn.slot*)
         (cmp:irc-store exception-selector *ehselector.slot*)
-        (let* ((typeid (%intrinsic-call cmp:+intrinsic/llvm.eh.typeid.for.p0+
-                                        (list (cmp:irc-exception-typeid* 'cmp:typeid-core-unwind))))
-               (matches-type (cmp:irc-icmp-eq exception-selector typeid)))
-          ;; If the exception is Clasp's Unwind exception, we handle it.
-          ;; Otherwise we go to the cleanup, or perhaps directly to the resume.
-          (cmp:irc-cond-br matches-type is-unwind-block cleanup-block)))
-      ;; Now that we know it's the right type of exception, see if we're in the right frame,
-      ;; and get the go index.
-      (cmp:irc-begin-block is-unwind-block)
-      (let* ((frame (dynenv-frame dynenv))
-             (go-index (generate-match-unwind
-                        frame (generate-end-catch-landing-pad cleanup-block)
-                        *exn.slot*)))
-        (cmp:irc-store go-index *go-index.slot*)
-        (cmp:irc-br next))
+        (when come-from-block
+          (let ((is-unwind-block (cmp:irc-basic-block-create "is-unwind"))
+                (isnt-unwind-block (cmp:irc-basic-block-create "is-not-unwind")))
+            (let* ((typeid (%intrinsic-call cmp:+intrinsic/llvm.eh.typeid.for.p0+
+                                            (list (cmp:irc-exception-typeid*
+                                                   'cmp:typeid-core-unwind))))
+                   (matches-type (cmp:irc-icmp-eq exception-selector typeid)))
+              ;; If the exception is Clasp's Unwind exception, we handle it.
+              ;; Otherwise keep testing.
+              (cmp:irc-cond-br matches-type is-unwind-block isnt-unwind-block))
+            ;; Now that we know it's the right type of exception,
+            ;; see if we're in the right frame, and get the go index if so.
+            (cmp:irc-begin-block is-unwind-block)
+            (let* ((frame (%intrinsic-call "llvm.frameaddress.p0" (list (%i32 0))
+                                           "frame"))
+                   (go-index (generate-match-unwind
+                              frame (generate-end-catch-landing-pad cleanup-block)
+                              *exn.slot*)))
+              (cmp:irc-store go-index *go-index.slot*)
+              (cmp:irc-br come-from-block))
+            (cmp:irc-begin-block isnt-unwind-block)))
+        (if catch-block
+            ;; for catches it's more convenient to generate the tests outside this
+            ;; function. see CATCH-INITIALIZER
+            (let* ((typeid (%intrinsic-call cmp:+intrinsic/llvm.eh.typeid.for.p0+
+                                            (list (cmp:irc-exception-typeid*
+                                                   'cmp:typeid-core-catch-throw))))
+                   (matches-type (cmp:irc-icmp-eq exception-selector typeid)))
+              (cmp:irc-cond-br matches-type catch-block cleanup-block))
+            (cmp:irc-br cleanup-block)))
       lp-block)))
+
+;; We know we have a catch. Compare against all the live catch tags
+;; from this function. Compute a go-index we can test later.
+;; This awkward setup is because we need to be able to __cxa_begin_catch
+;; and __cxa_end_catch, because this is a C++ exception we're handling and
+;; those functions mark it as handled, and also, we need to be able to
+;; do a correct C++ rethrow if none of the catches are ours.
+;; This function is roughly equivalent to generate-match-unwind.
+(defun catch-initializer (dynenv processor)
+  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+    (let ((init-block (cmp:irc-basic-block-create "catch-init")))
+      (cmp:irc-begin-block init-block)
+      (let ((exception-ptr
+              (cmp:with-landing-pad nil
+                (cmp:irc-intrinsic "__cxa_begin_catch"
+                                   (cmp:irc-typed-load cmp:%exn% *exn.slot* "exn")))))
+        (cmp:with-landing-pad (never-entry-landing-pad dynenv)
+          (loop with search = (%intrinsic-call "cc_catch_tag" (list exception-ptr))
+                for de = dynenv then (bir:parent de)
+                until (typep de 'bir:function)
+                when (typep de 'bir:catchi)
+                  do (let* ((tag (in (bir:input de)))
+                            (ix (get-catch-id de))
+                            (cmp (cmp:irc-icmp-eq search tag))
+                            (thenb (cmp:irc-basic-block-create "catch-match"))
+                            (elseb (cmp:irc-basic-block-create "catch-fail")))
+                       (cmp:irc-cond-br cmp thenb elseb)
+                       (cmp:irc-begin-block thenb)
+                       (cmp:irc-store (%size_t ix) *go-index.slot*)
+                       (cmp:irc-intrinsic "__cxa_end_catch")
+                       (cmp:irc-br processor)
+                       (cmp:irc-begin-block elseb)))))
+      ;; nothing matched. Rethrow.
+      (cmp:with-landing-pad
+          (generate-end-catch-landing-pad (never-entry-processor dynenv))
+        (cmp:irc-intrinsic "__cxa_rethrow")
+        (cmp:irc-unreachable))
+      init-block)))
 
 (defun generate-end-catch-landing-pad (cleanup-block)
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
@@ -182,7 +229,9 @@
         (llvm-sys:set-cleanup lpad t)
         (cmp:irc-store exception-structure *exn.slot*)
         (cmp:irc-store exception-selector *ehselector.slot*)
-        ;; FIXME: Check if end_catch ever actually unwinds. I think no.
+        ;; if __cxa_end_catch unwinds we're supposed to call std::terminate.
+        ;; but that would require a weird definition of __cxa_end_catch,
+        ;; and std::terminate sucks, so too bad.
         (cmp:with-landing-pad nil
           (%intrinsic-invoke-if-landing-pad-or-call "__cxa_end_catch" nil))
         (cmp:irc-br cleanup-block))
@@ -192,6 +241,14 @@
   (or (gethash dynenv *maybe-entry-processors*)
       (setf (gethash dynenv *maybe-entry-processors*)
             (compute-maybe-entry-processor dynenv tags))))
+
+(defun maybe-catch-processor (dynenv tags)
+  (or (gethash dynenv *maybe-catch-processors*)
+    (setf (gethash dynenv *maybe-catch-processors*)
+          (compute-maybe-catch-processor dynenv tags))))
+
+;;; Used by both come-from/entry and catch to avoid duplication.
+(defgeneric compute-shared-processor (dynenv next))
 
 (defgeneric compute-maybe-entry-processor (dynenv tags))
 
@@ -267,19 +324,27 @@
                   and collect (cons jump-id tag-block) into used-ids)
           bb))))
 
-(defmethod compute-maybe-entry-processor ((instruction bir:constant-bind) tags)
-  (destructuring-bind (index old-value de-stack) (dynenv-storage instruction)
-    (generate-unbind index old-value de-stack
-                     (maybe-entry-processor
-                      (cleavir-bir:parent instruction) tags))))
+(defmethod compute-maybe-entry-processor ((instruction bir:catchi) tags)
+  (maybe-entry-processor (bir:parent instruction) tags))
 
-(defmethod compute-maybe-entry-processor ((instruction bir:unwind-protect)
-                                          tags)
-  (lp-generate-protect instruction (maybe-entry-processor
-                                    (cleavir-bir:parent instruction) tags)))
+(defmethod compute-maybe-entry-processor ((instruction bir:constant-bind) tags)
+  (compute-shared-processor instruction
+                            (maybe-entry-processor (bir:parent instruction) tags)))
+(defmethod compute-shared-processor ((instruction bir:constant-bind) next)
+  (destructuring-bind (index old-value de-stack) (dynenv-storage instruction)
+    (generate-unbind index old-value de-stack next)))
+
+(defmethod compute-maybe-entry-processor ((instruction bir:unwind-protect) tags)
+  (compute-shared-processor instruction
+                            (maybe-entry-processor (bir:parent instruction) tags)))
+(defmethod compute-shared-processor ((instruction bir:unwind-protect) next)
+  (lp-generate-protect instruction next))
 
 (defmethod compute-maybe-entry-processor ((instruction cleavir-bir:values-save)
                                           tags)
+  (compute-shared-processor
+   instruction (maybe-entry-processor (bir:parent instruction) tags)))
+(defmethod compute-shared-processor ((instruction bir:values-save) next)
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder
                         (cmp:thread-local-llvm-context)))
     (let ((stackpos (dynenv-storage instruction))
@@ -289,10 +354,12 @@
       (%intrinsic-call cmp:+intrinsic/llvm.stackrestore.p0+
                        (list stackpos))
       ;; Continue
-      (cmp:irc-br
-       (maybe-entry-processor (cleavir-bir:parent instruction) tags))
+      (cmp:irc-br next)
       bb)))
 (defmethod compute-maybe-entry-processor ((inst bir:values-collect) tags)
+  (compute-shared-processor
+   inst (maybe-entry-processor (bir:parent inst) tags)))
+(defmethod compute-shared-processor ((inst bir:values-collect) next)
   (let ((stackpos (dynenv-storage inst)))
     (if stackpos
         (cmp:with-irbuilder ((llvm-sys:make-irbuilder
@@ -303,10 +370,9 @@
             (%intrinsic-call cmp:+intrinsic/llvm.stackrestore.p0+
                              (list stackpos))
             ;; Continue
-            (cmp:irc-br
-             (maybe-entry-processor (cleavir-bir:parent inst) tags))
+            (cmp:irc-br next)
             bb))
-        (maybe-entry-processor (cleavir-bir:parent inst) tags))))
+        next)))
 
 (defmethod compute-maybe-entry-processor ((instruction cleavir-bir:function)
                                           tags)
@@ -323,21 +389,64 @@
       (cmp:irc-unreachable)
       err)))
 
-;;; Returns T iff calls in this dynamic environment may nonlocal return to this
-;;; function, i.e. there is a come-from instruction up the way somewhere.
-(defun dynenv-may-enter-p (dynenv)
-  (etypecase dynenv
-    (cleavir-bir:function nil)
-    ((or cleavir-bir:leti cleavir-bir:values-save bir:values-collect
-         bir:unwind-protect bir:constant-bind)
-     (dynenv-may-enter-p (cleavir-bir:parent dynenv)))
-    (bir:come-from
-     (if (or (cleavir-set:empty-set-p (cleavir-bir:unwinds dynenv))
-             (cleavir-bir-transformations:simple-unwinding-p
-              dynenv *clasp-system*))
-         ;; simple unwinds are orthogonal to landing pads
-         (dynenv-may-enter-p (cleavir-bir:parent dynenv))
-         t))))
+(defgeneric compute-maybe-catch-processor (dynenv tags))
+
+(defmethod compute-maybe-catch-processor ((dynenv bir:come-from) tags)
+  (maybe-catch-processor (bir:parent dynenv) tags))
+
+(defmethod compute-maybe-catch-processor ((dynenv bir:catchi) tags)
+  ;; Check the previously determined go-index against our index.
+  ;; If it matches, we're done, otherwise keep going.
+  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+    (let* ((bb (cmp:irc-basic-block-create "process-catch"))
+           (_ (cmp:irc-begin-block bb))
+           (our-index (get-catch-id dynenv))
+           (ourid (%size_t our-index))
+           (go-index (cmp:irc-typed-load cmp:%go-index% *go-index.slot*))
+           (cmp (cmp:irc-icmp-eq go-index ourid))
+           (phi (bir:output dynenv))
+           (dest-block (gethash (second (bir:next dynenv)) tags))
+           (restore-block
+             (if (or (null phi) (null (cc-bmir:rtype phi)))
+                 dest-block
+                 (cmp:irc-basic-block-create "catch-landing-restore-values"))))
+      (declare (ignore _))
+      (cmp:irc-cond-br cmp restore-block
+                       (maybe-catch-processor (bir:parent dynenv) tags))
+      (unless (or (null phi) (null (cc-bmir:rtype phi)))
+        (cmp:irc-begin-block restore-block)
+        (phi-out-for-come-from phi restore-block)
+        (cmp:irc-br dest-block))
+      bb)))
+
+(defmethod compute-maybe-catch-processor ((instruction bir:constant-bind) tags)
+  (compute-shared-processor instruction
+                            (maybe-catch-processor (bir:parent instruction) tags)))
+(defmethod compute-maybe-catch-processor ((instruction bir:unwind-protect) tags)
+  (compute-shared-processor instruction
+                            (maybe-catch-processor (bir:parent instruction) tags)))
+(defmethod compute-maybe-catch-processor ((instruction bir:values-save) tags)
+  (compute-shared-processor instruction
+                            (maybe-catch-processor (bir:parent instruction) tags)))
+(defmethod compute-maybe-catch-processor ((instruction bir:values-collect) tags)
+  (compute-shared-processor instruction
+                            (maybe-catch-processor (bir:parent instruction) tags)))
+
+(defmethod compute-maybe-catch-processor ((instruction cleavir-bir:function)
+                                          tags)
+  (declare (ignore tags))
+  ;; We found in the landing pad that we were supposed to jump into this frame.
+  ;; However, no relevant catch has transferred control.
+  ;; This is a bug in the compiler.
+  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+    (let ((err (cmp:irc-basic-block-create "bug-in-catch")))
+      (cmp:irc-begin-block err)
+      (cmp:with-landing-pad nil
+        (%intrinsic-invoke-if-landing-pad-or-call
+         ;; error message doesn't actually mention come-from so whatever
+         "cc_error_bugged_come_from" (list (cmp:irc-typed-load cmp:%go-index% *go-index.slot*))))
+      (cmp:irc-unreachable)
+      err)))
 
 (defun compute-maybe-entry-landing-pad (dynenv tags)
   ;; KLUDGE: If there are no come-froms we just use the never-entry pad.
@@ -345,45 +454,21 @@
   ;; out of extent return, we could hypothetically end up unwinding to a frame
   ;; with no come-froms, and in this case we should signal an error rather than
   ;; do whatever weird thing.
-  (if (dynenv-may-enter-p dynenv)
-      (etypecase dynenv
-        (bir:come-from
-         (if (or (cleavir-set:empty-set-p (cleavir-bir:unwinds dynenv))
-                 (cleavir-bir-transformations:simple-unwinding-p
-                  dynenv *clasp-system*))
-             ;; simple SJLJ is orthogonal to landing pads,
-             ;; i.e. a simple unwind never goes through or to a
-             ;; landing pad.
-             (maybe-entry-landing-pad (cleavir-bir:parent dynenv) tags)
-             (generate-maybe-entry-landing-pad
-              (maybe-entry-processor dynenv tags)
-              (never-entry-processor dynenv)
-              (dynenv-needs-cleanup-p dynenv)
-              dynenv)))
-        ((or bir:constant-bind cleavir-bir:values-save bir:values-collect
-             cleavir-bir:leti bir:unwind-protect
-             cleavir-bir:function)
-         (generate-maybe-entry-landing-pad
-          (maybe-entry-processor dynenv tags)
-          (never-entry-processor dynenv)
-          (dynenv-needs-cleanup-p dynenv)
-          dynenv)))
-      (never-entry-landing-pad dynenv)))
-
-;;; never-entry landing pads, for when we always end with a resume.
-
-(defun generate-never-entry-landing-pad (next)
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
-    (let ((lp-block (cmp:irc-basic-block-create "never-entry-landing-pad")))
-      (cmp:irc-begin-block lp-block)
-      (let* ((lpad (cmp:irc-create-landing-pad 0 "lp"))
-             (exception-structure (cmp:irc-extract-value lpad (list 0) "exception-structure"))
-             (exception-selector (cmp:irc-extract-value lpad (list 1) "exception-selector")))
-        (llvm-sys:set-cleanup lpad t)
-        (cmp:irc-store exception-structure *exn.slot*)
-        (cmp:irc-store exception-selector *ehselector.slot*)
-        (cmp:irc-br next))
-      lp-block)))
+  (if (and (typep dynenv 'bir:come-from) (simple-come-from-p dynenv))
+      ;; can be fully ignored. Reuse parent landing pad.
+      (maybe-entry-landing-pad (bir:parent dynenv) tags)
+      ;; ok, may be nontrivial
+      (let* ((entrance-kinds (dynenv-entrance-kinds dynenv))
+             (entry-processor (when (member :come-from entrance-kinds)
+                                (maybe-entry-processor dynenv tags)))
+             (catch-processor (when (member :catch entrance-kinds)
+                                (catch-initializer
+                                 dynenv (maybe-catch-processor dynenv tags)))))
+        (if (or entry-processor catch-processor)
+            (generate-landing-pad
+             entry-processor catch-processor (member :cleanup entrance-kinds)
+             (never-entry-processor dynenv))
+            (never-entry-landing-pad dynenv)))))
 
 (defun never-entry-processor (instruction)
   (or (gethash instruction *never-entry-processors*)
@@ -398,13 +483,16 @@
 (defmethod compute-never-entry-processor ((dynenv cleavir-bir:values-save))
   ;; This whole frame is being discarded,
   ;; so no smaller stack unwinding is necessary.
-  (never-entry-processor (cleavir-bir:parent dynenv)))
+  (never-entry-processor (bir:parent dynenv)))
 (defmethod compute-never-entry-processor ((dynenv bir:values-collect))
   ;; ditto
   (never-entry-processor (bir:parent dynenv)))
 
 (defmethod compute-never-entry-processor ((dynenv bir:come-from))
-  (never-entry-processor (cleavir-bir:parent dynenv)))
+  (never-entry-processor (bir:parent dynenv)))
+
+(defmethod compute-never-entry-processor ((dynenv bir:catchi))
+  (never-entry-processor (bir:parent dynenv)))
 
 (defmethod compute-never-entry-processor ((dynenv cleavir-bir:leti))
   (never-entry-processor (cleavir-bir:parent dynenv)))
@@ -420,27 +508,43 @@
                        (never-entry-processor
                         (cleavir-bir:parent instruction))))
 
-;;; Used above. Should match compute-never-entry-landing-pad
-(defun dynenv-needs-cleanup-p (dynenv)
-  (etypecase dynenv
-    ;; Next might need a cleanup
-    ((or bir:come-from
-         ;; Cleanup only required for local exit.
-         cleavir-bir:leti cleavir-bir:values-save bir:values-collect)
-     (dynenv-needs-cleanup-p (cleavir-bir:parent dynenv)))
-    ;; Definitive answers
-    (cleavir-bir:function nil)
-    ((or bir:constant-bind bir:unwind-protect)
-     t)))
+;;; Determine whether a dynenv can be entered for :come-from, :catch, and/or :cleanup.
+;;; Basically matches the clauses on the landing pad.
+(defgeneric dynenv-entrance-kinds (dynenv))
+(defmethod dynenv-entrance-kinds ((dynenv bir:function)) nil)
+(defmethod dynenv-entrance-kinds ((dynenv bir:come-from))
+  (if (simple-come-from-p dynenv)
+      ;; simple SJLJ is orthogonal to landing pads,
+      ;; i.e. a simple unwind never goes through or to a
+      ;; landing pad.
+      (dynenv-entrance-kinds (bir:parent dynenv))
+      (adjoin :come-from (dynenv-entrance-kinds (bir:parent dynenv)))))
+(defmethod dynenv-entrance-kinds ((dynenv bir:catchi))
+  (adjoin :catch (dynenv-entrance-kinds (bir:parent dynenv))))
+(defmethod dynenv-entrance-kinds ((dynenv bir:leti))
+  (dynenv-entrance-kinds (bir:parent dynenv)))
+(defmethod dynenv-entrance-kinds ((dynenv bir:values-save))
+  (dynenv-entrance-kinds (bir:parent dynenv)))
+(defmethod dynenv-entrance-kinds ((dynenv bir:values-collect))
+  (dynenv-entrance-kinds (bir:parent dynenv)))
+(defmethod dynenv-entrance-kinds ((dynenv bir:constant-bind))
+  (adjoin :cleanup (dynenv-entrance-kinds (bir:parent dynenv))))
+(defmethod dynenv-entrance-kinds ((dynenv bir:unwind-protect))
+  (adjoin :cleanup (dynenv-entrance-kinds (bir:parent dynenv))))
+
+(defun simple-come-from-p (dynenv)
+  (or (cleavir-set:empty-set-p (cleavir-bir:unwinds dynenv))
+    (cleavir-bir-transformations:simple-unwinding-p
+     dynenv *clasp-system*)))
 
 (defun compute-never-entry-landing-pad (dynenv)
   (etypecase dynenv
-    ((or bir:come-from cleavir-bir:leti cleavir-bir:values-save
+    ((or bir:come-from bir:catchi bir:leti cleavir-bir:values-save
          bir:values-collect)
-     ;; We never come-from, so just keep going up.
+     ;; We never come-from nor catch, so just keep going up.
      (never-entry-landing-pad (cleavir-bir:parent dynenv)))
     ((or bir:constant-bind bir:unwind-protect)
-     (generate-never-entry-landing-pad (never-entry-processor dynenv)))
+     (generate-landing-pad nil nil t (never-entry-processor dynenv)))
     (cleavir-bir:function
      ;; Nothing to do
      nil)))
@@ -450,6 +554,7 @@
 (defmacro with-catch-pad-prep (&body body)
   `(let ((*maybe-entry-landing-pads* (make-hash-table :test #'eq))
          (*maybe-entry-processors* (make-hash-table :test #'eq))
+         (*maybe-catch-processors* (make-hash-table :test #'eq))
          (*never-entry-landing-pads* (make-hash-table :test #'eq))
          (*never-entry-processors* (make-hash-table :test #'eq))
          (*exn.slot* (cmp:alloca-exn))

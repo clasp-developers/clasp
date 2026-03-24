@@ -94,6 +94,7 @@
           +vaslist-size+ +vaslist-alignment+
           +unwind-protect-dynenv-size+
           +binding-dynenv-size+
+          +catch-dynenv-size+
           +void*-size+
           %void%
           %i1%
@@ -319,6 +320,7 @@
           cleavir-lambda-list-analysis-rest
           process-bir-lambda-list
           typeid-core-unwind
+          typeid-core-catch-throw
           *dbg-generate-dwarf*
           *dbg-current-function-metadata*
           *dbg-current-function-lineno*

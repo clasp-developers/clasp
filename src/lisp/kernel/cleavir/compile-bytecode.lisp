@@ -1167,6 +1167,28 @@
                        :inputs () :outputs () :next (list ib))
       (build:begin inserter ib))))
 
+(defmethod compile-instruction ((mnemonic (eql :catch-8))
+                                inserter context &rest args)
+  (destructuring-bind (target) args
+    (compile-catch inserter context target)))
+
+(defmethod compile-instruction ((mnemonic (eql :catch-16))
+                                inserter context &rest args)
+  (destructuring-bind (target) args
+    (compile-catch inserter context target)))
+
+(defun compile-catch (inserter context target)
+  (let ((during (build:make-iblock inserter :name '#:catch))
+        ;; grab before delay-block so that block doesn't see this on the stack.
+        (tag (stack-pop context))
+        (alt (delay-block inserter context target
+                          :name '#:caught :receiving -1)))
+    (build:terminate inserter 'bir:catchi
+                     :inputs (list tag)
+                     :outputs (list (first (bir:inputs alt)))
+                     :next (list during alt))
+    (build:begin inserter during)))
+
 (defmethod compile-instruction ((mnemonic (eql :throw))
                                 inserter context &rest args)
   (destructuring-bind () args
@@ -1174,6 +1196,18 @@
                      :inputs (list (stack-pop context) (mvals context))
                      :outputs () :next ()))
   (setf (reachablep context) nil))
+
+;; See FIXME on ENTRY-CLOSE
+(defmethod compile-instruction ((mnemonic (eql :catch-close))
+                                inserter context &rest args)
+  (declare (ignore context))
+  (destructuring-bind () args
+    (let* ((de (bir:parent (bir:dynamic-environment inserter)))
+           (ib (build:make-iblock
+                inserter :name '#:catch-close :dynamic-environment de)))
+      (build:terminate inserter 'bir:jump
+                       :inputs () :outputs () :next (list ib))
+      (build:begin inserter ib))))
 
 (defgeneric vcell/name (vcell))
 (defmethod vcell/name ((vcell core:variable-cell))
@@ -1466,11 +1500,15 @@
                              inserter context)
   (when (reachablep context)
     (let* ((receiving (core:bytecode-ast-block/receiving annot))
-           (freceiving (if (= receiving 1) -1 receiving))
            (name (core:bytecode-ast-block/name annot))
-           (end (core:bytecode-debug-info/end annot)))
+           (end (core:bytecode-debug-info/end annot))
+           (dynenv (bir:dynamic-environment inserter))
+           (catchp (and (eq name 'cl:catch) (typep dynenv 'bir:catchi)))
+           (freceiving (if (or (= receiving 1) catchp) -1 receiving))
+           (block-de (if catchp (bir:parent dynenv) dynenv)))
       (delay-block inserter context end
                    :name (symbolicate name '#:-after)
+                   :dynamic-environment block-de
                    :receiving freceiving)
       ;; this and FRECEIVING are to take care of the ugly code we generate
       ;; when a block is in a one-value context. See bytecode_compiler.cc.
@@ -1479,7 +1517,8 @@
       ;; values can always be put in the MV vector, but it sure looks ugly.
       (when (= receiving 1)
         (delay-block inserter context (1+ end) ; 1+ for the push.
-                     :name (symbolicate name '#:after-push)
+                     :name (symbolicate name '#:-after-push)
+                     :dynamic-environment block-de
                      :receiving receiving)))))
 
 (defmethod start-annotation ((the core:bytecode-ast-the) inserter context)
@@ -1757,6 +1796,7 @@
     (cmp::with-module (:module module)
       (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
         (let* ((clasp-cleavir::*unwind-ids* (make-hash-table :test #'eq))
+               (clasp-cleavir::*catch-ids* (make-hash-table :test #'eq))
                (clasp-cleavir::*function-info* function-info))
           (allocate-llvm-function-infos ir fvector fmap)
           (clasp-cleavir::with-constants (ctable ctable-name)

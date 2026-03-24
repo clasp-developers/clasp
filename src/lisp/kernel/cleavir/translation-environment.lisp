@@ -8,6 +8,7 @@
 (defvar *datum-values*)
 (defvar *dynenv-storage*)
 (defvar *unwind-ids*)
+(defvar *catch-ids*)
 (defvar *function-info*)
 (defvar *enclose-initializers*)
 
@@ -144,8 +145,9 @@
 ;;; But I'm not sure.
 ;;; Non-volatility seems to be the cause of #1183.
 (defun needs-volatile-loads-p (function)
-  (cleavir-set:some (lambda (inst) (not (null (bir:unwinds inst))))
-                    (bir:come-froms function)))
+  (or (cleavir-set:some (lambda (inst) (not (null (bir:unwinds inst))))
+                        (bir:come-froms function))
+    (not (cleavir-set:empty-set-p (bir:catches function)))))
 
 (defun variable-in (variable)
   (check-type variable bir:variable)
@@ -239,7 +241,11 @@
 
 (defun get-destination-id (iblock)
   (or (gethash iblock *unwind-ids*)
-      (error "Missing unwind ID for ~a" iblock)))
+    (error "Missing unwind ID for ~a" iblock)))
+
+(defun get-catch-id (catch)
+  (or (gethash catch *catch-ids*)
+    (error "Missing catch ID for ~a" catch)))
 
 ;; Does this iblock have nonlocal entrances?
 (defun has-entrances-p (iblock)

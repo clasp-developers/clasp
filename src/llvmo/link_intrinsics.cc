@@ -455,6 +455,16 @@ core::T_O* cc_initializeAndPushBindingDynenv(void* space, void* cspace, core::T_
   NO_UNWIND_END();
 }
 
+core::T_O* cc_initializeAndPushCatchDynenv(void* space, void* cspace, jmp_buf* target, core::T_O* tag) {
+  NO_UNWIND_BEGIN();
+  core::T_sp ttag((gc::Tagged)tag);
+  auto newde = InitObject<core::CatchDynEnv_O>(space, target, ttag);
+  auto newstack = InitObject<core::Cons_O>(cspace, newde, my_thread->dynEnvStackGet());
+  my_thread->dynEnvStackSet(newstack);
+  return newde.raw_();
+  NO_UNWIND_END();
+}
+
 T_O* cc_get_dynenv_stack() {
   NO_UNWIND_BEGIN();
   return my_thread->dynEnvStackGet().raw_();
@@ -468,14 +478,6 @@ void cc_set_dynenv_stack(T_O* dynenv_stack) {
   NO_UNWIND_END();
 }
 
-void* cc_dynenv_frame(T_O* dynenv) {
-  NO_UNWIND_BEGIN();
-  T_sp tde((gctools::Tagged)dynenv);
-  LexDynEnv_sp dde = gc::As_unsafe<LexDynEnv_sp>(tde);
-  return dde->frame;
-  NO_UNWIND_END();
-}
-
 [[noreturn]] void cc_sjlj_unwind(T_O* dde, size_t index) {
   T_sp tde((gctools::Tagged)dde);
   sjlj_unwind(gc::As<LexDynEnv_sp>(tde), index);
@@ -484,6 +486,13 @@ void* cc_dynenv_frame(T_O* dynenv) {
 [[noreturn]] void cc_throw(T_O* tagg) {
   T_sp tag((gctools::Tagged)tagg);
   sjlj_throw(tag);
+}
+
+T_O* cc_catch_tag(char* exceptionP) {
+  NO_UNWIND_BEGIN();
+  core::CatchThrow* catchP = reinterpret_cast<core::CatchThrow*>(exceptionP);
+  return catchP->getTag().raw_();
+  NO_UNWIND_END();
 }
 
 T_O* cc_get_unwind_dest() {
@@ -513,6 +522,7 @@ void cc_set_unwind_dest_index(size_t ind) {
 
 [[noreturn]] void cc_sjlj_continue_unwinding() { sjlj_continue_unwinding(); }
 
+// used for bugged cl:catch as well
 void cc_error_bugged_come_from(size_t id) { SIMPLE_ERROR("BUG: Nonlocal entry frame could not match go-index {}", id); }
 
 void debugFileScopeHandle(int* sourceFileInfoHandleP) {

@@ -315,6 +315,11 @@ function-or-placeholder - the llvm function or a placeholder for
   (let ((old-de-stack (first (dynenv-storage dynenv))))
     (when old-de-stack
       (%intrinsic-call "cc_set_dynenv_stack" (list old-de-stack)))))
+(defmethod undo-dynenv ((dynenv bir:catchi) tmv)
+  (declare (ignore tmv))
+  (let ((old-de-stack (dynenv-storage dynenv)))
+    (when old-de-stack
+      (%intrinsic-call "cc_set_dynenv_stack" (list old-de-stack)))))
 (defmethod undo-dynenv ((dynenv bir:values-save) tmv)
   (declare (ignore tmv))
   (%intrinsic-call cmp:+intrinsic/llvm.stackrestore.p0+
@@ -495,16 +500,16 @@ function-or-placeholder - the llvm function or a placeholder for
                    (setf escp t))
         finally (return (values iblocks blocks successors escp))))
 
+;; also used for catch!
 (defun phi-out-for-come-from (phi block)
-  (let ((mv (restore-multiple-value-0))
-        (rt (cc-bmir:rtype phi)))
+  (let ((rt (cc-bmir:rtype phi)))
     (cond ((null rt))
           ((equal rt '(:object))
-           (phi-out (cmp:irc-tmv-primary mv) phi block))
-          ((eq rt :multiple-values) (phi-out mv phi block))
+           (phi-out (cmp:irc-tmv-primary (restore-multiple-value-0)) phi block))
+          ((eq rt :multiple-values) (phi-out (restore-multiple-value-0) phi block))
           ((every (lambda (x) (eq x :object)) rt)
            (phi-out
-            (list* (cmp:irc-tmv-primary mv)
+            (list* (cmp:irc-tmv-primary (restore-multiple-value-0))
                    (loop for i from 1 below (length rt)
                          collect (cmp:irc-t*-load (return-value-elt i))))
             phi block))
@@ -624,6 +629,33 @@ function-or-placeholder - the llvm function or a placeholder for
            "cc_sjlj_unwind"
            (list cont (%size_t destination-id))))))
   (cmp:irc-unreachable))
+
+(defmethod translate-terminator ((instruction bir:catchi) abi next)
+  (declare (ignore abi))
+  (let* ((bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "catch-jmp-buf"))
+         (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil))
+         (dcons-space
+           (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
+                                          :label "catch-cons"))
+         (catch-space (cmp:alloca-i8 cmp:+catch-dynenv-size+
+                                     :alignment cmp:+alignment+
+                                     :label "catch-dynenv-mem"))
+         (tag (in (bir:input instruction))))
+    (%intrinsic-invoke-if-landing-pad-or-call
+     "cc_initializeAndPushCatchDynenv"
+     (list catch-space dcons-space bufp tag))
+    (setf (dynenv-storage instruction) old-de-stack)
+    (let* ((sj (%intrinsic-call "_setjmp" (list bufp)))
+           (cmp (cmp:irc-icmp-eq sj (%i32 0)))
+           (phi (bir:output instruction))
+           (restore-block (if (or (null phi) (null (cc-bmir:rtype phi)))
+                              (second next)
+                              (cmp:irc-basic-block-create "catch-restore-values"))))
+      (cmp:irc-cond-br cmp (first next) restore-block)
+      (unless (or (null phi) (null (cc-bmir:rtype phi)))
+        (cmp:irc-begin-block restore-block)
+        (phi-out-for-come-from phi restore-block)
+        (cmp:irc-br (second next))))))
 
 (defmethod translate-terminator ((instruction bir:throwi) abi next)
   (declare (ignore abi next))
@@ -2060,6 +2092,12 @@ function-or-placeholder - the llvm function or a placeholder for
     (let ((i 1))
       (cleavir-set:doset (entrance (bir:entrances function))
         (setf (gethash entrance *unwind-ids*) i)
+        (incf i)))
+    ;; We do this for catches as well. Since catches are disjoint from come-froms,
+    ;; we can start over, and since they're not used with setjmp we can start at zero.
+    (let ((i 0))
+      (cleavir-set:doset (catch (bir:catches function))
+        (setf (gethash catch *catch-ids*) i)
         (incf i))))
   (bir:do-functions (function module)
     (layout-procedure function (get-or-create-lambda-name function)
@@ -2067,6 +2105,7 @@ function-or-placeholder - the llvm function or a placeholder for
 
 (defun translate (bir &key abi)
   (let* ((*unwind-ids* (make-hash-table :test #'eq))
+         (*catch-ids* (make-hash-table :test #'eq))
          (*function-info* (make-hash-table :test #'eq)))
     (layout-module (bir:module bir) abi)
     (cmp::potentially-save-module)
@@ -2233,6 +2272,7 @@ COMPILE-FILE will use the default *clasp-env*."
     (cmp::with-module (:module module)
       (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
         (let* ((*unwind-ids* (make-hash-table :test #'eq))
+               (*catch-ids* (make-hash-table :test #'eq))
                (*function-info* function-info))
           (allocate-llvm-function-infos bir-module fvector)
           (with-constants (ctable ctable-name)
