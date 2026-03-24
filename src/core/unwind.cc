@@ -100,6 +100,11 @@ void sjlj_unwind_invalidate(DestDynEnv_sp dest) {
 
 void BindingDynEnv_O::proceed() { this->cell->unbind(this->old); }
 
+void ProgvDynEnv_O::proceed() {
+  for (size_t i = 0; i < cells->length(); ++i)
+    cells->vref(i).as_assert<VariableCell_O>()->unbind(old_values->vref(i));
+}
+
 [[noreturn]] void sjlj_unwind(LexDynEnv_sp dest, size_t index) {
   VM_INC_UNWIND_COUNTER(my_thread->_VM);
   switch (sjlj_unwind_search(dest)) {
