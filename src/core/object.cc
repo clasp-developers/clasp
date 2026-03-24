@@ -212,13 +212,9 @@ CL_DEFUN T_sp core__print_cxx_object(T_sp obj, T_sp stream) {
     core::List_sp alist = core__encode(obj);
     for (auto cur : alist) {
       Cons_sp entry = gc::As<Cons_sp>(oCar(cur));
-      Symbol_sp key = gc::As<Symbol_sp>(oCar(entry));
-      T_sp val = oCdr(entry);
       stream_write_char(stream, ' ');
-      cl__prin1(key, stream);
+      cl__prin1(entry, stream);
       stream_finish_output(stream);
-      stream_write_char(stream, ' ');
-      cl__prin1(val, stream);
     }
     stream_write_char(stream, ' ');
     stream_write_char(stream, ')');
