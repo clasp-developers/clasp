@@ -75,7 +75,6 @@ bool clasp_charEqual2(T_sp, T_sp);
 namespace core {
 FORWARD(Record);
 FORWARD(LambdaListHandler);
-FORWARD(Binder);
 FORWARD(Symbol);
 FORWARD(Cons);
 FORWARD(General);

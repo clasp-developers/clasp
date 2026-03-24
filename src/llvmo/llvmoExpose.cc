@@ -129,7 +129,6 @@ Error enableObjCRegistration(const char* PathToLibObjC);
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/sourceFileInfo.h>
-#include <clasp/core/loadTimeValues.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/compiler.h>
@@ -141,7 +140,6 @@ Error enableObjCRegistration(const char* PathToLibObjC);
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/jit.h>
 #include <clasp/llvmo/llvmoExpose.h>
-#include <clasp/core/lightProfiler.h>
 #include <clasp/llvmo/insertPoint.h>
 #include <clasp/llvmo/debugLoc.h>
 #include <clasp/llvmo/intrinsics.h>
@@ -3364,20 +3362,6 @@ CL_EXTERN_DEFMETHOD(Function_O, (void(llvm::Function::*)(llvm::Attribute::AttrKi
 // CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(llvm::StringRef)) & llvm::Function::addFnAttr);;
 CL_LISPIFY_NAME(addFnAttr2String);
 CL_EXTERN_DEFMETHOD(Function_O, (void(llvm::Function::*)(llvm::StringRef, llvm::StringRef)) & llvm::Function::addFnAttr);
-;
-;
-
-#if 0
-CL_LISPIFY_NAME("setLiterals");
-CL_DEFMETHOD void Function_O::setLiterals(core::LoadTimeValues_sp ltv) {
-  this->_RunTimeValues = ltv;
-}
-
-CL_LISPIFY_NAME("literals");
-CL_DEFMETHOD core::LoadTimeValues_sp Function_O::literals() const {
-  return this->_RunTimeValues;
-}
-#endif
 
 }; // namespace llvmo
 
@@ -3708,15 +3692,6 @@ CL_DEFUN void llvm_sys__accumulate_llvm_usage_seconds(double time) {
   int num = unbox_fixnum(gc::As<core::Fixnum_sp>(_sym_STARnumberOfLlvmFinalizationsSTAR->symbolValue()));
   ++num;
   _sym_STARnumberOfLlvmFinalizationsSTAR->setf_symbolValue(core::make_fixnum(num));
-}
-
-void finalizeEngineAndTime(llvm::ExecutionEngine* engine) {
-  core::LightTimer timer;
-  timer.start();
-  engine->finalizeObject();
-  timer.stop();
-  double thisTime = timer.getAccumulatedTime();
-  llvm_sys__accumulate_llvm_usage_seconds(thisTime);
 }
 
 /*! Return (values target nil) if successful or (values nil error-message) if not */

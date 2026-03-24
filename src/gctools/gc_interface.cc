@@ -389,7 +389,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init_class_kind(core::InstanceCreator_O);
   Init_class_kind(core::StandardClassCreator_O);
   Init_class_kind(core::SingleDispatchGenericFunction_O);
-  Init_class_kind(core::ImmobileObject_O);
   Init_class_kind(core::WeakPointer_O);
   Init_class_kind(llvmo::DebugLoc_O);
   Init_class_kind(core::Pointer_O);
@@ -505,7 +504,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init_class_kind(core::Null_O);
   Init_class_kind(core::Character_dummy_O);
   Init_class_kind(llvmo::DataLayout_O);
-  Init_class_kind(core::LoadTimeValues_O);
   Init_class_kind(core::SharpEqualWrapper_O);
   Init_class_kind(llvmo::ClaspJIT_O);
   Init_class_kind(core::Readtable_O);
@@ -650,8 +648,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init_class_kind(core::FileStatus_O);
   Init_class_kind(core::SourcePosInfo_O);
   Init_class_kind(core::DirectoryEntry_O);
-  Init_class_kind(core::LightUserData_O);
-  Init_class_kind(core::UserData_O);
   Init_class_kind(core::Record_O);
   Init_class_kind(clbind::ClassRegistry_O);
   Init_class_kind(core::Cons_O);

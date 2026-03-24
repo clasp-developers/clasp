@@ -41,7 +41,6 @@ THE SOFTWARE.
 #include <clasp/core/commonLispPackage.h>
 #include <clasp/core/keywordPackage.h>
 #include <clasp/core/extensionPackage.h>
-#include <clasp/core/lightProfiler.h>
 #include <clasp/core/package.h>
 #include <clasp/core/compPackage.h>
 #include <clasp/core/grayPackage.h>
@@ -69,8 +68,6 @@ THE SOFTWARE.
 #include <clasp/core/primitives.h>
 #include <clasp/core/iterator.h>
 #include <clasp/core/lambdaListHandler.h>
-#include <clasp/core/userData.h>
-#include <clasp/core/loadTimeValues.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/package.h>
 #include <clasp/core/pathname.h>

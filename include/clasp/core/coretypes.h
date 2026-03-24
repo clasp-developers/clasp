@@ -55,7 +55,6 @@ class Pointer_O;
 class Number_O;
 class Package_O;
 class Integer_O;
-class LoadTimeValues_O;
 /* AMS pool classes */
 class Symbol_O;
 class Null_O;

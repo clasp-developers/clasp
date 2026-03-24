@@ -105,8 +105,6 @@
            #~"character.cc"
            #~"designators.cc"
            #~"sequence.cc"
-           #~"loadTimeValues.cc"
-           #~"lightProfiler.cc"
            #~"fileSystem.cc"
            #~"posixTime.cc"
            #~"hwinfo.cc"

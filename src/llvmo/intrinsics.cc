@@ -50,7 +50,6 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/derivableCxxObject.h>
 #include <clasp/core/sourceFileInfo.h>
-#include <clasp/core/loadTimeValues.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/array.h>
