@@ -49,7 +49,6 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/core/sort.h>
 #include <clasp/core/fileSystem.h>
-#include <clasp/core/lightProfiler.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/symbolTable.h>

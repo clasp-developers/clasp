@@ -140,7 +140,6 @@ Error enableObjCRegistration(const char* PathToLibObjC);
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/jit.h>
 #include <clasp/llvmo/llvmoExpose.h>
-#include <clasp/core/lightProfiler.h>
 #include <clasp/llvmo/insertPoint.h>
 #include <clasp/llvmo/debugLoc.h>
 #include <clasp/llvmo/intrinsics.h>
@@ -3693,15 +3692,6 @@ CL_DEFUN void llvm_sys__accumulate_llvm_usage_seconds(double time) {
   int num = unbox_fixnum(gc::As<core::Fixnum_sp>(_sym_STARnumberOfLlvmFinalizationsSTAR->symbolValue()));
   ++num;
   _sym_STARnumberOfLlvmFinalizationsSTAR->setf_symbolValue(core::make_fixnum(num));
-}
-
-void finalizeEngineAndTime(llvm::ExecutionEngine* engine) {
-  core::LightTimer timer;
-  timer.start();
-  engine->finalizeObject();
-  timer.stop();
-  double thisTime = timer.getAccumulatedTime();
-  llvm_sys__accumulate_llvm_usage_seconds(thisTime);
 }
 
 /*! Return (values target nil) if successful or (values nil error-message) if not */

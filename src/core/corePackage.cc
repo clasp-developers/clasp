@@ -41,7 +41,6 @@ THE SOFTWARE.
 #include <clasp/core/commonLispPackage.h>
 #include <clasp/core/keywordPackage.h>
 #include <clasp/core/extensionPackage.h>
-#include <clasp/core/lightProfiler.h>
 #include <clasp/core/package.h>
 #include <clasp/core/compPackage.h>
 #include <clasp/core/grayPackage.h>
