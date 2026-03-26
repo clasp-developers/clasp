@@ -95,6 +95,7 @@
           +unwind-protect-dynenv-size+
           +binding-dynenv-size+
           +catch-dynenv-size+
+          +progv-dynenv-size+
           +void*-size+
           %void%
           %i1%

@@ -6,6 +6,7 @@
 #include <clasp/core/symbol.h>
 #include <clasp/core/arguments.h> // DynamicScopeManager
 #include <clasp/core/evaluator.h> // eval::funcall
+#include <clasp/core/sequence.h>  // cl__length
 
 namespace core {
 
@@ -140,6 +141,24 @@ public:
   BindingDynEnv_O(VariableCell_sp a_cell, T_sp a_old) : DynEnv_O(), cell(a_cell), old(a_old){};
   VariableCell_sp cell;
   T_sp old;
+  virtual SearchStatus search() const { return Continue; };
+  virtual void proceed();
+};
+
+// Dynenv for multiple special variable bindings.
+FORWARD(ProgvDynEnv);
+class ProgvDynEnv_O : public DynEnv_O {
+  LISP_CLASS(core, CorePkg, ProgvDynEnv_O, "ProgvDynEnv", DynEnv_O);
+
+public:
+  ProgvDynEnv_O(SimpleVector_sp a_cells, SimpleVector_sp a_old_values)
+    : cells(a_cells), old_values(a_old_values) {};
+  // We use simple vectors instead of the lists passed to progv because they're
+  // easier to iterate over, don't have to check for proper-list-ness, etc.
+  // We want to copy the lists in some form anyway, to avoid any shenanigans from
+  // perverse code that mutates the lists during the progv body.
+  SimpleVector_sp cells;
+  SimpleVector_sp old_values;
   virtual SearchStatus search() const { return Continue; };
   virtual void proceed();
 };
@@ -334,51 +353,45 @@ template <typename Catchf> T_mv call_with_catch(T_sp tag, Catchf&& cf) {
     }
 }
 
-template <typename Boundf> T_mv fprogv(List_sp symbols, List_sp values, Boundf&& bound) {
-  if (symbols.consp()) {
-    Symbol_sp sym = CONS_CAR(symbols).as<Symbol_O>();
-    List_sp nsymbols = CONS_CDR(symbols);
-    if (values.consp()) {
-      return call_with_variable_bound(sym, CONS_CAR(values),
-                                      [&]() { return fprogv(nsymbols, CONS_CDR(values), bound); });
-    } else { // out of values - make unbound
-      return call_with_variable_bound(sym, unbound<T_O>(),
-                                      [&]() { return fprogv(nsymbols, nil<T_O>(), bound); });
+// Defined in unwind.cc. Used here and in native-compiler-generated code.
+void progv_set_values(SimpleVector_sp cells, SimpleVector_sp oldvals,
+                      List_sp new_values);
+SimpleVector_sp resolve_progv_symbols(List_sp symbols, T_sp env);
+
+template <typename Boundf> T_mv fprogv_cells(SimpleVector_sp cells, List_sp values,
+                                             Boundf&& bound) {
+  size_t ncells = cells->length();
+  if (ncells == 0) return bound();
+  SimpleVector_sp oldvals = SimpleVector_O::make(ncells);
+
+  progv_set_values(cells, oldvals, values);
+
+  // All the new values are set up. Bind the progv dynenv and call the thunk.
+  // In order to unbind the values through C++ unwinds, we use RAII with an
+  // internal struct.
+  struct ProgvHelper {
+    ProgvHelper(SimpleVector_sp a_cells, SimpleVector_sp a_oldvals)
+      : cells(a_cells), oldvals(a_oldvals) {};
+    ~ProgvHelper() {
+      for (size_t i = 0; i < cells->length(); ++i)
+        cells->vref(i).as_unsafe<VariableCell_O>()->unbind(oldvals->vref(i));
     }
-  } else { // no symbols
-    return bound();
-  }
+    SimpleVector_sp cells, oldvals;
+  };
+  ProgvHelper unbinder(cells, oldvals);
+  gctools::StackAllocate<ProgvDynEnv_O> pde(cells, oldvals);
+  gctools::StackAllocate<Cons_O> sa_de(pde.asSmartPtr(), my_thread->dynEnvStackGet());
+  DynEnvPusher dep(my_thread, sa_de.asSmartPtr());
+  return bound();
 }
 
-template <typename Boundf> T_mv fprogv_env_aux(T_sp env,
-                                               List_sp symbols, List_sp values,
-                                               Boundf&& bound) {
-  // general case, look up cells
-  if (symbols.consp()) {
-    Symbol_sp sym = CONS_CAR(symbols).as<Symbol_O>();
-    T_sp rcell = eval::funcall(_sym_fcge_ensure_vcell, env, sym);
-    VariableCell_sp cell = rcell.as<VariableCell_O>();
-    List_sp nsymbols = CONS_CDR(symbols);
-    if (values.consp()) {
-      return call_with_cell_bound(cell, CONS_CAR(values),
-                                  [&]() { return fprogv_env_aux(env, nsymbols, CONS_CDR(values), bound); });
-    } else { // out of values - make unbound
-      return call_with_cell_bound(cell, unbound<T_O>(),
-                                  [&]() { return fprogv_env_aux(env, nsymbols, nil<T_O>(), bound); });
-    }
-  } else { // no symbols
-    return bound();
-  }
+template <typename Boundf> T_mv fprogv(List_sp symbols, List_sp values, Boundf&& bound) {
+  return fprogv_cells(resolve_progv_symbols(symbols, nil<T_O>()), values, bound);
 }
 
 template <typename Boundf> T_mv fprogv_env(T_sp env, List_sp symbols, List_sp values,
                                            Boundf&& bound) {
-  // special case: if env is nil (the usual main environment), use fprogv.
-  // This avoids calling fcge-ensure-vcell, so it's ok to do primitively.
-  if (env.nilp()) return fprogv(symbols, values, bound);
-  // more generally: look up cells in the environment
-  // (but don't bother to repeat this nilp check)
-  else return fprogv_env_aux(env, symbols, values, bound);
+  return fprogv_cells(resolve_progv_symbols(symbols, env), values, bound);
 }
 
 }; // namespace core

@@ -100,6 +100,15 @@
       (cmp:irc-br next)
       bb)))
 
+(defun generate-unprogv (cells oldvals de-stack next)
+  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+    (let ((bb (cmp:irc-basic-block-create "unprogv")))
+      (cmp:irc-begin-block bb)
+      (%intrinsic-call "cc_progvUnbind" (list cells oldvals))
+      (%intrinsic-call "cc_set_dynenv_stack" (list de-stack))
+      (cmp:irc-br next)
+      bb)))
+
 (defun lp-generate-protect (u-p-instruction next)
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
     (let ((bb (cmp:irc-basic-block-create "execute-protection")))
@@ -334,6 +343,13 @@
   (destructuring-bind (index old-value de-stack) (dynenv-storage instruction)
     (generate-unbind index old-value de-stack next)))
 
+(defmethod compute-maybe-entry-processor ((instruction bir:progvi) tags)
+  (compute-shared-processor instruction
+                            (maybe-entry-processor (bir:parent instruction) tags)))
+(defmethod compute-shared-processor ((instruction bir:progvi) next)
+  (destructuring-bind (cells oldvals de-stack) (dynenv-storage instruction)
+    (generate-unprogv cells oldvals de-stack next)))
+
 (defmethod compute-maybe-entry-processor ((instruction bir:unwind-protect) tags)
   (compute-shared-processor instruction
                             (maybe-entry-processor (bir:parent instruction) tags)))
@@ -422,6 +438,9 @@
 (defmethod compute-maybe-catch-processor ((instruction bir:constant-bind) tags)
   (compute-shared-processor instruction
                             (maybe-catch-processor (bir:parent instruction) tags)))
+(defmethod compute-maybe-catch-processor ((instruction bir:progvi) tags)
+  (compute-shared-processor instruction
+                            (maybe-catch-processor (bir:parent instruction) tags)))
 (defmethod compute-maybe-catch-processor ((instruction bir:unwind-protect) tags)
   (compute-shared-processor instruction
                             (maybe-catch-processor (bir:parent instruction) tags)))
@@ -503,6 +522,11 @@
                      (compute-never-entry-processor
                       (cleavir-bir:parent instruction)))))
 
+(defmethod compute-never-entry-processor ((instruction bir:progvi))
+  (destructuring-bind (cells oldvals oldstack) (dynenv-storage instruction)
+    (generate-unprogv cells oldvals oldstack
+                      (compute-never-entry-processor (bir:parent instruction)))))
+
 (defmethod compute-never-entry-processor ((instruction bir:unwind-protect))
   (lp-generate-protect instruction
                        (never-entry-processor
@@ -529,6 +553,8 @@
   (dynenv-entrance-kinds (bir:parent dynenv)))
 (defmethod dynenv-entrance-kinds ((dynenv bir:constant-bind))
   (adjoin :cleanup (dynenv-entrance-kinds (bir:parent dynenv))))
+(defmethod dynenv-entrance-kinds ((dynenv bir:progvi))
+  (adjoin :cleanup (dynenv-entrance-kinds (bir:parent dynenv))))
 (defmethod dynenv-entrance-kinds ((dynenv bir:unwind-protect))
   (adjoin :cleanup (dynenv-entrance-kinds (bir:parent dynenv))))
 
@@ -543,7 +569,7 @@
          bir:values-collect)
      ;; We never come-from nor catch, so just keep going up.
      (never-entry-landing-pad (cleavir-bir:parent dynenv)))
-    ((or bir:constant-bind bir:unwind-protect)
+    ((or bir:constant-bind bir:progvi bir:unwind-protect)
      (generate-landing-pad nil nil t (never-entry-processor dynenv)))
     (cleavir-bir:function
      ;; Nothing to do

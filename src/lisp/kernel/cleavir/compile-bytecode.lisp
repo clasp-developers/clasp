@@ -1258,12 +1258,26 @@
   (declare (ignore context))
   (destructuring-bind () args
     (let* ((bind (bir:dynamic-environment inserter))
-           (vname (bir:variable-name (first (bir:inputs bind))))
+           (vname (etypecase bind
+                    (bir:constant-bind
+                     (bir:variable-name (first (bir:inputs bind))))
+                    (bir:progvi '#:progv)))
            (ib (build:make-iblock
                 inserter :name (symbolicate '#:unbind- vname)
                 :dynamic-environment (bir:parent bind))))
       (build:terminate inserter 'bir:jump
                        :inputs () :outputs ()
+                       :next (list ib))
+      (build:begin inserter ib))))
+
+(defmethod compile-instruction ((mnemonic (eql :progv))
+                                inserter context &rest args)
+  (destructuring-bind (env) args
+    (declare (ignore env)) ; FIXME
+    (let ((vals (stack-pop context)) (vars (stack-pop context))
+          (ib (build:make-iblock inserter :name '#:progv)))
+      (build:terminate inserter 'bir:progvi
+                       :inputs (list vars vals)
                        :next (list ib))
       (build:begin inserter ib))))
 

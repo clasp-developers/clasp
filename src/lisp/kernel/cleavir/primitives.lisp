@@ -238,6 +238,7 @@
          (primitive-unwinds "cc_createAndPushTagbodyDynenv" :t* (list :i8* :i8* :jmp-buf-tag*))
          (primitive         "cc_initializeAndPushCleanupDynenv" :t* (list :i8* :i8* :jmp-buf-tag*))
          (primitive         "cc_initializeAndPushBindingDynenv" :t* (list :i8* :i8* :t* :t*))
+         (primitive         "cc_initializeAndPushProgvDynenv" :t* (list :i8* :i8* :t* :t*))
          (primitive         "cc_initializeAndPushCatchDynenv" :t* (list :i8* :i8* :jmp-buf-tag* :t*))
          (primitive         "cc_get_dynenv_stack" :t* (list))
          (primitive         "cc_set_dynenv_stack" :void (list :t*))
@@ -249,6 +250,9 @@
          ;; While this obviously unwinds, it does so by SJLJ and will
          ;; never throw an exception.
          (primitive         "cc_sjlj_continue_unwinding" :void nil :does-not-return t)
+         (primitive-unwinds "cc_progvResolveSymbols" :t* (list :t* :t*))
+         (primitive-unwinds "cc_progvSetValues" :t* (list :t* :t*))
+         (primitive         "cc_progvUnbind" :void (list :t* :t*))
          (primitive-unwinds "cc_signal_interrupts" :void (list))
          (primitive         "cc_saveMultipleValue0" :void (list :tmv))
          (primitive         "cc_restoreMultipleValue0" :return-type nil)
