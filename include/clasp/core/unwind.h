@@ -353,99 +353,45 @@ template <typename Catchf> T_mv call_with_catch(T_sp tag, Catchf&& cf) {
     }
 }
 
+// Defined in unwind.cc. Used here and in native-compiler-generated code.
+void progv_set_values(SimpleVector_sp cells, SimpleVector_sp oldvals,
+                      List_sp new_values);
+SimpleVector_sp resolve_progv_symbols(List_sp symbols, T_sp env);
+
 template <typename Boundf> T_mv fprogv_cells(SimpleVector_sp cells, List_sp values,
                                              Boundf&& bound) {
   size_t ncells = cells->length();
   if (ncells == 0) return bound();
   SimpleVector_sp oldvals = SimpleVector_O::make(ncells);
 
-  // We gather the new values (and unbounds) in a VLA before binding anything.
-  // This is so that we can signal any errors before actually doing any binding,
-  // so we don't need to worry about needing to undo halfway done bindings.
-  {
-    T_sp newvals[ncells];
-    {
-      List_sp cvals = values;
-      for (size_t i = 0; i < ncells; ++i) {
-        // Install the cells and old values in the progv dynenv.
-        VariableCell_sp cell = cells->vref(i).as<VariableCell_O>();
-        T_sp oldval = my_thread->_Bindings.thread_local_value(cell->ensureBindingIndex());
-        oldvals->vset(i, oldval);
-        // Set the new value of each cell.
-        if (cvals.nilp())
-          // All out of values, so make unbound.
-          newvals[i] = unbound<T_O>();
-        else if (cvals.consp()) {
-          newvals[i] = cvals.as_unsafe<Cons_O>()->car();
-          cvals = cvals.as_unsafe<Cons_O>()->cdr();
-        }
-        else TYPE_ERROR(cvals, cl::_sym_list);
-      }
-    }
-    // Now bind all the new values.
-    for (size_t i = 0; i < ncells; ++i)
-      cells->vref(i).as_unsafe<VariableCell_O>()->bind(newvals[i]);
-  }
+  progv_set_values(cells, oldvals, values);
+
   // All the new values are set up. Bind the progv dynenv and call the thunk.
   // In order to unbind the values through C++ unwinds, we use RAII with an
   // internal struct.
-  {
-    struct ProgvHelper {
-      ProgvHelper(SimpleVector_sp a_cells, SimpleVector_sp a_oldvals)
-        : cells(a_cells), oldvals(a_oldvals) {};
-      ~ProgvHelper() {
-        for (size_t i = 0; i < cells->length(); ++i)
-          cells->vref(i).as_unsafe<VariableCell_O>()->unbind(oldvals->vref(i));
-      }
-      SimpleVector_sp cells, oldvals;
-    };
-    ProgvHelper unbinder(cells, oldvals);
-    gctools::StackAllocate<ProgvDynEnv_O> pde(cells, oldvals);
-    gctools::StackAllocate<Cons_O> sa_de(pde.asSmartPtr(), my_thread->dynEnvStackGet());
-    DynEnvPusher dep(my_thread, sa_de.asSmartPtr());
-    return bound();
-  }
+  struct ProgvHelper {
+    ProgvHelper(SimpleVector_sp a_cells, SimpleVector_sp a_oldvals)
+      : cells(a_cells), oldvals(a_oldvals) {};
+    ~ProgvHelper() {
+      for (size_t i = 0; i < cells->length(); ++i)
+        cells->vref(i).as_unsafe<VariableCell_O>()->unbind(oldvals->vref(i));
+    }
+    SimpleVector_sp cells, oldvals;
+  };
+  ProgvHelper unbinder(cells, oldvals);
+  gctools::StackAllocate<ProgvDynEnv_O> pde(cells, oldvals);
+  gctools::StackAllocate<Cons_O> sa_de(pde.asSmartPtr(), my_thread->dynEnvStackGet());
+  DynEnvPusher dep(my_thread, sa_de.asSmartPtr());
+  return bound();
 }
 
 template <typename Boundf> T_mv fprogv(List_sp symbols, List_sp values, Boundf&& bound) {
-  size_t nsymbols = cl__length(symbols);
-  if (nsymbols == 0) return bound();
-  SimpleVector_sp cells = SimpleVector_O::make(nsymbols);
-  List_sp csymbols = symbols;
-  for (size_t i = 0; i < nsymbols; ++i) {
-    Cons_sp ccsymbols = csymbols.as<Cons_O>();
-    cells->vset(i, ccsymbols->car().as<Symbol_O>()->ensureVariableCell());
-    csymbols = ccsymbols->cdr();
-  }
-  return fprogv_cells(cells, values, bound);
-}
-
-template <typename Boundf> T_mv fprogv_env_aux(T_sp env,
-                                               List_sp symbols, List_sp values,
-                                               Boundf&& bound) {
-  size_t nsymbols = cl__length(symbols);
-  if (nsymbols == 0) return bound();
-  SimpleVector_sp cells = SimpleVector_O::make(nsymbols);
-  List_sp csymbols = symbols;
-  for (size_t i = 0; i < nsymbols; ++i) {
-    Cons_sp ccsymbols = csymbols.as<Cons_O>();
-    Symbol_sp sym = ccsymbols->car().as<Symbol_O>();
-    T_sp rcell = eval::funcall(_sym_fcge_ensure_vcell, env, sym);
-    VariableCell_sp cell = rcell.as<VariableCell_O>();
-    cells->vset(i, cell);
-    csymbols = ccsymbols->cdr();
-  }
-  return fprogv_cells(cells, values, bound);
+  return fprogv_cells(resolve_progv_symbols(symbols, nil<T_O>()), values, bound);
 }
 
 template <typename Boundf> T_mv fprogv_env(T_sp env, List_sp symbols, List_sp values,
                                            Boundf&& bound) {
-  // special case: if env is nil (the usual main environment), use fprogv.
-  // This avoids calling fcge-ensure-vcell, so it's ok to do primitively.
-  if (env.nilp()) return fprogv(symbols, values, bound);
-  // more generally: look up cells in the environment
-  // (but don't bother to repeat this nilp check)
-  else return fprogv_env_aux(env, symbols, values, bound);
+  return fprogv_cells(resolve_progv_symbols(symbols, env), values, bound);
 }
 
 }; // namespace core

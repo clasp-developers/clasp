@@ -263,4 +263,66 @@ CL_UNWIND_COOP(true);
   sjlj_throw(tag);
 }
 
+// Given a putative list of symbols as passed to PROGV, return a simple vector
+// of VariableCell_sp's. Symbols are resolved in the given environment.
+// If the environment is NIL, this is done without calling fcge-ensure-vcell,
+// so it's ok to do primitively.
+SimpleVector_sp resolve_progv_symbols(List_sp symbols, T_sp env) {
+  size_t nsymbols = cl__length(symbols);
+  // NOTE: could test for 0 here and return a constant vector if so,
+  // but PROGV with no symbols is too rare for me to want to bother.
+  SimpleVector_sp cells = SimpleVector_O::make(nsymbols);
+  List_sp csymbols = symbols;
+  if (env.nilp()) {
+    for (size_t i = 0; i < nsymbols; ++i) {
+      Cons_sp ccsymbols = csymbols.as<Cons_O>();
+      cells->vset(i, ccsymbols->car().as<Symbol_O>()->ensureVariableCell());
+      csymbols = ccsymbols->cdr();
+    }
+  } else { // FCGE
+    for (size_t i = 0; i < nsymbols; ++i) {
+      Cons_sp ccsymbols = csymbols.as<Cons_O>();
+      Symbol_sp sym = ccsymbols->car().as<Symbol_O>();
+      T_sp rcell = eval::funcall(_sym_fcge_ensure_vcell, env, sym);
+      VariableCell_sp cell = rcell.as<VariableCell_O>();
+      cells->vset(i, cell);
+      csymbols = ccsymbols->cdr();
+    }
+  }
+  return cells;
+}
+
+// Given a vector of variable cells as returned from resolve_progv_symbols,
+// another vector of the same length, and a putative list of new values as passed
+// to PROGV, set the values of all the symbols and mutate the other vector to contain
+// the old values.
+void progv_set_values(SimpleVector_sp cells, SimpleVector_sp oldvals, List_sp values) {
+  size_t ncells = cells->length();
+  // We gather the new values (and unbounds) in a VLA before binding anything.
+  // This is so that we can signal any errors before actually doing any binding,
+  // so we don't need to worry about needing to undo halfway done bindings.
+  T_sp newvals[ncells];
+  {
+    List_sp cvals = values;
+    for (size_t i = 0; i < ncells; ++i) {
+        // Install the cells and old values in the progv dynenv.
+      VariableCell_sp cell = cells->vref(i).as<VariableCell_O>();
+      T_sp oldval = my_thread->_Bindings.thread_local_value(cell->ensureBindingIndex());
+      oldvals->vset(i, oldval);
+        // Set the new value of each cell.
+      if (cvals.nilp())
+          // All out of values, so make unbound.
+        newvals[i] = unbound<T_O>();
+      else if (cvals.consp()) {
+        newvals[i] = cvals.as_unsafe<Cons_O>()->car();
+        cvals = cvals.as_unsafe<Cons_O>()->cdr();
+      }
+      else TYPE_ERROR(cvals, cl::_sym_list);
+    }
+  }
+  // Now bind all the new values.
+  for (size_t i = 0; i < ncells; ++i)
+    cells->vref(i).as_unsafe<VariableCell_O>()->bind(newvals[i]);
+}
+
 }; // namespace core

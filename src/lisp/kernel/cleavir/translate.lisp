@@ -725,6 +725,31 @@ function-or-placeholder - the llvm function or a placeholder for
   (declare (ignore tmv))
   (apply #'unbind-special (dynenv-storage dynenv)))
 
+(defmethod translate-terminator ((instruction bir:progvi) abi next)
+  (declare (ignore abi))
+  (let* ((inputs (bir:inputs instruction))
+         (syms (in (first inputs)))
+         (newvals (in (second inputs)))
+         (cells (%intrinsic-invoke-if-landing-pad-or-call
+                 "cc_progvResolveSymbols" (list (%nil) syms) "progv-cells"))
+         (oldvals (%intrinsic-invoke-if-landing-pad-or-call
+                   "cc_progvSetValues" (list cells newvals) "progv-oldvals"))
+         (pde-cons-mem (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
+                                                      :label "progv-dynenv-cons"))
+         (pde-mem (cmp:alloca-i8 cmp:+progv-dynenv-size+ :alignment cmp:+alignment+
+                                                         :label "progv-dynenv-mem"))
+         (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil)))
+    (%intrinsic-call "cc_initializeAndPushProgvDynenv"
+                     (list pde-mem pde-cons-mem cells oldvals))
+    (setf (dynenv-storage instruction) (list cells oldvals old-de-stack))
+    (cmp:irc-br (first next))))
+
+(defmethod undo-dynenv ((dynenv bir:progvi) tmv)
+  (declare (ignore tmv))
+  (destructuring-bind (cells oldvals oldstack) (dynenv-storage dynenv)
+    (%intrinsic-call "cc_progvUnbind" (list cells oldvals))
+    (%intrinsic-call "cc_set_dynenv_stack" (list oldstack))))
+
 (defmethod translate-simple-instruction ((instruction bir:thei) abi)
   (declare (ignore abi))
   (out (in (bir:input instruction)) (bir:output instruction)))

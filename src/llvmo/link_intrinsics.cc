@@ -454,6 +454,19 @@ core::T_O* cc_initializeAndPushBindingDynenv(void* space, void* cspace, core::T_
   NO_UNWIND_END();
 }
 
+core::T_O* cc_initializeAndPushProgvDynenv(void* space, void* cspace, core::T_O* cells, core::T_O* oldvals) {
+  NO_UNWIND_BEGIN();
+  core::T_sp tcells((gc::Tagged)cells);
+  core::T_sp tvals((gc::Tagged)oldvals);
+  core::SimpleVector_sp vcells = tcells.as_assert<core::SimpleVector_O>();
+  core::SimpleVector_sp vvals = tvals.as_assert<core::SimpleVector_O>();
+  auto newde = InitObject<core::ProgvDynEnv_O>(space, vcells, vvals);
+  auto newstack = InitObject<core::Cons_O>(cspace, newde, my_thread->dynEnvStackGet());
+  my_thread->dynEnvStackSet(newstack);
+  return newde.raw_();
+  NO_UNWIND_END();
+}
+
 core::T_O* cc_initializeAndPushCatchDynenv(void* space, void* cspace, jmp_buf* target, core::T_O* tag) {
   NO_UNWIND_BEGIN();
   core::T_sp ttag((gc::Tagged)tag);
@@ -461,6 +474,36 @@ core::T_O* cc_initializeAndPushCatchDynenv(void* space, void* cspace, jmp_buf* t
   auto newstack = InitObject<core::Cons_O>(cspace, newde, my_thread->dynEnvStackGet());
   my_thread->dynEnvStackSet(newstack);
   return newde.raw_();
+  NO_UNWIND_END();
+}
+
+// FIXME: The vectors ought to be stack-allocated. (it's progv, so low priority)
+T_O* cc_progvResolveSymbols(T_O* env, T_O* symbols) {
+  T_sp tenv((gc::Tagged)env);
+  T_sp tsyms((gc::Tagged)symbols);
+  T_sp vec = resolve_progv_symbols((List_sp)tsyms, tenv);
+  return vec.raw_();
+}
+
+T_O* cc_progvSetValues(T_O* cells, T_O* newvals) {
+  T_sp tcells((gc::Tagged)cells);
+  SimpleVector_sp rcells = tcells.as_assert<SimpleVector_O>();
+  SimpleVector_sp oldvals = SimpleVector_O::make(rcells->length());
+  T_sp tnewvals((gc::Tagged)newvals);
+  progv_set_values(rcells, oldvals, (List_sp)tnewvals);
+  return oldvals.raw_();
+}
+
+void cc_progvUnbind(T_O* cells, T_O* oldvals) {
+  NO_UNWIND_BEGIN();
+  T_sp tcells((gc::Tagged)cells);
+  T_sp toldvals((gc::Tagged)oldvals);
+  SimpleVector_sp rcells = tcells.as_assert<SimpleVector_O>();
+  SimpleVector_sp roldvals = toldvals.as_assert<SimpleVector_O>();
+  for (size_t i = 0; i < rcells->length(); ++i) {
+    VariableCell_sp cell = rcells->vref(i).as_assert<VariableCell_O>();
+    cell->unbind(roldvals->vref(i));
+  }
   NO_UNWIND_END();
 }
 
