@@ -4,15 +4,6 @@
 
 (export 'llvm-inline)
 
-;;; PROGV
-
-(defmacro progv (symbols values &body forms)
-  `(core:progv-function ,symbols ,values
-                        (lambda ()
-                          (declare (core:lambda-name core::progv-lambda))
-                          (progn ,@forms))))
-;;; progv-env defined in compile-file, since that's where we use it
-
 ;;; CORE::VECTOR-LENGTH
 
 (defun gen-vector-length-untagged (vector)
