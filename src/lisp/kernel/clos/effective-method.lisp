@@ -48,8 +48,9 @@
 
 (defun emf-maybe-compile (form)
   (if *avoid-compiling*
-      (let ((cmp:*cleavir-compile-hook* nil))
-        (declare (special cmp:*cleavir-compile-hook*))
+      (let ((cmp:*cleavir-compile-hook* nil)
+            (cmp:*btb-compile-hook* nil))
+        (declare (special cmp:*cleavir-compile-hook* cmp:*btb-compile-hook*))
         (compile nil form))
       (let ((*avoid-compiling* t))
         (compile nil form))))
