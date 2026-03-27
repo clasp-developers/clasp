@@ -420,7 +420,7 @@
            (ourid (%size_t our-index))
            (go-index (cmp:irc-typed-load cmp:%go-index% *go-index.slot*))
            (cmp (cmp:irc-icmp-eq go-index ourid))
-           (phi (bir:output dynenv))
+           (phi (first (bir:outputs dynenv)))
            (dest-block (gethash (second (bir:next dynenv)) tags))
            (restore-block
              (if (or (null phi) (null (cc-bmir:rtype phi)))

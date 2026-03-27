@@ -1178,15 +1178,13 @@
     (compile-catch inserter context target)))
 
 (defun compile-catch (inserter context target)
+  (declare (ignore target))
   (let ((during (build:make-iblock inserter :name '#:catch))
-        ;; grab before delay-block so that block doesn't see this on the stack.
-        (tag (stack-pop context))
-        (alt (delay-block inserter context target
-                          :name '#:caught :receiving -1)))
+        (tag (stack-pop context)))
+    ;; output and second NEXT are established by bytecode-ast-block.
     (build:terminate inserter 'bir:catchi
-                     :inputs (list tag)
-                     :outputs (list (first (bir:inputs alt)))
-                     :next (list during alt))
+                     :inputs (list tag) :outputs nil
+                     :next (list during))
     (build:begin inserter during)))
 
 (defmethod compile-instruction ((mnemonic (eql :throw))
@@ -1518,12 +1516,19 @@
            (end (core:bytecode-debug-info/end annot))
            (dynenv (bir:dynamic-environment inserter))
            (catchp (and (eq name 'cl:catch) (typep dynenv 'bir:catchi)))
-           (freceiving (if (or (= receiving 1) catchp) -1 receiving))
-           (block-de (if catchp (bir:parent dynenv) dynenv)))
-      (delay-block inserter context end
-                   :name (symbolicate name '#:-after)
-                   :dynamic-environment block-de
-                   :receiving freceiving)
+           (freceiving (if (= receiving 1) -1 receiving))
+           (block-de (if catchp (bir:parent dynenv) dynenv))
+           (block (delay-block inserter context end
+                               :name (symbolicate name '#:-after)
+                               :dynamic-environment block-de
+                               :receiving freceiving)))
+      (when catchp
+        (assert (= 1 (length (bir:next dynenv))))
+        (push block (rest (bir:next dynenv)))
+        (set:nadjoinf (bir:predecessors block) (bir:iblock dynenv))
+        (assert (zerop (length (bir:outputs dynenv))))
+        (unless (zerop receiving)
+        (setf (bir:outputs dynenv) (list (first (bir:inputs block))))))
       ;; this and FRECEIVING are to take care of the ugly code we generate
       ;; when a block is in a one-value context. See bytecode_compiler.cc.
       ;; Basically, we have entry -> [body] -> jump normal; exit: push; normal:
