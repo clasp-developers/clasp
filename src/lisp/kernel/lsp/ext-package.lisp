@@ -125,8 +125,9 @@
           start-autocompilation
           stop-autocompilation
           deoptimize reoptimize
-          ;; Macro parsing & acccess
+          ;; Macro parsing & access
           parse-deftype type-expander typexpand-1 typexpand
+          setf-expander
           ;; C++ iterators
           do-c++-iterator map-c++-iterator
           ;; Misc

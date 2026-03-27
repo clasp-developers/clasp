@@ -647,7 +647,7 @@ function-or-placeholder - the llvm function or a placeholder for
     (setf (dynenv-storage instruction) old-de-stack)
     (let* ((sj (%intrinsic-call "_setjmp" (list bufp)))
            (cmp (cmp:irc-icmp-eq sj (%i32 0)))
-           (phi (bir:output instruction))
+           (phi (first (bir:outputs instruction)))
            (restore-block (if (or (null phi) (null (cc-bmir:rtype phi)))
                               (second next)
                               (cmp:irc-basic-block-create "catch-restore-values"))))

@@ -634,7 +634,7 @@
   ;; So we have to goofily recreate maybe-cast-after.
   ;; Actually replacing a PHI is rather fraught, so instead we force its rtype to be
   ;; :multiple-values, and just create a new output casting it.
-  (let* ((phi (bir:output instruction))
+  (let* ((phi (first (bir:outputs instruction)))
          (rtype (if phi (cc-bmir:rtype phi) ()))
          (ib (second (bir:next instruction))))
     (unless (or (equal rtype :multiple-values) (null rtype))
