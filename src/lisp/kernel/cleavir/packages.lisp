@@ -5,9 +5,7 @@
   (:nicknames #:clasp-cleavir-translate-bir)
   (:local-nicknames (#:bir #:cleavir-bir)
                     (#:bir-transformations #:cleavir-bir-transformations)
-                    (#:ast #:cleavir-ast)
                     (#:ctype #:cleavir-ctype)
-                    (#:cst-to-ast #:cleavir-cst-to-ast)
                     (#:build #:cleavir-bir-builder)
                     (#:env #:cleavir-env)
                     (#:policy #:cleavir-compilation-policy))
@@ -32,11 +30,9 @@
    #:finalize-unwind-and-landing-pad-instructions
    #:cleavir-compile
    #:cleavir-compile-file
-   #:*function-inline-asts*
    #:*clasp-env*
    #:*clasp-system*
    #:alloca-i8
-   #:inline-ast
    )
   (:export #:primop-rtype-info)
   ;; for ext:describe-compiler-policy, CL compiler macros
@@ -48,27 +44,10 @@
   (ext:add-implementation-package '("CLASP-CLEAVIR") "EXT")
   (ext:add-implementation-package '("CLASP-CLEAVIR") "CL"))
 
-(defpackage #:clasp-cleavir-ast
-  (:nicknames #:cc-ast)
-  (:local-nicknames (#:ast #:cleavir-ast))
-  (:use #:common-lisp)
-  (:export
-   #:foreign-call-ast
-   #:foreign-call-pointer-ast
-   #:argument-asts
-   #:foreign-types
-   #:make-throw-ast
-   #:throw-ast
-   #:result-ast
-   #:tag-ast
-   #:datum-id
-   ))
-
 (defpackage #:clasp-cleavir-bir
   (:use #:cl)
   (:nicknames #:cc-bir)
   (:local-nicknames (#:bir #:cleavir-bir)
-                    (#:ast-to-bir #:cleavir-ast-to-bir)
                     (#:build #:cleavir-bir-builder))
   (:export #:header-stamp-case
            #:foreign-call-pointer #:foreign-types
@@ -119,3 +98,16 @@
   (:export #:values-list #:nth #:nthcdr #:last #:butlast #:nendp #:length)
   (:export #:maybe-transform-module)
   (:export #:vaslistablep))
+
+(defpackage #:clasp-bytecode-to-bir
+  (:use #:cl)
+  (:local-nicknames (#:bir #:cleavir-bir)
+                    (#:set #:cleavir-set)
+                    (#:ctype #:cleavir-ctype)
+                    (#:env #:cleavir-env)
+                    (#:policy #:cleavir-compilation-policy)
+                    (#:build #:cleavir-bir-builder))
+  (:export #:compile-module #:compile-function #:compile-hook)
+  (:export #:compile-cmodule
+           #:nmodule-code #:nmodule-literals #:nmodule-fmap)
+  (:export #:compile-lambda-into-module))

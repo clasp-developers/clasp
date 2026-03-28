@@ -69,8 +69,7 @@
        :expander (macro-function function-name)
        :compiler-macro (compiler-macro-function function-name)))
     ((fboundp function-name)
-     (let* ((cleavir-ast (clasp-cleavir:inline-ast function-name))
-            (inline-status (clasp-cleavir::global-inline-status function-name))
+     (let* ((inline-status (clasp-cleavir::global-inline-status function-name))
             (flags (gethash function-name clasp-cleavir::*fn-flags*))
             (transforms (gethash function-name clasp-cleavir::*fn-transforms*))
             (derivers (gethash function-name clasp-cleavir::*derivers*))
@@ -90,7 +89,6 @@
          :type (clasp-cleavir::global-ftype function-name)
          :compiler-macro (compiler-macro-function function-name)
          :inline inline-status
-         :inline-data cleavir-ast
          #+(or):attributes #+(or) attributes)))
     ;; A top-level defun for the function has been seen.
     ;; The expansion calls cmp::register-global-function-def at compile time,
@@ -100,8 +98,7 @@
        :name function-name
        :type (clasp-cleavir::global-ftype function-name)
        :compiler-macro (compiler-macro-function function-name)
-       :inline (clasp-cleavir::global-inline-status function-name)
-       :inline-data (clasp-cleavir:inline-ast function-name)))
+       :inline (clasp-cleavir::global-inline-status function-name)))
     (t nil)))
 
 (defmethod trucler:describe-function ((client client) (env null) symbol)

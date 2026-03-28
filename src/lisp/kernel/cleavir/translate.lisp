@@ -2136,84 +2136,6 @@ function-or-placeholder - the llvm function or a placeholder for
     (cmp::potentially-save-module)
     (xep-function (find-llvm-function-info bir))))
 
-(defun conversion-error-handler (condition)
-  ;; Resignal the condition to see if anything higher up wants to handle it.
-  ;; If not, continue compilation by replacing the errant form with a form
-  ;; that will signal an error if it's reached at runtime.
-  ;; The nature of this form is a bit tricky because it can't just include
-  ;; the original condition, if we're in COMPILE-FILE - conditions aren't
-  ;; necessarily dumpable, and nor is the source.
-  ;; For now we just assume we're in COMPILE-FILE.
-  (signal condition)
-  (let* ((cst (cst-to-ast:cst condition))
-         (form (cst:raw cst))
-         (origin (origin-source cst)))
-    (invoke-restart 'cst-to-ast:substitute-cst
-                    (cst:reconstruct
-                     clasp-cleavir:*clasp-system*
-                     `(error 'cmp:compiled-program-error
-                             :form ,(with-standard-io-syntax
-                                      (write-to-string form
-                                                       :escape t :pretty t
-                                                       :circle t :array nil))
-                             :origin ',(origin-spi origin)
-                             :condition ,(princ-to-string condition))
-                     cst :default-source origin))))
-
-(defun cst->ast (cst &optional (env *clasp-env*))
-  "Compile a cst into an AST and return it.
-Does not hoist.
-COMPILE might call this with an environment in ENV.
-COMPILE-FILE will use the default *clasp-env*."
-  (let (;; used by compute-inline-ast (inline-prep.lisp) to get detailed
-        ;; source info for inline function bodies.
-        (*compiling-cst* cst))
-    (declare (special *compiling-cst*))
-    (handler-bind
-        ((cst-to-ast:no-variable-info
-           (lambda (condition)
-             (cmp:warn-undefined-global-variable
-              (origin-spi (cmp:compiler-condition-origin condition))
-              (cst-to-ast:name condition))
-             (invoke-restart 'cst-to-ast:consider-special)))
-         (cst-to-ast:no-function-info
-           (lambda (condition)
-             (cmp:register-global-function-ref
-              (cst-to-ast:name condition)
-              (origin-spi (cmp:compiler-condition-origin condition)))
-             (invoke-restart 'cst-to-ast:consider-global)))
-         (cst-to-ast:compiler-macro-expansion-error
-           (lambda (condition)
-             (warn 'cmp:compiler-macro-expansion-error-warning
-                   :origin (origin-spi
-                            (cmp:compiler-condition-origin condition))
-                   :condition condition)
-             (continue condition)))
-         ((and cst-to-ast:compilation-program-error
-               ;; If something goes wrong evaluating an eval-when,
-               ;; we just want a normal error signal-
-               ;; we can't recover and keep compiling.
-               (not cst-to-ast:eval-error))
-           #'conversion-error-handler))
-      (cst-to-ast:cst-to-ast cst env clasp-cleavir:*clasp-system*))))
-
-;;; Given an AST that may not be a function-ast, wrap it
-;;; in a function AST. Useful for the pattern of
-;;; (eval form) = (funcall (compile nil `(lambda () ,form)))
-;;; as this essentially does the lambda wrap.
-(defun wrap-ast (ast)
-  (ast:make-function-ast
-   ast nil
-   :origin (ast:origin ast)
-   :policy (ast:policy ast)))
-
-(defun ast->bir (ast system)
-  (let* ((bir (cleavir-ast-to-bir:compile-toplevel ast system))
-         (module (bir:module bir)))
-    (bir-transformations module system)
-    (bir:verify module)
-    bir))
-
 ;;; These variables can be bound to debug the bir transformations.
 ;;; T means they apply after every transformation. Or, you can bind
 ;;; them to a list (of the keys in bir-transformations below), in
@@ -2265,18 +2187,6 @@ COMPILE-FILE will use the default *clasp-env*."
   (cc-bir-to-bmir:insert-casts-into-module module)
   (maybe-debug-transformation module :final)
   (values))
-
-(defun translate-ast (ast &key (abi *abi-x86-64*)
-                               (system *clasp-system*))
-  (let ((bir (ast->bir ast system)))
-    (translate bir :abi abi)))
-
-(defun bir-compile (form env)
-  (bir-compile-cst (cst:cst-from-expression form) env))
-
-(defun cleavir-compile (name &optional definition)
-  (let ((cmp:*cleavir-compile-hook* #'bir-compile))
-    (compile name definition)))
 
 ;;; Given a BIR module, compile an LLVM module and return four values
 ;;; needed to JIT or otherwise use it:
@@ -2406,20 +2316,6 @@ COMPILE-FILE will use the default *clasp-env*."
     caller))
 
 (defun make-foreign-caller (signature)
-  (let (;; KLUDGE: We use this variable to decide how to dump literals.
-        (cst-to-ast:*compiler* 'cl:compile)
-        (bir (make-foreign-caller-ir signature)))
+  (let ((bir (make-foreign-caller-ir signature)))
     (bir-transformations (bir:module bir) *clasp-system*)
     (bir->function bir)))
-
-(defun bir-compile-cst (cst env)
-  (let* ((cst-to-ast:*compiler* 'cl:compile)
-         (ast (cst->ast cst env))
-         (bir (ast->bir ast *clasp-system*)))
-    (bir->function bir)))
-
-(defun compile-form (form &optional (env *clasp-env*))
-  (let* ((cst (cst:cst-from-expression form))
-         (pre-ast (cst->ast cst env))
-         (ast (wrap-ast pre-ast)))
-    (translate-ast ast)))

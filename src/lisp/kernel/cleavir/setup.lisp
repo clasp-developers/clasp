@@ -132,8 +132,6 @@
   (define-function-flags map :dyn-call :dx-call)
   (define-function-flags map-into :dyn-call :dx-call)
   (define-function-flags merge :dyn-call :dx-call)
-  (define-function-flags ast:map-ast-depth-first-preorder :dyn-call
-    :dx-call)
   (define-function-flags bir:map-iblocks :dyn-call :dx-call)
   (define-function-flags bir:map-iblock-instructions :dyn-call :dx-call)
   ;; Can't do DYN-CALL for most sequence functions, as ext sequence
@@ -190,25 +188,6 @@
     ((eq (symbol-package name) (find-package :cleavir-primop)) t)
     (t nil)))
 
-;;; Store inline ASTs in the environment, keyed to their name.
-;;; FIXME: Fix sysprops for setf names
-(defun inline-ast (name)
-  (core:get-sysprop name 'inline-ast))
-(defun (setf inline-ast) (ast name)
-  (setf (core:get-sysprop name 'inline-ast) ast))
-
-;;; So that we can dump ASTs (for DEFUNs with an inline expansion)
-(defmethod make-load-form ((ast cleavir-ast:ast) &optional environment)
-  (declare (ignore environment))
-  (values `(allocate-instance ,(class-of ast))
-          `(initialize-instance
-            ,ast
-            ,@(loop for (keyword reader)
-                      in (cleavir-io:save-info ast)
-                    for value = (funcall reader ast)
-                    collect `(quote ,keyword)
-                    collect `(quote ,value)))))
-
 (defmethod make-load-form ((cst cst:cst) &optional environment)
   (make-load-form-saving-slots cst :environment environment))
 
@@ -250,15 +229,13 @@
        :expander (macro-function function-name)
        :compiler-macro (compiler-macro-function function-name)))
     ((fboundp function-name)
-     (let* ((cleavir-ast (inline-ast function-name))
-            (inline-status (global-inline-status function-name))
+     (let* ((inline-status (global-inline-status function-name))
             (attributes (function-attributes function-name)))
        (make-instance 'env:global-function-info
          :name function-name
          :type (global-ftype function-name)
          :compiler-macro (compiler-macro-function function-name)
          :inline inline-status
-         :ast cleavir-ast
          :attributes attributes)))
     ;; A top-level defun for the function has been seen.
     ;; The expansion calls cmp::register-global-function-def at compile time,
@@ -268,8 +245,7 @@
        :name function-name
        :type (global-ftype function-name)
        :compiler-macro (compiler-macro-function function-name)
-       :inline (global-inline-status function-name)
-       :ast (inline-ast function-name)))
+       :inline (global-inline-status function-name)))
     ( ;; If it is neither of the cases above, then this name does
      ;; not have any function-info associated with it.
      t

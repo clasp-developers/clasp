@@ -2,60 +2,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Define a "macro" for the Cleavir compiler.
-;;; This shouldn't be necessary, but I'd like to
-;;; avoid overwriting any bclasp definitions.
-;;; Don't use &environment or &whole.
-
-(defmacro def-convert-macro (name lambda-list &body body)
-  (let ((head (gensym "HEAD"))
-        (cst (gensym "CST"))
-        (environment (gensym "ENVIRONMENT"))
-        (system (gensym "SYSTEM")))
-    `(defmethod cst-to-ast:convert-special
-         ((,head (eql ',name)) ,cst ,environment (,system clasp-cleavir:clasp))
-       (cst-to-ast:convert
-        (destructuring-bind ,lambda-list (cst:raw (cst:rest ,cst))
-          (cst:reconstruct ,system (progn ,@body) ,cst))
-        ,environment ,system))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Define how to convert a special form that's "functionlike".
-;;; This means it evaluates all its arguments normally, and
-;;; left to right.
-;;; NAME is the operator. AST is the name of the AST class.
-;;; INITARGS is a list of initargs to make-instance that class.
-
-(defmacro define-functionlike-special-form (name ast (&rest initargs))
-  (let ((syms (loop for i in initargs collect (gensym (symbol-name i)))))
-    `(defmethod cst-to-ast:convert-special
-         ((head (eql ',name)) cst env (system clasp-cleavir:clasp))
-       (cst:db origin (op ,@syms) cst
-               (declare (ignore op))
-               (make-instance
-                   ',ast
-                 ,@(loop for i in initargs
-                         for s in syms
-                         collect i
-                         collect `(cst-to-ast:convert ,s env system))
-                 :origin cst)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Converting MULTIPLE-VALUE-CALL.
-;;;
-
-(def-convert-macro multiple-value-call (function-form &rest forms)
-  (let ((cf `(core:coerce-called-fdesignator ,function-form)))
-    (case (length forms)
-      (0
-       `(cleavir-primop:funcall ,cf))
-      (t
-       `(cleavir-primop:multiple-value-call ,cf ,@forms)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Dealing with type checks.
 
 ;;; Convert a type spec to something acceptable to typep.
@@ -161,21 +107,6 @@
       ((:the :return)
        (make-general-type-check-fun ctype system)))))
 
-(defun unreachability-error (ast origin policy env system)
-  ;; FIXME: Better error (condition type at least)
-  (ast:make-progn-ast
-   (list ast
-         (cst-to-ast:convert
-          (cst:cst-from-expression
-           '(locally
-             ;; Avoid recursion
-             (declare (optimize (type-check-ftype-return-values 0)))
-             (error "Unreachable"))
-           :source origin)
-          env system)
-         (ast:make-unreachable-ast :origin origin :policy policy))
-   :origin origin :policy policy))
-
 (defun values-top-p (ctype system)
   (and (null (ctype:values-required ctype system))
        (loop for ct in (ctype:values-optional ctype system)
@@ -194,119 +125,15 @@
      ((:argument) 'type-check-ftype-arguments)
      ((:return) 'type-check-ftype-return-values))))
 
-(defmethod cst-to-ast:type-wrap
-    (ast ctype context origin env (system clasp-cleavir:clasp))
-  (let ((sv-ctype-p (member context '(:variable :argument :setq))))
-    (if (if sv-ctype-p
-            (ctype:top-p ctype system)
-            (values-top-p ctype system))
-        ;; The type is too boring to note under any policy.
-        ast
-        ;; Do something.
-        (let* ((policy (env:policy (env:optimize-info system env)))
-               (insert-type-checks
-                 (insert-type-checks-level policy context))
-               (vctype (ecase context
-                         ((:the :return) ctype)
-                         ((:variable) (ctype:single-value ctype system))
-                         ((:argument :setq) (ctype:coerce-to-values ctype system))))
-               (botp (if sv-ctype-p
-                         (ctype:bottom-p ctype system)
-                         (values-bottom-p ctype system))))
-          (ecase insert-type-checks
-            ((0) ; trust without checking. Unsafe! 
-             (if botp
-                 ;; Type is bottom, so rather than THE, mark unreachable.
-                 (ast:make-progn-ast
-                  (list ast (cleavir-ast:make-unreachable-ast
-                             :origin origin :policy policy))
-                  :origin origin :policy policy)
-                 ;; Trusted THE
-                 (ast:make-the-ast ast vctype :trusted :origin origin :policy policy)))
-            ((1) ; note but don't use, i.e. make an untrusted+unchecked THE.
-             (ast:make-the-ast ast vctype nil :origin origin :policy policy))
-            ((2 3) ; Check
-             (if botp
-                 ;; This is unreachable, so insert an error.
-                 (unreachability-error ast origin policy env system)
-                 ;; Type check
-                 (ast:make-the-ast ast vctype
-                                   (cst-to-ast:convert
-                                    (cst:cst-from-expression
-                                     (make-type-check-fun context ctype system)
-                                     :source origin)
-                                    env system)
-                                   :origin origin :policy policy))))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Converting CORE:foreign-call-pointer
-;;;
-;;; This is converted into a pointer call
-;;;
-
-(defmethod cst-to-ast:convert-special
-    ((symbol (eql 'core:foreign-call-pointer)) cst environment (system clasp-cleavir:clasp))
-  (assert (listp (cst:raw (cst:second cst))))
-  (make-instance 'clasp-cleavir-ast:foreign-call-pointer-ast
-    :foreign-types (cst:raw (cst:second cst))
-    :argument-asts (cst-to-ast::convert-sequence (cst:rest (cst:rest cst)) environment system)
-    :origin cst))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Converting core::local-tagbody to tagbody
-;;;        and core::local-block to block
-;;;
-
-(defmethod cst-to-ast:convert-special
-    ((symbol (eql 'core::local-tagbody)) cst environment
-     (system clasp-cleavir:clasp))
-  (cst-to-ast:convert-special 'tagbody cst environment system))
-
-(defmethod cst-to-ast:convert-special
-    ((symbol (eql 'core::local-block)) cst environment
-     (system clasp-cleavir:clasp))
-  (cst-to-ast:convert-special 'block cst environment system))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Converting THROW
-;;;
-;;; Convert throw into a call
-
-(defmethod cst-to-ast:convert-special
-    ((symbol (eql 'cl:throw)) cst environment (system clasp-cleavir:clasp))
-  (cst:db origin (tag result-cst) 
-      (cst:rest cst)
-    ;; If I don't use a throw-ast node use the following
-    #+(or)
-    (cst-to-ast::convert `(core:throw-function ,tag ,result-cst) environment system)
-    ;; If I decide to go with a throw-ast node use the following
-    (clasp-cleavir-ast:make-throw-ast
-     (cst-to-ast:convert tag environment system)
-     (cst-to-ast:convert result-cst environment system)
-     cst)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Converting CORE:INSTANCE-REF
-;;;
-;;; FIXME: Maybe just use the primops instead.
-;;; FIXME: Is this code even relevant any more? If it is, update for
-;;; (setf si:instance-ref).
-
-(defmethod cst-to-ast:convert-special
-    ((symbol (eql 'core:instance-ref)) cst environment
-     (system clasp-cleavir:clasp))
-  (cst-to-ast:convert-special 'cleavir-primop:slot-read cst environment system))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Enhance source locations.
 
 ;;; Called by ext::special-operator-source-locations in source-location.lisp
 (defun special-operator-source-locations (name)
+  (declare (ignore name))
+  nil ; FIXME
+  #+(or)
   ;; We check for explicit specialization rather than using
   ;; compute-applicable-methods so that general around methods etc. are not
   ;; included; they're not really germane to the particular operator.

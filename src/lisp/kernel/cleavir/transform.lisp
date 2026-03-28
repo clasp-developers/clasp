@@ -45,12 +45,12 @@
                   ctype *clasp-system*))
 
 (defun lambda->birfun (module lambda-expression-cst)
-  (let* (;; FIXME: We should be harsher with errors than cst->ast is here,
-         ;; since deftransforms are part of the compiler, and not the
-         ;; user's fault.
-         (ast (cst->ast lambda-expression-cst))
-         (bir (cleavir-ast-to-bir:compile-into-module ast module
-                                                      *clasp-system*)))
+  (let (;; FIXME: We should be harsher with errors here,
+        ;; since deftransforms are part of the compiler, and not the
+        ;; user's fault.
+        ;; FIXME: Use source info in the CST.
+        (bir (clasp-bytecode-to-bir:compile-lambda-into-module
+              module (cst:raw lambda-expression-cst))))
     ;; Run the first few transformations.
     ;; FIXME: Use a pass manager/reoptimize flags/something smarter.
     (bir-transformations:eliminate-come-froms bir)

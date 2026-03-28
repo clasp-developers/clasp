@@ -88,6 +88,7 @@ Clasp reports IGNORE declarations on local functions analogously to variables."
   env)
 
 (defun augment-environment-with-symbol-macros (env smdefs)
+  (declare (ignore smdefs)) #+(or) ; FIXME
   (loop for (name expansion) in smdefs
         ;; Make sure we're not doing an illegal shadow.
         for info = (env:variable-info clasp-cleavir:*clasp-system*
@@ -238,6 +239,7 @@ Clasp reports IGNORE declarations on local functions analogously to variables."
                                'env:special-variable-info)
                   (setf env (env:add-special-variable env name)))))
       ((optimize)
+       #+(or) ; FIXME
        (setf env (cleavir-cst-to-ast::augment-environment-with-optimize
                   data env clasp-cleavir:*clasp-system*))))))
 

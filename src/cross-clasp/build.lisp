@@ -39,7 +39,7 @@
         ;; The build compiles a _lot_ of macroexpanders, mostly for CLOS,
         ;; and constructing CSTs for their bodies takes positively
         ;; stupid amounts of time. FIXME?
-        #+clasp(compiler:*cleavir-compile-hook* nil))
+        #+clasp(compiler:*btb-compile-hook* nil))
     (handler-bind
         (;; SBCL's script processor muffles style warnings, which is
          ;; pretty unfortunate for us, so print them ourselves here.
