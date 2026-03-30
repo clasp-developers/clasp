@@ -11,8 +11,7 @@
                #:cleavir-bir-builder ; for compile-bytecode
                #:cleavir-stealth-mixins
                #:concrete-syntax-tree
-               #:eclector
-               #:eclector-concrete-syntax-tree)
+               #:eclector)
   :serial t
   :components ((:file "packages")
                (:file "system")

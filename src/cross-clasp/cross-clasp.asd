@@ -1,7 +1,7 @@
 (asdf:defsystem #:cross-clasp
   :depends-on (:maclina :closer-mop :extrinsicl :extrinsicl/maclina :anatomicl
                         :alexandria :ecclesia :clostrum-basic
-               :trivial-package-local-nicknames :eclector-concrete-syntax-tree)
+               :trivial-package-local-nicknames :eclector)
   :components ((:file "packages")
                (:file "vm-clasp" :depends-on ("packages") :if-feature :clasp)
                (:file "trucler-clasp" :depends-on ("packages")

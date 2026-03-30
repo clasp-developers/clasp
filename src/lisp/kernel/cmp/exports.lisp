@@ -387,9 +387,7 @@
 (export '(builder build-fasl))
 
 ;;; Eclector
-(export '(*cst-client*
-          clasp-eclector-client-mixin
-          clasp-cst-client))
+(export '(clasp-eclector-client-mixin))
 
 ;;; bytecode
 (export '(*compile-file-native*))
