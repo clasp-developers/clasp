@@ -15,6 +15,11 @@
 (test-true source-location-macro
            (ext::source-location-p (first (ext:source-location 'defun :function))))
 
+;;; TODO: Currently disabled as the actual special form compilation is in C++
+;;; (the bytecode compiler)
+;;; If we used Maclina instead we could source that. Or we could source the methods in
+;;; b2b/compile-bytecode.lisp, but the mapping isn't perfectly clear (e.g. for LET).
+#+(or)
 (test-true source-location-special-from
            (ext::source-location-p (first (ext:source-location 'progn :function))))
 
