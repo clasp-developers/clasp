@@ -17,7 +17,6 @@
   :components ((:file "packages")
                (:file "system")
                (:file "policy")
-               (:file "reader")
                (:file "convert-special")
                (:file "setup")
                (:file "fold")

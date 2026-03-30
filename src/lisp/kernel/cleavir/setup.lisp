@@ -409,6 +409,11 @@
   (declare (ignore system))
   (core:interpret (cst:raw cst) (cleavir-env->bytecode env)))
 
+(defun origin-source (origin)
+  (loop while (typep origin 'cst:cst)
+        do (setf origin (cst:source origin)))
+  origin)
+
 (defmethod cmp:compiler-condition-origin
     ((condition cleavir-conditions:program-condition))
   ;; FIXME: ignore-errors is a bit paranoid
