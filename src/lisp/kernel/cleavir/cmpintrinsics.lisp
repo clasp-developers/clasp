@@ -516,6 +516,8 @@ Boehm and MPS use a single pointer"
 
 (define-symbol-macro %mv-limit% +multiple-values-limit+)
 (define-symbol-macro %mv-values-array% (llvm-sys:array-type-get %t*% %mv-limit%))
+
+;;; Matches MultipleValues (core/multipleValues.h)
 (define-symbol-macro %mv-struct%
     (cmp:with-thread-safe-context (context)
       (llvm-sys:struct-type-get context (list %size_t% %mv-values-array%) nil #|| is-packed ||#)))
@@ -524,7 +526,23 @@ Boehm and MPS use a single pointer"
     (cmp:with-thread-safe-context (context)
       (llvm-sys:struct-type-get context (list %mv-struct%) nil)))
 
-
+;;; Matches a prefix of ThreadLocalState (gctools/threadlocal.h.)
+;;; Not the whole thing because we don't need all of it, but stay tuned.
+(define-symbol-macro %thread-local-state%
+    (cmp:with-thread-safe-context (context)
+      (llvm-sys:struct-type-get
+       context
+       (list %t*% ; _Process
+             %t*% ; _DynEnvStackBottom
+             %t*% ; _UnwindDest
+             %size_t% ; _UnwindDestIndex
+             %size_t% ; _unwinds
+             %i8% ; _Breakstep
+             %void*% ; _BreakstepFrame
+             %mv-struct% ; _MultipleValues
+             )
+       nil)))
+(define-symbol-macro %thread-local-state*% (llvm-sys:type-get-pointer-to %thread-local-state%))
 
 #+(or)(progn
         (defvar +af+

@@ -225,8 +225,20 @@ struct VirtualMachine {
 };
 
 struct ThreadLocalState {
-
+  // Must match definition in cmpintrinsics.lisp.
   mp::Process_sp _Process;
+  // Stuff for SJLJ unwinding
+  List_sp _DynEnvStackBottom;
+  T_sp _UnwindDest;
+  size_t _UnwindDestIndex;
+  size_t _unwinds;
+  // Should we check for breaks?
+  bool _Breakstep;
+  // What frame are we stepping over? NULL means step-into mode.
+  void* _BreakstepFrame;
+  MultipleValues _MultipleValues;
+  // cmpintrinsics doesn't know about anything past this line.
+
   DynamicBindingStack _Bindings;
   std::atomic<core::Cons_sp> _PendingInterruptsHead;
   std::atomic<core::Cons_sp> _PendingInterruptsTail;
@@ -238,15 +250,6 @@ struct ThreadLocalState {
   List_sp _BufferStrWNsPool;
   StringOutputStream_sp _BFormatStringOutputStream;
   StringOutputStream_sp _WriteToStringOutputStream;
-  MultipleValues _MultipleValues;
-  size_t _unwinds;
-  bool _Breakstep; // Should we check for breaks?
-  // What frame are we stepping over? NULL means step-into mode.
-  void* _BreakstepFrame;
-  // Stuff for SJLJ unwinding
-  List_sp _DynEnvStackBottom;
-  T_sp _UnwindDest;
-  size_t _UnwindDestIndex;
   size_t _xorshf_x; // Marsaglia's xorshf generator
   size_t _xorshf_y;
   size_t _xorshf_z;
