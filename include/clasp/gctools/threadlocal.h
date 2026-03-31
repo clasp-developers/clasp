@@ -239,12 +239,7 @@ struct ThreadLocalState {
   StringOutputStream_sp _BFormatStringOutputStream;
   StringOutputStream_sp _WriteToStringOutputStream;
   MultipleValues _MultipleValues;
-  void* _sigaltstack_buffer;
   size_t _unwinds;
-  stack_t _original_stack;
-  std::string _initializer_symbol;
-  void* _object_file_start;
-  size_t _object_file_size;
   bool _Breakstep; // Should we check for breaks?
   // What frame are we stepping over? NULL means step-into mode.
   void* _BreakstepFrame;
@@ -257,7 +252,6 @@ struct ThreadLocalState {
   size_t _xorshf_z;
   uint64_t _BytesAllocated;
   uint64_t _Tid;
-  uintptr_t _BacktraceBasePointer;
   uint64_t _DtreeInterpreterCallCount;
   gctools::ThreadLocalStateLowLevel _LowLevel;
   VirtualMachine _VM;

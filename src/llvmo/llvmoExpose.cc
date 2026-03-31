@@ -4347,8 +4347,6 @@ void dump_objects_for_debugger(std::ostream& fout, std::string indent) {
 #if 0
   fprintf(fout,"%sInit_struct(\"llvmo::ObjectFileInfo\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(llvmo::ObjectFileInfo));
   python_dump_field(fout,"_objectID",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_objectID));
-  python_dump_field(fout,"_object_file_start",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_object_file_start));
-  python_dump_field(fout,"_object_file_size",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_object_file_size));
   python_dump_field(fout,"_stackmap_start",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_stackmap_start));
   python_dump_field(fout,"_stackmap_size",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_stackmap_size));
   python_dump_field(fout,"_next",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_next));
