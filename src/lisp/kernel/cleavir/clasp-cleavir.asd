@@ -3,25 +3,18 @@
   :version "0.0.1"
   :author "Christian Schafmeister <chris.schaf@verizon.net>"
   :licence "LGPL-3.0"
-  :depends-on (#:cleavir-ast-to-bir
-               #:cleavir-attributes
+  :depends-on (#:cleavir-attributes
                #:cleavir-bir
                #:cleavir-bir-transformations
                #:cleavir-compilation-policy
                #:cleavir-conditions
-               #:cleavir-cst-to-ast
                #:cleavir-bir-builder ; for compile-bytecode
                #:cleavir-stealth-mixins
-               #:concrete-syntax-tree
-               #:eclector
-               #:eclector-concrete-syntax-tree)
+               #:eclector)
   :serial t
   :components ((:file "packages")
                (:file "system")
                (:file "policy")
-               (:file "reader")
-               (:file "ast")
-               (:file "convert-form")
                (:file "convert-special")
                (:file "setup")
                (:file "fold")

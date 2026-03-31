@@ -368,8 +368,6 @@
 
 (defpackage #:cross-clasp.clasp.alexandria
   (:use #:cl))
-(defpackage #:cross-clasp.clasp.concrete-syntax-tree
-  (:use #:cl))
 (defpackage #:cross-clasp.clasp.ecclesia
   (:use #:cl))
 (defpackage #:cross-clasp.clasp.trivial-with-current-source-form
@@ -387,8 +385,7 @@
                     (#:gc #:cross-clasp.clasp.gctools)
                     (#:mp #:cross-clasp.clasp.mp)
                     (#:llvm-sys #:cross-clasp.clasp.llvm-sys)
-                    (#:ext #:cross-clasp.clasp.ext)
-                    (#:cst #:cross-clasp.clasp.concrete-syntax-tree))
+                    (#:ext #:cross-clasp.clasp.ext))
   (:shadow #:proclaim #:constantp)
   (:export #:client #:ct-client)
   (:export #:fill-environment)

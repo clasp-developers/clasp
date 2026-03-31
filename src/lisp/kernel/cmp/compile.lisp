@@ -2,12 +2,6 @@
 
 ;;;; Top-level interface: CL:COMPILE
 
-;; When Cleavir is installed set the value of *cleavir-compile-hook* to use it to compile forms
-;; It expects a function of one argument (lambda (form) ...) that will generate code in the
-;; current *module* for the form.  The lambda returns T if cleavir succeeded in compiling the form
-;; and nil otherwise
-(defvar *cleavir-compile-hook* nil)
-
 (defun compile-with-hook (compile-hook definition env)
   (with-compilation-unit ()
     (with-compilation-results ()
@@ -52,15 +46,10 @@
     ((and (consp definition) (eq (car definition) 'lambda))
      (with-compilation-unit ()
        (with-compilation-results ()
-         #+(or)
-         (let ((bc (cmp:bytecompile definition)))
+         (let ((bc (cmp:bytecompile definition environment)))
            (if (and (boundp '*btb-compile-hook*) *btb-compile-hook*)
-               (funcall *btb-compile-hook* bc nil)
-               bc))
-         #-(or)
-         (if *cleavir-compile-hook*
-             (funcall *cleavir-compile-hook* definition environment)
-             (bytecompile definition (coerce-to-lexenv environment))))))
+               (funcall *btb-compile-hook* bc environment)
+               bc)))))
     (t (error "COMPILE doesn't know how to handle ~a" definition))))
 
 (defun compile (name &optional definition)

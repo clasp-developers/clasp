@@ -138,7 +138,7 @@
              #~"kernel/clos/static-gfs/dependents.lisp"
              #~"kernel/clos/static-gfs/compiler-macros.lisp"
              ;; file compiler
-             :eclector-concrete-syntax-tree
+             :eclector
              #~"kernel/cmp/variables.lisp"
              #~"kernel/clos/make-load-form.lisp"
              #~"kernel/cmp/eclector.lisp"

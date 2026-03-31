@@ -196,7 +196,7 @@
                   (setf rt (mapcar #'max-vrtype rt inrt)))
                  ;; different value counts
                  (t (return :multiple-values)))))
-        (bir:catchi :multiple-values)))))
+        (bir:catchi (return :multiple-values))))))
 
 (defmethod definition-rtype ((var bir:variable))
   ;; The rtype of a variable can only be exactly zero or one values.

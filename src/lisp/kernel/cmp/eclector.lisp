@@ -3,20 +3,9 @@
 ;;; So that non-cst-client can inherit behaviour
 (defclass clasp-eclector-client-mixin ()())
 
-(defclass clasp-cst-client (eclector.concrete-syntax-tree:cst-client clasp-eclector-client-mixin) ())
-
-;; singleton- don't bother with constructor
-(defvar *cst-client*
-  (locally (declare (notinline make-instance))
-    (make-instance 'clasp-cst-client)))
-
 ;; Copy from build environment
 (defvar *additional-clasp-character-names* '#.*additional-clasp-character-names*)
 (defvar *mapping-char-code-to-char-names* '#.*mapping-char-code-to-char-names*)
-
-(defmethod eclector.base:source-position
-    ((client clasp-cst-client) stream)
-  (compile-file-source-pos-info stream))
 
 (defun simple-unicode-name (name)
   "If NAME is a string from \"U00\" to \"U10FFFF\", return the corresponding Unicode character."
@@ -28,7 +17,6 @@
       nil))
 
 (defmethod eclector.reader:find-character ((client clasp-eclector-client-mixin) name)
-  ;; This variable is defined in define-unicode-tables, which is loaded later.
   (declare (special *additional-clasp-character-names*))
   (or (call-next-method)
       (gethash name *additional-clasp-character-names*)
@@ -46,7 +34,10 @@
                 (string string-designator)
                 (symbol (symbol-name string-designator))
                 (character (string string-designator)))))
-    (eclector.reader:find-character *cst-client* name)))
+    ;; mimics FIND-CHARACTER method above.
+    (or (eclector.reader:find-character nil name) ; default method, for standard chars
+        (gethash name *additional-clasp-character-names*)
+        (simple-unicode-name name))))
 
 (defun cl:char-name (char)
   (or 
@@ -126,11 +117,8 @@
 (defvar core:*read-hook*)
 (defvar core:*read-preserving-whitespace-hook*)
 
-;;; to avoid eclector.parse-result::*stack* being unbound, when *client* is bound to a parse-result-client
-;;; Not sure whether this a a fortunate design in eclector
-
-(defclass clasp-non-cst-eclector-client (clasp-eclector-client-mixin) ())
-(defvar *clasp-normal-eclector-client* (make-instance 'clasp-non-cst-eclector-client))
+(defclass clasp-normal-eclector-client (clasp-eclector-client-mixin) ())
+(defvar *clasp-normal-eclector-client* (make-instance 'clasp-normal-eclector-client))
 
 (defclass clasp-tracking-eclector-client (clasp-eclector-client-mixin eclector.parse-result:parse-result-client) ())
 

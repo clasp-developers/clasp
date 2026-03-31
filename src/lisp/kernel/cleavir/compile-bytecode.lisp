@@ -1,15 +1,3 @@
-(defpackage #:clasp-bytecode-to-bir
-  (:use #:cl)
-  (:local-nicknames (#:bir #:cleavir-bir)
-                    (#:set #:cleavir-set)
-                    (#:ctype #:cleavir-ctype)
-                    (#:env #:cleavir-env)
-                    (#:policy #:cleavir-compilation-policy)
-                    (#:build #:cleavir-bir-builder))
-  (:export #:compile-module #:compile-function #:compile-hook)
-  (:export #:compile-cmodule
-           #:nmodule-code #:nmodule-literals #:nmodule-fmap))
-
 (in-package #:clasp-bytecode-to-bir)
 
 ;;; KLUDGE:
@@ -183,8 +171,7 @@
       (cleavir-bir-disassembler:display module))
     (clasp-cleavir::bir-transformations module system)
     (dissociate-inappropriate-closures (fmap funmap))
-    (let ((cleavir-cst-to-ast:*compiler* 'cl:compile)
-          ;; Ensure any closures have the same layout as original
+    (let (;; Ensure any closures have the same layout as original
           ;; bytecode closures, so the simple fun can be swapped
           ;; out transparently.
           (clasp-cleavir::*fixed-closures*
@@ -202,8 +189,7 @@
     (clasp-cleavir::bir-transformations irmodule system)
     (dissociate-inappropriate-closures (fmap funmap))
     (multiple-value-bind (function-infos constants ctable fvector)
-        (let ((cleavir-cst-to-ast:*compiler* 'cl:compile)
-              (clasp-cleavir::*fixed-closures*
+        (let ((clasp-cleavir::*fixed-closures*
                 (fixed-closures-map (fmap funmap))))                
           (clasp-cleavir::jit-bir irmodule :abi abi :pathname "repl-code"))
       ;; Install literals.
@@ -665,7 +651,7 @@
     (when (or (< nargs min) (and max (> nargs max)))
       (warn 'cmp:wrong-argcount-warning
             :given-nargs nargs :min-nargs min :max-nargs max
-            :origin (cst:source bir:*origin*))
+            :origin (car (origin-stack context)))
       (return-from type-wrap-arguments args))
     (loop for arg in args
           for ctype = (cond (req (pop req))
@@ -1585,10 +1571,10 @@
                         :type-check-function type-check-function)
           out))))
 
-;;; We compile a type check function into a bytecode cmodule, and then
+;;; We compile a function into a bytecode cmodule, and then
 ;;; compile that into our existing irmodule.
 ;;; We used to just cmp:bytecompile, i.e. make an actual runtime function,
-;;; but that has slight problems when the type check is made by the file
+;;; but that has slight problems when the function is made by the file
 ;;; compiler. For example, we had (find-class 'foo) compiler macroexpand
 ;;; into (... (load-time-value (core:find-class-holder 'foo)) ...). This
 ;;; load time value would then be evaluated at compile time, and the file
@@ -1597,14 +1583,10 @@
 ;;; Happily, everything works out with a cmodule even if we actually are doing
 ;;; runtime compilation (COMPILE or autocompilation) so we don't need to have
 ;;; a flag keeping track of that or any such crap.
-;;; TODO? Probably could cache this, at least for standard types.
-(defun bytecompile-type-check (which ctype sys irmod)
+;;; used for type checks and also for DEFTRANSFORM
+(defun compile-lambda-into-module (irmod lambda-expression)
   (let* ((bcmod (cmp:module/make))
-         (cfunction
-           (cmp:bytecompile-into bcmod
-                                 (clasp-cleavir::make-type-check-fun
-                                  which ctype sys)
-                                 *environment*)))
+         (cfunction (cmp:bytecompile-into bcmod lambda-expression *environment*)))
     (cmp:module/link bcmod)
     (let* ((bytecode (cmp:module/create-bytecode bcmod))
            (literals (cmp:module/literals bcmod))
@@ -1612,6 +1594,11 @@
            (cliterals (compute-compiled-literals literals irmod))
            (funmap (compile-bytecode-into bytecode info cliterals irmod)))
       (finfo-irfun (find-bcfun cfunction funmap)))))
+
+;;; TODO? Probably could cache this, at least for standard types.
+(defun bytecompile-type-check (which ctype sys irmod)
+  (compile-lambda-into-module irmod
+                              (clasp-cleavir::make-type-check-fun which ctype sys)))
 
 ;;; FIXME: To get declaration scope right w/ bytecode-debug-vars we'll probably
 ;;; need to ensure that decls appear before vars in the annotations.
@@ -1677,13 +1664,8 @@
     (pop (origin-stack context))))
 
 (defun kludge-spi (spi)
-  ;; KLUDGE KLUDGE KLUDGE
-  ;; BIR currently checks that all source infos are
-  ;; (source) CSTs. We don't have those.
-  ;; Probably BIR needs adjustment.
-  (if spi
-      (make-instance 'cst:atom-cst :raw nil :source (cons spi spi))
-      nil))
+  ;; pair of start and end, but it's really just a start
+  (cons spi spi))
 
 ;;; default methods: irrelevant to compilation. ignore.
 (defmethod start-annotation ((annot core:bytecode-debug-info)

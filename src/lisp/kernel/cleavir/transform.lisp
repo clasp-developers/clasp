@@ -44,13 +44,13 @@
   (ctype:subtypep (ctype:primary (asserted-ctype arg) *clasp-system*)
                   ctype *clasp-system*))
 
-(defun lambda->birfun (module lambda-expression-cst)
-  (let* (;; FIXME: We should be harsher with errors than cst->ast is here,
-         ;; since deftransforms are part of the compiler, and not the
-         ;; user's fault.
-         (ast (cst->ast lambda-expression-cst))
-         (bir (cleavir-ast-to-bir:compile-into-module ast module
-                                                      *clasp-system*)))
+(defun lambda->birfun (module lambda-expression)
+  (let (;; FIXME: We should be harsher with errors here,
+        ;; since deftransforms are part of the compiler, and not the
+        ;; user's fault.
+        ;; FIXME: Use source info in the CST.
+        (bir (clasp-bytecode-to-bir:compile-lambda-into-module
+              module lambda-expression)))
     ;; Run the first few transformations.
     ;; FIXME: Use a pass manager/reoptimize flags/something smarter.
     (bir-transformations:eliminate-come-froms bir)
@@ -71,9 +71,9 @@
 
 ;;; We can't ever inline mv local calls (yet! TODO, should be possible sometimes)
 ;;; so this is a bit simpler than the above.
-(defun replace-mvcallee-with-lambda (call lambda-expression-cst)
+(defun replace-mvcallee-with-lambda (call lambda-expression)
   (let ((bir (lambda->birfun (bir:module (bir:function call))
-                             lambda-expression-cst)))
+                             lambda-expression)))
     ;; Now properly insert it.
     (change-class call 'bir:mv-local-call
                   :inputs (list* bir (rest (bir:inputs call))))))
@@ -205,10 +205,11 @@ Optimizations are available for any of:
      ',name))
 
 ;;; Given an expression, make a CST for it.
-;;; FIXME: This should be more sophisticated. I'm thinking the source info
-;;; should be as for an inlined function.
+;;; ...or that's what it did do, but we know longer use CSTs.
+;;; FIXME: Better source tracking.
 (defun cstify-transformer (origin expression)
-  (cst:cst-from-expression expression :source origin))
+  (declare (ignore origin))
+  expression)
 
 ;; Useful below for inserting checks on arguments.
 (defmacro ensure-the (type form)

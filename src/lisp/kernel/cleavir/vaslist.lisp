@@ -36,10 +36,7 @@
 
 (defun vaslistablep (fname) (member fname *vaslistable*))
 
-(defun origin-source (origin)
-  (loop for org = origin then (cst:source org)
-        while (typep org 'cst:cst)
-        finally (return org)))
+(defun origin-source (origin) origin)
 
 (defgeneric format-reason (reason))
 (defmethod format-reason (reason)

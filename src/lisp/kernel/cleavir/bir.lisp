@@ -3,16 +3,6 @@
 (defclass foreign-call-pointer (bir:one-output bir:instruction)
   ((%foreign-types :initarg :foreign-types :accessor foreign-types)))
 
-(defmethod ast-to-bir:compile-ast
-    ((ast cc-ast:foreign-call-pointer-ast) inserter system)
-  (ast-to-bir:with-compiled-arguments (args (cc-ast:argument-asts ast)
-                                            inserter system)
-    (let ((out (make-instance 'bir:output)))
-      (build:insert inserter 'foreign-call-pointer
-                    :foreign-types (cc-ast:foreign-types ast)
-                    :inputs args :outputs (list out))
-      (list out))))
-
 ;;; atomics
 
 (defclass atomic (bir:instruction)
@@ -43,8 +33,7 @@
                 ,@(when rtype-info
                     `((setf (gethash (cleavir-primop-info:info ',name)
                                      *primop-rtypes*)
-                            '(,@rtype-info))))
-                (cleavir-cst-to-ast:defprimop ,name))))
+                            '(,@rtype-info)))))))
 
   (defprimop core:instance-rack 1 :value)
   (defprimop core::instance-rack-set 2 :effect)

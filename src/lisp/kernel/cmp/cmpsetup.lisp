@@ -87,9 +87,3 @@ Options are :tagbody :go :all :eh-landing-pads
 
 ;; List of function names which have been declared NOTINLINE.
 (defvar *notinlines* nil)
-
-;; When Cleavir is installed set the value of *cleavir-compile-hook* to use it to compile forms
-;; It expects a function of one argument (lambda (form) ...) that will generate code in the
-;; current *module* for the form.  The lambda returns T if cleavir succeeded in compiling the form
-;; and nil otherwise
-(defvar *cleavir-compile-hook* nil)
