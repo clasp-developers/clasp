@@ -651,7 +651,7 @@
     (when (or (< nargs min) (and max (> nargs max)))
       (warn 'cmp:wrong-argcount-warning
             :given-nargs nargs :min-nargs min :max-nargs max
-            :origin (cst:source bir:*origin*))
+            :origin (car (origin-stack context)))
       (return-from type-wrap-arguments args))
     (loop for arg in args
           for ctype = (cond (req (pop req))
@@ -1664,13 +1664,8 @@
     (pop (origin-stack context))))
 
 (defun kludge-spi (spi)
-  ;; KLUDGE KLUDGE KLUDGE
-  ;; BIR currently checks that all source infos are
-  ;; (source) CSTs. We don't have those.
-  ;; Probably BIR needs adjustment.
-  (if spi
-      (make-instance 'cst:atom-cst :raw nil :source (cons spi spi))
-      nil))
+  ;; pair of start and end, but it's really just a start
+  (cons spi spi))
 
 ;;; default methods: irrelevant to compilation. ignore.
 (defmethod start-annotation ((annot core:bytecode-debug-info)

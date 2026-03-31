@@ -155,31 +155,6 @@
                 '((eql do-type-inference) cons clasp-global-environment)
                 '((eql do-dx-analysis) cons clasp-global-environment)))
 
-#+cst
-(eval-when (:load-toplevel)
-  (clos:satiate #'cst:raw '(cst:atom-cst) '(cst:cons-cst))
-  (clos:satiate #'cst:source '(cst:atom-cst) '(cst:cons-cst))
-  ;; SP NIL NIL
-  (clos:satiate #'cst:cons '(cst:atom-cst cst:atom-cst))
-  (clos:satiate #'cst:listify '(cst:atom-cst) '(cst:cons-cst))
-  (clos:satiate #'cst:cstify '(null) '(cons))
-  (clos:satiate #'cst:parse '(cst:parser))
-  (clos:satiate #'cst:atom '(cst:atom-cst) '(cst:cons-cst))
-  (clos:satiate #'cst:null '(cst:atom-cst) '(cst:atom-cst))
-  (clos:satiate #'cst:consp '(cst:atom-cst) '(cst:cons-cst))
-  (clos:satiate #'cst:rest '(cst:cons-cst))
-  (clos:satiate #'cst:first '(cst:cons-cst))
-  (clos:satiate #'cst:second '(cst:cons-cst))
-  (clos:satiate #'cst:third '(cst:cons-cst))
-  (clos:satiate #'cst:nth '(fixnum cst:cons-cst))
-  (clos:satiate #'cst:nthrest '(fixnum cst:cons-cst))
-  ;; SP NIL T T
-  (clos:satiate #'cst:reconstruct
-                '(clasp-64bit cons cst:atom-cst)
-                '(clasp-64bit cons cst:cons-cst)
-                '(clasp-64bit cons null)
-                '(clasp-64bit cons cons)))
-
 ;;; clasp-cleavir
 (eval-when (:load-toplevel)
   (clos:satiate #'%default-int-type '(abi-x86-64))

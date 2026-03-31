@@ -188,9 +188,6 @@
     ((eq (symbol-package name) (find-package :cleavir-primop)) t)
     (t nil)))
 
-(defmethod make-load-form ((cst cst:cst) &optional environment)
-  (make-load-form-saving-slots cst :environment environment))
-
 (defun function-attributes (function-name)
   (let* ((flags (gethash function-name *fn-flags*))
          (transforms (gethash function-name *fn-transforms*))
@@ -401,17 +398,9 @@
 (defmethod cleavir-environment:eval (form env (sys clasp))
   (core:interpret form (cleavir-env->bytecode env)))
 
-(defun wrap-cst (cst)
-  (cst:quasiquote (cst:source cst)
-                  (lambda () (cst:unquote cst))))
-
-(defmethod cleavir-environment:cst-eval (cst env (system clasp))
-  (declare (ignore system))
-  (core:interpret (cst:raw cst) (cleavir-env->bytecode env)))
-
+;;; Used to pull out of CSTs, but we're no longer doing that.
+;;; Kept in case we need something like that later.
 (defun origin-source (origin)
-  (loop while (typep origin 'cst:cst)
-        do (setf origin (cst:source origin)))
   origin)
 
 (defmethod cmp:compiler-condition-origin

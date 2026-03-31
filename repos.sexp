@@ -152,12 +152,6 @@
   :branch "master"
   :commit "4596ddf32357fa793ece25cecb6e8661259b51ac"
   :pin 1)
- (:name :concrete-syntax-tree
-  :directory "src/lisp/kernel/contrib/Concrete-Syntax-Tree/"
-  :repository "https://github.com/s-expressionists/Concrete-Syntax-Tree.git"
-  :branch "master"
-  :commit "f79dab6b6d14000259449c169b501cc6398b3f54"
-  :pin 1)
  (:name :documentation-utils
   :directory "src/lisp/kernel/contrib/documentation-utils/"
   :repository "https://codeberg.org/shinmera/documentation-utils"

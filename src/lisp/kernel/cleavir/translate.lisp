@@ -759,17 +759,17 @@ function-or-placeholder - the llvm function or a placeholder for
   (out (enclose (bir:code instruction) (bir:extent instruction))
        (bir:output instruction)))
 
+#+(or)
 (defun maybe-insert-step-before (inst)
   (when (policy:policy-value (bir:policy inst)
                              'core::insert-step-conditions)
     (let ((origin (bir:origin inst)))
-      (when (typep origin 'cst:cst)
-        (let* ((frame (%intrinsic-call "llvm.frameaddress.p0"
-                                       (list (%i32 0)) "stepper-frame"))
-               (raw (cst:raw origin))
-               (lit (literal raw)))
-          (%intrinsic-invoke-if-landing-pad-or-call
-           "cc_breakstep" (list lit frame)))))))
+      (let* ((frame (%intrinsic-call "llvm.frameaddress.p0"
+                                     (list (%i32 0)) "stepper-frame"))
+             (raw (cst:raw origin))
+             (lit (literal raw)))
+        (%intrinsic-invoke-if-landing-pad-or-call
+         "cc_breakstep" (list lit frame))))))
 
 (defmethod translate-simple-instruction :before
     ((instruction bir:abstract-call) abi)
@@ -777,8 +777,10 @@ function-or-placeholder - the llvm function or a placeholder for
   ;; We must force all closure initializers to run before a call.
   (force-initializers)
   ;; Cooperation with the stepper
+  #+(or)
   (maybe-insert-step-before instruction))
 
+#+(or)
 (defun maybe-insert-step-after (inst)
   (when (and (policy:policy-value (bir:policy inst)
                                   'core::insert-step-conditions)
@@ -790,7 +792,7 @@ function-or-placeholder - the llvm function or a placeholder for
                      (list (%intrinsic-call "llvm.frameaddress.p0"
                                             (list (%i32 0))
                                             "stepper-frame")))))
-
+#+(or)
 (defmethod translate-simple-instruction :after
     ((instruction bir:abstract-call) abi)
   (declare (ignore abi))

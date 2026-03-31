@@ -176,10 +176,7 @@
             (funcall deriver argstype)
           (serious-condition (e)
             (cmp:note 'inference-error-note
-                      :origin (loop for org = (bir:origin inst)
-                                      then (cst:source org)
-                                    while (typep org 'cst:cst)
-                                    finally (return org))
+                      :origin (bir:origin inst)
                       :fname identity :condition e)
             (call-next-method)))
         (call-next-method))))

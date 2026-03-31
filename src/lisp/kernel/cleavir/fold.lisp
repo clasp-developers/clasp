@@ -14,10 +14,7 @@
             (serious-condition (c)
               (warn 'cmp:fold-failure :operation operator :operands arguments
                                       :condition c
-                                      :origin (loop for o = (bir:origin call)
-                                                      then (cst:source o)
-                                                    while (typep o 'cst:cst)
-                                                    finally (return o)))
+                                      :origin (bir:origin call))
               (return-from bir-transformations:fold-call nil))))
         nil)))
 
