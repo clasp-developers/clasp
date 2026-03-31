@@ -2130,14 +2130,6 @@ function-or-placeholder - the llvm function or a placeholder for
     (layout-procedure function (get-or-create-lambda-name function)
                       abi)))
 
-(defun translate (bir &key abi)
-  (let* ((*unwind-ids* (make-hash-table :test #'eq))
-         (*catch-ids* (make-hash-table :test #'eq))
-         (*function-info* (make-hash-table :test #'eq)))
-    (layout-module (bir:module bir) abi)
-    (cmp::potentially-save-module)
-    (xep-function (find-llvm-function-info bir))))
-
 ;;; These variables can be bound to debug the bir transformations.
 ;;; T means they apply after every transformation. Or, you can bind
 ;;; them to a list (of the keys in bir-transformations below), in
@@ -2214,6 +2206,7 @@ function-or-placeholder - the llvm function or a placeholder for
           (allocate-llvm-function-infos bir-module fvector)
           (with-constants (ctable ctable-name)
             (layout-module bir-module abi)
+            (llvm-sys:optimize-module module cmp:*optimization-level*)
             (cmp::potentially-save-module))
           (gen-function-vector fvector fvector-name)
           (values module function-info ctable

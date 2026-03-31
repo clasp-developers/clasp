@@ -943,16 +943,10 @@ But no irbuilders or basic-blocks. Return the fn."
   `(let ((*irbuilder* ,irbuilder))
      ,@code))
 
-(defmacro with-module (( &key module
-                           (optimize nil)
-                           (optimize-level '*optimization-level*)
-                           dry-run)
-                       &body body)
+(defmacro with-module ((&key module) &body body)
   `(let* ((*the-module* ,module))
      (or *the-module* (error "with-module *the-module* is NIL"))
-     (multiple-value-prog1
-         (progn ,@body)
-       (when (and ,optimize ,optimize-level (null ,dry-run)) (funcall ,optimize ,module ,optimize-level )))))
+     (progn ,@body)))
 
 ;;; ALLOCA functions
 
