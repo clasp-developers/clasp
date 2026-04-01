@@ -1,6 +1,7 @@
 ;;;; Code for introspecting bytecode FASLs and performing various
 ;;;; operations on them, such as validation (TODO) and linking.
 ;;;; TODO: Maybe store any warnings in the FASL object?
+;;;; This is basically useful for debugging Clasp itself.
 
 (in-package #:cmpltv)
 
@@ -45,8 +46,8 @@
     (dbgprint "Magic number matches: ~x" magic)))
 
 ;; Bounds for major and minor version understood by this loader.
-(defparameter *min-version* '(0 14))
-(defparameter *max-version* '(0 14))
+(defparameter *min-version* '(0 16))
+(defparameter *max-version* '(0 16))
 
 (defun loadable-version-p (major minor)
   (and
@@ -142,7 +143,7 @@
     (setf (creator index)
           (make-instance 'cons-creator))))
 
-(defmethod %load-instruction ((mnemonic (eql 'initialize-cons)) stream)
+(defmethod %load-instruction ((mnemonic (eql :init-cons)) stream)
   (let ((cons (read-creator stream))
         (car (read-creator stream)) (cdr (read-creator stream)))
     (dbgprint " (initialize-cons ~s ~s ~s)" cons car cdr)
@@ -153,7 +154,7 @@
         (a (gensym "ARRAY")) (s (gensym "STREAM")))
     `(let* ((,a ,array) (,s ,stream)
             (total-size (array-total-size ,a)))
-       (multiple-value-bind (full-bytes remainder) (floor total-size 8)
+       (multiple-value-bind (full-bytes remainder) (floor total-size ,perbyte)
          (loop for byteindex below full-bytes
                for index = (* ,perbyte byteindex)
                for byte = (read-byte ,s)
@@ -164,38 +165,44 @@
                                            byte)
                           for arrindex = `(+ index ,j)
                           collect `(setf (row-major-aref array ,arrindex) ,bits)))
-         ;; write remainder
-         (let* ((index (* ,perbyte full-bytes))
-                (byte (read-byte ,s)))
-           (loop for j below remainder
-                 for bit-index = (* ,nbits (- ,perbyte j 1))
-                 for bits = (ldb (byte ,nbits bit-index) byte)
-                 do (setf (row-major-aref ,a (+ index j)) bits)))))))
+         ;; read remainder
+         (unless (zerop remainder)
+           (let* ((index (* ,perbyte full-bytes))
+                  (byte (read-byte ,s)))
+             (loop for j below remainder
+                   for bit-index = (* ,nbits (- ,perbyte j 1))
+                   for bits = (ldb (byte ,nbits bit-index) byte)
+                   do (setf (row-major-aref ,a (+ index j)) bits))))))))
 
 (defun decode-et-code (code)
-  (or (find code +array-packing-infos+ :key #'second)
-      (error "BUG: Unknown UAET code #x~x" code)))
+  (loop for (key pcode) on cmpref:+uaet-codes+ by #'cddr
+        when (= code pcode)
+          return key
+        finally (error "BUG: Unknown UAET code #x~x" code)))
+(defun uaet-info (uaet-code)
+  (find (decode-et-code uaet-code) +array-packing-infos+ :key #'second))
 (defun decode-uaet (uaet-code)
-  (first (decode-et-code uaet-code)))
+  (first (uaet-info uaet-code)))
 
-(defun read-utf8-codepoint (stream)
-  (let ((b0 (read-byte stream)))
+(defun %read-utf8-codepoint (read-byte)
+  (declare (type (function () (values (unsigned-byte 8) &rest nil)) read-byte))
+  (let ((b0 (funcall read-byte)))
     (cond ((= (ldb (byte 1 7) b0) #b0) ; one byte
            b0)
           ((= (ldb (byte 3 5) b0) #b110)
-           (let ((b1 (read-byte stream))) ; two
+           (let ((b1 (funcall read-byte))) ; two
              (logior (ash (ldb (byte 5 0) b0) 6)
                      (ash (ldb (byte 6 0) b1) 0))))
           ((= (ldb (byte 4 4) b0) #b1110)
-           (let ((b1 (read-byte stream)) ; three
-                 (b2 (read-byte stream)))
+           (let ((b1 (funcall read-byte)) ; three
+                 (b2 (funcall read-byte)))
              (logior (ash (ldb (byte 4 0) b0) 12)
                      (ash (ldb (byte 6 0) b1) 6)
                      (ash (ldb (byte 6 0) b2) 0))))
           ((= (ldb (byte 5 3) b0) #b11110)
-           (let ((b1 (read-byte stream)) ; four
-                 (b2 (read-byte stream))
-                 (b3 (read-byte stream)))
+           (let ((b1 (funcall read-byte)) ; four
+                 (b2 (funcall read-byte))
+                 (b3 (funcall read-byte)))
              (logior (ash (ldb (byte 3 0) b0) 18)
                      (ash (ldb (byte 6 0) b1) 12)
                      (ash (ldb (byte 6 0) b2) 6)
@@ -203,15 +210,41 @@
           (t ; invalid. should we err or just warn?
            (error "Invalid UTF-8 header byte: ~x" b0)))))
 
+(defun read-utf8-codepoint (stream)
+  (%read-utf8-codepoint (lambda () (read-byte stream))))
+
+(defmethod %load-instruction ((mnemonic (eql :base-string)) stream)
+  (let* ((index (next-index))
+         (len (read-ub16 stream))
+         (bytes (make-array len :element-type '(unsigned-byte 8))))
+    (dbgprint " (base-string ~d ~d)" index len)
+    (read-sequence bytes stream)
+    (setf (creator index)
+          (make-instance 'base-string-creator
+            :prototype (map 'base-string #'code-char bytes)))))
+
+(defmethod %load-instruction ((mnemonic (eql :utf8-string)) stream)
+  (let* ((index (next-index)) (nbytes (read-ub16 stream))
+         (bytes (make-array nbytes :element-type '(unsigned-byte 8)))
+         (i 0))
+    (dbgprint " (utf8-string ~d ~d)" index nbytes)
+    (read-sequence bytes stream)
+    (flet ((grab-byte () (prog1 (aref bytes i) (incf i))))
+      (loop until (>= i nbytes)
+            collect (code-char (%read-utf8-codepoint #'grab-byte)) into chars
+            finally (return (setf (creator index)
+                                  (make-instance 'utf8-string-creator
+                                    :prototype (coerce chars 'string))))))))
+
 (defmethod %load-instruction ((mnemonic (eql :make-array)) stream)
   (let* ((index (next-index)) (uaet-code (read-byte stream))
          (uaet (decode-uaet uaet-code))
          (packing-code (read-byte stream))
-         (packing-info (decode-et-code packing-code))
-         (packing-type (first packing-info))
+         (packing-info (uaet-info packing-code))
+         (packing-type (second packing-info))
          (rank (read-byte stream))
          (dimensions (loop repeat rank collect (read-ub16 stream)))
-         (array (unless (eq packing-type 't)
+         (array (unless (eq packing-type :t)
                   ;; for T packing we don't make the array now,
                   ;; as doing so is side-effect-based.
                   (make-array dimensions :element-type uaet))))
@@ -220,57 +253,50 @@
                  `(loop for i below (array-total-size array)
                         for elem = ,form
                         do (setf (row-major-aref array i) elem))))
-      (cond ((equal packing-type 'nil))
-            ((equal packing-type 'base-char)
-             (undump (code-char (read-byte stream))))
-            ((equal packing-type 'character)
-             (undump (code-char (read-utf8-codepoint stream))))
-            ((equal packing-type 'single-float)
-             (undump (ext:bits-to-single-float (read-ub32 stream))))
-            ((equal packing-type 'double-float)
-             (undump (ext:bits-to-double-float (read-ub64 stream))))
-            ((equal packing-type '(complex single-float))
-             (undump
-              (complex (ext:bits-to-single-float (read-ub32 stream))
-                       (ext:bits-to-single-float (read-ub32 stream)))))
-            ((equal packing-type '(complex double-float))
-             (undump
-              (complex (ext:bits-to-double-float (read-ub64 stream))
-                       (ext:bits-to-double-float (read-ub64 stream)))))
-            ((equal packing-type 'bit) (read-sub-byte array stream 1))
-            ((equal packing-type '(unsigned-byte 2))
-             (read-sub-byte array stream 2))
-            ((equal packing-type '(unsigned-byte 4))
-             (read-sub-byte array stream 4))
-            ((equal packing-type '(unsigned-byte 8))
-             (read-sequence array stream))
-            ((equal packing-type '(unsigned-byte 16))
-             (undump (read-ub16 stream)))
-            ((equal packing-type '(unsigned-byte 32))
-             (undump (read-ub32 stream)))
-            ((equal packing-type '(unsigned-byte 64))
-             (undump (read-ub64 stream)))
-            ((equal packing-type '(signed-byte 8))
-             (undump (read-sb8  stream)))
-            ((equal packing-type '(signed-byte 16))
-             (undump (read-sb16 stream)))
-            ((equal packing-type '(signed-byte 32))
-             (undump (read-sb32 stream)))
-            ((equal packing-type '(signed-byte 64))
-             (undump (read-sb64 stream)))
-            ((equal packing-type 't))
-            (t (error "BUG: Unknown packing-type ~s" packing-type))))
+      (case packing-type
+        (:nil)
+        (:base-char (undump (code-char (read-byte stream))))
+        (:character (undump (code-char (read-utf8-codepoint stream))))
+        (:binary32 (ext:bits-to-single-float (read-ub32 stream)))
+        (:binary64 (ext:bits-to-double-float (read-ub64 stream)))
+        (:complex-binary32
+         (undump
+          (complex (ext:bits-to-single-float (read-ub32 stream))
+                   (ext:bits-to-single-float (read-ub32 stream)))))
+        (:complex-binary64
+         (undump
+          (complex (ext:bits-to-double-float (read-ub64 stream))
+                   (ext:bits-to-double-float (read-ub64 stream)))))
+        (:unsigned-byte1 (read-sub-byte array stream 1))
+        (:unsigned-byte2 (read-sub-byte array stream 2))
+        (:unsigned-byte4 (read-sub-byte array stream 4))
+        (:unsigned-byte8 (read-sequence array stream))
+        (:unsigned-byte16 (undump (read-ub16 stream)))
+        (:unsigned-byte32 (undump (read-ub32 stream)))
+        (:unsigned-byte64 (undump (read-ub64 stream)))
+        (:signed-byte8 (undump (read-sb8  stream)))
+        (:signed-byte16 (undump (read-sb16 stream)))
+        (:signed-byte32 (undump (read-sb32 stream)))
+        (:signed-byte64 (undump (read-sb64 stream)))
+        (:t)
+        (otherwise (error "BUG: Unknown packing-type ~s" packing-type))))
     (setf (creator index)
-          (if (eq packing-type 't)
+          (if (eq packing-type :t)
               (make-instance 'array-creator
                 :dimensions dimensions
-                :packing-info packing-info
+                :packing-info packing-type
                 :uaet-code uaet-code)
               (make-instance 'array-creator
                 :dimensions dimensions
-                :packing-info packing-info
+                :packing-info packing-type
                 :uaet-code uaet-code
                 :prototype array)))))
+
+(defmethod %load-instruction ((mnemonic (eql :init-array)) stream)
+  (let* ((array (read-creator stream))
+         (dims (dimensions array))
+         (data (loop repeat (apply #'* dims) collect (read-creator stream))))
+    (make-instance 'initialize-array :array array :values data)))
 
 (defmethod %load-instruction ((mnemonic (eql :make-hash-table)) stream)
   (let* ((index (next-index)) (testcode (read-byte stream))
@@ -283,6 +309,14 @@
     (dbgprint " (make-hash-table ~d ~s ~d)" index test count)
     (setf (creator index)
           (make-instance 'hash-table-creator :test test :count count))))
+
+(defmethod %load-instruction ((mnemonic (eql :init-hash-table)) stream)
+  (let ((table (read-creator stream)))
+    (assert (typep table 'hash-table-creator))
+    (let* ((count (read-ub32 stream))
+           (alist (loop repeat count
+                        collect (cons (read-creator stream) (read-creator stream)))))
+      (make-instance 'initialize-hash-table :table table :count count :alist alist))))
 
 (defmethod %load-instruction ((mnemonic (eql :make-sb64)) stream)
   (let ((index (next-index)) (fix (read-sb64 stream)))
@@ -419,6 +453,12 @@
     (dbgprint " (vcell ~d ~s)" index name)
     (setf (creator index) (make-instance 'vcell-lookup :name name))))
 
+(defmethod %load-instruction ((mnemonic (eql :environment)) stream)
+  (declare (ignore stream))
+  (let ((index (next-index)))
+    (dbgprint " (environment ~d)" index)
+    (setf (creator index) (make-instance 'environment-lookup))))
+
 (defmethod %load-instruction ((mnemonic (eql :symbol-value)) stream)
   (let ((index (next-index)) (name (read-creator stream)))
     (setf (creator index) (make-instance 'vdefinition :name name))))
@@ -511,11 +551,11 @@
       :name ncreator :module mod :infos infos)))
 
 (defun read-di-mnemonic (stream)
-  (let* ((opcode (read-byte stream))
-         (info (find opcode +debug-info-ops+ :key #'second)))
-    (if info
-        (first info)
-        (error "BUG: Unknown debug info opcode ~x" opcode))))
+  (let ((opcode (read-byte stream)))
+    (loop for (key code) on cmpref:+debug-info-ops+ by #'cddr
+          when (= code opcode)
+            return key
+          finally (error "BUG: Unknown debug info opcode ~x" opcode))))
 
 (defgeneric %load-debug-info (mnemonic stream))
 
@@ -611,7 +651,8 @@
   (let* ((acreator (read-creator stream))
          ;; For this to work, we have to actually make arrays from
          ;; make-array instructions, as we do.
-         (aname (if (and (typep acreator 'array-creator)
+         (aname (if (and (typep acreator '(or array-creator
+                                           base-string-creator utf8-string-creator))
                          (slot-boundp acreator '%prototype))
                     (prototype acreator)
                     (warn "Invalid FASL: Attribute name ~a is not a string"
@@ -658,6 +699,30 @@
 ;;;
 ;;; Operations on FASLs
 ;;;
+
+;;; Some basic dumb introspection
+(defun all-symbols (fasl)
+  (loop for instruction across (instructions fasl)
+        if (typep instruction 'interned-symbol-creator)
+          collect (cons (let ((package (symbol-creator-package instruction)))
+                          (if (and (typep package 'package-creator)
+                                   (typep (package-creator-name package)
+                                          '(or array-creator utf8-string-creator
+                                            base-string-creator)))
+                              (prototype (package-creator-name package))
+                              package))
+                        (let ((name (symbol-creator-name instruction)))
+                          (if (typep name '(or array-creator utf8-string-creator
+                                            base-string-creator))
+                              (prototype name)
+                              name)))
+        else if (typep instruction 'symbol-creator)
+               collect (cons nil
+                             (let ((name (symbol-creator-name instruction)))
+                               (if (typep name '(or array-creator utf8-string-creator
+                                                 base-string-creator))
+                                   (prototype name)
+                                   name)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -820,32 +885,3 @@
                           :if-does-not-exist :create
                           :element-type '(unsigned-byte 8))
     (write-fasl fasl output)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Concatenation
-;;; Make a new FASL that has the same effects as loading the original two
-;;; fasls in order would have. This is a dumb concatenation that doesn't try
-;;; to coalesce anything; that can be called "linking" maybe.
-
-(defun concatenate-fasls (&rest fasls)
-  (cond ((null fasls)
-         ;; weird, but ok
-         (make-instance 'fasl
-           :major *major-version* :minor *minor-version*
-           :instructions #()))
-        ((null (rest fasls)) (first fasls))
-        (t
-         (make-instance 'fasl
-           :major *major-version* :minor *minor-version*
-           ;; We could save a few bytes by skipping the mapcars,
-           ;; but it would make the code uglier
-           :instructions (apply #'concatenate 'vector
-                                (mapcar #'instructions fasls))))))
-
-(defun concatenate-fasl-files (&rest pathnames)
-  (apply #'concatenate-fasls (mapcar #'load-bytecode pathnames)))
-
-(defun link-bytecode-fasl-files (output-path input-paths)
-  (save-fasl (apply #'concatenate-fasl-files input-paths)
-             output-path))
