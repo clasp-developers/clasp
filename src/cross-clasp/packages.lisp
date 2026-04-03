@@ -366,22 +366,13 @@
   (:use #:cl)
   (:export #:*client*
            #:client))
-
 (defpackage #:cross-clasp.clasp.inravina-intrinsic
   (:use #:cl)
   (:export #:client))
 (defpackage #:cross-clasp.clasp.invistra-intrinsic
   (:use #:cl)
   (:export #:client))
-(defpackage #:cross-clasp.clasp.quaviver
-  (:use #:cl))
-(defpackage #:cross-clasp.clasp.quaviver.condition
-  (:use #:cl))
-(defpackage #:cross-clasp.clasp.quaviver.math
-  (:use #:cl))
-(defpackage #:cross-clasp.clasp.quaviver/schubfach
-  (:use #:cl)
-  (:export #:client))
+
 (defpackage #:cross-clasp
   (:use #:cl)
   (:local-nicknames (#:m #:maclina.machine)

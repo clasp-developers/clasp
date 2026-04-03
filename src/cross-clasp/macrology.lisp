@@ -1,5 +1,11 @@
 (in-package #:cross-clasp.clasp.core)
 
+(defmacro %pprint-exit-if-list-exhausted ()
+  `(inravina-extrinsic:pprint-exit-if-list-exhausted))
+
+(defmacro %pprint-pop ()
+  `(inravina-extrinsic:pprint-pop))
+
 (defmacro with-unique-names (symbols &body body)
   `(let* ,(mapcar (lambda (symbol)
                     (let* ((symbol-name (symbol-name symbol))

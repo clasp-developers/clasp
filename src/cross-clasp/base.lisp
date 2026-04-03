@@ -100,6 +100,10 @@
     "INRAVINA"
     "INVISTRA"
     "KHAZERN"
+    "QUAVIVER"
+    "QUAVIVER.CONDITION"
+    "QUAVIVER.MATH"
+    "QUAVIVER/SCHUBFACH"
     "TRIVIAL-WITH-CURRENT-SOURCE-FORM"))
 
 ;;; make a package in the build environment.
@@ -247,10 +251,10 @@
     (defpack "EXT" #:cross-clasp.clasp.ext)
     (defpack "KEYWORD" #:keyword)
     (defpack "ECCLESIA" #:ecclesia)
-    (defpack "QUAVIVER" #:cross-clasp.clasp.quaviver)
-    (defpack "QUAVIVER.CONDITION" #:cross-clasp.clasp.quaviver.condition)
-    (defpack "QUAVIVER.MATH" #:cross-clasp.clasp.quaviver.math)
-    (defpack "QUAVIVER/SCHUBFACH" #:cross-clasp.clasp.quaviver/schubfach)
+    (defpack "QUAVIVER" #:quaviver)
+    (defpack "QUAVIVER.CONDITION" #:quaviver.condition)
+    (defpack "QUAVIVER.MATH" #:quaviver.math)
+    (defpack "QUAVIVER/SCHUBFACH" #:quaviver/schubfach)
     (defpack "INCLESS" #:incless)
     (defpack "INRAVINA" #:inravina)
     (defpack "INVISTRA" #:invistra)
@@ -518,6 +522,14 @@
                        alexandria:ensure-car
                        alexandria:ensure-list
                        alexandria::generate-switch-body
+                       quaviver::unique-name
+                       quaviver.math::compute-expt
+                       quaviver.math::ceiling-log-expt
+                       quaviver::primitive-triple-bits-form
+                       quaviver::bits-primitive-triple-form
+                       quaviver::primitive-triple-float-form
+                       quaviver::float-primitive-triple-form
+                       quaviver::traits-from-sizes
                        khazern:unique-name
                        inravina:expand-logical-block
                        invistra::unique-name
@@ -527,20 +539,6 @@
                        invistra:format-with-client)
         for f = (fdefinition fname)
         do (setf (clostrum:fdefinition client rte fname) f))
-  (mapc #'proclaim
-        '((ftype (function (t t t &rest t) t)
-                 quaviver.condition:floating-point-underflow
-                 quaviver.condition:floating-point-overflow)
-          (ftype (function (t) (values t t t))
-                 quaviver::float-primitive-triple/short-float
-                 quaviver::float-primitive-triple/single-float
-                 quaviver::float-primitive-triple/double-float
-                 quaviver::float-primitive-triple/long-float)
-          (ftype (function (t t t t) t)
-                 quaviver::primitive-triple-float/short-float
-                 quaviver::primitive-triple-float/single-float
-                 quaviver::primitive-triple-float/double-float
-                 quaviver::primitive-triple-float/long-float)))
   (loop for (fname . src) in '((cl:proclaim . proclaim)
                                (cl:make-package . %make-package)
                                (clos::class-slots . closer-mop:class-slots)
@@ -554,23 +552,7 @@
                                (alexandria:format-symbol
                                 . %format-symbol)
                                (alexandria:symbolicate
-                                . %symbolicate)
-                               (cross-clasp.clasp.quaviver::unique-name
-                                . quaviver::unique-name)
-                               (cross-clasp.clasp.quaviver.math::compute-expt
-                                . quaviver.math::compute-expt)
-                               (cross-clasp.clasp.quaviver.math::ceiling-log-expt
-                                . quaviver.math::ceiling-log-expt)
-                               (cross-clasp.clasp.quaviver::primitive-triple-bits-form
-                                . quaviver::primitive-triple-bits-form)
-                               (cross-clasp.clasp.quaviver::bits-primitive-triple-form
-                                . quaviver::bits-primitive-triple-form)
-                               (cross-clasp.clasp.quaviver::primitive-triple-float-form
-                                . quaviver::primitive-triple-float-form)
-                               (cross-clasp.clasp.quaviver::float-primitive-triple-form
-                                . quaviver::float-primitive-triple-form)
-                               (cross-clasp.clasp.quaviver::traits-from-sizes
-                                . quaviver::traits-from-sizes))
+                                . %symbolicate))
         for f = (fdefinition src)
         do (setf (clostrum:fdefinition client rte fname) f))
   (flet ((traits (type &aux (plist (case type
@@ -645,7 +627,7 @@
           (macro-function 'incless-extrinsic:print-unreadable-object)
           (clostrum:fdefinition client rte 'cross-clasp.clasp.gray::redefine-cl-functions)
           (lambda ())
-          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::bits-float-form)
+          (clostrum:fdefinition client rte 'quaviver::bits-float-form)
           (lambda (type value)
             (ecase (getf (clostrum:symbol-plist client rte type) :implementation-type)
               (short-float
@@ -656,7 +638,7 @@
                `(ext::bits-to-double-float ,value))
               (long-float
                `(ext::bits-to-long-float ,value))))
-          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::float-bits-form)
+          (clostrum:fdefinition client rte 'quaviver::float-bits-form)
           (lambda (type value)
             (ecase (getf (clostrum:symbol-plist client rte type) :implementation-type)
               (short-float
@@ -667,57 +649,57 @@
                `(ext::double-float-to-bits ,value))
               (long-float
                `(ext::long-float-to-bits ,value))))
-          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::implementation-type)
+          (clostrum:fdefinition client rte 'quaviver::implementation-type)
           (lambda (type)
             (or (getf (clostrum:symbol-plist client rte type) :implementation-type)
                 (getf (traits type) :implementation-type)))
           (clostrum:fdefinition client rte
-                                'cross-clasp.clasp.quaviver::exact-implementation-type-p)
+                                'quaviver::exact-implementation-type-p)
           (lambda (type)
             (getf (traits type) :exact-implementation-type-p))
-          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::exponent-size)
+          (clostrum:fdefinition client rte 'quaviver::exponent-size)
           (lambda (type)
             (getf (traits type) :exponent-size))
-          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::significand-size)
+          (clostrum:fdefinition client rte 'quaviver::significand-size)
           (lambda (type)
             (getf (traits type) :significand-size))
-          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::arithmetic-size)
+          (clostrum:fdefinition client rte 'quaviver::arithmetic-size)
           (lambda (type)
             (getf (traits type) :arithmetic-size))
-          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::max-exponent)
+          (clostrum:fdefinition client rte 'quaviver::max-exponent)
           (lambda (type)
             (getf (traits type) :max-exponent))
-          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::min-exponent)
+          (clostrum:fdefinition client rte 'quaviver::min-exponent)
           (lambda (type)
             (getf (traits type) :min-exponent))
-          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::exponent-bias)
+          (clostrum:fdefinition client rte 'quaviver::exponent-bias)
           (lambda (type)
             (getf (traits type) :exponent-bias))
-          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::storage-size)
+          (clostrum:fdefinition client rte 'quaviver::storage-size)
           (lambda (type)
             (getf (traits type) :storage-size))
-          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::sign-byte-form)
+          (clostrum:fdefinition client rte 'quaviver::sign-byte-form)
           (lambda (type)
             (getf (traits type) :sign-byte-form))
-          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::exponent-byte-form)
+          (clostrum:fdefinition client rte 'quaviver::exponent-byte-form)
           (lambda (type)
             (getf (traits type) :exponent-byte-form))
-          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::exponent-bytespec)
+          (clostrum:fdefinition client rte 'quaviver::exponent-bytespec)
           (lambda (type)
             (bytespec (getf (traits type) :exponent-byte-form)))
-          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::significand-byte-form)
+          (clostrum:fdefinition client rte 'quaviver::significand-byte-form)
           (lambda (type)
             (getf (traits type) :significand-byte-form))
-          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::significand-bytespec)
+          (clostrum:fdefinition client rte 'quaviver::significand-bytespec)
           (lambda (type)
             (bytespec (getf (traits type) :significand-byte-form)))
-          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::nan-type-byte-form)
+          (clostrum:fdefinition client rte 'quaviver::nan-type-byte-form)
           (lambda (type)
             (getf (traits type) :nan-type-byte-form))
-          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::nan-payload-byte-form)
+          (clostrum:fdefinition client rte 'quaviver::nan-payload-byte-form)
           (lambda (type)
             (getf (traits type) :nan-payload-byte-form))
-          (clostrum:fdefinition client rte 'cross-clasp.clasp.quaviver::hidden-bit-p)
+          (clostrum:fdefinition client rte 'quaviver::hidden-bit-p)
           (lambda (type)
             (getf (traits type) :hidden-bit-p))))
 
@@ -780,7 +762,11 @@
                                (setf . %setf)
                                (remf . %remf)
                                (pprint-logical-block
-                                . inravina-extrinsic:pprint-logical-block)
+                                   . inravina-extrinsic:pprint-logical-block)
+                               #+(or)(pprint-exit-if-list-exhausted
+                                   . %pprint-exit-if-list-exhausted)
+                               #+(or)(pprint-pop
+                                   . %pprint-pop)
                                (trivial-with-current-source-form:with-current-source-form
                                    . ext:with-current-source-form))
         for m = (macro-function src)
