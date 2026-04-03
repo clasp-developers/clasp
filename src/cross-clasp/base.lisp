@@ -59,8 +59,9 @@
 
 ;; use trivial-package-local-nicknames, but resolve names in the
 ;; cross-clasp environment.
-(defun ext:add-package-local-nickname (local-nickname actual-package
-                                       &optional (package (m:symbol-value m:*client* *build-rte* '*package*)))
+(defun ext:add-package-local-nickname
+    (local-nickname actual-package
+     &optional (package (m:symbol-value m:*client* *build-rte* '*package*)))
   (let ((actual-package
           (if (packagep actual-package)
               actual-package
@@ -88,10 +89,17 @@
   plist)
 
 (defparameter *shared-package-names*
-  '("ALEXANDRIA" "ECCLESIA" "KHAZERN"
-    "ECLECTOR.BASE" "ECLECTOR.READER"
-    "ECLECTOR.READTABLE" "ECLECTOR.READTABLE.SIMPLE"
+  '("ALEXANDRIA"
+    "ECCLESIA"
+    "ECLECTOR.BASE"
     "ECLECTOR.PARSE-RESULT"
+    "ECLECTOR.READER"
+    "ECLECTOR.READTABLE"
+    "ECLECTOR.READTABLE.SIMPLE"
+    "INCLESS"
+    "INRAVINA"
+    "INVISTRA"
+    "KHAZERN"
     "TRIVIAL-WITH-CURRENT-SOURCE-FORM"))
 
 ;;; make a package in the build environment.
@@ -117,7 +125,8 @@
                            (error "Tried to use undefined package ~s" s))))
          (package (or (find-package hname)
                       (if sharedp
-                          (error "BUG: Package ~a should exist in the host already but doesn't" hname)
+                          (error "BUG: Package ~a should exist in the host already but doesn't"
+                                 hname)
                           (make-package hname :use use)))))
     (setf (clostrum:package-name m:*client* *build-rte* package) name
           (clostrum:find-package m:*client* *build-rte* name) package)
@@ -509,7 +518,13 @@
                        alexandria:ensure-car
                        alexandria:ensure-list
                        alexandria::generate-switch-body
-                       khazern:unique-name)
+                       khazern:unique-name
+                       inravina:expand-logical-block
+                       invistra::unique-name
+                       invistra:format-with-client
+                       invistra:make-downcase-stream
+                       incless:write-object
+                       invistra:format-with-client)
         for f = (fdefinition fname)
         do (setf (clostrum:fdefinition client rte fname) f))
   (mapc #'proclaim
@@ -540,18 +555,6 @@
                                 . %format-symbol)
                                (alexandria:symbolicate
                                 . %symbolicate)
-                               (inravina::expand-logical-block
-                                . inravina:expand-logical-block)
-                               (invistra::unique-name
-                                . invistra::unique-name)
-                               (invistra::format-with-client
-                                . invistra::format-with-client)
-                               (invistra::make-downcase-stream
-                                . invistra::make-downcase-stream)
-                               (incless::write-object
-                                . incless::write-object)
-                               #+(or)(invistra::format-with-client
-                                . invistra::format-with-client)
                                (cross-clasp.clasp.quaviver::unique-name
                                 . quaviver::unique-name)
                                (cross-clasp.clasp.quaviver.math::compute-expt
