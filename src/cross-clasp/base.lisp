@@ -265,7 +265,7 @@
                                  ;; global ext, i.e. clasp's, not ours
                                  (find-package "EXT")))
         "EXT")
-  (loop for (host-name . target-name) in '(("ECCLESIA" . "ECCLESIA") ("QUAVIVER" . "QUAVIVER")
+  (loop for (host-name . target-name) in '(("QUAVIVER" . "QUAVIVER")
                                            ("QUAVIVER.CONDITION" . "QUAVIVER.CONDITION")
                                            ("QUAVIVER.MATH" . "QUAVIVER.MATH")
                                            ("QUAVIVER/SCHUBFACH" . "QUAVIVER/SCHUBFACH")
@@ -273,9 +273,7 @@
                                            ("INVISTRA" . "INVISTRA")
                                            ("INCLESS-EXTRINSIC" . "INCLESS-INTRINSIC")
                                            ("INRAVINA-EXTRINSIC" . "INRAVINA-INTRINSIC")
-                                           ("INVISTRA-EXTRINSIC" . "INVISTRA-INTRINSIC")
-                                           ("ECLECTOR.BASE" . "ECLECTOR.BASE")
-                                           ("ECLECTOR.READER" . "ECLECTOR.READER"))
+                                           ("INVISTRA-EXTRINSIC" . "INVISTRA-INTRINSIC"))
         do (setf (clostrum:package-name client environment (find-package host-name))
                  target-name)))
 
@@ -595,16 +593,6 @@
                                 . %format-symbol)
                                (alexandria:symbolicate
                                 . %symbolicate)
-                               (cross-clasp.clasp.alexandria::ensure-car
-                                . alexandria:ensure-car)
-                               (cross-clasp.clasp.alexandria::ensure-list
-                                . alexandria:ensure-list)
-                               (cross-clasp.clasp.alexandria::symbolicate
-                                . %symbolicate)
-                               (cross-clasp.clasp.alexandria::generate-switch-body
-                                . alexandria::generate-switch-body)
-                               (cross-clasp.clasp.khazern::unique-name
-                                . khazern:unique-name)
                                (cross-clasp.clasp.inravina::expand-logical-block
                                 . inravina:expand-logical-block)
                                (cross-clasp.clasp.invistra::unique-name
