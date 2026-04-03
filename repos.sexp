@@ -251,7 +251,7 @@
   :directory "src/lisp/kernel/contrib/Maclina/"
   :repository "https://github.com/s-expressionists/Maclina.git"
   :branch "main"
-  :commit "bc46f828963b7c0c6a14fec433edc07cdd0c784f"
+  :commit "d92e9254b45da4e508503b984f02403c6fb6677a"
   :pin 1)
  (:name :mgl-pax
   :extension :cando

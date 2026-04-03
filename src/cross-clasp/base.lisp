@@ -87,24 +87,38 @@
   (setf (getf plist indicator) value)
   plist)
 
+(defparameter *shared-package-names*
+  '("ALEXANDRIA" "ECCLESIA" "KHAZERN"
+    "ECLECTOR.BASE" "ECLECTOR.READER"
+    "ECLECTOR.READTABLE" "ECLECTOR.READTABLE.SIMPLE"
+    "ECLECTOR.PARSE-RESULT"
+    "TRIVIAL-WITH-CURRENT-SOURCE-FORM"))
+
 ;;; make a package in the build environment.
-;;; this basically entails resolving all names with respect to that
-;;; environment, and then making a host package with CROSS-CLASP.CLASP.
-;;; prepended to the name.
+;;; For most packages we prepend CROSS-CLASP.CLASP. to avoid
+;;; stomping on any packages in the host (which may be Clasp).
+;;; This should make it easier to build a new version of Clasp with an
+;;; old version with a different definition of CORE, etc.
+;;; Some packages we share with the host to make things easier for
+;;; macroexpansions (i.e. they can expand into the symbols they usually
+;;; do, rather than cross-clasp.clasp.whatever).
 (defun %make-package (package-name &key nicknames use)
   (let* ((name (string package-name))
-         (hname (concatenate 'string "CROSS-CLASP.CLASP." name))
+         (sharedp (member package-name *shared-package-names*
+                          :test #'string=))
+         (hname (if sharedp
+                    name
+                    (concatenate 'string "CROSS-CLASP.CLASP." name)))
          (use
            (loop for u in use
                  for s = (string u)
                  collect (or (clostrum:find-package
                               m:*client* *build-rte* s)
                            (error "Tried to use undefined package ~s" s))))
-         #+(or)
-         (_ (when (find-package hname)
-              (delete-package hname))) ; fuck it
-         (package (or (find-package hname) (cl:make-package hname :use use))))
-    #+(or)(declare (ignore _))
+         (package (or (find-package hname)
+                      (if sharedp
+                          (error "BUG: Package ~a should exist in the host already but doesn't" hname)
+                          (make-package hname :use use)))))
     (setf (clostrum:package-name m:*client* *build-rte* package) name
           (clostrum:find-package m:*client* *build-rte* name) package)
     (loop for nick in nicknames
@@ -203,7 +217,7 @@
                                                                 ,nick)
                                 collect 'package)))))
     (defpack "COMMON-LISP" #:common-lisp "CL")
-    (defpack "COMMON-LISP-USER" #:cross-clasp.clasp.cl-user "CL-USER")
+    (defpack "COMMON-LISP-USER" #:common-lisp-user "CL-USER")
     (defpack "CORE" #:cross-clasp.clasp.core "SYS" "SYSTEM" "SI")
     (defpack "GCTOOLS" #:cross-clasp.clasp.gctools)
     (defpack "MP" #:cross-clasp.clasp.mp)
@@ -222,7 +236,7 @@
     (defpack "AST-TOOLING" #:cross-clasp.clasp.ast-tooling)
     (defpack "EXT" #:cross-clasp.clasp.ext)
     (defpack "KEYWORD" #:keyword)
-    (defpack "ECCLESIA" #:cross-clasp.clasp.ecclesia))
+    (defpack "ECCLESIA" #:ecclesia))
   ;; on clasp we have a few symbols from its actual core, like lambda-name.
   ;; So we need to be able to dump those correctly.
   #+clasp
@@ -236,10 +250,7 @@
                                (let ((*package* (find-package "CL")))
                                  ;; global ext, i.e. clasp's, not ours
                                  (find-package "EXT")))
-        "EXT")
-  (setf (clostrum:package-name client environment
-                               (find-package "ECCLESIA"))
-        "ECCLESIA"))
+        "EXT"))
 
 ;;; FIXME: defconstant should really be in common macros.
 (defun core::symbol-constantp (name)
@@ -441,7 +452,12 @@
                        ext::class-unboundp ext::class-get
                        cmp::warn-undefined-type
                        cmp::warn-cannot-coerce
-                       #+clasp si:backquote-append)
+                       #+clasp si:backquote-append
+                       alexandria:make-gensym-list
+                       alexandria:ensure-car
+                       alexandria:ensure-list
+                       alexandria::generate-switch-body
+                       khazern:unique-name)
         for f = (fdefinition fname)
         do (setf (clostrum:fdefinition client rte fname) f))
   (loop for (fname . src) in '((cl:proclaim . proclaim)
@@ -454,20 +470,10 @@
                                 . find-compiler-class)
                                (core::install-delayed-macros
                                 . %install-delayed-macros)
-                               (cross-clasp.clasp.alexandria::make-gensym-list
-                                . alexandria:make-gensym-list)
-                               (cross-clasp.clasp.alexandria::format-symbol
+                               (alexandria:format-symbol
                                 . %format-symbol)
-                               (cross-clasp.clasp.alexandria::ensure-car
-                                . alexandria:ensure-car)
-                               (cross-clasp.clasp.alexandria::ensure-list
-                                . alexandria:ensure-list)
-                               (cross-clasp.clasp.alexandria::symbolicate
-                                . %symbolicate)
-                               (cross-clasp.clasp.alexandria::generate-switch-body
-                                . alexandria::generate-switch-body)
-                               (cross-clasp.clasp.khazern::unique-name
-                                . khazern:unique-name))
+                               (alexandria:symbolicate
+                                . %symbolicate))
         for f = (fdefinition src)
         do (setf (clostrum:fdefinition client rte fname) f))
   (loop for mname in '(eclector.reader:quasiquote
@@ -526,7 +532,7 @@
                                (etypecase . core::%etypecase)
                                (setf . %setf)
                                (remf . %remf)
-                               (cross-clasp.clasp.trivial-with-current-source-form::with-current-source-form
+                               (trivial-with-current-source-form:with-current-source-form
                                    . ext:with-current-source-form))
         for m = (macro-function src)
         do (setf (clostrum:macro-function client rte mname) m))
