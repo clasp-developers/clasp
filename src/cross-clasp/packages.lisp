@@ -362,19 +362,6 @@
            #:stream-line-length #:stream-line-column
            #:stream-file-position #:stream-advance-to-column))
 
-;; Used by some external packages and such, for some reason
-(defpackage #:cross-clasp.clasp.cl-user
-  (:use #:cl))
-
-(defpackage #:cross-clasp.clasp.alexandria
-  (:use #:cl))
-(defpackage #:cross-clasp.clasp.ecclesia
-  (:use #:cl))
-(defpackage #:cross-clasp.clasp.trivial-with-current-source-form
-  (:use #:cl))
-(defpackage #:cross-clasp.clasp.khazern
-  (:use #:cl))
-
 (defpackage #:cross-clasp
   (:use #:cl)
   (:local-nicknames (#:m #:maclina.machine)
