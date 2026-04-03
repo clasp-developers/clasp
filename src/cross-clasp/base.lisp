@@ -242,9 +242,9 @@
     (defpack "QUAVIVER.CONDITION" #:cross-clasp.clasp.quaviver.condition)
     (defpack "QUAVIVER.MATH" #:cross-clasp.clasp.quaviver.math)
     (defpack "QUAVIVER/SCHUBFACH" #:cross-clasp.clasp.quaviver/schubfach)
-    (defpack "INCLESS" #:cross-clasp.clasp.incless)
-    (defpack "INRAVINA" #:cross-clasp.clasp.inravina)
-    (defpack "INVISTRA" #:cross-clasp.clasp.invistra)
+    (defpack "INCLESS" #:incless)
+    (defpack "INRAVINA" #:inravina)
+    (defpack "INVISTRA" #:invistra)
     (defpack "INCLESS-INTRINSIC" #:cross-clasp.clasp.incless-intrinsic)
     (defpack "INRAVINA-INTRINSIC" #:cross-clasp.clasp.inravina-intrinsic)
     (defpack "INVISTRA-INTRINSIC" #:cross-clasp.clasp.invistra-intrinsic)
@@ -269,8 +269,6 @@
                                            ("QUAVIVER.CONDITION" . "QUAVIVER.CONDITION")
                                            ("QUAVIVER.MATH" . "QUAVIVER.MATH")
                                            ("QUAVIVER/SCHUBFACH" . "QUAVIVER/SCHUBFACH")
-                                           ("INCLESS" . "INCLESS") ("INRAVINA" . "INRAVINA")
-                                           ("INVISTRA" . "INVISTRA")
                                            ("INCLESS-EXTRINSIC" . "INCLESS-INTRINSIC")
                                            ("INRAVINA-EXTRINSIC" . "INRAVINA-INTRINSIC")
                                            ("INVISTRA-EXTRINSIC" . "INVISTRA-INTRINSIC"))
@@ -438,13 +436,13 @@
                        invistra::*go-to-argument* invistra::*pop-remaining-arguments*
                        invistra::*inner-exit-if-exhausted* invistra::*outer-exit-if-exhausted*
                        invistra::*inner-exit* invistra::*outer-exit*
-                       cross-clasp.clasp.invistra::*format-output* cross-clasp.clasp.invistra::*extra-space*
-                       cross-clasp.clasp.invistra::*line-length* cross-clasp.clasp.invistra::*newline-kind*
-                       cross-clasp.clasp.invistra::*more-arguments-p* cross-clasp.clasp.invistra::*argument-index*
-                       cross-clasp.clasp.invistra::*remaining-argument-count* cross-clasp.clasp.invistra::*pop-argument*
-                       cross-clasp.clasp.invistra::*go-to-argument* cross-clasp.clasp.invistra::*pop-remaining-arguments*
-                       cross-clasp.clasp.invistra::*inner-exit-if-exhausted* cross-clasp.clasp.invistra::*outer-exit-if-exhausted*
-                       cross-clasp.clasp.invistra::*inner-exit* cross-clasp.clasp.invistra::*outer-exit*)
+                       invistra::*format-output* invistra::*extra-space*
+                       invistra::*line-length* invistra::*newline-kind*
+                       invistra::*more-arguments-p* invistra::*argument-index*
+                       invistra::*remaining-argument-count* invistra::*pop-argument*
+                       invistra::*go-to-argument* invistra::*pop-remaining-arguments*
+                       invistra::*inner-exit-if-exhausted* invistra::*outer-exit-if-exhausted*
+                       invistra::*inner-exit* invistra::*outer-exit*)
         do (clostrum:make-variable client rte vname))
   (loop for fname in '(core::symbol-constantp (setf core::symbol-constantp)
                        (setf ext:symbol-macro)
@@ -527,58 +525,7 @@
                  quaviver::primitive-triple-float/short-float
                  quaviver::primitive-triple-float/single-float
                  quaviver::primitive-triple-float/double-float
-                 quaviver::primitive-triple-float/long-float)
-          (ftype (function (t t t t) t)
-                 incless:handle-circle)
-          (ftype (function (t t t t) t)
-                 inravina:pprint-pop-p)
-          (ftype (function (t) t)
-                 inravina:coerce-output-stream-designator)
-          (ftype (function (t t) t)
-                 inravina:make-pretty-stream)
-          (ftype (function (t t t &key (:prefix t) (:per-line-prefix-p t) (:suffix t)) t)
-                 inravina:execute-logical-block)
-          (ftype (function (t t t t) t)
-                 inravina:pprint-indent)
-          (ftype (function (t t t) t)
-                 inravina:pprint-newline)
-          (ftype (function (t t t t t) t)
-                 inravina:pprint-tab)
-          (ftype (function (t t t t) t)
-                 inravina:pprint-start-logical-block)
-          (ftype (function (t t t) t)
-                 inravina:pprint-end-logical-block)
-          (ftype (function (t t t) t)
-                 inravina:pprint-valid-list-p)
-          (ftype (function (t t) t)
-                 invistra:coerce-function-designator
-                 incless:printing-char-p)
-          (ftype (function () t)
-                 invistra:make-upcase-stream)
-          (ftype (function (t) t)
-                 invistra:format-ordinal-numeral)
-          (ftype (function (t t) t)
-                 invistra:make-argument-cursor)
-          (ftype (function (t) t)
-                 invistra::dotted-list-length)
-          (ftype (function (t t t t t t t t) t)
-                 invistra:format-aesthetic
-                 invistra:format-standard)
-          (ftype (function (t t t) t)
-                 invistra:format-single-recursive)
-          (ftype (function (t t) t)
-                 invistra:format-remaining-recursive)
-          (ftype (function (t t t t t) t)
-                 invistra:format-tab)
-          (ftype (function (t t t t t t t t t) t)
-                 invistra:format-radix-numeral)
-          (ftype (function (t t t t t t t t t) t)
-                 invistra:format-fixed-format-float)
-          (ftype (function (t t t t t t t t t t t) t)
-                 invistra:format-exponential-float
-                 invistra:format-general-float)
-          (ftype (function (t t t t t t t t) t)
-                 invistra:format-monetary-float)))
+                 quaviver::primitive-triple-float/long-float)))
   (loop for (fname . src) in '((cl:proclaim . proclaim)
                                (cl:make-package . %make-package)
                                (clos::class-slots . closer-mop:class-slots)
@@ -593,9 +540,9 @@
                                 . %format-symbol)
                                (alexandria:symbolicate
                                 . %symbolicate)
-                               (cross-clasp.clasp.inravina::expand-logical-block
+                               (inravina::expand-logical-block
                                 . inravina:expand-logical-block)
-                               (cross-clasp.clasp.invistra::unique-name
+                               (invistra::unique-name
                                 . invistra::unique-name)
                                (invistra::format-with-client
                                 . invistra::format-with-client)
@@ -603,7 +550,7 @@
                                 . invistra::make-downcase-stream)
                                (incless::write-object
                                 . incless::write-object)
-                               #+(or)(cross-clasp.clasp.invistra::format-with-client
+                               #+(or)(invistra::format-with-client
                                 . invistra::format-with-client)
                                (cross-clasp.clasp.quaviver::unique-name
                                 . quaviver::unique-name)
@@ -645,7 +592,7 @@
                                         (getf plist :significand-size)))
          (bytespec (form)
            (cons (second form) (third form))))
-    (setf (clostrum:fdefinition client rte 'cross-clasp.clasp.incless::write-object)
+    (setf (clostrum:fdefinition client rte 'incless::write-object)
           (fdefinition 'incless:write-object)
           (clostrum:fdefinition client rte 'cl:format)
           (fdefinition 'invistra-extrinsic:format)

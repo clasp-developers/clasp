@@ -362,33 +362,14 @@
            #:stream-line-length #:stream-line-column
            #:stream-file-position #:stream-advance-to-column))
 
-(defpackage #:cross-clasp.clasp.incless
-  (:use #:cl)
-  (:shadow #:print-object))
 (defpackage #:cross-clasp.clasp.incless-intrinsic
   (:use #:cl)
   (:export #:*client*
            #:client))
 
-(defpackage #:cross-clasp.clasp.inravina
-  (:use #:cl)
-  (:shadow #:copy-pprint-dispatch
-           #:pprint-dispatch
-           #:pprint-exit-if-list-exhausted
-           #:pprint-fill
-           #:pprint-indent
-           #:pprint-linear
-           #:pprint-logical-block
-           #:pprint-newline
-           #:pprint-pop
-           #:pprint-tab
-           #:pprint-tabular
-           #:set-pprint-dispatch))
 (defpackage #:cross-clasp.clasp.inravina-intrinsic
   (:use #:cl)
   (:export #:client))
-(defpackage #:cross-clasp.clasp.invistra
-  (:use #:cl))
 (defpackage #:cross-clasp.clasp.invistra-intrinsic
   (:use #:cl)
   (:export #:client))
