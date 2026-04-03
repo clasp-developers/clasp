@@ -87,37 +87,28 @@
   (setf (getf plist indicator) value)
   plist)
 
-(defparameter *clasp-package-names*
-  '("CORE" "GCTOOLS" "MP" "LLVM" "LLVM-SYS" "CLOS" "COMPILER"
-    "SEQUENCE" "GRAY" "MPI" "CLBIND"
-    "CLANG-COMMENTS" "CLANG-AST" "AST-TOOLING" "EXT"
-    "SOCKETS-INTERNAL" "SERVE-EVENT-INTERNAL" "CLANG-COMPILE"
-    "SB-BSD-CLBIND" "SB-BSD-SOCKETS" "CMPREF" "STATIC-GFS"
-    "CMPLTV" "LITERAL" "CC-BIR-TO-BMIR" "CC-BMIR-TO-BLIR"
-    ;; loaded in build but not by cross-clasp
-    "KHAZERN-EXTENSION" "KHAZERN-EXTENSION-INTRINSIC"
-    ;; have alternate definitions due to importing clos: symbols
-    "CLOSER-MOP" "CLOSER-COMMON-LISP" "CLOSER-COMMON-LISP-USER"))
+(defparameter *shared-package-names*
+  '("ALEXANDRIA" "ECCLESIA" "KHAZERN"
+    "ECLECTOR.BASE" "ECLECTOR.READER"
+    "ECLECTOR.READTABLE" "ECLECTOR.READTABLE.SIMPLE"
+    "ECLECTOR.PARSE-RESULT"
+    "TRIVIAL-WITH-CURRENT-SOURCE-FORM"))
 
 ;;; make a package in the build environment.
-;;; All packages should already exist in the host environment so we
-;;; use those, and just make sure names/nicknames are set in the
-;;; environment.
-;;; For Clasp's packages we prepend CROSS-CLASP.CLASP. to avoid
+;;; For most packages we prepend CROSS-CLASP.CLASP. to avoid
 ;;; stomping on any packages in the host (which may be Clasp).
 ;;; This should make it easier to build a new version of Clasp with an
 ;;; old version with a different definition of CORE, etc.
+;;; Some packages we share with the host to make things easier for
+;;; macroexpansions (i.e. they can expand into the symbols they usually
+;;; do, rather than cross-clasp.clasp.whatever).
 (defun %make-package (package-name &key nicknames use)
   (let* ((name (string package-name))
-         (clasp-p
-           (or (member name *clasp-package-names* :test #'string=)
-               (and (> (length name) (length "CLASP"))
-                    (string= name "CLASP" :end1 5))
-               (and (> (length name) (length "CLEAVIR"))
-                    (string= name "CLEAVIR" :end1 7))))
-         (hname (if clasp-p
-                    (concatenate 'string "CROSS-CLASP.CLASP." name)
-                    name))
+         (sharedp (member package-name *shared-package-names*
+                          :test #'string=))
+         (hname (if sharedp
+                    name
+                    (concatenate 'string "CROSS-CLASP.CLASP." name)))
          (use
            (loop for u in use
                  for s = (string u)
@@ -125,9 +116,9 @@
                               m:*client* *build-rte* s)
                            (error "Tried to use undefined package ~s" s))))
          (package (or (find-package hname)
-                      (if clasp-p
-                          (make-package hname :use use)
-                          (error "BUG: Package ~a should exist in the host already but doesn't" hname)))))
+                      (if sharedp
+                          (error "BUG: Package ~a should exist in the host already but doesn't" hname)
+                          (make-package hname :use use)))))
     (setf (clostrum:package-name m:*client* *build-rte* package) name
           (clostrum:find-package m:*client* *build-rte* name) package)
     (loop for nick in nicknames
