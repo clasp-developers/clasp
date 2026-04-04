@@ -149,6 +149,8 @@
              (terpri))))
 
 (defmacro inspect-print (label object &optional place)
+  (when (stringp label)
+    (setf label `(formatter ,label)))
   (if place
       `(multiple-value-bind (update-flag new-value)
            (read-inspect-command ,label ,object nil)

@@ -760,14 +760,14 @@ GET-NAME-SERVICE-ERRNO")
     `(progn
        (export ',name)
        (defun ,name (socket)
-         (,(intern (format nil "GET-SOCKOPT-~A" type))
+         (,(intern (concatenate 'string (string '#:get-sockopt-) (string type)))
            (socket-file-descriptor socket)
            ,c-level
            ,c-const
            ))
        ,@(unless read-only
            `((defun (setf ,name) (value socket)
-               (,(intern (format nil "SET-SOCKOPT-~A" type))
+               (,(intern (concatenate 'string (string '#:set-sockopt-) (string type)))
                  (socket-file-descriptor socket)
                  ,c-level
                  ,c-const

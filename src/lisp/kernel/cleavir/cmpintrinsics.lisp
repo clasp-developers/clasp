@@ -94,7 +94,7 @@ names to offsets."
           )
         (let ((final `(progn
                         ,define-symbol-macro
-                        (defparameter ,(intern (format nil "INFO.~a" name))
+                        (defparameter ,(intern (concatenate 'string "INFO." (symbol-name name)))
                           (make-c++-struct :name ,name
                                            :tag ,tag
                                            :type-getter (lambda () (progn ,name))

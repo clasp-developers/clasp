@@ -4,6 +4,7 @@
       '(random-short random-double random-long
         ;; compile-file-no-unwind
         types-classes-10
+        write-quasiquote-01
         sbcl-cross-compile-4 ;;;not important
         ;; include-level-2a
         include-level-2b include-level-3 ;;; a problem for sbcl x-compiling
