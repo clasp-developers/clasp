@@ -169,4 +169,15 @@ void RandomState_O::__writeReadable__(T_sp stream) const {
   clasp_write_string("\")", stream);
 }
 
+CL_LAMBDA(seed);
+CL_DOCSTRING(R"dx(Create a random-state with the mt19937 generator seeded from the integer SEED.)dx");
+DOCGROUP(clasp);
+CL_DEFUN RandomState_sp core__make_seeded_random_state(Integer_sp seed) {
+  auto rs = gctools::GC<RandomState_O>::allocate(false);
+  gc::Fixnum fseed = clasp_to_fixnum(seed);
+  RandomState_O::Generator gen(static_cast<uint>(fseed));
+  rs->_Producer._value = gen;
+  return rs;
+}
+
 }; // namespace core

@@ -69,6 +69,7 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEqualp.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/cons.h>
+#include <clasp/core/random.h>
 #include <clasp/core/documentation.h>
 #include <clasp/core/backquote.h>
 #include <clasp/core/bformat.h>
@@ -1208,6 +1209,19 @@ void Lisp::parseCommandLineArguments(const CommandLineOptions& options) {
     }
     printf("%s:%d  Lisp smart_ptr width -> %d  sizeof(Lisp) -> %d\n", __FILE__, __LINE__, (int)(sizeof(_lisp->_Roots) / 8),
            (int)sizeof(Lisp));
+  }
+
+  SYMBOL_EXPORT_SC_(CorePkg, STARglobal_random_seedSTAR);
+  {
+    long seed = options._RandomNumberSeed;
+    if (seed == 0) {
+      seed = static_cast<long>(std::time(nullptr));
+    }
+    _sym_STARglobal_random_seedSTAR->defparameter(make_fixnum(seed));
+    // Re-seed cl:*random-state* from the global seed
+    RandomState_O::Generator gen(static_cast<uint>(seed));
+    auto rs = gc::As<RandomState_sp>(cl::_sym_STARrandom_stateSTAR->symbolValue());
+    rs->_Producer._value = gen;
   }
 
   SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineImageSTAR);
