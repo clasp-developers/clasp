@@ -1116,6 +1116,16 @@ CL_DEFUN List_sp cl__read_delimited_list(Character_sp chr, T_sp input_stream_des
 }
 
 SYMBOL_EXPORT_SC_(CorePkg, STARread_hookSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, read_with_native_reader);
+
+CL_LAMBDA(stream eof-error-p eof-value recursive-p);
+CL_DOCSTRING(R"dx(Native C++ reader for use as core:*read-hook*)dx");
+DOCGROUP(clasp);
+CL_DEFUN T_sp core__read_with_native_reader(T_sp stream, T_sp eof_error_p,
+                                                 T_sp eof_value, T_sp recursive_p) {
+  return read_lisp_object(stream, eof_error_p.isTrue(), eof_value,
+                          recursive_p.notnilp());
+} 
 
 CL_LAMBDA(&optional input-stream-designator (eof-error-p t) eof-value recursive-p);
 CL_DECLARE();
@@ -1130,10 +1140,16 @@ CL_DEFUN T_sp cl__read(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_
   }
   DynamicScopeManager scope(_sym_STARpreserve_whitespace_pSTAR, _lisp->_boolean(preserve_whitespace));
   T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
-  if (_sym_STARread_hookSTAR->boundP() && _sym_STARread_hookSTAR->symbolValue().notnilp())
-    return eval::funcall(_sym_STARread_hookSTAR->symbolValue(), sin, eof_error_p, eof_value, recursive_p);
-  else
-    return read_lisp_object(sin, eof_error_p.isTrue(), eof_value, recursive_p.notnilp());
+  //
+  // Call the real reader using the hook.
+  //  At startup it should be bound to #'core:read-with-native-reader
+  //   Once eclector is available it is bound to 'compiler::read-with-eclector
+  //
+  if (_sym_STARread_hookSTAR->boundP() && _sym_STARread_hookSTAR->symbolValue().notnilp()) {
+    return eval::funcall(_sym_STARread_hookSTAR->symbolValue(),
+                         sin, eof_error_p, eof_value, recursive_p );
+  }
+  return read_lisp_object(sin, eof_error_p.isTrue(), eof_value, recursive_p.notnilp());
 }
 
 CL_LAMBDA(&optional input-stream-designator (eof-error-p t) eof-value recursive-p);

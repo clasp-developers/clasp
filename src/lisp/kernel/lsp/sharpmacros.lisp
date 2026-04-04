@@ -128,7 +128,9 @@
   (set-dispatch-macro-character #\# #\= #'sharp-equal readtable)
   (set-dispatch-macro-character #\# #\# #'sharp-sharp readtable)
   (set-dispatch-macro-character #\# #\I #'read-cxx-object readtable)
-  (set-dispatch-macro-character #\# #\D #'read-dense-specialized-array readtable))
+  (set-dispatch-macro-character #\# #\D #'do-read-dense-specialized-array readtable))
 
 (sharpmacros-enhance *readtable*)
 (sharpmacros-enhance (symbol-value 'core:+standard-readtable+))
+
+(defvar +native-readtable+ (copy-readtable core:+standard-readtable+))
