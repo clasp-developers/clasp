@@ -58,6 +58,7 @@ struct CommandLineOptions {
   std::set<std::string> _Features;
   std::vector<pair<LoadEvalEnum, std::string>> _LoadEvalList;
   bool _AddressesP;
+  size_t _Threads;
   std::string _AddressesFileName;
   bool _FreezeStartupType;
   StartupTypeEnum _StartupType;

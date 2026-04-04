@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #include <clasp/core/foundation.h>
 #include <clasp/core/hwinfo.h>
+#include <clasp/core/commandLineOptions.h>
 #include <clasp/core/wrappers.h>
 
 #if defined(_WIN32) || defined(_TARGET_OS_WIN)
@@ -55,8 +56,11 @@ CL_DEFUN T_sp core__num_logical_processors() {
   return core::make_fixnum(systeminfo.dwNumberOfProcessors);
 
 #else
-
-  return core::make_fixnum(sysconf(_SC_NPROCESSORS_ONLN));
+  if (global_options->_Threads!=0) {
+    return core::make_fixnum(global_options->_Threads);
+  } else {
+    return core::make_fixnum(sysconf(_SC_NPROCESSORS_ONLN));
+  }
 
 #endif
 };

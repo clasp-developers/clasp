@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 
 #include <iostream>
+#include <string>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include "clasp/core/compiler.h"
@@ -78,6 +79,9 @@ Options:
   -t, --trampolines
       Generate trampolines around bytecode functions for profiling and debugging.
       This slows performance a bit.
+  -T, --threads <integer>
+      Set the number of lparallels worker threads.
+      Default is number of logical processors.
   -v, --version
       Print version
   -s, --verbose
@@ -279,6 +283,8 @@ void process_clasp_arguments(CommandLineOptions* options) {
                                               "--rc",
                                               "-S",
                                               "--seed",
+                                              "-T",
+                                              "--threads",
                                               "-f",
                                               "--feature"};
   for (auto arg = options->_KernelArguments.cbegin(), end = options->_KernelArguments.cend(); arg != end; ++arg) {
@@ -334,6 +340,10 @@ void process_clasp_arguments(CommandLineOptions* options) {
       if (options->validStartupTypeOption(*arg)) {
         options->_StartupType = cloNone;
       }
+    } else if (*arg == "-T" || *arg == "--threads") {
+      arg++;
+      std::string ss(*arg);
+      options->_Threads = std::stoi(ss);
     } else if (*arg == "-I" || *arg == "--ignore-image") {
       if (options->validStartupTypeOption(*arg)) {
         options->_StartupType = cloInitLisp;
@@ -420,7 +430,9 @@ void process_clasp_arguments(CommandLineOptions* options) {
 }
 
 CommandLineOptions::CommandLineOptions(int argc, const char* argv[])
-    : _ProcessArguments(process_clasp_arguments), _DisableMpi(false), _AddressesP(false), _StartupType(DEFAULT_STARTUP_TYPE),
+    : _ProcessArguments(process_clasp_arguments), _DisableMpi(false), _AddressesP(false),
+      _Threads(0),
+      _StartupType(DEFAULT_STARTUP_TYPE),
       _FreezeStartupType(false), _HasDescribeFile(false), _StartupFile(""), _ExportedSymbolsCheck(false),
       _RandomNumberSeed(0), _NoInform(false), _NoPrint(false), _DebuggerDisabled(false),
       _Interactive(true), _Version(false), _SilentStartup(true), _GenerateTrampolines(false),
