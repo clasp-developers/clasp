@@ -278,11 +278,7 @@
                                  ;; global ext, i.e. clasp's, not ours
                                  (find-package "EXT")))
         "EXT")
-  (loop for (host-name . target-name) in '(("QUAVIVER" . "QUAVIVER")
-                                           ("QUAVIVER.CONDITION" . "QUAVIVER.CONDITION")
-                                           ("QUAVIVER.MATH" . "QUAVIVER.MATH")
-                                           ("QUAVIVER/SCHUBFACH" . "QUAVIVER/SCHUBFACH")
-                                           ("INCLESS-EXTRINSIC" . "INCLESS-INTRINSIC")
+  (loop for (host-name . target-name) in '(("INCLESS-EXTRINSIC" . "INCLESS-INTRINSIC")
                                            ("INRAVINA-EXTRINSIC" . "INRAVINA-INTRINSIC")
                                            ("INVISTRA-EXTRINSIC" . "INVISTRA-INTRINSIC"))
         do (setf (clostrum:package-name client environment (find-package host-name))
@@ -429,6 +425,8 @@
                        core::*interrupts-enabled* core::*allow-with-interrupts*
                        core:*quasiquote* core::*sharp-equal-final-table*
                        core:*variable-source-infos*
+                       cross-clasp.clasp.inravina-intrinsic::*initial-pprint-dispatch*
+                       core::+standard-readtable+
                        ext:*invoke-debugger-hook* ext:*toplevel-hook*
                        ext:*inspector-hook* core::*documentation-pool*
                        core:*initialize-hooks* core:*terminate-hooks*
@@ -533,7 +531,6 @@
                        khazern:unique-name
                        inravina:expand-logical-block
                        invistra::unique-name
-                       invistra:format-with-client
                        invistra:make-downcase-stream
                        incless:write-object
                        invistra:format-with-client)
@@ -761,8 +758,7 @@
                                (etypecase . core::%etypecase)
                                (setf . %setf)
                                (remf . %remf)
-                               (pprint-logical-block
-                                   . inravina-extrinsic:pprint-logical-block)
+                               (pprint-logical-block . core::%pprint-logical-block)
                                #+(or)(pprint-exit-if-list-exhausted
                                    . %pprint-exit-if-list-exhausted)
                                #+(or)(pprint-pop

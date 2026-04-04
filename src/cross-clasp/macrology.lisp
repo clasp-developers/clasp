@@ -1,10 +1,13 @@
 (in-package #:cross-clasp.clasp.core)
 
-(defmacro %pprint-exit-if-list-exhausted ()
-  `(inravina-extrinsic:pprint-exit-if-list-exhausted))
-
-(defmacro %pprint-pop ()
-  `(inravina-extrinsic:pprint-pop))
+(defmacro %pprint-logical-block
+    ((stream-symbol object
+      &key (prefix "" prefix-p) (per-line-prefix "" per-line-prefix-p) (suffix "" suffix-p))
+     &body body)
+  (inravina:expand-logical-block 'cross-clasp.clasp.incless-intrinsic:*client* stream-symbol
+                                 object prefix prefix-p per-line-prefix per-line-prefix-p
+                                 suffix suffix-p 'pprint-exit-if-list-exhausted 'pprint-pop nil
+                                 body))
 
 (defmacro with-unique-names (symbols &body body)
   `(let* ,(mapcar (lambda (symbol)
