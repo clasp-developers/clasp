@@ -379,6 +379,7 @@ public: // Functions here
   Vector_sp pairs() const;
 };
 
+size_t cl__hash_table_count(HashTable_sp ht);
 T_mv clasp_gethash_safe(T_sp key, T_sp hashTable, T_sp default_);
 
 }; // namespace core

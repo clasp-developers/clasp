@@ -428,7 +428,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(hash-table-count)dx");
 DOCGROUP(clasp);
-CL_DEFUN uint cl__hash_table_count(HashTable_sp ht) { return ht->hashTableCount(); }
+CL_DEFUN size_t cl__hash_table_count(HashTable_sp ht) { return ht->hashTableCount(); }
 
 size_t HashTable_O::hashTableCount() const {
   HT_READ_LOCK(this);
