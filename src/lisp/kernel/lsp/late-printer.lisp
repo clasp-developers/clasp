@@ -3,6 +3,10 @@
 (defmethod incless:printing-char-p ((client incless-intrinsic:client) char)
   (core:printing-char-p char))
 
+(define-compiler-macro assert-failure (&whole form &rest args)
+  (declare (ignore args))
+  (invistra:expand-function incless-intrinsic:*client* form 4))
+
 (define-compiler-macro simple-program-error (&whole form &rest args)
   (declare (ignore args))
   (invistra:expand-function incless-intrinsic:*client* form 1))

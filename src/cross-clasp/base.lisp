@@ -531,6 +531,7 @@
                        khazern:unique-name
                        inravina:expand-logical-block
                        invistra::unique-name
+                       invistra:expand-function
                        invistra:make-downcase-stream
                        incless:write-object
                        invistra:format-with-client)
@@ -598,10 +599,14 @@
           (compiler-macro-function 'invistra-extrinsic:y-or-n-p)
           (clostrum:compiler-macro-function client rte 'cl:yes-or-no-p)
           (compiler-macro-function 'invistra-extrinsic:yes-or-no-p)
-          (clostrum:compiler-macro-function client rte 'core::simple-program-error)
+          (clostrum:compiler-macro-function client rte 'core::assert-failure)
           (lambda (form env)
             (declare (ignore env))
-            (invistra:expand-function incless-extrinsic:*client* form 1))
+            (print (invistra:expand-function incless-extrinsic:*client* form 4)))
+          (clostrum:compiler-macro-function client rte 'cross-clasp.clasp.core::assert-failure)
+          (lambda (form env)
+            (declare (ignore env))
+            (print (invistra:expand-function incless-extrinsic:*client* form 1)))
           (clostrum:compiler-macro-function client rte 'core::simple-reader-error)
           (lambda (form env)
             (declare (ignore env))
@@ -759,10 +764,6 @@
                                (setf . %setf)
                                (remf . %remf)
                                (pprint-logical-block . core::%pprint-logical-block)
-                               #+(or)(pprint-exit-if-list-exhausted
-                                   . %pprint-exit-if-list-exhausted)
-                               #+(or)(pprint-pop
-                                   . %pprint-pop)
                                (trivial-with-current-source-form:with-current-source-form
                                    . ext:with-current-source-form))
         for m = (macro-function src)

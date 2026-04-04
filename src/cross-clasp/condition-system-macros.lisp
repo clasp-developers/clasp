@@ -161,14 +161,17 @@
                                       ,temp-var))))))))
 
 
-(defmacro %assert (test-form &optional places (datum nil datump) &rest arguments)
+(defmacro %assert (test-form &optional places datum &rest arguments)
   `(core::while (not ,test-form)
      (setf (values ,@places)
            ;; Defined in clos/conditions.lisp
            (core::assert-failure ',test-form ',places (list ,@places)
                                  ;; If DATUM is provided, it must be for a
                                  ;; condition; NIL is not acceptable.
-                                 ,(if datump datum nil) ,@arguments))))
+                                 ,(if (stringp datum)
+                                      (invistra:expand-formatter incless-extrinsic:*client* datum)
+                                      datum)
+                                 ,@arguments))))
 
 (defmacro %check-type (place type &optional type-string)
   (when (and (consp type) (eq 'quote (car type)))
