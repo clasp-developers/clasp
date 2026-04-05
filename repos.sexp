@@ -138,7 +138,7 @@
   :directory "src/lisp/kernel/contrib/closer-mop/"
   :repository "https://github.com/pcostanza/closer-mop.git"
   :branch "master"
-  :commit "c6b1f2db0d77aea961e871f268b6fdcdc90c7510"
+  :commit "04db182eb614a1000718d14df230dc946e446775"
   :pin 1)
  (:name :clostrum
   :directory "src/lisp/kernel/contrib/Clostrum/"
@@ -207,25 +207,25 @@
   :directory "src/lisp/kernel/contrib/Incless/"
   :repository "https://github.com/s-expressionists/Incless.git"
   :branch "main"
-  :commit "ed66503f90f997c92f0bc74899684d7ae88163b4"
+  :commit "3a8ace620f1042a54ecbba04a05c816e89aa8eab"
   :pin 1)
  (:name :inravina
   :directory "src/lisp/kernel/contrib/Inravina/"
   :repository "https://github.com/s-expressionists/Inravina.git"
   :branch "main"
-  :commit "70169019cb7a7b8109e9db01abbe18f4532c8e30"
+  :commit "a1c98c87efee5a8b5d244d116a8520981c252fff"
   :pin 1)
  (:name :invistra
   :directory "src/lisp/kernel/contrib/Invistra/"
   :repository "https://github.com/s-expressionists/Invistra.git"
   :branch "main"
-  :commit "680d505fad4be9769faae63fb1a5b897eaa8d3c9"
+  :commit "33758cc91db36ebec46df51da7235ffcf2482b0b"
   :pin 1)
  (:name :khazern
   :directory "src/lisp/kernel/contrib/Khazern/"
   :repository "https://github.com/s-expressionists/Khazern.git"
   :branch "master"
-  :commit "7ac578303af2a965fbe7ccce663ecfe751090742"
+  :commit "17ee997c5583f8ced1f4603d05966e9f53df7a8b"
   :pin 1)
  (:name :let-plus
   :extension :cando
