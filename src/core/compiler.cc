@@ -666,7 +666,6 @@ void initialize_compiler_primitives(LispPtr lisp) {
   // Initialize raw object translators needed for Foreign Language Interface support
   llvmo::initialize_raw_translators(); // See file intrinsics.cc!
 
-  cleavirPrimop::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
   comp::_sym_STARcodeWalkerSTAR->defparameter(nil<T_O>());
   comp::_sym_STARsourceLocationsSTAR->makeSpecial();
   comp::_sym_STARbtb_compile_hookSTAR->defparameter(nil<T_O>());
