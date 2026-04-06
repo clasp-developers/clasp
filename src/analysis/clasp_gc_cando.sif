@@ -245,18 +245,18 @@
                           "llvmo::ExecutionEngine_O" "core::ClassRepCreator_O"
                           "core::MDArray_long_float_O" "core::SimpleVector_int16_t_O"
                           "llvmo::Attribute_O" "core::DerivableCxxObject_O"
-                          "core::WeakKeyMapping_O" "llvmo::SwitchInst_O"
-                          "core::SymbolToEnumConverter_O" "chem::RestrainedPiBond_O"
-                          "chem::ConformationCollection_O" "core::SingleDispatchGenericFunction_O"
-                          "core::ComplexVector_int32_t_O" "chem::StepReport_O" "geom::Color_O"
-                          "chem::FFVdw_O" "core::ComplexVector_byte4_t_O"
-                          "asttooling::SourceLocation_O" "core::LogicalPathname_O"
-                          "llvmo::TargetSubtargetInfo_O" "chem::FFLKSolvation_O"
-                          "core::SimpleVector_double_O" "chem::Root_O" "core::CFileStream_O"
-                          "core::SimpleMDArray_byte32_t_O" "core::Bignum_O" "core::ClassHolder_O"
-                          "chem::SketchFunction_O" "core::ComplexVector_byte32_t_O"
-                          "llvmo::UnaryInstruction_O" "llvmo::GlobalValue_O" "llvmo::PointerType_O"
-                          "core::TwoWayStream_O")}
+                          "comp::SpecialOperatorInfo_O" "core::WeakKeyMapping_O"
+                          "llvmo::SwitchInst_O" "core::SymbolToEnumConverter_O"
+                          "chem::RestrainedPiBond_O" "chem::ConformationCollection_O"
+                          "core::SingleDispatchGenericFunction_O" "core::ComplexVector_int32_t_O"
+                          "chem::StepReport_O" "geom::Color_O" "chem::FFVdw_O"
+                          "core::ComplexVector_byte4_t_O" "asttooling::SourceLocation_O"
+                          "core::LogicalPathname_O" "llvmo::TargetSubtargetInfo_O"
+                          "chem::FFLKSolvation_O" "core::SimpleVector_double_O" "chem::Root_O"
+                          "core::CFileStream_O" "core::SimpleMDArray_byte32_t_O" "core::Bignum_O"
+                          "core::ClassHolder_O" "chem::SketchFunction_O"
+                          "core::ComplexVector_byte32_t_O" "llvmo::UnaryInstruction_O"
+                          "llvmo::GlobalValue_O" "llvmo::PointerType_O" "core::TwoWayStream_O")}
 {class-kind :stamp-name "STAMPWTAG_core__T_O" :stamp-key "core::T_O" :parent-class "RootClass"
             :lisp-class-base "RootClass" :root-class "core::T_O" :stamp-wtag 3 :definition-data "0"}
 {class-kind :stamp-name "STAMPWTAG_core__Unused_dummy_O" :stamp-key "core::Unused_dummy_O"
@@ -265,6 +265,10 @@
 {class-kind :stamp-name "STAMPWTAG_core__General_O" :stamp-key "core::General_O"
             :parent-class "core::T_O" :lisp-class-base "core::T_O" :root-class "core::T_O"
             :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{class-kind :stamp-name "STAMPWTAG_comp__SpecialOperatorInfo_O"
+            :stamp-key "comp::SpecialOperatorInfo_O" :parent-class "core::General_O"
+            :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
 {templated-kind :stamp-name "STAMPWTAG_core__Creator_O" :stamp-key "core::Creator_O"
                 :parent-class "core::General_O" :lisp-class-base "core::General_O"
                 :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

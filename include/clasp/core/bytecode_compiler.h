@@ -190,6 +190,20 @@ struct NoVarInfoV {};
 
 typedef std::variant<NoVarInfoV, LexicalVarInfoV, SpecialVarInfoV, SymbolMacroVarInfoV, ConstantVarInfoV> VarInfoV;
 
+FORWARD(SpecialOperatorInfo);
+class SpecialOperatorInfo_O : public General_O {
+  LISP_CLASS(comp, CompPkg, SpecialOperatorInfo_O, "SpecialOperatorInfo", General_O);
+public:
+  SpecialOperatorInfo_O() = default;
+  CL_LISPIFY_NAME(SpecialOperatorInfo/make)
+  CL_DEF_CLASS_METHOD
+  static SpecialOperatorInfo_sp make() {
+    return gctools::GC<SpecialOperatorInfo_O>::allocate<gctools::RuntimeStage>();
+  }
+};
+
+struct SpecialOperatorInfoV {};
+
 FORWARD(FunInfo);
 class FunInfo_O : public General_O {
   LISP_ABSTRACT_CLASS(comp, CompPkg, FunInfo_O, "FunInfo", General_O);
@@ -307,7 +321,7 @@ struct LocalMacroInfoV {
 
 struct NoFunInfoV {};
 
-typedef std::variant<NoFunInfoV, GlobalFunInfoV, LocalFunInfoV, GlobalMacroInfoV, LocalMacroInfoV> FunInfoV;
+typedef std::variant<NoFunInfoV, GlobalFunInfoV, LocalFunInfoV, GlobalMacroInfoV, LocalMacroInfoV, SpecialOperatorInfoV> FunInfoV;
 
 FORWARD(BlockInfo);
 FORWARD(Label);

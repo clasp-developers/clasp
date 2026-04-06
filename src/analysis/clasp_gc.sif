@@ -150,14 +150,15 @@
                           "core::ClassRepCreator_O" "core::MDArray_long_float_O"
                           "core::SimpleVector_int16_t_O" "llvmo::Attribute_O"
                           "core::WeakKeyMapping_O" "core::DerivableCxxObject_O"
-                          "core::SymbolToEnumConverter_O" "llvmo::SwitchInst_O"
-                          "core::SingleDispatchGenericFunction_O" "core::ComplexVector_int32_t_O"
-                          "core::ComplexVector_byte4_t_O" "asttooling::SourceLocation_O"
-                          "core::LogicalPathname_O" "llvmo::TargetSubtargetInfo_O"
-                          "core::SimpleVector_double_O" "core::CFileStream_O"
-                          "core::SimpleMDArray_byte32_t_O" "core::Bignum_O" "core::ClassHolder_O"
-                          "core::ComplexVector_byte32_t_O" "llvmo::UnaryInstruction_O"
-                          "llvmo::GlobalValue_O" "llvmo::PointerType_O" "core::TwoWayStream_O")}
+                          "comp::SpecialOperatorInfo_O" "core::SymbolToEnumConverter_O"
+                          "llvmo::SwitchInst_O" "core::SingleDispatchGenericFunction_O"
+                          "core::ComplexVector_int32_t_O" "core::ComplexVector_byte4_t_O"
+                          "asttooling::SourceLocation_O" "core::LogicalPathname_O"
+                          "llvmo::TargetSubtargetInfo_O" "core::SimpleVector_double_O"
+                          "core::CFileStream_O" "core::SimpleMDArray_byte32_t_O" "core::Bignum_O"
+                          "core::ClassHolder_O" "core::ComplexVector_byte32_t_O"
+                          "llvmo::UnaryInstruction_O" "llvmo::GlobalValue_O" "llvmo::PointerType_O"
+                          "core::TwoWayStream_O")}
 {class-kind :stamp-name "STAMPWTAG_core__T_O" :stamp-key "core::T_O" :parent-class "RootClass"
             :lisp-class-base "RootClass" :root-class "core::T_O" :stamp-wtag 3 :definition-data "0"}
 {class-kind :stamp-name "STAMPWTAG_core__Vaslist_dummy_O" :stamp-key "core::Vaslist_dummy_O"
@@ -208,6 +209,10 @@
              :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "core::SymbolToEnumConverter_O"
              :layout-offset-field-names ("_SymbolToEnum")}
+{class-kind :stamp-name "STAMPWTAG_comp__SpecialOperatorInfo_O"
+            :stamp-key "comp::SpecialOperatorInfo_O" :parent-class "core::General_O"
+            :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
 {class-kind :stamp-name "STAMPWTAG_llvmo__Attribute_O" :stamp-key "llvmo::Attribute_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

@@ -348,6 +348,31 @@ static inline T_sp main_env_opt_id(T_sp name) {
   return table.as_unsafe<HashTable_O>()->gethash(name);
 }
 
+// FIXME: remove redundancy with cl:special-operator-p
+static bool special_operator_p(T_sp fname) {
+  return fname == cl::_sym_progn
+    || fname == cl::_sym_let || fname == cl::_sym_letSTAR
+    || fname == cl::_sym_flet || fname == cl::_sym_labels
+    || fname == cl::_sym_setq
+    || fname == cl::_sym_if
+    || fname == cl::_sym_Function_O
+    || fname == cl::_sym_tagbody || fname == cl::_sym_go
+    || fname == cl::_sym_block || fname == cl::_sym_return_from
+    || fname == cl::_sym_quote
+    || fname == cl::_sym_load_time_value
+    || fname == cl::_sym_macrolet
+    || fname == cl::_sym_symbol_macrolet
+    || fname == cl::_sym_multiple_value_call
+    || fname == cl::_sym_multiple_value_prog1
+    || fname == cl::_sym_locally
+    || fname == cl::_sym_eval_when
+    || fname == cl::_sym_the
+    || fname == cl::_sym_catch || fname == cl::_sym_throw
+    || fname == cl::_sym_unwind_protect
+    || fname == cl::_sym_progv
+    || fname == cleavirPrimop::_sym_funcall;
+}
+
 static inline T_sp main_env_fun_info(T_sp name) {
   // Split into setf and not versions.
   if (name.consp()) {
@@ -379,6 +404,8 @@ static inline T_sp main_env_fun_info(T_sp name) {
     return nil<T_O>();
   } else {
     Symbol_sp fname = gc::As<Symbol_sp>(name);
+    if (special_operator_p(fname))
+      return SpecialOperatorInfo_O::make();
     if (!fname->fboundp())
       return nil<T_O>();
     else if (fname->macroP())
@@ -432,6 +459,8 @@ static inline FunInfoV main_env_fun_info_v(T_sp name) {
     }
   } else {
     Symbol_sp fname = gc::As<Symbol_sp>(name);
+    if (special_operator_p(fname))
+      return FunInfoV(SpecialOperatorInfoV());
     if (!fname->fboundp())
       return FunInfoV(NoFunInfoV());
     else if (fname->macroP())
@@ -2707,8 +2736,9 @@ void compile_primop_funcall(T_sp callee, List_sp args, Lexenv_sp env, const Cont
                          head, clasp_make_fixnum(min), clasp_make_fixnum(max), rest);
 }
 
-void compile_combination(T_sp head, T_sp rest,
-                         Lexenv_sp env, const Context context) {
+static void compile_special_form(T_sp head, T_sp rest,
+                                 Lexenv_sp env, const Context context)
+{
   if (head == cl::_sym_progn)
     compile_progn(rest, env, context);
   else if (head == cl::_sym_let) {
@@ -2808,40 +2838,44 @@ void compile_combination(T_sp head, T_sp rest,
   // basic optimization
   } else if (head == cleavirPrimop::_sym_funcall)
     compile_primop_funcall(oCar(rest), oCdr(rest), env, context);
-  // not a special form
-  else {
-    if (gc::IsA<Symbol_sp>(head)) {
-      FunInfoV info = fun_info_v(head, env);
-      if (std::holds_alternative<GlobalMacroInfoV>(info)) {
-        Function_sp expander = std::get<GlobalMacroInfoV>(info).expander();
-        T_sp expansion = expand_macro(expander, Cons_O::create(head, rest), env);
-        Label_sp begin_label = Label_O::make(), end_label = Label_O::make();
-        begin_label->contextualize(context);
-        context.push_debug_info(BytecodeDebugMacroexpansion_O::make(begin_label, end_label, head));
-        compile_form(expansion, env, context);
-        end_label->contextualize(context);
-      } else if (std::holds_alternative<LocalMacroInfoV>(info)) {
-        Function_sp expander = std::get<LocalMacroInfoV>(info).expander();
-        T_sp expansion = expand_macro(expander, Cons_O::create(head, rest), env);
-        compile_form(expansion, env, context);
-      } else if (std::holds_alternative<GlobalFunInfoV>(info)) {
-        compile_global_call(std::get<GlobalFunInfoV>(info),
-                            head, rest, env, context);
-      } else if (std::holds_alternative<LocalFunInfoV>(info) || std::holds_alternative<NoFunInfoV>(info)) {
+  else SIMPLE_ERROR("Unknown special operator {}", _rep_(head));
+}
+
+void compile_combination(T_sp head, T_sp rest,
+                         Lexenv_sp env, const Context context) {
+  if (head.isA<Symbol_O>()) {
+    FunInfoV info = fun_info_v(head, env);
+    if (std::holds_alternative<SpecialOperatorInfoV>(info)) {
+      compile_special_form(head, rest, env, context);
+    } else if (std::holds_alternative<GlobalMacroInfoV>(info)) {
+      Function_sp expander = std::get<GlobalMacroInfoV>(info).expander();
+      T_sp expansion = expand_macro(expander, Cons_O::create(head, rest), env);
+      Label_sp begin_label = Label_O::make(), end_label = Label_O::make();
+      begin_label->contextualize(context);
+      context.push_debug_info(BytecodeDebugMacroexpansion_O::make(begin_label, end_label, head));
+      compile_form(expansion, env, context);
+      end_label->contextualize(context);
+    } else if (std::holds_alternative<LocalMacroInfoV>(info)) {
+      Function_sp expander = std::get<LocalMacroInfoV>(info).expander();
+      T_sp expansion = expand_macro(expander, Cons_O::create(head, rest), env);
+      compile_form(expansion, env, context);
+    } else if (std::holds_alternative<GlobalFunInfoV>(info)) {
+      compile_global_call(std::get<GlobalFunInfoV>(info),
+                          head, rest, env, context);
+    } else if (std::holds_alternative<LocalFunInfoV>(info) || std::holds_alternative<NoFunInfoV>(info)) {
         // unknown function warning handled by compile-function (eventually)
         // note we do a double lookup of the fun info,
         // which is inefficient in the compiler (doesn't affect generated code)
-        compile_called_function(head, env, context);
-        compile_call(rest, env, context);
-      } else
-        UNREACHABLE();
-    } else if (gc::IsA<Cons_sp>(head) && (oCar(head) == cl::_sym_lambda)) {
-      // Lambda form
       compile_called_function(head, env, context);
       compile_call(rest, env, context);
     } else
-      SIMPLE_ERROR("Illegal combination head: {} rest: {}", _rep_(head), _rep_(rest));
-  }
+      UNREACHABLE();
+  } else if (gc::IsA<Cons_sp>(head) && (oCar(head) == cl::_sym_lambda)) {
+      // Lambda form
+    compile_called_function(head, env, context);
+    compile_call(rest, env, context);
+  } else
+    SIMPLE_ERROR("Illegal combination head: {} rest: {}", _rep_(head), _rep_(rest));
 }
 
 void compile_form(T_sp form, Lexenv_sp env, const Context context) {
