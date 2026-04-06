@@ -41,28 +41,6 @@
        (core:valid-function-name-p (second form))
        (second form)))
 
-(define-cleavir-compiler-macro funcall
-    (&whole form function &rest arguments &environment env)
-  ;; If we have (funcall #'foo ...), we might be able to apply the FOO compiler macro.
-  ;; Failing that, we can at least skip any coercion - #'foo is obviously a function.
-  ;; (funcall #'(setf foo) ...) is fairly common, so this is nice to do.
-  (let ((name (constant-function-form function env)))
-    (when name
-      (return-from funcall
-        (let* ((func-info (cleavir-env:function-info
-                           clasp-cleavir:*clasp-system* env name))
-               (notinline (and func-info
-                               (eq 'notinline (cleavir-env:inline func-info))))
-               ;; We can't get this from the func-info because it might be
-               ;; a local-function-info, which doesn't have that slot.
-               (cmf (compiler-macro-function name env)))
-          (if (and cmf (not notinline))
-              (funcall *macroexpand-hook* cmf form env)
-              `(cleavir-primop:funcall ,function ,@arguments))))))
-  `(cleavir-primop:funcall
-    (core:coerce-called-fdesignator ,function)
-    ,@arguments))
-
 ;;; We do this so that the compiler only has one form of variadic call to
 ;;; worry about. Also, perhaps counterintuitively, mv-call is actually
 ;;; easier for the compiler to work with than APPLY is, and more general
