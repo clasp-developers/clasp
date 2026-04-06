@@ -336,6 +336,18 @@ T_sp Lexenv_O::lookupSymbolMacro(T_sp sname) {
     return nil<T_O>();
 }
 
+static inline T_sp main_env_opt_id(T_sp name) {
+  // basically just gethash, but give up gracefully if something
+  // goes wrong (*optimization-identities* is unbound, etc.)
+  // This should never happen, but it's technically possible.
+  // opt_id is optional, so returning nil is always valid.
+  if (!(_sym_STARoptimization_identitiesSTAR->boundP()))
+    return nil<T_O>();
+  T_sp table = _sym_STARoptimization_identitiesSTAR->symbolValue();
+  if (!table.isA<HashTable_O>()) return nil<T_O>();
+  return table.as_unsafe<HashTable_O>()->gethash(name);
+}
+
 static inline T_sp main_env_fun_info(T_sp name) {
   // Split into setf and not versions.
   if (name.consp()) {
@@ -353,11 +365,12 @@ static inline T_sp main_env_fun_info(T_sp name) {
           if (fname->macroP())
             return GlobalMacroInfo_O::make(fname->getSetfFdefinition());
           else {
+            T_sp opt_id = main_env_opt_id(name);
             if (cl::_sym_compiler_macro_function->fboundp()) {
               T_sp cmexpander = eval::funcall(cl::_sym_compiler_macro_function, name);
-              return GlobalFunInfo_O::make(cmexpander);
+              return GlobalFunInfo_O::make(cmexpander, opt_id);
             } else
-              return GlobalFunInfo_O::make(nil<T_O>());
+              return GlobalFunInfo_O::make(nil<T_O>(), opt_id);
           }
         }
       }
@@ -371,12 +384,13 @@ static inline T_sp main_env_fun_info(T_sp name) {
     else if (fname->macroP())
       return GlobalMacroInfo_O::make(fname->symbolFunction());
     else {
+      T_sp opt_id = main_env_opt_id(name);
       // Look for a compiler macro expander.
       if (cl::_sym_compiler_macro_function->fboundp()) {
         T_sp cmexpander = eval::funcall(cl::_sym_compiler_macro_function, fname);
-        return GlobalFunInfo_O::make(cmexpander);
+        return GlobalFunInfo_O::make(cmexpander, opt_id);
       } else
-        return GlobalFunInfo_O::make(nil<T_O>());
+        return GlobalFunInfo_O::make(nil<T_O>(), opt_id);
     }
   }
 }
@@ -409,10 +423,13 @@ static inline FunInfoV main_env_fun_info_v(T_sp name) {
     if (fname->macroP())
       return FunInfoV(GlobalMacroInfoV(fname->getSetfFdefinition()));
     else if (cl::_sym_compiler_macro_function->fboundp()) {
+      T_sp opt_id = main_env_opt_id(name);
       T_sp cmexpander = eval::funcall(cl::_sym_compiler_macro_function, name);
-      return FunInfoV(GlobalFunInfoV(cmexpander));
-    } else
-      return FunInfoV(GlobalFunInfoV(nil<T_O>()));
+      return FunInfoV(GlobalFunInfoV(cmexpander, opt_id));
+    } else {
+      T_sp opt_id = main_env_opt_id(name);
+      return FunInfoV(GlobalFunInfoV(nil<T_O>(), opt_id));
+    }
   } else {
     Symbol_sp fname = gc::As<Symbol_sp>(name);
     if (!fname->fboundp())
@@ -420,10 +437,13 @@ static inline FunInfoV main_env_fun_info_v(T_sp name) {
     else if (fname->macroP())
       return FunInfoV(GlobalMacroInfoV(fname->symbolFunction()));
     else if (cl::_sym_compiler_macro_function->fboundp()) {
+      T_sp opt_id = main_env_opt_id(name);
       T_sp cmexpander = eval::funcall(cl::_sym_compiler_macro_function, fname);
-      return FunInfoV(GlobalFunInfoV(cmexpander));
-    } else
-      return FunInfoV(GlobalFunInfoV(nil<T_O>()));
+      return FunInfoV(GlobalFunInfoV(cmexpander, opt_id));
+    } else {
+      T_sp opt_id = main_env_opt_id(name);
+      return FunInfoV(GlobalFunInfoV(nil<T_O>(), opt_id));
+    }
   }
 }
 
@@ -2615,27 +2635,55 @@ void compile_macrolet(List_sp bindings, List_sp body, Lexenv_sp env, const Conte
   compile_locally(body, nenv, context);
 }
 
-void compile_funcall(T_sp fform, List_sp args, Lexenv_sp env, const Context context) {
-  // Expand compiler macros when fform = #'foo or #'(setf foo).
+static void compile_funcall(T_sp fform, List_sp args, Lexenv_sp env, const Context context);
+
+static void compile_global_call(GlobalFunInfoV info,
+                                T_sp fname, List_sp args,
+                                Lexenv_sp env, const Context context)
+{
+  // Special case?
+  T_sp id = info.opt_id();
+  if (id == cl::_sym_funcall && args.consp()) {
+    compile_funcall(oCar(args), oCdr(args), env, context);
+    return;
+  }
+  // Compiler macro?
+  T_sp cmexpander = info.cmexpander();
+  if (cmexpander.notnilp() && !env->notinlinep(fname)
+      && cmexpander.isA<Function_O>()
+      // KLUDGE: CASE expands into PRIMOP:CASE.
+      && (fname != cl::_sym_case)) {
+    // Compiler macroexpand
+    T_sp form;
+    if (fname.isA<Symbol_O>())
+      form = Cons_O::create(fname, args);
+    else
+      form = Cons_O::create(cl::_sym_funcall, Cons_O::create(Cons_O::createList(cl::_sym_Function_O, fname), args));
+    T_sp expansion = expand_compiler_macro(cmexpander.as_unsafe<Function_O>(), form, env, context.source_info());
+    if (expansion != form) {
+      compile_form(expansion, env, context);
+      return;
+    }
+  }
+  // no compiler macro, or expansion declined: call
+  compile_called_function(fname, env, context);
+  compile_call(args, env, context);
+}
+
+static void compile_funcall(T_sp fform, List_sp args, Lexenv_sp env, const Context context) {
+  // Treat as a potentially optimizable global call
+  // when fform = #'foo or #'(setf foo).
   if (fform.consp() && oCar(fform) == cl::_sym_Function_O && oCdr(fform).consp() && oCddr(fform).nilp() &&
-      (gc::IsA<Symbol_sp>(oCadr(fform)) || (oCadr(fform).consp() && oCaadr(fform) != cl::_sym_lambda))) {
+      (oCadr(fform).isA<Symbol_O>() || (oCadr(fform).consp() && oCaadr(fform) != cl::_sym_lambda))) {
     T_sp fname = oCadr(fform);
     FunInfoV info = fun_info_v(fname, env);
     if (std::holds_alternative<GlobalFunInfoV>(info)) {
-      T_sp cmexpander = std::get<GlobalFunInfoV>(info).cmexpander();
-      // We don't skip typep/case here since we don't actually use them
-      // in a dangerously recursive way with funcall.
-      if (cmexpander.notnilp() && !env->notinlinep(fname)) {
-        T_sp form = Cons_O::create(cl::_sym_funcall, Cons_O::create(fform, args));
-        T_sp expansion = expand_compiler_macro(gc::As<Function_sp>(cmexpander), form, env, context.source_info());
-        if (expansion != form) {
-          compile_form(expansion, env, context);
-          return;
-        }
-      }
+      compile_global_call(std::get<GlobalFunInfoV>(info),
+                          fname, args, env, context);
+      return;
     }
   }
-  // No compiler macro, but we can avoid actually calling FUNCALL.
+  // No specific optimization, but we can avoid actually calling FUNCALL.
   compile_fdesignator(fform, env, context);
   compile_call(args, env, context);
 }
@@ -2659,7 +2707,8 @@ void compile_primop_funcall(T_sp callee, List_sp args, Lexenv_sp env, const Cont
                          head, clasp_make_fixnum(min), clasp_make_fixnum(max), rest);
 }
 
-void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context context) {
+void compile_combination(T_sp head, T_sp rest,
+                         Lexenv_sp env, const Context context) {
   if (head == cl::_sym_progn)
     compile_progn(rest, env, context);
   else if (head == cl::_sym_let) {
@@ -2757,12 +2806,7 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
       compile_progv(oCar(rest), oCadr(rest), oCddr(rest), env, context);
     else special_form_wrong_args(head, rest, 2);
   // basic optimization
-  } else if (head == cl::_sym_funcall
-             // Do a basic syntax check so that (funcall) fails properly.
-             && rest.consp())
-    compile_funcall(oCar(rest), oCdr(rest), env, context);
-  // extension
-  else if (head == cleavirPrimop::_sym_funcall)
+  } else if (head == cleavirPrimop::_sym_funcall)
     compile_primop_funcall(oCar(rest), oCdr(rest), env, context);
   else if (head == cleavirPrimop::_sym_eq) {
     // KLUDGE: Compile a call to EQ.
@@ -2789,21 +2833,8 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
         T_sp expansion = expand_macro(expander, Cons_O::create(head, rest), env);
         compile_form(expansion, env, context);
       } else if (std::holds_alternative<GlobalFunInfoV>(info)) {
-        T_sp cmexpander = std::get<GlobalFunInfoV>(info).cmexpander();
-        if (cmexpander.notnilp() &&
-            !env->notinlinep(head)
-            // KLUDGE: CASE expands into PRIMOP:CASE.
-            && (head != cl::_sym_case)) {
-          // Compiler macroexpand
-          T_sp form = Cons_O::create(head, rest);
-          T_sp expansion = expand_compiler_macro(gc::As<Function_sp>(cmexpander), form, env, context.source_info());
-          if (expansion != form) {
-            compile_form(expansion, env, context);
-            return;
-          }
-        } // no compiler macro, or expansion declined: call
-        compile_called_function(head, env, context);
-        compile_call(rest, env, context);
+        compile_global_call(std::get<GlobalFunInfoV>(info),
+                            head, rest, env, context);
       } else if (std::holds_alternative<LocalFunInfoV>(info) || std::holds_alternative<NoFunInfoV>(info)) {
         // unknown function warning handled by compile-function (eventually)
         // note we do a double lookup of the fun info,

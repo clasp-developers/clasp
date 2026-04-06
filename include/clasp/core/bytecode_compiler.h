@@ -201,22 +201,29 @@ class GlobalFunInfo_O : public FunInfo_O {
 
 public:
   T_sp _cmexpander = nil<T_O>(); // compiler macro expander
+  T_sp _opt_id = nil<T_O>(); // optimization mark
 public:
-  GlobalFunInfo_O(T_sp expander) : FunInfo_O(), _cmexpander(expander) {}
+  GlobalFunInfo_O(T_sp expander, T_sp opt_id)
+    : FunInfo_O(), _cmexpander(expander), _opt_id(opt_id) {};
   CL_LISPIFY_NAME(GlobalFunInfo/make)
+  CL_LAMBDA(expander &optional identity)
   CL_DEF_CLASS_METHOD
-  static GlobalFunInfo_sp make(T_sp expander) {
-    GlobalFunInfo_sp info = gctools::GC<GlobalFunInfo_O>::allocate<gctools::RuntimeStage>(expander);
-    return info;
+  static GlobalFunInfo_sp make(T_sp expander, T_sp opt_id) {
+    return gctools::GC<GlobalFunInfo_O>::allocate<gctools::RuntimeStage>(expander, opt_id);
   }
   CL_DEFMETHOD T_sp cmexpander() const { return this->_cmexpander; }
+  CL_DEFMETHOD T_sp opt_id() const { return this->_opt_id; }
 };
 
 struct GlobalFunInfoV {
-  GlobalFunInfoV(T_sp cmexpander) : _cmexpander(cmexpander){};
-  GlobalFunInfoV(GlobalFunInfo_sp info) : _cmexpander(info->cmexpander()){};
+  GlobalFunInfoV(T_sp cmexpander, T_sp opt_id)
+    : _cmexpander(cmexpander), _opt_id(opt_id) {};
+  GlobalFunInfoV(GlobalFunInfo_sp info)
+    : _cmexpander(info->cmexpander()), _opt_id(info->opt_id()) {};
   T_sp _cmexpander;
+  T_sp _opt_id;
   T_sp cmexpander() const { return _cmexpander; }
+  T_sp opt_id() const { return _opt_id; }
 };
 
 FORWARD(LocalFunInfo);

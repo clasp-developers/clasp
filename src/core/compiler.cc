@@ -672,6 +672,12 @@ void initialize_compiler_primitives(LispPtr lisp) {
   comp::_sym_STARbtb_compile_hookSTAR->defparameter(nil<T_O>());
   comp::_sym_STARautocompile_hookSTAR->defparameter(nil<T_O>());
   {
+    HashTable_sp ids = HashTable_O::createEqual();
+    comp::_sym_STARoptimization_identitiesSTAR->defparameter(ids);
+    // List functions the bytecode compiler can special case here.
+    ids->setf_gethash(cl::_sym_funcall, cl::_sym_funcall);
+  }
+  {
     Fixnum_sp one = clasp_make_fixnum(1);
     comp::_sym_STARoptimizeSTAR->defparameter(
         Cons_O::createList(Cons_O::createList(cl::_sym_compilation_speed, one), Cons_O::createList(cl::_sym_debug, one),

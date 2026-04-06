@@ -5733,6 +5733,9 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "comp::GlobalFunInfo_O" :layout-offset-field-names ("_cmexpander")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "comp::GlobalFunInfo_O" :layout-offset-field-names ("_opt_id")}
 {class-kind :stamp-name "STAMPWTAG_comp__LocalFunInfo_O" :stamp-key "comp::LocalFunInfo_O"
             :parent-class "comp::FunInfo_O" :lisp-class-base "comp::FunInfo_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

@@ -11,7 +11,8 @@
     ((nil) nil)
     ((:function) (cmp:global-fun-info/make
                   (clostrum:compiler-macro-function
-                   maclina.machine:*client* env name)))
+                   maclina.machine:*client* env name)
+                  nil))
     ((:macro) (cmp:global-macro-info/make
                (clostrum:macro-function
                 maclina.machine:*client* env name)))
