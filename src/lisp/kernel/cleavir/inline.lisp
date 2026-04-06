@@ -112,26 +112,7 @@
          (error 'type-error :datum ,val :expected-type 'fixnum))
      ,else))
 
-(define-cleavir-compiler-macro cl:eq (&whole form x y)
-  `(if (cleavir-primop:eq ,x ,y) t nil))
-
 (declaim (ftype (function (t t) boolean) cl:eq eql))
-#+(or)
-(progn
-  (debug-inline "eq")
-  (defun cl:eq (x y)
-    (if (cleavir-primop:eq x y) t nil)))
-#+(or)
-(progn
-  (debug-inline "eql")
-  (declaim (inline cl:eql))
-  (defun eql (x y)
-    (cond ((cleavir-primop:eq x y) t)
-          ((typep x 'core::eq-incomparable)
-           (if (typep y 'core::eq-incomparable)
-               (core:eql-underlying x y)
-               nil))
-          (t nil))))
 
 (declaim (ftype (function (&rest t) list) list))
 (declaim (ftype (function (&rest t) list) list*))
