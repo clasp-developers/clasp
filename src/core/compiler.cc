@@ -62,7 +62,6 @@ THE SOFTWARE.
 #include <clasp/core/pointer.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/hashTableEqual.h>
-#include <clasp/core/cleavirPrimopsPackage.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/bytecode_compiler.h>
