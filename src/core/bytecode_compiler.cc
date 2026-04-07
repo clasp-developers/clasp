@@ -489,6 +489,8 @@ FunInfoV fun_info_v(T_sp name, Lexenv_sp env) {
       return FunInfoV(GlobalFunInfoV(info.as_unsafe<GlobalFunInfo_O>()));
     else if (info.isA<GlobalMacroInfo_O>())
       return FunInfoV(GlobalMacroInfoV(info.as_unsafe<GlobalMacroInfo_O>()));
+    else if (info.isA<SpecialOperatorInfo_O>())
+      return FunInfoV(SpecialOperatorInfoV());
     else {
       ASSERT(info.nilp());
       return FunInfoV(NoFunInfoV());
