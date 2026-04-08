@@ -511,7 +511,7 @@ also known as unix-domain sockets."))
                             (name "FD-STREAM"))
   (assert (stringp name) (name) "name must be a string.")
   (let* ((external-format (if (subtypep element-type 'integer)
-                              :default
+                              nil ; was :default
                               external-format))
          (stream (ext:make-stream-from-fd fd mode :element-type element-type :external-format external-format :name name)))
     (when buffering
