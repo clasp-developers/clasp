@@ -144,7 +144,7 @@
   :directory "src/lisp/kernel/contrib/Clostrum/"
   :repository "https://github.com/s-expressionists/Clostrum.git"
   :branch "master"
-  :commit "5d0cfea2a73e073e6503655d3f68b87f0affd785"
+  :commit "bcdde830112262694fa4c5ef05afccda46675f1e"
   :pin 1)
  (:name :common-macros
   :directory "src/lisp/kernel/contrib/Common-macros/"
@@ -225,7 +225,7 @@
   :directory "src/lisp/kernel/contrib/Khazern/"
   :repository "https://github.com/s-expressionists/Khazern.git"
   :branch "master"
-  :commit "17ee997c5583f8ced1f4603d05966e9f53df7a8b"
+  :commit "b926748b4c7df7401914e1dedb31989dfc3123f2"
   :pin 1)
  (:name :let-plus
   :extension :cando
