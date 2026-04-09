@@ -213,7 +213,7 @@ template <class T> inline T tag_vaslist(core::Vaslist* p) {
 
 template <class T> inline T untag_general(T ptr) {
   GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & ptag_mask) == general_tag);
-  return reinterpret_cast<T>(&reinterpret_cast<char*>(ptr)[-general_tag]);
+  return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(ptr) - general_tag);
 }
 
 template <class T> inline core::Vaslist* untag_vaslist(T ptr) {
