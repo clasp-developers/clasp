@@ -102,7 +102,7 @@
       bb)))
 
 (defun generate-unprogv (cells oldvals de-stack next)
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+  (cmp:with-irbuilder ()
     (let ((bb (cmp:irc-basic-block-create "unprogv")))
       (cmp:irc-begin-block bb)
       (%intrinsic-call "cc_progvUnbind" (list cells oldvals))
@@ -146,7 +146,7 @@
 ;;; maybe-entry landing pads, for when we may be nonlocally entering this function.
 
 (defun generate-landing-pad (come-from-block catch-block cleanup-p cleanup-block)
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+  (cmp:with-irbuilder ()
     (let ((lp-block (cmp:irc-basic-block-create "maybe-entry-landing-pad")))
       (cmp:irc-begin-block lp-block)
       (let* ((lpad (cmp:irc-create-landing-pad 1 "lp"))
@@ -199,7 +199,7 @@
 ;; do a correct C++ rethrow if none of the catches are ours.
 ;; This function is roughly equivalent to generate-match-unwind.
 (defun catch-initializer (dynenv processor)
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+  (cmp:with-irbuilder ()
     (let ((init-block (cmp:irc-basic-block-create "catch-init")))
       (cmp:irc-begin-block init-block)
       (let ((exception-ptr
@@ -412,7 +412,7 @@
 (defmethod compute-maybe-catch-processor ((dynenv bir:catchi) tags)
   ;; Check the previously determined go-index against our index.
   ;; If it matches, we're done, otherwise keep going.
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+  (cmp:with-irbuilder ()
     (let* ((bb (cmp:irc-basic-block-create "process-catch"))
            (_ (cmp:irc-begin-block bb))
            (our-index (get-catch-id dynenv))
@@ -456,7 +456,7 @@
   ;; We found in the landing pad that we were supposed to jump into this frame.
   ;; However, no relevant catch has transferred control.
   ;; This is a bug in the compiler.
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+  (cmp:with-irbuilder ()
     (let ((err (cmp:irc-basic-block-create "bug-in-catch")))
       (cmp:irc-begin-block err)
       (cmp:with-landing-pad nil
