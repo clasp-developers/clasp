@@ -89,9 +89,10 @@
 (defun get-builtin-target-triple-and-data-layout ()
   "Query llvm for the target triple and the data-layout"
   (let* ((triple-str (llvm-sys:get-default-target-triple))
-         (target (llvm-sys:target-registry-lookup-target "" (llvm-sys:make-triple triple-str)))
+         (triple (llvm-sys:make-triple triple-str))
+         (target (llvm-sys:target-registry-lookup-target "" triple))
          (target-machine (llvm-sys:create-target-machine target
-                                                         triple-str
+                                                         #+(or llvm15 llvm16 llvm17 llvm18 llvm19) triple-str #-(or llvm15 llvm16 llvm17 llvm18 llvm19) triple
                                                          ""
                                                          ""
                                                          (llvm-sys:make-target-options)

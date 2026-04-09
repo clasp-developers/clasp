@@ -548,24 +548,33 @@ CL_DEFUN void llvm_sys__sanity_check_module(Module_sp module, int depth) {
 
 namespace llvmo {
 
-CL_LISPIFY_NAME(createTargetMachine);
 #if LLVM_VERSION_MAJOR < 17
+CL_LISPIFY_NAME(createTargetMachine);
 CL_EXTERN_DEFMETHOD(Target_O, (llvm::TargetMachine * (llvm::Target::*)(llvm::StringRef, llvm::StringRef, llvm::StringRef,
                                                                        const llvm::TargetOptions&, Optional<Reloc::Model>,
                                                                        Optional<CodeModel::Model>, CodeGenOpt::Level, bool) const) &
                                   llvm::Target::createTargetMachine);
 #elif LLVM_VERSION_MAJOR == 17
+CL_LISPIFY_NAME(createTargetMachine);
 CL_EXTERN_DEFMETHOD(Target_O,
                     (llvm::TargetMachine * (llvm::Target::*)(llvm::StringRef, llvm::StringRef, llvm::StringRef,
                                                              const llvm::TargetOptions&, std::optional<Reloc::Model>,
                                                              std::optional<CodeModel::Model>, CodeGenOpt::Level, bool) const) &
                         llvm::Target::createTargetMachine);
-#else
+#elif LLVM_VERSION_MAJOR < 22
+CL_LISPIFY_NAME(createTargetMachine);
 CL_EXTERN_DEFMETHOD(Target_O,
                     (llvm::TargetMachine * (llvm::Target::*)(llvm::StringRef, llvm::StringRef, llvm::StringRef,
                                                              const llvm::TargetOptions&, std::optional<Reloc::Model>,
                                                              std::optional<CodeModel::Model>, CodeGenOptLevel, bool) const) &
                         llvm::Target::createTargetMachine);
+#else
+CL_LISPIFY_NAME(createTargetMachine);
+CL_EXTERN_DEFMETHOD(Target_O,
+                    (llvm::TargetMachine * (llvm::Target::*)(const llvm::Triple&, llvm::StringRef, llvm::StringRef,
+                                                             const llvm::TargetOptions&, std::optional<Reloc::Model>,
+                                                             std::optional<CodeModel::Model>, CodeGenOptLevel, bool) const) &
+                    llvm::Target::createTargetMachine);
 #endif
 
 }; // namespace llvmo
