@@ -166,7 +166,7 @@ template <class T> inline T untag_cons(T ptr) {
 
 template <class T> inline T tag_general(T p) {
   GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(p) & ptag_mask) == 0);
-  return reinterpret_cast<T>(&reinterpret_cast<char*>(p)[general_tag]);
+  return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(p) + general_tag);
 }
 
 template <class T> inline T tag_object(T ptr) { return tag_general<T>(ptr); }
