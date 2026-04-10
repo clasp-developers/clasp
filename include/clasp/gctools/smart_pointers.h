@@ -961,7 +961,7 @@ public:
     throw_hard_error("Bad tag on tagged_pointer in constructor");
   };
 
-  explicit tagged_pointer(Type* f) : thePointer(reinterpret_cast<Type*>(reinterpret_cast<char*>(f) + general_tag)) {
+  explicit tagged_pointer(Type* f) : thePointer(reinterpret_cast<Type*>(reinterpret_cast<uintptr_t>(f) + general_tag)) {
     GCTOOLS_ASSERTF((f != NULL), "Don't initialize tagged_pointer with NULL - use the constructor with zero arguments");
   };
 

@@ -831,53 +831,43 @@ namespace gctools {
 #endif
 
 inline const void* GeneralPtrToHeaderPtr(const void* mostDerived) {
-  const void* ptr = reinterpret_cast<const char*>(mostDerived) - sizeof(Header_s);
-  return ptr;
+  return reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(mostDerived) - sizeof(Header_s));
 }
 
 inline void* GeneralPtrToHeaderPtr(void* mostDerived) {
-  void* ptr = reinterpret_cast<char*>(mostDerived) - sizeof(Header_s);
-  return ptr;
+  return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(mostDerived) - sizeof(Header_s));
 }
 
 inline const Header_s* header_pointer(const void* client_pointer) {
-  const Header_s* header = reinterpret_cast<const Header_s*>(reinterpret_cast<const char*>(client_pointer) - sizeof(Header_s));
-  return header;
+  return reinterpret_cast<const Header_s*>(reinterpret_cast<uintptr_t>(client_pointer) - sizeof(Header_s));
 }
 
 template <typename T> inline T* HeaderPtrToGeneralPtr(void* base) {
-  T* ptr = reinterpret_cast<T*>(reinterpret_cast<char*>(base) + sizeof(Header_s));
-  return ptr;
+  return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(base) + sizeof(Header_s));
 }
 
 inline const void* WeakPtrToHeaderPtr(const void* client) {
-  const void* ptr = reinterpret_cast<const char*>(client) - sizeof(Header_s);
-  return ptr;
+  return reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(client) - sizeof(Header_s));
 }
 
 inline void* WeakPtrToHeaderPtr(void* client) {
-  void* ptr = reinterpret_cast<char*>(client) - sizeof(Header_s);
-  return ptr;
+  return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(client) - sizeof(Header_s));
 }
 
 inline void* HeaderPtrToWeakPtr(void* header) {
-  void* ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(header) + sizeof(Header_s));
-  return ptr;
+  return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(header) + sizeof(Header_s));
 }
 
 inline const void* ConsPtrToHeaderPtr(const void* client) {
-  const void* ptr = reinterpret_cast<const char*>(client) - sizeof(ConsHeader_s);
-  return ptr;
+  return reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(client) - sizeof(ConsHeader_s));
 }
 
 inline void* ConsPtrToHeaderPtr(void* client) {
-  void* ptr = reinterpret_cast<char*>(client) - sizeof(ConsHeader_s);
-  return ptr;
+  return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(client) - sizeof(ConsHeader_s));
 }
 
 inline void* HeaderPtrToConsPtr(void* header) {
-  void* ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(header) + sizeof(ConsHeader_s));
-  return ptr;
+  return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(header) + sizeof(ConsHeader_s));
 }
 
 }; // namespace gctools
@@ -1036,7 +1026,7 @@ namespace gctools {
 template <typename T> void* SmartPtrToBasePtr(smart_ptr<T> obj) {
   void* ptr;
   if (obj.objectp()) {
-    ptr = reinterpret_cast<void*>(reinterpret_cast<char*>(obj.untag_object()) - sizeof(Header_s));
+    ptr = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(obj.untag_object()) - sizeof(Header_s));
   } else {
     throw_hard_error("Bad pointer for SmartPtrToBasePtr");
   }
