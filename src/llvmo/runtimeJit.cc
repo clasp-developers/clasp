@@ -894,11 +894,18 @@ CL_DEFMETHOD JITDylib_sp ClaspJIT_O::getMainJITDylib() {
 }
 
 CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string& name) {
+#if LLVM_VERSION_MAJOR >= 22
+  llvm::ExitOnError ExitOnErr;
+#endif
   stringstream sname;
   sname << name << "-" << global_JITDylibCounter;
   //  printf("%s:%d:%s  name -> %s\n", __FILE__, __LINE__, __FUNCTION__, sname.str().c_str());
+#if LLVM_VERSION_MAJOR < 22
   auto dy = this->_LLJIT->createJITDylib(sname.str());
   JITDylib& dylib(*dy);
+#else
+  JITDylib& dylib = ExitOnErr(_LLJIT->createJITDylib(sname.str()));
+#endif
   dylib.addGenerator(
       llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
   core::SimpleBaseString_sp ssname = core::SimpleBaseString_O::make(sname.str());
