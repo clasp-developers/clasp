@@ -11,7 +11,8 @@
           (unless target
             (error msg))
           (llvm-sys:emit-module (llvm-sys:create-target-machine target
-                                                                #+(or llvm15 llvm16 llvm17 llvm18 llvm19) (llvm-sys:get-triple triple) #-(or llvm16 llvm16 llvm17 llvm18 llvm19) triple
+                                                                #+(or llvm15 llvm16 llvm17 llvm18 llvm19 llvm20) (llvm-sys:get-triple triple)
+                                                                #-(or llvm16 llvm16 llvm17 llvm18 llvm19 llvm20) triple
                                                                 ""
                                                                 ""
                                                                 target-options

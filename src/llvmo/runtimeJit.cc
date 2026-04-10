@@ -23,8 +23,10 @@
 #include <clasp/llvmo/code.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/llvmo/jit.h>
-#if LLVM_VERSION_MAJOR > 20
+#if LLVM_VERSION_MAJOR > 19
 #include <llvm/ExecutionEngine/Orc/EHFrameRegistrationPlugin.h>
+#endif
+#if LLVM_VERSION_MAJOR > 20
 #include <llvm/ExecutionEngine/Orc/SelfExecutorProcessControl.h>
 #endif
 //
@@ -371,7 +373,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     if (!MR.getSymbols().count(PersonalitySymbol))
       Config.PrePrunePasses.insert(Config.PrePrunePasses.begin(), [this](jitlink::LinkGraph& G) -> Error {
         for (auto ssym : G.defined_symbols()) {
-#if LLVM_VERSION_MAJOR < 22
+#if LLVM_VERSION_MAJOR < 20
           std::string sssym(ssym->getName());
 #else
           std::string sssym(*ssym->getName());
@@ -397,7 +399,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
           }
       }
       for (auto ssym : G.defined_symbols()) {
-#if LLVM_VERSION_MAJOR < 22
+#if LLVM_VERSION_MAJOR < 20
         std::string sname = ssym->getName().str();
 #else
         std::string sname(*ssym->getName());
@@ -501,7 +503,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       if ((sectionName.find(BSS_NAME) != string::npos) || (sectionName.find(DATA_NAME) != string::npos)) {
         llvm::jitlink::SectionRange range(S);
         for (auto& sym : S.symbols()) {
-#if LLVM_VERSION_MAJOR < 22
+#if LLVM_VERSION_MAJOR < 20
           std::string name = sym->getName().str();
 #else
           std::string name(*sym->getName());
@@ -533,7 +535,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                                   currentCode->_TextSectionStart, currentCode->_TextSectionEnd));
         for (auto& sym : S.symbols()) {
           if (sym->isCallable() && sym->hasName()) {
-#if LLVM_VERSION_MAJOR < 22
+#if LLVM_VERSION_MAJOR < 20
             std::string name = sym->getName().str();
 #else
             std::string name(*sym->getName());
@@ -568,7 +570,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       printf("%s:%d:%s No executable region was found for the Code_O object for graph %s\n", __FILE__, __LINE__, __FUNCTION__,
              G.getName().c_str());
       for (auto* Sym : G.external_symbols()) {
-#if LLVM_VERSION_MAJOR < 22
+#if LLVM_VERSION_MAJOR < 20
         fmt::print("       Symbol: {}\n", Sym->getName().str());
 #else
         fmt::print("       Symbol: {}\n", *Sym->getName());
@@ -578,7 +580,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     //
     bool found_literals = false;
     for (auto ssym : G.defined_symbols()) {
-#if LLVM_VERSION_MAJOR < 22
+#if LLVM_VERSION_MAJOR < 20
       if (ssym->getName() == "DW.ref.__gxx_personality_v0") {
 #else
       if ((*ssym->getName()).compare("DW.ref.__gxx_personality_v0") == 0) {
@@ -600,7 +602,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       }
 #endif
       if (ssym->hasName()) {
-#if LLVM_VERSION_MAJOR < 22
+#if LLVM_VERSION_MAJOR < 20
         std::string sname = ssym->getName().str();
 #else
         std::string sname(*ssym->getName());

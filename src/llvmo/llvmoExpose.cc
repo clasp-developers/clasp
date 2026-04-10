@@ -561,7 +561,7 @@ CL_EXTERN_DEFMETHOD(Target_O,
                                                              const llvm::TargetOptions&, std::optional<Reloc::Model>,
                                                              std::optional<CodeModel::Model>, CodeGenOpt::Level, bool) const) &
                         llvm::Target::createTargetMachine);
-#elif LLVM_VERSION_MAJOR < 22
+#elif LLVM_VERSION_MAJOR < 21
 CL_LISPIFY_NAME(createTargetMachine);
 CL_EXTERN_DEFMETHOD(Target_O,
                     (llvm::TargetMachine * (llvm::Target::*)(llvm::StringRef, llvm::StringRef, llvm::StringRef,
@@ -638,7 +638,7 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::emitModule(core::T_sp stream, core::T_s
 
   llvm::legacy::PassManager PM;
 
-#if LLVM_VERSION_MAJOR < 21
+#if LLVM_VERSION_MAJOR < 20
   llvm::LLVMTargetMachine* LTM = dynamic_cast<llvm::LLVMTargetMachine*>(TM);
 #else
   llvm::TargetMachine* LTM = TM;
@@ -764,7 +764,7 @@ CL_DEFUN Triple_sp Triple_O::make(const string& triple) {
 };
 
 CL_PKG_NAME(LlvmoPkg,"triple-normalize");
-#if LLVM_VERSION_MAJOR < 21
+#if LLVM_VERSION_MAJOR < 20
 CL_EXTERN_DEFUN((std::string(*)(llvm::StringRef str))&llvm::Triple::normalize);
 #else
 CL_EXTERN_DEFUN((std::string(*)(llvm::StringRef str,llvm::Triple::CanonicalForm Form))&llvm::Triple::normalize);
@@ -784,7 +784,7 @@ CL_LISPIFY_NAME(getOSAndEnvironmentName);
 CL_EXTERN_DEFMETHOD(Triple_O, &llvm::Triple::getOSAndEnvironmentName);
 
 CL_PKG_NAME(LlvmoPkg, "lookup-intrinsic-id");
-#if LLVM_VERSION_MAJOR < 21
+#if LLVM_VERSION_MAJOR < 20
 CL_EXTERN_DEFUN((llvm::Intrinsic::ID(*)(llvm::StringRef Name))&llvm::Function::lookupIntrinsicID);
 #else
 CL_EXTERN_DEFUN((llvm::Intrinsic::ID(*)(llvm::StringRef Name))&llvm::Intrinsic::lookupIntrinsicID);
@@ -817,7 +817,7 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType_x86_64);
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType_xcore);
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType_nvptx);
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType_nvptx64);
-#if LLVM_VERSION_MAJOR < 21
+#if LLVM_VERSION_MAJOR < 20
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType_le32);
 SYMBOL_EXPORT_SC_(LlvmoPkg, ArchType_le64);
 #endif
@@ -855,7 +855,7 @@ CL_VALUE_ENUM(_sym_ArchType_x86_64, llvm::Triple::x86_64);     // X86-64: amd64,
 CL_VALUE_ENUM(_sym_ArchType_xcore, llvm::Triple::xcore);       // XCore: xcore
 CL_VALUE_ENUM(_sym_ArchType_nvptx, llvm::Triple::nvptx);       // NVPTX: 32-bit
 CL_VALUE_ENUM(_sym_ArchType_nvptx64, llvm::Triple::nvptx64);   // NVPTX: 64-bit
-#if LLVM_VERSION_MAJOR < 21
+#if LLVM_VERSION_MAJOR < 20
 CL_VALUE_ENUM(_sym_ArchType_le32, llvm::Triple::le32);         // le32: generic little-endian 32-bit CPU (PNaCl / Emscripten)
 CL_VALUE_ENUM(_sym_ArchType_le64, llvm::Triple::le64);         // le64: generic little-endian 64-bit CPU (PNaCl / Emscripten)
 #endif
