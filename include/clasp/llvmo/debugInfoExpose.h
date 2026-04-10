@@ -104,6 +104,16 @@ template <> struct to_object<llvm::DILocation*> {
 };
 }; // namespace translate
 
+#if LLVM_VERSION_MAJOR > 21
+namespace translate {
+template <> struct from_object<llvm::DISourceLanguageName> {
+  typedef llvm::DISourceLanguageName DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp o) : _v(o.unsafe_fixnum()) {};
+};
+}; // namespace translate
+#endif
+
 namespace llvmo {
 FORWARD(DINode);
 class DINode_O : public MDNode_O {
