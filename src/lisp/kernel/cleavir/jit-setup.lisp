@@ -45,10 +45,10 @@
   )
 
 (defmacro with-thread-safe-context ((name) &body body)
-  #+(or llvm15 llvm16 llvm17 llvm18 llvm19)
+  #+(or llvm15 llvm16 llvm17 llvm18 llvm19 llvm20)
   `(let ((,name (llvm-sys:thread-local-llvm-context)))
      ,@body)
-  #-(or llvm15 llvm16 llvm17 llvm18 llvm19)
+  #-(or llvm15 llvm16 llvm17 llvm18 llvm19 llvm20)
   `(llvm-sys:call-with-thread-safe-context (lambda (,name) ,@body)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -92,7 +92,8 @@
          (triple (llvm-sys:make-triple triple-str))
          (target (llvm-sys:target-registry-lookup-target "" triple))
          (target-machine (llvm-sys:create-target-machine target
-                                                         #+(or llvm15 llvm16 llvm17 llvm18 llvm19) triple-str #-(or llvm15 llvm16 llvm17 llvm18 llvm19) triple
+                                                         #+(or llvm15 llvm16 llvm17 llvm18 llvm19 llvm20) triple-str
+                                                         #-(or llvm15 llvm16 llvm17 llvm18 llvm19 llvm20) triple
                                                          ""
                                                          ""
                                                          (llvm-sys:make-target-options)

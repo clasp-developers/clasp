@@ -361,8 +361,8 @@ local-function - the lcl function that all of the xep functions call."
 (defun irc-sext (val &optional (destty %fixnum%) (label "sext"))
   (llvm-sys:create-sext *irbuilder* val destty label))
 
-(defun irc-zext (val &optional (destty %fixnum%) (label "zext") #+(or llvm18 llvm19) is-non-neg)
-  (llvm-sys:create-zext *irbuilder* val destty label #+(or llvm18 llvm19) is-non-neg))
+(defun irc-zext (val &optional (destty %fixnum%) (label "zext") #-(or llvm15 llvm16 llvm17) is-non-neg)
+  (llvm-sys:create-zext *irbuilder* val destty label #-(or llvm15 llvm16 llvm17) is-non-neg))
 
 (defun irc-untag-fixnum (t* fixnum-type &optional (label "fixnum"))
   "Given a T* fixnum llvm::Value, returns a Value of the given type
@@ -752,8 +752,13 @@ Otherwise do a variable shift."
   (llvm-sys:create-unreachable *irbuilder*))
 
 
-(defun irc-trunc (value type &optional (label "trunc") #+llvm19 is-nuw #+llvm19 is-nsw)
-  (llvm-sys:create-trunc *irbuilder* value type label #+llvm19 is-nuw #+llvm19 is-nsw))
+(defun irc-trunc (value type
+                  &optional (label "trunc")
+                            #-(or llvm15 llvm16 llvm17 llvm18) is-nuw
+                            #-(or llvm15 llvm16 llvm17 llvm18) is-nsw)
+  (llvm-sys:create-trunc *irbuilder* value type label
+                         #-(or llvm15 llvm16 llvm17 llvm18) is-nuw
+                         #-(or llvm15 llvm16 llvm17 llvm18) is-nsw))
 
 
 (defun irc-and (x y &optional (label "and"))
@@ -942,9 +947,9 @@ But no irbuilders or basic-blocks. Return the fn."
 (defmacro with-irbuilder ((&optional irbuilder) &body code)
   "Set *irbuilder* to the given IRBuilder"
   `(let ((*irbuilder* ,(or irbuilder
-                           #+(or llvm15 llvm16 llvm17 llvm18 llvm19)
+                           #+(or llvm15 llvm16 llvm17 llvm18 llvm19 llvm20)
                            '(llvm-sys:make-irbuilder (llvm-sys:thread-local-llvm-context))
-                           #-(or llvm15 llvm16 llvm17 llvm18 llvm19)
+                           #-(or llvm15 llvm16 llvm17 llvm18 llvm19 llvm20)
                            '(llvm-sys:call-with-thread-safe-context (function llvm-sys:make-irbuilder)))))
      ,@code))
 
