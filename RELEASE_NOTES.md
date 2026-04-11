@@ -1,6 +1,7 @@
-# Version 2.8.0 (LLVM15-19) Pending
+# Version 2.8.0 (LLVM15-20, 22) Pending
 
 ## Added
+* Support for LLVM20 and LLVM22. LLVM21 is excluded due to API incompatibility.
 * Weak-value and weak-key-and-value hash tables, as well as an interface
   for weak-key-or-value tables, although at present they are actually
   strong tables in practice.
