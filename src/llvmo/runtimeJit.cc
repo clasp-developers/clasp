@@ -200,12 +200,9 @@ public:
       ClaspAllocator* MyAllocator;
 
     public:
-      MyInFlightAlloc(ClaspAllocator* MA, BasicLayout BL) : MyAllocator(MA), BL(std::move(BL)) {
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s What do I do here?\n", __FILE__, __LINE__, __FUNCTION__));
-      }
+      MyInFlightAlloc(ClaspAllocator* MA, BasicLayout BL) : MyAllocator(MA), BL(std::move(BL)) {}
 
       void finalize(OnFinalizedFunction OnFinalized) override {
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__));
         // {1} Apply memory protections to A.DeallocSegsMem and FinalizedSegsMem.
         if (auto Err = applyProtections()) {
           OnFinalized(std::move(Err));
@@ -275,8 +272,6 @@ public:
     //   if the current CodeBlock doesn't have room then allocate another one.
     //   Return the CodeBlock in codeBlock
     //
-    DEBUG_OBJECT_FILES_PRINT(
-        ("%s:%d:%s I have BasicLayout - fill it in with allocateInCodeBlock ?\n", __FILE__, __LINE__, __FUNCTION__));
     if (segmentCount > 1) {
       CodeBlock_sp codeBlock;
 
@@ -298,7 +293,6 @@ public:
         JITDylib* jitdylib = one->wrappedPtr();
         JITLinkDylib* jitlinkdylib = llvm::cast<JITLinkDylib>(jitdylib);
         if (jitlinkdylib == JD) theJITDylib = one;
-        //DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s one JITDylib_sp = %p JITDylib* = %p JITLinkDylib* = %p\n", __FILE__, __LINE__, __FUNCTION__, one.raw_(), one->wrappedPtr(), llvm::cast<JITLinkDylib>(one->wrappedPtr()) ));
         cur = CONS_CDR(cur);
       }
       if (theJITDylib.unboundp()) {
@@ -306,22 +300,12 @@ public:
         abort();
       }
 #endif
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocating JD = %p \n", __FILE__, __LINE__, __FUNCTION__, JD));
       ObjectFile_sp codeObject;
       codeObject = lookupObjectFile(G.getName());
       codeObject->_CodeBlock = codeBlock;
       [[maybe_unused]] core::SimpleBaseString_sp codeName = createSimpleBaseStringForStage(G.getName());
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s looked up codeObject = %p with name: %s\n", __FILE__, __LINE__, __FUNCTION__,
-                                &*codeObject, _rep_(codeName).c_str()));
     } else {
       for (auto& KV : BL.segments()) {
-#ifdef DEBUG_OBJECT_FILES
-        auto allocGroup = KV.first;
-        std::string back;
-        llvm::raw_string_ostream ss(back);
-        llvm::jitlink::operator<<(ss, allocGroup);
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s single segment allocGroup = %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str()));
-#endif
         auto& Seg = KV.second;
         uint64_t ZeroFillStart = Seg.ContentSize;
         size_t SegmentSize = (uintptr_t)gctools::AlignUp(ZeroFillStart + Seg.ZeroFillSize, Seg.Alignment.value());
@@ -339,7 +323,6 @@ public:
     }
 
     OnAllocated(std::make_unique<MyInFlightAlloc>(this, BL));
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Returned from OnAllocated\n", __FILE__, __LINE__, __FUNCTION__));
   }
 
   //
@@ -366,22 +349,31 @@ public:
 namespace llvmo {
 
 class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
+  static constexpr auto personality_name = "DW.ref.__gxx_personality_v0";
+
+  static bool isPersonalitySymbol(llvm::jitlink::Symbol* symbol) {
+#if LLVM_VERSION_MAJOR < 20
+    return symbol->getName() == personality_name;
+#else
+    return symbol->hasName() && (*symbol->getName()).compare(personality_name) == 0;
+#endif
+  }
+
+  static std::string getSymbolName(llvm::jitlink::Symbol* symbol) {
+#if LLVM_VERSION_MAJOR < 20
+    return symbol->hasName() ? symbol->getName().str() : "";
+#else
+    return symbol->hasName() ? std::string(*symbol->getName()) : std::string();
+#endif
+  }
+
   void modifyPassConfig(llvm::orc::MaterializationResponsibility& MR, llvm::jitlink::LinkGraph& G,
                         llvm::jitlink::PassConfiguration& Config) {
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ClaspPlugin modifyPassConfig\n", __FILE__, __LINE__, __FUNCTION__));
-    auto PersonalitySymbol = MR.getTargetJITDylib().getExecutionSession().intern("DW.ref.__gxx_personality_v0");
+    auto PersonalitySymbol = MR.getTargetJITDylib().getExecutionSession().intern(personality_name);
     if (!MR.getSymbols().count(PersonalitySymbol))
       Config.PrePrunePasses.insert(Config.PrePrunePasses.begin(), [this](jitlink::LinkGraph& G) -> Error {
         for (auto ssym : G.defined_symbols()) {
-#if LLVM_VERSION_MAJOR < 20
-          std::string sssym(ssym->getName());
-#else
-          std::string sssym(*ssym->getName());
-#endif
-          if (strcmp(sssym.c_str(), "DW.ref.__gxx_personality_v0") == 0) {
-            DEBUG_OBJECT_FILES_PRINT(
-                ("%s:%d:%s PrePrunePass found DW.ref.__gxx_personality_v0 setting Strong Linkage and Local scope\n", __FILE__,
-                 __LINE__, __FUNCTION__));
+          if (isPersonalitySymbol(ssym)) {
             ssym->setLinkage(Linkage::Strong);
             ssym->setScope(Scope::Local);
             break;
@@ -398,27 +390,15 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
             count++;
           }
       }
-      for (auto ssym : G.defined_symbols()) {
-#if LLVM_VERSION_MAJOR < 20
-        std::string sname = ssym->getName().str();
-#else
-        std::string sname(*ssym->getName());
-#endif
-#ifdef DEBUG_OBJECT_FILES
-        if (ssym->getName().str() != "") {
-          DEBUG_OBJECT_FILES_PRINT(
-              ("%s:%d:%s PrePrunePass Symbol: %s\n", __FILE__, __LINE__, __FUNCTION__, ssym->getName().str().c_str()));
-        }
-#endif
-
-        bool keptAlive = false;
+      for (auto ssym : G.defined_symbols())
+        if (ssym->hasName()) {
+          std::string sname = getSymbolName(ssym);
+          bool keptAlive = false;
 #ifdef _TARGET_OS_LINUX
-        keptAlive = true;
-//                                        if (ssym->getName().str() != "") {printf("%s:%d:%s Symbol: %s\n", __FILE__, __LINE__,
-//                                        __FUNCTION__, ssym->getName().str().c_str() ); };
-#endif
-        if (sname.find(literals_name) != std::string::npos) {
           keptAlive = true;
+#endif
+          if (sname.find(literals_name) != std::string::npos) {
+            keptAlive = true;
 #if 0
                                           // I'd like to do this on linux because jit symbols need to be exposed
                                           // but it slows down startup enormously
@@ -426,102 +406,56 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                                           // Keep alive mangled symbols that we care about
 //                                          keptAlive = true;
 #endif
+          }
+          if (keptAlive)
+            ssym->setLive(true);
         }
-#ifdef DEBUG_OBJECT_FILES
-        if (sname != "") {
-          DEBUG_OBJECT_FILES_PRINT(
-              ("%s:%d:%s preprune symbol: %s  alive: %d\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str(), keptAlive));
-        }
-#endif
-        if (keptAlive)
-          ssym->setLive(true);
-      }
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass setLive %lu symbols\n", __FILE__, __LINE__, __FUNCTION__, count));
       return Error::success();
     });
     Config.PrePrunePasses.push_back([this](jitlink::LinkGraph& G) -> Error {
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePasses\n", __FILE__, __LINE__, __FUNCTION__));
       keepAliveStackmap(G);
       // printLinkGraph(G, "PrePrune:");
       return Error::success();
     });
     Config.PostFixupPasses.push_back([this](jitlink::LinkGraph& G) -> Error {
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PostFixupPasses\n", __FILE__, __LINE__, __FUNCTION__));
       parseLinkGraph(G);
       // printLinkGraph(G, "PostFixup:");
       return Error::success();
     });
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__));
   }
 
-  void notifyLoaded(llvm::orc::MaterializationResponsibility& MR) {
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__));
-  }
+  void notifyLoaded(llvm::orc::MaterializationResponsibility& MR) {}
 
-  llvm::Error notifyFailed(llvm::orc::MaterializationResponsibility& MR) {
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__));
-    return Error::success();
-  }
+  llvm::Error notifyFailed(llvm::orc::MaterializationResponsibility& MR) { return Error::success(); }
 
 #if LLVM_VERSION_MAJOR < 16
   llvm::Error notifyRemovingResources(ResourceKey K) { return Error::success(); }
 
-  void notifyTransferringResources(ResourceKey DstKey, ResourceKey SrcKey) {
-    printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__);
-  }
+  void notifyTransferringResources(ResourceKey DstKey, ResourceKey SrcKey) {}
 #else
   Error notifyRemovingResources(JITDylib& JD, ResourceKey K) { return Error::success(); };
 
-  void notifyTransferringResources(JITDylib& JD, ResourceKey DstKey, ResourceKey SrcKey) {
-    printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__);
-  }
+  void notifyTransferringResources(JITDylib& JD, ResourceKey DstKey, ResourceKey SrcKey) {}
 #endif
 
   void keepAliveStackmap(llvm::jitlink::LinkGraph& G) {
     for (auto& S : G.sections()) {
-      DEBUG_OBJECT_FILES_PRINT(
-          ("%s:%d:%s   section: %s getOrdinal->%u\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal()));
       if (S.getName().str() == STACKMAPS_NAME) {
-        for (auto& sym : S.symbols()) {
+        for (auto& sym : S.symbols())
           sym->setLive(true);
-        }
       }
     }
   }
 
   void parseLinkGraph(llvm::jitlink::LinkGraph& G) {
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Entered with G.getName() = %s\n", __FILE__, __LINE__, __FUNCTION__, G.getName().c_str()));
     uintptr_t textStart = ~0;
     uintptr_t textEnd = 0;
     ObjectFile_sp currentCode = lookupObjectFile(G.getName());
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     currentCode: %p\n", __FILE__, __LINE__, __FUNCTION__, &*currentCode));
     for (auto& S : G.sections()) {
-      DEBUG_OBJECT_FILES_PRINT(
-          ("%s:%d:%s  section: %s getOrdinal->%u \n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal()));
       std::string sectionName = S.getName().str();
       auto Prot = toSysMemoryProtectionFlags(S.getMemProt());
       if ((sectionName.find(BSS_NAME) != string::npos) || (sectionName.find(DATA_NAME) != string::npos)) {
-        llvm::jitlink::SectionRange range(S);
-        for (auto& sym : S.symbols()) {
-#if LLVM_VERSION_MAJOR < 20
-          std::string name = sym->getName().str();
-#else
-          std::string name(*sym->getName());
-#endif
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     section: %s symbol:  %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__,
-                                    S.getName().str().c_str(), name.c_str(), address, size));
-        }
-      }
-#if 0
-      else if (sectionName.find(DATA_NAME)!=string::npos) {
-        // If we want to handle the .data section differently than .bss then add more code here
-	llvm::jitlink::SectionRange range(S);
-	for ( auto& sym : S.symbols() ) {
-          // If we need to grab symbols from DATA_NAME segment do it here
-	}
-      }
-#endif
-      else if (Prot & llvm::sys::Memory::MF_EXEC) {
+      } else if (Prot & llvm::sys::Memory::MF_EXEC) {
         // Text section
         llvm::jitlink::SectionRange range(S);
         if ((uintptr_t)range.getStart().getValue() < textStart)
@@ -531,15 +465,9 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
           textEnd = tend;
         currentCode->_TextSectionStart = (void*)range.getStart().getValue();
         currentCode->_TextSectionEnd = (void*)((char*)range.getStart().getValue() + range.getSize());
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s --- TextSectionStart - TextSectionEnd = %p - %p\n", __FILE__, __LINE__, __FUNCTION__,
-                                  currentCode->_TextSectionStart, currentCode->_TextSectionEnd));
         for (auto& sym : S.symbols()) {
           if (sym->isCallable() && sym->hasName()) {
-#if LLVM_VERSION_MAJOR < 20
-            std::string name = sym->getName().str();
-#else
-            std::string name(*sym->getName());
-#endif
+            std::string name = getSymbolName(sym);
             void* address = (void*)sym->getAddress().getValue();
             size_t size = sym->getSize();
             core::core__jit_register_symbol(name, size, (void*)address);
@@ -547,11 +475,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         }
       } else if (sectionName.find(EH_FRAME_NAME) != string::npos) {
         llvm::jitlink::SectionRange range(S);
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   eh_frame section segment_start = %p  segment_size = %lu\n", __FILE__, __LINE__,
-                                  __FUNCTION__, start, size));
       } else if (sectionName.find(STACKMAPS_NAME) != string::npos) {
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   Saving stackmaps range currentCode %s\n", __FILE__, __LINE__, __FUNCTION__,
-                                  core::_rep_(currentCode).c_str()));
         llvm::jitlink::SectionRange range(S);
         currentCode->_StackmapStart = (void*)range.getStart().getValue();
         currentCode->_StackmapSize = (size_t)range.getSize();
@@ -562,60 +486,29 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       //      printf("%s:%d:%s  textStart %p - textStop %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)textStart, (void*)textEnd );
       currentCode->_TextSectionStart = (void*)textStart;
       currentCode->_TextSectionEnd = (void*)textEnd;
-      DEBUG_OBJECT_FILES_PRINT(
-          ("%s:%d:%s --- ObjectFile_sp %p badge: 0x%0x name: %s ---> final TextSectionStart - TextSectionEnd = %p - %p\n", __FILE__,
-           __LINE__, __FUNCTION__, currentCode.raw_(), lisp_badge(currentCode), _rep_(currentCode).c_str(),
-           currentCode->_TextSectionStart, currentCode->_TextSectionEnd));
     } else {
       printf("%s:%d:%s No executable region was found for the Code_O object for graph %s\n", __FILE__, __LINE__, __FUNCTION__,
              G.getName().c_str());
-      for (auto* Sym : G.external_symbols()) {
-#if LLVM_VERSION_MAJOR < 20
-        fmt::print("       Symbol: {}\n", Sym->getName().str());
-#else
-        fmt::print("       Symbol: {}\n", *Sym->getName());
-#endif
-      }
+      for (auto* Sym : G.external_symbols())
+        if (Sym->hasName())
+          fmt::print("       Symbol: {}\n", getSymbolName(Sym));
     }
     //
     bool found_literals = false;
-    for (auto ssym : G.defined_symbols()) {
-#if LLVM_VERSION_MAJOR < 20
-      if (ssym->getName() == "DW.ref.__gxx_personality_v0") {
-#else
-      if ((*ssym->getName()).compare("DW.ref.__gxx_personality_v0") == 0) {
-#endif
-        DEBUG_OBJECT_FILES_PRINT(
-            ("%s:%d:%s PrePrunePass found DW.ref.__gxx_personality_v0 setting Strong Linkage and Local scope\n", __FILE__, __LINE__,
-             __FUNCTION__));
+    for (auto ssym : G.defined_symbols())
+      if (isPersonalitySymbol(ssym)) {
         ssym->setLinkage(Linkage::Strong);
         ssym->setScope(Scope::Local);
         break;
       }
-    }
     for (auto ssym : G.defined_symbols()) {
-#ifdef DEBUG_OBJECT_FILES
       if (ssym->hasName()) {
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s defined_symbol -> hasName: %d name: %s at %p size: %llu\n", __FILE__, __LINE__,
-                                  __FUNCTION__, ssym->hasName(), ssym->getName().str().c_str(),
-                                  (void*)ssym->getAddress().getValue(), (size_t)ssym->getSize()));
-      }
-#endif
-      if (ssym->hasName()) {
-#if LLVM_VERSION_MAJOR < 20
-        std::string sname = ssym->getName().str();
-#else
-        std::string sname(*ssym->getName());
-#endif
+        std::string sname = getSymbolName(ssym);
         size_t pos;
         pos = sname.find(literals_name);
         if (pos != std::string::npos) {
           found_literals = true;
           currentCode->setLiteralVectorStart((void*)ssym->getAddress().getValue());
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s currentCode = %p  _LiteralVectorStart -> %p\n"
-                                    "   ssym->getSize() = %llu\n",
-                                    __FILE__, __LINE__, __FUNCTION__, &*currentCode, (void*)currentCode->_LiteralVectorStart,
-                                    (size_t)ssym->getSize()));
           size_t origSymbolSize = (size_t)ssym->getSize();
           size_t symbolSize = origSymbolSize;
           if (symbolSize == 1) {
@@ -639,10 +532,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
             abort();
           }
           currentCode->_LiteralVectorSizeBytes = symbolSize;
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Assignment currentCode->_LiteralVectorSizeBytes = %llu\n"
-                                    "   origSymbolSize = %llu\n",
-                                    __FILE__, __LINE__, __FUNCTION__, (size_t)currentCode->_LiteralVectorSizeBytes,
-                                    (size_t)origSymbolSize));
         }
       }
     }
@@ -651,14 +540,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       abort();
     }
     //
-#ifdef DEBUG_OBJECT_FILES
-    for (auto* Sym : G.external_symbols())
-      if (Sym->getName() == "DW.ref.__gxx_personality_v0") {
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Graph %s has external DW.ref.__gxx_personality_v0 reference.\n", __FILE__, __LINE__,
-                                  __FUNCTION__, G.getName().c_str()));
-        break;
-      }
-#endif
   }
 
   void printLinkGraph(llvm::jitlink::LinkGraph& G, llvm::StringRef Title) {
@@ -702,7 +583,6 @@ namespace llvmo {
 
 ClaspJIT_O::ClaspJIT_O() {
   llvm::ExitOnError ExitOnErr;
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Initializing ClaspJIT_O\n", __FILE__, __LINE__, __FUNCTION__));
   auto JTMB = ExitOnErr(JITTargetMachineBuilder::detectHost());
   TargetOptions to;
   to.FunctionSections = false;
@@ -720,7 +600,6 @@ ClaspJIT_O::ClaspJIT_O() {
             auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
             ObjLinkingLayer->addPlugin(
                 std::make_unique<EHFrameRegistrationPlugin>(ES, std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
-            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to addPlugin for ClaspPlugin\n", __FILE__, __LINE__, __FUNCTION__));
             ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
             // GDB registrar isn't working at the moment
             if (!getenv("CLASP_NO_JIT_GDB")) {
@@ -738,7 +617,6 @@ ClaspJIT_O::ClaspJIT_O() {
           .setObjectLinkingLayerCreator([this, &ExitOnErr](ExecutionSession& ES) {
             auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
             ObjLinkingLayer->addPlugin(ExitOnErr(orc::EHFrameRegistrationPlugin::Create(ES)));
-            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to addPlugin for ClaspPlugin\n", __FILE__, __LINE__, __FUNCTION__));
             ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
             if (!getenv("CLASP_NO_JIT_GDB")) {
               Error TargetSymErr = Error::success();
@@ -785,8 +663,6 @@ void ClaspJIT_O::adjustMainJITDylib(JITDylib_sp mainJITDylib) {
   llvm::ExitOnError ExitOnErr;
   JITDylib& dylib = *dylibsp->wrappedPtr();
   std::string mangledName = Name;
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s do_lookup %s in JITDylib_sp %p JITDylib* %p JITLINKDylib* %p\n", __FILE__, __LINE__,
-                            __FUNCTION__, mangledName.c_str(), dylibsp.raw_(), &dylib, llvm::cast<JITLinkDylib>(&dylib)));
   auto symbol = this->_LLJIT->lookup(dylib, mangledName);
   if (!symbol) {
     // printf("%s:%d could not find external linkage symbol named: %s\n", __FILE__, __LINE__, mangledName.c_str() );
@@ -802,7 +678,7 @@ void ClaspJIT_O::adjustMainJITDylib(JITDylib_sp mainJITDylib) {
 void* ClaspJIT_O::lookup_literals(JITDylib_sp dylibsp, size_t id) {
   void* literals = NULL;
   int namelen = snprintf(NULL, 0, "__clasp_literals_%zu", id);
-  char literals_name[namelen+1]; // +1 for null terminator
+  char literals_name[namelen + 1]; // +1 for null terminator
   sprintf(literals_name, "__clasp_literals_%zu", id);
   // ok to discard because literals is NULL iff lookup failed
   (void)do_lookup(dylibsp, literals_name, literals);
@@ -812,15 +688,14 @@ void* ClaspJIT_O::lookup_literals(JITDylib_sp dylibsp, size_t id) {
 void* ClaspJIT_O::lookup_fvector(JITDylib_sp dylibsp, size_t id) {
   void* fvector = NULL;
   int namelen = snprintf(NULL, 0, "function-vector-%zu", id);
-  char fvector_name[namelen+1];
+  char fvector_name[namelen + 1];
   sprintf(fvector_name, "function-vector-%zu", id);
   (void)do_lookup(dylibsp, fvector_name, fvector);
   return fvector;
 }
 
 [[nodiscard]] bool ClaspJIT_O::force_materialize(JITDylib_sp dylibsp, size_t id) {
-  return lookup_literals(dylibsp, id) != NULL
-    && lookup_fvector(dylibsp, id) != NULL;
+  return lookup_literals(dylibsp, id) != NULL && lookup_fvector(dylibsp, id) != NULL;
 }
 
 CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::lookup(JITDylib_sp dylibsp, const std::string& Name) {
@@ -925,18 +800,6 @@ CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string
 }
 
 void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s You now OWN MemoryBuffer %s  buffer->getBufferStart() -> %p  size: %lu\n", __FILE__, __LINE__,
-                            __FUNCTION__, buffer->getBufferIdentifier().str().c_str(), buffer->getBufferStart(),
-                            buffer->getBufferSize()));
-#ifdef DEBUG_OBJECT_FILES
-  if (globalDebugObjectFiles == DebugObjectFilesPrintSave) {
-    stringstream ss;
-    ss << core::core__monitor_directory();
-    ss << buffer->getBufferIdentifier().str() << "-" << ++global_object_file_number << ".o";
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Writing object file to: %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str()));
-    ObjectFile_O::writeToFile(ss.str(), buffer->getBufferStart(), buffer->getBufferSize());
-  }
-#endif
   // Grab the buffer and put it in the current ObjectFile
 
   ObjectFile_sp code = lookupObjectFile(buffer->getBufferIdentifier().str());
@@ -953,7 +816,6 @@ void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
 #else
   printf("%s:%d:%s Add support to set _TextSectionID for this os\n", __FILE__, __LINE__, __FUNCTION__);
 #endif
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s MemoryBuffer is %p\n", __FILE__, __LINE__, __FUNCTION__, code->_MemoryBuffer.get()));
 }
 
 void ClaspJIT_O::registerJITDylibAfterLoad(JITDylib_sp jitDylib) {
