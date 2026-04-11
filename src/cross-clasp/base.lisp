@@ -37,7 +37,10 @@
        ;; We don't use types (yet?), but treat an ftype declaration as
        ;; noting a function, as some code (like alexandria) does.
        (loop for f in (cddr proclamation)
-             do (cmp::register-global-function-def 'defun f)))))
+             do (cmp::register-global-function-def 'defun f)))
+      ((declaration)
+       (loop for n in (rest proclamation)
+             do (setf (clostrum:proclamation m:*client* *build-rte* n) t)))))
   (values))
 
 (defun core::*make-special (var)
@@ -568,6 +571,9 @@
         unless (or (not (clostrum:constantp client rte s))
                    (member s '(nil pi t)))
           do (clostrum:makunbound client rte s))
+  ;; misc proclamations
+  (setf (clostrum:proclamation client rte 'core:lambda-name) t
+        (clostrum:proclamation client rte 'core:lambda-list) t)
   (values))
 
 (defun initialize (character-names-path features-path)
