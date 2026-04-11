@@ -54,7 +54,9 @@
                                                                                    "int" 64
                                                                                    llvm-sys:+dw-ate-signed-fixed+
                                                                                    (core:enum-logical-or llvm-sys:diflags-enum
-                                                                                                         '(llvm-sys:diflags-zero)))))))
+                                                                                                         '(llvm-sys:diflags-zero))
+                                                                                   #-(or llvm15 llvm16 llvm17 llvm18 llvm19) 0
+                                                                                   #-(or llvm15 llvm16 llvm17 llvm18 llvm19 llvm20) 0)))))
     (llvm-sys:create-subroutine-type *the-module-dibuilder* arg-array
                                      (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero))
                                      0)))
@@ -328,7 +330,9 @@
                                  :lineno *dbg-current-function-lineno*
                                  :type (llvm-sys:create-basic-type
                                         *the-module-dibuilder*
-                                        type-name 64 type 0)
+                                        type-name 64 type 0
+                                        #-(or llvm15 llvm16 llvm17 llvm18 llvm19) 0
+                                        #-(or llvm15 llvm16 llvm17 llvm18 llvm19 llvm20) 0)
                                  :always-preserve t))
 
 (defun %dbg-variable-addr (addr var)
@@ -350,7 +354,9 @@
                                      (type llvm-sys:+dw-ate-address+))
   (when spi ; don't bother if there's no info.
     (let* ((type (llvm-sys:create-basic-type
-                  *the-module-dibuilder* type-name 64 type 0))
+                  *the-module-dibuilder* type-name 64 type 0
+                  #-(or llvm15 llvm16 llvm17 llvm18 llvm19) 0
+                  #-(or llvm15 llvm16 llvm17 llvm18 llvm19 llvm20) 0))
            (fsi (core:source-pos-info-function-scope spi))
            (scope (if fsi
                       (cached-function-scope fsi)
@@ -381,7 +387,9 @@
                                    (type llvm-sys:+dw-ate-address+))
   (when spi
     (let* ((type (llvm-sys:create-basic-type
-                  *the-module-dibuilder* type-name 64 type 0))
+                  *the-module-dibuilder* type-name 64 type 0
+                  #-(or llvm15 llvm16 llvm17 llvm18 llvm19) 0
+                  #-(or llvm15 llvm16 llvm17 llvm18 llvm19 llvm20) 0))
            (fsi (core:source-pos-info-function-scope spi))
            (scope (if fsi
                       (cached-function-scope fsi)
