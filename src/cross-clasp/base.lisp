@@ -453,6 +453,8 @@
                        cmp::warn-undefined-type
                        cmp::warn-cannot-coerce
                        #+clasp si:backquote-append
+                       core:expand-associative core:proper-list-p
+                       core:expand-compare core:expand-uncompare
                        alexandria:make-gensym-list
                        alexandria:ensure-car
                        alexandria:ensure-list
@@ -483,6 +485,7 @@
                        core::once-only
                        core::defconstant-eqx core::defconstant-equal
                        core::while core::until
+                       core:the-single
                        clos::with-early-accessors
                        clos::define-method-combination
                        clos::define-simple-method-combination
