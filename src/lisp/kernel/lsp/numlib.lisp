@@ -36,6 +36,13 @@
 (defun 1- (num) (- num 1))
 (defun 1+ (num) (+ num 1))
 
+;;; KLUDGE: (setf compiler-macro-function) is defined later in compiler-macro.lisp
+;;; but we want these compiler macros as early as possible during build, so that they
+;;; can be applied for e.g. DO-SUBSEQUENCE. So do it at compile time.
+(eval-when (:compile-toplevel)
+  (define-compiler-macro 1+ (x) `(core:two-arg-+ ,x 1))
+  (define-compiler-macro 1- (x) `(core:two-arg-- ,x 1)))
+
 (defun isqrt (i)
   "Args: (integer)
 Returns the integer square root of INTEGER."
