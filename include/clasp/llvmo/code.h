@@ -389,19 +389,20 @@ namespace llvmo {
 template <typename Stage> inline void allocateInCodeBlock(BasicLayout& BL, CodeBlock_sp& codeBlock) {
   WITH_READ_WRITE_LOCK(globals_->_CodeBlocksMutex);
   size_t PageSize = getpagesize();
-  auto SegsSizes = BL.getContiguousPageBasedLayoutSizes(PageSize);
+  llvm::ExitOnError ExitOnErr;
+  auto SegsSizes = ExitOnErr(BL.getContiguousPageBasedLayoutSizes(PageSize));
   if (_lisp->_Roots._AllCodeBlocks.load().consp()) {
     core::Cons_sp ll = gc::As_unsafe<core::Cons_sp>(_lisp->_Roots._AllCodeBlocks.load());
     codeBlock = gc::As<CodeBlock_sp>(CONS_CAR(ll));
   } else {
-    size_t size = std::max((size_t)CodeBlock_O::DefaultSize, (size_t)SegsSizes->total());
+    size_t size = std::max((size_t)CodeBlock_O::DefaultSize, (size_t)SegsSizes.total());
     codeBlock = CodeBlock_O::make<Stage>(size);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Created first CodeBlock size: %lu\n", __FILE__, __LINE__, __FUNCTION__, size));
     _lisp->_Roots._AllCodeBlocks.store(core::Cons_O::createAtStage<Stage>(codeBlock, _lisp->_Roots._AllCodeBlocks.load()));
   }
   bool fits = codeBlock->calculate(BL);
   if (!fits) {
-    size_t size = std::max((size_t)CodeBlock_O::DefaultSize, (size_t)SegsSizes->total());
+    size_t size = std::max((size_t)CodeBlock_O::DefaultSize, (size_t)SegsSizes.total());
     codeBlock = CodeBlock_O::make<Stage>(size);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Created a fresh CodeBlock size: %lu\n", __FILE__, __LINE__, __FUNCTION__, size));
     _lisp->_Roots._AllCodeBlocks.store(core::Cons_O::createAtStage<Stage>(codeBlock, _lisp->_Roots._AllCodeBlocks.load()));
