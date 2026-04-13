@@ -1975,7 +1975,7 @@
              (eform (ext:parse-macro name lambda-list body env))
              (aenv (cmp:lexenv/macroexpansion-environment env))
              (expander (cmp:bytecompile eform aenv))
-             (info (cmp:local-macro-info/make expander)))
+             (info (cmp:local-macro-info/make nil expander)))
         (push (cons name info) macros)))
     (bytecode-compile-toplevel-locally
      body (cmp:lexenv/make

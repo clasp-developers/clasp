@@ -382,7 +382,7 @@
      (let ((next (cleavir-env->bytecode (env::next env))))
        (cmp:lexenv/make
         (cmp:lexenv/vars next) (cmp:lexenv/tags next) (cmp:lexenv/blocks next)
-        (acons (env:name env) (cmp:local-macro-info/make (env:expander env))
+        (acons (env:name env) (cmp:local-macro-info/make nil (env:expander env))
                (cmp:lexenv/funs next))
         (cmp:lexenv/decls next) (cmp:lexenv/frame-end next))))
     (env:inline

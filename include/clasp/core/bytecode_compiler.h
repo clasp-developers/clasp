@@ -207,6 +207,30 @@ struct SpecialOperatorInfoV {};
 FORWARD(FunInfo);
 class FunInfo_O : public General_O {
   LISP_ABSTRACT_CLASS(comp, CompPkg, FunInfo_O, "FunInfo", General_O);
+public:
+  enum class InlineStatus { NONE, INLINE, NOTINLINE };
+
+  FunInfo_O(InlineStatus inl) : General_O(), _inline(inl) {}
+
+  InlineStatus _inline = InlineStatus::NONE;
+  InlineStatus inlstatus() { return _inline; }
+  CL_DEFMETHOD T_sp inline_status() const {
+    switch (_inline) {
+    case InlineStatus::INLINE: return cl::_sym_inline;
+    case InlineStatus::NOTINLINE: return cl::_sym_notinline;
+    case InlineStatus::NONE: return nil<T_O>();
+    }
+  }
+
+  // Clone this object but with a different inline status.
+  virtual FunInfo_sp clone_inline(InlineStatus inl) = 0;
+protected:
+  static InlineStatus sym_to_inl(T_sp sym) {
+    InlineStatus inl = InlineStatus::NONE;
+    if (sym == cl::_sym_inline) inl = InlineStatus::INLINE;
+    else if (sym == cl::_sym_notinline) inl = InlineStatus::NOTINLINE;
+    return inl;
+  }
 };
 
 FORWARD(GlobalFunInfo);
@@ -217,23 +241,29 @@ public:
   T_sp _cmexpander = nil<T_O>(); // compiler macro expander
   T_sp _opt_id = nil<T_O>(); // optimization mark
 public:
-  GlobalFunInfo_O(T_sp expander, T_sp opt_id)
-    : FunInfo_O(), _cmexpander(expander), _opt_id(opt_id) {};
+  GlobalFunInfo_O(InlineStatus inl, T_sp expander, T_sp opt_id)
+    : FunInfo_O(inl), _cmexpander(expander), _opt_id(opt_id) {};
   CL_LISPIFY_NAME(GlobalFunInfo/make)
-  CL_LAMBDA(expander &optional identity)
+  CL_LAMBDA(inline_status expander &optional identity)
   CL_DEF_CLASS_METHOD
-  static GlobalFunInfo_sp make(T_sp expander, T_sp opt_id) {
-    return gctools::GC<GlobalFunInfo_O>::allocate<gctools::RuntimeStage>(expander, opt_id);
+  static GlobalFunInfo_sp make(T_sp inlstatus, T_sp expander, T_sp opt_id) {
+    return make_direct(sym_to_inl(inlstatus), expander, opt_id);
+  }
+  static GlobalFunInfo_sp make_direct(InlineStatus inlstatus, T_sp expander, T_sp opt_id) {
+    return gctools::GC<GlobalFunInfo_O>::allocate<gctools::RuntimeStage>(inlstatus, expander, opt_id);
   }
   CL_DEFMETHOD T_sp cmexpander() const { return this->_cmexpander; }
   CL_DEFMETHOD T_sp opt_id() const { return this->_opt_id; }
+  virtual FunInfo_sp clone_inline(InlineStatus inl);
 };
 
 struct GlobalFunInfoV {
-  GlobalFunInfoV(T_sp cmexpander, T_sp opt_id)
-    : _cmexpander(cmexpander), _opt_id(opt_id) {};
+  GlobalFunInfoV(FunInfo_O::InlineStatus inl, T_sp cmexpander, T_sp opt_id)
+    : _inline(inl), _cmexpander(cmexpander), _opt_id(opt_id) {};
   GlobalFunInfoV(GlobalFunInfo_sp info)
-    : _cmexpander(info->cmexpander()), _opt_id(info->opt_id()) {};
+    : _inline(info->inlstatus()), _cmexpander(info->cmexpander()),
+      _opt_id(info->opt_id()) {};
+  FunInfo_O::InlineStatus _inline;
   T_sp _cmexpander;
   T_sp _opt_id;
   T_sp cmexpander() const { return _cmexpander; }
@@ -248,17 +278,24 @@ public:
   LexicalInfo_sp _lex;
 
 public:
-  LocalFunInfo_O(LexicalInfo_sp nlex) : FunInfo_O(), _lex(nlex){};
+  LocalFunInfo_O(InlineStatus inlstatus, LexicalInfo_sp nlex)
+    : FunInfo_O(inlstatus), _lex(nlex){};
   CL_LISPIFY_NAME(LocalFunInfo/make)
   CL_DEF_CLASS_METHOD
-  static LocalFunInfo_sp make(size_t frame_index, Cfunction_sp funct) {
+  static LocalFunInfo_sp make(T_sp inl,
+                              size_t frame_index, Cfunction_sp funct) {
+    return make_direct(sym_to_inl(inl), frame_index, funct);
+  }
+  static LocalFunInfo_sp make_direct(InlineStatus inl,
+                                     size_t frame_index, Cfunction_sp funct) {
     LexicalInfo_sp nlex = LexicalInfo_O::make(frame_index, funct);
-    return gctools::GC<LocalFunInfo_O>::allocate<gctools::RuntimeStage>(nlex);
+    return gctools::GC<LocalFunInfo_O>::allocate<gctools::RuntimeStage>(inl, nlex);
   }
   CL_LISPIFY_NAME(LocalFunInfo/lex)
   CL_DEFMETHOD LexicalInfo_sp lex() const { return this->_lex; }
   size_t frameIndex() const { return this->lex()->frameIndex(); }
   Cfunction_sp funct() const { return this->lex()->cfunction(); }
+  virtual FunInfo_sp clone_inline(InlineStatus inl);
 };
 
 struct LocalFunInfoV {
@@ -279,19 +316,28 @@ public:
   Function_sp _expander;
 
 public:
-  GlobalMacroInfo_O(Function_sp nexpander) : FunInfo_O(), _expander(nexpander){};
+  GlobalMacroInfo_O(InlineStatus inl, Function_sp nexpander)
+    : FunInfo_O(inl), _expander(nexpander){};
   CL_LISPIFY_NAME(GlobalMacroInfo/make)
   CL_DEF_CLASS_METHOD
-  static GlobalMacroInfo_sp make(Function_sp expander) {
-    return gctools::GC<GlobalMacroInfo_O>::allocate<gctools::RuntimeStage>(expander);
+  static GlobalMacroInfo_sp make(T_sp inlstatus, Function_sp expander) {
+    return make_direct(sym_to_inl(inlstatus), expander);
+  }
+  static GlobalMacroInfo_sp make_direct(InlineStatus inl, Function_sp expander) {
+    return gctools::GC<GlobalMacroInfo_O>::allocate<gctools::RuntimeStage>(inl, expander);
   }
   CL_DEFMETHOD Function_sp expander() const { return this->_expander; }
+  virtual FunInfo_sp clone_inline(InlineStatus inl);
 };
 
 struct GlobalMacroInfoV {
-  GlobalMacroInfoV(Function_sp expander) : _expander(expander){};
-  GlobalMacroInfoV(GlobalMacroInfo_sp info) : _expander(info->expander()){};
+  GlobalMacroInfoV(FunInfo_O::InlineStatus inl, Function_sp expander)
+    : _inline(inl), _expander(expander){};
+  GlobalMacroInfoV(GlobalMacroInfo_sp info)
+    : _inline(info->inlstatus()), _expander(info->expander()){};
+  FunInfo_O::InlineStatus _inline;
   Function_sp _expander;
+  FunInfo_O::InlineStatus inlstatus() const { return _inline; }
   Function_sp expander() const { return _expander; }
 };
 
@@ -303,19 +349,28 @@ public:
   Function_sp _expander;
 
 public:
-  LocalMacroInfo_O(Function_sp nexpander) : FunInfo_O(), _expander(nexpander){};
+  LocalMacroInfo_O(InlineStatus inl, Function_sp nexpander)
+    : FunInfo_O(inl), _expander(nexpander){};
   CL_LISPIFY_NAME(LocalMacroInfo/make)
   CL_DEF_CLASS_METHOD
-  static LocalMacroInfo_sp make(Function_sp expander) {
-    return gctools::GC<LocalMacroInfo_O>::allocate<gctools::RuntimeStage>(expander);
+  static LocalMacroInfo_sp make(T_sp inlstatus, Function_sp expander) {
+    return make_direct(sym_to_inl(inlstatus), expander);
+  }
+  static LocalMacroInfo_sp make_direct(InlineStatus inl, Function_sp expander) {
+    return gctools::GC<LocalMacroInfo_O>::allocate<gctools::RuntimeStage>(inl, expander);
   }
   CL_DEFMETHOD Function_sp expander() const { return this->_expander; }
+  virtual FunInfo_sp clone_inline(InlineStatus inl);
 };
 
 struct LocalMacroInfoV {
-  LocalMacroInfoV(Function_sp expander) : _expander(expander){};
-  LocalMacroInfoV(LocalMacroInfo_sp info) : _expander(info->expander()){};
+  LocalMacroInfoV(FunInfo_O::InlineStatus inl, Function_sp expander)
+    : _inline(inl), _expander(expander){};
+  LocalMacroInfoV(LocalMacroInfo_sp info)
+    : _inline(info->inlstatus()), _expander(info->expander()){};
+  FunInfo_O::InlineStatus _inline;
   Function_sp _expander;
+  FunInfo_O::InlineStatus inlstatus() const { return _inline; }
   Function_sp expander() const { return _expander; }
 };
 
@@ -430,6 +485,8 @@ public:
   Lexenv_sp bind_tags(List_sp tags, LexicalInfo_sp dynenv, const Context context);
   // Add VARS as special in ENV.
   CL_DEFMETHOD Lexenv_sp add_specials(List_sp vars);
+  // Add INLINES as inline and NOTINLINES as notinline in ENV.
+  CL_DEFMETHOD Lexenv_sp add_inlines(List_sp inlines, List_sp notinlines);
   // Add new declarations.
   CL_DEFMETHOD Lexenv_sp add_decls(List_sp decls);
   /* Macrolet expanders need to be compiled in the local compilation environment,

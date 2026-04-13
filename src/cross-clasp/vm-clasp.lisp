@@ -10,10 +10,12 @@
                                    env name)
     ((nil) nil)
     ((:function) (cmp:global-fun-info/make
+                  (clostrum:operator-inline maclina.machine:*client* env name)
                   (clostrum:compiler-macro-function
                    maclina.machine:*client* env name)
                   nil))
     ((:macro) (cmp:global-macro-info/make
+               (clostrum:operator-inline maclina.machine:*client* env name)
                (clostrum:macro-function
                 maclina.machine:*client* env name)))
     ((:special-operator) (cmp:special-operator-info/make))))

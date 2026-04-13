@@ -119,15 +119,17 @@
           (cmp:global-fun-info
            (make-instance 'trucler:global-function-description
              :name symbol
+             :inline (cmp:fun-info/inline-status info)
              :compiler-macro (cmp:global-fun-info/cmexpander info)))
           (cmp:local-fun-info
            ;; As with lexical variables, this may not end well
            ;; as there will be no identity or anything.
            (make-instance 'trucler:local-function-description
-             :name symbol :identity nil))
+             :name symbol :inline (cmp:fun-info/inline-status info) :identity nil))
           (cmp:global-macro-info
            (make-instance 'trucler:global-macro-description
-             :name symbol :expander (cmp:global-macro-info/expander info)))
+             :name symbol :expander (cmp:global-macro-info/expander info)
+             :inline (cmp:fun-info/inline-status info)))
           (cmp:local-macro-info
            (make-instance 'trucler:local-macro-description
              :name symbol :expander (cmp:local-macro-info/expander info)))))))
@@ -205,10 +207,10 @@
 
 (defmethod desc->info
     ((desc trucler:local-function-description))
-  (cmp:local-fun-info/make (trucler:identity desc)))
+  (cmp:local-fun-info/make (trucler:inline desc) (trucler:identity desc)))
 (defmethod desc->info
     ((desc trucler:local-macro-description))
-  (cmp:local-macro-info/make (trucler:expander desc)))
+  (cmp:local-macro-info/make (trucler:inline desc) (trucler:expander desc)))
 
 (defmethod trucler:augment-with-function-description
     ((client client) (env clasp-cleavir:clasp-global-environment)

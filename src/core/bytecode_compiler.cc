@@ -111,7 +111,7 @@ Lexenv_sp Lexenv_O::bind_funs(List_sp funs, const Context ctxt) {
   List_sp new_funs = this->funs();
   for (auto cur : funs) {
     T_sp name = oCar(cur);
-    auto info = LocalFunInfo_O::make(idx++, cf);
+    auto info = LocalFunInfo_O::make_direct(FunInfo_O::InlineStatus::NONE, idx++, cf);
     Cons_sp pair = Cons_O::create(name, info);
     new_funs = Cons_O::create(pair, new_funs);
   }
@@ -166,6 +166,57 @@ static List_sp scrub_decls(List_sp decls) {
       r << decl;
   }
   return r.cons();
+}
+
+FunInfo_sp GlobalFunInfo_O::clone_inline(InlineStatus inl) {
+  return make_direct(inl, cmexpander(), opt_id());
+}
+FunInfo_sp LocalFunInfo_O::clone_inline(InlineStatus inl) {
+  return make_direct(inl, frameIndex(), funct());
+}
+FunInfo_sp GlobalMacroInfo_O::clone_inline(InlineStatus inl) {
+  return make_direct(inl, expander());
+}
+FunInfo_sp LocalMacroInfo_O::clone_inline(InlineStatus inl) {
+  return make_direct(inl, expander());
+}
+
+static void extract_inlines(List_sp decls, List_sp& inlines, List_sp& notinlines) {
+  inlines = nil<T_O>(); notinlines = nil<T_O>();
+  for (auto cur : decls) {
+    T_sp decl = oCar(cur);
+    if (decl.isA<Cons_O>()) {
+      if (oCar(decl) == cl::_sym_inline)
+        inlines = Cons_O::append(oCdr(decl), inlines);
+      else if (oCar(decl) == cl::_sym_notinline)
+        notinlines = Cons_O::append(oCdr(decl), notinlines);
+    }
+  }
+}
+
+T_sp fun_info(T_sp name, Lexenv_sp env);
+
+Lexenv_sp Lexenv_O::add_inlines(List_sp inlines, List_sp notinlines) {
+  // Anything that's bound is copied.
+  // Anything that's not bound is ignored - FIXME, should be treated as global
+  // function and a style warning issued.
+  List_sp orig_funs = funs();
+  List_sp new_funs = orig_funs;
+  for (auto cur : inlines) {
+    T_sp name = oCar(cur);
+    T_sp existing = fun_info(name, this->asSmartPtr());
+    if (existing.isA<FunInfo_O>())
+      new_funs = Cons_O::create(Cons_O::create(name, existing.as_unsafe<FunInfo_O>()->clone_inline(FunInfo_O::InlineStatus::INLINE)), new_funs);
+  }
+  for (auto cur : notinlines) {
+    T_sp name = oCar(cur);
+    T_sp existing = fun_info(name, this->asSmartPtr());
+    if (existing.isA<FunInfo_O>())
+      new_funs = Cons_O::create(Cons_O::create(name, existing.as_unsafe<FunInfo_O>()->clone_inline(FunInfo_O::InlineStatus::NOTINLINE)), new_funs);
+  }
+  if (orig_funs == new_funs) // don't bother consing
+    return this->asSmartPtr();
+  else return sub_funs(new_funs);
 }
 
 Lexenv_sp Lexenv_O::add_decls(List_sp decls) {
@@ -354,6 +405,24 @@ static inline T_sp main_env_opt_id(T_sp name) {
   return table.as_unsafe<HashTable_O>()->gethash(name);
 }
 
+static inline FunInfo_O::InlineStatus main_env_inline(T_sp name) {
+  if (_sym_STARfunctions_to_inlineSTAR->boundP()) {
+    T_sp t_fti = _sym_STARfunctions_to_inlineSTAR->symbolValue();
+    if (t_fti.isA<HashTable_O>()) {
+      T_sp inlinep = t_fti.as_unsafe<HashTable_O>()->gethash(name);
+      if (inlinep.notnilp()) return FunInfo_O::InlineStatus::INLINE;
+    }
+  }
+  if (_sym_STARfunctions_to_notinlineSTAR->boundP()) {
+    T_sp t_fti = _sym_STARfunctions_to_notinlineSTAR->symbolValue();
+    if (t_fti.isA<HashTable_O>()) {
+      T_sp inlinep = t_fti.as_unsafe<HashTable_O>()->gethash(name);
+      if (inlinep.notnilp()) return FunInfo_O::InlineStatus::NOTINLINE;
+    }
+  }
+  return FunInfo_O::InlineStatus::NONE;
+}
+
 // FIXME: remove redundancy with cl:special-operator-p
 static bool special_operator_p(T_sp fname) {
   return fname == cl::_sym_progn
@@ -398,12 +467,15 @@ static inline T_sp main_env_fun_info(T_sp name) {
         if (fname.notnilp() && oCdr(dname).nilp()) {
           if (!fname->fboundp_setf()) {
             if (opt_id.notnilp())
-              return GlobalFunInfo_O::make(main_env_cmf(name), opt_id);
+              return GlobalFunInfo_O::make_direct(main_env_inline(name),
+                                                  main_env_cmf(name), opt_id);
             else return nil<T_O>();
           } if (fname->macroP())
-            return GlobalMacroInfo_O::make(fname->getSetfFdefinition());
+              return GlobalMacroInfo_O::make_direct(main_env_inline(name),
+                                                    fname->getSetfFdefinition());
           else
-            return GlobalFunInfo_O::make(main_env_cmf(name), opt_id);
+            return GlobalFunInfo_O::make_direct(main_env_inline(name),
+                                                main_env_cmf(name), opt_id);
         }
       }
     }
@@ -415,12 +487,14 @@ static inline T_sp main_env_fun_info(T_sp name) {
       return SpecialOperatorInfo_O::make();
     if (!fname->fboundp()) {
       if (opt_id.notnilp())
-        return GlobalFunInfo_O::make(main_env_cmf(name), opt_id);
+        return GlobalFunInfo_O::make_direct(main_env_inline(name),
+                                            main_env_cmf(name), opt_id);
       else return nil<T_O>();
     } else if (fname->macroP())
-      return GlobalMacroInfo_O::make(fname->symbolFunction());
+      return GlobalMacroInfo_O::make_direct(main_env_inline(name), fname->symbolFunction());
     else
-      return GlobalFunInfo_O::make(main_env_cmf(name), opt_id);
+      return GlobalFunInfo_O::make_direct(main_env_inline(name),
+                                          main_env_cmf(name), opt_id);
   }
 }
 
@@ -450,34 +524,44 @@ static inline FunInfoV main_env_fun_info_v(T_sp name) {
     Symbol_sp fname = gc::As<Symbol_sp>(sss);
     if (!fname->fboundp_setf()) {
       if (opt_id.notnilp())
-        return FunInfoV(GlobalFunInfoV(main_env_cmf(name), opt_id));
+        return FunInfoV(GlobalFunInfoV(main_env_inline(name),
+                                       main_env_cmf(name), opt_id));
       else return FunInfoV(NoFunInfoV());
     } else if (fname->macroP())
-      return FunInfoV(GlobalMacroInfoV(fname->getSetfFdefinition()));
+      return FunInfoV(GlobalMacroInfoV(main_env_inline(name),
+                                       fname->getSetfFdefinition()));
     else
-      return FunInfoV(GlobalFunInfoV(main_env_cmf(name), opt_id));
+      return FunInfoV(GlobalFunInfoV(main_env_inline(name),
+                                     main_env_cmf(name), opt_id));
   } else {
     Symbol_sp fname = gc::As<Symbol_sp>(name);
     if (special_operator_p(fname))
       return FunInfoV(SpecialOperatorInfoV());
     if (!fname->fboundp()) {
       if (opt_id.notnilp())
-        return FunInfoV(GlobalFunInfoV(main_env_cmf(name), opt_id));
+        return FunInfoV(GlobalFunInfoV(main_env_inline(name),
+                                       main_env_cmf(name), opt_id));
       else return FunInfoV(NoFunInfoV());
     } else if (fname->macroP())
-      return FunInfoV(GlobalMacroInfoV(fname->symbolFunction()));
+      return FunInfoV(GlobalMacroInfoV(main_env_inline(name),
+                                       fname->symbolFunction()));
     else
-      return FunInfoV(GlobalFunInfoV(main_env_cmf(name), opt_id));
+      return FunInfoV(GlobalFunInfoV(main_env_inline(name),
+                                     main_env_cmf(name), opt_id));
   }
 }
 
 FunInfoV fun_info_v(T_sp name, Lexenv_sp env) {
   // Local?
   T_sp info = env->functionInfo(name);
-  if (gc::IsA<LocalFunInfo_sp>(info))
-    return FunInfoV(LocalFunInfoV(gc::As_unsafe<LocalFunInfo_sp>(info)));
-  else if (gc::IsA<LocalMacroInfo_sp>(info))
-    return FunInfoV(LocalMacroInfoV(gc::As_unsafe<LocalMacroInfo_sp>(info)));
+  if (info.isA<LocalFunInfo_O>())
+    return FunInfoV(LocalFunInfoV(info.as_unsafe<LocalFunInfo_O>()));
+  else if (info.isA<LocalMacroInfo_O>())
+    return FunInfoV(LocalMacroInfoV(info.as_unsafe<LocalMacroInfo_O>()));
+  else if (info.isA<GlobalFunInfo_O>())
+    return FunInfoV(GlobalFunInfoV(info.as_unsafe<GlobalFunInfo_O>()));
+  else if (info.isA<GlobalMacroInfo_O>())
+    return FunInfoV(GlobalMacroInfoV(info.as_unsafe<GlobalMacroInfo_O>()));
   ASSERT(info.nilp());
 
   T_sp global = env->global();
@@ -1466,8 +1550,11 @@ void compile_locally(List_sp body, Lexenv_sp env, const Context ctxt) {
   List_sp code;
   List_sp specials;
   eval::extract_declares_docstring_code_specials(body, declares, false, docstring, code, specials);
+  List_sp inlines;
+  List_sp notinlines;
+  extract_inlines(declares, inlines, notinlines);
   declares = scrub_decls(declares);
-  env = env->add_specials(specials)->add_decls(declares);
+  env = env->add_specials(specials)->add_inlines(inlines, notinlines)->add_decls(declares);
   Label_sp begin_label = Label_O::make(), end_label = Label_O::make();
   if (declares.notnilp()) {
     begin_label->contextualize(ctxt);
@@ -1641,6 +1728,8 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
   List_sp code;
   List_sp specials;
   eval::extract_declares_docstring_code_specials(body, declares, false, docstring, code, specials);
+  List_sp inlines; List_sp notinlines;
+  extract_inlines(declares, inlines, notinlines);
   size_t lexical_binding_count = 0;
   size_t special_binding_count = 0;
   Lexenv_sp post_binding_env = env->add_specials(specials);
@@ -1673,7 +1762,7 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
     }
   }
   ctxt.emit_bind(lexical_binding_count, env->frameEnd());
-  post_binding_env = post_binding_env->add_decls(declares);
+  post_binding_env = post_binding_env->add_inlines(inlines, notinlines)->add_decls(declares);
   begin_label->contextualize(ctxt);
   // Output debug info before the progn to ensure sorting.
   T_sp dbindings = debug_bindings.cons();
@@ -1739,6 +1828,7 @@ void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Contex
   List_sp code;
   List_sp specials;
   eval::extract_declares_docstring_code_specials(body, declares, false, docstring, code, specials);
+  List_sp inlines; List_sp notinlines;
   size_t special_binding_count = 0;
   Lexenv_sp new_env = env;
   Context ctxt = ectxt;
@@ -1759,7 +1849,7 @@ void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Contex
       ibindings << Cons_O::createList(var, new_env->variableInfo(var).as_assert<LexicalVarInfo_O>()->lex(), source);
     }
   }
-  new_env = new_env->add_decls(declares);
+  new_env = new_env->add_inlines(inlines, notinlines)->add_decls(declares);
   // We make a new environment to make sure free special declarations get
   // through even if this let* doesn't bind them.
   // This creates duplicate alist entries for anything that _is_ bound
@@ -2649,7 +2739,8 @@ static List_sp macrolet_bindings(Lexenv_sp menv, List_sp bindings, List_sp funs)
     T_sp body = oCddr(binding);
     T_sp eform = eval::funcall(ext::_sym_parse_macro, name, lambda_list, body, menv);
     Function_sp expander = bytecompile(eform, menv);
-    LocalMacroInfo_sp info = LocalMacroInfo_O::make(expander);
+    LocalMacroInfo_sp info = LocalMacroInfo_O::make_direct(FunInfo_O::InlineStatus::NONE,
+                                                           expander);
     funs = Cons_O::create(Cons_O::create(name, info), funs);
   }
   return funs;
@@ -2970,7 +3061,9 @@ CL_DEFUN T_mv bytecode_toplevel_locally(List_sp body, Lexenv_sp env) {
   List_sp code;
   List_sp specials;
   eval::extract_declares_docstring_code_specials(body, declares, false, docstring, code, specials);
-  env = env->add_specials(specials)->add_decls(declares);
+  List_sp inlines; List_sp notinlines;
+  extract_inlines(declares, inlines, notinlines);
+  env = env->add_specials(specials)->add_inlines(inlines, notinlines)->add_decls(declares);
   return bytecode_toplevel_progn(code, env);
 }
 
