@@ -17,6 +17,8 @@
            #:odd-keywords #:unrecognized-keyword-argument-error
            #:simple-parse-error #:simple-reader-error)
   (:export #:defconstant-equal)
+  (:export #:expand-associative #:expand-compare #:expand-uncompare
+           #:proper-list-p #:the-single)
   (:export #:check-pending-interrupts #:terminal-interrupt
            #:signal-code-alist)
   ;; Clasp usually only defines these if the underlying OS has the given signal.

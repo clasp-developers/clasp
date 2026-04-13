@@ -158,10 +158,11 @@ core::SimpleBaseString_sp createSimpleBaseStringForStage(const std::string& snam
 }
 
 uint64_t getModuleSectionIndexForText(llvm::object::ObjectFile& objf) {
+  llvm::ExitOnError ExitOnErr;
   for (llvm::object::SectionRef Sec : objf.sections()) {
     if (!Sec.isText() || Sec.isVirtual())
       continue;
-    if (Sec.getName()->str() == TEXT_NAME) {
+    if (ExitOnErr(Sec.getName()).str() == TEXT_NAME) {
       return Sec.getIndex();
     }
   }
@@ -660,7 +661,6 @@ void ClaspJIT_O::adjustMainJITDylib(JITDylib_sp mainJITDylib) {
 }
 
 [[nodiscard]] bool ClaspJIT_O::do_lookup(JITDylib_sp dylibsp, const std::string& Name, void*& ptr) {
-  llvm::ExitOnError ExitOnErr;
   JITDylib& dylib = *dylibsp->wrappedPtr();
   std::string mangledName = Name;
   auto symbol = this->_LLJIT->lookup(dylib, mangledName);
@@ -804,10 +804,9 @@ void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
 
   ObjectFile_sp code = lookupObjectFile(buffer->getBufferIdentifier().str());
   code->_MemoryBuffer = std::move(buffer);
-  //  printf("%s:%d:%s loadedObjectFile %p  _MemoryBuffer = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)&*code,
-  //  (void*)code->_MemoryBuffer.get() );
-  auto objf = code->getObjectFile();
-  llvm::object::ObjectFile& of = *objf->get();
+  llvm::ExitOnError ExitOnErr;
+  auto ofp = ExitOnErr(code->getObjectFile());
+  llvm::object::ObjectFile& of = *ofp;
 #if defined(_TARGET_OS_LINUX)
   uint64_t secId = getModuleSectionIndexForText(of);
   code->_TextSectionId = secId;
