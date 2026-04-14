@@ -315,7 +315,7 @@ static inline T_sp main_env_var_info(Symbol_sp sym) {
 // returns a variable info or NIL.
 SYMBOL_EXPORT_SC_(CorePkg, fcge_lookup_var);
 
-CL_DEFUN T_sp var_info(Symbol_sp sym, Lexenv_sp env) {
+T_sp var_info(Symbol_sp sym, Lexenv_sp env) {
   // Local?
   T_sp info = env->variableInfo(sym);
   if (info.notnilp())
@@ -325,6 +325,20 @@ CL_DEFUN T_sp var_info(Symbol_sp sym, Lexenv_sp env) {
     return main_env_var_info(sym);
   else
     return eval::funcall(core::_sym_fcge_lookup_var, global, sym);
+}
+
+CL_DEFUN T_sp cmp__var_info(Symbol_sp name, T_sp env) {
+  T_sp global = env;
+  if (env.isA<Lexenv_O>()) {
+    Lexenv_sp lex = env.as_unsafe<Lexenv_O>();
+    T_sp info = lex->variableInfo(name);
+    if (info.notnilp()) return info;
+    global = lex->global();
+  }
+  if (global.nilp())
+    return main_env_var_info(name);
+  else
+    return eval::funcall(core::_sym_fcge_lookup_var, global, name);
 }
 
 static inline VarInfoV main_env_var_info_v(Symbol_sp sym) {
@@ -500,12 +514,27 @@ static inline T_sp main_env_fun_info(T_sp name) {
 
 SYMBOL_EXPORT_SC_(CorePkg, fcge_lookup_fun);
 
-CL_DEFUN T_sp fun_info(T_sp name, Lexenv_sp env) {
+T_sp fun_info(T_sp name, Lexenv_sp env) {
   // Local?
   T_sp info = env->functionInfo(name);
   if (info.notnilp())
     return info;
   T_sp global = env->global();
+  if (global.nilp())
+    return main_env_fun_info(name);
+  else
+    return eval::funcall(core::_sym_fcge_lookup_fun, global, name);
+}
+
+// Lisp version: handles any kind of environment.
+CL_DEFUN T_sp cmp__fun_info(T_sp name, T_sp env) {
+  T_sp global = env;
+  if (env.isA<Lexenv_O>()) {
+    Lexenv_sp lex = env.as_unsafe<Lexenv_O>();
+    T_sp info = lex->functionInfo(name);
+    if (info.notnilp()) return info;
+    global = lex->global();
+  }
   if (global.nilp())
     return main_env_fun_info(name);
   else
