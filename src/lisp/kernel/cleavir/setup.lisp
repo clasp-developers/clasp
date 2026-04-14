@@ -321,12 +321,6 @@
         (env:expander info)
         nil)))
 
-;;; Used by core:operator-shadowed-p
-(defun core:cleavir-operator-shadowed-p (name environment)
-  (typep (env:function-info *clasp-system* environment name)
-         '(or env:local-function-info
-           env:local-macro-info)))
-
 (defun type-expand-1 (type-specifier &optional env)
   (let (head)
     (etypecase type-specifier
