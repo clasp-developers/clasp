@@ -145,19 +145,6 @@
 (setf cmp:*policy*
      (policy:compute-policy *clasp-system* cmp:*optimize*))
 
-(defmethod env:optimize-info ((sys clasp) (environment clasp-global-environment))
-  ;; The default values are all 3.
-  (make-instance 'env:optimize-info
-    :optimize cmp:*optimize*
-    :policy cmp:*policy*))
-
-(defmethod env:optimize-info ((sys clasp) (environment NULL))
-  (env:optimize-info sys *clasp-env*))
-
-(defmethod env:optimize-info ((sys clasp) (env cmp:lexenv))
-  ;; FIXME: We will probably need lexenvs to track this eventually
-  (env:optimize-info sys *clasp-env*))
-
 (defun type-expand-1 (type-specifier &optional env)
   (let (head)
     (etypecase type-specifier
