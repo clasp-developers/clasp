@@ -369,3 +369,13 @@ specified bits of INTEGER2 with the specified bits of INTEGER1."
     (if size
         `(%deposit-field ,newbyte ,size ,position ,integer)
         whole))))
+
+(defun %the-single (type value)
+  (unless (typep value type)
+    (error 'type-error :datum value :expected-type type))
+  value)
+
+(defun %the-single-return (type value return)
+  (unless (typep value type)
+    (error 'type-error :datum value :expected-type type))
+  return)
