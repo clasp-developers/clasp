@@ -1150,4 +1150,8 @@ T_mv bytecode_toplevel_eval(T_sp, T_sp);
 // Used in loader
 bool btb_bcfun_p(BytecodeSimpleFun_sp, SimpleVector_sp);
 
+// environment access
+T_sp cmp__var_info(Symbol_sp name, T_sp env);
+T_sp cmp__fun_info(T_sp name, T_sp env);
+
 }; // namespace comp

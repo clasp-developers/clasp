@@ -624,26 +624,12 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(See CLHS: macro-function)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
-  if (env.nilp()) {
-    if (symbol->fboundp() && symbol->macroP())
-      return symbol->symbolFunction();
-    else
-      return nil<T_O>();
-  } else if (gc::IsA<comp::Lexenv_sp>(env)) {
-    return gc::As_unsafe<comp::Lexenv_sp>(env)->lookupMacro(symbol);
-  } else {
-    SYMBOL_EXPORT_SC_(CorePkg, cleavir_macro_function);
-    if (core::_sym_cleavir_macro_function->fboundp()) {
-      return eval::funcall(core::_sym_cleavir_macro_function, symbol, env);
-    } else {
-      printf("%s:%d Unexpected environment for MACRO-FUNCTION before Cleavir is available - using toplevel environment\n", __FILE__,
-             __LINE__);
-      if (symbol->fboundp() && symbol->macroP())
-        return symbol->symbolFunction();
-      else
-        return nil<T_O>();
-    }
-  }
+  T_sp info = comp::cmp__fun_info(symbol, env);
+  if (info.isA<comp::LocalMacroInfo_O>())
+    return info.as_unsafe<comp::LocalMacroInfo_O>()->expander();
+  else if (info.isA<comp::GlobalMacroInfo_O>())
+    return info.as_unsafe<comp::GlobalMacroInfo_O>()->expander();
+  else return nil<T_O>();
 }
 
 CL_LISPIFY_NAME("cl:macro-function");

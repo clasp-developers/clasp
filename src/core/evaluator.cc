@@ -740,25 +740,11 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Returns the macro expansion function for a symbol if it exists, or else NIL.)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp ext__symbol_macro(Symbol_sp sym, T_sp env) {
-  if (env.nilp()) { // nothing
-  } else if (gc::IsA<comp::Lexenv_sp>(env)) {
-    T_sp local = gc::As_unsafe<comp::Lexenv_sp>(env)->lookupSymbolMacro(sym);
-    if (local.notnilp())
-      return local;
-  } else { // pass to cleavir (which also checks global environment)
-    SYMBOL_EXPORT_SC_(CorePkg, cleavirSymbolMacro);
-    return eval::funcall(core::_sym_cleavirSymbolMacro, sym, env);
-  }
-  // check global environment
-  SYMBOL_SC_(ExtPkg, symbolMacro);
-  T_sp fn = nil<T_O>();
-  T_mv result = core__get_sysprop(sym, ext::_sym_symbolMacro);
-  MultipleValues& mvn = core::lisp_multipleValues();
-  if (gc::As<T_sp>(mvn.valueGet(1, result.number_of_values())).notnilp()) {
-    fn = gc::As<Function_sp>(result);
-  }
-  return fn;
-};
+  T_sp info = comp::cmp__var_info(sym, env);
+  if (info.isA<comp::SymbolMacroVarInfo_O>())
+    return info.as_unsafe<comp::SymbolMacroVarInfo_O>()->expander();
+  else return nil<T_O>();
+}
 
 CL_LAMBDA(arg);
 CL_DECLARE();

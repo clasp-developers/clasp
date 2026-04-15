@@ -300,6 +300,7 @@ static inline T_sp main_env_var_info(Symbol_sp sym) {
   if (sym->specialP())
     return SpecialVarInfo_O::make(true);
   // Global symbol macro?
+  SYMBOL_SC_(ExtPkg, symbolMacro);
   T_mv symmac = core__get_sysprop(sym, ext::_sym_symbolMacro);
   MultipleValues& mvn = core::lisp_multipleValues();
   if (gc::As_unsafe<T_sp>(mvn.valueGet(1, symmac.number_of_values())).notnilp()) {

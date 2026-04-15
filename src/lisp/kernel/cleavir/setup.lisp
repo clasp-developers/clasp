@@ -303,24 +303,6 @@
   ;; FIXME: We will probably need lexenvs to track this eventually
   (env:optimize-info sys *clasp-env*))
 
-;;; Used by ext:symbol-macro
-(defun core:cleavir-symbol-macro (symbol environment)
-  (let ((info (env:variable-info *clasp-system* environment symbol)))
-    (if (typep info 'env:symbol-macro-info)
-        (let ((expansion (env:expansion info)))
-          (lambda (form env)
-            (declare (ignore form env)
-                     (core:lambda-name cleavir-symbol-macro-function))
-            expansion))
-        nil)))
-
-;;; Used by cl:macro-function
-(defun core:cleavir-macro-function (symbol environment)
-  (let ((info (env:function-info *clasp-system* environment symbol)))
-    (if (typep info '(or env:global-macro-info env:local-macro-info))
-        (env:expander info)
-        nil)))
-
 (defun type-expand-1 (type-specifier &optional env)
   (let (head)
     (etypecase type-specifier
