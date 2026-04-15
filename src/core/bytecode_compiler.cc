@@ -172,7 +172,7 @@ FunInfo_sp GlobalFunInfo_O::clone_inline(InlineStatus inl) {
   return make_direct(inl, cmexpander(), opt_id());
 }
 FunInfo_sp LocalFunInfo_O::clone_inline(InlineStatus inl) {
-  return make_direct(inl, frameIndex(), funct());
+  return make_direct(inl, lex());
 }
 FunInfo_sp GlobalMacroInfo_O::clone_inline(InlineStatus inl) {
   return make_direct(inl, expander());

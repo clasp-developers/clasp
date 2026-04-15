@@ -287,9 +287,12 @@ public:
     return make_direct(sym_to_inl(inl), frame_index, funct);
   }
   static LocalFunInfo_sp make_direct(InlineStatus inl,
+                                     LexicalInfo_sp lex) {
+    return gctools::GC<LocalFunInfo_O>::allocate<gctools::RuntimeStage>(inl, lex);
+  }
+  static LocalFunInfo_sp make_direct(InlineStatus inl,
                                      size_t frame_index, Cfunction_sp funct) {
-    LexicalInfo_sp nlex = LexicalInfo_O::make(frame_index, funct);
-    return gctools::GC<LocalFunInfo_O>::allocate<gctools::RuntimeStage>(inl, nlex);
+    return make_direct(inl, LexicalInfo_O::make(frame_index, funct));
   }
   CL_LISPIFY_NAME(LocalFunInfo/lex)
   CL_DEFMETHOD LexicalInfo_sp lex() const { return this->_lex; }
