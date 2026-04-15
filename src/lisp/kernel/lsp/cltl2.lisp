@@ -20,12 +20,7 @@ Known bug: Clasp's implementation may not determine whether symbol macros are lo
       (cmp:constant-var-info (values :constant nil nil))
       (cmp:symbol-macro-var-info
        (values :symbol-macro
-               ;; KLUDGE/FIXME: globalness is not part of the info.
-               (and (typep env 'cmp:lexenv)
-                 (let ((g (cmp:var-info variable (cmp:lexenv/global env))))
-                   (or (not (typep g 'cmp:symbol-macro-var-info))
-                     (not (eq (cmp:symbol-macro-var-info/expander g)
-                              (cmp:symbol-macro-var-info/expander info))))))
+               (not (cmp:symbol-macro-var-info/globalp info))
                nil)) ; FIXME
       (cmp:special-var-info
        (values :special (not (cmp:special-var-info/globalp info))
@@ -107,9 +102,10 @@ Clasp reports IGNORE declarations on local functions analogously to variables."
 (defun symbol-macro-augmentation (v env declares)
   (declare (ignore env declares)) ; FIXME
   (destructuring-bind (name expansion) v
-    (cons name (cmp:symbol-macro-var-info/make (lambda (form env)
-                                                 (declare (ignore form env))
-                                                 expansion)))))
+    (cons name (cmp:symbol-macro-var-info/make
+                nil (lambda (form env)
+                      (declare (ignore form env))
+                      expansion)))))
 
 (defun declared-inline-status (name declares)
   (loop with inline = nil

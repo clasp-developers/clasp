@@ -24,63 +24,6 @@
   (setf (gethash name *vtypes*)
         (env:parse-type-specifier type *clasp-env* *clasp-system*)))
 
-(defmethod env:variable-info ((system clasp)
-                              (environment clasp-global-environment) symbol)
-  (cond (;; We can check whether this symbol names a constant variable
-	 ;; by checking the return value of CONSTANTP. 
-	 (constantp symbol)
-	 ;; If it is a constant variable, we can get its value by
-	 ;; calling SYMBOL-VALUE on it.
-	 (make-instance 'env:constant-variable-info
-	   :name symbol
-	   :value (symbol-value symbol)))
-        (;; Use Clasp's core:specialp test to determine if it is special.
-         ;; Note that in Clasp constants are also special (FIXME?) so we
-         ;; have to do this test after checking for constantness.
-         (ext:specialp symbol)
-	 (make-instance 'env:special-variable-info
-           :name symbol
-           :global-p t
-           :type (global-type symbol)))
-	(;; Maybe it's a symbol macro.
-	 (ext:symbol-macro symbol)
-	 (make-instance 'env:symbol-macro-info
-	   :name symbol
-	   :expansion (macroexpand-1 symbol)
-           :type (global-type symbol)))
-	(;; Otherwise, this symbol does not have any variable
-	 ;; information associated with it.
-	 t
-	 ;; Return NIL as the protocol stipulates.
-	 nil)))
-
-(defmethod env:variable-info ((system clasp) (environment null) symbol)
-  (env:variable-info system *clasp-env* symbol))
-
-(defmethod env:variable-info ((system clasp) (environment cmp:lexenv) symbol)
-  ;; This whole structure is getting redundant wrt cleavir-env.
-  ;; TODO: Move to trucler, forget cleavir environments.
-  ;; (But Trucler still has its own info structures, I think, so maybe not?)
-  ;; Also TODO: Types etc.?
-  (let ((info (cmp:var-info symbol environment)))
-    (etypecase info
-      (null
-       ;; Not locally bound: Check the global environment.
-       (env:variable-info system *clasp-env* symbol))
-      (cmp:lexical-var-info
-       ;; This will probably not go well - cleavir expects an identity, etc.
-       (make-instance 'env:lexical-variable-info :name symbol))
-      (cmp:special-var-info
-       (make-instance 'env:special-variable-info :name symbol :global-p nil))
-      (cmp:symbol-macro-var-info
-       (make-instance 'env:symbol-macro-info
-         :name symbol
-         :expansion (funcall (cmp:symbol-macro-var-info/expander info)
-                             symbol environment)))
-      (cmp:constant-var-info
-       (make-instance 'env:constant-variable-info
-         :name symbol :value (ext:constant-form-value symbol environment))))))
-
 (defvar *fn-flags* (make-hash-table :test #'equal))
 (defvar *fn-transforms* (make-hash-table :test #'equal))
 (defvar *derivers* (make-hash-table :test #'equal))
@@ -177,17 +120,6 @@
   (define-function-flags core::every/1 :dyn-call :dx-call)
   (define-function-flags core::some/1 :dyn-call :dx-call))
 
-(defun treat-as-special-operator-p (name)
-  (cond
-    ;; These are CL special operators (special-operator-p) but handled
-    ;; with macros.
-    ((member name '(catch throw progv)) nil)
-    ((special-operator-p name) t)
-    ((eq name 'core:foreign-call-pointer) t) ;; Call function pointers
-    ((eq name 'core::primop) t)
-    ((eq (symbol-package name) (find-package :cleavir-primop)) t)
-    (t nil)))
-
 (defun function-attributes (function-name)
   (let* ((flags (gethash function-name *fn-flags*))
          (transforms (gethash function-name *fn-transforms*))
@@ -209,83 +141,6 @@
     ((core:declared-global-inline-p name) 'cl:inline)
     ((core:declared-global-notinline-p name) 'cl:notinline)
     (t nil)))
-
-(defmethod env:function-info ((sys clasp)
-                              (environment clasp-global-environment)
-                              function-name)
-  (cond
-    ((and (symbolp function-name) (treat-as-special-operator-p function-name))
-     (make-instance 'env:special-operator-info
-       :name function-name))
-    ;; If the function name is the name of a macro, then
-    ;; MACRO-FUNCTION returns something other than NIL.
-    ((and (symbolp function-name) (not (null (macro-function function-name))))
-     (make-instance 'env:global-macro-info ; we're global, so the macro must be global.
-       :name function-name
-       :inline (global-inline-status function-name)
-       :expander (macro-function function-name)
-       :compiler-macro (compiler-macro-function function-name)))
-    ((fboundp function-name)
-     (let* ((inline-status (global-inline-status function-name))
-            (attributes (function-attributes function-name)))
-       (make-instance 'env:global-function-info
-         :name function-name
-         :type (global-ftype function-name)
-         :compiler-macro (compiler-macro-function function-name)
-         :inline inline-status
-         :attributes attributes)))
-    ;; A top-level defun for the function has been seen.
-    ;; The expansion calls cmp::register-global-function-def at compile time,
-    ;; which is hooked up so that among other things this works.
-    ((cmp:known-function-p function-name)
-     (make-instance 'env:global-function-info
-       :name function-name
-       :type (global-ftype function-name)
-       :compiler-macro (compiler-macro-function function-name)
-       :inline (global-inline-status function-name)))
-    ( ;; If it is neither of the cases above, then this name does
-     ;; not have any function-info associated with it.
-     t
-     ;; Return NIL as the protocol stipulates.
-     nil)))
-
-;;; The toplevel shell may have a bclasp environment - ignore it
-(defmethod env:function-info ((sys clasp) (environment null) symbol)
-  (env:function-info sys *clasp-env* symbol))
-
-(defmethod env:function-info ((sys clasp) (environment cmp:lexenv) symbol)
-  (if (and (symbolp symbol) (treat-as-special-operator-p symbol))
-      ;; The bytecode compiler doesn't know about special operators.
-      ;; (It might need to learn for Trucler, later.)
-      (make-instance 'env:special-operator-info :name symbol)
-      (let ((info (cmp:fun-info symbol environment)))
-        (etypecase info
-          (null (env:function-info sys *clasp-env* symbol)) ; check global
-          (cmp:global-fun-info
-           (make-instance 'env:global-function-info
-             :name symbol
-             :compiler-macro (cmp:global-fun-info/cmexpander info)))
-          (cmp:local-fun-info
-           ;; As with lexical variables, this may not end well
-           ;; as there will be no identity or anything.
-           (make-instance 'env:local-function-info :name symbol))
-          (cmp:global-macro-info
-           (make-instance 'env:global-macro-info
-             :name symbol :expander (cmp:global-macro-info/expander info)))
-          (cmp:local-macro-info
-           (make-instance 'env:local-macro-info
-             :name symbol :expander (cmp:local-macro-info/expander info)))))))
-
-(defmethod env:declarations ((sys clasp) (environment null))
-  (env:declarations sys *clasp-env*))
-
-;;; TODO: Handle (declaim (declaration ...))
-(defmethod env:declarations ((sys clasp) (environment clasp-global-environment))
-  '(;; behavior as in convert-form.lisp
-    core:lambda-name core:lambda-list))
-
-(defmethod env:declarations ((sys clasp) (env cmp:lexenv))
-  (env:declarations sys *clasp-env*))
 
 (setf cmp:*policy*
      (policy:compute-policy *clasp-system* cmp:*optimize*))
@@ -335,44 +190,6 @@
 (defmethod env:find-class (name environment (system clasp) &optional errorp)
   (declare (ignore environment errorp))
   name)
-
-(defun cleavir-env->bytecode (env)
-  ;; Convert a cleavir ENTRY (or null) into an environment clasp's bytecode compiler
-  ;; can use. Only for compile time environments, so it's symbol macros, macros, and
-  ;; declarations. The bytecode compiler doesn't use any declarations besides
-  ;; SPECIAL and NOTINLINE.
-  (etypecase env
-    ((or clasp-global-environment null) (cmp:make-null-lexical-environment))
-    (env:special-variable
-     (cmp:add-specials (cleavir-env->bytecode (env::next env))
-                       (list (env:name env))))
-    (env:symbol-macro
-     (let ((next (cleavir-env->bytecode (env::next env))))
-       (cmp:lexenv/make
-        (acons (env:name env)
-               (cmp:symbol-macro-var-info/make (constantly (env:expansion env)))
-               (cmp:lexenv/vars next))
-        (cmp:lexenv/tags next) (cmp:lexenv/blocks next) (cmp:lexenv/funs next)
-        (cmp:lexenv/decls next) (cmp:lexenv/frame-end next))))
-    (env:macro
-     (let ((next (cleavir-env->bytecode (env::next env))))
-       (cmp:lexenv/make
-        (cmp:lexenv/vars next) (cmp:lexenv/tags next) (cmp:lexenv/blocks next)
-        (acons (env:name env) (cmp:local-macro-info/make nil (env:expander env))
-               (cmp:lexenv/funs next))
-        (cmp:lexenv/decls next) (cmp:lexenv/frame-end next))))
-    (env:inline
-     (let ((next (cleavir-env->bytecode (env::next env))))
-       (if (eq (env:inline env) 'cl:notinline)
-           (cmp:lexenv/make
-            (cmp:lexenv/vars next) (cmp:lexenv/tags next) (cmp:lexenv/blocks next)
-            (cmp:lexenv/funs next) (cons `(notinline ,(env:name env)) (cmp:lexenv/decls next))
-            (cmp:lexenv/frame-end next))
-           next)))
-    (env::entry (cleavir-env->bytecode (env::next env)))))
-
-(defmethod cleavir-environment:eval (form env (sys clasp))
-  (core:interpret form (cleavir-env->bytecode env)))
 
 ;;; Used to pull out of CSTs, but we're no longer doing that.
 ;;; Kept in case we need something like that later.

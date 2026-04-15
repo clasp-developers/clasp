@@ -306,7 +306,7 @@ static inline T_sp main_env_var_info(Symbol_sp sym) {
   if (gc::As_unsafe<T_sp>(mvn.valueGet(1, symmac.number_of_values())).notnilp()) {
     T_sp symmac0 = symmac;
     Function_sp fsymmac = gc::As_assert<Function_sp>(symmac0);
-    return SymbolMacroVarInfo_O::make(fsymmac);
+    return SymbolMacroVarInfo_O::make(true, fsymmac);
   }
   // Unknown.
   return nil<T_O>();
@@ -355,7 +355,7 @@ static inline VarInfoV main_env_var_info_v(Symbol_sp sym) {
   if (gc::As_unsafe<T_sp>(mvn.valueGet(1, symmac.number_of_values())).notnilp()) {
     T_sp symmac0 = symmac;
     Function_sp fsymmac = gc::As_assert<Function_sp>(symmac0);
-    return VarInfoV(SymbolMacroVarInfoV(fsymmac));
+    return VarInfoV(SymbolMacroVarInfoV(true, fsymmac));
   }
   // Unknown.
   return VarInfoV(NoVarInfoV());
@@ -2748,7 +2748,7 @@ static T_sp symbol_macrolet_bindings(Lexenv_sp menv, List_sp bindings, T_sp vars
                                     Cons_O::createList(cl::_sym_declare, Cons_O::createList(cl::_sym_ignore, formv, envv)),
                                     Cons_O::createList(cl::_sym_quote, expansion));
     Function_sp expander = bytecompile(lexpr, menv);
-    SymbolMacroVarInfo_sp info = SymbolMacroVarInfo_O::make(expander);
+    SymbolMacroVarInfo_sp info = SymbolMacroVarInfo_O::make(false, expander);
     vars = Cons_O::create(Cons_O::create(name, info), vars);
   }
   return vars;

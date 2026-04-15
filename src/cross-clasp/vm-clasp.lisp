@@ -30,6 +30,7 @@
       (clostrum:symbol-value maclina.machine:*client* env name)))
     ((:symbol-macro)
      (cmp:symbol-macro-var-info/make
+      t
       (clostrum:variable-macro-expander maclina.machine:*client*
                                         env name)))))
 

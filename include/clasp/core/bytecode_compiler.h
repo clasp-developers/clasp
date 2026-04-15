@@ -80,7 +80,7 @@ public:
     LexicalInfo_sp nlex = LexicalInfo_O::make(frame_index, funct);
     return gctools::GC<LexicalVarInfo_O>::allocate<gctools::RuntimeStage>(nlex);
   }
-  LexicalInfo_sp lex() const { return this->_lex; }
+  CL_DEFMETHOD LexicalInfo_sp lex() const { return this->_lex; }
   CL_DEFMETHOD size_t frameIndex() const { return this->lex()->frameIndex(); }
   CL_LISPIFY_NAME(LexicalVarInfo/cfunction)
   CL_DEFMETHOD Cfunction_sp funct() const { return this->lex()->cfunction(); }
@@ -142,23 +142,30 @@ class SymbolMacroVarInfo_O : public VarInfo_O {
   LISP_CLASS(comp, CompPkg, SymbolMacroVarInfo_O, "SymbolMacroVarInfo", VarInfo_O);
 
 public:
+  bool _globalp;
   Function_sp _expander;
 
 public:
-  SymbolMacroVarInfo_O(Function_sp n_expander) : VarInfo_O(), _expander(n_expander){};
+  SymbolMacroVarInfo_O(bool globalp, Function_sp n_expander)
+    : VarInfo_O(), _globalp(globalp), _expander(n_expander){};
   CL_LISPIFY_NAME(SymbolMacroVarInfo/make)
   CL_DEF_CLASS_METHOD
-  static SymbolMacroVarInfo_sp make(Function_sp expander) {
-    SymbolMacroVarInfo_sp info = gctools::GC<SymbolMacroVarInfo_O>::allocate<gctools::RuntimeStage>(expander);
+  static SymbolMacroVarInfo_sp make(bool globalp, Function_sp expander) {
+    SymbolMacroVarInfo_sp info = gctools::GC<SymbolMacroVarInfo_O>::allocate<gctools::RuntimeStage>(globalp, expander);
     return info;
   }
+  CL_DEFMETHOD bool globalp() const { return this->_globalp; }
   CL_DEFMETHOD Function_sp expander() const { return this->_expander; }
 };
 
 struct SymbolMacroVarInfoV {
-  SymbolMacroVarInfoV(Function_sp expander) : _expander(expander){};
-  SymbolMacroVarInfoV(SymbolMacroVarInfo_sp info) : _expander(info->expander()){};
+  SymbolMacroVarInfoV(bool globalp, Function_sp expander)
+    : _globalp(globalp), _expander(expander){};
+  SymbolMacroVarInfoV(SymbolMacroVarInfo_sp info)
+    : _globalp(info->globalp()), _expander(info->expander()){};
+  bool _globalp;
   Function_sp _expander;
+  bool globalp() const { return _globalp; }
   Function_sp expander() const { return _expander; }
 };
 

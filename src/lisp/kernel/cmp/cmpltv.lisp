@@ -1990,9 +1990,9 @@
     (dolist (binding bindings)
       (push (cons (car binding)
                   (cmp:symbol-macro-var-info/make
-                   (lambda (form env)
-                     (declare (ignore form env))
-                     (cadr binding))))
+                   nil (lambda (form env)
+                         (declare (ignore form env))
+                         (cadr binding))))
             smacros))
     (bytecode-compile-toplevel-locally
      body (cmp:lexenv/make
