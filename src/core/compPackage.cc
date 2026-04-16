@@ -56,6 +56,7 @@ SYMBOL_EXPORT_SC_(CompPkg, STARthread_safe_contextSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, compile_quick_module_dump);
 SYMBOL_EXPORT_SC_(CompPkg, optimize_module_for_compile);
 SYMBOL_EXPORT_SC_(CompPkg, thread_local_llvm_context);
+SYMBOL_EXPORT_SC_(CompPkg, known_function_p);
 SYMBOL_SC_(CompPkg, aSingleCompilerSymbol);
 
 void initialize_compPackage() {

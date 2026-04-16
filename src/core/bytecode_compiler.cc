@@ -462,8 +462,18 @@ static bool special_operator_p(T_sp fname) {
     || fname == cl::_sym_progv;
 }
 
+// Return true if a function is known to the compiler even if it's
+// not yet bound, e.g. because we are compiling a file and saw a
+// toplevel DEFUN.
+static bool main_env_known_fun_p(T_sp name) {
+  if (_sym_known_function_p->fboundp()) {
+    T_sp r = eval::funcall(_sym_known_function_p, name);
+    return r.notnilp();
+  } else return false;
+}
+
 static inline T_sp main_env_fun_info(T_sp name) {
-  // NOTE: We treat functions as fbound if they have an opt_id.
+  // NOTE: We treat functions as known if they have an opt_id.
   // Very very early in startup, FUNCALL is not defined but does have
   // an opt_id. We want to compile that down so that we can use
   // FUNCALL in that early startup without infinite recursion.
@@ -481,7 +491,8 @@ static inline T_sp main_env_fun_info(T_sp name) {
         Symbol_sp fname = gc::As<Symbol_sp>(sss);
         if (fname.notnilp() && oCdr(dname).nilp()) {
           if (!fname->fboundp_setf()) {
-            if (opt_id.notnilp())
+            if (opt_id.notnilp()
+                || main_env_known_fun_p(name))
               return GlobalFunInfo_O::make_direct(main_env_inline(name),
                                                   main_env_cmf(name), opt_id);
             else return nil<T_O>();
@@ -501,7 +512,7 @@ static inline T_sp main_env_fun_info(T_sp name) {
     if (special_operator_p(fname))
       return SpecialOperatorInfo_O::make();
     if (!fname->fboundp()) {
-      if (opt_id.notnilp())
+      if (opt_id.notnilp() || main_env_known_fun_p(name))
         return GlobalFunInfo_O::make_direct(main_env_inline(name),
                                             main_env_cmf(name), opt_id);
       else return nil<T_O>();
@@ -553,7 +564,7 @@ static inline FunInfoV main_env_fun_info_v(T_sp name) {
     T_sp sss = CONS_CAR(dname);
     Symbol_sp fname = gc::As<Symbol_sp>(sss);
     if (!fname->fboundp_setf()) {
-      if (opt_id.notnilp())
+      if (opt_id.notnilp() || main_env_known_fun_p(name))
         return FunInfoV(GlobalFunInfoV(main_env_inline(name),
                                        main_env_cmf(name), opt_id));
       else return FunInfoV(NoFunInfoV());
@@ -568,7 +579,7 @@ static inline FunInfoV main_env_fun_info_v(T_sp name) {
     if (special_operator_p(fname))
       return FunInfoV(SpecialOperatorInfoV());
     if (!fname->fboundp()) {
-      if (opt_id.notnilp())
+      if (opt_id.notnilp() || main_env_known_fun_p(name))
         return FunInfoV(GlobalFunInfoV(main_env_inline(name),
                                        main_env_cmf(name), opt_id));
       else return FunInfoV(NoFunInfoV());
