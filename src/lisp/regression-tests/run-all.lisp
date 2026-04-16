@@ -63,6 +63,7 @@
 ;;; When we have system construction before debug.lisp, debug.lisp will fail
     "system-construction"
     "extensions"
+    "cltl2"
     "run-program"
     "snapshot"))
 
