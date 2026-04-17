@@ -8,129 +8,80 @@
 (defmethod trucler:describe-variable
     ((client client) (env clasp-cleavir:clasp-global-environment)
      symbol)
-  (cond ((constantp symbol)
-         (make-instance 'trucler:constant-variable-description
-           :name symbol :value (symbol-value symbol)))
-        ((ext:specialp symbol)
-         (make-instance 'trucler:global-special-variable-description
-           :name symbol :type (clasp-cleavir::global-type symbol)))
-        ((ext:symbol-macro symbol)
-         (make-instance 'trucler:global-symbol-macro-description
-           :name symbol :expansion (macroexpand-1 symbol)
-           :type (clasp-cleavir::global-type symbol)))
-        (t nil)))
+  (trucler:describe-variable client nil symbol))
 
-(defmethod trucler:describe-variable ((client client) (env null) symbol)
-  (trucler:describe-variable client clasp-cleavir:*clasp-env* symbol))
+(defgeneric info->desc (info name))
+
+(defmethod info->desc ((info null) name)
+  (declare (ignore name))
+  info)
+
+(defmethod info->desc ((info cmp:constant-var-info) name)
+  (make-instance 'trucler:constant-variable-description
+    :name name :value (cmp:constant-var-info/value info)))
+(defmethod info->desc ((info cmp:special-var-info) name)
+  (if (cmp:special-var-info/globalp info)
+      (make-instance 'trucler:global-special-variable-description
+        :name name :type (clasp-cleavir::global-type name))
+      (make-instance 'trucler:local-special-variable-description
+        :name name)))
+(defmethod info->desc ((info cmp:symbol-macro-var-info) name)
+  (if (cmp:symbol-macro-var-info/globalp info)
+      (make-instance 'trucler:global-symbol-macro-description
+        :name name
+        :expansion (funcall *macroexpand-hook*
+                            (cmp:symbol-macro-var-info/expander info)
+                            name nil))
+      (make-instance 'trucler:local-symbol-macro-description
+        :name name
+        :expansion (funcall *macroexpand-hook*
+                            (cmp:symbol-macro-var-info/expander info)
+                            name nil))))
+(defmethod info->desc ((info cmp:lexical-var-info) name)
+  (make-instance 'trucler:lexical-variable-description
+    :name name
+    :identity (cmp:lexical-var-info/lex info)))
+
+(defmethod trucler:describe-variable ((client client) (env null)
+                                      symbol)
+  (info->desc (cmp:var-info symbol env) symbol))
 
 (defmethod trucler:describe-variable
     ((client client) (env cmp:lexenv) symbol)
-  (let ((info (cmp:var-info symbol env)))
-    (etypecase info
-      (null
-       ;; Not locally bound: Check the global environment.
-       (trucler:describe-variable
-        client (cmp:lexenv/global env) symbol))
-      (cmp:lexical-var-info
-       ;; This will probably not go well - cleavir expects an identity, etc.
-       (make-instance 'trucler:lexical-variable-description
-         :name symbol :identity nil))
-      (cmp:special-var-info
-       (make-instance 'trucler:local-special-variable-description
-         :name symbol))
-      (cmp:symbol-macro-var-info
-       (make-instance 'trucler:local-symbol-macro-description
-         :name symbol
-         :expansion (funcall (cmp:symbol-macro-var-info/expander info)
-                             symbol env)))
-      (cmp:constant-var-info
-       (make-instance 'trucler:constant-variable-description
-         :name symbol
-         ;; FIXME: better interface
-         :value (core:variable-cell/value
-                 (core::fcge-ensure-vcell (cmp:lexenv/global env) symbol)))))))
+  (info->desc (cmp:var-info symbol env) symbol))
 
 (defmethod trucler:describe-function
     ((client client)
      (environment clasp-cleavir:clasp-global-environment)
      function-name)
-  (cond
-    ((and (symbolp function-name)
-          (clasp-cleavir::treat-as-special-operator-p function-name))
-     (make-instance 'trucler:special-operator-description
-       :name function-name))
-    ;; If the function name is the name of a macro, then
-    ;; MACRO-FUNCTION returns something other than NIL.
-    ((and (symbolp function-name) (not (null (macro-function function-name))))
-     ;; we're global, so the macro must be global.
-     (make-instance 'trucler:global-macro-description
-       :name function-name
-       ;;:inline (clasp-cleavir::global-inline-status function-name)
-       :expander (macro-function function-name)
-       :compiler-macro (compiler-macro-function function-name)))
-    ((fboundp function-name)
-     (let* ((inline-status (clasp-cleavir::global-inline-status function-name))
-            (flags (gethash function-name clasp-cleavir::*fn-flags*))
-            (transforms (gethash function-name clasp-cleavir::*fn-transforms*))
-            (derivers (gethash function-name clasp-cleavir::*derivers*))
-            (folds (gethash function-name clasp-cleavir::*folds*))
-            (vaslistablep (cc-vaslist:vaslistablep function-name))
-            (attributes (if (or flags transforms folds derivers)
-                            (make-instance 'cleavir-attributes:attributes
-                              :flags (or flags (cleavir-attributes:make-flags))
-                              :identities (if (or transforms folds
-                                                  derivers vaslistablep)
-                                              (list function-name)
-                                              nil))
-                            (cleavir-attributes:default-attributes))))
-       (declare (ignore attributes)) ; for now
-       (make-instance 'trucler:global-function-description
-         :name function-name
-         :type (clasp-cleavir::global-ftype function-name)
-         :compiler-macro (compiler-macro-function function-name)
-         :inline inline-status
-         #+(or):attributes #+(or) attributes)))
-    ;; A top-level defun for the function has been seen.
-    ;; The expansion calls cmp::register-global-function-def at compile time,
-    ;; which is hooked up so that among other things this works.
-    ((cmp:known-function-p function-name)
-     (make-instance 'trucler:global-function-description
-       :name function-name
-       :type (clasp-cleavir::global-ftype function-name)
-       :compiler-macro (compiler-macro-function function-name)
-       :inline (clasp-cleavir::global-inline-status function-name)))
-    (t nil)))
+  (trucler:describe-function client nil function-name))
 
-(defmethod trucler:describe-function ((client client) (env null) symbol)
-  (trucler:describe-function client clasp-cleavir:*clasp-env* symbol))
+(defmethod info->desc ((info cmp:special-operator-info) name)
+  (make-instance 'trucler:special-operator-description :name name))
+(defmethod info->desc ((info cmp:global-fun-info) name)
+  (make-instance 'trucler:global-function-description
+    :name name :inline (cmp:fun-info/inline-status info)
+    :compiler-macro (cmp:global-fun-info/cmexpander info)
+    :type (clasp-cleavir::global-ftype name)))
+(defmethod info->desc ((info cmp:local-fun-info) name)
+  (make-instance 'trucler:local-function-description
+    :name name :inline (cmp:fun-info/inline-status info)
+    :identity (cmp:local-fun-info/lex info)))
+(defmethod info->desc ((info cmp:global-macro-info) name)
+  (make-instance 'trucler:global-macro-description
+    :name name :inline (cmp:fun-info/inline-status info)
+    :expander (cmp:global-macro-info/expander info)))
+(defmethod info->desc ((info cmp:local-macro-info) name)
+  (make-instance 'trucler:local-macro-description
+    :name name
+    :expander (cmp:local-macro-info/expander info)))
+
+(defmethod trucler:describe-function ((client client) (env null) name)
+  (info->desc (cmp:fun-info name env) name))
 
 (defmethod trucler:describe-function
-    ((client client) (environment cmp:lexenv) symbol)
-  (if (and (symbolp symbol)
-           (clasp-cleavir::treat-as-special-operator-p symbol))
-      ;; The bytecode compiler doesn't know about special operators.
-      ;; (It might need to learn for Trucler, later.)
-      (make-instance 'trucler:special-operator-description :name symbol)
-      (let ((info (cmp:fun-info symbol environment)))
-        (etypecase info
-          (null ; check global
-           (trucler:describe-function
-            client (cmp:lexenv/global environment) symbol))
-          (cmp:global-fun-info
-           (make-instance 'trucler:global-function-description
-             :name symbol
-             :compiler-macro (cmp:global-fun-info/cmexpander info)))
-          (cmp:local-fun-info
-           ;; As with lexical variables, this may not end well
-           ;; as there will be no identity or anything.
-           (make-instance 'trucler:local-function-description
-             :name symbol :identity nil))
-          (cmp:global-macro-info
-           (make-instance 'trucler:global-macro-description
-             :name symbol :expander (cmp:global-macro-info/expander info)))
-          (cmp:local-macro-info
-           (make-instance 'trucler:local-macro-description
-             :name symbol :expander (cmp:local-macro-info/expander info)))))))
+    ((client client) (environment cmp:lexenv) name)
+  (info->desc (cmp:fun-info name environment) name))
 
 (defmethod trucler:describe-declarations
     ((client client)
@@ -173,6 +124,9 @@
   (cmp:lexical-var-info/make (trucler:identity desc) nil))
 (defmethod desc->info ((desc trucler:symbol-macro-description))
   (cmp:symbol-macro-var-info/make
+   (etypecase desc
+     (trucler:global-symbol-macro-description t)
+     (trucler:local-symbol-macro-description nil))
    (let ((expansion (trucler:expansion desc)))
      (lambda (form env) (declare (ignore form env)) expansion))))
 (defmethod desc->info
@@ -205,10 +159,10 @@
 
 (defmethod desc->info
     ((desc trucler:local-function-description))
-  (cmp:local-fun-info/make (trucler:identity desc)))
+  (cmp:local-fun-info/make (trucler:inline desc) (trucler:identity desc)))
 (defmethod desc->info
     ((desc trucler:local-macro-description))
-  (cmp:local-macro-info/make (trucler:expander desc)))
+  (cmp:local-macro-info/make (trucler:inline desc) (trucler:expander desc)))
 
 (defmethod trucler:augment-with-function-description
     ((client client) (env clasp-cleavir:clasp-global-environment)

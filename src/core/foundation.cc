@@ -926,9 +926,12 @@ static Function_sp bytecompile_wrapper(Function_sp entry, List_sp vars, Symbol_s
   /*
 `(lambda ,lambda-list
    (declare (core:lambda-name ,name))
-   (cleavir-primop:funcall ,entry ,@vars))
+   (funcall ,entry ,@vars))
 */
-  List_sp funcall_form = Cons_O::create(cleavirPrimop::_sym_funcall, Cons_O::create(entry, vars));
+  // Note that the bytecode compiler is smart enough to compile a call
+  // to the actual function and avoid FUNCALL. There'd be an infinite
+  // recursion otherwise. See compile_funcall in bytecode_compiler.cc.
+  List_sp funcall_form = Cons_O::create(cl::_sym_funcall, Cons_O::create(entry, vars));
   List_sp declare_form = Cons_O::createList(cl::_sym_declare, Cons_O::createList(core::_sym_lambdaName, name));
   List_sp form = Cons_O::createList(cl::_sym_lambda, lambda_list, declare_form, funcall_form);
   return comp::bytecompile(form, nil<T_O>());

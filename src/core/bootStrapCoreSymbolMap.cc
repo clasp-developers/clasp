@@ -28,7 +28,6 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/extensionPackage.fwd.h>
-#include <clasp/core/cleavirPrimopsPackage.fwd.h>
 #include <clasp/core/package.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/bootStrapCoreSymbolMap.h>

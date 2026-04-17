@@ -57,6 +57,7 @@
   name
   source-pos-info)
 
+;;; Also used by main_env_fun_info[_v] in bytecode_compiler.cc
 (defun known-function-p (name)
   (and (boundp '*global-function-defs*)
        (gethash name *global-function-defs*)))

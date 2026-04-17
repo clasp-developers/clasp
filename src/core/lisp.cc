@@ -504,6 +504,12 @@ void Lisp::startupLispEnvironment() {
     core::_sym_STARcxxDocumentationSTAR->defparameter(ht);
     Readtable_sp readtable = Readtable_O::create_standard_readtable();
     cl::_sym_STARreadtableSTAR->defparameter(readtable);
+#ifdef DEBUG_PROGRESS
+    printf("%s:%d startupLispEnvironment initialize_compiler_primitives\n", __FILE__, __LINE__);
+#endif
+    // Do this before compiling any functions
+    // (as initialize_functions does)
+    initialize_compiler_primitives(_lisp);
     initialize_functions();
     globals_->_Bundle->setup_pathname_translations();
 #ifdef DEBUG_PROGRESS
@@ -519,10 +525,6 @@ void Lisp::startupLispEnvironment() {
     printf("%s:%d startupLispEnvironment initialize_backquote\n", __FILE__, __LINE__);
 #endif
     initialize_backquote();
-#ifdef DEBUG_PROGRESS
-    printf("%s:%d startupLispEnvironment initialize_compiler_primitives\n", __FILE__, __LINE__);
-#endif
-    initialize_compiler_primitives(_lisp);
 #ifdef DEBUG_PROGRESS
     printf("%s:%d startupLispEnvironment initialize_bits\n", __FILE__, __LINE__);
 #endif

@@ -10,16 +10,15 @@
                                    env name)
     ((nil) nil)
     ((:function) (cmp:global-fun-info/make
+                  (clostrum:operator-inline maclina.machine:*client* env name)
                   (clostrum:compiler-macro-function
-                   maclina.machine:*client* env name)))
+                   maclina.machine:*client* env name)
+                  nil))
     ((:macro) (cmp:global-macro-info/make
+               (clostrum:operator-inline maclina.machine:*client* env name)
                (clostrum:macro-function
                 maclina.machine:*client* env name)))
-    ;; should have been picked off by bytecompile's normal processing
-    ;; but we use this elsewere, e.g. cl:macro-function
-    ;; We probably ought to have some kind of special-operator-info,
-    ;; but failing that, here's a KLUDGE.
-    ((:special-operator) nil)))
+    ((:special-operator) (cmp:special-operator-info/make))))
 
 (defmethod fcge-lookup-var (env name)
   (ecase (clostrum:variable-status maclina.machine:*client*
@@ -31,6 +30,7 @@
       (clostrum:symbol-value maclina.machine:*client* env name)))
     ((:symbol-macro)
      (cmp:symbol-macro-var-info/make
+      t
       (clostrum:variable-macro-expander maclina.machine:*client*
                                         env name)))))
 

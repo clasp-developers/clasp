@@ -619,15 +619,4 @@ void cc_validate_tagged_pointer(core::T_O* ptr)
 #endif
 };
 
-namespace llvmo {
-
-void initialize_raw_translators(void) {
-  // Nothing to do
-
-  return;
-
-} // initialize_raw_translators
-
-}; // namespace llvmo
-
 #pragma GCC visibility pop

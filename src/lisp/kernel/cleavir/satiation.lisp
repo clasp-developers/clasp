@@ -25,20 +25,7 @@
                  'clos:standard-effective-slot-definition
                  'clos:eql-specializer
                  'clos:method-combination
-                 'clos:funcallable-standard-class
-                 ;; OK on to the real shit.
-                 ,@(rest (clos:subclasses* (find-class 'cleavir-env::entry)))
-                 'cleavir-env:lexical-variable-info
-                 'cleavir-env:special-variable-info
-                 'cleavir-env:constant-variable-info
-                 'cleavir-env:symbol-macro-info
-                 'cleavir-env:local-function-info
-                 'cleavir-env:global-function-info
-                 'cleavir-env:local-macro-info
-                 'cleavir-env:special-operator-info
-                 'cleavir-env:block-info
-                 'cleavir-env:tag-info
-                 'cleavir-env:optimize-info)))
+                 'clos:funcallable-standard-class)))
     (frob)))
 
 ;;; See explanation in clos/static-gfs/compiler-macros.lisp
@@ -46,105 +33,12 @@
 
 ;;; Functions go here (TODO)
 
-;;; cleavir-env
-(eval-when (:load-toplevel)
-  (clos:satiate #'cleavir-env:name
-                '(cleavir-env:function) '(cleavir-env:block) '(cleavir-env:macro) '(cleavir-env:tag)
-                '(cleavir-env:lexical-variable) '(cleavir-env:special-variable)
-                '(cleavir-env:variable-ignore) '(cleavir-env:variable-type)
-                '(cleavir-env:local-function-info) '(cleavir-env:global-function-info)
-                '(cleavir-env:global-macro-info) '(cleavir-env:special-variable-info)
-                '(cleavir-env:lexical-variable-info))
-  (clos:satiate #'cleavir-env:policy '(cleavir-env:optimize-info))
-  (clos:satiate #'cleavir-env:ast '(cleavir-env:local-function-info) '(cleavir-env:global-function-info))
-  (clos:satiate #'cleavir-env:expander
-                '(cleavir-env:local-macro-info) '(cleavir-env:global-macro-info) '(cleavir-env:macro))
-  (clos:satiate #'cleavir-env:compiler-macro
-                '(cleavir-env:global-function-info) '(cleavir-env:global-function-info))
-  (clos:satiate #'cleavir-env:identity
-                '(cleavir-env:local-function-info) '(cleavir-env:block-info) '(cleavir-env:tag-info)
-                '(cleavir-env:lexical-variable-info) '(cleavir-env:lexical-variable)
-                '(cleavir-env:function) '(cleavir-env:block) '(cleavir-env:tag))
-  (clos:satiate #'cleavir-env:inline '(cleavir-env:local-function-info) '(cleavir-env:global-function-info))
-  (clos:satiate #'cleavir-env:type
-                '(cleavir-env:variable-type)
-                '(cleavir-env:local-function-info) '(cleavir-env:lexical-variable-info)
-                '(cleavir-env:global-function-info) '(cleavir-env:special-variable-info))
-  (clos:satiate #'cleavir-env:ignore
-                '(cleavir-env:variable-ignore)
-                '(cleavir-env:lexical-variable-info)
-                '(cleavir-env:local-function-info) '(cleavir-env:global-function-info))
-  (macrolet ((for-entries (name &rest remaining-args)
-               (let* ((entries (list* 'null 'clasp-global-environment
-                                      (rest (clos:subclasses* (find-class 'cleavir-env::entry)))))
-                      (tail (if remaining-args
-                                (loop for things in remaining-args
-                                      nconcing (mapcar (lambda (entry) `'(,entry ,@things)) entries))
-                                (mapcar (lambda (entry) `'(,entry)) entries))))
-                 `(clos:satiate #',name ,@tail))))
-    (for-entries cleavir-env:block-info (symbol))
-    ;; i include conses for (setf x) functions, but the specializer profile makes it irrelevant
-    (for-entries cleavir-env:function-info (symbol) (cons))
-    (for-entries cleavir-env:optimize-info)
-    (for-entries cleavir-env:tag-info (symbol))
-    (for-entries cleavir-env:variable-info (symbol))
-    (for-entries cleavir-env:global-environment)
-    (for-entries cleavir-env:declarations)
-    (for-entries cleavir-env:compile-time)
-    (for-entries cleavir-env:optimize-qualities)
-    (for-entries cleavir-env:function-dynamic-extent
-                 (cleavir-env:global-function-info) (cleavir-env:local-function-info))
-    (for-entries cleavir-env:function-ignore
-                 (cleavir-env:global-function-info) (cleavir-env:local-function-info))
-    (for-entries cleavir-env:function-type
-                 (cleavir-env:global-function-info) (cleavir-env:local-function-info))
-    (for-entries cleavir-env:variable-dynamic-extent
-                 (cleavir-env:lexical-variable-info) (cleavir-env:special-variable-info))
-    (for-entries cleavir-env:variable-ignore
-                 (cleavir-env:lexical-variable-info) (cleavir-env:special-variable-info))
-    (for-entries cleavir-env:variable-type
-                 (cleavir-env:lexical-variable-info) (cleavir-env:special-variable-info))
-    (for-entries cleavir-env:add-block (symbol))
-    ;;(for-entries cleavir-env:add-function-dynamic-extent (symbol) (cons))
-    ;;(for-entries cleavir-env:add-function-ignore (symbol symbol) (cons symbol) (symbol null) (cons null))
-    ;;(for-entries cleavir-env:add-function-type (symbol cons) (cons cons) (symbol symbol) (cons symbol))
-    ;;add-inline, add-inline-expansion
-    (for-entries cleavir-env:add-lexical-variable (symbol))
-    (for-entries cleavir-env:add-local-function (symbol))
-    (for-entries cleavir-env:add-local-macro (symbol core:closure))
-    (for-entries cleavir-env:add-local-symbol-macro (symbol symbol cons)) ; not sure history is correct
-    ;;add-optimize
-    (for-entries cleavir-env:add-special-variable (symbol))
-    (for-entries cleavir-env:add-tag (symbol))
-    ;;add-variable-dynamic-extent
-    (for-entries cleavir-env:add-variable-ignore (symbol symbol))
-    (for-entries cleavir-env:add-variable-type (symbol symbol) (symbol cons)))
-  (macrolet ((for-entries-after (name &rest preceding-args)
-               (let* ((entries (list* 'null 'clasp-global-environment
-                                      (rest (clos:subclasses* (find-class 'cleavir-env::entry)))))
-                      (tail (if preceding-args
-                                (loop for things in preceding-args
-                                      nconcing (mapcar (lambda (entry) `'(,@things ,entry)) entries))
-                                (mapcar (lambda (entry) `'(,entry)) entries))))
-                 `(clos:satiate #',name ,@tail))))
-    (for-entries-after cleavir-env:symbol-macro-expansion (symbol))
-    (for-entries-after cleavir-env:macro-function (symbol)))
-  (macrolet ((satiate-eval ()
-               (let ((entries (list* 'null 'clasp-global-environment
-                                     (rest (clos:subclasses* (find-class 'cleavir-env::entry))))))
-                 `(clos:satiate #'cleavir-env:eval
-                                ,@(loop for entry1 in entries
-                                        nconc (loop for entry2 in entries
-                                                    collect `'(cons ,entry1 ,entry2)))))))
-    (satiate-eval)))
-
 ;;; cleavir-compilation-policy
 (eval-when (:load-toplevel)
   (clos:satiate #'policy:compute-policy
                 '(cons clasp-global-environment))
   (clos:satiate #'policy:policy-qualities
-                '(clasp-global-environment) '(null)
-                '(cleavir-env:lexical-variable))
+                '(clasp-global-environment) '(null))
   (clos:satiate #'policy:normalize-optimize
                 '(cons clasp-global-environment))
   (clos:satiate #'policy:compute-policy-quality
