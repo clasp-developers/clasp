@@ -1078,6 +1078,9 @@
             :stamp-key "comp::SymbolMacroVarInfo_O" :parent-class "comp::VarInfo_O"
             :lisp-class-base "comp::VarInfo_O" :root-class "core::T_O" :stamp-wtag 3
             :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "comp::SymbolMacroVarInfo_O"
+             :layout-offset-field-names ("_globalp")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Function_O>"
              :offset-base-ctype "comp::SymbolMacroVarInfo_O"
