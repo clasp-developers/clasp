@@ -52,7 +52,7 @@ Clasp reports IGNORE declarations on local functions analogously to variables."
   (typecase env
     (null cmp:*optimize*)
     (cmp:lexenv
-     (ncond (loop for (id . data) in (cmp:lexenv/decls env)
+     (nconc (loop for (id . data) in (cmp:lexenv/decls env)
                   when (eq id 'optimize)
                     ;; FIXME: error prone
                     nconc (loop for thing in data
