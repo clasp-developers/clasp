@@ -1043,6 +1043,7 @@ void Lisp::remove_package(String_sp name) {
     PACKAGE_ERROR(name);
   }
   this->_Roots._PackageNameIndexMap->remhash(name);
+  ASSERT(fi.fixnump());
   this->_Roots._Packages[fi.unsafe_fixnum()]->setZombieP(true);
 }
 
@@ -1072,6 +1073,7 @@ void Lisp::inPackage(const string& p) {
   if (pi.nilp()) {
     SIMPLE_ERROR("I do not recognize package: {}", p);
   }
+  ASSERT(pi.fixnump());
   this->selectPackage(this->_Roots._Packages[pi.unsafe_fixnum()]);
 }
 

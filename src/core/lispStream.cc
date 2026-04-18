@@ -1504,6 +1504,7 @@ CL_DEFUN void core__write_c_uint32(T_sp stream, T_sp val) {
     TYPE_ERROR(val, ext::_sym_byte32);
   }
   unsigned char buffer[4];
+  ASSERT(val.fixnump());
   *(uint32_t*)buffer = val.unsafe_fixnum();
   stream_write_byte8(stream, buffer, 4);
 }
@@ -1514,6 +1515,7 @@ CL_DEFUN void core__write_c_uint16(T_sp stream, T_sp val) {
     TYPE_ERROR(val, ext::_sym_byte16);
   }
   unsigned char buffer[2];
+  ASSERT(val.fixnump());
   *(uint16_t*)buffer = (uint16_t)val.unsafe_fixnum();
   stream_write_byte8(stream, buffer, 2);
 }
