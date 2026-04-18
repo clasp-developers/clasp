@@ -9,6 +9,7 @@
 
 namespace core {
 class Bytecode_O;
+struct VMDynRecord;   // defined in clasp/gctools/threadlocal.h
 };
 
 template <> struct gctools::GCInfo<core::Bytecode_O> {
@@ -326,19 +327,25 @@ class VMFrameDynEnv_O : public DynEnv_O {
   LISP_CLASS(core, CorePkg, VMFrameDynEnv_O, "VMFrameDynEnv", DynEnv_O);
 
 public:
-  VMFrameDynEnv_O(T_O** a_old_sp, T_O** a_old_fp) : old_sp(a_old_sp), old_fp(a_old_fp) {}
+  VMFrameDynEnv_O(T_O** a_old_sp, T_O** a_old_fp, VMDynRecord* a_old_dyn_top)
+    : old_sp(a_old_sp), old_fp(a_old_fp), old_dyn_top(a_old_dyn_top) {}
   // Slightly sketchy: We use the destructor to reset the stack pointer,
   // so that C++ unwinds are also affected by this dynenv.
   // This means VMFrames must be stack allocated.
+  // old_dyn_top is the _dynRecordTop mark saved when this bytecode_call was
+  // entered. If an SJLJ longjmp bypasses this frame, proceed() restores it so
+  // the VM dynenv-record stack does not keep stale records across activations.
   ~VMFrameDynEnv_O() {
     VirtualMachine& vm = my_thread->_VM;
     vm._stackPointer = this->old_sp;
     vm._framePointer = this->old_fp;
+    vm._dynRecordTop = this->old_dyn_top;
   }
 
 public:
   T_O** old_sp;
   T_O** old_fp;
+  VMDynRecord* old_dyn_top;
 
 public:
   virtual SearchStatus search() const { return Continue; }

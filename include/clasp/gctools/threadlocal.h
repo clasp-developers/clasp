@@ -87,10 +87,11 @@ extern int global_debug_virtual_machine;
 //
 // Currently only the type and the stack exist — no opcodes are migrated yet.
 enum class VMDynKind : uint8_t {
-  Tagbody = 1,       // from `entry` opcode
-  Catch,             // from `catch_8/16`
+  Tagbody = 1,       // from `entry` opcode (not yet migrated)
+  Catch,             // from `catch_8/16` (not yet migrated)
   SpecialBind,       // from `special_bind` (one per bound cell)
-  UnwindProtect,     // from `protect`
+  Progv,             // from `progv` (one record covers N bindings)
+  UnwindProtect,     // from `protect` (not yet migrated — reserved)
 };
 
 struct VMDynRecord {

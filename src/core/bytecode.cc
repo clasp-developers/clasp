@@ -220,9 +220,49 @@ gctools::return_type
 bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure,
             core::T_O** fp, core::T_O** sp, size_t lcc_nargs, core::T_O** lcc_args);
 
+// Pop the topmost VMDynRecord and undo its effect. Used by the `unbind`
+// opcode, the `_return` defensive drain, and the outer catch handler — all
+// need to reverse one record worth of dynamic state.
+static inline void vm_pop_dyn_record(VirtualMachine& vm) {
+  VMDynRecord* r = --vm._dynRecordTop;
+  switch (r->kind) {
+  case VMDynKind::SpecialBind: {
+    VariableCell_sp cell((gctools::Tagged)r->slot0);
+    T_sp oldval((gctools::Tagged)r->slot1);
+    my_thread->dynEnvStackSet(CONS_CDR(my_thread->dynEnvStackGet()));
+    cell->unbind(oldval);
+    break;
+  }
+  case VMDynKind::Progv: {
+    SimpleVector_sp cells((gctools::Tagged)r->slot0);
+    SimpleVector_sp oldvals((gctools::Tagged)r->slot1);
+    my_thread->dynEnvStackSet(CONS_CDR(my_thread->dynEnvStackGet()));
+    for (size_t i = 0; i < cells->length(); ++i)
+      cells->vref(i).as_unsafe<VariableCell_O>()->unbind(oldvals->vref(i));
+    break;
+  }
+  default:
+    // Tagbody/Catch/UnwindProtect kinds migrate in later steps.
+    break;
+  }
+}
+
 // Helper functions extracted from opcodes that have scoped objects with
 // non-trivial destructors. Computed gotos cannot jump past such objects,
 // so we isolate them in separate functions.
+
+static void __attribute__((noinline)) vm_protect_impl(VirtualMachine& vm, MultipleValues& multipleValues,
+                             T_O** literals, T_O** closed, Closure_O* closure,
+                             T_O**& fp, T_O**& sp, size_t lcc_nargs, T_O** lcc_args,
+                             Closure_sp cleanup) {
+  T_mv result = funwind_protect([&]() {
+    return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
+  },
+    [&]() { eval::funcall(cleanup); });
+  multipleValues.setN(result.raw_(), result.number_of_values());
+  sp = vm._stackPointer;
+}
+
 
 static void __attribute__((noinline)) vm_entry_impl(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure,
                            T_O**& fp, T_O**& sp, size_t lcc_nargs, T_O** lcc_args, uint8_t n) {
@@ -260,35 +300,6 @@ static bool __attribute__((noinline)) vm_catch_impl(VirtualMachine& vm, T_O** li
     return result;
   });
   return thrown;
-}
-
-static void __attribute__((noinline)) vm_special_bind_impl(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure,
-                                  T_O**& fp, T_O**& sp, size_t lcc_nargs, T_O** lcc_args,
-                                  uint8_t c, T_sp value) {
-  T_sp cell((gctools::Tagged)literals[c]);
-  call_with_cell_bound(gc::As_assert<VariableCell_sp>(cell), value,
-                       [&]() { return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args); });
-  sp = vm._stackPointer;
-  vm._pc = vm._pc; // already set by recursive bytecode_vm
-}
-
-static void __attribute__((noinline)) vm_progv_impl(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure,
-                           T_O**& fp, T_O**& sp, size_t lcc_nargs, T_O** lcc_args,
-                           T_sp env, T_sp vars, T_sp vals) {
-  fprogv_env(env, vars, vals, [&]() { return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args); });
-  sp = vm._stackPointer;
-}
-
-static void __attribute__((noinline)) vm_protect_impl(VirtualMachine& vm, MultipleValues& multipleValues,
-                             T_O** literals, T_O** closed, Closure_O* closure,
-                             T_O**& fp, T_O**& sp, size_t lcc_nargs, T_O** lcc_args,
-                             Closure_sp cleanup) {
-  T_mv result = funwind_protect([&]() {
-    return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
-  },
-    [&]() { eval::funcall(cleanup); });
-  multipleValues.setN(result.raw_(), result.number_of_values());
-  sp = vm._stackPointer;
 }
 
 SYMBOL_EXPORT_SC_(KeywordPkg, name);
@@ -611,6 +622,12 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
     }
     VM_CASE(_return): {
       DBG_VM1("return\n");
+      // Drain any VM dynenv records still established within this
+      // activation. The old recursive-bytecode_vm flow relied on RAII to
+      // restore bindings on normal return even when the compiler didn't
+      // emit an explicit unbind before _return; we match that semantics.
+      while (vm._dynRecordTop > dyn_entry_mark)
+        vm_pop_dyn_record(vm);
       size_t nvalues = multipleValues.getSize();
       return gctools::return_type(multipleValues.valueGet(0, nvalues).raw_(), nvalues);
     }
@@ -1000,10 +1017,30 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       DBG_VM("special-bind %" PRIu8 "\n", c);
       T_sp value((gctools::Tagged)(vm.pop(sp)));
       pc++;
-      vm._pc = pc;
-      vm_special_bind_impl(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args, c, value);
-      sp = vm._stackPointer;
-      pc = vm._pc;
+      // Inline the binding instead of recursing into bytecode_vm. The paired
+      // `unbind` opcode pops the record and restores the value.
+      T_sp cell_sp((gctools::Tagged)literals[c]);
+      VariableCell_sp cell = gc::As_assert<VariableCell_sp>(cell_sp);
+      T_sp oldval = cell->bind(value);
+      // Keep a BindingDynEnv_O on the dyn-env stack so that SJLJ unwinders
+      // that longjmp past this frame still call BindingDynEnv_O::proceed()
+      // and restore the binding. We heap-allocate it because it must live
+      // across opcodes, not in a C++ stack scope.
+      BindingDynEnv_sp bde = gctools::GC<BindingDynEnv_O>::allocate(cell, oldval);
+      Cons_sp bde_cons = Cons_O::create(bde, my_thread->dynEnvStackGet());
+      my_thread->dynEnvStackSet(bde_cons);
+      // Push a VM record so `unbind` and the outer catch(Unwind&) handler
+      // can find and restore the binding without a recursive bytecode_vm.
+      ASSERT(vm._dynRecordTop < vm._dynRecordLimit);
+      VMDynRecord* r = vm._dynRecordTop++;
+      r->kind = VMDynKind::SpecialBind;
+      r->frame = nullptr;
+      r->slot0 = cell.raw_();
+      r->slot1 = oldval.raw_();
+      r->sp_mark = sp;
+      r->fp_mark = fp;
+      r->target_pc = nullptr;
+      r->dynenv_mark = bde_cons.raw_();
       VM_NEXT;
     }
     VM_CASE(symbol_value): {
@@ -1027,9 +1064,15 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
     }
     VM_CASE(unbind): {
       DBG_VM("unbind\n");
-      vm._pc = pc + 1;
-      vm._stackPointer = sp;
-      return gctools::return_type(nil<T_O>().raw_(), 0);
+      // Close the topmost dynenv record. One unbind closes one record:
+      //   - SpecialBind — one cell restored
+      //   - Progv — all N cells in the progv restored at once
+      // (compiler emits one unbind per special-bind, and one unbind for a
+      //  whole progv regardless of N).
+      ASSERT(vm._dynRecordTop > vm._dynRecordBottom);
+      vm_pop_dyn_record(vm);
+      pc++;
+      VM_NEXT;
     }
     VM_CASE(progv): {
       uint8_t c = *(++pc);
@@ -1037,10 +1080,28 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_sp env((gctools::Tagged)literals[c]);
       T_sp vals((gctools::Tagged)(vm.pop(sp)));
       T_sp vars((gctools::Tagged)(vm.pop(sp)));
-      vm._pc = ++pc;
-      vm_progv_impl(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args, env, vars, vals);
-      sp = vm._stackPointer;
-      pc = vm._pc;
+      pc++;
+      // Resolve symbols → cells, allocate an oldvals vector, and install the
+      // new bindings. One VMDynRecord covers all N bindings — one matching
+      // `unbind` opcode closes them all, matching compiler expectations.
+      SimpleVector_sp cells = resolve_progv_symbols(vars, env);
+      size_t ncells = cells->length();
+      SimpleVector_sp oldvals = SimpleVector_O::make(ncells);
+      progv_set_values(cells, oldvals, vals);
+      // Keep a ProgvDynEnv_O on the dyn-env stack for SJLJ compatibility.
+      ProgvDynEnv_sp pde = gctools::GC<ProgvDynEnv_O>::allocate(cells, oldvals);
+      Cons_sp pde_cons = Cons_O::create(pde, my_thread->dynEnvStackGet());
+      my_thread->dynEnvStackSet(pde_cons);
+      ASSERT(vm._dynRecordTop < vm._dynRecordLimit);
+      VMDynRecord* r = vm._dynRecordTop++;
+      r->kind = VMDynKind::Progv;
+      r->frame = nullptr;
+      r->slot0 = cells.raw_();
+      r->slot1 = oldvals.raw_();
+      r->sp_mark = sp;
+      r->fp_mark = fp;
+      r->target_pc = nullptr;
+      r->dynenv_mark = pde_cons.raw_();
       VM_NEXT;
     }
     VM_CASE(fdefinition): {
@@ -1149,16 +1210,11 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
   }
 #endif
     } catch (Unwind& uw) {
-      // Walk the VM dynenv-record stack down to this activation's entry mark.
-      // No opcodes push records yet, so in the scaffolding phase this is a
-      // no-op and we simply rethrow — semantics identical to before. As
-      // opcodes migrate, this handler will:
-      //   - run SpecialBind / UnwindProtect cleanups along the way,
-      //   - on Tagbody match: set pc/sp/fp from the record and re-enter the
-      //     dispatch loop via the enclosing `while (true)` (implicit continue),
-      //   - on Catch match: same, matched by tag.
-      // Anything past our mark propagates to the caller.
-      vm._dynRecordTop = dyn_entry_mark;
+      // Non-local exit propagating through this activation. Run cleanups
+      // for records we pass on the way out, then rethrow. Tagbody/Catch
+      // match logic will be added here in later steps.
+      while (vm._dynRecordTop > dyn_entry_mark)
+        vm_pop_dyn_record(vm);
       throw;
     }
   } // while (true) — only reached on resume-after-match (future work).
@@ -1639,6 +1695,7 @@ void VMFrameDynEnv_O::proceed() {
   VirtualMachine& vm = my_thread->_VM;
   vm._stackPointer = this->old_sp;
   vm._framePointer = this->old_fp;
+  vm._dynRecordTop = this->old_dyn_top;
 }
 
 }; // namespace core
@@ -1682,6 +1739,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   // being unwound to.
   core::T_O** old_fp = vm._framePointer;
   core::T_O** old_sp = vm._stackPointer;
+  core::VMDynRecord* old_dyn_top = vm._dynRecordTop;
   // Push the args and FP for debugging (see backtrace.cc)
   // This is mildly wasteful of stack space, but when calling bytecode from
   // non-bytecode the arguments won't be on the VM stack, so this is the
@@ -1692,7 +1750,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   core::T_O** fp = vm._framePointer = vm._stackPointer;
   core::T_O** sp = vm.push_frame(fp, nlocals);
   try {
-    gctools::StackAllocate<core::VMFrameDynEnv_O> frame(old_sp, old_fp);
+    gctools::StackAllocate<core::VMFrameDynEnv_O> frame(old_sp, old_fp, old_dyn_top);
     gctools::StackAllocate<core::Cons_O> sa_ec(frame.asSmartPtr(), my_thread->dynEnvStackGet());
     core::DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
     gctools::return_type res = bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
