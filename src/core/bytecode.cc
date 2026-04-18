@@ -241,8 +241,27 @@ static inline void vm_pop_dyn_record(VirtualMachine& vm) {
       cells->vref(i).as_unsafe<VariableCell_O>()->unbind(oldvals->vref(i));
     break;
   }
+  case VMDynKind::UnwindProtect: {
+    T_sp cleanup_fn((gctools::Tagged)r->slot0);
+    // Pop the SJLJ barrier (UnknownDynEnv_O) we pushed for this protect.
+    my_thread->dynEnvStackSet(CONS_CDR(my_thread->dynEnvStackGet()));
+    // Save multiple values and _UnwindDest across the cleanup (it may
+    // funcall arbitrary code), then run with *interrupts-enabled* = NIL.
+    T_sp dest = my_thread->_UnwindDest;
+    size_t dindex = my_thread->_UnwindDestIndex;
+    MultipleValues& mv = lisp_multipleValues();
+    size_t nvals = mv.getSize();
+    T_O* mv_temp[nvals];
+    mv.saveToTemp(nvals, mv_temp);
+    call_with_variable_bound(_sym_STARinterrupts_enabledSTAR, nil<T_O>(),
+                             [&]() { return eval::funcall(cleanup_fn); });
+    mv.loadFromTemp(nvals, mv_temp);
+    my_thread->_UnwindDestIndex = dindex;
+    my_thread->_UnwindDest = dest;
+    break;
+  }
   default:
-    // Tagbody/Catch/UnwindProtect kinds migrate in later steps.
+    // Tagbody/Catch kinds migrate in later steps.
     break;
   }
 }
@@ -250,18 +269,6 @@ static inline void vm_pop_dyn_record(VirtualMachine& vm) {
 // Helper functions extracted from opcodes that have scoped objects with
 // non-trivial destructors. Computed gotos cannot jump past such objects,
 // so we isolate them in separate functions.
-
-static void __attribute__((noinline)) vm_protect_impl(VirtualMachine& vm, MultipleValues& multipleValues,
-                             T_O** literals, T_O** closed, Closure_O* closure,
-                             T_O**& fp, T_O**& sp, size_t lcc_nargs, T_O** lcc_args,
-                             Closure_sp cleanup) {
-  T_mv result = funwind_protect([&]() {
-    return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
-  },
-    [&]() { eval::funcall(cleanup); });
-  multipleValues.setN(result.raw_(), result.number_of_values());
-  sp = vm._stackPointer;
-}
 
 
 static void __attribute__((noinline)) vm_entry_impl(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure,
@@ -626,6 +633,10 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       // activation. The old recursive-bytecode_vm flow relied on RAII to
       // restore bindings on normal return even when the compiler didn't
       // emit an explicit unbind before _return; we match that semantics.
+      // Sync sp/pc in case the drain runs an unwind-protect cleanup that
+      // recurses into bytecode_call.
+      vm._pc = pc;
+      vm._stackPointer = sp;
       while (vm._dynRecordTop > dyn_entry_mark)
         vm_pop_dyn_record(vm);
       size_t nvalues = multipleValues.getSize();
@@ -1068,8 +1079,10 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       //   - SpecialBind — one cell restored
       //   - Progv — all N cells in the progv restored at once
       // (compiler emits one unbind per special-bind, and one unbind for a
-      //  whole progv regardless of N).
+      //  whole progv regardless of N). Sync sp defensively for the
+      //  (unexpected) UnwindProtect case.
       ASSERT(vm._dynRecordTop > vm._dynRecordBottom);
+      vm._stackPointer = sp;
       vm_pop_dyn_record(vm);
       pc++;
       VM_NEXT;
@@ -1171,19 +1184,54 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       Closure_sp cleanup = Closure_O::make_bytecode_closure(fn, nclosed);
       vm.copyto(sp, nclosed, (T_O**)(cleanup->_Slots.data()));
       vm.drop(sp, nclosed);
-      vm._pc = ++pc;
-      vm._stackPointer = sp;
-      vm_protect_impl(vm, multipleValues, literals, closed, closure, fp, sp, lcc_nargs, lcc_args, cleanup);
-      sp = vm._stackPointer;
-      pc = vm._pc;
+      pc++;
+      // Push an UnknownDynEnv_O on the dyn-env stack. Its search() returns
+      // FallBack, so any SJLJ unwind that tries to cross this protect will
+      // fall back to `throw Unwind` (or `throw CatchThrow` for sjlj_throw),
+      // which our outer C++ handler catches and drives the cleanup through
+      // vm_pop_dyn_record. This replaces the setjmp inside the old
+      // funwind_protect — the cleanup closure lives in the VMDynRecord.
+      UnknownDynEnv_sp barrier = gctools::GC<UnknownDynEnv_O>::allocate();
+      Cons_sp barrier_cons = Cons_O::create(barrier, my_thread->dynEnvStackGet());
+      my_thread->dynEnvStackSet(barrier_cons);
+      ASSERT(vm._dynRecordTop < vm._dynRecordLimit);
+      VMDynRecord* r = vm._dynRecordTop++;
+      r->kind = VMDynKind::UnwindProtect;
+      r->frame = nullptr;
+      r->slot0 = cleanup.raw_();
+      r->slot1 = nullptr;
+      r->sp_mark = sp;
+      r->fp_mark = fp;
+      r->target_pc = nullptr;
+      r->dynenv_mark = barrier_cons.raw_();
       VM_NEXT;
     }
     VM_CASE(cleanup): {
       DBG_VM("cleanup\n");
+      // Normal-path cleanup: the protected body finished without unwinding.
+      // Pop the VM record and the SJLJ barrier, save the body's multiple
+      // values, run the cleanup thunk with *interrupts-enabled* = NIL,
+      // restore the values, and continue to the next opcode. On the unwind
+      // path the same work is done by vm_pop_dyn_record.
+      ASSERT(vm._dynRecordTop > vm._dynRecordBottom);
+      VMDynRecord* r = --vm._dynRecordTop;
+      ASSERT(r->kind == VMDynKind::UnwindProtect);
+      T_sp cleanup_fn((gctools::Tagged)r->slot0);
+      my_thread->dynEnvStackSet(CONS_CDR(my_thread->dynEnvStackGet()));
+      // Sync local sp / pc into the VM before calling out: the cleanup
+      // closure may recurse into bytecode_call which reads vm._stackPointer
+      // and vm._pc when setting up the callee frame.
       vm._pc = pc + 1;
       vm._stackPointer = sp;
-      size_t nvalues = multipleValues.getSize();
-      return gctools::return_type(multipleValues.valueGet(0, nvalues).raw_(), nvalues);
+      size_t nvals = multipleValues.getSize();
+      T_O* mv_temp[nvals];
+      multipleValues.saveToTemp(nvals, mv_temp);
+      call_with_variable_bound(_sym_STARinterrupts_enabledSTAR, nil<T_O>(),
+                               [&]() { return eval::funcall(cleanup_fn); });
+      multipleValues.loadFromTemp(nvals, mv_temp);
+      sp = vm._stackPointer;
+      pc++;
+      VM_NEXT;
     }
     VM_CASE(encell): {
       uint8_t n = *(++pc);
@@ -1213,6 +1261,17 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       // Non-local exit propagating through this activation. Run cleanups
       // for records we pass on the way out, then rethrow. Tagbody/Catch
       // match logic will be added here in later steps.
+      // sp was updated by the throwing opcode before the throw; sync it
+      // so an unwind-protect cleanup that recurses into bytecode_call
+      // sees a valid vm._stackPointer.
+      vm._stackPointer = sp;
+      while (vm._dynRecordTop > dyn_entry_mark)
+        vm_pop_dyn_record(vm);
+      throw;
+    } catch (...) {
+      // CatchThrow from sjlj_throw fallback, std exceptions, etc. must
+      // still trigger unwind-protect cleanups on the way through.
+      vm._stackPointer = sp;
       while (vm._dynRecordTop > dyn_entry_mark)
         vm_pop_dyn_record(vm);
       throw;

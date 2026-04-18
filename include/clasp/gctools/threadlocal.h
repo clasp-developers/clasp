@@ -91,7 +91,7 @@ enum class VMDynKind : uint8_t {
   Catch,             // from `catch_8/16` (not yet migrated)
   SpecialBind,       // from `special_bind` (one per bound cell)
   Progv,             // from `progv` (one record covers N bindings)
-  UnwindProtect,     // from `protect` (not yet migrated — reserved)
+  UnwindProtect,     // from `protect`
 };
 
 struct VMDynRecord {
