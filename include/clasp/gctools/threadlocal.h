@@ -78,10 +78,38 @@ extern int global_debug_virtual_machine;
 #define VM_RESET_COUNTERS(vm)
 #endif
 
+// ---------- Dynamic-environment records for the bytecode interpreter ----------
+// The bytecode VM establishes dynamic environments (tagbody, catch,
+// special-bind, progv, unwind-protect) by pushing records onto a side stack
+// instead of recursing into bytecode_vm. The entering opcodes push; the
+// matching exit opcodes pop; an outer try/catch(Unwind&) in bytecode_vm walks
+// the stack to run cleanups / resume at a saved pc on non-local exits.
+//
+// Currently only the type and the stack exist — no opcodes are migrated yet.
+enum class VMDynKind : uint8_t {
+  Tagbody = 1,       // from `entry` opcode
+  Catch,             // from `catch_8/16`
+  SpecialBind,       // from `special_bind` (one per bound cell)
+  UnwindProtect,     // from `protect`
+};
+
+struct VMDynRecord {
+  VMDynKind kind;
+  uint8_t _pad[7];
+  void* frame;                      // __builtin_frame_address at establishment
+  core::T_O* slot0;                 // kind-specific GC-managed: tag / cell / cleanup closure
+  core::T_O* slot1;                 // kind-specific GC-managed: old binding value
+  core::T_O** sp_mark;              // stack pointer at establishment
+  core::T_O** fp_mark;              // frame pointer at establishment
+  unsigned char* target_pc;         // resume pc (Tagbody/Catch)
+  core::T_O* dynenv_mark;           // saved head of my_thread->dynEnvStackGet()
+};
+
 struct VirtualMachine {
   // Stack size is kind of arbitrary, and really we should make it
   // grow and etc.
   static constexpr size_t MaxStackWords = 65536;
+  static constexpr size_t MaxDynRecords = 4096;
   bool _Running;
   core::T_O** _stackBottom = nullptr;
   size_t _stackBytes;
@@ -100,6 +128,13 @@ struct VirtualMachine {
 #endif
   core::T_O** _literals;
   unsigned char* _pc;
+
+  // Dynamic-environment record stack. Root-allocated so GC scans the
+  // T_O*/T_O** slots conservatively. _dynRecordTop points one past the last
+  // live record, so an empty stack has _dynRecordTop == _dynRecordBottom.
+  VMDynRecord* _dynRecordBottom = nullptr;
+  VMDynRecord* _dynRecordLimit = nullptr;
+  VMDynRecord* _dynRecordTop = nullptr;
 
   void error();
 

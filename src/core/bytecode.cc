@@ -319,6 +319,16 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
   MultipleValues& multipleValues = core::lisp_multipleValues();
   unsigned char* pc = vm._pc;
 
+  // Mark of the VM dynenv-record stack at entry to this activation. The outer
+  // try/catch(Unwind&) below walks the stack back down to this mark to run
+  // cleanups and decide whether to resume dispatch (on a matched
+  // tagbody/catch target) or rethrow to the caller. No opcodes push records
+  // yet — the scaffolding is inert until opcodes are migrated one at a time.
+  VMDynRecord* const dyn_entry_mark = vm._dynRecordTop;
+
+  while (true) {
+    try {
+
 // ---------- Computed-goto dispatch ----------
 // GCC and Clang support the labels-as-values extension (&&label).
 // Each opcode ends with VM_NEXT which jumps directly to the next
@@ -1138,6 +1148,20 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
     };
   }
 #endif
+    } catch (Unwind& uw) {
+      // Walk the VM dynenv-record stack down to this activation's entry mark.
+      // No opcodes push records yet, so in the scaffolding phase this is a
+      // no-op and we simply rethrow — semantics identical to before. As
+      // opcodes migrate, this handler will:
+      //   - run SpecialBind / UnwindProtect cleanups along the way,
+      //   - on Tagbody match: set pc/sp/fp from the record and re-enter the
+      //     dispatch loop via the enclosing `while (true)` (implicit continue),
+      //   - on Catch match: same, matched by tag.
+      // Anything past our mark propagates to the caller.
+      vm._dynRecordTop = dyn_entry_mark;
+      throw;
+    }
+  } // while (true) — only reached on resume-after-match (future work).
 #undef VM_CASE
 #undef VM_NEXT
 #ifdef USE_COMPUTED_GOTO
