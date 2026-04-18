@@ -670,6 +670,7 @@ CL_DEFUN T_sp cl__name_char(T_sp sname) {
   String_sp upname = cl__string_upcase(name);
   T_sp it = _lisp->characterInfo()._NamesToCharacterIndex->gethash(upname);
   if (it.fixnump()) {
+    ASSERT(it.unsafe_fixnum()>=0&&it.unsafe_fixnum()<_lisp->characterInfo().gIndexedCharacters.size());  
     return _lisp->characterInfo().gIndexedCharacters[it.unsafe_fixnum()];
   }
   // The upper exclusive bound on the value returned by the function char-code.
