@@ -260,53 +260,23 @@ static inline void vm_pop_dyn_record(VirtualMachine& vm) {
     my_thread->_UnwindDest = dest;
     break;
   }
-  default:
-    // Tagbody/Catch kinds migrate in later steps.
+  case VMDynKind::Catch: {
+    // Unwinding PAST a catch (non-matching throw or non-CatchThrow exit).
+    // Reset the dyn-env stack to the state it had before catch_8/16
+    // pushed its CatchDynEnv + barrier pair.
+    my_thread->dynEnvStackSet(T_sp((gctools::Tagged)r->dynenv_mark));
     break;
   }
-}
-
-// Helper functions extracted from opcodes that have scoped objects with
-// non-trivial destructors. Computed gotos cannot jump past such objects,
-// so we isolate them in separate functions.
-
-
-static void __attribute__((noinline)) vm_entry_impl(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure,
-                           T_O**& fp, T_O**& sp, size_t lcc_nargs, T_O** lcc_args, uint8_t n) {
-  jmp_buf target;
-  void* frame = __builtin_frame_address(0);
-  unsigned char* pc = vm._pc;
-  TagbodyDynEnv_sp env = TagbodyDynEnv_O::create(frame, &target);
-  vm.setreg(fp, n, env.raw_());
-  gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->dynEnvStackGet());
-  DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
-  _setjmp(target);
- again:
-  try {
-    bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
-    sp = vm._stackPointer;
-    pc = vm._pc;
-  } catch (Unwind& uw) {
-    if (uw.getFrame() == frame) {
-      my_thread->dynEnvStackGet() = sa_ec.asSmartPtr();
-      goto again;
-    } else
-      throw;
+  case VMDynKind::Tagbody: {
+    // Unwinding PAST a tagbody (non-matching Unwind). Reset the dyn-env
+    // stack to the state it had before `entry` pushed its TagbodyDynEnv
+    // + barrier pair.
+    my_thread->dynEnvStackSet(T_sp((gctools::Tagged)r->dynenv_mark));
+    break;
   }
-  vm._stackPointer = sp;
-  vm._pc = pc;
-}
-
-static bool __attribute__((noinline)) vm_catch_impl(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure,
-                           T_O**& fp, T_O**& sp, size_t lcc_nargs, T_O** lcc_args) {
-  T_sp tag((gctools::Tagged)(vm.pop(sp)));
-  bool thrown = true;
-  call_with_catch(tag, [&]() {
-    T_mv result = bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
-    thrown = false;
-    return result;
-  });
-  return thrown;
+  default:
+    break;
+  }
 }
 
 SYMBOL_EXPORT_SC_(KeywordPkg, name);
@@ -948,10 +918,33 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       uint8_t n = *(++pc);
       DBG_VM("entry %" PRIu8 "\n", n);
       pc++;
-      vm._pc = pc;
-      vm_entry_impl(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args, n);
-      sp = vm._stackPointer;
-      pc = vm._pc;
+      // Use the future VMDynRecord address as a unique "frame" identifier
+      // for this tagbody. __builtin_frame_address would collide across
+      // multiple tagbodies in the same bytecode_vm activation (we no
+      // longer have per-tagbody C++ frames).
+      ASSERT(vm._dynRecordTop < vm._dynRecordLimit);
+      VMDynRecord* r = vm._dynRecordTop;
+      // TagbodyDynEnv_O::frame gets our record pointer. Its jmp_buf is
+      // nullptr; the SJLJ barrier below forces sjlj_unwind to fall back
+      // to `throw Unwind(r, 1)`, which our outer handler matches by
+      // frame and resumes dispatch.
+      TagbodyDynEnv_sp env = TagbodyDynEnv_O::create((void*)r, (jmp_buf*)nullptr);
+      vm.setreg(fp, n, env.raw_());  // compiler stores env in this reg for `go`
+      T_sp dynenv_entry = my_thread->dynEnvStackGet();
+      Cons_sp env_cons = Cons_O::create(env, dynenv_entry);
+      UnknownDynEnv_sp barrier = gctools::GC<UnknownDynEnv_O>::allocate();
+      Cons_sp barrier_cons = Cons_O::create(barrier, env_cons);
+      my_thread->dynEnvStackSet(barrier_cons);
+      // Commit the record.
+      vm._dynRecordTop++;
+      r->kind = VMDynKind::Tagbody;
+      r->frame = (void*)r;
+      r->slot0 = env.raw_();       // keep env rooted through the record
+      r->slot1 = nullptr;
+      r->sp_mark = sp;
+      r->fp_mark = fp;
+      r->target_pc = nullptr;      // target set by exit_* into vm._pc
+      r->dynenv_mark = dynenv_entry.raw_();
       VM_NEXT;
     }
     VM_CASE(exit_8): {
@@ -980,22 +973,42 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
     }
     VM_CASE(entry_close): {
       DBG_VM("entry-close\n");
-      vm._pc = pc + 1;
-      vm._stackPointer = sp;
-      return gctools::return_type(nil<T_O>().raw_(), 0);
+      // Normal exit from a tagbody: body completed without a matching
+      // `go`. Pop the Tagbody record and reset the dyn-env stack.
+      ASSERT(vm._dynRecordTop > vm._dynRecordBottom);
+      VMDynRecord* r = --vm._dynRecordTop;
+      ASSERT(r->kind == VMDynKind::Tagbody);
+      my_thread->dynEnvStackSet(T_sp((gctools::Tagged)r->dynenv_mark));
+      pc++;
+      VM_NEXT;
     }
     VM_CASE(catch_8): {
       int8_t rel = *(pc + 1);
       DBG_VM("catch-8 %" PRId8 "\n", rel);
       unsigned char* catch_target = pc + rel;
       pc += 2;
-      vm._pc = pc;
-      bool thrown = vm_catch_impl(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
-      if (thrown) pc = catch_target;
-      else {
-        pc = vm._pc;
-        sp = vm._stackPointer;
-      }
+      T_sp tag((gctools::Tagged)(vm.pop(sp)));
+      // Two conses on the dyn-env stack:
+      //   - CatchDynEnv_O carrying the tag, so sjlj_throw_search can find
+      //     the catch by tag. Its jmp_buf is nullptr; it is never jumped to.
+      //   - UnknownDynEnv_O barrier above it, so sjlj_throw falls back to
+      //     throw CatchThrow (our outer handler catches and matches).
+      T_sp dynenv_entry = my_thread->dynEnvStackGet();
+      CatchDynEnv_sp cde = gctools::GC<CatchDynEnv_O>::allocate((jmp_buf*)nullptr, tag);
+      Cons_sp cde_cons = Cons_O::create(cde, dynenv_entry);
+      UnknownDynEnv_sp barrier = gctools::GC<UnknownDynEnv_O>::allocate();
+      Cons_sp barrier_cons = Cons_O::create(barrier, cde_cons);
+      my_thread->dynEnvStackSet(barrier_cons);
+      ASSERT(vm._dynRecordTop < vm._dynRecordLimit);
+      VMDynRecord* r = vm._dynRecordTop++;
+      r->kind = VMDynKind::Catch;
+      r->frame = nullptr;
+      r->slot0 = tag.raw_();
+      r->slot1 = nullptr;
+      r->sp_mark = sp;
+      r->fp_mark = fp;
+      r->target_pc = catch_target;
+      r->dynenv_mark = dynenv_entry.raw_();
       VM_NEXT;
     }
     VM_CASE(catch_16): {
@@ -1003,13 +1016,23 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       DBG_VM("catch-16 %" PRId16 "\n", rel);
       unsigned char* catch_target = pc + rel;
       pc += 3;
-      vm._pc = pc;
-      bool thrown = vm_catch_impl(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
-      if (thrown) pc = catch_target;
-      else {
-        pc = vm._pc;
-        sp = vm._stackPointer;
-      }
+      T_sp tag((gctools::Tagged)(vm.pop(sp)));
+      T_sp dynenv_entry = my_thread->dynEnvStackGet();
+      CatchDynEnv_sp cde = gctools::GC<CatchDynEnv_O>::allocate((jmp_buf*)nullptr, tag);
+      Cons_sp cde_cons = Cons_O::create(cde, dynenv_entry);
+      UnknownDynEnv_sp barrier = gctools::GC<UnknownDynEnv_O>::allocate();
+      Cons_sp barrier_cons = Cons_O::create(barrier, cde_cons);
+      my_thread->dynEnvStackSet(barrier_cons);
+      ASSERT(vm._dynRecordTop < vm._dynRecordLimit);
+      VMDynRecord* r = vm._dynRecordTop++;
+      r->kind = VMDynKind::Catch;
+      r->frame = nullptr;
+      r->slot0 = tag.raw_();
+      r->slot1 = nullptr;
+      r->sp_mark = sp;
+      r->fp_mark = fp;
+      r->target_pc = catch_target;
+      r->dynenv_mark = dynenv_entry.raw_();
       VM_NEXT;
     }
     VM_CASE(_throw): {
@@ -1019,9 +1042,15 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
     }
     VM_CASE(catch_close): {
       DBG_VM("catch-close\n");
-      vm._pc = pc + 1;
-      vm._stackPointer = sp;
-      return gctools::return_type(nil<T_O>().raw_(), 0);
+      // Normal exit from a catch scope: the body completed without a
+      // matching throw. Pop the Catch record and reset the dyn-env stack
+      // to the state it had before catch_8/16 pushed its two conses.
+      ASSERT(vm._dynRecordTop > vm._dynRecordBottom);
+      VMDynRecord* r = --vm._dynRecordTop;
+      ASSERT(r->kind == VMDynKind::Catch);
+      my_thread->dynEnvStackSet(T_sp((gctools::Tagged)r->dynenv_mark));
+      pc++;
+      VM_NEXT;
     }
     VM_CASE(special_bind): {
       uint8_t c = *(++pc);
@@ -1258,19 +1287,62 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
   }
 #endif
     } catch (Unwind& uw) {
-      // Non-local exit propagating through this activation. Run cleanups
-      // for records we pass on the way out, then rethrow. Tagbody/Catch
-      // match logic will be added here in later steps.
-      // sp was updated by the throwing opcode before the throw; sync it
-      // so an unwind-protect cleanup that recurses into bytecode_call
-      // sees a valid vm._stackPointer.
+      // An exit_* from within our activation (or any Unwind bubbling up
+      // from below). Walk records from the top down, running cleanups
+      // for SpecialBind / Progv / UnwindProtect and resetting dyn-env
+      // state for Catch / Tagbody records we pass. If we find a Tagbody
+      // record whose frame matches uw.getFrame(), resume dispatch at
+      // the target pc stashed in vm._pc by exit_*. The Tagbody record
+      // itself is NOT popped — the tagbody stays live, ready for the
+      // next `go`. By the time we reach a match, the walk has already
+      // restored dynEnvStackGet to the state just after `entry` pushed
+      // its TagbodyDynEnv + barrier pair, so no re-push is needed.
       vm._stackPointer = sp;
-      while (vm._dynRecordTop > dyn_entry_mark)
+      void* unwindFrame = uw.getFrame();
+      bool matched = false;
+      while (vm._dynRecordTop > dyn_entry_mark) {
+        VMDynRecord* r = vm._dynRecordTop - 1;
+        if (r->kind == VMDynKind::Tagbody && r->frame == unwindFrame) {
+          pc = vm._pc;              // target set by exit_*
+          sp = r->sp_mark;          // body sees tagbody-entry stack state
+          fp = r->fp_mark;
+          matched = true;
+          break;
+        }
         vm_pop_dyn_record(vm);
+      }
+      if (matched) continue;
+      throw;
+    } catch (CatchThrow& ct) {
+      // A matching catch may be in our record stack. Walk records from
+      // the top down, running cleanups for SpecialBind / Progv /
+      // UnwindProtect. When we find a Catch record whose tag matches,
+      // reset pc / sp / fp / dyn-env stack and resume dispatch via the
+      // enclosing while(true). If we reach the entry mark without a
+      // match, rethrow to let an outer scope handle it.
+      vm._stackPointer = sp;
+      T_sp throwTag = ct.getTag();
+      bool matched = false;
+      while (vm._dynRecordTop > dyn_entry_mark) {
+        VMDynRecord* r = vm._dynRecordTop - 1;
+        if (r->kind == VMDynKind::Catch
+            && T_sp((gctools::Tagged)r->slot0) == throwTag) {
+          pc = r->target_pc;
+          sp = r->sp_mark;
+          fp = r->fp_mark;
+          my_thread->dynEnvStackSet(T_sp((gctools::Tagged)r->dynenv_mark));
+          --vm._dynRecordTop;
+          matched = true;
+          break;
+        }
+        vm_pop_dyn_record(vm);
+      }
+      if (matched) continue;  // re-enter try { dispatch }
       throw;
     } catch (...) {
-      // CatchThrow from sjlj_throw fallback, std exceptions, etc. must
-      // still trigger unwind-protect cleanups on the way through.
+      // std exceptions and other foreign throws must still trigger
+      // unwind-protect cleanups on the way through — cleanup + rethrow
+      // only, no matching.
       vm._stackPointer = sp;
       while (vm._dynRecordTop > dyn_entry_mark)
         vm_pop_dyn_record(vm);
