@@ -196,7 +196,7 @@ size_t Array_O::arrayRowMajorIndex(List_sp indices) const {
       LIKELY_if(index.fixnump()) {
         gc::Fixnum oneIndex = index.unsafe_fixnum();
         unlikely_if(oneIndex < 0 || oneIndex >= curDimension) { badIndexError(this->asSmartPtr(), idx, oneIndex, curDimension); }
-        offset = offset * curDimension + oneIndex;
+        offset = offset * curDimension + oneIndex;  // We have no overflow check! 
       }
       else {
         indexNotFixnumError(index);
@@ -227,7 +227,7 @@ size_t Array_O::arrayRowMajorIndex(Vaslist_sp indices) const {
     LIKELY_if(one.fixnump()) {
       gc::Fixnum oneIndex = one.unsafe_fixnum();
       unlikely_if(oneIndex < 0 || oneIndex >= curDimension) { badIndexError(this->asSmartPtr(), idx, oneIndex, curDimension); }
-      offset = offset * curDimension + oneIndex;
+      offset = offset * curDimension + oneIndex; // we have no overflow check
     }
     else {
       indexNotFixnumError(one);
@@ -309,7 +309,7 @@ MDArray_O::MDArray_O(size_t rank, List_sp dimensions, Array_sp data, bool displa
     T_sp tdim = oCar(cur);
     size_t dim = tdim.unsafe_fixnum();
     this->_Dimensions[irank++] = dim;
-    arrayTotalSize *= dim;
+    arrayTotalSize *= dim; // We have no overflow check!
   }
   if (irank != rank) {
     SIMPLE_ERROR("Mismatch in the number of arguments rank = {} indices = {}", rank, _rep_(dimensions));
