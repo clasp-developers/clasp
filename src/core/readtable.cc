@@ -595,6 +595,7 @@ CL_DEFUN T_mv core__sharp_colon(T_sp sin, Character_sp ch, T_sp num) {
   make_str(sslexemes.string(), lexemes);
   SimpleString_sp lexeme_str = sslexemes.string()->asMinimalSimpleString();
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
+    ASSERT(lexme_str->length()!=0);
     Symbol_sp new_symbol = Symbol_O::create(gc::As<SimpleString_sp>(lexeme_str->unsafe_subseq(1, lexeme_str->length())));
     return Values(new_symbol);
   }
