@@ -359,7 +359,7 @@ bool MDArray_O::equalp(T_sp other) const {
   MDArray_sp mdaother = gc::As_unsafe<MDArray_sp>(other);
   for (size_t d = 0; d < this->rank(); ++d) {
     if (this->_Dimensions[d] != mdaother->_Dimensions[d])
-      return true;
+      return false; // When dimensions don't match then array is not equalp
   }
   for (size_t i(0), iEnd(this->arrayTotalSize()); i < iEnd; ++i) {
     if (!cl__equalp(this->rowMajorAref(i), mdaother->rowMajorAref(i)))
