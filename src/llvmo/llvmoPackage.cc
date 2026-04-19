@@ -34,7 +34,7 @@ THE SOFTWARE.
 #include "llvm/Support/InitLLVM.h"
 #include "llvm/InitializePasses.h"
 #include "llvm/IR/DebugInfo.h"  // StripDebugInfo (trampoline shrink)
-#include "trampoline_arena.h"   // arena-mode trampolines
+#include <clasp/llvmo/trampoline_arena.h>   // arena-mode trampolines
 #if 0
 #undef NDEBUG
 #include "llvm/Support/Debug.h"

@@ -24,7 +24,7 @@
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/pointer.h>
-#include "trampoline_arena.h"
+#include <clasp/llvmo/trampoline_arena.h>
 
 namespace llvmo {
 

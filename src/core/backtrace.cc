@@ -11,6 +11,7 @@
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/code.h>
+#include <clasp/llvmo/trampoline_arena.h>
 #include <clasp/core/stackmap.h>
 #include <clasp/core/backtrace.h>
 #ifdef USE_LIBUNWIND
@@ -557,9 +558,22 @@ static DebuggerFrame_sp make_cxx_frame(size_t fi, void* ip, const char* cstring,
                                INTERN_(kw, c_PLUS__PLUS_), false);
 }
 
+// Arena-trampoline frame: the PC lives in an mmap'd arena slot, so there's
+// no ObjectFile and no DWARF. The side table gives us the trampoline's name,
+// which is enough to label the frame so the user sees which Lisp function
+// the wrapper belongs to.
+static DebuggerFrame_sp make_arena_trampoline_frame(size_t /*fi*/, void* ip, const llvmo::TrampolineEntry* entry) {
+  T_sp lname = SimpleBaseString_O::make(entry->name);
+  return DebuggerFrame_O::make(lname, Pointer_O::create(ip), nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), false, nil<T_O>(),
+                               INTERN_(kw, lisp), false);
+}
+
 static DebuggerFrame_sp make_frame(size_t fi, void* absolute_ip, const char* string, void* fbp, unsigned char*& bytecode_pc,
                                    T_O**& bytecode_fp) {
   MaybeTrace trace(__FUNCTION__);
+  // Check the trampoline arena first — arena slots aren't in any ObjectFile.
+  if (const llvmo::TrampolineEntry* e = llvmo::arena_lookup_by_pc((uintptr_t)absolute_ip))
+    return make_arena_trampoline_frame(fi, absolute_ip, e);
   T_sp of = llvmo::only_object_file_for_instruction_pointer(absolute_ip);
   if (of.nilp())
     return make_cxx_frame(fi, absolute_ip, string, bytecode_pc, bytecode_fp);
@@ -570,6 +584,9 @@ static DebuggerFrame_sp make_frame(size_t fi, void* absolute_ip, const char* str
 
 static bool sanity_check_frame(size_t frameIndex, void* ip, void* fbp) {
   MaybeTrace trace(__FUNCTION__);
+  // Arena trampoline frames have no stackmap / register-save area, so there
+  // is nothing to sanity-check; treat them like a C++ frame.
+  if (llvmo::arena_owns_pc((uintptr_t)ip)) return true;
   T_sp of = llvmo::only_object_file_for_instruction_pointer(ip);
   if (of.nilp())
     return true; // C++ frames are always fine for our purposes
