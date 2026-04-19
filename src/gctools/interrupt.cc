@@ -421,7 +421,7 @@ void initialize_signals() {
 #endif
   INIT_SIGNAL(SIGURG, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
   // SIGXCPU is used by boehm to stop threads - this causes problems with boehm in the precise mode
-#if !(defined(USE_BOEHM) && defined(USE_PRECISE_GC))
+#if !defined(USE_BOEHM)
   INIT_SIGNAL(SIGXCPU, (SA_NODEFER | SA_RESTART), enqueue_or_handle_signal);
 #endif
   INIT_SIGNAL(SIGXFSZ, (SA_NODEFER | SA_RESTART), handle_signal_now); // signaled synchronously by some syscalls

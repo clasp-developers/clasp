@@ -10,5 +10,6 @@
            #~"llvmoExpose.cc"
            #~"code.cc"
            #~"llvmoPackage.cc"
+           #~"trampoline_arena.cc"
            #~"runtimeJit.cc"
            #~"clbindLlvmExpose.cc")
