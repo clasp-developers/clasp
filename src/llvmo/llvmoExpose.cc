@@ -758,7 +758,7 @@ CL_DOCSTRING(R"dx()dx");
 CL_PKG_NAME(LlvmoPkg,"make-triple");
 DOCGROUP(clasp);
 CL_DEFUN Triple_sp Triple_O::make(const string& triple) {
-  auto self = gctools::GC<Triple_O>::allocate();
+  auto self = gctools::GC<Triple_O>::allocate(true);
   self->_ptr = new llvm::Triple(triple);
   return self;
 };
