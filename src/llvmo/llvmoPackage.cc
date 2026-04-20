@@ -583,19 +583,11 @@ namespace llvmo {
 #include <trampoline.h>
 
 std::atomic<size_t> global_trampoline_counter;
-#ifdef CLASP_THREADS
-mp::Mutex* global_trampoline_mutex = NULL;
-#endif
 
-// For trampoline-stats diagnostic. Avoid including <gc.h> here.
-extern "C" size_t GC_get_heap_size(void);
-
-// Shared JITDylib that owns every CLASP_ENABLE_TRAMPOLINES trampoline.
-// Created lazily on the first trampoline compile. Without this, every
-// trampoline created its own JITDylib and pushed a Cons onto
-// _lisp->_Roots._JITDylibs — unbounded growth that crashed the process
-// on large workloads. Each trampoline still gets its own IR module
-// (with its unique _bct<N> symbol) within this shared dylib.
+// Shared JITDylib that owns the arena-init trampoline template module.
+// Created lazily on the first trampoline compile. This dylib is not
+// registered with _lisp->_Roots._JITDylibs (it holds only the template,
+// whose ObjectFile is marked _TransientSkipSnapshot and isn't serialized).
 JITDylib_sp global_trampoline_dylib;
 
 // Add an IR module to an already-existing JITDylib. Mirrors loadModule()
@@ -626,64 +618,6 @@ string escapeNameForLlvm(const string& inp) {
   return sout.str();
 }
 
-// Phase 2a diagnostic. Set CLASP_TRAMPOLINE_BYTE_DIFF=1 to enable. After the
-// JIT lookup we know the trampoline's start address; we look up the matching
-// "<name>_end" marker symbol to compute the size. The first trampoline has
-// its bytes captured. Subsequent trampolines are diff'd byte-by-byte against
-// the first; positions that differ are printed. This validates the
-// "memcpy + patch a few offsets" plan for Phase 2.
-//
-// Only fires for the first 4 trampolines so we don't flood stderr.
-static void trampoline_byte_diff_diagnostic(ClaspJIT_sp jit,
-                                            const std::string& name,
-                                            core::Pointer_sp bytecode_ptr) {
-  if (!getenv("CLASP_TRAMPOLINE_BYTE_DIFF")) return;
-  static std::atomic<int> calls{0};
-  int n = calls.fetch_add(1, std::memory_order_relaxed);
-  if (n >= 4) return;
-
-  // Look up the end-marker symbol to bound the function's size.
-  std::string end_name = name + "_end";
-  void* end_ptr = nullptr;
-  bool found = jit->do_lookup(global_trampoline_dylib, end_name, end_ptr);
-  if (!found) {
-    fprintf(stderr, "[trampoline-diff] could not find end marker '%s'\n", end_name.c_str());
-    return;
-  }
-
-  uint8_t* code = (uint8_t*)bytecode_ptr->ptr();
-  uint8_t* end  = (uint8_t*)end_ptr;
-  if (end <= code) {
-    fprintf(stderr, "[trampoline-diff] end %p <= start %p, can't compute size\n", end, code);
-    return;
-  }
-  size_t sz = (size_t)(end - code);
-
-  static std::vector<uint8_t> first_bytes;
-  static size_t first_size = 0;
-  if (first_bytes.empty()) {
-    first_bytes.assign(code, code + sz);
-    first_size = sz;
-    fprintf(stderr, "[trampoline-diff] first '%s' at %p size=%zu\n", name.c_str(), code, sz);
-    fprintf(stderr, "[trampoline-diff] bytes:");
-    for (size_t i = 0; i < sz; ++i) fprintf(stderr, " %02x", code[i]);
-    fprintf(stderr, "\n");
-  } else if (sz != first_size) {
-    fprintf(stderr, "[trampoline-diff] '%s' size %zu differs from first %zu\n", name.c_str(), sz, first_size);
-  } else {
-    fprintf(stderr, "[trampoline-diff] '%s' at %p size=%zu vs first: ", name.c_str(), code, sz);
-    bool any = false;
-    for (size_t i = 0; i < sz; ++i) {
-      if (code[i] != first_bytes[i]) {
-        if (!any) { fprintf(stderr, "diffs"); any = true; }
-        fprintf(stderr, " [%zu]%02x->%02x", i, first_bytes[i], code[i]);
-      }
-    }
-    if (!any) fprintf(stderr, "IDENTICAL");
-    fprintf(stderr, "\n");
-  }
-  fflush(stderr);
-}
 
 // Trampoline arena initialization.
 //
@@ -899,176 +833,53 @@ static bool ensure_trampoline_arena_initialized(ClaspJIT_sp jit) {
 }
 
 CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
-  // One-shot diagnostic: print the gating decisions the very first time we're
-  // called, so a missing env var on the loader side becomes obvious.
-  static std::atomic<bool> s_first{true};
-  if (s_first.exchange(false)) {
-    const char* enable_env = getenv("CLASP_ENABLE_TRAMPOLINES");
-    const char* backend_env = getenv("CLASP_TRAMPOLINE_BACKEND");
-    fprintf(stderr,
-            "[trampoline-arena] cmp__compile_trampoline first call: "
-            "_GenerateTrampolines=%d  CLASP_ENABLE_TRAMPOLINES=%s  CLASP_TRAMPOLINE_BACKEND=%s\n",
-            (int)global_options->_GenerateTrampolines,
-            enable_env  ? enable_env  : "(unset)",
-            backend_env ? backend_env : "(unset)");
-    fflush(stderr);
-  }
-  if (!global_options->_GenerateTrampolines
-      && !getenv("CLASP_ENABLE_TRAMPOLINES")) {
-    // If trampolines aren't enabled, don't compile one.
-    return Values(Pointer_O::create((void*)bytecode_call), SimpleBaseString_O::make("bytecode_call"));
+  // Special cases: functions that share a single libclasp fallback symbol.
+  // These aren't worth giving individual arena slots.
+  //   - (lambda nil ...) — anonymous lambdas with no arglist that Lisp code
+  //     distinguishes by source-file position rather than name.
+  //   - "" — empty-string names (makeBytecodeSimpleFun before set_trampoline
+  //     fires with the real name).
+  if (tname.consp() && CONS_CAR(tname) == ::cl::_sym_lambda
+      && CONS_CDR(tname).consp() && CONS_CAR(CONS_CDR(tname)).nilp()) {
+    return Values(Pointer_O::create((void*)lambda_nil),
+                  SimpleBaseString_O::make("lambda_nil"));
   }
 
-  // Arena backend: try to use the arena-allocated path. If the host arch
-  // doesn't support patching, or initialization fails, fall through to the
-  // existing LLVM trampoline path.
-  static const bool s_use_arena = []{
-    const char* v = getenv("CLASP_TRAMPOLINE_BACKEND");
-    return v && std::string(v) == "arena";
-  }();
-  if (s_use_arena) {
-    ClaspJIT_sp jit_for_init = llvm_sys__clasp_jit();
-    if (!jit_for_init.nilp() && ensure_trampoline_arena_initialized(jit_for_init)) {
-      // Derive a usable name for backtrace / perf-map (same logic as the
-      // LLVM path uses below). Anonymous lambdas and the empty-string case
-      // share the default trampoline as before.
-      if (tname.consp() && CONS_CAR(tname) == ::cl::_sym_lambda
-          && CONS_CDR(tname).consp() && CONS_CAR(CONS_CDR(tname)).nilp()) {
-        return Values(Pointer_O::create((void*)lambda_nil),
-                      SimpleBaseString_O::make("lambda_nil"));
-      }
-      std::string aname;
-      if (gc::IsA<core::Symbol_sp>(tname)) {
-        aname = gc::As_unsafe<core::Symbol_sp>(tname)->fullName();
-      } else {
-        aname = _rep_(tname);
-        if (aname.size() < 3 && aname[0] == '"' && aname.back() == '"') {
-          return Values(Pointer_O::create((void*)unknown_bytecode_trampoline),
-                        SimpleBaseString_O::make("unknown_bytecode_trampoline"));
-        }
-        if (aname.size() >= 2 && aname[0] == '"' && aname.back() == '"')
-          aname = aname.substr(1, aname.size() - 2);
-      }
-      size_t arenaId = global_trampoline_counter++;
-      std::string mangled = escapeNameForLlvm(aname) + "_bct" + std::to_string(arenaId);
-      core::Pointer_sp p = arena_compile_trampoline(mangled);
-      static std::atomic<int> wireup_count{0};
-      int wn = wireup_count.fetch_add(1);
-      if (wn < 3) {
-        fprintf(stderr, "[trampoline-arena] cmp__compile_trampoline returning arena slot %p for '%s'\n",
-                p->ptr(), mangled.c_str());
-        fflush(stderr);
-      }
-      return Values(p, SimpleBaseString_O::make(mangled));
-    }
-    // arena init failed — fall through to LLVM path below.
-  }
-
-  // FIXME: race
-  if (global_trampoline_mutex == NULL) {
-    global_trampoline_mutex = new mp::Mutex(DISSASSM_NAMEWORD);
-  }
-  WITH_READ_WRITE_LOCK(*global_trampoline_mutex);
+  // If the JIT isn't up yet (very early startup), return the default
+  // trampoline pointer. It's a plain passthrough to bytecode_call and gets
+  // replaced later when the function is named (loadltv calls set_trampoline).
   ClaspJIT_sp jit = llvm_sys__clasp_jit();
   if (jit.nilp()) {
-    // If the JIT isn't ready then use the default trampoline
-    return Values(Pointer_O::create((void*)default_bytecode_trampoline), SimpleBaseString_O::make("default_bytecode_trampoline"));
-  }
-  if (tname.consp() && CONS_CAR(tname) == ::cl::_sym_lambda && CONS_CDR(tname).consp() && CONS_CAR(CONS_CDR(tname)).nilp()) {
-    return Values(Pointer_O::create((void*)lambda_nil), SimpleBaseString_O::make("lambda_nil"));
+    return Values(Pointer_O::create((void*)default_bytecode_trampoline),
+                  SimpleBaseString_O::make("default_bytecode_trampoline"));
   }
 
-  std::string name;
-  bool is_named_symbol = false;
+  // Derive a printable name.
+  std::string aname;
   if (gc::IsA<core::Symbol_sp>(tname)) {
-    name = gc::As_unsafe<core::Symbol_sp>(tname)->fullName();
-    is_named_symbol = true;
+    aname = gc::As_unsafe<core::Symbol_sp>(tname)->fullName();
   } else {
-    name = _rep_(tname);
-    // printf("%s:%d:%s trampoline name = |%s|\n", __FILE__, __LINE__, __FUNCTION__, name.c_str());
-    // fflush();
-    if (name[0] == '"' && name[name.size() - 1] == '"') {
-      if (name.size() < 3) { // matches ""
-        return Values(Pointer_O::create((void*)unknown_bytecode_trampoline),
-                      SimpleBaseString_O::make("unknown_bytecode_trampoline"));
-      }
+    aname = _rep_(tname);
+    if (aname.size() < 3 && aname.size() >= 2 && aname[0] == '"' && aname.back() == '"') {
+      return Values(Pointer_O::create((void*)unknown_bytecode_trampoline),
+                    SimpleBaseString_O::make("unknown_bytecode_trampoline"));
     }
-    name = name.substr(1, name.size() - 2); // Strip double quotes
+    if (aname.size() >= 2 && aname[0] == '"' && aname.back() == '"')
+      aname = aname.substr(1, aname.size() - 2);
   }
-  size_t trampolineId = global_trampoline_counter++;
-  // Tally named-symbol vs anonymous (lambda / setf / etc.) trampolines.
-  // Tells us how much of the per-trampoline cost is going to functions a
-  // user would never see by name in a backtrace anyway — those are
-  // candidates for sharing the default trampoline.
-  static std::atomic<size_t> named_trampolines{0};
-  static std::atomic<size_t> anon_trampolines{0};
-  if (is_named_symbol) named_trampolines.fetch_add(1, std::memory_order_relaxed);
-  else                 anon_trampolines.fetch_add(1, std::memory_order_relaxed);
-  name = escapeNameForLlvm(name) + "_bct" + std::to_string(trampolineId);
-  // Diagnostic: every 1024 trampolines, dump the trampoline count, RSS, and
-  // Boehm heap size so we can see where memory is going. Set
-  // CLASP_TRAMPOLINE_STATS=1 to enable.
-  if (((trampolineId & 0x3FF) == 0) && getenv("CLASP_TRAMPOLINE_STATS")) {
-    long rss_pages = 0;
-    if (FILE* f = fopen("/proc/self/statm", "r")) {
-      long _vm = 0;
-      if (fscanf(f, "%ld %ld", &_vm, &rss_pages) != 2) rss_pages = 0;
-      fclose(f);
-    }
-    size_t n = named_trampolines.load(std::memory_order_relaxed);
-    size_t a = anon_trampolines.load(std::memory_order_relaxed);
-    size_t total = n + a;
-    printf("trampoline #%zu  rss=%ld MB  boehm_heap=%ld MB  named=%zu anon=%zu (anon %.0f%%)\n",
-           trampolineId,
-           (rss_pages * sysconf(_SC_PAGESIZE)) >> 20,
-           (long)(GC_get_heap_size() >> 20),
-           n, a,
-           total ? (100.0 * a / total) : 0.0);
-    fflush(stdout);
+
+  // Initialize the arena on first call. Init fails only if the JIT can't
+  // compile the template; fall back to bytecode_call in that case so the
+  // system degrades gracefully.
+  if (!ensure_trampoline_arena_initialized(jit)) {
+    return Values(Pointer_O::create((void*)default_bytecode_trampoline),
+                  SimpleBaseString_O::make("default_bytecode_trampoline"));
   }
-  // Lazily create the single trampoline JITDylib on the first call.
-  // The mutex (held above) makes this safe across threads.
-  if (!global_trampoline_dylib) {
-    global_trampoline_dylib = jit->createAndRegisterJITDylib("trampoline");
-  }
-#if LLVM_VERSION_MAJOR < 21
-  LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
-  std::string trampoline = core::searchAndReplaceString(global_trampoline, "wrapper:name", name);
-  // Demote @__clasp_literals_trampoline from external linkage to internal,
-  // so multiple trampoline modules sharing one JITDylib don't collide on
-  // it. The literal is a zero-element array — never used at runtime; only
-  // its definition needs to exist for the IR to verify.
-  trampoline = core::searchAndReplaceString(trampoline,
-      "@__clasp_literals_trampoline = local_unnamed_addr global",
-      "@__clasp_literals_trampoline = internal local_unnamed_addr global");
-  Module_sp module = llvm_sys__parseIRString(trampoline, context, "backtrace_trampoline");
-  // Drop DWARF / debug metadata: the trampoline IR template carries a
-  // full !DICompileUnit + !DISubprogram + ~150 imported-decl nodes that
-  // turn into permanent DWARF tables and JIT-mmap'd unwind info. The
-  // trampoline body just calls bytecode_call; perf/gdb resolve its name
-  // from the ELF symtab regardless.
-  llvm::StripDebugInfo(*module->wrappedPtr());
-  addModuleToDylib(global_trampoline_dylib, module, trampolineId);
-  core::Pointer_sp bytecode_ptr = jit->lookup(global_trampoline_dylib, name);
-  trampoline_byte_diff_diagnostic(jit, name, bytecode_ptr);
-  return Values(bytecode_ptr, SimpleBaseString_O::make(name));
-#else
-  llvm::orc::ThreadSafeContext* tsc = ((llvm::orc::ThreadSafeContext*)gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue())->externalObject());
-  return tsc->withContextDo([&](llvm::LLVMContext *lc) {
-    auto context = gctools::GC<LLVMContext_O>::allocate();
-    context->_ptr = lc;
-    std::string trampoline = core::searchAndReplaceString(global_trampoline, "wrapper:name", name);
-    trampoline = core::searchAndReplaceString(trampoline,
-        "@__clasp_literals_trampoline = local_unnamed_addr global",
-        "@__clasp_literals_trampoline = internal local_unnamed_addr global");
-    Module_sp module = llvm_sys__parseIRString(trampoline, context, "backtrace_trampoline");
-    llvm::StripDebugInfo(*module->wrappedPtr());
-    addModuleToDylib(global_trampoline_dylib, module, trampolineId);
-    core::Pointer_sp bytecode_ptr = jit->lookup(global_trampoline_dylib, name);
-    trampoline_byte_diff_diagnostic(jit, name, bytecode_ptr);
-    return Values(bytecode_ptr, SimpleBaseString_O::make(name));
-  });
-#endif
+
+  size_t arenaId = global_trampoline_counter++;
+  std::string mangled = escapeNameForLlvm(aname) + "_bct" + std::to_string(arenaId);
+  core::Pointer_sp p = arena_compile_trampoline(mangled);
+  return Values(p, SimpleBaseString_O::make(mangled));
 }
 }; // namespace llvmo
 
@@ -1112,57 +923,20 @@ CL_DEFUN_SETF core::T_sp setf_jit_lookup_t(core::T_sp value, JITDylib_sp dylib, 
 // No-op when the env var requesting the arena backend is unset — in that case
 // the saved bytecode_call value is the right runtime trampoline anyway.
 void arena_post_load_regenerate_trampolines() {
-  const char* backend_env = getenv("CLASP_TRAMPOLINE_BACKEND");
-  const char* enable_env  = getenv("CLASP_ENABLE_TRAMPOLINES");
-  bool use_arena = backend_env && std::string(backend_env) == "arena";
-  fprintf(stderr,
-          "[trampoline-arena] post-load entry: "
-          "CLASP_TRAMPOLINE_BACKEND=%s  CLASP_ENABLE_TRAMPOLINES=%s  "
-          "_GenerateTrampolines=%d  use_arena=%d\n",
-          backend_env ? backend_env : "(unset)",
-          enable_env  ? enable_env  : "(unset)",
-          (int)global_options->_GenerateTrampolines,
-          (int)use_arena);
-  fflush(stderr);
-  if (!use_arena) {
-    fprintf(stderr, "[trampoline-arena] post-load: arena backend not requested, skipping regen\n");
-    fflush(stderr);
-    return;
-  }
-  // Walk bytecode modules.
-  size_t n_modules = 0, n_funs_seen = 0, n_regen = 0, n_returned_default = 0;
-  void* default_trampoline = (void*)bytecode_call;
+  size_t n_regen = 0;
   core::List_sp modules = _lisp->_Roots._AllBytecodeModules.load(std::memory_order_relaxed);
   for (auto mods : modules) {
-    ++n_modules;
     core::BytecodeModule_sp module = gc::As_assert<core::BytecodeModule_sp>(oCar(mods));
     core::T_sp debuginfo = module->debugInfo();
     if (debuginfo.nilp()) continue;
     for (auto const& info : debuginfo.as_assert<core::SimpleVector_O>()) {
       if (gc::IsA<core::BytecodeSimpleFun_sp>(info)) {
-        ++n_funs_seen;
         core::BytecodeSimpleFun_sp fun = gc::As_unsafe<core::BytecodeSimpleFun_sp>(info);
-        core::Pointer_sp tramp = cmp__compile_trampoline(fun->functionName());
-        if (tramp->ptr() == default_trampoline) ++n_returned_default;
-        fun->set_trampoline(tramp);
+        fun->set_trampoline(cmp__compile_trampoline(fun->functionName()));
         ++n_regen;
-        if (n_regen <= 3 || (n_regen % 10000) == 0) {
-          fprintf(stderr,
-                  "[trampoline-arena] post-load #%zu '%s' -> %p%s\n",
-                  n_regen, _rep_(fun->functionName()).c_str(),
-                  tramp->ptr(),
-                  tramp->ptr() == default_trampoline ? " (DEFAULT bytecode_call!)" : "");
-          fflush(stderr);
-        }
       }
     }
   }
-  fprintf(stderr,
-          "[trampoline-arena] post-load bytecode: %zu modules, %zu funs seen, "
-          "%zu regen, %zu returned bytecode_call (cmp_compile_trampoline took the disabled path)\n",
-          n_modules, n_funs_seen, n_regen, n_returned_default);
-  fflush(stderr);
-
   // Generic-function dispatch trampolines (GFBytecodeSimpleFun).
   size_t n_gf = 0;
   core::List_sp gfs = _lisp->_Roots._AllGFBytecodeFuns.load(std::memory_order_relaxed);

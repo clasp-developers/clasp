@@ -276,9 +276,12 @@ bool arena_is_initialized() {
   return g_initialized.load(std::memory_order_acquire);
 }
 
-// perf-PID.map writer — opens lazily, one append per registered trampoline.
+// perf-PID.map writer — opens lazily, one append per registered entry.
 // Format: <hex addr>  <hex size>  <symbol name>
-static void write_perf_map_entry(uint8_t* addr, size_t size, const std::string& name) {
+// Shared across callers (arena trampoline registration and the LLVM-ORC
+// link-plugin per-symbol callback in runtimeJit.cc / compiler.cc). The first
+// caller truncates any stale file contents; subsequent callers append.
+void perf_map_append(uint8_t* addr, size_t size, const std::string& name) {
   std::lock_guard<std::mutex> g(g_perf_map_lock);
   if (!g_perf_map) {
     char path[64];
@@ -302,7 +305,7 @@ core::Pointer_sp arena_compile_trampoline(const std::string& name) {
 
   TrampolineEntry e{slot, (uint32_t)g_tramp_size, name};
   g_side_table->append(std::move(e));
-  write_perf_map_entry(slot, g_tramp_size, name);
+  perf_map_append(slot, g_tramp_size, name);
 
   // Diagnostic for the first few arena allocations.
   static std::atomic<int> debug_count{0};

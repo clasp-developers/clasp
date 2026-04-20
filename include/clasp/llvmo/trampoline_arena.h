@@ -118,4 +118,11 @@ bool arena_owns_pc(uintptr_t pc);
 // before. No-op when CLASP_TRAMPOLINE_BACKEND != "arena".
 void arena_post_load_regenerate_trampolines();
 
+// Append one entry to /tmp/perf-PID.map. Lazy-opens the file once per
+// process (truncating any stale contents from a previous-PID-with-the-same-id
+// rerun) and appends thereafter. Thread-safe. Used by arena trampoline
+// registration and by the LLVM-ORC link plugin's per-symbol callback so the
+// two never race over fopen("w") and clobber each other's data.
+void perf_map_append(uint8_t* addr, size_t size, const std::string& name);
+
 }; // namespace llvmo
