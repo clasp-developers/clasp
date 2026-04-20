@@ -117,15 +117,33 @@ const uint8_t kCieTemplate[24] = {
   0x90, 0x01,                   // DW_CFA_offset RIP 1 (RIP at CFA-8)
   0x00, 0x00,                   // padding nops
 };
-// CFI for one FDE — describes the prologue/epilogue of our 22-byte stub.
+// CFI for one FDE — describes the prologue/epilogue of our trampoline.
+// Expected layout (~42 bytes of code, padded by LLVM):
+//   0:  endbr64                (4)
+//   4:  push rbp               (1)   -> offset 5
+//   5:  mov rbp, rsp           (3)   -> offset 8
+//   8:  sub rsp, 0x20          (4)   -> offset 12
+//   12: mov [rbp-0x20], rsi    (4)   -> offset 16  (closure)
+//   16: mov [rbp-0x18], rdx    (4)   -> offset 20  (nargs)
+//   20: mov [rbp-0x10], rcx    (4)   -> offset 24  (args)
+//   24: movabs rax, imm64      (10)  -> offset 34
+//   34: call rax               (2)   -> offset 36
+//   36: add rsp, 0x20          (4)   -> offset 40
+//   40: pop rbp                (1)   -> offset 41
+//   41: ret                    (1)   -> offset 42
+// CFA rules:
+//   [0, 5):    initial — CFA = rsp+8 (from CIE)
+//   [5, 8):    after push rbp   — CFA = rsp+16, rbp saved at CFA-16
+//   [8, 41):   after mov rbp,rsp — CFA = rbp+16 (unchanged by sub rsp / restores)
+//   [41, ...): after pop rbp    — CFA = rsp+8 again
 const uint8_t kFdeCfiBytes[16] = {
-  0x00,                         // nop (pad to advance from 0 to 5 minus 5 = 0)
+  0x00,                         // aug length = 0 (followed by 15 bytes of CFI)
   0x45,                         // DW_CFA_advance_loc 5 (after endbr64+push rbp)
   0x0e, 0x10,                   // DW_CFA_def_cfa_offset 16
   0x86, 0x02,                   // DW_CFA_offset rbp 2 (rbp at CFA-16)
   0x43,                         // DW_CFA_advance_loc 3 (after mov rbp, rsp)
   0x0d, 0x06,                   // DW_CFA_def_cfa_register rbp
-  0x4d,                         // DW_CFA_advance_loc 13 (after movabs+call+pop rbp)
+  0x61,                         // DW_CFA_advance_loc 33 (after pop rbp, at offset 41)
   0x0c, 0x07, 0x08,             // DW_CFA_def_cfa rsp 8 (post-epilogue)
   0x00, 0x00, 0x00,             // nop padding to 16 bytes
 };
@@ -220,8 +238,8 @@ bool ExecutableArena::owns(uintptr_t pc) const {
 namespace {
 std::atomic<bool>     g_initialized{false};
 std::mutex            g_init_lock;
-std::vector<uint8_t>  g_stub_bytes;
-size_t                g_stub_size = 0;
+std::vector<uint8_t>  g_tramp_bytes;
+size_t                g_tramp_size = 0;
 ExecutableArena*      g_arena = nullptr;
 TrampolineSideTable*  g_side_table = nullptr;
 
@@ -229,25 +247,25 @@ FILE*                 g_perf_map = nullptr;
 std::mutex            g_perf_map_lock;
 }  // anonymous namespace
 
-bool arena_install_stub_template(const uint8_t* stub_bytes, size_t stub_size) {
+bool arena_install_trampoline_template(const uint8_t* tramp_bytes, size_t tramp_size) {
   std::lock_guard<std::mutex> g(g_init_lock);
   if (g_initialized.load(std::memory_order_relaxed)) return true;
-  if (!stub_bytes || stub_size == 0) {
-    fprintf(stderr, "[trampoline-arena] install_stub_template: invalid args\n");
+  if (!tramp_bytes || tramp_size == 0) {
+    fprintf(stderr, "[trampoline-arena] install_trampoline_template: invalid args\n");
     return false;
   }
-  g_stub_bytes.assign(stub_bytes, stub_bytes + stub_size);
-  g_stub_size = stub_size;
+  g_tramp_bytes.assign(tramp_bytes, tramp_bytes + tramp_size);
+  g_tramp_size = tramp_size;
   // Slot stride padded up to 16-byte alignment. The actual code is
-  // g_stub_size bytes; the FDE PC range uses g_stub_size, but slots are
+  // g_tramp_size bytes; the FDE PC range uses g_tramp_size, but slots are
   // spaced by slot_stride so subsequent slots align cleanly.
-  size_t slot_stride = (g_stub_size + 15u) & ~size_t(15);
-  g_arena = new ExecutableArena(slot_stride, 16, g_stub_size);
+  size_t slot_stride = (g_tramp_size + 15u) & ~size_t(15);
+  g_arena = new ExecutableArena(slot_stride, 16, g_tramp_size);
   g_side_table = new TrampolineSideTable();
-  fprintf(stderr, "[trampoline-arena] installed stub template: %zu bytes (slot stride %zu)\n",
-          g_stub_size, slot_stride);
-  fprintf(stderr, "[trampoline-arena] stub bytes:");
-  for (size_t i = 0; i < g_stub_size; ++i) fprintf(stderr, " %02x", g_stub_bytes[i]);
+  fprintf(stderr, "[trampoline-arena] installed trampoline template: %zu bytes (slot stride %zu)\n",
+          g_tramp_size, slot_stride);
+  fprintf(stderr, "[trampoline-arena] trampoline bytes:");
+  for (size_t i = 0; i < g_tramp_size; ++i) fprintf(stderr, " %02x", g_tramp_bytes[i]);
   fprintf(stderr, "\n");
   fflush(stderr);
   g_initialized.store(true, std::memory_order_release);
@@ -278,13 +296,13 @@ core::Pointer_sp arena_compile_trampoline(const std::string& name) {
     abort();
   }
   uint8_t* slot = g_arena->allocate();
-  std::memcpy(slot, g_stub_bytes.data(), g_stub_size);
-  // No patching: stub is byte-identical across all slots (the indirect
-  // call target is encoded as an absolute address in the stub's data area).
+  std::memcpy(slot, g_tramp_bytes.data(), g_tramp_size);
+  // No patching: trampoline is byte-identical across all slots (bytecode_call's
+  // address is encoded as an absolute 64-bit immediate inside the template).
 
-  TrampolineEntry e{slot, (uint32_t)g_stub_size, name};
+  TrampolineEntry e{slot, (uint32_t)g_tramp_size, name};
   g_side_table->append(std::move(e));
-  write_perf_map_entry(slot, g_stub_size, name);
+  write_perf_map_entry(slot, g_tramp_size, name);
 
   // Diagnostic for the first few arena allocations.
   static std::atomic<int> debug_count{0};

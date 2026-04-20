@@ -1,26 +1,24 @@
 /*
- * trampoline_arena.h — bytecode trampoline arena, jump-stub design.
+ * trampoline_arena.h — bytecode trampoline arena.
  *
- * Each "trampoline" is a small jump-stub that calls one process-wide
- * shared trampoline. The shared trampoline is compiled once by LLVM and
- * does the stackmap save + bytecode_call. Each stub is a memcpy of a
- * prototype the JIT compiles once at init; the prototype embeds the
- * shared trampoline's address as an absolute-address literal, so all
- * stubs are byte-identical and need no per-slot patching.
+ * Each "trampoline" is a small function that calls bytecode_call via an
+ * embedded absolute address. Each slot is a memcpy of a template the JIT
+ * compiles once at init; the template embeds bytecode_call's address as a
+ * 64-bit literal (movabs on x86_64), so all slots are byte-identical and
+ * need no per-slot patching.
  *
- *   caller -> stub (unique address per fn, shared bytes)
- *               `-> shared trampoline (one address for all fns)
- *                       `-> bytecode_call
+ *   caller -> trampoline (unique address per fn, shared bytes)
+ *                 `-> bytecode_call
  *
  * Backtrace identifies which Lisp function a frame represents by looking
- * up the stub's address (which is the return-address from the shared
- * trampoline's frame) in the side table.
+ * up the trampoline's address (which is the return-address from
+ * bytecode_call's frame) in the side table.
  *
  * Public API:
- *   - arena_install_stub_template(bytes, size): provided by the wire-up
- *     code in llvmoPackage.cc once it has compiled the shared trampoline
- *     and captured the stub. Idempotent.
- *   - arena_compile_trampoline(name): allocates a slot, memcpys the stub
+ *   - arena_install_trampoline_template(bytes, size): provided by the
+ *     wire-up code in llvmoPackage.cc once it has compiled the template
+ *     and captured its bytes. Idempotent.
+ *   - arena_compile_trampoline(name): allocates a slot, memcpys the
  *     template, registers in the side table + perf-PID.map, returns the
  *     slot's address.
  *   - arena_lookup_by_pc(pc), arena_owns_pc(pc): for backtrace.
@@ -98,9 +96,9 @@ private:
   std::atomic<size_t> _pages_published{0};
 };
 
-// Install the captured stub template. Returns true on success; subsequent
-// calls are idempotent no-ops.
-bool arena_install_stub_template(const uint8_t* stub_bytes, size_t stub_size);
+// Install the captured trampoline template. Returns true on success;
+// subsequent calls are idempotent no-ops.
+bool arena_install_trampoline_template(const uint8_t* tramp_bytes, size_t tramp_size);
 
 // True once arena_install_stub_template has been called successfully.
 bool arena_is_initialized();

@@ -685,41 +685,20 @@ static void trampoline_byte_diff_diagnostic(ClaspJIT_sp jit,
   fflush(stderr);
 }
 
-// Trampoline arena initialization (stub design).
+// Trampoline arena initialization.
 //
-// At first use we:
-//   1. Compile the SHARED trampoline once via the existing LLVM path,
-//      using a fixed seed name. This produces the actual function (with
-//      stackmap save + bytecode_call) at one address that all stubs will
-//      indirect-call into. Capture its address.
-//   2. Build a small IR module for the STUB: a function that calls a
-//      pointer-typed value created from an inttoptr of the shared
-//      trampoline's address (so the address is encoded as an absolute
-//      literal, not a symbol relocation). Compile via the JIT, look up
-//      the resulting bytes, capture them.
-//   3. Hand the captured stub bytes to arena_install_stub_template().
+// At first use we build a small IR module for the trampoline template: a
+// function that calls a pointer-typed value created from an inttoptr of
+// bytecode_call's address (so the address is encoded as an absolute 64-bit
+// literal, not a symbol relocation). Compile via the JIT, look up the
+// resulting bytes, capture them. Hand them to arena_install_trampoline_template().
 //
 // From then on, each cmp__compile_trampoline call routed to the arena
-// backend just memcpys the stub bytes into a fresh slot — no patching,
-// no per-arch code.
+// backend memcpys the template bytes into a fresh slot — no patching,
+// no per-arch code, no per-slot indirection.
 static bool ensure_trampoline_arena_initialized(ClaspJIT_sp jit);
 
-// Recursion guard. While we're inside the arena initializer's call to
-// cmp__compile_trampoline (to capture the shared trampoline), the
-// recursive call must skip the arena path or we'd reenter init forever.
-thread_local bool t_in_arena_capture = false;
-
 namespace {
-
-// Capture the shared trampoline's address via the existing LLVM trampoline
-// path. Sets out_addr.
-static bool capture_shared_trampoline(ClaspJIT_sp /*jit*/, void*& out_addr) {
-  core::T_sp seed = core::SimpleBaseString_O::make("__shared_bytecode_trampoline");
-  core::Pointer_mv res = cmp__compile_trampoline(seed);
-  core::Pointer_sp start_p = gc::As<core::Pointer_sp>(core::T_sp(res));
-  out_addr = start_p->ptr();
-  return out_addr != nullptr;
-}
 
 // Extract the leading "target datalayout = ..." and "target triple = ..."
 // lines from the existing trampoline IR template, so the stub IR uses the
@@ -742,31 +721,31 @@ static std::string extract_target_lines(const std::string& source) {
   return out;
 }
 
-// Build the stub IR text. The shared trampoline's address is embedded as
-// a 64-bit literal via inttoptr — LLVM materializes this as an absolute
+// Build the trampoline IR text. bytecode_call's address is embedded as a
+// 64-bit literal via inttoptr — LLVM materializes this as an absolute
 // address in the generated machine code, identical for every compiled
-// stub (only depends on the literal value).
-static std::string build_stub_ir(uint64_t shared_addr,
-                                  const std::string& stub_name) {
+// trampoline (only depends on the literal value).
+static std::string build_trampoline_ir(uint64_t bytecode_call_addr,
+                                        const std::string& tramp_name) {
   std::string targets = extract_target_lines(global_trampoline);
   char addr_buf[32];
-  snprintf(addr_buf, sizeof addr_buf, "%lu", (unsigned long)shared_addr);
+  snprintf(addr_buf, sizeof addr_buf, "%lu", (unsigned long)bytecode_call_addr);
   std::string ir;
   ir.reserve(2048);
   ir += targets;
   ir += "\n";
-  // The stub: a call (NOT a tail call — we want call+ret so the stub's
-  // address shows up as the return address from the shared trampoline's
+  // The trampoline: a call (NOT a tail call — we want call+ret so the
+  // trampoline's address shows up as the return address from bytecode_call's
   // frame, allowing backtrace symbol lookup via the side table).
   // Explicit function-type form for opaque-pointer indirect call:
   //   call <ret> (<argtypes>) %fp(<args>)
-  // Mirror the trampoline IR's literals stub. clasp's ObjectFile-on-load
+  // Mirror the legacy trampoline IR's literals stub. clasp's ObjectFile-on-load
   // machinery expects every JIT'd module to define this symbol.
   ir += "@__clasp_literals_trampoline_stub = internal local_unnamed_addr global [0 x ptr] zeroinitializer, align 8\n";
   // C++ personality declaration. Required so the function's eh_frame entry
   // routes exceptions through the C++ unwinder instead of triggering
   // terminate. Without this, a Lisp Unwind exception thrown by
-  // bytecode_call cannot propagate back through the stub frame.
+  // bytecode_call cannot propagate back through the trampoline frame.
   ir += "declare i32 @__gxx_personality_v0(...)\n\n";
   // Direct inttoptr-in-call: forces LLVM to materialize the address as a
   // 64-bit immediate (movabs on x86_64; MOVZ+MOVK*3 on arm64). The bytes
@@ -774,37 +753,52 @@ static std::string build_stub_ir(uint64_t shared_addr,
   // same value across all slots), so memcpy alone is enough — no
   // per-slot patching, no RIP-relative offsets to fix up.
   ir += "define { ptr, i64 } @\"";
-  ir += stub_name;
+  ir += tramp_name;
   ir += "\"(i64 %0, ptr %1, i64 %2, ptr %3) #0 personality ptr @__gxx_personality_v0 {\n";
+  // Save (closure, nargs, args) to a stack-allocated 3-slot array so a
+  // debugger or backtrace can recover them from this frame. volatile stores
+  // prevent LLVM from optimizing them out. Since all arena slots are
+  // byte-identical memcpys of this template, the offsets LLVM picks are
+  // stable across every slot and can be read directly from any trampoline
+  // frame (typically [rbp-0x20]/[rbp-0x18]/[rbp-0x10]).
+  ir += "  %saved = alloca [3 x i64], align 8\n";
+  ir += "  %p0 = getelementptr inbounds [3 x i64], ptr %saved, i64 0, i64 0\n";
+  ir += "  %p1 = getelementptr inbounds [3 x i64], ptr %saved, i64 0, i64 1\n";
+  ir += "  %p2 = getelementptr inbounds [3 x i64], ptr %saved, i64 0, i64 2\n";
+  ir += "  %closure_int = ptrtoint ptr %1 to i64\n";
+  ir += "  %args_int = ptrtoint ptr %3 to i64\n";
+  ir += "  store volatile i64 %closure_int, ptr %p0, align 8\n";
+  ir += "  store volatile i64 %2, ptr %p1, align 8\n";
+  ir += "  store volatile i64 %args_int, ptr %p2, align 8\n";
   ir += "  %fp = inttoptr i64 ";
   ir += addr_buf;
   ir += " to ptr\n";
   ir += "  %r = call { ptr, i64 } (i64, ptr, i64, ptr) %fp(i64 %0, ptr %1, i64 %2, ptr %3)\n";
   ir += "  ret { ptr, i64 } %r\n";
   ir += "}\n";
-  // End marker so we can compute the stub's size by symbol-lookup arithmetic.
+  // End marker so we can compute the trampoline's size by symbol-lookup arithmetic.
   ir += "define void @\"";
-  ir += stub_name;
+  ir += tramp_name;
   ir += "_end\"() #0 {\n  ret void\n}\n";
   // uwtable: emit unwind tables so Lisp Unwind exceptions can propagate
-  // through the stub's frame.
+  // through the trampoline's frame.
   // frame-pointer=all: keep the frame pointer chain intact for backtrace.
   ir += "attributes #0 = { uwtable \"frame-pointer\"=\"all\" }\n";
   return ir;
 }
 
-static bool capture_stub_template(ClaspJIT_sp jit,
-                                   uint64_t shared_addr,
-                                   std::vector<uint8_t>& out_bytes) {
-  std::string stub_name = "__bytecode_stub_template";
-  std::string ir = build_stub_ir(shared_addr, stub_name);
-  fprintf(stderr, "[trampoline-arena] stub IR (%zu bytes):\n%s\n", ir.size(), ir.c_str());
+static bool capture_trampoline_template(ClaspJIT_sp jit,
+                                         uint64_t bytecode_call_addr,
+                                         std::vector<uint8_t>& out_bytes) {
+  std::string tramp_name = "__bytecode_trampoline_template";
+  std::string ir = build_trampoline_ir(bytecode_call_addr, tramp_name);
+  fprintf(stderr, "[trampoline-arena] trampoline IR (%zu bytes):\n%s\n", ir.size(), ir.c_str());
   fflush(stderr);
 
 #if LLVM_VERSION_MAJOR < 21
   LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
-  fprintf(stderr, "[trampoline-arena] parsing stub IR...\n"); fflush(stderr);
-  Module_sp module = llvm_sys__parseIRString(ir, context, "stub");
+  fprintf(stderr, "[trampoline-arena] parsing trampoline IR...\n"); fflush(stderr);
+  Module_sp module = llvm_sys__parseIRString(ir, context, "trampoline");
 #else
   llvm::orc::ThreadSafeContext* tsc =
       ((llvm::orc::ThreadSafeContext*)gc::As<ThreadSafeContext_sp>(
@@ -813,46 +807,44 @@ static bool capture_stub_template(ClaspJIT_sp jit,
   tsc->withContextDo([&](llvm::LLVMContext* lc) {
     auto context = gctools::GC<LLVMContext_O>::allocate();
     context->_ptr = lc;
-    module = llvm_sys__parseIRString(ir, context, "stub");
+    module = llvm_sys__parseIRString(ir, context, "trampoline");
   });
 #endif
   fprintf(stderr, "[trampoline-arena] parse returned module %p\n", module.raw_());
   fflush(stderr);
   if (module.nilp() || !module->wrappedPtr()) {
-    fprintf(stderr, "[trampoline-arena] failed to parse stub IR\n");
+    fprintf(stderr, "[trampoline-arena] failed to parse trampoline IR\n");
     return false;
   }
   llvm::StripDebugInfo(*module->wrappedPtr());
 
-  // Use the same helper the existing trampoline path uses, into the same
-  // dylib. This way we exercise the same materialization machinery that
-  // works for the shared trampoline.
   fprintf(stderr, "[trampoline-arena] addModuleToDylib (global_trampoline_dylib)...\n"); fflush(stderr);
   if (!global_trampoline_dylib) {
     global_trampoline_dylib = jit->createAndRegisterJITDylib("trampoline");
   }
-  // Use a unique startupID so the ObjectFile codeName won't collide with
-  // shared trampolines compiled with smaller IDs.
-  static std::atomic<size_t> stub_id_counter{1000000};
-  size_t stub_id = stub_id_counter.fetch_add(1);
-  addModuleToDylib(global_trampoline_dylib, module, stub_id);
+  // Use a large startupID so the ObjectFile's codeName won't collide with
+  // user-compiled trampolines (whose IDs come from global_trampoline_counter
+  // starting near zero).
+  static std::atomic<size_t> tramp_id_counter{1000000};
+  size_t tramp_id = tramp_id_counter.fetch_add(1);
+  addModuleToDylib(global_trampoline_dylib, module, tramp_id);
   JITDylib_sp dylib = global_trampoline_dylib;
 
-  fprintf(stderr, "[trampoline-arena] looking up '%s'...\n", stub_name.c_str()); fflush(stderr);
+  fprintf(stderr, "[trampoline-arena] looking up '%s'...\n", tramp_name.c_str()); fflush(stderr);
   void* start = nullptr;
   void* end = nullptr;
-  if (!jit->do_lookup(dylib, stub_name, start)) {
-    fprintf(stderr, "[trampoline-arena] stub symbol lookup '%s' failed\n", stub_name.c_str());
+  if (!jit->do_lookup(dylib, tramp_name, start)) {
+    fprintf(stderr, "[trampoline-arena] trampoline symbol lookup '%s' failed\n", tramp_name.c_str());
     return false;
   }
   fprintf(stderr, "[trampoline-arena] start=%p, looking up end marker...\n", start); fflush(stderr);
-  if (!jit->do_lookup(dylib, stub_name + "_end", end)) {
-    fprintf(stderr, "[trampoline-arena] stub end marker '%s_end' lookup failed\n", stub_name.c_str());
+  if (!jit->do_lookup(dylib, tramp_name + "_end", end)) {
+    fprintf(stderr, "[trampoline-arena] trampoline end marker '%s_end' lookup failed\n", tramp_name.c_str());
     return false;
   }
   fprintf(stderr, "[trampoline-arena] end=%p\n", end); fflush(stderr);
   if ((uintptr_t)end <= (uintptr_t)start) {
-    fprintf(stderr, "[trampoline-arena] stub end %p <= start %p\n", end, start);
+    fprintf(stderr, "[trampoline-arena] trampoline end %p <= start %p\n", end, start);
     return false;
   }
   size_t sz = (uintptr_t)end - (uintptr_t)start;
@@ -861,6 +853,14 @@ static bool capture_stub_template(ClaspJIT_sp jit,
 }
 
 }  // anonymous namespace
+
+// Declared in runtimeJit.cc. When true, prepareObjectFileForMaterialization
+// marks the created ObjectFile_O's _TransientSkipSnapshot flag. We set it
+// while compiling the trampoline template so the snapshot save walker
+// excludes that scaffolding ObjectFile. It is still registered in
+// _AllObjectFiles (LLVM's link layer needs that), but is filtered out at
+// snapshot save time.
+extern thread_local bool t_mark_transient_snapshot;
 
 static bool ensure_trampoline_arena_initialized(ClaspJIT_sp jit) {
   static std::atomic<int> state{0};   // 0=uninit, 1=ready, 2=failed
@@ -874,29 +874,26 @@ static bool ensure_trampoline_arena_initialized(ClaspJIT_sp jit) {
   if (s == 1) return true;
   if (s == 2) return false;
 
-  void* shared_addr = nullptr;
-  t_in_arena_capture = true;
-  bool ok = capture_shared_trampoline(jit, shared_addr);
-  t_in_arena_capture = false;
-  if (!ok) {
-    fprintf(stderr, "[trampoline-arena] failed to capture shared trampoline\n");
+  // The trampoline template ObjectFile is scaffolding — mark it so the
+  // snapshot walker skips it.
+  struct MarkTransientGuard {
+    MarkTransientGuard()  { t_mark_transient_snapshot = true;  }
+    ~MarkTransientGuard() { t_mark_transient_snapshot = false; }
+  } mark_transient_guard;
+
+  std::vector<uint8_t> tramp_bytes;
+  if (!capture_trampoline_template(jit, (uint64_t)&bytecode_call, tramp_bytes)) {
     state.store(2, std::memory_order_release);
     return false;
   }
 
-  std::vector<uint8_t> stub_bytes;
-  if (!capture_stub_template(jit, (uint64_t)shared_addr, stub_bytes)) {
+  if (!arena_install_trampoline_template(tramp_bytes.data(), tramp_bytes.size())) {
+    fprintf(stderr, "[trampoline-arena] arena_install_trampoline_template failed\n");
     state.store(2, std::memory_order_release);
     return false;
   }
-
-  if (!arena_install_stub_template(stub_bytes.data(), stub_bytes.size())) {
-    fprintf(stderr, "[trampoline-arena] arena_install_stub_template failed\n");
-    state.store(2, std::memory_order_release);
-    return false;
-  }
-  fprintf(stderr, "[trampoline-arena] shared trampoline at %p, stub %zu bytes\n",
-          shared_addr, stub_bytes.size());
+  fprintf(stderr, "[trampoline-arena] trampoline template %zu bytes, calls bytecode_call at %p\n",
+          tramp_bytes.size(), (void*)&bytecode_call);
   state.store(1, std::memory_order_release);
   return true;
 }
@@ -929,7 +926,7 @@ CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
     const char* v = getenv("CLASP_TRAMPOLINE_BACKEND");
     return v && std::string(v) == "arena";
   }();
-  if (s_use_arena && !t_in_arena_capture) {
+  if (s_use_arena) {
     ClaspJIT_sp jit_for_init = llvm_sys__clasp_jit();
     if (!jit_for_init.nilp() && ensure_trampoline_arena_initialized(jit_for_init)) {
       // Derive a usable name for backtrace / perf-map (same logic as the
@@ -1029,7 +1026,7 @@ CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
            total ? (100.0 * a / total) : 0.0);
     fflush(stdout);
   }
-  // Lazily create the single shared trampoline JITDylib on the first call.
+  // Lazily create the single trampoline JITDylib on the first call.
   // The mutex (held above) makes this safe across threads.
   if (!global_trampoline_dylib) {
     global_trampoline_dylib = jit->createAndRegisterJITDylib("trampoline");

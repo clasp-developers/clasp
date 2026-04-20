@@ -1893,14 +1893,12 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   }
 }
 
-// Indirection for the trampoline IR. The JIT-compiled trampoline calls
-// through this pointer instead of bytecode_call directly. Centralizing the
-// call topology this way:
-//   - keeps every trampoline's call instruction in the same shape
-//     (load-from-global + indirect call), so all per-instance bytes that
-//     differ are confined to one known offset field per trampoline,
-//   - gives us a single hook for swapping the bytecode entry point if we
-//     ever want to (e.g. for instrumentation).
+// Legacy-path hook retained for src/core/trampoline/trampoline.cc which is
+// still compiled into libclasp (its IR is also embedded as global_trampoline
+// for target-datalayout extraction). The arena-mode trampolines no longer
+// indirect through this pointer — they call bytecode_call via an absolute
+// address baked into the trampoline template by LLVM. Will be removed when
+// the legacy LLVM trampoline path is deleted.
 gctools::return_type (*g_bytecode_call_ptr)(unsigned char*, core::T_O*, size_t, core::T_O**) = bytecode_call;
 
 }; // extern C

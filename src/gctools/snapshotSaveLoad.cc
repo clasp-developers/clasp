@@ -1070,11 +1070,20 @@ struct calculate_size_t {
       gctools::clasp_ptr_t client = HEADER_PTR_TO_GENERAL_PTR(header);
       size_t objectSize;
       if (header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
+        llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)client;
+        // Transient scaffolding (arena init's shared trampoline / stub
+        // template) must never appear in the snapshot; these ObjectFiles lack
+        // the standard __clasp_literals_<id> / function-vector-<id> symbols
+        // and would fail force_materialize at load time. Defense-in-depth —
+        // these are normally unreachable because they skip _AllObjectFiles
+        // registration, so we shouldn't hit this branch.
+        if (code->_TransientSkipSnapshot) {
+          return;
+        }
         this->_CodeCount++;
         //
         // Calculate the size of a Code_O object keeping only the literals vector
         //
-        llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)client;
         size_t saveCodeSize = llvmo::ObjectFile_O::sizeofInState(code, llvmo::SaveState);
         this->_TotalSize += sizeof(ISLGeneralHeader_s) + saveCodeSize;
         this->_ObjectFileCount++;
@@ -1151,6 +1160,11 @@ struct copy_objects_t {
       if (header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
         llvmo::ObjectFile_O* objectFile = (llvmo::ObjectFile_O*)clientStart;
         llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)clientStart;
+        // Defense-in-depth: transient arena-init scaffolding must never make
+        // it into the snapshot. Skip — matching the calculate_size_t pass.
+        if (code->_TransientSkipSnapshot) {
+          return;
+        }
         ISLGeneralHeader_s islheader(code->frontSize() + code->literalsSize(), (gctools::Header_s*)header, false);
         char* islh = this->_objects->write_buffer((char*)&islheader, sizeof(ISLGeneralHeader_s));
         char* new_client = this->_objects->write_buffer((char*)clientStart, code->frontSize());
@@ -1946,6 +1960,35 @@ void snapshot_save(SaveLispAndDie& data) {
 
   core::lisp_write(fmt::format("Finished invoking cmp:invoke-save-hooks\n"));
 
+  //
+  // Unlink transient-scaffolding ObjectFiles (arena-init shared trampoline and
+  // stub template) from _AllObjectFiles so they are unreachable before the
+  // walker runs. Must happen BEFORE call_with_stopped_world since we
+  // allocate cons cells to rebuild the list. Leaving them reachable causes
+  // the pass-2 forwarding-pointer walk to dereference cons cells that point
+  // at ObjectFiles we're skipping in the walker.
+  {
+    core::T_sp cur = _lisp->_Roots._AllObjectFiles.load(std::memory_order_relaxed);
+    core::T_sp kept = nil<core::T_O>();
+    size_t dropped = 0;
+    while (cur.consp()) {
+      core::T_sp car = CONS_CAR(gc::As_unsafe<core::Cons_sp>(cur));
+      if (gc::IsA<llvmo::ObjectFile_sp>(car)
+          && gc::As_unsafe<llvmo::ObjectFile_sp>(car)->_TransientSkipSnapshot) {
+        ++dropped;
+      } else {
+        kept = core::Cons_O::create(car, kept);
+      }
+      cur = CONS_CDR(gc::As_unsafe<core::Cons_sp>(cur));
+    }
+    _lisp->_Roots._AllObjectFiles.store(kept, std::memory_order_relaxed);
+    if (dropped) {
+      fprintf(stderr, "[trampoline-arena] snapshot save dropped %zu transient ObjectFile(s) from _AllObjectFiles\n", dropped);
+      fflush(stderr);
+    }
+  }
+  core::lisp_write(fmt::format("Finished removing transient object-files\n"));
+
   gctools::call_with_stopped_world(snapshot_save_impl, &data);
 }
 
@@ -2363,8 +2406,10 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         // Link all the code objects
         MaybeTimeStartup time5("Object file linking");
         using TP = thread_pool<ThreadManager>;
-#if 0
+#if 1
         // Create a pool with one thread for debugging threading issues
+        printf("%s:%d:%s  Snapshot-load limited to one linker thread\n",
+               __FILE__, __LINE__, __FUNCTION__ );
         TP pool(1);
 #else
         // Create a pool of multiple threads
@@ -2462,7 +2507,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                   // has a race condition.  TODO: Fix race condition
                   std::lock_guard<std::mutex> lk(g_materialize_lock);
                   if (!obj_claspJIT->force_materialize(jitdylib, objectId))
-                    ISL_ERROR("Failed to materialize JITDylib");
+                    ISL_ERROR("Failed to materialize JITDylib objectId=%lu", objectId );
                 }
               });
             }
