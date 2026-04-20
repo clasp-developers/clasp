@@ -77,7 +77,7 @@
 /* #undef GC_UNDERSCORE_STDCALL */
 
 /* Force the GC to use signals based on SIGRTMIN+k. */
-#define GC_USESIGRT_SIGNALS 1
+// #define GC_USESIGRT_SIGNALS 1
 
 /* See doc/README.macros. */
 /* #undef GC_USE_DLOPEN_WRAP */
