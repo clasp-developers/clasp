@@ -28,8 +28,9 @@
 (defvar *setf-expanders* (make-hash-table :test #'eq :thread-safe t))
 
 (defun setf-expander (symbol &optional environment)
-  (if (core:operator-shadowed-p symbol environment)
-      nil
+  (if (typep (cmp:fun-info symbol environment)
+             '(or cmp:local-fun-info cmp:local-macro-info))
+      nil ; shadowed
       (values (gethash symbol *setf-expanders*))))
 (defun (setf setf-expander) (expander symbol &optional environment)
   (unless (null environment)

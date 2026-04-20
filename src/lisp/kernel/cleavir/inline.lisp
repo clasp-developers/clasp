@@ -41,28 +41,6 @@
        (core:valid-function-name-p (second form))
        (second form)))
 
-(define-cleavir-compiler-macro funcall
-    (&whole form function &rest arguments &environment env)
-  ;; If we have (funcall #'foo ...), we might be able to apply the FOO compiler macro.
-  ;; Failing that, we can at least skip any coercion - #'foo is obviously a function.
-  ;; (funcall #'(setf foo) ...) is fairly common, so this is nice to do.
-  (let ((name (constant-function-form function env)))
-    (when name
-      (return-from funcall
-        (let* ((func-info (cleavir-env:function-info
-                           clasp-cleavir:*clasp-system* env name))
-               (notinline (and func-info
-                               (eq 'notinline (cleavir-env:inline func-info))))
-               ;; We can't get this from the func-info because it might be
-               ;; a local-function-info, which doesn't have that slot.
-               (cmf (compiler-macro-function name env)))
-          (if (and cmf (not notinline))
-              (funcall *macroexpand-hook* cmf form env)
-              `(cleavir-primop:funcall ,function ,@arguments))))))
-  `(cleavir-primop:funcall
-    (core:coerce-called-fdesignator ,function)
-    ,@arguments))
-
 ;;; We do this so that the compiler only has one form of variadic call to
 ;;; worry about. Also, perhaps counterintuitively, mv-call is actually
 ;;; easier for the compiler to work with than APPLY is, and more general
@@ -112,26 +90,7 @@
          (error 'type-error :datum ,val :expected-type 'fixnum))
      ,else))
 
-(define-cleavir-compiler-macro cl:eq (&whole form x y)
-  `(if (cleavir-primop:eq ,x ,y) t nil))
-
 (declaim (ftype (function (t t) boolean) cl:eq eql))
-#+(or)
-(progn
-  (debug-inline "eq")
-  (defun cl:eq (x y)
-    (if (cleavir-primop:eq x y) t nil)))
-#+(or)
-(progn
-  (debug-inline "eql")
-  (declaim (inline cl:eql))
-  (defun eql (x y)
-    (cond ((cleavir-primop:eq x y) t)
-          ((typep x 'core::eq-incomparable)
-           (if (typep y 'core::eq-incomparable)
-               (core:eql-underlying x y)
-               nil))
-          (t nil))))
 
 (declaim (ftype (function (&rest t) list) list))
 (declaim (ftype (function (&rest t) list) list*))

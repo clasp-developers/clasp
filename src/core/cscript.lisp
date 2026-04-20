@@ -82,7 +82,6 @@
            #~"array_bit.cc"
            #~"grayPackage.cc"
            #~"closPackage.cc"
-           #~"cleavirPrimopsPackage.cc"
            #~"seqPackage.cc"
            #~"eclector_readtable.cc"
            #~"compPackage.cc"

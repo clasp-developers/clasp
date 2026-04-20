@@ -2032,6 +2032,9 @@ struct CodeFixup_t {
   CodeFixup_t(llvmo::ObjectFile_O* o, llvmo::ObjectFile_O* n) : _oldCode(o), _newCode(n){};
 };
 
+static std::mutex g_materialize_lock;
+
+
 void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std::string& filename) {
   global_InSnapshotLoad = true;
   // Keep track of objects that we have already allocated
@@ -2360,7 +2363,13 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         // Link all the code objects
         MaybeTimeStartup time5("Object file linking");
         using TP = thread_pool<ThreadManager>;
+#if 0
+        // Create a pool with one thread for debugging threading issues
+        TP pool(1);
+#else
+        // Create a pool of multiple threads
         TP pool(TP::sane_number_of_threads());
+#endif
         for (cur_header = start_header; cur_header->_Kind != ISLKind::End;) {
           if (cur_header->_Kind == ISLKind::General) {
             ISLGeneralHeader_s* generalHeader = (ISLGeneralHeader_s*)cur_header;
@@ -2437,9 +2446,24 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                 core::ThreadLocalState tls;
                 my_thread_low_level = &tlsll;
                 my_thread = &tls;
-                printf("%s:%d:%s objectId = %lu\n", __FILE__, __LINE__, __FUNCTION__, objectId );
-                if (!obj_claspJIT->force_materialize(jitdylib, objectId))
-                  ISL_ERROR("Failed to materialize JITDylib objectId=%lu", objectId );
+                // Ensure the thread-local pointers don't dangle after the
+                // local `tls`/`tlsll` objects are destroyed at lambda exit.
+                // Worker threads are reused by the pool; between tasks any
+                // stray access to my_thread would read freed stack memory
+                // and GC scans would traverse garbage.
+                struct ClearTLS {
+                  ~ClearTLS() {
+                    my_thread = nullptr;
+                    my_thread_low_level = nullptr;
+                  }
+                } clear_tls_guard;
+                {
+                  // Lock this code for now because multithreaded linking
+                  // has a race condition.  TODO: Fix race condition
+                  std::lock_guard<std::mutex> lk(g_materialize_lock);
+                  if (!obj_claspJIT->force_materialize(jitdylib, objectId))
+                    ISL_ERROR("Failed to materialize JITDylib");
+                }
               });
             }
           }

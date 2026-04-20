@@ -154,8 +154,6 @@ Environment variables:
       Generate files that lldb/gdb/udb can use to debug clasp.
   CLASP_ENABLE_TRAMPOLINES=1
       Set this environment variable if you want good profiling.
-  CLASP_NO_JIT_GDB=1
-      Don't register object files with gdb/lldb for source level debugging.
   CLASP_SNAPSHOT=1
       Debug snapshot generation.
   CLASP_DONT_HANDLE_CRASH_SIGNALS=1
@@ -207,6 +205,8 @@ Environment variables:
       object is allocates (VERY EXPENSIVE)
   CLASP_DEBUG_STAMP_INFO=1
       Generate info about stamps.
+  CLASP_NO_GDB_JIT=1
+      Disable registering object files to the gdb/udb JIT debug API.
   CLASP_MPS_CONFIG=<arenaMb> <spareCommitLimitMb> <nurseryKb>
                    <nurseryMortalityPercent> <generation1Kb>
                    <generation1MortalityPercent> <keyExtendByKb>)dx";

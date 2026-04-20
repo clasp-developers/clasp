@@ -1236,14 +1236,11 @@ can be saved and reloaded within the project for later analysis"
 
 (defmethod classify-ctype ((tsty cast:template-specialization-type))
   "template-specialization-types are never interesting"
-  (let* ((template-name (cast:get-template-name tsty))
-         (template-decl (cast:get-as-template-decl template-name))
-         (name (cast:get-name template-decl))
-         (cxxrecord-decl (cast:get-as-cxxrecord-decl tsty)))
+  (let* ((cxxrecord-decl (cast:get-as-cxxrecord-decl tsty)))
     (if (null cxxrecord-decl) 
         (make-unclassified-template-specialization-ctype
          :key (record-key tsty) ;; (cast:get-as-string (cast:desugar tsty))
-         :template-name name)
+         )
         (error "Should never get here because template-specialization-types should never have cxxrecord-decl defined - its: ~a" cxxrecord-decl ))))
 
 (defmethod classify-ctype ((x cast:typedef-type))
@@ -1251,6 +1248,7 @@ can be saved and reloaded within the project for later analysis"
          (canonical-type (cast:get-type-ptr-or-null canonical-qual-type)))
     (classify-ctype canonical-type)))
 
+#+(or llvm15 llvm16 llvm17 llvm18 llvm19 llvm20 llvm21)
 (defmethod classify-ctype ((x cast:elaborated-type))
   (let* ((canonical-qual-type (cast:get-canonical-type-internal x))
          (canonical-type (cast:get-type-ptr-or-null canonical-qual-type))
@@ -1520,6 +1518,7 @@ can be saved and reloaded within the project for later analysis"
                                        (let* ((decl (cast:get-decl base-type))
                                               (decl-name (decl-name decl)))
                                          decl-name))
+                                      #+(or llvm15 llvm16 llvm17 llvm18 llvm19 llvm20)
                                       ((typep base-type 'cast:elaborated-type)
                                        (let* ((qual-type (cast:get-named-type base-type))
                                               (as-string (cast:get-as-string qual-type))

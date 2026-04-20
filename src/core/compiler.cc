@@ -62,7 +62,6 @@ THE SOFTWARE.
 #include <clasp/core/pointer.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/hashTableEqual.h>
-#include <clasp/core/cleavirPrimopsPackage.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/bytecode_compiler.h>
@@ -662,15 +661,16 @@ SYMBOL_SC_(CorePkg, dladdr);
 SYMBOL_EXPORT_SC_(CorePkg, callWithVariableBound);
 
 void initialize_compiler_primitives(LispPtr lisp) {
-
-  // Initialize raw object translators needed for Foreign Language Interface support
-  llvmo::initialize_raw_translators(); // See file intrinsics.cc!
-
-  cleavirPrimop::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
   comp::_sym_STARcodeWalkerSTAR->defparameter(nil<T_O>());
   comp::_sym_STARsourceLocationsSTAR->makeSpecial();
   comp::_sym_STARbtb_compile_hookSTAR->defparameter(nil<T_O>());
   comp::_sym_STARautocompile_hookSTAR->defparameter(nil<T_O>());
+  {
+    HashTable_sp ids = HashTable_O::createEqual();
+    comp::_sym_STARoptimization_identitiesSTAR->defparameter(ids);
+    // List functions the bytecode compiler can special case here.
+    ids->setf_gethash(cl::_sym_funcall, cl::_sym_funcall);
+  }
   {
     Fixnum_sp one = clasp_make_fixnum(1);
     comp::_sym_STARoptimizeSTAR->defparameter(

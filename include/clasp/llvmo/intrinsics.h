@@ -203,5 +203,4 @@ typedef enum {
                                          core::T_sp arg2 = nil<core::T_O>());
 
 [[noreturn]] void not_function_designator_error(core::T_sp datum);
-void initialize_raw_translators(void);
 } // namespace llvmo

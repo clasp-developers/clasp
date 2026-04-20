@@ -256,7 +256,9 @@ void initialize_matchers() {
   REGISTER_MATCHER(dependentSizedArrayType);
   REGISTER_MATCHER(doStmt);
   REGISTER_MATCHER(eachOf);
+#if LLVM_VERSION_MAJOR < 22
   REGISTER_MATCHER(elaboratedType);
+#endif
   REGISTER_MATCHER(enumConstantDecl);
   REGISTER_MATCHER(enumDecl);
   REGISTER_MATCHER(equalsBoundNode);

@@ -21,7 +21,16 @@
           (if expanded
               (apply #'get-atomic-expansion expansion keys)
               (error 'not-atomic :place place))))))
-;;; symbol method defined later in kernel2/cleavir/atomics.lisp
+(defmethod %get-atomic-expansion ((place symbol) environment keys)
+  (etypecase (cmp:var-info place environment)
+    (cmp:symbol-macro-var-info
+     (apply #'get-atomic-expansion (macroexpand-1 place environment) keys))
+    (cmp:special-var-info
+     (apply #'get-atomic-expansion `(symbol-value ',place) keys))
+    (cmp:lexical-var-info ; TODO
+     (error 'not-atomic :place place))
+    (null
+     (cmp:warn-undefined-global-variable nil place))))
 
 (defun get-atomic-expansion (place &rest keys
                              &key environment (order nil orderp)

@@ -440,6 +440,9 @@ class Triple_O : public core::ExternalObject_O {
 protected:
   PointerToExternalType _ptr;
 
+private:
+  bool _PtrIsOwned = false;
+
 public:
   static Triple_sp make(const string& triple);
 
@@ -449,12 +452,15 @@ public:
 
 public:
   void set_wrapped(PointerToExternalType ptr) {
-    delete this->_ptr;
+    if (_PtrIsOwned)
+      delete this->_ptr;
     this->_ptr = ptr;
   }
-  Triple_O() : Base(), _ptr(NULL){};
+  void set_ptrIsOwned(bool b) { _PtrIsOwned = b; }
+  Triple_O(bool ownedp = false)
+    : Base(), _ptr(NULL), _PtrIsOwned(ownedp){};
   ~Triple_O() {
-    if (_ptr != NULL) {
+    if (_ptr != NULL && _PtrIsOwned) {
       auto ptr = this->_ptr;
       //      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr](void) {
@@ -490,7 +496,23 @@ template <> struct from_object<llvm::Triple&> {
 
 namespace translate {
 template <> struct to_object<llvm::Triple*> {
-  static core::T_sp convert(llvm::Triple* ptr) { return ((core::RP_Create_wrapped<llvmo::Triple_O, llvm::Triple*>(ptr))); }
+  static core::T_sp convert(llvm::Triple* ptr) {
+    llvmo::Triple_sp trip = core::RP_Create_wrapped<llvmo::Triple_O, llvm::Triple*>(ptr);
+    trip->set_ptrIsOwned(true);
+    return trip;
+  }
+};
+
+template <> struct to_object<llvm::Triple&> {
+  static core::T_sp convert(llvm::Triple& val) {
+    return core::RP_Create_wrapped<llvmo::Triple_O, llvm::Triple*>(&val);
+  }
+};
+template <> struct to_object<const llvm::Triple&> {
+  static core::T_sp convert(const llvm::Triple& val) {
+    // this const_cast is Dubious FIXME KLUDGE
+    return core::RP_Create_wrapped<llvmo::Triple_O, llvm::Triple*>(const_cast<llvm::Triple*>(&val));
+  }
 };
 }; // namespace translate
     ;

@@ -349,7 +349,6 @@
 (defun atomic-aref-test* (array-type order-type system)
   ;; what we want to check is that we know the exact array element
   ;; type and atomic access order.
-  (declare (ignore return-type index-types))
   (and (cleavir-ctype:arrayp array-type system)
        (member (cleavir-ctype:array-element-type array-type system)
                ;; FIXME: Expand this set
