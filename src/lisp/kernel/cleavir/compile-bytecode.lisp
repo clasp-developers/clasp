@@ -427,8 +427,7 @@
                      :policy cmp:*policy* ; FIXME
                      :attributes nil
                      :module module))
-         (start (make-start-block inserter function bytecode-function)))
-    (setf (bir:start function) start)
+         (start (make-start-block function bytecode-function)))
     (set:nadjoinf (bir:functions module) function)
     function))
 
@@ -463,12 +462,11 @@
   (assert (stack context))
   (pop (stack context)))
 
-(defun make-start-block (inserter irfun bcfun)
-  (build:make-iblock
-   inserter
+(defun make-start-block (irfun bcfun)
+  (build:make-start-iblock
+   irfun
    :name (symbolicate (write-to-string (bcfun/fname bcfun))
-                      '#:-start)
-   :function irfun :dynamic-environment irfun))
+                      '#:-start)))
 
 (defun symbolicate (&rest components)
   ;; FIXME: Probably just use concatenate
