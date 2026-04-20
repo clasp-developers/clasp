@@ -4096,13 +4096,16 @@ mp::Mutex* global_jit_descriptor = NULL;
 
 void register_object_file_with_gdb(const llvm::object::ObjectFile& Obj,
                                    const llvm::RuntimeDyld::LoadedObjectInfo& loadedObjectInfo) {
+  static const bool disabled = std::getenv("CLASP_NO_GDB_JIT") != nullptr;
+  if (disabled) return;
   //  printf("%s:%d:%s  ObjectFile@%p\n", __FILE__, __LINE__, __FUNCTION__, &Obj);
   uint64_t Key = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(Obj.getData().data()));
   if (global_jit_descriptor == NULL) {
     global_jit_descriptor = new mp::Mutex(JITGDBIF_NAMEWORD);
   }
   WITH_READ_WRITE_LOCK(*global_jit_descriptor);
-  llvm::JITEventListener* listener = JITEventListener::createGDBRegistrationListener();
+  // get the singleton Listener from llvm
+  static llvm::JITEventListener* listener = JITEventListener::createGDBRegistrationListener();
   listener->notifyObjectLoaded(Key, Obj, loadedObjectInfo);
 }
 

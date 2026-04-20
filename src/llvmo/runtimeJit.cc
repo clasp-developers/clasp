@@ -603,7 +603,7 @@ ClaspJIT_O::ClaspJIT_O() {
                 std::make_unique<EHFrameRegistrationPlugin>(ES, std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
             ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
             // GDB registrar isn't working at the moment
-            if (!getenv("CLASP_NO_JIT_GDB")) {
+            if (!getenv("CLASP_NO_GDB_JIT")) {
               ObjLinkingLayer->addPlugin(
                   std::make_unique<orc::DebugObjectManagerPlugin>(ES, ExitOnErr(orc::createJITLoaderGDBRegistrar(ES))));
               if (TT.isOSBinFormatMachO()) {
@@ -619,7 +619,7 @@ ClaspJIT_O::ClaspJIT_O() {
             auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
             ObjLinkingLayer->addPlugin(ExitOnErr(orc::EHFrameRegistrationPlugin::Create(ES)));
             ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
-            if (!getenv("CLASP_NO_JIT_GDB")) {
+            if (!getenv("CLASP_NO_GDB_JIT")) {
               Error TargetSymErr = Error::success();
               auto Plugin = std::make_unique<ELFDebugObjectPlugin>(ES, true, true, TargetSymErr);
               ExitOnErr(std::move(TargetSymErr));
