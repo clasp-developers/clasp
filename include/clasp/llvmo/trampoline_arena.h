@@ -112,4 +112,12 @@ core::Pointer_sp arena_compile_trampoline(const std::string& name);
 const TrampolineEntry* arena_lookup_by_pc(uintptr_t pc);
 bool arena_owns_pc(uintptr_t pc);
 
+// Post-snapshot-load pass: walk every BytecodeSimpleFun reachable from
+// _AllBytecodeModules and install a fresh arena trampoline. Required because
+// the trampoline pointer baked into a snapshot points at an mmap'd page that
+// no longer exists after restart; the save side substitutes bytecode_call,
+// and this restores wrapped trampolines so backtrace / perf-map work as
+// before. No-op when CLASP_TRAMPOLINE_BACKEND != "arena".
+void arena_post_load_regenerate_trampolines();
+
 }; // namespace llvmo

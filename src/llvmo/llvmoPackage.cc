@@ -902,6 +902,20 @@ static bool ensure_trampoline_arena_initialized(ClaspJIT_sp jit) {
 }
 
 CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
+  // One-shot diagnostic: print the gating decisions the very first time we're
+  // called, so a missing env var on the loader side becomes obvious.
+  static std::atomic<bool> s_first{true};
+  if (s_first.exchange(false)) {
+    const char* enable_env = getenv("CLASP_ENABLE_TRAMPOLINES");
+    const char* backend_env = getenv("CLASP_TRAMPOLINE_BACKEND");
+    fprintf(stderr,
+            "[trampoline-arena] cmp__compile_trampoline first call: "
+            "_GenerateTrampolines=%d  CLASP_ENABLE_TRAMPOLINES=%s  CLASP_TRAMPOLINE_BACKEND=%s\n",
+            (int)global_options->_GenerateTrampolines,
+            enable_env  ? enable_env  : "(unset)",
+            backend_env ? backend_env : "(unset)");
+    fflush(stderr);
+  }
   if (!global_options->_GenerateTrampolines
       && !getenv("CLASP_ENABLE_TRAMPOLINES")) {
     // If trampolines aren't enabled, don't compile one.
@@ -1090,6 +1104,80 @@ CL_DEFUN_SETF core::T_sp setf_jit_lookup_t(core::T_sp value, JITDylib_sp dylib, 
   core::T_O** tptr = (core::T_O**)ptr;
   *tptr = value.raw_();
   return value;
+}
+
+// Re-attach an arena trampoline to every BytecodeSimpleFun reachable from the
+// snapshot. Called after snapshot_load completes its fixup pass. The save side
+// substituted bytecode_call for any arena-owned _Trampoline (since the slot
+// address is not stable across a restart); this restores wrapped trampolines
+// so backtraces and the perf-PID.map continue to identify Lisp frames.
+//
+// No-op when the env var requesting the arena backend is unset — in that case
+// the saved bytecode_call value is the right runtime trampoline anyway.
+void arena_post_load_regenerate_trampolines() {
+  const char* backend_env = getenv("CLASP_TRAMPOLINE_BACKEND");
+  const char* enable_env  = getenv("CLASP_ENABLE_TRAMPOLINES");
+  bool use_arena = backend_env && std::string(backend_env) == "arena";
+  fprintf(stderr,
+          "[trampoline-arena] post-load entry: "
+          "CLASP_TRAMPOLINE_BACKEND=%s  CLASP_ENABLE_TRAMPOLINES=%s  "
+          "_GenerateTrampolines=%d  use_arena=%d\n",
+          backend_env ? backend_env : "(unset)",
+          enable_env  ? enable_env  : "(unset)",
+          (int)global_options->_GenerateTrampolines,
+          (int)use_arena);
+  fflush(stderr);
+  if (!use_arena) {
+    fprintf(stderr, "[trampoline-arena] post-load: arena backend not requested, skipping regen\n");
+    fflush(stderr);
+    return;
+  }
+  // Walk bytecode modules.
+  size_t n_modules = 0, n_funs_seen = 0, n_regen = 0, n_returned_default = 0;
+  void* default_trampoline = (void*)bytecode_call;
+  core::List_sp modules = _lisp->_Roots._AllBytecodeModules.load(std::memory_order_relaxed);
+  for (auto mods : modules) {
+    ++n_modules;
+    core::BytecodeModule_sp module = gc::As_assert<core::BytecodeModule_sp>(oCar(mods));
+    core::T_sp debuginfo = module->debugInfo();
+    if (debuginfo.nilp()) continue;
+    for (auto const& info : debuginfo.as_assert<core::SimpleVector_O>()) {
+      if (gc::IsA<core::BytecodeSimpleFun_sp>(info)) {
+        ++n_funs_seen;
+        core::BytecodeSimpleFun_sp fun = gc::As_unsafe<core::BytecodeSimpleFun_sp>(info);
+        core::Pointer_sp tramp = cmp__compile_trampoline(fun->functionName());
+        if (tramp->ptr() == default_trampoline) ++n_returned_default;
+        fun->set_trampoline(tramp);
+        ++n_regen;
+        if (n_regen <= 3 || (n_regen % 10000) == 0) {
+          fprintf(stderr,
+                  "[trampoline-arena] post-load #%zu '%s' -> %p%s\n",
+                  n_regen, _rep_(fun->functionName()).c_str(),
+                  tramp->ptr(),
+                  tramp->ptr() == default_trampoline ? " (DEFAULT bytecode_call!)" : "");
+          fflush(stderr);
+        }
+      }
+    }
+  }
+  fprintf(stderr,
+          "[trampoline-arena] post-load bytecode: %zu modules, %zu funs seen, "
+          "%zu regen, %zu returned bytecode_call (cmp_compile_trampoline took the disabled path)\n",
+          n_modules, n_funs_seen, n_regen, n_returned_default);
+  fflush(stderr);
+
+  // Generic-function dispatch trampolines (GFBytecodeSimpleFun).
+  size_t n_gf = 0;
+  core::List_sp gfs = _lisp->_Roots._AllGFBytecodeFuns.load(std::memory_order_relaxed);
+  for (auto gf_cons : gfs) {
+    core::GFBytecodeSimpleFun_sp gf = gc::As_assert<core::GFBytecodeSimpleFun_sp>(oCar(gf_cons));
+    core::Pointer_sp tramp = cmp__compile_trampoline(gf->functionName());
+    gf->_Trampoline = (core::BytecodeTrampolineFunction)tramp->ptr();
+    ++n_gf;
+  }
+  fprintf(stderr, "[trampoline-arena] post-load regenerated %zu bytecode + %zu gf trampolines\n",
+          n_regen, n_gf);
+  fflush(stderr);
 }
 
 }; // namespace llvmo

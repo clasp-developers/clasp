@@ -37,6 +37,7 @@
 #include <clasp/gctools/skip.h>
 #include <clasp/gctools/scan.h>
 #include <clasp/llvmo/jit.h>
+#include <clasp/llvmo/trampoline_arena.h>
 #include <clasp/gctools/interrupt.h> // wait_for_user_signal
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
@@ -2436,8 +2437,9 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                 core::ThreadLocalState tls;
                 my_thread_low_level = &tlsll;
                 my_thread = &tls;
+                printf("%s:%d:%s objectId = %lu\n", __FILE__, __LINE__, __FUNCTION__, objectId );
                 if (!obj_claspJIT->force_materialize(jitdylib, objectId))
-                  ISL_ERROR("Failed to materialize JITDylib");
+                  ISL_ERROR("Failed to materialize JITDylib objectId=%lu", objectId );
               });
             }
           }
@@ -2657,6 +2659,12 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     // Setup the pathname info for wherever the executable was loaded
     //
     core::getcwd(true); // set *default-pathname-defaults*
+
+    // Reattach arena trampolines to bytecode functions whose _Trampoline was
+    // substituted with bytecode_call during save (the arena slot addresses
+    // didn't survive the restart). No-op when the arena backend isn't active.
+    llvmo::arena_post_load_regenerate_trampolines();
+
     {
       char* pause_startup = getenv("CLASP_PAUSE_INIT");
       if (pause_startup) {

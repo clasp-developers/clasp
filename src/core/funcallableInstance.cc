@@ -44,6 +44,9 @@ THE SOFTWARE.
 #include <clasp/core/primitives.h>
 #include <clasp/core/singleDispatchMethod.h>
 #include <clasp/llvmo/intrinsics.h>
+#include <clasp/llvmo/trampoline_arena.h>
+#include <clasp/core/bytecode.h>
+#include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/wrappers.h>
 #include <tuple>
@@ -501,6 +504,13 @@ GFBytecodeSimpleFun_sp GFBytecodeSimpleFun_O::make(Function_sp generic_function)
   SimpleVector_sp literals = gc::As<SimpleVector_sp>(mv.third(compiled.number_of_values()));
   size_t specialized_length = mv.fourth(compiled.number_of_values()).unsafe_fixnum();
   auto obj = gctools::GC<GFBytecodeSimpleFun_O>::allocate(fdesc, 0, bytecode, literals, generic_function, specialized_length);
+  // Register on the global list so the post-snapshot-load pass can walk
+  // every GFBytecodeSimpleFun and re-attach an arena trampoline. Atomic
+  // CAS-push to be safe under concurrent dispatch compilation.
+  T_sp old = _lisp->_Roots._AllGFBytecodeFuns.load(std::memory_order_relaxed);
+  Cons_sp newc = Cons_O::create(obj, old);
+  while (!_lisp->_Roots._AllGFBytecodeFuns.compare_exchange_weak(old, newc, std::memory_order_relaxed))
+    newc->setCdr(old);
   return obj;
 }
 
@@ -522,6 +532,14 @@ std::string GFBytecodeSimpleFun_O::__repr__() const {
 }
 
 void GFBytecodeSimpleFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+  // See BytecodeSimpleFun_O::fixupInternalsForSnapshotSaveLoad for rationale:
+  // arena-trampoline addresses can't be encoded as a stable reference, so we
+  // substitute bytecode_call before the standard fixup runs. The post-load
+  // pass walks _AllGFBytecodeFuns and re-attaches a fresh arena trampoline.
+  if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp
+      && llvmo::arena_owns_pc((uintptr_t)this->_Trampoline)) {
+    this->_Trampoline = (BytecodeTrampolineFunction)bytecode_call;
+  }
   this->fixupOneCodePointer(fixup, (void**)&this->_Trampoline);
   this->Base::fixupInternalsForSnapshotSaveLoad(fixup);
 }
