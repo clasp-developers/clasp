@@ -46,15 +46,16 @@ void TrampolineSideTable::append(TrampolineEntry e) {
 }
 
 const TrampolineEntry* TrampolineSideTable::find(uintptr_t pc) const {
+  // Linear scan. We can't binary-search because entries are appended in
+  // compile order, but mmap may place arena pages at non-monotonic addresses
+  // (each new page often comes back at a *lower* address than the previous
+  // one). With ~100K entries this scan is a few hundred microseconds — fine
+  // for backtrace frequency. If hot, add a per-page lookup index later.
   size_t n = _published.load(std::memory_order_acquire);
-  size_t lo = 0, hi = n;
-  while (lo < hi) {
-    size_t mid = lo + (hi - lo) / 2;
-    const TrampolineEntry& e = _entries[mid];
+  for (size_t i = 0; i < n; ++i) {
+    const TrampolineEntry& e = _entries[i];
     uintptr_t s = (uintptr_t)e.code_start;
-    if (s + e.code_size <= pc)      lo = mid + 1;
-    else if (s > pc)                hi = mid;
-    else                            return &e;
+    if (s <= pc && pc < s + e.code_size) return &e;
   }
   return nullptr;
 }
@@ -236,51 +237,100 @@ bool ExecutableArena::owns(uintptr_t pc) const {
 // ============================================================================
 
 namespace {
-std::atomic<bool>     g_initialized{false};
-std::mutex            g_init_lock;
-std::vector<uint8_t>  g_tramp_bytes;
-size_t                g_tramp_size = 0;
-ExecutableArena*      g_arena = nullptr;
-TrampolineSideTable*  g_side_table = nullptr;
+
+// One arena instance (template bytes + ExecutableArena + side table) plus
+// its initialization state. Two file-static instances exist below: one for
+// bytecode trampolines and one for generic-function dispatch trampolines.
+// Both kinds use identical machinery; only the captured template bytes
+// differ.
+class TrampolineArenaInstance {
+public:
+  TrampolineArenaInstance(const char* label) : _label(label) {}
+
+  bool install_template(const uint8_t* tramp_bytes, size_t tramp_size) {
+    std::lock_guard<std::mutex> g(_init_lock);
+    if (_initialized.load(std::memory_order_relaxed)) return true;
+    if (!tramp_bytes || tramp_size == 0) {
+      fprintf(stderr, "[trampoline-arena] %s install_template: invalid args\n", _label);
+      return false;
+    }
+    _tramp_bytes.assign(tramp_bytes, tramp_bytes + tramp_size);
+    _tramp_size = tramp_size;
+    // Slot stride padded up to 16-byte alignment. The actual code is
+    // _tramp_size bytes; the FDE PC range uses _tramp_size, but slots are
+    // spaced by slot_stride so subsequent slots align cleanly.
+    size_t slot_stride = (_tramp_size + 15u) & ~size_t(15);
+    _arena = new ExecutableArena(slot_stride, 16, _tramp_size);
+    _side_table = new TrampolineSideTable();
+    fprintf(stderr, "[trampoline-arena] installed %s template: %zu bytes (slot stride %zu)\n",
+            _label, _tramp_size, slot_stride);
+    fprintf(stderr, "[trampoline-arena] %s bytes:", _label);
+    for (size_t i = 0; i < _tramp_size; ++i) fprintf(stderr, " %02x", _tramp_bytes[i]);
+    fprintf(stderr, "\n");
+    fflush(stderr);
+    _initialized.store(true, std::memory_order_release);
+    return true;
+  }
+
+  bool is_initialized() const {
+    return _initialized.load(std::memory_order_acquire);
+  }
+
+  core::Pointer_sp compile(const std::string& name) {
+    if (!is_initialized()) {
+      fprintf(stderr, "[trampoline-arena] %s compile before init\n", _label);
+      abort();
+    }
+    uint8_t* slot = _arena->allocate();
+    std::memcpy(slot, _tramp_bytes.data(), _tramp_size);
+    // No patching: trampoline bytes are byte-identical across all slots
+    // (the call target is encoded as an absolute 64-bit immediate inside
+    // the template by LLVM at capture time).
+    _side_table->append(TrampolineEntry{slot, (uint32_t)_tramp_size, name});
+    perf_map_append(slot, _tramp_size, name);
+    int n = _debug_count.fetch_add(1);
+    if (n < 3) {
+      fprintf(stderr, "[trampoline-arena] %s compile #%d '%s' -> %p\n",
+              _label, n, name.c_str(), slot);
+      fflush(stderr);
+    }
+    return core::Pointer_O::create((void*)slot);
+  }
+
+  // Returns the entry for `pc` if owned, else nullptr.
+  const TrampolineEntry* lookup_if_owned(uintptr_t pc) const {
+    if (!is_initialized()) return nullptr;
+    if (!_arena->owns(pc)) return nullptr;
+    return _side_table->find(pc);
+  }
+
+  bool owns(uintptr_t pc) const {
+    return is_initialized() && _arena->owns(pc);
+  }
+
+private:
+  const char*           _label;
+  std::atomic<bool>     _initialized{false};
+  std::mutex            _init_lock;
+  std::vector<uint8_t>  _tramp_bytes;
+  size_t                _tramp_size = 0;
+  ExecutableArena*      _arena = nullptr;
+  TrampolineSideTable*  _side_table = nullptr;
+  std::atomic<int>      _debug_count{0};
+};
+
+TrampolineArenaInstance g_bytecode("bytecode trampoline");
+TrampolineArenaInstance g_gf("GF trampoline");
 
 FILE*                 g_perf_map = nullptr;
 std::mutex            g_perf_map_lock;
 }  // anonymous namespace
 
-bool arena_install_trampoline_template(const uint8_t* tramp_bytes, size_t tramp_size) {
-  std::lock_guard<std::mutex> g(g_init_lock);
-  if (g_initialized.load(std::memory_order_relaxed)) return true;
-  if (!tramp_bytes || tramp_size == 0) {
-    fprintf(stderr, "[trampoline-arena] install_trampoline_template: invalid args\n");
-    return false;
-  }
-  g_tramp_bytes.assign(tramp_bytes, tramp_bytes + tramp_size);
-  g_tramp_size = tramp_size;
-  // Slot stride padded up to 16-byte alignment. The actual code is
-  // g_tramp_size bytes; the FDE PC range uses g_tramp_size, but slots are
-  // spaced by slot_stride so subsequent slots align cleanly.
-  size_t slot_stride = (g_tramp_size + 15u) & ~size_t(15);
-  g_arena = new ExecutableArena(slot_stride, 16, g_tramp_size);
-  g_side_table = new TrampolineSideTable();
-  fprintf(stderr, "[trampoline-arena] installed trampoline template: %zu bytes (slot stride %zu)\n",
-          g_tramp_size, slot_stride);
-  fprintf(stderr, "[trampoline-arena] trampoline bytes:");
-  for (size_t i = 0; i < g_tramp_size; ++i) fprintf(stderr, " %02x", g_tramp_bytes[i]);
-  fprintf(stderr, "\n");
-  fflush(stderr);
-  g_initialized.store(true, std::memory_order_release);
-  return true;
-}
-
-bool arena_is_initialized() {
-  return g_initialized.load(std::memory_order_acquire);
-}
-
 // perf-PID.map writer — opens lazily, one append per registered entry.
 // Format: <hex addr>  <hex size>  <symbol name>
-// Shared across callers (arena trampoline registration and the LLVM-ORC
-// link-plugin per-symbol callback in runtimeJit.cc / compiler.cc). The first
-// caller truncates any stale file contents; subsequent callers append.
+// Shared across callers (both arena instances and the LLVM-ORC link-plugin
+// per-symbol callback in runtimeJit.cc / compiler.cc). The first caller
+// truncates any stale file contents; subsequent callers append.
 void perf_map_append(uint8_t* addr, size_t size, const std::string& name) {
   std::lock_guard<std::mutex> g(g_perf_map_lock);
   if (!g_perf_map) {
@@ -293,40 +343,35 @@ void perf_map_append(uint8_t* addr, size_t size, const std::string& name) {
   fflush(g_perf_map);
 }
 
+// -------------------------------------------------------------------------
+// Public C-level wrappers — delegate to the appropriate arena instance.
+// -------------------------------------------------------------------------
+
+bool arena_install_trampoline_template(const uint8_t* bytes, size_t size) {
+  return g_bytecode.install_template(bytes, size);
+}
+bool arena_is_initialized() { return g_bytecode.is_initialized(); }
 core::Pointer_sp arena_compile_trampoline(const std::string& name) {
-  if (!g_initialized.load(std::memory_order_acquire)) {
-    fprintf(stderr, "[trampoline-arena] arena_compile_trampoline before init\n");
-    abort();
-  }
-  uint8_t* slot = g_arena->allocate();
-  std::memcpy(slot, g_tramp_bytes.data(), g_tramp_size);
-  // No patching: trampoline is byte-identical across all slots (bytecode_call's
-  // address is encoded as an absolute 64-bit immediate inside the template).
-
-  TrampolineEntry e{slot, (uint32_t)g_tramp_size, name};
-  g_side_table->append(std::move(e));
-  perf_map_append(slot, g_tramp_size, name);
-
-  // Diagnostic for the first few arena allocations.
-  static std::atomic<int> debug_count{0};
-  int n = debug_count.fetch_add(1);
-  if (n < 3) {
-    fprintf(stderr, "[trampoline-arena] arena_compile_trampoline #%d '%s' -> %p\n",
-            n, name.c_str(), slot);
-    fflush(stderr);
-  }
-  return core::Pointer_O::create((void*)slot);
+  return g_bytecode.compile(name);
 }
 
+bool gf_arena_install_trampoline_template(const uint8_t* bytes, size_t size) {
+  return g_gf.install_template(bytes, size);
+}
+bool gf_arena_is_initialized() { return g_gf.is_initialized(); }
+core::Pointer_sp gf_arena_compile_trampoline(const std::string& name) {
+  return g_gf.compile(name);
+}
+
+// Unified lookup — checks both arenas so backtrace / debugger code can
+// resolve a PC without caring which kind it is.
 const TrampolineEntry* arena_lookup_by_pc(uintptr_t pc) {
-  if (!g_initialized.load(std::memory_order_acquire)) return nullptr;
-  if (!g_arena->owns(pc)) return nullptr;
-  return g_side_table->find(pc);
+  if (const TrampolineEntry* e = g_bytecode.lookup_if_owned(pc)) return e;
+  return g_gf.lookup_if_owned(pc);
 }
 
 bool arena_owns_pc(uintptr_t pc) {
-  if (!g_initialized.load(std::memory_order_acquire)) return false;
-  return g_arena->owns(pc);
+  return g_bytecode.owns(pc) || g_gf.owns(pc);
 }
 
 }; // namespace llvmo

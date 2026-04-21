@@ -434,36 +434,78 @@ static DebuggerFrame_sp make_lisp_frame(size_t frameIndex, void* absolute_ip, co
                                nil<T_O>(), INTERN_(kw, lisp), XEPp);
 }
 
-static DebuggerFrame_sp make_bytecode_frame_from_function(BytecodeSimpleFun_sp fun, void* bpc, T_O** bfp) {
+// Recover (closure, nargs, args) from the parent trampoline frame, if the
+// bytecode_call C++ frame at `bytecode_call_fbp` was reached via an arena
+// trampoline. The trampoline saves these at fixed negative offsets from its
+// own rbp:
+//   [tramp_rbp - 0x20] = closure
+//   [tramp_rbp - 0x18] = nargs
+//   [tramp_rbp - 0x10] = args
+// The walk:
+//   bytecode_call_rbp = bytecode_call_fbp
+//   tramp_rbp        = *(bytecode_call_rbp)         // saved old rbp
+//   tramp_return_pc  = *(bytecode_call_rbp + 8)     // PC inside trampoline
+// Returns true on success. Returns false (and leaves outputs unchanged) if
+// the parent frame isn't a trampoline (e.g. bytecode was invoked directly
+// from C++) or any pointer looks wrong.
+static bool recover_args_from_trampoline_frame(void* bytecode_call_fbp,
+                                                T_sp& out_closure,
+                                                size_t& out_nargs,
+                                                T_O**& out_args) {
+  if (!bytecode_call_fbp) return false;
+  void** rbp = (void**)bytecode_call_fbp;
+  void* tramp_rbp        = rbp[0];
+  void* tramp_return_pc  = rbp[1];
+  if (!tramp_rbp) return false;
+  if (!llvmo::arena_owns_pc((uintptr_t)tramp_return_pc)) return false;
+  uint8_t* p = (uint8_t*)tramp_rbp;
+  T_O*  saved_closure = *(T_O**)(p - 0x20);
+  size_t saved_nargs  = *(size_t*)(p - 0x18);
+  T_O** saved_args    = *(T_O***)(p - 0x10);
+  if (saved_nargs > 256) return false;  // sanity bound
+  out_closure = T_sp((gctools::Tagged)saved_closure);
+  out_nargs = saved_nargs;
+  out_args = saved_args;
+  return true;
+}
+
+static DebuggerFrame_sp make_bytecode_frame_from_function(BytecodeSimpleFun_sp fun, void* bpc, T_O** bfp,
+                                                           void* bytecode_call_fbp) {
   // We can get the closure easy if the function actually isn't one.
-  // Otherwise we'd have to poke through bytecode_vm arguments or maybe
-  // the vm stack?
   T_sp closure = (fun->environmentSize() == 0) ? (T_sp)fun : nil<T_O>();
   List_sp bindings = bytecode_bindings_for_pc(fun->code(), bpc, bfp);
   T_sp spi = bytecode_spi_for_pc(fun->code(), bpc);
-  // Grab arguments.
-  T_sp tnargs((gctools::Tagged)(*(bfp - BYTECODE_FRAME_NARGS_OFFSET)));
-  size_t nargs = tnargs.unsafe_fixnum();
-  T_O** argptr = (T_O**)*(bfp - BYTECODE_FRAME_ARGS_OFFSET);
+  // Recover arguments from the parent trampoline frame's saved-arg area
+  // rather than from the bytecode VM stack (bytecode_call no longer pushes
+  // the args/FP metadata that used to live at fp - BYTECODE_FRAME_*_OFFSET).
   ql::list largs;
-  for (size_t i = 0; i < nargs; ++i) {
-    T_O* rarg = argptr[i];
-    T_sp temp((gctools::Tagged)rarg);
-    largs << temp;
+  bool args_available = false;
+  T_sp tramp_closure;
+  size_t nargs = 0;
+  T_O** argptr = nullptr;
+  if (recover_args_from_trampoline_frame(bytecode_call_fbp, tramp_closure, nargs, argptr)) {
+    if (closure.nilp()) closure = tramp_closure;
+    for (size_t i = 0; i < nargs; ++i) {
+      T_sp temp((gctools::Tagged)argptr[i]);
+      largs << temp;
+    }
+    args_available = true;
   }
-  // Finally make the frame.
-  return DebuggerFrame_O::make(fun->functionName(), Pointer_O::create(bpc), spi, fun->fdesc(), closure, largs.cons(), true, bindings,
+  return DebuggerFrame_O::make(fun->functionName(), Pointer_O::create(bpc), spi, fun->fdesc(),
+                               closure, largs.cons(), args_available, bindings,
                                INTERN_(kw, bytecode), false);
 }
 
-static DebuggerFrame_sp make_bytecode_frame(size_t frameIndex, unsigned char*& pc, T_O**& fp) {
-  // Get the PC and frame pointer for the next frame.
+static DebuggerFrame_sp make_bytecode_frame(size_t frameIndex, unsigned char*& pc, T_O**& fp,
+                                             void* bytecode_call_fbp) {
+  // Get the PC for the current bytecode frame. The fp chain that used to be
+  // walked here (fp - BYTECODE_FRAME_PC_OFFSET / FP_OFFSET) is no longer
+  // populated by bytecode_call, so we don't advance pc/fp for nested
+  // bytecode frames; only the top-of-stack bytecode frame is reported.
   void* bpc = pc;
   T_O** bfp = fp;
-  if (fp) { // null fp means we've hit the end.
-    pc = (unsigned char*)(*(fp - BYTECODE_FRAME_PC_OFFSET));
-    fp = (T_O**)(*(fp - BYTECODE_FRAME_FP_OFFSET));
-  }
+  pc = nullptr;
+  fp = nullptr;
   // Find the bytecode module containing the current pc.
   List_sp modules = _lisp->_Roots._AllBytecodeModules.load(std::memory_order_relaxed);
   for (auto mods : modules) {
@@ -471,7 +513,7 @@ static DebuggerFrame_sp make_bytecode_frame(size_t frameIndex, unsigned char*& p
     if (bytecode_module_contains_address_p(mod, bpc)) {
       T_sp fun = bytecode_function_for_pc(mod, bpc);
       if (gc::IsA<BytecodeSimpleFun_sp>(fun))
-        return make_bytecode_frame_from_function(gc::As_unsafe<BytecodeSimpleFun_sp>(fun), bpc, bfp);
+        return make_bytecode_frame_from_function(gc::As_unsafe<BytecodeSimpleFun_sp>(fun), bpc, bfp, bytecode_call_fbp);
     }
   }
   return DebuggerFrame_O::make(INTERN_(kw, bytecode), Pointer_O::create(bpc), nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), false,
@@ -505,7 +547,8 @@ bool maybe_demangle(const std::string& fnName, std::string& output) {
   return false;
 }
 
-static DebuggerFrame_sp make_cxx_frame(size_t fi, void* ip, const char* cstring, unsigned char*& bytecode_pc, T_O**& bytecode_fp) {
+static DebuggerFrame_sp make_cxx_frame(size_t fi, void* ip, const char* cstring, void* fbp,
+                                        unsigned char*& bytecode_pc, T_O**& bytecode_fp) {
   MaybeTrace trace(__FUNCTION__);
 #ifdef USE_LIBUNWIND
   std::string linkname(cstring);
@@ -551,7 +594,7 @@ static DebuggerFrame_sp make_cxx_frame(size_t fi, void* ip, const char* cstring,
   // Look for bytecode frames.
   // NOTE: This is a little fragile. Beware.
   if (name == "bytecode_call")
-    return make_bytecode_frame(fi, bytecode_pc, bytecode_fp);
+    return make_bytecode_frame(fi, bytecode_pc, bytecode_fp, fbp);
   T_sp lname = SimpleBaseString_O::make(name);
   D(printf("%s%s:%d:%s lname %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, name.c_str()););
   return DebuggerFrame_O::make(lname, Pointer_O::create(ip), nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), false, nil<T_O>(),
@@ -559,24 +602,58 @@ static DebuggerFrame_sp make_cxx_frame(size_t fi, void* ip, const char* cstring,
 }
 
 // Arena-trampoline frame: the PC lives in an mmap'd arena slot, so there's
-// no ObjectFile and no DWARF. The side table gives us the trampoline's name,
-// which is enough to label the frame so the user sees which Lisp function
-// the wrapper belongs to.
-static DebuggerFrame_sp make_arena_trampoline_frame(size_t /*fi*/, void* ip, const llvmo::TrampolineEntry* entry) {
+// no ObjectFile and no DWARF. The side table gives us the trampoline's name.
+// The trampoline IR saves (closure, nargs, args) to its own stack frame at
+// fixed negative offsets from rbp; recover them here so the frame shows the
+// call's arguments alongside the function name.
+//
+// Layout (matches the volatile stores in build_trampoline_ir):
+//   [fbp - 0x20] = closure
+//   [fbp - 0x18] = nargs
+//   [fbp - 0x10] = args (T_O**)
+static DebuggerFrame_sp make_arena_trampoline_frame(size_t /*fi*/, void* ip, void* fbp,
+                                                     const llvmo::TrampolineEntry* entry) {
   T_sp lname = SimpleBaseString_O::make(entry->name);
-  return DebuggerFrame_O::make(lname, Pointer_O::create(ip), nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), false, nil<T_O>(),
+  T_sp closure = nil<T_O>();
+  ql::list largs;
+  bool args_available = false;
+  if (fbp) {
+    uint8_t* p = (uint8_t*)fbp;
+    T_O*  saved_closure = *(T_O**)(p - 0x20);
+    size_t saved_nargs  = *(size_t*)(p - 0x18);
+    T_O** saved_args    = *(T_O***)(p - 0x10);
+    if (saved_nargs <= 256) { // sanity bound
+      closure = T_sp((gctools::Tagged)saved_closure);
+      for (size_t i = 0; i < saved_nargs; ++i) {
+        T_sp temp((gctools::Tagged)saved_args[i]);
+        largs << temp;
+      }
+      args_available = true;
+    }
+  }
+  return DebuggerFrame_O::make(lname, Pointer_O::create(ip), nil<T_O>(), nil<T_O>(),
+                               closure, largs.cons(), args_available, nil<T_O>(),
                                INTERN_(kw, lisp), false);
 }
 
 static DebuggerFrame_sp make_frame(size_t fi, void* absolute_ip, const char* string, void* fbp, unsigned char*& bytecode_pc,
                                    T_O**& bytecode_fp) {
   MaybeTrace trace(__FUNCTION__);
+  // DIAGNOSTIC: log every PC the stack walker hands us, plus whether the
+  // arena recognized it. Set CLASP_BT_DEBUG=1 to enable.
+  static const bool s_bt_debug = (getenv("CLASP_BT_DEBUG") != nullptr);
+  if (s_bt_debug) {
+    bool owned = llvmo::arena_owns_pc((uintptr_t)absolute_ip);
+    fprintf(stderr, "[bt-debug] frame %zu  ip=%p  arena_owns=%d  symname='%s'\n",
+            fi, absolute_ip, (int)owned, string ? string : "(null)");
+    fflush(stderr);
+  }
   // Check the trampoline arena first — arena slots aren't in any ObjectFile.
   if (const llvmo::TrampolineEntry* e = llvmo::arena_lookup_by_pc((uintptr_t)absolute_ip))
-    return make_arena_trampoline_frame(fi, absolute_ip, e);
+    return make_arena_trampoline_frame(fi, absolute_ip, fbp, e);
   T_sp of = llvmo::only_object_file_for_instruction_pointer(absolute_ip);
   if (of.nilp())
-    return make_cxx_frame(fi, absolute_ip, string, bytecode_pc, bytecode_fp);
+    return make_cxx_frame(fi, absolute_ip, string, fbp, bytecode_pc, bytecode_fp);
   // The absolute_ip is in an ObjectFile_O object - so it must be a lisp frame
   else
     return make_lisp_frame(fi, absolute_ip, string, gc::As_unsafe<llvmo::ObjectFile_sp>(of), fbp);

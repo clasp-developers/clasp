@@ -571,6 +571,12 @@ void encodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, core::T_sp codebase, core
 #endif
   } else if (gc::IsA<core::BytecodeModule_sp>(codebase)) {
     encodeEntryPointInLibrary(fixup, ptrptr,"BytecodeModule");
+  } else if (codebase.nilp()) {
+    // No codebase object attached. Used by GFBytecodeSimpleFun where _Code is
+    // nil: the entry-point pointers are libclasp symbols (entry_point_n and
+    // its fixed-arity variants) resolvable by dladdr. Encode as a library
+    // reference so the loader looks them up by name.
+    encodeEntryPointInLibrary(fixup, ptrptr, "nilCodebase");
   } else {
     ISL_ERROR("The codebase must be a Code_sp or a Library_sp it is %s", _rep_(codebase).c_str());
   }
@@ -587,6 +593,8 @@ void decodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, core::T_sp codebase) {
   } else if (gc::IsA<llvmo::Library_sp>(codebase)) {
     decodeEntryPointInLibrary(fixup, ptrptr);
   } else if (gc::IsA<core::BytecodeModule_sp>(codebase)) {
+    decodeEntryPointInLibrary(fixup, ptrptr);
+  } else if (codebase.nilp()) {
     decodeEntryPointInLibrary(fixup, ptrptr);
   } else {
     SIMPLE_ERROR("The codebase must be a Code_sp or a Library_sp it is {}", _rep_(codebase));

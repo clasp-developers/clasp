@@ -100,13 +100,25 @@ private:
 // subsequent calls are idempotent no-ops.
 bool arena_install_trampoline_template(const uint8_t* tramp_bytes, size_t tramp_size);
 
-// True once arena_install_stub_template has been called successfully.
+// True once arena_install_trampoline_template has been called successfully.
 bool arena_is_initialized();
 
 // Allocate and register a new trampoline. Pre: arena is initialized.
 core::Pointer_sp arena_compile_trampoline(const std::string& name);
 
-// Backtrace lookup. Lock-free, signal-handler safe.
+// Generic-function dispatch arena. A second arena with its own template —
+// the GF template is a 3-arg trampoline (closure, nargs, args) that tail-calls
+// GFBytecodeEntryPoint::entry_point_n at an embedded absolute address, so
+// every generic function gets a unique PC and its name shows up in backtraces
+// and the perf-PID.map. Separate template because the signature differs from
+// the bytecode trampoline; shares the lookup/owns API below.
+bool gf_arena_install_trampoline_template(const uint8_t* tramp_bytes, size_t tramp_size);
+bool gf_arena_is_initialized();
+core::Pointer_sp gf_arena_compile_trampoline(const std::string& name);
+
+// Backtrace lookup. Lock-free, signal-handler safe. Checks both arenas
+// (bytecode first, then GF) so the caller doesn't care which kind a frame
+// belongs to.
 const TrampolineEntry* arena_lookup_by_pc(uintptr_t pc);
 bool arena_owns_pc(uintptr_t pc);
 

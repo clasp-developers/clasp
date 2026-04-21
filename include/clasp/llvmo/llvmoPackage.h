@@ -70,4 +70,10 @@ void initialize_ClaspJIT();
 
 core::Pointer_mv cmp__compile_trampoline(core::T_sp name);
 
+// Per-generic-function trampoline. Returns the address of an arena slot that
+// tail-calls GFBytecodeEntryPoint::entry_point_n. Each GF gets a unique
+// address so flame charts and backtraces show its name instead of all GFs
+// sharing the static entry_point_n symbol.
+core::Pointer_sp cmp__compile_gf_trampoline(core::T_sp name);
+
 }; // namespace llvmo

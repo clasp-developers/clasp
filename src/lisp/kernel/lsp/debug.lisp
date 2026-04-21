@@ -293,8 +293,21 @@ The delimiters and visibility may be ignored by using the lower level FRAME-UP, 
   `(call-with-stack (lambda (,stack) (declare (core:lambda-name with-stack-lambda)) ,@body)
                     ,@kwargs))
 
+(defun unnamed-bytecode-call-frame-p (frame)
+  "True for the C++ bytecode_call frame's fallback DebuggerFrame_O — the
+one whose function name is the symbol :BYTECODE because we couldn't (or
+no longer try to) recover the bytecode-VM frame's pc/fp metadata. The
+arena trampoline frame immediately above it already carries the Lisp
+function name, so this frame is pure noise. Returns NIL for the named
+bytecode frames (e.g., the innermost one resolved via
+bytecode_function_for_pc), which we keep because they carry per-frame
+bindings/locals."
+  (and (eq (frame-language frame) :bytecode)
+       (eq (core:debugger-frame-fname frame) :bytecode)))
+
 (defparameter *frame-filters* (list 'c++-frame-p
                                     'redundant-xep-p
+                                    'unnamed-bytecode-call-frame-p
                                     'package-hider
                                     'fname-hider)
   "A list of function designators. Any CLASP-DEBUG:FRAME for which any of the functions returns true will be considered invisible by the mid level CLASP-DEBUG interface (e.g. UP, DOWN)")
