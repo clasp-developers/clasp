@@ -87,8 +87,13 @@ bool SimpleFun_O::dladdrablep(std::set<void*>& uniques) {
     for (size_t ii = 0; ii < ClaspXepFunction::Entries; ++ii) {
       void* address = (void*)this->_EntryPoints._EntryPoints[ii].load(std::memory_order_relaxed);
       if (!uniques.contains(address)) {
-        Dl_info info;
         uniques.insert(address);
+        // Entry points that land in an arena trampoline slot are not
+        // backed by any loaded image, so dladdr necessarily fails on
+        // them. The arena's side table keeps their names, which is the
+        // symbolic-attainability this check is really about — accept.
+        if (llvmo::arena_owns_pc((uintptr_t)address)) continue;
+        Dl_info info;
         if (dladdr(address, &info) == 0)
           return false;
       }

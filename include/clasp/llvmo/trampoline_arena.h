@@ -64,33 +64,49 @@ private:
 
 class ExecutableArena {
 public:
-  // slot_code_size: the actual code length within each slot (used for FDE
-  // PC range — must be the function's true size, NOT the slot stride).
-  ExecutableArena(size_t slot_size, size_t slot_alignment, size_t slot_code_size);
-  // Allocate a fresh slot. Single-mapped: returned address is both
+  // Interleaved slot layout: [code | CIE | FDE | 4B terminator], padded to
+  // 16-byte stride. Every slot is a byte-identical memcpy of a single
+  // composed template. This works because the FDE uses pcrel|sdata4 for its
+  // PC begin field (offset from the field's own address to the function
+  // start), and within a slot both the field position and the code position
+  // are at compile-time-constant offsets from the slot base — so the PC
+  // begin value is a constant across every slot. Likewise the FDE's CIE
+  // pointer (distance back to the preceding CIE) is a constant.
+  //
+  // Each slot registers its own CIE+FDE with libgcc via
+  // __register_frame(slot + code_size) — the trailing 4B zero terminator
+  // stops libgcc's walk after the single FDE.
+  //
+  // Caller provides tramp/CIE/FDE byte blobs that are pre-patched for this
+  // layout (CIE pointer = cie_size + 4; PC begin = -(code_size + cie_size + 8);
+  // PC range = code_size).
+  ExecutableArena(const uint8_t* tramp_bytes, size_t tramp_size,
+                  const uint8_t* cie_bytes,   size_t cie_len,
+                  const uint8_t* fde_bytes,   size_t fde_len);
+  // Allocate a fresh slot, memcpy the composed template into it, and
+  // register its FDE with libgcc. Single-mapped: returned address is both
   // writeable and executable.
   uint8_t* allocate();
   // True if pc lies in any committed page. Lock-free.
   bool owns(uintptr_t pc) const;
+  // Code length within each slot — used by the side table for [start, start+size).
+  size_t slot_code_size() const { return _tramp_size; }
 
 private:
-  // Build eh_frame data covering one page's slots and register it with
-  // libgcc via __register_frame. Called when a new page is mmap'd.
-  void registerEhFrameForPage(uint8_t* page);
-
   std::mutex _lock;
-  size_t _slot_size;        // stride per slot (alignment-padded)
-  size_t _slot_alignment;
-  size_t _slot_code_size;   // actual code length, for FDE PC range
-  size_t _page_size;
+  size_t _tramp_size = 0;          // code length, for FDE PC range and side-table size
+  size_t _cie_size = 0;
+  size_t _fde_size = 0;
+  size_t _slot_stride = 0;         // 16-aligned: code + CIE + FDE + 4B term + padding
+  size_t _page_size = 0;
+  // Pre-composed slot template [code | CIE | FDE | terminator | pad]. Memcpy'd
+  // verbatim into every allocated slot; no per-slot patching.
+  std::vector<uint8_t> _slot_template;
   uint8_t* _current_page = nullptr;
   size_t _current_offset = 0;
   struct PageRange {
     uintptr_t start;
     uintptr_t end;
-    // Owned eh_frame data, registered via __register_frame for this page.
-    // Kept alive (never freed) for the lifetime of the registration.
-    std::vector<uint8_t> eh_frame;
   };
   std::vector<PageRange> _pages;
   std::atomic<size_t> _pages_published{0};
@@ -98,7 +114,23 @@ private:
 
 // Install the captured trampoline template. Returns true on success;
 // subsequent calls are idempotent no-ops.
-bool arena_install_trampoline_template(const uint8_t* tramp_bytes, size_t tramp_size);
+//
+// tramp_bytes   : exact machine bytes memcpy'd into each arena slot.
+// tramp_size    : length of tramp_bytes.
+// cie_bytes     : DWARF eh_frame CIE bytes (length prefix + CIE body). Same
+//                 bytes are memcpy'd into every slot immediately after the
+//                 code. Must specify DW_EH_PE_pcrel|DW_EH_PE_sdata4 for the
+//                 FDE encoding so the FDE's PC begin is a distance (constant
+//                 in this layout) rather than an absolute address.
+// cie_len       : length of cie_bytes.
+// fde_bytes     : DWARF eh_frame FDE bytes (length prefix + FDE body),
+//                 pre-patched for the slot layout: CIE pointer field set to
+//                 (cie_len + 4), PC begin (sdata4) set to
+//                 -(tramp_size + cie_len + 8), PC range set to tramp_size.
+// fde_len       : length of fde_bytes.
+bool arena_install_trampoline_template(const uint8_t* tramp_bytes, size_t tramp_size,
+                                        const uint8_t* cie_bytes,   size_t cie_len,
+                                        const uint8_t* fde_bytes,   size_t fde_len);
 
 // True once arena_install_trampoline_template has been called successfully.
 bool arena_is_initialized();
@@ -112,7 +144,9 @@ core::Pointer_sp arena_compile_trampoline(const std::string& name);
 // every generic function gets a unique PC and its name shows up in backtraces
 // and the perf-PID.map. Separate template because the signature differs from
 // the bytecode trampoline; shares the lookup/owns API below.
-bool gf_arena_install_trampoline_template(const uint8_t* tramp_bytes, size_t tramp_size);
+bool gf_arena_install_trampoline_template(const uint8_t* tramp_bytes, size_t tramp_size,
+                                           const uint8_t* cie_bytes,   size_t cie_len,
+                                           const uint8_t* fde_bytes,   size_t fde_len);
 bool gf_arena_is_initialized();
 core::Pointer_sp gf_arena_compile_trampoline(const std::string& name);
 

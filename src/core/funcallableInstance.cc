@@ -45,6 +45,7 @@ THE SOFTWARE.
 #include <clasp/core/singleDispatchMethod.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/trampoline_arena.h>
+#include <clasp/llvmo/trampolineWork.h> // cmp__compile_gf_trampoline
 #include <clasp/llvmo/llvmoPackage.h>
 #include <clasp/core/bytecode.h>
 #include <clasp/gctools/snapshotSaveLoad.h>

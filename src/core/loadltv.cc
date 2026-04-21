@@ -17,7 +17,8 @@
 #include <clasp/core/package.h>       // making packages
 #include <clasp/core/pathname.h>      // making pathnames
 #include <clasp/core/unixfsys.h>      // cl__truename
-#include <clasp/llvmo/llvmoPackage.h> // cmp__compile_trampoline
+#include <clasp/llvmo/llvmoPackage.h>
+#include <clasp/llvmo/trampolineWork.h> // cmp__compile_trampoline
 #include <clasp/llvmo/llvmoExpose.h>  // native module stuff
 #include <clasp/llvmo/jit.h>
 #include <clasp/llvmo/code.h>
