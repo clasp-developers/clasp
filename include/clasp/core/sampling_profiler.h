@@ -18,6 +18,8 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <string>
+#include <vector>
 
 namespace core {
 
@@ -28,6 +30,17 @@ struct SampleHeader {
   uint64_t vm_pc;          // bytecode VM's _pc at sample time, or 0
   uint32_t thread_id;      // Linux tid / macOS port id (truncated)
   uint32_t depth;          // number of trailing PCs (0 if walk failed)
+};
+
+// Aggregated symbolicated sample: one entry per unique (thread_id, frames)
+// group. `frames` is outermost-first (index 0 is the root, last is the
+// leaf). `sample_count` is the number of raw samples that collapsed into
+// this entry.
+struct SymbolicatedSample {
+  uint32_t thread_id;
+  size_t   sample_count;
+  std::vector<std::string> frames;
+  core::T_sp encode();
 };
 
 // Start the profiler.
@@ -56,6 +69,19 @@ void sampling_profiler_reset();
 // the arena side table, ObjectFile lookup, bytecode-module scan, and
 // dladdr. Returns true on success, false on I/O error.
 bool sampling_profiler_save(const char* path);
+
+// Return one entry per recorded sample. Each inner vector holds the
+// symbolicated frame names for that sample, outermost-first (index 0
+// is the root, last index is the leaf). Prints a warning and returns
+// an empty vector if the profiler is still running.
+std::vector<SymbolicatedSample> sampling_profiler_symbolicated_samples();
+
+// Populate the calling thread's stack bounds for later frame-walking.
+// Must be called from a non-signal context. sampling_profiler_start
+// calls this automatically for the calling thread; other threads that
+// should be fully profiled need to call ext:profile-register-thread
+// (or this function) themselves once before being sampled.
+void sampling_profiler_register_current_thread();
 
 // Diagnostics.
 size_t sampling_profiler_samples_recorded();

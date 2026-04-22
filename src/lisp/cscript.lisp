@@ -171,6 +171,7 @@
              #~"kernel/lsp/macroexpand-all.lisp"
              #~"kernel/cmp/external-clang.lisp"
              #~"kernel/cmp/disltv.lisp"
+             #~"kernel/lsp/flamegraph.lisp"
              #~"kernel/cleavir/auto-compile.lisp"))
 
 (defun add-extension-sources (target)

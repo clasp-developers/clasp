@@ -36,9 +36,16 @@
 #  include <sys/syscall.h>
 #endif
 
+#include <dlfcn.h>
+#include <unordered_map>
+#include <string>
+#include <vector>
+#include <algorithm>
+
 #include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/sampling_profiler.h>
+#include <clasp/llvmo/trampoline_arena.h>   // arena_lookup_by_pc
 
 namespace core {
 
@@ -212,12 +219,18 @@ static inline uint8_t* ring_reserve(size_t bytes) {
 static void sigprof_handler(int /*sig*/, siginfo_t* /*info*/, void* ucptr) {
   if (!g_running.load(std::memory_order_acquire)) return;
 
-  // Lazily populate this thread's stack bounds. pthread_getattr_np is not
-  // strictly async-signal-safe per POSIX, but on Linux+glibc it doesn't
-  // allocate for an already-initialized thread; on macOS the pthread_get_*
-  // calls are simple accessors. If we ever observe trouble here we can
-  // move the populate to a pre-profile sweep.
-  if (!t_stack_bounds.populated) populate_stack_bounds_for_this_thread();
+  // NEVER call pthread_getattr_np (or anything that can malloc) from a
+  // signal handler. On glibc pthread_getattr_np calls malloc, and if the
+  // interrupted thread was already inside malloc holding the glibc arena
+  // lock, the handler's malloc call deadlocks waiting for the same lock.
+  // Observed concretely under SLIME+compile: __cxa_allocate_exception
+  // from sjlj_unwind holds the arena lock when SIGPROF fires.
+  //
+  // Stack bounds must be populated before the thread ever receives a
+  // sample: in sampling_profiler_start for the calling thread, and via
+  // ext:profile-register-thread for any other Lisp thread. If bounds
+  // are not populated we fall back to leaf-only sampling, which is a
+  // usable data point and never deadlocks.
 
   uintptr_t rip = ucontext_rip(ucptr);
   uintptr_t rbp = ucontext_rbp(ucptr);
@@ -228,7 +241,13 @@ static void sigprof_handler(int /*sig*/, siginfo_t* /*info*/, void* ucptr) {
   uint64_t pcs[8192];
   uint32_t cap = g_max_depth;
   if (cap > 8192) cap = 8192;
-  uint32_t depth = walk_fp(rip, rbp, pcs, cap);
+  uint32_t depth;
+  if (t_stack_bounds.populated) {
+    depth = walk_fp(rip, rbp, pcs, cap);
+  } else {
+    pcs[0] = (uint64_t)rip;
+    depth = 1;
+  }
 
   const size_t record_bytes = sizeof(SampleHeader) + depth * sizeof(uint64_t);
   uint8_t* slot = ring_reserve(record_bytes);
@@ -343,6 +362,9 @@ bool sampling_profiler_start(unsigned rate_hz, unsigned max_depth, size_t buffer
   g_max_depth = max_depth;
 
   if (!install_sigaction()) return false;
+  // Populate this thread's stack bounds now, from a safe context, before
+  // any sample can fire. pthread_getattr_np is not async-signal-safe.
+  populate_stack_bounds_for_this_thread();
   // Publish running=true BEFORE arming the timer so the first tick sees
   // it. Release ordering pairs with the handler's acquire load.
   g_running.store(true, std::memory_order_release);
@@ -352,10 +374,12 @@ bool sampling_profiler_start(unsigned rate_hz, unsigned max_depth, size_t buffer
     return false;
   }
 
+#if 0
   fprintf(stderr,
           "[sampling-profiler] started: rate=%u Hz  max_depth=%u  buffer=%zu MiB\n",
           rate_hz, max_depth, buffer_bytes / (1024 * 1024));
   fflush(stderr);
+#endif
   return true;
 }
 
@@ -368,12 +392,14 @@ void sampling_profiler_stop() {
   // setitimer-disarm above prevents new signals.
   g_running.store(false, std::memory_order_release);
   restore_sigaction();
+#if 0
   fprintf(stderr,
           "[sampling-profiler] stopped: %lu samples recorded, %lu dropped, %zu/%zu bytes used\n",
           (unsigned long)g_samples_recorded.load(),
           (unsigned long)g_samples_dropped.load(),
           g_write_offset.load(), g_buffer_bytes);
   fflush(stderr);
+#endif
 }
 
 void sampling_profiler_reset() {
@@ -383,14 +409,165 @@ void sampling_profiler_reset() {
   g_samples_dropped.store(0, std::memory_order_release);
 }
 
-bool sampling_profiler_save(const char* path) {
-  std::lock_guard<std::mutex> g(g_lifecycle_lock);
-  if (g_running.load(std::memory_order_acquire)) {
-    fprintf(stderr, "[sampling-profiler] save: stop the profiler first\n");
-    return false;
+// ---------------------------------------------------------------------------
+// Symbolication (Phase 4) + collapsed-stacks aggregation (Phase 5).
+// ---------------------------------------------------------------------------
+
+namespace {
+
+// Sanitize a symbol name for collapsed-stacks output. flamegraph.pl uses
+// ';' as the frame separator and treats the trailing token as a numeric
+// count — so any ';' or whitespace in a Lisp symbol name (e.g.
+// "FOO; BAR" or "(SETF X)") would corrupt the line. Replace them with '_'.
+static std::string sanitize_frame(const std::string& s) {
+  std::string out; out.reserve(s.size());
+  for (char c : s) {
+    if (c == ';' || c == ' ' || c == '\t' || c == '\n' || c == '\r')
+      out += '_';
+    else
+      out += c;
   }
-  if (!g_buffer || g_write_offset.load() == 0) {
-    fprintf(stderr, "[sampling-profiler] save: no samples recorded\n");
+  return out;
+}
+
+// Per-process JIT-symbol index built from /tmp/perf-<pid>.map. Clasp's
+// trampoline arena and the LLVM-ORC post-link callback both write
+// <addr_hex> <size_hex> <name> lines to this file as code is generated;
+// we read the current state at symbolication time. Sorted by start
+// address so lookup is O(log N).
+struct PerfMapEntry {
+  uint64_t start;
+  uint64_t size;   // 0 bumped to 1 so single-byte stubs cover their own PC
+  std::string name;
+};
+
+static std::vector<PerfMapEntry> load_perf_map() {
+  std::vector<PerfMapEntry> out;
+  char path[64];
+  snprintf(path, sizeof path, "/tmp/perf-%d.map", getpid());
+  FILE* fp = fopen(path, "r");
+  if (!fp) return out;
+  char line[2048];
+  while (fgets(line, sizeof line, fp)) {
+    uint64_t addr = 0, size = 0;
+    char name[1024] = {0};
+    if (sscanf(line, "%lx %lx %1023[^\n]", &addr, &size, name) >= 3) {
+      out.push_back({addr, size ? size : 1, std::string(name)});
+    }
+  }
+  fclose(fp);
+  std::sort(out.begin(), out.end(),
+            [](const PerfMapEntry& a, const PerfMapEntry& b) {
+              return a.start < b.start;
+            });
+  return out;
+}
+
+static const PerfMapEntry*
+perf_map_lookup(const std::vector<PerfMapEntry>& idx, uint64_t pc) {
+  auto it = std::upper_bound(idx.begin(), idx.end(), pc,
+                             [](uint64_t p, const PerfMapEntry& e) {
+                               return p < e.start;
+                             });
+  if (it == idx.begin()) return nullptr;
+  --it;
+  if (pc >= it->start && pc < it->start + it->size) return &*it;
+  return nullptr;
+}
+
+// Resolve a PC to a human-readable frame name. Lookup order:
+//   1. Trampoline arenas (bytecode + GF) — O(log N) or O(N) side-table scan.
+//   2. perf-map — Clasp-JIT'd native code (both bytecode trampolines and
+//      ORC-JIT-linked ObjectFile symbols end up here).
+//   3. dladdr — covers libclasp, libc, libLLVM, other shared objects.
+//   4. Hex fallback.
+//
+// Cache results: the same PC reappears in many samples (especially the
+// bytecode VM's inner-loop return address) and dladdr isn't free.
+static std::string symbolicate_one(uint64_t pc,
+                                   std::unordered_map<uint64_t, std::string>& cache,
+                                   const std::vector<PerfMapEntry>& perf_map) {
+  auto it = cache.find(pc);
+  if (it != cache.end()) return it->second;
+
+  std::string name;
+  if (const llvmo::TrampolineEntry* e = llvmo::arena_lookup_by_pc((uintptr_t)pc)) {
+    name = e->name;
+  } else if (const PerfMapEntry* p = perf_map_lookup(perf_map, pc)) {
+    name = p->name;
+  } else {
+    Dl_info info;
+    if (dladdr((void*)(uintptr_t)pc, &info) && info.dli_sname && info.dli_sname[0]) {
+      name = info.dli_sname;
+    } else {
+      char buf[32];
+      snprintf(buf, sizeof buf, "0x%lx", (unsigned long)pc);
+      name = buf;
+    }
+  }
+  name = sanitize_frame(name);
+  cache.emplace(pc, name);
+  return name;
+}
+
+}  // anonymous namespace
+
+std::vector<SymbolicatedSample> sampling_profiler_symbolicated_samples() {
+  std::lock_guard<std::mutex> g(g_lifecycle_lock);
+  std::vector<SymbolicatedSample> out;
+  if (g_running.load(std::memory_order_acquire)) {
+    fprintf(stderr, "[sampling-profiler] symbolicated-samples: stop the profiler first\n");
+    return out;
+  }
+  if (!g_buffer || g_write_offset.load() == 0) return out;
+
+  std::unordered_map<uint64_t, std::string> sym_cache;
+  std::vector<PerfMapEntry> perf_map = load_perf_map();
+  // Dedup by (thread_id, joined frames). Value is an index into `out`.
+  std::unordered_map<std::string, size_t> group_index;
+
+  size_t end = g_write_offset.load();
+  size_t off = 0;
+  while (off + sizeof(SampleHeader) <= end) {
+    SampleHeader* h = (SampleHeader*)(g_buffer + off);
+    size_t record_bytes = sizeof(SampleHeader) + h->depth * sizeof(uint64_t);
+    if (off + record_bytes > end) break;
+    uint64_t* pcs = (uint64_t*)(g_buffer + off + sizeof(SampleHeader));
+
+    std::vector<std::string> frames;
+    frames.reserve(h->depth);
+    for (uint32_t i = h->depth; i-- > 0; ) {
+      frames.push_back(symbolicate_one(pcs[i], sym_cache, perf_map));
+    }
+    // Build dedup key: "tid|f0;f1;...;fN".
+    std::string key;
+    {
+      char tidbuf[16];
+      int n = snprintf(tidbuf, sizeof tidbuf, "%u|", (unsigned)h->thread_id);
+      key.append(tidbuf, n);
+    }
+    for (const auto& f : frames) { key += ';'; key += f; }
+
+    auto it = group_index.find(key);
+    if (it == group_index.end()) {
+      SymbolicatedSample s;
+      s.thread_id = h->thread_id;
+      s.sample_count = 1;
+      s.frames = std::move(frames);
+      group_index.emplace(std::move(key), out.size());
+      out.push_back(std::move(s));
+    } else {
+      out[it->second].sample_count++;
+    }
+    off += record_bytes;
+  }
+  return out;
+}
+
+bool sampling_profiler_save(const char* path) {
+  auto groups = sampling_profiler_symbolicated_samples();
+  if (groups.empty()) {
+    fprintf(stderr, "[sampling-profiler] save: no samples available\n");
     return false;
   }
 
@@ -399,35 +576,57 @@ bool sampling_profiler_save(const char* path) {
     fprintf(stderr, "[sampling-profiler] save: fopen(%s) failed: %s\n", path, strerror(errno));
     return false;
   }
-  // Phase 1 format: one line per sample:
-  //   "timestamp_ns thread_id depth pc0 pc1 ... pcN-1"
-  // Phase 4/5 replaces this with symbolicated collapsed-stacks output.
-  size_t end = g_write_offset.load();
-  size_t off = 0;
-  size_t emitted = 0;
-  while (off + sizeof(SampleHeader) <= end) {
-    SampleHeader* h = (SampleHeader*)(g_buffer + off);
-    size_t record_bytes = sizeof(SampleHeader) + h->depth * sizeof(uint64_t);
-    if (off + record_bytes > end) break;
-    uint64_t* pcs = (uint64_t*)(g_buffer + off + sizeof(SampleHeader));
-    fprintf(fp, "%lu %u %u",
-            (unsigned long)h->timestamp_ns,
-            (unsigned)h->thread_id,
-            (unsigned)h->depth);
-    for (uint32_t i = 0; i < h->depth; ++i)
-      fprintf(fp, " 0x%lx", (unsigned long)pcs[i]);
-    fputc('\n', fp);
-    off += record_bytes;
-    ++emitted;
+
+  // Collapsed-stacks output for flamegraph.pl:
+  //   frame_root;frame_mid;...;frame_leaf <count>\n
+  // The flamegraph format has no thread dimension, so we collapse
+  // same-frames groups across threads by summing sample_count.
+  std::unordered_map<std::string, size_t> counts;
+  size_t total_samples = 0;
+  for (const auto& g : groups) {
+    std::string key;
+    size_t est = 0;
+    for (const auto& f : g.frames) est += f.size() + 1;
+    key.reserve(est);
+    for (const auto& f : g.frames) {
+      if (!key.empty()) key += ';';
+      key += f;
+    }
+    counts[key] += g.sample_count;
+    total_samples += g.sample_count;
+  }
+
+  for (const auto& kv : counts) {
+    fprintf(fp, "%s %zu\n", kv.first.c_str(), kv.second);
   }
   fclose(fp);
-  fprintf(stderr, "[sampling-profiler] wrote %zu samples to %s\n", emitted, path);
+  fprintf(stderr,
+          "[sampling-profiler] wrote %zu samples (%zu unique stacks) to %s\n",
+          total_samples, counts.size(), path);
   return true;
 }
 
 size_t sampling_profiler_samples_recorded() { return g_samples_recorded.load(); }
 size_t sampling_profiler_samples_dropped() { return g_samples_dropped.load(); }
 size_t sampling_profiler_bytes_used() { return g_write_offset.load(); }
+
+void sampling_profiler_register_current_thread() {
+  populate_stack_bounds_for_this_thread();
+}
+
+core::T_sp SymbolicatedSample::encode() {
+  core::SimpleVector_sp sample = core::SimpleVector_O::make(3);
+  (*sample)[0] = clasp_make_fixnum(this->thread_id);
+  (*sample)[1] = clasp_make_fixnum(this->sample_count);
+  core::SimpleVector_sp frames = core::SimpleVector_O::make(this->frames.size());
+  size_t idx = 0;
+  for ( auto& fr : this->frames ) {
+    (*frames)[idx++] = core::SimpleBaseString_O::make(fr);
+  }
+  (*sample)[2] = frames;
+  return sample;
+}
+
 
 // ---------------------------------------------------------------------------
 // Lisp bindings.
@@ -458,6 +657,18 @@ CL_DOCSTRING(R"dx(Discard all recorded samples and reset counters.)dx");
 DOCGROUP(clasp);
 CL_DEFUN void ext__profile_reset() { sampling_profiler_reset(); }
 
+CL_DOCSTRING(R"dx(Return the symbolicated samples as a vector of symbolicated-sample instances)dx");
+DOCGROUP(clasp);
+CL_DEFUN core::T_sp ext__profile_symbolicated_samples() {
+  std::vector<SymbolicatedSample> res = sampling_profiler_symbolicated_samples();
+  core::ComplexVector_T_sp vec = core::ComplexVector_T_O::make(16384,nil<core::T_O>(),clasp_make_fixnum(0));
+  for ( auto& one : res ) {
+    core::T_sp obj = one.encode();
+    vec->vectorPushExtend(obj);
+  }
+  return vec;
+}
+
 CL_DOCSTRING(R"dx(Write the captured samples to PATH.
 Phase 1: one raw record per line — timestamp, tid, depth, hex PCs.
 Later phases will emit symbolicated collapsed-stacks / speedscope JSON.)dx");
@@ -482,6 +693,20 @@ CL_DOCSTRING(R"dx(Return the bytes used in the ring buffer so far.)dx");
 DOCGROUP(clasp);
 CL_DEFUN size_t ext__profile_bytes_used() {
   return sampling_profiler_bytes_used();
+}
+CL_DOCSTRING(R"dx(Return the bytes available in the ring buffer.)dx");
+DOCGROUP(clasp);
+CL_DEFUN size_t ext__profile_bytes_available() {
+  return g_buffer_bytes;
+}
+
+CL_DOCSTRING(R"dx(Populate the current thread's stack bounds so that samples
+taken on this thread include full frame-pointer-walked stacks rather than
+leaf-only PCs. Call once per Lisp thread that should be fully profiled,
+from a safe context (not a signal handler).)dx");
+DOCGROUP(clasp);
+CL_DEFUN void ext__profile_register_thread() {
+  sampling_profiler_register_current_thread();
 }
 
 } // namespace core

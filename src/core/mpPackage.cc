@@ -44,6 +44,7 @@ THE SOFTWARE.
 #include <clasp/gctools/interrupt.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/unwind.h>
+#include <clasp/core/sampling_profiler.h>
 
 extern "C" {
 void mutex_lock_enter(char* nameword) { (void)0; };
@@ -179,6 +180,11 @@ void Process_O::run(void* cold_end_of_stack) {
   my_thread->initialize_thread(this->asSmartPtr());
   //  my_thread->create_sigaltstack();
   _ThreadInfo = my_thread;
+
+  // Register with the sampling profiler so SIGPROF samples on this
+  // thread produce full frame-walked stacks rather than leaf-only.
+  // Safe no-op if the profiler is not running.
+  core::sampling_profiler_register_current_thread();
 
   // We're ready to run Lisp
   runInner(core::cl__reverse(_InitialSpecialBindings));
