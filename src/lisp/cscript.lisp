@@ -113,6 +113,7 @@
              #~"kernel/lsp/process.lisp"
              ;; toplevel
              #~"kernel/lsp/top.lisp"
+             #~"kernel/lsp/command-line-extensions.lisp"
              #~"kernel/lsp/top-hook.lisp"
              #~"kernel/install-delayed-macros.lisp"
              :ecclesia

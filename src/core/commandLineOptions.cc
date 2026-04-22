@@ -107,6 +107,14 @@ Options:
       Seed the random number generator with <n>
   -w, --wait
       Print the PID and wait for the user to hit a key
+  --ext:<name>[=<value>]
+      Reserved namespace for extension command-line options. The kernel
+      collects these verbatim and passes them to extension code via
+      core:extension-command-line-arguments. See ext:register-command-line-option.
+  Unknown -<flag> [value...]
+      Any unrecognized flag (anything starting with '-' that the kernel
+      doesn't know) is also collected for extensions, along with any
+      following non-flag tokens. If no extension claims it, startup errors.
   -- <argument>*
       Trailing <argument> not processed and are added to
       core:*command-line-arguments*
@@ -394,6 +402,14 @@ void process_clasp_arguments(CommandLineOptions* options) {
       options->_LoadEvalList.push_back(pair<LoadEvalEnum, std::string>(std::make_pair(cloScript, *++arg)));
     } else if (*arg == "-S" || *arg == "--seed") {
       options->_RandomNumberSeed = atoi((*++arg).c_str());
+    } else if (arg->compare(0, 6, "--ext:") == 0) {
+      options->_ExtensionArguments.push_back(*arg);
+    } else if (!arg->empty() && (*arg)[0] == '-') {
+      options->_ExtensionArguments.push_back(*arg);
+      while (arg + 1 != end && !(arg + 1)->empty() && (*(arg + 1))[0] != '-') {
+        ++arg;
+        options->_ExtensionArguments.push_back(*arg);
+      }
     } else {
       fmt::print(std::cerr, "{}: unrecognized option '{}'\n", gctools::program_name(), *arg);
       exit(1);
@@ -488,6 +504,15 @@ CL_DEFUN List_sp core__command_line_load_eval_sequence() {
     loadEvals = Cons_O::create(one, loadEvals);
   }
   return cl__nreverse(loadEvals);
+}
+
+DOCGROUP(clasp);
+CL_DEFUN List_sp core__extension_command_line_arguments() {
+  List_sp result = nil<T_O>();
+  for (auto it = global_options->_ExtensionArguments.rbegin(); it != global_options->_ExtensionArguments.rend(); ++it) {
+    result = Cons_O::create(SimpleBaseString_O::make(*it), result);
+  }
+  return result;
 }
 
 void maybeHandleAddressesOption(CommandLineOptions* options) {
