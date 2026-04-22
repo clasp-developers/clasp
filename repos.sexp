@@ -136,9 +136,9 @@
   :pin 0)
  (:name :closer-mop
   :directory "src/lisp/kernel/contrib/closer-mop/"
-  :repository "https://github.com/pcostanza/closer-mop.git"
+  :repository "https://codeberg.org/pcostanza/closer-mop"
   :branch "master"
-  :commit "04db182eb614a1000718d14df230dc946e446775"
+  :commit "26c1d68174"
   :pin 1)
  (:name :clostrum
   :directory "src/lisp/kernel/contrib/Clostrum/"
