@@ -428,8 +428,8 @@ CL_LAMBDA();
 CL_DOCSTRING("Walk all objects in memory and determine how many contain pointers that are not to valid objects. Return true iff all pointers are valid. Writes a report to standard output.");
 CL_DEFUN bool gctools__memory_test() {
   // Collect twice to try and get the mark bits set properly
-  GC_gcollect();
-  GC_gcollect();
+  collect_garbage();
+  collect_garbage();
   return memory_test();
 }
 

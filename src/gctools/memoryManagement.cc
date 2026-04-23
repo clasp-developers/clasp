@@ -413,9 +413,11 @@ bool ConsHeader_s::isValidConsObject() const {
   void* gcBase;
   if (!is_memory_readable((void*)this, 8))
     goto bad;
+#ifdef USE_BOEHM
   gcBase = GC_base((void*)this);
   if (gcBase != (void*)this)
     goto bad;
+#endif
   if (this->_badge_stamp_wtag_mtag._value == 0)
     goto bad;
   if (this->_badge_stamp_wtag_mtag.invalidP())
@@ -435,9 +437,11 @@ bool Header_s::isValidGeneralObject() const {
   void* gcBase;
   if (!is_memory_readable((void*)this, 8))
     goto bad;
+#ifdef USE_BOEHM
   gcBase = GC_base((void*)this);
   if (gcBase != (void*)this)
     goto bad;
+#endif
   if (this->_badge_stamp_wtag_mtag._value == 0)
     goto bad;
 #ifdef DEBUG_GUARD

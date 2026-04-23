@@ -101,8 +101,13 @@ struct MaybeTimeStartup {
 
 /* Return "GC" if the pointer is in GC memory or "SL" if it's in the safe/load buffer */
 bool pointer_in_gc_memory(void* pointer) {
+#ifdef USE_BOEHM
   if (GC_base(pointer))
     return true;
+#elif defined(USE_MMTK)
+  if (mmtk_clasp_is_in_mmtk_spaces(pointer))
+    return true;
+#endif
   return false;
 }
 
