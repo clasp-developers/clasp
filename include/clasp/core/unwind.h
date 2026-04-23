@@ -46,6 +46,7 @@ public:
  * C++ code with unknown dynamic environment, e.g. because nontrivial
  * destructors need to be run, there are catch blocks, or we simply
  * don't know. */
+FORWARD(UnknownDynEnv);
 class UnknownDynEnv_O : public DynEnv_O {
   LISP_CLASS(core, CorePkg, UnknownDynEnv_O, "UnknownDynEnv", DynEnv_O);
 

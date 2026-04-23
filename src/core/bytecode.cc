@@ -215,6 +215,70 @@ static Function_sp fdesignator_in_env(T_sp desig, T_sp env) {
 static unsigned char* long_dispatch(VirtualMachine&, unsigned char*, MultipleValues& multipleValues, T_O**, T_O**, Closure_O*,
                                     core::T_O**, core::T_O**, size_t, core::T_O**, uint8_t);
 
+// Forward declaration of bytecode_vm (needed by helper functions below).
+gctools::return_type
+bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure,
+            core::T_O** fp, core::T_O** sp, size_t lcc_nargs, core::T_O** lcc_args);
+
+// Pop the topmost VMDynRecord and undo its effect. Used by the `unbind`
+// opcode, the `_return` defensive drain, and the outer catch handler — all
+// need to reverse one record worth of dynamic state.
+static inline void vm_pop_dyn_record(VirtualMachine& vm) {
+  VMDynRecord* r = --vm._dynRecordTop;
+  switch (r->kind) {
+  case VMDynKind::SpecialBind: {
+    VariableCell_sp cell((gctools::Tagged)r->slot0);
+    T_sp oldval((gctools::Tagged)r->slot1);
+    my_thread->dynEnvStackSet(CONS_CDR(my_thread->dynEnvStackGet()));
+    cell->unbind(oldval);
+    break;
+  }
+  case VMDynKind::Progv: {
+    SimpleVector_sp cells((gctools::Tagged)r->slot0);
+    SimpleVector_sp oldvals((gctools::Tagged)r->slot1);
+    my_thread->dynEnvStackSet(CONS_CDR(my_thread->dynEnvStackGet()));
+    for (size_t i = 0; i < cells->length(); ++i)
+      cells->vref(i).as_unsafe<VariableCell_O>()->unbind(oldvals->vref(i));
+    break;
+  }
+  case VMDynKind::UnwindProtect: {
+    T_sp cleanup_fn((gctools::Tagged)r->slot0);
+    // Pop the SJLJ barrier (UnknownDynEnv_O) we pushed for this protect.
+    my_thread->dynEnvStackSet(CONS_CDR(my_thread->dynEnvStackGet()));
+    // Save multiple values and _UnwindDest across the cleanup (it may
+    // funcall arbitrary code), then run with *interrupts-enabled* = NIL.
+    T_sp dest = my_thread->_UnwindDest;
+    size_t dindex = my_thread->_UnwindDestIndex;
+    MultipleValues& mv = lisp_multipleValues();
+    size_t nvals = mv.getSize();
+    T_O* mv_temp[nvals];
+    mv.saveToTemp(nvals, mv_temp);
+    call_with_variable_bound(_sym_STARinterrupts_enabledSTAR, nil<T_O>(),
+                             [&]() { return eval::funcall(cleanup_fn); });
+    mv.loadFromTemp(nvals, mv_temp);
+    my_thread->_UnwindDestIndex = dindex;
+    my_thread->_UnwindDest = dest;
+    break;
+  }
+  case VMDynKind::Catch: {
+    // Unwinding PAST a catch (non-matching throw or non-CatchThrow exit).
+    // Reset the dyn-env stack to the state it had before catch_8/16
+    // pushed its CatchDynEnv + barrier pair.
+    my_thread->dynEnvStackSet(T_sp((gctools::Tagged)r->dynenv_mark));
+    break;
+  }
+  case VMDynKind::Tagbody: {
+    // Unwinding PAST a tagbody (non-matching Unwind). Reset the dyn-env
+    // stack to the state it had before `entry` pushed its TagbodyDynEnv
+    // + barrier pair.
+    my_thread->dynEnvStackSet(T_sp((gctools::Tagged)r->dynenv_mark));
+    break;
+  }
+  default:
+    break;
+  }
+}
+
 SYMBOL_EXPORT_SC_(KeywordPkg, name);
 #ifdef DEBUG_VIRTUAL_MACHINE
 __attribute__((optnone))
@@ -242,6 +306,113 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
 #endif
   MultipleValues& multipleValues = core::lisp_multipleValues();
   unsigned char* pc = vm._pc;
+
+  // Mark of the VM dynenv-record stack at entry to this activation. The outer
+  // try/catch(Unwind&) below walks the stack back down to this mark to run
+  // cleanups and decide whether to resume dispatch (on a matched
+  // tagbody/catch target) or rethrow to the caller. No opcodes push records
+  // yet — the scaffolding is inert until opcodes are migrated one at a time.
+  VMDynRecord* const dyn_entry_mark = vm._dynRecordTop;
+
+  while (true) {
+    try {
+
+// ---------- Computed-goto dispatch ----------
+// GCC and Clang support the labels-as-values extension (&&label).
+// Each opcode ends with VM_NEXT which jumps directly to the next
+// opcode, avoiding the single indirect-branch bottleneck of a switch.
+// Disabled when DEBUG_VIRTUAL_MACHINE is on so the switch is preserved
+// for debugging/recording.
+#if defined(__GNUC__) && !defined(DEBUG_VIRTUAL_MACHINE)
+#define USE_COMPUTED_GOTO 1
+#endif
+
+#ifdef USE_COMPUTED_GOTO
+  #define VM_CASE(name)  vm_op_##name
+  #define VM_NEXT        goto *dispatch_table[*pc]
+  static void* dispatch_table[256];
+  static bool dispatch_table_init = false;
+  if (!dispatch_table_init) [[unlikely]] {
+    for (int i = 0; i < 256; ++i) dispatch_table[i] = &&vm_op_error;
+    dispatch_table[(uint8_t)vm_code::ref]                      = &&vm_op_ref;
+    dispatch_table[(uint8_t)vm_code::_const]                   = &&vm_op__const;
+    dispatch_table[(uint8_t)vm_code::closure]                  = &&vm_op_closure;
+    dispatch_table[(uint8_t)vm_code::call]                     = &&vm_op_call;
+    dispatch_table[(uint8_t)vm_code::call_receive_one]         = &&vm_op_call_receive_one;
+    dispatch_table[(uint8_t)vm_code::call_receive_fixed]       = &&vm_op_call_receive_fixed;
+    dispatch_table[(uint8_t)vm_code::bind]                     = &&vm_op_bind;
+    dispatch_table[(uint8_t)vm_code::set]                      = &&vm_op_set;
+    dispatch_table[(uint8_t)vm_code::make_cell]                = &&vm_op_make_cell;
+    dispatch_table[(uint8_t)vm_code::cell_ref]                 = &&vm_op_cell_ref;
+    dispatch_table[(uint8_t)vm_code::cell_set]                 = &&vm_op_cell_set;
+    dispatch_table[(uint8_t)vm_code::make_closure]             = &&vm_op_make_closure;
+    dispatch_table[(uint8_t)vm_code::make_uninitialized_closure] = &&vm_op_make_uninitialized_closure;
+    dispatch_table[(uint8_t)vm_code::initialize_closure]       = &&vm_op_initialize_closure;
+    dispatch_table[(uint8_t)vm_code::_return]                  = &&vm_op__return;
+    dispatch_table[(uint8_t)vm_code::bind_required_args]       = &&vm_op_bind_required_args;
+    dispatch_table[(uint8_t)vm_code::bind_optional_args]       = &&vm_op_bind_optional_args;
+    dispatch_table[(uint8_t)vm_code::listify_rest_args]        = &&vm_op_listify_rest_args;
+    dispatch_table[(uint8_t)vm_code::vaslistify_rest_args]     = &&vm_op_vaslistify_rest_args;
+    dispatch_table[(uint8_t)vm_code::parse_key_args]           = &&vm_op_parse_key_args;
+    dispatch_table[(uint8_t)vm_code::jump_8]                   = &&vm_op_jump_8;
+    dispatch_table[(uint8_t)vm_code::jump_16]                  = &&vm_op_jump_16;
+    dispatch_table[(uint8_t)vm_code::jump_24]                  = &&vm_op_jump_24;
+    dispatch_table[(uint8_t)vm_code::jump_if_8]                = &&vm_op_jump_if_8;
+    dispatch_table[(uint8_t)vm_code::jump_if_16]               = &&vm_op_jump_if_16;
+    dispatch_table[(uint8_t)vm_code::jump_if_24]               = &&vm_op_jump_if_24;
+    dispatch_table[(uint8_t)vm_code::jump_if_supplied_8]       = &&vm_op_jump_if_supplied_8;
+    dispatch_table[(uint8_t)vm_code::jump_if_supplied_16]      = &&vm_op_jump_if_supplied_16;
+    dispatch_table[(uint8_t)vm_code::check_arg_count_LE]       = &&vm_op_check_arg_count_LE;
+    dispatch_table[(uint8_t)vm_code::check_arg_count_GE]       = &&vm_op_check_arg_count_GE;
+    dispatch_table[(uint8_t)vm_code::check_arg_count_EQ]       = &&vm_op_check_arg_count_EQ;
+    dispatch_table[(uint8_t)vm_code::push_values]              = &&vm_op_push_values;
+    dispatch_table[(uint8_t)vm_code::append_values]            = &&vm_op_append_values;
+    dispatch_table[(uint8_t)vm_code::pop_values]               = &&vm_op_pop_values;
+    dispatch_table[(uint8_t)vm_code::mv_call]                  = &&vm_op_mv_call;
+    dispatch_table[(uint8_t)vm_code::mv_call_receive_one]      = &&vm_op_mv_call_receive_one;
+    dispatch_table[(uint8_t)vm_code::mv_call_receive_fixed]    = &&vm_op_mv_call_receive_fixed;
+    dispatch_table[(uint8_t)vm_code::save_sp]                  = &&vm_op_save_sp;
+    dispatch_table[(uint8_t)vm_code::restore_sp]               = &&vm_op_restore_sp;
+    dispatch_table[(uint8_t)vm_code::entry]                    = &&vm_op_entry;
+    dispatch_table[(uint8_t)vm_code::exit_8]                   = &&vm_op_exit_8;
+    dispatch_table[(uint8_t)vm_code::exit_16]                  = &&vm_op_exit_16;
+    dispatch_table[(uint8_t)vm_code::exit_24]                  = &&vm_op_exit_24;
+    dispatch_table[(uint8_t)vm_code::entry_close]              = &&vm_op_entry_close;
+    dispatch_table[(uint8_t)vm_code::catch_8]                  = &&vm_op_catch_8;
+    dispatch_table[(uint8_t)vm_code::catch_16]                 = &&vm_op_catch_16;
+    dispatch_table[(uint8_t)vm_code::_throw]                   = &&vm_op__throw;
+    dispatch_table[(uint8_t)vm_code::catch_close]              = &&vm_op_catch_close;
+    dispatch_table[(uint8_t)vm_code::special_bind]             = &&vm_op_special_bind;
+    dispatch_table[(uint8_t)vm_code::symbol_value]             = &&vm_op_symbol_value;
+    dispatch_table[(uint8_t)vm_code::symbol_value_set]         = &&vm_op_symbol_value_set;
+    dispatch_table[(uint8_t)vm_code::unbind]                   = &&vm_op_unbind;
+    dispatch_table[(uint8_t)vm_code::progv]                    = &&vm_op_progv;
+    dispatch_table[(uint8_t)vm_code::fdefinition]              = &&vm_op_fdefinition;
+    dispatch_table[(uint8_t)vm_code::nil]                      = &&vm_op_nil;
+    // vm_code::eq (55) — not yet implemented, stays as vm_op_error
+    dispatch_table[(uint8_t)vm_code::push]                     = &&vm_op_push;
+    dispatch_table[(uint8_t)vm_code::pop]                      = &&vm_op_pop;
+    dispatch_table[(uint8_t)vm_code::dup]                      = &&vm_op_dup;
+    dispatch_table[(uint8_t)vm_code::fdesignator]              = &&vm_op_fdesignator;
+    dispatch_table[(uint8_t)vm_code::called_fdefinition]       = &&vm_op_called_fdefinition;
+    dispatch_table[(uint8_t)vm_code::protect]                  = &&vm_op_protect;
+    dispatch_table[(uint8_t)vm_code::cleanup]                  = &&vm_op_cleanup;
+    dispatch_table[(uint8_t)vm_code::encell]                   = &&vm_op_encell;
+    dispatch_table[(uint8_t)vm_code::_long]                    = &&vm_op__long;
+    dispatch_table_init = true;
+  }
+  VM_NEXT; // initial dispatch
+
+  vm_op_error: {
+    SimpleFun_sp ep = closure->entryPoint();
+    BytecodeModule_sp bcm = gc::As<BytecodeSimpleFun_sp>(ep)->code();
+    unsigned char* codeStart = (unsigned char*)bcm->bytecode()->rowMajorAddressOfElement_(0);
+    unsigned char* codeEnd = codeStart + bcm->bytecode()->arrayTotalSize();
+    SIMPLE_ERROR("Unknown opcode {} pc: {}  module: {} - {}", *pc, (void*)pc, (void*)codeStart, (void*)codeEnd);
+  }
+#else
+  #define VM_CASE(name)  case vm_code::name
+  #define VM_NEXT        break
   while (1) {
     VM_PC_CHECK(vm, pc, bytecode_start, bytecode_end);
 #if DEBUG_VM_RECORD_PLAYBACK == 1
@@ -252,48 +423,43 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
              global_stackTrigger, stackHeight);
       return gctools::return_type(nil<T_O>().raw_(), 0);
     }
-    // printf("%c", (unsigned char)(*vm._pc)+32);
     if (global_recordingFile) {
       VM_RECORD_PLAYBACK(vm._pc, "pc");
       VM_RECORD_PLAYBACK(vm._stackPointer, "stackPointer");
     }
 #endif
     switch ((vm_code)*pc) {
-    case vm_code::ref: {
+#endif
+    VM_CASE(ref): {
       uint8_t n = *(++pc);
       DBG_VM1("ref %" PRIu8 "\n", n);
       vm.push(sp, *(vm.reg(fp, n)));
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::_const: {
+    VM_CASE(_const): {
       uint8_t n = *(++pc);
       DBG_VM1("const %" PRIu8 "\n", n);
       T_O* value = literals[n];
       vm.push(sp, value);
       VM_RECORD_PLAYBACK(value, "const");
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::closure: {
+    VM_CASE(closure): {
       uint8_t n = *(++pc);
       DBG_VM("closure %" PRIu8 "\n", n);
       vm.push(sp, closed[n]);
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::call: {
+    VM_CASE(call): {
       uint8_t nargs = *(++pc);
       DBG_VM1("call %" PRIu8 "\n", nargs);
       T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
       Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
       maybe_step_call(__builtin_frame_address(0), func, nargs, args);
-      // We push the PC for the debugger (see make_bytecode_frame in backtrace.cc)
-      // We do this here rather than bytecode_call because e.g. we may call a
-      // non-bytecode function, that in turn calls a bunch of different bytecode
-      // functions, which may trash vm._pc making it unsuitable.
-      // We have to do this for all call instructions, not just this one.
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
@@ -301,9 +467,9 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       multipleValues.setN(res.raw_(), res.number_of_values());
       vm.drop(sp, nargs + 2);
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::call_receive_one: {
+    VM_CASE(call_receive_one): {
       uint8_t nargs = *(++pc);
       DBG_VM1("call-receive-one %" PRIu8 "\n", nargs);
       T_sp tfunc((gctools::Tagged)(*(vm.stackref(sp, nargs))));
@@ -327,9 +493,9 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       vm.push(sp, res.raw_());
       VM_RECORD_PLAYBACK(res.raw_(), "vm_call_receive_one");
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::call_receive_fixed: {
+    VM_CASE(call_receive_fixed): {
       uint8_t nargs = *(++pc);
       uint8_t nvals = *(++pc);
       DBG_VM("call-receive-fixed %" PRIu8 " %" PRIu8 "\n", nargs, nvals);
@@ -349,40 +515,40 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
           vm.push(sp, multipleValues.valueGet(i, svalues).raw_());
       }
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::bind: {
+    VM_CASE(bind): {
       uint8_t nelems = *(++pc);
       uint8_t base = *(++pc);
       DBG_VM1("bind %" PRIu8 " %" PRIu8 "\n", nelems, base);
       vm.copytoreg(fp, vm.stackref(sp, nelems - 1), nelems, base);
       vm.drop(sp, nelems);
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::set: {
+    VM_CASE(set): {
       uint8_t n = *(++pc);
       DBG_VM("set %" PRIu8 "\n", n);
       vm.setreg(fp, n, vm.pop(sp));
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::make_cell: {
+    VM_CASE(make_cell): {
       DBG_VM1("make-cell\n");
       T_sp car((gctools::Tagged)(vm.pop(sp)));
       T_sp cdr((gctools::Tagged)nil<T_O>().raw_());
       vm.push(sp, Cons_O::create(car, cdr).raw_());
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::cell_ref: {
+    VM_CASE(cell_ref): {
       DBG_VM1("cell-ref\n");
       T_sp cons((gctools::Tagged)vm.pop(sp));
       vm.push(sp, cons.unsafe_cons()->car().raw_());
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::cell_set: {
+    VM_CASE(cell_set): {
       DBG_VM("cell-set\n");
       T_sp cons((gctools::Tagged)vm.pop(sp));
       Cons_sp ccons = gc::As_assert<Cons_sp>(cons);
@@ -390,9 +556,9 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_sp tval((gctools::Tagged)val);
       ccons->rplaca(tval);
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::make_closure: {
+    VM_CASE(make_closure): {
       uint8_t c = *(++pc);
       DBG_VM("make-closure %" PRIu8 "\n", c);
       T_sp fn_sp((gctools::Tagged)literals[c]);
@@ -400,14 +566,13 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       size_t nclosed = fn->environmentSize();
       DBG_VM("  nclosed = %zu\n", nclosed);
       Closure_sp closure = Closure_O::make_bytecode_closure(fn, nclosed);
-      // FIXME: Can we use some more abstracted access?
       vm.copyto(sp, nclosed, (T_O**)(closure->_Slots.data()));
       vm.drop(sp, nclosed);
       vm.push(sp, closure.raw_());
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::make_uninitialized_closure: {
+    VM_CASE(make_uninitialized_closure): {
       uint8_t c = *(++pc);
       DBG_VM("make-uninitialized-closure %" PRIu8 "\n", c);
       T_sp fn_sp((gctools::Tagged)literals[c]);
@@ -417,51 +582,56 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       Closure_sp closure = Closure_O::make_bytecode_closure(fn, nclosed);
       vm.push(sp, closure.raw_());
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::initialize_closure: {
+    VM_CASE(initialize_closure): {
       uint8_t c = *(++pc);
       DBG_VM("initialize-closure %" PRIu8 "\n", c);
       T_sp tclosure((gctools::Tagged)(*(vm.reg(fp, c))));
       Closure_sp closure = gc::As_assert<Closure_sp>(tclosure);
-      // FIXME: We ought to be able to get the closure size directly
-      // from the closure through some nice method.
       BytecodeSimpleFun_sp fn = gc::As_assert<BytecodeSimpleFun_sp>(closure->entryPoint());
       size_t nclosed = fn->environmentSize();
       DBG_VM("  nclosed = %zu\n", nclosed);
       vm.copyto(sp, nclosed, (T_O**)(closure->_Slots.data()));
       vm.drop(sp, nclosed);
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::_return: {
+    VM_CASE(_return): {
       DBG_VM1("return\n");
-      // since the stack pointer is a local variable we don't need to
-      // adjust it.
+      // Drain any VM dynenv records still established within this
+      // activation. The old recursive-bytecode_vm flow relied on RAII to
+      // restore bindings on normal return even when the compiler didn't
+      // emit an explicit unbind before _return; we match that semantics.
+      // Sync sp/pc in case the drain runs an unwind-protect cleanup that
+      // recurses into bytecode_call.
+      vm._pc = pc;
+      vm._stackPointer = sp;
+      while (vm._dynRecordTop > dyn_entry_mark)
+        vm_pop_dyn_record(vm);
       size_t nvalues = multipleValues.getSize();
       return gctools::return_type(multipleValues.valueGet(0, nvalues).raw_(), nvalues);
     }
-    case vm_code::bind_required_args: {
+    VM_CASE(bind_required_args): {
       uint8_t nargs = *(++pc);
       DBG_VM("bind-required-args %" PRIu8 "\n", nargs);
       vm.copytoreg(fp, lcc_args, nargs, 0);
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::bind_optional_args: {
+    VM_CASE(bind_optional_args): {
       uint8_t nreq = *(++pc);
       uint8_t nopt = *(++pc);
       DBG_VM("bind-optional-args %" PRIu8 " %" PRIu8 "\n", nreq, nopt);
       for (size_t i = nreq + nopt; i > lcc_nargs; --i)
         vm.push(sp, unbound<T_O>().raw_());
-      // Push provided args, last arg first.
       for (size_t j = std::min((size_t)nreq+(size_t)nopt, lcc_nargs);
            j > nreq; --j)
         vm.push(sp, lcc_args[j - 1]);
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::listify_rest_args: {
+    VM_CASE(listify_rest_args): {
       uint8_t start = *(++pc);
       DBG_VM("listify-rest-args %" PRIu8 "\n", start);
       ql::list rest;
@@ -471,21 +641,17 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       }
       vm.push(sp, rest.cons().raw_());
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::vaslistify_rest_args: {
-      //
-      // This pushes two vaslist structures (each two words that look like fixnums)
-      // onto the stack.  the theVaslist_backup is used by vaslist_rewind
-      //
+    VM_CASE(vaslistify_rest_args): {
       uint8_t start = *(++pc);
       DBG_VM("vaslistify-rest-args %" PRIu8 "\n", start);
       auto theVaslist = vm.alloca_vaslist2(sp, lcc_args + start, lcc_nargs - start);
       vm.push(sp, theVaslist);
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::parse_key_args: {
+    VM_CASE(parse_key_args): {
       uint8_t more_start = *(++pc);
       uint8_t key_count_info = *(++pc);
       uint8_t key_literal_start = *(++pc);
@@ -500,17 +666,12 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
           T_sp tclosure((gctools::Tagged)gctools::tag_general(closure));
           throwOddKeywordsError(tclosure);
         }
-        // We grab keyword arguments from the end to the beginning.
-        // This means that earlier arguments are put in their variables
-        // last, matching the CL semantics.
-        // KLUDGE: We use a signed type so that if more_start is zero we don't
-        // wrap arg_index around. There's probably a cleverer solution.
         ptrdiff_t arg_index;
         for (arg_index = lcc_nargs - 1; arg_index >= more_start; arg_index -= 2) {
           bool valid_key_p = false;
           T_O* key = lcc_args[arg_index - 1];
           if (key == kw::_sym_allow_other_keys.raw_()) {
-            valid_key_p = true; // aok is always valid.
+            valid_key_p = true;
             T_sp value((gctools::Tagged)(lcc_args[arg_index]));
             aokp = value.notnilp();
           }
@@ -533,7 +694,6 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         T_sp tclosure((gctools::Tagged)gctools::tag_general(closure));
         throwUnrecognizedKeywordArgumentError(tclosure, unknown_keys);
       }
-      // Finally, push keys to the stack.
       for (size_t i = 0; i < key_count; ++i) {
         size_t key_id = key_count - i - 1;
         T_sp key((gctools::Tagged)literals[key_id + key_literal_start]);
@@ -541,27 +701,27 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         vm.push(sp, value.raw_());
       }
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::jump_8: {
+    VM_CASE(jump_8): {
       int8_t rel = *(pc + 1);
       DBG_VM1("jump %" PRId8 "\n", rel);
       pc += rel;
-      break;
+      VM_NEXT;
     }
-    case vm_code::jump_16: {
+    VM_CASE(jump_16): {
       int16_t rel = read_s16(pc + 1);
       DBG_VM("jump %" PRId16 "\n", rel);
       pc += rel;
-      break;
+      VM_NEXT;
     }
-    case vm_code::jump_24: {
+    VM_CASE(jump_24): {
       int32_t rel = read_label(pc, 3);
       DBG_VM("jump %" PRId32 "\n", rel);
       pc += rel;
-      break;
+      VM_NEXT;
     }
-    case vm_code::jump_if_8: {
+    VM_CASE(jump_if_8): {
       int8_t rel = *(pc + 1);
       DBG_VM1("jump-if %" PRId8 "\n", rel);
       T_sp tval((gctools::Tagged)vm.pop(sp));
@@ -570,9 +730,9 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         pc += rel;
       else
         pc += 2;
-      break;
+      VM_NEXT;
     }
-    case vm_code::jump_if_16: {
+    VM_CASE(jump_if_16): {
       int16_t rel = read_s16(pc + 1);
       DBG_VM("jump-if %" PRId16 "\n", rel);
       T_sp tval((gctools::Tagged)vm.pop(sp));
@@ -580,9 +740,9 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         pc += rel;
       else
         pc += 3;
-      break;
+      VM_NEXT;
     }
-    case vm_code::jump_if_24: {
+    VM_CASE(jump_if_24): {
       int32_t rel = read_label(pc, 3);
       DBG_VM("jump-if %" PRId32 "\n", rel);
       T_sp tval((gctools::Tagged)vm.pop(sp));
@@ -590,9 +750,9 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         pc += rel;
       else
         pc += 4;
-      break;
+      VM_NEXT;
     }
-    case vm_code::jump_if_supplied_8: {
+    VM_CASE(jump_if_supplied_8): {
       int32_t rel = *(pc + 1);
       DBG_VM("jump-if-supplied %" PRId8 "\n", rel);
       T_sp tval((gctools::Tagged)(vm.pop(sp)));
@@ -602,9 +762,9 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         vm.push(sp, tval.raw_());
         pc += rel;
       }
-      break;
+      VM_NEXT;
     }
-      case vm_code::jump_if_supplied_16: {
+    VM_CASE(jump_if_supplied_16): {
       int32_t rel = read_s16(pc + 1);
       DBG_VM("jump-if-supplied %" PRId16 "\n", rel);
       T_sp tval((gctools::Tagged)(vm.pop(sp)));
@@ -614,9 +774,9 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         vm.push(sp, tval.raw_());
         pc += rel;
       }
-      break;
+      VM_NEXT;
     }
-    case vm_code::check_arg_count_LE: {
+    VM_CASE(check_arg_count_LE): {
       uint8_t max_nargs = *(++pc);
       DBG_VM("check-arg-count<= %" PRIu8 "\n", max_nargs);
       if (lcc_nargs > max_nargs) {
@@ -624,9 +784,9 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         throwTooManyArgumentsError(tclosure, lcc_nargs, max_nargs);
       }
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::check_arg_count_GE: {
+    VM_CASE(check_arg_count_GE): {
       uint8_t min_nargs = *(++pc);
       DBG_VM("check-arg-count>= %" PRIu8 "\n", min_nargs);
       if (lcc_nargs < min_nargs) {
@@ -634,9 +794,9 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         throwTooFewArgumentsError(tclosure, lcc_nargs, min_nargs);
       }
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::check_arg_count_EQ: {
+    VM_CASE(check_arg_count_EQ): {
       uint8_t req_nargs = *(++pc);
       DBG_VM1("check-arg-count= %" PRIu8 "\n", req_nargs);
       if (lcc_nargs != req_nargs) {
@@ -644,21 +804,19 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         wrongNumberOfArguments(tclosure, lcc_nargs, req_nargs);
       }
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::push_values: {
-      // TODO: Direct copy?
+    VM_CASE(push_values): {
       DBG_VM("push-values\n");
       size_t nvalues = multipleValues.getSize();
       DBG_VM("  nvalues = %zu\n", nvalues);
       for (size_t i = 0; i < nvalues; ++i)
         vm.push(sp, multipleValues.valueGet(i, nvalues).raw_());
-      // We could skip tagging this, but that's error-prone.
       vm.push(sp, make_fixnum(nvalues).raw_());
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::append_values: {
+    VM_CASE(append_values): {
       DBG_VM("append-values\n");
       T_sp texisting_values((gctools::Tagged)vm.pop(sp));
       size_t existing_values = texisting_values.unsafe_fixnum();
@@ -669,9 +827,9 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         vm.push(sp, multipleValues.valueGet(i, nvalues).raw_());
       vm.push(sp, make_fixnum(nvalues + existing_values).raw_());
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::pop_values: {
+    VM_CASE(pop_values): {
       DBG_VM("pop-values\n");
       T_sp texisting_values((gctools::Tagged)vm.pop(sp));
       size_t existing_values = texisting_values.unsafe_fixnum();
@@ -680,9 +838,9 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       multipleValues.setSize(existing_values);
       vm.drop(sp, existing_values);
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::mv_call: {
+    VM_CASE(mv_call): {
       DBG_VM("mv-call\n");
       T_sp tnargs((gctools::Tagged)vm.pop(sp));
       size_t nargs = tnargs.unsafe_fixnum();
@@ -695,12 +853,12 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       vm._pc = pc;
       vm._stackPointer = sp;
       T_mv res = func->apply_raw(nargs, args);
-      vm.drop(sp, nargs + 1 + 1); // 1 each for func, pc
+      vm.drop(sp, nargs + 1 + 1);
       multipleValues.setN(res.raw_(), res.number_of_values());
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::mv_call_receive_one: {
+    VM_CASE(mv_call_receive_one): {
       DBG_VM("mv-call-receive-one\n");
       T_sp tnargs((gctools::Tagged)vm.pop(sp));
       size_t nargs = tnargs.unsafe_fixnum();
@@ -717,9 +875,9 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       multipleValues.set1(res);
       vm.push(sp, res.raw_());
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::mv_call_receive_fixed: {
+    VM_CASE(mv_call_receive_fixed): {
       uint8_t nvals = *(++pc);
       DBG_VM("mv-call-receive-fixed %" PRIu8 "\n", nvals);
       T_sp tnargs((gctools::Tagged)vm.pop(sp));
@@ -740,49 +898,56 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
           vm.push(sp, multipleValues.valueGet(i, svalues).raw_());
       }
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::save_sp: {
+    VM_CASE(save_sp): {
       uint8_t n = *(++pc);
       DBG_VM("save sp %" PRIu8 "\n", n);
       vm.savesp(fp, sp, n);
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::restore_sp: {
+    VM_CASE(restore_sp): {
       uint8_t n = *(++pc);
       DBG_VM("restore sp %" PRIu8 "\n", n);
       vm.restoresp(fp, sp, n);
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::entry: {
+    VM_CASE(entry): {
       uint8_t n = *(++pc);
       DBG_VM("entry %" PRIu8 "\n", n);
       pc++;
-      jmp_buf target;
-      void* frame = __builtin_frame_address(0);
-      vm._pc = pc;
-      TagbodyDynEnv_sp env = TagbodyDynEnv_O::create(frame, &target);
-      vm.setreg(fp, n, env.raw_());
-      gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->dynEnvStackGet());
-      DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
-      _setjmp(target);
-    again:
-      try {
-        bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
-        sp = vm._stackPointer;
-        pc = vm._pc;
-      } catch (Unwind& uw) {
-        if (uw.getFrame() == frame) {
-          my_thread->dynEnvStackGet() = sa_ec.asSmartPtr();
-          goto again;
-        } else
-          throw;
-      }
-      break;
+      // Use the future VMDynRecord address as a unique "frame" identifier
+      // for this tagbody. __builtin_frame_address would collide across
+      // multiple tagbodies in the same bytecode_vm activation (we no
+      // longer have per-tagbody C++ frames).
+      ASSERT(vm._dynRecordTop < vm._dynRecordLimit);
+      VMDynRecord* r = vm._dynRecordTop;
+      // TagbodyDynEnv_O::frame gets our record pointer. Its jmp_buf is
+      // nullptr; the SJLJ barrier below forces sjlj_unwind to fall back
+      // to `throw Unwind(r, 1)`, which our outer handler matches by
+      // frame and resumes dispatch.
+      TagbodyDynEnv_sp env = TagbodyDynEnv_O::create((void*)r, (jmp_buf*)nullptr);
+      vm.setreg(fp, n, env.raw_());  // compiler stores env in this reg for `go`
+      T_sp dynenv_entry = my_thread->dynEnvStackGet();
+      Cons_sp env_cons = Cons_O::create(env, dynenv_entry);
+      UnknownDynEnv_sp barrier = gctools::GC<UnknownDynEnv_O>::allocate();
+      Cons_sp barrier_cons = Cons_O::create(barrier, env_cons);
+      my_thread->dynEnvStackSet(barrier_cons);
+      // Commit the record.
+      vm._dynRecordTop++;
+      r->kind = VMDynKind::Tagbody;
+      r->frame = (void*)r;
+      r->slot0 = env.raw_();       // keep env rooted through the record
+      r->slot1 = nullptr;
+      r->sp_mark = sp;
+      r->fp_mark = fp;
+      r->target_pc = nullptr;      // target set by exit_* into vm._pc
+      r->dynenv_mark = dynenv_entry.raw_();
+      VM_NEXT;
     }
-    case vm_code::exit_8: {
+    VM_CASE(exit_8): {
       int8_t rel = *(pc + 1);
       DBG_VM("exit %" PRId8 "\n", rel);
       vm._pc = pc + rel;
@@ -790,7 +955,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       TagbodyDynEnv_sp tde = gc::As_assert<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
     }
-    case vm_code::exit_16: {
+    VM_CASE(exit_16): {
       int16_t rel = read_s16(pc + 1);
       DBG_VM("exit %" PRId16 "\n", rel);
       vm._pc = pc + rel;
@@ -798,7 +963,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       TagbodyDynEnv_sp tde = gc::As_assert<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
     }
-    case vm_code::exit_24: {
+    VM_CASE(exit_24): {
       int32_t rel = read_label(pc, 3);
       DBG_VM("exit %" PRId32 "\n", rel);
       vm._pc = pc + rel;
@@ -806,88 +971,128 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       TagbodyDynEnv_sp tde = gc::As_assert<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
     }
-    case vm_code::entry_close: {
+    VM_CASE(entry_close): {
       DBG_VM("entry-close\n");
-      // This sham return value just gets us out of the bytecode_vm call in
-      // vm_code::entry, above.
-      vm._pc = pc + 1;
-      vm._stackPointer = sp;
-      return gctools::return_type(nil<T_O>().raw_(), 0);
+      // Normal exit from a tagbody: body completed without a matching
+      // `go`. Pop the Tagbody record and reset the dyn-env stack.
+      ASSERT(vm._dynRecordTop > vm._dynRecordBottom);
+      VMDynRecord* r = --vm._dynRecordTop;
+      ASSERT(r->kind == VMDynKind::Tagbody);
+      my_thread->dynEnvStackSet(T_sp((gctools::Tagged)r->dynenv_mark));
+      pc++;
+      VM_NEXT;
     }
-    case vm_code::catch_8: {
+    VM_CASE(catch_8): {
       int8_t rel = *(pc + 1);
       DBG_VM("catch-8 %" PRId8 "\n", rel);
-      unsigned char* target = pc + rel;
-      bool thrown = true;
+      unsigned char* catch_target = pc + rel;
       pc += 2;
       T_sp tag((gctools::Tagged)(vm.pop(sp)));
-      vm._pc = pc;
-      call_with_catch(tag, [&]() {
-        T_mv result = bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
-        thrown = false;
-        return result;
-      });
-      if (thrown) pc = target;
-      else {
-        pc = vm._pc;
-        sp = vm._stackPointer;
-      }
-      break;
+      // Two conses on the dyn-env stack:
+      //   - CatchDynEnv_O carrying the tag, so sjlj_throw_search can find
+      //     the catch by tag. Its jmp_buf is nullptr; it is never jumped to.
+      //   - UnknownDynEnv_O barrier above it, so sjlj_throw falls back to
+      //     throw CatchThrow (our outer handler catches and matches).
+      T_sp dynenv_entry = my_thread->dynEnvStackGet();
+      CatchDynEnv_sp cde = gctools::GC<CatchDynEnv_O>::allocate((jmp_buf*)nullptr, tag);
+      Cons_sp cde_cons = Cons_O::create(cde, dynenv_entry);
+      UnknownDynEnv_sp barrier = gctools::GC<UnknownDynEnv_O>::allocate();
+      Cons_sp barrier_cons = Cons_O::create(barrier, cde_cons);
+      my_thread->dynEnvStackSet(barrier_cons);
+      ASSERT(vm._dynRecordTop < vm._dynRecordLimit);
+      VMDynRecord* r = vm._dynRecordTop++;
+      r->kind = VMDynKind::Catch;
+      r->frame = nullptr;
+      r->slot0 = tag.raw_();
+      r->slot1 = nullptr;
+      r->sp_mark = sp;
+      r->fp_mark = fp;
+      r->target_pc = catch_target;
+      r->dynenv_mark = dynenv_entry.raw_();
+      VM_NEXT;
     }
-    case vm_code::catch_16: {
+    VM_CASE(catch_16): {
       int16_t rel = read_s16(pc + 1);
-      DBG_VM("catch-8 %" PRId16 "\n", rel);
-      unsigned char* target = pc + rel;
-      bool thrown = true;
+      DBG_VM("catch-16 %" PRId16 "\n", rel);
+      unsigned char* catch_target = pc + rel;
       pc += 3;
       T_sp tag((gctools::Tagged)(vm.pop(sp)));
-      vm._pc = pc;
-      call_with_catch(tag, [&]() {
-        T_mv result = bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
-        thrown = false;
-        return result;
-      });
-      if (thrown) pc = target;
-      else {
-        pc = vm._pc;
-        sp = vm._stackPointer;
-      }
-      break;
+      T_sp dynenv_entry = my_thread->dynEnvStackGet();
+      CatchDynEnv_sp cde = gctools::GC<CatchDynEnv_O>::allocate((jmp_buf*)nullptr, tag);
+      Cons_sp cde_cons = Cons_O::create(cde, dynenv_entry);
+      UnknownDynEnv_sp barrier = gctools::GC<UnknownDynEnv_O>::allocate();
+      Cons_sp barrier_cons = Cons_O::create(barrier, cde_cons);
+      my_thread->dynEnvStackSet(barrier_cons);
+      ASSERT(vm._dynRecordTop < vm._dynRecordLimit);
+      VMDynRecord* r = vm._dynRecordTop++;
+      r->kind = VMDynKind::Catch;
+      r->frame = nullptr;
+      r->slot0 = tag.raw_();
+      r->slot1 = nullptr;
+      r->sp_mark = sp;
+      r->fp_mark = fp;
+      r->target_pc = catch_target;
+      r->dynenv_mark = dynenv_entry.raw_();
+      VM_NEXT;
     }
-    case vm_code::_throw: {
+    VM_CASE(_throw): {
       DBG_VM("throw\n");
       T_sp tag((gctools::Tagged)(vm.pop(sp)));
       sjlj_throw(tag);
     }
-    case vm_code::catch_close: {
-      DBG_VM("entry-close\n");
-      vm._pc = pc + 1;
-      vm._stackPointer = sp;
-      return gctools::return_type(nil<T_O>().raw_(), 0);
+    VM_CASE(catch_close): {
+      DBG_VM("catch-close\n");
+      // Normal exit from a catch scope: the body completed without a
+      // matching throw. Pop the Catch record and reset the dyn-env stack
+      // to the state it had before catch_8/16 pushed its two conses.
+      ASSERT(vm._dynRecordTop > vm._dynRecordBottom);
+      VMDynRecord* r = --vm._dynRecordTop;
+      ASSERT(r->kind == VMDynKind::Catch);
+      my_thread->dynEnvStackSet(T_sp((gctools::Tagged)r->dynenv_mark));
+      pc++;
+      VM_NEXT;
     }
-    case vm_code::special_bind: {
+    VM_CASE(special_bind): {
       uint8_t c = *(++pc);
       DBG_VM("special-bind %" PRIu8 "\n", c);
       T_sp value((gctools::Tagged)(vm.pop(sp)));
       pc++;
-      T_sp cell((gctools::Tagged)literals[c]);
-      vm._pc = pc;
-      call_with_cell_bound(gc::As_assert<VariableCell_sp>(cell), value,
-                           [&]() { return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args); });
-      sp = vm._stackPointer;
-      pc = vm._pc;
-      break;
+      // Inline the binding instead of recursing into bytecode_vm. The paired
+      // `unbind` opcode pops the record and restores the value.
+      T_sp cell_sp((gctools::Tagged)literals[c]);
+      VariableCell_sp cell = gc::As_assert<VariableCell_sp>(cell_sp);
+      T_sp oldval = cell->bind(value);
+      // Keep a BindingDynEnv_O on the dyn-env stack so that SJLJ unwinders
+      // that longjmp past this frame still call BindingDynEnv_O::proceed()
+      // and restore the binding. We heap-allocate it because it must live
+      // across opcodes, not in a C++ stack scope.
+      BindingDynEnv_sp bde = gctools::GC<BindingDynEnv_O>::allocate(cell, oldval);
+      Cons_sp bde_cons = Cons_O::create(bde, my_thread->dynEnvStackGet());
+      my_thread->dynEnvStackSet(bde_cons);
+      // Push a VM record so `unbind` and the outer catch(Unwind&) handler
+      // can find and restore the binding without a recursive bytecode_vm.
+      ASSERT(vm._dynRecordTop < vm._dynRecordLimit);
+      VMDynRecord* r = vm._dynRecordTop++;
+      r->kind = VMDynKind::SpecialBind;
+      r->frame = nullptr;
+      r->slot0 = cell.raw_();
+      r->slot1 = oldval.raw_();
+      r->sp_mark = sp;
+      r->fp_mark = fp;
+      r->target_pc = nullptr;
+      r->dynenv_mark = bde_cons.raw_();
+      VM_NEXT;
     }
-    case vm_code::symbol_value: {
+    VM_CASE(symbol_value): {
       uint8_t c = *(++pc);
       DBG_VM("symbol-value %" PRIu8 "\n", c);
       T_sp cell_sp((gctools::Tagged)literals[c]);
       VariableCell_sp cell = gc::As_assert<VariableCell_sp>(cell_sp);
       vm.push(sp, cell->value().raw_());
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::symbol_value_set: {
+    VM_CASE(symbol_value_set): {
       uint8_t c = *(++pc);
       DBG_VM("symbol-value-set %" PRIu8 "\n", c);
       T_sp cell_sp((gctools::Tagged)literals[c]);
@@ -895,34 +1100,53 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_sp value((gctools::Tagged)(vm.pop(sp)));
       cell->set_value(value);
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::unbind: {
+    VM_CASE(unbind): {
       DBG_VM("unbind\n");
-      vm._pc = pc + 1;
+      // Close the topmost dynenv record. One unbind closes one record:
+      //   - SpecialBind — one cell restored
+      //   - Progv — all N cells in the progv restored at once
+      // (compiler emits one unbind per special-bind, and one unbind for a
+      //  whole progv regardless of N). Sync sp defensively for the
+      //  (unexpected) UnwindProtect case.
+      ASSERT(vm._dynRecordTop > vm._dynRecordBottom);
       vm._stackPointer = sp;
-      // This return value is not actually used - we're just returning from
-      // a bytecode_vm recursively invoked by vm_special_bind above.
-      // (or vm_progv)
-      return gctools::return_type(nil<T_O>().raw_(), 0);
+      vm_pop_dyn_record(vm);
+      pc++;
+      VM_NEXT;
     }
-    case vm_code::progv: {
+    VM_CASE(progv): {
       uint8_t c = *(++pc);
       DBG_VM1("progv %" PRIu8 "\n", c);
       T_sp env((gctools::Tagged)literals[c]);
       T_sp vals((gctools::Tagged)(vm.pop(sp)));
       T_sp vars((gctools::Tagged)(vm.pop(sp)));
-      vm._pc = ++pc;
-      fprogv_env(env, vars, vals, [&]() { return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args); });
-      sp = vm._stackPointer;
-      pc = vm._pc;
-      break;
+      pc++;
+      // Resolve symbols → cells, allocate an oldvals vector, and install the
+      // new bindings. One VMDynRecord covers all N bindings — one matching
+      // `unbind` opcode closes them all, matching compiler expectations.
+      SimpleVector_sp cells = resolve_progv_symbols(vars, env);
+      size_t ncells = cells->length();
+      SimpleVector_sp oldvals = SimpleVector_O::make(ncells);
+      progv_set_values(cells, oldvals, vals);
+      // Keep a ProgvDynEnv_O on the dyn-env stack for SJLJ compatibility.
+      ProgvDynEnv_sp pde = gctools::GC<ProgvDynEnv_O>::allocate(cells, oldvals);
+      Cons_sp pde_cons = Cons_O::create(pde, my_thread->dynEnvStackGet());
+      my_thread->dynEnvStackSet(pde_cons);
+      ASSERT(vm._dynRecordTop < vm._dynRecordLimit);
+      VMDynRecord* r = vm._dynRecordTop++;
+      r->kind = VMDynKind::Progv;
+      r->frame = nullptr;
+      r->slot0 = cells.raw_();
+      r->slot1 = oldvals.raw_();
+      r->sp_mark = sp;
+      r->fp_mark = fp;
+      r->target_pc = nullptr;
+      r->dynenv_mark = pde_cons.raw_();
+      VM_NEXT;
     }
-    case vm_code::fdefinition: {
-      // We have function cells in the literals vector. While these are
-      // themselves callable, we have to resolve the cell because we
-      // use vm_code::fdefinition for lookup of #'foo, which may e.g.
-      // have its type or identity tested.
+    VM_CASE(fdefinition): {
       uint8_t c = *(++pc);
       DBG_VM1("fdefinition %" PRIu8 "\n", c);
       T_sp cell((gctools::Tagged)literals[c]);
@@ -930,35 +1154,36 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       vm.push(sp, fun.raw_());
       VM_RECORD_PLAYBACK(fun.raw_(), "fdefinition");
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::nil:
+    VM_CASE(nil): {
       DBG_VM("nil\n");
       vm.push(sp, nil<T_O>().raw_());
       pc++;
-      break;
-    case vm_code::push: {
+      VM_NEXT;
+    }
+    VM_CASE(push): {
       DBG_VM1("push\n");
       vm.push(sp, multipleValues.valueGet(0, multipleValues.getSize()).raw_());
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::pop: {
+    VM_CASE(pop): {
       DBG_VM1("pop\n");
       T_sp obj((gctools::Tagged)vm.pop(sp));
       multipleValues.set1(obj);
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::dup: {
+    VM_CASE(dup): {
       DBG_VM1("dup\n");
       T_O* obj = vm.pop(sp);
       vm.push(sp, obj);
       vm.push(sp, obj);
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::fdesignator: {
+    VM_CASE(fdesignator): {
       uint8_t c = *(++pc);
       DBG_VM1("fdesignator %" PRIu8 "\n", c);
       T_sp env((gctools::Tagged)literals[c]);
@@ -967,75 +1192,91 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       vm.push(sp, fun.raw_());
       VM_RECORD_PLAYBACK(run.raw_(), "fdesignator");
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::called_fdefinition: {
-      // This is like FDEFINITION except that we know the result will
-      // just be called. So, we can just use the cell directly
-      // without checking fboundedness, and this is just like const.
-      // (const would be different on an implementation that doesn't
-      //  have funcallable function cells.)
+    VM_CASE(called_fdefinition): {
       uint8_t c = *(++pc);
       DBG_VM1("called-fdefinition %" PRIu8 "\n", c);
       T_O* fun = literals[c];
       vm.push(sp, fun);
       VM_RECORD_PLAYBACK(fun, "called-fdefinition");
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::protect: {
+    VM_CASE(protect): {
       uint8_t c = *(++pc);
       DBG_VM("protect %" PRIu8 "\n", c);
-      // Build a closure - this works mostly like make_closure.
       T_sp fn_sp((gctools::Tagged)literals[c]);
       BytecodeSimpleFun_sp fn = fn_sp.as_assert<BytecodeSimpleFun_O>();
       size_t nclosed = fn->environmentSize();
       DBG_VM("  nclosed = %zu\n", nclosed);
-      // Technically we could avoid consing a closure when nclosed = 0
-      // but I don't know that it's worth the trouble.
       Closure_sp cleanup = Closure_O::make_bytecode_closure(fn, nclosed);
       vm.copyto(sp, nclosed, (T_O**)(cleanup->_Slots.data()));
       vm.drop(sp, nclosed);
-      // Now stick it onto the dynamic environment.
-      vm._pc = ++pc;
-      T_mv result = funwind_protect([&]() {
-        return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
-      },
-        [&]() { eval::funcall(cleanup); });
-      // copied from vm_code::call - required to avoid the cleanup's values
-      // for... some reason. I'm not totally sure.
-      multipleValues.setN(result.raw_(), result.number_of_values());
-      sp = vm._stackPointer;
-      pc = vm._pc;
-      break;
+      pc++;
+      // Push an UnknownDynEnv_O on the dyn-env stack. Its search() returns
+      // FallBack, so any SJLJ unwind that tries to cross this protect will
+      // fall back to `throw Unwind` (or `throw CatchThrow` for sjlj_throw),
+      // which our outer C++ handler catches and drives the cleanup through
+      // vm_pop_dyn_record. This replaces the setjmp inside the old
+      // funwind_protect — the cleanup closure lives in the VMDynRecord.
+      UnknownDynEnv_sp barrier = gctools::GC<UnknownDynEnv_O>::allocate();
+      Cons_sp barrier_cons = Cons_O::create(barrier, my_thread->dynEnvStackGet());
+      my_thread->dynEnvStackSet(barrier_cons);
+      ASSERT(vm._dynRecordTop < vm._dynRecordLimit);
+      VMDynRecord* r = vm._dynRecordTop++;
+      r->kind = VMDynKind::UnwindProtect;
+      r->frame = nullptr;
+      r->slot0 = cleanup.raw_();
+      r->slot1 = nullptr;
+      r->sp_mark = sp;
+      r->fp_mark = fp;
+      r->target_pc = nullptr;
+      r->dynenv_mark = barrier_cons.raw_();
+      VM_NEXT;
     }
-    case vm_code::cleanup: {
+    VM_CASE(cleanup): {
       DBG_VM("cleanup\n");
+      // Normal-path cleanup: the protected body finished without unwinding.
+      // Pop the VM record and the SJLJ barrier, save the body's multiple
+      // values, run the cleanup thunk with *interrupts-enabled* = NIL,
+      // restore the values, and continue to the next opcode. On the unwind
+      // path the same work is done by vm_pop_dyn_record.
+      ASSERT(vm._dynRecordTop > vm._dynRecordBottom);
+      VMDynRecord* r = --vm._dynRecordTop;
+      ASSERT(r->kind == VMDynKind::UnwindProtect);
+      T_sp cleanup_fn((gctools::Tagged)r->slot0);
+      my_thread->dynEnvStackSet(CONS_CDR(my_thread->dynEnvStackGet()));
+      // Sync local sp / pc into the VM before calling out: the cleanup
+      // closure may recurse into bytecode_call which reads vm._stackPointer
+      // and vm._pc when setting up the callee frame.
       vm._pc = pc + 1;
       vm._stackPointer = sp;
-      // We need to return the actual current values, or at least
-      // their correct count, so that funwind_protect can save them.
-      size_t nvalues = multipleValues.getSize();
-      return gctools::return_type(multipleValues.valueGet(0, nvalues).raw_(), nvalues);
+      size_t nvals = multipleValues.getSize();
+      T_O* mv_temp[nvals];
+      multipleValues.saveToTemp(nvals, mv_temp);
+      call_with_variable_bound(_sym_STARinterrupts_enabledSTAR, nil<T_O>(),
+                               [&]() { return eval::funcall(cleanup_fn); });
+      multipleValues.loadFromTemp(nvals, mv_temp);
+      sp = vm._stackPointer;
+      pc++;
+      VM_NEXT;
     }
-    case vm_code::encell: {
-      // abbreviation for ref N; make-cell; set N
+    VM_CASE(encell): {
       uint8_t n = *(++pc);
       DBG_VM1("encell %" PRIu8 "\n", n);
       T_sp val((gctools::Tagged)(*(vm.reg(fp, n))));
       vm.setreg(fp, n, Cons_O::create(val, nil<T_O>()).raw_());
       pc++;
-      break;
+      VM_NEXT;
     }
-    case vm_code::_long: {
-      // In a separate function to facilitate better icache utilization
-      // by bytecode_vm (hopefully)
+    VM_CASE(_long): {
       pc++;
-      // FIXME: This is a stupid way of returning two values.
       pc = long_dispatch(vm, pc, multipleValues, literals, closed, closure, fp, sp, lcc_nargs, lcc_args, *pc);
       sp = vm._stackPointer;
-      break;
+      VM_NEXT;
     }
+#ifndef USE_COMPUTED_GOTO
     default:
       SimpleFun_sp ep = closure->entryPoint();
       BytecodeModule_sp bcm = gc::As<BytecodeSimpleFun_sp>(ep)->code();
@@ -1044,6 +1285,75 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       SIMPLE_ERROR("Unknown opcode {} pc: {}  module: {} - {}", *pc, (void*)pc, (void*)codeStart, (void*)codeEnd);
     };
   }
+#endif
+    } catch (Unwind& uw) {
+      // An exit_* from within our activation (or any Unwind bubbling up
+      // from below). Walk records from the top down, running cleanups
+      // for SpecialBind / Progv / UnwindProtect and resetting dyn-env
+      // state for Catch / Tagbody records we pass. If we find a Tagbody
+      // record whose frame matches uw.getFrame(), resume dispatch at
+      // the target pc stashed in vm._pc by exit_*. The Tagbody record
+      // itself is NOT popped — the tagbody stays live, ready for the
+      // next `go`. By the time we reach a match, the walk has already
+      // restored dynEnvStackGet to the state just after `entry` pushed
+      // its TagbodyDynEnv + barrier pair, so no re-push is needed.
+      vm._stackPointer = sp;
+      void* unwindFrame = uw.getFrame();
+      bool matched = false;
+      while (vm._dynRecordTop > dyn_entry_mark) {
+        VMDynRecord* r = vm._dynRecordTop - 1;
+        if (r->kind == VMDynKind::Tagbody && r->frame == unwindFrame) {
+          pc = vm._pc;              // target set by exit_*
+          sp = r->sp_mark;          // body sees tagbody-entry stack state
+          fp = r->fp_mark;
+          matched = true;
+          break;
+        }
+        vm_pop_dyn_record(vm);
+      }
+      if (matched) continue;
+      throw;
+    } catch (CatchThrow& ct) {
+      // A matching catch may be in our record stack. Walk records from
+      // the top down, running cleanups for SpecialBind / Progv /
+      // UnwindProtect. When we find a Catch record whose tag matches,
+      // reset pc / sp / fp / dyn-env stack and resume dispatch via the
+      // enclosing while(true). If we reach the entry mark without a
+      // match, rethrow to let an outer scope handle it.
+      vm._stackPointer = sp;
+      T_sp throwTag = ct.getTag();
+      bool matched = false;
+      while (vm._dynRecordTop > dyn_entry_mark) {
+        VMDynRecord* r = vm._dynRecordTop - 1;
+        if (r->kind == VMDynKind::Catch
+            && T_sp((gctools::Tagged)r->slot0) == throwTag) {
+          pc = r->target_pc;
+          sp = r->sp_mark;
+          fp = r->fp_mark;
+          my_thread->dynEnvStackSet(T_sp((gctools::Tagged)r->dynenv_mark));
+          --vm._dynRecordTop;
+          matched = true;
+          break;
+        }
+        vm_pop_dyn_record(vm);
+      }
+      if (matched) continue;  // re-enter try { dispatch }
+      throw;
+    } catch (...) {
+      // std exceptions and other foreign throws must still trigger
+      // unwind-protect cleanups on the way through — cleanup + rethrow
+      // only, no matching.
+      vm._stackPointer = sp;
+      while (vm._dynRecordTop > dyn_entry_mark)
+        vm_pop_dyn_record(vm);
+      throw;
+    }
+  } // while (true) — only reached on resume-after-match (future work).
+#undef VM_CASE
+#undef VM_NEXT
+#ifdef USE_COMPUTED_GOTO
+#undef USE_COMPUTED_GOTO
+#endif
 }
 
 static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, MultipleValues& multipleValues, T_O** literals,
@@ -1516,6 +1826,7 @@ void VMFrameDynEnv_O::proceed() {
   VirtualMachine& vm = my_thread->_VM;
   vm._stackPointer = this->old_sp;
   vm._framePointer = this->old_fp;
+  vm._dynRecordTop = this->old_dyn_top;
 }
 
 }; // namespace core
@@ -1559,17 +1870,20 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   // being unwound to.
   core::T_O** old_fp = vm._framePointer;
   core::T_O** old_sp = vm._stackPointer;
-  // Push the args and FP for debugging (see backtrace.cc)
-  // This is mildly wasteful of stack space, but when calling bytecode from
-  // non-bytecode the arguments won't be on the VM stack, so this is the
-  // best I got.
-  vm.push(vm._stackPointer, core::make_fixnum(lcc_nargs).raw_());
-  vm.push(vm._stackPointer, (core::T_O*)lcc_args);
-  vm.push(vm._stackPointer, (core::T_O*)old_fp);
+  core::VMDynRecord* old_dyn_top = vm._dynRecordTop;
+  // The args and FP used to be pushed onto the VM stack here for the
+  // benefit of backtrace.cc (see BYTECODE_FRAME_*_OFFSET). The arena
+  // trampoline now saves (closure, nargs, args) at fixed offsets in its
+  // own C++ frame at [rbp-0x20]/[rbp-0x18]/[rbp-0x10], so backtrace can
+  // recover the args from there instead. Commented out — restore if any
+  // path that walks BYTECODE_FRAME_*_OFFSET breaks.
+  // vm.push(vm._stackPointer, core::make_fixnum(lcc_nargs).raw_());
+  // vm.push(vm._stackPointer, (core::T_O*)lcc_args);
+  // vm.push(vm._stackPointer, (core::T_O*)old_fp);
   core::T_O** fp = vm._framePointer = vm._stackPointer;
   core::T_O** sp = vm.push_frame(fp, nlocals);
   try {
-    gctools::StackAllocate<core::VMFrameDynEnv_O> frame(old_sp, old_fp);
+    gctools::StackAllocate<core::VMFrameDynEnv_O> frame(old_sp, old_fp, old_dyn_top);
     gctools::StackAllocate<core::Cons_O> sa_ec(frame.asSmartPtr(), my_thread->dynEnvStackGet());
     core::DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
     gctools::return_type res = bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
@@ -1580,6 +1894,14 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
     return gctools::return_type(nil<core::T_O>().raw_(), 0);
   }
 }
+
+// Legacy-path hook retained for src/core/trampoline/trampoline.cc which is
+// still compiled into libclasp (its IR is also embedded as global_trampoline
+// for target-datalayout extraction). The arena-mode trampolines no longer
+// indirect through this pointer — they call bytecode_call via an absolute
+// address baked into the trampoline template by LLVM. Will be removed when
+// the legacy LLVM trampoline path is deleted.
+gctools::return_type (*g_bytecode_call_ptr)(unsigned char*, core::T_O*, size_t, core::T_O**) = bytecode_call;
 
 }; // extern C
 

@@ -7,6 +7,7 @@
 #include <clasp/core/sourceFileInfo.h>    // source info stuff
 #include <clasp/core/hashTable.h>         // also for source info
 #include <clasp/llvmo/llvmoPackage.h>
+#include <clasp/llvmo/trampolineWork.h> // cmp__compile_trampoline
 #include <clasp/core/bytecode.h>
 #include <algorithm> // max
 

@@ -5808,6 +5808,9 @@
 {fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_Roots" "._AllBytecodeModules")}
+{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::Lisp"
+             :layout-offset-field-names ("_Roots" "._AllGFBytecodeFuns")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::SimpleFun_O>" :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_Roots" "._UnboundCellFunctionEntryPoint")}

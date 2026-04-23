@@ -17,7 +17,8 @@
 #include <clasp/core/package.h>       // making packages
 #include <clasp/core/pathname.h>      // making pathnames
 #include <clasp/core/unixfsys.h>      // cl__truename
-#include <clasp/llvmo/llvmoPackage.h> // cmp__compile_trampoline
+#include <clasp/llvmo/llvmoPackage.h>
+#include <clasp/llvmo/trampolineWork.h> // cmp__compile_trampoline
 #include <clasp/llvmo/llvmoExpose.h>  // native module stuff
 #include <clasp/llvmo/jit.h>
 #include <clasp/llvmo/code.h>
@@ -725,8 +726,8 @@ struct loadltv {
     uint16_t nclosed = read_u16();
     BytecodeModule_sp module = gc::As<BytecodeModule_sp>(get_ltv(read_index()));
     FunctionDescription_sp fdesc = makeFunctionDescription(nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), -1, -1, -1);
-    BytecodeSimpleFun_sp fun = core__makeBytecodeSimpleFun(fdesc, module, nlocals, nclosed, entry_point, final_size,
-                                                           llvmo::cmp__compile_trampoline(nil<T_O>()));
+    core::Pointer_sp tramp = llvmo::cmp__compile_trampoline(nil<T_O>());
+    BytecodeSimpleFun_sp fun = core__makeBytecodeSimpleFun(fdesc, module, nlocals, nclosed, entry_point, final_size, tramp );
     set_ltv(fun, index);
   }
 
@@ -812,8 +813,10 @@ struct loadltv {
     if (gc::IsA<Function_sp>(named)) {
       Function_sp fun = gc::As_unsafe<Function_sp>(named);
       fun->setf_functionName(name);
-      if (gc::IsA<BytecodeSimpleFun_sp>(named))
-        gc::As_unsafe<BytecodeSimpleFun_sp>(named)->set_trampoline(llvmo::cmp__compile_trampoline(name));
+      if (gc::IsA<BytecodeSimpleFun_sp>(named)) {
+        core::Pointer_sp tramp = llvmo::cmp__compile_trampoline(name);
+        gc::As_unsafe<BytecodeSimpleFun_sp>(named)->set_trampoline(tramp);
+      }
     }
   }
 

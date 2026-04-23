@@ -723,9 +723,21 @@ CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup_all_dylibs(const std::string& name) {
   return nil<core::T_O>();
 }
 
+// Set by arena-init code in llvmoPackage.cc around the shared-trampoline and
+// stub-template captures. When true, prepareObjectFileForMaterialization marks
+// the new ObjectFile as transient so the snapshot walker skips it. The
+// ObjectFile is still registered in _AllObjectFiles normally — LLVM's link
+// layer plugin looks up the ObjectFile by name via lookupObjectFile() during
+// link, so it must remain reachable/findable at runtime; only the snapshot
+// save path needs to ignore it.
+thread_local bool t_mark_transient_snapshot = false;
+
 ObjectFile_sp prepareObjectFileForMaterialization(JITDylib_sp dylib, const std::string& uniqueObjectFileName, size_t objectId) {
   core::SimpleBaseString_sp sbs = core::SimpleBaseString_O::make(uniqueObjectFileName);
   ObjectFile_sp codeObject = gc::GC<ObjectFile_O>::allocate<gctools::RuntimeStage>(sbs, unbound<CodeBlock_O>(), dylib, objectId);
+  if (t_mark_transient_snapshot) {
+    codeObject->_TransientSkipSnapshot = true;
+  }
   registerObjectFile<gctools::RuntimeStage>(codeObject);
   return codeObject;
 };

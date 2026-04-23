@@ -144,6 +144,16 @@ void VirtualMachine::startup() {
   this->enable_guards();
   this->_stackPointer = this->_stackBottom;
   (*this->_stackPointer) = NULL;
+
+  // Allocate the dynenv record stack as roots. Size in T_O* slots — each
+  // VMDynRecord occupies sizeof(VMDynRecord)/sizeof(T_O*) slots. Conservative
+  // GC scanning of this block keeps slot0/slot1 alive while a record is live.
+  static_assert(sizeof(VMDynRecord) % sizeof(core::T_O*) == 0,
+                "VMDynRecord must be a multiple of T_O* in size");
+  size_t dynRecordSlots = VirtualMachine::MaxDynRecords * (sizeof(VMDynRecord) / sizeof(core::T_O*));
+  this->_dynRecordBottom = (VMDynRecord*)gctools::GC<T_O>::allocateRootsAndZero(dynRecordSlots);
+  this->_dynRecordLimit = this->_dynRecordBottom + VirtualMachine::MaxDynRecords;
+  this->_dynRecordTop = this->_dynRecordBottom;
 }
 
 void VirtualMachine::enable_guards() {
@@ -175,6 +185,8 @@ VirtualMachine::~VirtualMachine() {
   // We have nothing to free and _stackBottom is just its initial NULL.
   if (this->_stackBottom)
     gctools::GC<T_O>::freeRoots(this->_stackBottom);
+  if (this->_dynRecordBottom)
+    gctools::GC<T_O>::freeRoots((T_O**)this->_dynRecordBottom);
 }
 
 // For main thread initialization - it happens too early and _Nil is undefined

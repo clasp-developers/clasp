@@ -191,7 +191,7 @@ public:
 //
 Lisp::GCRoots::GCRoots()
     : _ClaspJIT(nil<T_O>()), _AllObjectFiles(nil<T_O>()), _AllCodeBlocks(nil<T_O>()), _AllLibraries(nil<T_O>()),
-      _AllBytecodeModules(nil<T_O>()),
+      _AllBytecodeModules(nil<T_O>()), _AllGFBytecodeFuns(nil<T_O>()),
 #ifdef CLASP_THREADS
       _UnboundCellFunctionEntryPoint(unbound<SimpleFun_O>()), _ActiveThreads(nil<T_O>()), _DefaultSpecialBindings(nil<T_O>()),
 #endif

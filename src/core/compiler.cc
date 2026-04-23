@@ -58,6 +58,7 @@ THE SOFTWARE.
 #include <clasp/core/compiler.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/debugger.h>
+#include <clasp/llvmo/trampoline_arena.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/unixfsys.h>
@@ -354,43 +355,29 @@ CL_DEFUN T_sp core__startup_image_pathname(bool extension) {
   return pn;
 };
 
-int global_jit_pid = -1;
-FILE* global_jit_log_stream = NULL;
 bool global_jit_log_symbols = false;
 
+// Route LLVM-ORC per-symbol callbacks through the shared perf-PID.map
+// writer in trampoline_arena.cc so arena trampoline entries and native-
+// compiled symbols coexist in a single file. Without the shared writer,
+// each side would fopen("w") and truncate the other's entries.
 void jit_register_symbol(const std::string& name, size_t size, void* address) {
-  WITH_READ_WRITE_LOCK(globals_->_JITLogMutex);
-  int gpid = getpid();
-  if (global_jit_log_stream && (global_jit_pid != gpid)) {
-    fclose(global_jit_log_stream);
-    global_jit_log_stream = NULL;
-    global_jit_pid = -1;
+  // Strip CR/LF and runs of other control chars from the LLVM symbol name
+  // before logging — some mangled names contain embedded whitespace/control
+  // characters that break the perf-PID.map line-oriented format.
+  char nameBuffer[1024];
+  char* namecur = nameBuffer;
+  char prevchar = ' ';
+  for (int i = 0; i < (int)name.size() && (namecur - nameBuffer) < 1023; i++) {
+    if (name[i] == '\r') continue;
+    if (name[i] == '\n') continue;
+    if (name[i] < 32 && name[i] == prevchar) continue;
+    *namecur = name[i];
+    prevchar = name[i];
+    namecur++;
   }
-  if (global_jit_pid == -1) {
-    global_jit_pid = gpid;
-    stringstream filename;
-    filename << "/tmp/perf-" << gpid << ".map";
-    global_jit_log_stream = fopen(filename.str().c_str(), "w");
-  }
-  if (global_jit_log_stream) {
-    char nameBuffer[1024];
-    char* namecur = nameBuffer;
-    char prevchar = ' ';
-    for (int i = 0; i < name.size() && i < 1023; i++) {
-      if (name[i] == '\r')
-        continue;
-      if (name[i] == '\n')
-        continue;
-      if (name[i] < 32 && name[i] == prevchar)
-        continue;
-      *namecur = name[i];
-      prevchar = name[i];
-      namecur++;
-    }
-    *namecur = '\0';
-    fprintf(global_jit_log_stream, "%0lx %lx %s\n", (uintptr_t)address, size, nameBuffer);
-    fflush(global_jit_log_stream);
-  }
+  *namecur = '\0';
+  llvmo::perf_map_append((uint8_t*)address, size, std::string(nameBuffer));
 }
 
 CL_DEFUN void core__jit_register_symbol(const std::string& name, size_t size, void* address) {
