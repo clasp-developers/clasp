@@ -16,7 +16,6 @@
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/core/unwind.h>                    // DynEnv stuff
-#include <clasp/gctools/boehmGarbageCollection.h> // DynEnv stuff
 #include <clasp/external/thread-pool/thread_pool.h>
 
 THREAD_LOCAL gctools::ThreadLocalStateLowLevel* my_thread_low_level;
