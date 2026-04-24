@@ -955,17 +955,23 @@ function-or-placeholder - the llvm function or a placeholder for
                (cmp:process-bir-lambda-list (bir:lambda-list callee))
              (declare (ignore keyargs aok aux))
              (assert (not key-flag))
-             (let ((largs (length arguments)))
-               (when (or (< largs (car req))
-                         (and (not rest-var)
-                              (> largs (+ (car req) (car opt)))))
+             (let ((largs (length arguments))
+                   (max (if rest-var
+                            nil
+                            (+ (car req) (car opt)))))
+               (when (or (< largs (car req)) (and max (> largs max)))
                  ;; too many or too few args; we can get here from
                  ;; fixed-mv-local-calls for instance.
+                 (cmp:irc-intrinsic "cc_wrong_number_of_arguments"
+                                    (literal (bir:name callee))
+                                    (%size_t largs) (%size_t (car req))
+                                    (%size_t (or max 0)))
+                 ;; TODO: (irc-unreachable)
+                 ;; but it's not a big deal, since llvm knows that
+                 ;; cc_wrong_number_of_arguments is noreturn.
                  (return-from gen-local-call
-                   (translate-cast (closure-call-or-invoke
-                                    (enclose callee :dynamic nil)
-                                    arguments)
-                                   :multiple-values outputrt))))
+                   (llvm-sys:undef-value-get
+                    (return-rtype->llvm outputrt)))))
              (let* ((rest-id (cond ((null rest-var) nil)
                                    ((bir:unused-p rest-var) :unused)
                                    (varest-p :va-rest)
@@ -1057,7 +1063,7 @@ function-or-placeholder - the llvm function or a placeholder for
           (cmp:irc-begin-block mismatch)
           (cmp::irc-intrinsic-call-or-invoke
            "cc_wrong_number_of_arguments"
-           (list (enclose callee :indefinite nil) rnret
+           (list (literal (bir:name callee)) rnret
                  (%size_t nreq) (%size_t nfixed)))
           (cmp:irc-unreachable))
         ;; Generate not-enough-args cases.
