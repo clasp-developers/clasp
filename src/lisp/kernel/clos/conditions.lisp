@@ -1079,7 +1079,11 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
              (let* ((min (min-nargs condition))
                     (max (max-nargs condition))
                     (function (called-function condition))
-                    (name (and function (core:function-name function)))
+                    (name (typecase function
+                            (null 'cl:lambda)
+                            (function (core:function-name function))
+                            ;; assume it's a name, e.g. symbol
+                            (t function)))
                     (dname (if (eq name 'cl:lambda) "anonymous function" name)))
                (format stream "~@[Calling ~a - ~]Got ~d arguments, but expected ~@?"
                        dname (given-nargs condition)
