@@ -235,19 +235,10 @@ __attribute__((visibility("default"))) core::T_O* cc_gatherDynamicExtentRestArgu
   NO_UNWIND_END();
 }
 
-void badKeywordArgumentError(core::T_sp keyword, core::T_sp functionName, core::T_sp lambdaList) {
-  if (functionName.nilp()) {
-    SIMPLE_ERROR("When calling an unnamed function with the lambda list {} the bad keyword argument {} was passed",
-                 _rep_(lambdaList), _rep_(keyword));
-  }
-  SIMPLE_ERROR("When calling {} with the lambda-list {} the bad keyword argument {} was passed", _rep_(functionName),
-               _rep_(lambdaList), _rep_(keyword));
-}
-
 void cc_ifBadKeywordArgumentException(core::T_O* allowOtherKeys, core::T_O* kw, core::T_O* tclosure) {
-  core::Function_sp closure((gc::Tagged)tclosure);
+  core::T_sp closure((gc::Tagged)tclosure);
   if (gctools::tagged_nilp(allowOtherKeys))
-    badKeywordArgumentError(core::T_sp((gc::Tagged)kw), closure->functionName(), closure->lambdaList());
+    throwUnrecognizedKeywordArgumentError(closure, core::T_sp((gc::Tagged)kw));
 }
 };
 
