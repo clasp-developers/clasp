@@ -60,7 +60,7 @@
   (factor 1.0)
   (hash nil)
   (reverse-stack nil)
-  (inverted nil)
+  (inverted t)
   (negate nil)
   (notes "")
   (encoding nil)
@@ -96,7 +96,8 @@
                     red green blue aqua yellow purple orange~%~
    --hash           color by function-name hash (stable across runs)~%~
    --reverse        reverse each stack before merging~%~
-   --inverted       icicle (root at top)~%~
+   --inverted       icicle (root at top) — the default~%~
+   --no-inverted    classic flame graph (root at bottom)~%~
    --negate         switch differential hues~%~
    --notes TEXT     embed a note in the SVG~%~
    --total NUM      override total (max) count~%~
@@ -128,6 +129,7 @@
                ((string= a "--hash")      (setf (opts-hash o) t))
                ((string= a "--reverse")   (setf (opts-reverse-stack o) t))
                ((string= a "--inverted")  (setf (opts-inverted o) t))
+               ((string= a "--no-inverted") (setf (opts-inverted o) nil))
                ((string= a "--negate")    (setf (opts-negate o) t))
                ((or (string= a "--help") (string= a "-h"))
                 (usage)
@@ -456,6 +458,9 @@ and opens new frames from THIS in TMP. Returns THIS."
         (searchcolor (opts-search-color opts)))
     (format nil "~
 <style type=\"text/css\">
+svg { overflow-anchor: none; }
+.func_g { outline: none; }
+.func_g:focus, text:focus { outline: none; }
 .func_g:hover { stroke:black; stroke-width:0.5; cursor:pointer; }
 </style>
 <script type=\"text/ecmascript\">
@@ -721,7 +726,7 @@ and opens new frames from THIS in TMP. Returns THIS."
                      (bg-color1 "#eeeeee" bg-color1-p)
                      (bg-color2 "#eeeeb0" bg-color2-p)
                      total (factor 1.0)
-                     hash reverse-stack inverted negate
+                     hash reverse-stack (inverted t) negate
                      (notes "") encoding
                      (search-color "rgb(230,0,230)")
                      (frame-filter #'default-frame-filter))
@@ -882,11 +887,11 @@ palettes, your value is honored and a warning is printed to
           (emit-text output "rgb(0,0,0)" (opts-font-type opts) fontsize
                      xpad (* fontsize 2)
                      "Reset Zoom"
-                     :extra "id=\"unzoom\" onclick=\"unzoom()\" style=\"opacity:0.0;cursor:pointer\"")
+                     :extra "id=\"unzoom\" tabindex=\"-1\" onclick=\"unzoom()\" style=\"opacity:0.0;cursor:pointer\"")
           (emit-text output "rgb(0,0,0)" (opts-font-type opts) fontsize
                      (- imagewidth xpad 100) (* fontsize 2)
                      "Search"
-                     :extra "id=\"search\" onmouseover=\"searchover()\" onmouseout=\"searchout()\" onclick=\"search_prompt()\" style=\"opacity:0.1;cursor:pointer\"")
+                     :extra "id=\"search\" tabindex=\"-1\" onmouseover=\"searchover()\" onmouseout=\"searchout()\" onclick=\"search_prompt()\" style=\"opacity:0.1;cursor:pointer\"")
           (emit-text output "rgb(0,0,0)" (opts-font-type opts) fontsize
                      (- imagewidth xpad 100) (- imageheight (floor ypad2 2))
                      " " :extra "id=\"matched\"")
@@ -931,7 +936,7 @@ palettes, your value is honored and a warning is printed to
                                (color (opts-colors opts)
                                       (opts-hash opts) func)))))
                  ;; <g>
-                 (format output "<g class=\"func_g\" onmouseover=\"s(this)\" onmouseout=\"c()\" onclick=\"zoom(this)\">~%")
+                 (format output "<g class=\"func_g\" tabindex=\"-1\" onmouseover=\"s(this)\" onmouseout=\"c()\" onclick=\"zoom(this)\">~%")
                  (format output "<title>~A</title>" info)
                  (emit-rect output x1 y1 x2 y2 fill "rx=\"2\" ry=\"2\"")
                  (let* ((chars (floor (/ (- x2 x1)
