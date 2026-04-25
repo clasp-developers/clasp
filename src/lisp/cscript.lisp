@@ -34,6 +34,7 @@
              #~"kernel/lsp/assert.lisp"
              #~"kernel/clos/package.lisp"
              #~"kernel/lsp/ext-package.lisp"
+             #~"kernel/lsp/command-line-extensions.lisp"
              #~"kernel/lsp/arraylib.lisp"
              #~"kernel/lsp/numlib.lisp"
              #~"kernel/lsp/predlib.lisp"
@@ -113,7 +114,6 @@
              #~"kernel/lsp/process.lisp"
              ;; toplevel
              #~"kernel/lsp/top.lisp"
-             #~"kernel/lsp/command-line-extensions.lisp"
              #~"kernel/lsp/top-hook.lisp"
              #~"kernel/install-delayed-macros.lisp"
              :ecclesia

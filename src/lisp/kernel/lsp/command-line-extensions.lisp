@@ -1,4 +1,4 @@
-(in-package #:core)
+(in-package #:ext)
 
 (defvar *command-line-extensions* (make-hash-table :test 'equal)
   "Maps option-string (e.g. \"--swank\" or \"--ext:swank\") to a plist
@@ -9,7 +9,7 @@ of (:takes-arg BOOL :handler FUNCTION :help STRING).")
 OPTION is the literal flag string, e.g. \"--swank\" or \"--ext:swank-port\".
 If TAKES-ARG is true, HANDLER is called with the next token as a string.
 Otherwise HANDLER is called with no arguments.
-HELP is a one-line description shown by ext:print-extension-command-line-help."
+HELP is a one-line description shown by core:print-extension-command-line-help."
   (check-type option string)
   (check-type handler (or symbol function))
   (setf (gethash option *command-line-extensions*)
@@ -37,7 +37,7 @@ Otherwise return NIL."
 (defun process-extension-command-line-arguments ()
   "Walk core:extension-command-line-arguments, dispatching each registered
 option to its handler. Errors on any unclaimed token."
-  (let ((args (extension-command-line-arguments)))
+  (let ((args (core:extension-command-line-arguments)))
     (loop while args
           for arg = (pop args)
           do (multiple-value-bind (eq-name eq-value) (%parse-ext-equals-form arg)
@@ -58,8 +58,3 @@ option to its handler. Errors on any unclaimed token."
                       (funcall (getf spec :handler) value)))
                    (t
                     (funcall (getf spec :handler)))))))))
-
-(export '(register-command-line-option
-          unregister-command-line-option
-          print-extension-command-line-help)
-        :ext)

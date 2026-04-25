@@ -61,7 +61,7 @@
   (call-initialize-hooks)
   (unwind-protect
        (progn
-         (process-extension-command-line-arguments)
+         (ext:process-extension-command-line-arguments)
          (process-command-line-load-eval-sequence)
          (if (is-interactive-lisp)
              (top-level)
