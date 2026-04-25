@@ -646,10 +646,13 @@ Boehm and MPS use a single pointer"
 ;;   or the vaslist is used to access the arguments
 ;;   one after the other with calling-convention.va-arg
 (defstruct calling-convention
+  ;; LLVM value: the closure. This is only used to feed errors, e.g.
+  ;; cc_wrong_number_of_arguments, so it can be a function name rather
+  ;; than an actual function or closure.
   closure
-  nargs
-  register-args ; The arguments that were passed in registers
-  vaslist*      ; The address of the vaslist, or NIL
+  nargs ; LLVM value: number of arguments
+  register-args ; List of LLVM values: The arguments that were passed in registers
+  vaslist*      ; LLVM Value: The address of the vaslist, or NIL
   cleavir-lambda-list-analysis ; analysis of cleavir-lambda-list
   rest-alloc ; whether we can dx or ignore a &rest argument
   )
