@@ -31,7 +31,13 @@
 #include <sys/mman.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <clasp/core/common.h>
+#ifdef _TARGET_OS_DARWIN
+#define _XOPEN_SOURCE 600
 #include <ucontext.h>
+#else
+#include <ucontext.h>
+#endif
 #if defined(__linux__)
 #  include <sys/syscall.h>
 #endif
