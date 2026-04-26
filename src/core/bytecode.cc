@@ -1871,15 +1871,19 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   core::T_O** old_fp = vm._framePointer;
   core::T_O** old_sp = vm._stackPointer;
   core::VMDynRecord* old_dyn_top = vm._dynRecordTop;
-  // The args and FP used to be pushed onto the VM stack here for the
-  // benefit of backtrace.cc (see BYTECODE_FRAME_*_OFFSET). The arena
-  // trampoline now saves (closure, nargs, args) at fixed offsets in its
-  // own C++ frame at [rbp-0x20]/[rbp-0x18]/[rbp-0x10], so backtrace can
-  // recover the args from there instead. Commented out — restore if any
-  // path that walks BYTECODE_FRAME_*_OFFSET breaks.
-  // vm.push(vm._stackPointer, core::make_fixnum(lcc_nargs).raw_());
-  // vm.push(vm._stackPointer, (core::T_O*)lcc_args);
-  // vm.push(vm._stackPointer, (core::T_O*)old_fp);
+  // Push (nargs, args, old_fp) onto the VM stack to build the bytecode VM
+  // frame chain. Backtrace walks this chain via BYTECODE_FRAME_*_OFFSET to
+  // recover (pc, fp) for each parent bytecode frame; the saved fp at offset
+  // 0 also acts as the chain terminator (NULL when called from C, not
+  // bytecode). Without these pushes, only the topmost bytecode frame has
+  // its lexical bindings visible in the debugger — caller bytecode frames
+  // would have no way to find their VM frame pointer.
+  // The args themselves are also recoverable from the arena trampoline's
+  // C frame ([rbp-0x10]); the trampoline path is preferred for args because
+  // it works even for the topmost frame with no caller `call` opcode push.
+  vm.push(vm._stackPointer, core::make_fixnum(lcc_nargs).raw_());
+  vm.push(vm._stackPointer, (core::T_O*)lcc_args);
+  vm.push(vm._stackPointer, (core::T_O*)old_fp);
   core::T_O** fp = vm._framePointer = vm._stackPointer;
   core::T_O** sp = vm.push_frame(fp, nlocals);
   try {

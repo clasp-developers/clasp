@@ -475,9 +475,11 @@ static DebuggerFrame_sp make_bytecode_frame_from_function(BytecodeSimpleFun_sp f
   T_sp closure = (fun->environmentSize() == 0) ? (T_sp)fun : nil<T_O>();
   List_sp bindings = bytecode_bindings_for_pc(fun->code(), bpc, bfp);
   T_sp spi = bytecode_spi_for_pc(fun->code(), bpc);
-  // Recover arguments from the parent trampoline frame's saved-arg area
-  // rather than from the bytecode VM stack (bytecode_call no longer pushes
-  // the args/FP metadata that used to live at fp - BYTECODE_FRAME_*_OFFSET).
+  // Recover arguments from the parent trampoline frame's saved-arg area.
+  // The VM stack also has nargs/args at fp - BYTECODE_FRAME_NARGS_OFFSET /
+  // ARGS_OFFSET (pushed by bytecode_call for the chain walk), but the
+  // trampoline path also yields the closure and works uniformly for every
+  // bytecode_call C frame.
   ql::list largs;
   bool args_available = false;
   T_sp tramp_closure;
@@ -498,14 +500,21 @@ static DebuggerFrame_sp make_bytecode_frame_from_function(BytecodeSimpleFun_sp f
 
 static DebuggerFrame_sp make_bytecode_frame(size_t frameIndex, unsigned char*& pc, T_O**& fp,
                                              void* bytecode_call_fbp) {
-  // Get the PC for the current bytecode frame. The fp chain that used to be
-  // walked here (fp - BYTECODE_FRAME_PC_OFFSET / FP_OFFSET) is no longer
-  // populated by bytecode_call, so we don't advance pc/fp for nested
-  // bytecode frames; only the top-of-stack bytecode frame is reported.
+  // Snapshot (pc, fp) for the current bytecode frame, then advance the
+  // by-ref pc/fp to the caller's bytecode frame using the VM-stack chain
+  // bytecode_call builds (nargs/args/old_fp pushes; the PC at offset 3
+  // came from the caller's `call` opcode push). Each subsequent C frame
+  // named "bytecode_call" picks up its own (pc, fp) via this advance, so
+  // every bytecode frame in the backtrace gets its lexical bindings.
+  // The walk terminates naturally: when bytecode is invoked from C++, the
+  // saved old_fp at offset 0 is NULL (vm._framePointer was NULL), so the
+  // next iteration sees fp == NULL and stops.
   void* bpc = pc;
   T_O** bfp = fp;
-  pc = nullptr;
-  fp = nullptr;
+  if (fp) {
+    pc = (unsigned char*)(*(fp - BYTECODE_FRAME_PC_OFFSET));
+    fp = (T_O**)(*(fp - BYTECODE_FRAME_FP_OFFSET));
+  }
   // Find the bytecode module containing the current pc.
   List_sp modules = _lisp->_Roots._AllBytecodeModules.load(std::memory_order_relaxed);
   for (auto mods : modules) {
