@@ -3611,8 +3611,14 @@ CL_DEFUN core::T_sp FunctionType_O::get(llvm::Type* result_type, core::T_sp para
   return translate::to_object<llvm::FunctionType*>::convert(result);
 };
 
-// I can't get the following to work yet
-// CL_EXTERN_DEFMETHOD(FunctionType_O, &llvm::FunctionType::getReturnType);
+// Doesn't work. Clang complains it can't instantiate std::invoke:
+// note: candidate template ignored: substitution failure [with _Callable = llvm::Type *(llvm::FunctionType::*)() const, _Args = <PointerToExternalType>]: no type named 'type' in 'std::invoke_result<llvm::Type *(llvm::FunctionType::*)() const, llvm::Type *>'
+// I don't know why we're giving it a Type rather than a FunctionType.
+//CL_EXTERN_DEFMETHOD(FunctionType_O, &llvm::FunctionType::getReturnType);
+CL_DEFUN core::T_sp llvm_sys__function_type_return_type(llvmo::FunctionType_sp ftype) {
+  llvm::FunctionType* fty = ftype->wrapped();
+  return translate::to_object<llvm::Type*>::convert(fty->getReturnType());
+}
 
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp llvm_sys__function_type_param_types(llvmo::FunctionType_sp ftype) {
