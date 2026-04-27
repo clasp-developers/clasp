@@ -236,8 +236,6 @@ a_p = a_p_temp; a = a_temp;
         (irc-cond-br evenp kw-loop odd-kw)
         ;; There have been an odd number of arguments, so signal an error.
         (irc-begin-block odd-kw)
-        (unless (calling-convention-closure calling-conv)
-          (error "The calling-conv ~s does not have a closure" calling-conv))
         (irc-intrinsic "cc_oddKeywordException"
                        (calling-convention-closure calling-conv))
         (irc-unreachable))
