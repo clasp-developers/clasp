@@ -160,7 +160,9 @@
            (let ((rt '()))
              (cleavir-set:doset (call calls rt)
                (let* ((call-arg (nth pos (rest (bir:inputs call))))
-                      (next-rt (definition-rtype call-arg))
+                      (next-rt (if call-arg
+                                   (definition-rtype call-arg)
+                                   nil))
                       (real-next-rt
                         (cond ((null next-rt) nil)
                               ((member next-rt '(:vaslist
@@ -702,7 +704,9 @@
   (let ((args (rest (bir:inputs instruction))))
     (loop for item in (bir:lambda-list (bir:callee instruction))
           while (typep item 'bir:argument)
-          do (maybe-cast-before instruction (pop args) (cc-bmir:rtype item)))
+          do (let ((arg (pop args)))
+               (when arg ; there may not be enough arguments
+                 (maybe-cast-before instruction arg (cc-bmir:rtype item)))))
     (loop until (null args)
           do (maybe-cast-before instruction (pop args) '(:object))))
   (cast-local-call-output instruction))
