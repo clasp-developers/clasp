@@ -17,34 +17,8 @@
    ;; NIL if there's no XEP.
    (%prototype :initarg :prototype :reader prototype)))
 
-(defun lambda-list-too-hairy-p (lambda-list)
-  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs aok aux varest-p)
-      (cmp:process-bir-lambda-list lambda-list)
-    (declare (ignore reqargs optargs keyargs aok aux rest-var varest-p))
-    key-flag))
-
-(defun nontrivial-mv-local-call-p (call)
-  (cond ((typep call 'cc-bmir:fixed-mv-local-call)
-         ;; Could still be nontrivial if the number of arguments is wrong
-         (multiple-value-bind (req opt rest)
-             (cmp:process-bir-lambda-list (bir:lambda-list (bir:callee call)))
-           (let ((lreq (length (cc-bmir:rtype (second (bir:inputs call))))))
-             (or (< lreq (car req))
-                 (and (not rest) (> lreq (+ (car req) (car opt))))))))
-        ((typep call 'bir:mv-local-call) t)
-        (t nil)))
-
 (defun xep-needed-p (function)
   (or (bir:enclose function)
-      ;; We need a XEP for more involved lambda lists.
-      (lambda-list-too-hairy-p (bir:lambda-list function))
-      ;; or for mv-calls that might need to signal an error.
-      (and (cleavir-set:some #'nontrivial-mv-local-call-p
-                             (bir:local-calls function))
-           (multiple-value-bind (req opt rest)
-               (cmp:process-bir-lambda-list (bir:lambda-list function))
-             (declare (ignore opt))
-             (or (plusp (car req)) (not rest))))
       ;; Assume that a function with no enclose and no local calls is
       ;; toplevel and needs an XEP. Else it would have been removed or
       ;; deleted as it is unreferenced otherwise.
