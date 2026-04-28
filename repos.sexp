@@ -1,4 +1,33 @@
-((:name :acclimation
+(
+
+ (:name :cl-unicode
+  :extension :cando
+  :directory "src/lisp/kernel/contrib/cl-unicode/"
+  :repository "https://github.com/edicl/cl-unicode.git"
+  :branch "master"
+  :pin 1)
+
+ (:name :cl-interpol
+  :extension :cando
+  :directory "src/lisp/kernel/contrib/cl-interpol/"
+  :repository "https://github.com/edicl/cl-interpol.git"
+  :branch "master"
+  :pin 1)
+
+ (:name :cl-csv
+  :extension :cando
+  :directory "src/lisp/kernel/contrib/cl-csv/"
+  :repository "https://github.com/AccelerationNet/cl-csv.git"
+  :branch "master"
+  :pin 1)
+ (:name :iterate
+  :extension :cando
+  :directory "src/lisp/kernel/contrib/iterate/"
+  :repository "https://github.com/lisp-mirror/iterate.git"
+  :branch "master"
+  :pin 1)
+
+(:name :acclimation
   :directory "src/lisp/kernel/contrib/Acclimation/"
   :repository "https://github.com/robert-strandh/Acclimation.git"
   :branch "master"
@@ -422,4 +451,5 @@
   :repository "https://github.com/usocket/usocket.git"
   :branch "master"
   :commit "32f4841b4313d37c36963d0d1865135ee4e29a01"
-  :pin 1))
+  :pin 1)
+ )
