@@ -107,6 +107,11 @@
     (compile-bytecode-into (core:bytecode-module/bytecode bcmodule)
                            annots constants funmap irmodule)))
 
+(defun compile-bcfun-into (bcfun irmodule)
+  (let* ((bcmod (core:simple-fun-code bcfun))
+         (funmap (compile-bcmodule-into bcmod irmodule)))
+    (finfo-irfun (find-bcfun bcfun funmap))))
+
 ;;; Shared entry point for both runtime and compile-file-time.
 (defun compile-bytecode-into (bytecode annotations literals funmap
                               irmodule)
@@ -333,7 +338,8 @@
     :mvals (mvals context) :module (module context)
     :blockmap (blockmap context) :funmap (funmap context)
     :reachablep (reachablep context)
-    :optimize-stack (optimize-stack context) :policy (policy context)))
+    :optimize-stack (optimize-stack context) :policy (policy context)
+    :inline-stack (inline-stack context)))
 
 (defun compute-args (args literals)
   (loop for (type . value) in args
@@ -477,6 +483,11 @@
    ;; A stack of normalized optimize specifications.
    ;; entering a bytecode-ast-decls pushes one, exiting pops.
    (%optimize-stack :initarg :optimize-stack :accessor optimize-stack :type list)
+   ;; A stack of pairs of lists. The cars are lists of fnames locally
+   ;; declared INLINE, the cdrs NOTINLINE.
+   ;; entering a bytecode-ast-decls pushes one, exiting pops.
+   (%inline-stack :initform nil :initarg :inline-stack
+                  :accessor inline-stack :type list)
    (%policy :initarg :policy :accessor policy)
    (%variable-stack :initform nil :initarg :variable-stack
                     :accessor variable-stack :type list)
@@ -610,16 +621,75 @@
     (setf (mvals context) nil) ; invalidate for self-consistency checks
     (compile-call nargs inserter context)))
 
+;;; Check if we should inline a function. Right now this just means
+;;; looking for an explicit INLINE declaration or proclamation.
+(defun inline-p (fname context)
+  (let* (;; NOTE: inline-stack can be nil sometimes, in which case
+         ;; we obviously want INLINE and NOTINLINE to be nil.
+         (latest-inline (first (inline-stack context)))
+         (inline (car latest-inline)) (notinline (cdr latest-inline)))
+    (let ((global (clasp-cleavir::global-inline-status fname)))
+      (ecase global
+        ((cl:inline)
+         (not (member fname notinline :test #'equal)))
+        ((nil cl:notinline)
+         (member fname inline :test #'equal))))))
+
+;;; Check if a lambda list accepts N args. We don't want to make
+;;; invalid local calls.
+;;; Recapitulates generic-function-min-max-args and is yet another
+;;; lambda list reprocessing operation. FIXME
+(defun lambda-list-accepts-nargs-p (lambda-list nargs)
+  (multiple-value-bind (req opt restvar keyflag)
+      (core:process-lambda-list lambda-list 'function)
+    (and (>= nargs (car req))
+      (if (or restvar keyflag)
+          t
+          (<= nargs (+ (car req) (car opt)))))))
+
+;;; Compile in a BIR:FUNCTION for a callee if there is an inline
+;;; definition available, and the callee is not NOTINLINE, and
+;;; the call is facially valid. NARGS can be either a nonnegative
+;;; integer, in which case it's an argcount, or NIL, meaning it's an
+;;; mv call and validity doesn't need to be checked.
+;;; CALLEE is the BIR:DATUM for the callee, probably an OUTPUT.
+;;; If the conditions are not met, returns NIL.
+(defun inline-callee (callee nargs context)
+  (when (and (typep callee 'bir:output)
+          (typep (bir:definition callee) 'bir:constant-fdefinition))
+    (let* ((fcell (bir:input (bir:definition callee)))
+           (fname (bir:function-name fcell)))
+      (when (inline-p fname context)
+        (let ((inline-data
+                (or ; TODO: environment lookup
+                  ;; so that we can store inline defs at compile time
+                  ;; FIXME: broken on FCGEs yet again
+                  (and (fboundp fname)
+                    (let ((f (fdefinition fname)))
+                      (and (typep f 'core:bytecode-simple-fun) f))))))
+          (when inline-data
+            (multiple-value-bind (lambda-list lambda-list-p)
+                (ext:function-lambda-list inline-data)
+              (when (or (not nargs)
+                      (and lambda-list-p
+                        (lambda-list-accepts-nargs-p lambda-list nargs)))
+                (compile-bcfun-into inline-data (module context))))))))))
+
 (defun compile-call (nargs inserter context)
   (let* ((args (gather context nargs))
          (callee (stack-pop context))
          (ftype (callee-ftype callee inserter))
          (rargs (type-wrap-arguments ftype args inserter context))
          (out (make-instance 'bir:output))
-         (sys clasp-cleavir::*clasp-system*))
-    (build:insert inserter 'bir:call
-                  :inputs (list* callee rargs)
-                  :outputs (list out))
+         (sys clasp-cleavir::*clasp-system*)
+         (inline-callee (inline-callee callee nargs context)))
+    (if inline-callee
+        (build:insert inserter 'bir:local-call
+                      :inputs (list* inline-callee rargs)
+                      :outputs (list out))
+        (build:insert inserter 'bir:call
+                      :inputs (list* callee rargs)
+                      :outputs (list out)))
     (compile-type-decl :return (ctype:function-values ftype sys) out
                        inserter context)))
 
@@ -1061,7 +1131,8 @@
         (callee (stack-pop context))
         (out (make-instance 'bir:output)))
     (check-type previous (cons (eql :multiple-values) cons))
-    (let* ((last-arg (second previous))
+    (let* ((inline-callee (inline-callee callee nil context))
+           (last-arg (second previous))
            (lastdef (bir:definition last-arg))
            (mv (bir:output lastdef))
            (args (reverse (rest previous)))
@@ -1075,8 +1146,12 @@
       (change-class lastdef 'bir:values-collect
                     :inputs (append (butlast args) (bir:inputs lastdef)))
       ;; Generate the actual call
-      (build:insert inserter 'bir:mv-call
-                    :inputs (list callee mv) :outputs (list out))
+      (if inline-callee
+          (build:insert inserter 'bir:mv-local-call
+                        :inputs (list inline-callee mv)
+                        :outputs (list out))
+          (build:insert inserter 'bir:mv-call
+                        :inputs (list callee mv) :outputs (list out)))
       (build:terminate inserter 'bir:jump
                        :inputs () :outputs () :next (list after))
       (build:begin inserter after))
@@ -1605,13 +1680,27 @@
   (when (degenerate-annotation-p annot)
     (return-from start-annotation))
   (loop with opt = (first (optimize-stack context))
+        with old-inline = (first (inline-stack context))
+        with inline = (cons (copy-list (car old-inline))
+                            (copy-list (cdr old-inline)))
         for (spec . rest) in (core:bytecode-ast-decls/decls annot)
         do (case spec
              ((cl:optimize)
               (setf opt
                     (policy:normalize-optimize clasp-cleavir:*clasp-system*
-                                               (append (copy-list rest) opt)))))
-        finally (push opt (optimize-stack context))
+                                               (append (copy-list rest) opt))))
+             ((cl:notinline)
+              (setf (cdr inline)
+                    (union (cdr inline) rest :test #'equal)
+                    (car inline)
+                    (set-difference (car inline) rest :test #'equal)))
+             ((cl:inline)
+              (setf (car inline)
+                    (union (car inline) rest :test #'equal)
+                    (cdr inline)
+                    (set-difference (cdr inline) rest :test #'equal))))
+        finally (push inline (inline-stack context))
+                (push opt (optimize-stack context))
                 (setf (policy context)
                       (policy:compute-policy clasp-cleavir:*clasp-system* opt))))
 (defmethod end-annotation ((annot core:bytecode-ast-decls)
@@ -1619,6 +1708,7 @@
   (declare (ignore inserter))
   (when (degenerate-annotation-p annot)
     (return-from end-annotation))
+  (pop (inline-stack context))
   (pop (optimize-stack context))
   (setf (policy context) (policy:compute-policy clasp-cleavir:*clasp-system*
                                                 (first (optimize-stack context)))))
