@@ -28,6 +28,9 @@ THE SOFTWARE.
 
 /* Define a C++ GMP wrapper */
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-literal-operator"
 #include <gmpxx.h>
+#pragma clang diagnostic pop
 
 typedef mpz_class Bignum;
