@@ -18,11 +18,7 @@
    (%prototype :initarg :prototype :reader prototype)))
 
 (defun xep-needed-p (function)
-  (or (bir:enclose function)
-      ;; Assume that a function with no enclose and no local calls is
-      ;; toplevel and needs an XEP. Else it would have been removed or
-      ;; deleted as it is unreferenced otherwise.
-      (cleavir-set:empty-set-p (bir:local-calls function))))
+  (or (bir:enclose function) (bir:entry-point-p function)))
 
 (defun argument-rtype->llvm (arg)
   (let ((rtype (cc-bmir:rtype arg)))
@@ -2202,6 +2198,7 @@ function-or-placeholder - the llvm function or a placeholder for
                   :name (make-symbol (format nil "~a-CALLER-START" signature))
                   :function caller :dynamic-environment caller)))
     (cleavir-set:nadjoinf (bir:functions module) caller)
+    (cleavir-set:nadjoinf (bir:entry-points module) caller)
     (setf (bir:start caller) iblock
           (bir:lambda-list caller) arguments)
     (build:begin inserter iblock)

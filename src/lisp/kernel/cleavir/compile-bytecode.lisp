@@ -188,19 +188,20 @@
                            (disassemble nil))
   (multiple-value-bind (module funmap)
       (compile-bcmodule (core:simple-fun-code function))
-    (bir:remove-unused-values module)
-    (bir:verify module)
-    (when disassemble
-      (cleavir-bir-disassembler:display module))
-    (clasp-cleavir::bir-transformations module system)
-    (dissociate-inappropriate-closures (fmap funmap))
-    (let (;; Ensure any closures have the same layout as original
-          ;; bytecode closures, so the simple fun can be swapped
-          ;; out transparently.
-          (clasp-cleavir::*fixed-closures*
-            (fixed-closures-map (fmap funmap)))
-          (bir (finfo-irfun (find-bcfun function funmap))))
-      (clasp-cleavir::bir->function bir :abi abi))))
+    (let ((bir (finfo-irfun (find-bcfun function funmap))))
+      (cleavir-set:nadjoinf (bir:entry-points module) bir)
+      (bir:remove-unused-values module)
+      (bir:verify module)
+      (when disassemble
+        (cleavir-bir-disassembler:display module))
+      (clasp-cleavir::bir-transformations module system)
+      (dissociate-inappropriate-closures (fmap funmap))
+      (let (;; Ensure any closures have the same layout as original
+            ;; bytecode closures, so the simple fun can be swapped
+            ;; out transparently.
+            (clasp-cleavir::*fixed-closures*
+              (fixed-closures-map (fmap funmap))))
+        (clasp-cleavir::bir->function bir :abi abi)))))
 
 ;;; Given a bytecode module, compute native functions for all bytecode functions
 ;;; in it, and install them as new simple funs. Return value irrelevant.
@@ -209,6 +210,12 @@
                        &key (abi clasp-cleavir::*abi-x86-64*)
                          (system clasp-cleavir:*clasp-system*))
   (multiple-value-bind (irmodule funmap) (compile-bcmodule module)
+    (loop for info across (core:bytecode-module/debug-info module)
+          when (typep info 'core:bytecode-simple-fun)
+            do (let ((finfo (find-bcfun info funmap)))
+                 (when finfo
+                   (cleavir-set:nadjoinf (bir:entry-points irmodule)
+                                         (finfo-irfun finfo)))))
     (bir:remove-unused-values irmodule)
     (clasp-cleavir::bir-transformations irmodule system)
     (dissociate-inappropriate-closures (fmap funmap))
@@ -1835,7 +1842,14 @@
          (literals (compute-compiled-literals literals-info irmodule funmap)))
     (compile-bytecode-into bytecode debug-info literals funmap
                            irmodule)
+    (loop for info across debug-info
+          when (typep info 'cmp:cfunction)
+            do (let ((finfo (find-bcfun info funmap)))
+                 (when finfo
+                   (cleavir-set:nadjoinf (bir:entry-points irmodule)
+                                         (finfo-irfun finfo)))))
     (bir:remove-unused-values irmodule)
+    (bir:verify irmodule)
     ;;(cleavir-bir-disassembler:display irmodule) (terpri)
     (clasp-cleavir::bir-transformations irmodule clasp-cleavir:*clasp-system*)
     (dissociate-inappropriate-closures (fmap funmap))

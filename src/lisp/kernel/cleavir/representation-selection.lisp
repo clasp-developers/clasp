@@ -427,16 +427,15 @@
   (when (member returni-input *chasing-rtypes-of* :test #'eq)
     (return-from return-use-rtype '()))
   (let ((*chasing-rtypes-of* (cons returni-input *chasing-rtypes-of*))
-        (rt nil)
-        (local-calls (bir:local-calls function)))
-    (if (or (bir:enclose function) (cleavir-set:empty-set-p local-calls))
-        ;; The function is enclosed, so it could be called from anywhere, and
-        ;; we need to use the pessimistic protocol. No enclose and no local
-        ;; calls means it's the top level function, so the same situation.
+        (rt nil))
+    (if (or (bir:enclose function) (bir:entry-point-p function))
+        ;; The function is enclosed or an entry point,
+        ;; so it could be called from anywhere,
+        ;; and we need to use the pessimistic protocol.
         :multiple-values
         ;; No enclose, so we can look at all the call sites, and if they're
         ;; amenable, do something smarter.
-        (cleavir-set:doset (call local-calls rt)
+        (cleavir-set:doset (call (bir:local-calls function) rt)
           (setf rt (max-rtype rt (use-rtype (bir:output call))))))))
 
 (defgeneric compute-rtype (datum))
