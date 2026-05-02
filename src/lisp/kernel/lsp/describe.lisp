@@ -55,17 +55,17 @@
 (defun select-? ()
   (terpri)
   (format t
-	  "Inspect commands:~%~
-                n (or N or Newline):    inspects the field (recursively).~%~
-                s (or S):               skips the field.~%~
-                p (or P):               pretty-prints the field.~%~
-                a (or A):               aborts the inspection ~
-                                        of the rest of the fields.~%~
-                u (or U) form:          updates the field ~
-                                        with the value of the form.~%~
-                e (or E) form:          evaluates and prints the form.~%~
-                q (or Q):               quits the inspection.~%~
-                ?:                      prints this.~%~%"))
+          "Inspect commands:~@
+           n (or N or Newline):    inspects the field (recursively).~@
+           s (or S):               skips the field.~@
+           p (or P):               pretty-prints the field.~@
+           a (or A):               aborts the inspection ~
+                                   of the rest of the fields.~@
+           u (or U) form:          updates the field ~
+                                   with the value of the form.~@
+           e (or E) form:          evaluates and prints the form.~@
+           q (or Q):               quits the inspection.~@
+           ?:                      prints this.~2%"))
 
 (defun read-inspect-command (label object allow-recursive)
   (declare (special *quit-tag* *quit-tags*))
@@ -149,6 +149,8 @@
              (terpri))))
 
 (defmacro inspect-print (label object &optional place)
+  (when (stringp label)
+    (setf label `(formatter ,label)))
   (if place
       `(multiple-value-bind (update-flag new-value)
            (read-inspect-command ,label ,object nil)
@@ -256,17 +258,17 @@
 (defun inspect-cons (cons)
   (format t "~S - cons" cons)
   (when *inspect-mode*
-        (do ((i 0 (1+ i))
-             (l cons (cdr l)))
-            ((atom l)
-             (case l
-	       ((t nil) ;; no point in inspecting recursively t nor nil.
-		(inspect-print (format nil "nthcdr ~D: ~~S" i) l))
-	       (t
-		(inspect-recursively (format nil "nthcdr ~D:" i)
-				     l (cdr (nthcdr (1- i) cons))))))
-          (inspect-recursively (format nil "nth ~D:" i)
-                               (car l) (nth i cons)))))
+    (do ((i 0 (1+ i))
+         (l cons (cdr l)))
+        ((atom l)
+         (case l
+	         ((t nil) ;; no point in inspecting recursively t nor nil.
+		        (inspect-print (format nil "nthcdr ~D: ~~S" i) l))
+	         (t
+		        (inspect-recursively (format nil "nthcdr ~D:" i)
+				                         l (cdr (nthcdr (1- i) cons))))))
+      (inspect-recursively (format nil "nth ~D:" i)
+                           (car l) (nth i cons)))))
 
 (defun inspect-string (string)
   (format t (if (simple-string-p string) "~S - simple string" "~S - string")
@@ -466,28 +468,27 @@ q (or Q):             quits the inspection.~%~
   (when (and (not *inspect-mode*)
              (or (> *inspect-level* 5)
                  (member object *inspect-history*)))
-        (prin1 object)
-        (return-from inspect-object))
+    (prin1 object)
+    (return-from inspect-object))
   (incf *inspect-level*)
   (push object *inspect-history*)
   (catch 'ABORT-INSPECT
     (let ((* object))
-         (cond
-	       ((symbolp object) (inspect-symbol object))
-               ((packagep object) (inspect-package object))
-               ((characterp object) (inspect-character object))
-               ((numberp object) (inspect-number object))
-               ((consp object) (inspect-cons object))
-               ((stringp object) (inspect-string object))
-               ((vectorp object) (inspect-vector object))
-               ((arrayp object) (inspect-array object))
-               ((hash-table-p object) (inspect-hashtable object))
-               ;; Note that this needs to get generic functions,
-               ;; so keep it before the instancep test.
-               ((functionp object) (inspect-function object))
-	       ((sys:instancep object) (inspect-instance object))
-               ((sys:cxx-object-p object) (describe-object object *standard-output*))
-               (t (format t "~S - ~S" object (type-of object)))))))
+      (cond ((symbolp object) (inspect-symbol object))
+            ((packagep object) (inspect-package object))
+            ((characterp object) (inspect-character object))
+            ((numberp object) (inspect-number object))
+            ((consp object) (inspect-cons object))
+            ((stringp object) (inspect-string object))
+            ((vectorp object) (inspect-vector object))
+            ((arrayp object) (inspect-array object))
+            ((hash-table-p object) (inspect-hashtable object))
+            ;; Note that this needs to get generic functions,
+            ;; so keep it before the instancep test.
+            ((functionp object) (inspect-function object))
+	          ((sys:instancep object) (inspect-instance object))
+            ((sys:cxx-object-p object) (describe-object object *standard-output*))
+            (t (format t "~S - ~S" object (type-of object)))))))
 
 (defun default-inspector (object)
   "Args: (object)
@@ -516,17 +517,17 @@ inspect commands, or type '?' to the inspector."
   object)
 
 (defun describe (object &optional (stream *standard-output*)
-			&aux (*inspect-mode* nil)
-                             (*inspect-level* 0)
-                             (*inspect-history* nil)
-                             (*print-level* nil)
-                             (*print-length* nil)
-			     (*standard-output* (cond ((streamp stream) stream)
-			                              ((null stream) *standard-output*)
-						      ((eq stream t) *terminal-io*)
-						      (t (error 'type-error
-						                :datum stream
-								:expected-type '(or stream t nil))))))
+			           &aux (*inspect-mode* nil)
+                      (*inspect-level* 0)
+                      (*inspect-history* nil)
+                      (*print-level* nil)
+                      (*print-length* nil)
+			                (*standard-output* (cond ((streamp stream) stream)
+			                                         ((null stream) *standard-output*)
+						                                   ((eq stream t) *terminal-io*)
+						                                   (t (error 'type-error
+						                                             :datum stream
+								                                         :expected-type '(or stream t nil))))))
   "Args: (object &optional (stream *standard-output*))
 Prints information about OBJECT to STREAM."
   (terpri)

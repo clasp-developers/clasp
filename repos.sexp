@@ -206,21 +206,18 @@
  (:name :incless
   :directory "src/lisp/kernel/contrib/Incless/"
   :repository "https://github.com/s-expressionists/Incless.git"
-  :branch "main"
-  :commit "3a8ace620f1042a54ecbba04a05c816e89aa8eab"
-  :pin 1)
+  :branch "host"
+  :pin o)
  (:name :inravina
   :directory "src/lisp/kernel/contrib/Inravina/"
   :repository "https://github.com/s-expressionists/Inravina.git"
-  :branch "main"
-  :commit "a1c98c87efee5a8b5d244d116a8520981c252fff"
-  :pin 1)
+  :branch "host"
+  :pin 0)
  (:name :invistra
   :directory "src/lisp/kernel/contrib/Invistra/"
   :repository "https://github.com/s-expressionists/Invistra.git"
-  :branch "main"
-  :commit "33758cc91db36ebec46df51da7235ffcf2482b0b"
-  :pin 1)
+  :branch "alt-parse-3"
+  :pin 0)
  (:name :khazern
   :directory "src/lisp/kernel/contrib/Khazern/"
   :repository "https://github.com/s-expressionists/Khazern.git"
@@ -270,9 +267,8 @@
  (:name :nontrivial-gray-streams
   :directory "src/lisp/kernel/contrib/nontrivial-gray-streams/"
   :repository "https://github.com/yitzchak/nontrivial-gray-streams.git"
-  :branch "main"
-  :commit "0f7ba9e3018eafe03c521961183a126a2a9c0c4f"
-  :pin 1)
+  :branch "host"
+  :pin 0)
  (:name :parser.common-rules
   :extension :cando
   :directory "src/lisp/kernel/contrib/parser.common-rules/"
@@ -295,11 +291,10 @@
   :commit "47a70ba1e32362e03dad6ef8e6f36180b560f86a"
   :pin 1)
  (:name :quaviver
-  :directory "src/lisp/kernel/contrib/quaviver/"
-  :repository "https://github.com/s-expressionists/quaviver.git"
-  :branch "main"
-  :commit "6d0ee719fef9dca72b4da8dd48d99c66feb317f3"
-  :pin 1)
+  :directory "src/lisp/kernel/contrib/Quaviver/"
+  :repository "https://github.com/s-expressionists/Quaviver.git"
+  :branch "host"
+  :pin 0)
  (:name :quicklisp-client
   :directory "dependencies/quicklisp-client/"
   :repository "https://github.com/quicklisp/quicklisp-client.git"
