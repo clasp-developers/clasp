@@ -216,7 +216,7 @@
  (:name :invistra
   :directory "src/lisp/kernel/contrib/Invistra/"
   :repository "https://github.com/s-expressionists/Invistra.git"
-  :branch "host"
+  :branch "alt-parse-3"
   :pin 0)
  (:name :khazern
   :directory "src/lisp/kernel/contrib/Khazern/"

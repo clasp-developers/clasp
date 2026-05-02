@@ -54,6 +54,7 @@
 (defvar *outer-exit* nil)
 
 (defun format-with-client (client destination control &rest args)
+  (declare (ignore client))
   (let ((*format-output* (cond ((null destination)
                                 (make-string-output-stream))
                                ((eq destination t)
