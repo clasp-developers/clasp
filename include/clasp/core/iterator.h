@@ -36,9 +36,17 @@ namespace core {
 
 SMART(Iterator);
 class Iterator_O : public General_O {
-  LISP_CLASS(core, CorePkg, Iterator_O, "Iterator", General_O);
+  LISP_ABSTRACT_CLASS(core, CorePkg, Iterator_O, "Iterator", General_O);
 
 public:
+  // Untagged C++ subclasses (e.g. clbind::Iterator<X>) don't have their own
+  // LISP_CLASS-generated __class() override.  Without this, virtual dispatch
+  // walks past us to General_O::__class() and instances report General_O as
+  // their class — breaking single-dispatch on iterator= and similar.
+  virtual core::Instance_sp __class() const override {
+    return core::lisp_getStaticClass(Iterator_O::static_ValueStampWtagMtag);
+  }
+
   void initialize() override;
 
 private:

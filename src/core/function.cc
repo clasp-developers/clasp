@@ -351,7 +351,7 @@ CoreFun_sp makeCoreFun(FunctionDescription_sp fdesc,
 }
 
 SimpleFun_sp makeSimpleFun(FunctionDescription_sp tfdesc, const ClaspXepTemplate& entry_point) {
-  return gctools::GC<SimpleFun_O>::allocate(tfdesc, nil<T_O>(), entry_point);
+  return gctools::GC<XepSimpleFun_O>::allocate(tfdesc, nil<T_O>(), entry_point);
 }
 
 SimpleCoreFun_sp makeSimpleCoreFun(FunctionDescription_sp tfdesc, const ClaspXepTemplate& entry_point, CoreFun_sp lep) {
