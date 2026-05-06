@@ -240,8 +240,7 @@ int startup_clasp(void** stackMarker, gctools::ClaspInfo* claspInfo, int* exitCo
 #if defined(USE_BOEHM)
   gctools::startupBoehm(claspInfo); // Correct
 #elif defined(USE_MMTK)
-  int exitCode = gctools::initializeMmtk(startupFn, claspInfo->_argc, claspInfo->_argv, claspInfo->_mpiEnabled, claspInfo->_mpiRank,
-                                         claspInfo->_mpiSize);
+  gctools::initializeMmtk(claspInfo);
 #endif
 
   my_thread->startUpVM();

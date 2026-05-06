@@ -4,6 +4,7 @@ src/mps/
 src/bdwgc/
 src/libatomic_ops/
 src/schubfach/
+src/mmtk-core/
 GPATH
 GRTAGS
 GTAGS
@@ -64,3 +65,4 @@ makefile
 rosetta.tar
 *.sif
 systems.tar
+src/mmtk_clasp/target/

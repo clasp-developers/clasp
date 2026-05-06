@@ -1,44 +1,64 @@
 #pragma once
 
-extern THREAD_LOCAL MMTk_Mutator my_mutator;
+// Allocation via MMTk.
+//
+// MMTk allocates a block starting at alloc_start.  Clasp's Header_s sits at
+// alloc_start, so the MMTk ObjectReference (client pointer) is
+// alloc_start + sizeof(Header_s) = alloc_start + OBJECT_REF_OFFSET.
+
+#include <cstdlib>
+#include <cstring>
 
 namespace gctools {
 
-#define DOALLOC(true_size) reinterpret_cast<Header_s*>(alloc(my_mutator, true_size, 8, 0, 0))
-#define DO_CONS_ALLOC(true_size) DOALLOC(true_size)
-#define DO_ATOMIC_ALLOC(true_size) DOALLOC(true_size)
-#define DO_WEAK_ALLOC(true_size) DOALLOC(true_size)
-#define DO_GENERAL_ALLOC(true_size) DOALLOC(true_size)
-#define DO_UNCOLLECTABLE_ALLOC(true_size) DOALLOC(true_size)
-
-template <typename Cons, typename... ARGS> inline Cons* do_cons_allocation(size_t true_size, ARGS&&... args) {
-#ifdef USE_PRECISE_GC
-  Header_s* header = DO_CONS_ALLOC(true_size);
-#ifdef DEBUG_BOEHMPRECISE_ALLOC
-  printf("%s:%d:%s cons = %p\n", __FILE__, __LINE__, __FUNCTION__, cons);
-#endif
-#else
-  Header_s* header = DO_CONS_ALLOC(true_size);
-#endif
-  Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
-  new (header) Header_s::StampWtagMtag(cons);
-  new (cons) Cons(std::forward<ARGS>(args)...);
-  return cons;
+inline void* mmtk_alloc_raw(size_t size, MMTkClaspAllocSemantics semantics) {
+  return mmtk_clasp_alloc(my_thread_low_level->_mmtk_mutator, size, CLASP_ALIGNMENT, semantics);
 }
 
+inline void mmtk_post_alloc(void* alloc_start, size_t size, MMTkClaspAllocSemantics semantics,
+                             size_t header_size = sizeof(Header_s)) {
+  void* client = reinterpret_cast<char*>(alloc_start) + header_size;
+  mmtk_clasp_post_alloc(my_thread_low_level->_mmtk_mutator, client, size, semantics);
+}
+
+// --- Cons allocation ---
+
+template <typename Stage, typename Cons>
+inline ConsHeader_s* do_cons_allocation(size_t size) {
+  RAIIAllocationStage<Stage> stage(my_thread_low_level);
+  void* alloc_start;
+  if constexpr (std::is_same_v<Stage, SnapshotLoadStage>) {
+    alloc_start = std::malloc(size);
+  } else {
+    alloc_start = mmtk_alloc_raw(size, MMTK_CLASP_ALLOC_DEFAULT);
+    mmtk_post_alloc(alloc_start, size, MMTK_CLASP_ALLOC_DEFAULT, sizeof(ConsHeader_s));
+  }
+  ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(alloc_start);
+  const ConsHeader_s::StampWtagMtag stamp(ConsHeader_s::cons_mtag);
+  new (header) ConsHeader_s(stamp);
+  stage.registerAllocation(STAMPWTAG_CONS, size);
+  return header;
+}
+
+// --- Atomic allocation (no pointer fields) ---
+
+template <typename Stage = RuntimeStage>
 inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
+  RAIIAllocationStage<Stage> stage(my_thread_low_level);
   size_t true_size = size;
 #ifdef DEBUG_GUARD
   size_t tail_size = ((rand() % 8) + 1) * Alignment();
   true_size += tail_size;
 #endif
-#ifdef USE_PRECISE_GC
-  uintptr_t stamp = the_header.stamp();
-  Header_s* header = DO_ATOMIC_ALLOC(true_size);
-#else
-  Header_s* header = DO_ATOMIC_ALLOC(true_size);
-#endif
-  my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(), true_size);
+  void* alloc_start;
+  if constexpr (std::is_same_v<Stage, SnapshotLoadStage>) {
+    alloc_start = std::malloc(true_size);
+  } else {
+    alloc_start = mmtk_alloc_raw(true_size, MMTK_CLASP_ALLOC_DEFAULT);
+    mmtk_post_alloc(alloc_start, true_size, MMTK_CLASP_ALLOC_DEFAULT);
+  }
+  Header_s* header = reinterpret_cast<Header_s*>(alloc_start);
+  stage.registerAllocation(the_header.unshifted_stamp(), true_size);
 #ifdef DEBUG_GUARD
   memset(header, 0x00, true_size);
   new (header) Header_s(the_header, size, tail_size, true_size);
@@ -46,40 +66,27 @@ inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header,
   new (header) Header_s(the_header);
 #endif
   return header;
-};
+}
 
-inline Header_s* do_weak_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
-  size_t true_size = size;
-#ifdef USE_PRECISE_GC
-  Header_s* header = DO_WEAK_ALLOC(true_size);
-#else
-  Header_s* header = DO_WEAK_ALLOC(true_size);
-#endif
-  my_thread_low_level->_Allocations.registerWeakAllocation(the_header._value, true_size);
-#ifdef DEBUG_GUARD
-  memset(header, 0x00, true_size);
-  new (header) Header_s(the_header, 0, 0, true_size);
-#else
-  new (header) Header_s(the_header);
-#endif
-  return header;
-};
+// --- General allocation (contains pointers) ---
 
+template <typename Stage = RuntimeStage>
 inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
+  RAIIAllocationStage<Stage> stage(my_thread_low_level);
   size_t true_size = size;
 #ifdef DEBUG_GUARD
   size_t tail_size = ((rand() % 8) + 1) * Alignment();
   true_size += tail_size;
 #endif
-#ifdef USE_PRECISE_GC
-  Header_s* header = DO_GENERAL_ALLOC(true_size);
-#ifdef DEBUG_BOEHMPRECISE_ALLOC
-  printf("%s:%d:%s header = %p\n", __FILE__, __LINE__, __FUNCTION__, header);
-#endif
-#else
-  Header_s* header = DO_GENERAL_ALLOC(true_size);
-#endif
-  my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(), true_size);
+  void* alloc_start;
+  if constexpr (std::is_same_v<Stage, SnapshotLoadStage>) {
+    alloc_start = std::malloc(true_size);
+  } else {
+    alloc_start = mmtk_alloc_raw(true_size, MMTK_CLASP_ALLOC_DEFAULT);
+    mmtk_post_alloc(alloc_start, true_size, MMTK_CLASP_ALLOC_DEFAULT);
+  }
+  Header_s* header = reinterpret_cast<Header_s*>(alloc_start);
+  stage.registerAllocation(the_header.unshifted_stamp(), true_size);
 #ifdef DEBUG_GUARD
   memset(header, 0x00, true_size);
   new (header) Header_s(the_header, size, tail_size, true_size);
@@ -87,7 +94,9 @@ inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header
   new (header) Header_s(the_header);
 #endif
   return header;
-};
+}
+
+// --- Uncollectable / non-moving allocation ---
 
 inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   size_t true_size = size;
@@ -95,14 +104,9 @@ inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_
   size_t tail_size = ((rand() % 8) + 1) * Alignment();
   true_size += tail_size;
 #endif
-#ifdef USE_PRECISE_GC
-  Header_s* header = DO_UNCOLLECTABLE_ALLOC(true_size);
-#ifdef DEBUG_BOEHMPRECISE_ALLOC
-  printf("%s:%d:%s header = %p\n", __FILE__, __LINE__, __FUNCTION__, header);
-#endif
-#else
-  Header_s* header = DO_UNCOLLECTABLE_ALLOC(true_size);
-#endif
+  void* alloc_start = mmtk_alloc_raw(true_size, MMTK_CLASP_ALLOC_NON_MOVING);
+  mmtk_post_alloc(alloc_start, true_size, MMTK_CLASP_ALLOC_NON_MOVING);
+  Header_s* header = reinterpret_cast<Header_s*>(alloc_start);
   my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(), true_size);
 #ifdef DEBUG_GUARD
   memset(header, 0x00, true_size);
@@ -111,6 +115,30 @@ inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_
   new (header) Header_s(the_header);
 #endif
   return header;
-};
+}
+
+// --- Zero-initialised allocation for the bytecode VM root vector ---
+// This allocates a flat array of num void* slots (no Clasp header).
+
+inline void* do_allocate_zero(size_t num) {
+  size_t total = sizeof(void*) * num;
+  void* buffer = std::malloc(total);
+  std::memset(buffer, 0, total);
+  return buffer;
+}
+
+// --- Free ---
+
+inline void do_free(void* ptr) {
+  // MMTk manages GC memory; use free only for do_allocate_zero buffers.
+  std::free(ptr);
+}
+
+// --- Destructor finalizer registration ---
+
+template <class OT>
+inline void do_register_destructor_finalizer(void* baseptr) {
+  (void)baseptr;
+}
 
 }; // namespace gctools

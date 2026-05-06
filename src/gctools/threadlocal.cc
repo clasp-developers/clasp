@@ -110,10 +110,17 @@ ThreadLocalStateLowLevel::ThreadLocalStateLowLevel(void* stack_top)
       ,
       _RecursiveAllocationCounter(0)
 #endif
+{
+#ifdef USE_MMTK
+  _mmtk_mutator = mmtk_clasp_bind_mutator(this);
+#endif
+};
 
-          {};
-
-ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel(){};
+ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel() {
+#ifdef USE_MMTK
+  mmtk_clasp_destroy_mutator(_mmtk_mutator);
+#endif
+};
 
 }; // namespace gctools
 namespace core {

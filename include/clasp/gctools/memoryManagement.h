@@ -34,7 +34,7 @@ extern "C" {
 #include "src/bdwgc/include/gc_inline.h"
 };
 #elif defined(USE_MMTK)
-#include <mmtk/api/mmtk.h>
+#include <clasp/gctools/mmtk_clasp.h>
 #endif
 
 namespace core {
