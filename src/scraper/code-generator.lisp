@@ -1141,33 +1141,37 @@ void ~a::expose_to_clasp() {
       (format sout "#endif // ALL_TERMINATORS_CALL~%"))))
 
 (defun generate-layout-code (kind stream)
-  (dolist (field (fixed-fields% kind))
-    (format stream " {  fixed_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" },~%"
-            (tags:offset-type-cxx-identifier field)
-            (tags:offset-ctype field)
-            (tags:offset-base-ctype field)
-            (tags:layout-offset-field-names field)
-            (tags:layout-offset-field-names field)))
-  (let ((vinfo (variable-info% kind))
-        (vcapacity (variable-capacity% kind))
-        (vfields (variable-fields% kind)))
-    (when vinfo
-      (etypecase vinfo
-        (tags:variable-bit-array0
-         (format stream " {  variable_bit_array0, ~a, 0, __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" },~%"
-                 (tags:integral-value vinfo)
-                 (tags:offset-base-ctype vinfo)
-                 (tags:field-names vinfo) (tags:field-names vinfo)))
-        (tags:variable-array0
-         (format stream " {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" },~%"
-                 (tags:offset-base-ctype vinfo)
-                 (tags:field-names vinfo) (tags:field-names vinfo))))
-      (format stream " {  variable_capacity, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, NULL },~%"
-              (tags:ctype vcapacity)
-              (tags:offset-base-ctype vcapacity)
-              (tags:end-field-names vcapacity)
-              (tags:offset-base-ctype vcapacity)
-              (tags:length-field-names vcapacity))
+  ;; The C++ class name (formerly stored redundantly on every fixed-field /
+  ;; variable-* record as :offset-base-ctype) is now read once from the
+  ;; parent kind-tag's :stamp-key.
+  (let ((base (tags:stamp-key (tag% kind))))
+    (dolist (field (fixed-fields% kind))
+      (format stream " {  fixed_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" },~%"
+              (tags:offset-type-cxx-identifier field)
+              (tags:offset-ctype field)
+              base
+              (tags:layout-offset-field-names field)
+              (tags:layout-offset-field-names field)))
+    (let ((vinfo (variable-info% kind))
+          (vcapacity (variable-capacity% kind))
+          (vfields (variable-fields% kind)))
+      (when vinfo
+        (etypecase vinfo
+          (tags:variable-bit-array0
+           (format stream " {  variable_bit_array0, ~a, 0, __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" },~%"
+                   (tags:integral-value vinfo)
+                   base
+                   (tags:field-names vinfo) (tags:field-names vinfo)))
+          (tags:variable-array0
+           (format stream " {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" },~%"
+                   base
+                   (tags:field-names vinfo) (tags:field-names vinfo))))
+        (format stream " {  variable_capacity, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, NULL },~%"
+                (tags:ctype vcapacity)
+                base
+                (tags:end-field-names vcapacity)
+                base
+                (tags:length-field-names vcapacity))
       (etypecase vfields
         (tags:variable-field-only
          (format stream "{    variable_field, ~a, sizeof(~a), 0, 0, \"only\" },~%"
@@ -1180,7 +1184,7 @@ void ~a::expose_to_clasp() {
                    (tags:fixup-ctype-offset-type-key vfield)
                    (tags:fixup-ctype-key vfield)
                    (tags:layout-offset-field-names vfield)
-                   (tags:layout-offset-field-names vfield))))))))
+                   (tags:layout-offset-field-names vfield)))))))))
 
 (defgeneric generate-kind-tag-code (kind stream))
 (defmethod generate-kind-tag-code ((kind tags:class-kind) stream)

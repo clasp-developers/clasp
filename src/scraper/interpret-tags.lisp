@@ -1039,7 +1039,14 @@ Compare the symbol against previous definitions of symbols - if there is a misma
         (key (tags:stamp-key tag)))
     (unless (gethash key table)
       (setf (gethash key table) kind))
-    (setf (state-cur-kind state) kind)))
+    (setf (state-cur-kind state) kind)
+    ;; Inner records (fixed-field, variable-*) are now nested in the
+    ;; kind-tag's :contains slot rather than appearing as sibling
+    ;; top-level tags.  Dispatch them here so the existing per-class
+    ;; interpret-tag methods (which read state-cur-kind) keep working.
+    (dolist (child (tags:contains tag))
+      (interpret-tag child state))
+    (setf (state-cur-kind state) nil)))
 (defmethod interpret-tag ((tag tags:class-kind) state)
   (interpret-kind-tag tag state (state-classes state)))
 (defmethod interpret-tag ((tag tags:templated-kind) state)

@@ -136,16 +136,17 @@
    #:maybe-declare)
   ;; Static analyzer tags
   (:export
-   #:variable-bit-array0 #:integral-value #:offset-base-ctype #:field-names
+   #:variable-bit-array0 #:integral-value #:field-names
    #:end-field-names #:length-field-names
    #:variable-array0 #:variable-capacity #:ctype
    #:offset-type-cxx-identifier #+(or)#:ctype-key
    #:fixup-ctype-offset-type-key #:fixup-ctype-key
    #:layout-offset-field-names #:variable-field-only #:fixup-type
-   #:variable-field #:fixed-field #:offset-ctype #:offset-base-ctype
+   #:variable-field #:fixed-field #:offset-ctype
    #:class-kind #:stamp-name #:stamp-key
    #:parent-class #:lisp-class-base #:root-class
    #:stamp-wtag #:definition-data
    #:container-kind
    #:bitunit-container-kind #:bitwidth
-   #:templated-kind))
+   #:templated-kind
+   #:contains))
