@@ -336,6 +336,16 @@ has not been set."
                                              (root :build))
                                             (uiop:getcwd)))))))))
 
+(defmethod configure-unit (configuration (unit (eql :mmtk)))
+  "Check for cargo (required to build the MMTk Clasp binding)."
+  (message :emph "Configuring MMTk")
+  (let ((cargo (configure-program "cargo" #P"cargo")))
+    (setf (cargo configuration) cargo))
+  ;; For mmtk variants, link against the static library produced by cargo.
+  ;; The path is relative to the build directory where ninja runs.
+  (append-ldlibs configuration "mmtk_cargo/release/libmmtk_clasp.a" :gc :mmtk)
+  #+linux (append-ldlibs configuration "-lpthread -ldl -lm" :gc :mmtk))
+
 (defmethod configure-unit (configuration (unit (eql :asdf)))
   "Configure ASDF"
   (message :emph "Building ASDF sources")

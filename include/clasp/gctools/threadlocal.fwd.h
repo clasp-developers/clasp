@@ -2,6 +2,9 @@
 
 #include <signal.h>
 #include <chrono>
+#ifdef USE_MMTK
+#include <clasp/gctools/mmtk_clasp.h>
+#endif
 
 namespace gctools {
 
@@ -93,6 +96,9 @@ struct ThreadLocalStateLowLevel {
   void* _StackTop;
   bool _DisableInterrupts;
   AllocationProfiler _Allocations;
+#ifdef USE_MMTK
+  MMTkClaspMutator _mmtk_mutator;
+#endif
   // Time unwinds
   std::chrono::time_point<std::chrono::high_resolution_clock> _start_unwind;
   std::chrono::duration<size_t, std::nano> _unwind_time;

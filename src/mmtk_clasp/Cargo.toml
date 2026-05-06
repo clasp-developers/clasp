@@ -1,0 +1,19 @@
+[package]
+name = "mmtk_clasp"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "mmtk_clasp"
+crate-type = ["staticlib"]
+
+[profile.release]
+lto = true
+
+[dependencies]
+mmtk = { path = "../mmtk-core" }
+libc = "0.2"
+
+[features]
+default = []
+vo_bit = ["mmtk/vo_bit"]

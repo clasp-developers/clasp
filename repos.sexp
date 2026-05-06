@@ -254,6 +254,12 @@
   :branch "main"
   :commit "d92e9254b45da4e508503b984f02403c6fb6677a"
   :pin 1)
+ (:name :mmtk-core
+  :directory "src/mmtk-core/"
+  :repository "https://github.com/mmtk/mmtk-core.git"
+  :branch "master"
+  :commit "5781e63331f59bdea7db0a9c3f18305e37b3fcd4"
+  :pin 1)
  (:name :mgl-pax
   :extension :cando
   :directory "src/lisp/kernel/contrib/mgl-pax/"

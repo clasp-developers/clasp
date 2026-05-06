@@ -214,7 +214,13 @@
                     :description "Creating snapshot $out")
   (ninja:write-rule output-stream :update-unicode
                     :command (lisp-command "update-unicode.lisp" "$source")
-                    :description "Updating unicode tables"))
+                    :description "Updating unicode tables")
+  (when (cargo configuration)
+    (ninja:write-rule output-stream :cargo-build
+                      :command (format nil "~a build --release --manifest-path ../src/mmtk_clasp/Cargo.toml --target-dir mmtk_cargo"
+                                       (cargo configuration))
+                      :restat 1
+                      :description "Building MMTk Clasp binding")))
 
 (defmethod print-variant-target-source
     (configuration (name (eql :ninja)) output-stream (target (eql :trampoline)) (source cc-source)
@@ -478,16 +484,24 @@
   (ninja:write-build output-stream :phony
                      :outputs (list (build-name "generated"))
                      :inputs generated)
-  (if (static-linking-p configuration)
-      (ninja:write-build output-stream :ar
-                         :inputs objects
-                         :outputs (list libclasp))
-      (ninja:write-build output-stream :link-lib
-                         :variant-ldflags *variant-ldflags*
-                         :variant-ldlibs *variant-ldlibs*
-                         :libname libclasp-name
-                         :inputs objects
-                         :outputs (list libclasp)))
+  (let ((mmtk-lib (when (eq :mmtk *variant-gc*)
+                    (make-source "mmtk_cargo/release/libmmtk_clasp.a" :build))))
+    ;; Emit cargo-build only once — all mmtk variants share the same static lib.
+    (when (and mmtk-lib (not *variant-debug*))
+      (ninja:write-build output-stream :cargo-build
+                         :outputs (list mmtk-lib)))
+    (if (static-linking-p configuration)
+        (ninja:write-build output-stream :ar
+                           :inputs objects
+                           :order-only-inputs (when mmtk-lib (list mmtk-lib))
+                           :outputs (list libclasp))
+        (ninja:write-build output-stream :link-lib
+                           :variant-ldflags *variant-ldflags*
+                           :variant-ldlibs *variant-ldlibs*
+                           :libname libclasp-name
+                           :inputs objects
+                           :order-only-inputs (when mmtk-lib (list mmtk-lib))
+                           :outputs (list libclasp))))
   (ninja:write-build output-stream :phony
                      :inputs (list libclasp)
                      :outputs (list (build-name target)))
@@ -876,7 +890,7 @@
                        :implicit-inputs (list (build-name "base")
                                               (build-name "generated" :gc :boehm)
                                               database
-                                              (make-source "analyzer.stub" :variant-lib))                                    
+                                              (make-source "analyzer.stub" :variant-lib))
                        :database database
                        :log (make-source-output source :type "log")
                        :outputs (list output))

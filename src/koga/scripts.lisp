@@ -14,6 +14,7 @@
     (pprint `(asdf:initialize-source-registry
                (list :source-registry
                      ,(when host '(list :also-exclude "asdf"))
+                     (list :also-exclude "mmtk_cargo")
                      (list :tree (merge-pathnames ,(root :code) (uiop:getcwd)))
                      :inherit-configuration))
             output-stream))

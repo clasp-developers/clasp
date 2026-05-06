@@ -394,6 +394,11 @@
        :initform nil
        :type (or null pathname)
        :documentation "The ar binary to use. If not set then llvm-config will be used to find llvm-ar.")
+   (cargo :accessor cargo
+          :initarg :cargo
+          :initform nil
+          :type (or null pathname)
+          :documentation "The cargo binary to use when building the MMTk Rust binding.")
    (cc :accessor cc
        :initarg :cc
        :initform nil
@@ -528,7 +533,7 @@ is not compatible with snapshots.")
    (units :accessor units
           :initform '(:git :describe :cpu-count #+darwin :xcode :base :default-target :pkg-config
                            :clang :llvm :ar :cc :cxx :dis :mpi :nm :etags :ctags :gtags :objcopy
-                           :reproducible :asdf)
+                           :reproducible :mmtk :asdf)
           :type list
           :documentation "The configuration units")
    (outputs :accessor outputs
@@ -656,7 +661,9 @@ is not compatible with snapshots.")
                              (make-instance 'variant :gc :boehm :debug t)
                              (make-instance 'variant :gc :boehm :precise t :debug t)
                              (make-instance 'variant :gc :boehm :prep t)
-                             (make-instance 'variant :gc :boehm :debug t :prep t))
+                             (make-instance 'variant :gc :boehm :debug t :prep t)
+                             (make-instance 'variant :gc :mmtk :precise t)
+                             (make-instance 'variant :gc :mmtk :precise t :debug t))
              :type list
              :documentation "A list of the variants")
    (scripts :accessor scripts

@@ -1,5 +1,5 @@
 /*
-    File: boehmGarbageCollection.cc
+    File: mmtkGarbageCollection.cc
 */
 
 /*
@@ -23,69 +23,69 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* -^- */
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-// #include <clasp/core/numbers.h>
-#include <clasp/core/evaluator.h>
+#include <clasp/core/cons.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #ifdef USE_MMTK
 #include <clasp/gctools/mmtkGarbageCollection.h>
 #include <clasp/gctools/gcFunctions.h>
-#include <clasp/core/debugger.h>
-#include <clasp/core/compiler.h>
-#include <clasp/gctools/snapshotSaveLoad.h>
-
-THREAD_LOCAL MMTk_Mutator my_mutator;
 
 namespace gctools {
-__attribute__((noinline)) int initializeMmtk(int argc, char* argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
-  gc_init((size_t)(1024 * 1024 * 1024) * (size_t)4);
 
-  void* topOfStack;
-  my_mutator = bind_mutator(topOfStack);
+__attribute__((noinline)) void initializeMmtk(ClaspInfo* claspInfo) {
+  void* topOfStack = __builtin_frame_address(0);
 
-  // ctor sets up my_thread
-  gctools::ThreadLocalStateLowLevel thread_local_state_low_level(&topOfStack);
-  core::ThreadLocalState thread_local_state(false); // special ctor that does not require _Nil be defined
-  my_thread_low_level = &thread_local_state_low_level;
-  my_thread = &thread_local_state;
+  // Build and initialise the MMTk instance.
+  MMTkClaspBuilder builder = mmtk_clasp_create_builder();
+  // NoGC plan: allocate but never collect (Phase 1).
+  mmtk_clasp_set_option(builder, "plan", "NoGC");
+  // Dynamic heap: start at 1 GiB, grow up to 96 GiB as needed (NoGC never collects).
+  mmtk_clasp_set_dynamic_heap_size(builder, (size_t)1 * 1024 * 1024 * 1024,
+                                   (size_t)96 * 1024 * 1024 * 1024);
+  mmtk_clasp_init(builder);
 
-#if 0
-  // I'm not sure if this needs to be done for the main thread
-  GC_stack_base gc_stack_base;
-  GC_get_stack_base(&gc_stack_base);
-  GC_register_my_thread(&gc_stack_base);
-#endif
+  // Set up thread-local state for the main thread.
+  gctools::ThreadLocalStateLowLevel* thread_local_state_low_level =
+      new gctools::ThreadLocalStateLowLevel(topOfStack);
+  my_thread_low_level = thread_local_state_low_level;
 
-#ifndef SCRAPING
-#define ALL_PREGCSTARTUPS_CALLS
-#include PRE_GC_STARTUP_INC_H
-#undef ALL_PREGCSTARTUPS_CALLS
+  my_thread = (core::ThreadLocalState*)malloc(sizeof(core::ThreadLocalState));
+  new (my_thread) core::ThreadLocalState(false);
 
-  //
-  // Set up the _lisp and symbols memory as roots
-  //
-  gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*)&_lisp;
-  GC_add_roots((void*)lispRoot, (void*)((char*)lispRoot + sizeof(void*)));
-  gctools::clasp_ptr_t* coreSymbolRoots = (gctools::clasp_ptr_t*)&global_core_symbols[0];
-  GC_add_roots((void*)coreSymbolRoots, (void*)((char*)coreSymbolRoots + sizeof(void*) * NUMBER_OF_CORE_SYMBOLS));
-  gctools::clasp_ptr_t* symbolRoots = (gctools::clasp_ptr_t*)&global_symbols[0];
-  GC_add_roots((void*)symbolRoots, (void*)((char*)symbolRoots + sizeof(void*) * global_symbol_count));
-
-#endif
-  int exitCode;
-  try {
-    exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
-  } catch (core::SaveLispAndDie& ee) {
-#ifdef USE_PRECISE_GC
-    snapshotSaveLoad::snapshot_save(ee);
-#endif
-    exitCode = 0;
-  }
-  return exitCode;
+  // The mutator for this thread was bound by ThreadLocalStateLowLevel's ctor.
+  mmtk_clasp_initialize_collection(my_thread_low_level);
 }
 
-};     // namespace gctools
-#endif // whole file #ifdef USE_MMTK
+// --- GC interface stubs ---
+
+void collect_garbage() {
+  mmtk_clasp_handle_user_collection_request(my_thread_low_level);
+}
+
+void set_finalizer_list(core::T_sp object, core::List_sp finalizers) {
+  (void)object;
+  (void)finalizers;
+}
+
+void clear_finalizer_list(core::T_sp object) {
+  (void)object;
+}
+
+void invoke_finalizers() {}
+
+size_t heap_size() { return mmtk_clasp_total_bytes(); }
+
+size_t free_bytes() { return mmtk_clasp_free_bytes(); }
+
+size_t bytes_since_gc() { return 0; }
+
+void* call_with_stopped_world(void* (*f)(void*), void* data) {
+  return f(data);
+}
+
+CL_DEFUN size_t core__dynamic_usage() { return mmtk_clasp_total_bytes(); }
+
+}; // namespace gctools
+#endif // USE_MMTK
