@@ -341,6 +341,8 @@ class Fixnum:
         return self.__repr__()
     def consp(self):
         return False
+    def nilp(self):
+        return False
 
 class Character:
     def __init__(self,debugger,address):
@@ -527,7 +529,7 @@ class General_O(T_O):
         return result
     
     def __repr__(self):
-        return "a %s @0x%x" % (self._className, self._tptr) 
+        return "<%s @0x%x>" % (self._className, self._tptr) 
 
     def __str__(self):
         if self.nilp():
