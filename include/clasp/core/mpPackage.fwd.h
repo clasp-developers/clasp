@@ -516,9 +516,11 @@ struct ConditionVariable {
   ConditionVariable() { pthread_cond_init(&this->_ConditionVariable, NULL); };
   ~ConditionVariable() { pthread_cond_destroy(&this->_ConditionVariable); };
   bool wait(Mutex& m) {
+    bool r;
     BEGIN_PARK {
-      return pthread_cond_wait(&this->_ConditionVariable, &m._Mutex) == 0;
+      r = pthread_cond_wait(&this->_ConditionVariable, &m._Mutex) == 0;
     } END_PARK;
+    return r;
   }
   bool timed_wait(Mutex& m, double timeout) {
     struct timespec timeToWait;
