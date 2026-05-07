@@ -16,6 +16,7 @@
            #~"gc_boot.cc"
            #~"interrupt.cc"
            #~"park.cc"
+           #~"stw.cc"
            #~"gcFunctions.cc"
            #~"snapshotSaveLoad.cc"
            #~"gctoolsPackage.cc"

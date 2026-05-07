@@ -8,6 +8,7 @@
 #include <signal.h>
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/threadlocal.h>
+#include <clasp/gctools/stw.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/mpPackage.h>
 #include <clasp/core/array.h>
@@ -188,7 +189,7 @@ VirtualMachine::~VirtualMachine() {
 // ThreadLocalState::finish_initialization_main_thread() after the Nil symbol is
 // in GC managed memory.
 ThreadLocalState::ThreadLocalState(bool dummy)
-  : _unwinds(0), _CleanupFunctions(NULL), _BufferStr8NsPool(), _BufferStrWNsPool(), _PendingSignalsP(false),
+  : _unwinds(0), _CleanupFunctions(NULL), _BufferStr8NsPool(), _BufferStrWNsPool(), _PendingSignalsP(false), _GCState(GCState::Running),
     // initialized with null pointers so that dequeue_interrupt
     // can see that the queue is not yet available.
     // Default-initializing an atomic default-initializes the underlying object
@@ -204,6 +205,7 @@ ThreadLocalState::ThreadLocalState(bool dummy)
   this->_xorshf_y = rand();
   this->_xorshf_z = rand();
   sigemptyset(&this->_PendingSignals);
+  gctools::stw_register_thread();
 }
 
 pid_t ThreadLocalState::safe_fork() {
@@ -256,6 +258,7 @@ ERR:
 ThreadLocalState::ThreadLocalState()
   : _unwinds(0), _CleanupFunctions(NULL), _Breakstep(false), _PendingSignalsP(false),
     _PendingInterruptsHead(), _PendingInterruptsTail(),
+    _GCState(GCState::Running),
     _BreakstepFrame(NULL), _DynEnvStackBottom(nil<core::T_O>()), _UnwindDest(nil<core::T_O>()) {
 #ifdef _TARGET_OS_DARWIN
   pthread_threadid_np(NULL, &this->_Tid);
@@ -268,6 +271,7 @@ ThreadLocalState::ThreadLocalState()
   this->_xorshf_y = rand();
   this->_xorshf_z = rand();
   sigemptyset(&this->_PendingSignals);
+  gctools::stw_register_thread();
 }
 
 static void dumpDynEnvStack(T_sp stack) {
@@ -406,7 +410,7 @@ core::T_sp ThreadLocalState::dequeue_interrupt() {
 
 void ThreadLocalState::startUpVM() { this->_VM.startup(); }
 
-ThreadLocalState::~ThreadLocalState() {}
+ThreadLocalState::~ThreadLocalState() { gctools::stw_unregister_thread(); }
 
 void thread_local_register_cleanup(const std::function<void(void)>& cleanup) {
   CleanupFunctionNode* node = new CleanupFunctionNode(cleanup, my_thread->_CleanupFunctions);
