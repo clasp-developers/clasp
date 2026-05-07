@@ -64,6 +64,7 @@ THE SOFTWARE.
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/core/exceptions.h>
 #include <clasp/core/unwind.h>
+#include <clasp/gctools/stw.h>
 #include <clasp/gctools/interrupt.h>
 
 #if defined(_TARGET_OS_DARWIN)
@@ -576,7 +577,8 @@ void debugFileScopeHandle(int* sourceFileInfoHandleP) {
   NO_UNWIND_END();
 }
 
-void cc_signal_interrupts() {
+void cc_safepoint() {
+  gctools::gc_yield();
   gctools::handle_all_queued_interrupts();
 }
 };

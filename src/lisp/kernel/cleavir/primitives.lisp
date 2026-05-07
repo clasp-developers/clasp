@@ -253,7 +253,7 @@
          (primitive-unwinds "cc_progvResolveSymbols" :t* (list :t* :t*))
          (primitive-unwinds "cc_progvSetValues" :t* (list :t* :t*))
          (primitive         "cc_progvUnbind" :void (list :t* :t*))
-         (primitive-unwinds "cc_signal_interrupts" :void (list))
+         (primitive-unwinds "cc_safepoint" :void (list))
          (primitive         "cc_saveMultipleValue0" :void (list :tmv))
          (primitive         "cc_restoreMultipleValue0" :return-type nil)
          (primitive         "llvm.frameaddress.p0" :i8* (list :i32))

@@ -1907,7 +1907,7 @@ function-or-placeholder - the llvm function or a placeholder for
         (cmp:with-debug-info-source-position (source-pos-info)
           ;; but first, check for interrupts now that we have a source
           (%intrinsic-invoke-if-landing-pad-or-call
-           "cc_signal_interrupts" ())
+           "cc_safepoint" ())
           (let* ((function-type (llvm-sys:get-function-type (main-function llvm-function-info)))
                  (arguments
                    (mapcar (lambda (arg)
