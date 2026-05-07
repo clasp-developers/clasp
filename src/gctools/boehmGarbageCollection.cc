@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 
 #include <clasp/core/foundation.h>
+#include <clasp/gctools/stw.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lispStream.h>
 // #include <clasp/core/numbers.h>
@@ -264,7 +265,14 @@ size_t free_bytes() { return GC_get_free_bytes(); }
 size_t bytes_since_gc() { return GC_get_bytes_since_gc(); }
 
 void* call_with_stopped_world(void* (*f)(void*), void* data) {
-  return GC_call_with_alloc_lock(f, data);
+  // Remove the calling mutator from the running count before stopping the world,
+  // so clasp_stop_the_world() doesn't wait for us.
+  gctools::stw_mutator_stop();
+  clasp_stop_the_world();
+  void* result = GC_call_with_alloc_lock(f, data);
+  clasp_resume_the_world();
+  gctools::stw_mutator_resume();
+  return result;
 }
 
 CL_DEFUN size_t core__dynamic_space_size() { return GC_get_total_bytes(); }
