@@ -61,6 +61,20 @@ void end_gcless();
 // clasp_resume_the_world() is called. Called by end_park().
 void end_gcless_shared();
 
+// Check if the GC has asked the world to stop, and stop if so.
+// This is the slow path called from gc_yield below.
+void gc_yield_slow();
+
+extern std::atomic<bool> world_stopped;
+
+// Check if the GC has stop the world to stop, and stop if so.
+// This is called extremely frequently at safepoints, like the top of bytecode
+// functions, so ideally it will be fast.
+inline void gc_yield() {
+  if (world_stopped.load(std::memory_order_relaxed))
+    gc_yield_slow();
+}
+
 } // namespace gctools
 
 // Extern "C" so the Rust MMTk binding and plain C code can call these.

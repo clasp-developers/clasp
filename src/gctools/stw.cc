@@ -20,7 +20,7 @@ static std::mutex stw_mutex;
 static std::condition_variable all_parked_cv;
 // Signaled when the world resumes after a stop.
 static std::condition_variable world_resumed_cv;
-static bool world_stopped = false;
+std::atomic<bool> world_stopped{false};
 
 void stw_register_thread() {
   running_count.fetch_add(1, std::memory_order_acq_rel);
@@ -64,13 +64,19 @@ void begin_gcless() {
 
 void end_gcless_shared() {
   std::unique_lock<std::mutex> lock(stw_mutex);
-  world_resumed_cv.wait(lock, [] { return !world_stopped; });
+  world_resumed_cv.wait(lock, [] { return !world_stopped.load(std::memory_order_acq_rel); });
   running_count.fetch_add(1, std::memory_order_acq_rel);
 }
 
 void end_gcless() {
   end_gcless_shared();
   my_thread->unblock();
+}
+
+// see gc_yield
+void gc_yield_slow() {
+  begin_gcless();
+  end_gcless();
 }
 
 } // namespace gctools
@@ -85,10 +91,7 @@ void clasp_stop_the_world() {
   // Callers that ARE registered mutators (e.g. Boehm's call_with_stopped_world)
   // must remove themselves from running_count before calling this,
   // using stw_mutator_stop.
-  {
-    std::lock_guard<std::mutex> lock(gctools::stw_mutex);
-    gctools::world_stopped = true;
-  }
+  gctools::world_stopped.store(true, std::memory_order_acq_rel);
   std::unique_lock<std::mutex> lock(gctools::stw_mutex);
   gctools::all_parked_cv.wait(lock, [] {
     return gctools::running_count.load(std::memory_order_acq_rel) == 0;
@@ -96,10 +99,7 @@ void clasp_stop_the_world() {
 }
 
 void clasp_resume_the_world() {
-  {
-    std::lock_guard<std::mutex> lock(gctools::stw_mutex);
-    gctools::world_stopped = false;
-  }
+  gctools::world_stopped.store(false, std::memory_order_acq_rel);
   gctools::world_resumed_cv.notify_all();
 }
 
