@@ -1124,8 +1124,7 @@ struct copy_progress {
     intptr_t delta = cur - this->_begin;
     if (delta > this->_next_progress_tic) {
       this->_next_progress_tic += this->_inc;
-      core::lisp_write(
-          fmt::format("Copy memory to snapshot buffer {:6.2f} done\n", (100.0 * (float)delta / (float)this->_size)));
+      fmt::print("Copy memory to snapshot buffer {:6.2f} done\n", (100.0 * (float)delta / (float)this->_size));
     }
   }
 };
@@ -1363,7 +1362,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
     size_t hitBadPointers = 0;
     for (ssize_t ii = this->_Library._GroupedPointers.size() - 1; ii >= 0; --ii) {
       if (ii % 1000 == 0 && ii > 0) {
-        core::lisp_write(fmt::format("{:>5} remaining pointers to dladdr\n", ii));
+        fmt::print("{:>5} remaining pointers to dladdr\n", ii);
       }
       uintptr_t address = this->_Library._GroupedPointers[ii]._address;
       std::string saveName("");
@@ -1378,7 +1377,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
         this->_Library._SymbolBuffer.push_back('\0');
       }
     }
-    core::lisp_write(fmt::format("All pointers passed through dladdr\n"));
+    fmt::print("All pointers passed through dladdr\n");
     if (hitBadPointers) {
       ISL_ERROR("There were %lu bad pointers - we need to figure out how to get this to zero", hitBadPointers);
     }
@@ -1539,25 +1538,24 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
           void** addr = (void**)curLib._InternalPointers[ii]._ptrptr;
           *curLib._InternalPointers[ii]._ptrptr = encodeRelocation_(idx, groupPointerIdx);
         }
-        core::lisp_write(fmt::format("{} unique pointers need to be passed to dladdr\n", curLib._GroupedPointers.size()));
+        fmt::print("{} unique pointers need to be passed to dladdr\n", curLib._GroupedPointers.size());
         SaveSymbolCallback thing(curLib);
         curLib._SymbolInfo.resize(curLib._GroupedPointers.size(), SymbolInfo());
         thing.generateSymbolTable(fixup, symbolLookup);
-        core::lisp_write(
-            fmt::format("Library #{} {} contains {} unique pointers\n", idx, curLib._Name, curLib._GroupedPointers.size()));
+        fmt::print("Library #{} {} contains {} unique pointers\n", idx, curLib._Name, curLib._GroupedPointers.size());
         for (size_t ii = 0; ii < curLib._SymbolInfo.size(); ii++) {
           if (curLib._SymbolInfo[ii]._SymbolLength < 0) {
             printf("%s:%d:%s The _SymbolInfo[%lu] does not have a length\n", __FILE__, __LINE__, __FUNCTION__, ii);
           }
         }
-        core::lisp_write(fmt::format("Done with library #{} at {}\n", curLib._Name, (void*)&curLib));
+        fmt::print("Done with library #{} at {}\n", curLib._Name, (void*)&curLib);
       }
     }
   };
   OrderByAddress orderer;
-  core::lisp_write(fmt::format("Add libraries to classify unique pointers\n"));
+  fmt::print("Add libraries to classify unique pointers\n");
   orderer.addLibraries(fixup,symbolLookup);
-  core::lisp_write(fmt::format("Encoding relocation data for all pointers and identifying unique pointers\n"));
+  fmt::print("Encoding relocation data for all pointers and identifying unique pointers\n");
   orderer.identifyUnique(fixup,symbolLookup);
 }
 
@@ -1750,30 +1748,30 @@ void* snapshot_save_impl(void* data) {
   walk_snapshot_save_load_objects((ISLHeader_s*)snapshot._Memory->_BufferStart, prepare);
 
   {
-    core::lisp_write(fmt::format("Fixup vtable pointers\n"));
+    fmt::print("Fixup vtable pointers\n");
     gctools::clasp_ptr_t start;
     gctools::clasp_ptr_t end;
     core::exclusiveVtableSectionRange(start, end);
     fixup_vtables_t fixup_vtables(&fixup, (uintptr_t)start, (uintptr_t)end, &islInfo);
     walk_snapshot_save_load_objects((ISLHeader_s*)snapshot._Memory->_BufferStart, fixup_vtables);
   }
-  core::lisp_write(fmt::format("Copy memory done\n"));
+  fmt::print("Copy memory done\n");
 
   //
   // Now generate libraries
   //
   // Calculate the size of the libraries section
   SymbolLookup lookup;
-  core::lisp_write(fmt::format("Prepare relocation table for save\n"));
+  fmt::print("Prepare relocation table for save\n");
   prepareRelocationTableForSave(&fixup, lookup);
 
-  core::lisp_write(fmt::format("Calculate library sizes\n"));
+  fmt::print("Calculate library sizes\n");
   size_t librarySize = 0;
   for (size_t idx = 0; idx < fixup._ISLLibraries.size(); idx++) {
     librarySize += fixup._ISLLibraries[idx].writeSize();
   }
   snapshot._Libraries = new copy_buffer_t(librarySize);
-  core::lisp_write(fmt::format("Copy buffer\n"));
+  fmt::print("Copy buffer\n");
   for (size_t idx = 0; idx < fixup._ISLLibraries.size(); idx++) {
     size_t alignedLen = fixup._ISLLibraries[idx].nameSize();
     char* buffer = (char*)malloc(alignedLen);
@@ -1789,7 +1787,7 @@ void* snapshot_save_impl(void* data) {
     free(buffer);
   }
 
-  core::lisp_write(fmt::format("Generating fileHeader\n"));
+  fmt::print("Generating fileHeader\n");
   ISLFileHeader* fileHeader = snapshot._FileHeader;
   uintptr_t offset = snapshot._HeaderBuffer->_Size;
   fileHeader->_LibrariesOffset = offset;
@@ -1828,7 +1826,7 @@ void* snapshot_save_impl(void* data) {
       }
       filename = tfbuffer;
     }
-    core::lisp_write(fmt::format("Writing snapshot to temporary file {} filedes = {}\n", filename.c_str(), filedes));
+    fmt::print("Writing snapshot to temporary file {} filedes = {}\n", filename.c_str(), filedes);
     snapshot._HeaderBuffer->write_to_filedes(filedes);
     snapshot._Libraries->write_to_filedes(filedes);
     snapshot._Memory->write_to_filedes(filedes);
