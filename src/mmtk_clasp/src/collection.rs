@@ -1,26 +1,52 @@
+use crate::active_plan::VMActivePlan;
 use crate::mmtk;
 use crate::ClaspVM;
+use mmtk::util::alloc::AllocationError;
 use mmtk::util::opaque_pointer::*;
+use mmtk::vm::ActivePlan;
 use mmtk::vm::Collection;
 use mmtk::vm::GCThreadContext;
 use mmtk::Mutator;
 
+extern "C" {
+    fn clasp_stop_the_world();
+    fn clasp_resume_the_world();
+    fn clasp_pause_thread_for_gc();
+}
+
 pub struct VMCollection;
 
 impl Collection<ClaspVM> for VMCollection {
-    fn stop_all_mutators<F>(_tls: VMWorkerThread, _mutator_visitor: F)
+    fn out_of_memory(_tls: VMThread, err_kind: AllocationError) {
+        eprintln!(
+            "clasp-mmtk: out of memory ({:?}) — no GC plan collected anything. \
+             Increase heap size or switch to a collecting GC plan.",
+            err_kind
+        );
+        std::process::abort();
+    }
+
+    fn stop_all_mutators<F>(_tls: VMWorkerThread, mut mutator_visitor: F)
     where
         F: FnMut(&'static mut Mutator<ClaspVM>),
     {
-        unimplemented!()
+        // GC worker threads are not registered as Clasp mutators, so calling
+        // clasp_stop_the_world() here stops all Clasp mutator threads without
+        // including this thread in the wait.
+        unsafe { clasp_stop_the_world() };
+        for mutator in VMActivePlan::mutators() {
+            mutator_visitor(mutator);
+        }
     }
 
     fn resume_mutators(_tls: VMWorkerThread) {
-        unimplemented!()
+        unsafe { clasp_resume_the_world() };
     }
 
     fn block_for_gc(_tls: VMMutatorThread) {
-        unimplemented!()
+        // Park this mutator and wait until the GC has finished and
+        // resume_mutators has been called.
+        unsafe { clasp_pause_thread_for_gc() };
     }
 
     fn spawn_gc_thread(_tls: VMThread, ctx: GCThreadContext<ClaspVM>) {
