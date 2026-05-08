@@ -733,7 +733,7 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> func) {
       char** strings = backtrace_symbols(buffer, returned);
       void* fbp = __builtin_frame_address(0); // TODO later
       uintptr_t bplow = (uintptr_t)&fbp;
-      uintptr_t bphigh = (uintptr_t)my_thread_low_level->_StackTop;
+      uintptr_t bphigh = (uintptr_t)my_thread_low_level->_ControlStackTop;
       DebuggerFrame_sp bot = make_frame(0, buffer[0], strings[0], fbp, bytecode_pc, bytecode_fp);
       DebuggerFrame_sp prev = bot;
       void* newfbp;

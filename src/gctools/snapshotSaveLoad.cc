@@ -2461,8 +2461,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               size_t objectId = allocatedObjectFile->_ObjectId;
               pool.push_task([&obj_claspJIT, jitdylib, objectId]() {
                 // force_materialize can allocate, so set up a bit of a Lisp thread.
-                void* stacktop = &stacktop;
-                gctools::ThreadLocalStateLowLevel tlsll(stacktop);
+                gctools::ThreadLocalStateLowLevel tlsll;
                 core::ThreadLocalState tls;
                 my_thread_low_level = &tlsll;
                 my_thread = &tls;

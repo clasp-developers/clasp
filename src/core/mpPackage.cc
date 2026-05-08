@@ -182,8 +182,8 @@ void Process_O::runInner(core::List_sp bindings) {
 }
 
 __attribute__((noinline))
-void Process_O::run(void* cold_end_of_stack) {
-  gctools::ThreadLocalStateLowLevel thread_local_state_low_level(cold_end_of_stack);
+void Process_O::run() {
+  gctools::ThreadLocalStateLowLevel thread_local_state_low_level;
   core::ThreadLocalState thread_local_state;
   my_thread_low_level = &thread_local_state_low_level;
   my_thread = &thread_local_state;
@@ -210,8 +210,7 @@ void Process_O::run(void* cold_end_of_stack) {
 
 // This is the function actually passed to pthread_create.
 void* start_thread(void* vinfo) {
-  void* cold_end_of_stack = &cold_end_of_stack;
-  static_cast<Process_O*>(vinfo)->run(cold_end_of_stack);
+  static_cast<Process_O*>(vinfo)->run();
   return NULL;
 }
 

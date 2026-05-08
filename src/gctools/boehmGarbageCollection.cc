@@ -227,7 +227,7 @@ __attribute__((noinline)) void startupBoehm(gctools::ClaspInfo* claspInfo) {
   //  GC_enable_incremental();
   GC_init();
 
-  gctools::ThreadLocalStateLowLevel* thread_local_state_low_level = new gctools::ThreadLocalStateLowLevel(claspInfo);
+  gctools::ThreadLocalStateLowLevel* thread_local_state_low_level = new gctools::ThreadLocalStateLowLevel();
   my_thread_low_level = thread_local_state_low_level;
 
   // ctor sets up my_thread
