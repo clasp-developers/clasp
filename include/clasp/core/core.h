@@ -115,12 +115,6 @@ class type_info;
 //! Macro for attribute that causes symbols to be exposed
 #define ATTR_WEAK __attribute__((weak))
 
-#if defined(DEBUG_RECURSIVE_ALLOCATIONS)
-#define DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS() gctools::RecursiveAllocationCounter rac;
-#else
-#define DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS()
-#endif
-
 #define clasp_unlikely(x) __builtin_expect(!!(x), 0)
 #define clasp_likely(x) __builtin_expect(!!(x), 1)
 #define UNLIKELY(x) clasp_unlikely(x)

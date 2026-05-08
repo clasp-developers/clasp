@@ -47,24 +47,12 @@ struct ThreadLocalStateLowLevel {
   // Time unwinds
   std::chrono::time_point<std::chrono::high_resolution_clock> _start_unwind;
   std::chrono::duration<size_t, std::nano> _unwind_time;
-#if defined(DEBUG_RECURSIVE_ALLOCATIONS)
-  int _RecursiveAllocationCounter;
-  size_t _RecursiveAllocationHeaderValue;
-#endif
   ThreadLocalStateLowLevel();
   ~ThreadLocalStateLowLevel();
 };
 }; // namespace gctools
 
 extern THREAD_LOCAL gctools::ThreadLocalStateLowLevel* my_thread_low_level;
-
-#if defined(DEBUG_RECURSIVE_ALLOCATIONS)
-#endif
-
-namespace gctools {
-void lisp_increment_recursive_allocation_counter(ThreadLocalStateLowLevel* thread, size_t header_value);
-void lisp_decrement_recursive_allocation_counter(ThreadLocalStateLowLevel* thread);
-}; // namespace gctools
 
 namespace gctools {
 struct RAIIDisableInterrupts {
@@ -108,20 +96,3 @@ template <> struct RAIIAllocationStage<SnapshotLoadStage> {
 
 }; // namespace gctools
 #define RAII_DISABLE_INTERRUPTS() gctools::RAIIDisableInterrupts disable_interrupts__(my_thread_low_level)
-
-namespace gctools {
-#ifdef DEBUG_RECURSIVE_ALLOCATIONS
-struct RecursiveAllocationCounter {
-  RecursiveAllocationCounter(size_t header_value) {
-    lisp_increment_recursive_allocation_counter(my_thread_low_level, header_value);
-  };
-  ~RecursiveAllocationCounter() { lisp_decrement_recursive_allocation_counter(my_thread_low_level); }
-};
-#endif
-}; // namespace gctools
-
-#ifdef DEBUG_RECURSIVE_ALLOCATIONS
-#define RAII_DEBUG_RECURSIVE_ALLOCATIONS(header_value) ::gctools::RecursiveAllocationCounter _rac_(header_value);
-#else
-#define RAII_DEBUG_RECURSIVE_ALLOCATIONS(header_value)
-#endif
