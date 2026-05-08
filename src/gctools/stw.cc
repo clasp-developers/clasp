@@ -38,6 +38,12 @@ void stw_unregister_thread() {
 }
 
 void begin_gcless_shared() {
+  // Save the current stack pointer before decrementing running_count.
+  // The acq_rel fence on fetch_sub below ensures the GC thread sees this
+  // store after observing running_count == 0.
+  if (my_thread_low_level) {
+    my_thread_low_level->_ControlStackPointer = __builtin_frame_address(0);
+  }
   int prev = running_count.fetch_sub(1, std::memory_order_acq_rel);
   if (prev == 1) {
     all_parked_cv.notify_all();

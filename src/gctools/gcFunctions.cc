@@ -28,6 +28,7 @@
 #include <clasp/gctools/gc_interface.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
+#include <clasp/gctools/stw.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/symbolTable.h>
@@ -950,6 +951,19 @@ CL_DEFUN void gctools__dump_stamp_info(size_t unshifted_stamp) {
   // This shift makes this function work on the output of instance-stamp.
   // I don't get it.
   core::clasp_write_string(dump_stamp_info(STAMP_UNSHIFT_MTAG(unshifted_stamp)));
+}
+
+// Used in regression tests
+CL_DOCSTRING(R"dx(Return this thread's stack top, current stack pointer, and bottom. The stack pointer is immediately stale. This function for testing purposes only.)dx");
+CL_DEFUN core::T_mv gctools__stw_stack_bounds() {
+  gctools::begin_gcless();
+  void* sp = my_thread_low_level->_ControlStackPointer;
+  void* bottom = my_thread_low_level->_ControlStackBottom;
+  void* top = my_thread_low_level->_ControlStackTop;
+  gctools::end_gcless();
+  return Values(core::Integer_O::create((uintptr_t)top),
+                core::Integer_O::create((uintptr_t)sp),
+                core::Integer_O::create((uintptr_t)bottom));
 }
 
 }; // namespace gctools
