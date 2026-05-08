@@ -90,16 +90,6 @@ static std::terminate_handler g_prev_terminate_handler;
 
 namespace gctools {
 
-void monitorAllocation(stamp_t k, size_t sz) {
-#ifdef DEBUG_MONITOR_ALLOCATIONS
-  if (global_monitorAllocations.counter >= global_monitorAllocations.start &&
-      global_monitorAllocations.counter < global_monitorAllocations.end) {
-    core::core__clib_backtrace(global_monitorAllocations.backtraceDepth);
-  }
-  global_monitorAllocations.counter++;
-#endif
-}
-
 void set_abort_flag(bool abort_flag = false) { g_abort_flag = abort_flag; }
 
 bool abort_flag(void) { return g_abort_flag; }
@@ -247,26 +237,6 @@ int startup_clasp(void** stackMarker, gctools::ClaspInfo* claspInfo, int* exitCo
 
   // Register builtin function names
   define_builtin_cxx_class_names();
-
-  // Read the memory profiling settings <size-threshold> <number-theshold>
-  // as in export CLASP_MEMORY_PROFILE="16000000 1024"
-  // This means call HitAllocationSizeThreshold every time 16000000 bytes are allocated
-  //        and call HitAllocationNumberThreshold every time 1024 allocations take place
-  char* cur = getenv("CLASP_MEMORY_PROFILE");
-  size_t values[2];
-  int numValues = 0;
-  if (cur) {
-    while (*cur && numValues < 2) {
-      values[numValues] = strtol(cur, &cur, 10);
-      ++numValues;
-    }
-    if (numValues == 2) {
-      my_thread_low_level->_Allocations._AllocationNumberThreshold = values[1];
-    }
-    if (numValues >= 1) {
-      my_thread_low_level->_Allocations._AllocationSizeThreshold = values[0];
-    }
-  }
 
   //
   // Walk all of the loaded dynamic libraries

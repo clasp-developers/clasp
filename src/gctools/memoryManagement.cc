@@ -79,9 +79,6 @@ void gc_release() {
 #endif
 };
 
-__attribute__((noinline)) void HitAllocationSizeThreshold() { my_thread_low_level->_Allocations._HitAllocationSizeCounter++; }
-
-__attribute__((noinline)) void HitAllocationNumberThreshold() { my_thread_low_level->_Allocations._HitAllocationNumberCounter++; }
 }
 
 #include <clasp/core/scrape.h>

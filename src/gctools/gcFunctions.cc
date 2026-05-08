@@ -210,23 +210,6 @@ CL_DEFUN bool core__inherits_from_instance(core::T_sp obj) { return (gc::IsA<cor
 
 namespace gctools {
 
-CL_LAMBDA(on &key (backtrace-start 0) (backtrace-count 0) (backtrace-depth 6));
-DOCGROUP(clasp);
-CL_DEFUN void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceStart, core::Fixnum_sp backtraceCount,
-                                           core::Fixnum_sp backtraceDepth) {
-#ifdef DEBUG_MONITOR_ALLOCATIONS
-  global_monitorAllocations.on = on;
-  global_monitorAllocations.counter = 0;
-  if (backtraceStart.unsafe_fixnum() < 0 || backtraceCount.unsafe_fixnum() < 0 || backtraceDepth.unsafe_fixnum() < 0) {
-    SIMPLE_ERROR("Keyword arguments must all be >= 0");
-  }
-  global_monitorAllocations.start = backtraceStart.unsafe_fixnum();
-  global_monitorAllocations.end = backtraceStart.unsafe_fixnum() + backtraceCount.unsafe_fixnum();
-  global_monitorAllocations.backtraceDepth = backtraceDepth.unsafe_fixnum();
-  printf("%s:%d  monitorAllocations set to %d\n", __FILE__, __LINE__, on);
-#endif
-};
-
 SYMBOL_EXPORT_SC_(GcToolsPkg, ramp);
 SYMBOL_EXPORT_SC_(GcToolsPkg, rampCollectAll);
 
@@ -729,16 +712,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport)
     ss << (fmt::format("DEBUG_LONG_CALL_HISTORY = {}\n", (debug_long_call_history ? "**DEFINED**" : "undefined")));
-
-  bool debug_memory_profile = false;
-#ifdef DEBUG_MEMORY_PROFILE
-  debug_memory_profile = true;
-  debugging = true;
-  if (setFeatures)
-    features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MEMORY-PROFILE"), features);
-#endif
-  if (buildReport)
-    ss << (fmt::format("DEBUG_MEMORY_PROFILE = {}\n", (debug_memory_profile ? "**DEFINED**" : "undefined")));
 
   bool debug_verify_modules = false;
 #ifdef DEBUG_VERIFY_MODULES

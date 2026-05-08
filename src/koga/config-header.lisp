@@ -73,8 +73,6 @@
                  "DEBUG_STARTUP" (debug-startup configuration)
                  "DEBUG_MONITOR" (debug-monitor configuration)
                  "DEBUG_MONITOR_SUPPORT" (debug-monitor-support configuration)
-                 "DEBUG_MEMORY_PROFILE" (debug-memory-profile configuration)
-                 "DEBUG_COUNT_ALLOCATIONS" (debug-count-allocations configuration)
                  "DEBUG_VERIFY_MODULES" (debug-verify-modules configuration)
                  "DEBUG_LONG_CALL_HISTORY" (debug-long-call-history configuration)
                  "DEBUG_FASTGF" (debug-fastgf configuration)
