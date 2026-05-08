@@ -144,12 +144,7 @@ namespace gctools {
 struct RuntimeStage {};
 struct SnapshotLoadStage {};
 
-template <typename Stage> struct RAIIAllocationStage {
-private:
-  RAIIAllocationStage(ThreadLocalStateLowLevel* t) {
-    printf("%s:%d:%s This should never be called\n", __FILE__, __LINE__, __FUNCTION__);
-  };
-};
+template <typename Stage> struct RAIIAllocationStage;
 
 template <> struct RAIIAllocationStage<RuntimeStage> {
   ThreadLocalStateLowLevel* _threadLocalStateLowLevel;
