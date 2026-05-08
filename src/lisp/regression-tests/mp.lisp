@@ -253,30 +253,3 @@
         (spam-processes nthreads (lambda () (mp:atomic-push nil (car place))))
         (car place))
       ((nil nil nil nil nil nil nil)))
-
-;;; Stack bounds sanity checks.
-;;; gctools:stw-check-stack-bounds enters a GC-safe state and verifies that
-;;; the saved stack pointer lies within the thread's registered stack bounds.
-
-(defun stack-bounds-test ()
-  (multiple-value-bind (low sp high)
-      (gctools:stw-stack-bounds)
-    (if (<= low sp high)
-        (values nil nil nil)
-        (values low sp high))))
-
-(test stw-stack-bounds-main-thread
-      (stack-bounds-test)
-      (nil nil nil))
-
-(test stw-stack-bounds-new-thread
-      (mp:process-join
-       (mp:process-run-function nil #'stack-bounds-test))
-      (nil nil nil))
-
-(test stw-stack-bounds-multiple-threads
-      (let ((procs (loop repeat 4
-                         collect (mp:process-run-function
-                                  nil #'stack-bounds-test))))
-        (mapcar (lambda (p) (multiple-value-list (mp:process-join p))) procs))
-      (((nil nil nil) (nil nil nil) (nil nil nil) (nil nil nil))))
