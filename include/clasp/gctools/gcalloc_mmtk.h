@@ -27,12 +27,8 @@ template <typename Stage, typename Cons>
 inline ConsHeader_s* do_cons_allocation(size_t size) {
   RAIIDisableInterrupts disable_interrupts;
   void* alloc_start;
-  if constexpr (std::is_same_v<Stage, SnapshotLoadStage>) {
-    alloc_start = std::malloc(size);
-  } else {
-    alloc_start = mmtk_alloc_raw(size, MMTK_CLASP_ALLOC_DEFAULT);
-    mmtk_post_alloc(alloc_start, size, MMTK_CLASP_ALLOC_DEFAULT, sizeof(ConsHeader_s));
-  }
+  alloc_start = mmtk_alloc_raw(size, MMTK_CLASP_ALLOC_DEFAULT);
+  mmtk_post_alloc(alloc_start, size, MMTK_CLASP_ALLOC_DEFAULT, sizeof(ConsHeader_s));
   ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(alloc_start);
   const ConsHeader_s::StampWtagMtag stamp(ConsHeader_s::cons_mtag);
   new (header) ConsHeader_s(stamp);
@@ -51,14 +47,10 @@ inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header,
   true_size += tail_size;
 #endif
   void* alloc_start;
-  if constexpr (std::is_same_v<Stage, SnapshotLoadStage>) {
-    alloc_start = std::malloc(true_size);
-  } else {
-    alloc_start = mmtk_alloc_raw(true_size, MMTK_CLASP_ALLOC_DEFAULT);
-    mmtk_post_alloc(alloc_start, true_size, MMTK_CLASP_ALLOC_DEFAULT);
-  }
+  alloc_start = mmtk_alloc_raw(true_size, MMTK_CLASP_ALLOC_DEFAULT);
+  mmtk_post_alloc(alloc_start, true_size, MMTK_CLASP_ALLOC_DEFAULT);
   Header_s* header = reinterpret_cast<Header_s*>(alloc_start);
-  my_thread_low_level->_Allocation.sregisterAllocation(the_header.unshifted_stamp(), true_size);
+  my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(), true_size);
 #ifdef DEBUG_GUARD
   memset(header, 0x00, true_size);
   new (header) Header_s(the_header, size, tail_size, true_size);
@@ -79,12 +71,8 @@ inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header
   true_size += tail_size;
 #endif
   void* alloc_start;
-  if constexpr (std::is_same_v<Stage, SnapshotLoadStage>) {
-    alloc_start = std::malloc(true_size);
-  } else {
-    alloc_start = mmtk_alloc_raw(true_size, MMTK_CLASP_ALLOC_DEFAULT);
-    mmtk_post_alloc(alloc_start, true_size, MMTK_CLASP_ALLOC_DEFAULT);
-  }
+  alloc_start = mmtk_alloc_raw(true_size, MMTK_CLASP_ALLOC_DEFAULT);
+  mmtk_post_alloc(alloc_start, true_size, MMTK_CLASP_ALLOC_DEFAULT);
   Header_s* header = reinterpret_cast<Header_s*>(alloc_start);
   my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(), true_size);
 #ifdef DEBUG_GUARD
