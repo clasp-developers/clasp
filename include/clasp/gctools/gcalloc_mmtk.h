@@ -25,7 +25,7 @@ inline void mmtk_post_alloc(void* alloc_start, size_t size, MMTkClaspAllocSemant
 
 template <typename Stage, typename Cons>
 inline ConsHeader_s* do_cons_allocation(size_t size) {
-  RAIIAllocationStage<Stage> stage(my_thread_low_level);
+  RAIIDisableInterrupts disable_interrupts;
   void* alloc_start;
   if constexpr (std::is_same_v<Stage, SnapshotLoadStage>) {
     alloc_start = std::malloc(size);
@@ -44,7 +44,7 @@ inline ConsHeader_s* do_cons_allocation(size_t size) {
 
 template <typename Stage = RuntimeStage>
 inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
-  RAIIAllocationStage<Stage> stage(my_thread_low_level);
+  RAIIDisableInterrupts disable_interrupts;
   size_t true_size = size;
 #ifdef DEBUG_GUARD
   size_t tail_size = ((rand() % 8) + 1) * Alignment();
@@ -72,7 +72,7 @@ inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header,
 
 template <typename Stage = RuntimeStage>
 inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
-  RAIIAllocationStage<Stage> stage(my_thread_low_level);
+  RAIIDisableInterrupts disable_interrupts;
   size_t true_size = size;
 #ifdef DEBUG_GUARD
   size_t tail_size = ((rand() % 8) + 1) * Alignment();

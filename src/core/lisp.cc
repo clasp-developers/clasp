@@ -248,7 +248,7 @@ string dump_instanceClass_info(Instance_sp co, LispPtr prog) {
 }
 
 void Lisp::setupSpecialSymbols() {
-  RAII_DISABLE_INTERRUPTS();
+  gctools::RAIIDisableInterrupts disable_interrupts;
   SimpleBaseString_sp name_nil = SimpleBaseString_O::make("NIL");
   Null_sp symbol_nil = gctools::GC<Null_O>::allocate(name_nil); // ::create_at_boot("NIL");
   SimpleBaseString_sp name_unbound = SimpleBaseString_O::make("UNBOUND");

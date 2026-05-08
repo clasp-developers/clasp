@@ -21,7 +21,7 @@
 
 namespace gctools {
 template <typename Stage, typename Cons> inline ConsHeader_s* do_cons_allocation(size_t size) {
-  RAIIAllocationStage<Stage> stage(my_thread_low_level);
+  RAIIDisableInterrupts disable_interrupts;
 #ifdef USE_PRECISE_GC
   ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(
       ALIGNED_GC_MALLOC_KIND(size, global_cons_kind)); // wasMTAG
@@ -39,7 +39,7 @@ template <typename Stage, typename Cons> inline ConsHeader_s* do_cons_allocation
 
 template <typename Stage = RuntimeStage>
 inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
-  RAIIAllocationStage<Stage> stage(my_thread_low_level);
+  RAIIDisableInterrupts disable_interrupts;
   size_t true_size = size;
 #ifdef DEBUG_GUARD
   size_t tail_size = ((my_thread_random() % 8) + 1) * Alignment();
@@ -64,7 +64,7 @@ inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header,
 
 template <typename Stage = RuntimeStage>
 inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
-  RAIIAllocationStage<Stage> stage(my_thread_low_level);
+  RAIIDisableInterrupts disable_interrupts;
   size_t true_size = size;
 #ifdef DEBUG_GUARD
   size_t tail_size = ((my_thread_random() % 8) + 1) * Alignment();

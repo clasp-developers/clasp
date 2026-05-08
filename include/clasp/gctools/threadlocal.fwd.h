@@ -57,38 +57,12 @@ extern THREAD_LOCAL gctools::ThreadLocalStateLowLevel* my_thread_low_level;
 namespace gctools {
 struct RAIIDisableInterrupts {
   ThreadLocalStateLowLevel* this_thread;
-  RAIIDisableInterrupts(ThreadLocalStateLowLevel* t) : this_thread(t) { this->this_thread->_DisableInterrupts = true; }
+  RAIIDisableInterrupts(ThreadLocalStateLowLevel* t = my_thread_low_level) : this_thread(t) { this->this_thread->_DisableInterrupts = true; }
   ~RAIIDisableInterrupts() { this->this_thread->_DisableInterrupts = false; }
+
 };
-}; // namespace gctools
 
-// Defined in threadlocal.fwd.h
-// extern THREAD_LOCAL core::ThreadLocalStateLowLevel *my_thread_low_level;
-
-namespace gctools {
-
-//
-// We need to allocate Code_O objects in snapshot_load
-//  from threads that are not under our control.
-//  The threads don't have thread local state setup so we
-//  don't want to disable interrupts or register allocations.
-//
 struct RuntimeStage {};
 struct SnapshotLoadStage {};
 
-template <typename Stage> struct RAIIAllocationStage;
-
-template <> struct RAIIAllocationStage<RuntimeStage> {
-  ThreadLocalStateLowLevel* _threadLocalStateLowLevel;
-  RAIIDisableInterrupts _disableInterrupts;
-
-  RAIIAllocationStage(ThreadLocalStateLowLevel* t) : _threadLocalStateLowLevel(t), _disableInterrupts(t){};
-};
-
-template <> struct RAIIAllocationStage<SnapshotLoadStage> {
-
-  RAIIAllocationStage(ThreadLocalStateLowLevel* t){};
-};
-
 }; // namespace gctools
-#define RAII_DISABLE_INTERRUPTS() gctools::RAIIDisableInterrupts disable_interrupts__(my_thread_low_level)
