@@ -196,10 +196,6 @@ Environment variables:
       <directory> that contains quicklisp setup.lisp
   CLASP_FEATURES=<features>
       Set *features* (separate multiple features with spaces or commas)
-  CLASP_MEMORY_PROFILE=<size-threshold> <number-theshold>
-      Options means call HitAllocationSizeThreshold every time 16000000 bytes
-      are allocated and call HitAllocationNumberThreshold every time 1024
-      allocations take place
   CLASP_BACKTRACE_ALLOCATIONS=<stamp>
       Generate a backtrace to /tmp/stamp<stamp>.backtraces everytime a <stamp>
       object is allocates (VERY EXPENSIVE)

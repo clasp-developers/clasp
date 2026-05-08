@@ -8,25 +8,6 @@
 
 namespace gctools {
 
-extern "C" void HitAllocationSizeThreshold();
-extern "C" void HitAllocationNumberThreshold();
-
-extern void monitorAllocation(stamp_t k, size_t sz);
-extern void count_allocation(const stamp_t k);
-
-#ifdef DEBUG_MONITOR_ALLOCATIONS
-// This may be deprecated
-struct MonitorAllocations {
-  bool on;
-  bool stackDump;
-  int counter;
-  int start;
-  int end;
-  int backtraceDepth;
-  MonitorAllocations() : on(false), stackDump(false), counter(0){};
-};
-#endif
-
 struct AllocationProfiler {
   // These counters live in the THREAD_LOCAL ThreadLocalStateLowLevel (as the
   // member _Allocations) and are only ever accessed via
@@ -37,58 +18,21 @@ struct AllocationProfiler {
   size_t _AllocationNumberThreshold;
   int64_t _AllocationSizeCounter = 0;
   int64_t _AllocationNumberCounter = 0;
-  int64_t _HitAllocationNumberCounter = 0;
-  int64_t _HitAllocationSizeCounter = 0;
-#ifdef DEBUG_MONITOR_ALLOCATIONS
-  MonitorAllocations _Monitor;
-#endif
 
   AllocationProfiler()
-      : _AllocationSizeThreshold(1024 * 1024), _AllocationNumberThreshold(16386), _HitAllocationNumberCounter(0),
-        _HitAllocationSizeCounter(0){};
+    : _AllocationSizeThreshold(1024 * 1024), _AllocationNumberThreshold(16386) {};
   AllocationProfiler(size_t size, size_t number)
-      : _AllocationSizeThreshold(size), _AllocationNumberThreshold(number), _HitAllocationNumberCounter(0),
-        _HitAllocationSizeCounter(0){};
+    : _AllocationSizeThreshold(size), _AllocationNumberThreshold(number) {};
 
   inline void registerAllocation(stamp_t stamp, size_t size) {
     this->_BytesAllocated += size;
     this->_AllocationSizeCounter += size;
     this->_AllocationNumberCounter++;
-#ifdef DEBUG_MEMORY_PROFILE
-    if (this->_AllocationSizeCounter >= this->_AllocationSizeThreshold) {
-      HitAllocationSizeThreshold();
-      this->_AllocationSizeCounter -= this->_AllocationSizeThreshold;
-    }
-    if (this->_AllocationNumberCounter >= this->_AllocationNumberThreshold) {
-      HitAllocationNumberThreshold();
-      this->_AllocationNumberCounter = 0;
-    }
-#endif
-#if defined(GC_MONITOR_ALLOCATIONS)
-    if (this->_Monitor.on) {
-      monitorAllocation(stamp, sz);
-    }
-#endif
   };
   inline void registerWeakAllocation(uintptr_t stamp, size_t size) {
     this->_BytesAllocated += size;
     this->_AllocationSizeCounter += size;
     this->_AllocationNumberCounter++;
-#ifdef DEBUG_MEMORY_PROFILE
-    if (this->_AllocationSizeCounter >= this->_AllocationSizeThreshold) {
-      HitAllocationSizeThreshold();
-      this->_AllocationSizeCounter -= this->_AllocationSizeThreshold;
-    }
-    if (this->_AllocationNumberCounter >= this->_AllocationNumberThreshold) {
-      HitAllocationNumberThreshold();
-      this->_AllocationNumberCounter = 0;
-    }
-#endif
-#if defined(GC_MONITOR_ALLOCATIONS)
-    if (this->_Monitor.on) {
-      monitorWeakAllocation(stamp, sz);
-    }
-#endif
   };
 };
 
