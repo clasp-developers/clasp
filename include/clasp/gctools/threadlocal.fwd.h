@@ -83,15 +83,11 @@ template <> struct RAIIAllocationStage<RuntimeStage> {
   RAIIDisableInterrupts _disableInterrupts;
 
   RAIIAllocationStage(ThreadLocalStateLowLevel* t) : _threadLocalStateLowLevel(t), _disableInterrupts(t){};
-  void registerAllocation(uintptr_t ustamp, size_t size) {
-    this->_threadLocalStateLowLevel->_Allocations.registerAllocation(ustamp, size);
-  }
 };
 
 template <> struct RAIIAllocationStage<SnapshotLoadStage> {
 
   RAIIAllocationStage(ThreadLocalStateLowLevel* t){};
-  void registerAllocation(uintptr_t ustamp, size_t size){};
 };
 
 }; // namespace gctools
