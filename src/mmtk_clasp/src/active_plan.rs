@@ -10,7 +10,7 @@ use std::sync::{LazyLock, RwLock};
 // Safety invariant: each pointer is valid as long as its mutator thread is
 // alive; we only dereference during stop-the-world when all mutator threads
 // are suspended.
-struct MutatorPtr(*mut Mutator<ClaspVM>);
+pub(crate) struct MutatorPtr(*mut Mutator<ClaspVM>);
 unsafe impl Send for MutatorPtr {}
 unsafe impl Sync for MutatorPtr {}
 impl std::hash::Hash for MutatorPtr {
@@ -21,7 +21,7 @@ impl PartialEq for MutatorPtr {
 }
 impl Eq for MutatorPtr {}
 
-pub static MUTATORS: LazyLock<RwLock<HashSet<MutatorPtr>>> =
+pub(crate) static MUTATORS: LazyLock<RwLock<HashSet<MutatorPtr>>> =
     LazyLock::new(|| RwLock::new(HashSet::new()));
 
 pub(crate) fn register_mutator(mutator: *mut Mutator<ClaspVM>) {
