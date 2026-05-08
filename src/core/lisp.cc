@@ -1400,24 +1400,6 @@ void Lisp::readEvalPrintInteractive() {
   stream_terpri(cl::_sym_STARterminal_ioSTAR->symbolValue());
 }
 
-static bool global_invokedInternalDebugger = false;
-
-struct ExceptionSafeResetInvokedInternalDebugger {
-  ExceptionSafeResetInvokedInternalDebugger() { global_invokedInternalDebugger = true; };
-  virtual ~ExceptionSafeResetInvokedInternalDebugger() { global_invokedInternalDebugger = false; }
-};
-
-void stackSizeWarning(size_t stackUsed) {
-  if (!global_invokedInternalDebugger) {
-    int x;
-    char* xaddr = (char*)(&x);
-    printf("%s:%d Stack is getting full currently at %zu bytes - warning at %u bytes  top@%p current@%p\n", __FILE__, __LINE__,
-           stackUsed, globals_->_StackWarnSize, my_thread_low_level->_StackTop, xaddr);
-    ExceptionSafeResetInvokedInternalDebugger safe;
-    core__invoke_internal_debugger(nil<core::T_O>());
-  }
-};
-
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return the stack warn size)dx");
