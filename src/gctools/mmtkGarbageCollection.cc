@@ -36,8 +36,6 @@ THE SOFTWARE.
 namespace gctools {
 
 __attribute__((noinline)) void initializeMmtk(ClaspInfo* claspInfo) {
-  void* topOfStack = __builtin_frame_address(0);
-
   // Build and initialise the MMTk instance.
   MMTkClaspBuilder builder = mmtk_clasp_create_builder();
   // NoGC plan: allocate but never collect (Phase 1).
@@ -49,7 +47,7 @@ __attribute__((noinline)) void initializeMmtk(ClaspInfo* claspInfo) {
 
   // Set up thread-local state for the main thread.
   gctools::ThreadLocalStateLowLevel* thread_local_state_low_level =
-      new gctools::ThreadLocalStateLowLevel(topOfStack);
+      new gctools::ThreadLocalStateLowLevel();
   my_thread_low_level = thread_local_state_low_level;
 
   my_thread = (core::ThreadLocalState*)malloc(sizeof(core::ThreadLocalState));

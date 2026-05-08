@@ -132,7 +132,7 @@ public:
   };
 
   int startProcess();
-  void run(void* stackTop); // the function the thread actually runs, mostly
+  void run(); // the function the thread actually runs, mostly
   string __repr__() const override;
   inline ProcessPhase phase() const { return _Phase.load(std::memory_order_acquire); }
   string phase_as_string() const;

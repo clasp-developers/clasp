@@ -6,6 +6,10 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <signal.h>
+#include <pthread.h>
+#ifdef _TARGET_OS_FREEBSD
+#include <pthread_np.h>
+#endif
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/gctools/stw.h>
@@ -105,13 +109,32 @@ bool DynamicBindingStack::thread_local_boundp(uint32_t index) const {
 }; // namespace core
 
 namespace gctools {
-ThreadLocalStateLowLevel::ThreadLocalStateLowLevel(void* stack_top)
-    : _StackTop(stack_top), _DisableInterrupts(false)
+ThreadLocalStateLowLevel::ThreadLocalStateLowLevel()
+    : _DisableInterrupts(false)
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
       ,
       _RecursiveAllocationCounter(0)
 #endif
 {
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD) || defined(_TARGET_OS_DARWIN)
+  pthread_t self = pthread_self();
+  void* stackaddr; size_t stacksize;
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
+  pthread_attr_t attr;
+  pthread_attr_init(&attr);
+#if defined(_TARGET_OS_LINUX)
+  pthread_getattr_np(self, &attr);
+#else // _TARGET_OS_FREEBSD
+  pthread_attr_get_np(self, &attr);
+#endif
+  pthread_attr_getstack(&attr, &stackaddr, &stacksize);
+#elif defined(_TARGET_OS_DARWIN)
+  stackaddr = pthread_get_stackaddr_np(self);
+  stacksize = pthread_get_stacksize_np(self);
+#endif
+#endif // LINUX || FREEBSD || DARWIN
+  _ControlStackTop = stackaddr;
+  _ControlStackBottom = (void*)((char*)stackaddr + stacksize);
 #ifdef USE_MMTK
   _mmtk_mutator = mmtk_clasp_bind_mutator(this);
 #endif

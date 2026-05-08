@@ -93,7 +93,8 @@ struct AllocationProfiler {
 };
 
 struct ThreadLocalStateLowLevel {
-  void* _StackTop;
+  void* _ControlStackTop;
+  void* _ControlStackBottom;
   bool _DisableInterrupts;
   AllocationProfiler _Allocations;
 #ifdef USE_MMTK
@@ -106,7 +107,7 @@ struct ThreadLocalStateLowLevel {
   int _RecursiveAllocationCounter;
   size_t _RecursiveAllocationHeaderValue;
 #endif
-  ThreadLocalStateLowLevel(void* stack_top);
+  ThreadLocalStateLowLevel();
   ~ThreadLocalStateLowLevel();
 };
 }; // namespace gctools

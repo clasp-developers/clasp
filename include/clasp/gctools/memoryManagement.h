@@ -659,7 +659,7 @@ public:
       bpnew = (void**)*(void**)bp;
       if ((uintptr_t)bpnew < (uintptr_t)bp)
         break;
-      if (bpnew > my_thread_low_level->_StackTop)
+      if (bpnew > my_thread_low_level->_ControlStackTop)
         break;
       bp = bpnew;
       this->_backtrace[ii] = pc;
