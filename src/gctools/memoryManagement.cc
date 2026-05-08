@@ -153,28 +153,6 @@ DOCGROUP(clasp);
 CL_DEFUN Fixnum gctools__NextUnshiftedStampValue() { return global_NextUnshiftedStamp; }
 
 }; // namespace gctools
-namespace gctools {
-void lisp_increment_recursive_allocation_counter(ThreadLocalStateLowLevel* thread, size_t header_value) {
-#ifdef DEBUG_RECURSIVE_ALLOCATIONS
-  int x = thread->_RecursiveAllocationCounter + 1;
-  thread->_RecursiveAllocationCounter = x;
-  if (x != 1) {
-    printf("%s:%d A recursive allocation took place - these are illegal!!!!\n     The outer header_value is %lu and the inner one "
-           "is %lu\n",
-           __FILE__, __LINE__, thread->_RecursiveAllocationHeaderValue, header_value);
-    dbg_safe_backtrace();
-    abort();
-  }
-  thread->_RecursiveAllocationHeaderValue = header_value;
-#endif
-}
-void lisp_decrement_recursive_allocation_counter(ThreadLocalStateLowLevel* thread) {
-#ifdef DEBUG_RECURSIVE_ALLOCATIONS
-  --thread->_RecursiveAllocationCounter;
-#endif
-};
-
-}; // namespace gctools
 
 namespace gctools {
 #if 0

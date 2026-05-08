@@ -111,10 +111,6 @@ bool DynamicBindingStack::thread_local_boundp(uint32_t index) const {
 namespace gctools {
 ThreadLocalStateLowLevel::ThreadLocalStateLowLevel()
     : _DisableInterrupts(false)
-#ifdef DEBUG_RECURSIVE_ALLOCATIONS
-      ,
-      _RecursiveAllocationCounter(0)
-#endif
 {
 #if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD) || defined(_TARGET_OS_DARWIN)
   pthread_t self = pthread_self();

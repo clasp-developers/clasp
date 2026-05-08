@@ -579,14 +579,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (buildReport)
     ss << (fmt::format("DEBUG_STACKMAPS = {}\n", (debug_stackmaps ? "**DEFINED**" : "undefined")));
 
-  bool debug_recursive_allocations = false;
-#ifdef DEBUG_RECURSIVE_ALLOCATIONS
-  debug_recursive_allocations = true;
-  debugging = true;
-#endif
-  if (buildReport)
-    ss << (fmt::format("DEBUG_RECURSIVE_ALLOCATIONS = {}\n", (debug_recursive_allocations ? "**DEFINED**" : "undefined")));
-
   bool debug_guard = false;
 #ifdef DEBUG_GUARD
   debug_guard = true;
