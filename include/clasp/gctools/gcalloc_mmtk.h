@@ -36,7 +36,7 @@ inline ConsHeader_s* do_cons_allocation(size_t size) {
   ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(alloc_start);
   const ConsHeader_s::StampWtagMtag stamp(ConsHeader_s::cons_mtag);
   new (header) ConsHeader_s(stamp);
-  stage.registerAllocation(STAMPWTAG_CONS, size);
+  my_thread_low_level->_Allocations.registerAllocation(STAMPWTAG_CONS, size);
   return header;
 }
 
@@ -58,7 +58,7 @@ inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header,
     mmtk_post_alloc(alloc_start, true_size, MMTK_CLASP_ALLOC_DEFAULT);
   }
   Header_s* header = reinterpret_cast<Header_s*>(alloc_start);
-  stage.registerAllocation(the_header.unshifted_stamp(), true_size);
+  my_thread_low_level->_Allocation.sregisterAllocation(the_header.unshifted_stamp(), true_size);
 #ifdef DEBUG_GUARD
   memset(header, 0x00, true_size);
   new (header) Header_s(the_header, size, tail_size, true_size);
@@ -86,7 +86,7 @@ inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header
     mmtk_post_alloc(alloc_start, true_size, MMTK_CLASP_ALLOC_DEFAULT);
   }
   Header_s* header = reinterpret_cast<Header_s*>(alloc_start);
-  stage.registerAllocation(the_header.unshifted_stamp(), true_size);
+  my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(), true_size);
 #ifdef DEBUG_GUARD
   memset(header, 0x00, true_size);
   new (header) Header_s(the_header, size, tail_size, true_size);
