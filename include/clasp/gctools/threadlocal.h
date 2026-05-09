@@ -334,11 +334,7 @@ void thread_local_invoke_and_clear_cleanup();
 
 }; // namespace core
 
-namespace gctools {
-
-void registerBytesAllocated(size_t bytes);
-};
-
+// used in snapshot load
 struct ThreadManager {
   struct Worker {
 #ifdef USE_BOEHM
@@ -366,12 +362,4 @@ struct ThreadManager {
   void unregister_thread(std::thread& th){
       //    printf("%s:%d:%s What do I do here pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid(); );
   };
-};
-
-template <typename T> class thread_pool;
-
-namespace gctools {
-
-extern thread_pool<ThreadManager>* global_thread_pool;
-
 };

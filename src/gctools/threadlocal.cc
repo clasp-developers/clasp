@@ -46,20 +46,6 @@ void VirtualMachine::error() {
          __FUNCTION__);
 };
 
-unsigned int* BignumExportBuffer::getOrAllocate(const mpz_class& bignum, int nail) {
-  size_t size = _lisp->integer_ordering()._mpz_import_size;
-  size_t numb = (size << 3) - nail; // *8
-  size_t count = (mpz_sizeinbase(bignum.get_mpz_t(), 2) + numb - 1) / numb;
-  size_t bytes = count * size;
-  if (bytes > this->bufferSize) {
-    if (this->buffer) {
-      free(this->buffer);
-    }
-    this->buffer = (unsigned int*)malloc(bytes);
-  }
-  return this->buffer;
-};
-
 }; // namespace core
 
 namespace core {
@@ -448,9 +434,6 @@ void thread_local_invoke_and_clear_cleanup() {
   }
   my_thread->_CleanupFunctions = NULL;
 }
-
-// Need to use LTO to inline this.
-inline void registerTypesAllocated(size_t bytes) { my_thread->_BytesAllocated += bytes; }
 
 void ThreadLocalState::initialize_thread(mp::Process_sp process) {
   //  printf("%s:%d Initialize all ThreadLocalState things this->%p\n",__FILE__, __LINE__, (void*)this);
