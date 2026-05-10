@@ -284,6 +284,19 @@
     (format *error-output* \"~~a~~%\" condition)
     (sys:exit 1)))"))
 
+(defmethod print-prologue (configuration (name (eql :diff-sif)) output-stream)
+  (declare (ignore configuration))
+  (format output-stream "(load ~S)~%(sif-tools:diff-sif-files ~
+(pathname (elt core:*command-line-arguments* 0)) ~
+(pathname (elt core:*command-line-arguments* 1)) ~
+(pathname (elt core:*command-line-arguments* 2)))~%"
+          (namestring (truename "src/analysis/sif-tools.lisp"))))
+
+(defmethod print-prologue (configuration (name (eql :merge-sif)) output-stream)
+  (declare (ignore configuration))
+  (format output-stream "#-asdf (require :asdf)~%(load ~S)~%(destructuring-bind (base out &rest difs) (uiop:command-line-arguments)~%  (sif-tools:merge-sif-files (pathname base) (mapcar #'pathname difs) (pathname out)))~%"
+          (namestring (truename "src/analysis/sif-tools.lisp"))))
+
 (defmethod print-prologue (configuration (name (eql :snapshot)) output-stream)
   (format output-stream "(clos:compile-all-generic-functions)
 (gctools:save-lisp-and-die (elt core:*command-line-arguments* 0) :executable t)

@@ -110,6 +110,15 @@
                     :command "$clasp --norc --non-interactive --base --feature ignore-extensions --load analyze-file.lisp -- $out $in $log $database"
                     :depfile "$out.d"
                     :description "Analyzing $in")
+  (ninja:write-rule output-stream :diff-sif
+                    :command "$clasp --norc --non-interactive --base --feature ignore-extensions --load diff-sif.lisp -- $base $in $out"
+                    :description "Diffing $in against $base"
+                    :restat 1
+                    :pool "console")
+  (ninja:write-rule output-stream :merge-sif
+                    :command (lisp-command "merge-sif.lisp" "$base $out $in")
+                    :description "Merging extension diffs onto $base"
+                    :restat 1)
   (ninja:write-rule output-stream :ar
                     :command "$ar rcsu $out $in"
                     :description "Creating archive $out")
@@ -427,15 +436,39 @@
                                                              :package-lib
                                                              :package-dylib)))
           (libclasp-pc-installed (make-source "libclasp.pc" :package-pkgconfig))
-          (filtered-sifs (if *variant-precise*
-                             (sort sifs
-                                   (lambda (x y)
-                                     (and (eq x :code)
-                                          (eq y :variant)))
-                                   :key #'source-root)
-                             (remove-if (lambda (x)
-                                          (eq :code (source-root x)))
-                                        sifs))))
+          (extensions (extensions configuration))
+          (base-sif (find :code sifs :key #'source-root))
+          (combined-sif
+            ;; When extensions are enabled and we're on the precise variant,
+            ;; merge all enabled extensions' clasp_gc.dif files onto the bare
+            ;; base .sif in a single :merge-sif edge. Each .dif is generated
+            ;; against the bare base by ./analyze, so all share BASE-SIF as
+            ;; their fingerprint reference — they cannot be chained.
+            (when (and *variant-precise* extensions base-sif)
+              (let ((output (make-source "clasp_gc_combined.sif" :variant-generated))
+                    (difs (loop for ext in extensions
+                                for ext-name = (string-downcase (symbol-name ext))
+                                collect (make-source
+                                         (format nil "extensions/~A/src/analysis/clasp_gc.dif"
+                                                 ext-name)
+                                         :code))))
+                (ninja:write-build output-stream :merge-sif
+                                   :base base-sif
+                                   :implicit-inputs (list base-sif)
+                                   :inputs difs
+                                   :outputs (list output))
+                output)))
+          (filtered-sifs
+            (cond
+              (combined-sif
+               (cons combined-sif
+                     (remove :code sifs :key #'source-root)))
+              (*variant-precise*
+               (sort sifs
+                     (lambda (x y) (and (eq x :code) (eq y :variant)))
+                     :key #'source-root))
+              (t
+               (remove-if (lambda (x) (eq :code (source-root x))) sifs)))))
   (ninja:write-build output-stream :generate-headers
                      :inputs filtered-sifs
                      :precise (if *variant-precise* "1" "0")
@@ -851,22 +884,41 @@
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :analyze)) sources
      &key outputs &allow-other-keys
-     &aux (sif (make-source (if (member :cando (extensions configuration))
-                                             "src/analysis/clasp_gc_cando.sif"
-                                             "src/analysis/clasp_gc.sif")
-                                         :code)))              
-  (unless (or *variant-prep* *variant-precise* *variant-debug*)
-    (ninja:write-build output-stream :analyze-generate
-                       :clasp (wrap-with-env configuration (make-source "iclasp" :variant))
-                       :inputs outputs
-                       :implicit-inputs (list (build-name "base")
-                                              (build-name "generated" :gc :boehm)
-                                              (make-source "analyzer.stub" :variant-lib))                                    
-                       :sif sif
-                       :outputs (list (build-name "analyze")))
-    (ninja:write-build output-stream :phony
-                       :inputs (list (build-name "analyze"))
-                       :outputs (list "analyze"))))
+     &aux (extensions (extensions configuration))
+          (base-sif (make-source "src/analysis/clasp_gc.sif" :code)))
+  (declare (ignore sources))
+  ;; The analyze pipeline produces a single .sif (no extension) or a single
+  ;; .dif (one extension). With multiple extensions enabled we skip emitting
+  ;; the analyze target entirely — `./analyze <ext>` re-runs koga per-extension
+  ;; for that workflow.
+  (unless (or *variant-prep* *variant-precise* *variant-debug*
+              (> (length extensions) 1))
+    (let* ((ext (first extensions))
+           (ext-name (and ext (string-downcase (symbol-name ext))))
+           (analyzer-sif (if ext
+                             (make-source (format nil "clasp_gc_~A_target.sif" ext-name) :variant)
+                             base-sif))
+           (dif (and ext
+                     (make-source (format nil "extensions/~A/src/analysis/clasp_gc.dif" ext-name)
+                                  :code))))
+      (ninja:write-build output-stream :analyze-generate
+                         :clasp (wrap-with-env configuration (make-source "iclasp" :variant))
+                         :inputs outputs
+                         :implicit-inputs (list (build-name "base")
+                                                (build-name "generated" :gc :boehm)
+                                                (make-source "analyzer.stub" :variant-lib))
+                         :sif analyzer-sif
+                         :outputs (list (build-name "analyze") analyzer-sif))
+      (when ext
+        (ninja:write-build output-stream :diff-sif
+                           :clasp (wrap-with-env configuration (make-source "iclasp" :variant))
+                           :inputs (list analyzer-sif)
+                           :implicit-inputs (list base-sif (build-name "analyze"))
+                           :base base-sif
+                           :outputs (list dif)))
+      (ninja:write-build output-stream :phony
+                         :inputs (list (if ext dif (build-name "analyze")))
+                         :outputs (list "analyze")))))
 
 (defmethod print-variant-target-source
     (configuration (name (eql :ninja)) output-stream (target (eql :snapshot))

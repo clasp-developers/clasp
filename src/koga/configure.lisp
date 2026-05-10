@@ -569,6 +569,10 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"analyze-file.lisp" :build))
                                                          :analyze-generate
                                                          (list (make-source #P"analyze-generate.lisp" :build))
+                                                         :diff-sif
+                                                         (list (make-source #P"diff-sif.lisp" :build))
+                                                         :merge-sif
+                                                         (list (make-source #P"merge-sif.lisp" :build))
                                                          :snapshot
                                                          (list (make-source #P"snapshot.lisp" :variant))
                                                          :clasprc

@@ -1,17 +1,47 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
+# Separate --jobs from passthrough koga args, and capture any positional
+# extension names (./analyze cando seqan-clasp).
 NINJA_OPTIONS=""
-
-for i in "$@"; do
-  if [[ $i == --jobs=* ]]; then
-    NINJA_OPTIONS="-j ${i#*=}"
+KOGA_ARGS=()
+SELECTED_EXTS=()
+for arg in "$@"; do
+  if [[ $arg == --jobs=* ]]; then
+    NINJA_OPTIONS="-j ${arg#*=}"
+  elif [[ $arg == -* ]]; then
+    KOGA_ARGS+=("$arg")
+  else
+    SELECTED_EXTS+=("$arg")
   fi
 done
 
-./koga --build-mode=bytecode --build-path=build-analysis --clean --no-extensions "$@"
-ninja -C build-analysis $NINJA_OPTIONS analyze
+# Discover extensions: every extensions/*/ that contains a src/.
+discover_extensions() {
+  local d
+  for d in extensions/*/; do
+    if [[ -d "${d}src" ]]; then
+      basename "$d"
+    fi
+  done
+}
 
-./koga --build-mode=bytecode --build-path=build-analysis --clean --extensions=cando "$@"
-ninja -C build-analysis $NINJA_OPTIONS analyze
+if [[ ${#SELECTED_EXTS[@]} -eq 0 ]]; then
+  EXTS=( $(discover_extensions) )
+  RUN_BASE=1
+else
+  EXTS=( "${SELECTED_EXTS[@]}" )
+  RUN_BASE=0    # selective re-run: skip base, diff against committed base
+fi
+
+if [[ $RUN_BASE -eq 1 ]]; then
+  ./koga --build-mode=bytecode --build-path=build-analysis --clean --no-extensions "${KOGA_ARGS[@]}"
+  ninja -C build-analysis $NINJA_OPTIONS analyze
+fi
+
+for ext in "${EXTS[@]}"; do
+  ./koga --build-mode=bytecode --build-path=build-analysis --clean --extensions="$ext" "${KOGA_ARGS[@]}"
+  ninja -C build-analysis $NINJA_OPTIONS analyze
+done
 
 rm -rf build-analysis
